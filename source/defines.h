@@ -1,12 +1,12 @@
 #define APP_NAME				"WiiFlow"
-#define APP_VERSION				"3.0 ALPHA"
+#define APP_VERSION				"3.0 ALPHA_mod"
 
 #define APPDATA_DIR				"wiiflow"
 #define APPDATA_DIR2			"apps/wiiflow"
 
 #define GAMES_DIR 				"%s:/wbfs"
 #define HOMEBREW_DIR 			"%s:/apps"
-
+#define DML_DIR					"%s:/games"
 #define CFG_FILENAME			"wiiflow.ini"
 #define LANG_FILENAME			"languages.ini"
 #define CAT_FILENAME			"categories.ini"

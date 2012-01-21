@@ -37,7 +37,7 @@
 
 #define ARRAY_SIZE(a)		(sizeof a / sizeof a[0])
 
-static u32 allowedBases[] = { 37, 38, 53, 55, 56, 57, 58 };
+static u32 allowedBases[] = { 37, 38, 53, 55, 56, 57, 58, 60, 70, 80 };
 
 /* Check if the cIOS is a D2X. */
 bool cIOSInfo::D2X(u8 ios, u8 *base)

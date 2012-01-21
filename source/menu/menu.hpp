@@ -150,6 +150,7 @@ private:
 	u32 m_mainBtnPrev;
 	u32 m_mainBtnQuit;
 	u32 m_mainBtnDVD;
+	u32 m_mainBtnDML;
 	u32 m_mainBtnUsb;
 	u32 m_mainBtnChannel;
 	u32 m_mainBtnHomebrew;
@@ -354,6 +355,10 @@ private:
 	u32 m_gameSettingsBtnCategory[12];
 	u32 m_gameCategoryPage;
 	u32 m_gameSettingsPage;
+ 	u32 m_gameSettingsLblGameIOS;
+ 	u32 m_gameSettingsLblIOS;
+ 	u32 m_gameSettingsBtnIOSP;
+ 	u32 m_gameSettingsBtnIOSM;
 // System Menu
 	u32 m_systemBtnBack;
 	u32 m_systemLblTitle;
@@ -568,6 +573,7 @@ private:
 	bool _loadChannelList(void);
 	bool _loadList(void);
 	bool _loadHomebrewList(void);
+	bool _loadDmlList(void);
 	bool _loadGameList(void);
 	void _initCF(void);
 	// 
@@ -691,6 +697,7 @@ private:
 	void _launchGame(dir_discHdr *hdr, bool dvd);
 	void _launchChannel(dir_discHdr *hdr);
 	void _launchHomebrew(const char *filepath, safe_vector<std::string> arguments);
+	void _launchGC(const char *id);
 	void _setAA(int aa);
 	void _loadCFCfg(SThemeData &theme);
 	void _loadCFLayout(int version, bool forceAA = false, bool otherScrnFmt = false);

@@ -29,6 +29,14 @@
 #include "homebrew.h"
 #include "defines.h"
 
+#include "dml/dml.h"
+
+#define SEP 0xFF
+
+/** Base address for video registers. */
+#define MEM_VIDEO_BASE (0xCC002000)
+#define IOCTL_DI_DVDLowAudioBufferConfig 0xE4
+
 using namespace std;
 
 extern const u8 btngamecfg_png[];
@@ -134,6 +142,7 @@ static inline int loopNum(int i, int s)
 {
 	return i < 0 ? (s - (-i % s)) % s : i % s;
 }
+
 
 static void _extractBannerTitle(Banner *bnr, int language)
 {
@@ -453,7 +462,7 @@ void CMenu::_game(bool launch)
 				if (m_gameLblUser[i] != -1u)
 					m_btnMgr.show(m_gameLblUser[i]);
 
-			if (!m_locked)
+			if (m_current_view != COVERFLOW_DML && !m_locked)
 			{
 				b = m_gcfg1.getBool("ADULTONLY", id, false);
 				m_btnMgr.show(b ? m_gameBtnAdultOn : m_gameBtnAdultOff);
@@ -468,10 +477,13 @@ void CMenu::_game(bool launch)
 		{
 			m_btnMgr.hide(m_gameBtnFavoriteOn);
 			m_btnMgr.hide(m_gameBtnFavoriteOff);
-			m_btnMgr.hide(m_gameBtnAdultOn);
-			m_btnMgr.hide(m_gameBtnAdultOff);
+			if (m_current_view != COVERFLOW_DML)
+			{
+				m_btnMgr.hide(m_gameBtnAdultOn);
+				m_btnMgr.hide(m_gameBtnAdultOff);
+				m_btnMgr.hide(m_gameBtnSettings);
+			}
 			m_btnMgr.hide(m_gameBtnDelete);
-			m_btnMgr.hide(m_gameBtnSettings);
 			m_btnMgr.hide(m_gameBtnPlay);
 			m_btnMgr.hide(m_gameBtnBack);
 			for (u32 i = 0; i < ARRAY_SIZE(m_gameLblUser); ++i)
@@ -522,6 +534,9 @@ void CMenu::_launch(dir_discHdr *hdr)
 		case COVERFLOW_CHANNEL:
 			_launchChannel(hdr);
 			break;
+		case COVERFLOW_DML:
+			_launchGC((const char*)hdr->hdr.id);
+			break;
 		case COVERFLOW_USB:
 		default:
 			_launchGame(hdr, false);
@@ -530,6 +545,72 @@ void CMenu::_launch(dir_discHdr *hdr)
 }
 
 extern "C" {extern void USBStorage_Deinit(void);}
+
+void CMenu::_launchGC(const char *id)
+{	
+	Close_Inputs();
+	USBStorage_Deinit();
+	Nand::Instance()->Disable_Emu();
+	
+	char filepath[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
+	FILE *f;
+	sprintf(filepath, "%s:/games/boot.bin", DeviceName[SD]);	
+	f = fopen(filepath, "wb");
+	fwrite(id, 1, 6, f);
+	fclose(f);
+	
+	cleanup();
+	
+	memcpy((char *)0x80000000, id, 6);
+	
+	// Tell DML to boot the game from sd card
+	*(u32 *)0x80001800 = 0xB002D105;
+	DCFlushRange((void *)(0x80001800), 4);
+	ICInvalidateRange((void *)(0x80001800), 4);			
+	
+	*(volatile unsigned int *)0xCC003024 |= 7;
+	
+	setstreaming();
+	
+	VIDEO_SetBlack(TRUE);
+	if (id[3] == 'P')
+	{
+		SRAM_PAL();
+		
+		void *m_frameBuf;
+		static GXRModeObj *rmode = &TVPal528IntDf;
+		
+		/* Set video mode to PAL */
+		*(u32*)0x800000CC = 1;
+		
+		VIDEO_Configure(rmode);
+		m_frameBuf = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
+		
+		VIDEO_ClearFrameBuffer(rmode, m_frameBuf, COLOR_BLACK);
+		VIDEO_SetNextFramebuffer(m_frameBuf);
+	}
+	else
+	{
+		SRAM_NTSC();
+		
+		void *m_frameBuf;
+		static GXRModeObj *rmode = &TVNtsc480IntDf;
+		
+		/* Set video mode to NTSC */
+		*(u32*)0x800000CC = 0;
+		
+		VIDEO_Configure(rmode);
+		m_frameBuf = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
+		
+		VIDEO_ClearFrameBuffer(rmode, m_frameBuf, COLOR_BLACK);
+		VIDEO_SetNextFramebuffer(m_frameBuf);
+	}
+	VIDEO_Flush();
+	VIDEO_WaitVSync();
+
+	if (WII_LaunchTitle(0x0000000100000100ULL)<0)
+		Sys_LoadMenu();
+}
 
 void CMenu::_launchHomebrew(const char *filepath, safe_vector<std::string> arguments)
 {
@@ -659,10 +740,11 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 					error(sfmt("No cios found!"));
 					Sys_LoadMenu();
 				}
-				u8 IOS[3];
+				u8 IOS[4];
 				IOS[0] = gameIOS == 0 ? ios : gameIOS;
 				IOS[1] = 56;
 				IOS[2] = 57;
+				IOS[3] = 58;
 				bool found = false;
 				for(u8 num = 0; !found && num < 4; num++)
 				{
@@ -882,10 +964,11 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 				error(sfmt("No cios found!"));
 				Sys_LoadMenu();
 			}
- 			u8 IOS[3];
+ 			u8 IOS[4];
 			IOS[0] = gameIOS == 0 ? GetRequestedGameIOS(hdr) : gameIOS;
 			IOS[1] = 56;
 			IOS[2] = 57;
+			IOS[3] = 58;
 			gprintf("Game requested IOS: %u\n", IOS[0]);
 			bool found = false;
 			for(u8 num = 0; !found && num < 4; num++)

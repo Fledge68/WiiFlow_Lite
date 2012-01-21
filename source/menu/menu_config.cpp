@@ -42,25 +42,30 @@ void CMenu::_showConfig(void)
 	_setBg(m_configBg, m_configBg);
 	m_btnMgr.show(m_configLblTitle);
 	m_btnMgr.show(m_configBtnBack);
-	m_btnMgr.show(m_configLblPartitionName);
-	m_btnMgr.show(m_configLblPartition);
-	m_btnMgr.show(m_configBtnPartitionP);
-	m_btnMgr.show(m_configBtnPartitionM);
-	m_btnMgr.show(m_configLblDownload);
-	m_btnMgr.show(m_configBtnDownload);
+	if (m_current_view != COVERFLOW_DML)
+	{
+		m_btnMgr.show(m_configLblPartitionName);
+		m_btnMgr.show(m_configLblPartition);
+		m_btnMgr.show(m_configBtnPartitionP);
+		m_btnMgr.show(m_configBtnPartitionM);
+	}
+	if (!m_locked) {
+		m_btnMgr.show(m_configLblDownload);
+		m_btnMgr.show(m_configBtnDownload);
+	}
 	m_btnMgr.show(m_configLblParental);
 	m_btnMgr.show(m_configLblPage);
 	m_btnMgr.show(m_configBtnPageM);
 	m_btnMgr.show(m_configBtnPageP);
 
-	if(m_current_view != COVERFLOW_HOMEBREW)
+	if(m_current_view != COVERFLOW_HOMEBREW && m_current_view != COVERFLOW_DML)
 	{
 		m_btnMgr.show(m_configBtnEmulation);
 		m_btnMgr.show(m_configLblEmulation);
 	}
 
 	m_btnMgr.show(m_locked ? m_configBtnUnlock : m_configBtnSetCode);
-
+	
 	bool disable = m_current_view == COVERFLOW_CHANNEL && m_cfg.getBool("NAND", "disable", true);
 	char *partitionname = disable ? (char *)"NAND" : (char *)DeviceName[m_cfg.getInt(_domainFromView(), "partition", -1)];
 
@@ -71,8 +76,9 @@ void CMenu::_showConfig(void)
 	for (u32 i = 0; i < ARRAY_SIZE(m_configLblUser); ++i)
 		if (m_configLblUser[i] != -1u)
 			m_btnMgr.show(m_configLblUser[i]);
-
+	
 	m_btnMgr.setText(m_configLblPartition, (string)partitionname);
+
 	m_btnMgr.setText(m_configLblPage, wfmt(L"%i / %i", g_curPage, m_locked ? g_curPage + 1 : CMenu::_nbCfgPages));
 
 	bool isON = false;
