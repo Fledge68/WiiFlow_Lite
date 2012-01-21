@@ -1,0 +1,172 @@
+
+Files marked as "GPL" can be used without any constraint.
+Files marked as GPL require that you respect one of the GPL : http://www.gnu.org/licenses/
+All the original code in WiiFlow is in Public Domain (or WTFPL if GPL is not possible)
+
+
+source/
+
+|  File           |  Comment   |  Lic |  Original author(s)        |  Project where the original code is
+|-----------------|------------|------|----------------------------|------------------------------------
+| boxmesh.cpp     |            | GPL  |                            | WiiFlow 1.1
+| boxmesh.hpp     |            | GPL  |                            | WiiFlow 1.1
+| cheat.cpp       |            | GPL  |                            | WiiFlow 1.1
+| cheat.hpp       |            | GPL  |                            | WiiFlow 1.1
+| config.cpp      |            | GPL  |                            | WiiFlow 1.1
+| config.hpp      |            | GPL  |                            | WiiFlow 1.1
+| cursor.cpp      |            | GPL  |                            | WiiFlow 1.1
+| cursor.hpp      |            | GPL  |                            | WiiFlow 1.1
+| dns.c           |            | GPL  | PaulWagener                | WiiEarth
+| dns.h           |            | GPL  | PaulWagener                | WiiEarth
+| FreeTypeGX.cpp  | Modified   | GPL  | Armin Tamzarian            | http://code.google.com/p/freetypegx/
+| FreeTypeGX.hpp  | Modified   | GPL  | Armin Tamzarian            | http://code.google.com/p/freetypegx/
+| gui.cpp         |            | GPL  |                            | WiiFlow 1.1
+| gui.hpp         |            | GPL  |                            | WiiFlow 1.1
+| http.c          | Modified   | GPL  | PaulWagener                | WiiEarth
+| http.h          | Modified   | GPL  | PaulWagener                | WiiEarth
+| main.cpp        |            | GPL  |                            | WiiFlow 1.1
+| mem2.cpp        |            | GPL  |                            | WiiFlow 1.1
+| mem2.hpp        |            | GPL  |                            | WiiFlow 1.1
+| mem2alloc.cpp   |            | GPL  |                            | WiiFlow 1.1
+| mem2alloc.hpp   |            | GPL  |                            | WiiFlow 1.1
+| Metaphrasis.cpp | Modified   | GPL  | Armin Tamzarian            | http://code.google.com/p/metaphrasis/
+| Metaphrasis.h   | Modified   | GPL  | Armin Tamzarian            | http://code.google.com/p/metaphrasis/
+| objalloc.cpp    |            | GPL  |                            | WiiFlow 1.1
+| objalloc.hpp    |            | GPL  |                            | WiiFlow 1.1
+| oggplayer.c     | Modified   | GPL  | Hermes                     | Modified version from LibWiiGui
+| oggplayer.h     | Modified   | GPL  | Hermes                     | Modified version from LibWiiGui
+| pngu.c          | Modified   | ?    |                            | http://frontier-dev.net
+| pngu.h          | Modified   | ?    |                            | http://frontier-dev.net
+| smartalloc.cpp  |            | GPL  |                            | WiiFlow 1.1
+| smartptr.hpp    |            | GPL  |                            | WiiFlow 1.1
+| sound.cpp       |            | GPL  |                            | WiiFlow 1.1
+| sound.hpp       |            | GPL  |                            | WiiFlow 1.1
+| text.cpp        |            | GPL  |                            | WiiFlow 1.1
+| text.hpp        |            | GPL  |                            | WiiFlow 1.1
+| texture.cpp     |            | GPL  |                            | WiiFlow 1.1 Optimization : "Real-Time DXT Compression" by J.M.P. van Waveren (c) 2006 Id Software, Inc.
+| texture.hpp     |            | GPL  |                            | WiiFlow 1.1
+| vector.hpp      |            | GPL  |                            | WiiFlow 1.1
+| video.cpp       |            | GPL  |                            | WiiFlow 1.1
+| video.hpp       |            | GPL  |                            | WiiFlow 1.1
+| wstringEx.cpp   |            | GPL  |                            | WiiFlow 1.1 R8
+| wstringEx.hpp   |            | GPL  |                            | WiiFlow 1.1 R8
+--------------------------------------------------------------------------------------------------------
+
+
+source/data/
+
+|  File           |  Comment   |  Lic |  Original author(s)        |  Project where the original code is
+|-----------------|------------|------|----------------------------|------------------------------------
+| *.c             | Generated  |      |                            | WiiFlow 1.1
+--------------------------------------------------------------------------------------------------------
+
+
+source/loader/
+
+|  File           |  Comment   |  Lic |  Original author(s)        |  Project where the original code is
+|-----------------|------------|------|----------------------------|------------------------------------
+| alt_ios.c       | Modified   | GPL  | Hermes                     | uLoader 3.0C
+| alt_ios.h       | Modified   | GPL  | Hermes                     | uLoader 3.0C
+| apploader.c     | Modified   | GPL  | Waninkoko, WiiPower        | USB Loader 1.5, NeoGamma
+| apploader.h     | Modified   | GPL  | Waninkoko, WiiPower        | USB Loader 1.5, NeoGamma
+| dip_plugin_2.c  |            | GPL  | Hermes                     | uLoader
+| dip_plugin_2.h  |            | GPL  | Hermes                     | uLoader
+| dip_plugin_3.c  |            | GPL  | Hermes                     | uLoader 2.6
+| dip_plugin_3.h  |            | GPL  | Hermes                     | uLoader 2.6
+| dip_plugin_4.c  |            | GPL  | Hermes                     | uLoader 3.1
+| dip_plugin_4.h  |            | GPL  | Hermes                     | uLoader 3.1
+| disc.c          | Modified   | GPL  | Kwiirk, Waninkoko, Hermes  | YAL, USB Loader 1.5, uLoader 3.0C
+| disc.h          | Modified   | GPL  | Kwiirk, Waninkoko, Hermes  | YAL, USB Loader 1.5, uLoader 3.0C
+| ehcmodule_2.c   |            | GPL  | Kwiirk?, Hermes            | uLoader
+| ehcmodule_2.h   |            | GPL  | Kwiirk?, Hermes            | uLoader
+| ehcmodule_3.c   |            | GPL  | Kwiirk?, Hermes            | uLoader 2.6
+| ehcmodule_3.h   |            | GPL  | Kwiirk?, Hermes            | uLoader 2.6
+| ehcmodule_4.c   |            | GPL  | Kwiirk?, Hermes            | uLoader 3.1
+| ehcmodule_4.h   |            | GPL  | Kwiirk?, Hermes            | uLoader 3.1
+| fat.c           |            | GPL  |                            | WiiFlow 1.1
+| fat.h           |            | GPL  |                            | WiiFlow 1.1
+| fwrite_patch.h  |            | GPL  | Nuke, Brkirch              | http://code.google.com/p/usbgecko/
+| geckomenu.h     |            | GPL  | Nuke, Brkirch              | http://code.google.com/p/usbgecko/
+| kenobiwii.c     |            | GPL  | Nuke, Brkirch              | http://code.google.com/p/usbgecko/
+| load_dol.c      |            | GPL  | Shagkur?                   | ftpii, uLoader 3.0C
+| load_dol.h      |            | GPL  | Shagkur?                   | ftpii, uLoader 3.0C
+| mload.c         |            | GPL  | Hermes                     | uLoader 3.0C
+| mload.h         |            | GPL  | Hermes                     | uLoader 3.0C
+| partition.c     |            | GPL  | Waninkoko?                 | USB Loader 1.5
+| partition.h     |            | GPL  | Waninkoko?                 | USB Loader 1.5
+| patchcode.c     | Modified   | GPL  | Nuke, Brkirch              | http://code.google.com/p/usbgecko/
+| patchcode.h     | Modified   | GPL  | Nuke, Brkirch              | http://code.google.com/p/usbgecko/
+| patchhook.S     |            | GPL  | Nuke, Brkirch              | http://code.google.com/p/usbgecko/
+| ppc.h           |            | GPL  |                            | http://code.google.com/p/usbgecko/
+| sdhc.c          | Modified   | GPL  | Waninkoko                  | USB Loader 1.5
+| sdhc.h          | Modified   | GPL  | Waninkoko                  | USB Loader 1.5
+| sys.c           | Modified   | GPL  | Waninkoko                  | USB Loader 1.5
+| sys.h           | Modified   | GPL  | Waninkoko                  | USB Loader 1.5
+| usbstorage.c    | Modified   | GPL  | Kwiirk, Hermes             | YAL, USB Loader 1.5, uLoader 3.0C
+| usbstorage.h    | Modified   | GPL  | Kwiirk                     | YAL, USB Loader 1.5, uLoader 3.0C
+| utils.c         |            | GPL  | Waninkoko                  | USB Loader 1.5
+| utils.h         |            | GPL  | Waninkoko                  | USB Loader 1.5
+| utils.c         |            | GPL  | Waninkoko                  | USB Loader 1.5
+| utils.h         |            | GPL  | Waninkoko                  | USB Loader 1.5
+| videopatch.c    | Rewritten  | GPL  | WiiPower?                  | NeoGamma
+| videopatch.h    | Rewritten  | GPL  | WiiPower?                  | NeoGamma
+| wbfs.c          | Modified   | GPL  | Waninkoko                  | USB Loader 1.5
+| wbfs.h          | Modified   | GPL  | Waninkoko                  | USB Loader 1.5
+| wdvd.c          | Modified   | GPL  | Kwiirk, Hermes, Waninkoko  | USB Loader 1.5
+| wdvd.h          | Modified   | GPL  | Kwiirk, Hermes, Waninkoko  | USB Loader 1.5
+--------------------------------------------------------------------------------------------------------
+
+
+source/libs/libwbfs/
+
+|  File           |  Comment   |  Lic |  Original author(s)        |  Project where the original code is
+|-----------------|------------|------|----------------------------|------------------------------------
+| libwbfs.c       | Modified   | GPL  | Kwiirk                     | YAL?
+| libwbfs.h       | Modified   | GPL  | Kwiirk                     | YAL?
+| libwbfs_os.h    | Modified   | GPL  | Kwiirk                     | YAL?
+| rijndael.c      |            | ?    | Mike Scott                 | 
+| wiidisc.c       | Modified   | GPL  | Kwiirk                     | YAL?
+| wiidisc.h       | Modified   | GPL  | Kwiirk                     | YAL?
+--------------------------------------------------------------------------------------------------------
+
+
+source/menu/
+
+|  File           |  Comment   |  Lic |  Original author(s)        |  Project where the original code is
+|-----------------|------------|------|----------------------------|------------------------------------
+| *.cpp, *hpp     |            | GPL   |                            | WiiFlow 1.1
+--------------------------------------------------------------------------------------------------------
+
+
+include
+
+|  File           |  Comment   |  Lic |  Original author(s)        |  Project where the original code is
+|-----------------|------------|------|----------------------------|------------------------------------
+| ft2build.h      |            | ?    |                            | FreeType
+| png.h           |            | PNG  |                            | http://www.libpng.org
+| pngconf.h       | Modified   | PNG  |                            | http://www.libpng.org
+--------------------------------------------------------------------------------------------------------
+
+
+include/freetype
+
+|  File           |  Comment   |  Lic |  Original author(s)        |  Project where the original code is
+|-----------------|------------|------|----------------------------|------------------------------------
+| *.h             |            | ?    |                            | FreeType
+--------------------------------------------------------------------------------------------------------
+
+
+include/tremor
+
+|  File           |  Comment   |  Lic |  Original author(s)        |  Project where the original code is
+|-----------------|------------|------|----------------------------|------------------------------------
+| *.h             |            | ?    |                            | Tremor
+--------------------------------------------------------------------------------------------------------
+
+
+lib
+
+|  File           |  Comment   |  Lic |  Original author(s)        |  Project where the original code is
+|-----------------|------------|------|----------------------------|------------------------------------
+| *.a             |            |      |                            | 
+--------------------------------------------------------------------------------------------------------

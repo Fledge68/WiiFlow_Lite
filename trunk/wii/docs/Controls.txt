@@ -1,0 +1,40 @@
+Controls :
+- Main menu (coverflow) :
+-- Up / Down			Previous / next game (vertical)
+-- Left / Right			Previous / next game (horizontal)
+-- A					Select game
+-- B+A					Launch game immediately
+-- B+Home				Reload Wiiflow
+-- Home					Exit
+-- 1 / 2				Previous / next coverflow mode
+-- B+Left / B+Right		Change Song
+-- B+UP / B+DOWN		Alphabetic search
+-- B+Minus				Switch Partition
+-- B+Plus				Sort Games
+-- Minus+Home			Exit to Homebrew Channel
+-- Plus+Home			Exit to System Menu
+-- 1+Home				Exit to Priiloader
+-- 2+Home				Exit to BootMii
+
+-- Minus+A on Exit Icon	Exit to Homebrew Channel
+-- Plus+A on Exit Icon	Exit to System Menu
+-- 1+A on Exit Icon		Exit to Priiloader
+-- 2+A on Exit Icon		Exit to BootMii
+-- B on View Icon		Enable/Disable Nand emulator
+
+- Game :
+-- A on box				Show the backside
+-- A out of screen		Launch game
+-- B					Back to coverflow
+-- Minus / Plus			Previous / next game (vertical)
+-- Left / Right			Previous / next game (horizontal)
+
+- Settings menus :
+-- Minus / Plus			Previous / next page
+-- Left / Right			Previous / next page
+
+- Coverflow settings :
+-- B+Minus / B+Plus		Previous / next page
+-- B					Faster adjustement (B+A instead of just A to click a button)
+-- B+1					Copy whole coverflow
+-- B+2					Paste coverflow
