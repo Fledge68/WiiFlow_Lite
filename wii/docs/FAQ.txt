@@ -1,0 +1,73 @@
+Content:
+- I can't select a theme, i can't select my language.
+- Can it play background music?
+- It crashed when i tried to download covers.
+- When i launch 2 games in a row it freezes.
+- The Wii freezes when i leave a game.
+- The theme Nihonflow doesn't display accents correcty.
+- How do i disable sounds?
+- How can i download covers in my language?
+- How do video modes work?
+- What's the red hand?
+- How does the parental control work?
+- I've found a bug.
+
+-------
+
+Q. Can it play background music?
+A. Put your OGG/MP3 files in /wiiflow/music/
+
+
+Q. The theme Nihonflow doesn't display accents correcty.
+A. It's a theme made for Japanese people, with a font that supports their alphabet.
+But it's good in English too, and you can replace the font in /wiiflow/themes/nihonflow/
+
+
+Q. How do i disable sounds?
+A. In the settings menu, there's a page with sound volume adjustments.
+If you set a volume to 0, the sounds won't be loaded/played.
+
+
+Q. How can i download covers in my language?
+A. If you are Portuguese or if your Wii is not set to use your language, you need to modify wiiflow.ini
+In the URL, replace {loc} by your country code (see wiitdb.com for country codes)
+
+
+Q. How do video modes work?
+A. There are 2 ways of forcing a video mode : the "normal" way and the patch.
+If the normal way doesn't work, use the patch, but it might cause wrong screen coordinates in games.
+To force a video mode the normal way, set :
+- Video Mode : PAL 60 or PAL 50 or NTSC
+- Video Mode Patch : None
+To force a video mode through a patch, set :
+- Video Mode : PAL 60 or PAL 50 or NTSC
+- Video Modes Patch : Normal or More or All
+"Normal" means it will only patch video modes that have the same resolution as the one you've selected.
+"More" means it will patch every video mode as long as its mode (interlaced or progressive) is the same.
+"All" means it replaces any mode it finds.
+There is another way to use the video modes patch. Set :
+- Video Mode : Auto Patch
+- Video Modes Patch : None (ignored anyway)
+This time it tries to patch video modes the best way for you.
+
+
+Q. What's the red hand?
+A. See "How does the parental control work?"
+
+
+Q. How does the parental control work?
+A. The parental control is disabled by default.
+Go to the settings menu and click on "Set Code".
+Enter a 4 digits code.
+Now that there is a code, WiiFlow will switch to child mode on next start.
+To immediately enable it, go back to the coverflow and press B+Home.
+With child mode enabled, many functions become invisible.
+If you want to enable these functions again, go to the settings menu, click "Unlock", and type the same code.
+Now, you can go to game selection, and click on the red hand to select which games should be invisible in child mode.
+If you launch a game or restart WiiFlow, it will automatically switch back to child mode.
+To remove the child mode persitently, go to the settings menu, click "Unlock", type your code, then click "Set code", then "Erase".
+
+
+Q. I've found a bug.
+A. come to #wiiflow on irc.abjects.net, or goto the url http://tinyurl.com/wiiflowirc and report it there.
+

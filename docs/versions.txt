@@ -1,0 +1,49 @@
+
+[GENERAL]
+app_zip_size=2042058
+changes=2.2 Alpha2 Now updates data folder with zip support.\nMany more changes. (see svn for full details.)
+data_zip_size=456334
+dol_size=3713248
+num_versions=6
+update_url=http://wiiflow.org/update
+type=zip
+version=228
+latestversion=228
+
+[VERSION1]
+changes=Fix channels on base 57.\nAdd wiimote gestures and extenstions' stick sensitivity.\nOnly save ini's when they have changed.\nAdd ncard to channel launching.
+version=181
+type=dol
+
+[VERSION2]
+changes=Some more tweaks.
+version=170
+type=dol
+
+[VERSION3]
+changes=Full ntfs support with writing.\nAlt-Dol+ and WiiTDB.zip support with game informations.\nWinnertag and gamercard added.\nScreenshot feature added (gcpad z)\n Multiple bug fixes (more to come).
+version=166
+type=dol
+
+[VERSION4]
+changes=r92a release.
+version=92
+type=dol
+
+#[GENERAL]
+#app_zip_size= (if type != dol, {ios}.zip size in bytes, else 0)
+#changes= (Self explanatory)
+#data_zip_size= (if type != dol, data.zip size in bytes, else 0)
+#dol_size= (if type == dol, dol size in bytes, else 0)
+#num_versions= (installed version + number available in this txt file including latest version)
+#type= (dol|zip set to dol if update is for dol only without zip. defaults to zip.)
+#update_url= (http://wiiflow.org/update)
+#version= (latest version revision number)
+
+#[VERSION#]
+#app_zip_size=
+#changes=
+#data_zip_size=
+#dol_size=
+#type=
+#version= (revision number to DL)
