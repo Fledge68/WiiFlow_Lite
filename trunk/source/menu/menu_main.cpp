@@ -28,6 +28,8 @@ extern const u8 btnchannel_png[];
 extern const u8 btnchannels_png[];
 extern const u8 btnusb_png[];
 extern const u8 btnusbs_png[];
+extern const u8 btndml_png[];
+extern const u8 btndmls_png[];
 extern const u8 btndvd_png[];
 extern const u8 btndvds_png[];
 extern const u8 favoriteson_png[];
@@ -52,6 +54,7 @@ void CMenu::_hideMain(bool instant)
 	m_btnMgr.hide(m_mainBtnHomebrew, instant);
 	m_btnMgr.hide(m_mainBtnChannel, instant);
 	m_btnMgr.hide(m_mainBtnUsb, instant);
+	m_btnMgr.hide(m_mainBtnDML, instant);
 	m_btnMgr.hide(m_mainBtnDVD, instant);
 	m_btnMgr.hide(m_mainBtnInit, instant);
 	m_btnMgr.hide(m_mainBtnInit2, instant);
@@ -83,13 +86,16 @@ void CMenu::_showMain(void)
 	switch(m_current_view)
 	{
 		case COVERFLOW_HOMEBREW:
-			m_btnMgr.show(m_mainBtnUsb);
+			m_btnMgr.show(m_mainBtnDML);
 			break;
 		case COVERFLOW_CHANNEL:
-			if(!m_locked && show_homebrew)
+			if(show_homebrew)
 				m_btnMgr.show(m_mainBtnHomebrew);
 			else
-				m_btnMgr.show(m_mainBtnUsb);
+				m_btnMgr.show(m_mainBtnDML);
+			break;
+		case COVERFLOW_DML:
+			m_btnMgr.show(m_mainBtnUsb);
 			break;
 		default:
 			m_btnMgr.show(m_mainBtnChannel);
@@ -156,7 +162,9 @@ int CMenu::main(void)
 
 	SetupInput();
 	MusicPlayer::Instance()->Play();
+	m_gameList.SetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
 	_loadList();
+	
 	_showMain();
 	m_curGameId.clear();
 	_initCF();
@@ -366,7 +374,7 @@ int CMenu::main(void)
 				_initCF();
 			}
 			//Events to Switch off/on nand emu
-			else if (m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnHomebrew))
+			else if (m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML) || m_btnMgr.selected(m_mainBtnHomebrew))
 			{
 				m_cfg.setBool("NAND", "disable", !m_cfg.getBool("NAND", "disable", true));
 				gprintf("EmuNand is %s\n", m_cfg.getBool("NAND", "disable", true) ? "Disabled" : "Enabled");
@@ -443,15 +451,17 @@ int CMenu::main(void)
 				m_reload = (BTN_B_HELD || m_disable_exit);
 				break;
 			}
-			else if (m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnHomebrew))
+			else if (m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML) || m_btnMgr.selected(m_mainBtnHomebrew))
 			{
 				if (m_current_view == COVERFLOW_USB) 
 					m_current_view = COVERFLOW_CHANNEL;
 				else if (m_current_view == COVERFLOW_CHANNEL)
-					m_current_view = (!m_locked && show_homebrew) ? COVERFLOW_HOMEBREW : COVERFLOW_USB;
+					m_current_view = show_homebrew ? COVERFLOW_HOMEBREW : COVERFLOW_DML;
 				else if (m_current_view == COVERFLOW_HOMEBREW)
+					m_current_view = COVERFLOW_DML;
+				else if (m_current_view == COVERFLOW_DML)
 					m_current_view = COVERFLOW_USB;
-
+					
 				m_category = m_cat.getInt(_domainFromView(), "category", 0);
 				LoadView();
 			}
@@ -571,13 +581,16 @@ int CMenu::main(void)
 			switch(m_current_view)
 			{
 				case COVERFLOW_HOMEBREW:
-					m_btnMgr.show(m_mainBtnUsb);
+					m_btnMgr.show(m_mainBtnDML);
 					break;
 				case COVERFLOW_CHANNEL:
-					if(!m_locked && show_homebrew)
+					if(show_homebrew)
 						m_btnMgr.show(m_mainBtnHomebrew);
 					else
-						m_btnMgr.show(m_mainBtnUsb);
+						m_btnMgr.show(m_mainBtnDML);
+					break;
+				case COVERFLOW_DML:
+					m_btnMgr.show(m_mainBtnUsb);
 					break;
 				default:
 					m_btnMgr.show(m_mainBtnChannel);
@@ -591,6 +604,7 @@ int CMenu::main(void)
 			m_btnMgr.hide(m_mainBtnHomebrew);
 			m_btnMgr.hide(m_mainBtnChannel);
 			m_btnMgr.hide(m_mainBtnUsb);
+			m_btnMgr.hide(m_mainBtnDML);
 			m_btnMgr.hide(m_mainLblUser[2]);
 			m_btnMgr.hide(m_mainLblUser[3]);
 		}
@@ -641,6 +655,8 @@ void CMenu::_initMainMenu(CMenu::SThemeData &theme)
 	STexture texInfoS;
 	STexture texConfig;
 	STexture texConfigS;
+	STexture texDML;
+	STexture texDMLs;
 	STexture texDVD;
 	STexture texDVDs;
 	STexture texUsb;
@@ -674,6 +690,8 @@ void CMenu::_initMainMenu(CMenu::SThemeData &theme)
 	texDVDs.fromPNG(btndvds_png);
 	texUsb.fromPNG(btnusb_png);
 	texUsbs.fromPNG(btnusbs_png);
+	texDML.fromPNG(btndml_png);
+	texDMLs.fromPNG(btndmls_png);
 	texChannel.fromPNG(btnchannel_png);
 	texChannels.fromPNG(btnchannels_png);
 	texHomebrew.fromPNG(btnhomebrew_png);
@@ -695,6 +713,7 @@ void CMenu::_initMainMenu(CMenu::SThemeData &theme)
 	m_mainBtnChannel = _addPicButton(theme, "MAIN/CHANNEL_BTN", texChannel, texChannels, 520, 412, 48, 48);
 	m_mainBtnHomebrew = _addPicButton(theme, "MAIN/HOMEBREW_BTN", texHomebrew, texHomebrews, 520, 412, 48, 48);
 	m_mainBtnUsb = _addPicButton(theme, "MAIN/USB_BTN", texUsb, texUsbs, 520, 412, 48, 48);
+	m_mainBtnDML = _addPicButton(theme, "MAIN/DML_BTN", texDML, texDMLs, 520, 412, 48, 48);
 	m_mainBtnDVD = _addPicButton(theme, "MAIN/DVD_BTN", texDVD, texDVDs, 470, 412, 48, 48);
 	m_mainBtnNext = _addPicButton(theme, "MAIN/NEXT_BTN", texNext, texNextS, 540, 146, 80, 80);
 	m_mainBtnPrev = _addPicButton(theme, "MAIN/PREV_BTN", texPrev, texPrevS, 20, 146, 80, 80);
@@ -747,6 +766,7 @@ void CMenu::_initMainMenu(CMenu::SThemeData &theme)
 	_setHideAnim(m_mainBtnChannel, "MAIN/CHANNEL_BTN", 0, 40, 0.f, 0.f);
 	_setHideAnim(m_mainBtnHomebrew, "MAIN/HOMEBREW_BTN", 0, 40, 0.f, 0.f);
 	_setHideAnim(m_mainBtnUsb, "MAIN/USB_BTN", 0, 40, 0.f, 0.f);
+	_setHideAnim(m_mainBtnDML, "MAIN/DML_BTN", 0, 40, 0.f, 0.f);
 	_setHideAnim(m_mainBtnDVD, "MAIN/DVD_BTN", 0, 40, 0.f, 0.f);
 	_setHideAnim(m_mainBtnFavoritesOn, "MAIN/FAVORITES_ON", 0, 40, 0.f, 0.f);
 	_setHideAnim(m_mainBtnFavoritesOff, "MAIN/FAVORITES_OFF", 0, 40, 0.f, 0.f);

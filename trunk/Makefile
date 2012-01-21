@@ -22,6 +22,7 @@ SOURCES		:=	source \
 				source/config \
 				source/data \
 				source/devicemounter \
+				source/dml \
 				source/gecko \
 				source/gui \
 				source/list \
@@ -45,6 +46,7 @@ INCLUDES	:=	source \
 				source/cheats \
 				source/config \
 				source/devicemounter \
+				source/dml \
 				source/gecko \
 				source/gui \
 				source/list \

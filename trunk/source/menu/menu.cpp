@@ -1551,6 +1551,10 @@ bool CMenu::_loadList(void)
 			gprintf("homebrew view from ");
 			retval = _loadHomebrewList();
 			break;
+		case COVERFLOW_DML:
+			gprintf("dml view from ");
+			retval = _loadDmlList();
+			break;
 		default:
 			gprintf("usb view from ");
 			retval = _loadGameList();
@@ -1584,6 +1588,17 @@ bool CMenu::_loadHomebrewList()
 	DeviceHandler::Instance()->Open_WBFS(currentPartition);
 
 	m_gameList.Load(sfmt(HOMEBREW_DIR, DeviceName[currentPartition]), ".dol|.elf");
+	return m_gameList.size() > 0 ? true : false;
+}
+
+bool CMenu::_loadDmlList()
+{
+	if(!DeviceHandler::Instance()->IsInserted(SD))
+		return false;
+
+	gprintf("%s\n", DeviceName[SD]);
+	DeviceHandler::Instance()->Open_WBFS(SD);
+	m_gameList.Load(sfmt(DML_DIR, DeviceName[SD]), ".iso");
 	return m_gameList.size() > 0 ? true : false;
 }
 
@@ -1743,6 +1758,8 @@ const char *CMenu::_domainFromView()
 			return "NAND";
 		case COVERFLOW_HOMEBREW:
 			return "HOMEBREW";
+		case COVERFLOW_DML:
+			return "DML";
 		default:
 			return "GAMES";
 	}
@@ -1755,6 +1772,7 @@ void CMenu::UpdateCache(u32 view)
 	{
 		UpdateCache(COVERFLOW_USB);
 		UpdateCache(COVERFLOW_HOMEBREW);
+		UpdateCache(COVERFLOW_DML);
 		UpdateCache(COVERFLOW_CHANNEL);
 		return;
 	}
@@ -1766,6 +1784,8 @@ void CMenu::UpdateCache(u32 view)
 			domain = "NAND";
 		case COVERFLOW_HOMEBREW:
 			domain = "HOMEBREW";
+		case COVERFLOW_DML:
+			domain = "DML";
 		default:
 			domain = "GAMES";
 	}

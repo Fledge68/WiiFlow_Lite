@@ -15,7 +15,7 @@ static inline int loopNum(int i, int s)
 }
 
 u8 m_gameSettingCategories[12];
-u32 g_numGCfPages = 3;
+u32 g_numGCfPages = 4;
 
 void CMenu::_hideGameSettings(bool instant)
 {
@@ -58,6 +58,10 @@ void CMenu::_hideGameSettings(bool instant)
 	m_btnMgr.hide(m_gameSettingsLblDebuggerV, instant);
 	m_btnMgr.hide(m_gameSettingsBtnDebuggerP, instant);
 	m_btnMgr.hide(m_gameSettingsBtnDebuggerM, instant);
+	m_btnMgr.hide(m_gameSettingsLblGameIOS, instant);
+	m_btnMgr.hide(m_gameSettingsLblIOS, instant);
+	m_btnMgr.hide(m_gameSettingsBtnIOSP, instant);
+	m_btnMgr.hide(m_gameSettingsBtnIOSM, instant);
 
 	for (int i = 0; i < 12; ++i) {
 		m_btnMgr.hide(m_gameSettingsBtnCategory[i], instant); 
@@ -205,7 +209,21 @@ void CMenu::_showGameSettings(void)
 		m_btnMgr.hide(m_gameSettingsBtnEmulation);
 		m_btnMgr.hide(m_gameSettingsLblEmulation);
 	}
-
+	if (m_gameSettingsPage == 4)
+	{
+		m_btnMgr.show(m_gameSettingsLblGameIOS);
+		m_btnMgr.show(m_gameSettingsLblIOS);
+		m_btnMgr.show(m_gameSettingsBtnIOSP);
+		m_btnMgr.show(m_gameSettingsBtnIOSM);
+	}
+	else
+	{
+		m_btnMgr.hide(m_gameSettingsLblGameIOS);
+		m_btnMgr.hide(m_gameSettingsLblIOS);
+		m_btnMgr.hide(m_gameSettingsBtnIOSP);
+		m_btnMgr.hide(m_gameSettingsBtnIOSM);
+	}
+	
 	u32 i = 0;
 	
 	//Categories Pages
@@ -265,7 +283,7 @@ void CMenu::_showGameSettings(void)
 	string id(m_cf.getId());
 	int page = m_gameSettingsPage;
 
-	u32 maxpage = 3;
+	u32 maxpage = 4;
 	if (m_gameSettingsPage > maxpage)
 		page = m_gameSettingsPage-50;
 
@@ -277,6 +295,21 @@ void CMenu::_showGameSettings(void)
 	m_btnMgr.setText(m_gameSettingsLblVideo, _t(CMenu::_videoModes[i].id, CMenu::_videoModes[i].text));
 	i = min((u32)m_gcfg2.getInt(id, "language", 0), ARRAY_SIZE(CMenu::_languages) - 1u);
 	m_btnMgr.setText(m_gameSettingsLblLanguage, _t(CMenu::_languages[i].id, CMenu::_languages[i].text));
+
+	int j = 0;
+	if (m_gcfg2.getInt(id, "ios", &j) && _installed_cios.size() > 0)
+	{
+		CIOSItr itr = _installed_cios.find(j);
+		j = (itr == _installed_cios.end()) ? 0 : itr->first;
+	}
+	else j = 0;
+
+	if (j != 0)
+	{
+		m_btnMgr.setText(m_gameSettingsLblIOS, wstringEx(sfmt("%i", j)));
+	}
+	else
+		m_btnMgr.setText(m_gameSettingsLblIOS, L"AUTO");
 
 	i = min((u32)m_gcfg2.getInt(id, "patch_video_modes", 0), ARRAY_SIZE(CMenu::_vidModePatch) - 1u);
 	m_btnMgr.setText(m_gameSettingsLblPatchVidModesVal, _t(CMenu::_vidModePatch[i].id, CMenu::_vidModePatch[i].text));
@@ -378,6 +411,32 @@ void CMenu::_gameSettings(void)
 				s8 direction = m_btnMgr.selected(m_gameSettingsBtnVideoP) ? 1 : -1;
 				m_gcfg2.setInt(id, "video_mode", (int)loopNum((u32)m_gcfg2.getInt(id, "video_mode", 0) + direction, ARRAY_SIZE(CMenu::_videoModes)));
 				_showGameSettings();
+			}
+			else if (m_btnMgr.selected(m_gameSettingsBtnIOSM) || m_btnMgr.selected(m_gameSettingsBtnIOSP))
+			{
+				if( _installed_cios.size() > 0)
+				{
+					bool direction = m_btnMgr.selected(m_gameSettingsBtnIOSP);
+
+					CIOSItr itr = _installed_cios.find((u32)m_gcfg2.getInt(id, "ios", 0));
+					
+					if (direction && itr == _installed_cios.end())
+						itr = _installed_cios.begin();
+					else if(!direction && itr == _installed_cios.begin())
+						itr = _installed_cios.end();
+					else if (direction)
+						itr++;
+
+					if(!direction)
+						itr--;
+
+					if(itr->first != 0)
+						m_gcfg2.setInt(id, "ios", itr->first);
+					else
+						m_gcfg2.remove(id, "ios");
+
+					_showGameSettings();
+				}
 			}
 			else if (m_btnMgr.selected(m_gameSettingsBtnPatchVidModesP) || m_btnMgr.selected(m_gameSettingsBtnPatchVidModesM))
 			{
@@ -505,6 +564,12 @@ void CMenu::_initGameSettingsMenu(CMenu::SThemeData &theme)
 	m_gameSettingsLblEmulation = _addLabel(theme, "GAME_SETTINGS/EMU_SAVE", theme.lblFont, L"", 40, 310, 270, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsBtnEmulation = _addButton(theme, "GAME_SETTINGS/EMU_SAVE_BTN", theme.btnFont, L"", 330, 310, 270, 56, theme.btnFontColor);
 
+	//Page 4
+ 	m_gameSettingsLblGameIOS = _addLabel(theme, "GAME_SETTINGS/IOS", theme.lblFont, L"", 40, 130, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+ 	m_gameSettingsLblIOS = _addLabel(theme, "GAME_SETTINGS/IOS_BTN", theme.btnFont, L"", 436, 130, 108, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+ 	m_gameSettingsBtnIOSM = _addPicButton(theme, "GAME_SETTINGS/IOS_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 380, 130, 56, 56);
+ 	m_gameSettingsBtnIOSP = _addPicButton(theme, "GAME_SETTINGS/IOS_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 130, 56, 56);
+	
 	//Categories Page 1 
 	//m_gameSettingsLblCategory[0] = _addLabel(theme, "GAME_SETTINGS/CAT_ALL", theme.lblFont, L"All", 40, 130, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	//m_gameSettingsBtnCategory[0] = _addButton(theme, "GAME_SETTINGS/CAT_ALL_BTN", theme.btnFont, L"", 330, 130, 270, 56, theme.btnFontColor);
@@ -559,6 +624,10 @@ void CMenu::_initGameSettingsMenu(CMenu::SThemeData &theme)
 	_setHideAnim(m_gameSettingsBtnCountryPatch, "GAME_SETTINGS/COUNTRY_PATCH_BTN", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsLblVipatch, "GAME_SETTINGS/VIPATCH", -200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnVipatch, "GAME_SETTINGS/VIPATCH_BTN", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsLblGameIOS, "GAME_SETTINGS/IOS", -200, 0, 1.f, 0.f);
+ 	_setHideAnim(m_gameSettingsLblIOS, "GAME_SETTINGS/IOS_BTN", 200, 0, 1.f, 0.f);
+ 	_setHideAnim(m_gameSettingsBtnIOSM, "GAME_SETTINGS/IOS_MINUS", 200, 0, 1.f, 0.f);
+ 	_setHideAnim(m_gameSettingsBtnIOSP, "GAME_SETTINGS/IOS_PLUS", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsLblCover, "GAME_SETTINGS/COVER", -200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnCover, "GAME_SETTINGS/COVER_BTN", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsLblPage, "GAME_SETTINGS/PAGE_BTN", 0, 200, 1.f, 0.f);
@@ -602,6 +671,7 @@ void CMenu::_textGameSettings(void)
 	m_btnMgr.setText(m_gameSettingsLblOcarina, _t("cfgg5", L"Ocarina"));
 	m_btnMgr.setText(m_gameSettingsLblVipatch, _t("cfgg7", L"Vipatch"));
 	m_btnMgr.setText(m_gameSettingsBtnBack, _t("cfgg8", L"Back"));
+	m_btnMgr.setText(m_gameSettingsLblGameIOS, _t("cfgg10", L"IOS"));
 	m_btnMgr.setText(m_gameSettingsLblCover, _t("cfgg12", L"Download cover"));
 	m_btnMgr.setText(m_gameSettingsBtnCover, _t("cfgg13", L"Download"));
 	m_btnMgr.setText(m_gameSettingsLblPatchVidModes, _t("cfgg14", L"Patch video modes"));

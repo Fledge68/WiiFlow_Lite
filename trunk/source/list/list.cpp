@@ -126,10 +126,30 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 		strncpy(tmp.path, (*itr).c_str(), sizeof(tmp.path));
 		tmp.hdr.index = headerlist.size();
 		tmp.hdr.casecolor = 1;
-
+		
 		bool wbfs = (*itr).rfind(".wbfs") != string::npos || (*itr).rfind(".WBFS") != string::npos;
 		if (wbfs || (*itr).rfind(".iso")  != string::npos || (*itr).rfind(".ISO")  != string::npos)
 		{
+			char* filename = &(*itr)[(*itr).find_last_of('/')+1];
+			char gamename[64];
+			if(strcasecmp(filename, "game.iso") == 0 && strncasecmp((*itr).c_str(), "sd:/games/", 10) == 0 )
+			{
+				FILE *fp = fopen((*itr).c_str(), "rb");
+				if (fp)
+				{
+					fseek( fp, 0x00, SEEK_SET);
+					fread(tmp.hdr.id, 1, 6, fp);
+					fseek( fp, 0x20, SEEK_SET);
+					fread(gamename, 1, 64, fp);
+					SAFE_CLOSE(fp);
+					mbstowcs(tmp.title, gamename, 64);
+					Asciify(tmp.title);
+					tmp.hdr.casecolor = 0;
+					headerlist.push_back(tmp);
+				}
+				continue;
+			}
+			
 			Check_For_ID(tmp.hdr.id, (*itr).c_str(), "[", "]"); 	 			/* [GAMEID] Title, [GAMEID]_Title, Title [GAMEID], Title_[GAMEID] */
 			if(tmp.hdr.id[0] == 0)
 			{
@@ -183,7 +203,8 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 			{
 				mbstowcs(tmp.title, (const char *)tmp.hdr.title, sizeof(tmp.hdr.title));
 				Asciify(tmp.title);
-
+				
+				tmp.hdr.casecolor = 1;
 				headerlist.push_back(tmp);
 				continue;
 			}
@@ -241,8 +262,6 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 				if(!isalnum(tmp.hdr.id[i]) || tmp.hdr.id[i] == ' ' || tmp.hdr.id[i] == '\0')
 					tmp.hdr.id[i] = '_';
 
-			tmp.hdr.casecolor = 1;
-
 			Asciify(tmp.title);
 			headerlist.push_back(tmp);
 			continue;
@@ -273,7 +292,7 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 				
 				}
 				else mbstowcs(tmp.title, tmp.hdr.title, sizeof(tmp.title));
-
+				
 				Asciify(tmp.title);
 				headerlist.push_back(tmp);
 			}			
