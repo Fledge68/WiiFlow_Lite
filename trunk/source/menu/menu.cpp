@@ -1166,7 +1166,15 @@ void CMenu::_initCF(void)
 			if(m_gamelistdump)
 				m_dump.setWString(domain, id, m_gameList[i].title);
 
-			m_cf.addItem(&m_gameList[i], sfmt("%s/%s.png", m_picDir.c_str(), id.c_str()).c_str(), sfmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str()).c_str(), playcount, lastPlayed);
+			if (m_current_view != COVERFLOW_HOMEBREW)
+				m_cf.addItem(&m_gameList[i], sfmt("%s/%s.png", m_picDir.c_str(), id.c_str()).c_str(), sfmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str()).c_str(), playcount, lastPlayed);
+			else {
+				string s = sfmt("%s", m_gameList[i].path);
+			  	string f = s.substr(0, s.find_last_of("/"));
+			  
+				m_cf.addItem(&m_gameList[i], sfmt("%s/icon.png", f.c_str()).c_str(), sfmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str()).c_str(), playcount, lastPlayed);
+			}
+
 		}
 	}
 	m_gcfg1.unload();
