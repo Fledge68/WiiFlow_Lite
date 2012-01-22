@@ -701,7 +701,7 @@ private:
 	void _launchGame(dir_discHdr *hdr, bool dvd);
 	void _launchChannel(dir_discHdr *hdr);
 	void _launchHomebrew(const char *filepath, safe_vector<std::string> arguments);
-	void _launchGC(const char *id);
+	void _launchGC(const char *id, bool DML);
 	void _setAA(int aa);
 	void _loadCFCfg(SThemeData &theme);
 	void _loadCFLayout(int version, bool forceAA = false, bool otherScrnFmt = false);
