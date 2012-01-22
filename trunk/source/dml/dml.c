@@ -31,46 +31,6 @@ syssram* __SYS_LockSram();
 u32 __SYS_UnlockSram(u32 write);
 u32 __SYS_SyncSram(void);
 
-s32 setstreaming()
-	{
-	char __di_fs[] ATTRIBUTE_ALIGN(32) = "/dev/di";
-	u32 bufferin[0x20] __attribute__((aligned(32)));
-	u32 bufferout[0x20] __attribute__((aligned(32)));
-	s32 __dvd_fd = -1;
-	
-	u8 ioctl;
-	ioctl = IOCTL_DI_DVDLowAudioBufferConfig;
-
-	__dvd_fd = IOS_Open(__di_fs,0);
-	if(__dvd_fd < 0) return __dvd_fd;
-
-	memset(bufferin, 0, 0x20);
-	memset(bufferout, 0, 0x20);
-
-	bufferin[0] = (ioctl << 24);
-
-	if ( (*(u32*)0x80000008)>>24 )
-		{
-		bufferin[1] = 1;
-		if( ((*(u32*)0x80000008)>>16) & 0xFF )
-			bufferin[2] = 10;
-		else 
-			bufferin[2] = 0;
-		}
-	else
-		{		
-		bufferin[1] = 0;
-		bufferin[2] = 0;
-		}			
-	DCFlushRange(bufferin, 0x20);
-	
-	int Ret = IOS_Ioctl(__dvd_fd, ioctl, bufferin, 0x20, bufferout, 0x20);
-	
-	IOS_Close(__dvd_fd);
-	
-	return ((Ret == 1) ? 0 : -Ret);
-	}
-
 void SRAM_PAL()
 {
 	syssram *sram;
