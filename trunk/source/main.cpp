@@ -75,8 +75,6 @@ int main(int argc, char **argv)
 
 	do 
 	{
-		Open_Inputs();
-
 		bool deviceAvailable = false;
 
 		u8 timeout = 0;
@@ -91,6 +89,8 @@ int main(int argc, char **argv)
 		}
 		if(!deviceAvailable) Sys_Exit();
 
+    Open_Inputs(); // xFede: Initialize WPAD/PAD here, otherwise you could have a sync-delay on startup
+    
 		bool dipOK = Disc_Init() >= 0;
 
 		CMenu menu(vid);

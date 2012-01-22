@@ -293,6 +293,7 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 				}
 				else mbstowcs(tmp.title, tmp.hdr.title, sizeof(tmp.title));
 				
+				tmp.hdr.casecolor = 1;
 				Asciify(tmp.title);
 				headerlist.push_back(tmp);
 			}			

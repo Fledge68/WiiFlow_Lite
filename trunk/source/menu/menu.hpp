@@ -324,6 +324,10 @@ private:
 	u32 m_gameSettingsLblVideo;
 	u32 m_gameSettingsBtnVideoP;
 	u32 m_gameSettingsBtnVideoM;
+	u32 m_gameSettingsLblDMLGameVideo;
+	u32 m_gameSettingsLblDMLVideo;
+	u32 m_gameSettingsBtnDMLVideoP;
+	u32 m_gameSettingsBtnDMLVideoM;
 	u32 m_gameSettingsLblOcarina;
 	u32 m_gameSettingsBtnOcarina;
 	u32 m_gameSettingsLblVipatch;
@@ -767,6 +771,7 @@ private:
 	static const string _translations[23];
 	static const SOption _languages[11];
 	static const SOption _videoModes[7];
+	static const SOption _DMLvideoModes[3];
 	static const SOption _vidModePatch[4];
 	static const SOption _hooktype[8];
 	static const SOption _exitTo[5];

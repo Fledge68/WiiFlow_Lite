@@ -32,6 +32,10 @@ void CMenu::_hideGameSettings(bool instant)
 	m_btnMgr.hide(m_gameSettingsLblVideo, instant);
 	m_btnMgr.hide(m_gameSettingsBtnVideoP, instant);
 	m_btnMgr.hide(m_gameSettingsBtnVideoM, instant);
+	m_btnMgr.hide(m_gameSettingsLblDMLGameVideo, instant);
+	m_btnMgr.hide(m_gameSettingsLblDMLVideo, instant);
+	m_btnMgr.hide(m_gameSettingsBtnDMLVideoP, instant);
+	m_btnMgr.hide(m_gameSettingsBtnDMLVideoM, instant);
 	m_btnMgr.hide(m_gameSettingsLblOcarina, instant);
 	m_btnMgr.hide(m_gameSettingsBtnOcarina, instant);
 	m_btnMgr.hide(m_gameSettingsLblCheat, instant);
@@ -98,130 +102,150 @@ void CMenu::_showGameSettings(void)
 	m_btnMgr.show(m_gameSettingsBtnPageP);
 	m_btnMgr.show(m_gameSettingsBtnBack);
 	m_btnMgr.show(m_gameSettingsLblTitle);
-	if (m_gameSettingsPage == 1)
+	if (m_current_view != COVERFLOW_DML)
 	{
-		m_btnMgr.show(m_gameSettingsLblCover);
-		m_btnMgr.show(m_gameSettingsBtnCover);
-
-		m_btnMgr.show(m_gameSettingsBtnCategoryMain);
-		m_btnMgr.show(m_gameSettingsLblCategoryMain);
-
-		m_btnMgr.show(m_gameSettingsLblGameLanguage);
-		m_btnMgr.show(m_gameSettingsLblLanguage);
-		m_btnMgr.show(m_gameSettingsBtnLanguageP);
-		m_btnMgr.show(m_gameSettingsBtnLanguageM);
-
-		m_btnMgr.show(m_gameSettingsLblGameVideo);		
-		m_btnMgr.show(m_gameSettingsLblVideo);
-		m_btnMgr.show(m_gameSettingsBtnVideoP);
-		m_btnMgr.show(m_gameSettingsBtnVideoM);
-
-	}
-	else
-	{
-		m_btnMgr.hide(m_gameSettingsLblCover);
-		m_btnMgr.hide(m_gameSettingsBtnCover);
-
-		m_btnMgr.hide(m_gameSettingsBtnCategoryMain);
-		m_btnMgr.hide(m_gameSettingsLblCategoryMain);
-
-		m_btnMgr.hide(m_gameSettingsLblGameLanguage);
-		m_btnMgr.hide(m_gameSettingsLblLanguage);
-		m_btnMgr.hide(m_gameSettingsBtnLanguageP);
-		m_btnMgr.hide(m_gameSettingsBtnLanguageM);
-
-		m_btnMgr.hide(m_gameSettingsLblGameVideo);		
-		m_btnMgr.hide(m_gameSettingsLblVideo);
-		m_btnMgr.hide(m_gameSettingsBtnVideoP);
-		m_btnMgr.hide(m_gameSettingsBtnVideoM);
-
-	}
-	if (m_gameSettingsPage == 2)
-	{
-		m_btnMgr.show(m_gameSettingsLblDebugger);
-		m_btnMgr.show(m_gameSettingsLblDebuggerV);
-		m_btnMgr.show(m_gameSettingsBtnDebuggerP);
-		m_btnMgr.show(m_gameSettingsBtnDebuggerM);
-
-		m_btnMgr.show(m_gameSettingsLblHooktype);
-		m_btnMgr.show(m_gameSettingsLblHooktypeVal);
-		m_btnMgr.show(m_gameSettingsBtnHooktypeM);
-		m_btnMgr.show(m_gameSettingsBtnHooktypeP);
-
-		m_btnMgr.show(m_gameSettingsLblOcarina);
-		m_btnMgr.show(m_gameSettingsBtnOcarina);
-
-		m_btnMgr.show(m_gameSettingsLblCheat);
-		m_btnMgr.show(m_gameSettingsBtnCheat);
-	}
-	else
-	{
-		m_btnMgr.hide(m_gameSettingsLblDebugger);
-		m_btnMgr.hide(m_gameSettingsLblDebuggerV);
-		m_btnMgr.hide(m_gameSettingsBtnDebuggerP);
-		m_btnMgr.hide(m_gameSettingsBtnDebuggerM);
-
-		m_btnMgr.hide(m_gameSettingsLblHooktype);
-		m_btnMgr.hide(m_gameSettingsLblHooktypeVal);
-		m_btnMgr.hide(m_gameSettingsBtnHooktypeM);
-		m_btnMgr.hide(m_gameSettingsBtnHooktypeP);
-
-		m_btnMgr.hide(m_gameSettingsLblOcarina);
-		m_btnMgr.hide(m_gameSettingsBtnOcarina);
-
-		m_btnMgr.hide(m_gameSettingsLblCheat);
-		m_btnMgr.hide(m_gameSettingsBtnCheat);
-	}
-	if (m_gameSettingsPage == 3)
-	{
-
-		m_btnMgr.show(m_gameSettingsLblPatchVidModes);
-		m_btnMgr.show(m_gameSettingsLblPatchVidModesVal);
-		m_btnMgr.show(m_gameSettingsBtnPatchVidModesM);
-		m_btnMgr.show(m_gameSettingsBtnPatchVidModesP);
-
-		m_btnMgr.show(m_gameSettingsLblVipatch);
-		m_btnMgr.show(m_gameSettingsBtnVipatch);
-
-		m_btnMgr.show(m_gameSettingsLblCountryPatch);
-		m_btnMgr.show(m_gameSettingsBtnCountryPatch);
-		
-		if(!m_cfg.getBool("NAND", "disable", true) && m_current_view == COVERFLOW_USB)
+		if (m_gameSettingsPage == 1)
 		{
-			m_btnMgr.show(m_gameSettingsBtnEmulation);
-			m_btnMgr.show(m_gameSettingsLblEmulation);
+			m_btnMgr.show(m_gameSettingsLblCover);
+			m_btnMgr.show(m_gameSettingsBtnCover);
+
+			m_btnMgr.show(m_gameSettingsBtnCategoryMain);
+			m_btnMgr.show(m_gameSettingsLblCategoryMain);
+
+			m_btnMgr.show(m_gameSettingsLblGameLanguage);
+			m_btnMgr.show(m_gameSettingsLblLanguage);
+			m_btnMgr.show(m_gameSettingsBtnLanguageP);
+			m_btnMgr.show(m_gameSettingsBtnLanguageM);
+
+			m_btnMgr.show(m_gameSettingsLblGameVideo);		
+			m_btnMgr.show(m_gameSettingsLblVideo);
+			m_btnMgr.show(m_gameSettingsBtnVideoP);
+			m_btnMgr.show(m_gameSettingsBtnVideoM);
+		}
+		else
+		{
+			m_btnMgr.hide(m_gameSettingsLblCover);
+			m_btnMgr.hide(m_gameSettingsBtnCover);
+
+			m_btnMgr.hide(m_gameSettingsBtnCategoryMain);
+			m_btnMgr.hide(m_gameSettingsLblCategoryMain);
+
+			m_btnMgr.hide(m_gameSettingsLblGameLanguage);
+			m_btnMgr.hide(m_gameSettingsLblLanguage);
+			m_btnMgr.hide(m_gameSettingsBtnLanguageP);
+			m_btnMgr.hide(m_gameSettingsBtnLanguageM);
+
+			m_btnMgr.hide(m_gameSettingsLblGameVideo);		
+			m_btnMgr.hide(m_gameSettingsLblVideo);
+			m_btnMgr.hide(m_gameSettingsBtnVideoP);
+			m_btnMgr.hide(m_gameSettingsBtnVideoM);
+
+		}
+		if (m_gameSettingsPage == 2)
+		{
+			m_btnMgr.show(m_gameSettingsLblDebugger);
+			m_btnMgr.show(m_gameSettingsLblDebuggerV);
+			m_btnMgr.show(m_gameSettingsBtnDebuggerP);
+			m_btnMgr.show(m_gameSettingsBtnDebuggerM);
+
+			m_btnMgr.show(m_gameSettingsLblHooktype);
+			m_btnMgr.show(m_gameSettingsLblHooktypeVal);
+			m_btnMgr.show(m_gameSettingsBtnHooktypeM);
+			m_btnMgr.show(m_gameSettingsBtnHooktypeP);
+
+			m_btnMgr.show(m_gameSettingsLblOcarina);
+			m_btnMgr.show(m_gameSettingsBtnOcarina);
+
+			m_btnMgr.show(m_gameSettingsLblCheat);
+			m_btnMgr.show(m_gameSettingsBtnCheat);
+		}
+		else
+		{
+			m_btnMgr.hide(m_gameSettingsLblDebugger);
+			m_btnMgr.hide(m_gameSettingsLblDebuggerV);
+			m_btnMgr.hide(m_gameSettingsBtnDebuggerP);
+			m_btnMgr.hide(m_gameSettingsBtnDebuggerM);
+
+			m_btnMgr.hide(m_gameSettingsLblHooktype);
+			m_btnMgr.hide(m_gameSettingsLblHooktypeVal);
+			m_btnMgr.hide(m_gameSettingsBtnHooktypeM);
+			m_btnMgr.hide(m_gameSettingsBtnHooktypeP);
+
+			m_btnMgr.hide(m_gameSettingsLblOcarina);
+			m_btnMgr.hide(m_gameSettingsBtnOcarina);
+
+			m_btnMgr.hide(m_gameSettingsLblCheat);
+			m_btnMgr.hide(m_gameSettingsBtnCheat);
+		}
+		if (m_gameSettingsPage == 3)
+		{
+
+			m_btnMgr.show(m_gameSettingsLblPatchVidModes);
+			m_btnMgr.show(m_gameSettingsLblPatchVidModesVal);
+			m_btnMgr.show(m_gameSettingsBtnPatchVidModesM);
+			m_btnMgr.show(m_gameSettingsBtnPatchVidModesP);
+
+			m_btnMgr.show(m_gameSettingsLblVipatch);
+			m_btnMgr.show(m_gameSettingsBtnVipatch);
+
+			m_btnMgr.show(m_gameSettingsLblCountryPatch);
+			m_btnMgr.show(m_gameSettingsBtnCountryPatch);
+			
+			if(!m_cfg.getBool("NAND", "disable", true) && m_current_view == COVERFLOW_USB)
+			{
+				m_btnMgr.show(m_gameSettingsBtnEmulation);
+				m_btnMgr.show(m_gameSettingsLblEmulation);
+			}
+		}
+		else
+		{
+			m_btnMgr.hide(m_gameSettingsLblPatchVidModes);
+			m_btnMgr.hide(m_gameSettingsLblPatchVidModesVal);
+			m_btnMgr.hide(m_gameSettingsBtnPatchVidModesM);
+			m_btnMgr.hide(m_gameSettingsBtnPatchVidModesP);
+
+			m_btnMgr.hide(m_gameSettingsLblVipatch);
+			m_btnMgr.hide(m_gameSettingsBtnVipatch);
+
+			m_btnMgr.hide(m_gameSettingsLblCountryPatch);
+			m_btnMgr.hide(m_gameSettingsBtnCountryPatch);
+
+
+			m_btnMgr.hide(m_gameSettingsBtnEmulation);
+			m_btnMgr.hide(m_gameSettingsLblEmulation);
+		}
+		if (m_gameSettingsPage == 4)
+		{
+			m_btnMgr.show(m_gameSettingsLblGameIOS);
+			m_btnMgr.show(m_gameSettingsLblIOS);
+			m_btnMgr.show(m_gameSettingsBtnIOSP);
+			m_btnMgr.show(m_gameSettingsBtnIOSM);
+		}
+		else
+		{
+			m_btnMgr.hide(m_gameSettingsLblGameIOS);
+			m_btnMgr.hide(m_gameSettingsLblIOS);
+			m_btnMgr.hide(m_gameSettingsBtnIOSP);
+			m_btnMgr.hide(m_gameSettingsBtnIOSM);
 		}
 	}
 	else
 	{
-		m_btnMgr.hide(m_gameSettingsLblPatchVidModes);
-		m_btnMgr.hide(m_gameSettingsLblPatchVidModesVal);
-		m_btnMgr.hide(m_gameSettingsBtnPatchVidModesM);
-		m_btnMgr.hide(m_gameSettingsBtnPatchVidModesP);
-
-		m_btnMgr.hide(m_gameSettingsLblVipatch);
-		m_btnMgr.hide(m_gameSettingsBtnVipatch);
-
-		m_btnMgr.hide(m_gameSettingsLblCountryPatch);
-		m_btnMgr.hide(m_gameSettingsBtnCountryPatch);
-
-
-		m_btnMgr.hide(m_gameSettingsBtnEmulation);
-		m_btnMgr.hide(m_gameSettingsLblEmulation);
-	}
-	if (m_gameSettingsPage == 4)
-	{
-		m_btnMgr.show(m_gameSettingsLblGameIOS);
-		m_btnMgr.show(m_gameSettingsLblIOS);
-		m_btnMgr.show(m_gameSettingsBtnIOSP);
-		m_btnMgr.show(m_gameSettingsBtnIOSM);
-	}
-	else
-	{
-		m_btnMgr.hide(m_gameSettingsLblGameIOS);
-		m_btnMgr.hide(m_gameSettingsLblIOS);
-		m_btnMgr.hide(m_gameSettingsBtnIOSP);
-		m_btnMgr.hide(m_gameSettingsBtnIOSM);
+		g_numGCfPages = 1;
+		if (m_gameSettingsPage == 1)
+		{
+			m_btnMgr.show(m_gameSettingsLblDMLGameVideo);		
+			m_btnMgr.show(m_gameSettingsLblDMLVideo);
+			m_btnMgr.show(m_gameSettingsBtnDMLVideoP);
+			m_btnMgr.show(m_gameSettingsBtnDMLVideoM);
+		}
+		else
+		{
+			m_btnMgr.hide(m_gameSettingsLblDMLGameVideo);		
+			m_btnMgr.hide(m_gameSettingsLblDMLVideo);
+			m_btnMgr.hide(m_gameSettingsBtnDMLVideoP);
+			m_btnMgr.hide(m_gameSettingsBtnDMLVideoM);
+		}
 	}
 	
 	u32 i = 0;
@@ -283,7 +307,8 @@ void CMenu::_showGameSettings(void)
 	string id(m_cf.getId());
 	int page = m_gameSettingsPage;
 
-	u32 maxpage = 4;
+	u32 maxpage = g_numGCfPages;
+
 	if (m_gameSettingsPage > maxpage)
 		page = m_gameSettingsPage-50;
 
@@ -293,6 +318,8 @@ void CMenu::_showGameSettings(void)
 	m_btnMgr.setText(m_gameSettingsBtnCountryPatch, _optBoolToString(m_gcfg2.getOptBool(id, "country_patch", 0)));
 	i = min((u32)m_gcfg2.getInt(id, "video_mode", 0), ARRAY_SIZE(CMenu::_videoModes) - 1u);
 	m_btnMgr.setText(m_gameSettingsLblVideo, _t(CMenu::_videoModes[i].id, CMenu::_videoModes[i].text));
+	i = min((u32)m_gcfg2.getInt(id, "dml_video_mode", 0), ARRAY_SIZE(CMenu::_DMLvideoModes) - 1u);
+	m_btnMgr.setText(m_gameSettingsLblDMLVideo, _t(CMenu::_DMLvideoModes[i].id, CMenu::_DMLvideoModes[i].text));
 	i = min((u32)m_gcfg2.getInt(id, "language", 0), ARRAY_SIZE(CMenu::_languages) - 1u);
 	m_btnMgr.setText(m_gameSettingsLblLanguage, _t(CMenu::_languages[i].id, CMenu::_languages[i].text));
 
@@ -410,6 +437,12 @@ void CMenu::_gameSettings(void)
 			{
 				s8 direction = m_btnMgr.selected(m_gameSettingsBtnVideoP) ? 1 : -1;
 				m_gcfg2.setInt(id, "video_mode", (int)loopNum((u32)m_gcfg2.getInt(id, "video_mode", 0) + direction, ARRAY_SIZE(CMenu::_videoModes)));
+				_showGameSettings();
+			}
+			else if (m_btnMgr.selected(m_gameSettingsBtnDMLVideoP) || m_btnMgr.selected(m_gameSettingsBtnDMLVideoM))
+			{
+				s8 direction = m_btnMgr.selected(m_gameSettingsBtnDMLVideoP) ? 1 : -1;
+				m_gcfg2.setInt(id, "dml_video_mode", (int)loopNum((u32)m_gcfg2.getInt(id, "dml_video_mode", 0) + direction, ARRAY_SIZE(CMenu::_DMLvideoModes)));
 				_showGameSettings();
 			}
 			else if (m_btnMgr.selected(m_gameSettingsBtnIOSM) || m_btnMgr.selected(m_gameSettingsBtnIOSP))
@@ -538,6 +571,12 @@ void CMenu::_initGameSettingsMenu(CMenu::SThemeData &theme)
 	m_gameSettingsLblVideo = _addLabel(theme, "GAME_SETTINGS/VIDEO_BTN", theme.btnFont, L"", 386, 310, 158, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_gameSettingsBtnVideoM = _addPicButton(theme, "GAME_SETTINGS/VIDEO_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 330, 310, 56, 56);
 	m_gameSettingsBtnVideoP = _addPicButton(theme, "GAME_SETTINGS/VIDEO_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 310, 56, 56);
+	
+	//DML Page 1
+	m_gameSettingsLblDMLGameVideo = _addLabel(theme, "GAME_SETTINGS/DML_VIDEO", theme.lblFont, L"", 40, 130, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsLblDMLVideo = _addLabel(theme, "GAME_SETTINGS/DML_VIDEO_BTN", theme.btnFont, L"", 386, 130, 158, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_gameSettingsBtnDMLVideoM = _addPicButton(theme, "GAME_SETTINGS/DML_VIDEO_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 330, 130, 56, 56);
+	m_gameSettingsBtnDMLVideoP = _addPicButton(theme, "GAME_SETTINGS/DML_VIDEO_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 130, 56, 56);
 
 	// Page 2
 	m_gameSettingsLblDebugger = _addLabel(theme, "GAME_SETTINGS/GAME_DEBUGGER", theme.lblFont, L"", 40, 130, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
@@ -612,6 +651,10 @@ void CMenu::_initGameSettingsMenu(CMenu::SThemeData &theme)
 	_setHideAnim(m_gameSettingsLblVideo, "GAME_SETTINGS/VIDEO_BTN", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnVideoM, "GAME_SETTINGS/VIDEO_MINUS", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnVideoP, "GAME_SETTINGS/VIDEO_PLUS", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsLblDMLGameVideo, "GAME_SETTINGS/DML_VIDEO", -200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsLblDMLVideo, "GAME_SETTINGS/DML_VIDEO_BTN", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsBtnDMLVideoM, "GAME_SETTINGS/DML_VIDEO_MINUS", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsBtnDMLVideoP, "GAME_SETTINGS/DML_VIDEO_PLUS", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsLblGameLanguage, "GAME_SETTINGS/GAME_LANG", -200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsLblLanguage, "GAME_SETTINGS/GAME_LANG_BTN", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnLanguageM, "GAME_SETTINGS/GAME_LANG_MINUS", 200, 0, 1.f, 0.f);
@@ -669,6 +712,7 @@ void CMenu::_textGameSettings(void)
 	m_btnMgr.setText(m_gameSettingsLblGameLanguage, _t("cfgg3", L"Language"));
 	m_btnMgr.setText(m_gameSettingsLblCountryPatch, _t("cfgg4", L"Patch country strings"));
 	m_btnMgr.setText(m_gameSettingsLblOcarina, _t("cfgg5", L"Ocarina"));
+	m_btnMgr.setText(m_gameSettingsLblDMLGameVideo, _t("cfgg6", L"Video mode"));
 	m_btnMgr.setText(m_gameSettingsLblVipatch, _t("cfgg7", L"Vipatch"));
 	m_btnMgr.setText(m_gameSettingsBtnBack, _t("cfgg8", L"Back"));
 	m_btnMgr.setText(m_gameSettingsLblGameIOS, _t("cfgg10", L"IOS"));

@@ -31,12 +31,6 @@
 
 #include "dml/dml.h"
 
-#define SEP 0xFF
-
-/** Base address for video registers. */
-#define MEM_VIDEO_BASE (0xCC002000)
-#define IOCTL_DI_DVDLowAudioBufferConfig 0xE4
-
 using namespace std;
 
 extern const u8 btngamecfg_png[];
@@ -104,6 +98,12 @@ const CMenu::SOption CMenu::_videoModes[7] = {
 	{ "vidpatch", L"Auto Patch" },
 	{ "vidsys", L"System" },	
 	{ "vidprog", L"Progressive" }
+};
+
+const CMenu::SOption CMenu::_DMLvideoModes[3] = {
+	{ "0", L"Default" },
+	{ "1", L"PAL 576i" },
+	{ "2", L"NTSC 480i" },
 };
 
 const CMenu::SOption CMenu::_vidModePatch[4] = {
@@ -467,8 +467,8 @@ void CMenu::_game(bool launch)
 				b = m_gcfg1.getBool("ADULTONLY", id, false);
 				m_btnMgr.show(b ? m_gameBtnAdultOn : m_gameBtnAdultOff);
 				m_btnMgr.hide(b ? m_gameBtnAdultOff : m_gameBtnAdultOn);
-				m_btnMgr.show(m_gameBtnSettings);
 			}
+				m_btnMgr.show(m_gameBtnSettings);
 
 			if (m_current_view == COVERFLOW_USB && !m_locked)
 				m_btnMgr.show(m_gameBtnDelete);
@@ -481,8 +481,8 @@ void CMenu::_game(bool launch)
 			{
 				m_btnMgr.hide(m_gameBtnAdultOn);
 				m_btnMgr.hide(m_gameBtnAdultOff);
-				m_btnMgr.hide(m_gameBtnSettings);
 			}
+			m_btnMgr.hide(m_gameBtnSettings);
 			m_btnMgr.hide(m_gameBtnDelete);
 			m_btnMgr.hide(m_gameBtnPlay);
 			m_btnMgr.hide(m_gameBtnBack);
@@ -548,6 +548,8 @@ extern "C" {extern void USBStorage_Deinit(void);}
 
 void CMenu::_launchGC(const char *id)
 {	
+	int DMLvideoMode = m_gcfg2.getInt(id, "dml_video_mode", 0);
+	
 	Close_Inputs();
 	USBStorage_Deinit();
 	Nand::Instance()->Disable_Emu();
@@ -573,7 +575,7 @@ void CMenu::_launchGC(const char *id)
 	setstreaming();
 	
 	VIDEO_SetBlack(TRUE);
-	if (id[3] == 'P')
+	if ((id[3] == 'P') || (DMLvideoMode == 1))
 	{
 		SRAM_PAL();
 		
@@ -589,7 +591,7 @@ void CMenu::_launchGC(const char *id)
 		VIDEO_ClearFrameBuffer(rmode, m_frameBuf, COLOR_BLACK);
 		VIDEO_SetNextFramebuffer(m_frameBuf);
 	}
-	else
+	if ((id[3] != 'P') || (DMLvideoMode == 2))
 	{
 		SRAM_NTSC();
 		
@@ -1130,7 +1132,6 @@ void CMenu::_initGameMenu(CMenu::SThemeData &theme)
 	m_gameButtonsZone.h = m_theme.getInt("GAME/ZONES", "buttons_h", 480);
 	m_gameButtonsZone.hide = m_theme.getBool("GAME/ZONES", "buttons_hide", true);
 
-	// 
 	_setHideAnim(m_gameBtnPlay, "GAME/PLAY_BTN", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameBtnBack, "GAME/BACK_BTN", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameBtnFavoriteOn, "GAME/FAVORITE_ON", 0, 0, -1.5f, -1.5f);
@@ -1148,8 +1149,6 @@ void CMenu::_textGame(void)
 	m_btnMgr.setText(m_gameBtnPlay, _t("gm1", L"Play"));
 	m_btnMgr.setText(m_gameBtnBack, _t("gm2", L"Back"));
 }
-
-//
 
 struct IMD5Header
 {
