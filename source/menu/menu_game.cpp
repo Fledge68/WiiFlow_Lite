@@ -462,13 +462,10 @@ void CMenu::_game(bool launch)
 				if (m_gameLblUser[i] != -1u)
 					m_btnMgr.show(m_gameLblUser[i]);
 
-			if (m_current_view != COVERFLOW_DML && !m_locked)
-			{
-				b = m_gcfg1.getBool("ADULTONLY", id, false);
-				m_btnMgr.show(b ? m_gameBtnAdultOn : m_gameBtnAdultOff);
-				m_btnMgr.hide(b ? m_gameBtnAdultOff : m_gameBtnAdultOn);
-			}
-				m_btnMgr.show(m_gameBtnSettings);
+			b = m_gcfg1.getBool("ADULTONLY", id, false);
+			m_btnMgr.show(b ? m_gameBtnAdultOn : m_gameBtnAdultOff);
+			m_btnMgr.hide(b ? m_gameBtnAdultOff : m_gameBtnAdultOn);
+			m_btnMgr.show(m_gameBtnSettings);
 
 			if (m_current_view == COVERFLOW_USB && !m_locked)
 				m_btnMgr.show(m_gameBtnDelete);
@@ -535,7 +532,7 @@ void CMenu::_launch(dir_discHdr *hdr)
 			_launchChannel(hdr);
 			break;
 		case COVERFLOW_DML:
-			_launchGC((const char*)hdr->hdr.id);
+			_launchGC((const char*)hdr->hdr.id,true);
 			break;
 		case COVERFLOW_USB:
 		default:
@@ -546,35 +543,43 @@ void CMenu::_launch(dir_discHdr *hdr)
 
 extern "C" {extern void USBStorage_Deinit(void);}
 
-void CMenu::_launchGC(const char *id)
+void CMenu::_launchGC(const char *id, bool DML)
 {	
 	u8 DMLvideoMode = min((u32)m_gcfg2.getInt(id, "dml_video_mode", 0), ARRAY_SIZE(CMenu::_DMLvideoModes) - 1u);
+	if (!DML)
+		DMLvideoMode = 0;
 	Close_Inputs();
 	USBStorage_Deinit();
 	Nand::Instance()->Disable_Emu();
 	
-	char filepath[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
-	FILE *f;
-	sprintf(filepath, "%s:/games/boot.bin", DeviceName[SD]);	
-	f = fopen(filepath, "wb");
-	fwrite(id, 1, 6, f);
-	fclose(f);
+	if (DML)
+	{
+		char filepath[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
+		FILE *f;
+		sprintf(filepath, "%s:/games/boot.bin", DeviceName[SD]);	
+		f = fopen(filepath, "wb");
+		fwrite(id, 1, 6, f);
+		fclose(f);
+	}
 	
 	cleanup();
 	
-	memcpy((char *)0x80000000, id, 6);
-	
-	// Tell DML to boot the game from sd card
-	*(u32 *)0x80001800 = 0xB002D105;
-	DCFlushRange((void *)(0x80001800), 4);
-	ICInvalidateRange((void *)(0x80001800), 4);			
-	
-	*(volatile unsigned int *)0xCC003024 |= 7;
+	if (DML)
+	{
+		memcpy((char *)0x80000000, id, 6);
+		
+		// Tell DML to boot the game from sd card
+		*(u32 *)0x80001800 = 0xB002D105;
+		DCFlushRange((void *)(0x80001800), 4);
+		ICInvalidateRange((void *)(0x80001800), 4);			
+		
+		*(volatile unsigned int *)0xCC003024 |= 7;
+	}
 	
 	setstreaming();
 	
 	VIDEO_SetBlack(TRUE);
-	if ((id[3] == 'P') || (DMLvideoMode == 1))
+	if (((id[3] == 'P') && (DMLvideoMode == 0)) || (DMLvideoMode == 1))
 	{
 		SRAM_PAL();
 		
@@ -590,7 +595,7 @@ void CMenu::_launchGC(const char *id)
 		VIDEO_ClearFrameBuffer(rmode, m_frameBuf, COLOR_BLACK);
 		VIDEO_SetNextFramebuffer(m_frameBuf);
 	}
-	if ((id[3] != 'P') || (DMLvideoMode == 2))
+	if (((id[3] != 'P') && (DMLvideoMode == 0)) || (DMLvideoMode == 2))
 	{
 		SRAM_NTSC();
 		
@@ -1065,17 +1070,15 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		}
 	}
 
-	cleanup();
-	Close_Inputs();
-	USBStorage_Deinit();
 	if (gc)
 	{
-		WII_Initialize();
-		if (WII_LaunchTitle(0x0000000100000100ULL)<0)
-			Sys_LoadMenu();
+		_launchGC(id.c_str(),false);
 	}
 	else 
 	{
+		cleanup();
+		Close_Inputs();
+		USBStorage_Deinit();
 		gprintf("Booting game\n");
 		if (Disc_WiiBoot(videoMode, vipatch, countryPatch, patchVidMode) < 0)
 			Sys_LoadMenu();
