@@ -472,10 +472,12 @@ void CMenu::_game(bool launch)
 				if (m_gameLblUser[i] != -1u)
 					m_btnMgr.show(m_gameLblUser[i]);
 
-			b = m_gcfg1.getBool("ADULTONLY", id, false);
-			m_btnMgr.show(b ? m_gameBtnAdultOn : m_gameBtnAdultOff);
-			m_btnMgr.hide(b ? m_gameBtnAdultOff : m_gameBtnAdultOn);
-			m_btnMgr.show(m_gameBtnSettings);
+			if (!m_locked) {
+				b = m_gcfg1.getBool("ADULTONLY", id, false);
+				m_btnMgr.show(b ? m_gameBtnAdultOn : m_gameBtnAdultOff);
+				m_btnMgr.hide(b ? m_gameBtnAdultOff : m_gameBtnAdultOn);
+				m_btnMgr.show(m_gameBtnSettings);
+			}
 
 			if (m_current_view == COVERFLOW_USB && !m_locked)
 				m_btnMgr.show(m_gameBtnDelete);
@@ -484,11 +486,8 @@ void CMenu::_game(bool launch)
 		{
 			m_btnMgr.hide(m_gameBtnFavoriteOn);
 			m_btnMgr.hide(m_gameBtnFavoriteOff);
-			if (m_current_view != COVERFLOW_DML)
-			{
-				m_btnMgr.hide(m_gameBtnAdultOn);
-				m_btnMgr.hide(m_gameBtnAdultOff);
-			}
+			m_btnMgr.hide(m_gameBtnAdultOn);
+			m_btnMgr.hide(m_gameBtnAdultOff);
 			m_btnMgr.hide(m_gameBtnSettings);
 			m_btnMgr.hide(m_gameBtnDelete);
 			m_btnMgr.hide(m_gameBtnPlay);
