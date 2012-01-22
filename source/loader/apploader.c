@@ -88,9 +88,9 @@ s32 Apploader_Run(entry_point *entry, u8 vidMode, GXRModeObj *vmode, bool vipatc
 	*entry = appldr_final();
 	
 	IOSReloadBlock(IOS_GetVersion());
-	*(vu32 *)0x80003140 = *(vu32 *)0x80003188; // IOS Version Check
-	*(vu32 *)0x80003180 = *(vu32 *)0x80000000; // Game ID Online Check
-	*(vu32 *)0x80003184 = 0x80000000;
+
+	/* ERROR 002 fix (WiiPower) */
+	*(u32 *)0x80003140 = *(u32 *)0x80003188;
 
 	DCFlushRange((void*)0x80000000, 0x3f00);
 

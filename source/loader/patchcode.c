@@ -249,29 +249,29 @@ void vidolpatcher(void *addr, u32 len)
 s32 IOSReloadBlock(u8 reqios)
 {
     s32 ESHandle = IOS_Open("/dev/es", 0);
-    
+
     if (ESHandle < 0)
-	{
-		gprintf("Reload IOS Block failed, cannot open /dev/es\n");
+  {
+    gprintf("Reload IOS Block failed, cannot open /dev/es\n");
         return ESHandle;
-	}
-	
-	static ioctlv vector[2] ATTRIBUTE_ALIGN(32);		
-	static u32 mode[8] ATTRIBUTE_ALIGN(32);
-    static u32 ios[8] ATTRIBUTE_ALIGN(32);
+  }
 
-	mode[0] = 2;
-	vector[0].data = mode;
-    vector[0].len = 4;
+  static ioctlv vector[2] ATTRIBUTE_ALIGN(32);
+  static u32 mode ATTRIBUTE_ALIGN(32);
+  static u32 ios ATTRIBUTE_ALIGN(32);
 
-	ios[0] = reqios;
-	vector[1].data = ios;
-	vector[1].len = 4;
+  mode = 2;
+  vector[0].data = &mode;
+  vector[0].len  = sizeof(u32);
 
-    s32 r = IOS_Ioctlv(ESHandle, 0xA0, 2, 0, vector);
-	gprintf("Enable/Disable Block IOS Reload for cIOS%uv%u %s\n", IOS_GetVersion(), IOS_GetRevision() % 100, r < 0 ? "FAILED!" : "SUCCEEDED!");
-	
-    IOS_Close(ESHandle);
-	
-	return r;
+  ios = reqios;
+  vector[1].data = &ios;
+  vector[1].len  = sizeof(u32);
+
+  s32 r = IOS_Ioctlv(ESHandle, 0xA0, 2, 0, vector);
+  gprintf("Enable/Disable Block IOS Reload for cIOS%uv%u %s\n", IOS_GetVersion(), IOS_GetRevision() % 100, r < 0 ? "FAILED!" : "SUCCEEDED!");
+
+  IOS_Close(ESHandle);
+
+  return r;
 }
