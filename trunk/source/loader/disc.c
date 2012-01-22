@@ -44,27 +44,33 @@ extern void __exception_closeall();
 
 static u8	Tmd_Buffer[0x49e4 + 0x1C] ALIGNED(32);
 
+
 void __Disc_SetLowMem()
 {
-	*(vu32 *)0x80000060 = 0x38A00040; // Dev Debugger Hook
+	/* Setup low memory */
+	*(vu32 *)0x80000060 = 0x38A00040;
 	*(vu32 *)0x800000E4 = 0x80431A80;
 	*(vu32 *)0x800000EC = 0x81800000; // Dev Debugger Monitor Address
 	*(vu32 *)0x800000F0 = 0x01800000; // Simulated Memory Size
 	*(vu32 *)0xCD00643C = 0x00000000; // 32Mhz on Bus
 
-	*Sys_Magic	= 0x0d15ea5e;
-	*Version	= 1;
-	*Arena_L	= 0x00000000;
-	*BI2		= 0x817E5480;
-	*Bus_Speed	= 0x0E7BE2C0;
-	*CPU_Speed	= 0x2B73A840;
+	/* Copy disc ID (online check) */
+	memcpy((void *)0x80003180, (void *)0x80000000, 4);
 
-	*(vu32 *)0x800030F0 = 0x0000001C; // Dol Args
-	*(vu32 *)0x8000318C = 0x00000000; // Launch Code
-	*(vu32 *)0x80003190 = 0x00000000; // Return Code
+	// Patch in info missing from apploader reads
+	*Sys_Magic      = 0x0d15ea5e;
+	*Version        = 1;
+	*Arena_L        = 0x00000000;
+	*BI2            = 0x817E5480;
+	*Bus_Speed      = 0x0E7BE2C0;
+	*CPU_Speed      = 0x2B73A840;
 
-	*(vu32 *)0x80003140 = *(vu32 *)0x80003188; // IOS Version Check
-	*(vu32 *)0x80003180 = *(vu32 *)0x80000000; // Game ID Online Check
+	// From NeoGamme R4 (WiiPower)
+	*(vu32 *)0x800030F0 = 0x0000001C;
+	*(vu32 *)0x8000318C = 0x00000000;
+	*(vu32 *)0x80003190 = 0x00000000;
+	
+	// Fix for Sam & Max (WiiPower)
 	*(vu32 *)0x80003184 = 0x80000000;
 
 	/* Flush cache */
