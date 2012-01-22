@@ -30,6 +30,7 @@
 #include "defines.h"
 
 #include "dml/dml.h"
+#include "dml/dvd_broadway.h"
 
 using namespace std;
 
@@ -45,6 +46,15 @@ extern const u8 favoritesoff_png[];
 extern const u8 favoritesoffs_png[];
 extern const u8 delete_png[];
 extern const u8 deletes_png[];
+
+
+static dvddiskid *g_diskID = (dvddiskid*)0x80000000;
+static vu32 dvddone = 0;
+
+static void __dvd_readidcb(s32 result)
+{
+	dvddone = result;
+}
 
 extern u32 sector_size;
 extern int mainIOS;
@@ -1072,6 +1082,9 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		
 	if (gc)
 	{
+		bwDVD_LowInit();
+		bwDVD_LowReset(__dvd_readidcb);
+		bwDVD_LowReadID(g_diskID,__dvd_readidcb);
 		_launchGC(id.c_str(),false);
 	}
 	else 
