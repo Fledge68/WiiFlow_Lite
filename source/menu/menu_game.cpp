@@ -548,8 +548,7 @@ extern "C" {extern void USBStorage_Deinit(void);}
 
 void CMenu::_launchGC(const char *id)
 {	
-	int DMLvideoMode = m_gcfg2.getInt(id, "dml_video_mode", 0);
-	
+	u8 DMLvideoMode = min((u32)m_gcfg2.getInt(id, "dml_video_mode", 0), ARRAY_SIZE(CMenu::_DMLvideoModes) - 1u);
 	Close_Inputs();
 	USBStorage_Deinit();
 	Nand::Instance()->Disable_Emu();
