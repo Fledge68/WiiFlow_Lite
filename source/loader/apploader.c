@@ -86,8 +86,6 @@ s32 Apploader_Run(entry_point *entry, u8 vidMode, GXRModeObj *vmode, bool vipatc
 
 	/* Set entry point from apploader */
 	*entry = appldr_final();
-	
-	IOSReloadBlock(IOS_GetVersion());
 
 	/* ERROR 002 fix (WiiPower) */
 	*(u32 *)0x80003140 = *(u32 *)0x80003188;

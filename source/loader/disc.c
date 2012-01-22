@@ -341,6 +341,8 @@ s32 Disc_BootPartition(u64 offset, u8 vidMode, bool vipatch, bool countryString,
 {
 	entry_point p_entry;
 
+	IOSReloadBlock(IOS_GetVersion());
+	
 	s32 ret = WDVD_OpenPartition(offset, 0, 0, 0, Tmd_Buffer);
 	if (ret < 0) return ret;
 
