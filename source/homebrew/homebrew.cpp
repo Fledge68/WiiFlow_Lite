@@ -67,7 +67,7 @@ int LoadHomebrew(const char * filepath)
 	}
 	
 	bool good_read = fread((u8 *)buffer.get(), 1, filesize, file) == filesize;
-	fclose(file);
+	SAFE_CLOSE(file);
 	if (!good_read) return -4;
 
 	DCFlushRange((u8 *)buffer.get(), filesize);

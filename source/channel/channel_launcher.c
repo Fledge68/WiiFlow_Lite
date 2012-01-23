@@ -65,18 +65,17 @@ s32 BootChannel(u8 *data, u64 chantitle, u8 vidMode, bool vipatch, bool countryS
 	/* Set an appropriate video mode */
 	__Disc_SetVMode();
 
-	// IOS Version Check
-	*(vu32*)0x80003140	= ((ios << 16)) | 0xFFFF;
-	*(vu32*)0x80003188	= ((ios << 16)) | 0xFFFF;
-	DCFlushRange((void *)0x80003140, 32);
-	DCFlushRange((void *)0x80003188, 32);
+    // IOS Version Check
+    *(vu32*)0x80003140 = ((ios << 16)) | 0xFFFF;
+    *(vu32*)0x80003188 = ((ios << 16)) | 0xFFFF;
+    DCFlushRange((void *)0x80003140, 4);
+    DCFlushRange((void *)0x80003188, 4);
 
-	// Game ID Online Check
-	*(vu32 *)0x80000000 = TITLE_LOWER(chantitle);
-	*(vu32 *)0x80003180 = TITLE_LOWER(chantitle);
-	DCFlushRange((void *)0x80000000, 32);
-	DCFlushRange((void *)0x80003180, 32);
-
+    // Game ID Online Check
+    memset((void *)0x80000000, 0, 6);
+    *(vu32 *)0x80000000 = TITLE_LOWER(chantitle);
+    DCFlushRange((void *)0x80000000, 6);
+	
 	/* Shutdown IOS subsystems */
 	SYS_ResetSystem(SYS_SHUTDOWN, 0, 0);
 
@@ -135,15 +134,17 @@ u32 LoadChannel(u8 *buffer)
 	dolchunkcount = 0;
 	dolheader *dolfile = (dolheader *)buffer;
 
-	if(dolfile->bss_start)
-	{
-		ICInvalidateRange((void *)dolfile->bss_start, dolfile->bss_size);
-		memset((void *)dolfile->bss_start, 0, dolfile->bss_size);
-		DCFlushRange((void *)dolfile->bss_start, dolfile->bss_size);
-	}
+    if(dolfile->bss_start)
+    {
+            if(!(dolfile->bss_start & 0x80000000))
+                    dolfile->bss_start |= 0x80000000;
 
-	int i;
-	for(i = 0; i < 18; i++)
+            ICInvalidateRange((void *)dolfile->bss_start, dolfile->bss_size);
+            memset((void *)dolfile->bss_start, 0, dolfile->bss_size);
+            DCFlushRange((void *)dolfile->bss_start, dolfile->bss_size);
+    }
+
+	for(int i = 0; i < 18; i++)
 	{
 		if (!dolfile->section_size[i]) continue;
 		if (dolfile->section_pos[i] < sizeof(dolheader)) continue;
@@ -159,15 +160,15 @@ u32 LoadChannel(u8 *buffer)
 
 		dolchunkcount++;
 	}
+	SAFE_FREE(dolfile);
 	return dolfile->entry_point;
 }
 
 void PatchChannel(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes)
 {
-	int i;
 	bool hookpatched = false;
 
-	for (i=0;i < dolchunkcount;i++)
+	for (int i=0;i < dolchunkcount;i++)
 	{		
 		patchVideoModes(dolchunkoffset[i], dolchunksize[i], vidMode, vmode, patchVidModes);
 		if (vipatch) vidolpatcher(dolchunkoffset[i], dolchunksize[i]);
