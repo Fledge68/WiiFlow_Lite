@@ -21,7 +21,7 @@ const Vector3D g_boxSize(
 #define h(y)	((float)y / 256.0f)
 
 
-const SMeshVert g_boxMeshQ ATTRIBUTE_ALIGN(32)[] = {	// Quads
+const SMeshVert g_boxMeshQ[] ATTRIBUTE_ALIGN(32) = {	// Quads
 	// Bordure du bas devant
 	{ { g_frontCoverBL.x, g_frontCoverBL.y,						g_frontCoverBL.z },						CTexCoord(w(0), h(256)) },
 	{ { g_frontCoverBL.x, g_frontCoverBL.y - g_boxBorderWidth,	g_frontCoverBL.z - g_boxBorderWidth },	CTexCoord(w(10), h(256)) },
@@ -101,7 +101,7 @@ const SMeshVert g_boxMeshQ ATTRIBUTE_ALIGN(32)[] = {	// Quads
 	{ { g_backCoverBL.x, g_backCoverBL.y - g_boxBorderWidth, g_backCoverBL.z + g_boxBorderWidth },		CTexCoord(w(0), h(0)) }
 };
 
-const SMeshVert g_boxMeshT ATTRIBUTE_ALIGN(32)[] = {	// Triangles
+const SMeshVert g_boxMeshT[] ATTRIBUTE_ALIGN(32) = {	// Triangles
 	// Haut devant
 	{ { g_frontCoverTR.x, g_frontCoverTR.y, g_frontCoverBL.z },											CTexCoord(w(0), h(16)) },
 	{ { g_frontCoverTR.x + g_boxBorderWidth, g_frontCoverTR.y, g_frontCoverBL.z - g_boxBorderWidth },	CTexCoord(w(10), h(0)) },
@@ -126,7 +126,7 @@ const SMeshVert g_boxMeshT ATTRIBUTE_ALIGN(32)[] = {	// Triangles
 #undef h
 #undef w
 
-const SMeshVert g_flatCoverMesh ATTRIBUTE_ALIGN(32)[] = {
+const SMeshVert g_flatCoverMesh[] ATTRIBUTE_ALIGN(32) = {
 	{ { g_coverBL.x, g_coverBL.y, g_coverBL.z }, CTexCoord(0.f, 1.f) },
 	{ { g_coverTR.x, g_coverBL.y, g_coverBL.z }, CTexCoord(1.f, 1.f) },
 	{ { g_coverTR.x, g_coverTR.y, g_coverBL.z }, CTexCoord(1.f, 0.f) },
@@ -140,7 +140,7 @@ const CTexCoord g_flatCoverBoxTex[sizeof g_flatCoverMesh / sizeof g_flatCoverMes
 	CTexCoord(1.46f / 2.76f, 0.f)
 };
 
-const SMeshVert g_boxBackCoverMesh ATTRIBUTE_ALIGN(32)[] = {
+const SMeshVert g_boxBackCoverMesh[] ATTRIBUTE_ALIGN(32) = {
 	{ { g_backCoverTR.x, g_backCoverBL.y, g_backCoverBL.z }, CTexCoord(0.f, 1.f) },
 	{ { g_backCoverBL.x, g_backCoverBL.y, g_backCoverBL.z }, CTexCoord(1.3f / 2.76f, 1.f) },
 	{ { g_backCoverBL.x, g_backCoverTR.y, g_backCoverBL.z }, CTexCoord(1.3f / 2.76f, 0.f) },
@@ -152,7 +152,7 @@ const SMeshVert g_boxBackCoverMesh ATTRIBUTE_ALIGN(32)[] = {
 	{ { g_backCoverBL.x, g_backCoverBL.y, g_backCoverBL.z }, CTexCoord(1.3f / 2.76f, 1.f) },
 };
 
-const SMeshVert g_boxCoverMesh ATTRIBUTE_ALIGN(32)[] = {
+const SMeshVert g_boxCoverMesh[] ATTRIBUTE_ALIGN(32) = {
 	{ { g_frontCoverBL.x, g_frontCoverBL.y, g_frontCoverBL.z }, CTexCoord(1.46f / 2.76f, 1.f) },
 	{ { g_frontCoverTR.x, g_frontCoverBL.y, g_frontCoverBL.z }, CTexCoord(1.f, 1.f) },
 	{ { g_frontCoverTR.x, g_frontCoverTR.y, g_frontCoverBL.z }, CTexCoord(1.f, 0.f) },
