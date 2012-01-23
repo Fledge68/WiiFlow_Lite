@@ -56,8 +56,10 @@ void CMenu::_hideGameSettings(bool instant)
 	m_btnMgr.hide(m_gameSettingsBtnHooktypeP, instant);
 	m_btnMgr.hide(m_gameSettingsBtnCategoryMain, instant);
 	m_btnMgr.hide(m_gameSettingsLblCategoryMain, instant);
-	m_btnMgr.hide(m_gameSettingsBtnEmulation, instant);
+	m_btnMgr.hide(m_gameSettingsLblEmulationVal, instant);
 	m_btnMgr.hide(m_gameSettingsLblEmulation, instant);
+	m_btnMgr.hide(m_gameSettingsBtnEmulationP, instant);
+	m_btnMgr.hide(m_gameSettingsBtnEmulationM, instant);
 	m_btnMgr.hide(m_gameSettingsLblDebugger, instant);
 	m_btnMgr.hide(m_gameSettingsLblDebuggerV, instant);
 	m_btnMgr.hide(m_gameSettingsBtnDebuggerP, instant);
@@ -191,10 +193,12 @@ void CMenu::_showGameSettings(void)
 			m_btnMgr.show(m_gameSettingsLblCountryPatch);
 			m_btnMgr.show(m_gameSettingsBtnCountryPatch);
 			
-			if(!m_cfg.getBool("NAND", "disable", true) && m_current_view == COVERFLOW_USB)
+			if(m_current_view == COVERFLOW_USB)
 			{
-				m_btnMgr.show(m_gameSettingsBtnEmulation);
+				m_btnMgr.show(m_gameSettingsLblEmulationVal);
 				m_btnMgr.show(m_gameSettingsLblEmulation);
+				m_btnMgr.show(m_gameSettingsBtnEmulationP);
+				m_btnMgr.show(m_gameSettingsBtnEmulationM);
 			}
 		}
 		else
@@ -211,8 +215,10 @@ void CMenu::_showGameSettings(void)
 			m_btnMgr.hide(m_gameSettingsBtnCountryPatch);
 
 
-			m_btnMgr.hide(m_gameSettingsBtnEmulation);
+			m_btnMgr.hide(m_gameSettingsLblEmulationVal);
 			m_btnMgr.hide(m_gameSettingsLblEmulation);
+			m_btnMgr.hide(m_gameSettingsBtnEmulationP);
+			m_btnMgr.hide(m_gameSettingsBtnEmulationM);
 		}
 		if (m_gameSettingsPage == 4)
 		{
@@ -353,7 +359,9 @@ void CMenu::_showGameSettings(void)
 	for (int i=0; i<12; ++i)
 		m_btnMgr.setText(m_gameSettingsBtnCategory[i], _optBoolToString(m_gameSettingCategories[i] == '1'));
 
-	m_btnMgr.setText(m_gameSettingsBtnEmulation,  _optBoolToString(m_gcfg2.getBool(id, "emulate_save")));		
+	i = min((u32)m_gcfg2.getInt(id, "emulate_save", 0), ARRAY_SIZE(CMenu::_SaveEmu) - 1u);
+	m_btnMgr.setText(m_gameSettingsLblEmulationVal, _t(CMenu::_SaveEmu[i].id, CMenu::_SaveEmu[i].text));	
+	
 	m_btnMgr.setText(m_gameSettingsLblDebuggerV, m_gcfg2.getBool(id, "debugger", false) ? _t("gecko", L"Gecko") : _t("def", L"Default"));		
 }
 
@@ -497,14 +505,10 @@ void CMenu::_gameSettings(void)
 				m_gcfg2.setInt(id, "hooktype", (int)loopNum((u32)m_gcfg2.getInt(id, "hooktype", 1) + direction, ARRAY_SIZE(CMenu::_hooktype)));
 				_showGameSettings();
 			}
-			else if (m_btnMgr.selected(m_gameSettingsBtnEmulation))
+			else if (m_btnMgr.selected(m_gameSettingsBtnEmulationP) || m_btnMgr.selected(m_gameSettingsBtnEmulationM))
 			{
-				_hideGameSettings();
-				int intoption = loopNum(m_gcfg2.getOptBool(id, "emulate_save") + 1, 3);
-				if (intoption > 1)
-					m_gcfg2.remove(id, "emulate_save");
-				else
-					m_gcfg2.setOptBool(id, "emulate_save", intoption);
+				s8 direction = m_btnMgr.selected(m_gameSettingsBtnEmulationP) ? 1 : -1;
+				m_gcfg2.setInt(id, "emulate_save", (int)loopNum((u32)m_gcfg2.getInt(id, "emulate_save", 0) + direction, ARRAY_SIZE(CMenu::_SaveEmu)));
 				_showGameSettings();
 			}
 			else if (m_btnMgr.selected(m_gameSettingsBtnDebuggerP) || m_btnMgr.selected(m_gameSettingsBtnDebuggerM))
@@ -600,8 +604,11 @@ void CMenu::_initGameSettingsMenu(CMenu::SThemeData &theme)
 	m_gameSettingsLblPatchVidModesVal = _addLabel(theme, "GAME_SETTINGS/PATCH_VIDEO_MODE_BTN", theme.btnFont, L"", 386, 250, 158, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_gameSettingsBtnPatchVidModesM = _addPicButton(theme, "GAME_SETTINGS/PATCH_VIDEO_MODE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 330, 250, 56, 56);
 	m_gameSettingsBtnPatchVidModesP = _addPicButton(theme, "GAME_SETTINGS/PATCH_VIDEO_MODE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 250, 56, 56);
-	m_gameSettingsLblEmulation = _addLabel(theme, "GAME_SETTINGS/EMU_SAVE", theme.lblFont, L"", 40, 310, 270, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsBtnEmulation = _addButton(theme, "GAME_SETTINGS/EMU_SAVE_BTN", theme.btnFont, L"", 330, 310, 270, 56, theme.btnFontColor);
+	
+	m_gameSettingsLblEmulation = _addLabel(theme, "GAME_SETTINGS/EMU_SAVE", theme.lblFont, L"", 40, 310, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsLblEmulationVal = _addLabel(theme, "GAME_SETTINGS/EMU_SAVE_BTN", theme.btnFont, L"", 386, 310, 158, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_gameSettingsBtnEmulationM = _addPicButton(theme, "GAME_SETTINGS/EMU_SAVE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 330, 310, 56, 56);
+	m_gameSettingsBtnEmulationP = _addPicButton(theme, "GAME_SETTINGS/EMU_SAVE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 310, 56, 56);
 
 	//Page 4
  	m_gameSettingsLblGameIOS = _addLabel(theme, "GAME_SETTINGS/IOS", theme.lblFont, L"", 40, 130, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
@@ -686,7 +693,9 @@ void CMenu::_initGameSettingsMenu(CMenu::SThemeData &theme)
 	_setHideAnim(m_gameSettingsBtnHooktypeM, "GAME_SETTINGS/HOOKTYPE_MINUS", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnHooktypeP, "GAME_SETTINGS/HOOKTYPE_PLUS", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsLblEmulation, "GAME_SETTINGS/EMU_SAVE", -200, 0, 1.f, 0.f);
-	_setHideAnim(m_gameSettingsBtnEmulation, "GAME_SETTINGS/EMU_SAVE_BTN", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsLblEmulationVal, "GAME_SETTINGS/EMU_SAVE_BTN", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsBtnEmulationP, "GAME_SETTINGS/EMU_SAVE_PLUS", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsBtnEmulationM, "GAME_SETTINGS/EMU_SAVE_MINUS", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsLblDebugger, "GAME_SETTINGS/GAME_DEBUGGER", -200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsLblDebuggerV, "GAME_SETTINGS/GAME_DEBUGGER_BTN", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnDebuggerM, "GAME_SETTINGS/GAME_DEBUGGER_MINUS", 200, 0, 1.f, 0.f);
