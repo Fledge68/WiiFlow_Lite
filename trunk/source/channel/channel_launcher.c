@@ -143,8 +143,9 @@ u32 LoadChannel(u8 *buffer)
             memset((void *)dolfile->bss_start, 0, dolfile->bss_size);
             DCFlushRange((void *)dolfile->bss_start, dolfile->bss_size);
     }
-
-	for(int i = 0; i < 18; i++)
+   
+  int i;
+	for(i = 0; i < 18; i++)
 	{
 		if (!dolfile->section_size[i]) continue;
 		if (dolfile->section_pos[i] < sizeof(dolheader)) continue;
@@ -168,7 +169,8 @@ void PatchChannel(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryStrin
 {
 	bool hookpatched = false;
 
-	for (int i=0;i < dolchunkcount;i++)
+  int i;
+	for (i=0;i < dolchunkcount;i++)
 	{		
 		patchVideoModes(dolchunkoffset[i], dolchunksize[i], vidMode, vmode, patchVidModes);
 		if (vipatch) vidolpatcher(dolchunkoffset[i], dolchunksize[i]);
