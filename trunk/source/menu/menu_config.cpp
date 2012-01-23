@@ -58,7 +58,7 @@ void CMenu::_showConfig(void)
 	m_btnMgr.show(m_configBtnPageM);
 	m_btnMgr.show(m_configBtnPageP);
 
-	if(m_current_view != COVERFLOW_HOMEBREW && m_current_view != COVERFLOW_DML)
+	if(m_current_view != COVERFLOW_HOMEBREW && m_current_view != COVERFLOW_DML && m_current_view != COVERFLOW_USB)
 	{
 		m_btnMgr.show(m_configBtnEmulation);
 		m_btnMgr.show(m_configLblEmulation);

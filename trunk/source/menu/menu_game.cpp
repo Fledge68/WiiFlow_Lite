@@ -105,6 +105,12 @@ const CMenu::SOption CMenu::_DMLvideoModes[3] = {
 	{ "2", L"NTSC 480i" },
 };
 
+const CMenu::SOption CMenu::_SaveEmu[3] = {
+	{ "0", L"Default" },
+	{ "1", L"Partial" },
+	{ "2", L"Full" },
+};
+
 const CMenu::SOption CMenu::_vidModePatch[4] = {
 	{ "vmpnone", L"None" },
 	{ "vmpnormal", L"Normal" },
@@ -861,13 +867,12 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 
 	string emuPath = m_cfg.getString("GAMES", "savepath", m_cfg.getString("NAND", "path", ""));
 
-	bool emulate_save = emuPartition != 255 && m_gcfg2.testOptBool(id, "emulate_save", m_cfg.getBool("GAMES", "save_emulation", false));
-	bool emulate_mode = m_gcfg2.testOptBool(id, "full_emulation", m_cfg.getBool("GAMES", "full_emulation", false));
-
+	u8 emuSave = min((u32)m_gcfg2.getInt(id, "emulate_save", 0), ARRAY_SIZE(CMenu::_SaveEmu) - 1u);
+	
 	if (!dvd && get_frag_list((u8 *) hdr->hdr.id, (char *) hdr->path, currentPartition == 0 ? 0x200 : sector_size) < 0)
 		return;
 		
-	if(!dvd && emulate_save)
+	if(!dvd && emuSave)
 	{
 		char basepath[64];
 		snprintf(basepath, 64, "%s:%s", DeviceName[emuPartition], emuPath.c_str());
@@ -978,7 +983,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		}
 	}
 
-	if(emulate_save)
+	if(emuSave)
 	{
 		if(iosLoaded) ISFS_Deinitialize();
 		ISFS_Initialize();
@@ -986,7 +991,10 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
 		DeviceHandler::Instance()->UnMount(emuPartition);
 		
-		Nand::Instance()->Set_FullMode(emulate_mode);
+		if (emuSave == 2)
+			Nand::Instance()->Set_FullMode(true);
+		else
+			Nand::Instance()->Set_FullMode(false);
 
 		if(Nand::Instance()->Enable_Emu() < 0)
 		{

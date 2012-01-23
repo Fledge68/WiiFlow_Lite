@@ -345,7 +345,9 @@ private:
 	u32 m_gameSettingsLblHooktypeVal;
 	u32 m_gameSettingsBtnHooktypeM;
 	u32 m_gameSettingsBtnHooktypeP;
-	u32 m_gameSettingsBtnEmulation;
+	u32 m_gameSettingsLblEmulationVal;
+	u32 m_gameSettingsBtnEmulationP;
+	u32 m_gameSettingsBtnEmulationM;
 	u32 m_gameSettingsLblEmulation;
 	u32 m_gameSettingsLblDebugger;
 	u32 m_gameSettingsLblDebuggerV;
@@ -772,6 +774,7 @@ private:
 	static const SOption _languages[11];
 	static const SOption _videoModes[7];
 	static const SOption _DMLvideoModes[3];
+	static const SOption _SaveEmu[3];
 	static const SOption _vidModePatch[4];
 	static const SOption _hooktype[8];
 	static const SOption _exitTo[5];
