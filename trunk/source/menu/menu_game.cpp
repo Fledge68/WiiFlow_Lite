@@ -28,9 +28,7 @@
 #include "gecko.h"
 #include "homebrew.h"
 #include "defines.h"
-
-#include "dml/dml.h"
-#include "dml/dvd_broadway.h"
+#include "gc/gc.h"
 
 using namespace std;
 
@@ -46,15 +44,6 @@ extern const u8 favoritesoff_png[];
 extern const u8 favoritesoffs_png[];
 extern const u8 delete_png[];
 extern const u8 deletes_png[];
-
-
-static dvddiskid *g_diskID = (dvddiskid*)0x80000000;
-static vu32 dvddone = 0;
-
-static void __dvd_readidcb(s32 result)
-{
-	dvddone = result;
-}
 
 extern u32 sector_size;
 extern int mainIOS;
@@ -571,48 +560,22 @@ void CMenu::_launchGC(const char *id, bool DML)
 		USBStorage_Deinit();
 		cleanup();
 		
-		memcpy((char *)0x80000000, id, 6);
-		
 		// Tell DML to boot the game from sd card
 		*(u32 *)0x80001800 = 0xB002D105;
 		DCFlushRange((void *)(0x80001800), 4);
 		ICInvalidateRange((void *)(0x80001800), 4);			
 	}
 
-	setstreaming();
+	memcpy((char *)0x80000000, id, 6);
 	
 	VIDEO_SetBlack(TRUE);
 	if (((id[3] == 'P') && (DMLvideoMode == 0)) || (DMLvideoMode == 1))
 	{
-		SRAM_PAL();
-		
-		void *m_frameBuf;
-		static GXRModeObj *rmode = &TVPal528IntDf;
-		
-		/* Set video mode to PAL */
-		*(u32*)0x800000CC = 1;
-		
-		VIDEO_Configure(rmode);
-		m_frameBuf = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
-		
-		VIDEO_ClearFrameBuffer(rmode, m_frameBuf, COLOR_BLACK);
-		VIDEO_SetNextFramebuffer(m_frameBuf);
+		set_video_mode(1);
 	}
 	if (((id[3] != 'P') && (DMLvideoMode == 0)) || (DMLvideoMode == 2))
 	{
-		SRAM_NTSC();
-		
-		void *m_frameBuf;
-		static GXRModeObj *rmode = &TVNtsc480IntDf;
-		
-		/* Set video mode to NTSC */
-		*(u32*)0x800000CC = 0;
-		
-		VIDEO_Configure(rmode);
-		m_frameBuf = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
-		
-		VIDEO_ClearFrameBuffer(rmode, m_frameBuf, COLOR_BLACK);
-		VIDEO_SetNextFramebuffer(m_frameBuf);
+		set_video_mode(0);
 	}
 	VIDEO_Flush();
 	VIDEO_WaitVSync();
@@ -864,7 +827,8 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		{
 			error(L"Cannot Read DVD.");
 			if (BTN_B_PRESSED) return;
-		} 
+		}
+		
 		/* Check disc */
 		if (Disc_IsWii() < 0)
 		{
@@ -876,6 +840,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			else
 				gc = true;
 		}
+		
 		/* Read header */
 		struct discHdr *header = (struct discHdr *)MEM2_alloc(sizeof(struct discHdr));
 		Disc_ReadHeader(header);
@@ -1081,9 +1046,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		
 	if (gc)
 	{
-		bwDVD_LowInit();
-		bwDVD_LowReset(__dvd_readidcb);
-		bwDVD_LowReadID(g_diskID,__dvd_readidcb);
 		_launchGC(id.c_str(),false);
 	}
 	else 

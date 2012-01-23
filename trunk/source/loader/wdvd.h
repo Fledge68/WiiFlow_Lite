@@ -25,6 +25,7 @@ s32 WDVD_SetUSBMode(u32, const u8 *, s32);
 s32 WDVD_Eject(void);
 s32 WDVD_Read_Disc_BCA(void *);
 s32 WDVD_SetFragList(int device, void *fraglist, int size);
+s32 WDVD_setstreaming();
 
 #ifdef __cplusplus
 }
