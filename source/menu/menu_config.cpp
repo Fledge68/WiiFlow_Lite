@@ -58,12 +58,6 @@ void CMenu::_showConfig(void)
 	m_btnMgr.show(m_configBtnPageM);
 	m_btnMgr.show(m_configBtnPageP);
 
-	if(m_current_view != COVERFLOW_HOMEBREW && m_current_view != COVERFLOW_DML && m_current_view != COVERFLOW_USB)
-	{
-		m_btnMgr.show(m_configBtnEmulation);
-		m_btnMgr.show(m_configLblEmulation);
-	}
-
 	m_btnMgr.show(m_locked ? m_configBtnUnlock : m_configBtnSetCode);
 	
 	bool disable = m_current_view == COVERFLOW_CHANNEL && m_cfg.getBool("NAND", "disable", true);
@@ -82,18 +76,14 @@ void CMenu::_showConfig(void)
 	m_btnMgr.setText(m_configLblPage, wfmt(L"%i / %i", g_curPage, m_locked ? g_curPage + 1 : CMenu::_nbCfgPages));
 
 	bool isON = false;
-	switch(m_current_view)
+	if (m_current_view == COVERFLOW_CHANNEL)
 	{
-		case COVERFLOW_CHANNEL:
-			m_btnMgr.setText(m_configLblEmulation, _t("cfg12", L"NAND Emulation"));
-			isON = m_cfg.getBool("NAND", "disable", true);
-			break;
-		case COVERFLOW_USB:
-			m_btnMgr.setText(m_configLblEmulation, _t("cfg11", L"USB Saves Emulation"));
-			isON = !m_cfg.getBool("GAMES", "save_emulation", false);
-			break;
+		m_btnMgr.show(m_configBtnEmulation);
+		m_btnMgr.show(m_configLblEmulation);
+		m_btnMgr.setText(m_configLblEmulation, _t("cfg12", L"NAND Emulation"));
+		isON = m_cfg.getBool("NAND", "disable", true);
+		m_btnMgr.setText(m_configBtnEmulation, isON ?  _t("off", L"Off") : _t("on", L"On"));
 	}
-	m_btnMgr.setText(m_configBtnEmulation, isON ?  _t("off", L"Off") : _t("on", L"On"));
 }
 
 void CMenu::_config(int page)

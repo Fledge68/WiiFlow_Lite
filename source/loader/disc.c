@@ -72,9 +72,6 @@ void __Disc_SetLowMem()
 	
 	// Fix for Sam & Max (WiiPower)
 	*(vu32 *)0x80003184 = 0x80000000;
-
-	/* Copy disc ID */
-	memcpy((void *) Online_Check, (void *) Disc_ID, 4);
 }
 
 GXRModeObj * __Disc_SelectVMode(u8 videoselected, u64 chantitle)
