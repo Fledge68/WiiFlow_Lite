@@ -390,7 +390,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 				LWP_MutexUnlock(m_mutex);
 				download = downloadfile(buffer.get(), bufferSize, url.c_str(), CMenu::_downloadProgress, this);
 
-				if (download.data == NULL && newID[3] != 'E')
+				if (download.data == NULL && newID[3] == 'E')
 				{
 					url = makeURL(fmtURLBox[j], newID, "US");
 					LWP_MutexLock(m_mutex);
