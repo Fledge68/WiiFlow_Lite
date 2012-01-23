@@ -137,6 +137,8 @@ void CMenu::LoadView(void)
 	m_cf.applySettings();
 
 	char *mode = (m_current_view == COVERFLOW_CHANNEL && m_cfg.getBool("NAND", "disable", true)) ? (char *)"NAND" : (char *)DeviceName[currentPartition];
+	if (m_current_view == COVERFLOW_DML)
+		mode = (char *)"DML";
 
 	for(u8 i = 0; strncmp((const char *)&mode[i], "\0", 1) != 0; i++)
 			mode[i] = toupper(mode[i]);
@@ -320,7 +322,7 @@ int CMenu::main(void)
 			{
 				bool block = m_current_view == COVERFLOW_CHANNEL && m_cfg.getBool("NAND", "disable", true);
 				char *partition;
-				if(!block)
+				if(!block && (m_current_view != COVERFLOW_DML))
 				{
 					_showWaitMessage();
 					_hideMain();
@@ -343,7 +345,10 @@ int CMenu::main(void)
 					m_cfg.setInt(_domainFromView(), "partition", currentPartition);
 
 				}
-				else partition = (char *)"NAND";
+				else if (m_current_view == COVERFLOW_DML)
+					partition = (char *)"DML";
+				else
+					partition = (char *)"NAND";
 
 				for(u8 i = 0; strncmp((const char *)&partition[i], "\0", 1) != 0; i++)
 					partition[i] = toupper(partition[i]);
@@ -354,7 +359,7 @@ int CMenu::main(void)
 				m_btnMgr.setText(m_mainLblNotice, (string)partition);
 				m_btnMgr.show(m_mainLblNotice);
 
-				if(!block)
+				if(!block && (m_current_view != COVERFLOW_DML))
 				{
 					_loadList();
 					_showMain();
