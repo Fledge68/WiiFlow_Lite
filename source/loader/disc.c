@@ -253,7 +253,12 @@ s32 Disc_Open(void)
 	memset(diskid, 0, 32);
 
 	/* Read disc ID */
-	return WDVD_ReadDiskId(diskid);
+	ret = WDVD_ReadDiskId(diskid);
+	
+	/* Directly set Audio Streaming for GC */
+	WDVD_setstreaming();
+	
+	return ret;
 }
 
 s32 Disc_Wait(void)

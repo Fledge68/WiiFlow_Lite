@@ -11,7 +11,7 @@
 #include <ogcsys.h>
 #include <unistd.h>
 #include <sys/statvfs.h>
-#include "dml.h"
+#include "gc.h"
 #define SEP 0xFF
 
 #define BC 0x0000000100000100ULL
@@ -19,7 +19,6 @@
 
 /** Base address for video registers. */
 #define MEM_VIDEO_BASE (0xCC002000)
-#define IOCTL_DI_DVDLowAudioBufferConfig 0xE4
 
 #define VIDEO_MODE_NTSC 0
 #define VIDEO_MODE_PAL 1
@@ -31,20 +30,32 @@ syssram* __SYS_LockSram();
 u32 __SYS_UnlockSram(u32 write);
 u32 __SYS_SyncSram(void);
 
-void SRAM_PAL()
+void set_video_mode(int i)
 {
 	syssram *sram;
 	sram = __SYS_LockSram();
-	sram->flags = sram->flags |  (1 << 0);	// Set bit 0 to set the video mode to PAL
+	void *m_frameBuf;
+	static GXRModeObj *rmode;
+	if (i == 0)
+	{
+		rmode = &TVNtsc480IntDf;
+		sram->flags = sram->flags & ~(1 << 0);	// Clear bit 0 to set the video mode to NTSC
+	}
+	else
+	{
+		rmode = &TVPal528IntDf;
+		sram->flags = sram->flags |  (1 << 0);	// Set bit 0 to set the video mode to PAL
+	}
+	
 	__SYS_UnlockSram(1); // 1 -> write changes
 	while(!__SYS_SyncSram());
-}
 
-void SRAM_NTSC()
-{
-	syssram *sram;
-	sram = __SYS_LockSram();
-	sram->flags = sram->flags & ~(1 << 0);	// Clear bit 0 to set the video mode to NTSC
-	__SYS_UnlockSram(1); // 1 -> write changes
-	while(!__SYS_SyncSram());
+	/* Set video mode to PAL or NTSC */
+	*(u32*)0x800000CC = i;
+	
+	VIDEO_Configure(rmode);
+	m_frameBuf = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
+	
+	VIDEO_ClearFrameBuffer(rmode, m_frameBuf, COLOR_BLACK);
+	VIDEO_SetNextFramebuffer(m_frameBuf);
 }
