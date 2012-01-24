@@ -25,6 +25,19 @@ static safe_vector<std::string> Arguments;
 
 bool bootHB;
 
+bool IsDollZ (u8 *buff)
+{
+  int ret;
+  
+  u8 dollz_stamp[] = {0x3C};
+  int dollz_offs = 0x100;
+
+  ret = memcmp (&buff[dollz_offs], dollz_stamp, sizeof(dollz_stamp));
+  if (ret == 0) return true;
+  
+  return false;
+}
+
 void AddBootArgument(const char * argv)
 {
 	std::string arg(argv);
@@ -118,18 +131,17 @@ int BootHomebrew()
 	if(homebrewsize == 0) return -1;
 
 	struct __argv args;
-	SetupARGV(&args);
+	if (!IsDollZ(homebrewbuffer))
+		SetupARGV(&args);
 
 	memcpy(BOOTER_ADDR, app_booter_bin, app_booter_bin_size);
 	DCFlushRange(BOOTER_ADDR, app_booter_bin_size);
 
 	entrypoint entry = (entrypoint) BOOTER_ADDR;
 
-	if (args.argvMagic == ARGV_MAGIC)
-	{
-		memmove(ARGS_ADDR, &args, sizeof(args));
-		DCFlushRange(ARGS_ADDR, sizeof(args) + args.length);
-	}
+	memmove(ARGS_ADDR, &args, sizeof(args));
+	DCFlushRange(ARGS_ADDR, sizeof(args) + args.length);
+
 	SYS_ResetSystem(SYS_SHUTDOWN, 0, 0);
 	entry();
 
