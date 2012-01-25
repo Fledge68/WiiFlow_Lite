@@ -104,9 +104,14 @@ void CMenu::_showGameSettings(void)
 	m_btnMgr.show(m_gameSettingsBtnPageP);
 	m_btnMgr.show(m_gameSettingsBtnBack);
 	m_btnMgr.show(m_gameSettingsLblTitle);
-	if (m_current_view != COVERFLOW_DML)
+	if(m_current_view != COVERFLOW_DML)
+		g_numGCfPages = 4;
+	else
+		g_numGCfPages = 1;
+		
+	if (m_gameSettingsPage == 1)
 	{
-		if (m_gameSettingsPage == 1)
+		if(m_current_view != COVERFLOW_DML)
 		{
 			m_btnMgr.show(m_gameSettingsLblCover);
 			m_btnMgr.show(m_gameSettingsBtnCover);
@@ -126,6 +131,16 @@ void CMenu::_showGameSettings(void)
 		}
 		else
 		{
+			m_btnMgr.show(m_gameSettingsLblDMLGameVideo);		
+			m_btnMgr.show(m_gameSettingsLblDMLVideo);
+			m_btnMgr.show(m_gameSettingsBtnDMLVideoP);
+			m_btnMgr.show(m_gameSettingsBtnDMLVideoM);
+		}	
+	}
+	else
+	{
+		if(m_current_view != COVERFLOW_DML)
+		{
 			m_btnMgr.hide(m_gameSettingsLblCover);
 			m_btnMgr.hide(m_gameSettingsBtnCover);
 
@@ -141,109 +156,6 @@ void CMenu::_showGameSettings(void)
 			m_btnMgr.hide(m_gameSettingsLblVideo);
 			m_btnMgr.hide(m_gameSettingsBtnVideoP);
 			m_btnMgr.hide(m_gameSettingsBtnVideoM);
-
-		}
-		if (m_gameSettingsPage == 2)
-		{
-			m_btnMgr.show(m_gameSettingsLblDebugger);
-			m_btnMgr.show(m_gameSettingsLblDebuggerV);
-			m_btnMgr.show(m_gameSettingsBtnDebuggerP);
-			m_btnMgr.show(m_gameSettingsBtnDebuggerM);
-
-			m_btnMgr.show(m_gameSettingsLblHooktype);
-			m_btnMgr.show(m_gameSettingsLblHooktypeVal);
-			m_btnMgr.show(m_gameSettingsBtnHooktypeM);
-			m_btnMgr.show(m_gameSettingsBtnHooktypeP);
-
-			m_btnMgr.show(m_gameSettingsLblOcarina);
-			m_btnMgr.show(m_gameSettingsBtnOcarina);
-
-			m_btnMgr.show(m_gameSettingsLblCheat);
-			m_btnMgr.show(m_gameSettingsBtnCheat);
-		}
-		else
-		{
-			m_btnMgr.hide(m_gameSettingsLblDebugger);
-			m_btnMgr.hide(m_gameSettingsLblDebuggerV);
-			m_btnMgr.hide(m_gameSettingsBtnDebuggerP);
-			m_btnMgr.hide(m_gameSettingsBtnDebuggerM);
-
-			m_btnMgr.hide(m_gameSettingsLblHooktype);
-			m_btnMgr.hide(m_gameSettingsLblHooktypeVal);
-			m_btnMgr.hide(m_gameSettingsBtnHooktypeM);
-			m_btnMgr.hide(m_gameSettingsBtnHooktypeP);
-
-			m_btnMgr.hide(m_gameSettingsLblOcarina);
-			m_btnMgr.hide(m_gameSettingsBtnOcarina);
-
-			m_btnMgr.hide(m_gameSettingsLblCheat);
-			m_btnMgr.hide(m_gameSettingsBtnCheat);
-		}
-		if (m_gameSettingsPage == 3)
-		{
-
-			m_btnMgr.show(m_gameSettingsLblPatchVidModes);
-			m_btnMgr.show(m_gameSettingsLblPatchVidModesVal);
-			m_btnMgr.show(m_gameSettingsBtnPatchVidModesM);
-			m_btnMgr.show(m_gameSettingsBtnPatchVidModesP);
-
-			m_btnMgr.show(m_gameSettingsLblVipatch);
-			m_btnMgr.show(m_gameSettingsBtnVipatch);
-
-			m_btnMgr.show(m_gameSettingsLblCountryPatch);
-			m_btnMgr.show(m_gameSettingsBtnCountryPatch);
-			
-			if(m_current_view == COVERFLOW_USB)
-			{
-				m_btnMgr.show(m_gameSettingsLblEmulationVal);
-				m_btnMgr.show(m_gameSettingsLblEmulation);
-				m_btnMgr.show(m_gameSettingsBtnEmulationP);
-				m_btnMgr.show(m_gameSettingsBtnEmulationM);
-			}
-		}
-		else
-		{
-			m_btnMgr.hide(m_gameSettingsLblPatchVidModes);
-			m_btnMgr.hide(m_gameSettingsLblPatchVidModesVal);
-			m_btnMgr.hide(m_gameSettingsBtnPatchVidModesM);
-			m_btnMgr.hide(m_gameSettingsBtnPatchVidModesP);
-
-			m_btnMgr.hide(m_gameSettingsLblVipatch);
-			m_btnMgr.hide(m_gameSettingsBtnVipatch);
-
-			m_btnMgr.hide(m_gameSettingsLblCountryPatch);
-			m_btnMgr.hide(m_gameSettingsBtnCountryPatch);
-
-
-			m_btnMgr.hide(m_gameSettingsLblEmulationVal);
-			m_btnMgr.hide(m_gameSettingsLblEmulation);
-			m_btnMgr.hide(m_gameSettingsBtnEmulationP);
-			m_btnMgr.hide(m_gameSettingsBtnEmulationM);
-		}
-		if (m_gameSettingsPage == 4)
-		{
-			m_btnMgr.show(m_gameSettingsLblGameIOS);
-			m_btnMgr.show(m_gameSettingsLblIOS);
-			m_btnMgr.show(m_gameSettingsBtnIOSP);
-			m_btnMgr.show(m_gameSettingsBtnIOSM);
-		}
-		else
-		{
-			m_btnMgr.hide(m_gameSettingsLblGameIOS);
-			m_btnMgr.hide(m_gameSettingsLblIOS);
-			m_btnMgr.hide(m_gameSettingsBtnIOSP);
-			m_btnMgr.hide(m_gameSettingsBtnIOSM);
-		}
-	}
-	else
-	{
-		g_numGCfPages = 1;
-		if (m_gameSettingsPage == 1)
-		{
-			m_btnMgr.show(m_gameSettingsLblDMLGameVideo);		
-			m_btnMgr.show(m_gameSettingsLblDMLVideo);
-			m_btnMgr.show(m_gameSettingsBtnDMLVideoP);
-			m_btnMgr.show(m_gameSettingsBtnDMLVideoM);
 		}
 		else
 		{
@@ -253,6 +165,98 @@ void CMenu::_showGameSettings(void)
 			m_btnMgr.hide(m_gameSettingsBtnDMLVideoM);
 		}
 	}
+	if (m_gameSettingsPage == 2)
+	{
+		m_btnMgr.show(m_gameSettingsLblDebugger);
+		m_btnMgr.show(m_gameSettingsLblDebuggerV);
+		m_btnMgr.show(m_gameSettingsBtnDebuggerP);
+		m_btnMgr.show(m_gameSettingsBtnDebuggerM);
+
+		m_btnMgr.show(m_gameSettingsLblHooktype);
+		m_btnMgr.show(m_gameSettingsLblHooktypeVal);
+		m_btnMgr.show(m_gameSettingsBtnHooktypeM);
+		m_btnMgr.show(m_gameSettingsBtnHooktypeP);
+
+		m_btnMgr.show(m_gameSettingsLblOcarina);
+		m_btnMgr.show(m_gameSettingsBtnOcarina);
+
+		m_btnMgr.show(m_gameSettingsLblCheat);
+		m_btnMgr.show(m_gameSettingsBtnCheat);
+	}
+	else
+	{
+		m_btnMgr.hide(m_gameSettingsLblDebugger);
+		m_btnMgr.hide(m_gameSettingsLblDebuggerV);
+		m_btnMgr.hide(m_gameSettingsBtnDebuggerP);
+		m_btnMgr.hide(m_gameSettingsBtnDebuggerM);
+
+		m_btnMgr.hide(m_gameSettingsLblHooktype);
+		m_btnMgr.hide(m_gameSettingsLblHooktypeVal);
+		m_btnMgr.hide(m_gameSettingsBtnHooktypeM);
+		m_btnMgr.hide(m_gameSettingsBtnHooktypeP);
+
+		m_btnMgr.hide(m_gameSettingsLblOcarina);
+		m_btnMgr.hide(m_gameSettingsBtnOcarina);
+
+		m_btnMgr.hide(m_gameSettingsLblCheat);
+		m_btnMgr.hide(m_gameSettingsBtnCheat);
+	}
+	if (m_gameSettingsPage == 3)
+	{
+
+		m_btnMgr.show(m_gameSettingsLblPatchVidModes);
+		m_btnMgr.show(m_gameSettingsLblPatchVidModesVal);
+		m_btnMgr.show(m_gameSettingsBtnPatchVidModesM);
+		m_btnMgr.show(m_gameSettingsBtnPatchVidModesP);
+		m_btnMgr.show(m_gameSettingsLblVipatch);
+		m_btnMgr.show(m_gameSettingsBtnVipatch);
+
+		m_btnMgr.show(m_gameSettingsLblCountryPatch);
+		m_btnMgr.show(m_gameSettingsBtnCountryPatch);
+			
+		if(m_current_view == COVERFLOW_USB)
+		{
+			m_btnMgr.show(m_gameSettingsLblEmulationVal);
+			m_btnMgr.show(m_gameSettingsLblEmulation);
+			m_btnMgr.show(m_gameSettingsBtnEmulationP);
+			m_btnMgr.show(m_gameSettingsBtnEmulationM);
+		}
+	}
+	else
+	{
+		m_btnMgr.hide(m_gameSettingsLblPatchVidModes);
+		m_btnMgr.hide(m_gameSettingsLblPatchVidModesVal);
+		m_btnMgr.hide(m_gameSettingsBtnPatchVidModesM);
+		m_btnMgr.hide(m_gameSettingsBtnPatchVidModesP);
+
+		m_btnMgr.hide(m_gameSettingsLblVipatch);
+		m_btnMgr.hide(m_gameSettingsBtnVipatch);
+
+		m_btnMgr.hide(m_gameSettingsLblCountryPatch);
+		m_btnMgr.hide(m_gameSettingsBtnCountryPatch);
+
+
+		m_btnMgr.hide(m_gameSettingsLblEmulationVal);
+		m_btnMgr.hide(m_gameSettingsLblEmulation);
+		m_btnMgr.hide(m_gameSettingsBtnEmulationP);
+		m_btnMgr.hide(m_gameSettingsBtnEmulationM);
+	}
+	if (m_gameSettingsPage == 4)
+	{
+		m_btnMgr.show(m_gameSettingsLblGameIOS);
+		m_btnMgr.show(m_gameSettingsLblIOS);
+		m_btnMgr.show(m_gameSettingsBtnIOSP);
+		m_btnMgr.show(m_gameSettingsBtnIOSM);
+	}
+	else
+	{
+		m_btnMgr.hide(m_gameSettingsLblGameIOS);
+		m_btnMgr.hide(m_gameSettingsLblIOS);
+		m_btnMgr.hide(m_gameSettingsBtnIOSP);
+		m_btnMgr.hide(m_gameSettingsBtnIOSM);
+	}
+	
+
 	
 	u32 i = 0;
 	
@@ -721,7 +725,7 @@ void CMenu::_textGameSettings(void)
 	m_btnMgr.setText(m_gameSettingsLblGameLanguage, _t("cfgg3", L"Language"));
 	m_btnMgr.setText(m_gameSettingsLblCountryPatch, _t("cfgg4", L"Patch country strings"));
 	m_btnMgr.setText(m_gameSettingsLblOcarina, _t("cfgg5", L"Ocarina"));
-	m_btnMgr.setText(m_gameSettingsLblDMLGameVideo, _t("cfgg6", L"Video mode"));
+	m_btnMgr.setText(m_gameSettingsLblDMLGameVideo, _t("cfgg2", L"Video mode"));
 	m_btnMgr.setText(m_gameSettingsLblVipatch, _t("cfgg7", L"Vipatch"));
 	m_btnMgr.setText(m_gameSettingsBtnBack, _t("cfgg8", L"Back"));
 	m_btnMgr.setText(m_gameSettingsLblGameIOS, _t("cfgg10", L"IOS"));

@@ -131,21 +131,42 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 		if (wbfs || (*itr).rfind(".iso")  != string::npos || (*itr).rfind(".ISO")  != string::npos)
 		{
 			char* filename = &(*itr)[(*itr).find_last_of('/')+1];
-			char gamename[64];
 			if(strcasecmp(filename, "game.iso") == 0 && strncasecmp((*itr).c_str(), "sd:/games/", 10) == 0 )
 			{
 				FILE *fp = fopen((*itr).c_str(), "rb");
-				if (fp)
+				if( fp )
 				{
-					fseek( fp, 0x00, SEEK_SET);
-					fread(tmp.hdr.id, 1, 6, fp);
-					fseek( fp, 0x20, SEEK_SET);
-					fread(gamename, 1, 64, fp);
+					fseek( fp, 0x00, SEEK_SET );
+					fread( tmp.hdr.id, 1, 6, fp );
+					
+					GTitle = custom_titles.getString( "TITLES", (const char *) tmp.hdr.id );
+					int ccolor = custom_titles.getColor( "COVERS", (const char *) tmp.hdr.id, tmp.hdr.casecolor ).intVal();
+					
+					if( GTitle.size() > 0 || ( gameTDB.IsLoaded() && gameTDB.GetTitle( (char *)tmp.hdr.id, GTitle ) ) )
+					{					
+						mbstowcs( tmp.title, GTitle.c_str(), sizeof(tmp.title) );
+						Asciify( tmp.title );
+						tmp.hdr.casecolor = ccolor != 1 ? ccolor : gameTDB.GetCaseColor( (char *)tmp.hdr.id );
+						if( tmp.hdr.casecolor == 0xffffffff )
+							tmp.hdr.casecolor = 0;
+							
+						tmp.hdr.gc_magic = 0xc2339f3d;
+						headerlist.push_back( tmp );
+						continue;
+					}					
+										
+					fseek( fp, 0, SEEK_SET );
+					fread( &tmp.hdr, sizeof( discHdr ), 1, fp);
 					SAFE_CLOSE(fp);
-					mbstowcs(tmp.title, gamename, 64);
-					Asciify(tmp.title);
-					tmp.hdr.casecolor = 0;
-					headerlist.push_back(tmp);
+					
+					if ( tmp.hdr.gc_magic == 0xc2339f3d )
+					{
+						mbstowcs( tmp.title, (const char *)tmp.hdr.title, sizeof( tmp.hdr.title ) );
+						Asciify(tmp.title);
+						tmp.hdr.casecolor = 0;
+						headerlist.push_back( tmp );
+						continue;
+					}
 				}
 				continue;
 			}
@@ -175,13 +196,13 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 			// Get info from custom titles
 			GTitle = custom_titles.getString("TITLES", (const char *) tmp.hdr.id);
 			int ccolor = custom_titles.getColor("COVERS", (const char *) tmp.hdr.id, tmp.hdr.casecolor).intVal();
-			
+				
 			if(GTitle.size() > 0 || (gameTDB.IsLoaded() && gameTDB.GetTitle((char *)tmp.hdr.id, GTitle)))
 			{
 				mbstowcs(tmp.title, GTitle.c_str(), sizeof(tmp.title));
 				Asciify(tmp.title);
 				tmp.hdr.casecolor = ccolor != 1 ? ccolor : gameTDB.GetCaseColor((char *)tmp.hdr.id);
-
+				
 				tmp.hdr.wifi = gameTDB.GetWifiPlayers((char *)tmp.hdr.id);
 				tmp.hdr.players = gameTDB.GetPlayers((char *)tmp.hdr.id);
 				//tmp.hdr.controllers = gameTDB.GetAccessories((char *)tmp.hdr.id);
@@ -203,8 +224,7 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 			{
 				mbstowcs(tmp.title, (const char *)tmp.hdr.title, sizeof(tmp.hdr.title));
 				Asciify(tmp.title);
-				
-				tmp.hdr.casecolor = 1;
+				tmp.hdr.casecolor = ccolor != 1 ? ccolor : 1;
 				headerlist.push_back(tmp);
 				continue;
 			}
@@ -291,9 +311,11 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 					//tmp.hdr.controllers = gameTDB.GetAccessories((char *)tmp.hdr.id);
 				
 				}
-				else mbstowcs(tmp.title, tmp.hdr.title, sizeof(tmp.title));
-				
-				tmp.hdr.casecolor = 1;
+				else
+				{
+					mbstowcs(tmp.title, tmp.hdr.title, sizeof(tmp.title));
+					tmp.hdr.casecolor = ccolor != 1 ? ccolor : 1;
+				}
 				Asciify(tmp.title);
 				headerlist.push_back(tmp);
 			}			

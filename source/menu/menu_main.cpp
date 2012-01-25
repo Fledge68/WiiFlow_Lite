@@ -461,7 +461,7 @@ int CMenu::main(void)
 				if (m_current_view == COVERFLOW_USB) 
 					m_current_view = COVERFLOW_CHANNEL;
 				else if (m_current_view == COVERFLOW_CHANNEL)
-					m_current_view = show_homebrew ? COVERFLOW_HOMEBREW : COVERFLOW_DML;
+					m_current_view = (!m_locked && show_homebrew) ? COVERFLOW_HOMEBREW : COVERFLOW_DML;
 				else if (m_current_view == COVERFLOW_HOMEBREW)
 					m_current_view = COVERFLOW_DML;
 				else if (m_current_view == COVERFLOW_DML)
@@ -589,7 +589,7 @@ int CMenu::main(void)
 					m_btnMgr.show(m_mainBtnDML);
 					break;
 				case COVERFLOW_CHANNEL:
-					if(show_homebrew)
+					if(!m_locked && show_homebrew)
 						m_btnMgr.show(m_mainBtnHomebrew);
 					else
 						m_btnMgr.show(m_mainBtnDML);
