@@ -37,7 +37,7 @@
 
 #define ARRAY_SIZE(a)		(sizeof a / sizeof a[0])
 
-static u32 allowedBases[] = { 37, 38, 53, 55, 56, 57, 58, 60, 70, 80 };
+static u32 allowedBases[] = { 37, 38, 53, 55, 56, 57, 58 };
 
 /* Check if the cIOS is a D2X. */
 bool cIOSInfo::D2X(u8 ios, u8 *base)
@@ -74,7 +74,7 @@ iosinfo_t *cIOSInfo::GetInfo(u8 ios)
 	}
 
 	char filepath[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
-	sprintf(filepath, "/title/%08x/%08x/content/%08x.app", 0x00000001, ios, *(u8 *)((u32)TMD+0x1E7));
+	sprintf(filepath, "/title/00000001/%08x/content/%08x.app", ios, *(u8 *)((u32)TMD+0x1E7));
 
 	SAFE_FREE(TMD);
 

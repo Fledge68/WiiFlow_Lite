@@ -779,6 +779,7 @@ int GameTDB::GetRatingDescriptors(const char * id, safe_vector<string> & desc_li
     {
         if(strncmp(descriptor_text, "</descriptor>", strlen("</descriptor>")) == 0)
         {
+            desc_list[list_num].push_back('\0');
             descriptor_text = strstr(descriptor_text, "<descriptor>");
             if(!descriptor_text)
                 break;
@@ -818,8 +819,6 @@ int GameTDB::GetWifiPlayers(const char * id)
     }
 
     players = atoi(PlayersNode);
-	
-	delete [] data;
 
     return players;
 }
@@ -847,6 +846,7 @@ int GameTDB::GetWifiFeatures(const char * id, safe_vector<string> & feat_list)
     {
         if(strncmp(feature_text, "</feature>", strlen("</feature>")) == 0)
         {
+            feat_list[list_num].push_back('\0');
             feature_text = strstr(feature_text, "<feature>");
             if(!feature_text)
                 break;
@@ -891,8 +891,6 @@ int GameTDB::GetPlayers(const char * id)
     }
 
     players = atoi(PlayersNode);
-	
-	delete [] data;
 
     return players;
 }
@@ -924,14 +922,20 @@ int GameTDB::GetAccessories(const char * id, safe_vector<Accessory> & acc_list)
         for(const char * ptr = ControlsNode; *ptr != '"' && *ptr != '\0'; ptr++)
             acc_list[list_num].Name.push_back(*ptr);
 
-        acc_list[list_num].Required = false;
+        acc_list[list_num].Name.push_back('\0');
 
         char * requiredField = strstr(ControlsNode, "required=\"");
-		
-        if(requiredField && strncmp(requiredField + strlen("required=\""), "true", 4) == 0)
-		acc_list[list_num].Required = true;
+        if(!requiredField)
+        {
+            delete [] data;
+            return -1;
+        }
 
-        ControlsNode = strstr(ControlsNode, "<control type=\"");
+        requiredField += strlen("required=\"");
+
+        acc_list[list_num].Required = strncmp(requiredField, "true", 4) == 0;
+
+        ControlsNode = strstr(requiredField, "<control type=\"");
         if(ControlsNode)
             ControlsNode += strlen("<control type=\"");
 
@@ -948,8 +952,9 @@ unsigned int GameTDB::FindCaseColor(char * data)
 	unsigned int color = -1;
 	
     char * ColorNode = GetNodeText(data, "<case color=\"", "\"/>");
-    if(!ColorNode) return color;
-
+    if(!ColorNode)		
+		return color;
+	
 	char format[8];
 	sprintf(format, "0x%s", ColorNode);
 
@@ -958,13 +963,18 @@ unsigned int GameTDB::FindCaseColor(char * data)
 
 unsigned int GameTDB::GetCaseColor(const char * id)
 {
-    unsigned int color = -1;
-    if(!id) return color;
+	unsigned int color = -1;
+    if(!id)
+		return color;
 
     char * data = GetGameNode(id);
-    if(!data) return color;
+    if(!data)
+		return color;
 
     color = FindCaseColor(data);
+	
+	if( color != 0xffffffff )
+		gprintf("GameTDB: Found alternate color(%x) for: %s\n", color, id);
 	
 	delete [] data;
 	return color;

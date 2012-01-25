@@ -50,6 +50,10 @@ void CachedList<T>::Load(string path, string containing)													/* Load All
 		fclose(file);
 		remove(path.c_str());
 		
+		m_loaded = true;
+		m_update = false;
+		m_lastLanguage = m_curLanguage;
+		
 		if(!music && pathlist.size() > 0)
 		{
 			Save();

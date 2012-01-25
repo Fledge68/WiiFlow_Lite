@@ -26,7 +26,7 @@ template <typename T>
 CCache<T>::CCache(safe_vector<T> &list, string path , CMode mode) /* Load/Save All */
 {
 	filename = path;
-	//gprintf("Openning DB: %s\n", filename.c_str());
+	//gprintf("Opening DB: %s\n", filename.c_str());
 
 	cache = fopen(filename.c_str(), io[mode]);
 	if(!cache) return;

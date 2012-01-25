@@ -1303,11 +1303,8 @@ void CCoverFlow::_drawCoverBox(int i, bool mirror, CCoverFlow::DrawMode dm)
 	{ 
 		// set dvd box texture, depending on game
 		if (m_items[m_covers[i].index].hdr->hdr.casecolor == 0xFF0000 ||
-			strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "SMNE01", 6) == 0 || 
-			strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "SMNP01", 6) == 0 || 
-			strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "SMNJ01", 6) == 0 ||
-			strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "SMNK01", 6) == 0 || 
-			strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "SMNW01", 6) == 0)
+			strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "SMNxxx", 3) == 0 || 
+			strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "HBWxxx", 3) == 0)
 		{
 			GX_InitTexObj(&texObj, m_dvdSkin_Red.data.get(), m_dvdSkin_Red.width, m_dvdSkin_Red.height, m_dvdSkin_Red.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		} 
@@ -1315,13 +1312,13 @@ void CCoverFlow::_drawCoverBox(int i, bool mirror, CCoverFlow::DrawMode dm)
 				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "RZZJEL", 6) == 0 || 
 				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "RZNJ01", 6) == 0 ||
 				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "SEKJ99", 6) == 0 ||
-				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "SX3J01", 6) == 0)
+				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "SX3J01", 6) == 0 ||
+				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "CKBE88", 6) == 0)
 		{
 			GX_InitTexObj(&texObj, m_dvdSkin_Black.data.get(), m_dvdSkin_Black.width, m_dvdSkin_Black.height, m_dvdSkin_Black.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		}
-		else if (m_items[m_covers[i].index].hdr->hdr.casecolor == 0xFFFF00 ||
-				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "SIIP8P", 6) == 0 || 
-				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "SIIE8P", 6) == 0)
+		else if (m_items[m_covers[i].index].hdr->hdr.casecolor == 0xFCFF00 ||
+				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "SIIxxx", 3) == 0 )
 		{
 			GX_InitTexObj(&texObj, m_dvdSkin_Yellow.data.get(), m_dvdSkin_Yellow.width, m_dvdSkin_Yellow.height, m_dvdSkin_Yellow.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		}

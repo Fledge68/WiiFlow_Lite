@@ -720,11 +720,10 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 					error(sfmt("No cios found!"));
 					Sys_LoadMenu();
 				}
-				u8 IOS[4];
+				u8 IOS[3];
 				IOS[0] = gameIOS == 0 ? ios : gameIOS;
 				IOS[1] = 56;
 				IOS[2] = 57;
-				IOS[3] = 58;
 				bool found = false;
 				for(u8 num = 0; !found && num < 4; num++)
 				{
@@ -945,11 +944,10 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 				error(sfmt("No cios found!"));
 				Sys_LoadMenu();
 			}
- 			u8 IOS[4];
+ 			u8 IOS[3];
 			IOS[0] = gameIOS == 0 ? GetRequestedGameIOS(hdr) : gameIOS;
 			IOS[1] = 56;
 			IOS[2] = 57;
-			IOS[3] = 58;
 			gprintf("Game requested IOS: %u\n", IOS[0]);
 			bool found = false;
 			for(u8 num = 0; !found && num < 4; num++)
