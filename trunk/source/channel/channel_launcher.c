@@ -161,7 +161,6 @@ u32 LoadChannel(u8 *buffer)
 
 		dolchunkcount++;
 	}
-	SAFE_FREE(dolfile);
 	return dolfile->entry_point;
 }
 
