@@ -69,6 +69,7 @@ void CMenu::_hideMain(bool instant)
 }
 
 static bool show_homebrew = true;
+static bool parental_homebrew = false;
 
 void CMenu::_showMain(void)
 {
@@ -154,6 +155,7 @@ int CMenu::main(void)
 	string prevTheme = m_cfg.getString("GENERAL", "theme", "default");
 	bool use_grab = m_cfg.getBool("GENERAL", "use_grab", false);
 	show_homebrew = !m_cfg.getBool("HOMEBREW", "disable", false);
+	parental_homebrew = m_cfg.getBool("HOMEBREW", "parental", false);
 
 	m_reload = false;
 	static u32 disc_check = 0;
@@ -461,7 +463,7 @@ int CMenu::main(void)
 				if (m_current_view == COVERFLOW_USB) 
 					m_current_view = COVERFLOW_CHANNEL;
 				else if (m_current_view == COVERFLOW_CHANNEL)
-					m_current_view = (!m_locked && show_homebrew) ? COVERFLOW_HOMEBREW : COVERFLOW_DML;
+					m_current_view = (show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_DML;
 				else if (m_current_view == COVERFLOW_HOMEBREW)
 					m_current_view = COVERFLOW_DML;
 				else if (m_current_view == COVERFLOW_DML)
@@ -589,7 +591,7 @@ int CMenu::main(void)
 					m_btnMgr.show(m_mainBtnDML);
 					break;
 				case COVERFLOW_CHANNEL:
-					if(!m_locked && show_homebrew)
+					if (show_homebrew && (parental_homebrew || !m_locked))
 						m_btnMgr.show(m_mainBtnHomebrew);
 					else
 						m_btnMgr.show(m_mainBtnDML);
