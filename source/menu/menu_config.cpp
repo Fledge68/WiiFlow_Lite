@@ -167,7 +167,7 @@ int CMenu::_config1(void)
 				if (_code(code) && memcmp(code, m_cfg.getString("GENERAL", "parent_code", "").c_str(), 4) == 0)
 					m_locked = false;
 				else
-					error(L"Password incorrect.");
+					error(_t("cfgg25",L"Password incorrect."));
 				_showConfig();
 			}
 			else if (m_btnMgr.selected(m_configBtnSetCode))
