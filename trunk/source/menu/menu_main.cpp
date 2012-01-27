@@ -329,13 +329,13 @@ int CMenu::main(void)
 					_showWaitMessage();
 					_hideMain();
 
-					bool isD2Xv7 = IOS_GetRevision() % 100 == 7;
+					bool isD2XnewerThanV6 = IOS_GetRevision() % 100 > 6;
 					u8 limiter = 0;
 					currentPartition = loopNum(currentPartition + 1, (int)USB8);
 					while(!DeviceHandler::Instance()->IsInserted(currentPartition) ||
 						(m_current_view == COVERFLOW_CHANNEL && (DeviceHandler::Instance()->GetFSType(currentPartition) != PART_FS_FAT ||
-							(!isD2Xv7 && DeviceHandler::Instance()->PathToDriveType(m_appDir.c_str()) == currentPartition) ||
-							(!isD2Xv7 && DeviceHandler::Instance()->PathToDriveType(m_dataDir.c_str()) == currentPartition))) ||
+							(!isD2XnewerThanV6 && DeviceHandler::Instance()->PathToDriveType(m_appDir.c_str()) == currentPartition) ||
+							(!isD2XnewerThanV6 && DeviceHandler::Instance()->PathToDriveType(m_dataDir.c_str()) == currentPartition))) ||
 						(m_current_view == COVERFLOW_HOMEBREW && DeviceHandler::Instance()->GetFSType(currentPartition) == PART_FS_WBFS))
 					{
 						currentPartition = loopNum(currentPartition + 1, (int)USB8);
