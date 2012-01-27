@@ -65,7 +65,7 @@ void CMenu::_showConfig(void)
 	m_btnMgr.show(m_locked ? m_configBtnUnlock : m_configBtnSetCode);
 	
 	bool disable = m_current_view == COVERFLOW_CHANNEL && m_cfg.getBool("NAND", "disable", true);
-	char *partitionname = disable ? (char *)"NAND" : (char *)DeviceName[m_cfg.getInt(_domainFromView(), "partition", -1)];
+	char *partitionname = disable ? (char *)"NAND" : (char *)DeviceName[m_cfg.getInt(_domainFromView(), "partition", 0)];
 
 	for(u8 i = 0; strncmp((const char *)&partitionname[i], "\0", 1) != 0; i++)
 		partitionname[i] = toupper(partitionname[i]);

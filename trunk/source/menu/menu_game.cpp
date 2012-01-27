@@ -872,7 +872,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 
 	int emuPartition = m_cfg.getInt("GAMES", "savepartition", -1);
 	if(emuPartition == -1)
-		emuPartition = m_cfg.getInt("NAND", "partition", -1);
+		emuPartition = m_cfg.getInt("NAND", "partition", 0);
 
 	string emuPath = m_cfg.getString("GAMES", "savepath", m_cfg.getString("NAND", "path", ""));
 

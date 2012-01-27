@@ -352,6 +352,7 @@ int CMenu::main(void)
 					}
 
 					partition = (char *)DeviceName[currentPartition];
+					gprintf("Setting Emu NAND to Partition: %i\n",currentPartition);
 					m_cfg.setInt(_domainFromView(), "partition", currentPartition);
 
 				}
