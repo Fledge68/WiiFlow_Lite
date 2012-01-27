@@ -34,6 +34,7 @@ bool dogamehooks(void *addr, u32 len, bool channel);
 void langpatcher(void *addr, u32 len);
 void vidolpatcher(void *addr, u32 len);
 s32 IOSReloadBlock(u8 reqios, bool enable);
+void PatchAspectRatio(void *addr, u32 len, u8 aspect);
 
 #ifdef __cplusplus
 }

@@ -103,9 +103,9 @@ u8 Channels::GetRequestedIOS(u64 title)
 	return IOS;
 }
 
-bool Channels::Launch(u8 *data, u64 chantitle, u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, bool disableIOSreload)
+bool Channels::Launch(u8 *data, u64 chantitle, u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, bool disableIOSreload, int aspectRatio)
 {
-	return BootChannel(data, chantitle, vidMode, vipatch, countryString, patchVidMode, disableIOSreload);
+	return BootChannel(data, chantitle, vidMode, vipatch, countryString, patchVidMode, disableIOSreload, aspectRatio);
 }
 
 u64* Channels::GetChannelList(u32* count)

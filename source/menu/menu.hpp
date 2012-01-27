@@ -333,6 +333,11 @@ private:
 	u32 m_gameSettingsLblIOSreloadBlock;
 	u32 m_gameSettingsBtnIOSreloadBlock;
 	
+	u32 m_gameSettingsLblAspectRatio;
+	u32 m_gameSettingsLblAspectRatioVal;
+	u32 m_gameSettingsBtnAspectRatioP;
+	u32 m_gameSettingsBtnAspectRatioM;
+	
 	u32 m_gameSettingsLblOcarina;
 	u32 m_gameSettingsBtnOcarina;
 	u32 m_gameSettingsLblVipatch;
@@ -780,6 +785,7 @@ private:
 	static const SOption _videoModes[7];
 	static const SOption _DMLvideoModes[3];
 	static const SOption _SaveEmu[3];
+	static const SOption _AspectRatio[3];
 	static const SOption _vidModePatch[4];
 	static const SOption _hooktype[8];
 	static const SOption _exitTo[5];

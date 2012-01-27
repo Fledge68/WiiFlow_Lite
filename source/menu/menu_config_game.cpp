@@ -36,6 +36,10 @@ void CMenu::_hideGameSettings(bool instant)
 	m_btnMgr.hide(m_gameSettingsLblDMLVideo, instant);
 	m_btnMgr.hide(m_gameSettingsBtnDMLVideoP, instant);
 	m_btnMgr.hide(m_gameSettingsBtnDMLVideoM, instant);
+	m_btnMgr.hide(m_gameSettingsLblAspectRatio, instant);
+	m_btnMgr.hide(m_gameSettingsLblAspectRatioVal, instant);
+	m_btnMgr.hide(m_gameSettingsBtnAspectRatioP, instant);
+	m_btnMgr.hide(m_gameSettingsBtnAspectRatioM, instant);
 	m_btnMgr.hide(m_gameSettingsLblIOSreloadBlock, instant);
 	m_btnMgr.hide(m_gameSettingsBtnIOSreloadBlock, instant);
 	m_btnMgr.hide(m_gameSettingsLblOcarina, instant);
@@ -237,7 +241,6 @@ void CMenu::_showGameSettings(void)
 		m_btnMgr.hide(m_gameSettingsLblCountryPatch);
 		m_btnMgr.hide(m_gameSettingsBtnCountryPatch);
 
-
 		m_btnMgr.hide(m_gameSettingsLblEmulationVal);
 		m_btnMgr.hide(m_gameSettingsLblEmulation);
 		m_btnMgr.hide(m_gameSettingsBtnEmulationP);
@@ -254,6 +257,11 @@ void CMenu::_showGameSettings(void)
 		{
 			m_btnMgr.show(m_gameSettingsLblIOSreloadBlock);
 			m_btnMgr.show(m_gameSettingsBtnIOSreloadBlock);
+			
+			m_btnMgr.show(m_gameSettingsLblAspectRatio);
+			m_btnMgr.show(m_gameSettingsLblAspectRatioVal);
+			m_btnMgr.show(m_gameSettingsBtnAspectRatioP);
+			m_btnMgr.show(m_gameSettingsBtnAspectRatioM);
 		}
 	}
 	else
@@ -265,6 +273,11 @@ void CMenu::_showGameSettings(void)
 		
 		m_btnMgr.hide(m_gameSettingsLblIOSreloadBlock);
 		m_btnMgr.hide(m_gameSettingsBtnIOSreloadBlock);
+		
+		m_btnMgr.hide(m_gameSettingsLblAspectRatio);
+		m_btnMgr.hide(m_gameSettingsLblAspectRatioVal);
+		m_btnMgr.hide(m_gameSettingsBtnAspectRatioP);
+		m_btnMgr.hide(m_gameSettingsBtnAspectRatioM);
 	}
 	
 
@@ -344,6 +357,8 @@ void CMenu::_showGameSettings(void)
 	m_btnMgr.setText(m_gameSettingsLblDMLVideo, _t(CMenu::_DMLvideoModes[i].id, CMenu::_DMLvideoModes[i].text));
 	i = min((u32)m_gcfg2.getInt(id, "language", 0), ARRAY_SIZE(CMenu::_languages) - 1u);
 	m_btnMgr.setText(m_gameSettingsLblLanguage, _t(CMenu::_languages[i].id, CMenu::_languages[i].text));
+	i = min((u32)m_gcfg2.getInt(id, "aspect_ratio", 0), ARRAY_SIZE(CMenu::_AspectRatio) - 1u);
+	m_btnMgr.setText(m_gameSettingsLblAspectRatioVal, _t(CMenu::_AspectRatio[i].id, CMenu::_AspectRatio[i].text));
 
 	int j = 0;
 	if (m_gcfg2.getInt(id, "ios", &j) && _installed_cios.size() > 0)
@@ -476,6 +491,12 @@ void CMenu::_gameSettings(void)
 			{
 				s8 direction = m_btnMgr.selected(m_gameSettingsBtnDMLVideoP) ? 1 : -1;
 				m_gcfg2.setInt(id, "dml_video_mode", (int)loopNum((u32)m_gcfg2.getInt(id, "dml_video_mode", 0) + direction, ARRAY_SIZE(CMenu::_DMLvideoModes)));
+				_showGameSettings();
+			}
+			else if (m_btnMgr.selected(m_gameSettingsBtnAspectRatioP) || m_btnMgr.selected(m_gameSettingsBtnAspectRatioM))
+			{
+				s8 direction = m_btnMgr.selected(m_gameSettingsBtnAspectRatioP) ? 1 : -1;
+				m_gcfg2.setInt(id, "aspect_ratio", (int)loopNum((u32)m_gcfg2.getInt(id, "aspect_ratio", 0) + direction, ARRAY_SIZE(CMenu::_AspectRatio)));
 				_showGameSettings();
 			}
 			else if (m_btnMgr.selected(m_gameSettingsBtnIOSM) || m_btnMgr.selected(m_gameSettingsBtnIOSP))
@@ -645,6 +666,11 @@ void CMenu::_initGameSettingsMenu(CMenu::SThemeData &theme)
 	
 	m_gameSettingsLblIOSreloadBlock = _addLabel(theme, "GAME_SETTINGS/IOS_RELOAD_BLOCK", theme.lblFont, L"", 40, 190, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsBtnIOSreloadBlock =  _addButton(theme, "GAME_SETTINGS/IOS_RELOAD_BLOCK_BTN", theme.btnFont, L"", 380, 190, 220, 56, theme.btnFontColor);
+
+	m_gameSettingsLblAspectRatio = _addLabel(theme, "GAME_SETTINGS/ASPECT_RATIO", theme.lblFont, L"", 40, 250, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsLblAspectRatioVal = _addLabel(theme, "GAME_SETTINGS/ASPECT_RATIO_BTN", theme.btnFont, L"", 386, 250, 158, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_gameSettingsBtnAspectRatioP = _addPicButton(theme, "GAME_SETTINGS/ASPECT_RATIO_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 250, 56, 56);
+	m_gameSettingsBtnAspectRatioM = _addPicButton(theme, "GAME_SETTINGS/ASPECT_RATIO_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 330, 250, 56, 56);
 	
 	//Categories Page 1 
 	//m_gameSettingsLblCategory[0] = _addLabel(theme, "GAME_SETTINGS/CAT_ALL", theme.lblFont, L"All", 40, 130, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
@@ -720,6 +746,10 @@ void CMenu::_initGameSettingsMenu(CMenu::SThemeData &theme)
 	_setHideAnim(m_gameSettingsLblPatchVidModesVal, "GAME_SETTINGS/PATCH_VIDEO_MODE_BTN", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnPatchVidModesM, "GAME_SETTINGS/PATCH_VIDEO_MODE_MINUS", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnPatchVidModesP, "GAME_SETTINGS/PATCH_VIDEO_MODE_PLUS", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsLblAspectRatio, "GAME_SETTINGS/ASPECT_RATIO", -200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsLblAspectRatioVal, "GAME_SETTINGS/ASPECT_RATIO_BTN", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsBtnAspectRatioP, "GAME_SETTINGS/ASPECT_RATIO_PLUS", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsBtnAspectRatioM, "GAME_SETTINGS/ASPECT_RATIO_MINUS", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsLblHooktype, "GAME_SETTINGS/HOOKTYPE", -200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsLblHooktypeVal, "GAME_SETTINGS/HOOKTYPE_BTN", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnHooktypeM, "GAME_SETTINGS/HOOKTYPE_MINUS", 200, 0, 1.f, 0.f);
@@ -754,7 +784,6 @@ void CMenu::_textGameSettings(void)
 	m_btnMgr.setText(m_gameSettingsLblCountryPatch, _t("cfgg4", L"Patch country strings"));
 	m_btnMgr.setText(m_gameSettingsLblOcarina, _t("cfgg5", L"Ocarina"));
 	m_btnMgr.setText(m_gameSettingsLblDMLGameVideo, _t("cfgg2", L"Video mode"));
-	m_btnMgr.setText(m_gameSettingsLblIOSreloadBlock, _t("cfgg26",L"Disable IOS Reload block"));
 	m_btnMgr.setText(m_gameSettingsLblVipatch, _t("cfgg7", L"Vipatch"));
 	m_btnMgr.setText(m_gameSettingsBtnBack, _t("cfgg8", L"Back"));
 	m_btnMgr.setText(m_gameSettingsLblGameIOS, _t("cfgg10", L"IOS"));
@@ -766,8 +795,10 @@ void CMenu::_textGameSettings(void)
 	m_btnMgr.setText(m_gameSettingsLblCategoryMain, _t("cfgg17", L"Categories"));
 	m_btnMgr.setText(m_gameSettingsBtnCategoryMain, _t("cfgg16", L"Select"));
 	m_btnMgr.setText(m_gameSettingsLblHooktype, _t("cfgg18", L"Hook Type"));
-	m_btnMgr.setText(m_gameSettingsLblEmulation, _t("cfgg24", L"Savegame Emulation"));
 	m_btnMgr.setText(m_gameSettingsLblDebugger, _t("cfgg22", L"Debugger"));
+	m_btnMgr.setText(m_gameSettingsLblEmulation, _t("cfgg24", L"Savegame Emulation"));
+	m_btnMgr.setText(m_gameSettingsLblIOSreloadBlock, _t("cfgg26", L"Disable IOS Reload block"));
+	m_btnMgr.setText(m_gameSettingsLblAspectRatio, _t("cfgg27", L"Aspect Ratio"));
 	for (int i = 1; i < 12; ++i)
 		m_btnMgr.setText(m_gameSettingsLblCategory[i], m_cat.getWString("GENERAL", fmt("cat%d",i), wfmt(L"Category %i",i).c_str()));
 }
