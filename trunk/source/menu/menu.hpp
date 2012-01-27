@@ -324,10 +324,15 @@ private:
 	u32 m_gameSettingsLblVideo;
 	u32 m_gameSettingsBtnVideoP;
 	u32 m_gameSettingsBtnVideoM;
+	
 	u32 m_gameSettingsLblDMLGameVideo;
 	u32 m_gameSettingsLblDMLVideo;
 	u32 m_gameSettingsBtnDMLVideoP;
 	u32 m_gameSettingsBtnDMLVideoM;
+	
+	u32 m_gameSettingsLblIOSreloadBlock;
+	u32 m_gameSettingsBtnIOSreloadBlock;
+	
 	u32 m_gameSettingsLblOcarina;
 	u32 m_gameSettingsBtnOcarina;
 	u32 m_gameSettingsLblVipatch;
