@@ -1,6 +1,10 @@
 
 #include "menu.hpp"
+#include "nand.hpp"
 #include "sys.h"
+#include "loader/cios.hpp"
+#include "loader/alt_ios.h"
+#include "gecko/gecko.h"
 
 
 using namespace std;
@@ -186,7 +190,12 @@ int CMenu::_config1(void)
 				bool disable = m_current_view == COVERFLOW_CHANNEL && m_cfg.getBool("NAND", "disable", true);
 				if(!disable)
 				{
-					bool isD2XnewerThanV6 = IOS_GetRevision() % 100 > 6;
+					Nand::Instance()->Disable_Emu();
+					bool isD2XnewerThanV6 = false;
+					iosinfo_t * iosInfo = cIOSInfo::GetInfo(mainIOS);
+					if (iosInfo->version > 6)
+						isD2XnewerThanV6 = true;
+					Nand::Instance()->Enable_Emu();
 					u8 limiter = 0;
 					s8 direction = m_btnMgr.selected(m_configBtnPartitionP) ? 1 : -1;
 					currentPartition = loopNum(currentPartition + direction, (int)USB8);

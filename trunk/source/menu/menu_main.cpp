@@ -1,5 +1,6 @@
 
 #include "menu.hpp"
+#include "nand.hpp"
 #include "loader/wdvd.h"
 #include "network/gcard.h"
 #include "DeviceHandler.hpp"
@@ -11,6 +12,8 @@
 #include "gecko.h"
 #include "sys.h"
 #include "disc.h"
+#include "loader/cios.hpp"
+#include "loader/alt_ios.h"
 
 using namespace std;
 
@@ -328,8 +331,13 @@ int CMenu::main(void)
 				{
 					_showWaitMessage();
 					_hideMain();
-
-					bool isD2XnewerThanV6 = IOS_GetRevision() % 100 > 6;
+					
+					Nand::Instance()->Disable_Emu();
+					bool isD2XnewerThanV6 = false;
+					iosinfo_t * iosInfo = cIOSInfo::GetInfo(mainIOS);
+					if (iosInfo->version > 6)
+						isD2XnewerThanV6 = true;
+					Nand::Instance()->Enable_Emu();
 					u8 limiter = 0;
 					currentPartition = loopNum(currentPartition + 1, (int)USB8);
 					while(!DeviceHandler::Instance()->IsInserted(currentPartition) ||

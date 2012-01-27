@@ -42,16 +42,12 @@ static u32 allowedBases[] = { 37, 38, 53, 55, 56, 57, 58 };
 /* Check if the cIOS is a D2X. */
 bool cIOSInfo::D2X(u8 ios, u8 *base)
 {
-	bool ret = false;
-
 	iosinfo_t *info = GetInfo(ios);
-	if(info != NULL)
-	{
-		*base = (u8)info->baseios;
-		SAFE_FREE(info);
-		ret = true;
-	}
-	return ret;
+	if(!info)
+		return false;
+	*base = (u8)info->baseios;
+	SAFE_FREE(info);
+	return true;
 }
 
 /*
