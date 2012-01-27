@@ -187,7 +187,7 @@ void CMenu::init(void)
 		}
 	}
 	Nand::Instance()->Init(m_cfg.getString("NAND", "path", "").c_str(),
-		m_cfg.getInt("NAND", "partition", -1),
+		m_cfg.getInt("NAND", "partition", 0),
 		m_cfg.getBool("NAND", "disable", true)
 		);
 
@@ -222,7 +222,7 @@ void CMenu::init(void)
 	const char *domain = _domainFromView();
 	const char *checkDir = m_current_view == COVERFLOW_HOMEBREW ? HOMEBREW_DIR : GAMES_DIR;
 	
-	u8 partition = m_cfg.getInt(domain, "partition", -1);  //Auto find a valid partition and fix old ini partition settings.
+	u8 partition = m_cfg.getInt(domain, "partition", 0);  //Auto find a valid partition and fix old ini partition settings.
 	if(m_current_view != COVERFLOW_CHANNEL && (partition > USB8 || !DeviceHandler::Instance()->IsInserted(partition)))
 	{
 		m_cfg.remove(domain, "partition");
@@ -237,6 +237,7 @@ void CMenu::init(void)
 				&& ((m_current_view == COVERFLOW_USB && DeviceHandler::Instance()->GetFSType(i) == PART_FS_WBFS)
 				|| stat(sfmt(checkDir, DeviceName[i]).c_str(), &dummy) == 0))
 			{
+				gprintf("Setting Emu NAND to Partition: %i\n",currentPartition);
 				m_cfg.setInt(domain, "partition", i);
 				break;
 			}
@@ -1448,7 +1449,7 @@ const wstringEx CMenu::_fmt(const char *key, const wchar_t *def)
 
 bool CMenu::_loadChannelList(void)
 {
-	currentPartition = m_cfg.getInt("NAND", "partition", -1);
+	currentPartition = m_cfg.getInt("NAND", "partition", 0);
 	static u8 lastPartition = currentPartition;
 
 	bool disable_emu = m_cfg.getBool("NAND", "disable", true);
