@@ -111,6 +111,12 @@ const CMenu::SOption CMenu::_SaveEmu[3] = {
 	{ "2", L"Full" },
 };
 
+const CMenu::SOption CMenu::_AspectRatio[3] = {
+	{ "0", L"Default" },
+	{ "1", L"Force 4:3" },
+	{ "2", L"Force 16:9" },
+};
+
 const CMenu::SOption CMenu::_vidModePatch[4] = {
 	{ "vmpnone", L"None" },
 	{ "vmpnormal", L"Normal" },
@@ -655,7 +661,8 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	const char *rtrn = m_gcfg2.getBool(id, "returnto", true) ? m_cfg.getString("GENERAL", "returnto").c_str() : NULL;
 	u8 patchVidMode = min((u32)m_gcfg2.getInt(id, "patch_video_modes", 0), ARRAY_SIZE(CMenu::_vidModePatch) - 1u);
 	bool disableIOSreload = m_gcfg2.testOptBool(id, "reload_block", m_cfg.getBool("GENERAL", "reload_block", false));
-	
+	int aspectRatio = min((u32)m_gcfg2.getInt(id, "aspect_ratio", 0), ARRAY_SIZE(CMenu::_AspectRatio) - 1u)-1;
+
 	int gameIOS = 0;
 
 	if(!forwarder)
@@ -800,7 +807,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		if (WII_LaunchTitle(hdr->hdr.chantitle) < 0)
 			Sys_LoadMenu();	
 	}
-	else if(!channel.Launch(data, hdr->hdr.chantitle, videoMode, vipatch, countryPatch, patchVidMode, disableIOSreload))
+	else if(!channel.Launch(data, hdr->hdr.chantitle, videoMode, vipatch, countryPatch, patchVidMode, disableIOSreload, aspectRatio))
 		Sys_LoadMenu();
 }
 
@@ -861,7 +868,8 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	int language = min((u32)m_gcfg2.getInt(id, "language", 0), ARRAY_SIZE(CMenu::_languages) - 1u);
 	const char *rtrn = m_gcfg2.getBool(id, "returnto", true) ? m_cfg.getString("GENERAL", "returnto").c_str() : NULL;
 	bool disableIOSreload = m_gcfg2.testOptBool(id, "reload_block", m_cfg.getBool("GENERAL", "reload_block", false));
-	
+	int aspectRatio = min((u32)m_gcfg2.getInt(id, "aspect_ratio", 0), ARRAY_SIZE(CMenu::_AspectRatio) - 1u)-1;
+
 	int emuPartition = m_cfg.getInt("GAMES", "savepartition", -1);
 	if(emuPartition == -1)
 		emuPartition = m_cfg.getInt("NAND", "partition", -1);
@@ -1059,7 +1067,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	else 
 	{
 		gprintf("Booting game\n");
-		if (Disc_WiiBoot(videoMode, vipatch, countryPatch, patchVidMode, disableIOSreload) < 0)
+		if (Disc_WiiBoot(videoMode, vipatch, countryPatch, patchVidMode, disableIOSreload, aspectRatio) < 0)
 			Sys_LoadMenu();
 	}
 }

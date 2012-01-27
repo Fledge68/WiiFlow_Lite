@@ -102,8 +102,8 @@ extern "C" {
 	s32 Disc_Type(bool);
 	s32	Disc_IsWii(void);
 	s32	Disc_IsGC(void);
-	s32	Disc_BootPartition(u64, u8, bool, bool, u8, bool);
-	s32	Disc_WiiBoot(u8, bool, bool, u8, bool);
+	s32	Disc_BootPartition(u64, u8, bool, bool, u8, bool, int);
+	s32	Disc_WiiBoot(u8, bool, bool, u8, bool, int);
 
 #ifdef __cplusplus
 }

@@ -37,7 +37,7 @@ typedef struct _dolheader{
 
 u32 entryPoint;
 
-s32 BootChannel(u8 *data, u64 chantitle, u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, bool disableIOSreload)
+s32 BootChannel(u8 *data, u64 chantitle, u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, bool disableIOSreload, int aspectRatio)
 {
 	u32 ios;
 	Identify(chantitle, &ios);
@@ -56,7 +56,7 @@ s32 BootChannel(u8 *data, u64 chantitle, u8 vidMode, bool vipatch, bool countryS
 	if (hooktype != 0)
 		ocarina_do_code();
 
-	PatchChannel(vidMode, vmode, vipatch, countryString, patchVidMode);
+	PatchChannel(vidMode, vmode, vipatch, countryString, patchVidMode, aspectRatio);
 
 	entrypoint appJump = (entrypoint)entryPoint;
 
@@ -167,7 +167,7 @@ u32 LoadChannel(u8 *buffer)
 	return dolfile->entry_point;
 }
 
-void PatchChannel(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes)
+void PatchChannel(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio)
 {
 	bool hookpatched = false;
 
@@ -178,6 +178,7 @@ void PatchChannel(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryStrin
 		if (vipatch) vidolpatcher(dolchunkoffset[i], dolchunksize[i]);
 		if (configbytes[0] != 0xCD) langpatcher(dolchunkoffset[i], dolchunksize[i]);
 		if (countryString) PatchCountryStrings(dolchunkoffset[i], dolchunksize[i]);
+		if (aspectRatio != -1) PatchAspectRatio(dolchunkoffset[i], dolchunksize[i], aspectRatio);
 
 		if (hooktype != 0)
 			if (dogamehooks(dolchunkoffset[i], dolchunksize[i], true))

@@ -277,3 +277,34 @@ s32 IOSReloadBlock(u8 reqios, bool enable)
 
 	return r;
 }
+
+void PatchAspectRatio(void *addr, u32 len, u8 aspect)
+{
+	if(aspect > 1)
+		return;
+
+	static const u32 aspect_searchpattern1[5] = {
+		0x9421FFF0, 0x7C0802A6, 0x38800001, 0x90010014, 0x38610008
+	};
+
+	static const u32 aspect_searchpattern2[15] = {
+		0x2C030000, 0x40820010, 0x38000000, 0x98010008, 0x48000018,
+		0x88010008, 0x28000001, 0x4182000C, 0x38000000, 0x98010008,
+		0x80010014, 0x88610008, 0x7C0803A6, 0x38210010, 0x4E800020
+	};
+
+	u8 *addr_start = (u8 *) addr;
+	u8 *addr_end = addr_start + len - sizeof(aspect_searchpattern1) - 4 - sizeof(aspect_searchpattern2);
+
+	while(addr_start < addr_end)
+	{
+		if(   (memcmp(addr_start, aspect_searchpattern1, sizeof(aspect_searchpattern1)) == 0)
+		   && (memcmp(addr_start + 4 + sizeof(aspect_searchpattern1), aspect_searchpattern2, sizeof(aspect_searchpattern2)) == 0))
+		{
+			*((u32 *)(addr_start+0x44)) = (0x38600000 | aspect);
+			gprintf("Aspect ratio patched to: %s\n", aspect ? "16:9" : "4:3");
+			break;
+		}
+		addr_start += 4;
+	}
+}

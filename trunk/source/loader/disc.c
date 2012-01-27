@@ -339,7 +339,7 @@ s32 Disc_IsGC(void)
 	return Disc_Type(1);
 }
 
-s32 Disc_BootPartition(u64 offset, u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, bool disableIOSreload)
+s32 Disc_BootPartition(u64 offset, u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, bool disableIOSreload, int aspectRatio)
 {
 	entry_point p_entry;
 
@@ -358,7 +358,7 @@ s32 Disc_BootPartition(u64 offset, u8 vidMode, bool vipatch, bool countryString,
 	__Disc_SetLowMem();
 
 	/* Run apploader */
-	ret = Apploader_Run(&p_entry, vidMode, vmode, vipatch, countryString, patchVidMode);
+	ret = Apploader_Run(&p_entry, vidMode, vmode, vipatch, countryString, patchVidMode, aspectRatio);
 	free_wip();
 	if (ret < 0) return ret;
 
@@ -425,7 +425,7 @@ s32 Disc_BootPartition(u64 offset, u8 vidMode, bool vipatch, bool countryString,
 	return 0;
 }
 
-s32 Disc_WiiBoot(u8 vidMode, bool vipatch, bool countryString, u8 patchVidModes, bool disableIOSreload)
+s32 Disc_WiiBoot(u8 vidMode, bool vipatch, bool countryString, u8 patchVidModes, bool disableIOSreload, int aspectRatio)
 {
 	u64 offset;
 
@@ -434,5 +434,5 @@ s32 Disc_WiiBoot(u8 vidMode, bool vipatch, bool countryString, u8 patchVidModes,
 	if (ret < 0) return ret;
 
 	/* Boot partition */
-	return Disc_BootPartition(offset, vidMode, vipatch, countryString, patchVidModes, disableIOSreload);
+	return Disc_BootPartition(offset, vidMode, vipatch, countryString, patchVidModes, disableIOSreload, aspectRatio);
 }

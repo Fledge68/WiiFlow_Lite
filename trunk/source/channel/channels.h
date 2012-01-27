@@ -56,7 +56,7 @@ class Channels
 
 		u8 * Load(u64 title, char* id);
 		u8 GetRequestedIOS(u64 title);
-		bool Launch(u8 *data, u64 chantitle, u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, bool disableIOSreload);
+		bool Launch(u8 *data, u64 chantitle, u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, bool disableIOSreload, int aspectRatio);
 		
 		int Count();
 		wchar_t *GetName(int index);

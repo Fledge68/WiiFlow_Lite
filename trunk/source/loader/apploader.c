@@ -24,7 +24,7 @@ typedef void  (*app_entry)(void (**init)(void (*report)(const char *fmt, ...)), 
 /* Variables */
 static u32 buffer[0x20] ATTRIBUTE_ALIGN(32);
 
-static bool maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes);
+static bool maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio);
 static bool Remove_001_Protection(void *Address, int Size);
 static bool PrinceOfPersiaPatch();
 
@@ -32,7 +32,7 @@ static void __noprint(const char *fmt, ...)
 {
 }
 
-s32 Apploader_Run(entry_point *entry, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes)
+s32 Apploader_Run(entry_point *entry, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio)
 {
 	void *dst = NULL;
 	int len = 0;
@@ -72,7 +72,7 @@ s32 Apploader_Run(entry_point *entry, u8 vidMode, GXRModeObj *vmode, bool vipatc
 	{
 		/* Read data from DVD */
 		WDVD_Read(dst, len, (u64)(offset << 2));
-		if(maindolpatches(dst, len, vidMode, vmode, vipatch, countryString, patchVidModes))
+		if(maindolpatches(dst, len, vidMode, vmode, vipatch, countryString, patchVidModes, aspectRatio))
 			hookpatched = true;
 	}
 
@@ -236,7 +236,7 @@ bool NewSuperMarioBrosPatch(void *Address, int Size)
 	return false;
 }
 
-static bool maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes)
+static bool maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio)
 {
 	bool ret = false;
 
@@ -248,7 +248,7 @@ static bool maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bo
 	if (vipatch) vidolpatcher(dst, len);
 	if (configbytes[0] != 0xCD) langpatcher(dst, len);
 	if (countryString) PatchCountryStrings(dst, len); // Country Patch by WiiPower
-
+	if (aspectRatio != -1) PatchAspectRatio(dst, len, aspectRatio);
 	Remove_001_Protection(dst, len);
 	
 	// NSMB Patch by WiiPower
