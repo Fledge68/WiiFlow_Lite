@@ -339,11 +339,14 @@ s32 Disc_IsGC(void)
 	return Disc_Type(1);
 }
 
-s32 Disc_BootPartition(u64 offset, u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode)
+s32 Disc_BootPartition(u64 offset, u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, bool disableIOSreload)
 {
 	entry_point p_entry;
 
-	IOSReloadBlock(IOS_GetVersion());
+	if (disableIOSreload)
+		IOSReloadBlock(IOS_GetVersion(), false);
+	else
+		IOSReloadBlock(IOS_GetVersion(), true);
 	
 	s32 ret = WDVD_OpenPartition(offset, 0, 0, 0, Tmd_Buffer);
 	if (ret < 0) return ret;
@@ -422,7 +425,7 @@ s32 Disc_BootPartition(u64 offset, u8 vidMode, bool vipatch, bool countryString,
 	return 0;
 }
 
-s32 Disc_WiiBoot(u8 vidMode, bool vipatch, bool countryString, u8 patchVidModes)
+s32 Disc_WiiBoot(u8 vidMode, bool vipatch, bool countryString, u8 patchVidModes, bool disableIOSreload)
 {
 	u64 offset;
 
@@ -431,5 +434,5 @@ s32 Disc_WiiBoot(u8 vidMode, bool vipatch, bool countryString, u8 patchVidModes)
 	if (ret < 0) return ret;
 
 	/* Boot partition */
-	return Disc_BootPartition(offset, vidMode, vipatch, countryString, patchVidModes);
+	return Disc_BootPartition(offset, vidMode, vipatch, countryString, patchVidModes, disableIOSreload);
 }

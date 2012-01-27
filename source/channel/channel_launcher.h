@@ -8,7 +8,7 @@ extern "C" {
 #include <gctypes.h>
 #include <gccore.h>
 
-s32 BootChannel(u8 *data, u64 chantitle, u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode);
+s32 BootChannel(u8 *data, u64 chantitle, u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, bool disableIOSreload);
 
 u32 LoadChannel(u8 *buffer);
 void PatchChannel(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes);

@@ -37,7 +37,7 @@ typedef struct _dolheader{
 
 u32 entryPoint;
 
-s32 BootChannel(u8 *data, u64 chantitle, u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode)
+s32 BootChannel(u8 *data, u64 chantitle, u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, bool disableIOSreload)
 {
 	u32 ios;
 	Identify(chantitle, &ios);
@@ -60,7 +60,10 @@ s32 BootChannel(u8 *data, u64 chantitle, u8 vidMode, bool vipatch, bool countryS
 
 	entrypoint appJump = (entrypoint)entryPoint;
 
-	IOSReloadBlock(IOS_GetVersion());
+	if (disableIOSreload)
+		IOSReloadBlock(IOS_GetVersion(), false);
+	else
+		IOSReloadBlock(IOS_GetVersion(), true);
 
 	/* Set an appropriate video mode */
 	__Disc_SetVMode();

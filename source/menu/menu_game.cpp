@@ -654,7 +654,8 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	int language = min((u32)m_gcfg2.getInt(id, "language", 0), ARRAY_SIZE(CMenu::_languages) - 1u);
 	const char *rtrn = m_gcfg2.getBool(id, "returnto", true) ? m_cfg.getString("GENERAL", "returnto").c_str() : NULL;
 	u8 patchVidMode = min((u32)m_gcfg2.getInt(id, "patch_video_modes", 0), ARRAY_SIZE(CMenu::_vidModePatch) - 1u);
-
+	bool disableIOSreload = m_gcfg2.testOptBool(id, "reload_block", m_cfg.getBool("GENERAL", "reload_block", false));
+	
 	int gameIOS = 0;
 
 	if(!forwarder)
@@ -799,7 +800,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		if (WII_LaunchTitle(hdr->hdr.chantitle) < 0)
 			Sys_LoadMenu();	
 	}
-	else if(!channel.Launch(data, hdr->hdr.chantitle, videoMode, vipatch, countryPatch, patchVidMode))
+	else if(!channel.Launch(data, hdr->hdr.chantitle, videoMode, vipatch, countryPatch, patchVidMode, disableIOSreload))
 		Sys_LoadMenu();
 }
 
@@ -859,7 +860,8 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	u8 videoMode = (u8)min((u32)m_gcfg2.getInt(id, "video_mode", 0), ARRAY_SIZE(CMenu::_videoModes) - 1u);
 	int language = min((u32)m_gcfg2.getInt(id, "language", 0), ARRAY_SIZE(CMenu::_languages) - 1u);
 	const char *rtrn = m_gcfg2.getBool(id, "returnto", true) ? m_cfg.getString("GENERAL", "returnto").c_str() : NULL;
-
+	bool disableIOSreload = m_gcfg2.testOptBool(id, "reload_block", m_cfg.getBool("GENERAL", "reload_block", false));
+	
 	int emuPartition = m_cfg.getInt("GAMES", "savepartition", -1);
 	if(emuPartition == -1)
 		emuPartition = m_cfg.getInt("NAND", "partition", -1);
@@ -1057,7 +1059,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	else 
 	{
 		gprintf("Booting game\n");
-		if (Disc_WiiBoot(videoMode, vipatch, countryPatch, patchVidMode) < 0)
+		if (Disc_WiiBoot(videoMode, vipatch, countryPatch, patchVidMode, disableIOSreload) < 0)
 			Sys_LoadMenu();
 	}
 }
