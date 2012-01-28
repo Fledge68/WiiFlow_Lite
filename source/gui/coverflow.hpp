@@ -243,6 +243,8 @@ private:
 	STexture m_dvdSkin_Red;
 	STexture m_dvdSkin_Black;
 	STexture m_dvdSkin_Yellow;
+	STexture m_dvdSkin_GreenOne;
+	STexture m_dvdSkin_GreenTwo;
 	// Settings
 	std::string m_pngLoadCover;
 	std::string m_pngLoadCoverFlat;
