@@ -954,7 +954,9 @@ unsigned int GameTDB::FindCaseColor(char * data)
     char * ColorNode = GetNodeText(data, "<case color=\"", "\"/>");
     if(!ColorNode)		
 		return color;
-	
+	if(strlen(ColorNode) == 0)
+		return color;
+
 	char format[8];
 	sprintf(format, "0x%s", ColorNode);
 
