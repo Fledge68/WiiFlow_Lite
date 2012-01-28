@@ -73,7 +73,6 @@ void CMenu::_hideMain(bool instant)
 
 static bool show_homebrew = true;
 static bool parental_homebrew = false;
-static bool show_dml = false;
 
 void CMenu::_showMain(void)
 {
@@ -91,7 +90,7 @@ void CMenu::_showMain(void)
 	switch(m_current_view)
 	{
 		case COVERFLOW_HOMEBREW:
-			if( show_dml )
+			if( m_show_dml )
 				m_btnMgr.show(m_mainBtnDML);
 			else	
 				m_btnMgr.show(m_mainBtnUsb);
@@ -99,7 +98,7 @@ void CMenu::_showMain(void)
 		case COVERFLOW_CHANNEL:
 			if(show_homebrew)
 				m_btnMgr.show(m_mainBtnHomebrew);
-			else if( show_dml )
+			else if( m_show_dml )
 				m_btnMgr.show(m_mainBtnDML);
 			else 
 				m_btnMgr.show(m_mainBtnUsb);
@@ -164,8 +163,7 @@ int CMenu::main(void)
 	string prevTheme = m_cfg.getString("GENERAL", "theme", "default");
 	bool use_grab = m_cfg.getBool("GENERAL", "use_grab", false);
 	show_homebrew = !m_cfg.getBool("HOMEBREW", "disable", false);
-	parental_homebrew = m_cfg.getBool("HOMEBREW", "parental", false);
-	show_dml = MIOSisDML();
+	parental_homebrew = m_cfg.getBool("HOMEBREW", "parental", false);	
 
 	m_reload = false;
 	static u32 disc_check = 0;
@@ -479,9 +477,9 @@ int CMenu::main(void)
 				if (m_current_view == COVERFLOW_USB) 
 					m_current_view = COVERFLOW_CHANNEL;
 				else if (m_current_view == COVERFLOW_CHANNEL)
-					m_current_view = (show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : ( show_dml ? COVERFLOW_DML : COVERFLOW_USB );
+					m_current_view = (show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : ( m_show_dml ? COVERFLOW_DML : COVERFLOW_USB );
 				else if (m_current_view == COVERFLOW_HOMEBREW)
-					m_current_view = show_dml ? COVERFLOW_DML : COVERFLOW_USB;
+					m_current_view = m_show_dml ? COVERFLOW_DML : COVERFLOW_USB;
 				else if (m_current_view == COVERFLOW_DML)
 					m_current_view = COVERFLOW_USB;
 					
@@ -604,7 +602,7 @@ int CMenu::main(void)
 			switch(m_current_view)
 			{
 				case COVERFLOW_HOMEBREW:
-					if( show_dml )
+					if( m_show_dml )
 						m_btnMgr.show(m_mainBtnDML);
 					else
 						m_btnMgr.show(m_mainBtnUsb);
@@ -612,7 +610,7 @@ int CMenu::main(void)
 				case COVERFLOW_CHANNEL:
 					if (show_homebrew && (parental_homebrew || !m_locked))
 						m_btnMgr.show(m_mainBtnHomebrew);
-					else if( show_dml )
+					else if( m_show_dml )
 						m_btnMgr.show(m_mainBtnDML);
 					else
 						m_btnMgr.show(m_mainBtnUsb);
