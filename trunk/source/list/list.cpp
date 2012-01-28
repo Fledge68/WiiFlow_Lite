@@ -132,7 +132,7 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 		{
 			char* filename = &(*itr)[(*itr).find_last_of('/')+1];
 			if(strcasecmp(filename, "game.iso") == 0 && strncasecmp((*itr).c_str(), "sd:/games/", 10) == 0 )
-			{
+			{				
 				FILE *fp = fopen((*itr).c_str(), "rb");
 				if( fp )
 				{
@@ -151,6 +151,10 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 							tmp.hdr.casecolor = 0;
 							
 						tmp.hdr.gc_magic = 0xc2339f3d;
+						(*itr)[(*itr).find_last_of('/')] = 0;
+						(*itr).assign(&(*itr)[(*itr).find_last_of('/') + 1]);
+						strcpy( tmp.path, (*itr).c_str() );
+						gprintf("Found: %s\n", tmp.path);
 						headerlist.push_back( tmp );
 						continue;
 					}					
@@ -164,6 +168,10 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 						mbstowcs( tmp.title, (const char *)tmp.hdr.title, sizeof( tmp.hdr.title ) );
 						Asciify(tmp.title);
 						tmp.hdr.casecolor = 0;
+						(*itr)[(*itr).find_last_of('/')] = 0;
+						(*itr).assign(&(*itr)[(*itr).find_last_of('/') + 1]);
+						strcpy( tmp.path, (*itr).c_str() );
+						gprintf("Found: %s\n", tmp.path);
 						headerlist.push_back( tmp );
 						continue;
 					}

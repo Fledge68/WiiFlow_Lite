@@ -713,7 +713,7 @@ private:
 	void _launchGame(dir_discHdr *hdr, bool dvd);
 	void _launchChannel(dir_discHdr *hdr);
 	void _launchHomebrew(const char *filepath, safe_vector<std::string> arguments);
-	void _launchGC(const char *id, bool DML);
+	void _launchGC(dir_discHdr *hdr, bool DML);
 	void _setAA(int aa);
 	void _loadCFCfg(SThemeData &theme);
 	void _loadCFLayout(int version, bool forceAA = false, bool otherScrnFmt = false);
@@ -726,6 +726,7 @@ private:
 	void _cleanupDefaultFont();
 	const char *_domainFromView(void);
 	void UpdateCache(u32 view = COVERFLOW_MAX);
+	bool MIOSisDML();
 	SFont _font(CMenu::FontSet &fontSet, const char *domain, const char *key, u32 fontSize, u32 lineSpacing, u32 weight, u32 index, const char *genKey);
 	STexture _texture(TexSet &texSet, const char *domain, const char *key, STexture def);
 	safe_vector<STexture> _textures(TexSet &texSet, const char *domain, const char *key);

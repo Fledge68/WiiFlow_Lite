@@ -1801,3 +1801,46 @@ void CMenu::UpdateCache(u32 view)
 
 	m_cfg.setBool(domain, "update_cache", true);
 }
+
+bool CMenu::MIOSisDML()
+{
+	u32 length;
+	if( ES_GetStoredTMDSize( 0x100000101LL, &length ) < 0 )
+		return false;
+
+	signed_blob *TMD = (signed_blob*)MEM2_alloc( ALIGN32(length) );
+	if( !TMD ) 
+		return false;
+
+	if( ES_GetStoredTMD( 0x100000101LL, TMD, length ) < 0 )
+	{
+		SAFE_FREE( TMD );
+		return false;
+	}
+	
+	if( *(u16*)((u32)TMD+0x1E2) )
+	{
+		u32 size = 0;
+		char path[256];
+		sprintf( path, "/title/00000001/00000101/content/%.08x.app", *(u8*)((u32)TMD+0x1E7) );
+		u8 *appfile = ISFS_GetFile( (u8 *)path, &size, 0x10 );
+		if(appfile) 
+		{			
+			if( *(u32*)appfile == 0x6D696F73 )
+			{
+				if( *(u32*)(appfile+0x08) == 0x38323430 && *(u32*)(appfile+0x0c) == 0x32353300 )
+				{
+					if( *(u16*)((u32)TMD+0x1E2) != 0x037B )
+					{
+						gprintf( "MIOSisDML: YES!\n" );
+						SAFE_FREE( TMD );
+						return true;
+					}
+				}
+			}
+		}		
+	}
+	gprintf( "MIOSisDML: No!\n" );
+	SAFE_FREE(TMD);
+	return false;
+}
