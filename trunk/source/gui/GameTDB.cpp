@@ -477,8 +477,10 @@ bool GameTDB::FindTitle(char * data, string & title, string langCode)
     {
         return false;
     }
-
-    title = the_title;
+	
+	char tmp[64];
+    strncpy(tmp, the_title, 64);
+	title=tmp;
 	return true;
 }
 
