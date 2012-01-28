@@ -38,6 +38,9 @@ u32 le32(u32);
 u16 le16(u16);
 int makedir(char *newdir);
 
+typedef volatile unsigned short vu16;
+typedef volatile unsigned int vu32;
+
 bool str_replace(char *str, const char *olds, const char *news, int size);
 bool str_replace_all(char *str, const char *olds, const char *news, int size);
 
