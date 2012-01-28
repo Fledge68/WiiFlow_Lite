@@ -158,6 +158,7 @@ private:
 	u32 m_mainBtnInit2;
 	u32 m_mainLblInit;
 	u32 m_mainLblUser[6];
+	bool m_show_dml;
 //Main Config menus
 	u32 m_configLblPage;
 	u32 m_configBtnPageM;

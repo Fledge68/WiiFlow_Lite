@@ -186,6 +186,8 @@ void CMenu::init(void)
 			return;
 		}
 	}
+	
+	m_show_dml = MIOSisDML();
 	Nand::Instance()->Init(m_cfg.getString("NAND", "path", "").c_str(),
 		m_cfg.getInt("NAND", "partition", 0),
 		m_cfg.getBool("NAND", "disable", true)
@@ -1840,7 +1842,7 @@ bool CMenu::MIOSisDML()
 			}
 		}		
 	}
-	gprintf( "MIOSisDML: No!\n" );
+	gprintf( "MIOSisDML: No!\n" );	
 	SAFE_FREE(TMD);
 	return false;
 }
