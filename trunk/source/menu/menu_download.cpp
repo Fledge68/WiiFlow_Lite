@@ -1000,6 +1000,10 @@ int CMenu::_gametdbDownloaderAsync()
 				// We don't need the zipfile anymore
 				remove(zippath.c_str());
 				
+				// We should always remove the offsets file to make sure it's reloaded
+				string offsetspath = sfmt("%s/gametdb_offsets.bin", m_settingsDir.c_str());
+				remove(offsetspath.c_str());
+				
 				// Update cache
 				m_gameList.SetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
 				UpdateCache();
