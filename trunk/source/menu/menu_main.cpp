@@ -177,7 +177,10 @@ int CMenu::main(void)
 	MusicPlayer::Instance()->Play();
 	m_gameList.SetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
 	if (m_cfg.getBool("GENERAL", "update_cache", false))
+	{
 		UpdateCache();
+		m_gameList.Update();
+	}
 	_loadList();
 	
 	_showMain();
