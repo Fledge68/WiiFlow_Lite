@@ -174,8 +174,10 @@ private:
 	u32 m_configLblPartition;
 	u32 m_configBtnPartitionP;
 	u32 m_configBtnPartitionM;
-	u32 m_configBtnEmulation;
+	u32 m_configLblEmulationVal;
 	u32 m_configLblEmulation;
+	u32 m_configBtnEmulationM;
+	u32 m_configBtnEmulationP;
 	u32 m_configLblUser[4];
 	u32 m_configAdvLblTheme;
 	u32 m_configAdvLblCurTheme;
@@ -786,7 +788,9 @@ private:
 	static const SOption _languages[11];
 	static const SOption _videoModes[7];
 	static const SOption _DMLvideoModes[3];
-	static const SOption _SaveEmu[3];
+	static const SOption _NandEmu[3];
+	static const SOption _SaveEmu[4];
+	static const SOption _GlobalSaveEmu[3];
 	static const SOption _AspectRatio[3];
 	static const SOption _vidModePatch[4];
 	static const SOption _hooktype[8];
