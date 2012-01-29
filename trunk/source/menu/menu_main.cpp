@@ -175,29 +175,7 @@ int CMenu::main(void)
 
 	SetupInput();
 	MusicPlayer::Instance()->Play();
-	const char* lang;
-	switch (CONF_GetLanguage())
-	{
-		case CONF_LANG_GERMAN:
-			lang="DE";
-			break;
-		case CONF_LANG_FRENCH:
-			lang="FR";
-			break;
-		case CONF_LANG_SPANISH:
-			lang="ES";
-			break;
-		case CONF_LANG_ITALIAN:
-			lang="IT";
-			break;
-		case CONF_LANG_DUTCH:
-			lang="NL";
-			break;
-		default:
-			lang="EN";
-			break;
-	}
-	m_gameList.SetLanguage(lang);
+	m_gameList.SetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
 	if (m_cfg.getBool("GENERAL", "update_cache", false))
 		UpdateCache();
 	_loadList();
