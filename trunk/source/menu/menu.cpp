@@ -264,8 +264,6 @@ void CMenu::init(void)
 	makedir((char *)m_wipDir.c_str());
 	makedir((char *)m_listCacheDir.c_str());
 
-	m_gameList.Init(m_listCacheDir, m_settingsDir, m_loc.getString(m_curLanguage, "gametdb_code", "EN"));
-
 	// INI files
 	m_cat.load(sfmt("%s/" CAT_FILENAME, m_settingsDir.c_str()).c_str());
 	string themeName = m_cfg.getString("GENERAL", "theme", "DEFAULT");
@@ -313,6 +311,8 @@ void CMenu::init(void)
 		m_curLanguage = CMenu::_translations[0];
 		m_loc.load(sfmt("%s/%s.ini", m_languagesDir.c_str(), m_curLanguage.c_str()).c_str());
 	}
+	
+	m_gameList.Init(m_listCacheDir, m_settingsDir, m_loc.getString(m_curLanguage, "gametdb_code", "EN"));
 
 	m_aa = 3;
 
