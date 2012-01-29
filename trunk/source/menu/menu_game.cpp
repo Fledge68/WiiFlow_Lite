@@ -931,14 +931,15 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 
 	u8 emuSave = min((u32)m_gcfg2.getInt(id, "emulate_save", 0), ARRAY_SIZE(CMenu::_SaveEmu) - 1u);
 	
-	if (emuSave == 0 && emuSave != 1)
+	if (emuSave == 0)
 	{
 		emuSave = min(max(0, m_cfg.getInt("GAMES", "save_emulation", 0)), (int)ARRAY_SIZE(CMenu::_GlobalSaveEmu) - 1);
 		if (emuSave != 0)
 			emuSave++;
 	}
-	else
+	else if (emuSave == 1)
 		emuSave = 0;
+
 	if (!dvd && get_frag_list((u8 *) hdr->hdr.id, (char *) hdr->path, currentPartition == 0 ? 0x200 : sector_size) < 0)
 		return;
 		
