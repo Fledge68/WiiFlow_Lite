@@ -1124,6 +1124,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		
 	if(gc)
 	{
+		memcpy((char*)hdr->hdr.id, id.c_str(),6);
 		_launchGC( hdr, false );
 	}
 	else 
