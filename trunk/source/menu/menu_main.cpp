@@ -197,6 +197,8 @@ int CMenu::main(void)
 			break;
 	}
 	m_gameList.SetLanguage(lang);
+	if (m_cfg.getBool("GENERAL", "update_cache", false))
+		UpdateCache();
 	_loadList();
 	
 	_showMain();
