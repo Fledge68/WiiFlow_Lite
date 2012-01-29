@@ -1547,9 +1547,9 @@ bool CMenu::_loadList(void)
 	m_cf.clear();
 	m_gameList.clear();
 
-	gprintf("Loading items of ");
-
 	if(m_cfg.getBool(_domainFromView(), "update_cache")) m_gameList.Update(m_current_view);
+
+	gprintf("Loading items of ");
 
 	bool retval;
 	switch(m_current_view)
@@ -1779,6 +1779,7 @@ const char *CMenu::_domainFromView()
 
 void CMenu::UpdateCache(u32 view)
 {
+	gprintf("UpdateCache(%ld)\n", view);
 	if(view == COVERFLOW_MAX)
 	{
 		UpdateCache(COVERFLOW_USB);

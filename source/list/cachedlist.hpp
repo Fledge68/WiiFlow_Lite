@@ -37,9 +37,15 @@ class CachedList : public safe_vector<T>
 	{
 		if(view == COVERFLOW_MAX)
 			for(u32 i = 0; i < COVERFLOW_MAX; i++)
+			{
 				force_update[i] = true;
+				gprintf("force_update[%d] = true\n", i);
+			}
 		else
+		{
 			force_update[view] = true;
+			gprintf("force_update[%d] = true\n", view);
+		}
 	}
 
     void Load(string path, string containing);

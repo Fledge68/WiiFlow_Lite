@@ -18,6 +18,7 @@ void CachedList<T>::Load(string path, string containing)													/* Load All
 		update_games = strcasestr(path.c_str(), "wbfs") != NULL && force_update[COVERFLOW_USB];
 		update_homebrew = strcasestr(path.c_str(), "apps") != NULL && force_update[COVERFLOW_HOMEBREW];
 
+		gprintf("update_games=%d update_homebrew=%d\n", update_games, update_homebrew);
 		if(update_games || update_homebrew)
 			remove(m_database.c_str());
 
