@@ -41,6 +41,7 @@ extern const u8 favoritesoff_png[];
 extern const u8 favoritesoffs_png[];
 
 extern const u8 btnhomebrew_png[];
+extern const u8 btnhomebrews_png[];
 
 static inline int loopNum(int i, int s)
 {
@@ -745,7 +746,7 @@ void CMenu::_initMainMenu(CMenu::SThemeData &theme)
 	texChannel.fromPNG(btnchannel_png);
 	texChannels.fromPNG(btnchannels_png);
 	texHomebrew.fromPNG(btnhomebrew_png);
-	texHomebrews.fromPNG(btnhomebrew_png);
+	texHomebrews.fromPNG(btnhomebrews_png);
 	texPrev.fromPNG(btnprev_png);
 	texPrevS.fromPNG(btnprevs_png);
 	texNext.fromPNG(btnnext_png);
