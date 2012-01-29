@@ -51,9 +51,9 @@ void CachedList<T>::Load(string path, string containing)													/* Load All
 		fclose(file);
 		remove(path.c_str());
 		
-		m_loaded = true;
-		m_update = false;
 		m_lastLanguage = m_curLanguage;
+		m_loaded = true;
+		m_update = false;		
 		
 		if(!music && pathlist.size() > 0)
 		{
@@ -62,11 +62,10 @@ void CachedList<T>::Load(string path, string containing)													/* Load All
 		}
 	}
 	else
+	{
 		CCache<T>(*this, m_database, LOAD);
-
-	m_lastLanguage = m_curLanguage;
-	m_update = false;
-	m_loaded = true;
+		m_loaded = true;
+	}
 }
 
 template<>
