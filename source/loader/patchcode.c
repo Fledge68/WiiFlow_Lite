@@ -271,7 +271,7 @@ s32 IOSReloadBlock(u8 reqios, bool enable)
 	}
 
 	s32 r = IOS_Ioctlv(ESHandle, 0xA0, 2, 0, vector);
-	gprintf("Enable/Disable Block IOS Reload for cIOS%uv%u %s\n", IOS_GetVersion(), IOS_GetRevision() % 100, r < 0 ? "FAILED!" : "SUCCEEDED!");
+	gprintf("%s Block IOS Reload for cIOS%uv%u %s\n", (enable ? "Enable" : "Disable"), IOS_GetVersion(), IOS_GetRevision() % 100, r < 0 ? "FAILED!" : "SUCCEEDED!");
 
 	IOS_Close(ESHandle);
 
