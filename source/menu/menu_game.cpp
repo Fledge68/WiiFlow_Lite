@@ -102,21 +102,34 @@ const CMenu::SOption CMenu::_videoModes[7] = {
 };
 
 const CMenu::SOption CMenu::_DMLvideoModes[3] = {
-	{ "0", L"Default" },
-	{ "1", L"PAL 576i" },
-	{ "2", L"NTSC 480i" },
+	{ "DMLdef", L"Default" },
+	{ "DMLpal", L"PAL 576i" },
+	{ "DMLntsc", L"NTSC 480i" },
 };
 
-const CMenu::SOption CMenu::_SaveEmu[3] = {
-	{ "0", L"Default" },
-	{ "1", L"Partial" },
-	{ "2", L"Full" },
+const CMenu::SOption CMenu::_NandEmu[3] = {
+	{ "NANDoff", L"Off" },
+	{ "NANDpart", L"Partial" },
+	{ "NANDfull", L"Full" },
+};
+
+const CMenu::SOption CMenu::_GlobalSaveEmu[3] = {
+	{ "SaveOffG", L"Off" },
+	{ "SavePartG", L"Partial" },
+	{ "SaveFullG", L"Full" },
+};
+
+const CMenu::SOption CMenu::_SaveEmu[4] = {
+	{ "SaveDef", L"Default" },
+	{ "SaveOff", L"Off" },
+	{ "SavePart", L"Partial" },
+	{ "SaveFull", L"Full" },
 };
 
 const CMenu::SOption CMenu::_AspectRatio[3] = {
-	{ "0", L"Default" },
-	{ "1", L"Force 4:3" },
-	{ "2", L"Force 16:9" },
+	{ "aspectDef", L"Default" },
+	{ "aspect43", L"Force 4:3" },
+	{ "aspect169", L"Force 16:9" },
 };
 
 const CMenu::SOption CMenu::_vidModePatch[4] = {
@@ -736,7 +749,10 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		add_game_to_card(id.c_str());
 
 	bool emu_disabled = m_cfg.getBool("NAND", "disable", true);
-	bool emulate_mode = m_gcfg2.testOptBool(id, "full_emulation", m_cfg.getBool("NAND", "full_emulation", true));
+	bool emulate_mode = false;
+	int i = min(max(0, m_cfg.getInt("NAND", "emulation", 0)), (int)ARRAY_SIZE(CMenu::_NandEmu) - 1);
+	if (i==2)
+		emulate_mode = true;
 
 	m_gcfg1.save(true);
 	m_gcfg2.save(true);
@@ -915,6 +931,14 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 
 	u8 emuSave = min((u32)m_gcfg2.getInt(id, "emulate_save", 0), ARRAY_SIZE(CMenu::_SaveEmu) - 1u);
 	
+	if (emuSave == 0 && emuSave != 1)
+	{
+		emuSave = min(max(0, m_cfg.getInt("GAMES", "save_emulation", 0)), (int)ARRAY_SIZE(CMenu::_GlobalSaveEmu) - 1);
+		if (emuSave != 0)
+			emuSave++;
+	}
+	else
+		emuSave = 0;
 	if (!dvd && get_frag_list((u8 *) hdr->hdr.id, (char *) hdr->path, currentPartition == 0 ? 0x200 : sector_size) < 0)
 		return;
 		
@@ -1036,7 +1060,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
 		DeviceHandler::Instance()->UnMount(emuPartition);
 		
-		if (emuSave == 2)
+		if (emuSave == 3)
 			Nand::Instance()->Set_FullMode(true);
 		else
 			Nand::Instance()->Set_FullMode(false);
