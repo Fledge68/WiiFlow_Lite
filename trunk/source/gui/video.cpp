@@ -517,32 +517,40 @@ void CVideo::_showWaitMessages(CVideo *m)
 		WIILIGHT_TurnOff();
 	}
 	m->m_waitMessages.clear();
-	gprintf("Stop showing images\n");
+	//gprintf("Stop showing images\n");
 	m->m_showingWaitMessages = false;
+	m->CheckWaitThread(false);
+	gprintf("Stop showing images\n");
 }
 
-void CVideo::hideWaitMessage(bool force)
+void CVideo::hideWaitMessage()
 {
+	gprintf("Now hide wait message\n");
 	m_showWaitMessage = false;
-	CheckWaitThread(force);
 }
 
 void CVideo::CheckWaitThread(bool force)
 {
-	if (force || (!m_showingWaitMessages && waitThread != LWP_THREAD_NULL))
+	gprintf("Check wait thread start\n");
+	if (force || !m_showingWaitMessages ) //&& waitThread != LWP_THREAD_NULL))
 	{
-		m_showWaitMessage = false;
+		if (waitThread != LWP_THREAD_NULL)
+		{
+			//m_showWaitMessage = false;
+			gprintf("Thread running. Stop it\n");
 
-		if(LWP_ThreadIsSuspended(waitThread))
-			LWP_ResumeThread(waitThread);
+			if(LWP_ThreadIsSuspended(waitThread))
+				LWP_ResumeThread(waitThread);
 
-		LWP_JoinThread(waitThread, NULL);
+			LWP_JoinThread(waitThread, NULL);
 
-		SMART_FREE(waitThreadStack);
-		waitThread = LWP_THREAD_NULL;
+			SMART_FREE(waitThreadStack);
+			waitThread = LWP_THREAD_NULL;
 
-		m_waitMessages.clear();
+			m_waitMessages.clear();
+		}
 	}
+	gprintf("Check wait thread end\n");
 }
 
 void CVideo::waitMessage(float delay)
@@ -552,7 +560,7 @@ void CVideo::waitMessage(float delay)
 
 void CVideo::waitMessage(const safe_vector<STexture> &tex, float delay, bool useWiiLight)
 {
-	hideWaitMessage(true);
+	hideWaitMessage();
 
 	m_useWiiLight = useWiiLight;
 

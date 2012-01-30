@@ -64,7 +64,7 @@ public:
 	void prepareStencil(void);
 	void renderStencil(void);
 	int stencilVal(int x, int y);
-	void hideWaitMessage(bool force = false);
+	void hideWaitMessage();
 	void waitMessage(float delay);
 	void waitMessage(const safe_vector<STexture> &tex, float delay, bool useWiiLight = true);
 	void waitMessage(const STexture &tex);

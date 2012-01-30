@@ -264,6 +264,8 @@ void CMenu::init(void)
 	makedir((char *)m_wipDir.c_str());
 	makedir((char *)m_listCacheDir.c_str());
 
+	m_gameList.Init(m_listCacheDir, m_settingsDir, m_loc.getString(m_curLanguage, "gametdb_code", "EN"));
+
 	// INI files
 	m_cat.load(sfmt("%s/" CAT_FILENAME, m_settingsDir.c_str()).c_str());
 	string themeName = m_cfg.getString("GENERAL", "theme", "DEFAULT");
@@ -1682,9 +1684,9 @@ void CMenu::_load_installed_cioses()
 		}
 }
 
-void CMenu::_hideWaitMessage(bool force)
+void CMenu::_hideWaitMessage()
 {
-	m_vid.hideWaitMessage(force);
+	m_vid.hideWaitMessage();
 }
 
 void CMenu::_showWaitMessage()
