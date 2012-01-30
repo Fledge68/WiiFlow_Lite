@@ -1321,7 +1321,8 @@ void CCoverFlow::_drawCoverBox(int i, bool mirror, CCoverFlow::DrawMode dm)
 			GX_InitTexObj(&texObj, m_dvdSkin_Black.data.get(), m_dvdSkin_Black.width, m_dvdSkin_Black.height, m_dvdSkin_Black.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		}
 		else if (m_items[m_covers[i].index].hdr->hdr.casecolor == 0xFCFF00 ||
-				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "SIIxxx", 3) == 0 )
+				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "SIIE8P", 6) == 0 ||
+				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "SIIP8P", 6) == 0 )
 		{
 			GX_InitTexObj(&texObj, m_dvdSkin_Yellow.data.get(), m_dvdSkin_Yellow.width, m_dvdSkin_Yellow.height, m_dvdSkin_Yellow.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		}
