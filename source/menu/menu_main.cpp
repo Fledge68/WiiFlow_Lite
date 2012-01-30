@@ -81,6 +81,20 @@ void CMenu::_showMain(void)
 #ifdef SHOWMEM	
 	m_btnMgr.show(m_mem2FreeSize);
 #endif
+#ifdef SHOWMEMGECKO
+	mem1 = SYS_GetArena1Size();
+	mem2 = MEM2_freesize();
+	if( mem1 != mem1old )
+	{
+		mem1old = mem1;
+		gprintf("Mem1 Free: %u\n", mem1);
+	}
+	if( mem2 != mem2old )
+	{
+		mem2old = mem2;
+		gprintf("Mem2 Free: %u\n", mem2);
+	}	
+#endif
 	m_vid.set2DViewport(m_cfg.getInt("GENERAL", "tv_width", 640), m_cfg.getInt("GENERAL", "tv_height", 480),
 		m_cfg.getInt("GENERAL", "tv_x", 0), m_cfg.getInt("GENERAL", "tv_y", 0));
 	_setBg(m_gameBg, m_gameBgLQ);

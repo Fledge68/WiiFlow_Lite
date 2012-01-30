@@ -1,6 +1,7 @@
 #ifndef __MENU_HPP
 #define __MENU_HPP
 //#define SHOWMEM 1
+//#define SHOWMEMGECKO
 #include <wiiuse/wpad.h>
 #include <ogc/pad.h>
 
@@ -144,6 +145,12 @@ private:
 	u32 m_mainLblLetter;
 #ifdef SHOWMEM
 	u32 m_mem2FreeSize;
+#endif
+#ifdef SHOWMEMGECKO
+	unsigned int mem1old;
+	unsigned int mem1;
+	unsigned int mem2old;
+	unsigned int mem2;
 #endif
 	u32 m_mainLblNotice;
 	u32 m_mainBtnNext;
@@ -738,7 +745,7 @@ private:
 	safe_vector<STexture> _textures(TexSet &texSet, const char *domain, const char *key);
 	void _showWaitMessage();
 public:
-	void _hideWaitMessage(bool force = false);
+	void _hideWaitMessage();
 private:
 	SmartGuiSound _sound(CMenu::SoundSet &soundSet, const char *domain, const char *key, const u8 * snd, u32 len, string name, bool isAllocated);
 	SmartGuiSound _sound(CMenu::SoundSet &soundSet, const char *domain, const char *key, string name);

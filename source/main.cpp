@@ -20,7 +20,7 @@ extern "C" { extern void __exception_setreload(int t);}
 
 CMenu *mainMenu;
 extern "C" void ShowError(const wstringEx &error){mainMenu->error(error); }
-extern "C" void HideWaitMessage() {mainMenu->_hideWaitMessage(true); }
+extern "C" void HideWaitMessage() {mainMenu->_hideWaitMessage(); }
 
 int main(int argc, char **argv)
 {
