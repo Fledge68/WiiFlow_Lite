@@ -1326,12 +1326,12 @@ void CCoverFlow::_drawCoverBox(int i, bool mirror, CCoverFlow::DrawMode dm)
 			GX_InitTexObj(&texObj, m_dvdSkin_Yellow.data.get(), m_dvdSkin_Yellow.width, m_dvdSkin_Yellow.height, m_dvdSkin_Yellow.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		}
 		else if (m_items[m_covers[i].index].hdr->hdr.casecolor == 0x01A300 ||
-				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "SF8J01", 3) == 0 )
+				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "SF8J01", 6) == 0 )
 		{
 			GX_InitTexObj(&texObj, m_dvdSkin_GreenOne.data.get(), m_dvdSkin_GreenOne.width, m_dvdSkin_GreenOne.height, m_dvdSkin_GreenOne.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		}
 		else if (m_items[m_covers[i].index].hdr->hdr.casecolor == 0x00E360 ||
-				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "PDUE01", 3) == 0 )
+				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "PDUE01", 6) == 0 )
 		{
 			GX_InitTexObj(&texObj, m_dvdSkin_GreenTwo.data.get(), m_dvdSkin_GreenTwo.width, m_dvdSkin_GreenTwo.height, m_dvdSkin_GreenTwo.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		}
