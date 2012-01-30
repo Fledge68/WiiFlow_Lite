@@ -237,12 +237,12 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 				continue;
 			}
 			
-			if(wbfs)
+			/*if(wbfs)
 			{
 				wbfs_t *part = WBFS_Ext_OpenPart((char *)(*itr).c_str());
 				if (!part) continue;
 
-				/* Get header */
+				// Get header 
 				if(wbfs_get_disc_info(part, 0, (u8*)&tmp.hdr, sizeof(discHdr), NULL) == 0
 				&& memcmp(tmp.hdr.id, "__CFG_", sizeof tmp.hdr.id) != 0)
 				{
@@ -253,7 +253,7 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 				}
 				WBFS_Ext_ClosePart(part);
 				continue;
-			}
+			}*/
 		}
 		else if((*itr).rfind(".dol") != string::npos || (*itr).rfind(".DOL") != string::npos
 			|| (*itr).rfind(".elf") != string::npos || (*itr).rfind(".ELF")  != string::npos)
@@ -308,35 +308,40 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 		{
 			u8 partition = DeviceHandler::Instance()->PathToDriveType((*itr).c_str());
 			wbfs_t* handle = DeviceHandler::Instance()->GetWbfsHandle(partition);
-			if (!handle) return;
+			if (!handle)
+				return;
 
 			s32 ret = wbfs_get_disc_info(handle, count, (u8 *)&tmp.hdr, sizeof(struct discHdr), NULL);
 			count++;
-			if(ret != 0) continue;
+			if(ret != 0) 
+				continue;
 			
-			if (tmp.hdr.magic == 0x5D1C9EA3	&& memcmp(tmp.hdr.id, "__CFG_", sizeof tmp.hdr.id) != 0)
+			GTitle = custom_titles.getString("TITLES", (const char *) tmp.hdr.id);
+			int ccolor = custom_titles.getColor("COVERS", (const char *) tmp.hdr.id, 1).intVal();			
+			
+			if(GTitle.size() > 0 || (gameTDB.IsLoaded() && gameTDB.GetTitle((char *)tmp.hdr.id, GTitle)))
 			{
-				// Get info from custom titles
-				GTitle = custom_titles.getString("TITLES", (const char *) tmp.hdr.id);
-				int ccolor = custom_titles.getColor("COVERS", (const char *) tmp.hdr.id, tmp.hdr.casecolor).intVal();			
-				if(GTitle.size() > 0 || (gameTDB.GetTitle((char *)tmp.hdr.id, GTitle)))
-				{
-					mbstowcs(tmp.title, GTitle.c_str(), sizeof(tmp.title));
-					tmp.hdr.casecolor = ccolor != 1 ? ccolor : gameTDB.GetCaseColor((char *)tmp.hdr.id);
-
-					tmp.hdr.wifi = gameTDB.GetWifiPlayers((char *)tmp.hdr.id);
-					tmp.hdr.players = gameTDB.GetPlayers((char *)tmp.hdr.id);
-					//tmp.hdr.controllers = gameTDB.GetAccessories((char *)tmp.hdr.id);
+				mbstowcs(tmp.title, GTitle.c_str(), sizeof(tmp.title));
+				tmp.hdr.casecolor = ccolor != 1 ? ccolor : gameTDB.GetCaseColor((char *)tmp.hdr.id);
+				tmp.hdr.wifi = gameTDB.GetWifiPlayers((char *)tmp.hdr.id);
+				tmp.hdr.players = gameTDB.GetPlayers((char *)tmp.hdr.id);
 				
-				}
-				else
+				//tmp.hdr.controllers = gameTDB.GetAccessories((char *)tmp.hdr.id);
+				if (tmp.hdr.magic == 0x5D1C9EA3)
 				{
-					mbstowcs(tmp.title, tmp.hdr.title, sizeof(tmp.title));
-					tmp.hdr.casecolor = ccolor != 1 ? ccolor : 1;
+					Asciify(tmp.title);
+					headerlist.push_back(tmp);
 				}
+				continue;				
+			}
+			
+			if (tmp.hdr.magic == 0x5D1C9EA3)
+			{
+				mbstowcs(tmp.title, (const char *)tmp.hdr.title, sizeof(tmp.hdr.title));
 				Asciify(tmp.title);
+				tmp.hdr.casecolor = ccolor != 1 ? ccolor : 1;
 				headerlist.push_back(tmp);
-			}			
+			}
 			continue;
 		}
 	}
