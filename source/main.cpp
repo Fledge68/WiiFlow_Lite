@@ -89,12 +89,13 @@ int main(int argc, char **argv)
 		}
 		if(!deviceAvailable) Sys_Exit();
 
-    Open_Inputs(); // xFede: Initialize WPAD/PAD here, otherwise you could have a sync-delay on startup
-    
 		bool dipOK = Disc_Init() >= 0;
 
 		CMenu menu(vid);
 		menu.init();
+		
+		Open_Inputs(); //we should init inputs as last point
+		
 		mainMenu = &menu;
 		if (!iosOK)
 		{

@@ -23,14 +23,23 @@ static bool return_to_priiloader = false;
 static bool return_to_disable = false;
 static bool return_to_bootmii = false;
 
+
+void __Wpad_PowerCallback(s32 chan)
+{
+	/* Poweroff console */
+	shutdown = 1;
+}
+
 void Open_Inputs(void)
 {
-	if(WPAD_GetStatus() != WPAD_STATE_ENABLED && WPAD_GetStatus() != WPAD_STATE_ENABLING)
-	{
-		WPAD_Init();
-		PAD_Init();
-		WPAD_SetDataFormat(WPAD_CHAN_ALL, WPAD_FMT_BTNS_ACC_IR);
-	}
+	/* Initialize Wiimote subsystem */
+	PAD_Init();
+	WPAD_Init();
+
+	/* Set POWER button callback */
+	WPAD_SetPowerButtonCallback(__Wpad_PowerCallback);
+	
+	WPAD_SetDataFormat(WPAD_CHAN_ALL, WPAD_FMT_BTNS_ACC_IR);
 }
 
 void Close_Inputs(void)
