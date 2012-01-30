@@ -341,6 +341,9 @@ private:
 	u32 m_gameSettingsBtnAspectRatioP;
 	u32 m_gameSettingsBtnAspectRatioM;
 	
+	u32 m_gameSettingsLblCustom;
+	u32 m_gameSettingsBtnCustom;
+
 	u32 m_gameSettingsLblOcarina;
 	u32 m_gameSettingsBtnOcarina;
 	u32 m_gameSettingsLblVipatch;
