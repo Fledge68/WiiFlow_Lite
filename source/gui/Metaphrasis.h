@@ -27,7 +27,7 @@
  * <br>
  * Metaphrasis is written in C++ and makes use of a community standard and newly developed algorithms for conversion of 32-bit RGBA data buffers into various GX texture formats common to both the Gamecube and Wii platforms.  
  * <p>
- * This library was developed in-full by Armin Tamzarian with the support of developers in \#wiibrew on EFnet, Chaosteil of libwiisprite, and DrTwox of GRRLIB. 
+ * This library was developed in-full by Armin Tamzarian with the support of developers in \#wiidev on EFnet, Chaosteil of libwiisprite, and DrTwox of GRRLIB.
  * 
  * \section sec_installation_source Installation (Source Code)
  * 
@@ -86,13 +86,20 @@
  * \brief A static conversion class for transforming RGBA image buffers into verious GX texture formats for
  * Wii homebrew development.
  * \author Armin Tamzarian
- * \version 0.1.0
+ * \version 0.1.2
  * 
  * Metaphrasis is a static conversion class for transforming RGBA image buffers into verious GX texture formats for
  * Wii homebrew development. Metaphrasis is written in C++ and makes use of a community standard and newly developed
  * algorithms for conversion of 32-bit RGBA data buffers into various GX texture formats common to both the Gamecube
  * and Wii platforms.
  */
+#define RGBA_TO_IA4(x) ((x & 0x0000f000) >> 8) | ((x & 0x000000f0) >> 4)
+#define RGBA_TO_IA8(x) x & 0x0000ffff
+#define RGBA_TO_RGB565(x) ((x & 0xf8000000) >> 16) | ((x & 0x00fc0000) >> 13) | ((x & 0x0000f800) >> 11)
+#define RGBA_TO_RGB555(x) ((x & 0xf8000000) >> 17) | ((x & 0x00f80000) >> 14) | ((x & 0x0000f800) >> 11) | 0x8000
+#define RGBA_TO_RGB444(x) ((x & 0xf0000000) >> 17) | ((x & 0x00f00000) >> 13) | ((x & 0x0000f000) >> 9) | ((x & 0x000000e0) >> 5)
+#define RGBA_TO_RGB5A3(x) (x & 0xff) < 0xe0 ? RGBA_TO_RGB444(x) : RGBA_TO_RGB555(x)
+
 class Metaphrasis {
 	public:
 		Metaphrasis();
