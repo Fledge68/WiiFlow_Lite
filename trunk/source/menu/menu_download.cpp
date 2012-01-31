@@ -119,7 +119,7 @@ static string countryCode(const string &gameId)
 static string makeURL(const string format, const string gameId, const string country)
 {
 	string url = format;
-	if (url.find(TAG_LOC) == 0) //check if {loc} is in the URL before trying to replace it
+	if (url.find(TAG_LOC) != url.npos) //check if {loc} is in the URL before trying to replace it
 		url.replace(url.find(TAG_LOC), strlen(TAG_LOC), country.c_str());
 	url.replace(url.find(TAG_GAME_ID), strlen(TAG_GAME_ID), gameId.c_str());
 
