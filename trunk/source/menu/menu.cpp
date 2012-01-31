@@ -1794,10 +1794,13 @@ void CMenu::UpdateCache(u32 view)
 	{
 		case COVERFLOW_CHANNEL:
 			domain = "NAND";
+			break;
 		case COVERFLOW_HOMEBREW:
 			domain = "HOMEBREW";
+			break;
 		case COVERFLOW_DML:
 			domain = "DML";
+			break;
 		default:
 			domain = "GAMES";
 	}

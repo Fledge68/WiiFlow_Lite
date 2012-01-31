@@ -454,6 +454,13 @@ int CMenu::main(void)
 					m_btnMgr.show(m_mainLblNotice);
 				}
 			}
+			else if(m_btnMgr.selected(m_mainBtnConfig))
+			{
+				m_gameList.SetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
+								
+				UpdateCache(m_current_view); 				
+				LoadView();
+			}
 		}
 		else if (done==0 && m_cat.getBool("GENERAL", "category_on_start", false))
 		{

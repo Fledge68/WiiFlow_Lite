@@ -13,13 +13,15 @@ void CachedList<T>::Load(string path, string containing)													/* Load All
 	
 	bool update_games = false;
 	bool update_homebrew = false;
+	bool update_dml = false;
 	if(!m_wbfsFS)
 	{
 		update_games = strcasestr(path.c_str(), "wbfs") != NULL && force_update[COVERFLOW_USB];
 		update_homebrew = strcasestr(path.c_str(), "apps") != NULL && force_update[COVERFLOW_HOMEBREW];
-
+		update_dml = strcasestr(path.c_str(), "games") != NULL && force_update[COVERFLOW_DML];
+		
 		gprintf("update_games=%d update_homebrew=%d\n", update_games, update_homebrew);
-		if(update_games || update_homebrew)
+		if(update_games || update_homebrew || update_dml)
 			remove(m_database.c_str());
 
 		struct stat filestat, cache;
@@ -100,6 +102,7 @@ void CachedList<dir_discHdr>::LoadChannels(string path, u32 channelType)								
 
 	if(m_update)
 	{
+		gprintf("Updating\n");
 		list.GetChannels(*this, m_settingsDir, channelType, m_channelLang);
 		
 		m_loaded = true;
