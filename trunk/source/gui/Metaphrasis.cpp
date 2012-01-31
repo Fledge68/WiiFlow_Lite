@@ -61,7 +61,7 @@ uint32_t* Metaphrasis::convertBufferToI4(uint32_t* rgbaBuffer, uint16_t bufferWi
 				*dst++ = (src[((y + rows) * bufferWidth) + (x + 0)] & 0xf0) | ((src[((y + rows) * bufferWidth) + (x + 1)] & 0xf0) >> 4);
 				*dst++ = (src[((y + rows) * bufferWidth) + (x + 2)] & 0xf0) | ((src[((y + rows) * bufferWidth) + (x + 3)] & 0xf0) >> 4);
 				*dst++ = (src[((y + rows) * bufferWidth) + (x + 4)] & 0xf0) | ((src[((y + rows) * bufferWidth) + (x + 5)] & 0xf0) >> 4);
-				*dst++ = (src[((y + rows) * bufferWidth) + (x + 5)] & 0xf0) | ((src[((y + rows) * bufferWidth) + (x + 7)] & 0xf0) >> 4);
+				*dst++ = (src[((y + rows) * bufferWidth) + (x + 6)] & 0xf0) | ((src[((y + rows) * bufferWidth) + (x + 7)] & 0xf0) >> 4);
 			}
 		}
 	}
@@ -110,20 +110,27 @@ uint32_t* Metaphrasis::convertBufferToI8(uint32_t* rgbaBuffer, uint16_t bufferWi
 
 /**
  * Downsample the specified RGBA value data buffer to an IA4 value.
- * 
+ *
  * This routine downsamples the given RGBA data value into the IA4 texture data format.
- * 
+ *
+ * <strong>Format Explanation</strong>
+ * \n
+ * IA4 is a greyscale color format with a 4 bit Alpha component. In order to convert from the given RGBA color format simply concatenate
+ * the first 4 MSB from any color component (in this case the Blue component to decrease the number of place shifts performed) to
+ * the first 4 MSB from the Alpha component.
+ * \n\n
+ * <code>
+ * RGBA (32bit):  r7r6r5r4r3r2r1r0|g7g6g5g4g3g2g1g0|b7b6b5b4b3b2b1b|0a7a6a5a4a3a2a1a0
+ * \n
+ * RGBIA4 (8bit): b7b6b5b4a7a6a5a4
+ * </code>
+ *
  * @param rgba	A 32-bit RGBA value to convert to the IA4 format.
  * @return The IA4 value of the given RGBA value.
  */
 
 uint8_t Metaphrasis::convertRGBAToIA4(uint32_t rgba) {
-	uint8_t i, a;
-	
-	i = (rgba >> 8) & 0xf0;
-	a = (rgba     ) & 0xff;
-
-	return i | (a >> 4);
+	return RGBA_TO_IA4(rgba);
 }
 
 /**
@@ -148,14 +155,14 @@ uint32_t* Metaphrasis::convertBufferToIA4(uint32_t* rgbaBuffer, uint16_t bufferW
 	for(uint16_t y = 0; y < bufferHeight; y += 4) {
 		for(uint16_t x = 0; x < bufferWidth; x += 8) {
 			for(uint16_t rows = 0; rows < 4; rows++) {
-				*dst++ = Metaphrasis::convertRGBAToIA4(src[((y + rows) * bufferWidth) + (x + 0)]);
-				*dst++ = Metaphrasis::convertRGBAToIA4(src[((y + rows) * bufferWidth) + (x + 1)]);
-				*dst++ = Metaphrasis::convertRGBAToIA4(src[((y + rows) * bufferWidth) + (x + 2)]);
-				*dst++ = Metaphrasis::convertRGBAToIA4(src[((y + rows) * bufferWidth) + (x + 3)]);
-				*dst++ = Metaphrasis::convertRGBAToIA4(src[((y + rows) * bufferWidth) + (x + 4)]);
-				*dst++ = Metaphrasis::convertRGBAToIA4(src[((y + rows) * bufferWidth) + (x + 5)]);
-				*dst++ = Metaphrasis::convertRGBAToIA4(src[((y + rows) * bufferWidth) + (x + 6)]);
-				*dst++ = Metaphrasis::convertRGBAToIA4(src[((y + rows) * bufferWidth) + (x + 7)]);
+				*dst++ = RGBA_TO_IA4(src[((y + rows) * bufferWidth) + (x + 0)]);
+				*dst++ = RGBA_TO_IA4(src[((y + rows) * bufferWidth) + (x + 1)]);
+				*dst++ = RGBA_TO_IA4(src[((y + rows) * bufferWidth) + (x + 2)]);
+				*dst++ = RGBA_TO_IA4(src[((y + rows) * bufferWidth) + (x + 3)]);
+				*dst++ = RGBA_TO_IA4(src[((y + rows) * bufferWidth) + (x + 4)]);
+				*dst++ = RGBA_TO_IA4(src[((y + rows) * bufferWidth) + (x + 5)]);
+				*dst++ = RGBA_TO_IA4(src[((y + rows) * bufferWidth) + (x + 6)]);
+				*dst++ = RGBA_TO_IA4(src[((y + rows) * bufferWidth) + (x + 7)]);
 			}
 		}
 	}
@@ -169,17 +176,25 @@ uint32_t* Metaphrasis::convertBufferToIA4(uint32_t* rgbaBuffer, uint16_t bufferW
  * 
  * This routine downsamples the given RGBA data value into the IA8 texture data format.
  * 
+ * <strong>Format Explanation</strong>
+ * \n
+ * IA8 is a greyscale color format with a full 8 bit Alpha component. In order to convert from the given RGBA color format simply concatenate
+ * the entire 8 bit information from any color component (in this case the Blue component to decrease the number of place shifts performed) to
+ * the entire 8 bit Alpha component.
+ * \n\n
+ * <code>
+ * RGBA (32bit):   r7r6r5r4r3r2r1r0|g7g6g5g4g3g2g1g0|b7b6b5b4b3b2b1b|0a7a6a5a4a3a2a1a0
+ * \n
+ * RGBIA8 (16bit): b7b6b5b4b3b2b1b0|a7a6a5a4a3a2a1a0
+ * </code>
+ *
  * @param rgba	A 32-bit RGBA value to convert to the IA8 format.
  * @return The IA8 value of the given RGBA value.
  */
 
 uint16_t Metaphrasis::convertRGBAToIA8(uint32_t rgba) {
-	uint8_t i, a;
-	
-	i = (rgba >> 8) & 0xff;
-	a = (rgba     ) & 0xff;
 
-	return (i << 8) | a;
+	return RGBA_TO_IA8(rgba);
 }
 
 /**
@@ -204,10 +219,10 @@ uint32_t* Metaphrasis::convertBufferToIA8(uint32_t* rgbaBuffer, uint16_t bufferW
 	for(uint16_t y = 0; y < bufferHeight; y += 4) {
 		for(uint16_t x = 0; x < bufferWidth; x += 4) {
 			for(uint16_t rows = 0; rows < 4; rows++) {
-				*dst++ = Metaphrasis::convertRGBAToIA8(src[((y + rows) * bufferWidth) + (x + 0)]);
-				*dst++ = Metaphrasis::convertRGBAToIA8(src[((y + rows) * bufferWidth) + (x + 1)]);
-				*dst++ = Metaphrasis::convertRGBAToIA8(src[((y + rows) * bufferWidth) + (x + 2)]);
-				*dst++ = Metaphrasis::convertRGBAToIA8(src[((y + rows) * bufferWidth) + (x + 3)]);
+				*dst++ = RGBA_TO_IA8(src[((y + rows) * bufferWidth) + (x + 0)]);
+				*dst++ = RGBA_TO_IA8(src[((y + rows) * bufferWidth) + (x + 1)]);
+				*dst++ = RGBA_TO_IA8(src[((y + rows) * bufferWidth) + (x + 2)]);
+				*dst++ = RGBA_TO_IA8(src[((y + rows) * bufferWidth) + (x + 3)]);
 			}
 		}
 	}
@@ -237,18 +252,30 @@ uint32_t* Metaphrasis::convertBufferToRGBA8(uint32_t* rgbaBuffer, uint16_t buffe
 
 	for(uint16_t block = 0; block < bufferHeight; block += 4) {
 		for(uint16_t i = 0; i < bufferWidth; i += 4) {
-			for (uint16_t c = 0; c < 4; c++) {
-				for (uint16_t ar = 0; ar < 4; ar++) {
-					*dst++ = src[(((i + ar) + ((block + c) * bufferWidth)) * 4) + 3];
-					*dst++ = src[((i + ar) + ((block + c) * bufferWidth)) * 4];
-				}
-			}
-			for (uint16_t c = 0; c < 4; c++) {
-				for (uint16_t gb = 0; gb < 4; gb++) {
-					*dst++ = src[(((i + gb) + ((block + c) * bufferWidth)) * 4) + 1];
-					*dst++ = src[(((i + gb) + ((block + c) * bufferWidth)) * 4) + 2];
-				}
-			}
+            for (uint32_t c = 0; c < 4; c++) {
+				uint32_t blockWid = (((block + c) * bufferWidth) + i) << 2 ;
+
+				*dst++ = src[blockWid + 3];  // ar = 0
+				*dst++ = src[blockWid + 0];
+				*dst++ = src[blockWid + 7];  // ar = 1
+				*dst++ = src[blockWid + 4];
+				*dst++ = src[blockWid + 11]; // ar = 2
+				*dst++ = src[blockWid + 8];
+				*dst++ = src[blockWid + 15]; // ar = 3
+				*dst++ = src[blockWid + 12];
+            }
+            for (uint32_t c = 0; c < 4; c++) {
+				uint32_t blockWid = (((block + c) * bufferWidth) + i ) << 2 ;
+
+				*dst++ = src[blockWid + 1];  // gb = 0
+				*dst++ = src[blockWid + 2];
+				*dst++ = src[blockWid + 5];  // gb = 1
+				*dst++ = src[blockWid + 6];
+				*dst++ = src[blockWid + 9];  // gb = 2
+				*dst++ = src[blockWid + 10];
+				*dst++ = src[blockWid + 13]; // gb = 3
+				*dst++ = src[blockWid + 14];
+            }
 		}
 	}
 	DCFlushRange(dataBufferRGBA8, bufferSize);
@@ -262,18 +289,23 @@ uint32_t* Metaphrasis::convertBufferToRGBA8(uint32_t* rgbaBuffer, uint16_t buffe
  * This routine downsamples the given RGBA data value into the RGB565 texture data format.
  * Attribution for this routine is given fully to NoNameNo of GRRLIB Wii library.
  * 
+ * <strong>Format Explanation</strong>
+ * \n
+ * RGB565 is a color format without an Alpha component. In order to convert from the given RGBA color format simply concatenate
+ * the first 5 MSB from the Red component to the first 6 MSB from the Green component to the first 5 MSB from the Blue component.
+ * \n\n
+ * <code>
+ * RGBA (32bit):   r7r6r5r4r3r2r1r0|g7g6g5g4g3g2g1g0|b7b6b5b4b3b2b1b|0a7a6a5a4a3a2a1a0
+ * \n
+ * RGB565 (16bit): r7r6r5r4r3g7g6g5|g4g3g2b7b6b5b4b3
+ * </code>
+ *
  * @param rgba	A 32-bit RGBA value to convert to the RGB565 format.
  * @return The RGB565 value of the given RGBA value.
  */
 
 uint16_t Metaphrasis::convertRGBAToRGB565(uint32_t rgba) {
-	uint8_t r, g, b;
-	
-	r = (((rgba >> 24) & 0xff) * 31) / 255;
-	g = (((rgba >> 16) & 0xff) * 63) / 255;
-	b = (((rgba >>  8) & 0xff) * 31) / 255;
-
-	return (((r << 6) | g ) << 5 ) | b;
+	return RGBA_TO_RGB565(rgba);
 }
 
 /**
@@ -298,10 +330,10 @@ uint32_t* Metaphrasis::convertBufferToRGB565(uint32_t* rgbaBuffer, uint16_t buff
 	for(uint16_t y = 0; y < bufferHeight; y += 4) {
 		for(uint16_t x = 0; x < bufferWidth; x += 4) {
 			for(uint16_t rows = 0; rows < 4; rows++) {
-				*dst++ = Metaphrasis::convertRGBAToRGB565(src[((y + rows) * bufferWidth) + (x + 0)]);
-				*dst++ = Metaphrasis::convertRGBAToRGB565(src[((y + rows) * bufferWidth) + (x + 1)]);
-				*dst++ = Metaphrasis::convertRGBAToRGB565(src[((y + rows) * bufferWidth) + (x + 2)]);
-				*dst++ = Metaphrasis::convertRGBAToRGB565(src[((y + rows) * bufferWidth) + (x + 3)]);
+				*dst++ = RGBA_TO_RGB565(src[((y + rows) * bufferWidth) + (x + 0)]);
+				*dst++ = RGBA_TO_RGB565(src[((y + rows) * bufferWidth) + (x + 1)]);
+				*dst++ = RGBA_TO_RGB565(src[((y + rows) * bufferWidth) + (x + 2)]);
+				*dst++ = RGBA_TO_RGB565(src[((y + rows) * bufferWidth) + (x + 3)]);
 			}
 		}
 	}
@@ -314,39 +346,27 @@ uint32_t* Metaphrasis::convertBufferToRGB565(uint32_t* rgbaBuffer, uint16_t buff
  * Downsample the specified RGBA value data buffer to an RGB5A3 value.
  * 
  * This routine downsamples the given RGBA data value into the RGB5A3 texture data format.
- * Attribution for this routine is given fully to WiiGator via the TehSkeen forum.
  * 
+ * <strong>Format Explanation</strong>
+ * \n
+ * RGB5A3 is really a conditional application of the RGB444 and RGB555 formats based off of the value of the Alpha channel.
+ * If the 3 MSB of the Alpha channel is fully opaque (a7a6a5 == [1][1][1]) then the RGBA color is converted to RGB555 with the first bit set to 1.
+ * Otherwise the RGBA color is converted to RGB444 with a 3 bit alpha channel and the first bit set to 0.
+ *\n\n
+ * <code>
+ * RGBA (32bit):    r7r6r5r4r3r2r1r0|g7g6g5g4g3g2g1g0|b7b6b5b4b3b2b1b|0a7a6a5a4a3a2a1a0
+ * \n
+ * RGB555 (16bit): [1]r7r6r5r4r3g7g6|g5g4g3b7b6b5b4b3
+ * \n
+ * RGB444 (16bit): [0]r7r6r5r4g7g6g5|g4b7b6b5b4a7a6a5
+ * </code>
+ *
  * @param rgba	A 32-bit RGBA value to convert to the RGB5A3 format.
  * @return The RGB5A3 value of the given RGBA value.
  */
 
 uint16_t Metaphrasis::convertRGBAToRGB5A3(uint32_t rgba) {
-	uint32_t r, g, b, a;
-	uint16_t color;
-
-	r = (rgba >> 24) & 0xff;
-	g = (rgba >> 16) & 0xff;
-	b = (rgba >>  8) & 0xff;
-	a = (rgba      ) & 0xff;
-
-	if (a > 0xe0) {
-		r = r >> 3;
-		g = g >> 3;
-		b = b >> 3;
-	
-		color = (r << 10) | (g << 5) | b;
-		color |= 0x8000;
-	}
-	else {
-		r = r >> 4;
-		g = g >> 4;
-		b = b >> 4;
-		a = a >> 5;
-	
-		color = (a << 12) | (r << 8) | (g << 4) | b;
-	}
-
-	return color;
+	return RGBA_TO_RGB5A3(rgba);
 }
 	
 /**
@@ -371,10 +391,10 @@ uint32_t* Metaphrasis::convertBufferToRGB5A3(uint32_t* rgbaBuffer, uint16_t buff
 	for(uint16_t y = 0; y < bufferHeight; y += 4) {
 		for(uint16_t x = 0; x < bufferWidth; x += 4) {
 			for(uint16_t rows = 0; rows < 4; rows++) {
-				*dst++ = Metaphrasis::convertRGBAToRGB5A3(src[((y + rows) * bufferWidth) + (x + 0)]);
-				*dst++ = Metaphrasis::convertRGBAToRGB5A3(src[((y + rows) * bufferWidth) + (x + 1)]);
-				*dst++ = Metaphrasis::convertRGBAToRGB5A3(src[((y + rows) * bufferWidth) + (x + 2)]);
-				*dst++ = Metaphrasis::convertRGBAToRGB5A3(src[((y + rows) * bufferWidth) + (x + 3)]);
+				*dst++ = RGBA_TO_RGB5A3(src[((y + rows) * bufferWidth) + (x + 0)]);
+				*dst++ = RGBA_TO_RGB5A3(src[((y + rows) * bufferWidth) + (x + 1)]);
+				*dst++ = RGBA_TO_RGB5A3(src[((y + rows) * bufferWidth) + (x + 2)]);
+				*dst++ = RGBA_TO_RGB5A3(src[((y + rows) * bufferWidth) + (x + 3)]);
 			}
 		}
 	}
