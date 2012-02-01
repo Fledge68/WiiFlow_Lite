@@ -284,7 +284,7 @@ static void setLanguage(int l)
 		configbytes[0] = 0xCD;
 }
 
-void CMenu::_game(bool launch)
+void CMenu::_game(bool launch, bool gametdb)
 {
 	m_gcfg1.load(sfmt("%s/gameconfig1.ini", m_settingsDir.c_str()).c_str());
 	if (!launch)
@@ -321,7 +321,7 @@ void CMenu::_game(bool launch)
 			m_gameSound.Stop();
 			break;
 		}
-		else if (BTN_PLUS_PRESSED)
+		else if (BTN_PLUS_PRESSED && gametdb)
 		{
 			_hideGame();
 			m_gameSelected = true;

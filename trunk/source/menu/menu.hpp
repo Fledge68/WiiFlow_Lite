@@ -700,7 +700,7 @@ private:
 	int _config4(void);
 	int _configAdv(void);
 	int _configSnd(void);
-	void _game(bool launch = false);
+	void _game(bool launch = false, bool gametdb = false);
 	void _download(std::string gameId = std::string());
 	bool _code(char code[4], bool erase = false);
 	void _about(void);
