@@ -102,7 +102,7 @@ void CachedList<dir_discHdr>::LoadChannels(string path, u32 channelType)								
 
 	if(m_update)
 	{
-		gprintf("Updating\n");
+		gprintf("Updating channels\n");
 		list.GetChannels(*this, m_settingsDir, channelType, m_channelLang);
 		
 		m_loaded = true;
