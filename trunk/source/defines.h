@@ -1,5 +1,5 @@
 #define APP_NAME				"WiiFlow"
-#define APP_VERSION				"3.0 ALPHA"
+#define APP_VERSION				"3.1 Alpha"
 
 #define APPDATA_DIR				"wiiflow"
 #define APPDATA_DIR2			"apps/wiiflow"
@@ -22,8 +22,9 @@
 "Lustar, CedWii, Benjay, Domi78, Oops, Celtiore, Jiiwah, FluffyKiwi, Roku93, \
 Spayrosam, Bluescreen81, Chappy23, BlindDude, Bubba, DJTaz, OggZee, Usptactical, \
 WiiPower, Hermes, Spidy1000, Dimok, Kovani, Drexyl, DvZ, Etheboss, FIX94, GaiaKnight, \
-nibb, NJ7, Plasma, Pakatus, ravmn, spidercaleb, Ziggy34, And to anyone who has donated or contributed to Wiiflow \
-\nthat we missed!"
+nibb, NJ7, Plasma, Pakatus, ravmn, spidercaleb, Ziggy34 \
+ And to anyone who has donated or contributed to Wiiflow \
+that we missed!"
 
 #define THANKS_SITES			"devkitpro.org, wiibrew.org, gametdb.com, ohloh.net, wiifanart.com, wiiflowiki.com, tgames.fr.nf"
 #define THANKS_CODE				"CFG Loader, uLoader, USB Loader GX, NeoGamma, WiiXplorer, Triiforce, Mighty Channels"

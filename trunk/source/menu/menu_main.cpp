@@ -74,8 +74,8 @@ void CMenu::_hideMain(bool instant)
 }
 
 static bool show_homebrew = true;
-static bool show_channel = true;
 static bool parental_homebrew = false;
+static bool show_channel = true;
 
 void CMenu::_showMain(void)
 {
@@ -83,22 +83,8 @@ void CMenu::_showMain(void)
 #ifdef SHOWMEM	
 	m_btnMgr.show(m_mem2FreeSize);
 #endif
-#ifdef SHOWMEMGECKO
-	mem1 = SYS_GetArena1Size();
-	mem2 = MEM2_freesize();
-	if( mem1 != mem1old )
-	{
-		mem1old = mem1;
-		gprintf("Mem1 Free: %u\n", mem1);
-	}
-	if( mem2 != mem2old )
-	{
-		mem2old = mem2;
-		gprintf("Mem2 Free: %u\n", mem2);
-	}	
-#endif
 	m_vid.set2DViewport(m_cfg.getInt("GENERAL", "tv_width", 640), m_cfg.getInt("GENERAL", "tv_height", 480),
-		m_cfg.getInt("GENERAL", "tv_x", 0), m_cfg.getInt("GENERAL", "tv_y", 0));
+	m_cfg.getInt("GENERAL", "tv_x", 0), m_cfg.getInt("GENERAL", "tv_y", 0));
 	_setBg(m_gameBg, m_gameBgLQ);
 	m_btnMgr.show(m_mainBtnInfo);
 	m_btnMgr.show(m_mainBtnConfig);
@@ -169,7 +155,8 @@ void CMenu::LoadView(void)
 	_loadCFLayout(m_cfg.getInt(_domainFromView(), "last_cf_mode", 1));
 	m_cf.applySettings();
 
-	char *mode = (m_current_view == COVERFLOW_CHANNEL && m_cfg.getBool("NAND", "disable", true)) ? (char *)"NAND" : ((m_current_view == COVERFLOW_DML) ? (char *)"DML" : (char *)DeviceName[currentPartition]);
+	char *mode = (m_current_view == COVERFLOW_CHANNEL && m_cfg.getBool("NAND", "disable", true)) 
+		? (char *)"NAND" : ((m_current_view == COVERFLOW_DML) ? (char *)"DML" : (char *)DeviceName[currentPartition]);
 
 	for(u8 i = 0; strncmp((const char *)&mode[i], "\0", 1) != 0; i++)
 			mode[i] = toupper(mode[i]);
@@ -184,8 +171,8 @@ int CMenu::main(void)
 	wstringEx curLetter;
 	string prevTheme = m_cfg.getString("GENERAL", "theme", "default");
 	bool use_grab = m_cfg.getBool("GENERAL", "use_grab", false);
-	show_channel = !m_cfg.getBool("GENERAL", "hidechannel", false);
 	show_homebrew = !m_cfg.getBool("HOMEBREW", "disable", false);
+	show_channel = !m_cfg.getBool("GENERAL", "hidechannel", false);
 	parental_homebrew = m_cfg.getBool("HOMEBREW", "parental", false);	
 
 	m_reload = false;
@@ -197,12 +184,16 @@ int CMenu::main(void)
 
 	SetupInput();
 	MusicPlayer::Instance()->Play();
-	GameTDB m_gametdb;
-	m_gametdb.OpenFile(sfmt("%s/wiitdb.xml", m_settingsDir.c_str()).c_str());
-	bool gametdbloaded=false;
-	if (m_gametdb.IsLoaded())
-		gametdbloaded=true;
-	m_gametdb.CloseFile();
+	
+	GameTDB m_gametdb; 
+ 	m_gametdb.OpenFile(sfmt("%s/wiitdb.xml", m_settingsDir.c_str()).c_str());
+	m_GameTDBLoaded=false;
+ 	if( m_gametdb.IsLoaded() )
+	{
+		m_GameTDBLoaded=true;
+		m_gametdb.CloseFile();
+	}
+	
 	m_gameList.SetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
 	if (m_cfg.getBool("GENERAL", "update_cache", false))
 	{
@@ -472,7 +463,7 @@ int CMenu::main(void)
 			{
 				m_gameList.SetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
 								
-				UpdateCache(m_current_view); 				
+				UpdateCache(m_current_view);				
 				LoadView();
 			}
 		}
@@ -592,7 +583,7 @@ int CMenu::main(void)
 				if (m_cf.select())
 				{
 					_hideMain();
-					_game(BTN_B_HELD, gametdbloaded);
+					_game(BTN_B_HELD);
 					if(m_exit) break;
 					m_cf.cancel();
 					_showMain();

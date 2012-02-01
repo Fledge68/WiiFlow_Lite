@@ -166,6 +166,7 @@ private:
 	u32 m_mainLblInit;
 	u32 m_mainLblUser[6];
 	bool m_show_dml;
+	bool m_GameTDBLoaded;
 //Main Config menus
 	u32 m_configLblPage;
 	u32 m_configBtnPageM;
@@ -700,7 +701,7 @@ private:
 	int _config4(void);
 	int _configAdv(void);
 	int _configSnd(void);
-	void _game(bool launch = false, bool gametdb = false);
+	void _game(bool launch = false);
 	void _download(std::string gameId = std::string());
 	bool _code(char code[4], bool erase = false);
 	void _about(void);
