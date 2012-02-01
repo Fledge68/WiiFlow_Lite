@@ -1316,6 +1316,11 @@ void CCoverFlow::_drawCoverBox(int i, bool mirror, CCoverFlow::DrawMode dm)
 				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "RZNJ01", 6) == 0 ||
 				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "SEKJ99", 6) == 0 ||
 				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "SX3J01", 6) == 0 ||
+				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "SX3P01", 6) == 0 ||
+				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "R5WJA4", 6) == 0 ||
+				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "RUYJ99", 6) == 0 ||
+				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "S3HJ08", 6) == 0 ||
+				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "SJBJ01", 6) == 0 ||
 				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "CKBE88", 6) == 0)
 		{
 			GX_InitTexObj(&texObj, m_dvdSkin_Black.data.get(), m_dvdSkin_Black.width, m_dvdSkin_Black.height, m_dvdSkin_Black.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
