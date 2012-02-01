@@ -14,6 +14,7 @@
 #include "disc.h"
 #include "loader/cios.hpp"
 #include "loader/alt_ios.h"
+#include "GameTDB.hpp"
 
 using namespace std;
 
@@ -189,6 +190,12 @@ int CMenu::main(void)
 
 	SetupInput();
 	MusicPlayer::Instance()->Play();
+	GameTDB m_gametdb;
+	m_gametdb.OpenFile(sfmt("%s/wiitdb.xml", m_settingsDir.c_str()).c_str());
+	bool gametdbloaded=false;
+	if (m_gametdb.IsLoaded())
+		gametdbloaded=true;
+	m_gametdb.CloseFile();
 	m_gameList.SetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
 	if (m_cfg.getBool("GENERAL", "update_cache", false))
 	{
@@ -578,7 +585,7 @@ int CMenu::main(void)
 				if (m_cf.select())
 				{
 					_hideMain();
-					_game(BTN_B_HELD);
+					_game(BTN_B_HELD, gametdbloaded);
 					if(m_exit) break;
 					m_cf.cancel();
 					_showMain();
