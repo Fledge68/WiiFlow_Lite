@@ -74,6 +74,7 @@ void CMenu::_hideMain(bool instant)
 }
 
 static bool show_homebrew = true;
+static bool show_channel = true;
 static bool parental_homebrew = false;
 
 void CMenu::_showMain(void)
@@ -123,7 +124,14 @@ void CMenu::_showMain(void)
 			m_btnMgr.show(m_mainBtnUsb);
 			break;
 		default:
-			m_btnMgr.show(m_mainBtnChannel);
+			if (show_channel)
+				m_btnMgr.show(m_mainBtnChannel);
+			else if (show_homebrew && (parental_homebrew || !m_locked))
+				m_btnMgr.show(m_mainBtnHomebrew);
+			else if( m_show_dml )
+				m_btnMgr.show(m_mainBtnDML);
+			else
+				m_btnMgr.show(m_mainBtnUsb);
 			break;
 	}
 
@@ -161,9 +169,7 @@ void CMenu::LoadView(void)
 	_loadCFLayout(m_cfg.getInt(_domainFromView(), "last_cf_mode", 1));
 	m_cf.applySettings();
 
-	char *mode = (m_current_view == COVERFLOW_CHANNEL && m_cfg.getBool("NAND", "disable", true)) ? (char *)"NAND" : (char *)DeviceName[currentPartition];
-	if (m_current_view == COVERFLOW_DML)
-		mode = (char *)"DML";
+	char *mode = (m_current_view == COVERFLOW_CHANNEL && m_cfg.getBool("NAND", "disable", true)) ? (char *)"NAND" : ((m_current_view == COVERFLOW_DML) ? (char *)"DML" : (char *)DeviceName[currentPartition]);
 
 	for(u8 i = 0; strncmp((const char *)&mode[i], "\0", 1) != 0; i++)
 			mode[i] = toupper(mode[i]);
@@ -178,6 +184,7 @@ int CMenu::main(void)
 	wstringEx curLetter;
 	string prevTheme = m_cfg.getString("GENERAL", "theme", "default");
 	bool use_grab = m_cfg.getBool("GENERAL", "use_grab", false);
+	show_channel = !m_cfg.getBool("GENERAL", "hidechannel", false);
 	show_homebrew = !m_cfg.getBool("HOMEBREW", "disable", false);
 	parental_homebrew = m_cfg.getBool("HOMEBREW", "parental", false);	
 
@@ -509,7 +516,7 @@ int CMenu::main(void)
 			else if (m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML) || m_btnMgr.selected(m_mainBtnHomebrew))
 			{
 				if (m_current_view == COVERFLOW_USB) 
-					m_current_view = COVERFLOW_CHANNEL;
+					m_current_view = show_channel ? COVERFLOW_CHANNEL : ((show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : ( m_show_dml ? COVERFLOW_DML : COVERFLOW_USB ));
 				else if (m_current_view == COVERFLOW_CHANNEL)
 					m_current_view = (show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : ( m_show_dml ? COVERFLOW_DML : COVERFLOW_USB );
 				else if (m_current_view == COVERFLOW_HOMEBREW)
@@ -653,7 +660,14 @@ int CMenu::main(void)
 					m_btnMgr.show(m_mainBtnUsb);
 					break;
 				default:
-					m_btnMgr.show(m_mainBtnChannel);
+					if (show_channel)
+						m_btnMgr.show(m_mainBtnChannel);
+					else if (show_homebrew && (parental_homebrew || !m_locked))
+						m_btnMgr.show(m_mainBtnHomebrew);
+					else if( m_show_dml )
+						m_btnMgr.show(m_mainBtnDML);
+					else
+						m_btnMgr.show(m_mainBtnUsb);
 					break;
 			}
 			m_btnMgr.show(m_mainLblUser[2]);
