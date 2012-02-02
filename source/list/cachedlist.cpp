@@ -14,6 +14,7 @@ void CachedList<T>::Load(string path, string containing)													/* Load All
 	bool update_games = false;
 	bool update_homebrew = false;
 	bool update_dml = false;
+	bool ditimes = false;
 	if(!m_wbfsFS)
 	{
 		update_games = strcasestr(path.c_str(), "wbfs") != NULL && force_update[COVERFLOW_USB];
@@ -24,15 +25,18 @@ void CachedList<T>::Load(string path, string containing)													/* Load All
 		if(update_games || update_homebrew || update_dml)
 			remove(m_database.c_str());
 
-		struct stat filestat, cache;
+		m_discinf = sfmt("%s/disc.info", path.c_str());
+		struct stat filestat, discinfo, cache;
 		gprintf("%s\n", path.c_str());
-		if(stat(path.c_str(), &filestat) == -1) return;
+		if(stat(path.c_str(), &filestat) == -1) return;			
 		
 		bool update_lang = m_lastLanguage != m_curLanguage;
 		bool noDB = stat(m_database.c_str(), &cache) == -1;
 		bool mtimes = filestat.st_mtime > cache.st_mtime;
+		if(strcasestr(m_discinf.c_str(), "wbfs") != NULL && stat(m_discinf.c_str(), &discinfo) != -1)		
+			ditimes = discinfo.st_mtime > cache.st_mtime;
 
-		m_update = update_lang || noDB || mtimes;
+		m_update = update_lang || noDB || mtimes || ditimes;
 		if(m_update) gprintf("Cache is being updated because %s\n", update_lang ? "languages are different!" : noDB ? "a database was not found!" : "the WBFS folder was modified!");
 	}
 
@@ -44,6 +48,7 @@ void CachedList<T>::Load(string path, string containing)													/* Load All
 	if(m_update || m_wbfsFS || music)
 	{
 		gprintf("Calling list to update filelist\n");
+		
 		safe_vector<string> pathlist;
 		list.GetPaths(pathlist, containing, path, m_wbfsFS);
 		list.GetHeaders(pathlist, *this, m_settingsDir, m_curLanguage);
