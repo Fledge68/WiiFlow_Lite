@@ -76,6 +76,7 @@ class CachedList : public safe_vector<T>
 	string m_lastLanguage;
 	string m_channelLang;
 	string m_lastchannelLang;
+	string m_discinf;
 };
 
 #endif
