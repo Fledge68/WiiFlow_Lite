@@ -340,6 +340,11 @@ private:
 	u32 m_gameSettingsLblDMLVideo;
 	u32 m_gameSettingsBtnDMLVideoP;
 	u32 m_gameSettingsBtnDMLVideoM;
+
+	u32 m_gameSettingsLblGClanguageVal;
+	u32 m_gameSettingsLblGClanguage;
+	u32 m_gameSettingsBtnGClanguageP;
+	u32 m_gameSettingsBtnGClanguageM;
 	
 	u32 m_gameSettingsLblIOSreloadBlock;
 	u32 m_gameSettingsBtnIOSreloadBlock;
@@ -800,6 +805,7 @@ private:
 	static const SOption _languages[11];
 	static const SOption _videoModes[7];
 	static const SOption _DMLvideoModes[3];
+	static const SOption _GClanguages[7];
 	static const SOption _NandEmu[3];
 	static const SOption _SaveEmu[4];
 	static const SOption _GlobalSaveEmu[3];

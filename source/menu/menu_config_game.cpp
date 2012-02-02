@@ -36,6 +36,10 @@ void CMenu::_hideGameSettings(bool instant)
 	m_btnMgr.hide(m_gameSettingsLblDMLVideo, instant);
 	m_btnMgr.hide(m_gameSettingsBtnDMLVideoP, instant);
 	m_btnMgr.hide(m_gameSettingsBtnDMLVideoM, instant);
+	m_btnMgr.hide(m_gameSettingsLblGClanguageVal, instant);
+	m_btnMgr.hide(m_gameSettingsLblGClanguage, instant);
+	m_btnMgr.hide(m_gameSettingsBtnGClanguageP, instant);
+	m_btnMgr.hide(m_gameSettingsBtnGClanguageM, instant);
 	m_btnMgr.hide(m_gameSettingsLblAspectRatio, instant);
 	m_btnMgr.hide(m_gameSettingsLblAspectRatioVal, instant);
 	m_btnMgr.hide(m_gameSettingsBtnAspectRatioP, instant);
@@ -143,6 +147,11 @@ void CMenu::_showGameSettings(void)
 			m_btnMgr.show(m_gameSettingsLblDMLVideo);
 			m_btnMgr.show(m_gameSettingsBtnDMLVideoP);
 			m_btnMgr.show(m_gameSettingsBtnDMLVideoM);
+			
+			m_btnMgr.show(m_gameSettingsLblGClanguageVal);		
+			m_btnMgr.show(m_gameSettingsLblGClanguage);
+			m_btnMgr.show(m_gameSettingsBtnGClanguageP);
+			m_btnMgr.show(m_gameSettingsBtnGClanguageM);
 		}	
 	}
 	else
@@ -167,6 +176,11 @@ void CMenu::_showGameSettings(void)
 		}
 		else
 		{
+			m_btnMgr.hide(m_gameSettingsLblGClanguageVal);		
+			m_btnMgr.hide(m_gameSettingsLblGClanguage);
+			m_btnMgr.hide(m_gameSettingsBtnGClanguageP);
+			m_btnMgr.hide(m_gameSettingsBtnGClanguageM);
+
 			m_btnMgr.hide(m_gameSettingsLblDMLGameVideo);		
 			m_btnMgr.hide(m_gameSettingsLblDMLVideo);
 			m_btnMgr.hide(m_gameSettingsBtnDMLVideoP);
@@ -365,6 +379,8 @@ void CMenu::_showGameSettings(void)
 	m_btnMgr.setText(m_gameSettingsLblVideo, _t(CMenu::_videoModes[i].id, CMenu::_videoModes[i].text));
 	i = min((u32)m_gcfg2.getInt(id, "dml_video_mode", 0), ARRAY_SIZE(CMenu::_DMLvideoModes) - 1u);
 	m_btnMgr.setText(m_gameSettingsLblDMLVideo, _t(CMenu::_DMLvideoModes[i].id, CMenu::_DMLvideoModes[i].text));
+	i = min((u32)m_gcfg2.getInt(id, "gc_language", 0), ARRAY_SIZE(CMenu::_GClanguages) - 1u);
+	m_btnMgr.setText(m_gameSettingsLblGClanguageVal, _t(CMenu::_GClanguages[i].id, CMenu::_GClanguages[i].text));
 	i = min((u32)m_gcfg2.getInt(id, "language", 0), ARRAY_SIZE(CMenu::_languages) - 1u);
 	m_btnMgr.setText(m_gameSettingsLblLanguage, _t(CMenu::_languages[i].id, CMenu::_languages[i].text));
 	i = min((u32)m_gcfg2.getInt(id, "aspect_ratio", 0), ARRAY_SIZE(CMenu::_AspectRatio) - 1u);
@@ -513,6 +529,12 @@ void CMenu::_gameSettings(void)
 				m_gcfg2.setInt(id, "dml_video_mode", (int)loopNum((u32)m_gcfg2.getInt(id, "dml_video_mode", 0) + direction, ARRAY_SIZE(CMenu::_DMLvideoModes)));
 				_showGameSettings();
 			}
+			else if (m_btnMgr.selected(m_gameSettingsBtnGClanguageP) || m_btnMgr.selected(m_gameSettingsBtnGClanguageM))
+			{
+				s8 direction = m_btnMgr.selected(m_gameSettingsBtnGClanguageP) ? 1 : -1;
+				m_gcfg2.setInt(id, "gc_language", (int)loopNum((u32)m_gcfg2.getInt(id, "gc_language", 0) + direction, ARRAY_SIZE(CMenu::_GClanguages)));
+				_showGameSettings();
+			}
 			else if (m_btnMgr.selected(m_gameSettingsBtnAspectRatioP) || m_btnMgr.selected(m_gameSettingsBtnAspectRatioM))
 			{
 				s8 direction = m_btnMgr.selected(m_gameSettingsBtnAspectRatioP) ? 1 : -1;
@@ -649,6 +671,11 @@ void CMenu::_initGameSettingsMenu(CMenu::SThemeData &theme)
 	m_gameSettingsBtnDMLVideoM = _addPicButton(theme, "GAME_SETTINGS/DML_VIDEO_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 330, 130, 56, 56);
 	m_gameSettingsBtnDMLVideoP = _addPicButton(theme, "GAME_SETTINGS/DML_VIDEO_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 130, 56, 56);
 
+	m_gameSettingsLblGClanguage = _addLabel(theme, "GAME_SETTINGS/GC_LANG", theme.lblFont, L"", 40, 190, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsLblGClanguageVal = _addLabel(theme, "GAME_SETTINGS/GC_LANG_BTN", theme.btnFont, L"", 386, 190, 158, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_gameSettingsBtnGClanguageM = _addPicButton(theme, "GAME_SETTINGS/GC_LANG_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 330, 190, 56, 56);
+	m_gameSettingsBtnGClanguageP = _addPicButton(theme, "GAME_SETTINGS/DGC_LANG_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 190, 56, 56);
+
 	// Page 2
 	m_gameSettingsLblDebugger = _addLabel(theme, "GAME_SETTINGS/GAME_DEBUGGER", theme.lblFont, L"", 40, 130, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsLblDebuggerV = _addLabel(theme, "GAME_SETTINGS/GAME_DEBUGGER_BTN", theme.btnFont, L"", 386, 130, 158, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
@@ -745,6 +772,10 @@ void CMenu::_initGameSettingsMenu(CMenu::SThemeData &theme)
 	_setHideAnim(m_gameSettingsLblDMLVideo, "GAME_SETTINGS/DML_VIDEO_BTN", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnDMLVideoM, "GAME_SETTINGS/DML_VIDEO_MINUS", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnDMLVideoP, "GAME_SETTINGS/DML_VIDEO_PLUS", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsLblGClanguageVal, "GAME_SETTINGS/GC_LANG", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsLblGClanguage, "GAME_SETTINGS/GC_LANG_BTN", -200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsBtnGClanguageM, "GAME_SETTINGS/GC_LANG_MINUS", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsBtnGClanguageP, "GAME_SETTINGS/GC_LANG_PLUS", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsLblGameLanguage, "GAME_SETTINGS/GAME_LANG", -200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsLblLanguage, "GAME_SETTINGS/GAME_LANG_BTN", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnLanguageM, "GAME_SETTINGS/GAME_LANG_MINUS", 200, 0, 1.f, 0.f);
@@ -809,6 +840,7 @@ void CMenu::_textGameSettings(void)
 	m_btnMgr.setText(m_gameSettingsLblCountryPatch, _t("cfgg4", L"Patch country strings"));
 	m_btnMgr.setText(m_gameSettingsLblOcarina, _t("cfgg5", L"Ocarina"));
 	m_btnMgr.setText(m_gameSettingsLblDMLGameVideo, _t("cfgg2", L"Video mode"));
+	m_btnMgr.setText(m_gameSettingsLblGClanguage, _t("cfgg3", L"Language"));
 	m_btnMgr.setText(m_gameSettingsLblVipatch, _t("cfgg7", L"Vipatch"));
 	m_btnMgr.setText(m_gameSettingsBtnBack, _t("cfgg8", L"Back"));
 	m_btnMgr.setText(m_gameSettingsLblGameIOS, _t("cfgg10", L"IOS"));

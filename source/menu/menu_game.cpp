@@ -107,6 +107,16 @@ const CMenu::SOption CMenu::_DMLvideoModes[3] = {
 	{ "DMLntsc", L"NTSC 480i" },
 };
 
+const CMenu::SOption CMenu::_GClanguages[7] = {
+	{ "GClngdef", L"Default" },
+	{ "GClngeng", L"English" },
+	{ "GClngger", L"German" },
+	{ "GClngfre", L"French" },
+	{ "GClngspa", L"Spanish" },
+	{ "GClngita", L"Italian" },
+	{ "GClngdut", L"Dutch" }
+};
+
 const CMenu::SOption CMenu::_NandEmu[3] = {
 	{ "NANDoff", L"Off" },
 	{ "NANDpart", L"Partial" },
@@ -628,6 +638,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 	}
 #endif		
 		
+	u8 GClanguage = min((u32)m_gcfg2.getInt((char *)hdr->hdr.id, "gc_language", 0), ARRAY_SIZE(CMenu::_GClanguages) - 1u);
 	
 	memcpy((char *)0x80000000, (char *)hdr->hdr.id, 6);	
 	if((((char)hdr->hdr.id[3] == 'P') && (DMLvideoMode == 0)) || (DMLvideoMode == 1))
@@ -638,6 +649,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 	{
 		set_video_mode(0);
 	}
+	set_language(GClanguage);
 	VIDEO_SetBlack(TRUE);
 	VIDEO_Flush();
 	VIDEO_WaitVSync();
