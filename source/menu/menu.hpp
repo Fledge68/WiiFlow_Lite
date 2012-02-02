@@ -677,6 +677,7 @@ private:
 	void _showConfig4(void);
 	void _showConfigAdv(void);
 	void _showConfigSnd(void);
+	void _enableNandEmu(bool fromconfig);
 	void _showGame(void);
 	void _showDownload(void);
 	void _showCode(void);

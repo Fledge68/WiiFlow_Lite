@@ -17,6 +17,42 @@ static inline int loopNum(int i, int s)
 const int CMenu::_nbCfgPages = 6;
 static const int g_curPage = 1;
 
+void CMenu::_enableNandEmu(bool fromconfig)
+{
+	bool disable = true;
+	int i = m_current_view == COVERFLOW_CHANNEL && min(max(0, m_cfg.getInt("NAND", "emulation", 0)), (int)ARRAY_SIZE(CMenu::_NandEmu) - 1);
+	gprintf("i: %i\n",i);
+	if (i>0 || m_current_view != COVERFLOW_CHANNEL)
+		disable = false;
+	if(!disable)
+	{
+		Nand::Instance()->Disable_Emu();
+		bool isD2XnewerThanV6 = false;
+		iosinfo_t * iosInfo = cIOSInfo::GetInfo(mainIOS);
+		if (iosInfo->version > 6)
+			isD2XnewerThanV6 = true;
+		Nand::Instance()->Enable_Emu();
+		u8 limiter = 0;
+		s8 direction = m_btnMgr.selected(m_configBtnPartitionP) ? 1 : -1;
+		if (!fromconfig)
+			direction = 0;
+		currentPartition = loopNum(currentPartition + direction, (int)USB8);
+		while(!DeviceHandler::Instance()->IsInserted(currentPartition) ||
+			(m_current_view == COVERFLOW_CHANNEL && (DeviceHandler::Instance()->GetFSType(currentPartition) != PART_FS_FAT ||
+				(!isD2XnewerThanV6 && DeviceHandler::Instance()->PathToDriveType(m_appDir.c_str()) == currentPartition) ||
+				(!isD2XnewerThanV6 && DeviceHandler::Instance()->PathToDriveType(m_dataDir.c_str()) == currentPartition))) ||
+			(m_current_view == COVERFLOW_HOMEBREW && DeviceHandler::Instance()->GetFSType(currentPartition) == PART_FS_WBFS))
+		{
+			currentPartition = loopNum(currentPartition + direction, (int)USB8);
+			if (limiter > 10) break;
+			limiter++;
+		}
+
+		gprintf("Next item: %s\n", DeviceName[currentPartition]);
+		m_cfg.setInt(_domainFromView(), "partition", currentPartition);
+	}
+}
+
 void CMenu::_hideConfig(bool instant)
 {
 	m_btnMgr.hide(m_configLblTitle, instant);
@@ -149,7 +185,10 @@ int CMenu::_config1(void)
 	{
 		_mainLoopCommon();
 		if (BTN_HOME_PRESSED || BTN_B_PRESSED)
+		{
+			_enableNandEmu(false);
 			break;
+		}
 		else if (BTN_UP_PRESSED)
 			m_btnMgr.up();
 		else if (BTN_DOWN_PRESSED)
@@ -169,7 +208,10 @@ int CMenu::_config1(void)
 		if (BTN_A_PRESSED)
 		{
 			if (m_btnMgr.selected(m_configBtnBack))
+			{
+				_enableNandEmu(false);
 				break;
+			}
 			else if (m_btnMgr.selected(m_configBtnDownload))
 			{
 				m_cf.stopCoverLoader(true);
@@ -201,36 +243,7 @@ int CMenu::_config1(void)
 			}
 			else if (!m_locked && (m_btnMgr.selected(m_configBtnPartitionP) || m_btnMgr.selected(m_configBtnPartitionM)))
 			{
-				bool disable = true;
-				int i = m_current_view == COVERFLOW_CHANNEL && min(max(0, m_cfg.getInt("NAND", "emulation", 0)), (int)ARRAY_SIZE(CMenu::_NandEmu) - 1);
-				gprintf("i: %i\n",i);
-				if (i>0 || m_current_view != COVERFLOW_CHANNEL)
-					disable = false;
-				if(!disable)
-				{
-					Nand::Instance()->Disable_Emu();
-					bool isD2XnewerThanV6 = false;
-					iosinfo_t * iosInfo = cIOSInfo::GetInfo(mainIOS);
-					if (iosInfo->version > 6)
-						isD2XnewerThanV6 = true;
-					Nand::Instance()->Enable_Emu();
-					u8 limiter = 0;
-					s8 direction = m_btnMgr.selected(m_configBtnPartitionP) ? 1 : -1;
-					currentPartition = loopNum(currentPartition + direction, (int)USB8);
-					while(!DeviceHandler::Instance()->IsInserted(currentPartition) ||
-						(m_current_view == COVERFLOW_CHANNEL && (DeviceHandler::Instance()->GetFSType(currentPartition) != PART_FS_FAT ||
-							(!isD2XnewerThanV6 && DeviceHandler::Instance()->PathToDriveType(m_appDir.c_str()) == currentPartition) ||
-							(!isD2XnewerThanV6 && DeviceHandler::Instance()->PathToDriveType(m_dataDir.c_str()) == currentPartition))) ||
-						(m_current_view == COVERFLOW_HOMEBREW && DeviceHandler::Instance()->GetFSType(currentPartition) == PART_FS_WBFS))
-					{
-						currentPartition = loopNum(currentPartition + direction, (int)USB8);
-						if (limiter > 10) break;
-						limiter++;
-					}
-
-					gprintf("Next item: %s\n", DeviceName[currentPartition]);
-					m_cfg.setInt(_domainFromView(), "partition", currentPartition);
-				}
+				_enableNandEmu(true);
 				_showConfig();
 			}
 			else if (!m_locked && (m_btnMgr.selected(m_configBtnEmulationP) || m_btnMgr.selected(m_configBtnEmulationM)))
