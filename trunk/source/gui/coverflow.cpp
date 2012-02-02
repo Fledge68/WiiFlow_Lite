@@ -16,7 +16,7 @@
 #include "wstringEx.hpp"
 #include "lockMutex.hpp"
 #include "fonts.h"
-//#include "gecko.h"
+#include "gecko.h"
 
 using namespace std;
 
@@ -30,6 +30,9 @@ extern const u8 nopic_png[];
 extern const u8 loading_png[];
 extern const u8 flatnopic_png[];
 extern const u8 flatloading_png[];
+
+const char* black[14] = {"RZZJEL","RZNJ01","SEKJ99","SX3J01","SX3P01","R5WJA4","RUYJ99","S3HJ08","SJBJ01","CKBE88","CCPE01","SMMP01","MDUE01","APRP"};
+static int black_len = 14;
 
 static lwp_t coverLoaderThread = LWP_THREAD_NULL;
 SmartBuf coverLoaderThreadStack;
@@ -1276,6 +1279,17 @@ void CCoverFlow::_drawCoverFlat(int i, bool mirror, CCoverFlow::DrawMode dm)
 	GX_End();
 }
 
+bool CCoverFlow::_checkCoverColor(char* gameID, const char* checkID[], int len)
+{
+	int num;
+	for (num = 0; num < len; num++)
+	{
+		if (strncmp(gameID, checkID[num], strlen(checkID[num])) == 0)
+			return true;
+	}
+	return false;
+}
+
 void CCoverFlow::_drawCoverBox(int i, bool mirror, CCoverFlow::DrawMode dm)
 {
 	GXTexObj texObj;
@@ -1302,7 +1316,7 @@ void CCoverFlow::_drawCoverBox(int i, bool mirror, CCoverFlow::DrawMode dm)
 			break;
 	}
 	if (dm == CCoverFlow::CFDR_NORMAL)
-	{ 
+	{
 		// set dvd box texture, depending on game
 		if (m_items[m_covers[i].index].hdr->hdr.casecolor == 0xFF0000 ||
 			strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "SMNxxx", 3) == 0 || 
@@ -1312,20 +1326,7 @@ void CCoverFlow::_drawCoverBox(int i, bool mirror, CCoverFlow::DrawMode dm)
 		} 
 		else if (m_items[m_covers[i].index].hdr->hdr.casecolor == 0x000000 ||
 				 m_items[m_covers[i].index].hdr->hdr.casecolor == 0x181919 ||
-				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "RZZJEL", 6) == 0 || 
-				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "RZNJ01", 6) == 0 ||
-				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "SEKJ99", 6) == 0 ||
-				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "SX3J01", 6) == 0 ||
-				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "SX3P01", 6) == 0 ||
-				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "R5WJA4", 6) == 0 ||
-				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "RUYJ99", 6) == 0 ||
-				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "S3HJ08", 6) == 0 ||
-				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "SJBJ01", 6) == 0 ||
-				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "CKBE88", 6) == 0 ||
-                 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "CCPE01", 6) == 0 ||
-                 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "SMMP01", 6) == 0 ||
-				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "APRPxx", 4) == 0 ||
-				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "MDUE01", 6) == 0) 
+				 _checkCoverColor((char *)m_items[m_covers[i].index].hdr->hdr.id,black,black_len))
 		{
 			GX_InitTexObj(&texObj, m_dvdSkin_Black.data.get(), m_dvdSkin_Black.width, m_dvdSkin_Black.height, m_dvdSkin_Black.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		}
@@ -1821,7 +1822,7 @@ void CCoverFlow::right(void)
 	LockMutex lock(m_mutex);
 	_right(m_minDelay, m_rows >= 3 ? m_rows - 2 : 1);
 }
-#include "gecko.h"
+
 void CCoverFlow::_playSound(void)
 {
 	if (m_soundVolume > 0)
