@@ -42,6 +42,7 @@ void CachedList<T>::Load(string path, string containing)													/* Load All
 
 	if(update_games) force_update[COVERFLOW_USB] = false;
 	if(update_homebrew) force_update[COVERFLOW_HOMEBREW] = false;
+	if(update_dml) force_update[COVERFLOW_DML] = false;
 
 	bool music = typeid(T) == typeid(std::string);
 
