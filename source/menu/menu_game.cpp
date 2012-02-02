@@ -108,13 +108,13 @@ const CMenu::SOption CMenu::_DMLvideoModes[3] = {
 };
 
 const CMenu::SOption CMenu::_GClanguages[7] = {
-	{ "GClngdef", L"Default" },
-	{ "GClngeng", L"English" },
-	{ "GClngger", L"German" },
-	{ "GClngfre", L"French" },
-	{ "GClngspa", L"Spanish" },
-	{ "GClngita", L"Italian" },
-	{ "GClngdut", L"Dutch" }
+	{ "lngdef", L"Default" },
+	{ "lngeng", L"English" },
+	{ "lngger", L"German" },
+	{ "lngfre", L"French" },
+	{ "lngspa", L"Spanish" },
+	{ "lngita", L"Italian" },
+	{ "lngdut", L"Dutch" }
 };
 
 const CMenu::SOption CMenu::_NandEmu[3] = {
