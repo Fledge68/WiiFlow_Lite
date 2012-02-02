@@ -1015,6 +1015,8 @@ int CMenu::_gametdbDownloaderAsync()
 				LWP_MutexLock(m_mutex);
 				_setThrdMsg(_t("dlmsg26", L"Updating cache..."), 0.f);
 				LWP_MutexUnlock(m_mutex);
+				
+				m_GameTDBLoaded = true;
 
 				_loadList();
 				_initCF();
