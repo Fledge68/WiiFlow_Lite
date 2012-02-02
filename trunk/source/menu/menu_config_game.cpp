@@ -123,11 +123,11 @@ void CMenu::_showGameSettings(void)
 		
 	if (m_gameSettingsPage == 1)
 	{
+		m_btnMgr.show(m_gameSettingsLblCover);
+		m_btnMgr.show(m_gameSettingsBtnCover);
+		
 		if(m_current_view != COVERFLOW_DML)
 		{
-			m_btnMgr.show(m_gameSettingsLblCover);
-			m_btnMgr.show(m_gameSettingsBtnCover);
-
 			m_btnMgr.show(m_gameSettingsBtnCategoryMain);
 			m_btnMgr.show(m_gameSettingsLblCategoryMain);
 
@@ -156,10 +156,12 @@ void CMenu::_showGameSettings(void)
 	}
 	else
 	{
+		m_btnMgr.hide(m_gameSettingsLblCover);
+		m_btnMgr.hide(m_gameSettingsBtnCover);
+		
 		if(m_current_view != COVERFLOW_DML)
 		{
-			m_btnMgr.hide(m_gameSettingsLblCover);
-			m_btnMgr.hide(m_gameSettingsBtnCover);
+			
 
 			m_btnMgr.hide(m_gameSettingsBtnCategoryMain);
 			m_btnMgr.hide(m_gameSettingsLblCategoryMain);
@@ -666,15 +668,15 @@ void CMenu::_initGameSettingsMenu(CMenu::SThemeData &theme)
 	m_gameSettingsBtnVideoP = _addPicButton(theme, "GAME_SETTINGS/VIDEO_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 310, 56, 56);
 	
 	//DML Page 1
-	m_gameSettingsLblDMLGameVideo = _addLabel(theme, "GAME_SETTINGS/DML_VIDEO", theme.lblFont, L"", 40, 130, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsLblDMLVideo = _addLabel(theme, "GAME_SETTINGS/DML_VIDEO_BTN", theme.btnFont, L"", 386, 130, 158, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_gameSettingsBtnDMLVideoM = _addPicButton(theme, "GAME_SETTINGS/DML_VIDEO_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 330, 130, 56, 56);
-	m_gameSettingsBtnDMLVideoP = _addPicButton(theme, "GAME_SETTINGS/DML_VIDEO_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 130, 56, 56);
+	m_gameSettingsLblDMLGameVideo = _addLabel(theme, "GAME_SETTINGS/DML_VIDEO", theme.lblFont, L"", 40, 190, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsLblDMLVideo = _addLabel(theme, "GAME_SETTINGS/DML_VIDEO_BTN", theme.btnFont, L"", 386, 190, 158, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_gameSettingsBtnDMLVideoM = _addPicButton(theme, "GAME_SETTINGS/DML_VIDEO_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 330, 190, 56, 56);
+	m_gameSettingsBtnDMLVideoP = _addPicButton(theme, "GAME_SETTINGS/DML_VIDEO_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 190, 56, 56);
 
-	m_gameSettingsLblGClanguage = _addLabel(theme, "GAME_SETTINGS/GC_LANG", theme.lblFont, L"", 40, 190, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsLblGClanguageVal = _addLabel(theme, "GAME_SETTINGS/GC_LANG_BTN", theme.btnFont, L"", 386, 190, 158, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_gameSettingsBtnGClanguageM = _addPicButton(theme, "GAME_SETTINGS/GC_LANG_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 330, 190, 56, 56);
-	m_gameSettingsBtnGClanguageP = _addPicButton(theme, "GAME_SETTINGS/DGC_LANG_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 190, 56, 56);
+	m_gameSettingsLblGClanguage = _addLabel(theme, "GAME_SETTINGS/GC_LANG", theme.lblFont, L"", 40, 250, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsLblGClanguageVal = _addLabel(theme, "GAME_SETTINGS/GC_LANG_BTN", theme.btnFont, L"", 386, 250, 158, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_gameSettingsBtnGClanguageM = _addPicButton(theme, "GAME_SETTINGS/GC_LANG_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 330, 250, 56, 56);
+	m_gameSettingsBtnGClanguageP = _addPicButton(theme, "GAME_SETTINGS/DGC_LANG_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 250, 56, 56);
 
 	// Page 2
 	m_gameSettingsLblDebugger = _addLabel(theme, "GAME_SETTINGS/GAME_DEBUGGER", theme.lblFont, L"", 40, 130, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
