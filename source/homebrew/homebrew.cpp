@@ -1,6 +1,5 @@
 #include <gccore.h>
 #include <ogcsys.h>
-//#include <malloc.h>
 #include <stdio.h>
 #include <string.h>
 #include <ogc/machine/processor.h>
@@ -27,12 +26,10 @@ bool bootHB;
 
 bool IsDollZ (u8 *buff)
 {
-  int ret;
-  
   u8 dollz_stamp[] = {0x3C};
   int dollz_offs = 0x100;
 
-  ret = memcmp (&buff[dollz_offs], dollz_stamp, sizeof(dollz_stamp));
+  int ret = memcmp (&buff[dollz_offs], dollz_stamp, sizeof(dollz_stamp));
   if (ret == 0) return true;
   
   return false;
@@ -75,13 +72,17 @@ int LoadHomebrew(const char * filepath)
 	SmartBuf buffer = smartAnyAlloc(filesize);
 	if (!buffer)
 	{
-		fclose(file);
+		SAFE_CLOSE(file);
 		return -3;
 	}
-	
+
 	bool good_read = fread((u8 *)buffer.get(), 1, filesize, file) == filesize;
+	if (!good_read)
+    { 
+	    SAFE_CLOSE(file);
+		return -4;
+	}
 	SAFE_CLOSE(file);
-	if (!good_read) return -4;
 
 	DCFlushRange((u8 *)buffer.get(), filesize);
 

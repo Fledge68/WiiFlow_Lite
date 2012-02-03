@@ -31,8 +31,10 @@
 using namespace std;
 
 static const char FMT_BPIC_URL[] = "http://art.gametdb.com/wii/coverfullHQ/{loc}/{gameid}.png"\
+"|http://art.gametdb.com/wii/coverfullHQ2/{loc}/{gameid}.png"\
 "|http://art.gametdb.com/wii/coverfull/{loc}/{gameid}.png";
-static const char FMT_PIC_URL[] = "http://art.gametdb.com/wii/cover/{loc}/{gameid}.png";
+static const char FMT_PIC_URL[] = "http://art.gametdb.com/wii/cover/{loc}/{gameid}.png"\
+"|http://art.gametdb.com/wii/cover2/{loc}/{gameid}.png";
 
 static block download = { 0, 0 };
 static string countryCode(const string &gameId)
@@ -570,7 +572,7 @@ void CMenu::_download(string gameId)
 			m_thrdMessage = _t("dlmsg6", L"Canceling...");
 			m_thrdWorking = false;
 		}
-		// 
+
 		if (m_thrdMessageAdded)
 		{
 			LockMutex lock(m_mutex);
@@ -618,7 +620,7 @@ void CMenu::_initDownloadMenu(CMenu::SThemeData &theme)
 	m_downloadLblGameTDB = _addLabel(theme, "DOWNLOAD/GAMETDB", theme.btnFont, L"", 40, 400, 370, 60, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_downloadLblMessage[0] = _addLabel(theme, "DOWNLOAD/MESSAGE1", theme.lblFont, L"", 40, 228, 560, 100, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
 	m_downloadLblMessage[1] = _addLabel(theme, "DOWNLOAD/MESSAGE2", theme.lblFont, L"", 40, 228, 560, 100, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
-	//
+
 	_setHideAnim(m_downloadLblTitle, "DOWNLOAD/TITLE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_downloadPBar, "DOWNLOAD/PROGRESS_BAR", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_downloadLblCovers, "DOWNLOAD/COVERS", 0, 0, -2.f, 0.f);

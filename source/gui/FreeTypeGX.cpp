@@ -36,10 +36,7 @@ FreeTypeGX::FreeTypeGX(uint8_t textureFormat, uint8_t positionFormat) {
 
 	this->textureFormat = textureFormat;
 	this->positionFormat = positionFormat;
-	xScale = 1.f;
-	yScale = 1.f;
-	xPos = 0.f;
-	yPos = 0.f;
+    reset();
 	this->ftFace = 0;
 }
 
@@ -591,15 +588,9 @@ ftgxDataOffset FreeTypeGX::getOffset(wchar_t const *text) {
  */
 void FreeTypeGX::copyTextureToFramebuffer(GXTexObj *texObj, uint8_t positionFormat, uint16_t texWidth, uint16_t texHeight, int16_t screenX, int16_t screenY, GXColor color) {
 
-	f32	f32TexWidth = texWidth,
-		f32TexHeight = texHeight;
+	f32	f32TexWidth = texWidth,	f32TexHeight = texHeight;
 	float x = (float)screenX + xPos;
 	float y = (float)screenY + yPos;
-
-//	Mtx model;
-//	guMtxIdentity(model);
-//	guMtxTransApply(model, model, screenX, screenY, 0.0f);
-//	GX_LoadPosMtxImm(model, GX_PNMTX0);
 
 	GX_LoadTexObj(texObj, GX_TEXMAP0);
 
@@ -665,10 +656,8 @@ void FreeTypeGX::copyTextureToFramebuffer(GXTexObj *texObj, uint8_t positionForm
  * @param color	Color to apply to the texture.
  */
 void FreeTypeGX::copyFeatureToFramebuffer(uint8_t positionFormat, uint16_t featureWidth, uint16_t featureHeight, int16_t screenX, int16_t screenY, GXColor color) {
-	f32	f32FeatureWidth = featureWidth,
-		f32FeatureHeight = featureHeight;
+	f32	f32FeatureWidth = featureWidth,	f32FeatureHeight = featureHeight;
 
-	return;
 	GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
   	switch(positionFormat) {
 	  	case GX_POS_XY:

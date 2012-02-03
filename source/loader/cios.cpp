@@ -76,7 +76,7 @@ iosinfo_t *cIOSInfo::GetInfo(u8 ios)
 
 	u32 size = 0;
 	u8 *buffer = ISFS_GetFile((u8 *) filepath, &size, sizeof(iosinfo_t));
-	if(!buffer) return NULL;
+	if(buffer == NULL || size == 0) return NULL;
 
 	iosinfo_t *iosinfo = (iosinfo_t *) buffer;
 
@@ -97,5 +97,7 @@ iosinfo_t *cIOSInfo::GetInfo(u8 ios)
 		SAFE_FREE(buffer);
 		return NULL;
 	}
+	SAFE_FREE(buffer);
+	
 	return iosinfo;
 }

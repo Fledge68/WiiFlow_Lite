@@ -359,15 +359,14 @@ s32 Disc_BootPartition(u64 offset, u8 vidMode, bool vipatch, bool countryString,
 
 	/* Run apploader */
 	ret = Apploader_Run(&p_entry, vidMode, vmode, vipatch, countryString, patchVidMode, aspectRatio);
-	free_wip();
 	if (ret < 0) return ret;
 
+    free_wip();
+	
 	if (hooktype != 0)
 		ocarina_do_code();
 
 	gprintf("\n\nEntry Point is: %0x8\n", p_entry);
-//	gprintf("Lowmem:\n\n");
-//	ghexdump((void*)0x80000000, 0x3f00);
 
 	/* Set time */
 	__Disc_SetTime();
