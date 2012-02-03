@@ -150,13 +150,10 @@ u64* Channels::GetChannelList(u32* count)
 
 bool Channels::GetAppNameFromTmd(u64 title, char* app, bool dol, u32* bootcontent)
 {
-	u32 high = TITLE_UPPER(title);
-	u32 low  = TITLE_LOWER(title);
-
 	bool ret = false;
 
 	char tmd[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
-	sprintf(tmd, "/title/%08x/%08x/content/title.tmd", high, low);
+	sprintf(tmd, "/title/%08x/%08x/content/title.tmd", TITLE_UPPER(title), TITLE_LOWER(title));
 
 	u32 size;
 	u8 *data = ISFS_GetFile((u8 *) &tmd, &size, -1);
@@ -168,7 +165,7 @@ bool Channels::GetAppNameFromTmd(u64 title, char* app, bool dol, u32* bootconten
 		if(tmd_file->contents[i].index == (dol ? tmd_file->boot_index : 0))
 		{
 			*bootcontent = tmd_file->contents[i].cid;
-			sprintf(app, "/title/%08x/%08x/content/%08x.app", high, low, *bootcontent);
+			sprintf(app, "/title/%08x/%08x/content/%08x.app", TITLE_UPPER(title), TITLE_LOWER(title), *bootcontent);
 			ret = true;
 			break;
 		}

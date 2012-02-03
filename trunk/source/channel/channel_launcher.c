@@ -50,7 +50,8 @@ s32 BootChannel(u8 *data, u64 chantitle, u8 vidMode, bool vipatch, bool countryS
 
 	/* Set time */
 	__Disc_SetTime();
-
+	
+	/* Set low memery */
 	__Disc_SetLowMem();
 
 	if (hooktype != 0)
@@ -147,7 +148,7 @@ u32 LoadChannel(u8 *buffer)
             DCFlushRange((void *)dolfile->bss_start, dolfile->bss_size);
     }
    
-  int i;
+    int i;
 	for(i = 0; i < 18; i++)
 	{
 		if (!dolfile->section_size[i]) continue;
@@ -171,7 +172,7 @@ void PatchChannel(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryStrin
 {
 	bool hookpatched = false;
 
-  int i;
+    int i;
 	for (i=0;i < dolchunkcount;i++)
 	{		
 		patchVideoModes(dolchunkoffset[i], dolchunksize[i], vidMode, vmode, patchVidModes);
@@ -283,7 +284,7 @@ u8 * GetDol(u64 title, char *id, u32 bootcontent)
 	gprintf("Loading DOL: %s...", filepath);
 	u32 contentSize = 0;
 	u8 *data = ISFS_GetFile((u8 *) &filepath, &contentSize, -1);
-	if (data != NULL)
+	if (data != NULL && contentSize != 0)
 	{	
 		gprintf("Done!\n");
 	
