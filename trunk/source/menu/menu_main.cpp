@@ -194,7 +194,6 @@ int CMenu::main(void)
 		m_gametdb.CloseFile();
 	}
 	
-	m_gameList.SetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
 	if (m_cfg.getBool("GENERAL", "update_cache", false))
 	{
 		UpdateCache();

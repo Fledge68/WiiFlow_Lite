@@ -24,8 +24,7 @@ class CachedList : public safe_vector<T>
 	{
 		m_cacheDir = cachedir;
 		m_settingsDir = settingsDir;
-		m_curLanguage = m_lastLanguage = curLanguage;
-		m_channelLang = m_lastchannelLang = curLanguage;
+		m_curLanguage = curLanguage;
 		m_loaded = false;
 		m_database = "";
 		m_update = false;
@@ -48,8 +47,8 @@ class CachedList : public safe_vector<T>
 		}
 	}
 
-    void Load(string path, string containing);
-	void LoadChannels(string path, u32 channelType);
+    void Load(string path, string containing, string m_lastLanguage);
+	void LoadChannels(string path, u32 channelType, string m_lastLanguage);
 
     void Unload(){if(m_loaded) {this->clear(); m_loaded = false; m_database = "";}};
     void Save() {if(m_loaded) CCache<T>(*this, m_database, SAVE);}							/* Save All */
@@ -60,7 +59,7 @@ class CachedList : public safe_vector<T>
     void Add(T tmp) {if(m_loaded) CCache<T>(*this, m_database, tmp, ADD);}					/* Add One */
     void Remove(u32 index) {if(m_loaded) CCache<T>(*this, m_database, index, REMOVE);}		/* Remove One */
 	
-	void SetLanguage(string curLanguage) { m_curLanguage = m_channelLang = curLanguage; }
+	void SetLanguage(string curLanguage) { m_curLanguage = curLanguage; }
   private:
     string make_db_name(string path);
 
@@ -73,9 +72,6 @@ class CachedList : public safe_vector<T>
     string m_cacheDir;
 	string m_settingsDir;
 	string m_curLanguage;
-	string m_lastLanguage;
-	string m_channelLang;
-	string m_lastchannelLang;
 	string m_discinf;
 };
 
