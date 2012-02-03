@@ -1534,7 +1534,12 @@ bool CMenu::_loadChannelList(void)
 	string nandpath = sfmt("%s:%s", DeviceName[currentPartition], path.empty() ? "/" : path.c_str());
 	gprintf("nandpath = %s\n", nandpath.c_str());
 
-	if(!failed) m_gameList.LoadChannels(disable_emu ? "" : nandpath, 0);
+	if(!failed) 
+	{
+		m_gameList.LoadChannels(disable_emu ? "" : nandpath, 0, m_cfg.getString("NAND", "lastlanguage", "EN").c_str());
+		m_cfg.setString("NAND", "lastlanguage", m_loc.getString(m_curLanguage, "gametdb_code", "EN"));
+		m_cfg.save();
+	}
 	
 	lastPartition = currentPartition;
 	last_emu_state = disable_emu;
@@ -1585,7 +1590,9 @@ bool CMenu::_loadGameList(void)
 
 	gprintf("%s\n", DeviceName[currentPartition]);
 	DeviceHandler::Instance()->Open_WBFS(currentPartition);
-	m_gameList.Load(sfmt(GAMES_DIR, DeviceName[currentPartition]), ".wbfs|.iso");
+	m_gameList.Load(sfmt(GAMES_DIR, DeviceName[currentPartition]), ".wbfs|.iso", m_cfg.getString("GAMES", "lastlanguage", "EN").c_str());
+	m_cfg.setString("GAMES", "lastlanguage", m_loc.getString(m_curLanguage, "gametdb_code", "EN"));
+	m_cfg.save();
 	return m_gameList.size() > 0 ? true : false;
 }
 
@@ -1597,8 +1604,9 @@ bool CMenu::_loadHomebrewList()
 
 	gprintf("%s\n", DeviceName[currentPartition]);
 	DeviceHandler::Instance()->Open_WBFS(currentPartition);
-
-	m_gameList.Load(sfmt(HOMEBREW_DIR, DeviceName[currentPartition]), ".dol|.elf");
+	m_gameList.Load(sfmt(HOMEBREW_DIR, DeviceName[currentPartition]), ".dol|.elf", m_cfg.getString("HOMEBREW", "lastlanguage", "EN").c_str());
+	m_cfg.setString("HOMEBREW", "lastlanguage", m_loc.getString(m_curLanguage, "gametdb_code", "EN"));
+	m_cfg.save();
 	return m_gameList.size() > 0 ? true : false;
 }
 
@@ -1609,7 +1617,9 @@ bool CMenu::_loadDmlList()
 
 	gprintf("%s\n", DeviceName[SD]);
 	DeviceHandler::Instance()->Open_WBFS(SD);
-	m_gameList.Load(sfmt(DML_DIR, DeviceName[SD]), ".iso");
+	m_gameList.Load(sfmt(DML_DIR, DeviceName[SD]), ".iso", m_cfg.getString("DML", "lastlanguage", "EN").c_str());
+	m_cfg.setString("DML", "lastlanguage", m_loc.getString(m_curLanguage, "gametdb_code", "EN"));
+	m_cfg.save();
 	return m_gameList.size() > 0 ? true : false;
 }
 

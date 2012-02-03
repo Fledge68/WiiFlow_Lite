@@ -2,7 +2,7 @@
 #include <typeinfo>
 
 template <class T>
-void CachedList<T>::Load(string path, string containing)													/* Load All */
+void CachedList<T>::Load(string path, string containing, string m_lastLanguage)													/* Load All */
 {
 	gprintf("\nLoading files containing %s in %s\n", containing.c_str(), path.c_str());
 	m_loaded = false;
@@ -37,7 +37,10 @@ void CachedList<T>::Load(string path, string containing)													/* Load All
 			ditimes = discinfo.st_mtime > cache.st_mtime;
 
 		m_update = update_lang || noDB || mtimes || ditimes;
-		if(m_update) gprintf("Cache is being updated because %s\n", update_lang ? "languages are different!" : noDB ? "a database was not found!" : "the WBFS folder was modified!");
+		if(m_update) gprintf("Cache of %s is being updated because ", path.c_str());
+		if(update_lang) gprintf("languages are different!\nOld language string: %s\nNew language string: %s\n", m_lastLanguage.c_str(), m_curLanguage.c_str());
+		if(noDB) gprintf("a database was not found!\n");
+		if(mtimes || ditimes) gprintf("the WBFS folder was modified!");
 	}
 
 	if(update_games) force_update[COVERFLOW_USB] = false;
@@ -59,7 +62,6 @@ void CachedList<T>::Load(string path, string containing)													/* Load All
 		fclose(file);
 		remove(path.c_str());
 		
-		m_lastLanguage = m_curLanguage;
 		m_loaded = true;
 		m_update = false;		
 		
@@ -70,14 +72,14 @@ void CachedList<T>::Load(string path, string containing)													/* Load All
 		}
 	}
 	else
-	{
+	{		
 		CCache<T>(*this, m_database, LOAD);
 		m_loaded = true;
 	}
 }
 
 template<>
-void CachedList<dir_discHdr>::LoadChannels(string path, u32 channelType)													/* Load All */
+void CachedList<dir_discHdr>::LoadChannels(string path, u32 channelType, string m_lastLanguage)													/* Load All */
 {
 	m_loaded = false;
 	m_update = true;
@@ -101,7 +103,7 @@ void CachedList<dir_discHdr>::LoadChannels(string path, u32 channelType)								
 
 		if(stat(newpath.c_str(), &filestat) == -1) return;
 
-		m_update = force_update[COVERFLOW_CHANNEL] || m_lastchannelLang != m_channelLang || stat(m_database.c_str(), &cache) == -1 || filestat.st_mtime > cache.st_mtime;
+		m_update = force_update[COVERFLOW_CHANNEL] || m_lastLanguage != m_curLanguage || stat(m_database.c_str(), &cache) == -1 || filestat.st_mtime > cache.st_mtime;
 	}
 
 	force_update[COVERFLOW_CHANNEL] = false;
@@ -109,11 +111,10 @@ void CachedList<dir_discHdr>::LoadChannels(string path, u32 channelType)								
 	if(m_update)
 	{
 		gprintf("Updating channels\n");
-		list.GetChannels(*this, m_settingsDir, channelType, m_channelLang);
+		list.GetChannels(*this, m_settingsDir, channelType, m_curLanguage);
 		
 		m_loaded = true;
 		m_update = false;
-		m_lastchannelLang = m_channelLang;
 
 		if(this->size() > 0 && emu) Save();
 	}
