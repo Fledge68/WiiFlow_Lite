@@ -265,53 +265,41 @@ uint16_t FreeTypeGX::cacheGlyphDataComplete() {
 
 /**
  * Loads the rendered bitmap into the relevant structure's data buffer.
- * 
+ *
  * This routine does a simple byte-wise copy of the glyph's rendered 8-bit grayscale bitmap into the structure's buffer.
  * Each byte is converted from the bitmap's intensity value into the a uint32_t RGBA value.
- * 
- * @param bmp	A pointer to the most recently rendered glyph's bitmap.
- * @param charData	A pointer to an allocated ftgxCharData structure whose data represent that of the last rendered glyph.
+ *
+ * @param bmp   A pointer to the most recently rendered glyph's bitmap.
+ * @param charData      A pointer to an allocated ftgxCharData structure whose data represent that of the last rendered glyph.
+ *
+ * Optimized for RGBA8 use by Dimok.
  */
-void FreeTypeGX::loadGlyphData(FT_Bitmap *bmp, ftgxCharData *charData) {
-	
-	uint32_t *glyphData = (uint32_t *)MEM2_alloc(charData->textureWidth * charData->textureHeight * 4);
-	if (glyphData == 0)
-		return;
-	memset(glyphData, 0x00, charData->textureWidth * charData->textureHeight * 4);
-	
-	for (uint16_t imagePosY = 0; imagePosY < bmp->rows; imagePosY++) {
-		for (uint16_t imagePosX = 0; imagePosX < bmp->width; imagePosX++) {
-			uint32_t pixel = (uint32_t) bmp->buffer[imagePosY * bmp->width + imagePosX];
-			glyphData[imagePosY * charData->textureWidth + imagePosX] = 0x00000000 | (pixel << 24) | (pixel << 16) | (pixel << 8) | pixel;
-		}
-	}
-	
-	switch(this->textureFormat) {
-		case GX_TF_I4:
-			charData->glyphDataTexture = Metaphrasis::convertBufferToI4(glyphData, charData->textureWidth, charData->textureHeight);
-			break;
-		case GX_TF_I8:
-			charData->glyphDataTexture = Metaphrasis::convertBufferToI8(glyphData, charData->textureWidth, charData->textureHeight);
-			break;
-		case GX_TF_IA4:
-			charData->glyphDataTexture = Metaphrasis::convertBufferToIA4(glyphData, charData->textureWidth, charData->textureHeight);
-			break;
-		case GX_TF_IA8:
-			charData->glyphDataTexture = Metaphrasis::convertBufferToIA8(glyphData, charData->textureWidth, charData->textureHeight);
-			break;
-		case GX_TF_RGB565:
-			charData->glyphDataTexture = Metaphrasis::convertBufferToRGB565(glyphData, charData->textureWidth, charData->textureHeight);
-			break;
-		case GX_TF_RGB5A3:
-			charData->glyphDataTexture = Metaphrasis::convertBufferToRGB5A3(glyphData, charData->textureWidth, charData->textureHeight);
-			break;
-		case GX_TF_RGBA8:
-		default:
-			charData->glyphDataTexture = Metaphrasis::convertBufferToRGBA8(glyphData, charData->textureWidth, charData->textureHeight);
-			break;
-	}
-	
-	SAFE_FREE(glyphData);
+void FreeTypeGX::loadGlyphData(FT_Bitmap *bmp, ftgxCharData *charData)
+{
+    int length = charData->textureWidth * charData->textureHeight * 4;
+
+        uint8_t * glyphData = (uint8_t *) MEM2_alloc(length);
+        if(!glyphData) return;
+
+        memset(glyphData, 0x00, length);
+
+        uint8_t *src = (uint8_t *)bmp->buffer;
+        uint32_t offset;
+
+        for (int imagePosY = 0; imagePosY < bmp->rows; ++imagePosY)
+        {
+                for (int imagePosX = 0; imagePosX < bmp->width; ++imagePosX)
+                {
+                    offset = ((((imagePosY >> 2) * (charData->textureWidth >> 2) + (imagePosX >> 2)) << 5) + ((imagePosY & 3) << 2) + (imagePosX & 3)) << 1;
+                        glyphData[offset] = *src;
+                        glyphData[offset+1] = *src;
+                        glyphData[offset+32] = *src;
+                        glyphData[offset+33] = *src;
+                        ++src;
+                }
+        }
+        DCFlushRange(glyphData, length);
+        charData->glyphDataTexture = (uint32_t *) glyphData;
 }
 
 /**

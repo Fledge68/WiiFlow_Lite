@@ -22,7 +22,7 @@
 "Lustar, CedWii, Benjay, Domi78, Oops, \
 Celtiore, Jiiwah, FluffyKiwi, Roku93, \
 Spayrosam, Bluescreen81, Chappy23, \
-BlindDude, Bubba, DJTaz, OggZee, entropy,\
+BlindDude, Bubba, DJTaz, OggZee, entropy, \
 Usptactical, WiiPower, Hermes, Spidy1000, \
 Dimok, Kovani, Drexyl, DvZ, Etheboss, \
 GaiaKnight, nibb, NJ7, Plasma, Pakatus, \
