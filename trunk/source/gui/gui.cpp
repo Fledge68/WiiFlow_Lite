@@ -172,13 +172,15 @@ void CButtonsMgr::setSoundVolume(int vol)
 	m_soundVolume = min(max(0, vol), 0xFF);
 }
 
-void CButtonsMgr::show(u32 id, bool instant)
+void CButtonsMgr::show(u32 id, bool instant, bool synopsis)
 {
 	if (id < m_elts.size())
 	{
 		CButtonsMgr::SElement &b = *m_elts[id];
 		b.visible = true;
 		b.targetScaleX = 1.0f;
+		if(synopsis)
+			b.targetScaleX = 0.9f;
 		b.targetScaleY = 1.0f;
 		b.targetPos = Vector3D((float)b.x, (float)b.y, 0);
 		b.targetAlpha = 0xFF;

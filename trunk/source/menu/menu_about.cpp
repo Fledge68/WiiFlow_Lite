@@ -94,7 +94,7 @@ void CMenu::_showAbout(void)
 	_setBg(m_aboutBg, m_aboutBg);
 	m_btnMgr.show(m_aboutLblTitle);
 	m_btnMgr.show(m_aboutLblIOS);
-	m_btnMgr.show(m_aboutLblInfo);
+	m_btnMgr.show(m_aboutLblInfo,false,true);
 	m_btnMgr.show(m_aboutBtnSystem);
 	for (u32 i = 0; i < ARRAY_SIZE(m_aboutLblUser); ++i)
 		if (m_aboutLblUser[i] != -1u)
