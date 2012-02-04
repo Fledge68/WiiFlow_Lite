@@ -40,16 +40,20 @@ void Open_Inputs(void)
 	WPAD_SetPowerButtonCallback(__Wpad_PowerCallback);
 	
 	WPAD_SetDataFormat(WPAD_CHAN_ALL, WPAD_FMT_BTNS_ACC_IR);
+	
+	WPAD_SetIdleTimeout(60*5); // idle after 5 minutes
 }
 
 void Close_Inputs(void)
 {
-	while(WPAD_GetStatus() == WPAD_STATE_ENABLING); //Possible freeze if i keep this here?
-	if(WPAD_GetStatus() == WPAD_STATE_ENABLED)
-	{
-		WPAD_Flush(WPAD_CHAN_ALL);
-		WPAD_Shutdown();
-	}
+	u32 cnt;
+
+	/* Disconnect Wiimotes */
+	for (cnt = 0; cnt < 4; cnt++)
+		WPAD_Disconnect(cnt);
+
+	/* Shutdown Wiimote subsystem */
+	WPAD_Shutdown();
 }
 
 bool Sys_Exiting(void)
