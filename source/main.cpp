@@ -50,29 +50,30 @@ int main(int argc, char **argv)
 	}
 	gprintf("Loading cIOS: %d\n", mainIOS);
 
-
 	ISFS_Initialize();
 
 	// Load Custom IOS
 	bool iosOK = loadIOS(mainIOS, false);
 	MEM2_init(52);
-
+	
 	u8 mainIOSBase = 0;
 	iosOK = iosOK && cIOSInfo::D2X(mainIOS, &mainIOSBase);
 	gprintf("Loaded cIOS: %u has base %u\n", mainIOS, mainIOSBase);
-
+	
+	Open_Inputs(); //init wiimote early
+	
 	// Init video
 	vid.init();
 	WIILIGHT_Init();
-
+	
 	vid.waitMessage(0.2f);
-
+	
 	// Init
 	Sys_Init();
 	Sys_ExitTo(EXIT_TO_HBC);
-
+	
 	int ret = 0;
-
+	
 	do 
 	{
 		bool deviceAvailable = false;
@@ -94,7 +95,7 @@ int main(int argc, char **argv)
 		CMenu menu(vid);
 		menu.init();
 		
-		Open_Inputs(); //we should init inputs as last point
+		//Open_Inputs(); //we should init inputs as last point
 		
 		mainMenu = &menu;
 		if (!iosOK)
@@ -120,7 +121,7 @@ int main(int argc, char **argv)
 			IOS_ReloadIOS(58);
 			BootHomebrew();
 		}
-
+		Open_Inputs(); //reinit wiimote
 	} while (ret == 1);
 	
 	WifiGecko_Close();
