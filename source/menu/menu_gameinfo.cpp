@@ -121,6 +121,7 @@ void CMenu::_gameinfo(void)
 			m_btnMgr.reset(m_gameinfoLblSynopsis);
 			m_btnMgr.setText(m_gameinfoLblSynopsis, wfmt(L"%s", gameinfo.Synopsis.c_str()), true); //, line, false);
 
+			m_btnMgr.hide(m_gameinfoLblID, true);
 			m_btnMgr.hide(m_gameinfoLblDev, true);
 			m_btnMgr.hide(m_gameinfoLblRegion, true);
 			m_btnMgr.hide(m_gameinfoLblPublisher, true);
@@ -144,12 +145,12 @@ void CMenu::_gameinfo(void)
 				else
 					m_btnMgr.show(m_gameinfoLblUser[i]);
 			
-			m_btnMgr.show(m_gameinfoLblID);
 			m_btnMgr.show(m_gameinfoLblSynopsis);
 		}
 		else if (BTN_LEFT_PRESSED && !(m_thrdWorking && m_thrdStop))
 		{
 			page = 0;
+			first = true;
 			m_btnMgr.show(m_gameinfoLblID);
 			m_btnMgr.show(m_gameinfoLblDev);
 			m_btnMgr.show(m_gameinfoLblRegion);	

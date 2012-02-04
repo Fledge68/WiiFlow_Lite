@@ -272,7 +272,7 @@ int CMenu::main(void)
 			{
 				const char *domain = _domainFromView();
 				s8 direction = BTN_1_PRESSED ? 1 : -1;
-				int cfVersion = loopNum(m_cfg.getInt(domain, "last_cf_mode", 1) + direction, m_numCFVersions);
+				int cfVersion = 1+loopNum((m_cfg.getInt(domain, "last_cf_mode", 1)-1) + direction, m_numCFVersions);
 				_loadCFLayout(cfVersion);
 				m_cf.applySettings();
 				m_cfg.setInt(domain, "last_cf_mode", cfVersion);

@@ -157,6 +157,7 @@ int CMenu::_configAdv(void)
 				s8 direction = m_btnMgr.selected(m_configAdvBtnCurThemeP) ? 1 : -1;
 				curTheme = loopNum(curTheme + direction, (int)themes.size());
 				m_cfg.setString("GENERAL", "theme", themes[curTheme]);
+				m_cfg.setInt(_domainFromView(), "last_cf_mode", 1);
 				_showConfigAdv();
 			}
 			else if (m_btnMgr.selected(m_configAdvBtnCurLanguageP) || m_btnMgr.selected(m_configAdvBtnCurLanguageM))
