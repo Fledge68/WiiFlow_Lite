@@ -145,7 +145,7 @@ void CMenu::_gameinfo(void)
 				else
 					m_btnMgr.show(m_gameinfoLblUser[i]);
 			
-			m_btnMgr.show(m_gameinfoLblSynopsis);
+			m_btnMgr.show(m_gameinfoLblSynopsis,false,true);
 		}
 		else if (BTN_LEFT_PRESSED && !(m_thrdWorking && m_thrdStop))
 		{
