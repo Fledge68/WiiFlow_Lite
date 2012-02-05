@@ -188,10 +188,9 @@ void CMenu::init(void)
 	}
 	
 	m_show_dml = MIOSisDML();
-	Nand::Instance()->Init(m_cfg.getString("NAND", "path", "").c_str(),
-		m_cfg.getInt("NAND", "partition", 0),
-		m_cfg.getBool("NAND", "disable", true)
-		);
+	m_cfg.getString("NAND", "path", "").c_str();
+	m_cfg.getInt("NAND", "partition", 0);
+	m_cfg.getBool("NAND", "disable", true);
 
 	_load_installed_cioses();
 
