@@ -174,6 +174,10 @@ s32 WBFS_Ext_AddGame(progress_callback_t spinner, void *spinner_data)
 {
 	struct discHdr header ATTRIBUTE_ALIGN(32);
 
+	char *illegal = "\"*/:<>?\\|";
+	char *cp;
+	char *cleantitle;
+
 	char folder[MAX_FAT_PATH];
 	bzero(folder, MAX_FAT_PATH);
 
@@ -181,7 +185,11 @@ s32 WBFS_Ext_AddGame(progress_callback_t spinner, void *spinner_data)
 	bzero(gamepath, MAX_FAT_PATH);
 	
 	Disc_ReadHeader(&header);
-	snprintf(folder, sizeof(folder), "%s%s/%s [%s]", wbfs_fs_drive, wbfs_ext_dir, header.title, header.id);
+	asprintf(&cleantitle, header.title);
+	for (cp = strpbrk(cleantitle, illegal); cp; cp = strpbrk(cp, illegal))
+		*cp = '_';
+	snprintf(folder, sizeof(folder), "%s%s/%s [%s]", wbfs_fs_drive, wbfs_ext_dir, cleantitle, header.id);
+	free(cleantitle);
 	makedir((char *)folder);
 	snprintf(gamepath, sizeof(gamepath), "%s/%s.wbfs", folder, header.id);
 
