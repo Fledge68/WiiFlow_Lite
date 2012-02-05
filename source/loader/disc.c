@@ -398,36 +398,24 @@ s32 Disc_BootPartition(u64 offset, u8 vidMode, bool vipatch, bool countryString,
 	{
 		__asm__(
 			"lis %r3, appentrypoint@h\n"
-			"nop\n"
 			"ori %r3, %r3, appentrypoint@l\n"
-			"nop\n"
 			"lwz %r3, 0(%r3)\n"
-			"nop\n"
 			"mtlr %r3\n"
-			"nop\n"
 			"lis %r3, 0x8000\n"
-			"nop\n"
 			"ori %r3, %r3, 0x18A8\n"
 			"nop\n"
 			"mtctr %r3\n"
-			"nop\n"
 			"bctr\n"
-			"nop\n"
 		);
 	}
 	else
 	{
 		__asm__(
 			"lis %r3, appentrypoint@h\n"
-			"nop\n"
 			"ori %r3, %r3, appentrypoint@l\n"
-			"nop\n"
 			"lwz %r3, 0(%r3)\n"
-			"nop\n"
 			"mtlr %r3\n"
-			"nop\n"
 			"blr\n"
-			"nop\n"
 		);
 	}
 
