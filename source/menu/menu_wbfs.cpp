@@ -111,6 +111,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 	static discHdr header ATTRIBUTE_ALIGN(32);
 	bool done = false;
 	bool out = false;
+	bool del_cover = false;
 	struct AutoLight { AutoLight(void) { } ~AutoLight(void) { slotLight(false); } } aw;
 	string cfPos = m_cf.getNextId();
 
@@ -191,7 +192,9 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						break;
 					case CMenu::WO_REMOVE_GAME:
 						WBFS_RemoveGame((u8 *)m_cf.getId().c_str(), (char *) m_cf.getHdr()->path);
-						RemoveCover( (char *)m_cf.getId().c_str() );
+						del_cover = m_cfg.getBool("GENERAL", "delete_cover_and_game", false);
+						if(del_cover)
+							RemoveCover((char *)m_cf.getId().c_str());
 						m_btnMgr.show(m_wbfsPBar);
 						m_btnMgr.setProgress(m_wbfsPBar, 0.f, true);
 						m_btnMgr.setProgress(m_wbfsPBar, 1.f);
