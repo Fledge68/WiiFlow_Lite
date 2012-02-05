@@ -91,14 +91,21 @@ s32 BootChannel(u8 *data, u64 chantitle, u8 vidMode, bool vipatch, bool countryS
 		{
 			__asm__(
 				"lis %r3, entryPoint@h\n"
+				"nop\n"
 				"ori %r3, %r3, entryPoint@l\n"
+				"nop\n"
 				"lwz %r3, 0(%r3)\n"
+				"nop\n"
 				"mtlr %r3\n"
+				"nop\n"
 				"lis %r3, 0x8000\n"
+				"nop\n"
 				"ori %r3, %r3, 0x18A8\n"
 				"nop\n"
 				"mtctr %r3\n"
+				"nop\n"
 				"bctr\n"
+				"nop\n"
 			);
 		}
 		else  appJump();	
@@ -107,23 +114,39 @@ s32 BootChannel(u8 *data, u64 chantitle, u8 vidMode, bool vipatch, bool countryS
 	{
 		__asm__(
 			"lis %r3, returnpoint@h\n"
+			"nop\n"
 			"ori %r3, %r3, returnpoint@l\n"
+			"nop\n"
 			"mtlr %r3\n"
+			"nop\n"
 			"lis %r3, 0x8000\n"
+			"nop\n"
 			"ori %r3, %r3, 0x18A8\n"
 			"nop\n"
 			"mtctr %r3\n"
+			"nop\n"
 			"bctr\n"
+			"nop\n"
 			"returnpoint:\n"
+			"nop\n"
 			"bl DCDisable\n"
+			"nop\n"
 			"bl ICDisable\n"
+			"nop\n"
 			"li %r3, 0\n"
+			"nop\n"
 			"mtsrr1 %r3\n"
+			"nop\n"
 			"lis %r4, entryPoint@h\n"
+			"nop\n"
 			"ori %r4,%r4,entryPoint@l\n"
+			"nop\n"
 			"lwz %r4, 0(%r4)\n"
+			"nop\n"
 			"mtsrr0 %r4\n"
+			"nop\n"
 			"rfi\n"
+			"nop\n"
 		);
 	}
 	else _unstub_start();
