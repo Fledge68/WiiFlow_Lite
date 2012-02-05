@@ -96,6 +96,7 @@ s32 BootChannel(u8 *data, u64 chantitle, u8 vidMode, bool vipatch, bool countryS
 				"mtlr %r3\n"
 				"lis %r3, 0x8000\n"
 				"ori %r3, %r3, 0x18A8\n"
+				"nop\n"
 				"mtctr %r3\n"
 				"bctr\n"
 			);
