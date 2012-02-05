@@ -747,6 +747,7 @@ private:
 	const char *_domainFromView(void);
 	void UpdateCache(u32 view = COVERFLOW_MAX);
 	bool MIOSisDML();
+	void RemoveCover( char * id );
 	SFont _font(CMenu::FontSet &fontSet, const char *domain, const char *key, u32 fontSize, u32 lineSpacing, u32 weight, u32 index, const char *genKey);
 	STexture _texture(TexSet &texSet, const char *domain, const char *key, STexture def);
 	safe_vector<STexture> _textures(TexSet &texSet, const char *domain, const char *key);
