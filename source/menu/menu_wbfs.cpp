@@ -191,6 +191,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						break;
 					case CMenu::WO_REMOVE_GAME:
 						WBFS_RemoveGame((u8 *)m_cf.getId().c_str(), (char *) m_cf.getHdr()->path);
+						RemoveCover( (char *)m_cf.getId().c_str() );
 						m_btnMgr.show(m_wbfsPBar);
 						m_btnMgr.setProgress(m_wbfsPBar, 0.f, true);
 						m_btnMgr.setProgress(m_wbfsPBar, 1.f);

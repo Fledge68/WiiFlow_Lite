@@ -1860,3 +1860,25 @@ bool CMenu::MIOSisDML()
 	SAFE_FREE(TMD);
 	return false;
 }
+
+void CMenu::RemoveCover( char * id )
+{
+	FILE *fp = fopen(fmt("%s/%s.png", m_boxPicDir.c_str(), id), "rb");		
+	if (fp != 0)
+	{
+		SAFE_CLOSE(fp);
+		remove(fmt("%s/%s.png", m_boxPicDir.c_str(), id));
+	}
+	fp = fopen(fmt("%s/%s.png", m_picDir.c_str(), id), "rb");		
+	if (fp != 0)
+	{
+		SAFE_CLOSE(fp);
+		remove(fmt("%s/%s.png", m_picDir.c_str(), id));
+	}
+	fp = fopen(fmt("%s/%s.wfc", m_cacheDir.c_str(), id), "rb");		
+	if (fp != 0)
+	{
+		SAFE_CLOSE(fp);
+		remove(fmt("%s/%s.wfc", m_cacheDir.c_str(), id));
+	}	
+}
