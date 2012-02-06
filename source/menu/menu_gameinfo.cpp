@@ -11,8 +11,10 @@ extern const u8		wifi1_png[];
 extern const u8		wifi2_png[];
 extern const u8		wifi4_png[];
 extern const u8		wifi8_png[];
+extern const u8		wifi10_png[];
 extern const u8		wifi12_png[];
 extern const u8		wifi16_png[];
+extern const u8		wifi18_png[];
 extern const u8		wifi32_png[];
 
 extern const u8		wiimote1_png[];
@@ -24,6 +26,7 @@ extern const u8		wiimote8_png[];
 extern const u8		guitar_png[];
 extern const u8		guitarR_png[];
 extern const u8		microphone_png[];
+extern const u8		microphoneR_png[];
 extern const u8		gcncontroller_png[];
 extern const u8		classiccontroller_png[];
 extern const u8		nunchuk_png[];
@@ -38,6 +41,7 @@ extern const u8		motionplus_png[];
 extern const u8		motionplusR_png[];
 extern const u8		wheel_png[];
 extern const u8		zapper_png[];
+extern const u8		keyboard_png[];
 extern const u8		wiispeak_png[];
 
 //Ratings
@@ -398,10 +402,14 @@ void CMenu::_textGameInfo(void)
 			m_wifi.fromPNG(wifi4_png);
 		else if (gameinfo.WifiPlayers == 8)
 			m_wifi.fromPNG(wifi8_png);
+		else if (gameinfo.WifiPlayers == 10)
+			m_wifi.fromPNG(wifi10_png);
 		else if (gameinfo.WifiPlayers == 12)
 			m_wifi.fromPNG(wifi12_png);
 		else if (gameinfo.WifiPlayers == 16)
 			m_wifi.fromPNG(wifi16_png);
+		else if (gameinfo.WifiPlayers == 18)
+			m_wifi.fromPNG(wifi18_png);
 		else if (gameinfo.WifiPlayers == 32)
 			m_wifi.fromPNG(wifi32_png);
 
@@ -412,15 +420,17 @@ void CMenu::_textGameInfo(void)
 
 		u8	wiimote=0,
 			nunchuk=0,
-            classiccontroller=0,
-            balanceboard=0,
-            dancepad=0,
-            guitar=0,
-            gamecube=0,
-            motionplus=0,
-            drums=0,
+            		classiccontroller=0,
+            		balanceboard=0,
+            		dancepad=0,
+            		guitar=0,
+            		gamecube=0,
+            		motionplus=0,
+	                drums=0,
 			microphone=0,
-			wheel=0;
+			wheel=0,
+			keyboard,
+			zapper=0;
 		
 		//check required controlls
 		for (safe_vector<Accessory>::iterator acc_itr = gameinfo.Accessories.begin(); acc_itr != gameinfo.Accessories.end(); acc_itr++)
@@ -439,6 +449,8 @@ void CMenu::_textGameInfo(void)
                 dancepad=1;
             else if (strcmp((acc_itr->Name).c_str(), "motionplus") == 0)
                 motionplus=1;
+	    else if (strcmp((acc_itr->Name).c_str(), "microphone") == 0)
+		microphone=1;
             else if (strcmp((acc_itr->Name).c_str(), "balanceboard") == 0)
                 balanceboard=1;
         }
@@ -475,13 +487,13 @@ void CMenu::_textGameInfo(void)
 		if(guitar && x < max_controlsReq)
 		{
 			m_controlsreq[x].fromPNG(guitarR_png);
-			m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 60, 60);
+			m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 52, 60);
 			x++;
 		}
 		if(drums && x < max_controlsReq)
 		{
 			m_controlsreq[x].fromPNG(drumsR_png);
-			m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 60, 60);
+			m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 52, 60);
 			x++;
 		}
 		if(motionplus && x < max_controlsReq)
@@ -493,13 +505,19 @@ void CMenu::_textGameInfo(void)
 		if(dancepad && x < max_controlsReq)
 		{
 			m_controlsreq[x].fromPNG(dancepadR_png);
-			m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 60, 60);
+			m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 52, 60);
+			x++;
+		}
+		if(microphone && x < max_controlsReq)
+		{
+			m_controlsreq[x].fromPNG(microphoneR_png);
+			m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 52, 60);
 			x++;
 		}
 		if(balanceboard && x < max_controlsReq)
 		{
 			m_controlsreq[x].fromPNG(balanceboardR_png);
-			m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 60, 60);
+			m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 52, 60);
 			x++;
 		}
 
@@ -511,15 +529,17 @@ void CMenu::_textGameInfo(void)
 		//check optional controlls
 		wiimote=0,
 		nunchuk=0,
-        classiccontroller=0,
-        balanceboard=0,
-        dancepad=0,
-        guitar=0,
-        gamecube=0,
-        motionplus=0,
-        drums=0,
+        	classiccontroller=0,
+	        balanceboard=0,
+	        dancepad=0,
+	        guitar=0,
+	        gamecube=0,
+	        motionplus=0,
+	        drums=0,
 		microphone=0,
-		wheel=0;
+		wheel=0,
+		keyboard=0,
+		zapper=0;
 
 		for (safe_vector<Accessory>::iterator acc_itr = gameinfo.Accessories.begin(); acc_itr != gameinfo.Accessories.end(); acc_itr++)
 		{
@@ -543,6 +563,10 @@ void CMenu::_textGameInfo(void)
                 microphone=1;
             else if (strcmp((acc_itr->Name).c_str(), "gamecube") == 0)
                 gamecube=1;
+	    else if (strcmp((acc_itr->Name).c_str(), "keyboard") == 0)
+		keyboard=1;
+	    else if (strcmp((acc_itr->Name).c_str(), "zapper") == 0)
+		zapper=1;
 			else if (strcmp((acc_itr->Name).c_str(), "wheel") == 0)
                 wheel=1;
         }
@@ -553,7 +577,7 @@ void CMenu::_textGameInfo(void)
 		if(classiccontroller && x < max_controls)
 		{
 			m_controls[x].fromPNG(classiccontroller_png);
-			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 60, 60);
+			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 60);
 			x++;
 		}
 		if(nunchuk && x < max_controls)
@@ -564,18 +588,20 @@ void CMenu::_textGameInfo(void)
 		}
 		if(guitar && x < max_controls)
 		{
-			m_controls[x].fromPNG(guitarR_png);
-			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 60, 60);
+			m_controls[x].fromPNG(guitar_png);
+			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 60);
 			x++;
 		}
 		if(drums && x < max_controls)
 		{
 			m_controls[x].fromPNG(drums_png);
+			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 60);
 			x++;
 		}
 		if(dancepad && x < max_controls)
 		{
 			m_controls[x].fromPNG(dancepad_png);
+			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 60);
 			x++;
 		}
 		if(motionplus && x < max_controls)
@@ -587,6 +613,7 @@ void CMenu::_textGameInfo(void)
 		if(balanceboard && x < max_controls)
 		{
 			m_controls[x].fromPNG(balanceboard_png);
+			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 60);
 			x++;
 		}
 		if(microphone && x < max_controls)
@@ -598,11 +625,25 @@ void CMenu::_textGameInfo(void)
 		if(gamecube && x < max_controls)
 		{
 			m_controls[x].fromPNG(gcncontroller_png);
+			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 48, 60);
+			x++;
+		}
+		if(keyboard && x < max_controls)
+		{
+			m_controls[x].fromPNG(keyboard_png);
+			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 60);
+			x++;
+		}
+		if(zapper && x < max_controls)
+		{
+			m_controls[x].fromPNG(zapper_png);
+			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 70);
 			x++;
 		}
 		if(wheel && x < max_controls)
 		{
 			m_controls[x].fromPNG(wheel_png);
+			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 60);
 			x++;
 		}
 
