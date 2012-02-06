@@ -31,8 +31,8 @@ extern const u8 loading_png[];
 extern const u8 flatnopic_png[];
 extern const u8 flatloading_png[];
 
-const char* black[14] = {"RZZJEL","RZNJ01","SEKJ99","SX3J01","SX3P01","R5WJA4","RUYJ99","S3HJ08","SJBJ01","CKBE88","CCPE01","SMMP01","MDUE01","APRP"};
-static int black_len = 14;
+static const int black_len = 15;
+static const char* black[black_len] = {"RZZJEL","RZNJ01","SEKJ99","SX3J01","SX3P01","R5WJA4","RUYJ99","S3HJ08","SJBJ01","CKBE88","CCPE01","SMMP01","MDUE01","APR","AFR"};
 
 static lwp_t coverLoaderThread = LWP_THREAD_NULL;
 SmartBuf coverLoaderThreadStack;
