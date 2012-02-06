@@ -31,10 +31,15 @@
 using namespace std;
 
 static const char FMT_BPIC_URL[] = "http://art.gametdb.com/wii/coverfullHQ/{loc}/{gameid}.png"\
-"|http://art.gametdb.com/wii/coverfullHQ2/{loc}/{gameid}.png"\
 "|http://art.gametdb.com/wii/coverfull/{loc}/{gameid}.png";
-static const char FMT_PIC_URL[] = "http://art.gametdb.com/wii/cover/{loc}/{gameid}.png"\
-"|http://art.gametdb.com/wii/cover2/{loc}/{gameid}.png";
+static const char FMT_PIC_URL[] = "http://art.gametdb.com/wii/cover/{loc}/{gameid}.png";
+
+// If the alternative cover is not on the server, download the original one
+static const char FMT_BPIC_URL_ALT[] = "http://art.gametdb.com/wii/coverfullHQ2/{loc}/{gameid}.png"\
+"|http://art.gametdb.com/wii/coverfullHQ/{loc}/{gameid}.png"\
+"|http://art.gametdb.com/wii/coverfull/{loc}/{gameid}.png";
+static const char FMT_PIC_URL_ALT[]  = "http://art.gametdb.com/wii/cover2/{loc}/{gameid}.png"\
+"|http://art.gametdb.com/wii/cover/{loc}/{gameid}.png";
 
 static block download = { 0, 0 };
 static string countryCode(const string &gameId)
@@ -323,8 +328,19 @@ int CMenu::_coverDownloader(bool missingOnly)
 	}
 	bool savePNG = m_cfg.getBool("GENERAL", "keep_png", true);
 
-	safe_vector<string> fmtURLBox = stringToVector(m_cfg.getString("GENERAL", "url_full_covers", FMT_BPIC_URL), '|');
-	safe_vector<string> fmtURLFlat = stringToVector(m_cfg.getString("GENERAL", "url_flat_covers", FMT_PIC_URL), '|');
+	bool alternative_cover = m_cfg.getBool("GENERAL", "alternative_cover", true);
+	safe_vector<string> fmtURLBox;
+	safe_vector<string> fmtURLFlat;
+	if(alternative_cover)
+	{
+	    fmtURLBox = stringToVector(m_cfg.getString("GENERAL", "url_full_covers", FMT_BPIC_URL_ALT), '|');
+	    fmtURLFlat = stringToVector(m_cfg.getString("GENERAL", "url_flat_covers", FMT_PIC_URL_ALT), '|');
+	}
+	else
+	{
+	    fmtURLBox = stringToVector(m_cfg.getString("GENERAL", "url_full_covers", FMT_BPIC_URL), '|');
+	    fmtURLFlat = stringToVector(m_cfg.getString("GENERAL", "url_flat_covers", FMT_PIC_URL), '|');
+	}
 
 	u32 nbSteps = m_gameList.size();
 	u32 step = 0;
