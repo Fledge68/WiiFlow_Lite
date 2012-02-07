@@ -451,7 +451,7 @@ void CMenu::_loadCFCfg(SThemeData &theme)
 	for (u32 i = 1; i <= m_numCFVersions; ++i)
 		_loadCFLayout(i);
 
-	_loadCFLayout((m_cfg.getInt(_domainFromView(), "last_cf_mode" , 1) + (int)m_numCFVersions) % (int)m_numCFVersions);
+	_loadCFLayout(m_cfg.getInt(_domainFromView(), "last_cf_mode" , 1));
 }
 
 Vector3D CMenu::_getCFV3D(const string &domain, const string &key, const Vector3D &def, bool otherScrnFmt)
