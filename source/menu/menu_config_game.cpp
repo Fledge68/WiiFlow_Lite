@@ -676,7 +676,7 @@ void CMenu::_initGameSettingsMenu(CMenu::SThemeData &theme)
 	m_gameSettingsLblGClanguage = _addLabel(theme, "GAME_SETTINGS/GC_LANG", theme.lblFont, L"", 40, 250, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsLblGClanguageVal = _addLabel(theme, "GAME_SETTINGS/GC_LANG_BTN", theme.btnFont, L"", 386, 250, 158, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_gameSettingsBtnGClanguageM = _addPicButton(theme, "GAME_SETTINGS/GC_LANG_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 330, 250, 56, 56);
-	m_gameSettingsBtnGClanguageP = _addPicButton(theme, "GAME_SETTINGS/DGC_LANG_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 250, 56, 56);
+	m_gameSettingsBtnGClanguageP = _addPicButton(theme, "GAME_SETTINGS/GC_LANG_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 250, 56, 56);
 
 	// Page 2
 	m_gameSettingsLblDebugger = _addLabel(theme, "GAME_SETTINGS/GAME_DEBUGGER", theme.lblFont, L"", 40, 130, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
