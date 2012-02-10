@@ -24,7 +24,7 @@ class CachedList : public safe_vector<T>
 	{
 		m_cacheDir = cachedir;
 		m_settingsDir = settingsDir;
-		m_curLanguage = curLanguage;
+		m_curLanguage = m_lastLanguage = curLanguage;
 		m_loaded = false;
 		m_database = "";
 		m_update = false;
@@ -72,6 +72,7 @@ class CachedList : public safe_vector<T>
     string m_cacheDir;
 	string m_settingsDir;
 	string m_curLanguage;
+	string m_lastLanguage;
 	string m_discinf;
 };
 
