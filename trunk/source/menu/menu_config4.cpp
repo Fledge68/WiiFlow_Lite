@@ -189,22 +189,22 @@ void CMenu::_initConfig4Menu(CMenu::SThemeData &theme)
 	_addUserLabels(theme, m_config4LblUser, ARRAY_SIZE(m_config4LblUser), "CONFIG4");
 	m_config4Bg = _texture(theme.texSet, "CONFIG4/BG", "texture", theme.bg);
 	m_config4LblHome = _addLabel(theme, "CONFIG4/WIIMENU", theme.lblFont, L"", 40, 130, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_config4BtnHome = _addButton(theme, "CONFIG4/WIIMENU_BTN", theme.btnFont, L"", 400, 130, 200, 56, theme.btnFontColor);
+	m_config4BtnHome = _addButton(theme, "CONFIG4/WIIMENU_BTN", theme.btnFont, L"", 370, 130, 230, 56, theme.btnFontColor);
 	m_config4LblSaveFavMode = _addLabel(theme, "CONFIG4/SAVE_FAVMODE", theme.lblFont, L"", 40, 190, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_config4BtnSaveFavMode = _addButton(theme, "CONFIG4/SAVE_FAVMODE_BTN", theme.btnFont, L"", 400, 190, 200, 56, theme.btnFontColor);
+	m_config4BtnSaveFavMode = _addButton(theme, "CONFIG4/SAVE_FAVMODE_BTN", theme.btnFont, L"", 370, 190, 230, 56, theme.btnFontColor);
 	m_config4LblCategoryOnBoot = _addLabel(theme, "CONFIG4/CAT_ON_START", theme.lblFont, L"", 40, 250, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_config4BtnCategoryOnBoot = _addButton(theme, "CONFIG4/CAT_ON_START_BTN", theme.btnFont, L"", 400, 250, 200, 56, theme.btnFontColor);
+	m_config4BtnCategoryOnBoot = _addButton(theme, "CONFIG4/CAT_ON_START_BTN", theme.btnFont, L"", 370, 250, 230, 56, theme.btnFontColor);
 	m_config4LblReturnTo = _addLabel(theme, "CONFIG4/RETURN_TO", theme.lblFont, L"", 40, 310, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_config4LblReturnToVal = _addLabel(theme, "CONFIG4/RETURN_TO_BTN", theme.btnFont, L"", 426, 310, 118, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_config4BtnReturnToM = _addPicButton(theme, "CONFIG4/RETURN_TO_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 370, 310, 56, 56);
 	m_config4BtnReturnToP = _addPicButton(theme, "CONFIG4/RETURN_TO_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 310, 56, 56);
 //
 	_setHideAnim(m_config4LblHome, "CONFIG4/WIIMENU", 100, 0, -2.f, 0.f);
-	_setHideAnim(m_config4BtnHome, "CONFIG4/WIIMENU_BTN", 0, 0, -2.f, 0.f);
+	_setHideAnim(m_config4BtnHome, "CONFIG4/WIIMENU_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_config4LblSaveFavMode, "CONFIG4/SAVE_FAVMODE", 100, 0, -2.f, 0.f);
-	_setHideAnim(m_config4BtnSaveFavMode, "CONFIG4/SAVE_FAVMODE_BTN", 0, 0, -2.f, 0.f);
+	_setHideAnim(m_config4BtnSaveFavMode, "CONFIG4/SAVE_FAVMODE_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_config4LblCategoryOnBoot, "CONFIG4/CAT_ON_START", 100, 0, -2.f, 0.f);
-	_setHideAnim(m_config4BtnCategoryOnBoot, "CONFIG4/CAT_ON_START_BTN", 0, 0, -2.f, 0.f);
+	_setHideAnim(m_config4BtnCategoryOnBoot, "CONFIG4/CAT_ON_START_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_config4LblReturnTo, "CONFIG4/RETURN_TO", 100, 0, -2.f, 0.f);
 	_setHideAnim(m_config4LblReturnToVal, "CONFIG4/RETURN_TO_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_config4BtnReturnToM, "CONFIG4/RETURN_TO_MINUS", 0, 0, 1.f, -1.f);
