@@ -96,7 +96,7 @@ void CMenu::_gameinfo(void)
 		}	
 		if(first && page == 1)
 		{
-			m_btnMgr.moveBy(m_gameinfoLblSynopsis, 0, -(10));
+			m_btnMgr.moveBy(m_gameinfoLblSynopsis, 0, -(30));
 			amount_of_skips++;
 			first = false;
 		}
@@ -251,20 +251,20 @@ void CMenu::_initGameInfoMenu(CMenu::SThemeData &theme)
 	_addUserLabels(theme, m_gameinfoLblUser, 2, 1, "GAMEINFO");
 	
 	m_gameinfoBg = _texture(theme.texSet, "GAMEINFO/BG", "texture", theme.bg);
-	m_gameinfoLblID = _addLabel(theme, "GAMEINFO/GAMEID", theme.btnFont, L"", 125, 5, 420, 75, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
-	m_gameinfoLblGenre = _addLabel(theme, "GAMEINFO/GENRE", theme.txtFont, L"", 40, 140, 460, 56, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
-	m_gameinfoLblDev = _addLabel(theme, "GAMEINFO/DEVELOPER", theme.txtFont, L"", 40, 170, 460, 56, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
-	m_gameinfoLblPublisher = _addLabel(theme, "GAMEINFO/PUBLISHER", theme.txtFont, L"", 40, 200, 460, 56, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
-	m_gameinfoLblRlsdate = _addLabel(theme, "GAMEINFO/RLSDATE", theme.txtFont, L"", 40, 230, 460, 56, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
-	m_gameinfoLblRegion = _addLabel(theme, "GAMEINFO/REGION", theme.txtFont, L"", 40, 260, 460, 56, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
+	m_gameinfoLblID = _addText(theme, "GAMEINFO/GAMEID", theme.txtFont, L"", 40, 110, 420, 75, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
+	m_gameinfoLblGenre = _addText(theme, "GAMEINFO/GENRE", theme.txtFont, L"", 40, 140, 460, 56, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
+	m_gameinfoLblDev = _addText(theme, "GAMEINFO/DEVELOPER", theme.txtFont, L"", 40, 170, 460, 56, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
+	m_gameinfoLblPublisher = _addText(theme, "GAMEINFO/PUBLISHER", theme.txtFont, L"", 40, 200, 460, 56, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
+	m_gameinfoLblRlsdate = _addText(theme, "GAMEINFO/RLSDATE", theme.txtFont, L"", 40, 230, 460, 56, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
+	m_gameinfoLblRegion = _addText(theme, "GAMEINFO/REGION", theme.txtFont, L"", 40, 260, 460, 56, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
 	m_gameinfoLblRating = _addLabel(theme, "GAMEINFO/RATING", theme.titleFont, L"", 550, 380, 48, 60, theme.titleFontColor, 0, m_rating);
-	m_gameinfoLblSynopsis = _addLabel(theme, "GAMEINFO/SYNOPSIS", theme.txtFont, L"", 20, 150, 600, 400, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP, emptyTex);
+	m_gameinfoLblSynopsis = _addText(theme, "GAMEINFO/SYNOPSIS", theme.txtFont, L"", 20, 150, 600, 400, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
 	m_gameinfoLblWifiplayers = _addLabel(theme, "GAMEINFO/WIFIPLAYERS", theme.txtFont, L"", 550, 110, 68, 60, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP,m_wifi);
 
 	_addUserLabels(theme, m_gameinfoLblUser, 1, 1, "GAMEINFO");
 	_addUserLabels(theme, m_gameinfoLblUser, 3, 2, "GAMEINFO");
 
-	m_gameinfoLblTitle = _addLabel(theme, "GAMEINFO/TITLE", theme.titleFont, L"", 20, 60, 600, 75, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_TOP);
+	m_gameinfoLblTitle = _addLabel(theme, "GAMEINFO/TITLE", theme.titleFont, L"", 20, 30, 600, 75, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 
 	for (u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControlsReq); ++i)
 	{
@@ -280,8 +280,8 @@ void CMenu::_initGameInfoMenu(CMenu::SThemeData &theme)
 		_setHideAnim(m_gameinfoLblControls[i], dom.c_str(), 0, -100, 0.f, 0.f);
 	}
 	// 
-	_setHideAnim(m_gameinfoLblID, "GAMEINFO/GAMEID",0, 100, 0.f, 0.f);
-	_setHideAnim(m_gameinfoLblTitle, "GAMEINFO/TITLE", 0, 100, 0.f, 0.f);
+	_setHideAnim(m_gameinfoLblID, "GAMEINFO/GAMEID",0, -100, 0.f, 0.f);
+	_setHideAnim(m_gameinfoLblTitle, "GAMEINFO/TITLE", 0, -100, 0.f, 0.f);
 	_setHideAnim(m_gameinfoLblRating, "GAMEINFO/RATING", 100, 0, 0.f, 0.f);
 	_setHideAnim(m_gameinfoLblSynopsis, "GAMEINFO/SYNOPSIS", 0, 100, 0.f, 0.f);
 	_setHideAnim(m_gameinfoLblRegion, "GAMEINFO/REGION", 0, -100, 0.f, 0.f);
@@ -307,7 +307,7 @@ void CMenu::_textGameInfo(void)
 	if(titlecheck)
 	{
 		gprintf("ID: %s\nTitle: %s\n", gameinfo.GameID.c_str(), gameinfo.Title.c_str());
-		m_btnMgr.setText(m_gameinfoLblID, wfmt(L"%s", gameinfo.GameID.c_str()), true);
+		m_btnMgr.setText(m_gameinfoLblID, wfmt(L"GameID: %s", gameinfo.GameID.c_str()), true);
 		m_btnMgr.setText(m_gameinfoLblTitle, wfmt(L"%s", gameinfo.Title.c_str()), true);
 		m_btnMgr.setText(m_gameinfoLblSynopsis, wfmt(L"%s", gameinfo.Synopsis.c_str()), false);
 		m_btnMgr.setText(m_gameinfoLblDev, wfmt(_fmt("gameinfo1",L"Developer: %s"), gameinfo.Developer.c_str()), true);
@@ -316,6 +316,7 @@ void CMenu::_textGameInfo(void)
 
 		string wGenres = vectorToString(gameinfo.Genres, ", ");
 		m_btnMgr.setText(m_gameinfoLblGenre, wfmt(_fmt("gameinfo5",L"Genre: %s"), wGenres.c_str()), true);
+//		m_btnMgr.setText(m_gameinfoLblGenre, wfmt(_fmt("gameinfo5",L"Genre: %s"), gameinfo.Genre.c_str()), true);
 
 		int year = gameinfo.PublishDate >> 16;
         int day = gameinfo.PublishDate & 0xFF;

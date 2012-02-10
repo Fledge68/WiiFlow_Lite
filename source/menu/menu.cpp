@@ -721,7 +721,7 @@ void CMenu::_buildMenus(void)
 	theme.lblFontColor = m_theme.getColor("GENERAL", "label_font_color", 0xD0BFDFFF);
 
 	theme.titleFont = _font(theme.fontSet, "GENERAL", "title_font", TITLEFONT);
-	theme.titleFontColor = m_theme.getColor("GENERAL", "title_font_color", 0xD0BFDFFF);
+	theme.titleFontColor = m_theme.getColor("GENERAL", "title_font_color", 0xFFFFFFFF);
 	
 	theme.txtFont = _font(theme.fontSet, "GENERAL", "text_font", TEXTFONT);
 	theme.txtFontColor = m_theme.getColor("GENERAL", "text_font_color", 0xFFFFFFFF);
@@ -1016,6 +1016,48 @@ u32 CMenu::_addPicButton(CMenu::SThemeData &theme, const char *domain, STexture 
 		y = m_vid.height() - y - height;
 
 	return m_btnMgr.addPicButton(tex1, tex2, x, y, width, height, clickSound, hoverSound);
+}
+
+u32 CMenu::_addTitle(CMenu::SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, u16 style)
+{
+	CColor c(color);
+
+	c = m_theme.getColor(domain, "color", c);
+	x = m_theme.getInt(domain, "x", x);
+	y = m_theme.getInt(domain, "y", y);
+	width = m_theme.getInt(domain, "width", width);
+	height = m_theme.getInt(domain, "height", height);
+	font = _font(theme.fontSet, domain, "font", TITLEFONT);
+	style = _textStyle(domain, "style", style);
+
+	u16 btnPos = _textStyle(domain, "elmstyle", FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
+	if (btnPos & FTGX_JUSTIFY_RIGHT)
+		x = m_vid.width() - x - width;
+	if (btnPos & FTGX_ALIGN_BOTTOM)
+		y = m_vid.height() - y - height;
+
+	return m_btnMgr.addLabel(font, text, x, y, width, height, c, style);
+}
+
+u32 CMenu::_addText(CMenu::SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, u16 style)
+{
+	CColor c(color);
+
+	c = m_theme.getColor(domain, "color", c);
+	x = m_theme.getInt(domain, "x", x);
+	y = m_theme.getInt(domain, "y", y);
+	width = m_theme.getInt(domain, "width", width);
+	height = m_theme.getInt(domain, "height", height);
+	font = _font(theme.fontSet, domain, "font", TEXTFONT);
+	style = _textStyle(domain, "style", style);
+
+	u16 btnPos = _textStyle(domain, "elmstyle", FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
+	if (btnPos & FTGX_JUSTIFY_RIGHT)
+		x = m_vid.width() - x - width;
+	if (btnPos & FTGX_ALIGN_BOTTOM)
+		y = m_vid.height() - y - height;
+
+	return m_btnMgr.addLabel(font, text, x, y, width, height, c, style);
 }
 
 u32 CMenu::_addLabel(CMenu::SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, u16 style)

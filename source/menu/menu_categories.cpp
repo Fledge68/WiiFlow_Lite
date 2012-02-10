@@ -19,8 +19,8 @@ void CMenu::_CategorySettings()
 			m_btnMgr.down();
 		if (BTN_A_PRESSED)
 		{
-			if (m_btnMgr.selected(m_categoryBtnBack))
-				break;
+//			if (m_btnMgr.selected(m_categoryBtnBack))
+//				break;
 			for (int i = 0; i < 12; ++i)
 			{
 				if (m_btnMgr.selected(m_categoryBtn[i]))
@@ -41,7 +41,8 @@ void CMenu::_CategorySettings()
 
 void CMenu::_hideCategorySettings(bool instant)
 {
-	m_btnMgr.hide(m_categoryBtnBack,instant);
+//	m_btnMgr.hide(m_categoryBtnBack,instant);
+	m_btnMgr.hide(m_categoryLblTitle,instant);
 	for (int i = 0; i < 12; ++i)
 		m_btnMgr.hide(m_categoryBtn[i],instant);
 
@@ -54,7 +55,8 @@ void CMenu::_showCategorySettings(void)
 {
 	_setBg(m_categoryBg, m_categoryBg);
 	
-	m_btnMgr.show(m_categoryBtnBack);
+//	m_btnMgr.show(m_categoryBtnBack);
+	m_btnMgr.show(m_categoryLblTitle);
 	for (int i = 0; i < m_max_categories+1; ++i)
 		m_btnMgr.show(m_categoryBtn[i]);
 		
@@ -68,21 +70,23 @@ void CMenu::_initCategorySettingsMenu(CMenu::SThemeData &theme)
 {
 	_addUserLabels(theme, m_categoryLblUser, ARRAY_SIZE(m_categoryLblUser), "CATEGORY");
 	m_categoryBg = _texture(theme.texSet, "CATEGORY/BG", "texture", theme.bg);
-	m_categoryBtnBack = _addButton(theme, "CATEGORY/BACK_BTN", theme.btnFont, L"", 420, 410, 200, 56, theme.btnFontColor);
-	m_categoryBtn[0] = _addButton(theme, "CATEGORY/ALL_BTN", theme.btnFont, L"",  60, 40, 200, 50, theme.btnFontColor);
-	m_categoryBtn[1] = _addButton(theme, "CATEGORY/1_BTN", theme.btnFont, L"", 340, 40, 200, 50, theme.btnFontColor);
-	m_categoryBtn[2] = _addButton(theme, "CATEGORY/2_BTN", theme.btnFont, L"",  60, 100, 200, 50, theme.btnFontColor);
-	m_categoryBtn[3] = _addButton(theme, "CATEGORY/3_BTN", theme.btnFont, L"", 340, 100, 200, 50, theme.btnFontColor);
-	m_categoryBtn[4] = _addButton(theme, "CATEGORY/4_BTN", theme.btnFont, L"",  60, 160, 200, 50, theme.btnFontColor);
-	m_categoryBtn[5] = _addButton(theme, "CATEGORY/5_BTN", theme.btnFont, L"", 340, 160, 200, 50, theme.btnFontColor);
-	m_categoryBtn[6] = _addButton(theme, "CATEGORY/6_BTN", theme.btnFont, L"",  60, 220, 200, 50, theme.btnFontColor);
-	m_categoryBtn[7] = _addButton(theme, "CATEGORY/7_BTN", theme.btnFont, L"", 340, 220, 200, 50, theme.btnFontColor);
-	m_categoryBtn[8] = _addButton(theme, "CATEGORY/8_BTN", theme.btnFont, L"",  60, 280, 200, 50, theme.btnFontColor);
-	m_categoryBtn[9] = _addButton(theme, "CATEGORY/9_BTN", theme.btnFont, L"", 340, 280, 200, 50, theme.btnFontColor);
-	m_categoryBtn[10] = _addButton(theme, "CATEGORY/10_BTN", theme.btnFont, L"", 60, 340, 200, 50, theme.btnFontColor);
-	m_categoryBtn[11] = _addButton(theme, "CATEGORY/11_BTN", theme.btnFont, L"",340, 340, 200, 50, theme.btnFontColor);
+	m_categoryLblTitle = _addTitle(theme, "CATEGORY/TITLE", theme.titleFont, L"", 20, 30, 600, 75, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+//	m_categoryBtnBack = _addButton(theme, "CATEGORY/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 56, theme.btnFontColor);
+	m_categoryBtn[0] = _addButton(theme, "CATEGORY/ALL_BTN", theme.btnFont, L"",  60, 100, 200, 50, theme.btnFontColor);
+	m_categoryBtn[1] = _addButton(theme, "CATEGORY/1_BTN", theme.btnFont, L"", 340, 100, 200, 50, theme.btnFontColor);
+	m_categoryBtn[2] = _addButton(theme, "CATEGORY/2_BTN", theme.btnFont, L"",  60, 160, 200, 50, theme.btnFontColor);
+	m_categoryBtn[3] = _addButton(theme, "CATEGORY/3_BTN", theme.btnFont, L"", 340, 160, 200, 50, theme.btnFontColor);
+	m_categoryBtn[4] = _addButton(theme, "CATEGORY/4_BTN", theme.btnFont, L"",  60, 220, 200, 50, theme.btnFontColor);
+	m_categoryBtn[5] = _addButton(theme, "CATEGORY/5_BTN", theme.btnFont, L"", 340, 220, 200, 50, theme.btnFontColor);
+	m_categoryBtn[6] = _addButton(theme, "CATEGORY/6_BTN", theme.btnFont, L"",  60, 280, 200, 50, theme.btnFontColor);
+	m_categoryBtn[7] = _addButton(theme, "CATEGORY/7_BTN", theme.btnFont, L"", 340, 280, 200, 50, theme.btnFontColor);
+	m_categoryBtn[8] = _addButton(theme, "CATEGORY/8_BTN", theme.btnFont, L"",  60, 340, 200, 50, theme.btnFontColor);
+	m_categoryBtn[9] = _addButton(theme, "CATEGORY/9_BTN", theme.btnFont, L"", 340, 340, 200, 50, theme.btnFontColor);
+	m_categoryBtn[10] = _addButton(theme, "CATEGORY/10_BTN", theme.btnFont, L"", 60, 400, 200, 50, theme.btnFontColor);
+	m_categoryBtn[11] = _addButton(theme, "CATEGORY/11_BTN", theme.btnFont, L"",340, 400, 200, 50, theme.btnFontColor);
 
-	_setHideAnim(m_categoryBtnBack, "CATEGORY/BACK_BTN", 0, 0, -2.f, 0.f);
+//	_setHideAnim(m_categoryBtnBack, "CATEGORY/BACK_BTN", 0, 0, -2.f, 0.f);
+	_setHideAnim(m_categoryLblTitle, "CATEGORY/TITLE", 0, 0, 0.f, 0.f);
 	_setHideAnim(m_categoryBtn[0], "CATEGORY/ALL_BTN", 0, 0, 0.f, 0.f);
 	for (int i = 1; i < 12; ++i)
 		_setHideAnim(m_categoryBtn[i], sfmt("CATEGORY/%i_BTN", i).c_str(), 0, 0, 0.f, 0.f);
@@ -93,7 +97,8 @@ void CMenu::_initCategorySettingsMenu(CMenu::SThemeData &theme)
 
 void CMenu::_textCategorySettings(void)
 {
-	m_btnMgr.setText(m_categoryBtnBack, _t("cd1", L"Back"));
+//	m_btnMgr.setText(m_categoryBtnBack, _t("cd1", L"Back"));
+	m_btnMgr.setText(m_categoryLblTitle, _t("cg1", L"Categories"));
 	m_btnMgr.setText(m_categoryBtn[0], _t("dl3", L"All"));
 	for (int i = 1; i < 12; i++)
 	m_btnMgr.setText(m_categoryBtn[i], m_cat.getWString("GENERAL", sfmt("cat%d",i).c_str(), wfmt(L"Category %i",i).c_str()));

@@ -122,8 +122,8 @@ void CMenu::_initCodeMenu(CMenu::SThemeData &theme)
 	m_codeBtnKey[2] = _addButton(theme, "CODE/2_BTN", theme.btnFont, L"2", 270, 260, 100, 50, theme.btnFontColor);
 	m_codeBtnKey[3] = _addButton(theme, "CODE/3_BTN", theme.btnFont, L"3", 380, 260, 100, 50, theme.btnFontColor);
 	m_codeBtnKey[0] = _addButton(theme, "CODE/0_BTN", theme.btnFont, L"0", 270, 340, 210, 50, theme.btnFontColor);
-	m_codeBtnErase = _addButton(theme, "CODE/ERASE_BTN", theme.btnFont, L"", 20, 410, 200, 56, theme.btnFontColor);
-	m_codeBtnBack = _addButton(theme, "CODE/BACK_BTN", theme.btnFont, L"", 420, 410, 200, 56, theme.btnFontColor);
+	m_codeBtnErase = _addButton(theme, "CODE/ERASE_BTN", theme.btnFont, L"", 20, 400, 200, 56, theme.btnFontColor);
+	m_codeBtnBack = _addButton(theme, "CODE/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 56, theme.btnFontColor);
 	// 
 	for (int i = 0; i < 10; ++i)
 		_setHideAnim(m_codeBtnKey[i], sfmt("CODE/%i_BTN", i).c_str(), 0, 0, 0.f, 0.f);
