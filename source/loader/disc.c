@@ -384,7 +384,7 @@ s32 Disc_BootPartition(u64 offset, u8 vidMode, bool vipatch, bool countryString,
 	/* Shutdown IOS subsystems */
 	SYS_ResetSystem(SYS_SHUTDOWN, 0, 0);
 
-	 /* Originally from tueidj - taken from NeoGamme (thx) */
+	/* Originally from tueidj - taken from NeoGamme (thx) */
 	*(vu32*)0xCC003024 = 1;
 	
 	// fix for PeppaPig

@@ -51,7 +51,7 @@ s32 BootChannel(u8 *data, u64 chantitle, u8 vidMode, bool vipatch, bool countryS
 	/* Set time */
 	__Disc_SetTime();
 	
-	/* Set low memery */
+	/* Set low memory */
 	__Disc_SetLowMem();
 
 	if (hooktype != 0)

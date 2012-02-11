@@ -20,7 +20,7 @@ int amountOfChannels = -1;
 
 const CMenu::SOption CMenu::_exitTo[6] = {
 	{ "def", L"Default" },
-	{ "menu", L"Sytem Menu" },
+	{ "menu", L"System Menu" },
 	{ "hbc", L"HBC" },
 	{ "prii", L"Priiloader" },
 	{ "disabled", L"Disabled" },
