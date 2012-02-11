@@ -816,7 +816,7 @@ private:
 	static const SOption _AspectRatio[3];
 	static const SOption _vidModePatch[4];
 	static const SOption _hooktype[8];
-	static const SOption _exitTo[5];
+	static const SOption _exitTo[6];
 	static std::map<u8, u8> _installed_cios;
 	typedef std::map<u8, u8>::iterator CIOSItr;
 	static int _version[9];

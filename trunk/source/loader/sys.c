@@ -17,6 +17,7 @@ static bool reset = false;
 static bool shutdown = false;
 bool exiting = false;
 
+static bool priiloader_def = false;
 static bool return_to_hbc = false;
 static bool return_to_menu = false;
 static bool return_to_priiloader = false;
@@ -71,6 +72,7 @@ void Sys_Test(void)
 
 void Sys_ExitTo(int option)
 {
+	priiloader_def = option == PRIILOADER_DEF;
 	return_to_hbc = option == EXIT_TO_HBC;
 	return_to_menu = option == EXIT_TO_MENU;
 	return_to_priiloader = option == EXIT_TO_PRIILOADER;
@@ -86,6 +88,10 @@ void Sys_ExitTo(int option)
 	{
 		Write32(0x8132fffb,0x4461636f);
 	}
+	else
+	{
+		Write32(0x8132fffb,0xffffffff);
+	}
 }
 
 void Sys_Exit(void)
@@ -95,7 +101,7 @@ void Sys_Exit(void)
 	/* Shutdown Inputs */
 	Close_Inputs();
 
-	if (return_to_menu || return_to_priiloader) Sys_LoadMenu();
+	if (return_to_menu || return_to_priiloader || priiloader_def) Sys_LoadMenu();
 	else if(return_to_bootmii) IOS_ReloadIOS(254);
 	if(WII_LaunchTitle(HBC_108)<0)
 		if(WII_LaunchTitle(HBC_HAXX)<0)
