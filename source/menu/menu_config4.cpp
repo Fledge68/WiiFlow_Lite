@@ -18,10 +18,11 @@ static inline int loopNum(int i, int s)
 int currentChannelIndex = -1;
 int amountOfChannels = -1;
 
-const CMenu::SOption CMenu::_exitTo[5] = {
-	{ "menu", L"Menu" },
+const CMenu::SOption CMenu::_exitTo[6] = {
+	{ "def", L"Default" },
+	{ "menu", L"Sytem Menu" },
 	{ "hbc", L"HBC" },
-	{ "prii", L"Prii" },
+	{ "prii", L"Priiloader" },
 	{ "disabled", L"Disabled" },
 	{ "bootmii", L"BootMii" }
 };
