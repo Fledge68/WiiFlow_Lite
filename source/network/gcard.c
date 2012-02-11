@@ -1,6 +1,7 @@
 #include "gcard.h"
 #include "http.h"
 #include "utils.h"
+#include "gecko/gecko.h"
 
 #include <malloc.h>
 #include <string.h>
@@ -59,6 +60,7 @@ void add_game_to_card(const char *gameid)
 			str_replace(url, (char *) "{KEY}", (char *) providers[i].key, MAX_URL_SIZE);		
 			str_replace(url, (char *) "{ID6}", (char *) gameid, MAX_URL_SIZE);
 
+			gprintf("Gamertag URL:\n%s\n",(char*)url);
 			downloadfile(NULL, 0, (char *) url, NULL, NULL);
 		}
 	}

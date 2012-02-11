@@ -582,46 +582,31 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 {	
 	Nand::Instance()->Disable_Emu();
 	u8 DMLvideoMode = 0;
-	
-#ifdef DML_THROUGH_MEM /*** Need special DML for this ***/
-	if( DML )
+
+	if(has_enabled_providers() && _initNetwork() == 0)
+		add_game_to_card((char *)hdr->hdr.id);
+
+	if(DML)
 	{
-		gprintf( "Wiiflow DML:Launch game 'sd:/games/%s/game.iso' through memory\n", hdr->path );
-		DMLvideoMode = min((u32)m_gcfg2.getInt((char *)hdr->hdr.id, "dml_video_mode", 0), ARRAY_SIZE(CMenu::_DMLvideoModes) - 1u);
+		#ifdef DML_THROUGH_MEM /*** Need special DML for this ***/
+		gprintf("Wiiflow DML: Launch game 'sd:/games/%s/game.iso' through memory\n", hdr->path);
 		*(vu32*)0x800A0000 = 0x4e444d4c;
-		memcpy( (void *)0x800A0004, hdr->path, strlen( hdr->path ) +1 );
-		DCFlushRange( (void *)( 0x800A0000 ), 4 );
-		ICInvalidateRange( (void *)( 0x800A0000 ), 4 );
-		
-		m_cfg.setString( "DML", "current_item", (char *)hdr->hdr.id );
-		m_gcfg1.setInt( "PLAYCOUNT", (char *)hdr->hdr.id, m_gcfg1.getInt( "PLAYCOUNT", (char *)hdr->hdr.id, 0 ) + 1 );
-		m_gcfg1.setUInt( "LASTPLAYED", (char *)hdr->hdr.id, time(NULL) );
-		m_gcfg1.save(true);
-		m_cfg.save(true);
-		
-		Close_Inputs();
-		USBStorage_Deinit();
-		cleanup();
-		
-		// Tell DML to boot the game from sd card
-		*(vu32*)0x80001800 = 0xB002D105;
-		DCFlushRange((void *)(0x80001800), 4);
-		ICInvalidateRange((void *)(0x80001800), 4);		
-	}
-#else
-	if( DML )
-	{
-		gprintf( "Wiiflow DML:Launch game 'sd:/games/%s/game.iso' through boot.bin\n", hdr->path );
-		DMLvideoMode = min((u32)m_gcfg2.getInt((char *)hdr->hdr.id, "dml_video_mode", 0), ARRAY_SIZE(CMenu::_DMLvideoModes) - 1u);
+		memcpy((void *)0x800A0004, hdr->path, strlen(hdr->path) + 1);
+		DCFlushRange((void *)(0x800A0000), 4);
+		ICInvalidateRange((void *)(0x800A0000), 4);
+		#else
+		gprintf("Wiiflow DML: Launch game 'sd:/games/%s/game.iso' through boot.bin\n", hdr->path);
 		char filepath[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
 		FILE *f;
-		sprintf(filepath, "%s:/games/boot.bin", DeviceName[SD]);	
+		sprintf(filepath, "%s:/games/boot.bin", DeviceName[SD]);
 		f = fopen(filepath, "wb");
-		fwrite(hdr->path, 1, strlen( hdr->path ) +1, f);
+		fwrite(hdr->path, 1, strlen(hdr->path) + 1, f);
 		fclose(f);
+		#endif
 		
+		DMLvideoMode = min((u32)m_gcfg2.getInt((char *)hdr->hdr.id, "dml_video_mode", 0), ARRAY_SIZE(CMenu::_DMLvideoModes) - 1u);
 		m_cfg.setString("DML", "current_item", (char *)hdr->hdr.id);
-		m_gcfg1.setInt("PLAYCOUNT", (char *)hdr->hdr.id, m_gcfg1.getInt("PLAYCOUNT", string((const char *) hdr->hdr.id), 0) + 1);
+		m_gcfg1.setInt("PLAYCOUNT", (char *)hdr->hdr.id, m_gcfg1.getInt("PLAYCOUNT", (char *)hdr->hdr.id, 0) + 1);
 		m_gcfg1.setUInt("LASTPLAYED", (char *)hdr->hdr.id, time(NULL));
 		m_gcfg1.save(true);
 		m_cfg.save(true);
@@ -630,14 +615,12 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 		USBStorage_Deinit();
 		cleanup();
 		
-		// Tell DML to boot the game from sd card
+		//Tell DML to boot the game from sd card
 		*(vu32*)0x80001800 = 0xB002D105;
 		DCFlushRange((void *)(0x80001800), 4);
-		ICInvalidateRange((void *)(0x80001800), 4);
-		
+		ICInvalidateRange((void *)(0x80001800), 4);		
 	}
-#endif		
-		
+	
 	u8 GClanguage = min((u32)m_gcfg2.getInt((char *)hdr->hdr.id, "gc_language", 0), ARRAY_SIZE(CMenu::_GClanguages) - 1u);
 	
 	memcpy((char *)0x80000000, (char *)hdr->hdr.id, 6);	
