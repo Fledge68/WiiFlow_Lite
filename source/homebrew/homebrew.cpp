@@ -137,17 +137,12 @@ int BootHomebrew()
 
 	memcpy(BOOTER_ADDR, app_booter_bin, app_booter_bin_size);
 	DCFlushRange(BOOTER_ADDR, app_booter_bin_size);
-	ICInvalidateRange(BOOTER_ADDR, app_booter_bin_size);
 
 	entrypoint entry = (entrypoint) BOOTER_ADDR;
-	
-	if(!IsDollZ(homebrewbuffer))
-	    memcpy(ARGS_ADDR, &args, sizeof(args));
-	else
-	    memset(ARGS_ADDR, 0, sizeof(args));
-		
+
+	memmove(ARGS_ADDR, &args, sizeof(args));
 	DCFlushRange(ARGS_ADDR, sizeof(args) + args.length);
-	
+
 	SYS_ResetSystem(SYS_SHUTDOWN, 0, 0);
 	entry();
 
