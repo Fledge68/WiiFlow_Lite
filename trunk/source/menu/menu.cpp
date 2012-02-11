@@ -1861,6 +1861,12 @@ void CMenu::UpdateCache(u32 view)
 
 bool CMenu::MIOSisDML()
 {
+	if(m_cfg.getBool("DML", "always_show_button", false))
+	{
+		gprintf("Force enabling DML view\n");
+		return true;
+	}
+
 	u32 length;
 	if( ES_GetStoredTMDSize( 0x100000101LL, &length ) < 0 )
 		return false;
