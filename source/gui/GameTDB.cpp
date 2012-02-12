@@ -953,7 +953,7 @@ unsigned int GameTDB::FindCaseColor(char * data)
 {
 	unsigned int color = -1;
 	
-    char * ColorNode = GetNodeText(data, "<case color=\"", "\"/>");
+    char * ColorNode = GetNodeText(data, "<case color=\"", "\"");
     if(!ColorNode)		
 		return color;
 	if(strlen(ColorNode) == 0)
@@ -975,6 +975,7 @@ unsigned int GameTDB::GetCaseColor(const char * id)
     if(!data)
 		return color;
 
+
     color = FindCaseColor(data);
 	
 	if( color != 0xffffffff )
@@ -982,6 +983,32 @@ unsigned int GameTDB::GetCaseColor(const char * id)
 	
 	delete [] data;
 	return color;
+}
+
+int GameTDB::GetCaseVersions(const char * id)
+{
+    int altcase = -1;
+
+    if(!id)
+        return altcase;
+
+    char * data = GetGameNode(id);
+    if(!data)
+	{
+		gprintf("GameTDB: GameNode for %s not found\n", id);
+		return altcase;
+	}
+
+    char * PlayersNode = GetNodeText(data, "case versions=\"", "\"");
+    if(!PlayersNode)
+    {
+        delete [] data;
+        return altcase;
+    }
+
+    altcase = atoi(PlayersNode);
+
+    return altcase;
 }
 
 bool GameTDB::GetGameXMLInfo(const char * id, GameXMLInfo * gameInfo)
