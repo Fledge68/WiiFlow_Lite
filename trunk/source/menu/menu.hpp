@@ -86,6 +86,8 @@ private:
 	std::string m_dataDir;
 	std::string m_picDir;
 	std::string m_boxPicDir;
+	std::string m_cpicDir;
+	std::string m_boxcPicDir;
 	std::string m_cacheDir;
 	std::string m_themeDir;
 	std::string m_musicDir;
@@ -259,6 +261,34 @@ private:
 	u32 m_configScreenBtnTVYP;
 	u32 m_configScreenLblUser[4];
 //Download menu
+	enum CoverPrio
+	{
+		C_TYPE_PRIOA = (1<<0),
+		C_TYPE_PRIOB = (1<<1),
+		C_TYPE_EN =    (1<<2),
+		C_TYPE_JA =    (1<<3),
+		C_TYPE_FR =    (1<<4),
+		C_TYPE_DE =    (1<<5),
+		C_TYPE_ES =    (1<<6),
+		C_TYPE_IT =    (1<<7),
+		C_TYPE_NL =    (1<<8),
+		C_TYPE_PT =    (1<<9),
+		C_TYPE_RU =    (1<<10),
+		C_TYPE_KO =    (1<<11),
+		C_TYPE_ZHCN =  (1<<12),
+		C_TYPE_AU =    (1<<13),
+		C_TYPE_ONOR =  (1<<14),
+		C_TYPE_ONCU =  (1<<15),
+		
+	};
+	enum CoverType
+	{
+		BOX = 1,
+		CBOX,
+		FLAT,
+		CFLAT,
+	};
+	u32 m_downloadPrioVal;
 	u32 m_downloadLblTitle;
 	u32 m_downloadPBar;
 	u32 m_downloadBtnCancel;
@@ -270,7 +300,55 @@ private:
 	u32 m_downloadLblCovers;
 	u32 m_downloadLblGameTDB;
 	u32 m_downloadLblUser[4];
+	u32 m_downloadLblCoverPrio;
+	u32 m_downloadLblPrio;
+	u32 m_downloadBtnPrioM;
+	u32 m_downloadBtnPrioP;
 	u32 m_downloadBtnVersion;
+	u32 m_downloadLblCoverSet;
+	u32 m_downloadBtnCoverSet;
+	u32 m_downloadLblSetTitle;
+	u32 m_downloadLblRegion;
+	enum Regions
+	{
+		EN = 1,
+		JA,
+		FR,
+		DE,		
+		ES,
+		IT,
+		NL,
+		PT,
+		RU,
+		KO,
+		ZHCN,
+		AU,
+	};
+	u32 m_downloadBtnEN;
+	u32 m_downloadBtnJA;
+	u32 m_downloadBtnFR;
+	u32 m_downloadBtnDE;
+	u32 m_downloadBtnES;
+	u32 m_downloadBtnIT;
+	u32 m_downloadBtnNL;
+	u32 m_downloadBtnPT;
+	u32 m_downloadBtnRU;
+	u32 m_downloadBtnKO;
+	u32 m_downloadBtnZHCN;
+	u32 m_downloadBtnAU;
+	u32 m_downloadBtnENs;
+	u32 m_downloadBtnJAs;
+	u32 m_downloadBtnFRs;
+	u32 m_downloadBtnDEs;
+	u32 m_downloadBtnESs;
+	u32 m_downloadBtnITs;
+	u32 m_downloadBtnNLs;
+	u32 m_downloadBtnPTs;
+	u32 m_downloadBtnRUs;
+	u32 m_downloadBtnKOs;
+	u32 m_downloadBtnZHCNs;
+	u32 m_downloadBtnAUs;
+	u32 m_downloadBtnBack;
 	static s8 _versionDownloaderInit(CMenu *m);
 	static s8 _versionTxtDownloaderInit(CMenu *m);
 	s8 _versionDownloader();
@@ -441,8 +519,7 @@ private:
 	STexture m_controls[4];
 // Category menu
 	u32 m_categoryBtn[12];
-//	u32 m_categoryBtnBack;
-	u32 m_categoryLblTitle;
+	u32 m_categoryBtnBack;
 	u32 m_categoryLblUser[4];
 	u8 m_max_categories;
 	u8 m_category;
@@ -573,6 +650,8 @@ private:
 		CColor lblFontColor;
 		CColor txtFontColor;
 		CColor titleFontColor;
+		CColor selubtnFontColor;
+		CColor selsbtnFontColor;
 		STexture bg;
 		STexture btnTexL;
 		STexture btnTexR;
@@ -580,6 +659,12 @@ private:
 		STexture btnTexLS;
 		STexture btnTexRS;
 		STexture btnTexCS;
+		STexture btnTexLH;
+		STexture btnTexRH;
+		STexture btnTexCH;
+		STexture btnTexLSH;
+		STexture btnTexRSH;
+		STexture btnTexCSH;
 		STexture pbarTexL;
 		STexture pbarTexR;
 		STexture pbarTexC;
@@ -665,6 +750,7 @@ private:
 	void _hideConfigSnd(bool instant = false);
 	void _hideGame(bool instant = false);
 	void _hideDownload(bool instant = false);
+	void _hideSettings(bool instant = false);
 	void _hideCode(bool instant = false);
 	void _hideAbout(bool instant = false);
 	void _hideWBFS(bool instant = false);
@@ -686,6 +772,7 @@ private:
 	void _enableNandEmu(bool fromconfig);
 	void _showGame(void);
 	void _showDownload(void);
+	void _showSettings();
 	void _showCode(void);
 	void _showAbout(void);
 	void _showCategorySettings(void);
@@ -760,6 +847,7 @@ private:
 	SmartGuiSound _sound(CMenu::SoundSet &soundSet, const char *domain, const char *key, string name);
 	u16 _textStyle(const char *domain, const char *key, u16 def);
 	u32 _addButton(SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color);
+	u32 _addSelButton(SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color);
 	u32 _addPicButton(SThemeData &theme, const char *domain, STexture &texNormal, STexture &texSelected, int x, int y, u32 width, u32 height);
 	u32 _addTitle(SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, u16 style);
 	u32 _addText(SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, u16 style);

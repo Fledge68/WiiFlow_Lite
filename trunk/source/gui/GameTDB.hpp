@@ -123,6 +123,7 @@ class GameTDB
         //! Get the box (case) color for a specific game id
         //! Returns the color in RGB (first 3 bytes)
         unsigned int GetCaseColor(const char * id);
+		int GetCaseVersions(const char * id);
         //! Get the complete game info in the GameXMLInfo struct
         bool GetGameXMLInfo(const char * id, GameXMLInfo * gameInfo);
         //! Convert a specific game rating to a string

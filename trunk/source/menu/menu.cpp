@@ -41,6 +41,12 @@ extern const u8 butright_png[];
 extern const u8 butsleft_png[];
 extern const u8 butscenter_png[];
 extern const u8 butsright_png[];
+extern const u8 buthleft_png[];
+extern const u8 buthcenter_png[];
+extern const u8 buthright_png[];
+extern const u8 buthsleft_png[];
+extern const u8 buthscenter_png[];
+extern const u8 buthsright_png[];
 extern const u8 pbarleft_png[];
 extern const u8 pbarcenter_png[];
 extern const u8 pbarright_png[];
@@ -726,6 +732,9 @@ void CMenu::_buildMenus(void)
 	theme.txtFont = _font(theme.fontSet, "GENERAL", "text_font", TEXTFONT);
 	theme.txtFontColor = m_theme.getColor("GENERAL", "text_font_color", 0xFFFFFFFF);
 	
+	theme.selsbtnFontColor = m_theme.getColor("GENERAL", "selsbtn_font_color", 0xD0BFDFFF);
+	theme.selubtnFontColor = m_theme.getColor("GENERAL", "selubtn_font_color", 0xD0BFDFFF);
+	
 	// Default Sounds
 	theme.clickSound	= _sound(theme.soundSet, "GENERAL", "click_sound", click_wav, click_wav_size, string("default_btn_click"), false);
 	theme.hoverSound	= _sound(theme.soundSet, "GENERAL", "hover_sound", hover_wav, hover_wav_size, string("default_btn_hover"), false);
@@ -736,14 +745,33 @@ void CMenu::_buildMenus(void)
 	theme.btnTexL = _texture(theme.texSet, "GENERAL", "button_texture_left", theme.btnTexL); 
 	theme.btnTexR.fromPNG(butright_png);
 	theme.btnTexR = _texture(theme.texSet, "GENERAL", "button_texture_right", theme.btnTexR); 
-	theme.btnTexC.fromPNG(butcenter_png);
-	theme.btnTexC = _texture(theme.texSet, "GENERAL", "button_texture_center", theme.btnTexC); 
+	 theme.btnTexC.fromPNG(butcenter_png);
+	 theme.btnTexC = _texture(theme.texSet, "GENERAL", "button_texture_center", theme.btnTexC); 
 	theme.btnTexLS.fromPNG(butsleft_png);
 	theme.btnTexLS = _texture(theme.texSet, "GENERAL", "button_texture_left_selected", theme.btnTexLS); 
 	theme.btnTexRS.fromPNG(butsright_png);
 	theme.btnTexRS = _texture(theme.texSet, "GENERAL", "button_texture_right_selected", theme.btnTexRS); 
-	theme.btnTexCS.fromPNG(butscenter_png);
-	theme.btnTexCS = _texture(theme.texSet, "GENERAL", "button_texture_center_selected", theme.btnTexCS); 
+	 theme.btnTexCS.fromPNG(butscenter_png);
+	 theme.btnTexCS = _texture(theme.texSet, "GENERAL", "button_texture_center_selected", theme.btnTexCS); 
+	
+	
+	theme.btnTexLH.fromPNG(buthleft_png);
+	theme.btnTexLH = _texture(theme.texSet, "GENERAL", "button_texture_hlleft", theme.btnTexLH); 
+	theme.btnTexRH.fromPNG(buthright_png);
+	theme.btnTexRH = _texture(theme.texSet, "GENERAL", "button_texture_hlright", theme.btnTexRH); 
+	 theme.btnTexCH.fromPNG(buthcenter_png);
+	 theme.btnTexCH = _texture(theme.texSet, "GENERAL", "button_texture_hlcenter", theme.btnTexCH); 
+	theme.btnTexLSH.fromPNG(buthsleft_png);
+	theme.btnTexLSH = _texture(theme.texSet, "GENERAL", "button_texture_hlleft_selected", theme.btnTexLSH); 
+	theme.btnTexRSH.fromPNG(buthsright_png);
+	theme.btnTexRSH = _texture(theme.texSet, "GENERAL", "button_texture_hlright_selected", theme.btnTexRSH); 
+	 theme.btnTexCSH.fromPNG(buthscenter_png);
+	 theme.btnTexCSH = _texture(theme.texSet, "GENERAL", "button_texture_hlcenter_selected", theme.btnTexCSH); 
+	
+	
+	
+	
+	
 	theme.pbarTexL.fromPNG(pbarleft_png);
 	theme.pbarTexL = _texture(theme.texSet, "GENERAL", "progressbar_texture_left", theme.pbarTexL); 
 	theme.pbarTexR.fromPNG(pbarright_png);
@@ -984,6 +1012,37 @@ u32 CMenu::_addButton(CMenu::SThemeData &theme, const char *domain, SFont font, 
 	btnTexSet.rightSel = _texture(theme.texSet, domain, "texture_right_selected", theme.btnTexRS);
 	btnTexSet.centerSel = _texture(theme.texSet, domain, "texture_center_selected", theme.btnTexCS);
 
+	font = _font(theme.fontSet, domain, "font", BUTTONFONT);
+
+	SmartGuiSound clickSound = _sound(theme.soundSet, domain, "click_sound", theme.clickSound->GetName());
+	SmartGuiSound hoverSound = _sound(theme.soundSet, domain, "hover_sound", theme.hoverSound->GetName());
+	
+	u16 btnPos = _textStyle(domain, "elmstyle", FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
+	if (btnPos & FTGX_JUSTIFY_RIGHT)
+		x = m_vid.width() - x - width;
+	if (btnPos & FTGX_ALIGN_BOTTOM)
+		y = m_vid.height() - y - height;
+	
+	return m_btnMgr.addButton(font, text, x, y, width, height, c, btnTexSet, clickSound, hoverSound);
+}
+
+u32 CMenu::_addSelButton(CMenu::SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color)
+{
+	SButtonTextureSet btnTexSet;
+	CColor c(color);
+
+	c = m_theme.getColor(domain, "color", c);
+	x = m_theme.getInt(domain, "x", x);
+	y = m_theme.getInt(domain, "y", y);
+	width = m_theme.getInt(domain, "width", width);
+	height = m_theme.getInt(domain, "height", height);
+	btnTexSet.left = _texture(theme.texSet, domain, "texture_left", theme.btnTexLH);
+	btnTexSet.right = _texture(theme.texSet, domain, "texture_right", theme.btnTexRH);
+	btnTexSet.center = _texture(theme.texSet, domain, "texture_center", theme.btnTexCH);
+	btnTexSet.leftSel = _texture(theme.texSet, domain, "texture_left_selected", theme.btnTexLSH);
+	btnTexSet.rightSel = _texture(theme.texSet, domain, "texture_right_selected", theme.btnTexRSH);
+	btnTexSet.centerSel = _texture(theme.texSet, domain, "texture_center_selected", theme.btnTexCSH);
+	
 	font = _font(theme.fontSet, domain, "font", BUTTONFONT);
 
 	SmartGuiSound clickSound = _sound(theme.soundSet, domain, "click_sound", theme.clickSound->GetName());
