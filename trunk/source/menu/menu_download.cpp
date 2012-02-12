@@ -1210,12 +1210,13 @@ void CMenu::_download(string gameId)
 				m_btnMgr.hide(m_downloadBtnGameTDBDownload);
 				m_btnMgr.hide(m_downloadLblCovers);
 				m_btnMgr.hide(m_downloadLblGameTDBDownload);
-				m_btnMgr.hide(m_downloadLblCoverPrio);
-				m_btnMgr.hide(m_downloadLblPrio);
-				m_btnMgr.hide(m_downloadBtnPrioM);
-				m_btnMgr.hide(m_downloadBtnPrioP);
+				//m_btnMgr.hide(m_downloadLblCoverPrio);
+				//m_btnMgr.hide(m_downloadLblPrio);
+				//m_btnMgr.hide(m_downloadBtnPrioM);
+				//m_btnMgr.hide(m_downloadBtnPrioP);
 				m_btnMgr.hide(m_downloadLblCoverSet);
 				m_btnMgr.hide(m_downloadBtnCoverSet);
+				
 				m_thrdStop = false;
 				m_thrdWorking = true;
 				gameId.clear();
@@ -1236,11 +1237,11 @@ void CMenu::_download(string gameId)
 					{
 						if( m_downloadPrioVal&C_TYPE_PRIOA )
 						{
-							if(m_downloadPrioVal&C_TYPE_PRIOB ) // 0111 5
+							if(m_downloadPrioVal&C_TYPE_PRIOB )
 							{
 								m_downloadPrioVal ^= C_TYPE_PRIOB;
 							}
-							else								// 0110 4
+							else
 							{
 								m_downloadPrioVal ^= C_TYPE_PRIOA;
 								m_downloadPrioVal ^= C_TYPE_PRIOB;
@@ -1248,11 +1249,11 @@ void CMenu::_download(string gameId)
 						}
 						else
 						{
-							if(m_downloadPrioVal&C_TYPE_PRIOB ) // 0101 3
+							if(m_downloadPrioVal&C_TYPE_PRIOB )
 							{
 								m_downloadPrioVal ^= C_TYPE_PRIOB;
 							}
-							else								// 0100 2
+							else
 							{
 								m_downloadPrioVal ^= C_TYPE_ONCU;
 							}
@@ -1434,6 +1435,8 @@ void CMenu::_download(string gameId)
 				m_btnMgr.hide(m_downloadBtnGameTDBDownload);
 				m_btnMgr.hide(m_downloadLblCovers);
 				m_btnMgr.hide(m_downloadLblGameTDBDownload);
+				m_btnMgr.hide(m_downloadLblCoverSet);
+				m_btnMgr.hide(m_downloadBtnCoverSet);
 				m_thrdStop = false;
 				m_thrdWorking = true;
 				
