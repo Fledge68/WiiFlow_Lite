@@ -26,6 +26,7 @@
 #include <string.h>
 #include <math.h>
 #include "AifDecoder.hpp"
+#include "gecko.h"
 
 typedef struct
 {
@@ -130,20 +131,30 @@ void AifDecoder::OpenFile()
 		CloseFile();
 		return;
 	}
-
+	
 	SWaveChunk WaveChunk;
-	do
-	{
-        int ret = file_fd->read((u8 *) &WaveChunk, sizeof(SWaveChunk));
-        if(ret <= 0)
-        {
-            CloseFile();
-            return;
-        }
-	}
-	while(WaveChunk.magicDATA != 'COMM');
+	u32 limit = 0;
 
-    DataOffset = file_fd->tell()+WaveChunk.size;
+	while(limit != 60)
+	{
+		int ret = file_fd->read((u8 *) &WaveChunk, sizeof(SWaveChunk));
+		if(ret <= 0)
+		{
+			CloseFile();
+			return;
+		}
+		
+		if(WaveChunk.magicDATA == 'COMM')
+			break;
+
+		file_fd->seek(-sizeof(SWaveChunk)+1, SEEK_CUR);
+
+		limit++;
+
+			
+	}
+	
+	DataOffset = file_fd->tell()+WaveChunk.size;
 
     SAIFFCommChunk CommHdr;
     file_fd->seek(file_fd->tell()-sizeof(SWaveChunk), SEEK_SET);
@@ -158,12 +169,20 @@ void AifDecoder::OpenFile()
     file_fd->seek(DataOffset, SEEK_SET);
 
     SAIFFSSndChunk SSndChunk;
-    file_fd->read((u8 *) &SSndChunk, sizeof(SAIFFSSndChunk));
+	
+	limit = 0;
 
-    if(SSndChunk.fccSSND != 'SSND')
+	while(limit != 60)
 	{
-		CloseFile();
-		return;
+		file_fd->read((u8 *) &SSndChunk, sizeof(SAIFFSSndChunk));
+		
+		if(SSndChunk.fccSSND == 'SSND')			
+			break;
+
+		file_fd->seek(-sizeof(SAIFFSSndChunk)+1, SEEK_CUR);
+		DataOffset += 1;
+
+		limit++;			
 	}
 
 	DataOffset += sizeof(SAIFFSSndChunk);
