@@ -1592,7 +1592,7 @@ void CMenu::_initDownloadMenu(CMenu::SThemeData &theme)
 	_setHideAnim(m_downloadBtnKOs, "DOWNLOAD/KOS", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_downloadBtnZHCNs, "DOWNLOAD/ZHCNS", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_downloadBtnAUs, "DOWNLOAD/AUS", 0, 0, -2.f, 0.f);
-	_setHideAnim(m_downloadBtnBack, "DOWNLOAD/BACK", 0, 0, -2.f, 0.f);
+	_setHideAnim(m_downloadBtnBack, "DOWNLOAD/BACK_BTN", 0, 0, -2.f, 0.f);
 	
 	
 	m_downloadPrioVal = m_cfg.getUInt("GENERAL", "cover_prio", 0);
