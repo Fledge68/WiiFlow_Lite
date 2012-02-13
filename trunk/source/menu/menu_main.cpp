@@ -92,30 +92,30 @@ void CMenu::_showMain(void)
 
 	switch(m_current_view)
 	{
-		case COVERFLOW_HOMEBREW:
-			if( m_show_dml )
-				m_btnMgr.show(m_mainBtnDML);
-			else	
+		case COVERFLOW_DML:
+			if(show_channel)
+				m_btnMgr.show(m_mainBtnChannel);
+			else if(show_homebrew)
+				m_btnMgr.show(m_mainBtnHomebrew);
+			else 
 				m_btnMgr.show(m_mainBtnUsb);
 			break;
 		case COVERFLOW_CHANNEL:
 			if(show_homebrew)
 				m_btnMgr.show(m_mainBtnHomebrew);
-			else if( m_show_dml )
-				m_btnMgr.show(m_mainBtnDML);
-			else 
+			else
 				m_btnMgr.show(m_mainBtnUsb);
 			break;
-		case COVERFLOW_DML:
+		case COVERFLOW_HOMEBREW:
 			m_btnMgr.show(m_mainBtnUsb);
 			break;
 		default:
-			if (show_channel)
+			if(m_show_dml)
+				m_btnMgr.show(m_mainBtnDML);
+			else if (show_channel)
 				m_btnMgr.show(m_mainBtnChannel);
 			else if (show_homebrew && (parental_homebrew || !m_locked))
 				m_btnMgr.show(m_mainBtnHomebrew);
-			else if( m_show_dml )
-				m_btnMgr.show(m_mainBtnDML);
 			else
 				m_btnMgr.show(m_mainBtnUsb);
 			break;
@@ -506,12 +506,12 @@ int CMenu::main(void)
 			else if (m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML) || m_btnMgr.selected(m_mainBtnHomebrew))
 			{
 				if (m_current_view == COVERFLOW_USB) 
-					m_current_view = show_channel ? COVERFLOW_CHANNEL : ((show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : ( m_show_dml ? COVERFLOW_DML : COVERFLOW_USB ));
-				else if (m_current_view == COVERFLOW_CHANNEL)
-					m_current_view = (show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : ( m_show_dml ? COVERFLOW_DML : COVERFLOW_USB );
-				else if (m_current_view == COVERFLOW_HOMEBREW)
-					m_current_view = m_show_dml ? COVERFLOW_DML : COVERFLOW_USB;
+					m_current_view = m_show_dml ? COVERFLOW_DML : (show_channel ? COVERFLOW_CHANNEL : ((show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB));
 				else if (m_current_view == COVERFLOW_DML)
+					m_current_view = show_channel ? COVERFLOW_CHANNEL : ((show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB);
+				else if (m_current_view == COVERFLOW_CHANNEL)
+					m_current_view = (show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB;
+				else if (m_current_view == COVERFLOW_HOMEBREW)
 					m_current_view = COVERFLOW_USB;
 					
 				m_category = m_cat.getInt(_domainFromView(), "category", 0);
@@ -630,36 +630,36 @@ int CMenu::main(void)
 		}
 		if (!m_cfg.getBool("GENERAL", "hideviews", false) && (m_gameList.empty() || m_show_zone_main2))
 		{
-			switch(m_current_view)
-			{
-				case COVERFLOW_HOMEBREW:
-					if( m_show_dml )
-						m_btnMgr.show(m_mainBtnDML);
-					else
-						m_btnMgr.show(m_mainBtnUsb);
-					break;
-				case COVERFLOW_CHANNEL:
-					if (show_homebrew && (parental_homebrew || !m_locked))
-						m_btnMgr.show(m_mainBtnHomebrew);
-					else if( m_show_dml )
-						m_btnMgr.show(m_mainBtnDML);
-					else
-						m_btnMgr.show(m_mainBtnUsb);
-					break;
-				case COVERFLOW_DML:
+		switch(m_current_view)
+		{
+			case COVERFLOW_DML:
+				if(show_channel)
+					m_btnMgr.show(m_mainBtnChannel);
+				else if(show_homebrew)
+					m_btnMgr.show(m_mainBtnHomebrew);
+				else 
 					m_btnMgr.show(m_mainBtnUsb);
-					break;
-				default:
-					if (show_channel)
-						m_btnMgr.show(m_mainBtnChannel);
-					else if (show_homebrew && (parental_homebrew || !m_locked))
-						m_btnMgr.show(m_mainBtnHomebrew);
-					else if( m_show_dml )
-						m_btnMgr.show(m_mainBtnDML);
-					else
-						m_btnMgr.show(m_mainBtnUsb);
-					break;
-			}
+				break;
+			case COVERFLOW_CHANNEL:
+				if(show_homebrew)
+					m_btnMgr.show(m_mainBtnHomebrew);
+				else
+					m_btnMgr.show(m_mainBtnUsb);
+				break;
+			case COVERFLOW_HOMEBREW:
+				m_btnMgr.show(m_mainBtnUsb);
+				break;
+			default:
+				if(m_show_dml)
+					m_btnMgr.show(m_mainBtnDML);
+				else if (show_channel)
+					m_btnMgr.show(m_mainBtnChannel);
+				else if (show_homebrew && (parental_homebrew || !m_locked))
+					m_btnMgr.show(m_mainBtnHomebrew);
+				else
+					m_btnMgr.show(m_mainBtnUsb);
+				break;
+		}
 			m_btnMgr.show(m_mainLblUser[2]);
 			m_btnMgr.show(m_mainLblUser[3]);
 		}
