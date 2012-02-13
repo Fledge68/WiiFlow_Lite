@@ -30,6 +30,7 @@
 #include "video.hpp"
 #include "gecko.h"
 #include "defines.h"
+#include "text.hpp"
 
 #define NAME_OFFSET_DB  "gametdb_offsets.bin"
 #define MAXREADSIZE     1024*1024   // Cache size only for parsing the offsets: 1MB
@@ -638,8 +639,10 @@ unsigned int GameTDB::GetPublishDate(const char * id)
     return ((year & 0xFFFF) << 16 | (month & 0xFF) << 8 | (day & 0xFF));
 }
 
-bool GameTDB::GetGenres(const char * id, safe_vector<string> & genre)
+bool GameTDB::GetGenres(const char * id, string & gen)
 {
+	safe_vector<string> genre;
+
     if(!id) return false;
 
     char * data = GetGameNode(id);
@@ -679,6 +682,8 @@ bool GameTDB::GetGenres(const char * id, safe_vector<string> & genre)
     genre[genre_num].push_back('\0');
 
     delete [] data;
+	
+	gen = vectorToString(genre, ", ");
 
     return true;
 }
