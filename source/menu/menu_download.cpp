@@ -1505,7 +1505,7 @@ void CMenu::_initDownloadMenu(CMenu::SThemeData &theme)
 	m_downloadLblCovers = _addLabel(theme, "DOWNLOAD/COVERS", theme.btnFont, L"", 40, 130, 320, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_downloadBtnAll = _addButton(theme, "DOWNLOAD/ALL_BTN", theme.btnFont, L"", 370, 130, 230, 56, theme.btnFontColor);
 	m_downloadBtnMissing = _addButton(theme, "DOWNLOAD/MISSING_BTN", theme.btnFont, L"", 370, 190, 230, 56, theme.btnFontColor);
-	m_downloadLblCoverSet = _addLabel(theme, "DOWNLOAD/COVERSSET_LBL", theme.btnFont, L"", 40, 250, 320, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_downloadLblCoverSet = _addLabel(theme, "DOWNLOAD/COVERSSET", theme.btnFont, L"", 40, 250, 320, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_downloadBtnCoverSet = _addButton(theme, "DOWNLOAD/COVERSET_BTN", theme.btnFont, L"", 370, 250, 230, 56, theme.btnFontColor);
 	m_downloadLblGameTDBDownload = _addLabel(theme, "DOWNLOAD/GAMETDB_DOWNLOAD", theme.btnFont, L"", 40, 310, 320, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_downloadBtnGameTDBDownload = _addButton(theme, "DOWNLOAD/GAMETDB_DOWNLOAD_BTN", theme.btnFont, L"", 370, 310, 230, 56, theme.btnFontColor);
@@ -1556,7 +1556,7 @@ void CMenu::_initDownloadMenu(CMenu::SThemeData &theme)
 	_setHideAnim(m_downloadBtnCancel, "DOWNLOAD/CANCEL_BTN", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_downloadBtnAll, "DOWNLOAD/ALL_BTN", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_downloadBtnMissing, "DOWNLOAD/MISSING_BTN", 0, 0, -2.f, 0.f);	
-	_setHideAnim(m_downloadLblCoverSet, "DOWNLOAD/COVERSSET_LBL", 0, 0, -2.f, 0.f);
+	_setHideAnim(m_downloadLblCoverSet, "DOWNLOAD/COVERSSET", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_downloadBtnCoverSet, "DOWNLOAD/COVERSET_BTN", 0, 0, -2.f, 0.f);	
 	_setHideAnim(m_downloadLblGameTDBDownload, "DOWNLOAD/GAMETDB_DOWNLOAD", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_downloadBtnGameTDBDownload, "DOWNLOAD/GAMETDB_DOWNLOAD_BTN", 0, 0, -2.f, 0.f);
