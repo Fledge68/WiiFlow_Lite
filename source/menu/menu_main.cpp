@@ -505,15 +505,28 @@ int CMenu::main(void)
 			}
 			else if (m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML) || m_btnMgr.selected(m_mainBtnHomebrew))
 			{
-				if (m_current_view == COVERFLOW_USB) 
-					m_current_view = m_show_dml ? COVERFLOW_DML : (show_channel ? COVERFLOW_CHANNEL : ((show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB));
-				else if (m_current_view == COVERFLOW_DML)
-					m_current_view = show_channel ? COVERFLOW_CHANNEL : ((show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB);
-				else if (m_current_view == COVERFLOW_CHANNEL)
-					m_current_view = (show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB;
-				else if (m_current_view == COVERFLOW_HOMEBREW)
-					m_current_view = COVERFLOW_USB;
-					
+				if (m_cfg.getBool("GENERAL", "dpad_mode", false) && (BTN_UP_PRESSED || BTN_DOWN_PRESSED || BTN_LEFT_PRESSED || BTN_RIGHT_PRESSED))
+				{
+					if (BTN_UP_PRESSED) 
+						m_current_view = COVERFLOW_USB;
+					else if (BTN_DOWN_PRESSED && m_show_dml)
+						m_current_view = COVERFLOW_DML;
+					else if (BTN_LEFT_PRESSED && show_homebrew && (parental_homebrew || !m_locked))
+						m_current_view =  COVERFLOW_HOMEBREW;
+					else if (BTN_RIGHT_PRESSED && show_channel)
+						m_current_view = COVERFLOW_CHANNEL;
+				}
+				else
+				{
+					if (m_current_view == COVERFLOW_USB) 
+						m_current_view = m_show_dml ? COVERFLOW_DML : (show_channel ? COVERFLOW_CHANNEL : ((show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB));
+					else if (m_current_view == COVERFLOW_DML)
+						m_current_view = show_channel ? COVERFLOW_CHANNEL : ((show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB);
+					else if (m_current_view == COVERFLOW_CHANNEL)
+						m_current_view = (show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB;
+					else if (m_current_view == COVERFLOW_HOMEBREW)
+						m_current_view = COVERFLOW_USB;
+				}
 				m_category = m_cat.getInt(_domainFromView(), "category", 0);
 				LoadView();
 			}
