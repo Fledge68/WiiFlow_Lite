@@ -505,15 +505,15 @@ int CMenu::main(void)
 			}
 			else if (m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML) || m_btnMgr.selected(m_mainBtnHomebrew))
 			{
-				if (m_cfg.getBool("GENERAL", "dpad_mode", false) && (BTN_UP_PRESSED || BTN_DOWN_PRESSED || BTN_LEFT_PRESSED || BTN_RIGHT_PRESSED))
+				if (m_cfg.getBool("GENERAL", "dpad_mode", false) && (BTN_UP_HELD || BTN_DOWN_HELD || BTN_LEFT_HELD || BTN_RIGHT_HELD))
 				{
-					if (BTN_UP_PRESSED) 
+					if (BTN_UP_HELD) 
 						m_current_view = COVERFLOW_USB;
-					else if (BTN_DOWN_PRESSED && m_show_dml)
+					else if (BTN_DOWN_HELD && m_show_dml)
 						m_current_view = COVERFLOW_DML;
-					else if (BTN_LEFT_PRESSED && show_homebrew && (parental_homebrew || !m_locked))
+					else if (BTN_LEFT_HELD && show_homebrew && (parental_homebrew || !m_locked))
 						m_current_view =  COVERFLOW_HOMEBREW;
-					else if (BTN_RIGHT_PRESSED && show_channel)
+					else if (BTN_RIGHT_HELD && show_channel)
 						m_current_view = COVERFLOW_CHANNEL;
 				}
 				else
