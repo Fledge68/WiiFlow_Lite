@@ -173,6 +173,7 @@ int CMenu::main(void)
 	bool use_grab = m_cfg.getBool("GENERAL", "use_grab", false);
 	show_homebrew = !m_cfg.getBool("HOMEBREW", "disable", false);
 	show_channel = !m_cfg.getBool("GENERAL", "hidechannel", false);
+	bool dpad_mode = m_cfg.getBool("GENERAL", "dpad_mode", false);
 	parental_homebrew = m_cfg.getBool("HOMEBREW", "parental", false);	
 
 	m_reload = false;
@@ -255,6 +256,19 @@ int CMenu::main(void)
 			break;
 		}
 		m_btnMgr.noClick(true);
+		if ((m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML) || m_btnMgr.selected(m_mainBtnHomebrew)) && dpad_mode && (BTN_UP_PRESSED || BTN_DOWN_PRESSED || BTN_LEFT_PRESSED || BTN_RIGHT_PRESSED))
+		{
+			if (BTN_UP_PRESSED) 
+				m_current_view = COVERFLOW_USB;
+			else if (BTN_DOWN_PRESSED && m_show_dml)
+				m_current_view = COVERFLOW_DML;
+			else if (BTN_LEFT_PRESSED && show_homebrew && (parental_homebrew || !m_locked))
+				m_current_view =  COVERFLOW_HOMEBREW;
+			else if (BTN_RIGHT_PRESSED && show_channel)
+				m_current_view = COVERFLOW_CHANNEL;
+			m_category = m_cat.getInt(_domainFromView(), "category", 0);
+			LoadView();
+		}
 		if (!m_btnMgr.selected(m_mainBtnQuit) && !BTN_B_HELD && (BTN_UP_REPEAT || RIGHT_STICK_UP))
 			m_cf.up();
 		if (!m_btnMgr.selected(m_mainBtnQuit) && ((!BTN_B_HELD && (BTN_RIGHT_REPEAT || RIGHT_STICK_RIGHT)) || WROLL_RIGHT))
@@ -505,28 +519,14 @@ int CMenu::main(void)
 			}
 			else if (m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML) || m_btnMgr.selected(m_mainBtnHomebrew))
 			{
-				if (m_cfg.getBool("GENERAL", "dpad_mode", false) && (BTN_UP_HELD || BTN_DOWN_HELD || BTN_LEFT_HELD || BTN_RIGHT_HELD))
-				{
-					if (BTN_UP_HELD) 
-						m_current_view = COVERFLOW_USB;
-					else if (BTN_DOWN_HELD && m_show_dml)
-						m_current_view = COVERFLOW_DML;
-					else if (BTN_LEFT_HELD && show_homebrew && (parental_homebrew || !m_locked))
-						m_current_view =  COVERFLOW_HOMEBREW;
-					else if (BTN_RIGHT_HELD && show_channel)
-						m_current_view = COVERFLOW_CHANNEL;
-				}
-				else
-				{
-					if (m_current_view == COVERFLOW_USB) 
-						m_current_view = m_show_dml ? COVERFLOW_DML : (show_channel ? COVERFLOW_CHANNEL : ((show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB));
-					else if (m_current_view == COVERFLOW_DML)
-						m_current_view = show_channel ? COVERFLOW_CHANNEL : ((show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB);
-					else if (m_current_view == COVERFLOW_CHANNEL)
-						m_current_view = (show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB;
-					else if (m_current_view == COVERFLOW_HOMEBREW)
-						m_current_view = COVERFLOW_USB;
-				}
+				if (m_current_view == COVERFLOW_USB) 
+					m_current_view = m_show_dml ? COVERFLOW_DML : (show_channel ? COVERFLOW_CHANNEL : ((show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB));
+				else if (m_current_view == COVERFLOW_DML)
+					m_current_view = show_channel ? COVERFLOW_CHANNEL : ((show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB);
+				else if (m_current_view == COVERFLOW_CHANNEL)
+					m_current_view = (show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB;
+				else if (m_current_view == COVERFLOW_HOMEBREW)
+					m_current_view = COVERFLOW_USB;
 				m_category = m_cat.getInt(_domainFromView(), "category", 0);
 				LoadView();
 			}
