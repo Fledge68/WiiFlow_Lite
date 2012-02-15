@@ -53,6 +53,55 @@ extern const u8 pbarright_png[];
 extern const u8 pbarlefts_png[];
 extern const u8 pbarcenters_png[];
 extern const u8 pbarrights_png[];
+extern const u8 butauon_png[];
+extern const u8 butauons_png[];
+extern const u8 butauoff_png[];
+extern const u8 butauoffs_png[];
+extern const u8 butenon_png[];
+extern const u8 butenons_png[];
+extern const u8 butenoff_png[];
+extern const u8 butenoffs_png[];
+extern const u8 butjaon_png[];
+extern const u8 butjaons_png[];
+extern const u8 butjaoff_png[];
+extern const u8 butjaoffs_png[];
+extern const u8 butfron_png[];
+extern const u8 butfrons_png[];
+extern const u8 butfroff_png[];
+extern const u8 butfroffs_png[];
+extern const u8 butdeon_png[];
+extern const u8 butdeons_png[];
+extern const u8 butdeoff_png[];
+extern const u8 butdeoffs_png[];
+extern const u8 buteson_png[];
+extern const u8 butesons_png[];
+extern const u8 butesoff_png[];
+extern const u8 butesoffs_png[];
+extern const u8 butiton_png[];
+extern const u8 butitons_png[];
+extern const u8 butitoff_png[];
+extern const u8 butitoffs_png[];
+extern const u8 butnlon_png[];
+extern const u8 butnlons_png[];
+extern const u8 butnloff_png[];
+extern const u8 butnloffs_png[];
+extern const u8 butpton_png[];
+extern const u8 butptons_png[];
+extern const u8 butptoff_png[];
+extern const u8 butptoffs_png[];
+extern const u8 butruon_png[];
+extern const u8 butruons_png[];
+extern const u8 butruoff_png[];
+extern const u8 butruoffs_png[];
+extern const u8 butkoon_png[];
+extern const u8 butkoons_png[];
+extern const u8 butkooff_png[];
+extern const u8 butkooffs_png[];
+extern const u8 butzhcnon_png[];
+extern const u8 butzhcnons_png[];
+extern const u8 butzhcnoff_png[];
+extern const u8 butzhcnoffs_png[];
+
 
 using namespace std;
 
@@ -754,24 +803,114 @@ void CMenu::_buildMenus(void)
 	 theme.btnTexCS.fromPNG(butscenter_png);
 	 theme.btnTexCS = _texture(theme.texSet, "GENERAL", "button_texture_center_selected", theme.btnTexCS); 
 	
-	
-	theme.btnTexLH.fromPNG(buthleft_png);
-	theme.btnTexLH = _texture(theme.texSet, "GENERAL", "button_texture_hlleft", theme.btnTexLH); 
-	theme.btnTexRH.fromPNG(buthright_png);
-	theme.btnTexRH = _texture(theme.texSet, "GENERAL", "button_texture_hlright", theme.btnTexRH); 
-	 theme.btnTexCH.fromPNG(buthcenter_png);
-	 theme.btnTexCH = _texture(theme.texSet, "GENERAL", "button_texture_hlcenter", theme.btnTexCH); 
-	theme.btnTexLSH.fromPNG(buthsleft_png);
-	theme.btnTexLSH = _texture(theme.texSet, "GENERAL", "button_texture_hlleft_selected", theme.btnTexLSH); 
-	theme.btnTexRSH.fromPNG(buthsright_png);
-	theme.btnTexRSH = _texture(theme.texSet, "GENERAL", "button_texture_hlright_selected", theme.btnTexRSH); 
-	 theme.btnTexCSH.fromPNG(buthscenter_png);
-	 theme.btnTexCSH = _texture(theme.texSet, "GENERAL", "button_texture_hlcenter_selected", theme.btnTexCSH); 
-	
-	
-	
-	
-	
+	theme.btnAUOn.fromPNG(butauon_png);
+       	theme.btnAUOn = _texture(theme.texSet, "GENERAL", "button_au_on", theme.btnAUOn);
+	theme.btnAUOns.fromPNG(butauons_png);
+	theme.btnAUOns = _texture(theme.texSet, "GENERAL", "button_au_on_selected", theme.btnAUOns);
+	theme.btnAUOff.fromPNG(butauoff_png);
+	theme.btnAUOff = _texture(theme.texSet, "GENERAL", "button_au_off", theme.btnAUOff);
+	theme.btnAUOffs.fromPNG(butauoffs_png);
+	theme.btnAUOffs = _texture(theme.texSet, "GENERAL", "button_au_off_selected", theme.btnAUOffs);
+
+	theme.btnENOn.fromPNG(butenon_png);
+       	theme.btnENOn = _texture(theme.texSet, "GENERAL", "button_en_on", theme.btnENOn);
+	theme.btnENOns.fromPNG(butenons_png);
+	theme.btnENOns = _texture(theme.texSet, "GENERAL", "button_en_on_selected", theme.btnENOns);
+	theme.btnENOff.fromPNG(butenoff_png);
+	theme.btnENOff = _texture(theme.texSet, "GENERAL", "button_en_off", theme.btnENOff);
+	theme.btnENOffs.fromPNG(butenoffs_png);
+	theme.btnENOffs = _texture(theme.texSet, "GENERAL", "button_en_off_selected", theme.btnENOffs);
+
+	theme.btnJAOn.fromPNG(butjaon_png);
+       	theme.btnJAOn = _texture(theme.texSet, "GENERAL", "button_ja_on", theme.btnJAOn);
+	theme.btnJAOns.fromPNG(butjaons_png);
+	theme.btnJAOns = _texture(theme.texSet, "GENERAL", "button_ja_on_selected", theme.btnJAOns);
+	theme.btnJAOff.fromPNG(butjaoff_png);
+	theme.btnJAOff = _texture(theme.texSet, "GENERAL", "button_ja_off", theme.btnJAOff);
+	theme.btnJAOffs.fromPNG(butjaoffs_png);
+	theme.btnJAOffs = _texture(theme.texSet, "GENERAL", "button_ja_off_selected", theme.btnJAOffs);
+
+	theme.btnFROn.fromPNG(butfron_png);
+       	theme.btnFROn = _texture(theme.texSet, "GENERAL", "button_fr_on", theme.btnFROn);
+	theme.btnFROns.fromPNG(butfrons_png);
+	theme.btnFROns = _texture(theme.texSet, "GENERAL", "button_fr_on_selected", theme.btnFROns);
+	theme.btnFROff.fromPNG(butfroff_png);
+	theme.btnFROff = _texture(theme.texSet, "GENERAL", "button_fr_off", theme.btnFROff);
+	theme.btnFROffs.fromPNG(butfroffs_png);
+	theme.btnFROffs = _texture(theme.texSet, "GENERAL", "button_fr_off_selected", theme.btnFROffs);
+
+	theme.btnDEOn.fromPNG(butdeon_png);
+       	theme.btnDEOn = _texture(theme.texSet, "GENERAL", "button_de_on", theme.btnDEOn);
+	theme.btnDEOns.fromPNG(butdeons_png);
+	theme.btnDEOns = _texture(theme.texSet, "GENERAL", "button_de_on_selected", theme.btnDEOns);
+	theme.btnDEOff.fromPNG(butdeoff_png);
+	theme.btnDEOff = _texture(theme.texSet, "GENERAL", "button_de_off", theme.btnDEOff);
+	theme.btnDEOffs.fromPNG(butdeoffs_png);
+	theme.btnDEOffs = _texture(theme.texSet, "GENERAL", "button_de_off_selected", theme.btnDEOffs);
+
+	theme.btnESOn.fromPNG(buteson_png);
+       	theme.btnESOn = _texture(theme.texSet, "GENERAL", "button_es_on", theme.btnESOn);
+	theme.btnESOns.fromPNG(butesons_png);
+	theme.btnESOns = _texture(theme.texSet, "GENERAL", "button_es_on_selected", theme.btnESOns);
+	theme.btnESOff.fromPNG(butesoff_png);
+	theme.btnESOff = _texture(theme.texSet, "GENERAL", "button_es_off", theme.btnESOff);
+	theme.btnESOffs.fromPNG(butesoffs_png);
+	theme.btnESOffs = _texture(theme.texSet, "GENERAL", "button_es_off_selected", theme.btnESOffs);
+
+	theme.btnITOn.fromPNG(butiton_png);
+       	theme.btnITOn = _texture(theme.texSet, "GENERAL", "button_it_on", theme.btnITOn);
+	theme.btnITOns.fromPNG(butitons_png);
+	theme.btnITOns = _texture(theme.texSet, "GENERAL", "button_it_on_selected", theme.btnITOns);
+	theme.btnITOff.fromPNG(butitoff_png);
+	theme.btnITOff = _texture(theme.texSet, "GENERAL", "button_it_off", theme.btnITOff);
+	theme.btnITOffs.fromPNG(butitoffs_png);
+	theme.btnITOffs = _texture(theme.texSet, "GENERAL", "button_it_off_selected", theme.btnITOffs);
+
+	theme.btnNLOn.fromPNG(butnlon_png);
+       	theme.btnNLOn = _texture(theme.texSet, "GENERAL", "button_nl_on", theme.btnNLOn);
+	theme.btnNLOns.fromPNG(butnlons_png);
+	theme.btnNLOns = _texture(theme.texSet, "GENERAL", "button_nl_on_selected", theme.btnNLOns);
+	theme.btnNLOff.fromPNG(butnloff_png);
+	theme.btnNLOff = _texture(theme.texSet, "GENERAL", "button_nl_off", theme.btnNLOff);
+	theme.btnNLOffs.fromPNG(butnloffs_png);
+	theme.btnNLOffs = _texture(theme.texSet, "GENERAL", "button_nl_off_selected", theme.btnNLOffs);
+
+	theme.btnPTOn.fromPNG(butpton_png);
+       	theme.btnPTOn = _texture(theme.texSet, "GENERAL", "button_pt_on", theme.btnPTOn);
+	theme.btnPTOns.fromPNG(butptons_png);
+	theme.btnPTOns = _texture(theme.texSet, "GENERAL", "button_pt_on_selected", theme.btnPTOns);
+	theme.btnPTOff.fromPNG(butptoff_png);
+	theme.btnPTOff = _texture(theme.texSet, "GENERAL", "button_pt_off", theme.btnPTOff);
+	theme.btnPTOffs.fromPNG(butptoffs_png);
+	theme.btnPTOffs = _texture(theme.texSet, "GENERAL", "button_pt_off_selected", theme.btnPTOffs);
+
+	theme.btnRUOn.fromPNG(butruon_png);
+       	theme.btnRUOn = _texture(theme.texSet, "GENERAL", "button_ru_on", theme.btnRUOn);
+	theme.btnRUOns.fromPNG(butruons_png);
+	theme.btnRUOns = _texture(theme.texSet, "GENERAL", "button_ru_on_selected", theme.btnRUOns);
+	theme.btnRUOff.fromPNG(butruoff_png);
+	theme.btnRUOff = _texture(theme.texSet, "GENERAL", "button_ru_off", theme.btnRUOff);
+	theme.btnRUOffs.fromPNG(butruoffs_png);
+	theme.btnRUOffs = _texture(theme.texSet, "GENERAL", "button_ru_off_selected", theme.btnRUOffs);
+
+	theme.btnKOOn.fromPNG(butkoon_png);
+       	theme.btnKOOn = _texture(theme.texSet, "GENERAL", "button_ko_on", theme.btnKOOn);
+	theme.btnKOOns.fromPNG(butkoons_png);
+	theme.btnKOOns = _texture(theme.texSet, "GENERAL", "button_ko_on_selected", theme.btnKOOns);
+	theme.btnKOOff.fromPNG(butkooff_png);
+	theme.btnKOOff = _texture(theme.texSet, "GENERAL", "button_ko_off", theme.btnKOOff);
+	theme.btnKOOffs.fromPNG(butkooffs_png);
+	theme.btnKOOffs = _texture(theme.texSet, "GENERAL", "button_ko_off_selected", theme.btnKOOffs);
+
+	theme.btnZHCNOn.fromPNG(butzhcnon_png);
+       	theme.btnZHCNOn = _texture(theme.texSet, "GENERAL", "button_zhcn_on", theme.btnZHCNOn);
+	theme.btnZHCNOns.fromPNG(butzhcnons_png);
+	theme.btnZHCNOns = _texture(theme.texSet, "GENERAL", "button_zhcn_on_selected", theme.btnZHCNOns);
+	theme.btnZHCNOff.fromPNG(butzhcnoff_png);
+	theme.btnZHCNOff = _texture(theme.texSet, "GENERAL", "button_zhcn_off", theme.btnZHCNOff);
+	theme.btnZHCNOffs.fromPNG(butzhcnoffs_png);
+	theme.btnZHCNOffs = _texture(theme.texSet, "GENERAL", "button_zhcn_off_selected", theme.btnZHCNOffs);
+
 	theme.pbarTexL.fromPNG(pbarleft_png);
 	theme.pbarTexL = _texture(theme.texSet, "GENERAL", "progressbar_texture_left", theme.pbarTexL); 
 	theme.pbarTexR.fromPNG(pbarright_png);
