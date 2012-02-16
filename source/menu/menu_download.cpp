@@ -38,6 +38,7 @@ static const char FMT_CBPIC_URL[] = "http://art.gametdb.com/wii/coverfullHQ2/{lo
 static const char FMT_CPIC_URL[] = "http://art.gametdb.com/wii/cover2/{loc}/{gameid}.png";
 
 static block download = { 0, 0 };
+static bool settingsmenu = false;
 static string countryCode(const string &gameId)
 {
 	switch (gameId[3])
@@ -1192,7 +1193,16 @@ void CMenu::_download(string gameId)
 	{
 		_mainLoopCommon(false, m_thrdWorking);
 		if ((BTN_HOME_PRESSED || BTN_B_PRESSED) && !m_thrdWorking)
-			break;
+		{
+			if(settingsmenu)
+			{
+				settingsmenu = false;
+				_hideSettings();
+				_showDownload();
+			}
+			else
+				break;
+		}
 		else if (BTN_UP_PRESSED)
 			m_btnMgr.up();
 		else if (BTN_DOWN_PRESSED)
@@ -1320,11 +1330,13 @@ void CMenu::_download(string gameId)
 				_showSettings();
 			}
 			else if (m_btnMgr.selected(m_downloadBtnCoverSet) && !m_thrdWorking)
-			{				
+			{
+				settingsmenu = true;
 				_showSettings();				
 			}
 			else if (m_btnMgr.selected(m_downloadBtnBack) && !m_thrdWorking)
-			{				
+			{
+				_hideSettings();
 				_showDownload();
 			}
 			else if ((m_btnMgr.selected(m_downloadBtnEN) || m_btnMgr.selected(m_downloadBtnENs)) && !m_thrdWorking)
