@@ -16,6 +16,7 @@
 #include "savefile.h"
 #include "wip.h"
 #include "channel_launcher.h"
+#include "devicemounter/sdhc.h"
 
 #include "loader/frag.h"
 #include "loader/fst.h"
@@ -1071,7 +1072,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		if(!DeviceHandler::Instance()->IsInserted(currentPartition))
 			DeviceHandler::Instance()->Mount(currentPartition);
 		DeviceHandler::Instance()->Mount(emuPartition);
-
 	}
 	
 	if (!m_directLaunch)
@@ -1116,7 +1116,9 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	cleanup();
 	Close_Inputs();
 	USBStorage_Deinit();
-		
+	if(currentPartition == 0)
+		SDHC_Init();
+	
 	if(gc)
 	{
 		memcpy((char*)hdr->hdr.id, id.c_str(),6);

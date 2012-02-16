@@ -431,7 +431,11 @@ s32 Disc_WiiBoot(u8 vidMode, bool vipatch, bool countryString, u8 patchVidModes,
 
 	/* Find game partition offset */
 	s32 ret = __Disc_FindPartition(&offset);
-	if (ret < 0) return ret;
+	if (ret < 0) 
+	{
+		gprintf("Game Partition not found!\n");
+		return ret;
+	}
 
 	/* Boot partition */
 	return Disc_BootPartition(offset, vidMode, vipatch, countryString, patchVidModes, disableIOSreload, aspectRatio);
