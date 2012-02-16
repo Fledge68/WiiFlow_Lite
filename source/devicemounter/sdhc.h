@@ -1,3 +1,8 @@
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #ifndef _SDHC_H_
 #define _SDHC_H_
 
@@ -15,4 +20,8 @@ bool SDHC_WriteSectors(u32, u32, void *);
 extern int sdhc_mode_sd;
 extern int sdhc_inited;
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif
