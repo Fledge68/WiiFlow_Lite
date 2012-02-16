@@ -34,6 +34,18 @@ extern const u8 flatloading_png[];
 static const int black_len = 15;
 static const char* black[black_len] = {"RZZJEL","RZNJ01","SEKJ99","SX3J01","SX3P01","R5WJA4","RUYJ99","S3HJ08","SJBJ01","CKBE88","CCPE01","SMMP01","MDUE01","APR","AFR"};
 
+static const int red_len = 2;
+static const char* red[red_len] = {"SMN","HBW"};
+
+static const int yellow_len = 2;
+static const char* yellow[yellow_len] = {"SIIE8P","SIIP8P"};
+
+static const int greenOne_len = 1;
+static const char* greenOne[greenOne_len] = {"SF8J01"};
+
+static const int greenTwo_len = 1;
+static const char* greenTwo[greenTwo_len] = {"PDUE01"};
+
 static lwp_t coverLoaderThread = LWP_THREAD_NULL;
 SmartBuf coverLoaderThreadStack;
 
@@ -1319,8 +1331,7 @@ void CCoverFlow::_drawCoverBox(int i, bool mirror, CCoverFlow::DrawMode dm)
 	{
 		// set dvd box texture, depending on game
 		if (m_items[m_covers[i].index].hdr->hdr.casecolor == 0xFF0000 ||
-			strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "SMNxxx", 3) == 0 || 
-			strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "HBWxxx", 3) == 0)
+			_checkCoverColor((char *)m_items[m_covers[i].index].hdr->hdr.id,red,red_len))
 		{
 			GX_InitTexObj(&texObj, m_dvdSkin_Red.data.get(), m_dvdSkin_Red.width, m_dvdSkin_Red.height, m_dvdSkin_Red.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		} 
@@ -1331,18 +1342,17 @@ void CCoverFlow::_drawCoverBox(int i, bool mirror, CCoverFlow::DrawMode dm)
 			GX_InitTexObj(&texObj, m_dvdSkin_Black.data.get(), m_dvdSkin_Black.width, m_dvdSkin_Black.height, m_dvdSkin_Black.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		}
 		else if (m_items[m_covers[i].index].hdr->hdr.casecolor == 0xFCFF00 ||
-				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "SIIE8P", 6) == 0 ||
-				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "SIIP8P", 6) == 0 )
+				 _checkCoverColor((char *)m_items[m_covers[i].index].hdr->hdr.id,yellow,yellow_len))
 		{
 			GX_InitTexObj(&texObj, m_dvdSkin_Yellow.data.get(), m_dvdSkin_Yellow.width, m_dvdSkin_Yellow.height, m_dvdSkin_Yellow.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		}
 		else if (m_items[m_covers[i].index].hdr->hdr.casecolor == 0x01A300 ||
-				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "SF8J01", 6) == 0 )
+				 _checkCoverColor((char *)m_items[m_covers[i].index].hdr->hdr.id,greenOne,greenOne_len))
 		{
 			GX_InitTexObj(&texObj, m_dvdSkin_GreenOne.data.get(), m_dvdSkin_GreenOne.width, m_dvdSkin_GreenOne.height, m_dvdSkin_GreenOne.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		}
 		else if (m_items[m_covers[i].index].hdr->hdr.casecolor == 0x00E360 ||
-				 strncmp((char *) m_items[m_covers[i].index].hdr->hdr.id, "PDUE01", 6) == 0 )
+				 _checkCoverColor((char *)m_items[m_covers[i].index].hdr->hdr.id,greenTwo,greenTwo_len))
 		{
 			GX_InitTexObj(&texObj, m_dvdSkin_GreenTwo.data.get(), m_dvdSkin_GreenTwo.width, m_dvdSkin_GreenTwo.height, m_dvdSkin_GreenTwo.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		}
