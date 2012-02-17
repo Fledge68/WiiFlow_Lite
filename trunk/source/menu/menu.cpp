@@ -432,8 +432,6 @@ void CMenu::cleanup(bool ios_reload)
 {
 	m_cf.stopCoverLoader();
 
-	CheckGameSoundThread(true);
-
 	_stopSounds();
 	
 	if (!ios_reload)
@@ -1511,8 +1509,8 @@ void CMenu::_mainLoopCommon(bool withCF, bool blockReboot, bool adjusting)
 		}
 		Sys_Test();
 	}
-
-	if (withCF && m_gameSelected && m_gamesound_changed && (m_gameSoundHdr == NULL) && !m_gameSound.IsPlaying() && MusicPlayer::Instance()->GetVolume() == 0)
+	
+	if (withCF && m_gameSelected && m_gamesound_changed && (!m_gameSoundHdr) && !m_gameSound.IsPlaying() && MusicPlayer::Instance()->GetVolume() == 0)
 	{
 		m_gameSound.Play(m_bnrSndVol);
 		m_gamesound_changed = false;

@@ -305,6 +305,7 @@ void CMenu::_game(bool launch)
 	if (!launch)
 	{
 		SetupInput();
+		CheckGameSoundThread();
 		_playGameSound();
 		_showGame();
 		m_gameSelected = true;
@@ -320,6 +321,7 @@ void CMenu::_game(bool launch)
 
 		if (startGameSound == -5)
 		{
+			CheckGameSoundThread();
 			_playGameSound();
 			_showGame();
 		}
@@ -393,7 +395,6 @@ void CMenu::_game(bool launch)
 				if (!m_locked)
 				{
 					_hideGame();
-					CheckGameSoundThread(true);
 					if (_wbfsOp(CMenu::WO_REMOVE_GAME))
 					{
 						m_gameSound.Stop();
@@ -849,7 +850,6 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		IOS_Close(ESHandle);
 	}
 	
-	CheckGameSoundThread(true);
 	cleanup();
 	Close_Inputs();
 	USBStorage_Deinit();
@@ -979,7 +979,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	u32 cheatSize = 0, gameconfigSize = 0;
 	bool iosLoaded = false;
 
-	CheckGameSoundThread(true);
 	if (videoMode == 0)	videoMode = (u8)min((u32)m_cfg.getInt("GENERAL", "video_mode", 0), ARRAY_SIZE(CMenu::_videoModes) - 1);
 	if (language == 0)	language = min((u32)m_cfg.getInt("GENERAL", "game_language", 0), ARRAY_SIZE(CMenu::_languages) - 1);
 	m_cfg.setString("GAMES", "current_item", id);
@@ -1229,30 +1228,27 @@ void CMenu::_gameSoundThread(CMenu *m)
 	Banner *banner = m->m_current_view == COVERFLOW_USB ?
 		_extractBnr(m->m_gameSoundHdr) : m->m_current_view == COVERFLOW_CHANNEL ?
 		_extractChannelBnr(m->m_gameSoundHdr->hdr.chantitle) : NULL;
-
+	SAFE_DELETE(m->m_gameSoundHdr);
+	
 	if (banner == NULL || !banner->IsValid())
 	{
 		gprintf("no valid banner found\n");
 		SAFE_DELETE(banner);
-		m->m_gameSoundHdr = NULL;
 		return;
 	}
 	_extractBannerTitle(banner, GetLanguage(m->m_loc.getString(m->m_curLanguage, "gametdb_code", "EN").c_str()));
 	
 	const u8 *soundBin = banner->GetFile((char *) "sound.bin", &sndSize);
-
+	SAFE_DELETE(banner);
+	
 	if (soundBin == NULL || (((IMD5Header *)soundBin)->fcc != 'IMD5' && ((IMD5Header *)soundBin)->fcc != 'RIFF'))
 	{
 		gprintf("Failed to load banner sound!\n\n");
-		SAFE_DELETE(banner);
-		m->m_gameSoundHdr = NULL;
 		return;
 	}
 
 	m->m_gameSound.Load(soundBin, sndSize, false);
-	SAFE_DELETE(banner);
 	m->m_gamesound_changed = true;
-	m->m_gameSoundHdr = NULL;
 }
 
 void CMenu::_playGameSound(void)
@@ -1268,9 +1264,9 @@ void CMenu::_playGameSound(void)
 	LWP_CreateThread(&m_gameSoundThread, (void *(*)(void *))CMenu::_gameSoundThread, (void *)this, gameSoundThreadStack.get(), stack_size, 40);
 }
 
-void CMenu::CheckGameSoundThread(bool force)
+void CMenu::CheckGameSoundThread()
 {
-	if (force || (m_gameSoundHdr == NULL && m_gameSoundThread != LWP_THREAD_NULL))
+	if (m_gameSoundHdr == NULL && m_gameSoundThread != LWP_THREAD_NULL)
 	{
 		if(LWP_ThreadIsSuspended(m_gameSoundThread))
 			LWP_ResumeThread(m_gameSoundThread);
@@ -1282,9 +1278,9 @@ void CMenu::CheckGameSoundThread(bool force)
 	}
 }
 
-void CMenu::CheckThreads(bool force)
+void CMenu::CheckThreads()
 {
-	CheckGameSoundThread(force);
+	//CheckGameSoundThread(force);
 	//m_vid.CheckWaitThread(force);
 #ifdef SHOWMEMGECKO
 	mem1 = SYS_GetArena1Size();
