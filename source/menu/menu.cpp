@@ -802,7 +802,20 @@ void CMenu::_buildMenus(void)
 	theme.btnTexRS = _texture(theme.texSet, "GENERAL", "button_texture_right_selected", theme.btnTexRS); 
 	 theme.btnTexCS.fromPNG(butscenter_png);
 	 theme.btnTexCS = _texture(theme.texSet, "GENERAL", "button_texture_center_selected", theme.btnTexCS); 
-	
+
+	theme.btnTexLH.fromPNG(buthleft_png);
+	theme.btnTexLH = _texture(theme.texSet, "GENERAL", "button_texture_hlleft", theme.btnTexLH); 
+	theme.btnTexRH.fromPNG(buthright_png);
+	theme.btnTexRH = _texture(theme.texSet, "GENERAL", "button_texture_hlright", theme.btnTexRH); 
+	 theme.btnTexCH.fromPNG(buthcenter_png);
+	 theme.btnTexCH = _texture(theme.texSet, "GENERAL", "button_texture_hlcenter", theme.btnTexCH); 
+	theme.btnTexLSH.fromPNG(buthsleft_png);
+	theme.btnTexLSH = _texture(theme.texSet, "GENERAL", "button_texture_hlleft_selected", theme.btnTexLSH); 
+	theme.btnTexRSH.fromPNG(buthsright_png);
+	theme.btnTexRSH = _texture(theme.texSet, "GENERAL", "button_texture_hlright_selected", theme.btnTexRSH); 
+	 theme.btnTexCSH.fromPNG(buthscenter_png);
+	 theme.btnTexCSH = _texture(theme.texSet, "GENERAL", "button_texture_hlcenter_selected", theme.btnTexCSH); 
+
 	theme.btnAUOn.fromPNG(butauon_png);
        	theme.btnAUOn = _texture(theme.texSet, "GENERAL", "button_au_on", theme.btnAUOn);
 	theme.btnAUOns.fromPNG(butauons_png);
