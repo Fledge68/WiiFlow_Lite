@@ -1,7 +1,7 @@
 #ifndef __MENU_HPP
 #define __MENU_HPP
 //#define SHOWMEM 1
-//#define SHOWMEMGECKO
+#define SHOWMEMGECKO
 #include <wiiuse/wpad.h>
 #include <ogc/pad.h>
 
@@ -932,14 +932,14 @@ private:
 	static int _GCgameInstaller(void *obj); 
 	wstringEx _optBoolToString(int b);
 	void _stopSounds(void);
-	//
+
 	static u32 _downloadCheatFileAsync(void *obj);
-	// 
+
 	void _playGameSound(void);
-	void CheckGameSoundThread(bool force = false);
-	void CheckThreads(bool force = false);
+	void CheckGameSoundThread(void);
+	void CheckThreads(void);
 	static void _gameSoundThread(CMenu *m);
-	//
+
 	static void _load_installed_cioses();
 	//
 	struct SOption { const char id[10]; const wchar_t text[16]; };
