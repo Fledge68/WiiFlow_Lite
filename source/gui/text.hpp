@@ -67,5 +67,6 @@ std::string lowerCase(std::string text);
 std::string ltrim(std::string s);
 std::string rtrim(std::string s);
 void Asciify( wchar_t *str );
+void Asciify2( char *str );
 
 #endif // !defined(__TEXT_HPP)

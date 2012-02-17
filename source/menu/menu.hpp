@@ -929,6 +929,7 @@ private:
 	void _getGrabStatus(void);
 	static void _addDiscProgress(int status, int total, void *user_data);
 	static int _gameInstaller(void *obj);
+	static int _GCgameInstaller(void *obj); 
 	wstringEx _optBoolToString(int b);
 	void _stopSounds(void);
 	//

@@ -2,6 +2,7 @@
 #include "menu.hpp"
 #include "loader/wbfs.h"
 #include "lockMutex.hpp"
+#include "loader/gc_disc.hpp"
 
 using namespace std;
 
@@ -105,11 +106,63 @@ int CMenu::_gameInstaller(void *obj)
 	return ret;
 }
 
+int CMenu::_GCgameInstaller(void *obj)
+{
+	CMenu &m = *(CMenu *)obj;
+	
+	int ret;
+
+	if (!DeviceHandler::Instance()->IsInserted(SD))
+	{
+		m.m_thrdWorking = false;
+		return -1;
+	}
+
+	struct statvfs stats;
+	memset(&stats, 0, sizeof(stats));
+	statvfs("sd:/" , &stats);
+	
+	u64 free = (u64)stats.f_frsize * (u64)stats.f_bfree;
+	
+	int blockfree = free/0x8000;	
+	
+	if (blockfree <= 44556)
+	{
+		LWP_MutexLock(m.m_mutex);
+		m._setThrdMsg(wfmt(m._fmt("wbfsop11", L"Not enough space : 44557 blocks needed, %d available"), blockfree), 0.f);
+		LWP_MutexUnlock(m.m_mutex);
+		ret = -1;
+	}
+	else
+	{
+
+		LWP_MutexLock(m.m_mutex);
+		m._setThrdMsg(L"", 0);
+		LWP_MutexUnlock(m.m_mutex);
+		
+		ret=0;	
+		
+		ret = GC_GameDumper(CMenu::_addDiscProgress, obj);
+		LWP_MutexLock(m.m_mutex);
+		if (ret == 0)
+			m._setThrdMsg(m._t("wbfsop8", L"Game installed"), 1.f);
+		else
+			m._setThrdMsg(m._t("wbfsop9", L"An error has occurred"), 1.f);
+		LWP_MutexUnlock(m.m_mutex);
+		slotLight(true);
+	}
+	m.m_thrdWorking = false;
+	return ret;
+}
+
 bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 {
 	lwp_t thread = 0;
 	static discHdr header ATTRIBUTE_ALIGN(32);
+	static gc_discHdr gcheader ATTRIBUTE_ALIGN(32);
 	bool done = false;
+	bool upd_usb = false;
+	bool upd_dml = false;
 	bool out = false;
 	bool del_cover = true;
 	struct AutoLight { AutoLight(void) { } ~AutoLight(void) { slotLight(false); } } aw;
@@ -168,27 +221,43 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 							out = true;
 							break;
 						}
-						if (Disc_IsWii() < 0)
+						if (Disc_IsWii() == 0)
 						{
-							error(_t("wbfsoperr3", L"This is not a Wii disc!"));
-							out = true;
-							break;
-						}
-						Disc_ReadHeader(&header);
+							Disc_ReadHeader(&header);
 						
-						if (_searchGamesByID((const char *) header.id).size() != 0)
+							if (_searchGamesByID((const char *) header.id).size() != 0)
+							{
+								error(_t("wbfsoperr4", L"Game already installed"));
+								out = true;
+								break;
+							}
+							cfPos = string((char *) header.id);
+							m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsop6", L"Installing [%s] %s..."), string((const char *)header.id, sizeof header.id).c_str(), string((const char *)header.title, sizeof header.title).c_str()));
+							done = true;
+							upd_usb = true;
+							m_thrdWorking = true;
+							m_thrdProgress = 0.f;
+							m_thrdMessageAdded = false;
+							LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_gameInstaller, (void *)this, 0, 8 * 1024, 64);
+						}
+						else if(Disc_IsGC() == 0)
 						{
-							error(_t("wbfsoperr4", L"Game already installed"));
+							Disc_ReadGCHeader(&gcheader);
+							cfPos = string((char *) gcheader.id);
+							m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsop6", L"Installing [%s] %s..."), string((const char *)gcheader.id, sizeof gcheader.id).c_str(), string((const char *)gcheader.title, sizeof gcheader.title).c_str()));
+							done = true;
+							upd_dml = true;
+							m_thrdWorking = true;
+							m_thrdProgress = 0.f;
+							m_thrdMessageAdded = false;
+							LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_GCgameInstaller, (void *)this, 0, 8 * 1024, 64);
+						}
+						else
+						{
+							error(_t("wbfsoperr3", L"This is not a Wii or GC disc!"));
 							out = true;
 							break;
-						}
-						cfPos = string((char *) header.id);
-						m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsop6", L"Installing [%s] %s..."), string((const char *)header.id, sizeof header.id).c_str(), string((const char *)header.title, sizeof header.title).c_str()));
-						done = true;
-						m_thrdWorking = true;
-						m_thrdProgress = 0.f;
-						m_thrdMessageAdded = false;
-						LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_gameInstaller, (void *)this, 0, 8 * 1024, 64);
+						}						
 						break;
 					case CMenu::WO_REMOVE_GAME:
 						WBFS_RemoveGame((u8 *)m_cf.getId().c_str(), (char *) m_cf.getHdr()->path);
@@ -228,7 +297,11 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 	if (done && (op == CMenu::WO_REMOVE_GAME || op == CMenu::WO_ADD_GAME))
 	{
 		m_gameList.SetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
-		UpdateCache(COVERFLOW_USB);
+		if( upd_dml )
+			UpdateCache(COVERFLOW_DML);
+		
+		if( upd_usb )
+			UpdateCache(COVERFLOW_USB);
 
 		_loadList();
 		_initCF();
