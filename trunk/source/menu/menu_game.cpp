@@ -48,6 +48,10 @@ extern const u8 favoritesoffs_png[];
 extern const u8 delete_png[];
 extern const u8 deletes_png[];
 
+//gc sound
+extern const u8 gc_ogg[];
+extern const u32 gc_ogg_size;
+
 extern u32 sector_size;
 extern int mainIOS;
 static u64 sm_title_id[8]  ATTRIBUTE_ALIGN(32);
@@ -1211,6 +1215,13 @@ SmartBuf gameSoundThreadStack;
 
 void CMenu::_gameSoundThread(CMenu *m)
 {
+	if(m->m_current_view == COVERFLOW_DML)
+	{
+		m->m_gameSound.Load(gc_ogg, gc_ogg_size, false);
+		m->m_gamesound_changed = true;
+		return;
+	}
+	
 	m->m_gamesound_changed = false;
 	u32 sndSize = 0;
 	m->m_gameSoundHdr = m->m_cf.getHdr();
