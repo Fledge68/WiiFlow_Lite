@@ -81,11 +81,11 @@ struct gc_discHdr
 	/* Magic word */
 	u32 magic;
 
-	/* Padding */
-	u8 unused2[4];
-
 	/* Game title */
-	char title[124];
+	char title[64];
+	
+	/* Padding */
+	u8 unused2[64];
 } ATTRIBUTE_PACKED;
 
 #ifdef __cplusplus

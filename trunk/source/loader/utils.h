@@ -7,6 +7,9 @@
 #define MB_SIZE		1048576.0
 #define GB_SIZE		1073741824.0
 
+#define	READSIZE	(32*1024)
+#define MAX_FAT_PATH   1024
+
 /* Macros */
 #define round_up(x,n)	(-(-(x) & -(n)))
 
