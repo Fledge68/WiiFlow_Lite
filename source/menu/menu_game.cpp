@@ -336,6 +336,7 @@ void CMenu::_game(bool launch)
 		if (BTN_HOME_PRESSED || BTN_B_PRESSED)
 		{
 			m_gameSound.Stop();
+			CheckGameSoundThread();
 			break;
 		}
 		else if (BTN_PLUS_PRESSED && m_GameTDBLoaded)
@@ -398,6 +399,7 @@ void CMenu::_game(bool launch)
 					if (_wbfsOp(CMenu::WO_REMOVE_GAME))
 					{
 						m_gameSound.Stop();
+						CheckGameSoundThread();
 						break;
 					}
 					_showGame();
@@ -410,6 +412,7 @@ void CMenu::_game(bool launch)
 			else if (m_btnMgr.selected(m_gameBtnBack))
 			{
 				m_gameSound.Stop();
+				CheckGameSoundThread();
 				break;
 			}
 			else if (m_btnMgr.selected(m_gameBtnSettings))
@@ -850,6 +853,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		IOS_Close(ESHandle);
 	}
 	
+	CheckGameSoundThread();
 	cleanup();
 	Close_Inputs();
 	USBStorage_Deinit();
@@ -979,6 +983,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	u32 cheatSize = 0, gameconfigSize = 0;
 	bool iosLoaded = false;
 
+	CheckGameSoundThread();
 	if (videoMode == 0)	videoMode = (u8)min((u32)m_cfg.getInt("GENERAL", "video_mode", 0), ARRAY_SIZE(CMenu::_videoModes) - 1);
 	if (language == 0)	language = min((u32)m_cfg.getInt("GENERAL", "game_language", 0), ARRAY_SIZE(CMenu::_languages) - 1);
 	m_cfg.setString("GAMES", "current_item", id);
