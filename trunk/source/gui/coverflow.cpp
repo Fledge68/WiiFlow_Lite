@@ -1329,34 +1329,50 @@ void CCoverFlow::_drawCoverBox(int i, bool mirror, CCoverFlow::DrawMode dm)
 	}
 	if (dm == CCoverFlow::CFDR_NORMAL)
 	{
+		u32 casecolor = m_items[m_covers[i].index].hdr->hdr.casecolor;
 		// set dvd box texture, depending on game
-		if (m_items[m_covers[i].index].hdr->hdr.casecolor == 0xFF0000 ||
-			_checkCoverColor((char *)m_items[m_covers[i].index].hdr->hdr.id,red,red_len))
-		{
+		if(casecolor == 0xFFFFFF)
+			GX_InitTexObj(&texObj, m_dvdSkin.data.get(), m_dvdSkin.width, m_dvdSkin.height, m_dvdSkin.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+		else if (casecolor == 0xFF0000)
 			GX_InitTexObj(&texObj, m_dvdSkin_Red.data.get(), m_dvdSkin_Red.width, m_dvdSkin_Red.height, m_dvdSkin_Red.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
-		} 
-		else if (m_items[m_covers[i].index].hdr->hdr.casecolor == 0x000000 ||
-				 m_items[m_covers[i].index].hdr->hdr.casecolor == 0x181919 ||
-				 _checkCoverColor((char *)m_items[m_covers[i].index].hdr->hdr.id,black,black_len))
+		else if (casecolor == 0x000000 || casecolor == 0x181919)
+			GX_InitTexObj(&texObj, m_dvdSkin_Black.data.get(), m_dvdSkin_Black.width, m_dvdSkin_Black.height, m_dvdSkin_Black.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+		else if (casecolor == 0xFCFF00)
+			GX_InitTexObj(&texObj, m_dvdSkin_Yellow.data.get(), m_dvdSkin_Yellow.width, m_dvdSkin_Yellow.height, m_dvdSkin_Yellow.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+		else if (casecolor == 0x01A300)
+			GX_InitTexObj(&texObj, m_dvdSkin_GreenOne.data.get(), m_dvdSkin_GreenOne.width, m_dvdSkin_GreenOne.height, m_dvdSkin_GreenOne.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+		else if (casecolor == 0x00E360)
+			GX_InitTexObj(&texObj, m_dvdSkin_GreenTwo.data.get(), m_dvdSkin_GreenTwo.width, m_dvdSkin_GreenTwo.height, m_dvdSkin_GreenTwo.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+		else if(_checkCoverColor((char *)m_items[m_covers[i].index].hdr->hdr.id,red,red_len))
 		{
+			m_items[m_covers[i].index].hdr->hdr.casecolor = 0xFF0000;
+			GX_InitTexObj(&texObj, m_dvdSkin_Red.data.get(), m_dvdSkin_Red.width, m_dvdSkin_Red.height, m_dvdSkin_Red.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+		}
+		else if(_checkCoverColor((char *)m_items[m_covers[i].index].hdr->hdr.id,black,black_len))
+		{
+			m_items[m_covers[i].index].hdr->hdr.casecolor = 0x000000;
 			GX_InitTexObj(&texObj, m_dvdSkin_Black.data.get(), m_dvdSkin_Black.width, m_dvdSkin_Black.height, m_dvdSkin_Black.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		}
-		else if (m_items[m_covers[i].index].hdr->hdr.casecolor == 0xFCFF00 ||
-				 _checkCoverColor((char *)m_items[m_covers[i].index].hdr->hdr.id,yellow,yellow_len))
+		else if(_checkCoverColor((char *)m_items[m_covers[i].index].hdr->hdr.id,yellow,yellow_len))
 		{
+			m_items[m_covers[i].index].hdr->hdr.casecolor = 0xFCFF00;
 			GX_InitTexObj(&texObj, m_dvdSkin_Yellow.data.get(), m_dvdSkin_Yellow.width, m_dvdSkin_Yellow.height, m_dvdSkin_Yellow.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		}
-		else if (m_items[m_covers[i].index].hdr->hdr.casecolor == 0x01A300 ||
-				 _checkCoverColor((char *)m_items[m_covers[i].index].hdr->hdr.id,greenOne,greenOne_len))
+		else if(_checkCoverColor((char *)m_items[m_covers[i].index].hdr->hdr.id,greenOne,greenOne_len))
 		{
+			m_items[m_covers[i].index].hdr->hdr.casecolor = 0x01A300;
 			GX_InitTexObj(&texObj, m_dvdSkin_GreenOne.data.get(), m_dvdSkin_GreenOne.width, m_dvdSkin_GreenOne.height, m_dvdSkin_GreenOne.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		}
-		else if (m_items[m_covers[i].index].hdr->hdr.casecolor == 0x00E360 ||
-				 _checkCoverColor((char *)m_items[m_covers[i].index].hdr->hdr.id,greenTwo,greenTwo_len))
+		else if(_checkCoverColor((char *)m_items[m_covers[i].index].hdr->hdr.id,greenTwo,greenTwo_len))
 		{
+			m_items[m_covers[i].index].hdr->hdr.casecolor = 0x00E360;
 			GX_InitTexObj(&texObj, m_dvdSkin_GreenTwo.data.get(), m_dvdSkin_GreenTwo.width, m_dvdSkin_GreenTwo.height, m_dvdSkin_GreenTwo.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		}
-		else GX_InitTexObj(&texObj, m_dvdSkin.data.get(), m_dvdSkin.width, m_dvdSkin.height, m_dvdSkin.format, GX_CLAMP, GX_CLAMP, GX_FALSE);	
+		else
+		{
+			m_items[m_covers[i].index].hdr->hdr.casecolor = 0xFFFFFF;
+			GX_InitTexObj(&texObj, m_dvdSkin.data.get(), m_dvdSkin.width, m_dvdSkin.height, m_dvdSkin.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+		}
 		GX_LoadTexObj(&texObj, GX_TEXMAP0);
 	}
 	GX_Begin(GX_QUADS, GX_VTXFMT0, g_boxMeshQSize);
