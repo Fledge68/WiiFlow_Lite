@@ -1,7 +1,7 @@
 #ifndef __MENU_HPP
 #define __MENU_HPP
 //#define SHOWMEM 1
-#define SHOWMEMGECKO
+//#define SHOWMEMGECKO
 #include <wiiuse/wpad.h>
 #include <ogc/pad.h>
 
