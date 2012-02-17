@@ -1233,7 +1233,7 @@ void CMenu::_gameSoundThread(CMenu *m)
 	Banner *banner = m->m_current_view == COVERFLOW_USB ?
 		_extractBnr(m->m_gameSoundHdr) : m->m_current_view == COVERFLOW_CHANNEL ?
 		_extractChannelBnr(m->m_gameSoundHdr->hdr.chantitle) : NULL;
-	SAFE_DELETE(m->m_gameSoundHdr);
+	m->m_gameSoundHdr = NULL;
 	
 	if (banner == NULL || !banner->IsValid())
 	{
