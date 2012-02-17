@@ -139,7 +139,7 @@ void CMenu::_textAbout(void)
 	if(translator.size() > 3) thanks.append(translator);
 
 	m_btnMgr.setText(m_aboutLblInfo,
-			wfmt(_fmt("about5", L"%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s"),
+			wfmt(L"%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s",
 			developers.toUTF8().c_str(),
 			pDevelopers.toUTF8().c_str(),
 			origLoader.toUTF8().c_str(),
