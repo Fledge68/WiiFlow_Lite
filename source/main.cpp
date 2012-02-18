@@ -29,7 +29,7 @@ int main(int argc, char **argv)
 	geckoinit = InitGecko();
 	__exception_setreload(5);
 	
-	gprintf("\nWelcome to %s %s r%s!\nThis is the debug output.\n", APP_NAME, APP_VERSION, SVN_REV);
+	gprintf(" \nWelcome to %s %s r%s!\nThis is the debug output.\n", APP_NAME, APP_VERSION, SVN_REV);
 
 	SYS_SetArena1Hi(APPLOADER_START);
 	CVideo vid;
