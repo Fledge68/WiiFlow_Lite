@@ -84,7 +84,7 @@ void CMenu::_showConfig(void)
 	_setBg(m_configBg, m_configBg);
 	m_btnMgr.show(m_configLblTitle);
 	m_btnMgr.show(m_configBtnBack);
-	if (m_current_view != COVERFLOW_DML)
+	if (m_current_view != COVERFLOW_DML && !m_locked)
 	{
 		m_btnMgr.show(m_configLblPartitionName);
 		m_btnMgr.show(m_configLblPartition);
@@ -119,7 +119,7 @@ void CMenu::_showConfig(void)
 
 	m_btnMgr.setText(m_configLblPage, wfmt(L"%i / %i", g_curPage, m_locked ? g_curPage + 1 : CMenu::_nbCfgPages));
 
-	if (m_current_view == COVERFLOW_CHANNEL || m_current_view == COVERFLOW_USB)
+	if ((m_current_view == COVERFLOW_CHANNEL || m_current_view == COVERFLOW_USB) && !m_locked)
 	{
 		m_btnMgr.show(m_configLblEmulation);
 		m_btnMgr.show(m_configLblEmulationVal);
