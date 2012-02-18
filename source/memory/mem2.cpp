@@ -31,7 +31,7 @@ extern "C"
 {
 	void MEM2_init(unsigned int mem2Size)
 	{
-		if(&_end + 0x100 > APPLOADER_START) gprintf("ZOMG MOVE THE ENTRYPOINT DOWN!");
+		if(&_end + 0x100 > APPLOADER_START) gprintf("ZOMG MOVE THE ENTRYPOINT DOWN!\n");
 
 		g_mem2gp.init(mem2Size);
 		g_mem2gp.clear();

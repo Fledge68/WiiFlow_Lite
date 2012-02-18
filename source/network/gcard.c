@@ -20,15 +20,17 @@ int amount_of_providers = 0;
 u8 register_card_provider(const char *url, const char *key)
 {
 	struct provider *new_providers = (struct provider *) realloc(providers, (amount_of_providers + 1) * sizeof(struct provider));
-	if (new_providers != NULL)
+	if (new_providers != NULL && strlen(url) > 0 && strlen(key) > 0)
 	{
 		providers = new_providers;
 		memset(&providers[amount_of_providers], 0, sizeof(struct provider));
 		strncpy((char *) providers[amount_of_providers].url, url, 128);
 		strncpy((char *) providers[amount_of_providers].key, key, 48);
 		amount_of_providers++;
+		gprintf("Gamercard provider is valid!\n");
 		return 0;
 	}
+	gprintf("Gamertag provider is NOT valid!\n");
 	return -1;
 }
 

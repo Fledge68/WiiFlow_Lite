@@ -233,7 +233,7 @@ bool Identify(u64 titleid, u32 *ios)
 
 	if(!Identify_GenerateTik(&tikBuffer,&tikSize))
 	{
-		gprintf("Generating fake ticket...Failed!");
+		gprintf("Generating fake ticket...Failed!\n");
 		return false;
 	}
 
