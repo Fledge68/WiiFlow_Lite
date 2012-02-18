@@ -305,7 +305,6 @@ void CMenu::_game(bool launch)
 	if (!launch)
 	{
 		SetupInput();
-		CheckGameSoundThread();
 		_playGameSound();
 		_showGame();
 		m_gameSelected = true;
@@ -321,7 +320,6 @@ void CMenu::_game(bool launch)
 
 		if (startGameSound == -5)
 		{
-			CheckGameSoundThread();
 			_playGameSound();
 			_showGame();
 		}
@@ -1262,28 +1260,26 @@ void CMenu::_gameSoundThread(CMenu *m)
 void CMenu::_playGameSound(void)
 {
 	m_gamesound_changed = false;
-	if (m_bnrSndVol == 0 || m_gameSoundHdr != NULL || m_gameSoundThread != LWP_THREAD_NULL) return;
+	if (m_bnrSndVol == 0) return;
 
 	m_cf.stopCoverLoader();
-
+	
 	unsigned int stack_size = (unsigned int)32768;
 	SMART_FREE(gameSoundThreadStack);
 	gameSoundThreadStack = smartMem2Alloc(stack_size);
+	CheckGameSoundThread();
 	LWP_CreateThread(&m_gameSoundThread, (void *(*)(void *))CMenu::_gameSoundThread, (void *)this, gameSoundThreadStack.get(), stack_size, 40);
 }
 
 void CMenu::CheckGameSoundThread()
 {
-	if (m_gameSoundHdr == NULL && m_gameSoundThread != LWP_THREAD_NULL)
-	{
-		if(LWP_ThreadIsSuspended(m_gameSoundThread))
-			LWP_ResumeThread(m_gameSoundThread);
+	if(LWP_ThreadIsSuspended(m_gameSoundThread))
+		LWP_ResumeThread(m_gameSoundThread);
 
-		LWP_JoinThread(m_gameSoundThread, NULL);
+	LWP_JoinThread(m_gameSoundThread, NULL);
 
-		SMART_FREE(gameSoundThreadStack);
-		m_gameSoundThread = LWP_THREAD_NULL;
-	}
+	SMART_FREE(gameSoundThreadStack);
+	m_gameSoundThread = LWP_THREAD_NULL;
 }
 
 void CMenu::CheckThreads()
