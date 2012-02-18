@@ -15,6 +15,8 @@
 #include "wifi_gecko.h"
 #include "cios.hpp"
 #include "nand.hpp"
+#include "defines.h"
+#include "svnrev.h"
 
 extern "C" { extern void __exception_setreload(int t);}
 
@@ -26,6 +28,8 @@ int main(int argc, char **argv)
 {
 	geckoinit = InitGecko();
 	__exception_setreload(5);
+	
+	gprintf("\nWelcome to %s %s r%s!\nThis is the debug output.\n", APP_NAME, APP_VERSION, SVN_REV);
 
 	SYS_SetArena1Hi(APPLOADER_START);
 	CVideo vid;
