@@ -410,21 +410,28 @@ void CMenu::init(void)
 	m_category = m_cat.getInt(domain, "category", 0);
 	m_max_categories = m_cat.getInt(domain, "numcategories", 12);
 
-
-	safe_vector<string> gamercards = stringToVector(m_cfg.getString("GAMERCARD", "gamercards"), '|');
-	if (gamercards.size() == 0 && m_cfg.getBool("GAMERCARD", "wiinnertag_enable", false))
+	m_cfg.setString("GAMERCARD", "gamercards", "wiinnertag|dutag");
+	m_cfg.getString("GAMERCARD", "wiinnertag_url", WIINNERTAG_URL);
+	m_cfg.getString("GAMERCARD", "wiinnertag_key", "");
+	m_cfg.getString("GAMERCARD", "dutag_url", DUTAG_URL);
+	m_cfg.getString("GAMERCARD", "dutag_key", "");
+	if (m_cfg.getBool("GAMERCARD", "gamercards_enable", false))
 	{
-		gamercards.push_back("wiinnertag");
-		m_cfg.setString("GAMERCARD", "gamercards", "wiinnertag");
-		m_cfg.remove("GAMERCARD", "wiinnertag_enable");
-	}
+		safe_vector<string> gamercards = stringToVector(m_cfg.getString("GAMERCARD", "gamercards"), '|');
+		if (gamercards.size() == 0)
+		{
+			gamercards.push_back("wiinnertag");
+			gamercards.push_back("dutag");
+		}
 
-	for (safe_vector<string>::iterator itr = gamercards.begin(); itr != gamercards.end(); itr++)
-	{
-		register_card_provider(
-			m_cfg.getString("GAMERCARD", sfmt("%s_url", (*itr).c_str())).c_str(),
-			m_cfg.getString("GAMERCARD", sfmt("%s_key", (*itr).c_str())).c_str()
-		);
+		for (safe_vector<string>::iterator itr = gamercards.begin(); itr != gamercards.end(); itr++)
+		{
+			gprintf("Found gamercard provider: %s\n",(*itr).c_str());
+			register_card_provider(
+				m_cfg.getString("GAMERCARD", sfmt("%s_url", (*itr).c_str())).c_str(),
+				m_cfg.getString("GAMERCARD", sfmt("%s_key", (*itr).c_str())).c_str()
+			);
+		}
 	}
 }
 
