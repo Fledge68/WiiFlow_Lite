@@ -620,9 +620,10 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 		m_gcfg1.save(true);
 		m_cfg.save(true);
 		
+		cleanup();
 		Close_Inputs();
 		USBStorage_Deinit();
-		cleanup();
+		SDHC_Init();
 		
 		//Tell DML to boot the game from sd card
 		*(vu32*)0x80001800 = 0xB002D105;
@@ -857,6 +858,8 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	cleanup();
 	Close_Inputs();
 	USBStorage_Deinit();
+	if(currentPartition == 0 && !forwarder)
+		SDHC_Init();
 
 	if(forwarder)
 	{
