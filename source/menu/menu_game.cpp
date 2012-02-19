@@ -623,6 +623,10 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 		USBStorage_Deinit();
 		SDHC_Init();
 		
+		WDVD_Init();
+		WDVD_StopMotor();
+		WDVD_Close();
+		
 		//Tell DML to boot the game from sd card
 		*(vu32*)0x80001800 = 0xB002D105;
 		DCFlushRange((void *)(0x80001800), 4);
@@ -647,7 +651,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 
 	*(vu32*)0xCC003024 |= 7;
 	
-	if(WII_LaunchTitle( 0x100000100LL ) < 0 )
+	if(WII_LaunchTitle(0x100000100LL) < 0 )
 		Sys_LoadMenu();
 }
 
