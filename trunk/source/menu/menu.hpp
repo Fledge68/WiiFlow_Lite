@@ -2,7 +2,7 @@
 #define __MENU_HPP
 //#define SHOWMEM 1
 //#define SHOWMEMGECKO
-#include <wiiuse/wpad.h>
+#include "wiiuse/wpad.h"
 #include <ogc/pad.h>
 
 #include "safe_vector.hpp"

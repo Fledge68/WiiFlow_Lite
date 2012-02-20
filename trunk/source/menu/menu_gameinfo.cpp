@@ -1,6 +1,6 @@
 #include "menu.hpp"
 
-#include <wiiuse/wpad.h>
+#include "wiiuse/wpad.h"
 
 #include "GameTDB.hpp"
 #include "alt_ios.h"

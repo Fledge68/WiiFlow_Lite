@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <ogcsys.h>
 #include <stdlib.h>
-#include <wiiuse/wpad.h>
+#include "wiiuse/wpad.h"
 #include "mem2.hpp"
 #include <string.h>
 #include "sys.h"
