@@ -241,8 +241,15 @@ void CMenu::init(void)
 			return;
 		}
 	}
-	
-	m_show_dml = MIOSisDML();
+
+	if(m_cfg.getBool("DML", "always_show_button", false))
+	{
+		gprintf("Force enabling DML view\n");
+		m_show_dml = true;
+	}
+	else
+		m_show_dml = MIOSisDML();
+
 	m_cfg.getString("NAND", "path", "").c_str();
 	m_cfg.getInt("NAND", "partition", 0);
 	m_cfg.getBool("NAND", "disable", true);
@@ -2077,50 +2084,23 @@ void CMenu::UpdateCache(u32 view)
 
 bool CMenu::MIOSisDML()
 {
-	if(m_cfg.getBool("DML", "always_show_button", false))
+	u32 size = 0;
+	u8 *appfile = ISFS_GetFile((u8*)"/title/00000001/00000101/content/0000000c.app", &size, 0);
+	if(appfile)
 	{
-		gprintf("Force enabling DML view\n");
-		return true;
-	}
-
-	u32 length;
-	if( ES_GetStoredTMDSize( 0x100000101LL, &length ) < 0 )
-		return false;
-
-	signed_blob *TMD = (signed_blob*)MEM2_alloc( ALIGN32(length) );
-	if( !TMD ) 
-		return false;
-
-	if( ES_GetStoredTMD( 0x100000101LL, TMD, length ) < 0 )
-	{
-		SAFE_FREE( TMD );
-		return false;
-	}
-	
-	if( *(u16*)((u32)TMD+0x1E2) )
-	{
-		u32 size = 0;
-		char path[256];
-		sprintf( path, "/title/00000001/00000101/content/%.08x.app", *(u8*)((u32)TMD+0x1E7) );
-		u8 *appfile = ISFS_GetFile( (u8 *)path, &size, 0x10 );
-		if(appfile) 
-		{			
-			if( *(u32*)appfile == 0x6D696F73 )
+		for(u32 i=0; i < size; ++i) 
+		{
+			if(*(u32*)(appfile+i) == 0x44494F53)
 			{
-				if( *(u32*)(appfile+0x08) == 0x38323430 && *(u32*)(appfile+0x0c) == 0x32353300 )
-				{
-					if( *(u16*)((u32)TMD+0x1E2) != 0x037B )
-					{
-						gprintf( "MIOSisDML: YES!\n" );
-						SAFE_FREE( TMD );
-						return true;
-					}
-				}
+				gprintf("DML is installed as MIOS\n");
+				SAFE_FREE(appfile);
+				return true;
 			}
-		}		
+		}
 	}
-	gprintf( "MIOSisDML: No!\n" );	
-	SAFE_FREE(TMD);
+
+	SAFE_FREE(appfile);
+	gprintf("DML is not installed as MIOS\n");
 	return false;
 }
 
