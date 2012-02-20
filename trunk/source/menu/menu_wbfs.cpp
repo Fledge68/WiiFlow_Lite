@@ -110,6 +110,15 @@ int CMenu::_GCgameInstaller(void *obj)
 {
 	CMenu &m = *(CMenu *)obj;
 	
+	bool skip = m.m_cfg.getBool("DML", "skip_on_error", false);
+	bool comp = m.m_cfg.getBool("DML", "compressed_dump", false);
+	bool wexf = m.m_cfg.getBool("DML", "write_ex_files", false);
+	bool alig = m.m_cfg.getBool("DML", "align_files", false);
+	u32 nretry = m.m_cfg.getUInt("DML", "num_retries", 5);
+	u32 rsize = 32768;
+	
+	m.m_gcdump.Init(skip, comp, wexf, alig, nretry, rsize);
+	
 	int ret;
 
 	if (!DeviceHandler::Instance()->IsInserted(SD))
@@ -123,29 +132,33 @@ int CMenu::_GCgameInstaller(void *obj)
 	statvfs("sd:/" , &stats);
 	
 	u64 free = (u64)stats.f_frsize * (u64)stats.f_bfree;
+	u32 needed = 0;
 	
-	int blockfree = free/0x8000;	
+	m.m_gcdump.CheckSpace(&needed, comp);
 	
-	if (blockfree <= 44556)
+	u32 blockfree = free/0x8000;	
+	
+	if (blockfree <= needed)
 	{
 		LWP_MutexLock(m.m_mutex);
-		m._setThrdMsg(wfmt(m._fmt("wbfsop11", L"Not enough space : 44557 blocks needed, %d available"), blockfree), 0.f);
+		m._setThrdMsg(wfmt(m._fmt("wbfsop11", L"Not enough space : %d blocks needed, %d available"), needed, blockfree), 0.f);
 		LWP_MutexUnlock(m.m_mutex);
 		ret = -1;
 	}
 	else
 	{
-
 		LWP_MutexLock(m.m_mutex);
 		m._setThrdMsg(L"", 0);
 		LWP_MutexUnlock(m.m_mutex);
 		
-		ret=0;	
-		
-		ret = GC_GameDumper(CMenu::_addDiscProgress, obj);
+		ret = m.m_gcdump.DumpGame(CMenu::_addDiscProgress, obj);
 		LWP_MutexLock(m.m_mutex);
-		if (ret == 0)
+		if(ret == 0)
 			m._setThrdMsg(m._t("wbfsop8", L"Game installed"), 1.f);
+		else if( ret >= 0x30200)
+			m._setThrdMsg(wfmt(m._fmt("wbfsop12", L"DVDError(%d)"), ret), 0.f);
+		else if( ret > 0)
+			m._setThrdMsg(wfmt(m._fmt("wbfsop13", L"Game installed, but disc contains errors (%d)"), ret), 0.f);
 		else
 			m._setThrdMsg(m._t("wbfsop9", L"An error has occurred"), 1.f);
 		LWP_MutexUnlock(m.m_mutex);
@@ -243,6 +256,13 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						else if(Disc_IsGC() == 0)
 						{
 							Disc_ReadGCHeader(&gcheader);
+							
+							if (_searchGamesByID((const char *) gcheader.id).size() != 0)
+							{
+								error(_t("wbfsoperr4", L"Game already installed"));
+								out = true;
+								break;
+							}
 							cfPos = string((char *) gcheader.id);
 							m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsop6", L"Installing [%s] %s..."), string((const char *)gcheader.id, sizeof gcheader.id).c_str(), string((const char *)gcheader.title, sizeof gcheader.title).c_str()));
 							done = true;

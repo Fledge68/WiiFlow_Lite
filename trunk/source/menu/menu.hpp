@@ -21,6 +21,7 @@
 #include "gct.h"
 #include "DeviceHandler.hpp"
 #include "musicplayer.h"
+#include "loader/gc_disc.hpp" 
 
 //Also in wbfs.h
 #define PART_FS_WBFS 0
@@ -66,6 +67,7 @@ private:
 	Config m_titles;
 	Config m_version;
 	Channels m_channels;
+	GCDump m_gcdump;
 	safe_vector<std::string> m_homebrewArgs;
 	SmartBuf m_base_font;
 	u32 m_base_font_size;

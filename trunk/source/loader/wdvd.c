@@ -5,25 +5,26 @@
 #include "gecko.h"
 
 /* Constants */
-#define IOCTL_DI_READID		0x70
-#define IOCTL_DI_READ		0x71
-#define IOCTL_DI_WAITCVRCLOSE	0x79
-#define IOCTL_DI_GETCOVER	0x88
-#define IOCTL_DI_RESET		0x8A
-#define IOCTL_DI_OPENPART	0x8B
-#define IOCTL_DI_CLOSEPART	0x8C
-#define IOCTL_DI_UNENCREAD	0x8D
-#define IOCTL_DI_SEEK		0xAB
-#define IOCTL_DI_STOPLASER	0xD2
-#define IOCTL_DI_OFFSET		0xD9
-#define IOCTL_DI_DISC_BCA	0xDA
-#define IOCTL_DI_STOPMOTOR	0xE3
-#define IOCTL_DI_SETWBFSMODE	0xF4
+#define IOCTL_DI_READID                  0x70
+#define IOCTL_DI_READ                    0x71
+#define IOCTL_DI_WAITCVRCLOSE            0x79
+#define IOCTL_DI_GETCOVER                0x88
+#define IOCTL_DI_RESET                   0x8A
+#define IOCTL_DI_OPENPART                0x8B
+#define IOCTL_DI_CLOSEPART               0x8C
+#define IOCTL_DI_UNENCREAD               0x8D
+#define IOCTL_DI_SEEK                    0xAB
+#define IOCTL_DI_STOPLASER               0xD2
+#define IOCTL_DI_OFFSET                  0xD9
+#define IOCTL_DI_DISC_BCA                0xDA
+#define IOCTL_DI_REQUESTERROR            0xE0
+#define IOCTL_DI_STOPMOTOR               0xE3
+#define IOCTL_DI_SETWBFSMODE             0xF4
 #define IOCTL_DI_DVDLowAudioBufferConfig 0xE4
 
-#define IOCTL_DI_SETFRAG	0xF9
-#define IOCTL_DI_GETMODE	0xFA
-#define IOCTL_DI_HELLO		0xFB
+#define IOCTL_DI_SETFRAG                 0xF9
+#define IOCTL_DI_GETMODE                 0xFA
+#define IOCTL_DI_HELLO                   0xFB
 
 /* Variables */
 static u32 inbuf[8]  ATTRIBUTE_ALIGN(32);
@@ -267,6 +268,21 @@ s32 WDVD_Read(void *buf, u32 len, u64 offset)
 
 	s32 ret = IOS_Ioctl(di_fd, IOCTL_DI_READ, inbuf, sizeof(inbuf), buf, len);
 	if (ret < 0) return ret;
+
+	return (ret == 1) ? 0 : -ret;
+}
+
+s32 WDVD_LowRequestError(u32 *error)
+{
+	memset(inbuf, 0, sizeof(inbuf));
+	
+	inbuf[0] = IOCTL_DI_REQUESTERROR << 24;
+	
+	s32 ret = IOS_Ioctl(di_fd, IOCTL_DI_REQUESTERROR, inbuf, sizeof(inbuf), outbuf, sizeof(outbuf));
+	if (ret < 0) return ret;
+	
+	if (ret == 1) 	
+		memcpy(error, outbuf, sizeof(u32));
 
 	return (ret == 1) ? 0 : -ret;
 }
