@@ -147,7 +147,7 @@ int CMenu::_config4(void)
 				int exit_to = (int)loopNum((u32)m_cfg.getInt("GENERAL", "exit_to", 0) + 1, ARRAY_SIZE(CMenu::_exitTo));
 				m_cfg.setInt("GENERAL", "exit_to", exit_to);
 				Sys_ExitTo(exit_to);
-				m_disable_exit = exit_to == 3;
+				m_disable_exit = exit_to == EXIT_TO_DISABLE;
 				_showConfig4();
 			}
 			else if (m_btnMgr.selected(m_config4BtnSaveFavMode))
