@@ -27,7 +27,7 @@
  ***************************************************************************/
 #include <unistd.h>
 #include <asndlib.h>
-#include <wiiuse/wpad.h>
+#include "wiiuse/wpad.h"
 
 #include "WiiMovie.hpp"
 #include "musicplayer.h"

@@ -8,7 +8,7 @@
 #include <string>
 #include "safe_vector.hpp"
 
-#include <wiiuse/wpad.h>
+#include "wiiuse/wpad.h"
 #include <ogc/pad.h>
 
 #include "video.hpp"

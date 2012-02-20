@@ -4,7 +4,7 @@
 #include <ogcsys.h>
 #include <unistd.h>
 #include <ogc/lwp_watchdog.h>
-#include <wiiuse/wpad.h>
+#include "wiiuse/wpad.h"
 #include <ogc/machine/processor.h>
 
 #include "apploader.h"

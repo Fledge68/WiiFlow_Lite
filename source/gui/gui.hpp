@@ -4,7 +4,7 @@
 #ifndef __GUI_HPP
 #define __GUI_HPP
 
-#include <wiiuse/wpad.h>
+#include "wiiuse/wpad.h"
 #include <ogc/pad.h>
 
 #include "video.hpp"
