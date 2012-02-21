@@ -109,6 +109,7 @@ int CMenu::_gameInstaller(void *obj)
 int CMenu::_GCgameInstaller(void *obj)
 {
 	CMenu &m = *(CMenu *)obj;
+	GCDump m_gcdump;
 	
 	bool skip = m.m_cfg.getBool("DML", "skip_on_error", false);
 	bool comp = m.m_cfg.getBool("DML", "compressed_dump", false);
@@ -117,7 +118,7 @@ int CMenu::_GCgameInstaller(void *obj)
 	u32 nretry = m.m_cfg.getUInt("DML", "num_retries", 5);
 	u32 rsize = 32768;
 	
-	m.m_gcdump.Init(skip, comp, wexf, alig, nretry, rsize);
+	m_gcdump.Init(skip, comp, wexf, alig, nretry, rsize);
 	
 	int ret;
 
@@ -134,7 +135,7 @@ int CMenu::_GCgameInstaller(void *obj)
 	u64 free = (u64)stats.f_frsize * (u64)stats.f_bfree;
 	u32 needed = 0;
 	
-	m.m_gcdump.CheckSpace(&needed, comp);
+	m_gcdump.CheckSpace(&needed, comp);
 	
 	u32 blockfree = free/0x8000;	
 	
@@ -151,7 +152,7 @@ int CMenu::_GCgameInstaller(void *obj)
 		m._setThrdMsg(L"", 0);
 		LWP_MutexUnlock(m.m_mutex);
 		
-		ret = m.m_gcdump.DumpGame(CMenu::_addDiscProgress, obj);
+		ret = m_gcdump.DumpGame(CMenu::_addDiscProgress, obj);
 		LWP_MutexLock(m.m_mutex);
 		if(ret == 0)
 			m._setThrdMsg(m._t("wbfsop8", L"Game installed"), 1.f);
