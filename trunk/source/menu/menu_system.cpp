@@ -249,7 +249,7 @@ void CMenu::_textSystem(void)
 {
 	m_btnMgr.setText(m_systemLblTitle, _t("sys1", L"Update WiiFlow"));
 	m_btnMgr.setText(m_systemLblVersionTxt, _t("sys2", L"WiiFlow Version:"));
-	m_btnMgr.setText(m_systemLblVersion, wfmt(L"v%s r%s", APP_VERSION, SVN_REV).c_str());
+	m_btnMgr.setText(m_systemLblVersion, wfmt(L"(%s-r%s)", APP_VERSION, SVN_REV).c_str());
 	m_btnMgr.setText(m_systemBtnBack, _t("sys3", L"Cancel"));
 	m_btnMgr.setText(m_systemBtnDownload, _t("sys4", L"Upgrade"));
 	i = min((u32)version_num, ARRAY_SIZE(CMenu::_version) -1u);
