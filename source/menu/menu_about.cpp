@@ -123,7 +123,7 @@ void CMenu::_initAboutMenu(CMenu::SThemeData &theme)
 void CMenu::_textAbout(void)
 {
 	m_btnMgr.setText(m_aboutBtnSystem, _t("sys4", L"Update"));
-	m_btnMgr.setText(m_aboutLblTitle, wfmt(_fmt("appname", L"%s v%s r%s"), APP_NAME, APP_VERSION, SVN_REV), false);
+	m_btnMgr.setText(m_aboutLblTitle, wfmt(_fmt("appname", L"%s (%s-r%s)"), APP_NAME, APP_VERSION, SVN_REV), false);
 
 	wstringEx developers(wfmt(_fmt("about6", L"\nCurrent Developers:\n%s"), DEVELOPERS));
 	wstringEx pDevelopers(wfmt(_fmt("about7", L"Past Developers:\n%s"), PAST_DEVELOPERS));
