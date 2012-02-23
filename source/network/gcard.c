@@ -19,10 +19,9 @@ int amount_of_providers = 0;
 
 u8 register_card_provider(const char *url, const char *key)
 {
-	struct provider *new_providers = (struct provider *) realloc(providers, (amount_of_providers + 1) * sizeof(struct provider));
-	if (new_providers != NULL && strlen(url) > 0 && strlen(key) > 0)
+	if (strlen(url) > 0 && strlen(key) > 0)
 	{
-		providers = new_providers;
+		providers = (struct provider *) realloc(providers, (amount_of_providers + 1) * sizeof(struct provider));;
 		memset(&providers[amount_of_providers], 0, sizeof(struct provider));
 		strncpy((char *) providers[amount_of_providers].url, url, 128);
 		strncpy((char *) providers[amount_of_providers].key, key, 48);
@@ -40,9 +39,7 @@ u8 has_enabled_providers()
 	for (i = 0; i < amount_of_providers && providers != NULL; i++)
 	{
 		if (strlen(providers[i].url) > 0 && strlen(providers[i].key) > 0)
-		{
 			return 1;
-		}
 	}
 	return 0;
 }
@@ -50,10 +47,10 @@ u8 has_enabled_providers()
 void add_game_to_card(const char *gameid)
 {
 	int i;
-	
+
 	char *url = (char *) malloc(MAX_URL_SIZE); // Too much memory, but only like 10 bytes
 	memset(url, 0, sizeof(url));
-	
+
 	for (i = 0; i < amount_of_providers && providers != NULL; i++)
 	{
 		if (strlen(providers[i].url) > 0 && strlen(providers[i].key) > 0)
