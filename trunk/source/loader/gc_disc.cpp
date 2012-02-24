@@ -1,6 +1,6 @@
 /***************************************************************************
  * Copyright (C) 2012
- * by OverjoY for Wiiflow
+ * by OverjoY and FIX94 for Wiiflow
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any
@@ -107,7 +107,7 @@ s32 GCDump::__DiscWrite(char * path, u32 offset, u32 length, progress_callback_t
 		
 		else if( ret > 1 )
 			return 0;
-			
+
 		fwrite(ReadBuffer, 1, toread, f);		
 		
 		wrote += toread;
@@ -122,41 +122,49 @@ s32 GCDump::__DiscWrite(char * path, u32 offset, u32 length, progress_callback_t
 	return wrote;
 }
 
-s32 GCDump::__DiscWriteAligned(char * path, u32 offset, u32 length)
+s32 GCDump::__DiscWriteAligned(char * path, u32 offset, u32 length, int *alignment)
 {
 	u8 *ReadBuffer = (u8 *)memalign(32, gc_readsize+4);
 	u32 toread = 0;
 	u32 wrote = 0;
+	*alignment = 32768;
 	FILE *f = fopen(path, "ab");
-	
+
 	while(length)
 	{
 		toread = gc_readsize;
-		if(toread > length)
+		if (toread > length)
 			toread = length;
-			
+
 		s32 ret = __DiscReadRaw(ReadBuffer, offset, (toread+31)&(~31));
-		if( ret == 1 )
+		if (ret == 1)
 			memset(ReadBuffer, 0, gc_readsize);
-
-		
-		if( ret > 1 )
-			return -1;
-
-		if(aligned)
+		else if (ret > 1)
+			return 0;
+	
+		if (aligned)
 		{
-			fwrite(ReadBuffer, 1, (toread+31)&(~31), f);		
-			wrote += (toread+31)&(~31);
+			fwrite(ReadBuffer, 1, (toread+32767)&(~32767), f);		
+			wrote += (toread+32767)&(~32767);
+			offset += toread;
+			length -= toread;
 		}
 		else
 		{
-			fwrite(ReadBuffer, 1, (toread+3)&(~3), f);		
-			wrote += (toread+3)&(~3);
+			for(unsigned int align = 0x8000; align > 2; align/=2)
+			{
+				if((offset & (align-1)) == 0)
+				{
+					fwrite(ReadBuffer, 1, (toread+(align-1))&(~(align-1)), f);		
+					wrote += (toread+(align-1))&(~(align-1));
+					offset += toread;
+					length -= toread;
+					*alignment = (int)align;
+					break;
+				}
+			}
 		}
-		offset += toread;
-		length -= toread;
 	}
-	
 	fclose(f);
 	free(ReadBuffer);
 	return wrote;
@@ -255,8 +263,10 @@ s32 GCDump::DumpGame(progress_callback_t spinner, void *spinner_data)
 	
 	gprintf("Writing %s\n", gamepath);
 	if(compressed)
-	{	
-		ret = __DiscWriteAligned(gamepath, 0, GamePartOffset);	
+	{
+		int alignment;
+
+		ret = __DiscWriteAligned(gamepath, 0, GamePartOffset, &alignment);
 		wrote += ret;
 	
 		u32 i;
@@ -269,8 +279,8 @@ s32 GCDump::DumpGame(progress_callback_t spinner, void *spinner_data)
 			} 
 			else 
 			{	
-				ret = __DiscWriteAligned(gamepath, fst[i].FileOffset, fst[i].FileLength);
-				gprintf("Writing: %d/%d: %s from 0x%08x to 0x%08x\n", i, FSTEnt, FSTNameOff + fst[i].NameOffset, fst[i].FileOffset, wrote);
+				ret = __DiscWriteAligned(gamepath, fst[i].FileOffset, fst[i].FileLength, &alignment);
+				gprintf("Writing: %d/%d: %s from 0x%08x to 0x%08x(%i)\n", i, FSTEnt, FSTNameOff + fst[i].NameOffset, fst[i].FileOffset, wrote, alignment);
 				if( ret >= 0 )
 				{
 					fst[i].FileOffset = wrote;
@@ -369,7 +379,7 @@ s32 GCDump::CheckSpace(u32 *needed, bool comp)
 				size += (fst[i].FileLength+31)&(~31);
 			}
 		}
-		free(FSTBuffer);		
+		free(FSTBuffer);
 	}
 	*needed = size/0x8000;
 	gprintf("Free space needed on SD: %d bytes (%x blocks)\n", size, size/0x8000);

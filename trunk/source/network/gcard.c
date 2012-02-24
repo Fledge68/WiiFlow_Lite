@@ -19,9 +19,9 @@ int amount_of_providers = 0;
 
 u8 register_card_provider(const char *url, const char *key)
 {
-	if (strlen(url) > 0 && strlen(key) > 0)
+	if (strlen(url) > 0 && strlen(key) > 0 && strstr(url, "{KEY}") != NULL && strstr(url, "{ID6}") != NULL)
 	{
-		providers = (struct provider *) realloc(providers, (amount_of_providers + 1) * sizeof(struct provider));;
+		providers = (struct provider *) realloc(providers, (amount_of_providers + 1) * sizeof(struct provider));
 		memset(&providers[amount_of_providers], 0, sizeof(struct provider));
 		strncpy((char *) providers[amount_of_providers].url, url, 128);
 		strncpy((char *) providers[amount_of_providers].key, key, 48);
@@ -35,12 +35,8 @@ u8 register_card_provider(const char *url, const char *key)
 
 u8 has_enabled_providers()
 {
-	int i;
-	for (i = 0; i < amount_of_providers && providers != NULL; i++)
-	{
-		if (strlen(providers[i].url) > 0 && strlen(providers[i].key) > 0)
-			return 1;
-	}
+	if (amount_of_providers != 0 && providers != NULL)
+		return 1;
 	return 0;
 }
 
@@ -53,15 +49,12 @@ void add_game_to_card(const char *gameid)
 
 	for (i = 0; i < amount_of_providers && providers != NULL; i++)
 	{
-		if (strlen(providers[i].url) > 0 && strlen(providers[i].key) > 0)
-		{
-			strcpy(url, (char *) providers[i].url);
-			str_replace(url, (char *) "{KEY}", (char *) providers[i].key, MAX_URL_SIZE);		
-			str_replace(url, (char *) "{ID6}", (char *) gameid, MAX_URL_SIZE);
+		strcpy(url, (char *) providers[i].url);
+		str_replace(url, (char *) "{KEY}", (char *) providers[i].key, MAX_URL_SIZE);		
+		str_replace(url, (char *) "{ID6}", (char *) gameid, MAX_URL_SIZE);
 
-			gprintf("Gamertag URL:\n%s\n",(char*)url);
-			downloadfile(NULL, 0, (char *) url, NULL, NULL);
-		}
+		gprintf("Gamertag URL:\n%s\n",(char*)url);
+		downloadfile(NULL, 0, (char *) url, NULL, NULL);
 	}
 	SAFE_FREE(url);
 }
