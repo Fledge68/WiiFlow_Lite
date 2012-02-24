@@ -1,6 +1,6 @@
 /***************************************************************************
  * Copyright (C) 2012
- * by OverjoY for Wiiflow
+ * by OverjoY and FIX94 for Wiiflow
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any
@@ -84,6 +84,6 @@ private:
 	} FST;
 	s32 __DiscReadRaw(void *outbuf, u32 offset, u32 length);
 	s32 __DiscWrite(char * path, u32 offset, u32 length, progress_callback_t spinner , void *spinner_data);
-	s32 __DiscWriteAligned(char * path, u32 offset, u32 length);
+	s32 __DiscWriteAligned(char * path, u32 offset, u32 length, int *alignment);
 };
 #endif
