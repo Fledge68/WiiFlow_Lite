@@ -3,6 +3,7 @@
 #include "loader/wbfs.h"
 #include "lockMutex.hpp"
 #include "loader/gc_disc.hpp"
+#include "gc.h"
 
 using namespace std;
 
@@ -178,7 +179,6 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 	bool upd_usb = false;
 	bool upd_dml = false;
 	bool out = false;
-	bool del_cover = true;
 	struct AutoLight { AutoLight(void) { } ~AutoLight(void) { slotLight(false); } } aw;
 	string cfPos = m_cf.getNextId();
 
@@ -258,7 +258,9 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						{
 							Disc_ReadGCHeader(&gcheader);
 							
-							if (_searchGamesByID((const char *) gcheader.id).size() != 0)
+							char gcfolder[64];
+							sprintf(gcfolder, "%s [%s]", gcheader.title, (char *)gcheader.id);
+							if (_searchGamesByID((const char *) gcheader.id).size() != 0 || DML_GameIsInstalled((char *)gcheader.id) || DML_GameIsInstalled(gcfolder))
 							{
 								error(_t("wbfsoperr4", L"Game already installed"));
 								out = true;
@@ -278,12 +280,14 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 							error(_t("wbfsoperr3", L"This is not a Wii or GC disc!"));
 							out = true;
 							break;
-						}						
+						}
 						break;
 					case CMenu::WO_REMOVE_GAME:
-						WBFS_RemoveGame((u8 *)m_cf.getId().c_str(), (char *) m_cf.getHdr()->path);
-						del_cover = m_cfg.getBool("GENERAL", "delete_cover_and_game", true);
-						if(del_cover)
+						if(m_current_view == COVERFLOW_USB)
+							WBFS_RemoveGame((u8 *)m_cf.getId().c_str(), (char *) m_cf.getHdr()->path);
+						else
+							DML_RemoveGame(m_cf.getHdr()->path);
+						if(m_cfg.getBool("GENERAL", "delete_cover_and_game", true))
 							RemoveCover((char *)m_cf.getId().c_str());
 						m_btnMgr.show(m_wbfsPBar);
 						m_btnMgr.setProgress(m_wbfsPBar, 0.f, true);

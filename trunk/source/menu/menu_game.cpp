@@ -512,7 +512,7 @@ void CMenu::_game(bool launch)
 				m_btnMgr.show(m_gameBtnSettings);
 			}
 
-			if (m_current_view == COVERFLOW_USB && !m_locked)
+			if ((m_current_view == COVERFLOW_USB || m_current_view == COVERFLOW_DML) && !m_locked)
 				m_btnMgr.show(m_gameBtnDelete);
 		}
 		else
