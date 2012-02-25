@@ -1,5 +1,11 @@
 #include <gccore.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <dirent.h>
 #include "gc.h"
+#include "gecko.h"
+
+#define MAX_FAT_PATH 1024
 
 #define SRAM_ENGLISH 0
 #define SRAM_GERMAN 1
@@ -86,4 +92,50 @@ void set_language(u8 lang)
 
 	__SYS_UnlockSram(1); // 1 -> write changes
 	while(!__SYS_SyncSram());
+}
+
+void DML_RemoveGame(const char *discid)
+{
+	int num = 6;
+	const char *fl[6] = {"sd:/games/%s/game.iso","sd:/games/%s/sys/boot.bin","sd:/games/%s/sys/bi2.bin",
+	"sd:/games/%s/sys/apploader.img","sd:/games/%s/sys","sd:/games/%s"};
+	char fname[MAX_FAT_PATH];
+	FILE *f;
+	DIR *dir;
+	int i;
+	for(i = 0; i < num; i++)
+	{
+		sprintf(fname, fl[i], discid);
+		f = fopen((char*)fname, "r");
+		if(f) 
+		{
+			gprintf("Deleting %s...\n",fname);
+			fclose(f);
+			remove(fname);
+		}
+		dir = opendir((char*)fname);
+		if(dir)
+		{
+			gprintf("Deleting %s...\n",fname);
+			closedir(dir);
+			unlink((char*)fname);
+		}
+	}
+}
+
+bool DML_GameIsInstalled(char *discid) 
+{
+	char filepath[64];
+	sprintf(filepath, "sd:/games/%s/game.iso", discid);
+	
+	gprintf("Filepath on SD: %s\n", filepath);
+	
+	FILE *f = fopen(filepath, "r");
+	if (f) 
+	{
+		fclose(f);
+		return true;
+	}
+	gprintf("Not found\n");
+	return false;
 }
