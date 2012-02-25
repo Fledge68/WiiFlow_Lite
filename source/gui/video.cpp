@@ -519,7 +519,7 @@ void CVideo::_showWaitMessages(CVideo *m)
 	m->m_waitMessages.clear();
 	//gprintf("Stop showing images\n");
 	m->m_showingWaitMessages = false;
-	//m->CheckWaitThread(false);
+	m->CheckWaitThread(false);
 	gprintf("Stop showing images\n");
 }
 
