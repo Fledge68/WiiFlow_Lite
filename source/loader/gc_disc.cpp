@@ -122,25 +122,11 @@ s32 GCDump::__DiscWrite(char * path, u32 offset, u32 length, progress_callback_t
 	return wrote;
 }
 
-s32 GCDump::__DiscWriteAligned(char * path, u32 offset, u32 length, int *alignment)
+s32 GCDump::__DiscWriteAligned(FILE *f, u32 offset, u32 length)
 {
 	u8 *ReadBuffer = (u8 *)MEM2_alloc(gc_readsize+4);
 	u32 toread = 0;
 	u32 wrote = 0;
-	*alignment = 32768;
-	FILE *f = fopen(path, "ab");
-
-	unsigned int align = 0x8000;
-
-	for(align = 0x8000; align > 2; align/=2)
-	{
-		if((offset & (align-1)) == 0)
-		{
-			break;
-		}
-	}
-	
-	*alignment = (int)align;
 
 	while(length)
 	{
@@ -153,23 +139,12 @@ s32 GCDump::__DiscWriteAligned(char * path, u32 offset, u32 length, int *alignme
 			memset(ReadBuffer, 0, gc_readsize);
 		else if (ret > 1)
 			return 0;
-	
-		if (aligned)
-		{
-			fwrite(ReadBuffer, 1, (toread+32767)&(~32767), f);		
-			wrote += (toread+32767)&(~32767);
-			offset += toread;
-			length -= toread;
-		}
-		else
-		{
-			fwrite(ReadBuffer, 1, ((toread+(align-1))&(~(align-1))), f);		
-			wrote += ((toread+(align-1))&(~(align-1)));
-			offset += toread;
-			length -= toread;
-		}
+
+		fwrite(ReadBuffer, 1, toread, f);
+		wrote += toread;
+		offset += toread;
+		length -= toread;
 	}
-	SAFE_CLOSE(f);
 	MEM2_free(ReadBuffer);
 	return wrote;
 }
@@ -177,7 +152,7 @@ s32 GCDump::__DiscWriteAligned(char * path, u32 offset, u32 length, int *alignme
 s32 GCDump::DumpGame(progress_callback_t spinner, void *spinner_data)
 {	
 	static gc_discHdr gcheader ATTRIBUTE_ALIGN(32);
-	
+
 	u8 *ReadBuffer = (u8 *)MEM2_alloc(0x40);
 	u8 *FSTBuffer;
 	u32 wrote = 0;
@@ -191,63 +166,65 @@ s32 GCDump::DumpGame(progress_callback_t spinner, void *spinner_data)
 	u32 GamePartOffset = 0;
 	u32 DataSize = 0;	
 	char *FSTNameOff = (char *)NULL;
-	
+
 	char folder[MAX_FAT_PATH];
 	bzero(folder, MAX_FAT_PATH);	
 	char gamepath[MAX_FAT_PATH];
 	bzero(gamepath, MAX_FAT_PATH);
-	
+
 	s32 ret = Disc_ReadGCHeader(&gcheader);
 	Asciify2(gcheader.title);
 
 	snprintf(folder, sizeof(folder), "%s:/games/%s [%s]", DeviceName[SD], gcheader.title, (char *)gcheader.id);
 	makedir((char *)folder);
-	
+
 	if(writeexfiles)
 	{
 		snprintf(folder, sizeof(folder), "%s:/games/%s [%s]/sys", DeviceName[SD], gcheader.title, (char *)gcheader.id);	
 		makedir((char *)folder);
 	}
-	
+
 	ret = __DiscReadRaw(ReadBuffer, 0x400, 0x40);
 	if(ret > 0)
 		return 0x31100;
-	
+
 	ApploaderSize = *(vu32*)(ReadBuffer);
 	DOLOffset = *(vu32*)(ReadBuffer+0x20);
 	FSTOffset = *(vu32*)(ReadBuffer+0x24);
 	FSTSize = *(vu32*)(ReadBuffer+0x28);
 	GamePartOffset = *(vu32*)(ReadBuffer+0x34);
 	DataSize = *(vu32*)(ReadBuffer+0x38);
-	
+
 	MEM2_free(ReadBuffer);
-	
+
 	DOLSize = FSTOffset - DOLOffset;
 	DiscSize =  DataSize + GamePartOffset;
-	
+
 	FSTBuffer = (u8 *)MEM2_alloc((FSTSize+31)&(~31));
 
 	ret = __DiscReadRaw(FSTBuffer, FSTOffset, (FSTSize+31)&(~31));
+
 	if(ret > 0)
 		return 0x31100;
-		
+
 	FSTable = (u8*)FSTBuffer;
 
 	FSTEnt = *(u32*)(FSTable+0x08);
-	
+
 	FSTNameOff = (char*)(FSTable + FSTEnt * 0x0C);
 	FST *fst = (FST *)(FSTable);
-	
+
 	gprintf("Dumping: %s %s\n", gcheader.title, compressed ? "compressed" : "full");
-	
+
 	gprintf("Apploader size : %d\n", ApploaderSize);
 	gprintf("DOL offset     : 0x%08x\n", DOLOffset);
 	gprintf("DOL size       : %d\n", DOLSize);
 	gprintf("FST offset     : 0x%08x\n", FSTOffset);
 	gprintf("FST size       : %d\n", FSTSize);
 	gprintf("Num FST entries: %d\n", FSTEnt);
+	gprintf("Data Offset    : 0x%08x\n", FSTOffset+FSTSize);
 	gprintf("Disc size      : %d\n", DiscSize);
-	
+
 	if(writeexfiles)
 	{
 		gprintf("Writing %s/boot.bin\n", folder);
@@ -262,19 +239,23 @@ s32 GCDump::DumpGame(progress_callback_t spinner, void *spinner_data)
 		snprintf(gamepath, sizeof(gamepath), "%s/apploader.img", folder);	
 		__DiscWrite(gamepath, 0x2440, ApploaderSize, spinner, spinner_data);
 	}
-	
+
 	snprintf(gamepath, sizeof(gamepath), "%s:/games/%s [%s]/game.iso", DeviceName[SD], gcheader.title, (char *)gcheader.id);
-	
+
 	gprintf("Writing %s\n", gamepath);
 	if(compressed)
 	{
-		int alignment;
+		u32 align;
+		u32 correction;
+		
+		FILE *f;
+		f = fopen(gamepath, "ab");
 
-		ret = __DiscWriteAligned(gamepath, 0, GamePartOffset, &alignment);
-		wrote += ret;
+		ret = __DiscWriteAligned(f, 0, (FSTOffset + FSTSize));
+		wrote += (FSTOffset + FSTSize);
 	
 		u32 i;
-	
+
 		for( i=1; i < FSTEnt; ++i )
 		{
 			if( fst[i].Type )
@@ -282,9 +263,29 @@ s32 GCDump::DumpGame(progress_callback_t spinner, void *spinner_data)
 				continue;
 			} 
 			else 
-			{	
-				ret = __DiscWriteAligned(gamepath, fst[i].FileOffset, fst[i].FileLength, &alignment);
-				gprintf("Writing: %d/%d: %s from 0x%08x to 0x%08x(%i)\n", i, FSTEnt, FSTNameOff + fst[i].NameOffset, fst[i].FileOffset, wrote, alignment);
+			{
+				correction = 0x00;
+				for(align = 0x8000; align > 2; align/=2)
+				{
+					if((fst[i].FileOffset & (align-1)) == 0 || force_32k_align)
+					{
+						break;
+					}
+				}
+				
+				while(((wrote+correction) & (align-1)) != 0)
+					correction++;
+				
+				if(correction>0x00)
+				{
+					u32 j;
+					for(j=0x00;j<correction;j++)
+						fwrite("", 1, 1, f);
+					wrote += correction;
+				}
+				
+				ret = __DiscWriteAligned(f, fst[i].FileOffset, fst[i].FileLength);
+				gprintf("Writing: %d/%d: %s from 0x%08x to 0x%08x(%i)\n", i, FSTEnt, FSTNameOff + fst[i].NameOffset, fst[i].FileOffset, wrote, align);
 				if( ret >= 0 )
 				{
 					fst[i].FileOffset = wrote;
@@ -295,18 +296,20 @@ s32 GCDump::DumpGame(progress_callback_t spinner, void *spinner_data)
 				{
 					spinner(FSTEnt, FSTEnt, spinner_data);
 					MEM2_free(FSTBuffer);
+					SAFE_CLOSE(f);
 					return gc_error;
 				}
 			}
-		}	
-	
+		}
+
+		SAFE_CLOSE(f);
+
 		gprintf("Updating FST\n");
-		
-		FILE *f = fopen(gamepath, "r+");
+		f = fopen(gamepath, "r+");
 		fseek(f, FSTOffset, SEEK_SET);
 		fwrite(fst, 1, FSTSize, f);
 		SAFE_CLOSE(f);
-		
+
 		gprintf("Done!! Disc old size: %d, disc new size: %d, saved: %d\n", DiscSize, wrote, DiscSize - wrote);
 	}
 	else
@@ -321,7 +324,7 @@ s32 GCDump::DumpGame(progress_callback_t spinner, void *spinner_data)
 	}
 
 	MEM2_free(FSTBuffer);
-	
+
 	return gc_skipped;	
 }
 

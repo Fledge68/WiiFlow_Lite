@@ -38,7 +38,7 @@ public:
 		skiponerror = skip;
 		compressed = comp;
 		writeexfiles = wexf;
-		aligned = align;
+		force_32k_align = align;
 		gc_nbrretry = nretry;
 		gc_readsize = rsize;
 		gc_skipped = 0;
@@ -46,7 +46,7 @@ public:
 	s32 DumpGame(progress_callback_t spinner, void *spinner_data);
 	s32 CheckSpace(u32 *needed, bool comp);
 private:
-	bool aligned;
+	bool force_32k_align;
 	bool skiponerror;
 	bool compressed;
 	bool writeexfiles;
@@ -84,6 +84,6 @@ private:
 	} FST;
 	s32 __DiscReadRaw(void *outbuf, u32 offset, u32 length);
 	s32 __DiscWrite(char * path, u32 offset, u32 length, progress_callback_t spinner , void *spinner_data);
-	s32 __DiscWriteAligned(char * path, u32 offset, u32 length, int *alignment);
+	s32 __DiscWriteAligned(FILE *f, u32 offset, u32 length);
 };
 #endif
