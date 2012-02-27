@@ -156,13 +156,15 @@ void CMenu::LoadView(void)
 	m_cf.applySettings();
 
 	char *mode = (m_current_view == COVERFLOW_CHANNEL && m_cfg.getBool("NAND", "disable", true)) 
-		? (char *)"NAND" : ((m_current_view == COVERFLOW_DML) ? (char *)"DML" : (char *)DeviceName[currentPartition]);
+		? (char *)"NAND" : (char *)DeviceName[currentPartition];
 
 	for(u8 i = 0; strncmp((const char *)&mode[i], "\0", 1) != 0; i++)
 			mode[i] = toupper(mode[i]);
 
 	m_showtimer=60;
-	m_btnMgr.setText(m_mainLblNotice, (string)mode);
+	char gui_name[20];
+	sprintf(gui_name,"%s [%s]",_domainFromView(),mode);
+	m_btnMgr.setText(m_mainLblNotice, (string)gui_name);
 	m_btnMgr.show(m_mainLblNotice);
 }
 
@@ -370,7 +372,7 @@ int CMenu::main(void)
 			{
 				bool block = m_current_view == COVERFLOW_CHANNEL && m_cfg.getBool("NAND", "disable", true);
 				char *partition;
-				if(!block && (m_current_view != COVERFLOW_DML))
+				if(!block)
 				{
 					_showWaitMessage();
 					_hideMain();
@@ -387,7 +389,7 @@ int CMenu::main(void)
 						(m_current_view == COVERFLOW_CHANNEL && (DeviceHandler::Instance()->GetFSType(currentPartition) != PART_FS_FAT ||
 							(!isD2XnewerThanV6 && DeviceHandler::Instance()->PathToDriveType(m_appDir.c_str()) == currentPartition) ||
 							(!isD2XnewerThanV6 && DeviceHandler::Instance()->PathToDriveType(m_dataDir.c_str()) == currentPartition))) ||
-						(m_current_view == COVERFLOW_HOMEBREW && DeviceHandler::Instance()->GetFSType(currentPartition) == PART_FS_WBFS))
+						((m_current_view == COVERFLOW_HOMEBREW || m_current_view == COVERFLOW_DML) && DeviceHandler::Instance()->GetFSType(currentPartition) == PART_FS_WBFS))
 					{
 						currentPartition = loopNum(currentPartition + 1, (int)USB8);
 						if(limiter > 10) break;
@@ -399,8 +401,6 @@ int CMenu::main(void)
 					m_cfg.setInt(_domainFromView(), "partition", currentPartition);
 
 				}
-				else if (m_current_view == COVERFLOW_DML)
-					partition = (char *)"DML";
 				else
 					partition = (char *)"NAND";
 
@@ -410,10 +410,12 @@ int CMenu::main(void)
 				gprintf("Next item: %s\n", partition);
 
 				m_showtimer=60; 
-				m_btnMgr.setText(m_mainLblNotice, (string)partition);
+				char gui_name[20];
+				sprintf(gui_name,"%s [%s]",_domainFromView(),partition);
+				m_btnMgr.setText(m_mainLblNotice, (string)gui_name);
 				m_btnMgr.show(m_mainLblNotice);
 
-				if(!block && (m_current_view != COVERFLOW_DML))
+				if(!block)
 				{
 					_loadList();
 					_showMain();

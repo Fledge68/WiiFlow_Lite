@@ -4,6 +4,9 @@
 #include "lockMutex.hpp"
 #include "loader/gc_disc.hpp"
 #include "gc.h"
+#include "fileOps.h"
+#include "music/SoundHandler.hpp"
+#include "channel/nand.hpp"
 
 using namespace std;
 
@@ -119,19 +122,21 @@ int CMenu::_GCgameInstaller(void *obj)
 	u32 nretry = m.m_cfg.getUInt("DML", "num_retries", 5);
 	u32 rsize = 32768;
 	
-	m_gcdump.Init(skip, comp, wexf, alig, nretry, rsize);
+	m_gcdump.Init(skip, comp, wexf, alig, nretry, rsize,DeviceName[currentPartition]);
 	
 	int ret;
 
-	if (!DeviceHandler::Instance()->IsInserted(SD))
+	if (!DeviceHandler::Instance()->IsInserted(currentPartition))
 	{
 		m.m_thrdWorking = false;
 		return -1;
 	}
 
+	char partition[strlen(DeviceName[currentPartition])+2];
+	sprintf(partition,"%s:/",DeviceName[currentPartition]);
 	struct statvfs stats;
 	memset(&stats, 0, sizeof(stats));
-	statvfs("sd:/" , &stats);
+	statvfs(partition , &stats);
 	
 	u64 free = (u64)stats.f_frsize * (u64)stats.f_bfree;
 	u32 needed = 0;
@@ -170,6 +175,45 @@ int CMenu::_GCgameInstaller(void *obj)
 	return ret;
 }
 
+int CMenu::_GCcopyGame(void *obj)
+{
+	CMenu &m = *(CMenu *)obj;
+	char partition[strlen(DeviceName[SD])];
+	sprintf(partition,"%s:/",DeviceName[SD]);
+	if(fsop_GetFreeSpaceKb((char*)DeviceName[SD])<fsop_GetFolderKb(m.m_cf.getHdr()->path))
+	{
+		LWP_MutexLock(m.m_mutex);
+		m._setThrdMsg(wfmt(m._fmt("wbfsop11", L"Not enough space: %d blocks needed, %d available"), fsop_GetFolderKb(m.m_cf.getHdr()->path), fsop_GetFreeSpaceKb(partition)), 0.f);
+		LWP_MutexUnlock(m.m_mutex);
+		m.m_thrdWorking = false;
+		return -1;
+	}
+	else
+	{
+		LWP_MutexLock(m.m_mutex);
+		m._setThrdMsg(L"", 0);
+		char folder[10] = "sd:/games";
+		if (!fsop_DirExist(folder))
+		{
+			fsop_MakeFolder(folder);
+		}
+		char source[64];
+		char target[64];
+		sprintf(source, "%s:/games/%s", DeviceName[currentPartition], m.m_cf.getHdr()->path);
+		sprintf(target, "sd:/games/%s", m.m_cf.getHdr()->path);
+		gprintf("Copying from: \n%s \nto: \n%s\n",source,target);
+		LWP_MutexUnlock(m.m_mutex);
+		fsop_CopyFolder(source, target, CMenu::_addDiscProgress, obj);
+		LWP_MutexLock(m.m_mutex);
+		m._setThrdMsg(m._t("wbfsop12", L"Game copied"), 1.f);
+		gprintf("Game copied.\n");
+		LWP_MutexUnlock(m.m_mutex);
+		slotLight(true);
+	}
+	m.m_thrdWorking = false;
+	return 0;
+}
+
 bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 {
 	lwp_t thread = 0;
@@ -188,10 +232,13 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 	switch (op)
 	{
 		case CMenu::WO_ADD_GAME:
-			m_btnMgr.setText(m_wbfsLblDialog, _t("wbfsadddlg", L"Please insert the disc you want to copy, then click on Go."));
+			if(copyGameCubeGame)
+				m_btnMgr.setText(m_wbfsLblDialog, _t("wbfscpydlg", L"If you are sure you want to copy this game to SD, click on Go."));
+			else
+				m_btnMgr.setText(m_wbfsLblDialog, _t("wbfsadddlg", L"Please insert the disc you want to copy, then click on Go."));
 			break;
 		case CMenu::WO_REMOVE_GAME:
-			m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsremdlg", L"To permanently remove the game : %s, click on Go."), m_cf.getTitle().c_str()));
+			m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsremdlg", L"To permanently remove the game: %s, click on Go."), (u8*)m_cf.getTitle().toUTF8().c_str()));
 			break;
 		case CMenu::WO_FORMAT:
 			break;
@@ -202,7 +249,11 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 	{
 		_mainLoopCommon(false, m_thrdWorking);
 		if ((BTN_HOME_PRESSED || BTN_B_PRESSED) && !m_thrdWorking)
+		{
+			if (copyGameCubeGame)
+				return done;
 			break;
+		}
 		else if (BTN_UP_PRESSED)
 			m_btnMgr.up();
 		else if (BTN_DOWN_PRESSED)
@@ -210,7 +261,11 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 		if (BTN_A_PRESSED && !m_thrdWorking)
 		{
 			if (m_btnMgr.selected(m_wbfsBtnBack))
+			{
+				if (copyGameCubeGame)
+					return done;
 				break;
+			}
 			else if (m_btnMgr.selected(m_wbfsBtnGo))
 			{
 				switch (op)
@@ -222,6 +277,34 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						m_btnMgr.hide(m_wbfsBtnBack);
 						m_btnMgr.show(m_wbfsLblMessage);
 						m_btnMgr.setText(m_wbfsLblMessage, L"");
+						if (copyGameCubeGame)
+						{
+							char gcfolder[64];
+							char* title = (char *)m_cf.getTitle().toUTF8().c_str();
+							char* gameid = (char *)m_cf.getHdr()->hdr.id;
+							sprintf(gcfolder, "%s [%s]", title, gameid);
+							if (DML_GameIsInstalled(gameid, DeviceName[SD]) || DML_GameIsInstalled(gcfolder, DeviceName[SD]))
+							{
+								error(_t("wbfsoperr4", L"Game already installed"));
+								out = true;
+								break;
+							}
+							cfPos = string(gameid);
+							m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsop10", L"Copying [%s] %s..."), (u8*)gameid, (u8*)m_cf.getTitle().toUTF8().c_str()));
+							done = true;
+							m_thrdWorking = true;
+							m_thrdProgress = 0.f;
+							m_thrdMessageAdded = false;
+							m_cf.stopCoverLoader();
+							_stopSounds();
+							MusicPlayer::DestroyInstance();
+							SoundHandler::DestroyInstance();
+							soundDeinit();
+							Nand::Instance()->Disable_Emu();
+							Nand::DestroyInstance();
+							LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_GCcopyGame, (void *)this, 0, 8 * 1024, 64);
+							break;
+						}
 						Disc_SetUSB(NULL);
 						if (Disc_Wait() < 0)
 						{
@@ -260,7 +343,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 							
 							char gcfolder[64];
 							sprintf(gcfolder, "%s [%s]", gcheader.title, (char *)gcheader.id);
-							if (_searchGamesByID((const char *) gcheader.id).size() != 0 || DML_GameIsInstalled((char *)gcheader.id) || DML_GameIsInstalled(gcfolder))
+							if (_searchGamesByID((const char *) gcheader.id).size() != 0 || DML_GameIsInstalled((char *)gcheader.id, DeviceName[currentPartition]) || DML_GameIsInstalled(gcfolder, DeviceName[currentPartition]))
 							{
 								error(_t("wbfsoperr4", L"Game already installed"));
 								out = true;
@@ -286,7 +369,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						if(m_current_view == COVERFLOW_USB)
 							WBFS_RemoveGame((u8 *)m_cf.getId().c_str(), (char *) m_cf.getHdr()->path);
 						else
-							DML_RemoveGame(m_cf.getHdr()->path);
+							DML_RemoveGame(m_cf.getHdr()->path, DeviceName[currentPartition]);
 						if(m_cfg.getBool("GENERAL", "delete_cover_and_game", true))
 							RemoveCover((char *)m_cf.getId().c_str());
 						m_btnMgr.show(m_wbfsPBar);
@@ -319,7 +402,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 		}
 	}
 	_hideWBFS();
-	if (done && (op == CMenu::WO_REMOVE_GAME || op == CMenu::WO_ADD_GAME))
+	if (done && !copyGameCubeGame && (op == CMenu::WO_REMOVE_GAME || op == CMenu::WO_ADD_GAME))
 	{
 		m_gameList.SetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
 		if( upd_dml )

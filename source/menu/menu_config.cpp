@@ -84,14 +84,12 @@ void CMenu::_showConfig(void)
 	_setBg(m_configBg, m_configBg);
 	m_btnMgr.show(m_configLblTitle);
 	m_btnMgr.show(m_configBtnBack);
-	if (m_current_view != COVERFLOW_DML && !m_locked)
+	if (!m_locked)
 	{
 		m_btnMgr.show(m_configLblPartitionName);
 		m_btnMgr.show(m_configLblPartition);
 		m_btnMgr.show(m_configBtnPartitionP);
 		m_btnMgr.show(m_configBtnPartitionM);
-	}
-	if (!m_locked) {
 		m_btnMgr.show(m_configLblDownload);
 		m_btnMgr.show(m_configBtnDownload);
 	}

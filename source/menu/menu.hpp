@@ -634,6 +634,7 @@ private:
 
 private:
 	enum WBFS_OP { WO_ADD_GAME, WO_REMOVE_GAME, WO_FORMAT };
+	bool copyGameCubeGame;
 	typedef std::pair<std::string, u32> FontDesc;
 	typedef std::map<FontDesc, SFont> FontSet;
 	typedef std::map<std::string, STexture> TexSet;
@@ -931,6 +932,7 @@ private:
 	static void _addDiscProgress(int status, int total, void *user_data);
 	static int _gameInstaller(void *obj);
 	static int _GCgameInstaller(void *obj); 
+	static int _GCcopyGame(void *obj);
 	wstringEx _optBoolToString(int b);
 	void _stopSounds(void);
 

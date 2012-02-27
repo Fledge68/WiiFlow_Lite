@@ -161,8 +161,6 @@ void CMenu::_showGameSettings(void)
 		
 		if(m_current_view != COVERFLOW_DML)
 		{
-			
-
 			m_btnMgr.hide(m_gameSettingsBtnCategoryMain);
 			m_btnMgr.hide(m_gameSettingsLblCategoryMain);
 

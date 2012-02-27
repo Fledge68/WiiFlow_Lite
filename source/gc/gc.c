@@ -4,6 +4,7 @@
 #include <dirent.h>
 #include "gc.h"
 #include "gecko.h"
+#include "fileOps.h"
 
 #define MAX_FAT_PATH 1024
 
@@ -94,18 +95,18 @@ void set_language(u8 lang)
 	while(!__SYS_SyncSram());
 }
 
-void DML_RemoveGame(const char *discid)
+void DML_RemoveGame(const char *discid, const char* partition)
 {
 	int num = 6;
-	const char *fl[6] = {"sd:/games/%s/game.iso","sd:/games/%s/sys/boot.bin","sd:/games/%s/sys/bi2.bin",
-	"sd:/games/%s/sys/apploader.img","sd:/games/%s/sys","sd:/games/%s"};
+	const char *fl[6] = {"%s:/games/%s/game.iso","%s:/games/%s/sys/boot.bin","%s:/games/%s/sys/bi2.bin",
+	"%s:/games/%s/sys/apploader.img","%s:/games/%s/sys","%s:/games/%s"};
 	char fname[MAX_FAT_PATH];
 	FILE *f;
 	DIR *dir;
 	int i;
 	for(i = 0; i < num; i++)
 	{
-		sprintf(fname, fl[i], discid);
+		sprintf(fname, fl[i], partition, discid);
 		f = fopen((char*)fname, "r");
 		if(f) 
 		{
@@ -123,10 +124,10 @@ void DML_RemoveGame(const char *discid)
 	}
 }
 
-bool DML_GameIsInstalled(char *discid) 
+bool DML_GameIsInstalled(char *discid, const char* partition) 
 {
 	char filepath[64];
-	sprintf(filepath, "sd:/games/%s/game.iso", discid);
+	sprintf(filepath, "%s:/games/%s/game.iso", partition, discid);
 	
 	gprintf("Filepath on SD: %s\n", filepath);
 	

@@ -135,6 +135,7 @@ CMenu::CMenu(CVideo &vid) :
 	m_gamesound_changed = false;
 	m_base_font_size = 0;
 	m_current_view = COVERFLOW_USB;
+	copyGameCubeGame = false;
 }
 
 extern "C" { int makedir(char *newdir); }
@@ -1876,12 +1877,13 @@ bool CMenu::_loadHomebrewList()
 
 bool CMenu::_loadDmlList()
 {
-	if(!DeviceHandler::Instance()->IsInserted(SD))
+	currentPartition = m_cfg.getInt("DML", "partition", 0);
+	if(!DeviceHandler::Instance()->IsInserted(currentPartition))
 		return false;
 
-	gprintf("%s\n", DeviceName[SD]);
-	DeviceHandler::Instance()->Open_WBFS(SD);
-	m_gameList.Load(sfmt(DML_DIR, DeviceName[SD]), ".iso", m_cfg.getString("DML", "lastlanguage", "EN").c_str());
+	gprintf("%s\n", DeviceName[currentPartition]);
+	DeviceHandler::Instance()->Open_WBFS(currentPartition);
+	m_gameList.Load(sfmt(DML_DIR, DeviceName[currentPartition]), ".iso", m_cfg.getString("DML", "lastlanguage", "EN").c_str());
 	m_cfg.setString("DML", "lastlanguage", m_loc.getString(m_curLanguage, "gametdb_code", "EN"));
 	m_cfg.save();
 	return m_gameList.size() > 0 ? true : false;
