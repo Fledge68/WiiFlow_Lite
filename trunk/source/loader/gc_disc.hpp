@@ -33,7 +33,7 @@ typedef void (*progress_callback_t)(int status,int total,void *user_data);
 class GCDump
 {
 public:
-	void Init(bool skip, bool comp, bool wexf, bool align, u32 nretry, u32 rsize)
+	void Init(bool skip, bool comp, bool wexf, bool align, u32 nretry, u32 rsize, const char* partition)
 	{
 		skiponerror = skip;
 		compressed = comp;
@@ -41,6 +41,7 @@ public:
 		force_32k_align = align;
 		gc_nbrretry = nretry;
 		gc_readsize = rsize;
+		gamepartition = partition;
 		gc_skipped = 0;
 	}
 	s32 DumpGame(progress_callback_t spinner, void *spinner_data);
@@ -50,6 +51,7 @@ private:
 	bool skiponerror;
 	bool compressed;
 	bool writeexfiles;
+	const char* gamepartition;
 	u32 gc_nbrretry;
 	u32 gc_error;
 	u32 gc_retry;

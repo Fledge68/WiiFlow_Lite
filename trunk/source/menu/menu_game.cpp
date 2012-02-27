@@ -424,6 +424,19 @@ void CMenu::_game(bool launch)
 			else if (launch || m_btnMgr.selected(m_gameBtnPlay) || (!WPadIR_Valid(0) && !WPadIR_Valid(1) && !WPadIR_Valid(2) && !WPadIR_Valid(3) && m_btnMgr.selected((u32)-1)))
 			{
 				_hideGame();
+				
+				if(currentPartition != SD && m_current_view == COVERFLOW_DML)
+				{
+					copyGameCubeGame = true;
+					if(!_wbfsOp(CMenu::WO_ADD_GAME))
+					{
+						copyGameCubeGame = false;
+						break;
+					}
+					currentPartition = SD;
+				}
+
+				copyGameCubeGame = false;
 				dir_discHdr *hdr = m_cf.getHdr();
 
 				m_cf.clear();

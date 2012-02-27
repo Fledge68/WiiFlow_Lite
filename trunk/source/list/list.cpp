@@ -131,7 +131,7 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 		if (wbfs || (*itr).rfind(".iso")  != string::npos || (*itr).rfind(".ISO")  != string::npos)
 		{
 			char* filename = &(*itr)[(*itr).find_last_of('/')+1];
-			if(strcasecmp(filename, "game.iso") == 0 && strncasecmp((*itr).c_str(), "sd:/games/", 10) == 0 )
+			if(strcasecmp(filename, "game.iso") == 0 && strstr((*itr).c_str(), ":/games/") != NULL)
 			{				
 				FILE *fp = fopen((*itr).c_str(), "rb");
 				if( fp )

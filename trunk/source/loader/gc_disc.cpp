@@ -175,12 +175,12 @@ s32 GCDump::DumpGame(progress_callback_t spinner, void *spinner_data)
 	s32 ret = Disc_ReadGCHeader(&gcheader);
 	Asciify2(gcheader.title);
 
-	snprintf(folder, sizeof(folder), "%s:/games/%s [%s]", DeviceName[SD], gcheader.title, (char *)gcheader.id);
+	snprintf(folder, sizeof(folder), "%s:/games/%s [%s]", gamepartition, gcheader.title, (char *)gcheader.id);
 	makedir((char *)folder);
 
 	if(writeexfiles)
 	{
-		snprintf(folder, sizeof(folder), "%s:/games/%s [%s]/sys", DeviceName[SD], gcheader.title, (char *)gcheader.id);	
+		snprintf(folder, sizeof(folder), "%s:/games/%s [%s]/sys", gamepartition, gcheader.title, (char *)gcheader.id);	
 		makedir((char *)folder);
 	}
 
@@ -240,7 +240,7 @@ s32 GCDump::DumpGame(progress_callback_t spinner, void *spinner_data)
 		__DiscWrite(gamepath, 0x2440, ApploaderSize, spinner, spinner_data);
 	}
 
-	snprintf(gamepath, sizeof(gamepath), "%s:/games/%s [%s]/game.iso", DeviceName[SD], gcheader.title, (char *)gcheader.id);
+	snprintf(gamepath, sizeof(gamepath), "%s:/games/%s [%s]/game.iso", gamepartition, gcheader.title, (char *)gcheader.id);
 
 	gprintf("Writing %s\n", gamepath);
 	if(compressed)
@@ -389,6 +389,6 @@ s32 GCDump::CheckSpace(u32 *needed, bool comp)
 		MEM2_free(FSTBuffer);
 	}
 	*needed = size/0x8000;
-	gprintf("Free space needed on SD: %d bytes (%x blocks)\n", size, size/0x8000);
+	gprintf("Free space needed: %d bytes (%x blocks)\n", size, size/0x8000);
 	return 0;
 }
