@@ -5,8 +5,7 @@
 #include "gc.h"
 #include "gecko.h"
 #include "fileOps.h"
-
-#define MAX_FAT_PATH 1024
+#include "utils.h"
 
 #define SRAM_ENGLISH 0
 #define SRAM_GERMAN 1

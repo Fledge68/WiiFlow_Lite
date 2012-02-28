@@ -39,6 +39,8 @@
 #include "gecko.h"
 #include "fileOps.h"
 
+using namespace std;
+
 static u8 *FSTable ALIGNED(32);
 
 s32 GCDump::__DiscReadRaw(void *outbuf, u32 offset, u32 length)
@@ -97,8 +99,7 @@ s32 GCDump::__DiscWrite(char * path, u32 offset, u32 length, u8 *ReadBuffer, pro
 
 	while(length)
 	{
-		toread = gc_readsize ? gc_readsize<length : length;
-
+		toread = min(length,gc_readsize);
 		s32 ret = __DiscReadRaw(ReadBuffer, offset, (toread+31)&(~31));
 		if( ret == 1 )
 			memset(ReadBuffer, 0, gc_readsize);
@@ -113,7 +114,6 @@ s32 GCDump::__DiscWrite(char * path, u32 offset, u32 length, u8 *ReadBuffer, pro
 	}
 	
 	SAFE_CLOSE(f);
-	MEM2_free(ReadBuffer);
 	return wrote;
 }
 
@@ -124,7 +124,7 @@ s32 GCDump::__DiscWriteAligned(FILE *f, u32 offset, u32 length, u8 *ReadBuffer)
 
 	while(length)
 	{
-		toread = length ? gc_readsize>length : gc_readsize;
+		toread = min(length,gc_readsize);
 		s32 ret = __DiscReadRaw(ReadBuffer, offset, (toread+31)&(~31));
 		if (ret == 1)
 			memset(ReadBuffer, 0, gc_readsize);
@@ -142,7 +142,7 @@ s32 GCDump::DumpGame(progress_callback_t spinner, void *spinner_data)
 {	
 	static gc_discHdr gcheader ATTRIBUTE_ALIGN(32);
 
-	u8 *ReadBuffer = (u8 *)MEM2_alloc(gc_readsize);
+	u8 *ReadBuffer = (u8 *)MEM2_alloc(0x40);
 	u8 *FSTBuffer;
 	u32 wrote = 0;
 
@@ -154,6 +154,7 @@ s32 GCDump::DumpGame(progress_callback_t spinner, void *spinner_data)
 	u32 FSTEnt = 0;
 	u32 GamePartOffset = 0;
 	u32 DataSize = 0;
+	char *FSTNameOff = (char *)NULL;
 
 	char folder[MAX_FAT_PATH];
 	bzero(folder, MAX_FAT_PATH);	
@@ -164,9 +165,11 @@ s32 GCDump::DumpGame(progress_callback_t spinner, void *spinner_data)
 	Asciify2(gcheader.title);
 
 	snprintf(folder, sizeof(folder), "%s:/games/", gamepartition);
-	fsop_MakeFolder(folder);
+	if(!fsop_DirExist(folder))
+		fsop_MakeFolder(folder);
 	snprintf(folder, sizeof(folder), "%s:/games/%s [%s]", gamepartition, gcheader.title, (char *)gcheader.id);
-	fsop_MakeFolder(folder);
+	if(!fsop_DirExist(folder))
+		fsop_MakeFolder(folder);
 
 	ret = __DiscReadRaw(ReadBuffer, 0x400, 0x40);
 	if(ret > 0)
@@ -197,10 +200,13 @@ s32 GCDump::DumpGame(progress_callback_t spinner, void *spinner_data)
 	}
 
 	FSTable = (u8*)FSTBuffer;
+	MEM2_free(ReadBuffer);
+
+	ReadBuffer = (u8 *)MEM2_alloc(gc_readsize);
 
 	FSTEnt = *(u32*)(FSTable+0x08);
 
-	char *FSTNameOff = (char*)(FSTable + FSTEnt * 0x0C);
+	FSTNameOff = (char*)(FSTable + FSTEnt * 0x0C);
 	FST *fst = (FST *)(FSTable);
 
 	gprintf("Dumping: %s %s\n", gcheader.title, compressed ? "compressed" : "full");
@@ -217,7 +223,8 @@ s32 GCDump::DumpGame(progress_callback_t spinner, void *spinner_data)
 	if(writeexfiles)
 	{
 		snprintf(folder, sizeof(folder), "%s:/games/%s [%s]/sys", gamepartition, gcheader.title, (char *)gcheader.id);	
-		fsop_MakeFolder(folder);
+		if(!fsop_DirExist(folder))
+			fsop_MakeFolder(folder);
 
 		gprintf("Writing %s/boot.bin\n", folder);
 		snprintf(gamepath, sizeof(gamepath), "%s/boot.bin", folder);
@@ -279,7 +286,6 @@ s32 GCDump::DumpGame(progress_callback_t spinner, void *spinner_data)
 				else
 				{
 					spinner(FSTEnt, FSTEnt, spinner_data);
-					MEM2_free(FSTBuffer);
 					MEM2_free(ReadBuffer);
 					SAFE_CLOSE(f);
 					return gc_error;
@@ -299,15 +305,14 @@ s32 GCDump::DumpGame(progress_callback_t spinner, void *spinner_data)
 		ret = __DiscWrite(gamepath, 0, DiscSize, ReadBuffer, spinner, spinner_data);
 		if( ret < 0 )
 		{
-			MEM2_free(FSTBuffer);
 			MEM2_free(ReadBuffer);
 			return gc_error;
 		}
 		gprintf("Done!! Disc size: %d\n", DiscSize);
 	}
 
-	MEM2_free(FSTBuffer);
 	MEM2_free(ReadBuffer);
+	MEM2_free(FSTBuffer);
 
 	return gc_skipped;	
 }

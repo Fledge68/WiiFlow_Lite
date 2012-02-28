@@ -633,8 +633,7 @@ private:
 	bool m_video_playing;
 
 private:
-	enum WBFS_OP { WO_ADD_GAME, WO_REMOVE_GAME, WO_FORMAT };
-	bool copyGameCubeGame;
+	enum WBFS_OP { WO_ADD_GAME, WO_REMOVE_GAME, WO_FORMAT, WO_COPY_GAME };
 	typedef std::pair<std::string, u32> FontDesc;
 	typedef std::map<FontDesc, SFont> FontSet;
 	typedef std::map<std::string, STexture> TexSet;
