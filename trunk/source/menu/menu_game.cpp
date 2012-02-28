@@ -333,7 +333,6 @@ void CMenu::_game(bool launch)
 
 		if (BTN_HOME_PRESSED || BTN_B_PRESSED)
 		{
-			m_gameSound.Stop();
 			CheckGameSoundThread();
 			break;
 		}
@@ -424,17 +423,21 @@ void CMenu::_game(bool launch)
 			else if (launch || m_btnMgr.selected(m_gameBtnPlay) || (!WPadIR_Valid(0) && !WPadIR_Valid(1) && !WPadIR_Valid(2) && !WPadIR_Valid(3) && m_btnMgr.selected((u32)-1)))
 			{
 				_hideGame();
+				dir_discHdr *hdr = m_cf.getHdr();
 				
 				if(currentPartition != SD && m_current_view == COVERFLOW_DML)
 				{
-					if(!_wbfsOp(CMenu::WO_COPY_GAME))
-					{
+					char gcfolder[MAX_FAT_PATH];
+					sprintf(gcfolder, "%s [%s]", m_cf.getTitle().toUTF8().c_str(), (char *)hdr->hdr.id);
+					memset(hdr->path,0,256);
+					if (DML_GameIsInstalled((char *)hdr->hdr.id, DeviceName[SD]))
+						sprintf(hdr->path,"%s",(char*)hdr->hdr.id);
+					else if (DML_GameIsInstalled(gcfolder, DeviceName[SD]))
+						sprintf(hdr->path,"%s",gcfolder);
+					else if(!_wbfsOp(CMenu::WO_COPY_GAME))
 						break;
-					}
-					currentPartition = SD;
 				}
-
-				dir_discHdr *hdr = m_cf.getHdr();
+				currentPartition = SD;
 
 				m_cf.clear();
 				_showWaitMessage();
@@ -613,10 +616,8 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 		ICInvalidateRange((void *)(0x800A0000), 4);
 		#else
 		gprintf("Wiiflow DML: Launch game 'sd:/games/%s/game.iso' through boot.bin\n", hdr->path);
-		char filepath[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
 		FILE *f;
-		sprintf(filepath, "%s:/games/boot.bin", DeviceName[SD]);
-		f = fopen(filepath, "wb");
+		f = fopen("sd:/games/boot.bin", "wb");
 		fwrite(hdr->path, 1, strlen(hdr->path) + 1, f);
 		fclose(f);
 		#endif

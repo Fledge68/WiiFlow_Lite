@@ -361,16 +361,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						m_btnMgr.hide(m_wbfsBtnBack);
 						m_btnMgr.show(m_wbfsLblMessage);
 						m_btnMgr.setText(m_wbfsLblMessage, L"");
-						char gcfolder[64];
-						char* title = (char *)m_cf.getTitle().toUTF8().c_str();
 						char* gameid = (char *)m_cf.getHdr()->hdr.id;
-						sprintf(gcfolder, "%s [%s]", title, gameid);
-						if (DML_GameIsInstalled(gameid, DeviceName[SD]) || DML_GameIsInstalled(gcfolder, DeviceName[SD]))
-						{
-							error(_t("wbfsoperr4", L"Game already found on SD"));
-							out = true;
-							break;
-						}
 						cfPos = string(gameid);
 						m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsop10", L"Copying [%s] %s..."), (u8*)gameid, (u8*)m_cf.getTitle().toUTF8().c_str()));
 						done = true;
