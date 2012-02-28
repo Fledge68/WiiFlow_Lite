@@ -37,6 +37,7 @@
 #include "wdvd.h"
 #include "text.hpp"
 #include "gecko.h"
+#include "fileOps.h"
 
 static u8 *FSTable ALIGNED(32);
 
@@ -87,29 +88,23 @@ s32 GCDump::__DiscReadRaw(void *outbuf, u32 offset, u32 length)
 	return -1;		
 }
 
-s32 GCDump::__DiscWrite(char * path, u32 offset, u32 length, progress_callback_t spinner, void *spinner_data)
+s32 GCDump::__DiscWrite(char * path, u32 offset, u32 length, u8 *ReadBuffer, progress_callback_t spinner, void *spinner_data)
 {
 	gprintf("__DiscWrite(%s, 0x%08x, %x)\n", path, offset, length);
-	u8 *ReadBuffer = (u8 *)MEM2_alloc(gc_readsize);
 	u32 toread = 0;
 	u32 wrote = 0;
-	FILE *f = fopen(path, "ab");
-	
+	FILE *f = fopen(path, "wb");
+
 	while(length)
 	{
-		toread = gc_readsize;
-		if(toread > length)
-			toread = length;
-			
+		toread = gc_readsize ? gc_readsize<length : length;
+
 		s32 ret = __DiscReadRaw(ReadBuffer, offset, (toread+31)&(~31));
 		if( ret == 1 )
 			memset(ReadBuffer, 0, gc_readsize);
-		
 		else if( ret > 1 )
 			return 0;
-
-		fwrite(ReadBuffer, 1, toread, f);		
-		
+		fwrite(ReadBuffer, 1, toread, f);
 		wrote += toread;
 		offset += toread;
 		length -= toread;
@@ -122,30 +117,24 @@ s32 GCDump::__DiscWrite(char * path, u32 offset, u32 length, progress_callback_t
 	return wrote;
 }
 
-s32 GCDump::__DiscWriteAligned(FILE *f, u32 offset, u32 length)
+s32 GCDump::__DiscWriteAligned(FILE *f, u32 offset, u32 length, u8 *ReadBuffer)
 {
-	u8 *ReadBuffer = (u8 *)MEM2_alloc(gc_readsize+4);
 	u32 toread = 0;
 	u32 wrote = 0;
 
 	while(length)
 	{
-		toread = gc_readsize;
-		if (toread > length)
-			toread = length;
-
+		toread = length ? gc_readsize>length : gc_readsize;
 		s32 ret = __DiscReadRaw(ReadBuffer, offset, (toread+31)&(~31));
 		if (ret == 1)
 			memset(ReadBuffer, 0, gc_readsize);
 		else if (ret > 1)
 			return 0;
-
 		fwrite(ReadBuffer, 1, toread, f);
 		wrote += toread;
 		offset += toread;
 		length -= toread;
 	}
-	MEM2_free(ReadBuffer);
 	return wrote;
 }
 
@@ -153,7 +142,7 @@ s32 GCDump::DumpGame(progress_callback_t spinner, void *spinner_data)
 {	
 	static gc_discHdr gcheader ATTRIBUTE_ALIGN(32);
 
-	u8 *ReadBuffer = (u8 *)MEM2_alloc(0x40);
+	u8 *ReadBuffer = (u8 *)MEM2_alloc(gc_readsize);
 	u8 *FSTBuffer;
 	u32 wrote = 0;
 
@@ -164,8 +153,7 @@ s32 GCDump::DumpGame(progress_callback_t spinner, void *spinner_data)
 	u32 FSTSize = 0;
 	u32 FSTEnt = 0;
 	u32 GamePartOffset = 0;
-	u32 DataSize = 0;	
-	char *FSTNameOff = (char *)NULL;
+	u32 DataSize = 0;
 
 	char folder[MAX_FAT_PATH];
 	bzero(folder, MAX_FAT_PATH);	
@@ -175,18 +163,17 @@ s32 GCDump::DumpGame(progress_callback_t spinner, void *spinner_data)
 	s32 ret = Disc_ReadGCHeader(&gcheader);
 	Asciify2(gcheader.title);
 
+	snprintf(folder, sizeof(folder), "%s:/games/", gamepartition);
+	fsop_MakeFolder(folder);
 	snprintf(folder, sizeof(folder), "%s:/games/%s [%s]", gamepartition, gcheader.title, (char *)gcheader.id);
-	makedir((char *)folder);
-
-	if(writeexfiles)
-	{
-		snprintf(folder, sizeof(folder), "%s:/games/%s [%s]/sys", gamepartition, gcheader.title, (char *)gcheader.id);	
-		makedir((char *)folder);
-	}
+	fsop_MakeFolder(folder);
 
 	ret = __DiscReadRaw(ReadBuffer, 0x400, 0x40);
 	if(ret > 0)
+	{
+		MEM2_free(ReadBuffer);
 		return 0x31100;
+	}
 
 	ApploaderSize = *(vu32*)(ReadBuffer);
 	DOLOffset = *(vu32*)(ReadBuffer+0x20);
@@ -194,8 +181,6 @@ s32 GCDump::DumpGame(progress_callback_t spinner, void *spinner_data)
 	FSTSize = *(vu32*)(ReadBuffer+0x28);
 	GamePartOffset = *(vu32*)(ReadBuffer+0x34);
 	DataSize = *(vu32*)(ReadBuffer+0x38);
-
-	MEM2_free(ReadBuffer);
 
 	DOLSize = FSTOffset - DOLOffset;
 	DiscSize =  DataSize + GamePartOffset;
@@ -205,13 +190,17 @@ s32 GCDump::DumpGame(progress_callback_t spinner, void *spinner_data)
 	ret = __DiscReadRaw(FSTBuffer, FSTOffset, (FSTSize+31)&(~31));
 
 	if(ret > 0)
+	{
+		MEM2_free(FSTBuffer);
+		MEM2_free(ReadBuffer);
 		return 0x31100;
+	}
 
 	FSTable = (u8*)FSTBuffer;
 
 	FSTEnt = *(u32*)(FSTable+0x08);
 
-	FSTNameOff = (char*)(FSTable + FSTEnt * 0x0C);
+	char *FSTNameOff = (char*)(FSTable + FSTEnt * 0x0C);
 	FST *fst = (FST *)(FSTable);
 
 	gprintf("Dumping: %s %s\n", gcheader.title, compressed ? "compressed" : "full");
@@ -227,17 +216,20 @@ s32 GCDump::DumpGame(progress_callback_t spinner, void *spinner_data)
 
 	if(writeexfiles)
 	{
+		snprintf(folder, sizeof(folder), "%s:/games/%s [%s]/sys", gamepartition, gcheader.title, (char *)gcheader.id);	
+		fsop_MakeFolder(folder);
+
 		gprintf("Writing %s/boot.bin\n", folder);
 		snprintf(gamepath, sizeof(gamepath), "%s/boot.bin", folder);
-		__DiscWrite(gamepath, 0, 0x440, spinner, spinner_data);
+		__DiscWrite(gamepath, 0, 0x440, ReadBuffer, spinner, spinner_data);
 
 		gprintf("Writing %s/bi2.bin\n", folder);
 		snprintf(gamepath, sizeof(gamepath), "%s/bi2.bin", folder);	
-		__DiscWrite(gamepath, 0x440, 0x2000, spinner, spinner_data);
+		__DiscWrite(gamepath, 0x440, 0x2000, ReadBuffer, spinner, spinner_data);
 	
 		gprintf("Writing %s/apploader.img\n", folder);
 		snprintf(gamepath, sizeof(gamepath), "%s/apploader.img", folder);	
-		__DiscWrite(gamepath, 0x2440, ApploaderSize, spinner, spinner_data);
+		__DiscWrite(gamepath, 0x2440, ApploaderSize, ReadBuffer, spinner, spinner_data);
 	}
 
 	snprintf(gamepath, sizeof(gamepath), "%s:/games/%s [%s]/game.iso", gamepartition, gcheader.title, (char *)gcheader.id);
@@ -247,11 +239,11 @@ s32 GCDump::DumpGame(progress_callback_t spinner, void *spinner_data)
 	{
 		u32 align;
 		u32 correction;
-		
-		FILE *f;
-		f = fopen(gamepath, "ab");
 
-		ret = __DiscWriteAligned(f, 0, (FSTOffset + FSTSize));
+		FILE *f;
+		f = fopen(gamepath, "wb");
+
+		ret = __DiscWriteAligned(f, 0, (FSTOffset + FSTSize), ReadBuffer);
 		wrote += (FSTOffset + FSTSize);
 	
 		u32 i;
@@ -264,27 +256,19 @@ s32 GCDump::DumpGame(progress_callback_t spinner, void *spinner_data)
 			} 
 			else 
 			{
-				correction = 0x00;
 				for(align = 0x8000; align > 2; align/=2)
 				{
 					if((fst[i].FileOffset & (align-1)) == 0 || force_32k_align)
 					{
+						correction = 0x00;
+						while(((wrote+correction) & (align-1)) != 0)
+							correction++;
+						wrote += correction;
+						fseek(f,correction,SEEK_END);
 						break;
 					}
 				}
-				
-				while(((wrote+correction) & (align-1)) != 0)
-					correction++;
-				
-				if(correction>0x00)
-				{
-					u32 j;
-					for(j=0x00;j<correction;j++)
-						fwrite("", 1, 1, f);
-					wrote += correction;
-				}
-				
-				ret = __DiscWriteAligned(f, fst[i].FileOffset, fst[i].FileLength);
+				ret = __DiscWriteAligned(f, fst[i].FileOffset, fst[i].FileLength, ReadBuffer);
 				gprintf("Writing: %d/%d: %s from 0x%08x to 0x%08x(%i)\n", i, FSTEnt, FSTNameOff + fst[i].NameOffset, fst[i].FileOffset, wrote, align);
 				if( ret >= 0 )
 				{
@@ -296,16 +280,14 @@ s32 GCDump::DumpGame(progress_callback_t spinner, void *spinner_data)
 				{
 					spinner(FSTEnt, FSTEnt, spinner_data);
 					MEM2_free(FSTBuffer);
+					MEM2_free(ReadBuffer);
 					SAFE_CLOSE(f);
 					return gc_error;
 				}
 			}
 		}
 
-		SAFE_CLOSE(f);
-
 		gprintf("Updating FST\n");
-		f = fopen(gamepath, "r+");
 		fseek(f, FSTOffset, SEEK_SET);
 		fwrite(fst, 1, FSTSize, f);
 		SAFE_CLOSE(f);
@@ -314,16 +296,18 @@ s32 GCDump::DumpGame(progress_callback_t spinner, void *spinner_data)
 	}
 	else
 	{
-		ret = __DiscWrite(gamepath, 0, DiscSize, spinner, spinner_data);
+		ret = __DiscWrite(gamepath, 0, DiscSize, ReadBuffer, spinner, spinner_data);
 		if( ret < 0 )
 		{
 			MEM2_free(FSTBuffer);
+			MEM2_free(ReadBuffer);
 			return gc_error;
 		}
 		gprintf("Done!! Disc size: %d\n", DiscSize);
 	}
 
 	MEM2_free(FSTBuffer);
+	MEM2_free(ReadBuffer);
 
 	return gc_skipped;	
 }

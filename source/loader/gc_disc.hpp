@@ -85,7 +85,7 @@ private:
 		};
 	} FST;
 	s32 __DiscReadRaw(void *outbuf, u32 offset, u32 length);
-	s32 __DiscWrite(char * path, u32 offset, u32 length, progress_callback_t spinner , void *spinner_data);
-	s32 __DiscWriteAligned(FILE *f, u32 offset, u32 length);
+	s32 __DiscWrite(char * path, u32 offset, u32 length, u8 *ReadBuffer, progress_callback_t spinner , void *spinner_data);
+	s32 __DiscWriteAligned(FILE *f, u32 offset, u32 length, u8 *ReadBuffer);
 };
 #endif
