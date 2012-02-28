@@ -135,7 +135,6 @@ CMenu::CMenu(CVideo &vid) :
 	m_gamesound_changed = false;
 	m_base_font_size = 0;
 	m_current_view = COVERFLOW_USB;
-	copyGameCubeGame = false;
 }
 
 extern "C" { int makedir(char *newdir); }

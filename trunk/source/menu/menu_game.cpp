@@ -427,16 +427,13 @@ void CMenu::_game(bool launch)
 				
 				if(currentPartition != SD && m_current_view == COVERFLOW_DML)
 				{
-					copyGameCubeGame = true;
-					if(!_wbfsOp(CMenu::WO_ADD_GAME))
+					if(!_wbfsOp(CMenu::WO_COPY_GAME))
 					{
-						copyGameCubeGame = false;
 						break;
 					}
 					currentPartition = SD;
 				}
 
-				copyGameCubeGame = false;
 				dir_discHdr *hdr = m_cf.getHdr();
 
 				m_cf.clear();
