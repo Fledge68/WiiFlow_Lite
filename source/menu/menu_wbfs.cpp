@@ -148,7 +148,7 @@ int CMenu::_GCgameInstaller(void *obj)
 	bool wexf = m.m_cfg.getBool("DML", "write_ex_files", false);
 	bool alig = m.m_cfg.getBool("DML", "force_32k_align_files", false);
 	u32 nretry = m.m_cfg.getUInt("DML", "num_retries", 5);
-	u32 rsize = 32768;
+	u32 rsize = 1048576; //1MB
 
 	m_gcdump.Init(skip, comp, wexf, alig, nretry, rsize,DeviceName[currentPartition]);
 	
@@ -160,7 +160,7 @@ int CMenu::_GCgameInstaller(void *obj)
 		return -1;
 	}
 
-	char partition[5];
+	char partition[6];
 	sprintf(partition,"%s:/",DeviceName[currentPartition]);
 	struct statvfs stats;
 	memset(&stats, 0, sizeof(stats));
