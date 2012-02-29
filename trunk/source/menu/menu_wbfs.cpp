@@ -168,7 +168,7 @@ int CMenu::_GCgameInstaller(void *obj)
 	
 	u64 free = (u64)stats.f_frsize * (u64)stats.f_bfree;
 	u32 needed = 0;
-	
+
 	ret = m_gcdump.CheckSpace(&needed, comp, CMenu::_Messenger, obj);
 	if(ret != 0)
 	{
@@ -212,12 +212,10 @@ int CMenu::_GCgameInstaller(void *obj)
 int CMenu::_GCcopyGame(void *obj)
 {
 	CMenu &m = *(CMenu *)obj;
-	char partition[strlen(DeviceName[SD])];
-	sprintf(partition,"%s:/",DeviceName[SD]);
-	if(fsop_GetFreeSpaceKb((char*)DeviceName[SD])<fsop_GetFolderKb(m.m_cf.getHdr()->path))
+	if(fsop_GetFreeSpaceKb((char*)"sd:/")<fsop_GetFolderKb(m.m_cf.getHdr()->path))
 	{
 		LWP_MutexLock(m.m_mutex);
-		m._setThrdMsg(wfmt(m._fmt("wbfsop10", L"Not enough space: %d blocks needed, %d available"), fsop_GetFolderKb(m.m_cf.getHdr()->path), fsop_GetFreeSpaceKb(partition)), 0.f);
+		m._setThrdMsg(wfmt(m._fmt("wbfsop10", L"Not enough space: %d blocks needed, %d available"), fsop_GetFolderKb(m.m_cf.getHdr()->path), fsop_GetFreeSpaceKb((char*)"sd:/")), 0.f);
 		LWP_MutexUnlock(m.m_mutex);
 		m.m_thrdWorking = false;
 		return -1;
@@ -226,11 +224,8 @@ int CMenu::_GCcopyGame(void *obj)
 	{
 		LWP_MutexLock(m.m_mutex);
 		m._setThrdMsg(L"", 0);
-		char folder[10] = "sd:/games";
-		if (!fsop_DirExist(folder))
-		{
-			fsop_MakeFolder(folder);
-		}
+		if (!fsop_DirExist((char*)"sd:/games"))
+			fsop_MakeFolder((char*)"sd:/games");
 		char source[64];
 		char target[64];
 		sprintf(source, "%s:/games/%s", DeviceName[currentPartition], m.m_cf.getHdr()->path);
@@ -343,7 +338,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						{
 							Disc_ReadGCHeader(&gcheader);
 							
-							char gcfolder[64];
+							char gcfolder[MAX_FAT_PATH];
 							sprintf(gcfolder, "%s [%s]", gcheader.title, (char *)gcheader.id);
 							if (_searchGamesByID((const char *) gcheader.id).size() != 0 || DML_GameIsInstalled((char *)gcheader.id, DeviceName[currentPartition]) || DML_GameIsInstalled(gcfolder, DeviceName[currentPartition]))
 							{

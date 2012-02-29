@@ -125,7 +125,7 @@ void DML_RemoveGame(const char *discid, const char* partition)
 
 bool DML_GameIsInstalled(char *discid, const char* partition) 
 {
-	char filepath[64];
+	char filepath[MAX_FAT_PATH];
 	sprintf(filepath, "%s:/games/%s/game.iso", partition, discid);
 	
 	gprintf("Filepath on SD: %s\n", filepath);
