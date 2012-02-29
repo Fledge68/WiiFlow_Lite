@@ -146,7 +146,7 @@ s32 GCDump::DumpGame(progress_callback_t spinner, message_callback_t message, vo
 	u8 *ReadBuffer = (u8 *)MEM2_alloc(gc_readsize);
 
 	u32 j;
-	
+
 	char *FSTNameOff = (char *)NULL;
 
 	char folder[MAX_FAT_PATH];
@@ -154,7 +154,7 @@ s32 GCDump::DumpGame(progress_callback_t spinner, message_callback_t message, vo
 	char gamepath[MAX_FAT_PATH];
 	bzero(gamepath, MAX_FAT_PATH);	
 	char minfo[74];
-	
+
 	for( j=0; j<2; ++j)
 	{
 		bool done = false;
@@ -207,9 +207,9 @@ s32 GCDump::DumpGame(progress_callback_t spinner, message_callback_t message, vo
 
 		FSTNameOff = (char*)(FSTable + FSTEnt * 0x0C);
 		FST *fst = (FST *)(FSTable);
-		
+
 		snprintf(minfo, sizeof(minfo), "[%.06s] %s", (char *)gcheader.id, gcheader.title);
-		
+
 		if(FSTTotal > FSTSize)
 			message( 4, j+1, minfo, spinner_data);
 		else
