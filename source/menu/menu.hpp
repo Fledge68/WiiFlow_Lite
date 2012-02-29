@@ -929,8 +929,9 @@ private:
 	void LoadView(void);
 	void _getGrabStatus(void);
 	static void _addDiscProgress(int status, int total, void *user_data);
-	static int _gameInstaller(void *obj);
-	static int _GCgameInstaller(void *obj); 
+	static void _Messenger(int message, int info, char *cinfo, void *user_data);
+	static int _gameInstaller(void *obj);	
+	static int _GCgameInstaller(void *obj);
 	static int _GCcopyGame(void *obj);
 	wstringEx _optBoolToString(int b);
 	void _stopSounds(void);

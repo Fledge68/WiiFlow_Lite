@@ -29,6 +29,7 @@
 #define GC_DISC_H_
 
 typedef void (*progress_callback_t)(int status,int total,void *user_data);
+typedef void (*message_callback_t)(int message, int info, char *cinfo, void *user_data);
 
 class GCDump
 {
@@ -44,19 +45,32 @@ public:
 		gamepartition = partition;
 		gc_skipped = 0;
 	}
-	s32 DumpGame(progress_callback_t spinner, void *spinner_data);
-	s32 CheckSpace(u32 *needed, bool comp);
+	s32 DumpGame(progress_callback_t spinner, message_callback_t message, void *spinner_data);
+	s32 CheckSpace(u32 *needed, bool comp, message_callback_t message, void *message_data);
 private:
 	bool force_32k_align;
 	bool skiponerror;
 	bool compressed;
 	bool writeexfiles;
 	const char* gamepartition;
+	u8 Disc;
+	u8 Disc2;
 	u32 gc_nbrretry;
 	u32 gc_error;
 	u32 gc_retry;
 	u32 gc_skipped;
-	u32 gc_readsize;
+	u32 gc_readsize;	
+	u32 ID;
+	u32 ID2;	
+	u32 ApploaderSize;
+	u32 DOLOffset;
+	u32 DOLSize;
+	u32 FSTOffset;
+	u32 FSTSize;
+	u32 FSTTotal;
+	u32 FSTEnt;
+	u32 GamePartOffset;
+	u32 DataSize;
 	u32 DiscSize;
 	typedef struct
 	{

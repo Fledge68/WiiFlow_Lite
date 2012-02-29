@@ -71,6 +71,31 @@ void CMenu::_addDiscProgress(int status, int total, void *user_data)
 	}
 }
 
+void CMenu::_Messenger(int message, int info, char *cinfo, void *user_data)
+{
+	CMenu &m = *(CMenu *)user_data;
+	LWP_MutexLock(m.m_mutex);
+	if(message == 1)
+		m._setThrdMsg(wfmt(m._fmt("wbfsop14", L"Calculating space needed for %s...\n Please insert disc %d to continue"), cinfo, info), 0.f);
+	if(message == 2)
+		m._setThrdMsg(wfmt(m._fmt("wbfsop15", L"Calculating space needed for %s"), cinfo), 0.f);
+	if(message == 3)
+		m._setThrdMsg(wfmt(m._fmt("wbfsop16", L"Installing %s"), cinfo), 0.f);
+	if(message == 4)
+		m._setThrdMsg(wfmt(m._fmt("wbfsop17", L"Installing %s disc %d/2"), cinfo, info), 0.f);
+	if(message == 5)
+		m._setThrdMsg(m._t("wbfsop18", L"Don't try to trick me with a Wii disc!!"), 0.f);
+	if(message == 6)	
+		m._setThrdMsg(m._t("wbfsop19", L"This is not a GC disc!!"), 0.f);
+	if(message == 7)
+		m._setThrdMsg(wfmt(m._fmt("wbfsop20", L"You inserted disc %d again!!"), info), 0.f);
+	if(message == 8)
+		m._setThrdMsg(m._t("wbfsop21", L"This is a disc of another game!!"), 0.f);
+	if(message == 9)
+		m._setThrdMsg(wfmt(m._fmt("wbfsop22", L"Installing %s...\n Please insert disc 2 to continue"), cinfo), 1.f);
+	LWP_MutexUnlock(m.m_mutex);
+}
+
 int CMenu::_gameInstaller(void *obj)
 {
 	CMenu &m = *(CMenu *)obj;
@@ -144,7 +169,13 @@ int CMenu::_GCgameInstaller(void *obj)
 	u64 free = (u64)stats.f_frsize * (u64)stats.f_bfree;
 	u32 needed = 0;
 	
-	m_gcdump.CheckSpace(&needed, comp);
+	ret = m_gcdump.CheckSpace(&needed, comp, CMenu::_Messenger, obj);
+	if(ret != 0)
+	{
+		m._setThrdMsg(m._t("wbfsop9", L"An error has occurred"), 1.f);
+		m.m_thrdWorking = false;
+		return ret;
+	}
 	
 	u32 blockfree = free/0x8000;	
 	
@@ -161,14 +192,14 @@ int CMenu::_GCgameInstaller(void *obj)
 		m._setThrdMsg(L"", 0);
 		LWP_MutexUnlock(m.m_mutex);
 		
-		ret = m_gcdump.DumpGame(CMenu::_addDiscProgress, obj);
+		ret = m_gcdump.DumpGame(CMenu::_addDiscProgress, CMenu::_Messenger, obj);
 		LWP_MutexLock(m.m_mutex);
 		if(ret == 0)
 			m._setThrdMsg(m._t("wbfsop8", L"Game installed"), 1.f);
 		else if( ret >= 0x30200)
-			m._setThrdMsg(wfmt(m._fmt("wbfsop12", L"DVDError(%d)"), ret), 0.f);
+			m._setThrdMsg(wfmt(m._fmt("wbfsop12", L"DVDError(%d)"), ret), 1.f);
 		else if( ret > 0)
-			m._setThrdMsg(wfmt(m._fmt("wbfsop13", L"Game installed, but disc contains errors (%d)"), ret), 0.f);
+			m._setThrdMsg(wfmt(m._fmt("wbfsop13", L"Game installed, but disc contains errors (%d)"), ret), 1.f);
 		else
 			m._setThrdMsg(m._t("wbfsop9", L"An error has occurred"), 1.f);
 		LWP_MutexUnlock(m.m_mutex);
