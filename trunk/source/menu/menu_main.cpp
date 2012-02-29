@@ -178,7 +178,6 @@ int CMenu::main(void)
 	bool dpad_mode = m_cfg.getBool("GENERAL", "dpad_mode", false);
 	parental_homebrew = m_cfg.getBool("HOMEBREW", "parental", false);	
 
-	u32 cv=m_current_view;
 	m_reload = false;
 	static u32 disc_check = 0;
 	int done = 0;
@@ -261,7 +260,6 @@ int CMenu::main(void)
 		m_btnMgr.noClick(true);
 		if ((m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML) || m_btnMgr.selected(m_mainBtnHomebrew)) && dpad_mode && (BTN_UP_PRESSED || BTN_DOWN_PRESSED || BTN_LEFT_PRESSED || BTN_RIGHT_PRESSED))
 		{
-			cv = m_current_view;
 			if (BTN_UP_PRESSED) 
                 m_current_view = COVERFLOW_USB;
             else if (BTN_DOWN_PRESSED && m_show_dml)
@@ -270,22 +268,19 @@ int CMenu::main(void)
                 m_current_view =  COVERFLOW_HOMEBREW;
             else if (BTN_RIGHT_PRESSED && show_channel)
                 m_current_view = COVERFLOW_CHANNEL;
-			if (cv != m_current_view)
-			{
-				m_category = m_cat.getInt(_domainFromView(), "category", 0);
-				LoadView();
-			}
+			m_category = m_cat.getInt(_domainFromView(), "category", 0);
+			LoadView();
 		}
-		if (cv == m_current_view && !m_btnMgr.selected(m_mainBtnChannel) && !m_btnMgr.selected(m_mainBtnUsb) && !m_btnMgr.selected(m_mainBtnDML) && !m_btnMgr.selected(m_mainBtnHomebrew))
+		if (!m_btnMgr.selected(m_mainBtnChannel) && !m_btnMgr.selected(m_mainBtnUsb) && !m_btnMgr.selected(m_mainBtnDML) && !m_btnMgr.selected(m_mainBtnHomebrew))
 		{
-		if (!m_btnMgr.selected(m_mainBtnQuit) && !BTN_B_HELD && (BTN_UP_REPEAT || RIGHT_STICK_UP))
-			m_cf.up();
-		if (!m_btnMgr.selected(m_mainBtnQuit) && ((!BTN_B_HELD && (BTN_RIGHT_REPEAT || RIGHT_STICK_RIGHT)) || WROLL_RIGHT))
-			m_cf.right();
-		if (!m_btnMgr.selected(m_mainBtnQuit) && !BTN_B_HELD && (BTN_DOWN_REPEAT ||  RIGHT_STICK_DOWN))
-			m_cf.down();
-		if (!m_btnMgr.selected(m_mainBtnQuit) && ((!BTN_B_HELD && (BTN_LEFT_REPEAT || RIGHT_STICK_LEFT)) || WROLL_LEFT))
-			m_cf.left();
+			if (!m_btnMgr.selected(m_mainBtnQuit) && !BTN_B_HELD && (BTN_UP_REPEAT || RIGHT_STICK_UP))
+				m_cf.up();
+			if (!m_btnMgr.selected(m_mainBtnQuit) && ((!BTN_B_HELD && (BTN_RIGHT_REPEAT || RIGHT_STICK_RIGHT)) || WROLL_RIGHT))
+				m_cf.right();
+			if (!m_btnMgr.selected(m_mainBtnQuit) && !BTN_B_HELD && (BTN_DOWN_REPEAT ||  RIGHT_STICK_DOWN))
+				m_cf.down();
+			if (!m_btnMgr.selected(m_mainBtnQuit) && ((!BTN_B_HELD && (BTN_LEFT_REPEAT || RIGHT_STICK_LEFT)) || WROLL_LEFT))
+				m_cf.left();
 		}
 		m_btnMgr.noClick(false);
 		//CF Layout select
