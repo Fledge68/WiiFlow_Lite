@@ -400,13 +400,13 @@ s32 GCDump::DumpGame(progress_callback_t spinner, message_callback_t message, vo
 s32 GCDump::CheckSpace(u32 *needed, bool comp, message_callback_t message, void *message_data)
 {
 	static gc_discHdr gcheader ATTRIBUTE_ALIGN(32);
-	
+
 	u8 *ReadBuffer = (u8 *)MEM2_alloc(0x440);
 	u32 size = 0;
 	u32 j;
-	
+
 	char minfo[74];
-	
+
 	for( j=0; j<2; ++j)
 	{
 		s32 ret = __DiscReadRaw(ReadBuffer, 0, 0x440);
@@ -415,7 +415,7 @@ s32 GCDump::CheckSpace(u32 *needed, bool comp, message_callback_t message, void 
 			MEM2_free(ReadBuffer);
 			return 1;
 		}
-	
+
 		ID = *(vu32*)(ReadBuffer);
 		ID2 = 0;
 		Disc = *(vu8*)(ReadBuffer+0x06);
@@ -426,24 +426,23 @@ s32 GCDump::CheckSpace(u32 *needed, bool comp, message_callback_t message, void 
 		FSTTotal = *(vu32*)(ReadBuffer+0x42c);
 		GamePartOffset = *(vu32*)(ReadBuffer+0x434);
 		DataSize = *(vu32*)(ReadBuffer+0x438);
-	
 		DiscSize =  DataSize + GamePartOffset;
-		
+
 		bool done = false;
-		
+
 		Disc_ReadGCHeader(&gcheader);
 		Asciify2(gcheader.title);
-		
+
 		snprintf(minfo, sizeof(minfo), "[%.06s] %s", (char *)gcheader.id, gcheader.title);
-	
+
 		message( 2, 0, minfo, message_data);	
-	
+
 		if(writeexfiles)
 		{
 			size += 0xa440;
 			size += ApploaderSize;
 		}
-	
+
 		if(!comp)
 		{
 			size += DiscSize;		
@@ -458,27 +457,42 @@ s32 GCDump::CheckSpace(u32 *needed, bool comp, message_callback_t message, void 
 				MEM2_free(FSTBuffer);
 				return 1;
 			}
-		
+
 			FSTable = (u8*)FSTBuffer;
 			u32 FSTEnt = *(u32*)(FSTable+0x08);
 			FST *fst = (FST *)(FSTable);
-		
+
+			size += (FSTOffset + FSTSize);
+
 			u32 i;
-	
+			u32 correction;
+			u32 align;
+
 			for( i=1; i < FSTEnt; ++i )
 			{
 				if( fst[i].Type )
 				{
 					continue;
 				} 
-				else 
-				{	
-					size += (fst[i].FileLength+31)&(~31);
+				else
+				{
+					for(align = 0x8000; align > 2; align/=2)
+					{
+						if((fst[i].FileOffset & (align-1)) == 0 || force_32k_align)
+						{
+							correction = 0x00;
+							while(((size+correction) & (align-1)) != 0)
+								correction++;
+							size += correction;
+							break;
+						}
+					}
+					size += fst[i].FileLength;
 				}
 			}
 			MEM2_free(FSTBuffer);
 		}
-		
+
 		if(FSTTotal > FSTSize)
 		{
 			u32 cover = 0;

@@ -226,8 +226,8 @@ int CMenu::_GCcopyGame(void *obj)
 		m._setThrdMsg(L"", 0);
 		if (!fsop_DirExist((char*)"sd:/games"))
 			fsop_MakeFolder((char*)"sd:/games");
-		char source[64];
-		char target[64];
+		char source[MAX_FAT_PATH];
+		char target[MAX_FAT_PATH];
 		sprintf(source, "%s:/games/%s", DeviceName[currentPartition], m.m_cf.getHdr()->path);
 		sprintf(target, "sd:/games/%s", m.m_cf.getHdr()->path);
 		gprintf("Copying from: \n%s \nto: \n%s\n",source,target);
