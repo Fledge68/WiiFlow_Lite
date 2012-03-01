@@ -429,7 +429,7 @@ void CMenu::_game(bool launch)
 				{
 					char gcfolder[MAX_FAT_PATH];
 					sprintf(gcfolder, "%s [%s]", m_cf.getTitle().toUTF8().c_str(), (char *)hdr->hdr.id);
-					memset(hdr->path,0,256);
+					memset(hdr->path,0,sizeof(hdr->path));
 					if (DML_GameIsInstalled((char *)hdr->hdr.id, DeviceName[SD]))
 						sprintf(hdr->path,"%s",(char*)hdr->hdr.id);
 					else if (DML_GameIsInstalled(gcfolder, DeviceName[SD]))
