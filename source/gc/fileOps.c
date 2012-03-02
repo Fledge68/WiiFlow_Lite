@@ -15,7 +15,6 @@ en exposed s_fsop fsop structure can be used by callback to update operation sta
 
 #include <dirent.h>
 #include <unistd.h>
-#include <sys/stat.h> //for mkdir 
 #include <sys/statvfs.h>
 
 #include "fileOps.h"
@@ -204,16 +203,6 @@ bool fsop_CopyFile (char *source, char *target, progress_callback_t spinner, voi
 }
 
 /*
-Semplified folder make
-*/
-int fsop_MakeFolder (char *path)
-{
-	if (mkdir(path, S_IREAD | S_IWRITE) == 0) return true;
-	
-	return false;
-}
-
-/*
 Recursive copyfolder
 */
 static bool doCopyFolder (char *source, char *target, progress_callback_t spinner, void *spinner_data)
@@ -224,9 +213,9 @@ static bool doCopyFolder (char *source, char *target, progress_callback_t spinne
 	bool ret = true;
 	
 	// If target folder doesn't exist, create it !
-	if (!fsop_DirExist (target))
+	if (!fsop_DirExist(target))
 	{
-		fsop_MakeFolder (target);
+		makedir(target);
 	}
 
 	pdir=opendir(source);
@@ -241,14 +230,14 @@ static bool doCopyFolder (char *source, char *target, progress_callback_t spinne
 		sprintf (newTarget, "%s/%s", target, pent->d_name);
 		
 		// If it is a folder... recurse...
-		if (fsop_DirExist (newSource))
+		if (fsop_DirExist(newSource))
 		{
-			ret = doCopyFolder (newSource, newTarget, spinner, spinner_data);
+			ret = doCopyFolder(newSource, newTarget, spinner, spinner_data);
 		}
 		else	// It is a file !
 		{
-			strcpy (fsop.op, pent->d_name);
-			ret = fsop_CopyFile (newSource, newTarget, spinner, spinner_data);
+			strcpy(fsop.op, pent->d_name);
+			ret = fsop_CopyFile(newSource, newTarget, spinner, spinner_data);
 		}
 	}
 	

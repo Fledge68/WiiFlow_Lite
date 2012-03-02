@@ -39,6 +39,7 @@
 #include "text.hpp"
 #include "gecko.h"
 #include "fileOps.h"
+#include "defines.h"
 
 using namespace std;
 
@@ -164,12 +165,12 @@ s32 GCDump::DumpGame(progress_callback_t spinner, message_callback_t message, vo
 		s32 ret = Disc_ReadGCHeader(&gcheader);
 		Asciify2(gcheader.title);
 
-		snprintf(folder, sizeof(folder), "%s:/games/", gamepartition);
+		snprintf(folder, sizeof(folder), DML_DIR, gamepartition);
 		if(!fsop_DirExist(folder))
-			fsop_MakeFolder(folder);
+			makedir(folder);
 		snprintf(folder, sizeof(folder), "%s:/games/%s [%.06s]%s", gamepartition, gcheader.title, (char *)gcheader.id, j ? "2" : "");
 		if(!fsop_DirExist(folder))
-			fsop_MakeFolder(folder);
+			makedir(folder);
 
 		ret = __DiscReadRaw(ReadBuffer, 0, 0x440);
 		if(ret > 0)
@@ -230,7 +231,7 @@ s32 GCDump::DumpGame(progress_callback_t spinner, message_callback_t message, vo
 		{
 			snprintf(folder, sizeof(folder), "%s:/games/%s [%.06s]%s/sys", gamepartition, gcheader.title, (char *)gcheader.id, j ? "2" : "");	
 			if(!fsop_DirExist(folder))
-				fsop_MakeFolder(folder);
+				makedir(folder);
 
 			gprintf("Writing %s/boot.bin\n", folder);
 			snprintf(gamepath, sizeof(gamepath), "%s/boot.bin", folder);

@@ -7,6 +7,7 @@
 #include "fileOps.h"
 #include "music/SoundHandler.hpp"
 #include "channel/nand.hpp"
+#include "defines.h"
 
 using namespace std;
 
@@ -224,8 +225,10 @@ int CMenu::_GCcopyGame(void *obj)
 	{
 		LWP_MutexLock(m.m_mutex);
 		m._setThrdMsg(L"", 0);
-		if (!fsop_DirExist((char*)"sd:/games"))
-			fsop_MakeFolder((char*)"sd:/games");
+		char folder[MAX_FAT_PATH];
+		snprintf(folder, sizeof(folder), DML_DIR, DeviceName[SD]);
+		if (!fsop_DirExist(folder))
+			makedir(folder);
 		char source[MAX_FAT_PATH];
 		char target[MAX_FAT_PATH];
 		sprintf(source, "%s:/games/%s", DeviceName[currentPartition], m.m_cf.getHdr()->path);
