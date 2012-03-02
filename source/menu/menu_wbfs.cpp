@@ -163,11 +163,7 @@ int CMenu::_GCgameInstaller(void *obj)
 
 	char partition[6];
 	sprintf(partition,"%s:/",DeviceName[currentPartition]);
-	struct statvfs stats;
-	memset(&stats, 0, sizeof(stats));
-	statvfs(partition , &stats);
-	
-	u64 free = (u64)stats.f_frsize * (u64)stats.f_bfree;
+
 	u32 needed = 0;
 
 	ret = m_gcdump.CheckSpace(&needed, comp, CMenu::_Messenger, obj);
@@ -178,12 +174,10 @@ int CMenu::_GCgameInstaller(void *obj)
 		return ret;
 	}
 	
-	u32 blockfree = free/0x8000;	
-	
-	if (blockfree <= needed)
+	if (fsop_GetFreeSpaceKb(partition) <= needed)
 	{
 		LWP_MutexLock(m.m_mutex);
-		m._setThrdMsg(wfmt(m._fmt("wbfsop10", L"Not enough space: %d blocks needed, %d available"), needed, blockfree), 0.f);
+		m._setThrdMsg(wfmt(m._fmt("wbfsop10", L"Not enough space: %d blocks needed, %d available"), needed, fsop_GetFreeSpaceKb(partition)), 0.f);
 		LWP_MutexUnlock(m.m_mutex);
 		ret = -1;
 	}
@@ -367,9 +361,15 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						break;
 					case CMenu::WO_REMOVE_GAME:
 						if(m_current_view == COVERFLOW_USB)
+						{
 							WBFS_RemoveGame((u8 *)m_cf.getId().c_str(), (char *) m_cf.getHdr()->path);
+							upd_usb = true;
+						}
 						else
+						{
 							DML_RemoveGame(m_cf.getHdr()->path, DeviceName[currentPartition]);
+							upd_dml = true;
+						}
 						if(m_cfg.getBool("GENERAL", "delete_cover_and_game", true))
 							RemoveCover((char *)m_cf.getId().c_str());
 						m_btnMgr.show(m_wbfsPBar);
