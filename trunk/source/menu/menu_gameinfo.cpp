@@ -21,6 +21,7 @@ extern const u8		wiimote1_png[];
 extern const u8		wiimote2_png[];
 extern const u8		wiimote3_png[];
 extern const u8		wiimote4_png[];
+extern const u8		wiimote6_png[];
 extern const u8		wiimote8_png[];
 
 extern const u8		guitar_png[];
@@ -470,6 +471,8 @@ void CMenu::_textGameInfo(void)
 				m_controlsreq[x].fromPNG(wiimote3_png);
 			else if (players == 4)
 				m_controlsreq[x].fromPNG(wiimote4_png);
+			else if (players == 6)
+				m_controlsreq[x].fromPNG(wiimote6_png);
 			else if (players == 8)
 				m_controlsreq[x].fromPNG(wiimote8_png);
 
