@@ -207,37 +207,40 @@ int CMenu::_GCgameInstaller(void *obj)
 int CMenu::_GCcopyGame(void *obj)
 {
 	CMenu &m = *(CMenu *)obj;
-	if(fsop_GetFreeSpaceKb((char*)"sd:/")<fsop_GetFolderKb(m.m_cf.getHdr()->path))
+	char folder[12];
+	char source[300];
+	char target[300];
+	snprintf(folder, sizeof(folder), DML_DIR, DeviceName[currentPartition]);
+	snprintf(source, sizeof(source), "%s/%s", folder, m.m_cf.getHdr()->path);
+	memset(folder, 0, sizeof(folder));
+	snprintf(folder, sizeof(folder), DML_DIR, DeviceName[SD]);
+	snprintf(target, sizeof(target), "%s/%s", folder, m.m_cf.getHdr()->path);
+	int ret;
+	if(fsop_GetFreeSpaceKb((char*)"sd:/")<fsop_GetFolderKb(source))
 	{
 		LWP_MutexLock(m.m_mutex);
-		m._setThrdMsg(wfmt(m._fmt("wbfsop10", L"Not enough space: %d blocks needed, %d available"), fsop_GetFolderKb(m.m_cf.getHdr()->path), fsop_GetFreeSpaceKb((char*)"sd:/")), 0.f);
+		m._setThrdMsg(wfmt(m._fmt("wbfsop10", L"Not enough space: %d blocks needed, %d available"), fsop_GetFolderKb(source), fsop_GetFreeSpaceKb((char*)"sd:/")), 0.f);
 		LWP_MutexUnlock(m.m_mutex);
-		m.m_thrdWorking = false;
-		return -1;
+		ret = -1;
 	}
 	else
 	{
 		LWP_MutexLock(m.m_mutex);
 		m._setThrdMsg(L"", 0);
-		char folder[MAX_FAT_PATH];
-		snprintf(folder, sizeof(folder), DML_DIR, DeviceName[SD]);
+		gprintf("Copying from:\n%s\nto:\n%s\n",source,target);
+		LWP_MutexUnlock(m.m_mutex);
 		if (!fsop_DirExist(folder))
 			makedir(folder);
-		char source[MAX_FAT_PATH];
-		char target[MAX_FAT_PATH];
-		sprintf(source, "%s:/games/%s", DeviceName[currentPartition], m.m_cf.getHdr()->path);
-		sprintf(target, "sd:/games/%s", m.m_cf.getHdr()->path);
-		gprintf("Copying from: \n%s \nto: \n%s\n",source,target);
-		LWP_MutexUnlock(m.m_mutex);
 		fsop_CopyFolder(source, target, CMenu::_addDiscProgress, obj);
 		LWP_MutexLock(m.m_mutex);
 		m._setThrdMsg(m._t("wbfsop14", L"Game copied, press Back to boot the game."), 1.f);
 		gprintf("Game copied.\n");
 		LWP_MutexUnlock(m.m_mutex);
 		slotLight(true);
+		ret = 0;
 	}
 	m.m_thrdWorking = false;
-	return 0;
+	return ret;
 }
 
 bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
@@ -390,10 +393,10 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						m_btnMgr.hide(m_wbfsBtnBack);
 						m_btnMgr.show(m_wbfsLblMessage);
 						m_btnMgr.setText(m_wbfsLblMessage, L"");
-						char* gameid = (char *)m_cf.getHdr()->hdr.id;
-						cfPos = string(gameid);
-						m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsop10", L"Copying [%s] %s..."), (u8*)gameid, (u8*)m_cf.getTitle().toUTF8().c_str()));
+						cfPos = string((char*)m_cf.getHdr()->hdr.id);
+						m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsop10", L"Copying [%s] %s..."), (u8*)m_cf.getHdr()->hdr.id, (u8*)m_cf.getTitle().toUTF8().c_str()));
 						done = true;
+						upd_dml = true;
 						m_thrdWorking = true;
 						m_thrdProgress = 0.f;
 						m_thrdMessageAdded = false;

@@ -424,20 +424,24 @@ void CMenu::_game(bool launch)
 			{
 				_hideGame();
 				dir_discHdr *hdr = m_cf.getHdr();
-				
 				if(currentPartition != SD && m_current_view == COVERFLOW_DML)
 				{
 					char gcfolder[MAX_FAT_PATH];
 					sprintf(gcfolder, "%s [%s]", m_cf.getTitle().toUTF8().c_str(), (char *)hdr->hdr.id);
-					memset(hdr->path,0,sizeof(hdr->path));
 					if (DML_GameIsInstalled((char *)hdr->hdr.id, DeviceName[SD]))
+					{
+						memset(hdr->path,0,sizeof(hdr->path));
 						sprintf(hdr->path,"%s",(char*)hdr->hdr.id);
+					}
 					else if (DML_GameIsInstalled(gcfolder, DeviceName[SD]))
+					{
+						memset(hdr->path,0,sizeof(hdr->path));
 						sprintf(hdr->path,"%s",gcfolder);
+					}
 					else if(!_wbfsOp(CMenu::WO_COPY_GAME))
 						break;
+					currentPartition = SD;
 				}
-				currentPartition = SD;
 
 				m_cf.clear();
 				_showWaitMessage();
