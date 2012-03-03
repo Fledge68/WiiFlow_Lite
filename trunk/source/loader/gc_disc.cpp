@@ -253,6 +253,7 @@ s32 GCDump::DumpGame(progress_callback_t spinner, message_callback_t message, vo
 		{
 			u32 align;
 			u32 correction;
+			u32 toread;
 
 			FILE *f;
 			f = fopen(gamepath, "wb");
@@ -267,8 +268,8 @@ s32 GCDump::DumpGame(progress_callback_t spinner, message_callback_t message, vo
 				if( fst[i].Type )
 				{
 					continue;
-				} 
-				else 
+				}
+				else
 				{
 					for(align = 0x8000; align > 2; align/=2)
 					{
@@ -278,7 +279,14 @@ s32 GCDump::DumpGame(progress_callback_t spinner, message_callback_t message, vo
 							while(((wrote+correction) & (align-1)) != 0)
 								correction++;
 							wrote += correction;
-							fseek(f,correction,SEEK_END);
+							//fseek(f,correction,SEEK_END);
+							while(correction)
+							{
+								toread=min(correction,gc_readsize);
+								memset(ReadBuffer,0,toread);
+								fwrite(ReadBuffer,1,toread,f);
+								correction -= toread;
+							}
 							break;
 						}
 					}
