@@ -211,6 +211,16 @@ private:
 	u32 m_config3LblVideo;
 	u32 m_config3BtnVideoP;
 	u32 m_config3BtnVideoM;
+
+	u32 m_config3LblDMLGameLanguage;
+	u32 m_config3LblDMLLanguage;
+	u32 m_config3BtnDMLLanguageP;
+	u32 m_config3BtnDMLLanguageM;
+	u32 m_config3LblDMLGameVideo;
+	u32 m_config3LblDMLVideo;
+	u32 m_config3BtnDMLVideoP;
+	u32 m_config3BtnDMLVideoM;
+
 	u32 m_config3LblOcarina;
 	u32 m_config3BtnOcarina;
 	u32 m_config3LblAsyncNet;
@@ -949,8 +959,12 @@ private:
 	static const string _translations[23];
 	static const SOption _languages[11];
 	static const SOption _videoModes[7];
-	static const SOption _DMLvideoModes[3];
-	static const SOption _GClanguages[7];
+	
+	static const SOption _GlobalDMLvideoModes[3];
+	static const SOption _GlobalGClanguages[7];
+	static const SOption _DMLvideoModes[4];
+	static const SOption _GClanguages[8];
+
 	static const SOption _NandEmu[3];
 	static const SOption _SaveEmu[4];
 	static const SOption _GlobalSaveEmu[3];
