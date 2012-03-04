@@ -106,14 +106,32 @@ const CMenu::SOption CMenu::_videoModes[7] = {
 	{ "vidprog", L"Progressive" }
 };
 
-const CMenu::SOption CMenu::_DMLvideoModes[3] = {
-	{ "DMLdef", L"Default" },
+const CMenu::SOption CMenu::_GlobalDMLvideoModes[3] = {
+	{ "DMLdefG", L"Game" },
 	{ "DMLpal", L"PAL 576i" },
-	{ "DMLntsc", L"NTSC 480i" },
+	{ "DMLntsc", L"NTSC 480i" }
 };
 
-const CMenu::SOption CMenu::_GClanguages[7] = {
+const CMenu::SOption CMenu::_DMLvideoModes[4] = {
+	{ "DMLdef", L"Default" },
+	{ "DMLdefG", L"Game" },
+	{ "DMLpal", L"PAL 576i" },
+	{ "DMLntsc", L"NTSC 480i" }
+};
+
+const CMenu::SOption CMenu::_GlobalGClanguages[7] = {
+	{ "lngsys", L"System" },
+	{ "lngeng", L"English" },
+	{ "lngger", L"German" },
+	{ "lngfre", L"French" },
+	{ "lngspa", L"Spanish" },
+	{ "lngita", L"Italian" },
+	{ "lngdut", L"Dutch" }
+};
+
+const CMenu::SOption CMenu::_GClanguages[8] = {
 	{ "lngdef", L"Default" },
+	{ "lngsys", L"System" },
 	{ "lngeng", L"English" },
 	{ "lngger", L"German" },
 	{ "lngfre", L"French" },
@@ -606,6 +624,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 {	
 	Nand::Instance()->Disable_Emu();
 	u8 DMLvideoMode = 0;
+	u8 GClanguage = 0;
 
 	if(has_enabled_providers() && _initNetwork() == 0)
 		add_game_to_card((char *)hdr->hdr.id);
@@ -625,30 +644,39 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 		fwrite(hdr->path, 1, strlen(hdr->path) + 1, f);
 		fclose(f);
 		#endif
-		
+
 		DMLvideoMode = min((u32)m_gcfg2.getInt((char *)hdr->hdr.id, "dml_video_mode", 0), ARRAY_SIZE(CMenu::_DMLvideoModes) - 1u);
+		if(DMLvideoMode == 0)
+			DMLvideoMode = min((u32)m_cfg.getInt("DML", "video_mode", 0), ARRAY_SIZE(CMenu::_GlobalDMLvideoModes) - 1u);
+		else
+			DMLvideoMode--;
+		GClanguage = min((u32)m_gcfg2.getInt((char *)hdr->hdr.id, "gc_language", 0), ARRAY_SIZE(CMenu::_GClanguages) - 1u);
+		if(GClanguage == 0)
+			GClanguage = min((u32)m_cfg.getInt("DML", "game_language", 0), ARRAY_SIZE(CMenu::_GlobalGClanguages) - 1u);
+		else
+			GClanguage--;
+		gprintf("gc lang: %i; %i\n",GClanguage, m_cfg.getInt("DML", "game_language", 0));
+
 		m_cfg.setString("DML", "current_item", (char *)hdr->hdr.id);
 		m_gcfg1.setInt("PLAYCOUNT", (char *)hdr->hdr.id, m_gcfg1.getInt("PLAYCOUNT", (char *)hdr->hdr.id, 0) + 1);
 		m_gcfg1.setUInt("LASTPLAYED", (char *)hdr->hdr.id, time(NULL));
 		m_gcfg1.save(true);
 		m_cfg.save(true);
-		
+
 		cleanup();
 		Close_Inputs();
 		USBStorage_Deinit();
 		SDHC_Init();
-		
+
 		WDVD_Init();
 		WDVD_StopMotor();
 		WDVD_Close();
-		
+
 		//Tell DML to boot the game from sd card
 		*(vu32*)0x80001800 = 0xB002D105;
 		DCFlushRange((void *)(0x80001800), 4);
 		ICInvalidateRange((void *)(0x80001800), 4);		
 	}
-	
-	u8 GClanguage = min((u32)m_gcfg2.getInt((char *)hdr->hdr.id, "gc_language", 0), ARRAY_SIZE(CMenu::_GClanguages) - 1u);
 	
 	memcpy((char *)0x80000000, (char *)hdr->hdr.id, 6);	
 	if((((char)hdr->hdr.id[3] == 'P') && (DMLvideoMode == 0)) || (DMLvideoMode == 1))
