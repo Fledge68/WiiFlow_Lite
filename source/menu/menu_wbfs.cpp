@@ -145,8 +145,8 @@ int CMenu::_GCgameInstaller(void *obj)
 	GCDump m_gcdump;
 	
 	bool skip = m.m_cfg.getBool("DML", "skip_on_error", false);
-	bool comp = m.m_cfg.getBool("DML", "compressed_dump", false);
-	bool wexf = m.m_cfg.getBool("DML", "write_ex_files", false);
+	bool comp = m.m_cfg.getBool("DML", "compressed_dump", true);
+	bool wexf = m.m_cfg.getBool("DML", "write_ex_files", true);
 	bool alig = m.m_cfg.getBool("DML", "force_32k_align_files", false);
 	u32 nretry = m.m_cfg.getUInt("DML", "num_retries", 5);
 	u32 rsize = 1048576; //1MB

@@ -72,6 +72,7 @@ private:
 	u32 GamePartOffset;
 	u32 DataSize;
 	u32 DiscSize;
+	u32 DiscSizeCalculated;
 	typedef struct
 	{
 		union
@@ -99,7 +100,7 @@ private:
 		};
 	} FST;
 	s32 __DiscReadRaw(void *outbuf, u32 offset, u32 length);
-	s32 __DiscWrite(char * path, u32 offset, u32 length, u8 *ReadBuffer, progress_callback_t spinner , void *spinner_data);
-	s32 __DiscWriteAligned(FILE *f, u32 offset, u32 length, u8 *ReadBuffer);
+	s32 __DiscWrite(char * path, u32 offset, u32 length, u32 already_done, u8 *ReadBuffer, progress_callback_t spinner, void *spinner_data);
+	s32 __DiscWriteFile(FILE *f, u32 offset, u32 length, u32 already_done, u8 *ReadBuffer, progress_callback_t spinner, void *spinner_data);
 };
 #endif
