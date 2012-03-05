@@ -27,6 +27,7 @@ en exposed s_fsop fsop structure can be used by callback to update operation sta
 
 static u8 *buff = NULL;
 static FILE *fs = NULL, *ft = NULL;
+static u32 bytes;
 static u32 block = 32768;
 static u32 blockIdx = 0;
 static u32 blockInfo[2] = {0,0};
@@ -153,7 +154,7 @@ bool fsop_CopyFile (char *source, char *target, progress_callback_t spinner, voi
 	int err = 0;
 
 	u32 size;
-	u32 bytes, rb,wb;
+	u32 rb,wb;
 
 	fs = fopen(source, "rb");
 	if (!fs)
@@ -198,7 +199,6 @@ bool fsop_CopyFile (char *source, char *target, progress_callback_t spinner, voi
 	while (stopThread != 0)
 		usleep (5);
 
-	bytes = 0;
 	u32 bi;
 	do
 	{
@@ -296,6 +296,7 @@ bool fsop_CopyFolder (char *source, char *target, progress_callback_t spinner, v
 {
 	gprintf("DML game USB->SD job started!\n");
 
+	bytes = 0;
 	folderSize = fsop_GetFolderBytes(source);
 	return doCopyFolder(source, target, spinner, spinner_data);
 }
