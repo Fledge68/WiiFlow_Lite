@@ -370,7 +370,11 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						}
 						else
 						{
-							DML_RemoveGame(m_cf.getHdr()->path, DeviceName[currentPartition]);
+							char folder[12];
+							char source[300];
+							snprintf(folder, sizeof(folder), DML_DIR, DeviceName[currentPartition]);
+							snprintf(source, sizeof(source), "%s/%s", folder, m_cf.getHdr()->path);
+							fsop_deleteFolder(source);
 							upd_dml = true;
 						}
 						if(m_cfg.getBool("GENERAL", "delete_cover_and_game", true))
