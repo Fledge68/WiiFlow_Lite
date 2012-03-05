@@ -273,6 +273,8 @@ s32 GCDump::DumpGame(progress_callback_t spinner, message_callback_t message, vo
 								memset(ReadBuffer,0,toread);
 								fwrite(ReadBuffer,1,toread,f);
 								correction -= toread;
+								if(spinner)
+									spinner(wrote+toread, DiscSizeCalculated, spinner_data);
 							}
 							break;
 						}

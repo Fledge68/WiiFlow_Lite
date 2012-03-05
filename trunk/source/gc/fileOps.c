@@ -32,6 +32,7 @@ static u32 blockIdx = 0;
 static u32 blockInfo[2] = {0,0};
 static u32 blockReady = 0;
 static u32 stopThread;
+static u64 folderSize = 0;
 
 // return false if the file doesn't exist
 bool fsop_GetFileSizeBytes (char *path, size_t *filesize)	// for me stats st_size report always 0 :(
@@ -198,12 +199,6 @@ bool fsop_CopyFile (char *source, char *target, progress_callback_t spinner, voi
 		usleep (5);
 
 	bytes = 0;
-	bool spinnerFlag = false;
-	if (strstr (source, "game.iso")) {
-		spinner(bytes, size, spinner_data);
-		spinnerFlag = true;
-	}
-
 	u32 bi;
 	do
 	{
@@ -223,7 +218,8 @@ bool fsop_CopyFile (char *source, char *target, progress_callback_t spinner, voi
 		if (rb == 0) err = 1;
 		bytes += rb;
 
-		if (spinnerFlag) spinner(bytes, size, spinner_data);
+		if (spinner)
+			spinner(bytes, folderSize, spinner_data);
 	}
 	while (bytes < size && err == 0);
 
@@ -295,10 +291,43 @@ static bool doCopyFolder (char *source, char *target, progress_callback_t spinne
 
 	return ret;
 }
-	
+
 bool fsop_CopyFolder (char *source, char *target, progress_callback_t spinner, void *spinner_data)
 {
 	gprintf("DML game USB->SD job started!\n");
 
+	folderSize = fsop_GetFolderBytes(source);
 	return doCopyFolder(source, target, spinner, spinner_data);
+}
+
+void fsop_deleteFolder(char *source)
+{
+	DIR *pdir;
+	struct dirent *pent;
+	char newSource[300];
+
+	pdir = opendir(source);
+
+	while ((pent=readdir(pdir)) != NULL) 
+	{
+		// Skip it
+		if (strcmp (pent->d_name, ".") == 0 || strcmp (pent->d_name, "..") == 0)
+			continue;
+
+		sprintf (newSource, "%s/%s", source, pent->d_name);
+
+		// If it is a folder... recurse...
+		if (fsop_DirExist(newSource))
+		{
+			fsop_deleteFolder(newSource);
+		}
+		else	// It is a file !
+		{
+			gprintf("Deleting file: %s\n",newSource);
+			remove(newSource);
+		}
+	}
+	closedir(pdir);
+	gprintf("Deleting directory: %s\n",source);
+	unlink(source);
 }
