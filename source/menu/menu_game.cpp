@@ -451,12 +451,12 @@ void CMenu::_game(bool launch)
 						memset(hdr->path,0,sizeof(hdr->path));
 						sprintf(hdr->path,"%s",(char*)hdr->hdr.id);
 					}
-					else if (DML_GameIsInstalled(gcfolder, DeviceName[SD]))
+					else if(DML_GameIsInstalled(gcfolder, DeviceName[SD]))
 					{
 						memset(hdr->path,0,sizeof(hdr->path));
 						sprintf(hdr->path,"%s",gcfolder);
 					}
-					else if(!_wbfsOp(CMenu::WO_COPY_GAME))
+					else if(!DML_GameIsInstalled(hdr->path, DeviceName[SD]) && !_wbfsOp(CMenu::WO_COPY_GAME))
 						break;
 					currentPartition = SD;
 				}
@@ -593,7 +593,6 @@ void CMenu::_directlaunch(const string &id)
 			_launch(&m_gameList[0]); // Launch will exit wiiflow
 		}
 	}
-	
 	error(sfmt("Cannot find the game with ID: %s", id.c_str()));
 }
 
@@ -621,7 +620,7 @@ void CMenu::_launch(dir_discHdr *hdr)
 extern "C" {extern void USBStorage_Deinit(void);}
 
 void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
-{	
+{
 	Nand::Instance()->Disable_Emu();
 	u8 DMLvideoMode = 0;
 	u8 GClanguage = 0;
@@ -655,7 +654,6 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 			GClanguage = min((u32)m_cfg.getInt("DML", "game_language", 0), ARRAY_SIZE(CMenu::_GlobalGClanguages) - 1u);
 		else
 			GClanguage--;
-		gprintf("gc lang: %i; %i\n",GClanguage, m_cfg.getInt("DML", "game_language", 0));
 
 		m_cfg.setString("DML", "current_item", (char *)hdr->hdr.id);
 		m_gcfg1.setInt("PLAYCOUNT", (char *)hdr->hdr.id, m_gcfg1.getInt("PLAYCOUNT", (char *)hdr->hdr.id, 0) + 1);
@@ -677,7 +675,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 		DCFlushRange((void *)(0x80001800), 4);
 		ICInvalidateRange((void *)(0x80001800), 4);		
 	}
-	
+
 	memcpy((char *)0x80000000, (char *)hdr->hdr.id, 6);	
 	if((((char)hdr->hdr.id[3] == 'P') && (DMLvideoMode == 0)) || (DMLvideoMode == 1))
 	{
@@ -693,7 +691,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 	VIDEO_WaitVSync();
 
 	*(vu32*)0xCC003024 |= 7;
-	
+
 	if(WII_LaunchTitle(0x100000100LL) < 0 )
 		Sys_LoadMenu();
 }

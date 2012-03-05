@@ -100,7 +100,7 @@ bool DML_GameIsInstalled(char *discid, const char* partition)
 	char folder[12];
 	char source[300];
 	snprintf(folder, sizeof(folder), DML_DIR, partition);
-	snprintf(source, sizeof(source), "%s/%s", folder, discid);
+	snprintf(source, sizeof(source), "%s/%s/game.iso", folder, discid);
 	
 	FILE *f = fopen(source, "r");
 	if (f) 
