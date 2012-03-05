@@ -303,11 +303,11 @@ int CMenu::main(void)
 			}
 			m_btnMgr.noClick(false);
 		}
-		//Search by pages
+		//Change Songs
 		else if (!BTN_B_HELD && BTN_MINUS_PRESSED)
-			m_cf.pageUp();
+			MusicPlayer::Instance()->Previous();
 		else if (!BTN_B_HELD && BTN_PLUS_PRESSED)
-			m_cf.pageDown();
+			MusicPlayer::Instance()->Next();
 		else if (BTN_B_HELD)
 		{
 			const char *domain = _domainFromView();
@@ -341,11 +341,11 @@ int CMenu::main(void)
 					m_btnMgr.show(m_mainLblNotice);
 				}
 			}
-			//Change songs
+			//Search by pages
 			else if (BTN_LEFT_PRESSED)
-				MusicPlayer::Instance()->Previous();
+				m_cf.pageUp();
 			else if (BTN_RIGHT_PRESSED)
-				MusicPlayer::Instance()->Next();
+				m_cf.pageDown();
 			//Sorting Selection
 			else if (BTN_PLUS_PRESSED && !m_locked)
 			{
