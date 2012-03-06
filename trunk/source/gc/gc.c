@@ -6,7 +6,6 @@
 #include "gecko.h"
 #include "fileOps.h"
 #include "utils.h"
-#include "defines.h"
 
 #define SRAM_ENGLISH 0
 #define SRAM_GERMAN 1
@@ -95,11 +94,11 @@ void set_language(u8 lang)
 	while(!__SYS_SyncSram());
 }
 
-bool DML_GameIsInstalled(char *discid, const char* partition) 
+bool DML_GameIsInstalled(char *discid, const char* partition, const char* dmlgamedir) 
 {
-	char folder[12];
+	char folder[50];
 	char source[300];
-	snprintf(folder, sizeof(folder), DML_DIR, partition);
+	snprintf(folder, sizeof(folder), dmlgamedir, partition);
 	snprintf(source, sizeof(source), "%s/%s/game.iso", folder, discid);
 	
 	FILE *f = fopen(source, "r");

@@ -249,6 +249,7 @@ void CMenu::init(void)
 	}
 	else
 		m_show_dml = MIOSisDML();
+	m_DMLgameDir = m_cfg.getString("DML", "dir_usb_games", DML_DIR);
 
 	m_cfg.getString("NAND", "path", "").c_str();
 	m_cfg.getInt("NAND", "partition", 0);
@@ -263,7 +264,7 @@ void CMenu::init(void)
 	m_ver = sfmt("%s/versions", m_appDir.c_str());
 	m_app_update_zip = sfmt("%s/update.zip", m_appDir.c_str());
 	m_data_update_zip = sfmt("%s/update.zip", m_dataDir.c_str());
-	//
+
 	m_cacheDir = m_cfg.getString("GENERAL", "dir_cache", sfmt("%s/cache", m_dataDir.c_str()));
 	m_settingsDir = m_cfg.getString("GENERAL", "dir_settings", sfmt("%s/settings", m_dataDir.c_str()));
 	m_languagesDir = m_cfg.getString("GENERAL", "dir_languages", sfmt("%s/languages", m_dataDir.c_str()));
@@ -278,7 +279,6 @@ void CMenu::init(void)
 	m_cheatDir = m_cfg.getString("GENERAL", "dir_cheat", sfmt("%s/gct", m_txtCheatDir.c_str()));
 	m_wipDir = m_cfg.getString("GENERAL", "dir_wip", sfmt("%s/wip", m_txtCheatDir.c_str()));
 	m_listCacheDir = m_cfg.getString("GENERAL", "dir_list_cache", sfmt("%s/lists", m_cacheDir.c_str()));
-	//
 
 	DeviceHandler::SetWatchdog(m_cfg.getUInt("GENERAL", "watchdog_timeout", 10));
 
@@ -1882,7 +1882,10 @@ bool CMenu::_loadDmlList()
 
 	gprintf("%s\n", DeviceName[currentPartition]);
 	DeviceHandler::Instance()->Open_WBFS(currentPartition);
-	m_gameList.Load(sfmt(DML_DIR, DeviceName[currentPartition]), ".iso", m_cfg.getString("DML", "lastlanguage", "EN").c_str());
+	if(currentPartition != SD)
+		m_gameList.Load(sfmt(m_DMLgameDir.c_str(), DeviceName[currentPartition]), ".iso", m_cfg.getString("DML", "lastlanguage", "EN").c_str());
+	else
+		m_gameList.Load(sfmt(DML_DIR, DeviceName[currentPartition]), ".iso", m_cfg.getString("DML", "lastlanguage", "EN").c_str());
 	m_cfg.setString("DML", "lastlanguage", m_loc.getString(m_curLanguage, "gametdb_code", "EN"));
 	m_cfg.save();
 	return m_gameList.size() > 0 ? true : false;

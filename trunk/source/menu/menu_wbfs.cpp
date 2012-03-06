@@ -151,7 +151,7 @@ int CMenu::_GCgameInstaller(void *obj)
 	u32 nretry = m.m_cfg.getUInt("DML", "num_retries", 5);
 	u32 rsize = 1048576; //1MB
 
-	m_gcdump.Init(skip, comp, wexf, alig, nretry, rsize,DeviceName[currentPartition]);
+	m_gcdump.Init(skip, comp, wexf, alig, nretry, rsize,DeviceName[currentPartition],m.m_DMLgameDir.c_str());
 	
 	int ret;
 
@@ -207,10 +207,10 @@ int CMenu::_GCgameInstaller(void *obj)
 int CMenu::_GCcopyGame(void *obj)
 {
 	CMenu &m = *(CMenu *)obj;
-	char folder[12];
+	char folder[50];
 	char source[300];
 	char target[300];
-	snprintf(folder, sizeof(folder), DML_DIR, DeviceName[currentPartition]);
+	snprintf(folder, sizeof(folder), m.m_DMLgameDir.c_str(), DeviceName[currentPartition]);
 	snprintf(source, sizeof(source), "%s/%s", folder, m.m_cf.getHdr()->path);
 	memset(folder, 0, sizeof(folder));
 	snprintf(folder, sizeof(folder), DML_DIR, DeviceName[SD]);
@@ -338,9 +338,14 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						{
 							Disc_ReadGCHeader(&gcheader);
 							
-							char gcfolder[MAX_FAT_PATH];
+							char gcfolder[300];
+							char dmlgamedir[50];
+							if(currentPartition != SD)
+								sprintf(dmlgamedir,"%s",m_DMLgameDir.c_str());
+							else
+								sprintf(dmlgamedir,"%s",DML_DIR);
 							sprintf(gcfolder, "%s [%s]", gcheader.title, (char *)gcheader.id);
-							if (_searchGamesByID((const char *) gcheader.id).size() != 0 || DML_GameIsInstalled((char *)gcheader.id, DeviceName[currentPartition]) || DML_GameIsInstalled(gcfolder, DeviceName[currentPartition]))
+							if (_searchGamesByID((const char *) gcheader.id).size() != 0 || DML_GameIsInstalled((char *)gcheader.id, DeviceName[currentPartition], dmlgamedir) || DML_GameIsInstalled(gcfolder, DeviceName[currentPartition], dmlgamedir))
 							{
 								error(_t("wbfsoperr4", L"Game already installed"));
 								out = true;
@@ -370,9 +375,12 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						}
 						else
 						{
-							char folder[12];
+							char folder[50];
 							char source[300];
-							snprintf(folder, sizeof(folder), DML_DIR, DeviceName[currentPartition]);
+							if(currentPartition != SD)
+								snprintf(folder, sizeof(folder), m_DMLgameDir.c_str(), DeviceName[currentPartition]);
+							else
+								snprintf(folder, sizeof(folder), DML_DIR, DeviceName[currentPartition]);
 							snprintf(source, sizeof(source), "%s/%s", folder, m_cf.getHdr()->path);
 							fsop_deleteFolder(source);
 							upd_dml = true;
