@@ -323,6 +323,7 @@ void CMenu::_game(bool launch)
 	if (!launch)
 	{
 		SetupInput();
+		m_cf.stopCoverLoader();
 		_playGameSound();
 		_showGame();
 		m_gameSelected = true;
@@ -351,6 +352,7 @@ void CMenu::_game(bool launch)
 
 		if (BTN_HOME_PRESSED || BTN_B_PRESSED)
 		{
+			m_gameSound.Stop();
 			CheckGameSoundThread();
 			break;
 		}
@@ -527,7 +529,7 @@ void CMenu::_game(bool launch)
 			m_gameSound.Stop();
 			m_gameSelected = false;
 			m_fa.unload();
-			_setBg(m_mainBg, m_mainBgLQ);			
+			_setBg(m_mainBg, m_mainBgLQ);
 		}
 		if (m_show_zone_game)
 		{
@@ -661,6 +663,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 		m_gcfg1.save(true);
 		m_cfg.save(true);
 
+		CheckGameSoundThread();
 		cleanup();
 		Close_Inputs();
 		USBStorage_Deinit();
@@ -1307,12 +1310,10 @@ void CMenu::_playGameSound(void)
 	m_gamesound_changed = false;
 	if (m_bnrSndVol == 0) return;
 
-	m_cf.stopCoverLoader();
-	
+	CheckGameSoundThread();
 	unsigned int stack_size = (unsigned int)32768;
 	SMART_FREE(gameSoundThreadStack);
 	gameSoundThreadStack = smartMem2Alloc(stack_size);
-	CheckGameSoundThread();
 	LWP_CreateThread(&m_gameSoundThread, (void *(*)(void *))CMenu::_gameSoundThread, (void *)this, gameSoundThreadStack.get(), stack_size, 40);
 }
 
