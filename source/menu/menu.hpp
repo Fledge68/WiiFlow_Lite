@@ -81,7 +81,7 @@ private:
 	std::string m_curChanId;
 
 	u8 m_numCFVersions;
-	// 
+
 	std::string m_themeDataDir;
 	std::string m_appDir;
 	std::string m_dataDir;
@@ -101,6 +101,7 @@ private:
 	std::string m_settingsDir;
 	std::string m_languagesDir;
 	std::string m_listCacheDir;
+	std::string m_DMLgameDir;
 	/* Updates */
 	const char* m_app_update_url;
 	const char* m_data_update_url;

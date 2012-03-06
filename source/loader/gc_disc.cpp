@@ -152,7 +152,10 @@ s32 GCDump::DumpGame(progress_callback_t spinner, message_callback_t message, vo
 		s32 ret = Disc_ReadGCHeader(&gcheader);
 		Asciify2(gcheader.title);
 
-		snprintf(folder, sizeof(folder), DML_DIR, gamepartition);
+		if(strncmp(gamepartition, "sd",2) != 0)
+			snprintf(folder, sizeof(folder), dmlgamedir, gamepartition);
+		else
+			snprintf(folder, sizeof(folder), DML_DIR, gamepartition);
 		if(!fsop_DirExist(folder))
 			makedir(folder);
 		snprintf(folder, sizeof(folder), "%s:/games/%s [%.06s]%s", gamepartition, gcheader.title, (char *)gcheader.id, j ? "2" : "");

@@ -34,7 +34,7 @@ typedef void (*message_callback_t)(int message, int info, char *cinfo, void *use
 class GCDump
 {
 public:
-	void Init(bool skip, bool comp, bool wexf, bool align, u32 nretry, u32 rsize, const char* partition)
+	void Init(bool skip, bool comp, bool wexf, bool align, u32 nretry, u32 rsize, const char* partition, const char* m_DMLgameDir)
 	{
 		skiponerror = skip;
 		compressed = comp;
@@ -43,6 +43,7 @@ public:
 		gc_nbrretry = nretry;
 		gc_readsize = rsize;
 		gamepartition = partition;
+		dmlgamedir = m_DMLgameDir;
 		gc_skipped = 0;
 	}
 	s32 DumpGame(progress_callback_t spinner, message_callback_t message, void *spinner_data);
@@ -53,6 +54,7 @@ private:
 	bool compressed;
 	bool writeexfiles;
 	const char* gamepartition;
+	const char* dmlgamedir;
 	u8 Disc;
 	u8 Disc2;
 	u32 gc_nbrretry;
