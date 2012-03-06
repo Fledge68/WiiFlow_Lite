@@ -519,7 +519,6 @@ void CVideo::_showWaitMessages(CVideo *m)
 	m->m_waitMessages.clear();
 	//gprintf("Stop showing images\n");
 	m->m_showingWaitMessages = false;
-	m->CheckWaitThread(false);
 	gprintf("Stop showing images\n");
 }
 
@@ -527,13 +526,14 @@ void CVideo::hideWaitMessage()
 {
 	gprintf("Now hide wait message\n");
 	m_showWaitMessage = false;
+	CheckWaitThread(true);
 }
 
 void CVideo::CheckWaitThread(bool force)
 {
-	gprintf("Check wait thread start\n");
-	if (force || !m_showingWaitMessages ) //&& waitThread != LWP_THREAD_NULL))
+	if (force || !m_showingWaitMessages) //&& waitThread != LWP_THREAD_NULL))
 	{
+		gprintf("Check wait thread start\n");
 		if (waitThread != LWP_THREAD_NULL)
 		{
 			//m_showWaitMessage = false;
@@ -549,8 +549,8 @@ void CVideo::CheckWaitThread(bool force)
 
 			m_waitMessages.clear();
 		}
+		gprintf("Check wait thread end\n");
 	}
-	gprintf("Check wait thread end\n");
 }
 
 void CVideo::waitMessage(float delay)
@@ -593,6 +593,7 @@ void CVideo::waitMessage(const safe_vector<STexture> &tex, float delay, bool use
 		waitMessage(m_waitMessages[0]);
 	else if (m_waitMessages.size() > 1)
 	{
+		CheckWaitThread(true);
 		m_showWaitMessage = true;
 		unsigned int stack_size = (unsigned int)32768;  //Try 32768?
 		SMART_FREE(waitThreadStack);
