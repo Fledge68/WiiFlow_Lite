@@ -43,7 +43,7 @@ public:
 		gc_nbrretry = nretry;
 		gc_readsize = rsize;
 		gamepartition = partition;
-		dmlgamedir = m_DMLgameDir;
+		usb_dml_game_dir = m_DMLgameDir;
 		gc_skipped = 0;
 	}
 	s32 DumpGame(progress_callback_t spinner, message_callback_t message, void *spinner_data);
@@ -54,7 +54,7 @@ private:
 	bool compressed;
 	bool writeexfiles;
 	const char* gamepartition;
-	const char* dmlgamedir;
+	const char* usb_dml_game_dir;
 	u8 Disc;
 	u8 Disc2;
 	u32 gc_nbrretry;

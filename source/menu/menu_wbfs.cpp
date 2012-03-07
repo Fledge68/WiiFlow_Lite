@@ -344,11 +344,8 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 							
 							char gcfolder[300];
 							char dmlgamedir[50];
-							if(currentPartition != SD)
-								sprintf(dmlgamedir,"%s",m_DMLgameDir.c_str());
-							else
-								sprintf(dmlgamedir,"%s",DML_DIR);
-							sprintf(gcfolder, "%s [%s]", gcheader.title, (char *)gcheader.id);
+							snprintf(dmlgamedir, sizeof(dmlgamedir), "%s", (currentPartition != SD) ? m_DMLgameDir.c_str() : DML_DIR);
+							snprintf(gcfolder, sizeof(gcfolder), "%s [%s]", gcheader.title, (char *)gcheader.id);
 							if (_searchGamesByID((const char *) gcheader.id).size() != 0 || DML_GameIsInstalled((char *)gcheader.id, DeviceName[currentPartition], dmlgamedir) || DML_GameIsInstalled(gcfolder, DeviceName[currentPartition], dmlgamedir))
 							{
 								error(_t("wbfsoperr4", L"Game already installed"));
@@ -379,13 +376,8 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						}
 						else
 						{
-							char folder[50];
 							char source[300];
-							if(currentPartition != SD)
-								snprintf(folder, sizeof(folder), m_DMLgameDir.c_str(), DeviceName[currentPartition]);
-							else
-								snprintf(folder, sizeof(folder), DML_DIR, DeviceName[currentPartition]);
-							snprintf(source, sizeof(source), "%s/%s", folder, m_cf.getHdr()->path);
+							snprintf(source, sizeof(source), "%s", sfmt((char *)m_cf.getHdr()->path, DeviceName[currentPartition]).c_str());
 							fsop_deleteFolder(source);
 							upd_dml = true;
 						}

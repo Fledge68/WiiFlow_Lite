@@ -450,13 +450,13 @@ void CMenu::_game(bool launch)
 					sprintf(gcfolder, "%s [%s]", m_cf.getTitle().toUTF8().c_str(), (char *)hdr->hdr.id);
 					if (DML_GameIsInstalled((char *)hdr->hdr.id, DeviceName[SD], DML_DIR))
 					{
-						memset(hdr->path,0,sizeof(hdr->path));
-						sprintf(hdr->path,"%s",(char*)hdr->hdr.id);
+						memset(hdr->path, 0, sizeof(hdr->path));
+						snprintf(hdr->path, sizeof(hdr->path), "%s", (char*)hdr->hdr.id);
 					}
 					else if(DML_GameIsInstalled(gcfolder, DeviceName[SD], DML_DIR))
 					{
-						memset(hdr->path,0,sizeof(hdr->path));
-						sprintf(hdr->path,"%s",gcfolder);
+						memset(hdr->path, 0, sizeof(hdr->path));
+						snprintf(hdr->path, sizeof(hdr->path), "%s", gcfolder);
 					}
 					else if(!DML_GameIsInstalled(hdr->path, DeviceName[SD], DML_DIR) && !_wbfsOp(CMenu::WO_COPY_GAME))
 						break;
