@@ -944,6 +944,7 @@ private:
 	static int _gameInstaller(void *obj);	
 	static int _GCgameInstaller(void *obj);
 	static int _GCcopyGame(void *obj);
+	float m_progress; 
 	wstringEx _optBoolToString(int b);
 	void _stopSounds(void);
 

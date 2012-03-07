@@ -62,12 +62,12 @@ static void slotLight(bool state)
 void CMenu::_addDiscProgress(int status, int total, void *user_data)
 {
 	CMenu &m = *(CMenu *)user_data;
-	float progress = total == 0 ? 0.f : (float)status / (float)total;
+	m.m_progress = total == 0 ? 0.f : (float)status / (float)total;
 	// Don't synchronize too often
-	if (progress - m.m_thrdProgress >= 0.01f)
+	if(m.m_progress - m.m_thrdProgress >= 0.01f)
 	{
 		LWP_MutexLock(m.m_mutex);
-		m._setThrdMsg(L"", progress);
+		m._setThrdMsg(L"", m.m_progress);
 		LWP_MutexUnlock(m.m_mutex);
 	}
 }
@@ -77,23 +77,23 @@ void CMenu::_Messenger(int message, int info, char *cinfo, void *user_data)
 	CMenu &m = *(CMenu *)user_data;
 	LWP_MutexLock(m.m_mutex);
 	if(message == 1)
-		m._setThrdMsg(wfmt(m._fmt("wbfsop14", L"Calculating space needed for %s...\n Please insert disc %d to continue"), cinfo, info), 0.f);
+		m._setThrdMsg(wfmt(m._fmt("wbfsop23", L"Calculating space needed for %s...\n Please insert disc %d to continue"), cinfo, info), m.m_progress);
 	if(message == 2)
-		m._setThrdMsg(wfmt(m._fmt("wbfsop15", L"Calculating space needed for %s"), cinfo), 0.f);
+		m._setThrdMsg(wfmt(m._fmt("wbfsop15", L"Calculating space needed for %s"), cinfo), m.m_progress);
 	if(message == 3)
-		m._setThrdMsg(wfmt(m._fmt("wbfsop16", L"Installing %s"), cinfo), 0.f);
+		m._setThrdMsg(wfmt(m._fmt("wbfsop16", L"Installing %s"), cinfo), m.m_progress);
 	if(message == 4)
-		m._setThrdMsg(wfmt(m._fmt("wbfsop17", L"Installing %s disc %d/2"), cinfo, info), 0.f);
+		m._setThrdMsg(wfmt(m._fmt("wbfsop17", L"Installing %s disc %d/2"), cinfo, info), m.m_progress);
 	if(message == 5)
-		m._setThrdMsg(m._t("wbfsop18", L"Don't try to trick me with a Wii disc!!"), 0.f);
+		m._setThrdMsg(m._t("wbfsop18", L"Don't try to trick me with a Wii disc!!"), m.m_progress);
 	if(message == 6)	
-		m._setThrdMsg(m._t("wbfsop19", L"This is not a GC disc!!"), 0.f);
+		m._setThrdMsg(m._t("wbfsop19", L"This is not a GC disc!!"), m.m_progress);
 	if(message == 7)
-		m._setThrdMsg(wfmt(m._fmt("wbfsop20", L"You inserted disc %d again!!"), info), 0.f);
+		m._setThrdMsg(wfmt(m._fmt("wbfsop20", L"You inserted disc %d again!!"), info), m.m_progress);
 	if(message == 8)
-		m._setThrdMsg(m._t("wbfsop21", L"This is a disc of another game!!"), 0.f);
+		m._setThrdMsg(m._t("wbfsop21", L"This is a disc of another game!!"), m.m_progress);
 	if(message == 9)
-		m._setThrdMsg(wfmt(m._fmt("wbfsop22", L"Installing %s...\n Please insert disc 2 to continue"), cinfo), 1.f);
+		m._setThrdMsg(wfmt(m._fmt("wbfsop22", L"Installing %s...\n Please insert disc 2 to continue"), cinfo), m.m_progress);
 	LWP_MutexUnlock(m.m_mutex);
 }
 
@@ -150,10 +150,14 @@ int CMenu::_GCgameInstaller(void *obj)
 	bool alig = m.m_cfg.getBool("DML", "force_32k_align_files", false);
 	u32 nretry = m.m_cfg.getUInt("DML", "num_retries", 5);
 	u32 rsize = 1048576; //1MB
+	
+	if(skip)
+		rsize = 8192; // Use small chunks when skip on error is enabled
 
 	m_gcdump.Init(skip, comp, wexf, alig, nretry, rsize,DeviceName[currentPartition],m.m_DMLgameDir.c_str());
 	
-	int ret;
+	int ret;	
+	m.m_progress = 0.f;
 
 	if (!DeviceHandler::Instance()->IsInserted(currentPartition))
 	{
