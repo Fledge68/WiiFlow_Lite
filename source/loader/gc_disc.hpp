@@ -61,7 +61,8 @@ private:
 	u32 gc_error;
 	u32 gc_retry;
 	u32 gc_skipped;
-	u32 gc_readsize;	
+	u32 gc_readsize;
+	u32 gc_done;
 	u32 ID;
 	u32 ID2;	
 	u32 ApploaderSize;
@@ -102,7 +103,8 @@ private:
 		};
 	} FST;
 	s32 __DiscReadRaw(void *outbuf, u32 offset, u32 length);
-	s32 __DiscWrite(char * path, u32 offset, u32 length, u32 already_done, u8 *ReadBuffer, progress_callback_t spinner, void *spinner_data);
-	s32 __DiscWriteFile(FILE *f, u32 offset, u32 length, u32 already_done, u8 *ReadBuffer, progress_callback_t spinner, void *spinner_data);
+	s32 __DiscWrite(char * path, u32 offset, u32 length, u8 *ReadBuffer, progress_callback_t spinner, void *spinner_data);
+	s32 __DiscWriteFile(FILE *f, u32 offset, u32 length, u8 *ReadBuffer, progress_callback_t spinner, void *spinner_data);
+	bool __WaitForDisc(u8 dsc, char *minfo, u32 msg, message_callback_t message, void *message_data);
 };
 #endif
