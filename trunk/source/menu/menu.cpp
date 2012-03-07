@@ -249,7 +249,7 @@ void CMenu::init(void)
 	}
 	else
 		m_show_dml = MIOSisDML();
-	m_DMLgameDir = m_cfg.getString("DML", "dir_usb_games", DML_DIR);
+	m_DMLgameDir = sfmt("%%s:/%s", m_cfg.getString("DML", "dir_usb_games", "games").c_str());
 
 	m_cfg.getString("NAND", "path", "").c_str();
 	m_cfg.getInt("NAND", "partition", 0);

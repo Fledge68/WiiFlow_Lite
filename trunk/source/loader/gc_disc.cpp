@@ -218,9 +218,9 @@ s32 GCDump::DumpGame(progress_callback_t spinner, message_callback_t message, vo
 	char *FSTNameOff = (char *)NULL;
 
 	char folder[MAX_FAT_PATH];
-	bzero(folder, MAX_FAT_PATH);	
+	bzero(folder, MAX_FAT_PATH);
 	char gamepath[MAX_FAT_PATH];
-	bzero(gamepath, MAX_FAT_PATH);	
+	bzero(gamepath, MAX_FAT_PATH);
 	char minfo[74];
 
 	for( j=0; j<2; ++j)
@@ -230,16 +230,20 @@ s32 GCDump::DumpGame(progress_callback_t spinner, message_callback_t message, vo
 
 		s32 ret = Disc_ReadGCHeader(&gcheader);
 		Asciify2(gcheader.title);
-		
-		if(strncmp(gamepartition, "sd", 2) != 0)
-			snprintf(folder, sizeof(folder), dmlgamedir, gamepartition); //WTF??
-		else
-			snprintf(folder, sizeof(folder), DML_DIR, gamepartition);
+
+		snprintf(folder, sizeof(folder), sfmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition).c_str());
 		if(!fsop_DirExist(folder))
+		{
+			gprintf("Creating directory: %s", folder);
 			makedir(folder);
-		snprintf(folder, sizeof(folder), "%s:/games/%s [%.06s]%s", gamepartition, gcheader.title, (char *)gcheader.id, j ? "2" : "");
+		}
+		memset(folder, 0, sizeof(folder));
+		snprintf(folder, sizeof(folder), "%s/%s [%.06s]%s", sfmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition).c_str(), gcheader.title, (char *)gcheader.id, j ? "2" : "");
 		if(!fsop_DirExist(folder))
+		{
+			gprintf("Creating directory: %s", folder);
 			makedir(folder);
+		}
 
 		ret = __DiscReadRaw(ReadBuffer, 0, 0x440);
 		if(ret > 0)
@@ -298,9 +302,13 @@ s32 GCDump::DumpGame(progress_callback_t spinner, message_callback_t message, vo
 
 		if(writeexfiles)
 		{
-			snprintf(folder, sizeof(folder), "%s:/games/%s [%.06s]%s/sys", gamepartition, gcheader.title, (char *)gcheader.id, j ? "2" : "");	
+			memset(folder, 0, sizeof(folder));
+			snprintf(folder, sizeof(folder), "%s/%s [%.06s]%s/sys", sfmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition).c_str(), gcheader.title, (char *)gcheader.id, j ? "2" : "");
 			if(!fsop_DirExist(folder))
+			{
+				gprintf("Creating directory: %s", folder);
 				makedir(folder);
+			}
 
 			gprintf("Writing %s/boot.bin\n", folder);
 			snprintf(gamepath, sizeof(gamepath), "%s/boot.bin", folder);
@@ -315,7 +323,7 @@ s32 GCDump::DumpGame(progress_callback_t spinner, message_callback_t message, vo
 			gc_done += __DiscWrite(gamepath, 0x2440, ApploaderSize, ReadBuffer, spinner, spinner_data);
 		}
 
-		snprintf(gamepath, sizeof(gamepath), "%s:/games/%s [%.06s]%s/game.iso", gamepartition, gcheader.title, (char *)gcheader.id, j ? "2" : "");
+		snprintf(gamepath, sizeof(gamepath), "%s/%s [%.06s]%s/game.iso", sfmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition).c_str(), gcheader.title, (char *)gcheader.id, j ? "2" : "");
 
 		gprintf("Writing %s\n", gamepath);
 		if(compressed)
