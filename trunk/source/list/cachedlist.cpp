@@ -57,7 +57,7 @@ void CachedList<T>::Load(string path, string containing, string m_lastLanguage)	
 		
 		safe_vector<string> pathlist;
 		list.GetPaths(pathlist, containing, path, m_wbfsFS);
-		list.GetHeaders(pathlist, *this, m_settingsDir, m_curLanguage);
+		list.GetHeaders(pathlist, *this, m_settingsDir, m_curLanguage, m_DMLgameDir);
 
 		path.append("/touch.db");
 		FILE *file = fopen(path.c_str(), "wb");
