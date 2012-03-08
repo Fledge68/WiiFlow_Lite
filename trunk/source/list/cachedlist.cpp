@@ -7,7 +7,7 @@ void CachedList<T>::Load(string path, string containing, string m_lastLanguage)	
 	gprintf("\nLoading files containing %s in %s\n", containing.c_str(), path.c_str());
 	m_loaded = false;
 	m_database = sfmt("%s/%s.db", m_cacheDir.c_str(), (make_db_name(path)).c_str());
-	
+
 	m_wbfsFS = strncasecmp(DeviceHandler::Instance()->PathToFSName(path.c_str()), "WBFS", 4) == 0;
 	
 	bool update_games = false;
@@ -23,9 +23,11 @@ void CachedList<T>::Load(string path, string containing, string m_lastLanguage)	
 		
 		update_games = strcasestr(path.c_str(), "wbfs") != NULL && force_update[COVERFLOW_USB];
 		update_homebrew = strcasestr(path.c_str(), "apps") != NULL && force_update[COVERFLOW_HOMEBREW];
-		update_dml = strcasestr(path.c_str(), "games") != NULL && force_update[COVERFLOW_DML];
-		
-		gprintf("update_games=%d update_homebrew=%d\n", update_games, update_homebrew);
+
+		const char* partition = DeviceName[DeviceHandler::Instance()->PathToDriveType(path.c_str())];
+		update_dml = strcasestr(path.c_str(), sfmt(strncmp(partition, "sd", 2) != 0 ? m_DMLgameDir.c_str() : "%s:/games", partition).c_str()) != NULL && force_update[COVERFLOW_DML];
+
+		gprintf("update_games=%d update_homebrew=%d update_dml=%d\n", update_games, update_homebrew, update_dml);
 		if(update_games || update_homebrew || update_dml)
 			remove(m_database.c_str());
 
