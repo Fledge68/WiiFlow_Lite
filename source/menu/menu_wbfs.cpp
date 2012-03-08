@@ -377,7 +377,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						else
 						{
 							char source[300];
-							snprintf(source, sizeof(source), "%s", sfmt((char *)m_cf.getHdr()->path, DeviceName[currentPartition]).c_str());
+							snprintf(source, sizeof(source), "%s/%s", sfmt((currentPartition != SD) ? m_DMLgameDir.c_str() : DML_DIR, DeviceName[currentPartition]).c_str(), (char *)m_cf.getHdr()->path);
 							fsop_deleteFolder(source);
 							upd_dml = true;
 						}

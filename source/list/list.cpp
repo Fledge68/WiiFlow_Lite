@@ -82,7 +82,7 @@ void CList<T>::GetPaths(safe_vector<string> &pathlist, string containing, string
 }
 
 template <>
-void CList<string>::GetHeaders(safe_vector<string> pathlist, safe_vector<string> &headerlist, string, string)
+void CList<string>::GetHeaders(safe_vector<string> pathlist, safe_vector<string> &headerlist, string, string, string)
 {
 	//gprintf("Getting headers for CList<string>\n");
 
@@ -94,7 +94,7 @@ void CList<string>::GetHeaders(safe_vector<string> pathlist, safe_vector<string>
 }
 
 template <>
-void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<dir_discHdr> &headerlist, string settingsDir, string curLanguage)
+void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<dir_discHdr> &headerlist, string settingsDir, string curLanguage, string DMLgameUSBDir)
 {
 	if(pathlist.size() < 1) return;
 	headerlist.reserve(pathlist.size() + headerlist.size());
@@ -131,7 +131,8 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 		if (wbfs || (*itr).rfind(".iso")  != string::npos || (*itr).rfind(".ISO")  != string::npos)
 		{
 			char* filename = &(*itr)[(*itr).find_last_of('/')+1];
-			if(strcasecmp(filename, "game.iso") == 0 && strstr((*itr).c_str(), ":/games/") != NULL)
+			const char* dml_partition = DeviceName[DeviceHandler::Instance()->PathToDriveType((*itr).c_str())];
+			if(strcasecmp(filename, "game.iso") == 0 && strstr((*itr).c_str(), sfmt((strncmp(dml_partition, "sd", 2) != 0) ? DMLgameUSBDir.c_str() : DML_DIR, dml_partition).c_str()) != NULL)
 			{				
 				FILE *fp = fopen((*itr).c_str(), "rb");
 				if( fp )
