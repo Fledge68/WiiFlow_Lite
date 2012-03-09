@@ -321,7 +321,14 @@ s32 Disc_Type(bool gc)
 		check = GC_MAGIC;
 		struct gc_discHdr *header = (struct gc_discHdr *)buffer;
 		ret = Disc_ReadGCHeader(header);
-		magic = header->magic;
+		if(strcmp((char *)header->id, "GCOPDV") == 0)
+		{
+			magic = 0xc2339f3d;
+		}
+		else
+		{
+			magic = header->magic;
+		}
 	}
 
 	if (ret < 0) return ret;
