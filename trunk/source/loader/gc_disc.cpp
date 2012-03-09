@@ -57,6 +57,16 @@ s32 GCDump::__DiscReadRaw(void *outbuf, u32 offset, u32 length)
 			WDVD_LowRequestError(&gc_error);			
 			if(gc_error == 0x30200 || gc_error == 0x30201 || gc_error == 0x31100)
 			{
+				if(gc_retry >= gc_nbrretry && waitonerror)
+				{
+					__WaitForDisc(Disc, 10);
+					gc_retry = 0;
+					waitonerror = false;
+					if(FSTTotal > FSTSize)
+						message(4, Disc+1, minfo, u_data);
+					else
+						message(3, 0, minfo, u_data);
+				}
 				if(gc_retry >= gc_nbrretry)
 				{
 					if(!skiponerror)
@@ -75,6 +85,14 @@ s32 GCDump::__DiscReadRaw(void *outbuf, u32 offset, u32 length)
 				}
 				gc_retry++;
 			}
+			else if(gc_error == 0x1023a00)
+			{
+				__WaitForDisc(Disc, 11);
+				if(FSTTotal > FSTSize)
+					message(4, Disc+1, minfo, u_data);
+				else
+					message(3, 0, minfo, u_data);
+			}
 			else
 			{
 				gprintf("Read error(%x) at offset: 0x%08x.\n", gc_error, offset);
@@ -92,19 +110,19 @@ s32 GCDump::__DiscReadRaw(void *outbuf, u32 offset, u32 length)
 	return -1;		
 }
 
-s32 GCDump::__DiscWrite(char * path, u32 offset, u32 length, u8 *ReadBuffer, progress_callback_t spinner, void *spinner_data)
+s32 GCDump::__DiscWrite(char * path, u32 offset, u32 length, u8 *ReadBuffer)
 {
 	gprintf("__DiscWrite(%s, 0x%08x, %x)\n", path, offset, length);
 	u32 wrote = 0;
 	FILE *f = fopen(path, "wb");
 
-	wrote = __DiscWriteFile(f, offset, length, ReadBuffer, spinner, spinner_data);
+	wrote = __DiscWriteFile(f, offset, length, ReadBuffer);
 	
 	SAFE_CLOSE(f);
 	return wrote;
 }
 
-s32 GCDump::__DiscWriteFile(FILE *f, u32 offset, u32 length, u8 *ReadBuffer, progress_callback_t spinner, void *spinner_data)
+s32 GCDump::__DiscWriteFile(FILE *f, u32 offset, u32 length, u8 *ReadBuffer)
 {
 	u32 toread = 0;
 	u32 wrote = 0;
@@ -123,23 +141,26 @@ s32 GCDump::__DiscWriteFile(FILE *f, u32 offset, u32 length, u8 *ReadBuffer, pro
 		length -= toread;
 		gc_done += toread;
 		if(spinner)
-			spinner(gc_done/1024, DiscSizeCalculated, spinner_data);
+			spinner(gc_done/1024, DiscSizeCalculated, u_data);
 	}
 	return wrote;
 }
 
-bool GCDump::__WaitForDisc(u8 dsc, char *minfo, u32 msg, message_callback_t message, void *message_data)
+bool GCDump::__WaitForDisc(u8 dsc, u32 msg)
 {
 	u8 *ReadBuffer = (u8 *)MEM2_alloc(0x440);
 	
 	u32 cover = 0;
-	bool done = false;
-	*(u32*)0xCD0000C0 |= 0x20;
+	bool done = false;	
 	while(!done)
-	{
-		message( msg, dsc+1, minfo, message_data);
+	{				
+		message( msg, dsc+1, minfo, u_data);		
 		while(1)
 		{
+			*(u32*)0xCD0000C0 |= 0x20;
+			usleep( 1000000 );
+			*(u32*)0xCD0000C0 &= ~0x20;
+			usleep( 1000000 );
 			WDVD_GetCoverStatus(&cover);
 			if(!(cover & 0x2))
 				break;
@@ -147,6 +168,10 @@ bool GCDump::__WaitForDisc(u8 dsc, char *minfo, u32 msg, message_callback_t mess
 
 		while(1)
 		{
+			*(u32*)0xCD0000C0 |= 0x20;
+			usleep( 1000000 );
+			*(u32*)0xCD0000C0 &= ~0x20;
+			usleep( 1000000 );
 			if(Disc_Wait() < 0)
 				continue;
 
@@ -169,33 +194,32 @@ bool GCDump::__WaitForDisc(u8 dsc, char *minfo, u32 msg, message_callback_t mess
 				Disc2 = *(vu8*)(ReadBuffer+0x06);
 							
 				if(ID == ID2 && Disc2 == dsc)
-				{
-					*(u32*)0xCD0000C0 &= ~0x20;
+				{					
 					done = true;
 					break;
 				}
 				else if(ID == ID2 && Disc2 != dsc)
 				{
-					message( 7, dsc+1, NULL, message_data);
+					message( 7, Disc2+1, NULL, u_data);
 					usleep( 5000000 );
 					break;
 				}
 				else if(ID != ID2)
 				{
-					message( 8, 0, NULL, message_data);
+					message( 8, 0, NULL, u_data);
 					usleep( 5000000 );
 					break;
 				}
 			}
 			else if(Disc_IsWii() == 0)
 			{
-				message( 5, 0, NULL, message_data);
+				message( 5, 0, NULL, u_data);
 				usleep( 5000000 );
 				break;
 			}
 			else
 			{
-				message( 6, 0, NULL, message_data);
+				message( 6, 0, NULL, u_data);
 				usleep( 5000000 );
 				break;
 				
@@ -206,7 +230,7 @@ bool GCDump::__WaitForDisc(u8 dsc, char *minfo, u32 msg, message_callback_t mess
 	return done;
 }
 
-s32 GCDump::DumpGame(progress_callback_t spinner, message_callback_t message, void *spinner_data)
+s32 GCDump::DumpGame()
 {	
 	static gc_discHdr gcheader ATTRIBUTE_ALIGN(32);
 
@@ -220,8 +244,7 @@ s32 GCDump::DumpGame(progress_callback_t spinner, message_callback_t message, vo
 	char folder[MAX_FAT_PATH];
 	bzero(folder, MAX_FAT_PATH);
 	char gamepath[MAX_FAT_PATH];
-	bzero(gamepath, MAX_FAT_PATH);
-	char minfo[74];
+	bzero(gamepath, MAX_FAT_PATH);	
 
 	for( j=0; j<2; ++j)
 	{
@@ -253,6 +276,7 @@ s32 GCDump::DumpGame(progress_callback_t spinner, message_callback_t message, vo
 		}
 
 		ID = *(vu32*)(ReadBuffer);
+		Disc = *(vu8*)(ReadBuffer+0x06);
 		ApploaderSize = *(vu32*)(ReadBuffer+0x400);
 		DOLOffset = *(vu32*)(ReadBuffer+0x420);
 		FSTOffset = *(vu32*)(ReadBuffer+0x424);
@@ -285,9 +309,9 @@ s32 GCDump::DumpGame(progress_callback_t spinner, message_callback_t message, vo
 		snprintf(minfo, sizeof(minfo), "[%.06s] %s", (char *)gcheader.id, gcheader.title);
 
 		if(FSTTotal > FSTSize)
-			message(4, j+1, minfo, spinner_data);
+			message(4, j+1, minfo, u_data);
 		else
-			message(3, 0, minfo, spinner_data);
+			message(3, 0, minfo, u_data);
 
 		gprintf("Dumping: %s %s\n", gcheader.title, compressed ? "compressed" : "full");
 
@@ -312,15 +336,15 @@ s32 GCDump::DumpGame(progress_callback_t spinner, message_callback_t message, vo
 
 			gprintf("Writing %s/boot.bin\n", folder);
 			snprintf(gamepath, sizeof(gamepath), "%s/boot.bin", folder);
-			gc_done += __DiscWrite(gamepath, 0, 0x440, ReadBuffer, spinner, spinner_data);
+			gc_done += __DiscWrite(gamepath, 0, 0x440, ReadBuffer);
 
 			gprintf("Writing %s/bi2.bin\n", folder);
 			snprintf(gamepath, sizeof(gamepath), "%s/bi2.bin", folder);
-			gc_done += __DiscWrite(gamepath, 0x440, 0x2000, ReadBuffer, spinner, spinner_data);
+			gc_done += __DiscWrite(gamepath, 0x440, 0x2000, ReadBuffer);
 
 			gprintf("Writing %s/apploader.img\n", folder);
 			snprintf(gamepath, sizeof(gamepath), "%s/apploader.img", folder);
-			gc_done += __DiscWrite(gamepath, 0x2440, ApploaderSize, ReadBuffer, spinner, spinner_data);
+			gc_done += __DiscWrite(gamepath, 0x2440, ApploaderSize, ReadBuffer);
 		}
 
 		snprintf(gamepath, sizeof(gamepath), "%s/%s [%.06s]%s/game.iso", sfmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition).c_str(), gcheader.title, (char *)gcheader.id, j ? "2" : "");
@@ -335,7 +359,7 @@ s32 GCDump::DumpGame(progress_callback_t spinner, message_callback_t message, vo
 			FILE *f;
 			f = fopen(gamepath, "wb");
 
-			ret = __DiscWriteFile(f, 0, (FSTOffset + FSTSize), ReadBuffer, spinner, spinner_data);
+			ret = __DiscWriteFile(f, 0, (FSTOffset + FSTSize), ReadBuffer);
 			wrote += (FSTOffset + FSTSize);
 			gc_done += wrote;
 	
@@ -369,7 +393,7 @@ s32 GCDump::DumpGame(progress_callback_t spinner, message_callback_t message, vo
 							break;
 						}
 					}
-					ret = __DiscWriteFile(f, fst[i].FileOffset, fst[i].FileLength, ReadBuffer, spinner, spinner_data);
+					ret = __DiscWriteFile(f, fst[i].FileOffset, fst[i].FileLength, ReadBuffer);
 					gprintf("Writing: %d/%d: %s from 0x%08x to 0x%08x(%i)\n", i, FSTEnt, FSTNameOff + fst[i].NameOffset, fst[i].FileOffset, wrote, align);
 					if( ret >= 0 )
 					{
@@ -395,7 +419,7 @@ s32 GCDump::DumpGame(progress_callback_t spinner, message_callback_t message, vo
 		}
 		else
 		{
-			ret = __DiscWrite(gamepath, 0, DiscSize, ReadBuffer, spinner, spinner_data);
+			ret = __DiscWrite(gamepath, 0, DiscSize, ReadBuffer);
 			if( ret < 0 )
 			{
 				MEM2_free(ReadBuffer);
@@ -408,7 +432,7 @@ s32 GCDump::DumpGame(progress_callback_t spinner, message_callback_t message, vo
 		MEM2_free(FSTBuffer);
 		
 		if(FSTTotal > FSTSize && !j)
-			__WaitForDisc(1, minfo, 9, message, spinner_data);
+			__WaitForDisc(1, 9);
 		else
 			break;
 	}
@@ -418,15 +442,13 @@ s32 GCDump::DumpGame(progress_callback_t spinner, message_callback_t message, vo
 	return gc_skipped;	
 }
 
-s32 GCDump::CheckSpace(u32 *needed, bool comp, message_callback_t message, void *message_data)
+s32 GCDump::CheckSpace(u32 *needed, bool comp)
 {
 	static gc_discHdr gcheader ATTRIBUTE_ALIGN(32);
 
 	u8 *ReadBuffer = (u8 *)MEM2_alloc(0x440);
 	u32 size = 0;
 	u32 j;
-
-	char minfo[74];
 
 	for( j=0; j<2; ++j)
 	{
@@ -454,7 +476,7 @@ s32 GCDump::CheckSpace(u32 *needed, bool comp, message_callback_t message, void 
 
 		snprintf(minfo, sizeof(minfo), "[%.06s] %s", (char *)gcheader.id, gcheader.title);
 
-		message( 2, 0, minfo, message_data);	
+		message( 2, 0, minfo, u_data);	
 
 		if(writeexfiles)
 		{
@@ -499,7 +521,7 @@ s32 GCDump::CheckSpace(u32 *needed, bool comp, message_callback_t message, void 
 					{
 						if((fst[i].FileOffset & (align-1)) == 0 || force_32k_align)
 						{
-							correction = 0x00;
+							correction = 0;
 							while(((size+correction) & (align-1)) != 0)
 								correction++;
 							size += correction;
@@ -515,14 +537,14 @@ s32 GCDump::CheckSpace(u32 *needed, bool comp, message_callback_t message, void 
 		if(FSTTotal > FSTSize)
 		{
 			if(Disc == 0 && j == 0)
-				__WaitForDisc(1, minfo, 1, message, message_data);
+				__WaitForDisc(1, 1);
 			else if(Disc == 0x01 && j == 0)
-				__WaitForDisc(0, minfo, 1, message, message_data);
+				__WaitForDisc(0, 1);
 			
 			if(j == 1)
 			{
 				if(Disc == 0x01)
-					__WaitForDisc(0, minfo, 1, message, message_data);				
+					__WaitForDisc(0, 1);				
 
 				break;
 			}
@@ -531,9 +553,31 @@ s32 GCDump::CheckSpace(u32 *needed, bool comp, message_callback_t message, void 
 			break;		
 	}
 	MEM2_free(ReadBuffer);
-	DiscSizeCalculated = (size/1024);
-	*needed = size/0x8000;
-	gprintf("Free space needed: %d Mb (%x blocks)\n", (size/1024)/1024, size/0x8000);
+	DiscSizeCalculated = size/0x400;
+	*needed = (size/0x8000) >> 2;
+	gprintf("Free space needed: %d Mb (%d blocks)\n", size/0x100000, (size/0x8000) >> 2);
+	return 0;
+}
+
+u32 GCDump::GetFreeSpace(char *path, u32 Value)
+{
+	struct statvfs stats;
+	memset(&stats, 0, sizeof(stats));
+	statvfs(path , &stats);
+	
+	u64 free = (u64)stats.f_frsize * (u64)stats.f_bfree;
+	
+	switch(Value)
+	{
+		case KB:
+			return free/0x400;
+		case BL:
+			return (free/0x8000) >> 2;	
+		case MB:
+			return free/0x100000;
+		case GB:
+			return free/0x40000000;		
+	}	
 	return 0;
 }
 

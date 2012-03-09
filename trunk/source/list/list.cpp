@@ -133,20 +133,27 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 			char* filename = &(*itr)[(*itr).find_last_of('/')+1];
 			const char* dml_partition = DeviceName[DeviceHandler::Instance()->PathToDriveType((*itr).c_str())];
 			if(strcasecmp(filename, "game.iso") == 0 && strstr((*itr).c_str(), sfmt((strncmp(dml_partition, "sd", 2) != 0) ? DMLgameUSBDir.c_str() : DML_DIR, dml_partition).c_str()) != NULL)
-			{				
+			{
 				FILE *fp = fopen((*itr).c_str(), "rb");
 				if( fp )
 				{
-					fseek( fp, 0x00, SEEK_SET );
+					fseek( fp, 0, SEEK_SET );
 					fread( tmp.hdr.id, 1, 6, fp );
+					
+					u8 gc_disc[1];
+					
+					fread(gc_disc, 1, 1, fp);
 					
 					GTitle = custom_titles.getString( "TITLES", (const char *) tmp.hdr.id );
 					int ccolor = custom_titles.getColor( "COVERS", (const char *) tmp.hdr.id, tmp.hdr.casecolor ).intVal();
 					
 					if( GTitle.size() > 0 || ( gameTDB.IsLoaded() && gameTDB.GetTitle( (char *)tmp.hdr.id, GTitle ) ) )
-					{					
+					{							
 						mbstowcs( tmp.title, GTitle.c_str(), sizeof(tmp.title) );
 						Asciify( tmp.title );
+						if(gc_disc[0])
+							wcslcat(tmp.title, L" disc 2", sizeof(tmp.title));
+						
 						tmp.hdr.casecolor = ccolor != 1 ? ccolor : gameTDB.GetCaseColor( (char *)tmp.hdr.id );
 						if( tmp.hdr.casecolor == 0xffffffff )
 							tmp.hdr.casecolor = 0;
@@ -165,9 +172,12 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 					SAFE_CLOSE(fp);
 					
 					if ( tmp.hdr.gc_magic == 0xc2339f3d )
-					{
+					{							
 						mbstowcs( tmp.title, (const char *)tmp.hdr.title, sizeof( tmp.hdr.title ) );
 						Asciify(tmp.title);
+						if(gc_disc[0])
+							wcslcat(tmp.title, L" disc 2", sizeof(tmp.title));
+						
 						tmp.hdr.casecolor = 0;
 						(*itr)[(*itr).find_last_of('/')] = 0;
 						(*itr).assign(&(*itr)[(*itr).find_last_of('/') + 1]);
