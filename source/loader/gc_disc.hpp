@@ -31,10 +31,18 @@
 typedef void (*progress_callback_t)(int status,int total,void *user_data);
 typedef void (*message_callback_t)(int message, int info, char *cinfo, void *user_data);
 
+enum spcall
+{
+	KB = 0,
+	BL,
+	MB,
+	GB,
+};
+
 class GCDump
 {
 public:
-	void Init(bool skip, bool comp, bool wexf, bool align, u32 nretry, u32 rsize, const char* partition, const char* m_DMLgameDir)
+	void Init(bool skip, bool comp, bool wexf, bool align, u32 nretry, u32 rsize, const char* partition, const char* m_DMLgameDir, progress_callback_t i_spinner, message_callback_t i_message, void *i_udata)
 	{
 		skiponerror = skip;
 		compressed = comp;
@@ -45,16 +53,26 @@ public:
 		gamepartition = partition;
 		usb_dml_game_dir = m_DMLgameDir;
 		gc_skipped = 0;
+		spinner = i_spinner;
+		message = i_message;
+		u_data = i_udata;
+		waitonerror = true;
 	}
-	s32 DumpGame(progress_callback_t spinner, message_callback_t message, void *spinner_data);
-	s32 CheckSpace(u32 *needed, bool comp, message_callback_t message, void *message_data);
+	s32 DumpGame( );
+	s32 CheckSpace(u32 *needed, bool comp);
+	u32 GetFreeSpace(char *path, u32 Value);
 private:
+	progress_callback_t spinner;
+	message_callback_t message;
+	void *u_data;
 	bool force_32k_align;
 	bool skiponerror;
 	bool compressed;
 	bool writeexfiles;
-	const char* gamepartition;
-	const char* usb_dml_game_dir;
+	bool waitonerror;
+	const char *gamepartition;
+	const char *usb_dml_game_dir;
+	char minfo[74];
 	u8 Disc;
 	u8 Disc2;
 	u32 gc_nbrretry;
@@ -103,8 +121,8 @@ private:
 		};
 	} FST;
 	s32 __DiscReadRaw(void *outbuf, u32 offset, u32 length);
-	s32 __DiscWrite(char * path, u32 offset, u32 length, u8 *ReadBuffer, progress_callback_t spinner, void *spinner_data);
-	s32 __DiscWriteFile(FILE *f, u32 offset, u32 length, u8 *ReadBuffer, progress_callback_t spinner, void *spinner_data);
-	bool __WaitForDisc(u8 dsc, char *minfo, u32 msg, message_callback_t message, void *message_data);
+	s32 __DiscWrite(char * path, u32 offset, u32 length, u8 *ReadBuffer);
+	s32 __DiscWriteFile(FILE *f, u32 offset, u32 length, u8 *ReadBuffer);
+	bool __WaitForDisc(u8 dsc, u32 msg);
 };
 #endif

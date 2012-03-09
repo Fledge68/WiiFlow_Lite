@@ -94,6 +94,10 @@ void CMenu::_Messenger(int message, int info, char *cinfo, void *user_data)
 		m._setThrdMsg(m._t("wbfsop21", L"This is a disc of another game!!"), m.m_progress);
 	if(message == 9)
 		m._setThrdMsg(wfmt(m._fmt("wbfsop22", L"Installing %s...\n Please insert disc 2 to continue"), cinfo), m.m_progress);
+	if(message == 10)	
+		m._setThrdMsg(m._t("wbfsop25", L"Disc read error!! Please clean the disc"), m.m_progress);
+	if(message == 11)	
+		m._setThrdMsg(m._t("wbfsop26", L"Disc ejected!! Please insert disc again"), m.m_progress);
 	LWP_MutexUnlock(m.m_mutex);
 }
 
@@ -113,7 +117,7 @@ int CMenu::_gameInstaller(void *obj)
 	WBFS_DiskSpace(&used, &free);
 	WBFS_DVD_Size(&comp_size, &real_size);
 	
-	if ((f32)comp_size + (f32)128*1024 >= free * GB_SIZE)
+	if((f32)comp_size + (f32)128*1024 >= free * GB_SIZE)
 	{
 		LWP_MutexLock(m.m_mutex);
 		m._setThrdMsg(wfmt(m._fmt("wbfsop10", L"Not enough space: %lld blocks needed, %i available"), comp_size, free), 0.f);
@@ -154,7 +158,7 @@ int CMenu::_GCgameInstaller(void *obj)
 	if(skip)
 		rsize = 8192; // Use small chunks when skip on error is enabled
 
-	m_gcdump.Init(skip, comp, wexf, alig, nretry, rsize,DeviceName[currentPartition],m.m_DMLgameDir.c_str());
+	m_gcdump.Init(skip, comp, wexf, alig, nretry, rsize,DeviceName[currentPartition],m.m_DMLgameDir.c_str(), CMenu::_addDiscProgress, CMenu::_Messenger, obj);
 	
 	int ret;	
 	m.m_progress = 0.f;
@@ -170,7 +174,7 @@ int CMenu::_GCgameInstaller(void *obj)
 
 	u32 needed = 0;
 
-	ret = m_gcdump.CheckSpace(&needed, comp, CMenu::_Messenger, obj);
+	ret = m_gcdump.CheckSpace(&needed, comp);
 	if(ret != 0)
 	{
 		m._setThrdMsg(m._t("wbfsop9", L"An error has occurred"), 1.f);
@@ -178,20 +182,22 @@ int CMenu::_GCgameInstaller(void *obj)
 		return ret;
 	}
 	
-	if (fsop_GetFreeSpaceKb(partition) <= needed)
+	if(m_gcdump.GetFreeSpace(partition, BL) <= needed)
 	{
+		gprintf("Free space available: %d Mb (%d blocks)\n", m_gcdump.GetFreeSpace(partition, MB), m_gcdump.GetFreeSpace(partition, BL));
 		LWP_MutexLock(m.m_mutex);
-		m._setThrdMsg(wfmt(m._fmt("wbfsop10", L"Not enough space: %d blocks needed, %d available"), needed, fsop_GetFreeSpaceKb(partition)), 0.f);
+		m._setThrdMsg(wfmt(m._fmt("wbfsop24", L"Not enough space: %d blocks needed, %d available"), needed, m_gcdump.GetFreeSpace(partition, BL)), 0.f);
 		LWP_MutexUnlock(m.m_mutex);
 		ret = -1;
 	}
 	else
 	{
+		gprintf("Free space available: %d Mb (%d blocks)\n", m_gcdump.GetFreeSpace(partition, MB), m_gcdump.GetFreeSpace(partition, BL));
 		LWP_MutexLock(m.m_mutex);
 		m._setThrdMsg(L"", 0);
 		LWP_MutexUnlock(m.m_mutex);
 		
-		ret = m_gcdump.DumpGame(CMenu::_addDiscProgress, CMenu::_Messenger, obj);
+		ret = m_gcdump.DumpGame();
 		LWP_MutexLock(m.m_mutex);
 		if(ret == 0)
 			m._setThrdMsg(m._t("wbfsop8", L"Game installed"), 1.f);
