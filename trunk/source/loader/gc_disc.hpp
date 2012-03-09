@@ -56,7 +56,7 @@ public:
 		spinner = i_spinner;
 		message = i_message;
 		u_data = i_udata;
-		waitonerror = true;
+		waitonerror = true;		
 	}
 	s32 DumpGame( );
 	s32 CheckSpace(u32 *needed, bool comp);
@@ -70,6 +70,8 @@ private:
 	bool compressed;
 	bool writeexfiles;
 	bool waitonerror;
+	bool gamedone;
+	bool multigamedisc;
 	const char *gamepartition;
 	const char *usb_dml_game_dir;
 	char minfo[74];
@@ -94,6 +96,10 @@ private:
 	u32 DataSize;
 	u32 DiscSize;
 	u32 DiscSizeCalculated;
+	u32 MultiGameCnt;
+	u32 MultiGameDump;
+	u32 Gamesize[10];
+	u64 NextOffset;
 	typedef struct
 	{
 		union
@@ -120,9 +126,10 @@ private:
 			u32 entry[2];
 		};
 	} FST;
-	s32 __DiscReadRaw(void *outbuf, u32 offset, u32 length);
-	s32 __DiscWrite(char * path, u32 offset, u32 length, u8 *ReadBuffer);
-	s32 __DiscWriteFile(FILE *f, u32 offset, u32 length, u8 *ReadBuffer);
+	s32 __DiscReadRaw(void *outbuf, u64 offset, u32 length);
+	s32 __DiscWrite(char * path, u64 offset, u32 length, u8 *ReadBuffer);
+	s32 __DiscWriteFile(FILE *f, u64 offset, u32 length, u8 *ReadBuffer);
+	void __AnalizeMultiDisc();
 	bool __WaitForDisc(u8 dsc, u32 msg);
 };
 #endif

@@ -45,7 +45,27 @@ using namespace std;
 
 static u8 *FSTable ALIGNED(32);
 
-s32 GCDump::__DiscReadRaw(void *outbuf, u32 offset, u32 length)
+void GCDump::__AnalizeMultiDisc()
+{
+	u8 *Buffer = (u8 *)MEM2_alloc(0x10);
+	MultiGameCnt = 0;
+	while(1)
+	{
+		__DiscReadRaw(Buffer, 0x40+(MultiGameCnt*4), 4);
+		u64 MultiGameOffset = *(vu32*)(Buffer) << 2;
+		if(!MultiGameOffset)
+			break;		
+		
+		if(MultiGameDump == MultiGameCnt)
+		{
+			NextOffset = MultiGameOffset;
+		}
+		MultiGameCnt++;
+	}
+	MEM2_free(Buffer);
+}
+
+s32 GCDump::__DiscReadRaw(void *outbuf, u64 offset, u32 length)
 {	
 	while(1)
 	{
@@ -110,7 +130,7 @@ s32 GCDump::__DiscReadRaw(void *outbuf, u32 offset, u32 length)
 	return -1;		
 }
 
-s32 GCDump::__DiscWrite(char * path, u32 offset, u32 length, u8 *ReadBuffer)
+s32 GCDump::__DiscWrite(char * path, u64 offset, u32 length, u8 *ReadBuffer)
 {
 	gprintf("__DiscWrite(%s, 0x%08x, %x)\n", path, offset, length);
 	u32 wrote = 0;
@@ -122,7 +142,7 @@ s32 GCDump::__DiscWrite(char * path, u32 offset, u32 length, u8 *ReadBuffer)
 	return wrote;
 }
 
-s32 GCDump::__DiscWriteFile(FILE *f, u32 offset, u32 length, u8 *ReadBuffer)
+s32 GCDump::__DiscWriteFile(FILE *f, u64 offset, u32 length, u8 *ReadBuffer)
 {
 	u32 toread = 0;
 	u32 wrote = 0;
@@ -183,7 +203,7 @@ bool GCDump::__WaitForDisc(u8 dsc, u32 msg)
 					
 			if(Disc_IsGC() == 0)
 			{
-				s32 ret = __DiscReadRaw(ReadBuffer, 0, 0x440);
+				s32 ret = __DiscReadRaw(ReadBuffer, 0+NextOffset, 0x440);
 				if(ret > 0)
 				{
 					MEM2_free(ReadBuffer);
@@ -236,8 +256,13 @@ s32 GCDump::DumpGame()
 
 	u8 *ReadBuffer = (u8 *)MEM2_alloc(gc_readsize);
 
-	u32 j;
 	gc_done = 0;
+	gamedone = false;
+	multigamedisc = false;
+	MultiGameDump = 0;
+	MultiGameCnt = 0;
+	NextOffset = 0;
+	Disc = 0;
 
 	char *FSTNameOff = (char *)NULL;
 
@@ -246,12 +271,22 @@ s32 GCDump::DumpGame()
 	char gamepath[MAX_FAT_PATH];
 	bzero(gamepath, MAX_FAT_PATH);	
 
-	for( j=0; j<2; ++j)
+	while(!gamedone)
 	{
 		u8 *FSTBuffer;
 		u32 wrote = 0;
 
 		s32 ret = Disc_ReadGCHeader(&gcheader);
+		
+		if(memcmp((char *)gcheader.id, "GCOPDV", 6) == 0)
+		{
+			multigamedisc = true;
+			__AnalizeMultiDisc();
+			__DiscReadRaw(ReadBuffer, 0+NextOffset, sizeof(gc_discHdr));
+			memcpy(gcheader.id, ReadBuffer, 6);
+			strcpy(gcheader.title, (char *)ReadBuffer+0x20);			
+		}
+		
 		Asciify2(gcheader.title);
 
 		snprintf(folder, sizeof(folder), sfmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition).c_str());
@@ -261,14 +296,21 @@ s32 GCDump::DumpGame()
 			makedir(folder);
 		}
 		memset(folder, 0, sizeof(folder));
-		snprintf(folder, sizeof(folder), "%s/%s [%.06s]%s", sfmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition).c_str(), gcheader.title, (char *)gcheader.id, j ? "2" : "");
+		snprintf(folder, sizeof(folder), "%s/%s [%.06s]%s", sfmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition).c_str(), gcheader.title, (char *)gcheader.id, Disc ? "2" : "");
 		if(!fsop_DirExist(folder))
 		{
 			gprintf("Creating directory: %s", folder);
 			makedir(folder);
 		}
+		else
+		{
+			gprintf("Skipping game: %s (Already installed)(%d)\n", gcheader.title, Gamesize[MultiGameDump]);
+			gc_done += Gamesize[MultiGameDump];
+			MultiGameDump++;
+			continue;
+		}
 
-		ret = __DiscReadRaw(ReadBuffer, 0, 0x440);
+		ret = __DiscReadRaw(ReadBuffer, 0+NextOffset, 0x440);
 		if(ret > 0)
 		{
 			MEM2_free(ReadBuffer);
@@ -290,7 +332,7 @@ s32 GCDump::DumpGame()
 
 		FSTBuffer = (u8 *)MEM2_alloc((FSTSize+31)&(~31));
 
-		ret = __DiscReadRaw(FSTBuffer, FSTOffset, (FSTSize+31)&(~31));
+		ret = __DiscReadRaw(FSTBuffer, FSTOffset+NextOffset, (FSTSize+31)&(~31));
 
 		if(ret > 0)
 		{
@@ -309,7 +351,7 @@ s32 GCDump::DumpGame()
 		snprintf(minfo, sizeof(minfo), "[%.06s] %s", (char *)gcheader.id, gcheader.title);
 
 		if(FSTTotal > FSTSize)
-			message(4, j+1, minfo, u_data);
+			message(4, Disc+1, minfo, u_data);
 		else
 			message(3, 0, minfo, u_data);
 
@@ -327,7 +369,7 @@ s32 GCDump::DumpGame()
 		if(writeexfiles)
 		{
 			memset(folder, 0, sizeof(folder));
-			snprintf(folder, sizeof(folder), "%s/%s [%.06s]%s/sys", sfmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition).c_str(), gcheader.title, (char *)gcheader.id, j ? "2" : "");
+			snprintf(folder, sizeof(folder), "%s/%s [%.06s]%s/sys", sfmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition).c_str(), gcheader.title, (char *)gcheader.id, Disc ? "2" : "");
 			if(!fsop_DirExist(folder))
 			{
 				gprintf("Creating directory: %s", folder);
@@ -336,18 +378,18 @@ s32 GCDump::DumpGame()
 
 			gprintf("Writing %s/boot.bin\n", folder);
 			snprintf(gamepath, sizeof(gamepath), "%s/boot.bin", folder);
-			gc_done += __DiscWrite(gamepath, 0, 0x440, ReadBuffer);
+			gc_done += __DiscWrite(gamepath, 0+NextOffset, 0x440, ReadBuffer);
 
 			gprintf("Writing %s/bi2.bin\n", folder);
 			snprintf(gamepath, sizeof(gamepath), "%s/bi2.bin", folder);
-			gc_done += __DiscWrite(gamepath, 0x440, 0x2000, ReadBuffer);
+			gc_done += __DiscWrite(gamepath, 0x440+NextOffset, 0x2000, ReadBuffer);
 
 			gprintf("Writing %s/apploader.img\n", folder);
 			snprintf(gamepath, sizeof(gamepath), "%s/apploader.img", folder);
-			gc_done += __DiscWrite(gamepath, 0x2440, ApploaderSize, ReadBuffer);
+			gc_done += __DiscWrite(gamepath, 0x2440+NextOffset, ApploaderSize, ReadBuffer);
 		}
 
-		snprintf(gamepath, sizeof(gamepath), "%s/%s [%.06s]%s/game.iso", sfmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition).c_str(), gcheader.title, (char *)gcheader.id, j ? "2" : "");
+		snprintf(gamepath, sizeof(gamepath), "%s/%s [%.06s]%s/game.iso", sfmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition).c_str(), gcheader.title, (char *)gcheader.id, Disc ? "2" : "");
 
 		gprintf("Writing %s\n", gamepath);
 		if(compressed)
@@ -359,7 +401,7 @@ s32 GCDump::DumpGame()
 			FILE *f;
 			f = fopen(gamepath, "wb");
 
-			ret = __DiscWriteFile(f, 0, (FSTOffset + FSTSize), ReadBuffer);
+			ret = __DiscWriteFile(f, 0+NextOffset, (FSTOffset + FSTSize), ReadBuffer);
 			wrote += (FSTOffset + FSTSize);
 			gc_done += wrote;
 	
@@ -393,7 +435,7 @@ s32 GCDump::DumpGame()
 							break;
 						}
 					}
-					ret = __DiscWriteFile(f, fst[i].FileOffset, fst[i].FileLength, ReadBuffer);
+					ret = __DiscWriteFile(f, fst[i].FileOffset+NextOffset, fst[i].FileLength, ReadBuffer);
 					gprintf("Writing: %d/%d: %s from 0x%08x to 0x%08x(%i)\n", i, FSTEnt, FSTNameOff + fst[i].NameOffset, fst[i].FileOffset, wrote, align);
 					if( ret >= 0 )
 					{
@@ -419,7 +461,7 @@ s32 GCDump::DumpGame()
 		}
 		else
 		{
-			ret = __DiscWrite(gamepath, 0, DiscSize, ReadBuffer);
+			ret = __DiscWrite(gamepath, 0+NextOffset, DiscSize, ReadBuffer);
 			if( ret < 0 )
 			{
 				MEM2_free(ReadBuffer);
@@ -431,10 +473,31 @@ s32 GCDump::DumpGame()
 		
 		MEM2_free(FSTBuffer);
 		
-		if(FSTTotal > FSTSize && !j)
-			__WaitForDisc(1, 9);
+		if(FSTTotal > FSTSize && !multigamedisc)
+		{
+			if(Disc)
+			{
+				gamedone = true;
+				break;
+			}
+			else
+			{
+				__WaitForDisc(1, 9);
+				Disc++;
+			}
+		}
 		else
-			break;
+		{
+			if(MultiGameDump+1 == MultiGameCnt)
+			{
+				gamedone = true;
+				break;
+			}
+			else
+			{
+				MultiGameDump++;
+			}
+		}
 	}
 
 	MEM2_free(ReadBuffer);
@@ -447,12 +510,32 @@ s32 GCDump::CheckSpace(u32 *needed, bool comp)
 	static gc_discHdr gcheader ATTRIBUTE_ALIGN(32);
 
 	u8 *ReadBuffer = (u8 *)MEM2_alloc(0x440);
-	u32 size = 0;
-	u32 j;
+	u32 size = 0;	
+	bool scnddisc = false;
+	gamedone = false;
+	multigamedisc = false;
+	MultiGameDump = 0;
+	MultiGameCnt = 0;
+	NextOffset = 0;
+	Disc = 0;
 
-	for( j=0; j<2; ++j)
-	{
-		s32 ret = __DiscReadRaw(ReadBuffer, 0, 0x440);
+	while(!gamedone)
+	{	
+		u32 multisize = 0;
+		Disc_ReadGCHeader(&gcheader);
+		
+		if(memcmp((char *)gcheader.id, "GCOPDV", 6) == 0)
+		{
+			multigamedisc = true;
+			__AnalizeMultiDisc();
+			__DiscReadRaw(ReadBuffer, 0+NextOffset, sizeof(gc_discHdr));
+			memcpy(gcheader.id, ReadBuffer, sizeof(gcheader.id));
+			strcpy(gcheader.title, (char *)ReadBuffer+0x20);
+		}
+		
+		Asciify2(gcheader.title);
+		
+		s32 ret = __DiscReadRaw(ReadBuffer, 0+NextOffset, 0x440);
 		if(ret > 0)
 		{
 			MEM2_free(ReadBuffer);
@@ -471,28 +554,25 @@ s32 GCDump::CheckSpace(u32 *needed, bool comp)
 		DataSize = *(vu32*)(ReadBuffer+0x438);
 		DiscSize =  DataSize + GamePartOffset;
 
-		Disc_ReadGCHeader(&gcheader);
-		Asciify2(gcheader.title);
-
 		snprintf(minfo, sizeof(minfo), "[%.06s] %s", (char *)gcheader.id, gcheader.title);
 
 		message( 2, 0, minfo, u_data);	
 
 		if(writeexfiles)
 		{
-			size += 0xa440;
-			size += ApploaderSize;
+			multisize += 0xa440;
+			multisize += ApploaderSize;
 		}
 
 		if(!comp)
 		{
-			size += DiscSize;		
+			multisize += DiscSize;		
 		}
 		else
 		{
 			u8 *FSTBuffer = (u8 *)MEM2_alloc((FSTSize+31)&(~31));
 
-			ret = __DiscReadRaw(FSTBuffer, FSTOffset, (FSTSize+31)&(~31));
+			ret = __DiscReadRaw(FSTBuffer, FSTOffset+NextOffset, (FSTSize+31)&(~31));
 			if(ret > 0)
 			{
 				MEM2_free(FSTBuffer);
@@ -503,7 +583,7 @@ s32 GCDump::CheckSpace(u32 *needed, bool comp)
 			u32 FSTEnt = *(u32*)(FSTable+0x08);
 			FST *fst = (FST *)(FSTable);
 
-			size += (FSTOffset + FSTSize);
+			multisize += (FSTOffset + FSTSize);
 
 			u32 i;
 			u32 correction;
@@ -524,33 +604,47 @@ s32 GCDump::CheckSpace(u32 *needed, bool comp)
 							correction = 0;
 							while(((size+correction) & (align-1)) != 0)
 								correction++;
-							size += correction;
+							multisize += correction;
 							break;
 						}
 					}
-					size += fst[i].FileLength;
+					multisize += fst[i].FileLength;
 				}
 			}
 			MEM2_free(FSTBuffer);
 		}
+		size += multisize;
+		Gamesize[MultiGameDump] = multisize;
 
-		if(FSTTotal > FSTSize)
+		if(FSTTotal > FSTSize && !multigamedisc)
 		{
-			if(Disc == 0 && j == 0)
+			if(Disc == 0 && !scnddisc)				
 				__WaitForDisc(1, 1);
-			else if(Disc == 0x01 && j == 0)
+			else if(Disc == 0x01 && !scnddisc)
 				__WaitForDisc(0, 1);
 			
-			if(j == 1)
+			if(scnddisc)
 			{
 				if(Disc == 0x01)
 					__WaitForDisc(0, 1);				
 
+				gamedone = true;
 				break;
 			}
+			scnddisc = true;
 		}
 		else
-			break;		
+		{
+			if(MultiGameDump+1 == MultiGameCnt)
+			{
+				gamedone = true;
+				break;
+			}
+			else
+			{
+				MultiGameDump++;
+			}
+		}		
 	}
 	MEM2_free(ReadBuffer);
 	DiscSizeCalculated = size/0x400;
