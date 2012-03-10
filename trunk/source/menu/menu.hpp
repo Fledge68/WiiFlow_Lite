@@ -170,6 +170,7 @@ private:
 	u32 m_mainLblInit;
 	u32 m_mainLblUser[6];
 	bool m_show_dml;
+	bool m_new_dml;
 	bool m_GameTDBLoaded;
 //Main Config menus
 	u32 m_configLblPage;
