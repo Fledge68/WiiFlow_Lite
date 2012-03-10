@@ -59,7 +59,7 @@ u32 CMenu::_downloadCheatFileAsync(void *obj)
 	if (cheatfile.data != NULL && cheatfile.size > 65 && cheatfile.data[0] != '<')
 	{
 		FILE *file = fopen(fmt("%s/%s.txt", m->m_txtCheatDir.c_str(), id.c_str()), "wb");
-				
+
 		if (file != NULL)
 		{
 			fwrite(cheatfile.data, 1, cheatfile.size, file);
@@ -77,8 +77,10 @@ void CMenu::_CheatSettings()
 {
 	SetupInput();
 
+	string id = m_cf.getId();
+
 	m_cheatSettingsPage = 1;
-	int txtavailable = m_cheatfile.openTxtfile(fmt("%s/%s.txt", m_txtCheatDir.c_str(), m_cf.getId().c_str())); 
+	int txtavailable = m_cheatfile.openTxtfile(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id.c_str())); 
 	
 	_showCheatSettings();
 	_textCheatSettings();
@@ -119,10 +121,10 @@ void CMenu::_CheatSettings()
 		}
 		else if ((WBTN_2_HELD && WBTN_1_PRESSED) || (WBTN_1_HELD && WBTN_2_PRESSED))
 		{
-			remove(fmt("%s/%s.gct", m_cheatDir.c_str(), m_cf.getId().c_str()));
-			remove(fmt("%s/%s.txt", m_txtCheatDir.c_str(), m_cf.getId().c_str()));
-			m_gcfg2.remove(m_cf.getId(), "cheat");
-			m_gcfg2.remove(m_cf.getId(), "hooktype");
+			remove(fmt("%s/%s.gct", m_cheatDir.c_str(), id.c_str()));
+			remove(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id.c_str()));
+			m_gcfg2.remove(id, "cheat");
+			m_gcfg2.remove(id, "hooktype");
 			break;
 		}
 		else if (BTN_A_PRESSED)
@@ -152,17 +154,17 @@ void CMenu::_CheatSettings()
 					
 				if (selected)
 				{
-					m_cheatfile.createGCT(fmt("%s/%s.gct", m_cheatDir.c_str(), m_cf.getId().c_str())); 
-					m_gcfg2.setOptBool(m_cf.getId(), "cheat", 1);
-					m_gcfg2.setInt(m_cf.getId(), "hooktype", m_gcfg2.getInt(m_cf.getId(), "hooktype", 1));
+					m_cheatfile.createGCT(fmt("%s/%s.gct", m_cheatDir.c_str(), id.c_str())); 
+					m_gcfg2.setOptBool(id, "cheat", 1);
+					m_gcfg2.setInt(id, "hooktype", m_gcfg2.getInt(id, "hooktype", 1));
 				}
 				else
 				{
-					remove(fmt("%s/%s.gct", m_cheatDir.c_str(), m_cf.getId().c_str()));
-					m_gcfg2.remove(m_cf.getId(), "cheat");
-					m_gcfg2.remove(m_cf.getId(), "hooktype");
+					remove(fmt("%s/%s.gct", m_cheatDir.c_str(), id.c_str()));
+					m_gcfg2.remove(id, "cheat");
+					m_gcfg2.remove(id, "hooktype");
 				}
-				m_cheatfile.createTXT(fmt("%s/%s.txt", m_txtCheatDir.c_str(), m_cf.getId().c_str()));
+				m_cheatfile.createTXT(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id.c_str()));
 				break;
 			}
 			else if (m_btnMgr.selected(m_cheatBtnDownload))
@@ -234,7 +236,7 @@ void CMenu::_CheatSettings()
 				}
 				_hideCheatDownload();
 				
-				txtavailable = m_cheatfile.openTxtfile(fmt("%s/%s.txt", m_txtCheatDir.c_str(), m_cf.getId().c_str()));
+				txtavailable = m_cheatfile.openTxtfile(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id.c_str()));
 				_showCheatSettings();
 
 				if (txtavailable)
@@ -245,8 +247,9 @@ void CMenu::_CheatSettings()
 				if (m_cheatfile.getCnt() == 0)
 				{
 					// cheat code not found, show result
+					char type = id[0] == 'S' ? 'R' : id[0];
 					m_btnMgr.setText(m_cheatLblItem[0], _t("cheat4", L"Download not found."));
-					m_btnMgr.setText(m_cheatLblItem[1], sfmt(GECKOURL, m_cf.getId().c_str()));
+					m_btnMgr.setText(m_cheatLblItem[1], sfmt(GECKOURL, type, id.c_str()));
 					m_btnMgr.show(m_cheatLblItem[1]);
 				}
 			}

@@ -119,7 +119,7 @@ void CMenu::_showGameSettings(void)
 	if(m_current_view != COVERFLOW_DML)
 		g_numGCfPages = 4;
 	else
-		g_numGCfPages = 1;
+		g_numGCfPages = 2;
 		
 	if (m_gameSettingsPage == 1)
 	{
@@ -194,10 +194,13 @@ void CMenu::_showGameSettings(void)
 		m_btnMgr.show(m_gameSettingsBtnDebuggerP);
 		m_btnMgr.show(m_gameSettingsBtnDebuggerM);
 
-		m_btnMgr.show(m_gameSettingsLblHooktype);
-		m_btnMgr.show(m_gameSettingsLblHooktypeVal);
-		m_btnMgr.show(m_gameSettingsBtnHooktypeM);
-		m_btnMgr.show(m_gameSettingsBtnHooktypeP);
+		if(m_current_view != COVERFLOW_DML)
+		{
+			m_btnMgr.show(m_gameSettingsLblHooktype);
+			m_btnMgr.show(m_gameSettingsLblHooktypeVal);
+			m_btnMgr.show(m_gameSettingsBtnHooktypeM);
+			m_btnMgr.show(m_gameSettingsBtnHooktypeP);
+		}
 
 		m_btnMgr.show(m_gameSettingsLblOcarina);
 		m_btnMgr.show(m_gameSettingsBtnOcarina);
@@ -212,10 +215,13 @@ void CMenu::_showGameSettings(void)
 		m_btnMgr.hide(m_gameSettingsBtnDebuggerP);
 		m_btnMgr.hide(m_gameSettingsBtnDebuggerM);
 
-		m_btnMgr.hide(m_gameSettingsLblHooktype);
-		m_btnMgr.hide(m_gameSettingsLblHooktypeVal);
-		m_btnMgr.hide(m_gameSettingsBtnHooktypeM);
-		m_btnMgr.hide(m_gameSettingsBtnHooktypeP);
+		if(m_current_view != COVERFLOW_DML)
+		{
+			m_btnMgr.hide(m_gameSettingsLblHooktype);
+			m_btnMgr.hide(m_gameSettingsLblHooktypeVal);
+			m_btnMgr.hide(m_gameSettingsBtnHooktypeM);
+			m_btnMgr.hide(m_gameSettingsBtnHooktypeP);
+		}
 
 		m_btnMgr.hide(m_gameSettingsLblOcarina);
 		m_btnMgr.hide(m_gameSettingsBtnOcarina);

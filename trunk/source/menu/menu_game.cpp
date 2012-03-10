@@ -639,9 +639,21 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 			memset(DMLCfg, 0, sizeof(DML_CFG));
 			DMLCfg->Magicbytes = 0xD1050CF6;
 			DMLCfg->CfgVersion = 0x00000001;
-			DMLCfg->VideoMode = DML_VID_NONE;
-			DMLCfg->Config = DML_CFG_GAME_PATH;
+			DMLCfg->VideoMode |= DML_VID_NONE;
+			DMLCfg->Config |= DML_CFG_GAME_PATH;
 			snprintf(DMLCfg->GamePath, sizeof(DMLCfg->GamePath), "/games/%s/game.iso", hdr->path);
+			if(m_gcfg2.testOptBool((char *)hdr->hdr.id, "cheat", m_cfg.getBool("GAMES", "cheat", false)))
+			{
+				DMLCfg->Config |= DML_CFG_CHEATS;
+				DMLCfg->Config |= DML_CFG_CHEAT_PATH;
+				const char *ptr;
+				if(strstr(m_cheatDir.c_str(), "sd:/") != NULL)
+				{
+					ptr = &m_cheatDir.c_str()[3];
+					snprintf(DMLCfg->CheatPath, sizeof(DMLCfg->CheatPath), "%s/%s", ptr, fmt("%s.gct", hdr->hdr.id));
+				}
+				gprintf("Cheat dir: %s\n", DMLCfg->CheatPath);
+			}
 			memcpy((void *)0xC0001700, DMLCfg, sizeof(DML_CFG));
 			MEM2_free(DMLCfg);
 		}
