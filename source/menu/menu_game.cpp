@@ -30,6 +30,7 @@
 #include "homebrew.h"
 #include "defines.h"
 #include "gc/gc.h"
+#include "gc/fileOps.h"
 
 //#define DML_THROUGH_MEM /*** Load game through mem.. Not compatible with regulair DML ***/
 
@@ -635,24 +636,38 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 		if(m_new_dml)
 		{
 			gprintf("Wiiflow DML: Launch game 'sd:/games/%s/game.iso' through memory\n", hdr->path);
+
 			DML_CFG *DMLCfg = (DML_CFG*)MEM2_alloc(sizeof(DML_CFG));
 			memset(DMLCfg, 0, sizeof(DML_CFG));
+			snprintf(DMLCfg->GamePath, sizeof(DMLCfg->GamePath), "/games/%s/game.iso", hdr->path);
 			DMLCfg->Magicbytes = 0xD1050CF6;
 			DMLCfg->CfgVersion = 0x00000001;
 			DMLCfg->VideoMode |= DML_VID_NONE;
 			DMLCfg->Config |= DML_CFG_GAME_PATH;
-			snprintf(DMLCfg->GamePath, sizeof(DMLCfg->GamePath), "/games/%s/game.iso", hdr->path);
+
 			if(m_gcfg2.testOptBool((char *)hdr->hdr.id, "cheat", m_cfg.getBool("GAMES", "cheat", false)))
 			{
+				const char *ptr;
+
+				char old_cheat_path[256];
+				snprintf(old_cheat_path, sizeof(old_cheat_path), "%s/%s", m_cheatDir.c_str(), fmt("%s.gct", hdr->hdr.id));
+
 				DMLCfg->Config |= DML_CFG_CHEATS;
 				DMLCfg->Config |= DML_CFG_CHEAT_PATH;
-				const char *ptr;
-				if(strstr(m_cheatDir.c_str(), "sd:/") != NULL)
+
+				if(strstr(old_cheat_path, "sd:/") != NULL)
 				{
-					ptr = &m_cheatDir.c_str()[3];
-					snprintf(DMLCfg->CheatPath, sizeof(DMLCfg->CheatPath), "%s/%s", ptr, fmt("%s.gct", hdr->hdr.id));
+					ptr = &old_cheat_path[3];
 				}
-				gprintf("Cheat dir: %s\n", DMLCfg->CheatPath);
+				else
+				{
+					char new_cheat_path[256];
+					snprintf(new_cheat_path, sizeof(new_cheat_path), "%s/%s/%s", fmt(DML_DIR, DeviceName[SD]), hdr->path, fmt("%s.gct", hdr->hdr.id));
+					fsop_CopyFile(old_cheat_path, new_cheat_path, NULL, NULL);
+					ptr = &new_cheat_path[3];
+				}
+				strncpy(DMLCfg->CheatPath, ptr, sizeof(DMLCfg->CheatPath));
+				gprintf("Cheat File: %s\n", DMLCfg->CheatPath);
 			}
 			memcpy((void *)0xC0001700, DMLCfg, sizeof(DML_CFG));
 			MEM2_free(DMLCfg);
