@@ -625,11 +625,14 @@ extern "C" {extern void USBStorage_Deinit(void);}
 void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 {
 	Nand::Instance()->Disable_Emu();
+	char* id = (char *)hdr->hdr.id;
 	u8 DMLvideoMode = 0;
 	u8 GClanguage = 0;
+	bool NMM = m_gcfg2.testOptBool(id, "NMM", m_cfg.getBool("DML", "NMM", false));
+	bool NMM_debug = m_gcfg2.testOptBool(id, "NMM_debug", m_cfg.getBool("DML", "NMM_debug", false));
 
 	if(has_enabled_providers() && _initNetwork() == 0)
-		add_game_to_card((char *)hdr->hdr.id);
+		add_game_to_card(id);
 
 	if(DML)
 	{
@@ -645,12 +648,12 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 			DMLCfg->VideoMode |= DML_VID_NONE;
 			DMLCfg->Config |= DML_CFG_GAME_PATH;
 
-			if(m_gcfg2.testOptBool((char *)hdr->hdr.id, "cheat", m_cfg.getBool("GAMES", "cheat", false)))
+			if(m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool("NMM", "cheat", false)))
 			{
 				const char *ptr;
 
 				char old_cheat_path[256];
-				snprintf(old_cheat_path, sizeof(old_cheat_path), "%s/%s", m_cheatDir.c_str(), fmt("%s.gct", hdr->hdr.id));
+				snprintf(old_cheat_path, sizeof(old_cheat_path), "%s/%s", m_cheatDir.c_str(), fmt("%s.gct", id));
 
 				DMLCfg->Config |= DML_CFG_CHEATS;
 				DMLCfg->Config |= DML_CFG_CHEAT_PATH;
@@ -662,13 +665,23 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 				else
 				{
 					char new_cheat_path[256];
-					snprintf(new_cheat_path, sizeof(new_cheat_path), "%s/%s/%s", fmt(DML_DIR, DeviceName[SD]), hdr->path, fmt("%s.gct", hdr->hdr.id));
+					snprintf(new_cheat_path, sizeof(new_cheat_path), "%s/%s/%s", fmt(DML_DIR, DeviceName[SD]), hdr->path, fmt("%s.gct", id));
 					fsop_CopyFile(old_cheat_path, new_cheat_path, NULL, NULL);
 					ptr = &new_cheat_path[3];
 				}
 				strncpy(DMLCfg->CheatPath, ptr, sizeof(DMLCfg->CheatPath));
 				gprintf("Cheat File: %s\n", DMLCfg->CheatPath);
 			}
+
+			if(m_gcfg2.getBool(id, "debugger", false))
+				DMLCfg->Config |= DML_CFG_DEBUGGER;
+			if(NMM)
+			{
+				DMLCfg->Config |= DML_CFG_NMM;
+				if(NMM_debug)
+					DMLCfg->Config |= DML_CFG_NMM_DEBUG;
+			}
+
 			memcpy((void *)0xC0001700, DMLCfg, sizeof(DML_CFG));
 			MEM2_free(DMLCfg);
 		}
@@ -681,20 +694,20 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 			fclose(f);
 		}
 
-		DMLvideoMode = min((u32)m_gcfg2.getInt((char *)hdr->hdr.id, "dml_video_mode", 0), ARRAY_SIZE(CMenu::_DMLvideoModes) - 1u);
+		DMLvideoMode = min((u32)m_gcfg2.getInt(id, "dml_video_mode", 0), ARRAY_SIZE(CMenu::_DMLvideoModes) - 1u);
 		if(DMLvideoMode == 0)
 			DMLvideoMode = min((u32)m_cfg.getInt("DML", "video_mode", 0), ARRAY_SIZE(CMenu::_GlobalDMLvideoModes) - 1u);
 		else
 			DMLvideoMode--;
-		GClanguage = min((u32)m_gcfg2.getInt((char *)hdr->hdr.id, "gc_language", 0), ARRAY_SIZE(CMenu::_GClanguages) - 1u);
+		GClanguage = min((u32)m_gcfg2.getInt(id, "gc_language", 0), ARRAY_SIZE(CMenu::_GClanguages) - 1u);
 		if(GClanguage == 0)
 			GClanguage = min((u32)m_cfg.getInt("DML", "game_language", 0), ARRAY_SIZE(CMenu::_GlobalGClanguages) - 1u);
 		else
 			GClanguage--;
 
-		m_cfg.setString("DML", "current_item", (char *)hdr->hdr.id);
-		m_gcfg1.setInt("PLAYCOUNT", (char *)hdr->hdr.id, m_gcfg1.getInt("PLAYCOUNT", (char *)hdr->hdr.id, 0) + 1);
-		m_gcfg1.setUInt("LASTPLAYED", (char *)hdr->hdr.id, time(NULL));
+		m_cfg.setString("DML", "current_item", id);
+		m_gcfg1.setInt("PLAYCOUNT", id, m_gcfg1.getInt("PLAYCOUNT", id, 0) + 1);
+		m_gcfg1.setUInt("LASTPLAYED", id, time(NULL));
 		m_gcfg1.save(true);
 		m_cfg.save(true);
 
@@ -714,12 +727,12 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 		ICInvalidateRange((void *)(0x80001800), 4);
 	}
 
-	memcpy((char *)0x80000000, (char *)hdr->hdr.id, 6);	
-	if((((char)hdr->hdr.id[3] == 'P') && (DMLvideoMode == 0)) || (DMLvideoMode == 1))
+	memcpy((char *)0x80000000, id, 6);	
+	if(((id[3] == 'P') && (DMLvideoMode == 0)) || (DMLvideoMode == 1))
 	{
 		set_video_mode(1);
 	}
-	if((((char)hdr->hdr.id[3] != 'P') && (DMLvideoMode == 0)) || (DMLvideoMode == 2))
+	if(((id[3] != 'P') && (DMLvideoMode == 0)) || (DMLvideoMode == 2))
 	{
 		set_video_mode(0);
 	}
