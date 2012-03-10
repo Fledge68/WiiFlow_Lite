@@ -116,7 +116,7 @@ void CMenu::_showGameSettings(void)
 	m_btnMgr.show(m_gameSettingsBtnPageP);
 	m_btnMgr.show(m_gameSettingsBtnBack);
 	m_btnMgr.show(m_gameSettingsLblTitle);
-	if(m_current_view != COVERFLOW_DML)
+	if(m_cf.getHdr()->hdr.gc_magic != 0xc2339f3d)
 		g_numGCfPages = 4;
 	else
 		g_numGCfPages = 2;
@@ -126,7 +126,7 @@ void CMenu::_showGameSettings(void)
 		m_btnMgr.show(m_gameSettingsLblCover);
 		m_btnMgr.show(m_gameSettingsBtnCover);
 		
-		if(m_current_view != COVERFLOW_DML)
+		if(m_cf.getHdr()->hdr.gc_magic != 0xc2339f3d)
 		{
 			m_btnMgr.show(m_gameSettingsBtnCategoryMain);
 			m_btnMgr.show(m_gameSettingsLblCategoryMain);
@@ -159,7 +159,7 @@ void CMenu::_showGameSettings(void)
 		m_btnMgr.hide(m_gameSettingsLblCover);
 		m_btnMgr.hide(m_gameSettingsBtnCover);
 		
-		if(m_current_view != COVERFLOW_DML)
+		if(m_cf.getHdr()->hdr.gc_magic != 0xc2339f3d)
 		{
 			m_btnMgr.hide(m_gameSettingsBtnCategoryMain);
 			m_btnMgr.hide(m_gameSettingsLblCategoryMain);
@@ -194,7 +194,7 @@ void CMenu::_showGameSettings(void)
 		m_btnMgr.show(m_gameSettingsBtnDebuggerP);
 		m_btnMgr.show(m_gameSettingsBtnDebuggerM);
 
-		if(m_current_view != COVERFLOW_DML)
+		if(m_cf.getHdr()->hdr.gc_magic != 0xc2339f3d)
 		{
 			m_btnMgr.show(m_gameSettingsLblHooktype);
 			m_btnMgr.show(m_gameSettingsLblHooktypeVal);
@@ -215,7 +215,7 @@ void CMenu::_showGameSettings(void)
 		m_btnMgr.hide(m_gameSettingsBtnDebuggerP);
 		m_btnMgr.hide(m_gameSettingsBtnDebuggerM);
 
-		if(m_current_view != COVERFLOW_DML)
+		if(m_cf.getHdr()->hdr.gc_magic != 0xc2339f3d)
 		{
 			m_btnMgr.hide(m_gameSettingsLblHooktype);
 			m_btnMgr.hide(m_gameSettingsLblHooktypeVal);

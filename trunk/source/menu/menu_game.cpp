@@ -445,7 +445,7 @@ void CMenu::_game(bool launch)
 			{
 				_hideGame();
 				dir_discHdr *hdr = m_cf.getHdr();
-				if(currentPartition != SD && m_current_view == COVERFLOW_DML)
+				if(currentPartition != SD && hdr->hdr.gc_magic == 0xc2339f3d)
 				{
 					char gcfolder[300];
 					sprintf(gcfolder, "%s [%s]", m_cf.getTitle().toUTF8().c_str(), (char *)hdr->hdr.id);
@@ -470,7 +470,7 @@ void CMenu::_game(bool launch)
 				if (m_current_view != COVERFLOW_HOMEBREW)
 				{
 					// Get banner_title
-					Banner * banner = m_current_view == COVERFLOW_CHANNEL ? _extractChannelBnr(chantitle) : m_current_view == COVERFLOW_USB ? _extractBnr(hdr) : NULL;
+					Banner * banner = m_current_view == COVERFLOW_CHANNEL ? _extractChannelBnr(chantitle) : (m_current_view == COVERFLOW_USB && hdr->hdr.gc_magic != 0xc2339f3d) ? _extractBnr(hdr) : NULL;
 					if (banner != NULL)
 					{						
 						if (banner->IsValid())
@@ -550,7 +550,7 @@ void CMenu::_game(bool launch)
 				m_btnMgr.show(m_gameBtnSettings);
 			}
 
-			if ((m_current_view == COVERFLOW_USB || m_current_view == COVERFLOW_DML) && !m_locked)
+			if ((m_current_view == COVERFLOW_USB || m_cf.getHdr()->hdr.gc_magic == 0xc2339f3d) && !m_locked)
 				m_btnMgr.show(m_gameBtnDelete);
 		}
 		else
@@ -602,6 +602,11 @@ void CMenu::_directlaunch(const string &id)
 void CMenu::_launch(dir_discHdr *hdr)
 {
 	m_gcfg2.load(sfmt("%s/gameconfig2.ini", m_settingsDir.c_str()).c_str());
+	if(hdr->hdr.gc_magic == 0xc2339f3d)
+	{
+		_launchGC(hdr, true);
+		return;
+	}
 	switch(m_current_view)
 	{
 		case COVERFLOW_HOMEBREW:
@@ -1321,7 +1326,7 @@ SmartBuf gameSoundThreadStack;
 
 void CMenu::_gameSoundThread(CMenu *m)
 {
-	if(m->m_current_view == COVERFLOW_DML)
+	if(m->m_cf.getHdr()->hdr.gc_magic == 0xc2339f3d)
 	{
 		m->m_gameSound.Load(gc_ogg, gc_ogg_size, false);
 		m->m_gamesound_changed = true;
