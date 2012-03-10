@@ -632,19 +632,27 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 
 	if(DML)
 	{
-		#ifdef DML_THROUGH_MEM /*** Need special DML for this ***/
-		gprintf("Wiiflow DML: Launch game 'sd:/games/%s/game.iso' through memory\n", hdr->path);
-		*(vu32*)0x800A0000 = 0x4e444d4c;
-		memcpy((void *)0x800A0004, hdr->path, strlen(hdr->path) + 1);
-		DCFlushRange((void *)(0x800A0000), 4);
-		ICInvalidateRange((void *)(0x800A0000), 4);
-		#else
-		gprintf("Wiiflow DML: Launch game 'sd:/games/%s/game.iso' through boot.bin\n", hdr->path);
-		FILE *f;
-		f = fopen("sd:/games/boot.bin", "wb");
-		fwrite(hdr->path, 1, strlen(hdr->path) + 1, f);
-		fclose(f);
-		#endif
+		if(m_new_dml)
+		{
+			gprintf("Wiiflow DML: Launch game 'sd:/games/%s/game.iso' through memory\n", hdr->path);
+			DML_CFG *DMLCfg = (DML_CFG*)MEM2_alloc(sizeof(DML_CFG));
+			memset(DMLCfg, 0, sizeof(DML_CFG));
+			DMLCfg->Magicbytes = 0xD1050CF6;
+			DMLCfg->CfgVersion = 0x00000001;
+			DMLCfg->VideoMode = DML_VID_NONE;
+			DMLCfg->Config = DML_CFG_GAME_PATH;
+			snprintf(DMLCfg->GamePath, sizeof(DMLCfg->GamePath), "/games/%s/game.iso", hdr->path);
+			memcpy((void *)0xC0001700, DMLCfg, sizeof(DML_CFG));
+			MEM2_free(DMLCfg);
+		}
+		else
+		{
+			gprintf("Wiiflow DML: Launch game 'sd:/games/%s/game.iso' through boot.bin\n", hdr->path);
+			FILE *f;
+			f = fopen("sd:/games/boot.bin", "wb");
+			fwrite(hdr->path, 1, strlen(hdr->path) + 1, f);
+			fclose(f);
+		}
 
 		DMLvideoMode = min((u32)m_gcfg2.getInt((char *)hdr->hdr.id, "dml_video_mode", 0), ARRAY_SIZE(CMenu::_DMLvideoModes) - 1u);
 		if(DMLvideoMode == 0)
@@ -676,7 +684,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 		//Tell DML to boot the game from sd card
 		*(vu32*)0x80001800 = 0xB002D105;
 		DCFlushRange((void *)(0x80001800), 4);
-		ICInvalidateRange((void *)(0x80001800), 4);		
+		ICInvalidateRange((void *)(0x80001800), 4);
 	}
 
 	memcpy((char *)0x80000000, (char *)hdr->hdr.id, 6);	
