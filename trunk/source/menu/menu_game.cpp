@@ -628,14 +628,36 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 	char* id = (char *)hdr->hdr.id;
 	u8 DMLvideoMode = 0;
 	u8 GClanguage = 0;
-	bool NMM = m_gcfg2.testOptBool(id, "NMM", m_cfg.getBool("DML", "NMM", false));
-	bool NMM_debug = m_gcfg2.testOptBool(id, "NMM_debug", m_cfg.getBool("DML", "NMM_debug", false));
+	const char *ptr = "";
 
 	if(has_enabled_providers() && _initNetwork() == 0)
 		add_game_to_card(id);
 
 	if(DML)
 	{
+		bool NMM = m_gcfg2.testOptBool(id, "NMM", m_cfg.getBool("DML", "NMM", false));
+		bool NMM_debug = m_gcfg2.testOptBool(id, "NMM_debug", m_cfg.getBool("DML", "NMM_debug", false));
+		bool cheats = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool("DML", "cheat", false));
+
+		if(cheats)
+		{
+			char old_cheat_path[256];
+			snprintf(old_cheat_path, sizeof(old_cheat_path), "%s/%s", m_cheatDir.c_str(), fmt("%s.gct", id));
+			char new_cheat_path[256];
+			snprintf(new_cheat_path, sizeof(new_cheat_path), "%s/%s/%s", fmt(DML_DIR, DeviceName[SD]), hdr->path, fmt("%s.gct", id));
+
+			if(strstr(old_cheat_path, "sd:/") != NULL && m_new_dml)
+			{
+				ptr = &old_cheat_path[3];
+			}
+			else
+			{
+				fsop_CopyFile(old_cheat_path, new_cheat_path, NULL, NULL);
+				ptr = &new_cheat_path[3];
+			}
+			gprintf("Cheat File: %s\n", ptr);
+		}
+
 		if(m_new_dml)
 		{
 			gprintf("Wiiflow DML: Launch game 'sd:/games/%s/game.iso' through memory\n", hdr->path);
@@ -648,29 +670,12 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 			DMLCfg->VideoMode |= DML_VID_NONE;
 			DMLCfg->Config |= DML_CFG_GAME_PATH;
 
-			if(m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool("NMM", "cheat", false)))
+			if(cheats)
 			{
-				const char *ptr;
-
-				char old_cheat_path[256];
-				snprintf(old_cheat_path, sizeof(old_cheat_path), "%s/%s", m_cheatDir.c_str(), fmt("%s.gct", id));
-
 				DMLCfg->Config |= DML_CFG_CHEATS;
 				DMLCfg->Config |= DML_CFG_CHEAT_PATH;
 
-				if(strstr(old_cheat_path, "sd:/") != NULL)
-				{
-					ptr = &old_cheat_path[3];
-				}
-				else
-				{
-					char new_cheat_path[256];
-					snprintf(new_cheat_path, sizeof(new_cheat_path), "%s/%s/%s", fmt(DML_DIR, DeviceName[SD]), hdr->path, fmt("%s.gct", id));
-					fsop_CopyFile(old_cheat_path, new_cheat_path, NULL, NULL);
-					ptr = &new_cheat_path[3];
-				}
 				strncpy(DMLCfg->CheatPath, ptr, sizeof(DMLCfg->CheatPath));
-				gprintf("Cheat File: %s\n", DMLCfg->CheatPath);
 			}
 
 			if(m_gcfg2.getBool(id, "debugger", false))
