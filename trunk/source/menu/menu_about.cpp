@@ -155,5 +155,6 @@ void CMenu::_textAbout(void)
 	if(iosInfo != NULL)
 		m_btnMgr.setText(m_aboutLblIOS, wfmt(_fmt("ios", L"IOS%i base %i v%i"), mainIOS, iosInfo->baseios, iosInfo->version), true);
 	SAFE_FREE(iosInfo);
-	Nand::Instance()->Enable_Emu();
+	if(m_current_view == COVERFLOW_CHANNEL && m_cfg.getInt("NAND", "emulation", 0) > 0)
+		Nand::Instance()->Enable_Emu();
 }

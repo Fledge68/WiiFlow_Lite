@@ -96,6 +96,7 @@ s32 Nand::Nand_Unmount(NandDevice *Device)
 
 s32 Nand::Nand_Enable(NandDevice *Device)
 {
+	gprintf("Enabling NAND Emulator\n");
 	s32 fd = IOS_Open("/dev/fs", 0);
 	if (fd < 0) return fd;
 
@@ -118,6 +119,7 @@ s32 Nand::Nand_Enable(NandDevice *Device)
 
 s32 Nand::Nand_Disable(void)
 {
+	gprintf("Disabling NAND Emulator\n");
 	s32 fd = IOS_Open("/dev/fs", 0);
 	if (fd < 0) return fd;
 

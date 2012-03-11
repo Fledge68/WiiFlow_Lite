@@ -2,10 +2,12 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <string.h>
 #include "gc.h"
 #include "gecko.h"
 #include "fileOps.h"
 #include "utils.h"
+#include "memory/mem2.hpp"
 
 #define SRAM_ENGLISH 0
 #define SRAM_GERMAN 1
@@ -18,7 +20,7 @@ syssram* __SYS_LockSram();
 u32 __SYS_UnlockSram(u32 write);
 u32 __SYS_SyncSram(void);
 
-void set_video_mode(int i)
+void GC_SetVideoMode(int i)
 {
 	syssram *sram;
 	sram = __SYS_LockSram();
@@ -48,8 +50,8 @@ void set_video_mode(int i)
 
 	/* Set video mode to PAL or NTSC */
 	*(vu32*)0x800000CC = i;
-	DCFlushRange((void *)(0x800000CC), 1);
-	ICInvalidateRange((void *)(0x800000CC), 1);
+	DCFlushRange((void *)(0x800000CC), 4);
+	ICInvalidateRange((void *)(0x800000CC), 4);
 	
 	VIDEO_Configure(rmode);
 	m_frameBuf = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
@@ -77,7 +79,7 @@ u8 get_wii_language()
 	}
 }
 
-void set_language(u8 lang)
+void GC_SetLanguage(u8 lang)
 {
 	if (lang == 0)
 	{
@@ -94,7 +96,7 @@ void set_language(u8 lang)
 	while(!__SYS_SyncSram());
 }
 
-bool DML_GameIsInstalled(char *discid, const char* partition, const char* dmlgamedir) 
+bool GC_GameIsInstalled(char *discid, const char* partition, const char* dmlgamedir) 
 {
 	char folder[50];
 	char source[300];
@@ -110,4 +112,63 @@ bool DML_GameIsInstalled(char *discid, const char* partition, const char* dmlgam
 	}
 	gprintf("Not found on %s: %s\n", partition, source);
 	return false;
+}
+
+void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, bool debugger, bool NMM, bool NMM_debug)
+{
+	gprintf("Wiiflow DML: Launch game 'sd:/games/%s/game.iso' through memory (new method)\n", GamePath);
+
+	DML_CFG *DMLCfg = (DML_CFG*)MEM2_alloc(sizeof(DML_CFG));
+	memset(DMLCfg, 0, sizeof(DML_CFG));
+	snprintf(DMLCfg->GamePath, sizeof(DMLCfg->GamePath), "/games/%s/game.iso", GamePath);
+
+	DMLCfg->Magicbytes = 0xD1050CF6;
+	DMLCfg->CfgVersion = 0x00000001;
+	DMLCfg->VideoMode |= DML_VID_NONE;
+	DMLCfg->Config |= DML_CFG_GAME_PATH;
+
+	if(CheatPath)
+	{
+		char *ptr;
+		if(strstr(CheatPath, "sd:/") == NULL)
+		{
+			fsop_CopyFile(CheatPath, NewCheatPath, NULL, NULL);
+			ptr = &NewCheatPath[3];
+		}
+		else
+			ptr = &CheatPath[3];
+		strncpy(DMLCfg->CheatPath, ptr, sizeof(DMLCfg->CheatPath));
+		DMLCfg->Config |= DML_CFG_CHEATS;
+		DMLCfg->Config |= DML_CFG_CHEAT_PATH;
+	}
+	if(debugger)
+		DMLCfg->Config |= DML_CFG_DEBUGGER;
+	if(NMM)
+	{
+		DMLCfg->Config |= DML_CFG_NMM;
+		if(NMM_debug)
+			DMLCfg->Config |= DML_CFG_NMM_DEBUG;
+	}
+	//Write options into memory
+	memcpy((void *)0xC0001700, DMLCfg, sizeof(DML_CFG));
+	MEM2_free(DMLCfg);
+}
+
+void DML_Old_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath)
+{
+	gprintf("Wiiflow DML: Launch game 'sd:/games/%s/game.iso' through boot.bin (old method)\n", GamePath);
+	FILE *f;
+	f = fopen("sd:/games/boot.bin", "wb");
+	fwrite(GamePath, 1, strlen(GamePath) + 1, f);
+	fclose(f);
+
+	if(CheatPath && strstr(CheatPath, NewCheatPath) == NULL)
+		fsop_CopyFile(CheatPath, NewCheatPath, NULL, NULL);
+
+	//Tell DML to boot the game from sd card
+	*(vu32*)0x80001800 = 0xB002D105;
+	DCFlushRange((void *)(0x80001800), 4);
+	ICInvalidateRange((void *)(0x80001800), 4);
+
+	*(vu32*)0xCC003024 |= 7;
 }

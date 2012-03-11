@@ -31,7 +31,8 @@ void CMenu::_enableNandEmu(bool fromconfig)
 		iosinfo_t * iosInfo = cIOSInfo::GetInfo(mainIOS);
 		if (iosInfo->version > 6)
 			isD2XnewerThanV6 = true;
-		Nand::Instance()->Enable_Emu();
+		if(m_current_view == COVERFLOW_CHANNEL && m_cfg.getInt("NAND", "emulation", 0) > 0)
+			Nand::Instance()->Enable_Emu();
 		u8 limiter = 0;
 		s8 direction = m_btnMgr.selected(m_configBtnPartitionP) ? 1 : -1;
 		if (!fromconfig)

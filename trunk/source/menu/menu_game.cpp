@@ -30,9 +30,6 @@
 #include "homebrew.h"
 #include "defines.h"
 #include "gc/gc.h"
-#include "gc/fileOps.h"
-
-//#define DML_THROUGH_MEM /*** Load game through mem.. Not compatible with regulair DML ***/
 
 using namespace std;
 
@@ -449,17 +446,17 @@ void CMenu::_game(bool launch)
 				{
 					char gcfolder[300];
 					sprintf(gcfolder, "%s [%s]", m_cf.getTitle().toUTF8().c_str(), (char *)hdr->hdr.id);
-					if (DML_GameIsInstalled((char *)hdr->hdr.id, DeviceName[SD], DML_DIR))
+					if (GC_GameIsInstalled((char *)hdr->hdr.id, DeviceName[SD], DML_DIR))
 					{
 						memset(hdr->path, 0, sizeof(hdr->path));
 						snprintf(hdr->path, sizeof(hdr->path), "%s", (char*)hdr->hdr.id);
 					}
-					else if(DML_GameIsInstalled(gcfolder, DeviceName[SD], DML_DIR))
+					else if(GC_GameIsInstalled(gcfolder, DeviceName[SD], DML_DIR))
 					{
 						memset(hdr->path, 0, sizeof(hdr->path));
 						snprintf(hdr->path, sizeof(hdr->path), "%s", gcfolder);
 					}
-					else if(!DML_GameIsInstalled(hdr->path, DeviceName[SD], DML_DIR) && !_wbfsOp(CMenu::WO_COPY_GAME))
+					else if(!GC_GameIsInstalled(hdr->path, DeviceName[SD], DML_DIR) && !_wbfsOp(CMenu::WO_COPY_GAME))
 						break;
 					currentPartition = SD;
 				}
@@ -633,79 +630,31 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 	m_gameSound.Stop();
 	CheckGameSoundThread();
 	char* id = (char *)hdr->hdr.id;
-	u8 DMLvideoMode = 0;
-	u8 GClanguage = 0;
-	const char *ptr = "";
-
 	if(has_enabled_providers() && _initNetwork() == 0)
 		add_game_to_card(id);
 
+	u8 DMLvideoMode = 0;
+	u8 GClanguage = 0;
+
 	if(DML)
 	{
+		char CheatPath[256];
+		char NewCheatPath[255];
 		bool NMM = m_gcfg2.testOptBool(id, "NMM", m_cfg.getBool("DML", "NMM", false));
 		bool NMM_debug = m_gcfg2.testOptBool(id, "NMM_debug", m_cfg.getBool("DML", "NMM_debug", false));
 		bool cheats = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool("DML", "cheat", false));
+		bool DML_debug = m_gcfg2.getBool(id, "debugger", false);
 
 		if(cheats)
 		{
-			char old_cheat_path[256];
-			snprintf(old_cheat_path, sizeof(old_cheat_path), "%s/%s", m_cheatDir.c_str(), fmt("%s.gct", id));
-			char new_cheat_path[256];
-			snprintf(new_cheat_path, sizeof(new_cheat_path), "%s/%s/%s", fmt(DML_DIR, DeviceName[SD]), hdr->path, fmt("%s.gct", id));
-
-			if(strstr(old_cheat_path, "sd:/") != NULL && m_new_dml)
-			{
-				ptr = &old_cheat_path[3];
-			}
-			else
-			{
-				fsop_CopyFile(old_cheat_path, new_cheat_path, NULL, NULL);
-				ptr = &new_cheat_path[3];
-			}
-			gprintf("Cheat File: %s\n", ptr);
+			snprintf(CheatPath, sizeof(CheatPath), "%s/%s", m_cheatDir.c_str(), fmt("%s.gct", id));
+			snprintf(NewCheatPath, sizeof(NewCheatPath), "%s/%s/%s", fmt(DML_DIR, "sd"), hdr->path, fmt("%s.gct", id));
 		}
 
 		if(m_new_dml)
-		{
-			gprintf("Wiiflow DML: Launch game 'sd:/games/%s/game.iso' through memory\n", hdr->path);
-
-			DML_CFG *DMLCfg = (DML_CFG*)MEM2_alloc(sizeof(DML_CFG));
-			memset(DMLCfg, 0, sizeof(DML_CFG));
-			snprintf(DMLCfg->GamePath, sizeof(DMLCfg->GamePath), "/games/%s/game.iso", hdr->path);
-			DMLCfg->Magicbytes = 0xD1050CF6;
-			DMLCfg->CfgVersion = 0x00000001;
-			DMLCfg->VideoMode |= DML_VID_NONE;
-			DMLCfg->Config |= DML_CFG_GAME_PATH;
-
-			if(cheats)
-			{
-				DMLCfg->Config |= DML_CFG_CHEATS;
-				DMLCfg->Config |= DML_CFG_CHEAT_PATH;
-
-				strncpy(DMLCfg->CheatPath, ptr, sizeof(DMLCfg->CheatPath));
-			}
-
-			if(m_gcfg2.getBool(id, "debugger", false))
-				DMLCfg->Config |= DML_CFG_DEBUGGER;
-			if(NMM)
-			{
-				DMLCfg->Config |= DML_CFG_NMM;
-				if(NMM_debug)
-					DMLCfg->Config |= DML_CFG_NMM_DEBUG;
-			}
-
-			memcpy((void *)0xC0001700, DMLCfg, sizeof(DML_CFG));
-			MEM2_free(DMLCfg);
-		}
+			DML_New_SetOptions(hdr->path, CheatPath, NewCheatPath, DML_debug, NMM, NMM_debug);
 		else
-		{
-			gprintf("Wiiflow DML: Launch game 'sd:/games/%s/game.iso' through boot.bin\n", hdr->path);
-			FILE *f;
-			f = fopen("sd:/games/boot.bin", "wb");
-			fwrite(hdr->path, 1, strlen(hdr->path) + 1, f);
-			fclose(f);
-		}
-
+			DML_Old_SetOptions(hdr->path, CheatPath, NewCheatPath);
 		DMLvideoMode = min((u32)m_gcfg2.getInt(id, "dml_video_mode", 0), ARRAY_SIZE(CMenu::_DMLvideoModes) - 1u);
 		if(DMLvideoMode == 0)
 			DMLvideoMode = min((u32)m_cfg.getInt("DML", "video_mode", 0), ARRAY_SIZE(CMenu::_GlobalDMLvideoModes) - 1u);
@@ -731,28 +680,17 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 		WDVD_Init();
 		WDVD_StopMotor();
 		WDVD_Close();
-
-		//Tell DML to boot the game from sd card
-		*(vu32*)0x80001800 = 0xB002D105;
-		DCFlushRange((void *)(0x80001800), 4);
-		ICInvalidateRange((void *)(0x80001800), 4);
 	}
 
 	memcpy((char *)0x80000000, id, 6);	
 	if(((id[3] == 'P') && (DMLvideoMode == 0)) || (DMLvideoMode == 1))
-	{
-		set_video_mode(1);
-	}
+		GC_SetVideoMode(1);
 	if(((id[3] != 'P') && (DMLvideoMode == 0)) || (DMLvideoMode == 2))
-	{
-		set_video_mode(0);
-	}
-	set_language(GClanguage);
+		GC_SetVideoMode(0);
+	GC_SetLanguage(GClanguage);
 	VIDEO_SetBlack(TRUE);
 	VIDEO_Flush();
 	VIDEO_WaitVSync();
-
-	*(vu32*)0xCC003024 |= 7;
 
 	if(WII_LaunchTitle(0x100000100LL) < 0 )
 		Sys_LoadMenu();

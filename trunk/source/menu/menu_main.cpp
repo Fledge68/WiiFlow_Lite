@@ -390,7 +390,8 @@ int CMenu::main(void)
 					iosinfo_t * iosInfo = cIOSInfo::GetInfo(mainIOS);
 					if (iosInfo->version > 6)
 						isD2XnewerThanV6 = true;
-					Nand::Instance()->Enable_Emu();
+					if(m_current_view == COVERFLOW_CHANNEL && m_cfg.getInt("NAND", "emulation", 0) > 0)
+						Nand::Instance()->Enable_Emu();
 					u8 limiter = 0;
 					currentPartition = loopNum(currentPartition + 1, (int)USB8);
 					while(!DeviceHandler::Instance()->IsInserted(currentPartition) ||
