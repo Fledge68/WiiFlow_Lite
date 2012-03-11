@@ -114,7 +114,7 @@ bool GC_GameIsInstalled(char *discid, const char* partition, const char* dmlgame
 	return false;
 }
 
-void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, bool debugger, bool NMM, bool NMM_debug)
+void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, bool debugger, bool NMM, bool NMM_debug, bool cheats)
 {
 	gprintf("Wiiflow DML: Launch game 'sd:/games/%s/game.iso' through memory (new method)\n", GamePath);
 
@@ -127,7 +127,7 @@ void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, boo
 	DMLCfg->VideoMode |= DML_VID_NONE;
 	DMLCfg->Config |= DML_CFG_GAME_PATH;
 
-	if(CheatPath)
+	if(cheats)
 	{
 		char *ptr;
 		if(strstr(CheatPath, "sd:/") == NULL)
@@ -154,7 +154,7 @@ void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, boo
 	MEM2_free(DMLCfg);
 }
 
-void DML_Old_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath)
+void DML_Old_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats)
 {
 	gprintf("Wiiflow DML: Launch game 'sd:/games/%s/game.iso' through boot.bin (old method)\n", GamePath);
 	FILE *f;
@@ -162,7 +162,7 @@ void DML_Old_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath)
 	fwrite(GamePath, 1, strlen(GamePath) + 1, f);
 	fclose(f);
 
-	if(CheatPath && strstr(CheatPath, NewCheatPath) == NULL)
+	if(cheats && strstr(CheatPath, NewCheatPath) == NULL)
 		fsop_CopyFile(CheatPath, NewCheatPath, NULL, NULL);
 
 	//Tell DML to boot the game from sd card

@@ -652,9 +652,9 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 		}
 
 		if(m_new_dml)
-			DML_New_SetOptions(hdr->path, CheatPath, NewCheatPath, DML_debug, NMM, NMM_debug);
+			DML_New_SetOptions(hdr->path, CheatPath, NewCheatPath, DML_debug, NMM, NMM_debug, cheats);
 		else
-			DML_Old_SetOptions(hdr->path, CheatPath, NewCheatPath);
+			DML_Old_SetOptions(hdr->path, CheatPath, NewCheatPath, cheats);
 		DMLvideoMode = min((u32)m_gcfg2.getInt(id, "dml_video_mode", 0), ARRAY_SIZE(CMenu::_DMLvideoModes) - 1u);
 		if(DMLvideoMode == 0)
 			DMLvideoMode = min((u32)m_cfg.getInt("DML", "video_mode", 0), ARRAY_SIZE(CMenu::_GlobalDMLvideoModes) - 1u);
