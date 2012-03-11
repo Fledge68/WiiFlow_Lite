@@ -480,7 +480,8 @@ bool GameTDB::FindTitle(char * data, string & title, string langCode)
     }
 	
 	char tmp[64];
-    strncpy(tmp, the_title, 64);
+	strncpy(tmp, the_title, sizeof(tmp) - 1);
+	tmp[sizeof(tmp) - 1] = '\0';
 	title=tmp;
 	return true;
 }
