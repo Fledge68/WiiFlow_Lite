@@ -1816,6 +1816,7 @@ bool CMenu::_loadList(void)
 {
 	m_cf.clear();
 	m_gameList.clear();
+	Nand::Instance()->Disable_Emu();
 
 	if(m_cfg.getBool(_domainFromView(), "update_cache")) m_gameList.Update(m_current_view);
 

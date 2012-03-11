@@ -107,7 +107,8 @@ void CMenu::_showConfig4(void)
 		}
 	}
 
-	Nand::Instance()->Enable_Emu();
+	if(m_current_view == COVERFLOW_CHANNEL && m_cfg.getInt("NAND", "emulation", 0) > 0)
+		Nand::Instance()->Enable_Emu();
 
 	m_btnMgr.setText(m_config4LblReturnToVal, channelName);
 }
