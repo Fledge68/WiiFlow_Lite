@@ -122,7 +122,7 @@ int main(int argc, char **argv)
 		vid.cleanup();
 		if (bootHB)
 		{
-			IOS_ReloadIOS(58);
+			//IOS_ReloadIOS(58);
 			BootHomebrew();
 		}
 		Open_Inputs(); //reinit wiimote
