@@ -630,6 +630,8 @@ extern "C" {extern void USBStorage_Deinit(void);}
 void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 {
 	Nand::Instance()->Disable_Emu();
+	m_gameSound.Stop();
+	CheckGameSoundThread();
 	char* id = (char *)hdr->hdr.id;
 	u8 DMLvideoMode = 0;
 	u8 GClanguage = 0;
@@ -721,7 +723,6 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 		m_gcfg1.save(true);
 		m_cfg.save(true);
 
-		CheckGameSoundThread();
 		cleanup();
 		Close_Inputs();
 		USBStorage_Deinit();
