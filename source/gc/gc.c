@@ -114,7 +114,7 @@ bool GC_GameIsInstalled(char *discid, const char* partition, const char* dmlgame
 	return false;
 }
 
-void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, bool debugger, bool NMM, bool NMM_debug, bool cheats)
+void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, bool debugger, u8 NMM, bool cheats)
 {
 	gprintf("Wiiflow DML: Launch game 'sd:/games/%s/game.iso' through memory (new method)\n", GamePath);
 
@@ -126,6 +126,8 @@ void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, boo
 	DMLCfg->CfgVersion = 0x00000001;
 	DMLCfg->VideoMode |= DML_VID_NONE;
 	DMLCfg->Config |= DML_CFG_GAME_PATH;
+
+	DMLCfg->Config |= DML_CFG_ACTIVITY_LED; //Sorry but I like it lol, option will may follow
 
 	if(cheats)
 	{
@@ -141,14 +143,14 @@ void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, boo
 		DMLCfg->Config |= DML_CFG_CHEATS;
 		DMLCfg->Config |= DML_CFG_CHEAT_PATH;
 	}
+
 	if(debugger)
 		DMLCfg->Config |= DML_CFG_DEBUGGER;
-	if(NMM)
-	{
+	if(NMM > 0)
 		DMLCfg->Config |= DML_CFG_NMM;
-		if(NMM_debug)
-			DMLCfg->Config |= DML_CFG_NMM_DEBUG;
-	}
+	if(NMM > 1)
+		DMLCfg->Config |= DML_CFG_NMM_DEBUG;
+
 	//Write options into memory
 	memcpy((void *)0xC0001700, DMLCfg, sizeof(DML_CFG));
 	MEM2_free(DMLCfg);

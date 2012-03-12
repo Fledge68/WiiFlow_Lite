@@ -123,7 +123,7 @@ s32 Nand::Nand_Disable(void)
 	s32 fd = IOS_Open("/dev/fs", 0);
 	if (fd < 0) return fd;
 
-	u32 inbuf ATTRIBUTE_ALIGN(32) = 0;
+	static u32 inbuf ATTRIBUTE_ALIGN(32) = 0;
 	s32 ret = IOS_Ioctl(fd, 100, &inbuf, sizeof(inbuf), NULL, 0);
 	IOS_Close(fd);
 

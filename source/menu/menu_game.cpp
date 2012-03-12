@@ -163,6 +163,13 @@ const CMenu::SOption CMenu::_AspectRatio[3] = {
 	{ "aspect169", L"Force 16:9" },
 };
 
+const CMenu::SOption CMenu::_NMM[4] = {
+	{ "NMMDef", L"Default" },
+	{ "NMMOff", L"Disabled" },
+	{ "NMMon", L"Enabled" },
+	{ "NMMdebug", L"Debug" },
+};
+
 const CMenu::SOption CMenu::_vidModePatch[4] = {
 	{ "vmpnone", L"None" },
 	{ "vmpnormal", L"Normal" },
@@ -635,13 +642,15 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 
 	u8 DMLvideoMode = 0;
 	u8 GClanguage = 0;
-
 	if(DML)
 	{
 		char CheatPath[256];
 		char NewCheatPath[255];
-		bool NMM = m_gcfg2.testOptBool(id, "NMM", m_cfg.getBool("DML", "NMM", false));
-		bool NMM_debug = m_gcfg2.testOptBool(id, "NMM_debug", m_cfg.getBool("DML", "NMM_debug", false));
+		u8 NMM = min((u32)m_gcfg2.getInt(id, "dml_nmm", 0), ARRAY_SIZE(CMenu::_NMM) - 1u);
+		if(NMM == 0)
+			NMM = min((u32)m_cfg.getInt("DML", "dml_nmm", 0), ARRAY_SIZE(CMenu::_NMM) - 1u);
+		else
+			NMM--;
 		bool cheats = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool("DML", "cheat", false));
 		bool DML_debug = m_gcfg2.getBool(id, "debugger", false);
 
@@ -652,7 +661,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 		}
 
 		if(m_new_dml)
-			DML_New_SetOptions(hdr->path, CheatPath, NewCheatPath, DML_debug, NMM, NMM_debug, cheats);
+			DML_New_SetOptions(hdr->path, CheatPath, NewCheatPath, DML_debug, NMM, cheats);
 		else
 			DML_Old_SetOptions(hdr->path, CheatPath, NewCheatPath, cheats);
 		DMLvideoMode = min((u32)m_gcfg2.getInt(id, "dml_video_mode", 0), ARRAY_SIZE(CMenu::_DMLvideoModes) - 1u);
