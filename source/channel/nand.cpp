@@ -1,6 +1,7 @@
 /***************************************************************************
- * Copyright (C) 2011
- * by Miigotu
+ * Copyright (C) 2011 by Miigotu
+ *           (C) 2012 by OverjoY for Wiiflow-mod
+ *
  * Rewritten code from Mighty Channels and Triiforce
  *
  * This software is provided 'as-is', without any express or implied
@@ -37,6 +38,16 @@
 #include "utils.h"
 #include "gecko.h"
 #include "mem2.hpp"
+
+u8 *confbuffer;
+u8 CCode[0x1008];
+char SCode[4];
+char *txtbuffer;
+
+config_header *cfg_hdr;
+
+bool tbdec = false;
+bool configloaded = false;
 
 static NandDevice NandDeviceList[] = {
 	{ "Disable",						0,	0x00,	0x00 },
@@ -123,7 +134,7 @@ s32 Nand::Nand_Disable(void)
 	s32 fd = IOS_Open("/dev/fs", 0);
 	if (fd < 0) return fd;
 
-	static u32 inbuf ATTRIBUTE_ALIGN(32) = 0;
+	u32 inbuf ATTRIBUTE_ALIGN(32) = 0;
 	s32 ret = IOS_Ioctl(fd, 100, &inbuf, sizeof(inbuf), NULL, 0);
 	IOS_Close(fd);
 
@@ -176,3 +187,253 @@ void Nand::Set_NandPath(string path)
 	if(path.size() <= 32)
 		memcpy(NandPath, path.c_str(), path.size());
 }
+
+void Nand::__Dec_Enc_TB(void) 
+{	
+	u32 key = 0x73B5DBFA;
+    int i;
+    
+	for( i=0; i < 0x100; ++i ) 
+	{    
+		txtbuffer[i] ^= key&0xFF;
+		key = (key<<1) | (key>>31);
+	}
+	
+	tbdec = tbdec ? false : true;
+}
+
+void Nand::__configshifttxt(char *str)
+{
+	const char *ptr = str;
+	char *ctr = str;
+	int i;
+	int j = strlen(str);
+	
+	for( i=0; i<j; ++i )
+	{		
+		if( strncmp( str+(i-3), "PALC", 4 ) == 0 )
+			*ctr = 0x0d;
+		else if( strncmp( str+(i-2), "LUH", 3 ) == 0 )
+			*ctr = 0x0d;
+		else if( strncmp( str+(i-2), "LUM", 3 ) == 0 )	
+			*ctr = 0x0d;
+		else 
+			*ctr = str[i];
+
+		ctr++;
+	}	
+	*ctr = *ptr;
+	*ctr = '\0';
+}
+
+s32 Nand::__configread(void)
+{
+	confbuffer = (u8 *)MEM2_alloc(0x4000);
+	txtbuffer = (char *)MEM2_alloc(0x100);
+	cfg_hdr = (config_header *)NULL;
+	
+	FILE *f = fopen(cfgpath, "rb");
+	if(f)
+	{
+		fread(confbuffer, 1, 0x4000, f);
+		gprintf("SYSCONF readed from: %s \n", cfgpath);
+		fclose(f);
+	}
+		
+	f = fopen(settxtpath, "rb");
+	if(f)
+	{
+		fread(txtbuffer, 1, 0x100, f);
+		gprintf("setting.txt readed from: %s \n", settxtpath);
+		fclose(f);
+	}
+		
+	cfg_hdr = (config_header *)confbuffer;
+		
+	__Dec_Enc_TB();
+	
+	configloaded = configloaded ? false : true;
+	
+	if(tbdec && configloaded)
+		return 1;		
+	
+	return 0;	
+}
+
+s32 Nand::__configwrite(void)
+{
+	if(configloaded)
+	{
+		__Dec_Enc_TB();
+		
+		if(!tbdec)
+		{
+			FILE *f = fopen(cfgpath, "wb");
+			if(f)
+			{
+				fwrite(confbuffer, 1, 0x4000, f);
+				gprintf("SYSCONF written to: %s \n", cfgpath);
+				fclose(f);
+			}
+				
+			f = fopen(settxtpath, "wb");
+			if(f)
+			{
+				fwrite(txtbuffer, 1, 0x100, f);
+				gprintf("setting.txt written to: %s \n", settxtpath);
+				fclose(f);
+			}		
+				
+			configloaded = configloaded ? false : true;
+			
+			if(!tbdec && !configloaded)
+				return 1;			
+		}
+	}
+	MEM2_free(confbuffer);
+	MEM2_free(txtbuffer);
+	return 0;			
+} 
+
+u32 Nand::__configsetbyte(const char *item, u8 val)
+{
+	u32 i;
+	for(i=0; i<cfg_hdr->ncnt; ++i)
+	{
+		if(memcmp(confbuffer+(cfg_hdr->noff[i] + 1), item, strlen(item)) == 0)
+		{
+			*(u8*)(confbuffer+cfg_hdr->noff[i] + 1 + strlen(item)) = val;
+			break;
+		}
+	}
+	return 0;
+}
+
+u32 Nand::__configsetbigarray(const char *item, void *val, u32 size)
+{
+	u32 i;
+	for(i=0; i<cfg_hdr->ncnt; ++i)
+	{
+		if(memcmp(confbuffer+(cfg_hdr->noff[i] + 1), item, strlen(item)) == 0)
+		{
+			memcpy(confbuffer+cfg_hdr->noff[i] + 3 + strlen(item), val, size);
+			break;
+		}
+	}
+	return 0;
+}
+
+u32 Nand::__configsetsetting(const char *item, const char *val)
+{		
+	char *curitem = strstr(txtbuffer, item);
+	char *curstrt, *curend;
+	
+	if(curitem == NULL)
+		return 0;
+	
+	curstrt = strchr(curitem, '=');
+	curend = strchr(curitem, 0x0d);
+	
+	if( curstrt && curend )
+	{
+		curstrt += 1;
+		u32 len = curend - curstrt;
+		if( strlen( val ) > len )
+		{
+			static char buffer[0x100];
+			u32 nlen;
+			nlen = txtbuffer-(curstrt+strlen(val));
+			strcpy( buffer, txtbuffer+nlen );
+			strncpy( curstrt, val, strlen(val));
+			curstrt += strlen(val); 
+			strncpy(curstrt, buffer, strlen(buffer));
+		}
+		else
+		{
+			strncpy(curstrt, val, strlen(val));
+		}
+
+		__configshifttxt(txtbuffer);
+
+		return 1;
+	}
+	return 0;
+}
+
+s32 Nand::Do_Region_Change(string id, char *path)
+{
+	bzero(cfgpath, MAX_FAT_PATH);	
+	bzero(settxtpath, MAX_FAT_PATH);
+	
+	snprintf(cfgpath, sizeof(cfgpath), "%s/shared2/sys/SYSCONF", path);
+	snprintf(settxtpath, sizeof(settxtpath), "%s/title/00000001/00000002/data/setting.txt", path);
+	
+	if(__configread())
+	{
+		switch(id[3])
+		{
+			case 'J':
+			{
+				gprintf("Switching region to NTSC-j \n");
+				CCode[0] = 1;
+				__configsetbyte( "IPL.LNG", 0 );				
+				__configsetbigarray( "SADR.LNG", CCode, 0x1007 );
+				__configsetsetting( "AREA", "JPN" );
+				__configsetsetting( "MODEL", "RVL-001(JPN)" );
+				__configsetsetting( "CODE", "LJM" );
+				__configsetsetting( "VIDEO", "NTSC" );
+				__configsetsetting( "GAME", "JP" );								
+			} break;
+			case 'E':
+			{
+				gprintf("Switching region to NTSC-u \n");
+				CCode[0] = 31;
+				__configsetbyte( "IPL.LNG", 1 );				
+				__configsetbigarray( "IPL.SADR", CCode, 0x1007 );
+				__configsetsetting( "AREA", "USA" );
+				__configsetsetting( "MODEL", "RVL-001(USA)" );
+				__configsetsetting( "CODE", "LU" );
+				__configsetsetting( "VIDEO", "NTSC" );
+				__configsetsetting( "GAME", "US" );									
+			} break;
+			case 'D':
+			case 'F':
+			case 'I':
+			case 'M':
+			case 'P':
+			case 'S':
+			case 'U':					
+			{
+				gprintf("Switching region to PAL \n");
+				CCode[0] = 110;
+				__configsetbyte( "IPL.LNG", 6 );				
+				__configsetbigarray( "IPL.SADR", CCode, 0x1007 );
+				__configsetsetting( "AREA", "EUR" );
+				__configsetsetting( "MODEL", "RVL-001(EUR)" );
+				__configsetsetting( "CODE", "LEH" );
+				__configsetsetting( "VIDEO", "PAL" );
+				__configsetsetting( "GAME", "EU" );								
+			} break;
+			case 'K':					
+			{
+				gprintf("Switching region to NTSC-k \n");
+				CCode[0] = 137;
+				__configsetbyte( "IPL.LNG", 9 );				
+				__configsetbigarray( "IPL.SADR", CCode, 0x1007 );
+				__configsetsetting( "AREA", "KOR" );
+				__configsetsetting( "MODEL", "RVL-001(KOR)" );
+				__configsetsetting( "CODE", "LKM" );
+				__configsetsetting( "VIDEO", "NTSC" );
+				__configsetsetting( "GAME", "KR" );
+			} break;		
+		}
+	}
+	__configwrite();
+	return 1;	
+}
+	
+	
+	
+	
+	
+	

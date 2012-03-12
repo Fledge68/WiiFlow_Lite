@@ -974,8 +974,8 @@ private:
 	static const SOption _GClanguages[8];
 
 	static const SOption _NandEmu[3];
-	static const SOption _SaveEmu[4];
-	static const SOption _GlobalSaveEmu[3];
+	static const SOption _SaveEmu[5];
+	static const SOption _GlobalSaveEmu[4];
 	static const SOption _AspectRatio[3];
 	static const SOption _NMM[4];
 	static const SOption _vidModePatch[4];
