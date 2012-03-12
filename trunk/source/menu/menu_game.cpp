@@ -144,16 +144,18 @@ const CMenu::SOption CMenu::_NandEmu[3] = {
 	{ "NANDfull", L"Full" },
 };
 
-const CMenu::SOption CMenu::_GlobalSaveEmu[3] = {
+const CMenu::SOption CMenu::_GlobalSaveEmu[4] = {
 	{ "SaveOffG", L"Off" },
-	{ "SavePartG", L"Partial" },
+	{ "SavePartG", L"Game save" },
+	{ "SaveRegG", L"Regionswitch" },
 	{ "SaveFullG", L"Full" },
 };
 
-const CMenu::SOption CMenu::_SaveEmu[4] = {
+const CMenu::SOption CMenu::_SaveEmu[5] = {
 	{ "SaveDef", L"Default" },
 	{ "SaveOff", L"Off" },
-	{ "SavePart", L"Partial" },
+	{ "SavePart", L"Game save" },
+	{ "SaveReg", L"Regionswitch" },
 	{ "SaveFull", L"Full" },
 };
 
@@ -1006,7 +1008,15 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	{
 		char basepath[64];
 		snprintf(basepath, 64, "%s:%s", DeviceName[emuPartition], emuPath.c_str());
-		CreateSavePath(basepath, hdr);
+		if(emuSave == 2 || emuSave > 3)
+		{
+			CreateSavePath(basepath, hdr);
+		}
+		if(emuSave > 2)
+		{
+			//Nand::Instance()->CreateConfig(basepath); // TODO: Write config files if they don't excist
+			Nand::Instance()->Do_Region_Change(id, basepath);
+		}
 	}
 
 		int gameIOS = 0;
@@ -1121,6 +1131,8 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		DeviceHandler::Instance()->UnMount(emuPartition);
 		
 		if (emuSave == 3)
+			Nand::Instance()->Set_RCMode(true);
+		else if (emuSave == 4)
 			Nand::Instance()->Set_FullMode(true);
 		else
 			Nand::Instance()->Set_FullMode(false);
