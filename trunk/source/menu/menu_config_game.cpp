@@ -44,6 +44,10 @@ void CMenu::_hideGameSettings(bool instant)
 	m_btnMgr.hide(m_gameSettingsLblAspectRatioVal, instant);
 	m_btnMgr.hide(m_gameSettingsBtnAspectRatioP, instant);
 	m_btnMgr.hide(m_gameSettingsBtnAspectRatioM, instant);
+	m_btnMgr.hide(m_gameSettingsLblNMM, instant);
+	m_btnMgr.hide(m_gameSettingsLblNMM_Val, instant);
+	m_btnMgr.hide(m_gameSettingsBtnNMM_P, instant);
+	m_btnMgr.hide(m_gameSettingsBtnNMM_M, instant);
 	m_btnMgr.hide(m_gameSettingsLblIOSreloadBlock, instant);
 	m_btnMgr.hide(m_gameSettingsBtnIOSreloadBlock, instant);
 	m_btnMgr.hide(m_gameSettingsLblCustom, instant);
@@ -119,7 +123,7 @@ void CMenu::_showGameSettings(void)
 	if(m_cf.getHdr()->hdr.gc_magic != 0xc2339f3d)
 		g_numGCfPages = 4;
 	else
-		g_numGCfPages = 2;
+		g_numGCfPages = 3;
 		
 	if (m_gameSettingsPage == 1)
 	{
@@ -158,7 +162,7 @@ void CMenu::_showGameSettings(void)
 	{
 		m_btnMgr.hide(m_gameSettingsLblCover);
 		m_btnMgr.hide(m_gameSettingsBtnCover);
-		
+
 		if(m_cf.getHdr()->hdr.gc_magic != 0xc2339f3d)
 		{
 			m_btnMgr.hide(m_gameSettingsBtnCategoryMain);
@@ -169,19 +173,19 @@ void CMenu::_showGameSettings(void)
 			m_btnMgr.hide(m_gameSettingsBtnLanguageP);
 			m_btnMgr.hide(m_gameSettingsBtnLanguageM);
 
-			m_btnMgr.hide(m_gameSettingsLblGameVideo);		
+			m_btnMgr.hide(m_gameSettingsLblGameVideo);
 			m_btnMgr.hide(m_gameSettingsLblVideo);
 			m_btnMgr.hide(m_gameSettingsBtnVideoP);
 			m_btnMgr.hide(m_gameSettingsBtnVideoM);
 		}
 		else
 		{
-			m_btnMgr.hide(m_gameSettingsLblGClanguageVal);		
+			m_btnMgr.hide(m_gameSettingsLblGClanguageVal);
 			m_btnMgr.hide(m_gameSettingsLblGClanguage);
 			m_btnMgr.hide(m_gameSettingsBtnGClanguageP);
 			m_btnMgr.hide(m_gameSettingsBtnGClanguageM);
 
-			m_btnMgr.hide(m_gameSettingsLblDMLGameVideo);		
+			m_btnMgr.hide(m_gameSettingsLblDMLGameVideo);
 			m_btnMgr.hide(m_gameSettingsLblDMLVideo);
 			m_btnMgr.hide(m_gameSettingsBtnDMLVideoP);
 			m_btnMgr.hide(m_gameSettingsBtnDMLVideoM);
@@ -231,42 +235,61 @@ void CMenu::_showGameSettings(void)
 	}
 	if (m_gameSettingsPage == 3)
 	{
-
-		m_btnMgr.show(m_gameSettingsLblPatchVidModes);
-		m_btnMgr.show(m_gameSettingsLblPatchVidModesVal);
-		m_btnMgr.show(m_gameSettingsBtnPatchVidModesM);
-		m_btnMgr.show(m_gameSettingsBtnPatchVidModesP);
-		m_btnMgr.show(m_gameSettingsLblVipatch);
-		m_btnMgr.show(m_gameSettingsBtnVipatch);
-
-		m_btnMgr.show(m_gameSettingsLblCountryPatch);
-		m_btnMgr.show(m_gameSettingsBtnCountryPatch);
-			
-		if(m_current_view == COVERFLOW_USB)
+		if(m_cf.getHdr()->hdr.gc_magic != 0xc2339f3d)
 		{
-			m_btnMgr.show(m_gameSettingsLblEmulationVal);
-			m_btnMgr.show(m_gameSettingsLblEmulation);
-			m_btnMgr.show(m_gameSettingsBtnEmulationP);
-			m_btnMgr.show(m_gameSettingsBtnEmulationM);
+			m_btnMgr.show(m_gameSettingsLblPatchVidModes);
+			m_btnMgr.show(m_gameSettingsLblPatchVidModesVal);
+			m_btnMgr.show(m_gameSettingsBtnPatchVidModesM);
+			m_btnMgr.show(m_gameSettingsBtnPatchVidModesP);
+			m_btnMgr.show(m_gameSettingsLblVipatch);
+			m_btnMgr.show(m_gameSettingsBtnVipatch);
+
+			m_btnMgr.show(m_gameSettingsLblCountryPatch);
+			m_btnMgr.show(m_gameSettingsBtnCountryPatch);
+
+			if(m_current_view == COVERFLOW_USB)
+			{
+				m_btnMgr.show(m_gameSettingsLblEmulationVal);
+				m_btnMgr.show(m_gameSettingsLblEmulation);
+				m_btnMgr.show(m_gameSettingsBtnEmulationP);
+				m_btnMgr.show(m_gameSettingsBtnEmulationM);
+			}
+		}
+		else
+		{
+			m_btnMgr.show(m_gameSettingsLblNMM);
+			m_btnMgr.show(m_gameSettingsLblNMM_Val);
+			m_btnMgr.show(m_gameSettingsBtnNMM_P);
+			m_btnMgr.show(m_gameSettingsBtnNMM_M);
 		}
 	}
 	else
 	{
-		m_btnMgr.hide(m_gameSettingsLblPatchVidModes);
-		m_btnMgr.hide(m_gameSettingsLblPatchVidModesVal);
-		m_btnMgr.hide(m_gameSettingsBtnPatchVidModesM);
-		m_btnMgr.hide(m_gameSettingsBtnPatchVidModesP);
+		if(m_cf.getHdr()->hdr.gc_magic != 0xc2339f3d)
+		{
+			m_btnMgr.hide(m_gameSettingsLblPatchVidModes);
+			m_btnMgr.hide(m_gameSettingsLblPatchVidModesVal);
+			m_btnMgr.hide(m_gameSettingsBtnPatchVidModesM);
+			m_btnMgr.hide(m_gameSettingsBtnPatchVidModesP);
 
-		m_btnMgr.hide(m_gameSettingsLblVipatch);
-		m_btnMgr.hide(m_gameSettingsBtnVipatch);
+			m_btnMgr.hide(m_gameSettingsLblVipatch);
+			m_btnMgr.hide(m_gameSettingsBtnVipatch);
 
-		m_btnMgr.hide(m_gameSettingsLblCountryPatch);
-		m_btnMgr.hide(m_gameSettingsBtnCountryPatch);
+			m_btnMgr.hide(m_gameSettingsLblCountryPatch);
+			m_btnMgr.hide(m_gameSettingsBtnCountryPatch);
 
-		m_btnMgr.hide(m_gameSettingsLblEmulationVal);
-		m_btnMgr.hide(m_gameSettingsLblEmulation);
-		m_btnMgr.hide(m_gameSettingsBtnEmulationP);
-		m_btnMgr.hide(m_gameSettingsBtnEmulationM);
+			m_btnMgr.hide(m_gameSettingsLblEmulationVal);
+			m_btnMgr.hide(m_gameSettingsLblEmulation);
+			m_btnMgr.hide(m_gameSettingsBtnEmulationP);
+			m_btnMgr.hide(m_gameSettingsBtnEmulationM);
+		}
+		else
+		{
+			m_btnMgr.hide(m_gameSettingsLblNMM);
+			m_btnMgr.hide(m_gameSettingsLblNMM_Val);
+			m_btnMgr.hide(m_gameSettingsBtnNMM_P);
+			m_btnMgr.hide(m_gameSettingsBtnNMM_M);
+		}
 	}
 	if (m_gameSettingsPage == 4)
 	{
@@ -391,6 +414,8 @@ void CMenu::_showGameSettings(void)
 	m_btnMgr.setText(m_gameSettingsLblLanguage, _t(CMenu::_languages[i].id, CMenu::_languages[i].text));
 	i = min((u32)m_gcfg2.getInt(id, "aspect_ratio", 0), ARRAY_SIZE(CMenu::_AspectRatio) - 1u);
 	m_btnMgr.setText(m_gameSettingsLblAspectRatioVal, _t(CMenu::_AspectRatio[i].id, CMenu::_AspectRatio[i].text));
+	i = min((u32)m_gcfg2.getInt(id, "dml_nmm", 0), ARRAY_SIZE(CMenu::_NMM) - 1u);
+	m_btnMgr.setText(m_gameSettingsLblNMM_Val, _t(CMenu::_NMM[i].id, CMenu::_NMM[i].text));
 	m_btnMgr.setText(m_gameSettingsBtnCustom, _optBoolToString(m_gcfg2.getOptBool(id, "custom", 0)));
 
 	int j = 0;
@@ -547,6 +572,12 @@ void CMenu::_gameSettings(void)
 				m_gcfg2.setInt(id, "aspect_ratio", (int)loopNum((u32)m_gcfg2.getInt(id, "aspect_ratio", 0) + direction, ARRAY_SIZE(CMenu::_AspectRatio)));
 				_showGameSettings();
 			}
+			else if (m_btnMgr.selected(m_gameSettingsBtnNMM_P) || m_btnMgr.selected(m_gameSettingsBtnNMM_M))
+			{
+				s8 direction = m_btnMgr.selected(m_gameSettingsBtnNMM_P) ? 1 : -1;
+				m_gcfg2.setInt(id, "dml_nmm", (int)loopNum((u32)m_gcfg2.getInt(id, "dml_nmm", 0) + direction, ARRAY_SIZE(CMenu::_NMM)));
+				_showGameSettings();
+			}
 			else if (m_btnMgr.selected(m_gameSettingsBtnIOSM) || m_btnMgr.selected(m_gameSettingsBtnIOSP))
 			{
 				if( _installed_cios.size() > 0)
@@ -699,17 +730,25 @@ void CMenu::_initGameSettingsMenu(CMenu::SThemeData &theme)
 	// Page 3
 	m_gameSettingsLblCountryPatch = _addLabel(theme, "GAME_SETTINGS/COUNTRY_PATCH", theme.lblFont, L"", 40, 130, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsBtnCountryPatch = _addButton(theme, "GAME_SETTINGS/COUNTRY_PATCH_BTN", theme.btnFont, L"", 380, 130, 220, 56, theme.btnFontColor);
+
 	m_gameSettingsLblVipatch = _addLabel(theme, "GAME_SETTINGS/VIPATCH", theme.lblFont, L"", 40, 190, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsBtnVipatch = _addButton(theme, "GAME_SETTINGS/VIPATCH_BTN", theme.btnFont, L"", 380, 190, 220, 56, theme.btnFontColor);
+
 	m_gameSettingsLblPatchVidModes = _addLabel(theme, "GAME_SETTINGS/PATCH_VIDEO_MODE", theme.lblFont, L"", 40, 250, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsLblPatchVidModesVal = _addLabel(theme, "GAME_SETTINGS/PATCH_VIDEO_MODE_BTN", theme.btnFont, L"", 436, 250, 108, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_gameSettingsBtnPatchVidModesM = _addPicButton(theme, "GAME_SETTINGS/PATCH_VIDEO_MODE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 380, 250, 56, 56);
 	m_gameSettingsBtnPatchVidModesP = _addPicButton(theme, "GAME_SETTINGS/PATCH_VIDEO_MODE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 250, 56, 56);
-	
+
 	m_gameSettingsLblEmulation = _addLabel(theme, "GAME_SETTINGS/EMU_SAVE", theme.lblFont, L"", 40, 310, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsLblEmulationVal = _addLabel(theme, "GAME_SETTINGS/EMU_SAVE_BTN", theme.btnFont, L"", 436, 310, 108, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_gameSettingsBtnEmulationM = _addPicButton(theme, "GAME_SETTINGS/EMU_SAVE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 380, 310, 56, 56);
 	m_gameSettingsBtnEmulationP = _addPicButton(theme, "GAME_SETTINGS/EMU_SAVE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 310, 56, 56);
+
+	//DML Page 3
+	m_gameSettingsLblNMM = _addLabel(theme, "GAME_SETTINGS/DML_NMM", theme.lblFont, L"", 40, 130, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsLblNMM_Val = _addLabel(theme, "GAME_SETTINGS/DML_NMM_BTN", theme.btnFont, L"", 386, 130, 158, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_gameSettingsBtnNMM_M = _addPicButton(theme, "GAME_SETTINGS/DML_NMM_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 330, 130, 56, 56);
+	m_gameSettingsBtnNMM_P = _addPicButton(theme, "GAME_SETTINGS/DML_NMM_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 130, 56, 56);
 
 	//Page 4
  	m_gameSettingsLblGameIOS = _addLabel(theme, "GAME_SETTINGS/IOS", theme.lblFont, L"", 40, 130, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
@@ -759,12 +798,11 @@ void CMenu::_initGameSettingsMenu(CMenu::SThemeData &theme)
 	m_gameSettingsLblCategory[11] = _addLabel(theme, "GAME_SETTINGS/CAT_11", theme.lblFont, L"", 40, 250, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsBtnCategory[11] = _addButton(theme, "GAME_SETTINGS/CAT_11_BTN", theme.btnFont, L"", 330, 250, 270, 56, theme.btnFontColor);
 
-	// 
 	m_gameSettingsLblPage = _addLabel(theme, "GAME_SETTINGS/PAGE_BTN", theme.btnFont, L"", 76, 400, 80, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_gameSettingsBtnPageM = _addPicButton(theme, "GAME_SETTINGS/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 20, 400, 56, 56);
 	m_gameSettingsBtnPageP = _addPicButton(theme, "GAME_SETTINGS/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 156, 400, 56, 56);
 	m_gameSettingsBtnBack = _addButton(theme, "GAME_SETTINGS/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 56, theme.btnFontColor);
-	// 
+
 	_setHideAnim(m_gameSettingsLblTitle, "GAME_SETTINGS/TITLE", 0, -200, 0.f, 1.f);
 	_setHideAnim(m_gameSettingsLblGameVideo, "GAME_SETTINGS/VIDEO", -200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsLblVideo, "GAME_SETTINGS/VIDEO_BTN", 200, 0, 1.f, 0.f);
@@ -812,6 +850,10 @@ void CMenu::_initGameSettingsMenu(CMenu::SThemeData &theme)
 	_setHideAnim(m_gameSettingsLblAspectRatioVal, "GAME_SETTINGS/ASPECT_RATIO_BTN", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnAspectRatioP, "GAME_SETTINGS/ASPECT_RATIO_PLUS", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnAspectRatioM, "GAME_SETTINGS/ASPECT_RATIO_MINUS", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsLblNMM, "GAME_SETTINGS/DML_NMM", -200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsLblNMM_Val, "GAME_SETTINGS/DML_NMM_BTN", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsBtnNMM_P, "GAME_SETTINGS/DML_NMM_PLUS", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsBtnNMM_M, "GAME_SETTINGS/DML_NMM_MINUS", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsLblHooktype, "GAME_SETTINGS/HOOKTYPE", -200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsLblHooktypeVal, "GAME_SETTINGS/HOOKTYPE_BTN", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnHooktypeM, "GAME_SETTINGS/HOOKTYPE_MINUS", 200, 0, 1.f, 0.f);
@@ -862,6 +904,7 @@ void CMenu::_textGameSettings(void)
 	m_btnMgr.setText(m_gameSettingsLblEmulation, _t("cfgg24", L"Savegame Emulation"));
 	m_btnMgr.setText(m_gameSettingsLblIOSreloadBlock, _t("cfgg26", L"Disable IOS Reload block"));
 	m_btnMgr.setText(m_gameSettingsLblAspectRatio, _t("cfgg27", L"Aspect Ratio"));
+	m_btnMgr.setText(m_gameSettingsLblNMM, _t("cfgg28", L"NMM"));
 	m_btnMgr.setText(m_gameSettingsLblCustom, _t("custom", L"Custom"));
 	for (int i = 1; i < 12; ++i)
 		m_btnMgr.setText(m_gameSettingsLblCategory[i], m_cat.getWString("GENERAL", fmt("cat%d",i), wfmt(L"Category %i",i).c_str()));
