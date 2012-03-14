@@ -126,7 +126,7 @@ const SMeshVert g_boxMeshT[] = {	// Triangles
 #undef h
 #undef w
 
-const SMeshVert g_flatCoverMesh[] ATTRIBUTE_ALIGN(32) = {
+const SMeshVert g_flatCoverMesh[] = {
 	{ { g_coverBL.x, g_coverBL.y, g_coverBL.z }, CTexCoord(0.f, 1.f) },
 	{ { g_coverTR.x, g_coverBL.y, g_coverBL.z }, CTexCoord(1.f, 1.f) },
 	{ { g_coverTR.x, g_coverTR.y, g_coverBL.z }, CTexCoord(1.f, 0.f) },
