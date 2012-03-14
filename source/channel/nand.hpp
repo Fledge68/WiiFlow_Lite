@@ -56,7 +56,8 @@ class Nand
 
 		void Set_NandPath(string path);
 		
-		s32 Do_Region_Change(string id, char *path);
+		s32 CreateConfig(const char *path);
+		s32 Do_Region_Change(string id, const char *path);
 
 	private:
 		Nand() : MountedDevice(0), EmuDevice(REAL_NAND), Disabled(true), Partition(0), FullMode(0x100), NandPath() {}
@@ -74,6 +75,8 @@ class Nand
 		u32 __configsetbyte(const char *item, u8 val);
 		u32 __configsetbigarray(const char *item, void *val, u32 size);
 		u32 __configsetsetting(const char *item, const char *val);
+		void __CreatePath(const char *path, ...);
+		
 
 		u32 MountedDevice;
 		u32 EmuDevice;

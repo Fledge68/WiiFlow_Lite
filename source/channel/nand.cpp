@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright (C) 2011 by Miigotu
+ * Copyright (C) 2011 by Miigotu for wiiflow 2011
  *           (C) 2012 by OverjoY for Wiiflow-mod
  *
  * Rewritten code from Mighty Channels and Triiforce
@@ -25,7 +25,6 @@
  *
  * Nand/Emulation Handling Class
  *
- * for wiiflow 2011
  ***************************************************************************/
  
 #include <stdio.h>
@@ -33,16 +32,21 @@
 #include <malloc.h>
 #include <string.h>
 #include <cstdlib>
+#include <stdarg.h>
+#include <dirent.h>
 
 #include "nand.hpp"
 #include "utils.h"
 #include "gecko.h"
 #include "mem2.hpp"
 
-u8 *confbuffer;
+#define SYSCONFPATH "/shared2/sys/SYSCONF"
+#define TXTPATH "/title/00000001/00000002/data/setting.txt"
+
+u8 *confbuffer ATTRIBUTE_ALIGN(32);
 u8 CCode[0x1008];
 char SCode[4];
-char *txtbuffer;
+char *txtbuffer ATTRIBUTE_ALIGN(32);
 
 config_header *cfg_hdr;
 
@@ -232,21 +236,28 @@ s32 Nand::__configread(void)
 	txtbuffer = (char *)MEM2_alloc(0x100);
 	cfg_hdr = (config_header *)NULL;
 	
-	FILE *f = fopen(cfgpath, "rb");
-	if(f)
-	{
-		fread(confbuffer, 1, 0x4000, f);
-		gprintf("SYSCONF readed from: %s \n", cfgpath);
-		fclose(f);
-	}
+	ISFS_Deinitialize();
+	ISFS_Initialize();
+	
+	s32 fd = IOS_Open(SYSCONFPATH, IPC_OPEN_READ);
+	if(fd < 0)
+		return 0;
+	
+	s32 ret = IOS_Read(fd, confbuffer, 0x4000);
+	if(ret < 0)
+		return 0;
+
+	IOS_Close(fd);
+	
+	fd = IOS_Open(TXTPATH, IPC_OPEN_READ);
+	if(fd < 0)
+		return 0;
+
+	ret = IOS_Read(fd, txtbuffer, 0x100);
+	if(ret < 0)
+		return 0;
 		
-	f = fopen(settxtpath, "rb");
-	if(f)
-	{
-		fread(txtbuffer, 1, 0x100, f);
-		gprintf("setting.txt readed from: %s \n", settxtpath);
-		fclose(f);
-	}
+	IOS_Close(fd);
 		
 	cfg_hdr = (config_header *)confbuffer;
 		
@@ -264,7 +275,7 @@ s32 Nand::__configwrite(void)
 {
 	if(configloaded)
 	{
-		__Dec_Enc_TB();
+		__Dec_Enc_TB();		
 		
 		if(!tbdec)
 		{
@@ -272,15 +283,15 @@ s32 Nand::__configwrite(void)
 			if(f)
 			{
 				fwrite(confbuffer, 1, 0x4000, f);
-				gprintf("SYSCONF written to: %s \n", cfgpath);
+				gprintf("SYSCONF written to:\"%s\"\n", cfgpath);
 				fclose(f);
 			}
-				
+			
 			f = fopen(settxtpath, "wb");
 			if(f)
 			{
 				fwrite(txtbuffer, 1, 0x100, f);
-				gprintf("setting.txt written to: %s \n", settxtpath);
+				gprintf("setting.txt written to: \"%s\"\n", settxtpath);
 				fclose(f);
 			}		
 				
@@ -334,11 +345,11 @@ u32 Nand::__configsetsetting(const char *item, const char *val)
 	curstrt = strchr(curitem, '=');
 	curend = strchr(curitem, 0x0d);
 	
-	if( curstrt && curend )
+	if(curstrt && curend)
 	{
 		curstrt += 1;
 		u32 len = curend - curstrt;
-		if( strlen( val ) > len )
+		if(strlen(val) > len)
 		{
 			static char buffer[0x100];
 			u32 nlen;
@@ -360,13 +371,50 @@ u32 Nand::__configsetsetting(const char *item, const char *val)
 	return 0;
 }
 
-s32 Nand::Do_Region_Change(string id, char *path)
+void Nand::__CreatePath(const char *path, ...)
 {
-	bzero(cfgpath, MAX_FAT_PATH);	
-	bzero(settxtpath, MAX_FAT_PATH);
+	char *folder = NULL;
+	va_list args;
+	va_start(args, path);
+	if((vasprintf(&folder, path, args) >= 0) && folder)
+	{
+		DIR *d;
+
+		d = opendir(folder);
+		if(!d)
+		{
+			gprintf("Creating folder: \"%s\"\n", folder);
+			makedir(folder);
+		}
+		else
+		{
+			gprintf("Folder \"%s\" exists\n", folder);
+			closedir(d);
+		}
+	}
+	va_end(args);
+	SAFE_FREE(folder);	
+}
+ 
+s32 Nand::CreateConfig(const char *path)
+{
+	__CreatePath(path);
+	__CreatePath("%s/shared2", path);
+	__CreatePath("%s/shared2/sys", path);
+	__CreatePath("%s/title", path);
+	__CreatePath("%s/title/00000001", path);
+	__CreatePath("%s/title/00000001/00000002", path);
+	__CreatePath("%s/title/00000001/00000002/data", path);
+	return 0;	
+}
+
+s32 Nand::Do_Region_Change(string id, const char *path)
+{
+	bzero(cfgpath, ISFS_MAXPATH);	
+	bzero(settxtpath, ISFS_MAXPATH);
 	
-	snprintf(cfgpath, sizeof(cfgpath), "%s/shared2/sys/SYSCONF", path);
-	snprintf(settxtpath, sizeof(settxtpath), "%s/title/00000001/00000002/data/setting.txt", path);
+	snprintf(cfgpath, sizeof(cfgpath), "%s%s", path, SYSCONFPATH);
+	snprintf(settxtpath, sizeof(settxtpath), "%s%s", path, TXTPATH);
 	
 	if(__configread())
 	{
