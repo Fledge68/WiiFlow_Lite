@@ -655,6 +655,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 			NMM--;
 		bool cheats = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool("DML", "cheat", false));
 		bool DML_debug = m_gcfg2.getBool(id, "debugger", false);
+		bool nodisc = m_cfg.getBool("DML", "no_disc_patch", true);
 
 		if(cheats)
 		{
@@ -663,7 +664,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 		}
 
 		if(m_new_dml)
-			DML_New_SetOptions(hdr->path, CheatPath, NewCheatPath, DML_debug, NMM, cheats);
+			DML_New_SetOptions(hdr->path, CheatPath, NewCheatPath, DML_debug, NMM, cheats, nodisc);
 		else
 			DML_Old_SetOptions(hdr->path, CheatPath, NewCheatPath, cheats);
 		DMLvideoMode = min((u32)m_gcfg2.getInt(id, "dml_video_mode", 0), ARRAY_SIZE(CMenu::_DMLvideoModes) - 1u);
