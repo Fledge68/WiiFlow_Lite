@@ -27,6 +27,7 @@ enum dmlconfig
 	DML_CFG_CHEAT_PATH	= (1<<6),
 	DML_CFG_ACTIVITY_LED= (1<<7),
 	DML_CFG_PADHOOK		= (1<<8),
+	DML_CFG_NODISC		= (1<<9),
 };
 
 enum dmlvideomode
@@ -44,7 +45,7 @@ enum dmlvideomode
 void GC_SetVideoMode(int i);
 void GC_SetLanguage(u8 lang);
 bool GC_GameIsInstalled(char *discid, const char* partition, const char* dmlgamedir);
-void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, bool debugger, u8 NMM, bool cheats);
+void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, bool debugger, u8 NMM, bool cheats, bool nodisc);
 void DML_Old_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats);
 #endif //GC_H_
 
