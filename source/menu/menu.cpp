@@ -258,6 +258,7 @@ void CMenu::init(void)
 
 	_load_installed_cioses();
 
+	snprintf(m_app_update_drive, sizeof(m_app_update_drive), "%s:/", drive);
 	m_dataDir = sfmt("%s:/%s", drive, APPDATA_DIR);
 	gprintf("Data Directory: %s\n", m_dataDir.c_str());
 

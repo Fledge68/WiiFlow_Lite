@@ -27,7 +27,7 @@
 #define TAG_LOC			"{loc}"
 #define TITLES_URL		"http://www.gametdb.com/titles.txt?LANG=%s"
 #define GAMETDB_URL		"http://www.gametdb.com/wiitdb.zip?LANG=%s&FALLBACK=TRUE&WIIWARE=TRUE&GAMECUBE=TRUE"
-#define UPDATE_URL_VERSION	"http://update.wiiflow.org/txt/versions.txt"
+#define UPDATE_URL_VERSION	"http://dl.dropbox.com/u/25620767/WiiflowMod/versions.txt"
 
 using namespace std;
 
@@ -1820,7 +1820,7 @@ s8 CMenu::_versionDownloader() // code to download new version
 	m_thrdStep = 0.2f;
 	m_thrdStepLen = 0.9f - 0.2f;
 	gprintf("App Update URL: %s\n", m_app_update_url);
-	gprintf("Data Update URL: %s\n", m_app_update_url);
+	gprintf("Data Update URL: %s\n", m_data_update_url);
 	
 	download = downloadfile(buffer.get(), bufferSize, m_app_update_url, CMenu::_downloadProgress, this);
 	if (download.data == 0 || download.size < m_app_update_size)
@@ -1854,7 +1854,7 @@ s8 CMenu::_versionDownloader() // code to download new version
 		LWP_MutexUnlock(m_mutex);
 
 		ZipFile zFile(m_app_update_zip.c_str());
-		bool result = zFile.ExtractAll(m_appDir.c_str());
+		bool result = zFile.ExtractAll(m_app_update_drive);
 		remove(m_app_update_zip.c_str());
 
 		if (!result) goto fail;
