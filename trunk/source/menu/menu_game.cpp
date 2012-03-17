@@ -680,9 +680,12 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 		m_gcfg1.setInt("PLAYCOUNT", id, m_gcfg1.getInt("PLAYCOUNT", id, 0) + 1);
 		m_gcfg1.setUInt("LASTPLAYED", id, time(NULL));
 
-		WDVD_Init();
-		WDVD_StopMotor();
-		WDVD_Close();
+		if(!nodisc || !m_new_dml)
+		{
+			WDVD_Init();
+			WDVD_StopMotor();
+			WDVD_Close();
+		}
 	}
 
 	memcpy((char *)0x80000000, id, 6);	
