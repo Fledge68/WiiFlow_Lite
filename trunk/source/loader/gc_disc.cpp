@@ -203,7 +203,7 @@ bool GCDump::__WaitForDisc(u8 dsc, u32 msg)
 					
 			if(Disc_IsGC() == 0)
 			{
-				s32 ret = __DiscReadRaw(ReadBuffer, 0+NextOffset, 0x440);
+				s32 ret = __DiscReadRaw(ReadBuffer, NextOffset, 0x440);
 				if(ret > 0)
 				{
 					MEM2_free(ReadBuffer);
@@ -282,7 +282,7 @@ s32 GCDump::DumpGame()
 		{
 			multigamedisc = true;
 			__AnalizeMultiDisc();
-			__DiscReadRaw(ReadBuffer, 0+NextOffset, sizeof(gc_discHdr));
+			__DiscReadRaw(ReadBuffer, NextOffset, sizeof(gc_discHdr));
 			memcpy(gcheader.id, ReadBuffer, 6);
 			strcpy(gcheader.title, (char *)ReadBuffer+0x20);			
 		}
@@ -310,7 +310,7 @@ s32 GCDump::DumpGame()
 			continue;
 		}
 
-		ret = __DiscReadRaw(ReadBuffer, 0+NextOffset, 0x440);
+		ret = __DiscReadRaw(ReadBuffer, NextOffset, 0x440);
 		if(ret > 0)
 		{
 			MEM2_free(ReadBuffer);
@@ -378,7 +378,7 @@ s32 GCDump::DumpGame()
 
 			gprintf("Writing %s/boot.bin\n", folder);
 			snprintf(gamepath, sizeof(gamepath), "%s/boot.bin", folder);
-			gc_done += __DiscWrite(gamepath, 0+NextOffset, 0x440, ReadBuffer);
+			gc_done += __DiscWrite(gamepath, NextOffset, 0x440, ReadBuffer);
 
 			gprintf("Writing %s/bi2.bin\n", folder);
 			snprintf(gamepath, sizeof(gamepath), "%s/bi2.bin", folder);
@@ -401,7 +401,7 @@ s32 GCDump::DumpGame()
 			FILE *f;
 			f = fopen(gamepath, "wb");
 
-			ret = __DiscWriteFile(f, 0+NextOffset, (FSTOffset + FSTSize), ReadBuffer);
+			ret = __DiscWriteFile(f, NextOffset, (FSTOffset + FSTSize), ReadBuffer);
 			wrote += (FSTOffset + FSTSize);
 			gc_done += wrote;
 	
@@ -461,7 +461,7 @@ s32 GCDump::DumpGame()
 		}
 		else
 		{
-			ret = __DiscWrite(gamepath, 0+NextOffset, DiscSize, ReadBuffer);
+			ret = __DiscWrite(gamepath, NextOffset, DiscSize, ReadBuffer);
 			if( ret < 0 )
 			{
 				MEM2_free(ReadBuffer);
@@ -486,7 +486,7 @@ s32 GCDump::DumpGame()
 				Disc++;
 			}
 		}
-		else
+		else if(multigamedisc)
 		{
 			if(MultiGameDump+1 == MultiGameCnt)
 			{
@@ -498,6 +498,8 @@ s32 GCDump::DumpGame()
 				MultiGameDump++;
 			}
 		}
+		else
+			gamedone = true;
 	}
 
 	MEM2_free(ReadBuffer);
@@ -510,7 +512,7 @@ s32 GCDump::CheckSpace(u32 *needed, bool comp)
 	static gc_discHdr gcheader ATTRIBUTE_ALIGN(32);
 
 	u8 *ReadBuffer = (u8 *)MEM2_alloc(0x440);
-	u32 size = 0;	
+	u32 size = 0;
 	bool scnddisc = false;
 	gamedone = false;
 	multigamedisc = false;
@@ -520,7 +522,7 @@ s32 GCDump::CheckSpace(u32 *needed, bool comp)
 	Disc = 0;
 
 	while(!gamedone)
-	{	
+	{
 		u32 multisize = 0;
 		Disc_ReadGCHeader(&gcheader);
 		
@@ -528,14 +530,14 @@ s32 GCDump::CheckSpace(u32 *needed, bool comp)
 		{
 			multigamedisc = true;
 			__AnalizeMultiDisc();
-			__DiscReadRaw(ReadBuffer, 0+NextOffset, sizeof(gc_discHdr));
+			__DiscReadRaw(ReadBuffer, NextOffset, sizeof(gc_discHdr));
 			memcpy(gcheader.id, ReadBuffer, sizeof(gcheader.id));
 			strcpy(gcheader.title, (char *)ReadBuffer+0x20);
 		}
 		
 		Asciify2(gcheader.title);
 		
-		s32 ret = __DiscReadRaw(ReadBuffer, 0+NextOffset, 0x440);
+		s32 ret = __DiscReadRaw(ReadBuffer, NextOffset, 0x440);
 		if(ret > 0)
 		{
 			MEM2_free(ReadBuffer);
@@ -602,7 +604,7 @@ s32 GCDump::CheckSpace(u32 *needed, bool comp)
 						if((fst[i].FileOffset & (align-1)) == 0 || force_32k_align)
 						{
 							correction = 0;
-							while(((size+correction) & (align-1)) != 0)
+							while(((multisize+correction) & (align-1)) != 0)
 								correction++;
 							multisize += correction;
 							break;
@@ -618,22 +620,22 @@ s32 GCDump::CheckSpace(u32 *needed, bool comp)
 
 		if(FSTTotal > FSTSize && !multigamedisc)
 		{
-			if(Disc == 0 && !scnddisc)				
+			if(Disc == 0 && !scnddisc)
 				__WaitForDisc(1, 1);
 			else if(Disc == 0x01 && !scnddisc)
 				__WaitForDisc(0, 1);
-			
+
 			if(scnddisc)
 			{
 				if(Disc == 0x01)
-					__WaitForDisc(0, 1);				
+					__WaitForDisc(0, 1);
 
 				gamedone = true;
 				break;
 			}
 			scnddisc = true;
 		}
-		else
+		else if(multigamedisc)
 		{
 			if(MultiGameDump+1 == MultiGameCnt)
 			{
@@ -644,7 +646,9 @@ s32 GCDump::CheckSpace(u32 *needed, bool comp)
 			{
 				MultiGameDump++;
 			}
-		}		
+		}
+		else
+			gamedone = true;
 	}
 	MEM2_free(ReadBuffer);
 	DiscSizeCalculated = size/0x400;
