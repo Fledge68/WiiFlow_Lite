@@ -39,9 +39,7 @@
 #include "utils.h"
 #include "gecko.h"
 #include "mem2.hpp"
-
-#define SYSCONFPATH "/shared2/sys/SYSCONF"
-#define TXTPATH "/title/00000001/00000002/data/setting.txt"
+#include "smartptr.hpp"
 
 u8 *confbuffer ATTRIBUTE_ALIGN(32);
 u8 CCode[0x1008];
@@ -203,7 +201,7 @@ void Nand::__Dec_Enc_TB(void)
 		key = (key<<1) | (key>>31);
 	}
 	
-	tbdec = tbdec ? false : true;
+	tbdec = tbdec ? false : true;	
 }
 
 void Nand::__configshifttxt(char *str)
@@ -231,33 +229,24 @@ void Nand::__configshifttxt(char *str)
 }
 
 s32 Nand::__configread(void)
-{
+{	
 	confbuffer = (u8 *)MEM2_alloc(0x4000);
 	txtbuffer = (char *)MEM2_alloc(0x100);
 	cfg_hdr = (config_header *)NULL;
 	
-	ISFS_Deinitialize();
-	ISFS_Initialize();
-	
-	s32 fd = IOS_Open(SYSCONFPATH, IPC_OPEN_READ);
-	if(fd < 0)
-		return 0;
-	
-	s32 ret = IOS_Read(fd, confbuffer, 0x4000);
-	if(ret < 0)
-		return 0;
-
-	IOS_Close(fd);
-	
-	fd = IOS_Open(TXTPATH, IPC_OPEN_READ);
-	if(fd < 0)
-		return 0;
-
-	ret = IOS_Read(fd, txtbuffer, 0x100);
-	if(ret < 0)
-		return 0;
+	FILE *f = fopen(cfgpath, "rb");
+	if(f)
+	{
+		fread(confbuffer, 1, 0x4000, f);
+		SAFE_CLOSE(f);
+	}
 		
-	IOS_Close(fd);
+	f = fopen(settxtpath, "rb");
+	if(f)
+	{
+		fread(txtbuffer, 1, 0x100, f);
+		SAFE_CLOSE(f);
+	}
 		
 	cfg_hdr = (config_header *)confbuffer;
 		
@@ -268,14 +257,14 @@ s32 Nand::__configread(void)
 	if(tbdec && configloaded)
 		return 1;		
 	
-	return 0;	
+	return 0;
 }
 
 s32 Nand::__configwrite(void)
 {
 	if(configloaded)
 	{
-		__Dec_Enc_TB();		
+		__Dec_Enc_TB();	
 		
 		if(!tbdec)
 		{
@@ -284,7 +273,7 @@ s32 Nand::__configwrite(void)
 			{
 				fwrite(confbuffer, 1, 0x4000, f);
 				gprintf("SYSCONF written to:\"%s\"\n", cfgpath);
-				fclose(f);
+				SAFE_CLOSE(f);
 			}
 			
 			f = fopen(settxtpath, "wb");
@@ -292,7 +281,7 @@ s32 Nand::__configwrite(void)
 			{
 				fwrite(txtbuffer, 1, 0x100, f);
 				gprintf("setting.txt written to: \"%s\"\n", settxtpath);
-				fclose(f);
+				SAFE_CLOSE(f);
 			}		
 				
 			configloaded = configloaded ? false : true;
@@ -301,8 +290,8 @@ s32 Nand::__configwrite(void)
 				return 1;			
 		}
 	}
-	MEM2_free(confbuffer);
-	MEM2_free(txtbuffer);
+	free(confbuffer);
+	free(txtbuffer);
 	return 0;			
 } 
 
@@ -371,6 +360,138 @@ u32 Nand::__configsetsetting(const char *item, const char *val)
 	return 0;
 }
 
+s32 Nand::__FlashNandFile(const char *source, const char *dest)
+{
+	s32 ret;
+	FILE *file = fopen(source, "rb");
+	if(!file) 
+	{
+		gprintf("Error opening source: \"%s\"\n", source);
+		return 0;
+	}
+	
+	fseek(file, 0, SEEK_END);
+	u32 fsize = ftell(file);
+	fseek(file, 0, SEEK_SET);
+	
+	gprintf("Flashing: %s (%uKB) to nand: %s...", source, (fsize / 0x400)+1, dest);
+	
+	ISFS_Delete(dest);
+	ISFS_CreateFile(dest, 0, 3, 3, 3);
+	s32 fd = ISFS_Open(dest, ISFS_OPEN_RW);
+	if(fd < 0)
+	{
+		gprintf(" failed\nError: ISFS_OPEN(%s, %d) %d\n", dest, ISFS_OPEN_RW, fd);
+		SAFE_CLOSE(file);
+		return fd;
+	}
+
+	u8 *buffer = (u8 *)MEM2_alloc(BLOCK);
+	u32 toread = fsize;
+	while(toread > 0)
+	{
+		u32 size = BLOCK;
+		if(toread < BLOCK)
+			size = toread;
+
+		ret = fread(buffer, 1, size, file);
+		if(ret <= 0) 
+		{
+			gprintf(" failed\nError: fread(%p, 1, %d, %s) %d\n", buffer, size, source, ret);
+			ISFS_Close(fd);
+			SAFE_CLOSE(file);
+			MEM2_free(buffer);
+			return ret;
+		}
+		
+		ret = ISFS_Write(fd, buffer, size);
+		if(ret <= 0) 
+		{
+			gprintf(" failed\nError: ISFS_Write(%d, %p, %d) %d\n", fd, buffer, size, ret);
+			ISFS_Close(fd);
+			SAFE_CLOSE(file);
+			MEM2_free(buffer);
+			return ret;
+		}
+		toread -= size;
+	}
+	
+    gprintf(" done!\n");
+	ISFS_Close(fd);
+	SAFE_CLOSE(file);
+	MEM2_free(buffer);
+	return 1;
+}
+
+s32 Nand::__DumpNandFile(const char *source, const char *dest)
+{
+	s32 fd = ISFS_Open(source, ISFS_OPEN_READ);
+	if (fd < 0) 
+	{
+		gprintf("Error: IOS_OPEN(%s, %d) %d\n", source, ISFS_OPEN_READ, fd);
+		return fd;
+	}
+        
+	FILE *file = fopen(dest, "wb");
+	if (!file)
+	{
+		gprintf("Error opening destination: \"%s\"\n", dest);
+		ISFS_Close(fd);
+		return 0;
+	}
+
+	fstats *status = (fstats *)MEM2_alloc(sizeof(fstats));
+	s32 ret = ISFS_GetFileStats(fd, status);
+	if (ret < 0)
+	{
+		gprintf("Error: ISFS_GetFileStats(%d) %d\n", fd, ret);
+		ISFS_Close(fd);
+		SAFE_CLOSE(file);
+		MEM2_free(status);
+		return ret;
+	}
+	
+	gprintf("Dumping: %s (%uKB) from nand to %s...", source, (status->file_length / 0x400)+1, dest);
+
+	u8 *buffer = (u8 *)MEM2_alloc(BLOCK);
+	u32 toread = status->file_length;
+	while(toread > 0)
+	{
+		u32 size = BLOCK;
+		if (toread < BLOCK)
+			size = toread;
+
+		ret = ISFS_Read(fd, buffer, size);
+		if (ret < 0)
+		{
+			gprintf(" failed\nError: ISFS_Read(%d, %p, %d) %d\n", fd, buffer, size, ret);
+			ISFS_Close(fd);
+			SAFE_CLOSE(file);
+			MEM2_free(status);
+			MEM2_free(buffer);
+			return ret;
+		}
+		
+		ret = fwrite(buffer, 1, size, file);
+		if(ret < 0) 
+		{
+			gprintf(" failed\nError writing to destination: \"%s\" (%d)\n", dest, ret);
+			ISFS_Close(fd);
+			SAFE_CLOSE(file);
+			MEM2_free(status);
+			MEM2_free(buffer);
+			return ret;
+		}
+		toread -= size;
+	}
+	gprintf(" done!\n");
+	ISFS_Close(fd);
+	SAFE_CLOSE(file);
+	MEM2_free(status);
+	MEM2_free(buffer);
+	return 1;
+}
+
 void Nand::__CreatePath(const char *path, ...)
 {
 	char *folder = NULL;
@@ -405,17 +526,20 @@ s32 Nand::CreateConfig(const char *path)
 	__CreatePath("%s/title/00000001", path);
 	__CreatePath("%s/title/00000001/00000002", path);
 	__CreatePath("%s/title/00000001/00000002/data", path);
-	return 0;	
-}
-
-s32 Nand::Do_Region_Change(string id, const char *path)
-{
-	bzero(cfgpath, ISFS_MAXPATH);	
-	bzero(settxtpath, ISFS_MAXPATH);
+	
+	bzero(cfgpath, MAX_FAT_PATH);	
+	bzero(settxtpath, MAX_FAT_PATH);
 	
 	snprintf(cfgpath, sizeof(cfgpath), "%s%s", path, SYSCONFPATH);
 	snprintf(settxtpath, sizeof(settxtpath), "%s%s", path, TXTPATH);
 	
+	__DumpNandFile(SYSCONFPATH, cfgpath);
+	__DumpNandFile(TXTPATH, settxtpath);
+	return 0;	
+}
+
+s32 Nand::Do_Region_Change(string id)
+{	
 	if(__configread())
 	{
 		switch(id[3])
@@ -454,7 +578,7 @@ s32 Nand::Do_Region_Change(string id, const char *path)
 			{
 				gprintf("Switching region to PAL \n");
 				CCode[0] = 110;
-				__configsetbyte( "IPL.LNG", 6 );				
+				__configsetbyte( "IPL.LNG", 1 );				
 				__configsetbigarray( "IPL.SADR", CCode, 0x1007 );
 				__configsetsetting( "AREA", "EUR" );
 				__configsetsetting( "MODEL", "RVL-001(EUR)" );
@@ -478,10 +602,5 @@ s32 Nand::Do_Region_Change(string id, const char *path)
 	}
 	__configwrite();
 	return 1;	
-}
-	
-	
-	
-	
-	
+}	
 	
