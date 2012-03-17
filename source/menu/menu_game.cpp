@@ -172,6 +172,12 @@ const CMenu::SOption CMenu::_NMM[4] = {
 	{ "NMMdebug", L"Debug" },
 };
 
+const CMenu::SOption CMenu::_NoDVD[3] = {
+	{ "NoDVDDef", L"Default" },
+	{ "NoDVDOff", L"Disabled" },
+	{ "NoDVDon", L"Enabled" },
+};
+
 const CMenu::SOption CMenu::_vidModePatch[4] = {
 	{ "vmpnone", L"None" },
 	{ "vmpnormal", L"Normal" },
@@ -648,12 +654,16 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 		char NewCheatPath[255];
 		u8 NMM = min((u32)m_gcfg2.getInt(id, "dml_nmm", 0), ARRAY_SIZE(CMenu::_NMM) - 1u);
 		if(NMM == 0)
-			NMM = min((u32)m_cfg.getInt("DML", "dml_nmm", 0), ARRAY_SIZE(CMenu::_NMM) - 1u);
+			NMM = m_cfg.getInt("DML", "dml_nmm", 0);
 		else
 			NMM--;
+		u8 nodisc = min((u32)m_gcfg2.getInt(id, "no_disc_patch", 0), ARRAY_SIZE(CMenu::_NoDVD) - 1u);
+		if(nodisc == 0)
+			nodisc = m_cfg.getInt("DML", "no_disc_patch", 0);
+		else
+			nodisc--;
 		bool cheats = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool("DML", "cheat", false));
 		bool DML_debug = m_gcfg2.getBool(id, "debugger", false);
-		bool nodisc = m_cfg.getBool("DML", "no_disc_patch", true);
 
 		if(cheats)
 		{
@@ -662,7 +672,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 		}
 
 		if(m_new_dml)
-			DML_New_SetOptions(hdr->path, CheatPath, NewCheatPath, DML_debug, NMM, cheats, nodisc);
+			DML_New_SetOptions(hdr->path, CheatPath, NewCheatPath, cheats, DML_debug, NMM, nodisc);
 		else
 			DML_Old_SetOptions(hdr->path, CheatPath, NewCheatPath, cheats);
 		DMLvideoMode = min((u32)m_gcfg2.getInt(id, "dml_video_mode", 0), ARRAY_SIZE(CMenu::_DMLvideoModes) - 1u);

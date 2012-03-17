@@ -114,7 +114,7 @@ bool GC_GameIsInstalled(char *discid, const char* partition, const char* dmlgame
 	return false;
 }
 
-void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, bool debugger, u8 NMM, bool cheats, bool nodisc)
+void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats, bool debugger, u8 NMM, u8 nodisc)
 {
 	gprintf("Wiiflow DML: Launch game 'sd:/games/%s/game.iso' through memory (new method)\n", GamePath);
 
@@ -150,7 +150,7 @@ void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, boo
 		DMLCfg->Config |= DML_CFG_NMM;
 	if(NMM > 1)
 		DMLCfg->Config |= DML_CFG_NMM_DEBUG;
-	if(nodisc)
+	if(nodisc > 0)
 		DMLCfg->Config |= DML_CFG_NODISC;
 
 	//Write options into memory
