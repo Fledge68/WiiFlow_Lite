@@ -635,9 +635,7 @@ extern "C" {extern void USBStorage_Deinit(void);}
 
 void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 {
-	Nand::Instance()->Disable_Emu();
 	m_gameSound.Stop();
-	CheckGameSoundThread();
 	char* id = (char *)hdr->hdr.id;
 	if(has_enabled_providers() && _initNetwork() == 0)
 		add_game_to_card(id);
@@ -681,13 +679,6 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 		m_cfg.setString("DML", "current_item", id);
 		m_gcfg1.setInt("PLAYCOUNT", id, m_gcfg1.getInt("PLAYCOUNT", id, 0) + 1);
 		m_gcfg1.setUInt("LASTPLAYED", id, time(NULL));
-		m_gcfg1.save(true);
-		m_cfg.save(true);
-
-		cleanup();
-		Close_Inputs();
-		USBStorage_Deinit();
-		SDHC_Init();
 
 		WDVD_Init();
 		WDVD_StopMotor();
@@ -703,6 +694,21 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 	VIDEO_SetBlack(TRUE);
 	VIDEO_Flush();
 	VIDEO_WaitVSync();
+
+	m_gcfg1.save(true);
+	m_gcfg2.save(true);
+	m_cat.save(true);
+	m_cfg.save(true);
+
+	CheckGameSoundThread();
+	_hideWaitMessage();
+
+	cleanup();
+	Close_Inputs();
+	USBStorage_Deinit();
+	SDHC_Init();
+
+	Nand::Instance()->Disable_Emu();
 
 	if(WII_LaunchTitle(0x100000100LL) < 0 )
 		Sys_LoadMenu();
