@@ -103,6 +103,7 @@ private:
 	std::string m_listCacheDir;
 	std::string m_DMLgameDir;
 	/* Updates */
+	char m_app_update_drive[6];
 	const char* m_app_update_url;
 	const char* m_data_update_url;
 	std::string m_dol;

@@ -78,13 +78,14 @@ void CMenu::_system()
 				m_btnMgr.setProgress(m_downloadPBar, 0.f);
 				m_thrdStop = false;
 				m_thrdWorking = true;
-				gprintf("\nVersion to DL: %i\n", newIOS);
+				gprintf("\nVersion to DL: %i\n", newVer);
 
-				m_app_update_size = m_version.getInt("GENERAL", "app_zip_size", 0);
+				if(m_version.getInt("GENERAL", "version", 0) == newVer)
+					m_app_update_size = m_version.getInt("GENERAL", "app_zip_size", 0);
 				m_data_update_size = m_version.getInt("GENERAL", "data_zip_size", 0);
 
-				m_app_update_url = fmt("%s/r%i/%i.zip", m_version.getString("GENERAL", "update_url", "http://update.wiiflow.org").c_str(), newVer, newIOS);
-				m_data_update_url = fmt("%s/r%i/data.zip", m_version.getString("GENERAL", "update_url", "http://update.wiiflow.org").c_str(), newVer);
+				m_app_update_url = fmt("%s/Wiiflow_Mod_svn_r%i.zip", m_version.getString("GENERAL", "update_url", "http://open-wiiflow-mod.googlecode.com/files").c_str(), newVer);
+				m_data_update_url = fmt("%s/r%i/data.zip", m_version.getString("GENERAL", "update_url", "http://open-wiiflow-mod.googlecode.com/files").c_str(), newVer);
 
 				m_showtimer = 120;
 				LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_versionDownloaderInit, (void *)this, 0, 8192, 40);
@@ -111,6 +112,7 @@ void CMenu::_system()
 				{
 					m_btnMgr.setText(m_systemLblVerSelectVal, wstringEx(sfmt("%i", CMenu::_version[i])));
 					newVer = CMenu::_version[i];
+					m_app_update_size = m_version.getInt(sfmt("VERSION%i", i - 1u), "app_zip_size", 0);
 					if (i > 1 && i != num_versions)
 						m_btnMgr.setText(m_systemLblInfo, m_version.getWString(sfmt("VERSION%i", i - 1u), "changes"));
 					else 
@@ -130,6 +132,7 @@ void CMenu::_system()
 				{
 					m_btnMgr.setText(m_systemLblVerSelectVal, wstringEx(sfmt("%i", CMenu::_version[i])));
 					newVer = CMenu::_version[i];
+					m_app_update_size = m_version.getInt(sfmt("VERSION%i", i - 1u), "app_zip_size", 0);
 					if (i > 1 && i != num_versions)
 						m_btnMgr.setText(m_systemLblInfo, m_version.getWString(sfmt("VERSION%i", i - 1u), "changes"));
 					else 
@@ -249,7 +252,7 @@ void CMenu::_textSystem(void)
 {
 	m_btnMgr.setText(m_systemLblTitle, _t("sys1", L"Update WiiFlow"));
 	m_btnMgr.setText(m_systemLblVersionTxt, _t("sys2", L"WiiFlow Version:"));
-	m_btnMgr.setText(m_systemLblVersion, wfmt(L"(%s-r%s)", APP_VERSION, SVN_REV).c_str());
+	m_btnMgr.setText(m_systemLblVersion, wfmt(L"r%s", SVN_REV).c_str());
 	m_btnMgr.setText(m_systemBtnBack, _t("sys3", L"Cancel"));
 	m_btnMgr.setText(m_systemBtnDownload, _t("sys4", L"Upgrade"));
 	i = min((u32)version_num, ARRAY_SIZE(CMenu::_version) -1u);
