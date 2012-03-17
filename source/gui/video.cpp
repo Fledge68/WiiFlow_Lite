@@ -526,30 +526,25 @@ void CVideo::hideWaitMessage()
 {
 	gprintf("Now hide wait message\n");
 	m_showWaitMessage = false;
-	CheckWaitThread(true);
+	CheckWaitThread();
 }
 
-void CVideo::CheckWaitThread(bool force)
+void CVideo::CheckWaitThread()
 {
-	if (force || !m_showingWaitMessages) //&& waitThread != LWP_THREAD_NULL))
+	if (!m_showingWaitMessages && waitThread != LWP_THREAD_NULL)
 	{
-		gprintf("Check wait thread start\n");
-		if (waitThread != LWP_THREAD_NULL)
-		{
-			//m_showWaitMessage = false;
-			gprintf("Thread running. Stop it\n");
+		m_showWaitMessage = false;
+		gprintf("Thread running. Stop it\n");
 
-			if(LWP_ThreadIsSuspended(waitThread))
-				LWP_ResumeThread(waitThread);
+		if(LWP_ThreadIsSuspended(waitThread))
+			LWP_ResumeThread(waitThread);
 
-			LWP_JoinThread(waitThread, NULL);
+		LWP_JoinThread(waitThread, NULL);
 
-			SMART_FREE(waitThreadStack);
-			waitThread = LWP_THREAD_NULL;
+		SMART_FREE(waitThreadStack);
+		waitThread = LWP_THREAD_NULL;
 
-			m_waitMessages.clear();
-		}
-		gprintf("Check wait thread end\n");
+		m_waitMessages.clear();
 	}
 }
 
@@ -593,13 +588,13 @@ void CVideo::waitMessage(const safe_vector<STexture> &tex, float delay, bool use
 		waitMessage(m_waitMessages[0]);
 	else if (m_waitMessages.size() > 1)
 	{
-		CheckWaitThread(true);
+		CheckWaitThread();
 		m_showWaitMessage = true;
 		unsigned int stack_size = (unsigned int)32768;  //Try 32768?
-		SMART_FREE(waitThreadStack);
-		waitThreadStack = SmartBuf((unsigned char *)__real_malloc(stack_size), SmartBuf::SRCALL_MALLOC);
+		//SMART_FREE(waitThreadStack);
+		//waitThreadStack = SmartBuf((unsigned char *)__real_malloc(stack_size), SmartBuf::SRCALL_MALLOC);
 		waitThreadStack = smartMem2Alloc(stack_size);
-		LWP_CreateThread(&waitThread, (void *(*)(void *))CVideo::_showWaitMessages, (void *)this, waitThreadStack.get(), stack_size, 0);
+		LWP_CreateThread(&waitThread, (void *(*)(void *))CVideo::_showWaitMessages, (void *)this, waitThreadStack.get(), stack_size, LWP_PRIO_IDLE);
 	}
 }
 
