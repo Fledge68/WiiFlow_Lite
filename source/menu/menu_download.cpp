@@ -1524,8 +1524,7 @@ void CMenu::_initDownloadMenu(CMenu::SThemeData &theme)
 	m_downloadLblGameTDB = _addLabel(theme, "DOWNLOAD/GAMETDB", theme.lblFont, L"", 40, 390, 370, 60, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_downloadLblMessage[0] = _addLabel(theme, "DOWNLOAD/MESSAGE1", theme.lblFont, L"", 40, 228, 560, 100, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
 	m_downloadLblMessage[1] = _addLabel(theme, "DOWNLOAD/MESSAGE2", theme.lblFont, L"", 40, 228, 560, 100, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
-	
-	
+
 	// Cover settings
 	m_downloadLblSetTitle = _addTitle(theme, "DOWNLOAD/SETTITLE", theme.titleFont, L"", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 	m_downloadLblCoverPrio = _addLabel(theme, "DOWNLOAD/COVERPRIO", theme.lblFont, L"", 40, 100, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
@@ -1559,7 +1558,6 @@ void CMenu::_initDownloadMenu(CMenu::SThemeData &theme)
 	m_downloadBtnAUs = _addPicButton(theme, "DOWNLOAD/AUS", theme.btnAUOn, theme.btnAUOns, 465, 340, 120, 56);
 	m_downloadBtnBack = _addButton(theme, "DOWNLOAD/BACK_BTN", theme.btnFont, L"", 420, 410, 200, 56, theme.btnFontColor);
 
-
 	
 	// Download menu
 	_setHideAnim(m_downloadLblTitle, "DOWNLOAD/TITLE", 0, 0, -2.f, 0.f);
@@ -1573,8 +1571,7 @@ void CMenu::_initDownloadMenu(CMenu::SThemeData &theme)
 	_setHideAnim(m_downloadLblGameTDBDownload, "DOWNLOAD/GAMETDB_DOWNLOAD", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_downloadBtnGameTDBDownload, "DOWNLOAD/GAMETDB_DOWNLOAD_BTN", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_downloadLblGameTDB, "DOWNLOAD/GAMETDB", 0, 0, -2.f, 0.f);
-	
-	
+
 	// Cover settings	
 	_setHideAnim(m_downloadLblSetTitle, "DOWNLOAD/SETTITLE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_downloadLblCoverPrio, "DOWNLOAD/COVERPRIO", 0, 0, -2.f, 0.f);
@@ -1605,10 +1602,9 @@ void CMenu::_initDownloadMenu(CMenu::SThemeData &theme)
 	_setHideAnim(m_downloadBtnZHCNs, "DOWNLOAD/ZHCNS", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_downloadBtnAUs, "DOWNLOAD/AUS", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_downloadBtnBack, "DOWNLOAD/BACK_BTN", 0, 0, -2.f, 0.f);
-	
-	
+
 	m_downloadPrioVal = m_cfg.getUInt("GENERAL", "cover_prio", 0);
-	
+
 	_hideDownload(true);
 	_textDownload();
 }
@@ -1765,10 +1761,10 @@ s8 CMenu::_versionDownloader() // code to download new version
 	if (m_data_update_size == 0) m_data_update_size	= 0x400000;
 	
 	// check for existing dol
-    ifstream filestr;
+	ifstream filestr;
 	gprintf("DOL Path: %s\n", m_dol.c_str());
-    filestr.open(m_dol.c_str());
-    if (filestr.fail())
+	filestr.open(m_dol.c_str());
+	if (filestr.fail())
 	{
 		filestr.close();
 		rename(dol_backup, m_dol.c_str());
@@ -1784,7 +1780,7 @@ s8 CMenu::_versionDownloader() // code to download new version
 		m_thrdWorking = false;
 		return 0;
 	}
-    filestr.close();
+	filestr.close();
 
 	u32 bufferSize = max(m_app_update_size, m_data_update_size);	// Buffer for size of the biggest file.
 	SmartBuf buffer = smartAnyAlloc(bufferSize);
@@ -1821,7 +1817,7 @@ s8 CMenu::_versionDownloader() // code to download new version
 	m_thrdStepLen = 0.9f - 0.2f;
 	gprintf("App Update URL: %s\n", m_app_update_url);
 	gprintf("Data Update URL: %s\n", m_data_update_url);
-	
+
 	download = downloadfile(buffer.get(), bufferSize, m_app_update_url, CMenu::_downloadProgress, this);
 	if (download.data == 0 || download.size < m_app_update_size)
 	{
@@ -1832,12 +1828,12 @@ s8 CMenu::_versionDownloader() // code to download new version
 		m_thrdWorking = false;
 		return 0;
 	}
-	
+
 	// download finished, backup boot.dol and write new files.
 	LWP_MutexLock(m_mutex);
 	_setThrdMsg(_t("dlmsg13", L"Saving..."), 0.8f);
 	LWP_MutexUnlock(m_mutex);			
-	
+
 	remove(dol_backup);
 	rename(m_dol.c_str(), dol_backup);
 
@@ -1848,7 +1844,7 @@ s8 CMenu::_versionDownloader() // code to download new version
 	{
 		fwrite(download.data, 1, download.size, file);
 		SAFE_CLOSE(file);
-		
+
 		LWP_MutexLock(m_mutex);
 		_setThrdMsg(_t("dlmsg24", L"Extracting..."), 0.8f);
 		LWP_MutexUnlock(m_mutex);
@@ -1877,12 +1873,12 @@ s8 CMenu::_versionDownloader() // code to download new version
 			LWP_MutexUnlock(m_mutex);
 			goto success;
 		}
-		
+
 		// download finished, write new files.
 		LWP_MutexLock(m_mutex);
 		_setThrdMsg(_t("dlmsg13", L"Saving..."), 0.9f);
 		LWP_MutexUnlock(m_mutex);
-		
+
 		remove(m_data_update_zip.c_str());
 
 		file = fopen(m_data_update_zip.c_str(), "wb");
@@ -1890,11 +1886,11 @@ s8 CMenu::_versionDownloader() // code to download new version
 		{
 			fwrite(download.data, 1, download.size, file);
 			SAFE_CLOSE(file);
-			
+
 			LWP_MutexLock(m_mutex);
 			_setThrdMsg(_t("dlmsg24", L"Extracting..."), 0.8f);
 			LWP_MutexUnlock(m_mutex);
-			
+
 			ZipFile zDataFile(m_data_update_zip.c_str());
 			result = zDataFile.ExtractAll(m_dataDir.c_str());
 			remove(m_data_update_zip.c_str());
@@ -1906,7 +1902,6 @@ s8 CMenu::_versionDownloader() // code to download new version
 				LWP_MutexUnlock(m_mutex);
 			}
 		}
-
 	}
 	else
 		goto fail;
@@ -1916,15 +1911,17 @@ success:
 	_setThrdMsg(_t("dlmsg21", L"WiiFlow will now exit to allow the update to take effect."), 1.f);
 	LWP_MutexUnlock(m_mutex);
 
-    filestr.open(m_dol.c_str());
-    if (filestr.fail())
+	filestr.open(m_dol.c_str());
+	if (filestr.fail())
 	{
 		LWP_MutexLock(m_mutex);
 		_setThrdMsg(_t("dlmsg25", L"Extraction must have failed! Renaming the backup to boot.dol"), 1.f);
 		LWP_MutexUnlock(m_mutex);
 		rename(dol_backup, m_dol.c_str());
 	}
-    filestr.close();
+	else
+		remove(dol_backup);
+	filestr.close();
 
 	m_exit = true;
 	goto out;
@@ -1996,7 +1993,7 @@ int CMenu::_gametdbDownloaderAsync()
 			if (file == NULL)
 			{
 				gprintf("Can't save zip file\n");
-	
+
 				LWP_MutexLock(m_mutex);
 				_setThrdMsg(_t("dlmsg15", L"Couldn't save ZIP file"), 1.f);
 				LWP_MutexUnlock(m_mutex);
