@@ -1035,7 +1035,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		if(emuSave > 2)
 		{
 			Nand::Instance()->CreateConfig(basepath);
-			Nand::Instance()->Do_Region_Change(id, basepath);
+			Nand::Instance()->Do_Region_Change(id);
 		}
 	}
 

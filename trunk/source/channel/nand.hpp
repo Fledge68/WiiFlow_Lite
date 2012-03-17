@@ -18,6 +18,11 @@
 #define RF_NEWS_CHANNEL		0x48414741
 #define RF_FORECAST_CHANNEL	0x48414641
 
+#define SYSCONFPATH "/shared2/sys/SYSCONF"
+#define TXTPATH "/title/00000001/00000002/data/setting.txt"
+
+#define BLOCK 0x4000
+
 /* 'NAND Device' structure */
 typedef struct nandDevice
 {
@@ -57,7 +62,7 @@ class Nand
 		void Set_NandPath(string path);
 		
 		s32 CreateConfig(const char *path);
-		s32 Do_Region_Change(string id, const char *path);
+		s32 Do_Region_Change(string id);
 
 	private:
 		Nand() : MountedDevice(0), EmuDevice(REAL_NAND), Disabled(true), Partition(0), FullMode(0x100), NandPath() {}
@@ -75,6 +80,8 @@ class Nand
 		u32 __configsetbyte(const char *item, u8 val);
 		u32 __configsetbigarray(const char *item, void *val, u32 size);
 		u32 __configsetsetting(const char *item, const char *val);
+		s32 __FlashNandFile(const char *source, const char *dest);
+		s32 __DumpNandFile(const char *source, const char *dest);
 		void __CreatePath(const char *path, ...);
 		
 
@@ -85,8 +92,8 @@ class Nand
 		u32 Partition ATTRIBUTE_ALIGN(32);
 		u32 FullMode ATTRIBUTE_ALIGN(32);
 		char NandPath[32] ATTRIBUTE_ALIGN(32);
-		char cfgpath[1024] ATTRIBUTE_ALIGN(32);
-		char settxtpath[1024] ATTRIBUTE_ALIGN(32);
+		char cfgpath[1024];
+		char settxtpath[1024];
 
 		static Nand * instance;
 };
