@@ -450,6 +450,11 @@ private:
 	u32 m_gameSettingsBtnNMM_P;
 	u32 m_gameSettingsBtnNMM_M;
 
+	u32 m_gameSettingsLblNoDVD;
+	u32 m_gameSettingsLblNoDVD_Val;
+	u32 m_gameSettingsBtnNoDVD_P;
+	u32 m_gameSettingsBtnNoDVD_M;
+
 	u32 m_gameSettingsLblCustom;
 	u32 m_gameSettingsBtnCustom;
 
@@ -978,6 +983,7 @@ private:
 	static const SOption _GlobalSaveEmu[4];
 	static const SOption _AspectRatio[3];
 	static const SOption _NMM[4];
+	static const SOption _NoDVD[3];
 	static const SOption _vidModePatch[4];
 	static const SOption _hooktype[8];
 	static const SOption _exitTo[6];
