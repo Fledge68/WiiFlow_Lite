@@ -622,17 +622,17 @@ void CMenu::_launch(dir_discHdr *hdr)
 	switch(m_current_view)
 	{
 		case COVERFLOW_HOMEBREW:
-			_launchHomebrew( (char *)hdr->path, m_homebrewArgs );
+			_launchHomebrew((char *)hdr->path, m_homebrewArgs);
 			break;
 		case COVERFLOW_CHANNEL:
-			_launchChannel( hdr );
+			_launchChannel(hdr);
 			break;
 		case COVERFLOW_DML:
-			_launchGC( hdr, true );
+			_launchGC(hdr, true);
 			break;
 		case COVERFLOW_USB:
 		default:
-			_launchGame( hdr, false );
+			_launchGame(hdr, false);
 			break;
 	}
 }
@@ -697,8 +697,10 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 			WDVD_Close();
 		}
 	}
+	else
+		gprintf("Booting GC game\n");
 
-	memcpy((char *)0x80000000, id, 6);	
+	memcpy((char *)0x80000000, id, 6);
 	if(((id[3] == 'P') && (DMLvideoMode == 0)) || (DMLvideoMode == 1))
 		GC_SetVideoMode(1);
 	if(((id[3] != 'P') && (DMLvideoMode == 0)) || (DMLvideoMode == 2))
@@ -714,16 +716,17 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 	m_cfg.save(true);
 
 	CheckGameSoundThread();
-	_hideWaitMessage();
 
 	cleanup();
 	Close_Inputs();
 	USBStorage_Deinit();
-	SDHC_Init();
+	if(DML)
+		SDHC_Init();
 
+	_hideWaitMessage();
 	Nand::Instance()->Disable_Emu();
 
-	if(WII_LaunchTitle(0x100000100LL) < 0 )
+	if(WII_LaunchTitle(0x100000100LL) < 0)
 		Sys_LoadMenu();
 }
 
@@ -950,7 +953,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	string id = string((const char *) hdr->hdr.id);
 	Nand::Instance()->Disable_Emu();
 
-	bool gc = false;
 	if (dvd)
 	{
 		u32 cover = 0;
@@ -975,7 +977,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			error(L"Cannot Read DVD.");
 			if (BTN_B_PRESSED) return;
 		}
-		
+
 		/* Check disc */
 		if (Disc_IsWii() < 0)
 		{
@@ -985,9 +987,17 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 				if (BTN_B_PRESSED) return;
 			}
 			else
-				gc = true;
+			{
+				/* Read GC disc header */
+				struct gc_discHdr *gcHeader = (struct gc_discHdr *)MEM2_alloc(sizeof(struct gc_discHdr));
+				Disc_ReadGCHeader(gcHeader);
+				memcpy(hdr->hdr.id, gcHeader->id, 6);
+				SAFE_FREE(gcHeader);
+				/* Launching GC Game */
+				_launchGC(hdr, false);
+			}
 		}
-		
+
 		/* Read header */
 		struct discHdr *header = (struct discHdr *)MEM2_alloc(sizeof(struct discHdr));
 		Disc_ReadHeader(header);
@@ -1011,7 +1021,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	string emuPath = m_cfg.getString("GAMES", "savepath", m_cfg.getString("NAND", "path", ""));
 
 	u8 emuSave = min((u32)m_gcfg2.getInt(id, "emulate_save", 0), ARRAY_SIZE(CMenu::_SaveEmu) - 1u);
-	
+
 	if (emuSave == 0)
 	{
 		emuSave = min(max(0, m_cfg.getInt("GAMES", "save_emulation", 0)), (int)ARRAY_SIZE(CMenu::_GlobalSaveEmu) - 1);
@@ -1023,7 +1033,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 
 	if (!dvd && get_frag_list((u8 *) hdr->hdr.id, (char *) hdr->path, currentPartition == 0 ? 0x200 : sector_size) < 0)
 		return;
-		
+
 	if(!dvd && emuSave)
 	{
 		char basepath[64];
@@ -1039,20 +1049,21 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		}
 	}
 
-		int gameIOS = 0;
-		int userIOS = 0;
-		if (m_gcfg2.getInt(id, "ios", &userIOS) && _installed_cios.size() > 0)
+	int gameIOS = 0;
+	int userIOS = 0;
+	if (m_gcfg2.getInt(id, "ios", &userIOS) && _installed_cios.size() > 0)
+	{
+		for(CIOSItr itr = _installed_cios.begin(); itr != _installed_cios.end(); itr++)
 		{
-			for(CIOSItr itr = _installed_cios.begin(); itr != _installed_cios.end(); itr++)
+			if(itr->second == userIOS || itr->first == userIOS)
 			{
-				if(itr->second == userIOS || itr->first == userIOS)
-				{
-					gameIOS = itr->first;
-					break;
-				}
-				else gameIOS = 0;
+				gameIOS = itr->first;
+				break;
 			}
+			else
+				gameIOS = 0;
 		}
+	}
 
 	u8 patchVidMode = min((u32)m_gcfg2.getInt(id, "patch_video_modes", 0), ARRAY_SIZE(CMenu::_vidModePatch) - 1u);
 	hooktype = (u32) m_gcfg2.getInt(id, "hooktype", 0); // hooktype is defined in patchcode.h
@@ -1074,7 +1085,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	m_cfg.setString("GAMES", "current_item", id);
 	m_gcfg1.setInt("PLAYCOUNT", id, m_gcfg1.getInt("PLAYCOUNT", id, 0) + 1);
 	m_gcfg1.setUInt("LASTPLAYED", id, time(NULL));
-	
+
 	if (has_enabled_providers() && _initNetwork() == 0)
 		add_game_to_card(id.c_str());
 
@@ -1149,7 +1160,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 
 		Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
 		DeviceHandler::Instance()->UnMount(emuPartition);
-		
+
 		if (emuSave == 3)
 			Nand::Instance()->Set_RCMode(true);
 		else if (emuSave == 4)
@@ -1168,20 +1179,20 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			DeviceHandler::Instance()->Mount(currentPartition);
 		DeviceHandler::Instance()->Mount(emuPartition);
 	}
-	
+
 	if (!m_directLaunch)
 	{
 		if (rtrn != NULL && strlen(rtrn) == 4)
 		{			
 			int rtrnID = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
-			
+
 			static ioctlv vector[1]  ATTRIBUTE_ALIGN(32);
 
 			sm_title_id[0] = (((u64)(0x00010001) << 32) | (rtrnID&0xFFFFFFFF));
-			
+
 			vector[0].data = sm_title_id;
 			vector[0].len = 8;
-			
+
 			s32 ESHandle = IOS_Open("/dev/es", 0);
 			gprintf("Return to channel %s. Using new d2x way\n", IOS_Ioctlv(ESHandle, 0xA1, 1, 0, vector) != -101 ? "succeeded" : "failed!");
 			IOS_Close(ESHandle);
@@ -1198,8 +1209,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			if (iosLoaded) Sys_LoadMenu();
 			return;
 		}
-		
-		
+
 		if (Disc_Open() < 0)
 		{
 			error(L"Disc_Open failed");
@@ -1207,24 +1217,16 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			return;
 		}
 	}
-	
+
 	cleanup();
 	Close_Inputs();
 	USBStorage_Deinit();
 	if(currentPartition == 0)
 		SDHC_Init();
-	
-	if(gc)
-	{
-		memcpy((char*)hdr->hdr.id, id.c_str(),6);
-		_launchGC( hdr, false );
-	}
-	else 
-	{
-		gprintf("Booting game\n");
-		if (Disc_WiiBoot(videoMode, vipatch, countryPatch, patchVidMode, disableIOSreload, aspectRatio) < 0)
-			Sys_LoadMenu();
-	}
+
+	gprintf("Booting game\n");
+	if (Disc_WiiBoot(videoMode, vipatch, countryPatch, patchVidMode, disableIOSreload, aspectRatio) < 0)
+		Sys_LoadMenu();
 }
 
 void CMenu::_initGameMenu(CMenu::SThemeData &theme)

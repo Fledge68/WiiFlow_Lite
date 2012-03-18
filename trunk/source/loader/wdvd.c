@@ -5,26 +5,26 @@
 #include "gecko.h"
 
 /* Constants */
-#define IOCTL_DI_READID                  0x70
-#define IOCTL_DI_READ                    0x71
-#define IOCTL_DI_WAITCVRCLOSE            0x79
-#define IOCTL_DI_GETCOVER                0x88
-#define IOCTL_DI_RESET                   0x8A
-#define IOCTL_DI_OPENPART                0x8B
-#define IOCTL_DI_CLOSEPART               0x8C
-#define IOCTL_DI_UNENCREAD               0x8D
-#define IOCTL_DI_SEEK                    0xAB
-#define IOCTL_DI_STOPLASER               0xD2
-#define IOCTL_DI_OFFSET                  0xD9
-#define IOCTL_DI_DISC_BCA                0xDA
-#define IOCTL_DI_REQUESTERROR            0xE0
-#define IOCTL_DI_STOPMOTOR               0xE3
-#define IOCTL_DI_SETWBFSMODE             0xF4
-#define IOCTL_DI_DVDLowAudioBufferConfig 0xE4
+#define IOCTL_DI_READID					0x70
+#define IOCTL_DI_READ					0x71
+#define IOCTL_DI_WAITCVRCLOSE			0x79
+#define IOCTL_DI_GETCOVER				0x88
+#define IOCTL_DI_RESET					0x8A
+#define IOCTL_DI_OPENPART				0x8B
+#define IOCTL_DI_CLOSEPART				0x8C
+#define IOCTL_DI_UNENCREAD				0x8D
+#define IOCTL_DI_SEEK					0xAB
+#define IOCTL_DI_STOPLASER				0xD2
+#define IOCTL_DI_OFFSET					0xD9
+#define IOCTL_DI_DISC_BCA				0xDA
+#define IOCTL_DI_REQUESTERROR			0xE0
+#define IOCTL_DI_STOPMOTOR				0xE3
+#define IOCTL_DI_DVDAUDIOBUFFERCFG		0xE4
+#define IOCTL_DI_SETWBFSMODE			0xF4
 
-#define IOCTL_DI_SETFRAG                 0xF9
-#define IOCTL_DI_GETMODE                 0xFA
-#define IOCTL_DI_HELLO                   0xFB
+#define IOCTL_DI_SETFRAG				0xF9
+#define IOCTL_DI_GETMODE				0xFA
+#define IOCTL_DI_HELLO					0xFB
 
 /* Variables */
 static u32 inbuf[8]  ATTRIBUTE_ALIGN(32);
@@ -32,39 +32,6 @@ static u32 outbuf[8] ATTRIBUTE_ALIGN(32);
 
 static const char di_fs[] ATTRIBUTE_ALIGN(32) = "/dev/di";
 static s32 di_fd = -1;
-
-s32 WDVD_setstreaming()
-{
-	u8 ioctl;
-	ioctl = IOCTL_DI_DVDLowAudioBufferConfig;
-
-	memset(inbuf, 0, 0x20);
-	memset(outbuf, 0, 0x20);
-
-	inbuf[0] = (ioctl << 24);
-
-	if ( (*(u32*)0x80000008)>>24 )
-	{
-		inbuf[1] = 1;
-		if( ((*(u32*)0x80000008)>>16) & 0xFF )
-		{
-			inbuf[2] = 10;
-		} else 
-		{
-			inbuf[2] = 0;
-		}
-	}
-	else
-	{		
-		inbuf[1] = 0;
-		inbuf[2] = 0;
-	}			
-	DCFlushRange(inbuf, 0x20);
-	
-	int Ret = IOS_Ioctl(di_fd, ioctl, inbuf, 0x20, outbuf, 0x20);
-
-	return ((Ret == 1) ? 0 : -Ret);
-}
 
 s32 WDVD_Init(void)
 {
@@ -375,8 +342,6 @@ s32 WDVD_SetFragList(int device, void *fraglist, int size)
 	return (ret == 1) ? 0 : -ret;
 }
 
-#define IOCTL_DI_HELLO		0xFB
-
 s32 WDVD_hello(u32 *status)
 {
 	memset(inbuf, 0, sizeof(inbuf));
@@ -394,4 +359,30 @@ s32 WDVD_hello(u32 *status)
 	}
 
 	return -ret;
+}
+
+s32 WDVD_SetStreaming(void)
+{
+	memset(inbuf, 0, sizeof(inbuf));
+
+	inbuf[0] = IOCTL_DI_DVDAUDIOBUFFERCFG << 24;
+
+	if ((*(u32*)0x80000008)>>24)
+	{
+		inbuf[1] = 1;
+		if(((*(u32*)0x80000008)>>16) & 0xFF)
+			inbuf[2] = 10;
+		else
+			inbuf[2] = 0;
+	}
+	else
+	{	
+		inbuf[1] = 0;
+		inbuf[2] = 0;
+	}
+
+	s32 ret = IOS_Ioctl(di_fd, IOCTL_DI_DVDAUDIOBUFFERCFG, inbuf, sizeof(inbuf), outbuf, sizeof(outbuf));
+	if (ret < 0) return ret;
+
+	return (ret == 1) ? 0 : -ret;
 }
