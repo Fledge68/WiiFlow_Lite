@@ -665,7 +665,7 @@ int CMenu::main(void)
 					m_btnMgr.show(m_mainBtnUsb);
 				break;
 			case COVERFLOW_CHANNEL:
-				if(show_homebrew)
+				if (show_homebrew && (parental_homebrew || !m_locked))
 					m_btnMgr.show(m_mainBtnHomebrew);
 				else
 					m_btnMgr.show(m_mainBtnUsb);
