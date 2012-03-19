@@ -641,27 +641,31 @@ extern "C" {extern void USBStorage_Deinit(void);}
 
 void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 {
-	m_gameSound.Stop();
 	char* id = (char *)hdr->hdr.id;
+
+	Nand::Instance()->Disable_Emu();
+
+	m_gcfg1.setInt("PLAYCOUNT", id, m_gcfg1.getInt("PLAYCOUNT", id, 0) + 1);
+	m_gcfg1.setUInt("LASTPLAYED", id, time(NULL));
+
 	if(has_enabled_providers() && _initNetwork() == 0)
 		add_game_to_card(id);
 
-	u8 DMLvideoMode = 0;
-	u8 GClanguage = 0;
+	u8 DMLvideoMode = min((u32)m_gcfg2.getInt(id, "dml_video_mode", 0), ARRAY_SIZE(CMenu::_DMLvideoModes) - 1u);
+	DMLvideoMode = (DMLvideoMode == 0) ? min((u32)m_cfg.getInt("DML", "video_mode", 0), ARRAY_SIZE(CMenu::_GlobalDMLvideoModes) - 1u) : DMLvideoMode-1;
+	u8 GClanguage = min((u32)m_gcfg2.getInt(id, "gc_language", 0), ARRAY_SIZE(CMenu::_GClanguages) - 1u);
+	GClanguage = (GClanguage == 0) ? min((u32)m_cfg.getInt("DML", "game_language", 0), ARRAY_SIZE(CMenu::_GlobalGClanguages) - 1u) : GClanguage-1;
+
 	if(DML)
 	{
+		m_cfg.setString("DML", "current_item", id);
+
 		char CheatPath[256];
 		char NewCheatPath[255];
 		u8 NMM = min((u32)m_gcfg2.getInt(id, "dml_nmm", 0), ARRAY_SIZE(CMenu::_NMM) - 1u);
-		if(NMM == 0)
-			NMM = m_cfg.getInt("DML", "dml_nmm", 0);
-		else
-			NMM--;
+		NMM = (NMM == 0) ? m_cfg.getInt("DML", "dml_nmm", 0) : NMM-1;
 		u8 nodisc = min((u32)m_gcfg2.getInt(id, "no_disc_patch", 0), ARRAY_SIZE(CMenu::_NoDVD) - 1u);
-		if(nodisc == 0)
-			nodisc = m_cfg.getInt("DML", "no_disc_patch", 0);
-		else
-			nodisc--;
+		nodisc = (nodisc == 0) ? m_cfg.getInt("DML", "no_disc_patch", 0) : nodisc-1;
 		bool cheats = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool("DML", "cheat", false));
 		bool DML_debug = m_gcfg2.getBool(id, "debugger", false);
 
@@ -675,20 +679,6 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 			DML_New_SetOptions(hdr->path, CheatPath, NewCheatPath, cheats, DML_debug, NMM, nodisc);
 		else
 			DML_Old_SetOptions(hdr->path, CheatPath, NewCheatPath, cheats);
-		DMLvideoMode = min((u32)m_gcfg2.getInt(id, "dml_video_mode", 0), ARRAY_SIZE(CMenu::_DMLvideoModes) - 1u);
-		if(DMLvideoMode == 0)
-			DMLvideoMode = min((u32)m_cfg.getInt("DML", "video_mode", 0), ARRAY_SIZE(CMenu::_GlobalDMLvideoModes) - 1u);
-		else
-			DMLvideoMode--;
-		GClanguage = min((u32)m_gcfg2.getInt(id, "gc_language", 0), ARRAY_SIZE(CMenu::_GClanguages) - 1u);
-		if(GClanguage == 0)
-			GClanguage = min((u32)m_cfg.getInt("DML", "game_language", 0), ARRAY_SIZE(CMenu::_GlobalGClanguages) - 1u);
-		else
-			GClanguage--;
-
-		m_cfg.setString("DML", "current_item", id);
-		m_gcfg1.setInt("PLAYCOUNT", id, m_gcfg1.getInt("PLAYCOUNT", id, 0) + 1);
-		m_gcfg1.setUInt("LASTPLAYED", id, time(NULL));
 
 		if(!nodisc || !m_new_dml)
 		{
@@ -700,6 +690,16 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 	else
 		gprintf("Booting GC game\n");
 
+	m_gcfg1.save(true);
+	m_gcfg2.save(true);
+	m_cat.save(true);
+	m_cfg.save(true);
+
+	cleanup();
+	Close_Inputs();
+	USBStorage_Deinit();
+	SDHC_Init();
+
 	memcpy((char *)0x80000000, id, 6);
 	if(((id[3] == 'P') && (DMLvideoMode == 0)) || (DMLvideoMode == 1))
 		GC_SetVideoMode(1);
@@ -709,22 +709,6 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 	VIDEO_SetBlack(TRUE);
 	VIDEO_Flush();
 	VIDEO_WaitVSync();
-
-	m_gcfg1.save(true);
-	m_gcfg2.save(true);
-	m_cat.save(true);
-	m_cfg.save(true);
-
-	CheckGameSoundThread();
-
-	cleanup();
-	Close_Inputs();
-	USBStorage_Deinit();
-	if(DML)
-		SDHC_Init();
-
-	_hideWaitMessage();
-	Nand::Instance()->Disable_Emu();
 
 	if(WII_LaunchTitle(0x100000100LL) < 0)
 		Sys_LoadMenu();

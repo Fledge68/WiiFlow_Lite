@@ -82,9 +82,7 @@ u8 get_wii_language()
 void GC_SetLanguage(u8 lang)
 {
 	if (lang == 0)
-	{
 		lang = get_wii_language();
-	}
 	else
 		lang--;
 
@@ -120,16 +118,21 @@ void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, boo
 
 	DML_CFG *DMLCfg = (DML_CFG*)MEM2_alloc(sizeof(DML_CFG));
 	memset(DMLCfg, 0, sizeof(DML_CFG));
-	snprintf(DMLCfg->GamePath, sizeof(DMLCfg->GamePath), "/games/%s/game.iso", GamePath);
 
 	DMLCfg->Magicbytes = 0xD1050CF6;
 	DMLCfg->CfgVersion = 0x00000001;
 	DMLCfg->VideoMode |= DML_VID_NONE;
-	DMLCfg->Config |= DML_CFG_GAME_PATH;
 
 	DMLCfg->Config |= DML_CFG_ACTIVITY_LED; //Sorry but I like it lol, option will may follow
+	DMLCfg->Config |= DML_CFG_PADHOOK; //Makes life easier, l+z+b+digital down...
 
-	if(cheats)
+	if(GamePath != NULL)
+	{
+		snprintf(DMLCfg->GamePath, sizeof(DMLCfg->GamePath), "/games/%s/game.iso", GamePath);
+		DMLCfg->Config |= DML_CFG_GAME_PATH;
+	}
+
+	if(CheatPath != NULL && NewCheatPath != NULL && cheats)
 	{
 		char *ptr;
 		if(strstr(CheatPath, "sd:/") == NULL)
@@ -140,10 +143,11 @@ void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, boo
 		else
 			ptr = &CheatPath[3];
 		strncpy(DMLCfg->CheatPath, ptr, sizeof(DMLCfg->CheatPath));
-		DMLCfg->Config |= DML_CFG_CHEATS;
 		DMLCfg->Config |= DML_CFG_CHEAT_PATH;
 	}
 
+	if(cheats)
+		DMLCfg->Config |= DML_CFG_CHEATS;
 	if(debugger)
 		DMLCfg->Config |= DML_CFG_DEBUGGER;
 	if(NMM > 0)
