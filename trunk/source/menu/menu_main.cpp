@@ -176,6 +176,7 @@ int CMenu::main(void)
 	show_homebrew = !m_cfg.getBool("HOMEBREW", "disable", false);
 	show_channel = !m_cfg.getBool("GENERAL", "hidechannel", false);
 	bool dpad_mode = m_cfg.getBool("GENERAL", "dpad_mode", false);
+	bool b_lr_mode = m_cfg.getBool("GENERAL", "b_lr_mode", false);
 	parental_homebrew = m_cfg.getBool("HOMEBREW", "parental", false);	
 
 	u32 cv=m_current_view;
@@ -303,11 +304,11 @@ int CMenu::main(void)
 			}
 			m_btnMgr.noClick(false);
 		}
-		//Change Songs
-		else if (!BTN_B_HELD && BTN_MINUS_PRESSED)
-			MusicPlayer::Instance()->Previous();
-		else if (!BTN_B_HELD && BTN_PLUS_PRESSED)
-			MusicPlayer::Instance()->Next();
+		//Change Songs or search by pages
+		else if (!BTN_B_HELD && BTN_MINUS_PRESSED && b_lr_mode) MusicPlayer::Instance()->Previous();
+		else if (!BTN_B_HELD && BTN_MINUS_PRESSED && !b_lr_mode) m_cf.pageUp();
+		else if (!BTN_B_HELD && BTN_PLUS_PRESSED && b_lr_mode) MusicPlayer::Instance()->Next();
+		else if (!BTN_B_HELD && BTN_PLUS_PRESSED && !b_lr_mode) m_cf.pageDown();
 		else if (BTN_B_HELD)
 		{
 			const char *domain = _domainFromView();
@@ -341,11 +342,11 @@ int CMenu::main(void)
 					m_btnMgr.show(m_mainLblNotice);
 				}
 			}
-			//Search by pages
-			else if (BTN_LEFT_PRESSED)
-				m_cf.pageUp();
-			else if (BTN_RIGHT_PRESSED)
-				m_cf.pageDown();
+			//Search by pages or change songs
+			else if (BTN_LEFT_PRESSED && b_lr_mode) m_cf.pageUp();
+			else if (BTN_LEFT_PRESSED && !b_lr_mode) MusicPlayer::Instance()->Previous();
+			else if (BTN_RIGHT_PRESSED && b_lr_mode) m_cf.pageDown();
+			else if (BTN_RIGHT_PRESSED && !b_lr_mode) MusicPlayer::Instance()->Next();
 			//Sorting Selection
 			else if (BTN_PLUS_PRESSED && !m_locked)
 			{
