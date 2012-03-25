@@ -974,9 +974,9 @@ private:
 	static const SOption _languages[11];
 	static const SOption _videoModes[7];
 	
-	static const SOption _GlobalDMLvideoModes[3];
+	static const SOption _GlobalDMLvideoModes[6];
 	static const SOption _GlobalGClanguages[7];
-	static const SOption _DMLvideoModes[4];
+	static const SOption _DMLvideoModes[7];
 	static const SOption _GClanguages[8];
 
 	static const SOption _NandEmu[3];

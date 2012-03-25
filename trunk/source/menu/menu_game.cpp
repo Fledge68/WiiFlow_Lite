@@ -104,17 +104,23 @@ const CMenu::SOption CMenu::_videoModes[7] = {
 	{ "vidprog", L"Progressive" }
 };
 
-const CMenu::SOption CMenu::_GlobalDMLvideoModes[3] = {
+const CMenu::SOption CMenu::_GlobalDMLvideoModes[6] = {
 	{ "DMLdefG", L"Game" },
 	{ "DMLpal", L"PAL 576i" },
-	{ "DMLntsc", L"NTSC 480i" }
+	{ "DMLntsc", L"NTSC 480i" },
+	{ "DMLpal60", L"PAL 480i" },
+	{ "DMLprog", L"NTSC 480p" },
+	{ "DMLprogP", L"PAL 480p" }
 };
 
-const CMenu::SOption CMenu::_DMLvideoModes[4] = {
+const CMenu::SOption CMenu::_DMLvideoModes[7] = {
 	{ "DMLdef", L"Default" },
 	{ "DMLdefG", L"Game" },
 	{ "DMLpal", L"PAL 576i" },
-	{ "DMLntsc", L"NTSC 480i" }
+	{ "DMLntsc", L"NTSC 480i" },
+	{ "DMLpal60", L"PAL 480i" },
+	{ "DMLprog", L"NTSC 480p" },
+	{ "DMLprogP", L"PAL 480p" }
 };
 
 const CMenu::SOption CMenu::_GlobalGClanguages[7] = {
@@ -651,10 +657,15 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 	if(has_enabled_providers() && _initNetwork() == 0)
 		add_game_to_card(id);
 
-	u8 DMLvideoMode = min((u32)m_gcfg2.getInt(id, "dml_video_mode", 0), ARRAY_SIZE(CMenu::_DMLvideoModes) - 1u);
-	DMLvideoMode = (DMLvideoMode == 0) ? min((u32)m_cfg.getInt("DML", "video_mode", 0), ARRAY_SIZE(CMenu::_GlobalDMLvideoModes) - 1u) : DMLvideoMode-1;
 	u8 GClanguage = min((u32)m_gcfg2.getInt(id, "gc_language", 0), ARRAY_SIZE(CMenu::_GClanguages) - 1u);
 	GClanguage = (GClanguage == 0) ? min((u32)m_cfg.getInt("DML", "game_language", 0), ARRAY_SIZE(CMenu::_GlobalGClanguages) - 1u) : GClanguage-1;
+
+	u8 DMLvideoMode = min((u32)m_gcfg2.getInt(id, "dml_video_mode", 0), ARRAY_SIZE(CMenu::_DMLvideoModes) - 1u);
+	DMLvideoMode = (DMLvideoMode == 0) ? min((u32)m_cfg.getInt("DML", "video_mode", 0), ARRAY_SIZE(CMenu::_GlobalDMLvideoModes) - 1u) : DMLvideoMode-1;
+	if((id[3] == 'P') && (DMLvideoMode == 0))
+		DMLvideoMode = 1;
+	else if((id[3] != 'P') && (DMLvideoMode == 0))
+		DMLvideoMode = 2;
 
 	if(DML)
 	{
@@ -676,7 +687,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 		}
 
 		if(m_new_dml)
-			DML_New_SetOptions(hdr->path, CheatPath, NewCheatPath, cheats, DML_debug, NMM, nodisc);
+			DML_New_SetOptions(hdr->path, CheatPath, NewCheatPath, cheats, DML_debug, NMM, nodisc, DMLvideoMode);
 		else
 			DML_Old_SetOptions(hdr->path, CheatPath, NewCheatPath, cheats);
 
@@ -701,14 +712,8 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 	SDHC_Init();
 
 	memcpy((char *)0x80000000, id, 6);
-	if(((id[3] == 'P') && (DMLvideoMode == 0)) || (DMLvideoMode == 1))
-		GC_SetVideoMode(1);
-	if(((id[3] != 'P') && (DMLvideoMode == 0)) || (DMLvideoMode == 2))
-		GC_SetVideoMode(0);
+	GC_SetVideoMode(DMLvideoMode);
 	GC_SetLanguage(GClanguage);
-	VIDEO_SetBlack(TRUE);
-	VIDEO_Flush();
-	VIDEO_WaitVSync();
 
 	if(WII_LaunchTitle(0x100000100LL) < 0)
 		Sys_LoadMenu();
