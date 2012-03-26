@@ -542,8 +542,14 @@ private:
 	STexture m_controlsreq[4];
 	STexture m_controls[4];
 // Category menu
-	u32 m_categoryBtn[12];
+	u32 m_categoryLblPage;
+	u32 m_categoryBtnPageM;
+	u32 m_categoryBtnPageP;
 	u32 m_categoryBtnBack;
+	u32 m_categoryLblTitle;
+	u32 m_categoryLblCat[20];
+	u32 m_categoryBtnCat[20];
+	u32 m_categoryBtnCats[20];
 	u32 m_categoryLblUser[4];
 	u8 m_max_categories;
 	u8 m_category;
@@ -878,7 +884,7 @@ private:
 	void _gameinfo(void);
 	void _gameSettings(void);
 	void _CheatSettings();
-	void _CategorySettings();
+	void _CategorySettings(bool fromGameSet=false);
 	//
 	void _mainLoopCommon(bool withCF = false, bool blockReboot = false, bool adjusting = false);
 	// 
