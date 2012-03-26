@@ -14,7 +14,6 @@ static inline int loopNum(int i, int s)
 	return i < 0 ? (s - (-i % s)) % s : i % s;
 }
 
-u8 m_gameSettingCategories[12];
 u32 g_numGCfPages = 4;
 
 void CMenu::_hideGameSettings(bool instant)
@@ -89,10 +88,6 @@ void CMenu::_hideGameSettings(bool instant)
 	m_btnMgr.hide(m_gameSettingsBtnIOSP, instant);
 	m_btnMgr.hide(m_gameSettingsBtnIOSM, instant);
 
-	for (int i = 0; i < 12; ++i) {
-		m_btnMgr.hide(m_gameSettingsBtnCategory[i], instant); 
-		m_btnMgr.hide(m_gameSettingsLblCategory[i], instant); 
-	}
 	for (u32 i = 0; i < ARRAY_SIZE(m_gameSettingsLblUser); ++i)
 		if (m_gameSettingsLblUser[i] != -1u)
 			m_btnMgr.hide(m_gameSettingsLblUser[i], instant);
@@ -351,70 +346,14 @@ void CMenu::_showGameSettings(void)
 		m_btnMgr.hide(m_gameSettingsLblCustom);
 		m_btnMgr.hide(m_gameSettingsBtnCustom);
 	}
-
 	u32 i = 0;
-	
-	//Categories Pages
-	if (m_gameSettingsPage == 51)
-	{
-		for (i = 1; i < (u32)min(m_max_categories+1, 5); ++i)
-		{
-			m_btnMgr.show(m_gameSettingsBtnCategory[i]);
-			m_btnMgr.show(m_gameSettingsLblCategory[i]);
-		}		
-	}
-	else
-	{
-		for (i = 1; i < 5; ++i)
-		{
-			m_btnMgr.hide(m_gameSettingsBtnCategory[i]);
-			m_btnMgr.hide(m_gameSettingsLblCategory[i]);
-		}		
-	}
-	if (m_gameSettingsPage == 52)
-	{
-		for (i = 5; i < (u32)min(m_max_categories+1, 9); ++i)
-		{
-			m_btnMgr.show(m_gameSettingsBtnCategory[i]);
-			m_btnMgr.show(m_gameSettingsLblCategory[i]);
-		}		
-	}
-	else
-	{
-		for (i = 5; i < 9; ++i)
-		{
-			m_btnMgr.hide(m_gameSettingsBtnCategory[i]);
-			m_btnMgr.hide(m_gameSettingsLblCategory[i]);
-		}		
-	}
-	if (m_gameSettingsPage == 53)
-	{
-		for (i = 9; i < (u32)min(m_max_categories+1, 12);++i)
-		{
-			m_btnMgr.show(m_gameSettingsBtnCategory[i]);
-			m_btnMgr.show(m_gameSettingsLblCategory[i]);
-		}		
-	}
-	else
-	{
-		for (i = 9; i < 12; ++i)
-		{
-			m_btnMgr.hide(m_gameSettingsBtnCategory[i]);
-			m_btnMgr.hide(m_gameSettingsLblCategory[i]);
-		}	
-	}
-	
 	for (i = 0; i < ARRAY_SIZE(m_gameSettingsLblUser); ++i)
 		if (m_gameSettingsLblUser[i] != -1u)
 			m_btnMgr.show(m_gameSettingsLblUser[i]);
 
 	string id(m_cf.getId());
 	int page = m_gameSettingsPage;
-
 	u32 maxpage = g_numGCfPages;
-
-	if (m_gameSettingsPage > maxpage)
-		page = m_gameSettingsPage-50;
 
 	m_btnMgr.setText(m_gameSettingsLblPage, wfmt(L"%i / %i", page, maxpage));
 	m_btnMgr.setText(m_gameSettingsBtnOcarina, _optBoolToString(m_gcfg2.getOptBool(id, "cheat")));
@@ -465,13 +404,6 @@ void CMenu::_showGameSettings(void)
 
 	m_btnMgr.setText(m_gameSettingsBtnCategoryMain, _fmt("cfgg16",  wfmt(L"Select",i).c_str() )); 
 	
-	char *categories = (char *) m_cat.getString("CATEGORIES", id, "").c_str();
-	memset(&m_gameSettingCategories, '0', sizeof(m_gameSettingCategories));
-	if (strlen(categories) == sizeof(m_gameSettingCategories))
-		memcpy(&m_gameSettingCategories, categories, sizeof(m_gameSettingCategories));
-	for (int i=0; i<12; ++i)
-		m_btnMgr.setText(m_gameSettingsBtnCategory[i], _optBoolToString(m_gameSettingCategories[i] == '1'));
-
 	i = min((u32)m_gcfg2.getInt(id, "emulate_save", 0), ARRAY_SIZE(CMenu::_SaveEmu) - 1u);
 	m_btnMgr.setText(m_gameSettingsLblEmulationVal, _t(CMenu::_SaveEmu[i].id, CMenu::_SaveEmu[i].text));	
 	
@@ -498,10 +430,7 @@ void CMenu::_gameSettings(void)
 		{
 			if (m_gameSettingsPage == 1)
 				m_gameSettingsPage = g_numGCfPages;
-			else if (m_gameSettingsPage == 51)
-				m_gameSettingsPage = 53;
-			else if ((m_gameSettingsPage > 1 && m_gameSettingsPage <= g_numGCfPages) || m_gameSettingsPage > 51)
-				--m_gameSettingsPage;
+			else --m_gameSettingsPage;
 			if(BTN_LEFT_PRESSED || BTN_MINUS_PRESSED) m_btnMgr.click(m_gameSettingsBtnPageM);
 			_showGameSettings();
 		}
@@ -509,11 +438,7 @@ void CMenu::_gameSettings(void)
 		{
 			if (m_gameSettingsPage == g_numGCfPages)
 				m_gameSettingsPage = 1;
-			else if (m_gameSettingsPage == 53)
-				m_gameSettingsPage = 51;
-			else if (m_gameSettingsPage < g_numGCfPages || (m_gameSettingsPage > g_numGCfPages && m_gameSettingsPage < 53 && m_max_categories > 8)
-				|| (m_gameSettingsPage > g_numGCfPages && m_gameSettingsPage < 52 && m_max_categories > 3))
-				++m_gameSettingsPage;
+			else ++m_gameSettingsPage;
 			if(BTN_RIGHT_PRESSED || BTN_PLUS_PRESSED) m_btnMgr.click(m_gameSettingsBtnPageP);
 			_showGameSettings();
 		}
@@ -678,20 +603,9 @@ void CMenu::_gameSettings(void)
 			else if (m_btnMgr.selected(m_gameSettingsBtnCategoryMain))
 			{
 				_hideGameSettings();
-				m_gameSettingsPage = 51;
+				_CategorySettings(true);
 				_showGameSettings();
 			}
-			for (int i = 0; i < 12; ++i)
-				if (m_btnMgr.selected(m_gameSettingsBtnCategory[i]))
-				{
-					m_gameSettingCategories[i] = m_gameSettingCategories[i] == '1' ? '0' : '1';
-					char categories[13];
-					memset(&categories, 0, sizeof(categories));
-					memcpy(&categories, &m_gameSettingCategories, sizeof(m_gameSettingCategories));
-					m_cat.setString("CATEGORIES", id, categories);
-					_showGameSettings();
-					break;
-				}
 		}
 		else if ((WBTN_2_HELD && WBTN_1_PRESSED) || (WBTN_1_HELD && WBTN_2_PRESSED))
 		{	
@@ -805,37 +719,6 @@ void CMenu::_initGameSettingsMenu(CMenu::SThemeData &theme)
 	m_gameSettingsLblCustom = _addLabel(theme, "GAME_SETTINGS/CUSTOM", theme.lblFont, L"", 40, 310, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsBtnCustom =  _addButton(theme, "GAME_SETTINGS/CUSTOM_BTN", theme.btnFont, L"", 350, 310, 240, 56, theme.btnFontColor);
 
-	//Categories Page 1 
-	//m_gameSettingsLblCategory[0] = _addLabel(theme, "GAME_SETTINGS/CAT_ALL", theme.lblFont, L"All", 40, 130, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	//m_gameSettingsBtnCategory[0] = _addButton(theme, "GAME_SETTINGS/CAT_ALL_BTN", theme.btnFont, L"", 330, 130, 270, 56, theme.btnFontColor);
-
-	m_gameSettingsLblCategory[1] = _addLabel(theme, "GAME_SETTINGS/CAT_1", theme.lblFont, L"", 40, 130, 190, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsBtnCategory[1] = _addButton(theme, "GAME_SETTINGS/CAT_1_BTN", theme.btnFont, L"", 330, 130, 270, 56, theme.btnFontColor);
-	m_gameSettingsLblCategory[2] = _addLabel(theme, "GAME_SETTINGS/CAT_2", theme.lblFont, L"", 40, 190, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsBtnCategory[2] = _addButton(theme, "GAME_SETTINGS/CAT_2_BTN", theme.btnFont, L"", 330, 190, 270, 56, theme.btnFontColor);
-	m_gameSettingsLblCategory[3] = _addLabel(theme, "GAME_SETTINGS/CAT_3", theme.lblFont, L"", 40, 250, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsBtnCategory[3] = _addButton(theme, "GAME_SETTINGS/CAT_3_BTN", theme.btnFont, L"", 330, 250, 270, 56, theme.btnFontColor);
-	m_gameSettingsLblCategory[4] = _addLabel(theme, "GAME_SETTINGS/CAT_4", theme.lblFont, L"", 40, 310, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsBtnCategory[4] = _addButton(theme, "GAME_SETTINGS/CAT_4_BTN", theme.btnFont, L"", 330, 310, 270, 56, theme.btnFontColor);
-	
-	//Categories Page 2
-	m_gameSettingsLblCategory[5] = _addLabel(theme, "GAME_SETTINGS/CAT_5", theme.lblFont, L"", 40, 130, 190, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsBtnCategory[5] = _addButton(theme, "GAME_SETTINGS/CAT_5_BTN", theme.btnFont, L"", 330, 130, 270, 56, theme.btnFontColor);
-	m_gameSettingsLblCategory[6] = _addLabel(theme, "GAME_SETTINGS/CAT_6", theme.lblFont, L"", 40, 190, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsBtnCategory[6] = _addButton(theme, "GAME_SETTINGS/CAT_6_BTN", theme.btnFont, L"", 330, 190, 270, 56, theme.btnFontColor);
-	m_gameSettingsLblCategory[7] = _addLabel(theme, "GAME_SETTINGS/CAT_7", theme.lblFont, L"", 40, 250, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsBtnCategory[7] = _addButton(theme, "GAME_SETTINGS/CAT_7_BTN", theme.btnFont, L"", 330, 250, 270, 56, theme.btnFontColor);
-	m_gameSettingsLblCategory[8] = _addLabel(theme, "GAME_SETTINGS/CAT_8", theme.lblFont, L"", 40, 310, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsBtnCategory[8] = _addButton(theme, "GAME_SETTINGS/CAT_8_BTN", theme.btnFont, L"", 330, 310, 270, 56, theme.btnFontColor);
-
-	//Categories Page 3 
-	m_gameSettingsLblCategory[9] = _addLabel(theme, "GAME_SETTINGS/CAT_9", theme.lblFont, L"", 40, 130, 190, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsBtnCategory[9] = _addButton(theme, "GAME_SETTINGS/CAT_9_BTN", theme.btnFont, L"", 330, 130, 270, 56, theme.btnFontColor);
-	m_gameSettingsLblCategory[10] = _addLabel(theme, "GAME_SETTINGS/CAT_10", theme.lblFont, L"", 40, 190, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsBtnCategory[10] = _addButton(theme, "GAME_SETTINGS/CAT_10_BTN", theme.btnFont, L"", 330, 190, 270, 56, theme.btnFontColor);
-	m_gameSettingsLblCategory[11] = _addLabel(theme, "GAME_SETTINGS/CAT_11", theme.lblFont, L"", 40, 250, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsBtnCategory[11] = _addButton(theme, "GAME_SETTINGS/CAT_11_BTN", theme.btnFont, L"", 330, 250, 270, 56, theme.btnFontColor);
-
 	m_gameSettingsLblPage = _addLabel(theme, "GAME_SETTINGS/PAGE_BTN", theme.btnFont, L"", 76, 400, 80, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_gameSettingsBtnPageM = _addPicButton(theme, "GAME_SETTINGS/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 20, 400, 56, 56);
 	m_gameSettingsBtnPageP = _addPicButton(theme, "GAME_SETTINGS/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 156, 400, 56, 56);
@@ -911,12 +794,6 @@ void CMenu::_initGameSettingsMenu(CMenu::SThemeData &theme)
 	//Categories
 	_setHideAnim(m_gameSettingsBtnCategoryMain, "GAME_SETTINGS/CAT_MAIN_BTN", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsLblCategoryMain, "GAME_SETTINGS/CAT_MAIN", -200, 0, 1.f, 0.f);
-	//_setHideAnim(m_gameSettingsBtnCategory[0], "GAME_SETTINGS/CAT_ALL_BTN", 200, 0, 1.f, 0.f);
-	//_setHideAnim(m_gameSettingsLblCategory[0], "GAME_SETTINGS/CAT_ALL", -200, 0, 1.f, 0.f);
-	for (int i = 1; i < 12; ++i) {
-		_setHideAnim(m_gameSettingsBtnCategory[i], sfmt("GAME_SETTINGS/CAT_%i_BTN", i).c_str(), 200, 0, 1.f, 0.f);
-		_setHideAnim(m_gameSettingsLblCategory[i], sfmt("GAME_SETTINGS/CAT_%i", i).c_str(), -200, 0, 1.f, 0.f);
-	}
 
 	_hideGameSettings(true);
 	_textGameSettings();
@@ -949,6 +826,4 @@ void CMenu::_textGameSettings(void)
 	m_btnMgr.setText(m_gameSettingsLblNMM, _t("cfgg28", L"NMM"));
 	m_btnMgr.setText(m_gameSettingsLblNoDVD, _t("cfgg29", L"No DVD Patch"));
 	m_btnMgr.setText(m_gameSettingsLblCustom, _t("custom", L"Custom"));
-	for (int i = 1; i < 12; ++i)
-		m_btnMgr.setText(m_gameSettingsLblCategory[i], m_cat.getWString("GENERAL", fmt("cat%d",i), wfmt(L"Category %i",i).c_str()));
 }

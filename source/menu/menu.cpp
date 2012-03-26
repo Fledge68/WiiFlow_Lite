@@ -795,7 +795,7 @@ void CMenu::_buildMenus(void)
 	theme.txtFont = _font(theme.fontSet, "GENERAL", "text_font", TEXTFONT);
 	theme.txtFontColor = m_theme.getColor("GENERAL", "text_font_color", 0xFFFFFFFF);
 	
-	theme.selsbtnFontColor = m_theme.getColor("GENERAL", "selsbtn_font_color", 0xD0BFDFFF);
+	theme.selsbtnFontColor = m_theme.getColor("GENERAL", "selsbtn_font_color", 0xFA5882FF);
 	theme.selubtnFontColor = m_theme.getColor("GENERAL", "selubtn_font_color", 0xD0BFDFFF);
 	
 	// Default Sounds
@@ -1404,6 +1404,7 @@ void CMenu::_initCF(void)
 {
 	Config m_dump;
 	const char *domain = _domainFromView();
+	const char *catviews = m_cat.getString("GENERAL", "categories", "").c_str();
 
 	m_cf.clear();
 	m_cf.reserve(m_gameList.size());
@@ -1419,16 +1420,25 @@ void CMenu::_initCF(void)
 			strncpy((char *) m_gameList[i].hdr.id, "JODI", 6);
 
 		string id = string((const char *)m_gameList[i].hdr.id, m_current_view == COVERFLOW_CHANNEL ?  4 : 6);
-		
+		string idcats = m_cat.getString("CATEGORIES", id, "").c_str();
+		if (idcats.length() == 12) 
+		{
+			idcats.append("00000000");
+			m_cat.setString("CATEGORIES", id, idcats);
+		}		
 		if ((!m_favorites || m_gcfg1.getBool("FAVORITES", id, false)) && (!m_locked || !m_gcfg1.getBool("ADULTONLY", id, false)) && !m_gcfg1.getBool("HIDDEN", id, false))
 		{
-			if (m_category != 0)
+			if (catviews[0] == '0')
 			{
-				const char *categories = m_cat.getString("CATEGORIES", id, "").c_str();
-				if (strlen(categories) != 12 || categories[m_category] == '0') 
-					continue;
+				const char *idcats = m_cat.getString("CATEGORIES", id, "").c_str();
+				if (strlen(idcats) != 20) continue;
+				else
+				{
+					bool idinacat=0;
+					for (u32 j = 1; j<20; ++j) if (catviews[j] == '1' && idcats[j] == '1') idinacat=1;
+					if (!idinacat) continue;
+				}
 			}
-
 			int playcount = m_gcfg1.getInt("PLAYCOUNT", id, 0);
 			unsigned int lastPlayed = m_gcfg1.getUInt("LASTPLAYED", id, 0);
 
