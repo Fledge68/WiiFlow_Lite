@@ -33,7 +33,8 @@ public:
 		g = (rgba8 & 0x0000FF00) >> 8;
 		b = rgba8 & 0x000000FF;
 	}
-	int intVal() { return a << 24 | r << 16 | g << 8 | b; }
+	//int intVal() { return a << 24 | r << 16 | g << 8 | b; }
+	int intVal() { return r << 16 | g << 8 | b; }
 	bool operator==(const CColor &c) const { return c.r == r && c.g == g && c.b == b && c.a == a; }
 	bool operator!=(const CColor &c) const { return c.r != r || c.g != g || c.b != b || c.a != a; }
 	void blend(const CColor &src);
