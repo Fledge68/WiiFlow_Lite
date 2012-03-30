@@ -28,7 +28,7 @@ void GC_SetVideoMode(u8 videomode)
 	static GXRModeObj *rmode;
 	int memflag = 0;
 
-	if(VIDEO_HaveComponentCable())
+	if((VIDEO_HaveComponentCable() && (CONF_GetProgressiveScan() > 0)) || videomode > 3)
 		sram->flags |= 0x80; //set progressive flag
 	else
 		sram->flags &= 0x7F; //clear progressive flag
@@ -135,7 +135,7 @@ bool GC_GameIsInstalled(char *discid, const char* partition, const char* dmlgame
 	return false;
 }
 
-void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats, bool debugger, u8 NMM, u8 nodisc, u8 DMLvideoMode)
+void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats, bool debugger, u8 NMM, u8 nodisc) //, u8 DMLvideoMode)
 {
 	gprintf("Wiiflow DML: Launch game 'sd:/games/%s/game.iso' through memory (new method)\n", GamePath);
 
@@ -144,7 +144,8 @@ void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, boo
 
 	DMLCfg->Magicbytes = 0xD1050CF6;
 	DMLCfg->CfgVersion = 0x00000001;
-	DMLCfg->VideoMode |= DML_VID_FORCE;
+	//DMLCfg->VideoMode |= DML_VID_FORCE;
+	DMLCfg->VideoMode |= DML_VID_NONE;
 
 	DMLCfg->Config |= DML_CFG_ACTIVITY_LED; //Sorry but I like it lol, option will may follow
 	DMLCfg->Config |= DML_CFG_PADHOOK; //Makes life easier, l+z+b+digital down...
@@ -180,6 +181,7 @@ void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, boo
 	if(nodisc > 0)
 		DMLCfg->Config |= DML_CFG_NODISC;
 
+	/*
 	if(DMLvideoMode == 1)
 		DMLCfg->VideoMode |= DML_VID_FORCE_PAL50;
 	else if(DMLvideoMode == 2)
@@ -188,6 +190,7 @@ void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, boo
 		DMLCfg->VideoMode |= DML_VID_FORCE_PAL60;
 	else
 		DMLCfg->VideoMode |= DML_VID_FORCE_PROG;
+	*/
 
 	//Write options into memory
 	memcpy((void *)0xC0001700, DMLCfg, sizeof(DML_CFG));
