@@ -398,7 +398,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						if(fsop_GetFreeSpaceKb((char*)"sd:/")<fsop_GetFolderKb(source))
 						{
 							m_btnMgr.hide(m_wbfsBtnGo);
-							_setThrdMsg(wfmt(_fmt("wbfsop10", L"Not enough space: %d blocks needed, %d available"), fsop_GetFolderKb(source), fsop_GetFreeSpaceKb((char*)"sd:/")), 0.f);
+							_setThrdMsg(wfmt(_fmt("wbfsop24", L"Not enough space: %d blocks needed, %d available"), fsop_GetFolderKb(source), fsop_GetFreeSpaceKb((char*)"sd:/")), 0.f);
 							break;
 						}
 
