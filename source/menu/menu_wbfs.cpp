@@ -225,32 +225,22 @@ int CMenu::_GCcopyGame(void *obj)
 	memset(folder, 0, sizeof(folder));
 	snprintf(folder, sizeof(folder), DML_DIR, DeviceName[SD]);
 	snprintf(target, sizeof(target), "%s/%s", folder, m.m_cf.getHdr()->path);
-	int ret;
-	if(fsop_GetFreeSpaceKb((char*)"sd:/")<fsop_GetFolderKb(source))
-	{
-		LWP_MutexLock(m.m_mutex);
-		m._setThrdMsg(wfmt(m._fmt("wbfsop10", L"Not enough space: %d blocks needed, %d available"), fsop_GetFolderKb(source), fsop_GetFreeSpaceKb((char*)"sd:/")), 0.f);
-		LWP_MutexUnlock(m.m_mutex);
-		ret = -1;
-	}
-	else
-	{
-		LWP_MutexLock(m.m_mutex);
-		m._setThrdMsg(L"", 0);
-		gprintf("Copying from:\n%s\nto:\n%s\n",source,target);
-		LWP_MutexUnlock(m.m_mutex);
-		if (!fsop_DirExist(folder))
-			makedir(folder);
-		fsop_CopyFolder(source, target, CMenu::_addDiscProgress, obj);
-		LWP_MutexLock(m.m_mutex);
-		m._setThrdMsg(m._t("wbfsop14", L"Game copied, press Back to boot the game."), 1.f);
-		gprintf("Game copied.\n");
-		LWP_MutexUnlock(m.m_mutex);
-		slotLight(true);
-		ret = 0;
-	}
+
+	LWP_MutexLock(m.m_mutex);
+	m._setThrdMsg(L"", 0);
+	gprintf("Copying from:\n%s\nto:\n%s\n",source,target);
+	LWP_MutexUnlock(m.m_mutex);
+	if (!fsop_DirExist(folder))
+		makedir(folder);
+	fsop_CopyFolder(source, target, CMenu::_addDiscProgress, obj);
+	LWP_MutexLock(m.m_mutex);
+	m._setThrdMsg(m._t("wbfsop14", L"Game copied, press Back to boot the game."), 1.f);
+	gprintf("Game copied.\n");
+	LWP_MutexUnlock(m.m_mutex);
+	slotLight(true);
+
 	m.m_thrdWorking = false;
-	return ret;
+	return 0;
 }
 
 bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
@@ -401,6 +391,17 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 					case CMenu::WO_FORMAT:
 						break;
 					case CMenu::WO_COPY_GAME:
+						char folder[50];
+						char source[300];
+						snprintf(folder, sizeof(folder), m_DMLgameDir.c_str(), DeviceName[currentPartition]);
+						snprintf(source, sizeof(source), "%s/%s", folder, m_cf.getHdr()->path);
+						if(fsop_GetFreeSpaceKb((char*)"sd:/")<fsop_GetFolderKb(source))
+						{
+							m_btnMgr.hide(m_wbfsBtnGo);
+							_setThrdMsg(wfmt(_fmt("wbfsop10", L"Not enough space: %d blocks needed, %d available"), fsop_GetFolderKb(source), fsop_GetFreeSpaceKb((char*)"sd:/")), 0.f);
+							break;
+						}
+
 						m_btnMgr.show(m_wbfsPBar);
 						m_btnMgr.setProgress(m_wbfsPBar, 0.f);
 						m_btnMgr.hide(m_wbfsBtnGo);
