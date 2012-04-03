@@ -292,14 +292,14 @@ s32 GCDump::DumpGame()
 		snprintf(folder, sizeof(folder), sfmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition).c_str());
 		if(!fsop_DirExist(folder))
 		{
-			gprintf("Creating directory: %s", folder);
+			gprintf("Creating directory: %s\n", folder);
 			makedir(folder);
 		}
 		memset(folder, 0, sizeof(folder));
 		snprintf(folder, sizeof(folder), "%s/%s [%.06s]%s", sfmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition).c_str(), gcheader.title, (char *)gcheader.id, Disc ? "2" : "");
 		if(!fsop_DirExist(folder))
 		{
-			gprintf("Creating directory: %s", folder);
+			gprintf("Creating directory: %s\n", folder);
 			makedir(folder);
 		}
 		else
@@ -372,7 +372,7 @@ s32 GCDump::DumpGame()
 			snprintf(folder, sizeof(folder), "%s/%s [%.06s]%s/sys", sfmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition).c_str(), gcheader.title, (char *)gcheader.id, Disc ? "2" : "");
 			if(!fsop_DirExist(folder))
 			{
-				gprintf("Creating directory: %s", folder);
+				gprintf("Creating directory: %s\n", folder);
 				makedir(folder);
 			}
 
