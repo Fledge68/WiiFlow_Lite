@@ -4,6 +4,7 @@
 #include "config.hpp"
 #include "defines.h"
 #include "channels.h"
+#include "gc.h"
 
 template <typename T>
 void CList<T>::GetPaths(safe_vector<string> &pathlist, string containing, string directory, bool wbfs_fs)
@@ -148,7 +149,7 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 					int ccolor = custom_titles.getColor( "COVERS", (const char *) tmp.hdr.id, tmp.hdr.casecolor ).intVal();
 
 					if( GTitle.size() > 0 || ( gameTDB.IsLoaded() && gameTDB.GetTitle( (char *)tmp.hdr.id, GTitle ) ) )
-					{							
+					{
 						mbstowcs( tmp.title, GTitle.c_str(), sizeof(tmp.title) );
 						Asciify( tmp.title );
 						if(gc_disc[0])
@@ -162,17 +163,24 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 						(*itr)[(*itr).find_last_of('/')] = 0;
 						(*itr).assign(&(*itr)[(*itr).find_last_of('/') + 1]);
 						strcpy( tmp.path, (*itr).c_str() );
+
+						if(strncmp(dml_partition, "sd", 2) != 0)
+						{
+							if (GC_GameIsInstalled((char*)tmp.hdr.id, DeviceName[SD], DML_DIR) || GC_GameIsInstalled((char*)fmt("%s [%s]", tmp.hdr.title, (char *)tmp.hdr.id), DeviceName[SD], DML_DIR) || GC_GameIsInstalled(tmp.path, DeviceName[SD], DML_DIR))
+								wcslcat(tmp.title, L" \n(on SD)", sizeof(tmp.title));
+						}
+
 						gprintf("Found: %s\n", tmp.path);
 						headerlist.push_back( tmp );
 						continue;
-					}					
+					}
 
 					fseek( fp, 0, SEEK_SET );
 					fread( &tmp.hdr, sizeof( discHdr ), 1, fp);
 					SAFE_CLOSE(fp);
 					
 					if ( tmp.hdr.gc_magic == 0xc2339f3d )
-					{							
+					{
 						mbstowcs( tmp.title, (const char *)tmp.hdr.title, sizeof( tmp.hdr.title ) );
 						Asciify(tmp.title);
 						if(gc_disc[0])
@@ -182,6 +190,13 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 						(*itr)[(*itr).find_last_of('/')] = 0;
 						(*itr).assign(&(*itr)[(*itr).find_last_of('/') + 1]);
 						strcpy( tmp.path, (*itr).c_str() );
+
+						if(strncmp(dml_partition, "sd", 2) != 0)
+						{
+							if (GC_GameIsInstalled((char*)tmp.hdr.id, DeviceName[SD], DML_DIR) || GC_GameIsInstalled((char*)fmt("%s [%s]", tmp.hdr.title, (char *)tmp.hdr.id), DeviceName[SD], DML_DIR) || GC_GameIsInstalled(tmp.path, DeviceName[SD], DML_DIR))
+								wcslcat(tmp.title, L" \n(on SD)", sizeof(tmp.title));
+						}
+
 						gprintf("Found: %s\n", tmp.path);
 						headerlist.push_back( tmp );
 						continue;
