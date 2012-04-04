@@ -147,14 +147,14 @@ int CMenu::_GCgameInstaller(void *obj)
 {
 	CMenu &m = *(CMenu *)obj;
 	GCDump m_gcdump;
-	
+
 	bool skip = m.m_cfg.getBool("DML", "skip_on_error", false);
 	bool comp = m.m_cfg.getBool("DML", "compressed_dump", true);
 	bool wexf = m.m_cfg.getBool("DML", "write_ex_files", true);
 	bool alig = m.m_cfg.getBool("DML", "force_32k_align_files", false);
 	u32 nretry = m.m_cfg.getUInt("DML", "num_retries", 5);
 	u32 rsize = 1048576; //1MB
-	
+
 	if(skip)
 		rsize = 8192; // Use small chunks when skip on error is enabled
 
@@ -181,7 +181,7 @@ int CMenu::_GCgameInstaller(void *obj)
 		m.m_thrdWorking = false;
 		return ret;
 	}
-	
+
 	if(m_gcdump.GetFreeSpace(partition, BL) <= needed)
 	{
 		gprintf("Free space available: %d Mb (%d blocks)\n", m_gcdump.GetFreeSpace(partition, MB), m_gcdump.GetFreeSpace(partition, BL));
@@ -196,7 +196,7 @@ int CMenu::_GCgameInstaller(void *obj)
 		LWP_MutexLock(m.m_mutex);
 		m._setThrdMsg(L"", 0);
 		LWP_MutexUnlock(m.m_mutex);
-		
+
 		ret = m_gcdump.DumpGame();
 		LWP_MutexLock(m.m_mutex);
 		if(ret == 0)
@@ -429,7 +429,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 					break;
 			}
 		}
-		// 
+
 		if (m_thrdMessageAdded)
 		{
 			LockMutex lock(m_mutex);
@@ -446,15 +446,25 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 	if (done && (op == CMenu::WO_REMOVE_GAME || op == CMenu::WO_ADD_GAME))
 	{
 		m_gameList.SetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
-		if( upd_dml )
+		if(upd_dml)
 			UpdateCache(COVERFLOW_DML);
-		
-		if( upd_usb )
+
+		if(upd_usb)
 			UpdateCache(COVERFLOW_USB);
 
 		_loadList();
 		_initCF();
 		m_cf.findId(cfPos.c_str(), true);
+	}
+	else if(done && op == CMenu::WO_COPY_GAME)
+	{
+		m_gameList.SetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
+		if(upd_dml)
+		{
+			UpdateCache(COVERFLOW_DML);
+			currentPartition = SD;
+			UpdateCache(COVERFLOW_DML);
+		}
 	}
 	return done;
 }
