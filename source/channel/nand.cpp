@@ -1,6 +1,6 @@
 /***************************************************************************
- * Copyright (C) 2011 by Miigotu for wiiflow 2011
- *           (C) 2012 by OverjoY for Wiiflow-mod
+ * Copyright (C) 2011 by Miigotu
+ *           (C) 2012 by OverjoY
  *
  * Rewritten code from Mighty Channels and Triiforce
  *
@@ -23,7 +23,7 @@
  * 3. This notice may not be removed or altered from any source
  * distribution.
  *
- * Nand/Emulation Handling Class
+ * Nand/Emulation Handling Class for Wiiflow
  *
  ***************************************************************************/
  
@@ -39,7 +39,7 @@
 #include "utils.h"
 #include "gecko.h"
 #include "mem2.hpp"
-#include "smartptr.hpp"
+#include "text.hpp"
 
 u8 *confbuffer ATTRIBUTE_ALIGN(32);
 u8 CCode[0x1008];
@@ -51,7 +51,8 @@ config_header *cfg_hdr;
 bool tbdec = false;
 bool configloaded = false;
 
-static NandDevice NandDeviceList[] = {
+static NandDevice NandDeviceList[] = 
+{
 	{ "Disable",						0,	0x00,	0x00 },
 	{ "SD/SDHC Card",					1,	0xF0,	0xF1 },
 	{ "USB 2.0 Mass Storage Device",	2,	0xF2,	0xF3 },
@@ -228,6 +229,45 @@ void Nand::__configshifttxt(char *str)
 	*ctr = '\0';
 }
 
+void Nand::__GetNameList(const char *source, namelist **entries, int *count)
+{
+	u32 i, j, k, l;
+	u32 numentries = 0;	
+	char *names;
+	char curentry[ISFS_MAXPATH];
+	char entrypath[ISFS_MAXPATH];
+
+	s32 ret = ISFS_ReadDir(source, NULL, &numentries);
+	names = (char *)MEM2_alloc((ISFS_MAXPATH) * numentries);
+	ret = ISFS_ReadDir(source, names, &numentries);	
+	*count = numentries;
+
+	if(*entries)
+		MEM2_free(*entries);
+
+	*entries = (namelist *)MEM2_alloc(sizeof(namelist)*numentries);	
+
+	for(i = 0, k = 0; i < numentries; i++)
+	{
+		for(j = 0; names[k] != 0; j++, k++)
+			curentry[j] = names[k];
+		
+		curentry[j] = 0;
+		k++;
+
+		strcpy((*entries)[i].name, curentry);
+
+		if(source[strlen(source)-1] == '/')
+			snprintf(entrypath, sizeof(entrypath), "%s%s", source, curentry);
+		else
+			snprintf(entrypath, sizeof(entrypath), "%s/%s", source, curentry);
+		
+		ret = ISFS_ReadDir(entrypath, NULL, &l);		
+		(*entries)[i].type = ret < 0 ? 0 : 1;
+	}	
+	MEM2_free(names);
+}
+
 s32 Nand::__configread(void)
 {	
 	confbuffer = (u8 *)MEM2_alloc(0x4000);
@@ -360,6 +400,67 @@ u32 Nand::__configsetsetting(const char *item, const char *val)
 	return 0;
 }
 
+bool Nand::__FileExists(const char *path, ...)
+{
+	FILE *f = fopen(path, "rb");		
+	if (f != 0)
+	{
+		gprintf("File \"%s\" exists\n", path);		
+		SAFE_CLOSE(f);
+		return true;
+	}
+	return false;
+}
+
+u32 Nand::__TestNandPath(const char *path)
+{
+	if(!strncmp(path, "/import", 7)) return 0;
+	if(!strncmp(path, "/meta", 5)) return 0;
+	if(!strncmp(path, "/shared", 7) && !n_dumpwsc && !n_dumpwvc) return 1;	
+	if(!strncmp(path, "/sys", 4)) return 0;
+
+	if(!strncmp(path, "/ticket/00000001/", 17))
+	{
+		const char *tmp = path + 17;
+		if(!strncmp(tmp, "00000002.tik", 8) && !n_dumpmen) return 1; // Menu
+		if(strncmp(tmp, "00000002.tik", 8) && !n_dumpios) return 1; // IOSs
+		return 0;
+	}
+	if(!strncmp(path, "/ticket/00010001/", 17))
+	{
+		const char *tmp = path + 17;
+		if(!strncmp(tmp, "48XXXXXX.tik", 2) && n_dumpwsc) return 0; // SC
+		if(strncmp(tmp, "48XXXXXX.tik", 2) && n_dumpwvc) return 0; // WW&VC
+		return 1;
+	}
+	if(!strncmp(path, "/ticket/00010002/", 17) && !n_dumpwsc) return 1; // SC
+	if(!strncmp(path, "/ticket/00010005/", 17) && !n_dumpwgs) return 1; // DLC?
+	if(!strncmp(path, "/ticket/00010008/", 17) && !n_dumpwsc) return 1; // Hidden SC
+	
+	if(!strncmp(path, "/title/00000001/", 16))
+	{
+		const char *tmp = path + 16;
+		if(!strncmp(tmp, "00000002", 8) && n_dumpmen) return 0; // Menu
+		if(strncmp(tmp, "00000002", 8) && n_dumpios) return 0; // IOSs
+		return 1;
+	}
+	if(!strncmp(path, "/title/00010000/", 16) && !n_dumpwgs) return 1; // Saves
+	if(!strncmp(path, "/title/00010001/", 16))
+	{
+		const char *tmp = path + 16;
+		if(!strncmp(tmp, "48XXXXXX", 2) && n_dumpwsc) return 0; // SC
+		if(strncmp(tmp, "48XXXXXX", 2) && n_dumpwvc) return 0; // WW&VC
+		return 1;
+	}
+	if(!strncmp(path, "/title/00010002/", 16) && !n_dumpwsc) return 1; // SC
+	if(!strncmp(path, "/title/00010004/", 16) && !n_dumpwgs) return 1; // Saves
+	if(!strncmp(path, "/title/00010005/", 16) && !n_dumpwgs) return 1; // DLC
+	if(!strncmp(path, "/title/00010008/", 16) && !n_dumpwsc) return 1; // Hidden SC
+	
+	if(!strncmp(path, "/tmp", 4)) return 0;
+	return 0;
+}
+
 s32 Nand::__FlashNandFile(const char *source, const char *dest)
 {
 	s32 ret;
@@ -374,7 +475,7 @@ s32 Nand::__FlashNandFile(const char *source, const char *dest)
 	u32 fsize = ftell(file);
 	fseek(file, 0, SEEK_SET);
 	
-	gprintf("Flashing: %s (%uKB) to nand: %s...", source, (fsize / 0x400)+1, dest);
+	gprintf("Flashing: %s (%uKB) to nand...", source, (fsize / 0x400)+1);
 	
 	ISFS_Delete(dest);
 	ISFS_CreateFile(dest, 0, 3, 3, 3);
@@ -425,13 +526,19 @@ s32 Nand::__FlashNandFile(const char *source, const char *dest)
 
 s32 Nand::__DumpNandFile(const char *source, const char *dest)
 {
+	if(__TestNandPath(source))
+		return 0;
+		
 	s32 fd = ISFS_Open(source, ISFS_OPEN_READ);
 	if (fd < 0) 
 	{
 		gprintf("Error: IOS_OPEN(%s, %d) %d\n", source, ISFS_OPEN_READ, fd);
 		return fd;
 	}
-        
+	
+	if(__FileExists(dest))   
+		remove(dest);
+	
 	FILE *file = fopen(dest, "wb");
 	if (!file)
 	{
@@ -451,7 +558,7 @@ s32 Nand::__DumpNandFile(const char *source, const char *dest)
 		return ret;
 	}
 	
-	gprintf("Dumping: %s (%uKB) from nand to %s...", source, (status->file_length / 0x400)+1, dest);
+	gprintf("Dumping: %s (%uKB)...", source, (status->file_length / 0x400)+1);
 
 	u8 *buffer = (u8 *)MEM2_alloc(BLOCK);
 	u32 toread = status->file_length;
@@ -492,18 +599,59 @@ s32 Nand::__DumpNandFile(const char *source, const char *dest)
 	return 1;
 }
 
-void Nand::__CreatePath(const char *path, ...)
+s32 Nand::__DumpNandFolder(const char *source, const char *dest)
 {
+	namelist *names = NULL;
+	int cnt, i;
+	char nsource[ISFS_MAXPATH];
+	char ndest[MAX_FAT_PATH];		
+	
+	__GetNameList(source, &names, &cnt);	
+	
+	for(i = 0; i < cnt; i++) 
+	{
+		if(source[strlen(source)-1] == '/')
+			snprintf(nsource, sizeof(nsource), "%s%s", source, names[i].name);
+		else
+			snprintf(nsource, sizeof(nsource), "%s/%s", source, names[i].name);		
+		
+		if(!names[i].type)
+		{
+			Asciify2(nsource);
+			snprintf(ndest, sizeof(ndest), "%s%s", dest, nsource);
+			__DumpNandFile(nsource, ndest);
+		}
+		else
+		{
+			if(!__TestNandPath(nsource))
+			{			
+				CreatePath("%s%s", dest, nsource);				
+				__DumpNandFolder(nsource, dest);
+			}
+		}
+	}
+
+	SAFE_FREE(names);
+	return 0;	
+}	
+
+void Nand::CreatePath(const char *path, ...)
+{		
 	char *folder = NULL;
 	va_list args;
 	va_start(args, path);
 	if((vasprintf(&folder, path, args) >= 0) && folder)
 	{
+		if(folder[strlen(folder)-1] == '/')
+			folder[strlen(folder)-1] = 0;
+			
+		Asciify2(folder);
+			
 		DIR *d;
-
 		d = opendir(folder);
+
 		if(!d)
-		{
+		{			
 			gprintf("Creating folder: \"%s\"\n", folder);
 			makedir(folder);
 		}
@@ -516,19 +664,46 @@ void Nand::__CreatePath(const char *path, ...)
 	va_end(args);
 	SAFE_FREE(folder);	
 }
+
+s32 Nand::DoNandDump(const char *source, const char *dest, bool dumpios, bool dumpwgs, bool dumpwsc, bool dumpwvc, bool dumpmen)
+{
+	n_dumpios = dumpios;
+	n_dumpwgs = dumpwgs;
+	n_dumpwsc = dumpwsc;
+	n_dumpwvc = dumpwvc;
+	n_dumpmen = dumpmen;
+	
+	u32 temp = 0;	
+	
+	s32 ret = ISFS_ReadDir(source, NULL, &temp);
+	if(ret < 0)
+	{
+		char ndest[MAX_FAT_PATH];
+		snprintf(ndest, sizeof(ndest), "%s%s", dest, source);
+		CreatePath(dest);
+		
+		__DumpNandFile(source, ndest);
+	}
+	else
+	{
+		__DumpNandFolder(source, dest);
+	}
+	
+	return 0;	
+}
  
 s32 Nand::CreateConfig(const char *path)
 {
-	__CreatePath(path);
-	__CreatePath("%s/shared2", path);
-	__CreatePath("%s/shared2/sys", path);
-	__CreatePath("%s/title", path);
-	__CreatePath("%s/title/00000001", path);
-	__CreatePath("%s/title/00000001/00000002", path);
-	__CreatePath("%s/title/00000001/00000002/data", path);
+	CreatePath(path);
+	CreatePath("%s/shared2", path);
+	CreatePath("%s/shared2/sys", path);
+	CreatePath("%s/title", path);
+	CreatePath("%s/title/00000001", path);
+	CreatePath("%s/title/00000001/00000002", path);
+	CreatePath("%s/title/00000001/00000002/data", path);
 	
-	bzero(cfgpath, MAX_FAT_PATH);	
-	bzero(settxtpath, MAX_FAT_PATH);
+	bzero(cfgpath, MAX_FAT_PATH+1);	
+	bzero(settxtpath, MAX_FAT_PATH+1);
 	
 	snprintf(cfgpath, sizeof(cfgpath), "%s%s", path, SYSCONFPATH);
 	snprintf(settxtpath, sizeof(settxtpath), "%s%s", path, TXTPATH);
@@ -602,5 +777,4 @@ s32 Nand::Do_Region_Change(string id)
 	}
 	__configwrite();
 	return 1;	
-}	
-	
+}

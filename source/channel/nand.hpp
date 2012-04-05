@@ -21,7 +21,7 @@
 #define SYSCONFPATH "/shared2/sys/SYSCONF"
 #define TXTPATH "/title/00000001/00000002/data/setting.txt"
 
-#define BLOCK 0x4000
+#define BLOCK 2048
 
 /* 'NAND Device' structure */
 typedef struct nandDevice
@@ -38,6 +38,12 @@ typedef struct _config_header
 	u16		ncnt;
 	u16		noff[];
 } config_header;
+
+typedef struct _namelist
+{
+	char name[ISFS_MAXPATH];
+	int type;
+} namelist;
 
 using namespace std;
 
@@ -60,10 +66,12 @@ class Nand
 		u32 Get_Partition(void) { return Partition; };
 
 		void Set_NandPath(string path);
+		void CreatePath(const char *path, ...);
 		
 		s32 CreateConfig(const char *path);
 		s32 Do_Region_Change(string id);
-
+		s32 DoNandDump(const char *source, const char *dest, bool dumpios, bool dumpwgs, bool dumpwsc, bool dumpwvc, bool dumpmen);
+		
 	private:
 		Nand() : MountedDevice(0), EmuDevice(REAL_NAND), Disabled(true), Partition(0), FullMode(0x100), NandPath() {}
 		~Nand(void){}
@@ -75,20 +83,27 @@ class Nand
 		s32 Nand_Disable(void);
 		void __Dec_Enc_TB(void);
 		void __configshifttxt(char *str);
+		void __GetNameList(const char *source, namelist **entries, int *count);
 		s32 __configread(void);
 		s32 __configwrite(void);
 		u32 __configsetbyte(const char *item, u8 val);
 		u32 __configsetbigarray(const char *item, void *val, u32 size);
 		u32 __configsetsetting(const char *item, const char *val);
+		bool __FileExists(const char *path, ...);
+		u32 __TestNandPath(const char *path);
 		s32 __FlashNandFile(const char *source, const char *dest);
 		s32 __DumpNandFile(const char *source, const char *dest);
-		void __CreatePath(const char *path, ...);
-		
+		s32 __DumpNandFolder(const char *source, const char *dest);				
 
 		u32 MountedDevice;
 		u32 EmuDevice;
 		bool Disabled;
-
+		bool n_dumpios;
+		bool n_dumpwgs;
+		bool n_dumpwsc;
+		bool n_dumpwvc;
+		bool n_dumpmen;
+		
 		u32 Partition ATTRIBUTE_ALIGN(32);
 		u32 FullMode ATTRIBUTE_ALIGN(32);
 		char NandPath[32] ATTRIBUTE_ALIGN(32);

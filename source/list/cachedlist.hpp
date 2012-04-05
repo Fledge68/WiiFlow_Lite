@@ -20,7 +20,7 @@ template <typename T = dir_discHdr>
 class CachedList : public safe_vector<T>
 {
   public:
-	void Init(string cachedir, string settingsDir, string curLanguage, string DMLgameDir)						/* Initialize Private Variables */
+	void Init(string cachedir, string settingsDir, string curLanguage, string DMLgameDir, bool extcheck)						/* Initialize Private Variables */
 	{
 		m_cacheDir = cachedir;
 		m_settingsDir = settingsDir;
@@ -28,6 +28,7 @@ class CachedList : public safe_vector<T>
 		m_loaded = false;
 		m_database = "";
 		m_update = false;
+		m_extcheck = extcheck;
 		m_DMLgameDir = DMLgameDir;
 		for(u32 i = 0; i < COVERFLOW_MAX; i++)
 			force_update[i] = false;
@@ -67,6 +68,7 @@ class CachedList : public safe_vector<T>
     bool m_loaded;
     bool m_update;
     bool m_wbfsFS;
+	bool m_extcheck;
 	u8 force_update[COVERFLOW_MAX];
     CList<T> list;
     string m_database;

@@ -1,9 +1,10 @@
 #define APP_NAME				"WiiFlow"
-#define APP_VERSION				"Mod 3.0"
+#define APP_VERSION				"Mod 3.1"
 
 #define APPDATA_DIR				"wiiflow"
 #define APPDATA_DIR2			"apps/wiiflow"
 
+#define STDEMU_DIR              "/wiiflow/nandemu"
 #define GAMES_DIR 				"%s:/wbfs"
 #define HOMEBREW_DIR 			"%s:/apps"
 #define DML_DIR					"%s:/games"
@@ -13,8 +14,8 @@
 #define TITLES_FILENAME			"titles.ini"
 #define CTITLES_FILENAME		"custom_titles.ini"
 
-#define DEVELOPERS				"r-win, Miigotu, OverjoY, FIX94"
-#define PAST_DEVELOPERS			"Hibernatus, Narolez, Hulk"
+#define DEVELOPERS				"r-win, OverjoY, FIX94"
+#define PAST_DEVELOPERS			"Hibernatus, Narolez, Hulk, Miigotu"
 #define LOADER_AUTHOR			"Kwiirk, Waninkoko, Hermes"
 #define GUI_AUTHOR				"Hibernatus"
 

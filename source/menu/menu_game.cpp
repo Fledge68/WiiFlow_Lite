@@ -1,4 +1,6 @@
 
+//#define ENABLEDUMPER
+
 #include "menu.hpp"
 #include "loader/patchcode.h"
 
@@ -1008,7 +1010,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		emuPartition = m_cfg.getInt("NAND", "partition", 0);
 
 	string emuPath = m_cfg.getString("GAMES", "savepath", m_cfg.getString("NAND", "path", ""));
-
+	
 	u8 emuSave = min((u32)m_gcfg2.getInt(id, "emulate_save", 0), ARRAY_SIZE(CMenu::_SaveEmu) - 1u);
 
 	if (emuSave == 0)
@@ -1018,15 +1020,54 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			emuSave++;
 	}
 	else if (emuSave == 1)
-		emuSave = 0;
-
-	if (!dvd && get_frag_list((u8 *) hdr->hdr.id, (char *) hdr->path, currentPartition == 0 ? 0x200 : sector_size) < 0)
-		return;
+		emuSave = 0;	
 
 	if(!dvd && emuSave)
-	{
+	{	
+		bool createnand = false;
 		char basepath[64];
-		snprintf(basepath, 64, "%s:%s", DeviceName[emuPartition], emuPath.c_str());
+		if(emuPath.size() == 0)
+		{
+			Nand::Instance()->CreatePath("%s:/wiiflow", DeviceName[emuPartition]);
+			Nand::Instance()->CreatePath("%s:/wiiflow/nandemu", DeviceName[emuPartition]);
+			m_cfg.setString("GAMES", "savepath", STDEMU_DIR);
+			emuPath = m_cfg.getString("GAMES", "savepath", STDEMU_DIR);
+			snprintf(basepath, 64, "%s:%s", DeviceName[emuPartition], emuPath.c_str());
+			if(emuSave == 4)
+				createnand = true;
+		}
+		else
+		{		
+			snprintf(basepath, 64, "%s:%s", DeviceName[emuPartition], emuPath.c_str());
+			if(emuSave == 4)
+			{				
+				DIR *d;
+				d = opendir(basepath);
+				if(!d)
+				{
+					Nand::Instance()->CreatePath("%s:/wiiflow", DeviceName[emuPartition]);
+					Nand::Instance()->CreatePath("%s:/wiiflow/nandemu", DeviceName[emuPartition]);
+					createnand = true;
+				}
+				else
+				{
+					closedir(d);
+				}
+			}
+		}
+		
+		if(createnand)
+		{
+#ifdef ENABLEDUMPER						
+			bool dumpios = m_cfg.getBool("NAND", "nanddumpios", false);
+			bool dumpgs = m_cfg.getBool("NAND", "nanddumpgamesaves", false);
+			bool dumpsc = m_cfg.getBool("NAND", "nanddumpsyschannels", false);
+			bool dumpwvc = m_cfg.getBool("NAND", "nanddumpwwchannels", true);
+			bool dumpmen = m_cfg.getBool("NAND", "nanddumpsysmenu", false);				
+			Nand::Instance()->DoNandDump("/", basepath, dumpios, dumpgs, dumpsc, dumpwvc, dumpmen);
+#endif
+		}		
+		
 		if(emuSave == 2 || emuSave > 3)
 		{
 			CreateSavePath(basepath, hdr);
@@ -1037,6 +1078,9 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			Nand::Instance()->Do_Region_Change(id);
 		}
 	}
+	
+	if (!dvd && get_frag_list((u8 *) hdr->hdr.id, (char *) hdr->path, currentPartition == 0 ? 0x200 : sector_size) < 0)
+		return;
 
 	int gameIOS = 0;
 	int userIOS = 0;

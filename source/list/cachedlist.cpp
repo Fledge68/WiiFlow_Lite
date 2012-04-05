@@ -40,13 +40,31 @@ void CachedList<T>::Load(string path, string containing, string m_lastLanguage)	
 		bool noDB = stat(m_database.c_str(), &cache) == -1;
 		bool mtimes = filestat.st_mtime > cache.st_mtime;
 		if(strcasestr(m_discinf.c_str(), "wbfs") != NULL && stat(m_discinf.c_str(), &discinfo) != -1)		
-			ditimes = discinfo.st_mtime > cache.st_mtime;
+			ditimes = discinfo.st_mtime > cache.st_mtime;		
 
 		m_update = update_lang || noDB || mtimes || ditimes;
 		if(m_update) gprintf("Cache of %s is being updated because ", path.c_str());
 		if(update_lang) gprintf("languages are different!\nOld language string: %s\nNew language string: %s\n", m_lastLanguage.c_str(), m_curLanguage.c_str());
 		if(noDB) gprintf("a database was not found!\n");
 		if(mtimes || ditimes) gprintf("the WBFS folder was modified!\n");
+	
+		if(m_extcheck && !m_update)
+		{
+			bool m_chupdate = false;
+	
+			DIR *dir = opendir(path.c_str());
+			struct dirent *entry;
+			while((entry = readdir(dir)) != NULL)
+			{
+				m_discinf = sfmt("%s/%s", path.c_str(), entry->d_name);
+				if(stat(m_discinf.c_str(), &discinfo) != -1)
+					m_chupdate = discinfo.st_mtime > cache.st_mtime;
+			
+				if(m_chupdate)
+					break;
+			}
+			m_update = m_chupdate;
+		}	
 	}
 
 	if(update_games) force_update[COVERFLOW_USB] = false;

@@ -52,13 +52,13 @@ int main(int argc, char **argv)
 					gameid = NULL;
 		}
 	}
-	gprintf("Loading cIOS: %d\n", mainIOS);
-
-	ISFS_Initialize();
+	gprintf("Loading cIOS: %d\n", mainIOS);	
 
 	// Load Custom IOS
 	bool iosOK = loadIOS(mainIOS, false);
 	MEM2_init(52);
+	
+	ISFS_Initialize();
 	
 	u8 mainIOSBase = 0;
 	iosOK = iosOK && cIOSInfo::D2X(mainIOS, &mainIOSBase);
