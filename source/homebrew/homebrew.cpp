@@ -26,13 +26,14 @@ bool bootHB;
 
 bool IsDollZ (u8 *buff)
 {
-  u8 dollz_stamp[] = {0x3C};
-  int dollz_offs = 0x100;
+	u8 dollz_stamp[] = {0x3C};
+	int dollz_offs = 0x100;
 
-  int ret = memcmp (&buff[dollz_offs], dollz_stamp, sizeof(dollz_stamp));
-  if (ret == 0) return true;
-  
-  return false;
+	int ret = memcmp (&buff[dollz_offs], dollz_stamp, sizeof(dollz_stamp));
+	if (ret == 0)
+		return true;
+
+	return false;
 }
 
 void AddBootArgument(const char * argv)
@@ -44,9 +45,8 @@ void AddBootArgument(const char * argv)
 int CopyHomebrewMemory(u8 *temp, u32 pos, u32 len)
 {
 	homebrewsize += len;
-    memcpy(homebrewbuffer+pos, temp, len);
+	memcpy(homebrewbuffer+pos, temp, len);
 	DCFlushRange(homebrewbuffer+pos, len);
-
 	return 1;
 }
 
@@ -60,38 +60,36 @@ void FreeHomebrewBuffer()
 
 int LoadHomebrew(const char * filepath)
 {
-	if(!filepath) return -1;
+	if(!filepath) 
+		return -1;
 
 	FILE *file = fopen(filepath ,"rb");
-	if(!file) return -2;
+	if(!file) 
+		return -2;
 
 	fseek(file, 0, SEEK_END);
 	u32 filesize = ftell(file);
 	rewind(file);
 
-	SmartBuf buffer = smartAnyAlloc(filesize);
-	if (!buffer)
+	if(filesize > 33554431)
+		return -3;
+
+	bool good_read = fread(homebrewbuffer, 1, filesize, file) == filesize;
+	if (!good_read)
 	{
 		SAFE_CLOSE(file);
-		return -3;
-	}
-
-	bool good_read = fread((u8 *)buffer.get(), 1, filesize, file) == filesize;
-	if (!good_read)
-    { 
-	    SAFE_CLOSE(file);
 		return -4;
 	}
 	SAFE_CLOSE(file);
 
-	DCFlushRange((u8 *)buffer.get(), filesize);
-
-	return CopyHomebrewMemory((u8*)buffer.get(), 0, filesize);
+	homebrewsize += filesize;
+	return 1;
 }
 
 static int SetupARGV(struct __argv * args)
 {
-	if(!args) return -1;
+	if(!args) 
+		return -1;
 
 	bzero(args, sizeof(struct __argv));
 	args->argvMagic = ARGV_MAGIC;
@@ -129,7 +127,8 @@ static int SetupARGV(struct __argv * args)
 
 int BootHomebrew()
 {
-	if(homebrewsize == 0) return -1;
+	if(homebrewsize == 0) 
+		return -1;
 
 	struct __argv args;
 	if (!IsDollZ(homebrewbuffer))
