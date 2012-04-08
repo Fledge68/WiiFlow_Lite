@@ -85,6 +85,7 @@ private:
 	std::string m_themeDataDir;
 	std::string m_appDir;
 	std::string m_dataDir;
+	std::string m_pluginsDir;
 	std::string m_picDir;
 	std::string m_boxPicDir;
 	std::string m_cpicDir;
@@ -163,6 +164,7 @@ private:
 	u32 m_mainBtnQuit;
 	u32 m_mainBtnDVD;
 	u32 m_mainBtnDML;
+	u32 m_mainBtnEmu;
 	u32 m_mainBtnUsb;
 	u32 m_mainBtnChannel;
 	u32 m_mainBtnHomebrew;
@@ -770,11 +772,12 @@ private:
 		float minMaxVal[4][2];
 	};
 	// 
-	bool _loadChannelList(void);
 	bool _loadList(void);
-	bool _loadHomebrewList(void);
-	bool _loadDmlList(void);
 	bool _loadGameList(void);
+	bool _loadDmlList(void);
+	bool _loadChannelList(void);
+	bool _loadEmuList(void);
+	bool _loadHomebrewList(void);
 	void _initCF(void);
 	// 
 	void _initMainMenu(SThemeData &theme);
@@ -922,6 +925,7 @@ private:
 	void _showWaitMessage();
 public:
 	void _hideWaitMessage();
+	bool m_Emulator_boot;
 private:
 	SmartGuiSound _sound(CMenu::SoundSet &soundSet, const char *domain, const char *key, const u8 * snd, u32 len, string name, bool isAllocated);
 	SmartGuiSound _sound(CMenu::SoundSet &soundSet, const char *domain, const char *key, string name);

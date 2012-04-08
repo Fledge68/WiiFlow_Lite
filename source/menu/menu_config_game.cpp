@@ -311,7 +311,7 @@ void CMenu::_showGameSettings(void)
 		m_btnMgr.show(m_gameSettingsLblIOS);
 		m_btnMgr.show(m_gameSettingsBtnIOSP);
 		m_btnMgr.show(m_gameSettingsBtnIOSM);
-		
+
 		if (m_current_view != COVERFLOW_HOMEBREW)
 		{
 			m_btnMgr.show(m_gameSettingsLblIOSreloadBlock);

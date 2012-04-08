@@ -13,7 +13,6 @@
 #include "coverflow.hpp"
 #include "pngu.h"
 #include "boxmesh.hpp"
-#include "boxmesh_hb.hpp"
 #include "wstringEx.hpp"
 #include "lockMutex.hpp"
 #include "fonts.h"
@@ -1277,38 +1276,20 @@ void CCoverFlow::_drawCoverFlat(int i, bool mirror, CCoverFlow::DrawMode dm)
 			GX_InitTexObjLOD(&texObj, GX_LIN_MIP_LIN, GX_LINEAR, 0.f, (float)tex.maxLOD, mirror ? 1.f : m_lodBias, GX_FALSE, m_edgeLOD ? GX_TRUE : GX_FALSE, m_aniso);
 		GX_LoadTexObj(&texObj, GX_TEXMAP0);
 	}
-	if(strstr(m_items[m_covers[i].index].picPath.c_str(),"/apps") == NULL && strstr(m_items[m_covers[i].index].boxPicPath.c_str(),"/apps") == NULL)
+
+	GX_Begin(GX_QUADS, GX_VTXFMT0, g_flatCoverMeshSize);
+	for (u32 j = 0; j < g_flatCoverMeshSize; ++j)
 	{
-		GX_Begin(GX_QUADS, GX_VTXFMT0, g_flatCoverMeshSize);
-		for (u32 j = 0; j < g_flatCoverMeshSize; ++j)
+		GX_Position3f32(g_flatCoverMesh[j].pos.x, g_flatCoverMesh[j].pos.y, g_flatCoverMesh[j].pos.z);
+		if (dm == CCoverFlow::CFDR_NORMAL)
 		{
-			GX_Position3f32(g_flatCoverMesh[j].pos.x, g_flatCoverMesh[j].pos.y, g_flatCoverMesh[j].pos.z);
-			if (dm == CCoverFlow::CFDR_NORMAL)
-			{
-				if (boxTex)
-					GX_TexCoord2f32(g_flatCoverBoxTex[j].x, g_flatCoverBoxTex[j].y);
-				else
-					GX_TexCoord2f32(g_flatCoverMesh[j].texCoord.x, g_flatCoverMesh[j].texCoord.y);
-			}
+			if (boxTex)
+				GX_TexCoord2f32(g_flatCoverBoxTex[j].x, g_flatCoverBoxTex[j].y);
+			else
+				GX_TexCoord2f32(g_flatCoverMesh[j].texCoord.x, g_flatCoverMesh[j].texCoord.y);
 		}
-		GX_End();
 	}
-	else
-	{
-		GX_Begin(GX_QUADS, GX_VTXFMT0, g_flatCoverMesh_HBSize);
-		for (u32 j = 0; j < g_flatCoverMesh_HBSize; ++j)
-		{
-			GX_Position3f32(g_flatCoverMesh_HB[j].pos.x, g_flatCoverMesh_HB[j].pos.y, g_flatCoverMesh_HB[j].pos.z);
-			if (dm == CCoverFlow::CFDR_NORMAL)
-			{
-				if (boxTex)
-					GX_TexCoord2f32(g_flatCoverBoxTex_HB[j].x, g_flatCoverBoxTex_HB[j].y);
-				else
-					GX_TexCoord2f32(g_flatCoverMesh_HB[j].texCoord.x, g_flatCoverMesh_HB[j].texCoord.y);
-			}
-		}
-		GX_End();
-	}
+	GX_End();
 }
 
 bool CCoverFlow::_checkCoverColor(char* gameID, const char* checkID[], int len)
@@ -1395,120 +1376,61 @@ void CCoverFlow::_drawCoverBox(int i, bool mirror, CCoverFlow::DrawMode dm)
 		}
 		GX_LoadTexObj(&texObj, GX_TEXMAP0);
 	}
-	if(strstr(m_items[m_covers[i].index].picPath.c_str(),"/apps") == NULL && strstr(m_items[m_covers[i].index].boxPicPath.c_str(),"/apps") == NULL)
+
+	GX_Begin(GX_QUADS, GX_VTXFMT0, g_boxMeshQSize);
+	for (u32 j = 0; j < g_boxMeshQSize; ++j)
 	{
-		GX_Begin(GX_QUADS, GX_VTXFMT0, g_boxMeshQSize);
-		for (u32 j = 0; j < g_boxMeshQSize; ++j)
-		{
-			GX_Position3f32(g_boxMeshQ[j].pos.x, g_boxMeshQ[j].pos.y, g_boxMeshQ[j].pos.z);
-			if (dm == CCoverFlow::CFDR_NORMAL)
-				GX_TexCoord2f32(g_boxMeshQ[j].texCoord.x, g_boxMeshQ[j].texCoord.y);
-		}
-		GX_End();
-		GX_Begin(GX_TRIANGLES, GX_VTXFMT0, g_boxMeshTSize);
-		for (u32 j = 0; j < g_boxMeshTSize; ++j)
-		{
-			GX_Position3f32(g_boxMeshT[j].pos.x, g_boxMeshT[j].pos.y, g_boxMeshT[j].pos.z);
-			if (dm == CCoverFlow::CFDR_NORMAL)
-				GX_TexCoord2f32(g_boxMeshT[j].texCoord.x, g_boxMeshT[j].texCoord.y);
-		}
-		GX_End();
+		GX_Position3f32(g_boxMeshQ[j].pos.x, g_boxMeshQ[j].pos.y, g_boxMeshQ[j].pos.z);
+		if (dm == CCoverFlow::CFDR_NORMAL)
+			GX_TexCoord2f32(g_boxMeshQ[j].texCoord.x, g_boxMeshQ[j].texCoord.y);
+	}
+	GX_End();
+	GX_Begin(GX_TRIANGLES, GX_VTXFMT0, g_boxMeshTSize);
+	for (u32 j = 0; j < g_boxMeshTSize; ++j)
+	{
+		GX_Position3f32(g_boxMeshT[j].pos.x, g_boxMeshT[j].pos.y, g_boxMeshT[j].pos.z);
+		if (dm == CCoverFlow::CFDR_NORMAL)
+			GX_TexCoord2f32(g_boxMeshT[j].texCoord.x, g_boxMeshT[j].texCoord.y);
+	}
+	GX_End();
+	if (dm == CCoverFlow::CFDR_NORMAL)
+	{
+		STexture *myTex = &tex;
+		if (flatTex)
+			myTex = &m_noCoverTexture;
+		GX_InitTexObj(&texObj, myTex->data.get(), myTex->width, myTex->height, myTex->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+		if (myTex->maxLOD > 0)
+			GX_InitTexObjLOD(&texObj, GX_LIN_MIP_LIN, GX_LINEAR, 0.f, (float)myTex->maxLOD, mirror ? 1.f : m_lodBias, GX_FALSE, m_edgeLOD ? GX_TRUE : GX_FALSE, m_aniso);
+		GX_LoadTexObj(&texObj, GX_TEXMAP0);
+	}
+	GX_Begin(GX_QUADS, GX_VTXFMT0, g_boxBackCoverMeshSize);
+	for (u32 j = 0; j < g_boxBackCoverMeshSize; ++j)
+	{
+		GX_Position3f32(g_boxBackCoverMesh[j].pos.x, g_boxBackCoverMesh[j].pos.y, g_boxBackCoverMesh[j].pos.z);
+		if (dm == CCoverFlow::CFDR_NORMAL)
+			GX_TexCoord2f32(g_boxBackCoverMesh[j].texCoord.x, g_boxBackCoverMesh[j].texCoord.y);
+	}
+	GX_End();
+	if (dm == CCoverFlow::CFDR_NORMAL && flatTex)
+	{
+		GX_InitTexObj(&texObj, tex.data.get(), tex.width, tex.height, tex.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+		if (tex.maxLOD > 0)
+			GX_InitTexObjLOD(&texObj, GX_LIN_MIP_LIN, GX_LINEAR, 0.f, (float)tex.maxLOD, mirror ? 1.f : m_lodBias, GX_FALSE, m_edgeLOD ? GX_TRUE : GX_FALSE, m_aniso);
+		GX_LoadTexObj(&texObj, GX_TEXMAP0);
+	}
+	GX_Begin(GX_QUADS, GX_VTXFMT0, g_boxCoverMeshSize);
+	for (u32 j = 0; j < g_boxCoverMeshSize; ++j)
+	{
+		GX_Position3f32(g_boxCoverMesh[j].pos.x, g_boxCoverMesh[j].pos.y, g_boxCoverMesh[j].pos.z);
 		if (dm == CCoverFlow::CFDR_NORMAL)
 		{
-			STexture *myTex = &tex;
 			if (flatTex)
-				myTex = &m_noCoverTexture;
-			GX_InitTexObj(&texObj, myTex->data.get(), myTex->width, myTex->height, myTex->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
-			if (myTex->maxLOD > 0)
-				GX_InitTexObjLOD(&texObj, GX_LIN_MIP_LIN, GX_LINEAR, 0.f, (float)myTex->maxLOD, mirror ? 1.f : m_lodBias, GX_FALSE, m_edgeLOD ? GX_TRUE : GX_FALSE, m_aniso);
-			GX_LoadTexObj(&texObj, GX_TEXMAP0);
+				GX_TexCoord2f32(g_boxCoverFlatTex[j].x, g_boxCoverFlatTex[j].y);
+			else
+				GX_TexCoord2f32(g_boxCoverMesh[j].texCoord.x, g_boxCoverMesh[j].texCoord.y);
 		}
-		GX_Begin(GX_QUADS, GX_VTXFMT0, g_boxBackCoverMeshSize);
-		for (u32 j = 0; j < g_boxBackCoverMeshSize; ++j)
-		{
-			GX_Position3f32(g_boxBackCoverMesh[j].pos.x, g_boxBackCoverMesh[j].pos.y, g_boxBackCoverMesh[j].pos.z);
-			if (dm == CCoverFlow::CFDR_NORMAL)
-				GX_TexCoord2f32(g_boxBackCoverMesh[j].texCoord.x, g_boxBackCoverMesh[j].texCoord.y);
-		}
-		GX_End();
-		if (dm == CCoverFlow::CFDR_NORMAL && flatTex)
-		{
-			GX_InitTexObj(&texObj, tex.data.get(), tex.width, tex.height, tex.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
-			if (tex.maxLOD > 0)
-				GX_InitTexObjLOD(&texObj, GX_LIN_MIP_LIN, GX_LINEAR, 0.f, (float)tex.maxLOD, mirror ? 1.f : m_lodBias, GX_FALSE, m_edgeLOD ? GX_TRUE : GX_FALSE, m_aniso);
-			GX_LoadTexObj(&texObj, GX_TEXMAP0);
-		}
-		GX_Begin(GX_QUADS, GX_VTXFMT0, g_boxCoverMeshSize);
-		for (u32 j = 0; j < g_boxCoverMeshSize; ++j)
-		{
-			GX_Position3f32(g_boxCoverMesh[j].pos.x, g_boxCoverMesh[j].pos.y, g_boxCoverMesh[j].pos.z);
-			if (dm == CCoverFlow::CFDR_NORMAL)
-			{
-				if (flatTex)
-					GX_TexCoord2f32(g_boxCoverFlatTex[j].x, g_boxCoverFlatTex[j].y);
-				else
-					GX_TexCoord2f32(g_boxCoverMesh[j].texCoord.x, g_boxCoverMesh[j].texCoord.y);
-			}
-		}
-		GX_End();
 	}
-	else
-	{
-		GX_Begin(GX_QUADS, GX_VTXFMT0, g_boxMeshQ_HBSize);
-		for (u32 j = 0; j < g_boxMeshQ_HBSize; ++j)
-		{
-			GX_Position3f32(g_boxMeshQ_HB[j].pos.x, g_boxMeshQ_HB[j].pos.y, g_boxMeshQ_HB[j].pos.z);
-			if (dm == CCoverFlow::CFDR_NORMAL)
-				GX_TexCoord2f32(g_boxMeshQ_HB[j].texCoord.x, g_boxMeshQ_HB[j].texCoord.y);
-		}
-		GX_End();
-		GX_Begin(GX_TRIANGLES, GX_VTXFMT0, g_boxMeshT_HBSize);
-		for (u32 j = 0; j < g_boxMeshT_HBSize; ++j)
-		{
-			GX_Position3f32(g_boxMeshT_HB[j].pos.x, g_boxMeshT_HB[j].pos.y, g_boxMeshT_HB[j].pos.z);
-			if (dm == CCoverFlow::CFDR_NORMAL)
-				GX_TexCoord2f32(g_boxMeshT_HB[j].texCoord.x, g_boxMeshT_HB[j].texCoord.y);
-		}
-		GX_End();
-		if (dm == CCoverFlow::CFDR_NORMAL)
-		{
-			STexture *myTex = &tex;
-			if (flatTex)
-				myTex = &m_noCoverTexture;
-			GX_InitTexObj(&texObj, myTex->data.get(), myTex->width, myTex->height, myTex->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
-			if (myTex->maxLOD > 0)
-				GX_InitTexObjLOD(&texObj, GX_LIN_MIP_LIN, GX_LINEAR, 0.f, (float)myTex->maxLOD, mirror ? 1.f : m_lodBias, GX_FALSE, m_edgeLOD ? GX_TRUE : GX_FALSE, m_aniso);
-			GX_LoadTexObj(&texObj, GX_TEXMAP0);
-		}
-		GX_Begin(GX_QUADS, GX_VTXFMT0, g_boxBackCoverMesh_HBSize);
-		for (u32 j = 0; j < g_boxBackCoverMesh_HBSize; ++j)
-		{
-			GX_Position3f32(g_boxBackCoverMesh_HB[j].pos.x, g_boxBackCoverMesh_HB[j].pos.y, g_boxBackCoverMesh_HB[j].pos.z);
-			if (dm == CCoverFlow::CFDR_NORMAL)
-				GX_TexCoord2f32(g_boxBackCoverMesh_HB[j].texCoord.x, g_boxBackCoverMesh_HB[j].texCoord.y);
-		}
-		GX_End();
-		if (dm == CCoverFlow::CFDR_NORMAL && flatTex)
-		{
-			GX_InitTexObj(&texObj, tex.data.get(), tex.width, tex.height, tex.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
-			if (tex.maxLOD > 0)
-				GX_InitTexObjLOD(&texObj, GX_LIN_MIP_LIN, GX_LINEAR, 0.f, (float)tex.maxLOD, mirror ? 1.f : m_lodBias, GX_FALSE, m_edgeLOD ? GX_TRUE : GX_FALSE, m_aniso);
-			GX_LoadTexObj(&texObj, GX_TEXMAP0);
-		}
-		GX_Begin(GX_QUADS, GX_VTXFMT0, g_boxCoverMesh_HBSize);
-		for (u32 j = 0; j < g_boxCoverMeshSize; ++j)
-		{
-			GX_Position3f32(g_boxCoverMesh_HB[j].pos.x, g_boxCoverMesh_HB[j].pos.y, g_boxCoverMesh_HB[j].pos.z);
-			if (dm == CCoverFlow::CFDR_NORMAL)
-			{
-				if (flatTex)
-					GX_TexCoord2f32(g_boxCoverFlatTex_HB[j].x, g_boxCoverFlatTex_HB[j].y);
-				else
-					GX_TexCoord2f32(g_boxCoverMesh_HB[j].texCoord.x, g_boxCoverMesh_HB[j].texCoord.y);
-			}
-		}
-		GX_End();
-	}
+	GX_End();
 }
 
 void CCoverFlow::_loadCover(int i, int item)
@@ -2075,6 +1997,8 @@ bool CCoverFlow::findId(const char *id, bool instant)
 	for (i = 0; i < m_items.size(); ++i)
 		if (memcmp(&m_items[i].hdr->hdr.id, id, strlen(id)) == 0)
 			break;
+		else if (strlen(id) > 6 && memcmp(&m_items[i].hdr->path[std::string(m_items[i].hdr->path).find_last_of("/")], id, strlen(id)) == 0)
+			break;
 	if (i >= m_items.size())
 		return false;
 	m_jump = 0;
@@ -2611,7 +2535,7 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq)
 		SmartBuf zBuffer = m_compressCache ? smartMem2Alloc(zBufferSize) : tex.data;
 		if (!!zBuffer && (!m_compressCache || compress(zBuffer.get(), &zBufferSize, tex.data.get(), bufSize) == Z_OK))
 		{
-			FILE *file = fopen(sfmt("%s/%s.wfc", m_cachePath.c_str(), m_items[i].hdr->hdr.id).c_str(), "wb");
+			FILE *file = fopen(sfmt("%s/%s.wfc", m_cachePath.c_str(), (m_items[i].hdr->hdr.gc_magic == 0x4c4f4c4f ? &m_items[i].hdr->path[std::string(m_items[i].hdr->path).find_last_of("/")] : (char*)m_items[i].hdr->hdr.id)).c_str(), "wb");
 			if (file != 0)
 			{
 				SWFCHeader header(tex, box, m_compressCache);
@@ -2670,14 +2594,15 @@ void CCoverFlow::_dropHQLOD(int i)
 
 CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq)
 {
-	if (!m_loadingCovers) return CL_ERROR;
+	if (!m_loadingCovers) 
+		return CL_ERROR;
 
 	bool allocFailed = false;
 
 	// Try to find the texture in the cache
 	if (!m_cachePath.empty())
 	{
-		FILE *file = fopen(sfmt("%s/%s.wfc", m_cachePath.c_str(), m_items[i].hdr->hdr.id).c_str(), "rb");
+		FILE *file = fopen(sfmt("%s/%s.wfc", m_cachePath.c_str(), (m_items[i].hdr->hdr.gc_magic == 0x4c4f4c4f ? &m_items[i].hdr->path[std::string(m_items[i].hdr->path).find_last_of("/")] : (char*)m_items[i].hdr->hdr.id)).c_str(), "rb");
 		if (file != 0)
 		{
 			bool success = false;

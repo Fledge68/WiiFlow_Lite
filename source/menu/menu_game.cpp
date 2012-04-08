@@ -48,9 +48,18 @@ extern const u8 favoritesoffs_png[];
 extern const u8 delete_png[];
 extern const u8 deletes_png[];
 
-//gc sound
+//sounds
 extern const u8 gc_ogg[];
 extern const u32 gc_ogg_size;
+
+extern const u8 nes_ogg[];
+extern const u32 nes_ogg_size;
+
+extern const u8 snes_ogg[];
+extern const u32 snes_ogg_size;
+
+extern const u8 gba_ogg[];
+extern const u32 gba_ogg_size;
 
 extern u32 sector_size;
 extern int mainIOS;
@@ -492,7 +501,7 @@ void CMenu::_game(bool launch)
 				m_cf.clear();
 				_showWaitMessage();
 
-				if (m_current_view != COVERFLOW_HOMEBREW)
+				if (m_current_view != COVERFLOW_HOMEBREW && m_current_view != COVERFLOW_EMU)
 				{
 					// Get banner_title
 					Banner * banner = m_current_view == COVERFLOW_CHANNEL ? _extractChannelBnr(chantitle) : (m_current_view == COVERFLOW_USB && hdr->hdr.gc_magic != 0xc2339f3d) ? _extractBnr(hdr) : NULL;
@@ -627,7 +636,29 @@ void CMenu::_directlaunch(const string &id)
 void CMenu::_launch(dir_discHdr *hdr)
 {
 	m_gcfg2.load(sfmt("%s/gameconfig2.ini", m_settingsDir.c_str()).c_str());
-	if(hdr->hdr.gc_magic == 0xc2339f3d)
+	if(hdr->hdr.gc_magic == 0x4c4f4c4f)
+	{
+		string title(&hdr->path[std::string(hdr->path).find_last_of("/")]);
+		m_cfg.setString("EMULATOR", "current_item", title);
+		string wiiflow_dol(m_dol);
+		if(strstr(wiiflow_dol.c_str(), "sd:/") == NULL)
+			wiiflow_dol.erase(3,1);
+		string path((char*)hdr->path, size_t(strlen((char*)hdr->path) - title.size()));
+		safe_vector<std::string> arguments;
+		if(strstr(path.c_str(), "sd:/") == NULL)
+			path.erase(3,1);
+		arguments.push_back(path);
+		arguments.push_back(title);
+		arguments.push_back(wiiflow_dol);
+		if(hdr->hdr.magic == 0x534e4553)
+			_launchHomebrew(fmt("%s/snes9x-gx.dol", m_pluginsDir.c_str()), arguments);
+		else if(hdr->hdr.magic == 0x46434555)
+			_launchHomebrew(fmt("%s/fceugx.dol", m_pluginsDir.c_str()), arguments);
+		else if(hdr->hdr.magic == 0x56424158)
+			_launchHomebrew(fmt("%s/vbagx.dol", m_pluginsDir.c_str()), arguments);
+		return;
+	}
+	else if(hdr->hdr.gc_magic == 0xc2339f3d)
 	{
 		_launchGC(hdr, true);
 		return;
@@ -642,6 +673,9 @@ void CMenu::_launch(dir_discHdr *hdr)
 			break;
 		case COVERFLOW_DML:
 			_launchGC(hdr, true);
+			break;
+		case COVERFLOW_EMU:
+			_launchHomebrew((char *)hdr->path, m_homebrewArgs);
 			break;
 		case COVERFLOW_USB:
 		default:
@@ -1352,7 +1386,25 @@ void CMenu::_gameSoundThread(CMenu *m)
 		m->m_gamesound_changed = true;
 		return;
 	}
-	
+	else if(m->m_cf.getHdr()->hdr.magic == 0x46434555)
+	{
+		m->m_gameSound.Load(nes_ogg, nes_ogg_size, false);
+		m->m_gamesound_changed = true;
+		return;
+	}
+	else if(m->m_cf.getHdr()->hdr.magic == 0x534e4553)
+	{
+		m->m_gameSound.Load(snes_ogg, snes_ogg_size, false);
+		m->m_gamesound_changed = true;
+		return;
+	}
+	else if(m->m_cf.getHdr()->hdr.magic == 0x56424158)
+	{
+		m->m_gameSound.Load(gba_ogg, gba_ogg_size, false);
+		m->m_gamesound_changed = true;
+		return;
+	}
+
 	m->m_gamesound_changed = false;
 	u32 sndSize = 0;
 	m->m_gameSoundHdr = m->m_cf.getHdr();

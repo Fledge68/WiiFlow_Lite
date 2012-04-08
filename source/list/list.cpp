@@ -341,17 +341,17 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 			count++;
 			if(ret != 0) 
 				continue;
-			
+
 			GTitle = custom_titles.getString("TITLES", (const char *) tmp.hdr.id);
 			int ccolor = custom_titles.getColor("COVERS", (const char *) tmp.hdr.id, 1).intVal();			
-			
+
 			if(GTitle.size() > 0 || (gameTDB.IsLoaded() && gameTDB.GetTitle((char *)tmp.hdr.id, GTitle)))
 			{
 				mbstowcs(tmp.title, GTitle.c_str(), sizeof(tmp.title));
 				tmp.hdr.casecolor = ccolor != 1 ? ccolor : gameTDB.GetCaseColor((char *)tmp.hdr.id);
 				tmp.hdr.wifi = gameTDB.GetWifiPlayers((char *)tmp.hdr.id);
 				tmp.hdr.players = gameTDB.GetPlayers((char *)tmp.hdr.id);
-				
+
 				//tmp.hdr.controllers = gameTDB.GetAccessories((char *)tmp.hdr.id);
 				if (tmp.hdr.magic == 0x5D1C9EA3)
 				{
@@ -368,6 +368,108 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 				tmp.hdr.casecolor = ccolor != 1 ? ccolor : 1;
 				headerlist.push_back(tmp);
 			}
+			continue;
+		}
+		else if(lowerCase(*itr).rfind(".nes")  != string::npos || lowerCase(*itr).rfind(".fds")  != string::npos
+		|| lowerCase(*itr).rfind(".nsf")  != string::npos || lowerCase(*itr).rfind(".unf")  != string::npos
+		|| lowerCase(*itr).rfind(".nez")  != string::npos || lowerCase(*itr).rfind(".unif")  != string::npos)
+		{
+			strncpy(tmp.path, (*itr).c_str(), sizeof(tmp.path));
+
+			(*itr).assign(&(*itr)[(*itr).find_last_of('/') + 1]);
+
+			char filename[64];
+			strncpy(filename, (*itr).c_str(), sizeof(filename));
+
+			int ccolor = custom_titles.getColor("COVERS", (const char *) tmp.hdr.id, 0xff0000).intVal();
+			tmp.hdr.casecolor = ccolor != 0xff0000 ? ccolor : 0xff0000;
+
+			mbstowcs(tmp.title, filename, sizeof(tmp.title));
+			Asciify(tmp.title);
+			gprintf("Found: %s\n", tmp.path);
+			tmp.hdr.magic = 0x46434555 ; //FCEU
+			tmp.hdr.gc_magic = 0x4c4f4c4f; //Abusing gc_magic for general emu detection ;)
+			headerlist.push_back(tmp);
+			continue;
+		}
+		else if(lowerCase(*itr).rfind(".smc")  != string::npos || lowerCase(*itr).rfind(".fig")  != string::npos
+		|| lowerCase(*itr).rfind(".sfc")  != string::npos || lowerCase(*itr).rfind(".swc")  != string::npos)
+		{
+			strncpy(tmp.path, (*itr).c_str(), sizeof(tmp.path));
+
+			(*itr).assign(&(*itr)[(*itr).find_last_of('/') + 1]);
+
+			char filename[64];
+			strncpy(filename, (*itr).c_str(), sizeof(filename));
+
+			int ccolor = custom_titles.getColor("COVERS", (const char *) tmp.hdr.id, 0x01A300).intVal();
+			tmp.hdr.casecolor = ccolor != 0x01A300 ? ccolor : 0x01A300;
+
+			mbstowcs(tmp.title, filename, sizeof(tmp.title));
+			Asciify(tmp.title);
+			gprintf("Found: %s\n", tmp.path);
+			tmp.hdr.magic = 0x534e4553; //SNES
+			tmp.hdr.gc_magic = 0x4c4f4c4f; //Abusing gc_magic for general emu detection ;)
+			headerlist.push_back(tmp);
+			continue;
+		}
+		else if(lowerCase(*itr).rfind(".agb")  != string::npos || lowerCase(*itr).rfind(".gba")  != string::npos
+		|| lowerCase(*itr).rfind(".bin")  != string::npos || lowerCase(*itr).rfind(".elf")  != string::npos
+		|| lowerCase(*itr).rfind(".mb")  != string::npos || lowerCase(*itr).rfind(".dmg")  != string::npos
+		|| lowerCase(*itr).rfind(".gb")  != string::npos || lowerCase(*itr).rfind(".gbc")  != string::npos
+		|| lowerCase(*itr).rfind(".cgb")  != string::npos || lowerCase(*itr).rfind(".sgb")  != string::npos)
+		{
+			strncpy(tmp.path, (*itr).c_str(), sizeof(tmp.path));
+
+			(*itr).assign(&(*itr)[(*itr).find_last_of('/') + 1]);
+
+			char filename[64];
+			strncpy(filename, (*itr).c_str(), sizeof(filename));
+
+			int ccolor = custom_titles.getColor("COVERS", (const char *) tmp.hdr.id, 0xfcff00).intVal();
+			tmp.hdr.casecolor = ccolor != 0xfcff00 ? ccolor : 0xfcff00;
+
+			mbstowcs(tmp.title, filename, sizeof(tmp.title));
+			Asciify(tmp.title);
+			gprintf("Found: %s\n", tmp.path);
+			tmp.hdr.magic = 0x56424158 ; //VBAX
+			tmp.hdr.gc_magic = 0x4c4f4c4f; //Abusing gc_magic for general emu detection ;)
+			headerlist.push_back(tmp);
+			continue;
+		}
+		else if(lowerCase(*itr).rfind(".zip")  != string::npos || lowerCase(*itr).rfind(".7z")  != string::npos)
+		{
+			strncpy(tmp.path, (*itr).c_str(), sizeof(tmp.path));
+
+			(*itr).assign(&(*itr)[(*itr).find_last_of('/') + 1]);
+
+			char filename[64];
+			strncpy(filename, (*itr).c_str(), sizeof(filename));
+
+			if(lowerCase(tmp.path).rfind("fceugx")  != string::npos)
+			{
+				int ccolor = custom_titles.getColor("COVERS", (const char *) tmp.hdr.id, 0xff0000).intVal();
+				tmp.hdr.casecolor = ccolor != 0xff0000 ? ccolor : 0xff0000;
+				tmp.hdr.magic = 0x46434555 ; //FCEU
+			}
+			else if(lowerCase(tmp.path).rfind("snes9xgx")  != string::npos)
+			{
+				int ccolor = custom_titles.getColor("COVERS", (const char *) tmp.hdr.id, 0x01A300).intVal();
+				tmp.hdr.casecolor = ccolor != 0x01A300 ? ccolor : 0x01A300;
+				tmp.hdr.magic = 0x534e4553; //SNES
+			}
+			else if(lowerCase(tmp.path).rfind("vbagx")  != string::npos)
+			{
+				int ccolor = custom_titles.getColor("COVERS", (const char *) tmp.hdr.id, 0xfcff00).intVal();
+				tmp.hdr.casecolor = ccolor != 0xfcff00 ? ccolor : 0xfcff00;
+				tmp.hdr.magic = 0x56424158; //VBAX
+			}
+			mbstowcs(tmp.title, filename, sizeof(tmp.title));
+			Asciify(tmp.title);
+			gprintf("Found: %s\n", tmp.path);
+
+			tmp.hdr.gc_magic = 0x4c4f4c4f; //Abusing gc_magic for general emu detection ;)
+			headerlist.push_back(tmp);
 			continue;
 		}
 	}
