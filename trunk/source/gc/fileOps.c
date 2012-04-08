@@ -112,7 +112,18 @@ u32 fsop_GetFreeSpaceKb (char *path) // Return free kb on the device passed
 	return ret ;
 }
 
-	
+bool fsop_FileExist(const char *fn)
+{
+	FILE * f;
+	f = fopen(fn, "rb");
+	if (f) 
+	{
+		fclose(f);
+		return true;
+	}
+	return false;
+}
+
 bool fsop_DirExist (char *path)
 {
 	DIR *dir;

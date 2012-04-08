@@ -28,13 +28,14 @@ int main(int argc, char **argv)
 {
 	geckoinit = InitGecko();
 	__exception_setreload(5);
-	
+
 	gprintf(" \nWelcome to %s (%s-r%s)!\nThis is the debug output.\n", APP_NAME, APP_VERSION, SVN_REV);
 
 	SYS_SetArena1Hi(APPLOADER_START);
 	CVideo vid;
 
 	char *gameid = NULL;
+	bool Emulator_boot = false;
 
 	for (int i = 0; i < argc; i++)
 	{
@@ -51,6 +52,8 @@ int main(int argc, char **argv)
 				if (!isalnum(gameid[i]))
 					gameid = NULL;
 		}
+		else if (argv[i] != NULL && strcasestr(argv[i], "EMULATOR_MAGIC") != NULL)
+			Emulator_boot = true;
 	}
 	gprintf("Loading cIOS: %d\n", mainIOS);	
 
@@ -98,9 +101,9 @@ int main(int argc, char **argv)
 
 		CMenu menu(vid);
 		menu.init();
-		
+
 		//Open_Inputs(); //we should init inputs as last point
-		
+
 		mainMenu = &menu;
 		if (!iosOK)
 		{
@@ -117,7 +120,11 @@ int main(int argc, char **argv)
 			if (gameid != NULL && strlen(gameid) == 6)
 				menu._directlaunch(gameid);
 			else
+			{
+				if(Emulator_boot)
+					menu.m_Emulator_boot = true;
 				ret = menu.main();
+			}
 		}
 		vid.cleanup();
 		if (bootHB)

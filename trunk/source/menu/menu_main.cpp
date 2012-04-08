@@ -34,6 +34,8 @@ extern const u8 btnusb_png[];
 extern const u8 btnusbs_png[];
 extern const u8 btndml_png[];
 extern const u8 btndmls_png[];
+extern const u8 btnemu_png[];
+extern const u8 btnemus_png[];
 extern const u8 btndvd_png[];
 extern const u8 btndvds_png[];
 extern const u8 favoriteson_png[];
@@ -60,6 +62,7 @@ void CMenu::_hideMain(bool instant)
 	m_btnMgr.hide(m_mainBtnChannel, instant);
 	m_btnMgr.hide(m_mainBtnUsb, instant);
 	m_btnMgr.hide(m_mainBtnDML, instant);
+	m_btnMgr.hide(m_mainBtnEmu, instant);
 	m_btnMgr.hide(m_mainBtnDVD, instant);
 	m_btnMgr.hide(m_mainBtnInit, instant);
 	m_btnMgr.hide(m_mainBtnInit2, instant);
@@ -76,6 +79,7 @@ void CMenu::_hideMain(bool instant)
 static bool show_homebrew = true;
 static bool parental_homebrew = false;
 static bool show_channel = true;
+static bool show_emu = true;
 
 void CMenu::_showMain(void)
 {
@@ -95,13 +99,17 @@ void CMenu::_showMain(void)
 		case COVERFLOW_DML:
 			if(show_channel)
 				m_btnMgr.show(m_mainBtnChannel);
+			else if(show_emu)
+				m_btnMgr.show(m_mainBtnEmu);
 			else if(show_homebrew)
 				m_btnMgr.show(m_mainBtnHomebrew);
-			else 
+			else
 				m_btnMgr.show(m_mainBtnUsb);
 			break;
 		case COVERFLOW_CHANNEL:
-			if (show_homebrew && (parental_homebrew || !m_locked))
+			if(show_emu)
+				m_btnMgr.show(m_mainBtnEmu);
+			else if (show_homebrew && (parental_homebrew || !m_locked))
 				m_btnMgr.show(m_mainBtnHomebrew);
 			else
 				m_btnMgr.show(m_mainBtnUsb);
@@ -109,12 +117,20 @@ void CMenu::_showMain(void)
 		case COVERFLOW_HOMEBREW:
 			m_btnMgr.show(m_mainBtnUsb);
 			break;
+		case COVERFLOW_EMU:
+			if (show_homebrew && (parental_homebrew || !m_locked))
+				m_btnMgr.show(m_mainBtnHomebrew);
+			else
+				m_btnMgr.show(m_mainBtnUsb);
+			break;
 		default:
 			if(m_show_dml)
 				m_btnMgr.show(m_mainBtnDML);
 			else if (show_channel)
 				m_btnMgr.show(m_mainBtnChannel);
-			else if (show_homebrew && (parental_homebrew || !m_locked))
+			else if(show_emu)
+				m_btnMgr.show(m_mainBtnEmu);
+			else if(show_homebrew && (parental_homebrew || !m_locked))
 				m_btnMgr.show(m_mainBtnHomebrew);
 			else
 				m_btnMgr.show(m_mainBtnUsb);
@@ -175,11 +191,15 @@ int CMenu::main(void)
 	bool use_grab = m_cfg.getBool("GENERAL", "use_grab", false);
 	show_homebrew = !m_cfg.getBool("HOMEBREW", "disable", false);
 	show_channel = !m_cfg.getBool("GENERAL", "hidechannel", false);
+	show_emu = !m_cfg.getBool("EMULATOR", "disable", false);
 	bool dpad_mode = m_cfg.getBool("GENERAL", "dpad_mode", false);
 	bool b_lr_mode = m_cfg.getBool("GENERAL", "b_lr_mode", false);
 	parental_homebrew = m_cfg.getBool("HOMEBREW", "parental", false);	
 
-	u32 cv=m_current_view;
+	if(m_Emulator_boot)
+		m_current_view = COVERFLOW_EMU;
+
+	u32 cv = m_current_view;
 	m_reload = false;
 	static u32 disc_check = 0;
 	int done = 0;
@@ -209,6 +229,8 @@ int CMenu::main(void)
 	_showMain();
 	m_curGameId.clear();
 	_initCF();
+	if(m_Emulator_boot)
+		LoadView();
 
 	lwp_t coverStatus = LWP_THREAD_NULL;
 	unsigned int stack_size = (unsigned int)32768;
@@ -261,7 +283,7 @@ int CMenu::main(void)
 		}
 		m_btnMgr.noClick(true);
 		cv = m_current_view;
-		if ((m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML) || m_btnMgr.selected(m_mainBtnHomebrew)) && dpad_mode && (BTN_UP_PRESSED || BTN_DOWN_PRESSED || BTN_LEFT_PRESSED || BTN_RIGHT_PRESSED))
+		if ((m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML) || m_btnMgr.selected(m_mainBtnHomebrew) || m_btnMgr.selected(m_mainBtnEmu)) && dpad_mode && (BTN_UP_PRESSED || BTN_DOWN_PRESSED || BTN_LEFT_PRESSED || BTN_RIGHT_PRESSED))
 		{
 			if (BTN_UP_PRESSED) 
                 m_current_view = COVERFLOW_USB;
@@ -392,7 +414,7 @@ int CMenu::main(void)
 					u8 limiter = 0;
 					currentPartition = loopNum(currentPartition + 1, (int)USB8);
 					while(!DeviceHandler::Instance()->IsInserted(currentPartition) ||
-						(m_current_view == COVERFLOW_CHANNEL && (DeviceHandler::Instance()->GetFSType(currentPartition) != PART_FS_FAT ||
+						((m_current_view == COVERFLOW_CHANNEL || m_current_view == COVERFLOW_EMU) && (DeviceHandler::Instance()->GetFSType(currentPartition) != PART_FS_FAT ||
 							(!isD2XnewerThanV6 && DeviceHandler::Instance()->PathToDriveType(m_appDir.c_str()) == currentPartition) ||
 							(!isD2XnewerThanV6 && DeviceHandler::Instance()->PathToDriveType(m_dataDir.c_str()) == currentPartition))) ||
 						((m_current_view == COVERFLOW_HOMEBREW || m_current_view == COVERFLOW_DML) && DeviceHandler::Instance()->GetFSType(currentPartition) == PART_FS_WBFS))
@@ -480,7 +502,7 @@ int CMenu::main(void)
 			else if(m_btnMgr.selected(m_mainBtnConfig))
 			{
 				m_gameList.SetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
-								
+
 				UpdateCache(m_current_view);				
 				LoadView();
 			}
@@ -522,13 +544,15 @@ int CMenu::main(void)
 				m_reload = (BTN_B_HELD || m_disable_exit);
 				break;
 			}
-			else if (m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML) || m_btnMgr.selected(m_mainBtnHomebrew))
+			else if (m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML) || m_btnMgr.selected(m_mainBtnHomebrew) || m_btnMgr.selected(m_mainBtnEmu))
 			{
 				if (m_current_view == COVERFLOW_USB) 
-					m_current_view = m_show_dml ? COVERFLOW_DML : (show_channel ? COVERFLOW_CHANNEL : ((show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB));
+					m_current_view = m_show_dml ? COVERFLOW_DML : (show_channel ? COVERFLOW_CHANNEL : (show_emu ? COVERFLOW_EMU : ((show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB)));
 				else if (m_current_view == COVERFLOW_DML)
-					m_current_view = show_channel ? COVERFLOW_CHANNEL : ((show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB);
+					m_current_view = show_channel ? COVERFLOW_CHANNEL : ((show_emu ? COVERFLOW_EMU : (show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB));
 				else if (m_current_view == COVERFLOW_CHANNEL)
+					m_current_view = (show_emu ? COVERFLOW_EMU : (show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB);
+				else if (m_current_view == COVERFLOW_EMU)
 					m_current_view = (show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB;
 				else if (m_current_view == COVERFLOW_HOMEBREW)
 					m_current_view = COVERFLOW_USB;
@@ -652,12 +676,22 @@ int CMenu::main(void)
 			case COVERFLOW_DML:
 				if(show_channel)
 					m_btnMgr.show(m_mainBtnChannel);
+				else if(show_emu)
+					m_btnMgr.show(m_mainBtnEmu);
 				else if(show_homebrew)
 					m_btnMgr.show(m_mainBtnHomebrew);
 				else 
 					m_btnMgr.show(m_mainBtnUsb);
 				break;
 			case COVERFLOW_CHANNEL:
+				if(show_emu)
+					m_btnMgr.show(m_mainBtnEmu);
+				else if (show_homebrew && (parental_homebrew || !m_locked))
+					m_btnMgr.show(m_mainBtnHomebrew);
+				else
+					m_btnMgr.show(m_mainBtnUsb);
+				break;
+			case COVERFLOW_EMU:
 				if (show_homebrew && (parental_homebrew || !m_locked))
 					m_btnMgr.show(m_mainBtnHomebrew);
 				else
@@ -671,6 +705,8 @@ int CMenu::main(void)
 					m_btnMgr.show(m_mainBtnDML);
 				else if (show_channel)
 					m_btnMgr.show(m_mainBtnChannel);
+				else if(show_emu)
+					m_btnMgr.show(m_mainBtnEmu);
 				else if (show_homebrew && (parental_homebrew || !m_locked))
 					m_btnMgr.show(m_mainBtnHomebrew);
 				else
@@ -686,6 +722,7 @@ int CMenu::main(void)
 			m_btnMgr.hide(m_mainBtnChannel);
 			m_btnMgr.hide(m_mainBtnUsb);
 			m_btnMgr.hide(m_mainBtnDML);
+			m_btnMgr.hide(m_mainBtnEmu);
 			m_btnMgr.hide(m_mainLblUser[2]);
 			m_btnMgr.hide(m_mainLblUser[3]);
 		}
@@ -738,6 +775,8 @@ void CMenu::_initMainMenu(CMenu::SThemeData &theme)
 	STexture texConfigS;
 	STexture texDML;
 	STexture texDMLs;
+	STexture texEmu;
+	STexture texEmus;
 	STexture texDVD;
 	STexture texDVDs;
 	STexture texUsb;
@@ -773,6 +812,8 @@ void CMenu::_initMainMenu(CMenu::SThemeData &theme)
 	texUsbs.fromPNG(btnusbs_png);
 	texDML.fromPNG(btndml_png);
 	texDMLs.fromPNG(btndmls_png);
+	texEmu.fromPNG(btnemu_png);
+	texEmus.fromPNG(btnemus_png);
 	texChannel.fromPNG(btnchannel_png);
 	texChannels.fromPNG(btnchannels_png);
 	texHomebrew.fromPNG(btnhomebrew_png);
@@ -795,6 +836,7 @@ void CMenu::_initMainMenu(CMenu::SThemeData &theme)
 	m_mainBtnHomebrew = _addPicButton(theme, "MAIN/HOMEBREW_BTN", texHomebrew, texHomebrews, 520, 400, 48, 48);
 	m_mainBtnUsb = _addPicButton(theme, "MAIN/USB_BTN", texUsb, texUsbs, 520, 400, 48, 48);
 	m_mainBtnDML = _addPicButton(theme, "MAIN/DML_BTN", texDML, texDMLs, 520, 400, 48, 48);
+	m_mainBtnEmu = _addPicButton(theme, "MAIN/EMU_BTN", texEmu, texEmus, 520, 400, 48, 48);
 	m_mainBtnDVD = _addPicButton(theme, "MAIN/DVD_BTN", texDVD, texDVDs, 470, 400, 48, 48);
 	m_mainBtnNext = _addPicButton(theme, "MAIN/NEXT_BTN", texNext, texNextS, 540, 146, 80, 80);
 	m_mainBtnPrev = _addPicButton(theme, "MAIN/PREV_BTN", texPrev, texPrevS, 20, 146, 80, 80);
@@ -848,6 +890,7 @@ void CMenu::_initMainMenu(CMenu::SThemeData &theme)
 	_setHideAnim(m_mainBtnHomebrew, "MAIN/HOMEBREW_BTN", 0, 40, 0.f, 0.f);
 	_setHideAnim(m_mainBtnUsb, "MAIN/USB_BTN", 0, 40, 0.f, 0.f);
 	_setHideAnim(m_mainBtnDML, "MAIN/DML_BTN", 0, 40, 0.f, 0.f);
+	_setHideAnim(m_mainBtnEmu, "MAIN/EMU_BTN", 0, 40, 0.f, 0.f);
 	_setHideAnim(m_mainBtnDVD, "MAIN/DVD_BTN", 0, 40, 0.f, 0.f);
 	_setHideAnim(m_mainBtnFavoritesOn, "MAIN/FAVORITES_ON", 0, 40, 0.f, 0.f);
 	_setHideAnim(m_mainBtnFavoritesOff, "MAIN/FAVORITES_OFF", 0, 40, 0.f, 0.f);
