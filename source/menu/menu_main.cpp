@@ -225,12 +225,15 @@ int CMenu::main(void)
 		m_gameList.Update();
 	}
 	_loadList();
-	
+	if(m_Emulator_boot)
+	{
+		_loadCFLayout(m_cfg.getInt(_domainFromView(), "last_cf_mode", 1));
+		m_cf.applySettings();
+	}
+
 	_showMain();
 	m_curGameId.clear();
 	_initCF();
-	if(m_Emulator_boot)
-		LoadView();
 
 	lwp_t coverStatus = LWP_THREAD_NULL;
 	unsigned int stack_size = (unsigned int)32768;
