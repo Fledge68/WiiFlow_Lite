@@ -101,7 +101,8 @@ extern const u8 butzhcnon_png[];
 extern const u8 butzhcnons_png[];
 extern const u8 butzhcnoff_png[];
 extern const u8 butzhcnoffs_png[];
-
+extern const u8 checkbox_png[];
+extern const u8 checkboxs_png[];
 
 using namespace std;
 
@@ -116,7 +117,6 @@ CMenu::CMenu(CVideo &vid) :
 	m_thrdStepLen = 0.f;
 	m_locked = false;
 	m_favorites = false;
-	m_category = 0;
 	m_networkInit = false;
 	m_thrdNetwork = false;
 	m_mutex = 0;
@@ -418,8 +418,7 @@ void CMenu::init(void)
 	
 	if (m_cfg.getBool("GENERAL", "favorites_on_startup", false))
 		m_favorites = m_cfg.getBool(domain, "favorites", false);
-	m_category = m_cat.getInt(domain, "category", 0);
-	m_max_categories = m_cat.getInt(domain, "numcategories", 12);
+	m_max_categories = m_cat.getInt("GENERAL", "numcategories", 21);
 
 	m_cfg.setString("GAMERCARD", "gamercards", "wiinnertag|dutag");
 	m_cfg.getString("GAMERCARD", "wiinnertag_url", WIINNERTAG_URL);
@@ -940,6 +939,15 @@ void CMenu::_buildMenus(void)
 	theme.btnZHCNOffs.fromPNG(butzhcnoffs_png);
 	theme.btnZHCNOffs = _texture(theme.texSet, "GENERAL", "button_zhcn_off_selected", theme.btnZHCNOffs);
 
+	theme.checkboxoff.fromPNG(checkbox_png);
+    theme.checkboxoff = _texture(theme.texSet, "GENERAL", "checkbox_off", theme.checkboxoff);
+	theme.checkboxoffs.fromPNG(checkbox_png);
+	theme.checkboxoffs = _texture(theme.texSet, "GENERAL", "checkbox_off_selected", theme.checkboxoffs);
+	theme.checkboxon.fromPNG(checkboxs_png);
+	theme.checkboxon = _texture(theme.texSet, "GENERAL", "checkbox_on", theme.checkboxon);
+	theme.checkboxons.fromPNG(checkboxs_png);
+	theme.checkboxons = _texture(theme.texSet, "GENERAL", "checkbox_on_selected", theme.checkboxons);
+
 	theme.pbarTexL.fromPNG(pbarleft_png);
 	theme.pbarTexL = _texture(theme.texSet, "GENERAL", "progressbar_texture_left", theme.pbarTexL); 
 	theme.pbarTexR.fromPNG(pbarright_png);
@@ -1406,7 +1414,7 @@ void CMenu::_initCF(void)
 {
 	Config m_dump;
 	const char *domain = _domainFromView();
-	const char *catviews = m_cat.getString("GENERAL", "categories", "").c_str();
+	const char *catviews = m_cat.getString(domain, "categories", "100000000000000000000").c_str();
 
 	m_cf.clear();
 	m_cf.reserve(m_gameList.size());
@@ -1423,21 +1431,21 @@ void CMenu::_initCF(void)
 
 		string id = string((const char *)m_gameList[i].hdr.id, m_current_view == COVERFLOW_CHANNEL ?  4 : 6);
 		string idcats = m_cat.getString("CATEGORIES", id, "").c_str();
-		if (idcats.length() == 12) 
+		if (idcats.length() < 21 && idcats.length() > 0)  
 		{
-			idcats.append("00000000");
+			idcats.append((21-idcats.length()), '0');
 			m_cat.setString("CATEGORIES", id, idcats);
 		}		
-		if ((!m_favorites || m_gcfg1.getBool("FAVORITES", id, false)) && (!m_locked || !m_gcfg1.getBool("ADULTONLY", id, false)) && !m_gcfg1.getBool("HIDDEN", id, false))
+		if ((!m_favorites || m_gcfg1.getBool("FAVORITES", id, false)) && (!m_locked || !m_gcfg1.getBool("ADULTONLY", id, false)))
 		{
 			if (catviews[0] == '0')
 			{
 				const char *idcats = m_cat.getString("CATEGORIES", id, "").c_str();
-				if (strlen(idcats) != 20) continue;
+				if (strlen(idcats) == 0) continue;
 				else
 				{
 					bool idinacat=0;
-					for (u32 j = 1; j<20; ++j) if (catviews[j] == '1' && idcats[j] == '1') idinacat=1;
+					for (u32 j = 1; j<m_max_categories; ++j) if (catviews[j] == '1' && idcats[j] == '1') idinacat=1;
 					if (!idinacat) continue;
 				}
 			}
