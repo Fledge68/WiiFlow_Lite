@@ -22,6 +22,7 @@ bool CButtonsMgr::init(CVideo &vid)
 	m_rumbleEnabled = false;
 	m_soundVolume = 0xFF;
 	m_noclick = false;
+	m_nohover = false;
 	m_vid = vid;
 	soundInit();
 
@@ -231,7 +232,8 @@ void CButtonsMgr::mouse(int chan, int x, int y)
 				if (s != m_selected[chan])
 				{
 					if (m_soundVolume > 0 && !!but.hoverSound)
-						but.hoverSound->Play(m_soundVolume);
+						if(!m_nohover) 
+							but.hoverSound->Play(m_soundVolume);
 					if (m_rumbleEnabled)
 					{
 						m_rumble[chan] = 4;
@@ -312,6 +314,11 @@ void CButtonsMgr::down(void)
 			}
 		}
 	}
+}
+
+void CButtonsMgr::noHover(bool nohover)
+{
+	m_nohover = nohover;
 }
 
 void CButtonsMgr::noClick(bool noclick)

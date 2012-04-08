@@ -57,6 +57,7 @@ public:
 	void draw(void);
 	void tick(void);
 	void noClick(bool noclick = false);
+	void noHover(bool nohover = false);
 	void click(u32 id = (u32)-1);
 	bool selected(u32 button = (u32)-1);
 	void setRumble(int, bool wii = false, bool gc = false);
@@ -147,6 +148,7 @@ private:
 	SmartGuiSound m_sndClick;
 	u8 m_soundVolume;
 	bool m_noclick;
+	bool m_nohover;
 	CVideo m_vid;
 private:
 	void _drawBtn(const SButton &b, bool selected, bool click);

@@ -271,11 +271,7 @@ int CMenu::main(void)
                 m_current_view =  COVERFLOW_HOMEBREW;
             else if (BTN_RIGHT_PRESSED && show_channel)
                 m_current_view = COVERFLOW_CHANNEL;
-			if (cv != m_current_view)
-			{
-				m_category = m_cat.getInt(_domainFromView(), "category", 0);
-				LoadView();
-			}
+			if (cv != m_current_view) LoadView();
 		}
 		if (cv == m_current_view && !m_btnMgr.selected(m_mainBtnChannel) && !m_btnMgr.selected(m_mainBtnUsb) && !m_btnMgr.selected(m_mainBtnDML) && !m_btnMgr.selected(m_mainBtnHomebrew))
 		{
@@ -449,10 +445,7 @@ int CMenu::main(void)
 			{
 				m_cfg.setBool("NAND", "disable", !m_cfg.getBool("NAND", "disable", true));
 				gprintf("EmuNand is %s\n", m_cfg.getBool("NAND", "disable", true) ? "Disabled" : "Enabled");
-
-				m_category = m_cat.getInt("NAND", "category", 0);
 				m_current_view = COVERFLOW_CHANNEL;
-
 				LoadView();
 			}
 			else if (m_btnMgr.selected(m_mainBtnNext) || m_btnMgr.selected(m_mainBtnPrev))
@@ -539,7 +532,6 @@ int CMenu::main(void)
 					m_current_view = (show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB;
 				else if (m_current_view == COVERFLOW_HOMEBREW)
 					m_current_view = COVERFLOW_USB;
-				m_category = m_cat.getInt(_domainFromView(), "category", 0);
 				LoadView();
 			}
 			else if (m_btnMgr.selected(m_mainBtnInit))

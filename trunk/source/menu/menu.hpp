@@ -488,9 +488,6 @@ private:
 	u32 m_gameSettingsBtnCheat;
 	u32 m_gameSettingsLblCategoryMain;
 	u32 m_gameSettingsBtnCategoryMain;
-	u32 m_gameSettingsLblCategory[12];
-	u32 m_gameSettingsBtnCategory[12];
-	u32 m_gameCategoryPage;
 	u32 m_gameSettingsPage;
  	u32 m_gameSettingsLblGameIOS;
  	u32 m_gameSettingsLblIOS;
@@ -547,12 +544,12 @@ private:
 	u32 m_categoryBtnPageP;
 	u32 m_categoryBtnBack;
 	u32 m_categoryLblTitle;
-	u32 m_categoryLblCat[20];
-	u32 m_categoryBtnCat[20];
-	u32 m_categoryBtnCats[20];
+	u32 m_categoryLblCat[21];
+	u32 m_categoryBtn[21];
+	u32 m_categoryBtnCat[21];
+	u32 m_categoryBtnCats[21];
 	u32 m_categoryLblUser[4];
 	u8 m_max_categories;
-	u8 m_category;
 // Zones
 	SZone m_mainPrevZone;
 	SZone m_mainNextZone;
@@ -743,7 +740,10 @@ private:
 		STexture btnZHCNOns;
 		STexture btnZHCNOff;
 		STexture btnZHCNOffs;
-
+		STexture checkboxoff;
+		STexture checkboxoffs;
+		STexture checkboxon;
+		STexture checkboxons;
 		STexture pbarTexL;
 		STexture pbarTexR;
 		STexture pbarTexC;
@@ -862,6 +862,7 @@ private:
 	void _showCFTheme(u32 curParam, int version, bool wide);
 	void _showGameSettings(void);
 	void _showCheatDownload(void);
+	void _updateCheckboxes(void);
 	void _setBg(const STexture &tex, const STexture &lqTex);
 	void _updateBg(void);
 	void _drawBg(void);
