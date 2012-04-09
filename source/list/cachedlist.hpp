@@ -5,6 +5,7 @@
 #include "cache.hpp"
 #include "safe_vector.hpp"
 #include "gecko.h"
+#include "config/config.hpp"
 
 using namespace std;
 
@@ -79,6 +80,8 @@ class CachedList : public safe_vector<T>
 	string m_lastLanguage;
 	string m_discinf;
 	string m_DMLgameDir;
+public:
+	Config m_plugin;
 };
 
 #endif

@@ -66,6 +66,7 @@ private:
 	Config m_theme;
 	Config m_titles;
 	Config m_version;
+	Config m_plugin;
 	Channels m_channels;
 	safe_vector<std::string> m_homebrewArgs;
 	SmartBuf m_base_font;
