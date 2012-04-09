@@ -623,7 +623,7 @@ void CMenu::_directlaunch(const string &id)
 			strncasecmp(DeviceHandler::Instance()->PathToFSName(path.c_str()), "WBFS", 4) == 0);
 
 		m_gameList.clear();
-		list.GetHeaders(pathlist, m_gameList, m_settingsDir, m_curLanguage, m_DMLgameDir);
+		list.GetHeaders(pathlist, m_gameList, m_settingsDir, m_curLanguage, m_DMLgameDir, m_plugin);
 		if(m_gameList.size() > 0)
 		{
 			gprintf("Game found on partition #%i\n", i);
@@ -651,12 +651,11 @@ void CMenu::_launch(dir_discHdr *hdr)
 		arguments.push_back(path);
 		arguments.push_back(title);
 		arguments.push_back(wiiflow_dol);
-		if(hdr->hdr.magic == 0x534e4553)
-			_launchHomebrew(fmt("%s/snes9x-gx.dol", m_pluginsDir.c_str()), arguments);
-		else if(hdr->hdr.magic == 0x46434555)
-			_launchHomebrew(fmt("%s/fceugx.dol", m_pluginsDir.c_str()), arguments);
-		else if(hdr->hdr.magic == 0x56424158)
-			_launchHomebrew(fmt("%s/vbagx.dol", m_pluginsDir.c_str()), arguments);
+		char magic[10];
+		snprintf(magic,sizeof(magic),"%08x",hdr->hdr.magic);
+		m_plugin.load(fmt("%s/plugins.ini", m_pluginsDir.c_str()));
+		_launchHomebrew(fmt("%s/%s", m_pluginsDir.c_str(), m_plugin.getString("GENERAL",magic,"").c_str()), arguments);
+		m_plugin.save(true);
 		return;
 	}
 	else if(hdr->hdr.gc_magic == 0xc2339f3d)
@@ -763,6 +762,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 
 void CMenu::_launchHomebrew(const char *filepath, safe_vector<std::string> arguments)
 {
+	gprintf("Filepath of homebrew: %s\n",filepath);
 	if(LoadHomebrew(filepath))
 	{
 		m_gcfg1.save(true);

@@ -83,7 +83,7 @@ void CList<T>::GetPaths(safe_vector<string> &pathlist, string containing, string
 }
 
 template <>
-void CList<string>::GetHeaders(safe_vector<string> pathlist, safe_vector<string> &headerlist, string, string, string)
+void CList<string>::GetHeaders(safe_vector<string> pathlist, safe_vector<string> &headerlist, string, string, string, Config&)
 {
 	//gprintf("Getting headers for CList<string>\n");
 
@@ -95,7 +95,7 @@ void CList<string>::GetHeaders(safe_vector<string> pathlist, safe_vector<string>
 }
 
 template <>
-void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<dir_discHdr> &headerlist, string settingsDir, string curLanguage, string DMLgameUSBDir)
+void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<dir_discHdr> &headerlist, string settingsDir, string curLanguage, string DMLgameUSBDir, Config &plugin)
 {
 	if(pathlist.size() < 1) return;
 	headerlist.reserve(pathlist.size() + headerlist.size());
@@ -370,106 +370,37 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 			}
 			continue;
 		}
-		else if(lowerCase(*itr).rfind(".nes")  != string::npos || lowerCase(*itr).rfind(".fds")  != string::npos
-		|| lowerCase(*itr).rfind(".nsf")  != string::npos || lowerCase(*itr).rfind(".unf")  != string::npos
-		|| lowerCase(*itr).rfind(".nez")  != string::npos || lowerCase(*itr).rfind(".unif")  != string::npos)
+		else if(plugin.loaded())
 		{
-			strncpy(tmp.path, (*itr).c_str(), sizeof(tmp.path));
-
-			(*itr).assign(&(*itr)[(*itr).find_last_of('/') + 1]);
-
-			char filename[64];
-			strncpy(filename, (*itr).c_str(), sizeof(filename));
-
-			int ccolor = custom_titles.getColor("COVERS", (const char *) tmp.hdr.id, 0xff0000).intVal();
-			tmp.hdr.casecolor = ccolor != 0xff0000 ? ccolor : 0xff0000;
-
-			mbstowcs(tmp.title, filename, sizeof(tmp.title));
-			Asciify(tmp.title);
-			gprintf("Found: %s\n", tmp.path);
-			tmp.hdr.magic = 0x46434555 ; //FCEU
-			tmp.hdr.gc_magic = 0x4c4f4c4f; //Abusing gc_magic for general emu detection ;)
-			headerlist.push_back(tmp);
-			continue;
-		}
-		else if(lowerCase(*itr).rfind(".smc")  != string::npos || lowerCase(*itr).rfind(".fig")  != string::npos
-		|| lowerCase(*itr).rfind(".sfc")  != string::npos || lowerCase(*itr).rfind(".swc")  != string::npos)
-		{
-			strncpy(tmp.path, (*itr).c_str(), sizeof(tmp.path));
-
-			(*itr).assign(&(*itr)[(*itr).find_last_of('/') + 1]);
-
-			char filename[64];
-			strncpy(filename, (*itr).c_str(), sizeof(filename));
-
-			int ccolor = custom_titles.getColor("COVERS", (const char *) tmp.hdr.id, 0x01A300).intVal();
-			tmp.hdr.casecolor = ccolor != 0x01A300 ? ccolor : 0x01A300;
-
-			mbstowcs(tmp.title, filename, sizeof(tmp.title));
-			Asciify(tmp.title);
-			gprintf("Found: %s\n", tmp.path);
-			tmp.hdr.magic = 0x534e4553; //SNES
-			tmp.hdr.gc_magic = 0x4c4f4c4f; //Abusing gc_magic for general emu detection ;)
-			headerlist.push_back(tmp);
-			continue;
-		}
-		else if(lowerCase(*itr).rfind(".agb")  != string::npos || lowerCase(*itr).rfind(".gba")  != string::npos
-		|| lowerCase(*itr).rfind(".bin")  != string::npos || lowerCase(*itr).rfind(".elf")  != string::npos
-		|| lowerCase(*itr).rfind(".mb")  != string::npos || lowerCase(*itr).rfind(".dmg")  != string::npos
-		|| lowerCase(*itr).rfind(".gb")  != string::npos || lowerCase(*itr).rfind(".gbc")  != string::npos
-		|| lowerCase(*itr).rfind(".cgb")  != string::npos || lowerCase(*itr).rfind(".sgb")  != string::npos)
-		{
-			strncpy(tmp.path, (*itr).c_str(), sizeof(tmp.path));
-
-			(*itr).assign(&(*itr)[(*itr).find_last_of('/') + 1]);
-
-			char filename[64];
-			strncpy(filename, (*itr).c_str(), sizeof(filename));
-
-			int ccolor = custom_titles.getColor("COVERS", (const char *) tmp.hdr.id, 0xfcff00).intVal();
-			tmp.hdr.casecolor = ccolor != 0xfcff00 ? ccolor : 0xfcff00;
-
-			mbstowcs(tmp.title, filename, sizeof(tmp.title));
-			Asciify(tmp.title);
-			gprintf("Found: %s\n", tmp.path);
-			tmp.hdr.magic = 0x56424158 ; //VBAX
-			tmp.hdr.gc_magic = 0x4c4f4c4f; //Abusing gc_magic for general emu detection ;)
-			headerlist.push_back(tmp);
-			continue;
-		}
-		else if(lowerCase(*itr).rfind(".zip")  != string::npos || lowerCase(*itr).rfind(".7z")  != string::npos)
-		{
-			strncpy(tmp.path, (*itr).c_str(), sizeof(tmp.path));
-
-			(*itr).assign(&(*itr)[(*itr).find_last_of('/') + 1]);
-
-			char filename[64];
-			strncpy(filename, (*itr).c_str(), sizeof(filename));
-
-			if(lowerCase(tmp.path).rfind("fceugx")  != string::npos)
+			safe_vector<string> types = plugin.getStrings("PLUGIN","fileTypes",'|');
+			if (types.size() > 0)
 			{
-				int ccolor = custom_titles.getColor("COVERS", (const char *) tmp.hdr.id, 0xff0000).intVal();
-				tmp.hdr.casecolor = ccolor != 0xff0000 ? ccolor : 0xff0000;
-				tmp.hdr.magic = 0x46434555 ; //FCEU
-			}
-			else if(lowerCase(tmp.path).rfind("snes9xgx")  != string::npos)
-			{
-				int ccolor = custom_titles.getColor("COVERS", (const char *) tmp.hdr.id, 0x01A300).intVal();
-				tmp.hdr.casecolor = ccolor != 0x01A300 ? ccolor : 0x01A300;
-				tmp.hdr.magic = 0x534e4553; //SNES
-			}
-			else if(lowerCase(tmp.path).rfind("vbagx")  != string::npos)
-			{
-				int ccolor = custom_titles.getColor("COVERS", (const char *) tmp.hdr.id, 0xfcff00).intVal();
-				tmp.hdr.casecolor = ccolor != 0xfcff00 ? ccolor : 0xfcff00;
-				tmp.hdr.magic = 0x56424158; //VBAX
-			}
-			mbstowcs(tmp.title, filename, sizeof(tmp.title));
-			Asciify(tmp.title);
-			gprintf("Found: %s\n", tmp.path);
+				for(safe_vector<string>::iterator type_itr = types.begin(); type_itr != types.end(); type_itr++)
+				{
+					if(lowerCase(*itr).rfind((*type_itr).c_str()) != string::npos)
+					{
+						strncpy(tmp.path, (*itr).c_str(), sizeof(tmp.path));
 
-			tmp.hdr.gc_magic = 0x4c4f4c4f; //Abusing gc_magic for general emu detection ;)
-			headerlist.push_back(tmp);
+						(*itr).assign(&(*itr)[(*itr).find_last_of('/') + 1]);
+
+						char filename[64];
+						strncpy(filename, (*itr).c_str(), sizeof(filename));
+
+						int plugin_ccolor;
+						sscanf(plugin.getString("PLUGIN","coverColor","").c_str(), "%08x", &plugin_ccolor);
+						int ccolor = custom_titles.getColor("COVERS", (const char *) tmp.hdr.id, plugin_ccolor).intVal();
+						tmp.hdr.casecolor = ccolor != plugin_ccolor ? ccolor : plugin_ccolor;
+
+						mbstowcs(tmp.title, filename, sizeof(tmp.title));
+						Asciify(tmp.title);
+						gprintf("Found: %s\n", tmp.path);
+						sscanf(plugin.getString("PLUGIN","magic","").c_str(), "%08x", &tmp.hdr.magic); //Plugin magic
+						tmp.hdr.gc_magic = 0x4c4f4c4f; //Abusing gc_magic for general emu detection ;)
+						headerlist.push_back(tmp);
+						break;
+					}
+				}
+			}
 			continue;
 		}
 	}

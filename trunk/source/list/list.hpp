@@ -15,6 +15,7 @@
 #include "disc.h"
 #include "text.hpp"
 #include "cache.hpp"
+#include "config/config.hpp"
 
 using namespace std;
 template <typename T>
@@ -24,7 +25,7 @@ class CList
 		 CList(){};
 		~CList(){};
 		void GetPaths(safe_vector<string> &pathlist, string containing, string directory, bool wbfs_fs = false);
-		void GetHeaders(safe_vector<string> pathlist, safe_vector<T> &headerlist, string, string, string);
+		void GetHeaders(safe_vector<string> pathlist, safe_vector<T> &headerlist, string, string, string, Config &plugin);
 		void GetChannels(safe_vector<T> &headerlist, string, u32, string);
 	private:
 		void Check_For_ID(u8 *id, string path, string one, string two);

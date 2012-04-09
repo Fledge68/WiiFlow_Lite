@@ -13,7 +13,7 @@ void CachedList<T>::Load(string path, string containing, string m_lastLanguage)	
 	bool update_games = false;
 	bool update_homebrew = false;
 	bool update_dml = false;
-	bool update_emu = strcasestr(containing.c_str(), ".zip") != NULL;
+	bool update_emu = strcasestr(path.c_str(), m_plugin.getString("PLUGIN","romDir","").c_str()) != NULL;
 	bool ditimes = false;
 	bool music = typeid(T) == typeid(std::string);
 	if(music)
@@ -80,7 +80,7 @@ void CachedList<T>::Load(string path, string containing, string m_lastLanguage)	
 		
 		safe_vector<string> pathlist;
 		list.GetPaths(pathlist, containing, path, m_wbfsFS);
-		list.GetHeaders(pathlist, *this, m_settingsDir, m_curLanguage, m_DMLgameDir);
+		list.GetHeaders(pathlist, *this, m_settingsDir, m_curLanguage, m_DMLgameDir, m_plugin);
 
 		path.append("/touch.db");
 		FILE *file = fopen(path.c_str(), "wb");

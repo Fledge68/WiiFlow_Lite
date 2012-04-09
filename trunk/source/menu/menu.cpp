@@ -1950,12 +1950,31 @@ bool CMenu::_loadEmuList()
 
 	gprintf("%s\n", DeviceName[currentPartition]);
 	DeviceHandler::Instance()->Open_WBFS(currentPartition);
-	if(fsop_FileExist(fmt("%s/fceugx.dol", m_pluginsDir.c_str())))
-		m_gameList.Load(sfmt("%s:/fceugx/roms", DeviceName[currentPartition]), ".nes|.fds|.nsf|.unf|.nez|.unif|.zip|.7z", "EN");
-	if(fsop_FileExist(fmt("%s/snes9x-gx.dol", m_pluginsDir.c_str())))
-		m_gameList.Load(sfmt("%s:/snes9xgx/roms", DeviceName[currentPartition]), ".smc|.fig|.sfc|.swc|.zip|.7z", "EN");
-	if(fsop_FileExist(fmt("%s/vbagx.dol", m_pluginsDir.c_str())))
-		m_gameList.Load(sfmt("%s:/vbagx/roms", DeviceName[currentPartition]), ".agb|.gba|.bin|.elf|.mb|.dmg||.gb|.gbc|.cgb|.sgb|.zip|.7z", "EN");
+
+	DIR *pdir;
+	struct dirent *pent;
+
+	m_plugin.load(fmt("%s/plugins.ini", m_pluginsDir.c_str()));
+	pdir = opendir(m_pluginsDir.c_str());
+
+	while ((pent = readdir(pdir)) != NULL)
+	{
+		// Skip it
+		if (strcmp (pent->d_name, ".") == 0 || strcmp (pent->d_name, "..") == 0)
+			continue;
+		if(strcasestr(pent->d_name, ".ini") != NULL)
+		{
+			m_gameList.m_plugin.load(fmt("%s/%s", m_pluginsDir.c_str(), pent->d_name));
+			if(m_gameList.m_plugin.loaded())
+			{
+				m_gameList.Load(sfmt("%s:/%s", DeviceName[currentPartition], m_gameList.m_plugin.getString("PLUGIN","romDir","").c_str()), m_gameList.m_plugin.getString("PLUGIN","fileTypes","").c_str(), "EN");
+				m_plugin.setString("GENERAL",m_gameList.m_plugin.getString("PLUGIN","magic","").c_str(),m_gameList.m_plugin.getString("PLUGIN","dolFile","").c_str());
+			}
+			m_gameList.m_plugin.unload();
+		}
+	}
+	closedir(pdir);
+	m_plugin.save(true);
 	m_cfg.setString("EMULATOR", "lastlanguage", m_loc.getString(m_curLanguage, "gametdb_code", "EN"));
 	m_cfg.save();
 
