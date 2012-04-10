@@ -33,6 +33,7 @@ SOURCES		:=	source \
 				source/menu \
 				source/music \
 				source/network \
+				source/plugin \
 				source/unzip \
 				source/xml \
 				source/wstringEx \
@@ -57,6 +58,7 @@ INCLUDES	:=	source \
 				source/menu \
 				source/music \
 				source/network \
+				source/plugin \
 				source/unzip \
 				source/wstringEx \
 				source/xml

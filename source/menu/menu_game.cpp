@@ -52,15 +52,6 @@ extern const u8 deletes_png[];
 extern const u8 gc_ogg[];
 extern const u32 gc_ogg_size;
 
-extern const u8 nes_ogg[];
-extern const u32 nes_ogg_size;
-
-extern const u8 snes_ogg[];
-extern const u32 snes_ogg_size;
-
-extern const u8 gba_ogg[];
-extern const u32 gba_ogg_size;
-
 extern u32 sector_size;
 extern int mainIOS;
 static u64 sm_title_id[8]  ATTRIBUTE_ALIGN(32);
@@ -623,7 +614,8 @@ void CMenu::_directlaunch(const string &id)
 			strncasecmp(DeviceHandler::Instance()->PathToFSName(path.c_str()), "WBFS", 4) == 0);
 
 		m_gameList.clear();
-		list.GetHeaders(pathlist, m_gameList, m_settingsDir, m_curLanguage, m_DMLgameDir, m_plugin);
+		Config nullCfg;
+		list.GetHeaders(pathlist, m_gameList, m_settingsDir, m_curLanguage, m_DMLgameDir, nullCfg);
 		if(m_gameList.size() > 0)
 		{
 			gprintf("Game found on partition #%i\n", i);
@@ -651,11 +643,7 @@ void CMenu::_launch(dir_discHdr *hdr)
 		arguments.push_back(path);
 		arguments.push_back(title);
 		arguments.push_back(wiiflow_dol);
-		char magic[10];
-		snprintf(magic,sizeof(magic),"%08x",hdr->hdr.magic);
-		m_plugin.load(fmt("%s/plugins.ini", m_pluginsDir.c_str()));
-		_launchHomebrew(fmt("%s/%s", m_pluginsDir.c_str(), m_plugin.getString("GENERAL",magic,"").c_str()), arguments);
-		m_plugin.save(true);
+		_launchHomebrew(fmt("%s/%s", m_pluginsDir.c_str(), m_plugin.GetDolName(hdr->hdr.magic)), arguments);
 		return;
 	}
 	else if(hdr->hdr.gc_magic == 0xc2339f3d)
@@ -1387,21 +1375,9 @@ void CMenu::_gameSoundThread(CMenu *m)
 		m->m_gamesound_changed = true;
 		return;
 	}
-	else if(m->m_cf.getHdr()->hdr.magic == 0x46434555)
+	else if(m->m_cf.getHdr()->hdr.gc_magic == 0x4c4f4c4f)
 	{
-		m->m_gameSound.Load(nes_ogg, nes_ogg_size, false);
-		m->m_gamesound_changed = true;
-		return;
-	}
-	else if(m->m_cf.getHdr()->hdr.magic == 0x534e4553)
-	{
-		m->m_gameSound.Load(snes_ogg, snes_ogg_size, false);
-		m->m_gamesound_changed = true;
-		return;
-	}
-	else if(m->m_cf.getHdr()->hdr.magic == 0x56424158)
-	{
-		m->m_gameSound.Load(gba_ogg, gba_ogg_size, false);
+		m->m_gameSound.Load(m->m_plugin.GetBannerSound(m->m_cf.getHdr()->hdr.magic), m->m_plugin.GetBannerSoundSize(), false);
 		m->m_gamesound_changed = true;
 		return;
 	}
