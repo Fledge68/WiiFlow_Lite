@@ -13,19 +13,19 @@ void CachedList<T>::Load(string path, string containing, string m_lastLanguage)	
 	bool update_games = false;
 	bool update_homebrew = false;
 	bool update_dml = false;
-	bool update_emu = strcasestr(path.c_str(), m_plugin.getString("PLUGIN","romDir","").c_str()) != NULL;
+	bool update_emu = false;
+
 	bool ditimes = false;
 	bool music = typeid(T) == typeid(std::string);
 	if(music)
 		gprintf("Loading music list from path: %s\n",path.c_str());
-	else if(update_emu)
-		gprintf("Loading emulator gamelist from path: %s\n",path.c_str());
 	else if(!m_wbfsFS)
 	{
 		gprintf("Database file: %s\n", m_database.c_str());
 		
 		update_games = strcasestr(path.c_str(), "wbfs") != NULL && force_update[COVERFLOW_USB];
 		update_homebrew = strcasestr(path.c_str(), "apps") != NULL && force_update[COVERFLOW_HOMEBREW];
+		update_emu = strcasestr(path.c_str(), m_plugin.getString("PLUGIN","romDir","").c_str()) != NULL && force_update[COVERFLOW_EMU];
 
 		const char* partition = DeviceName[DeviceHandler::Instance()->PathToDriveType(path.c_str())];
 		update_dml = strcasestr(path.c_str(), sfmt(strncmp(partition, "sd", 2) != 0 ? m_DMLgameDir.c_str() : "%s:/games", partition).c_str()) != NULL && force_update[COVERFLOW_DML];
@@ -74,7 +74,7 @@ void CachedList<T>::Load(string path, string containing, string m_lastLanguage)	
 	if(update_homebrew) force_update[COVERFLOW_HOMEBREW] = false;
 	if(update_dml) force_update[COVERFLOW_DML] = false;
 
-	if(m_update || m_wbfsFS || music || update_emu)
+	if(m_update || m_wbfsFS || music)
 	{
 		gprintf("Calling list to update filelist\n");
 		
@@ -90,7 +90,7 @@ void CachedList<T>::Load(string path, string containing, string m_lastLanguage)	
 		m_loaded = true;
 		m_update = false;		
 		
-		if(!music && !update_emu && pathlist.size() > 0)
+		if(!music && pathlist.size() > 0)
 		{
 			Save();
 			pathlist.clear();
