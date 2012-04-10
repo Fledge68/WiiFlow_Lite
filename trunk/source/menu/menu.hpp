@@ -7,6 +7,7 @@
 
 #include "safe_vector.hpp"
 #include "cachedlist.hpp"
+#include "plugin/plugin.hpp"
 
 #include <map>
 #include "gui_sound.h"
@@ -66,7 +67,7 @@ private:
 	Config m_theme;
 	Config m_titles;
 	Config m_version;
-	Config m_plugin;
+	Plugin m_plugin;
 	Channels m_channels;
 	safe_vector<std::string> m_homebrewArgs;
 	SmartBuf m_base_font;

@@ -336,6 +336,8 @@ void CMenu::init(void)
 	m_themeDataDir = sfmt("%s/%s", m_themeDir.c_str(), themeName.c_str());
 	m_theme.load(sfmt("%s.ini", m_themeDataDir.c_str()).c_str());
 
+	m_plugin.init(m_pluginsDir);
+
 	u8 defaultMenuLanguage = 7; //English
 	switch (CONF_GetLanguage())
 	{
@@ -458,7 +460,9 @@ void CMenu::cleanup(bool ios_reload)
 	{
 		SMART_FREE(m_cameraSound);
 	}
-	
+
+	m_plugin.Cleanup();
+
 	MusicPlayer::DestroyInstance();
 	SoundHandler::DestroyInstance();
 	soundDeinit();
@@ -1954,7 +1958,6 @@ bool CMenu::_loadEmuList()
 	DIR *pdir;
 	struct dirent *pent;
 
-	m_plugin.load(fmt("%s/plugins.ini", m_pluginsDir.c_str()));
 	pdir = opendir(m_pluginsDir.c_str());
 
 	safe_vector<dir_discHdr> emuList;
@@ -1973,17 +1976,18 @@ bool CMenu::_loadEmuList()
 				m_gameList.Load(sfmt("%s:/%s", DeviceName[currentPartition], m_gameList.m_plugin.getString("PLUGIN","romDir","").c_str()), m_gameList.m_plugin.getString("PLUGIN","fileTypes","").c_str(), m_cfg.getString("EMULATOR", "lastlanguage", "EN").c_str());
 				for(safe_vector<dir_discHdr>::iterator tmp_itr = m_gameList.begin(); tmp_itr != m_gameList.end(); tmp_itr++)
 					emuList.push_back(*tmp_itr);
-				m_plugin.setString("GENERAL",m_gameList.m_plugin.getString("PLUGIN","magic","").c_str(),m_gameList.m_plugin.getString("PLUGIN","dolFile","").c_str());
+				m_plugin.AddPlugin(m_gameList.m_plugin);
 			}
 			m_gameList.m_plugin.unload();
 		}
 	}
 	closedir(pdir);
-	m_plugin.save(true);
 	m_gameList.clear();
 	for(safe_vector<dir_discHdr>::iterator tmp_itr = emuList.begin(); tmp_itr != emuList.end(); tmp_itr++)
 		m_gameList.push_back(*tmp_itr);
 	emuList.clear();
+	//If we return to the coverflow before wiiflow quit we dont need to reload plugins
+	m_plugin.EndAdd();
 	m_cfg.setString("EMULATOR", "lastlanguage", m_loc.getString(m_curLanguage, "gametdb_code", "EN"));
 	m_cfg.save();
 
