@@ -630,19 +630,28 @@ void CMenu::_launch(dir_discHdr *hdr)
 	m_gcfg2.load(sfmt("%s/gameconfig2.ini", m_settingsDir.c_str()).c_str());
 	if(hdr->hdr.gc_magic == 0x4c4f4c4f)
 	{
-		m_cfg.setString("EMULATOR", "current_item", &hdr->path[std::string(hdr->path).find_last_of("/")]);
 		string title(&hdr->path[std::string(hdr->path).find_last_of("/")+1]);
 		string wiiflow_dol(m_dol);
 		if(strstr(wiiflow_dol.c_str(), "sd:/") == NULL)
 			wiiflow_dol.erase(3,1);
 		string path((char*)hdr->path, size_t(strlen((char*)hdr->path) - title.size()));
 		safe_vector<std::string> arguments;
-		if(strstr(path.c_str(), "sd:/") == NULL)
-			path.erase(3,1);
 		gprintf("Game title: %s\n", title.c_str());
-		arguments.push_back(path);
-		arguments.push_back(title);
-		arguments.push_back(wiiflow_dol);
+		if(strstr(path.c_str(), "sd:/") == NULL && strstr(path.c_str(), ":/") != NULL)
+		{
+			path.erase(3,1);
+			arguments.push_back(path);
+			arguments.push_back(title);
+			arguments.push_back(wiiflow_dol);
+			m_cfg.setString("EMULATOR", "current_item", &hdr->path[std::string(hdr->path).find_last_of("/")]);
+		}
+		else
+		{
+			arguments.push_back(title);
+			char gametitle[64];
+			wcstombs(gametitle, hdr->title, sizeof(gametitle));
+			m_cfg.setString("EMULATOR", "current_item", gametitle);
+		}
 		_launchHomebrew(fmt("%s/%s", m_pluginsDir.c_str(), m_plugin.GetDolName(hdr->hdr.magic)), arguments);
 		return;
 	}

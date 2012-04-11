@@ -1965,18 +1965,31 @@ bool CMenu::_loadEmuList()
 	while ((pent = readdir(pdir)) != NULL)
 	{
 		// Skip it
-		if (strcmp(pent->d_name, ".") == 0 || strcmp(pent->d_name, "..") == 0 || strcasecmp(pent->d_name, "plugins.ini") == 0)
+		if (strcmp(pent->d_name, ".") == 0 || strcmp(pent->d_name, "..") == 0 
+		|| strcasecmp(pent->d_name, "plugins.ini") == 0 || strcasecmp(pent->d_name, "scummvm.ini") == 0)
 			continue;
 		if(strcasestr(pent->d_name, ".ini") != NULL)
 		{
 			m_gameList.m_plugin.load(fmt("%s/%s", m_pluginsDir.c_str(), pent->d_name));
 			if(m_gameList.m_plugin.loaded())
 			{
-				m_gameList.clear();
-				m_gameList.Load(sfmt("%s:/%s", DeviceName[currentPartition], m_gameList.m_plugin.getString("PLUGIN","romDir","").c_str()), m_gameList.m_plugin.getString("PLUGIN","fileTypes","").c_str(), m_cfg.getString("EMULATOR", "lastlanguage", "EN").c_str());
-				for(safe_vector<dir_discHdr>::iterator tmp_itr = m_gameList.begin(); tmp_itr != m_gameList.end(); tmp_itr++)
-					emuList.push_back(*tmp_itr);
 				m_plugin.AddPlugin(m_gameList.m_plugin);
+				m_gameList.clear();
+				if(strcasestr(m_gameList.m_plugin.getString("PLUGIN","romDir","").c_str(), "scummvm.ini") == NULL)
+				{
+					m_gameList.Load(sfmt("%s:/%s", DeviceName[currentPartition], m_gameList.m_plugin.getString("PLUGIN","romDir","").c_str()), m_gameList.m_plugin.getString("PLUGIN","fileTypes","").c_str(), m_cfg.getString("EMULATOR", "lastlanguage", "EN").c_str());
+					for(safe_vector<dir_discHdr>::iterator tmp_itr = m_gameList.begin(); tmp_itr != m_gameList.end(); tmp_itr++)
+						emuList.push_back(*tmp_itr);
+				}
+				else
+				{
+					Config scummvm;
+					safe_vector<dir_discHdr> scummvmList;
+					scummvm.load(fmt("%s/%s", m_pluginsDir.c_str(), "scummvm.ini"));
+					scummvmList = m_plugin.ParseScummvmINI(scummvm, DeviceName[currentPartition]);
+					for(safe_vector<dir_discHdr>::iterator tmp_itr = scummvmList.begin(); tmp_itr != scummvmList.end(); tmp_itr++)
+						emuList.push_back(*tmp_itr);
+				}
 			}
 			m_gameList.m_plugin.unload();
 		}

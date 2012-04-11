@@ -11,6 +11,9 @@
 #include "plugin.hpp"
 #include "memory/mem2.hpp"
 #include "gui/text.hpp"
+#include "gecko/gecko.h"
+
+static const std::string emptyString;
 
 void Plugin::init(string m_pluginsDir)
 {
@@ -40,10 +43,13 @@ bool Plugin::AddPlugin(Config &plugin)
 {
 	if(!adding)
 		return false;
-	u32 magic;
+
+	DolName.push_back(plugin.getString("PLUGIN","dolFile",""));
+	u32 magic, caseColor;
 	sscanf(plugin.getString("PLUGIN","magic","").c_str(), "%08x", &magic);
 	magicWords.push_back(magic);
-	DolName.push_back(plugin.getString("PLUGIN","dolFile",""));
+	sscanf(plugin.getString("PLUGIN","coverColor","").c_str(), "%08x", &caseColor);
+	caseColors.push_back(caseColor);
 
 	string bannerfilepath = sfmt("%s/%s", pluginsDir.c_str(), plugin.getString("PLUGIN","bannerSound","").c_str());
 	ifstream infile;
@@ -94,4 +100,33 @@ char* Plugin::GetDolName(u32 magic)
 		if(magic == magicWords[banner_pos])
 			return (char*)DolName[banner_pos].c_str();
 	return null;
+}
+
+safe_vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, const char* Device)
+{
+	gprintf("Parsing scummvm.ini\n");
+	safe_vector<dir_discHdr> gameHeader;
+	string game = ini.firstDomain().c_str();
+	dir_discHdr tmp;
+	while(1)
+	{
+		if(game != emptyString && (lowerCase(game).rfind("scummvm") != string::npos
+		|| lowerCase(ini.getString(game, "path")).rfind(Device) == string::npos))
+		{
+			game = ini.nextDomain();
+			continue;
+		}
+		if(game == emptyString)
+			break;
+		memset(&tmp, 0, sizeof(dir_discHdr));
+		tmp.hdr.casecolor = caseColors.back();
+		mbstowcs(tmp.title, ini.getString(game,"description").c_str(), sizeof(tmp.title));
+		strncpy(tmp.path, game.c_str(), sizeof(tmp.path));
+		gprintf("Found: %s\n", ini.getString(game,"description").c_str());
+		tmp.hdr.magic = magicWords.back();
+		tmp.hdr.gc_magic = 0x4c4f4c4f;
+		gameHeader.push_back(tmp);
+		game = ini.nextDomain();
+	}
+	return gameHeader;
 }
