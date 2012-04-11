@@ -13,6 +13,7 @@
 
 #include "config/config.hpp"
 #include "safe_vector.hpp"
+#include "loader/disc.h"
 
 using namespace std;
 
@@ -26,11 +27,13 @@ public:
 	void init(string);
 	void Cleanup();
 	void EndAdd();
+	safe_vector<dir_discHdr> ParseScummvmINI(Config &ini, const char* Device);
 private:
 	safe_vector<u8*> BannerSound;
 	safe_vector<u32> BannerSoundSize;
 	safe_vector<u32> magicWords;
 	safe_vector<string> DolName;
+	safe_vector<u32> caseColors;
 	u8 banner_pos;
 	string pluginsDir;
 	bool adding;
