@@ -637,9 +637,10 @@ void CMenu::_launch(dir_discHdr *hdr)
 		string path((char*)hdr->path, size_t(strlen((char*)hdr->path) - title.size()));
 		safe_vector<std::string> arguments;
 		gprintf("Game title: %s\n", title.c_str());
-		if(strstr(path.c_str(), "sd:/") == NULL && strstr(path.c_str(), ":/") != NULL)
+		if(strstr(path.c_str(), ":/") != NULL)
 		{
-			path.erase(3,1);
+			if(strstr(path.c_str(), "sd:/") == NULL)
+				path.erase(3,1);
 			arguments.push_back(path);
 			arguments.push_back(title);
 			arguments.push_back(wiiflow_dol);
