@@ -50,6 +50,7 @@ bool Plugin::AddPlugin(Config &plugin)
 	magicWords.push_back(magic);
 	sscanf(plugin.getString("PLUGIN","coverColor","").c_str(), "%08x", &caseColor);
 	caseColors.push_back(caseColor);
+	ReturnLoader.push_back(plugin.getBool("PLUGIN","ReturnLoader"));
 
 	string bannerfilepath = sfmt("%s/%s", pluginsDir.c_str(), plugin.getString("PLUGIN","bannerSound","").c_str());
 	ifstream infile;
@@ -71,6 +72,16 @@ bool Plugin::AddPlugin(Config &plugin)
 	{
 		BannerSound.push_back(0);
 		BannerSoundSize.push_back(0);
+	}
+	return false;
+}
+
+bool Plugin::UseReturnLoader(u32 magic)
+{
+	for(u8 pos = 0; pos < magicWords.size(); pos++)
+	{
+		if(magic == magicWords[pos])
+			return ReturnLoader[pos];
 	}
 	return false;
 }

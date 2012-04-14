@@ -643,7 +643,10 @@ void CMenu::_launch(dir_discHdr *hdr)
 				path.erase(3,1);
 			arguments.push_back(path);
 			arguments.push_back(title);
-			arguments.push_back(wiiflow_dol);
+			if(m_plugin.UseReturnLoader(hdr->hdr.magic))
+				arguments.push_back(sfmt("%s/WiiFlowLoader.dol",m_pluginsDir.c_str()));
+			else
+				arguments.push_back(wiiflow_dol);
 			m_cfg.setString("EMULATOR", "current_item", &hdr->path[std::string(hdr->path).find_last_of("/")]);
 		}
 		else

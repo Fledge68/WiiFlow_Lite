@@ -24,6 +24,7 @@ public:
 	u8* GetBannerSound(u32 magic);
 	u32 GetBannerSoundSize();
 	char* GetDolName(u32 magic);
+	bool UseReturnLoader(u32 magic);
 	void init(string);
 	void Cleanup();
 	void EndAdd();
@@ -34,6 +35,8 @@ private:
 	safe_vector<u32> magicWords;
 	safe_vector<string> DolName;
 	safe_vector<u32> caseColors;
+	safe_vector<bool> ReturnLoader;
+	
 	u8 banner_pos;
 	string pluginsDir;
 	bool adding;
