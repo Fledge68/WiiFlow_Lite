@@ -311,7 +311,7 @@ int CMenu::main(void)
 		}
 		m_btnMgr.noClick(false);
 		//CF Layout select
-		if (!BTN_B_HELD && (BTN_1_PRESSED || BTN_2_PRESSED))
+		if (!BTN_B_HELD && (BTN_1_PRESSED || BTN_2_PRESSED) && m_current_view != COVERFLOW_HOMEBREW && m_current_view != COVERFLOW_EMU)
 		{
 			m_btnMgr.noClick(true);
 			if (!m_btnMgr.selected(m_mainBtnQuit))
