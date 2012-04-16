@@ -1986,7 +1986,7 @@ bool CMenu::_loadEmuList()
 					Config scummvm;
 					safe_vector<dir_discHdr> scummvmList;
 					scummvm.load(fmt("%s/%s", m_pluginsDir.c_str(), "scummvm.ini"));
-					scummvmList = m_plugin.ParseScummvmINI(scummvm, DeviceName[currentPartition]);
+					scummvmList = m_plugin.ParseScummvmINI(scummvm, string(DeviceName[currentPartition]));
 					for(safe_vector<dir_discHdr>::iterator tmp_itr = scummvmList.begin(); tmp_itr != scummvmList.end(); tmp_itr++)
 						emuList.push_back(*tmp_itr);
 				}

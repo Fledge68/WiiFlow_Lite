@@ -28,7 +28,7 @@ public:
 	void init(string);
 	void Cleanup();
 	void EndAdd();
-	safe_vector<dir_discHdr> ParseScummvmINI(Config &ini, const char* Device);
+	safe_vector<dir_discHdr> ParseScummvmINI(Config &ini, string Device);
 private:
 	safe_vector<u8*> BannerSound;
 	safe_vector<u32> BannerSoundSize;

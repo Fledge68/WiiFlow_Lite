@@ -113,11 +113,13 @@ char* Plugin::GetDolName(u32 magic)
 	return null;
 }
 
-safe_vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, const char* Device)
+safe_vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, string Device)
 {
 	gprintf("Parsing scummvm.ini\n");
 	safe_vector<dir_discHdr> gameHeader;
 	string game = ini.firstDomain().c_str();
+	if(Device.rfind("usb") != string::npos)
+		Device.erase(3, 1);
 	dir_discHdr tmp;
 	while(1)
 	{
