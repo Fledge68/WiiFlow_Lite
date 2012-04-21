@@ -24,7 +24,7 @@ class CList
     public:
 		 CList(){};
 		~CList(){};
-		void GetPaths(safe_vector<string> &pathlist, string containing, string directory, bool wbfs_fs = false);
+		void GetPaths(safe_vector<string> &pathlist, string containing, string directory, bool wbfs_fs = false, bool dml = false);
 		void GetHeaders(safe_vector<string> pathlist, safe_vector<T> &headerlist, string, string, string, Config &plugin);
 		void GetChannels(safe_vector<T> &headerlist, string, u32, string);
 	private:

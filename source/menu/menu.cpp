@@ -1938,9 +1938,9 @@ bool CMenu::_loadDmlList()
 	gprintf("%s\n", DeviceName[currentPartition]);
 	DeviceHandler::Instance()->Open_WBFS(currentPartition);
 	if(currentPartition != SD)
-		m_gameList.Load(sfmt(m_DMLgameDir.c_str(), DeviceName[currentPartition]), ".iso", m_cfg.getString("DML", "lastlanguage", "EN").c_str());
+		m_gameList.Load(sfmt(m_DMLgameDir.c_str(), DeviceName[currentPartition]), "boot.bin|.iso", m_cfg.getString("DML", "lastlanguage", "EN").c_str());
 	else
-		m_gameList.Load(sfmt(DML_DIR, DeviceName[currentPartition]), ".iso", m_cfg.getString("DML", "lastlanguage", "EN").c_str());
+		m_gameList.Load(sfmt(DML_DIR, DeviceName[currentPartition]), "boot.bin|.iso", m_cfg.getString("DML", "lastlanguage", "EN").c_str());
 	m_cfg.setString("DML", "lastlanguage", m_loc.getString(m_curLanguage, "gametdb_code", "EN"));
 	m_cfg.save();
 	return m_gameList.size() > 0 ? true : false;
@@ -1961,6 +1961,7 @@ bool CMenu::_loadEmuList()
 	pdir = opendir(m_pluginsDir.c_str());
 
 	safe_vector<dir_discHdr> emuList;
+	Config m_plugin_cfg;
 
 	while ((pent = readdir(pdir)) != NULL)
 	{
@@ -1970,16 +1971,18 @@ bool CMenu::_loadEmuList()
 			continue;
 		if(strcasestr(pent->d_name, ".ini") != NULL)
 		{
-			m_gameList.m_plugin.load(fmt("%s/%s", m_pluginsDir.c_str(), pent->d_name));
-			if(m_gameList.m_plugin.loaded())
+			m_plugin_cfg.load(fmt("%s/%s", m_pluginsDir.c_str(), pent->d_name));
+			if(m_plugin_cfg.loaded())
 			{
-				m_plugin.AddPlugin(m_gameList.m_plugin);
+				m_plugin.AddPlugin(m_plugin_cfg);
 				m_gameList.clear();
-				if(strcasestr(m_gameList.m_plugin.getString("PLUGIN","romDir","").c_str(), "scummvm.ini") == NULL)
+				if(strcasestr(m_plugin_cfg.getString("PLUGIN","romDir","").c_str(), "scummvm.ini") == NULL)
 				{
-					m_gameList.Load(sfmt("%s:/%s", DeviceName[currentPartition], m_gameList.m_plugin.getString("PLUGIN","romDir","").c_str()), m_gameList.m_plugin.getString("PLUGIN","fileTypes","").c_str(), m_cfg.getString("EMULATOR", "lastlanguage", "EN").c_str());
+					m_gameList.LoadPluginConfig(fmt("%s/%s", m_pluginsDir.c_str(), pent->d_name));
+					m_gameList.Load(sfmt("%s:/%s", DeviceName[currentPartition], m_plugin_cfg.getString("PLUGIN","romDir","").c_str()), m_plugin_cfg.getString("PLUGIN","fileTypes","").c_str(), m_cfg.getString("EMULATOR", "lastlanguage", "EN").c_str());
 					for(safe_vector<dir_discHdr>::iterator tmp_itr = m_gameList.begin(); tmp_itr != m_gameList.end(); tmp_itr++)
 						emuList.push_back(*tmp_itr);
+					m_gameList.UnloadPluginConfig();
 				}
 				else
 				{
@@ -1991,7 +1994,7 @@ bool CMenu::_loadEmuList()
 						emuList.push_back(*tmp_itr);
 				}
 			}
-			m_gameList.m_plugin.unload();
+			m_plugin_cfg.unload();
 		}
 	}
 	closedir(pdir);
