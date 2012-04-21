@@ -123,17 +123,18 @@ safe_vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, string Device)
 	dir_discHdr tmp;
 	while(1)
 	{
-		if(game != emptyString && (lowerCase(game).rfind("scummvm") != string::npos
-		|| lowerCase(ini.getString(game, "path")).rfind(Device) == string::npos))
+		if(game == emptyString)
+			break;
+		if(strncasecmp(game.c_str(), "/", 1) == 0 || 
+		lowerCase(game).rfind("scummvm") != string::npos ||
+		lowerCase(ini.getStrings(game, "path", '/')[0]).rfind(Device.c_str()) == string::npos)
 		{
 			game = ini.nextDomain();
 			continue;
 		}
-		if(game == emptyString)
-			break;
 		memset(&tmp, 0, sizeof(dir_discHdr));
 		tmp.hdr.casecolor = caseColors.back();
-		mbstowcs(tmp.title, ini.getString(game,"description").c_str(), sizeof(tmp.title));
+		mbstowcs(tmp.title, ini.getString(game,"description").c_str(), 64);
 		strncpy(tmp.path, game.c_str(), sizeof(tmp.path));
 		gprintf("Found: %s\n", ini.getString(game,"description").c_str());
 		tmp.hdr.magic = magicWords.back();
