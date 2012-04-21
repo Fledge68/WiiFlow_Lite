@@ -7,7 +7,7 @@
 #include "gc.h"
 
 template <typename T>
-void CList<T>::GetPaths(safe_vector<string> &pathlist, string containing, string directory, bool wbfs_fs)
+void CList<T>::GetPaths(safe_vector<string> &pathlist, string containing, string directory, bool wbfs_fs, bool dml)
 {
 	if (!wbfs_fs)
 	{
@@ -18,6 +18,7 @@ void CList<T>::GetPaths(safe_vector<string> &pathlist, string containing, string
 		safe_vector<string> compares = stringToVector(containing, '|');
 		safe_vector<string> temp_pathlist;
 
+		bool foundDMLgame;
 		struct dirent *ent;
 
 		/* Read primary entries */
@@ -49,20 +50,34 @@ void CList<T>::GetPaths(safe_vector<string> &pathlist, string containing, string
 			{
 				dir_itr = opendir((*templist).c_str());
 				if (!dir_itr) continue;
+				if(dml)
+					foundDMLgame = false;
 
 				/* Read secondary entries */
 				while((ent = readdir(dir_itr)) != NULL)
 				{
-					if(ent->d_type != DT_REG) continue;
-					if (strlen(ent->d_name) < 8) continue;
-
-					for(safe_vector<string>::iterator compare = compares.begin(); compare != compares.end(); compare++)
-						if (strcasestr(ent->d_name, (*compare).c_str()) != NULL)
+					if(ent->d_type == DT_REG && strlen(ent->d_name) > 7)
+					{
+						for(safe_vector<string>::iterator compare = compares.begin(); compare != compares.end(); compare++)
 						{
-							//gprintf("Pushing %s to the list.\n", sfmt("%s/%s", (*templist).c_str(), ent->d_name).c_str());
-							pathlist.push_back(sfmt("%s/%s", (*templist).c_str(), ent->d_name));
+							if (strcasestr(ent->d_name, (*compare).c_str()) != NULL)
+							{
+								//gprintf("Pushing %s to the list.\n", sfmt("%s/%s", (*templist).c_str(), ent->d_name).c_str());
+								pathlist.push_back(sfmt("%s/%s", (*templist).c_str(), ent->d_name));
+								if(dml)
+									foundDMLgame = true;
+								break;
+							}
+						}
+					}
+					else if(dml && foundDMLgame == false)
+					{
+						if(strcasestr(ent->d_name, "sys") != NULL)
+						{
+							temp_pathlist.push_back(sfmt("%s/%s", (*templist).c_str(), ent->d_name));
 							break;
 						}
+					}
 				}
 				closedir(dir_itr);
 			}
@@ -129,11 +144,12 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 		tmp.hdr.casecolor = 1;
 		
 		bool wbfs = (*itr).rfind(".wbfs") != string::npos || (*itr).rfind(".WBFS") != string::npos;
-		if (wbfs || (*itr).rfind(".iso")  != string::npos || (*itr).rfind(".ISO")  != string::npos)
+		if (wbfs || (*itr).rfind(".iso")  != string::npos || (*itr).rfind(".ISO")  != string::npos
+				 || (*itr).rfind(".bin")  != string::npos || (*itr).rfind(".BIN")  != string::npos)
 		{
 			char* filename = &(*itr)[(*itr).find_last_of('/')+1];
 			const char* dml_partition = DeviceName[DeviceHandler::Instance()->PathToDriveType((*itr).c_str())];
-			if(strcasecmp(filename, "game.iso") == 0 && strstr((*itr).c_str(), sfmt((strncmp(dml_partition, "sd", 2) != 0) ? DMLgameUSBDir.c_str() : DML_DIR, dml_partition).c_str()) != NULL)
+			if((strcasecmp(filename, "game.iso") == 0 || strcasecmp(filename, "boot.bin") == 0) && strstr((*itr).c_str(), sfmt((strncmp(dml_partition, "sd", 2) != 0) ? DMLgameUSBDir.c_str() : DML_DIR, dml_partition).c_str()) != NULL)
 			{
 				FILE *fp = fopen((*itr).c_str(), "rb");
 				if( fp )
@@ -161,6 +177,8 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 
 						tmp.hdr.gc_magic = 0xc2339f3d;
 						(*itr)[(*itr).find_last_of('/')] = 0;
+						if(strcasecmp(filename, "boot.bin") == 0)
+							(*itr)[(*itr).find_last_of('/')] = 0;
 						(*itr).assign(&(*itr)[(*itr).find_last_of('/') + 1]);
 						strcpy( tmp.path, (*itr).c_str() );
 
@@ -188,6 +206,8 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 
 						tmp.hdr.casecolor = 0;
 						(*itr)[(*itr).find_last_of('/')] = 0;
+						if(strcasecmp(filename, "boot.bin") == 0)
+							(*itr)[(*itr).find_last_of('/')] = 0;
 						(*itr).assign(&(*itr)[(*itr).find_last_of('/') + 1]);
 						strcpy( tmp.path, (*itr).c_str() );
 
