@@ -58,7 +58,7 @@ void GC_SetVideoMode(u8 videomode)
 		rmode = &TVNtsc480Prog;
 	else if(videomode == 5)
 	{
-		rmode = &TVNtsc480Prog; //TVEurgb60Hz480Prog codedumps
+		rmode = &TVEurgb60Hz480Prog;
 		memflag = 5;
 	}
 
