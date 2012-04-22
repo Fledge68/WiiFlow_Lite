@@ -124,14 +124,24 @@ bool GC_GameIsInstalled(char *discid, const char* partition, const char* dmlgame
 	snprintf(folder, sizeof(folder), dmlgamedir, partition);
 	snprintf(source, sizeof(source), "%s/%s/game.iso", folder, discid);
 	
-	FILE *f = fopen(source, "r");
-	if (f) 
+	FILE *f = fopen(source, "rb");
+	if(f) 
 	{
 		gprintf("Found on %s: %s\n", partition, source);
 		fclose(f);
 		return true;
 	}
-	gprintf("Not found on %s: %s\n", partition, source);
+	else
+	{
+		snprintf(source, sizeof(source), "%s/%s/sys/boot.bin", folder, discid);
+		f = fopen(source, "rb");
+		if(f) 
+		{
+			gprintf("Found on %s: %s\n", partition, source);
+			fclose(f);
+			return true;
+		}
+	}
 	return false;
 }
 

@@ -18,7 +18,6 @@ void CList<T>::GetPaths(safe_vector<string> &pathlist, string containing, string
 		safe_vector<string> compares = stringToVector(containing, '|');
 		safe_vector<string> temp_pathlist;
 
-		bool foundDMLgame;
 		struct dirent *ent;
 
 		/* Read primary entries */
@@ -38,20 +37,18 @@ void CList<T>::GetPaths(safe_vector<string> &pathlist, string containing, string
 					}
 			}
 			else
-			{
 				temp_pathlist.push_back(sfmt("%s/%s", directory.c_str(), ent->d_name));
-			}
 		}
 		closedir(dir_itr);
 
 		if(temp_pathlist.size() > 0)
 		{
+			bool FoundDMLgame;
 			for(safe_vector<string>::iterator templist = temp_pathlist.begin(); templist != temp_pathlist.end(); templist++)
 			{
 				dir_itr = opendir((*templist).c_str());
 				if (!dir_itr) continue;
-				if(dml)
-					foundDMLgame = false;
+				FoundDMLgame = false;
 
 				/* Read secondary entries */
 				while((ent = readdir(dir_itr)) != NULL)
@@ -60,21 +57,24 @@ void CList<T>::GetPaths(safe_vector<string> &pathlist, string containing, string
 					{
 						for(safe_vector<string>::iterator compare = compares.begin(); compare != compares.end(); compare++)
 						{
-							if (strcasestr(ent->d_name, (*compare).c_str()) != NULL)
+							if(dml && strcasestr(ent->d_name, (*compare).c_str()) != NULL)
 							{
+								FoundDMLgame = true;
 								//gprintf("Pushing %s to the list.\n", sfmt("%s/%s", (*templist).c_str(), ent->d_name).c_str());
 								pathlist.push_back(sfmt("%s/%s", (*templist).c_str(), ent->d_name));
-								if(dml)
-									foundDMLgame = true;
 								break;
 							}
 						}
 					}
-					else if(dml && foundDMLgame == false)
+					else if(dml && !FoundDMLgame && strncasecmp(ent->d_name, "sys", 3) == 0)
 					{
-						if(strcasestr(ent->d_name, "sys") != NULL)
+						FILE *f;
+						f = fopen(fmt("%s/%s/boot.bin", (*templist).c_str(), ent->d_name), "rb");
+						if(f)
 						{
-							temp_pathlist.push_back(sfmt("%s/%s", (*templist).c_str(), ent->d_name));
+							fclose(f);
+							//gprintf("Pushing %s to the list.\n", sfmt("%s/%s/boot.bin", (*templist).c_str(), ent->d_name).c_str());
+							pathlist.push_back(sfmt("%s/%s/boot.bin", (*templist).c_str(), ent->d_name));
 							break;
 						}
 					}
