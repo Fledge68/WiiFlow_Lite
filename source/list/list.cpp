@@ -57,7 +57,7 @@ void CList<T>::GetPaths(safe_vector<string> &pathlist, string containing, string
 					{
 						for(safe_vector<string>::iterator compare = compares.begin(); compare != compares.end(); compare++)
 						{
-							if(dml && strcasestr(ent->d_name, (*compare).c_str()) != NULL)
+							if(strcasestr(ent->d_name, (*compare).c_str()) != NULL)
 							{
 								FoundDMLgame = true;
 								//gprintf("Pushing %s to the list.\n", sfmt("%s/%s", (*templist).c_str(), ent->d_name).c_str());
