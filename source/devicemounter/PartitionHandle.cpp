@@ -42,7 +42,7 @@
 #define PARTITION_TYPE_WIN95_EXTENDED		0x0F /* Windows 95 extended partition */
 #define PARTITION_TYPE_GPT_TABLE			0xEE /* New Standard */
 
-#define CACHE 8
+#define CACHE 32
 #define SECTORS 64
 
 extern const DISC_INTERFACE __io_sdhc;
@@ -128,7 +128,7 @@ bool PartitionHandle::Mount(int pos, const char * name)
 	}
 	else if(strncmp(GetFSName(pos), "NTFS", 4) == 0)
 	{
-		if(ntfsMount(MountNameList[pos].c_str(), interface, GetLBAStart(pos), CACHE, SECTORS, NTFS_SU | NTFS_RECOVER | NTFS_IGNORE_CASE))
+		if(ntfsMount(MountNameList[pos].c_str(), interface, GetLBAStart(pos), CACHE, SECTORS, NTFS_SHOW_HIDDEN_FILES | NTFS_RECOVER))
 			return true;
 	}
 	else if(strncmp(GetFSName(pos), "LINUX", 5) == 0)
@@ -177,33 +177,50 @@ void PartitionHandle::UnMount(int pos)
 
 int PartitionHandle::FindPartitions()
 {
-	MASTER_BOOT_RECORD mbr;
+	MASTER_BOOT_RECORD *mbr = (MASTER_BOOT_RECORD *)MEM2_alloc(MAX_BYTES_PER_SECTOR);
+	if(!mbr) return -1;
 
 	// Read the first sector on the device
-	if(!interface->readSectors(0, 1, &mbr)) return 0;
+	if(!interface->readSectors(0, 1, mbr)) 
+	{
+		MEM2_free(mbr);
+		return 0;
+	}
 
 	// Check if it's a RAW disc, without a partition table
-	if(CheckRAW((VOLUME_BOOT_RECORD *)&mbr)) return 1;
-
+	if(CheckRAW((VOLUME_BOOT_RECORD *)mbr)) 
+	{
+		MEM2_free(mbr);
+		return 1;
+	}
 	// Verify this is the device's master boot record
-	if(mbr.signature != MBR_SIGNATURE) return 0;
+	if(mbr->signature != MBR_SIGNATURE) 
+	{
+		MEM2_free(mbr);
+		return 0;
+	}
 
 	for (int i = 0; i < 4; i++)
 	{
-		PARTITION_RECORD * partition = (PARTITION_RECORD *) &mbr.partitions[i];
-		VOLUME_BOOT_RECORD vbr;
+		PARTITION_RECORD * partition = (PARTITION_RECORD *)&mbr->partitions[i];
+		VOLUME_BOOT_RECORD *vbr = (VOLUME_BOOT_RECORD *)MEM2_alloc(MAX_BYTES_PER_SECTOR);
+		if(!vbr) 
+		{
+			MEM2_free(mbr);
+			return -1;
+		}
 
 		if (le32(partition->lba_start) == 0) continue; // Invalid partition
 
-		if(!interface->readSectors(le32(partition->lba_start), 1, &vbr)) continue;
+		if(!interface->readSectors(le32(partition->lba_start), 1, vbr)) continue;
 
 		// Check if the partition is WBFS
-		bool isWBFS = memcmp((u8 *)&vbr, WBFS_SIGNATURE, sizeof(WBFS_SIGNATURE)) == 0;
+		bool isWBFS = memcmp((u8 *)vbr, WBFS_SIGNATURE, sizeof(WBFS_SIGNATURE)) == 0;
 
 		if(!isWBFS && i == 0 && partition->type == PARTITION_TYPE_GPT_TABLE)
 			return CheckGPT() ? PartitionList.size() : 0;
 
-		if(!isWBFS && vbr.Signature != VBR_SIGNATURE && partition->type != 0x83) continue;
+		if(!isWBFS && vbr->Signature != VBR_SIGNATURE && partition->type != 0x83) continue;
 
 		if(!isWBFS && (partition->type == PARTITION_TYPE_DOS33_EXTENDED || partition->type == PARTITION_TYPE_WIN95_EXTENDED))
 		{
@@ -215,7 +232,7 @@ int PartitionHandle::FindPartitions()
 			PartitionFS PartitionEntry = {"0",0,0,0,0,0,0,0};
 			PartitionEntry.FSName = isWBFS ? "WBFS" : PartFromType(partition->type);
 			PartitionEntry.LBA_Start = le32(partition->lba_start);
-			PartitionEntry.SecCount = isWBFS ? ((wbfs_head_t *)&vbr)->n_hd_sec : le32(partition->block_count);
+			PartitionEntry.SecCount = isWBFS ? ((wbfs_head_t *)vbr)->n_hd_sec : le32(partition->block_count);
 			PartitionEntry.Bootable = (partition->status == PARTITION_BOOTABLE);
 			PartitionEntry.PartitionType = partition->type;
 			PartitionEntry.PartitionNum = i;
@@ -223,33 +240,43 @@ int PartitionHandle::FindPartitions()
 
 			PartitionList.push_back(PartitionEntry);
 		}
+		MEM2_free(vbr);
 	}
+	MEM2_free(mbr);
 	return PartitionList.size();
 }
 
 void PartitionHandle::CheckEBR(u8 PartNum, sec_t ebr_lba)
 {
-	EXTENDED_BOOT_RECORD ebr;
+	EXTENDED_BOOT_RECORD *ebr = (EXTENDED_BOOT_RECORD *)MEM2_alloc(MAX_BYTES_PER_SECTOR);
 	sec_t next_erb_lba = 0;
 
 	do
 	{
 		// Read and validate the extended boot record
-		if(!interface->readSectors(ebr_lba + next_erb_lba, 1, &ebr)) return;
+		if(!interface->readSectors(ebr_lba + next_erb_lba, 1, ebr)) 
+		{
+			MEM2_free(ebr);
+			return;
+		}
 
 		// Check if the partition is WBFS
-		bool isWBFS = memcmp((u8 *)&ebr, WBFS_SIGNATURE, sizeof(WBFS_SIGNATURE)) == 0;
+		bool isWBFS = memcmp((u8 *)ebr, WBFS_SIGNATURE, sizeof(WBFS_SIGNATURE)) == 0;
 
-		if(!isWBFS && ebr.signature != EBR_SIGNATURE) return;
-		
-		if(isWBFS || le32(ebr.partition.block_count) > 0)
+		if(!isWBFS && ebr->signature != EBR_SIGNATURE) 
+		{
+			MEM2_free(ebr);
+			return;
+		}
+
+		if(isWBFS || le32(ebr->partition.block_count) > 0)
 		{
 			PartitionFS PartitionEntry = {"0",0,0,0,0,0,0,0};
-			PartitionEntry.FSName = isWBFS ? "WBFS" : PartFromType(ebr.partition.type);
-			PartitionEntry.LBA_Start = ebr_lba + next_erb_lba + le32(ebr.partition.lba_start);
-			PartitionEntry.SecCount = isWBFS ? ((wbfs_head_t *)&ebr)->n_hd_sec : le32(ebr.partition.block_count);
-			PartitionEntry.Bootable = (ebr.partition.status == PARTITION_BOOTABLE);
-			PartitionEntry.PartitionType = ebr.partition.type;
+			PartitionEntry.FSName = isWBFS ? "WBFS" : PartFromType(ebr->partition.type);
+			PartitionEntry.LBA_Start = ebr_lba + next_erb_lba + le32(ebr->partition.lba_start);
+			PartitionEntry.SecCount = isWBFS ? ((wbfs_head_t *)&ebr)->n_hd_sec : le32(ebr->partition.block_count);
+			PartitionEntry.Bootable = (ebr->partition.status == PARTITION_BOOTABLE);
+			PartitionEntry.PartitionType = ebr->partition.type;
 			PartitionEntry.PartitionNum = PartNum;
 			PartitionEntry.EBR_Sector = ebr_lba + next_erb_lba;
 
@@ -257,30 +284,40 @@ void PartitionHandle::CheckEBR(u8 PartNum, sec_t ebr_lba)
 		}
 		// Get the start sector of the current partition
 		// and the next extended boot record in the chain
-		next_erb_lba = le32(ebr.next_ebr.lba_start);
+		next_erb_lba = le32(ebr->next_ebr.lba_start);
 	}
 	while(next_erb_lba > 0);
+	MEM2_free(ebr);
 }
 
 bool PartitionHandle::CheckGPT(void)
 {
-	GPT_PARTITION_TABLE gpt;
+	GPT_PARTITION_TABLE *gpt = (GPT_PARTITION_TABLE *)MEM2_alloc(MAX_BYTES_PER_SECTOR);
+	if(!gpt) return false;
 	bool success = false; // To return false unless at least 1 partition is verified
 
-	if(!interface->readSectors(1, 33, &gpt)) return false;	// To read all 128 possible partitions
+	if(!interface->readSectors(1, 33, gpt))
+	{
+		free(gpt);
+		return false;	// To read all 128 possible partitions
+	}
 
 	// Verify this is the Primary GPT entry
-	if(strncmp(gpt.magic, GPT_SIGNATURE, 8) != 0) 	return false;
-	if(le32(gpt.Entry_Size) != 128)				return false;
-	if(le64(gpt.Table_LBA) != 2)					return false;
-	if(le64(gpt.Header_LBA) != 1)					return false;
-	if(le64(gpt.First_Usable_LBA) != 34)			return false;
-	if(gpt.Reserved != 0)							return false;
-
-	VOLUME_BOOT_RECORD * vbr = new VOLUME_BOOT_RECORD;
-	for(u8 i = 0; i < le32(gpt.Num_Entries) && PartitionList.size() <= 8; i++)
+	if((strncmp(gpt->magic, GPT_SIGNATURE, 8) != 0) 
+			|| (le32(gpt->Entry_Size) != 128) 
+			|| (le64(gpt->Table_LBA) != 2)
+			|| (le64(gpt->Header_LBA) != 1)
+			|| (le64(gpt->First_Usable_LBA) != 34)
+			|| (gpt->Reserved != 0))
 	{
-		GUID_PARTITION_ENTRY * entry = (GUID_PARTITION_ENTRY *) &gpt.partitions[i];
+		free(gpt);
+		return false;
+	}
+
+	for(u8 i = 0; i < le32(gpt->Num_Entries) && PartitionList.size() <= 8; i++)
+	{
+		GUID_PARTITION_ENTRY * entry = (GUID_PARTITION_ENTRY *) &gpt->partitions[i];
+		VOLUME_BOOT_RECORD *vbr = (VOLUME_BOOT_RECORD*)MEM2_alloc(MAX_BYTES_PER_SECTOR);
 
 		int Start = le64(entry->First_LBA);
 		int End = le64(entry->Last_LBA);
@@ -341,7 +378,10 @@ bool PartitionHandle::CheckGPT(void)
 			success = true;
 			PartitionList.push_back(PartitionEntry);
 		}
+		free(vbr);
 	}
+	free(gpt);
+
 	return success;
 }
 
