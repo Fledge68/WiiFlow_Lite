@@ -43,7 +43,8 @@
 #define PARTITION_BOOTABLE      0x80 /* Bootable (active) */
 #define PARTITION_NONBOOTABLE   0x00 /* Non-bootable */
 
-#define BYTES_PER_SECTOR        512 /* Default in libogc */
+#define BYTES_PER_SECTOR		512 /* Default in libogc */
+#define MAX_BYTES_PER_SECTOR	4096 /* Max bytes per sector */
 
 enum SIG_OFFSETS {
 	BPB_NTFS_ADDR = 0x3,
