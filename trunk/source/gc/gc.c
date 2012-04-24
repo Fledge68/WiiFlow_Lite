@@ -117,7 +117,7 @@ void GC_SetLanguage(u8 lang)
 	while(!__SYS_SyncSram());
 }
 
-bool GC_GameIsInstalled(char *discid, const char* partition, const char* dmlgamedir) 
+int GC_GameIsInstalled(char *discid, const char* partition, const char* dmlgamedir) 
 {
 	char folder[50];
 	char source[300];
@@ -129,7 +129,7 @@ bool GC_GameIsInstalled(char *discid, const char* partition, const char* dmlgame
 	{
 		gprintf("Found on %s: %s\n", partition, source);
 		fclose(f);
-		return true;
+		return 1;
 	}
 	else
 	{
@@ -139,10 +139,10 @@ bool GC_GameIsInstalled(char *discid, const char* partition, const char* dmlgame
 		{
 			gprintf("Found on %s: %s\n", partition, source);
 			fclose(f);
-			return true;
+			return 2;
 		}
 	}
-	return false;
+	return 0;
 }
 
 void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats, bool debugger, u8 NMM, u8 nodisc) //, u8 DMLvideoMode)
@@ -162,7 +162,10 @@ void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, boo
 
 	if(GamePath != NULL)
 	{
-		snprintf(DMLCfg->GamePath, sizeof(DMLCfg->GamePath), "/games/%s/game.iso", GamePath);
+		if(GC_GameIsInstalled(GamePath, "sd", "%s:/games") == 2)
+			snprintf(DMLCfg->GamePath, sizeof(DMLCfg->GamePath), "/games/%s/", GamePath);
+		else
+			snprintf(DMLCfg->GamePath, sizeof(DMLCfg->GamePath), "/games/%s/game.iso", GamePath);
 		DMLCfg->Config |= DML_CFG_GAME_PATH;
 	}
 
@@ -204,6 +207,10 @@ void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, boo
 
 	//Write options into memory
 	memcpy((void *)0xC0001700, DMLCfg, sizeof(DML_CFG));
+
+	//DML v1.2+
+	memcpy((void *)0xC1200000, DMLCfg, sizeof(DML_CFG));
+
 	MEM2_free(DMLCfg);
 }
 
