@@ -28,6 +28,8 @@ enum dmlconfig
 	DML_CFG_ACTIVITY_LED= (1<<7),
 	DML_CFG_PADHOOK		= (1<<8),
 	DML_CFG_NODISC		= (1<<9),
+	DML_CFG_BOOT_DISC	= (1<<10),
+	DML_CFG_BOOT_DOL	= (1<<11),
 };
 
 enum dmlvideomode
@@ -40,11 +42,12 @@ enum dmlvideomode
 	DML_VID_FORCE_PAL60	= (1<<1),
 	DML_VID_FORCE_NTSC	= (1<<2),
 	DML_VID_FORCE_PROG	= (1<<3),
+	DML_VID_PROG_PATCH	= (1<<4),
 };
 
 void GC_SetVideoMode(u8 videomode);
 void GC_SetLanguage(u8 lang);
-bool GC_GameIsInstalled(char *discid, const char* partition, const char* dmlgamedir);
+int GC_GameIsInstalled(char *discid, const char* partition, const char* dmlgamedir);
 void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats, bool debugger, u8 NMM, u8 nodisc); //, u8 DMLvideoMode);
 void DML_Old_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats);
 #endif //GC_H_
