@@ -1482,7 +1482,13 @@ void CMenu::_initCF(void)
 				m_dump.setWString(domain, id, m_gameList[i].title);
 
 			if (m_current_view == COVERFLOW_EMU)
-				m_cf.addItem(&m_gameList[i], sfmt("%s/%s.png", m_picDir.c_str(), &m_gameList[i].path[std::string(m_gameList[i].path).find_last_of("/")]).c_str(), sfmt("%s/%s.png", m_boxPicDir.c_str(), &m_gameList[i].path[std::string(m_gameList[i].path).find_last_of("/")]).c_str(), playcount, lastPlayed);
+			{
+				string tempname(m_gameList[i].path);
+				tempname.assign(&tempname[tempname.find_last_of('/') + 1]);
+				if(tempname.find_last_of('.') != string::npos)
+					tempname.erase(tempname.find_last_of('.'), tempname.size() - tempname.find_last_of('.'));
+				m_cf.addItem(&m_gameList[i], sfmt("%s/%s.png", m_picDir.c_str(), tempname.c_str()).c_str(), sfmt("%s/%s.png", m_boxPicDir.c_str(), tempname.c_str()).c_str(), playcount, lastPlayed);
+			}
 			else if (m_current_view != COVERFLOW_HOMEBREW)
 				m_cf.addItem(&m_gameList[i], sfmt("%s/%s.png", m_picDir.c_str(), id.c_str()).c_str(), sfmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str()).c_str(), playcount, lastPlayed);
 			else 
