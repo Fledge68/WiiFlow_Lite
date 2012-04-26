@@ -232,3 +232,21 @@ void DML_Old_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, boo
 
 	*(vu32*)0xCC003024 |= 7;
 }
+
+void DML_New_SetBootDiscOption()
+{
+	gprintf("Booting GC game\n");
+
+	DML_CFG *DMLCfg = (DML_CFG*)MEM2_alloc(sizeof(DML_CFG));
+	memset(DMLCfg, 0, sizeof(DML_CFG));
+
+	DMLCfg->Magicbytes = 0xD1050CF6;
+	DMLCfg->CfgVersion = 0x00000001;
+
+	DMLCfg->Config |= DML_CFG_BOOT_DISC;
+
+	//DML v1.2+
+	memcpy((void *)0xC1200000, DMLCfg, sizeof(DML_CFG));
+
+	MEM2_free(DMLCfg);
+}
