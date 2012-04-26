@@ -401,18 +401,19 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 					{
 						strncpy(tmp.path, (*itr).c_str(), sizeof(tmp.path));
 
-						(*itr).assign(&(*itr)[(*itr).find_last_of('/') + 1]);
-
-						char filename[64];
-						strncpy(filename, (*itr).c_str(), sizeof(filename));
-
 						int plugin_ccolor;
 						sscanf(plugin.getString("PLUGIN","coverColor","").c_str(), "%08x", &plugin_ccolor);
 						int ccolor = custom_titles.getColor("COVERS", (const char *) tmp.hdr.id, plugin_ccolor).intVal();
 						tmp.hdr.casecolor = ccolor != plugin_ccolor ? ccolor : plugin_ccolor;
 
-						mbstowcs(tmp.title, filename, sizeof(tmp.title));
+						char tempname[64];
+						(*itr).assign(&(*itr)[(*itr).find_last_of('/') + 1]);
+						if((*itr).find_last_of('.') != string::npos)
+							(*itr).erase((*itr).find_last_of('.'), (*itr).size() - (*itr).find_last_of('.'));
+						strncpy(tempname, (*itr).c_str(), sizeof(tempname));
+						mbstowcs(tmp.title, tempname, sizeof(tmp.title));
 						Asciify(tmp.title);
+
 						gprintf("Found: %s\n", tmp.path);
 						sscanf(plugin.getString("PLUGIN","magic","").c_str(), "%08x", &tmp.hdr.magic); //Plugin magic
 						tmp.hdr.gc_magic = 0x4c4f4c4f; //Abusing gc_magic for general emu detection ;)
