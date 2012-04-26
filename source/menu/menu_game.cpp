@@ -741,7 +741,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 		}
 	}
 	else
-		gprintf("Booting GC game\n");
+		DML_New_SetBootDiscOption();
 
 	m_gcfg1.save(true);
 	m_gcfg2.save(true);
