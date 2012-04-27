@@ -56,17 +56,19 @@ wbfs_disc_t* WBFS_Ext_OpenDisc(u8 *discid, char *fname)
 		if (fd == -1) return NULL;
 
 		wbfs_disc_t *iso_file = calloc(sizeof(wbfs_disc_t),1);
-		if (iso_file == NULL) return NULL;
+		if (iso_file == NULL) 
+			return NULL;
 
 		// mark with a special wbfs_part
-		wbfs_iso_file.wbfs_sec_sz = 512;
+		wbfs_iso_file.wbfs_sec_sz = sector_size;
 		iso_file->p = &wbfs_iso_file;
 		iso_file->header = (void*)fd;
 		return iso_file;
 	}
 
 	wbfs_t *part = WBFS_Ext_OpenPart(fname);
-	if (!part)return NULL;
+	if(!part)
+		return NULL;
 
 	return wbfs_open_disc(part, discid);
 }
@@ -129,11 +131,13 @@ wbfs_t* WBFS_Ext_OpenPart(char *fname)
 	if(split_open(&split, fname) < 0)
 		return NULL;
 
-	wbfs_t *part = wbfs_open_partition(
-			split_read_sector, nop_write_sector, //readonly //split_write_sector,
-			&split, sector_size, split.total_sec, 0, 0);
+	wbfs_set_force_mode(1);
+	wbfs_t *part = wbfs_open_partition(split_read_sector, nop_write_sector, //readonly //split_write_sector,
+		&split, sector_size, split.total_sec, 0, 0);
+	wbfs_set_force_mode(0);
 
-	if (!part) split_close(&split);
+	if (!part)
+		split_close(&split);
 
 	return part;
 }

@@ -1,9 +1,9 @@
 
-#define MAX_SPLIT 10
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#define MAX_SPLIT 10
 
 typedef struct split_info
 {
