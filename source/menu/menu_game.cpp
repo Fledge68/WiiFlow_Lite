@@ -388,7 +388,8 @@ void CMenu::_game(bool launch)
 			m_gameSelected = true;
 			_gameinfo();
 			_showGame();
-			if (!m_gameSound.IsPlaying()) startGameSound = -6;
+			if (!m_gameSound.IsPlaying()) 
+				startGameSound = -6;
 		}
 		else if (BTN_MINUS_PRESSED)
 		{
@@ -464,7 +465,8 @@ void CMenu::_game(bool launch)
 				m_gameSelected = true;
 				_gameSettings();
 				_showGame();
-				if (!m_gameSound.IsPlaying()) startGameSound = -6;
+				if (!m_gameSound.IsPlaying()) 
+					startGameSound = -6;
 			}
 			else if (launch || m_btnMgr.selected(m_gameBtnPlay) || (!WPadIR_Valid(0) && !WPadIR_Valid(1) && !WPadIR_Valid(2) && !WPadIR_Valid(3) && m_btnMgr.selected((u32)-1)))
 			{
@@ -1379,6 +1381,7 @@ struct IMD5Header
 } __attribute__((packed));
 
 SmartBuf gameSoundThreadStack;
+unsigned int gameSoundThreadStackSize = (unsigned int)32768;
 
 void CMenu::_gameSoundThread(CMenu *m)
 {
@@ -1428,13 +1431,14 @@ void CMenu::_gameSoundThread(CMenu *m)
 void CMenu::_playGameSound(void)
 {
 	m_gamesound_changed = false;
-	if (m_bnrSndVol == 0) return;
+	if(m_bnrSndVol == 0) 
+		return;
 
 	CheckGameSoundThread();
-	unsigned int stack_size = (unsigned int)32768;
-	SMART_FREE(gameSoundThreadStack);
-	gameSoundThreadStack = smartMem2Alloc(stack_size);
-	LWP_CreateThread(&m_gameSoundThread, (void *(*)(void *))CMenu::_gameSoundThread, (void *)this, gameSoundThreadStack.get(), stack_size, 40);
+	if(!gameSoundThreadStack.get())
+		gameSoundThreadStack = smartMem2Alloc(gameSoundThreadStackSize);
+
+	LWP_CreateThread(&m_gameSoundThread, (void *(*)(void *))CMenu::_gameSoundThread, (void *)this, gameSoundThreadStack.get(), gameSoundThreadStackSize, 60);
 }
 
 void CMenu::CheckGameSoundThread()
@@ -1443,8 +1447,8 @@ void CMenu::CheckGameSoundThread()
 		LWP_ResumeThread(m_gameSoundThread);
 
 	LWP_JoinThread(m_gameSoundThread, NULL);
-
-	SMART_FREE(gameSoundThreadStack);
+	if(gameSoundThreadStack.get())
+		SMART_FREE(gameSoundThreadStack);
 	m_gameSoundThread = LWP_THREAD_NULL;
 }
 
