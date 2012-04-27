@@ -348,10 +348,12 @@ s32 WBFS_DiskSpace(f32 *used, f32 *free)
 
 wbfs_disc_t* WBFS_OpenDisc(u8 *discid, char *path)
 {
-	if (wbfs_part_fs) return WBFS_Ext_OpenDisc(discid, path);
+	if (wbfs_part_fs)
+		return WBFS_Ext_OpenDisc(discid, path);
 
 	/* No device open */
-	if (!hdd) return NULL;
+	if (!hdd)
+		return NULL;
 
 	/* Open disc */
 	return wbfs_open_disc(hdd, discid);

@@ -12,7 +12,7 @@
 #include <ctype.h>
 
 #include "splits.h"
-#include "gecko.h"
+#include "gecko/gecko.h"
 
 #define off64_t off_t
 #define FMT_llu "%llu"
@@ -21,7 +21,7 @@
 #define split_error(x)		do { printf("\nsplit error: %s\n\n",x); } while(0)
 
 // 1 cluster less than 4gb
-u64 OPT_split_size = (u64)4LL * 1024 * 1024 * 1024 - 32 * 1024;
+u64 OPT_split_size = (u64) 4LL * 1024 * 1024 * 1024 - 32 * 1024;
 // 1 cluster less than 2gb
 //u64 OPT_split_size = (u64)2LL * 1024 * 1024 * 1024 - 32 * 1024;
 
@@ -30,9 +30,12 @@ u64 OPT_split_size = (u64)4LL * 1024 * 1024 * 1024 - 32 * 1024;
 void split_get_fname(split_info_t *s, int idx, char *fname)
 {
 	strcpy(fname, s->fname);
-	if (idx == 0 && s->create_mode) {
-//		strcat(fname, ".tmp");
-	} else if (idx > 0) {
+	if (idx == 0 && s->create_mode)
+	{
+		strcat(fname, ".tmp");
+	}
+	else if (idx > 0)
+	{
 		char *c = fname + strlen(fname) - 1;
 		*c = '0' + idx;
 	}
@@ -41,19 +44,18 @@ void split_get_fname(split_info_t *s, int idx, char *fname)
 int split_open_file(split_info_t *s, int idx)
 {
 	int fd = s->fd[idx];
-	if (fd>=0) return fd;
+	if (fd >= 0) return fd;
 	char fname[1024];
 	split_get_fname(s, idx, fname);
 	//char *mode = s->create_mode ? "wb+" : "rb+";
-	int mode = s->create_mode ? (O_CREAT | O_RDWR) : O_RDWR ;
+	int mode = s->create_mode ? (O_CREAT | O_RDWR) : O_RDWR;
 	//gprintf("SPLIT OPEN %s %s %d\n", fname, mode, idx); //Wpad_WaitButtons();
 	//f = fopen(fname, mode);
 	fd = open(fname, mode);
-	if (fd<0) return -1;
-	if (idx > 0 && s->create_mode) {
-//		gprintf("%s Split: %d %s          \n",
-//				s->create_mode ? "Create" : "Read",
-//				idx, fname);
+	if (fd < 0) return -1;
+	if (idx > 0 && s->create_mode)
+	{
+		//gprintf("%s Split: %d %s		\n", s->create_mode ? "Create" : "Read", idx, fname);
 	}
 	s->fd[idx] = fd;
 	return fd;
@@ -206,15 +208,17 @@ void split_init(split_info_t *s, char *fname)
 {
 	int i;
 	char *p;
-	//fprintf(stderr, "SPLIT_INIT %s\n", fname);
+	//gprintf("SPLIT_INIT %s\n", fname);
 	memset(s, 0, sizeof(*s));
-	for (i=0; i<MAX_SPLIT; i++) {
+	for (i = 0; i < MAX_SPLIT; i++)
+	{
 		s->fd[i] = -1;
 	}
 	strcpy(s->fname, fname);
 	s->max_split = 1;
 	p = strrchr(fname, '.');
-	if (p && (strcasecmp(p, ".wbfs") == 0)) {
+	if (p && (strcasecmp(p, ".wbfs") == 0))
+	{
 		s->max_split = MAX_SPLIT;
 	}
 }
@@ -284,36 +288,37 @@ int split_open(split_info_t *s, char *fname)
 	u64 split_size = 0;
 	int fd;
 	split_init(s, fname);
-	for (i=0; i<s->max_split; i++) {
+	for (i = 0; i < s->max_split; i++)
+	{
 		fd = split_open_file(s, i);
-		if (fd<0) {
-			if (i==0) goto err;
+		if (fd < 0)
+		{
+			if (i == 0)
+				goto error;
 			break;
 		}
 		// check previous size - all splits except last must be same size
-		if (i > 0 && size != split_size) {
-			fprintf(stderr, "split %d: invalid size "FMT_lld"", i, size);
-			goto err;
+		if (i > 0 && size != split_size)
+		{
+			gprintf("split %i: invalid size %ld\n", i, size);
+			goto error;
 		}
 		// get size
 		//fseeko(f, 0, SEEK_END);
 		//size = ftello(f);
 		size = lseek(fd, 0, SEEK_END);
 		// check sector alignment
-		if (size % 512) {
-			fprintf(stderr, "split %d: size ("FMT_lld") not sector (512) aligned!",
-					i, size);
-		}
+		if (size % 512)
+			gprintf("split %i: size (%ld) not sector (512) aligned!", i, size);
 		// first sets split size
-		if (i==0) {
+		if (i == 0)
 			split_size = size;
-		}
 		total_size += size;
 	}
 	split_set_size(s, split_size, total_size);
 	return 0;
-err:
+
+error:
 	split_close(s);
 	return -1;
 }
-
