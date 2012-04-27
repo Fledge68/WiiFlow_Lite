@@ -13,11 +13,6 @@ extern const u8 wait_02_png[];
 extern const u8 wait_03_png[];
 extern const u8 wait_04_png[];
 extern const u8 wait_05_png[];
-extern const u8 wait_06_png[];
-extern const u8 wait_07_png[];
-extern const u8 wait_08_png[];
-extern const u8 wait_09_png[];
-extern const u8 wait_10_png[];
 
 const float CVideo::_jitter2[2][2] = {
 	{ 0.246490f, 0.249999f },
@@ -323,13 +318,13 @@ void CVideo::drawAAScene(bool fs)
 
 	if (m_aa <= 0 || m_aa > 8)
 		return;
-	// 
+
 	for (aa = 0; aa < m_aa; ++aa)
 		if (!m_aaBuffer[aa])
 			break;
 	if (aa == 7)
 		aa = 6;
-	// 
+
 	GX_SetNumChans(0);
 	for (int i = 0; i < aa; ++i)
 	{
@@ -353,12 +348,12 @@ void CVideo::drawAAScene(bool fs)
 		GX_SetTevAlphaOp(GX_TEVSTAGE0 + i, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
 	}
 	GX_SetNumTevStages(aa);
-	// 
+
 	GX_SetAlphaUpdate(GX_TRUE);
 	GX_SetCullMode(GX_CULL_NONE);
 	GX_SetZMode(GX_DISABLE, GX_ALWAYS, GX_FALSE);
 	GX_SetBlendMode(GX_BM_NONE, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
-	// 
+
 	GX_ClearVtxDesc();
 	GX_SetVtxDesc(GX_VA_POS, GX_DIRECT);
 	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
@@ -460,17 +455,18 @@ void CVideo::_showWaitMessages(CVideo *m)
 	s16 currentLightLevel = 0;
 
 	safe_vector<STexture>::iterator waitItr = m->m_waitMessages.begin();
-
+	s8 direction = 1;
 	gprintf("Going to show a wait message screen, delay: %d, # images: %d\n", waitFrames, m->m_waitMessages.size());
 
 	m->waitMessage(*waitItr);
-	waitItr++;
+	waitItr += direction;
 
 	if (m->m_useWiiLight)
 	{
 		WIILIGHT_SetLevel(0);
 		WIILIGHT_TurnOn();
 	}
+
 	while (m->m_showWaitMessage)
 	{
 		if (m->m_useWiiLight)
@@ -491,21 +487,12 @@ void CVideo::_showWaitMessages(CVideo *m)
 		
 		if (waitFrames == 0)
 		{
-			if (waitItr == m->m_waitMessages.end())
-				waitItr = m->m_waitMessages.begin();
-			
-			while (!*waitItr->data) 
-			{
-				gprintf("Skipping one image, because loaded data is not valid\n");
-				waitItr++;
-
-				if (waitItr == m->m_waitMessages.end())
-					waitItr = m->m_waitMessages.begin();
-			}
-			
 			m->waitMessage(*waitItr);
-			waitItr++;
-			
+			waitItr += direction;
+
+			if(waitItr + 1 == m->m_waitMessages.end() || waitItr == m->m_waitMessages.begin())
+				direction *= (-1);
+
 			waitFrames = frames;
 		}
 		waitFrames--;
@@ -527,6 +514,9 @@ void CVideo::hideWaitMessage()
 	gprintf("Now hide wait message\n");
 	m_showWaitMessage = false;
 	CheckWaitThread();
+
+	WIILIGHT_SetLevel(0);
+	WIILIGHT_TurnOff();
 }
 
 void CVideo::CheckWaitThread()
@@ -561,22 +551,15 @@ void CVideo::waitMessage(const safe_vector<STexture> &tex, float delay, bool use
 
 	if (tex.size() == 0)
 	{
-		STexture m_wTextures[10];
+		STexture m_wTextures[5];
 		m_wTextures[0].fromPNG(wait_01_png);
 		m_wTextures[1].fromPNG(wait_02_png);
 		m_wTextures[2].fromPNG(wait_03_png);
 		m_wTextures[3].fromPNG(wait_04_png);
 		m_wTextures[4].fromPNG(wait_05_png);
-		m_wTextures[5].fromPNG(wait_06_png);
-		m_wTextures[6].fromPNG(wait_07_png);
-		m_wTextures[7].fromPNG(wait_08_png);
-		m_wTextures[8].fromPNG(wait_09_png);
-		m_wTextures[9].fromPNG(wait_10_png);
-		m_waitMessages.reserve(10);
-		for (int i = 0; i < 10; i++)
+		for (int i = 0; i < 5; i++)
 			m_waitMessages.push_back(m_wTextures[i]);
-
-		m_waitMessageDelay = 0.2f;
+		m_waitMessageDelay = 0.3f;
 	}
 	else
 	{
@@ -603,51 +586,46 @@ void CVideo::waitMessage(const STexture &tex)
 	Mtx modelViewMtx;
 	GXTexObj texObj;
 
-	for (int i = 0; i < 3; ++i)
-	{
-		prepare();
-		setup2DProjection();
-		//prepareAAPass(i);
-		//setup2DProjection(false, true);
-		GX_SetNumChans(0);
-		GX_ClearVtxDesc();
-		GX_SetVtxDesc(GX_VA_POS, GX_DIRECT);
-		GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
-		GX_SetVtxDesc(GX_VA_TEX0, GX_DIRECT);
-		GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
-		GX_SetNumTexGens(1);
-		GX_SetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_TEXC);
-		GX_SetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_TEXA);
-		GX_SetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
-		GX_SetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
-		GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLORNULL);
-		GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
-		GX_SetBlendMode(GX_BM_NONE, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
-		GX_SetAlphaUpdate(GX_TRUE);
-		GX_SetCullMode(GX_CULL_NONE);
-		GX_SetZMode(GX_DISABLE, GX_ALWAYS, GX_FALSE);
-		guMtxIdentity(modelViewMtx);
-		GX_LoadPosMtxImm(modelViewMtx, GX_PNMTX0);
-		GX_InitTexObj(&texObj, tex.data.get(), tex.width, tex.height, tex.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
-		GX_LoadTexObj(&texObj, GX_TEXMAP0);
-		GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
-		GX_Position3f32((float)((640 - tex.width) / 2), (float)((480 - tex.height) / 2), 0.f);
-		GX_TexCoord2f32(0.f, 0.f);
-		GX_Position3f32((float)((640 + tex.width) / 2), (float)((480 - tex.height) / 2), 0.f);
-		GX_TexCoord2f32(1.f, 0.f);
-		GX_Position3f32((float)((640 + tex.width) / 2), (float)((480 + tex.height) / 2), 0.f);
-		GX_TexCoord2f32(1.f, 1.f);
-		GX_Position3f32((float)((640 - tex.width) / 2), (float)((480 + tex.height) / 2), 0.f);
-		GX_TexCoord2f32(0.f, 1.f);
-		GX_End();
-		render();
-	}
+	prepare();
+	setup2DProjection();
+	GX_SetNumChans(0);
+	GX_ClearVtxDesc();
+	GX_SetVtxDesc(GX_VA_POS, GX_DIRECT);
+	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+	GX_SetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+	GX_SetNumTexGens(1);
+	GX_SetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_TEXC);
+	GX_SetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_TEXA);
+	GX_SetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+	GX_SetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+	GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLORNULL);
+	GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
+	GX_SetBlendMode(GX_BM_NONE, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+	GX_SetAlphaUpdate(GX_TRUE);
+	GX_SetCullMode(GX_CULL_NONE);
+	GX_SetZMode(GX_DISABLE, GX_ALWAYS, GX_FALSE);
+	guMtxIdentity(modelViewMtx);
+	GX_LoadPosMtxImm(modelViewMtx, GX_PNMTX0);
+	GX_InitTexObj(&texObj, tex.data.get(), tex.width, tex.height, tex.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+	GX_LoadTexObj(&texObj, GX_TEXMAP0);
+	GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
+	GX_Position3f32((float)((640 - tex.width) / 2), (float)((480 - tex.height) / 2), 0.f);
+	GX_TexCoord2f32(0.f, 0.f);
+	GX_Position3f32((float)((640 + tex.width) / 2), (float)((480 - tex.height) / 2), 0.f);
+	GX_TexCoord2f32(1.f, 0.f);
+	GX_Position3f32((float)((640 + tex.width) / 2), (float)((480 + tex.height) / 2), 0.f);
+	GX_TexCoord2f32(1.f, 1.f);
+	GX_Position3f32((float)((640 - tex.width) / 2), (float)((480 + tex.height) / 2), 0.f);
+	GX_TexCoord2f32(0.f, 1.f);
+	GX_End();
+	render();
 	GX_SetNumChans(1);
 }
 
 s32 CVideo::TakeScreenshot(const char *path)
 {
-	IMGCTX ctx = PNGU_SelectImageFromDevice (path);
+	IMGCTX ctx = PNGU_SelectImageFromDevice(path);
 	s32 ret = PNGU_EncodeFromYCbYCr(ctx, m_rmode->fbWidth, m_rmode->efbHeight, m_frameBuf[m_curFB], 1);
 	PNGU_ReleaseImageContext (ctx);
 	return ret;
