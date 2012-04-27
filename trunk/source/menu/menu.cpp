@@ -1582,6 +1582,7 @@ void CMenu::_mainLoopCommon(bool withCF, bool blockReboot, bool adjusting)
 	
 	if (withCF && m_gameSelected && m_gamesound_changed && (m_gameSoundHdr == NULL) && !m_gameSound.IsPlaying() && MusicPlayer::Instance()->GetVolume() == 0)
 	{
+		CheckGameSoundThread();
 		m_gameSound.Play(m_bnrSndVol);
 		m_gamesound_changed = false;
 	}
