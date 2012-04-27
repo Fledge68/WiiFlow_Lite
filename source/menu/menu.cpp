@@ -507,7 +507,7 @@ void CMenu::_loadCFCfg(SThemeData &theme)
 
 	//gprintf("Preparing to load sounds from %s\n", m_themeDataDir.c_str());
 	m_cf.setCachePath(m_cacheDir.c_str(), !m_cfg.getBool("GENERAL", "keep_png", true), m_cfg.getBool("GENERAL", "compress_cache", false));
-	m_cf.setBufferSize(m_cfg.getInt("GENERAL", "cover_buffer", 120));
+	m_cf.setBufferSize(m_cfg.getInt("GENERAL", "cover_buffer", 20));
 	// Coverflow Sounds
 	m_cf.setSounds(
 		SmartGuiSound(new GuiSound(sfmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString(domain, "sound_flip").c_str()))),
@@ -1508,7 +1508,7 @@ void CMenu::_initCF(void)
 	}
  	m_cf.setBoxMode(m_cfg.getBool("GENERAL", "box_mode", true));
 	m_cf.setCompression(m_cfg.getBool("GENERAL", "allow_texture_compression", true));
-	m_cf.setBufferSize(m_cfg.getInt("GENERAL", "cover_buffer", 120));
+	m_cf.setBufferSize(m_cfg.getInt("GENERAL", "cover_buffer", 20));
 	m_cf.setSorting((Sorting)m_cfg.getInt(domain, "sort", 0));
 	if (m_curGameId.empty() || !m_cf.findId(m_curGameId.c_str(), true))
 		m_cf.findId(m_cfg.getString(domain, "current_item").c_str(), true);
