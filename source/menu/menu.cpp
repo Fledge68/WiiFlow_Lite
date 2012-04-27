@@ -1485,8 +1485,8 @@ void CMenu::_initCF(void)
 			{
 				string tempname(m_gameList[i].path);
 				tempname.assign(&tempname[tempname.find_last_of('/') + 1]);
-				if(tempname.find_last_of('.') != string::npos)
-					tempname.erase(tempname.find_last_of('.'), tempname.size() - tempname.find_last_of('.'));
+				//if(tempname.find_last_of('.') != string::npos)
+				//	tempname.erase(tempname.find_last_of('.'), tempname.size() - tempname.find_last_of('.'));
 				m_cf.addItem(&m_gameList[i], sfmt("%s/%s.png", m_picDir.c_str(), tempname.c_str()).c_str(), sfmt("%s/%s.png", m_boxPicDir.c_str(), tempname.c_str()).c_str(), playcount, lastPlayed);
 			}
 			else if (m_current_view != COVERFLOW_HOMEBREW)
