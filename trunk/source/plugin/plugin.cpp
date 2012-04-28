@@ -117,6 +117,8 @@ safe_vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, string Device)
 {
 	gprintf("Parsing scummvm.ini\n");
 	safe_vector<dir_discHdr> gameHeader;
+	if(!ini.loaded())
+		return gameHeader;
 	string game = ini.firstDomain().c_str();
 	if(Device.rfind("usb") != string::npos)
 		Device.erase(3, 1);
@@ -134,9 +136,11 @@ safe_vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, string Device)
 		}
 		memset(&tmp, 0, sizeof(dir_discHdr));
 		tmp.hdr.casecolor = caseColors.back();
-		mbstowcs(tmp.title, ini.getString(game,"description").c_str(), 64);
+		wstringEx tmpString;
+		tmpString.fromUTF8(ini.getString(game,"description").c_str());
+		wcsncpy(tmp.title, tmpString.c_str(), 64);
 		strncpy(tmp.path, game.c_str(), sizeof(tmp.path));
-		gprintf("Found: %s\n", ini.getString(game,"description").c_str());
+		gprintf("Found: %s\n", tmpString.c_str());
 		tmp.hdr.magic = magicWords.back();
 		tmp.hdr.gc_magic = 0x4c4f4c4f;
 		gameHeader.push_back(tmp);

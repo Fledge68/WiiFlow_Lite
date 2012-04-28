@@ -170,7 +170,7 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 						//Asciify( tmp.title );
 						wstringEx tmpString;
 						tmpString.fromUTF8(GTitle.c_str());
-						wcsncpy(tmp.title, tmpString.c_str(), tmpString.size());
+						wcsncpy(tmp.title, tmpString.c_str(), 64);
 						if(gc_disc[0])
 							wcslcat(tmp.title, L" disc 2", sizeof(tmp.title));
 
@@ -206,7 +206,7 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 						//Asciify(tmp.title);
 						wstringEx tmpString;
 						tmpString.fromUTF8((const char *)tmp.hdr.title);
-						wcsncpy(tmp.title, tmpString.c_str(), tmpString.size());
+						wcsncpy(tmp.title, tmpString.c_str(), 64);
 						if(gc_disc[0])
 							wcslcat(tmp.title, L" disc 2", sizeof(tmp.title));
 
@@ -263,7 +263,7 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 				//Asciify(tmp.title);
 				wstringEx tmpString;
 				tmpString.fromUTF8(GTitle.c_str());
-				wcsncpy(tmp.title, tmpString.c_str(), tmpString.size());
+				wcsncpy(tmp.title, tmpString.c_str(), 64);
 				tmp.hdr.casecolor = ccolor != 1 ? ccolor : gameTDB.GetCaseColor((char *)tmp.hdr.id);
 
 				tmp.hdr.wifi = gameTDB.GetWifiPlayers((char *)tmp.hdr.id);
@@ -289,7 +289,7 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 				//Asciify(tmp.title);
 				wstringEx tmpString;
 				tmpString.fromUTF8((const char *)tmp.hdr.title);
-				wcsncpy(tmp.title, tmpString.c_str(), tmpString.size());
+				wcsncpy(tmp.title, tmpString.c_str(), 64);
 				tmp.hdr.casecolor = ccolor != 1 ? ccolor : 1;
 				headerlist.push_back(tmp);
 				continue;
@@ -362,7 +362,7 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 				tmp.hdr.casecolor = ccolor != 1 ? ccolor : 1;
 			}
 			//Asciify(tmp.title);
-			wcsncpy(tmp.title, tmpString.c_str(), tmpString.size());
+			wcsncpy(tmp.title, tmpString.c_str(), 64);
 			headerlist.push_back(tmp);
 			continue;
 		}
@@ -394,7 +394,7 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 				if (tmp.hdr.magic == 0x5D1C9EA3)
 				{
 					//Asciify(tmp.title);
-					wcsncpy(tmp.title, tmpString.c_str(), tmpString.size());
+					wcsncpy(tmp.title, tmpString.c_str(), 64);
 					headerlist.push_back(tmp);
 				}
 				continue;
@@ -405,7 +405,7 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 				//mbstowcs(tmp.title, (const char *)tmp.hdr.title, sizeof(tmp.hdr.title));
 				//Asciify(tmp.title);
 				tmpString.fromUTF8((const char *)tmp.hdr.title);
-				wcsncpy(tmp.title, tmpString.c_str(), tmpString.size());
+				wcsncpy(tmp.title, tmpString.c_str(), 64);
 				tmp.hdr.casecolor = ccolor != 1 ? ccolor : 1;
 				headerlist.push_back(tmp);
 			}
@@ -436,7 +436,7 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 						//Asciify(tmp.title);
 						wstringEx tmpString;
 						tmpString.fromUTF8(tempname);
-						wcsncpy(tmp.title, tmpString.c_str(), tmpString.size());
+						wcsncpy(tmp.title, tmpString.c_str(), 64);
 
 						gprintf("Found: %s\n", tmp.path);
 						sscanf(plugin.getString("PLUGIN","magic","").c_str(), "%08x", &tmp.hdr.magic); //Plugin magic
