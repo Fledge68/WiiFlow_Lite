@@ -51,7 +51,7 @@ class CachedList : public safe_vector<T>
 		}
 	}
 
-    void Load(string path, string containing, string m_lastLanguage);
+    void Load(string path, string containing, string m_lastLanguage, Config &m_plugin);
 	void LoadChannels(string path, u32 channelType, string m_lastLanguage);
 
     void Unload(){if(m_loaded) {this->clear(); m_loaded = false; m_database = "";}};
@@ -64,8 +64,6 @@ class CachedList : public safe_vector<T>
     void Remove(u32 index) {if(m_loaded) CCache<T>(*this, m_database, index, REMOVE);}		/* Remove One */
 	
 	void SetLanguage(string curLanguage) { m_curLanguage = curLanguage; }
-	void LoadPluginConfig(const char* name) { m_plugin.load(name); }
-	void UnloadPluginConfig() {m_plugin.unload(); };
   private:
     string make_db_name(string path);
 
@@ -82,7 +80,6 @@ class CachedList : public safe_vector<T>
 	string m_lastLanguage;
 	string m_discinf;
 	string m_DMLgameDir;
-	Config m_plugin;
 };
 
 #endif
