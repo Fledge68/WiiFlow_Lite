@@ -66,6 +66,11 @@ const int CVideo::_stencilHeight = 128;
 static lwp_t waitThread = LWP_THREAD_NULL;
 SmartBuf waitThreadStack;
 
+extern "C"
+{
+	extern __typeof(memalign) __real_memalign;
+}
+
 CVideo::CVideo(void) :
 	m_rmode(NULL), m_frameBuf(), m_curFB(0), m_fifo(NULL),
 	m_yScale(0.0f), m_xfbHeight(0), m_wide(false),
@@ -147,7 +152,7 @@ void CVideo::init(void)
 	VIDEO_WaitVSync();
 	if (m_rmode->viTVMode & VI_NON_INTERLACE)
 		VIDEO_WaitVSync();
-	m_fifo = MEM1_alloc(DEFAULT_FIFO_SIZE);
+	m_fifo = __real_memalign(32, DEFAULT_FIFO_SIZE);
 	memset(m_fifo, 0, DEFAULT_FIFO_SIZE);
 	GX_Init(m_fifo, DEFAULT_FIFO_SIZE);
 	GX_SetCopyClear(CColor(0), 0x00FFFFFF);
