@@ -2,7 +2,7 @@
 #include <typeinfo>
 
 template <class T>
-void CachedList<T>::Load(string path, string containing, string m_lastLanguage)													/* Load All */
+void CachedList<T>::Load(string path, string containing, string m_lastLanguage, Config &m_plugin)													/* Load All */
 {
 	gprintf("\nLoading files containing %s in %s\n", containing.c_str(), path.c_str());
 	m_loaded = false;
