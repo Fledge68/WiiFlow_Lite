@@ -166,8 +166,11 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 
 					if( GTitle.size() > 0 || ( gameTDB.IsLoaded() && gameTDB.GetTitle( (char *)tmp.hdr.id, GTitle ) ) )
 					{
-						mbstowcs( tmp.title, GTitle.c_str(), sizeof(tmp.title) );
-						Asciify( tmp.title );
+						//mbstowcs( tmp.title, GTitle.c_str(), sizeof(tmp.title) );
+						//Asciify( tmp.title );
+						wstringEx tmpString;
+						tmpString.fromUTF8(GTitle.c_str());
+						wcsncpy(tmp.title, tmpString.c_str(), tmpString.size());
 						if(gc_disc[0])
 							wcslcat(tmp.title, L" disc 2", sizeof(tmp.title));
 
@@ -199,8 +202,11 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 					
 					if ( tmp.hdr.gc_magic == 0xc2339f3d )
 					{
-						mbstowcs( tmp.title, (const char *)tmp.hdr.title, sizeof( tmp.hdr.title ) );
-						Asciify(tmp.title);
+						//mbstowcs( tmp.title, (const char *)tmp.hdr.title, sizeof( tmp.hdr.title ) );
+						//Asciify(tmp.title);
+						wstringEx tmpString;
+						tmpString.fromUTF8((const char *)tmp.hdr.title);
+						wcsncpy(tmp.title, tmpString.c_str(), tmpString.size());
 						if(gc_disc[0])
 							wcslcat(tmp.title, L" disc 2", sizeof(tmp.title));
 
@@ -253,8 +259,11 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 				
 			if(GTitle.size() > 0 || (gameTDB.IsLoaded() && gameTDB.GetTitle((char *)tmp.hdr.id, GTitle)))
 			{
-				mbstowcs(tmp.title, GTitle.c_str(), sizeof(tmp.title));
-				Asciify(tmp.title);
+				//mbstowcs(tmp.title, GTitle.c_str(), sizeof(tmp.title));
+				//Asciify(tmp.title);
+				wstringEx tmpString;
+				tmpString.fromUTF8(GTitle.c_str());
+				wcsncpy(tmp.title, tmpString.c_str(), tmpString.size());
 				tmp.hdr.casecolor = ccolor != 1 ? ccolor : gameTDB.GetCaseColor((char *)tmp.hdr.id);
 
 				tmp.hdr.wifi = gameTDB.GetWifiPlayers((char *)tmp.hdr.id);
@@ -276,8 +285,11 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 
 			if (tmp.hdr.magic == 0x5D1C9EA3)
 			{
-				mbstowcs(tmp.title, (const char *)tmp.hdr.title, sizeof(tmp.hdr.title));
-				Asciify(tmp.title);
+				//mbstowcs(tmp.title, (const char *)tmp.hdr.title, sizeof(tmp.hdr.title));
+				//Asciify(tmp.title);
+				wstringEx tmpString;
+				tmpString.fromUTF8((const char *)tmp.hdr.title);
+				wcsncpy(tmp.title, tmpString.c_str(), tmpString.size());
 				tmp.hdr.casecolor = ccolor != 1 ? ccolor : 1;
 				headerlist.push_back(tmp);
 				continue;
@@ -334,19 +346,23 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 			}
 
 			// Get info from custom titles
+			wstringEx tmpString;
 			GTitle = custom_titles.getString("TITLES", (const char *) tmp.hdr.id);
 			int ccolor = custom_titles.getColor("COVERS", (const char *) tmp.hdr.id, tmp.hdr.casecolor).intVal();			
 			if(GTitle.size() > 0 || (gameTDB.GetTitle((char *)tmp.hdr.id, GTitle)))
 			{
-				mbstowcs(tmp.title, GTitle.c_str(), sizeof(tmp.title));
+				//mbstowcs(tmp.title, GTitle.c_str(), sizeof(tmp.title));
+				tmpString.fromUTF8(GTitle.c_str());
 				tmp.hdr.casecolor = ccolor != 1 ? ccolor : gameTDB.GetCaseColor((char *)tmp.hdr.id);
 			}
 			else
 			{
-				mbstowcs(tmp.title, (*itr).c_str(), sizeof(tmp.title));
+				//mbstowcs(tmp.title, (*itr).c_str(), sizeof(tmp.title));
+				tmpString.fromUTF8((*itr).c_str());
 				tmp.hdr.casecolor = ccolor != 1 ? ccolor : 1;
 			}
-			Asciify(tmp.title);
+			//Asciify(tmp.title);
+			wcsncpy(tmp.title, tmpString.c_str(), tmpString.size());
 			headerlist.push_back(tmp);
 			continue;
 		}
@@ -363,11 +379,13 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 				continue;
 
 			GTitle = custom_titles.getString("TITLES", (const char *) tmp.hdr.id);
-			int ccolor = custom_titles.getColor("COVERS", (const char *) tmp.hdr.id, 1).intVal();			
+			int ccolor = custom_titles.getColor("COVERS", (const char *) tmp.hdr.id, 1).intVal();
 
+			wstringEx tmpString;
 			if(GTitle.size() > 0 || (gameTDB.IsLoaded() && gameTDB.GetTitle((char *)tmp.hdr.id, GTitle)))
 			{
-				mbstowcs(tmp.title, GTitle.c_str(), sizeof(tmp.title));
+				//mbstowcs(tmp.title, GTitle.c_str(), sizeof(tmp.title));
+				tmpString.fromUTF8(GTitle.c_str());
 				tmp.hdr.casecolor = ccolor != 1 ? ccolor : gameTDB.GetCaseColor((char *)tmp.hdr.id);
 				tmp.hdr.wifi = gameTDB.GetWifiPlayers((char *)tmp.hdr.id);
 				tmp.hdr.players = gameTDB.GetPlayers((char *)tmp.hdr.id);
@@ -375,16 +393,19 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 				//tmp.hdr.controllers = gameTDB.GetAccessories((char *)tmp.hdr.id);
 				if (tmp.hdr.magic == 0x5D1C9EA3)
 				{
-					Asciify(tmp.title);
+					//Asciify(tmp.title);
+					wcsncpy(tmp.title, tmpString.c_str(), tmpString.size());
 					headerlist.push_back(tmp);
 				}
-				continue;				
+				continue;
 			}
-			
+
 			if (tmp.hdr.magic == 0x5D1C9EA3)
 			{
-				mbstowcs(tmp.title, (const char *)tmp.hdr.title, sizeof(tmp.hdr.title));
-				Asciify(tmp.title);
+				//mbstowcs(tmp.title, (const char *)tmp.hdr.title, sizeof(tmp.hdr.title));
+				//Asciify(tmp.title);
+				tmpString.fromUTF8((const char *)tmp.hdr.title);
+				wcsncpy(tmp.title, tmpString.c_str(), tmpString.size());
 				tmp.hdr.casecolor = ccolor != 1 ? ccolor : 1;
 				headerlist.push_back(tmp);
 			}
@@ -411,8 +432,11 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 						if((*itr).find_last_of('.') != string::npos)
 							(*itr).erase((*itr).find_last_of('.'), (*itr).size() - (*itr).find_last_of('.'));
 						strncpy(tempname, (*itr).c_str(), sizeof(tempname));
-						mbstowcs(tmp.title, tempname, sizeof(tmp.title));
-						Asciify(tmp.title);
+						//mbstowcs(tmp.title, tempname, sizeof(tmp.title));
+						//Asciify(tmp.title);
+						wstringEx tmpString;
+						tmpString.fromUTF8(tempname);
+						wcsncpy(tmp.title, tmpString.c_str(), tmpString.size());
 
 						gprintf("Found: %s\n", tmp.path);
 						sscanf(plugin.getString("PLUGIN","magic","").c_str(), "%08x", &tmp.hdr.magic); //Plugin magic
