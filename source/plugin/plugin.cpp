@@ -126,7 +126,7 @@ safe_vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, string Device)
 		if(game == emptyString)
 			break;
 		if(strncasecmp(game.c_str(), "/", 1) == 0 || 
-		lowerCase(game).rfind("scummvm") != string::npos ||
+		strncasecmp(lowerCase(ini.getString(game,"description")).c_str(), "/", 1) == 0 ||
 		lowerCase(ini.getStrings(game, "path", '/')[0]).rfind(Device.c_str()) == string::npos)
 		{
 			game = ini.nextDomain();
