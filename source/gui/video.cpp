@@ -66,12 +66,6 @@ const int CVideo::_stencilHeight = 128;
 static lwp_t waitThread = LWP_THREAD_NULL;
 SmartBuf waitThreadStack;
 
-extern "C"
-{
-	extern __typeof(malloc) __real_malloc;
-	extern __typeof(memalign) __real_memalign;
-}
-
 CVideo::CVideo(void) :
 	m_rmode(NULL), m_frameBuf(), m_curFB(0), m_fifo(NULL),
 	m_yScale(0.0f), m_xfbHeight(0), m_wide(false),
@@ -153,7 +147,7 @@ void CVideo::init(void)
 	VIDEO_WaitVSync();
 	if (m_rmode->viTVMode & VI_NON_INTERLACE)
 		VIDEO_WaitVSync();
-	m_fifo = __real_memalign(32, DEFAULT_FIFO_SIZE);
+	m_fifo = MEM1_alloc(DEFAULT_FIFO_SIZE);
 	memset(m_fifo, 0, DEFAULT_FIFO_SIZE);
 	GX_Init(m_fifo, DEFAULT_FIFO_SIZE);
 	GX_SetCopyClear(CColor(0), 0x00FFFFFF);
@@ -452,14 +446,14 @@ void CVideo::_showWaitMessages(CVideo *m)
 	
 	u8 fadeStep = 2 * (u32) (255.f / (waitFrames * m->m_waitMessages.size()));
 	s8 fadeDirection = 1;
+	s8 PNGfadeDirection = 1;
 	s16 currentLightLevel = 0;
 
 	safe_vector<STexture>::iterator waitItr = m->m_waitMessages.begin();
-	s8 direction = 1;
 	gprintf("Going to show a wait message screen, delay: %d, # images: %d\n", waitFrames, m->m_waitMessages.size());
 
 	m->waitMessage(*waitItr);
-	waitItr += direction;
+	waitItr += PNGfadeDirection;
 
 	if (m->m_useWiiLight)
 	{
@@ -488,10 +482,10 @@ void CVideo::_showWaitMessages(CVideo *m)
 		if (waitFrames == 0)
 		{
 			m->waitMessage(*waitItr);
-			waitItr += direction;
+			waitItr += PNGfadeDirection;
 
 			if(waitItr + 1 == m->m_waitMessages.end() || waitItr == m->m_waitMessages.begin())
-				direction *= (-1);
+				PNGfadeDirection *= (-1);
 
 			waitFrames = frames;
 		}
@@ -504,7 +498,6 @@ void CVideo::_showWaitMessages(CVideo *m)
 		WIILIGHT_TurnOff();
 	}
 	m->m_waitMessages.clear();
-	//gprintf("Stop showing images\n");
 	m->m_showingWaitMessages = false;
 	gprintf("Stop showing images\n");
 }
@@ -573,9 +566,7 @@ void CVideo::waitMessage(const safe_vector<STexture> &tex, float delay, bool use
 	{
 		CheckWaitThread();
 		m_showWaitMessage = true;
-		unsigned int stack_size = (unsigned int)32768;  //Try 32768?
-		//SMART_FREE(waitThreadStack);
-		//waitThreadStack = SmartBuf((unsigned char *)__real_malloc(stack_size), SmartBuf::SRCALL_MALLOC);
+		unsigned int stack_size = (unsigned int)32768;
 		waitThreadStack = smartMem2Alloc(stack_size);
 		LWP_CreateThread(&waitThread, (void *(*)(void *))CVideo::_showWaitMessages, (void *)this, waitThreadStack.get(), stack_size, LWP_PRIO_IDLE);
 	}
