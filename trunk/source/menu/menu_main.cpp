@@ -466,7 +466,7 @@ int CMenu::main(void)
 				_initCF();
 			}
 			//Events to Switch off/on nand emu
-			else if (m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML) || m_btnMgr.selected(m_mainBtnHomebrew))
+			else if (m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML)|| m_btnMgr.selected(m_mainBtnEmu) || m_btnMgr.selected(m_mainBtnHomebrew))
 			{
 				m_cfg.setBool("NAND", "disable", !m_cfg.getBool("NAND", "disable", true));
 				gprintf("EmuNand is %s\n", m_cfg.getBool("NAND", "disable", true) ? "Disabled" : "Enabled");
