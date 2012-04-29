@@ -38,10 +38,10 @@ static __inline__ void ntfs_debug_runlist_dump(const struct _runlist_element *rl
 
 #define NTFS_BUG(msg)							\
 {									\
-	int ___i = 1;							\
+	int ___i;							\
 	ntfs_log_critical("Bug in %s(): %s\n", __FUNCTION__, msg);	\
 	ntfs_log_debug("Forcing segmentation fault!");			\
-	___i = ((int*)NULL)[___i];					\
+	___i = ((int*)NULL)[1];						\
 }
 
 #endif /* defined _NTFS_DEBUG_H */

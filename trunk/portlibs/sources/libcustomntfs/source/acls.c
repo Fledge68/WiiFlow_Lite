@@ -522,7 +522,9 @@ gid_t ntfs_find_group(const struct MAPPING* groupmapping, const SID * gsid)
 {
 	gid_t gid;
 	const struct MAPPING *p;
+	int gsidsz;
 
+	gsidsz = ntfs_sid_size(gsid);
 	p = groupmapping;
 	while (p && p->xid && !ntfs_same_sid(gsid, p->sid))
 		p = p->next;
@@ -878,7 +880,7 @@ BOOL ntfs_valid_posix(const struct POSIX_SECURITY *pxdesc)
 		}
 	}
 	if ((pxdesc->acccnt > 0)
-	   && ((checks[0].owners != 1) || (checks[0].groups != 1) 
+	   && ((checks[0].owners != 1) || (checks[0].groups != 1)
 		|| (checks[0].others != 1)))
 		ok = FALSE;
 		/* do not check owner, group or other are present in */
@@ -1804,7 +1806,7 @@ static BOOL build_group_denials_grant(ACL *pacl,
  *	- grants to owner (always present - first grant)
  *        + grants to designated user
  *        + mask denial to group (unless mask allows all)
- *	- denials to group (preventing grants to world to apply) 
+ *	- denials to group (preventing grants to world to apply)
  *	- grants to group (unless group has no more than world rights)
  *        + mask denials to designated group (unless mask allows all)
  *        + grants to designated group
@@ -1899,6 +1901,7 @@ static int buildacls_posix(struct MAPPING* const mapping[],
 	const SID *sid;
 	int acecnt;
 	int usidsz;
+	int gsidsz;
 	int wsidsz;
 	int asidsz;
 	int ssidsz;
@@ -1906,6 +1909,7 @@ static int buildacls_posix(struct MAPPING* const mapping[],
 	le32 grants;
 
 	usidsz = ntfs_sid_size(usid);
+	gsidsz = ntfs_sid_size(gsid);
 	wsidsz = ntfs_sid_size(worldsid);
 	asidsz = ntfs_sid_size(adminsid);
 	ssidsz = ntfs_sid_size(systemsid);
@@ -3128,6 +3132,7 @@ static int norm_ownadmin_permissions_posix(struct POSIX_SECURITY *posix_desc,
 	u16 tag;
 	u16 tagsset;
 	struct POSIX_ACE *pxace;
+	int acccnt;
 	mode_t denywrld;
 	mode_t allow;
 	mode_t deny;
@@ -3136,6 +3141,7 @@ static int norm_ownadmin_permissions_posix(struct POSIX_SECURITY *posix_desc,
 
 	mode = 0;
 	pxace = posix_desc->acl.ace;
+	acccnt = posix_desc->acccnt;
 	tagsset = 0;
 	denywrld = 0;
 		/*
@@ -3875,10 +3881,12 @@ struct POSIX_SECURITY *ntfs_build_permissions_posix(
 int ntfs_build_permissions(const char *securattr,
 			const SID *usid, const SID *gsid, BOOL isdir)
 {
+	const SECURITY_DESCRIPTOR_RELATIVE *phead;
 	int perm;
 	BOOL adminowns;
 	BOOL groupowns;
 
+	phead = (const SECURITY_DESCRIPTOR_RELATIVE*)securattr;
 	adminowns = ntfs_same_sid(usid,adminsid)
 	         || ntfs_same_sid(gsid,adminsid);
 	groupowns = !adminowns && ntfs_same_sid(gsid,usid);
@@ -3961,6 +3969,7 @@ static struct MAPLIST *getmappingitem(FILEREADER reader, void *fileid,
 {
 	int src;
 	int dst;
+	char *p;
 	char *q;
 	char *pu;
 	char *pg;
@@ -3994,6 +4003,7 @@ static struct MAPLIST *getmappingitem(FILEREADER reader, void *fileid,
 		if (gotend) {
 			pu = pg = (char*)NULL;
 			/* decompose into uid, gid and sid */
+			p = item->maptext;
 			item->uidstr = item->maptext;
 			item->gidstr = strchr(item->uidstr, ':');
 			if (item->gidstr) {

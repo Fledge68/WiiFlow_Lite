@@ -42,7 +42,7 @@
 #define PARTITION_TYPE_WIN95_EXTENDED		0x0F /* Windows 95 extended partition */
 #define PARTITION_TYPE_GPT_TABLE			0xEE /* New Standard */
 
-#define CACHE 32
+#define CACHE 8
 #define SECTORS 64
 
 extern const DISC_INTERFACE __io_sdhc;
@@ -128,7 +128,7 @@ bool PartitionHandle::Mount(int pos, const char * name)
 	}
 	else if(strncmp(GetFSName(pos), "NTFS", 4) == 0)
 	{
-		if(ntfsMount(MountNameList[pos].c_str(), interface, GetLBAStart(pos), CACHE, SECTORS, NTFS_SHOW_HIDDEN_FILES | NTFS_RECOVER))
+		if(ntfsMount(MountNameList[pos].c_str(), interface, GetLBAStart(pos), CACHE, SECTORS, NTFS_SU | NTFS_RECOVER | NTFS_IGNORE_CASE))
 			return true;
 	}
 	else if(strncmp(GetFSName(pos), "LINUX", 5) == 0)
