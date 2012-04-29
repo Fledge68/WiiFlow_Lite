@@ -411,7 +411,7 @@ void CMenu::init(void)
 	_buildMenus();
 
 	m_locked = m_cfg.getString("GENERAL", "parent_code", "").size() >= 4;
-	m_btnMgr.setRumble(CONF_GetPadMotorMode() != 0);
+	m_btnMgr.setRumble(m_cfg.getBool("GENERAL", "rumble", true));
 
 	int exit_to = m_cfg.getInt("GENERAL", "exit_to", 0);
 	m_disable_exit = exit_to == EXIT_TO_DISABLE;
