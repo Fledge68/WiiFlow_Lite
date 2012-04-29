@@ -1,6 +1,8 @@
 //Enable the line below to always write SD log
 //#define sd_write_log
 
+#define filebuffer 1024
+
 #include <gccore.h>
 #include <malloc.h>
 #include <stdio.h>
@@ -71,14 +73,14 @@ void WriteToFile(char* tmp)
 {
 	if(bufferMessages)
 	{
-		if(strlen(tmpfilebuffer) + strlen(tmp) <= 1024)
+		if((strlen(tmpfilebuffer) + strlen(tmp)) < filebuffer)
 			strcat(tmpfilebuffer, tmp);
 	}
 	else
 	{
 		if(tmpfilebuffer != NULL)
 		{
-			free(tmpfilebuffer);
+			SAFE_FREE(tmpfilebuffer);
 			tmpfilebuffer = NULL;
 		}
 		return;
@@ -90,7 +92,7 @@ void WriteToFile(char* tmp)
 		if(outfile)
 		{
 			fwrite(tmpfilebuffer, 1, strlen(tmpfilebuffer), outfile);
-			memset(tmpfilebuffer, 0, strlen(tmpfilebuffer));
+			memset(tmpfilebuffer, 0, sizeof(tmpfilebuffer));
 			fclose(outfile);
 		}
 	}
@@ -149,7 +151,8 @@ bool InitGecko()
 
 	USBGeckoOutput();
 
-	tmpfilebuffer = (char*)malloc(sizeof(char[1024]));
+	tmpfilebuffer = (char*)calloc(filebuffer + 1, sizeof(char));
+
 	#ifdef sd_write_log
 		WriteToSD = true;
 	#endif
