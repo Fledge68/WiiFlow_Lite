@@ -28,6 +28,7 @@ enum Sorting
 	SORT_LASTPLAYED,
 	SORT_WIFIPLAYERS,
 	SORT_PLAYERS,
+	SORT_MAGIC,
 	SORT_MAX,
 	SORT_ESRB,
 	SORT_CONTROLLERS,
@@ -328,7 +329,8 @@ private:
 	
 	void _stopSound(SmartGuiSound snd);
 	void _playSound(SmartGuiSound snd);
-	
+
+	static bool _sortByMagic(CItem item1, CItem item2);
 	static bool _sortByPlayCount(CItem item1, CItem item2);
 	static bool _sortByLastPlayed(CItem item1, CItem item2);
 	static bool _sortByGameID(CItem item1, CItem item2);
