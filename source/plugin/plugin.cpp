@@ -120,16 +120,14 @@ safe_vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, string Device)
 	if(!ini.loaded())
 		return gameHeader;
 	string game = ini.firstDomain().c_str();
-	if(Device.rfind("usb") != string::npos)
-		Device.erase(3, 1);
 	dir_discHdr tmp;
 	while(1)
 	{
 		if(game == emptyString)
 			break;
 		if(strncasecmp(game.c_str(), "/", 1) == 0 || 
-		strncasecmp(lowerCase(ini.getString(game,"description")).c_str(), "/", 1) == 0 ||
-		lowerCase(ini.getStrings(game, "path", '/')[0]).rfind(Device.c_str()) == string::npos)
+		strncasecmp(ini.getString(game,"description").c_str(), "/", 1) == 0 ||
+		strncasecmp(ini.getWString(game, "path").toUTF8().c_str(), Device.c_str(), 3) != 0)
 		{
 			game = ini.nextDomain();
 			continue;
@@ -140,7 +138,7 @@ safe_vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, string Device)
 		tmpString.fromUTF8(ini.getString(game,"description").c_str());
 		wcsncpy(tmp.title, tmpString.c_str(), 64);
 		strncpy(tmp.path, game.c_str(), sizeof(tmp.path));
-		gprintf("Found: %s\n", tmpString.c_str());
+		gprintf("Found: %ls\n", tmp.title);
 		tmp.hdr.magic = magicWords.back();
 		tmp.hdr.gc_magic = 0x4c4f4c4f;
 		gameHeader.push_back(tmp);
