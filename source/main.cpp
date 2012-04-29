@@ -91,11 +91,15 @@ int main(int argc, char **argv)
 			DeviceHandler::Instance()->MountAll();
 			sleep(1);
 
-			for(u8 device = SD; device <= USB8; device++)
+			for(u8 device = USB1; device <= USB8; device++)
 				if(DeviceHandler::Instance()->IsInserted(device))
 					deviceAvailable = true;
 		}
-		if(!deviceAvailable) Sys_Exit();
+		if(DeviceHandler::Instance()->IsInserted(SD))
+			deviceAvailable = true;
+
+		if(!deviceAvailable)
+			Sys_Exit();
 
 		bool dipOK = Disc_Init() >= 0;
 
