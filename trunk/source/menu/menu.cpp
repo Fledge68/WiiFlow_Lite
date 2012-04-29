@@ -197,8 +197,15 @@ void CMenu::init(void)
 
 	m_cfg.load(sfmt("%s/" CFG_FILENAME, m_appDir.c_str()).c_str());
 
+	//Gecko Output to SD
+	if(!WriteToSD)
+	{
+		WriteToSD = m_cfg.getBool("GENERAL", "sd_write_log", false);
+		bufferMessages = WriteToSD;
+	}
+
 	bool onUSB = m_cfg.getBool("GENERAL", "data_on_usb", strncmp(drive, "usb", 3) == 0);
-	
+
 	drive = check; //reset the drive variable for the check
 
 	if (onUSB)

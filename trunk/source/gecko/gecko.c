@@ -1,3 +1,6 @@
+//Enable the line below to always write SD log
+//#define sd_write_log
+
 #include <gccore.h>
 #include <malloc.h>
 #include <stdio.h>
@@ -10,53 +13,87 @@
 bool geckoinit = false;
 bool textVideoInit = false;
 
+bool bufferMessages = true;
+bool WriteToSD = false;
+
 #include <stdarg.h>
 
 static ssize_t __out_write(struct _reent *r __attribute__((unused)), int fd __attribute__((unused)), const char *ptr, size_t len)
 {
-    if(geckoinit && ptr)
-        {
-            u32 level;
-			level = IRQ_Disable();
-			usb_sendbuffer(1, ptr, len);
-			IRQ_Restore(level);
-        }
+	if(geckoinit && ptr)
+	{
+		u32 level;
+		level = IRQ_Disable();
+		usb_sendbuffer(1, ptr, len);
+		IRQ_Restore(level);
+	}
 
-        return len;
+	return len;
 }
 
 static const devoptab_t gecko_out = {
-        "stdout",       // device name
-        0,                      // size of file structure
-        NULL,           // device open
-        NULL,           // device close
-        __out_write,// device write
-        NULL,           // device read
-        NULL,           // device seek
-        NULL,           // device fstat
-        NULL,           // device stat
-        NULL,           // device link
-        NULL,           // device unlink
-        NULL,           // device chdir
-        NULL,           // device rename
-        NULL,           // device mkdir
-        0,                      // dirStateSize
-        NULL,           // device diropen_r
-        NULL,           // device dirreset_r
-        NULL,           // device dirnext_r
-        NULL,           // device dirclose_r
-        NULL,           // device statvfs_r
-        NULL,           // device ftruncate_r
-        NULL,           // device fsync_r
-        NULL,           // device deviceData
-        NULL,           // device chmod_r
-        NULL,           // device fchmod_r
+	"stdout",       // device name
+	0,                      // size of file structure
+	NULL,           // device open
+	NULL,           // device close
+	__out_write,// device write
+	NULL,           // device read
+	NULL,           // device seek
+	NULL,           // device fstat
+	NULL,           // device stat
+	NULL,           // device link
+	NULL,           // device unlink
+	NULL,           // device chdir
+	NULL,           // device rename
+	NULL,           // device mkdir
+	0,                      // dirStateSize
+	NULL,           // device diropen_r
+	NULL,           // device dirreset_r
+	NULL,           // device dirnext_r
+	NULL,           // device dirclose_r
+	NULL,           // device statvfs_r
+	NULL,           // device ftruncate_r
+	NULL,           // device fsync_r
+	NULL,           // device deviceData
+	NULL,           // device chmod_r
+	NULL,           // device fchmod_r
 };
 
 static void USBGeckoOutput()
 {
-        devoptab_list[STD_OUT] = &gecko_out;
-        devoptab_list[STD_ERR] = &gecko_out;
+	devoptab_list[STD_OUT] = &gecko_out;
+	devoptab_list[STD_ERR] = &gecko_out;
+}
+
+
+char *tmpfilebuffer = NULL;
+void WriteToFile(char* tmp)
+{
+	if(bufferMessages)
+	{
+		if(strlen(tmpfilebuffer) + strlen(tmp) <= 1024)
+			strcat(tmpfilebuffer, tmp);
+	}
+	else
+	{
+		if(tmpfilebuffer != NULL)
+		{
+			free(tmpfilebuffer);
+			tmpfilebuffer = NULL;
+		}
+		return;
+	}
+
+	if(WriteToSD)
+	{
+		FILE *outfile = fopen("sd:/wiiflow.log", "a");
+		if(outfile)
+		{
+			fwrite(tmpfilebuffer, 1, strlen(tmpfilebuffer), outfile);
+			memset(tmpfilebuffer, 0, strlen(tmpfilebuffer));
+			fclose(outfile);
+		}
+	}
 }
 
 //using the gprintf from crediar because it is smaller than mine
@@ -67,6 +104,7 @@ void gprintf( const char *format, ... )
 	va_start(va, format);
 	if((vasprintf(&tmp, format, va) >= 0) && tmp)
 	{
+		WriteToFile(tmp);
 		WifiGecko_Send(tmp, strlen(tmp));
 		if (geckoinit)
 			__out_write(NULL, 0, tmp, strlen(tmp));
@@ -105,12 +143,16 @@ void ghexdump(void *d, int len) {
   }
 }
 
-
 bool InitGecko()
 {
 	if (geckoinit) return geckoinit;
 
-	USBGeckoOutput();	
+	USBGeckoOutput();
+
+	tmpfilebuffer = (char*)malloc(sizeof(char[1024]));
+	#ifdef sd_write_log
+		WriteToSD = true;
+	#endif
 
 	u32 geckoattached = usb_isgeckoalive(EXI_CHANNEL_1);
 	if (geckoattached)
@@ -120,4 +162,3 @@ bool InitGecko()
 	}
 	else return false;
 }
-

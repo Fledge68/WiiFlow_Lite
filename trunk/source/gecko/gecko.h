@@ -8,6 +8,8 @@ extern "C" {
 #endif
 
 	extern bool geckoinit;
+	extern bool bufferMessages;
+	extern bool WriteToSD;
 
 	//use this just like printf();
 	void gprintf(const char *format, ...);
