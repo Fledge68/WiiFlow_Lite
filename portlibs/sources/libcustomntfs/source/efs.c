@@ -139,6 +139,7 @@ static int fixup_loop(ntfs_inode *ni)
 	ntfs_attr *na;
 	ATTR_RECORD *a;
 	BOOL restart;
+	BOOL first;
 	int cnt;
 	int maxcnt;
 	int res = 0;
@@ -199,6 +200,7 @@ static int fixup_loop(ntfs_inode *ni)
 		if (na)
 			ntfs_attr_close(na);
 		}
+		first = FALSE;
 	} while (restart && !res);
 	if (ctx)
 		ntfs_attr_put_search_ctx(ctx);

@@ -1,31 +1,33 @@
+# Quick'n'dirty makefile [BC] v2
 
-default: cube-release wii-release
+ifeq ($(strip $(DEVKITPPC)),)
+$(error "Please set DEVKITPPC in your environment. export DEVKITPPC=<path to>devkitPPC")
+endif
 
-all: debug release
+include $(DEVKITPPC)/wii_rules
 
-debug: cube-debug wii-debug
+LIBOGC_INC      :=      $(DEVKITPRO)/libogc/include
+LIBOGC_LIB      :=      $(DEVKITPRO)/libogc/lib/wii
 
-release: cube-release wii-release
+CFLAGS  := -O3 $(MACHDEP) -I$(LIBOGC_INC) -DHAVE_CONFIG_H
 
-cube-debug:
-	$(MAKE) -C source PLATFORM=cube BUILD=cube_debug
+SOURCES	:= source
+LIB     := ntfs
+CFILES  := $(wildcard $(SOURCES)/*.c)
+OFILES  := $(CFILES:.c=.o)
+ARC     := lib$(LIB).a
+HDR     := ntfs.h
 
-wii-debug:
-	$(MAKE) -C source  PLATFORM=wii BUILD=wii_debug
+all : $(OFILES)
+		$(AR) -r $(ARC) $(OFILES)
 
-cube-release:
-	$(MAKE) -C source  PLATFORM=cube BUILD=cube_release
+clean :
+		rm -f $(OFILES) $(ARC)
 
-wii-release:
-	$(MAKE) -C source  PLATFORM=wii BUILD=wii_release
+install :
+		cp -f $(ARC) ../../lib
+		cp -f $(HDR) ../../include
+		cp -f ntfsfile_frag.h ../../include
 
-clean: 
-	$(MAKE) -C source clean
-
-install: cube-release wii-release
-	$(MAKE) -C source install
-
-run: install
-	$(MAKE) -C example
-	$(MAKE) -C example run
-
+%.o : %.c
+		$(CC) $(CFLAGS) -c $< -o $@
