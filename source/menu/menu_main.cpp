@@ -372,7 +372,7 @@ int CMenu::main(void)
 			else if (BTN_PLUS_PRESSED && !m_locked)
 			{
 				u32 sort = 0;
-				sort = loopNum((m_cfg.getInt(domain, "sort", 0)) + 1, SORT_MAX - 1);
+				sort = loopNum((m_cfg.getInt(domain, "sort", 0)) + 1, SORT_MAX);
 				m_cf.setSorting((Sorting)sort);
 				m_cfg.setInt(domain, "sort", sort);
 				wstringEx curSort ;
@@ -390,6 +390,8 @@ int CMenu::main(void)
 					curSort = m_loc.getWString(m_curLanguage, "bywifiplayers", L"By Wifi Players");
 				else if (sort == SORT_PLAYERS)
 					curSort = m_loc.getWString(m_curLanguage, "byplayers", L"By Players");
+				else if (sort == SORT_MAGIC)
+					curSort = m_loc.getWString(m_curLanguage, "bypluginmagic", L"By Plugin Magic");
 				else if (sort == SORT_CONTROLLERS)
 					curSort = m_loc.getWString(m_curLanguage, "bycontrollers", L"By Controllers");
 
