@@ -1456,25 +1456,32 @@ void CMenu::_initCF(void)
 	if(m_gamelistdump) m_dump.load(sfmt("%s/titlesdump.ini", m_settingsDir.c_str()).c_str());
 
 	m_gcfg1.load(sfmt("%s/gameconfig1.ini", m_settingsDir.c_str()).c_str());
+	string id;
 	for (u32 i = 0; i < m_gameList.size(); ++i)
 	{
 		u64 chantitle = m_gameList[i].hdr.chantitle;
-		if (m_current_view == COVERFLOW_CHANNEL && chantitle == HBC_108)
-			strncpy((char *) m_gameList[i].hdr.id, "JODI", 6);
+		if (m_current_view == COVERFLOW_CHANNEL && chantitle == HBC_108) strncpy((char *) m_gameList[i].hdr.id, "JODI", 6);
 
-		string id = string((const char *)m_gameList[i].hdr.id, m_current_view == COVERFLOW_CHANNEL ?  4 : 6);
-		if (m_current_view != COVERFLOW_EMU)
-		{
+		if (m_current_view == COVERFLOW_EMU)
+			{
+				string tempname(m_gameList[i].path);
+				tempname.erase(0, tempname.find_first_of('/')+1);
+				string dirName = tempname.substr(0, tempname.find_first_of('/')+1);
+				tempname.assign(&tempname[tempname.find_last_of('/') + 1]);
+				if(tempname.find_last_of('.') != string::npos)
+					tempname.erase(tempname.find_last_of('.'), tempname.size() - tempname.find_last_of('.'));
+					id = dirName+tempname;
+			}
+		else id = string((const char *)m_gameList[i].hdr.id, m_current_view == COVERFLOW_CHANNEL ?  4 : 6);
 			string idcats = m_cat.getString("CATEGORIES", id, "").c_str();
 			if (idcats.length() < 21 && idcats.length() > 0)  
 			{
 				idcats.append((21-idcats.length()), '0');
 				m_cat.setString("CATEGORIES", id, idcats);
 			}		
-		}
 		if ((!m_favorites || m_gcfg1.getBool("FAVORITES", id, false)) && (!m_locked || !m_gcfg1.getBool("ADULTONLY", id, false)))
 		{
-			if (catviews[0] == '0' && m_current_view != COVERFLOW_EMU)
+			if (catviews[0] == '0')
 			{
 				const char *idcats = m_cat.getString("CATEGORIES", id, "").c_str();
 				if (strlen(idcats) == 0) continue;
