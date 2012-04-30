@@ -199,7 +199,6 @@ int CMenu::main(void)
 	if(m_Emulator_boot)
 		m_current_view = COVERFLOW_EMU;
 
-	u32 cv = m_current_view;
 	m_reload = false;
 	static u32 disc_check = 0;
 	int done = 0;
@@ -284,29 +283,30 @@ int CMenu::main(void)
 			}
 			break;
 		}
-		m_btnMgr.noClick(true);
-		cv = m_current_view;
-		if ((m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML) || m_btnMgr.selected(m_mainBtnHomebrew) || m_btnMgr.selected(m_mainBtnEmu)) && dpad_mode && (BTN_UP_PRESSED || BTN_DOWN_PRESSED || BTN_LEFT_PRESSED || BTN_RIGHT_PRESSED))
+		if ((BTN_UP_PRESSED || BTN_DOWN_PRESSED || BTN_LEFT_PRESSED || BTN_RIGHT_PRESSED) && dpad_mode && (m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML) || m_btnMgr.selected(m_mainBtnHomebrew) || m_btnMgr.selected(m_mainBtnEmu)))
 		{
+			u32 lastView = m_current_view;
 			if (BTN_UP_PRESSED) 
                 m_current_view = COVERFLOW_USB;
             else if (BTN_DOWN_PRESSED && m_show_dml)
                 m_current_view = COVERFLOW_DML;
-            else if (BTN_LEFT_PRESSED && show_homebrew && (parental_homebrew || !m_locked))
-                m_current_view =  COVERFLOW_HOMEBREW;
+            else if (BTN_LEFT_PRESSED && show_emu)
+                m_current_view =  COVERFLOW_EMU;
             else if (BTN_RIGHT_PRESSED && show_channel)
                 m_current_view = COVERFLOW_CHANNEL;
-			if (cv != m_current_view) LoadView();
+			if (lastView != m_current_view) LoadView();
+			continue;
 		}
-		if (cv == m_current_view && !m_btnMgr.selected(m_mainBtnChannel) && !m_btnMgr.selected(m_mainBtnUsb) && !m_btnMgr.selected(m_mainBtnDML) && !m_btnMgr.selected(m_mainBtnHomebrew))
+		m_btnMgr.noClick(true);
+		if (!m_btnMgr.selected(m_mainBtnChannel) && !m_btnMgr.selected(m_mainBtnUsb) && !m_btnMgr.selected(m_mainBtnDML) && !m_btnMgr.selected(m_mainBtnHomebrew) && !m_btnMgr.selected(m_mainBtnEmu))
 		{
-		if (!m_btnMgr.selected(m_mainBtnQuit) && !BTN_B_HELD && (BTN_UP_REPEAT || RIGHT_STICK_UP))
+		if (!BTN_B_HELD && (BTN_UP_REPEAT || RIGHT_STICK_UP))
 			m_cf.up();
-		if (!m_btnMgr.selected(m_mainBtnQuit) && ((!BTN_B_HELD && (BTN_RIGHT_REPEAT || RIGHT_STICK_RIGHT)) || WROLL_RIGHT))
+		if ((!BTN_B_HELD && (BTN_RIGHT_REPEAT || RIGHT_STICK_RIGHT)) || WROLL_RIGHT)
 			m_cf.right();
-		if (!m_btnMgr.selected(m_mainBtnQuit) && !BTN_B_HELD && (BTN_DOWN_REPEAT ||  RIGHT_STICK_DOWN))
+		if (!BTN_B_HELD && (BTN_DOWN_REPEAT ||  RIGHT_STICK_DOWN))
 			m_cf.down();
-		if (!m_btnMgr.selected(m_mainBtnQuit) && ((!BTN_B_HELD && (BTN_LEFT_REPEAT || RIGHT_STICK_LEFT)) || WROLL_LEFT))
+		if ((!BTN_B_HELD && (BTN_LEFT_REPEAT || RIGHT_STICK_LEFT)) || WROLL_LEFT)
 			m_cf.left();
 		}
 		m_btnMgr.noClick(false);

@@ -31,6 +31,11 @@ void CMenu::_showCategorySettings(void)
 	for (u32 i = 0; i < ARRAY_SIZE(m_categoryLblUser); ++i) if (m_categoryLblUser[i] != -1u) m_btnMgr.show(m_categoryLblUser[i]);
 	m_btnMgr.show(m_categoryLblTitle);
 	m_btnMgr.show(m_categoryBtnBack);
+	_updateCheckboxes();
+}
+
+void CMenu::_updateCheckboxes(void)
+{
 	if (m_max_categories > 10)
 	{
 		m_btnMgr.setText(m_categoryLblPage, wfmt(L"%i / 2", C_curPage));
@@ -38,11 +43,6 @@ void CMenu::_showCategorySettings(void)
 		m_btnMgr.show(m_categoryBtnPageM);
 		m_btnMgr.show(m_categoryBtnPageP);
 	}
-	_updateCheckboxes();
-}
-
-void CMenu::_updateCheckboxes(void)
-{
 	for (int i=0; i<21; ++i) 
 	{
 		m_btnMgr.hide(m_categoryBtn[i]);
@@ -82,6 +82,7 @@ void CMenu::_updateCheckboxes(void)
 
 void CMenu::_CategorySettings(bool fromGameSet)
 {
+	if (m_current_view == COVERFLOW_EMU) return;
 	SetupInput();
 	C_curPage = 1;
 	gameSet = fromGameSet;
