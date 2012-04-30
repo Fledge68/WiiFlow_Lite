@@ -48,7 +48,19 @@ void CMenu::_updateCheckboxes(void)
 		m_btnMgr.hide(m_categoryBtn[i]);
 		m_btnMgr.hide(m_categoryLblCat[i]);
 	}
-	string id(m_cf.getId());
+	string id;
+	if (m_current_view != COVERFLOW_EMU) id = m_cf.getId();
+	else 
+					{
+						dir_discHdr *hdr = m_cf.getHdr();
+						string tempname(hdr->path);
+						tempname.erase(0, tempname.find_first_of('/')+1);
+						string dirName = tempname.substr(0, tempname.find_first_of('/')+1);
+						tempname.assign(&tempname[tempname.find_last_of('/') + 1]);
+						if(tempname.find_last_of('.') != string::npos)
+							tempname.erase(tempname.find_last_of('.'), tempname.size() - tempname.find_last_of('.'));
+						id = dirName+tempname;
+					}
 	const char *catflags;
 	if (gameSet) catflags = m_cat.getString("CATEGORIES", id, "").c_str();
 	else catflags = m_cat.getString(_domainFromView(), "categories", "100000000000000000000").c_str();
@@ -82,7 +94,6 @@ void CMenu::_updateCheckboxes(void)
 
 void CMenu::_CategorySettings(bool fromGameSet)
 {
-	if (m_current_view == COVERFLOW_EMU) return;
 	SetupInput();
 	C_curPage = 1;
 	gameSet = fromGameSet;
@@ -92,7 +103,10 @@ void CMenu::_CategorySettings(bool fromGameSet)
 		_mainLoopCommon();
 		if (!m_btnMgr.selected(lastBtn)) m_btnMgr.noHover(false);
 		if (BTN_HOME_PRESSED || BTN_B_PRESSED)
-			break;
+			{
+				m_cat.save();
+				break;
+			}
 		else if (BTN_UP_PRESSED)
 			m_btnMgr.up();
 		else if (BTN_DOWN_PRESSED)
@@ -116,7 +130,10 @@ void CMenu::_CategorySettings(bool fromGameSet)
 		if (BTN_A_PRESSED)
 		{
 			if (m_btnMgr.selected(m_categoryBtnBack))
+			{
+				m_cat.save();
 				break;
+			}
 			for (int i = 0; i < 21; ++i)
 			{
 				if (m_btnMgr.selected(m_categoryBtn[i]))
@@ -129,7 +146,19 @@ void CMenu::_CategorySettings(bool fromGameSet)
 					char catflags[22];
 					memset(&catflags, 0, sizeof(catflags));
 					memcpy(&catflags, &m_categories, sizeof(m_categories));
-					string id(m_cf.getId());
+					string id;
+					if (m_current_view != COVERFLOW_EMU) id = m_cf.getId();
+					else
+					{
+						dir_discHdr *hdr = m_cf.getHdr();
+						string tempname(hdr->path);
+						tempname.erase(0, tempname.find_first_of('/')+1);
+						string dirName = tempname.substr(0, tempname.find_first_of('/')+1);
+						tempname.assign(&tempname[tempname.find_last_of('/') + 1]);
+						if(tempname.find_last_of('.') != string::npos)
+							tempname.erase(tempname.find_last_of('.'), tempname.size() - tempname.find_last_of('.'));
+						id = dirName+tempname;
+					}
 					if (string (catflags) == "000000000000000000000") catflags[0] = '1';
 					if (gameSet) m_cat.setString("CATEGORIES", id, catflags);
 					else m_cat.setString(_domainFromView(), "categories", catflags);
