@@ -1463,15 +1463,18 @@ void CMenu::_initCF(void)
 			strncpy((char *) m_gameList[i].hdr.id, "JODI", 6);
 
 		string id = string((const char *)m_gameList[i].hdr.id, m_current_view == COVERFLOW_CHANNEL ?  4 : 6);
-		string idcats = m_cat.getString("CATEGORIES", id, "").c_str();
-		if (idcats.length() < 21 && idcats.length() > 0)  
+		if (m_current_view != COVERFLOW_EMU)
 		{
-			idcats.append((21-idcats.length()), '0');
-			m_cat.setString("CATEGORIES", id, idcats);
-		}		
+			string idcats = m_cat.getString("CATEGORIES", id, "").c_str();
+			if (idcats.length() < 21 && idcats.length() > 0)  
+			{
+				idcats.append((21-idcats.length()), '0');
+				m_cat.setString("CATEGORIES", id, idcats);
+			}		
+		}
 		if ((!m_favorites || m_gcfg1.getBool("FAVORITES", id, false)) && (!m_locked || !m_gcfg1.getBool("ADULTONLY", id, false)))
 		{
-			if (catviews[0] == '0')
+			if (catviews[0] == '0' && m_current_view != COVERFLOW_EMU)
 			{
 				const char *idcats = m_cat.getString("CATEGORIES", id, "").c_str();
 				if (strlen(idcats) == 0) continue;
