@@ -468,7 +468,7 @@ BOOL ntfs_check_logfile(ntfs_attr *log_na, RESTART_PAGE_HEADER **rp)
 	u8 *kaddr = NULL;
 	RESTART_PAGE_HEADER *rstr1_ph = NULL;
 	RESTART_PAGE_HEADER *rstr2_ph = NULL;
-	int log_page_size, log_page_mask, err;
+	int log_page_size, err;
 	BOOL logfile_is_empty = TRUE;
 	u8 log_page_bits;
 
@@ -481,7 +481,6 @@ BOOL ntfs_check_logfile(ntfs_attr *log_na, RESTART_PAGE_HEADER **rp)
 	if (size > (s64)MaxLogFileSize)
 		size = MaxLogFileSize;
 	log_page_size = DefaultLogPageSize;
-	log_page_mask = log_page_size - 1;
 	/*
 	 * Use generic_ffs() instead of ffs() to enable the compiler to
 	 * optimize log_page_size and log_page_bits into constants.
@@ -703,7 +702,7 @@ int ntfs_empty_logfile(ntfs_attr *na)
 	char buf[NTFS_BUF_SIZE];
 
 	ntfs_log_trace("Entering.\n");
-
+	
 	if (NVolLogFileEmpty(na->ni->vol))
 		return 0;
 
@@ -717,7 +716,7 @@ int ntfs_empty_logfile(ntfs_attr *na)
 
 	pos = 0;
 	while ((count = na->data_size - pos) > 0) {
-
+		
 		if (count > NTFS_BUF_SIZE)
 			count = NTFS_BUF_SIZE;
 
@@ -733,6 +732,6 @@ int ntfs_empty_logfile(ntfs_attr *na)
 	}
 
 	NVolSetLogFileEmpty(na->ni->vol);
-
+	
 	return 0;
 }

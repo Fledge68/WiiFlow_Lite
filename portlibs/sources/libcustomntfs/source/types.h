@@ -1,5 +1,5 @@
 /*
- * types.h - Misc type definitions not related to on-disk structure.
+ * types.h - Misc type definitions not related to on-disk structure.  
  *           Originated from the Linux-NTFS project.
  *
  * Copyright (c) 2000-2004 Anton Altaparmakov
