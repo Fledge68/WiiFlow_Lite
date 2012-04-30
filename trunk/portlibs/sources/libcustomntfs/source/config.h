@@ -226,6 +226,9 @@
 /* Define to 1 if you have the <sys/byteorder.h> header file. */
 #undef HAVE_SYS_BYTEORDER_H
 
+/* Define to 1 if you have the <sys/disk.h> header file. */
+#undef HAVE_SYS_DISK_H
+
 /* Define to 1 if you have the <sys/endian.h> header file. */
 #undef HAVE_SYS_ENDIAN_H
 
@@ -309,13 +312,13 @@
 #define PACKAGE_NAME "ntfs-3g"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "ntfs-3g 2011.4.12"
+#define PACKAGE_STRING "ntfs-3g 2012.1.15"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "ntfs-3g"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "2011.4.12"
+#define PACKAGE_VERSION "2012.1.15"
 
 /* POSIX ACL support */
 #undef POSIXACLS
@@ -345,7 +348,7 @@
 #endif
 
 /* Version number of package */
-#define VERSION "2011.4.12"
+#define VERSION "2012.1.15"
 
 /* Define to 1 if this is a Windows OS */
 #undef WINDOWS
@@ -374,6 +377,9 @@
 
 /* Required define if using POSIX threads */
 #undef _REENTRANT
+
+/* Define to empty if `const' does not conform to ANSI C. */
+#undef const
 
 /* Define to `__inline__' or `__inline' if that's what the C compiler
    calls it, or to nothing if 'inline' is not supported under any name.  */

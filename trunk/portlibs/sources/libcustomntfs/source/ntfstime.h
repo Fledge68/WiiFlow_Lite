@@ -36,6 +36,18 @@
 
 #include "types.h"
 
+#ifndef GEKKO
+/*
+ * assume "struct timespec" is not defined if st_mtime is not defined
+ */
+#if !defined(st_mtime) & !defined(__timespec_defined)
+struct timespec {
+	time_t tv_sec;
+	long tv_nsec;
+} ;
+#endif
+#endif
+
 /*
  * There are four times more conversions of internal representation
  * to ntfs representation than any other conversion, so the most
