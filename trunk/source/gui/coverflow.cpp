@@ -1701,11 +1701,6 @@ void CCoverFlow::_instantTarget(int i)
 	cvr.txtColor = cvr.txtTargetColor;
 }
 
-bool CCoverFlow::_sortByMagic(CItem item1, CItem item2)
-{
-	return (item1.hdr->hdr.magic == item2.hdr->hdr.magic) ? _sortByAlpha(item1, item2) : item1.hdr->hdr.magic > item2.hdr->hdr.magic;
-}
-
 bool CCoverFlow::_sortByPlayCount(CItem item1, CItem item2)
 {
 	return (item1.playcount == item2.playcount) ? _sortByAlpha(item1, item2) : item1.playcount > item2.playcount;
@@ -1768,8 +1763,6 @@ bool CCoverFlow::start(const char *id)
 	// Sort items
 	if (m_sorting == SORT_ALPHA)
 		sort(m_items.begin(), m_items.end(), CCoverFlow::_sortByAlpha);
-	else if (m_sorting == SORT_MAGIC)
-		sort(m_items.begin(), m_items.end(), CCoverFlow::_sortByMagic);
 	else if (m_sorting == SORT_PLAYCOUNT)
 		sort(m_items.begin(), m_items.end(), CCoverFlow::_sortByPlayCount);
 	else if (m_sorting == SORT_LASTPLAYED)
