@@ -29,12 +29,9 @@ void Plugin::EndAdd()
 
 void Plugin::Cleanup()
 {
-	for(banner_pos = 0; banner_pos < magicWords.size(); banner_pos++)
-		MEM2_free(BannerSound[banner_pos]);
-	BannerSound.clear();
-	BannerSoundSize.clear();
-	magicWords.clear();
-	DolName.clear();
+	for(banner_pos = 0; banner_pos < Plugins.size(); banner_pos++)
+		MEM2_free(Plugins[banner_pos].BannerSound);
+	Plugins.clear();
 	banner_pos = 0;
 	pluginsDir.erase(0, pluginsDir.size());
 }
@@ -44,13 +41,12 @@ bool Plugin::AddPlugin(Config &plugin)
 	if(!adding)
 		return false;
 
-	DolName.push_back(plugin.getString("PLUGIN","dolFile",""));
-	u32 magic, caseColor;
-	sscanf(plugin.getString("PLUGIN","magic","").c_str(), "%08x", &magic);
-	magicWords.push_back(magic);
-	sscanf(plugin.getString("PLUGIN","coverColor","").c_str(), "%08x", &caseColor);
-	caseColors.push_back(caseColor);
-	ReturnLoader.push_back(plugin.getBool("PLUGIN","ReturnLoader"));
+	PluginOptions NewPlugin;
+	NewPlugin.DolName = plugin.getString("PLUGIN","dolFile","");
+	NewPlugin.coverFolder = plugin.getString("PLUGIN","coverFolder","");
+	sscanf(plugin.getString("PLUGIN","magic","").c_str(), "%08x", &NewPlugin.magicWord);
+	sscanf(plugin.getString("PLUGIN","coverColor","").c_str(), "%08x", &NewPlugin.caseColor);
+	NewPlugin.ReturnLoader = plugin.getBool("PLUGIN","ReturnLoader");
 
 	string bannerfilepath = sfmt("%s/%s", pluginsDir.c_str(), plugin.getString("PLUGIN","bannerSound","").c_str());
 	ifstream infile;
@@ -64,34 +60,36 @@ bool Plugin::AddPlugin(Config &plugin)
 		//Don't free that, otherwise you would delete the sound
 		char* FileReadBuffer = (char*)MEM2_alloc(size);
 		infile.read(FileReadBuffer, size);
-		BannerSound.push_back((u8*)FileReadBuffer);
-		BannerSoundSize.push_back(size);
+		NewPlugin.BannerSound = (u8*)FileReadBuffer;
+		NewPlugin.BannerSoundSize = size;
+		Plugins.push_back(NewPlugin);
 		return true;
 	}
 	else
 	{
-		BannerSound.push_back(0);
-		BannerSoundSize.push_back(0);
+		NewPlugin.BannerSound = 0;
+		NewPlugin.BannerSoundSize = 0;
+		Plugins.push_back(NewPlugin);
 	}
 	return false;
 }
 
 bool Plugin::UseReturnLoader(u32 magic)
 {
-	for(u8 pos = 0; pos < magicWords.size(); pos++)
+	for(u8 pos = 0; pos < Plugins.size(); pos++)
 	{
-		if(magic == magicWords[pos])
-			return ReturnLoader[pos];
+		if(magic == Plugins[pos].magicWord)
+			return Plugins[pos].ReturnLoader;
 	}
 	return false;
 }
 
 u8* Plugin::GetBannerSound(u32 magic)
 {
-	for(banner_pos = 0; banner_pos < magicWords.size(); banner_pos++)
+	for(banner_pos = 0; banner_pos < Plugins.size(); banner_pos++)
 	{
-		if(magic == magicWords[banner_pos])
-			return BannerSound[banner_pos];
+		if(magic == Plugins[banner_pos].magicWord)
+			return Plugins[banner_pos].BannerSound;
 	}
 	return NULL;
 }
@@ -99,17 +97,26 @@ u8* Plugin::GetBannerSound(u32 magic)
 u32 Plugin::GetBannerSoundSize()
 {
 	//We call that directly after GetBannerSound, so no need to search for the magic again
-	if(BannerSoundSize[banner_pos] > 0)
-		return BannerSoundSize[banner_pos];
+	if(Plugins[banner_pos].BannerSoundSize > 0)
+		return Plugins[banner_pos].BannerSoundSize;
 	return 0;
 }
 
 char* Plugin::GetDolName(u32 magic)
 {
 	char *null = (char*)" ";
-	for(banner_pos = 0; banner_pos < magicWords.size(); banner_pos++)
-		if(magic == magicWords[banner_pos])
-			return (char*)DolName[banner_pos].c_str();
+	for(u8 pos = 0; pos < Plugins.size(); pos++)
+		if(magic == Plugins[pos].magicWord)
+			return (char*)Plugins[pos].DolName.c_str();
+	return null;
+}
+
+char* Plugin::GetCoverFolderName(u32 magic)
+{
+	char *null = (char*)" ";
+	for(u8 pos = 0; pos < Plugins.size(); pos++)
+		if(magic == Plugins[pos].magicWord)
+			return (char*)Plugins[pos].coverFolder.c_str();
 	return null;
 }
 
@@ -133,13 +140,13 @@ safe_vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, string Device)
 			continue;
 		}
 		memset(&tmp, 0, sizeof(dir_discHdr));
-		tmp.hdr.casecolor = caseColors.back();
+		tmp.hdr.casecolor = Plugins.back().caseColor;
 		wstringEx tmpString;
 		tmpString.fromUTF8(ini.getString(game,"description").c_str());
 		wcsncpy(tmp.title, tmpString.c_str(), 64);
 		strncpy(tmp.path, game.c_str(), sizeof(tmp.path));
 		gprintf("Found: %ls\n", tmp.title);
-		tmp.hdr.magic = magicWords.back();
+		tmp.hdr.magic = Plugins.back().magicWord;
 		tmp.hdr.gc_magic = 0x4c4f4c4f;
 		gameHeader.push_back(tmp);
 		game = ini.nextDomain();

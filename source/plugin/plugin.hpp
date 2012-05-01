@@ -17,6 +17,17 @@
 
 using namespace std;
 
+struct PluginOptions
+{
+	u8 *BannerSound;
+	u32 BannerSoundSize;
+	u32 magicWord;
+	string DolName;
+	string coverFolder;
+	u32 caseColor;
+	bool ReturnLoader;
+};
+
 class Plugin
 {
 public:
@@ -24,19 +35,14 @@ public:
 	u8* GetBannerSound(u32 magic);
 	u32 GetBannerSoundSize();
 	char* GetDolName(u32 magic);
+	char* GetCoverFolderName(u32 magic);
 	bool UseReturnLoader(u32 magic);
 	void init(string);
 	void Cleanup();
 	void EndAdd();
 	safe_vector<dir_discHdr> ParseScummvmINI(Config &ini, string Device);
 private:
-	safe_vector<u8*> BannerSound;
-	safe_vector<u32> BannerSoundSize;
-	safe_vector<u32> magicWords;
-	safe_vector<string> DolName;
-	safe_vector<u32> caseColors;
-	safe_vector<bool> ReturnLoader;
-	
+	safe_vector<PluginOptions> Plugins;
 	u8 banner_pos;
 	string pluginsDir;
 	bool adding;
