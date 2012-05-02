@@ -192,10 +192,8 @@ private:
 	u32 m_configLblPartition;
 	u32 m_configBtnPartitionP;
 	u32 m_configBtnPartitionM;
-	u32 m_configLblEmulationVal;
-	u32 m_configLblEmulation;
-	u32 m_configBtnEmulationM;
-	u32 m_configBtnEmulationP;
+	u32 m_configLblNandEmu;
+	u32 m_configBtnNandEmu;
 	u32 m_configLblUser[4];
 	u32 m_configAdvLblTheme;
 	u32 m_configAdvLblCurTheme;
@@ -554,6 +552,37 @@ private:
 	u32 m_categoryBtnCats[21];
 	u32 m_categoryLblUser[4];
 	u8 m_max_categories;
+	// NandEmulation menu
+	std::string m_saveExtGameId;
+	bool m_nandext;
+	bool m_fulldump;
+	bool m_sgdump;
+	bool m_saveall;
+	bool m_forceext;
+	//int m_saveExtMode;
+	u32 m_nandemuLblTitle;
+	u32 m_nandemuBtnBack;
+	u32 m_nandemuLblEmulationVal;
+	u32 m_nandemuLblEmulation;
+	u32 m_nandemuBtnEmulationM;
+	u32 m_nandemuBtnEmulationP;
+	u32 m_nandemuLblSaveDump;
+	u32 m_nandemuBtnAll;
+	u32 m_nandemuBtnMissing;
+	u32 m_nandemuLblNandDump;
+	u32 m_nandemuBtnNandDump;
+	u32 m_nandfileLblMessage;
+	u32 m_nandemuLblMessage;
+	u32 m_nandfileLblDialog;
+	u32 m_nandfinLblDialog;
+	u32 m_nandemuLblDialog;
+	u32 m_nandfilePBar;
+	u32 m_nandemuPBar;
+	u32 m_nandemuBtnExtract;
+	u32 m_nandemuBtnDisable;
+	u32 m_nandemuLblInit;
+	u32 m_nandemuLblUser[4];
+	STexture m_nandemuBg;
 // Zones
 	SZone m_mainPrevZone;
 	SZone m_mainNextZone;
@@ -651,6 +680,7 @@ private:
 	mutex_t m_mutex;
 	wstringEx m_thrdMessage;
 	volatile float m_thrdProgress;
+	volatile float m_fileProgress;
 	volatile bool m_thrdMessageAdded;
 	volatile bool m_gameSelected;
 	GuiSound m_gameSound;
@@ -802,6 +832,7 @@ private:
 	void _initCategorySettingsMenu(SThemeData &theme);
 	void _initSystemMenu(SThemeData &theme);
 	void _initGameInfoMenu(SThemeData &theme);
+	void _initNandEmuMenu(CMenu::SThemeData &theme);
 	//
 	void _textCategorySettings(void);
 	void _textCheatSettings(void);
@@ -822,6 +853,7 @@ private:
 	void _textWBFS(void);
 	void _textGameSettings(void);
 	void _textGameInfo(void);
+	void _textNandEmu(void);
 	//
 	void _hideCheatSettings(bool instant = false);
 	void _hideError(bool instant = false);
@@ -844,6 +876,7 @@ private:
 	void _hideSystem(bool instant = false);
 	void _hideGameInfo(bool instant = false);
 	void _hideCheatDownload(bool instant = false);
+	void _hideNandEmu(bool instant = false);
 	//
 	void _showError(void);
 	void _showMain(void);
@@ -872,6 +905,7 @@ private:
 	void _updateBg(void);
 	void _drawBg(void);
 	void _updateText(void);
+	void _showNandEmu(void);
 	// 
 	void _config(int page);
 	int _config1(void);
@@ -880,6 +914,9 @@ private:
 	int _config4(void);
 	int _configAdv(void);
 	int _configSnd(void);
+	int _NandEmuCfg(void);
+	int _AutoCreateNand(void);
+	int _AutoExtractSave(string gameId);
 	void _game(bool launch = false);
 	void _download(std::string gameId = std::string());
 	bool _code(char code[4], bool erase = false);
@@ -950,6 +987,7 @@ private:
 	wstringEx _getNoticeTranslation(int sorting, wstringEx curLetter);
 	// 
 	void _setThrdMsg(const wstringEx &msg, float progress);
+	void _setDumpMsg(const wstringEx &msg, float progress, float fileprog);
 	int _coverDownloader(bool missingOnly);
 	static int _coverDownloaderAll(CMenu *m);
 	static int _coverDownloaderMissing(CMenu *m);
@@ -967,12 +1005,21 @@ private:
 	void _getGrabStatus(void);
 	static void _addDiscProgress(int status, int total, void *user_data);
 	static void _Messenger(int message, int info, char *cinfo, void *user_data);
+	static void _ShowProgress(int dumpstat, int dumpprog, int filestat, int fileprog, int files, int folders, char *tmess, void *user_data);
 	static int _gameInstaller(void *obj);	
 	static int _GCgameInstaller(void *obj);
 	static int _GCcopyGame(void *obj);
-	float m_progress; 
+	float m_progress;
+	float m_fprogress;
+	int m_fileprog;
+	int m_filesize;
+	int m_dumpsize;
+	int m_filesdone;
+	int m_foldersdone;
+	int m_nandexentry;
 	wstringEx _optBoolToString(int b);
 	void _stopSounds(void);
+	static int _NandDumper(void *obj);
 
 	static u32 _downloadCheatFileAsync(void *obj);
 
@@ -1002,6 +1049,7 @@ private:
 	static const SOption _vidModePatch[4];
 	static const SOption _hooktype[8];
 	static const SOption _exitTo[6];
+	static const SOption _DumpMode[4];
 	static std::map<u8, u8> _installed_cios;
 	typedef std::map<u8, u8>::iterator CIOSItr;
 	static int _version[9];

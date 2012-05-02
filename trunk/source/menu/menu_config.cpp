@@ -6,53 +6,10 @@
 #include "loader/alt_ios.h"
 #include "gecko/gecko.h"
 
-
 using namespace std;
-
-static inline int loopNum(int i, int s)
-{
-	return i < 0 ? (s - (-i % s)) % s : i % s;
-}
 
 const int CMenu::_nbCfgPages = 6;
 static const int g_curPage = 1;
-
-void CMenu::_enableNandEmu(bool fromconfig)
-{
-	bool disable = true;
-	int i = m_current_view == COVERFLOW_CHANNEL && min(max(0, m_cfg.getInt("NAND", "emulation", 0)), (int)ARRAY_SIZE(CMenu::_NandEmu) - 1);
-	gprintf("i: %i\n",i);
-	if (i>0 || m_current_view != COVERFLOW_CHANNEL)
-		disable = false;
-	if(!disable)
-	{
-		Nand::Instance()->Disable_Emu();
-		bool isD2XnewerThanV6 = false;
-		iosinfo_t * iosInfo = cIOSInfo::GetInfo(mainIOS);
-		if (iosInfo->version > 6)
-			isD2XnewerThanV6 = true;
-		if(m_current_view == COVERFLOW_CHANNEL && m_cfg.getInt("NAND", "emulation", 0) > 0)
-			Nand::Instance()->Enable_Emu();
-		u8 limiter = 0;
-		s8 direction = m_btnMgr.selected(m_configBtnPartitionP) ? 1 : -1;
-		if (!fromconfig)
-			direction = 0;
-		currentPartition = loopNum(currentPartition + direction, (int)USB8);
-		while(!DeviceHandler::Instance()->IsInserted(currentPartition) ||
-			((m_current_view == COVERFLOW_CHANNEL || m_current_view == COVERFLOW_EMU) && (DeviceHandler::Instance()->GetFSType(currentPartition) != PART_FS_FAT ||
-				(!isD2XnewerThanV6 && DeviceHandler::Instance()->PathToDriveType(m_appDir.c_str()) == currentPartition) ||
-				(!isD2XnewerThanV6 && DeviceHandler::Instance()->PathToDriveType(m_dataDir.c_str()) == currentPartition))) ||
-			((m_current_view == COVERFLOW_HOMEBREW || m_current_view == COVERFLOW_DML) && DeviceHandler::Instance()->GetFSType(currentPartition) == PART_FS_WBFS))
-		{
-			currentPartition = loopNum(currentPartition + direction, (int)USB8);
-			if (limiter > 10) break;
-			limiter++;
-		}
-
-		gprintf("Next item: %s\n", DeviceName[currentPartition]);
-		m_cfg.setInt(_domainFromView(), "partition", currentPartition);
-	}
-}
 
 void CMenu::_hideConfig(bool instant)
 {
@@ -71,10 +28,8 @@ void CMenu::_hideConfig(bool instant)
 	m_btnMgr.hide(m_configLblParental, instant);
 	m_btnMgr.hide(m_configBtnUnlock, instant);
 	m_btnMgr.hide(m_configBtnSetCode, instant);
-	m_btnMgr.hide(m_configLblEmulationVal, instant);
-	m_btnMgr.hide(m_configLblEmulation, instant);
-	m_btnMgr.hide(m_configBtnEmulationP, instant);
-	m_btnMgr.hide(m_configBtnEmulationM, instant);
+	m_btnMgr.hide(m_configLblNandEmu, instant);
+	m_btnMgr.hide(m_configBtnNandEmu, instant);
 	for (u32 i = 0; i < ARRAY_SIZE(m_configLblUser); ++i)
 		if (m_configLblUser[i] != -1u)
 			m_btnMgr.hide(m_configLblUser[i], instant);
@@ -118,25 +73,8 @@ void CMenu::_showConfig(void)
 
 	m_btnMgr.setText(m_configLblPage, wfmt(L"%i / %i", g_curPage, m_locked ? g_curPage + 1 : CMenu::_nbCfgPages));
 
-	if ((m_current_view == COVERFLOW_CHANNEL || m_current_view == COVERFLOW_USB) && !m_locked)
-	{
-		m_btnMgr.show(m_configLblEmulation);
-		m_btnMgr.show(m_configLblEmulationVal);
-		m_btnMgr.show(m_configBtnEmulationP);
-		m_btnMgr.show(m_configBtnEmulationM);
-		if (m_current_view == COVERFLOW_CHANNEL)
-		{
-			m_btnMgr.setText(m_configLblEmulation, _t("cfg12", L"NAND Emulation"));
-			i = min(max(0, m_cfg.getInt("NAND", "emulation", 0)), (int)ARRAY_SIZE(CMenu::_NandEmu) - 1);
-			m_btnMgr.setText(m_configLblEmulationVal, _t(CMenu::_NandEmu[i].id, CMenu::_NandEmu[i].text));
-		}
-		else if (m_current_view == COVERFLOW_USB)
-		{
-			m_btnMgr.setText(m_configLblEmulation, _t("cfgg24", L"Savegame Emulation"));
-			i = min(max(0, m_cfg.getInt("GAMES", "save_emulation", 0)), (int)ARRAY_SIZE(CMenu::_GlobalSaveEmu) - 1);
-			m_btnMgr.setText(m_configLblEmulationVal, _t(CMenu::_GlobalSaveEmu[i].id, CMenu::_GlobalSaveEmu[i].text));
-		}
-	}
+	m_btnMgr.show(m_configLblNandEmu);
+	m_btnMgr.show(m_configBtnNandEmu);
 }
 
 void CMenu::_config(int page)
@@ -245,14 +183,13 @@ int CMenu::_config1(void)
 				_enableNandEmu(true);
 				_showConfig();
 			}
-			else if (!m_locked && (m_btnMgr.selected(m_configBtnEmulationP) || m_btnMgr.selected(m_configBtnEmulationM)))
+			else if (!m_locked && m_btnMgr.selected(m_configBtnNandEmu))
 			{
-				s8 direction = m_btnMgr.selected(m_configBtnEmulationP) ? 1 : -1;
-				if (m_current_view == COVERFLOW_CHANNEL)
-					m_cfg.setInt("NAND", "emulation", (int)loopNum((u32)m_cfg.getInt("NAND", "emulation", 0) + direction, ARRAY_SIZE(CMenu::_NandEmu)));
-				else if (m_current_view == COVERFLOW_USB)
-					m_cfg.setInt("GAMES", "save_emulation", (int)loopNum((u32)m_cfg.getInt("GAMES", "save_emulation", 0) + direction, ARRAY_SIZE(CMenu::_GlobalSaveEmu)));
+				m_cf.stopCoverLoader(true);
+				_hideConfig();
+				_NandEmuCfg();
 				_showConfig();
+				m_cf.startCoverLoader();
 			}
 		}
 	}
@@ -295,11 +232,8 @@ void CMenu::_initConfigMenu(CMenu::SThemeData &theme)
 	m_configLblPartition = _addLabel(theme, "CONFIG/PARTITION_BTN", theme.btnFont, L"", 456, 250, 88, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_configBtnPartitionM = _addPicButton(theme, "CONFIG/PARTITION_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 400, 250, 56, 56);
 	m_configBtnPartitionP = _addPicButton(theme, "CONFIG/PARTITION_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 250, 56, 56);
-	m_configLblEmulation = _addLabel(theme, "CONFIG/EMU_SAVE", theme.lblFont, L"", 40, 310, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_configLblEmulationVal = _addLabel(theme, "CONFIG/EMU_SAVE_BTN_GLOBAL", theme.btnFont, L"", 456, 310, 88, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_configBtnEmulationM = _addPicButton(theme, "CONFIG/EMU_SAVE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 400, 310, 56, 56);
-	m_configBtnEmulationP = _addPicButton(theme, "CONFIG/EMU_SAVE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 310, 56, 56);
-	m_configLblPage = _addLabel(theme, "CONFIG/PAGE_BTN", theme.btnFont, L"", 76, 400, 80, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_configLblNandEmu = _addLabel(theme, "CONFIG/NANDEMU", theme.lblFont, L"", 40, 310, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_configBtnNandEmu = _addButton(theme, "CONFIG/NANDEMU_BTN", theme.btnFont, L"", 400, 310, 200, 56, theme.btnFontColor);m_configLblPage = _addLabel(theme, "CONFIG/PAGE_BTN", theme.btnFont, L"", 76, 400, 80, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_configBtnPageM = _addPicButton(theme, "CONFIG/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 20, 400, 56, 56);
 	m_configBtnPageP = _addPicButton(theme, "CONFIG/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 156, 400, 56, 56);
 	m_configBtnBack = _addButton(theme, "CONFIG/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 56, theme.btnFontColor);
@@ -315,10 +249,8 @@ void CMenu::_initConfigMenu(CMenu::SThemeData &theme)
 	_setHideAnim(m_configLblPartition, "CONFIG/PARTITION_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_configBtnPartitionM, "CONFIG/PARTITION_MINUS", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_configBtnPartitionP, "CONFIG/PARTITION_PLUS", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_configLblEmulation, "CONFIG/EMU_SAVE", 100, 0, -2.f, 0.f);
-	_setHideAnim(m_configLblEmulationVal, "CONFIG/EMU_SAVE_BTN_GLOBAL", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_configBtnEmulationM, "CONFIG/EMU_SAVE_MINUS", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_configBtnEmulationP, "CONFIG/EMU_SAVE_PLUS", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_configLblNandEmu, "CONFIG/NANDEMU", 100, 0, -2.f, 0.f);
+	_setHideAnim(m_configBtnNandEmu, "CONFIG/NANDEMU_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_configBtnBack, "CONFIG/BACK_BTN", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_configLblPage, "CONFIG/PAGE_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_configBtnPageM, "CONFIG/PAGE_MINUS", 0, 0, 1.f, -1.f);
@@ -335,7 +267,8 @@ void CMenu::_textConfig(void)
 	m_btnMgr.setText(m_configLblParental, _t("cfg5", L"Parental control"));
 	m_btnMgr.setText(m_configBtnUnlock, _t("cfg6", L"Unlock"));
 	m_btnMgr.setText(m_configBtnSetCode, _t("cfg7", L"Set code"));
-
 	m_btnMgr.setText(m_configLblPartitionName, _t("cfgp1", L"Game Partition"));
 	m_btnMgr.setText(m_configBtnBack, _t("cfg10", L"Back"));
+	m_btnMgr.setText(m_configLblNandEmu, _t("cfg13", L"Nand emulation settings"));
+	m_btnMgr.setText(m_configBtnNandEmu, _t("cfg14", L"Set"));
 }

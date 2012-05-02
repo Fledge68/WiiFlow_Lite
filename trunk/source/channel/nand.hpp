@@ -23,6 +23,8 @@
 
 #define BLOCK 2048
 
+typedef void (*dump_callback_t)(int dumpstat, int dumpprog, int filestat, int fileprog, int files, int folders, char *tmess, void *user_data);
+
 /* 'NAND Device' structure */
 typedef struct nandDevice
 {
@@ -70,8 +72,10 @@ class Nand
 		
 		s32 CreateConfig(const char *path);
 		s32 Do_Region_Change(string id);
-		s32 DoNandDump(const char *source, const char *dest, bool dumpios, bool dumpwgs, bool dumpwsc, bool dumpwvc, bool dumpmen);
-		
+		s32 DoNandDump(const char *source, const char *dest, bool dumpwgs, dump_callback_t i_dumper, void *i_data);
+		s32 CalcDumpSpace(const char *source, bool dumpwgs, dump_callback_t i_dumper, void *i_data);
+		void ResetCounters(void);
+	
 	private:
 		Nand() : MountedDevice(0), EmuDevice(REAL_NAND), Disabled(true), Partition(0), FullMode(0x100), NandPath() {}
 		~Nand(void){}
@@ -90,20 +94,26 @@ class Nand
 		u32 __configsetbigarray(const char *item, void *val, u32 size);
 		u32 __configsetsetting(const char *item, const char *val);
 		bool __FileExists(const char *path, ...);
-		u32 __TestNandPath(const char *path);
+		void __FATify(char *dst, const char *src);
+		s32 __Unescaped2x(const char *path);
 		s32 __FlashNandFile(const char *source, const char *dest);
 		s32 __DumpNandFile(const char *source, const char *dest);
 		s32 __DumpNandFolder(const char *source, const char *dest);				
 
 		u32 MountedDevice;
 		u32 EmuDevice;
+		u32 NandSize;
+		u32 NandDone;
+		u32 FileDone;
+		u32 FilesDone;
+		u32 FoldersDone;
 		bool Disabled;
-		bool n_dumpios;
 		bool n_dumpwgs;
-		bool n_dumpwsc;
-		bool n_dumpwvc;
-		bool n_dumpmen;
+		bool fake;
+		bool showprogress;
 		
+		void *data;
+		dump_callback_t dumper;
 		u32 Partition ATTRIBUTE_ALIGN(32);
 		u32 FullMode ATTRIBUTE_ALIGN(32);
 		char NandPath[32] ATTRIBUTE_ALIGN(32);

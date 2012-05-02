@@ -87,17 +87,17 @@ void WavDecoder::OpenFile()
     SWaveChunk DataChunk;
     file_fd->read((u8 *) &DataChunk, sizeof(SWaveChunk));
 
-    if(DataChunk.magicDATA == 'fact')
-    {
-        DataOffset += 8+le32(DataChunk.size);
-        file_fd->seek(DataOffset, SEEK_SET);
-        file_fd->read((u8 *) &DataChunk, sizeof(SWaveChunk));
-    }
-    if(DataChunk.magicDATA != 'data')
-    {
-		CloseFile();
-		return;
-    }
+	while(DataChunk.magicDATA != 'data')
+	{
+		DataOffset += 8+le32(DataChunk.size);
+		file_fd->seek(DataOffset, SEEK_SET);
+		int ret = file_fd->read((u8 *) &DataChunk, sizeof(SWaveChunk));
+		if(ret <= 0)
+		{
+			CloseFile();
+			return;
+		}
+	}
 
     DataOffset += 8;
     DataSize = le32(DataChunk.size);

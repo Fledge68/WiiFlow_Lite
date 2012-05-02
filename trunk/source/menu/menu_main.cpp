@@ -143,9 +143,39 @@ void CMenu::_showMain(void)
 
 	if (m_gameList.empty())
 	{
-		m_btnMgr.show(m_mainBtnInit);
-		m_btnMgr.show(m_mainBtnInit2);
-		m_btnMgr.show(m_mainLblInit);
+		switch(m_current_view)
+		{
+			case COVERFLOW_USB:
+			case COVERFLOW_DML:
+				m_btnMgr.setText(m_mainLblInit, _t("main2", L"Welcome to WiiFlow. I have not found any games. Click Install to install games, or Select partition to select your partition type."), true);
+				m_btnMgr.show(m_mainBtnInit);
+				m_btnMgr.show(m_mainBtnInit2);
+				m_btnMgr.show(m_mainLblInit);
+			break;
+			case COVERFLOW_CHANNEL:
+				if(!m_cfg.getBool("NAND", "disable", true))
+				{
+					Nand::Instance()->Disable_Emu();
+					_hideMain();
+					if(!_AutoCreateNand())
+						m_cfg.setBool("NAND", "disable", true);
+
+					_loadList();
+					_showMain();
+					_initCF();
+				}
+			break;
+			case COVERFLOW_HOMEBREW:
+				m_btnMgr.setText(m_mainLblInit, _t("main4", L"Welcome to WiiFlow. I have not found any homebrew apps. Select partition to select your partition type."), true);
+				m_btnMgr.show(m_mainBtnInit2);
+				m_btnMgr.show(m_mainLblInit);
+			break;
+			case COVERFLOW_EMU:
+				m_btnMgr.setText(m_mainLblInit, _t("main5", L"Welcome to WiiFlow. I have not found any emulator plugins or games. Select partition to select your partition type."), true);
+				m_btnMgr.show(m_mainBtnInit2);
+				m_btnMgr.show(m_mainLblInit);
+			break;
+		}		
 	}
 }
 
@@ -913,7 +943,7 @@ void CMenu::_textMain(void)
 {
 	m_btnMgr.setText(m_mainBtnInit, _t("main1", L"Install Game"));
 	m_btnMgr.setText(m_mainBtnInit2, _t("main3", L"Select Partition"));
-	m_btnMgr.setText(m_mainLblInit, _t("main2", L"Welcome to WiiFlow. I have not found any games. Click Install to install games, or Select partition to select your partition type."), true);
+	//m_btnMgr.setText(m_mainLblInit, _t("main2", L"Welcome to WiiFlow. I have not found any games. Click Install to install games, or Select partition to select your partition type."), true);
 }
 
 wstringEx CMenu::_getNoticeTranslation(int sorting, wstringEx curLetter)
