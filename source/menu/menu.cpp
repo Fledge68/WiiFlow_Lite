@@ -1026,6 +1026,7 @@ void CMenu::_buildMenus(void)
 	_initCategorySettingsMenu(theme);
 	_initSystemMenu(theme);
 	_initGameInfoMenu(theme);
+	_initNandEmuMenu(theme);
 	
 	_loadCFCfg(theme);
 }

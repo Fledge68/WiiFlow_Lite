@@ -204,6 +204,7 @@ const CMenu::SOption CMenu::_hooktype[8] = {
 	{ "hooktype6", L"OSSleepThread" },
 	{ "hooktype7", L"AXNextFrame" },
 };
+
 /*
 0 No Hook
 1 VBI
@@ -214,6 +215,13 @@ const CMenu::SOption CMenu::_hooktype[8] = {
 6 OSSleepThread Hook
 7 AXNextFrame Hook
 */
+
+const CMenu::SOption CMenu::_DumpMode[4] = {
+	{ "DumpNAll", L"Nand All" },
+	{ "DumpNMss", L"Nand Missing" },
+	{ "DumpLAll", L"List All" },
+	{ "DumpLMss", L"List Missing" },
+};
 
 std::map<u8, u8> CMenu::_installed_cios;
 u8 banner_title[84];
@@ -1054,7 +1062,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 
 	int emuPartition = m_cfg.getInt("GAMES", "savepartition", -1);
 	if(emuPartition == -1)
-		emuPartition = m_cfg.getInt("NAND", "partition", 0);
+		emuPartition = m_cfg.getInt("NAND", "partition", 0);	
 
 	string emuPath = m_cfg.getString("GAMES", "savepath", m_cfg.getString("NAND", "path", ""));
 	
@@ -1070,7 +1078,28 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		emuSave = 0;	
 
 	if(!dvd && emuSave)
-	{	
+	{
+		bool emuPartIsValid = false;
+		for(u8 i = emuPartition; i <= USB8; ++i)
+		{
+			if(!DeviceHandler::Instance()->IsInserted(emuPartition) || DeviceHandler::Instance()->GetFSType(emuPartition) != PART_FS_FAT)
+			{
+				emuPartition++;
+				continue;
+			}
+			else
+			{
+				emuPartIsValid = true;
+				break;
+			}
+		}
+		
+		if(!emuPartIsValid)
+		{
+			error(sfmt("No valid FAT partition found for nandemulation!"));
+			return;			
+		}
+		
 		bool createnand = false;
 		char basepath[64];
 		if(emuPath.size() == 0)
@@ -1102,21 +1131,23 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 				}
 			}
 		}
-		
+
 		if(createnand)
 		{
-#ifdef ENABLEDUMPER						
-			bool dumpios = m_cfg.getBool("NAND", "nanddumpios", false);
-			bool dumpgs = m_cfg.getBool("NAND", "nanddumpgamesaves", false);
-			bool dumpsc = m_cfg.getBool("NAND", "nanddumpsyschannels", false);
-			bool dumpwvc = m_cfg.getBool("NAND", "nanddumpwwchannels", true);
-			bool dumpmen = m_cfg.getBool("NAND", "nanddumpsysmenu", false);				
-			Nand::Instance()->DoNandDump("/", basepath, dumpios, dumpgs, dumpsc, dumpwvc, dumpmen);
-#endif
-		}		
+			_hideWaitMessage();
+			_AutoCreateNand();
+			_showWaitMessage();
+		}
 		
 		if(emuSave == 2 || emuSave > 3)
 		{
+			if(emuSave == 2)
+			{
+				m_forceext = false;
+				_hideWaitMessage();
+				_AutoExtractSave(id);
+				_showWaitMessage();
+			}			
 			CreateSavePath(basepath, hdr);
 		}
 		if(emuSave > 2)

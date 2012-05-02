@@ -51,6 +51,8 @@ config_header *cfg_hdr;
 bool tbdec = false;
 bool configloaded = false;
 
+static const int d2xfatrepl_len = 7;
+
 static NandDevice NandDeviceList[] = 
 {
 	{ "Disable",						0,	0x00,	0x00 },
@@ -412,53 +414,43 @@ bool Nand::__FileExists(const char *path, ...)
 	return false;
 }
 
-u32 Nand::__TestNandPath(const char *path)
+void Nand::__FATify(char *ptr, const char *str)
 {
-	if(!strncmp(path, "/import", 7)) return 0;
-	if(!strncmp(path, "/meta", 5)) return 0;
-	if(!strncmp(path, "/shared", 7) && !n_dumpwsc && !n_dumpwvc) return 1;	
-	if(!strncmp(path, "/sys", 4)) return 0;
-
-	if(!strncmp(path, "/ticket/00000001/", 17))
+	char ctr;
+	while ((ctr = *(str++)) != '\0') 
 	{
-		const char *tmp = path + 17;
-		if(!strncmp(tmp, "00000002.tik", 8) && !n_dumpmen) return 1; // Menu
-		if(strncmp(tmp, "00000002.tik", 8) && !n_dumpios) return 1; // IOSs
-		return 0;
+		const char *esc;
+		switch (ctr) 
+		{
+			case '"':
+				esc = "&qt;";
+			break;
+			case '*':
+				esc = "&st;";
+			break;
+			case ':':
+				esc = "&cl;";
+			break;
+			case '<':
+				esc = "&lt;";
+			break;
+			case '>':
+				esc = "&gt;";
+			break;
+			case '?':
+				esc = "&qm;";
+			break; 
+			case '|':
+				esc = "&vb;";
+			break;
+			default:
+				*(ptr++) = ctr;
+				continue;
+		}
+		strcpy(ptr, esc);
+		ptr += 4;
 	}
-	if(!strncmp(path, "/ticket/00010001/", 17))
-	{
-		const char *tmp = path + 17;
-		if(!strncmp(tmp, "48XXXXXX.tik", 2) && n_dumpwsc) return 0; // SC
-		if(strncmp(tmp, "48XXXXXX.tik", 2) && n_dumpwvc) return 0; // WW&VC
-		return 1;
-	}
-	if(!strncmp(path, "/ticket/00010002/", 17) && !n_dumpwsc) return 1; // SC
-	if(!strncmp(path, "/ticket/00010005/", 17) && !n_dumpwgs) return 1; // DLC?
-	if(!strncmp(path, "/ticket/00010008/", 17) && !n_dumpwsc) return 1; // Hidden SC
-	
-	if(!strncmp(path, "/title/00000001/", 16))
-	{
-		const char *tmp = path + 16;
-		if(!strncmp(tmp, "00000002", 8) && n_dumpmen) return 0; // Menu
-		if(strncmp(tmp, "00000002", 8) && n_dumpios) return 0; // IOSs
-		return 1;
-	}
-	if(!strncmp(path, "/title/00010000/", 16) && !n_dumpwgs) return 1; // Saves
-	if(!strncmp(path, "/title/00010001/", 16))
-	{
-		const char *tmp = path + 16;
-		if(!strncmp(tmp, "48XXXXXX", 2) && n_dumpwsc) return 0; // SC
-		if(strncmp(tmp, "48XXXXXX", 2) && n_dumpwvc) return 0; // WW&VC
-		return 1;
-	}
-	if(!strncmp(path, "/title/00010002/", 16) && !n_dumpwsc) return 1; // SC
-	if(!strncmp(path, "/title/00010004/", 16) && !n_dumpwgs) return 1; // Saves
-	if(!strncmp(path, "/title/00010005/", 16) && !n_dumpwgs) return 1; // DLC
-	if(!strncmp(path, "/title/00010008/", 16) && !n_dumpwsc) return 1; // Hidden SC
-	
-	if(!strncmp(path, "/tmp", 4)) return 0;
-	return 0;
+	*ptr = '\0';
 }
 
 s32 Nand::__FlashNandFile(const char *source, const char *dest)
@@ -526,9 +518,7 @@ s32 Nand::__FlashNandFile(const char *source, const char *dest)
 
 s32 Nand::__DumpNandFile(const char *source, const char *dest)
 {
-	if(__TestNandPath(source))
-		return 0;
-		
+	FileDone = 0;	
 	s32 fd = ISFS_Open(source, ISFS_OPEN_READ);
 	if (fd < 0) 
 	{
@@ -536,8 +526,29 @@ s32 Nand::__DumpNandFile(const char *source, const char *dest)
 		return fd;
 	}
 	
+	fstats *status = (fstats *)MEM2_alloc(sizeof(fstats));
+	s32 ret = ISFS_GetFileStats(fd, status);
+	if (ret < 0)
+	{
+		gprintf("Error: ISFS_GetFileStats(%d) %d\n", fd, ret);
+		ISFS_Close(fd);
+		MEM2_free(status);
+		return ret;
+	}
+	
+	if(fake)
+	{
+		NandSize += status->file_length;
+		if(showprogress)
+			dumper(NandSize, 0x1f400000, 0x1f400000, NandSize, FilesDone, FoldersDone, (char *)"", data);
+		
+		ISFS_Close(fd);
+		MEM2_free(status);
+		return 0;
+	}
+	
 	if(__FileExists(dest))   
-		remove(dest);
+		remove(dest);		
 	
 	FILE *file = fopen(dest, "wb");
 	if (!file)
@@ -546,19 +557,8 @@ s32 Nand::__DumpNandFile(const char *source, const char *dest)
 		ISFS_Close(fd);
 		return 0;
 	}
-
-	fstats *status = (fstats *)MEM2_alloc(sizeof(fstats));
-	s32 ret = ISFS_GetFileStats(fd, status);
-	if (ret < 0)
-	{
-		gprintf("Error: ISFS_GetFileStats(%d) %d\n", fd, ret);
-		ISFS_Close(fd);
-		SAFE_CLOSE(file);
-		MEM2_free(status);
-		return ret;
-	}
 	
-	gprintf("Dumping: %s (%uKB)...", source, (status->file_length / 0x400)+1);
+	gprintf("Dumping: %s (%ukb)...", source, (status->file_length / 0x400)+1);
 
 	u8 *buffer = (u8 *)MEM2_alloc(BLOCK);
 	u32 toread = status->file_length;
@@ -590,13 +590,28 @@ s32 Nand::__DumpNandFile(const char *source, const char *dest)
 			return ret;
 		}
 		toread -= size;
+		NandDone += size;
+		FileDone += size;
+		
+		if(showprogress)
+		{
+			const char *file = strrchr(source, '/')+1;
+			dumper(NandDone, NandSize, status->file_length, FileDone, FilesDone, FoldersDone, (char *)file, data);
+		}
+	}
+	FilesDone++;
+	if(showprogress)
+	{
+		const char *file = strrchr(source, '/')+1;
+		dumper(NandDone, NandSize, status->file_length, FileDone, FilesDone, FoldersDone, (char *)file, data);
 	}
 	gprintf(" done!\n");
-	ISFS_Close(fd);
-	SAFE_CLOSE(file);
+	SAFE_CLOSE(file);	
+	ISFS_Close(fd);	
 	MEM2_free(status);
 	MEM2_free(buffer);
-	return 1;
+	
+	return 0;
 }
 
 s32 Nand::__DumpNandFolder(const char *source, const char *dest)
@@ -604,7 +619,8 @@ s32 Nand::__DumpNandFolder(const char *source, const char *dest)
 	namelist *names = NULL;
 	int cnt, i;
 	char nsource[ISFS_MAXPATH];
-	char ndest[MAX_FAT_PATH];		
+	char ndest[MAX_FAT_PATH];
+	char tdest[MAX_FAT_PATH];
 	
 	__GetNameList(source, &names, &cnt);	
 	
@@ -617,41 +633,41 @@ s32 Nand::__DumpNandFolder(const char *source, const char *dest)
 		
 		if(!names[i].type)
 		{
-			Asciify2(nsource);
-			snprintf(ndest, sizeof(ndest), "%s%s", dest, nsource);
+			__FATify(tdest, nsource);			
+			snprintf(ndest, sizeof(ndest), "%s%s", dest, tdest);
 			__DumpNandFile(nsource, ndest);
 		}
 		else
 		{
-			if(!__TestNandPath(nsource))
-			{			
-				CreatePath("%s%s", dest, nsource);				
-				__DumpNandFolder(nsource, dest);
+			if(!fake)
+			{
+				__FATify(tdest, nsource);						
+				CreatePath("%s%s", dest, tdest);
+				FoldersDone++;
 			}
+			
+			__DumpNandFolder(nsource, dest);
 		}
 	}
-
 	SAFE_FREE(names);
-	return 0;	
-}	
+	return 0;
+}
 
 void Nand::CreatePath(const char *path, ...)
-{		
+{
 	char *folder = NULL;
 	va_list args;
 	va_start(args, path);
 	if((vasprintf(&folder, path, args) >= 0) && folder)
 	{
 		if(folder[strlen(folder)-1] == '/')
-			folder[strlen(folder)-1] = 0;
-			
-		Asciify2(folder);
+			folder[strlen(folder)-1] = 0;		
 			
 		DIR *d;
 		d = opendir(folder);
 
 		if(!d)
-		{			
+		{	
 			gprintf("Creating folder: \"%s\"\n", folder);
 			makedir(folder);
 		}
@@ -662,19 +678,17 @@ void Nand::CreatePath(const char *path, ...)
 		}
 	}
 	va_end(args);
-	SAFE_FREE(folder);	
+	SAFE_FREE(folder);
 }
 
-s32 Nand::DoNandDump(const char *source, const char *dest, bool dumpios, bool dumpwgs, bool dumpwsc, bool dumpwvc, bool dumpmen)
-{
-	n_dumpios = dumpios;
+s32 Nand::DoNandDump(const char *source, const char *dest, bool dumpwgs, dump_callback_t i_dumper, void *i_data)
+{	
+	data = i_data;
+	dumper = i_dumper;
 	n_dumpwgs = dumpwgs;
-	n_dumpwsc = dumpwsc;
-	n_dumpwvc = dumpwvc;
-	n_dumpmen = dumpmen;
-	
+	fake = false;
+	showprogress = true;
 	u32 temp = 0;	
-	
 	s32 ret = ISFS_ReadDir(source, NULL, &temp);
 	if(ret < 0)
 	{
@@ -685,11 +699,37 @@ s32 Nand::DoNandDump(const char *source, const char *dest, bool dumpios, bool du
 		__DumpNandFile(source, ndest);
 	}
 	else
-	{
+	{		
 		__DumpNandFolder(source, dest);
-	}
-	
+	}	
 	return 0;	
+}
+
+s32 Nand::CalcDumpSpace(const char *source, bool dumpwgs, dump_callback_t i_dumper, void *i_data)
+{	
+	data = i_data;
+	dumper = i_dumper;
+	n_dumpwgs = dumpwgs;
+	fake = true;
+	showprogress = true;		
+	
+	u32 temp = 0;	
+	
+	s32 ret = ISFS_ReadDir(source, NULL, &temp);
+	if(ret < 0)		
+		__DumpNandFile(source, "");
+	else
+		__DumpNandFolder(source, "");
+	
+	return NandSize;	
+}
+
+void Nand::ResetCounters(void)
+{
+	NandSize = 0;
+	FilesDone = 0;
+	FoldersDone = 0;
+	NandDone = 0;
 }
  
 s32 Nand::CreateConfig(const char *path)
@@ -701,6 +741,9 @@ s32 Nand::CreateConfig(const char *path)
 	CreatePath("%s/title/00000001", path);
 	CreatePath("%s/title/00000001/00000002", path);
 	CreatePath("%s/title/00000001/00000002/data", path);
+	
+	fake = false;
+	showprogress = false;
 	
 	bzero(cfgpath, MAX_FAT_PATH+1);	
 	bzero(settxtpath, MAX_FAT_PATH+1);
