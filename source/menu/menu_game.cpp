@@ -731,7 +731,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 		}
 
 		if(m_new_dml)
-			DML_New_SetOptions(hdr->path, CheatPath, NewCheatPath, cheats, DML_debug, NMM, nodisc); //, DMLvideoMode);
+			DML_New_SetOptions(hdr->path, CheatPath, NewCheatPath, cheats, DML_debug, NMM, nodisc, DMLvideoMode);
 		else
 			DML_Old_SetOptions(hdr->path, CheatPath, NewCheatPath, cheats);
 

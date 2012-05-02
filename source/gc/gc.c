@@ -145,7 +145,7 @@ int GC_GameIsInstalled(char *discid, const char* partition, const char* dmlgamed
 	return 0;
 }
 
-void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats, bool debugger, u8 NMM, u8 nodisc) //, u8 DMLvideoMode)
+void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats, bool debugger, u8 NMM, u8 nodisc, u8 DMLvideoMode)
 {
 	gprintf("Wiiflow DML: Launch game 'sd:/games/%s/game.iso' through memory (new method)\n", GamePath);
 
@@ -194,16 +194,8 @@ void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, boo
 	if(nodisc > 0)
 		DMLCfg->Config |= DML_CFG_NODISC;
 
-	/*
-	if(DMLvideoMode == 1)
-		DMLCfg->VideoMode |= DML_VID_FORCE_PAL50;
-	else if(DMLvideoMode == 2)
-		DMLCfg->VideoMode |= DML_VID_FORCE_NTSC;
-	else if(DMLvideoMode == 3)
-		DMLCfg->VideoMode |= DML_VID_FORCE_PAL60;
-	else
-		DMLCfg->VideoMode |= DML_VID_FORCE_PROG;
-	*/
+	if(DMLvideoMode > 3)
+		DMLCfg->VideoMode |= DML_VID_PROG_PATCH;
 
 	//Write options into memory
 	memcpy((void *)0xC0001700, DMLCfg, sizeof(DML_CFG));
