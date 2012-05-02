@@ -902,15 +902,19 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 				IOS[1] = 56;
 				IOS[2] = 57;
 				bool found = false;
-				for(u8 num = 0; !found && num < 4; num++)
+				for(u8 num = 0; num < 3; num++)
 				{
-					if(IOS[num] == 0) num++;
-					for(CIOSItr itr = _installed_cios.begin(); !found && itr != _installed_cios.end(); itr++)
+					if(found)
+						break;
+					if(IOS[num] == 0)
+						continue;
+					for(CIOSItr itr = _installed_cios.begin(); itr != _installed_cios.end(); itr++)
 					{
 						if(itr->second == IOS[num] || itr->first == IOS[num])
 						{
 							gameIOS = itr->first;
 							found = true;
+							break;
 						}
 					}
 				}
@@ -1198,15 +1202,19 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			IOS[2] = 57;
 			gprintf("Game requested IOS: %u\n", IOS[0]);
 			bool found = false;
-			for(u8 num = 0; !found && num < 4; num++)
+			for(u8 num = 0; num < 3; num++)
 			{
-				if(IOS[num] == 0) num++;
-				for(CIOSItr itr = _installed_cios.begin(); !found && itr != _installed_cios.end(); itr++)
+				if(found)
+					break;
+				if(IOS[num] == 0)
+					continue;
+				for(CIOSItr itr = _installed_cios.begin(); itr != _installed_cios.end(); itr++)
 				{
-					if(itr->second == IOS[num])
+					if(itr->second == IOS[num] || itr->first == IOS[num])
 					{
 						gameIOS = itr->first;
 						found = true;
+						break;
 					}
 				}
 			}
