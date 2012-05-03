@@ -940,6 +940,7 @@ public:
 	void _directlaunch(const std::string &id);
 private:
 	bool _loadFile(SmartBuf &buffer, u32 &size, const char *path, const char *file);
+	int _loadIOS(u8 ios, string id);
 	void _launch(dir_discHdr *hdr);
 	void _launchGame(dir_discHdr *hdr, bool dvd);
 	void _launchChannel(dir_discHdr *hdr);

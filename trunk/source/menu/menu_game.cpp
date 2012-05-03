@@ -798,12 +798,83 @@ void CMenu::_launchHomebrew(const char *filepath, safe_vector<std::string> argum
 	m_exit = true;
 }
 
+enum {LOAD_IOS_FAILED = 0, LOAD_IOS_SUCCEEDED, LOAD_IOS_NOT_NEEDED};
+
+int CMenu::_loadIOS(u8 ios, string id)
+{
+	int gameIOS = 0;
+	int userIOS = 0;
+
+	if (m_gcfg2.getInt(id, "ios", &userIOS) && _installed_cios.size() > 0)
+	{
+		for(CIOSItr itr = _installed_cios.begin(); itr != _installed_cios.end(); itr++)
+		{
+			if(itr->second == userIOS || itr->first == userIOS)
+			{
+				gameIOS = itr->first;
+				break;
+			}
+			else gameIOS = 0;
+		}
+	}
+
+	// Reload IOS, if requested
+	if (gameIOS != mainIOS)
+	{
+		if(gameIOS < 0x64)
+		{
+			if ( _installed_cios.size() <= 0)
+			{
+				error(sfmt("No cios found!"));
+				Sys_LoadMenu();
+			}
+			u8 IOS[3];
+			IOS[0] = gameIOS == 0 ? ios : gameIOS;
+			IOS[1] = 56;
+			IOS[2] = 57;
+			bool found = false;
+			for(u8 num = 0; num < 3; num++)
+			{
+				if(found)
+					break;
+				if(IOS[num] == 0)
+					continue;
+				for(CIOSItr itr = _installed_cios.begin(); itr != _installed_cios.end(); itr++)
+				{
+					if(itr->second == IOS[num] || itr->first == IOS[num])
+					{
+						gameIOS = itr->first;
+						found = true;
+						break;
+					}
+				}
+			}
+			if(!found)
+			{
+				error(sfmt("Couldn't find a cIOS using base %i, or 56/57", IOS[0]));
+				return LOAD_IOS_FAILED;
+			}
+		}
+		if (gameIOS != mainIOS)
+		{
+			gprintf("Reloading IOS into %d\n", gameIOS);
+			cleanup(true);
+			if(!loadIOS(gameIOS, true))
+			{
+				error(sfmt("Couldn't load IOS %i", gameIOS));
+				return LOAD_IOS_FAILED;
+			}
+			return LOAD_IOS_SUCCEEDED;
+		}
+	}
+	return LOAD_IOS_NOT_NEEDED;
+}
+
 static const char systems[11] = { 'C', 'E', 'F', 'J', 'L', 'M', 'N', 'P', 'Q', 'W', 'H' };
 
 void CMenu::_launchChannel(dir_discHdr *hdr)
 {
 	Channels channel;
-	u8 ios = channel.GetRequestedIOS(hdr->hdr.chantitle);
 	u8 *data = NULL;
 	
 	string id = string((const char *) hdr->hdr.id);
@@ -837,24 +908,8 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	bool disableIOSreload = m_gcfg2.testOptBool(id, "reload_block", m_cfg.getBool("GENERAL", "reload_block", false));
 	int aspectRatio = min((u32)m_gcfg2.getInt(id, "aspect_ratio", 0), ARRAY_SIZE(CMenu::_AspectRatio) - 1u)-1;
 
-	int gameIOS = 0;
-
 	if(!forwarder)
 	{
-		int userIOS = 0;
-		if (m_gcfg2.getInt(id, "ios", &userIOS) && _installed_cios.size() > 0)
-		{
-			for(CIOSItr itr = _installed_cios.begin(); itr != _installed_cios.end(); itr++)
-			{
-				if(itr->second == userIOS || itr->first == userIOS)
-				{
-					gameIOS = itr->first;
-					break;
-				}
-				else gameIOS = 0;
-			}
-		}
-
 		hooktype = (u32) m_gcfg2.getInt(id, "hooktype", 0);
 		debuggerselect = m_gcfg2.getBool(id, "debugger", false) ? 1 : 0;
 
@@ -894,57 +949,11 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		if (cheat) _loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", hdr->hdr.id));
 		ocarina_load_code((u8 *) &hdr->hdr.id, cheatFile.get(), cheatSize);
 
-
-		// Reload IOS, if requested
-		if (gameIOS != mainIOS)
-		{
-			if(gameIOS < 0x64)
-			{
-				if ( _installed_cios.size() <= 0)
-				{
-					error(sfmt("No cios found!"));
-					Sys_LoadMenu();
-				}
-				u8 IOS[3];
-				IOS[0] = gameIOS == 0 ? ios : gameIOS;
-				IOS[1] = 56;
-				IOS[2] = 57;
-				bool found = false;
-				for(u8 num = 0; num < 3; num++)
-				{
-					if(found)
-						break;
-					if(IOS[num] == 0)
-						continue;
-					for(CIOSItr itr = _installed_cios.begin(); itr != _installed_cios.end(); itr++)
-					{
-						if(itr->second == IOS[num] || itr->first == IOS[num])
-						{
-							gameIOS = itr->first;
-							found = true;
-							break;
-						}
-					}
-				}
-				if(!found)
-				{
-					error(sfmt("Couldn't find a cIOS using base %i, or 56/57", IOS[0]));
-					return;
-				}
-			}
-			if (gameIOS != mainIOS)
-			{
-				gprintf("Reloading IOS into %d\n", gameIOS);
-				cleanup(true);
-				if(!loadIOS(gameIOS, true))
-				{
-					error(sfmt("Couldn't load IOS %i", gameIOS));
-					return;
-				}
-				iosLoaded = true;
-			}
-		}
-
+		int result = _loadIOS(channel.GetRequestedIOS(hdr->hdr.chantitle), id);
+		if (result == LOAD_IOS_FAILED)
+			return;
+		if (result == LOAD_IOS_SUCCEEDED)
+			iosLoaded = true;
 	}
 
 	if(!emu_disabled)
@@ -1160,22 +1169,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	if (!dvd && get_frag_list((u8 *) hdr->hdr.id, (char *) hdr->path, currentPartition == 0 ? 0x200 : sector_size) < 0)
 		return;
 
-	int gameIOS = 0;
-	int userIOS = 0;
-	if (m_gcfg2.getInt(id, "ios", &userIOS) && _installed_cios.size() > 0)
-	{
-		for(CIOSItr itr = _installed_cios.begin(); itr != _installed_cios.end(); itr++)
-		{
-			if(itr->second == userIOS || itr->first == userIOS)
-			{
-				gameIOS = itr->first;
-				break;
-			}
-			else
-				gameIOS = 0;
-		}
-	}
-
 	u8 patchVidMode = min((u32)m_gcfg2.getInt(id, "patch_video_modes", 0), ARRAY_SIZE(CMenu::_vidModePatch) - 1u);
 	hooktype = (u32) m_gcfg2.getInt(id, "hooktype", 0); // hooktype is defined in patchcode.h
 	debuggerselect = m_gcfg2.getBool(id, "debugger", false) ? 1 : 0; // debuggerselect is defined in fst.h
@@ -1188,7 +1181,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 
 	SmartBuf cheatFile, gameconfig;
 	u32 cheatSize = 0, gameconfigSize = 0;
-	bool iosLoaded = false;
 
 	CheckGameSoundThread();
 	if (videoMode == 0)	videoMode = (u8)min((u32)m_cfg.getInt("GENERAL", "video_mode", 0), ARRAY_SIZE(CMenu::_videoModes) - 1);
@@ -1217,55 +1209,15 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 
 	net_wc24cleanup();
 
-	// Reload IOS, if requested
-	if (!dvd && gameIOS != mainIOS)
+	bool iosLoaded = false;
+
+	if (!dvd)
 	{
-		if(gameIOS < 0x64)
-		{
-			if ( _installed_cios.size() <= 0)
-			{
-				error(sfmt("No cios found!"));
-				Sys_LoadMenu();
-			}
- 			u8 IOS[3];
-			IOS[0] = gameIOS == 0 ? GetRequestedGameIOS(hdr) : gameIOS;
-			IOS[1] = 56;
-			IOS[2] = 57;
-			gprintf("Game requested IOS: %u\n", IOS[0]);
-			bool found = false;
-			for(u8 num = 0; num < 3; num++)
-			{
-				if(found)
-					break;
-				if(IOS[num] == 0)
-					continue;
-				for(CIOSItr itr = _installed_cios.begin(); itr != _installed_cios.end(); itr++)
-				{
-					if(itr->second == IOS[num] || itr->first == IOS[num])
-					{
-						gameIOS = itr->first;
-						found = true;
-						break;
-					}
-				}
-			}
-			if(!found)
-			{
-				error(sfmt("Couldn't find a cIOS using base %i, or 56/57", IOS[0]));
-				return;
-			}
-		}
-		if (gameIOS != mainIOS)
-		{
-			gprintf("Reloading IOS into %d\n", gameIOS);
-			cleanup(true);
-			if(!loadIOS(gameIOS, true))
-			{
-				error(sfmt("Couldn't load IOS %i", gameIOS));
-				return;
-			}
+		int result = _loadIOS(GetRequestedGameIOS(hdr), id);
+		if (result == LOAD_IOS_FAILED)
+			return;
+		if (result == LOAD_IOS_SUCCEEDED)
 			iosLoaded = true;
-		}
 	}
 
 	if(emuSave)
