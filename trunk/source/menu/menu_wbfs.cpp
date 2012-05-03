@@ -340,7 +340,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 							
 							char gcfolder[300];
 							char dmlgamedir[50];
-							snprintf(dmlgamedir, sizeof(dmlgamedir), "%s", (currentPartition != SD) ? m_DMLgameDir.c_str() : DML_DIR);
+							strncpy(dmlgamedir, (currentPartition != SD) ? m_DMLgameDir.c_str() : DML_DIR, sizeof(dmlgamedir));
 							snprintf(gcfolder, sizeof(gcfolder), "%s [%s]", gcheader.title, (char *)gcheader.id);
 							if (_searchGamesByID((const char *) gcheader.id).size() != 0 || GC_GameIsInstalled((char *)gcheader.id, DeviceName[currentPartition], dmlgamedir) || GC_GameIsInstalled(gcfolder, DeviceName[currentPartition], dmlgamedir))
 							{
