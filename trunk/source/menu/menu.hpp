@@ -105,6 +105,7 @@ private:
 	std::string m_languagesDir;
 	std::string m_listCacheDir;
 	std::string m_DMLgameDir;
+	std::string m_helpDir;
 	/* Updates */
 	char m_app_update_drive[6];
 	const char* m_app_update_url;
