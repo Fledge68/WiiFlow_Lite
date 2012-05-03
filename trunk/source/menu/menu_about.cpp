@@ -95,7 +95,8 @@ void CMenu::_showAbout(void)
 	m_btnMgr.show(m_aboutLblTitle);
 	m_btnMgr.show(m_aboutLblIOS);
 	m_btnMgr.show(m_aboutLblInfo,false,true);
-	m_btnMgr.show(m_aboutBtnSystem);
+	if (!m_locked)
+		m_btnMgr.show(m_aboutBtnSystem);
 	for (u32 i = 0; i < ARRAY_SIZE(m_aboutLblUser); ++i)
 		if (m_aboutLblUser[i] != -1u)
 			m_btnMgr.show(m_aboutLblUser[i]);

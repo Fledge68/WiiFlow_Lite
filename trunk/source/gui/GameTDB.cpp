@@ -488,9 +488,10 @@ bool GameTDB::FindTitle(char * data, string & title, string langCode)
 
 bool GameTDB::GetTitle(const char * id, string & title)
 {
-    if(!id) return false;
+	title = "";
+	if(!id) return false;
 
-    char * data = GetGameNode(id);
+	char * data = GetGameNode(id);
     if(!data) return false;
 
 	bool retval = FindTitle(data, title, LangCode);
@@ -502,9 +503,10 @@ bool GameTDB::GetTitle(const char * id, string & title)
 
 bool GameTDB::GetSynopsis(const char * id, string & synopsis)
 {
-    if(!id) return false;
+	synopsis = "";
+	if(!id) return false;
 
-    char * data = GetGameNode(id);
+	char * data = GetGameNode(id);
     if(!data) return false;
 
     char * language = SeekLang(data, LangCode.c_str());
@@ -534,9 +536,10 @@ bool GameTDB::GetSynopsis(const char * id, string & synopsis)
 
 bool GameTDB::GetRegion(const char * id, string & region)
 {
-    if(!id) return false;
+	region = "";
+	if(!id) return false;
 
-    char * data = GetGameNode(id);
+	char * data = GetGameNode(id);
     if(!data) return false;
 
     char * the_region = GetNodeText(data, "<region>", "</region>");
@@ -555,9 +558,10 @@ bool GameTDB::GetRegion(const char * id, string & region)
 
 bool GameTDB::GetDeveloper(const char * id, string & dev)
 {
-    if(!id) return false;
+	dev = "";
+	if(!id) return false;
 
-    char * data = GetGameNode(id);
+	char * data = GetGameNode(id);
     if(!data) return false;
 
     char * the_dev = GetNodeText(data, "<developer>", "</developer>");
@@ -576,9 +580,10 @@ bool GameTDB::GetDeveloper(const char * id, string & dev)
 
 bool GameTDB::GetPublisher(const char * id, string & pub)
 {
-    if(!id) return false;
+	pub = "";
+	if(!id) return false;
 
-    char * data = GetGameNode(id);
+	char * data = GetGameNode(id);
     if(!data) return false;
 
     char * the_pub = GetNodeText(data, "<publisher>", "</publisher>");
@@ -644,7 +649,8 @@ bool GameTDB::GetGenres(const char * id, string & gen)
 {
 	safe_vector<string> genre;
 
-    if(!id) return false;
+    gen = "";
+	if(!id) return false;
 
     char * data = GetGameNode(id);
     if(!data) return false;
@@ -738,7 +744,8 @@ int GameTDB::GetRating(const char * id)
 
 bool GameTDB::GetRatingValue(const char * id, string & rating_value)
 {
-    if(!id) return false;
+	rating_value = "";
+	if(!id) return false;
 
     char * data = GetGameNode(id);
     if(!data) return false;
@@ -766,6 +773,7 @@ bool GameTDB::GetRatingValue(const char * id, string & rating_value)
 
 int GameTDB::GetRatingDescriptors(const char * id, safe_vector<string> & desc_list)
 {
+    desc_list.clear();
     if(!id)
         return -1;
 
@@ -781,7 +789,6 @@ int GameTDB::GetRatingDescriptors(const char * id, safe_vector<string> & desc_li
     }
 
     unsigned int list_num = 0;
-    desc_list.clear();
 
     while(*descriptor_text != '\0')
     {
@@ -833,6 +840,7 @@ int GameTDB::GetWifiPlayers(const char * id)
 
 int GameTDB::GetWifiFeatures(const char * id, safe_vector<string> & feat_list)
 {
+    feat_list.clear();
     if(!id)
         return -1;
 
@@ -848,7 +856,6 @@ int GameTDB::GetWifiFeatures(const char * id, safe_vector<string> & feat_list)
     }
 
     unsigned int list_num = 0;
-    feat_list.clear();
 
     while(*feature_text != '\0')
     {
@@ -905,6 +912,7 @@ int GameTDB::GetPlayers(const char * id)
 
 int GameTDB::GetAccessories(const char * id, safe_vector<Accessory> & acc_list)
 {
+    acc_list.clear();
     if(!id)
         return -1;
 
@@ -920,7 +928,6 @@ int GameTDB::GetAccessories(const char * id, safe_vector<Accessory> & acc_list)
     }
 
     unsigned int list_num = 0;
-    acc_list.clear();
 
     while(ControlsNode && *ControlsNode != '\0')
     {
