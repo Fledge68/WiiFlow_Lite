@@ -40,6 +40,8 @@ extern const u8		drums_png[];
 extern const u8		drumsR_png[];
 extern const u8		motionplus_png[];
 extern const u8		motionplusR_png[];
+extern const u8		udraw_png[];
+extern const u8		udrawR_png[];
 extern const u8		wheel_png[];
 extern const u8		zapper_png[];
 extern const u8		keyboard_png[];
@@ -336,6 +338,7 @@ void CMenu::_textGameInfo(void)
 		}
 		
 		//Ratings
+		m_rating.fromPNG(norating_png);
 		switch(gameinfo.RatingType)
 		{
 			case 0:
@@ -350,8 +353,6 @@ void CMenu::_textGameInfo(void)
 					m_rating.fromPNG(cero_c_png);
 				else if (gameinfo.RatingValue == "Z")
 					m_rating.fromPNG(cero_z_png);
-				else
-					m_rating.fromPNG(norating_png);		
 				break;
 			case 1:
 				//ESRB
@@ -367,8 +368,6 @@ void CMenu::_textGameInfo(void)
 					m_rating.fromPNG(esrb_t_png);
 				else if (gameinfo.RatingValue == "M")
 					m_rating.fromPNG(esrb_m_png);
-				else
-					m_rating.fromPNG(norating_png);
 				break;
 			case 2:
 				//PEGI
@@ -382,8 +381,6 @@ void CMenu::_textGameInfo(void)
 					m_rating.fromPNG(pegi_16_png);
 				else if (gameinfo.RatingValue == "18")
 					m_rating.fromPNG(pegi_18_png);
-				else
-					m_rating.fromPNG(norating_png);
 				break;
 			default:
 				break;
@@ -419,16 +416,17 @@ void CMenu::_textGameInfo(void)
 
 		u8	wiimote=0,
 			nunchuk=0,
-            		classiccontroller=0,
-            		balanceboard=0,
-            		dancepad=0,
-            		guitar=0,
-            		gamecube=0,
-            		motionplus=0,
-	                drums=0,
+			classiccontroller=0,
+			balanceboard=0,
+			dancepad=0,
+			guitar=0,
+			gamecube=0,
+			motionplus=0,
+			drums=0,
 			microphone=0,
 			wheel=0,
-			keyboard,
+			keyboard=0,
+			udraw = 0,
 			zapper=0;
 		
 		//check required controlls
@@ -452,6 +450,8 @@ void CMenu::_textGameInfo(void)
 		microphone=1;
             else if (strcmp((acc_itr->Name).c_str(), "balanceboard") == 0)
                 balanceboard=1;
+			else if (strcmp((acc_itr->Name).c_str(), "udraw") == 0)
+				udraw = 1;
         }
 
 		u8 x = 0;
@@ -521,6 +521,12 @@ void CMenu::_textGameInfo(void)
 			m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 52, 60);
 			x++;
 		}
+		if(udraw && x < max_controlsReq)
+		{
+			m_controlsreq[x].fromPNG(udrawR_png);
+			m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 52, 60);
+			x++;
+		}
 
 		cnt_controlsreq = x;
 
@@ -540,6 +546,7 @@ void CMenu::_textGameInfo(void)
 		microphone=0,
 		wheel=0,
 		keyboard=0,
+		udraw = 0,
 		zapper=0;
 
 		for (safe_vector<Accessory>::iterator acc_itr = gameinfo.Accessories.begin(); acc_itr != gameinfo.Accessories.end(); acc_itr++)
@@ -570,6 +577,8 @@ void CMenu::_textGameInfo(void)
 		zapper=1;
 			else if (strcmp((acc_itr->Name).c_str(), "wheel") == 0)
                 wheel=1;
+			else if (strcmp((acc_itr->Name).c_str(), "udraw") == 0)
+				udraw = 1;
         }
 		
 		x = 0;
@@ -632,6 +641,12 @@ void CMenu::_textGameInfo(void)
 		if(keyboard && x < max_controls)
 		{
 			m_controls[x].fromPNG(keyboard_png);
+			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 60);
+			x++;
+		}
+		if(udraw && x < max_controls)
+		{
+			m_controls[x].fromPNG(udraw_png);
 			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 60);
 			x++;
 		}
