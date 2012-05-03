@@ -487,12 +487,12 @@ void CMenu::_game(bool launch)
 					if (GC_GameIsInstalled((char *)hdr->hdr.id, DeviceName[SD], DML_DIR))
 					{
 						memset(hdr->path, 0, sizeof(hdr->path));
-						snprintf(hdr->path, sizeof(hdr->path), "%s", (char*)hdr->hdr.id);
+						strncpy(hdr->path, (char*)hdr->hdr.id, sizeof(hdr->path));
 					}
 					else if(GC_GameIsInstalled(gcfolder, DeviceName[SD], DML_DIR))
 					{
 						memset(hdr->path, 0, sizeof(hdr->path));
-						snprintf(hdr->path, sizeof(hdr->path), "%s", gcfolder);
+						strncpy(hdr->path, gcfolder, sizeof(hdr->path));
 					}
 					else if(!GC_GameIsInstalled(hdr->path, DeviceName[SD], DML_DIR) && !_wbfsOp(CMenu::WO_COPY_GAME))
 						break;
