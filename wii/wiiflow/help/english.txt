@@ -1,0 +1,54 @@
+Controls:
+- Main menu (coverflow) :
+-- Up / Down  =  Previous / next game (vertical)
+-- Left / Right  =  Previous / next game (horizontal)
+-- Minus / Plus  =  Fast skip through games
+-- A  =  Select game
+-- B+A  =  Launch game immediately
+-- B+Home  =  Reload Wiiflow
+-- Home  =  Exit to Wii menu
+-- 1 / 2  =  Previous / next coverflow mode
+-- B+Left / B+Right  =  Change Song
+-- B+UP / B+DOWN  =  Alphabetic search
+-- B+Onscreen Arrows  =  Alphabetic search
+-- B+Minus  =  Switch Partition
+-- B+Plus  =  Sort Games
+
+-- A on Star Icon  =  Favorites
+-- B on Star Icon  =  Categories
+-- A on Gear Icon  =  Wiiflow settings
+-- A on Disc Icon (Game Disc in Drive)  =  Launch game disc
+-- A on USB Icon  =  Switch to Game menu (icon changes to channels)
+-- A on Channels Icon  =  Switch to Channels menu (icon changes to USB)
+-- A on Home Icon  =  Exit to Wii Menu
+
+- Game :
+-- A on box  =  Show the backside
+-- A out of screen  =  Launch game
+-- B  =  Back to coverflow
+-- Up / Down  =  Previous / next game (vertical)
+-- Left / Right  =  Previous / next game (horizontal)
+-- Plus  =  Game Info
+---Right (in Game Info)  =  Game Description
+---Left  (in Game Desc)  =  Game Info
+-- A on Star Icon  =  Toggle Favorite (Yellow = Favorite)
+-- A on Hand Icon  =  Parental Lock (Red = locked)
+-- A on Gear Icon  =  Game Settings
+-- A on X Icon  =   Delete Game
+
+- Settings menus :
+-- Minus / Plus  =  Previous / next page
+-- Left / Right  =  Previous / next page
+
+- Coverflow Adjust settings :
+-- B+Minus / B+Plus  =  Previous / next page
+-- B  =  Faster adjustment (B+A instead of just A to click a button)
+-- B+1  =  Copy whole coverflow
+-- B+2  =  Paste coverflow\n\
+
+TIPS for running games that crash:
+If the game just locks up with a black screen at launch then check to see if it is a PAL game.
+  (Press the Plus button on the game screen.)  If it is PAL, then set the game's video mode to "PAL 50Hz" in the game's setting screen.
+  You will need to use a component connection to the TV and have your WII set to 480p video mode.
+
+If a game crashes, then try running the game again.  If it continually crashes, then turn the USB Emulation to \"Off\" in the game's setting screen.
