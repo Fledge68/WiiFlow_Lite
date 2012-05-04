@@ -8,6 +8,7 @@
 #include "music/SoundHandler.hpp"
 #include "channel/nand.hpp"
 #include "defines.h"
+#include "wdvd.h"
 
 using namespace std;
 
@@ -439,13 +440,21 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 			m_btnMgr.setProgress(m_wbfsPBar, m_thrdProgress);
 			m_btnMgr.setText(m_wbfsLblMessage, wfmt(_fmt("wbfsprogress", L"%i%%"), (int)(m_thrdProgress * 100.f)));
 			if (!m_thrdWorking)
+			{
+				if(op == CMenu::WO_ADD_GAME)
+				{
+					WDVD_StopMotor();
+					WDVD_Close();
+				}
 				m_btnMgr.show(m_wbfsBtnBack);
+			}
 		}
 	}
 	_hideWBFS();
 	if (done && (op == CMenu::WO_REMOVE_GAME || op == CMenu::WO_ADD_GAME))
 	{
-		m_gameList.SetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
+		m_gameList.SetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());			
+		
 		if(upd_dml)
 			UpdateCache(COVERFLOW_DML);
 

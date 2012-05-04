@@ -158,20 +158,25 @@ s32 WBFS_Ext_RemoveGame(u8 *discid, char *gamepath)
 	char folder[MAX_FAT_PATH];
 	STRCOPY(folder, gamepath);
 	char *p = strrchr(folder, '/');
-	if (p) *p = 0;
+	if(p) *p = 0;
 
 	dir_iter = opendir(folder);
 	if (!dir_iter) return 0;
-	while ((ent = readdir(dir_iter)) != NULL)
+	while((ent = readdir(dir_iter)) != NULL)
 	{
-		if (ent->d_name[0] == '.') continue;
+		//if(ent->d_name[0] == '.') 
+		//	continue;
+			
+		if(strstr(ent->d_name, (char*)discid) != NULL)
+		{
 
-		snprintf(file, sizeof(file), "%s/%s", folder, ent->d_name);
-		//if(discid != NULL && strstr(file, (char*)discid) != NULL)
+			snprintf(file, sizeof(file), "%s/%s", folder, ent->d_name);
+			//if(discid != NULL && strstr(file, (char*)discid) != NULL)
 			remove(file);
+		}
 	}
 	closedir(dir_iter);
-	//if(strlen(folder) > 11)
+	if(strlen(folder) > 11)
 		unlink(folder);
 	return 0;
 }
