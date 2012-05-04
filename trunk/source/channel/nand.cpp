@@ -51,8 +51,6 @@ config_header *cfg_hdr;
 bool tbdec = false;
 bool configloaded = false;
 
-static const int d2xfatrepl_len = 7;
-
 static NandDevice NandDeviceList[] = 
 {
 	{ "Disable",						0,	0x00,	0x00 },

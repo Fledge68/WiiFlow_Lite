@@ -255,8 +255,8 @@ s32 Disc_Open(void)
 	/* Read disc ID */
 	ret = WDVD_ReadDiskId(diskid);
 
-	/* Directly set Audio Streaming for GC */
-	gprintf("Setting Audio Streaming for GC Games: 0x%08x\n", WDVD_SetStreaming());
+	/* Directly set Audio Streaming for GC But not here ;) */
+	//gprintf("Setting Audio Streaming for GC Games: 0x%08x\n", WDVD_SetStreaming());
 
 	return ret;
 }
