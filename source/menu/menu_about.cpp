@@ -126,7 +126,7 @@ void CMenu::_textAbout(void)
 	m_btnMgr.setText(m_aboutBtnSystem, _t("sys4", L"Update"));
 	m_btnMgr.setText(m_aboutLblTitle, wfmt(_fmt("appname", L"%s (%s-r%s)"), APP_NAME, APP_VERSION, SVN_REV), false);
 
-	char * help =(char *)MEM2_alloc(4096);
+	char *help = (char*)calloc(4096, sizeof(char));
 	FILE * f = fopen(sfmt("%s/%s.txt", m_helpDir.c_str(), m_curLanguage.c_str()).c_str(), "r");
 	if (f == NULL)
 		f = fopen(sfmt("%s/english.txt", m_helpDir.c_str()).c_str(), "r");
