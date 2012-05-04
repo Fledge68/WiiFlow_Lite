@@ -42,8 +42,10 @@ public:
 	void EndAdd();
 	safe_vector<dir_discHdr> ParseScummvmINI(Config &ini, string Device);
 private:
+	s8 GetPluginPosition(u32 magic);
+
 	safe_vector<PluginOptions> Plugins;
-	u8 banner_pos;
+	s8 Plugin_Pos;
 	string pluginsDir;
 	bool adding;
 };
