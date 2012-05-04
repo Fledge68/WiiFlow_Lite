@@ -8,12 +8,8 @@ static const int g_curPage = 6;
 
 void CMenu::_hideConfigScreen(bool instant)
 {
-	m_btnMgr.hide(m_configLblTitle, instant);
-	m_btnMgr.hide(m_configBtnBack, instant);
-	m_btnMgr.hide(m_configLblPage, instant);
-	m_btnMgr.hide(m_configBtnPageM, instant);
-	m_btnMgr.hide(m_configBtnPageP, instant);
-	// 
+	_hideConfigCommon(instant);
+
 	m_btnMgr.hide(m_configScreenLblTVHeight, instant);
 	m_btnMgr.hide(m_configScreenLblTVHeightVal, instant);
 	m_btnMgr.hide(m_configScreenBtnTVHeightP, instant);
@@ -37,13 +33,8 @@ void CMenu::_hideConfigScreen(bool instant)
 
 void CMenu::_showConfigScreen(void)
 {
-	_setBg(m_configScreenBg, m_configScreenBg);
-	m_btnMgr.show(m_configLblTitle);
-	m_btnMgr.show(m_configBtnBack);
-	m_btnMgr.show(m_configLblPage);
-	m_btnMgr.show(m_configBtnPageM);
-	m_btnMgr.show(m_configBtnPageP);
-	// 
+	_showConfigCommon(m_configScreenBg, g_curPage);
+
 	m_btnMgr.show(m_configScreenLblTVHeight);
 	m_btnMgr.show(m_configScreenLblTVHeightVal);
 	m_btnMgr.show(m_configScreenBtnTVHeightP);
@@ -63,8 +54,7 @@ void CMenu::_showConfigScreen(void)
 	for (u32 i = 0; i < ARRAY_SIZE(m_configScreenLblUser); ++i)
 		if (m_configScreenLblUser[i] != -1u)
 			m_btnMgr.show(m_configScreenLblUser[i]);
-	// 
-	m_btnMgr.setText(m_configLblPage, wfmt(L"%i / %i", g_curPage, m_locked ? g_curPage : CMenu::_nbCfgPages));
+
 	m_btnMgr.setText(m_configScreenLblTVWidthVal, wfmt(L"%i", 640 * 640 / max(1, m_cfg.getInt("GENERAL", "tv_width", 640))));
 	m_btnMgr.setText(m_configScreenLblTVHeightVal, wfmt(L"%i", 480 * 480 / max(1, m_cfg.getInt("GENERAL", "tv_height", 480))));
 	m_btnMgr.setText(m_configScreenLblTVXVal, wfmt(L"%i", -m_cfg.getInt("GENERAL", "tv_x", 0)));
@@ -73,36 +63,15 @@ void CMenu::_showConfigScreen(void)
 
 int CMenu::_configScreen(void)
 {
-	int nextPage = 0;
+	int change = CONFIG_PAGE_NO_CHANGE;
 	SetupInput();
 
 	_showConfigScreen();
 	while (true)
 	{
-		_mainLoopCommon();
-		if (BTN_HOME_PRESSED || BTN_B_PRESSED)
+		change = _configCommon();
+		if (change != CONFIG_PAGE_NO_CHANGE)
 			break;
-		else if (BTN_UP_PRESSED)
-			m_btnMgr.up();
-		else if (BTN_DOWN_PRESSED)
-			m_btnMgr.down();
-		if (BTN_LEFT_PRESSED || BTN_MINUS_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_configBtnPageM)))
-		{
-			nextPage = g_curPage == 1 && !m_locked ? CMenu::_nbCfgPages : max(1, m_locked ? 1 : g_curPage - 1);
-			if(BTN_LEFT_PRESSED || BTN_MINUS_PRESSED) m_btnMgr.click(m_configBtnPageM);
-			break;
-		}
-		if (BTN_RIGHT_PRESSED || BTN_PLUS_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_configBtnPageP)))
-		{
-			nextPage = (g_curPage == CMenu::_nbCfgPages) ? 1 : min(g_curPage + 1, CMenu::_nbCfgPages);
-			if(BTN_RIGHT_PRESSED || BTN_PLUS_PRESSED) m_btnMgr.click(m_configBtnPageP);
-			break;
-		}
-		if (BTN_A_PRESSED)
-		{
-			if (m_btnMgr.selected(m_configBtnBack))
-				break;
-		}
 		if (BTN_A_REPEAT)
 		{
 			if (m_btnMgr.selected(m_configScreenBtnTVWidthP) || m_btnMgr.selected(m_configScreenBtnTVWidthM)
@@ -133,7 +102,7 @@ int CMenu::_configScreen(void)
 		}
 	}
 	_hideConfigScreen();
-	return nextPage;
+	return change;
 }
 
 void CMenu::_initConfigScreenMenu(CMenu::SThemeData &theme)

@@ -7,12 +7,8 @@ static const int g_curPage = 5;
 
 void CMenu::_hideConfigSnd(bool instant)
 {
-	m_btnMgr.hide(m_configLblTitle, instant);
-	m_btnMgr.hide(m_configBtnBack, instant);
-	m_btnMgr.hide(m_configLblPage, instant);
-	m_btnMgr.hide(m_configBtnPageM, instant);
-	m_btnMgr.hide(m_configBtnPageP, instant);
-	// 
+	_hideConfigCommon(instant);
+
 	m_btnMgr.hide(m_configSndLblBnrVol, instant);
 	m_btnMgr.hide(m_configSndLblBnrVolVal, instant);
 	m_btnMgr.hide(m_configSndBtnBnrVolP, instant);
@@ -36,13 +32,8 @@ void CMenu::_hideConfigSnd(bool instant)
 
 void CMenu::_showConfigSnd(void)
 {
-	_setBg(m_configSndBg, m_configSndBg);
-	m_btnMgr.show(m_configLblTitle);
-	m_btnMgr.show(m_configBtnBack);
-	m_btnMgr.show(m_configLblPage);
-	m_btnMgr.show(m_configBtnPageM);
-	m_btnMgr.show(m_configBtnPageP);
-	// 
+	_showConfigCommon(m_configSndBg, g_curPage);
+
 	m_btnMgr.show(m_configSndLblBnrVol);
 	m_btnMgr.show(m_configSndLblBnrVolVal);
 	m_btnMgr.show(m_configSndBtnBnrVolP);
@@ -62,8 +53,7 @@ void CMenu::_showConfigSnd(void)
 	for (u32 i = 0; i < ARRAY_SIZE(m_configSndLblUser); ++i)
 		if (m_configSndLblUser[i] != -1u)
 			m_btnMgr.show(m_configSndLblUser[i]);
-	// 
-	m_btnMgr.setText(m_configLblPage, wfmt(L"%i / %i", g_curPage, m_locked ? g_curPage : CMenu::_nbCfgPages));
+
 	m_btnMgr.setText(m_configSndLblGuiVolVal, wfmt(L"%i", m_cfg.getInt("GENERAL", "sound_volume_gui", 255)));
 	m_btnMgr.setText(m_configSndLblCFVolVal, wfmt(L"%i", m_cfg.getInt("GENERAL", "sound_volume_coverflow", 255)));
 	m_btnMgr.setText(m_configSndLblMusicVolVal, wfmt(L"%i", m_cfg.getInt("GENERAL", "sound_volume_music", 255)));
@@ -72,37 +62,16 @@ void CMenu::_showConfigSnd(void)
 
 int CMenu::_configSnd(void)
 {
-	int nextPage = 0;
+	int change = CONFIG_PAGE_NO_CHANGE;
 	SetupInput();
 	int step = 1;
 
 	_showConfigSnd();
 	while (true)
 	{
-		_mainLoopCommon();
-		if (BTN_HOME_PRESSED || BTN_B_PRESSED)
+		change = _configCommon();
+		if (change != CONFIG_PAGE_NO_CHANGE)
 			break;
-		else if (BTN_UP_PRESSED)
-			m_btnMgr.up();
-		else if (BTN_DOWN_PRESSED)
-			m_btnMgr.down();
-		if (BTN_LEFT_PRESSED || BTN_MINUS_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_configBtnPageM)))
-		{
-			nextPage = max(1, m_locked ? 1 : g_curPage - 1);
-			if(BTN_LEFT_PRESSED || BTN_MINUS_PRESSED) m_btnMgr.click(m_configBtnPageM);
-			break;
-		}
-		if (!m_locked && (BTN_RIGHT_PRESSED || BTN_PLUS_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_configBtnPageP))))
-		{
-			nextPage = min(g_curPage + 1, CMenu::_nbCfgPages);
-			if(BTN_RIGHT_PRESSED || BTN_PLUS_PRESSED) m_btnMgr.click(m_configBtnPageP);
-			break;
-		}
-		if (BTN_A_PRESSED)
-		{
-			if (m_btnMgr.selected(m_configBtnBack))
-				break;
-		}
 		if (BTN_A_REPEAT)
 		{
 			if (m_btnMgr.selected(m_configSndBtnBnrVolP))
@@ -158,7 +127,7 @@ int CMenu::_configSnd(void)
 		}
 	}
 	_hideConfigSnd();
-	return nextPage;
+	return change;
 }
 
 void CMenu::_initConfigSndMenu(CMenu::SThemeData &theme)
