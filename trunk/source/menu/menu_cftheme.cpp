@@ -412,7 +412,7 @@ void CMenu::_cfTheme(void)
 				m_theme.load(fmt("%s/%s.ini", m_themeDir.c_str(), m_cfg.getString("GENERAL", "theme", "defaut").c_str()));
 				break;
 			}
-			else if (m_btnMgr.selected(m_cfThemeBtnAlt) && m_current_view != COVERFLOW_HOMEBREW && m_current_view != COVERFLOW_EMU)
+			else if (m_btnMgr.selected(m_cfThemeBtnAlt))
 			{
 				cfVersion = 1 + loopNum(cfVersion, m_numCFVersions);
 				_showCFTheme(curParam, cfVersion, wide);
