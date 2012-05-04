@@ -14,6 +14,7 @@
 #include "gecko/gecko.h"
 
 static const std::string emptyString;
+static char* emptyChar = (char*)" ";
 
 void Plugin::init(string m_pluginsDir)
 {
@@ -29,11 +30,11 @@ void Plugin::EndAdd()
 
 void Plugin::Cleanup()
 {
-	for(banner_pos = 0; banner_pos < Plugins.size(); banner_pos++)
-		MEM2_free(Plugins[banner_pos].BannerSound);
-	Plugins.clear();
-	banner_pos = 0;
-	pluginsDir.erase(0, pluginsDir.size());
+	for(u8 pos = 0; pos < Plugins.size(); pos++)
+	{
+		if(Plugins[pos].BannerSound != NULL)
+			MEM2_free(Plugins[pos].BannerSound);
+	}
 }
 
 bool Plugin::AddPlugin(Config &plugin)
@@ -74,50 +75,50 @@ bool Plugin::AddPlugin(Config &plugin)
 	return false;
 }
 
-bool Plugin::UseReturnLoader(u32 magic)
+s8 Plugin::GetPluginPosition(u32 magic)
 {
 	for(u8 pos = 0; pos < Plugins.size(); pos++)
 	{
 		if(magic == Plugins[pos].magicWord)
-			return Plugins[pos].ReturnLoader;
+			return pos;
 	}
+	return -1;
+}
+
+bool Plugin::UseReturnLoader(u32 magic)
+{
+	if((Plugin_Pos = GetPluginPosition(magic)) >= 0)
+		return Plugins[Plugin_Pos].ReturnLoader;
 	return false;
 }
 
 u8* Plugin::GetBannerSound(u32 magic)
 {
-	for(banner_pos = 0; banner_pos < Plugins.size(); banner_pos++)
-	{
-		if(magic == Plugins[banner_pos].magicWord)
-			return Plugins[banner_pos].BannerSound;
-	}
+	if((Plugin_Pos = GetPluginPosition(magic)) >= 0)
+		return Plugins[Plugin_Pos].BannerSound;
 	return NULL;
 }
 
 u32 Plugin::GetBannerSoundSize()
 {
 	//We call that directly after GetBannerSound, so no need to search for the magic again
-	if(Plugins[banner_pos].BannerSoundSize > 0)
-		return Plugins[banner_pos].BannerSoundSize;
+	if(Plugin_Pos >= 0)
+		return Plugins[Plugin_Pos].BannerSoundSize;
 	return 0;
 }
 
 char* Plugin::GetDolName(u32 magic)
 {
-	char *null = (char*)" ";
-	for(u8 pos = 0; pos < Plugins.size(); pos++)
-		if(magic == Plugins[pos].magicWord)
-			return (char*)Plugins[pos].DolName.c_str();
-	return null;
+	if((Plugin_Pos = GetPluginPosition(magic)) >= 0)
+		return (char*)Plugins[Plugin_Pos].DolName.c_str();
+	return emptyChar;
 }
 
 char* Plugin::GetCoverFolderName(u32 magic)
 {
-	char *null = (char*)" ";
-	for(u8 pos = 0; pos < Plugins.size(); pos++)
-		if(magic == Plugins[pos].magicWord)
-			return (char*)Plugins[pos].coverFolder.c_str();
-	return null;
+	if((Plugin_Pos = GetPluginPosition(magic)) >= 0)
+		return (char*)Plugins[Plugin_Pos].coverFolder.c_str();
+	return emptyChar;
 }
 
 safe_vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, string Device)
