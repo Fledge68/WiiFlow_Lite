@@ -378,11 +378,12 @@ void CMenu::_game(bool launch)
 			startGameSound = 1;
 		}
 		if (BTN_B_PRESSED && (m_btnMgr.selected(m_gameBtnFavoriteOn) || m_btnMgr.selected(m_gameBtnFavoriteOff)))
-			{
-				_hideGame();
-				_CategorySettings(true);
-				_showGame();
-			}
+		{
+			_hideGame();
+			_CategorySettings(true);
+			_showGame();
+			continue;
+		}
 		if (BTN_HOME_PRESSED || BTN_B_PRESSED)
 		{
 			m_gameSound.Stop();
