@@ -32,7 +32,7 @@ void split_get_fname(split_info_t *s, int idx, char *fname)
 	strcpy(fname, s->fname);
 	if (idx == 0 && s->create_mode)
 	{
-		strcat(fname, ".tmp");
+		//strcat(fname, ".tmp");
 	}
 	else if (idx > 0)
 	{

@@ -1,5 +1,4 @@
 
-//#define ENABLEDUMPER
 
 #include "menu.hpp"
 #include "loader/patchcode.h"
@@ -1044,6 +1043,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			else
 			{
 				/* Read GC disc header */
+				gprintf("Setting Audio Streaming for GC Games: 0x%08x\n", WDVD_SetStreaming());
 				struct gc_discHdr *gcHeader = (struct gc_discHdr *)MEM2_alloc(sizeof(struct gc_discHdr));
 				Disc_ReadGCHeader(gcHeader);
 				memcpy(hdr->hdr.id, gcHeader->id, 6);
