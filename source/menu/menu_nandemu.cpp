@@ -43,6 +43,7 @@ static bool _nandSaveExcists(const char *npath)
 
 void CMenu::_enableNandEmu(bool fromconfig)
 {
+	_cfNeedsUpdate();
 	bool disable = true;
 	int i = m_current_view == COVERFLOW_CHANNEL && min(max(0, m_cfg.getInt("NAND", "emulation", 0)), (int)ARRAY_SIZE(CMenu::_NandEmu) - 1);
 	gprintf("i: %i\n",i);
@@ -279,7 +280,7 @@ int CMenu::_AutoExtractSave(string gameId)
 	{
 		m_btnMgr.setText(m_nandemuBtnExtract, _t("cfgne24", L"Extract save"));
 		m_btnMgr.setText(m_nandemuBtnDisable, _t("cfgne25", L"Create new save"));	
-		m_btnMgr.setText(m_nandemuLblInit, _t("cfgne26", L"A save file for this game was created on real nand. Extract excisting safe file from real nand or create new file for nandemulation?"));
+		m_btnMgr.setText(m_nandemuLblInit, _t("cfgne26", L"A save file for this game was created on real nand. Extract existing safe file from real nand or create new file for nand emulation?"));
 		m_btnMgr.show(m_nandemuBtnExtract);
 		m_btnMgr.show(m_nandemuBtnDisable);	
 		m_btnMgr.show(m_nandemuLblInit);

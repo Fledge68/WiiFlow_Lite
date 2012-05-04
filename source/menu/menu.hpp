@@ -629,6 +629,8 @@ private:
 	s32	  wmote_roll_skip[WPAD_MAX_WIIMOTES];
 	bool  enable_wmote_roll;
 
+	bool m_cfNeedsUpdate;
+
 	void SetupInput(void);
 	void ScanInput(void);
 
@@ -859,6 +861,7 @@ private:
 	void _hideCheatSettings(bool instant = false);
 	void _hideError(bool instant = false);
 	void _hideMain(bool instant = false);
+	void _hideConfigCommon(bool instant = false);
 	void _hideConfig(bool instant = false);
 	void _hideConfig3(bool instant = false);
 	void _hideConfigScreen(bool instant = false);
@@ -881,6 +884,7 @@ private:
 	//
 	void _showError(void);
 	void _showMain(void);
+	void _showConfigCommon(const STexture & bg, int page);
 	void _showConfig(void);
 	void _showConfig3(void);
 	void _showConfigScreen(void);
@@ -907,8 +911,9 @@ private:
 	void _drawBg(void);
 	void _updateText(void);
 	void _showNandEmu(void);
-	// 
+	//
 	void _config(int page);
+	int _configCommon(void);
 	int _config1(void);
 	int _config3(void);
 	int _configScreen(void);
@@ -918,6 +923,14 @@ private:
 	int _NandEmuCfg(void);
 	int _AutoCreateNand(void);
 	int _AutoExtractSave(string gameId);
+	enum configPageChanges
+	{
+		CONFIG_PAGE_DEC = -1,
+		CONFIG_PAGE_NO_CHANGE = 0,
+		CONFIG_PAGE_INC = 1,
+		CONFIG_PAGE_BACK,
+	};
+	void _cfNeedsUpdate(void);
 	void _game(bool launch = false);
 	void _download(std::string gameId = std::string());
 	bool _code(char code[4], bool erase = false);
