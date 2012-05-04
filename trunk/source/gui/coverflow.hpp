@@ -86,6 +86,7 @@ public:
 	void setFont(SFont font, const CColor &color);
 	void setRange(u32 rows, u32 columns);
 	void setBoxMode(bool box);
+	void setHQcover(bool HQ);
 	void setTextureQuality(float lodBias, int aniso, bool edgeLOD);
 	void setCameraPos(bool selected, const Vector3D &pos, const Vector3D &aim);
 	void setCameraOsc(bool selected, const Vector3D &speed, const Vector3D &amp);
@@ -256,6 +257,7 @@ private:
 	CColor m_fanartFontColor;
 	bool m_fanartPlaying;
 	bool m_box;
+	bool m_useHQcover;
 	u32 m_range;
 	u32 m_rows;
 	u32 m_columns;

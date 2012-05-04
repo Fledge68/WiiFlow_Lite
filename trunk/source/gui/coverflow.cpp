@@ -203,6 +203,7 @@ CCoverFlow::CCoverFlow(void)
 	m_compressCache = false;
 	m_deletePicsAfterCaching = false;
 	m_box = true;
+	m_useHQcover = false;
 	m_rows = 1;
 	m_columns = 11;
 	m_range = m_rows * m_columns;
@@ -275,6 +276,11 @@ void CCoverFlow::setTextureQuality(float lodBias, int aniso, bool edgeLOD)
 void CCoverFlow::setBoxMode(bool box)
 {
 	m_box = box;
+}
+
+void CCoverFlow::setHQcover(bool HQ)
+{
+	m_useHQcover = HQ;
 }
 
 void CCoverFlow::setBufferSize(u32 numCovers)
@@ -2674,15 +2680,13 @@ int CCoverFlow::_coverLoader(CCoverFlow *cf)
 	u32 i;
 
 	u32 bufferSize = cf->m_range + cf->m_numBufCovers;
-	if(bufferSize >= cf->m_items.size())
-		bufferSize = cf->m_items.size();
 
-	while (cf->m_loadingCovers)
+	while(cf->m_loadingCovers)
 	{
 		update = cf->m_moved;
 		cf->m_moved = false;
 
-		for (u32 j = cf->m_items.size(); j >= bufferSize && cf->m_loadingCovers && !cf->m_moved && update; --j)
+		for(u32 j = cf->m_items.size(); j >= bufferSize && cf->m_loadingCovers && !cf->m_moved && update; --j)
 		{
 			firstItem = cf->m_covers[cf->m_range / 2].index;
 			i = loopNum((j & 1) ? firstItem - (j + 1) / 2 : firstItem + j / 2, cf->m_items.size());
@@ -2692,20 +2696,21 @@ int CCoverFlow::_coverLoader(CCoverFlow *cf)
 			LWP_MutexUnlock(cf->m_mutex);
 		}
 		ret = CCoverFlow::CL_OK;
-		for (u32 j = 0; j <= bufferSize && cf->m_loadingCovers && !cf->m_moved && update && ret != CCoverFlow::CL_NOMEM; ++j)
+		for(u32 j = 0; j <= bufferSize && cf->m_loadingCovers && !cf->m_moved && update && ret != CCoverFlow::CL_NOMEM; ++j)
 		{
 			firstItem = cf->m_covers[cf->m_range / 2].index;
 			i = loopNum((j & 1) ? firstItem - (j + 1) / 2 : firstItem + j / 2, cf->m_items.size());
-			if (cf->m_items[i].state != CCoverFlow::STATE_Loading)
+			if(cf->m_items[i].state != CCoverFlow::STATE_Loading)
 				continue;
-
-			if ((ret = cf->_loadCoverTex(i, cf->m_box, i == (u32)firstItem)) == CCoverFlow::CL_ERROR)
+			if(firstItem == (u32)cf->m_hqCover && cf->m_useHQcover)
+				continue;
+			if((ret = cf->_loadCoverTex(i, cf->m_box, i == (u32)firstItem)) == CCoverFlow::CL_ERROR)
 			{
 				if ((ret = cf->_loadCoverTex(i, !cf->m_box, i == (u32)firstItem)) == CCoverFlow::CL_ERROR)
 					cf->m_items[i].state = CCoverFlow::STATE_NoCover;
 			}
 		}
-		if (ret == CCoverFlow::CL_NOMEM && bufferSize > 3)
+		if(ret == CCoverFlow::CL_NOMEM && bufferSize > 3)
 			bufferSize -= 2;
 	}
 	return 0;

@@ -1531,6 +1531,7 @@ void CMenu::_initCF(void)
 	m_cf.setCompression(m_cfg.getBool("GENERAL", "allow_texture_compression", true));
 	m_cf.setBufferSize(m_cfg.getInt("GENERAL", "cover_buffer", 20));
 	m_cf.setSorting((Sorting)m_cfg.getInt(domain, "sort", 0));
+	m_cf.setHQcover(m_cfg.getBool("GENERAL", "cover_use_hq", false));
 	if (m_curGameId.empty() || !m_cf.findId(m_curGameId.c_str(), true))
 		m_cf.findId(m_cfg.getString(domain, "current_item").c_str(), true);
 	m_cf.startCoverLoader();
