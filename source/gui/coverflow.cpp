@@ -2700,9 +2700,9 @@ int CCoverFlow::_coverLoader(CCoverFlow *cf)
 		{
 			firstItem = cf->m_covers[cf->m_range / 2].index;
 			i = loopNum((j & 1) ? firstItem - (j + 1) / 2 : firstItem + j / 2, cf->m_items.size());
-			if(cf->m_items[i].state != CCoverFlow::STATE_Loading)
+			if(!cf->m_useHQcover && cf->m_items[i].state != CCoverFlow::STATE_Loading)
 				continue;
-			if(firstItem == (u32)cf->m_hqCover && cf->m_useHQcover)
+			else if(cf->m_useHQcover && firstItem == (u32)cf->m_hqCover && cf->m_items[i].state != CCoverFlow::STATE_Loading)
 				continue;
 			if((ret = cf->_loadCoverTex(i, cf->m_box, i == (u32)firstItem)) == CCoverFlow::CL_ERROR)
 			{
