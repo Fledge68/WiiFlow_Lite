@@ -7,11 +7,6 @@ static const wchar_t *g_whitespaces = L" \f\n\r\t\v";
 // Simplified use of sprintf
 const char *fmt(const char *format, ...)
 {
-	enum {
-		MAX_MSG_SIZE	= 512,
-		MAX_USES		= 8
-	};
-
 	static int currentStr = 0;
 	currentStr = (currentStr + 1) % MAX_USES;
 

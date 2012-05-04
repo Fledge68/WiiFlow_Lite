@@ -28,7 +28,7 @@ void CachedList<T>::Load(string path, string containing, string m_lastLanguage, 
 		update_emu = strcasestr(path.c_str(), m_plugin.getString("PLUGIN","romDir","").c_str()) != NULL && force_update[COVERFLOW_EMU];
 
 		const char* partition = DeviceName[DeviceHandler::Instance()->PathToDriveType(path.c_str())];
-		update_dml = strcasestr(path.c_str(), sfmt(strncmp(partition, "sd", 2) != 0 ? m_DMLgameDir.c_str() : "%s:/games", partition).c_str()) != NULL && force_update[COVERFLOW_DML];
+		update_dml = strcasestr(path.c_str(), fmt(strncmp(partition, "sd", 2) != 0 ? m_DMLgameDir.c_str() : "%s:/games", partition)) != NULL && force_update[COVERFLOW_DML];
 
 		gprintf("update_games=%d update_homebrew=%d update_dml=%d, update_emu=%d\n", update_games, update_homebrew, update_dml, update_emu);
 		if(update_games || update_homebrew || update_dml || update_emu)

@@ -127,9 +127,9 @@ void CMenu::_textAbout(void)
 	m_btnMgr.setText(m_aboutLblTitle, wfmt(_fmt("appname", L"%s (%s-r%s)"), APP_NAME, APP_VERSION, SVN_REV), false);
 
 	char *help = (char*)calloc(4096, sizeof(char));
-	FILE * f = fopen(sfmt("%s/%s.txt", m_helpDir.c_str(), m_curLanguage.c_str()).c_str(), "r");
+	FILE * f = fopen(fmt("%s/%s.txt", m_helpDir.c_str(), m_curLanguage.c_str()), "r");
 	if (f == NULL)
-		f = fopen(sfmt("%s/english.txt", m_helpDir.c_str()).c_str(), "r");
+		f = fopen(fmt("%s/english.txt", m_helpDir.c_str()), "r");
 	if (f == NULL)
 		strcpy(help, "ERROR: No Help File Found");
 	else

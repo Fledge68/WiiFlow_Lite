@@ -54,6 +54,12 @@ private:
 };
 
 // Nothing to do with CText. Q&D helpers for string formating.
+
+enum {
+	MAX_MSG_SIZE	= 512,
+	MAX_USES		= 8
+};
+
 const char *fmt(const char *format, ...);
 std::string sfmt(const char *format, ...);
 wstringEx wfmt(const wstringEx &format, ...);

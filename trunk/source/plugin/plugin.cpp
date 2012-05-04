@@ -126,7 +126,7 @@ safe_vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, string Device)
 	safe_vector<dir_discHdr> gameHeader;
 	if(!ini.loaded())
 		return gameHeader;
-	string game = ini.firstDomain().c_str();
+	string game(ini.firstDomain());
 	dir_discHdr tmp;
 	while(1)
 	{

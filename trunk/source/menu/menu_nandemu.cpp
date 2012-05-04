@@ -499,7 +499,7 @@ int CMenu::_NandDumper(void *obj)
 	m.m_cfg.save();
 	
 	char basepath[64];
-	snprintf(basepath, 64, "%s:%s", DeviceName[emuPartition], emuPath.c_str());	
+	snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[emuPartition], emuPath.c_str());	
 	
 	LWP_MutexLock(m.m_mutex);
 	m._setDumpMsg(L"Calculating space needed for extraction...", 0.f, 0.f);

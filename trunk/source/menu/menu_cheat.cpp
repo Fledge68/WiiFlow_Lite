@@ -54,7 +54,7 @@ u32 CMenu::_downloadCheatFileAsync(void *obj)
 	string id = m->m_cf.getId();
 	char type = id[0] == 'S' ? 'R' : id[0];
 
-	block cheatfile = downloadfile(buffer.get(), bufferSize, sfmt(GECKOURL, type, id.c_str()).c_str(),CMenu::_downloadProgress, m);
+	block cheatfile = downloadfile(buffer.get(), bufferSize, fmt(GECKOURL, type, id.c_str()), CMenu::_downloadProgress, m);
 
 	if (cheatfile.data != NULL && cheatfile.size > 65 && cheatfile.data[0] != '<')
 	{
@@ -360,8 +360,8 @@ void CMenu::_initCheatSettingsMenu(CMenu::SThemeData &theme)
 	_setHideAnim(m_cheatBtnPageP, "CHEAT/PAGE_PLUS", 0, 0, 1.f, -1.f);
 	
 	for (int i=0;i<CHEATSPERPAGE;++i) {
-		_setHideAnim(m_cheatLblItem[i], sfmt("CHEAT/ITEM_%i", i).c_str(), -200, 0, 1.f, 0.f);
-		_setHideAnim(m_cheatBtnItem[i], sfmt("CHEAT/ITEM_%i_BTN", i).c_str(), 200, 0, 1.f, 0.f);
+		_setHideAnim(m_cheatLblItem[i], fmt("CHEAT/ITEM_%i", i), -200, 0, 1.f, 0.f);
+		_setHideAnim(m_cheatBtnItem[i], fmt("CHEAT/ITEM_%i_BTN", i), 200, 0, 1.f, 0.f);
 	}
 	
 	_hideCheatSettings();

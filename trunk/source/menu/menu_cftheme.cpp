@@ -328,7 +328,7 @@ void CMenu::_cfTheme(void)
 		{
 			m_theme.clear();
 			m_theme.unload();
-			m_theme.load(sfmt("%s/%s.ini", m_themeDir.c_str(), m_cfg.getString("GENERAL", "theme", "defaut").c_str()).c_str());
+			m_theme.load(fmt("%s/%s.ini", m_themeDir.c_str(), m_cfg.getString("GENERAL", "theme", "defaut").c_str()));
 			break;
 		}
 		else if (BTN_UP_PRESSED)
@@ -409,7 +409,7 @@ void CMenu::_cfTheme(void)
 			{
 				m_theme.clear();
 				m_theme.unload();
-				m_theme.load(sfmt("%s/%s.ini", m_themeDir.c_str(), m_cfg.getString("GENERAL", "theme", "defaut").c_str()).c_str());
+				m_theme.load(fmt("%s/%s.ini", m_themeDir.c_str(), m_cfg.getString("GENERAL", "theme", "defaut").c_str()));
 				break;
 			}
 			else if (m_btnMgr.selected(m_cfThemeBtnAlt) && m_current_view != COVERFLOW_HOMEBREW && m_current_view != COVERFLOW_EMU)
@@ -584,12 +584,12 @@ void CMenu::_initCFThemeMenu(CMenu::SThemeData &theme)
 		domain = sfmt("CFTHEME/VAL%i%c_%%s", i / 3 + 1, (char)(i % 3) + 'A');
 		x = 20 + (i / 4) * 150;
 		y = 340 + (i % 4) * 32;
-		m_cfThemeLblVal[i] = _addLabel(theme, sfmt(domain.c_str(), "BTN").c_str(), theme.btnFont, L"", x + 32, y, 86, 32, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-		m_cfThemeBtnValM[i] = _addPicButton(theme, sfmt(domain.c_str(), "MINUS").c_str(), theme.btnTexMinus, theme.btnTexMinusS, x, y, 32, 32);
-		m_cfThemeBtnValP[i] = _addPicButton(theme, sfmt(domain.c_str(), "PLUS").c_str(), theme.btnTexPlus, theme.btnTexPlusS, x + 118, y, 32, 32);
+		m_cfThemeLblVal[i] = _addLabel(theme, fmt(domain.c_str(), "BTN"), theme.btnFont, L"", x + 32, y, 86, 32, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+		m_cfThemeBtnValM[i] = _addPicButton(theme, fmt(domain.c_str(), "MINUS"), theme.btnTexMinus, theme.btnTexMinusS, x, y, 32, 32);
+		m_cfThemeBtnValP[i] = _addPicButton(theme, fmt(domain.c_str(), "PLUS"), theme.btnTexPlus, theme.btnTexPlusS, x + 118, y, 32, 32);
 	}
 	for (int i = 0; i < 4; ++i)
-		m_cfThemeLblValTxt[i] = _addLabel(theme, sfmt("CFTHEME/VAL%i_LBL", i + 1).c_str(), theme.lblFont, L"", 20 + i * 150, 100, 150, 240, theme.lblFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_BOTTOM, emptyTex);
+		m_cfThemeLblValTxt[i] = _addLabel(theme, fmt("CFTHEME/VAL%i_LBL", i + 1), theme.lblFont, L"", 20 + i * 150, 100, 150, 240, theme.lblFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_BOTTOM, emptyTex);
 	_hideCFTheme(true);
 }
 

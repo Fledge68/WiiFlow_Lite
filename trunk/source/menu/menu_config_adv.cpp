@@ -137,7 +137,7 @@ int CMenu::_configAdv(void)
 				s8 direction = m_btnMgr.selected(m_configAdvBtnCurLanguageP) ? 1 : -1;
 				int lang = (int)loopNum((u32)m_cfg.getInt("GENERAL", "language", 0) + direction, ARRAY_SIZE(CMenu::_translations));
 				m_curLanguage = CMenu::_translations[lang];
-				if (m_loc.load(sfmt("%s/%s.ini", m_languagesDir.c_str(), m_curLanguage.c_str()).c_str()))
+				if (m_loc.load(fmt("%s/%s.ini", m_languagesDir.c_str(), m_curLanguage.c_str())))
 				{
 					m_cfg.setInt("GENERAL", "language", lang);
 					lang_changed = true;
@@ -149,13 +149,13 @@ int CMenu::_configAdv(void)
 						lang = (int)loopNum((u32)lang + direction, ARRAY_SIZE(CMenu::_translations));
 						m_curLanguage = CMenu::_translations[lang];
 						struct stat langs;
-						if (stat(sfmt("%s/%s.ini", m_languagesDir.c_str(), m_curLanguage.c_str()).c_str(), &langs) == 0)
+						if (stat(fmt("%s/%s.ini", m_languagesDir.c_str(), m_curLanguage.c_str()), &langs) == 0)
 							break;
 					}
 					m_cfg.setInt("GENERAL", "language", lang);
 					lang_changed = true;
 					m_curLanguage = CMenu::_translations[lang];
-					m_loc.load(sfmt("%s/%s.ini", m_languagesDir.c_str(), m_curLanguage.c_str()).c_str());
+					m_loc.load(fmt("%s/%s.ini", m_languagesDir.c_str(), m_curLanguage.c_str()));
 				}
 				_updateText();
 				_showConfigAdv();

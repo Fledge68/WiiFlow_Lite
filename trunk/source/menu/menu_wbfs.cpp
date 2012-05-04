@@ -171,7 +171,7 @@ int CMenu::_GCgameInstaller(void *obj)
 	}
 
 	char partition[6];
-	sprintf(partition,"%s:/",DeviceName[currentPartition]);
+	snprintf(partition, sizeof(partition), "%s:/", DeviceName[currentPartition]);
 
 	u32 needed = 0;
 
@@ -374,7 +374,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						else
 						{
 							char source[300];
-							snprintf(source, sizeof(source), "%s/%s", sfmt((currentPartition != SD) ? m_DMLgameDir.c_str() : DML_DIR, DeviceName[currentPartition]).c_str(), (char *)m_cf.getHdr()->path);
+							snprintf(source, sizeof(source), "%s/%s", fmt((currentPartition != SD) ? m_DMLgameDir.c_str() : DML_DIR, DeviceName[currentPartition]), (char *)m_cf.getHdr()->path);
 							fsop_deleteFolder(source);
 							upd_dml = true;
 						}
