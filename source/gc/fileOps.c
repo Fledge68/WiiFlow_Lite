@@ -75,7 +75,7 @@ u64 fsop_GetFolderBytes (char *source)
 		if (strcmp (pent->d_name, ".") == 0 || strcmp (pent->d_name, "..") == 0)
 			continue;
 
-		sprintf (newSource, "%s/%s", source, pent->d_name);
+		snprintf(newSource, sizeof(newSource), "%s/%s", source, pent->d_name);
 
 		// If it is a folder... recurse...
 		if (fsop_DirExist (newSource))
@@ -284,8 +284,8 @@ static bool doCopyFolder (char *source, char *target, progress_callback_t spinne
 		if (strcmp (pent->d_name, ".") == 0 || strcmp (pent->d_name, "..") == 0)
 			continue;
 	
-		sprintf (newSource, "%s/%s", source, pent->d_name);
-		sprintf (newTarget, "%s/%s", target, pent->d_name);
+		snprintf(newSource, sizeof(newSource), "%s/%s", source, pent->d_name);
+		snprintf(newTarget, sizeof(newTarget), "%s/%s", target, pent->d_name);
 		
 		// If it is a folder... recurse...
 		if (fsop_DirExist(newSource))
@@ -326,7 +326,7 @@ void fsop_deleteFolder(char *source)
 		if (strcmp (pent->d_name, ".") == 0 || strcmp (pent->d_name, "..") == 0)
 			continue;
 
-		sprintf (newSource, "%s/%s", source, pent->d_name);
+		snprintf (newSource, sizeof(newSource), "%s/%s", source, pent->d_name);
 
 		// If it is a folder... recurse...
 		if (fsop_DirExist(newSource))

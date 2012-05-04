@@ -483,7 +483,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 	GameTDB c_gameTDB;
 	if (m_settingsDir.size() > 0)
 	{
-		c_gameTDB.OpenFile(sfmt("%s/wiitdb.xml", m_settingsDir.c_str()).c_str());
+		c_gameTDB.OpenFile(fmt("%s/wiitdb.xml", m_settingsDir.c_str()));
 		c_gameTDB.SetLanguageCode(m_curLanguage.c_str());
 	}
 	
@@ -524,7 +524,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 		m_thrdStepLen = dlWeight / (float)nbSteps;
 
 		Config m_newID;
-		m_newID.load(sfmt("%s/newid.ini", m_settingsDir.c_str()).c_str());
+		m_newID.load(fmt("%s/newid.ini", m_settingsDir.c_str()));
 		m_newID.setString("CHANNELS", "WFSF", "DWFA");		
 		
 		u32 CoverType = 0;		
@@ -1973,7 +1973,7 @@ int CMenu::_gametdbDownloaderAsync()
 		LWP_MutexUnlock(m_mutex);
 		m_thrdStep = 0.0f;
 		m_thrdStepLen = 1.0f;
-		download = downloadfile(buffer.get(), bufferSize, sfmt(GAMETDB_URL, langCode.c_str()).c_str(), CMenu::_downloadProgress, this);
+		download = downloadfile(buffer.get(), bufferSize, fmt(GAMETDB_URL, langCode.c_str()), CMenu::_downloadProgress, this);
 		if (download.data == 0)
 		{
 			LWP_MutexLock(m_mutex);

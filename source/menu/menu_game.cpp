@@ -347,7 +347,7 @@ static void setLanguage(int l)
 
 void CMenu::_game(bool launch)
 {
-	m_gcfg1.load(sfmt("%s/gameconfig1.ini", m_settingsDir.c_str()).c_str());
+	m_gcfg1.load(fmt("%s/gameconfig1.ini", m_settingsDir.c_str()));
 	if (!launch)
 	{
 		SetupInput();
@@ -482,7 +482,7 @@ void CMenu::_game(bool launch)
 				if(currentPartition != SD && hdr->hdr.gc_magic == 0xc2339f3d)
 				{
 					char gcfolder[300];
-					sprintf(gcfolder, "%s [%s]", m_cf.getTitle().toUTF8().c_str(), (char *)hdr->hdr.id);
+					snprintf(gcfolder, sizeof(gcfolder), "%s [%s]", m_cf.getTitle().toUTF8().c_str(), (char *)hdr->hdr.id);
 					if (GC_GameIsInstalled((char *)hdr->hdr.id, DeviceName[SD], DML_DIR))
 					{
 						memset(hdr->path, 0, sizeof(hdr->path));
@@ -636,7 +636,7 @@ void CMenu::_directlaunch(const string &id)
 
 void CMenu::_launch(dir_discHdr *hdr)
 {
-	m_gcfg2.load(sfmt("%s/gameconfig2.ini", m_settingsDir.c_str()).c_str());
+	m_gcfg2.load(fmt("%s/gameconfig2.ini", m_settingsDir.c_str()));
 	if(hdr->hdr.gc_magic == 0x4c4f4c4f)
 	{
 		string title(&hdr->path[std::string(hdr->path).find_last_of("/")+1]);
@@ -1116,13 +1116,13 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			Nand::Instance()->CreatePath("%s:/wiiflow/nandemu", DeviceName[emuPartition]);
 			m_cfg.setString("GAMES", "savepath", STDEMU_DIR);
 			emuPath = m_cfg.getString("GAMES", "savepath", STDEMU_DIR);
-			snprintf(basepath, 64, "%s:%s", DeviceName[emuPartition], emuPath.c_str());
+			snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[emuPartition], emuPath.c_str());
 			if(emuSave == 4)
 				createnand = true;
 		}
 		else
 		{		
-			snprintf(basepath, 64, "%s:%s", DeviceName[emuPartition], emuPath.c_str());
+			snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[emuPartition], emuPath.c_str());
 			if(emuSave == 4)
 			{				
 				DIR *d;
@@ -1271,7 +1271,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		if (ret < 0)
 		{
 			gprintf("Set USB failed: %d\n", ret);
-			error(wfmt(L"Set USB failed: %d\n", ret).c_str());
+			error(wfmt(L"Set USB failed: %d\n", ret));
 			if (iosLoaded) Sys_LoadMenu();
 			return;
 		}
@@ -1326,7 +1326,7 @@ void CMenu::_initGameMenu(CMenu::SThemeData &theme)
 	texSettingsSel.fromPNG(btngamecfgs_png);
 	_addUserLabels(theme, m_gameLblUser, ARRAY_SIZE(m_gameLblUser), "GAME");
 	m_gameBg = _texture(theme.texSet, "GAME/BG", "texture", theme.bg);
-	if (m_theme.loaded() && STexture::TE_OK == bgLQ.fromPNGFile(sfmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString("GAME/BG", "texture").c_str()).c_str(), GX_TF_CMPR, ALLOC_MEM2, 64, 64))
+	if (m_theme.loaded() && STexture::TE_OK == bgLQ.fromPNGFile(fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString("GAME/BG", "texture").c_str()), GX_TF_CMPR, ALLOC_MEM2, 64, 64))
 		m_gameBgLQ = bgLQ;
 
 	m_gameBtnPlay = _addButton(theme, "GAME/PLAY_BTN", theme.btnFont, L"", 420, 344, 200, 56, theme.btnFontColor);

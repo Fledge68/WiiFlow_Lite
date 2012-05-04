@@ -303,7 +303,7 @@ void CMenu::_textGameInfo(void)
 	cnt_controls = 0;
 
 	GameTDB m_gametdb;
-	m_gametdb.OpenFile(sfmt("%s/wiitdb.xml", m_settingsDir.c_str()).c_str());
+	m_gametdb.OpenFile(fmt("%s/wiitdb.xml", m_settingsDir.c_str()));
 	m_gametdb.SetLanguageCode(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
 		
 	titlecheck = m_gametdb.IsLoaded() && m_gametdb.GetGameXMLInfo(m_cf.getId().c_str(), &gameinfo);

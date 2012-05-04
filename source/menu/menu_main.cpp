@@ -209,7 +209,7 @@ void CMenu::LoadView(void)
 
 	m_showtimer=60;
 	char gui_name[20];
-	sprintf(gui_name,"%s [%s]",_domainFromView(),mode);
+	snprintf(gui_name, sizeof(gui_name), "%s [%s]", _domainFromView(),mode);
 	m_btnMgr.setText(m_mainLblNotice, (string)gui_name);
 	m_btnMgr.show(m_mainLblNotice);
 }
@@ -240,7 +240,7 @@ int CMenu::main(void)
 	MusicPlayer::Instance()->Play();
 	
 	GameTDB m_gametdb; 
- 	m_gametdb.OpenFile(sfmt("%s/wiitdb.xml", m_settingsDir.c_str()).c_str());
+ 	m_gametdb.OpenFile(fmt("%s/wiitdb.xml", m_settingsDir.c_str()));
 	m_GameTDBLoaded=false;
  	if( m_gametdb.IsLoaded() )
 	{
@@ -296,8 +296,8 @@ int CMenu::main(void)
 				{
 						struct stat dummy;
 						if(DeviceHandler::Instance()->IsInserted(SD) && 
-						stat(sfmt("%s:/bootmii/armboot.bin", DeviceName[SD]).c_str(), &dummy) == 0 && 
-						stat(sfmt("%s:/bootmii/ppcboot.elf", DeviceName[SD]).c_str(), &dummy) == 0)
+						stat(fmt("%s:/bootmii/armboot.bin", DeviceName[SD]), &dummy) == 0 && 
+						stat(fmt("%s:/bootmii/ppcboot.elf", DeviceName[SD]), &dummy) == 0)
 							Sys_ExitTo(EXIT_TO_BOOTMII);
 						else  Sys_ExitTo(EXIT_TO_HBC);
 				}
@@ -472,7 +472,7 @@ int CMenu::main(void)
 
 				m_showtimer=60; 
 				char gui_name[20];
-				sprintf(gui_name,"%s [%s]",_domainFromView(),partition);
+				snprintf(gui_name, sizeof(gui_name), "%s [%s]", _domainFromView(),partition);
 				m_btnMgr.setText(m_mainLblNotice, (string)gui_name);
 				m_btnMgr.show(m_mainLblNotice);
 
@@ -568,8 +568,8 @@ int CMenu::main(void)
 					else if(BTN_2_HELD)	//Check that the files are there, or ios will hang.
 					{
 						if(DeviceHandler::Instance()->IsInserted(SD) && 
-						stat(sfmt("%s:/bootmii/armboot.bin", DeviceName[SD]).c_str(), &dummy) == 0 && 
-						stat(sfmt("%s:/bootmii/ppcboot.elf", DeviceName[SD]).c_str(), &dummy) == 0)
+						stat(fmt("%s:/bootmii/armboot.bin", DeviceName[SD]), &dummy) == 0 && 
+						stat(fmt("%s:/bootmii/ppcboot.elf", DeviceName[SD]), &dummy) == 0)
 							Sys_ExitTo(EXIT_TO_BOOTMII);
 						 else Sys_ExitTo(EXIT_TO_HBC);
 					}
@@ -830,7 +830,7 @@ void CMenu::_initMainMenu(CMenu::SThemeData &theme)
 	STexture emptyTex;
 
 	m_mainBg = _texture(theme.texSet, "MAIN/BG", "texture", theme.bg);
-	if (m_theme.loaded() && STexture::TE_OK == bgLQ.fromPNGFile(sfmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString("MAIN/BG", "texture").c_str()).c_str(), GX_TF_CMPR, ALLOC_MEM2, 64, 64))
+	if (m_theme.loaded() && STexture::TE_OK == bgLQ.fromPNGFile(fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString("MAIN/BG", "texture").c_str()), GX_TF_CMPR, ALLOC_MEM2, 64, 64))
 		m_mainBgLQ = bgLQ;
 
 	texQuit.fromPNG(btnquit_png);

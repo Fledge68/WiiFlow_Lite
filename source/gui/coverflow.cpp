@@ -2476,7 +2476,7 @@ bool CCoverFlow::preCacheCover(const char *id, const u8 *png, bool full)
 	SmartBuf zBuffer = m_compressCache ? smartMem2Alloc(zBufferSize) : tex.data;
 	if (!!zBuffer && (!m_compressCache || compress(zBuffer.get(), &zBufferSize, tex.data.get(), bufSize) == Z_OK))
 	{
-		FILE *file = fopen(sfmt("%s/%s.wfc", m_cachePath.c_str(), id).c_str(), "wb");
+		FILE *file = fopen(fmt("%s/%s.wfc", m_cachePath.c_str(), id), "wb");
 		if (file != 0)
 		{
 			SWFCHeader header(tex, full, m_compressCache);
@@ -2493,7 +2493,7 @@ bool CCoverFlow::fullCoverCached(const char *id)
 {
 	bool found = false;
 
-	FILE *file = fopen(sfmt("%s/%s.wfc", m_cachePath.c_str(), id).c_str(), "rb");
+	FILE *file = fopen(fmt("%s/%s.wfc", m_cachePath.c_str(), id), "rb");
 	if (file != 0)
 	{
 		SWFCHeader header;
@@ -2532,7 +2532,7 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq)
 		SmartBuf zBuffer = m_compressCache ? smartMem2Alloc(zBufferSize) : tex.data;
 		if (!!zBuffer && (!m_compressCache || compress(zBuffer.get(), &zBufferSize, tex.data.get(), bufSize) == Z_OK))
 		{
-			FILE *file = fopen(sfmt("%s/%s.wfc", m_cachePath.c_str(), (m_items[i].hdr->hdr.gc_magic == 0x4c4f4c4f ? &m_items[i].hdr->path[std::string(m_items[i].hdr->path).find_last_of("/")] : (char*)m_items[i].hdr->hdr.id)).c_str(), "wb");
+			FILE *file = fopen(fmt("%s/%s.wfc", m_cachePath.c_str(), (m_items[i].hdr->hdr.gc_magic == 0x4c4f4c4f ? &m_items[i].hdr->path[std::string(m_items[i].hdr->path).find_last_of("/")] : (char*)m_items[i].hdr->hdr.id)), "wb");
 			if (file != 0)
 			{
 				SWFCHeader header(tex, box, m_compressCache);
@@ -2599,7 +2599,7 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq)
 	// Try to find the texture in the cache
 	if (!m_cachePath.empty())
 	{
-		FILE *file = fopen(sfmt("%s/%s.wfc", m_cachePath.c_str(), (m_items[i].hdr->hdr.gc_magic == 0x4c4f4c4f ? &m_items[i].hdr->path[std::string(m_items[i].hdr->path).find_last_of("/")] : (char*)m_items[i].hdr->hdr.id)).c_str(), "rb");
+		FILE *file = fopen(fmt("%s/%s.wfc", m_cachePath.c_str(), (m_items[i].hdr->hdr.gc_magic == 0x4c4f4c4f ? &m_items[i].hdr->path[std::string(m_items[i].hdr->path).find_last_of("/")] : (char*)m_items[i].hdr->hdr.id)), "rb");
 		if (file != 0)
 		{
 			bool success = false;

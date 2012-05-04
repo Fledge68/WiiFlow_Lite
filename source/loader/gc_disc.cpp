@@ -289,14 +289,14 @@ s32 GCDump::DumpGame()
 		
 		Asciify2(gcheader.title);
 
-		snprintf(folder, sizeof(folder), sfmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition).c_str());
+		snprintf(folder, sizeof(folder), fmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition));
 		if(!fsop_DirExist(folder))
 		{
 			gprintf("Creating directory: %s\n", folder);
 			makedir(folder);
 		}
 		memset(folder, 0, sizeof(folder));
-		snprintf(folder, sizeof(folder), "%s/%s [%.06s]%s", sfmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition).c_str(), gcheader.title, (char *)gcheader.id, Disc ? "2" : "");
+		snprintf(folder, sizeof(folder), "%s/%s [%.06s]%s", fmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition), gcheader.title, (char *)gcheader.id, Disc ? "2" : "");
 		if(!fsop_DirExist(folder))
 		{
 			gprintf("Creating directory: %s\n", folder);
@@ -369,7 +369,7 @@ s32 GCDump::DumpGame()
 		if(writeexfiles)
 		{
 			memset(folder, 0, sizeof(folder));
-			snprintf(folder, sizeof(folder), "%s/%s [%.06s]%s/sys", sfmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition).c_str(), gcheader.title, (char *)gcheader.id, Disc ? "2" : "");
+			snprintf(folder, sizeof(folder), "%s/%s [%.06s]%s/sys", fmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition), gcheader.title, (char *)gcheader.id, Disc ? "2" : "");
 			if(!fsop_DirExist(folder))
 			{
 				gprintf("Creating directory: %s\n", folder);
@@ -389,7 +389,7 @@ s32 GCDump::DumpGame()
 			gc_done += __DiscWrite(gamepath, 0x2440+NextOffset, ApploaderSize, ReadBuffer);
 		}
 
-		snprintf(gamepath, sizeof(gamepath), "%s/%s [%.06s]%s/game.iso", sfmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition).c_str(), gcheader.title, (char *)gcheader.id, Disc ? "2" : "");
+		snprintf(gamepath, sizeof(gamepath), "%s/%s [%.06s]%s/game.iso", fmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition), gcheader.title, (char *)gcheader.id, Disc ? "2" : "");
 
 		gprintf("Writing %s\n", gamepath);
 		if(compressed)

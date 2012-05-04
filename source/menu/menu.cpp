@@ -151,7 +151,7 @@ void CMenu::init(void)
 	Playlog_Delete();
 
 	for(int i = SD; i <= USB8; i++) //Find the first partition with a wiiflow.ini
-		if (DeviceHandler::Instance()->IsInserted(i) && DeviceHandler::Instance()->GetFSType(i) != PART_FS_WBFS && stat(sfmt("%s:/%s/" CFG_FILENAME, DeviceName[i], APPDATA_DIR2).c_str(), &dummy) == 0)
+		if (DeviceHandler::Instance()->IsInserted(i) && DeviceHandler::Instance()->GetFSType(i) != PART_FS_WBFS && stat(fmt("%s:/%s/" CFG_FILENAME, DeviceName[i], APPDATA_DIR2), &dummy) == 0)
 		{
 			drive = DeviceName[i];
 			break;
@@ -159,7 +159,7 @@ void CMenu::init(void)
 
 	if(drive == check) //No wiiflow.ini found
 		for(int i = SD; i <= USB8; i++) //Find the first partition with a boot.dol
-			if (DeviceHandler::Instance()->IsInserted(i) && DeviceHandler::Instance()->GetFSType(i) != PART_FS_WBFS && stat(sfmt("%s:/%s/boot.dol", DeviceName[i], APPDATA_DIR2).c_str(), &dummy) == 0)
+			if (DeviceHandler::Instance()->IsInserted(i) && DeviceHandler::Instance()->GetFSType(i) != PART_FS_WBFS && stat(fmt("%s:/%s/boot.dol", DeviceName[i], APPDATA_DIR2), &dummy) == 0)
 			{
 				drive = DeviceName[i];
 				break;
@@ -167,7 +167,7 @@ void CMenu::init(void)
 			
 	if(drive == check) //No boot.dol found
 		for(int i = SD; i <= USB8; i++) //Find the first partition with apps/wiiflow folder
-			if (DeviceHandler::Instance()->IsInserted(i) && DeviceHandler::Instance()->GetFSType(i) != PART_FS_WBFS && stat(sfmt("%s:/%s", DeviceName[i], APPDATA_DIR2).c_str(), &dummy) == 0)
+			if (DeviceHandler::Instance()->IsInserted(i) && DeviceHandler::Instance()->GetFSType(i) != PART_FS_WBFS && stat(fmt("%s:/%s", DeviceName[i], APPDATA_DIR2), &dummy) == 0)
 			{
 				drive = DeviceName[i];
 				break;
@@ -178,7 +178,7 @@ void CMenu::init(void)
 			if (DeviceHandler::Instance()->IsInserted(i) && DeviceHandler::Instance()->GetFSType(i) != PART_FS_WBFS)
 			{
 				drive = DeviceName[i];
-				makedir((char *)sfmt("%s:/%s", DeviceName[i], APPDATA_DIR2).c_str()); //Make the apps dir, so saving wiiflow.ini does not fail.
+				makedir((char *)fmt("%s:/%s", DeviceName[i], APPDATA_DIR2)); //Make the apps dir, so saving wiiflow.ini does not fail.
 				break;
 			}
 
@@ -195,7 +195,7 @@ void CMenu::init(void)
 	m_appDir = sfmt("%s:/%s", drive, APPDATA_DIR2);
 	gprintf("Wiiflow boot.dol Location: %s\n", m_appDir.c_str());
 
-	m_cfg.load(sfmt("%s/" CFG_FILENAME, m_appDir.c_str()).c_str());
+	m_cfg.load(fmt("%s/" CFG_FILENAME, m_appDir.c_str()));
 
 	//Gecko Output to SD
 	if(!WriteToSD)
@@ -211,7 +211,7 @@ void CMenu::init(void)
 	if (onUSB)
 	{
 		for(int i = USB1; i <= USB8; i++) //Look for first partition with a wiiflow folder in root
-			if (DeviceHandler::Instance()->IsInserted(i) && DeviceHandler::Instance()->GetFSType(i) != PART_FS_WBFS && stat(sfmt("%s:/%s", DeviceName[i], APPDATA_DIR).c_str(), &dummy) == 0)
+			if (DeviceHandler::Instance()->IsInserted(i) && DeviceHandler::Instance()->GetFSType(i) != PART_FS_WBFS && stat(fmt("%s:/%s", DeviceName[i], APPDATA_DIR), &dummy) == 0)
 			{
 				drive = DeviceName[i];
 				break;
@@ -221,7 +221,7 @@ void CMenu::init(void)
 
 	if(drive == check && onUSB) //No wiiflow folder found in root of any usb partition, and data_on_usb=yes
 		for(int i = USB1; i <= USB8; i++) // Try first USB partition with wbfs folder.
-			if (DeviceHandler::Instance()->IsInserted(i) && DeviceHandler::Instance()->GetFSType(i) != PART_FS_WBFS && stat(sfmt(GAMES_DIR, DeviceName[i]).c_str(), &dummy) == 0)
+			if (DeviceHandler::Instance()->IsInserted(i) && DeviceHandler::Instance()->GetFSType(i) != PART_FS_WBFS && stat(fmt(GAMES_DIR, DeviceName[i]), &dummy) == 0)
 			{
 				drive = DeviceName[i];
 				break;
@@ -261,7 +261,7 @@ void CMenu::init(void)
 	m_new_dml = m_cfg.getBool("DML", "dml_r52+", true);
 	m_DMLgameDir = sfmt("%%s:/%s", m_cfg.getString("DML", "dir_usb_games", "games").c_str());
 
-	m_cfg.getString("NAND", "path", "").c_str();
+	m_cfg.getString("NAND", "path", "");
 	m_cfg.getInt("NAND", "partition", 0);
 	m_cfg.getBool("NAND", "disable", true);
 
@@ -311,7 +311,7 @@ void CMenu::init(void)
 			}
 			if (DeviceHandler::Instance()->IsInserted(i)
 				&& ((m_current_view == COVERFLOW_USB && DeviceHandler::Instance()->GetFSType(i) == PART_FS_WBFS)
-				|| stat(sfmt(checkDir, DeviceName[i]).c_str(), &dummy) == 0))
+				|| stat(fmt(checkDir, DeviceName[i]), &dummy) == 0))
 			{
 				gprintf("Setting Emu NAND to Partition: %i\n",currentPartition);
 				m_cfg.setInt(domain, "partition", i);
@@ -340,10 +340,10 @@ void CMenu::init(void)
 	makedir((char *)m_helpDir.c_str());
 
 	// INI files
-	m_cat.load(sfmt("%s/" CAT_FILENAME, m_settingsDir.c_str()).c_str());
+	m_cat.load(fmt("%s/" CAT_FILENAME, m_settingsDir.c_str()));
 	string themeName = m_cfg.getString("GENERAL", "theme", "DEFAULT");
 	m_themeDataDir = sfmt("%s/%s", m_themeDir.c_str(), themeName.c_str());
-	m_theme.load(sfmt("%s.ini", m_themeDataDir.c_str()).c_str());
+	m_theme.load(fmt("%s.ini", m_themeDataDir.c_str()));
 
 	m_plugin.init(m_pluginsDir);
 
@@ -382,11 +382,11 @@ void CMenu::init(void)
 		defaultMenuLanguage = 2; //Brazilian
 
 	m_curLanguage = CMenu::_translations[m_cfg.getInt("GENERAL", "language", defaultMenuLanguage)];
-	if (!m_loc.load(sfmt("%s/%s.ini", m_languagesDir.c_str(), m_curLanguage.c_str()).c_str()))
+	if (!m_loc.load(fmt("%s/%s.ini", m_languagesDir.c_str(), m_curLanguage.c_str())))
 	{
 		m_cfg.setInt("GENERAL", "language", 0);
 		m_curLanguage = CMenu::_translations[0];
-		m_loc.load(sfmt("%s/%s.ini", m_languagesDir.c_str(), m_curLanguage.c_str()).c_str());
+		m_loc.load(fmt("%s/%s.ini", m_languagesDir.c_str(), m_curLanguage.c_str()));
 	}
 	
 	bool extcheck = m_cfg.getBool("GENERAL", "extended_list_check", true);
@@ -402,7 +402,7 @@ void CMenu::init(void)
 
 	for(int chan = WPAD_MAX_WIIMOTES-2; chan >= 0; chan--)
 	{
-		m_cursor[chan].init(sfmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString("GENERAL", sfmt("pointer%i", chan+1).c_str()).c_str()).c_str(),
+		m_cursor[chan].init(fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString("GENERAL", fmt("pointer%i", chan+1)).c_str()),
 			m_vid.wide(), pShadowColor, pShadowX, pShadowY, pShadowBlur, chan);
 		WPAD_SetVRes(chan, m_vid.width() + m_cursor[chan].width(), m_vid.height() + m_cursor[chan].height());
 	}
@@ -419,8 +419,8 @@ void CMenu::init(void)
 	m_disable_exit = exit_to == EXIT_TO_DISABLE;
 
 	if(exit_to == EXIT_TO_BOOTMII && (!DeviceHandler::Instance()->IsInserted(SD) || 
-	stat(sfmt("%s:/bootmii/armboot.bin",DeviceName[SD]).c_str(), &dummy) != 0 || 
-	stat(sfmt("%s:/bootmii/ppcboot.elf", DeviceName[SD]).c_str(), &dummy) != 0))
+	stat(fmt("%s:/bootmii/armboot.bin",DeviceName[SD]), &dummy) != 0 || 
+	stat(fmt("%s:/bootmii/ppcboot.elf", DeviceName[SD]), &dummy) != 0))
 		exit_to = EXIT_TO_HBC;
 	Sys_ExitTo(exit_to);
 
@@ -452,8 +452,8 @@ void CMenu::init(void)
 		{
 			gprintf("Found gamercard provider: %s\n",(*itr).c_str());
 			register_card_provider(
-				m_cfg.getString("GAMERCARD", sfmt("%s_url", (*itr).c_str())).c_str(),
-				m_cfg.getString("GAMERCARD", sfmt("%s_key", (*itr).c_str())).c_str()
+				m_cfg.getString("GAMERCARD", fmt("%s_url", (*itr).c_str())).c_str(),
+				m_cfg.getString("GAMERCARD", fmt("%s_key", (*itr).c_str())).c_str()
 			);
 		}
 	}
@@ -595,8 +595,8 @@ void CMenu::_loadCFLayout(int version, bool forceAA, bool otherScrnFmt)
 {
 	bool homebrew = m_current_view == COVERFLOW_HOMEBREW;
 	bool smallbox = (homebrew || m_current_view == COVERFLOW_EMU) && m_cfg.getBool(_domainFromView(), "smallbox", true);
-	string domain(smallbox ? (homebrew ? sfmt("_BREWFLOW_%i", version).c_str() : sfmt("_EMUFLOW_%i", version).c_str()) : sfmt("_COVERFLOW_%i", version).c_str());
-	string domainSel(smallbox ? (homebrew ? sfmt("_BREWFLOW_%i_S", version).c_str() : sfmt("_EMUFLOW_%i_S", version).c_str()) : sfmt("_COVERFLOW_%i_S", version).c_str());
+	string domain(smallbox ? (homebrew ? fmt("_BREWFLOW_%i", version) : fmt("_EMUFLOW_%i", version)) : fmt("_COVERFLOW_%i", version));
+	string domainSel(smallbox ? (homebrew ? fmt("_BREWFLOW_%i_S", version) : fmt("_EMUFLOW_%i_S", version)) : fmt("_COVERFLOW_%i_S", version));
 	bool sf = otherScrnFmt;
 
 	int max_fsaa = m_theme.getInt(domain, "max_fsaa", 3);
@@ -1076,7 +1076,7 @@ SFont CMenu::_font(CMenu::FontSet &fontSet, const char *domain, const char *key,
 
 	// TTF not found in memory, load it to create a new font
 	SFont retFont;
- 	if (!useDefault && retFont.fromFile(sfmt("%s/%s", m_themeDataDir.c_str(), filename.c_str()).c_str(), fonts[0].res, fonts[1].res, fonts[2].res, index))
+ 	if (!useDefault && retFont.fromFile(fmt("%s/%s", m_themeDataDir.c_str(), filename.c_str()), fonts[0].res, fonts[1].res, fonts[2].res, index))
 	{
 		// Theme Font
 		fontSet[CMenu::FontDesc(upperCase(filename.c_str()), fonts[0].res)] = retFont;
@@ -1111,7 +1111,7 @@ safe_vector<STexture> CMenu::_textures(TexSet &texSet, const char *domain, const
 					textures.push_back(i->second);
 				}
 				STexture tex;
-				if (STexture::TE_OK == tex.fromPNGFile(sfmt("%s/%s", m_themeDataDir.c_str(), filename.c_str()).c_str(), GX_TF_RGBA8, ALLOC_MEM2))
+				if (STexture::TE_OK == tex.fromPNGFile(fmt("%s/%s", m_themeDataDir.c_str(), filename.c_str()), GX_TF_RGBA8, ALLOC_MEM2))
 				{
 					texSet[filename] = tex;
 					textures.push_back(tex);
@@ -1136,7 +1136,7 @@ STexture CMenu::_texture(CMenu::TexSet &texSet, const char *domain, const char *
 				return i->second;
 
 			STexture tex;
-			if (STexture::TE_OK == tex.fromPNGFile(sfmt("%s/%s", m_themeDataDir.c_str(), filename.c_str()).c_str(), GX_TF_RGBA8, ALLOC_MEM2))
+			if (STexture::TE_OK == tex.fromPNGFile(fmt("%s/%s", m_themeDataDir.c_str(), filename.c_str()), GX_TF_RGBA8, ALLOC_MEM2))
 			{
 				texSet[filename] = tex;
 				return tex;
@@ -1157,7 +1157,7 @@ SmartGuiSound CMenu::_sound(CMenu::SoundSet &soundSet, const char *domain, const
 	if (i == soundSet.end())
 	{
 		if(strncmp(filename.c_str(), name.c_str(), name.size()) != 0)
-			soundSet[upperCase(filename.c_str())] = SmartGuiSound(new GuiSound(sfmt("%s/%s", m_themeDataDir.c_str(), filename.c_str()).c_str()));
+			soundSet[upperCase(filename.c_str())] = SmartGuiSound(new GuiSound(fmt("%s/%s", m_themeDataDir.c_str(), filename.c_str())));
 		else
 			soundSet[upperCase(filename.c_str())] = SmartGuiSound(new GuiSound(snd, len, filename, isAllocated));
 
@@ -1180,7 +1180,7 @@ SmartGuiSound CMenu::_sound(CMenu::SoundSet &soundSet, const char *domain, const
 	CMenu::SoundSet::iterator i = soundSet.find(upperCase(filename.c_str()));
 	if (i == soundSet.end())
 	{
-		soundSet[upperCase(filename.c_str())] = SmartGuiSound(new GuiSound(sfmt("%s/%s", m_themeDataDir.c_str(), filename.c_str()).c_str()));
+		soundSet[upperCase(filename.c_str())] = SmartGuiSound(new GuiSound(fmt("%s/%s", m_themeDataDir.c_str(), filename.c_str())));
 		return soundSet[upperCase(filename.c_str())];
 	}
 	return i->second;
@@ -1456,9 +1456,9 @@ void CMenu::_initCF(void)
 	m_cf.reserve(m_gameList.size());
 
  	m_gamelistdump = m_cfg.getBool(domain, "dump_list", true);
-	if(m_gamelistdump) m_dump.load(sfmt("%s/titlesdump.ini", m_settingsDir.c_str()).c_str());
+	if(m_gamelistdump) m_dump.load(fmt("%s/titlesdump.ini", m_settingsDir.c_str()));
 
-	m_gcfg1.load(sfmt("%s/gameconfig1.ini", m_settingsDir.c_str()).c_str());
+	m_gcfg1.load(fmt("%s/gameconfig1.ini", m_settingsDir.c_str()));
 	string id;
 	for (u32 i = 0; i < m_gameList.size(); ++i)
 	{
@@ -1508,15 +1508,15 @@ void CMenu::_initCF(void)
 				string coverFolder(m_plugin.GetCoverFolderName(m_gameList[i].hdr.magic));
 				//if(tempname.find_last_of('.') != string::npos)
 				//	tempname.erase(tempname.find_last_of('.'), tempname.size() - tempname.find_last_of('.'));
-				m_cf.addItem(&m_gameList[i], sfmt("%s/%s/%s.png", m_picDir.c_str(), coverFolder.c_str(), tempname.c_str()).c_str(), sfmt("%s/%s/%s.png", m_boxPicDir.c_str(), coverFolder.c_str(), tempname.c_str()).c_str(), playcount, lastPlayed);
+				m_cf.addItem(&m_gameList[i], fmt("%s/%s/%s.png", m_picDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s/%s.png", m_boxPicDir.c_str(), coverFolder.c_str(), tempname.c_str()), playcount, lastPlayed);
 			}
 			else if (m_current_view != COVERFLOW_HOMEBREW)
-				m_cf.addItem(&m_gameList[i], sfmt("%s/%s.png", m_picDir.c_str(), id.c_str()).c_str(), sfmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str()).c_str(), playcount, lastPlayed);
+				m_cf.addItem(&m_gameList[i], fmt("%s/%s.png", m_picDir.c_str(), id.c_str()), fmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str()), playcount, lastPlayed);
 			else 
 			{
 				string s = sfmt("%s", m_gameList[i].path);
 			  	string f = s.substr(0, s.find_last_of("/"));
-				m_cf.addItem(&m_gameList[i], sfmt("%s/icon.png", f.c_str()).c_str(), sfmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str()).c_str(), playcount, lastPlayed);
+				m_cf.addItem(&m_gameList[i], fmt("%s/icon.png", f.c_str()), fmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str()), playcount, lastPlayed);
 			}
 
 		}
@@ -1629,7 +1629,7 @@ void CMenu::_mainLoopCommon(bool withCF, bool blockReboot, bool adjusting)
 		timeinfo = localtime(&rawtime);
 		strftime(buffer,80,"%b-%d-20%y-%Hh%Mm%Ss.png",timeinfo);
 		gprintf("Screenshot taken and saved to: %s/%s\n", m_screenshotDir.c_str(), buffer);
-		m_vid.TakeScreenshot(sfmt("%s/%s", m_screenshotDir.c_str(), buffer).c_str());
+		m_vid.TakeScreenshot(fmt("%s/%s", m_screenshotDir.c_str(), buffer));
 		if (!!m_cameraSound)
 			m_cameraSound->Play(255);
 	}

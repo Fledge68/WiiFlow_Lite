@@ -72,8 +72,8 @@ void CMenu::_showConfig4(void)
 	m_btnMgr.setText(m_config4BtnCategoryOnBoot, m_cat.getBool("GENERAL", "category_on_start") ? _t("on", L"On") : _t("off", L"Off"));
 
 	Config titles, custom_titles;
-	titles.load(sfmt("%s/" TITLES_FILENAME, m_settingsDir.c_str()).c_str());
-	custom_titles.load(sfmt("%s/" CTITLES_FILENAME, m_settingsDir.c_str()).c_str());
+	titles.load(fmt("%s/" TITLES_FILENAME, m_settingsDir.c_str()));
+	custom_titles.load(fmt("%s/" CTITLES_FILENAME, m_settingsDir.c_str()));
 
 	wstringEx channelName = m_loc.getWString(m_curLanguage, "disabled", L"Disabled");
 

@@ -131,7 +131,7 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 	GameTDB gameTDB;
 	if (settingsDir.size() > 0)
 	{
-		gameTDB.OpenFile(sfmt("%s/wiitdb.xml", settingsDir.c_str()).c_str());
+		gameTDB.OpenFile(fmt("%s/wiitdb.xml", settingsDir.c_str()));
 		if(curLanguage.size() == 0) curLanguage = "EN";
 		gameTDB.SetLanguageCode(curLanguage.c_str());
 	}
@@ -470,7 +470,7 @@ void CList<dir_discHdr>::GetChannels(safe_vector<dir_discHdr> &headerlist, strin
 	GameTDB gameTDB;
 	if (settingsDir.size() > 0)
 	{
-		gameTDB.OpenFile(sfmt("%s/wiitdb.xml", settingsDir.c_str()).c_str());
+		gameTDB.OpenFile(fmt("%s/wiitdb.xml", settingsDir.c_str()));
 		if(curLanguage.size() == 0) curLanguage = "EN";
 		gameTDB.SetLanguageCode(curLanguage.c_str());
 	}

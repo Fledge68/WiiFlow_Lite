@@ -412,7 +412,7 @@ void CMenu::_showGameSettings(void)
 
 void CMenu::_gameSettings(void)
 {
-	m_gcfg2.load(sfmt("%s/gameconfig2.ini", m_settingsDir.c_str()).c_str());
+	m_gcfg2.load(fmt("%s/gameconfig2.ini", m_settingsDir.c_str()));
 	string id(m_cf.getId());
 
 	m_gameSettingsPage = 1;
