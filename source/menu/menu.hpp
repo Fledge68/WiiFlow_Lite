@@ -141,7 +141,6 @@ private:
 	STexture m_gameSettingsBg;
 	STexture m_gameBgLQ;
 	STexture m_mainBgLQ;
-	STexture m_pluginBg;
 	STexture m_categoryBg;
 	// 
 	u32 m_errorLblMessage;
@@ -554,18 +553,6 @@ private:
 	u32 m_categoryBtnCats[21];
 	u32 m_categoryLblUser[4];
 	u8 m_max_categories;
-// Plugin menu
-	u32 m_pluginLblPage;
-	u32 m_pluginBtnPageM;
-	u32 m_pluginBtnPageP;
-	u32 m_pluginBtnBack;
-	u32 m_pluginLblTitle;
-	u32 m_pluginLblCat[21];
-	u32 m_pluginBtn[21];
-	u32 m_pluginBtnCat[21];
-	u32 m_pluginBtnCats[21];
-	u32 m_pluginLblUser[4];
-	u8 m_plugins;
 // NandEmulation menu
 	std::string m_saveExtGameId;
 	bool m_nandext;
