@@ -3,9 +3,22 @@
 #include <string.h>
 #include <gccore.h>
 
-u8 m_Plugins[21];
 u32 Plugin_curPage;
 u8 Plugin_lastBtn;
+
+// Plugin menu
+u32 m_pluginLblPage;
+u32 m_pluginBtnPageM;
+u32 m_pluginBtnPageP;
+u32 m_pluginBtnBack;
+u32 m_pluginLblTitle;
+u32 m_pluginLblCat[21];
+u32 m_pluginBtn[21];
+u32 m_pluginBtnCat[21];
+u32 m_pluginBtnCats[21];
+u32 m_pluginLblUser[4];
+u8 m_max_plugins;
+STexture m_pluginBg;
 
 void CMenu::_hidePluginSettings(bool instant)
 {
@@ -42,7 +55,7 @@ void CMenu::_showPluginSettings(void)
 
 void CMenu::_updatePluginCheckboxes(void)
 {
-	if(m_plugins > 10)
+	if(m_max_plugins > 10)
 	{
 		m_btnMgr.setText(m_pluginLblPage, wfmt(L"%i / 2", Plugin_curPage));
 		m_btnMgr.show(m_pluginLblPage);
@@ -59,8 +72,8 @@ void CMenu::_updatePluginCheckboxes(void)
 	if(Plugin_curPage == 1)
 	{
 		int j = 11;
-		if(m_plugins < 11)
-			j = m_plugins;
+		if(m_max_plugins < 11)
+			j = m_max_plugins;
 		for(u8 i = 0; i < j; ++i)
 		{
 			m_btnMgr.show(m_pluginLblCat[i]);
@@ -73,7 +86,7 @@ void CMenu::_updatePluginCheckboxes(void)
 	}
 	else
 	{
-		for(int i = 11; i < m_plugins; ++i)
+		for(int i = 11; i < m_max_plugins; ++i)
 		{
 			m_btnMgr.show(m_pluginLblCat[i]);
 			m_pluginBtn[i] = m_pluginBtnCat[i];
@@ -199,6 +212,7 @@ void CMenu::_initPluginSettingsMenu(CMenu::SThemeData &theme)
 		_setHideAnim(m_pluginLblCat[i], fmt("PLUGIN/PLUGIN_%i", i), 0, 0, 1.f, 0.f);
 		m_pluginBtn[i] = m_pluginBtnCat[i];
 	}
+	m_max_plugins = 0;
 	_hidePluginSettings(true);
 	_textPluginSettings();
 }
@@ -218,7 +232,7 @@ void CMenu::_textPluginSettings(void)
 				m_btnMgr.setText(m_pluginLblCat[i], m_plugin.GetPluginName(i - 1));
 			else
 			{
-				m_plugins = i;
+				m_max_plugins = i;
 				break;
 			}
 		}

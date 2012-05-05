@@ -434,8 +434,6 @@ void CMenu::init(void)
 		m_favorites = m_cfg.getBool(domain, "favorites", false);
 	m_max_categories = m_cat.getInt("GENERAL", "numcategories", 21);
 
-	m_plugins = 0;
-
 	m_cfg.setString("GAMERCARD", "gamercards", "wiinnertag|dutag");
 	m_cfg.getString("GAMERCARD", "wiinnertag_url", WIINNERTAG_URL);
 	m_cfg.getString("GAMERCARD", "wiinnertag_key", "");
