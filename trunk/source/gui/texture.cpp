@@ -10,7 +10,7 @@ using namespace std;
 static u32 upperPower(u32 width)
 {
 	u32 i = 8;
-	u32 maxWidth = 1024;
+	u32 maxWidth = 1090;
 	while (i < width && i < maxWidth)
 		i <<= 1;
 	return i;
@@ -280,7 +280,7 @@ STexture::TexErr STexture::fromPNG(const u8 *buffer, u8 f, Alloc alloc, u32 minM
 		PNGU_ReleaseImageContext(ctx);
 		return STexture::TE_ERROR;
 	}
-	if (imgProp.imgWidth > 1024 || imgProp.imgHeight > 1024)
+	if (imgProp.imgWidth > 1090 || imgProp.imgHeight > 1090)
 	{
 		PNGU_ReleaseImageContext(ctx);
 		return STexture::TE_ERROR;
