@@ -434,6 +434,8 @@ void CMenu::init(void)
 		m_favorites = m_cfg.getBool(domain, "favorites", false);
 	m_max_categories = m_cat.getInt("GENERAL", "numcategories", 21);
 
+	m_plugins = 0;
+
 	m_cfg.setString("GAMERCARD", "gamercards", "wiinnertag|dutag");
 	m_cfg.getString("GAMERCARD", "wiinnertag_url", WIINNERTAG_URL);
 	m_cfg.getString("GAMERCARD", "wiinnertag_key", "");
@@ -1025,11 +1027,12 @@ void CMenu::_buildMenus(void)
 	_initCFThemeMenu(theme);
 	_initGameSettingsMenu(theme);
 	_initCheatSettingsMenu(theme); 
+	_initPluginSettingsMenu(theme);
 	_initCategorySettingsMenu(theme);
 	_initSystemMenu(theme);
 	_initGameInfoMenu(theme);
 	_initNandEmuMenu(theme);
-	
+
 	_loadCFCfg(theme);
 }
 
@@ -1454,6 +1457,9 @@ void CMenu::_initCF(void)
 
 	m_cf.clear();
 	m_cf.reserve(m_gameList.size());
+	safe_vector<bool> EnabledPlugins;
+	if(m_current_view == COVERFLOW_EMU)
+		EnabledPlugins = m_plugin.GetEnabledPlugins(m_cfg);
 
  	m_gamelistdump = m_cfg.getBool(domain, "dump_list", true);
 	if(m_gamelistdump) m_dump.load(fmt("%s/titlesdump.ini", m_settingsDir.c_str()));
@@ -1463,31 +1469,33 @@ void CMenu::_initCF(void)
 	for (u32 i = 0; i < m_gameList.size(); ++i)
 	{
 		u64 chantitle = m_gameList[i].hdr.chantitle;
-		if (m_current_view == COVERFLOW_CHANNEL && chantitle == HBC_108) strncpy((char *) m_gameList[i].hdr.id, "JODI", 6);
-
+		if (m_current_view == COVERFLOW_CHANNEL && chantitle == HBC_108)
+			strncpy((char *) m_gameList[i].hdr.id, "JODI", 6);
 		if (m_current_view == COVERFLOW_EMU)
-			{
-				string tempname(m_gameList[i].path);
-				tempname.erase(0, tempname.find_first_of('/')+1);
-				string dirName = tempname.substr(0, tempname.find_first_of('/')+1);
-				tempname.assign(&tempname[tempname.find_last_of('/') + 1]);
-				if(tempname.find_last_of('.') != string::npos)
-					tempname.erase(tempname.find_last_of('.'), tempname.size() - tempname.find_last_of('.'));
-					id = dirName+tempname;
-			}
-		else id = string((const char *)m_gameList[i].hdr.id, m_current_view == COVERFLOW_CHANNEL ?  4 : 6);
-			string idcats = m_cat.getString("CATEGORIES", id, "").c_str();
-			if (idcats.length() < 21 && idcats.length() > 0)  
-			{
-				idcats.append((21-idcats.length()), '0');
-				m_cat.setString("CATEGORIES", id, idcats);
-			}		
+		{
+			string tempname(m_gameList[i].path);
+			tempname.erase(0, tempname.find_first_of('/')+1);
+			string dirName = tempname.substr(0, tempname.find_first_of('/')+1);
+			tempname.assign(&tempname[tempname.find_last_of('/') + 1]);
+			if(tempname.find_last_of('.') != string::npos)
+				tempname.erase(tempname.find_last_of('.'), tempname.size() - tempname.find_last_of('.'));
+			id = dirName+tempname;
+		}
+		else 
+			id = string((const char *)m_gameList[i].hdr.id, m_current_view == COVERFLOW_CHANNEL ?  4 : 6);
+		string idcats = m_cat.getString("CATEGORIES", id, "").c_str();
+		if (idcats.length() < 21 && idcats.length() > 0)  
+		{
+			idcats.append((21-idcats.length()), '0');
+			m_cat.setString("CATEGORIES", id, idcats);
+		}
 		if ((!m_favorites || m_gcfg1.getBool("FAVORITES", id, false)) && (!m_locked || !m_gcfg1.getBool("ADULTONLY", id, false)))
 		{
 			if (catviews[0] == '0')
 			{
 				const char *idcats = m_cat.getString("CATEGORIES", id, "").c_str();
-				if (strlen(idcats) == 0) continue;
+				if (strlen(idcats) == 0)
+					continue;
 				else
 				{
 					bool idinacat=0;
@@ -1508,7 +1516,19 @@ void CMenu::_initCF(void)
 				string coverFolder(m_plugin.GetCoverFolderName(m_gameList[i].hdr.magic));
 				//if(tempname.find_last_of('.') != string::npos)
 				//	tempname.erase(tempname.find_last_of('.'), tempname.size() - tempname.find_last_of('.'));
-				m_cf.addItem(&m_gameList[i], fmt("%s/%s/%s.png", m_picDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s/%s.png", m_boxPicDir.c_str(), coverFolder.c_str(), tempname.c_str()), playcount, lastPlayed);
+				if(EnabledPlugins.size() == 0) //all plugins
+					m_cf.addItem(&m_gameList[i], fmt("%s/%s/%s.png", m_picDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s/%s.png", m_boxPicDir.c_str(), coverFolder.c_str(), tempname.c_str()), playcount, lastPlayed);
+				else
+				{
+					for(u8 j = 0; j < EnabledPlugins.size(); j++)
+					{
+						if(EnabledPlugins[j] == true && m_gameList[i].hdr.magic == m_plugin.getPluginMagic(j))
+						{
+							m_cf.addItem(&m_gameList[i], fmt("%s/%s/%s.png", m_picDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s/%s.png", m_boxPicDir.c_str(), coverFolder.c_str(), tempname.c_str()), playcount, lastPlayed);
+							break;
+						}
+					}
+				}
 			}
 			else if (m_current_view != COVERFLOW_HOMEBREW)
 				m_cf.addItem(&m_gameList[i], fmt("%s/%s.png", m_picDir.c_str(), id.c_str()), fmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str()), playcount, lastPlayed);

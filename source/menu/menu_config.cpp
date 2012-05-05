@@ -33,8 +33,8 @@ void CMenu::_hideConfig(bool instant)
 	m_btnMgr.hide(m_configLblParental, instant);
 	m_btnMgr.hide(m_configBtnUnlock, instant);
 	m_btnMgr.hide(m_configBtnSetCode, instant);
-	m_btnMgr.hide(m_configLblNandEmu, instant);
-	m_btnMgr.hide(m_configBtnNandEmu, instant);
+	m_btnMgr.hide(m_configLblCfg4, instant);
+	m_btnMgr.hide(m_configBtnCfg4, instant);
 	for (u32 i = 0; i < ARRAY_SIZE(m_configLblUser); ++i)
 		if (m_configLblUser[i] != -1u)
 			m_btnMgr.hide(m_configLblUser[i], instant);
@@ -79,8 +79,8 @@ void CMenu::_showConfig(void)
 		
 		m_btnMgr.setText(m_configLblPartition, (string)partitionname);
 
-		m_btnMgr.show(m_configLblNandEmu);
-		m_btnMgr.show(m_configBtnNandEmu);
+		m_btnMgr.show(m_configLblCfg4);
+		m_btnMgr.show(m_configBtnCfg4);
 	}
 	m_btnMgr.show(m_configLblParental);
 	m_btnMgr.show(m_locked ? m_configBtnUnlock : m_configBtnSetCode);
@@ -172,6 +172,8 @@ int CMenu::_config1(void)
 	gprintf("Current Partition: %d\n", currentPartition);
 	
 	_showConfig();
+	_textConfig();
+
 	while (true)
 	{
 		change = _configCommon();
@@ -224,12 +226,15 @@ int CMenu::_config1(void)
 				_enableNandEmu(true);
 				_showConfig();
 			}
-			else if (m_btnMgr.selected(m_configBtnNandEmu))
+			else if (m_btnMgr.selected(m_configBtnCfg4))
 			{
 				_cfNeedsUpdate();
 				m_cf.stopCoverLoader(true);
 				_hideConfig();
-				_NandEmuCfg();
+				if(m_current_view != COVERFLOW_EMU)
+					_NandEmuCfg();
+				else
+					_PluginSettings();
 				_showConfig();
 				m_cf.startCoverLoader();
 			}
@@ -274,8 +279,9 @@ void CMenu::_initConfigMenu(CMenu::SThemeData &theme)
 	m_configLblPartition = _addLabel(theme, "CONFIG/PARTITION_BTN", theme.btnFont, L"", 456, 250, 88, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_configBtnPartitionM = _addPicButton(theme, "CONFIG/PARTITION_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 400, 250, 56, 56);
 	m_configBtnPartitionP = _addPicButton(theme, "CONFIG/PARTITION_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 250, 56, 56);
-	m_configLblNandEmu = _addLabel(theme, "CONFIG/NANDEMU", theme.lblFont, L"", 40, 310, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_configBtnNandEmu = _addButton(theme, "CONFIG/NANDEMU_BTN", theme.btnFont, L"", 400, 310, 200, 56, theme.btnFontColor);m_configLblPage = _addLabel(theme, "CONFIG/PAGE_BTN", theme.btnFont, L"", 76, 400, 80, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_configLblCfg4 = _addLabel(theme, "CONFIG/CFG4", theme.lblFont, L"", 40, 310, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_configBtnCfg4 = _addButton(theme, "CONFIG/CFG4_BTN", theme.btnFont, L"", 400, 310, 200, 56, theme.btnFontColor);
+	m_configLblPage = _addLabel(theme, "CONFIG/PAGE_BTN", theme.btnFont, L"", 76, 400, 80, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_configBtnPageM = _addPicButton(theme, "CONFIG/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 20, 400, 56, 56);
 	m_configBtnPageP = _addPicButton(theme, "CONFIG/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 156, 400, 56, 56);
 	m_configBtnBack = _addButton(theme, "CONFIG/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 56, theme.btnFontColor);
@@ -291,8 +297,8 @@ void CMenu::_initConfigMenu(CMenu::SThemeData &theme)
 	_setHideAnim(m_configLblPartition, "CONFIG/PARTITION_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_configBtnPartitionM, "CONFIG/PARTITION_MINUS", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_configBtnPartitionP, "CONFIG/PARTITION_PLUS", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_configLblNandEmu, "CONFIG/NANDEMU", 100, 0, -2.f, 0.f);
-	_setHideAnim(m_configBtnNandEmu, "CONFIG/NANDEMU_BTN", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_configLblCfg4, "CONFIG/CFG4", 100, 0, -2.f, 0.f);
+	_setHideAnim(m_configBtnCfg4, "CONFIG/CFG4_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_configBtnBack, "CONFIG/BACK_BTN", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_configLblPage, "CONFIG/PAGE_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_configBtnPageM, "CONFIG/PAGE_MINUS", 0, 0, 1.f, -1.f);
@@ -311,6 +317,14 @@ void CMenu::_textConfig(void)
 	m_btnMgr.setText(m_configBtnSetCode, _t("cfg7", L"Set code"));
 	m_btnMgr.setText(m_configLblPartitionName, _t("cfgp1", L"Game Partition"));
 	m_btnMgr.setText(m_configBtnBack, _t("cfg10", L"Back"));
-	m_btnMgr.setText(m_configLblNandEmu, _t("cfg13", L"Nand emulation settings"));
-	m_btnMgr.setText(m_configBtnNandEmu, _t("cfg14", L"Set"));
+	if(m_current_view != COVERFLOW_EMU)
+	{
+		m_btnMgr.setText(m_configLblCfg4, _t("cfg13", L"Nand emulation settings"));
+		m_btnMgr.setText(m_configBtnCfg4, _t("cfg14", L"Set"));
+	}
+	else
+	{
+		m_btnMgr.setText(m_configLblCfg4, _t("cfg15", L"Plugins"));
+		m_btnMgr.setText(m_configBtnCfg4, _t("cfg16", L"Select"));
+	}
 }

@@ -141,6 +141,7 @@ private:
 	STexture m_gameSettingsBg;
 	STexture m_gameBgLQ;
 	STexture m_mainBgLQ;
+	STexture m_pluginBg;
 	STexture m_categoryBg;
 	// 
 	u32 m_errorLblMessage;
@@ -193,8 +194,8 @@ private:
 	u32 m_configLblPartition;
 	u32 m_configBtnPartitionP;
 	u32 m_configBtnPartitionM;
-	u32 m_configLblNandEmu;
-	u32 m_configBtnNandEmu;
+	u32 m_configLblCfg4;
+	u32 m_configBtnCfg4;
 	u32 m_configLblUser[4];
 	u32 m_configAdvLblTheme;
 	u32 m_configAdvLblCurTheme;
@@ -553,14 +554,26 @@ private:
 	u32 m_categoryBtnCats[21];
 	u32 m_categoryLblUser[4];
 	u8 m_max_categories;
-	// NandEmulation menu
+// Plugin menu
+	u32 m_pluginLblPage;
+	u32 m_pluginBtnPageM;
+	u32 m_pluginBtnPageP;
+	u32 m_pluginBtnBack;
+	u32 m_pluginLblTitle;
+	u32 m_pluginLblCat[21];
+	u32 m_pluginBtn[21];
+	u32 m_pluginBtnCat[21];
+	u32 m_pluginBtnCats[21];
+	u32 m_pluginLblUser[4];
+	u8 m_plugins;
+// NandEmulation menu
 	std::string m_saveExtGameId;
 	bool m_nandext;
 	bool m_fulldump;
 	bool m_sgdump;
 	bool m_saveall;
 	bool m_forceext;
-	//int m_saveExtMode;
+//int m_saveExtMode;
 	u32 m_nandemuLblTitle;
 	u32 m_nandemuBtnBack;
 	u32 m_nandemuLblEmulationVal;
@@ -832,11 +845,13 @@ private:
 	void _initGameSettingsMenu(SThemeData &theme);
 	void _initCheatSettingsMenu(SThemeData &theme);
 	void _initCheatButtons();
+	void _initPluginSettingsMenu(SThemeData &theme);
 	void _initCategorySettingsMenu(SThemeData &theme);
 	void _initSystemMenu(SThemeData &theme);
 	void _initGameInfoMenu(SThemeData &theme);
 	void _initNandEmuMenu(CMenu::SThemeData &theme);
 	//
+	void _textPluginSettings(void);
 	void _textCategorySettings(void);
 	void _textCheatSettings(void);
 	void _textSystem(void);
@@ -876,6 +891,7 @@ private:
 	void _hideWBFS(bool instant = false);
 	void _hideCFTheme(bool instant = false);
 	void _hideGameSettings(bool instant = false);
+	void _hidePluginSettings(bool instant = false);
 	void _hideCategorySettings(bool instant = false);
 	void _hideSystem(bool instant = false);
 	void _hideGameInfo(bool instant = false);
@@ -897,6 +913,7 @@ private:
 	void _showSettings();
 	void _showCode(void);
 	void _showAbout(void);
+	void _showPluginSettings(void);
 	void _showCategorySettings(void);
 	void _showCheatSettings(void);
 	void _showSystem(void);
@@ -905,6 +922,7 @@ private:
 	void _showCFTheme(u32 curParam, int version, bool wide);
 	void _showGameSettings(void);
 	void _showCheatDownload(void);
+	void _updatePluginCheckboxes(void);
 	void _updateCheckboxes(void);
 	void _setBg(const STexture &tex, const STexture &lqTex);
 	void _updateBg(void);
@@ -941,6 +959,7 @@ private:
 	void _gameinfo(void);
 	void _gameSettings(void);
 	void _CheatSettings();
+	void _PluginSettings();
 	void _CategorySettings(bool fromGameSet=false);
 	//
 	void _mainLoopCommon(bool withCF = false, bool blockReboot = false, bool adjusting = false);
