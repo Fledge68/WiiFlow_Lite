@@ -36,6 +36,11 @@ public:
 	u32 GetBannerSoundSize();
 	char* GetDolName(u32 magic);
 	char* GetCoverFolderName(u32 magic);
+	wstringEx GetPluginName(u8 pos);
+	u32 getPluginMagic(u8 pos);
+	bool PluginExist(u8 pos);
+	void SetEnablePlugin(Config &cfg, u8 pos, u8 ForceMode = 0);
+	safe_vector<bool> GetEnabledPlugins(Config &cfg);
 	bool UseReturnLoader(u32 magic);
 	void init(string);
 	void Cleanup();

@@ -121,6 +121,63 @@ char* Plugin::GetCoverFolderName(u32 magic)
 	return emptyChar;
 }
 
+bool Plugin::PluginExist(u8 pos)
+{
+	if(pos < Plugins.size())
+		return true;
+	return false;
+}
+
+wstringEx Plugin::GetPluginName(u8 pos)
+{
+	wstringEx tmpString;
+	string PluginName(Plugins[pos].DolName);
+	PluginName.erase(PluginName.end() - 4, PluginName.end());
+	tmpString.fromUTF8(PluginName.c_str());
+	return tmpString;
+}
+
+void Plugin::SetEnablePlugin(Config &cfg, u8 pos, u8 ForceMode)
+{
+	if(pos < Plugins.size())
+	{
+		char PluginMagicWord[8];
+		snprintf(PluginMagicWord, sizeof(PluginMagicWord), "%08x", Plugins[pos].magicWord);
+		if(ForceMode == 1)
+			cfg.setBool("PLUGIN", PluginMagicWord, false);
+		else if(ForceMode == 2)
+			cfg.setBool("PLUGIN", PluginMagicWord, true);
+		else
+			cfg.setBool("PLUGIN", PluginMagicWord, cfg.getBool("PLUGIN", PluginMagicWord) ? false : true);
+	}
+}
+
+safe_vector<bool> Plugin::GetEnabledPlugins(Config &cfg)
+{
+	safe_vector<bool> enabledPlugins;
+	char PluginMagicWord[8];
+	u8 enabledPluginsNumber = 0;
+	for(u8 i = 0; i < Plugins.size(); i++)
+	{
+		snprintf(PluginMagicWord, sizeof(PluginMagicWord), "%08x", Plugins[i].magicWord);
+		if(cfg.getBool("PLUGIN", PluginMagicWord, true))
+		{
+			enabledPluginsNumber++;
+			enabledPlugins.push_back(true);
+		}
+		else
+			enabledPlugins.push_back(false);
+	}
+	if(enabledPluginsNumber == Plugins.size())
+		enabledPlugins.clear();
+	return enabledPlugins;
+}
+
+u32 Plugin::getPluginMagic(u8 pos)
+{
+	return Plugins[pos].magicWord;
+}
+
 safe_vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, string Device)
 {
 	gprintf("Parsing scummvm.ini\n");
