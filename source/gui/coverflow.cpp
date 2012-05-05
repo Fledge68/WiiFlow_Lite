@@ -2506,7 +2506,7 @@ bool CCoverFlow::fullCoverCached(const char *id)
 		found = fread(&header, 1, sizeof header, file) == sizeof header
 			&& header.full != 0 && m_compressTextures == (header.cmpr != 0)
 			&& header.getWidth() >= 8 && header.getHeight() >= 8
-			&& header.getWidth() <= 1024 && header.getHeight() <= 1024;
+			&& header.getWidth() <= 1090 && header.getHeight() <= 1090;
 		SAFE_CLOSE(file);
 	}
 	return found;
