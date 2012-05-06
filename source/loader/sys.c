@@ -82,16 +82,17 @@ void Sys_ExitTo(int option)
 	//magic word to force wii menu in priiloader.
 	if(return_to_menu)
 	{
-		Write32(0x8132fffb, 0x50756e65);
+		*(vu32*)0x8132FFFB = 0x50756e65;
 	}
 	else if(return_to_priiloader)
 	{
-		Write32(0x8132fffb,0x4461636f);
+		*(vu32*)0x8132FFFB = 0x4461636f;
 	}
 	else
 	{
-		Write32(0x8132fffb,0xffffffff);
+		*(vu32*)0x8132FFFB = 0xffffffff;
 	}
+	DCFlushRange((void *)(0x8132FFFB), 4);
 }
 
 void Sys_Exit(void)
@@ -101,12 +102,16 @@ void Sys_Exit(void)
 	/* Shutdown Inputs */
 	Close_Inputs();
 
-	if (return_to_menu || return_to_priiloader || priiloader_def) Sys_LoadMenu();
-	else if(return_to_bootmii) IOS_ReloadIOS(254);
-	if(WII_LaunchTitle(HBC_108)<0)
-		if(WII_LaunchTitle(HBC_HAXX)<0)
-			if(WII_LaunchTitle(HBC_JODI)<0)
-				SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
+	if (return_to_menu || return_to_priiloader || priiloader_def)
+		Sys_LoadMenu();
+	else if(return_to_bootmii)
+		IOS_ReloadIOS(254);
+
+	//else
+	if(WII_LaunchTitle(HBC_108) < 0)
+		if(WII_LaunchTitle(HBC_HAXX) < 0)
+			if(WII_LaunchTitle(HBC_JODI) < 0)
+				WII_LaunchTitle(0x100000002LL); //SYS_ResetSystem doesnt work properly with new libogc
 }
 
 void __Sys_ResetCallback(void)
@@ -130,5 +135,5 @@ void Sys_Init(void)
 void Sys_LoadMenu(void)
 {
 	/* Return to the Wii system menu */
-	SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
+	WII_LaunchTitle(0x100000002LL); //SYS_ResetSystem doesnt work properly with new libogc
 }

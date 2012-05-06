@@ -228,11 +228,13 @@ void CVideo::prepare(void)
 
 void CVideo::cleanup(void)
 {
+	gprintf("Cleaning up video...\n");
 	for (u32 i = 0; i < sizeof m_aaBuffer / sizeof m_aaBuffer[0]; ++i)
 	{
 		SMART_FREE(m_aaBuffer[i]);
 		m_aaBufferSize[i] = 0;
 	}
+	SAFE_FREE(m_fifo);
 }
 
 void CVideo::prepareAAPass(int aaStep)
