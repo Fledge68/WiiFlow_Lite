@@ -58,8 +58,8 @@ private:
 // Nothing to do with CText. Q&D helpers for string formating.
 
 enum {
-	MAX_MSG_SIZE	= 512,
-	MAX_USES		= 8
+	MAX_MSG_SIZE	= 1024,
+	MAX_USES		= 16,
 };
 
 const char *fmt(const char *format, ...);

@@ -13,7 +13,7 @@ static inline int loopNum(int i, int s)
 	return i < 0 ? (s - (-i % s)) % s : i % s;
 }
 
-static bool _saveExcists(const char *path)
+static bool _saveExists(const char *path)
 {	
 	DIR *d;
 	d = opendir(path);
@@ -28,7 +28,7 @@ static bool _saveExcists(const char *path)
 	}
 }
 
-static bool _nandSaveExcists(const char *npath)
+static bool _nandSaveExists(const char *npath)
 {	
 	u32 temp = 0;	
 	
@@ -164,11 +164,11 @@ int CMenu::_NandEmuCfg(void)
 	lwp_t thread = 0;
 	SetupInput();
 	_showNandEmu();
-	
+
 	m_thrdStop = false;
 	m_thrdMessageAdded = false;
 	m_nandext = false;
-	
+
 	while(true)
 	{
 		_mainLoopCommon(false, m_thrdWorking);
@@ -211,7 +211,7 @@ int CMenu::_NandEmuCfg(void)
 			m_btnMgr.setText(m_nandfileLblMessage, L"");
 			m_btnMgr.setText(m_nandemuLblDialog, _t("cfgne11", L"Overall progress:"));
 			if(m_fulldump)
-				m_btnMgr.setText(m_nandemuLblTitle, _t("cfgne12", L"Nand extractor"));
+				m_btnMgr.setText(m_nandemuLblTitle, _t("cfgne12", L"NAND extractor"));
 			else
 				m_btnMgr.setText(m_nandemuLblTitle, _t("cfgne13", L"Game save extractor"));
 			m_thrdStop = false;
@@ -224,7 +224,7 @@ int CMenu::_NandEmuCfg(void)
 			m_cfg.save();
 			break;
 		}
-		
+
 		if (m_thrdMessageAdded)
 		{
 			LockMutex lock(m_mutex);
@@ -235,20 +235,17 @@ int CMenu::_NandEmuCfg(void)
 			m_btnMgr.setProgress(m_nandemuPBar, m_thrdProgress);
 			m_btnMgr.setText(m_nandfileLblMessage, wfmt(_fmt("fileprogress", L"%d / %dkb"), m_fileprog/0x400, m_filesize/0x400));
 			m_btnMgr.setText(m_nandemuLblMessage, wfmt(_fmt("dumpprogress", L"%i%%"), (int)(m_thrdProgress*100.f)));			
-			
+
 			if (!m_thrdWorking)
 			{
-				
 				if(m_sgdump)
 					m_btnMgr.setText(m_nandfinLblDialog, wfmt(_fmt("cfgne14", L"Extracted: %d saves / %d files / %d folders"), m_nandexentry, m_filesdone, m_foldersdone));
 				else
 					m_btnMgr.setText(m_nandfinLblDialog, wfmt(_fmt("cfgne15", L"Extracted: %d files / %d folders"), m_filesdone, m_foldersdone));
 				if(m_dumpsize/0x400 > 0x270f)
-					m_btnMgr.setText(m_nandemuLblDialog, wfmt(_fmt("cfgne16", L"Total size: %uMb (%d blocks)"), (m_dumpsize/0x100000), (m_dumpsize/0x8000)>>2));
+					m_btnMgr.setText(m_nandemuLblDialog, wfmt(_fmt("cfgne16", L"Total size: %uMB (%d blocks)"), (m_dumpsize/0x100000), (m_dumpsize/0x8000)>>2));
 				else
-					m_btnMgr.setText(m_nandemuLblDialog, wfmt(_fmt("cfgne17", L"Total size: %ukb (%d blocks)"), (m_dumpsize/0x400), (m_dumpsize/0x8000)>>2));
-				
-				
+					m_btnMgr.setText(m_nandemuLblDialog, wfmt(_fmt("cfgne17", L"Total size: %uKB (%d blocks)"), (m_dumpsize/0x400), (m_dumpsize/0x8000)>>2));
 				m_btnMgr.show(m_nandemuBtnBack);
 				m_btnMgr.show(m_nandfinLblDialog);
 			}
@@ -264,28 +261,28 @@ int CMenu::_AutoExtractSave(string gameId)
 	int savePath = gameId.c_str()[0] << 24 | gameId.c_str()[1] << 16 | gameId.c_str()[2] << 8 | gameId.c_str()[3];			
 	string npath = sfmt("/title/00010000/%x", savePath);
 	string path = sfmt("%s:%s/title/00010000/%x", DeviceName[emuPartition], m_cfg.getString("GAMES", "savepath", m_cfg.getString("NAND", "path", "")).c_str(), savePath);
-	
-	if(!_nandSaveExcists(npath.c_str()) || (!m_forceext && _saveExcists(path.c_str())))
+
+	if(!_nandSaveExists(npath.c_str()) || (!m_forceext && _saveExists(path.c_str())))
 		return 0;
-		
+
 	lwp_t thread = 0;
 	SetupInput();
 	m_thrdStop = false;
 	m_thrdMessageAdded = false;
 	m_nandext = false;	
-	
+
 	if(!m_forceext)
 	{
 		m_btnMgr.setText(m_nandemuBtnExtract, _t("cfgne24", L"Extract save"));
 		m_btnMgr.setText(m_nandemuBtnDisable, _t("cfgne25", L"Create new save"));	
-		m_btnMgr.setText(m_nandemuLblInit, _t("cfgne26", L"A save file for this game was created on real nand. Extract existing safe file from real nand or create new file for nand emulation?"));
+		m_btnMgr.setText(m_nandemuLblInit, _t("cfgne26", L"A save file for this game was created on real NAND. Extract existing save file from real nand or create new file for NAND Emulation?"));
 		m_btnMgr.show(m_nandemuBtnExtract);
 		m_btnMgr.show(m_nandemuBtnDisable);	
 		m_btnMgr.show(m_nandemuLblInit);
 	}
 
 	m_saveExtGameId = gameId;
-	
+
 	while(true)
 	{
 		_mainLoopCommon(false, m_thrdWorking);
@@ -317,7 +314,7 @@ int CMenu::_AutoExtractSave(string gameId)
 			_hideNandEmu();			
 			return 0;
 		}
-		
+
 		if(m_thrdMessageAdded)
 		{
 			LockMutex lock(m_mutex);
@@ -328,14 +325,14 @@ int CMenu::_AutoExtractSave(string gameId)
 			m_btnMgr.setProgress(m_nandemuPBar, m_thrdProgress);
 			m_btnMgr.setText(m_nandfileLblMessage, wfmt(_fmt("fileprogress", L"%d / %dkb"), m_fileprog/0x400, m_filesize/0x400));
 			m_btnMgr.setText(m_nandemuLblMessage, wfmt(_fmt("dumpprogress", L"%i%%"), (int)(m_thrdProgress*100.f)));			
-			
+
 			if (!m_thrdWorking)
 			{
 				m_btnMgr.setText(m_nandfinLblDialog, wfmt(_fmt("cfgne14", L"Extracted: %d saves / %d files / %d folders"), m_nandexentry, m_filesdone, m_foldersdone));
 				if(m_dumpsize/0x400 > 0x270f)
-					m_btnMgr.setText(m_nandemuLblDialog, wfmt(_fmt("cfgne16", L"Total size: %uMb (%d blocks)"), (m_dumpsize/0x100000), (m_dumpsize/0x8000)>>2));
+					m_btnMgr.setText(m_nandemuLblDialog, wfmt(_fmt("cfgne16", L"Total size: %uMB (%d blocks)"), (m_dumpsize/0x100000), (m_dumpsize/0x8000)>>2));
 				else
-					m_btnMgr.setText(m_nandemuLblDialog, wfmt(_fmt("cfgne17", L"Total size: %ukb (%d blocks)"), (m_dumpsize/0x400), (m_dumpsize/0x8000)>>2));	
+					m_btnMgr.setText(m_nandemuLblDialog, wfmt(_fmt("cfgne17", L"Total size: %uKB (%d blocks)"), (m_dumpsize/0x400), (m_dumpsize/0x8000)>>2));
 				
 				_hideNandEmu();
 				return 1;
@@ -353,14 +350,14 @@ int CMenu::_AutoCreateNand(void)
 	m_thrdStop = false;
 	m_thrdMessageAdded = false;
 	m_nandext = false;	
-	
-	m_btnMgr.setText(m_nandemuBtnExtract, _t("cfgne5", L"Extract nand"));
-	m_btnMgr.setText(m_nandemuBtnDisable, _t("cfgne22", L"Disable nandemulation"));	
-	m_btnMgr.setText(m_nandemuLblInit, _t("cfgne23", L"Welcome to WiiFlow. I have not found a valid nand for nand emulation. Click Extract to extract your nand, or click disable to disable nand emulation."));
+
+	m_btnMgr.setText(m_nandemuBtnExtract, _t("cfgne5", L"Extract NAND"));
+	m_btnMgr.setText(m_nandemuBtnDisable, _t("cfgne22", L"Disable NAND Emulation"));	
+	m_btnMgr.setText(m_nandemuLblInit, _t("cfgne23", L"Welcome to WiiFlow. I have not found a valid nand for NAND Emulation. Click Extract to extract your NAND, or click disable to disable NAND Emulation."));
 	m_btnMgr.show(m_nandemuBtnExtract);
 	m_btnMgr.show(m_nandemuBtnDisable);	
 	m_btnMgr.show(m_nandemuLblInit);	
-	
+
 	while(true)
 	{
 		_mainLoopCommon(false, m_thrdWorking);
@@ -380,7 +377,7 @@ int CMenu::_AutoCreateNand(void)
 			m_btnMgr.setText(m_nandemuLblMessage, L"");
 			m_btnMgr.setText(m_nandfileLblMessage, L"");
 			m_btnMgr.setText(m_nandemuLblDialog, _t("cfgne11", L"Overall progress:"));
-			m_btnMgr.setText(m_nandemuLblTitle, _t("cfgne12", L"Nand extractor"));
+			m_btnMgr.setText(m_nandemuLblTitle, _t("cfgne12", L"NAND Extractor"));
 			m_thrdStop = false;
 			m_thrdProgress = 0.f;
 			m_thrdWorking = true;
@@ -391,7 +388,7 @@ int CMenu::_AutoCreateNand(void)
 			_hideNandEmu();			
 			return 0;
 		}
-		
+
 		if(m_thrdMessageAdded)
 		{
 			LockMutex lock(m_mutex);
@@ -402,7 +399,7 @@ int CMenu::_AutoCreateNand(void)
 			m_btnMgr.setProgress(m_nandemuPBar, m_thrdProgress);
 			m_btnMgr.setText(m_nandfileLblMessage, wfmt(_fmt("fileprogress", L"%d / %dkb"), m_fileprog/0x400, m_filesize/0x400));
 			m_btnMgr.setText(m_nandemuLblMessage, wfmt(_fmt("dumpprogress", L"%i%%"), (int)(m_thrdProgress*100.f)));			
-			
+
 			if (!m_thrdWorking)
 			{
 				m_btnMgr.setText(m_nandfinLblDialog, wfmt(_fmt("cfgne15", L"Extracted: %d files / %d folders"), m_filesdone, m_foldersdone));
@@ -431,9 +428,9 @@ int CMenu::_NandDumper(void *obj)
 	m.m_dumpsize = 0;
 	m.m_filesdone = 0;
 	m.m_foldersdone = 0;
-	
+
 	Nand::Instance()->ResetCounters();
-	
+
 	if(m.m_current_view == COVERFLOW_CHANNEL)
 	{
 		emuPartition = m.m_cfg.getInt("NAND", "partition", 0);
@@ -446,7 +443,7 @@ int CMenu::_NandDumper(void *obj)
 			emuPartition = m.m_cfg.getInt("NAND", "partition", 0);
 		emuPath = m.m_cfg.getString("GAMES", "savepath", m.m_cfg.getString("NAND", "path", ""));
 	}
-	
+
 	for(u8 i = emuPartition; i <= USB8; ++i)
 	{
 		if(!DeviceHandler::Instance()->IsInserted(emuPartition) || DeviceHandler::Instance()->GetFSType(emuPartition) != PART_FS_FAT)
@@ -464,10 +461,10 @@ int CMenu::_NandDumper(void *obj)
 			break;
 		}
 	}
-	
+
 	if(!emuPartIsValid)
 	{
-		m.error(sfmt("No valid FAT partition found for nandemulation!"));
+		m.error(sfmt("No valid FAT partition found for NAND Emulation!"));
 		m.m_thrdWorking = false;		
 		m.m_btnMgr.hide(m.m_nandfilePBar);
 		m.m_btnMgr.hide(m.m_nandfileLblMessage);
@@ -477,7 +474,7 @@ int CMenu::_NandDumper(void *obj)
 		m._hideNandEmu();
 		return 0;
 	}
-	
+
 	if(emuPath.size() == 0)
 	{
 		Nand::Instance()->CreatePath("%s:/wiiflow", DeviceName[emuPartition]);
@@ -495,14 +492,14 @@ int CMenu::_NandDumper(void *obj)
 		}		
 	}
 	m.m_cfg.save();
-	
+
 	char basepath[64];
 	snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[emuPartition], emuPath.c_str());	
-	
+
 	LWP_MutexLock(m.m_mutex);
 	m._setDumpMsg(L"Calculating space needed for extraction...", 0.f, 0.f);
 	LWP_MutexUnlock(m.m_mutex);
-	
+
 	if(m.m_fulldump)
 	{
 		m.m_dumpsize = Nand::Instance()->CalcDumpSpace("/", true, CMenu::_ShowProgress, obj);
@@ -515,7 +512,7 @@ int CMenu::_NandDumper(void *obj)
 		string path, npath;
 		vector<string> saveList;
 		m.m_sgdump = true;
-		
+
 		if(m.m_saveExtGameId.empty())
 		{
 			m.m_nandexentry = 0;
@@ -525,29 +522,27 @@ int CMenu::_NandDumper(void *obj)
 				LWP_MutexLock(m.m_mutex);
 				m._setDumpMsg(m._t("cfgne18", L"Listing game saves to extract..."), 0.f, 0.f);
 				LWP_MutexUnlock(m.m_mutex);					
-				
+
 				string id((const char *)m.m_gameList[i].hdr.id, 4);
-						
+
 				int savePath = id.c_str()[0] << 24 | id.c_str()[1] << 16 | id.c_str()[2] << 8 | id.c_str()[3];
-				
+
 				path = sfmt("%s/title/00010000/%x", basepath, savePath);
 				npath = sfmt("/title/00010000/%x", savePath);
-						
-				if(!missingOnly || !_saveExcists(path.c_str()))
+
+				if(!missingOnly || !_saveExists(path.c_str()))
 				{
-					if(_nandSaveExcists(npath.c_str()))
+					if(_nandSaveExists(npath.c_str()))
 					{
 						m.m_nandexentry++;
 						saveList.push_back(id);
 					}
-				}	
-
+				}
 			}
 		}
 		else
 			saveList.push_back(m.m_saveExtGameId);
 
-		
 		for(u32 i = 0; i < saveList.size() && !m.m_thrdStop; ++i)
 		{
 			char source[ISFS_MAXPATH];
@@ -564,7 +559,7 @@ int CMenu::_NandDumper(void *obj)
 			Nand::Instance()->DoNandDump(source, basepath, false, CMenu::_ShowProgress, obj);
 		}
 	}
-	
+
 	m.m_thrdWorking = false;
 	LWP_MutexLock(m.m_mutex);
 	m.m_btnMgr.hide(m.m_nandfilePBar);
@@ -599,8 +594,7 @@ void CMenu::_initNandEmuMenu(CMenu::SThemeData &theme)
 	m_nandemuBtnExtract = _addButton(theme, "NANDEMU/EXTRACT", theme.titleFont, L"", 72, 180, 496, 56, theme.titleFontColor);
 	m_nandemuBtnDisable = _addButton(theme, "NANDEMU/DISABLE", theme.titleFont, L"", 72, 290, 496, 56, theme.titleFontColor);
 	m_nandemuLblInit = _addLabel(theme, "NANDEMU/INIT", theme.lblFont, L"", 40, 40, 560, 140, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	
-	
+
 	_setHideAnim(m_nandemuLblTitle, "NANDEMU/TITLE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_nandfileLblMessage, "NANDEMU/FMESSAGE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_nandemuLblMessage, "NANDEMU/MESSAGE", 0, 0, -2.f, 0.f);
@@ -629,11 +623,11 @@ void CMenu::_initNandEmuMenu(CMenu::SThemeData &theme)
 
 void CMenu::_textNandEmu(void)
 {	
-	m_btnMgr.setText(m_nandemuLblEmulation, _t("cfgne1", L"Nand emulation"));
+	m_btnMgr.setText(m_nandemuLblEmulation, _t("cfgne1", L"NAND Emulation"));
 	m_btnMgr.setText(m_nandemuLblSaveDump, _t("cfgne2", L"Extract game saves"));
 	m_btnMgr.setText(m_nandemuBtnAll, _t("cfgne3", L"All"));
 	m_btnMgr.setText(m_nandemuBtnMissing, _t("cfgne4", L"Missing"));	
-	m_btnMgr.setText(m_nandemuLblNandDump, _t("cfgne5", L"Extract nand"));
+	m_btnMgr.setText(m_nandemuLblNandDump, _t("cfgne5", L"Extract NAND"));
 	m_btnMgr.setText(m_nandemuBtnNandDump, _t("cfgne6", L"Start"));	
 	m_btnMgr.setText(m_nandemuBtnBack, _t("cfgne7", L"Back"));	
 }

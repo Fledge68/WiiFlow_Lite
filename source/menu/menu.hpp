@@ -71,7 +71,7 @@ private:
 	Config m_version;
 	Plugin m_plugin;
 	Channels m_channels;
-	vector<std::string> m_homebrewArgs;
+	vector<string> m_homebrewArgs;
 	SmartBuf m_base_font;
 	u32 m_base_font_size;
 	u8 m_aa;
@@ -80,44 +80,44 @@ private:
 	bool m_locked;
 	bool m_favorites;
 	s16 m_showtimer;
-	std::string m_curLanguage;
-	std::string m_curGameId;
-	std::string m_curChanId;
+	string m_curLanguage;
+	string m_curGameId;
+	string m_curChanId;
 
 	u8 m_numCFVersions;
 
-	std::string m_themeDataDir;
-	std::string m_appDir;
-	std::string m_dataDir;
-	std::string m_pluginsDir;
-	std::string m_picDir;
-	std::string m_boxPicDir;
-	std::string m_cpicDir;
-	std::string m_boxcPicDir;
-	std::string m_cacheDir;
-	std::string m_themeDir;
-	std::string m_musicDir;
-	std::string m_txtCheatDir;
-	std::string m_cheatDir;
-	std::string m_wipDir;
-	std::string m_videoDir;
-	std::string m_fanartDir;
-	std::string m_screenshotDir;
-	std::string m_settingsDir;
-	std::string m_languagesDir;
-	std::string m_listCacheDir;
-	std::string m_DMLgameDir;
-	std::string m_helpDir;
+	string m_themeDataDir;
+	string m_appDir;
+	string m_dataDir;
+	string m_pluginsDir;
+	string m_picDir;
+	string m_boxPicDir;
+	string m_cpicDir;
+	string m_boxcPicDir;
+	string m_cacheDir;
+	string m_themeDir;
+	string m_musicDir;
+	string m_txtCheatDir;
+	string m_cheatDir;
+	string m_wipDir;
+	string m_videoDir;
+	string m_fanartDir;
+	string m_screenshotDir;
+	string m_settingsDir;
+	string m_languagesDir;
+	string m_listCacheDir;
+	string m_DMLgameDir;
+	string m_helpDir;
 	/* Updates */
 	char m_app_update_drive[6];
 	const char* m_app_update_url;
 	const char* m_data_update_url;
-	std::string m_dol;
-	std::string m_app_update_zip;
+	string m_dol;
+	string m_app_update_zip;
 	u32 m_app_update_size;
-	std::string m_data_update_zip;
+	string m_data_update_zip;
 	u32 m_data_update_size;
-	std::string m_ver;
+	string m_ver;
 	/* End Updates */
 	// 
 	STexture m_prevBg;
@@ -373,6 +373,12 @@ private:
 	s8 _versionDownloader();
 	s8 _versionTxtDownloader();
 //Game menu
+	enum
+	{
+		LOAD_IOS_FAILED = 0,
+		LOAD_IOS_SUCCEEDED,
+		LOAD_IOS_NOT_NEEDED
+	};
 	u32 m_gameLblInfo;
 	u32 m_gameBtnFavoriteOn;
 	u32 m_gameBtnFavoriteOff;
@@ -556,7 +562,7 @@ private:
 	u32 m_categoryLblUser[4];
 	u8 m_max_categories;
 // NandEmulation menu
-	std::string m_saveExtGameId;
+	string m_saveExtGameId;
 	bool m_nandext;
 	bool m_fulldump;
 	bool m_sgdump;
@@ -681,7 +687,7 @@ private:
 	volatile bool m_thrdNetwork;
 	float m_thrdStep;
 	float m_thrdStepLen;
-	std::string m_coverDLGameId;
+	string m_coverDLGameId;
 	mutex_t m_mutex;
 	wstringEx m_thrdMessage;
 	volatile float m_thrdProgress;
@@ -698,11 +704,17 @@ private:
 	bool m_video_playing;
 
 private:
-	enum WBFS_OP { WO_ADD_GAME, WO_REMOVE_GAME, WO_FORMAT, WO_COPY_GAME };
-	typedef std::pair<std::string, u32> FontDesc;
-	typedef std::map<FontDesc, SFont> FontSet;
-	typedef std::map<std::string, STexture> TexSet;
-	typedef std::map<std::string, SmartGuiSound > SoundSet;
+	enum WBFS_OP
+	{
+		WO_ADD_GAME,
+		WO_REMOVE_GAME,
+		WO_FORMAT,
+		WO_COPY_GAME,
+	};
+	typedef pair<string, u32> FontDesc;
+	typedef map<FontDesc, SFont> FontSet;
+	typedef map<string, STexture> TexSet;
+	typedef map<string, SmartGuiSound > SoundSet;
 	struct SThemeData
 	{
 		TexSet texSet;
@@ -799,8 +811,22 @@ private:
 	};
 	struct SCFParamDesc
 	{
-		enum { PDT_EMPTY, PDT_FLOAT, PDT_V3D, PDT_COLOR, PDT_BOOL, PDT_INT, PDT_TXTSTYLE } paramType[4];
-		enum { PDD_BOTH, PDD_NORMAL, PDD_SELECTED } domain;
+		enum
+		{
+			PDT_EMPTY,
+			PDT_FLOAT,
+			PDT_V3D,
+			PDT_COLOR,
+			PDT_BOOL,
+			PDT_INT, 
+			PDT_TXTSTYLE,
+		} paramType[4];
+		enum
+		{
+			PDD_BOTH,
+			PDD_NORMAL, 
+			PDD_SELECTED,
+		} domain;
 		bool scrnFmt;
 		const char name[32];
 		const char valName[4][64];
@@ -939,7 +965,7 @@ private:
 	};
 	void _cfNeedsUpdate(void);
 	void _game(bool launch = false);
-	void _download(std::string gameId = std::string());
+	void _download(string gameId = string());
 	bool _code(char code[4], bool erase = false);
 	void _about(void);
 	bool _wbfsOp(WBFS_OP op);
@@ -958,21 +984,21 @@ private:
 	vector<dir_discHdr> _searchGamesByType(const char type);
 	vector<dir_discHdr> _searchGamesByRegion(const char region); */
 public:
-	void _directlaunch(const std::string &id);
+	void _directlaunch(const string &id);
 private:
 	bool _loadFile(SmartBuf &buffer, u32 &size, const char *path, const char *file);
 	int _loadIOS(u8 ios, string id);
 	void _launch(dir_discHdr *hdr);
 	void _launchGame(dir_discHdr *hdr, bool dvd);
 	void _launchChannel(dir_discHdr *hdr);
-	void _launchHomebrew(const char *filepath, vector<std::string> arguments);
+	void _launchHomebrew(const char *filepath, vector<string> arguments);
 	void _launchGC(dir_discHdr *hdr, bool DML);
 	void _setAA(int aa);
 	void _loadCFCfg(SThemeData &theme);
 	void _loadCFLayout(int version, bool forceAA = false, bool otherScrnFmt = false);
-	Vector3D _getCFV3D(const std::string &domain, const std::string &key, const Vector3D &def, bool otherScrnFmt = false);
-	int _getCFInt(const std::string &domain, const std::string &key, int def, bool otherScrnFmt = false);
-	float _getCFFloat(const std::string &domain, const std::string &key, float def, bool otherScrnFmt = false);
+	Vector3D _getCFV3D(const string &domain, const string &key, const Vector3D &def, bool otherScrnFmt = false);
+	int _getCFInt(const string &domain, const string &key, int def, bool otherScrnFmt = false);
+	float _getCFFloat(const string &domain, const string &key, float def, bool otherScrnFmt = false);
 	void _cfParam(bool inc, int i, const SCFParamDesc &p, int cfVersion, bool wide);
 	void _buildMenus(void);
 	void _loadDefaultFont(bool korean);
@@ -1073,8 +1099,8 @@ private:
 	static const SOption _hooktype[8];
 	static const SOption _exitTo[6];
 	static const SOption _DumpMode[4];
-	static std::map<u8, u8> _installed_cios;
-	typedef std::map<u8, u8>::iterator CIOSItr;
+	static map<u8, u8> _installed_cios;
+	typedef map<u8, u8>::iterator CIOSItr;
 	static int _version[9];
 	static const SCFParamDesc _cfParams[];
 	static const int _nbCfgPages;
