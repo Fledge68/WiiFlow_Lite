@@ -111,7 +111,7 @@ void Sys_Exit(void)
 	if(WII_LaunchTitle(HBC_108) < 0)
 		if(WII_LaunchTitle(HBC_HAXX) < 0)
 			if(WII_LaunchTitle(HBC_JODI) < 0)
-				WII_LaunchTitle(0x100000002LL); //SYS_ResetSystem doesnt work properly with new libogc
+				WII_ReturnToMenu(); //SYS_ResetSystem doesnt work properly with new libogc
 }
 
 void __Sys_ResetCallback(void)
@@ -135,5 +135,5 @@ void Sys_Init(void)
 void Sys_LoadMenu(void)
 {
 	/* Return to the Wii system menu */
-	WII_LaunchTitle(0x100000002LL); //SYS_ResetSystem doesnt work properly with new libogc
+	WII_ReturnToMenu(); //SYS_ResetSystem doesnt work properly with new libogc
 }
