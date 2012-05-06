@@ -317,7 +317,7 @@ void CMenu::_textConfig(void)
 	m_btnMgr.setText(m_configBtnBack, _t("cfg10", L"Back"));
 	if(m_current_view != COVERFLOW_EMU)
 	{
-		m_btnMgr.setText(m_configLblCfg4, _t("cfg13", L"Nand emulation settings"));
+		m_btnMgr.setText(m_configLblCfg4, _t("cfg13", L"NAND Emulation Settings"));
 		m_btnMgr.setText(m_configBtnCfg4, _t("cfg14", L"Set"));
 	}
 	else
