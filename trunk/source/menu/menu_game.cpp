@@ -220,7 +220,7 @@ const CMenu::SOption CMenu::_DumpMode[4] = {
 	{ "DumpLMss", L"List Missing" },
 };
 
-std::map<u8, u8> CMenu::_installed_cios;
+map<u8, u8> CMenu::_installed_cios;
 u8 banner_title[84];
 
 static inline int loopNum(int i, int s)
@@ -638,12 +638,12 @@ void CMenu::_launch(dir_discHdr *hdr)
 	m_gcfg2.load(fmt("%s/gameconfig2.ini", m_settingsDir.c_str()));
 	if(hdr->hdr.gc_magic == 0x4c4f4c4f)
 	{
-		string title(&hdr->path[std::string(hdr->path).find_last_of("/")+1]);
+		string title(&hdr->path[string(hdr->path).find_last_of("/")+1]);
 		string wiiflow_dol(m_dol);
 		if(strstr(wiiflow_dol.c_str(), "sd:/") == NULL)
 			wiiflow_dol.erase(3,1);
 		string path((char*)hdr->path, size_t(strlen((char*)hdr->path) - title.size()));
-		vector<std::string> arguments;
+		vector<string> arguments;
 		gprintf("Game title: %s\n", title.c_str());
 		if(strstr(path.c_str(), ":/") != NULL)
 		{
@@ -655,7 +655,7 @@ void CMenu::_launch(dir_discHdr *hdr)
 				arguments.push_back(sfmt("%s/WiiFlowLoader.dol",m_pluginsDir.c_str()));
 			else
 				arguments.push_back(wiiflow_dol);
-			m_cfg.setString("EMULATOR", "current_item", &hdr->path[std::string(hdr->path).find_last_of("/")]);
+			m_cfg.setString("EMULATOR", "current_item", &hdr->path[string(hdr->path).find_last_of("/")]);
 		}
 		else
 		{
@@ -769,7 +769,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 		Sys_LoadMenu();
 }
 
-void CMenu::_launchHomebrew(const char *filepath, vector<std::string> arguments)
+void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 {
 	gprintf("Filepath of homebrew: %s\n",filepath);
 	if(LoadHomebrew(filepath))
@@ -795,8 +795,6 @@ void CMenu::_launchHomebrew(const char *filepath, vector<std::string> arguments)
 	}
 	m_exit = true;
 }
-
-enum {LOAD_IOS_FAILED = 0, LOAD_IOS_SUCCEEDED, LOAD_IOS_NOT_NEEDED};
 
 int CMenu::_loadIOS(u8 ios, string id)
 {
