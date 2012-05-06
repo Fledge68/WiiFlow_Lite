@@ -3,7 +3,6 @@
 
 #include "list.hpp"
 #include "cache.hpp"
-#include "safe_vector.hpp"
 #include "gecko.h"
 #include "config/config.hpp"
 
@@ -19,7 +18,7 @@ enum {
 };
 
 template <typename T = dir_discHdr>
-class CachedList : public safe_vector<T>
+class CachedList : public vector<T>
 {
   public:
 	void Init(string cachedir, string settingsDir, string curLanguage, string DMLgameDir, bool extcheck)						/* Initialize Private Variables */

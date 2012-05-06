@@ -580,7 +580,7 @@ void MthVideoFile::getCurrentFrame(VideoFrame& f) const
 JpgVideoFile::JpgVideoFile(FILE* f)
 : VideoFile(f)
 {
-	safe_vector<u8> data(getFilesize(f));
+	vector<u8> data(getFilesize(f));
 	fread(&data[0], 1, getFilesize(f), f);
 
 	loadFrame(_currFrame, &data[0], getFilesize(f));

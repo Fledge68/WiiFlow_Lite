@@ -16,8 +16,6 @@
 #include "loader/alt_ios.h"
 #include "GameTDB.hpp"
 
-using namespace std;
-
 extern const u8 btnconfig_png[];
 extern const u8 btnconfigs_png[];
 extern const u8 btninfo_png[];

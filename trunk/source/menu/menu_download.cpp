@@ -29,8 +29,6 @@
 #define GAMETDB_URL		"http://www.gametdb.com/wiitdb.zip?LANG=%s&FALLBACK=TRUE&WIIWARE=TRUE&GAMECUBE=TRUE"
 #define UPDATE_URL_VERSION	"http://dl.dropbox.com/u/25620767/WiiflowMod/versions.txt"
 
-using namespace std;
-
 static const char FMT_BPIC_URL[] = "http://art.gametdb.com/wii/coverfullHQ/{loc}/{gameid}.png"\
 "|http://art.gametdb.com/wii/coverfull/{loc}/{gameid}.png";
 static const char FMT_PIC_URL[] = "http://art.gametdb.com/wii/cover/{loc}/{gameid}.png";
@@ -455,7 +453,7 @@ void CMenu::_deinitNetwork()
 int CMenu::_coverDownloader(bool missingOnly)
 {
 	string path;
-	safe_vector<string> coverList;
+	vector<string> coverList;
 	int count = 0, countFlat = 0;
 	float listWeight = missingOnly ? 0.125f : 0.f;	// 1/8 of the progress bar for testing the PNGs we already have
 	float dlWeight = 1.f - listWeight;
@@ -472,10 +470,10 @@ int CMenu::_coverDownloader(bool missingOnly)
 	}
 	bool savePNG = m_cfg.getBool("GENERAL", "keep_png", true);
 
-	safe_vector<string> fmtURLBox = stringToVector(m_cfg.getString("GENERAL", "url_full_covers", FMT_BPIC_URL), '|');
-	safe_vector<string> fmtURLFlat = stringToVector(m_cfg.getString("GENERAL", "url_flat_covers", FMT_PIC_URL), '|');
-	safe_vector<string> fmtURLCBox = stringToVector(m_cfg.getString("GENERAL", "url_custom_full_covers", FMT_CBPIC_URL), '|');
-	safe_vector<string> fmtURLCFlat = stringToVector(m_cfg.getString("GENERAL", "url_custom_flat_covers", FMT_CPIC_URL), '|');
+	vector<string> fmtURLBox = stringToVector(m_cfg.getString("GENERAL", "url_full_covers", FMT_BPIC_URL), '|');
+	vector<string> fmtURLFlat = stringToVector(m_cfg.getString("GENERAL", "url_flat_covers", FMT_PIC_URL), '|');
+	vector<string> fmtURLCBox = stringToVector(m_cfg.getString("GENERAL", "url_custom_full_covers", FMT_CBPIC_URL), '|');
+	vector<string> fmtURLCFlat = stringToVector(m_cfg.getString("GENERAL", "url_custom_flat_covers", FMT_CPIC_URL), '|');
 	
 	u32 nbSteps = m_gameList.size();
 	u32 step = 0;

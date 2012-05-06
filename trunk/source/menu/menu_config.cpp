@@ -6,8 +6,6 @@
 #include "loader/alt_ios.h"
 #include "gecko/gecko.h"
 
-using namespace std;
-
 const int CMenu::_nbCfgPages = 6;
 static const int g_curPage = 1;
 

@@ -7,7 +7,7 @@
 #include "gc.h"
 
 template <typename T>
-void CList<T>::GetPaths(safe_vector<string> &pathlist, string containing, string directory, bool wbfs_fs, bool dml)
+void CList<T>::GetPaths(vector<string> &pathlist, string containing, string directory, bool wbfs_fs, bool dml)
 {
 	if (!wbfs_fs)
 	{
@@ -15,8 +15,8 @@ void CList<T>::GetPaths(safe_vector<string> &pathlist, string containing, string
 		DIR *dir_itr = opendir(directory.c_str());
 		if (!dir_itr) return;
 
-		safe_vector<string> compares = stringToVector(containing, '|');
-		safe_vector<string> temp_pathlist;
+		vector<string> compares = stringToVector(containing, '|');
+		vector<string> temp_pathlist;
 
 		struct dirent *ent;
 
@@ -28,7 +28,7 @@ void CList<T>::GetPaths(safe_vector<string> &pathlist, string containing, string
 
 			if(ent->d_type == DT_REG)
 			{
-				for(safe_vector<string>::iterator compare = compares.begin(); compare != compares.end(); compare++)
+				for(vector<string>::iterator compare = compares.begin(); compare != compares.end(); compare++)
 					if (strcasestr(ent->d_name, (*compare).c_str()) != NULL)
 					{
 						//gprintf("Pushing %s to the list.\n", sfmt("%s/%s", directory.c_str(), ent->d_name).c_str());
@@ -44,7 +44,7 @@ void CList<T>::GetPaths(safe_vector<string> &pathlist, string containing, string
 		if(temp_pathlist.size() > 0)
 		{
 			bool FoundDMLgame;
-			for(safe_vector<string>::iterator templist = temp_pathlist.begin(); templist != temp_pathlist.end(); templist++)
+			for(vector<string>::iterator templist = temp_pathlist.begin(); templist != temp_pathlist.end(); templist++)
 			{
 				dir_itr = opendir((*templist).c_str());
 				if (!dir_itr) continue;
@@ -55,7 +55,7 @@ void CList<T>::GetPaths(safe_vector<string> &pathlist, string containing, string
 				{
 					if(ent->d_type == DT_REG && strlen(ent->d_name) > 7)
 					{
-						for(safe_vector<string>::iterator compare = compares.begin(); compare != compares.end(); compare++)
+						for(vector<string>::iterator compare = compares.begin(); compare != compares.end(); compare++)
 						{
 							if(strcasestr(ent->d_name, (*compare).c_str()) != NULL)
 							{
@@ -98,19 +98,19 @@ void CList<T>::GetPaths(safe_vector<string> &pathlist, string containing, string
 }
 
 template <>
-void CList<string>::GetHeaders(safe_vector<string> pathlist, safe_vector<string> &headerlist, string, string, string, Config&)
+void CList<string>::GetHeaders(vector<string> pathlist, vector<string> &headerlist, string, string, string, Config&)
 {
 	//gprintf("Getting headers for CList<string>\n");
 
 	if(pathlist.size() < 1) return;
 	headerlist.reserve(pathlist.size() + headerlist.size());
 
-	for(safe_vector<string>::iterator itr = pathlist.begin(); itr != pathlist.end(); itr++)
+	for(vector<string>::iterator itr = pathlist.begin(); itr != pathlist.end(); itr++)
 		headerlist.push_back((*itr).c_str());
 }
 
 template <>
-void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<dir_discHdr> &headerlist, string settingsDir, string curLanguage, string DMLgameUSBDir, Config &plugin)
+void CList<dir_discHdr>::GetHeaders(vector<string> pathlist, vector<dir_discHdr> &headerlist, string settingsDir, string curLanguage, string DMLgameUSBDir, Config &plugin)
 {
 	if(pathlist.size() < 1) return;
 	headerlist.reserve(pathlist.size() + headerlist.size());
@@ -136,7 +136,7 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 		gameTDB.SetLanguageCode(curLanguage.c_str());
 	}
 
-	for(safe_vector<string>::iterator itr = pathlist.begin(); itr != pathlist.end(); itr++)
+	for(vector<string>::iterator itr = pathlist.begin(); itr != pathlist.end(); itr++)
 	{
 		bzero(&tmp, sizeof(dir_discHdr));
 		strncpy(tmp.path, (*itr).c_str(), sizeof(tmp.path));
@@ -413,10 +413,10 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 		}
 		else if(plugin.loaded())
 		{
-			safe_vector<string> types = plugin.getStrings("PLUGIN","fileTypes",'|');
+			vector<string> types = plugin.getStrings("PLUGIN","fileTypes",'|');
 			if (types.size() > 0)
 			{
-				for(safe_vector<string>::iterator type_itr = types.begin(); type_itr != types.end(); type_itr++)
+				for(vector<string>::iterator type_itr = types.begin(); type_itr != types.end(); type_itr++)
 				{
 					if(lowerCase(*itr).rfind((*type_itr).c_str()) != string::npos)
 					{
@@ -455,7 +455,7 @@ void CList<dir_discHdr>::GetHeaders(safe_vector<string> pathlist, safe_vector<di
 }
 
 template <>
-void CList<dir_discHdr>::GetChannels(safe_vector<dir_discHdr> &headerlist, string settingsDir, u32 channelType, string curLanguage)
+void CList<dir_discHdr>::GetChannels(vector<dir_discHdr> &headerlist, string settingsDir, u32 channelType, string curLanguage)
 {
 	Channels m_channels;
 	m_channels.Init(channelType, curLanguage, true);

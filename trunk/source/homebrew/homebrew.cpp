@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ogc/machine/processor.h>
-#include "safe_vector.hpp"
+#include <vector>
 #include <string>
 #include "smartptr.hpp"
 #include "gecko.h"
@@ -11,6 +11,8 @@
 #define EXECUTE_ADDR	((u8 *) 0x92000000)
 #define BOOTER_ADDR		((u8 *) 0x93000000)
 #define ARGS_ADDR		((u8 *) 0x93200000)
+
+using namespace std;
 
 extern const u8 app_booter_bin[];
 extern const u32 app_booter_bin_size;
@@ -20,7 +22,7 @@ extern "C" { void __exception_closeall(); }
 
 static u8 *homebrewbuffer = EXECUTE_ADDR;
 static u32 homebrewsize = 0;
-static safe_vector<std::string> Arguments;
+static vector<string> Arguments;
 
 bool bootHB;
 

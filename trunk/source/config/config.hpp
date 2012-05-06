@@ -4,7 +4,6 @@
 
 #include <map>
 #include <string>
-#include "safe_vector.hpp"
 
 #include "video.hpp"
 #include "smartptr.hpp"
@@ -36,7 +35,7 @@ public:
 	// Get
 	wstringEx getWString(const std::string &domain, const std::string &key, const wstringEx &defVal = wstringEx());
 	std::string getString(const std::string &domain, const std::string &key, const std::string &defVal = std::string());
-	safe_vector<std::string> getStrings(const std::string &domain, const std::string &key, char seperator = ',', const std::string &defval = std::string());
+	vector<std::string> getStrings(const std::string &domain, const std::string &key, char seperator = ',', const std::string &defval = std::string());
 	bool getBool(const std::string &domain, const std::string &key, bool defVal = false);
 	int getOptBool(const std::string &domain, const std::string &key, int defVal = 2);
 	bool testOptBool(const std::string &domain, const std::string &key, bool defVal);

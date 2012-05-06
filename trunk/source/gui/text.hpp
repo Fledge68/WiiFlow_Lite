@@ -2,7 +2,7 @@
 #ifndef __TEXT_HPP
 #define __TEXT_HPP
 
-#include "safe_vector.hpp"
+#include <vector>
 #include <string>
 
 #include "wstringEx.hpp"
@@ -10,6 +10,8 @@
 #include "video.hpp"
 
 #include "smartptr.hpp"
+
+using namespace std;
 
 struct SFont
 {
@@ -45,8 +47,8 @@ private:
 		Vector3D targetPos;
 	};
 private:
-	typedef safe_vector<SWord> CLine;
-	safe_vector<CLine> m_lines;
+	typedef vector<SWord> CLine;
+	vector<CLine> m_lines;
 	SFont m_font;
 	CColor m_color;
 	u32 firstLine;
@@ -64,10 +66,10 @@ const char *fmt(const char *format, ...);
 std::string sfmt(const char *format, ...);
 wstringEx wfmt(const wstringEx &format, ...);
 bool checkFmt(const wstringEx &ref, const wstringEx &format);
-std::string vectorToString(const safe_vector<std::string> &vect, std::string sep);
-wstringEx vectorToString(const safe_vector<wstringEx> &vect, char sep);
-safe_vector<wstringEx> stringToVector(const wstringEx &text, char sep);
-safe_vector<std::string> stringToVector(const std::string &text, char sep);
+std::string vectorToString(const vector<std::string> &vect, std::string sep);
+wstringEx vectorToString(const vector<wstringEx> &vect, char sep);
+vector<wstringEx> stringToVector(const wstringEx &text, char sep);
+vector<std::string> stringToVector(const std::string &text, char sep);
 std::string upperCase(std::string text);
 std::string lowerCase(std::string text);
 std::string ltrim(std::string s);

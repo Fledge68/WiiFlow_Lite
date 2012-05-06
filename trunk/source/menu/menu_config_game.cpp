@@ -7,8 +7,6 @@
 
 #define ARRAY_SIZE(a)	(sizeof a / sizeof a[0])
 
-using namespace std;
-
 static inline int loopNum(int i, int s)
 {
 	return i < 0 ? (s - (-i % s)) % s : i % s;

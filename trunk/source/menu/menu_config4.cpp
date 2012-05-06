@@ -6,8 +6,6 @@
 #include "defines.h"
 #include "nand.hpp"
 
-using namespace std;
-
 static const int g_curPage = 4;
 
 static inline int loopNum(int i, int s)

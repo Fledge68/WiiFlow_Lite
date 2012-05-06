@@ -1,7 +1,5 @@
 #include "text.hpp"
 
-using namespace std;
-
 static const wchar_t *g_whitespaces = L" \f\n\r\t\v";
 
 // Simplified use of sprintf
@@ -104,7 +102,7 @@ wstringEx wfmt(const wstringEx &format, ...)
 	return ws;
 }
 
-string vectorToString(const safe_vector<string> &vect, string sep)
+string vectorToString(const vector<string> &vect, string sep)
 {
 	string s;
 	for (u32 i = 0; i < vect.size(); ++i)
@@ -116,7 +114,7 @@ string vectorToString(const safe_vector<string> &vect, string sep)
 	return s;
 }
 
-wstringEx vectorToString(const safe_vector<wstringEx> &vect, char sep)
+wstringEx vectorToString(const vector<wstringEx> &vect, char sep)
 {
 	wstringEx s;
 	for (u32 i = 0; i < vect.size(); ++i)
@@ -128,9 +126,9 @@ wstringEx vectorToString(const safe_vector<wstringEx> &vect, char sep)
 	return s;
 }
 
-safe_vector<string> stringToVector(const string &text, char sep)
+vector<string> stringToVector(const string &text, char sep)
 {
-	safe_vector<string> v;
+	vector<string> v;
 	if (text.empty()) return v;
 	u32 count = 1;
 	for (u32 i = 0; i < text.size(); ++i)
@@ -154,9 +152,9 @@ safe_vector<string> stringToVector(const string &text, char sep)
 	return v;
 }
 
-safe_vector<wstringEx> stringToVector(const wstringEx &text, char sep)
+vector<wstringEx> stringToVector(const wstringEx &text, char sep)
 {
-	safe_vector<wstringEx> v;
+	vector<wstringEx> v;
 	if (text.empty()) return v;
 	u32 count = 1;
 	for (u32 i = 0; i < text.size(); ++i)
@@ -242,7 +240,7 @@ void CText::setText(SFont font, const wstringEx &t)
 
 	firstLine = 0;
 	// Don't care about performance
-	safe_vector<wstringEx> lines = stringToVector(t, L'\n');
+	vector<wstringEx> lines = stringToVector(t, L'\n');
 	m_lines.reserve(lines.size());
 	// 
 	for (u32 k = 0; k < lines.size(); ++k)
@@ -282,7 +280,7 @@ void CText::setText(SFont font, const wstringEx &t, u32 startline)
 
 	firstLine = startline;
 	// Don't care about performance
-	safe_vector<wstringEx> lines = stringToVector(t, L'\n');
+	vector<wstringEx> lines = stringToVector(t, L'\n');
 	m_lines.reserve(lines.size());
 	// 
 	for (u32 k = 0; k < lines.size(); ++k)

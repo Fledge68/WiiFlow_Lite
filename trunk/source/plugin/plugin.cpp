@@ -152,9 +152,9 @@ void Plugin::SetEnablePlugin(Config &cfg, u8 pos, u8 ForceMode)
 	}
 }
 
-safe_vector<bool> Plugin::GetEnabledPlugins(Config &cfg)
+vector<bool> Plugin::GetEnabledPlugins(Config &cfg)
 {
-	safe_vector<bool> enabledPlugins;
+	vector<bool> enabledPlugins;
 	char PluginMagicWord[8];
 	u8 enabledPluginsNumber = 0;
 	for(u8 i = 0; i < Plugins.size(); i++)
@@ -178,10 +178,10 @@ u32 Plugin::getPluginMagic(u8 pos)
 	return Plugins[pos].magicWord;
 }
 
-safe_vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, string Device)
+vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, string Device)
 {
 	gprintf("Parsing scummvm.ini\n");
-	safe_vector<dir_discHdr> gameHeader;
+	vector<dir_discHdr> gameHeader;
 	if(!ini.loaded())
 		return gameHeader;
 	string game(ini.firstDomain());

@@ -430,7 +430,7 @@ void CMenu::_textGameInfo(void)
 			zapper=0;
 		
 		//check required controlls
-		for (safe_vector<Accessory>::iterator acc_itr = gameinfo.Accessories.begin(); acc_itr != gameinfo.Accessories.end(); acc_itr++)
+		for (vector<Accessory>::iterator acc_itr = gameinfo.Accessories.begin(); acc_itr != gameinfo.Accessories.end(); acc_itr++)
 		{
 			if (!acc_itr->Required) continue;
 			
@@ -549,7 +549,7 @@ void CMenu::_textGameInfo(void)
 		udraw = 0,
 		zapper=0;
 
-		for (safe_vector<Accessory>::iterator acc_itr = gameinfo.Accessories.begin(); acc_itr != gameinfo.Accessories.end(); acc_itr++)
+		for (vector<Accessory>::iterator acc_itr = gameinfo.Accessories.begin(); acc_itr != gameinfo.Accessories.end(); acc_itr++)
 		{
 			if (acc_itr->Required) continue;
 		

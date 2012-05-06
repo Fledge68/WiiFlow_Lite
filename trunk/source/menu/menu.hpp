@@ -4,8 +4,8 @@
 //#define SHOWMEMGECKO
 #include "wiiuse/wpad.h"
 #include <ogc/pad.h>
+#include <vector>
 
-#include "safe_vector.hpp"
 #include "cachedlist.hpp"
 #include "plugin/plugin.hpp"
 
@@ -29,6 +29,8 @@
 #define PART_FS_FAT  1
 #define PART_FS_NTFS 2
 #define PART_FS_EXT  3
+
+using namespace std;
 
 extern "C" {extern u8 currentPartition;}
 extern bool bootHB;
@@ -69,7 +71,7 @@ private:
 	Config m_version;
 	Plugin m_plugin;
 	Channels m_channels;
-	safe_vector<std::string> m_homebrewArgs;
+	vector<std::string> m_homebrewArgs;
 	SmartBuf m_base_font;
 	u32 m_base_font_size;
 	u8 m_aa;
@@ -951,10 +953,10 @@ private:
 	//
 	void _mainLoopCommon(bool withCF = false, bool blockReboot = false, bool adjusting = false);
 	// 
-	safe_vector<dir_discHdr> _searchGamesByID(const char *gameId);
-/* 	safe_vector<dir_discHdr> _searchGamesByTitle(wchar_t letter);
-	safe_vector<dir_discHdr> _searchGamesByType(const char type);
-	safe_vector<dir_discHdr> _searchGamesByRegion(const char region); */
+	vector<dir_discHdr> _searchGamesByID(const char *gameId);
+/* 	vector<dir_discHdr> _searchGamesByTitle(wchar_t letter);
+	vector<dir_discHdr> _searchGamesByType(const char type);
+	vector<dir_discHdr> _searchGamesByRegion(const char region); */
 public:
 	void _directlaunch(const std::string &id);
 private:
@@ -963,7 +965,7 @@ private:
 	void _launch(dir_discHdr *hdr);
 	void _launchGame(dir_discHdr *hdr, bool dvd);
 	void _launchChannel(dir_discHdr *hdr);
-	void _launchHomebrew(const char *filepath, safe_vector<std::string> arguments);
+	void _launchHomebrew(const char *filepath, vector<std::string> arguments);
 	void _launchGC(dir_discHdr *hdr, bool DML);
 	void _setAA(int aa);
 	void _loadCFCfg(SThemeData &theme);
@@ -982,7 +984,7 @@ private:
 	void RemoveCover( char * id );
 	SFont _font(CMenu::FontSet &fontSet, const char *domain, const char *key, u32 fontSize, u32 lineSpacing, u32 weight, u32 index, const char *genKey);
 	STexture _texture(TexSet &texSet, const char *domain, const char *key, STexture def);
-	safe_vector<STexture> _textures(TexSet &texSet, const char *domain, const char *key);
+	vector<STexture> _textures(TexSet &texSet, const char *domain, const char *key);
 	void _showWaitMessage();
 public:
 	void _hideWaitMessage();

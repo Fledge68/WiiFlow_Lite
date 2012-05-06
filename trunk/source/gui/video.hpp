@@ -3,12 +3,13 @@
 #define __VIDEO_HPP
 
 #include <gccore.h>
+#include <vector>
 
 #include "smartptr.hpp"
 #include "vector.hpp"
 #include "texture.hpp"
 
-#include "safe_vector.hpp"
+using namespace std;
 
 class CTexCoord
 {
@@ -67,7 +68,7 @@ public:
 	int stencilVal(int x, int y);
 	void hideWaitMessage();
 	void waitMessage(float delay);
-	void waitMessage(const safe_vector<STexture> &tex, float delay, bool useWiiLight = true);
+	void waitMessage(const vector<STexture> &tex, float delay, bool useWiiLight = true);
 	void waitMessage(const STexture &tex);
 	void CheckWaitThread();
 	s32 TakeScreenshot(const char *);
@@ -99,7 +100,7 @@ private:
 	bool m_showWaitMessage;
 	volatile bool m_showingWaitMessages;
 	bool m_useWiiLight;
-	safe_vector<STexture> m_waitMessages;
+	vector<STexture> m_waitMessages;
 	// 
 	static const int _stencilWidth;
 	static const int _stencilHeight;

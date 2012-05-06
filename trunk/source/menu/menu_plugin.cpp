@@ -68,7 +68,7 @@ void CMenu::_updatePluginCheckboxes(void)
 		m_btnMgr.hide(m_pluginLblCat[i]);
 	}
 
-	safe_vector<bool> EnabledPlugins = m_plugin.GetEnabledPlugins(m_cfg);
+	vector<bool> EnabledPlugins = m_plugin.GetEnabledPlugins(m_cfg);
 	if(Plugin_curPage == 1)
 	{
 		int j = 11;

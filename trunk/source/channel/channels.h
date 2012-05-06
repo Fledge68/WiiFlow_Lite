@@ -29,7 +29,7 @@
 #ifndef _CHANNELS_H_
 #define _CHANNELS_H_
 
-#include "safe_vector.hpp"
+#include <vector>
 #include <string>
 
 #include "smartptr.hpp"
@@ -70,7 +70,7 @@ class Channels
 		u32 channelType;
 		string langCode;
 
-		safe_vector<Channel> channels;
+		vector<Channel> channels;
 		
 		static int GetLanguage(const char *lang);
 		u64* GetChannelList(u32* count);

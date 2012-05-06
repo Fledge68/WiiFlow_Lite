@@ -2,9 +2,6 @@
 #include "gecko.h"
 #include <stdlib.h>
 
-using namespace std;
-
-
 static const u32 g_repeatDelay = 25;
 
 void CMenu::SetupInput()

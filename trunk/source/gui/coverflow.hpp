@@ -6,7 +6,6 @@
 #include <ogcsys.h>
 #include <gccore.h>
 #include <string>
-#include "safe_vector.hpp"
 
 #include "wiiuse/wpad.h"
 #include <ogc/pad.h>
@@ -227,8 +226,8 @@ private:
 	Vector3D m_cameraAim;
 	Vector3D m_targetCameraPos;
 	Vector3D m_targetCameraAim;
-	safe_vector<CItem> m_items;
-	safe_vector<CCover> m_covers;
+	vector<CItem> m_items;
+	vector<CCover> m_covers;
 	int m_delay;
 	int m_minDelay;
 	int m_jump;
@@ -325,7 +324,7 @@ private:
 	CLRet _loadCoverTex(u32 i, bool box, bool hq);
 	bool _invisibleCover(u32 x, u32 y);
 	void _instantTarget(int i);
-	void _transposeCover(safe_vector<CCover> &dst, u32 rows, u32 columns, int pos);
+	void _transposeCover(vector<CCover> &dst, u32 rows, u32 columns, int pos);
 	void _playSound(void);
 	
 	void _stopSound(SmartGuiSound snd);
