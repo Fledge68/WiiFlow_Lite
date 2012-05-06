@@ -1,9 +1,6 @@
 
 #include "menu.hpp"
 
-
-using namespace std;
-
 static const int g_curPage = 6;
 
 void CMenu::_hideConfigScreen(bool instant)

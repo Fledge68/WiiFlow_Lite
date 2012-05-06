@@ -29,8 +29,9 @@
 #ifndef _BANNER_H_
 #define _BANNER_H_
 
-#include "safe_vector.hpp"
 #include <string>
+
+using namespace std;
 
 #define IMET_MAX_NAME_LEN 0x2a
 
@@ -55,8 +56,6 @@ typedef struct
 	u8  zeroes2[0x24c];
 	u8  md5[0x10];
 } IMET;
-
-using namespace std;
 
 class Banner
 {

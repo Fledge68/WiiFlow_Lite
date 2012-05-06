@@ -10,9 +10,9 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include "config/config.hpp"
-#include "safe_vector.hpp"
 #include "loader/disc.h"
 
 using namespace std;
@@ -40,16 +40,16 @@ public:
 	u32 getPluginMagic(u8 pos);
 	bool PluginExist(u8 pos);
 	void SetEnablePlugin(Config &cfg, u8 pos, u8 ForceMode = 0);
-	safe_vector<bool> GetEnabledPlugins(Config &cfg);
+	vector<bool> GetEnabledPlugins(Config &cfg);
 	bool UseReturnLoader(u32 magic);
 	void init(string);
 	void Cleanup();
 	void EndAdd();
-	safe_vector<dir_discHdr> ParseScummvmINI(Config &ini, string Device);
+	vector<dir_discHdr> ParseScummvmINI(Config &ini, string Device);
 private:
 	s8 GetPluginPosition(u32 magic);
 
-	safe_vector<PluginOptions> Plugins;
+	vector<PluginOptions> Plugins;
 	s8 Plugin_Pos;
 	string pluginsDir;
 	bool adding;

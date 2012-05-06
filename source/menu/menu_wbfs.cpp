@@ -10,8 +10,6 @@
 #include "defines.h"
 #include "wdvd.h"
 
-using namespace std;
-
 void CMenu::_hideWBFS(bool instant)
 {
 	m_btnMgr.hide(m_wbfsLblTitle, instant);

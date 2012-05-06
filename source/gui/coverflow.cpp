@@ -310,7 +310,7 @@ void CCoverFlow::setFont(SFont font, const CColor &color)
 	}
 }
 
-void CCoverFlow::_transposeCover(safe_vector<CCoverFlow::CCover> &dst, u32 rows, u32 columns, int pos)
+void CCoverFlow::_transposeCover(vector<CCoverFlow::CCover> &dst, u32 rows, u32 columns, int pos)
 {
 	int i = pos - (int)(rows * columns / 2);
 	int j = rows >= 3 ? abs(i) - ((abs(i) + (int)rows / 2) / (int)rows) * 2 : abs(i);
@@ -331,7 +331,7 @@ void CCoverFlow::setRange(u32 rows, u32 columns)
 	if (!m_covers.empty())
 	{
 		stopCoverLoader();
-		safe_vector<CCoverFlow::CCover> tmpCovers;
+		vector<CCoverFlow::CCover> tmpCovers;
 		tmpCovers.resize(range);
 		if (rows >= 3)
 			for (u32 x = 0; x < columns; ++x)

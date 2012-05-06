@@ -31,8 +31,8 @@
 
 #include <stdio.h> //FILE*
 #include <string>
-#include "safe_vector.hpp"
-
+#include <vector>
+using namespace std;
 
 #include <gccore.h>
 
@@ -285,7 +285,7 @@ class ThpVideoFile : public VideoFile
   int _currFrameNr;
   int _nextFrameOffset;
   int _nextFrameSize;
-  safe_vector<u8> _currFrameData;
+  vector<u8> _currFrameData;
 };
 
 class MthVideoFile : public VideoFile
@@ -311,7 +311,7 @@ class MthVideoFile : public VideoFile
   int _nextFrameOffset;
   int _nextFrameSize;
   int _thisFrameSize;
-  safe_vector<u8> _currFrameData;
+  vector<u8> _currFrameData;
 };
 
 class JpgVideoFile : public VideoFile

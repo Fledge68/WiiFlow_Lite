@@ -32,8 +32,6 @@
 #include "defines.h"
 #include "gc/gc.h"
 
-using namespace std;
-
 extern const u8 btngamecfg_png[];
 extern const u8 btngamecfgs_png[];
 extern const u8 stopkidon_png[];
@@ -619,7 +617,7 @@ void CMenu::_directlaunch(const string &id)
 		DeviceHandler::Instance()->Open_WBFS(i);
 		CList<dir_discHdr> list;
 		string path = sfmt(GAMES_DIR, DeviceName[i]);
-		safe_vector<string> pathlist;
+		vector<string> pathlist;
 		list.GetPaths(pathlist, id.c_str(), path,
 			strncasecmp(DeviceHandler::Instance()->PathToFSName(path.c_str()), "WBFS", 4) == 0);
 
@@ -645,7 +643,7 @@ void CMenu::_launch(dir_discHdr *hdr)
 		if(strstr(wiiflow_dol.c_str(), "sd:/") == NULL)
 			wiiflow_dol.erase(3,1);
 		string path((char*)hdr->path, size_t(strlen((char*)hdr->path) - title.size()));
-		safe_vector<std::string> arguments;
+		vector<std::string> arguments;
 		gprintf("Game title: %s\n", title.c_str());
 		if(strstr(path.c_str(), ":/") != NULL)
 		{
@@ -771,7 +769,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 		Sys_LoadMenu();
 }
 
-void CMenu::_launchHomebrew(const char *filepath, safe_vector<std::string> arguments)
+void CMenu::_launchHomebrew(const char *filepath, vector<std::string> arguments)
 {
 	gprintf("Filepath of homebrew: %s\n",filepath);
 	if(LoadHomebrew(filepath))

@@ -647,7 +647,7 @@ unsigned int GameTDB::GetPublishDate(const char * id)
 
 bool GameTDB::GetGenres(const char * id, string & gen)
 {
-	safe_vector<string> genre;
+	vector<string> genre;
 
     gen = "";
 	if(!id) return false;
@@ -771,7 +771,7 @@ bool GameTDB::GetRatingValue(const char * id, string & rating_value)
     return true;
 }
 
-int GameTDB::GetRatingDescriptors(const char * id, safe_vector<string> & desc_list)
+int GameTDB::GetRatingDescriptors(const char * id, vector<string> & desc_list)
 {
     desc_list.clear();
     if(!id)
@@ -838,7 +838,7 @@ int GameTDB::GetWifiPlayers(const char * id)
     return players;
 }
 
-int GameTDB::GetWifiFeatures(const char * id, safe_vector<string> & feat_list)
+int GameTDB::GetWifiFeatures(const char * id, vector<string> & feat_list)
 {
     feat_list.clear();
     if(!id)
@@ -910,7 +910,7 @@ int GameTDB::GetPlayers(const char * id)
     return players;
 }
 
-int GameTDB::GetAccessories(const char * id, safe_vector<Accessory> & acc_list)
+int GameTDB::GetAccessories(const char * id, vector<Accessory> & acc_list)
 {
     acc_list.clear();
     if(!id)

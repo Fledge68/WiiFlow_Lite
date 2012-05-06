@@ -24,7 +24,7 @@
 #ifndef GAMETDB_HPP_
 #define GAMETDB_HPP_
 
-#include "safe_vector.hpp"
+#include <vector>
 #include <string>
 
 using namespace std;
@@ -47,11 +47,11 @@ typedef struct _GameXMLInfo
 	string Genres;
 	int RatingType;
 	string RatingValue;
-	safe_vector<string> RatingDescriptors;
+	vector<string> RatingDescriptors;
 	int WifiPlayers;
-	safe_vector<string> WifiFeatures;
+	vector<string> WifiFeatures;
 	int Players;
-	safe_vector<Accessory> Accessories;
+	vector<Accessory> Accessories;
 	int CaseColor;
 
 } GameXMLInfo;
@@ -107,19 +107,19 @@ class GameTDB
         bool GetRatingValue(const char * id, string & rating_value);
         //! Get the rating descriptor list inside a vector for a specific game id
         //! Returns the amount of descriptors found or -1 if failed
-        int GetRatingDescriptors(const char * id, safe_vector<string> & desc_list);
+        int GetRatingDescriptors(const char * id, vector<string> & desc_list);
         //! Get the wifi player count for a specific game id
         //! Returns the amount of wifi players or -1 if failed
         int GetWifiPlayers(const char * id);
         //! Get the wifi feature list inside a vector for a specific game id
         //! Returns the amount of wifi features found or -1 if failed
-        int GetWifiFeatures(const char * id, safe_vector<string> & feat_list);
+        int GetWifiFeatures(const char * id, vector<string> & feat_list);
         //! Get the player count for a specific game id
         //! Returns the amount of players or -1 if failed
         int GetPlayers(const char * id);
         //! Returns the amount of accessoires found or -1 if failed
         //! Get the accessoire (inputs) list inside a vector for a specific game id
-        int GetAccessories(const char * id, safe_vector<Accessory> & acc_list);
+        int GetAccessories(const char * id, vector<Accessory> & acc_list);
         //! Get the box (case) color for a specific game id
         //! Returns the color in RGB (first 3 bytes)
         unsigned int GetCaseColor(const char * id);
@@ -150,7 +150,7 @@ class GameTDB
 
 		bool isLoaded;
 		bool isParsed;
-        safe_vector<GameOffsets> OffsetMap;
+        vector<GameOffsets> OffsetMap;
         FILE * file;
 		const char *filepath;
         string LangCode;

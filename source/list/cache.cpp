@@ -23,7 +23,7 @@ CCache<T>::CCache(T &tmp, string path, u32 index, CMode mode) /* Load/Save One *
 }
 
 template <typename T>
-CCache<T>::CCache(safe_vector<T> &list, string path , CMode mode) /* Load/Save All */
+CCache<T>::CCache(vector<T> &list, string path , CMode mode) /* Load/Save All */
 {
 	filename = path;
 	//gprintf("Opening DB: %s\n", filename.c_str());
@@ -45,7 +45,7 @@ CCache<T>::CCache(safe_vector<T> &list, string path , CMode mode) /* Load/Save A
 }
 
 template <typename T>
-CCache<T>::CCache(safe_vector<T> &list, string path, T tmp, CMode mode) /* Add One */
+CCache<T>::CCache(vector<T> &list, string path, T tmp, CMode mode) /* Add One */
 {
 	filename = path;
 	//gprintf("Openning DB: %s\n", filename.c_str());
@@ -64,7 +64,7 @@ CCache<T>::CCache(safe_vector<T> &list, string path, T tmp, CMode mode) /* Add O
 }
 
 template <typename T>
-CCache<T>::CCache(safe_vector<T> &list, string path, u32 index, CMode mode)  /* Remove One */
+CCache<T>::CCache(vector<T> &list, string path, u32 index, CMode mode)  /* Remove One */
 {
 	filename = path;
 	//gprintf("Openning DB: %s\n", filename.c_str());
@@ -91,7 +91,7 @@ CCache<T>::~CCache()
 }
 
 template <typename T>
-void CCache<T>::SaveAll(safe_vector<T> list)
+void CCache<T>::SaveAll(vector<T> list)
 {
 	//gprintf("Updating DB: %s\n", filename.c_str());
 	if(!cache) return;
@@ -108,7 +108,7 @@ void CCache<T>::SaveOne(T tmp, u32 index)
 }
 
 template <typename T>
-void CCache<T>::LoadAll(safe_vector<T> &list)
+void CCache<T>::LoadAll(vector<T> &list)
 {
 	if(!cache) return;
 
@@ -142,7 +142,7 @@ void CCache<T>::LoadOne(T &tmp, u32 index)
 }
 
 template <typename T>
-void CCache<T>::AddOne(safe_vector<T> &list, T tmp)
+void CCache<T>::AddOne(vector<T> &list, T tmp)
 {
 	//gprintf("Adding Item number %u in DB: %s\n", list.size()+1, filename.c_str());
 	list.push_back(tmp);
@@ -152,7 +152,7 @@ void CCache<T>::AddOne(safe_vector<T> &list, T tmp)
 }
 
 template <typename T>
-void CCache<T>::RemoveOne(safe_vector<T> &list, u32 index)
+void CCache<T>::RemoveOne(vector<T> &list, u32 index)
 {
 	//gprintf("Removing Item number %u in DB: %s\n", index, filename.c_str());
 	list.erase(list.begin() + index);

@@ -6,8 +6,6 @@
 #include "DeviceHandler.hpp"
 #include "gecko.h"
 
-using namespace std;
-
 static const char *g_whitespaces = " \f\n\r\t\v";
 static const int g_floatPrecision = 10;
 
@@ -332,9 +330,9 @@ string Config::getString(const string &domain, const string &key, const string &
 	return data;
 }
 
-safe_vector<string> Config::getStrings(const string &domain, const string &key, char seperator, const string &defVal)
+vector<string> Config::getStrings(const string &domain, const string &key, char seperator, const string &defVal)
 {
-	safe_vector<string> retval;
+	vector<string> retval;
 	
 	if (domain.empty() || key.empty())
 	{

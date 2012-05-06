@@ -27,9 +27,11 @@
 #define PARTITION_HANDLE_H
 
 #include <gccore.h>
-#include "safe_vector.hpp"
 #include "libwbfs/libwbfs.h"
 #include <string>
+#include <vector>
+
+using namespace std;
 
 #define MAX_PARTITIONS          32 /* Maximum number of partitions that can be found */
 #define MAX_MOUNTS              10 /* Maximum number of mounts available at one time */
@@ -212,8 +214,8 @@ class PartitionHandle
 		bool CheckGPT(void);
 
         const DISC_INTERFACE *interface;
-        safe_vector<PartitionFS> PartitionList;
-        safe_vector<std::string> MountNameList;
+        vector<PartitionFS> PartitionList;
+        vector<std::string> MountNameList;
 };
 
 #endif

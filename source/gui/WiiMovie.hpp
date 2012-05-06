@@ -39,7 +39,7 @@ class WiiMovie
 		float fps;
         Timer PlayTime;
         u32 VideoFrameCount;
-        safe_vector<STexture> Frames;
+        vector<STexture> Frames;
 		bool Playing;
 		bool ExitRequested;
 		bool fullScreen;

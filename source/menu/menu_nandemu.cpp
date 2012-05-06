@@ -8,8 +8,6 @@
 #include "gecko/gecko.h"
 #include "defines.h"
 
-using namespace std;
-
 static inline int loopNum(int i, int s)
 {
 	return i < 0 ? (s - (-i % s)) % s : i % s;
@@ -515,7 +513,7 @@ int CMenu::_NandDumper(void *obj)
 	{
 		bool missingOnly = !m.m_saveall;		
 		string path, npath;
-		safe_vector<string> saveList;
+		vector<string> saveList;
 		m.m_sgdump = true;
 		
 		if(m.m_saveExtGameId.empty())

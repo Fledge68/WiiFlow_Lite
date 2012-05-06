@@ -6,8 +6,6 @@
 
 #define DEFAULT_FIFO_SIZE	(256 * 1024)
 
-using namespace std;
-
 extern const u8 wait_01_png[];
 extern const u8 wait_02_png[];
 extern const u8 wait_03_png[];
@@ -454,7 +452,7 @@ void CVideo::_showWaitMessages(CVideo *m)
 	s8 PNGfadeDirection = 1;
 	s16 currentLightLevel = 0;
 
-	safe_vector<STexture>::iterator waitItr = m->m_waitMessages.begin();
+	vector<STexture>::iterator waitItr = m->m_waitMessages.begin();
 	gprintf("Going to show a wait message screen, delay: %d, # images: %d\n", waitFrames, m->m_waitMessages.size());
 
 	m->waitMessage(*waitItr);
@@ -538,10 +536,10 @@ void CVideo::CheckWaitThread()
 
 void CVideo::waitMessage(float delay)
 {
-	waitMessage(safe_vector<STexture>(), delay);
+	waitMessage(vector<STexture>(), delay);
 }
 
-void CVideo::waitMessage(const safe_vector<STexture> &tex, float delay, bool useWiiLight)
+void CVideo::waitMessage(const vector<STexture> &tex, float delay, bool useWiiLight)
 {
 	hideWaitMessage();
 

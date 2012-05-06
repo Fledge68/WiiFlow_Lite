@@ -105,8 +105,6 @@ extern const u8 butzhcnoffs_png[];
 extern const u8 checkbox_png[];
 extern const u8 checkboxs_png[];
 
-using namespace std;
-
 CMenu::CMenu(CVideo &vid) :
 	m_vid(vid)
 {
@@ -441,14 +439,14 @@ void CMenu::init(void)
 	m_cfg.getString("GAMERCARD", "dutag_key", "");
 	if (m_cfg.getBool("GAMERCARD", "gamercards_enable", false))
 	{
-		safe_vector<string> gamercards = stringToVector(m_cfg.getString("GAMERCARD", "gamercards"), '|');
+		vector<string> gamercards = stringToVector(m_cfg.getString("GAMERCARD", "gamercards"), '|');
 		if (gamercards.size() == 0)
 		{
 			gamercards.push_back("wiinnertag");
 			gamercards.push_back("dutag");
 		}
 
-		for (safe_vector<string>::iterator itr = gamercards.begin(); itr != gamercards.end(); itr++)
+		for (vector<string>::iterator itr = gamercards.begin(); itr != gamercards.end(); itr++)
 		{
 			gprintf("Found gamercard provider: %s\n",(*itr).c_str());
 			register_card_provider(
@@ -1093,16 +1091,16 @@ SFont CMenu::_font(CMenu::FontSet &fontSet, const char *domain, const char *key,
 	return retFont;
 }
 
-safe_vector<STexture> CMenu::_textures(TexSet &texSet, const char *domain, const char *key)
+vector<STexture> CMenu::_textures(TexSet &texSet, const char *domain, const char *key)
 {
-	safe_vector<STexture> textures;
+	vector<STexture> textures;
 
 	if (m_theme.loaded())
 	{
-		safe_vector<string> filenames = m_theme.getStrings(domain, key);
+		vector<string> filenames = m_theme.getStrings(domain, key);
 		if (filenames.size() > 0)
 		{
-			for (safe_vector<string>::iterator itr = filenames.begin(); itr != filenames.end(); itr++)
+			for (vector<string>::iterator itr = filenames.begin(); itr != filenames.end(); itr++)
 			{
 				string filename = *itr;
 
@@ -1455,7 +1453,7 @@ void CMenu::_initCF(void)
 
 	m_cf.clear();
 	m_cf.reserve(m_gameList.size());
-	safe_vector<bool> EnabledPlugins;
+	vector<bool> EnabledPlugins;
 	if(m_current_view == COVERFLOW_EMU)
 		EnabledPlugins = m_plugin.GetEnabledPlugins(m_cfg);
 
@@ -2010,7 +2008,7 @@ bool CMenu::_loadEmuList()
 
 	pdir = opendir(m_pluginsDir.c_str());
 
-	safe_vector<dir_discHdr> emuList;
+	vector<dir_discHdr> emuList;
 	Config m_plugin_cfg;
 
 	while ((pent = readdir(pdir)) != NULL)
@@ -2029,16 +2027,16 @@ bool CMenu::_loadEmuList()
 				if(strcasestr(m_plugin_cfg.getString("PLUGIN","romDir","").c_str(), "scummvm.ini") == NULL)
 				{
 					m_gameList.Load(sfmt("%s:/%s", DeviceName[currentPartition], m_plugin_cfg.getString("PLUGIN","romDir","").c_str()), m_plugin_cfg.getString("PLUGIN","fileTypes","").c_str(), m_cfg.getString("EMULATOR", "lastlanguage", "EN").c_str(), m_plugin_cfg);
-					for(safe_vector<dir_discHdr>::iterator tmp_itr = m_gameList.begin(); tmp_itr != m_gameList.end(); tmp_itr++)
+					for(vector<dir_discHdr>::iterator tmp_itr = m_gameList.begin(); tmp_itr != m_gameList.end(); tmp_itr++)
 						emuList.push_back(*tmp_itr);
 				}
 				else
 				{
 					Config scummvm;
-					safe_vector<dir_discHdr> scummvmList;
+					vector<dir_discHdr> scummvmList;
 					scummvm.load(fmt("%s/%s", m_pluginsDir.c_str(), "scummvm.ini"));
 					scummvmList = m_plugin.ParseScummvmINI(scummvm, string(DeviceName[currentPartition]));
-					for(safe_vector<dir_discHdr>::iterator tmp_itr = scummvmList.begin(); tmp_itr != scummvmList.end(); tmp_itr++)
+					for(vector<dir_discHdr>::iterator tmp_itr = scummvmList.begin(); tmp_itr != scummvmList.end(); tmp_itr++)
 						emuList.push_back(*tmp_itr);
 				}
 			}
@@ -2047,7 +2045,7 @@ bool CMenu::_loadEmuList()
 	}
 	closedir(pdir);
 	m_gameList.clear();
-	for(safe_vector<dir_discHdr>::iterator tmp_itr = emuList.begin(); tmp_itr != emuList.end(); tmp_itr++)
+	for(vector<dir_discHdr>::iterator tmp_itr = emuList.begin(); tmp_itr != emuList.end(); tmp_itr++)
 		m_gameList.push_back(*tmp_itr);
 	emuList.clear();
 	//If we return to the coverflow before wiiflow quit we dont need to reload plugins
