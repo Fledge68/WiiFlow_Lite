@@ -219,13 +219,13 @@ void CMenu::_initPluginSettingsMenu(CMenu::SThemeData &theme)
 
 void CMenu::_textPluginSettings(void)
 {
-	m_btnMgr.setText(m_pluginLblTitle, _t("", L"Select Plugins"));
-	m_btnMgr.setText(m_pluginBtnBack, _t("plugin_cd1", L"Back"));
+	m_btnMgr.setText(m_pluginLblTitle, _t("cfgpl1", L"Select Plugins"));
+	m_btnMgr.setText(m_pluginBtnBack, _t("cd1", L"Back"));
 	u8 i = 0;
 	while(true)
 	{
 		if(i == 0)
-			m_btnMgr.setText(m_pluginLblCat[i], _t("plugin_dl3", L"All"));
+			m_btnMgr.setText(m_pluginLblCat[i], _t("dl3", L"All"));
 		else
 		{
 			if(m_plugin.PluginExist(i - 1))

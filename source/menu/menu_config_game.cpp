@@ -818,7 +818,7 @@ void CMenu::_textGameSettings(void)
 	m_btnMgr.setText(m_gameSettingsBtnCategoryMain, _t("cfgg16", L"Select"));
 	m_btnMgr.setText(m_gameSettingsLblHooktype, _t("cfgg18", L"Hook Type"));
 	m_btnMgr.setText(m_gameSettingsLblDebugger, _t("cfgg22", L"Debugger"));
-	m_btnMgr.setText(m_gameSettingsLblEmulation, _t("cfgg24", L"Nand emulation"));
+	m_btnMgr.setText(m_gameSettingsLblEmulation, _t("cfgg24", L"NAND Emulation"));
 	m_btnMgr.setText(m_gameSettingsLblIOSreloadBlock, _t("cfgg26", L"Disable IOS Reload block"));
 	m_btnMgr.setText(m_gameSettingsLblAspectRatio, _t("cfgg27", L"Aspect Ratio"));
 	m_btnMgr.setText(m_gameSettingsLblNMM, _t("cfgg28", L"NMM"));

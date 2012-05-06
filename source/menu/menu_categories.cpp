@@ -248,7 +248,7 @@ void CMenu::_initCategorySettingsMenu(CMenu::SThemeData &theme)
 
 void CMenu::_textCategorySettings(void)
 {
-	m_btnMgr.setText(m_categoryLblTitle, _t("", L"Select Categories"));
+	m_btnMgr.setText(m_categoryLblTitle, _t("cfgg17", L"Select Categories"));
 	m_btnMgr.setText(m_categoryBtnBack, _t("cd1", L"Back"));
 	for(int i = 0; i < 21; ++i)
 	{
