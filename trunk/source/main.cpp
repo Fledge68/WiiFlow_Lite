@@ -130,7 +130,6 @@ int main(int argc, char **argv)
 				ret = menu.main();
 			}
 		}
-		vid.cleanup();
 		if (bootHB)
 		{
 			//IOS_ReloadIOS(58);
