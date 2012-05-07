@@ -13,6 +13,7 @@ extern "C"
 #define MEM2_PRIORITY_SIZE	0x1000
 
 void *MEM1_alloc(unsigned int s);
+void *MEM1_memalign(unsigned int a, unsigned int s);
 void *MEM1_realloc(void *p, unsigned int s);
 void MEM1_free(void *p);
 
