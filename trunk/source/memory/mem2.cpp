@@ -35,6 +35,11 @@ void *MEM1_alloc(unsigned int s)
 	return __real_malloc(s);
 }
 
+void *MEM1_memalign(unsigned int a, unsigned int s)
+{
+	return __real_memalign(a, s);
+}
+
 void *MEM1_realloc(void *p, unsigned int s)
 {
 	return __real_realloc(p, s);
@@ -44,7 +49,6 @@ void MEM1_free(void *p)
 {
 	__real_free(p);
 }
-
 
 void MEM2_init(unsigned int mem2Size)
 {
