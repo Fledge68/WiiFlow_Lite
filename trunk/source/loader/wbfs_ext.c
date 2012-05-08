@@ -164,14 +164,9 @@ s32 WBFS_Ext_RemoveGame(u8 *discid, char *gamepath)
 	if (!dir_iter) return 0;
 	while((ent = readdir(dir_iter)) != NULL)
 	{
-		//if(ent->d_name[0] == '.') 
-		//	continue;
-			
 		if(strstr(ent->d_name, (char*)discid) != NULL)
 		{
-
 			snprintf(file, sizeof(file), "%s/%s", folder, ent->d_name);
-			//if(discid != NULL && strstr(file, (char*)discid) != NULL)
 			remove(file);
 		}
 	}
@@ -218,8 +213,7 @@ s32 WBFS_Ext_AddGame(progress_callback_t spinner, void *spinner_data)
 		return -1;
 	}
 
-	wbfs_t *part = wbfs_open_partition(split_read_sector, split_write_sector,
-									&split, 512, n_sector, 0, 1);
+	wbfs_t *part = wbfs_open_partition(split_read_sector, split_write_sector, &split, 512, n_sector, 0, 1);
 	if (!part)
 	{
 		split_close(&split);
