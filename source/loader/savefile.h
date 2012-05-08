@@ -7,7 +7,6 @@
    extern "C" {
 #endif /* __cplusplus */
 
-void CreateSavePath(const char *basepath, struct dir_discHdr *hdr);
 void CreateTitleTMD(const char *path, struct dir_discHdr *hdr);
 
 #ifdef __cplusplus

@@ -50,64 +50,43 @@ static void CreateNandPath(const char *path, ...)
 
 void CreateTitleTMD(const char *path, struct dir_discHdr *hdr)
 {
-	struct stat filestat;
-	if (stat(path, &filestat) == 0)
-	{
-		gprintf("%s Exists!\n", path);
+	wbfs_disc_t *disc = WBFS_OpenDisc((u8 *) &hdr->hdr.id, (char *)hdr->path);
+	if(!disc) 
 		return;
-	}
-	gprintf("Creating Game TMD: %s\n", path);
-
-	wbfs_disc_t *disc = WBFS_OpenDisc((u8 *) &hdr->hdr.id, (char *) hdr->path);
-	if (!disc) return;
 
 	u8 *titleTMD = NULL;
 	u32 tmd_size = wbfs_extract_file(disc, (char *) "TMD", (void **)&titleTMD);
 	WBFS_CloseDisc(disc);
 
-	if(!titleTMD) return;
+	if(!titleTMD) 
+		return;
+		
+	u32 highTID = *(u32*)(titleTMD+0x18c);
+	u32 lowTID = *(u32*)(titleTMD+0x190);
+	
+	CreateNandPath("%s/title/%08x/%08x/data", path, highTID, lowTID);
+	CreateNandPath("%s/title/%08x/%08x/content", path, highTID, lowTID);
+	
+	char nandpath[ISFS_MAXPATH];
+	snprintf(nandpath, sizeof(nandpath), "%s/title/%08x/%08x/content/title.tmd", path, highTID, lowTID);
 
-	FILE *file = fopen(path, "wb");
+	struct stat filestat;
+	if (stat(nandpath, &filestat) == 0)
+	{
+		SAFE_FREE(titleTMD);
+		gprintf("%s Exists!\n", nandpath);
+		return;
+	}
+	gprintf("Creating Game TMD: %s\n", nandpath);
+	
+	FILE *file = fopen(nandpath, "wb");
 	if(file)
 	{
 		fwrite(titleTMD, 1, tmd_size, file);
-		gprintf("Written Game TMD to: %s\n", path);
+		gprintf("Written Game TMD to: %s\n", nandpath);
 		fclose(file);
 	}
-	else gprintf("Openning %s failed returning %i\n", path, file);
-
+	else gprintf("Openning %s failed returning %i\n", nandpath, file);
 
 	SAFE_FREE(titleTMD);
-}
-
-void CreateSavePath(const char *basepath, struct  dir_discHdr *hdr)
-{
-	CreateNandPath("%s/import", basepath);
-	CreateNandPath("%s/meta", basepath);
-	CreateNandPath("%s/shared1", basepath);
-	CreateNandPath("%s/shared2", basepath);
-	CreateNandPath("%s/sys", basepath);
-	CreateNandPath("%s/ticket", basepath);
-	CreateNandPath("%s/tmp", basepath);
-	CreateNandPath("%s/title", basepath);
-
-	const char *titlePath = "/title/00010000";
-
-	if(	memcmp(hdr->hdr.id, "RGW", 3) == 0)
-		titlePath = "/title/00010004";
-
-	char fullpath[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
-	
-	snprintf(fullpath, sizeof(fullpath), "%s%s", basepath, titlePath);
-	CreateNandPath(fullpath);
-
-	char nandPath[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
-	snprintf(nandPath, sizeof(nandPath), "%s/%02x%02x%02x%02x", fullpath, hdr->hdr.id[0], hdr->hdr.id[1], hdr->hdr.id[2], hdr->hdr.id[3]);
-	CreateNandPath(nandPath);
-
-	CreateNandPath("%s/data", nandPath);
-	CreateNandPath("%s/content", nandPath);
-
-	strcat(nandPath, "/content/title.tmd");
-	CreateTitleTMD(nandPath, hdr);
 }
