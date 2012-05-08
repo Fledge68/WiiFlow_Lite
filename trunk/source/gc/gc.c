@@ -19,6 +19,7 @@
 syssram* __SYS_LockSram();
 u32 __SYS_UnlockSram(u32 write);
 u32 __SYS_SyncSram(void);
+DML_CFG *DMLCfg = NULL;
 
 void GC_SetVideoMode(u8 videomode)
 {
@@ -149,12 +150,11 @@ void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, boo
 {
 	gprintf("Wiiflow DML: Launch game 'sd:/games/%s/game.iso' through memory (new method)\n", GamePath);
 
-	DML_CFG *DMLCfg = (DML_CFG*)MEM2_alloc(sizeof(DML_CFG));
+	DMLCfg = (DML_CFG*)MEM2_alloc(sizeof(DML_CFG));
 	memset(DMLCfg, 0, sizeof(DML_CFG));
 
 	DMLCfg->Magicbytes = 0xD1050CF6;
 	DMLCfg->CfgVersion = 0x00000001;
-	//DMLCfg->VideoMode |= DML_VID_FORCE;
 	DMLCfg->VideoMode |= DML_VID_NONE;
 
 	DMLCfg->Config |= DML_CFG_ACTIVITY_LED; //Sorry but I like it lol, option will may follow
@@ -196,14 +196,6 @@ void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, boo
 
 	if(DMLvideoMode > 3)
 		DMLCfg->VideoMode |= DML_VID_PROG_PATCH;
-
-	//Write options into memory
-	memcpy((void *)0xC0001700, DMLCfg, sizeof(DML_CFG));
-
-	//DML v1.2+
-	memcpy((void *)0xC1200000, DMLCfg, sizeof(DML_CFG));
-
-	MEM2_free(DMLCfg);
 }
 
 void DML_Old_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats)
@@ -229,16 +221,27 @@ void DML_New_SetBootDiscOption()
 {
 	gprintf("Booting GC game\n");
 
-	DML_CFG *DMLCfg = (DML_CFG*)MEM2_alloc(sizeof(DML_CFG));
+	DMLCfg = (DML_CFG*)MEM2_alloc(sizeof(DML_CFG));
 	memset(DMLCfg, 0, sizeof(DML_CFG));
 
 	DMLCfg->Magicbytes = 0xD1050CF6;
 	DMLCfg->CfgVersion = 0x00000001;
 
 	DMLCfg->Config |= DML_CFG_BOOT_DISC;
+}
+
+void DML_New_WriteOptions()
+{
+	if(DMLCfg == NULL)
+		return;
+
+	//Write options into memory
+	memcpy((void *)0x80001700, DMLCfg, sizeof(DML_CFG));
+	DCFlushRange((void *)(0x80001700), sizeof(DML_CFG));
 
 	//DML v1.2+
-	memcpy((void *)0xC1200000, DMLCfg, sizeof(DML_CFG));
+	memcpy((void *)0x81200000, DMLCfg, sizeof(DML_CFG));
+	DCFlushRange((void *)(0x81200000), sizeof(DML_CFG));
 
 	MEM2_free(DMLCfg);
 }

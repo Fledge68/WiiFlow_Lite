@@ -48,9 +48,11 @@ enum dmlvideomode
 void GC_SetVideoMode(u8 videomode);
 void GC_SetLanguage(u8 lang);
 int GC_GameIsInstalled(char *discid, const char* partition, const char* dmlgamedir);
+
 void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats, bool debugger, u8 NMM, u8 nodisc, u8 DMLvideoMode);
 void DML_Old_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats);
 void DML_New_SetBootDiscOption();
+void DML_New_WriteOptions();
 #endif //GC_H_
 
 #ifdef __cplusplus

@@ -761,9 +761,9 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 	USBStorage_Deinit();
 	SDHC_Init();
 
-	memcpy((char *)0x80000000, id, 6);
 	GC_SetVideoMode(DMLvideoMode);
 	GC_SetLanguage(GClanguage);
+	DML_New_WriteOptions();
 
 	if(WII_LaunchTitle(0x100000100LL) < 0)
 		Sys_LoadMenu();
