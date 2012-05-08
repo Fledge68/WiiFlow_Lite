@@ -1150,10 +1150,10 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			{
 				m_forceext = false;
 				_hideWaitMessage();
-				_AutoExtractSave(id);
+				if(!_AutoExtractSave(id))
+					CreateTitleTMD(basepath, hdr);
 				_showWaitMessage();
 			}			
-			CreateSavePath(basepath, hdr);
 		}
 		if(emuSave > 2)
 		{
