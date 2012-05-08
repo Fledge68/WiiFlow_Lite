@@ -1826,7 +1826,7 @@ bool CMenu::_loadChannelList(void)
 
 	gprintf("%s, which is %s\n", disable_emu ? "NAND" : DeviceName[currentPartition], changed ? "refreshing." : "cached.");
 
-	string path = m_cfg.getString("NAND", "path", "");
+	string path = m_cfg.getString("NAND", "path", STDEMU_DIR);
 
 	if(first && !disable_emu)
 	{
@@ -1839,7 +1839,7 @@ bool CMenu::_loadChannelList(void)
 
 		if(sysconf != NULL && sysconf_size > 0)
 		{
-			sprintf(filepath, "%s:%sshared2/sys/SYSCONF", DeviceName[currentPartition], path.c_str());	
+			sprintf(filepath, "%s:%s/shared2/sys/SYSCONF", DeviceName[currentPartition], path.c_str());	
 			FILE *file = fopen(filepath, "wb");
 			if(file)
 			{
@@ -1856,7 +1856,7 @@ bool CMenu::_loadChannelList(void)
 
 		if(meez != NULL && meez_size > 0)
 		{
-			sprintf(filepath, "%s:%sshared2/menu/FaceLib/RFL_DB.dat", DeviceName[currentPartition], path.c_str());
+			sprintf(filepath, "%s:%s/shared2/menu/FaceLib/RFL_DB.dat", DeviceName[currentPartition], path.c_str());
 			FILE *file = fopen(filepath, "wb");
 			if(file)
 			{
@@ -1890,7 +1890,7 @@ bool CMenu::_loadChannelList(void)
 	if(!DeviceHandler::Instance()->IsInserted(currentPartition))
 		DeviceHandler::Instance()->Mount(currentPartition);
 
-	string nandpath = sfmt("%s:%s", DeviceName[currentPartition], path.empty() ? "/" : path.c_str());
+	string nandpath = sfmt("%s:%s/", DeviceName[currentPartition], path.empty() ? "" : path.c_str());
 	gprintf("nandpath = %s\n", nandpath.c_str());
 
 	if(!failed) 

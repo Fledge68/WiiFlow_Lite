@@ -259,11 +259,26 @@ int CMenu::_AutoExtractSave(string gameId)
 {
 	int emuPartition = m_cfg.getInt("GAMES", "savepartition", m_cfg.getInt("NAND", "partition", 0));
 	int savePath = gameId.c_str()[0] << 24 | gameId.c_str()[1] << 16 | gameId.c_str()[2] << 8 | gameId.c_str()[3];			
-	string npath = sfmt("/title/00010000/%x", savePath);
-	string path = sfmt("%s:%s/title/00010000/%x", DeviceName[emuPartition], m_cfg.getString("GAMES", "savepath", m_cfg.getString("NAND", "path", "")).c_str(), savePath);
-
-	if(!_nandSaveExists(npath.c_str()) || (!m_forceext && _saveExists(path.c_str())))
+	char basepath[MAX_FAT_PATH];	
+	snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[emuPartition], m_cfg.getString("GAMES", "savepath", m_cfg.getString("NAND", "path", "")).c_str());	
+		
+	Nand::Instance()->CreatePath("%s/import", basepath);
+	Nand::Instance()->CreatePath("%s/meta", basepath);
+	Nand::Instance()->CreatePath("%s/shared1", basepath);
+	Nand::Instance()->CreatePath("%s/shared2", basepath);
+	Nand::Instance()->CreatePath("%s/sys", basepath);
+	Nand::Instance()->CreatePath("%s/title", basepath);
+	Nand::Instance()->CreatePath("%s/ticket", basepath);	
+	Nand::Instance()->CreatePath("%s/tmp", basepath);
+	
+	string npath = sfmt("/title/00010000/%08x", savePath);
+	string path = sfmt("%s/title/00010000/%08x", basepath, savePath);
+	
+	if(!_nandSaveExists(sfmt("/title/00010000/%08x", savePath).c_str()) && !_nandSaveExists(sfmt("/title/00010004/%08x", savePath).c_str()))		
 		return 0;
+	
+	if(!m_forceext && (_saveExists(sfmt("%s/title/00010000/%08x", basepath, savePath).c_str()) || _saveExists(sfmt("%s/title/00010004/%08x", basepath, savePath).c_str())))
+		return 1;
 
 	lwp_t thread = 0;
 	SetupInput();
@@ -509,7 +524,6 @@ int CMenu::_NandDumper(void *obj)
 	else
 	{
 		bool missingOnly = !m.m_saveall;		
-		string path, npath;
 		vector<string> saveList;
 		m.m_sgdump = true;
 
@@ -527,12 +541,9 @@ int CMenu::_NandDumper(void *obj)
 
 				int savePath = id.c_str()[0] << 24 | id.c_str()[1] << 16 | id.c_str()[2] << 8 | id.c_str()[3];
 
-				path = sfmt("%s/title/00010000/%x", basepath, savePath);
-				npath = sfmt("/title/00010000/%x", savePath);
-
-				if(!missingOnly || !_saveExists(path.c_str()))
+				if(!missingOnly || (!_saveExists(sfmt("%s/title/00010000/%08x", basepath, savePath).c_str()) && !_saveExists(sfmt("%s/title/00010004/%08x", basepath, savePath).c_str())))
 				{
-					if(_nandSaveExists(npath.c_str()))
+					if(_nandSaveExists(sfmt("/title/00010000/%08x", savePath).c_str()) || _nandSaveExists(sfmt("/title/00010004/%08x", savePath).c_str()))
 					{
 						m.m_nandexentry++;
 						saveList.push_back(id);
@@ -547,14 +558,20 @@ int CMenu::_NandDumper(void *obj)
 		{
 			char source[ISFS_MAXPATH];
 			int savePath = saveList[i].c_str()[0] << 24 | saveList[i].c_str()[1] << 16 | saveList[i].c_str()[2] << 8 | saveList[i].c_str()[3];
-			snprintf(source, sizeof(source), "/title/00010000/%x",  savePath);
+			snprintf(source, sizeof(source), "/title/00010000/%08x",  savePath);
+			if(!_nandSaveExists(source))
+				snprintf(source, sizeof(source), "/title/00010004/%08x",  savePath);
+			
 			m.m_dumpsize = Nand::Instance()->CalcDumpSpace(source, false, CMenu::_ShowProgress, obj);	
 		}		
 		for(u32 i = 0; i < saveList.size() && !m.m_thrdStop; ++i)
 		{
 			char source[ISFS_MAXPATH];
 			int savePath = saveList[i].c_str()[0] << 24 | saveList[i].c_str()[1] << 16 | saveList[i].c_str()[2] << 8 | saveList[i].c_str()[3];
-			snprintf(source, sizeof(source), "/title/00010000/%x",  savePath);	
+			snprintf(source, sizeof(source), "/title/00010000/%08x",  savePath);	
+			if(!_nandSaveExists(source))
+				snprintf(source, sizeof(source), "/title/00010004/%08x",  savePath);
+			
 			m.m_nandext = true;	
 			Nand::Instance()->DoNandDump(source, basepath, false, CMenu::_ShowProgress, obj);
 		}

@@ -941,7 +941,6 @@ void CMenu::_textMain(void)
 {
 	m_btnMgr.setText(m_mainBtnInit, _t("main1", L"Install Game"));
 	m_btnMgr.setText(m_mainBtnInit2, _t("main3", L"Select Partition"));
-	//m_btnMgr.setText(m_mainLblInit, _t("main2", L"Welcome to WiiFlow. I have not found any games. Click Install to install games, or Select partition to select your partition type."), true);
 }
 
 wstringEx CMenu::_getNoticeTranslation(int sorting, wstringEx curLetter)
