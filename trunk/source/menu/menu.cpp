@@ -473,7 +473,10 @@ void CMenu::cleanup(bool ios_reload)
 	MusicPlayer::DestroyInstance();
 	SoundHandler::DestroyInstance();
 	soundDeinit();
-	m_vid.cleanup();
+
+	if(!m_reload)
+		m_vid.cleanup();
+
 	if (!ios_reload)
 	{
 		LWP_MutexDestroy(m_mutex);
