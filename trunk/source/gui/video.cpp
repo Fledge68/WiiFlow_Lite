@@ -73,11 +73,6 @@ CVideo::CVideo(void) :
 	memset(m_frameBuf, 0, sizeof m_frameBuf);
 }
 
-CVideo::~CVideo(void)
-{
-	cleanup();
-}
-
 void CColor::blend(const CColor &src)
 {
 	if (src.a == 0) return;

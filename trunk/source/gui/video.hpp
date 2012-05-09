@@ -46,7 +46,6 @@ class CVideo
 {
 public:
 	CVideo(void);
-	~CVideo(void);
 	void init(void);
 	void prepare(void);
 	void setAA(u8 aa, bool alpha = false, int width = 0, int height = 0);
