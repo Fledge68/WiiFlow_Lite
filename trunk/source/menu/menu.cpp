@@ -10,6 +10,8 @@
 #include <dirent.h>
 #include <time.h>
 #include <wchar.h>
+#include <network.h>
+#include <errno.h>
 
 #include "gecko.h"
 #include "defines.h"
@@ -191,14 +193,19 @@ void CMenu::init(void)
 	}
 
 	m_appDir = sfmt("%s:/%s", drive, APPDATA_DIR2);
-	gprintf("Wiiflow boot.dol Location: %s\n", m_appDir.c_str());
+	m_cfg.load(sfmt("%s/" CFG_FILENAME, m_appDir.c_str()).c_str());
+	if (m_cfg.getBool("GENERAL", "async_network") || has_enabled_providers() || m_cfg.getBool("DEBUG", "wifi_gecko"))
+	{
+		_initAsyncNetwork();
+		while(net_get_status() == -EBUSY);
+	}
 
-	m_cfg.load(fmt("%s/" CFG_FILENAME, m_appDir.c_str()));
+	gprintf("Wiiflow boot.dol Location: %s\n", m_appDir.c_str());
 
 	//Gecko Output to SD
 	if(!WriteToSD)
 	{
-		WriteToSD = m_cfg.getBool("GENERAL", "sd_write_log", false);
+		WriteToSD = m_cfg.getBool("DEBUG", "sd_write_log", false);
 		bufferMessages = WriteToSD;
 	}
 

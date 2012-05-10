@@ -403,14 +403,14 @@ s32 CMenu::_networkComplete(s32 ok, void *usrData)
 	m->m_networkInit = ok == 0;
 	m->m_thrdNetwork = false;
 
-	bool wifigecko = m->m_cfg.getBool("GENERAL", "wifi_gecko", false);
+	bool wifigecko = m->m_cfg.getBool("DEBUG", "wifi_gecko", false);
 	gprintf("NET: Network init complete, enabled wifi_gecko: %s\n", wifigecko ? "yes" : "no");
 
 	if (wifigecko)
 	{
 		// Get ip
-		std::string ip = m->m_cfg.getString("GENERAL", "wifi_gecko_ip");
-		u16 port = m->m_cfg.getInt("GENERAL", "wifi_gecko_port");
+		std::string ip = m->m_cfg.getString("DEBUG", "wifi_gecko_ip");
+		u16 port = m->m_cfg.getInt("DEBUG", "wifi_gecko_port", 4405);
 
 		if (ip.size() > 0 && port != 0)
 		{
