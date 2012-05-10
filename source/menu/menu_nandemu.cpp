@@ -13,12 +13,38 @@ static inline int loopNum(int i, int s)
 	return i < 0 ? (s - (-i % s)) % s : i % s;
 }
 
+
+bool CMenu::_checkSave(string id, bool nand)
+{
+	int savePath = id.c_str()[0] << 24 | id.c_str()[1] << 16 | id.c_str()[2] << 8 | id.c_str()[3];
+	if(nand)
+	{
+		u32 temp = 0;	
+		if(ISFS_ReadDir(sfmt("/title/00010000/%08x", savePath).c_str(), NULL, &temp) < 0)
+			if(ISFS_ReadDir(sfmt("/title/00010004/%08x", savePath).c_str(), NULL, &temp) < 0)
+				return false;
+	}
+	else
+	{	
+		int emuPartition = m_cfg.getInt("GAMES", "savepartition", -1);						
+		string emuPath = m_cfg.getString("GAMES", "savepath", "");
+		if(emuPartition < 0 || emuPath.size() == 0)
+			return false;
+			
+		struct stat fstat;
+		if((stat(sfmt("%s:%s/title/00010000/%08x", DeviceName[emuPartition], emuPath.c_str(), savePath).c_str(), &fstat) != 0 ) 
+			&& (stat(sfmt("%s:%s/title/00010004/%08x", DeviceName[emuPartition], emuPath.c_str(), savePath).c_str(), &fstat) != 0))
+			return false;
+	}
+	return true;
+}
+
 static bool _saveExists(const char *path)
 {	
 	DIR *d;
 	d = opendir(path);
 	if(!d)
-	{	
+	{
 		return false;
 	}
 	else
@@ -26,17 +52,6 @@ static bool _saveExists(const char *path)
 		closedir(d);
 		return true;
 	}
-}
-
-static bool _nandSaveExists(const char *npath)
-{	
-	u32 temp = 0;	
-	
-	s32 ret = ISFS_ReadDir(npath, NULL, &temp);
-	if(ret < 0)
-		return false;
-		
-	return true;
 }
 
 void CMenu::_enableNandEmu(bool fromconfig)
@@ -255,10 +270,84 @@ int CMenu::_NandEmuCfg(void)
 	return 0;
 }
 
+int CMenu::_FlashSave(string gameId)
+{
+	int emuPartition = m_cfg.getInt("GAMES", "savepartition", m_cfg.getInt("NAND", "partition", 0));			
+	char basepath[MAX_FAT_PATH];	
+	snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[emuPartition], m_cfg.getString("GAMES", "savepath", m_cfg.getString("NAND", "path", "")).c_str());	
+
+	if(!_checkSave(gameId, false))
+		return 0;
+		
+	lwp_t thread = 0;
+	SetupInput();
+	m_thrdStop = false;
+	m_thrdMessageAdded = false;
+	m_nandext = false;
+
+	m_saveExtGameId = gameId;
+
+	while(true)
+	{
+		_mainLoopCommon(false, m_thrdWorking);
+		if(m_forceext)
+		{
+			m_forceext = false;	
+			m_btnMgr.hide(m_nandemuLblInit);
+			m_btnMgr.show(m_nandemuLblTitle);
+			m_btnMgr.show(m_nandfilePBar);
+			m_btnMgr.show(m_nandemuPBar);
+			m_btnMgr.show(m_nandfileLblMessage);
+			m_btnMgr.show(m_nandemuLblMessage);
+			m_btnMgr.show(m_nandfileLblDialog);
+			m_btnMgr.show(m_nandemuLblDialog);
+			m_btnMgr.setText(m_nandemuLblMessage, L"");
+			m_btnMgr.setText(m_nandfileLblMessage, L"");
+			m_btnMgr.setText(m_nandemuLblDialog, _t("cfgne11", L"Overall Progress:"));
+			m_btnMgr.setText(m_nandemuLblTitle, _t("cfgne28", L"Game Save Flasher"));
+			m_thrdStop = false;
+			m_thrdProgress = 0.f;
+			m_thrdWorking = true;
+			LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_NandFlasher, (void *)this, 0, 32768, 40);
+		}
+		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnBack)))
+		{
+			m_cfg.save();
+			_hideNandEmu();
+				return 1;
+		}
+
+		if(m_thrdMessageAdded)
+		{
+			LockMutex lock(m_mutex);
+			m_thrdMessageAdded = false;
+			if (!m_thrdMessage.empty())
+				m_btnMgr.setText(m_nandfileLblDialog, m_thrdMessage);
+			m_btnMgr.setProgress(m_nandfilePBar, m_fileProgress);
+			m_btnMgr.setProgress(m_nandemuPBar, m_thrdProgress);
+			m_btnMgr.setText(m_nandfileLblMessage, wfmt(_fmt("fileprogress", L"%d / %dKB"), m_fileprog/0x400, m_filesize/0x400));
+			m_btnMgr.setText(m_nandemuLblMessage, wfmt(_fmt("dumpprogress", L"%i%%"), (int)(m_thrdProgress*100.f)));			
+
+			if (!m_thrdWorking)
+			{
+				m_btnMgr.setText(m_nandfinLblDialog, wfmt(_fmt("cfgne29", L"Flashed: %d saves / %d files / %d folders"), m_nandexentry, m_filesdone, m_foldersdone));
+				if(m_dumpsize/0x400 > 0x270f)
+					m_btnMgr.setText(m_nandemuLblDialog, wfmt(_fmt("cfgne16", L"Total size: %uMB (%d blocks)"), (m_dumpsize/0x100000), (m_dumpsize/0x8000)>>2));
+				else
+					m_btnMgr.setText(m_nandemuLblDialog, wfmt(_fmt("cfgne17", L"Total size: %uKB (%d blocks)"), (m_dumpsize/0x400), (m_dumpsize/0x8000)>>2));
+				
+				m_btnMgr.show(m_nandemuBtnBack);
+				m_btnMgr.show(m_nandfinLblDialog);
+			}
+		}
+	}	
+	_hideNandEmu();
+	return 0;
+}
+
 int CMenu::_AutoExtractSave(string gameId)
 {
 	int emuPartition = m_cfg.getInt("GAMES", "savepartition", m_cfg.getInt("NAND", "partition", 0));
-	int savePath = gameId.c_str()[0] << 24 | gameId.c_str()[1] << 16 | gameId.c_str()[2] << 8 | gameId.c_str()[3];			
 	char basepath[MAX_FAT_PATH];	
 	snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[emuPartition], m_cfg.getString("GAMES", "savepath", m_cfg.getString("NAND", "path", "")).c_str());	
 		
@@ -271,13 +360,10 @@ int CMenu::_AutoExtractSave(string gameId)
 	Nand::Instance()->CreatePath("%s/ticket", basepath);	
 	Nand::Instance()->CreatePath("%s/tmp", basepath);
 	
-	string npath = sfmt("/title/00010000/%08x", savePath);
-	string path = sfmt("%s/title/00010000/%08x", basepath, savePath);
-	
-	if(!_nandSaveExists(sfmt("/title/00010000/%08x", savePath).c_str()) && !_nandSaveExists(sfmt("/title/00010004/%08x", savePath).c_str()))		
-		return 0;
-	
-	if(!m_forceext && (_saveExists(sfmt("%s/title/00010000/%08x", basepath, savePath).c_str()) || _saveExists(sfmt("%s/title/00010004/%08x", basepath, savePath).c_str())))
+	if(!_checkSave(gameId, true))
+		return 1;
+
+	if(!m_forceext && _checkSave(gameId, false))
 		return 1;
 
 	lwp_t thread = 0;
@@ -324,10 +410,16 @@ int CMenu::_AutoExtractSave(string gameId)
 			m_thrdWorking = true;
 			LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_NandDumper, (void *)this, 0, 32768, 40);
 		}
-		if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnDisable)))
+		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnDisable)))
 		{
 			_hideNandEmu();			
 			return 0;
+		}
+		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnBack)))
+		{
+			m_cfg.save();
+			_hideNandEmu();
+				return 1;
 		}
 
 		if(m_thrdMessageAdded)
@@ -349,8 +441,8 @@ int CMenu::_AutoExtractSave(string gameId)
 				else
 					m_btnMgr.setText(m_nandemuLblDialog, wfmt(_fmt("cfgne17", L"Total size: %uKB (%d blocks)"), (m_dumpsize/0x400), (m_dumpsize/0x8000)>>2));
 				
-				_hideNandEmu();
-				return 1;
+				m_btnMgr.show(m_nandemuBtnBack);
+				m_btnMgr.show(m_nandfinLblDialog);
 			}
 		}
 	}	
@@ -398,10 +490,16 @@ int CMenu::_AutoCreateNand(void)
 			m_thrdWorking = true;
 			LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_NandDumper, (void *)this, 0, 32768, 40);
 		}
-		if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnDisable)))
+		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnDisable)))
 		{
 			_hideNandEmu();			
 			return 0;
+		}
+		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnBack)))
+		{
+			m_cfg.save();
+			_hideNandEmu();
+				return 1;
 		}
 
 		if(m_thrdMessageAdded)
@@ -423,13 +521,61 @@ int CMenu::_AutoCreateNand(void)
 				else
 					m_btnMgr.setText(m_nandemuLblDialog, wfmt(_fmt("cfgne17", L"Total size: %uKB (%d blocks)"), (m_dumpsize/0x400), (m_dumpsize/0x8000)>>2));	
 				
-				_hideNandEmu();
-				return 1;
+				m_btnMgr.show(m_nandemuBtnBack);
+				m_btnMgr.show(m_nandfinLblDialog);
 			}
 		}
 	}	
 	_hideNandEmu();
 	return 0;
+}
+
+int CMenu::_NandFlasher(void *obj)
+{
+	CMenu &m = *(CMenu *)obj;
+	string emuPath;
+	int emuPartition = -1;
+	char source[MAX_FAT_PATH];
+	char dest[ISFS_MAXPATH];
+	
+	if(m.m_current_view == COVERFLOW_CHANNEL)
+	{
+		emuPartition = m.m_cfg.getInt("NAND", "partition", 0);
+		emuPath = m.m_cfg.getString("NAND", "path", "");
+	}
+	else if(m.m_current_view == COVERFLOW_USB)
+	{
+		emuPartition = m.m_cfg.getInt("GAMES", "savepartition", -1);
+		if(emuPartition == -1)
+			emuPartition = m.m_cfg.getInt("NAND", "partition", 0);
+		emuPath = m.m_cfg.getString("GAMES", "savepath", m.m_cfg.getString("NAND", "path", ""));
+	}
+	
+	int flashID = m.m_saveExtGameId.c_str()[0] << 24 | m.m_saveExtGameId.c_str()[1] << 16 | m.m_saveExtGameId.c_str()[2] << 8 | m.m_saveExtGameId.c_str()[3];
+	
+	if(_saveExists(sfmt("%s:%s/title/00010000/%08x", DeviceName[emuPartition], emuPath.c_str(), flashID).c_str()))	
+	{
+		snprintf(source, sizeof(source), "%s:%s/title/00010000/%08x", DeviceName[emuPartition], emuPath.c_str(), flashID);
+		snprintf(dest, sizeof(dest), "/title/00010000/%08x", flashID);
+	}
+	else if(_saveExists(sfmt("%s:%s/title/00010004/%08x", DeviceName[emuPartition], emuPath.c_str(), flashID).c_str()))
+	{
+		snprintf(source, sizeof(source), "%s:%s/title/00010004/%08x", DeviceName[emuPartition], emuPath.c_str(), flashID);
+		snprintf(dest, sizeof(dest), "/title/00010004/%08x", flashID);
+	}
+	Nand::Instance()->ResetCounters();
+	m.m_nandexentry = 1;
+	m.m_dumpsize = Nand::Instance()->CalcFlashSize(source, CMenu::_ShowProgress, obj);
+	m.m_nandext = true;	
+	Nand::Instance()->FlashToNAND(source, dest, CMenu::_ShowProgress, obj);
+	
+	m.m_thrdWorking = false;
+	LWP_MutexLock(m.m_mutex);
+	m.m_btnMgr.hide(m.m_nandfilePBar);
+	m.m_btnMgr.hide(m.m_nandfileLblMessage);
+	m._setDumpMsg(m._t("cfgne30", L"Flashing save files finished!"), 1.f, 1.f);
+	LWP_MutexUnlock(m.m_mutex);
+	return 0;	
 }
 
 int CMenu::_NandDumper(void *obj)
@@ -517,9 +663,9 @@ int CMenu::_NandDumper(void *obj)
 
 	if(m.m_fulldump)
 	{
-		m.m_dumpsize = Nand::Instance()->CalcDumpSpace("/", true, CMenu::_ShowProgress, obj);
+		m.m_dumpsize = Nand::Instance()->CalcDumpSpace("/", CMenu::_ShowProgress, obj);
 		m.m_nandext = true;	
-		Nand::Instance()->DoNandDump("/", basepath, true, CMenu::_ShowProgress, obj);
+		Nand::Instance()->DoNandDump("/", basepath, CMenu::_ShowProgress, obj);
 	}
 	else
 	{
@@ -539,11 +685,9 @@ int CMenu::_NandDumper(void *obj)
 
 				string id((const char *)m.m_gameList[i].hdr.id, 4);
 
-				int savePath = id.c_str()[0] << 24 | id.c_str()[1] << 16 | id.c_str()[2] << 8 | id.c_str()[3];
-
-				if(!missingOnly || (!_saveExists(sfmt("%s/title/00010000/%08x", basepath, savePath).c_str()) && !_saveExists(sfmt("%s/title/00010004/%08x", basepath, savePath).c_str())))
+				if(!missingOnly || !m._checkSave(id, false))
 				{
-					if(_nandSaveExists(sfmt("/title/00010000/%08x", savePath).c_str()) || _nandSaveExists(sfmt("/title/00010004/%08x", savePath).c_str()))
+					if(m._checkSave(id, true))
 					{
 						m.m_nandexentry++;
 						saveList.push_back(id);
@@ -552,28 +696,31 @@ int CMenu::_NandDumper(void *obj)
 			}
 		}
 		else
+		{
+			m.m_nandexentry = 1;
 			saveList.push_back(m.m_saveExtGameId);
+		}
 
 		for(u32 i = 0; i < saveList.size() && !m.m_thrdStop; ++i)
 		{
 			char source[ISFS_MAXPATH];
 			int savePath = saveList[i].c_str()[0] << 24 | saveList[i].c_str()[1] << 16 | saveList[i].c_str()[2] << 8 | saveList[i].c_str()[3];
-			snprintf(source, sizeof(source), "/title/00010000/%08x",  savePath);
-			if(!_nandSaveExists(source))
-				snprintf(source, sizeof(source), "/title/00010004/%08x",  savePath);
+			snprintf(source, sizeof(source), "/title/00010000/%08x", savePath);
+			if(!m._checkSave(saveList[i], true))
+				snprintf(source, sizeof(source), "/title/00010004/%08x", savePath);
 			
-			m.m_dumpsize = Nand::Instance()->CalcDumpSpace(source, false, CMenu::_ShowProgress, obj);	
+			m.m_dumpsize = Nand::Instance()->CalcDumpSpace(source, CMenu::_ShowProgress, obj);	
 		}		
 		for(u32 i = 0; i < saveList.size() && !m.m_thrdStop; ++i)
 		{
 			char source[ISFS_MAXPATH];
 			int savePath = saveList[i].c_str()[0] << 24 | saveList[i].c_str()[1] << 16 | saveList[i].c_str()[2] << 8 | saveList[i].c_str()[3];
 			snprintf(source, sizeof(source), "/title/00010000/%08x",  savePath);	
-			if(!_nandSaveExists(source))
+			if(!m._checkSave(saveList[i], true))
 				snprintf(source, sizeof(source), "/title/00010004/%08x",  savePath);
 			
 			m.m_nandext = true;	
-			Nand::Instance()->DoNandDump(source, basepath, false, CMenu::_ShowProgress, obj);
+			Nand::Instance()->DoNandDump(source, basepath, CMenu::_ShowProgress, obj);
 		}
 	}
 

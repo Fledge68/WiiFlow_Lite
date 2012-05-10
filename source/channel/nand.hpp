@@ -9,6 +9,8 @@
 #include <iostream>
 #include <string>
 
+#include "loader/disc.h"
+
 #define REAL_NAND	0
 #define EMU_SD		1
 #define EMU_USB		2
@@ -70,10 +72,13 @@ class Nand
 		void Set_NandPath(string path);
 		void CreatePath(const char *path, ...);
 		
+		void CreateTitleTMD(const char *path, dir_discHdr *hdr);
 		s32 CreateConfig(const char *path);
 		s32 Do_Region_Change(string id);
-		s32 DoNandDump(const char *source, const char *dest, bool dumpwgs, dump_callback_t i_dumper, void *i_data);
-		s32 CalcDumpSpace(const char *source, bool dumpwgs, dump_callback_t i_dumper, void *i_data);
+		s32 FlashToNAND(const char *source, const char *dest, dump_callback_t i_dumper, void *i_data);
+		s32 DoNandDump(const char *source, const char *dest, dump_callback_t i_dumper, void *i_data);
+		s32 CalcFlashSize(const char *source, dump_callback_t i_dumper, void *i_data);
+		s32 CalcDumpSpace(const char *source, dump_callback_t i_dumper, void *i_data);
 		void ResetCounters(void);
 	
 	private:
@@ -97,6 +102,7 @@ class Nand
 		void __FATify(char *dst, const char *src);
 		s32 __Unescaped2x(const char *path);
 		s32 __FlashNandFile(const char *source, const char *dest);
+		s32 __FlashNandFolder(const char *source, const char *dest);
 		s32 __DumpNandFile(const char *source, const char *dest);
 		s32 __DumpNandFolder(const char *source, const char *dest);				
 
@@ -108,7 +114,6 @@ class Nand
 		u32 FilesDone;
 		u32 FoldersDone;
 		bool Disabled;
-		bool n_dumpwgs;
 		bool fake;
 		bool showprogress;
 		
