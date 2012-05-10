@@ -31,6 +31,9 @@
 #include <network.h>
 #include "wifi_gecko.h"
 
+// set to use TCP socket instead of UDP
+#define WIFI_GECKO_USE_TCP	(0)
+
 static int connection = -1;
 static int init = 0;
 
@@ -63,13 +66,21 @@ int WifiGecko_Connect()
 
 	if (dest_ip == NULL || dest_port == 0) return connection;
 
-    connection = net_socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
+#if WIFI_GECKO_USE_TCP
+    connection = net_socket(PF_INET, SOCK_STREAM, 0);
+#else
+    connection = net_socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
+#endif
     if (connection < 0)
         return connection;
 
 	struct sockaddr_in connect_addr;
 	memset(&connect_addr, 0, sizeof(connect_addr));
-	connect_addr.sin_family = AF_INET;
+#if WIFI_GECKO_USE_TCP
+	connect_addr.sin_family = PF_INET;
+#else
+    connect_addr.sin_family = AF_INET;
+#endif
 	connect_addr.sin_port = htons(dest_port);
 	inet_aton(dest_ip, &connect_addr.sin_addr);
 
