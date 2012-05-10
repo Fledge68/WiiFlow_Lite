@@ -504,6 +504,10 @@ private:
  	u32 m_gameSettingsLblIOS;
  	u32 m_gameSettingsBtnIOSP;
  	u32 m_gameSettingsBtnIOSM;
+	u32 m_gameSettingsLblExtractSave;
+	u32 m_gameSettingsBtnExtractSave;
+	u32 m_gameSettingsLblFlashSave;
+	u32 m_gameSettingsBtnFlashSave;
 // System Menu
 	u32 m_systemBtnBack;
 	u32 m_systemLblTitle;
@@ -956,6 +960,7 @@ private:
 	int _NandEmuCfg(void);
 	int _AutoCreateNand(void);
 	int _AutoExtractSave(string gameId);
+	int _FlashSave(string gameId);
 	enum configPageChanges
 	{
 		CONFIG_PAGE_DEC = -1,
@@ -1069,6 +1074,8 @@ private:
 	wstringEx _optBoolToString(int b);
 	void _stopSounds(void);
 	static int _NandDumper(void *obj);
+	static int _NandFlasher(void *obj);
+	bool _checkSave(string id, bool nand);
 
 	static u32 _downloadCheatFileAsync(void *obj);
 
@@ -1098,7 +1105,6 @@ private:
 	static const SOption _vidModePatch[4];
 	static const SOption _hooktype[8];
 	static const SOption _exitTo[6];
-	static const SOption _DumpMode[4];
 	static map<u8, u8> _installed_cios;
 	typedef map<u8, u8>::iterator CIOSItr;
 	static int _version[9];

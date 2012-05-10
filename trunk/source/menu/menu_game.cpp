@@ -14,7 +14,6 @@
 #include "network/gcard.h"
 #include "DeviceHandler.hpp"
 #include "loader/wbfs.h"
-#include "savefile.h"
 #include "wip.h"
 #include "channel_launcher.h"
 #include "devicemounter/sdhc.h"
@@ -212,13 +211,6 @@ const CMenu::SOption CMenu::_hooktype[8] = {
 6 OSSleepThread Hook
 7 AXNextFrame Hook
 */
-
-const CMenu::SOption CMenu::_DumpMode[4] = {
-	{ "DumpNAll", L"Nand All" },
-	{ "DumpNMss", L"Nand Missing" },
-	{ "DumpLAll", L"List All" },
-	{ "DumpLMss", L"List Missing" },
-};
 
 map<u8, u8> CMenu::_installed_cios;
 u8 banner_title[84];
@@ -1151,7 +1143,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 				m_forceext = false;
 				_hideWaitMessage();
 				if(!_AutoExtractSave(id))
-					CreateTitleTMD(basepath, hdr);
+					Nand::Instance()->CreateTitleTMD(basepath, hdr);
 				_showWaitMessage();
 			}			
 		}
