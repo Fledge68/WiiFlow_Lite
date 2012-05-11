@@ -13,7 +13,8 @@
 #include "gui/text.hpp"
 #include "gecko/gecko.h"
 
-static const std::string emptyString;
+static const string emptyString;
+static const string emptyString2("/");
 static char* emptyChar = (char*)" ";
 
 void Plugin::init(string m_pluginsDir)
@@ -48,6 +49,14 @@ bool Plugin::AddPlugin(Config &plugin)
 	sscanf(plugin.getString("PLUGIN","magic","").c_str(), "%08x", &NewPlugin.magicWord);
 	sscanf(plugin.getString("PLUGIN","coverColor","").c_str(), "%08x", &NewPlugin.caseColor);
 	NewPlugin.ReturnLoader = plugin.getBool("PLUGIN","ReturnLoader");
+
+	string PluginName = plugin.getString("PLUGIN","displayname","");
+	if(PluginName == emptyString || PluginName == emptyString2)
+	{
+		PluginName = NewPlugin.DolName;
+		PluginName.erase(PluginName.end() - 4, PluginName.end());
+	}
+	NewPlugin.DisplayName.fromUTF8(PluginName.c_str());
 
 	string bannerfilepath = sfmt("%s/%s", pluginsDir.c_str(), plugin.getString("PLUGIN","bannerSound","").c_str());
 	ifstream infile;
@@ -130,11 +139,7 @@ bool Plugin::PluginExist(u8 pos)
 
 wstringEx Plugin::GetPluginName(u8 pos)
 {
-	wstringEx tmpString;
-	string PluginName(Plugins[pos].DolName);
-	PluginName.erase(PluginName.end() - 4, PluginName.end());
-	tmpString.fromUTF8(PluginName.c_str());
-	return tmpString;
+	return Plugins[pos].DisplayName;
 }
 
 void Plugin::SetEnablePlugin(Config &cfg, u8 pos, u8 ForceMode)
@@ -185,13 +190,14 @@ vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, string Device)
 	if(!ini.loaded())
 		return gameHeader;
 	string game(ini.firstDomain());
+	string GameName;
 	dir_discHdr tmp;
 	while(1)
 	{
-		if(game == emptyString)
+		if(game == emptyString || game == emptyString2)
 			break;
-		if(strncasecmp(game.c_str(), "/", 1) == 0 || 
-		strncasecmp(ini.getString(game,"description").c_str(), "/", 1) == 0 ||
+		GameName = ini.getString(game,"description");
+		if(GameName == emptyString || GameName == emptyString2 ||
 		strncasecmp(ini.getWString(game, "path").toUTF8().c_str(), Device.c_str(), 3) != 0)
 		{
 			game = ini.nextDomain();
@@ -200,7 +206,7 @@ vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, string Device)
 		memset(&tmp, 0, sizeof(dir_discHdr));
 		tmp.hdr.casecolor = Plugins.back().caseColor;
 		wstringEx tmpString;
-		tmpString.fromUTF8(ini.getString(game,"description").c_str());
+		tmpString.fromUTF8(GameName.c_str());
 		wcsncpy(tmp.title, tmpString.c_str(), 64);
 		strncpy(tmp.path, game.c_str(), sizeof(tmp.path));
 		gprintf("Found: %ls\n", tmp.title);
