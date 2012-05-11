@@ -451,6 +451,32 @@ void Nand::__FATify(char *ptr, const char *str)
 	*ptr = '\0';
 }
 
+void Nand::__NANDify(char *str)
+{
+	char *src = str;
+	char *dst = str;
+	char c;
+
+	while((c = *(src++)) != '\0') 
+	{
+		if(c == '&') 
+		{
+			if(!strncmp(src, "qt;", 3)) c = '"';    
+			else if (!strncmp(src, "st;", 3)) c = '*';            
+			else if (!strncmp(src, "cl;", 3)) c = ':';            
+			else if (!strncmp(src, "lt;", 3)) c = '<';      
+			else if (!strncmp(src, "gt;", 3)) c = '>';    
+			else if (!strncmp(src, "qm;", 3)) c = '?';    
+			else if (!strncmp(src, "vb;", 3)) c = '|';     
+
+			if (c != '&')
+				src += 3;
+		} 
+		*(dst++) = c;
+	}
+	*dst = '\0';
+}
+
 s32 Nand::__FlashNandFile(const char *source, const char *dest)
 {
 	s32 ret;
@@ -640,7 +666,6 @@ s32 Nand::__FlashNandFolder(const char *source, const char *dest)
 {	
 	char nsource[MAX_FAT_PATH];
 	char ndest[ISFS_MAXPATH];
-	char tdest[ISFS_MAXPATH];
 	
 	DIR *dir_iter;
 	struct dirent *ent;
@@ -666,10 +691,9 @@ s32 Nand::__FlashNandFolder(const char *source, const char *dest)
 		
 		if(ent->d_type == DT_DIR)
 		{
-			//__FATify(tdest, ndest);	
+			__NANDify(ndest);	
 			if(!fake)
 			{
-				//ISFS_CreateDir(tdest, 0, 3, 3, 3);
 				ISFS_CreateDir(ndest, 0, 3, 3, 3);
 				FoldersDone++;
 			}
@@ -677,8 +701,7 @@ s32 Nand::__FlashNandFolder(const char *source, const char *dest)
 		}
 		else
 		{			
-			//__FATify(tdest, ndest);
-			//__FlashNandFile(nsource, tdest);
+			__NANDify(ndest);
 			__FlashNandFile(nsource, ndest);
 		}
 	}
