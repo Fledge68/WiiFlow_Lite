@@ -38,7 +38,7 @@ public:
 	CCoverFlow(void);
 	~CCoverFlow(void);
 	// 
-	bool init(const SmartBuf &font, u32 font_size);
+	bool init(const SmartBuf &font, u32 font_size, bool vid_50hz);
 	// Cover list management
 	void clear(void);
 	void reserve(u32 capacity);
@@ -257,6 +257,7 @@ private:
 	bool m_fanartPlaying;
 	bool m_box;
 	bool m_useHQcover;
+	bool m_50hz;
 	u32 m_range;
 	u32 m_rows;
 	u32 m_columns;

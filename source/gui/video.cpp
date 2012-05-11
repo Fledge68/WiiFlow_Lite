@@ -112,6 +112,11 @@ void CVideo::init(void)
 
 	m_rmode->viWidth = m_wide ? 700 : 672;
 
+	if(m_rmode == &TVPal576IntDfScale || m_rmode == &TVPal576ProgScale)
+		m_50hz = true;
+	else
+		m_50hz = false;
+
 	//CONF_VIDEO_NTSC and CONF_VIDEO_MPAL and m_rmode TVEurgb60Hz480IntDf are the same max height and width.
 	if (type == CONF_VIDEO_PAL && m_rmode != &TVEurgb60Hz480IntDf)
 	{
@@ -224,7 +229,7 @@ void CVideo::cleanup(void)
 		SMART_FREE(m_aaBuffer[i]);
 		m_aaBufferSize[i] = 0;
 	}
-	MEM1_free(m_fifo);
+	//MEM1_free(m_fifo);
 }
 
 void CVideo::prepareAAPass(int aaStep)

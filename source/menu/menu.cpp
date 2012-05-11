@@ -325,7 +325,7 @@ void CMenu::init(void)
 		}
 	}
 
-	m_cf.init(m_base_font, m_base_font_size);
+	m_cf.init(m_base_font, m_base_font_size, m_vid.vid_50hz());
 
 	//Make important folders first.
 	makedir((char *)m_cacheDir.c_str());

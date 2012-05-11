@@ -216,13 +216,21 @@ CCoverFlow::CCoverFlow(void)
 	LWP_MutexInit(&m_mutex, 0);
 }
 
-bool CCoverFlow::init(const SmartBuf &font, u32 font_size)
+bool CCoverFlow::init(const SmartBuf &font, u32 font_size, bool vid_50hz)
 {
+	m_50hz = vid_50hz;
+
 	// Load font
 	m_font.fromBuffer(font, font_size, TITLEFONT);
 	m_fontColor = CColor(0xFFFFFFFF);
 	m_fanartFontColor = CColor(0xFFFFFFFF);
-	// 
+
+	if(m_50hz)
+	{
+		gprintf("WiiFlow is in 50hz mode\n");
+		m_minDelay = 4;
+	}
+
 	if (CONF_GetAspectRatio() == CONF_ASPECT_16_9)
 		guPerspective(m_projMtx, 45, 16.f / 9.f, .1f, 300.f);
 	else
@@ -2347,7 +2355,7 @@ void CCoverFlow::prevID(wchar_t *c)
 
 void CCoverFlow::_coverTick(int i)
 {
-	float speed = m_selected ? 0.07f : 0.1f;
+	float speed = m_selected ? (m_50hz ? 0.085f : 0.07f) : (m_50hz ? 0.12f : 0.1f);
 	Vector3D posDist(m_covers[i].targetPos - m_covers[i].pos);
 
 	if (posDist.sqNorm() < 0.5f)
