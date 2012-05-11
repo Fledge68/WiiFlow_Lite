@@ -245,7 +245,11 @@ int CMenu::main(void)
 		m_GameTDBLoaded=true;
 		m_gametdb.CloseFile();
 	}
-	
+	if (m_cfg.getBool("GENERAL", "startup_menu", false)) 
+	{
+		m_vid.hideWaitMessage();
+		_Startup();
+	}
 	if (m_cfg.getBool("GENERAL", "update_cache", false))
 	{
 		UpdateCache();
@@ -311,6 +315,13 @@ int CMenu::main(void)
 			}
 			break;
 		}
+		if (BTN_PLUS_PRESSED && (m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML) || m_btnMgr.selected(m_mainBtnHomebrew) || m_btnMgr.selected(m_mainBtnEmu)))
+		{
+			_hideMain(true);
+			_Startup();
+			LoadView();
+			continue;
+		}		
 		if ((BTN_UP_PRESSED || BTN_DOWN_PRESSED || BTN_LEFT_PRESSED || BTN_RIGHT_PRESSED) && dpad_mode && (m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML) || m_btnMgr.selected(m_mainBtnHomebrew) || m_btnMgr.selected(m_mainBtnEmu)))
 		{
 			u32 lastView = m_current_view;
