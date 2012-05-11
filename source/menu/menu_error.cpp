@@ -28,9 +28,10 @@ void CMenu::error(const wstringEx &msg)
 	_hideWaitMessage();
 	m_btnMgr.setText(m_errorLblMessage, msg, true);
 	_showError();
+
+	gprintf(msg.toUTF8().c_str());
 	do
 	{
-		gprintf(msg.toUTF8().c_str());
 		_mainLoopCommon();
 	} while (!BTN_B_PRESSED && !BTN_A_PRESSED && !BTN_HOME_PRESSED);
 	_hideError(false);
