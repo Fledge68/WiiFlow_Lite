@@ -61,6 +61,7 @@ public:
 	u32 width2D(void) { return m_width2D; }
 	u32 height2D(void) { return m_height2D; }
 	bool wide(void) const { return m_wide; }
+	bool vid_50hz(void) const { return m_50hz; }
 	void set2DViewport(u32 w, u32 h, int x, int y);
 	void prepareStencil(void);
 	void renderStencil(void);
@@ -80,6 +81,7 @@ private:
 	float m_yScale;
 	u32 m_xfbHeight;
 	bool m_wide;
+	bool m_50hz;
 	u32 m_width2D;
 	u32 m_height2D;
 	int m_x2D;
