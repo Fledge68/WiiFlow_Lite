@@ -24,6 +24,7 @@ struct PluginOptions
 	u32 magicWord;
 	string DolName;
 	string coverFolder;
+	wstringEx DisplayName;
 	u32 caseColor;
 	bool ReturnLoader;
 };
