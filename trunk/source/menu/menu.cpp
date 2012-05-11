@@ -1034,6 +1034,7 @@ void CMenu::_buildMenus(void)
 	_initCFThemeMenu(theme);
 	_initGameSettingsMenu(theme);
 	_initCheatSettingsMenu(theme); 
+	_initStartupMenu(theme);
 	_initPluginSettingsMenu(theme);
 	_initCategorySettingsMenu(theme);
 	_initSystemMenu(theme);

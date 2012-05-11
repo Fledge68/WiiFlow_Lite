@@ -864,12 +864,14 @@ private:
 	void _initGameSettingsMenu(SThemeData &theme);
 	void _initCheatSettingsMenu(SThemeData &theme);
 	void _initCheatButtons();
+	void _initStartupMenu(SThemeData &theme);
 	void _initPluginSettingsMenu(SThemeData &theme);
 	void _initCategorySettingsMenu(SThemeData &theme);
 	void _initSystemMenu(SThemeData &theme);
 	void _initGameInfoMenu(SThemeData &theme);
 	void _initNandEmuMenu(CMenu::SThemeData &theme);
 	//
+	void _textStartup(void);
 	void _textPluginSettings(void);
 	void _textCategorySettings(void);
 	void _textCheatSettings(void);
@@ -910,6 +912,7 @@ private:
 	void _hideWBFS(bool instant = false);
 	void _hideCFTheme(bool instant = false);
 	void _hideGameSettings(bool instant = false);
+	void _hideStartup(bool instant = false);
 	void _hidePluginSettings(bool instant = false);
 	void _hideCategorySettings(bool instant = false);
 	void _hideSystem(bool instant = false);
@@ -932,6 +935,8 @@ private:
 	void _showSettings();
 	void _showCode(void);
 	void _showAbout(void);
+	void _showStartup(void);
+	void _showStartupNotice(void);
 	void _showPluginSettings(void);
 	void _showCategorySettings(void);
 	void _showCheatSettings(void);
@@ -941,6 +946,7 @@ private:
 	void _showCFTheme(u32 curParam, int version, bool wide);
 	void _showGameSettings(void);
 	void _showCheatDownload(void);
+	void _updateStartupBtns(void);
 	void _updatePluginCheckboxes(void);
 	void _updateCheckboxes(void);
 	void _setBg(const STexture &tex, const STexture &lqTex);
@@ -979,6 +985,7 @@ private:
 	void _gameinfo(void);
 	void _gameSettings(void);
 	void _CheatSettings();
+	void _Startup();
 	void _PluginSettings();
 	void _CategorySettings(bool fromGameSet=false);
 	//
