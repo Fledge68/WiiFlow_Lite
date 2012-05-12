@@ -58,7 +58,7 @@ extern "C"
 	void wd_build_disc_usage(wiidisc_t *d, partition_selector_t selector, u8 *usage_table);
 
 	// effectively remove not copied partition from the partition table.
-	void wd_fix_partition_table(wiidisc_t *d, partition_selector_t selector, u8 *partition_table);
+	void wd_fix_partition_table(partition_selector_t selector, u8 *partition_table);
 
 #ifdef __cplusplus
 }

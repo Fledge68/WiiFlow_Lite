@@ -13,7 +13,7 @@ s32 BootChannel(u8 *data, u64 chantitle, u8 vidMode, bool vipatch, bool countryS
 u32 LoadChannel(u8 *buffer);
 void PatchChannel(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio);
 
-u8 * GetDol(u64 title, char *id, u32 bootcontent);
+u8 * GetDol(u64 title, u32 bootcontent);
 
 bool Identify(u64 titleid, u32 *ios);
 bool Identify_GenerateTik(signed_blob **outbuf, u32 *outlen);

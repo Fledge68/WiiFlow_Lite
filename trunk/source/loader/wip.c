@@ -28,9 +28,9 @@ void do_wip_code(u8 * dst, u32 len)
         return;
     }
 
-    int i = 0;
-    int n = 0;
-    int offset = 0;
+    u32 i = 0;
+    s32 n = 0;
+    s32 offset = 0;
 
     for(i = 0; i < CodesCount; i++)
     {
@@ -38,13 +38,13 @@ void do_wip_code(u8 * dst, u32 len)
         {
             offset = CodeList[i].offset+n-ProcessedLength;
 
-            if(offset < 0 || offset >= len)
+            if(offset < 0 || (u32)offset >= len)
                 continue;
 
             if(dst[offset] == ((u8 *)&CodeList[i].srcaddress)[n])
             {
                 dst[offset] = ((u8 *)&CodeList[i].dstaddress)[n];
-                gprintf("WIP: %08X Address Patched.\n", CodeList[i].offset+n);
+                gprintf("WIP: %08X Address Patched.\n", CodeList[i].offset + n);
             }
             else
             {

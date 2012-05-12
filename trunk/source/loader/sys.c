@@ -25,7 +25,7 @@ static bool return_to_disable = false;
 static bool return_to_bootmii = false;
 
 
-void __Wpad_PowerCallback(s32 chan)
+void __Wpad_PowerCallback()
 {
 	/* Poweroff console */
 	shutdown = 1;

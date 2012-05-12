@@ -8,8 +8,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "zlib.h"
 #include "unzip.h"
+#include "mem2.hpp"
 
 #define READ_8(adr)  ((unsigned char)*(adr))
 #define READ_16(adr) ( READ_8(adr) | (READ_8(adr+1) << 8) )
@@ -111,7 +113,7 @@ uLong* bytesRecovered;
                         dataSize = uncpsize;
                     }
                     if (dataSize > 0) {
-                        char* data = malloc(dataSize);
+                        char* data = MEM2_alloc(dataSize);
                         if (data != NULL) {
                             if ((int)fread(data, 1, dataSize, fpZip) == dataSize) {
                                 if ((int)fwrite(data, 1, dataSize, fpOut) == dataSize) {
@@ -123,7 +125,7 @@ uLong* bytesRecovered;
                             } else {
                                 err = Z_ERRNO;
                             }
-                            SAFE_FREE(data);
+                            MEM2_free(data);
                             if (err != Z_OK) {
                                 break;
                             }

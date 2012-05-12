@@ -1,23 +1,17 @@
 
-#include "mem2.hpp"
-#include "mem2alloc.hpp"
-#include "gecko.h"
-
 #include <malloc.h>
 #include <string.h>
 #include <ogc/system.h>
 
-#ifndef APPLOADER_START		/* Also defined in disc.h */
-#define APPLOADER_START (void *)0x81200000
-#endif
-#ifndef APPLOADER_END		/* Also defined in disc.h */
-#define APPLOADER_END (void *)0x81700000
-#endif
+#include "mem2.hpp"
+#include "mem2alloc.hpp"
+#include "gecko.h"
+#include "disc.h"
 
 // Forbid the use of MEM2 through malloc
 u32 MALLOC_MEM2 = 0;
+
 static CMEM2Alloc g_mem2gp;
-extern int _end;
 
 extern "C"
 {
@@ -52,9 +46,6 @@ void MEM1_free(void *p)
 
 void MEM2_init(unsigned int mem2Size)
 {
-	if(&_end + 0x100 > APPLOADER_START)
-		gprintf("ZOMG MOVE THE ENTRYPOINT DOWN!\n");
-
 	g_mem2gp.init(mem2Size);
 	g_mem2gp.clear();
 

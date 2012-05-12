@@ -15,9 +15,7 @@ More info : http://frontier-dev.net
 #include "png.h"
 #include "mem2.hpp"
 #include "utils.h"
-
-#undef malloc
-#define malloc MEM2_alloc
+#include "gecko/gecko.h"
 
 // Constants
 #define PNGU_SOURCE_BUFFER			1
@@ -30,7 +28,6 @@ int pngu_decode (IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, PNGU_u32 stripAlph
 void pngu_free_info (IMGCTX ctx);
 void pngu_read_data_from_buffer (png_structp png_ptr, png_bytep data, png_size_t length);
 void pngu_write_data_to_buffer (png_structp png_ptr, png_bytep data, png_size_t length);
-void pngu_flush_data_to_buffer (png_structp png_ptr);
 int pngu_clamp (int value, int min, int max);
 
 
@@ -62,7 +59,7 @@ IMGCTX PNGU_SelectImageFromBuffer (const void *buffer)
 {
 	if (!buffer) return NULL;
 
-	IMGCTX ctx = malloc (sizeof (struct _IMGCTX));
+	IMGCTX ctx = MEM2_alloc(sizeof (struct _IMGCTX));
 	if (!ctx) return NULL;
 
 	ctx->buffer = (void *) buffer;
@@ -79,19 +76,20 @@ IMGCTX PNGU_SelectImageFromBuffer (const void *buffer)
 
 IMGCTX PNGU_SelectImageFromDevice (const char *filename)
 {
-	if (!filename) return NULL;
+	if (!filename)
+		return NULL;
 
-	IMGCTX ctx = malloc (sizeof (struct _IMGCTX));
+	IMGCTX ctx = MEM2_alloc(sizeof (struct _IMGCTX));
 	if (!ctx) return NULL;
 
 	ctx->buffer = NULL;
 	ctx->source = PNGU_SOURCE_DEVICE;
 	ctx->cursor = 0;
 
-	ctx->filename = malloc (strlen (filename) + 1);
+	ctx->filename = MEM2_alloc(strlen (filename) + 1);
 	if (!ctx->filename)
 	{
-		SAFE_FREE(ctx);
+		MEM2_free(ctx);
 		return NULL;
 	}
 	strcpy(ctx->filename, filename);
@@ -105,16 +103,18 @@ IMGCTX PNGU_SelectImageFromDevice (const char *filename)
 
 void PNGU_ReleaseImageContext (IMGCTX ctx)
 {
-	if (!ctx) return;
+	if(!ctx)
+		return;
 
-	if (ctx->filename) SAFE_FREE (ctx->filename);
+	if(ctx->filename)
+		MEM2_free(ctx->filename);
 
-	if ((ctx->propRead) && (ctx->prop.trans))
-		SAFE_FREE (ctx->prop.trans);
+	if((ctx->propRead) && (ctx->prop.trans))
+		MEM2_free(ctx->prop.trans);
 
-	pngu_free_info (ctx);
+	pngu_free_info(ctx);
 
-	SAFE_FREE (ctx);
+	MEM2_free(ctx);
 }
 
 
@@ -766,21 +766,21 @@ int PNGU_DecodeToCMPR(IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, void *buffer)
 				outBuf += 4;
 			}
 	// Free resources
-	SAFE_FREE (ctx->img_data);
-	SAFE_FREE (ctx->row_pointers);
+	MEM2_free(ctx->img_data);
+	MEM2_free(ctx->row_pointers);
 
 	// Success
 	return PNGU_OK;
 }
 
-
-void user_error (png_structp png_ptr, png_const_charp c)
+void user_error(png_structp png_ptr, png_const_charp c)
 {
 	longjmp(png_jmpbuf(png_ptr), 1);
+	gprintf("%s\n", c);
 }
-int PNGU_EncodeFromYCbYCr (IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, void *buffer, PNGU_u32 stride)
-{
 
+int PNGU_EncodeFromYCbYCr(IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, void *buffer, PNGU_u32 stride)
+{
 	// Erase from the context any readed info
 	pngu_free_info (ctx);
 	ctx->propRead = 0;
@@ -820,7 +820,7 @@ int PNGU_EncodeFromYCbYCr (IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, void *bu
 	{
 		// Installation of our custom data writer function
 		ctx->cursor = 0;
-		png_set_write_fn (ctx->png_ptr, ctx, pngu_write_data_to_buffer, pngu_flush_data_to_buffer);
+		png_set_write_fn (ctx->png_ptr, ctx, pngu_write_data_to_buffer, NULL);
 	}
 	else if (ctx->source == PNGU_SOURCE_DEVICE)
 	{
@@ -837,7 +837,7 @@ int PNGU_EncodeFromYCbYCr (IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, void *bu
 	if (rowbytes % 4)
 		rowbytes = ((rowbytes / 4) + 1) * 4; // Add extra padding so each row starts in a 4 byte boundary
 
-	ctx->img_data = malloc (rowbytes * height);
+	ctx->img_data = MEM2_alloc(rowbytes * height);
 	if (!ctx->img_data)
 	{
 		png_destroy_write_struct (&(ctx->png_ptr), (png_infopp)NULL);
@@ -846,7 +846,7 @@ int PNGU_EncodeFromYCbYCr (IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, void *bu
 		return PNGU_LIB_ERROR;
 	}
 
-	ctx->row_pointers = malloc (sizeof (png_bytep) * height);
+	ctx->row_pointers = MEM2_alloc(sizeof (png_bytep) * height);
 	if (!ctx->row_pointers)
 	{
 		png_destroy_write_struct (&(ctx->png_ptr), (png_infopp)NULL);
@@ -878,8 +878,8 @@ int PNGU_EncodeFromYCbYCr (IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, void *bu
 	png_write_end (ctx->png_ptr, (png_infop) NULL);
 
 	// Free resources
-	SAFE_FREE (ctx->img_data);
-	SAFE_FREE (ctx->row_pointers);
+	MEM2_free(ctx->img_data);
+	MEM2_free(ctx->row_pointers);
 	png_destroy_write_struct (&(ctx->png_ptr), &(ctx->info_ptr));
 	if (ctx->source == PNGU_SOURCE_DEVICE)
 		fclose (ctx->fd);
@@ -1048,7 +1048,7 @@ int pngu_info (IMGCTX ctx)
 		}
 
 		// Query list of transparent colors, if any.
-		int i;
+		u32 i;
 		png_bytep trans;
 		png_color_16p trans_values;
 		ctx->prop.numTrans = 0;
@@ -1058,7 +1058,7 @@ int pngu_info (IMGCTX ctx)
 		{
 			if (ctx->prop.numTrans)
 			{
-				ctx->prop.trans = malloc (sizeof (PNGUCOLOR) * ctx->prop.numTrans);
+				ctx->prop.trans = MEM2_alloc(sizeof (PNGUCOLOR) * ctx->prop.numTrans);
 				if (ctx->prop.trans)
 				{
 					for (i = 0; i < ctx->prop.numTrans; i++)
@@ -1077,7 +1077,7 @@ int pngu_info (IMGCTX ctx)
 		{
 			if (ctx->prop.numTrans)
 			{
-				ctx->prop.trans = malloc (sizeof (PNGUCOLOR) * ctx->prop.numTrans);
+				ctx->prop.trans = MEM2_alloc(sizeof (PNGUCOLOR) * ctx->prop.numTrans);
 				if (ctx->prop.trans)
 					for (i = 0; i < ctx->prop.numTrans; i++)
 						ctx->prop.trans[i].r = ctx->prop.trans[i].g = ctx->prop.trans[i].b = 
@@ -1099,7 +1099,7 @@ int pngu_info (IMGCTX ctx)
 
 int pngu_decode (IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, PNGU_u32 stripAlpha, int force32bit)
 {
-	int i;
+	u32 i;
 	int mem_err = 0;
 
 	// Read info if it hasn't been read before
@@ -1130,7 +1130,7 @@ int pngu_decode (IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, PNGU_u32 stripAlph
 		//printf("*** This is a corrupted image!!\n"); sleep(5);
 		return mem_err ? PNGU_LIB_ERROR : -666;
 	}
-	png_set_error_fn (ctx->png_ptr, NULL, user_error, user_error);
+	png_set_error_fn(ctx->png_ptr, NULL, user_error, user_error);
 	// Scale 16 bit samples to 8 bit
 	if (ctx->prop.imgBitDepth == 16)
 		png_set_strip_16 (ctx->png_ptr);
@@ -1159,14 +1159,14 @@ int pngu_decode (IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, PNGU_u32 stripAlph
 	if (rowbytes % 4)
 		rowbytes = ((rowbytes / 4) + 1) * 4; // Add extra padding so each row starts in a 4 byte boundary
 
-	ctx->img_data = malloc (rowbytes * ctx->prop.imgHeight);
+	ctx->img_data = MEM2_alloc(rowbytes * ctx->prop.imgHeight);
 	if (!ctx->img_data)
 	{
 		mem_err = 1;
 		goto error;
 	}
 
-	ctx->row_pointers = malloc (sizeof (png_bytep) * ctx->prop.imgHeight);
+	ctx->row_pointers = MEM2_alloc(sizeof (png_bytep) * ctx->prop.imgHeight);
 	if (!ctx->row_pointers)
 	{
 		mem_err = 1;
@@ -1195,8 +1195,9 @@ int pngu_decode (IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, PNGU_u32 stripAlph
 
 	// restore default error handling
 	memcpy(png_jmpbuf(ctx->png_ptr), save_jmp, sizeof(save_jmp));
+
 	// Free resources
-	pngu_free_info (ctx);
+	pngu_free_info(ctx);
 
 	// Success
 	return PNGU_OK;
@@ -1238,13 +1239,6 @@ void pngu_write_data_to_buffer (png_structp png_ptr, png_bytep data, png_size_t 
 	memcpy (ctx->buffer + ctx->cursor, data, length);
 	ctx->cursor += length;
 }
-
-
-void pngu_flush_data_to_buffer (png_structp png_ptr)
-{
-	// Nothing to do here
-}
-
 
 // Function used in YCbYCr to RGB decoding
 int pngu_clamp (int value, int min, int max)

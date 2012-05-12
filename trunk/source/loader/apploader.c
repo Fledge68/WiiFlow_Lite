@@ -28,10 +28,6 @@ static bool maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bo
 static bool Remove_001_Protection(void *Address, int Size);
 static bool PrinceOfPersiaPatch();
 
-static void __noprint(const char *fmt, ...)
-{
-}
-
 s32 Apploader_Run(entry_point *entry, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio)
 {
 	void *dst = NULL;
@@ -53,7 +49,8 @@ s32 Apploader_Run(entry_point *entry, u8 vidMode, GXRModeObj *vmode, bool vipatc
 	/* Read apploader code */
 	// Either you limit memory usage or you don't touch the heap after that, because this is writing at 0x1200000
 	ret = WDVD_Read(APPLOADER_START, appldr_len, APPLDR_OFFSET + 0x20);
-	if (ret < 0) return ret;
+	if (ret < 0)
+		return ret;
 
 	DCFlushRange(APPLOADER_START, appldr_len);
 
@@ -64,7 +61,7 @@ s32 Apploader_Run(entry_point *entry, u8 vidMode, GXRModeObj *vmode, bool vipatc
 	appldr_entry(&appldr_init, &appldr_main, &appldr_final);
 
 	/* Initialize apploader */
-	appldr_init(__noprint);
+	appldr_init(gprintf);
 	
 	bool hookpatched = false;
 
@@ -269,10 +266,12 @@ static bool Remove_001_Protection(void *Address, int Size)
 	u8 *Addr;
 
 	for (Addr = Address; Addr <= Addr_end - sizeof SearchPattern; Addr += 4)
+	{
 		if (memcmp(Addr, SearchPattern, sizeof SearchPattern) == 0) 
 		{
 			memcpy(Addr, PatchData, sizeof PatchData);
 			return true;
 		}
+	}
 	return false;
 }

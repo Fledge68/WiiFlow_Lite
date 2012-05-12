@@ -48,7 +48,6 @@ static rw_sector_callback_t writeCallback = NULL;
 
 s32 __WBFS_ReadDVD(void *fp, u32 lba, u32 len, void *iobuf)
 {
-	void *buffer = NULL;
 	s32 ret;
 
 	/* Calculate offset */
@@ -62,22 +61,25 @@ s32 __WBFS_ReadDVD(void *fp, u32 lba, u32 len, void *iobuf)
 	if (size)
 	{
 		ret = WDVD_UnencryptedRead(iobuf, size, offset);
-		if (ret < 0) goto out;
+		if (ret < 0)
+			goto out;
 	}
 
 	/* Read non-aligned data */
 	if (mod)
 	{
 		/* Allocate memory */
-		buffer = MEM2_alloc(0x20);
-		if (!buffer) return -1;
+		fp = MEM2_alloc(0x20);
+		if (!fp)
+			return -1;
 
 		/* Read data */
-		ret = WDVD_UnencryptedRead(buffer, 0x20, offset + size);
-		if (ret < 0) goto out;
+		ret = WDVD_UnencryptedRead(fp, 0x20, offset + size);
+		if (ret < 0)
+			goto out;
 
 		/* Copy data */
-		memcpy(iobuf + size, buffer, mod);
+		memcpy(iobuf + size, fp, mod);
 	}
 
 	/* Success */
@@ -85,19 +87,19 @@ s32 __WBFS_ReadDVD(void *fp, u32 lba, u32 len, void *iobuf)
 
 out:
 	/* Free memory */
-	SAFE_FREE(buffer);
+	SAFE_FREE(fp);
 
 	return ret;
 }
 
-s32 __WBFS_ReadUSB(void *fp, u32 lba, u32 count, void *iobuf)
+s32 __WBFS_ReadUSB(void* fp, u32 lba, u32 count, void *iobuf)
 {
 	u32 cnt = 0;
 
 	/* Do reads */
 	while (cnt < count)
 	{
-		void *ptr = ((u8 *)iobuf) + (cnt * sector_size);
+		fp = ((u8 *)iobuf) + (cnt * sector_size);
 		u32 sectors = (count - cnt);
 
 		/* Read sectors is too big */
@@ -105,7 +107,7 @@ s32 __WBFS_ReadUSB(void *fp, u32 lba, u32 count, void *iobuf)
 			sectors = MAX_NB_SECTORS;
 
 		/* USB read */
-		s32 ret = USBStorage_ReadSectors(lba + cnt, sectors, ptr);
+		s32 ret = USBStorage_ReadSectors(lba + cnt, sectors, fp);
 		if (ret < 0) return ret;
 
 		/* Increment counter */
@@ -115,14 +117,14 @@ s32 __WBFS_ReadUSB(void *fp, u32 lba, u32 count, void *iobuf)
 	return 0;
 }
 
-s32 __WBFS_WriteUSB(void *fp, u32 lba, u32 count, void *iobuf)
+s32 __WBFS_WriteUSB(void* fp, u32 lba, u32 count, void *iobuf)
 {
 	u32 cnt = 0;
 
 	/* Do writes */
 	while (cnt < count)
 	{
-		void *ptr = ((u8 *)iobuf) + (cnt * sector_size);
+		fp = ((u8 *)iobuf) + (cnt * sector_size);
 		u32 sectors = (count - cnt);
 
 		/* Write sectors is too big */
@@ -130,7 +132,7 @@ s32 __WBFS_WriteUSB(void *fp, u32 lba, u32 count, void *iobuf)
 			sectors = MAX_NB_SECTORS;
 
 		/* USB write */
-		s32 ret = USBStorage_WriteSectors(lba + cnt, sectors, ptr);
+		s32 ret = USBStorage_WriteSectors(lba + cnt, sectors, fp);
 		if (ret < 0) return ret;
 
 		/* Increment counter */
@@ -140,14 +142,14 @@ s32 __WBFS_WriteUSB(void *fp, u32 lba, u32 count, void *iobuf)
 	return 0;
 }
 
-s32 __WBFS_ReadSDHC(void *fp, u32 lba, u32 count, void *iobuf)
+s32 __WBFS_ReadSDHC(void* fp, u32 lba, u32 count, void *iobuf)
 {
 	u32 cnt = 0;
 
 	/* Do reads */
 	while (cnt < count)
 	{
-		void *ptr = ((u8 *)iobuf) + (cnt * sector_size);
+		fp = ((u8 *)iobuf) + (cnt * sector_size);
 		u32 sectors = (count - cnt);
 
 		/* Read sectors is too big */
@@ -155,7 +157,7 @@ s32 __WBFS_ReadSDHC(void *fp, u32 lba, u32 count, void *iobuf)
 			sectors = MAX_NB_SECTORS;
 
 		/* SDHC read */
-		s32 ret = SDHC_ReadSectors(lba + cnt, sectors, ptr);
+		s32 ret = SDHC_ReadSectors(lba + cnt, sectors, fp);
 		if (!ret) return -1;
 
 		/* Increment counter */
@@ -165,7 +167,7 @@ s32 __WBFS_ReadSDHC(void *fp, u32 lba, u32 count, void *iobuf)
 	return 0;
 }
 
-s32 __WBFS_WriteSDHC(void *fp, u32 lba, u32 count, void *iobuf)
+s32 __WBFS_WriteSDHC(void* fp, u32 lba, u32 count, void *iobuf)
 {
 	u32 cnt = 0;
 	s32 ret;
@@ -173,7 +175,7 @@ s32 __WBFS_WriteSDHC(void *fp, u32 lba, u32 count, void *iobuf)
 	/* Do writes */
 	while (cnt < count)
 	{
-		void *ptr = ((u8 *)iobuf) + (cnt * sector_size);
+		fp = ((u8 *)iobuf) + (cnt * sector_size);
 		u32 sectors = (count - cnt);
 
 		/* Write sectors is too big */
@@ -181,7 +183,7 @@ s32 __WBFS_WriteSDHC(void *fp, u32 lba, u32 count, void *iobuf)
 			sectors = MAX_NB_SECTORS;
 
 		/* SDHC write */
-		ret = SDHC_WriteSectors(lba + cnt, sectors, ptr);
+		ret = SDHC_WriteSectors(lba + cnt, sectors, fp);
 		if (!ret) return -1;
 
 		/* Increment counter */
@@ -361,10 +363,12 @@ wbfs_disc_t* WBFS_OpenDisc(u8 *discid, char *path)
 
 void WBFS_CloseDisc(wbfs_disc_t *disc)
 {
-	if (wbfs_part_fs)return WBFS_Ext_CloseDisc(disc);
+	if (wbfs_part_fs)
+		return WBFS_Ext_CloseDisc(disc);
 
 	/* No device open */
-	if (!hdd || !disc) return;
+	if (!hdd || !disc)
+		return;
 
 	/* Close disc */
 	wbfs_close_disc(disc);

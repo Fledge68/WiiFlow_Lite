@@ -19,6 +19,8 @@
 #include "disc.h"
 #include "utils.h"
 
+using namespace std;
+
 enum Sorting
 {
 	SORT_ALPHA,
@@ -81,7 +83,7 @@ public:
 	void setCompression(bool enable) { m_compressTextures = enable; }
 	bool getBoxMode(void) const { return m_box;}
 	void setBufferSize(u32 numCovers);
-	void setTextures(const std::string &loadingPic, const std::string &loadingPicFlat, const std::string &noCoverPic, const std::string &noCoverPicFlat);
+	void setTextures(const string &loadingPic, const string &loadingPicFlat, const string &noCoverPic, const string &noCoverPicFlat);
 	void setFont(SFont font, const CColor &color);
 	void setRange(u32 rows, u32 columns);
 	void setBoxMode(bool box);
@@ -123,8 +125,8 @@ public:
 	bool fullCoverCached(const char *id);
 	bool preCacheCover(const char *id, const u8 *png, bool full);
 	// 
-	std::string getId(void) const;
-	std::string getNextId(void) const;
+	string getId(void) const;
+	string getNextId(void) const;
 	dir_discHdr * getHdr(void) const;
 	dir_discHdr * getNextHdr(void) const;
 	wstringEx getTitle(void) const;
@@ -185,8 +187,8 @@ private:
 	struct CItem
 	{
 		dir_discHdr *hdr;
-		std::string picPath;
-		std::string boxPicPath;
+		string picPath;
+		string boxPicPath;
 		int playcount;
 		unsigned int lastPlayed;
 		STexture texture;
@@ -246,10 +248,10 @@ private:
 	STexture m_dvdSkin_GreenOne;
 	STexture m_dvdSkin_GreenTwo;
 	// Settings
-	std::string m_pngLoadCover;
-	std::string m_pngLoadCoverFlat;
-	std::string m_pngNoCover;
-	std::string m_pngNoCoverFlat;
+	string m_pngLoadCover;
+	string m_pngLoadCoverFlat;
+	string m_pngNoCover;
+	string m_pngNoCoverFlat;
 	u32 m_numBufCovers;
 	SFont m_font;
 	CColor m_fontColor;
@@ -257,7 +259,6 @@ private:
 	bool m_fanartPlaying;
 	bool m_box;
 	bool m_useHQcover;
-	bool m_50hz;
 	u32 m_range;
 	u32 m_rows;
 	u32 m_columns;
@@ -267,7 +268,7 @@ private:
 	bool m_hideCover;
 	bool m_compressTextures;
 	bool m_compressCache;
-	std::string m_cachePath;
+	string m_cachePath;
 	bool m_deletePicsAfterCaching;
 	bool m_mirrorBlur;
 	float m_mirrorAlpha;

@@ -40,9 +40,12 @@ static void disc_read(wiidisc_t *d, u32 offset, u8 *data, u32 len)
 	if (data)
 	{
 		int ret = 0;
-		if (len == 0) return;
+		if (len == 0)
+			return;
+
 		ret = d->read(d->fp, offset, len, data);
-		if (ret) wbfs_fatal("error reading disc");
+		if(ret)
+			wbfs_fatal("error reading disc\n");
 	}
 	if (d->sector_usage_table)
 	{
@@ -169,7 +172,8 @@ static void do_files(wiidisc_t*d)
 	if (fst_size)
 	{
 		fst = wbfs_ioalloc(fst_size);
-		if (fst == 0) wbfs_fatal("malloc fst");
+		if (fst == 0)
+			wbfs_fatal("malloc fst\n");
 		partition_read(d, fst_offset, fst, fst_size,0);
 		n_files = _be32(fst + 8);
 
@@ -217,7 +221,8 @@ static void do_partition(wiidisc_t*d)
 	d->partition_data_offset = _be32(b + 0x14);
 	d->partition_block = (d->partition_raw_offset + d->partition_data_offset) >> 13;
 	tmd = wbfs_ioalloc(tmd_size);
-	if (tmd == 0) wbfs_fatal("malloc tmd");
+	if (tmd == 0)
+		wbfs_fatal("malloc tmd\n");
 	partition_raw_read(d, tmd_offset, tmd, tmd_size);
 
 	if(d->extract_pathname && strcmp(d->extract_pathname, "TMD") == 0 && !d->extracted_buffer)
@@ -227,7 +232,8 @@ static void do_partition(wiidisc_t*d)
 	}
 
 	cert = wbfs_ioalloc(cert_size);
-	if (cert == 0) wbfs_fatal("malloc cert");
+	if (cert == 0)
+		wbfs_fatal("malloc cert\n");
 	partition_raw_read(d, cert_offset, cert, cert_size);
 
 	_decrypt_title_key(tik, d->disc_key);
@@ -339,7 +345,7 @@ void wd_build_disc_usage(wiidisc_t *d, partition_selector_t selector, u8 *usage_
 	d->sector_usage_table = 0;
 }
 
-void wd_fix_partition_table(wiidisc_t *d, partition_selector_t selector, u8 *partition_table)
+void wd_fix_partition_table(partition_selector_t selector, u8 *partition_table)
 {
 	u8 *b = partition_table;
 	u32 partition_offset; 
@@ -349,7 +355,7 @@ void wd_fix_partition_table(wiidisc_t *d, partition_selector_t selector, u8 *par
 	if (selector == ALL_PARTITIONS) return;
 	n_partitions = _be32(b);
 	if (_be32(b + 4) - (0x40000 >> 2) > 0x50)
-		wbfs_fatal("cannot modify this partition table. Please report the bug.");
+		wbfs_fatal("cannot modify this partition table. Please report the bug.\n");
 	
 	b += (_be32(b + 4) - (0x40000 >> 2)) * 4;
 	j = 0;

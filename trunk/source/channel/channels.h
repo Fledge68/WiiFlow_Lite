@@ -54,7 +54,7 @@ class Channels
 
 		void Init(u32 channelType, string lang, bool reload = false);
 
-		u8 * Load(u64 title, char* id);
+		u8 * Load(u64 title);
 		u8 GetRequestedIOS(u64 title);
 		bool Launch(u8 *data, u64 chantitle, u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, bool disableIOSreload, int aspectRatio);
 		

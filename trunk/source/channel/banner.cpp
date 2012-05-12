@@ -84,7 +84,7 @@ Banner::Banner(u8 *bnr, u64 title)
 
 Banner::~Banner()
 {
-	SAFE_FREE(opening);
+	MEM2_free(opening);
 }
 
 bool Banner::IsValid()
@@ -135,7 +135,7 @@ bool Banner::GetName(wchar_t *name, int language)
 		for (int i = 0; i < IMET_MAX_NAME_LEN; i++)
 		{
 			name[i] = channelname[i];
-		}						
+		}
 		return true;
 	}
 	return false;
@@ -174,11 +174,11 @@ Banner * Banner::GetBanner(u64 title, char *appname, bool isfs, bool imetOnly)
 			fseek(fp, 0, SEEK_SET);
 		}
 		
-		buf = malloc(size);
+		buf = MEM2_alloc(size);
 
 		fread(buf, size, 1, fp);
 		SAFE_CLOSE(fp);
 	}
-	
-	return new Banner((u8 *) buf, title);
+
+	return new Banner((u8 *)buf, title);
 }

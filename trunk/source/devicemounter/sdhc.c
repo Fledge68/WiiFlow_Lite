@@ -122,8 +122,8 @@ bool SDHC_ReadSectors(u32 sector, u32 count, void *buffer)
 		if (!sdhc_buf2)
 			return false;
 
-		int cnt;
-		int max_sec = SDHC_MEM2_SIZE / sector_size;
+		u32 cnt;
+		u32 max_sec = SDHC_MEM2_SIZE / sector_size;
 		//dbg_printf("sdhc_read(%u,%u) unaligned(%p)\n", sector, count, buffer);
 		while (count)
 		{
@@ -173,8 +173,8 @@ bool SDHC_WriteSectors(u32 sector, u32 count, void *buffer)
 		if (!sdhc_buf2)
 			return false;
 
-		int cnt;
-		int max_sec = SDHC_MEM2_SIZE / sector_size;
+		u32 cnt;
+		u32 max_sec = SDHC_MEM2_SIZE / sector_size;
 
 		while (count)
 		{

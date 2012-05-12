@@ -63,8 +63,8 @@ typedef struct wbfs_disc_info
 //
 
 // callback definition. Return 1 on fatal error (callback is supposed to make retries until no hopes..)
-typedef int (*rw_sector_callback_t)(void*fp,u32 lba,u32 count,void*iobuf);
-typedef void (*progress_callback_t)(int status,int total,void *user_data);
+typedef int (*rw_sector_callback_t)(void *fp, u32 lba, u32 count, void *iobuf);
+typedef void (*progress_callback_t)(int status, int total, void *user_data);
 
 
 typedef struct wbfs_s
@@ -123,10 +123,10 @@ typedef struct wbfs_disc_s
    calls wbfs_error() to have textual meaning of errors
    @return NULL in case of error
 */
-wbfs_t*wbfs_open_hd(rw_sector_callback_t read_hdsector,
-                 rw_sector_callback_t write_hdsector,
-                 void *callback_data,
-                 int hd_sector_size, int num_hd_sector, int reset);
+wbfs_t *wbfs_open_hd(rw_sector_callback_t read_hdsector,
+					rw_sector_callback_t write_hdsector,
+					void *callback_data,
+					int hd_sector_size, int num_hd_sector, int reset);
 
 /*! @brief open a wbfs partition
    @param read_hdsector,write_hdsector: accessors to the partition
@@ -137,10 +137,10 @@ wbfs_t*wbfs_open_hd(rw_sector_callback_t read_hdsector,
    calls wbfs_error() to have textual meaning of errors
    @return NULL in case of error
 */
-wbfs_t*wbfs_open_partition(rw_sector_callback_t read_hdsector,
-                           rw_sector_callback_t write_hdsector,
-                           void *callback_data,
-                           int hd_sector_size, int num_hd_sector, u32 partition_lba, int reset);
+wbfs_t *wbfs_open_partition(rw_sector_callback_t read_hdsector,
+							rw_sector_callback_t write_hdsector,
+							void *callback_data,
+							int hd_sector_size, int num_hd_sector, u32 partition_lba, int reset);
 
 
 /*! @brief close a wbfs partition, and sync the metadatas to the disc */
@@ -204,11 +204,6 @@ u32 wbfs_rm_disc(wbfs_t*p, u8* discid);
   This allows to use wbfs as a wiidisc container
  */
 u32 wbfs_trim(wbfs_t*p);
-
-/*! extract a disc from the wbfs, unused sectors are just untouched, allowing descent filesystem to only really usefull space to store the disc.
-Even if the filesize is 4.7GB, the disc usage will be less.
- */
-u32 wbfs_extract_disc(wbfs_disc_t*d, rw_sector_callback_t write_dst_wii_sector,void *callback_data,progress_callback_t spinner);
 
 /*! extract a file from the wii disc filesystem. 
   E.G. Allows to extract the opening.bnr to install a game as a system menu channel

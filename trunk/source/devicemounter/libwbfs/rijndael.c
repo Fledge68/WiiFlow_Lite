@@ -382,7 +382,6 @@ void aes_decrypt(u8 *iv, u8 *inbuf, u8 *outbuf, unsigned long long len)
 		}
 		else fraction = 16;
 
-		//	debug_printf("block %d: fraction = %d\n", blockno, fraction);
 		memcpy(block, inbuf + blockno * sizeof(block), fraction);
 		decrypt((char*) block);
 		u8 *ctext_ptr;
@@ -392,8 +391,6 @@ void aes_decrypt(u8 *iv, u8 *inbuf, u8 *outbuf, unsigned long long len)
 
 		for (i = 0; i < fraction; i++)
 			outbuf[blockno * sizeof(block) + i] = ctext_ptr[i] ^ block[i];
-		//	debug_printf("Block %d output: ", blockno);
-		//	hexdump(outbuf + blockno*sizeof(block), 16);
 	}
 }
 
@@ -402,8 +399,6 @@ void aes_encrypt(u8 *iv, u8 *inbuf, u8 *outbuf, unsigned long long len)
 {
 	u8 block[16];
 	unsigned int blockno = 0, i;
-
-	//  debug_printf("aes_decrypt(%p, %p, %p, %lld)\n", iv, inbuf, outbuf, len);
 
 	for (blockno = 0; blockno <= (len / sizeof(block)); blockno++)
 	{
@@ -416,7 +411,6 @@ void aes_encrypt(u8 *iv, u8 *inbuf, u8 *outbuf, unsigned long long len)
 		}
 		else fraction = 16;
 
-		//	debug_printf("block %d: fraction = %d\n", blockno, fraction);
 		memcpy(block, inbuf + blockno * sizeof(block), fraction);
 
 		for (i = 0; i < fraction; i++)
@@ -425,8 +419,6 @@ void aes_encrypt(u8 *iv, u8 *inbuf, u8 *outbuf, unsigned long long len)
 		encrypt((char*) block);
 		memcpy(iv, block, sizeof(block));
 		memcpy(outbuf + blockno * sizeof(block), block, sizeof(block));
-		//	debug_printf("Block %d output: ", blockno);
-		//	hexdump(outbuf + blockno*sizeof(block), 16);
 	}
 }
 

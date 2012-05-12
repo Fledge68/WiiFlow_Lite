@@ -174,8 +174,8 @@ void PatchChannel(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryStrin
 {
 	bool hookpatched = false;
 
-    int i;
-	for (i=0;i < dolchunkcount;i++)
+	u32 i;
+	for (i=0; i < dolchunkcount; i++)
 	{		
 		patchVideoModes(dolchunkoffset[i], dolchunksize[i], vidMode, vmode, patchVidModes);
 		if (vipatch) vidolpatcher(dolchunkoffset[i], dolchunksize[i]);
@@ -278,7 +278,7 @@ bool Identify(u64 titleid, u32 *ios)
 	return ret < 0 ? false : true;
 }
 
-u8 * GetDol(u64 title, char *id, u32 bootcontent)
+u8 * GetDol(u64 title, u32 bootcontent)
 {
 	char filepath[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
 	sprintf(filepath, "/title/%08x/%08x/content/%08x.app", TITLE_UPPER(title), TITLE_LOWER(title), bootcontent);
