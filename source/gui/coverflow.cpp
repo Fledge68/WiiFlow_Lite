@@ -1,13 +1,11 @@
 // Coverflow
 
-#include <malloc.h>
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <algorithm>
 #include <new>
 #include <zlib.h>
-
 #include <cwctype>
 
 #include "coverflow.hpp"
@@ -17,8 +15,6 @@
 #include "lockMutex.hpp"
 #include "fonts.h"
 #include "gecko.h"
-
-using namespace std;
 
 extern const u8 dvdskin_png[];
 extern const u8 dvdskin_red_png[];
@@ -83,6 +79,9 @@ static inline wchar_t upperCaseWChar(wchar_t c)
 {
 	return c >= L'a' && c <= L'z' ? c & 0x00DF : c;
 }
+
+float m_normal_speed;
+float m_selected_speed;
 
 CCoverFlow::CCoverFlow(void)
 {
@@ -212,22 +211,24 @@ CCoverFlow::CCoverFlow(void)
 	sndCopyNum = 0;
 	m_soundVolume = 0xFF;
 	m_sorting = SORT_ALPHA;
+	m_normal_speed = 0.1f;
+	m_selected_speed = 0.07f;
 	// 
 	LWP_MutexInit(&m_mutex, 0);
 }
 
 bool CCoverFlow::init(const SmartBuf &font, u32 font_size, bool vid_50hz)
 {
-	m_50hz = vid_50hz;
-
 	// Load font
 	m_font.fromBuffer(font, font_size, TITLEFONT);
 	m_fontColor = CColor(0xFFFFFFFF);
 	m_fanartFontColor = CColor(0xFFFFFFFF);
 
-	if(m_50hz)
+	if(vid_50hz)
 	{
 		gprintf("WiiFlow is in 50hz mode\n");
+		m_normal_speed = 0.12f;
+		m_selected_speed = 0.084f;
 		m_minDelay = 4;
 	}
 
@@ -1448,16 +1449,16 @@ void CCoverFlow::_loadCover(int i, int item)
 	m_covers[i].title.setText(m_font, m_items[item].hdr->title);
 }
 
-std::string CCoverFlow::getId(void) const
+string CCoverFlow::getId(void) const
 {
 	if (m_covers.empty() || m_items.empty()) return "";
-	return std::string((char *) &m_items[loopNum(m_covers[m_range / 2].index + m_jump, m_items.size())].hdr->hdr.id);
+	return string((char *) &m_items[loopNum(m_covers[m_range / 2].index + m_jump, m_items.size())].hdr->hdr.id);
 }
 
-std::string CCoverFlow::getNextId(void) const
+string CCoverFlow::getNextId(void) const
 {
 	if (m_covers.empty() || m_items.empty()) return "";
-	return std::string((char *) &m_items[loopNum(m_covers[m_range / 2].index + m_jump + 1, m_items.size())].hdr->hdr.id);
+	return string((char *) &m_items[loopNum(m_covers[m_range / 2].index + m_jump + 1, m_items.size())].hdr->hdr.id);
 }
 
 dir_discHdr * CCoverFlow::getHdr(void) const
@@ -2008,7 +2009,7 @@ bool CCoverFlow::findId(const char *id, bool instant)
 	for (i = 0; i < m_items.size(); ++i)
 		if (memcmp(&m_items[i].hdr->hdr.id, id, strlen(id)) == 0)
 			break;
-		else if (strlen(id) > 6 && memcmp(&m_items[i].hdr->path[std::string(m_items[i].hdr->path).find_last_of("/")], id, strlen(id)) == 0)
+		else if (strlen(id) > 6 && memcmp(&m_items[i].hdr->path[string(m_items[i].hdr->path).find_last_of("/")], id, strlen(id)) == 0)
 			break;
 	if (i >= m_items.size())
 		return false;
@@ -2355,7 +2356,7 @@ void CCoverFlow::prevID(wchar_t *c)
 
 void CCoverFlow::_coverTick(int i)
 {
-	float speed = m_selected ? (m_50hz ? 0.085f : 0.07f) : (m_50hz ? 0.12f : 0.1f);
+	float speed = m_selected ? m_selected_speed : m_normal_speed;
 	Vector3D posDist(m_covers[i].targetPos - m_covers[i].pos);
 
 	if (posDist.sqNorm() < 0.5f)
@@ -2546,7 +2547,7 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq)
 		SmartBuf zBuffer = m_compressCache ? smartMem2Alloc(zBufferSize) : tex.data;
 		if (!!zBuffer && (!m_compressCache || compress(zBuffer.get(), &zBufferSize, tex.data.get(), bufSize) == Z_OK))
 		{
-			FILE *file = fopen(fmt("%s/%s.wfc", m_cachePath.c_str(), (m_items[i].hdr->hdr.gc_magic == 0x4c4f4c4f ? &m_items[i].hdr->path[std::string(m_items[i].hdr->path).find_last_of("/")] : (char*)m_items[i].hdr->hdr.id)), "wb");
+			FILE *file = fopen(fmt("%s/%s.wfc", m_cachePath.c_str(), (m_items[i].hdr->hdr.gc_magic == 0x4c4f4c4f ? &m_items[i].hdr->path[string(m_items[i].hdr->path).find_last_of("/")] : (char*)m_items[i].hdr->hdr.id)), "wb");
 			if (file != 0)
 			{
 				SWFCHeader header(tex, box, m_compressCache);
@@ -2613,7 +2614,7 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq)
 	// Try to find the texture in the cache
 	if (!m_cachePath.empty())
 	{
-		FILE *file = fopen(fmt("%s/%s.wfc", m_cachePath.c_str(), (m_items[i].hdr->hdr.gc_magic == 0x4c4f4c4f ? &m_items[i].hdr->path[std::string(m_items[i].hdr->path).find_last_of("/")] : (char*)m_items[i].hdr->hdr.id)), "rb");
+		FILE *file = fopen(fmt("%s/%s.wfc", m_cachePath.c_str(), (m_items[i].hdr->hdr.gc_magic == 0x4c4f4c4f ? &m_items[i].hdr->path[string(m_items[i].hdr->path).find_last_of("/")] : (char*)m_items[i].hdr->hdr.id)), "rb");
 		if (file != 0)
 		{
 			bool success = false;

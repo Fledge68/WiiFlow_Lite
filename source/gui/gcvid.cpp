@@ -26,13 +26,15 @@
  * gcvid.cpp
  ***************************************************************************/
 
-#include "gcvid.h"
-#include "utils.h"
-
 #include <cstdlib> //NULL
 #include <cstring> //memcmp
 #include <string>
 #include <cassert>
+
+#include "gcvid.h"
+#include "utils.h"
+#include "mem2.hpp"
+
 using namespace std;
 
 void readThpHeader(FILE* f, ThpHeader& h)
@@ -278,7 +280,7 @@ void VideoFrame::resize(int width, int height)
 	_p = 3*width;
 	_p += (4 - _p%4)%4;
 
-	_data = (u8 *) malloc(_p * _h);
+	_data = (u8 *)MEM2_alloc(_p * _h);
 }
 
 int VideoFrame::getWidth() const
@@ -298,7 +300,7 @@ const u8* VideoFrame::getData() const
 
 void VideoFrame::dealloc()
 {
-	SAFE_FREE(_data);
+	MEM2_free(_data);
 	_w = _h = _p = 0;
 }
 

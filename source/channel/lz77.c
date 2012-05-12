@@ -97,7 +97,7 @@ s32 __decompressLZ77_11(u8 *in, u32 inputLen, u8 **output, u32 *outputLen)
 					compressedPos += 2;
 				}
 	 
-				for (y = 0; y < copyLen; y++)
+				for (y = 0; y < (int)copyLen; y++)
 				{
 					out[decompressedPos + y] = out[decompressedPos - pos + y];
 				}
@@ -120,7 +120,7 @@ s32 __decompressLZ77_11(u8 *in, u32 inputLen, u8 **output, u32 *outputLen)
 	return 0;
 }
  
-s32 __decompressLZ77_10(u8 *in, u32 inputLen, u8 **output, u32 *outputLen)
+s32 __decompressLZ77_10(u8 *in, u8 **output, u32 *outputLen)
 {
 	int x, y;
 	 
@@ -203,7 +203,7 @@ int decompressLZ77content(u8 *buffer, u32 length, u8 **output, u32 *outputLen)
     {
         case LZ77_0x10_FLAG:
             printf("LZ77 variant 0x10 compressed content...unpacking may take a while...\n");
-            ret = __decompressLZ77_10(buffer, length, output, outputLen);
+            ret = __decompressLZ77_10(buffer, output, outputLen);
 			break;
         case LZ77_0x11_FLAG:
             printf("LZ77 variant 0x11 compressed content...unpacking may take a while...\n");

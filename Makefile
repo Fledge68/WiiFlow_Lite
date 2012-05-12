@@ -70,8 +70,8 @@ ios			:=	249
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-CFLAGS	 =	-g -Os -Wall $(MACHDEP) $(INCLUDE) -DHAVE_CONFIG_H
-CXXFLAGS =	-g -Os -Wall -Wextra -Wno-multichar $(MACHDEP) $(INCLUDE) -DHAVE_CONFIG_H
+CFLAGS	 =	-g -Os -Wall -Wextra -Wno-multichar $(MACHDEP) $(INCLUDE) -DHAVE_CONFIG_H
+CXXFLAGS =	$(CFLAGS)
 
 LDFLAGS	 =	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map,--section-start,.init=0x80A00000,-wrap,malloc,-wrap,free,-wrap,memalign,-wrap,calloc,-wrap,realloc,-wrap,malloc_usable_size -T../scripts/rvl.ld
 

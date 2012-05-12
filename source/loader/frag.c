@@ -29,7 +29,7 @@ void frag_init(FragList *ff, int maxnum)
 
 void frag_dump(FragList *ff)
 {
-	int i;
+	u32 i;
 	gprintf("frag list: %d %d 0x%x\n", ff->num, ff->size, ff->size);
 	for (i = 0; i < ff->num; i++)
 	{
@@ -72,7 +72,8 @@ int _frag_append(void *ff, u32 offset, u32 sector, u32 count)
 
 int frag_concat(FragList *ff, FragList *src)
 {
-	int i, ret;
+	int ret;
+	u32 i;
 	u32 size = ff->size;
 
 	for (i=0; i<src->num; i++)
@@ -91,7 +92,7 @@ int frag_concat(FragList *ff, FragList *src)
 // the difference should be filled with 0
 int frag_get(FragList *ff, u32 offset, u32 count, u32 *poffset, u32 *psector, u32 *pcount)
 {
-	int i;
+	u32 i;
 	u32 delta;
 	for (i=0; i<ff->num; i++)
 	{
@@ -130,7 +131,7 @@ int frag_get(FragList *ff, u32 offset, u32 count, u32 *poffset, u32 *psector, u3
 
 int frag_remap(FragList *ff, FragList *log, FragList *phy)
 {
-	int i;
+	u32 i;
 	u32 offset;
 	u32 sector;
 	for (i=0; i<log->num; i++)
@@ -164,10 +165,11 @@ int get_frag_list(u8 *id, char *path, const u32 hdd_sector_size)
 	bool isWBFS = wbfs_part_fs != PART_FS_WBFS && strcasestr(strrchr(fname,'.'), ".wbfs") != 0;
 
 	struct stat st;
-	FragList *fs = malloc(sizeof(FragList));
-	FragList *fa = malloc(sizeof(FragList));
-	FragList *fw = malloc(sizeof(FragList));
-	int ret, ret_val = -1, i, j;
+	FragList *fs = MEM2_alloc(sizeof(FragList));
+	FragList *fa = MEM2_alloc(sizeof(FragList));
+	FragList *fw = MEM2_alloc(sizeof(FragList));
+	int ret, ret_val = -1;
+	u32 i, j;
 
 	frag_init(fa, MAX_FRAG);
 
@@ -228,7 +230,8 @@ int get_frag_list(u8 *id, char *path, const u32 hdd_sector_size)
 		{
 			gprintf("Shifting all frags by sector: %d\n", wbfs_part_lba);
 			// offset to start of partition
-			for (j = 0; j < fs->num; j++) fs->frag[j].sector += wbfs_part_lba;
+			for (j = 0; j < fs->num; j++) 
+				fs->frag[j].sector += wbfs_part_lba;
 		}
 		
 		frag_concat(fa, fs);
@@ -263,10 +266,11 @@ int get_frag_list(u8 *id, char *path, const u32 hdd_sector_size)
 	ret_val = 0;
 
 out:
-	if (ret_val) SAFE_FREE(frag_list);
-	SAFE_FREE(fs);
-	SAFE_FREE(fa);
-	SAFE_FREE(fw);
+	if (ret_val)
+		MEM2_free(frag_list);
+	MEM2_free(fs);
+	MEM2_free(fa);
+	MEM2_free(fw);
 
 	return ret_val;
 }

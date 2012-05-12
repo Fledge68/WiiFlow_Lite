@@ -32,7 +32,7 @@ static u32 block = 32768;
 static u32 blockIdx = 0;
 static u32 blockInfo[2] = {0,0};
 static u32 blockReady = 0;
-static u32 stopThread;
+static s32 stopThread;
 static u64 folderSize = 0;
 
 // return false if the file doesn't exist
@@ -138,7 +138,7 @@ bool fsop_DirExist (char *path)
 	return false;
 }
 
-static void *thread_CopyFileReader (void *arg)
+static void *thread_CopyFileReader()
 {
 	u32 rb;
 	stopThread = 0;

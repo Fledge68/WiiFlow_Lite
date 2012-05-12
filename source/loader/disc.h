@@ -1,11 +1,11 @@
 #ifndef _DISC_H_
 #define _DISC_H_
 
-#ifndef APPLOADER_START		/* Also defined in mem2.hpp */
-#define APPLOADER_START (void *)0x81200000
+#ifndef APPLOADER_START
+#define APPLOADER_START		(void *)0x81200000
 #endif
-#ifndef APPLOADER_END		/* Also defined in mem2.hpp */
-#define APPLOADER_END (void *)0x81700000
+#ifndef APPLOADER_END
+#define APPLOADER_END		(void *)0x81700000
 #endif
 
 #define	Sys_Magic	((vu32*)0x80000020)
@@ -92,18 +92,18 @@ struct gc_discHdr
 extern "C" {
 #endif /* __cplusplus */
 
-	/* Prototypes */
-	s32	Disc_Init(void);
-	s32	Disc_Open(void);
-	s32	Disc_Wait(void);
-	s32	Disc_SetUSB(const u8 *);
-	s32	Disc_ReadHeader(void *);
-	s32 Disc_ReadGCHeader(void *);
-	s32 Disc_Type(bool);
-	s32	Disc_IsWii(void);
-	s32	Disc_IsGC(void);
-	s32	Disc_BootPartition(u64, u8, bool, bool, u8, bool, int);
-	s32	Disc_WiiBoot(u8, bool, bool, u8, bool, int);
+/* Prototypes */
+s32	Disc_Init(void);
+s32	Disc_Open(void);
+s32	Disc_Wait(void);
+s32	Disc_SetUSB(const u8 *);
+s32	Disc_ReadHeader(void *);
+s32 Disc_ReadGCHeader(void *);
+s32 Disc_Type(bool);
+s32	Disc_IsWii(void);
+s32	Disc_IsGC(void);
+s32	Disc_BootPartition(u64, u8, bool, bool, u8, bool, int);
+s32	Disc_WiiBoot(u8, bool, bool, u8, bool, int);
 
 #ifdef __cplusplus
 }

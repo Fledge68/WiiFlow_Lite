@@ -24,13 +24,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <gccore.h>
-#include <malloc.h>
 #include <sys/unistd.h>
 #include <ogc/ipc.h>
 #include "fst.h"
 
 #include "gecko.h"
 #include "sys.h"
+#include "mem2.hpp"
 
 #include "patchcode.h"
 
@@ -68,7 +68,7 @@ int app_gameconfig_load(u8 *discid, const u8 *gameconfig, u32 tempgameconfsize)
 
 	if (gameconf == NULL)
 	{
-		gameconf = malloc(65536);
+		gameconf = MEM2_alloc(65536);
 		if (gameconf == NULL)
 			return -1;
 	}
@@ -76,7 +76,7 @@ int app_gameconfig_load(u8 *discid, const u8 *gameconfig, u32 tempgameconfsize)
 	if (gameconfig == NULL || tempgameconfsize == 0)
 		return -2;
 	
-	u8 *tempgameconf = (u8 *) gameconfig;
+	u8 *tempgameconf = (u8 *)gameconfig;
 
 	u32 ret;
 	s32 gameidmatch, maxgameidmatch = -1, maxgameidmatch2 = -1;
@@ -158,270 +158,81 @@ int app_gameconfig_load(u8 *discid, const u8 *gameconfig, u32 tempgameconfsize)
 					if (parsebufpos == 17) break;
 				}
 				parsebuffer[parsebufpos] = 0;
-				//if (!autobootcheck)
+				if (strncasecmp("codeliststart", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 13)
 				{
-					//if (strncasecmp("addtocodelist(", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 14)
-					//{
-					//	ret = sscanf(tempgameconf + i, "%x %x", &codeaddr, &codeval);
-					//	if (ret == 2)
-					//		addtocodelist(codeaddr, codeval);
-					//}
-					if (strncasecmp("codeliststart", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 13)
+					sscanf((char *)(tempgameconf + i), " = %x", (unsigned int *)&codelist);
+				}
+				if (strncasecmp("codelistend", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 11)
+				{
+					sscanf((char *)(tempgameconf + i), " = %x", (unsigned int *)&codelistend);
+				}
+				if (strncasecmp("poke", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 4)
+				{
+					ret = sscanf((char *)tempgameconf + i, "( %x , %x", &codeaddr, &codeval);
+					if (ret == 2)
 					{
-						sscanf((char *)(tempgameconf + i), " = %x", (unsigned int *)&codelist);
+						*(gameconf + (gameconfsize / 4)) = 0;
+						gameconfsize += 4;
+						*(gameconf + (gameconfsize / 4)) = 0;
+						gameconfsize += 8;
+						*(gameconf + (gameconfsize / 4)) = codeaddr;
+						gameconfsize += 4;
+						*(gameconf + (gameconfsize / 4)) = codeval;
+						gameconfsize += 4;
+						DCFlushRange((void *) (gameconf + (gameconfsize / 4) - 5), 20);
 					}
-					if (strncasecmp("codelistend", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 11)
+				}
+				if (strncasecmp("pokeifequal", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 11)
+				{
+					ret = sscanf((char *)(tempgameconf + i), "( %x , %x , %x , %x", &codeaddr, &codeval, &codeaddr2, &codeval2);
+					if (ret == 4)
 					{
-						sscanf((char *)(tempgameconf + i), " = %x", (unsigned int *)&codelistend);
+						*(gameconf + (gameconfsize / 4)) = 0;
+						gameconfsize += 4;
+						*(gameconf + (gameconfsize / 4)) = codeaddr;
+						gameconfsize += 4;
+						*(gameconf + (gameconfsize / 4)) = codeval;
+						gameconfsize += 4;
+						*(gameconf + (gameconfsize / 4)) = codeaddr2;
+						gameconfsize += 4;
+						*(gameconf + (gameconfsize / 4)) = codeval2;
+						gameconfsize += 4;
+						DCFlushRange((void *) (gameconf + (gameconfsize / 4) - 5), 20);
 					}
-					/*
-					if (strncasecmp("hooktype", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 8)
+				}
+				if (strncasecmp("searchandpoke", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 13)
+				{
+					ret = sscanf((char *)(tempgameconf + i), "( %x%n", &codeval, &tempoffset);
+					if (ret == 1)
 					{
-						if (hookset == 1)
+						gameconfsize += 4;
+						temp = 0;
+						while (ret == 1)
 						{
-							ret = sscanf(tempgameconf + i, " = %u", &temp);
-							if (ret == 1)
-								if (temp >= 0 && temp <= 7)
-									config_bytes[2] = temp;
-						}
-					}
-					*/
-					if (strncasecmp("poke", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 4)
-					{
-						ret = sscanf((char *)tempgameconf + i, "( %x , %x", &codeaddr, &codeval);
-						if (ret == 2)
-						{
-							*(gameconf + (gameconfsize / 4)) = 0;
-							gameconfsize += 4;
-							*(gameconf + (gameconfsize / 4)) = 0;
-							gameconfsize += 8;
-							*(gameconf + (gameconfsize / 4)) = codeaddr;
-							gameconfsize += 4;
 							*(gameconf + (gameconfsize / 4)) = codeval;
 							gameconfsize += 4;
-							DCFlushRange((void *) (gameconf + (gameconfsize / 4) - 5), 20);
+							temp++;
+							i += tempoffset;
+							ret = sscanf((char *)(tempgameconf + i), " %x%n", &codeval, &tempoffset);
 						}
-					}
-					if (strncasecmp("pokeifequal", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 11)
-					{
-						ret = sscanf((char *)(tempgameconf + i), "( %x , %x , %x , %x", &codeaddr, &codeval, &codeaddr2, &codeval2);
+						*(gameconf + (gameconfsize / 4) - temp - 1) = temp;
+						ret = sscanf((char *)(tempgameconf + i), " , %x , %x , %x , %x", &codeaddr, &codeaddr2, &codeoffset, &codeval2);
 						if (ret == 4)
 						{
-							*(gameconf + (gameconfsize / 4)) = 0;
-							gameconfsize += 4;
 							*(gameconf + (gameconfsize / 4)) = codeaddr;
-							gameconfsize += 4;
-							*(gameconf + (gameconfsize / 4)) = codeval;
 							gameconfsize += 4;
 							*(gameconf + (gameconfsize / 4)) = codeaddr2;
 							gameconfsize += 4;
+							*(gameconf + (gameconfsize / 4)) = codeoffset;
+							gameconfsize += 4;
 							*(gameconf + (gameconfsize / 4)) = codeval2;
 							gameconfsize += 4;
-							DCFlushRange((void *) (gameconf + (gameconfsize / 4) - 5), 20);
+							DCFlushRange((void *) (gameconf + (gameconfsize / 4) - temp - 5), temp * 4 + 20);
 						}
+						else
+							gameconfsize -= temp * 4 + 4;
 					}
-					if (strncasecmp("searchandpoke", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 13)
-					{
-						ret = sscanf((char *)(tempgameconf + i), "( %x%n", &codeval, &tempoffset);
-						if (ret == 1)
-						{
-							gameconfsize += 4;
-							temp = 0;
-							while (ret == 1)
-							{
-								*(gameconf + (gameconfsize / 4)) = codeval;
-								gameconfsize += 4;
-								temp++;
-								i += tempoffset;
-								ret = sscanf((char *)(tempgameconf + i), " %x%n", &codeval, &tempoffset);
-							}
-							*(gameconf + (gameconfsize / 4) - temp - 1) = temp;
-							ret = sscanf((char *)(tempgameconf + i), " , %x , %x , %x , %x", &codeaddr, &codeaddr2, &codeoffset, &codeval2);
-							if (ret == 4)
-							{
-								*(gameconf + (gameconfsize / 4)) = codeaddr;
-								gameconfsize += 4;
-								*(gameconf + (gameconfsize / 4)) = codeaddr2;
-								gameconfsize += 4;
-								*(gameconf + (gameconfsize / 4)) = codeoffset;
-								gameconfsize += 4;
-								*(gameconf + (gameconfsize / 4)) = codeval2;
-								gameconfsize += 4;
-								DCFlushRange((void *) (gameconf + (gameconfsize / 4) - temp - 5), temp * 4 + 20);
-							}
-							else
-								gameconfsize -= temp * 4 + 4;
-						}
-
-					}
-					/*
-					if (strncasecmp("hook", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 4)
-					{
-						ret = sscanf(tempgameconf + i, "( %x %x %x %x %x %x %x %x", customhook, customhook + 1, customhook + 2, customhook + 3, customhook + 4, customhook + 5, customhook + 6, customhook + 7);
-						if (ret >= 3)
-						{
-							if (hookset != 1)
-								configwarn |= 4;
-							config_bytes[2] = 0x08;
-							customhooksize = ret * 4;
-						}
-					}
-					if (strncasecmp("002fix", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 6)
-					{
-						ret = sscanf(tempgameconf + i, " = %u", &temp);
-						if (ret == 1)
-							if (temp >= 0 && temp <= 0x1)
-								fakeiosversion = temp;
-					}
-					if (strncasecmp("switchios", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 9)
-					{
-						ret = sscanf(tempgameconf + i, " = %u", &temp);
-						if (ret == 1)
-							if (temp >= 0 && temp <= 1)
-								willswitchios = temp;
-					}
-					if (strncasecmp("videomode", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 9)
-					{
-						ret = sscanf(tempgameconf + i, " = %u", &temp);
-						if (ret == 1)
-						{
-							if (temp == 0)
-							{
-								if (config_bytes[1] != 0x00)
-									configwarn |= 1;
-								config_bytes[1] = 0x00;
-							}
-							else if (temp == 1)
-							{
-								if (config_bytes[1] != 0x03)
-									configwarn |= 1;
-								config_bytes[1] = 0x03;
-							}
-							else if (temp == 2)
-							{
-								if (config_bytes[1] != 0x01)
-									configwarn |= 1;
-								config_bytes[1] = 0x01;
-							}
-							else if (temp == 3)
-							{
-								if (config_bytes[1] != 0x02)
-									configwarn |= 1;
-								config_bytes[1] = 0x02;
-							}
-						}
-					}
-					if (strncasecmp("language", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 8)
-					{
-						ret = sscanf(tempgameconf + i, " = %u", &temp);
-						if (ret == 1)
-						{
-							if (temp == 0)
-							{
-								if (config_bytes[0] != 0xCD)
-									configwarn |= 2;
-								config_bytes[0] = 0xCD;
-							}
-							else if (temp > 0 && temp <= 10)
-							{
-								if (config_bytes[0] != temp-1)
-									configwarn |= 2;
-								config_bytes[0] = temp-1;
-							}
-						}
-					}
-					if (strncasecmp("diagnostic", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 10)
-					{
-						ret = sscanf(tempgameconf + i, " = %u", &temp);
-						if (ret == 1)
-						{
-							if (temp == 0 || temp == 1)
-								diagcreate = temp;
-						}
-					}
-					if (strncasecmp("vidtv", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 5)
-					{
-						ret = sscanf(tempgameconf + i, " = %u", &temp);
-						if (ret == 1)
-							if (temp >= 0 && temp <= 1)
-								vipatchon = temp;
-					}
-					if (strncasecmp("fwritepatch", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 11)
-					{
-						ret = sscanf(tempgameconf + i, " = %u", &temp);
-						if (ret == 1)
-							if (temp >= 0 && temp <= 1)
-								applyfwritepatch = temp;
-					}
-					if (strncasecmp("dumpmaindol", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 11)
-					{
-						ret = sscanf(tempgameconf + i, " = %u", &temp);
-						if (ret == 1)
-							if (temp >= 0 && temp <= 1)
-								dumpmaindol = temp;
-					}
-					*/
 				}
-				/*else
-				{
-
-					if (strncasecmp("autoboot", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 8)
-					{
-						ret = sscanf(tempgameconf + i, " = %u", &temp);
-						if (ret == 1)
-							if (temp >= 0 && temp <= 1)
-								autoboot = temp;
-					}
-					if (strncasecmp("autobootwait", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 12)
-					{
-						ret = sscanf(tempgameconf + i, " = %u", &temp);
-						if (ret == 1)
-							if (temp >= 0 && temp <= 255)
-								autobootwait = temp;
-					}
-					if (strncasecmp("autoboothbc", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 11)
-					{
-						ret = sscanf(tempgameconf + i, " = %u", &temp);
-						if (ret == 1)
-							if (temp >= 0 && temp <= 1)
-								autoboothbc = temp;
-					}
-					if (strncasecmp("autobootocarina", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 15)
-					{
-						ret = sscanf(tempgameconf + i, " = %u", &temp);
-						if (ret == 1)
-							if (temp >= 0 && temp <= 1)
-								config_bytes[4] = temp;
-					}
-					if (strncasecmp("autobootdebugger", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 16)
-					{
-						ret = sscanf(tempgameconf + i, " = %u", &temp);
-						if (ret == 1)
-							if (temp >= 0 && temp <= 1)
-								config_bytes[7] = temp;
-					}
-					if (strncasecmp("rebootermenuitem", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 16)
-					{
-						ret = sscanf(tempgameconf + i, " = %u", &temp);
-						if (ret == 1)
-							if (temp >= 0 && temp <= 1)
-								rebooterasmenuitem = temp;
-					}
-					if (strncasecmp("startupios", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 10)
-					{
-						ret = sscanf(tempgameconf + i, " = %u", &temp);
-						if (ret == 1)
-							if (temp >= 0 && temp <= 255)
-							{
-								sdio_Shutdown();
-								IOS_ReloadIOS(temp);
-								detectIOScapabilities();
-								sd_init();
-								startupiosloaded = 1;
-							}
-					}
-
-				}*/
 				if (tempgameconf[i] != ':')
 				{
 					while ((i != tempgameconfsize) && (tempgameconf[i] != 10 && tempgameconf[i] != 13)) i++;
@@ -431,14 +242,14 @@ int app_gameconfig_load(u8 *discid, const u8 *gameconfig, u32 tempgameconfsize)
 			if (i != tempgameconfsize) while ((tempgameconf[i] != 10 && tempgameconf[i] != 13) && (i != 0)) i--;
 		}
 	}
+	MEM2_free(gameconf);
 	return 0;
-	//tempcodelist = ((u8 *) gameconf) + gameconfsize;
 }
 
 u8 *code_buf = NULL;
-int code_size = 0;
+u32 code_size = 0;
 
-int ocarina_load_code(u8 *id, const u8 *cheat, u32 cheatSize)
+int ocarina_load_code(const u8 *cheat, u32 cheatSize)
 {
 	if (debuggerselect == 0x00)
 		codelist = (u8 *) 0x800022A8;
@@ -446,10 +257,8 @@ int ocarina_load_code(u8 *id, const u8 *cheat, u32 cheatSize)
 		codelist = (u8 *) 0x800028B8;
 	codelistend = (u8 *) 0x80003000;
 
-//	app_loadgameconfig((char *)id);
-
 	code_buf = (u8 *)cheat;
-    code_size = cheatSize;
+	code_size = cheatSize;
 
 	if(code_size <= 0)
 	{

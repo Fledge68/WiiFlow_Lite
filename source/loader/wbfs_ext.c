@@ -36,8 +36,6 @@ split_info_t split;
 
 struct statvfs wbfs_ext_vfs;
 
-s32 __WBFS_ReadDVD(void *fp, u32 lba, u32 len, void *iobuf);
-
 #define STRCOPY(DEST,SRC) strcopy(DEST,SRC,sizeof(DEST)) 
 char* strcopy(char *dest, const char *src, int size)
 {
@@ -95,10 +93,10 @@ s32 WBFS_Ext_DiskSpace(f32 *used, f32 *free)
 	*used = 0;
 	*free = 0;
 
-	static int wbfs_ext_vfs_have = 0, wbfs_ext_vfs_lba = 0,  wbfs_ext_vfs_dev = 0;
+	static s32 wbfs_ext_vfs_have = 0, wbfs_ext_vfs_lba = 0,  wbfs_ext_vfs_dev = 0;
 
 	// statvfs is slow, so cache values
-	if (!wbfs_ext_vfs_have || wbfs_ext_vfs_lba != wbfs_part_lba || wbfs_ext_vfs_dev != wbfsDev )
+	if (!wbfs_ext_vfs_have || wbfs_ext_vfs_lba != (s32)wbfs_part_lba || wbfs_ext_vfs_dev != wbfsDev )
 	{
 		if(statvfs(wbfs_fs_drive, &wbfs_ext_vfs))
 			return 0;
@@ -116,23 +114,13 @@ s32 WBFS_Ext_DiskSpace(f32 *used, f32 *free)
 	return 0;
 }
 
-static int nop_read_sector(void *_fp,u32 lba,u32 count,void*buf)
-{
-	return 0;
-}
-
-static int nop_write_sector(void *_fp,u32 lba,u32 count,void*buf)
-{
-	return 0;
-}
-
 wbfs_t* WBFS_Ext_OpenPart(char *fname)
 {
 	if(split_open(&split, fname) < 0)
 		return NULL;
 
 	wbfs_set_force_mode(1);
-	wbfs_t *part = wbfs_open_partition(split_read_sector, nop_write_sector, //readonly //split_write_sector,
+	wbfs_t *part = wbfs_open_partition(split_read_sector, 0, //readonly //split_write_sector,
 		&split, sector_size, split.total_sec, 0, 0);
 	wbfs_set_force_mode(0);
 
@@ -243,7 +231,7 @@ s32 WBFS_Ext_DVD_Size(u64 *comp_size, u64 *real_size)
 	// init a temporary dummy part
 	// as a placeholder for wbfs_size_disc
 	wbfs_t *part = wbfs_open_partition(
-			nop_read_sector, nop_write_sector,
+			0, 0,
 			NULL, sector_size, n_sector, 0, 1);
 	if (!part) return -1;
 

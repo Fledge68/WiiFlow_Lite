@@ -40,6 +40,7 @@ woven in by Terry Thorsen 1/2003.
 #include <string.h>
 #include "zlib.h"
 #include "unzip.h"
+#include "mem2.hpp"
 
 #ifdef STDC
 #  include <stddef.h>
@@ -75,10 +76,10 @@ extern int errno;
 #endif
 
 #ifndef ALLOC
-# define ALLOC(size) (malloc(size))
+# define ALLOC(size) (MEM2_alloc(size))
 #endif
 #ifndef TRYFREE
-# define TRYFREE(p) if(p) {free(p); p = NULL;}
+# define TRYFREE(p) if(p) {MEM2_free(p); p = NULL;}
 #endif
 
 #define SIZECENTRALDIRITEM (0x2e)
@@ -171,11 +172,14 @@ voidpf filestream;
 int *pi;
 {
     unsigned char c;
-    int err = (int)ZREAD(*pzlib_filefunc_def,filestream,&c,1);
-    if (err==1) {
+    int err = (int)ZREAD(*pzlib_filefunc_def, filestream, &c, 1);
+    if (err==1) 
+	{
         *pi = (int)c;
         return UNZ_OK;
-    } else {
+    } 
+	else 
+	{
         if (ZERROR(*pzlib_filefunc_def,filestream))
             return UNZ_ERRNO;
         else
@@ -411,8 +415,7 @@ zlib_filefunc_def* pzlib_filefunc_def;
     else
         us.z_filefunc = *pzlib_filefunc_def;
 
-    us.filestream= (*(us.z_filefunc.zopen_file))(us.z_filefunc.opaque,
-                   path,
+    us.filestream= (*(us.z_filefunc.zopen_file))(path,
                    ZLIB_FILEFUNC_MODE_READ |
                    ZLIB_FILEFUNC_MODE_EXISTING);
     if (us.filestream==NULL)

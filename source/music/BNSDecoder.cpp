@@ -23,10 +23,12 @@
  *
  * for WiiXplorer 2010
  ***************************************************************************/
-#include <malloc.h>
+ 
 #include <string.h>
 #include <math.h>
 #include <unistd.h>
+
+#include "mem2.hpp"
 #include "BNSDecoder.hpp"
 
 BNSDecoder::BNSDecoder(const char * filepath)
@@ -59,7 +61,7 @@ BNSDecoder::~BNSDecoder()
     while(Decoding)
         usleep(100);
 
-    SAFE_FREE(SoundData.buffer);
+    MEM2_free(SoundData.buffer);
 }
 
 void BNSDecoder::OpenFile()
@@ -262,7 +264,7 @@ static u8 * decodeBNS(u32 &size, const BNSInfo &bnsInfo, const BNSData &bnsData)
 	int numBlocks = (bnsData.size - 8) / 8;
 	int numSamples = numBlocks * 14;
 	const BNSADPCMBlock *inputBuf = (const BNSADPCMBlock *)&bnsData.data;
-	u8 * buffer = (u8 *) malloc(numSamples * sizeof (s16));
+	u8 * buffer = (u8 *)MEM2_alloc(numSamples * sizeof (s16));
 	s16 *outputBuf;
 
 	if (!buffer)
@@ -342,7 +344,7 @@ SoundBlock DecodefromBNS(const u8 *buffer, u32 size)
 	}
 	else
 	{
-		OutBlock.buffer = (u8*) malloc(dataChunk.size);
+		OutBlock.buffer = (u8*)MEM2_alloc(dataChunk.size);
 		if (!OutBlock.buffer)
 			return OutBlock;
 		memcpy(OutBlock.buffer, &dataChunk.data, dataChunk.size);

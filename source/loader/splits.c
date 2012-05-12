@@ -18,7 +18,7 @@
 #define FMT_llu "%llu"
 #define FMT_lld "%lld"
 
-#define split_error(x)		do { printf("\nsplit error: %s\n\n",x); } while(0)
+#define split_error(x)		do { gprintf("\nsplit error: %s\n\n",x); } while(0)
 
 // 1 cluster less than 4gb
 u64 OPT_split_size = (u64) 4LL * 1024 * 1024 * 1024 - 32 * 1024;
@@ -65,12 +65,16 @@ int split_open_file(split_info_t *s, int idx)
 int write_zero(int fd, off_t size)
 {
 	int buf[0x4000]; //64kb
-	int chunk;
-	int ret;
 	memset(buf, 0, sizeof(buf));
-	while (size) {
+
+	u32 chunk;
+	int ret;
+
+	while (size) 
+	{
 		chunk = size;
-		if (chunk > sizeof(buf)) chunk = sizeof(buf);
+		if (chunk > sizeof(buf))
+			chunk = sizeof(buf);
 		ret = write(fd, buf, chunk);
 //		gprintf("WZ %d %d / %lld \n", ret, chunk, size);
 		size -= chunk;
@@ -84,7 +88,8 @@ int split_fill(split_info_t *s, int idx, u64 size)
 	int fd = split_open_file(s, idx);
 	
 	off64_t fsize = lseek(fd, 0, SEEK_END);
-	if (fsize < size) {
+	if ((u64)fsize < size) 
+	{
 //		gprintf("TRUNC %d "FMT_lld" "FMT_lld"\n", idx, size, fsize); // Wpad_WaitButtons();
 		ftruncate(fd, size);
 //		write_zero(fd, size - fsize);
@@ -97,13 +102,13 @@ int split_get_file(split_info_t *s, u32 lba, u32 *sec_count, int fill)
 {
 	int fd;
 	if (lba >= s->total_sec) {
-		fprintf(stderr, "SPLIT: invalid sector %u / %u\n", lba, (u32)s->total_sec);
+		gprintf( "SPLIT: invalid sector %u / %u\n", lba, (u32)s->total_sec);
 		return -1;
 	}
 	int idx;
 	idx = lba / s->split_sec;
 	if (idx >= s->max_split) {
-		fprintf(stderr, "SPLIT: invalid split %d / %d\n", idx, s->max_split - 1);
+		gprintf( "SPLIT: invalid split %d / %d\n", idx, s->max_split - 1);
 		return -1;
 	}
 	fd = s->fd[idx];
@@ -118,7 +123,7 @@ int split_get_file(split_info_t *s, u32 lba, u32 *sec_count, int fill)
 		fd = split_open_file(s, idx);
 	}
 	if (fd<0) {
-		fprintf(stderr, "SPLIT %d: no file\n", idx);
+		gprintf( "SPLIT %d: no file\n", idx);
 		return -1;
 	}
 	u32 sec = lba % s->split_sec; // inside file
@@ -141,7 +146,7 @@ int split_get_file(split_info_t *s, u32 lba, u32 *sec_count, int fill)
 	return fd;
 }
 
-int split_read_sector(void *_fp,u32 lba,u32 count,void*buf)
+int split_read_sector(void *_fp, u32 lba, u32 count, void *buf)
 {
 	split_info_t *s = _fp;
 	int fd;                                 
@@ -150,28 +155,30 @@ int split_read_sector(void *_fp,u32 lba,u32 count,void*buf)
 	int i;
 	u32 chunk;
 	size_t ret;
-	//fprintf(stderr,"READ %d %d\n", lba, count);
-	for (i=0; i<(int)count; i+=chunk) {
+	//gprintf("READ %d %d\n", lba, count);
+	for (i=0; i<(int)count; i+=chunk)
+	{
 		chunk = count - i;
 		fd = split_get_file(s, lba+i, &chunk, 1);
-		if (fd<0) {
-			fprintf(stderr,"\n\n"FMT_lld" %d %p\n",off,count,_fp);
-			split_error("error seeking in disc partition");
+		if (fd<0) 
+		{
+			gprintf("\n\n"FMT_lld" %d %p\n",off,count,_fp);
+			split_error("error seeking in disc partition\n");
 			return 1;
 		}
 		//ret = fread(buf+i*512, 512ULL, chunk, f);
 		ret = read(fd, buf+i*512, chunk * 512);
-		if (ret != chunk * 512) {
-			fprintf(stderr, "error reading %u %u [%u] %u = %u\n",
-					lba, count, i, chunk, ret);
-			split_error("error reading disc");
+		if (ret != chunk * 512)
+		{
+			gprintf( "error reading %u %u [%u] %u = %u\n", lba, count, i, chunk, ret);
+			split_error("error reading disc\n");
 			return 1;
 		}
 	}
 	return 0;
 }
 
-int split_write_sector(void *_fp,u32 lba,u32 count,void*buf)
+int split_write_sector(void *_fp, u32 lba, u32 count, void *buf)
 {
 	split_info_t *s = _fp;
 	int fd;                                 
@@ -181,23 +188,26 @@ int split_write_sector(void *_fp,u32 lba,u32 count,void*buf)
 	u32 chunk;
 	size_t ret;
 //	gprintf("WRITE %d %d %p \n", lba, count, buf);
-	for (i=0; i<(int)count; i+=chunk) {
+	for (i=0; i<(int)count; i+=chunk)
+	{
 		chunk = count - i;
 		fd = split_get_file(s, lba+i, &chunk, 0);
 //		gprintf("WRITE Got file: %d\n", fd);
 		//if (chunk != count)
-		//	fprintf(stderr, "WRITE CHUNK %d %d/%d\n", lba+i, chunk, count);
-		if (fd<0 || !chunk) {
-			fprintf(stderr,"\n\n"FMT_lld" %d %p\n",off,count,_fp);
-			split_error("error seeking in disc partition");
+		//	gprintf( "WRITE CHUNK %d %d/%d\n", lba+i, chunk, count);
+		if (fd<0 || !chunk)
+		{
+			gprintf("\n\n"FMT_lld" %d %p\n",off,count,_fp);
+			split_error("error seeking in disc partition\n");
 			return 1;
 		}
 		//if (fwrite(buf+i*512, 512ULL, chunk, f) != chunk) {
 //		gprintf("write %d %p %d \n", fd, buf+i*512, chunk * 512);
 		ret = write(fd, buf+i*512, chunk * 512);
 //		gprintf("write ret = %d \n", ret);
-		if (ret != chunk * 512) {
-			split_error("error writing disc");
+		if (ret != chunk * 512)
+		{
+			split_error("error writing disc\n");
 			return 1;
 		}
 	}
@@ -266,7 +276,7 @@ int split_create(split_info_t *s, char *fname,
 		} else {
 			fd = open(sname, O_RDONLY);
 			if (fd >= 0) {
-				fprintf(stderr, "Error: file already exists: %s\n", sname);
+				gprintf( "Error: file already exists: %s\n", sname);
 				close(fd);
 				error = 1;
 			}

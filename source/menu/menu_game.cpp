@@ -885,7 +885,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	forwarder = m_gcfg2.getBool(id, "custom", forwarder) || strncmp(id.c_str(), "WIMC", 4) == 0;
 
 	if(!forwarder)
-		data = channel.Load(hdr->hdr.chantitle, (char *)id.c_str());
+		data = channel.Load(hdr->hdr.chantitle);
 
 	Nand::Instance()->Disable_Emu();
 
@@ -939,8 +939,9 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 
 		SmartBuf cheatFile;
 		u32 cheatSize = 0;
-		if (cheat) _loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", hdr->hdr.id));
-		ocarina_load_code((u8 *) &hdr->hdr.id, cheatFile.get(), cheatSize);
+		if (cheat)
+			_loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", hdr->hdr.id));
+		ocarina_load_code(cheatFile.get(), cheatSize);
 
 		int result = _loadIOS(channel.GetRequestedIOS(hdr->hdr.chantitle), id);
 		if (result == LOAD_IOS_FAILED)
@@ -1193,13 +1194,14 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 
 	setLanguage(language);
 
-	if (cheat) _loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", hdr->hdr.id));
+	if(cheat)
+		_loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", hdr->hdr.id));
 
 	_loadFile(gameconfig, gameconfigSize, m_txtCheatDir.c_str(), "gameconfig.txt");
 
 	load_wip_patches((u8 *) m_wipDir.c_str(), (u8 *) &hdr->hdr.id);	
 	app_gameconfig_load((u8 *) &hdr->hdr.id, gameconfig.get(), gameconfigSize);
-	ocarina_load_code((u8 *) &hdr->hdr.id, cheatFile.get(), cheatSize);
+	ocarina_load_code(cheatFile.get(), cheatSize);
 
 	if (!using_wifi_gecko)
 		net_wc24cleanup();

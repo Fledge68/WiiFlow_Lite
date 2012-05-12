@@ -12,9 +12,10 @@
 #include <time.h>
 #include <errno.h>
 #include <fcntl.h>
-# include <unistd.h>
-# include <utime.h>
+#include <unistd.h>
+#include <utime.h>
 
+#include "mem2.hpp"
 #include "unzip.h"
 
 #define CASESENSITIVITY (0)
@@ -42,14 +43,14 @@ int makedir (char *newdir)
     if (len <= 0)
         return 0;
 
-    buffer = (char*)malloc(len+1);
+    buffer = (char*)MEM2_alloc(len+1);
     strcpy(buffer,newdir);
 
     if (buffer[len-1] == '/') {
         buffer[len-1] = '\0';
     }
     if (mymkdir(buffer) == 0) {
-        SAFE_FREE(buffer);
+        MEM2_free(buffer);
         return 1;
     }
 
@@ -63,19 +64,19 @@ int makedir (char *newdir)
         *p = 0;
         if ((mymkdir(buffer) == -1) && (errno == ENOENT)) {
 //            printf("couldn't create directory %s\n",buffer);
-            SAFE_FREE(buffer);
+            MEM2_free(buffer);
             return 0;
         }
         if (hold == 0)
             break;
         *p++ = hold;
     }
-    SAFE_FREE(buffer);
+    MEM2_free(buffer);
     return 1;
 }
 
 static char *fullfilename(const char *basedir, char *filename) {
-	char *file = (char *) malloc(strlen(basedir) + strlen(filename) + 1);
+	char *file = (char *)MEM2_alloc(strlen(basedir) + strlen(filename) + 1);
 	if (basedir == NULL) {
 		strcpy(file, filename);
 	} else {
@@ -107,7 +108,7 @@ static int do_extract_currentfile(unzFile uf,const int* popt_extract_without_pat
     }
 
     size_buf = WRITEBUFFERSIZE;
-    buf = (void*)malloc(size_buf);
+    buf = (void*)MEM2_alloc(size_buf);
     if (buf==NULL) {
 //        printf("Error allocating memory\n");
         return UNZ_INTERNALERROR;
@@ -125,7 +126,7 @@ static int do_extract_currentfile(unzFile uf,const int* popt_extract_without_pat
         if ((*popt_extract_without_path)==0) {
 
 			// Fix the path, this will fail if the directoryname is the same as the first filename in the zip
-			char *path = (char *) malloc(strlen(filename_withpath));
+			char *path = (char *)MEM2_alloc(strlen(filename_withpath));
 			strcpy(path, filename_withpath);
 			char *ptr = strstr(path, filename_withoutpath);
 			*ptr = '\0';
@@ -133,7 +134,7 @@ static int do_extract_currentfile(unzFile uf,const int* popt_extract_without_pat
 //            printf("creating directory: %s\n",path);
             mymkdir(path);
 
-			SAFE_FREE(path);
+			MEM2_free(path);
         }
     } else {
         char* write_filename;
@@ -187,12 +188,12 @@ static int do_extract_currentfile(unzFile uf,const int* popt_extract_without_pat
                 *(filename_withoutpath-1)='\0';
 
 				// Fix the path, this will fail if the directoryname is the same as the first filename in the zip
-				char *path = (char *) malloc(strlen(write_filename));
+				char *path = (char *)MEM2_alloc(strlen(write_filename));
 				strcpy(path, write_filename);
 				char *ptr = strstr(path, filename_withoutpath);
 				*ptr = '\0';
                 makedir(path);
-				SAFE_FREE(path);
+				MEM2_free(path);
 				
                 *(filename_withoutpath-1)=c;
                 fout=fopen(write_filename,"wb");
@@ -232,8 +233,8 @@ static int do_extract_currentfile(unzFile uf,const int* popt_extract_without_pat
         } else
             unzCloseCurrentFile(uf); /* don't lose the error */
     }
-	SAFE_FREE(filename_withpath);
-    SAFE_FREE(buf);
+	MEM2_free(filename_withpath);
+    MEM2_free(buf);
     return err;
 }
 

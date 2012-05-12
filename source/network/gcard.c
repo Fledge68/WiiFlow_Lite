@@ -1,9 +1,10 @@
+
 #include "gcard.h"
 #include "http.h"
 #include "utils.h"
 #include "gecko/gecko.h"
+#include "mem2.hpp"
 
-#include <malloc.h>
 #include <string.h>
 
 #define MAX_URL_SIZE 178 // 128 + 48 + 6
@@ -44,7 +45,7 @@ void add_game_to_card(const char *gameid)
 {
 	int i;
 
-	char *url = (char *) malloc(MAX_URL_SIZE); // Too much memory, but only like 10 bytes
+	char *url = (char *)MEM2_alloc(MAX_URL_SIZE); // Too much memory, but only like 10 bytes
 	memset(url, 0, sizeof(url));
 
 	for (i = 0; i < amount_of_providers && providers != NULL; i++)
@@ -56,5 +57,5 @@ void add_game_to_card(const char *gameid)
 		gprintf("Gamertag URL:\n%s\n",(char*)url);
 		downloadfile(NULL, 0, (char *) url, NULL, NULL);
 	}
-	SAFE_FREE(url);
+	MEM2_free(url);
 }

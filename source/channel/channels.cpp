@@ -74,7 +74,7 @@ Channels::~Channels()
 {
 }
 
-u8 * Channels::Load(u64 title, char *id)
+u8 * Channels::Load(u64 title)
 {
 	char app[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
 	u32 bootcontent;
@@ -82,7 +82,7 @@ u8 * Channels::Load(u64 title, char *id)
 	if(!GetAppNameFromTmd(title, app, true, &bootcontent))
 		return NULL;
 
-	return GetDol(title, id, bootcontent);	
+	return GetDol(title, bootcontent);
 }
 
 u8 Channels::GetRequestedIOS(u64 title)

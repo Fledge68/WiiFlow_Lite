@@ -30,43 +30,34 @@
 #endif
 
 voidpf ZCALLBACK fopen_file_func OF((
-                                        voidpf opaque,
                                         const char* filename,
                                         int mode));
 
 uLong ZCALLBACK fread_file_func OF((
-                                       voidpf opaque,
                                        voidpf stream,
                                        void* buf,
                                        uLong size));
 
 uLong ZCALLBACK fwrite_file_func OF((
-                                        voidpf opaque,
                                         voidpf stream,
                                         const void* buf,
                                         uLong size));
 
-long ZCALLBACK ftell_file_func OF((
-                                      voidpf opaque,
-                                      voidpf stream));
+long ZCALLBACK ftell_file_func OF((voidpf stream));
 
 long ZCALLBACK fseek_file_func OF((
-                                      voidpf opaque,
                                       voidpf stream,
                                       uLong offset,
                                       int origin));
 
 int ZCALLBACK fclose_file_func OF((
-                                      voidpf opaque,
                                       voidpf stream));
 
 int ZCALLBACK ferror_file_func OF((
-                                      voidpf opaque,
                                       voidpf stream));
 
 
-voidpf ZCALLBACK fopen_file_func (opaque, filename, mode)
-voidpf opaque;
+voidpf ZCALLBACK fopen_file_func (filename, mode)
 const char* filename;
 int mode;
 {
@@ -87,8 +78,7 @@ int mode;
 }
 
 
-uLong ZCALLBACK fread_file_func (opaque, stream, buf, size)
-voidpf opaque;
+uLong ZCALLBACK fread_file_func (stream, buf, size)
 voidpf stream;
 void* buf;
 uLong size;
@@ -99,8 +89,7 @@ uLong size;
 }
 
 
-uLong ZCALLBACK fwrite_file_func (opaque, stream, buf, size)
-voidpf opaque;
+uLong ZCALLBACK fwrite_file_func (stream, buf, size)
 voidpf stream;
 const void* buf;
 uLong size;
@@ -110,8 +99,7 @@ uLong size;
     return ret;
 }
 
-long ZCALLBACK ftell_file_func (opaque, stream)
-voidpf opaque;
+long ZCALLBACK ftell_file_func (stream)
 voidpf stream;
 {
     long ret;
@@ -119,8 +107,7 @@ voidpf stream;
     return ret;
 }
 
-long ZCALLBACK fseek_file_func (opaque, stream, offset, origin)
-voidpf opaque;
+long ZCALLBACK fseek_file_func (stream, offset, origin)
 voidpf stream;
 uLong offset;
 int origin;
@@ -145,8 +132,7 @@ int origin;
     return ret;
 }
 
-int ZCALLBACK fclose_file_func (opaque, stream)
-voidpf opaque;
+int ZCALLBACK fclose_file_func(stream)
 voidpf stream;
 {
     int ret;
@@ -154,8 +140,7 @@ voidpf stream;
     return ret;
 }
 
-int ZCALLBACK ferror_file_func (opaque, stream)
-voidpf opaque;
+int ZCALLBACK ferror_file_func(stream)
 voidpf stream;
 {
     int ret;
@@ -173,5 +158,4 @@ zlib_filefunc_def* pzlib_filefunc_def;
     pzlib_filefunc_def->zseek_file = fseek_file_func;
     pzlib_filefunc_def->zclose_file = fclose_file_func;
     pzlib_filefunc_def->zerror_file = ferror_file_func;
-    pzlib_filefunc_def->opaque = NULL;
 }
