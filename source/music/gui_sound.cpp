@@ -245,7 +245,7 @@ bool GuiSound::LoadSoundEffect(const u8 * snd, u32 len)
 		u8 * tmpsnd = (u8 *)MEM2_realloc(sound, done+4096);
 		if(!tmpsnd)
 		{
-			SAFE_FREE(sound);
+			MEM2_free(sound);
 			return false;
 		}
 
@@ -479,8 +479,8 @@ void GuiSound::UncompressSoundbin(const u8 * snd, u32 len, bool isallocated)
 
 	if(isallocated)
 	{
-		void *p = (void *) snd;
-		SAFE_FREE(p);
+		void *p = (void *)snd;
+		MEM2_free(p);
 	}
 
 	allocated = true;

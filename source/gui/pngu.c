@@ -9,7 +9,6 @@ More info : http://frontier-dev.net
 ********************************************************************************************/
 #include <stdio.h>
 #include <stdlib.h>
-#include <malloc.h>
 
 #include "pngu.h"
 #include "png.h"

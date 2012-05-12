@@ -24,7 +24,6 @@
  * for WiiXplorer 2010
  ***************************************************************************/
 #include <unistd.h>
-#include <malloc.h>
 #include "SoundHandler.hpp"
 #include "Mp3Decoder.hpp"
 #include "OggDecoder.hpp"
@@ -33,6 +32,7 @@
 #include "BNSDecoder.hpp"
 
 #include "gecko/gecko.h"
+#include "mem2.hpp"
 
 SoundHandler * SoundHandler::instance = NULL;
 
@@ -43,7 +43,7 @@ SoundHandler::SoundHandler()
 	for(u32 i = 0; i < MAX_DECODERS; ++i)
         DecoderList[i] = NULL;
 
-    ThreadStack = (u8 *) memalign(32, 32768);
+    ThreadStack = (u8 *)MEM1_memalign(32, 32768);
 	if(!ThreadStack)
         return;
 
@@ -59,7 +59,7 @@ SoundHandler::~SoundHandler()
 	ThreadSignal();
 	LWP_JoinThread(SoundThread, NULL);
 	SoundThread = LWP_THREAD_NULL;
-	SAFE_FREE(ThreadStack);
+	MEM1_free(ThreadStack);
 
 	ClearDecoderList();
 	gprintf("SHND: Stopped sound thread\n");

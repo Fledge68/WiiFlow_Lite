@@ -29,7 +29,6 @@
  
 #include <stdio.h>
 #include <ogcsys.h>
-#include <malloc.h>
 #include <string.h>
 #include <cstdlib>
 #include <stdarg.h>

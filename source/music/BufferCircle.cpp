@@ -23,9 +23,8 @@
  *
  * for WiiXplorer 2010
  ***************************************************************************/
-#include <malloc.h>
+#include "mem2.hpp"
 #include "BufferCircle.hpp"
-#include "utils.h"
 
 BufferCircle::BufferCircle()
 {
@@ -50,9 +49,9 @@ void BufferCircle::SetBufferBlockSize(int size)
 
     for(int i = 0; i < Size(); i++)
     {
-        SAFE_FREE(SoundBuffer[i]);
+        MEM1_free(SoundBuffer[i]);
 
-        SoundBuffer[i] = (u8 *) memalign(32, ALIGN32(BufferBlockSize));
+        SoundBuffer[i] = (u8 *)MEM1_memalign(32, BufferBlockSize);
         BufferSize[i] = 0;
         BufferReady[i] = false;
     }
@@ -72,7 +71,7 @@ void BufferCircle::Resize(int size)
     for(int i = oldSize; i < Size(); i++)
     {
         if(BufferBlockSize > 0)
-            SoundBuffer[i] = (u8 *) memalign(32, ALIGN32(BufferBlockSize));
+            SoundBuffer[i] = (u8 *)MEM1_memalign(32, BufferBlockSize);
         else
             SoundBuffer[i] = NULL;
         BufferSize[i] = 0;
@@ -85,7 +84,7 @@ void BufferCircle::RemoveBuffer(int pos)
     if(!Valid(pos))
         return;
 
-    SAFE_FREE(SoundBuffer[pos]);
+    MEM1_free(SoundBuffer[pos]);
 
     SoundBuffer.erase(SoundBuffer.begin()+pos);
     BufferSize.erase(BufferSize.begin()+pos);
@@ -106,7 +105,7 @@ void BufferCircle::FreeBuffer()
 {
     for(int i = 0; i < Size(); i++)
     {
-		SAFE_FREE(SoundBuffer[i]);
+		MEM1_free(SoundBuffer[i]);
         BufferSize[i] = 0;
         BufferReady[i] = false;
     }

@@ -24,7 +24,6 @@
  * for WiiXplorer 2010
  ***************************************************************************/
 #include <unistd.h>
-#include <malloc.h>
 #include "OggDecoder.hpp"
 
 extern "C"  int ogg_read(void * punt, int bytes, int blocks, int *f)
