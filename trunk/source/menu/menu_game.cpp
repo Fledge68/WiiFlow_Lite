@@ -1039,7 +1039,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 				struct gc_discHdr *gcHeader = (struct gc_discHdr *)MEM2_alloc(sizeof(struct gc_discHdr));
 				Disc_ReadGCHeader(gcHeader);
 				memcpy(hdr->hdr.id, gcHeader->id, 6);
-				SAFE_FREE(gcHeader);
+				MEM2_free(gcHeader);
 				/* Launching GC Game */
 				_launchGC(hdr, false);
 			}
@@ -1050,7 +1050,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		Disc_ReadHeader(header);
 		for (int i = 0;i < 6; i++)
 			id[i] = header->id[i];
-		SAFE_FREE(header);
+		MEM2_free(header);
 	}
 	bool vipatch = m_gcfg2.testOptBool(id, "vipatch", m_cfg.getBool("GENERAL", "vipatch", false));
 	bool cheat = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool("GAMES", "cheat", false));

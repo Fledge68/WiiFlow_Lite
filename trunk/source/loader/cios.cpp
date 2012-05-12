@@ -24,7 +24,6 @@
  * distribution.
  ***************************************************************************/
 
-
 #include <gctypes.h>
 #include <malloc.h>
 #include <cstdio>

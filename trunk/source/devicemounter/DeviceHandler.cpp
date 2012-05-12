@@ -23,7 +23,7 @@
  *
  * for WiiXplorer 2010
  ***************************************************************************/
-#include <malloc.h>
+
 #include <unistd.h>
 #include <string.h>
 #include <ogc/mutex.h>

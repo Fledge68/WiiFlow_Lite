@@ -32,6 +32,7 @@
 #include "WiiMovie.hpp"
 #include "musicplayer.h"
 #include "gecko.h"
+#include "mem2.hpp"
 
 #define SND_BUFFERS     8
 #define FRAME_BUFFERS	8
@@ -75,7 +76,7 @@ WiiMovie::WiiMovie(const char * filepath)
 	}
 
 	PlayThreadStack = NULL;
-	ThreadStack = (u8 *) memalign(32, 32768);
+	ThreadStack = (u8 *)MEM2_alloc(32768);
 	if (!ThreadStack)
 		return;
 
@@ -111,7 +112,7 @@ WiiMovie::~WiiMovie()
 	}
 	if (ThreadStack != NULL)
 	{
-		SAFE_FREE(ThreadStack);
+		MEM2_free(ThreadStack);
 		ThreadStack = NULL;
 	}
 
@@ -129,7 +130,7 @@ bool WiiMovie::Play(bool loop)
 
 	gprintf("Start playing video\n");
 
-	PlayThreadStack = (u8 *) memalign(32, 32768);
+	PlayThreadStack = (u8 *)MEM2_alloc(32768);
 	if (PlayThreadStack == NULL) return false;
 
     Playing = true;
@@ -156,7 +157,7 @@ void WiiMovie::Stop()
 	PlayThread = LWP_THREAD_NULL;
 	gprintf("Playing thread stopped\n");
 
-	SAFE_FREE(PlayThreadStack);
+	MEM2_free(PlayThreadStack);
 }
 
 void WiiMovie::SetVolume(int vol)

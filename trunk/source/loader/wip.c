@@ -1,7 +1,9 @@
+
 #include <gccore.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "mem2.hpp"
 #include "utils.h" //SAFE_CLOSE
 #include "gecko.h"
 
@@ -106,12 +108,13 @@ int load_wip_patches(u8 *dir, u8 *gameid)
         u32 srcaddress = (u32) strtoul(line+9, NULL, 16);
         u32 dstaddress = (u32) strtoul(line+18, NULL, 16);
 
-        if(!CodeList) CodeList = malloc(sizeof(WIP_Code));
+        if(!CodeList)
+			CodeList = MEM2_alloc(sizeof(WIP_Code));
 
-        WIP_Code * tmp = realloc(CodeList, (CodesCount+1)*sizeof(WIP_Code));
+        WIP_Code *tmp = MEM2_realloc(CodeList, (CodesCount+1)*sizeof(WIP_Code));
         if(!tmp)
         {
-            SAFE_FREE(CodeList);
+            MEM2_free(CodeList);
             SAFE_CLOSE(fp);
             return -1;
         }

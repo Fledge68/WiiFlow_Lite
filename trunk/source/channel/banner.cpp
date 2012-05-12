@@ -26,7 +26,6 @@
  * for wiiflow 2010
  ***************************************************************************/
 
-#include <malloc.h>
 #include <ogcsys.h>
 #include <string.h>
 #include <stdio.h>

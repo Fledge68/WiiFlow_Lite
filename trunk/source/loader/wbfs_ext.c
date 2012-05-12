@@ -3,7 +3,6 @@
 
 #include <stdio.h>
 #include <unistd.h>
-#include <malloc.h>
 #include <ogcsys.h>
 #include <dirent.h>
 #include <sys/types.h>

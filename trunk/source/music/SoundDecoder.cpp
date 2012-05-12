@@ -26,7 +26,6 @@
  * for WiiXplorer 2010
  ***************************************************************************/
 #include <gccore.h>
-#include <malloc.h>
 #include <string.h>
 #include <unistd.h>
 #include "SoundDecoder.hpp"

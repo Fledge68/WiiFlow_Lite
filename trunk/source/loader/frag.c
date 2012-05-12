@@ -277,7 +277,8 @@ out:
 
 int set_frag_list(u8 *id)
 {
-	if (frag_list == NULL) return -2;
+	if (frag_list == NULL)
+		return -2;
 
 	// (+1 for header which is same size as fragment)
 	int size = sizeof(Fragment) * (frag_list->num + 1);
@@ -289,10 +290,11 @@ int set_frag_list(u8 *id)
 
 	int ret = WDVD_SetFragList(wbfsDev, frag_list, size);
 
-	free(frag_list);
+	MEM2_free(frag_list);
 	frag_list = NULL;
 
-	if (ret) return ret;
+	if(ret)
+		return ret;
 	
 	// verify id matches
 	char discid[32] ATTRIBUTE_ALIGN(32);
