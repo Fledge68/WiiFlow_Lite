@@ -181,14 +181,21 @@ s32 Nand::Disable_Emu()
 
 void Nand::Set_NandPath(string path)
 {
-	if(isalnum(*(path.begin()))) path.insert(path.begin(), '/');
-	else *(path.begin()) = '/';
+	if(isalnum(*(path.begin())))
+		path.insert(path.begin(), '/');
+	else
+		*(path.begin()) = '/';
 
-	if(isalnum(*(path.end()))) path.push_back('/');
-	else *(path.end()) = '/';
+	if(isalnum(*(path.end())))
+		path.push_back('/');
+	else
+		path.replace(path.length() - 1, 1, "/");
 
 	if(path.size() <= 32)
 		memcpy(NandPath, path.c_str(), path.size());
+	else
+		memset(NandPath, 0, sizeof(NandPath));
+gprintf("NandPath = %s\n", NandPath);
 }
 
 void Nand::__Dec_Enc_TB(void) 
@@ -757,6 +764,16 @@ void Nand::CreatePath(const char *path, ...)
 		if(folder[strlen(folder)-1] == '/')
 			folder[strlen(folder)-1] = 0;		
 			
+		char *check = folder;
+		while (true)
+		{
+			check = strstr(folder, "//");
+			if (check != NULL)
+				strcpy(check, check + 1);
+			else
+				break;
+		}
+		
 		DIR *d;
 		d = opendir(folder);
 

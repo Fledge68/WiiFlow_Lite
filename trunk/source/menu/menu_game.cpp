@@ -791,14 +791,11 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 	m_exit = true;
 }
 
-int CMenu::_loadIOS(u8 ios, string id)
+int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id)
 {
-	int gameIOS = 0;
-	int userIOS = 0;
+	gprintf("Game ID# %s requested IOS %d.  User selected %d\n", id.c_str(), gameIOS, userIOS);
 
-	gprintf("Game ID# %s requested IOS %d\n", id.c_str(), ios);
-
-	if (m_gcfg2.getInt(id, "ios", &userIOS) && _installed_cios.size() > 0)
+	if (userIOS > 0 && _installed_cios.size() > 0)
 	{
 		for(CIOSItr itr = _installed_cios.begin(); itr != _installed_cios.end(); itr++)
 		{
@@ -807,58 +804,56 @@ int CMenu::_loadIOS(u8 ios, string id)
 				gameIOS = itr->first;
 				break;
 			}
-			else gameIOS = 0;
 		}
 	}
 
-	// Reload IOS, if requested
-	if (gameIOS != mainIOS)
+	// remap IOS to CIOS
+	if(gameIOS < 0x64)
 	{
-		if(gameIOS < 0x64)
+		if ( _installed_cios.size() <= 0)
 		{
-			if ( _installed_cios.size() <= 0)
+			error(sfmt("No cios found!"));
+			Sys_LoadMenu();
+		}
+		u8 IOS[3];
+		IOS[0] = gameIOS;
+		IOS[1] = 56;
+		IOS[2] = 57;
+		bool found = false;
+		for(u8 num = 0; num < 3; num++)
+		{
+			if(found)
+				break;
+			if(IOS[num] == 0)
+				continue;
+			for(CIOSItr itr = _installed_cios.begin(); itr != _installed_cios.end(); itr++)
 			{
-				error(sfmt("No cios found!"));
-				Sys_LoadMenu();
-			}
-			u8 IOS[3];
-			IOS[0] = gameIOS == 0 ? ios : gameIOS;
-			IOS[1] = 56;
-			IOS[2] = 57;
-			bool found = false;
-			for(u8 num = 0; num < 3; num++)
-			{
-				if(found)
-					break;
-				if(IOS[num] == 0)
-					continue;
-				for(CIOSItr itr = _installed_cios.begin(); itr != _installed_cios.end(); itr++)
+				if(itr->second == IOS[num] || itr->first == IOS[num])
 				{
-					if(itr->second == IOS[num] || itr->first == IOS[num])
-					{
-						gameIOS = itr->first;
-						found = true;
-						break;
-					}
+					gameIOS = itr->first;
+					found = true;
+					break;
 				}
 			}
-			if(!found)
-			{
-				error(sfmt("Couldn't find a cIOS using base %i, or 56/57", IOS[0]));
-				return LOAD_IOS_FAILED;
-			}
 		}
-		if (gameIOS != mainIOS)
+		if(!found)
 		{
-			gprintf("Reloading IOS into %d\n", gameIOS);
-			cleanup(true);
-			if(!loadIOS(gameIOS, true))
-			{
-				error(sfmt("Couldn't load IOS %i", gameIOS));
-				return LOAD_IOS_FAILED;
-			}
-			return LOAD_IOS_SUCCEEDED;
+			error(sfmt("Couldn't find a cIOS using base %i, or 56/57", IOS[0]));
+			return LOAD_IOS_FAILED;
 		}
+	}
+
+	if (gameIOS != mainIOS)
+	{
+		gprintf("Reloading IOS into %d\n", gameIOS);
+		cleanup(true);
+		if(!loadIOS(gameIOS, true))
+		{
+			_reload_wifi_gecko();
+			error(sfmt("Couldn't load IOS %i", gameIOS));
+			return LOAD_IOS_FAILED;
+		}
+		return LOAD_IOS_SUCCEEDED;
 	}
 	return LOAD_IOS_NOT_NEEDED;
 }
@@ -926,6 +921,9 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	if (i==2)
 		emulate_mode = true;
 
+	int userIOS = 0;
+	m_gcfg2.getInt(id, "ios", &userIOS);
+
 	m_gcfg1.save(true);
 	m_gcfg2.save(true);
 	m_cat.save(true);
@@ -943,7 +941,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 			_loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", hdr->hdr.id));
 		ocarina_load_code(cheatFile.get(), cheatSize);
 
-		int result = _loadIOS(channel.GetRequestedIOS(hdr->hdr.chantitle), id);
+		int result = _loadIOS(channel.GetRequestedIOS(hdr->hdr.chantitle), userIOS, id);
 		if (result == LOAD_IOS_FAILED)
 			return;
 		if (result == LOAD_IOS_SUCCEEDED)
@@ -1001,7 +999,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 {
 	string id = string((const char *) hdr->hdr.id);
 	Nand::Instance()->Disable_Emu();
-	bool using_wifi_gecko = m_cfg.getBool("DEBUG", "wifi_gecko");
 
 	if (dvd)
 	{
@@ -1187,6 +1184,9 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	if (has_enabled_providers() && _initNetwork() == 0)
 		add_game_to_card(id.c_str());
 
+	int userIOS = 0;
+	m_gcfg2.getInt(id, "ios", &userIOS);
+
 	m_gcfg1.save(true);
 	m_gcfg2.save(true);
 	m_cat.save(true);
@@ -1203,31 +1203,22 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	app_gameconfig_load((u8 *) &hdr->hdr.id, gameconfig.get(), gameconfigSize);
 	ocarina_load_code(cheatFile.get(), cheatSize);
 
-	if (!using_wifi_gecko)
+	if (!m_use_wifi_gecko)
 		net_wc24cleanup();
 
 	bool iosLoaded = false;
 
 	if (!dvd)
 	{
-		int result = _loadIOS(GetRequestedGameIOS(hdr), id);
+		int result = _loadIOS(GetRequestedGameIOS(hdr), userIOS, id);
 		if (result == LOAD_IOS_FAILED)
 			return;
 		if (result == LOAD_IOS_SUCCEEDED)
 			iosLoaded = true;
 	}
-
-	if (iosLoaded && using_wifi_gecko)
-	{
-		_initAsyncNetwork();
-		while(net_get_status() == -EBUSY);
-	}
-
+	
 	if(emuSave)
 	{
-		if(iosLoaded) ISFS_Deinitialize();
-		ISFS_Initialize();
-
 		Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
 		DeviceHandler::Instance()->UnMount(emuPartition);
 

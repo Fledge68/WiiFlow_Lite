@@ -194,11 +194,9 @@ void CMenu::init(void)
 
 	m_appDir = sfmt("%s:/%s", drive, APPDATA_DIR2);
 	m_cfg.load(sfmt("%s/" CFG_FILENAME, m_appDir.c_str()).c_str());
-	if (m_cfg.getBool("GENERAL", "async_network") || has_enabled_providers() || m_cfg.getBool("DEBUG", "wifi_gecko"))
-	{
-		_initAsyncNetwork();
-		while(net_get_status() == -EBUSY);
-	}
+	m_use_wifi_gecko = m_cfg.getBool("DEBUG", "wifi_gecko");
+	if (m_cfg.getBool("GENERAL", "async_network") || has_enabled_providers() || m_use_wifi_gecko)
+		_reload_wifi_gecko();
 
 	gprintf("Wiiflow boot.dol Location: %s\n", m_appDir.c_str());
 
@@ -496,7 +494,18 @@ void CMenu::cleanup(bool ios_reload)
 	{
 		_cleanupDefaultFont();
 	}
-	_deinitNetwork();
+	if (!ios_reload || (!m_use_wifi_gecko && ios_reload)) 
+		_deinitNetwork();
+}
+
+void CMenu::_reload_wifi_gecko(void)
+{
+	if (m_use_wifi_gecko)
+	{
+		_initAsyncNetwork();
+		while(net_get_status() == -EBUSY);
+		usleep(1000);
+	}
 }
 
 void CMenu::_setAA(int aa)
