@@ -29,6 +29,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <network.h>
+#include <errno.h>
 #include "wifi_gecko.h"
 
 // set to use TCP socket instead of UDP
@@ -108,7 +109,9 @@ int WifiGecko_Send(const char * data, int datasize)
 
     while (done < datasize)
     {
-        if(blocksize > datasize-done)
+		while(net_get_status() == -EBUSY);
+
+		if(blocksize > datasize-done)
             blocksize = datasize-done;
 
         ret = net_send(connection, data + done, blocksize, 0);

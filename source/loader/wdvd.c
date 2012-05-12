@@ -335,12 +335,6 @@ s32 WDVD_SetFragList(int device, void *fraglist, int size)
 	inbuf[2] = (u32)fraglist;
 	inbuf[3] = size;
 
-	//int i;
-	//for (i = 0; i < 8; i++)
-	//	gprintf("inbuf[%d] = %X\n", i, inbuf[i]);
-	//ghexdump(fraglist, size);
-	//gprintf("\n");
-
 	DCFlushRange(fraglist, size);
 	s32 ret = IOS_Ioctl(di_fd, IOCTL_DI_SETFRAG, inbuf, sizeof(inbuf), outbuf, sizeof(outbuf));
 	if (ret < 0) return ret;
