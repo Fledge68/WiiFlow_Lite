@@ -188,13 +188,15 @@ void Nand::Set_NandPath(string path)
 	if(isalnum(*(path.end())))
 		path.push_back('/');
 	else
-		path.replace(path.length() - 1, 1, "/");
+		//path.replace(path.length() - 1, 1, "/"); WTF?
+		*(path.end()) = '/';
 
 	if(path.size() <= 32)
 		memcpy(NandPath, path.c_str(), path.size());
 	else
 		memset(NandPath, 0, sizeof(NandPath));
-gprintf("NandPath = %s\n", NandPath);
+		
+	gprintf("NandPath = %s\n", NandPath);
 }
 
 void Nand::__Dec_Enc_TB(void) 
@@ -811,8 +813,11 @@ void Nand::CreateTitleTMD(const char *path, dir_discHdr *hdr)
 	CreatePath("%s/title/%08x/%08x/content", path, highTID, lowTID);
 	
 	char nandpath[MAX_FAT_PATH];
-	snprintf(nandpath, sizeof(nandpath), "%s/title/%08x/%08x/content/title.tmd", path, highTID, lowTID);
-
+	if(path[strlen(path)-1] == '/')
+		snprintf(nandpath, sizeof(nandpath), "%stitle/%08x/%08x/content/title.tmd", path, highTID, lowTID);
+	else
+		snprintf(nandpath, sizeof(nandpath), "%s/title/%08x/%08x/content/title.tmd", path, highTID, lowTID);
+	
 	struct stat filestat;
 	if (stat(nandpath, &filestat) == 0)
 	{
