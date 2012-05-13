@@ -12,7 +12,6 @@
 #include <wchar.h>
 #include <network.h>
 #include <errno.h>
-#include <wiilight.h>
 
 #include "gecko.h"
 #include "defines.h"
@@ -24,6 +23,7 @@
 #include "cios.hpp"
 #include "loader/playlog.h"
 #include "gc/fileOps.h"
+#include "Gekko.h"
 
 // Sounds
 extern const u8 click_wav[];
@@ -495,8 +495,10 @@ void CMenu::cleanup(bool ios_reload)
 	if (!ios_reload || (!m_use_wifi_gecko && ios_reload)) 
 		_deinitNetwork();
 
-	WIILIGHT_SetLevel(0);
-	WIILIGHT_TurnOff();
+	wiiLightSetLevel(0);
+	wiiLightOff();
+
+	gprintf(" \nMemory cleaned up\n");
 }
 
 void CMenu::_reload_wifi_gecko(void)
