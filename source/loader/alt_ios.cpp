@@ -68,7 +68,7 @@ u32 IOSPATCH_AHBPROT()
 
 bool loadIOS(int ios, bool launch_game)
 {
-	gprintf("Reloading into IOS %i from %i (AHBPROT: %u)...", ios, IOS_GetVersion(), HAVE_AHBPROT);
+	gprintf("Reloading into IOS %i from %i (AHBPROT: %u)...\n", ios, IOS_GetVersion(), HAVE_AHBPROT);
 
 	Close_Inputs();
 	DeviceHandler::Instance()->UnMountAll();

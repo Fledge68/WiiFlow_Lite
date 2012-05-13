@@ -29,6 +29,14 @@
 
 using namespace std;
 
+enum
+{
+	GAMETDB_RATING_TYPE_CERO,
+	GAMETDB_RATING_TYPE_ESRB,
+	GAMETDB_RATING_TYPE_PEGI,
+	GAMETDB_RATING_TYPE_GRB
+};
+
 typedef struct _Accessory
 {
     string Name;
