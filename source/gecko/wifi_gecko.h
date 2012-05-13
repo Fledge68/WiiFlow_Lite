@@ -36,7 +36,6 @@ void WifiGecko_Init(const char *ip, u16 port);
 int WifiGecko_Connect();
 void WifiGecko_Close();
 int WifiGecko_Send(const char * data, int datasize);
-void wifi_printf(const char * format, ...);
 
 #ifdef __cplusplus
 }

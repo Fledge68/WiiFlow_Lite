@@ -79,16 +79,18 @@ IMGCTX PNGU_SelectImageFromDevice (const char *filename)
 		return NULL;
 
 	IMGCTX ctx = MEM2_alloc(sizeof (struct _IMGCTX));
-	if (!ctx) return NULL;
+	if (ctx == NULL)
+		return NULL;
 
 	ctx->buffer = NULL;
 	ctx->source = PNGU_SOURCE_DEVICE;
 	ctx->cursor = 0;
 
 	ctx->filename = MEM2_alloc(strlen (filename) + 1);
-	if (!ctx->filename)
+	if (ctx->filename == NULL)
 	{
-		MEM2_free(ctx);
+		if(ctx != NULL)
+			MEM2_free(ctx);
 		return NULL;
 	}
 	strcpy(ctx->filename, filename);

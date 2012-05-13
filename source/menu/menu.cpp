@@ -1872,7 +1872,7 @@ bool CMenu::_loadChannelList(void)
 			}
 			else
 				gprintf("Openning %s failed returning %i\n", filepath, file);
-			free(sysconf);
+			MEM2_free(sysconf);
 		}
 
 		sprintf(filepath, "/shared2/menu/FaceLib/RFL_DB.dat");
@@ -1890,7 +1890,7 @@ bool CMenu::_loadChannelList(void)
 			}
 			else
 				gprintf("Openning %s failed returning %i\n", filepath, file);
-			free(meez);
+			MEM2_free(meez);
 		}
 		first = false;
 	}
@@ -2186,6 +2186,9 @@ void CMenu::_loadDefaultFont(bool korean)
 
 	// Read content.map from ISFS
 	u8 *content = ISFS_GetFile((u8 *) "/shared1/content.map", &size, 0);
+	if(content == NULL)
+		return;
+
 	int items = size / sizeof(map_entry_t);
 
 	//gprintf("Open content.map, size %d, items %d\n", size, items);
@@ -2203,7 +2206,6 @@ retry:
             memcpy(u8_font_filename+9, cm[i].filename, 8);
 
 			u8 *u8_font_archive = ISFS_GetFile((u8 *) u8_font_filename, &size, 0);
-
 			//gprintf("Opened fontfile: %s: %d bytes\n", u8_font_filename, size);
 
 			if (u8_font_archive != NULL)
@@ -2216,8 +2218,8 @@ retry:
 				memcpy(m_base_font.get(), font_file, size);
 				if(!!m_base_font)
 					m_base_font_size = size;
+				MEM2_free(u8_font_archive);
 			}
-			free(u8_font_archive);
 			break;
 		}
 	}
@@ -2228,7 +2230,7 @@ retry:
 		goto retry;
 	}
 
-	free(content);
+	MEM2_free(content);
 }
 
 void CMenu::_cleanupDefaultFont()
@@ -2301,13 +2303,12 @@ bool CMenu::MIOSisDML()
 			if(*(u32*)(appfile+i) == 0x44494F53)
 			{
 				gprintf("DML is installed as MIOS\n");
-				free(appfile);
+				MEM2_free(appfile);
 				return true;
 			}
 		}
+		MEM2_free(appfile);
 	}
-
-	free(appfile);
 	gprintf("DML is not installed as MIOS\n");
 	return false;
 }

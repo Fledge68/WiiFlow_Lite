@@ -131,7 +131,8 @@ bool WiiMovie::Play(bool loop)
 	gprintf("Start playing video\n");
 
 	PlayThreadStack = (u8 *)MEM2_alloc(32768);
-	if (PlayThreadStack == NULL) return false;
+	if (PlayThreadStack == NULL)
+		return false;
 
     Playing = true;
     PlayTime.reset();
@@ -151,13 +152,13 @@ void WiiMovie::Stop()
 	gprintf("Stopping WiiMovie video\n");
     ExitRequested = true;
 	if (PlayThread != LWP_THREAD_NULL)
-	{
 		LWP_JoinThread(PlayThread, NULL);
-	}
+
 	PlayThread = LWP_THREAD_NULL;
 	gprintf("Playing thread stopped\n");
 
-	MEM2_free(PlayThreadStack);
+	if(PlayThreadStack != NULL)
+		MEM2_free(PlayThreadStack);
 }
 
 void WiiMovie::SetVolume(int vol)

@@ -45,7 +45,7 @@ bool cIOSInfo::D2X(u8 ios, u8 *base)
 	if(!info)
 		return false;
 	*base = (u8)info->baseios;
-	free(info);
+	MEM2_free(info);
 	return true;
 }
 
@@ -59,25 +59,27 @@ iosinfo_t *cIOSInfo::GetInfo(u8 ios)
 	u32 TMD_Length;
 	if (ES_GetStoredTMDSize(TITLE_ID(1, ios), &TMD_Length) < 0) return NULL;
 
-	signed_blob *TMD = (signed_blob*) MEM2_alloc(ALIGN32(TMD_Length));
-	if (!TMD) return NULL;
+	signed_blob *TMD = (signed_blob*)MEM2_alloc(ALIGN32(TMD_Length));
+	if (TMD == NULL)
+		return NULL;
 
 	if (ES_GetStoredTMD(TITLE_ID(1, ios), TMD, TMD_Length) < 0)
 	{
-		free(TMD);
+		MEM2_free(TMD);
 		return NULL;
 	}
 
 	char filepath[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
 	sprintf(filepath, "/title/00000001/%08x/content/%08x.app", ios, *(u8 *)((u32)TMD+0x1E7));
 
-	free(TMD);
+	MEM2_free(TMD);
 
 	u32 size = 0;
-	u8 *buffer = ISFS_GetFile((u8 *) filepath, &size, sizeof(iosinfo_t));
-	if(buffer == NULL || size == 0) return NULL;
+	u8 *buffer = ISFS_GetFile((u8 *)filepath, &size, sizeof(iosinfo_t));
+	if(buffer == NULL || size == 0)
+		return NULL;
 
-	iosinfo_t *iosinfo = (iosinfo_t *) buffer;
+	iosinfo_t *iosinfo = (iosinfo_t *)buffer;
 
 	bool baseMatch = false;
 	for(u8 i = 0; i < ARRAY_SIZE(allowedBases); i++)
@@ -93,10 +95,9 @@ iosinfo_t *cIOSInfo::GetInfo(u8 ios)
 		|| !baseMatch									/* Base */
 		|| strncasecmp(iosinfo->name, "d2x", 3) != 0)	/* Name */
 	{
-		free(buffer);
+		MEM2_free(buffer);
 		return NULL;
 	}
-	free(buffer);
-	
+
 	return iosinfo;
 }
