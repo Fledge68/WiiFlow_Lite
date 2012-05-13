@@ -12,6 +12,7 @@
 #include <wchar.h>
 #include <network.h>
 #include <errno.h>
+#include <wiilight.h>
 
 #include "gecko.h"
 #include "defines.h"
@@ -467,11 +468,9 @@ void CMenu::cleanup(bool ios_reload)
 	m_cf.stopCoverLoader();
 
 	_stopSounds();
-	
+
 	if (!ios_reload)
-	{
-		SMART_FREE(m_cameraSound);
-	}
+		m_cameraSound.release();
 
 	m_plugin.Cleanup();
 
@@ -491,11 +490,13 @@ void CMenu::cleanup(bool ios_reload)
 	DeviceHandler::DestroyInstance();
 
 	if (!ios_reload)
-	{
 		_cleanupDefaultFont();
-	}
+
 	if (!ios_reload || (!m_use_wifi_gecko && ios_reload)) 
 		_deinitNetwork();
+
+	WIILIGHT_SetLevel(0);
+	WIILIGHT_TurnOff();
 }
 
 void CMenu::_reload_wifi_gecko(void)
@@ -1700,7 +1701,8 @@ void CMenu::_updateBg(void)
 		return;
 	}
 	if (m_curBg.data.get() == m_prevBg.data.get())
-		SMART_FREE(m_curBg.data);
+		m_curBg.data.release();
+
 	m_vid.prepare();
 	GX_SetViewport(0.f, 0.f, 640.f, 480.f, 0.f, 1.f);
 	guOrtho(projMtx, 0.f, 480.f, 0.f, 640.f, 0.f, 1000.0f);
@@ -1868,8 +1870,9 @@ bool CMenu::_loadChannelList(void)
 				gprintf("Written SYSCONF to: %s\n", filepath);
 				fclose(file);
 			}
-			else gprintf("Openning %s failed returning %i\n", filepath, file);
-			SAFE_FREE(sysconf);
+			else
+				gprintf("Openning %s failed returning %i\n", filepath, file);
+			free(sysconf);
 		}
 
 		sprintf(filepath, "/shared2/menu/FaceLib/RFL_DB.dat");
@@ -1885,8 +1888,9 @@ bool CMenu::_loadChannelList(void)
 				gprintf("Written Mii's to: %s\n", filepath);
 				fclose(file);
 			}
-			else gprintf("Openning %s failed returning %i\n", filepath, file);
-			SAFE_FREE(meez);
+			else
+				gprintf("Openning %s failed returning %i\n", filepath, file);
+			free(meez);
 		}
 		first = false;
 	}
@@ -1905,7 +1909,8 @@ bool CMenu::_loadChannelList(void)
 			Nand::Instance()->Disable_Emu();
 			failed = true;
 		}
-		else failed = false;
+		else
+			failed = false;
 	}
 
 	if(!DeviceHandler::Instance()->IsInserted(currentPartition))
@@ -1920,7 +1925,7 @@ bool CMenu::_loadChannelList(void)
 		m_cfg.setString("NAND", "lastlanguage", m_loc.getString(m_curLanguage, "gametdb_code", "EN"));
 		m_cfg.save();
 	}
-	
+
 	lastPartition = currentPartition;
 	last_emu_state = disable_emu;
 
@@ -2104,11 +2109,10 @@ void CMenu::_stopSounds(void)
 
 bool CMenu::_loadFile(SmartBuf &buffer, u32 &size, const char *path, const char *file)
 {
-	SMART_FREE(buffer);
 	size = 0;
 	FILE *fp = fopen(file == NULL ? path : fmt("%s/%s", path, file), "rb");
-		
-	if (fp == 0) return false;
+	if (fp == NULL)
+		return false;
 
 	fseek(fp, 0, SEEK_END);
 	u32 fileSize = ftell(fp);
@@ -2116,34 +2120,42 @@ bool CMenu::_loadFile(SmartBuf &buffer, u32 &size, const char *path, const char 
 	SmartBuf fileBuf = smartAnyAlloc(fileSize);
 	if (!fileBuf)
 	{
-		SAFE_CLOSE(fp);
+		fclose(fp);
 		return false;
 	}
 	if (fread(fileBuf.get(), 1, fileSize, fp) != fileSize)
 	{
-		SAFE_CLOSE(fp);
+		fclose(fp);
 		return false;
 	}
-	SAFE_CLOSE(fp);
+	fclose(fp);
+
+	if(buffer.get())
+		buffer.release();
 	buffer = fileBuf;
+
 	size = fileSize;
 	return true;
 }
 
 void CMenu::_load_installed_cioses()
 {
-	if (_installed_cios.size() > 0) return;
+	if (_installed_cios.size() > 0)
+		return;
+
 	gprintf("Loading cIOS map\n");
-	
+
 	_installed_cios[0] = 1;
 	u8 base = 0;
 
-	for (u8 slot = 100; slot < 254; slot++)
+	for (u8 slot = 200; slot < 254; slot++)
+	{
 		if(cIOSInfo::D2X(slot, &base))
 		{
 			gprintf("Found base %u in slot %u\n", base, slot);
 			_installed_cios[slot] = base;
 		}
+	}
 }
 
 void CMenu::_hideWaitMessage()
@@ -2171,11 +2183,11 @@ void CMenu::_loadDefaultFont(bool korean)
 {
 	u32 size;
 	bool retry = false;
-	
+
 	// Read content.map from ISFS
 	u8 *content = ISFS_GetFile((u8 *) "/shared1/content.map", &size, 0);
 	int items = size / sizeof(map_entry_t);
-		
+
 	//gprintf("Open content.map, size %d, items %d\n", size, items);
 
 retry:	
@@ -2189,39 +2201,39 @@ retry:
 			char u8_font_filename[22] = {0};
 			strcpy(u8_font_filename, "/shared1/XXXXXXXX.app"); // Faster than sprintf
             memcpy(u8_font_filename+9, cm[i].filename, 8);
-			
+
 			u8 *u8_font_archive = ISFS_GetFile((u8 *) u8_font_filename, &size, 0);
-			
+
 			//gprintf("Opened fontfile: %s: %d bytes\n", u8_font_filename, size);
-			
+
 			if (u8_font_archive != NULL)
 			{
 				const u8 *font_file = u8_get_file_by_index(u8_font_archive, 1, &size); // There is only one file in that app
-				
+
 				//gprintf("Extracted font: %d\n", size);
-				
+
 				m_base_font = smartMem2Alloc(size);
 				memcpy(m_base_font.get(), font_file, size);
 				if(!!m_base_font)
 					m_base_font_size = size;
 			}
-			SAFE_FREE(u8_font_archive);
+			free(u8_font_archive);
 			break;
 		}
 	}
-	
+
 	if (!retry)
 	{
 		retry = true;
 		goto retry;
 	}
-	
-	SAFE_FREE(content);
+
+	free(content);
 }
 
 void CMenu::_cleanupDefaultFont()
 {
-	SMART_FREE(m_base_font);
+	m_base_font.release();
 	m_base_font_size = 0;
 }
 
@@ -2289,13 +2301,13 @@ bool CMenu::MIOSisDML()
 			if(*(u32*)(appfile+i) == 0x44494F53)
 			{
 				gprintf("DML is installed as MIOS\n");
-				SAFE_FREE(appfile);
+				free(appfile);
 				return true;
 			}
 		}
 	}
 
-	SAFE_FREE(appfile);
+	free(appfile);
 	gprintf("DML is not installed as MIOS\n");
 	return false;
 }
@@ -2303,21 +2315,23 @@ bool CMenu::MIOSisDML()
 void CMenu::RemoveCover( char * id )
 {
 	FILE *fp = fopen(fmt("%s/%s.png", m_boxPicDir.c_str(), id), "rb");		
-	if (fp != 0)
+	if (fp != NULL)
 	{
-		SAFE_CLOSE(fp);
+		fclose(fp);
 		remove(fmt("%s/%s.png", m_boxPicDir.c_str(), id));
 	}
+
 	fp = fopen(fmt("%s/%s.png", m_picDir.c_str(), id), "rb");		
-	if (fp != 0)
+	if (fp != NULL)
 	{
-		SAFE_CLOSE(fp);
+		fclose(fp);
 		remove(fmt("%s/%s.png", m_picDir.c_str(), id));
 	}
+
 	fp = fopen(fmt("%s/%s.wfc", m_cacheDir.c_str(), id), "rb");		
-	if (fp != 0)
+	if (fp != NULL)
 	{
-		SAFE_CLOSE(fp);
+		fclose(fp);
 		remove(fmt("%s/%s.wfc", m_cacheDir.c_str(), id));
 	}	
 }

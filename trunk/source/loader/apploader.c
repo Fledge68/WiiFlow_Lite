@@ -18,6 +18,9 @@ typedef void  (*app_init)(void (*report)(const char *fmt, ...));
 typedef void *(*app_final)();
 typedef void  (*app_entry)(void (**init)(void (*report)(const char *fmt, ...)), int (**main)(), void *(**final)());
 
+/* Apploader pointers */
+static u8 *appldr = (u8 *) 0x81200000;
+
 /* Constants */
 #define APPLDR_OFFSET	0x2440
 
@@ -33,26 +36,24 @@ s32 Apploader_Run(entry_point *entry, u8 vidMode, GXRModeObj *vmode, bool vipatc
 	void *dst = NULL;
 	int len = 0;
 	int offset = 0;
+	u32 appldr_len;
+	s32 ret;
 	app_init  appldr_init;
 	app_main  appldr_main;
 	app_final appldr_final;
 
 	/* Read apploader header */
-	s32 ret = WDVD_Read(buffer, 0x20, APPLDR_OFFSET);
-	if (ret < 0) return ret;
-
-	/* Calculate apploader length */
-	u32 appldr_len = buffer[5] + buffer[6];
-
-	SYS_SetArena1Hi(APPLOADER_END);
-
-	/* Read apploader code */
-	// Either you limit memory usage or you don't touch the heap after that, because this is writing at 0x1200000
-	ret = WDVD_Read(APPLOADER_START, appldr_len, APPLDR_OFFSET + 0x20);
+	ret = WDVD_Read(buffer, 0x20, APPLDR_OFFSET);
 	if (ret < 0)
 		return ret;
 
-	DCFlushRange(APPLOADER_START, appldr_len);
+	/* Calculate apploader length */
+	appldr_len = buffer[5] + buffer[6];
+
+	/* Read apploader code */
+	ret = WDVD_Read(appldr, appldr_len, APPLDR_OFFSET + 0x20);
+	if (ret < 0)
+		return ret;
 
 	/* Set apploader entry function */
 	app_entry appldr_entry = (app_entry)buffer[4];

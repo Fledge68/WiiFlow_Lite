@@ -45,7 +45,7 @@ bool cIOSInfo::D2X(u8 ios, u8 *base)
 	if(!info)
 		return false;
 	*base = (u8)info->baseios;
-	SAFE_FREE(info);
+	free(info);
 	return true;
 }
 
@@ -64,14 +64,14 @@ iosinfo_t *cIOSInfo::GetInfo(u8 ios)
 
 	if (ES_GetStoredTMD(TITLE_ID(1, ios), TMD, TMD_Length) < 0)
 	{
-		SAFE_FREE(TMD);
+		free(TMD);
 		return NULL;
 	}
 
 	char filepath[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
 	sprintf(filepath, "/title/00000001/%08x/content/%08x.app", ios, *(u8 *)((u32)TMD+0x1E7));
 
-	SAFE_FREE(TMD);
+	free(TMD);
 
 	u32 size = 0;
 	u8 *buffer = ISFS_GetFile((u8 *) filepath, &size, sizeof(iosinfo_t));
@@ -93,10 +93,10 @@ iosinfo_t *cIOSInfo::GetInfo(u8 ios)
 		|| !baseMatch									/* Base */
 		|| strncasecmp(iosinfo->name, "d2x", 3) != 0)	/* Name */
 	{
-		SAFE_FREE(buffer);
+		free(buffer);
 		return NULL;
 	}
-	SAFE_FREE(buffer);
+	free(buffer);
 	
 	return iosinfo;
 }

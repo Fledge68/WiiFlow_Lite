@@ -84,7 +84,6 @@
 #include <ctype.h>
 
 #include "MD5.h"
-#include "utils.h"
 #include "mem2.hpp"
 
 /* -------------------------------------------------------------------------- **
@@ -572,7 +571,7 @@ unsigned char * MD5fromFile(unsigned char *dst, const char *src)
     if(!!buffer)
 	{
 	    //no memory
-        SAFE_CLOSE(file);
+        fclose(file);
 		return NULL;
 	}
 
@@ -583,8 +582,8 @@ unsigned char * MD5fromFile(unsigned char *dst, const char *src)
 
 	} while(read > 0);
 
-    SAFE_CLOSE(file);
-    SAFE_FREE(buffer);
+    fclose(file);
+    MEM2_free(buffer);
 
     (void)auth_md5CloseCtx( ctx, dst );       /* Close the context.   */
 

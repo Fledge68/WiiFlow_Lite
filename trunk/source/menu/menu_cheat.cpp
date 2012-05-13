@@ -29,7 +29,8 @@ void CMenu::_showCheatDownload(void)
 u32 CMenu::_downloadCheatFileAsync(void *obj)
 {
 	CMenu *m = (CMenu *)obj;
-	if (!m->m_thrdWorking) return 0;
+	if (!m->m_thrdWorking)
+		return 0;
 
 	m->m_thrdStop = false;
 
@@ -42,7 +43,7 @@ u32 CMenu::_downloadCheatFileAsync(void *obj)
 		m->m_thrdWorking = false;
 		return -1;
 	}
-	
+
 	u32 bufferSize = 0x080000;	// Maximum download size 512kb
 	SmartBuf buffer = smartAnyAlloc(bufferSize);
 	if (!buffer)
@@ -63,12 +64,14 @@ u32 CMenu::_downloadCheatFileAsync(void *obj)
 		if (file != NULL)
 		{
 			fwrite(cheatfile.data, 1, cheatfile.size, file);
-			SAFE_CLOSE(file);
+			fclose(file);
+			buffer.release();
 			m->m_thrdWorking = false;
 			return 0;
 		}
 	}
-	
+
+	buffer.release();
 	m->m_thrdWorking = false;
 	return -3;
 }

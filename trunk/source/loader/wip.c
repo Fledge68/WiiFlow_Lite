@@ -69,7 +69,7 @@ void wip_reset_counter()
 void free_wip()
 {
 	if(CodeList)
-        SAFE_FREE(CodeList);
+        MEM2_free(CodeList);
 
     CodesCount = 0;
     ProcessedLength = 0;
@@ -115,7 +115,7 @@ int load_wip_patches(u8 *dir, u8 *gameid)
         if(!tmp)
         {
             MEM2_free(CodeList);
-            SAFE_CLOSE(fp);
+            fclose(fp);
             return -1;
         }
 
@@ -126,7 +126,7 @@ int load_wip_patches(u8 *dir, u8 *gameid)
         CodeList[CodesCount].dstaddress = dstaddress;
         CodesCount++;
     }
-    SAFE_CLOSE(fp);
+    fclose(fp);
     gprintf("\n");
 
 	return 0;

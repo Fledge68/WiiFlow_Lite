@@ -187,7 +187,8 @@ bool SFont::fromBuffer(const SmartBuf &buffer, u32 bufferSize, u32 size, u32 lsp
 	weight = min(w, 32u);
 	index = idx;
 
-	SMART_FREE(data);
+	if(data.get())
+		data.release();
 	data = smartMem2Alloc(bufferSize);
 	if(!data) return false;
 
@@ -214,12 +215,13 @@ bool SFont::fromFile(const char *filename, u32 size, u32 lspacing, u32 w, u32 id
 	u32 fileSize = ftell(file);
 	fseek(file, 0, SEEK_SET);
 	if (fileSize == 0) return false;
-	
-	SMART_FREE(data);
+
+	if(data.get())
+		data.release();
 	data = smartMem2Alloc(fileSize);
 	if (!data)
 	{
-		SAFE_CLOSE(file);
+		fclose(file);
 		return false;
 	}
 		

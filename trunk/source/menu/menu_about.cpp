@@ -22,7 +22,7 @@ void CMenu::_about(void)
 	SetupInput();
 	_showAbout();
 
-	do
+	while(1)
 	{
 		_mainLoopCommon();
 
@@ -74,7 +74,7 @@ void CMenu::_about(void)
 				m_cf.startCoverLoader();
 			}
 		}
-	} while (true);
+	}
 	_hideAbout(false);
 }
 
@@ -85,8 +85,10 @@ void CMenu::_hideAbout(bool instant)
 	m_btnMgr.hide(m_aboutLblInfo, instant);
 	m_btnMgr.hide(m_aboutBtnSystem, instant);
 	for (u32 i = 0; i < ARRAY_SIZE(m_aboutLblUser); ++i)
+	{
 		if (m_aboutLblUser[i] != -1u)
 			m_btnMgr.hide(m_aboutLblUser[i], instant);
+	}
 }
 
 void CMenu::_showAbout(void)
@@ -98,8 +100,10 @@ void CMenu::_showAbout(void)
 	if (!m_locked)
 		m_btnMgr.show(m_aboutBtnSystem);
 	for (u32 i = 0; i < ARRAY_SIZE(m_aboutLblUser); ++i)
+	{
 		if (m_aboutLblUser[i] != -1u)
 			m_btnMgr.show(m_aboutLblUser[i]);
+	}
 }
 
 void CMenu::_initAboutMenu(CMenu::SThemeData &theme)
@@ -111,12 +115,12 @@ void CMenu::_initAboutMenu(CMenu::SThemeData &theme)
 	m_aboutLblInfo = _addText(theme, "ABOUT/INFO", theme.txtFont, L"", 20, 200, 600, 280, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
 	m_aboutBtnSystem = _addButton(theme, "ABOUT/SYSTEM_BTN", theme.btnFont, L"", 20, 400, 200, 56, theme.btnFontColor);
 	m_aboutLblIOS = _addLabel(theme, "ABOUT/IOS", theme.txtFont, L"", 240, 400, 360, 56, theme.txtFontColor, FTGX_JUSTIFY_RIGHT | FTGX_ALIGN_MIDDLE);
-	// 
+
 	_setHideAnim(m_aboutLblTitle, "ABOUT/TITLE", 0, 100, 0.f, 0.f);
 	_setHideAnim(m_aboutLblInfo, "ABOUT/INFO", 0, 100, 0.f, 0.f);
 	_setHideAnim(m_aboutBtnSystem, "ABOUT/SYSTEM_BTN", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_aboutLblIOS, "ABOUT/IOS", 0, 100, 0.f, 0.f);
-	// 
+
 	_hideAbout(true);
 	_textAbout();
 }
@@ -126,7 +130,9 @@ void CMenu::_textAbout(void)
 	m_btnMgr.setText(m_aboutBtnSystem, _t("sys4", L"Update"));
 	m_btnMgr.setText(m_aboutLblTitle, wfmt(_fmt("appname", L"%s (%s-r%s)"), APP_NAME, APP_VERSION, SVN_REV), false);
 
-	char *help = (char*)calloc(4096, sizeof(char));
+	char *help = (char*)MEM2_alloc(4096 * sizeof(char));
+	memset(help, 0, sizeof(help));
+
 	FILE * f = fopen(fmt("%s/%s.txt", m_helpDir.c_str(), m_curLanguage.c_str()), "r");
 	if (f == NULL)
 		f = fopen(fmt("%s/english.txt", m_helpDir.c_str()), "r");
@@ -152,7 +158,8 @@ void CMenu::_textAbout(void)
 
 	wstringEx translator(wfmt(L", %s", m_loc.getWString(m_curLanguage, "translation_author").toUTF8().c_str()));
 	wstringEx thanks(wfmt(_fmt("about4", L"Thanks To:\n%s"), THANKS));
-	if(translator.size() > 3) thanks.append(translator);
+	if(translator.size() > 3)
+		thanks.append(translator);
 
 	m_btnMgr.setText(m_aboutLblInfo,
 			wfmt(L"%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s",
@@ -167,12 +174,14 @@ void CMenu::_textAbout(void)
 			false
 		);
 
-	SAFE_FREE(help);
+	MEM2_free(help);
 	Nand::Instance()->Disable_Emu();
+
 	iosinfo_t * iosInfo = cIOSInfo::GetInfo(mainIOS);
 	if(iosInfo != NULL)
 		m_btnMgr.setText(m_aboutLblIOS, wfmt(_fmt("ios", L"IOS%i base %i v%i"), mainIOS, iosInfo->baseios, iosInfo->version), true);
-	SAFE_FREE(iosInfo);
+	free(iosInfo);
+
 	if(m_current_view == COVERFLOW_CHANNEL && m_cfg.getInt("NAND", "emulation", 0) > 0)
 		Nand::Instance()->Enable_Emu();
 }

@@ -368,7 +368,7 @@ VideoFile::VideoFile(FILE* f)
 
 VideoFile::~VideoFile()
 {
-	SAFE_CLOSE(_f);
+	fclose(_f);
 }
 
 int VideoFile::getWidth() const
@@ -620,7 +620,7 @@ VideoFile* openVideo(const string& fileName)
 			return new JpgVideoFile(f);
 
 		default:
-			SAFE_CLOSE(f);
+			fclose(f);
 			return NULL;
 	}
 }

@@ -16,12 +16,6 @@
 #define ALIGN32(x) (((x) + 31) & ~31)
 #define ALIGNED(x) __attribute__((aligned(x)))
 
-#define SMART_FREE(P)		{if(!!P)P.release();}
-#define SAFE_FREE(P)		{if(P != NULL){free(P);P = NULL;}}
-#define MEM2_SAFE_FREE(P)	{if(P){MEM2_free(P);P = NULL;}}
-#define SAFE_DELETE(P)		{if(P != NULL){delete P;P = NULL;}}
-#define SAFE_CLOSE(P)		{if(P != NULL){fclose(P);P = NULL; }}
-
 #define TITLE_ID(x,y)		(((u64)(x) << 32) | (y))
 #define TITLE_UPPER(x)		((u32)((x) >> 32))
 #define TITLE_LOWER(x)		((u32)(x) & 0xFFFFFFFF)

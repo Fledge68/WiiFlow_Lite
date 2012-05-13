@@ -278,7 +278,8 @@ int CMenu::main(void)
 		{
 			LWP_JoinThread(coverStatus, NULL);
 			coverStatus = LWP_THREAD_NULL;
-			SMART_FREE(coverstatus_stack);
+			if(coverstatus_stack.get())
+				coverstatus_stack.release();
 			WDVD_GetCoverStatus(&disc_check);
 		}
 
@@ -753,7 +754,6 @@ int CMenu::main(void)
 					m_btnMgr.show(m_mainBtnHomebrew);
 				else
 					m_btnMgr.show(m_mainBtnUsb);
-				break;
 		}
 			m_btnMgr.show(m_mainLblUser[2]);
 			m_btnMgr.show(m_mainLblUser[3]);
@@ -780,15 +780,16 @@ int CMenu::main(void)
 			m_btnMgr.hide(m_mainLblUser[4]);
 			m_btnMgr.hide(m_mainLblUser[5]);
 		}
-		//
 		for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
+		{
 			if (WPadIR_Valid(chan) || (m_show_pointer[chan] && !WPadIR_Valid(chan)))
 				m_cf.mouse(m_vid, chan, m_cursor[chan].x(), m_cursor[chan].y());
 			else
-				m_cf.mouse(m_vid, chan, -1, -1);		
+				m_cf.mouse(m_vid, chan, -1, -1);
+		}
 	}
 	_showWaitMessage();
-	//
+
 	gprintf("Invalidate GX\n");
 
 	GX_InvVtxCache();
@@ -802,7 +803,9 @@ int CMenu::main(void)
 	gprintf("Wait for dvd\n");
 	LWP_JoinThread(coverStatus, NULL);
 	coverStatus = LWP_THREAD_NULL;
-	SMART_FREE(coverstatus_stack);
+	if(coverstatus_stack.get())
+		coverstatus_stack.release();
+
 	gprintf("Done with main\n");
 	return m_reload ? 1 : 0;
 }

@@ -10,6 +10,7 @@
 #include <sys/iosupport.h>
 #include <stdarg.h>
 
+#include "mem2.hpp"
 #include "wifi_gecko.h"
 
 /* init-globals */
@@ -78,7 +79,7 @@ void WriteToFile(char* tmp)
 	{
 		if(tmpfilebuffer != NULL)
 		{
-			SAFE_FREE(tmpfilebuffer);
+			MEM2_free(tmpfilebuffer);
 			tmpfilebuffer = NULL;
 		}
 		return;
@@ -111,7 +112,7 @@ void gprintf( const char *format, ... )
 	}
 	va_end(va);
 
-	SAFE_FREE(tmp);
+	free(tmp);
 } 
 
 char ascii(char s)
@@ -161,7 +162,8 @@ bool InitGecko()
 
 	USBGeckoOutput();
 
-	tmpfilebuffer = (char*)calloc(filebuffer + 1, sizeof(char));
+	tmpfilebuffer = (char*)MEM2_alloc(filebuffer + 1 * sizeof(char));
+	memset(tmpfilebuffer, 0, sizeof(tmpfilebuffer));
 
 	#ifdef sd_write_log
 		WriteToSD = true;

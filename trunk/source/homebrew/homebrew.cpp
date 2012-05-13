@@ -79,10 +79,10 @@ int LoadHomebrew(const char * filepath)
 	bool good_read = fread(homebrewbuffer, 1, filesize, file) == filesize;
 	if (!good_read)
 	{
-		SAFE_CLOSE(file);
+		fclose(file);
 		return -4;
 	}
-	SAFE_CLOSE(file);
+	fclose(file);
 
 	homebrewsize += filesize;
 	return 1;

@@ -198,7 +198,7 @@ void CList<dir_discHdr>::GetHeaders(vector<string> pathlist, vector<dir_discHdr>
 
 					fseek( fp, 0, SEEK_SET );
 					fread( &tmp.hdr, sizeof( discHdr ), 1, fp);
-					SAFE_CLOSE(fp);
+					fclose(fp);
 					
 					if ( tmp.hdr.gc_magic == 0xc2339f3d )
 					{
@@ -280,7 +280,7 @@ void CList<dir_discHdr>::GetHeaders(vector<string> pathlist, vector<dir_discHdr>
 			{
 				fseek(fp, wbfs ? 512 : 0, SEEK_SET);
 				fread(&tmp.hdr, sizeof(discHdr), 1, fp);
-				SAFE_CLOSE(fp);
+				fclose(fp);
 			}
 
 			if (tmp.hdr.magic == 0x5D1C9EA3)

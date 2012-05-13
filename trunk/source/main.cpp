@@ -18,21 +18,36 @@
 #include "defines.h"
 #include "svnrev.h"
 
-extern "C" { extern void __exception_setreload(int t);}
-
 CMenu *mainMenu;
-extern "C" void ShowError(const wstringEx &error){mainMenu->error(error); }
-extern "C" void HideWaitMessage() {mainMenu->_hideWaitMessage(); }
+
+extern "C" 
+{ 
+	extern void __exception_setreload(int t);
+
+	void ShowError(const wstringEx &error)
+	{
+		mainMenu->error(error);
+	}
+	void HideWaitMessage() 
+	{
+		mainMenu->_hideWaitMessage();
+	}
+}
 
 int main(int argc, char **argv)
 {
-	geckoinit = InitGecko();
 	__exception_setreload(5);
+	MEM2_init(52);
+	ISFS_Initialize();
 
+	geckoinit = InitGecko();
 	gprintf(" \nWelcome to %s (%s-r%s)!\nThis is the debug output.\n", APP_NAME, APP_VERSION, SVN_REV);
 
-	SYS_SetArena1Hi(APPLOADER_START);
+	// Init video
 	CVideo vid;
+	vid.init();
+	WIILIGHT_Init();
+	vid.waitMessage(0.2f);
 
 	char *gameid = NULL;
 	bool Emulator_boot = false;
@@ -59,28 +74,19 @@ int main(int argc, char **argv)
 
 	// Load Custom IOS
 	bool iosOK = loadIOS(mainIOS, false);
-	MEM2_init(52);
-	
-	ISFS_Initialize();
-	
+
 	u8 mainIOSBase = 0;
 	iosOK = iosOK && cIOSInfo::D2X(mainIOS, &mainIOSBase);
 	gprintf("Loaded cIOS: %u has base %u\n", mainIOS, mainIOSBase);
-	
+
 	Open_Inputs(); //init wiimote early
-	
-	// Init video
-	vid.init();
-	WIILIGHT_Init();
-	
-	vid.waitMessage(0.2f);
-	
+
 	// Init
 	Sys_Init();
 	Sys_ExitTo(EXIT_TO_HBC);
-	
+
 	int ret = 0;
-	
+
 	do 
 	{
 		bool deviceAvailable = false;
@@ -92,8 +98,10 @@ int main(int argc, char **argv)
 			sleep(1);
 
 			for(u8 device = USB1; device <= USB8; device++)
+			{
 				if(DeviceHandler::Instance()->IsInserted(device))
 					deviceAvailable = true;
+			}
 		}
 		if(DeviceHandler::Instance()->IsInserted(SD))
 			deviceAvailable = true;
@@ -105,8 +113,6 @@ int main(int argc, char **argv)
 
 		CMenu menu(vid);
 		menu.init();
-
-		//Open_Inputs(); //we should init inputs as last point
 
 		mainMenu = &menu;
 		if (!iosOK)

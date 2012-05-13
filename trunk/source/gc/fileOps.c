@@ -36,23 +36,25 @@ static s32 stopThread;
 static u64 folderSize = 0;
 
 // return false if the file doesn't exist
-bool fsop_GetFileSizeBytes (char *path, size_t *filesize)	// for me stats st_size report always 0 :(
+bool fsop_GetFileSizeBytes(char *path, size_t *filesize)	// for me stats st_size report always 0 :(
 {
 	FILE *f;
 	size_t size = 0;
 
 	f = fopen(path, "rb");
-	if (!f)
+	if(!f)
 	{
-		if (filesize) *filesize = size;
+		if(filesize)
+			*filesize = size;
 		return false;
 	}
 
 	//Get file size
 	fseek( f, 0, SEEK_END);
 	size = ftell(f);
-	if (filesize) *filesize = size;
-	SAFE_CLOSE(f);
+	if(filesize)
+		*filesize = size;
+	fclose(f);
 	
 	return true;
 }
@@ -176,7 +178,7 @@ bool fsop_CopyFile (char *source, char *target, progress_callback_t spinner, voi
 	ft = fopen(target, "wt");
 	if (!ft)
 	{
-		SAFE_CLOSE(fs);
+		fclose(fs);
 		return false;
 	}
 
@@ -186,8 +188,8 @@ bool fsop_CopyFile (char *source, char *target, progress_callback_t spinner, voi
 
 	if (size == 0)
 	{
-		SAFE_CLOSE(fs);
-		SAFE_CLOSE(ft);
+		fclose(fs);
+		fclose(ft);
 		return true;
 	}
 
@@ -246,8 +248,8 @@ bool fsop_CopyFile (char *source, char *target, progress_callback_t spinner, voi
 	stopThread = 1;
 	DCFlushRange(&stopThread, sizeof(stopThread));
 
-	SAFE_CLOSE(fs);
-	SAFE_CLOSE(ft);
+	fclose(fs);
+	fclose(ft);
 	MEM2_free(buff);
 
 	if (err) 

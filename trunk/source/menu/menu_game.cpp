@@ -399,17 +399,16 @@ void CMenu::_game(bool launch)
 			FILE *file = fopen(videoPath.c_str(), "rb");
 			if (file)
 			{
-				SAFE_CLOSE(file);
-				
+				fclose(file);
 				_hideGame();
 				WiiMovie movie(videoPath.c_str());
 				movie.SetScreenSize(m_cfg.getInt("GENERAL", "tv_width", 640), m_cfg.getInt("GENERAL", "tv_height", 480), m_cfg.getInt("GENERAL", "tv_x", 0), m_cfg.getInt("GENERAL", "tv_y", 0));
 				movie.SetVolume(m_cfg.getInt("GENERAL", "sound_volume_bnr", 255));
 				//_stopSounds();		
 				movie.Play();
-				
+
 				m_video_playing = true;
-				
+
 				STexture videoBg;
 				while (!BTN_B_PRESSED && !BTN_A_PRESSED && !BTN_HOME_PRESSED && movie.GetNextFrame(&videoBg))
 				{
@@ -1393,21 +1392,22 @@ void CMenu::_gameSoundThread(CMenu *m)
 		_extractBnr(m->m_gameSoundHdr) : m->m_current_view == COVERFLOW_CHANNEL ?
 		_extractChannelBnr(m->m_gameSoundHdr->hdr.chantitle) : NULL;
 	m->m_gameSoundHdr = NULL;
-	
+
 	if (banner == NULL || !banner->IsValid())
 	{
 		gprintf("no valid banner found\n");
-		SAFE_DELETE(banner);
+		delete banner;
 		return;
 	}
 	_extractBannerTitle(banner, GetLanguage(m->m_loc.getString(m->m_curLanguage, "gametdb_code", "EN").c_str()));
-	
+
 	const u8 *soundBin = banner->GetFile((char *) "sound.bin", &sndSize);
-	SAFE_DELETE(banner);
-	
+	delete banner;
+
 	if (soundBin == NULL || (((IMD5Header *)soundBin)->fcc != 'IMD5' && ((IMD5Header *)soundBin)->fcc != 'RIFF'))
 	{
 		gprintf("Failed to load banner sound!\n\n");
+		delete soundBin;
 		return;
 	}
 
@@ -1435,7 +1435,7 @@ void CMenu::CheckGameSoundThread()
 
 	LWP_JoinThread(m_gameSoundThread, NULL);
 	if(gameSoundThreadStack.get())
-		SMART_FREE(gameSoundThreadStack);
+		gameSoundThreadStack.release();
 	m_gameSoundThread = LWP_THREAD_NULL;
 }
 
