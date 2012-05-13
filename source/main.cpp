@@ -8,7 +8,6 @@
 #include "text.hpp"
 #include <ogc/system.h>
 #include <unistd.h>
-#include <wiilight.h>
 #include "DeviceHandler.hpp"
 #include "homebrew.h"
 #include "gecko.h"
@@ -46,7 +45,6 @@ int main(int argc, char **argv)
 	// Init video
 	CVideo vid;
 	vid.init();
-	WIILIGHT_Init();
 	vid.waitMessage(0.2f);
 
 	char *gameid = NULL;

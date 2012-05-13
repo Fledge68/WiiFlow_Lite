@@ -1,7 +1,7 @@
 #include "pngu.h"
 #include "video.hpp"
 #include <string.h>
-#include <wiilight.h>
+#include "gekko.h"
 #include "gecko.h"
 
 #define DEFAULT_FIFO_SIZE	(256 * 1024)
@@ -457,8 +457,8 @@ void CVideo::_showWaitMessages(CVideo *m)
 
 	if (m->m_useWiiLight)
 	{
-		WIILIGHT_SetLevel(0);
-		WIILIGHT_TurnOn();
+		wiiLightSetLevel(0);
+		wiiLightOn();
 	}
 
 	while (m->m_showWaitMessage)
@@ -476,7 +476,7 @@ void CVideo::_showWaitMessages(CVideo *m)
 				currentLightLevel = 0;
 				fadeDirection = 1;
 			}
-			WIILIGHT_SetLevel(currentLightLevel);
+			wiiLightSetLevel(currentLightLevel);
 		}
 		
 		if (waitFrames == 0)
@@ -494,8 +494,8 @@ void CVideo::_showWaitMessages(CVideo *m)
 	}
 	if (m->m_useWiiLight)
 	{
-		WIILIGHT_SetLevel(0);
-		WIILIGHT_TurnOff();
+		wiiLightSetLevel(0);
+		wiiLightOff();
 	}
 	m->m_waitMessages.clear();
 	m->m_showingWaitMessages = false;
@@ -508,8 +508,8 @@ void CVideo::hideWaitMessage()
 	m_showWaitMessage = false;
 	CheckWaitThread();
 
-	WIILIGHT_SetLevel(0);
-	WIILIGHT_TurnOff();
+	wiiLightSetLevel(0);
+	wiiLightOff();
 }
 
 void CVideo::CheckWaitThread()
