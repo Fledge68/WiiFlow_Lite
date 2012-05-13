@@ -70,6 +70,9 @@ static void USBGeckoOutput()
 
 void WriteToFile(char* tmp)
 {
+	if(tmpfilebuffer == NULL)
+		return;
+
 	if(bufferMessages)
 	{
 		if((strlen(tmpfilebuffer) + strlen(tmp)) < filebuffer)
@@ -77,11 +80,8 @@ void WriteToFile(char* tmp)
 	}
 	else
 	{
-		if(tmpfilebuffer != NULL)
-		{
-			MEM2_free(tmpfilebuffer);
-			tmpfilebuffer = NULL;
-		}
+		MEM2_free(tmpfilebuffer);
+		tmpfilebuffer = NULL;
 		return;
 	}
 
@@ -100,19 +100,17 @@ void WriteToFile(char* tmp)
 //using the gprintf from crediar because it is smaller than mine
 void gprintf( const char *format, ... )
 {
-	char * tmp = NULL;
+	char *tmp = NULL;
 	va_list va;
 	va_start(va, format);
 	if((vasprintf(&tmp, format, va) >= 0) && tmp)
 	{
 		WriteToFile(tmp);
 		WifiGecko_Send(tmp, strlen(tmp));
-		if (geckoinit)
-			__out_write(NULL, 0, tmp, strlen(tmp));
+		__out_write(NULL, 0, tmp, strlen(tmp));
+		free(tmp);
 	}
 	va_end(va);
-
-	free(tmp);
 } 
 
 char ascii(char s)
@@ -157,13 +155,14 @@ void ghexdump(void *d, int len)
 
 bool InitGecko()
 {
-	if (geckoinit)
+	if(geckoinit)
 		return geckoinit;
 
 	USBGeckoOutput();
 
 	tmpfilebuffer = (char*)MEM2_alloc(filebuffer + 1 * sizeof(char));
-	memset(tmpfilebuffer, 0, sizeof(tmpfilebuffer));
+	if(tmpfilebuffer != NULL)
+		memset(tmpfilebuffer, 0, sizeof(tmpfilebuffer));
 
 	#ifdef sd_write_log
 		WriteToSD = true;

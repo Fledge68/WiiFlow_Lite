@@ -234,19 +234,27 @@ void Nand::__GetNameList(const char *source, namelist **entries, int *count)
 {
 	u32 i, j, k, l;
 	u32 numentries = 0;	
-	char *names;
+	char *names = NULL;
 	char curentry[ISFS_MAXPATH];
 	char entrypath[ISFS_MAXPATH];
 
 	s32 ret = ISFS_ReadDir(source, NULL, &numentries);
 	names = (char *)MEM2_alloc((ISFS_MAXPATH) * numentries);
+	if(names == NULL)
+		return;
+
 	ret = ISFS_ReadDir(source, names, &numentries);	
 	*count = numentries;
 
-	if(*entries)
+	if(*entries != NULL)
+	{
 		MEM2_free(*entries);
+		*entries = NULL;
+	}
 
-	*entries = (namelist *)MEM2_alloc(sizeof(namelist)*numentries);	
+	*entries = (namelist *)MEM2_alloc(sizeof(namelist) * numentries);	
+	if(*entries == NULL)
+		return;
 
 	for(i = 0, k = 0; i < numentries; i++)
 	{
@@ -273,6 +281,9 @@ s32 Nand::__configread(void)
 {	
 	confbuffer = (u8 *)MEM2_alloc(0x4000);
 	txtbuffer = (char *)MEM2_alloc(0x100);
+	if(confbuffer == NULL || txtbuffer == NULL)
+		return -1;
+
 	cfg_hdr = (config_header *)NULL;
 
 	FILE *f = fopen(cfgpath, "rb");
@@ -322,16 +333,16 @@ s32 Nand::__configwrite(void)
 				fwrite(txtbuffer, 1, 0x100, f);
 				gprintf("setting.txt written to: \"%s\"\n", settxtpath);
 				fclose(f);
-			}		
+			}
 			configloaded = configloaded ? false : true;
 
 			if(!tbdec && !configloaded)
-				return 1;			
+				return 1;
 		}
 	}
-	free(confbuffer);
-	free(txtbuffer);
-	return 0;			
+	MEM2_free(confbuffer);
+	MEM2_free(txtbuffer);
+	return 0;
 }
 
 u32 Nand::__configsetbyte(const char *item, u8 val)
@@ -512,6 +523,9 @@ s32 Nand::__FlashNandFile(const char *source, const char *dest)
 	}
 
 	u8 *buffer = (u8 *)MEM2_alloc(BLOCK);
+	if(buffer == NULL)
+		return -1;
+
 	u32 toread = fsize;
 	while(toread > 0)
 	{
@@ -572,6 +586,9 @@ s32 Nand::__DumpNandFile(const char *source, const char *dest)
 	}
 
 	fstats *status = (fstats *)MEM2_alloc(sizeof(fstats));
+	if(status == NULL)
+		return -1;
+
 	s32 ret = ISFS_GetFileStats(fd, status);
 	if (ret < 0)
 	{
@@ -605,6 +622,9 @@ s32 Nand::__DumpNandFile(const char *source, const char *dest)
 	gprintf("Dumping: %s (%ukb)...", source, (status->file_length / 0x400)+1);
 
 	u8 *buffer = (u8 *)MEM2_alloc(BLOCK);
+	if(buffer == NULL)
+		return -1;
+
 	u32 toread = status->file_length;
 	while(toread > 0)
 	{
@@ -740,7 +760,7 @@ s32 Nand::__DumpNandFolder(const char *source, const char *dest)
 			__DumpNandFolder(nsource, dest);
 		}
 	}
-	free(names);
+	MEM2_free(names);
 	return 0;
 }
 
@@ -777,9 +797,9 @@ void Nand::CreatePath(const char *path, ...)
 			gprintf("Folder \"%s\" exists\n", folder);
 			closedir(d);
 		}
+		free(folder);
 	}
 	va_end(args);
-	free(folder);
 }
 
 void Nand::CreateTitleTMD(const char *path, dir_discHdr *hdr)
@@ -792,7 +812,7 @@ void Nand::CreateTitleTMD(const char *path, dir_discHdr *hdr)
 	u32 tmd_size = wbfs_extract_file(disc, (char *) "TMD", (void **)&titleTMD);
 	WBFS_CloseDisc(disc);
 
-	if(!titleTMD) 
+	if(titleTMD == NULL) 
 		return;
 
 	u32 highTID = *(u32*)(titleTMD+0x18c);
@@ -810,7 +830,7 @@ void Nand::CreateTitleTMD(const char *path, dir_discHdr *hdr)
 	struct stat filestat;
 	if (stat(nandpath, &filestat) == 0)
 	{
-		free(titleTMD);
+		MEM2_free(titleTMD);
 		gprintf("%s Exists!\n", nandpath);
 		return;
 	}
@@ -826,7 +846,7 @@ void Nand::CreateTitleTMD(const char *path, dir_discHdr *hdr)
 	else 
 		gprintf("Creating title TMD: %s failed (%i)\n", nandpath, file);
 
-	free(titleTMD);
+	MEM2_free(titleTMD);
 }
 
 s32 Nand::FlashToNAND(const char *source, const char *dest, dump_callback_t i_dumper, void *i_data)

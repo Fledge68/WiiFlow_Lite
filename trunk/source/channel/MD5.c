@@ -567,8 +567,7 @@ unsigned char * MD5fromFile(unsigned char *dst, const char *src)
         blksize = 1048576;
 
     unsigned char * buffer = MEM2_alloc(blksize);
-
-    if(!!buffer)
+    if(buffer == NULL)
 	{
 	    //no memory
         fclose(file);
@@ -579,7 +578,6 @@ unsigned char * MD5fromFile(unsigned char *dst, const char *src)
 	{
 	    read = fread(buffer, 1, blksize, file);
         (void)auth_md5SumCtx( ctx, buffer, read );    /* Pass only one block. */
-
 	} while(read > 0);
 
     fclose(file);

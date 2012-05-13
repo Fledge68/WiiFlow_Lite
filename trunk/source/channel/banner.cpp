@@ -82,7 +82,8 @@ Banner::Banner(u8 *bnr, u64 title)
 
 Banner::~Banner()
 {
-	MEM2_free(opening);
+	if(opening != NULL)
+		MEM2_free(opening);
 }
 
 bool Banner::IsValid()
@@ -152,10 +153,11 @@ Banner * Banner::GetBanner(u64 title, char *appname, bool isfs, bool imetOnly)
 	{
 		u32 size = 0;
 		
-		buf = ISFS_GetFile((u8 *) appname, &size, imetOnly ? sizeof(IMET) + IMET_OFFSET : 0);
+		buf = ISFS_GetFile((u8 *)appname, &size, imetOnly ? sizeof(IMET) + IMET_OFFSET : 0);
 		if (size == 0) 
 		{
-			free(buf);
+			if(buf != NULL)
+				MEM2_free(buf);
 			return NULL;
 		}
 	}
@@ -171,8 +173,10 @@ Banner * Banner::GetBanner(u64 title, char *appname, bool isfs, bool imetOnly)
 			size = ftell(fp);
 			fseek(fp, 0, SEEK_SET);
 		}
-		
+
 		buf = MEM2_alloc(size);
+		if(!buf)
+			return NULL;
 
 		fread(buf, size, 1, fp);
 		fclose(fp);

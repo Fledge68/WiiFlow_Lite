@@ -161,15 +161,19 @@ int get_frag_list(u8 *id, char *path, const u32 hdd_sector_size)
 	u32 length = strlen(path);
 	strcpy(fname, path);
 
-	if(fname[length-1] > '0' && fname[length-1] < '9') return 0;
+	int ret, ret_val = -1;
+	u32 i, j;
+
+	if(fname[length-1] > '0' && fname[length-1] < '9')
+		return 0;
 	bool isWBFS = wbfs_part_fs != PART_FS_WBFS && strcasestr(strrchr(fname,'.'), ".wbfs") != 0;
 
 	struct stat st;
 	FragList *fs = MEM2_alloc(sizeof(FragList));
 	FragList *fa = MEM2_alloc(sizeof(FragList));
 	FragList *fw = MEM2_alloc(sizeof(FragList));
-	int ret, ret_val = -1;
-	u32 i, j;
+	if(fs == NULL || fa == NULL || fw == NULL)
+		goto out;
 
 	frag_init(fa, MAX_FRAG);
 
@@ -238,6 +242,9 @@ int get_frag_list(u8 *id, char *path, const u32 hdd_sector_size)
 	}
 
 	frag_list = MEM2_alloc((sizeof(FragList)+31)&(~31));
+	if(frag_list == NULL)
+		goto out;
+
 	frag_init(frag_list, MAX_FRAG);
 	if (isWBFS) // If this is a .wbfs file format, remap.
 	{
@@ -255,23 +262,26 @@ int get_frag_list(u8 *id, char *path, const u32 hdd_sector_size)
 			goto out;
 		}
 		WBFS_CloseDisc(disc); // Close before jumping on fail.
-		if (frag_remap(frag_list, fw, fa))
+		if(frag_remap(frag_list, fw, fa))
 		{
 			ret_val = -6;
 			goto out;
 		}
 	}
-	else memcpy(frag_list, fa, sizeof(FragList)); // .iso files do not need a remap, just copy
+	else
+		memcpy(frag_list, fa, sizeof(FragList)); // .iso files do not need a remap, just copy
 
 	ret_val = 0;
 
 out:
-	if (ret_val)
+	if (frag_list != NULL)
 		MEM2_free(frag_list);
-	MEM2_free(fs);
-	MEM2_free(fa);
-	MEM2_free(fw);
-
+	if(fs != NULL)
+		MEM2_free(fs);
+	if(fa != NULL)
+		MEM2_free(fa);
+	if(fw != NULL)
+		MEM2_free(fw);
 	return ret_val;
 }
 

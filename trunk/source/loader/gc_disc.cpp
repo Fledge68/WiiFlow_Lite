@@ -48,6 +48,9 @@ static u8 *FSTable ALIGNED(32);
 void GCDump::__AnalizeMultiDisc()
 {
 	u8 *Buffer = (u8 *)MEM2_alloc(0x10);
+	if(Buffer == NULL)
+		return;
+
 	MultiGameCnt = 0;
 	while(1)
 	{
@@ -169,7 +172,9 @@ s32 GCDump::__DiscWriteFile(FILE *f, u64 offset, u32 length, u8 *ReadBuffer)
 bool GCDump::__WaitForDisc(u8 dsc, u32 msg)
 {
 	u8 *ReadBuffer = (u8 *)MEM2_alloc(0x440);
-	
+	if(ReadBuffer == NULL)
+		return false;
+
 	u32 cover = 0;
 	bool done = false;	
 	while(!done)
@@ -200,7 +205,7 @@ bool GCDump::__WaitForDisc(u8 dsc, u32 msg)
 				MEM2_free(ReadBuffer);
 				return false;
 			}
-					
+
 			if(Disc_IsGC() == 0)
 			{
 				s32 ret = __DiscReadRaw(ReadBuffer, NextOffset, 0x440);
@@ -209,10 +214,10 @@ bool GCDump::__WaitForDisc(u8 dsc, u32 msg)
 					MEM2_free(ReadBuffer);
 					return false;
 				}
-						
+
 				ID2 = *(vu32*)(ReadBuffer);	
 				Disc2 = *(vu8*)(ReadBuffer+0x06);
-							
+
 				if(ID == ID2 && Disc2 == dsc)
 				{					
 					done = true;
@@ -255,6 +260,8 @@ s32 GCDump::DumpGame()
 	static gc_discHdr gcheader ATTRIBUTE_ALIGN(32);
 
 	u8 *ReadBuffer = (u8 *)MEM2_alloc(gc_readsize);
+	if(ReadBuffer == NULL)
+		return 0x31100;
 
 	gc_done = 0;
 	gamedone = false;
@@ -331,6 +338,8 @@ s32 GCDump::DumpGame()
 		DiscSize = DataSize + GamePartOffset;
 
 		FSTBuffer = (u8 *)MEM2_alloc((FSTSize+31)&(~31));
+		if(FSTBuffer == NULL)
+			return 0x31100;
 
 		ret = __DiscReadRaw(FSTBuffer, FSTOffset+NextOffset, (FSTSize+31)&(~31));
 
@@ -470,9 +479,8 @@ s32 GCDump::DumpGame()
 			}			
 			gprintf("Done!! Disc size: %d\n", DiscSize);
 		}
-		
 		MEM2_free(FSTBuffer);
-		
+
 		if(FSTTotal > FSTSize && !multigamedisc)
 		{
 			if(Disc)
@@ -512,6 +520,9 @@ s32 GCDump::CheckSpace(u32 *needed, bool comp)
 	static gc_discHdr gcheader ATTRIBUTE_ALIGN(32);
 
 	u8 *ReadBuffer = (u8 *)MEM2_alloc(0x440);
+	if(ReadBuffer == NULL)
+		return 1;
+
 	u32 size = 0;
 	bool scnddisc = false;
 	gamedone = false;
@@ -573,6 +584,8 @@ s32 GCDump::CheckSpace(u32 *needed, bool comp)
 		else
 		{
 			u8 *FSTBuffer = (u8 *)MEM2_alloc((FSTSize+31)&(~31));
+			if(FSTBuffer == NULL)
+				return 1;
 
 			ret = __DiscReadRaw(FSTBuffer, FSTOffset+NextOffset, (FSTSize+31)&(~31));
 			if(ret > 0)

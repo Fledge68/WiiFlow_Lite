@@ -300,7 +300,8 @@ const u8* VideoFrame::getData() const
 
 void VideoFrame::dealloc()
 {
-	MEM2_free(_data);
+	if(_data != NULL)
+		MEM2_free(_data);
 	_w = _h = _p = 0;
 }
 

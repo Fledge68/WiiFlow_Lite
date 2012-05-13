@@ -131,19 +131,3 @@ int WifiGecko_Send(const char * data, int datasize)
 
     return ret;
 }
-
-void wifi_printf(const char * format, ...)
-{
-	if (!init) return;
-
-	char * tmp = NULL;
-	va_list va;
-	va_start(va, format);
-	if((vasprintf(&tmp, format, va) >= 0) && tmp)
-	{
-		WifiGecko_Send(tmp, strlen(tmp));
-	}
-	va_end(va);
-
-	free(tmp);
-}

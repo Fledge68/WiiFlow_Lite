@@ -196,10 +196,12 @@ bool fsop_CopyFile (char *source, char *target, progress_callback_t spinner, voi
 	// Return to beginning....
 	fseek(fs, 0, SEEK_SET);
 
-	u8 * threadStack = NULL;
+	u8 *threadStack = NULL;
 	lwp_t hthread = LWP_THREAD_NULL;
 
 	buff = MEM2_alloc(block*2);
+	if(buff == NULL)
+		return false;
 
 	blockIdx = 0;
 	blockReady = 0;
@@ -207,6 +209,9 @@ bool fsop_CopyFile (char *source, char *target, progress_callback_t spinner, voi
 	blockInfo[1] = 0;
 
 	threadStack = MEM2_alloc(STACKSIZE);
+	if(threadStack == NULL)
+		return false;
+
 	LWP_CreateThread (&hthread, thread_CopyFileReader, NULL, threadStack, STACKSIZE, 30);
 
 	while (stopThread != 0)

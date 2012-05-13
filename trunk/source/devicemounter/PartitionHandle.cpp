@@ -178,7 +178,8 @@ void PartitionHandle::UnMount(int pos)
 int PartitionHandle::FindPartitions()
 {
 	MASTER_BOOT_RECORD *mbr = (MASTER_BOOT_RECORD *)MEM2_alloc(MAX_BYTES_PER_SECTOR);
-	if(!mbr) return -1;
+	if(mbr == NULL)
+		return -1;
 
 	// Read the first sector on the device
 	if(!interface->readSectors(0, 1, mbr)) 
@@ -249,6 +250,8 @@ int PartitionHandle::FindPartitions()
 void PartitionHandle::CheckEBR(u8 PartNum, sec_t ebr_lba)
 {
 	EXTENDED_BOOT_RECORD *ebr = (EXTENDED_BOOT_RECORD *)MEM2_alloc(MAX_BYTES_PER_SECTOR);
+	if(ebr == NULL)
+		return;
 	sec_t next_erb_lba = 0;
 
 	do
@@ -293,12 +296,13 @@ void PartitionHandle::CheckEBR(u8 PartNum, sec_t ebr_lba)
 bool PartitionHandle::CheckGPT(void)
 {
 	GPT_PARTITION_TABLE *gpt = (GPT_PARTITION_TABLE *)MEM2_alloc(MAX_BYTES_PER_SECTOR);
-	if(!gpt) return false;
+	if(gpt == NULL)
+		return false;
 	bool success = false; // To return false unless at least 1 partition is verified
 
 	if(!interface->readSectors(1, 33, gpt))
 	{
-		free(gpt);
+		MEM2_free(gpt);
 		return false;	// To read all 128 possible partitions
 	}
 
@@ -310,14 +314,19 @@ bool PartitionHandle::CheckGPT(void)
 			|| (le64(gpt->First_Usable_LBA) != 34)
 			|| (gpt->Reserved != 0))
 	{
-		free(gpt);
+		MEM2_free(gpt);
 		return false;
 	}
 
 	for(u8 i = 0; i < le32(gpt->Num_Entries) && PartitionList.size() <= 8; i++)
 	{
-		GUID_PARTITION_ENTRY * entry = (GUID_PARTITION_ENTRY *) &gpt->partitions[i];
+		GUID_PARTITION_ENTRY *entry = (GUID_PARTITION_ENTRY *) &gpt->partitions[i];
 		VOLUME_BOOT_RECORD *vbr = (VOLUME_BOOT_RECORD*)MEM2_alloc(MAX_BYTES_PER_SECTOR);
+		if(vbr == NULL)
+		{
+			MEM2_free(gpt);
+			return false;
+		}
 
 		int Start = le64(entry->First_LBA);
 		int End = le64(entry->Last_LBA);
@@ -378,9 +387,9 @@ bool PartitionHandle::CheckGPT(void)
 			success = true;
 			PartitionList.push_back(PartitionEntry);
 		}
-		free(vbr);
+		MEM2_free(vbr);
 	}
-	free(gpt);
+	MEM2_free(gpt);
 
 	return success;
 }

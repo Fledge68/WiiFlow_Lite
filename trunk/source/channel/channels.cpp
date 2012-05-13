@@ -92,12 +92,14 @@ u8 Channels::GetRequestedIOS(u64 title)
 	sprintf(tmd, "/title/%08x/%08x/content/title.tmd", TITLE_UPPER(title), TITLE_LOWER(title));
 
 	u32 size;
-	u8 *titleTMD = (u8 *) ISFS_GetFile((u8 *) &tmd, &size, -1);
+	u8 *titleTMD = (u8 *)ISFS_GetFile((u8 *) &tmd, &size, -1);
+	if(titleTMD == NULL)
+		return 0;
 
 	if(size > 0x18B)
 		IOS = titleTMD[0x18B];
 
-	free(titleTMD);
+	MEM2_free(titleTMD);
 
 	return IOS;
 }
@@ -113,20 +115,18 @@ u64* Channels::GetChannelList(u32* count)
 	if (ES_GetNumTitles(&countall) < 0 || !countall) return NULL;
 
 	u64* titles = (u64*)MEM2_alloc(countall * sizeof(u64));
-	if (!titles) return NULL;
+	if (!titles)
+		return NULL;
 
 	if(ES_GetTitles(titles, countall) < 0)
 	{
-		free(titles);
+		MEM2_free(titles);
 		return NULL;
 	}
 
 	u64* channels = (u64*)MEM2_alloc(countall * sizeof(u64));
 	if (!channels)
-	{
-		free(titles);
 		return NULL;
-	}
 
 	*count = 0;
 	for (u32 i = 0; i < countall; i++)
@@ -138,13 +138,12 @@ u64* Channels::GetChannelList(u32* count)
  			if (TITLE_LOWER(titles[i]) == RF_NEWS_CHANNEL ||	// skip region free news and forecast channel
 				TITLE_LOWER(titles[i]) == RF_FORECAST_CHANNEL)
 				continue;
-
 			channels[(*count)++] = titles[i];
 		}
 	}
-	free(titles);
+	MEM2_free(titles);
 
-	return (u64*)MEM2_realloc(channels, *count * sizeof(u64));
+	return(u64*)MEM2_realloc(channels, *count * sizeof(u64));
 }
 
 bool Channels::GetAppNameFromTmd(u64 title, char* app, bool dol, u32* bootcontent)
@@ -156,11 +155,13 @@ bool Channels::GetAppNameFromTmd(u64 title, char* app, bool dol, u32* bootconten
 
 	u32 size;
 	u8 *data = ISFS_GetFile((u8 *) &tmd, &size, -1);
-	if (data == NULL || size < 0x208) return ret;
+	if (data == NULL || size < 0x208)
+		return ret;
 
-	_tmd * tmd_file = (_tmd *) SIGNATURE_PAYLOAD((u32 *)data);
+	_tmd *tmd_file = (_tmd *)SIGNATURE_PAYLOAD((u32 *)data);
 	u16 i;
 	for(i = 0; i < tmd_file->num_contents; ++i)
+	{
 		if(tmd_file->contents[i].index == (dol ? tmd_file->boot_index : 0))
 		{
 			*bootcontent = tmd_file->contents[i].cid;
@@ -168,8 +169,9 @@ bool Channels::GetAppNameFromTmd(u64 title, char* app, bool dol, u32* bootconten
 			ret = true;
 			break;
 		}
+	}
 
-	free(data);
+	MEM2_free(data);
 
 	return ret;
 }
@@ -224,7 +226,8 @@ void Channels::Search(u32 channelType, string lang)
 {
 	u32 count;
 	u64* list = GetChannelList(&count);
-	if (!list) return;
+	if (list == NULL)
+		return;
 
 	int language = lang.size() == 0 ? CONF_GetLanguage() : GetLanguage(lang.c_str());
 
@@ -245,7 +248,7 @@ void Channels::Search(u32 channelType, string lang)
 		}
 	}
 
-	free(list);
+	MEM2_free(list);
 }
 
 wchar_t * Channels::GetName(int index)
