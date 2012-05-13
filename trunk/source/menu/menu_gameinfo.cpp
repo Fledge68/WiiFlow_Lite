@@ -63,6 +63,11 @@ extern const u8		cero_c_png[];
 extern const u8		cero_d_png[];
 extern const u8		cero_z_png[];
 
+extern const u8		grb_a_png[];
+extern const u8		grb_12_png[];
+extern const u8		grb_15_png[];
+extern const u8		grb_18_png[];
+
 extern const u8		pegi_3_png[];
 extern const u8		pegi_7_png[];
 extern const u8		pegi_12_png[];
@@ -341,8 +346,7 @@ void CMenu::_textGameInfo(void)
 		m_rating.fromPNG(norating_png);
 		switch(gameinfo.RatingType)
 		{
-			case 0:
-				//CERO
+			case GAMETDB_RATING_TYPE_CERO:
 				if (gameinfo.RatingValue == "A")
 					m_rating.fromPNG(cero_a_png);
 				else if (gameinfo.RatingValue == "B")
@@ -354,8 +358,7 @@ void CMenu::_textGameInfo(void)
 				else if (gameinfo.RatingValue == "Z")
 					m_rating.fromPNG(cero_z_png);
 				break;
-			case 1:
-				//ESRB
+			case GAMETDB_RATING_TYPE_ESRB:
 				if (gameinfo.RatingValue == "AO")
 					m_rating.fromPNG(esrb_ao_png);
 				else if (gameinfo.RatingValue == "E")
@@ -369,8 +372,7 @@ void CMenu::_textGameInfo(void)
 				else if (gameinfo.RatingValue == "M")
 					m_rating.fromPNG(esrb_m_png);
 				break;
-			case 2:
-				//PEGI
+			case GAMETDB_RATING_TYPE_PEGI:
 				if (gameinfo.RatingValue == "3")
 					m_rating.fromPNG(pegi_3_png);
 				else if (gameinfo.RatingValue == "7")
@@ -381,6 +383,16 @@ void CMenu::_textGameInfo(void)
 					m_rating.fromPNG(pegi_16_png);
 				else if (gameinfo.RatingValue == "18")
 					m_rating.fromPNG(pegi_18_png);
+				break;
+			case GAMETDB_RATING_TYPE_GRB:
+				if (gameinfo.RatingValue == "a")
+					m_rating.fromPNG(grb_a_png);
+				else if (gameinfo.RatingValue == "12")
+					m_rating.fromPNG(grb_12_png);
+				else if (gameinfo.RatingValue == "15")
+					m_rating.fromPNG(grb_15_png);
+				else if (gameinfo.RatingValue == "18")
+					m_rating.fromPNG(grb_18_png);
 				break;
 			default:
 				break;
