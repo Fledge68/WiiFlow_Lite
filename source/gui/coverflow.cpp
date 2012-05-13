@@ -251,10 +251,11 @@ CCoverFlow::~CCoverFlow(void)
 {
 	clear();
 /* 	for(u8 i = 0; i < 4; i++) */
-		SMART_FREE(m_sound[0]);
-	SMART_FREE(m_hoverSound);
-	SMART_FREE(m_selectSound);
-	SMART_FREE(m_cancelSound);
+	if(m_sound[0].get())
+		m_sound[0].release();
+	m_hoverSound.release();
+	m_selectSound.release();
+	m_cancelSound.release();
 	LWP_MutexDestroy(m_mutex);
 }
 
@@ -550,7 +551,8 @@ void CCoverFlow::setBlur(u32 blurResolution, u32 blurRadius, float blurFactor)
 	u32 i = min(max(0u, blurResolution), sizeof blurRes / sizeof blurRes[0] - 1u);
 	m_effectTex.width = blurRes[i].x;
 	m_effectTex.height = blurRes[i].y;
-	SMART_FREE(m_effectTex.data);
+	if(m_effectTex.data.get())
+		m_effectTex.data.release();
 	m_blurRadius = min(max(1u, blurRadius), 3u);
 	m_blurFactor = min(max(1.f, blurFactor), 2.f);
 }
@@ -617,7 +619,8 @@ void CCoverFlow::stopCoverLoader(bool empty)
 		{
 			for (u32 i = 0; i < m_items.size(); ++i)
 			{
-				SMART_FREE(m_items[i].texture.data);
+				if(m_items[i].texture.data.get())
+					m_items[i].texture.data.release();
 				m_items[i].state = CCoverFlow::STATE_Loading;
 			}
 		}
@@ -2497,7 +2500,7 @@ bool CCoverFlow::preCacheCover(const char *id, const u8 *png, bool full)
 			SWFCHeader header(tex, full, m_compressCache);
 			fwrite(&header, 1, sizeof header, file);
 			fwrite(zBuffer.get(), 1, zBufferSize, file);
-			SAFE_CLOSE(file);
+			fclose(file);
 		}
 	}
 
@@ -2516,7 +2519,7 @@ bool CCoverFlow::fullCoverCached(const char *id)
 			&& header.full != 0 && m_compressTextures == (header.cmpr != 0)
 			&& header.getWidth() >= 8 && header.getHeight() >= 8
 			&& header.getWidth() <= 1090 && header.getHeight() <= 1090;
-		SAFE_CLOSE(file);
+		fclose(file);
 	}
 	return found;
 }
@@ -2553,7 +2556,7 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq)
 				SWFCHeader header(tex, box, m_compressCache);
 				fwrite(&header, 1, sizeof header, file);
 				fwrite(zBuffer.get(), 1, zBufferSize, file);
-				SAFE_CLOSE(file);
+				fclose(file);
 				if (m_deletePicsAfterCaching)
 					remove(path);
 			}
@@ -2671,7 +2674,7 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq)
 				}
 			}
 			//
-			SAFE_CLOSE(file);
+			fclose(file);
 			if (success) return CCoverFlow::CL_OK;
 		}
 	}
@@ -2700,7 +2703,8 @@ int CCoverFlow::_coverLoader(CCoverFlow *cf)
 			firstItem = cf->m_covers[cf->m_range / 2].index;
 			i = loopNum((j & 1) ? firstItem - (j + 1) / 2 : firstItem + j / 2, cf->m_items.size());
 			LWP_MutexLock(cf->m_mutex);
-			SMART_FREE(cf->m_items[i].texture.data);
+			if(cf->m_items[i].texture.data.get())
+				cf->m_items[i].texture.data.release();
 			cf->m_items[i].state = CCoverFlow::STATE_Loading;
 			LWP_MutexUnlock(cf->m_mutex);
 		}

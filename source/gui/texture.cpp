@@ -211,9 +211,9 @@ STexture::TexErr STexture::fromPNGFile(const char *filename, u8 f, Alloc alloc, 
 		ptrPng = smartMem2Alloc(fileSize);
 		if (!!ptrPng)
 			if (fread(ptrPng.get(), 1, fileSize, file) != fileSize)
-				SMART_FREE(ptrPng);
+				ptrPng.release();
 	}
-	SAFE_CLOSE(file);
+	fclose(file);
 	return !!ptrPng ? fromPNG(ptrPng.get(), f, alloc, minMipSize, maxMipSize) : STexture::TE_NOMEM;
 }
 
@@ -319,8 +319,8 @@ STexture::TexErr STexture::fromPNG(const u8 *buffer, u8 f, Alloc alloc, u32 minM
 		}
 		if (!tmpData || !tmpData2)
 		{
-			SMART_FREE(tmpData);
-			SMART_FREE(tmpData2);
+			tmpData.release();
+			tmpData2.release();
 			PNGU_ReleaseImageContext(ctx);
 			return STexture::TE_NOMEM;
 		}

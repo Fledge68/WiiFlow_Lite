@@ -43,7 +43,7 @@ s32 BootChannel(u8 *data, u64 chantitle, u8 vidMode, bool vipatch, bool countryS
 	Identify(chantitle, &ios);
 
 	entryPoint = LoadChannel(data);
-	SAFE_FREE(data);
+	free(data);
 
 	/* Select an appropriate video mode */
 	GXRModeObj * vmode = __Disc_SelectVMode(vidMode, chantitle);
@@ -243,8 +243,8 @@ bool Identify(u64 titleid, u32 *ios)
 	if (certBuffer == NULL || certSize == 0)
 	{
 		gprintf("Reading certs...Failed!\n");
-		SAFE_FREE(tmdBuffer);
-		SAFE_FREE(tikBuffer);
+		free(tmdBuffer);
+		free(tikBuffer);
 		return false;
 	}
 	
@@ -271,9 +271,9 @@ bool Identify(u64 titleid, u32 *ios)
 		}
 	}
 	
-	SAFE_FREE(tmdBuffer);
-	SAFE_FREE(tikBuffer);
-	SAFE_FREE(certBuffer);
+	free(tmdBuffer);
+	free(tikBuffer);
+	free(certBuffer);
 
 	return ret < 0 ? false : true;
 }
@@ -297,10 +297,10 @@ u8 * GetDol(u64 title, u32 bootcontent)
 			if (decompressLZ77content(data, contentSize, &decompressed, &size) < 0)
 			{
 				gprintf("Decompression failed\n");
-				SAFE_FREE(data);
+				free(data);
 				return NULL;
 			}
-			SAFE_FREE(data);
+			free(data);
 			data = decompressed;
 		}	
 		return data;

@@ -153,8 +153,8 @@ int PNGU_DecodeToYCbYCr (IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, void *buff
 															*(ctx->row_pointers[y]+x*6+3), *(ctx->row_pointers[y]+x*6+4), *(ctx->row_pointers[y]+x*6+5));
 	
 	// Free resources
-	SAFE_FREE (ctx->img_data);
-	SAFE_FREE (ctx->row_pointers);
+	MEM2_free(ctx->img_data);
+	MEM2_free(ctx->row_pointers);
 
 	// Success
 	return PNGU_OK;
@@ -177,8 +177,8 @@ int PNGU_DecodeToRGB565 (IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, void *buff
 				(((PNGU_u16) (ctx->row_pointers[y][x*3+2] & 0xF8)) >> 3);
 	
 	// Free resources
-	SAFE_FREE (ctx->img_data);
-	SAFE_FREE (ctx->row_pointers);
+	MEM2_free(ctx->img_data);
+	MEM2_free(ctx->row_pointers);
 
 	// Success
 	return PNGU_OK;
@@ -213,8 +213,8 @@ int PNGU_DecodeToRGBA8 (IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, void *buffe
 	}
 	
 	// Free resources
-	SAFE_FREE (ctx->img_data);
-	SAFE_FREE (ctx->row_pointers);
+	MEM2_free(ctx->img_data);
+	MEM2_free(ctx->row_pointers);
 
 	// Success
 	return PNGU_OK;
@@ -276,8 +276,8 @@ int PNGU_DecodeTo4x4RGB565 (IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, void *b
 	}
 
 	// Free resources
-	SAFE_FREE (ctx->img_data);
-	SAFE_FREE (ctx->row_pointers);
+	MEM2_free(ctx->img_data);
+	MEM2_free(ctx->row_pointers);
 
 	// Success
 	return PNGU_OK;
@@ -523,8 +523,8 @@ int PNGU_DecodeTo4x4RGB5A3 (IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, void *b
 	}
 	
 	// Free resources
-	SAFE_FREE (ctx->img_data);
-	SAFE_FREE (ctx->row_pointers);
+	MEM2_free(ctx->img_data);
+	MEM2_free(ctx->row_pointers);
 
 	// Success
 	return PNGU_OK;
@@ -647,8 +647,8 @@ int PNGU_DecodeTo4x4RGBA8 (IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, void *bu
 	}
 	
 	// Free resources
-	SAFE_FREE (ctx->img_data);
-	SAFE_FREE (ctx->row_pointers);
+	MEM2_free(ctx->img_data);
+	MEM2_free(ctx->row_pointers);
 
 	// Success
 	return PNGU_OK;
@@ -1123,8 +1123,8 @@ int pngu_decode (IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, PNGU_u32 stripAlph
 	{
 		error:
 		memcpy(png_jmpbuf(ctx->png_ptr), save_jmp, sizeof(save_jmp));
-		SAFE_FREE(ctx->row_pointers);
-		SAFE_FREE(ctx->img_data);
+		MEM2_free(ctx->row_pointers);
+		MEM2_free(ctx->img_data);
 		pngu_free_info (ctx);
 		//printf("*** This is a corrupted image!!\n"); sleep(5);
 		return mem_err ? PNGU_LIB_ERROR : -666;

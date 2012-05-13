@@ -35,7 +35,6 @@
 #include <dirent.h>
 
 #include "nand.hpp"
-#include "utils.h"
 #include "mem2.hpp"
 #include "wbfs.h"
 #include "gecko.h"
@@ -275,30 +274,29 @@ s32 Nand::__configread(void)
 	confbuffer = (u8 *)MEM2_alloc(0x4000);
 	txtbuffer = (char *)MEM2_alloc(0x100);
 	cfg_hdr = (config_header *)NULL;
-	
+
 	FILE *f = fopen(cfgpath, "rb");
 	if(f)
 	{
 		fread(confbuffer, 1, 0x4000, f);
-		SAFE_CLOSE(f);
+		fclose(f);
 	}
-		
+
 	f = fopen(settxtpath, "rb");
 	if(f)
 	{
 		fread(txtbuffer, 1, 0x100, f);
-		SAFE_CLOSE(f);
+		fclose(f);
 	}
-		
 	cfg_hdr = (config_header *)confbuffer;
-		
+
 	__Dec_Enc_TB();
-	
+
 	configloaded = configloaded ? false : true;
-	
+
 	if(tbdec && configloaded)
 		return 1;		
-	
+
 	return 0;
 }
 
@@ -307,7 +305,7 @@ s32 Nand::__configwrite(void)
 	if(configloaded)
 	{
 		__Dec_Enc_TB();	
-		
+
 		if(!tbdec)
 		{
 			FILE *f = fopen(cfgpath, "wb");
@@ -315,19 +313,18 @@ s32 Nand::__configwrite(void)
 			{
 				fwrite(confbuffer, 1, 0x4000, f);
 				gprintf("SYSCONF written to:\"%s\"\n", cfgpath);
-				SAFE_CLOSE(f);
+				fclose(f);
 			}
-			
+
 			f = fopen(settxtpath, "wb");
 			if(f)
 			{
 				fwrite(txtbuffer, 1, 0x100, f);
 				gprintf("setting.txt written to: \"%s\"\n", settxtpath);
-				SAFE_CLOSE(f);
+				fclose(f);
 			}		
-				
 			configloaded = configloaded ? false : true;
-			
+
 			if(!tbdec && !configloaded)
 				return 1;			
 		}
@@ -335,7 +332,7 @@ s32 Nand::__configwrite(void)
 	free(confbuffer);
 	free(txtbuffer);
 	return 0;			
-} 
+}
 
 u32 Nand::__configsetbyte(const char *item, u8 val)
 {
@@ -408,7 +405,7 @@ bool Nand::__FileExists(const char *path, ...)
 	if (f != 0)
 	{
 		gprintf("File \"%s\" exists\n", path);		
-		SAFE_CLOSE(f);
+		fclose(f);
 		return true;
 	}
 	return false;
@@ -488,30 +485,29 @@ s32 Nand::__FlashNandFile(const char *source, const char *dest)
 		gprintf("Error opening source: \"%s\"\n", source);
 		return 0;
 	}
-	
+
 	fseek(file, 0, SEEK_END);
 	u32 fsize = ftell(file);
 	fseek(file, 0, SEEK_SET);
-	
+
 	if(fake)
 	{
 		NandSize += fsize;
 		if(showprogress)
 			dumper(NandSize, 0x1f400000, 0x1f400000, NandSize, FilesDone, FoldersDone, (char *)"", data);
-		
-		SAFE_CLOSE(file);
+		fclose(file);
 		return 0;
 	}
-	
+
 	gprintf("Flashing: %s (%uKB) to nand...", dest, (fsize / 0x400)+1);
-	
+
 	ISFS_Delete(dest);
 	ISFS_CreateFile(dest, 0, 3, 3, 3);
 	s32 fd = ISFS_Open(dest, ISFS_OPEN_RW);
 	if(fd < 0)
 	{
 		gprintf(" failed\nError: ISFS_OPEN(%s, %d) %d\n", dest, ISFS_OPEN_RW, fd);
-		SAFE_CLOSE(file);
+		fclose(file);
 		return fd;
 	}
 
@@ -528,24 +524,24 @@ s32 Nand::__FlashNandFile(const char *source, const char *dest)
 		{
 			gprintf(" failed\nError: fread(%p, 1, %d, %s) %d\n", buffer, size, source, ret);
 			ISFS_Close(fd);
-			SAFE_CLOSE(file);
+			fclose(file);
 			MEM2_free(buffer);
 			return ret;
 		}
-		
+
 		ret = ISFS_Write(fd, buffer, size);
 		if(ret <= 0) 
 		{
 			gprintf(" failed\nError: ISFS_Write(%d, %p, %d) %d\n", fd, buffer, size, ret);
 			ISFS_Close(fd);
-			SAFE_CLOSE(file);
+			fclose(file);
 			MEM2_free(buffer);
 			return ret;
 		}
 		toread -= size;
 		NandDone += size;
 		FileDone += size;
-		
+
 		if(showprogress)
 		{
 			const char *file = strrchr(dest, '/')+1;
@@ -561,7 +557,7 @@ s32 Nand::__FlashNandFile(const char *source, const char *dest)
 	}
 	ISFS_Close(fd);
 	MEM2_free(buffer);
-	SAFE_CLOSE(file);	
+	fclose(file);	
 	return 1;
 }
 
@@ -574,7 +570,7 @@ s32 Nand::__DumpNandFile(const char *source, const char *dest)
 		gprintf("Error: IOS_OPEN(%s, %d) %d\n", source, ISFS_OPEN_READ, fd);
 		return fd;
 	}
-	
+
 	fstats *status = (fstats *)MEM2_alloc(sizeof(fstats));
 	s32 ret = ISFS_GetFileStats(fd, status);
 	if (ret < 0)
@@ -584,21 +580,20 @@ s32 Nand::__DumpNandFile(const char *source, const char *dest)
 		MEM2_free(status);
 		return ret;
 	}
-	
+
 	if(fake)
 	{
 		NandSize += status->file_length;
 		if(showprogress)
 			dumper(NandSize, 0x1f400000, 0x1f400000, NandSize, FilesDone, FoldersDone, (char *)"", data);
-		
 		ISFS_Close(fd);
 		MEM2_free(status);
 		return 0;
 	}
-	
+
 	if(__FileExists(dest))   
 		remove(dest);		
-	
+
 	FILE *file = fopen(dest, "wb");
 	if (!file)
 	{
@@ -606,7 +601,7 @@ s32 Nand::__DumpNandFile(const char *source, const char *dest)
 		ISFS_Close(fd);
 		return 0;
 	}
-	
+
 	gprintf("Dumping: %s (%ukb)...", source, (status->file_length / 0x400)+1);
 
 	u8 *buffer = (u8 *)MEM2_alloc(BLOCK);
@@ -622,18 +617,18 @@ s32 Nand::__DumpNandFile(const char *source, const char *dest)
 		{
 			gprintf(" failed\nError: ISFS_Read(%d, %p, %d) %d\n", fd, buffer, size, ret);
 			ISFS_Close(fd);
-			SAFE_CLOSE(file);
+			fclose(file);
 			MEM2_free(status);
 			MEM2_free(buffer);
 			return ret;
 		}
-		
+
 		ret = fwrite(buffer, 1, size, file);
 		if(ret < 0) 
 		{
 			gprintf(" failed\nError writing to destination: \"%s\" (%d)\n", dest, ret);
 			ISFS_Close(fd);
-			SAFE_CLOSE(file);
+			fclose(file);
 			MEM2_free(status);
 			MEM2_free(buffer);
 			return ret;
@@ -641,7 +636,7 @@ s32 Nand::__DumpNandFile(const char *source, const char *dest)
 		toread -= size;
 		NandDone += size;
 		FileDone += size;
-		
+
 		if(showprogress)
 		{
 			const char *file = strrchr(source, '/')+1;
@@ -655,11 +650,11 @@ s32 Nand::__DumpNandFile(const char *source, const char *dest)
 		dumper(NandDone, NandSize, status->file_length, FileDone, FilesDone, FoldersDone, (char *)file, data);
 	}
 	gprintf(" done!\n");
-	SAFE_CLOSE(file);	
+	fclose(file);	
 	ISFS_Close(fd);	
 	MEM2_free(status);
 	MEM2_free(buffer);
-	
+
 	return 0;
 }
 
@@ -668,19 +663,19 @@ s32 Nand::__FlashNandFolder(const char *source, const char *dest)
 {	
 	char nsource[MAX_FAT_PATH];
 	char ndest[ISFS_MAXPATH];
-	
+
 	DIR *dir_iter;
 	struct dirent *ent;
-	
+
 	dir_iter = opendir(source);
 	if (!dir_iter)
 		return 1;
-		
+
 	while((ent = readdir(dir_iter)) != NULL)
 	{
 		if(ent->d_name[0] == '.') 
 			continue;
-			
+
 		if(dest[strlen(dest)-1] == '/')
 			snprintf(ndest, sizeof(ndest), "%s%s", dest, ent->d_name);
 		else
@@ -690,7 +685,7 @@ s32 Nand::__FlashNandFolder(const char *source, const char *dest)
 			snprintf(nsource, sizeof(nsource), "%s%s", source, ent->d_name);
 		else
 			snprintf(nsource, sizeof(nsource), "%s/%s", source, ent->d_name);
-		
+
 		if(ent->d_type == DT_DIR)
 		{
 			__NANDify(ndest);	
@@ -717,16 +712,16 @@ s32 Nand::__DumpNandFolder(const char *source, const char *dest)
 	char nsource[ISFS_MAXPATH];
 	char ndest[MAX_FAT_PATH];
 	char tdest[MAX_FAT_PATH];
-	
+
 	__GetNameList(source, &names, &cnt);	
-	
+
 	for(i = 0; i < cnt; i++) 
 	{
 		if(source[strlen(source)-1] == '/')
 			snprintf(nsource, sizeof(nsource), "%s%s", source, names[i].name);
 		else
 			snprintf(nsource, sizeof(nsource), "%s/%s", source, names[i].name);		
-		
+
 		if(!names[i].type)
 		{
 			__FATify(tdest, nsource);			
@@ -745,7 +740,7 @@ s32 Nand::__DumpNandFolder(const char *source, const char *dest)
 			__DumpNandFolder(nsource, dest);
 		}
 	}
-	SAFE_FREE(names);
+	free(names);
 	return 0;
 }
 
@@ -758,7 +753,7 @@ void Nand::CreatePath(const char *path, ...)
 	{
 		if(folder[strlen(folder)-1] == '/')
 			folder[strlen(folder)-1] = 0;		
-			
+
 		char *check = folder;
 		while (true)
 		{
@@ -768,7 +763,7 @@ void Nand::CreatePath(const char *path, ...)
 			else
 				break;
 		}
-		
+
 		DIR *d;
 		d = opendir(folder);
 
@@ -784,7 +779,7 @@ void Nand::CreatePath(const char *path, ...)
 		}
 	}
 	va_end(args);
-	SAFE_FREE(folder);
+	free(folder);
 }
 
 void Nand::CreateTitleTMD(const char *path, dir_discHdr *hdr)
@@ -799,28 +794,28 @@ void Nand::CreateTitleTMD(const char *path, dir_discHdr *hdr)
 
 	if(!titleTMD) 
 		return;
-		
+
 	u32 highTID = *(u32*)(titleTMD+0x18c);
 	u32 lowTID = *(u32*)(titleTMD+0x190);
-	
+
 	CreatePath("%s/title/%08x/%08x/data", path, highTID, lowTID);
 	CreatePath("%s/title/%08x/%08x/content", path, highTID, lowTID);
-	
+
 	char nandpath[MAX_FAT_PATH];
 	if(path[strlen(path)-1] == '/')
 		snprintf(nandpath, sizeof(nandpath), "%stitle/%08x/%08x/content/title.tmd", path, highTID, lowTID);
 	else
 		snprintf(nandpath, sizeof(nandpath), "%s/title/%08x/%08x/content/title.tmd", path, highTID, lowTID);
-	
+
 	struct stat filestat;
 	if (stat(nandpath, &filestat) == 0)
 	{
-		SAFE_FREE(titleTMD);
+		free(titleTMD);
 		gprintf("%s Exists!\n", nandpath);
 		return;
 	}
 	gprintf("Creating title TMD: %s\n", nandpath);
-	
+
 	FILE *file = fopen(nandpath, "wb");
 	if(file)
 	{
@@ -831,7 +826,7 @@ void Nand::CreateTitleTMD(const char *path, dir_discHdr *hdr)
 	else 
 		gprintf("Creating title TMD: %s failed (%i)\n", nandpath, file);
 
-	SAFE_FREE(titleTMD);
+	free(titleTMD);
 }
 
 s32 Nand::FlashToNAND(const char *source, const char *dest, dump_callback_t i_dumper, void *i_data)
@@ -884,15 +879,15 @@ s32 Nand::CalcDumpSpace(const char *source, dump_callback_t i_dumper, void *i_da
 	dumper = i_dumper;
 	fake = true;
 	showprogress = true;		
-	
+
 	u32 temp = 0;	
-	
+
 	s32 ret = ISFS_ReadDir(source, NULL, &temp);
 	if(ret < 0)		
 		__DumpNandFile(source, "");
 	else
 		__DumpNandFolder(source, "");
-	
+
 	return NandSize;	
 }
 
@@ -913,16 +908,16 @@ s32 Nand::CreateConfig(const char *path)
 	CreatePath("%s/title/00000001", path);
 	CreatePath("%s/title/00000001/00000002", path);
 	CreatePath("%s/title/00000001/00000002/data", path);
-	
+
 	fake = false;
 	showprogress = false;
-	
+
 	bzero(cfgpath, MAX_FAT_PATH+1);	
 	bzero(settxtpath, MAX_FAT_PATH+1);
-	
+
 	snprintf(cfgpath, sizeof(cfgpath), "%s%s", path, SYSCONFPATH);
 	snprintf(settxtpath, sizeof(settxtpath), "%s%s", path, TXTPATH);
-	
+
 	__DumpNandFile(SYSCONFPATH, cfgpath);
 	__DumpNandFile(TXTPATH, settxtpath);
 	return 0;	
@@ -935,59 +930,55 @@ s32 Nand::Do_Region_Change(string id)
 		switch(id[3])
 		{
 			case 'J':
-			{
-				gprintf("Switching region to NTSC-j \n");
+				gprintf("Switching region to NTSC-J \n");
 				CCode[0] = 1;
-				__configsetbyte( "IPL.LNG", 0 );				
+				__configsetbyte( "IPL.LNG", 0 );
 				__configsetbigarray( "SADR.LNG", CCode, 0x1007 );
 				__configsetsetting( "AREA", "JPN" );
 				__configsetsetting( "MODEL", "RVL-001(JPN)" );
 				__configsetsetting( "CODE", "LJM" );
 				__configsetsetting( "VIDEO", "NTSC" );
-				__configsetsetting( "GAME", "JP" );								
-			} break;
+				__configsetsetting( "GAME", "JP" );
+				break;
 			case 'E':
-			{
-				gprintf("Switching region to NTSC-u \n");
+				gprintf("Switching region to NTSC-U \n");
 				CCode[0] = 31;
-				__configsetbyte( "IPL.LNG", 1 );				
+				__configsetbyte( "IPL.LNG", 1 );
 				__configsetbigarray( "IPL.SADR", CCode, 0x1007 );
 				__configsetsetting( "AREA", "USA" );
 				__configsetsetting( "MODEL", "RVL-001(USA)" );
 				__configsetsetting( "CODE", "LU" );
 				__configsetsetting( "VIDEO", "NTSC" );
-				__configsetsetting( "GAME", "US" );									
-			} break;
+				__configsetsetting( "GAME", "US" );
+				break;
 			case 'D':
 			case 'F':
 			case 'I':
 			case 'M':
 			case 'P':
 			case 'S':
-			case 'U':					
-			{
+			case 'U':
 				gprintf("Switching region to PAL \n");
 				CCode[0] = 110;
-				__configsetbyte( "IPL.LNG", 1 );				
+				__configsetbyte( "IPL.LNG", 1 );
 				__configsetbigarray( "IPL.SADR", CCode, 0x1007 );
 				__configsetsetting( "AREA", "EUR" );
 				__configsetsetting( "MODEL", "RVL-001(EUR)" );
 				__configsetsetting( "CODE", "LEH" );
 				__configsetsetting( "VIDEO", "PAL" );
-				__configsetsetting( "GAME", "EU" );								
-			} break;
-			case 'K':					
-			{
-				gprintf("Switching region to NTSC-k \n");
+				__configsetsetting( "GAME", "EU" );
+				break;
+			case 'K':
+				gprintf("Switching region to NTSC-K \n");
 				CCode[0] = 137;
-				__configsetbyte( "IPL.LNG", 9 );				
+				__configsetbyte( "IPL.LNG", 9 );
 				__configsetbigarray( "IPL.SADR", CCode, 0x1007 );
 				__configsetsetting( "AREA", "KOR" );
 				__configsetsetting( "MODEL", "RVL-001(KOR)" );
 				__configsetsetting( "CODE", "LKM" );
 				__configsetsetting( "VIDEO", "NTSC" );
 				__configsetsetting( "GAME", "KR" );
-			} break;		
+				break;
 		}
 	}
 	__configwrite();

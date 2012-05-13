@@ -28,7 +28,7 @@ u8 *ISFS_GetFile(u8 *path, u32 *size, s32 length)
 				if (ISFS_Read(fd, (char*)buf, length) != length)
 				{
 					*size = 0;
-					SAFE_FREE(buf);
+					free(buf);
 				}
 			}
 		}

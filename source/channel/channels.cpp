@@ -36,7 +36,6 @@
 #include "banner.h"
 #include "wstringEx.hpp"
 #include "gecko.h"
-#include "utils.h"
 #include "fs.h"
 #include "config.hpp"
 #include "text.hpp"
@@ -97,8 +96,8 @@ u8 Channels::GetRequestedIOS(u64 title)
 
 	if(size > 0x18B)
 		IOS = titleTMD[0x18B];
-		
-	SAFE_FREE(titleTMD);
+
+	free(titleTMD);
 
 	return IOS;
 }
@@ -118,14 +117,14 @@ u64* Channels::GetChannelList(u32* count)
 
 	if(ES_GetTitles(titles, countall) < 0)
 	{
-		SAFE_FREE(titles);
+		free(titles);
 		return NULL;
 	}
 
 	u64* channels = (u64*)MEM2_alloc(countall * sizeof(u64));
 	if (!channels)
 	{
-		SAFE_FREE(titles);
+		free(titles);
 		return NULL;
 	}
 
@@ -143,7 +142,7 @@ u64* Channels::GetChannelList(u32* count)
 			channels[(*count)++] = titles[i];
 		}
 	}
-	SAFE_FREE(titles);
+	free(titles);
 
 	return (u64*)MEM2_realloc(channels, *count * sizeof(u64));
 }
@@ -170,7 +169,7 @@ bool Channels::GetAppNameFromTmd(u64 title, char* app, bool dol, u32* bootconten
 			break;
 		}
 
-	SAFE_FREE(data);
+	free(data);
 
 	return ret;
 }
@@ -246,7 +245,7 @@ void Channels::Search(u32 channelType, string lang)
 		}
 	}
 
-	SAFE_FREE(list);
+	free(list);
 }
 
 wchar_t * Channels::GetName(int index)

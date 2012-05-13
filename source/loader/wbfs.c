@@ -86,7 +86,7 @@ s32 __WBFS_ReadDVD(void *fp, u32 lba, u32 len, void *iobuf)
 
 out:
 	/* Free memory */
-	SAFE_FREE(fp);
+	MEM2_free(fp);
 
 	return ret;
 }

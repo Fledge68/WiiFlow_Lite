@@ -359,7 +359,8 @@ s32 Disc_BootPartition(u64 offset, u8 vidMode, bool vipatch, bool countryString,
 		IOSReloadBlock(IOS_GetVersion(), true);
 	
 	s32 ret = WDVD_OpenPartition(offset, 0, 0, 0, Tmd_Buffer);
-	if (ret < 0) return ret;
+	if (ret < 0)
+		return ret;
 
 	/* Select an appropriate video mode */
 	__Disc_SelectVMode(vidMode, 0);
@@ -369,14 +370,16 @@ s32 Disc_BootPartition(u64 offset, u8 vidMode, bool vipatch, bool countryString,
 
 	/* Run apploader */
 	ret = Apploader_Run(&p_entry, vidMode, vmode, vipatch, countryString, patchVidMode, aspectRatio);
-	if (ret < 0) return ret;
+	if (ret < 0)
+		return ret;
 
     free_wip();
 	
 	if (hooktype != 0)
 		ocarina_do_code();
 
-	gprintf("\n\nEntry Point is: %0x8\n", p_entry);
+	gprintf("\n\nEntry Point is: 0x%08x\n", p_entry);
+	appentrypoint = (u32)p_entry;
 
 	/* Set time */
 	__Disc_SetTime();
@@ -400,10 +403,8 @@ s32 Disc_BootPartition(u64 offset, u8 vidMode, bool vipatch, bool countryString,
 	// fix for PeppaPig
 	memcpy((void*)0x800000F4,(char *) &temp_data, 4);
 
-	appentrypoint = (u32) p_entry;
-	
 	gprintf("Jumping to entrypoint\n");
-	
+
 	if (hooktype != 0)
 	{
 		__asm__(

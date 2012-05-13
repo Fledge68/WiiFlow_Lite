@@ -36,7 +36,6 @@
 #include "banner.h"
 #include "MD5.h"
 #include "loader/fs.h"
-#include "loader/utils.h"
 #include "gecko.h"
 #include "U8Archive.h"
 
@@ -156,7 +155,7 @@ Banner * Banner::GetBanner(u64 title, char *appname, bool isfs, bool imetOnly)
 		buf = ISFS_GetFile((u8 *) appname, &size, imetOnly ? sizeof(IMET) + IMET_OFFSET : 0);
 		if (size == 0) 
 		{
-			SAFE_FREE(buf);
+			free(buf);
 			return NULL;
 		}
 	}
@@ -176,7 +175,7 @@ Banner * Banner::GetBanner(u64 title, char *appname, bool isfs, bool imetOnly)
 		buf = MEM2_alloc(size);
 
 		fread(buf, size, 1, fp);
-		SAFE_CLOSE(fp);
+		fclose(fp);
 	}
 
 	return new Banner((u8 *)buf, title);

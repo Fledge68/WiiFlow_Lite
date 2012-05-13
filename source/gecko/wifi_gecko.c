@@ -145,5 +145,5 @@ void wifi_printf(const char * format, ...)
 	}
 	va_end(va);
 
-	SAFE_FREE(tmp);
+	free(tmp);
 }

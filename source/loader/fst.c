@@ -443,7 +443,7 @@ int ocarina_do_code(u64 chantitle)
 	{
 		memcpy(codelist, code_buf, code_size);
 		DCFlushRange(codelist, (u32)codelistend - (u32)codelist);
-		SAFE_FREE(code_buf);
+		MEM2_free(code_buf);
 	}
 
 	// TODO What's this???

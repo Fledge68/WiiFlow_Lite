@@ -26,13 +26,13 @@ public:
 			switch (m_srcAlloc)
 			{
 				case SRCALL_NEW:
-					SAFE_DELETE(m_p);
+					delete m_p;
 					break;
 				default:
-					SAFE_FREE(m_p);
+					free(m_p);
 					break;
 			}
-			SAFE_DELETE(m_refcount);
+			delete m_refcount;
 		}
 
 		m_p = NULL;

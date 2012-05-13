@@ -226,8 +226,8 @@ void CVideo::cleanup(void)
 	gprintf("Cleaning up video...\n");
 	for (u32 i = 0; i < sizeof m_aaBuffer / sizeof m_aaBuffer[0]; ++i)
 	{
-		SMART_FREE(m_aaBuffer[i]);
-		m_aaBufferSize[i] = 0;
+		if(m_aaBuffer[i].get())
+			m_aaBuffer[i].release();
 	}
 	//MEM1_free(m_fifo);
 }
@@ -524,7 +524,8 @@ void CVideo::CheckWaitThread()
 
 		LWP_JoinThread(waitThread, NULL);
 
-		SMART_FREE(waitThreadStack);
+		if(waitThreadStack.get())
+			waitThreadStack.release();
 		waitThread = LWP_THREAD_NULL;
 
 		m_waitMessages.clear();

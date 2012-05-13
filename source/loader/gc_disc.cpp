@@ -138,7 +138,7 @@ s32 GCDump::__DiscWrite(char * path, u64 offset, u32 length, u8 *ReadBuffer)
 
 	wrote = __DiscWriteFile(f, offset, length, ReadBuffer);
 	
-	SAFE_CLOSE(f);
+	fclose(f);
 	return wrote;
 }
 
@@ -446,7 +446,7 @@ s32 GCDump::DumpGame()
 					{
 						MEM2_free(ReadBuffer);
 						MEM2_free(FSTBuffer);
-						SAFE_CLOSE(f);
+						fclose(f);
 						return gc_error;
 					}
 				}
@@ -455,7 +455,7 @@ s32 GCDump::DumpGame()
 			gprintf("Updating FST\n");
 			fseek(f, FSTOffset, SEEK_SET);
 			fwrite(fst, 1, FSTSize, f);
-			SAFE_CLOSE(f);
+			fclose(f);
 
 			gprintf("Done!! Disc old size: %d, disc new size: %d, saved: %d\n", DiscSize, wrote, DiscSize - wrote);
 		}
