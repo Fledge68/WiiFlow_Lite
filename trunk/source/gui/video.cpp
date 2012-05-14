@@ -493,10 +493,7 @@ void CVideo::_showWaitMessages(CVideo *m)
 		VIDEO_WaitVSync();
 	}
 	if (m->m_useWiiLight)
-	{
-		wiiLightSetLevel(0);
 		wiiLightOff();
-	}
 	m->m_waitMessages.clear();
 	m->m_showingWaitMessages = false;
 	gprintf("Stop showing images\n");
@@ -507,8 +504,6 @@ void CVideo::hideWaitMessage()
 	gprintf("Now hide wait message\n");
 	m_showWaitMessage = false;
 	CheckWaitThread();
-
-	wiiLightSetLevel(0);
 	wiiLightOff();
 }
 
