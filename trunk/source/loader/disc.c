@@ -40,8 +40,6 @@ GXRModeObj *disc_vmode = NULL;
 GXRModeObj *vmode = NULL;
 u32 vmode_reg = 0;
 
-extern void __exception_closeall();
-
 static u8	Tmd_Buffer[0x49e4 + 0x1C] ALIGNED(32);
 
 
@@ -387,21 +385,13 @@ s32 Disc_BootPartition(u64 offset, u8 vidMode, bool vipatch, bool countryString,
 	/* Set an appropriate video mode */
 	__Disc_SetVMode();
 
-	u8 temp_data[4];
-
-	// fix for PeppaPig
-	memcpy((char *) &temp_data, (void*)0x800000F4,4);
-
 	usleep(100 * 1000);
 
 	/* Shutdown IOS subsystems */
-	SYS_ResetSystem(SYS_SHUTDOWN, 0, 0);
+	Sys_Shutdown();
 
 	/* Originally from tueidj - taken from NeoGamma (thx) */
 	*(vu32*)0xCC003024 = 1;
-	
-	// fix for PeppaPig
-	memcpy((void*)0x800000F4,(char *) &temp_data, 4);
 
 	gprintf("Jumping to entrypoint\n");
 
