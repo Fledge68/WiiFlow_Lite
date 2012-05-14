@@ -1,6 +1,7 @@
 #include "loader/wbfs.h"
 #include "libwbfs/wiidisc.h"
 #include "menu.hpp"
+#include "defines.h"
 
 #include "loader/sys.h"
 #include "gecko.h"
@@ -442,7 +443,7 @@ void CMenu::_showGameSettings(void)
 
 void CMenu::_gameSettings(void)
 {
-	m_gcfg2.load(fmt("%s/gameconfig2.ini", m_settingsDir.c_str()));
+	m_gcfg2.load(fmt("%s/" GAME_SETTINGS2_FILENAME, m_settingsDir.c_str()));
 	string id(m_cf.getId());
 
 	m_gameSettingsPage = 1;
