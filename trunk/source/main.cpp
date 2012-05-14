@@ -36,8 +36,7 @@ extern "C"
 int main(int argc, char **argv)
 {
 	__exception_setreload(5);
-	MEM2_init(52);
-	ISFS_Initialize();
+	MEM2_init(52);	
 
 	geckoinit = InitGecko();
 	gprintf(" \nWelcome to %s (%s-r%s)!\nThis is the debug output.\n", APP_NAME, APP_VERSION, SVN_REV);
@@ -72,10 +71,12 @@ int main(int argc, char **argv)
 
 	// Load Custom IOS
 	bool iosOK = loadIOS(mainIOS, false);
+	
+	ISFS_Initialize();
 
 	u8 mainIOSBase = 0;
 	iosOK = iosOK && cIOSInfo::D2X(mainIOS, &mainIOSBase);
-	gprintf("Loaded cIOS: %u has base %u\n", mainIOS, mainIOSBase);
+	gprintf("Loaded cIOS: %u has base %u\n", mainIOS, mainIOSBase);	
 
 	Open_Inputs(); //init wiimote early
 
