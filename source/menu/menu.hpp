@@ -76,7 +76,6 @@ private:
 	u32 m_base_font_size;
 	u8 m_aa;
 	bool m_directLaunch;
-	bool m_gamelistdump;
 	bool m_locked;
 	bool m_favorites;
 	s16 m_showtimer;
@@ -394,6 +393,8 @@ private:
 	u32 m_codeBtnKey[10];
 	u32 m_codeBtnBack;
 	u32 m_codeBtnErase;
+	u32 m_codeBtnAge;
+	u32 m_codeLblAge;
 	u32 m_codeLblUser[4];
 //About menu
 	u32 m_aboutLblTitle;
@@ -977,7 +978,7 @@ private:
 	void _cfNeedsUpdate(void);
 	void _game(bool launch = false);
 	void _download(string gameId = string());
-	bool _code(char code[4], bool erase = false);
+	void _code(void);
 	void _about(void);
 	bool _wbfsOp(WBFS_OP op);
 	void _cfTheme(void);

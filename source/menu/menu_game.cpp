@@ -340,7 +340,7 @@ static void setLanguage(int l)
 
 void CMenu::_game(bool launch)
 {
-	m_gcfg1.load(fmt("%s/gameconfig1.ini", m_settingsDir.c_str()));
+	m_gcfg1.load(fmt("%s/" GAME_SETTINGS1_FILENAME, m_settingsDir.c_str()));
 	if (!launch)
 	{
 		SetupInput();
@@ -629,7 +629,7 @@ void CMenu::_directlaunch(const string &id)
 
 void CMenu::_launch(dir_discHdr *hdr)
 {
-	m_gcfg2.load(fmt("%s/gameconfig2.ini", m_settingsDir.c_str()));
+	m_gcfg2.load(fmt("%s/" GAME_SETTINGS2_FILENAME, m_settingsDir.c_str()));
 	if(hdr->hdr.gc_magic == 0x4c4f4c4f)
 	{
 		string title(&hdr->path[string(hdr->path).find_last_of("/")+1]);

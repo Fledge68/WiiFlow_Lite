@@ -13,6 +13,12 @@
 #define CAT_FILENAME			"categories.ini"
 #define TITLES_FILENAME			"titles.ini"
 #define CTITLES_FILENAME		"custom_titles.ini"
+#define AGE_LOCK_FILENAME		"age_lock.ini"
+#define TITLES_DUMP_FILENAME	"titlesdump.ini"
+#define GAME_SETTINGS1_FILENAME	"gameconfig1.ini"
+#define GAME_SETTINGS2_FILENAME	"gameconfig2.ini"
+
+#define AGE_LOCK_DEFAULT		13
 
 #define DEVELOPERS				"r-win, OverjoY, FIX94"
 #define PAST_DEVELOPERS			"Hibernatus, Narolez, Hulk, Miigotu"

@@ -24,6 +24,7 @@
 #include "loader/playlog.h"
 #include "gc/fileOps.h"
 #include "Gekko.h"
+#include "GameTDB.hpp"
 
 // Sounds
 extern const u8 click_wav[];
@@ -1469,20 +1470,34 @@ void CMenu::_addUserLabels(CMenu::SThemeData &theme, u32 *ids, u32 start, u32 si
 
 void CMenu::_initCF(void)
 {
-	Config m_dump;
+	Config dump, gameAgeList;
+	GameTDB gametdb;
 	const char *domain = _domainFromView();
 	const char *catviews = m_cat.getString(domain, "categories", "100000000000000000000").c_str();
-
 	m_cf.clear();
 	m_cf.reserve(m_gameList.size());
 	vector<bool> EnabledPlugins;
 	if(m_current_view == COVERFLOW_EMU)
 		EnabledPlugins = m_plugin.GetEnabledPlugins(m_cfg);
 
- 	m_gamelistdump = m_cfg.getBool(domain, "dump_list", true);
-	if(m_gamelistdump) m_dump.load(fmt("%s/titlesdump.ini", m_settingsDir.c_str()));
+ 	bool dumpGameLst = m_cfg.getBool(domain, "dump_list", true);
+	if(dumpGameLst) dump.load(fmt("%s/" TITLES_DUMP_FILENAME, m_settingsDir.c_str()));
 
-	m_gcfg1.load(fmt("%s/gameconfig1.ini", m_settingsDir.c_str()));
+	m_gcfg1.load(fmt("%s/" GAME_SETTINGS1_FILENAME, m_settingsDir.c_str()));
+	int ageLock = m_cfg.getInt("GENERAL", "age_lock");
+	if (ageLock < 2 || ageLock > 19)
+		ageLock = 19;
+
+	if (ageLock < 19)
+	{
+		gameAgeList.load(fmt("%s/" AGE_LOCK_FILENAME, m_settingsDir.c_str()));
+		if (m_current_view == COVERFLOW_USB || m_current_view == COVERFLOW_CHANNEL)
+		{
+			gametdb.OpenFile(sfmt("%s/wiitdb.xml", m_settingsDir.c_str()).c_str());
+			gametdb.SetLanguageCode(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
+		}
+	}
+
 	string id;
 	for (u32 i = 0; i < m_gameList.size(); ++i)
 	{
@@ -1507,7 +1522,83 @@ void CMenu::_initCF(void)
 			idcats.append((21-idcats.length()), '0');
 			m_cat.setString("CATEGORIES", id, idcats);
 		}
-		if ((!m_favorites || m_gcfg1.getBool("FAVORITES", id, false)) && (!m_locked || !m_gcfg1.getBool("ADULTONLY", id, false)))
+		
+		bool ageLocked = false;
+		if (ageLock < 19)
+		{
+			int ageRated = min(max(gameAgeList.getInt(domain, id), 0), 19);
+
+			if (ageRated == 0 && (m_current_view == COVERFLOW_USB || m_current_view == COVERFLOW_CHANNEL))
+			{
+				GameXMLInfo gameinfo;
+				if (gametdb.IsLoaded() && gametdb.GetGameXMLInfo(id.c_str(), &gameinfo))
+				{
+					switch(gameinfo.RatingType)
+					{
+						case GAMETDB_RATING_TYPE_CERO:
+							if (gameinfo.RatingValue == "A")
+								ageRated = 3;
+							else if (gameinfo.RatingValue == "B")
+								ageRated = 12;
+							else if (gameinfo.RatingValue == "D")
+								ageRated = 15;
+							else if (gameinfo.RatingValue == "C")
+								ageRated = 17;
+							else if (gameinfo.RatingValue == "Z")
+								ageRated = 18;
+							break;
+						case GAMETDB_RATING_TYPE_ESRB:
+							if (gameinfo.RatingValue == "E")
+								ageRated = 6;
+							else if (gameinfo.RatingValue == "EC")
+								ageRated = 3;
+							else if (gameinfo.RatingValue == "E10+")
+								ageRated = 10;
+							else if (gameinfo.RatingValue == "T")
+								ageRated = 13;
+							else if (gameinfo.RatingValue == "M")
+								ageRated = 17;
+							else if (gameinfo.RatingValue == "AO")
+								ageRated = 18;
+							break;
+						case GAMETDB_RATING_TYPE_PEGI:
+							if (gameinfo.RatingValue == "3")
+								ageRated = 3;
+							else if (gameinfo.RatingValue == "7")
+								ageRated = 7;
+							else if (gameinfo.RatingValue == "12")
+								ageRated = 12;
+							else if (gameinfo.RatingValue == "16")
+								ageRated = 16;
+							else if (gameinfo.RatingValue == "18")
+								ageRated = 18;
+							break;
+						case GAMETDB_RATING_TYPE_GRB:
+							if (gameinfo.RatingValue == "A")
+								ageRated = 3;
+							else if (gameinfo.RatingValue == "12")
+								ageRated = 12;
+							else if (gameinfo.RatingValue == "15")
+								ageRated = 15;
+							else if (gameinfo.RatingValue == "18")
+								ageRated = 18;
+							break;
+						default:
+							break;
+					}
+				}
+			}
+			if (ageRated == 0)
+				ageRated = min(max(m_cfg.getInt("GENERAL", "age_lock_default", AGE_LOCK_DEFAULT), 2), 19);
+			if (ageRated == 0)
+				ageRated = AGE_LOCK_DEFAULT;
+			if (ageRated > ageLock)
+				ageLocked = true;
+		}
+
+		if ((!m_favorites || m_gcfg1.getBool("FAVORITES", id, false))
+			&& (!m_locked || !m_gcfg1.getBool("ADULTONLY", id, false))
+			&& !ageLocked)
 		{
 			if (catviews[0] == '0')
 			{
@@ -1524,8 +1615,8 @@ void CMenu::_initCF(void)
 			int playcount = m_gcfg1.getInt("PLAYCOUNT", id, 0);
 			unsigned int lastPlayed = m_gcfg1.getUInt("LASTPLAYED", id, 0);
 
-			if(m_gamelistdump)
-				m_dump.setWString(domain, id, m_gameList[i].title);
+			if(dumpGameLst)
+				dump.setWString(domain, id, m_gameList[i].title);
 
 			if (m_current_view == COVERFLOW_EMU)
 			{
@@ -1560,9 +1651,9 @@ void CMenu::_initCF(void)
 		}
 	}
 	m_gcfg1.unload();
- 	if (m_gamelistdump)
+ 	if (dumpGameLst)
 	{
-		m_dump.save(true);
+		dump.save(true);
 		m_cfg.setBool(domain, "dump_list", false);
 	}
  	m_cf.setBoxMode(m_cfg.getBool("GENERAL", "box_mode", true));

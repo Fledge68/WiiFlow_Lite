@@ -307,11 +307,11 @@ void CMenu::_textGameInfo(void)
 	cnt_controlsreq = 0;
 	cnt_controls = 0;
 
-	GameTDB m_gametdb;
-	m_gametdb.OpenFile(fmt("%s/wiitdb.xml", m_settingsDir.c_str()));
-	m_gametdb.SetLanguageCode(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
+	GameTDB gametdb;
+	gametdb.OpenFile(fmt("%s/wiitdb.xml", m_settingsDir.c_str()));
+	gametdb.SetLanguageCode(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
 		
-	titlecheck = m_gametdb.IsLoaded() && m_gametdb.GetGameXMLInfo(m_cf.getId().c_str(), &gameinfo);
+	titlecheck = gametdb.IsLoaded() && gametdb.GetGameXMLInfo(m_cf.getId().c_str(), &gameinfo);
 	if(titlecheck)
 	{
 		gprintf("ID: %s\nTitle: %s\n", gameinfo.GameID.c_str(), gameinfo.Title.c_str());
@@ -359,9 +359,7 @@ void CMenu::_textGameInfo(void)
 					m_rating.fromPNG(cero_z_png);
 				break;
 			case GAMETDB_RATING_TYPE_ESRB:
-				if (gameinfo.RatingValue == "AO")
-					m_rating.fromPNG(esrb_ao_png);
-				else if (gameinfo.RatingValue == "E")
+				if (gameinfo.RatingValue == "E")
 					m_rating.fromPNG(esrb_e_png);
 				else if (gameinfo.RatingValue == "EC")
 					m_rating.fromPNG(esrb_ec_png);
@@ -371,6 +369,8 @@ void CMenu::_textGameInfo(void)
 					m_rating.fromPNG(esrb_t_png);
 				else if (gameinfo.RatingValue == "M")
 					m_rating.fromPNG(esrb_m_png);
+				else if (gameinfo.RatingValue == "AO")
+					m_rating.fromPNG(esrb_ao_png);
 				break;
 			case GAMETDB_RATING_TYPE_PEGI:
 				if (gameinfo.RatingValue == "3")
@@ -385,7 +385,7 @@ void CMenu::_textGameInfo(void)
 					m_rating.fromPNG(pegi_18_png);
 				break;
 			case GAMETDB_RATING_TYPE_GRB:
-				if (gameinfo.RatingValue == "a")
+				if (gameinfo.RatingValue == "A")
 					m_rating.fromPNG(grb_a_png);
 				else if (gameinfo.RatingValue == "12")
 					m_rating.fromPNG(grb_12_png);
@@ -682,6 +682,6 @@ void CMenu::_textGameInfo(void)
 	else
 		m_btnMgr.setText(m_gameinfoLblTitle, wfmt(L"%s", "No Gameinfo"), true);
 
-	m_gametdb.CloseFile();
+	gametdb.CloseFile();
 
 }
