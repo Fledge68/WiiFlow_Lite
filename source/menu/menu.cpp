@@ -494,8 +494,6 @@ void CMenu::cleanup(bool ios_reload)
 
 	if (!ios_reload || (!m_use_wifi_gecko && ios_reload)) 
 		_deinitNetwork();
-
-	wiiLightSetLevel(0);
 	wiiLightOff();
 
 	gprintf(" \nMemory cleaned up\n");
