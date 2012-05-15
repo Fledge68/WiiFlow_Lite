@@ -48,9 +48,6 @@ void MEM2_init(unsigned int mem2Size)
 {
 	g_mem2gp.init(mem2Size);
 	g_mem2gp.clear();
-
-	/* Protect space reserved for apploader */
-	SYS_SetArena1Hi(APPLOADER_START);
 }
 
 void MEM2_cleanup(void)
