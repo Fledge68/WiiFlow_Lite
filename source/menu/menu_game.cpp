@@ -1,5 +1,4 @@
 
-
 #include "menu.hpp"
 #include "loader/patchcode.h"
 
@@ -8,6 +7,7 @@
 #include "loader/alt_ios.h"
 #include "loader/playlog.h"
 #include <ogc/machine/processor.h>
+#include <ogc/lwp_threads.h>
 #include <unistd.h>
 #include <time.h>
 #include "network/http.h"
@@ -33,6 +33,7 @@
 #include "homebrew.h"
 #include "defines.h"
 #include "gc/gc.h"
+#include "gekko.h"
 
 extern const u8 btngamecfg_png[];
 extern const u8 btngamecfgs_png[];
@@ -1278,20 +1279,34 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		}
 	}
 
-	while(net_get_status() == -EBUSY);
+	while(net_get_status() == -EBUSY)
+		usleep(100);
+
+	m_vid.CheckWaitThread(true);
 	cleanup();
 	// wifi-gecko can no longer function after cleanup
 	Close_Inputs();
-	USBStorage_Deinit();
 	if(currentPartition == 0)
 		SDHC_Init();
 
-	// Stop wait message thread
-	m_vid.hideWaitMessage();
-	usleep(100 * 1000);
+	// clear mem1 main
+	u32 size = (u32)0x80a00000 - (u32)0x80004000;
+	memset((void*)0x80004000, 0, size);
+	DCFlushRange((void*)0x80004000, size);
 
 	gprintf("Booting game\n");
-	if (Disc_WiiBoot(videoMode, vipatch, countryPatch, patchVidMode, disableIOSreload, aspectRatio) < 0)
+
+	/* Find game partition offset */
+	u64 offset;
+	Disc_FindPartition(&offset);
+	u32 AppEntryPoint = RunApploader(offset, videoMode, vipatch, countryPatch, patchVidMode, disableIOSreload, aspectRatio);
+	DeviceHandler::DestroyInstance();
+	USBStorage_Deinit();
+
+	MEM2_clear();
+
+	gprintf("\n\nEntry Point is: 0x%08x\n", AppEntryPoint);
+	if (Disc_WiiBoot(AppEntryPoint) < 0)
 		Sys_LoadMenu();
 }
 
