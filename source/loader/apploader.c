@@ -18,9 +18,6 @@ typedef void  (*app_init)(void (*report)(const char *fmt, ...));
 typedef void *(*app_final)();
 typedef void  (*app_entry)(void (**init)(void (*report)(const char *fmt, ...)), int (**main)(), void *(**final)());
 
-/* Apploader pointers */
-static u8 *appldr = (u8 *) 0x81200000;
-
 /* Constants */
 #define APPLDR_OFFSET	0x2440
 
@@ -50,10 +47,14 @@ s32 Apploader_Run(entry_point *entry, u8 vidMode, GXRModeObj *vmode, bool vipatc
 	/* Calculate apploader length */
 	appldr_len = buffer[5] + buffer[6];
 
+	SYS_SetArena1Hi(APPLOADER_END);
+
 	/* Read apploader code */
-	ret = WDVD_Read(appldr, appldr_len, APPLDR_OFFSET + 0x20);
+	ret = WDVD_Read(APPLOADER_START, appldr_len, APPLDR_OFFSET + 0x20);
 	if (ret < 0)
 		return ret;
+
+	DCFlushRange(APPLOADER_START, appldr_len);
 
 	/* Set apploader entry function */
 	app_entry appldr_entry = (app_entry)buffer[4];
