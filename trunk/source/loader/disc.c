@@ -362,10 +362,9 @@ s32 Disc_BootPartition()
 	/* Set an appropriate video mode */
 	__Disc_SetVMode();
 
-	usleep(100 * 1000);
-
 	/* Shutdown IOS subsystems */
 	u32 level = IRQ_Disable();
+	__dsp_shutdown();
 	__IOS_ShutdownSubsystems();
 	__exception_closeall();
 

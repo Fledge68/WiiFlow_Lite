@@ -26,6 +26,10 @@ static bool return_to_priiloader = false;
 static bool return_to_disable = false;
 static bool return_to_bootmii = false;
 
+extern void __exception_closeall();
+static vu16* const _dspReg = (u16*)0xCC005000;
+extern u32 __PADDisableRecalibration(s32 disable);
+
 void __Wpad_PowerCallback()
 {
 	/* Poweroff console */
@@ -137,4 +141,24 @@ void Sys_LoadMenu(void)
 {
 	/* Return to the Wii system menu */
 	WII_ReturnToMenu(); //SYS_ResetSystem doesnt work properly with new libogc
+}
+
+void __dsp_shutdown(void)
+{
+	u32 tick;
+
+	_dspReg[5] = (DSPCR_DSPRESET|DSPCR_HALT);
+	_dspReg[27] &= ~0x8000;
+	while(_dspReg[5]&0x400);
+	while(_dspReg[5]&0x200);
+
+	_dspReg[5] = (DSPCR_DSPRESET|DSPCR_DSPINT|DSPCR_ARINT|DSPCR_AIINT|DSPCR_HALT);
+	_dspReg[0] = 0;
+	while((_SHIFTL(_dspReg[2],16,16)|(_dspReg[3]&0xffff))&0x80000000);
+
+	tick = gettick();
+	while((gettick()-tick)<44);
+
+	_dspReg[5] |= DSPCR_RES;
+	while(_dspReg[5]&DSPCR_RES);
 }
