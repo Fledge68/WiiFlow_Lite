@@ -1286,6 +1286,10 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	if(currentPartition == 0)
 		SDHC_Init();
 
+	// Stop wait message thread
+	m_vid.hideWaitMessage();
+	usleep(100 * 1000);
+
 	gprintf("Booting game\n");
 	if (Disc_WiiBoot(videoMode, vipatch, countryPatch, patchVidMode, disableIOSreload, aspectRatio) < 0)
 		Sys_LoadMenu();

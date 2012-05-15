@@ -39,7 +39,7 @@ void CMEM2Alloc::cleanup(void)
 void CMEM2Alloc::clear(void)
 {
 	m_first = 0;
-	memset(m_baseAddress, 0, (u8 *)m_endAddress - (u8 *)m_endAddress);
+	memset(m_baseAddress, 0, (u8 *)m_endAddress - (u8 *)m_baseAddress);
 }
 
 unsigned int CMEM2Alloc::usableSize(void *p)
