@@ -170,16 +170,13 @@ GXRModeObj * __Disc_SelectVMode(u8 videoselected, u64 chantitle)
 
 void __Disc_SetVMode(void)
 {
-	// Stop wait message thread
-	extern void HideWaitMessage();
-	HideWaitMessage();
-
 	/* Set video mode register */
 	*(vu32 *)0x800000CC = vmode_reg;
 
 	/* Set video mode */
-	if (vmode != 0) VIDEO_Configure(vmode);
-		
+	if (vmode != 0)
+		VIDEO_Configure(vmode);
+
 	/* Setup video  */
  	VIDEO_SetBlack(TRUE);
 	VIDEO_Flush();
@@ -355,24 +352,32 @@ s32 Disc_BootPartition(u64 offset, u8 vidMode, bool vipatch, bool countryString,
 		IOSReloadBlock(IOS_GetVersion(), false);
 	else
 		IOSReloadBlock(IOS_GetVersion(), true);
-	
+
 	s32 ret = WDVD_OpenPartition(offset, 0, 0, 0, Tmd_Buffer);
 	if (ret < 0)
 		return ret;
 
-	/* Select an appropriate video mode */
-	__Disc_SelectVMode(vidMode, 0);
+	/* Greenscreen Fix */
+	VIDEO_SetBlack(TRUE);
+	VIDEO_Flush();
+	VIDEO_WaitVSync();
+
+	/* Clear memory */
+	MEM2_clear();
 
 	/* Setup low memory */;
 	__Disc_SetLowMem();
+
+	/* Select an appropriate video mode */
+	__Disc_SelectVMode(vidMode, 0);
 
 	/* Run apploader */
 	ret = Apploader_Run(&p_entry, vidMode, vmode, vipatch, countryString, patchVidMode, aspectRatio);
 	if (ret < 0)
 		return ret;
 
-    free_wip();
-	
+	free_wip();
+
 	if (hooktype != 0)
 		ocarina_do_code();
 

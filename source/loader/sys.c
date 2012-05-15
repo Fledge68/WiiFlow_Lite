@@ -166,6 +166,8 @@ static void __dsp_shutdown()
 //Modified libogc call
 void Sys_Shutdown(void)
 {
+	Close_Inputs();
+
 	__dsp_shutdown();
 	u32 ret = __PADDisableRecalibration(TRUE);
 
