@@ -846,7 +846,6 @@ int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id)
 	if (gameIOS != mainIOS)
 	{
 		gprintf("Reloading IOS into %d\n", gameIOS);
-		cleanup(true);
 		if(!loadIOS(gameIOS, true))
 		{
 			_reload_wifi_gecko();
@@ -1290,7 +1289,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		SDHC_Init();
 
 	// clear mem1 main
-	u32 size = (u32)0x80a00000 - (u32)0x80004000;
+	u32 size = (u32)0x80A80000 - (u32)0x80004000;
 	memset((void*)0x80004000, 0, size);
 	DCFlushRange((void*)0x80004000, size);
 
@@ -1302,10 +1301,8 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	u32 AppEntryPoint = RunApploader(offset, videoMode, vipatch, countryPatch, patchVidMode, disableIOSreload, aspectRatio);
 	DeviceHandler::DestroyInstance();
 	USBStorage_Deinit();
-
-	MEM2_clear();
-
 	gprintf("\n\nEntry Point is: 0x%08x\n", AppEntryPoint);
+	usleep(100 * 1000);
 	if (Disc_WiiBoot(AppEntryPoint) < 0)
 		Sys_LoadMenu();
 }
