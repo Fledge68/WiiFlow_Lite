@@ -70,7 +70,7 @@ public:
 	void waitMessage(float delay);
 	void waitMessage(const vector<STexture> &tex, float delay, bool useWiiLight = true);
 	void waitMessage(const STexture &tex);
-	void CheckWaitThread();
+	void CheckWaitThread(bool force = false);
 	s32 TakeScreenshot(const char *);
 	void shiftViewPort(float x, float y);
 private:

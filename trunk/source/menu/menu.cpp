@@ -481,6 +481,7 @@ void CMenu::cleanup(bool ios_reload)
 
 	if(!m_reload)
 		m_vid.cleanup();
+	wiiLightOff();
 
 	if (!ios_reload)
 	{
@@ -488,15 +489,11 @@ void CMenu::cleanup(bool ios_reload)
 		m_mutex = 0;
 	}
 
-	DeviceHandler::DestroyInstance();
-
 	if (!ios_reload)
 		_cleanupDefaultFont();
 
 	if (!ios_reload || (!m_use_wifi_gecko && ios_reload)) 
 		_deinitNetwork();
-	wiiLightOff();
-
 	gprintf(" \nMemory cleaned up\n");
 }
 

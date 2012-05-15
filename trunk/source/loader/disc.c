@@ -3,6 +3,7 @@
 #include <string.h>
 #include <ogcsys.h>
 #include <unistd.h>
+#include <ogc/lwp_threads.h>
 #include <ogc/lwp_watchdog.h>
 #include "wiiuse/wpad.h"
 #include <ogc/machine/processor.h>
@@ -41,15 +42,19 @@ GXRModeObj *vmode = NULL;
 u32 vmode_reg = 0;
 
 static u8	Tmd_Buffer[0x49e4 + 0x1C] ALIGNED(32);
-
+extern void __exception_closeall();
 
 void __Disc_SetLowMem()
 {
 	/* Setup low memory */
+	*(vu32 *)0x80000030 = 0x00000000; // Arena Low
 	*(vu32 *)0x80000060 = 0x38A00040;
 	*(vu32 *)0x800000E4 = 0x80431A80;
 	*(vu32 *)0x800000EC = 0x81800000; // Dev Debugger Monitor Address
 	*(vu32 *)0x800000F0 = 0x01800000; // Simulated Memory Size
+	*(vu32 *)0x800000F4 = 0x817E5480;
+	*(vu32 *)0x800000F8 = 0x0E7BE2C0; // bus speed
+	*(vu32 *)0x800000FC = 0x2B73A840; // cpu speed
 	*(vu32 *)0xCD00643C = 0x00000000; // 32Mhz on Bus
 
 	/* Copy disc ID (online check) */
@@ -172,18 +177,18 @@ void __Disc_SetVMode(void)
 {
 	/* Set video mode register */
 	*(vu32 *)0x800000CC = vmode_reg;
+	DCFlushRange((void *)(0x800000CC), 4);
+	ICInvalidateRange((void *)(0x800000CC), 4);
 
 	/* Set video mode */
-	if (vmode != 0)
-		VIDEO_Configure(vmode);
+	if (disc_vmode != 0)
+		VIDEO_Configure(disc_vmode);
 
 	/* Setup video  */
  	VIDEO_SetBlack(TRUE);
 	VIDEO_Flush();
 	VIDEO_WaitVSync();
-	if (vmode->viTVMode & VI_NON_INTERLACE)
-		VIDEO_WaitVSync();
-	else while (VIDEO_GetNextField())
+	if(disc_vmode->viTVMode & VI_NON_INTERLACE)
 		VIDEO_WaitVSync();
 }
 
@@ -193,7 +198,7 @@ void __Disc_SetTime(void)
 	settime(secs_to_ticks(time(NULL) - 946684800));
 }
 
-s32 __Disc_FindPartition(u64 *outbuf)
+s32 Disc_FindPartition(u64 *outbuf)
 {
 	u64 offset = 0;
 	u32 cnt;
@@ -344,45 +349,12 @@ s32 Disc_IsGC(void)
 	return Disc_Type(1);
 }
 
-s32 Disc_BootPartition(u64 offset, u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, bool disableIOSreload, int aspectRatio)
+s32 Disc_BootPartition()
 {
-	entry_point p_entry;
-
-	if (disableIOSreload)
-		IOSReloadBlock(IOS_GetVersion(), false);
-	else
-		IOSReloadBlock(IOS_GetVersion(), true);
-
-	s32 ret = WDVD_OpenPartition(offset, 0, 0, 0, Tmd_Buffer);
-	if (ret < 0)
-		return ret;
-
-	/* Greenscreen Fix */
-	VIDEO_SetBlack(TRUE);
-	VIDEO_Flush();
-	VIDEO_WaitVSync();
-
-	/* Clear memory */
-	MEM2_clear();
-
-	/* Setup low memory */;
-	__Disc_SetLowMem();
-
-	/* Select an appropriate video mode */
-	__Disc_SelectVMode(vidMode, 0);
-
-	/* Run apploader */
-	ret = Apploader_Run(&p_entry, vidMode, vmode, vipatch, countryString, patchVidMode, aspectRatio);
-	if (ret < 0)
-		return ret;
-
 	free_wip();
 
 	if (hooktype != 0)
 		ocarina_do_code();
-
-	gprintf("\n\nEntry Point is: 0x%08x\n", p_entry);
-	appentrypoint = (u32)p_entry;
 
 	/* Set time */
 	__Disc_SetTime();
@@ -393,16 +365,18 @@ s32 Disc_BootPartition(u64 offset, u8 vidMode, bool vipatch, bool countryString,
 	usleep(100 * 1000);
 
 	/* Shutdown IOS subsystems */
-	Sys_Shutdown();
+	u32 level = IRQ_Disable();
+	__IOS_ShutdownSubsystems();
+	__exception_closeall();
 
 	/* Originally from tueidj - taken from NeoGamma (thx) */
 	*(vu32*)0xCC003024 = 1;
 
-	gprintf("Jumping to entrypoint\n");
+	gprintf("Jumping to entry point\n");
 
 	if (hooktype != 0)
 	{
-		__asm__(
+		asm volatile (
 			"lis %r3, appentrypoint@h\n"
 			"ori %r3, %r3, appentrypoint@l\n"
 			"lwz %r3, 0(%r3)\n"
@@ -416,7 +390,7 @@ s32 Disc_BootPartition(u64 offset, u8 vidMode, bool vipatch, bool countryString,
 	}
 	else
 	{
-		__asm__(
+		asm volatile (
 			"lis %r3, appentrypoint@h\n"
 			"ori %r3, %r3, appentrypoint@l\n"
 			"lwz %r3, 0(%r3)\n"
@@ -425,21 +399,44 @@ s32 Disc_BootPartition(u64 offset, u8 vidMode, bool vipatch, bool countryString,
 		);
 	}
 
+	IRQ_Restore(level);
+
 	return 0;
 }
 
-s32 Disc_WiiBoot(u8 vidMode, bool vipatch, bool countryString, u8 patchVidModes, bool disableIOSreload, int aspectRatio)
+s32 Disc_WiiBoot(u32 AppEntryPoint)
 {
-	u64 offset;
-
-	/* Find game partition offset */
-	s32 ret = __Disc_FindPartition(&offset);
-	if (ret < 0) 
-	{
-		gprintf("Game Partition not found!\n");
-		return ret;
-	}
+	appentrypoint = AppEntryPoint;
 
 	/* Boot partition */
-	return Disc_BootPartition(offset, vidMode, vipatch, countryString, patchVidModes, disableIOSreload, aspectRatio);
+	return Disc_BootPartition();
+}
+
+u32 RunApploader(u64 offset, u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, bool disableIOSreload, int aspectRatio)
+{
+	gprintf("Running Apploader...\n");
+
+	entry_point p_entry;
+
+	if (disableIOSreload)
+		IOSReloadBlock(IOS_GetVersion(), false);
+	else
+		IOSReloadBlock(IOS_GetVersion(), true);
+
+	s32 ret = WDVD_OpenPartition(offset, 0, 0, 0, Tmd_Buffer);
+	if (ret < 0)
+		return ret;
+
+	/* Setup low memory */;
+	__Disc_SetLowMem();
+
+	/* Select an appropriate video mode */
+	__Disc_SelectVMode(vidMode, 0);
+
+	/* Run apploader */
+	ret = Apploader_Run(&p_entry, vidMode, vmode, vipatch, countryString, patchVidMode, aspectRatio);
+	if (ret < 0)
+		return ret;
+
+	return (u32)p_entry;
 }

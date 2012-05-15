@@ -102,8 +102,11 @@ s32 Disc_ReadGCHeader(void *);
 s32 Disc_Type(bool);
 s32	Disc_IsWii(void);
 s32	Disc_IsGC(void);
-s32	Disc_BootPartition(u64, u8, bool, bool, u8, bool, int);
-s32	Disc_WiiBoot(u8, bool, bool, u8, bool, int);
+s32	Disc_BootPartition();
+s32	Disc_WiiBoot(u32);
+s32 Disc_FindPartition(u64 *outbuf);
+
+u32 RunApploader(u64 offset, u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, bool disableIOSreload, int aspectRatio);
 
 #ifdef __cplusplus
 }

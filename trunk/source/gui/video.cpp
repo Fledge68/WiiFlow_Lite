@@ -229,6 +229,15 @@ void CVideo::cleanup(void)
 		if(m_aaBuffer[i].get())
 			m_aaBuffer[i].release();
 	}
+
+	GX_AbortFrame();
+	GX_Flush();
+
+	VIDEO_SetBlack(TRUE);
+	VIDEO_Flush();
+	VIDEO_WaitVSync();
+	if (m_rmode->viTVMode & VI_NON_INTERLACE)
+		VIDEO_WaitVSync();
 	//MEM1_free(m_fifo);
 }
 
@@ -507,9 +516,9 @@ void CVideo::hideWaitMessage()
 	wiiLightOff();
 }
 
-void CVideo::CheckWaitThread()
+void CVideo::CheckWaitThread(bool force)
 {
-	if (!m_showingWaitMessages && waitThread != LWP_THREAD_NULL)
+	if ((!m_showingWaitMessages && waitThread != LWP_THREAD_NULL) || force)
 	{
 		m_showWaitMessage = false;
 		gprintf("Thread running. Stop it\n");
