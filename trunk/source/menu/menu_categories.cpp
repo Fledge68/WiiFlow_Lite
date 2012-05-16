@@ -24,7 +24,8 @@ void CMenu::_hideCategorySettings(bool instant)
 	for(int i = 0; i < 21; ++i)
 	{
 		m_btnMgr.hide(m_categoryLblCat[i]);
-		m_btnMgr.hide(m_categoryBtn[i]);
+		m_btnMgr.hide(m_categoryBtnCat[i]);
+		m_btnMgr.hide(m_categoryBtnCats[i]);		
 	}
 }
 
@@ -52,26 +53,29 @@ void CMenu::_updateCheckboxes(void)
 	}
 	for(int i = 0; i < 21; ++i)
 	{
-		m_btnMgr.hide(m_categoryBtn[i]);
+		m_btnMgr.hide(m_categoryBtnCat[i]);
+		m_btnMgr.hide(m_categoryBtnCats[i]);
 		m_btnMgr.hide(m_categoryLblCat[i]);
 	}
-	string id;
-	if(m_current_view != COVERFLOW_EMU)
-		id = m_cf.getId();
-	else
-	{
-		dir_discHdr *hdr = m_cf.getHdr();
-		string tempname(hdr->path);
-		tempname.erase(0, tempname.find_first_of('/')+1);
-		string dirName = tempname.substr(0, tempname.find_first_of('/')+1);
-		tempname.assign(&tempname[tempname.find_last_of('/') + 1]);
-		if(tempname.find_last_of('.') != string::npos)
-			tempname.erase(tempname.find_last_of('.'), tempname.size() - tempname.find_last_of('.'));
-		id = dirName+tempname;
-	}
 	const char *catflags;
-	if(gameSet) 
+	if (gameSet)
+	{
+		string id;
+		if(m_current_view != COVERFLOW_EMU)
+			id = m_cf.getId();
+		else
+		{
+			dir_discHdr *hdr = m_cf.getHdr();
+			string tempname(hdr->path);
+			tempname.erase(0, tempname.find_first_of('/')+1);
+			string dirName = tempname.substr(0, tempname.find_first_of('/')+1);
+			tempname.assign(&tempname[tempname.find_last_of('/') + 1]);
+			if(tempname.find_last_of('.') != string::npos)
+			tempname.erase(tempname.find_last_of('.'), tempname.size() - tempname.find_last_of('.'));
+			id = dirName+tempname;
+		}
 		catflags = m_cat.getString("CATEGORIES", id, "").c_str();
+	}
 	else
 		catflags = m_cat.getString(_domainFromView(), "categories", "100000000000000000000").c_str();
 	memset(&m_categories, '0', sizeof(m_categories));
@@ -89,10 +93,9 @@ void CMenu::_updateCheckboxes(void)
 				continue;
 			m_btnMgr.show(m_categoryLblCat[i]);
 			if(catflags[i] == '1')
-				m_categoryBtn[i] = m_categoryBtnCats[i];
+				m_btnMgr.show(m_categoryBtnCats[i]);
 			else
-				m_categoryBtn[i] = m_categoryBtnCat[i];
-			m_btnMgr.show(m_categoryBtn[i]);
+				m_btnMgr.show(m_categoryBtnCat[i]);
 		}
 	}
 	else
@@ -101,10 +104,9 @@ void CMenu::_updateCheckboxes(void)
 		{
 			m_btnMgr.show(m_categoryLblCat[i]);
 			if(catflags[i] == '1')
-				m_categoryBtn[i] = m_categoryBtnCats[i];
+				m_btnMgr.show(m_categoryBtnCats[i]);
 			else
-				m_categoryBtn[i] = m_categoryBtnCat[i];
-			m_btnMgr.show(m_categoryBtn[i]);
+				m_btnMgr.show(m_categoryBtnCat[i]);
 		}
 	}
 }
@@ -156,9 +158,11 @@ void CMenu::_CategorySettings(bool fromGameSet)
 			}
 			for(int i = 0; i < 21; ++i)
 			{
-				if(m_btnMgr.selected(m_categoryBtn[i]))
+				if(m_btnMgr.selected(m_categoryBtnCat[i]) || m_btnMgr.selected(m_categoryBtnCats[i]))
 				{
-					lastBtn = m_categoryBtn[i];
+					lastBtn = m_categoryBtnCat[i];
+					if(m_btnMgr.selected(m_categoryBtnCats[i]))
+						lastBtn = m_categoryBtnCats[i];
 					m_btnMgr.noHover(true);
 					m_categories[i] = m_categories[i] == '1' ? '0' : '1';
 					if(i == 0 && m_categories[i] == '1')
@@ -171,24 +175,26 @@ void CMenu::_CategorySettings(bool fromGameSet)
 					char catflags[22];
 					memset(&catflags, 0, sizeof(catflags));
 					memcpy(&catflags, &m_categories, sizeof(m_categories));
-					string id;
-					if(m_current_view != COVERFLOW_EMU)
-						id = m_cf.getId();
-					else
-					{
-						dir_discHdr *hdr = m_cf.getHdr();
-						string tempname(hdr->path);
-						tempname.erase(0, tempname.find_first_of('/')+1);
-						string dirName = tempname.substr(0, tempname.find_first_of('/')+1);
-						tempname.assign(&tempname[tempname.find_last_of('/') + 1]);
-						if(tempname.find_last_of('.') != string::npos)
-							tempname.erase(tempname.find_last_of('.'), tempname.size() - tempname.find_last_of('.'));
-						id = dirName+tempname;
-					}
 					if(string (catflags) == "000000000000000000000")
 						catflags[0] = '1';
-					if(gameSet)
-						m_cat.setString("CATEGORIES", id, catflags);
+					if (gameSet)
+					{
+						string id;
+						if(m_current_view != COVERFLOW_EMU)
+							id = m_cf.getId();
+						else
+						{
+							dir_discHdr *hdr = m_cf.getHdr();
+							string tempname(hdr->path);
+							tempname.erase(0, tempname.find_first_of('/')+1);
+							string dirName = tempname.substr(0, tempname.find_first_of('/')+1);
+							tempname.assign(&tempname[tempname.find_last_of('/') + 1]);
+							if(tempname.find_last_of('.') != string::npos)
+								tempname.erase(tempname.find_last_of('.'), tempname.size() - tempname.find_last_of('.'));
+							id = dirName+tempname;
+						}
+					m_cat.setString("CATEGORIES", id, catflags);
+					}
 					else
 						m_cat.setString(_domainFromView(), "categories", catflags);
 					_updateCheckboxes();
@@ -239,8 +245,6 @@ void CMenu::_initCategorySettingsMenu(CMenu::SThemeData &theme)
 	{
 		_setHideAnim(m_categoryBtnCat[i], fmt("CATEGORY/CAT_%i_BTN", i), 0, 0, 1.f, 0.f);
 		_setHideAnim(m_categoryBtnCats[i], fmt("CATEGORY/CAT_%i_BTNS", i), 0, 0, 1.f, 0.f);
-		_setHideAnim(m_categoryLblCat[i], fmt("CATEGORY/CAT_%i", i), 0, 0, 1.f, 0.f);
-		m_categoryBtn[i] = m_categoryBtnCat[i];
 	}
 	_hideCategorySettings(true);
 	_textCategorySettings();

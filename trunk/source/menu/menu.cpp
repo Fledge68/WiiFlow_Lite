@@ -1470,7 +1470,6 @@ void CMenu::_initCF(void)
 	Config dump, gameAgeList;
 	GameTDB gametdb;
 	const char *domain = _domainFromView();
-	const char *catviews = m_cat.getString(domain, "categories", "100000000000000000000").c_str();
 	m_cf.clear();
 	m_cf.reserve(m_gameList.size());
 	vector<bool> EnabledPlugins;
@@ -1494,7 +1493,7 @@ void CMenu::_initCF(void)
 			gametdb.SetLanguageCode(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
 		}
 	}
-
+	const char *catviews = m_cat.getString(domain, "categories", "100000000000000000000").c_str();
 	string id;
 	for (u32 i = 0; i < m_gameList.size(); ++i)
 	{
