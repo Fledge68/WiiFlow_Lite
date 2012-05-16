@@ -467,17 +467,21 @@ void CMenu::init(void)
 void CMenu::cleanup(bool ios_reload)
 {
 	m_cf.stopCoverLoader();
+	m_cf.clear();
+
+	m_plugin.Cleanup();
 
 	_stopSounds();
 
 	if (!ios_reload)
 		m_cameraSound.release();
 
-	m_plugin.Cleanup();
-
 	MusicPlayer::DestroyInstance();
 	SoundHandler::DestroyInstance();
 	soundDeinit();
+	__dsp_shutdown();
+
+	DeviceHandler::DestroyInstance();
 
 	if(!m_reload)
 		m_vid.cleanup();

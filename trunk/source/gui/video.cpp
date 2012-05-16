@@ -11,6 +11,7 @@ extern const u8 wait_02_png[];
 extern const u8 wait_03_png[];
 extern const u8 wait_04_png[];
 extern const u8 wait_05_png[];
+vector<STexture> m_defaultWaitMessages;
 
 const float CVideo::_jitter2[2][2] = {
 	{ 0.246490f, 0.249999f },
@@ -224,20 +225,33 @@ void CVideo::prepare(void)
 void CVideo::cleanup(void)
 {
 	gprintf("Cleaning up video...\n");
-	for (u32 i = 0; i < sizeof m_aaBuffer / sizeof m_aaBuffer[0]; ++i)
-	{
-		if(m_aaBuffer[i].get())
-			m_aaBuffer[i].release();
-	}
+	GX_InvVtxCache();
+	GX_InvalidateTexAll();
+
+	VIDEO_ClearFrameBuffer(m_rmode, m_frameBuf[0], COLOR_BLACK);
+	VIDEO_ClearFrameBuffer(m_rmode, m_frameBuf[1], COLOR_BLACK);
+	VIDEO_Flush();
+	VIDEO_WaitVSync();
+	if(m_rmode->viTVMode & VI_NON_INTERLACE)
+		VIDEO_WaitVSync();
 
 	GX_AbortFrame();
 	GX_Flush();
 
-	VIDEO_SetBlack(TRUE);
-	VIDEO_Flush();
-	VIDEO_WaitVSync();
-	if (m_rmode->viTVMode & VI_NON_INTERLACE)
-		VIDEO_WaitVSync();
+	for(u8 i = 0; i < sizeof m_aaBuffer / sizeof m_aaBuffer[0]; ++i)
+	{
+		if(m_aaBuffer[i].get())
+			m_aaBuffer[i].release();
+	}
+	for(u8 i = 0; i < m_defaultWaitMessages.size(); i++)
+	{
+		if(m_defaultWaitMessages[i].data.get())
+			m_defaultWaitMessages[i].data.release();
+	}
+	free(MEM_K1_TO_K0(m_frameBuf[0]));
+	free(MEM_K1_TO_K0(m_frameBuf[1]));
+	MEM1_free(m_stencil);
+	MEM1_free(m_fifo);
 }
 
 void CVideo::prepareAAPass(int aaStep)
@@ -502,7 +516,6 @@ void CVideo::_showWaitMessages(CVideo *m)
 	}
 	if (m->m_useWiiLight)
 		wiiLightOff();
-	m->m_waitMessages.clear();
 	m->m_showingWaitMessages = false;
 	gprintf("Stop showing images\n");
 }
@@ -530,13 +543,22 @@ void CVideo::CheckWaitThread(bool force)
 		if(waitThreadStack.get())
 			waitThreadStack.release();
 		waitThread = LWP_THREAD_NULL;
-
-		m_waitMessages.clear();
 	}
 }
 
 void CVideo::waitMessage(float delay)
 {
+	if(m_defaultWaitMessages.size() == 0)
+	{
+		STexture m_wTextures[5];
+		m_wTextures[0].fromPNG(wait_01_png);
+		m_wTextures[1].fromPNG(wait_02_png);
+		m_wTextures[2].fromPNG(wait_03_png);
+		m_wTextures[3].fromPNG(wait_04_png);
+		m_wTextures[4].fromPNG(wait_05_png);
+		for (int i = 0; i < 5; i++)
+			m_defaultWaitMessages.push_back(m_wTextures[i]);
+	}
 	waitMessage(vector<STexture>(), delay);
 }
 
@@ -548,14 +570,7 @@ void CVideo::waitMessage(const vector<STexture> &tex, float delay, bool useWiiLi
 
 	if (tex.size() == 0)
 	{
-		STexture m_wTextures[5];
-		m_wTextures[0].fromPNG(wait_01_png);
-		m_wTextures[1].fromPNG(wait_02_png);
-		m_wTextures[2].fromPNG(wait_03_png);
-		m_wTextures[3].fromPNG(wait_04_png);
-		m_wTextures[4].fromPNG(wait_05_png);
-		for (int i = 0; i < 5; i++)
-			m_waitMessages.push_back(m_wTextures[i]);
+		m_waitMessages = m_defaultWaitMessages;
 		m_waitMessageDelay = 0.3f;
 	}
 	else

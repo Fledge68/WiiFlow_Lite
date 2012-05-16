@@ -1290,10 +1290,9 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	cleanup();
 	// wifi-gecko can no longer function after cleanup
 	Close_Inputs();
+	USBStorage_Deinit();
 	if(currentPartition == 0)
 		SDHC_Init();
-
-	usleep(100 * 1000);
 
 	/* Find game partition offset */
 	u64 offset;
@@ -1302,8 +1301,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		return;
 
 	RunApploader(offset, videoMode, vipatch, countryPatch, patchVidMode, aspectRatio);
-	DeviceHandler::DestroyInstance();
-	USBStorage_Deinit();
 	gprintf("Booting game\n");
 	Disc_BootPartition();
 }
