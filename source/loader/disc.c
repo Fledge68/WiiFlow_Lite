@@ -44,6 +44,8 @@ u32 vmode_reg = 0;
 static u8	Tmd_Buffer[0x49e4 + 0x1C] ALIGNED(32);
 extern void __exception_closeall();
 
+entry_point p_entry;
+
 void __Disc_SetLowMem()
 {
 	/* Setup low memory */
@@ -351,8 +353,6 @@ s32 Disc_IsGC(void)
 
 s32 Disc_BootPartition()
 {
-	free_wip();
-
 	if (hooktype != 0)
 		ocarina_do_code();
 
@@ -364,14 +364,11 @@ s32 Disc_BootPartition()
 
 	/* Shutdown IOS subsystems */
 	u32 level = IRQ_Disable();
-	__dsp_shutdown();
 	__IOS_ShutdownSubsystems();
 	__exception_closeall();
 
 	/* Originally from tueidj - taken from NeoGamma (thx) */
 	*(vu32*)0xCC003024 = 1;
-
-	gprintf("Jumping to entry point\n");
 
 	if (hooktype != 0)
 	{
@@ -403,28 +400,9 @@ s32 Disc_BootPartition()
 	return 0;
 }
 
-s32 Disc_WiiBoot(u32 AppEntryPoint)
+void RunApploader(u64 offset, u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, int aspectRatio)
 {
-	appentrypoint = AppEntryPoint;
-
-	/* Boot partition */
-	return Disc_BootPartition();
-}
-
-u32 RunApploader(u64 offset, u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, bool disableIOSreload, int aspectRatio)
-{
-	gprintf("Running Apploader...\n");
-
-	entry_point p_entry;
-
-	if (disableIOSreload)
-		IOSReloadBlock(IOS_GetVersion(), false);
-	else
-		IOSReloadBlock(IOS_GetVersion(), true);
-
-	s32 ret = WDVD_OpenPartition(offset, 0, 0, 0, Tmd_Buffer);
-	if (ret < 0)
-		return ret;
+	WDVD_OpenPartition(offset, 0, 0, 0, Tmd_Buffer);
 
 	/* Setup low memory */;
 	__Disc_SetLowMem();
@@ -433,9 +411,7 @@ u32 RunApploader(u64 offset, u8 vidMode, bool vipatch, bool countryString, u8 pa
 	__Disc_SelectVMode(vidMode, 0);
 
 	/* Run apploader */
-	ret = Apploader_Run(&p_entry, vidMode, vmode, vipatch, countryString, patchVidMode, aspectRatio);
-	if (ret < 0)
-		return ret;
+	Apploader_Run(&p_entry, vidMode, vmode, vipatch, countryString, patchVidMode, aspectRatio);
 
-	return (u32)p_entry;
+	appentrypoint = (u32)p_entry;
 }

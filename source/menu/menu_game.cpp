@@ -1278,6 +1278,11 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		}
 	}
 
+	if (disableIOSreload)
+		IOSReloadBlock(IOS_GetVersion(), false);
+	else
+		IOSReloadBlock(IOS_GetVersion(), true);
+
 	while(net_get_status() == -EBUSY)
 		usleep(100);
 
@@ -1288,22 +1293,17 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	if(currentPartition == 0)
 		SDHC_Init();
 
-	// clear mem1 main
-	u32 size = (u32)0x80A00000 - (u32)0x80004000;
-	memset((void*)0x80004000, 0, size);
-	DCFlushRange((void*)0x80004000, size);
-
 	gprintf("Booting game\n");
+	usleep(100 * 1000);
 
 	/* Find game partition offset */
 	u64 offset;
 	Disc_FindPartition(&offset);
-	u32 AppEntryPoint = RunApploader(offset, videoMode, vipatch, countryPatch, patchVidMode, disableIOSreload, aspectRatio);
-	gprintf("\n\nEntry Point is: 0x%08x\n", AppEntryPoint);
+	RunApploader(offset, videoMode, vipatch, countryPatch, patchVidMode, aspectRatio);
 	DeviceHandler::DestroyInstance();
 	USBStorage_Deinit();
-	if (Disc_WiiBoot(AppEntryPoint) < 0)
-		Sys_LoadMenu();
+	free_wip();
+	Disc_BootPartition();
 }
 
 void CMenu::_initGameMenu(CMenu::SThemeData &theme)
@@ -1438,7 +1438,7 @@ void CMenu::_playGameSound(void)
 
 	CheckGameSoundThread();
 	if(!gameSoundThreadStack.get())
-		gameSoundThreadStack = smartMem2Alloc(gameSoundThreadStackSize);
+		gameSoundThreadStack = smartMem1Alloc(gameSoundThreadStackSize);
 
 	LWP_CreateThread(&m_gameSoundThread, (void *(*)(void *))CMenu::_gameSoundThread, (void *)this, gameSoundThreadStack.get(), gameSoundThreadStackSize, 60);
 }
