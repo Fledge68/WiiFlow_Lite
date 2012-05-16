@@ -4,15 +4,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "mem2.hpp"
-#include "utils.h" //SAFE_CLOSE
 #include "gecko.h"
-
-typedef struct
-{
-    u32 offset;
-    u32 srcaddress;
-    u32 dstaddress;
-} WIP_Code;
+#include "wip.h"
 
 static WIP_Code * CodeList = NULL;
 static u32 CodesCount = 0;
@@ -50,13 +43,29 @@ void do_wip_code(u8 * dst, u32 len)
             }
             else
             {
-                gprintf("WIP: %08X Address does not match with WIP entrie.\n", CodeList[i].offset+n);
+                gprintf("WIP: %08X Address does not match with WIP entry.\n", CodeList[i].offset+n);
                 gprintf("Destination: %02X | Should be: %02X.\n", dst[offset], ((u8 *)&CodeList[i].srcaddress)[n]);
             }
         }
     }
     ProcessedLength += len;
     Counter++;
+}
+
+//! for internal patches only
+//! .wip files override internal patches
+//! the codelist has to be freed if the set fails
+//! if set was successful the codelist will be freed when it's done
+bool set_wip_list(WIP_Code * list, int size)
+{
+	if (!CodeList && size > 0)
+	{
+		CodeList = list;
+		CodesCount = size;
+		return true;
+	}
+
+	return false;
 }
 
 void wip_reset_counter()

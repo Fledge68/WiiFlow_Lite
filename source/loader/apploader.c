@@ -11,6 +11,7 @@
 #include "wbfs.h"
 #include "sys.h"
 #include "gecko.h"
+#include "fst.h"
 
 /* Apploader function pointers */
 typedef int   (*app_main)(void **dst, int *size, int *offset);
@@ -27,9 +28,12 @@ static u8 *appldr = (u8 *) 0x81200000;
 /* Variables */
 static u32 buffer[0x20] ATTRIBUTE_ALIGN(32);
 
-static bool maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio);
-static bool Remove_001_Protection(void *Address, int Size);
-static bool PrinceOfPersiaPatch();
+void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio);
+void PatchCountryStrings(void *Address, int Size);
+bool Remove_001_Protection(void *Address, int Size);
+bool PrinceOfPersiaPatch();
+bool NewSuperMarioBrosPatch();
+bool hookpatched = false;
 
 s32 Apploader_Run(entry_point *entry, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio)
 {
@@ -63,24 +67,22 @@ s32 Apploader_Run(entry_point *entry, u8 vidMode, GXRModeObj *vmode, bool vipatc
 
 	/* Initialize apploader */
 	appldr_init(gprintf);
-	
-	bool hookpatched = false;
 
 	while (appldr_main(&dst, &len, &offset))
 	{
 		/* Read data from DVD */
 		WDVD_Read(dst, len, (u64)(offset << 2));
-		if(maindolpatches(dst, len, vidMode, vmode, vipatch, countryString, patchVidModes, aspectRatio))
-			hookpatched = true;
+		maindolpatches(dst, len, vidMode, vmode, vipatch, countryString, patchVidModes, aspectRatio);
 	}
 
-	if (hooktype != 0 && !hookpatched)
+	free_wip();
+	if (hooktype != 0)
 	{
-		gprintf("Error: Could not patch the hook\n");
-		gprintf("Ocarina and debugger won't work\n");
+		if(hookpatched)
+			ocarina_do_code();
+		else
+			gprintf("Error: Could not patch the hook, Ocarina and debugger won't work\n");
 	}
-	
-	PrinceOfPersiaPatch();
 
 	/* Set entry point from apploader */
 	*entry = appldr_final();
@@ -91,6 +93,32 @@ s32 Apploader_Run(entry_point *entry, u8 vidMode, GXRModeObj *vmode, bool vipatc
 	DCFlushRange((void*)0x80000000, 0x3f00);
 
 	return 0;
+}
+
+void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio)
+{
+	PrinceOfPersiaPatch();
+	NewSuperMarioBrosPatch();
+
+	patchVideoModes(dst, len, vidMode, vmode, patchVidModes);
+
+	if(hooktype != 0 && dogamehooks(dst, len, false))
+		hookpatched = true;
+	if(vipatch)
+		vidolpatcher(dst, len);
+	if(configbytes[0] != 0xCD)
+		langpatcher(dst, len);
+	if(countryString)
+		PatchCountryStrings(dst, len); // Country Patch by WiiPower
+	if(aspectRatio != -1)
+		PatchAspectRatio(dst, len, aspectRatio);
+
+	Remove_001_Protection(dst, len);
+
+	do_wip_code((u8 *)dst, len);
+
+	DCFlushRange(dst, len);
+	ICInvalidateRange(dst, len);
 }
 
 void PatchCountryStrings(void *Address, int Size)
@@ -168,98 +196,97 @@ void PatchCountryStrings(void *Address, int Size)
 		}
 }
 
-static bool PrinceOfPersiaPatch()
+bool PrinceOfPersiaPatch()
 {
-    if (memcmp("SPX", (char *)0x80000000, 3) == 0 || memcmp("RPW", (char *)0x80000000, 3) == 0)
+	if (memcmp("SPX", (char *) 0x80000000, 3) != 0 && memcmp("RPW", (char *) 0x80000000, 3) != 0)
+		return false;
+
+	WIP_Code * CodeList = MEM2_alloc(5 * sizeof(WIP_Code));
+	CodeList[0].offset = 0x007AAC6A;
+	CodeList[0].srcaddress = 0x7A6B6F6A;
+	CodeList[0].dstaddress = 0x6F6A7A6B;
+	CodeList[1].offset = 0x007AAC75;
+	CodeList[1].srcaddress = 0x7C7A6939;
+	CodeList[1].dstaddress = 0x69397C7A;
+	CodeList[2].offset = 0x007AAC82;
+	CodeList[2].srcaddress = 0x7376686B;
+	CodeList[2].dstaddress = 0x686B7376;
+	CodeList[3].offset = 0x007AAC92;
+	CodeList[3].srcaddress = 0x80717570;
+	CodeList[3].dstaddress = 0x75708071;
+	CodeList[4].offset = 0x007AAC9D;
+	CodeList[4].srcaddress = 0x82806F3F;
+	CodeList[4].dstaddress = 0x6F3F8280;
+
+	if (set_wip_list(CodeList, 5) == false)
 	{
-        u8 *p = (u8 *)0x807AEB6A;
-        *p++ = 0x6F;
-        *p++ = 0x6A;
-        *p++ = 0x7A;
-        *p++ = 0x6B;
-        p = (u8 *)0x807AEB75;
-        *p++ = 0x69;
-        *p++ = 0x39;
-        *p++ = 0x7C;
-        *p++ = 0x7A;
-        p = (u8 *)0x807AEB82;
-        *p++ = 0x68;
-        *p++ = 0x6B;
-        *p++ = 0x73;
-        *p++ = 0x76;
-        p = (u8 *)0x807AEB92;
-        *p++ = 0x75;
-        *p++ = 0x70;
-        *p++ = 0x80;
-        *p++ = 0x71;
-        p = (u8 *)0x807AEB9D;
-        *p++ = 0x6F;
-        *p++ = 0x3F;
-        *p++ = 0x82;
-        *p++ = 0x80;
-        return true;
+		MEM2_free(CodeList);
+		CodeList = NULL;
+		return false;
 	}
-    return false;
+
+	return true;
 }
 
-bool NewSuperMarioBrosPatch(void *Address, int Size)
+bool NewSuperMarioBrosPatch()
 {
-	if (memcmp("SMN", (char *)0x80000000, 3) == 0)
+	WIP_Code * CodeList = NULL;
+
+	if (memcmp("SMNE01", (char *) 0x80000000, 6) == 0)
 	{
-		u8 SearchPattern1[32] = {// PAL
-			0x94, 0x21, 0xFF, 0xD0, 0x7C, 0x08, 0x02, 0xA6,
-			0x90, 0x01, 0x00, 0x34, 0x39, 0x61, 0x00, 0x30,
-			0x48, 0x12, 0xD9, 0x39, 0x7C, 0x7B, 0x1B, 0x78,
-			0x7C, 0x9C, 0x23, 0x78, 0x7C, 0xBD, 0x2B, 0x78};
-		u8 SearchPattern2[32] = {// NTSC
-			0x94, 0x21, 0xFF, 0xD0, 0x7C, 0x08, 0x02, 0xA6,
-			0x90, 0x01, 0x00, 0x34, 0x39, 0x61, 0x00, 0x30,
-			0x48, 0x12, 0xD7, 0x89, 0x7C, 0x7B, 0x1B, 0x78,
-			0x7C, 0x9C, 0x23, 0x78, 0x7C, 0xBD, 0x2B, 0x78};
-		u8 PatchData[4] = {0x4E, 0x80, 0x00, 0x20};
-	
-		void *Addr = Address;
-		void *Addr_end = Address+Size;
-		while (Addr <= Addr_end-sizeof(SearchPattern1))
-		{
-			if (  memcmp(Addr, SearchPattern1, sizeof(SearchPattern1))==0
-				|| memcmp(Addr, SearchPattern2, sizeof(SearchPattern2))==0)
-			{
-				memcpy(Addr,PatchData,sizeof(PatchData));
-				return true;
-			}
-			Addr += 4;
-		}
+		CodeList = MEM2_alloc(3 * sizeof(WIP_Code));
+		if(!CodeList)
+			return false;
+		CodeList[0].offset = 0x001AB610;
+		CodeList[0].srcaddress = 0x9421FFD0;
+		CodeList[0].dstaddress = 0x4E800020;
+		CodeList[1].offset = 0x001CED53;
+		CodeList[1].srcaddress = 0xDA000000;
+		CodeList[1].dstaddress = 0x71000000;
+		CodeList[2].offset = 0x001CED6B;
+		CodeList[2].srcaddress = 0xDA000000;
+		CodeList[2].dstaddress = 0x71000000;
 	}
-	return false;
+	else if (memcmp("SMNP01", (char *) 0x80000000, 6) == 0)
+	{
+		CodeList = MEM2_alloc(3 * sizeof(WIP_Code));
+		if(!CodeList)
+			return false;
+		CodeList[0].offset = 0x001AB750;
+		CodeList[0].srcaddress = 0x9421FFD0;
+		CodeList[0].dstaddress = 0x4E800020;
+		CodeList[1].offset = 0x001CEE90;
+		CodeList[1].srcaddress = 0x38A000DA;
+		CodeList[1].dstaddress = 0x38A00071;
+		CodeList[2].offset = 0x001CEEA8;
+		CodeList[2].srcaddress = 0x388000DA;
+		CodeList[2].dstaddress = 0x38800071;
+	}
+	else if (memcmp("SMNJ01", (char *) 0x80000000, 6) == 0)
+	{
+		CodeList = MEM2_alloc(3 * sizeof(WIP_Code));
+		if(!CodeList)
+			return false;
+		CodeList[0].offset = 0x001AB420;
+		CodeList[0].srcaddress = 0x9421FFD0;
+		CodeList[0].dstaddress = 0x4E800020;
+		CodeList[1].offset = 0x001CEB63;
+		CodeList[1].srcaddress = 0xDA000000;
+		CodeList[1].dstaddress = 0x71000000;
+		CodeList[2].offset = 0x001CEB7B;
+		CodeList[2].srcaddress = 0xDA000000;
+		CodeList[2].dstaddress = 0x71000000;
+	}
+	if (CodeList && set_wip_list(CodeList, 3) == false)
+	{
+		MEM2_free(CodeList);
+		CodeList = NULL;
+		return false;
+	}
+	return CodeList != NULL;
 }
 
-static bool maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio)
-{
-	bool ret = false;
-
-	DCFlushRange(dst, len);
-
-	patchVideoModes(dst, len, vidMode, vmode, patchVidModes);
-
-	if (hooktype != 0) ret = dogamehooks(dst, len, false);
-	if (vipatch) vidolpatcher(dst, len);
-	if (configbytes[0] != 0xCD) langpatcher(dst, len);
-	if (countryString) PatchCountryStrings(dst, len); // Country Patch by WiiPower
-	if (aspectRatio != -1) PatchAspectRatio(dst, len, aspectRatio);
-	Remove_001_Protection(dst, len);
-	
-	// NSMB Patch by WiiPower
-	NewSuperMarioBrosPatch(dst,len);
-
-	do_wip_code((u8 *) dst, len);
-	
-	DCFlushRange(dst, len);
-
-	return ret;
-}
-
-static bool Remove_001_Protection(void *Address, int Size)
+bool Remove_001_Protection(void *Address, int Size)
 {
 	static const u8 SearchPattern[] = {0x40, 0x82, 0x00, 0x0C, 0x38, 0x60, 0x00, 0x01, 0x48, 0x00, 0x02, 0x44, 0x38, 0x61, 0x00, 0x18};
 	static const u8 PatchData[] = {0x40, 0x82, 0x00, 0x04, 0x38, 0x60, 0x00, 0x01, 0x48, 0x00, 0x02, 0x44, 0x38, 0x61, 0x00, 0x18};

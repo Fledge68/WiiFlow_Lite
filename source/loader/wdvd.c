@@ -169,9 +169,14 @@ s32 WDVD_Eject(void)
 	return (ret == 1) ? 0 : -ret;
 }
 
-s32 WDVD_OpenPartition(u64 offset, void* Ticket, void* Certificate, unsigned int Cert_Len, void* Out)
+s32 WDVD_OpenPartition(u64 offset)
 {
+	if (di_fd < 0)
+		return di_fd;
+
+	static u8 Tmd_Buffer[0x4A00] ATTRIBUTE_ALIGN(32);
 	static ioctlv Vectors[5] ATTRIBUTE_ALIGN(32);
+	s32 ret;
 
 	memset(inbuf, 0, sizeof inbuf);
 	memset(outbuf, 0, sizeof outbuf);
@@ -181,17 +186,19 @@ s32 WDVD_OpenPartition(u64 offset, void* Ticket, void* Certificate, unsigned int
 
 	Vectors[0].data		= inbuf;
 	Vectors[0].len		= 0x20;
-	Vectors[1].data		= (Ticket == NULL) ? 0 : Ticket;
-	Vectors[1].len		= (Ticket == NULL) ? 0 : 0x2a4;
-	Vectors[2].data		= (Certificate == NULL) ? 0 : Certificate;
-	Vectors[2].len		= (Certificate == NULL) ? 0 : Cert_Len;
-	Vectors[3].data		= Out;
+	Vectors[1].data		= 0;
+	Vectors[1].len		= 0;
+	Vectors[2].data		= 0;
+	Vectors[2].len		= 0;
+	Vectors[3].data		= Tmd_Buffer;
 	Vectors[3].len		= 0x49e4;
 	Vectors[4].data		= outbuf;
 	Vectors[4].len		= 0x20;
 
-	s32 ret = IOS_Ioctlv(di_fd, IOCTL_DI_OPENPART, 3, 2, Vectors);
-	if (ret < 0) return ret;
+	ret = IOS_Ioctlv(di_fd, IOCTL_DI_OPENPART, 3, 2, (ioctlv *)Vectors);
+
+	if (ret < 0)
+		return ret;
 
 	return (ret == 1) ? 0 : -ret;
 }
