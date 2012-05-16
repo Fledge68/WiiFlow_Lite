@@ -1293,7 +1293,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	if(currentPartition == 0)
 		SDHC_Init();
 
-	gprintf("Booting game\n");
 	usleep(100 * 1000);
 
 	/* Find game partition offset */
@@ -1305,7 +1304,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	RunApploader(offset, videoMode, vipatch, countryPatch, patchVidMode, aspectRatio);
 	DeviceHandler::DestroyInstance();
 	USBStorage_Deinit();
-	free_wip();
+	gprintf("Booting game\n");
 	Disc_BootPartition();
 }
 

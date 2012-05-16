@@ -40,8 +40,8 @@ static u8  *diskid = (u8  *)0x80000000;
 GXRModeObj *disc_vmode = NULL;
 GXRModeObj *vmode = NULL;
 u32 vmode_reg = 0;
+u8 vidmode_selected = 0;
 
-static u8	Tmd_Buffer[0x49e4] ALIGNED(32);
 extern void __exception_closeall();
 
 entry_point p_entry;
@@ -63,9 +63,6 @@ void __Disc_SetLowMem()
 
 	/* Copy disc ID */
 	memcpy((void *) Online_Check, (void *) Disc_ID, 4);
-
-	/* Flush cache */
-	DCFlushRange((void *)0x80000000, 0x3F00);
 }
 
 GXRModeObj * __Disc_SelectVMode(u8 videoselected, u64 chantitle)
@@ -360,9 +357,6 @@ s32 Disc_IsGC(void)
 
 s32 Disc_BootPartition()
 {
-	if (hooktype != 0)
-		ocarina_do_code();
-
 	/* Set time */
 	__Disc_SetTime();
 
@@ -410,7 +404,7 @@ s32 Disc_BootPartition()
 
 void RunApploader(u64 offset, u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, int aspectRatio)
 {
-	WDVD_OpenPartition(offset, 0, 0, 0, Tmd_Buffer);
+	WDVD_OpenPartition(offset);
 
 	/* Setup low memory */;
 	__Disc_SetLowMem();
