@@ -60,7 +60,10 @@ SoundHandler::~SoundHandler()
 	LWP_JoinThread(SoundThread, NULL);
 	SoundThread = LWP_THREAD_NULL;
 	if(ThreadStack != NULL)
+	{
 		MEM1_free(ThreadStack);
+		ThreadStack = NULL;
+	}
 
 	ClearDecoderList();
 	gprintf("SHND: Stopped sound thread\n");
@@ -69,68 +72,71 @@ SoundHandler::~SoundHandler()
 SoundHandler * SoundHandler::Instance()
 {
 	if (instance == NULL)
-	{
 		instance = new SoundHandler();
-	}
 	return instance;
 }
 
 void SoundHandler::DestroyInstance()
 {
-    if(instance)
-    {
-        delete instance;
-    }
-    instance = NULL;
+	if(instance)
+	{
+		delete instance;
+		instance = NULL;
+	}
 }
 
 void SoundHandler::AddDecoder(int voice, const char * filepath)
 {
-    if(voice < 0 || voice >= MAX_DECODERS)
-        return;
+	if(voice < 0 || voice >= MAX_DECODERS)
+		return;
 
-    if(DecoderList[voice] != NULL)
-        RemoveDecoder(voice);
+	if(DecoderList[voice] != NULL)
+		RemoveDecoder(voice);
 
-    DecoderList[voice] = GetSoundDecoder(filepath);
+	DecoderList[voice] = GetSoundDecoder(filepath);
 }
 
 void SoundHandler::AddDecoder(int voice, const u8 * snd, int len)
 {
-    if(voice < 0 || voice >= MAX_DECODERS)
-        return;
-	
+	if(voice < 0 || voice >= MAX_DECODERS)
+		return;
+
 	if (snd == NULL || len == 0)
 		return;
 
-    if(DecoderList[voice] != NULL)
-        RemoveDecoder(voice);
+	if(DecoderList[voice] != NULL)
+	RemoveDecoder(voice);
 
-    DecoderList[voice] = GetSoundDecoder(snd, len);
+	DecoderList[voice] = GetSoundDecoder(snd, len);
 }
 
 void SoundHandler::RemoveDecoder(int voice)
 {
-    if(voice < 0 || voice >= MAX_DECODERS)
-        return;
+	if(voice < 0 || voice >= MAX_DECODERS)
+		return;
 
     if(DecoderList[voice] != NULL)
     {
-        if(DecoderList[voice]->GetSoundType() == SOUND_OGG) delete ((OggDecoder *) DecoderList[voice]);
-        else if(DecoderList[voice]->GetSoundType() == SOUND_MP3) delete ((Mp3Decoder *) DecoderList[voice]);
-        else if(DecoderList[voice]->GetSoundType() == SOUND_WAV) delete ((WavDecoder *) DecoderList[voice]);
-        else if(DecoderList[voice]->GetSoundType() == SOUND_AIF) delete ((AifDecoder *) DecoderList[voice]);
-        else if(DecoderList[voice]->GetSoundType() == SOUND_BNS) delete ((BNSDecoder *) DecoderList[voice]);
-        else delete DecoderList[voice];
+		if(DecoderList[voice]->GetSoundType() == SOUND_OGG)
+			delete ((OggDecoder *)DecoderList[voice]);
+		else if(DecoderList[voice]->GetSoundType() == SOUND_MP3)
+			delete ((Mp3Decoder *)DecoderList[voice]);
+		else if(DecoderList[voice]->GetSoundType() == SOUND_WAV)
+			delete ((WavDecoder *)DecoderList[voice]);
+		else if(DecoderList[voice]->GetSoundType() == SOUND_AIF)
+			delete ((AifDecoder *)DecoderList[voice]);
+		else if(DecoderList[voice]->GetSoundType() == SOUND_BNS)
+			delete ((BNSDecoder *)DecoderList[voice]);
+		else
+			delete DecoderList[voice];
+		DecoderList[voice] = NULL;
     }
-
-    DecoderList[voice] = NULL;
 }
 
 void SoundHandler::ClearDecoderList()
 {
-    for(u32 i = 0; i < MAX_DECODERS; ++i)
-        RemoveDecoder(i);
+	for(u32 i = 0; i < MAX_DECODERS; ++i)
+		RemoveDecoder(i);
 }
 
 static inline bool CheckMP3Signature(const u8 * buffer)

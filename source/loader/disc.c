@@ -163,7 +163,6 @@ void __Disc_SetVMode(void)
 	/* Set video mode register */
 	*(vu32 *)0x800000CC = vmode_reg;
 	DCFlushRange((void *)(0x800000CC), 4);
-	ICInvalidateRange((void *)(0x800000CC), 4);
 
 	/* Set video mode */
 	if (disc_vmode != 0)
@@ -364,7 +363,6 @@ s32 Disc_BootPartition()
 	__Disc_SetVMode();
 
 	/* Shutdown IOS subsystems */
-	__dsp_shutdown();
 	u32 level = IRQ_Disable();
 	__IOS_ShutdownSubsystems();
 	__exception_closeall();
