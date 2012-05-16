@@ -1,13 +1,6 @@
 #ifndef _DISC_H_
 #define _DISC_H_
 
-#define	Sys_Magic	((vu32*)0x80000020)
-#define	Version		((vu32*)0x80000024)
-#define	Arena_L		((vu32*)0x80000030)
-#define	BI2			((vu32*)0x800000F4)
-#define	Bus_Speed	((vu32*)0x800000F8)
-#define	CPU_Speed	((vu32*)0x800000Fc)
-
 /* Disc header structure */
 struct discHdr
 {

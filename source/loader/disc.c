@@ -20,7 +20,7 @@
 #include "frag.h"
 #include "usbstorage.h"
 #include "wip.h"
-
+#include "memory.h"
 #include "gecko.h"
 
 #define ALIGNED(x) __attribute__((aligned(x)))
@@ -41,7 +41,7 @@ GXRModeObj *disc_vmode = NULL;
 GXRModeObj *vmode = NULL;
 u32 vmode_reg = 0;
 
-static u8	Tmd_Buffer[0x49e4 + 0x1C] ALIGNED(32);
+static u8	Tmd_Buffer[0x49e4] ALIGNED(32);
 extern void __exception_closeall();
 
 entry_point p_entry;
@@ -49,35 +49,21 @@ entry_point p_entry;
 void __Disc_SetLowMem()
 {
 	/* Setup low memory */
-	*(vu32 *)0x80000030 = 0x00000000; // Arena Low
-	*(vu32 *)0x80000060 = 0x38A00040;
-	*(vu32 *)0x800000E4 = 0x80431A80;
-	*(vu32 *)0x800000EC = 0x81800000; // Dev Debugger Monitor Address
-	*(vu32 *)0x800000F0 = 0x01800000; // Simulated Memory Size
-	*(vu32 *)0x800000F4 = 0x817E5480;
-	*(vu32 *)0x800000F8 = 0x0E7BE2C0; // bus speed
-	*(vu32 *)0x800000FC = 0x2B73A840; // cpu speed
-	*(vu32 *)0xCD00643C = 0x00000000; // 32Mhz on Bus
+	*Sys_Magic			= 0x0D15EA5E; // Standard Boot Code
+	*Sys_Version		= 0x00000001; // Version
+	*Arena_L			= 0x00000000; // Arena Low
+	*BI2				= 0x817E5480; // BI2
+	*Bus_Speed			= 0x0E7BE2C0; // Console Bus Speed
+	*CPU_Speed			= 0x2B73A840; // Console CPU Speed
+	*Assembler			= 0x38A00040; // Assembler
+	*(u32*)0x800000E4	= 0x80431A80;
+	*Dev_Debugger		= 0x81800000; // Dev Debugger Monitor Address
+	*Simulated_Mem		= 0x01800000; // Simulated Memory Size
+	*(vu32*)0xCD00643C	= 0x00000000; // 32Mhz on Bus
 
-	/* Copy disc ID (online check) */
-	memcpy((void *)0x80003180, (void *)0x80000000, 4);
+	/* Copy disc ID */
+	memcpy((void *) Online_Check, (void *) Disc_ID, 4);
 
-	// Patch in info missing from apploader reads
-	*Sys_Magic      = 0x0d15ea5e;
-	*Version        = 1;
-	*Arena_L        = 0x00000000;
-	*BI2            = 0x817E5480;
-	*Bus_Speed      = 0x0E7BE2C0;
-	*CPU_Speed      = 0x2B73A840;
-
-	// From NeoGamme R4 (WiiPower)
-	*(vu32 *)0x800030F0 = 0x0000001C;
-	*(vu32 *)0x8000318C = 0x00000000;
-	*(vu32 *)0x80003190 = 0x00000000;
-	
-	// Fix for Sam & Max (WiiPower)
-	*(vu32 *)0x80003184 = 0x80000000;
-	
 	/* Flush cache */
 	DCFlushRange((void *)0x80000000, 0x3F00);
 }
@@ -143,7 +129,7 @@ GXRModeObj * __Disc_SelectVMode(u8 videoselected, u64 chantitle)
 					if (CONF_GetVideo() != CONF_VIDEO_NTSC)
 					{
 						vmode_reg = VI_NTSC;
-						vmode = progressive ? &TVNtsc480Prog : &TVEurgb60Hz480IntDf;
+						vmode = progressive ? &TVEurgb60Hz480Prog : &TVEurgb60Hz480IntDf;
 					}
 					break;
 			}
@@ -153,8 +139,8 @@ GXRModeObj * __Disc_SelectVMode(u8 videoselected, u64 chantitle)
 			vmode_reg = vmode->viTVMode >> 2;
 			break;
 		case 2: // PAL60
-			vmode = progressive ? &TVNtsc480Prog : &TVEurgb60Hz480IntDf;
-			vmode_reg = progressive ? TVEurgb60Hz480Prog.viTVMode >> 2 : vmode->viTVMode >> 2;
+			vmode = progressive ? &TVEurgb60Hz480Prog : &TVEurgb60Hz480IntDf;
+			vmode_reg = progressive ? vmode->viTVMode >> 2 : vmode->viTVMode >> 2;
 			break;
 		case 3: // NTSC
 			vmode = progressive ? &TVNtsc480Prog : &TVNtsc480IntDf;
@@ -205,31 +191,52 @@ s32 Disc_FindPartition(u64 *outbuf)
 	u64 offset = 0;
 	u32 cnt;
 
+	u32 *TMP_Buffer = (u32*)MEM2_alloc(0x20);
+	if(!TMP_Buffer)
+		return -1;
+
 	/* Read partition info */
-	s32 ret = WDVD_UnencryptedRead(buffer, 0x20, PTABLE_OFFSET);
-	if (ret < 0) return ret;
-
-	/* Get data */
-	u32 nb_partitions = buffer[0];
-	u64 table_offset  = buffer[1] << 2;
-	
-	if (nb_partitions > 8) return -1;
-
-	/* Read partition table */
-	ret = WDVD_UnencryptedRead(buffer, 0x20, table_offset);
-	if (ret < 0) return ret;
-
-	/* Find game partition */
-	for (cnt = 0; cnt < nb_partitions; cnt++)
+	s32 ret = WDVD_UnencryptedRead(TMP_Buffer, 0x20, PTABLE_OFFSET);
+	if(ret < 0)
 	{
-		u32 type = buffer[cnt * 2 + 1];
-
-		/* Game partition */
-		if(!type) offset = buffer[cnt * 2] << 2;
+		MEM2_free(TMP_Buffer);
+		return ret;
 	}
 
+	/* Get data */
+	u32 nb_partitions = TMP_Buffer[0];
+	u64 table_offset  = TMP_Buffer[1] << 2;
+	
+	if(nb_partitions > 8)
+	{
+		MEM2_free(TMP_Buffer);
+		return -1;
+	}
+
+	memset(TMP_Buffer, 0, sizeof(TMP_Buffer));
+
+	/* Read partition table */
+	ret = WDVD_UnencryptedRead(TMP_Buffer, 0x20, table_offset);
+	if (ret < 0)
+	{
+		MEM2_free(TMP_Buffer);
+		return ret;
+	}
+
+	/* Find game partition */
+	for(cnt = 0; cnt < nb_partitions; cnt++)
+	{
+		u32 type = TMP_Buffer[cnt * 2 + 1];
+
+		/* Game partition */
+		if(!type)
+			offset = TMP_Buffer[cnt * 2] << 2;
+	}
+	MEM2_free(TMP_Buffer);
+
 	/* No game partition found */
-	if (!offset) return -1;
+	if (!offset)
+		return -1;
 
 	/* Set output buffer */
 	*outbuf = offset;
@@ -363,6 +370,7 @@ s32 Disc_BootPartition()
 	__Disc_SetVMode();
 
 	/* Shutdown IOS subsystems */
+	__dsp_shutdown();
 	u32 level = IRQ_Disable();
 	__IOS_ShutdownSubsystems();
 	__exception_closeall();

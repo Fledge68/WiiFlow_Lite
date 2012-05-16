@@ -336,7 +336,7 @@ void load_handler()
 	{
 		if (debuggerselect == 0x01)
 		{
-			gprintf("Debbugger selected is gecko\n");
+			//gprintf("Debbugger selected is gecko\n");
 			memset((void*)0x80001800,0,codehandler_size);
 			memcpy((void*)0x80001800,codehandler,codehandler_size);
 			//if (pausedstartoption == 0x01)
@@ -349,7 +349,7 @@ void load_handler()
 		}
 		else
 		{
-			gprintf("Debbugger selected is not gecko\n");
+			//gprintf("Debbugger selected is not gecko\n");
 			memset((void*)0x80001800,0,codehandleronly_size);
 			memcpy((void*)0x80001800,codehandleronly,codehandleronly_size);
 			memcpy((void*)0x80001906, &codelist, 2);
