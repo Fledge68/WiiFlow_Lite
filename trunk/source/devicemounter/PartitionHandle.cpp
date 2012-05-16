@@ -42,7 +42,7 @@
 #define PARTITION_TYPE_WIN95_EXTENDED		0x0F /* Windows 95 extended partition */
 #define PARTITION_TYPE_GPT_TABLE			0xEE /* New Standard */
 
-#define CACHE 8
+#define CACHE 32
 #define SECTORS 64
 
 extern const DISC_INTERFACE __io_sdhc;

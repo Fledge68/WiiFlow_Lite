@@ -59,7 +59,8 @@ SoundHandler::~SoundHandler()
 	ThreadSignal();
 	LWP_JoinThread(SoundThread, NULL);
 	SoundThread = LWP_THREAD_NULL;
-	MEM1_free(ThreadStack);
+	if(ThreadStack != NULL)
+		MEM1_free(ThreadStack);
 
 	ClearDecoderList();
 	gprintf("SHND: Stopped sound thread\n");

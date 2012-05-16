@@ -1,4 +1,3 @@
-
 #include "mem2alloc.hpp"
 
 #include <ogc/system.h>
@@ -7,13 +6,15 @@
 
 #include "lockMutex.hpp" 
 
+#define IOS_RELOAD_AREA		0x90200000
+
 void CMEM2Alloc::init(unsigned int size)
 {
-	m_baseAddress = (SBlock *)(((u32)SYS_GetArena2Lo() + 31) & ~31);
-	m_endAddress = (SBlock *)((char *)m_baseAddress + std::min(size * 0x100000, (SYS_GetArena2Size() - 0x20 - 31) & ~31)); // Round down - an extra 32 for wdvd_unencrypted read
+	m_baseAddress = (SBlock *) std::max(((u32)SYS_GetArena2Lo() + 31) & ~31, IOS_RELOAD_AREA);
+	m_endAddress = (SBlock *)((char *)m_baseAddress + std::min(size * 0x100000, SYS_GetArena2Size() & ~31));
 	if (m_endAddress > (SBlock *)0x93000000)
 		m_endAddress = (SBlock *)0x93000000;
-	SYS_SetArena2Lo(m_endAddress + 0x20);
+	SYS_SetArena2Lo(m_endAddress);
 	LWP_MutexInit(&m_mutex, 0);
 }
 
@@ -51,9 +52,9 @@ void *CMEM2Alloc::allocate(unsigned int s)
 {
 	if (s == 0)
 		s = 1;
-	// 
+	//
 	LockMutex lock(m_mutex);
-	// 
+	//
 	s = (s - 1) / sizeof (SBlock) + 1;
 	// First block
 	if (m_first == 0)
@@ -116,10 +117,10 @@ void CMEM2Alloc::release(void *p)
 	SBlock *i = (SBlock *)p - 1;
 	i->f = true;
 
-    // If there are no other blocks following yet,
-    // set the remaining size to free size. - Dimok
+	// If there are no other blocks following yet,
+	// set the remaining size to free size. - Dimok
 	if(i->next == 0)
-        i->s = m_endAddress - i - 1;
+		i->s = m_endAddress - i - 1;
 
 	// Merge with previous block
 	if (i->prev != 0 && i->prev->f)
@@ -148,7 +149,6 @@ void *CMEM2Alloc::reallocate(void *p, unsigned int s)
 
 	if (s == 0)
 		s = 1;
-
 	if (p == 0)
 		return allocate(s);
 
@@ -157,7 +157,7 @@ void *CMEM2Alloc::reallocate(void *p, unsigned int s)
 	{
 		LockMutex lock(m_mutex);
 
-		// Check for out of memory (dimok)
+		//out of memory /* Dimok */
 		if (i + s + 1 >= m_endAddress)
 		{
 			return 0;
@@ -208,25 +208,25 @@ void *CMEM2Alloc::reallocate(void *p, unsigned int s)
 
 unsigned int CMEM2Alloc::FreeSize()
 {
-    LockMutex lock(m_mutex);
+	LockMutex lock(m_mutex);
 
-    if (m_first == 0)
-        return (const char *) m_endAddress - (const char *) m_baseAddress;
+	if (m_first == 0)
+		return (const char *) m_endAddress - (const char *) m_baseAddress;
 
 	SBlock *i;
-    unsigned int size = 0;
+	unsigned int size = 0;
 
 	for(i = m_first; i != 0; i = i->next)
 	{
 		if(i->f && i->next != 0)
-            size += i->s;
+			size += i->s;
 
-        else if(i->f && i->next == 0)
-            size += m_endAddress - i - 1;
+		else if(i->f && i->next == 0)
+			size += m_endAddress - i - 1;
 
-        else if(!i->f && i->next == 0)
-            size += m_endAddress - i - i->s - 1;
-    }
+		else if(!i->f && i->next == 0)
+			size += m_endAddress - i - i->s - 1;
+	}
 
-    return size*sizeof(SBlock);
+	return size*sizeof(SBlock);
 }
