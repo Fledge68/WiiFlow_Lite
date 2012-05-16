@@ -1,13 +1,6 @@
 #ifndef _DISC_H_
 #define _DISC_H_
 
-#ifndef APPLOADER_START
-#define APPLOADER_START		(void *)0x81200000
-#endif
-#ifndef APPLOADER_END
-#define APPLOADER_END		(void *)0x81700000
-#endif
-
 #define	Sys_Magic	((vu32*)0x80000020)
 #define	Version		((vu32*)0x80000024)
 #define	Arena_L		((vu32*)0x80000030)

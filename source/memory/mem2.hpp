@@ -9,7 +9,7 @@ extern "C"
 {
 #endif
 
-#define MAX_MEM1_ARENA_LO	((void *) (((u32)APPLOADER_START)-size))
+#define MAX_MEM1_ARENA_LO	((void *)(0x81700000-size))
 #define MEM2_PRIORITY_SIZE	0x1000
 
 void *MEM1_alloc(unsigned int s);

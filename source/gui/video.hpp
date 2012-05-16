@@ -78,6 +78,7 @@ private:
 	void *m_frameBuf[2];
 	int m_curFB;
 	void *m_fifo;
+	void *m_stencil;
 	float m_yScale;
 	u32 m_xfbHeight;
 	bool m_wide;
@@ -90,7 +91,6 @@ private:
 	bool m_aaAlpha;
 	int m_aaWidth;
 	int m_aaHeight;
-	SmartBuf m_stencil;
 	SmartBuf m_aaBuffer[8];
 	u32 m_aaBufferSize[8];
 	float m_vpX;

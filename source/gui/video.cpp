@@ -171,8 +171,8 @@ void CVideo::init(void)
 	GX_SetNumChans(0);
 	GX_SetZCompLoc(GX_ENABLE);
 	setup2DProjection();
-	m_stencil = smartMemAlign32(CVideo::_stencilWidth * CVideo::_stencilHeight);
-	memset(m_stencil.get(), 0, CVideo::_stencilWidth * CVideo::_stencilHeight);
+	m_stencil = MEM1_memalign(32, CVideo::_stencilWidth * CVideo::_stencilHeight);
+	memset(m_stencil, 0, CVideo::_stencilWidth * CVideo::_stencilHeight);
 }
 
 void CVideo::set2DViewport(u32 w, u32 h, int x, int y)
@@ -238,7 +238,6 @@ void CVideo::cleanup(void)
 	VIDEO_WaitVSync();
 	if (m_rmode->viTVMode & VI_NON_INTERLACE)
 		VIDEO_WaitVSync();
-	//MEM1_free(m_fifo);
 }
 
 void CVideo::prepareAAPass(int aaStep)
@@ -407,7 +406,7 @@ int CVideo::stencilVal(int x, int y)
 	u32 i = coordsI8(x, y, (u32)CVideo::_stencilWidth);
 	if (i >= (u32)(CVideo::_stencilWidth * CVideo::_stencilHeight))
 		return 0;
-	return m_stencil.get()[i];
+	return ((u8*)m_stencil)[i];
 }
 
 void CVideo::prepareStencil(void)
@@ -427,9 +426,9 @@ void CVideo::renderStencil(void)
 	GX_SetCopyFilter(GX_FALSE, NULL, GX_FALSE, NULL);
 	GX_SetTexCopySrc(0, 0, CVideo::_stencilWidth, CVideo::_stencilHeight);
 	GX_SetTexCopyDst(CVideo::_stencilWidth, CVideo::_stencilHeight, GX_CTF_R8, GX_FALSE);
-	GX_CopyTex(m_stencil.get(), GX_TRUE);
+	GX_CopyTex(m_stencil, GX_TRUE);
 	GX_PixModeSync();
-	DCFlushRange(m_stencil.get(), CVideo::_stencilWidth * CVideo::_stencilHeight);
+	DCFlushRange(m_stencil, CVideo::_stencilWidth * CVideo::_stencilHeight);
 	GX_SetCopyFilter(m_rmode->aa, m_rmode->sample_pattern, GX_TRUE, m_rmode->vfilter);
 }
 

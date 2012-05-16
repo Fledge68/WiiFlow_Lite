@@ -1289,7 +1289,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		SDHC_Init();
 
 	// clear mem1 main
-	u32 size = (u32)0x80A80000 - (u32)0x80004000;
+	u32 size = (u32)0x80A00000 - (u32)0x80004000;
 	memset((void*)0x80004000, 0, size);
 	DCFlushRange((void*)0x80004000, size);
 
@@ -1299,10 +1299,9 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	u64 offset;
 	Disc_FindPartition(&offset);
 	u32 AppEntryPoint = RunApploader(offset, videoMode, vipatch, countryPatch, patchVidMode, disableIOSreload, aspectRatio);
+	gprintf("\n\nEntry Point is: 0x%08x\n", AppEntryPoint);
 	DeviceHandler::DestroyInstance();
 	USBStorage_Deinit();
-	gprintf("\n\nEntry Point is: 0x%08x\n", AppEntryPoint);
-	usleep(100 * 1000);
 	if (Disc_WiiBoot(AppEntryPoint) < 0)
 		Sys_LoadMenu();
 }

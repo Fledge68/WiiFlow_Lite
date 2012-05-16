@@ -36,14 +36,14 @@ extern "C"
 int main(int argc, char **argv)
 {
 	__exception_setreload(5);
-	MEM2_init(52);
-
-	geckoinit = InitGecko();
-	gprintf(" \nWelcome to %s (%s-r%s)!\nThis is the debug output.\n", APP_NAME, APP_VERSION, SVN_REV);
 
 	// Init video
 	CVideo vid;
 	vid.init();
+
+	MEM2_init(52);
+	geckoinit = InitGecko();
+	gprintf(" \nWelcome to %s (%s-r%s)!\nThis is the debug output.\n", APP_NAME, APP_VERSION, SVN_REV);
 	vid.waitMessage(0.2f);
 
 	char *gameid = NULL;
