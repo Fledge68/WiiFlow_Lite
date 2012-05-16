@@ -1596,16 +1596,24 @@ void CMenu::_initCF(void)
 			&& (!m_locked || !m_gcfg1.getBool("ADULTONLY", id, false))
 			&& !ageLocked)
 		{
-			if (catviews[0] == '0')
+			if(catviews[0] == '0')
 			{
 				const char *idcats = m_cat.getString("CATEGORIES", id, "").c_str();
-				if (strlen(idcats) == 0)
+				if(strlen(idcats) == 0)
 					continue;
 				else
 				{
-					bool idinacat=0;
-					for (u32 j = 1; j<m_max_categories; ++j) if (catviews[j] == '1' && idcats[j] == '1') idinacat=1;
-					if (!idinacat) continue;
+					bool idinacat = false;
+					for(u32 j = 1; j<m_max_categories; ++j)
+					{
+						if(catviews[j] == '1' && idcats[j] == '1') 
+						{
+							idinacat = true;
+							break;
+						}
+					}
+					if(!idinacat)
+						continue;
 				}
 			}
 			int playcount = m_gcfg1.getInt("PLAYCOUNT", id, 0);
@@ -2204,7 +2212,7 @@ bool CMenu::_loadFile(SmartBuf &buffer, u32 &size, const char *path, const char 
 	fseek(fp, 0, SEEK_END);
 	u32 fileSize = ftell(fp);
 	fseek(fp, 0, SEEK_SET);
-	SmartBuf fileBuf = smartAnyAlloc(fileSize);
+	SmartBuf fileBuf = smartMem2Alloc(fileSize);
 	if (!fileBuf)
 	{
 		fclose(fp);

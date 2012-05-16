@@ -1298,7 +1298,10 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 
 	/* Find game partition offset */
 	u64 offset;
-	Disc_FindPartition(&offset);
+	s32 ret = Disc_FindPartition(&offset);
+	if(ret < 0)
+		return;
+
 	RunApploader(offset, videoMode, vipatch, countryPatch, patchVidMode, aspectRatio);
 	DeviceHandler::DestroyInstance();
 	USBStorage_Deinit();
