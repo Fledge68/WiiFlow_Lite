@@ -140,14 +140,7 @@ void CVideo::init(void)
 	m_frameBuf[1] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(m_rmode));
 	VIDEO_Configure(m_rmode);
 	m_curFB = 0;
-	VIDEO_SetNextFramebuffer(m_frameBuf[m_curFB]);
-	VIDEO_ClearFrameBuffer(m_rmode, m_frameBuf[m_curFB], COLOR_BLACK);
-	m_curFB ^= 1;
-	VIDEO_SetNextFramebuffer(m_frameBuf[m_curFB]);
-	VIDEO_ClearFrameBuffer(m_rmode, m_frameBuf[m_curFB], COLOR_BLACK);
-	m_curFB ^= 1;
-	VIDEO_SetNextFramebuffer(m_frameBuf[m_curFB]);
-	VIDEO_SetBlack(FALSE);
+	VIDEO_SetBlack(TRUE);
 	VIDEO_Flush();
 	VIDEO_WaitVSync();
 	if (m_rmode->viTVMode & VI_NON_INTERLACE)
@@ -178,6 +171,12 @@ void CVideo::init(void)
 	GX_SetNumChans(0);
 	GX_SetZCompLoc(GX_ENABLE);
 	setup2DProjection();
+	VIDEO_ClearFrameBuffer(m_rmode, m_frameBuf[m_curFB], COLOR_BLACK);
+	render();
+	VIDEO_ClearFrameBuffer(m_rmode, m_frameBuf[m_curFB], COLOR_BLACK);
+	render();
+	VIDEO_SetBlack(FALSE);
+	VIDEO_Flush();
 	m_stencil = MEM1_memalign(32, CVideo::_stencilWidth * CVideo::_stencilHeight);
 	memset(m_stencil, 0, CVideo::_stencilWidth * CVideo::_stencilHeight);
 }
