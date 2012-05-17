@@ -348,9 +348,10 @@ int CMenu::_FlashSave(string gameId)
 int CMenu::_AutoExtractSave(string gameId)
 {
 	int emuPartition = m_cfg.getInt("GAMES", "savepartition", m_cfg.getInt("NAND", "partition", 0));
+	if(emuPartition < 0)
+		emuPartition = 0;
 	char basepath[MAX_FAT_PATH];	
 	snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[emuPartition], m_cfg.getString("GAMES", "savepath", m_cfg.getString("NAND", "path", "")).c_str());	
-		
 	Nand::Instance()->CreatePath("%s/import", basepath);
 	Nand::Instance()->CreatePath("%s/meta", basepath);
 	Nand::Instance()->CreatePath("%s/shared1", basepath);
