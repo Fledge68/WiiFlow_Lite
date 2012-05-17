@@ -21,9 +21,9 @@ public:
 	T *get(void) const { return m_p; }
 	virtual void release(void)
 	{
-		if (m_refcount != NULL && --*m_refcount == 0)
+		if (m_p != NULL && m_refcount != NULL && --*m_refcount == 0)
 		{
-			switch (m_srcAlloc)
+			switch(m_srcAlloc)
 			{
 				case SRCALL_NEW:
 					delete m_p;

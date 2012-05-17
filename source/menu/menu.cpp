@@ -479,13 +479,14 @@ void CMenu::cleanup(bool ios_reload)
 	MusicPlayer::DestroyInstance();
 	SoundHandler::DestroyInstance();
 	soundDeinit();
-	__dsp_shutdown();
-
-	DeviceHandler::DestroyInstance();
 
 	if(!m_reload)
+	{
+		DeviceHandler::DestroyInstance();
+		__dsp_shutdown();
 		m_vid.cleanup();
-	wiiLightOff();
+		wiiLightOff();
+	}
 
 	if (!ios_reload)
 	{
