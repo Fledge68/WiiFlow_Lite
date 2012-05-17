@@ -1421,7 +1421,8 @@ void CMenu::_gameSoundThread(CMenu *m)
 	if (soundBin == NULL || (((IMD5Header *)soundBin)->fcc != 'IMD5' && ((IMD5Header *)soundBin)->fcc != 'RIFF'))
 	{
 		gprintf("Failed to load banner sound!\n\n");
-		delete soundBin;
+		if(soundBin != NULL)
+			delete soundBin;
 		return;
 	}
 

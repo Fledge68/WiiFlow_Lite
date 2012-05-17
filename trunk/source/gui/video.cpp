@@ -225,18 +225,20 @@ void CVideo::prepare(void)
 void CVideo::cleanup(void)
 {
 	gprintf("Cleaning up video...\n");
-	GX_InvVtxCache();
-	GX_InvalidateTexAll();
 
-	VIDEO_ClearFrameBuffer(m_rmode, m_frameBuf[0], COLOR_BLACK);
-	VIDEO_ClearFrameBuffer(m_rmode, m_frameBuf[1], COLOR_BLACK);
+	VIDEO_ClearFrameBuffer(m_rmode, m_frameBuf[m_curFB], COLOR_BLACK);
+	render();
+	VIDEO_ClearFrameBuffer(m_rmode, m_frameBuf[m_curFB], COLOR_BLACK);
+	render();
+
+	GX_DrawDone();
+	GX_AbortFrame();
+
+	VIDEO_SetBlack(TRUE);
 	VIDEO_Flush();
 	VIDEO_WaitVSync();
 	if(m_rmode->viTVMode & VI_NON_INTERLACE)
 		VIDEO_WaitVSync();
-
-	GX_AbortFrame();
-	GX_Flush();
 
 	for(u8 i = 0; i < sizeof m_aaBuffer / sizeof m_aaBuffer[0]; ++i)
 	{
@@ -248,10 +250,26 @@ void CVideo::cleanup(void)
 		if(m_defaultWaitMessages[i].data.get())
 			m_defaultWaitMessages[i].data.release();
 	}
-	free(MEM_K1_TO_K0(m_frameBuf[0]));
-	free(MEM_K1_TO_K0(m_frameBuf[1]));
-	MEM1_free(m_stencil);
-	MEM1_free(m_fifo);
+	if(m_frameBuf[0] != NULL)
+	{
+		free(MEM_K1_TO_K0(m_frameBuf[0]));
+		m_frameBuf[0] = NULL;
+	}
+	if(m_frameBuf[1] != NULL)
+	{
+		free(MEM_K1_TO_K0(m_frameBuf[1]));
+		m_frameBuf[0] = NULL;
+	}
+	if(m_stencil != NULL)
+	{
+		MEM1_free(m_stencil);
+		m_stencil = NULL;
+	}
+	if(m_fifo != NULL)
+	{
+		MEM1_free(m_fifo);
+		m_fifo = NULL;
+	}
 }
 
 void CVideo::prepareAAPass(int aaStep)
