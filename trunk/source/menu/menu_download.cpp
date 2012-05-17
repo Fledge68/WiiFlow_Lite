@@ -590,7 +590,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 									for( int o = 0; o < 12; ++o )
 									{
 										bool tdl = false;
-										if( download.data != NULL )
+										if(download.data != NULL && download.size > 0 && checkPNGBuf(download.data))
 											break;
 										switch( o )
 										{
@@ -680,29 +680,30 @@ int CMenu::_coverDownloader(bool missingOnly)
 											download = downloadfile(buffer.get(), bufferSize, url.c_str(), CMenu::_downloadProgress, this);
 										}
 									}
-									if (download.data != NULL)
-									{
-										if (savePNG)
-										{									
-											LWP_MutexLock(m_mutex);
-											_setThrdMsg(wfmt(_fmt("dlmsg4", L"Saving %s"), path.c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
-											LWP_MutexUnlock(m_mutex);
-											file = fopen(path.c_str(), "wb");
-											if (file != NULL)
-											{
-												fwrite(download.data, download.size, 1, file);
-												fclose(file);
-											}
-										}
 
+									if(download.data == NULL || download.size == 0 || !checkPNGBuf(download.data))
+										continue;
+
+									if (savePNG)
+									{									
 										LWP_MutexLock(m_mutex);
-										_setThrdMsg(wfmt(_fmt("dlmsg10", L"Making %s"), sfmt("%s.wfc", coverList[i].c_str()).c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
+										_setThrdMsg(wfmt(_fmt("dlmsg4", L"Saving %s"), path.c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
 										LWP_MutexUnlock(m_mutex);
-										if (m_cf.preCacheCover(coverList[i].c_str(), download.data, true))
+										file = fopen(path.c_str(), "wb");
+										if (file != NULL)
 										{
-											++count;
-											success = true;
+											fwrite(download.data, download.size, 1, file);
+											fclose(file);
 										}
+									}
+
+									LWP_MutexLock(m_mutex);
+									_setThrdMsg(wfmt(_fmt("dlmsg10", L"Making %s"), sfmt("%s.wfc", coverList[i].c_str()).c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
+									LWP_MutexUnlock(m_mutex);
+									if (m_cf.preCacheCover(coverList[i].c_str(), download.data, true))
+									{
+										++count;
+										success = true;
 									}
 								}
 							}
@@ -729,7 +730,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 									for( int o = 0; o < 12; ++o )
 									{
 										bool tdl = false;
-										if( download.data != NULL )
+										if(download.data != NULL && download.size > 0 && checkPNGBuf(download.data))
 											break;										
 									
 										switch( o )
@@ -824,29 +825,29 @@ int CMenu::_coverDownloader(bool missingOnly)
 										}
 									}
 
-									if (download.data != NULL)
-									{	
-										if (savePNG)
-										{	
-											LWP_MutexLock(m_mutex);
-											_setThrdMsg(wfmt(_fmt("dlmsg4", L"Saving %s"), path.c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
-											LWP_MutexUnlock(m_mutex);
-											file = fopen(path.c_str(), "wb");
-											if (file != NULL)
-											{
-												fwrite(download.data, download.size, 1, file);
-												fclose(file);
-											}
-										}
+									if(download.data == NULL || download.size == 0 || !checkPNGBuf(download.data))
+										continue;
 
+									if (savePNG)
+									{	
 										LWP_MutexLock(m_mutex);
-										_setThrdMsg(wfmt(_fmt("dlmsg10", L"Making %s"), sfmt("%s.wfc", coverList[i].c_str()).c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
+										_setThrdMsg(wfmt(_fmt("dlmsg4", L"Saving %s"), path.c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
 										LWP_MutexUnlock(m_mutex);
-										if (m_cf.preCacheCover(coverList[i].c_str(), download.data, true))
+										file = fopen(path.c_str(), "wb");
+										if (file != NULL)
 										{
-											++count;
-											success = true;
+											fwrite(download.data, download.size, 1, file);
+											fclose(file);
 										}
+									}
+
+									LWP_MutexLock(m_mutex);
+									_setThrdMsg(wfmt(_fmt("dlmsg10", L"Making %s"), sfmt("%s.wfc", coverList[i].c_str()).c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
+									LWP_MutexUnlock(m_mutex);
+									if (m_cf.preCacheCover(coverList[i].c_str(), download.data, true))
+									{
+										++count;
+										success = true;
 									}
 								}
 							}
@@ -873,7 +874,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 									for( int o = 0; o < 12; ++o )
 									{
 										bool tdl = false;
-										if( download.data != NULL )
+										if(download.data != NULL && download.size > 0 && checkPNGBuf(download.data))
 											break;										
 
 										switch( o )
@@ -967,29 +968,29 @@ int CMenu::_coverDownloader(bool missingOnly)
 										}
 									}
 
-									if (download.data != NULL)
-									{
-										if (savePNG)
-										{
-											LWP_MutexLock(m_mutex);
-											_setThrdMsg(wfmt(_fmt("dlmsg4", L"Saving %s"), path.c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
-											LWP_MutexUnlock(m_mutex);
-											file = fopen(path.c_str(), "wb");
-											if (file != NULL)
-											{
-												fwrite(download.data, download.size, 1, file);
-												fclose(file);
-											}
-										}
+									if(download.data == NULL || download.size == 0 || !checkPNGBuf(download.data))
+										continue;
 
+									if (savePNG)
+									{
 										LWP_MutexLock(m_mutex);
-										_setThrdMsg(wfmt(_fmt("dlmsg10", L"Making %s"), sfmt("%s.wfc", coverList[i].c_str()).c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
+										_setThrdMsg(wfmt(_fmt("dlmsg4", L"Saving %s"), path.c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
 										LWP_MutexUnlock(m_mutex);
-										if (m_cf.preCacheCover(coverList[i].c_str(), download.data, false))
+										file = fopen(path.c_str(), "wb");
+										if (file != NULL)
 										{
-											++countFlat;
-											success = true;
+											fwrite(download.data, download.size, 1, file);
+											fclose(file);
 										}
+									}
+
+									LWP_MutexLock(m_mutex);
+									_setThrdMsg(wfmt(_fmt("dlmsg10", L"Making %s"), sfmt("%s.wfc", coverList[i].c_str()).c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
+									LWP_MutexUnlock(m_mutex);
+									if (m_cf.preCacheCover(coverList[i].c_str(), download.data, false))
+									{
+										++countFlat;
+										success = true;
 									}
 								}
 							}
@@ -1016,7 +1017,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 									for( int o = 0; o < 12; ++o )
 									{
 										bool tdl = false;
-										if( download.data != NULL )
+										if(download.data != NULL && download.size > 0 && checkPNGBuf(download.data))
 											break;										
 
 										switch( o )
@@ -1109,29 +1110,30 @@ int CMenu::_coverDownloader(bool missingOnly)
 											download = downloadfile(buffer.get(), bufferSize, url.c_str(), CMenu::_downloadProgress, this);
 										}
 									}
-									if (download.data != NULL)
-									{
-										if (savePNG)
-										{
-											LWP_MutexLock(m_mutex);
-											_setThrdMsg(wfmt(_fmt("dlmsg4", L"Saving %s"), path.c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
-											LWP_MutexUnlock(m_mutex);
-											file = fopen(path.c_str(), "wb");
-											if (file != NULL)
-											{
-												fwrite(download.data, download.size, 1, file);
-												fclose(file);
-											}
-										}
 
+									if(download.data == NULL || download.size == 0 || !checkPNGBuf(download.data))
+										continue;
+
+									if (savePNG)
+									{
 										LWP_MutexLock(m_mutex);
-										_setThrdMsg(wfmt(_fmt("dlmsg10", L"Making %s"), sfmt("%s.wfc", coverList[i].c_str()).c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
+										_setThrdMsg(wfmt(_fmt("dlmsg4", L"Saving %s"), path.c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
 										LWP_MutexUnlock(m_mutex);
-										if (m_cf.preCacheCover(coverList[i].c_str(), download.data, false))
+										file = fopen(path.c_str(), "wb");
+										if (file != NULL)
 										{
-											++countFlat;
-											success = true;
+											fwrite(download.data, download.size, 1, file);
+											fclose(file);
 										}
+									}
+
+									LWP_MutexLock(m_mutex);
+									_setThrdMsg(wfmt(_fmt("dlmsg10", L"Making %s"), sfmt("%s.wfc", coverList[i].c_str()).c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
+									LWP_MutexUnlock(m_mutex);
+									if (m_cf.preCacheCover(coverList[i].c_str(), download.data, false))
+									{
+										++countFlat;
+										success = true;
 									}
 								}
 							}
