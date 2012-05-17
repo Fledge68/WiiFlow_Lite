@@ -225,7 +225,7 @@ void CMenu::_textPluginSettings(void)
 	while(true)
 	{
 		if(i == 0)
-			m_btnMgr.setText(m_pluginLblCat[i], _t("dl3", L"All"));
+			m_btnMgr.setText(m_pluginLblCat[i], _t("dl25", L"All"));
 		else
 		{
 			if(m_plugin.PluginExist(i - 1))
