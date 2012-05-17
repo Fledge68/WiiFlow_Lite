@@ -47,6 +47,7 @@ void MEM1_free(void *p)
 void MEM2_init(unsigned int mem2Size)
 {
 	g_mem2gp.init(mem2Size);
+	g_mem2gp.clear();
 }
 
 void MEM2_cleanup(void)
