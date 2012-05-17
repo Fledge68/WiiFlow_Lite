@@ -25,8 +25,7 @@
  ***************************************************************************/
 #include "mem2.hpp"
 #include "BufferCircle.hpp"
-
-#define ALIGN32(x) (((x) + 31) & ~31)
+#include "utils.h"
 
 BufferCircle::BufferCircle()
 {
