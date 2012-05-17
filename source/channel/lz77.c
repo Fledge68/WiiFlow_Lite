@@ -20,8 +20,7 @@
  
 #include "lz77.h"
 #include "mem2.hpp"
-
-#define ALIGN32(x) (((x) + 31) & ~31)
+#include "utils.h"
 
 u32 packBytes(int a, int b, int c, int d)
 {

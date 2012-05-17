@@ -141,6 +141,12 @@ void CVideo::init(void)
 	VIDEO_Configure(m_rmode);
 	m_curFB = 0;
 	VIDEO_SetNextFramebuffer(m_frameBuf[m_curFB]);
+	VIDEO_ClearFrameBuffer(m_rmode, m_frameBuf[m_curFB], COLOR_BLACK);
+	m_curFB ^= 1;
+	VIDEO_SetNextFramebuffer(m_frameBuf[m_curFB]);
+	VIDEO_ClearFrameBuffer(m_rmode, m_frameBuf[m_curFB], COLOR_BLACK);
+	m_curFB ^= 1;
+	VIDEO_SetNextFramebuffer(m_frameBuf[m_curFB]);
 	VIDEO_SetBlack(FALSE);
 	VIDEO_Flush();
 	VIDEO_WaitVSync();

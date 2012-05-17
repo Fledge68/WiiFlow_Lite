@@ -153,7 +153,7 @@ s32 GCDump::__DiscWriteFile(FILE *f, u64 offset, u32 length, u8 *ReadBuffer)
 	while(length)
 	{
 		toread = min(length, gc_readsize);
-		s32 ret = __DiscReadRaw(ReadBuffer, offset, (toread+31)&(~31));
+		s32 ret = __DiscReadRaw(ReadBuffer, offset, ALIGN32(toread));
 		if (ret == 1)
 			memset(ReadBuffer, 0, gc_readsize);
 		else if (ret > 1)
@@ -337,11 +337,11 @@ s32 GCDump::DumpGame()
 		DOLSize = FSTOffset - DOLOffset;
 		DiscSize = DataSize + GamePartOffset;
 
-		FSTBuffer = (u8 *)MEM2_alloc((FSTSize+31)&(~31));
+		FSTBuffer = (u8 *)MEM2_alloc(ALIGN32(FSTSize));
 		if(FSTBuffer == NULL)
 			return 0x31100;
 
-		ret = __DiscReadRaw(FSTBuffer, FSTOffset+NextOffset, (FSTSize+31)&(~31));
+		ret = __DiscReadRaw(FSTBuffer, FSTOffset+NextOffset, ALIGN32(FSTSize));
 
 		if(ret > 0)
 		{
@@ -583,11 +583,11 @@ s32 GCDump::CheckSpace(u32 *needed, bool comp)
 		}
 		else
 		{
-			u8 *FSTBuffer = (u8 *)MEM2_alloc((FSTSize+31)&(~31));
+			u8 *FSTBuffer = (u8 *)MEM2_alloc(ALIGN32(FSTSize));
 			if(FSTBuffer == NULL)
 				return 1;
 
-			ret = __DiscReadRaw(FSTBuffer, FSTOffset+NextOffset, (FSTSize+31)&(~31));
+			ret = __DiscReadRaw(FSTBuffer, FSTOffset+NextOffset, ALIGN32(FSTSize));
 			if(ret > 0)
 			{
 				MEM2_free(FSTBuffer);
