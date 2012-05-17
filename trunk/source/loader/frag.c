@@ -241,7 +241,7 @@ int get_frag_list(u8 *id, char *path, const u32 hdd_sector_size)
 		frag_concat(fa, fs);
 	}
 
-	frag_list = MEM2_alloc((sizeof(FragList)+31)&(~31));
+	frag_list = MEM1_memalign(32, ALIGN32(sizeof(FragList)));
 	if(frag_list == NULL)
 		goto out;
 
@@ -274,14 +274,21 @@ int get_frag_list(u8 *id, char *path, const u32 hdd_sector_size)
 	ret_val = 0;
 
 out:
-	if (frag_list != NULL)
-		MEM2_free(frag_list);
 	if(fs != NULL)
+	{
 		MEM2_free(fs);
+		fs = NULL;
+	}
 	if(fa != NULL)
+	{
 		MEM2_free(fa);
+		fa = NULL;
+	}
 	if(fw != NULL)
+	{
 		MEM2_free(fw);
+		fw = NULL;
+	}
 	return ret_val;
 }
 
@@ -295,12 +302,10 @@ int set_frag_list(u8 *id)
 	DCFlushRange(frag_list, size);
 
  	gprintf("Calling WDVD_SetFragList, frag list size %d\n", size);
-/*	if (size > 400) ghexdump(frag_list, 400);
-	else ghexdump(frag_list, size); */
 
 	int ret = WDVD_SetFragList(wbfsDev, frag_list, size);
 
-	MEM2_free(frag_list);
+	MEM1_free(frag_list);
 	frag_list = NULL;
 
 	if(ret)
