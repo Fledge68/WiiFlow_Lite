@@ -1,7 +1,7 @@
 #include "pngu.h"
 #include "video.hpp"
 #include <string.h>
-#include "gekko.h"
+#include "Gekko.h"
 #include "gecko.h"
 
 #define DEFAULT_FIFO_SIZE	(256 * 1024)

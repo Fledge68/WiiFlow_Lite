@@ -33,7 +33,7 @@
 #include "homebrew.h"
 #include "defines.h"
 #include "gc/gc.h"
-#include "gekko.h"
+#include "Gekko.h"
 
 extern const u8 btngamecfg_png[];
 extern const u8 btngamecfgs_png[];
