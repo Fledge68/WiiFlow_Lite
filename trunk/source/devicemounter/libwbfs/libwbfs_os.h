@@ -14,11 +14,11 @@
 #define wbfs_fatal(x)		do { gprintf(x); wd_last_error = 1; } while(0)
 #define wbfs_error(x)		do { gprintf(x); wd_last_error = 2; } while(0)
 
-#define wbfs_malloc(x)		MEM2_alloc(x)
-#define wbfs_free(x)		MEM2_free(x)
+#define wbfs_malloc(x)		MEM1_alloc(x)
+#define wbfs_free(x)		MEM1_free(x)
 
-#define wbfs_ioalloc(x)		MEM2_alloc(((x) + 31) & ~31)
-#define wbfs_iofree(x)		MEM2_free(x)
+#define wbfs_ioalloc(x)		MEM1_memalign(32, x)
+#define wbfs_iofree(x)		MEM1_free(x)
 
 #define wbfs_be16(x)		(*((u16*)(x)))
 #define wbfs_be32(x)		(*((u32*)(x)))

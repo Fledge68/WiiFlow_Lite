@@ -40,9 +40,10 @@ class GuiSound
 		//!Constructor
 		//!\param sound Pointer to the sound data
 		//!\param filesize Length of sound data
-        GuiSound(std::string filepath, int voice = -1);
+		GuiSound(std::string filepath, int voice = -1);
 		GuiSound(const u8 * snd, u32 len, std::string name, bool allocated = false, int voice = -1);
-
+		//!Stops sound and frees all memory/closes files
+		void FreeMemory();
 		//!Destructor
 		~GuiSound();
 		//!Load a file and replace the old one
@@ -84,13 +85,10 @@ class GuiSound
 		//!Initializes the GuiSound object by setting the default values
 		void Init();
 		//!Special sound case for sound.bin
-        void UncompressSoundbin(const u8 * snd, u32 len, bool isallocated);
+		void UncompressSoundbin(const u8 * snd, u32 len, bool isallocated);
 	protected:
-        //!Stops sound and frees all memory/closes files
-        void FreeMemory();
-
 		std::string filepath;
-		u8 * sound; //!< Pointer to the sound data
+		u8 *sound; //!< Pointer to the sound data
 		u32 length; //!< Length of sound data
 		s32 voice; //!< Currently assigned ASND voice channel
 		int volume; //!< Sound volume (0-100)

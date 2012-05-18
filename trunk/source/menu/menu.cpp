@@ -1749,8 +1749,8 @@ void CMenu::_mainLoopCommon(bool withCF, bool blockReboot, bool adjusting)
 		m_gameSound.Play(m_bnrSndVol);
 		m_gamesound_changed = false;
 	}
-	else if (!m_gameSelected)
-		m_gameSound.Stop();
+	else if(!m_gameSelected)
+		m_gameSound.FreeMemory();
 
 	CheckThreads();
 

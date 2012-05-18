@@ -380,7 +380,7 @@ void CMenu::_game(bool launch)
 		}
 		if (BTN_HOME_PRESSED || BTN_B_PRESSED)
 		{
-			m_gameSound.Stop();
+			m_gameSound.FreeMemory();
 			CheckGameSoundThread();
 			break;
 		}
