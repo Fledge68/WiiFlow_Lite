@@ -1294,6 +1294,10 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	if(currentPartition == 0)
 		SDHC_Init();
 
+	/* Clear Memory */
+	MEM1_clear();
+	MEM2_clear();
+
 	/* Find game partition offset */
 	u64 offset;
 	s32 ret = Disc_FindPartition(&offset);
@@ -1438,7 +1442,7 @@ void CMenu::_playGameSound(void)
 
 	CheckGameSoundThread();
 	if(!gameSoundThreadStack.get())
-		gameSoundThreadStack = smartMem1Alloc(gameSoundThreadStackSize);
+		gameSoundThreadStack = smartAnyAlloc(gameSoundThreadStackSize);
 
 	LWP_CreateThread(&m_gameSoundThread, (void *(*)(void *))CMenu::_gameSoundThread, (void *)this, gameSoundThreadStack.get(), gameSoundThreadStackSize, 60);
 }

@@ -46,8 +46,13 @@ void CList<T>::GetPaths(vector<string> &pathlist, string containing, string dire
 			bool FoundDMLgame;
 			for(vector<string>::iterator templist = temp_pathlist.begin(); templist != temp_pathlist.end(); templist++)
 			{
+				if((*templist).size() == 0)
+					continue;
+
 				dir_itr = opendir((*templist).c_str());
-				if (!dir_itr) continue;
+				if(!dir_itr)
+					continue;
+
 				FoundDMLgame = false;
 
 				/* Read secondary entries */
