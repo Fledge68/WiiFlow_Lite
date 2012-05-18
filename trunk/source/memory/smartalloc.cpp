@@ -1,10 +1,5 @@
 #include "smartptr.hpp"
 
-SmartBuf smartMalloc(unsigned int size)
-{
-	return SmartBuf((unsigned char *)malloc(size), SmartBuf::SRCALL_MALLOC);
-}
-
 SmartBuf smartMemAlign32(unsigned int size)
 {
 	return smartAnyAlloc(size);

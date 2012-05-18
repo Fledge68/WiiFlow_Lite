@@ -241,7 +241,7 @@ int get_frag_list(u8 *id, char *path, const u32 hdd_sector_size)
 		frag_concat(fa, fs);
 	}
 
-	frag_list = MEM1_alloc(ALIGN32(sizeof(FragList)));
+	frag_list = MEM1_memalign(32, sizeof(FragList));
 	if(frag_list == NULL)
 		goto out;
 

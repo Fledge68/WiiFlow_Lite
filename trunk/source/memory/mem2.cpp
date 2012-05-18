@@ -6,6 +6,7 @@
 #include "mem2.hpp"
 #include "mem2alloc.hpp"
 #include "gecko.h"
+#include "utils.h"
 
 // Forbid the use of MEM2 through malloc
 u32 MALLOC_MEM2 = 0;
@@ -44,6 +45,11 @@ void *MEM1_alloc(unsigned int s)
 	return g_mem1gp.allocate(s);
 }
 
+void *MEM1_memalign(unsigned int a, unsigned int s)
+{
+	return g_mem1gp.allocate(ALIGN(a, s));
+}
+
 void *MEM1_realloc(void *p, unsigned int s)
 {
 	return g_mem1gp.reallocate(p, s);
@@ -52,6 +58,16 @@ void *MEM1_realloc(void *p, unsigned int s)
 void MEM1_free(void *p)
 {
 	g_mem1gp.release(p);
+}
+
+unsigned int MEM1_usableSize(void *p)
+{
+	return g_mem1gp.usableSize(p);
+}
+
+unsigned int MEM1_freesize()
+{
+	return g_mem1gp.FreeSize();
 }
 
 
@@ -81,6 +97,11 @@ void *MEM2_alloc(unsigned int s)
 	return g_mem2gp.allocate(s);
 }
 
+void *MEM2_memalign(unsigned int a, unsigned int s)
+{
+	return g_mem2gp.allocate(ALIGN(a, s));
+}
+
 void *MEM2_realloc(void *p, unsigned int s)
 {
 	return g_mem2gp.reallocate(p, s);
@@ -88,7 +109,7 @@ void *MEM2_realloc(void *p, unsigned int s)
 
 unsigned int MEM2_usableSize(void *p)
 {
-	return CMEM2Alloc::usableSize(p);
+	return g_mem2gp.usableSize(p);
 }
 
 unsigned int MEM2_freesize()

@@ -1420,7 +1420,7 @@ void CMenu::_gameSoundThread(CMenu *m)
 	_extractBannerTitle(banner, GetLanguage(m->m_loc.getString(m->m_curLanguage, "gametdb_code", "EN").c_str()));
 
 	const u8 *soundBin = banner->GetFile((char *) "sound.bin", &sndSize);
-	delete banner;
+	MEM2_free(banner);
 
 	if (soundBin == NULL || (((IMD5Header *)soundBin)->fcc != 'IMD5' && ((IMD5Header *)soundBin)->fcc != 'RIFF'))
 	{
@@ -1442,7 +1442,7 @@ void CMenu::_playGameSound(void)
 
 	CheckGameSoundThread();
 	if(!gameSoundThreadStack.get())
-		gameSoundThreadStack = smartAnyAlloc(gameSoundThreadStackSize);
+		gameSoundThreadStack = smartMem1Alloc(gameSoundThreadStackSize);
 
 	LWP_CreateThread(&m_gameSoundThread, (void *(*)(void *))CMenu::_gameSoundThread, (void *)this, gameSoundThreadStack.get(), gameSoundThreadStackSize, 60);
 }

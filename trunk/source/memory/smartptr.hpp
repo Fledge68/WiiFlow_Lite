@@ -14,7 +14,7 @@
 template <class T> class SmartPtr
 {
 public:
-	enum SrcAlloc { SRCALL_MALLOC, SRCALL_MEM2, SRCALL_MEM1, SRCALL_NEW };
+	enum SrcAlloc { SRCALL_NEW, SRCALL_MEM1, SRCALL_MEM2 };
 	T &operator*(void) const { return *m_p; }
 	T *operator->(void) const { return m_p; }
 	bool operator!(void) const { return m_p == NULL; }
@@ -25,11 +25,14 @@ public:
 		{
 			switch(m_srcAlloc)
 			{
-				case SRCALL_NEW:
-					delete m_p;
+				case SRCALL_MEM1:
+					MEM1_free(m_p);
+					break;
+				case SRCALL_MEM2:
+					MEM2_free(m_p);
 					break;
 				default:
-					free(m_p);
+					delete m_p;
 					break;
 			}
 			delete m_refcount;
@@ -67,7 +70,6 @@ protected:
 typedef SmartPtr<unsigned char> SmartBuf;
 typedef SmartPtr<GuiSound> SmartGuiSound;
 
-SmartBuf smartMalloc(unsigned int size);
 SmartBuf smartMemAlign32(unsigned int size);
 SmartBuf smartMem2Alloc(unsigned int size);
 SmartBuf smartAnyAlloc(unsigned int size);
