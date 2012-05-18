@@ -346,10 +346,10 @@ void CMenu::init(void)
 
 	// INI files
 	m_cat.load(fmt("%s/" CAT_FILENAME, m_settingsDir.c_str()));
+	m_startup.load(fmt("%s/" STARTUP_FILENAME, m_settingsDir.c_str()));
 	string themeName = m_cfg.getString("GENERAL", "theme", "DEFAULT");
 	m_themeDataDir = sfmt("%s/%s", m_themeDir.c_str(), themeName.c_str());
 	m_theme.load(fmt("%s.ini", m_themeDataDir.c_str()));
-
 	m_plugin.init(m_pluginsDir);
 
 	u8 defaultMenuLanguage = 7; //English
@@ -1231,14 +1231,17 @@ u16 CMenu::_textStyle(const char *domain, const char *key, u16 def)
 	return textStyle;
 }
 
-u32 CMenu::_addButton(CMenu::SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color)
+u32 CMenu::_addButton(CMenu::SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, bool skipTheme)
 {
 	SButtonTextureSet btnTexSet;
 	CColor c(color);
 
 	c = m_theme.getColor(domain, "color", c);
-	x = m_theme.getInt(domain, "x", x);
-	y = m_theme.getInt(domain, "y", y);
+	if (!skipTheme)
+	{
+		x = m_theme.getInt(domain, "x", x);
+		y = m_theme.getInt(domain, "y", y);
+	}
 	width = m_theme.getInt(domain, "width", width);
 	height = m_theme.getInt(domain, "height", height);
 	btnTexSet.left = _texture(theme.texSet, domain, "texture_left", theme.btnTexL);
