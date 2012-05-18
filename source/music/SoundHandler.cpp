@@ -115,12 +115,23 @@ void SoundHandler::RemoveDecoder(int voice)
 	if(voice < 0 || voice >= MAX_DECODERS)
 		return;
 
-    if(DecoderList[voice] != NULL)
-    {
+	if(DecoderList[voice] != NULL)
+	{
 		(*DecoderList[voice]).ClearBuffer();
-		delete DecoderList[voice];
+		if(DecoderList[voice]->GetSoundType() == SOUND_OGG)
+			delete((OggDecoder *)DecoderList[voice]);
+		else if(DecoderList[voice]->GetSoundType() == SOUND_MP3)
+			delete((Mp3Decoder *)DecoderList[voice]);
+		else if(DecoderList[voice]->GetSoundType() == SOUND_WAV)
+			delete((WavDecoder *)DecoderList[voice]);
+		else if(DecoderList[voice]->GetSoundType() == SOUND_AIF)
+			delete((AifDecoder *)DecoderList[voice]);
+		else if(DecoderList[voice]->GetSoundType() == SOUND_BNS)
+			delete((BNSDecoder *)DecoderList[voice]);
+		else
+			delete DecoderList[voice];
 		DecoderList[voice] = NULL;
-    }
+	}
 }
 
 void SoundHandler::ClearDecoderList()
