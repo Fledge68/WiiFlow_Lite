@@ -52,7 +52,7 @@ void BufferCircle::SetBufferBlockSize(int size)
     {
 		if(SoundBuffer[i] != NULL)
 			MEM1_free(SoundBuffer[i]);
-        SoundBuffer[i] = (u8 *)MEM1_memalign(32, ALIGN32(BufferBlockSize));
+        SoundBuffer[i] = (u8 *)MEM1_alloc(ALIGN32(BufferBlockSize));
         BufferSize[i] = 0;
         BufferReady[i] = false;
     }
@@ -72,7 +72,7 @@ void BufferCircle::Resize(int size)
     for(int i = oldSize; i < Size(); i++)
     {
         if(BufferBlockSize > 0)
-            SoundBuffer[i] = (u8 *)MEM1_memalign(32, ALIGN32(BufferBlockSize));
+            SoundBuffer[i] = (u8 *)MEM1_alloc(ALIGN32(BufferBlockSize));
         else
             SoundBuffer[i] = NULL;
         BufferSize[i] = 0;

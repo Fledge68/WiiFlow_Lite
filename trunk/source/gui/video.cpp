@@ -3,6 +3,7 @@
 #include <string.h>
 #include "Gekko.h"
 #include "gecko.h"
+#include "utils.h"
 
 #define DEFAULT_FIFO_SIZE	(256 * 1024)
 
@@ -145,7 +146,7 @@ void CVideo::init(void)
 	VIDEO_WaitVSync();
 	if (m_rmode->viTVMode & VI_NON_INTERLACE)
 		VIDEO_WaitVSync();
-	m_fifo = MEM1_memalign(32, DEFAULT_FIFO_SIZE);
+	m_fifo = MEM1_alloc(ALIGN32(DEFAULT_FIFO_SIZE));
 	memset(m_fifo, 0, DEFAULT_FIFO_SIZE);
 	GX_Init(m_fifo, DEFAULT_FIFO_SIZE);
 	GX_SetCopyClear(CColor(0), 0x00FFFFFF);
@@ -177,7 +178,7 @@ void CVideo::init(void)
 	render();
 	VIDEO_SetBlack(FALSE);
 	VIDEO_Flush();
-	m_stencil = MEM1_memalign(32, CVideo::_stencilWidth * CVideo::_stencilHeight);
+	m_stencil = MEM1_alloc(ALIGN32(CVideo::_stencilWidth * CVideo::_stencilHeight));
 	memset(m_stencil, 0, CVideo::_stencilWidth * CVideo::_stencilHeight);
 }
 

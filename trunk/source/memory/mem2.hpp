@@ -12,8 +12,10 @@ extern "C"
 #define MAX_MEM1_ARENA_LO	((void *)(0x81700000-size))
 #define MEM2_PRIORITY_SIZE	0x1000
 
+void MEM1_init(void *addr, void *end);
+void MEM1_cleanup(void);
+void MEM1_clear(void);
 void *MEM1_alloc(unsigned int s);
-void *MEM1_memalign(unsigned int a, unsigned int s);
 void *MEM1_realloc(void *p, unsigned int s);
 void MEM1_free(void *p);
 

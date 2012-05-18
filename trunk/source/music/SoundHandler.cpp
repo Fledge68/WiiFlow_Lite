@@ -43,7 +43,7 @@ SoundHandler::SoundHandler()
 	for(u32 i = 0; i < MAX_DECODERS; ++i)
 		DecoderList[i] = NULL;
 
-	ThreadStack = (u8 *)MEM1_memalign(32, 32768);
+	ThreadStack = (u8 *)MEM1_alloc(32768);
 	if(!ThreadStack)
 		return;
 

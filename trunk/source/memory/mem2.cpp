@@ -10,6 +10,7 @@
 // Forbid the use of MEM2 through malloc
 u32 MALLOC_MEM2 = 0;
 
+static CMEM2Alloc g_mem1gp;
 static CMEM2Alloc g_mem2gp;
 
 extern "C"
@@ -22,25 +23,35 @@ extern __typeof(memalign) __real_memalign;
 extern __typeof(free) __real_free;
 extern __typeof(malloc_usable_size) __real_malloc_usable_size;
 
+void MEM1_init(void *addr, void *end)
+{
+	g_mem1gp.init(addr, end);
+	g_mem1gp.clear();
+}
+
+void MEM1_cleanup(void)
+{
+	g_mem1gp.cleanup();
+}
+
+void MEM1_clear(void)
+{
+	g_mem1gp.clear();
+}
 
 void *MEM1_alloc(unsigned int s)
 {
-	return __real_malloc(s);
-}
-
-void *MEM1_memalign(unsigned int a, unsigned int s)
-{
-	return __real_memalign(a, s);
+	return g_mem1gp.allocate(s);
 }
 
 void *MEM1_realloc(void *p, unsigned int s)
 {
-	return __real_realloc(p, s);
+	return g_mem1gp.reallocate(p, s);
 }
 
 void MEM1_free(void *p)
 {
-	__real_free(p);
+	g_mem1gp.release(p);
 }
 
 
