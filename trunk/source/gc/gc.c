@@ -150,7 +150,7 @@ void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, boo
 {
 	gprintf("Wiiflow DML: Launch game 'sd:/games/%s/game.iso' through memory (new method)\n", GamePath);
 
-	DMLCfg = (DML_CFG*)MEM2_alloc(sizeof(DML_CFG));
+	DMLCfg = (DML_CFG*)MEM1_alloc(sizeof(DML_CFG));
 	if(DMLCfg == NULL)
 		return;
 	memset(DMLCfg, 0, sizeof(DML_CFG));
@@ -223,7 +223,7 @@ void DML_New_SetBootDiscOption()
 {
 	gprintf("Booting GC game\n");
 
-	DMLCfg = (DML_CFG*)MEM2_alloc(sizeof(DML_CFG));
+	DMLCfg = (DML_CFG*)MEM1_alloc(sizeof(DML_CFG));
 	if(DMLCfg == NULL)
 		return;
 	memset(DMLCfg, 0, sizeof(DML_CFG));
@@ -247,5 +247,5 @@ void DML_New_WriteOptions()
 	memcpy((void *)0x81200000, DMLCfg, sizeof(DML_CFG));
 	DCFlushRange((void *)(0x81200000), sizeof(DML_CFG));
 
-	MEM2_free(DMLCfg);
+	MEM1_free(DMLCfg);
 }
