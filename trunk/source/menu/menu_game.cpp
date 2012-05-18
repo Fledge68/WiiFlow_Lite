@@ -1420,7 +1420,7 @@ void CMenu::_gameSoundThread(CMenu *m)
 	_extractBannerTitle(banner, GetLanguage(m->m_loc.getString(m->m_curLanguage, "gametdb_code", "EN").c_str()));
 
 	const u8 *soundBin = banner->GetFile((char *) "sound.bin", &sndSize);
-	MEM2_free(banner);
+	delete banner;
 
 	if (soundBin == NULL || (((IMD5Header *)soundBin)->fcc != 'IMD5' && ((IMD5Header *)soundBin)->fcc != 'RIFF'))
 	{
