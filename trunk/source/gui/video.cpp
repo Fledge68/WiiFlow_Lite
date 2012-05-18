@@ -107,13 +107,12 @@ void CVideo::setAA(u8 aa, bool alpha, int width, int height)
 void CVideo::init(void)
 {
 	VIDEO_Init();
+	VIDEO_SetBlack(TRUE);
 	m_wide = CONF_GetAspectRatio() == CONF_ASPECT_16_9;
 	m_rmode = VIDEO_GetPreferredMode(NULL);
-
 	u32 type = CONF_GetVideo();
 
 	m_rmode->viWidth = m_wide ? 700 : 672;
-
 	if(m_rmode == &TVPal576IntDfScale || m_rmode == &TVPal576ProgScale)
 		m_50hz = true;
 	else
@@ -140,12 +139,8 @@ void CVideo::init(void)
 	m_frameBuf[0] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(m_rmode));
 	m_frameBuf[1] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(m_rmode));
 	VIDEO_Configure(m_rmode);
-	m_curFB = 0;
-	VIDEO_SetBlack(TRUE);
 	VIDEO_Flush();
-	VIDEO_WaitVSync();
-	if (m_rmode->viTVMode & VI_NON_INTERLACE)
-		VIDEO_WaitVSync();
+	m_curFB = 0;
 	m_fifo = MEM1_memalign(32, DEFAULT_FIFO_SIZE);
 	memset(m_fifo, 0, DEFAULT_FIFO_SIZE);
 	GX_Init(m_fifo, DEFAULT_FIFO_SIZE);
@@ -172,12 +167,18 @@ void CVideo::init(void)
 	GX_SetNumChans(0);
 	GX_SetZCompLoc(GX_ENABLE);
 	setup2DProjection();
-	VIDEO_ClearFrameBuffer(m_rmode, m_frameBuf[m_curFB], COLOR_BLACK);
+
+	VIDEO_ClearFrameBuffer(m_rmode, m_frameBuf[0], COLOR_BLACK);
+	VIDEO_ClearFrameBuffer(m_rmode, m_frameBuf[1], COLOR_BLACK);
 	render();
-	VIDEO_ClearFrameBuffer(m_rmode, m_frameBuf[m_curFB], COLOR_BLACK);
 	render();
+
 	VIDEO_SetBlack(FALSE);
 	VIDEO_Flush();
+	VIDEO_WaitVSync();
+	if(m_rmode->viTVMode & VI_NON_INTERLACE)
+		VIDEO_WaitVSync();
+
 	m_stencil = MEM1_memalign(32, CVideo::_stencilWidth * CVideo::_stencilHeight);
 	memset(m_stencil, 0, CVideo::_stencilWidth * CVideo::_stencilHeight);
 }
