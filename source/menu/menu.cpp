@@ -483,7 +483,6 @@ void CMenu::cleanup(bool ios_reload)
 	if(!m_reload)
 	{
 		DeviceHandler::DestroyInstance();
-		__dsp_shutdown();
 		m_vid.cleanup();
 		wiiLightOff();
 	}
