@@ -16,14 +16,18 @@ void MEM1_init(void *addr, void *end);
 void MEM1_cleanup(void);
 void MEM1_clear(void);
 void *MEM1_alloc(unsigned int s);
+void *MEM1_memalign(unsigned int a, unsigned int s);
 void *MEM1_realloc(void *p, unsigned int s);
 void MEM1_free(void *p);
+unsigned int MEM1_usableSize(void *p);
+unsigned int MEM1_freesize();
 
 void MEM2_init(unsigned int mem2Size);
 void MEM2_cleanup(void);
 void MEM2_clear(void);
 void MEM2_free(void *p);
 void *MEM2_alloc(unsigned int s);
+void *MEM2_memalign(unsigned int a, unsigned int s);
 void *MEM2_realloc(void *p, unsigned int s);
 unsigned int MEM2_usableSize(void *p);
 unsigned int MEM2_freesize();

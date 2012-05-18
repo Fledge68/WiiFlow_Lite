@@ -12,7 +12,7 @@
 /* Macros */
 #define round_up(x,n)	(-(-(x) & -(n)))
 
-#define ALIGN(x) (((x) + 3) & ~3)
+#define ALIGN(n, x) (((x) + (n - 1)) & ~(n - 1))
 #define ALIGN32(x) (((x) + 31) & ~31)
 #define ALIGNED(x) __attribute__((aligned(x)))
 

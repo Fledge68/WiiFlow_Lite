@@ -1776,7 +1776,7 @@ void CMenu::_mainLoopCommon(bool withCF, bool blockReboot, bool adjusting)
 			m_cameraSound->Play(255);
 	}
 	#ifdef SHOWMEM
-	m_btnMgr.setText(m_mem2FreeSize, wfmt(L"Mem2 Free:%u, Mem1 Free:%u", MEM2_freesize(), SYS_GetArena1Size()), true);
+	m_btnMgr.setText(m_mem2FreeSize, wfmt(L"Mem2 Free:%u, Mem1 Free:%u", MEM2_freesize(), MEM1_freesize()), true);
 	#endif
 }
 
