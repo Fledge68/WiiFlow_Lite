@@ -345,7 +345,6 @@ void CMenu::init(void)
 
 	// INI files
 	m_cat.load(fmt("%s/" CAT_FILENAME, m_settingsDir.c_str()));
-	m_startup.load(fmt("%s/" STARTUP_FILENAME, m_settingsDir.c_str()));
 	string themeName = m_cfg.getString("GENERAL", "theme", "DEFAULT");
 	m_themeDataDir = sfmt("%s/%s", m_themeDir.c_str(), themeName.c_str());
 	m_theme.load(fmt("%s.ini", m_themeDataDir.c_str()));

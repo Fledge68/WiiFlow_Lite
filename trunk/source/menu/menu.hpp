@@ -65,7 +65,6 @@ private:
 	CachedList<dir_discHdr> m_gameList;
 	Config m_cfg;
 	Config m_loc;
-	Config m_startup;
 	Config m_cat;
 	Config m_gcfg1;
 	Config m_gcfg2;
