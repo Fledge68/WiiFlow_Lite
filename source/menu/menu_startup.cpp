@@ -3,6 +3,8 @@
 #include <string.h>
 #include <gccore.h>
 
+#include "defines.h"
+
 int Startup_curPage;
 u8 numPlugins;
 
@@ -16,6 +18,7 @@ u32 m_startupLblTitle;
 u32 m_startupBtnSource[20];
 u32 m_startupLblUser[4];
 STexture m_startupBg;
+Config m_startup;
 
 void CMenu::_hideStartup(bool instant)
 {
@@ -81,6 +84,8 @@ void CMenu::_Startup()
 {
 	DIR *pdir;
 	struct dirent *pent;
+	if(!m_startup.loaded())
+		m_startup.load(fmt("%s/%s", m_settingsDir.c_str(), STARTUP_FILENAME));
 
 	pdir = opendir(m_pluginsDir.c_str());
 	Config m_plugin_cfg;
