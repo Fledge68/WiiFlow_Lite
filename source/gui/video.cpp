@@ -233,19 +233,16 @@ void CVideo::cleanup(void)
 {
 	gprintf("Cleaning up video...\n");
 
-	VIDEO_ClearFrameBuffer(m_rmode, m_frameBuf[m_curFB], COLOR_BLACK);
+	VIDEO_ClearFrameBuffer(m_rmode, m_frameBuf[0], COLOR_BLACK);
+	VIDEO_ClearFrameBuffer(m_rmode, m_frameBuf[1], COLOR_BLACK);
 	render();
-	VIDEO_ClearFrameBuffer(m_rmode, m_frameBuf[m_curFB], COLOR_BLACK);
 	render();
-
-	GX_DrawDone();
-	GX_AbortFrame();
 
 	VIDEO_SetBlack(TRUE);
 	VIDEO_Flush();
-	VIDEO_WaitVSync();
-	if(m_rmode->viTVMode & VI_NON_INTERLACE)
-		VIDEO_WaitVSync();
+
+	GX_DrawDone();
+	GX_AbortFrame();
 
 	for(u8 i = 0; i < sizeof m_aaBuffer / sizeof m_aaBuffer[0]; ++i)
 	{
