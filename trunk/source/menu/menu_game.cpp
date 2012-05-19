@@ -515,7 +515,8 @@ void CMenu::_game(bool launch)
 				gprintf("Launching game %s\n", id.c_str());
 				_launch(hdr);
 
-				if(m_exit || bootHB) break;
+				if(m_exit)
+					break;
 
 				_hideWaitMessage();
 				launch = false;
@@ -768,29 +769,36 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 
 void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 {
+	Nand::Instance()->Disable_Emu();
+	m_reload = true;
+
 	gprintf("Filepath of homebrew: %s\n",filepath);
-	if(LoadHomebrew(filepath))
-	{
-		m_gcfg1.save(true);
-		m_gcfg2.save(true);
-		m_cat.save(true);
-		m_cfg.save(true);
 
-		AddBootArgument(filepath);
-		for(u32 i = 0; i < arguments.size(); ++i)
-			AddBootArgument(arguments[i].c_str());
+	m_gcfg1.save(true);
+	m_gcfg2.save(true);
+	m_cat.save(true);
+	m_cfg.save(true);
 
-		Playlog_Delete();
+	while(net_get_status() == -EBUSY)
+		usleep(100);
 
-		cleanup();
-		Close_Inputs();
-		USBStorage_Deinit();
+	m_vid.CheckWaitThread(true);
+	Playlog_Delete();
+	cleanup();
+	// wifi and sd gecko doesnt work anymore after cleanup
+	Close_Inputs();
+	m_vid.cleanup();
+	wiiLightOff();
+	__dsp_shutdown();
 
-		Nand::Instance()->Disable_Emu();
-
-		bootHB = true;
-	}
-	m_exit = true;
+	LoadHomebrew(filepath);
+	DeviceHandler::DestroyInstance();
+	USBStorage_Deinit();
+	AddBootArgument(filepath);
+	for(u32 i = 0; i < arguments.size(); ++i)
+		AddBootArgument(arguments[i].c_str());
+	gprintf("Booting Homebrew application...\n");
+	BootHomebrew();
 }
 
 int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id)

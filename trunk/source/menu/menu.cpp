@@ -134,7 +134,6 @@ CMenu::CMenu(CVideo &vid) :
 	m_exit = false;
 	m_initialCoverStatusComplete = false;
 	m_reload = false;
-	bootHB = false;
 	m_gamesound_changed = false;
 	m_base_font_size = 0;
 	m_current_view = COVERFLOW_USB;
