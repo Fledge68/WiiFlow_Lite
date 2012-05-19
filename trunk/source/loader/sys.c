@@ -86,17 +86,11 @@ void Sys_ExitTo(int option)
 
 	//magic word to force wii menu in priiloader.
 	if(return_to_menu)
-	{
 		*(vu32*)0x8132FFFB = 0x50756e65;
-	}
 	else if(return_to_priiloader)
-	{
 		*(vu32*)0x8132FFFB = 0x4461636f;
-	}
 	else
-	{
 		*(vu32*)0x8132FFFB = 0xffffffff;
-	}
 	DCFlushRange((void *)(0x8132FFFB), 4);
 }
 
@@ -108,6 +102,7 @@ void Sys_Exit(void)
 	/* Shutdown Inputs */
 	Close_Inputs();
 
+	WII_Initialize();
 	if(return_to_menu || return_to_priiloader || priiloader_def)
 		Sys_LoadMenu();
 	else if(return_to_bootmii)

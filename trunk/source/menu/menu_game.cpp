@@ -761,6 +761,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 	GC_SetLanguage(GClanguage);
 	DML_New_WriteOptions();
 
+	WII_Initialize();
 	if(WII_LaunchTitle(0x100000100LL) < 0)
 		Sys_LoadMenu();
 }
