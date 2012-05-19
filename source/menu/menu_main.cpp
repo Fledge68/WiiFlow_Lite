@@ -263,6 +263,7 @@ int CMenu::main(void)
 	}
 
 	_showMain();
+	m_vid.CheckWaitThread(true);
 	m_curGameId.clear();
 	_initCF();
 

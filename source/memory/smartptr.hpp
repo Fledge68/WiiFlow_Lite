@@ -25,14 +25,11 @@ public:
 		{
 			switch(m_srcAlloc)
 			{
-				case SRCALL_MEM1:
-					MEM1_free(m_p);
-					break;
-				case SRCALL_MEM2:
-					MEM2_free(m_p);
+				case SRCALL_NEW:
+					delete m_p;
 					break;
 				default:
-					delete m_p;
+					free(m_p);
 					break;
 			}
 			delete m_refcount;

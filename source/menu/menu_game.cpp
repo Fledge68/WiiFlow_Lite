@@ -382,6 +382,7 @@ void CMenu::_game(bool launch)
 		{
 			m_gameSound.FreeMemory();
 			CheckGameSoundThread();
+			ClearGameSoundThreadStack();
 			break;
 		}
 		else if (BTN_PLUS_PRESSED && m_GameTDBLoaded)
@@ -1288,7 +1289,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 
 	m_vid.CheckWaitThread(true);
 	cleanup();
-	// wifi-gecko can no longer function after cleanup
+	// wifi and sd gecko doesnt work anymore after cleanup
 	Close_Inputs();
 	USBStorage_Deinit();
 	if(currentPartition == 0)
@@ -1296,6 +1297,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 
 	/* Clear Memory */
 	MEM1_clear();
+	MEM1_wrap(0);
 	MEM2_clear();
 
 	/* Find game partition offset */
@@ -1453,9 +1455,13 @@ void CMenu::CheckGameSoundThread()
 		LWP_ResumeThread(m_gameSoundThread);
 
 	LWP_JoinThread(m_gameSoundThread, NULL);
+	m_gameSoundThread = LWP_THREAD_NULL;
+}
+
+void CMenu::ClearGameSoundThreadStack()
+{
 	if(gameSoundThreadStack.get())
 		gameSoundThreadStack.release();
-	m_gameSoundThread = LWP_THREAD_NULL;
 }
 
 void CMenu::CheckThreads()
