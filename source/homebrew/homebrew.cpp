@@ -24,8 +24,6 @@ static u8 *homebrewbuffer = EXECUTE_ADDR;
 static u32 homebrewsize = 0;
 static vector<string> Arguments;
 
-bool bootHB;
-
 bool IsDollZ (u8 *buff)
 {
 	u8 dollz_stamp[] = {0x3C};
@@ -40,27 +38,11 @@ bool IsDollZ (u8 *buff)
 
 void AddBootArgument(const char * argv)
 {
-	std::string arg(argv);
+	string arg(argv);
 	Arguments.push_back(arg);
 }
 
-int CopyHomebrewMemory(u8 *temp, u32 pos, u32 len)
-{
-	homebrewsize += len;
-	memcpy(homebrewbuffer+pos, temp, len);
-	DCFlushRange(homebrewbuffer+pos, len);
-	return 1;
-}
-
-void FreeHomebrewBuffer()
-{
-	homebrewbuffer = EXECUTE_ADDR;
-	homebrewsize = 0;
-
-	Arguments.clear();
-}
-
-int LoadHomebrew(const char * filepath)
+int LoadHomebrew(const char *filepath)
 {
 	if(!filepath) 
 		return -1;
@@ -73,15 +55,7 @@ int LoadHomebrew(const char * filepath)
 	u32 filesize = ftell(file);
 	rewind(file);
 
-	if(filesize > 33554431)
-		return -3;
-
-	bool good_read = fread(homebrewbuffer, 1, filesize, file) == filesize;
-	if (!good_read)
-	{
-		fclose(file);
-		return -4;
-	}
+	fread(homebrewbuffer, 1, filesize, file);
 	fclose(file);
 
 	homebrewsize += filesize;
@@ -129,9 +103,6 @@ static int SetupARGV(struct __argv * args)
 
 int BootHomebrew()
 {
-	if(homebrewsize == 0) 
-		return -1;
-
 	struct __argv args;
 	if (!IsDollZ(homebrewbuffer))
 		SetupARGV(&args);
@@ -139,13 +110,16 @@ int BootHomebrew()
 	memcpy(BOOTER_ADDR, app_booter_bin, app_booter_bin_size);
 	DCFlushRange(BOOTER_ADDR, app_booter_bin_size);
 
-	entrypoint entry = (entrypoint) BOOTER_ADDR;
+	entrypoint entry = (entrypoint)BOOTER_ADDR;
 
 	memmove(ARGS_ADDR, &args, sizeof(args));
 	DCFlushRange(ARGS_ADDR, sizeof(args) + args.length);
 
-	SYS_ResetSystem(SYS_SHUTDOWN, 0, 0);
+	/* Shutdown IOS subsystems */
+	u32 level = IRQ_Disable();
+	__IOS_ShutdownSubsystems();
+	__exception_closeall();
 	entry();
-
+	IRQ_Restore(level);
 	return 0;
 }

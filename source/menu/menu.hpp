@@ -32,8 +32,10 @@
 
 using namespace std;
 
-extern "C" {extern u8 currentPartition;}
-extern bool bootHB;
+extern "C" 
+{
+	extern u8 currentPartition;
+}
 
 class CMenu
 {
