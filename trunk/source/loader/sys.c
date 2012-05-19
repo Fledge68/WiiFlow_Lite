@@ -102,12 +102,13 @@ void Sys_ExitTo(int option)
 
 void Sys_Exit(void)
 {
-	if(return_to_disable) return;
+	if(return_to_disable)
+		return;
 
 	/* Shutdown Inputs */
 	Close_Inputs();
 
-	if (return_to_menu || return_to_priiloader || priiloader_def)
+	if(return_to_menu || return_to_priiloader || priiloader_def)
 		Sys_LoadMenu();
 	else if(return_to_bootmii)
 		IOS_ReloadIOS(254);
@@ -129,7 +130,6 @@ void __Sys_PowerCallback(void)
 	shutdown = true;
 }
 
-
 void Sys_Init(void)
 {
 	/* Set RESET/POWER button callback */
@@ -141,4 +141,24 @@ void Sys_LoadMenu(void)
 {
 	/* Return to the Wii system menu */
 	WII_ReturnToMenu(); //SYS_ResetSystem doesnt work properly with new libogc
+}
+
+void __dsp_shutdown(void)
+{
+	u32 tick;
+
+	_dspReg[5] = (DSPCR_DSPRESET|DSPCR_HALT);
+	_dspReg[27] &= ~0x8000;
+	while(_dspReg[5]&0x400);
+	while(_dspReg[5]&0x200);
+
+	_dspReg[5] = (DSPCR_DSPRESET|DSPCR_DSPINT|DSPCR_ARINT|DSPCR_AIINT|DSPCR_HALT);
+	_dspReg[0] = 0;
+	while((_SHIFTL(_dspReg[2],16,16)|(_dspReg[3]&0xffff))&0x80000000);
+
+	tick = gettick();
+	while((gettick()-tick)<44);
+
+	_dspReg[5] |= DSPCR_RES;
+	while(_dspReg[5]&DSPCR_RES);
 }

@@ -468,6 +468,7 @@ void CMenu::cleanup(bool ios_reload)
 {
 	m_cf.stopCoverLoader();
 	m_cf.clear();
+	ClearGameSoundThreadStack();
 
 	m_plugin.Cleanup();
 
@@ -485,6 +486,7 @@ void CMenu::cleanup(bool ios_reload)
 		DeviceHandler::DestroyInstance();
 		m_vid.cleanup();
 		wiiLightOff();
+		__dsp_shutdown();
 	}
 
 	if (!ios_reload)
@@ -498,6 +500,8 @@ void CMenu::cleanup(bool ios_reload)
 
 	if (!ios_reload || (!m_use_wifi_gecko && ios_reload)) 
 		_deinitNetwork();
+	ClearLogBuffer();
+
 	gprintf(" \nMemory cleaned up\n");
 }
 
@@ -1749,7 +1753,7 @@ void CMenu::_mainLoopCommon(bool withCF, bool blockReboot, bool adjusting)
 		m_gamesound_changed = false;
 	}
 	else if(!m_gameSelected)
-		m_gameSound.FreeMemory();
+		m_gameSound.Stop();
 
 	CheckThreads();
 

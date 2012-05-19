@@ -68,6 +68,14 @@ static void USBGeckoOutput()
 	devoptab_list[STD_ERR] = &gecko_out;
 }
 
+void ClearLogBuffer()
+{
+	if(tmpfilebuffer == NULL)
+		return;
+	MEM1_free(tmpfilebuffer);
+	tmpfilebuffer = NULL;
+}
+
 void WriteToFile(char* tmp)
 {
 	if(tmpfilebuffer == NULL)
@@ -80,7 +88,7 @@ void WriteToFile(char* tmp)
 	}
 	else
 	{
-		MEM2_free(tmpfilebuffer);
+		MEM1_free(tmpfilebuffer);
 		tmpfilebuffer = NULL;
 		return;
 	}
@@ -160,7 +168,7 @@ bool InitGecko()
 
 	USBGeckoOutput();
 
-	tmpfilebuffer = (char*)MEM2_alloc(filebuffer + 1 * sizeof(char));
+	tmpfilebuffer = (char*)MEM1_alloc(filebuffer + 1 * sizeof(char));
 	if(tmpfilebuffer != NULL)
 		memset(tmpfilebuffer, 0, sizeof(tmpfilebuffer));
 

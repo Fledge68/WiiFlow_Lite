@@ -15,6 +15,7 @@ extern "C" {
 	void gprintf(const char *format, ...);
 	void ghexdump(void *d, int len);
 	bool InitGecko();
+	void ClearLogBuffer();
 
 #ifdef __cplusplus
 }

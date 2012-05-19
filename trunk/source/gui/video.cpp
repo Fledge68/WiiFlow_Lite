@@ -547,7 +547,6 @@ void CVideo::_showWaitMessages(CVideo *m)
 
 void CVideo::hideWaitMessage()
 {
-	gprintf("Now hide wait message\n");
 	m_showWaitMessage = false;
 	CheckWaitThread();
 	wiiLightOff();
@@ -558,7 +557,7 @@ void CVideo::CheckWaitThread(bool force)
 	if ((!m_showingWaitMessages && waitThread != LWP_THREAD_NULL) || force)
 	{
 		m_showWaitMessage = false;
-		gprintf("Thread running. Stop it\n");
+		gprintf("Now hide wait message\n");
 
 		if(LWP_ThreadIsSuspended(waitThread))
 			LWP_ResumeThread(waitThread);
