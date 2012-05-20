@@ -7,7 +7,7 @@
 #include "gc.h"
 
 template <typename T>
-void CList<T>::GetPaths(vector<string> &pathlist, string containing, string directory, bool wbfs_fs, bool dml)
+void CList<T>::GetPaths(vector<string> &pathlist, string containing, string directory, bool wbfs_fs, bool dml, bool music)
 {
 	if (!wbfs_fs)
 	{
@@ -44,12 +44,12 @@ void CList<T>::GetPaths(vector<string> &pathlist, string containing, string dire
 		if(temp_pathlist.size() > 0)
 		{
 			bool FoundDMLgame;
-			for(vector<string>::iterator templist = temp_pathlist.begin(); templist != temp_pathlist.end(); templist++)
+			for(u32 i = 0; i < temp_pathlist.size(); i++)
 			{
-				if((*templist).size() == 0)
+				if(temp_pathlist[i].size() == 0)
 					continue;
 
-				dir_itr = opendir((*templist).c_str());
+				dir_itr = opendir(temp_pathlist[i].c_str());
 				if(!dir_itr)
 					continue;
 
@@ -58,29 +58,35 @@ void CList<T>::GetPaths(vector<string> &pathlist, string containing, string dire
 				/* Read secondary entries */
 				while((ent = readdir(dir_itr)) != NULL)
 				{
-					if(ent->d_type == DT_REG && strlen(ent->d_name) > 7)
+					if (ent->d_name[0] == '.') continue;
+					if(ent->d_type == DT_REG && (strlen(ent->d_name) > 7 || music))
 					{
 						for(vector<string>::iterator compare = compares.begin(); compare != compares.end(); compare++)
 						{
 							if(strcasestr(ent->d_name, (*compare).c_str()) != NULL)
 							{
 								FoundDMLgame = true;
-								//gprintf("Pushing %s to the list.\n", sfmt("%s/%s", (*templist).c_str(), ent->d_name).c_str());
-								pathlist.push_back(sfmt("%s/%s", (*templist).c_str(), ent->d_name));
+								//gprintf("Pushing %s to the list.\n", sfmt("%s/%s", temp_pathlist[i].c_str(), ent->d_name).c_str());
+								pathlist.push_back(sfmt("%s/%s", temp_pathlist[i].c_str(), ent->d_name));
 								break;
 							}
 						}
 					}
-					else if(dml && !FoundDMLgame && strncasecmp(ent->d_name, "sys", 3) == 0)
+					else
 					{
-						FILE *f;
-						f = fopen(fmt("%s/%s/boot.bin", (*templist).c_str(), ent->d_name), "rb");
-						if(f)
+						if(music)
+							temp_pathlist.push_back(sfmt("%s/%s", temp_pathlist[i].c_str(), ent->d_name));
+						else if(dml && !FoundDMLgame && strncasecmp(ent->d_name, "sys", 3) == 0)
 						{
-							fclose(f);
-							//gprintf("Pushing %s to the list.\n", sfmt("%s/%s/boot.bin", (*templist).c_str(), ent->d_name).c_str());
-							pathlist.push_back(sfmt("%s/%s/boot.bin", (*templist).c_str(), ent->d_name));
-							break;
+							FILE *f;
+							f = fopen(fmt("%s/%s/boot.bin", temp_pathlist[i].c_str(), ent->d_name), "rb");
+							if(f)
+							{
+								fclose(f);
+								//gprintf("Pushing %s to the list.\n", sfmt("%s/%s/boot.bin", temp_pathlist[i].c_str(), ent->d_name).c_str());
+								pathlist.push_back(sfmt("%s/%s/boot.bin", temp_pathlist[i].c_str(), ent->d_name));
+								break;
+							}
 						}
 					}
 				}
