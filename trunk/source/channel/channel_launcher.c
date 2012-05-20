@@ -20,6 +20,7 @@ void __Disc_SetLowMem(void);
 void __Disc_SetVMode(void);
 void __Disc_SetTime(void);
 void _unstub_start();
+u32 entryPoint;
 
 extern void __exception_closeall();
 
@@ -35,15 +36,10 @@ typedef struct _dolheader{
 	u32 padding[7];
 } __attribute__((packed)) dolheader;
 
-u32 entryPoint;
-
-s32 BootChannel(u8 *data, u64 chantitle, u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, bool disableIOSreload, int aspectRatio)
+s32 BootChannel(u32 entry, u64 chantitle, u32 ios, u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, int aspectRatio)
 {
-	u32 ios;
-	Identify(chantitle, &ios);
-
-	entryPoint = LoadChannel(data);
-	MEM2_free(data);
+	gprintf("Loading Channel...\n");
+	entryPoint = entry;
 
 	/* Select an appropriate video mode */
 	GXRModeObj * vmode = __Disc_SelectVMode(vidMode, chantitle);
@@ -61,11 +57,6 @@ s32 BootChannel(u8 *data, u64 chantitle, u8 vidMode, bool vipatch, bool countryS
 
 	entrypoint appJump = (entrypoint)entryPoint;
 
-	if (disableIOSreload)
-		IOSReloadBlock(IOS_GetVersion(), false);
-	else
-		IOSReloadBlock(IOS_GetVersion(), true);
-
 	/* Set an appropriate video mode */
 	__Disc_SetVMode();
 
@@ -79,15 +70,20 @@ s32 BootChannel(u8 *data, u64 chantitle, u8 vidMode, bool vipatch, bool countryS
     memset((void *)0x80000000, 0, 6);
     *(vu32 *)0x80000000 = TITLE_LOWER(chantitle);
     DCFlushRange((void *)0x80000000, 6);
-	
-	/* Shutdown IOS subsystems */
-	SYS_ResetSystem(SYS_SHUTDOWN, 0, 0);
 
 	gprintf("Jumping to entrypoint %08x\n", entryPoint);
-	
+
+	/* Shutdown IOS subsystems */
+	u32 level = IRQ_Disable();
+	__IOS_ShutdownSubsystems();
+	__exception_closeall();
+
+	/* Originally from tueidj - taken from NeoGamma (thx) */
+	*(vu32*)0xCC003024 = 1;
+
 	if (entryPoint != 0x3400)
 	{
-		if (hooktype != 0)
+		if(hooktype != 0)
 		{
 			__asm__(
 				"lis %r3, entryPoint@h\n"
@@ -101,9 +97,10 @@ s32 BootChannel(u8 *data, u64 chantitle, u8 vidMode, bool vipatch, bool countryS
 				"bctr\n"
 			);
 		}
-		else  appJump();	
+		else
+			appJump();
 	}
- 	else if (hooktype != 0)
+ 	else if(hooktype != 0)
 	{
 		__asm__(
 			"lis %r3, returnpoint@h\n"
@@ -126,7 +123,10 @@ s32 BootChannel(u8 *data, u64 chantitle, u8 vidMode, bool vipatch, bool countryS
 			"rfi\n"
 		);
 	}
-	else _unstub_start();
+	else
+		_unstub_start();
+
+	IRQ_Restore(level);
 
 	return 0;
 }
@@ -140,30 +140,30 @@ u32 LoadChannel(u8 *buffer)
 	dolchunkcount = 0;
 	dolheader *dolfile = (dolheader *)buffer;
 
-    if(dolfile->bss_start)
-    {
-            if(!(dolfile->bss_start & 0x80000000))
-                    dolfile->bss_start |= 0x80000000;
+	if(dolfile->bss_start)
+	{
+		if(!(dolfile->bss_start & 0x80000000))
+			dolfile->bss_start |= 0x80000000;
 
-            ICInvalidateRange((void *)dolfile->bss_start, dolfile->bss_size);
-            memset((void *)dolfile->bss_start, 0, dolfile->bss_size);
-            DCFlushRange((void *)dolfile->bss_start, dolfile->bss_size);
-    }
-   
-    int i;
+		memset((void *)dolfile->bss_start, 0, dolfile->bss_size);
+		DCFlushRange((void *)dolfile->bss_start, dolfile->bss_size);
+		ICInvalidateRange((void *)dolfile->bss_start, dolfile->bss_size);
+	}
+
+	int i;
 	for(i = 0; i < 18; i++)
 	{
-		if (!dolfile->section_size[i]) continue;
-		if (dolfile->section_pos[i] < sizeof(dolheader)) continue;
+		if(!dolfile->section_size[i]) continue;
+		if(dolfile->section_pos[i] < sizeof(dolheader)) continue;
 		if(!(dolfile->section_start[i] & 0x80000000)) dolfile->section_start[i] |= 0x80000000;
 
 		dolchunkoffset[dolchunkcount] = (void *)dolfile->section_start[i];
 		dolchunksize[dolchunkcount] = dolfile->section_size[i];			
 
 		gprintf("Moving section %u from offset %08x to %08x-%08x...\n", i, dolfile->section_pos[i], dolchunkoffset[dolchunkcount], dolchunkoffset[dolchunkcount]+dolchunksize[dolchunkcount]);
-		ICInvalidateRange(dolchunkoffset[dolchunkcount], dolchunksize[dolchunkcount]);
-		memmove (dolchunkoffset[dolchunkcount], buffer + dolfile->section_pos[i], dolchunksize[dolchunkcount]);
+		memmove(dolchunkoffset[dolchunkcount], buffer + dolfile->section_pos[i], dolchunksize[dolchunkcount]);
 		DCFlushRange(dolchunkoffset[dolchunkcount], dolchunksize[dolchunkcount]);
+		ICInvalidateRange(dolchunkoffset[dolchunkcount], dolchunksize[dolchunkcount]);
 
 		dolchunkcount++;
 	}
@@ -216,38 +216,45 @@ bool Identify_GenerateTik(signed_blob **outbuf, u32 *outlen)
 bool Identify(u64 titleid, u32 *ios)
 {
 	char filepath[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
-	
+
+	gprintf("Reading TMD...");
 	sprintf(filepath, "/title/%08x/%08x/content/title.tmd", TITLE_UPPER(titleid), TITLE_LOWER(titleid));
 	u32 tmdSize;
 	u8 *tmdBuffer = ISFS_GetFile((u8 *) &filepath, &tmdSize, -1);
 	if (tmdBuffer == NULL || tmdSize == 0)
 	{
-		gprintf("Reading TMD...Failed!\n");
+		gprintf("Failed!\n");
 		return false;
 	}
+	gprintf("Success!\n");
 
 	*ios = (u32)(tmdBuffer[0x18b]);
 
 	u32 tikSize;
 	signed_blob *tikBuffer = NULL;
 
+	gprintf("Generating fake ticket...");
 	if(!Identify_GenerateTik(&tikBuffer,&tikSize))
 	{
-		gprintf("Generating fake ticket...Failed!\n");
+		gprintf("Failed!\n");
 		return false;
 	}
+	gprintf("Success!\n");
 
+	gprintf("Reading certs...");
 	sprintf(filepath, "/sys/cert.sys");
 	u32 certSize;
 	u8 *certBuffer = ISFS_GetFile((u8 *) &filepath, &certSize, -1);
 	if (certBuffer == NULL || certSize == 0)
 	{
-		gprintf("Reading certs...Failed!\n");
+		gprintf("Failed!\n");
 		MEM2_free(tmdBuffer);
 		MEM2_free(tikBuffer);
 		return false;
 	}
-	
+	gprintf("Success!\n");
+
+	gprintf("ES_Identify\n");
 	s32 ret = ES_Identify((signed_blob*)certBuffer, certSize, (signed_blob*)tmdBuffer, tmdSize, tikBuffer, tikSize, NULL);
 	if (ret < 0)
 	{

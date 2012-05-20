@@ -73,15 +73,22 @@ Channels::~Channels()
 {
 }
 
-u8 * Channels::Load(u64 title)
+u32 Channels::Load(u64 title, u32 *ios)
 {
 	char app[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
 	u32 bootcontent;
+	u32 entry = 0;
 
 	if(!GetAppNameFromTmd(title, app, true, &bootcontent))
-		return NULL;
+		return entry;
 
-	return GetDol(title, bootcontent);
+	u8* data = GetDol(title, bootcontent);
+
+	Identify(title, ios);
+	entry = LoadChannel(data);
+	free(data);
+
+	return entry;
 }
 
 u8 Channels::GetRequestedIOS(u64 title)
@@ -102,11 +109,6 @@ u8 Channels::GetRequestedIOS(u64 title)
 	MEM2_free(titleTMD);
 
 	return IOS;
-}
-
-bool Channels::Launch(u8 *data, u64 chantitle, u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, bool disableIOSreload, int aspectRatio)
-{
-	return BootChannel(data, chantitle, vidMode, vipatch, countryString, patchVidMode, disableIOSreload, aspectRatio);
 }
 
 u64* Channels::GetChannelList(u32* count)
