@@ -872,8 +872,10 @@ static const char systems[11] = { 'C', 'E', 'F', 'J', 'L', 'M', 'N', 'P', 'Q', '
 void CMenu::_launchChannel(dir_discHdr *hdr)
 {
 	Channels channel;
-	u8 *data = NULL;
-	
+	u32 ios = 0;
+	u32 entry = 0;
+	MEM1_wrap(0);
+
 	string id = string((const char *) hdr->hdr.id);
 
 	bool forwarder = true;
@@ -887,13 +889,9 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	}
 
 	forwarder = m_gcfg2.getBool(id, "custom", forwarder) || strncmp(id.c_str(), "WIMC", 4) == 0;
-
 	if(!forwarder)
-		data = channel.Load(hdr->hdr.chantitle);
-
+		entry = channel.Load(hdr->hdr.chantitle, &ios);
 	Nand::Instance()->Disable_Emu();
-
-	if(!forwarder && data == NULL) return;
 
 	bool vipatch = m_gcfg2.testOptBool(id, "vipatch", m_cfg.getBool("GENERAL", "vipatch", false));
 	bool cheat = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool("NAND", "cheat", false));
@@ -986,7 +984,12 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		gprintf("Return to channel %s. Using new d2x way\n", IOS_Ioctlv(ESHandle, 0xA1, 1, 0, vector) != -101 ? "Succeeded" : "Failed!" );
 		IOS_Close(ESHandle);
 	}
-	
+
+	if (disableIOSreload)
+		IOSReloadBlock(IOS_GetVersion(), false);
+	else
+		IOSReloadBlock(IOS_GetVersion(), true);
+
 	CheckGameSoundThread();
 	cleanup();
 	Close_Inputs();
@@ -1000,7 +1003,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		if (WII_LaunchTitle(hdr->hdr.chantitle) < 0)
 			Sys_LoadMenu();	
 	}
-	else if(!channel.Launch(data, hdr->hdr.chantitle, videoMode, vipatch, countryPatch, patchVidMode, disableIOSreload, aspectRatio))
+	else if(!BootChannel(entry, hdr->hdr.chantitle, ios, videoMode, vipatch, countryPatch, patchVidMode, aspectRatio))
 		Sys_LoadMenu();
 }
 

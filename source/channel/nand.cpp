@@ -81,8 +81,14 @@ void Nand::Init(string path, u32 partition, bool disable)
 
 s32 Nand::Nand_Mount(NandDevice *Device)
 {
+	gprintf("Device: %s\n", Device->Name);
+
 	s32 fd = IOS_Open("fat", 0);
-	if (fd < 0) return fd;
+	if(fd < 0)
+	{
+		gprintf("Mount Fail 1\n");
+		return fd;
+	}
 
 	static ioctlv vector[1] ATTRIBUTE_ALIGN(32);	
 	
@@ -145,17 +151,28 @@ s32 Nand::Nand_Disable(void)
 s32 Nand::Enable_Emu()
 {
 	if(MountedDevice == EmuDevice || Disabled)
+	{
+		gprintf("Fail 1\n");
 		return 0;
+	}
 
 	Disable_Emu();
 
 	NandDevice *Device = &NandDeviceList[EmuDevice];
 
 	s32 ret = Nand_Mount(Device);
-	if (ret < 0) return ret;
+	if(ret < 0)
+	{
+		gprintf("Fail 2\n");
+		return ret;
+	}
 
 	ret = Nand_Enable(Device);
-	if (ret < 0) return ret;
+	if(ret < 0)
+	{
+		gprintf("Fail 3\n");
+		return ret;
+	}
 
 	MountedDevice = EmuDevice;
 
