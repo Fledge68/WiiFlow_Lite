@@ -114,6 +114,7 @@ private:
 private:
 	void _drawAASceneWithAlpha(float w, float h);
 	void _setViewPort(float x, float y, float w, float h);
+	void _clearScreen();
 	static void _showWaitMessages(CVideo *m);
 private:
 	CVideo(const CVideo &);
