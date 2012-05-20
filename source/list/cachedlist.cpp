@@ -79,7 +79,7 @@ void CachedList<T>::Load(string path, string containing, string m_lastLanguage, 
 		gprintf("Calling list to update filelist\n");
 		
 		vector<string> pathlist;
-		list.GetPaths(pathlist, containing, path, m_wbfsFS, (update_dml || (m_update && strcasestr(path.c_str(), ":/games") != NULL)));
+		list.GetPaths(pathlist, containing, path, m_wbfsFS, (update_dml || (m_update && strcasestr(path.c_str(), ":/games") != NULL)), music);
 		list.GetHeaders(pathlist, *this, m_settingsDir, m_curLanguage, m_DMLgameDir, m_plugin);
 
 		path.append("/touch.db");
