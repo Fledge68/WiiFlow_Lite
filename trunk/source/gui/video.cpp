@@ -167,12 +167,7 @@ void CVideo::init(void)
 	GX_SetNumChans(0);
 	GX_SetZCompLoc(GX_ENABLE);
 	setup2DProjection();
-
-	VIDEO_ClearFrameBuffer(m_rmode, m_frameBuf[0], COLOR_BLACK);
-	VIDEO_ClearFrameBuffer(m_rmode, m_frameBuf[1], COLOR_BLACK);
-	render();
-	render();
-
+	_clearScreen();
 	VIDEO_SetBlack(FALSE);
 	VIDEO_Flush();
 	VIDEO_WaitVSync();
@@ -181,6 +176,14 @@ void CVideo::init(void)
 
 	m_stencil = MEM1_memalign(32, CVideo::_stencilWidth * CVideo::_stencilHeight);
 	memset(m_stencil, 0, CVideo::_stencilWidth * CVideo::_stencilHeight);
+}
+
+void CVideo::_clearScreen()
+{
+	VIDEO_ClearFrameBuffer(m_rmode, m_frameBuf[0], COLOR_BLACK);
+	VIDEO_ClearFrameBuffer(m_rmode, m_frameBuf[1], COLOR_BLACK);
+	render();
+	render();
 }
 
 void CVideo::set2DViewport(u32 w, u32 h, int x, int y)
@@ -233,11 +236,7 @@ void CVideo::cleanup(void)
 {
 	gprintf("Cleaning up video...\n");
 
-	VIDEO_ClearFrameBuffer(m_rmode, m_frameBuf[0], COLOR_BLACK);
-	VIDEO_ClearFrameBuffer(m_rmode, m_frameBuf[1], COLOR_BLACK);
-	render();
-	render();
-
+	_clearScreen();
 	VIDEO_SetBlack(TRUE);
 	VIDEO_Flush();
 
@@ -495,6 +494,7 @@ void CVideo::_showWaitMessages(CVideo *m)
 
 	vector<STexture>::iterator waitItr = m->m_waitMessages.begin();
 	gprintf("Going to show a wait message screen, delay: %d, # images: %d\n", waitFrames, m->m_waitMessages.size());
+	m->_clearScreen();
 
 	m->waitMessage(*waitItr);
 	waitItr += PNGfadeDirection;
