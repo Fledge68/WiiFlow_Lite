@@ -494,7 +494,6 @@ void CVideo::_showWaitMessages(CVideo *m)
 
 	vector<STexture>::iterator waitItr = m->m_waitMessages.begin();
 	gprintf("Going to show a wait message screen, delay: %d, # images: %d\n", waitFrames, m->m_waitMessages.size());
-	m->_clearScreen();
 
 	m->waitMessage(*waitItr);
 	waitItr += PNGfadeDirection;
@@ -599,7 +598,8 @@ void CVideo::waitMessage(const vector<STexture> &tex, float delay, bool useWiiLi
 		m_waitMessages = tex;
 		m_waitMessageDelay = delay;
 	}
-	
+	_clearScreen();
+
 	if (m_waitMessages.size() == 1)
 		waitMessage(m_waitMessages[0]);
 	else if (m_waitMessages.size() > 1)
