@@ -39,7 +39,7 @@ void MusicPlayer::Init(Config &cfg, string musicDir, string themeMusicDir)
 	if (dir & NORMAL_MUSIC)
 		m_music_files.Load(musicDir, ".ogg|.mp3", "EN", cfg); //|.mod|.xm|.s3m|.wav|.aiff");
 	
-	if (cfg.getBool("GENERAL", "randomize_music", false) && m_music_files.size() > 0)
+	if (cfg.getBool("GENERAL", "randomize_music", true) && m_music_files.size() > 0)
 	{
 		srand(unsigned(time(NULL)));
 		random_shuffle(m_music_files.begin(), m_music_files.end());

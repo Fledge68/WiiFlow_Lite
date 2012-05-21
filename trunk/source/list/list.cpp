@@ -5,9 +5,10 @@
 #include "defines.h"
 #include "channels.h"
 #include "gc.h"
+#include "fileOps.h"
 
 template <typename T>
-void CList<T>::GetPaths(vector<string> &pathlist, string containing, string directory, bool wbfs_fs, bool dml, bool music)
+void CList<T>::GetPaths(vector<string> &pathlist, string containing, string directory, bool wbfs_fs, bool dml, bool no_depth_limit)
 {
 	if (!wbfs_fs)
 	{
@@ -23,8 +24,8 @@ void CList<T>::GetPaths(vector<string> &pathlist, string containing, string dire
 		/* Read primary entries */
 		while((ent = readdir(dir_itr)) != NULL)
 		{
-			if (ent->d_name[0] == '.') continue;
-			//if (strlen(ent->d_name) < 6) continue;
+			if (ent->d_name[0] == '.')
+				continue;
 
 			if(ent->d_type == DT_REG)
 			{
@@ -41,57 +42,59 @@ void CList<T>::GetPaths(vector<string> &pathlist, string containing, string dire
 		}
 		closedir(dir_itr);
 
-		if(temp_pathlist.size() > 0)
+		bool FoundFile;
+		while(temp_pathlist.size())
 		{
-			bool FoundDMLgame;
-			for(u32 i = 0; i < temp_pathlist.size(); i++)
+			if(temp_pathlist[0].size() == 0)
 			{
-				if(temp_pathlist[i].size() == 0)
+				temp_pathlist.erase(temp_pathlist.begin());
+				continue;
+			}
+
+			dir_itr = opendir(temp_pathlist[0].c_str());
+			if(!dir_itr)
+			{
+				temp_pathlist.erase(temp_pathlist.begin());
+				continue;
+			}
+
+			FoundFile = false;
+
+			/* Read subdirectory */
+			while((ent = readdir(dir_itr)) != NULL)
+			{
+				if (ent->d_name[0] == '.')
 					continue;
-
-				dir_itr = opendir(temp_pathlist[i].c_str());
-				if(!dir_itr)
-					continue;
-
-				FoundDMLgame = false;
-
-				/* Read secondary entries */
-				while((ent = readdir(dir_itr)) != NULL)
+				if(ent->d_type == DT_REG)
 				{
-					if (ent->d_name[0] == '.') continue;
-					if(ent->d_type == DT_REG && (strlen(ent->d_name) > 7 || music))
+					for(vector<string>::iterator compare = compares.begin(); compare != compares.end(); compare++)
 					{
-						for(vector<string>::iterator compare = compares.begin(); compare != compares.end(); compare++)
+						if(strcasestr(ent->d_name, (*compare).c_str()) != NULL)
 						{
-							if(strcasestr(ent->d_name, (*compare).c_str()) != NULL)
-							{
-								FoundDMLgame = true;
-								//gprintf("Pushing %s to the list.\n", sfmt("%s/%s", temp_pathlist[i].c_str(), ent->d_name).c_str());
-								pathlist.push_back(sfmt("%s/%s", temp_pathlist[i].c_str(), ent->d_name));
-								break;
-							}
-						}
-					}
-					else
-					{
-						if(music)
-							temp_pathlist.push_back(sfmt("%s/%s", temp_pathlist[i].c_str(), ent->d_name));
-						else if(dml && !FoundDMLgame && strncasecmp(ent->d_name, "sys", 3) == 0)
-						{
-							FILE *f;
-							f = fopen(fmt("%s/%s/boot.bin", temp_pathlist[i].c_str(), ent->d_name), "rb");
-							if(f)
-							{
-								fclose(f);
-								//gprintf("Pushing %s to the list.\n", sfmt("%s/%s/boot.bin", temp_pathlist[i].c_str(), ent->d_name).c_str());
-								pathlist.push_back(sfmt("%s/%s/boot.bin", temp_pathlist[i].c_str(), ent->d_name));
-								break;
-							}
+							FoundFile = true;
+							//gprintf("Pushing %s to the list.\n", sfmt("%s/%s", temp_pathlist[0].c_str(), ent->d_name).c_str());
+							pathlist.push_back(sfmt("%s/%s", temp_pathlist[0].c_str(), ent->d_name));
+							break;
 						}
 					}
 				}
-				closedir(dir_itr);
+				else
+				{
+					if(no_depth_limit)
+						temp_pathlist.push_back(sfmt("%s/%s", temp_pathlist[0].c_str(), ent->d_name));
+					else if(dml && !FoundFile && strncasecmp(ent->d_name, "sys", 3) == 0 &&
+						fsop_FileExist(fmt("%s/%s/boot.bin", temp_pathlist[0].c_str(), ent->d_name)))
+					{
+						FoundFile = true;
+						//gprintf("Pushing %s to the list.\n", sfmt("%s/%s/boot.bin", temp_pathlist[0].c_str(), ent->d_name).c_str());
+						pathlist.push_back(sfmt("%s/%s/boot.bin", temp_pathlist[0].c_str(), ent->d_name));
+						break;
+					}
+				}
 			}
+			closedir(dir_itr);
+			/* Finished reading subdirectory, erase it */
+			temp_pathlist.erase(temp_pathlist.begin());
 		}
 	}
 	else
