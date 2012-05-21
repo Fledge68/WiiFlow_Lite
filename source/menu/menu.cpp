@@ -618,8 +618,8 @@ void CMenu::_loadCFLayout(int version, bool forceAA, bool otherScrnFmt)
 {
 	bool homebrew = m_current_view == COVERFLOW_HOMEBREW;
 	bool smallbox = (homebrew || m_current_view == COVERFLOW_EMU) && m_cfg.getBool(_domainFromView(), "smallbox", true);
-	string domain(smallbox ? (homebrew ? fmt("_BREWFLOW_%i", version) : fmt("_EMUFLOW_%i", version)) : fmt("_COVERFLOW_%i", version));
-	string domainSel(smallbox ? (homebrew ? fmt("_BREWFLOW_%i_S", version) : fmt("_EMUFLOW_%i_S", version)) : fmt("_COVERFLOW_%i_S", version));
+	string domain(homebrew ? fmt("_BREWFLOW_%i", version) : m_current_view == COVERFLOW_EMU ? fmt("_EMUFLOW_%i", version) : fmt("_COVERFLOW_%i", version));
+	string domainSel(homebrew ? fmt("_BREWFLOW_%i_S", version) : m_current_view == COVERFLOW_EMU ? fmt("_EMUFLOW_%i_S", version) : fmt("_COVERFLOW_%i_S", version));
 	bool sf = otherScrnFmt;
 
 	int max_fsaa = m_theme.getInt(domain, "max_fsaa", 3);
