@@ -196,9 +196,9 @@ vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, string Device)
 	{
 		if(game == emptyString || game == emptyString2)
 			break;
-		GameName = ini.getString(game,"description");
+		GameName = ini.getString(game, "description");
 		if(GameName == emptyString || GameName == emptyString2 ||
-		strncasecmp(ini.getWString(game, "path").toUTF8().c_str(), Device.c_str(), 3) != 0)
+		strncasecmp(ini.getWString(game, "path").toUTF8().c_str(), Device.c_str(), 2) != 0)
 		{
 			game = ini.nextDomain();
 			continue;
