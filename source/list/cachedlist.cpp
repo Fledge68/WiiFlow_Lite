@@ -17,6 +17,7 @@ void CachedList<T>::Load(string path, string containing, string m_lastLanguage, 
 
 	bool ditimes = false;
 	bool music = typeid(T) == typeid(std::string);
+	bool emu = strcasestr(path.c_str(), m_plugin.getString("PLUGIN","romDir","").c_str()) != NULL;
 	if(music)
 		gprintf("Loading music list from path: %s\n",path.c_str());
 	else if(!m_wbfsFS)
@@ -25,7 +26,7 @@ void CachedList<T>::Load(string path, string containing, string m_lastLanguage, 
 		
 		update_games = strcasestr(path.c_str(), "wbfs") != NULL && force_update[COVERFLOW_USB];
 		update_homebrew = strcasestr(path.c_str(), "apps") != NULL && force_update[COVERFLOW_HOMEBREW];
-		update_emu = strcasestr(path.c_str(), m_plugin.getString("PLUGIN","romDir","").c_str()) != NULL && force_update[COVERFLOW_EMU];
+		update_emu = emu && force_update[COVERFLOW_EMU];
 
 		const char* partition = DeviceName[DeviceHandler::Instance()->PathToDriveType(path.c_str())];
 		update_dml = strcasestr(path.c_str(), fmt(strncmp(partition, "sd", 2) != 0 ? m_DMLgameDir.c_str() : "%s:/games", partition)) != NULL && force_update[COVERFLOW_DML];
@@ -46,10 +47,10 @@ void CachedList<T>::Load(string path, string containing, string m_lastLanguage, 
 			ditimes = discinfo.st_mtime > cache.st_mtime;		
 
 		m_update = update_lang || noDB || mtimes || ditimes;
-		if(m_update) gprintf("Cache of %s is being updated because ", path.c_str());
-		if(update_lang) gprintf("languages are different!\nOld language string: %s\nNew language string: %s\n", m_lastLanguage.c_str(), m_curLanguage.c_str());
-		if(noDB) gprintf("a database was not found!\n");
-		if(mtimes || ditimes) gprintf("the WBFS folder was modified!\n");
+		if(m_update) gprintf("Cache of %s is being updated because:", path.c_str());
+		if(update_lang) gprintf("Languages are different!\nOld language string: %s\nNew language string: %s\n", m_lastLanguage.c_str(), m_curLanguage.c_str());
+		if(noDB) gprintf("A database was not found!\n");
+		if(mtimes || ditimes) gprintf("The WBFS folder was modified!\nCache date: %i\nFolder date: %i\n", cache.st_mtime, filestat.st_mtime);
 	
 		if(m_extcheck && !m_update)
 		{
@@ -79,7 +80,7 @@ void CachedList<T>::Load(string path, string containing, string m_lastLanguage, 
 		gprintf("Calling list to update filelist\n");
 		
 		vector<string> pathlist;
-		list.GetPaths(pathlist, containing, path, m_wbfsFS, (update_dml || (m_update && strcasestr(path.c_str(), ":/games") != NULL)), music);
+		list.GetPaths(pathlist, containing, path, m_wbfsFS, (update_dml || (m_update && strcasestr(path.c_str(), ":/games") != NULL)), (music || emu));
 		list.GetHeaders(pathlist, *this, m_settingsDir, m_curLanguage, m_DMLgameDir, m_plugin);
 
 		path.append("/touch.db");

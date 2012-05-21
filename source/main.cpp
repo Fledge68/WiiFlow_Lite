@@ -36,7 +36,7 @@ extern "C"
 int main(int argc, char **argv)
 {
 	__exception_setreload(5);
-	MEM1_init((void*)0x80003f00, (void*)0x80b00000);
+	MEM1_init((void*)0x80004000, (void*)0x80b00000);
 
 	// Init video
 	CVideo vid;

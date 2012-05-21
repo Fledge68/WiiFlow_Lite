@@ -181,7 +181,7 @@ bool GuiSound::Load(const char * filepath)
 
 	if(!decoder->IsBufferReady())
 	{	
-		gprintf("Buffer not ready!!n");
+		gprintf("Buffer not ready!!\n");
 		SoundHandler::Instance()->RemoveDecoder(voice);
 		return false;
 	}
