@@ -22,7 +22,7 @@ class CList
     public:
 		 CList(){};
 		~CList(){};
-		void GetPaths(vector<string> &pathlist, string containing, string directory, bool wbfs_fs = false, bool dml = false, bool no_depth_limit = false);
+		void GetPaths(vector<string> &pathlist, string containing, string directory, bool wbfs_fs = false, bool dml = false, bool depth_limit = true);
 		void GetHeaders(vector<string> pathlist, vector<T> &headerlist, string, string, string, Config &plugin);
 		void GetChannels(vector<T> &headerlist, string, u32, string);
 	private:
