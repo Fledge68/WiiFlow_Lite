@@ -136,13 +136,9 @@ int main(int argc, char **argv)
 				ret = menu.main();
 			}
 		}
-		Open_Inputs(); //reinit wiimote
+		if(ret == 1)
+			Open_Inputs(); //reinit wiimote
 	} while (ret == 1);
-	
-	WifiGecko_Close();
-
-	Nand::Instance()->Disable_Emu();
-	Nand::DestroyInstance();
 
 	Sys_Exit();
 	return 0;

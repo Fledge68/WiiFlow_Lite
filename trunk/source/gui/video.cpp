@@ -249,30 +249,11 @@ void CVideo::cleanup(void)
 			m_aaBuffer[i].release();
 	}
 	for(u8 i = 0; i < m_defaultWaitMessages.size(); i++)
-	{
-		if(m_defaultWaitMessages[i].data.get())
-			m_defaultWaitMessages[i].data.release();
-	}
-	if(m_frameBuf[0] != NULL)
-	{
-		free(MEM_K1_TO_K0(m_frameBuf[0]));
-		m_frameBuf[0] = NULL;
-	}
-	if(m_frameBuf[1] != NULL)
-	{
-		free(MEM_K1_TO_K0(m_frameBuf[1]));
-		m_frameBuf[0] = NULL;
-	}
-	if(m_stencil != NULL)
-	{
-		MEM1_free(m_stencil);
-		m_stencil = NULL;
-	}
-	if(m_fifo != NULL)
-	{
-		MEM1_free(m_fifo);
-		m_fifo = NULL;
-	}
+		m_defaultWaitMessages[i].data.release();
+	free(MEM_K1_TO_K0(m_frameBuf[0]));
+	free(MEM_K1_TO_K0(m_frameBuf[1]));
+	MEM1_free(m_stencil);
+	MEM1_free(m_fifo);
 }
 
 void CVideo::prepareAAPass(int aaStep)

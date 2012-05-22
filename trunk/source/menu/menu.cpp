@@ -462,8 +462,13 @@ void CMenu::init(void)
 	}
 }
 
+bool cleaned_up = false;
+
 void CMenu::cleanup(bool ios_reload)
 {
+	if(cleaned_up)
+		return;
+
 	m_cf.stopCoverLoader();
 	m_cf.clear();
 	ClearGameSoundThreadStack();
@@ -500,6 +505,7 @@ void CMenu::cleanup(bool ios_reload)
 		_deinitNetwork();
 	ClearLogBuffer();
 
+	cleaned_up = true;
 	gprintf(" \nMemory cleaned up\n");
 }
 
