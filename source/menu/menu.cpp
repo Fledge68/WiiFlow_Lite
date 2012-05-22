@@ -1509,14 +1509,25 @@ void CMenu::_initCF(void)
 		u64 chantitle = m_gameList[i].hdr.chantitle;
 		if (m_current_view == COVERFLOW_CHANNEL && chantitle == HBC_108)
 			strncpy((char *) m_gameList[i].hdr.id, "JODI", 6);
-		if (m_current_view == COVERFLOW_EMU)
+		if(m_current_view == COVERFLOW_EMU)
 		{
 			string tempname(m_gameList[i].path);
+			if(tempname.empty() ||  tempname.find_first_of('/') == string::npos)
+			{
+				continue;
+			}
 			tempname.erase(0, tempname.find_first_of('/')+1);
 			string dirName = tempname.substr(0, tempname.find_first_of('/')+1);
+			if (tempname.find_first_of('/') == string::npos)
+			{
+				continue;
+			}
 			tempname.assign(&tempname[tempname.find_last_of('/') + 1]);
-			if(tempname.find_last_of('.') != string::npos)
-				tempname.erase(tempname.find_last_of('.'), tempname.size() - tempname.find_last_of('.'));
+			if(tempname.find_last_of('.') == string::npos)
+			{
+				continue;
+			}
+			tempname.erase(tempname.find_last_of('.'), tempname.size() - tempname.find_last_of('.'));
 			id = dirName+tempname;
 		}
 		else 
