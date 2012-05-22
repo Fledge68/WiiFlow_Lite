@@ -8,7 +8,7 @@
 #include "fileOps.h"
 
 template <typename T>
-void CList<T>::GetPaths(vector<string> &pathlist, string containing, string directory, bool wbfs_fs, bool dml, bool no_depth_limit)
+void CList<T>::GetPaths(vector<string> &pathlist, string containing, string directory, bool wbfs_fs, bool dml, bool depth_limit)
 {
 	if (!wbfs_fs)
 	{
@@ -24,18 +24,20 @@ void CList<T>::GetPaths(vector<string> &pathlist, string containing, string dire
 		/* Read primary entries */
 		while((ent = readdir(dir_itr)) != NULL)
 		{
-			if (ent->d_name[0] == '.')
+			if(ent->d_name[0] == '.')
 				continue;
 
 			if(ent->d_type == DT_REG)
 			{
 				for(vector<string>::iterator compare = compares.begin(); compare != compares.end(); compare++)
+				{
 					if (strcasestr(ent->d_name, (*compare).c_str()) != NULL)
 					{
 						//gprintf("Pushing %s to the list.\n", sfmt("%s/%s", directory.c_str(), ent->d_name).c_str());
 						pathlist.push_back(sfmt("%s/%s", directory.c_str(), ent->d_name));
 						break;
 					}
+				}
 			}
 			else
 				temp_pathlist.push_back(sfmt("%s/%s", directory.c_str(), ent->d_name));
@@ -45,26 +47,18 @@ void CList<T>::GetPaths(vector<string> &pathlist, string containing, string dire
 		bool FoundFile;
 		while(temp_pathlist.size())
 		{
-			if(temp_pathlist[0].size() == 0)
-			{
+			while((dir_itr = opendir(temp_pathlist[0].c_str())) && !dir_itr)
 				temp_pathlist.erase(temp_pathlist.begin());
-				continue;
-			}
-
-			dir_itr = opendir(temp_pathlist[0].c_str());
-			if(!dir_itr)
-			{
-				temp_pathlist.erase(temp_pathlist.begin());
-				continue;
-			}
 
 			FoundFile = false;
 
 			/* Read subdirectory */
 			while((ent = readdir(dir_itr)) != NULL)
 			{
-				if (ent->d_name[0] == '.')
+				if(ent->d_name[0] == '.')
 					continue;
+				if(dml && FoundFile)
+					break;
 				if(ent->d_type == DT_REG)
 				{
 					for(vector<string>::iterator compare = compares.begin(); compare != compares.end(); compare++)
@@ -80,7 +74,7 @@ void CList<T>::GetPaths(vector<string> &pathlist, string containing, string dire
 				}
 				else
 				{
-					if(no_depth_limit)
+					if(!depth_limit)
 						temp_pathlist.push_back(sfmt("%s/%s", temp_pathlist[0].c_str(), ent->d_name));
 					else if(dml && !FoundFile && strncasecmp(ent->d_name, "sys", 3) == 0 &&
 						fsop_FileExist(fmt("%s/%s/boot.bin", temp_pathlist[0].c_str(), ent->d_name)))
@@ -88,7 +82,6 @@ void CList<T>::GetPaths(vector<string> &pathlist, string containing, string dire
 						FoundFile = true;
 						//gprintf("Pushing %s to the list.\n", sfmt("%s/%s/boot.bin", temp_pathlist[0].c_str(), ent->d_name).c_str());
 						pathlist.push_back(sfmt("%s/%s/boot.bin", temp_pathlist[0].c_str(), ent->d_name));
-						break;
 					}
 				}
 			}
