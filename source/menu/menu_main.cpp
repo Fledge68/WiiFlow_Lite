@@ -790,14 +790,6 @@ int CMenu::main(void)
 				m_cf.mouse(m_vid, chan, -1, -1);
 		}
 	}
-	_showWaitMessage();
-
-	gprintf("Invalidate GX\n");
-
-	GX_InvVtxCache();
-	GX_InvalidateTexAll();
-	gprintf("Clear coverflow\n");
-	m_cf.clear();
 	gprintf("Saving configuration files\n");
 	m_cfg.save();
 	m_cat.save();
@@ -807,8 +799,7 @@ int CMenu::main(void)
 	coverStatus = LWP_THREAD_NULL;
 	if(coverstatus_stack.get())
 		coverstatus_stack.release();
-
-	gprintf("Done with main\n");
+	cleanup();
 	return m_reload ? 1 : 0;
 }
 
