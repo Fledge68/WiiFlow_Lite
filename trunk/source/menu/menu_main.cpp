@@ -335,12 +335,16 @@ int CMenu::main(void)
                 m_current_view =  COVERFLOW_EMU;
             else if (BTN_RIGHT_PRESSED && show_channel)
                 m_current_view = COVERFLOW_CHANNEL;
-			if (lastView != m_current_view) LoadView();
+			if (lastView == m_current_view) 
+			{
+				m_current_view = COVERFLOW_HOMEBREW;
+			}
+			LoadView();
 			continue;
 		}
 		m_btnMgr.noClick(true);
-		if (!m_btnMgr.selected(m_mainBtnChannel) && !m_btnMgr.selected(m_mainBtnUsb) && !m_btnMgr.selected(m_mainBtnDML) && !m_btnMgr.selected(m_mainBtnHomebrew) && !m_btnMgr.selected(m_mainBtnEmu))
-		{
+		//if (!m_btnMgr.selected(m_mainBtnChannel) && !m_btnMgr.selected(m_mainBtnUsb) && !m_btnMgr.selected(m_mainBtnDML) && !m_btnMgr.selected(m_mainBtnHomebrew) && !m_btnMgr.selected(m_mainBtnEmu))
+		//{
 		if (!BTN_B_HELD && (BTN_UP_REPEAT || RIGHT_STICK_UP))
 			m_cf.up();
 		if ((!BTN_B_HELD && (BTN_RIGHT_REPEAT || RIGHT_STICK_RIGHT)) || WROLL_RIGHT)
@@ -349,7 +353,7 @@ int CMenu::main(void)
 			m_cf.down();
 		if ((!BTN_B_HELD && (BTN_LEFT_REPEAT || RIGHT_STICK_LEFT)) || WROLL_LEFT)
 			m_cf.left();
-		}
+		//}
 		m_btnMgr.noClick(false);
 		//CF Layout select
 		if (!BTN_B_HELD && (BTN_1_PRESSED || BTN_2_PRESSED))
