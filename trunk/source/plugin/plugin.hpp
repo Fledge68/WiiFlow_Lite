@@ -43,6 +43,8 @@ public:
 	void SetEnablePlugin(Config &cfg, u8 pos, u8 ForceMode = 0);
 	vector<bool> GetEnabledPlugins(Config &cfg);
 	bool UseReturnLoader(u32 magic);
+	bool isMplayerCE(u32 magic);
+	vector<string> CreateMplayerCEArguments(const char *src);
 	void init(string);
 	void Cleanup();
 	void EndAdd();

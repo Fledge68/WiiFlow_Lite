@@ -17,6 +17,9 @@ using namespace std;
 extern const u8 app_booter_bin[];
 extern const u32 app_booter_bin_size;
 
+extern const u8 stub_bin[];
+extern const u32 stub_bin_size;
+
 typedef void (*entrypoint) (void);
 extern "C" { void __exception_closeall(); }
 
@@ -101,7 +104,7 @@ static int SetupARGV(struct __argv * args)
 	return 0;
 }
 
-int BootHomebrew()
+int BootHomebrew(bool wiiflow_stub)
 {
 	struct __argv args;
 	if (!IsDollZ(homebrewbuffer))
@@ -114,6 +117,16 @@ int BootHomebrew()
 
 	memmove(ARGS_ADDR, &args, sizeof(args));
 	DCFlushRange(ARGS_ADDR, sizeof(args) + args.length);
+
+	if(wiiflow_stub)
+	{
+		/* Clear low mem - the hard way :P */
+		memset((void*)0x80000000, 0, 0x4000);
+
+		/* Copy stub into memory */
+		memcpy((void*)0x80001800, stub_bin, stub_bin_size);
+		DCFlushRange((void*)0x80001800, stub_bin_size);
+	}
 
 	/* Shutdown IOS subsystems */
 	u32 level = IRQ_Disable();
