@@ -64,6 +64,8 @@ class Nand
 		void Set_Partition(u32 partition) { Partition = partition; };
 		void Set_FullMode(bool fullmode) { FullMode = fullmode ? 0x100 : 0; };
 		void Set_RCMode(bool rcmode) { FullMode = rcmode ? 0x40 : 0; };
+		void Set_SSMode(bool ssmode) { FullMode = ssmode ? 0x60 : 0; };
+
 
 		const char * Get_NandPath(void) { return NandPath; };
 		u32 Get_Partition(void) { return Partition; };

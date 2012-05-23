@@ -153,9 +153,12 @@ u32 LoadChannel(u8 *buffer)
 	int i;
 	for(i = 0; i < 18; i++)
 	{
-		if(!dolfile->section_size[i]) continue;
-		if(dolfile->section_pos[i] < sizeof(dolheader)) continue;
-		if(!(dolfile->section_start[i] & 0x80000000)) dolfile->section_start[i] |= 0x80000000;
+		if(!dolfile->section_size[i]) 
+			continue;
+		if(dolfile->section_pos[i] < sizeof(dolheader)) 
+			continue;
+		if(!(dolfile->section_start[i] & 0x80000000)) 
+			dolfile->section_start[i] |= 0x80000000;
 
 		dolchunkoffset[dolchunkcount] = (void *)dolfile->section_start[i];
 		dolchunksize[dolchunkcount] = dolfile->section_size[i];			
@@ -285,7 +288,7 @@ bool Identify(u64 titleid, u32 *ios)
 	return ret < 0 ? false : true;
 }
 
-u8 * GetDol(u64 title, u32 bootcontent)
+u8 *GetDol(u64 title, u32 bootcontent)
 {
 	char filepath[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
 	sprintf(filepath, "/title/%08x/%08x/content/%08x.app", TITLE_UPPER(title), TITLE_LOWER(title), bootcontent);

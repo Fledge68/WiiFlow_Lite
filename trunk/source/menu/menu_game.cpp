@@ -826,7 +826,7 @@ int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id)
 	// remap IOS to CIOS
 	if(gameIOS < 0x64)
 	{
-		if ( _installed_cios.size() <= 0)
+		if(_installed_cios.size() <= 0)
 		{
 			error(sfmt("No cios found!"));
 			Sys_LoadMenu();
@@ -859,7 +859,7 @@ int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id)
 		}
 	}
 
-	if (gameIOS != mainIOS)
+	if(gameIOS != mainIOS)
 	{
 		gprintf("Reloading IOS into %d\n", gameIOS);
 		if(!loadIOS(gameIOS, true))
@@ -881,6 +881,8 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	u32 ios = 0;
 	u32 entry = 0;
 	MEM1_wrap(0);
+	
+	Nand::Instance()->Disable_Emu();
 
 	string id = string((const char *) hdr->hdr.id);
 
@@ -895,10 +897,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	}
 
 	forwarder = m_gcfg2.getBool(id, "custom", forwarder) || strncmp(id.c_str(), "WIMC", 4) == 0;
-	if(!forwarder)
-		entry = channel.Load(hdr->hdr.chantitle, &ios);
-	Nand::Instance()->Disable_Emu();
-
+	
 	bool vipatch = m_gcfg2.testOptBool(id, "vipatch", m_cfg.getBool("GENERAL", "vipatch", false));
 	bool cheat = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool("NAND", "cheat", false));
 	bool countryPatch = m_gcfg2.testOptBool(id, "country_patch", m_cfg.getBool("GENERAL", "country_patch", false));
@@ -927,56 +926,121 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 
 	if(!forwarder && has_enabled_providers() && _initNetwork() == 0)
 		add_game_to_card(id.c_str());
-
+		
+	string emuPath = m_cfg.getString("NAND", "path", "");
+	int emuPartition = m_cfg.getInt("NAND", "partition", 0);
 	bool emu_disabled = m_cfg.getBool("NAND", "disable", true);
-	bool emulate_mode = false;
-	int i = min(max(0, m_cfg.getInt("NAND", "emulation", 0)), (int)ARRAY_SIZE(CMenu::_NandEmu) - 1);
-	if (i==2)
-		emulate_mode = true;
+	int emulate_mode = min(max(0, m_cfg.getInt("NAND", "emulation", 0)), (int)ARRAY_SIZE(CMenu::_NandEmu) - 1);
 
-	int userIOS = 0;
-	m_gcfg2.getInt(id, "ios", &userIOS);
+	int userIOS = m_gcfg2.getInt(id, "ios", 0);
 
 	m_gcfg1.save(true);
 	m_gcfg2.save(true);
 	m_cat.save(true);
 	m_cfg.save(true);
+	
+	if(!emu_disabled)
+	{
+		Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
+		DeviceHandler::Instance()->UnMount(emuPartition);
 
-	bool iosLoaded = false;
+		if(emulate_mode == 3)
+			Nand::Instance()->Set_RCMode(true);
+		else if(emulate_mode == 2)
+			Nand::Instance()->Set_FullMode(true);
+		else
+			Nand::Instance()->Set_FullMode(false);
+
+		if(Nand::Instance()->Enable_Emu() < 0)
+		{
+			Nand::Instance()->Disable_Emu();
+			error(L"Enabling emu failed!");
+
+			return;
+		}
+		DeviceHandler::Instance()->Mount(emuPartition);
+	}		
 
 	if(!forwarder)
 	{
+		entry = channel.Load(hdr->hdr.chantitle, &ios);
 		setLanguage(language);
 
 		SmartBuf cheatFile;
 		u32 cheatSize = 0;
 		if (cheat)
 			_loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", hdr->hdr.id));
+		
 		ocarina_load_code(cheatFile.get(), cheatSize);
 
-		int result = _loadIOS(channel.GetRequestedIOS(hdr->hdr.chantitle), userIOS, id);
-		if (result == LOAD_IOS_FAILED)
-			return;
-		if (result == LOAD_IOS_SUCCEEDED)
-			iosLoaded = true;
-	}
-
-	if(!emu_disabled)
-	{
-		if(iosLoaded) ISFS_Deinitialize();
-		ISFS_Initialize();
-
-		Nand::Instance()->Set_FullMode(emulate_mode);
-		if(Nand::Instance()->Enable_Emu() < 0)
+		int gameIOS = userIOS == 0 ? channel.GetRequestedIOS(hdr->hdr.chantitle) : userIOS;
+		
+		gprintf("%s IOS %u\n", userIOS == 0 ? "Game requested" : "User requested", gameIOS);
+		
+		if (gameIOS != mainIOS)
 		{
-			Nand::Instance()->Disable_Emu();
-			error(L"Enabling emu after reload failed!");
-			if(iosLoaded) Sys_LoadMenu();
-			return;
+			u8 IOS[3];
+			IOS[0] = gameIOS;
+			IOS[1] = 56;
+			IOS[2] = 57;
+			bool found = false;
+			for(u8 num = 0; num < 3; num++)
+			{
+				if(found)
+					break;
+				if(IOS[num] == 0)
+					continue;
+				for(CIOSItr itr = _installed_cios.begin(); itr != _installed_cios.end(); itr++)
+				{
+					if(itr->second == IOS[num] || itr->first == IOS[num])
+					{
+						gameIOS = itr->first;
+						found = true;
+						break;
+					}
+				}
+			}
+			if(!found)
+			{
+				error(sfmt("Couldn't find a cIOS using base %i, or 56/57", IOS[0]));
+				return;
+			}
 		}
+
+		if(gameIOS != mainIOS)
+		{
+			gprintf("Reloading IOS into %d\n", gameIOS);
+			if(!loadIOS(gameIOS, false))
+			{
+				_reload_wifi_gecko();
+				error(sfmt("Couldn't reload to cIOS %i", gameIOS));
+				return;
+			}
+			if(!emu_disabled)
+			{
+				Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
+				DeviceHandler::Instance()->UnMount(emuPartition);
+
+				if(emulate_mode == 3)
+					Nand::Instance()->Set_RCMode(true);
+				else if(emulate_mode == 2)
+					Nand::Instance()->Set_FullMode(true);
+				else
+					Nand::Instance()->Set_FullMode(false);
+
+				if(Nand::Instance()->Enable_Emu() < 0)
+				{
+					Nand::Instance()->Disable_Emu();
+					error(L"Enabling emu after reload failed!");
+					Sys_LoadMenu();
+					return;
+				}
+				DeviceHandler::Instance()->Mount(emuPartition);
+			}
+		}		
 	}
 
-	if (rtrn != NULL && strlen(rtrn) == 4)
+	if(rtrn != NULL && strlen(rtrn) == 4)
 	{			
 		int rtrnID = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
 		
@@ -991,15 +1055,13 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		IOS_Close(ESHandle);
 	}
 
-	if (disableIOSreload)
-		IOSReloadBlock(IOS_GetVersion(), false);
-	else
-		IOSReloadBlock(IOS_GetVersion(), true);
+	IOSReloadBlock(IOS_GetVersion(), disableIOSreload);
 
 	CheckGameSoundThread();
 	cleanup();
 	Close_Inputs();
-	USBStorage_Deinit();
+	USBStorage_Deinit();	
+	
 	if(currentPartition == 0 && !forwarder)
 		SDHC_Init();
 
@@ -1240,9 +1302,9 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
 		DeviceHandler::Instance()->UnMount(emuPartition);
 
-		if (emuSave == 3)
+		if(emuSave == 3)
 			Nand::Instance()->Set_RCMode(true);
-		else if (emuSave == 4)
+		else if(emuSave == 4)
 			Nand::Instance()->Set_FullMode(true);
 		else
 			Nand::Instance()->Set_FullMode(false);
