@@ -116,7 +116,8 @@ s32 Nand::Nand_Enable(NandDevice *Device)
 {
 	gprintf("Enabling NAND Emulator\n");
 	s32 fd = IOS_Open("/dev/fs", 0);
-	if (fd < 0) return fd;
+	if (fd < 0)
+		return fd;
 
 	int NandPathlen = strlen(NandPath) + 1;
 
@@ -150,12 +151,6 @@ s32 Nand::Nand_Disable(void)
 
 s32 Nand::Enable_Emu()
 {
-	if(MountedDevice == EmuDevice || Disabled)
-	{
-		gprintf("Fail 1\n");
-		return 0;
-	}
-
 	Disable_Emu();
 
 	NandDevice *Device = &NandDeviceList[EmuDevice];

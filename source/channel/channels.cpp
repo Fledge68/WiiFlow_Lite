@@ -82,7 +82,7 @@ u32 Channels::Load(u64 title, u32 *ios)
 	if(!GetAppNameFromTmd(title, app, true, &bootcontent))
 		return entry;
 
-	u8* data = GetDol(title, bootcontent);
+	u8 *data = GetDol(title, bootcontent);
 
 	Identify(title, ios);
 	entry = LoadChannel(data);
@@ -148,7 +148,7 @@ u64* Channels::GetChannelList(u32* count)
 	return(u64*)MEM2_realloc(channels, *count * sizeof(u64));
 }
 
-bool Channels::GetAppNameFromTmd(u64 title, char* app, bool dol, u32* bootcontent)
+bool Channels::GetAppNameFromTmd(u64 title, char *app, bool dol, u32 *bootcontent)
 {
 	bool ret = false;
 
