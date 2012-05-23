@@ -12,6 +12,8 @@
 #include "memory/mem2.hpp"
 #include "gui/text.hpp"
 #include "gecko/gecko.h"
+#include "devicemounter/PartitionHandle.h"
+#include "devicemounter/DeviceHandler.hpp"
 
 static const string emptyString;
 static const string emptyString2("/");
@@ -216,4 +218,50 @@ vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, string Device)
 		game = ini.nextDomain();
 	}
 	return gameHeader;
+}
+
+/* Thanks to dimok for this */
+vector<string> Plugin::CreateMplayerCEArguments(const char *filepath)
+{
+	vector<string> args;
+	char dst[1024];
+
+	int i = 0;
+	char device[10];
+
+	while(filepath[i] != ':')
+	{
+		device[i] = filepath[i];
+		device[i+1] = 0;
+		i++;
+	}
+
+	char * ptr = (char *) &filepath[i];
+
+	while(ptr[0] != '/' || ptr[1] == '/')
+		ptr++;
+
+	if(strncmp(DeviceHandler::PathToFSName(filepath), "NTF", 3) == 0)
+	{
+		sprintf(dst, "ntfs_usb:%s", ptr);
+	}
+	else if(strncmp(device, "usb", 3) == 0)
+	{
+		sprintf(dst, "usb:%s", ptr);
+	}
+	else
+	{
+		sprintf(dst, "%s:%s", device, ptr);
+	}
+
+	args.push_back(dst);
+	args.push_back(string("-quiet"));
+	return args;
+}
+
+bool Plugin::isMplayerCE(u32 magic)
+{
+	if((Plugin_Pos = GetPluginPosition(magic)) >= 0)
+		return (Plugins[Plugin_Pos].magicWord == 0x4D504345);
+	return false;
 }

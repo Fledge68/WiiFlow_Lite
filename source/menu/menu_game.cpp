@@ -642,7 +642,9 @@ void CMenu::_launch(dir_discHdr *hdr)
 		string path((char*)hdr->path, size_t(strlen((char*)hdr->path) - title.size()));
 		vector<string> arguments;
 		gprintf("Game title: %s\n", title.c_str());
-		if(strstr(path.c_str(), ":/") != NULL)
+		if(m_plugin.isMplayerCE(hdr->hdr.magic))
+			arguments = m_plugin.CreateMplayerCEArguments(string(hdr->path).c_str());
+		else if(strstr(path.c_str(), ":/") != NULL)
 		{
 			if(strstr(path.c_str(), "sd:/") == NULL)
 				path.erase(3,1);
@@ -769,6 +771,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 
 void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 {
+	bool wiiflow_stub = m_cfg.getBool("HOMEBREW", "return_to_wiiflow", true);
 	Nand::Instance()->Disable_Emu();
 	m_reload = true;
 
@@ -796,9 +799,12 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 	USBStorage_Deinit();
 	AddBootArgument(filepath);
 	for(u32 i = 0; i < arguments.size(); ++i)
+	{
+		gprintf("Boot argument: %s\n", arguments[i].c_str());
 		AddBootArgument(arguments[i].c_str());
+	}
 	gprintf("Booting Homebrew application...\n");
-	BootHomebrew();
+	BootHomebrew(wiiflow_stub);
 }
 
 int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id)
