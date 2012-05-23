@@ -245,17 +245,17 @@ void CMenu::_initStartupMenu(CMenu::SThemeData &theme)
 	{
 		row = m_startup.getInt("BUTTONS", fmt("button_%i_row", i), i / 2);
 		col = m_startup.getInt("BUTTONS", fmt("button_%i_col", i), 0);
-		m_startupBtnSource[i] = _addButton(theme, fmt("STARTUP/SOURCE_BTN_%i", i), theme.btnFont, L"", (30 + 300 * col), (100 + 58 * row), 280, 56, theme.btnFontColor, true);
+		m_startupBtnSource[i] = _addButton(theme, fmt("STARTUP/SOURCE_BTN_%i", i), theme.btnFont, L"", (30 + 300 * col), (100 + 58 * row), 280, 56, theme.btnFontColor);
 		row = m_startup.getInt("BUTTONS", fmt("button_%i_row", i + 10), i / 2);
 		col = m_startup.getInt("BUTTONS", fmt("button_%i_col", i + 10), 0);
-		m_startupBtnSource[i + 10] = _addButton(theme, fmt("STARTUP/SOURCE_BTN_%i", i + 10), theme.btnFont, L"", (30 + 300 * col), (100 + 58 * row), 280, 56, theme.btnFontColor, true);
+		m_startupBtnSource[i + 10] = _addButton(theme, fmt("STARTUP/SOURCE_BTN_%i", i + 10), theme.btnFont, L"", (30 + 300 * col), (100 + 58 * row), 280, 56, theme.btnFontColor);
 		i++;
 		row = m_startup.getInt("BUTTONS", fmt("button_%i_row", i), (i - 1) / 2);
 		col = m_startup.getInt("BUTTONS", fmt("button_%i_col", i), 1);
-		m_startupBtnSource[i] = _addButton(theme, fmt("STARTUP/SOURCE_BTN_%i", i), theme.btnFont, L"", (30 + 300 * col), (100 + 58 * row), 280, 56, theme.btnFontColor, true);
+		m_startupBtnSource[i] = _addButton(theme, fmt("STARTUP/SOURCE_BTN_%i", i), theme.btnFont, L"", (30 + 300 * col), (100 + 58 * row), 280, 56, theme.btnFontColor);
 		row = m_startup.getInt("BUTTONS", fmt("button_%i_row", i + 10), (i - 1) /2);
 		col = m_startup.getInt("BUTTONS", fmt("button_%i_col", i + 10), 1);
-		m_startupBtnSource[i + 10] = _addButton(theme, fmt("STARTUP/SOURCE_BTN_%i", i + 10), theme.btnFont, L"", (30 + 300 * col), (100 + 58 * row), 280, 56, theme.btnFontColor, true);
+		m_startupBtnSource[i + 10] = _addButton(theme, fmt("STARTUP/SOURCE_BTN_%i", i + 10), theme.btnFont, L"", (30 + 300 * col), (100 + 58 * row), 280, 56, theme.btnFontColor);
 		i++;
 	}
 
