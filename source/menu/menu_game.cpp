@@ -905,7 +905,6 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	int language = min((u32)m_gcfg2.getInt(id, "language", 0), ARRAY_SIZE(CMenu::_languages) - 1u);
 	const char *rtrn = m_gcfg2.getBool(id, "returnto", true) ? m_cfg.getString("GENERAL", "returnto").c_str() : NULL;
 	u8 patchVidMode = min((u32)m_gcfg2.getInt(id, "patch_video_modes", 0), ARRAY_SIZE(CMenu::_vidModePatch) - 1u);
-	bool disableIOSreload = m_gcfg2.testOptBool(id, "reload_block", m_cfg.getBool("GENERAL", "reload_block", false));
 	int aspectRatio = min((u32)m_gcfg2.getInt(id, "aspect_ratio", 0), ARRAY_SIZE(CMenu::_AspectRatio) - 1u)-1;
 
 	if(!forwarder)
@@ -1055,7 +1054,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		IOS_Close(ESHandle);
 	}
 
-	IOSReloadBlock(IOS_GetVersion(), disableIOSreload);
+	IOSReloadBlock(IOS_GetVersion(), true);
 
 	CheckGameSoundThread();
 	cleanup();
@@ -1138,7 +1137,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	u8 videoMode = (u8)min((u32)m_gcfg2.getInt(id, "video_mode", 0), ARRAY_SIZE(CMenu::_videoModes) - 1u);
 	int language = min((u32)m_gcfg2.getInt(id, "language", 0), ARRAY_SIZE(CMenu::_languages) - 1u);
 	const char *rtrn = m_gcfg2.getBool(id, "returnto", true) ? m_cfg.getString("GENERAL", "returnto").c_str() : NULL;
-	bool disableIOSreload = m_gcfg2.testOptBool(id, "reload_block", m_cfg.getBool("GENERAL", "reload_block", false));
 	int aspectRatio = min((u32)m_gcfg2.getInt(id, "aspect_ratio", 0), ARRAY_SIZE(CMenu::_AspectRatio) - 1u)-1;
 
 	int emuPartition = m_cfg.getInt("GAMES", "savepartition", -1);
@@ -1358,11 +1356,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			return;
 		}
 	}
-
-	if (disableIOSreload)
-		IOSReloadBlock(IOS_GetVersion(), false);
-	else
-		IOSReloadBlock(IOS_GetVersion(), true);
+	IOSReloadBlock(IOS_GetVersion(), true);
 
 	while(net_get_status() == -EBUSY)
 		usleep(100);
@@ -1376,9 +1370,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		SDHC_Init();
 
 	/* Clear Memory */
-	MEM1_clear();
 	MEM1_wrap(0);
-	MEM2_clear();
 
 	/* Find game partition offset */
 	u64 offset;
