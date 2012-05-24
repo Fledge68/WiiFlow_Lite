@@ -14,6 +14,7 @@
 #include "gecko/gecko.h"
 #include "devicemounter/PartitionHandle.h"
 #include "devicemounter/DeviceHandler.hpp"
+#include "defines.h"
 
 static const string emptyString;
 static const string emptyString2("/");
@@ -213,7 +214,7 @@ vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, string Device)
 		strncpy(tmp.path, game.c_str(), sizeof(tmp.path));
 		gprintf("Found: %ls\n", tmp.title);
 		tmp.hdr.magic = Plugins.back().magicWord;
-		tmp.hdr.gc_magic = 0x4c4f4c4f;
+		tmp.hdr.gc_magic = EMU_MAGIC;
 		gameHeader.push_back(tmp);
 		game = ini.nextDomain();
 	}

@@ -250,6 +250,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 	bool done = false;
 	bool upd_usb = false;
 	bool upd_dml = false;
+	bool upd_emu = false;
 	bool out = false;
 	struct AutoLight { AutoLight(void) { } ~AutoLight(void) { slotLight(false); } } aw;
 	string cfPos = m_cf.getNextId();
@@ -364,17 +365,22 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						}
 						break;
 					case CMenu::WO_REMOVE_GAME:
-						if(m_current_view == COVERFLOW_USB)
-						{
-							WBFS_RemoveGame((u8 *)m_cf.getId().c_str(), (char *) m_cf.getHdr()->path);
-							upd_usb = true;
-						}
-						else
+						if(m_cf.getHdr()->hdr.gc_magic == GC_MAGIC)
 						{
 							char source[300];
 							snprintf(source, sizeof(source), "%s/%s", fmt((currentPartition != SD) ? m_DMLgameDir.c_str() : DML_DIR, DeviceName[currentPartition]), (char *)m_cf.getHdr()->path);
 							fsop_deleteFolder(source);
 							upd_dml = true;
+						}
+						else if(m_cf.getHdr()->hdr.gc_magic == EMU_MAGIC)
+						{
+							fsop_deleteFile((char*)m_cf.getHdr()->path);
+							upd_emu = true;
+						}
+						else if(m_current_view == COVERFLOW_USB)
+						{
+							WBFS_RemoveGame((u8 *)m_cf.getId().c_str(), (char *) m_cf.getHdr()->path);
+							upd_usb = true;
 						}
 						if(m_cfg.getBool("GENERAL", "delete_cover_and_game", true))
 							RemoveCover((char *)m_cf.getId().c_str());
@@ -458,6 +464,9 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 
 		if(upd_usb)
 			UpdateCache(COVERFLOW_USB);
+
+		if(upd_emu)
+			UpdateCache(COVERFLOW_EMU);
 
 		_loadList();
 		_initCF();

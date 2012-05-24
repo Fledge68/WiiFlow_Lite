@@ -350,3 +350,12 @@ void fsop_deleteFolder(char *source)
 	gprintf("Deleting directory: %s\n",source);
 	unlink(source);
 }
+
+void fsop_deleteFile(char *source)
+{
+	if(fsop_FileExist(source))
+	{
+		gprintf("Deleting file: %s\n",source);
+		remove(source);
+	}
+}

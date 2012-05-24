@@ -50,3 +50,7 @@ Triiforce"
 
 #define WIINNERTAG_URL 			"http://www.wiinnertag.com/wiinnertag_scripts/update_sign.php?key={KEY}&game_id={ID6}"
 #define DUTAG_URL				"http://tag.darkumbra.net/{KEY}.update={ID6}"
+
+#define WII_MAGIC				0x5D1C9EA3
+#define GC_MAGIC				0xC2339F3D
+#define EMU_MAGIC				0x4C4F4C4F

@@ -50,8 +50,6 @@ void CMenu::_hideGameSettings(bool instant)
 	m_btnMgr.hide(m_gameSettingsLblNoDVD_Val, instant);
 	m_btnMgr.hide(m_gameSettingsBtnNoDVD_P, instant);
 	m_btnMgr.hide(m_gameSettingsBtnNoDVD_M, instant);
-	m_btnMgr.hide(m_gameSettingsLblIOSreloadBlock, instant);
-	m_btnMgr.hide(m_gameSettingsBtnIOSreloadBlock, instant);
 	m_btnMgr.hide(m_gameSettingsLblCustom, instant);
 	m_btnMgr.hide(m_gameSettingsBtnCustom, instant);
 	m_btnMgr.hide(m_gameSettingsLblOcarina, instant);
@@ -122,7 +120,7 @@ void CMenu::_showGameSettings(void)
 	m_btnMgr.show(m_gameSettingsBtnPageP);
 	m_btnMgr.show(m_gameSettingsBtnBack);
 	m_btnMgr.show(m_gameSettingsLblTitle);
-	if(m_cf.getHdr()->hdr.gc_magic != 0xc2339f3d)
+	if(m_cf.getHdr()->hdr.gc_magic != GC_MAGIC)
 	{
 		if(m_current_view == COVERFLOW_USB && _checkSave(string((const char *)m_cf.getHdr()->hdr.id), false))
 			g_numGCfPages = 5;
@@ -142,7 +140,7 @@ void CMenu::_showGameSettings(void)
 		m_btnMgr.show(m_gameSettingsLblCover);
 		m_btnMgr.show(m_gameSettingsBtnCover);
 		
-		if(m_cf.getHdr()->hdr.gc_magic != 0xc2339f3d)
+		if(m_cf.getHdr()->hdr.gc_magic != GC_MAGIC)
 		{
 			m_btnMgr.show(m_gameSettingsBtnCategoryMain);
 			m_btnMgr.show(m_gameSettingsLblCategoryMain);
@@ -175,7 +173,7 @@ void CMenu::_showGameSettings(void)
 		m_btnMgr.hide(m_gameSettingsLblCover);
 		m_btnMgr.hide(m_gameSettingsBtnCover);
 
-		if(m_cf.getHdr()->hdr.gc_magic != 0xc2339f3d)
+		if(m_cf.getHdr()->hdr.gc_magic != GC_MAGIC)
 		{
 			m_btnMgr.hide(m_gameSettingsBtnCategoryMain);
 			m_btnMgr.hide(m_gameSettingsLblCategoryMain);
@@ -210,7 +208,7 @@ void CMenu::_showGameSettings(void)
 		m_btnMgr.show(m_gameSettingsBtnDebuggerP);
 		m_btnMgr.show(m_gameSettingsBtnDebuggerM);
 
-		if(m_cf.getHdr()->hdr.gc_magic != 0xc2339f3d)
+		if(m_cf.getHdr()->hdr.gc_magic != GC_MAGIC)
 		{
 			m_btnMgr.show(m_gameSettingsLblHooktype);
 			m_btnMgr.show(m_gameSettingsLblHooktypeVal);
@@ -231,7 +229,7 @@ void CMenu::_showGameSettings(void)
 		m_btnMgr.hide(m_gameSettingsBtnDebuggerP);
 		m_btnMgr.hide(m_gameSettingsBtnDebuggerM);
 
-		if(m_cf.getHdr()->hdr.gc_magic != 0xc2339f3d)
+		if(m_cf.getHdr()->hdr.gc_magic != GC_MAGIC)
 		{
 			m_btnMgr.hide(m_gameSettingsLblHooktype);
 			m_btnMgr.hide(m_gameSettingsLblHooktypeVal);
@@ -247,7 +245,7 @@ void CMenu::_showGameSettings(void)
 	}
 	if (m_gameSettingsPage == 3)
 	{
-		if(m_cf.getHdr()->hdr.gc_magic != 0xc2339f3d)
+		if(m_cf.getHdr()->hdr.gc_magic != GC_MAGIC)
 		{
 			m_btnMgr.show(m_gameSettingsLblPatchVidModes);
 			m_btnMgr.show(m_gameSettingsLblPatchVidModesVal);
@@ -282,7 +280,7 @@ void CMenu::_showGameSettings(void)
 	}
 	else
 	{
-		if(m_cf.getHdr()->hdr.gc_magic != 0xc2339f3d)
+		if(m_cf.getHdr()->hdr.gc_magic != GC_MAGIC)
 		{
 			m_btnMgr.hide(m_gameSettingsLblPatchVidModes);
 			m_btnMgr.hide(m_gameSettingsLblPatchVidModesVal);
@@ -333,12 +331,6 @@ void CMenu::_showGameSettings(void)
 		m_btnMgr.show(m_gameSettingsBtnIOSP);
 		m_btnMgr.show(m_gameSettingsBtnIOSM);
 
-		if (m_current_view != COVERFLOW_HOMEBREW)
-		{
-			m_btnMgr.show(m_gameSettingsLblIOSreloadBlock);
-			m_btnMgr.show(m_gameSettingsBtnIOSreloadBlock);
-		}
-		
 		if(m_current_view == COVERFLOW_USB && _checkSave(string((const char *)m_cf.getHdr()->hdr.id), true))
 		{
 			m_btnMgr.show(m_gameSettingsLblExtractSave);
@@ -359,9 +351,6 @@ void CMenu::_showGameSettings(void)
 		m_btnMgr.hide(m_gameSettingsLblIOS);
 		m_btnMgr.hide(m_gameSettingsBtnIOSP);
 		m_btnMgr.hide(m_gameSettingsBtnIOSM);
-		
-		m_btnMgr.hide(m_gameSettingsLblIOSreloadBlock);
-		m_btnMgr.hide(m_gameSettingsBtnIOSreloadBlock);	
 
 		m_btnMgr.hide(m_gameSettingsLblExtractSave);
 		m_btnMgr.hide(m_gameSettingsBtnExtractSave);
@@ -388,7 +377,7 @@ void CMenu::_showGameSettings(void)
 
 	m_btnMgr.setText(m_gameSettingsLblPage, wfmt(L"%i / %i", page, maxpage));
 	m_btnMgr.setText(m_gameSettingsBtnOcarina, _optBoolToString(m_gcfg2.getOptBool(id, "cheat")));
-	if(m_cf.getHdr()->hdr.gc_magic != 0xc2339f3d)
+	if(m_cf.getHdr()->hdr.gc_magic != GC_MAGIC)
 	{
 		m_btnMgr.setText(m_gameSettingsBtnVipatch, _optBoolToString(m_gcfg2.getOptBool(id, "vipatch", 0)));
 		m_btnMgr.setText(m_gameSettingsBtnCountryPatch, _optBoolToString(m_gcfg2.getOptBool(id, "country_patch", 0)));
@@ -761,9 +750,6 @@ void CMenu::_initGameSettingsMenu(CMenu::SThemeData &theme)
  	m_gameSettingsBtnIOSM = _addPicButton(theme, "GAME_SETTINGS/IOS_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 330, 190, 56, 56);
  	m_gameSettingsBtnIOSP = _addPicButton(theme, "GAME_SETTINGS/IOS_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 190, 56, 56);
 
-	m_gameSettingsLblIOSreloadBlock = _addLabel(theme, "GAME_SETTINGS/IOS_RELOAD_BLOCK", theme.lblFont, L"", 40, 250, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsBtnIOSreloadBlock = _addButton(theme, "GAME_SETTINGS/IOS_RELOAD_BLOCK_BTN", theme.btnFont, L"", 330, 250, 270, 56, theme.btnFontColor);
-	
 	m_gameSettingsLblExtractSave = _addLabel(theme, "GAME_SETTINGS/EXTRACT_SAVE", theme.lblFont, L"", 40, 310, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsBtnExtractSave = _addButton(theme, "GAME_SETTINGS/EXTRACT_SAVE_BTN", theme.btnFont, L"", 330, 310, 270, 56, theme.btnFontColor);
 
@@ -782,8 +768,6 @@ void CMenu::_initGameSettingsMenu(CMenu::SThemeData &theme)
 	_setHideAnim(m_gameSettingsLblVideo, "GAME_SETTINGS/VIDEO_BTN", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnVideoM, "GAME_SETTINGS/VIDEO_MINUS", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnVideoP, "GAME_SETTINGS/VIDEO_PLUS", 200, 0, 1.f, 0.f);
-	_setHideAnim(m_gameSettingsLblIOSreloadBlock, "GAME_SETTINGS/IOS_RELOAD_BLOCK", -200, 0, 1.f, 0.f);
-	_setHideAnim(m_gameSettingsBtnIOSreloadBlock, "GAME_SETTINGS/IOS_RELOAD_BLOCK_BTN", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsLblCustom, "GAME_SETTINGS/CUSTOM", -200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnCustom, "GAME_SETTINGS/CUSTOM_BTN", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsLblDMLGameVideo, "GAME_SETTINGS/DML_VIDEO", -200, 0, 1.f, 0.f);
@@ -878,7 +862,6 @@ void CMenu::_textGameSettings(void)
 	m_btnMgr.setText(m_gameSettingsLblHooktype, _t("cfgg18", L"Hook Type"));
 	m_btnMgr.setText(m_gameSettingsLblDebugger, _t("cfgg22", L"Debugger"));
 	m_btnMgr.setText(m_gameSettingsLblEmulation, _t("cfgg24", L"NAND Emulation"));
-	m_btnMgr.setText(m_gameSettingsLblIOSreloadBlock, _t("cfgg26", L"Disable IOS Reload block"));
 	m_btnMgr.setText(m_gameSettingsLblAspectRatio, _t("cfgg27", L"Aspect Ratio"));
 	m_btnMgr.setText(m_gameSettingsLblNMM, _t("cfgg28", L"NMM"));
 	m_btnMgr.setText(m_gameSettingsLblNoDVD, _t("cfgg29", L"No DVD Patch"));
