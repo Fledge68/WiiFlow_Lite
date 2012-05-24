@@ -474,7 +474,7 @@ void CMenu::_game(bool launch)
 			{
 				_hideGame();
 				dir_discHdr *hdr = m_cf.getHdr();
-				if(currentPartition != SD && hdr->hdr.gc_magic == 0xc2339f3d)
+				if(currentPartition != SD && hdr->hdr.gc_magic == GC_MAGIC)
 				{
 					char gcfolder[300];
 					snprintf(gcfolder, sizeof(gcfolder), "%s [%s]", m_cf.getTitle().toUTF8().c_str(), (char *)hdr->hdr.id);
@@ -499,7 +499,7 @@ void CMenu::_game(bool launch)
 				if (m_current_view != COVERFLOW_HOMEBREW && m_current_view != COVERFLOW_EMU)
 				{
 					// Get banner_title
-					Banner * banner = m_current_view == COVERFLOW_CHANNEL ? _extractChannelBnr(chantitle) : (m_current_view == COVERFLOW_USB && hdr->hdr.gc_magic != 0xc2339f3d) ? _extractBnr(hdr) : NULL;
+					Banner * banner = m_current_view == COVERFLOW_CHANNEL ? _extractChannelBnr(chantitle) : (m_current_view == COVERFLOW_USB && hdr->hdr.gc_magic != GC_MAGIC) ? _extractBnr(hdr) : NULL;
 					if (banner != NULL)
 					{						
 						if (banner->IsValid())
@@ -580,7 +580,7 @@ void CMenu::_game(bool launch)
 				m_btnMgr.show(m_gameBtnSettings);
 			}
 
-			if ((m_current_view == COVERFLOW_USB || m_cf.getHdr()->hdr.gc_magic == 0xc2339f3d) && !m_locked)
+			if ((m_current_view == COVERFLOW_USB || m_current_view == COVERFLOW_EMU || m_cf.getHdr()->hdr.gc_magic == GC_MAGIC) && !m_locked)
 				m_btnMgr.show(m_gameBtnDelete);
 		}
 		else
@@ -633,7 +633,7 @@ void CMenu::_directlaunch(const string &id)
 void CMenu::_launch(dir_discHdr *hdr)
 {
 	m_gcfg2.load(fmt("%s/" GAME_SETTINGS2_FILENAME, m_settingsDir.c_str()));
-	if(hdr->hdr.gc_magic == 0x4c4f4c4f)
+	if(hdr->hdr.gc_magic == EMU_MAGIC)
 	{
 		string title(&hdr->path[string(hdr->path).find_last_of("/")+1]);
 		string wiiflow_dol(m_dol);
@@ -666,7 +666,7 @@ void CMenu::_launch(dir_discHdr *hdr)
 		_launchHomebrew(fmt("%s/%s", m_pluginsDir.c_str(), m_plugin.GetDolName(hdr->hdr.magic)), arguments);
 		return;
 	}
-	else if(hdr->hdr.gc_magic == 0xc2339f3d)
+	else if(hdr->hdr.gc_magic == GC_MAGIC)
 	{
 		_launchGC(hdr, true);
 		return;
@@ -1463,13 +1463,13 @@ unsigned int gameSoundThreadStackSize = (unsigned int)32768;
 
 void CMenu::_gameSoundThread(CMenu *m)
 {
-	if(m->m_cf.getHdr()->hdr.gc_magic == 0xc2339f3d)
+	if(m->m_cf.getHdr()->hdr.gc_magic == GC_MAGIC)
 	{
 		m->m_gameSound.Load(gc_ogg, gc_ogg_size, false);
 		m->m_gamesound_changed = true;
 		return;
 	}
-	else if(m->m_cf.getHdr()->hdr.gc_magic == 0x4c4f4c4f)
+	else if(m->m_cf.getHdr()->hdr.gc_magic == EMU_MAGIC)
 	{
 		m->m_gameSound.Load(m->m_plugin.GetBannerSound(m->m_cf.getHdr()->hdr.magic), m->m_plugin.GetBannerSoundSize(), false);
 		m->m_gamesound_changed = true;

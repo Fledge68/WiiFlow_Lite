@@ -185,7 +185,7 @@ void CList<dir_discHdr>::GetHeaders(vector<string> pathlist, vector<dir_discHdr>
 						if( tmp.hdr.casecolor == 0xffffffff )
 							tmp.hdr.casecolor = 0;
 
-						tmp.hdr.gc_magic = 0xc2339f3d;
+						tmp.hdr.gc_magic = GC_MAGIC;
 						(*itr)[(*itr).find_last_of('/')] = 0;
 						if(strcasecmp(filename, "boot.bin") == 0)
 							(*itr)[(*itr).find_last_of('/')] = 0;
@@ -207,7 +207,7 @@ void CList<dir_discHdr>::GetHeaders(vector<string> pathlist, vector<dir_discHdr>
 					fread( &tmp.hdr, sizeof( discHdr ), 1, fp);
 					fclose(fp);
 					
-					if ( tmp.hdr.gc_magic == 0xc2339f3d )
+					if (tmp.hdr.gc_magic == GC_MAGIC)
 					{
 						//mbstowcs( tmp.title, (const char *)tmp.hdr.title, sizeof( tmp.hdr.title ) );
 						//Asciify(tmp.title);
@@ -447,7 +447,7 @@ void CList<dir_discHdr>::GetHeaders(vector<string> pathlist, vector<dir_discHdr>
 
 						gprintf("Found: %s\n", tmp.path);
 						sscanf(plugin.getString("PLUGIN","magic","").c_str(), "%08x", &tmp.hdr.magic); //Plugin magic
-						tmp.hdr.gc_magic = 0x4c4f4c4f; //Abusing gc_magic for general emu detection ;)
+						tmp.hdr.gc_magic = EMU_MAGIC; //Abusing gc_magic for general emu detection ;)
 						headerlist.push_back(tmp);
 						break;
 					}

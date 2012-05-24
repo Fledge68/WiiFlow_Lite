@@ -22,13 +22,12 @@
 #include "wip.h"
 #include "memory.h"
 #include "gecko.h"
+#include "defines.h"
 
 #define ALIGNED(x) __attribute__((aligned(x)))
 
 /* Constants */
 #define PTABLE_OFFSET	0x40000
-#define WII_MAGIC	0x5D1C9EA3
-#define GC_MAGIC	0xC2339F3D
 
 //appentrypoint 
 u32 appentrypoint;
@@ -323,16 +322,13 @@ s32 Disc_Type(bool gc)
 		struct gc_discHdr *header = (struct gc_discHdr *)buffer;
 		ret = Disc_ReadGCHeader(header);
 		if(strcmp((char *)header->id, "GCOPDV") == 0)
-		{
-			magic = 0xc2339f3d;
-		}
+			magic = GC_MAGIC;
 		else
-		{
 			magic = header->magic;
-		}
 	}
 
-	if (ret < 0) return ret;
+	if (ret < 0)
+		return ret;
 		
 	/* Check magic word */
 	if (magic != check) return -1;
