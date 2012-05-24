@@ -56,13 +56,16 @@ void __Disc_SetLowMem()
 	*Bus_Speed			= 0x0E7BE2C0; // Console Bus Speed
 	*CPU_Speed			= 0x2B73A840; // Console CPU Speed
 	*Assembler			= 0x38A00040; // Assembler
-	*(u32*)0x800000E4	= 0x80431A80;
+	*(vu32*)0x800000E4	= 0x80431A80;
 	*Dev_Debugger		= 0x81800000; // Dev Debugger Monitor Address
 	*Simulated_Mem		= 0x01800000; // Simulated Memory Size
 	*(vu32*)0xCD00643C	= 0x00000000; // 32Mhz on Bus
 
+	/* Fix for Sam & Max (WiiPower) */
+	*GameID_Address		= 0x80000000;
+
 	/* Copy disc ID */
-	memcpy((void *) Online_Check, (void *) Disc_ID, 4);
+	memcpy((void *)Online_Check, (void *)Disc_ID, 4);
 }
 
 GXRModeObj * __Disc_SelectVMode(u8 videoselected, u64 chantitle)
