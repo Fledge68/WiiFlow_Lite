@@ -234,7 +234,7 @@ int CMenu::main(void)
 	if (m_cfg.getBool("GENERAL", "async_network", false) || has_enabled_providers())
 		_initAsyncNetwork();
 
-	SetupInput();
+	SetupInput(true);
 	MusicPlayer::Instance()->Play();
 	
 	GameTDB m_gametdb; 

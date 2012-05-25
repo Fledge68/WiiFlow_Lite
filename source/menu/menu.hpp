@@ -647,7 +647,7 @@ private:
 
 	bool m_cfNeedsUpdate;
 
-	void SetupInput(void);
+	void SetupInput(bool reset_pos = false);
 	void ScanInput(void);
 
 	void ButtonsPressed(void);
