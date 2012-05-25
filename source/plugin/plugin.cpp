@@ -244,7 +244,7 @@ vector<string> Plugin::CreateMplayerCEArguments(const char *filepath)
 
 	if(strncmp(DeviceHandler::PathToFSName(filepath), "NTF", 3) == 0)
 	{
-		sprintf(dst, "ntfs_usb:%s", ptr);
+		sprintf(dst, "ntfs:%s", ptr);
 	}
 	else if(strncmp(device, "usb", 3) == 0)
 	{
@@ -256,7 +256,6 @@ vector<string> Plugin::CreateMplayerCEArguments(const char *filepath)
 	}
 
 	args.push_back(dst);
-	args.push_back(string("-quiet"));
 	return args;
 }
 

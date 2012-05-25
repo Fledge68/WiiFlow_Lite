@@ -128,7 +128,7 @@ bool PartitionHandle::Mount(int pos, const char * name)
 	}
 	else if(strncmp(GetFSName(pos), "NTFS", 4) == 0)
 	{
-		if(ntfsMount(MountNameList[pos].c_str(), interface, GetLBAStart(pos), CACHE, SECTORS, NTFS_SU | NTFS_RECOVER | NTFS_IGNORE_CASE))
+		if(ntfsMount(MountNameList[pos].c_str(), interface, GetLBAStart(pos), CACHE, SECTORS, NTFS_SU | NTFS_RECOVER))
 			return true;
 	}
 	else if(strncmp(GetFSName(pos), "LINUX", 5) == 0)
