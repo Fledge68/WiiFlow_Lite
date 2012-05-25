@@ -1,0 +1,42 @@
+SOURCE MENU SETUP:
+
+This folder contains source_menu.ini, default.png, and button images.
+
+There's 2 pages with 12 image buttons each for a total of 24 image buttons. Each button is represented in source_menu.ini as [BUTTON_#].
+
+IMAGES:
+I've supplied you with some basic images to start but you can replace them with your own if you like.  Make sure they are png images sized w90 x h90.  If not they will be stretched or squished to fit.  They can be named whatever you like just make sure the image names in the source_menu.ini match.
+
+SOURCE_MENU.INI:
+---------------------------------------------------------------	
+[BUTTON_0]
+image=wii.png	// image normal
+image_s=wii.png	// image selected (notice they can be the same)
+source=wii	// see below
+
+[BUTTON_3]
+image=genesis.png
+image_s=genesis.png
+source=plugin
+magic=53454741	// plugin magic (only needed when source=plugin)
+-------------------------------------------------------------------
+
+There are seven sources to choose from and they are as follows -
+1. wii = wii usb games
+2. dml = gamecube dml games
+3. emunand = your emu NAND
+4. realnand = your real NAND
+5. homebrew = homebrew view
+6. allplugins = all plugins together
+7. plugin = a specific plugin specified by the magic#
+
+the buttons are positioned like this -
+0	1	2	3
+4	5	6	7
+8	9	10	11
+
+If you like to edit or make themes you should be able to adjust everything like you normally do.  Your images will override the ones in the source_menu folder. But keep in mind not everyone will use button 1 for wii and button 2 for snes etc...
+
+You can still specify emuflows for each button like before.  That part didn't change.
+
+
