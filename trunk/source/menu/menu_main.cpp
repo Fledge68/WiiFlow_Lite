@@ -173,7 +173,7 @@ void CMenu::_showMain(void)
 				m_btnMgr.show(m_mainBtnInit2);
 				m_btnMgr.show(m_mainLblInit);
 			break;
-		}		
+		}
 	}
 }
 
@@ -708,7 +708,6 @@ int CMenu::main(void)
 		{
 			m_btnMgr.hide(m_mainLblUser[0]);
 			m_btnMgr.hide(m_mainLblUser[1]);
-			m_btnMgr.hide(m_mainBtnConfig);
 			m_btnMgr.hide(m_mainBtnInfo);
 			m_btnMgr.hide(m_mainBtnQuit);
 			m_btnMgr.hide(m_mainBtnFavoritesOn);

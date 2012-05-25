@@ -149,9 +149,47 @@ void CList<dir_discHdr>::GetHeaders(vector<string> pathlist, vector<dir_discHdr>
 		strncpy(tmp.path, (*itr).c_str(), sizeof(tmp.path));
 		tmp.hdr.index = headerlist.size();
 		tmp.hdr.casecolor = 1;
-		
+
 		bool wbfs = (*itr).rfind(".wbfs") != string::npos || (*itr).rfind(".WBFS") != string::npos;
-		if (wbfs || (*itr).rfind(".iso")  != string::npos || (*itr).rfind(".ISO")  != string::npos
+
+		if(plugin.loaded())
+		{
+			vector<string> types = plugin.getStrings("PLUGIN","fileTypes",'|');
+			if (types.size() > 0)
+			{
+				for(vector<string>::iterator type_itr = types.begin(); type_itr != types.end(); type_itr++)
+				{
+					if(lowerCase(*itr).rfind((*type_itr).c_str()) != string::npos)
+					{
+						strncpy(tmp.path, (*itr).c_str(), sizeof(tmp.path));
+
+						int plugin_ccolor;
+						sscanf(plugin.getString("PLUGIN","coverColor","").c_str(), "%08x", &plugin_ccolor);
+						int ccolor = custom_titles.getColor("COVERS", (const char *) tmp.hdr.id, plugin_ccolor).intVal();
+						tmp.hdr.casecolor = ccolor != plugin_ccolor ? ccolor : plugin_ccolor;
+
+						char tempname[64];
+						(*itr).assign(&(*itr)[(*itr).find_last_of('/') + 1]);
+						if((*itr).find_last_of('.') != string::npos)
+							(*itr).erase((*itr).find_last_of('.'), (*itr).size() - (*itr).find_last_of('.'));
+						strncpy(tempname, (*itr).c_str(), sizeof(tempname));
+						//mbstowcs(tmp.title, tempname, sizeof(tmp.title));
+						//Asciify(tmp.title);
+						wstringEx tmpString;
+						tmpString.fromUTF8(tempname);
+						wcsncpy(tmp.title, tmpString.c_str(), 64);
+
+						gprintf("Found: %s\n", tmp.path);
+						sscanf(plugin.getString("PLUGIN","magic","").c_str(), "%08x", &tmp.hdr.magic); //Plugin magic
+						tmp.hdr.gc_magic = EMU_MAGIC; //Abusing gc_magic for general emu detection ;)
+						headerlist.push_back(tmp);
+						break;
+					}
+				}
+			}
+			continue;
+		}
+		else if (wbfs || (*itr).rfind(".iso")  != string::npos || (*itr).rfind(".ISO")  != string::npos
 				 || (*itr).rfind(".bin")  != string::npos || (*itr).rfind(".BIN")  != string::npos)
 		{
 			char* filename = &(*itr)[(*itr).find_last_of('/')+1];
@@ -415,43 +453,6 @@ void CList<dir_discHdr>::GetHeaders(vector<string> pathlist, vector<dir_discHdr>
 				wcsncpy(tmp.title, tmpString.c_str(), 64);
 				tmp.hdr.casecolor = ccolor != 1 ? ccolor : 1;
 				headerlist.push_back(tmp);
-			}
-			continue;
-		}
-		else if(plugin.loaded())
-		{
-			vector<string> types = plugin.getStrings("PLUGIN","fileTypes",'|');
-			if (types.size() > 0)
-			{
-				for(vector<string>::iterator type_itr = types.begin(); type_itr != types.end(); type_itr++)
-				{
-					if(lowerCase(*itr).rfind((*type_itr).c_str()) != string::npos)
-					{
-						strncpy(tmp.path, (*itr).c_str(), sizeof(tmp.path));
-
-						int plugin_ccolor;
-						sscanf(plugin.getString("PLUGIN","coverColor","").c_str(), "%08x", &plugin_ccolor);
-						int ccolor = custom_titles.getColor("COVERS", (const char *) tmp.hdr.id, plugin_ccolor).intVal();
-						tmp.hdr.casecolor = ccolor != plugin_ccolor ? ccolor : plugin_ccolor;
-
-						char tempname[64];
-						(*itr).assign(&(*itr)[(*itr).find_last_of('/') + 1]);
-						if((*itr).find_last_of('.') != string::npos)
-							(*itr).erase((*itr).find_last_of('.'), (*itr).size() - (*itr).find_last_of('.'));
-						strncpy(tempname, (*itr).c_str(), sizeof(tempname));
-						//mbstowcs(tmp.title, tempname, sizeof(tmp.title));
-						//Asciify(tmp.title);
-						wstringEx tmpString;
-						tmpString.fromUTF8(tempname);
-						wcsncpy(tmp.title, tmpString.c_str(), 64);
-
-						gprintf("Found: %s\n", tmp.path);
-						sscanf(plugin.getString("PLUGIN","magic","").c_str(), "%08x", &tmp.hdr.magic); //Plugin magic
-						tmp.hdr.gc_magic = EMU_MAGIC; //Abusing gc_magic for general emu detection ;)
-						headerlist.push_back(tmp);
-						break;
-					}
-				}
 			}
 			continue;
 		}
