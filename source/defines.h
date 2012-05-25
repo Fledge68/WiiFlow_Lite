@@ -11,7 +11,7 @@
 #define CFG_FILENAME			"wiiflow.ini"
 #define LANG_FILENAME			"languages.ini"
 #define CAT_FILENAME			"categories.ini"
-#define STARTUP_FILENAME		"startup_menu.ini"
+#define SOURCE_FILENAME			"source_menu.ini"
 #define TITLES_FILENAME			"titles.ini"
 #define CTITLES_FILENAME		"custom_titles.ini"
 #define AGE_LOCK_FILENAME		"age_lock.ini"

@@ -296,7 +296,7 @@ void CMenu::init(void)
 	m_wipDir = m_cfg.getString("GENERAL", "dir_wip", sfmt("%s/wip", m_txtCheatDir.c_str()));
 	m_listCacheDir = m_cfg.getString("GENERAL", "dir_list_cache", sfmt("%s/lists", m_cacheDir.c_str()));
 	m_helpDir = m_cfg.getString("GENERAL", "dir_help", sfmt("%s/help", m_dataDir.c_str()));
-
+	
 	DeviceHandler::SetWatchdog(m_cfg.getUInt("GENERAL", "watchdog_timeout", 10));
 
 	const char *domain = _domainFromView();
@@ -1054,7 +1054,7 @@ void CMenu::_buildMenus(void)
 	_initCFThemeMenu(theme);
 	_initGameSettingsMenu(theme);
 	_initCheatSettingsMenu(theme); 
-	_initStartupMenu(theme);
+	_initSourceMenu(theme);
 	_initPluginSettingsMenu(theme);
 	_initCategorySettingsMenu(theme);
 	_initSystemMenu(theme);
@@ -1238,17 +1238,14 @@ u16 CMenu::_textStyle(const char *domain, const char *key, u16 def)
 	return textStyle;
 }
 
-u32 CMenu::_addButton(CMenu::SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, bool skipTheme)
+u32 CMenu::_addButton(CMenu::SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color)
 {
 	SButtonTextureSet btnTexSet;
 	CColor c(color);
 
 	c = m_theme.getColor(domain, "color", c);
-	if (!skipTheme)
-	{
-		x = m_theme.getInt(domain, "x", x);
-		y = m_theme.getInt(domain, "y", y);
-	}
+	x = m_theme.getInt(domain, "x", x);
+	y = m_theme.getInt(domain, "y", y);
 	width = m_theme.getInt(domain, "width", width);
 	height = m_theme.getInt(domain, "height", height);
 	btnTexSet.left = _texture(theme.texSet, domain, "texture_left", theme.btnTexL);

@@ -5,87 +5,112 @@
 
 #include "defines.h"
 
-int Startup_curPage;
+int Source_curPage;
+int pages;
 u8 numPlugins;
+string m_sourceDir;
+Config m_source;
 
-// Startup menu
-u32 m_startupLblNotice;
-u32 m_startupLblPage;
-u32 m_startupBtnPageM;
-u32 m_startupBtnPageP;
-u32 m_startupBtnBack;
-u32 m_startupLblTitle;
-u32 m_startupBtnSource[20];
-u32 m_startupLblUser[4];
-STexture m_startupBg;
-Config m_startup;
+// Source menu
+u32 m_sourceLblNotice;
+u32 m_sourceLblPage;
+u32 m_sourceBtnPageM;
+u32 m_sourceBtnPageP;
+u32 m_sourceBtnBack;
+u32 m_sourceLblTitle;
+u32 m_sourceBtnSource[24];
+u32 m_sourceLblUser[4];
+STexture m_sourceBg;
 
-void CMenu::_hideStartup(bool instant)
+void CMenu::_hideSource(bool instant)
 {
-	m_btnMgr.hide(m_startupLblTitle, instant);
-	m_btnMgr.hide(m_startupBtnBack, instant);
-	m_btnMgr.hide(m_startupLblNotice, instant);
-	m_btnMgr.hide(m_startupLblPage, instant);
-	m_btnMgr.hide(m_startupBtnPageM, instant);
-	m_btnMgr.hide(m_startupBtnPageP, instant);
-	for (u32 i = 0; i < ARRAY_SIZE(m_startupLblUser); ++i)
+	m_btnMgr.hide(m_sourceLblTitle, instant);
+	m_btnMgr.hide(m_sourceBtnBack, instant);
+	m_btnMgr.hide(m_sourceLblNotice, instant);
+	m_btnMgr.hide(m_sourceLblPage, instant);
+	m_btnMgr.hide(m_sourceBtnPageM, instant);
+	m_btnMgr.hide(m_sourceBtnPageP, instant);
+	for (u32 i = 0; i < ARRAY_SIZE(m_sourceLblUser); ++i)
 	{
-		if (m_startupLblUser[i] != -1u)
-			m_btnMgr.hide(m_startupLblUser[i], instant);
+		if (m_sourceLblUser[i] != -1u)
+			m_btnMgr.hide(m_sourceLblUser[i], instant);
 	}
 
-	for (int i = 0; i < 20; ++i)
+	for (int i = 0; i < 24; ++i)
 	{
-		m_btnMgr.hide(m_startupBtnSource[i]);
+		m_btnMgr.hide(m_sourceBtnSource[i]);
 	}
 }
 
-void CMenu::_showStartup(void)
+void CMenu::_showSource(void)
 {
-	_setBg(m_startupBg, m_startupBg);
+	_setBg(m_sourceBg, m_sourceBg);
 	
-	for (u32 i = 0; i < ARRAY_SIZE(m_startupLblUser); ++i)
+	for (u32 i = 0; i < ARRAY_SIZE(m_sourceLblUser); ++i)
 	{
-		if (m_startupLblUser[i] != -1u)
-			m_btnMgr.show(m_startupLblUser[i]);
+		if (m_sourceLblUser[i] != -1u)
+			m_btnMgr.show(m_sourceLblUser[i]);
 	}
 
-	m_btnMgr.show(m_startupLblTitle);
-	m_btnMgr.show(m_startupBtnBack);
+	m_btnMgr.show(m_sourceLblTitle);
+	m_btnMgr.show(m_sourceBtnBack);
+	
+	for (int i = 12; i <24; ++i)
+	{
+		string source = m_source.getString(fmt("BUTTON_%i", i), "source", "");
+		if (!source.empty())
+		{
+			pages++;
+			break;
+		}
+	}
+	
 }
 
-void CMenu::_updateStartupBtns(void)
+void CMenu::_updateSourceBtns(void)
 {
-	if (numPlugins > 6)
+	if (pages > 1)
 	{
-		m_btnMgr.setText(m_startupLblPage, wfmt(L"%i / 2", Startup_curPage));
-		m_btnMgr.show(m_startupLblPage);
-		m_btnMgr.show(m_startupBtnPageM);
-		m_btnMgr.show(m_startupBtnPageP);
+		m_btnMgr.setText(m_sourceLblPage, wfmt(L"%i / 2", Source_curPage));
+		m_btnMgr.show(m_sourceLblPage);
+		m_btnMgr.show(m_sourceBtnPageM);
+		m_btnMgr.show(m_sourceBtnPageP);
 	}
-	for (int i = 0; i < 20; ++i)
-		m_btnMgr.hide(m_startupBtnSource[i]);		
+	for (int i = 0; i < 24; ++i)
+		m_btnMgr.hide(m_sourceBtnSource[i]);		
 
-	for (int i = 0; i < (numPlugins + 4); ++i)
-	{	
-		int page = m_startup.getInt("BUTTONS", fmt("button_%i_page", i), (i < 10 ? 1 : 2));
-		if (page == Startup_curPage)
-			m_btnMgr.show(m_startupBtnSource[i]);
-	}	
+	if (Source_curPage == 1)
+	{
+		for (int i = 0; i < 12; ++i)
+		{	
+			string source = m_source.getString(fmt("BUTTON_%i", i), "source", "");
+			if (!source.empty())
+				m_btnMgr.show(m_sourceBtnSource[i]);
+		}	
+	}
+	else
+	{
+		for (int i = 12; i < 24; ++i)
+		{	
+			string source = m_source.getString(fmt("BUTTON_%i", i), "source", "");
+			if (!source.empty())
+				m_btnMgr.show(m_sourceBtnSource[i]);
+		}
+	}
 }
 
-void CMenu::_showStartupNotice(void)
+void CMenu::_showSourceNotice(void)
 {
 	m_showtimer = 90;
-	m_btnMgr.show(m_startupLblNotice);
+	m_btnMgr.show(m_sourceLblNotice);
 }
 
-void CMenu::_Startup()
+void CMenu::_Source()
 {
 	DIR *pdir;
 	struct dirent *pent;
-	if(!m_startup.loaded())
-		m_startup.load(fmt("%s/%s", m_settingsDir.c_str(), STARTUP_FILENAME));
+	if(!m_source.loaded())
+		m_source.load(fmt("%s/%s", m_sourceDir.c_str(), SOURCE_FILENAME));
 
 	pdir = opendir(m_pluginsDir.c_str());
 	Config m_plugin_cfg;
@@ -116,177 +141,210 @@ void CMenu::_Startup()
 	bool show_channel = !m_cfg.getBool("GENERAL", "hidechannel", false);
 	bool show_emu = !m_cfg.getBool("EMULATOR", "disable", false);
 	bool parental_homebrew = m_cfg.getBool("HOMEBREW", "parental", false);	
-	bool pluginSelected = false;
+	bool imgSelected = false;
 	m_showtimer = 0;
-	Startup_curPage = 1;
-	_textStartup();
-	_showStartup();
-	_updateStartupBtns();
+	Source_curPage = 1;
+	pages = 1;
+	_showSource();
+	_updateSourceBtns();
 	
 	while(true)
 	{
 		_mainLoopCommon();
-		if (BTN_B_PRESSED && m_btnMgr.selected(m_startupBtnSource[1]))
-		{
-			if (!show_channel) _showStartupNotice();
-			else
-			{
-				m_current_view = COVERFLOW_CHANNEL;
-				m_cfg.setBool("NAND", "disable", true);
-				break;
-			}
-		}		
 		if (BTN_HOME_PRESSED || BTN_B_PRESSED)
+		{
 			break;
+		}
 		else if(BTN_UP_PRESSED)
 			m_btnMgr.up();
 		else if(BTN_DOWN_PRESSED)
 			m_btnMgr.down();
-		if(((BTN_MINUS_PRESSED || BTN_LEFT_PRESSED) && (numPlugins + 4) > 10) || (BTN_A_PRESSED && m_btnMgr.selected(m_startupBtnPageM)))
+		if(((BTN_MINUS_PRESSED || BTN_LEFT_PRESSED) && pages > 1) || (BTN_A_PRESSED && m_btnMgr.selected(m_sourceBtnPageM)))
 		{
-			Startup_curPage = Startup_curPage == 1 ? 2 : 1;
+			Source_curPage = Source_curPage == 1 ? 2 : 1;
 			if(BTN_LEFT_PRESSED || BTN_MINUS_PRESSED)
-				m_btnMgr.click(m_startupBtnPageM);
-			_updateStartupBtns();
+				m_btnMgr.click(m_sourceBtnPageM);
+			_updateSourceBtns();
 		}
-		else if(((BTN_PLUS_PRESSED || BTN_RIGHT_PRESSED) && (numPlugins + 4) > 10) || (BTN_A_PRESSED && m_btnMgr.selected(m_startupBtnPageP)))
+		else if(((BTN_PLUS_PRESSED || BTN_RIGHT_PRESSED) && pages > 1) || (BTN_A_PRESSED && m_btnMgr.selected(m_sourceBtnPageP)))
 		{
-			Startup_curPage = Startup_curPage == 1 ? 2 : 1;
+			Source_curPage = Source_curPage == 1 ? 2 : 1;
 			if (BTN_RIGHT_PRESSED || BTN_PLUS_PRESSED)
-				m_btnMgr.click(m_startupBtnPageP);
-			_updateStartupBtns();
+				m_btnMgr.click(m_sourceBtnPageP);
+			_updateSourceBtns();
 		}
 		if (BTN_A_PRESSED)
 		{
-			if (m_btnMgr.selected(m_startupBtnBack))
+			if (m_btnMgr.selected(m_sourceBtnBack))
 				break;
-			if (m_btnMgr.selected(m_startupBtnSource[0]))
+			for (int i = 0; i < 24; ++i)
 			{
-				m_current_view = COVERFLOW_USB;
-				break;
-			}
-			if (m_btnMgr.selected(m_startupBtnSource[2]))
-			{
-				if (!m_show_dml) _showStartupNotice();
-				else
+				if (m_btnMgr.selected(m_sourceBtnSource[i]))
 				{
-					m_current_view = COVERFLOW_DML;
-					break;
-				}
-			}
-			if (m_btnMgr.selected(m_startupBtnSource[1]))
-			{
-				if (!show_channel) _showStartupNotice();
-				else
-				{
-					m_current_view = COVERFLOW_CHANNEL;
-					m_cfg.setBool("NAND", "disable", false);
-					break;
-				}
-			}
-			if (m_btnMgr.selected(m_startupBtnSource[3]))
-			{
-				if (!show_homebrew || (!parental_homebrew && m_locked)) _showStartupNotice(); 
-				else
-				{
-					m_current_view = COVERFLOW_HOMEBREW;
-					break;
-				}
-			}
-			for (u8 i = 0; i < numPlugins; ++i)
-			{
-				if (m_btnMgr.selected(m_startupBtnSource[i + 4]))
-				{
-					if (!show_emu) _showStartupNotice();
-					else
+					string source = m_source.getString(fmt("BUTTON_%i", i), "source", "");
+					if (source == "wii")
 					{
-						m_current_view = COVERFLOW_EMU;
-						pluginSelected = true;
-						for (u8 j = 0; j < numPlugins; ++j)
-							m_plugin.SetEnablePlugin(m_cfg, j, 1);
-						m_plugin.SetEnablePlugin(m_cfg, i, 2);
-						string domain = m_plugin.GetDolName(m_plugin.getPluginMagic(i));
-						domain.erase(domain.end() - 4, domain.end());
-						int layout = m_startup.getInt(domain, m_cfg.getString("GENERAL", "theme", "default"), 0);
-						if (layout != 0)
-							m_cfg.setInt("EMULATOR", "last_cf_mode", layout);
+						m_current_view = COVERFLOW_USB;
+						imgSelected = true;
 						break;
+					}
+					if (source == "dml")
+					{
+						if (!m_show_dml) _showSourceNotice();
+						else
+						{
+							m_current_view = COVERFLOW_DML;
+							imgSelected = true;
+							break;
+						}
+					}
+					if (source == "emunand")
+					{
+						if (!show_channel) _showSourceNotice();
+						else
+						{
+							m_current_view = COVERFLOW_CHANNEL;
+							m_cfg.setBool("NAND", "disable", false);
+							imgSelected = true;
+							break;
+						}
+					}
+					if (source == "realnand")
+					{
+						if (!show_channel) _showSourceNotice();
+						else
+						{
+							m_current_view = COVERFLOW_CHANNEL;
+							m_cfg.setBool("NAND", "disable", true);
+							imgSelected = true;
+							break;
+						}
+					}
+					if (source == "homebrew")
+					{
+						if (!show_homebrew || (!parental_homebrew && m_locked)) _showSourceNotice(); 
+						else
+						{
+							m_current_view = COVERFLOW_HOMEBREW;
+							imgSelected = true;
+							break;
+						}
+					}
+					if (source == "allplugins")
+					{
+						if (!show_emu) _showSourceNotice();
+						else
+						{
+							m_current_view = COVERFLOW_EMU;
+							imgSelected = true;
+							
+							for (u8 j = 0; j < numPlugins; ++j)
+							{
+								m_plugin.SetEnablePlugin(m_cfg, j, 2);
+							}
+							break;
+						}
+					}
+					if (source == "plugin")
+					{
+						if (!show_emu) _showSourceNotice();
+						else
+						{
+							m_current_view = COVERFLOW_EMU;
+							imgSelected = true;
+							
+							u32 sourceMagic;
+							sscanf(m_source.getString(fmt("BUTTON_%i", i), "magic","").c_str(), "%08x", &sourceMagic);
+							
+							for (u8 j = 0; j < numPlugins; ++j)
+							{
+								if (sourceMagic == m_plugin.getPluginMagic(j))
+								{
+									m_plugin.SetEnablePlugin(m_cfg, j, 2);
+								}
+								else
+								{
+									m_plugin.SetEnablePlugin(m_cfg, j, 1);
+								}
+							}
+							
+							string domain = m_plugin.GetDolName(sourceMagic);
+							domain.erase(domain.end() - 4, domain.end());
+							
+							int layout = m_source.getInt(domain, m_cfg.getString("GENERAL", "theme", "default"), 0);
+							if (layout != 0)
+								m_cfg.setInt("EMULATOR", "last_cf_mode", layout);
+							break;
+						}
 					}
 				}
 			}
-			if (pluginSelected) 
+			if (imgSelected) 
 			{
 				break;
 			}
 		}
 		if (m_showtimer > 0)
 			if (--m_showtimer == 0)
-					m_btnMgr.hide(m_startupLblNotice);
+					m_btnMgr.hide(m_sourceLblNotice);
 	}
-	_hideStartup(true);
+	_hideSource(true);
 }
 
-void CMenu::_initStartupMenu(CMenu::SThemeData &theme)
+void CMenu::_initSourceMenu(CMenu::SThemeData &theme)
 {
-	_addUserLabels(theme, m_startupLblUser, ARRAY_SIZE(m_startupLblUser), "STARTUP");
-	m_startupBg = _texture(theme.texSet, "STARTUP/BG", "texture", theme.bg);
-	m_startupLblTitle = _addTitle(theme, "STARTUP/TITLE", theme.titleFont, L"", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
-	m_startupBtnBack = _addButton(theme, "STARTUP/BACK_BTN", theme.btnFont, L"", 424, 400, 210, 56, theme.btnFontColor);
-	m_startupLblNotice = _addLabel(theme, "STARTUP/NOTICE", theme.btnFont, L"", 20, 400, 600, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_TOP);
-	m_startupLblPage = _addLabel(theme, "STARTUP/PAGE_BTN", theme.btnFont, L"", 62, 400, 98, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_startupBtnPageM = _addPicButton(theme, "STARTUP/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 10, 400, 52, 56);
-	m_startupBtnPageP = _addPicButton(theme, "STARTUP/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 160, 400, 52, 56);
+	_addUserLabels(theme, m_sourceLblUser, ARRAY_SIZE(m_sourceLblUser), "SOURCE");
+	m_sourceBg = _texture(theme.texSet, "SOURCE/BG", "texture", theme.bg);
+	m_sourceLblTitle = _addTitle(theme, "SOURCE/TITLE", theme.titleFont, L"", 20, 20, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_sourceBtnBack = _addButton(theme, "SOURCE/BACK_BTN", theme.btnFont, L"", 424, 400, 210, 56, theme.btnFontColor);
+	m_sourceLblNotice = _addLabel(theme, "SOURCE/NOTICE", theme.btnFont, L"", 20, 400, 600, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_TOP);
+	m_sourceLblPage = _addLabel(theme, "SOURCE/PAGE_BTN", theme.btnFont, L"", 62, 400, 98, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_sourceBtnPageM = _addPicButton(theme, "SOURCE/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 10, 400, 52, 56);
+	m_sourceBtnPageP = _addPicButton(theme, "SOURCE/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 160, 400, 52, 56);
 
+	m_sourceDir = m_cfg.getString("GENERAL", "dir_Source", sfmt("%s/source_menu", m_dataDir.c_str()));
+
+	if(!m_source.loaded())
+		m_source.load(fmt("%s/%s", m_sourceDir.c_str(), SOURCE_FILENAME));
+	int page;
 	int row;
 	int col;
+	string ImgName;
 	
-	int i = 0;
-	while (i < 10)
+	for ( int i = 0; i < 24; ++i)
 	{
-		row = m_startup.getInt("BUTTONS", fmt("button_%i_row", i), i / 2);
-		col = m_startup.getInt("BUTTONS", fmt("button_%i_col", i), 0);
-		m_startupBtnSource[i] = _addButton(theme, fmt("STARTUP/SOURCE_BTN_%i", i), theme.btnFont, L"", (30 + 300 * col), (100 + 58 * row), 280, 56, theme.btnFontColor);
-		row = m_startup.getInt("BUTTONS", fmt("button_%i_row", i + 10), i / 2);
-		col = m_startup.getInt("BUTTONS", fmt("button_%i_col", i + 10), 0);
-		m_startupBtnSource[i + 10] = _addButton(theme, fmt("STARTUP/SOURCE_BTN_%i", i + 10), theme.btnFont, L"", (30 + 300 * col), (100 + 58 * row), 280, 56, theme.btnFontColor);
-		i++;
-		row = m_startup.getInt("BUTTONS", fmt("button_%i_row", i), (i - 1) / 2);
-		col = m_startup.getInt("BUTTONS", fmt("button_%i_col", i), 1);
-		m_startupBtnSource[i] = _addButton(theme, fmt("STARTUP/SOURCE_BTN_%i", i), theme.btnFont, L"", (30 + 300 * col), (100 + 58 * row), 280, 56, theme.btnFontColor);
-		row = m_startup.getInt("BUTTONS", fmt("button_%i_row", i + 10), (i - 1) /2);
-		col = m_startup.getInt("BUTTONS", fmt("button_%i_col", i + 10), 1);
-		m_startupBtnSource[i + 10] = _addButton(theme, fmt("STARTUP/SOURCE_BTN_%i", i + 10), theme.btnFont, L"", (30 + 300 * col), (100 + 58 * row), 280, 56, theme.btnFontColor);
-		i++;
+		STexture texConsoleImg;
+		STexture texConsoleImgs;
+	
+		ImgName = m_source.getString(fmt("BUTTON_%i", i),"image", "default.png");
+		texConsoleImg.fromPNGFile(fmt("%s/%s", m_sourceDir.c_str(), ImgName.c_str()), GX_TF_RGBA8, ALLOC_MEM2);
+		ImgName = m_source.getString(fmt("BUTTON_%i", i),"image_s", "default.png");
+		texConsoleImgs.fromPNGFile(fmt("%s/%s", m_sourceDir.c_str(), ImgName.c_str()), GX_TF_RGBA8, ALLOC_MEM2);
+	
+		page = i / 12;
+		row = (i / 4 ) - (page * 3);
+		col = (i - (page * 12)) - (row * 4);
+		m_sourceBtnSource[i] = _addPicButton(theme, fmt("SOURCE/SOURCE_BTN_%i", i), texConsoleImg, texConsoleImgs, (30 + 150 * col), (90 + 100 * row), 90, 90);
 	}
+	
+	_setHideAnim(m_sourceLblTitle, "SOURCE/TITLE", 0, -200, 0.f, 1.f);
+	_setHideAnim(m_sourceLblNotice, "SOURCE/NOTICE", 0, 0, 1.f, 0.f);
+	_setHideAnim(m_sourceLblPage, "SOURCE/PAGE_BTN", 0, 200, 1.f, 0.f);
+	_setHideAnim(m_sourceBtnPageM, "SOURCE/PAGE_MINUS", 0, 200, 1.f, 0.f);
+	_setHideAnim(m_sourceBtnPageP, "SOURCE/PAGE_PLUS", 0, 200, 1.f, 0.f);
+	_setHideAnim(m_sourceBtnBack, "SOURCE/BACK_BTN", 0, 200, 1.f, 0.f);
 
-	_setHideAnim(m_startupLblTitle, "STARTUP/TITLE", 0, -200, 0.f, 1.f);
-	_setHideAnim(m_startupLblNotice, "STARTUP/NOTICE", 0, 0, 1.f, 0.f);
-	_setHideAnim(m_startupLblPage, "STARTUP/PAGE_BTN", 0, 200, 1.f, 0.f);
-	_setHideAnim(m_startupBtnPageM, "STARTUP/PAGE_MINUS", 0, 200, 1.f, 0.f);
-	_setHideAnim(m_startupBtnPageP, "STARTUP/PAGE_PLUS", 0, 200, 1.f, 0.f);
-	_setHideAnim(m_startupBtnBack, "STARTUP/BACK_BTN", 0, 200, 1.f, 0.f);
-
-	for(int i = 0; i < 20; ++i)
+	for(int i = 0; i < 24; ++i)
 	{
-		_setHideAnim(m_startupBtnSource[i], fmt("STARTUP/SOURCE_BTN_%i", i), 0, 0, 1.f, 0.f);
+		_setHideAnim(m_sourceBtnSource[i], fmt("SOURCE/SOURCE_BTN_%i", i), 0, 0, 1.f, 0.f);
 	}
-	_hideStartup(true);
+	_textSource();
+	_hideSource(true);
 }
 
-void CMenu::_textStartup(void)
+void CMenu::_textSource(void)
 {
-	m_btnMgr.setText(m_startupLblTitle, _t("", L"Select Source"));
-	m_btnMgr.setText(m_startupBtnBack, _t("", L"Exit"));
-	m_btnMgr.setText(m_startupLblNotice, _t("", L"** DISABLED **"));
-	m_btnMgr.setText(m_startupBtnSource[0], _t("", L"Wii Games"));
-	m_btnMgr.setText(m_startupBtnSource[1], _t("", L"VC/WiiWare"));
-	m_btnMgr.setText(m_startupBtnSource[2], _t("", L"GC Games"));
-	m_btnMgr.setText(m_startupBtnSource[3], _t("", L"Homebrew"));
-		
-	if (numPlugins != 0)
-	{
-		for(u8 i = 0; i < numPlugins; ++i)
-			m_btnMgr.setText(m_startupBtnSource[i + 4], m_plugin.GetPluginName(i));
-	}
+	m_btnMgr.setText(m_sourceLblTitle, _t("", L"Select Source"));
+	m_btnMgr.setText(m_sourceBtnBack, _t("", L"Exit"));
+	m_btnMgr.setText(m_sourceLblNotice, _t("", L"** DISABLED **"));
 }
-
