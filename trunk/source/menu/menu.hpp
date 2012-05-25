@@ -109,6 +109,7 @@ private:
 	string m_listCacheDir;
 	string m_DMLgameDir;
 	string m_helpDir;
+	
 	/* Updates */
 	char m_app_update_drive[6];
 	const char* m_app_update_url;
@@ -867,14 +868,14 @@ private:
 	void _initGameSettingsMenu(SThemeData &theme);
 	void _initCheatSettingsMenu(SThemeData &theme);
 	void _initCheatButtons();
-	void _initStartupMenu(SThemeData &theme);
+	void _initSourceMenu(SThemeData &theme);
 	void _initPluginSettingsMenu(SThemeData &theme);
 	void _initCategorySettingsMenu(SThemeData &theme);
 	void _initSystemMenu(SThemeData &theme);
 	void _initGameInfoMenu(SThemeData &theme);
 	void _initNandEmuMenu(CMenu::SThemeData &theme);
 	//
-	void _textStartup(void);
+	void _textSource(void);
 	void _textPluginSettings(void);
 	void _textCategorySettings(void);
 	void _textCheatSettings(void);
@@ -915,7 +916,7 @@ private:
 	void _hideWBFS(bool instant = false);
 	void _hideCFTheme(bool instant = false);
 	void _hideGameSettings(bool instant = false);
-	void _hideStartup(bool instant = false);
+	void _hideSource(bool instant = false);
 	void _hidePluginSettings(bool instant = false);
 	void _hideCategorySettings(bool instant = false);
 	void _hideSystem(bool instant = false);
@@ -938,8 +939,8 @@ private:
 	void _showSettings();
 	void _showCode(void);
 	void _showAbout(void);
-	void _showStartup(void);
-	void _showStartupNotice(void);
+	void _showSource(void);
+	void _showSourceNotice(void);
 	void _showPluginSettings(void);
 	void _showCategorySettings(void);
 	void _showCheatSettings(void);
@@ -949,7 +950,7 @@ private:
 	void _showCFTheme(u32 curParam, int version, bool wide);
 	void _showGameSettings(void);
 	void _showCheatDownload(void);
-	void _updateStartupBtns(void);
+	void _updateSourceBtns(void);
 	void _updatePluginCheckboxes(void);
 	void _updateCheckboxes(void);
 	void _setBg(const STexture &tex, const STexture &lqTex);
@@ -988,7 +989,7 @@ private:
 	void _gameinfo(void);
 	void _gameSettings(void);
 	void _CheatSettings();
-	void _Startup();
+	void _Source();
 	void _PluginSettings();
 	void _CategorySettings(bool fromGameSet=false);
 	//
@@ -1036,7 +1037,7 @@ private:
 	SmartGuiSound _sound(CMenu::SoundSet &soundSet, const char *domain, const char *key, const u8 * snd, u32 len, string name, bool isAllocated);
 	SmartGuiSound _sound(CMenu::SoundSet &soundSet, const char *domain, const char *key, string name);
 	u16 _textStyle(const char *domain, const char *key, u16 def);
-	u32 _addButton(SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, bool skipTheme = false);
+	u32 _addButton(SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color);
 	u32 _addSelButton(SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color);
 	u32 _addPicButton(SThemeData &theme, const char *domain, STexture &texNormal, STexture &texSelected, int x, int y, u32 width, u32 height);
 	u32 _addTitle(SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, u16 style);

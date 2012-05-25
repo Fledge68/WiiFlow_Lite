@@ -248,7 +248,7 @@ int CMenu::main(void)
 	if (m_cfg.getBool("GENERAL", "startup_menu", false)) 
 	{
 		m_vid.hideWaitMessage();
-		_Startup();
+		_Source();
 	}
 	if (m_cfg.getBool("GENERAL", "update_cache", false))
 	{
@@ -320,7 +320,7 @@ int CMenu::main(void)
 		if (BTN_PLUS_PRESSED && (m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML) || m_btnMgr.selected(m_mainBtnHomebrew) || m_btnMgr.selected(m_mainBtnEmu)))
 		{
 			_hideMain(true);
-			_Startup();
+			_Source();
 			LoadView();
 			continue;
 		}		
