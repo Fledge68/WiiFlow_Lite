@@ -708,6 +708,8 @@ int CMenu::main(void)
 		{
 			m_btnMgr.hide(m_mainLblUser[0]);
 			m_btnMgr.hide(m_mainLblUser[1]);
+			if(!m_gameList.empty())
+				m_btnMgr.hide(m_mainBtnConfig);
 			m_btnMgr.hide(m_mainBtnInfo);
 			m_btnMgr.hide(m_mainBtnQuit);
 			m_btnMgr.hide(m_mainBtnFavoritesOn);
