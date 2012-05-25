@@ -169,7 +169,7 @@ void CMenu::_showMain(void)
 				m_btnMgr.show(m_mainLblInit);
 			break;
 			case COVERFLOW_EMU:
-				m_btnMgr.setText(m_mainLblInit, _t("main5", L"Welcome to WiiFlow. I have not found any emulator plugins or games. Select partition to select your partition type."), true);
+				m_btnMgr.setText(m_mainLblInit, _t("main5", L"Welcome to WiiFlow. I have not found any plugins. Select partition to select your partition type."), true);
 				m_btnMgr.show(m_mainBtnInit2);
 				m_btnMgr.show(m_mainLblInit);
 			break;
