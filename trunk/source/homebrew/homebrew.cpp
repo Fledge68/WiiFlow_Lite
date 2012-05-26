@@ -120,10 +120,10 @@ int BootHomebrew(bool wiiflow_stub)
 
 	if(wiiflow_stub)
 	{
-		/* Clear low mem - the hard way :P */
-		memset((void*)0x80000000, 0, 0x4000);
+		/* Clear potential homebrew channel stub */
+		memset((void*)0x80001800, 0, 0x1800);
 
-		/* Copy stub into memory */
+		/* Copy our own stub into memory */
 		memcpy((void*)0x80001800, stub_bin, stub_bin_size);
 		DCFlushRange((void*)0x80001800, stub_bin_size);
 	}
