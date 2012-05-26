@@ -8,9 +8,9 @@
 #include "smartptr.hpp"
 #include "gecko.h"
 
-#define EXECUTE_ADDR	((u8 *) 0x92000000)
-#define BOOTER_ADDR		((u8 *) 0x93000000)
-#define ARGS_ADDR		((u8 *) 0x93200000)
+#define EXECUTE_ADDR	((u8 *)0x92000000)
+#define BOOTER_ADDR		((u8 *)0x93000000)
+#define ARGS_ADDR		((u8 *)0x93200000)
 
 using namespace std;
 
@@ -125,6 +125,19 @@ int BootHomebrew(bool wiiflow_stub)
 
 		/* Copy our own stub into memory */
 		memcpy((void*)0x80001800, stub_bin, stub_bin_size);
+
+		/* Lower Title ID */
+		*(vu8*)0x80001bf2 = 0x00;
+		*(vu8*)0x80001bf3 = 0x01;
+		*(vu8*)0x80001c06 = 0x00;
+		*(vu8*)0x80001c07 = 0x08;
+
+		/* Upper Title ID */
+		*(vu8*)0x80001bfa = 0x57;
+		*(vu8*)0x80001bfb = 0x49;
+		*(vu8*)0x80001c0a = 0x49;
+		*(vu8*)0x80001c0b = 0x48;
+
 		DCFlushRange((void*)0x80001800, stub_bin_size);
 	}
 
