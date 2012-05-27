@@ -28,7 +28,7 @@ LIBDIR		:=	../lib
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-CFLAGS		=	-O2 -Wall -Wno-unused $(MACHDEP) $(INCLUDE) -DGEKKO -DWORDS_BIGENDIAN
+CFLAGS		=	-Os -Wall -Wno-unused $(MACHDEP) $(INCLUDE) -DGEKKO -DWORDS_BIGENDIAN
 CXXFLAGS	=	$(CFLAGS)
 ASFLAGS		:=	-g
 export EXT2BIN	:=	$(LIBDIR)/$(PLATFORM)/libext2fs.a
