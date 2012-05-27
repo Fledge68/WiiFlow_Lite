@@ -18,7 +18,7 @@ u32 m_sourceBtnPageM;
 u32 m_sourceBtnPageP;
 u32 m_sourceBtnBack;
 u32 m_sourceLblTitle;
-u32 m_sourceBtnSource[24];
+u32 m_sourceBtnSource[36];
 u32 m_sourceLblUser[4];
 STexture m_sourceBg;
 
@@ -36,7 +36,7 @@ void CMenu::_hideSource(bool instant)
 			m_btnMgr.hide(m_sourceLblUser[i], instant);
 	}
 
-	for (int i = 0; i < 24; ++i)
+	for (int i = 0; i < 36; ++i)
 	{
 		m_btnMgr.hide(m_sourceBtnSource[i]);
 	}
@@ -55,13 +55,12 @@ void CMenu::_showSource(void)
 	m_btnMgr.show(m_sourceLblTitle);
 	m_btnMgr.show(m_sourceBtnBack);
 	
-	for (int i = 12; i <24; ++i)
+	for (int i = 12; i < 36; ++i)
 	{
 		string source = m_source.getString(fmt("BUTTON_%i", i), "source", "");
 		if (!source.empty())
 		{
-			pages++;
-			break;
+			pages = (i / 12) + 1;
 		}
 	}
 	
@@ -71,32 +70,22 @@ void CMenu::_updateSourceBtns(void)
 {
 	if (pages > 1)
 	{
-		m_btnMgr.setText(m_sourceLblPage, wfmt(L"%i / 2", Source_curPage));
+		m_btnMgr.setText(m_sourceLblPage, wfmt(L"%i / %i", Source_curPage, pages));
 		m_btnMgr.show(m_sourceLblPage);
 		m_btnMgr.show(m_sourceBtnPageM);
 		m_btnMgr.show(m_sourceBtnPageP);
 	}
-	for (int i = 0; i < 24; ++i)
+	for (int i = 0; i < 36; ++i)
 		m_btnMgr.hide(m_sourceBtnSource[i]);		
 
-	if (Source_curPage == 1)
-	{
-		for (int i = 0; i < 12; ++i)
-		{	
-			string source = m_source.getString(fmt("BUTTON_%i", i), "source", "");
-			if (!source.empty())
-				m_btnMgr.show(m_sourceBtnSource[i]);
-		}	
-	}
-	else
-	{
-		for (int i = 12; i < 24; ++i)
-		{	
-			string source = m_source.getString(fmt("BUTTON_%i", i), "source", "");
-			if (!source.empty())
-				m_btnMgr.show(m_sourceBtnSource[i]);
-		}
-	}
+	int j = (Source_curPage - 1) * 12;
+	
+	for (int i = j; i < (j + 12); ++i)
+	{	
+		string source = m_source.getString(fmt("BUTTON_%i", i), "source", "");
+		if (!source.empty())
+			m_btnMgr.show(m_sourceBtnSource[i]);
+	}	
 }
 
 void CMenu::_showSourceNotice(void)
@@ -161,14 +150,14 @@ void CMenu::_Source()
 			m_btnMgr.down();
 		if(((BTN_MINUS_PRESSED || BTN_LEFT_PRESSED) && pages > 1) || (BTN_A_PRESSED && m_btnMgr.selected(m_sourceBtnPageM)))
 		{
-			Source_curPage = Source_curPage == 1 ? 2 : 1;
+			Source_curPage = Source_curPage == 1 ? pages : (Source_curPage == 2 ? 1 : 2);
 			if(BTN_LEFT_PRESSED || BTN_MINUS_PRESSED)
 				m_btnMgr.click(m_sourceBtnPageM);
 			_updateSourceBtns();
 		}
 		else if(((BTN_PLUS_PRESSED || BTN_RIGHT_PRESSED) && pages > 1) || (BTN_A_PRESSED && m_btnMgr.selected(m_sourceBtnPageP)))
 		{
-			Source_curPage = Source_curPage == 1 ? 2 : 1;
+			Source_curPage = Source_curPage == 3 ? 1 : (Source_curPage == 1 ? 2 : 3);
 			if (BTN_RIGHT_PRESSED || BTN_PLUS_PRESSED)
 				m_btnMgr.click(m_sourceBtnPageP);
 			_updateSourceBtns();
@@ -177,7 +166,7 @@ void CMenu::_Source()
 		{
 			if (m_btnMgr.selected(m_sourceBtnBack))
 				break;
-			for (int i = 0; i < 24; ++i)
+			for (int i = 0; i < 36; ++i)
 			{
 				if (m_btnMgr.selected(m_sourceBtnSource[i]))
 				{
@@ -268,10 +257,7 @@ void CMenu::_Source()
 								}
 							}
 							
-							string domain = m_plugin.GetDolName(sourceMagic);
-							domain.erase(domain.end() - 4, domain.end());
-							
-							int layout = m_source.getInt(domain, m_cfg.getString("GENERAL", "theme", "default"), 0);
+							int layout = m_source.getInt(fmt("BUTTON_%i", i), "emuflow", 0);
 							if (layout != 0)
 								m_cfg.setInt("EMULATOR", "last_cf_mode", layout);
 							break;
@@ -311,7 +297,7 @@ void CMenu::_initSourceMenu(CMenu::SThemeData &theme)
 	int col;
 	string ImgName;
 	
-	for ( int i = 0; i < 24; ++i)
+	for ( int i = 0; i < 36; ++i)
 	{
 		STexture texConsoleImg;
 		STexture texConsoleImgs;
@@ -334,7 +320,7 @@ void CMenu::_initSourceMenu(CMenu::SThemeData &theme)
 	_setHideAnim(m_sourceBtnPageP, "SOURCE/PAGE_PLUS", 0, 200, 1.f, 0.f);
 	_setHideAnim(m_sourceBtnBack, "SOURCE/BACK_BTN", 0, 200, 1.f, 0.f);
 
-	for(int i = 0; i < 24; ++i)
+	for(int i = 0; i < 36; ++i)
 	{
 		_setHideAnim(m_sourceBtnSource[i], fmt("SOURCE/SOURCE_BTN_%i", i), 0, 0, 1.f, 0.f);
 	}
