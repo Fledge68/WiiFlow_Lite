@@ -273,7 +273,7 @@ static void do_disc(wiidisc_t *d)
 	u32 i;
 	disc_read(d, 0, b, 0x100);
 	magic = _be32(b + 24);
-	if (magic != 0x5D1C9EA3)
+	if (magic != WII_MAGIC)
 	{
 		wbfs_iofree(b);
 		wbfs_error("not a wii disc");

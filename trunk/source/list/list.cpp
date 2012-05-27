@@ -315,7 +315,7 @@ void CList<dir_discHdr>::GetHeaders(vector<string> pathlist, vector<dir_discHdr>
 				tmp.hdr.players = gameTDB.GetPlayers((char *)tmp.hdr.id);
 				//tmp.hdr.controllers = gameTDB.GetAccessories((char *)tmp.hdr.id);
 
-				tmp.hdr.magic = 0x5D1C9EA3;
+				tmp.hdr.magic = WII_MAGIC;
 				headerlist.push_back(tmp);
 				continue;
 			}
@@ -328,7 +328,7 @@ void CList<dir_discHdr>::GetHeaders(vector<string> pathlist, vector<dir_discHdr>
 				fclose(fp);
 			}
 
-			if (tmp.hdr.magic == 0x5D1C9EA3)
+			if (tmp.hdr.magic == WII_MAGIC)
 			{
 				//mbstowcs(tmp.title, (const char *)tmp.hdr.title, sizeof(tmp.hdr.title));
 				//Asciify(tmp.title);
@@ -436,7 +436,7 @@ void CList<dir_discHdr>::GetHeaders(vector<string> pathlist, vector<dir_discHdr>
 				tmp.hdr.players = gameTDB.GetPlayers((char *)tmp.hdr.id);
 
 				//tmp.hdr.controllers = gameTDB.GetAccessories((char *)tmp.hdr.id);
-				if (tmp.hdr.magic == 0x5D1C9EA3)
+				if (tmp.hdr.magic == WII_MAGIC)
 				{
 					//Asciify(tmp.title);
 					wcsncpy(tmp.title, tmpString.c_str(), 64);
@@ -445,7 +445,7 @@ void CList<dir_discHdr>::GetHeaders(vector<string> pathlist, vector<dir_discHdr>
 				continue;
 			}
 
-			if (tmp.hdr.magic == 0x5D1C9EA3)
+			if (tmp.hdr.magic == WII_MAGIC)
 			{
 				//mbstowcs(tmp.title, (const char *)tmp.hdr.title, sizeof(tmp.hdr.title));
 				//Asciify(tmp.title);
