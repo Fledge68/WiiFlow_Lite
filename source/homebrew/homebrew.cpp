@@ -27,6 +27,9 @@ static u8 *homebrewbuffer = EXECUTE_ADDR;
 static u32 homebrewsize = 0;
 static vector<string> Arguments;
 
+static u32 stubtitlepositions[8] = { 0x80001bf2, 0x80001bf3, 0x80001c06, 0x80001c07,
+									0x80001bfa, 0x80001bfb, 0x80001c0a, 0x80001c0b };
+
 bool IsDollZ (u8 *buff)
 {
 	u8 dollz_stamp[] = {0x3C};
@@ -104,7 +107,35 @@ static int SetupARGV(struct __argv * args)
 	return 0;
 }
 
-int BootHomebrew(bool wiiflow_stub)
+static void writeStub(u64 chan_title)
+{
+	u8 i;
+	u32 digit;
+	char title[2][9];
+	snprintf(title[0], sizeof(title[0]), "%08x", TITLE_UPPER(chan_title));
+	snprintf(title[1], sizeof(title[1]), "%08x", TITLE_LOWER(chan_title));
+
+	/* Clear potential homebrew channel stub */
+	memset((void*)0x80001800, 0, 0x1800);
+
+	/* Copy our own stub into memory */
+	memcpy((void*)0x80001800, stub_bin, stub_bin_size);
+
+	/* Write in the Title ID we got */
+	for(i = 0; i < 4; i++)
+	{
+		sscanf(&title[0][i*2], "%02x", &digit);
+		//gprintf("%x\n", digit);
+		*(vu8*)stubtitlepositions[i] = digit;
+		sscanf(&title[1][i*2], "%02x", &digit);
+		//gprintf("%x\n", digit);
+		*(vu8*)stubtitlepositions[i+4] = digit;
+	}
+
+	DCFlushRange((void*)0x80001800, stub_bin_size);
+}
+
+int BootHomebrew(u64 chan_title)
 {
 	struct __argv args;
 	if (!IsDollZ(homebrewbuffer))
@@ -118,28 +149,7 @@ int BootHomebrew(bool wiiflow_stub)
 	memmove(ARGS_ADDR, &args, sizeof(args));
 	DCFlushRange(ARGS_ADDR, sizeof(args) + args.length);
 
-	if(wiiflow_stub)
-	{
-		/* Clear potential homebrew channel stub */
-		memset((void*)0x80001800, 0, 0x1800);
-
-		/* Copy our own stub into memory */
-		memcpy((void*)0x80001800, stub_bin, stub_bin_size);
-
-		/* Lower Title ID */
-		*(vu8*)0x80001bf2 = 0x00;
-		*(vu8*)0x80001bf3 = 0x01;
-		*(vu8*)0x80001c06 = 0x00;
-		*(vu8*)0x80001c07 = 0x08;
-
-		/* Upper Title ID */
-		*(vu8*)0x80001bfa = 0x57;
-		*(vu8*)0x80001bfb = 0x49;
-		*(vu8*)0x80001c0a = 0x49;
-		*(vu8*)0x80001c0b = 0x48;
-
-		DCFlushRange((void*)0x80001800, stub_bin_size);
-	}
+	writeStub(chan_title);
 
 	/* Shutdown IOS subsystems */
 	u32 level = IRQ_Disable();
