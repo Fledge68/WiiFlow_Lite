@@ -771,9 +771,13 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 
 void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 {
-	bool wiiflow_stub = m_cfg.getBool("HOMEBREW", "return_to_wiiflow", true);
 	Nand::Instance()->Disable_Emu();
 	m_reload = true;
+
+	Channels channel;
+	u64 title = SYSTEM_MENU;
+	if(channel.GetRequestedIOS(RETURN_CHANNEL) != 0)
+		title = RETURN_CHANNEL;
 
 	gprintf("Filepath of homebrew: %s\n",filepath);
 
@@ -803,8 +807,9 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 		gprintf("Boot argument: %s\n", arguments[i].c_str());
 		AddBootArgument(arguments[i].c_str());
 	}
+	gprintf("Return to Channel: %08x %08x\n", TITLE_UPPER(title), TITLE_LOWER(title));
 	gprintf("Booting Homebrew application...\n");
-	BootHomebrew(wiiflow_stub);
+	BootHomebrew(title);
 }
 
 int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id)
