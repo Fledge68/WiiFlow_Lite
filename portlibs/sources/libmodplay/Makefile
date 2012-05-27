@@ -28,7 +28,7 @@ INCLUDES	:=
 #---------------------------------------------------------------------------------
 
 # CFLAGS		= -g -O2 -Wall $(MACHDEP) $(INCLUDE)
-CFLAGS		= -ffast-math -O3 -pipe -mrvl -mcpu=750 -meabi -mhard-float -Wall $(MACHDEP) $(INCLUDE) -DGEKKO -DHAVE_CONFIG_H
+CFLAGS		= -ffast-math -Os -pipe -mrvl -mcpu=750 -meabi -mhard-float -Wall $(MACHDEP) $(INCLUDE) -DGEKKO -DHAVE_CONFIG_H
 CXXFLAGS	=	$(CFLAGS)
 # LDFLAGS 	= -g $(MACHDEP) -Wl,-Map,$(notdir $@).map
 ARFLAGS 	= rcs

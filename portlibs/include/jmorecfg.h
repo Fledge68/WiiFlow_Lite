@@ -160,8 +160,10 @@ typedef short INT16;
 
 #ifndef XMD_H			/* X11/xmd.h correctly defines INT32 */
 #ifndef _BASETSD_H_		/* Microsoft defines it in basetsd.h */
+#ifndef _BASETSD_H		/* MinGW is slightly different */
 #ifndef QGLOBAL_H		/* Qt defines it in qglobal.h */
 typedef long INT32;
+#endif
 #endif
 #endif
 #endif
@@ -231,8 +233,7 @@ typedef unsigned int JDIMENSION;
  */
 
 #ifndef HAVE_BOOLEAN
-// typedef int boolean;
-typedef unsigned char boolean;
+typedef int boolean;
 #endif
 #ifndef FALSE			/* in case these macros already exist */
 #define FALSE	0		/* values of boolean */
