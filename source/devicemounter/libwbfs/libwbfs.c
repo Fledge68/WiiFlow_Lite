@@ -343,7 +343,7 @@ u32 wbfs_get_disc_info(wbfs_t *p, u32 index,u8 *header,int header_size,u32 *size
 				if(header_size > (int)p->hd_sec_sz)
 					header_size = p->hd_sec_sz;
 				u32 magic = wbfs_ntohl(*(u32*)(p->tmp_buffer + 24));
-				if(magic != 0x5D1C9EA3)
+				if(magic != WII_MAGIC)
 				{
 					p->head->disc_table[i]=0;
 					return 1;

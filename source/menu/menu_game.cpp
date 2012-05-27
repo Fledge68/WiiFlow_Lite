@@ -385,7 +385,7 @@ void CMenu::_game(bool launch)
 			ClearGameSoundThreadStack();
 			break;
 		}
-		else if (BTN_PLUS_PRESSED && m_GameTDBLoaded)
+		else if (BTN_PLUS_PRESSED && m_GameTDBLoaded && (m_cf.getHdr()->hdr.magic == WII_MAGIC || m_cf.getHdr()->hdr.gc_magic == GC_MAGIC || m_current_view == COVERFLOW_CHANNEL))
 		{
 			_hideGame();
 			m_gameSelected = true;
