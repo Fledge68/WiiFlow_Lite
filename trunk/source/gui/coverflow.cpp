@@ -2551,7 +2551,15 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq)
 		SmartBuf zBuffer = m_compressCache ? smartMem2Alloc(zBufferSize) : tex.data;
 		if (!!zBuffer && (!m_compressCache || compress(zBuffer.get(), &zBufferSize, tex.data.get(), bufSize) == Z_OK))
 		{
-			FILE *file = fopen(fmt("%s/%s.wfc", m_cachePath.c_str(), (m_items[i].hdr->hdr.gc_magic == EMU_MAGIC ? &m_items[i].hdr->path[string(m_items[i].hdr->path).find_last_of("/")] : (char*)m_items[i].hdr->hdr.id)), "wb");
+			char gamePath[256];
+			if(m_items[i].hdr->hdr.gc_magic == EMU_MAGIC)
+			{
+				if(string(m_items[i].hdr->path).find_last_of("/") != string::npos)
+					strncpy(gamePath, &m_items[i].hdr->path[string(m_items[i].hdr->path).find_last_of("/")], sizeof(gamePath));
+				else
+					strncpy(gamePath, m_items[i].hdr->path, sizeof(gamePath));
+			}
+			FILE *file = fopen(fmt("%s/%s.wfc", m_cachePath.c_str(), (m_items[i].hdr->hdr.gc_magic == EMU_MAGIC ? gamePath : (char*)m_items[i].hdr->hdr.id)), "wb");
 			if (file != 0)
 			{
 				SWFCHeader header(tex, box, m_compressCache);
@@ -2618,7 +2626,15 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq)
 	// Try to find the texture in the cache
 	if (!m_cachePath.empty())
 	{
-		FILE *file = fopen(fmt("%s/%s.wfc", m_cachePath.c_str(), (m_items[i].hdr->hdr.gc_magic == EMU_MAGIC ? &m_items[i].hdr->path[string(m_items[i].hdr->path).find_last_of("/")] : (char*)m_items[i].hdr->hdr.id)), "rb");
+		char gamePath[256];
+		if(m_items[i].hdr->hdr.gc_magic == EMU_MAGIC)
+		{
+			if(string(m_items[i].hdr->path).find_last_of("/") != string::npos)
+				strncpy(gamePath, &m_items[i].hdr->path[string(m_items[i].hdr->path).find_last_of("/")], sizeof(gamePath));
+			else
+				strncpy(gamePath, m_items[i].hdr->path, sizeof(gamePath));
+		}
+		FILE *file = fopen(fmt("%s/%s.wfc", m_cachePath.c_str(), (m_items[i].hdr->hdr.gc_magic == EMU_MAGIC ? gamePath : (char*)m_items[i].hdr->hdr.id)), "rb");
 		if (file != 0)
 		{
 			bool success = false;
