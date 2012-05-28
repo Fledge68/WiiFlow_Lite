@@ -1648,7 +1648,8 @@ void CMenu::_initCF(void)
 			if (m_current_view == COVERFLOW_EMU)
 			{
 				string tempname(m_gameList[i].path);
-				tempname.assign(&tempname[tempname.find_last_of('/') + 1]);
+				if(tempname.find_last_of("/") != string::npos)
+					tempname.assign(&tempname[tempname.find_last_of("/") + 1]);
 				string coverFolder(m_plugin.GetCoverFolderName(m_gameList[i].hdr.magic));
 				//if(tempname.find_last_of('.') != string::npos)
 				//	tempname.erase(tempname.find_last_of('.'), tempname.size() - tempname.find_last_of('.'));
