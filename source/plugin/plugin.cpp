@@ -22,6 +22,7 @@ static char* emptyChar = (char*)" ";
 
 void Plugin::init(string m_pluginsDir)
 {
+	ScummVM_magic = 0;
 	pluginsDir = m_pluginsDir;
 	//Ready to add plugins
 	adding = true;
@@ -192,6 +193,8 @@ vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, string Device)
 	vector<dir_discHdr> gameHeader;
 	if(!ini.loaded())
 		return gameHeader;
+	ScummVM_magic = Plugins[Plugins.size()-1].magicWord;
+
 	string game(ini.firstDomain());
 	string GameName;
 	dir_discHdr tmp;
@@ -264,4 +267,9 @@ bool Plugin::isMplayerCE(u32 magic)
 	if((Plugin_Pos = GetPluginPosition(magic)) >= 0)
 		return (Plugins[Plugin_Pos].magicWord == 0x4D504345);
 	return false;
+}
+
+bool Plugin::isScummVM(u32 magic)
+{
+	return (magic == ScummVM_magic);
 }

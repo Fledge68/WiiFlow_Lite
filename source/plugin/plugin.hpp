@@ -49,12 +49,15 @@ public:
 	void Cleanup();
 	void EndAdd();
 	vector<dir_discHdr> ParseScummvmINI(Config &ini, string Device);
+	bool isScummVM(u32 magic);
+
 private:
 	s8 GetPluginPosition(u32 magic);
 
 	vector<PluginOptions> Plugins;
 	s8 Plugin_Pos;
 	string pluginsDir;
+	u32 ScummVM_magic;
 	bool adding;
 };
 #endif
