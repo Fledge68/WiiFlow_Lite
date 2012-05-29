@@ -19,6 +19,7 @@
 static const string emptyString;
 static const string emptyString2("/");
 static char* emptyChar = (char*)" ";
+u32 ScummVM_magic;
 
 void Plugin::init(string m_pluginsDir)
 {
