@@ -43,21 +43,19 @@ public:
 	void SetEnablePlugin(Config &cfg, u8 pos, u8 ForceMode = 0);
 	vector<bool> GetEnabledPlugins(Config &cfg);
 	bool UseReturnLoader(u32 magic);
+	bool isScummVM(u32 magic);
 	bool isMplayerCE(u32 magic);
 	vector<string> CreateMplayerCEArguments(const char *src);
 	void init(string);
 	void Cleanup();
 	void EndAdd();
 	vector<dir_discHdr> ParseScummvmINI(Config &ini, string Device);
-	bool isScummVM(u32 magic);
 
 private:
 	s8 GetPluginPosition(u32 magic);
-
 	vector<PluginOptions> Plugins;
 	s8 Plugin_Pos;
 	string pluginsDir;
-	u32 ScummVM_magic;
 	bool adding;
 };
 #endif
