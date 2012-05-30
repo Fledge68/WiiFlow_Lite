@@ -169,6 +169,13 @@ void __Disc_SetVMode(void)
 	/* Set video mode */
 	if (disc_vmode != 0)
 		VIDEO_Configure(disc_vmode);
+
+	/* Setup video  */
+	VIDEO_SetBlack(TRUE);
+	VIDEO_Flush();
+	VIDEO_WaitVSync();
+	if(disc_vmode->viTVMode & VI_NON_INTERLACE)
+		VIDEO_WaitVSync();
 }
 
 void __Disc_SetTime(void)
