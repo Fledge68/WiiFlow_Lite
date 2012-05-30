@@ -157,7 +157,7 @@ void CMenu::_Source()
 		}
 		else if(((BTN_PLUS_PRESSED || BTN_RIGHT_PRESSED) && pages > 1) || (BTN_A_PRESSED && m_btnMgr.selected(m_sourceBtnPageP)))
 		{
-			Source_curPage = Source_curPage == 3 ? 1 : (Source_curPage == 1 ? 2 : 3);
+			Source_curPage = Source_curPage == 3 ? 1 : (Source_curPage == 1 ? 2 : (pages == 2 ? 1 : 3));
 			if (BTN_RIGHT_PRESSED || BTN_PLUS_PRESSED)
 				m_btnMgr.click(m_sourceBtnPageP);
 			_updateSourceBtns();
@@ -332,5 +332,5 @@ void CMenu::_textSource(void)
 {
 	m_btnMgr.setText(m_sourceLblTitle, _t("", L"Select Source"));
 	m_btnMgr.setText(m_sourceBtnBack, _t("", L"Exit"));
-	m_btnMgr.setText(m_sourceLblNotice, _t("", L"** DISABLED **"));
+	m_btnMgr.setText(m_sourceLblNotice, _t("NMMOff", L"** DISABLED **"));
 }
