@@ -145,7 +145,8 @@ void CMenu::_textAbout(void)
 		fclose(f);
 	}
 
-	wstringEx help_text(help);
+	wstringEx help_text;
+	help_text.fromUTF8(help);
 
 	wstringEx developers(wfmt(_fmt("about6", L"\nCurrent Developers:\n%s"), DEVELOPERS));
 	wstringEx pDevelopers(wfmt(_fmt("about7", L"Past Developers:\n%s"), PAST_DEVELOPERS));
