@@ -274,6 +274,11 @@ int get_frag_list(u8 *id, char *path, const u32 hdd_sector_size)
 	ret_val = 0;
 
 out:
+	if(ret_val && frag_list != NULL)
+	{
+		MEM1_free(frag_list);
+		frag_list = NULL;
+	}
 	if(fs != NULL)
 	{
 		MEM2_free(fs);
