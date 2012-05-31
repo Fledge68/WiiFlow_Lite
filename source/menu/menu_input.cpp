@@ -10,6 +10,7 @@ void CMenu::SetupInput(bool reset_pos)
 	{
 		if(reset_pos)
 		{
+			m_show_pointer[chan] = false;
 			stickPointer_x[chan] = (m_vid.width() + m_cursor[chan].width())/2;
 			stickPointer_y[chan] = (m_vid.height() + m_cursor[chan].height())/2;
 		}
