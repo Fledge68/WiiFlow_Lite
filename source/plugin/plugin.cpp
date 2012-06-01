@@ -151,7 +151,7 @@ void Plugin::SetEnablePlugin(Config &cfg, u8 pos, u8 ForceMode)
 {
 	if(pos < Plugins.size())
 	{
-		char PluginMagicWord[8];
+		char PluginMagicWord[9];
 		snprintf(PluginMagicWord, sizeof(PluginMagicWord), "%08x", Plugins[pos].magicWord);
 		if(ForceMode == 1)
 			cfg.setBool("PLUGIN", PluginMagicWord, false);
