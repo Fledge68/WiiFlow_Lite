@@ -638,7 +638,7 @@ void CCoverFlow::startCoverLoader(void)
 	m_moved = true;
 
 	unsigned int stack_size = (unsigned int)8192;
-	LWP_CreateThread(&coverLoaderThread, (void *(*)(void *))CCoverFlow::_coverLoader, (void *)this, 0, stack_size, 40);
+	LWP_CreateThread(&coverLoaderThread, (void *(*)(void *))CCoverFlow::_coverLoader, (void *)this, 0, stack_size, 20);
 	gprintf("Coverflow started!\n");
 }
 
