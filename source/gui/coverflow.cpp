@@ -608,7 +608,7 @@ void CCoverFlow::stopCoverLoader(bool empty)
 {
 	m_loadingCovers = false;
 
-	if (coverLoaderThread != LWP_THREAD_NULL &&	!m_loadingCovers)
+	if(coverLoaderThread != LWP_THREAD_NULL &&	!m_loadingCovers)
 	{
 		if(LWP_ThreadIsSuspended(coverLoaderThread))
 			LWP_ResumeThread(coverLoaderThread);
@@ -616,7 +616,7 @@ void CCoverFlow::stopCoverLoader(bool empty)
 		LWP_JoinThread(coverLoaderThread, NULL);
 		coverLoaderThread = LWP_THREAD_NULL;
 
-		if (empty)
+		if(empty)
 		{
 			for (u32 i = 0; i < m_items.size(); ++i)
 			{
@@ -625,17 +625,21 @@ void CCoverFlow::stopCoverLoader(bool empty)
 				m_items[i].state = CCoverFlow::STATE_Loading;
 			}
 		}
+		gprintf("Coverflow stopped!\n");
 	}
 }
 
 void CCoverFlow::startCoverLoader(void)
 {
-	if (m_covers.empty() || coverLoaderThread != LWP_THREAD_NULL || m_loadingCovers) return;
+	if(m_covers.empty() || coverLoaderThread != LWP_THREAD_NULL || m_loadingCovers)
+		return;
 
 	m_loadingCovers = true;
+	m_moved = true;
 
 	unsigned int stack_size = (unsigned int)8192;
 	LWP_CreateThread(&coverLoaderThread, (void *(*)(void *))CCoverFlow::_coverLoader, (void *)this, 0, stack_size, 40);
+	gprintf("Coverflow started!\n");
 }
 
 void CCoverFlow::clear(void)
@@ -1823,7 +1827,6 @@ bool CCoverFlow::start(const char *id)
 	m_jump = 0;
 	m_selected = false;
 	m_moved = true;
-	gprintf("Coverflow started!\n");
 	if (id == 0 || !findId(id, true))
 		_loadAllCovers(0);
 	_updateAllTargets();
