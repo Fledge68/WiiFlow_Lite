@@ -1540,23 +1540,3 @@ void CMenu::ClearGameSoundThreadStack()
 	if(gameSoundThreadStack.get())
 		gameSoundThreadStack.release();
 }
-
-void CMenu::CheckThreads()
-{
-	//CheckGameSoundThread(force);
-	//m_vid.CheckWaitThread(force);
-#ifdef SHOWMEMGECKO
-	mem1 = SYS_GetArena1Size();
-	mem2 = MEM2_freesize();
-	if( mem1 != mem1old )
-	{
-		mem1old = mem1;
-		gprintf("Mem1 Free: %u\n", mem1);
-	}
-	if( mem2 != mem2old )
-	{
-		mem2old = mem2;
-		gprintf("Mem2 Free: %u\n", mem2);
-	}	
-#endif
-}

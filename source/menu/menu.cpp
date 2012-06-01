@@ -1701,7 +1701,8 @@ void CMenu::_initCF(void)
 
 void CMenu::_mainLoopCommon(bool withCF, bool blockReboot, bool adjusting)
 {
-	if (withCF) m_cf.tick();
+	if(withCF)
+		m_cf.tick();
 	m_btnMgr.tick();
 	m_fa.tick();
 	m_cf.setFanartPlaying(m_fa.isLoaded());
@@ -1711,11 +1712,13 @@ void CMenu::_mainLoopCommon(bool withCF, bool blockReboot, bool adjusting)
 
 	m_fa.hideCover() ? 	m_cf.hideCover() : m_cf.showCover();
 
-	if (withCF) m_cf.makeEffectTexture(m_vid, m_lqBg);
-	if (withCF && m_aa > 0)
+	if(withCF)
+		m_cf.makeEffectTexture(m_vid, m_lqBg);
+
+	if(withCF && m_aa > 0)
 	{
 		m_vid.setAA(m_aa, true);
-		for (int i = 0; i < m_aa; ++i)
+		for(int i = 0; i < m_aa; ++i)
 		{
 			m_vid.prepareAAPass(i);
 			m_vid.setup2DProjection(false, true);
@@ -1736,7 +1739,7 @@ void CMenu::_mainLoopCommon(bool withCF, bool blockReboot, bool adjusting)
 		m_vid.setup2DProjection();
 		_drawBg();
 		m_fa.draw(false);
-		if (withCF)
+		if(withCF)
 		{
 			m_cf.draw();
 			m_vid.setup2DProjection();
@@ -1746,25 +1749,25 @@ void CMenu::_mainLoopCommon(bool withCF, bool blockReboot, bool adjusting)
 	}
 
 	m_fa.draw();
-	
+
 	m_btnMgr.draw();
 	ScanInput();
 
 	m_vid.setup2DProjection();
 	m_vid.render();
-	if (!blockReboot)
+	if(!blockReboot)
 	{
-		if (withCF && Sys_Exiting())
+		if(withCF && Sys_Exiting())
 			m_cf.clear();
-		if (Sys_Exiting())
+		if(Sys_Exiting())
 		{
 			m_cat.save();
 			m_cfg.save();
 		}
 		Sys_Test();
 	}
-	
-	if (withCF && m_gameSelected && m_gamesound_changed && (m_gameSoundHdr == NULL) && !m_gameSound.IsPlaying() && MusicPlayer::Instance()->GetVolume() == 0)
+
+	if(withCF && m_gameSelected && m_gamesound_changed && (m_gameSoundHdr == NULL) && !m_gameSound.IsPlaying() && MusicPlayer::Instance()->GetVolume() == 0)
 	{
 		CheckGameSoundThread();
 		m_gameSound.Play(m_bnrSndVol);
@@ -1773,19 +1776,14 @@ void CMenu::_mainLoopCommon(bool withCF, bool blockReboot, bool adjusting)
 	else if(!m_gameSelected)
 		m_gameSound.Stop();
 
-	CheckThreads();
-
-	if (withCF && m_gameSoundThread == LWP_THREAD_NULL)
-		m_cf.startCoverLoader();
-
 	MusicPlayer::Instance()->Tick(m_video_playing || (m_gameSelected && 
 		m_gameSound.IsLoaded()) ||  m_gameSound.IsPlaying());
-	
+
 	//Take Screenshot
-	if (gc_btnsPressed & PAD_TRIGGER_Z)
+	if(gc_btnsPressed & PAD_TRIGGER_Z)
 	{
 		time_t rawtime;
-		struct tm * timeinfo;
+		struct tm *timeinfo;
 		char buffer[80];
 
 		time(&rawtime);
@@ -1793,12 +1791,28 @@ void CMenu::_mainLoopCommon(bool withCF, bool blockReboot, bool adjusting)
 		strftime(buffer,80,"%b-%d-20%y-%Hh%Mm%Ss.png",timeinfo);
 		gprintf("Screenshot taken and saved to: %s/%s\n", m_screenshotDir.c_str(), buffer);
 		m_vid.TakeScreenshot(fmt("%s/%s", m_screenshotDir.c_str(), buffer));
-		if (!!m_cameraSound)
+		if(!!m_cameraSound)
 			m_cameraSound->Play(255);
 	}
-	#ifdef SHOWMEM
+
+#ifdef SHOWMEM
 	m_btnMgr.setText(m_mem2FreeSize, wfmt(L"Mem2 Free:%u, Mem1 Free:%u", MEM2_freesize(), MEM1_freesize()), true);
-	#endif
+#endif
+
+#ifdef SHOWMEMGECKO
+	mem1 = MEM1_freesize();
+	mem2 = MEM2_freesize();
+	if(mem1 != mem1old)
+	{
+		mem1old = mem1;
+		gprintf("Mem1 Free: %u\n", mem1);
+	}
+	if(mem2 != mem2old)
+	{
+		mem2old = mem2;
+		gprintf("Mem2 Free: %u\n", mem2);
+	}	
+#endif
 }
 
 void CMenu::_setBg(const STexture &tex, const STexture &lqTex)

@@ -1095,7 +1095,6 @@ private:
 	void _playGameSound(void);
 	void CheckGameSoundThread(void);
 	void ClearGameSoundThreadStack(void);
-	void CheckThreads(void);
 	static void _gameSoundThread(CMenu *m);
 
 	static void _load_installed_cioses();
