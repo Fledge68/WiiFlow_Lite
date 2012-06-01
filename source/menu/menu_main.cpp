@@ -569,27 +569,14 @@ int CMenu::main(void)
 				m_cf.pageUp();
 		 	else if (m_btnMgr.selected(m_mainBtnNext))
 				m_cf.pageDown();
-			else if (m_btnMgr.selected(m_mainBtnQuit))
+			else if(m_btnMgr.selected(m_mainBtnQuit))
 			{
-				if(!m_locked && !m_disable_exit)
-				{
-					struct stat dummy;
-					if(BTN_PLUS_HELD) Sys_ExitTo(EXIT_TO_HBC);
-					else if(BTN_MINUS_HELD) Sys_ExitTo(EXIT_TO_MENU);
-					else if(BTN_1_HELD) Sys_ExitTo(EXIT_TO_PRIILOADER);
-					else if(BTN_2_HELD)	//Check that the files are there, or ios will hang.
-					{
-						if(DeviceHandler::Instance()->IsInserted(SD) && 
-						stat(fmt("%s:/bootmii/armboot.bin", DeviceName[SD]), &dummy) == 0 && 
-						stat(fmt("%s:/bootmii/ppcboot.elf", DeviceName[SD]), &dummy) == 0)
-							Sys_ExitTo(EXIT_TO_BOOTMII);
-						 else Sys_ExitTo(EXIT_TO_HBC);
-					}
-				}
-				m_reload = (BTN_B_HELD || m_disable_exit);
-				break;
+				_hideMain(true);
+				_Source();
+				LoadView();
+				continue;
 			}
-			else if (m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML) || m_btnMgr.selected(m_mainBtnHomebrew) || m_btnMgr.selected(m_mainBtnEmu))
+			else if(m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML) || m_btnMgr.selected(m_mainBtnHomebrew) || m_btnMgr.selected(m_mainBtnEmu))
 			{
 				if (m_current_view == COVERFLOW_USB) 
 					m_current_view = m_show_dml ? COVERFLOW_DML : (show_channel ? COVERFLOW_CHANNEL : (show_emu ? COVERFLOW_EMU : ((show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB)));
