@@ -165,7 +165,7 @@ void Plugin::SetEnablePlugin(Config &cfg, u8 pos, u8 ForceMode)
 vector<bool> Plugin::GetEnabledPlugins(Config &cfg)
 {
 	vector<bool> enabledPlugins;
-	char PluginMagicWord[8];
+	char PluginMagicWord[9];
 	u8 enabledPluginsNumber = 0;
 	for(u8 i = 0; i < Plugins.size(); i++)
 	{
