@@ -342,31 +342,31 @@ static void setLanguage(int l)
 void CMenu::_game(bool launch)
 {
 	m_gcfg1.load(fmt("%s/" GAME_SETTINGS1_FILENAME, m_settingsDir.c_str()));
-	if (!launch)
+	if(!launch)
 	{
 		SetupInput();
-		m_cf.stopCoverLoader();
 		_playGameSound();
 		_showGame();
 		m_gameSelected = true;
 	}
-	
+
 	s8 startGameSound = 1;
-	while (true)
+	while(true)
 	{
-		if(startGameSound < 1) startGameSound++;
+		if(startGameSound < 1)
+			startGameSound++;
 
 		string id(m_cf.getId());
 		u64 chantitle = m_cf.getChanTitle();
 
-		if (startGameSound == -5)
+		if(startGameSound == -5)
 		{
 			_playGameSound();
 			_showGame();
 		}
 		_mainLoopCommon(true);
 
-		if (startGameSound == 0)
+		if(startGameSound == 0)
 		{
 			m_gameSelected = true;
 			startGameSound = 1;
@@ -378,14 +378,14 @@ void CMenu::_game(bool launch)
 			_showGame();
 			continue;
 		}
-		if (BTN_HOME_PRESSED || BTN_B_PRESSED)
+		if(BTN_HOME_PRESSED || BTN_B_PRESSED)
 		{
 			m_gameSound.FreeMemory();
 			CheckGameSoundThread();
 			ClearGameSoundThreadStack();
 			break;
 		}
-		else if (BTN_PLUS_PRESSED && m_GameTDBLoaded && (m_cf.getHdr()->hdr.magic == WII_MAGIC || m_cf.getHdr()->hdr.gc_magic == GC_MAGIC || m_current_view == COVERFLOW_CHANNEL))
+		else if(BTN_PLUS_PRESSED && m_GameTDBLoaded && (m_cf.getHdr()->hdr.magic == WII_MAGIC || m_cf.getHdr()->hdr.gc_magic == GC_MAGIC || m_current_view == COVERFLOW_CHANNEL))
 		{
 			_hideGame();
 			m_gameSelected = true;
@@ -394,12 +394,12 @@ void CMenu::_game(bool launch)
 			if (!m_gameSound.IsPlaying()) 
 				startGameSound = -6;
 		}
-		else if (BTN_MINUS_PRESSED)
+		else if(BTN_MINUS_PRESSED)
 		{
 			string videoPath = sfmt("%s/%.3s.thp", m_videoDir.c_str(), id.c_str());
-		
+
 			FILE *file = fopen(videoPath.c_str(), "rb");
-			if (file)
+			if(file)
 			{
 				fclose(file);
 				_hideGame();
@@ -412,7 +412,7 @@ void CMenu::_game(bool launch)
 				m_video_playing = true;
 
 				STexture videoBg;
-				while (!BTN_B_PRESSED && !BTN_A_PRESSED && !BTN_HOME_PRESSED && movie.GetNextFrame(&videoBg))
+				while(!BTN_B_PRESSED && !BTN_A_PRESSED && !BTN_HOME_PRESSED && movie.GetNextFrame(&videoBg))
 				{
 					_setBg(videoBg, videoBg);
 					m_bgCrossFade = 10;
@@ -424,7 +424,7 @@ void CMenu::_game(bool launch)
 				//m_gameSound.play(m_bnrSndVol);
 			}
 		}
-		else if ((BTN_1_PRESSED) || (BTN_2_PRESSED))
+		else if((BTN_1_PRESSED) || (BTN_2_PRESSED))
 		{
 			s8 direction = BTN_1_PRESSED ? 1 : -1;
 			const char *domain = _domainFromView();
@@ -433,16 +433,16 @@ void CMenu::_game(bool launch)
 			m_cf.applySettings();
 			m_cfg.setInt(domain, "last_cf_mode" , cfVersion);
 		}
-		else if (launch || BTN_A_PRESSED)
+		else if(launch || BTN_A_PRESSED)
 		{
 			if (m_btnMgr.selected(m_mainBtnQuit))
 				break;
-			else if (m_btnMgr.selected(m_gameBtnDelete))
+			else if(m_btnMgr.selected(m_gameBtnDelete))
 			{
-				if (!m_locked)
+				if(!m_locked)
 				{
 					_hideGame();
-					if (_wbfsOp(CMenu::WO_REMOVE_GAME))
+					if(_wbfsOp(CMenu::WO_REMOVE_GAME))
 					{
 						m_gameSound.Stop();
 						CheckGameSoundThread();
@@ -451,26 +451,26 @@ void CMenu::_game(bool launch)
 					_showGame();
 				}
 			}
-			else if (m_btnMgr.selected(m_gameBtnFavoriteOn) || m_btnMgr.selected(m_gameBtnFavoriteOff))
+			else if(m_btnMgr.selected(m_gameBtnFavoriteOn) || m_btnMgr.selected(m_gameBtnFavoriteOff))
 				m_gcfg1.setBool("FAVORITES", id, !m_gcfg1.getBool("FAVORITES", id, false));
-			else if (m_btnMgr.selected(m_gameBtnAdultOn) || m_btnMgr.selected(m_gameBtnAdultOff))
+			else if(m_btnMgr.selected(m_gameBtnAdultOn) || m_btnMgr.selected(m_gameBtnAdultOff))
 				m_gcfg1.setBool("ADULTONLY", id, !m_gcfg1.getBool("ADULTONLY", id, false));
-			else if (m_btnMgr.selected(m_gameBtnBack))
+			else if(m_btnMgr.selected(m_gameBtnBack))
 			{
 				m_gameSound.Stop();
 				CheckGameSoundThread();
 				break;
 			}
-			else if (m_btnMgr.selected(m_gameBtnSettings))
+			else if(m_btnMgr.selected(m_gameBtnSettings))
 			{
 				_hideGame();
 				m_gameSelected = true;
 				_gameSettings();
 				_showGame();
-				if (!m_gameSound.IsPlaying()) 
+				if(!m_gameSound.IsPlaying()) 
 					startGameSound = -6;
 			}
-			else if (launch || m_btnMgr.selected(m_gameBtnPlay) || (!WPadIR_Valid(0) && !WPadIR_Valid(1) && !WPadIR_Valid(2) && !WPadIR_Valid(3) && m_btnMgr.selected((u32)-1)))
+			else if(launch || m_btnMgr.selected(m_gameBtnPlay) || (!WPadIR_Valid(0) && !WPadIR_Valid(1) && !WPadIR_Valid(2) && !WPadIR_Valid(3) && m_btnMgr.selected((u32)-1)))
 			{
 				_hideGame();
 				dir_discHdr *hdr = m_cf.getHdr();
@@ -478,7 +478,7 @@ void CMenu::_game(bool launch)
 				{
 					char gcfolder[300];
 					snprintf(gcfolder, sizeof(gcfolder), "%s [%s]", m_cf.getTitle().toUTF8().c_str(), (char *)hdr->hdr.id);
-					if (GC_GameIsInstalled((char *)hdr->hdr.id, DeviceName[SD], DML_DIR))
+					if(GC_GameIsInstalled((char *)hdr->hdr.id, DeviceName[SD], DML_DIR))
 					{
 						memset(hdr->path, 0, sizeof(hdr->path));
 						strncpy(hdr->path, (char*)hdr->hdr.id, sizeof(hdr->path));
@@ -496,19 +496,19 @@ void CMenu::_game(bool launch)
 				m_cf.clear();
 				_showWaitMessage();
 
-				if (m_current_view != COVERFLOW_HOMEBREW && m_current_view != COVERFLOW_EMU)
+				if(m_current_view != COVERFLOW_HOMEBREW && m_current_view != COVERFLOW_EMU)
 				{
 					// Get banner_title
 					Banner * banner = m_current_view == COVERFLOW_CHANNEL ? _extractChannelBnr(chantitle) : (m_current_view == COVERFLOW_USB && hdr->hdr.gc_magic != GC_MAGIC) ? _extractBnr(hdr) : NULL;
-					if (banner != NULL)
+					if(banner != NULL)
 					{						
-						if (banner->IsValid())
+						if(banner->IsValid())
 							_extractBannerTitle(banner, GetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str()));
 						delete banner;
 					}
 					banner = NULL;
 
-					if (Playlog_Update(id.c_str(), banner_title) < 0)
+					if(Playlog_Update(id.c_str(), banner_title) < 0)
 						Playlog_Delete();
 				}
 
@@ -535,34 +535,34 @@ void CMenu::_game(bool launch)
 						m_cf.flip();
 			}
 		}
-		if ((startGameSound == 1 || startGameSound < -8) && (BTN_UP_REPEAT || RIGHT_STICK_UP))
+		if((startGameSound == 1 || startGameSound < -8) && (BTN_UP_REPEAT || RIGHT_STICK_UP))
 		{
 			m_cf.up();
 			startGameSound = -10;
 		}
-		if ((startGameSound == 1 || startGameSound < -8) && (BTN_RIGHT_REPEAT || RIGHT_STICK_RIGHT))
+		if((startGameSound == 1 || startGameSound < -8) && (BTN_RIGHT_REPEAT || RIGHT_STICK_RIGHT))
 		{
 			m_cf.right();
 			startGameSound = -10;
 		}
-		if ((startGameSound == 1 || startGameSound < -8) && (BTN_DOWN_REPEAT || RIGHT_STICK_DOWN))
+		if((startGameSound == 1 || startGameSound < -8) && (BTN_DOWN_REPEAT || RIGHT_STICK_DOWN))
 		{
 			m_cf.down();
 			startGameSound = -10;
 		}
-		if ((startGameSound == 1 || startGameSound < -8) && (BTN_LEFT_REPEAT || RIGHT_STICK_LEFT))
+		if((startGameSound == 1 || startGameSound < -8) && (BTN_LEFT_REPEAT || RIGHT_STICK_LEFT))
 		{
 			m_cf.left();
 			startGameSound = -10;
 		}
-		if (startGameSound == -10)
+		if(startGameSound == -10)
 		{
 			m_gameSound.Stop();
 			m_gameSelected = false;
 			m_fa.unload();
 			_setBg(m_mainBg, m_mainBgLQ);
 		}
-		if (m_show_zone_game)
+		if(m_show_zone_game)
 		{
 			bool b = m_gcfg1.getBool("FAVORITES", id, false);
 			m_btnMgr.show(b ? m_gameBtnFavoriteOn : m_gameBtnFavoriteOff);
@@ -573,7 +573,8 @@ void CMenu::_game(bool launch)
 				if (m_gameLblUser[i] != -1u)
 					m_btnMgr.show(m_gameLblUser[i]);
 
-			if (!m_locked) {
+			if (!m_locked)
+			{
 				b = m_gcfg1.getBool("ADULTONLY", id, false);
 				m_btnMgr.show(b ? m_gameBtnAdultOn : m_gameBtnAdultOff);
 				m_btnMgr.hide(b ? m_gameBtnAdultOff : m_gameBtnAdultOn);
@@ -599,7 +600,6 @@ void CMenu::_game(bool launch)
 		}
 	}
 	m_gcfg1.save(true);
-	
 	_hideGame();
 }
 
