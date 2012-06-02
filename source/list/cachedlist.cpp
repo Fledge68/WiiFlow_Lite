@@ -50,11 +50,10 @@ void CachedList<T>::Load(string path, string containing, string m_lastLanguage, 
 		if(update_lang) gprintf("Languages are different!\nOld language string: %s\nNew language string: %s\n", m_lastLanguage.c_str(), m_curLanguage.c_str());
 		if(noDB) gprintf("A database was not found!\n");
 		if(mtimes || ditimes) gprintf("The WBFS folder was modified!\nCache date: %i\nFolder date: %i\n", cache.st_mtime, filestat.st_mtime);
-	
-		if(m_extcheck && !m_update)
+
+		if(m_extcheck && !m_update && strcasestr(path.c_str(), "wbfs") != NULL)
 		{
 			bool m_chupdate = false;
-	
 			DIR *dir = opendir(path.c_str());
 			struct dirent *entry;
 			while((entry = readdir(dir)) != NULL)
@@ -62,7 +61,6 @@ void CachedList<T>::Load(string path, string containing, string m_lastLanguage, 
 				m_discinf = sfmt("%s/%s", path.c_str(), entry->d_name);
 				if(stat(m_discinf.c_str(), &discinfo) != -1)
 					m_chupdate = discinfo.st_mtime > cache.st_mtime;
-			
 				if(m_chupdate)
 					break;
 			}
