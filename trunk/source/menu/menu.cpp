@@ -392,7 +392,7 @@ void CMenu::init(void)
 		m_loc.load(fmt("%s/%s.ini", m_languagesDir.c_str(), m_curLanguage.c_str()));
 	}
 	
-	bool extcheck = m_cfg.getBool("GENERAL", "extended_list_check", true);
+	bool extcheck = m_cfg.getBool("GENERAL", "extended_list_check", false);
 	
 	m_gameList.Init(m_listCacheDir, m_settingsDir, m_loc.getString(m_curLanguage, "gametdb_code", "EN"), m_DMLgameDir, extcheck);
 
