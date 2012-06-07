@@ -34,7 +34,7 @@
 #include <string.h>
 
 #include "ZipFile.h"
-#include "miniunz.h"
+#include "gc/fileOps.h"
 
 ZipFile::ZipFile(const char *filepath)
 {
@@ -143,7 +143,7 @@ bool ZipFile::ExtractAll(const char *dest)
             char temppath[strlen(writepath)];
             snprintf(temppath, position, "%s", writepath);
 
-            makedir(temppath);
+            fsop_MakeFolder(temppath);
 
             if (ret == UNZ_OK)
             {

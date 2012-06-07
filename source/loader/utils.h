@@ -33,7 +33,6 @@ extern "C" {
 u64 le64(u64);
 u32 le32(u32);
 u16 le16(u16);
-int makedir(char *newdir);
 
 typedef volatile unsigned short vu16;
 typedef volatile unsigned int vu32;

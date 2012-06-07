@@ -140,8 +140,6 @@ CMenu::CMenu(CVideo &vid) :
 	m_Emulator_boot = false;
 }
 
-extern "C" { int makedir(char *newdir); }
-
 void CMenu::init(void)
 {
 	const char *drive = "empty";
@@ -179,7 +177,7 @@ void CMenu::init(void)
 			if (DeviceHandler::Instance()->IsInserted(i) && DeviceHandler::Instance()->GetFSType(i) != PART_FS_WBFS)
 			{
 				drive = DeviceName[i];
-				makedir((char *)fmt("%s:/%s", DeviceName[i], APPDATA_DIR2)); //Make the apps dir, so saving wiiflow.ini does not fail.
+				fsop_MakeFolder((char *)fmt("%s:/%s", DeviceName[i], APPDATA_DIR2)); //Make the apps dir, so saving wiiflow.ini does not fail.
 				break;
 			}
 
@@ -327,21 +325,21 @@ void CMenu::init(void)
 	m_cf.init(m_base_font, m_base_font_size, m_vid.vid_50hz());
 
 	//Make important folders first.
-	makedir((char *)m_cacheDir.c_str());
-	makedir((char *)m_settingsDir.c_str());
-	makedir((char *)m_languagesDir.c_str());
-	makedir((char *)m_boxPicDir.c_str());
-	makedir((char *)m_picDir.c_str());
-	makedir((char *)m_themeDir.c_str());
-	makedir((char *)m_musicDir.c_str());
-	makedir((char *)m_videoDir.c_str());
-	makedir((char *)m_fanartDir.c_str());
-	makedir((char *)m_screenshotDir.c_str());
-	makedir((char *)m_txtCheatDir.c_str());
-	makedir((char *)m_cheatDir.c_str());
-	makedir((char *)m_wipDir.c_str());
-	makedir((char *)m_listCacheDir.c_str());
-	makedir((char *)m_helpDir.c_str());
+	fsop_MakeFolder((char *)m_cacheDir.c_str());
+	fsop_MakeFolder((char *)m_settingsDir.c_str());
+	fsop_MakeFolder((char *)m_languagesDir.c_str());
+	fsop_MakeFolder((char *)m_boxPicDir.c_str());
+	fsop_MakeFolder((char *)m_picDir.c_str());
+	fsop_MakeFolder((char *)m_themeDir.c_str());
+	fsop_MakeFolder((char *)m_musicDir.c_str());
+	fsop_MakeFolder((char *)m_videoDir.c_str());
+	fsop_MakeFolder((char *)m_fanartDir.c_str());
+	fsop_MakeFolder((char *)m_screenshotDir.c_str());
+	fsop_MakeFolder((char *)m_txtCheatDir.c_str());
+	fsop_MakeFolder((char *)m_cheatDir.c_str());
+	fsop_MakeFolder((char *)m_wipDir.c_str());
+	fsop_MakeFolder((char *)m_listCacheDir.c_str());
+	fsop_MakeFolder((char *)m_helpDir.c_str());
 
 	// INI files
 	m_cat.load(fmt("%s/" CAT_FILENAME, m_settingsDir.c_str()));
