@@ -72,7 +72,7 @@ void ClearLogBuffer()
 {
 	if(tmpfilebuffer == NULL)
 		return;
-	MEM1_free(tmpfilebuffer);
+	MEM2_free(tmpfilebuffer);
 	tmpfilebuffer = NULL;
 }
 
@@ -88,7 +88,7 @@ void WriteToFile(char* tmp)
 	}
 	else
 	{
-		MEM1_free(tmpfilebuffer);
+		MEM2_free(tmpfilebuffer);
 		tmpfilebuffer = NULL;
 		return;
 	}
@@ -168,7 +168,7 @@ bool InitGecko()
 
 	USBGeckoOutput();
 
-	tmpfilebuffer = (char*)MEM1_alloc(filebuffer + 1 * sizeof(char));
+	tmpfilebuffer = (char*)MEM2_alloc(filebuffer + 1 * sizeof(char));
 	if(tmpfilebuffer != NULL)
 		memset(tmpfilebuffer, 0, sizeof(tmpfilebuffer));
 

@@ -18,7 +18,7 @@ void CachedList<T>::Load(string path, string containing, string m_lastLanguage, 
 	bool ditimes = false;
 	bool music = typeid(T) == typeid(std::string);
 	if(music)
-		gprintf("Loading music list from path: %s\n",path.c_str());
+		gprintf("Loading music list from path: %s\n", path.c_str());
 	else if(!m_wbfsFS)
 	{
 		gprintf("Database file: %s\n", m_database.c_str());
@@ -37,7 +37,8 @@ void CachedList<T>::Load(string path, string containing, string m_lastLanguage, 
 		m_discinf = sfmt("%s/disc.info", path.c_str());
 		struct stat filestat, discinfo, cache;
 		gprintf("%s\n", path.c_str());
-		if(stat(path.c_str(), &filestat) == -1) return;			
+		if(stat(path.c_str(), &filestat) == -1) 
+			return;			
 		
 		bool update_lang = m_lastLanguage != m_curLanguage;
 		bool noDB = stat(m_database.c_str(), &cache) == -1;
@@ -46,12 +47,16 @@ void CachedList<T>::Load(string path, string containing, string m_lastLanguage, 
 			ditimes = discinfo.st_mtime > cache.st_mtime;		
 
 		m_update = update_lang || noDB || mtimes || ditimes;
-		if(m_update) gprintf("Cache of %s is being updated because:\n", path.c_str());
-		if(update_lang) gprintf("Languages are different!\nOld language string: %s\nNew language string: %s\n", m_lastLanguage.c_str(), m_curLanguage.c_str());
-		if(noDB) gprintf("A database was not found!\n");
-		if(mtimes || ditimes) gprintf("The WBFS folder was modified!\nCache date: %i\nFolder date: %i\n", cache.st_mtime, filestat.st_mtime);
+		if(m_update) 
+			gprintf("Cache of %s is being updated because:\n", path.c_str());
+		if(update_lang) 
+			gprintf("Languages are different!\nOld language string: %s\nNew language string: %s\n", m_lastLanguage.c_str(), m_curLanguage.c_str());
+		if(noDB) 
+			gprintf("A database was not found!\n");
+		if(mtimes || ditimes) 
+			gprintf("The WBFS folder was modified!\nCache date: %i\nFolder date: %i\n", cache.st_mtime, filestat.st_mtime);
 
-		if(m_extcheck && !m_update && strcasestr(path.c_str(), "wbfs") != NULL)
+		if(m_extcheck && !m_update && !music)
 		{
 			bool m_chupdate = false;
 			DIR *dir = opendir(path.c_str());
@@ -68,9 +73,12 @@ void CachedList<T>::Load(string path, string containing, string m_lastLanguage, 
 		}	
 	}
 
-	if(update_games) force_update[COVERFLOW_USB] = false;
-	if(update_homebrew) force_update[COVERFLOW_HOMEBREW] = false;
-	if(update_dml) force_update[COVERFLOW_DML] = false;
+	if(update_games) 
+		force_update[COVERFLOW_USB] = false;
+	if(update_homebrew) 
+		force_update[COVERFLOW_HOMEBREW] = false;
+	if(update_dml) 
+		force_update[COVERFLOW_DML] = false;
 
 	if(m_update || m_wbfsFS || music)
 	{

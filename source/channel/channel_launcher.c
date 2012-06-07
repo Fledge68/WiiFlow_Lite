@@ -26,7 +26,8 @@ extern void __exception_closeall();
 
 typedef void (*entrypoint) (void);
 
-typedef struct _dolheader{
+typedef struct _dolheader
+{
 	u32 section_pos[18];
 	u32 section_start[18];
 	u32 section_size[18];
@@ -67,9 +68,9 @@ s32 BootChannel(u32 entry, u64 chantitle, u32 ios, u8 vidMode, bool vipatch, boo
     DCFlushRange((void *)0x80003188, 4);
 
     // Game ID Online Check
-    memset((void *)0x80000000, 0, 6);
+    memset((void *)0x80000000, 0, 4);
     *(vu32 *)0x80000000 = TITLE_LOWER(chantitle);
-    DCFlushRange((void *)0x80000000, 6);
+	DCFlushRange((void *)0x80000000, 4);
 
 	gprintf("Jumping to entrypoint %08x\n", entryPoint);
 
@@ -85,7 +86,7 @@ s32 BootChannel(u32 entry, u64 chantitle, u32 ios, u8 vidMode, bool vipatch, boo
 	{
 		if(hooktype != 0)
 		{
-			__asm__(
+			asm volatile (
 				"lis %r3, entryPoint@h\n"
 				"ori %r3, %r3, entryPoint@l\n"
 				"lwz %r3, 0(%r3)\n"
@@ -102,7 +103,7 @@ s32 BootChannel(u32 entry, u64 chantitle, u32 ios, u8 vidMode, bool vipatch, boo
 	}
  	else if(hooktype != 0)
 	{
-		__asm__(
+		asm volatile (
 			"lis %r3, returnpoint@h\n"
 			"ori %r3, %r3, returnpoint@l\n"
 			"mtlr %r3\n"

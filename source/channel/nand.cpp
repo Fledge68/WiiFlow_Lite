@@ -949,9 +949,42 @@ s32 Nand::CreateConfig(const char *path)
 
 	snprintf(cfgpath, sizeof(cfgpath), "%s%s", path, SYSCONFPATH);
 	snprintf(settxtpath, sizeof(settxtpath), "%s%s", path, TXTPATH);
+	snprintf(settxtpath, sizeof(settxtpath), "%s%s", path, TXTPATH);
 
 	__DumpNandFile(SYSCONFPATH, cfgpath);
 	__DumpNandFile(TXTPATH, settxtpath);
+	return 0;	
+}
+
+s32 Nand::PreNandCfg(const char *path, bool miis)
+{
+	CreatePath(path);
+	CreatePath("%s/shared2", path);
+	CreatePath("%s/shared2/sys", path);
+	if(miis)
+	{
+		CreatePath("%s/shared2/menu", path);
+		CreatePath("%s/shared2/menu/FaceLib", path);
+	}
+	CreatePath("%s/title", path);
+	CreatePath("%s/title/00000001", path);
+	CreatePath("%s/title/00000001/00000002", path);
+	CreatePath("%s/title/00000001/00000002/data", path);
+
+	char dest[MAX_FAT_PATH];
+	
+	fake = false;
+	showprogress = false;
+
+	snprintf(dest, sizeof(dest), "%s%s", path, SYSCONFPATH);
+	__DumpNandFile(SYSCONFPATH, dest);
+	snprintf(dest, sizeof(dest), "%s%s", path, TXTPATH);
+	__DumpNandFile(TXTPATH, dest);
+	if(miis)
+	{
+		snprintf(dest, sizeof(dest), "%s%s", path, MIIPATH);
+		__DumpNandFile(MIIPATH, dest);
+	}
 	return 0;	
 }
 

@@ -20,6 +20,7 @@
 #define RF_FORECAST_CHANNEL	0x48414641
 
 #define SYSCONFPATH "/shared2/sys/SYSCONF"
+#define MIIPATH "/shared2/menu/FaceLib/RFL_DB.dat"
 #define TXTPATH "/title/00000001/00000002/data/setting.txt"
 
 #define BLOCK 2048
@@ -75,6 +76,7 @@ class Nand
 		
 		void CreateTitleTMD(const char *path, dir_discHdr *hdr);
 		s32 CreateConfig(const char *path);
+		s32 PreNandCfg(const char *path, bool miis);
 		s32 Do_Region_Change(string id);
 		s32 FlashToNAND(const char *source, const char *dest, dump_callback_t i_dumper, void *i_data);
 		s32 DoNandDump(const char *source, const char *dest, dump_callback_t i_dumper, void *i_data);

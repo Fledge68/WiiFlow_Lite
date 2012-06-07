@@ -189,7 +189,7 @@ s32 Disc_FindPartition(u64 *outbuf)
 	u64 offset = 0;
 	u32 cnt;
 
-	u32 *TMP_Buffer = (u32*)MEM1_alloc(0x20);
+	u32 *TMP_Buffer = (u32*)MEM2_alloc(0x20);
 	if(!TMP_Buffer)
 		return -1;
 
@@ -197,7 +197,7 @@ s32 Disc_FindPartition(u64 *outbuf)
 	s32 ret = WDVD_UnencryptedRead(TMP_Buffer, 0x20, PTABLE_OFFSET);
 	if(ret < 0)
 	{
-		MEM1_free(TMP_Buffer);
+		MEM2_free(TMP_Buffer);
 		return ret;
 	}
 
@@ -207,7 +207,7 @@ s32 Disc_FindPartition(u64 *outbuf)
 	
 	if(nb_partitions > 8)
 	{
-		MEM1_free(TMP_Buffer);
+		MEM2_free(TMP_Buffer);
 		return -1;
 	}
 
@@ -217,7 +217,7 @@ s32 Disc_FindPartition(u64 *outbuf)
 	ret = WDVD_UnencryptedRead(TMP_Buffer, 0x20, table_offset);
 	if (ret < 0)
 	{
-		MEM1_free(TMP_Buffer);
+		MEM2_free(TMP_Buffer);
 		return ret;
 	}
 
@@ -230,7 +230,7 @@ s32 Disc_FindPartition(u64 *outbuf)
 		if(!type)
 			offset = TMP_Buffer[cnt * 2] << 2;
 	}
-	MEM1_free(TMP_Buffer);
+	MEM2_free(TMP_Buffer);
 
 	/* No game partition found */
 	if (!offset)
