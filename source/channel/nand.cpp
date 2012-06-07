@@ -38,6 +38,7 @@
 #include "mem2.hpp"
 #include "wbfs.h"
 #include "gecko.h"
+#include "fileOps.h"
 
 u8 *confbuffer ATTRIBUTE_ALIGN(32);
 u8 CCode[0x1008];
@@ -422,18 +423,6 @@ u32 Nand::__configsetsetting(const char *item, const char *val)
 	return 0;
 }
 
-bool Nand::__FileExists(const char *path, ...)
-{
-	FILE *f = fopen(path, "rb");		
-	if (f != 0)
-	{
-		gprintf("File \"%s\" exists\n", path);		
-		fclose(f);
-		return true;
-	}
-	return false;
-}
-
 void Nand::__FATify(char *ptr, const char *str)
 {
 	char ctr;
@@ -620,8 +609,8 @@ s32 Nand::__DumpNandFile(const char *source, const char *dest)
 		return 0;
 	}
 
-	if(__FileExists(dest))   
-		remove(dest);		
+	if(fsop_FileExist(dest))
+		remove(dest);
 
 	FILE *file = fopen(dest, "wb");
 	if (!file)

@@ -101,14 +101,13 @@ class Nand
 		u32 __configsetbyte(const char *item, u8 val);
 		u32 __configsetbigarray(const char *item, void *val, u32 size);
 		u32 __configsetsetting(const char *item, const char *val);
-		bool __FileExists(const char *path, ...);
 		void __NANDify(char *str);
 		void __FATify(char *dst, const char *src);
 		s32 __Unescaped2x(const char *path);
 		s32 __FlashNandFile(const char *source, const char *dest);
 		s32 __FlashNandFolder(const char *source, const char *dest);
 		s32 __DumpNandFile(const char *source, const char *dest);
-		s32 __DumpNandFolder(const char *source, const char *dest);				
+		s32 __DumpNandFolder(const char *source, const char *dest);
 
 		u32 MountedDevice;
 		u32 EmuDevice;
