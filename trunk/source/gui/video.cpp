@@ -247,11 +247,15 @@ void CVideo::cleanup(void)
 	{
 		if(m_aaBuffer[i].get())
 			m_aaBuffer[i].release();
+			
+		m_aaBufferSize[i] = 0;	
 	}
 	for(u8 i = 0; i < m_defaultWaitMessages.size(); i++)
+	{
 		m_defaultWaitMessages[i].data.release();
-	free(MEM_K1_TO_K0(m_frameBuf[0]));
-	free(MEM_K1_TO_K0(m_frameBuf[1]));
+	}
+	//free(MEM_K1_TO_K0(m_frameBuf[0]));
+	//free(MEM_K1_TO_K0(m_frameBuf[1]));
 	MEM1_free(m_stencil);
 	MEM1_free(m_fifo);
 }

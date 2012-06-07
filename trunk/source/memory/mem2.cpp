@@ -11,10 +11,7 @@
 // Forbid the use of MEM2 through malloc
 u32 MALLOC_MEM2 = 0;
 
-static CMEM2Alloc g_mem1gp;
 static CMEM2Alloc g_mem2gp;
-
-bool WrapMEM1 = true;
 
 extern "C"
 {
@@ -26,57 +23,34 @@ extern __typeof(memalign) __real_memalign;
 extern __typeof(free) __real_free;
 extern __typeof(malloc_usable_size) __real_malloc_usable_size;
 
-void MEM1_init(void *addr, void *end)
-{
-	g_mem1gp.init(addr, end);
-	g_mem1gp.clear();
-}
-
-void MEM1_cleanup(void)
-{
-	g_mem1gp.cleanup();
-}
-
-void MEM1_clear(void)
-{
-	g_mem1gp.clear();
-}
-
 void *MEM1_alloc(unsigned int s)
 {
-	return g_mem1gp.allocate(s);
+	return __real_malloc(s);
 }
 
 void *MEM1_memalign(unsigned int a, unsigned int s)
 {
-	return g_mem1gp.allocate(ALIGN(a, s));
+	return __real_memalign(a, s);
 }
 
 void *MEM1_realloc(void *p, unsigned int s)
 {
-	return g_mem1gp.reallocate(p, s);
+	return __real_realloc(p, s);
 }
 
 void MEM1_free(void *p)
 {
-	g_mem1gp.release(p);
-}
-
-void MEM1_wrap(unsigned int enable)
-{
-	WrapMEM1 = enable;
-}
-
-unsigned int MEM1_usableSize(void *p)
-{
-	return g_mem1gp.usableSize(p);
+	if(p != NULL)
+	{
+		free(p);
+		p = NULL;
+	}
 }
 
 unsigned int MEM1_freesize()
 {
-	return g_mem1gp.FreeSize();
+	return SYS_GetArena1Size();
 }
-
 
 void MEM2_init(unsigned int mem2Size)
 {
@@ -127,7 +101,7 @@ unsigned int MEM2_freesize()
 void *__wrap_malloc(size_t size)
 {
 	void *p;
-	if(SYS_GetArena1Lo() >= MAX_MEM1_ARENA_LO || size >= MEM2_PRIORITY_SIZE || !WrapMEM1)
+	if(SYS_GetArena1Lo() >= MAX_MEM1_ARENA_LO || size >= MEM2_PRIORITY_SIZE)
 	{
 		p = g_mem2gp.allocate(size);
 		if(p != 0) 
@@ -143,7 +117,7 @@ void *__wrap_malloc(size_t size)
 void *__wrap_calloc(size_t n, size_t size)
 {
 	void *p;
-	if(SYS_GetArena1Lo() >= MAX_MEM1_ARENA_LO || (n * size) >= MEM2_PRIORITY_SIZE || !WrapMEM1)
+	if(SYS_GetArena1Lo() >= MAX_MEM1_ARENA_LO || (n * size) >= MEM2_PRIORITY_SIZE)
 	{
 		p = g_mem2gp.allocate(n * size);
 		if (p != 0)
@@ -166,7 +140,7 @@ void *__wrap_calloc(size_t n, size_t size)
 void *__wrap_memalign(size_t a, size_t size)
 {
 	void *p;
-	if(SYS_GetArena1Lo() >= MAX_MEM1_ARENA_LO || size >= MEM2_PRIORITY_SIZE || !WrapMEM1)
+	if(SYS_GetArena1Lo() >= MAX_MEM1_ARENA_LO || size >= MEM2_PRIORITY_SIZE)
 	{
 		p = MEM2_memalign(a, size);
 		if (p != 0)
@@ -186,8 +160,6 @@ void __wrap_free(void *p)
 
 	if(((u32)p & 0x10000000) != 0)
 		g_mem2gp.release(p);
-	else if((u32)p < (u32)0x80b00000 && (u32)p >= (u32)0x80003f00)
-		g_mem1gp.release(p);
 	else
 		__real_free(p);
 }

@@ -392,7 +392,8 @@ void CMenu::init(void)
 		m_loc.load(fmt("%s/%s.ini", m_languagesDir.c_str(), m_curLanguage.c_str()));
 	}
 	
-	bool extcheck = m_cfg.getBool("GENERAL", "extended_list_check", false);
+	bool extcheck = m_cfg.getBool("GENERAL", "extended_list_check", true);
+	m_tempView = false;
 	
 	m_gameList.Init(m_listCacheDir, m_settingsDir, m_loc.getString(m_curLanguage, "gametdb_code", "EN"), m_DMLgameDir, extcheck);
 
@@ -1971,65 +1972,36 @@ const wstringEx CMenu::_fmt(const char *key, const wchar_t *def)
 
 bool CMenu::_loadChannelList(void)
 {
-	currentPartition = m_cfg.getInt("NAND", "partition", 0);
-	static u8 lastPartition = currentPartition;
+	string emuPath;
+	
+	m_partRequest = m_cfg.getInt("NAND", "partition", 0);
+	int emuPartition = _FindEmuPart(&emuPath, m_partRequest, false);
 
 	bool disable_emu = m_cfg.getBool("NAND", "disable", true);
 	static bool last_emu_state = disable_emu;
 
-	if(!disable_emu && !DeviceHandler::Instance()->IsInserted(currentPartition))
+	if(emuPartition < 0)
+		emuPartition = _FindEmuPart(&emuPath, m_partRequest, true);
+	
+	if(emuPartition < 0)
 		return false;
+	else	
+		currentPartition = emuPartition; 
+	
+	static u8 lastPartition = currentPartition;
 
 	static bool first = true;
 	static bool failed = false;
 
 	bool changed = lastPartition != currentPartition || last_emu_state != disable_emu || first || failed;
-
-	gprintf("%s, which is %s\n", disable_emu ? "NAND" : DeviceName[currentPartition], changed ? "refreshing." : "cached.");
-
-	string path = m_cfg.getString("NAND", "path", STDEMU_DIR);
+	
+	gprintf("%s, which is %s\n", disable_emu ? "NAND" : DeviceName[emuPartition], changed ? "refreshing." : "cached.");
 
 	if(first && !disable_emu)
 	{
-		char filepath[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
-
-		u32 sysconf_size, meez_size;
-
-		sprintf(filepath, "/shared2/sys/SYSCONF");
-		u8 *sysconf = ISFS_GetFile((u8 *) &filepath, &sysconf_size, -1);
-
-		if(sysconf != NULL && sysconf_size > 0)
-		{
-			sprintf(filepath, "%s:%s/shared2/sys/SYSCONF", DeviceName[currentPartition], path.c_str());	
-			FILE *file = fopen(filepath, "wb");
-			if(file)
-			{
-				fwrite(sysconf, 1, sysconf_size, file);
-				gprintf("Written SYSCONF to: %s\n", filepath);
-				fclose(file);
-			}
-			else
-				gprintf("Openning %s failed returning %i\n", filepath, file);
-			MEM2_free(sysconf);
-		}
-
-		sprintf(filepath, "/shared2/menu/FaceLib/RFL_DB.dat");
-		u8 *meez = ISFS_GetFile((u8 *) &filepath, &meez_size, -1);
-
-		if(meez != NULL && meez_size > 0)
-		{
-			sprintf(filepath, "%s:%s/shared2/menu/FaceLib/RFL_DB.dat", DeviceName[currentPartition], path.c_str());
-			FILE *file = fopen(filepath, "wb");
-			if(file)
-			{
-				fwrite(meez, 1, meez_size, file);
-				gprintf("Written Mii's to: %s\n", filepath);
-				fclose(file);
-			}
-			else
-				gprintf("Openning %s failed returning %i\n", filepath, file);
-			MEM2_free(meez);
-		}
+		char basepath[64];		
+		snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[currentPartition], emuPath.c_str());
+		Nand::Instance()->PreNandCfg(basepath, m_cfg.getBool("NAND", "miis_from_real", true));
 		first = false;
 	}
 
@@ -2041,7 +2013,7 @@ bool CMenu::_loadChannelList(void)
 
 		DeviceHandler::Instance()->UnMount(currentPartition);
 
-		Nand::Instance()->Init(path.c_str(), currentPartition, disable_emu);
+		Nand::Instance()->Init(emuPath.c_str(), currentPartition, disable_emu);
 		if(Nand::Instance()->Enable_Emu() < 0)
 		{
 			Nand::Instance()->Disable_Emu();
@@ -2054,9 +2026,9 @@ bool CMenu::_loadChannelList(void)
 	if(!DeviceHandler::Instance()->IsInserted(currentPartition))
 		DeviceHandler::Instance()->Mount(currentPartition);
 
-	string nandpath = sfmt("%s:%s/", DeviceName[currentPartition], path.empty() ? "" : path.c_str());
+	string nandpath = sfmt("%s:%s/", DeviceName[currentPartition], emuPath.empty() ? "" : emuPath.c_str());
 	gprintf("nandpath = %s\n", nandpath.c_str());
-
+	
 	if(!failed) 
 	{
 		m_gameList.LoadChannels(disable_emu ? "" : nandpath, 0, m_cfg.getString("NAND", "lastlanguage", "EN").c_str());
@@ -2273,7 +2245,7 @@ bool CMenu::_loadFile(SmartBuf &buffer, u32 &size, const char *path, const char 
 		buffer.release();
 	buffer = fileBuf;
 
-	size = fileSize;
+	size = fileSize;	
 	return true;
 }
 

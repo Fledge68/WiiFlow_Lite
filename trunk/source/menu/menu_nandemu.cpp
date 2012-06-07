@@ -13,6 +13,141 @@ static inline int loopNum(int i, int s)
 	return i < 0 ? (s - (-i % s)) % s : i % s;
 }
 
+static bool __FileExists(const char *path)
+{
+	FILE *f = fopen(path, "rb");		
+	if (f != 0)
+	{
+		//gprintf("File \"%s\" exists\n", path);		
+		fclose(f);
+		return true;
+	}
+	return false;
+}
+
+static bool _saveExists(const char *path)
+{	
+	DIR *d;
+	d = opendir(path);
+	if(!d)
+	{
+		return false;
+	}
+	else
+	{
+		closedir(d);
+		return true;
+	}
+}
+
+bool CMenu::_TestEmuNand(int epart, const char *path, bool indept)
+{
+	bool haveValidENand = true;
+	char basepath[64];
+	char testpath[MAX_FAT_PATH];
+	snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[epart], path);
+	DIR *d;
+	d = opendir(basepath);
+	if(!d)
+		haveValidENand = false;
+	else
+		closedir(d);
+		
+	if(indept)
+	{
+		// Check Wiimotes && Region
+		snprintf(testpath, sizeof(testpath), "%s:%s/shared2/sys/SYSCONF", DeviceName[epart], path);
+		if(!__FileExists(testpath))
+		{
+			//gprintf("Nandcheck: SYSCONF not found\n");
+			haveValidENand = false;
+		}
+		snprintf(testpath, sizeof(testpath), "%s:%s/title/00000001/00000002/data/setting.txt", DeviceName[epart], path);
+		if(!__FileExists(testpath))
+		{
+			//gprintf("Nandcheck: setting.txt not found\n");
+			haveValidENand = false;
+		}
+		// Check Mii's
+		snprintf(testpath, sizeof(testpath), "%s:%s/shared2/menu/FaceLib/RFL_DB.dat", DeviceName[epart], path);
+		if(!__FileExists(testpath))
+		{
+			//gprintf("Nandcheck: Mii's not found\n");
+			haveValidENand = false;
+		}
+	}
+	return haveValidENand;
+}
+
+int CMenu::_FindEmuPart(string *emuPath, int part, bool searchvalid)
+{
+	int emuPartition = -1;	
+	string tmpPath;
+	if(m_current_view == COVERFLOW_CHANNEL)
+	{
+		emuPartition = m_cfg.getInt("NAND", "partition", 0);
+		tmpPath = m_cfg.getString("NAND", "path", "");
+		if(tmpPath.size() == 0)
+		{
+			m_cfg.setString("NAND", "path", STDEMU_DIR);
+			tmpPath = m_cfg.getString("NAND", "path", STDEMU_DIR);
+		}
+	}
+	else if(m_current_view == COVERFLOW_USB)
+	{
+		emuPartition = m_cfg.getInt("GAMES", "savepartition", -1);
+		if(emuPartition == -1)
+			emuPartition = m_cfg.getInt("NAND", "partition", 0);
+		tmpPath = m_cfg.getString("GAMES", "savepath", m_cfg.getString("NAND", "path", ""));
+		if(tmpPath.size() == 0)
+		{
+			m_cfg.setString("GAMES", "savepath", STDEMU_DIR);
+			tmpPath = m_cfg.getString("GAMES", "savepath", STDEMU_DIR);
+		}
+	}
+
+	if(_TestEmuNand(emuPartition, tmpPath.c_str(), true) && DeviceHandler::Instance()->IsInserted(emuPartition) && DeviceHandler::Instance()->GetFSType(emuPartition) == PART_FS_FAT)
+	{	
+		*emuPath = tmpPath;
+		return emuPartition;
+	}		
+	else
+	{	
+		emuPartition = part;
+		bool fllscn = emuPartition == -1;
+		for(u8 i = emuPartition; i <= USB8; ++i)
+		{
+			if(!DeviceHandler::Instance()->IsInserted(emuPartition) || DeviceHandler::Instance()->GetFSType(emuPartition) != PART_FS_FAT)
+			{
+				emuPartition++;
+				continue;
+			}
+			else
+			{
+				if(_TestEmuNand(i, tmpPath.c_str(), true) || searchvalid)
+				{
+					if(m_current_view == COVERFLOW_CHANNEL)
+						m_cfg.setInt("NAND", "partition", i);
+					else if(m_current_view == COVERFLOW_USB)
+						m_cfg.setInt("GAMES", "savepartition", i);
+					
+					*emuPath = tmpPath;
+					m_cfg.save();
+		
+					return i;
+				}
+			}
+		
+			if(i == USB8 && !fllscn)
+			{
+				i = 0;
+				fllscn = true;
+			}
+		}
+	}
+	
+	return -1;
+}
 
 bool CMenu::_checkSave(string id, bool nand)
 {
@@ -39,29 +174,11 @@ bool CMenu::_checkSave(string id, bool nand)
 	return true;
 }
 
-static bool _saveExists(const char *path)
-{	
-	DIR *d;
-	d = opendir(path);
-	if(!d)
-	{
-		return false;
-	}
-	else
-	{
-		closedir(d);
-		return true;
-	}
-}
-
 void CMenu::_enableNandEmu(bool fromconfig)
 {
 	_cfNeedsUpdate();
-	bool disable = true;
-	int i = m_current_view == COVERFLOW_CHANNEL && min(max(0, m_cfg.getInt("NAND", "emulation", 0)), (int)ARRAY_SIZE(CMenu::_NandEmu) - 1);
-	gprintf("i: %i\n",i);
-	if (i>0 || m_current_view != COVERFLOW_CHANNEL)
-		disable = false;
+	bool disable = m_cfg.getBool("NAND", "disable", true) && m_current_view == COVERFLOW_CHANNEL && !m_tempView;	
+	
 	if(!disable)
 	{
 		Nand::Instance()->Disable_Emu();
@@ -69,7 +186,7 @@ void CMenu::_enableNandEmu(bool fromconfig)
 		iosinfo_t * iosInfo = cIOSInfo::GetInfo(mainIOS);
 		if (iosInfo->version > 6)
 			isD2XnewerThanV6 = true;
-		if(m_current_view == COVERFLOW_CHANNEL && m_cfg.getInt("NAND", "emulation", 0) > 0)
+		if(m_current_view == COVERFLOW_CHANNEL && !m_cfg.getBool("NAND", "disable", true) && !m_tempView)
 			Nand::Instance()->Enable_Emu();
 		u8 limiter = 0;
 		s8 direction = m_btnMgr.selected(m_configBtnPartitionP) ? 1 : -1;
@@ -88,7 +205,10 @@ void CMenu::_enableNandEmu(bool fromconfig)
 		}
 
 		gprintf("Next item: %s\n", DeviceName[currentPartition]);
-		m_cfg.setInt(_domainFromView(), "partition", currentPartition);
+		if(m_tempView)
+			m_cfg.setInt("GAMES", "savepartition", currentPartition);
+		else
+			m_cfg.setInt(_domainFromView(), "partition", currentPartition);
 	}
 }
 
@@ -139,6 +259,7 @@ void CMenu::_hideNandEmu(bool instant)
 	m_btnMgr.hide(m_nandemuLblNandDump, instant);
 	m_btnMgr.hide(m_nandemuBtnNandDump, instant);
 	m_btnMgr.hide(m_nandemuBtnExtract, instant);
+	m_btnMgr.hide(m_nandemuBtnPartition, instant);
 	m_btnMgr.hide(m_nandemuBtnDisable, instant);	
 	m_btnMgr.hide(m_nandemuLblInit, instant); 
 }
@@ -150,12 +271,16 @@ void CMenu::_showNandEmu(void)
 	m_btnMgr.show(m_nandemuLblTitle);
 	m_btnMgr.show(m_nandemuBtnBack);
 	int i;
-	if((m_current_view == COVERFLOW_CHANNEL || m_current_view == COVERFLOW_USB) && !m_locked)
+	if(((m_current_view == COVERFLOW_CHANNEL && !m_cfg.getBool("NAND", "disable", true)) || m_current_view == COVERFLOW_USB) && !m_locked)
 	{
 		m_btnMgr.show(m_nandemuLblEmulation);
 		m_btnMgr.show(m_nandemuLblEmulationVal);
 		m_btnMgr.show(m_nandemuBtnEmulationP);
 		m_btnMgr.show(m_nandemuBtnEmulationM);
+	}
+	
+	if((m_current_view == COVERFLOW_CHANNEL || m_current_view == COVERFLOW_USB) && !m_locked)
+	{		
 		m_btnMgr.show(m_nandemuLblSaveDump);
 		m_btnMgr.show(m_nandemuBtnAll);
 		m_btnMgr.show(m_nandemuBtnMissing);
@@ -347,19 +472,16 @@ int CMenu::_FlashSave(string gameId)
 
 int CMenu::_AutoExtractSave(string gameId)
 {
-	int emuPartition = m_cfg.getInt("GAMES", "savepartition", m_cfg.getInt("NAND", "partition", 0));
+	string emuPath;
+
+	if(m_current_view == COVERFLOW_CHANNEL)
+		m_partRequest = m_cfg.getInt("NAND", "partition", -1);	
+	else if(m_current_view == COVERFLOW_USB)
+		m_partRequest = m_cfg.getInt("GAMES", "savepartition", -1);	
+	int emuPartition = _FindEmuPart(&emuPath, m_partRequest, false);
+	
 	if(emuPartition < 0)
-		emuPartition = 0;
-	char basepath[MAX_FAT_PATH];	
-	snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[emuPartition], m_cfg.getString("GAMES", "savepath", m_cfg.getString("NAND", "path", "")).c_str());	
-	Nand::Instance()->CreatePath("%s/import", basepath);
-	Nand::Instance()->CreatePath("%s/meta", basepath);
-	Nand::Instance()->CreatePath("%s/shared1", basepath);
-	Nand::Instance()->CreatePath("%s/shared2", basepath);
-	Nand::Instance()->CreatePath("%s/sys", basepath);
-	Nand::Instance()->CreatePath("%s/title", basepath);
-	Nand::Instance()->CreatePath("%s/ticket", basepath);	
-	Nand::Instance()->CreatePath("%s/tmp", basepath);
+		emuPartition = _FindEmuPart(&emuPath, m_partRequest, true);	
 	
 	if(!_checkSave(gameId, true))
 		return 1;
@@ -413,6 +535,16 @@ int CMenu::_AutoExtractSave(string gameId)
 		}
 		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnDisable)))
 		{
+			char basepath[MAX_FAT_PATH];	
+			snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[emuPartition], emuPath.c_str());	
+			Nand::Instance()->CreatePath("%s/import", basepath);
+			Nand::Instance()->CreatePath("%s/meta", basepath);
+			Nand::Instance()->CreatePath("%s/shared1", basepath);
+			Nand::Instance()->CreatePath("%s/shared2", basepath);
+			Nand::Instance()->CreatePath("%s/sys", basepath);
+			Nand::Instance()->CreatePath("%s/title", basepath);
+			Nand::Instance()->CreatePath("%s/ticket", basepath);	
+			Nand::Instance()->CreatePath("%s/tmp", basepath);
 			_hideNandEmu();			
 			return 0;
 		}
@@ -455,15 +587,19 @@ int CMenu::_AutoCreateNand(void)
 {
 	lwp_t thread = 0;
 	SetupInput();
+	string emuPath;
 	m_thrdStop = false;
 	m_thrdMessageAdded = false;
-	m_nandext = false;	
+	m_nandext = false;
+	m_tempView = false;
 
 	m_btnMgr.setText(m_nandemuBtnExtract, _t("cfgne5", L"Extract NAND"));
 	m_btnMgr.setText(m_nandemuBtnDisable, _t("cfgne22", L"Disable NAND Emulation"));	
+	m_btnMgr.setText(m_nandemuBtnPartition, _t("cfgne31", L"Select Partition"));
 	m_btnMgr.setText(m_nandemuLblInit, _t("cfgne23", L"Welcome to WiiFlow. I have not found a valid NAND for NAND Emulation. Click Extract to extract your NAND, or click disable to disable NAND Emulation."));
 	m_btnMgr.show(m_nandemuBtnExtract);
-	m_btnMgr.show(m_nandemuBtnDisable);	
+	m_btnMgr.show(m_nandemuBtnDisable);
+	m_btnMgr.show(m_nandemuBtnPartition);	
 	m_btnMgr.show(m_nandemuLblInit);	
 
 	while(true)
@@ -473,7 +609,8 @@ int CMenu::_AutoCreateNand(void)
 		{
 			m_fulldump =  true;
 			m_btnMgr.hide(m_nandemuBtnExtract);
-			m_btnMgr.hide(m_nandemuBtnDisable);	
+			m_btnMgr.hide(m_nandemuBtnDisable);
+			m_btnMgr.hide(m_nandemuBtnPartition);
 			m_btnMgr.hide(m_nandemuLblInit);
 			m_btnMgr.show(m_nandemuLblTitle);
 			m_btnMgr.show(m_nandfilePBar);
@@ -495,6 +632,23 @@ int CMenu::_AutoCreateNand(void)
 		{
 			_hideNandEmu();			
 			return 0;
+		}
+		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnPartition)))
+		{
+			if(m_current_view == COVERFLOW_USB)
+			{
+				m_tempView = true;
+				m_current_view = COVERFLOW_CHANNEL;
+			}
+			_hideNandEmu();
+			_config(1);
+			if(m_tempView)
+			{
+				m_current_view = COVERFLOW_USB;
+				m_tempView = false;
+				return 0;
+			}
+			return 1;
 		}
 		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnBack)))
 		{
@@ -535,23 +689,16 @@ int CMenu::_NandFlasher(void *obj)
 {
 	CMenu &m = *(CMenu *)obj;
 	string emuPath;
-	int emuPartition = -1;
+	
 	char source[MAX_FAT_PATH];
 	char dest[ISFS_MAXPATH];
 	
 	if(m.m_current_view == COVERFLOW_CHANNEL)
-	{
-		emuPartition = m.m_cfg.getInt("NAND", "partition", 0);
-		emuPath = m.m_cfg.getString("NAND", "path", "");
-	}
+		m.m_partRequest = m.m_cfg.getInt("NAND", "partition", -1);	
 	else if(m.m_current_view == COVERFLOW_USB)
-	{
-		emuPartition = m.m_cfg.getInt("GAMES", "savepartition", -1);
-		if(emuPartition == -1)
-			emuPartition = m.m_cfg.getInt("NAND", "partition", 0);
-		emuPath = m.m_cfg.getString("GAMES", "savepath", m.m_cfg.getString("NAND", "path", ""));
-	}
+		m.m_partRequest = m.m_cfg.getInt("GAMES", "savepartition", -1);
 	
+	int emuPartition = m._FindEmuPart(&emuPath, m.m_partRequest, false);	
 	int flashID = m.m_saveExtGameId.c_str()[0] << 24 | m.m_saveExtGameId.c_str()[1] << 16 | m.m_saveExtGameId.c_str()[2] << 8 | m.m_saveExtGameId.c_str()[3];
 	
 	if(_saveExists(sfmt("%s:%s/title/00010000/%08x", DeviceName[emuPartition], emuPath.c_str(), flashID).c_str()))	
@@ -584,7 +731,6 @@ int CMenu::_NandDumper(void *obj)
 	CMenu &m = *(CMenu *)obj;
 	string emuPath;
 	int emuPartition = -1;
-	bool emuPartIsValid = false;
 	m.m_nandext = false;
 	m.m_sgdump = false;
 	m.m_dumpsize = 0;
@@ -592,68 +738,26 @@ int CMenu::_NandDumper(void *obj)
 	m.m_foldersdone = 0;
 
 	Nand::Instance()->ResetCounters();
-
+	
 	if(m.m_current_view == COVERFLOW_CHANNEL)
-	{
-		emuPartition = m.m_cfg.getInt("NAND", "partition", 0);
-		emuPath = m.m_cfg.getString("NAND", "path", "");
-	}
+		m.m_partRequest = m.m_cfg.getInt("NAND", "partition", -1);	
 	else if(m.m_current_view == COVERFLOW_USB)
-	{
-		emuPartition = m.m_cfg.getInt("GAMES", "savepartition", -1);
-		if(emuPartition == -1)
-			emuPartition = m.m_cfg.getInt("NAND", "partition", 0);
-		emuPath = m.m_cfg.getString("GAMES", "savepath", m.m_cfg.getString("NAND", "path", ""));
-	}
+		m.m_partRequest = m.m_cfg.getInt("GAMES", "savepartition", -1);
+	
+	emuPartition = m._FindEmuPart(&emuPath, m.m_partRequest, true);
 
-	for(u8 i = emuPartition; i <= USB8; ++i)
-	{
-		if(!DeviceHandler::Instance()->IsInserted(emuPartition) || DeviceHandler::Instance()->GetFSType(emuPartition) != PART_FS_FAT)
-		{
-			emuPartition++;
-			continue;
-		}
-		else
-		{
-			emuPartIsValid = true;
-			if(m.m_current_view == COVERFLOW_CHANNEL)
-				m.m_cfg.setInt("NAND", "partition", emuPartition);
-			else if(m.m_current_view == COVERFLOW_USB)
-				m.m_cfg.setInt("GAMES", "savepartition", emuPartition);			
-			break;
-		}
-	}
-
-	if(!emuPartIsValid)
+	if(emuPartition < 0)
 	{
 		m.error(m._t("cfgne8", L"No valid FAT partition found for NAND Emulation!"));
-		m.m_thrdWorking = false;		
-		m.m_btnMgr.hide(m.m_nandfilePBar);
-		m.m_btnMgr.hide(m.m_nandfileLblMessage);
-		LWP_MutexLock(m.m_mutex);
-		m._setDumpMsg(m._t("cfgne20", L"Extraction failed!"), 1.f, 1.f);
-		LWP_MutexUnlock(m.m_mutex);
-		m._hideNandEmu();
+		//m.m_thrdWorking = false;		
+		//m.m_btnMgr.hide(m.m_nandfilePBar);
+		//m.m_btnMgr.hide(m.m_nandfileLblMessage);
+		//LWP_MutexLock(m.m_mutex);
+		//m._setDumpMsg(m._t("cfgne20", L"Extraction failed!"), 1.f, 1.f);
+		//LWP_MutexUnlock(m.m_mutex);
+		//m._hideNandEmu();
 		return 0;
 	}
-
-	if(emuPath.size() == 0)
-	{
-		Nand::Instance()->CreatePath("%s:/wiiflow", DeviceName[emuPartition]);
-		Nand::Instance()->CreatePath("%s:/wiiflow/nandemu", DeviceName[emuPartition]);
-		if(m.m_current_view == COVERFLOW_CHANNEL)
-		{
-			m.m_cfg.setString("NAND", "path", STDEMU_DIR);
-			emuPath = m.m_cfg.getString("NAND", "path", STDEMU_DIR);
-			
-		}
-		else if(m.m_current_view == COVERFLOW_USB)
-		{
-			m.m_cfg.setString("GAMES", "savepath", STDEMU_DIR);			
-			emuPath = m.m_cfg.getString("GAMES", "savepath", STDEMU_DIR);
-		}		
-	}
-	m.m_cfg.save();
 
 	char basepath[64];
 	snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[emuPartition], emuPath.c_str());	
@@ -757,7 +861,8 @@ void CMenu::_initNandEmuMenu(CMenu::SThemeData &theme)
 	m_nandemuBtnNandDump = _addButton(theme, "NANDEMU/NAND_DUMP_BTN", theme.btnFont, L"", 350, 310, 250, 56, theme.btnFontColor);
 	m_nandemuBtnBack = _addButton(theme, "NANDEMU/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 56, theme.btnFontColor);
 	m_nandemuBtnExtract = _addButton(theme, "NANDEMU/EXTRACT", theme.titleFont, L"", 72, 180, 496, 56, theme.titleFontColor);
-	m_nandemuBtnDisable = _addButton(theme, "NANDEMU/DISABLE", theme.titleFont, L"", 72, 290, 496, 56, theme.titleFontColor);
+	m_nandemuBtnDisable = _addButton(theme, "NANDEMU/DISABLE", theme.titleFont, L"", 72, 270, 496, 56, theme.titleFontColor);
+	m_nandemuBtnPartition = _addButton(theme, "NANDEMU/PARTITION", theme.titleFont, L"", 72, 360, 496, 56, theme.titleFontColor);
 	m_nandemuLblInit = _addLabel(theme, "NANDEMU/INIT", theme.lblFont, L"", 40, 40, 560, 140, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 
 	_setHideAnim(m_nandemuLblTitle, "NANDEMU/TITLE", 0, 0, -2.f, 0.f);
@@ -779,6 +884,7 @@ void CMenu::_initNandEmuMenu(CMenu::SThemeData &theme)
 	_setHideAnim(m_nandemuBtnNandDump, "NANDEMU/NAND_DUMP_BTN", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_nandemuBtnBack, "NANDEMU/BACK_BTN", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_nandemuBtnExtract, "NANDEMU/EXTRACT", 0, 0, -2.f, 0.f);
+	_setHideAnim(m_nandemuBtnPartition, "NANDEMU/PARTITION", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_nandemuBtnDisable, "NANDEMU/DISABLE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_nandemuLblInit, "NANDEMU/INIT", 100, 0, -2.f, 0.f);
 

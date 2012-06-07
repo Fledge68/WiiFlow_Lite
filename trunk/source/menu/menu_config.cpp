@@ -62,11 +62,8 @@ void CMenu::_showConfig(void)
 		m_btnMgr.show(m_configLblDownload);
 		m_btnMgr.show(m_configBtnDownload);
 	
-		bool disable = true;
-		int i = m_current_view == COVERFLOW_CHANNEL && min(max(0, m_cfg.getInt("NAND", "emulation", 0)), (int)ARRAY_SIZE(CMenu::_NandEmu) - 1);
-		if (i>0 || m_current_view != COVERFLOW_CHANNEL)
-			disable = false;
-		char *partitionname = disable ? (char *)"NAND" : (char *)DeviceName[m_cfg.getInt(_domainFromView(), "partition", 0)];
+		bool disable = m_cfg.getBool("NAND", "disable", true) && m_current_view == COVERFLOW_CHANNEL && !m_tempView;
+		char *partitionname = disable ? (char *)"NAND" : (char *)DeviceName[m_tempView ? m_cfg.getInt("GAMES", "savepartition", 0) : m_cfg.getInt(_domainFromView(), "partition", 0)];
 
 		for(u8 i = 0; strncmp((const char *)&partitionname[i], "\0", 1) != 0; i++)
 			partitionname[i] = toupper(partitionname[i]);
@@ -215,15 +212,14 @@ int CMenu::_config1(void)
 			}
 		}
 	}
+	
 	if (currentPartition != bCurrentPartition)
-	{
-		bool disable = true;
-		int i = m_current_view == COVERFLOW_CHANNEL && min(max(0, m_cfg.getInt("NAND", "emulation", 0)), (int)ARRAY_SIZE(CMenu::_NandEmu) - 1);
-		if (i>0 || m_current_view != COVERFLOW_CHANNEL)
-			disable = false;
+	{	
+		bool disable = m_cfg.getBool("NAND", "disable", true) && m_current_view == COVERFLOW_CHANNEL && !m_tempView;
+
 		if(!disable)
 		{
-			char *newpartition = disable ? (char *)"NAND" : (char *)DeviceName[m_cfg.getInt(_domainFromView(), "partition", currentPartition)];
+			char *newpartition = (char *)DeviceName[m_cfg.getInt(m_tempView ? "GAMES" : _domainFromView(), m_tempView ? "savepartition" : "partition", currentPartition)];
 				
 			for(u8 i = 0; strncmp((const char *)&newpartition[i], "\0", 1) != 0; i++)
 				newpartition[i] = toupper(newpartition[i]);

@@ -630,7 +630,8 @@ int CMenu::main(void)
 			{
 				_hideMain();
 				_about();
-				 if(m_exit)break;
+				 if(m_exit)
+					break;
 				_showMain();
 			}
 			else if (m_btnMgr.selected(m_mainBtnDVD))

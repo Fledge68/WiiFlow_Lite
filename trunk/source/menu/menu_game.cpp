@@ -146,8 +146,7 @@ const CMenu::SOption CMenu::_GClanguages[8] = {
 	{ "lngdut", L"Dutch" }
 };
 
-const CMenu::SOption CMenu::_NandEmu[3] = {
-	{ "NANDoff", L"Off" },
+const CMenu::SOption CMenu::_NandEmu[2] = {
 	{ "NANDpart", L"Partial" },
 	{ "NANDfull", L"Full" },
 };
@@ -884,9 +883,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 {
 	Channels channel;
 	u32 ios = 0;
-	u32 entry = 0;
-	MEM1_wrap(0);
-	
+	u32 entry = 0;	
 	Nand::Instance()->Disable_Emu();
 
 	string id = string((const char *) hdr->hdr.id);
@@ -911,17 +908,20 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	const char *rtrn = m_gcfg2.getBool(id, "returnto", true) ? m_cfg.getString("GENERAL", "returnto").c_str() : NULL;
 	u8 patchVidMode = min((u32)m_gcfg2.getInt(id, "patch_video_modes", 0), ARRAY_SIZE(CMenu::_vidModePatch) - 1u);
 	int aspectRatio = min((u32)m_gcfg2.getInt(id, "aspect_ratio", 0), ARRAY_SIZE(CMenu::_AspectRatio) - 1u)-1;
-
+	
 	if(!forwarder)
 	{
 		hooktype = (u32) m_gcfg2.getInt(id, "hooktype", 0);
 		debuggerselect = m_gcfg2.getBool(id, "debugger", false) ? 1 : 0;
 
-		if ((debuggerselect || cheat) && hooktype == 0) hooktype = 1;
-		if (!debuggerselect && !cheat) hooktype = 0;
-
-		if (videoMode == 0)	videoMode = (u8)min((u32)m_cfg.getInt("GENERAL", "video_mode", 0), ARRAY_SIZE(CMenu::_videoModes) - 1);
-		if (language == 0)	language = min((u32)m_cfg.getInt("GENERAL", "game_language", 0), ARRAY_SIZE(CMenu::_languages) - 1);
+		if ((debuggerselect || cheat) && hooktype == 0) 
+			hooktype = 1;
+		if (!debuggerselect && !cheat) 
+			hooktype = 0;
+		if (videoMode == 0)	
+			videoMode = (u8)min((u32)m_cfg.getInt("GENERAL", "video_mode", 0), ARRAY_SIZE(CMenu::_videoModes) - 1);
+		if (language == 0)	
+			language = min((u32)m_cfg.getInt("GENERAL", "game_language", 0), ARRAY_SIZE(CMenu::_languages) - 1);
 	}
 
 	m_cfg.setString("NAND", "current_item", id);
@@ -930,12 +930,14 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 
 	if(!forwarder && has_enabled_providers() && _initNetwork() == 0)
 		add_game_to_card(id.c_str());
-		
-	string emuPath = m_cfg.getString("NAND", "path", "");
-	int emuPartition = m_cfg.getInt("NAND", "partition", 0);
-	bool emu_disabled = m_cfg.getBool("NAND", "disable", true);
-	int emulate_mode = min(max(0, m_cfg.getInt("NAND", "emulation", 0)), (int)ARRAY_SIZE(CMenu::_NandEmu) - 1);
 
+	string emuPath;
+	m_partRequest = m_cfg.getInt("NAND", "partition", 0);
+	int emuPartition = _FindEmuPart(&emuPath, m_partRequest, false);
+	
+	bool emu_disabled = m_cfg.getBool("NAND", "disable", true);
+	int emulate_mode = min(max(0, m_cfg.getInt("NAND", "emulation", 1)), (int)ARRAY_SIZE(CMenu::_NandEmu) - 1);
+	
 	int userIOS = m_gcfg2.getInt(id, "ios", 0);
 
 	m_gcfg1.save(true);
@@ -943,14 +945,26 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	m_cat.save(true);
 	m_cfg.save(true);
 	
-	if(!emu_disabled)
+	/*if(!emu_disabled && emulate_mode == 1)
 	{
+		char basepath[64];
+		snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[emuPartition], emuPath.c_str());
+		Nand::Instance()->CreateConfig(basepath);
+		Nand::Instance()->Do_Region_Change(id);
+	}*/
+
+	CheckGameSoundThread();
+	m_vid.CheckWaitThread(true);
+	cleanup();
+	USBStorage_Deinit();
+	Close_Inputs();
+	
+	if(!emu_disabled)
+	{		
 		Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
 		DeviceHandler::Instance()->UnMount(emuPartition);
 
-		if(emulate_mode == 3)
-			Nand::Instance()->Set_RCMode(true);
-		else if(emulate_mode == 2)
+		if(emulate_mode == 1)
 			Nand::Instance()->Set_FullMode(true);
 		else
 			Nand::Instance()->Set_FullMode(false);
@@ -962,7 +976,6 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 
 			return;
 		}
-		DeviceHandler::Instance()->Mount(emuPartition);
 	}		
 
 	if(!forwarder)
@@ -977,11 +990,11 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		
 		ocarina_load_code(cheatFile.get(), cheatSize);
 
-		int gameIOS = userIOS == 0 ? channel.GetRequestedIOS(hdr->hdr.chantitle) : userIOS;
+		int gameIOS = userIOS == 0 ? ios : userIOS;
 		
 		gprintf("%s IOS %u\n", userIOS == 0 ? "Game requested" : "User requested", gameIOS);
 		
-		if (gameIOS != mainIOS)
+		if (gameIOS != mainIOS && gameIOS <= 0x50)
 		{
 			u8 IOS[3];
 			IOS[0] = gameIOS;
@@ -1025,9 +1038,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 				Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
 				DeviceHandler::Instance()->UnMount(emuPartition);
 
-				if(emulate_mode == 3)
-					Nand::Instance()->Set_RCMode(true);
-				else if(emulate_mode == 2)
+				if(emulate_mode == 1)
 					Nand::Instance()->Set_FullMode(true);
 				else
 					Nand::Instance()->Set_FullMode(false);
@@ -1039,11 +1050,10 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 					Sys_LoadMenu();
 					return;
 				}
-				DeviceHandler::Instance()->Mount(emuPartition);
 			}
 		}		
-	}
-
+	}	
+	
 	if(rtrn != NULL && strlen(rtrn) == 4)
 	{			
 		int rtrnID = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
@@ -1059,23 +1069,14 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		IOS_Close(ESHandle);
 	}
 
-	IOSReloadBlock(IOS_GetVersion(), true);
-
-	CheckGameSoundThread();
-	cleanup();
-	Close_Inputs();
-	USBStorage_Deinit();	
-	
-	if(currentPartition == 0 && !forwarder)
-		SDHC_Init();
-
 	if(forwarder)
 	{
 		WII_Initialize();
 		if (WII_LaunchTitle(hdr->hdr.chantitle) < 0)
 			Sys_LoadMenu();	
 	}
-	else if(!BootChannel(entry, hdr->hdr.chantitle, ios, videoMode, vipatch, countryPatch, patchVidMode, aspectRatio))
+	
+	if(!BootChannel(entry, hdr->hdr.chantitle, ios, videoMode, vipatch, countryPatch, patchVidMode, aspectRatio))
 		Sys_LoadMenu();
 }
 
@@ -1144,88 +1145,56 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	const char *rtrn = m_gcfg2.getBool(id, "returnto", true) ? m_cfg.getString("GENERAL", "returnto").c_str() : NULL;
 	int aspectRatio = min((u32)m_gcfg2.getInt(id, "aspect_ratio", 0), ARRAY_SIZE(CMenu::_AspectRatio) - 1u)-1;
 
-	int emuPartition = m_cfg.getInt("GAMES", "savepartition", -1);
-	if(emuPartition == -1)
-		emuPartition = m_cfg.getInt("NAND", "partition", 0);	
-
-	string emuPath = m_cfg.getString("GAMES", "savepath", m_cfg.getString("NAND", "path", ""));
+	string emuPath;
+	m_partRequest = m_cfg.getInt("GAMES", "savepartition", -1);
+	if(m_partRequest == -1)
+		m_partRequest = m_cfg.getInt("NAND", "partition", 0);
+	int emuPartition = _FindEmuPart(&emuPath, m_partRequest, false);
 	
-	u8 emuSave = min((u32)m_gcfg2.getInt(id, "emulate_save", 0), ARRAY_SIZE(CMenu::_SaveEmu) - 1u);
+	u8 emulate_mode = min((u32)m_gcfg2.getInt(id, "emulate_save", 0), ARRAY_SIZE(CMenu::_SaveEmu) - 1u);
 
-	if (emuSave == 0)
+	if (emulate_mode == 0)
 	{
-		emuSave = min(max(0, m_cfg.getInt("GAMES", "save_emulation", 0)), (int)ARRAY_SIZE(CMenu::_GlobalSaveEmu) - 1);
-		if (emuSave != 0)
-			emuSave++;
+		emulate_mode = min(max(0, m_cfg.getInt("GAMES", "save_emulation", 0)), (int)ARRAY_SIZE(CMenu::_GlobalSaveEmu) - 1);
+		if(emulate_mode != 0)
+			emulate_mode++;
 	}
-	else if (emuSave == 1)
-		emuSave = 0;	
+	else if(emulate_mode == 1)
+		emulate_mode = 0;	
 
-	if(!dvd && emuSave)
-	{
-		bool emuPartIsValid = false;
-		for(u8 i = emuPartition; i <= USB8; ++i)
+	if(!dvd && emulate_mode)
+	{		
+		if(emuPartition < 0)
 		{
-			if(!DeviceHandler::Instance()->IsInserted(emuPartition) || DeviceHandler::Instance()->GetFSType(emuPartition) != PART_FS_FAT)
+			if(emulate_mode == 4)
 			{
-				emuPartition++;
-				continue;
+				_hideWaitMessage();
+				while(true)
+				{
+					_AutoCreateNand();
+					if(_TestEmuNand(m_cfg.getInt("GAMES", "savepartition", 0), emuPath.c_str(), true))
+					{
+						emuPartition = m_cfg.getInt("GAMES", "savepartition", -1);
+						string emuPath = m_cfg.getString("GAMES", "savepath", m_cfg.getString("NAND", "path", ""));						
+						break;
+					}
+				}
+				_showWaitMessage();
 			}
 			else
 			{
-				emuPartIsValid = true;
-				break;
+				emuPartition = _FindEmuPart(&emuPath, 1, true);
+				Nand::Instance()->CreatePath("%s:/wiiflow", DeviceName[emuPartition]);
+				Nand::Instance()->CreatePath("%s:/wiiflow/nandemu", DeviceName[emuPartition]);
 			}
-		}
+		}		
+	
+		char basepath[64];		
+		snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[emuPartition], emuPath.c_str());
 		
-		if(!emuPartIsValid)
+		if(emulate_mode == 2 || emulate_mode > 3)
 		{
-			error(sfmt("No valid FAT partition found for nandemulation!"));
-			return;			
-		}
-		
-		bool createnand = false;
-		char basepath[64];
-		if(emuPath.size() == 0)
-		{
-			Nand::Instance()->CreatePath("%s:/wiiflow", DeviceName[emuPartition]);
-			Nand::Instance()->CreatePath("%s:/wiiflow/nandemu", DeviceName[emuPartition]);
-			m_cfg.setString("GAMES", "savepath", STDEMU_DIR);
-			emuPath = m_cfg.getString("GAMES", "savepath", STDEMU_DIR);
-			snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[emuPartition], emuPath.c_str());
-			if(emuSave == 4)
-				createnand = true;
-		}
-		else
-		{		
-			snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[emuPartition], emuPath.c_str());
-			if(emuSave == 4)
-			{				
-				DIR *d;
-				d = opendir(basepath);
-				if(!d)
-				{
-					Nand::Instance()->CreatePath("%s:/wiiflow", DeviceName[emuPartition]);
-					Nand::Instance()->CreatePath("%s:/wiiflow/nandemu", DeviceName[emuPartition]);
-					createnand = true;
-				}
-				else
-				{
-					closedir(d);
-				}
-			}
-		}
-
-		if(createnand)
-		{
-			_hideWaitMessage();
-			_AutoCreateNand();
-			_showWaitMessage();
-		}
-		
-		if(emuSave == 2 || emuSave > 3)
-		{
-			if(emuSave == 2)
+			if(emulate_mode == 2)
 			{
 				m_forceext = false;
 				_hideWaitMessage();
@@ -1234,7 +1203,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 				_showWaitMessage();
 			}			
 		}
-		if(emuSave > 2)
+		if(emulate_mode > 2)
 		{
 			Nand::Instance()->CreateConfig(basepath);
 			Nand::Instance()->Do_Region_Change(id);
@@ -1258,13 +1227,13 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	u32 cheatSize = 0, gameconfigSize = 0;
 
 	CheckGameSoundThread();
-	if (videoMode == 0)	videoMode = (u8)min((u32)m_cfg.getInt("GENERAL", "video_mode", 0), ARRAY_SIZE(CMenu::_videoModes) - 1);
-	if (language == 0)	language = min((u32)m_cfg.getInt("GENERAL", "game_language", 0), ARRAY_SIZE(CMenu::_languages) - 1);
+	if(videoMode == 0)	videoMode = (u8)min((u32)m_cfg.getInt("GENERAL", "video_mode", 0), ARRAY_SIZE(CMenu::_videoModes) - 1);
+	if(language == 0)	language = min((u32)m_cfg.getInt("GENERAL", "game_language", 0), ARRAY_SIZE(CMenu::_languages) - 1);
 	m_cfg.setString("GAMES", "current_item", id);
 	m_gcfg1.setInt("PLAYCOUNT", id, m_gcfg1.getInt("PLAYCOUNT", id, 0) + 1);
 	m_gcfg1.setUInt("LASTPLAYED", id, time(NULL));
 
-	if (has_enabled_providers() && _initNetwork() == 0)
+	if(has_enabled_providers() && _initNetwork() == 0)
 		add_game_to_card(id.c_str());
 
 	int userIOS = 0;
@@ -1300,14 +1269,14 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			iosLoaded = true;
 	}
 	
-	if(emuSave)
+	if(emulate_mode)
 	{
 		Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
 		DeviceHandler::Instance()->UnMount(emuPartition);
 
-		if(emuSave == 3)
+		if(emulate_mode == 3)
 			Nand::Instance()->Set_RCMode(true);
-		else if(emuSave == 4)
+		else if(emulate_mode == 4)
 			Nand::Instance()->Set_FullMode(true);
 		else
 			Nand::Instance()->Set_FullMode(false);
@@ -1373,9 +1342,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	USBStorage_Deinit();
 	if(currentPartition == 0)
 		SDHC_Init();
-
-	/* Clear Memory */
-	MEM1_wrap(0);
 
 	/* Find game partition offset */
 	u64 offset;
@@ -1521,7 +1487,7 @@ void CMenu::_playGameSound(void)
 
 	CheckGameSoundThread();
 	if(!gameSoundThreadStack.get())
-		gameSoundThreadStack = smartMem1Alloc(gameSoundThreadStackSize);
+		gameSoundThreadStack = smartMem2Alloc(gameSoundThreadStackSize);
 
 	LWP_CreateThread(&m_gameSoundThread, (void *(*)(void *))CMenu::_gameSoundThread, (void *)this, gameSoundThreadStack.get(), gameSoundThreadStackSize, 60);
 }

@@ -576,7 +576,8 @@ private:
 	bool m_sgdump;
 	bool m_saveall;
 	bool m_forceext;
-//int m_saveExtMode;
+	bool m_tempView;
+	int m_partRequest;
 	u32 m_nandemuLblTitle;
 	u32 m_nandemuBtnBack;
 	u32 m_nandemuLblEmulationVal;
@@ -597,6 +598,7 @@ private:
 	u32 m_nandemuPBar;
 	u32 m_nandemuBtnExtract;
 	u32 m_nandemuBtnDisable;
+	u32 m_nandemuBtnPartition;
 	u32 m_nandemuLblInit;
 	u32 m_nandemuLblUser[4];
 	STexture m_nandemuBg;
@@ -1088,7 +1090,9 @@ private:
 	void _stopSounds(void);
 	static int _NandDumper(void *obj);
 	static int _NandFlasher(void *obj);
+	int _FindEmuPart(string *emuPath, int part, bool searchvalid);
 	bool _checkSave(string id, bool nand);
+	bool _TestEmuNand(int epart, const char *path, bool indept);	
 
 	static u32 _downloadCheatFileAsync(void *obj);
 
@@ -1109,7 +1113,7 @@ private:
 	static const SOption _DMLvideoModes[7];
 	static const SOption _GClanguages[8];
 
-	static const SOption _NandEmu[3];
+	static const SOption _NandEmu[2];
 	static const SOption _SaveEmu[5];
 	static const SOption _GlobalSaveEmu[4];
 	static const SOption _AspectRatio[3];
