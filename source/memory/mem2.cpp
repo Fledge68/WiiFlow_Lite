@@ -40,11 +40,7 @@ void *MEM1_realloc(void *p, unsigned int s)
 
 void MEM1_free(void *p)
 {
-	if(p != NULL)
-	{
-		free(p);
-		p = NULL;
-	}
+	__real_free(p);
 }
 
 unsigned int MEM1_freesize()
