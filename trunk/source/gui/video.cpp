@@ -254,8 +254,8 @@ void CVideo::cleanup(void)
 	{
 		m_defaultWaitMessages[i].data.release();
 	}
-	//free(MEM_K1_TO_K0(m_frameBuf[0]));
-	//free(MEM_K1_TO_K0(m_frameBuf[1]));
+	free(MEM_K1_TO_K0(m_frameBuf[0]));
+	free(MEM_K1_TO_K0(m_frameBuf[1]));
 	MEM1_free(m_stencil);
 	MEM1_free(m_fifo);
 }

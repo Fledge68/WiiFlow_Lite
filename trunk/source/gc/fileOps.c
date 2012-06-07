@@ -126,7 +126,7 @@ bool fsop_FileExist(const char *fn)
 	return false;
 }
 
-bool fsop_DirExist (char *path)
+bool fsop_DirExist(char *path)
 {
 	DIR *dir;
 
@@ -136,6 +136,15 @@ bool fsop_DirExist (char *path)
 		closedir(dir);
 		return true;
 	}
+
+	return false;
+}
+
+
+bool fsop_MakeFolder(char *path)
+{
+	if(mkdir(path, S_IREAD | S_IWRITE) == 0)
+		return true;
 
 	return false;
 }
@@ -161,7 +170,7 @@ static void *thread_CopyFileReader()
 	return 0;
 }
 
-bool fsop_CopyFile (char *source, char *target, progress_callback_t spinner, void *spinner_data)
+bool fsop_CopyFile(char *source, char *target, progress_callback_t spinner, void *spinner_data)
 {
 	gprintf("Creating file: %s\n",target);
 	int err = 0;
@@ -269,7 +278,7 @@ bool fsop_CopyFile (char *source, char *target, progress_callback_t spinner, voi
 /*
 Recursive copyfolder
 */
-static bool doCopyFolder (char *source, char *target, progress_callback_t spinner, void *spinner_data)
+static bool doCopyFolder(char *source, char *target, progress_callback_t spinner, void *spinner_data)
 {
 	DIR *pdir;
 	struct dirent *pent;
@@ -277,32 +286,28 @@ static bool doCopyFolder (char *source, char *target, progress_callback_t spinne
 	bool ret = true;
 
 	// If target folder doesn't exist, create it !
-	if (!fsop_DirExist(target))
+	if(!fsop_DirExist(target))
 	{
 		gprintf("Creating directory: %s\n",target);
-		makedir(target);
+		fsop_MakeFolder(target);
 	}
 
 	pdir = opendir(source);
 
-	while ((pent=readdir(pdir)) != NULL && ret == true) 
+	while((pent=readdir(pdir)) != NULL && ret == true) 
 	{
 		// Skip it
-		if (strcmp (pent->d_name, ".") == 0 || strcmp (pent->d_name, "..") == 0)
+		if(strcmp (pent->d_name, ".") == 0 || strcmp (pent->d_name, "..") == 0)
 			continue;
 	
 		snprintf(newSource, sizeof(newSource), "%s/%s", source, pent->d_name);
 		snprintf(newTarget, sizeof(newTarget), "%s/%s", target, pent->d_name);
 		
 		// If it is a folder... recurse...
-		if (fsop_DirExist(newSource))
-		{
+		if(fsop_DirExist(newSource))
 			ret = doCopyFolder(newSource, newTarget, spinner, spinner_data);
-		}
 		else	// It is a file !
-		{
 			ret = fsop_CopyFile(newSource, newTarget, spinner, spinner_data);
-		}
 	}
 
 	closedir(pdir);
@@ -310,7 +315,7 @@ static bool doCopyFolder (char *source, char *target, progress_callback_t spinne
 	return ret;
 }
 
-bool fsop_CopyFolder (char *source, char *target, progress_callback_t spinner, void *spinner_data)
+bool fsop_CopyFolder(char *source, char *target, progress_callback_t spinner, void *spinner_data)
 {
 	gprintf("DML game USB->SD job started!\n");
 
@@ -327,24 +332,20 @@ void fsop_deleteFolder(char *source)
 
 	pdir = opendir(source);
 
-	while ((pent=readdir(pdir)) != NULL) 
+	while((pent=readdir(pdir)) != NULL) 
 	{
 		// Skip it
-		if (strcmp (pent->d_name, ".") == 0 || strcmp (pent->d_name, "..") == 0)
+		if(strcmp (pent->d_name, ".") == 0 || strcmp (pent->d_name, "..") == 0)
 			continue;
 
-		snprintf (newSource, sizeof(newSource), "%s/%s", source, pent->d_name);
+		snprintf(newSource, sizeof(newSource), "%s/%s", source, pent->d_name);
 
 		// If it is a folder... recurse...
-		if (fsop_DirExist(newSource))
-		{
+		if(fsop_DirExist(newSource))
 			fsop_deleteFolder(newSource);
-		}
 		else	// It is a file !
-		{
 			gprintf("Deleting file: %s\n",newSource);
 			remove(newSource);
-		}
 	}
 	closedir(pdir);
 	gprintf("Deleting directory: %s\n",source);

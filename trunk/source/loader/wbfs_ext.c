@@ -21,6 +21,7 @@
 #include "utils.h"
 #include "disc.h"
 #include "gecko.h"
+#include "gc/fileOps.h"
 
 #define MAX_FAT_PATH 1024
 #define TITLE_LEN 64
@@ -183,7 +184,7 @@ s32 WBFS_Ext_AddGame(progress_callback_t spinner, void *spinner_data)
 		*cp = '_';
 	snprintf(folder, sizeof(folder), "%s%s/%s [%s]", wbfs_fs_drive, wbfs_ext_dir, cleantitle, header.id);
 	free(cleantitle);
-	makedir((char *)folder);
+	fsop_MakeFolder((char *)folder);
 	snprintf(gamepath, sizeof(gamepath), "%s/%s.wbfs", folder, header.id);
 
 	u64 size = (u64)143432*2*0x8000ULL;

@@ -791,7 +791,7 @@ void Nand::CreatePath(const char *path, ...)
 		if(!d)
 		{	
 			gprintf("Creating folder: \"%s\"\n", folder);
-			makedir(folder);
+			fsop_MakeFolder(folder);
 		}
 		else
 		{
