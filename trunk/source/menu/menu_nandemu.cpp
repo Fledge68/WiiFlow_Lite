@@ -7,22 +7,11 @@
 #include "lockMutex.hpp"
 #include "gecko/gecko.h"
 #include "defines.h"
+#include "fileOps.h"
 
 static inline int loopNum(int i, int s)
 {
 	return i < 0 ? (s - (-i % s)) % s : i % s;
-}
-
-static bool __FileExists(const char *path)
-{
-	FILE *f = fopen(path, "rb");		
-	if (f != 0)
-	{
-		//gprintf("File \"%s\" exists\n", path);		
-		fclose(f);
-		return true;
-	}
-	return false;
 }
 
 static bool _saveExists(const char *path)
@@ -57,20 +46,20 @@ bool CMenu::_TestEmuNand(int epart, const char *path, bool indept)
 	{
 		// Check Wiimotes && Region
 		snprintf(testpath, sizeof(testpath), "%s:%s/shared2/sys/SYSCONF", DeviceName[epart], path);
-		if(!__FileExists(testpath))
+		if(!fsop_FileExist(testpath))
 		{
 			//gprintf("Nandcheck: SYSCONF not found\n");
 			haveValidENand = false;
 		}
 		snprintf(testpath, sizeof(testpath), "%s:%s/title/00000001/00000002/data/setting.txt", DeviceName[epart], path);
-		if(!__FileExists(testpath))
+		if(!fsop_FileExist(testpath))
 		{
 			//gprintf("Nandcheck: setting.txt not found\n");
 			haveValidENand = false;
 		}
 		// Check Mii's
 		snprintf(testpath, sizeof(testpath), "%s:%s/shared2/menu/FaceLib/RFL_DB.dat", DeviceName[epart], path);
-		if(!__FileExists(testpath))
+		if(!fsop_FileExist(testpath))
 		{
 			//gprintf("Nandcheck: Mii's not found\n");
 			haveValidENand = false;
