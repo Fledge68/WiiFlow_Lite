@@ -24,6 +24,7 @@ struct PluginOptions
 	u32 magicWord;
 	string DolName;
 	string coverFolder;
+	string consoleCoverID;
 	wstringEx DisplayName;
 	u32 caseColor;
 	bool ReturnLoader;
@@ -37,6 +38,7 @@ public:
 	u32 GetBannerSoundSize();
 	char* GetDolName(u32 magic);
 	char* GetCoverFolderName(u32 magic);
+	string GenerateCoverLink(dir_discHdr gameHeader, string url);
 	wstringEx GetPluginName(u8 pos);
 	u32 getPluginMagic(u8 pos);
 	bool PluginExist(u8 pos);

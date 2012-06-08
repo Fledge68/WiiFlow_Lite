@@ -162,6 +162,7 @@ void CList<dir_discHdr>::GetHeaders(vector<string> pathlist, vector<dir_discHdr>
 					if(lowerCase(*itr).rfind((*type_itr).c_str()) != string::npos)
 					{
 						strncpy(tmp.path, (*itr).c_str(), sizeof(tmp.path));
+						strncpy((char*)tmp.hdr.id, "PLUGIN", sizeof(tmp.hdr.id));
 
 						int plugin_ccolor;
 						sscanf(plugin.getString("PLUGIN","coverColor","").c_str(), "%08x", &plugin_ccolor);
