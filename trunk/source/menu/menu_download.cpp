@@ -135,7 +135,7 @@ static string makeURL(const string format, const string gameId, const string cou
  		url.replace(url.find(TAG_LOC), strlen(TAG_LOC), country.c_str());
 
 	if(url.find(TAG_CONSOLE) != url.npos)
-		url.replace(url.find(TAG_LOC), strlen(TAG_LOC), "wii");
+		url.replace(url.find(TAG_CONSOLE), strlen(TAG_CONSOLE), "wii");
 
 	url.replace(url.find(TAG_GAME_ID), strlen(TAG_GAME_ID), gameId.c_str());
 
