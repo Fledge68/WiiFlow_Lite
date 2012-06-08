@@ -1,3 +1,4 @@
+﻿
 Controls:
 - Main menu (coverflow) :
 -- Up / Down  =  Previous / next game (vertical)
@@ -20,7 +21,7 @@ Controls:
 -- A on Disc Icon (Game Disc in Drive)  =  Launch game disc
 -- A on USB Icon  =  Switch to Game menu (icon changes to channels)
 -- A on Channels Icon  =  Switch to Channels menu (icon changes to USB)
--- A on Home Icon  =  Exit to Wii Menu
+-- A on Home Icon  =  Display source menu
 
 - Game :
 -- A on box  =  Show the backside

@@ -15,11 +15,16 @@
 #include "devicemounter/PartitionHandle.h"
 #include "devicemounter/DeviceHandler.hpp"
 #include "defines.h"
+#include "crc32.h"
 
 static const string emptyString;
 static const string emptyString2("/");
 static char* emptyChar = (char*)" ";
 u32 ScummVM_magic;
+
+#define TAG_GAME_ID		"{gameid}"
+#define TAG_LOC			"{loc}"
+#define TAG_CONSOLE		"{console}"
 
 void Plugin::init(string m_pluginsDir)
 {
@@ -62,6 +67,7 @@ bool Plugin::AddPlugin(Config &plugin)
 		PluginName.erase(PluginName.end() - 4, PluginName.end());
 	}
 	NewPlugin.DisplayName.fromUTF8(PluginName.c_str());
+	NewPlugin.consoleCoverID = plugin.getString("PLUGIN","consoleCoverID","");
 
 	string bannerfilepath = sfmt("%s/%s", pluginsDir.c_str(), plugin.getString("PLUGIN","bannerSound","").c_str());
 	ifstream infile;
@@ -273,4 +279,21 @@ bool Plugin::isMplayerCE(u32 magic)
 bool Plugin::isScummVM(u32 magic)
 {
 	return (magic == ScummVM_magic);
+}
+
+string Plugin::GenerateCoverLink(dir_discHdr gameHeader, string url)
+{
+	Plugin_Pos = GetPluginPosition(gameHeader.hdr.magic);
+
+	if(url.find(TAG_LOC) != url.npos)
+ 		url.replace(url.find(TAG_LOC), strlen(TAG_LOC), "EN");
+
+	if(url.find(TAG_CONSOLE) != url.npos)
+		url.replace(url.find(TAG_CONSOLE), strlen(TAG_CONSOLE), (Plugins[Plugin_Pos].consoleCoverID.size() ? Plugins[Plugin_Pos].consoleCoverID.c_str() : "nintendo"));	
+
+	char crc_string[9];
+	snprintf(crc_string, sizeof(crc_string), "%08x", crc32file(gameHeader.path));
+	url.replace(url.find(TAG_GAME_ID), strlen(TAG_GAME_ID), upperCase(crc_string).c_str());
+	gprintf("URL: %s\n", url.c_str());
+	return url;
 }

@@ -25,6 +25,8 @@
 
 #define TAG_GAME_ID		"{gameid}"
 #define TAG_LOC			"{loc}"
+#define TAG_CONSOLE		"{console}"
+
 #define TITLES_URL		"http://www.gametdb.com/titles.txt?LANG=%s"
 #define GAMETDB_URL		"http://www.gametdb.com/wiitdb.zip?LANG=%s&FALLBACK=TRUE&WIIWARE=TRUE&GAMECUBE=TRUE"
 #define UPDATE_URL_VERSION	"http://dl.dropbox.com/u/25620767/WiiflowMod/versions.txt"
@@ -36,11 +38,11 @@
 					type *name = (type*)(((u32)(_al__##name)) + ((alignment) - (( \
 					(u32)(_al__##name))&((alignment)-1))))
 
-static const char FMT_BPIC_URL[] = "http://art.gametdb.com/wii/coverfullHQ/{loc}/{gameid}.png"\
-"|http://art.gametdb.com/wii/coverfull/{loc}/{gameid}.png";
-static const char FMT_PIC_URL[] = "http://art.gametdb.com/wii/cover/{loc}/{gameid}.png";
-static const char FMT_CBPIC_URL[] = "http://art.gametdb.com/wii/coverfullHQ2/{loc}/{gameid}.png";
-static const char FMT_CPIC_URL[] = "http://art.gametdb.com/wii/cover2/{loc}/{gameid}.png";
+static const char FMT_BPIC_URL[] = "http://art.gametdb.com/{console}/coverfullHQ/{loc}/{gameid}.png"\
+"|http://art.gametdb.com/{console}/coverfull/{loc}/{gameid}.png";
+static const char FMT_PIC_URL[] = "http://art.gametdb.com/{console}/cover/{loc}/{gameid}.png";
+static const char FMT_CBPIC_URL[] = "http://art.gametdb.com/{console}/coverfullHQ2/{loc}/{gameid}.png";
+static const char FMT_CPIC_URL[] = "http://art.gametdb.com/{console}/cover2/{loc}/{gameid}.png";
 
 static block download = { 0, 0 };
 static bool settingsmenu = false;
@@ -129,9 +131,12 @@ static string countryCode(const string &gameId)
 static string makeURL(const string format, const string gameId, const string country)
 {
 	string url = format;
-	if (url.find(TAG_LOC) != url.npos) 
- 		url.replace(url.find(TAG_LOC), strlen(TAG_LOC), country.c_str());	
-	
+	if(url.find(TAG_LOC) != url.npos)
+ 		url.replace(url.find(TAG_LOC), strlen(TAG_LOC), country.c_str());
+
+	if(url.find(TAG_CONSOLE) != url.npos)
+		url.replace(url.find(TAG_LOC), strlen(TAG_LOC), "wii");
+
 	url.replace(url.find(TAG_GAME_ID), strlen(TAG_GAME_ID), gameId.c_str());
 
 	return url;
@@ -454,13 +459,15 @@ int CMenu::_coverDownloader(bool missingOnly)
 {
 	string path;
 	vector<string> coverList;
+	vector<dir_discHdr> pluginCoverList;
+
 	int count = 0, countFlat = 0;
 	float listWeight = missingOnly ? 0.125f : 0.f;	// 1/8 of the progress bar for testing the PNGs we already have
 	float dlWeight = 1.f - listWeight;
 
 	u32 bufferSize = 0x280000;	// Maximum download size 2 MB
 	SmartBuf buffer = smartAnyAlloc(bufferSize);
-	if (!buffer)
+	if(!buffer)
 	{
 		LWP_MutexLock(m_mutex);
 		_setThrdMsg(L"Not enough memory!", 1.f);
@@ -495,10 +502,28 @@ int CMenu::_coverDownloader(bool missingOnly)
 			_setThrdMsg(_t("dlmsg7", L"Listing covers to download..."), listWeight * (float)step / (float)nbSteps);
 			LWP_MutexUnlock(m_mutex);
 			++step;
-			string id((const char *)m_gameList[i].hdr.id, sizeof m_gameList[i].hdr.id);
-			path = sfmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str());
+			string id;
+			if(m_current_view == COVERFLOW_EMU)
+			{
+				char gamePath[256];
+				if(string(m_gameList[i].path).find_last_of("/") != string::npos)
+					strncpy(gamePath, &m_gameList[i].path[string(m_gameList[i].path).find_last_of("/")], sizeof(gamePath));
+				else
+					strncpy(gamePath, m_gameList[i].path, sizeof(gamePath));
+				path = sfmt("%s/%s.png", m_boxPicDir.c_str(), gamePath);
+				id = path;
+			}
+			else
+			{
+				id = (const char *)m_gameList[i].hdr.id;
+				path = sfmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str());
+			}
 			if (!missingOnly || (!m_cf.fullCoverCached(id.c_str()) && !checkPNGFile(path.c_str())))
+			{
+				if(m_current_view == COVERFLOW_EMU)
+					pluginCoverList.push_back(m_gameList[i]);
 				coverList.push_back(id);
+			}
 		}
 	}
 	else
@@ -578,8 +603,11 @@ int CMenu::_coverDownloader(bool missingOnly)
 							if (!checkPNGFile(path.c_str()))
 							{
 								for (u32 j = 0; !success && j < fmtURLBox.size() && !m_thrdStop; ++j)
-								{											
-									url = makeURL(fmtURLBox[j], newID, countryCode(newID));
+								{
+									if(m_current_view == COVERFLOW_EMU)
+										url = m_plugin.GenerateCoverLink(pluginCoverList[i], fmtURLBox[j]);
+									else
+										url = makeURL(fmtURLBox[j], newID, countryCode(newID));
 									if (j == 0) ++step;
 									m_thrdStep = listWeight + dlWeight * (float)step / (float)nbSteps;
 									LWP_MutexLock(m_mutex);
@@ -592,9 +620,11 @@ int CMenu::_coverDownloader(bool missingOnly)
 										bool tdl = false;
 										if(download.data != NULL && download.size > 0 && checkPNGBuf(download.data))
 											break;
+										if(m_current_view == COVERFLOW_EMU)
+											break;
 										switch( o )
 										{
-											case EN:										
+											case EN:
 												if(( newID[3] == 'E' || newID[3] == 'X' || newID[3] == 'Y' || newID[3] == 'P') && m_downloadPrioVal&C_TYPE_EN )
 													url = makeURL(fmtURLBox[j], newID, "EN");
 													tdl = true;
@@ -685,12 +715,12 @@ int CMenu::_coverDownloader(bool missingOnly)
 										continue;
 
 									if (savePNG)
-									{									
+									{
 										LWP_MutexLock(m_mutex);
 										_setThrdMsg(wfmt(_fmt("dlmsg4", L"Saving %s"), path.c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
 										LWP_MutexUnlock(m_mutex);
 										file = fopen(path.c_str(), "wb");
-										if (file != NULL)
+										if(file != NULL)
 										{
 											fwrite(download.data, download.size, 1, file);
 											fclose(file);
@@ -714,13 +744,16 @@ int CMenu::_coverDownloader(bool missingOnly)
 							custom = true;
 						c_altCase = c_gameTDB.GetCaseVersions( coverList[i].c_str() );
 						if (!success && !m_thrdStop && c_gameTDB.IsLoaded() && c_altCase > 1 && custom)
-						{	
+						{
 							path = sfmt("%s/%s.png", m_boxPicDir.c_str(), coverList[i].c_str());
 							if (!checkPNGFile(path.c_str()))
 							{
 								for (u32 j = 0; !success && j < fmtURLCBox.size() && !m_thrdStop; ++j)
-								{												
-									url = makeURL(fmtURLCBox[j], newID, countryCode(newID));									
+								{
+									if(m_current_view == COVERFLOW_EMU)
+										url = m_plugin.GenerateCoverLink(pluginCoverList[i], fmtURLCBox[j]);
+									else
+										url = makeURL(fmtURLCBox[j], newID, countryCode(newID));
 									if (j == 0) ++step;
 									m_thrdStep = listWeight + dlWeight * (float)step / (float)nbSteps;
 									LWP_MutexLock(m_mutex);
@@ -731,11 +764,12 @@ int CMenu::_coverDownloader(bool missingOnly)
 									{
 										bool tdl = false;
 										if(download.data != NULL && download.size > 0 && checkPNGBuf(download.data))
-											break;										
-									
+											break;
+										if(m_current_view == COVERFLOW_EMU)
+											break;
 										switch( o )
 										{
-											case EN:										
+											case EN:
 												if(( newID[3] == 'E' || newID[3] == 'X' || newID[3] == 'Y' || newID[3] == 'P') && m_downloadPrioVal&C_TYPE_EN )
 												{
 													url = makeURL(fmtURLCBox[j], newID, "EN");
@@ -853,7 +887,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 							}
 						}
 						break;
-					case FLAT:						
+					case FLAT:
 						if( m_downloadPrioVal&C_TYPE_ONOR )
 							original = false;
 						if (!success && !m_thrdStop && original)
@@ -865,7 +899,10 @@ int CMenu::_coverDownloader(bool missingOnly)
 								if (m_thrdStop) break;
 								for (u32 j = 0; !success && j < fmtURLFlat.size() && !m_thrdStop; ++j)
 								{
-									url = makeURL(fmtURLFlat[j], newID, countryCode(newID));
+									if(m_current_view == COVERFLOW_EMU)
+										url = m_plugin.GenerateCoverLink(pluginCoverList[i], fmtURLFlat[j]);
+									else
+										url = makeURL(fmtURLFlat[j], newID, countryCode(newID));
 									LWP_MutexLock(m_mutex);
 									_setThrdMsg(wfmt(_fmt("dlmsg8", L"Full cover not found. Downloading from %s"), url.c_str()), listWeight + dlWeight * (float)step / (float)nbSteps);
 									LWP_MutexUnlock(m_mutex);
@@ -875,11 +912,12 @@ int CMenu::_coverDownloader(bool missingOnly)
 									{
 										bool tdl = false;
 										if(download.data != NULL && download.size > 0 && checkPNGBuf(download.data))
-											break;										
-
+											break;
+										if(m_current_view == COVERFLOW_EMU)
+											break;
 										switch( o )
 										{
-											case EN:										
+											case EN:
 												if(( newID[3] == 'E' || newID[3] == 'X' || newID[3] == 'Y' || newID[3] == 'P') && m_downloadPrioVal&C_TYPE_EN )
 												{
 													url = makeURL(fmtURLFlat[j], newID, "EN");
@@ -1157,6 +1195,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 		_setThrdMsg(wfmt(_fmt("dlmsg9", L"%i/%i files downloaded. %i are front covers only."), count + countFlat, n, countFlat), 1.f);
 	LWP_MutexUnlock(m_mutex);
 	m_thrdWorking = false;
+	pluginCoverList.clear();
 	buffer.release();
 	return 0;
 }
@@ -1174,8 +1213,20 @@ void CMenu::_download(string gameId)
 	m_btnMgr.setText(m_downloadBtnCancel, _t("dl1", L"Cancel"));
 	m_thrdStop = false;
 	m_thrdMessageAdded = false;
-	m_coverDLGameId = gameId;
-	while (true)
+
+	if((m_current_view == COVERFLOW_EMU) && gameId.size())
+	{
+		char gamePath[256];
+		if(string(m_cf.getHdr()->path).find_last_of("/") != string::npos)
+			strncpy(gamePath, &m_cf.getHdr()->path[string(m_cf.getHdr()->path).find_last_of("/")], sizeof(gamePath));
+		else
+			strncpy(gamePath, m_cf.getHdr()->path, sizeof(gamePath));
+		m_coverDLGameId = gamePath;
+	}
+	else
+		m_coverDLGameId = gameId;
+
+	while(true)
 	{
 		_mainLoopCommon(false, m_thrdWorking);
 		if ((BTN_HOME_PRESSED || BTN_B_PRESSED) && !m_thrdWorking)
