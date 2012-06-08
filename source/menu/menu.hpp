@@ -569,39 +569,11 @@ private:
 	u32 m_categoryBtnCats[21];
 	u32 m_categoryLblUser[4];
 	u8 m_max_categories;
-// NandEmulation menu
+// NandEmulation
 	string m_saveExtGameId;
-	bool m_nandext;
-	bool m_fulldump;
-	bool m_sgdump;
-	bool m_saveall;
 	bool m_forceext;
 	bool m_tempView;
-	int m_partRequest;
-	u32 m_nandemuLblTitle;
-	u32 m_nandemuBtnBack;
-	u32 m_nandemuLblEmulationVal;
-	u32 m_nandemuLblEmulation;
-	u32 m_nandemuBtnEmulationM;
-	u32 m_nandemuBtnEmulationP;
-	u32 m_nandemuLblSaveDump;
-	u32 m_nandemuBtnAll;
-	u32 m_nandemuBtnMissing;
-	u32 m_nandemuLblNandDump;
-	u32 m_nandemuBtnNandDump;
-	u32 m_nandfileLblMessage;
-	u32 m_nandemuLblMessage;
-	u32 m_nandfileLblDialog;
-	u32 m_nandfinLblDialog;
-	u32 m_nandemuLblDialog;
-	u32 m_nandfilePBar;
-	u32 m_nandemuPBar;
-	u32 m_nandemuBtnExtract;
-	u32 m_nandemuBtnDisable;
-	u32 m_nandemuBtnPartition;
-	u32 m_nandemuLblInit;
-	u32 m_nandemuLblUser[4];
-	STexture m_nandemuBg;
+	s32 m_partRequest;
 // Zones
 	SZone m_mainPrevZone;
 	SZone m_mainNextZone;

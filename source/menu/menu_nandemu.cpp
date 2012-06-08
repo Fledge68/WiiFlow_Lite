@@ -9,6 +9,37 @@
 #include "defines.h"
 #include "fileOps.h"
 
+// NandEmulation menu
+u32 m_nandemuLblTitle;
+u32 m_nandemuBtnBack;
+u32 m_nandemuLblEmulationVal;
+u32 m_nandemuLblEmulation;
+u32 m_nandemuBtnEmulationM;
+u32 m_nandemuBtnEmulationP;
+u32 m_nandemuLblSaveDump;
+u32 m_nandemuBtnAll;
+u32 m_nandemuBtnMissing;
+u32 m_nandemuLblNandDump;
+u32 m_nandemuBtnNandDump;
+u32 m_nandfileLblMessage;
+u32 m_nandemuLblMessage;
+u32 m_nandfileLblDialog;
+u32 m_nandfinLblDialog;
+u32 m_nandemuLblDialog;
+u32 m_nandfilePBar;
+u32 m_nandemuPBar;
+u32 m_nandemuBtnExtract;
+u32 m_nandemuBtnDisable;
+u32 m_nandemuBtnPartition;
+u32 m_nandemuLblInit;
+u32 m_nandemuLblUser[4];
+STexture m_nandemuBg;
+
+bool m_nandext;
+bool m_fulldump;
+bool m_sgdump;
+bool m_saveall;
+
 static inline int loopNum(int i, int s)
 {
 	return i < 0 ? (s - (-i % s)) % s : i % s;
@@ -220,7 +251,7 @@ void CMenu::_ShowProgress(int dumpstat, int dumpprog, int filesize, int fileprog
 	m.m_filesdone = files;
 	m.m_foldersdone = folders;
 	LWP_MutexLock(m.m_mutex);
-	if(m.m_nandext)
+	if(m_nandext)
 		m._setDumpMsg(wfmt(m._fmt("cfgne9", L"Current file: %s"), tmess), m.m_progress, m.m_fprogress);
 	else
 		m._setDumpMsg(L"...", m.m_progress, m.m_fprogress);
@@ -703,13 +734,13 @@ int CMenu::_NandFlasher(void *obj)
 	Nand::Instance()->ResetCounters();
 	m.m_nandexentry = 1;
 	m.m_dumpsize = Nand::Instance()->CalcFlashSize(source, CMenu::_ShowProgress, obj);
-	m.m_nandext = true;	
+	m_nandext = true;
 	Nand::Instance()->FlashToNAND(source, dest, CMenu::_ShowProgress, obj);
 	
 	m.m_thrdWorking = false;
 	LWP_MutexLock(m.m_mutex);
-	m.m_btnMgr.hide(m.m_nandfilePBar);
-	m.m_btnMgr.hide(m.m_nandfileLblMessage);
+	m.m_btnMgr.hide(m_nandfilePBar);
+	m.m_btnMgr.hide(m_nandfileLblMessage);
 	m._setDumpMsg(m._t("cfgne30", L"Flashing save files finished!"), 1.f, 1.f);
 	LWP_MutexUnlock(m.m_mutex);
 	return 0;	
@@ -720,31 +751,24 @@ int CMenu::_NandDumper(void *obj)
 	CMenu &m = *(CMenu *)obj;
 	string emuPath;
 	int emuPartition = -1;
-	m.m_nandext = false;
-	m.m_sgdump = false;
+	m_nandext = false;
+	m_sgdump = false;
 	m.m_dumpsize = 0;
 	m.m_filesdone = 0;
 	m.m_foldersdone = 0;
 
 	Nand::Instance()->ResetCounters();
-	
+
 	if(m.m_current_view == COVERFLOW_CHANNEL)
 		m.m_partRequest = m.m_cfg.getInt("NAND", "partition", -1);	
 	else if(m.m_current_view == COVERFLOW_USB)
 		m.m_partRequest = m.m_cfg.getInt("GAMES", "savepartition", -1);
-	
+
 	emuPartition = m._FindEmuPart(&emuPath, m.m_partRequest, true);
 
 	if(emuPartition < 0)
 	{
 		m.error(m._t("cfgne8", L"No valid FAT partition found for NAND Emulation!"));
-		//m.m_thrdWorking = false;		
-		//m.m_btnMgr.hide(m.m_nandfilePBar);
-		//m.m_btnMgr.hide(m.m_nandfileLblMessage);
-		//LWP_MutexLock(m.m_mutex);
-		//m._setDumpMsg(m._t("cfgne20", L"Extraction failed!"), 1.f, 1.f);
-		//LWP_MutexUnlock(m.m_mutex);
-		//m._hideNandEmu();
 		return 0;
 	}
 
@@ -755,17 +779,17 @@ int CMenu::_NandDumper(void *obj)
 	m._setDumpMsg(m._t("cfgne27", L"Calculating space needed for extraction..."), 0.f, 0.f);
 	LWP_MutexUnlock(m.m_mutex);
 
-	if(m.m_fulldump)
+	if(m_fulldump)
 	{
 		m.m_dumpsize = Nand::Instance()->CalcDumpSpace("/", CMenu::_ShowProgress, obj);
-		m.m_nandext = true;	
+		m_nandext = true;
 		Nand::Instance()->DoNandDump("/", basepath, CMenu::_ShowProgress, obj);
 	}
 	else
 	{
-		bool missingOnly = !m.m_saveall;		
+		bool missingOnly = !m_saveall;
 		vector<string> saveList;
-		m.m_sgdump = true;
+		m_sgdump = true;
 
 		if(m.m_saveExtGameId.empty())
 		{
@@ -802,7 +826,7 @@ int CMenu::_NandDumper(void *obj)
 			snprintf(source, sizeof(source), "/title/00010000/%08x", savePath);
 			if(!m._checkSave(saveList[i], true))
 				snprintf(source, sizeof(source), "/title/00010004/%08x", savePath);
-			
+
 			m.m_dumpsize = Nand::Instance()->CalcDumpSpace(source, CMenu::_ShowProgress, obj);	
 		}		
 		for(u32 i = 0; i < saveList.size() && !m.m_thrdStop; ++i)
@@ -812,16 +836,16 @@ int CMenu::_NandDumper(void *obj)
 			snprintf(source, sizeof(source), "/title/00010000/%08x",  savePath);	
 			if(!m._checkSave(saveList[i], true))
 				snprintf(source, sizeof(source), "/title/00010004/%08x",  savePath);
-			
-			m.m_nandext = true;	
+
+			m_nandext = true;
 			Nand::Instance()->DoNandDump(source, basepath, CMenu::_ShowProgress, obj);
 		}
 	}
 
 	m.m_thrdWorking = false;
 	LWP_MutexLock(m.m_mutex);
-	m.m_btnMgr.hide(m.m_nandfilePBar);
-	m.m_btnMgr.hide(m.m_nandfileLblMessage);
+	m.m_btnMgr.hide(m_nandfilePBar);
+	m.m_btnMgr.hide(m_nandfileLblMessage);
 	m._setDumpMsg(m._t("cfgne19", L"Extraction finished!"), 1.f, 1.f);
 	LWP_MutexUnlock(m.m_mutex);
 	return 0;
