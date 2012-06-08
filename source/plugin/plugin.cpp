@@ -84,6 +84,7 @@ bool Plugin::AddPlugin(Config &plugin)
 		NewPlugin.BannerSound = (u8*)FileReadBuffer;
 		NewPlugin.BannerSoundSize = size;
 		Plugins.push_back(NewPlugin);
+		infile.close();
 		return true;
 	}
 	else
@@ -292,7 +293,18 @@ string Plugin::GenerateCoverLink(dir_discHdr gameHeader, string url)
 		url.replace(url.find(TAG_CONSOLE), strlen(TAG_CONSOLE), (Plugins[Plugin_Pos].consoleCoverID.size() ? Plugins[Plugin_Pos].consoleCoverID.c_str() : "nintendo"));	
 
 	char crc_string[9];
-	snprintf(crc_string, sizeof(crc_string), "%08x", crc32file(gameHeader.path));
+	if(strstr(gameHeader.path, ".zip") == NULL)
+		snprintf(crc_string, sizeof(crc_string), "%08x", crc32file(gameHeader.path));
+	else
+	{
+		u32 crc_buffer;
+		ifstream infile;
+		infile.open(gameHeader.path, ios::binary);
+		infile.seekg(0x0e, ios::beg);
+		infile.read((char*)&crc_buffer, 8);
+		infile.close();
+		snprintf(crc_string, sizeof(crc_string), "%08x", SWAP32(crc_buffer));
+	}
 	url.replace(url.find(TAG_GAME_ID), strlen(TAG_GAME_ID), upperCase(crc_string).c_str());
 	gprintf("URL: %s\n", url.c_str());
 	return url;
