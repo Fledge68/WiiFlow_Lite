@@ -12,10 +12,16 @@
 #include <string>
 #include <vector>
 
+using namespace std;
+
 #include "config/config.hpp"
 #include "loader/disc.h"
 
-using namespace std;
+#define SWAP32(x)		((((x) & 0xff) << 24) | (((x) & 0xff00) << 8) | (((x) & 0xff0000) >> 8) | (((x) >> 24) & 0xff))
+
+#define TAG_GAME_ID		"{gameid}"
+#define TAG_LOC			"{loc}"
+#define TAG_CONSOLE		"{console}"
 
 struct PluginOptions
 {

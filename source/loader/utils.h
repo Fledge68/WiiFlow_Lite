@@ -20,8 +20,6 @@
 #define TITLE_UPPER(x)		((u32)((x) >> 32))
 #define TITLE_LOWER(x)		((u32)(x) & 0xFFFFFFFF)
 
-#define SWAP32(x)			((((x) & 0xff) << 24) | (((x) & 0xff00) << 8) | (((x) & 0xff0000) >> 8) | (((x) >> 24) & 0xff))
-
 #define Write8(addr, val)	*(u8 *)addr = val; DCFlushRange((void *)addr, sizeof(u8));
 #define Write16(addr, val)	*(u16 *)addr = val; DCFlushRange((void *)addr, sizeof(u16));
 #define Write32(addr, val)	*(u32 *)addr = val; DCFlushRange((void *)addr, sizeof(u32));
