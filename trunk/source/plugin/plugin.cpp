@@ -22,10 +22,6 @@ static const string emptyString2("/");
 static char* emptyChar = (char*)" ";
 u32 ScummVM_magic;
 
-#define TAG_GAME_ID		"{gameid}"
-#define TAG_LOC			"{loc}"
-#define TAG_CONSOLE		"{console}"
-
 void Plugin::init(string m_pluginsDir)
 {
 	ScummVM_magic = 0;
