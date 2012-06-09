@@ -104,6 +104,8 @@ void CVideo::setAA(u8 aa, bool alpha, int width, int height)
 	}
 }
 
+extern GXRModeObj TVPal574IntDfScale;
+
 void CVideo::init(void)
 {
 	VIDEO_Init();
@@ -113,8 +115,11 @@ void CVideo::init(void)
 	u32 type = CONF_GetVideo();
 
 	m_rmode->viWidth = m_wide ? 700 : 672;
-	if(m_rmode == &TVPal576IntDfScale || m_rmode == &TVPal576ProgScale)
+	if(m_rmode == &TVPal576IntDfScale)
+	{
+		m_rmode = &TVPal574IntDfScale; //We may get some problems otherwise
 		m_50hz = true;
+	}
 	else
 		m_50hz = false;
 
