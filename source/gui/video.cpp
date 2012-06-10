@@ -118,6 +118,11 @@ void CVideo::init(void)
 	if(m_rmode == &TVPal576IntDfScale)
 	{
 		m_rmode = &TVPal574IntDfScale; //We may get some problems otherwise
+		VIDEO_Configure(m_rmode);
+		VIDEO_Flush();
+		m_rmode = &TVPal576IntDfScale;
+		VIDEO_Configure(m_rmode);
+		VIDEO_Flush();
 		m_50hz = true;
 	}
 	else
