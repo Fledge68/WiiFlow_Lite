@@ -317,13 +317,7 @@ int CMenu::main(void)
 			}
 			break;
 		}
-		if (BTN_PLUS_PRESSED && (m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML) || m_btnMgr.selected(m_mainBtnHomebrew) || m_btnMgr.selected(m_mainBtnEmu)))
-		{
-			_hideMain(true);
-			_Source();
-			LoadView();
-			continue;
-		}		
+
 		if ((BTN_UP_PRESSED || BTN_DOWN_PRESSED || BTN_LEFT_PRESSED || BTN_RIGHT_PRESSED) && dpad_mode && (m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML) || m_btnMgr.selected(m_mainBtnHomebrew) || m_btnMgr.selected(m_mainBtnEmu)))
 		{
 			u32 lastView = m_current_view;
@@ -498,6 +492,13 @@ int CMenu::main(void)
 		}
 		if (BTN_B_PRESSED)
 		{
+			if (m_btnMgr.selected(m_mainBtnQuit))
+			{
+				_hideMain(true);
+				_Source();
+				LoadView();
+				continue;
+			}					
 			//Events to Show Categories
 			if (m_btnMgr.selected(m_mainBtnFavoritesOn) || m_btnMgr.selected(m_mainBtnFavoritesOff))
 			{
@@ -569,12 +570,25 @@ int CMenu::main(void)
 				m_cf.pageUp();
 		 	else if (m_btnMgr.selected(m_mainBtnNext))
 				m_cf.pageDown();
-			else if(m_btnMgr.selected(m_mainBtnQuit))
+			else if (m_btnMgr.selected(m_mainBtnQuit))
 			{
-				_hideMain(true);
-				_Source();
-				LoadView();
-				continue;
+				if(!m_locked && !m_disable_exit)
+				{
+					struct stat dummy;
+					if(BTN_PLUS_HELD) Sys_ExitTo(EXIT_TO_HBC);
+					else if(BTN_MINUS_HELD) Sys_ExitTo(EXIT_TO_MENU);
+					else if(BTN_1_HELD) Sys_ExitTo(EXIT_TO_PRIILOADER);
+					else if(BTN_2_HELD)	//Check that the files are there, or ios will hang.
+					{
+						if(DeviceHandler::Instance()->IsInserted(SD) && 
+						stat(fmt("%s:/bootmii/armboot.bin", DeviceName[SD]), &dummy) == 0 && 
+						stat(fmt("%s:/bootmii/ppcboot.elf", DeviceName[SD]), &dummy) == 0)
+							Sys_ExitTo(EXIT_TO_BOOTMII);
+						 else Sys_ExitTo(EXIT_TO_HBC);
+					}
+				}
+				m_reload = (BTN_B_HELD || m_disable_exit);
+				break;
 			}
 			else if(m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML) || m_btnMgr.selected(m_mainBtnHomebrew) || m_btnMgr.selected(m_mainBtnEmu))
 			{

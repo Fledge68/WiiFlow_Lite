@@ -1,4 +1,4 @@
-﻿
+
 Controls:
 - Main menu (coverflow) :
 -- Up / Down  =  Previous / next game (vertical)
@@ -18,10 +18,13 @@ Controls:
 -- A on Star Icon  =  Favorites
 -- B on Star Icon  =  Categories
 -- A on Gear Icon  =  Wiiflow settings
+-- B on Gear Icon  =  Refresh cache
+-- A on USB, DML, Channels, Emu, or Homebrew Icon  =  Switch to that view
+-- B on USB, DML, Channels, Emu, or Homebrew Icon  =  Enable/Disable Emu-NAND and switch to Channels view
+-- A on Home Icon  =  Exit to Wii menu
+-- B on Home Icon  =  Display Source menu
 -- A on Disc Icon (Game Disc in Drive)  =  Launch game disc
--- A on USB Icon  =  Switch to Game menu (icon changes to channels)
--- A on Channels Icon  =  Switch to Channels menu (icon changes to USB)
--- A on Home Icon  =  Display source menu
+-- A on Question Mark Icon  =  Display credits and this help file, and update WiiFlow
 
 - Game :
 -- A on box  =  Show the backside
@@ -33,6 +36,7 @@ Controls:
 ---Right (in Game Info)  =  Game Description
 ---Left  (in Game Desc)  =  Game Info
 -- A on Star Icon  =  Toggle Favorite (Yellow = Favorite)
+-- B on Star Icon  =  Set Categories for game
 -- A on Hand Icon  =  Parental Lock (Red = locked)
 -- A on Gear Icon  =  Game Settings
 -- A on X Icon  =   Delete Game

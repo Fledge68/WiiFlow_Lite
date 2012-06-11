@@ -310,7 +310,7 @@ void CMenu::_initSourceMenu(CMenu::SThemeData &theme)
 		page = i / 12;
 		row = (i / 4 ) - (page * 3);
 		col = (i - (page * 12)) - (row * 4);
-		m_sourceBtnSource[i] = _addPicButton(theme, fmt("SOURCE/SOURCE_BTN_%i", i), texConsoleImg, texConsoleImgs, (30 + 150 * col), (90 + 100 * row), 90, 90);
+		m_sourceBtnSource[i] = _addPicButton(theme, fmt("SOURCE/SOURCE_BTN_%i", i), texConsoleImg, texConsoleImgs, (30 + 150 * col), (90 + 100 * row), 120, 90);
 	}
 	
 	_setHideAnim(m_sourceLblTitle, "SOURCE/TITLE", 0, -200, 0.f, 1.f);
