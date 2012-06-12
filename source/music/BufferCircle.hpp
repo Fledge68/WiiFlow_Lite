@@ -28,6 +28,7 @@
 
 #include <vector>
 #include <gctypes.h>
+#include <string.h>
 
 class BufferCircle
 {
