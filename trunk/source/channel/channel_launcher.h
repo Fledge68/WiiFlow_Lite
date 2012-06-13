@@ -13,10 +13,12 @@ s32 BootChannel(u32 entry, u64 chantitle, u32 ios, u8 vidMode, bool vipatch, boo
 u32 LoadChannel(u8 *buffer);
 void PatchChannel(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio);
 
-u8 * GetDol(u64 title, u32 bootcontent);
+u8 *GetDol(u64 title, u32 bootcontent);
 
 bool Identify(u64 titleid, u32 *ios);
 bool Identify_GenerateTik(signed_blob **outbuf, u32 *outlen);
+
+s32 WiiFlow_LaunchTitle(u64 titleID);
 
 #ifdef __cplusplus
 }

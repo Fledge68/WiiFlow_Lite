@@ -1,15 +1,17 @@
+
+#include <ogc/machine/processor.h>
+#include <ogc/lwp_threads.h>
+#include <ogc/lwp_watchdog.h>
 #include <stdio.h>
 #include <ogcsys.h>
 #include <stdlib.h>
+#include <string.h>
+
 #include "wiiuse/wpad.h"
 #include "mem2.hpp"
-#include <string.h>
-#include <ogc/lwp_threads.h>
-#include <ogc/lwp_watchdog.h>
 #include "sys.h"
 #include "gecko.h"
-
-#include <ogc/machine/processor.h>
+#include "channel_launcher.h"
 #include "sha1.h"
 #include "fs.h"
 #include "mem2.hpp"
@@ -109,10 +111,10 @@ void Sys_Exit(void)
 		IOS_ReloadIOS(254);
 
 	//else
-	if(WII_LaunchTitle(HBC_108) < 0)
-		if(WII_LaunchTitle(HBC_HAXX) < 0)
-			if(WII_LaunchTitle(HBC_JODI) < 0)
-				WII_ReturnToMenu(); //SYS_ResetSystem doesnt work properly with new libogc
+	if(WiiFlow_LaunchTitle(HBC_108) < 0)
+		if(WiiFlow_LaunchTitle(HBC_HAXX) < 0)
+			if(WiiFlow_LaunchTitle(HBC_JODI) < 0)
+				WiiFlow_LaunchTitle(0x100000002LL); //SYS_ResetSystem doesnt work properly with new libogc
 }
 
 void __Sys_ResetCallback(void)
@@ -135,7 +137,7 @@ void Sys_Init(void)
 void Sys_LoadMenu(void)
 {
 	/* Return to the Wii system menu */
-	WII_ReturnToMenu(); //SYS_ResetSystem doesnt work properly with new libogc
+	WiiFlow_LaunchTitle(0x100000002LL); //SYS_ResetSystem doesnt work properly with new libogc
 }
 
 void __dsp_shutdown(void)
