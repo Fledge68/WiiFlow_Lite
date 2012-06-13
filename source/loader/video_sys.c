@@ -2695,7 +2695,7 @@ GXRModeObj *rmode;
 				if ( CONF_GetEuRGB60() > 0 ) {
 					rmode = &CUSTOM_TVEurgb60Hz480IntDf;
 				} else {
-					rmode = &CUSTOM_TVPal528IntDf;
+					rmode = &CUSTOM_TVPal574IntDfScale;
 				}
 				break;
 			case CONF_VIDEO_MPAL:
@@ -2713,7 +2713,7 @@ GXRModeObj *rmode;
 			rmode = &CUSTOM_TVNtsc480IntDf;
 			break;
 		case VI_PAL:
-			rmode = &CUSTOM_TVPal528IntDf;
+			rmode = &CUSTOM_TVPal574IntDfScale;
 			break;
 		case VI_MPAL:
 			rmode = &CUSTOM_TVMpal480IntDf;
