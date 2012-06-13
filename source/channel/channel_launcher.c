@@ -14,6 +14,13 @@
 #include "gecko.h"
 #include "mem2.hpp"
 
+#define STACK_ALIGN(type, name, cnt, alignment)         \
+					u8 _al__##name[((sizeof(type)*(cnt)) + (alignment) + \
+					(((sizeof(type)*(cnt))%(alignment)) > 0 ? ((alignment) - \
+					((sizeof(type)*(cnt))%(alignment))) : 0))]; \
+					type *name = (type*)(((u32)(_al__##name)) + ((alignment) - (( \
+					(u32)(_al__##name))&((alignment)-1))))
+
 GXRModeObj * __Disc_SelectVMode(u8 videoselected, u64 chantitle);
 void PatchCountryStrings(void *Address, int Size);
 void __Disc_SetLowMem(void);
@@ -318,4 +325,14 @@ u8 *GetDol(u64 title, u32 bootcontent)
 	}
 	gprintf("Failed!\n");
 	return NULL;
+}
+
+s32 WiiFlow_LaunchTitle(u64 titleID)
+{
+	u32 numviews;
+	STACK_ALIGN(tikview,views,4,32);
+
+	ES_GetNumTicketViews(titleID, &numviews);
+	ES_GetTicketViews(titleID, views, numviews);
+	return ES_LaunchTitle(titleID, &views[0]);
 }
