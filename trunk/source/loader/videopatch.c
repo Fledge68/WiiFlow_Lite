@@ -1,168 +1,29 @@
 // Inspired by WiiPower's "video toy", but simpler
 
 #include "videopatch.h"
+#include "video_types.h"
 
 #include <string.h>
 
 #define ARRAY_SIZE(a)	(sizeof a / sizeof a[0])
 
-extern GXRModeObj TVNtsc480Int;
-
-GXRModeObj TVPal528Prog = 
-{
-    6,      		 // viDisplayMode
-    640,             // fbWidth
-    528,             // efbHeight
-    528,             // xfbHeight
-    (VI_MAX_WIDTH_PAL - 640)/2,         // viXOrigin
-    (VI_MAX_HEIGHT_PAL - 528)/2,        // viYOrigin
-    640,             // viWidth
-    528,             // viHeight
-    VI_XFBMODE_SF,   // xFBmode
-    GX_FALSE,        // field_rendering
-    GX_FALSE,        // aa
-
-    // sample points arranged in increasing Y order
-	{
-		{6,6},{6,6},{6,6},  // pix 0, 3 sample points, 1/12 units, 4 bits each
-		{6,6},{6,6},{6,6},  // pix 1
-		{6,6},{6,6},{6,6},  // pix 2
-		{6,6},{6,6},{6,6}   // pix 3
-	},
-	
-    // vertical filter[7], 1/64 units, 6 bits each
-	{
-		 0,         // line n-1
-		 0,         // line n-1
-		21,         // line n
-		22,         // line n
-		21,         // line n
-		 0,         // line n+1
-		 0          // line n+1
-	}
-
-};
-
-GXRModeObj TVPal528ProgSoft = 
-{
-    6,      		 // viDisplayMode
-    640,             // fbWidth
-    528,             // efbHeight
-    528,             // xfbHeight
-    (VI_MAX_WIDTH_PAL - 640)/2,         // viXOrigin
-    (VI_MAX_HEIGHT_PAL - 528)/2,        // viYOrigin
-    640,             // viWidth
-    528,             // viHeight
-    VI_XFBMODE_SF,   // xFBmode
-    GX_FALSE,        // field_rendering
-    GX_FALSE,        // aa
-
-    // sample points arranged in increasing Y order
-	{
-		{6,6},{6,6},{6,6},  // pix 0, 3 sample points, 1/12 units, 4 bits each
-		{6,6},{6,6},{6,6},  // pix 1
-		{6,6},{6,6},{6,6},  // pix 2
-		{6,6},{6,6},{6,6}   // pix 3
-	},
-	
-    // vertical filter[7], 1/64 units, 6 bits each
-	{
-		 8,         // line n-1
-		 8,         // line n-1
-		10,         // line n
-		12,         // line n
-		10,         // line n
-		 8,         // line n+1
-		 8          // line n+1
-	}
-
-};
-
-GXRModeObj TVPal528ProgUnknown = 
-{
-    6,      		 // viDisplayMode
-    640,             // fbWidth
-    264,             // efbHeight
-    524,             // xfbHeight
-    (VI_MAX_WIDTH_PAL - 640)/2,         // viXOrigin
-    (VI_MAX_HEIGHT_PAL - 528)/2,        // viYOrigin
-    640,             // viWidth
-    524,             // viHeight
-    VI_XFBMODE_SF,   // xFBmode
-    GX_FALSE,        // field_rendering
-    GX_TRUE,         // aa
-
-    // sample points arranged in increasing Y order
-	{
-		{3,2},{9,6},{3,10},  // pix 0, 3 sample points, 1/12 units, 4 bits each
-		{3,2},{9,6},{3,10},  // pix 1
-		{9,2},{3,6},{9,10},  // pix 2
-		{9,2},{3,6},{9,10}   // pix 3
-	},
-	
-    // vertical filter[7], 1/64 units, 6 bits each
-	{
-		 4,         // line n-1
-		 8,         // line n-1
-		12,         // line n
-		16,         // line n
-		12,         // line n
-		 8,         // line n+1
-		 4          // line n+1
-	}
-
-};
-
-GXRModeObj TVPal574IntDfScale =
-{
-    VI_TVMODE_PAL_INT,      // viDisplayMode
-    640,             // fbWidth
-    480,             // efbHeight
-    574,             // xfbHeight
-    (VI_MAX_WIDTH_PAL - 640)/2,         // viXOrigin
-    (VI_MAX_HEIGHT_PAL - 574)/2,        // viYOrigin
-    640,             // viWidth
-    574,             // viHeight
-    VI_XFBMODE_DF,   // xFBmode
-    GX_FALSE,        // field_rendering
-    GX_FALSE,        // aa
-
-    // sample points arranged in increasing Y order
-	{
-		{6,6},{6,6},{6,6},  // pix 0, 3 sample points, 1/12 units, 4 bits each
-		{6,6},{6,6},{6,6},  // pix 1
-		{6,6},{6,6},{6,6},  // pix 2
-		{6,6},{6,6},{6,6}   // pix 3
-	},
-    // vertical filter[7], 1/64 units, 6 bits each
-	{
-		 8,         // line n-1
-		 8,         // line n-1
-		10,         // line n
-		12,         // line n
-		10,         // line n
-		 8,         // line n+1
-		 8          // line n+1
-	}
-};
-
 static const GXRModeObj *g_vidmodes[] = {
-	&TVNtsc480Int,
-	&TVNtsc480IntDf,
-	&TVNtsc480Prog,
+	&CUSTOM_TVNtsc480Int,
+	&CUSTOM_TVNtsc480IntDf,
+	&CUSTOM_TVNtsc480Prog,
 
-	&TVPal528Int, 
-	&TVPal528IntDf,
-	&TVPal528Prog,
-	&TVPal528ProgSoft,
-	&TVPal528ProgUnknown,
+	&CUSTOM_TVPal528Int, 
+	&CUSTOM_TVPal528IntDf,
+	&CUSTOM_TVPal528Prog,
+	&CUSTOM_TVPal528ProgSoft,
+	&CUSTOM_TVPal528ProgUnknown,
 
-	&TVMpal480IntDf,
-	&TVMpal480Prog,
+	&CUSTOM_TVMpal480IntDf,
+	&CUSTOM_TVMpal480Prog,
 
-	&TVEurgb60Hz480Int,
-	&TVEurgb60Hz480IntDf,
-	&TVEurgb60Hz480Prog
+	&CUSTOM_TVEurgb60Hz480Int,
+	&CUSTOM_TVEurgb60Hz480IntDf,
+	&CUSTOM_TVEurgb60Hz480Prog
 };
 
 // Level :
@@ -204,47 +65,47 @@ static void patch_videomode(GXRModeObj* mode1, GXRModeObj* mode2)
 }
 
 static GXRModeObj* PAL2NTSC[]={
-	&TVMpal480IntDf,		&TVNtsc480IntDf,
-	&TVPal264Ds,			&TVNtsc240Ds,
-	&TVPal264DsAa,			&TVNtsc240DsAa,
-	&TVPal264Int,			&TVNtsc240Int,
-	&TVPal264IntAa,			&TVNtsc240IntAa,
-	&TVPal524IntAa,			&TVNtsc480IntAa,
-	&TVPal528Int,			&TVNtsc480IntAa,
-	&TVPal528IntDf,			&TVNtsc480IntDf,
-	&TVPal574IntDfScale,	&TVNtsc480IntDf,
-	&TVEurgb60Hz240Ds,		&TVNtsc240Ds,
-	&TVEurgb60Hz240DsAa,	&TVNtsc240DsAa,
-	&TVEurgb60Hz240Int,		&TVNtsc240Int,
-	&TVEurgb60Hz240IntAa,	&TVNtsc240IntAa,
-	&TVEurgb60Hz480Int,		&TVNtsc480IntAa,
-	&TVEurgb60Hz480IntDf,	&TVNtsc480IntDf,
-	&TVEurgb60Hz480IntAa,	&TVNtsc480IntAa,
-	&TVEurgb60Hz480Prog,	&TVNtsc480Prog,
-	&TVEurgb60Hz480ProgSoft,&TVNtsc480Prog,
-	&TVEurgb60Hz480ProgAa,  &TVNtsc480Prog,
+	&CUSTOM_TVMpal480IntDf,		&CUSTOM_TVNtsc480IntDf,
+	&CUSTOM_TVPal264Ds,			&CUSTOM_TVNtsc240Ds,
+	&CUSTOM_TVPal264DsAa,			&CUSTOM_TVNtsc240DsAa,
+	&CUSTOM_TVPal264Int,			&CUSTOM_TVNtsc240Int,
+	&CUSTOM_TVPal264IntAa,			&CUSTOM_TVNtsc240IntAa,
+	&CUSTOM_TVPal524IntAa,			&CUSTOM_TVNtsc480IntAa,
+	&CUSTOM_TVPal528Int,			&CUSTOM_TVNtsc480IntAa,
+	&CUSTOM_TVPal528IntDf,			&CUSTOM_TVNtsc480IntDf,
+	&CUSTOM_TVPal574IntDfScale,	&CUSTOM_TVNtsc480IntDf,
+	&CUSTOM_TVEurgb60Hz240Ds,		&CUSTOM_TVNtsc240Ds,
+	&CUSTOM_TVEurgb60Hz240DsAa,	&CUSTOM_TVNtsc240DsAa,
+	&CUSTOM_TVEurgb60Hz240Int,		&CUSTOM_TVNtsc240Int,
+	&CUSTOM_TVEurgb60Hz240IntAa,	&CUSTOM_TVNtsc240IntAa,
+	&CUSTOM_TVEurgb60Hz480Int,		&CUSTOM_TVNtsc480IntAa,
+	&CUSTOM_TVEurgb60Hz480IntDf,	&CUSTOM_TVNtsc480IntDf,
+	&CUSTOM_TVEurgb60Hz480IntAa,	&CUSTOM_TVNtsc480IntAa,
+	&CUSTOM_TVEurgb60Hz480Prog,	&CUSTOM_TVNtsc480Prog,
+	&CUSTOM_TVEurgb60Hz480ProgSoft,&CUSTOM_TVNtsc480Prog,
+	&CUSTOM_TVEurgb60Hz480ProgAa,  &CUSTOM_TVNtsc480Prog,
 	0,0
 };
 
 static GXRModeObj* NTSC2PAL[]={
-	&TVNtsc240Ds,			&TVPal264Ds,
-	&TVNtsc240DsAa,			&TVPal264DsAa,
-	&TVNtsc240Int,			&TVPal264Int,
-	&TVNtsc240IntAa,		&TVPal264IntAa,
-	&TVNtsc480IntDf,		&TVPal528IntDf,
-	&TVNtsc480IntAa,		&TVPal524IntAa,
-	&TVNtsc480Prog,			&TVPal528IntDf,
+	&CUSTOM_TVNtsc240Ds,			&CUSTOM_TVPal264Ds,
+	&CUSTOM_TVNtsc240DsAa,			&CUSTOM_TVPal264DsAa,
+	&CUSTOM_TVNtsc240Int,			&CUSTOM_TVPal264Int,
+	&CUSTOM_TVNtsc240IntAa,		&CUSTOM_TVPal264IntAa,
+	&CUSTOM_TVNtsc480IntDf,		&CUSTOM_TVPal528IntDf,
+	&CUSTOM_TVNtsc480IntAa,		&CUSTOM_TVPal524IntAa,
+	&CUSTOM_TVNtsc480Prog,			&CUSTOM_TVPal528IntDf,
 	0,0
 };
 
 static GXRModeObj* NTSC2PAL60[]={
-	&TVNtsc240Ds,			&TVEurgb60Hz240Ds,
-	&TVNtsc240DsAa,			&TVEurgb60Hz240DsAa,
-	&TVNtsc240Int,			&TVEurgb60Hz240Int,
-	&TVNtsc240IntAa,		&TVEurgb60Hz240IntAa,
-	&TVNtsc480IntDf,		&TVEurgb60Hz480IntDf,
-	&TVNtsc480IntAa,		&TVEurgb60Hz480IntAa,
-	&TVNtsc480Prog,			&TVEurgb60Hz480Prog,
+	&CUSTOM_TVNtsc240Ds,			&CUSTOM_TVEurgb60Hz240Ds,
+	&CUSTOM_TVNtsc240DsAa,			&CUSTOM_TVEurgb60Hz240DsAa,
+	&CUSTOM_TVNtsc240Int,			&CUSTOM_TVEurgb60Hz240Int,
+	&CUSTOM_TVNtsc240IntAa,		&CUSTOM_TVEurgb60Hz240IntAa,
+	&CUSTOM_TVNtsc480IntDf,		&CUSTOM_TVEurgb60Hz480IntDf,
+	&CUSTOM_TVNtsc480IntAa,		&CUSTOM_TVEurgb60Hz480IntAa,
+	&CUSTOM_TVNtsc480Prog,			&CUSTOM_TVEurgb60Hz480Prog,
 	0,0
 };
 

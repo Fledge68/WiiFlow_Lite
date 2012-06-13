@@ -67,12 +67,12 @@ void __Disc_SetLowMem()
 	memcpy((void *)Online_Check, (void *)Disc_ID, 4);
 }
 
-GXRModeObj * __Disc_SelectVMode(u8 videoselected, u64 chantitle)
+GXRModeObj *__Disc_SelectVMode(u8 videoselected, u64 chantitle)
 {
-    vmode = VIDEO_GetPreferredMode(0);
+    vmode = CUSTOM_VIDEO_GetPreferredMode(0);
 
 	/* Get video mode configuration */
-	bool progressive = (CONF_GetProgressiveScan() > 0) && VIDEO_HaveComponentCable();
+	bool progressive = (CONF_GetProgressiveScan() > 0) && CUSTOM_VIDEO_HaveComponentCable();
 
 	/* Select video mode register */
 	switch (CONF_GetVideo())
@@ -81,7 +81,7 @@ GXRModeObj * __Disc_SelectVMode(u8 videoselected, u64 chantitle)
 			if (CONF_GetEuRGB60() > 0)
 			{
 				vmode_reg = VI_EURGB60;
-				vmode = progressive ? &TVNtsc480Prog : &TVEurgb60Hz480IntDf;
+				vmode = progressive ? &CUSTOM_TVNtsc480Prog : &CUSTOM_TVEurgb60Hz480IntDf;
 			}
 			else
 				vmode_reg = VI_PAL;
@@ -118,7 +118,7 @@ GXRModeObj * __Disc_SelectVMode(u8 videoselected, u64 chantitle)
 					if (CONF_GetVideo() != CONF_VIDEO_PAL)
 					{
 						vmode_reg = VI_PAL;
-						vmode = progressive ? &TVNtsc480Prog : &TVNtsc480IntDf;
+						vmode = progressive ? &CUSTOM_TVNtsc480Prog : &CUSTOM_TVNtsc480IntDf;
 					}
 					break;
 				// NTSC
@@ -128,28 +128,28 @@ GXRModeObj * __Disc_SelectVMode(u8 videoselected, u64 chantitle)
 					if (CONF_GetVideo() != CONF_VIDEO_NTSC)
 					{
 						vmode_reg = VI_NTSC;
-						vmode = progressive ? &TVEurgb60Hz480Prog : &TVEurgb60Hz480IntDf;
+						vmode = progressive ? &CUSTOM_TVEurgb60Hz480Prog : &CUSTOM_TVEurgb60Hz480IntDf;
 					}
 					break;
 			}
 			break;
 		case 1: // PAL50
-			vmode =  &TVPal528IntDf;
+			vmode =  &CUSTOM_TVPal528IntDf;
 			vmode_reg = vmode->viTVMode >> 2;
 			break;
 		case 2: // PAL60
-			vmode = progressive ? &TVEurgb60Hz480Prog : &TVEurgb60Hz480IntDf;
+			vmode = progressive ? &CUSTOM_TVEurgb60Hz480Prog : &CUSTOM_TVEurgb60Hz480IntDf;
 			vmode_reg = progressive ? vmode->viTVMode >> 2 : vmode->viTVMode >> 2;
 			break;
 		case 3: // NTSC
-			vmode = progressive ? &TVNtsc480Prog : &TVNtsc480IntDf;
+			vmode = progressive ? &CUSTOM_TVNtsc480Prog : &CUSTOM_TVNtsc480IntDf;
 			vmode_reg = vmode->viTVMode >> 2;
 			break;
 		case 4: // AUTO PATCH TO SYSTEM
 		case 5: // SYSTEM
 			break;
 		case 6: // PROGRESSIVE 480P(NTSC + PATCH ALL)
-			vmode = &TVNtsc480Prog;
+			vmode = &CUSTOM_TVNtsc480Prog;
 			vmode_reg = vmode->viTVMode >> 2;
 			break;
 		default:
@@ -168,14 +168,14 @@ void __Disc_SetVMode(void)
 
 	/* Set video mode */
 	if (disc_vmode != 0)
-		VIDEO_Configure(disc_vmode);
+		CUSTOM_VIDEO_Configure(disc_vmode);
 
 	/* Setup video  */
-	VIDEO_SetBlack(TRUE);
-	VIDEO_Flush();
-	VIDEO_WaitVSync();
+	CUSTOM_VIDEO_SetBlack(TRUE);
+	CUSTOM_VIDEO_Flush();
+	CUSTOM_VIDEO_WaitVSync();
 	if(disc_vmode->viTVMode & VI_NON_INTERLACE)
-		VIDEO_WaitVSync();
+		CUSTOM_VIDEO_WaitVSync();
 }
 
 void __Disc_SetTime(void)

@@ -8,6 +8,7 @@
 #include "fileOps.h"
 #include "utils.h"
 #include "memory/mem2.hpp"
+#include "loader/video_sys.h"
 
 #define SRAM_ENGLISH 0
 #define SRAM_GERMAN 1
@@ -23,13 +24,11 @@ DML_CFG *DMLCfg = NULL;
 
 void GC_SetVideoMode(u8 videomode)
 {
-	syssram *sram;
-	sram = __SYS_LockSram();
-	void *m_frameBuf;
+	syssram *sram = __SYS_LockSram();
 	static GXRModeObj *rmode;
 	int memflag = 0;
 
-	if((VIDEO_HaveComponentCable() && (CONF_GetProgressiveScan() > 0)) || videomode > 3)
+	if((CUSTOM_VIDEO_HaveComponentCable() && (CONF_GetProgressiveScan() > 0)) || videomode > 3)
 		sram->flags |= 0x80; //set progressive flag
 	else
 		sram->flags &= 0x7F; //clear progressive flag
@@ -47,19 +46,19 @@ void GC_SetVideoMode(u8 videomode)
 	}
 
 	if(videomode == 1)
-		rmode = &TVPal528IntDf;
+		rmode = &CUSTOM_TVPal528IntDf;
 	else if(videomode == 2)
-		rmode = &TVNtsc480IntDf;
+		rmode = &CUSTOM_TVNtsc480IntDf;
 	else if(videomode == 3)
 	{
-		rmode = &TVEurgb60Hz480IntDf;
+		rmode = &CUSTOM_TVEurgb60Hz480IntDf;
 		memflag = 5;
 	}
 	else if(videomode == 4)
-		rmode = &TVNtsc480Prog;
+		rmode = &CUSTOM_TVNtsc480Prog;
 	else if(videomode == 5)
 	{
-		rmode = &TVEurgb60Hz480Prog;
+		rmode = &CUSTOM_TVEurgb60Hz480Prog;
 		memflag = 5;
 	}
 
@@ -71,17 +70,16 @@ void GC_SetVideoMode(u8 videomode)
 	DCFlushRange((void *)(0x800000CC), 4);
 	ICInvalidateRange((void *)(0x800000CC), 4);
 
-	VIDEO_Configure(rmode);
-	m_frameBuf = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
+	/* Set video mode */
+	if (rmode != 0)
+		CUSTOM_VIDEO_Configure(rmode);
 
-	VIDEO_ClearFrameBuffer(rmode, m_frameBuf, COLOR_BLACK);
-	VIDEO_SetNextFramebuffer(m_frameBuf);
-
-	VIDEO_SetBlack(TRUE);
-	VIDEO_Flush();
-	VIDEO_WaitVSync();
-	if(rmode->viTVMode&VI_NON_INTERLACE) 
-		VIDEO_WaitVSync();
+	/* Setup video  */
+	CUSTOM_VIDEO_SetBlack(TRUE);
+	CUSTOM_VIDEO_Flush();
+	CUSTOM_VIDEO_WaitVSync();
+	if(rmode->viTVMode & VI_NON_INTERLACE)
+		CUSTOM_VIDEO_WaitVSync();
 }
 
 u8 get_wii_language()

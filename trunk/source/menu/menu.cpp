@@ -2196,19 +2196,16 @@ void CMenu::_stopSounds(void)
 	// Fade out sounds
 	int fade_rate = m_cfg.getInt("GENERAL", "music_fade_rate", 8);
 
-	if (!MusicPlayer::Instance()->IsStopped())
+	if(!MusicPlayer::Instance()->IsStopped())
 	{
-		while (MusicPlayer::Instance()->GetVolume() > 0 || m_gameSound.GetVolume() > 0)
+		while(MusicPlayer::Instance()->GetVolume() > 0 || m_gameSound.GetVolume() > 0)
 		{
 			MusicPlayer::Instance()->Tick(true);
-			
-			if (m_gameSound.GetVolume() > 0)
+			if(m_gameSound.GetVolume() > 0)
 				m_gameSound.SetVolume(m_gameSound.GetVolume() < fade_rate ? 0 : m_gameSound.GetVolume() - fade_rate);
-
-			VIDEO_WaitVSync();		
+			CUSTOM_VIDEO_WaitVSync();
 		}
 	}
-	
 	m_btnMgr.stopSounds();
 	m_cf.stopSound();
 
