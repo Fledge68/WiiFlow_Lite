@@ -8,6 +8,7 @@
 #include "smartptr.hpp"
 #include "vector.hpp"
 #include "texture.hpp"
+#include "video_sys.h"
 
 using namespace std;
 
