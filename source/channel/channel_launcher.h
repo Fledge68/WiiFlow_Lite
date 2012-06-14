@@ -18,8 +18,6 @@ u8 *GetDol(u64 title, u32 bootcontent);
 bool Identify(u64 titleid, u32 *ios);
 bool Identify_GenerateTik(signed_blob **outbuf, u32 *outlen);
 
-s32 WiiFlow_LaunchTitle(u64 titleID);
-
 #ifdef __cplusplus
 }
 #endif	/* __cplusplus */

@@ -106,20 +106,22 @@ void CVideo::setAA(u8 aa, bool alpha, int width, int height)
 
 void CVideo::init(void)
 {
-	CUSTOM_VIDEO_Init();
-	CUSTOM_VIDEO_SetBlack(TRUE);
+	VIDEO_Init();
+	VIDEO_SetBlack(TRUE);
 	m_wide = CONF_GetAspectRatio() == CONF_ASPECT_16_9;
-	m_rmode = CUSTOM_VIDEO_GetPreferredMode(NULL);
+	m_rmode = VIDEO_GetPreferredMode(NULL);
 	u32 type = CONF_GetVideo();
 
-	m_rmode->viWidth = m_wide ? 700 : 672;
-	if(m_rmode == &CUSTOM_TVPal574IntDfScale)
+	m_50hz = false;
+	if(m_rmode == &TVPal528IntDf)
+	{
+		m_rmode= &TVPal574IntDfScale;
 		m_50hz = true;
-	else
-		m_50hz = false;
+	}
+	m_rmode->viWidth = m_wide ? 700 : 672;
 
-	//CONF_CUSTOM_VIDEO_NTSC and CONF_CUSTOM_VIDEO_MPAL and m_rmode CUSTOM_TVEurgb60Hz480IntDf are the same max height and width.
-	if (type == CONF_VIDEO_PAL && m_rmode != &CUSTOM_TVEurgb60Hz480IntDf)
+	//CONF_VIDEO_NTSC and CONF_VIDEO_MPAL and m_rmode TVEurgb60Hz480IntDf are the same max height and width.
+	if (type == CONF_VIDEO_PAL && m_rmode != &TVEurgb60Hz480IntDf)
 	{
 		m_rmode->viHeight = VI_MAX_HEIGHT_PAL;
 		m_rmode->viXOrigin = (VI_MAX_WIDTH_PAL - m_rmode->viWidth) / 2;
@@ -138,8 +140,8 @@ void CVideo::init(void)
 
 	m_frameBuf[0] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(m_rmode));
 	m_frameBuf[1] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(m_rmode));
-	CUSTOM_VIDEO_Configure(m_rmode);
-	CUSTOM_VIDEO_Flush();
+	VIDEO_Configure(m_rmode);
+	VIDEO_Flush();
 	m_curFB = 0;
 	m_fifo = MEM1_memalign(32, DEFAULT_FIFO_SIZE);
 	memset(m_fifo, 0, DEFAULT_FIFO_SIZE);
@@ -168,11 +170,11 @@ void CVideo::init(void)
 	GX_SetZCompLoc(GX_ENABLE);
 	setup2DProjection();
 	_clearScreen();
-	CUSTOM_VIDEO_SetBlack(FALSE);
-	CUSTOM_VIDEO_Flush();
-	CUSTOM_VIDEO_WaitVSync();
+	VIDEO_SetBlack(FALSE);
+	VIDEO_Flush();
+	VIDEO_WaitVSync();
 	if(m_rmode->viTVMode & VI_NON_INTERLACE)
-		CUSTOM_VIDEO_WaitVSync();
+		VIDEO_WaitVSync();
 
 	m_stencil = MEM1_memalign(32, CVideo::_stencilWidth * CVideo::_stencilHeight);
 	memset(m_stencil, 0, CVideo::_stencilWidth * CVideo::_stencilHeight);
@@ -180,8 +182,8 @@ void CVideo::init(void)
 
 void CVideo::_clearScreen()
 {
-	CUSTOM_VIDEO_ClearFrameBuffer(m_rmode, m_frameBuf[0], COLOR_BLACK);
-	CUSTOM_VIDEO_ClearFrameBuffer(m_rmode, m_frameBuf[1], COLOR_BLACK);
+	VIDEO_ClearFrameBuffer(m_rmode, m_frameBuf[0], COLOR_BLACK);
+	VIDEO_ClearFrameBuffer(m_rmode, m_frameBuf[1], COLOR_BLACK);
 	render();
 	render();
 }
@@ -237,8 +239,8 @@ void CVideo::cleanup(void)
 	gprintf("Cleaning up video...\n");
 
 	_clearScreen();
-	CUSTOM_VIDEO_SetBlack(TRUE);
-	CUSTOM_VIDEO_Flush();
+	VIDEO_SetBlack(TRUE);
+	VIDEO_Flush();
 
 	GX_DrawDone();
 	GX_AbortFrame();
@@ -459,9 +461,9 @@ void CVideo::render(void)
 	GX_SetColorUpdate(GX_TRUE);
 	GX_CopyDisp(MEM_K1_TO_K0(m_frameBuf[m_curFB]), GX_TRUE);
 	DCFlushRange(m_frameBuf[m_curFB], 2 * m_rmode->fbWidth * m_rmode->xfbHeight);
-	CUSTOM_VIDEO_SetNextFramebuffer(m_frameBuf[m_curFB]);
-	CUSTOM_VIDEO_Flush();
-	CUSTOM_VIDEO_WaitVSync();
+	VIDEO_SetNextFramebuffer(m_frameBuf[m_curFB]);
+	VIDEO_Flush();
+	VIDEO_WaitVSync();
 	m_curFB ^= 1;
 	GX_InvalidateTexAll();
 }
@@ -518,7 +520,7 @@ void CVideo::_showWaitMessages(CVideo *m)
 			waitFrames = frames;
 		}
 		waitFrames--;
-		CUSTOM_VIDEO_WaitVSync();
+		VIDEO_WaitVSync();
 	}
 	if (m->m_useWiiLight)
 		wiiLightOff();

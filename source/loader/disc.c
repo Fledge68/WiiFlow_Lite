@@ -36,7 +36,6 @@ u32 appentrypoint;
 static u32 *buffer = (u32 *)0x93000000;
 static u8  *diskid = (u8  *)0x80000000;
 
-GXRModeObj *disc_vmode = NULL;
 GXRModeObj *vmode = NULL;
 u32 vmode_reg = 0;
 u8 vidmode_selected = 0;
@@ -69,93 +68,55 @@ void __Disc_SetLowMem()
 
 GXRModeObj *__Disc_SelectVMode(u8 videoselected, u64 chantitle)
 {
-    vmode = CUSTOM_VIDEO_GetPreferredMode(0);
+	vmode = VIDEO_GetPreferredMode(NULL);
 
 	/* Get video mode configuration */
-	bool progressive = (CONF_GetProgressiveScan() > 0) && CUSTOM_VIDEO_HaveComponentCable();
-
-	/* Select video mode register */
-	switch (CONF_GetVideo())
-	{
-		case CONF_VIDEO_PAL:
-			if (CONF_GetEuRGB60() > 0)
-			{
-				vmode_reg = VI_EURGB60;
-				vmode = progressive ? &CUSTOM_TVNtsc480Prog : &CUSTOM_TVEurgb60Hz480IntDf;
-			}
-			else
-				vmode_reg = VI_PAL;
-			break;
-
-		case CONF_VIDEO_MPAL:
-			vmode_reg = VI_MPAL;
-			break;
-
-		case CONF_VIDEO_NTSC:
-			vmode_reg = VI_NTSC;
-			break;
-	}
+	bool progressive = (CONF_GetProgressiveScan() > 0) && VIDEO_HaveComponentCable();
 
 	char Region;
 	if(chantitle != 0)
 		Region = ((u32)(chantitle) & 0xFFFFFFFF) % 256;
-	else Region = diskid[3];
+	else
+		Region = diskid[3];
 
-    switch (videoselected)
+	/* Select video mode */
+	switch(Region)
 	{
-		case 0: // DEFAULT (DISC/GAME)
-			/* Select video mode */
-			switch (Region)
-			{
-				case 'W':
-					break; // Don't overwrite wiiware video modes.
-				// PAL
-				case 'D':
-				case 'F':
-				case 'P':
-				case 'X':
-				case 'Y':
-					if (CONF_GetVideo() != CONF_VIDEO_PAL)
-					{
-						vmode_reg = VI_PAL;
-						vmode = progressive ? &CUSTOM_TVNtsc480Prog : &CUSTOM_TVNtsc480IntDf;
-					}
-					break;
-				// NTSC
-				case 'E':
-				case 'J':
-				default:
-					if (CONF_GetVideo() != CONF_VIDEO_NTSC)
-					{
-						vmode_reg = VI_NTSC;
-						vmode = progressive ? &CUSTOM_TVEurgb60Hz480Prog : &CUSTOM_TVEurgb60Hz480IntDf;
-					}
-					break;
-			}
+		case 'W':
+			break; // Don't overwrite wiiware video modes.
+		// PAL
+		case 'D':
+		case 'F':
+		case 'P':
+		case 'X':
+		case 'Y':
+			vmode_reg = VI_PAL;
+			if(CONF_GetVideo() != CONF_VIDEO_PAL)
+				vmode = progressive ? &TVNtsc480Prog : &TVNtsc480IntDf;
 			break;
-		case 1: // PAL50
-			vmode =  &CUSTOM_TVPal528IntDf;
-			vmode_reg = vmode->viTVMode >> 2;
-			break;
-		case 2: // PAL60
-			vmode = progressive ? &CUSTOM_TVEurgb60Hz480Prog : &CUSTOM_TVEurgb60Hz480IntDf;
-			vmode_reg = progressive ? vmode->viTVMode >> 2 : vmode->viTVMode >> 2;
-			break;
-		case 3: // NTSC
-			vmode = progressive ? &CUSTOM_TVNtsc480Prog : &CUSTOM_TVNtsc480IntDf;
-			vmode_reg = vmode->viTVMode >> 2;
-			break;
-		case 4: // AUTO PATCH TO SYSTEM
-		case 5: // SYSTEM
-			break;
-		case 6: // PROGRESSIVE 480P(NTSC + PATCH ALL)
-			vmode = &CUSTOM_TVNtsc480Prog;
-			vmode_reg = vmode->viTVMode >> 2;
+		// NTSC
+		case 'E':
+		case 'J':
+			vmode_reg = VI_NTSC;
+			if(CONF_GetVideo() != CONF_VIDEO_NTSC)
+				vmode = progressive ? &TVNtsc480Prog : &TVPal528IntDf;
 			break;
 		default:
 			break;
 	}
-	disc_vmode = vmode;
+
+	if(videoselected)
+	{
+		if(videoselected == 1) //PAL50
+			vmode = &TVPal528IntDf;
+		else if(videoselected == 2) //PAL60
+			vmode = &TVEurgb60Hz480IntDf;
+		else if(videoselected == 3) //NTSC
+			vmode = &TVNtsc480IntDf;
+		else
+			vmode = &TVNtsc480Prog;
+		vmode_reg = vmode->viTVMode >> 2;
+	}
 
 	return vmode;
 }
@@ -167,15 +128,15 @@ void __Disc_SetVMode(void)
 	DCFlushRange((void *)(0x800000CC), 4);
 
 	/* Set video mode */
-	if (disc_vmode != 0)
-		CUSTOM_VIDEO_Configure(disc_vmode);
+	if(vmode != 0)
+		VIDEO_Configure(vmode);
 
 	/* Setup video  */
-	CUSTOM_VIDEO_SetBlack(TRUE);
-	CUSTOM_VIDEO_Flush();
-	CUSTOM_VIDEO_WaitVSync();
-	if(disc_vmode->viTVMode & VI_NON_INTERLACE)
-		CUSTOM_VIDEO_WaitVSync();
+	VIDEO_SetBlack(TRUE);
+	VIDEO_Flush();
+	VIDEO_WaitVSync();
+	if(vmode->viTVMode & VI_NON_INTERLACE)
+		VIDEO_WaitVSync();
 }
 
 void __Disc_SetTime(void)

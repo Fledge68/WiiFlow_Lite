@@ -36,6 +36,7 @@ extern "C"
 int main(int argc, char **argv)
 {
 	__exception_setreload(5);
+	geckoinit = InitGecko();
 
 	// Init video
 	CVideo vid;
@@ -44,7 +45,7 @@ int main(int argc, char **argv)
 	MEM2_init(49); //Thats everything we can get anyways
 	vid.waitMessage(0.2f);
 
-	geckoinit = InitGecko();
+	AllocSDGeckoBuffer();
 	gprintf(" \nWelcome to %s (%s-r%s)!\nThis is the debug output.\n", APP_NAME, APP_VERSION, SVN_REV);
 
 	char *gameid = NULL;

@@ -764,7 +764,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 	DML_New_WriteOptions();
 
 	WII_Initialize();
-	if(WiiFlow_LaunchTitle(0x100000100LL) < 0)
+	if(WII_LaunchTitle(0x100000100LL) < 0)
 		Sys_LoadMenu();
 }
 
@@ -795,7 +795,6 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 	Close_Inputs();
 	m_vid.cleanup();
 	wiiLightOff();
-	__dsp_shutdown();
 
 	LoadHomebrew(filepath);
 	DeviceHandler::DestroyInstance();
@@ -1072,7 +1071,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	if(forwarder)
 	{
 		WII_Initialize();
-		if (WiiFlow_LaunchTitle(hdr->hdr.chantitle) < 0)
+		if(WII_LaunchTitle(hdr->hdr.chantitle) < 0)
 			Sys_LoadMenu();	
 	}
 	

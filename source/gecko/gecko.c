@@ -168,10 +168,6 @@ bool InitGecko()
 
 	USBGeckoOutput();
 
-	tmpfilebuffer = (char*)MEM2_alloc(filebuffer + 1 * sizeof(char));
-	if(tmpfilebuffer != NULL)
-		memset(tmpfilebuffer, 0, sizeof(tmpfilebuffer));
-
 	#ifdef sd_write_log
 		WriteToSD = true;
 	#endif
@@ -184,4 +180,11 @@ bool InitGecko()
 	}
 	else
 		return false;
+}
+
+void AllocSDGeckoBuffer()
+{
+	tmpfilebuffer = (char*)MEM2_alloc(filebuffer + 1 * sizeof(char));
+	if(tmpfilebuffer != NULL)
+		memset(tmpfilebuffer, 0, sizeof(tmpfilebuffer));
 }
