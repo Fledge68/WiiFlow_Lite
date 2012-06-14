@@ -1,0 +1,64 @@
+Commandes :
+- Page principale (coverflow) :
+-- Haut/Bas  =  Jeu précédent/suivant (vertical)
+-- Gauche/Droite  =  Jeu précédent/suivant (horizontal)
+-- Moins/Plus  =  Défilement rapide des jeux
+-- A  =  Sélectionner le jeu
+-- B+A  =  Lancement rapide du jeu
+-- B+Maison  =  Rechargement de WiiFlow
+-- B+Engrenage  =  Reconstruire les fichiers cache
+-- Maison  =  Quitter vers le menu Wii
+-- 1/2  =  Mode d'affichage précédent/suivant
+-- B+Gauche/B+Droite  =  Changer la musique
+-- B+Haut/B+Bas  =  Recherche alphabétique
+-- B+Flèches  =  Recherche alphabétique
+-- B+Moins  =  Changer de partition
+-- B+Plus  =  Changer le mode de tri
+
+-- A sur les icônes USB/DML/Chaînes/Emulateurs/HBC  =  Coverflow correspondant
+-- Plus sur l'icône Chaîne  =  Basculer sur le menu source
+-- A sur l'icône Disque (Disque de jeu dans le lecteur)  =  Lancement du disque de jeu
+-- A sur l'icône Engrenage  =  Paramètres de WiiFlow
+-- A sur l'icône Étoile  =  Favoris
+-- B sur l'icône Étoile  =  Catégories
+-- A sur l'icône Maison  =  Quitter vers le menu Wii
+-- B sur l'icône Maison  =  Basculer sur le menu source
+
+- Jeux :
+-- A sur la boîte  =  Voir la face arrière
+-- A hors de l'écran  =  Lancer le jeu
+-- Haut/Bas  =  Jeu précédent/suivant (vertical)
+-- Gauche/Droite  =  Jeu précédent/suivant (horizontal)
+-- A sur l'icône Croix  =  Effacer le jeu
+-- A sur l'icône Engrenage  =  Paramètres du jeu
+-- A sur l'icône Étoile  =  Mettre en favori (Jaune=en favori)
+-- A sur l'icône Main  =  Verrouillage parental (Rouge=Verrouiller)
+-- B  =  Retour au coverflow
+-- Plus  =  Informations sur le jeu
+--- Droite (dans les infos du jeu)  =  Description du jeu
+---- Gauche  (dans la description du jeu)  =  Synopsis
+
+- Menus paramètres :
+-- Moins/Plus  =  Page précédente/suivante
+-- Gauche/Droite  =  Page précédente/suivante
+
+- Réglage des paramètres du Coverflow :
+-- B+Moins/B+Plus  =  Page précédente/suivante
+-- B  =  Ajustement rapide (B+A au lieu de cliquer A sur un bouton)
+-- B+1  =  Copier l'ensemble du Coverflow
+-- B+2  =  Coller le Coverflow
+
+- Manette classique
+-- Bouton A  =  Bouton A
+-- Bouton B  =  Bouton B
+-- Bouton 1  =  Bouton Y
+-- Bouton 2  =  Bouton X 
+
+- Guitare
+-- Bouton A  =  Bouton Vert
+-- Bouton B  =  Bouton Rouge
+-- Bouton 1  =  Bouton Bleu
+-- Bouton 2  =  Bouton Jaune
+
+- Manette GameCube
+-- Z  =  Capture d'écran
