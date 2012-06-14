@@ -233,7 +233,8 @@ void CMenu::_showSettings()
 	if( m_downloadPrioVal&C_TYPE_KO )
 		m_btnMgr.show(m_downloadBtnKOs);
 	else
-		m_btnMgr.show(m_downloadBtnKO);	
+		m_btnMgr.show(m_downloadBtnKO);
+
 	if( m_downloadPrioVal&C_TYPE_ZHCN )
 		m_btnMgr.show(m_downloadBtnZHCNs);
 	else
@@ -1620,6 +1621,8 @@ void CMenu::_initDownloadMenu(CMenu::SThemeData &theme)
 	_setHideAnim(m_downloadBtnPT, "DOWNLOAD/PT", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_downloadBtnRU, "DOWNLOAD/RU", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_downloadBtnKO, "DOWNLOAD/KO", 0, 0, -2.f, 0.f);
+	_setHideAnim(m_downloadBtnZHCN, "DOWNLOAD/ZHCN", 0, 0, -2.f, 0.f);
+	_setHideAnim(m_downloadBtnAU, "DOWNLOAD/AU", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_downloadBtnENs, "DOWNLOAD/ENS", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_downloadBtnJAs, "DOWNLOAD/JAS", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_downloadBtnFRs, "DOWNLOAD/FRS", 0, 0, -2.f, 0.f);
