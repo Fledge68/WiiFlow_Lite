@@ -326,13 +326,3 @@ u8 *GetDol(u64 title, u32 bootcontent)
 	gprintf("Failed!\n");
 	return NULL;
 }
-
-s32 WiiFlow_LaunchTitle(u64 titleID)
-{
-	u32 numviews;
-	STACK_ALIGN(tikview,views,4,32);
-
-	ES_GetNumTicketViews(titleID, &numviews);
-	ES_GetTicketViews(titleID, views, numviews);
-	return ES_LaunchTitle(titleID, &views[0]);
-}

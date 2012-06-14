@@ -8,7 +8,6 @@
 #include "fileOps.h"
 #include "utils.h"
 #include "memory/mem2.hpp"
-#include "loader/video_sys.h"
 
 #define SRAM_ENGLISH 0
 #define SRAM_GERMAN 1
@@ -25,17 +24,17 @@ DML_CFG *DMLCfg = NULL;
 void GC_SetVideoMode(u8 videomode)
 {
 	syssram *sram = __SYS_LockSram();
-	static GXRModeObj *rmode;
-	int memflag = 0;
+	static GXRModeObj *vmode;
+	int vmode_reg = 0;
 
-	if((CUSTOM_VIDEO_HaveComponentCable() && (CONF_GetProgressiveScan() > 0)) || videomode > 3)
+	if((VIDEO_HaveComponentCable() && (CONF_GetProgressiveScan() > 0)) || videomode > 3)
 		sram->flags |= 0x80; //set progressive flag
 	else
 		sram->flags &= 0x7F; //clear progressive flag
 
 	if(videomode == 1 || videomode == 3 || videomode == 5)
 	{
-		memflag = 1;
+		vmode_reg = 1;
 		sram->flags |= 0x01; // Set bit 0 to set the video mode to PAL
 		sram->ntd |= 0x40; //set pal60 flag
 	}
@@ -46,40 +45,39 @@ void GC_SetVideoMode(u8 videomode)
 	}
 
 	if(videomode == 1)
-		rmode = &CUSTOM_TVPal528IntDf;
+		vmode = &TVPal528IntDf;
 	else if(videomode == 2)
-		rmode = &CUSTOM_TVNtsc480IntDf;
+		vmode = &TVNtsc480IntDf;
 	else if(videomode == 3)
 	{
-		rmode = &CUSTOM_TVEurgb60Hz480IntDf;
-		memflag = 5;
+		vmode = &TVEurgb60Hz480IntDf;
+		vmode_reg = 5;
 	}
 	else if(videomode == 4)
-		rmode = &CUSTOM_TVNtsc480Prog;
+		vmode = &TVNtsc480Prog;
 	else if(videomode == 5)
 	{
-		rmode = &CUSTOM_TVEurgb60Hz480Prog;
-		memflag = 5;
+		vmode = &TVNtsc480Prog;
+		vmode_reg = 5;
 	}
 
 	__SYS_UnlockSram(1); // 1 -> write changes
 	while(!__SYS_SyncSram());
 
-	/* Set video mode to PAL or NTSC */
-	*(vu32*)0x800000CC = memflag;
+	/* Set video mode register */
+	*(vu32 *)0x800000CC = vmode_reg;
 	DCFlushRange((void *)(0x800000CC), 4);
-	ICInvalidateRange((void *)(0x800000CC), 4);
 
 	/* Set video mode */
-	if (rmode != 0)
-		CUSTOM_VIDEO_Configure(rmode);
+	if(vmode != 0)
+		VIDEO_Configure(vmode);
 
 	/* Setup video  */
-	CUSTOM_VIDEO_SetBlack(TRUE);
-	CUSTOM_VIDEO_Flush();
-	CUSTOM_VIDEO_WaitVSync();
-	if(rmode->viTVMode & VI_NON_INTERLACE)
-		CUSTOM_VIDEO_WaitVSync();
+	VIDEO_SetBlack(TRUE);
+	VIDEO_Flush();
+	VIDEO_WaitVSync();
+	if(vmode->viTVMode & VI_NON_INTERLACE)
+		VIDEO_WaitVSync();
 }
 
 u8 get_wii_language()

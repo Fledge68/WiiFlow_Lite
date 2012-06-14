@@ -488,7 +488,6 @@ void CMenu::cleanup(bool ios_reload)
 		DeviceHandler::DestroyInstance();
 		m_vid.cleanup();
 		wiiLightOff();
-		__dsp_shutdown();
 	}
 
 	if (!ios_reload)
@@ -2203,7 +2202,7 @@ void CMenu::_stopSounds(void)
 			MusicPlayer::Instance()->Tick(true);
 			if(m_gameSound.GetVolume() > 0)
 				m_gameSound.SetVolume(m_gameSound.GetVolume() < fade_rate ? 0 : m_gameSound.GetVolume() - fade_rate);
-			CUSTOM_VIDEO_WaitVSync();
+			VIDEO_WaitVSync();
 		}
 	}
 	m_btnMgr.stopSounds();

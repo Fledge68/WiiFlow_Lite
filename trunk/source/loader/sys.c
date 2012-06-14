@@ -111,10 +111,10 @@ void Sys_Exit(void)
 		IOS_ReloadIOS(254);
 
 	//else
-	if(WiiFlow_LaunchTitle(HBC_108) < 0)
-		if(WiiFlow_LaunchTitle(HBC_HAXX) < 0)
-			if(WiiFlow_LaunchTitle(HBC_JODI) < 0)
-				WiiFlow_LaunchTitle(0x100000002LL); //SYS_ResetSystem doesnt work properly with new libogc
+	if(WII_LaunchTitle(HBC_108) < 0)
+		if(WII_LaunchTitle(HBC_HAXX) < 0)
+			if(WII_LaunchTitle(HBC_JODI) < 0)
+				SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
 }
 
 void __Sys_ResetCallback(void)
@@ -137,25 +137,5 @@ void Sys_Init(void)
 void Sys_LoadMenu(void)
 {
 	/* Return to the Wii system menu */
-	WiiFlow_LaunchTitle(0x100000002LL); //SYS_ResetSystem doesnt work properly with new libogc
-}
-
-void __dsp_shutdown(void)
-{
-	u32 tick;
-
-	_dspReg[5] = (DSPCR_DSPRESET|DSPCR_HALT);
-	_dspReg[27] &= ~0x8000;
-	while(_dspReg[5]&0x400);
-	while(_dspReg[5]&0x200);
-
-	_dspReg[5] = (DSPCR_DSPRESET|DSPCR_DSPINT|DSPCR_ARINT|DSPCR_AIINT|DSPCR_HALT);
-	_dspReg[0] = 0;
-	while((_SHIFTL(_dspReg[2],16,16)|(_dspReg[3]&0xffff))&0x80000000);
-
-	tick = gettick();
-	while((gettick()-tick)<44);
-
-	_dspReg[5] |= DSPCR_RES;
-	while(_dspReg[5]&DSPCR_RES);
+	SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
 }
