@@ -180,7 +180,7 @@ void CList<dir_discHdr>::GetHeaders(vector<string> pathlist, vector<dir_discHdr>
 
 						gprintf("Found: %s\n", tmp.path);
 						sscanf(plugin.getString("PLUGIN","magic","").c_str(), "%08x", &tmp.hdr.magic); //Plugin magic
-						tmp.hdr.gc_magic = EMU_MAGIC; //Abusing gc_magic for general emu detection ;)
+						tmp.hdr.gc_magic = PLUGIN_MAGIC; //Abusing gc_magic for general emu detection ;)
 						headerlist.push_back(tmp);
 						break;
 					}
@@ -330,54 +330,34 @@ void CList<dir_discHdr>::GetHeaders(vector<string> pathlist, vector<dir_discHdr>
 				headerlist.push_back(tmp);
 				continue;
 			}
-			
 		}
 		else if((*itr).rfind(".dol") != string::npos || (*itr).rfind(".DOL") != string::npos
 			|| (*itr).rfind(".elf") != string::npos || (*itr).rfind(".ELF")  != string::npos)
 		{
 			char *filename = &(*itr)[(*itr).find_last_of('/')+1];
+			strncpy((char*)tmp.hdr.id, "HB_APP", sizeof(tmp.hdr.id));
 
 			if(strcasecmp(filename, "boot.dol") != 0 && strcasecmp(filename, "boot.elf") != 0) continue;
 
 			(*itr)[(*itr).find_last_of('/')] = 0;
+			strncpy(tmp.path, (*itr).c_str(), sizeof(tmp.path));
+
 			(*itr).assign(&(*itr)[(*itr).find_last_of('/') + 1]);
-			
-			(*itr)[0] = toupper((*itr)[0]);
-			for (u32 i = 1; i < (*itr).size(); ++i)
-			{
-				if((*itr)[i] == '_' || (*itr)[i] == '-')
-					(*itr)[i] = ' ';
-
-				if((*itr)[i] == ' ')
-				{
-					(*itr)[i + 1] = toupper((*itr)[i + 1]);
-					i++;
-				}
-				else (*itr)[i] = tolower((*itr)[i]);
-			}
-
-			memcpy(tmp.hdr.id, (*itr).c_str(), 6);
-			for (u32 i = 0; i < 6; ++i)
-			{
-				tmp.hdr.id[i] = toupper(tmp.hdr.id[i]);
-				if(!isalnum(tmp.hdr.id[i]) || tmp.hdr.id[i] == ' ' || tmp.hdr.id[i] == '\0')
-					tmp.hdr.id[i] = '_';
-			}
+			char foldername[64];
+			strncpy(foldername, (*itr).c_str(), sizeof(foldername));
+			gprintf("Found: %s\n", foldername);
 
 			// Get info from custom titles
 			wstringEx tmpString;
-			GTitle = custom_titles.getString("TITLES", (const char *) tmp.hdr.id);
-			int ccolor = custom_titles.getColor("COVERS", (const char *) tmp.hdr.id, tmp.hdr.casecolor).intVal();			
-			if(GTitle.size() > 0 || (gameTDB.GetTitle((char *)tmp.hdr.id, GTitle)))
-			{
+			GTitle = custom_titles.getString("TITLES", (const char *)foldername);
+			int ccolor = custom_titles.getColor("COVERS", (const char *)foldername, tmp.hdr.casecolor).intVal();			
+			if(GTitle.size() > 0)
 				tmpString.fromUTF8(GTitle.c_str());
-				tmp.hdr.casecolor = ccolor != 1 ? ccolor : gameTDB.GetCaseColor((char *)tmp.hdr.id);
-			}
 			else
-			{
-				tmpString.fromUTF8((*itr).c_str());
-				tmp.hdr.casecolor = ccolor != 1 ? ccolor : 1;
-			}
+				tmpString.fromUTF8(foldername);
+
+			tmp.hdr.casecolor = ccolor;
+			tmp.hdr.gc_magic = HB_MAGIC;
 			wcsncpy(tmp.title, tmpString.c_str(), 64);
 			headerlist.push_back(tmp);
 			continue;

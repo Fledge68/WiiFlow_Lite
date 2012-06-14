@@ -2555,14 +2555,14 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq)
 		if (!!zBuffer && (!m_compressCache || compress(zBuffer.get(), &zBufferSize, tex.data.get(), bufSize) == Z_OK))
 		{
 			char gamePath[256];
-			if(m_items[i].hdr->hdr.gc_magic == EMU_MAGIC)
+			if(NoGameID(m_items[i].hdr->hdr.gc_magic))
 			{
 				if(string(m_items[i].hdr->path).find_last_of("/") != string::npos)
 					strncpy(gamePath, &m_items[i].hdr->path[string(m_items[i].hdr->path).find_last_of("/")], sizeof(gamePath));
 				else
 					strncpy(gamePath, m_items[i].hdr->path, sizeof(gamePath));
 			}
-			FILE *file = fopen(fmt("%s/%s.wfc", m_cachePath.c_str(), (m_items[i].hdr->hdr.gc_magic == EMU_MAGIC ? gamePath : (char*)m_items[i].hdr->hdr.id)), "wb");
+			FILE *file = fopen(fmt("%s/%s.wfc", m_cachePath.c_str(), (NoGameID(m_items[i].hdr->hdr.gc_magic) ? gamePath : (char*)m_items[i].hdr->hdr.id)), "wb");
 			if (file != 0)
 			{
 				SWFCHeader header(tex, box, m_compressCache);
@@ -2627,29 +2627,29 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq)
 	bool allocFailed = false;
 
 	// Try to find the texture in the cache
-	if (!m_cachePath.empty())
+	if(!m_cachePath.empty())
 	{
 		char gamePath[256];
-		if(m_items[i].hdr->hdr.gc_magic == EMU_MAGIC)
+		if(NoGameID(m_items[i].hdr->hdr.gc_magic))
 		{
 			if(string(m_items[i].hdr->path).find_last_of("/") != string::npos)
 				strncpy(gamePath, &m_items[i].hdr->path[string(m_items[i].hdr->path).find_last_of("/")], sizeof(gamePath));
 			else
 				strncpy(gamePath, m_items[i].hdr->path, sizeof(gamePath));
 		}
-		FILE *file = fopen(fmt("%s/%s.wfc", m_cachePath.c_str(), (m_items[i].hdr->hdr.gc_magic == EMU_MAGIC ? gamePath : (char*)m_items[i].hdr->hdr.id)), "rb");
-		if (file != 0)
+		FILE *file = fopen(fmt("%s/%s.wfc", m_cachePath.c_str(), (NoGameID(m_items[i].hdr->hdr.gc_magic) ? gamePath : (char*)m_items[i].hdr->hdr.id)), "rb");
+		if(file != 0)
 		{
 			bool success = false;
 			fseek(file, 0, SEEK_END);
 			u32 fileSize = ftell(file);
 			SWFCHeader header;
-			if (fileSize > sizeof header)
+			if(fileSize > sizeof header)
 			{
 				fseek(file, 0, SEEK_SET);
 				fread(&header, 1, sizeof header, file);
 				// Try to find a matching cache file, otherwise try the PNG file, otherwise try again with the cache file with less constraints
-				if (header.newFmt != 0 && (((!box || header.full != 0) && (header.cmpr != 0) == m_compressTextures) || (!_loadCoverTexPNG(i, box, hq))))
+				if(header.newFmt != 0 && (((!box || header.full != 0) && (header.cmpr != 0) == m_compressTextures) || (!_loadCoverTexPNG(i, box, hq))))
 				{
 					STexture tex;
 					tex.format = header.cmpr != 0 ? GX_TF_CMPR : GX_TF_RGB565;

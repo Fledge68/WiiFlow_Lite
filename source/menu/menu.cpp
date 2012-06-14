@@ -1508,14 +1508,19 @@ void CMenu::_initCF(void)
 	for (u32 i = 0; i < m_gameList.size(); ++i)
 	{
 		u64 chantitle = m_gameList[i].hdr.chantitle;
-		if (m_current_view == COVERFLOW_CHANNEL && chantitle == HBC_108)
+		if(m_current_view == COVERFLOW_CHANNEL && chantitle == HBC_108)
 			strncpy((char *) m_gameList[i].hdr.id, "JODI", 6);
-		if(m_current_view == COVERFLOW_EMU)
+		if(NoGameID(m_gameList[i].hdr.gc_magic))
 		{
 			string tempname(m_gameList[i].path);
-			if(!m_plugin.isScummVM(m_gameList[i].hdr.magic))
+			if(m_gameList[i].hdr.gc_magic == HB_MAGIC)
 			{
-				if(tempname.empty() ||  tempname.find_first_of('/') == string::npos)
+				tempname.assign(&tempname[tempname.find_last_of('/') + 1]);
+				id = tempname;
+			}
+			else if(!m_plugin.isScummVM(m_gameList[i].hdr.magic))
+			{
+				if(tempname.empty() || tempname.find_first_of('/') == string::npos)
 				{
 					continue;
 				}
@@ -1648,7 +1653,7 @@ void CMenu::_initCF(void)
 			if(dumpGameLst)
 				dump.setWString(domain, id, m_gameList[i].title);
 
-			if (m_current_view == COVERFLOW_EMU)
+			if(m_gameList[i].hdr.gc_magic == PLUGIN_MAGIC)
 			{
 				string tempname(m_gameList[i].path);
 				if(tempname.find_last_of("/") != string::npos)
@@ -1670,15 +1675,10 @@ void CMenu::_initCF(void)
 					}
 				}
 			}
-			else if (m_current_view != COVERFLOW_HOMEBREW)
+			else if(m_gameList[i].hdr.gc_magic == HB_MAGIC)
+				m_cf.addItem(&m_gameList[i], fmt("%s/icon.png", m_gameList[i].path), fmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str()), playcount, lastPlayed);
+			else
 				m_cf.addItem(&m_gameList[i], fmt("%s/%s.png", m_picDir.c_str(), id.c_str()), fmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str()), playcount, lastPlayed);
-			else 
-			{
-				string s = sfmt("%s", m_gameList[i].path);
-			  	string f = s.substr(0, s.find_last_of("/"));
-				m_cf.addItem(&m_gameList[i], fmt("%s/icon.png", f.c_str()), fmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str()), playcount, lastPlayed);
-			}
-
 		}
 	}
 	m_gcfg1.unload();
@@ -2074,7 +2074,7 @@ bool CMenu::_loadList(void)
 			retval = _loadGameList();
 			break;
 	}
-	
+	gprintf("Games found: %i\n", m_gameList.size());
 	m_cfg.remove(_domainFromView(), "update_cache");
 
 	return retval;

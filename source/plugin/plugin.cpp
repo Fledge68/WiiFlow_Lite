@@ -214,6 +214,7 @@ vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, string Device)
 			continue;
 		}
 		memset(&tmp, 0, sizeof(dir_discHdr));
+		strncpy((char*)tmp.hdr.id, "PLUGIN", sizeof(tmp.hdr.id));
 		tmp.hdr.casecolor = Plugins.back().caseColor;
 		wstringEx tmpString;
 		tmpString.fromUTF8(GameName.c_str());
@@ -221,7 +222,7 @@ vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, string Device)
 		strncpy(tmp.path, game.c_str(), sizeof(tmp.path));
 		gprintf("Found: %ls\n", tmp.title);
 		tmp.hdr.magic = Plugins.back().magicWord;
-		tmp.hdr.gc_magic = EMU_MAGIC;
+		tmp.hdr.gc_magic = PLUGIN_MAGIC;
 		gameHeader.push_back(tmp);
 		game = ini.nextDomain();
 	}

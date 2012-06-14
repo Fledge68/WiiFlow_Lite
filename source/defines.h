@@ -53,4 +53,5 @@ Triiforce"
 
 #define WII_MAGIC				0x5D1C9EA3
 #define GC_MAGIC				0xC2339F3D
-#define EMU_MAGIC				0x4C4F4C4F
+#define PLUGIN_MAGIC			0x4C4F4C4F
+#define HB_MAGIC				0x484F4D45

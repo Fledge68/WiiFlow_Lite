@@ -3,6 +3,7 @@
 #define _UTILS_H_
 
 #include <gctypes.h>
+#include "defines.h"
 
 #define KB_SIZE				1024.0
 #define MB_SIZE				1048576.0
@@ -23,6 +24,8 @@
 #define Write8(addr, val)	*(u8 *)addr = val; DCFlushRange((void *)addr, sizeof(u8));
 #define Write16(addr, val)	*(u16 *)addr = val; DCFlushRange((void *)addr, sizeof(u16));
 #define Write32(addr, val)	*(u32 *)addr = val; DCFlushRange((void *)addr, sizeof(u32));
+
+#define NoGameID(x)			(x == PLUGIN_MAGIC || x == HB_MAGIC)
 
 #ifdef __cplusplus
 extern "C" {

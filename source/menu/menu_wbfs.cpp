@@ -372,7 +372,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 							fsop_deleteFolder(source);
 							upd_dml = true;
 						}
-						else if(m_cf.getHdr()->hdr.gc_magic == EMU_MAGIC)
+						else if(m_cf.getHdr()->hdr.gc_magic == PLUGIN_MAGIC)
 						{
 							fsop_deleteFile((char*)m_cf.getHdr()->path);
 							upd_emu = true;
