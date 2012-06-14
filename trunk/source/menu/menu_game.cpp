@@ -33,6 +33,7 @@
 #include "homebrew.h"
 #include "defines.h"
 #include "gc/gc.h"
+#include "gc/fileOps.h"
 #include "Gekko.h"
 
 extern const u8 btngamecfg_png[];
@@ -632,7 +633,7 @@ void CMenu::_directlaunch(const string &id)
 void CMenu::_launch(dir_discHdr *hdr)
 {
 	m_gcfg2.load(fmt("%s/" GAME_SETTINGS2_FILENAME, m_settingsDir.c_str()));
-	if(hdr->hdr.gc_magic == EMU_MAGIC)
+	if(hdr->hdr.gc_magic == PLUGIN_MAGIC)
 	{
 		string title(&hdr->path[string(hdr->path).find_last_of("/")+1]);
 		string wiiflow_dol(m_dol);
@@ -665,30 +666,26 @@ void CMenu::_launch(dir_discHdr *hdr)
 		_launchHomebrew(fmt("%s/%s", m_pluginsDir.c_str(), m_plugin.GetDolName(hdr->hdr.magic)), arguments);
 		return;
 	}
+	else if(hdr->hdr.gc_magic == HB_MAGIC)
+	{
+		char gamepath[128];
+		snprintf(gamepath, sizeof(gamepath), "%s/boot.dol", hdr->path);
+		if(!fsop_FileExist((const char*)gamepath))
+			snprintf(gamepath, sizeof(gamepath), "%s/boot.elf", hdr->path);
+		_launchHomebrew(gamepath, m_homebrewArgs);
+		return;
+	}
 	else if(hdr->hdr.gc_magic == GC_MAGIC)
 	{
 		_launchGC(hdr, true);
 		return;
 	}
-	switch(m_current_view)
+	else if(m_current_view == COVERFLOW_CHANNEL)
 	{
-		case COVERFLOW_HOMEBREW:
-			_launchHomebrew((char *)hdr->path, m_homebrewArgs);
-			break;
-		case COVERFLOW_CHANNEL:
-			_launchChannel(hdr);
-			break;
-		case COVERFLOW_DML:
-			_launchGC(hdr, true);
-			break;
-		case COVERFLOW_EMU:
-			_launchHomebrew((char *)hdr->path, m_homebrewArgs);
-			break;
-		case COVERFLOW_USB:
-		default:
-			_launchGame(hdr, false);
-			break;
+		_launchChannel(hdr);
+		return;
 	}
+	_launchGame(hdr, false);
 }
 
 extern "C" {extern void USBStorage_Deinit(void);}
@@ -1439,7 +1436,7 @@ void CMenu::_gameSoundThread(CMenu *m)
 		m->m_gamesound_changed = true;
 		return;
 	}
-	else if(m->m_cf.getHdr()->hdr.gc_magic == EMU_MAGIC)
+	else if(m->m_cf.getHdr()->hdr.gc_magic == PLUGIN_MAGIC)
 	{
 		m->m_gameSound.Load(m->m_plugin.GetBannerSound(m->m_cf.getHdr()->hdr.magic), m->m_plugin.GetBannerSoundSize(), false);
 		m->m_gamesound_changed = true;
