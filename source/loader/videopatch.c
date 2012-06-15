@@ -245,7 +245,7 @@ static GXRModeObj* NTSC2PAL60[]={
 	&TVNtsc240IntAa,		&TVEurgb60Hz240IntAa,
 	&TVNtsc480IntDf,		&TVEurgb60Hz480IntDf,
 	&TVNtsc480IntAa,		&TVEurgb60Hz480IntAa,
-	&TVNtsc480Prog,			&TVNtsc480Prog,
+	&TVNtsc480Prog,			&TVEurgb60Hz480Prog,
 	0,0
 };
 
