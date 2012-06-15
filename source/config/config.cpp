@@ -333,17 +333,18 @@ string Config::getString(const string &domain, const string &key, const string &
 vector<string> Config::getStrings(const string &domain, const string &key, char seperator, const string &defVal)
 {
 	vector<string> retval;
-	
-	if (domain.empty() || key.empty())
+
+	if(domain.empty() || key.empty())
 	{
-		if (defVal != std::string())
+		if(defVal != std::string())
 			retval.push_back(defVal);
 		return retval;
 	}
+
 	string &data = m_domains[upperCase(domain)][lowerCase(key)];
-	if (data.empty())
+	if(data.empty())
 	{
-		if (defVal != std::string())
+		if(defVal != std::string())
 			retval.push_back(defVal);
 		return retval;
 	}
@@ -355,7 +356,14 @@ vector<string> Config::getStrings(const string &domain, const string &key, char 
 	// find first "non-delimiter".
 	string::size_type pos = data.find_first_of(seperator, lastPos);
 
-	while (string::npos != pos || string::npos != lastPos)
+	// no seperator found, return data
+	if(pos == string::npos)
+	{
+		retval.push_back(data);
+		return retval;
+	}
+
+	while(string::npos != pos || string::npos != lastPos)
 	{
 		// found a token, add it to the vector.
 		retval.push_back(data.substr(lastPos, pos - lastPos));
