@@ -22,9 +22,7 @@
 #include "wip.h"
 #include "memory.h"
 #include "gecko.h"
-#include "defines.h"
-
-#define ALIGNED(x) __attribute__((aligned(x)))
+#include "utils.h"
 
 /* Constants */
 #define PTABLE_OFFSET	0x40000

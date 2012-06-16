@@ -14,7 +14,7 @@
 #include <errno.h>
 
 #include "gecko.h"
-#include "defines.h"
+#include "types.h"
 #include "fonts.h"
 #include "music/SoundHandler.hpp"
 #include "fs.h"
@@ -1504,21 +1504,19 @@ void CMenu::_initCF(void)
 		}
 	}
 	const char *catviews = m_cat.getString(domain, "categories", "100000000000000000000").c_str();
-	string id;
 	for (u32 i = 0; i < m_gameList.size(); ++i)
 	{
-		u64 chantitle = m_gameList[i].hdr.chantitle;
-		if(m_current_view == COVERFLOW_CHANNEL && chantitle == HBC_108)
-			strncpy((char *) m_gameList[i].hdr.id, "JODI", 6);
-		if(NoGameID(m_gameList[i].hdr.gc_magic))
+		string id;
+		string tempname(m_gameList[i].path);
+		u64 chantitle = m_gameList[i].chantitle;
+		if(m_gameList[i].type == TYPE_HOMEBREW)
 		{
-			string tempname(m_gameList[i].path);
-			if(m_gameList[i].hdr.gc_magic == HB_MAGIC)
-			{
-				tempname.assign(&tempname[tempname.find_last_of('/') + 1]);
-				id = tempname;
-			}
-			else if(!m_plugin.isScummVM(m_gameList[i].hdr.magic))
+			tempname.assign(&tempname[tempname.find_last_of('/') + 1]);
+			id = tempname;
+		}
+		else if(m_gameList[i].type == TYPE_PLUGIN)
+		{
+			if(!m_plugin.isScummVM(m_gameList[i].plugin_magic))
 			{
 				if(tempname.empty() || tempname.find_first_of('/') == string::npos)
 				{
@@ -1541,24 +1539,29 @@ void CMenu::_initCF(void)
 			else
 				id = tempname;
 		}
-		else 
-			id = string((const char *)m_gameList[i].hdr.id, m_current_view == COVERFLOW_CHANNEL ?  4 : 6);
+		else
+		{
+			if(m_gameList[i].type == TYPE_CHANNEL && chantitle == HBC_108)
+				strncpy(m_gameList[i].id, "JODI", 6);
+			id = string(m_gameList[i].id);
+		}
+
 		string idcats = m_cat.getString("CATEGORIES", id, "").c_str();
 		if (idcats.length() < 21 && idcats.length() > 0)  
 		{
 			idcats.append((21-idcats.length()), '0');
 			m_cat.setString("CATEGORIES", id, idcats);
 		}
-		
+
 		bool ageLocked = false;
 		if (ageLock < 19)
 		{
 			int ageRated = min(max(gameAgeList.getInt(domain, id), 0), 19);
 
-			if (ageRated == 0 && (m_current_view == COVERFLOW_USB || m_current_view == COVERFLOW_CHANNEL))
+			if(ageRated == 0 && (m_current_view == COVERFLOW_USB || m_current_view == COVERFLOW_CHANNEL))
 			{
 				GameXMLInfo gameinfo;
-				if (gametdb.IsLoaded() && gametdb.GetGameXMLInfo(id.c_str(), &gameinfo))
+				if(gametdb.IsLoaded() && gametdb.GetGameXMLInfo(id.c_str(), &gameinfo))
 				{
 					switch(gameinfo.RatingType)
 					{
@@ -1615,15 +1618,15 @@ void CMenu::_initCF(void)
 					}
 				}
 			}
-			if (ageRated == 0)
+			if(ageRated == 0)
 				ageRated = min(max(m_cfg.getInt("GENERAL", "age_lock_default", AGE_LOCK_DEFAULT), 2), 19);
-			if (ageRated == 0)
+			if(ageRated == 0)
 				ageRated = AGE_LOCK_DEFAULT;
-			if (ageRated > ageLock)
+			if(ageRated > ageLock)
 				ageLocked = true;
 		}
 
-		if ((!m_favorites || m_gcfg1.getBool("FAVORITES", id, false))
+		if((!m_favorites || m_gcfg1.getBool("FAVORITES", id, false))
 			&& (!m_locked || !m_gcfg1.getBool("ADULTONLY", id, false))
 			&& !ageLocked)
 		{
@@ -1653,21 +1656,19 @@ void CMenu::_initCF(void)
 			if(dumpGameLst)
 				dump.setWString(domain, id, m_gameList[i].title);
 
-			if(m_gameList[i].hdr.gc_magic == PLUGIN_MAGIC)
+			if(m_gameList[i].type == TYPE_PLUGIN)
 			{
 				string tempname(m_gameList[i].path);
 				if(tempname.find_last_of("/") != string::npos)
 					tempname.assign(&tempname[tempname.find_last_of("/") + 1]);
-				string coverFolder(m_plugin.GetCoverFolderName(m_gameList[i].hdr.magic));
-				//if(tempname.find_last_of('.') != string::npos)
-				//	tempname.erase(tempname.find_last_of('.'), tempname.size() - tempname.find_last_of('.'));
+				string coverFolder(m_plugin.GetCoverFolderName(m_gameList[i].plugin_magic));
 				if(EnabledPlugins.size() == 0) //all plugins
 					m_cf.addItem(&m_gameList[i], fmt("%s/%s/%s.png", m_picDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s/%s.png", m_boxPicDir.c_str(), coverFolder.c_str(), tempname.c_str()), playcount, lastPlayed);
 				else
 				{
 					for(u8 j = 0; j < EnabledPlugins.size(); j++)
 					{
-						if(EnabledPlugins[j] == true && m_gameList[i].hdr.magic == m_plugin.getPluginMagic(j))
+						if(EnabledPlugins[j] == true && m_gameList[i].plugin_magic == m_plugin.getPluginMagic(j))
 						{
 							m_cf.addItem(&m_gameList[i], fmt("%s/%s/%s.png", m_picDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s/%s.png", m_boxPicDir.c_str(), coverFolder.c_str(), tempname.c_str()), playcount, lastPlayed);
 							break;
@@ -1675,7 +1676,7 @@ void CMenu::_initCF(void)
 					}
 				}
 			}
-			else if(m_gameList[i].hdr.gc_magic == HB_MAGIC)
+			else if(m_gameList[i].type == TYPE_HOMEBREW)
 				m_cf.addItem(&m_gameList[i], fmt("%s/icon.png", m_gameList[i].path), fmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str()), playcount, lastPlayed);
 			else
 				m_cf.addItem(&m_gameList[i], fmt("%s/%s.png", m_picDir.c_str(), id.c_str()), fmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str()), playcount, lastPlayed);

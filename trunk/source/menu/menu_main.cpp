@@ -654,7 +654,7 @@ int CMenu::main(void)
 				_hideMain(true);
 				dir_discHdr hdr;
 				memset(&hdr, 0, sizeof(dir_discHdr));
-				memcpy(&hdr.hdr.id, "dvddvd", 6);
+				memcpy(&hdr.id, "dvddvd", 6);
 				_launchGame(&hdr, true);
 				_showMain();
 			}

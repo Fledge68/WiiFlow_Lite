@@ -2,7 +2,7 @@
 #include "gecko.h"
 #include "GameTDB.hpp"
 #include "config.hpp"
-#include "defines.h"
+#include "types.h"
 #include "channels.h"
 #include "gc.h"
 #include "fileOps.h"
@@ -92,11 +92,13 @@ void CList<T>::GetPaths(vector<string> &pathlist, string containing, string dire
 	}
 	else
 	{
-		if(strcasestr(containing.c_str(), ".dol") != 0) return;
+		if(strcasestr(containing.c_str(), ".dol") != 0)
+			return;
 
 		int partition = DeviceHandler::Instance()->PathToDriveType(directory.c_str());
 		wbfs_t* handle = DeviceHandler::Instance()->GetWbfsHandle(partition);
-		if (!handle) return;
+		if(!handle)
+			return;
 
 		u32 count = wbfs_count_discs(handle);
 		for(u32 i = 0; i < count; i++)
@@ -109,7 +111,9 @@ void CList<string>::GetHeaders(vector<string> pathlist, vector<string> &headerli
 {
 	//gprintf("Getting headers for CList<string>\n");
 
-	if(pathlist.size() < 1) return;
+	if(pathlist.size() < 1)
+		return;
+
 	headerlist.reserve(pathlist.size() + headerlist.size());
 
 	for(vector<string>::iterator itr = pathlist.begin(); itr != pathlist.end(); itr++)
@@ -119,9 +123,10 @@ void CList<string>::GetHeaders(vector<string> pathlist, vector<string> &headerli
 template <>
 void CList<dir_discHdr>::GetHeaders(vector<string> pathlist, vector<dir_discHdr> &headerlist, string settingsDir, string curLanguage, string DMLgameUSBDir, Config &plugin)
 {
-	if(pathlist.size() < 1) return;
-	headerlist.reserve(pathlist.size() + headerlist.size());
+	if(pathlist.size() < 1)
+		return;
 
+	headerlist.reserve(pathlist.size() + headerlist.size());
 	gprintf("Getting headers for paths in pathlist (%d)\n", pathlist.size());
 
 	dir_discHdr tmp;
@@ -129,14 +134,14 @@ void CList<dir_discHdr>::GetHeaders(vector<string> pathlist, vector<dir_discHdr>
 	string GTitle;
 
 	Config custom_titles;
-	if (settingsDir.size() > 0)
+	if(settingsDir.size() > 0)
 	{
 		string custom_titles_path = sfmt("%s/" CTITLES_FILENAME, settingsDir.c_str());
 		custom_titles.load(custom_titles_path.c_str());
 	}
 
 	GameTDB gameTDB;
-	if (settingsDir.size() > 0)
+	if(settingsDir.size() > 0)
 	{
 		gameTDB.OpenFile(fmt("%s/wiitdb.xml", settingsDir.c_str()));
 		if(curLanguage.size() == 0) curLanguage = "EN";
@@ -145,10 +150,10 @@ void CList<dir_discHdr>::GetHeaders(vector<string> pathlist, vector<dir_discHdr>
 
 	for(vector<string>::iterator itr = pathlist.begin(); itr != pathlist.end(); itr++)
 	{
-		bzero(&tmp, sizeof(dir_discHdr));
+		memset(&tmp, 0, sizeof(tmp));
 		strncpy(tmp.path, (*itr).c_str(), sizeof(tmp.path));
-		tmp.hdr.index = headerlist.size();
-		tmp.hdr.casecolor = 1;
+		tmp.index = headerlist.size();
+		tmp.casecolor = 1;
 
 		bool wbfs = (*itr).rfind(".wbfs") != string::npos || (*itr).rfind(".WBFS") != string::npos;
 
@@ -162,26 +167,23 @@ void CList<dir_discHdr>::GetHeaders(vector<string> pathlist, vector<dir_discHdr>
 					if(lowerCase(*itr).rfind((*type_itr).c_str()) != string::npos)
 					{
 						strncpy(tmp.path, (*itr).c_str(), sizeof(tmp.path));
-						strncpy((char*)tmp.hdr.id, "PLUGIN", sizeof(tmp.hdr.id));
-
-						int plugin_ccolor;
-						sscanf(plugin.getString("PLUGIN","coverColor","").c_str(), "%08x", &plugin_ccolor);
-						int ccolor = custom_titles.getColor("COVERS", (const char *) tmp.hdr.id, plugin_ccolor).intVal();
-						tmp.hdr.casecolor = ccolor != plugin_ccolor ? ccolor : plugin_ccolor;
+						strncpy(tmp.id, "PLUGIN", sizeof(tmp.id));
+						sscanf(plugin.getString("PLUGIN","coverColor","").c_str(), "%08x", &tmp.casecolor);
 
 						char tempname[64];
 						(*itr).assign(&(*itr)[(*itr).find_last_of('/') + 1]);
 						if((*itr).find_last_of('.') != string::npos)
 							(*itr).erase((*itr).find_last_of('.'), (*itr).size() - (*itr).find_last_of('.'));
 						strncpy(tempname, (*itr).c_str(), sizeof(tempname));
+
 						wstringEx tmpString;
 						tmpString.fromUTF8(tempname);
 						wcsncpy(tmp.title, tmpString.c_str(), 64);
 						Asciify(tmp.title);
 
-						gprintf("Found: %s\n", tmp.path);
-						sscanf(plugin.getString("PLUGIN","magic","").c_str(), "%08x", &tmp.hdr.magic); //Plugin magic
-						tmp.hdr.gc_magic = PLUGIN_MAGIC; //Abusing gc_magic for general emu detection ;)
+						//gprintf("Found: %ls\n", tmp.title);
+						sscanf(plugin.getString("PLUGIN","magic","").c_str(), "%08x", &tmp.plugin_magic); //Plugin magic
+						tmp.type = TYPE_PLUGIN;
 						headerlist.push_back(tmp);
 						break;
 					}
@@ -189,7 +191,7 @@ void CList<dir_discHdr>::GetHeaders(vector<string> pathlist, vector<dir_discHdr>
 			}
 			continue;
 		}
-		else if (wbfs || (*itr).rfind(".iso")  != string::npos || (*itr).rfind(".ISO")  != string::npos
+		else if(wbfs || (*itr).rfind(".iso")  != string::npos || (*itr).rfind(".ISO")  != string::npos
 				 || (*itr).rfind(".bin")  != string::npos || (*itr).rfind(".BIN")  != string::npos)
 		{
 			char* filename = &(*itr)[(*itr).find_last_of('/')+1];
@@ -197,218 +199,189 @@ void CList<dir_discHdr>::GetHeaders(vector<string> pathlist, vector<dir_discHdr>
 			if((strcasecmp(filename, "game.iso") == 0 || strcasecmp(filename, "boot.bin") == 0) && strstr((*itr).c_str(), sfmt((strncmp(dml_partition, "sd", 2) != 0) ? DMLgameUSBDir.c_str() : DML_DIR, dml_partition).c_str()) != NULL)
 			{
 				FILE *fp = fopen((*itr).c_str(), "rb");
-				if( fp )
+				if(fp)
 				{
-					fseek( fp, 0, SEEK_SET );
-					fread( tmp.hdr.id, 1, 6, fp );
-
 					u8 gc_disc[1];
-
+					fseek(fp, 6, SEEK_SET);
 					fread(gc_disc, 1, 1, fp);
 
-					GTitle = custom_titles.getString( "TITLES", (const char *) tmp.hdr.id );
-					int ccolor = custom_titles.getColor( "COVERS", (const char *) tmp.hdr.id, tmp.hdr.casecolor ).intVal();
-
-					if( GTitle.size() > 0 || ( gameTDB.IsLoaded() && gameTDB.GetTitle( (char *)tmp.hdr.id, GTitle ) ) )
-					{
-						wstringEx tmpString;
-						tmpString.fromUTF8(GTitle.c_str());
-						wcsncpy(tmp.title, tmpString.c_str(), 64);
-						Asciify(tmp.title);
-						if(gc_disc[0])
-							wcslcat(tmp.title, L" disc 2", sizeof(tmp.title));
-
-						tmp.hdr.casecolor = ccolor != 1 ? ccolor : gameTDB.GetCaseColor( (char *)tmp.hdr.id );
-						if( tmp.hdr.casecolor == 0xffffffff )
-							tmp.hdr.casecolor = 0;
-
-						tmp.hdr.gc_magic = GC_MAGIC;
-						(*itr)[(*itr).find_last_of('/')] = 0;
-						if(strcasecmp(filename, "boot.bin") == 0)
-							(*itr)[(*itr).find_last_of('/')] = 0;
-						(*itr).assign(&(*itr)[(*itr).find_last_of('/') + 1]);
-						strcpy( tmp.path, (*itr).c_str() );
-
-						if(strncmp(dml_partition, "sd", 2) != 0)
-						{
-							if (GC_GameIsInstalled((char*)tmp.hdr.id, DeviceName[SD], DML_DIR) || GC_GameIsInstalled((char*)fmt("%s [%s]", tmp.hdr.title, (char *)tmp.hdr.id), DeviceName[SD], DML_DIR) || GC_GameIsInstalled(tmp.path, DeviceName[SD], DML_DIR))
-								wcslcat(tmp.title, L" \n(on SD)", sizeof(tmp.title));
-						}
-
-						gprintf("Found: %s\n", tmp.path);
-						headerlist.push_back( tmp );
-						continue;
-					}
-
-					fseek( fp, 0, SEEK_SET );
-					fread( &tmp.hdr, sizeof( discHdr ), 1, fp);
+					discHdr gc_hdr;
+					fseek(fp, 0, SEEK_SET);
+					fread(&gc_hdr, sizeof(discHdr), 1, fp);
 					fclose(fp);
-					
-					if (tmp.hdr.gc_magic == GC_MAGIC)
-					{
-						wstringEx tmpString;
-						tmpString.fromUTF8((const char *)tmp.hdr.title);
-						wcsncpy(tmp.title, tmpString.c_str(), 64);
-						Asciify(tmp.title);
-						if(gc_disc[0])
-							wcslcat(tmp.title, L" disc 2", sizeof(tmp.title));
 
-						tmp.hdr.casecolor = 0;
+					if(gc_hdr.gc_magic == GC_MAGIC)
+					{
+						strncpy(tmp.id, (char*)gc_hdr.id, 6);
 						(*itr)[(*itr).find_last_of('/')] = 0;
 						if(strcasecmp(filename, "boot.bin") == 0)
 							(*itr)[(*itr).find_last_of('/')] = 0;
 						(*itr).assign(&(*itr)[(*itr).find_last_of('/') + 1]);
-						strcpy( tmp.path, (*itr).c_str() );
+						strcpy(tmp.path, (*itr).c_str());
+						GTitle = custom_titles.getString("TITLES", tmp.id);
+						tmp.casecolor = 0;
+						int ccolor = custom_titles.getColor("COVERS", tmp.id, tmp.casecolor).intVal();
 
+						wstringEx tmpString;
+						if(GTitle.size() > 0 || (gameTDB.IsLoaded() && gameTDB.GetTitle(tmp.id, GTitle)))
+						{
+							tmpString.fromUTF8(GTitle.c_str());
+							tmp.casecolor = ccolor != 0 ? ccolor : gameTDB.GetCaseColor(tmp.id);
+						}
+						else
+						{
+							tmpString.fromUTF8(gc_hdr.title);
+							tmp.casecolor = ccolor;
+						}
+						wcsncpy(tmp.title, tmpString.c_str(), 64);
+						if(gc_disc[0])
+							wcslcat(tmp.title, L" disc 2", sizeof(tmp.title));
 						if(strncmp(dml_partition, "sd", 2) != 0)
 						{
-							if (GC_GameIsInstalled((char*)tmp.hdr.id, DeviceName[SD], DML_DIR) || GC_GameIsInstalled((char*)fmt("%s [%s]", tmp.hdr.title, (char *)tmp.hdr.id), DeviceName[SD], DML_DIR) || GC_GameIsInstalled(tmp.path, DeviceName[SD], DML_DIR))
+							if(GC_GameIsInstalled(tmp.id, DeviceName[SD], DML_DIR) || GC_GameIsInstalled((char*)fmt("%s [%s]", tmp.title, tmp.id), DeviceName[SD], DML_DIR) || GC_GameIsInstalled(tmp.path, DeviceName[SD], DML_DIR))
 								wcslcat(tmp.title, L" \n(on SD)", sizeof(tmp.title));
 						}
+						Asciify(tmp.title);
 
-						gprintf("Found: %s\n", tmp.path);
-						headerlist.push_back( tmp );
+						//gprintf("Found: %ls\n", tmp.title);
+						tmp.type = TYPE_GC_GAME;
+						headerlist.push_back(tmp);
 						continue;
 					}
 				}
 				continue;
 			}
 
-			Check_For_ID(tmp.hdr.id, (*itr).c_str(), "[", "]"); 	 			/* [GAMEID] Title, [GAMEID]_Title, Title [GAMEID], Title_[GAMEID] */
-			if(tmp.hdr.id[0] == 0)
+			Check_For_ID(tmp.id, (*itr).c_str(), "[", "]"); 	 			/* [GAMEID] Title, [GAMEID]_Title, Title [GAMEID], Title_[GAMEID] */
+			if(tmp.id[0] == 0)
 			{
-				Check_For_ID(tmp.hdr.id, (*itr).c_str(), "/", "."); 			/* GAMEID.wbfs, GAMEID.iso */
-				if(tmp.hdr.id[0] == 0)
+				Check_For_ID(tmp.id, (*itr).c_str(), "/", "."); 			/* GAMEID.wbfs, GAMEID.iso */
+				if(tmp.id[0] == 0)
 				{
-					Check_For_ID(tmp.hdr.id, (*itr).c_str(), "/", "_"); 		/* GAMEID_Title */
-					if(tmp.hdr.id[0] == 0)
+					Check_For_ID(tmp.id, (*itr).c_str(), "/", "_"); 		/* GAMEID_Title */
+					if(tmp.id[0] == 0)
 					{
-						Check_For_ID(tmp.hdr.id, (*itr).c_str(), "_", "."); 	/* Title_GAMEID */ // <-- Unsafe?
-						if(tmp.hdr.id[0] == 0)
-							Check_For_ID(tmp.hdr.id, (*itr).c_str(), " ", "."); /* Title GAMEID */ //<-- Unsafe?
+						Check_For_ID(tmp.id, (*itr).c_str(), "_", "."); 	/* Title_GAMEID */ // <-- Unsafe?
+						if(tmp.id[0] == 0)
+							Check_For_ID(tmp.id, (*itr).c_str(), " ", "."); /* Title GAMEID */ //<-- Unsafe?
 					}
 				}
 			}
 
-			if(!isalnum(tmp.hdr.id[0]) || tmp.hdr.id[0] == 0 || memcmp(tmp.hdr.id, "__CFG_", sizeof tmp.hdr.id) == 0)
+			if(!isalnum(tmp.id[0]) || tmp.id[0] == 0 || memcmp(tmp.id, "__CFG_", sizeof tmp.id) == 0)
 			{
 				gprintf("Skipping file: '%s'\n", (*itr).c_str());
 				continue;
 			}
 
-			// Get info from custom titles
-			GTitle = custom_titles.getString("TITLES", (const char *) tmp.hdr.id);
-			int ccolor = custom_titles.getColor("COVERS", (const char *) tmp.hdr.id, tmp.hdr.casecolor).intVal();
-
-			if(GTitle.size() > 0 || (gameTDB.IsLoaded() && gameTDB.GetTitle((char *)tmp.hdr.id, GTitle)))
-			{
-				wstringEx tmpString;
-				tmpString.fromUTF8(GTitle.c_str());
-				wcsncpy(tmp.title, tmpString.c_str(), 64);
-				Asciify(tmp.title);
-				tmp.hdr.casecolor = ccolor != 1 ? ccolor : gameTDB.GetCaseColor((char *)tmp.hdr.id);
-
-				tmp.hdr.wifi = gameTDB.GetWifiPlayers((char *)tmp.hdr.id);
-				tmp.hdr.players = gameTDB.GetPlayers((char *)tmp.hdr.id);
-				//tmp.hdr.controllers = gameTDB.GetAccessories((char *)tmp.hdr.id);
-
-				tmp.hdr.magic = WII_MAGIC;
-				headerlist.push_back(tmp);
-				continue;
-			}
-
+			discHdr wii_hdr;
 			FILE *fp = fopen((*itr).c_str(), "rb");
-			if (fp)
+			if(fp)
 			{
 				fseek(fp, wbfs ? 512 : 0, SEEK_SET);
-				fread(&tmp.hdr, sizeof(discHdr), 1, fp);
+				fread(&wii_hdr, sizeof(discHdr), 1, fp);
 				fclose(fp);
 			}
 
-			if (tmp.hdr.magic == WII_MAGIC)
+			if(wii_hdr.magic == WII_MAGIC)
 			{
+				strncpy(tmp.id, (char*)wii_hdr.id, 6);
+				GTitle = custom_titles.getString("TITLES", tmp.id);
+				int ccolor = custom_titles.getColor("COVERS", tmp.id, tmp.casecolor).intVal();
+
 				wstringEx tmpString;
-				tmpString.fromUTF8((const char *)tmp.hdr.title);
+				if(GTitle.size() > 0 || (gameTDB.IsLoaded() && gameTDB.GetTitle(tmp.id, GTitle)))
+				{
+					tmpString.fromUTF8(GTitle.c_str());
+					tmp.wifi = gameTDB.GetWifiPlayers(tmp.id);
+					tmp.players = gameTDB.GetPlayers(tmp.id);
+					tmp.casecolor = ccolor != 1 ? ccolor : gameTDB.GetCaseColor(tmp.id);
+				}
+				else
+				{
+					tmpString.fromUTF8(wii_hdr.title);
+					tmp.casecolor = ccolor;
+				}
 				wcsncpy(tmp.title, tmpString.c_str(), 64);
 				Asciify(tmp.title);
-				tmp.hdr.casecolor = ccolor != 1 ? ccolor : 1;
+
+				//gprintf("Found: %ls\n", tmp.title);
+				tmp.type = TYPE_WII_GAME;
 				headerlist.push_back(tmp);
 				continue;
 			}
-		}
-		else if((*itr).rfind(".dol") != string::npos || (*itr).rfind(".DOL") != string::npos
-			|| (*itr).rfind(".elf") != string::npos || (*itr).rfind(".ELF")  != string::npos)
-		{
-			char *filename = &(*itr)[(*itr).find_last_of('/')+1];
-			strncpy((char*)tmp.hdr.id, "HB_APP", sizeof(tmp.hdr.id));
-
-			if(strcasecmp(filename, "boot.dol") != 0 && strcasecmp(filename, "boot.elf") != 0) continue;
-
-			(*itr)[(*itr).find_last_of('/')] = 0;
-			strncpy(tmp.path, (*itr).c_str(), sizeof(tmp.path));
-
-			(*itr).assign(&(*itr)[(*itr).find_last_of('/') + 1]);
-			char foldername[64];
-			strncpy(foldername, (*itr).c_str(), sizeof(foldername));
-			gprintf("Found: %s\n", foldername);
-
-			// Get info from custom titles
-			wstringEx tmpString;
-			GTitle = custom_titles.getString("TITLES", (const char *)foldername);
-			int ccolor = custom_titles.getColor("COVERS", (const char *)foldername, tmp.hdr.casecolor).intVal();			
-			if(GTitle.size() > 0)
-				tmpString.fromUTF8(GTitle.c_str());
-			else
-				tmpString.fromUTF8(foldername);
-
-			tmp.hdr.casecolor = ccolor;
-			tmp.hdr.gc_magic = HB_MAGIC;
-			wcsncpy(tmp.title, tmpString.c_str(), 64);
-			Asciify(tmp.title);
-			headerlist.push_back(tmp);
-			continue;
 		}
 		else if(strncasecmp(DeviceHandler::Instance()->PathToFSName((*itr).c_str()), "WBFS", 4) == 0)
 		{
 			u8 partition = DeviceHandler::Instance()->PathToDriveType((*itr).c_str());
 			wbfs_t* handle = DeviceHandler::Instance()->GetWbfsHandle(partition);
-			if (!handle)
+			if(!handle)
 				return;
 
-			s32 ret = wbfs_get_disc_info(handle, count, (u8 *)&tmp.hdr, sizeof(struct discHdr), NULL);
+			discHdr wbfs_hdr;
+			s32 ret = wbfs_get_disc_info(handle, count, (u8 *)&wbfs_hdr, sizeof(struct discHdr), NULL);
 			count++;
 			if(ret != 0) 
 				continue;
 
-			GTitle = custom_titles.getString("TITLES", (const char *) tmp.hdr.id);
-			int ccolor = custom_titles.getColor("COVERS", (const char *) tmp.hdr.id, 1).intVal();
-
-			wstringEx tmpString;
-			if(GTitle.size() > 0 || (gameTDB.IsLoaded() && gameTDB.GetTitle((char *)tmp.hdr.id, GTitle)))
+			if(wbfs_hdr.magic == WII_MAGIC)
 			{
-				tmpString.fromUTF8(GTitle.c_str());
-				tmp.hdr.casecolor = ccolor != 1 ? ccolor : gameTDB.GetCaseColor((char *)tmp.hdr.id);
-				tmp.hdr.wifi = gameTDB.GetWifiPlayers((char *)tmp.hdr.id);
-				tmp.hdr.players = gameTDB.GetPlayers((char *)tmp.hdr.id);
+				strncpy(tmp.id, (char*)wbfs_hdr.id, 6);
+				GTitle = custom_titles.getString("TITLES", tmp.id);
+				int ccolor = custom_titles.getColor("COVERS", tmp.id, tmp.casecolor).intVal();
 
-				//tmp.hdr.controllers = gameTDB.GetAccessories((char *)tmp.hdr.id);
-				if (tmp.hdr.magic == WII_MAGIC)
+				wstringEx tmpString;
+				if(GTitle.size() > 0 || (gameTDB.IsLoaded() && gameTDB.GetTitle(tmp.id, GTitle)))
 				{
-					wcsncpy(tmp.title, tmpString.c_str(), 64);
-					Asciify(tmp.title);
-					headerlist.push_back(tmp);
+					tmpString.fromUTF8(GTitle.c_str());
+					tmp.wifi = gameTDB.GetWifiPlayers(tmp.id);
+					tmp.players = gameTDB.GetPlayers(tmp.id);
+					tmp.casecolor = ccolor != 1 ? ccolor : gameTDB.GetCaseColor(tmp.id);
 				}
-				continue;
-			}
-
-			if (tmp.hdr.magic == WII_MAGIC)
-			{
-				tmpString.fromUTF8((const char *)tmp.hdr.title);
+				else
+				{
+					tmpString.fromUTF8((const char *)wbfs_hdr.title);
+					tmp.casecolor = ccolor;
+				}
 				wcsncpy(tmp.title, tmpString.c_str(), 64);
 				Asciify(tmp.title);
-				tmp.hdr.casecolor = ccolor != 1 ? ccolor : 1;
+
+				//gprintf("Found: %ls\n", tmp.title);
+				tmp.type = TYPE_WII_GAME;
 				headerlist.push_back(tmp);
 			}
+			continue;
+		}
+		else if((*itr).rfind(".dol") != string::npos || (*itr).rfind(".DOL") != string::npos
+			|| (*itr).rfind(".elf") != string::npos || (*itr).rfind(".ELF")  != string::npos)
+		{
+			char *filename = &(*itr)[(*itr).find_last_of('/')+1];
+			if(strcasecmp(filename, "boot.dol") != 0 && strcasecmp(filename, "boot.elf") != 0)
+				continue;
+
+			strncpy(tmp.id, "HB_APP", sizeof(tmp.id));
+
+			(*itr)[(*itr).find_last_of('/')] = 0;
+			strncpy(tmp.path, (*itr).c_str(), sizeof(tmp.path));
+
+			(*itr).assign(&(*itr)[(*itr).find_last_of('/') + 1]);
+			char homebrewtitle[64];
+			strncpy(homebrewtitle, (*itr).c_str(), sizeof(homebrewtitle));
+
+			tmp.casecolor = custom_titles.getColor("COVERS", homebrewtitle, tmp.casecolor).intVal();
+
+			wstringEx tmpString;
+			GTitle = custom_titles.getString("TITLES", homebrewtitle);		
+			if(GTitle.size() > 0)
+				tmpString.fromUTF8(GTitle.c_str());
+			else
+				tmpString.fromUTF8(homebrewtitle);
+			wcsncpy(tmp.title, tmpString.c_str(), 64);
+			Asciify(tmp.title);
+
+			//gprintf("Found: %ls\n", tmp.title);
+			tmp.type = TYPE_HOMEBREW;
+			headerlist.push_back(tmp);
 			continue;
 		}
 	}
@@ -446,34 +419,37 @@ void CList<dir_discHdr>::GetChannels(vector<dir_discHdr> &headerlist, string set
 	{
 		Channel *chan = m_channels.GetChannel(i);
 		
-		if (chan->id == NULL) 
+		if(chan->id == NULL) 
 			continue; // Skip invalid channels
 
 		dir_discHdr tmp;
 		bzero(&tmp, sizeof(dir_discHdr));
-		tmp.hdr.index = headerlist.size();
-		tmp.hdr.casecolor = 1;
+		tmp.index = headerlist.size();
+		tmp.casecolor = 1;
 
-		memcpy(tmp.hdr.id, chan->id, 4);
-		memcpy(tmp.title, chan->name, sizeof(tmp.title));
-		string GTitle = custom_titles.getString("TITLES", (const char *) tmp.hdr.id);
-		int ccolor = custom_titles.getColor("COVERS", (const char *) tmp.hdr.id, tmp.hdr.casecolor).intVal();
+		tmp.chantitle = chan->title;
+		strncpy(tmp.id, chan->id, 4);
+		int ccolor = custom_titles.getColor("COVERS", tmp.id, tmp.casecolor).intVal();
 
-		if(GTitle.size() > 0 || (gameTDB.IsLoaded() && gameTDB.GetTitle((char *)tmp.hdr.id, GTitle)))
+		wstringEx tmpString;
+		string GTitle = custom_titles.getString("TITLES", tmp.id);
+		if(GTitle.size() > 0 || (gameTDB.IsLoaded() && gameTDB.GetTitle(tmp.id, GTitle)))
 		{
-			wstringEx tmpString;
 			tmpString.fromUTF8(GTitle.c_str());
-			wcsncpy(tmp.title, tmpString.c_str(), 64);
+			tmp.casecolor = ccolor != 1 ? ccolor : gameTDB.GetCaseColor(tmp.id);
+			tmp.wifi = gameTDB.GetWifiPlayers(tmp.id);
+			tmp.players = gameTDB.GetPlayers(tmp.id);
+		}
+		else
+		{
+			tmpString = chan->name;
+			tmp.casecolor = ccolor;
 		}
 
-		tmp.hdr.casecolor = ccolor != 1 ? ccolor : gameTDB.GetCaseColor((char *)tmp.hdr.id);
-
-		tmp.hdr.wifi = gameTDB.GetWifiPlayers((char *)tmp.hdr.id);
-		tmp.hdr.players = gameTDB.GetPlayers((char *)tmp.hdr.id);
-		//tmp.hdr.controllers = gameTDB.GetAccessories((char *)tmp.hdr.id);
-				
-		tmp.hdr.chantitle = chan->title;
-	
+		wcsncpy(tmp.title, tmpString.c_str(), 64);
+		Asciify(tmp.title);
+		//gprintf("Found: %ls\n", tmp.title);
+		tmp.type = TYPE_CHANNEL;
 		headerlist.push_back(tmp);
 	}
 
@@ -482,8 +458,9 @@ void CList<dir_discHdr>::GetChannels(vector<dir_discHdr> &headerlist, string set
 }
 
 template <typename T>
-void CList<T>::Check_For_ID(u8 *id, string path, string one, string two)
+void CList<T>::Check_For_ID(char *id, string path, string one, string two)
 {
+	memset(id, 0, sizeof(id));
 	size_t idstart = path.find_last_of(one);
 	size_t idend = path.find_last_of(two);
 	if (idend != string::npos && idstart != string::npos && idend - idstart == 7)

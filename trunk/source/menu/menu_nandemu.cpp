@@ -801,7 +801,7 @@ int CMenu::_NandDumper(void *obj)
 				m._setDumpMsg(m._t("cfgne18", L"Listing game saves to extract..."), 0.f, 0.f);
 				LWP_MutexUnlock(m.m_mutex);					
 
-				string id((const char *)m.m_gameList[i].hdr.id, 4);
+				string id((const char *)m.m_gameList[i].id, 4);
 
 				if(!missingOnly || !m._checkSave(id, false))
 				{

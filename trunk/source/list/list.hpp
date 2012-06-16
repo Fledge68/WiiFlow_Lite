@@ -26,6 +26,6 @@ class CList
 		void GetHeaders(vector<string> pathlist, vector<T> &headerlist, string, string, string, Config &plugin);
 		void GetChannels(vector<T> &headerlist, string, u32, string);
 	private:
-		void Check_For_ID(u8 *id, string path, string one, string two);
+		void Check_For_ID(char *id, string path, string one, string two);
 };
 #endif
