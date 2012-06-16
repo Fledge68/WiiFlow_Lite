@@ -25,8 +25,6 @@
 #define Write16(addr, val)	*(u16 *)addr = val; DCFlushRange((void *)addr, sizeof(u16));
 #define Write32(addr, val)	*(u32 *)addr = val; DCFlushRange((void *)addr, sizeof(u32));
 
-#define NoGameID(x)			(x == PLUGIN_MAGIC || x == HB_MAGIC)
-
 #ifdef __cplusplus
 extern "C" {
 #endif	/* __cplusplus */

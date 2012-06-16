@@ -1,5 +1,9 @@
+
 #ifndef _DISC_H_
 #define _DISC_H_
+
+#define WII_MAGIC				0x5D1C9EA3
+#define GC_MAGIC				0xC2339F3D
 
 /* Disc header structure */
 struct discHdr
@@ -42,13 +46,6 @@ struct discHdr
 	u8 unused3[26];
 } ATTRIBUTE_PACKED;
 
-struct dir_discHdr
-{
-	struct discHdr hdr;
-	char path[256];
-	wchar_t title[64];
-} ATTRIBUTE_PACKED;
-
 struct gc_discHdr
 {
 	/* Game ID */
@@ -72,6 +69,25 @@ struct gc_discHdr
 	
 	/* Padding */
 	u8 unused2[64];
+} ATTRIBUTE_PACKED;
+
+struct dir_discHdr
+{
+	char id[7]; //6+1 for null character
+
+	char path[256];
+	wchar_t title[64];
+	u64 chantitle;
+
+	u32 plugin_magic;
+	u8 type;
+
+	u32 casecolor;
+	u16 index;
+	u8 esrb;
+	u8 controllers;
+	u8 players;
+	u8 wifi;
 } ATTRIBUTE_PACKED;
 
 #ifdef __cplusplus

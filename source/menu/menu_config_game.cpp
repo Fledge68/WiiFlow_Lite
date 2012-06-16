@@ -1,7 +1,7 @@
 #include "loader/wbfs.h"
 #include "libwbfs/wiidisc.h"
 #include "menu.hpp"
-#include "defines.h"
+#include "types.h"
 
 #include "loader/sys.h"
 #include "gecko.h"
@@ -120,27 +120,38 @@ void CMenu::_showGameSettings(void)
 	m_btnMgr.show(m_gameSettingsBtnPageP);
 	m_btnMgr.show(m_gameSettingsBtnBack);
 	m_btnMgr.show(m_gameSettingsLblTitle);
-	if(m_cf.getHdr()->hdr.gc_magic != GC_MAGIC)
-	{
-		if(m_current_view == COVERFLOW_USB && _checkSave(string((const char *)m_cf.getHdr()->hdr.id), false))
-			g_numGCfPages = 5;
-		else 
-			g_numGCfPages = 4;
-	}
-	else
+	if(m_cf.getHdr()->type == TYPE_GC_GAME)
 	{
 		if(m_new_dml)
 			g_numGCfPages = 3;
 		else
 			g_numGCfPages = 2;
 	}
+	else
+	{
+		if(m_current_view == COVERFLOW_USB && _checkSave(string((const char *)m_cf.getHdr()->id), false))
+			g_numGCfPages = 5;
+		else 
+			g_numGCfPages = 4;
+	}
 
 	if (m_gameSettingsPage == 1)
 	{
 		m_btnMgr.show(m_gameSettingsLblCover);
 		m_btnMgr.show(m_gameSettingsBtnCover);
-		
-		if(m_cf.getHdr()->hdr.gc_magic != GC_MAGIC)
+		if(m_cf.getHdr()->type == TYPE_GC_GAME)
+		{
+			m_btnMgr.show(m_gameSettingsLblDMLGameVideo);
+			m_btnMgr.show(m_gameSettingsLblDMLVideo);
+			m_btnMgr.show(m_gameSettingsBtnDMLVideoP);
+			m_btnMgr.show(m_gameSettingsBtnDMLVideoM);
+
+			m_btnMgr.show(m_gameSettingsLblGClanguageVal);
+			m_btnMgr.show(m_gameSettingsLblGClanguage);
+			m_btnMgr.show(m_gameSettingsBtnGClanguageP);
+			m_btnMgr.show(m_gameSettingsBtnGClanguageM);
+		}
+		else
 		{
 			m_btnMgr.show(m_gameSettingsBtnCategoryMain);
 			m_btnMgr.show(m_gameSettingsLblCategoryMain);
@@ -150,30 +161,29 @@ void CMenu::_showGameSettings(void)
 			m_btnMgr.show(m_gameSettingsBtnLanguageP);
 			m_btnMgr.show(m_gameSettingsBtnLanguageM);
 
-			m_btnMgr.show(m_gameSettingsLblGameVideo);		
+			m_btnMgr.show(m_gameSettingsLblGameVideo);
 			m_btnMgr.show(m_gameSettingsLblVideo);
 			m_btnMgr.show(m_gameSettingsBtnVideoP);
 			m_btnMgr.show(m_gameSettingsBtnVideoM);
 		}
-		else
-		{
-			m_btnMgr.show(m_gameSettingsLblDMLGameVideo);		
-			m_btnMgr.show(m_gameSettingsLblDMLVideo);
-			m_btnMgr.show(m_gameSettingsBtnDMLVideoP);
-			m_btnMgr.show(m_gameSettingsBtnDMLVideoM);
-			
-			m_btnMgr.show(m_gameSettingsLblGClanguageVal);		
-			m_btnMgr.show(m_gameSettingsLblGClanguage);
-			m_btnMgr.show(m_gameSettingsBtnGClanguageP);
-			m_btnMgr.show(m_gameSettingsBtnGClanguageM);
-		}	
 	}
 	else
 	{
 		m_btnMgr.hide(m_gameSettingsLblCover);
 		m_btnMgr.hide(m_gameSettingsBtnCover);
+		if(m_cf.getHdr()->type == TYPE_GC_GAME)
+		{
+			m_btnMgr.hide(m_gameSettingsLblGClanguageVal);
+			m_btnMgr.hide(m_gameSettingsLblGClanguage);
+			m_btnMgr.hide(m_gameSettingsBtnGClanguageP);
+			m_btnMgr.hide(m_gameSettingsBtnGClanguageM);
 
-		if(m_cf.getHdr()->hdr.gc_magic != GC_MAGIC)
+			m_btnMgr.hide(m_gameSettingsLblDMLGameVideo);
+			m_btnMgr.hide(m_gameSettingsLblDMLVideo);
+			m_btnMgr.hide(m_gameSettingsBtnDMLVideoP);
+			m_btnMgr.hide(m_gameSettingsBtnDMLVideoM);
+		}
+		else
 		{
 			m_btnMgr.hide(m_gameSettingsBtnCategoryMain);
 			m_btnMgr.hide(m_gameSettingsLblCategoryMain);
@@ -188,18 +198,6 @@ void CMenu::_showGameSettings(void)
 			m_btnMgr.hide(m_gameSettingsBtnVideoP);
 			m_btnMgr.hide(m_gameSettingsBtnVideoM);
 		}
-		else
-		{
-			m_btnMgr.hide(m_gameSettingsLblGClanguageVal);
-			m_btnMgr.hide(m_gameSettingsLblGClanguage);
-			m_btnMgr.hide(m_gameSettingsBtnGClanguageP);
-			m_btnMgr.hide(m_gameSettingsBtnGClanguageM);
-
-			m_btnMgr.hide(m_gameSettingsLblDMLGameVideo);
-			m_btnMgr.hide(m_gameSettingsLblDMLVideo);
-			m_btnMgr.hide(m_gameSettingsBtnDMLVideoP);
-			m_btnMgr.hide(m_gameSettingsBtnDMLVideoM);
-		}
 	}
 	if (m_gameSettingsPage == 2)
 	{
@@ -208,7 +206,7 @@ void CMenu::_showGameSettings(void)
 		m_btnMgr.show(m_gameSettingsBtnDebuggerP);
 		m_btnMgr.show(m_gameSettingsBtnDebuggerM);
 
-		if(m_cf.getHdr()->hdr.gc_magic != GC_MAGIC)
+		if(m_cf.getHdr()->type != TYPE_GC_GAME)
 		{
 			m_btnMgr.show(m_gameSettingsLblHooktype);
 			m_btnMgr.show(m_gameSettingsLblHooktypeVal);
@@ -229,7 +227,7 @@ void CMenu::_showGameSettings(void)
 		m_btnMgr.hide(m_gameSettingsBtnDebuggerP);
 		m_btnMgr.hide(m_gameSettingsBtnDebuggerM);
 
-		if(m_cf.getHdr()->hdr.gc_magic != GC_MAGIC)
+		if(m_cf.getHdr()->type != TYPE_GC_GAME)
 		{
 			m_btnMgr.hide(m_gameSettingsLblHooktype);
 			m_btnMgr.hide(m_gameSettingsLblHooktypeVal);
@@ -245,7 +243,7 @@ void CMenu::_showGameSettings(void)
 	}
 	if (m_gameSettingsPage == 3)
 	{
-		if(m_cf.getHdr()->hdr.gc_magic != GC_MAGIC)
+		if(m_cf.getHdr()->type != TYPE_GC_GAME)
 		{
 			m_btnMgr.show(m_gameSettingsLblPatchVidModes);
 			m_btnMgr.show(m_gameSettingsLblPatchVidModesVal);
@@ -255,9 +253,9 @@ void CMenu::_showGameSettings(void)
 			m_btnMgr.show(m_gameSettingsBtnVipatch);
 
 			m_btnMgr.show(m_gameSettingsLblCountryPatch);
-			m_btnMgr.show(m_gameSettingsBtnCountryPatch);		
-			
-			if (m_current_view != COVERFLOW_HOMEBREW)
+			m_btnMgr.show(m_gameSettingsBtnCountryPatch);
+
+			if(m_cf.getHdr()->type == TYPE_WII_GAME)
 			{
 				m_btnMgr.show(m_gameSettingsLblAspectRatio);
 				m_btnMgr.show(m_gameSettingsLblAspectRatioVal);
@@ -271,7 +269,7 @@ void CMenu::_showGameSettings(void)
 			m_btnMgr.show(m_gameSettingsLblNMM_Val);
 			m_btnMgr.show(m_gameSettingsBtnNMM_P);
 			m_btnMgr.show(m_gameSettingsBtnNMM_M);
-			
+
 			m_btnMgr.show(m_gameSettingsLblNoDVD);
 			m_btnMgr.show(m_gameSettingsLblNoDVD_Val);
 			m_btnMgr.show(m_gameSettingsBtnNoDVD_P);
@@ -280,7 +278,7 @@ void CMenu::_showGameSettings(void)
 	}
 	else
 	{
-		if(m_cf.getHdr()->hdr.gc_magic != GC_MAGIC)
+		if(m_cf.getHdr()->type != TYPE_GC_GAME)
 		{
 			m_btnMgr.hide(m_gameSettingsLblPatchVidModes);
 			m_btnMgr.hide(m_gameSettingsLblPatchVidModesVal);
@@ -313,29 +311,27 @@ void CMenu::_showGameSettings(void)
 	}
 	if (m_gameSettingsPage == 4)
 	{
-		if (m_current_view == COVERFLOW_CHANNEL)
+		if(m_cf.getHdr()->type == TYPE_CHANNEL)
 		{
 			m_btnMgr.show(m_gameSettingsLblCustom);
 			m_btnMgr.show(m_gameSettingsBtnCustom);
 		}
-		
-		if(m_current_view == COVERFLOW_USB)
+		else if(m_cf.getHdr()->type == TYPE_WII_GAME)
 		{
 			m_btnMgr.show(m_gameSettingsLblEmulationVal);
 			m_btnMgr.show(m_gameSettingsLblEmulation);
 			m_btnMgr.show(m_gameSettingsBtnEmulationP);
-			m_btnMgr.show(m_gameSettingsBtnEmulationM);			
+			m_btnMgr.show(m_gameSettingsBtnEmulationM);
+			if(_checkSave(string((const char *)m_cf.getHdr()->id), true))
+			{
+				m_btnMgr.show(m_gameSettingsLblExtractSave);
+				m_btnMgr.show(m_gameSettingsBtnExtractSave);
+			}
 		}
 		m_btnMgr.show(m_gameSettingsLblGameIOS);
 		m_btnMgr.show(m_gameSettingsLblIOS);
 		m_btnMgr.show(m_gameSettingsBtnIOSP);
 		m_btnMgr.show(m_gameSettingsBtnIOSM);
-
-		if(m_current_view == COVERFLOW_USB && _checkSave(string((const char *)m_cf.getHdr()->hdr.id), true))
-		{
-			m_btnMgr.show(m_gameSettingsLblExtractSave);
-			m_btnMgr.show(m_gameSettingsBtnExtractSave);
-		}
 	}
 	else
 	{
@@ -377,7 +373,18 @@ void CMenu::_showGameSettings(void)
 
 	m_btnMgr.setText(m_gameSettingsLblPage, wfmt(L"%i / %i", page, maxpage));
 	m_btnMgr.setText(m_gameSettingsBtnOcarina, _optBoolToString(m_gcfg2.getOptBool(id, "cheat")));
-	if(m_cf.getHdr()->hdr.gc_magic != GC_MAGIC)
+	if(m_cf.getHdr()->type == TYPE_GC_GAME)
+	{
+		i = min((u32)m_gcfg2.getInt(id, "dml_video_mode", 0), ARRAY_SIZE(CMenu::_DMLvideoModes) - 1u);
+		m_btnMgr.setText(m_gameSettingsLblDMLVideo, _t(CMenu::_DMLvideoModes[i].id, CMenu::_DMLvideoModes[i].text));
+		i = min((u32)m_gcfg2.getInt(id, "gc_language", 0), ARRAY_SIZE(CMenu::_GClanguages) - 1u);
+		m_btnMgr.setText(m_gameSettingsLblGClanguageVal, _t(CMenu::_GClanguages[i].id, CMenu::_GClanguages[i].text));
+		i = min((u32)m_gcfg2.getInt(id, "dml_nmm", 0), ARRAY_SIZE(CMenu::_NMM) - 1u);
+		m_btnMgr.setText(m_gameSettingsLblNMM_Val, _t(CMenu::_NMM[i].id, CMenu::_NMM[i].text));
+		i = min((u32)m_gcfg2.getInt(id, "no_disc_patch", 0), ARRAY_SIZE(CMenu::_NoDVD) - 1u);
+		m_btnMgr.setText(m_gameSettingsLblNoDVD_Val, _t(CMenu::_NoDVD[i].id, CMenu::_NoDVD[i].text));
+	}
+	else
 	{
 		m_btnMgr.setText(m_gameSettingsBtnVipatch, _optBoolToString(m_gcfg2.getOptBool(id, "vipatch", 0)));
 		m_btnMgr.setText(m_gameSettingsBtnCountryPatch, _optBoolToString(m_gcfg2.getOptBool(id, "country_patch", 0)));
@@ -390,17 +397,7 @@ void CMenu::_showGameSettings(void)
 		m_btnMgr.setText(m_gameSettingsLblAspectRatioVal, _t(CMenu::_AspectRatio[i].id, CMenu::_AspectRatio[i].text));
 		m_btnMgr.setText(m_gameSettingsBtnCustom, _optBoolToString(m_gcfg2.getOptBool(id, "custom", 0)));
 	}
-	else
-	{
-		i = min((u32)m_gcfg2.getInt(id, "dml_video_mode", 0), ARRAY_SIZE(CMenu::_DMLvideoModes) - 1u);
-		m_btnMgr.setText(m_gameSettingsLblDMLVideo, _t(CMenu::_DMLvideoModes[i].id, CMenu::_DMLvideoModes[i].text));
-		i = min((u32)m_gcfg2.getInt(id, "gc_language", 0), ARRAY_SIZE(CMenu::_GClanguages) - 1u);
-		m_btnMgr.setText(m_gameSettingsLblGClanguageVal, _t(CMenu::_GClanguages[i].id, CMenu::_GClanguages[i].text));
-		i = min((u32)m_gcfg2.getInt(id, "dml_nmm", 0), ARRAY_SIZE(CMenu::_NMM) - 1u);
-		m_btnMgr.setText(m_gameSettingsLblNMM_Val, _t(CMenu::_NMM[i].id, CMenu::_NMM[i].text));
-		i = min((u32)m_gcfg2.getInt(id, "no_disc_patch", 0), ARRAY_SIZE(CMenu::_NoDVD) - 1u);
-		m_btnMgr.setText(m_gameSettingsLblNoDVD_Val, _t(CMenu::_NoDVD[i].id, CMenu::_NoDVD[i].text));
-	}
+
 	int j = 0;
 	if (m_gcfg2.getInt(id, "ios", &j) && _installed_cios.size() > 0)
 	{

@@ -14,7 +14,7 @@
 #include "gecko/gecko.h"
 #include "devicemounter/PartitionHandle.h"
 #include "devicemounter/DeviceHandler.hpp"
-#include "defines.h"
+#include "types.h"
 #include "crc32.h"
 
 static const string emptyString;
@@ -214,15 +214,15 @@ vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, string Device)
 			continue;
 		}
 		memset(&tmp, 0, sizeof(dir_discHdr));
-		strncpy((char*)tmp.hdr.id, "PLUGIN", sizeof(tmp.hdr.id));
-		tmp.hdr.casecolor = Plugins.back().caseColor;
+		strncpy((char*)tmp.id, "PLUGIN", sizeof(tmp.id));
+		tmp.casecolor = Plugins.back().caseColor;
 		wstringEx tmpString;
 		tmpString.fromUTF8(GameName.c_str());
 		wcsncpy(tmp.title, tmpString.c_str(), 64);
 		strncpy(tmp.path, game.c_str(), sizeof(tmp.path));
 		gprintf("Found: %ls\n", tmp.title);
-		tmp.hdr.magic = Plugins.back().magicWord;
-		tmp.hdr.gc_magic = PLUGIN_MAGIC;
+		tmp.plugin_magic = Plugins.back().magicWord;
+		tmp.type = TYPE_PLUGIN;
 		gameHeader.push_back(tmp);
 		game = ini.nextDomain();
 	}
@@ -281,7 +281,7 @@ bool Plugin::isScummVM(u32 magic)
 
 string Plugin::GenerateCoverLink(dir_discHdr gameHeader, string url)
 {
-	Plugin_Pos = GetPluginPosition(gameHeader.hdr.magic);
+	Plugin_Pos = GetPluginPosition(gameHeader.plugin_magic);
 
 	if(url.find(TAG_LOC) != url.npos)
  		url.replace(url.find(TAG_LOC), strlen(TAG_LOC), "EN");

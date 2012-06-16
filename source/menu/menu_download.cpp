@@ -516,7 +516,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 			}
 			else
 			{
-				id = (const char *)m_gameList[i].hdr.id;
+				id = (const char *)m_gameList[i].id;
 				path = sfmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str());
 			}
 			if (!missingOnly || (!m_cf.fullCoverCached(id.c_str()) && !checkPNGFile(path.c_str())))

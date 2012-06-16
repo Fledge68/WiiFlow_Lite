@@ -31,7 +31,7 @@
 #include "alt_ios.h"
 #include "gecko.h"
 #include "homebrew.h"
-#include "defines.h"
+#include "types.h"
 #include "gc/gc.h"
 #include "gc/fileOps.h"
 #include "Gekko.h"
@@ -242,7 +242,7 @@ static Banner *_extractChannelBnr(const u64 chantitle)
 static Banner *_extractBnr(dir_discHdr *hdr)
 {
 	Banner *banner = NULL;
-	wbfs_disc_t *disc = WBFS_OpenDisc((u8 *) &hdr->hdr.id, (char *) hdr->path);
+	wbfs_disc_t *disc = WBFS_OpenDisc((u8 *) &hdr->id, (char *) hdr->path);
 	if (disc != NULL)
 	{
 		void *bnr = NULL;
@@ -275,7 +275,7 @@ static u8 GetRequestedGameIOS(dir_discHdr *hdr)
 {
 	u8 IOS = 0;
 
-	wbfs_disc_t *disc = WBFS_OpenDisc((u8 *) &hdr->hdr.id, (char *) hdr->path);
+	wbfs_disc_t *disc = WBFS_OpenDisc((u8 *) &hdr->id, (char *) hdr->path);
 	if (!disc) return IOS;
 
 	u8 *titleTMD = NULL;
@@ -385,7 +385,7 @@ void CMenu::_game(bool launch)
 			ClearGameSoundThreadStack();
 			break;
 		}
-		else if(BTN_PLUS_PRESSED && m_GameTDBLoaded && (m_cf.getHdr()->hdr.magic == WII_MAGIC || m_cf.getHdr()->hdr.gc_magic == GC_MAGIC || m_current_view == COVERFLOW_CHANNEL))
+		else if(BTN_PLUS_PRESSED && m_GameTDBLoaded && (m_cf.getHdr()->type == TYPE_WII_GAME || m_cf.getHdr()->type == TYPE_GC_GAME || m_cf.getHdr()->type == TYPE_CHANNEL))
 		{
 			_hideGame();
 			m_gameSelected = true;
@@ -474,14 +474,14 @@ void CMenu::_game(bool launch)
 			{
 				_hideGame();
 				dir_discHdr *hdr = m_cf.getHdr();
-				if(currentPartition != SD && hdr->hdr.gc_magic == GC_MAGIC)
+				if(currentPartition != SD && hdr->type == TYPE_GC_GAME)
 				{
 					char gcfolder[300];
-					snprintf(gcfolder, sizeof(gcfolder), "%s [%s]", m_cf.getTitle().toUTF8().c_str(), (char *)hdr->hdr.id);
-					if(GC_GameIsInstalled((char *)hdr->hdr.id, DeviceName[SD], DML_DIR))
+					snprintf(gcfolder, sizeof(gcfolder), "%s [%s]", m_cf.getTitle().toUTF8().c_str(), (char *)hdr->id);
+					if(GC_GameIsInstalled((char *)hdr->id, DeviceName[SD], DML_DIR))
 					{
 						memset(hdr->path, 0, sizeof(hdr->path));
-						strncpy(hdr->path, (char*)hdr->hdr.id, sizeof(hdr->path));
+						strncpy(hdr->path, (char*)hdr->id, sizeof(hdr->path));
 					}
 					else if(GC_GameIsInstalled(gcfolder, DeviceName[SD], DML_DIR))
 					{
@@ -496,10 +496,10 @@ void CMenu::_game(bool launch)
 				m_cf.clear();
 				_showWaitMessage();
 
-				if(m_current_view != COVERFLOW_HOMEBREW && m_current_view != COVERFLOW_EMU)
+				if(hdr->type != TYPE_HOMEBREW && hdr->type != TYPE_PLUGIN)
 				{
 					// Get banner_title
-					Banner * banner = m_current_view == COVERFLOW_CHANNEL ? _extractChannelBnr(chantitle) : (m_current_view == COVERFLOW_USB && hdr->hdr.gc_magic != GC_MAGIC) ? _extractBnr(hdr) : NULL;
+					Banner *banner = hdr->type == TYPE_CHANNEL ? _extractChannelBnr(chantitle) : (hdr->type == TYPE_WII_GAME ? _extractBnr(hdr) : NULL);
 					if(banner != NULL)
 					{						
 						if(banner->IsValid())
@@ -581,7 +581,7 @@ void CMenu::_game(bool launch)
 				m_btnMgr.show(m_gameBtnSettings);
 			}
 
-			if ((m_current_view == COVERFLOW_USB || m_current_view == COVERFLOW_EMU || m_cf.getHdr()->hdr.gc_magic == GC_MAGIC) && !m_locked)
+			if ((m_cf.getHdr()->type != TYPE_HOMEBREW && m_cf.getHdr()->type != TYPE_CHANNEL) && !m_locked)
 				m_btnMgr.show(m_gameBtnDelete);
 		}
 		else
@@ -633,7 +633,12 @@ void CMenu::_directlaunch(const string &id)
 void CMenu::_launch(dir_discHdr *hdr)
 {
 	m_gcfg2.load(fmt("%s/" GAME_SETTINGS2_FILENAME, m_settingsDir.c_str()));
-	if(hdr->hdr.gc_magic == PLUGIN_MAGIC)
+	if(hdr->type == TYPE_WII_GAME)
+	{
+		_launchGame(hdr, false);
+		return;
+	}
+	else if(hdr->type == TYPE_PLUGIN)
 	{
 		string title(&hdr->path[string(hdr->path).find_last_of("/")+1]);
 		string wiiflow_dol(m_dol);
@@ -642,7 +647,7 @@ void CMenu::_launch(dir_discHdr *hdr)
 		string path((char*)hdr->path, size_t(strlen((char*)hdr->path) - title.size()));
 		vector<string> arguments;
 		gprintf("Game title: %s\n", title.c_str());
-		if(m_plugin.isMplayerCE(hdr->hdr.magic))
+		if(m_plugin.isMplayerCE(hdr->plugin_magic))
 			arguments = m_plugin.CreateMplayerCEArguments(string(hdr->path).c_str());
 		else if(strstr(path.c_str(), ":/") != NULL)
 		{
@@ -650,7 +655,7 @@ void CMenu::_launch(dir_discHdr *hdr)
 				path.erase(3,1);
 			arguments.push_back(path);
 			arguments.push_back(title);
-			if(m_plugin.UseReturnLoader(hdr->hdr.magic))
+			if(m_plugin.UseReturnLoader(hdr->plugin_magic))
 				arguments.push_back(sfmt("%s/WiiFlowLoader.dol",m_pluginsDir.c_str()));
 			else
 				arguments.push_back(wiiflow_dol);
@@ -663,10 +668,10 @@ void CMenu::_launch(dir_discHdr *hdr)
 			wcstombs(gametitle, hdr->title, sizeof(gametitle));
 			m_cfg.setString("EMULATOR", "current_item", gametitle);
 		}
-		_launchHomebrew(fmt("%s/%s", m_pluginsDir.c_str(), m_plugin.GetDolName(hdr->hdr.magic)), arguments);
+		_launchHomebrew(fmt("%s/%s", m_pluginsDir.c_str(), m_plugin.GetDolName(hdr->plugin_magic)), arguments);
 		return;
 	}
-	else if(hdr->hdr.gc_magic == HB_MAGIC)
+	else if(hdr->type == TYPE_HOMEBREW)
 	{
 		char gamepath[128];
 		snprintf(gamepath, sizeof(gamepath), "%s/boot.dol", hdr->path);
@@ -675,24 +680,23 @@ void CMenu::_launch(dir_discHdr *hdr)
 		_launchHomebrew(gamepath, m_homebrewArgs);
 		return;
 	}
-	else if(hdr->hdr.gc_magic == GC_MAGIC)
+	else if(hdr->type == TYPE_GC_GAME)
 	{
 		_launchGC(hdr, true);
 		return;
 	}
-	else if(m_current_view == COVERFLOW_CHANNEL)
+	else if(hdr->type == TYPE_CHANNEL)
 	{
 		_launchChannel(hdr);
 		return;
 	}
-	_launchGame(hdr, false);
 }
 
 extern "C" {extern void USBStorage_Deinit(void);}
 
 void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 {
-	char* id = (char *)hdr->hdr.id;
+	char* id = (char *)hdr->id;
 
 	Nand::Instance()->Disable_Emu();
 
@@ -882,7 +886,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	u32 entry = 0;	
 	Nand::Instance()->Disable_Emu();
 
-	string id = string((const char *) hdr->hdr.id);
+	string id = string((const char *)hdr->id);
 
 	bool forwarder = true;
 	for (u8 num = 0; num < ARRAY_SIZE(systems); num++)
@@ -976,13 +980,13 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 
 	if(!forwarder)
 	{
-		entry = channel.Load(hdr->hdr.chantitle, &ios);
+		entry = channel.Load(hdr->chantitle, &ios);
 		setLanguage(language);
 
 		SmartBuf cheatFile;
 		u32 cheatSize = 0;
 		if (cheat)
-			_loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", hdr->hdr.id));
+			_loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", hdr->id));
 		
 		ocarina_load_code(cheatFile.get(), cheatSize);
 
@@ -1068,17 +1072,17 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	if(forwarder)
 	{
 		WII_Initialize();
-		if(WII_LaunchTitle(hdr->hdr.chantitle) < 0)
+		if(WII_LaunchTitle(hdr->chantitle) < 0)
 			Sys_LoadMenu();	
 	}
 	
-	if(!BootChannel(entry, hdr->hdr.chantitle, ios, videoMode, vipatch, countryPatch, patchVidMode, aspectRatio))
+	if(!BootChannel(entry, hdr->chantitle, ios, videoMode, vipatch, countryPatch, patchVidMode, aspectRatio))
 		Sys_LoadMenu();
 }
 
 void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 {
-	string id = string((const char *) hdr->hdr.id);
+	string id = string((const char *) hdr->id);
 	Nand::Instance()->Disable_Emu();
 
 	if (dvd)
@@ -1119,7 +1123,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 				/* Read GC disc header */
 				struct gc_discHdr *gcHeader = (struct gc_discHdr *)MEM2_alloc(sizeof(struct gc_discHdr));
 				Disc_ReadGCHeader(gcHeader);
-				memcpy(hdr->hdr.id, gcHeader->id, 6);
+				memcpy(hdr->id, gcHeader->id, 6);
 				MEM2_free(gcHeader);
 				/* Launching GC Game */
 				_launchGC(hdr, false);
@@ -1206,7 +1210,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		}
 	}
 	
-	if (!dvd && get_frag_list((u8 *) hdr->hdr.id, (char *) hdr->path, currentPartition == 0 ? 0x200 : sector_size) < 0)
+	if (!dvd && get_frag_list((u8 *)hdr->id, (char *) hdr->path, currentPartition == 0 ? 0x200 : sector_size) < 0)
 		return;
 
 	u8 patchVidMode = min((u32)m_gcfg2.getInt(id, "patch_video_modes", 0), ARRAY_SIZE(CMenu::_vidModePatch) - 1u);
@@ -1243,12 +1247,12 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	setLanguage(language);
 
 	if(cheat)
-		_loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", hdr->hdr.id));
+		_loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", hdr->id));
 
 	_loadFile(gameconfig, gameconfigSize, m_txtCheatDir.c_str(), "gameconfig.txt");
 
-	load_wip_patches((u8 *) m_wipDir.c_str(), (u8 *) &hdr->hdr.id);	
-	app_gameconfig_load((u8 *) &hdr->hdr.id, gameconfig.get(), gameconfigSize);
+	load_wip_patches((u8 *)m_wipDir.c_str(), (u8 *) &hdr->id);	
+	app_gameconfig_load((u8 *) &hdr->id, gameconfig.get(), gameconfigSize);
 	ocarina_load_code(cheatFile.get(), cheatSize);
 
 	if (!m_use_wifi_gecko)
@@ -1310,7 +1314,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 
 	if (!dvd)
 	{
-		s32 ret = Disc_SetUSB((u8 *) hdr->hdr.id);
+		s32 ret = Disc_SetUSB((u8 *)hdr->id);
 		if (ret < 0)
 		{
 			gprintf("Set USB failed: %d\n", ret);
@@ -1430,26 +1434,26 @@ unsigned int gameSoundThreadStackSize = (unsigned int)32768;
 
 void CMenu::_gameSoundThread(CMenu *m)
 {
-	if(m->m_cf.getHdr()->hdr.gc_magic == GC_MAGIC)
+	if(m->m_cf.getHdr()->type == TYPE_GC_GAME)
 	{
 		m->m_gameSound.Load(gc_ogg, gc_ogg_size, false);
 		m->m_gamesound_changed = true;
 		return;
 	}
-	else if(m->m_cf.getHdr()->hdr.gc_magic == PLUGIN_MAGIC)
+	else if(m->m_cf.getHdr()->type == TYPE_PLUGIN)
 	{
-		m->m_gameSound.Load(m->m_plugin.GetBannerSound(m->m_cf.getHdr()->hdr.magic), m->m_plugin.GetBannerSoundSize(), false);
+		m->m_gameSound.Load(m->m_plugin.GetBannerSound(m->m_cf.getHdr()->plugin_magic), m->m_plugin.GetBannerSoundSize(), false);
 		m->m_gamesound_changed = true;
 		return;
 	}
 
+	m->m_gameSoundHdr = m->m_cf.getHdr();
 	m->m_gamesound_changed = false;
 	u32 sndSize = 0;
-	m->m_gameSoundHdr = m->m_cf.getHdr();
 
-	Banner *banner = m->m_current_view == COVERFLOW_USB ?
-		_extractBnr(m->m_gameSoundHdr) : m->m_current_view == COVERFLOW_CHANNEL ?
-		_extractChannelBnr(m->m_gameSoundHdr->hdr.chantitle) : NULL;
+	Banner *banner = m->m_gameSoundHdr->type == TYPE_WII_GAME ?
+		_extractBnr(m->m_gameSoundHdr) : m->m_gameSoundHdr->type == TYPE_CHANNEL ?
+		_extractChannelBnr(m->m_gameSoundHdr->chantitle) : NULL;
 	m->m_gameSoundHdr = NULL;
 
 	if (banner == NULL || !banner->IsValid())

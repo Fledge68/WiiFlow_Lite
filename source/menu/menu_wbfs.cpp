@@ -7,7 +7,7 @@
 #include "fileOps.h"
 #include "music/SoundHandler.hpp"
 #include "channel/nand.hpp"
-#include "defines.h"
+#include "types.h"
 #include "wdvd.h"
 
 void CMenu::_hideWBFS(bool instant)
@@ -69,6 +69,16 @@ void CMenu::_addDiscProgress(int status, int total, void *user_data)
 		m._setThrdMsg(L"", m.m_progress);
 		LWP_MutexUnlock(m.m_mutex);
 	}
+}
+
+vector<dir_discHdr> CMenu::_searchGamesByID(const char *gameId)
+{
+	vector<dir_discHdr> retval;
+	for (vector<dir_discHdr>::iterator itr = m_gameList.begin(); itr != m_gameList.end(); itr++)
+		if (strncmp((const char *) (*itr).id, gameId, strlen(gameId)) == 0)
+			retval.push_back(*itr);
+
+	return retval;
 }
 
 void CMenu::_Messenger(int message, int info, char *cinfo, void *user_data)
@@ -365,19 +375,19 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						}
 						break;
 					case CMenu::WO_REMOVE_GAME:
-						if(m_cf.getHdr()->hdr.gc_magic == GC_MAGIC)
+						if(m_cf.getHdr()->type == TYPE_GC_GAME)
 						{
 							char source[300];
 							snprintf(source, sizeof(source), "%s/%s", fmt((currentPartition != SD) ? m_DMLgameDir.c_str() : DML_DIR, DeviceName[currentPartition]), (char *)m_cf.getHdr()->path);
 							fsop_deleteFolder(source);
 							upd_dml = true;
 						}
-						else if(m_cf.getHdr()->hdr.gc_magic == PLUGIN_MAGIC)
+						else if(m_cf.getHdr()->type == TYPE_PLUGIN)
 						{
 							fsop_deleteFile((char*)m_cf.getHdr()->path);
 							upd_emu = true;
 						}
-						else if(m_current_view == COVERFLOW_USB)
+						else if(m_cf.getHdr()->type == TYPE_WII_GAME)
 						{
 							WBFS_RemoveGame((u8 *)m_cf.getId().c_str(), (char *) m_cf.getHdr()->path);
 							upd_usb = true;
@@ -413,8 +423,8 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						m_btnMgr.hide(m_wbfsBtnBack);
 						m_btnMgr.show(m_wbfsLblMessage);
 						m_btnMgr.setText(m_wbfsLblMessage, L"");
-						cfPos = string((char*)m_cf.getHdr()->hdr.id);
-						m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsop10", L"Copying [%s] %s..."), (u8*)m_cf.getHdr()->hdr.id, (u8*)m_cf.getTitle().toUTF8().c_str()));
+						cfPos = string((char*)m_cf.getHdr()->id);
+						m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsop10", L"Copying [%s] %s..."), (u8*)m_cf.getHdr()->id, (u8*)m_cf.getTitle().toUTF8().c_str()));
 						done = true;
 						upd_dml = true;
 						m_thrdWorking = true;

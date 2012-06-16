@@ -805,7 +805,7 @@ void Nand::CreatePath(const char *path, ...)
 
 void Nand::CreateTitleTMD(const char *path, dir_discHdr *hdr)
 {
-	wbfs_disc_t *disc = WBFS_OpenDisc((u8 *) &hdr->hdr.id, (char *)hdr->path);
+	wbfs_disc_t *disc = WBFS_OpenDisc((u8 *)&hdr->id, (char *)hdr->path);
 	if(!disc) 
 		return;
 
