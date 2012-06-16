@@ -2003,7 +2003,7 @@ bool CMenu::_loadChannelList(void)
 		first = false;
 	}
 
-	if(changed && !disable_emu)
+	if(!disable_emu)
 	{
 		Nand::Instance()->Disable_Emu();
 		if(!DeviceHandler::Instance()->IsInserted(lastPartition))
