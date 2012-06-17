@@ -304,24 +304,36 @@ string Plugin::GenerateCoverLink(dir_discHdr gameHeader, string url, Config &Che
 	else
 	{
 		gprintf("Generating CRC32 for %s\n", gamePath);
-		if(strstr(gameHeader.path, ".zip") == NULL)
+		u32 buffer;
+		ifstream infile;
+		if(strstr(gameHeader.path, ".zip") != NULL)
 		{
-			snprintf(crc_string, sizeof(crc_string), "%08x", crc32file(gameHeader.path));
-			Checksums.setString("CHECKSUMS", gamePath, crc_string);
-			Checksums.save();
-		}
-		else
-		{
-			u32 crc_buffer;
-			ifstream infile;
 			infile.open(gameHeader.path, ios::binary);
 			infile.seekg(0x0e, ios::beg);
-			infile.read((char*)&crc_buffer, 8);
+			infile.read((char*)&buffer, 8);
 			infile.close();
-			snprintf(crc_string, sizeof(crc_string), "%08x", SWAP32(crc_buffer));
-			Checksums.setString("CHECKSUMS", gamePath, crc_string);
-			Checksums.save();
+			snprintf(crc_string, sizeof(crc_string), "%08x", SWAP32(buffer));
 		}
+		else if(strstr(gameHeader.path, ".7z") != NULL)
+		{
+			infile.open(gameHeader.path, ios::binary);
+			infile.seekg(-8, ios::end);
+			while(infile.tellg())
+			{
+				infile.read((char*)&buffer, 8);
+				if(buffer == 0x00050111)
+					break;
+				infile.seekg(-9, ios::cur);
+			}
+			infile.seekg(-13, ios::cur);
+			infile.read((char*)&buffer, 8);
+			infile.close();
+			snprintf(crc_string, sizeof(crc_string), "%08x", SWAP32(buffer));
+		}
+		else
+			snprintf(crc_string, sizeof(crc_string), "%08x", crc32file(gameHeader.path));
+		Checksums.setString("CHECKSUMS", gamePath, crc_string);
+		Checksums.save();
 	}
 	url.replace(url.find(TAG_GAME_ID), strlen(TAG_GAME_ID), upperCase(crc_string).c_str());
 	gprintf("URL: %s\n", url.c_str());
