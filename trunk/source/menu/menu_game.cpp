@@ -476,19 +476,24 @@ void CMenu::_game(bool launch)
 				dir_discHdr *hdr = m_cf.getHdr();
 				if(currentPartition != SD && hdr->type == TYPE_GC_GAME)
 				{
-					char gcfolder[300];
-					snprintf(gcfolder, sizeof(gcfolder), "%s [%s]", m_cf.getTitle().toUTF8().c_str(), (char *)hdr->id);
-					if(GC_GameIsInstalled((char *)hdr->id, DeviceName[SD], DML_DIR))
+					bool foundOnSD;
+					CList<dir_discHdr> tmplist;
+					vector<string> pathlist;
+					tmplist.GetPaths(pathlist, ".iso|.bin", "sd:/games", false, true);
+					vector<dir_discHdr> tmpGameList;
+					Config nullCfg;
+					tmplist.GetHeaders(pathlist, tmpGameList, m_settingsDir, m_curLanguage, m_DMLgameDir, nullCfg);
+					for(u8 i = 0; i < tmpGameList.size(); i++)
 					{
-						memset(hdr->path, 0, sizeof(hdr->path));
-						strncpy(hdr->path, (char*)hdr->id, sizeof(hdr->path));
+						if(strncasecmp(tmpGameList.at(i).id, hdr->id, 6) == 0)
+						{
+							foundOnSD = true;
+							memset(hdr->path, 0, sizeof(hdr->path));
+							strncpy(hdr->path, tmpGameList.at(i).path, sizeof(hdr->path));
+							break;
+						}
 					}
-					else if(GC_GameIsInstalled(gcfolder, DeviceName[SD], DML_DIR))
-					{
-						memset(hdr->path, 0, sizeof(hdr->path));
-						strncpy(hdr->path, gcfolder, sizeof(hdr->path));
-					}
-					else if(!GC_GameIsInstalled(hdr->path, DeviceName[SD], DML_DIR) && !_wbfsOp(CMenu::WO_COPY_GAME))
+					if(!foundOnSD && !_wbfsOp(CMenu::WO_COPY_GAME))
 						break;
 					currentPartition = SD;
 				}
@@ -647,7 +652,7 @@ void CMenu::_launch(dir_discHdr *hdr)
 		string path((char*)hdr->path, size_t(strlen((char*)hdr->path) - title.size()));
 		vector<string> arguments;
 		gprintf("Game title: %s\n", title.c_str());
-		if(m_plugin.isMplayerCE(hdr->plugin_magic))
+		if(m_plugin.isMplayerCE(hdr->settings[0]))
 			arguments = m_plugin.CreateMplayerCEArguments(string(hdr->path).c_str());
 		else if(strstr(path.c_str(), ":/") != NULL)
 		{
@@ -655,7 +660,7 @@ void CMenu::_launch(dir_discHdr *hdr)
 				path.erase(3,1);
 			arguments.push_back(path);
 			arguments.push_back(title);
-			if(m_plugin.UseReturnLoader(hdr->plugin_magic))
+			if(m_plugin.UseReturnLoader(hdr->settings[0]))
 				arguments.push_back(sfmt("%s/WiiFlowLoader.dol",m_pluginsDir.c_str()));
 			else
 				arguments.push_back(wiiflow_dol);
@@ -668,7 +673,7 @@ void CMenu::_launch(dir_discHdr *hdr)
 			wcstombs(gametitle, hdr->title, sizeof(gametitle));
 			m_cfg.setString("EMULATOR", "current_item", gametitle);
 		}
-		_launchHomebrew(fmt("%s/%s", m_pluginsDir.c_str(), m_plugin.GetDolName(hdr->plugin_magic)), arguments);
+		_launchHomebrew(fmt("%s/%s", m_pluginsDir.c_str(), m_plugin.GetDolName(hdr->settings[0])), arguments);
 		return;
 	}
 	else if(hdr->type == TYPE_HOMEBREW)
@@ -980,7 +985,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 
 	if(!forwarder)
 	{
-		entry = channel.Load(hdr->chantitle, &ios);
+		entry = channel.Load(TITLE_ID(hdr->settings[0],hdr->settings[1]), &ios);
 		setLanguage(language);
 
 		SmartBuf cheatFile;
@@ -1072,11 +1077,11 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	if(forwarder)
 	{
 		WII_Initialize();
-		if(WII_LaunchTitle(hdr->chantitle) < 0)
+		if(WII_LaunchTitle(TITLE_ID(hdr->settings[0],hdr->settings[1])) < 0)
 			Sys_LoadMenu();	
 	}
 	
-	if(!BootChannel(entry, hdr->chantitle, ios, videoMode, vipatch, countryPatch, patchVidMode, aspectRatio))
+	if(!BootChannel(entry, TITLE_ID(hdr->settings[0],hdr->settings[1]), ios, videoMode, vipatch, countryPatch, patchVidMode, aspectRatio))
 		Sys_LoadMenu();
 }
 
@@ -1442,7 +1447,7 @@ void CMenu::_gameSoundThread(CMenu *m)
 	}
 	else if(m->m_cf.getHdr()->type == TYPE_PLUGIN)
 	{
-		m->m_gameSound.Load(m->m_plugin.GetBannerSound(m->m_cf.getHdr()->plugin_magic), m->m_plugin.GetBannerSoundSize(), false);
+		m->m_gameSound.Load(m->m_plugin.GetBannerSound(m->m_cf.getHdr()->settings[0]), m->m_plugin.GetBannerSoundSize(), false);
 		m->m_gamesound_changed = true;
 		return;
 	}
@@ -1453,7 +1458,7 @@ void CMenu::_gameSoundThread(CMenu *m)
 
 	Banner *banner = m->m_gameSoundHdr->type == TYPE_WII_GAME ?
 		_extractBnr(m->m_gameSoundHdr) : m->m_gameSoundHdr->type == TYPE_CHANNEL ?
-		_extractChannelBnr(m->m_gameSoundHdr->chantitle) : NULL;
+		_extractChannelBnr(TITLE_ID(m->m_gameSoundHdr->settings[0],m->m_gameSoundHdr->settings[1])) : NULL;
 	m->m_gameSoundHdr = NULL;
 
 	if (banner == NULL || !banner->IsValid())

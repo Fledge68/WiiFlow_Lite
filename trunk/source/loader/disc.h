@@ -77,9 +77,8 @@ struct dir_discHdr
 
 	char path[256];
 	wchar_t title[64];
-	u64 chantitle;
+	u32 settings[2]; //chantitle, plugin magic, crc32, gamecube game on sd, etc
 
-	u32 plugin_magic;
 	u8 type;
 
 	u32 casecolor;

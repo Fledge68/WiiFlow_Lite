@@ -1492,7 +1492,8 @@ u64 CCoverFlow::getChanTitle(void) const
 {
 	if (m_covers.empty() || m_items.empty()) return 0;
 
-	return m_items[loopNum(m_covers[m_range / 2].index + m_jump, m_items.size())].hdr->chantitle;
+	return TITLE_ID(m_items[loopNum(m_covers[m_range / 2].index + m_jump, m_items.size())].hdr->settings[0],
+					m_items[loopNum(m_covers[m_range / 2].index + m_jump, m_items.size())].hdr->settings[1]);
 }
 
 

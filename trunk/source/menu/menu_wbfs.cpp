@@ -329,13 +329,13 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						{
 							Disc_ReadHeader(&header);
 						
-							if (_searchGamesByID((const char *) header.id).size() != 0)
+							if(_searchGamesByID((const char *) header.id).size() != 0)
 							{
 								error(_t("wbfsoperr4", L"Game already installed"));
 								out = true;
 								break;
 							}
-							cfPos = string((char *) header.id);
+							cfPos = string((char *)header.id);
 							m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsop6", L"Installing [%s] %s..."), string((const char *)header.id, sizeof header.id).c_str(), string((const char *)header.title, sizeof header.title).c_str()));
 							done = true;
 							upd_usb = true;
@@ -352,7 +352,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 							char dmlgamedir[50];
 							strncpy(dmlgamedir, (currentPartition != SD) ? m_DMLgameDir.c_str() : DML_DIR, sizeof(dmlgamedir));
 							snprintf(gcfolder, sizeof(gcfolder), "%s [%s]", gcheader.title, (char *)gcheader.id);
-							if (_searchGamesByID((const char *) gcheader.id).size() != 0 || GC_GameIsInstalled((char *)gcheader.id, DeviceName[currentPartition], dmlgamedir) || GC_GameIsInstalled(gcfolder, DeviceName[currentPartition], dmlgamedir))
+							if(_searchGamesByID((const char *) gcheader.id).size() != 0)
 							{
 								error(_t("wbfsoperr4", L"Game already installed"));
 								out = true;

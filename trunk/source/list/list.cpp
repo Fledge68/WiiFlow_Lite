@@ -129,6 +129,9 @@ void CList<dir_discHdr>::GetHeaders(vector<string> pathlist, vector<dir_discHdr>
 	headerlist.reserve(pathlist.size() + headerlist.size());
 	gprintf("Getting headers for paths in pathlist (%d)\n", pathlist.size());
 
+	vector<char*> GC_SD_IDs;
+	bool GC_SD_IDs_loaded = false;
+
 	dir_discHdr tmp;
 	u32 count = 0;
 	string GTitle;
@@ -182,7 +185,7 @@ void CList<dir_discHdr>::GetHeaders(vector<string> pathlist, vector<dir_discHdr>
 						Asciify(tmp.title);
 
 						//gprintf("Found: %ls\n", tmp.title);
-						sscanf(plugin.getString("PLUGIN","magic","").c_str(), "%08x", &tmp.plugin_magic); //Plugin magic
+						sscanf(plugin.getString("PLUGIN","magic","").c_str(), "%08x", &tmp.settings[0]); //Plugin magic
 						tmp.type = TYPE_PLUGIN;
 						headerlist.push_back(tmp);
 						break;
@@ -238,8 +241,27 @@ void CList<dir_discHdr>::GetHeaders(vector<string> pathlist, vector<dir_discHdr>
 							wcslcat(tmp.title, L" disc 2", sizeof(tmp.title));
 						if(strncmp(dml_partition, "sd", 2) != 0)
 						{
-							if(GC_GameIsInstalled(tmp.id, DeviceName[SD], DML_DIR) || GC_GameIsInstalled((char*)fmt("%s [%s]", tmp.title, tmp.id), DeviceName[SD], DML_DIR) || GC_GameIsInstalled(tmp.path, DeviceName[SD], DML_DIR))
-								wcslcat(tmp.title, L" \n(on SD)", sizeof(tmp.title));
+							if(!GC_SD_IDs_loaded)
+							{
+								CList<dir_discHdr> tmplist;
+								vector<string> pathlist;
+								tmplist.GetPaths(pathlist, ".iso|.bin", "sd:/games", false, true);
+								vector<dir_discHdr> tmpGameList;
+								tmplist.GetHeaders(pathlist, tmpGameList, settingsDir, curLanguage, DMLgameUSBDir, plugin);
+								for(u8 i = 0; i < tmpGameList.size(); i++)
+									GC_SD_IDs.push_back(tmpGameList.at(i).id);
+								GC_SD_IDs_loaded = true;
+							}
+							tmp.settings[0] = 0;
+							for(u8 i = 0; i < GC_SD_IDs.size(); i++)
+							{
+								if(strncasecmp(GC_SD_IDs.at(i), tmp.id, 6) == 0)
+								{
+									tmp.settings[0] = 1; //Later Checks can use this as easy information
+									wcslcat(tmp.title, L" \n(on SD)", sizeof(tmp.title));
+									break;
+								}
+							}
 						}
 						Asciify(tmp.title);
 
@@ -427,7 +449,8 @@ void CList<dir_discHdr>::GetChannels(vector<dir_discHdr> &headerlist, string set
 		tmp.index = headerlist.size();
 		tmp.casecolor = 1;
 
-		tmp.chantitle = chan->title;
+		tmp.settings[0] = TITLE_UPPER(chan->title);
+		tmp.settings[1] = TITLE_LOWER(chan->title);
 		strncpy(tmp.id, chan->id, 4);
 		int ccolor = custom_titles.getColor("COVERS", tmp.id, tmp.casecolor).intVal();
 
