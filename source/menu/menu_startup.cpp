@@ -330,7 +330,7 @@ void CMenu::_initSourceMenu(CMenu::SThemeData &theme)
 
 void CMenu::_textSource(void)
 {
-	m_btnMgr.setText(m_sourceLblTitle, _t("", L"Select Source"));
-	m_btnMgr.setText(m_sourceBtnBack, _t("", L"Exit"));
+	m_btnMgr.setText(m_sourceLblTitle, _t("stup1", L"Select Source"));
+	m_btnMgr.setText(m_sourceBtnBack, _t("stup2", L"Exit"));
 	m_btnMgr.setText(m_sourceLblNotice, _t("NMMOff", L"** DISABLED **"));
 }
