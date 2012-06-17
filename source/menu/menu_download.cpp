@@ -511,7 +511,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 			{
 				char gamePath[256];
 				if(string(m_gameList[i].path).find_last_of("/") != string::npos)
-					strncpy(gamePath, &m_gameList[i].path[string(m_gameList[i].path).find_last_of("/")], sizeof(gamePath));
+					strncpy(gamePath, &m_gameList[i].path[string(m_gameList[i].path).find_last_of("/")+1], sizeof(gamePath));
 				else
 					strncpy(gamePath, m_gameList[i].path, sizeof(gamePath));
 				path = sfmt("%s/%s.png", m_boxPicDir.c_str(), gamePath);
@@ -1222,7 +1222,7 @@ void CMenu::_download(string gameId)
 	{
 		char gamePath[256];
 		if(string(m_cf.getHdr()->path).find_last_of("/") != string::npos)
-			strncpy(gamePath, &m_cf.getHdr()->path[string(m_cf.getHdr()->path).find_last_of("/")], sizeof(gamePath));
+			strncpy(gamePath, &m_cf.getHdr()->path[string(m_cf.getHdr()->path).find_last_of("/")+1], sizeof(gamePath));
 		else
 			strncpy(gamePath, m_cf.getHdr()->path, sizeof(gamePath));
 		m_coverDLGameId = gamePath;
