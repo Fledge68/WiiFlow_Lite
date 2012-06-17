@@ -279,7 +279,7 @@ bool Plugin::isScummVM(u32 magic)
 	return (magic == ScummVM_magic);
 }
 
-string Plugin::GenerateCoverLink(dir_discHdr gameHeader, string url)
+string Plugin::GenerateCoverLink(dir_discHdr gameHeader, string url, Config &Checksums)
 {
 	Plugin_Pos = GetPluginPosition(gameHeader.settings[0]);
 
@@ -289,9 +289,21 @@ string Plugin::GenerateCoverLink(dir_discHdr gameHeader, string url)
 	if(url.find(TAG_CONSOLE) != url.npos)
 		url.replace(url.find(TAG_CONSOLE), strlen(TAG_CONSOLE), (Plugins[Plugin_Pos].consoleCoverID.size() ? Plugins[Plugin_Pos].consoleCoverID.c_str() : "nintendo"));	
 
+	char gamePath[256];
+	if(string(gameHeader.path).find_last_of("/") != string::npos)
+		strncpy(gamePath, &gameHeader.path[string(gameHeader.path).find_last_of("/")], sizeof(gamePath));
+	else
+		strncpy(gamePath, gameHeader.path, sizeof(gamePath));
+	string cachedCRC = Checksums.getString("CHECKSUMS", gamePath, emptyString);
 	char crc_string[9];
-	if(strstr(gameHeader.path, ".zip") == NULL)
+	if(cachedCRC != emptyString)
+		snprintf(crc_string, sizeof(crc_string), "%s", cachedCRC.c_str());
+	else if(strstr(gameHeader.path, ".zip") == NULL)
+	{
 		snprintf(crc_string, sizeof(crc_string), "%08x", crc32file(gameHeader.path));
+		Checksums.setString("CHECKSUMS", gamePath, crc_string);
+		Checksums.save();
+	}
 	else
 	{
 		u32 crc_buffer;
@@ -301,6 +313,8 @@ string Plugin::GenerateCoverLink(dir_discHdr gameHeader, string url)
 		infile.read((char*)&crc_buffer, 8);
 		infile.close();
 		snprintf(crc_string, sizeof(crc_string), "%08x", SWAP32(crc_buffer));
+		Checksums.setString("CHECKSUMS", gamePath, crc_string);
+		Checksums.save();
 	}
 	url.replace(url.find(TAG_GAME_ID), strlen(TAG_GAME_ID), upperCase(crc_string).c_str());
 	gprintf("URL: %s\n", url.c_str());

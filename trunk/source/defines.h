@@ -19,6 +19,7 @@
 #define TITLES_DUMP_FILENAME	"titlesdump.ini"
 #define GAME_SETTINGS1_FILENAME	"gameconfig1.ini"
 #define GAME_SETTINGS2_FILENAME	"gameconfig2.ini"
+#define PLUGIN_CRCS_FILENAME	"plugin_crc32.ini"
 
 #define AGE_LOCK_DEFAULT		13
 
