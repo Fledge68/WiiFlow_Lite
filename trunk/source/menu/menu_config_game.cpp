@@ -34,8 +34,8 @@ void CMenu::_hideGameSettings(bool instant)
 	m_btnMgr.hide(m_gameSettingsLblDMLVideo, instant);
 	m_btnMgr.hide(m_gameSettingsBtnDMLVideoP, instant);
 	m_btnMgr.hide(m_gameSettingsBtnDMLVideoM, instant);
-	m_btnMgr.hide(m_gameSettingsLblGClanguageVal, instant);
 	m_btnMgr.hide(m_gameSettingsLblGClanguage, instant);
+	m_btnMgr.hide(m_gameSettingsLblGClanguageVal, instant);
 	m_btnMgr.hide(m_gameSettingsBtnGClanguageP, instant);
 	m_btnMgr.hide(m_gameSettingsBtnGClanguageM, instant);
 	m_btnMgr.hide(m_gameSettingsLblAspectRatio, instant);
@@ -146,8 +146,8 @@ void CMenu::_showGameSettings(void)
 			m_btnMgr.show(m_gameSettingsBtnDMLVideoP);
 			m_btnMgr.show(m_gameSettingsBtnDMLVideoM);
 
-			m_btnMgr.show(m_gameSettingsLblGClanguageVal);
 			m_btnMgr.show(m_gameSettingsLblGClanguage);
+			m_btnMgr.show(m_gameSettingsLblGClanguageVal);
 			m_btnMgr.show(m_gameSettingsBtnGClanguageP);
 			m_btnMgr.show(m_gameSettingsBtnGClanguageM);
 		}
@@ -173,8 +173,8 @@ void CMenu::_showGameSettings(void)
 		m_btnMgr.hide(m_gameSettingsBtnCover);
 		if(m_cf.getHdr()->type == TYPE_GC_GAME)
 		{
-			m_btnMgr.hide(m_gameSettingsLblGClanguageVal);
 			m_btnMgr.hide(m_gameSettingsLblGClanguage);
+			m_btnMgr.hide(m_gameSettingsLblGClanguageVal);
 			m_btnMgr.hide(m_gameSettingsBtnGClanguageP);
 			m_btnMgr.hide(m_gameSettingsBtnGClanguageM);
 
@@ -771,8 +771,8 @@ void CMenu::_initGameSettingsMenu(CMenu::SThemeData &theme)
 	_setHideAnim(m_gameSettingsLblDMLVideo, "GAME_SETTINGS/DML_VIDEO_BTN", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnDMLVideoM, "GAME_SETTINGS/DML_VIDEO_MINUS", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnDMLVideoP, "GAME_SETTINGS/DML_VIDEO_PLUS", 200, 0, 1.f, 0.f);
-	_setHideAnim(m_gameSettingsLblGClanguageVal, "GAME_SETTINGS/GC_LANG", 200, 0, 1.f, 0.f);
-	_setHideAnim(m_gameSettingsLblGClanguage, "GAME_SETTINGS/GC_LANG_BTN", -200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsLblGClanguage, "GAME_SETTINGS/GC_LANG", -200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsLblGClanguageVal, "GAME_SETTINGS/GC_LANG_BTN", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnGClanguageM, "GAME_SETTINGS/GC_LANG_MINUS", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnGClanguageP, "GAME_SETTINGS/GC_LANG_PLUS", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsLblGameLanguage, "GAME_SETTINGS/GAME_LANG", -200, 0, 1.f, 0.f);
