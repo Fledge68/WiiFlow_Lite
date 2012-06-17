@@ -44,7 +44,7 @@ public:
 	u32 GetBannerSoundSize();
 	char* GetDolName(u32 magic);
 	char* GetCoverFolderName(u32 magic);
-	string GenerateCoverLink(dir_discHdr gameHeader, string url);
+	string GenerateCoverLink(dir_discHdr gameHeader, string url, Config &Checksums);
 	wstringEx GetPluginName(u8 pos);
 	u32 getPluginMagic(u8 pos);
 	bool PluginExist(u8 pos);
