@@ -664,7 +664,7 @@ void CMenu::_launch(dir_discHdr *hdr)
 				arguments.push_back(sfmt("%s/WiiFlowLoader.dol",m_pluginsDir.c_str()));
 			else
 				arguments.push_back(wiiflow_dol);
-			m_cfg.setString("EMULATOR", "current_item", &hdr->path[string(hdr->path).find_last_of("/")]);
+			m_cfg.setString("EMULATOR", "current_item", title);
 		}
 		else
 		{

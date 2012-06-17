@@ -2559,11 +2559,13 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq)
 			if(NoGameID(m_items[i].hdr->type))
 			{
 				if(string(m_items[i].hdr->path).find_last_of("/") != string::npos)
-					strncpy(gamePath, &m_items[i].hdr->path[string(m_items[i].hdr->path).find_last_of("/")], sizeof(gamePath));
+					strncpy(gamePath, &m_items[i].hdr->path[string(m_items[i].hdr->path).find_last_of("/")+1], sizeof(gamePath));
 				else
 					strncpy(gamePath, m_items[i].hdr->path, sizeof(gamePath));
 			}
-			FILE *file = fopen(fmt("%s/%s.wfc", m_cachePath.c_str(), (NoGameID(m_items[i].hdr->type) ? gamePath : (char*)m_items[i].hdr->id)), "wb");
+			else
+				strncpy(gamePath, m_items[i].hdr->id, sizeof(gamePath));
+			FILE *file = fopen(fmt("%s/%s.wfc", m_cachePath.c_str(), gamePath), "wb");
 			if (file != 0)
 			{
 				SWFCHeader header(tex, box, m_compressCache);
@@ -2634,11 +2636,13 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq)
 		if(NoGameID(m_items[i].hdr->type))
 		{
 			if(string(m_items[i].hdr->path).find_last_of("/") != string::npos)
-				strncpy(gamePath, &m_items[i].hdr->path[string(m_items[i].hdr->path).find_last_of("/")], sizeof(gamePath));
+				strncpy(gamePath, &m_items[i].hdr->path[string(m_items[i].hdr->path).find_last_of("/")+1], sizeof(gamePath));
 			else
 				strncpy(gamePath, m_items[i].hdr->path, sizeof(gamePath));
 		}
-		FILE *file = fopen(fmt("%s/%s.wfc", m_cachePath.c_str(), (NoGameID(m_items[i].hdr->type) ? gamePath : (char*)m_items[i].hdr->id)), "rb");
+		else
+			strncpy(gamePath, m_items[i].hdr->id, sizeof(gamePath));
+		FILE *file = fopen(fmt("%s/%s.wfc", m_cachePath.c_str(), gamePath), "rb");
 		if(file != 0)
 		{
 			bool success = false;

@@ -291,7 +291,7 @@ string Plugin::GenerateCoverLink(dir_discHdr gameHeader, string url, Config &Che
 
 	char gamePath[256];
 	if(string(gameHeader.path).find_last_of("/") != string::npos)
-		strncpy(gamePath, &gameHeader.path[string(gameHeader.path).find_last_of("/")], sizeof(gamePath));
+		strncpy(gamePath, &gameHeader.path[string(gameHeader.path).find_last_of("/")+1], sizeof(gamePath));
 	else
 		strncpy(gamePath, gameHeader.path, sizeof(gamePath));
 	string cachedCRC = Checksums.getString("CHECKSUMS", gamePath, emptyString);
