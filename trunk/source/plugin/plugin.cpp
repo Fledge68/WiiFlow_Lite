@@ -297,24 +297,31 @@ string Plugin::GenerateCoverLink(dir_discHdr gameHeader, string url, Config &Che
 	string cachedCRC = Checksums.getString("CHECKSUMS", gamePath, emptyString);
 	char crc_string[9];
 	if(cachedCRC != emptyString)
-		snprintf(crc_string, sizeof(crc_string), "%s", cachedCRC.c_str());
-	else if(strstr(gameHeader.path, ".zip") == NULL)
 	{
-		snprintf(crc_string, sizeof(crc_string), "%08x", crc32file(gameHeader.path));
-		Checksums.setString("CHECKSUMS", gamePath, crc_string);
-		Checksums.save();
+		gprintf("CRC32 of %s is cached\n", gamePath);
+		snprintf(crc_string, sizeof(crc_string), "%s", cachedCRC.c_str());
 	}
 	else
 	{
-		u32 crc_buffer;
-		ifstream infile;
-		infile.open(gameHeader.path, ios::binary);
-		infile.seekg(0x0e, ios::beg);
-		infile.read((char*)&crc_buffer, 8);
-		infile.close();
-		snprintf(crc_string, sizeof(crc_string), "%08x", SWAP32(crc_buffer));
-		Checksums.setString("CHECKSUMS", gamePath, crc_string);
-		Checksums.save();
+		gprintf("Generating CRC32 for %s\n", gamePath);
+		if(strstr(gameHeader.path, ".zip") == NULL)
+		{
+			snprintf(crc_string, sizeof(crc_string), "%08x", crc32file(gameHeader.path));
+			Checksums.setString("CHECKSUMS", gamePath, crc_string);
+			Checksums.save();
+		}
+		else
+		{
+			u32 crc_buffer;
+			ifstream infile;
+			infile.open(gameHeader.path, ios::binary);
+			infile.seekg(0x0e, ios::beg);
+			infile.read((char*)&crc_buffer, 8);
+			infile.close();
+			snprintf(crc_string, sizeof(crc_string), "%08x", SWAP32(crc_buffer));
+			Checksums.setString("CHECKSUMS", gamePath, crc_string);
+			Checksums.save();
+		}
 	}
 	url.replace(url.find(TAG_GAME_ID), strlen(TAG_GAME_ID), upperCase(crc_string).c_str());
 	gprintf("URL: %s\n", url.c_str());

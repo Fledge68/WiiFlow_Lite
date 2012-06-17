@@ -495,7 +495,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 	}
 
 	Config m_checksums;
-	m_checksums.load(fmt("%s/" PLUGIN_CRCS_FILENAME, m_settingsDir.c_str()));
+	m_checksums.load(fmt("%s/%s", m_settingsDir.c_str(), PLUGIN_CRCS_FILENAME));
 
 	if (m_coverDLGameId.empty())
 	{
@@ -1218,7 +1218,7 @@ void CMenu::_download(string gameId)
 	m_thrdStop = false;
 	m_thrdMessageAdded = false;
 
-	if((m_cf.getHdr()->type == TYPE_PLUGIN) && gameId.size())
+	if(gameId.size() && m_cf.getHdr()->type == TYPE_PLUGIN)
 	{
 		char gamePath[256];
 		if(string(m_cf.getHdr()->path).find_last_of("/") != string::npos)
