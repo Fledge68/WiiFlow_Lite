@@ -1508,7 +1508,7 @@ void CMenu::_initCF(void)
 	{
 		string id;
 		string tempname(m_gameList[i].path);
-		u64 chantitle = m_gameList[i].chantitle;
+		u64 chantitle = TITLE_ID(m_gameList[i].settings[0],m_gameList[i].settings[1]);
 		if(m_gameList[i].type == TYPE_HOMEBREW)
 		{
 			tempname.assign(&tempname[tempname.find_last_of('/') + 1]);
@@ -1516,7 +1516,7 @@ void CMenu::_initCF(void)
 		}
 		else if(m_gameList[i].type == TYPE_PLUGIN)
 		{
-			if(!m_plugin.isScummVM(m_gameList[i].plugin_magic))
+			if(!m_plugin.isScummVM(m_gameList[i].settings[0]))
 			{
 				if(tempname.empty() || tempname.find_first_of('/') == string::npos)
 				{
@@ -1661,14 +1661,14 @@ void CMenu::_initCF(void)
 				string tempname(m_gameList[i].path);
 				if(tempname.find_last_of("/") != string::npos)
 					tempname.assign(&tempname[tempname.find_last_of("/") + 1]);
-				string coverFolder(m_plugin.GetCoverFolderName(m_gameList[i].plugin_magic));
+				string coverFolder(m_plugin.GetCoverFolderName(m_gameList[i].settings[0]));
 				if(EnabledPlugins.size() == 0) //all plugins
 					m_cf.addItem(&m_gameList[i], fmt("%s/%s/%s.png", m_picDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s/%s.png", m_boxPicDir.c_str(), coverFolder.c_str(), tempname.c_str()), playcount, lastPlayed);
 				else
 				{
 					for(u8 j = 0; j < EnabledPlugins.size(); j++)
 					{
-						if(EnabledPlugins[j] == true && m_gameList[i].plugin_magic == m_plugin.getPluginMagic(j))
+						if(EnabledPlugins[j] == true && m_gameList[i].settings[0] == m_plugin.getPluginMagic(j))
 						{
 							m_cf.addItem(&m_gameList[i], fmt("%s/%s/%s.png", m_picDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s/%s.png", m_boxPicDir.c_str(), coverFolder.c_str(), tempname.c_str()), playcount, lastPlayed);
 							break;

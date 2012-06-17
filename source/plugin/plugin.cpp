@@ -221,7 +221,7 @@ vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, string Device)
 		wcsncpy(tmp.title, tmpString.c_str(), 64);
 		strncpy(tmp.path, game.c_str(), sizeof(tmp.path));
 		gprintf("Found: %ls\n", tmp.title);
-		tmp.plugin_magic = Plugins.back().magicWord;
+		tmp.settings[0] = Plugins.back().magicWord;
 		tmp.type = TYPE_PLUGIN;
 		gameHeader.push_back(tmp);
 		game = ini.nextDomain();
@@ -281,7 +281,7 @@ bool Plugin::isScummVM(u32 magic)
 
 string Plugin::GenerateCoverLink(dir_discHdr gameHeader, string url)
 {
-	Plugin_Pos = GetPluginPosition(gameHeader.plugin_magic);
+	Plugin_Pos = GetPluginPosition(gameHeader.settings[0]);
 
 	if(url.find(TAG_LOC) != url.npos)
  		url.replace(url.find(TAG_LOC), strlen(TAG_LOC), "EN");
