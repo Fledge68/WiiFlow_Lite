@@ -325,6 +325,7 @@ void CMenu::init(void)
 	m_cf.init(m_base_font, m_base_font_size, m_vid.vid_50hz());
 
 	//Make important folders first.
+	fsop_MakeFolder((char *)m_dataDir.c_str()); //D'OH!
 	fsop_MakeFolder((char *)m_cacheDir.c_str());
 	fsop_MakeFolder((char *)m_settingsDir.c_str());
 	fsop_MakeFolder((char *)m_languagesDir.c_str());
