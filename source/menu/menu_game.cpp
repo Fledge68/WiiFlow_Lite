@@ -476,7 +476,7 @@ void CMenu::_game(bool launch)
 				dir_discHdr *hdr = m_cf.getHdr();
 				if(currentPartition != SD && hdr->type == TYPE_GC_GAME)
 				{
-					bool foundOnSD;
+					bool foundOnSD = false;
 					CList<dir_discHdr> tmplist;
 					vector<string> pathlist;
 					tmplist.GetPaths(pathlist, ".iso|.bin", "sd:/games", false, true);
