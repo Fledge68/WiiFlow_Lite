@@ -104,7 +104,7 @@ GuiSound::GuiSound(GuiSound *g)
 
 	if (g->sound != NULL)
 	{
-		u8 * snd = (u8 *)MEM2_alloc(g->length);
+		u8 *snd = (u8 *)MEM1_alloc(g->length);
 		memcpy(snd, g->sound, length);
 		Load(snd, g->length, true);
 	}
@@ -144,7 +144,7 @@ void GuiSound::FreeMemory()
 
 	if(allocated)
 	{
-		MEM2_free(sound);
+		MEM1_free(sound);
 		allocated = false;
 	}
 	filepath = "";
@@ -237,15 +237,15 @@ bool GuiSound::LoadSoundEffect(const u8 * snd, u32 len)
 	decoder.Rewind();
 
 	u32 done = 0;
-	sound = (u8 *)MEM2_alloc(4096);
+	sound = (u8 *)MEM1_alloc(4096);
 	memset(sound, 0, 4096);
 
 	while(1)
 	{
-		u8 * tmpsnd = (u8 *)MEM2_realloc(sound, done+4096);
+		u8 * tmpsnd = (u8 *)MEM1_realloc(sound, done+4096);
 		if(!tmpsnd)
 		{
-			MEM2_free(sound);
+			MEM1_free(sound);
 			return false;
 		}
 
@@ -258,7 +258,7 @@ bool GuiSound::LoadSoundEffect(const u8 * snd, u32 len)
 		done += read;
 	}
 
-	sound = (u8 *)MEM2_realloc(sound, done);
+	sound = (u8 *)MEM1_realloc(sound, done);
 	SoundEffectLength = done;
 	allocated = true;
 
@@ -407,7 +407,7 @@ u8 * uncompressLZ77(const u8 *inBuf, u32 inLength, u32 * size)
 	const u8 *inBufEnd = inBuf + inLength;
 	inBuf += 8;
 
-	buffer = (u8 *)MEM2_alloc(uncSize);
+	buffer = (u8 *)MEM1_alloc(uncSize);
 
 	if (!buffer)
 		return buffer;
@@ -468,7 +468,7 @@ void GuiSound::UncompressSoundbin(const u8 * snd, u32 len, bool isallocated)
 	}
 	else
 	{
-		sound = (u8 *)MEM2_alloc(length);
+		sound = (u8 *)MEM1_alloc(length);
 		if (!sound)
 		{
 			length = 0;
@@ -480,7 +480,7 @@ void GuiSound::UncompressSoundbin(const u8 * snd, u32 len, bool isallocated)
 	if(isallocated)
 	{
 		void *p = (void *)snd;
-		MEM2_free(p);
+		MEM1_free(p);
 	}
 
 	allocated = true;
