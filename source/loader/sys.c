@@ -111,10 +111,10 @@ void Sys_Exit(void)
 		IOS_ReloadIOS(254);
 
 	//else
-	if(WII_LaunchTitle(HBC_108) < 0)
-		if(WII_LaunchTitle(HBC_HAXX) < 0)
-			if(WII_LaunchTitle(HBC_JODI) < 0)
-				SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
+	WII_LaunchTitle(HBC_108);
+	WII_LaunchTitle(HBC_JODI);
+	WII_LaunchTitle(HBC_HAXX);
+	SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
 }
 
 void __Sys_ResetCallback(void)

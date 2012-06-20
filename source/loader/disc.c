@@ -93,9 +93,10 @@ GXRModeObj * __Disc_SelectVMode(u8 videoselected, u64 chantitle)
 	}
 
 	char Region;
-	if(chantitle != 0)
+	if(chantitle)
 		Region = ((u32)(chantitle) & 0xFFFFFFFF) % 256;
-	else Region = diskid[3];
+	else
+		Region = diskid[3];
 
 	switch (videoselected)
 	{
