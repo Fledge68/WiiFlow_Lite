@@ -94,7 +94,7 @@ void CMenu::_showSourceNotice(void)
 	m_btnMgr.show(m_sourceLblNotice);
 }
 
-void CMenu::_Source()
+bool CMenu::_Source()
 {
 	DIR *pdir;
 	struct dirent *pent;
@@ -104,13 +104,14 @@ void CMenu::_Source()
 	pdir = opendir(m_pluginsDir.c_str());
 	Config m_plugin_cfg;
 	u8 i = 0;
-	
-	while ((pent = readdir(pdir)) != NULL)
+	bool back = false;
+
+	while((pent = readdir(pdir)) != NULL)
 	{
-		if (strcmp(pent->d_name, ".") == 0 || strcmp(pent->d_name, "..") == 0 
+		if(strcmp(pent->d_name, ".") == 0 || strcmp(pent->d_name, "..") == 0 
 		|| strcasecmp(pent->d_name, "plugins.ini") == 0 || strcasecmp(pent->d_name, "scummvm.ini") == 0)
 			continue;
-		if (strcasestr(pent->d_name, ".ini") != NULL)
+		if(strcasestr(pent->d_name, ".ini") != NULL)
 		{
 			m_plugin_cfg.load(fmt("%s/%s", m_pluginsDir.c_str(), pent->d_name));
 			if (m_plugin_cfg.loaded())
@@ -118,7 +119,7 @@ void CMenu::_Source()
 				i++;
 				m_plugin.AddPlugin(m_plugin_cfg);
 			}
-		m_plugin_cfg.unload();
+			m_plugin_cfg.unload();
 		}
 	}
 	closedir(pdir);
@@ -142,6 +143,7 @@ void CMenu::_Source()
 		_mainLoopCommon();
 		if (BTN_HOME_PRESSED || BTN_B_PRESSED)
 		{
+			back = true;
 			break;
 		}
 		else if(BTN_UP_PRESSED)
@@ -162,13 +164,16 @@ void CMenu::_Source()
 				m_btnMgr.click(m_sourceBtnPageP);
 			_updateSourceBtns();
 		}
-		if (BTN_A_PRESSED)
+		if(BTN_A_PRESSED)
 		{
-			if (m_btnMgr.selected(m_sourceBtnBack))
-				break;
-			for (int i = 0; i < 36; ++i)
+			if(m_btnMgr.selected(m_sourceBtnBack))
 			{
-				if (m_btnMgr.selected(m_sourceBtnSource[i]))
+				back = true;
+				break;
+			}
+			for(int i = 0; i < 36; ++i)
+			{
+				if(m_btnMgr.selected(m_sourceBtnSource[i]))
 				{
 					string source = m_source.getString(fmt("BUTTON_%i", i), "source", "");
 					if (source == "wii")
@@ -258,23 +263,24 @@ void CMenu::_Source()
 							}
 							
 							int layout = m_source.getInt(fmt("BUTTON_%i", i), "emuflow", 0);
-							if (layout != 0)
+							if(layout != 0)
 								m_cfg.setInt("EMULATOR", "last_cf_mode", layout);
 							break;
 						}
 					}
 				}
 			}
-			if (imgSelected) 
-			{
+			if(imgSelected)
 				break;
-			}
 		}
-		if (m_showtimer > 0)
-			if (--m_showtimer == 0)
-					m_btnMgr.hide(m_sourceLblNotice);
+		if(m_showtimer > 0)
+		{
+			if(--m_showtimer == 0)
+				m_btnMgr.hide(m_sourceLblNotice);
+		}
 	}
 	_hideSource(true);
+	return back;
 }
 
 void CMenu::_initSourceMenu(CMenu::SThemeData &theme)
