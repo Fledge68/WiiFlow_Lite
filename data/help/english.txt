@@ -22,7 +22,7 @@ Controls:
 -- A on USB, DML, Channels, Emu, or Homebrew Icon  =  Switch to that view
 -- B on USB, DML, Channels, Emu, or Homebrew Icon  =  Enable/Disable Emu-NAND and switch to Channels view
 -- A on Home Icon  =  Exit to Wii menu
--- B on Home Icon  =  Display Source menu
+-- Hold B for 3 seconds  =  Display Source menu
 -- A on Disc Icon (Game Disc in Drive)  =  Launch game disc
 -- A on Question Mark Icon  =  Display credits and this help file, and update WiiFlow
 

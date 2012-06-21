@@ -10,6 +10,9 @@
 
 const int pixels_to_skip = 10;
 
+extern const u8 english_txt[];
+extern const u32 english_txt_size;
+
 void CMenu::_about(void)
 {
 	int amount_of_skips = 0;
@@ -130,23 +133,20 @@ void CMenu::_textAbout(void)
 	m_btnMgr.setText(m_aboutBtnSystem, _t("sys4", L"Update"));
 	m_btnMgr.setText(m_aboutLblTitle, wfmt(_fmt("appname", L"%s (%s-r%s)"), APP_NAME, APP_VERSION, SVN_REV), false);
 
-	char *help = (char*)MEM2_alloc(4096 * sizeof(char));
-	memset(help, 0, sizeof(help));
-
+	wstringEx help_text;
 	FILE * f = fopen(fmt("%s/%s.txt", m_helpDir.c_str(), m_curLanguage.c_str()), "r");
-	if (f == NULL)
-		f = fopen(fmt("%s/english.txt", m_helpDir.c_str()), "r");
-	if (f == NULL)
-		strcpy(help, "ERROR: No Help File Found");
-	else
+	if(f)
 	{
+		char *help = (char*)MEM2_alloc(4096 * sizeof(char));
+		memset(help, 0, sizeof(help));
 		fread(help, 4095, 1, f);
-		help[4095] = 0;
+		help[4095] = '\0';
+		help_text.fromUTF8(help);
+		MEM2_free(help);
 		fclose(f);
 	}
-
-	wstringEx help_text;
-	help_text.fromUTF8(help);
+	else
+		help_text.fromUTF8((char*)english_txt);
 
 	wstringEx developers(wfmt(_fmt("about6", L"\nCurrent Developers:\n%s"), DEVELOPERS));
 	wstringEx pDevelopers(wfmt(_fmt("about7", L"Past Developers:\n%s"), PAST_DEVELOPERS));
@@ -175,7 +175,6 @@ void CMenu::_textAbout(void)
 			false
 		);
 
-	MEM2_free(help);
 	Nand::Instance()->Disable_Emu();
 
 	iosinfo_t * iosInfo = cIOSInfo::GetInfo(mainIOS);
