@@ -11,7 +11,12 @@
 const int pixels_to_skip = 10;
 
 extern const u8 english_txt[];
-extern const u32 english_txt_size;
+
+//About menu
+u32 m_aboutLblTitle;
+u32 m_aboutLblInfo;
+u32 m_aboutLblUser[4];
+u32 m_aboutLblIOS;
 
 void CMenu::_about(void)
 {

@@ -400,11 +400,6 @@ private:
 	u32 m_codeBtnAge;
 	u32 m_codeLblAge;
 	u32 m_codeLblUser[4];
-//About menu
-	u32 m_aboutLblTitle;
-	u32 m_aboutLblInfo;
-	u32 m_aboutLblUser[4];
-	u32 m_aboutLblIOS;
 //menu_wbfs
 	u32 m_wbfsLblTitle;
 	u32 m_wbfsPBar;
