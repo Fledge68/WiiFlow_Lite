@@ -44,6 +44,7 @@ public:
 	~CMenu(void) {cleanup();}
 	void init(void);
 	void error(const wstringEx &msg);
+	void exitHandler(void);
 	int main(void);
 	void cleanup(bool ios_reload = false);
 	u32 m_current_view;
@@ -963,7 +964,7 @@ private:
 	void _gameinfo(void);
 	void _gameSettings(void);
 	void _CheatSettings();
-	void _Source();
+	bool _Source();
 	void _PluginSettings();
 	void _CategorySettings(bool fromGameSet=false);
 	//
