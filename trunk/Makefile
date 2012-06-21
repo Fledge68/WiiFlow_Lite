@@ -41,7 +41,8 @@ SOURCES		:=	source \
 
 DATA		:=	data \
 				data/images \
-				data/sounds
+				data/sounds \
+				data/help
 
 INCLUDES	:=	source \
 				source/cheats \
@@ -109,6 +110,8 @@ export CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
 sFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
 SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.S)))
 
+TXTFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.txt)))
+
 BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.bin)))
 TTFFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.ttf)))
 PNGFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.png)))
@@ -134,7 +137,8 @@ export OFILES	:=	$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) \
 					$(sFILES:.s=.o) $(SFILES:.S=.o) \
 					$(TTFFILES:.ttf=.ttf.o) $(PNGFILES:.png=.png.o) $(DOLFILES:.dol=.dol.o) \
 					$(OGGFILES:.ogg=.ogg.o) $(PCMFILES:.pcm=.pcm.o) $(MP3FILES:.mp3=.mp3.o) \
-					$(WAVFILES:.wav=.wav.o) $(ELFFILES:.elf=.elf.o) $(BINFILES:.bin=.bin.o)
+					$(WAVFILES:.wav=.wav.o) $(ELFFILES:.elf=.elf.o) $(BINFILES:.bin=.bin.o) \
+					$(TXTFILES:.txt=.txt.o)
 
 #---------------------------------------------------------------------------------
 # build a list of include paths
@@ -195,6 +199,13 @@ $(OUTPUT).elf: $(OFILES) alt_ios_gen.o
 
 #---------------------------------------------------------------------------------
 $(BUILD)/alt_ios_gen.o: alt_ios_gen.c
+
+#---------------------------------------------------------------------------------
+# This rule links in binary data with the .txt extension
+#---------------------------------------------------------------------------------
+%.txt.o:	%.txt
+	@echo $(notdir $<)
+	@bin2s -a 32 $< | $(AS) -o $(@)
 
 #---------------------------------------------------------------------------------
 # This rule links in binary data with the .png extension

@@ -23,8 +23,8 @@
 
 #define AGE_LOCK_DEFAULT		13
 
-#define DEVELOPERS				"r-win, OverjoY, FIX94"
-#define PAST_DEVELOPERS			"Hibernatus, Narolez, Hulk, Miigotu"
+#define DEVELOPERS				"OverjoY, FIX94"
+#define PAST_DEVELOPERS			"Hibernatus, Narolez, Hulk, Miigotu, r-win"
 #define LOADER_AUTHOR			"Kwiirk, Waninkoko, Hermes"
 #define GUI_AUTHOR				"Hibernatus"
 
