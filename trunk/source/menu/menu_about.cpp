@@ -60,24 +60,6 @@ void CMenu::_about(void)
 		}
 		else if (BTN_HOME_PRESSED || BTN_B_PRESSED)
 			break;
-		else if (BTN_A_PRESSED && !(m_thrdWorking && m_thrdStop))
-		{
-			if (!m_locked && m_btnMgr.selected(m_aboutBtnSystem))
-			{
-				// show system menu
-				m_cf.stopCoverLoader(true);
-				_hideAbout(false);
-				_system();
-				remove(m_ver.c_str());
-				if(m_exit)
-				{
-					_launchHomebrew(m_dol.c_str(), m_homebrewArgs);
-					break;
-				}
-				_showAbout();
-				m_cf.startCoverLoader();
-			}
-		}
 	}
 	_hideAbout(false);
 }
@@ -87,7 +69,6 @@ void CMenu::_hideAbout(bool instant)
 	m_btnMgr.hide(m_aboutLblTitle, instant);
 	m_btnMgr.hide(m_aboutLblIOS, instant);
 	m_btnMgr.hide(m_aboutLblInfo, instant);
-	m_btnMgr.hide(m_aboutBtnSystem, instant);
 	for (u32 i = 0; i < ARRAY_SIZE(m_aboutLblUser); ++i)
 	{
 		if (m_aboutLblUser[i] != -1u)
@@ -101,8 +82,6 @@ void CMenu::_showAbout(void)
 	m_btnMgr.show(m_aboutLblTitle);
 	m_btnMgr.show(m_aboutLblIOS);
 	m_btnMgr.show(m_aboutLblInfo,false,true);
-	if (!m_locked)
-		m_btnMgr.show(m_aboutBtnSystem);
 	for (u32 i = 0; i < ARRAY_SIZE(m_aboutLblUser); ++i)
 	{
 		if (m_aboutLblUser[i] != -1u)
@@ -117,12 +96,10 @@ void CMenu::_initAboutMenu(CMenu::SThemeData &theme)
 	m_aboutBg = _texture(theme.texSet, "ABOUT/BG", "texture", theme.bg);
 	m_aboutLblTitle = _addTitle(theme, "ABOUT/TITLE", theme.titleFont, L"", 20, 30, 600, 75, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 	m_aboutLblInfo = _addText(theme, "ABOUT/INFO", theme.txtFont, L"", 20, 200, 600, 280, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
-	m_aboutBtnSystem = _addButton(theme, "ABOUT/SYSTEM_BTN", theme.btnFont, L"", 20, 400, 200, 56, theme.btnFontColor);
 	m_aboutLblIOS = _addLabel(theme, "ABOUT/IOS", theme.txtFont, L"", 240, 400, 360, 56, theme.txtFontColor, FTGX_JUSTIFY_RIGHT | FTGX_ALIGN_MIDDLE);
 
 	_setHideAnim(m_aboutLblTitle, "ABOUT/TITLE", 0, 100, 0.f, 0.f);
 	_setHideAnim(m_aboutLblInfo, "ABOUT/INFO", 0, 100, 0.f, 0.f);
-	_setHideAnim(m_aboutBtnSystem, "ABOUT/SYSTEM_BTN", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_aboutLblIOS, "ABOUT/IOS", 0, 100, 0.f, 0.f);
 
 	_hideAbout(true);
@@ -130,7 +107,6 @@ void CMenu::_initAboutMenu(CMenu::SThemeData &theme)
 
 void CMenu::_textAbout(void)
 {
-	m_btnMgr.setText(m_aboutBtnSystem, _t("sys4", L"Update"));
 	m_btnMgr.setText(m_aboutLblTitle, wfmt(_fmt("appname", L"%s (%s-r%s)"), APP_NAME, APP_VERSION, SVN_REV), false);
 
 	wstringEx help_text;
