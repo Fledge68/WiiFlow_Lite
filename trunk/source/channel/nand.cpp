@@ -49,6 +49,7 @@ config_header *cfg_hdr;
 
 bool tbdec = false;
 bool configloaded = false;
+bool emu_enabled = false;
 
 static NandDevice NandDeviceList[] = 
 {
@@ -86,10 +87,7 @@ s32 Nand::Nand_Mount(NandDevice *Device)
 
 	s32 fd = IOS_Open("fat", 0);
 	if(fd < 0)
-	{
-		gprintf("Mount Fail 1\n");
 		return fd;
-	}
 
 	static ioctlv vector[1] ATTRIBUTE_ALIGN(32);	
 	
@@ -141,7 +139,8 @@ s32 Nand::Nand_Disable(void)
 {
 	gprintf("Disabling NAND Emulator\n");
 	s32 fd = IOS_Open("/dev/fs", 0);
-	if (fd < 0) return fd;
+	if(fd < 0)
+		return fd;
 
 	u32 inbuf ATTRIBUTE_ALIGN(32) = 0;
 	s32 ret = IOS_Ioctl(fd, 100, &inbuf, sizeof(inbuf), NULL, 0);
@@ -152,32 +151,28 @@ s32 Nand::Nand_Disable(void)
 
 s32 Nand::Enable_Emu()
 {
-	Disable_Emu();
+	if(emu_enabled)
+		return 0;
 
 	NandDevice *Device = &NandDeviceList[EmuDevice];
 
 	s32 ret = Nand_Mount(Device);
 	if(ret < 0)
-	{
-		gprintf("Fail 2\n");
 		return ret;
-	}
 
 	ret = Nand_Enable(Device);
 	if(ret < 0)
-	{
-		gprintf("Fail 3\n");
 		return ret;
-	}
 
 	MountedDevice = EmuDevice;
 
+	emu_enabled = true;
 	return 0;
 }	
 
 s32 Nand::Disable_Emu()
 {
-	if(MountedDevice == 0)
+	if(MountedDevice == 0 || !emu_enabled)
 		return 0;
 
 	NandDevice * Device = &NandDeviceList[MountedDevice];
@@ -187,6 +182,7 @@ s32 Nand::Disable_Emu()
 
 	MountedDevice = 0;
 
+	emu_enabled = false;
 	return 0;
 }
 
