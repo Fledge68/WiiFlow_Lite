@@ -341,8 +341,10 @@ int CMenu::main(void)
 		}
 		if(BTN_HOME_PRESSED)
 		{
-			exitHandler();
-			break;
+			_hideMain();
+			if(_Home()) //exit wiiflow
+				break;
+			_showMain();
 		}
 		else if(BTN_A_PRESSED)
 		{
@@ -352,8 +354,10 @@ int CMenu::main(void)
 				m_cf.pageDown();
 			else if(m_btnMgr.selected(m_mainBtnQuit))
 			{
-				exitHandler();
-				break;
+				_hideMain();
+				if(_Home()) //exit wiiflow
+					break;
+				_showMain();
 			}
 			else if(m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML) || m_btnMgr.selected(m_mainBtnHomebrew) || m_btnMgr.selected(m_mainBtnEmu))
 			{
@@ -497,12 +501,6 @@ int CMenu::main(void)
 					m_btnMgr.setText(m_mainLblNotice, curLetter);
 					m_btnMgr.show(m_mainLblNotice);
 				}
-			}
-			else if(m_btnMgr.selected(m_mainBtnConfig))
-			{
-				m_gameList.SetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
-				UpdateCache(m_current_view);
-				LoadView();
 			}
 			else if(enable_wmote_roll && m_btnMgr.selected(m_mainBtnQuit))
 			{

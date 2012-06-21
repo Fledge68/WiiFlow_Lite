@@ -405,7 +405,6 @@ private:
 	u32 m_aboutLblInfo;
 	u32 m_aboutLblUser[4];
 	u32 m_aboutLblIOS;
-	u32 m_aboutBtnSystem;
 //menu_wbfs
 	u32 m_wbfsLblTitle;
 	u32 m_wbfsPBar;
@@ -849,6 +848,7 @@ private:
 	void _initSystemMenu(SThemeData &theme);
 	void _initGameInfoMenu(SThemeData &theme);
 	void _initNandEmuMenu(CMenu::SThemeData &theme);
+	void _initHomeMenu(CMenu::SThemeData &theme);
 	//
 	void _textSource(void);
 	void _textPluginSettings(void);
@@ -872,6 +872,7 @@ private:
 	void _textGameSettings(void);
 	void _textGameInfo(void);
 	void _textNandEmu(void);
+	void _textHome(void);
 	//
 	void _hideCheatSettings(bool instant = false);
 	void _hideError(bool instant = false);
@@ -898,6 +899,7 @@ private:
 	void _hideGameInfo(bool instant = false);
 	void _hideCheatDownload(bool instant = false);
 	void _hideNandEmu(bool instant = false);
+	void _hideHome(bool instant = false);
 	//
 	void _showError(void);
 	void _showMain(void);
@@ -925,6 +927,7 @@ private:
 	void _showCFTheme(u32 curParam, int version, bool wide);
 	void _showGameSettings(void);
 	void _showCheatDownload(void);
+	void _showHome(void);
 	void _updateSourceBtns(void);
 	void _updatePluginCheckboxes(void);
 	void _updateCheckboxes(void);
@@ -967,6 +970,7 @@ private:
 	bool _Source();
 	void _PluginSettings();
 	void _CategorySettings(bool fromGameSet=false);
+	bool _Home();
 	//
 	void _mainLoopCommon(bool withCF = false, bool blockReboot = false, bool adjusting = false);
 	// 

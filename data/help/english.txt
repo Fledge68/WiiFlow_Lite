@@ -6,8 +6,8 @@ Controls:
 -- Minus / Plus  =  Fast skip through games
 -- A  =  Select game
 -- B+A  =  Launch game immediately
--- B+Home  =  Reload Wiiflow
--- Home  =  Exit to Wii menu
+-- B+Home  =  Reload WiiFlow
+-- Home  =  Open Home Menu / Exit WiiFlow
 -- 1 / 2  =  Previous / next coverflow mode
 -- B+Left / B+Right  =  Change Song
 -- B+UP / B+DOWN  =  Alphabetic search
@@ -17,7 +17,7 @@ Controls:
 
 -- A on Star Icon  =  Favorites
 -- B on Star Icon  =  Categories
--- A on Gear Icon  =  Wiiflow settings
+-- A on Gear Icon  =  WiiFlow settings
 -- B on Gear Icon  =  Refresh cache
 -- A on USB, DML, Channels, Emu, or Homebrew Icon  =  Switch to that view
 -- B on USB, DML, Channels, Emu, or Homebrew Icon  =  Enable/Disable Emu-NAND and switch to Channels view
@@ -49,7 +49,7 @@ Controls:
 -- B+Minus / B+Plus  =  Previous / next page
 -- B  =  Faster adjustment (B+A instead of just A to click a button)
 -- B+1  =  Copy whole coverflow
--- B+2  =  Paste coverflow\n\
+-- B+2  =  Paste coverflow
 
 TIPS for running games that crash:
 If the game just locks up with a black screen at launch then check to see if it is a PAL game.
