@@ -512,6 +512,10 @@ int CMenu::main(void)
 				continue;
 			}
 		}
+		else if(WROLL_LEFT)
+			m_cf.left();
+		else if(WROLL_RIGHT)
+			m_cf.right();
 
 		if(!BTN_B_HELD)
 		{
