@@ -20,6 +20,7 @@ void CMenu::_about(void)
 	u32 thanks_w = 0, thanks_h = 0;
 	bool first = true;
 
+	_textAbout();
 	m_btnMgr.reset(m_aboutLblInfo, true);
 
 	SetupInput();
@@ -125,7 +126,6 @@ void CMenu::_initAboutMenu(CMenu::SThemeData &theme)
 	_setHideAnim(m_aboutLblIOS, "ABOUT/IOS", 0, 100, 0.f, 0.f);
 
 	_hideAbout(true);
-	_textAbout();
 }
 
 void CMenu::_textAbout(void)
@@ -134,13 +134,15 @@ void CMenu::_textAbout(void)
 	m_btnMgr.setText(m_aboutLblTitle, wfmt(_fmt("appname", L"%s (%s-r%s)"), APP_NAME, APP_VERSION, SVN_REV), false);
 
 	wstringEx help_text;
-	FILE * f = fopen(fmt("%s/%s.txt", m_helpDir.c_str(), m_curLanguage.c_str()), "r");
+	FILE *f = fopen(fmt("%s/%s.txt", m_helpDir.c_str(), m_curLanguage.c_str()), "r");
 	if(f)
 	{
-		char *help = (char*)MEM2_alloc(4096 * sizeof(char));
-		memset(help, 0, sizeof(help));
-		fread(help, 4095, 1, f);
-		help[4095] = '\0';
+		fseek(f, 0, SEEK_END);
+		u32 fsize = ftell(f);
+		char *help = (char*)MEM2_alloc(fsize+1); //+1 for null character
+		fseek(f, 0, SEEK_SET);
+		fread(help, 1, fsize, f);
+		help[fsize] = '\0';
 		help_text.fromUTF8(help);
 		MEM2_free(help);
 		fclose(f);
@@ -182,6 +184,6 @@ void CMenu::_textAbout(void)
 		m_btnMgr.setText(m_aboutLblIOS, wfmt(_fmt("ios", L"IOS%i base %i v%i"), mainIOS, iosInfo->baseios, iosInfo->version), true);
 	MEM2_free(iosInfo);
 
-	if(m_current_view == COVERFLOW_CHANNEL && m_cfg.getInt("NAND", "emulation", 0) > 0)
+	if(m_current_view == COVERFLOW_CHANNEL && m_cfg.getInt("NAND", "emulation", 0))
 		Nand::Instance()->Enable_Emu();
 }

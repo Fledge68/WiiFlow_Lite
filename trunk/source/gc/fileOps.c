@@ -139,13 +139,12 @@ bool fsop_DirExist(char *path)
 }
 
 
-bool fsop_MakeFolder(char *path)
+void fsop_MakeFolder(char *path)
 {
+	if(fsop_DirExist(path))
+		return;
 	gprintf("Folder path to create: %s\n", path);
-	if(mkdir(path, S_IREAD | S_IWRITE) == 0)
-		return true;
-
-	return false;
+	mkdir(path, S_IREAD | S_IWRITE);
 }
 
 static void *thread_CopyFileReader()
