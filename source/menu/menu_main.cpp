@@ -139,7 +139,7 @@ void CMenu::_showMain(void)
 		if (m_mainLblUser[i] != -1u)
 			m_btnMgr.show(m_mainLblUser[i]);
 
-	if (m_gameList.empty())
+	if(m_gameList.empty())
 	{
 		switch(m_current_view)
 		{
@@ -149,7 +149,7 @@ void CMenu::_showMain(void)
 				m_btnMgr.show(m_mainBtnInit);
 				m_btnMgr.show(m_mainBtnInit2);
 				m_btnMgr.show(m_mainLblInit);
-			break;
+				break;
 			case COVERFLOW_CHANNEL:
 				if(!m_cfg.getBool("NAND", "disable", true))
 				{
@@ -157,24 +157,25 @@ void CMenu::_showMain(void)
 					_hideMain();
 					if(!_AutoCreateNand())
 						m_cfg.setBool("NAND", "disable", true);
-
 					_loadList();
 					_showMain();
 					_initCF();
 				}
-			break;
+				break;
 			case COVERFLOW_HOMEBREW:
 				m_btnMgr.setText(m_mainLblInit, _t("main4", L"Welcome to WiiFlow. I have not found any homebrew apps. Select partition to select your partition type."), true);
 				m_btnMgr.show(m_mainBtnInit2);
 				m_btnMgr.show(m_mainLblInit);
-			break;
+				break;
 			case COVERFLOW_EMU:
 				m_btnMgr.setText(m_mainLblInit, _t("main5", L"Welcome to WiiFlow. I have not found any plugins. Select partition to select your partition type."), true);
 				m_btnMgr.show(m_mainBtnInit2);
 				m_btnMgr.show(m_mainLblInit);
-			break;
+				break;
 		}
 	}
+	else if(m_current_view == COVERFLOW_CHANNEL && !m_cfg.getBool("NAND", "disable", true))
+		Nand::Instance()->Enable_Emu();
 }
 
 int CMenu::GetCoverStatusAsync(CMenu *m)
