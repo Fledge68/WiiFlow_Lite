@@ -491,6 +491,15 @@ int CMenu::main(void)
 				UpdateCache(m_current_view);
 				LoadView();
 			}
+			else if(enable_wmote_roll && m_btnMgr.selected(m_mainBtnQuit))
+			{
+				_hideMain();
+				if(!_Source()) //Different source selected
+					LoadView();
+				else
+					_showMain();
+				continue;
+			}
 		}
 
 		if(!BTN_B_HELD)
@@ -659,7 +668,7 @@ int CMenu::main(void)
 					_initCF();
 				}
 			}
-			else 
+			else if(!enable_wmote_roll)
 			{
 				if(!SourceMenuTimeout)
 					SourceMenuTimeout = time(0);
