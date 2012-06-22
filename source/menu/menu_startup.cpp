@@ -2,8 +2,18 @@
 
 #include <string.h>
 #include <gccore.h>
-
 #include "defines.h"
+
+extern const u8 btnchannel_png[];
+extern const u8 btnchannels_png[];
+extern const u8 btnusb_png[];
+extern const u8 btnusbs_png[];
+extern const u8 btndml_png[];
+extern const u8 btndmls_png[];
+extern const u8 btnemu_png[];
+extern const u8 btnemus_png[];
+extern const u8 btnhomebrew_png[];
+extern const u8 btnhomebrews_png[];
 
 int Source_curPage;
 int pages;
@@ -21,6 +31,11 @@ u32 m_sourceLblTitle;
 u32 m_sourceBtnSource[36];
 u32 m_sourceLblUser[4];
 STexture m_sourceBg;
+u32 m_sourceBtnDML;
+u32 m_sourceBtnEmu;
+u32 m_sourceBtnUsb;
+u32 m_sourceBtnChannel;
+u32 m_sourceBtnHomebrew;
 
 void CMenu::_hideSource(bool instant)
 {
@@ -30,6 +45,12 @@ void CMenu::_hideSource(bool instant)
 	m_btnMgr.hide(m_sourceLblPage, instant);
 	m_btnMgr.hide(m_sourceBtnPageM, instant);
 	m_btnMgr.hide(m_sourceBtnPageP, instant);
+	m_btnMgr.hide(m_sourceBtnHomebrew, instant);
+	m_btnMgr.hide(m_sourceBtnChannel, instant);
+	m_btnMgr.hide(m_sourceBtnUsb, instant);
+	m_btnMgr.hide(m_sourceBtnDML, instant);
+	m_btnMgr.hide(m_sourceBtnEmu, instant);
+
 	for (u32 i = 0; i < ARRAY_SIZE(m_sourceLblUser); ++i)
 	{
 		if (m_sourceLblUser[i] != -1u)
@@ -135,8 +156,20 @@ bool CMenu::_Source()
 	m_showtimer = 0;
 	Source_curPage = 1;
 	pages = 1;
+
 	_showSource();
-	_updateSourceBtns();
+	if(!m_source.loaded())
+	{
+		m_btnMgr.show(m_sourceBtnHomebrew);
+		m_btnMgr.show(m_sourceBtnChannel);
+		m_btnMgr.show(m_sourceBtnUsb);
+		m_btnMgr.show(m_sourceBtnDML);
+		m_btnMgr.show(m_sourceBtnEmu);
+	}
+	else
+	{
+		_updateSourceBtns();
+	}
 	
 	while(true)
 	{
@@ -170,6 +203,47 @@ bool CMenu::_Source()
 			{
 				back = true;
 				break;
+			}
+			if(m_btnMgr.selected(m_sourceBtnUsb))
+			{
+				m_current_view = COVERFLOW_USB;
+				break;
+			}
+			if(m_btnMgr.selected(m_sourceBtnDML))
+			{
+				if (!m_show_dml) _showSourceNotice();
+				else
+				{
+					m_current_view = COVERFLOW_DML;
+					break;
+				}
+			}
+			if(m_btnMgr.selected(m_sourceBtnChannel))
+			{
+				if (!show_channel) _showSourceNotice();
+				else
+				{
+					m_current_view = COVERFLOW_CHANNEL;
+					break;
+				}
+			}
+			if(m_btnMgr.selected(m_sourceBtnHomebrew))
+			{
+				if (!show_homebrew || (!parental_homebrew && m_locked)) _showSourceNotice(); 
+				else
+				{
+					m_current_view = COVERFLOW_HOMEBREW;
+					break;
+				}
+			}
+			if(m_btnMgr.selected(m_sourceBtnEmu))
+			{
+				if (!show_emu) _showSourceNotice();
+				else
+				{
+					m_current_view = COVERFLOW_EMU;
+					break;
+				}
 			}
 			for(int i = 0; i < 36; ++i)
 			{
@@ -285,6 +359,34 @@ bool CMenu::_Source()
 
 void CMenu::_initSourceMenu(CMenu::SThemeData &theme)
 {
+	STexture texDML;
+	STexture texDMLs;
+	STexture texEmu;
+	STexture texEmus;
+	STexture texUsb;
+	STexture texUsbs;
+	STexture texChannel;
+	STexture texChannels;
+	STexture texHomebrew;
+	STexture texHomebrews;
+
+	texUsb.fromPNG(btnusb_png);
+	texUsbs.fromPNG(btnusbs_png);
+	texDML.fromPNG(btndml_png);
+	texDMLs.fromPNG(btndmls_png);
+	texEmu.fromPNG(btnemu_png);
+	texEmus.fromPNG(btnemus_png);
+	texChannel.fromPNG(btnchannel_png);
+	texChannels.fromPNG(btnchannels_png);
+	texHomebrew.fromPNG(btnhomebrew_png);
+	texHomebrews.fromPNG(btnhomebrews_png);
+
+	m_sourceBtnChannel = _addPicButton(theme, "SOURCE/CHANNEL_BTN", texChannel, texChannels, 265, 260, 48, 48);
+	m_sourceBtnHomebrew = _addPicButton(theme, "SOURCE/HOMEBREW_BTN", texHomebrew, texHomebrews, 325, 260, 48, 48);
+	m_sourceBtnUsb = _addPicButton(theme, "SOURCE/USB_BTN", texUsb, texUsbs, 235, 200, 48, 48);
+	m_sourceBtnDML = _addPicButton(theme, "SOURCE/DML_BTN", texDML, texDMLs, 295, 200, 48, 48);
+	m_sourceBtnEmu = _addPicButton(theme, "SOURCE/EMU_BTN", texEmu, texEmus, 355, 200, 48, 48);
+	
 	_addUserLabels(theme, m_sourceLblUser, ARRAY_SIZE(m_sourceLblUser), "SOURCE");
 	m_sourceBg = _texture(theme.texSet, "SOURCE/BG", "texture", theme.bg);
 	m_sourceLblTitle = _addTitle(theme, "SOURCE/TITLE", theme.titleFont, L"", 20, 20, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
@@ -293,7 +395,7 @@ void CMenu::_initSourceMenu(CMenu::SThemeData &theme)
 	m_sourceLblPage = _addLabel(theme, "SOURCE/PAGE_BTN", theme.btnFont, L"", 62, 400, 98, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_sourceBtnPageM = _addPicButton(theme, "SOURCE/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 10, 400, 52, 56);
 	m_sourceBtnPageP = _addPicButton(theme, "SOURCE/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 160, 400, 52, 56);
-
+	
 	m_sourceDir = m_cfg.getString("GENERAL", "dir_Source", sfmt("%s/source_menu", m_dataDir.c_str()));
 
 	if(!m_source.loaded())
@@ -319,6 +421,11 @@ void CMenu::_initSourceMenu(CMenu::SThemeData &theme)
 		m_sourceBtnSource[i] = _addPicButton(theme, fmt("SOURCE/SOURCE_BTN_%i", i), texConsoleImg, texConsoleImgs, (30 + 150 * col), (90 + 100 * row), 120, 90);
 	}
 	
+	_setHideAnim(m_sourceBtnChannel, "SOURCE/CHANNEL_BTN", 0, 40, 0.f, 0.f);
+	_setHideAnim(m_sourceBtnHomebrew, "SOURCE/HOMEBREW_BTN", 0, 40, 0.f, 0.f);
+	_setHideAnim(m_sourceBtnUsb, "SOURCE/USB_BTN", 0, 40, 0.f, 0.f);
+	_setHideAnim(m_sourceBtnDML, "SOURCE/DML_BTN", 0, 40, 0.f, 0.f);
+	_setHideAnim(m_sourceBtnEmu, "SOURCE/EMU_BTN", 0, 40, 0.f, 0.f);
 	_setHideAnim(m_sourceLblTitle, "SOURCE/TITLE", 0, -200, 0.f, 1.f);
 	_setHideAnim(m_sourceLblNotice, "SOURCE/NOTICE", 0, 0, 1.f, 0.f);
 	_setHideAnim(m_sourceLblPage, "SOURCE/PAGE_BTN", 0, 200, 1.f, 0.f);
