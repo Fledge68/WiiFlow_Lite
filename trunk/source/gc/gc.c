@@ -153,7 +153,7 @@ void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, boo
 
 	DMLCfg->Magicbytes = 0xD1050CF6;
 	DMLCfg->CfgVersion = 0x00000001;
-	DMLCfg->VideoMode |= DML_VID_NONE;
+	DMLCfg->VideoMode |= DML_VID_DML_AUTO;
 
 	DMLCfg->Config |= DML_CFG_ACTIVITY_LED; //Sorry but I like it lol, option will may follow
 	DMLCfg->Config |= DML_CFG_PADHOOK; //Makes life easier, l+z+b+digital down...
@@ -226,6 +226,7 @@ void DML_New_SetBootDiscOption()
 
 	DMLCfg->Magicbytes = 0xD1050CF6;
 	DMLCfg->CfgVersion = 0x00000001;
+	DMLCfg->VideoMode |= DML_VID_DML_AUTO;
 
 	DMLCfg->Config |= DML_CFG_BOOT_DISC;
 }
