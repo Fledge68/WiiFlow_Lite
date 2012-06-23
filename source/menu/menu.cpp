@@ -2400,25 +2400,34 @@ void CMenu::UpdateCache(u32 view)
 	m_cfg.setBool(domain, "update_cache", true);
 }
 
-bool CMenu::MIOSisDML()
+int CMenu::MIOSisDML()
 {
 	u32 size = 0;
 	u8 *appfile = ISFS_GetFile((u8*)"/title/00000001/00000101/content/0000000c.app", &size, 0);
 	if(appfile)
 	{
-		for(u32 i=0; i < size; ++i) 
+		for(u32 i = 0; i < size; ++i) 
 		{
-			if(*(u32*)(appfile+i) == 0x44494F53)
+			if(*(vu32*)(appfile+i) == 0x44494F53)
 			{
-				gprintf("DML is installed as MIOS\n");
+				for(u32 j = 0; j < size; ++j)
+				{
+					if(*(vu32*)(appfile+j) == 0x4C697465)
+					{
+						gprintf("DIOS-MIOS Lite is installed as MIOS\n");
+						MEM2_free(appfile);
+						return 2;
+					}
+				}
+				gprintf("DIOS-MIOS is installed as MIOS\n");
 				MEM2_free(appfile);
-				return true;
+				return 1;
 			}
 		}
 		MEM2_free(appfile);
 	}
-	gprintf("DML is not installed as MIOS\n");
-	return false;
+	gprintf("DIOS-MIOS (Lite) not found\n");
+	return 0;
 }
 
 void CMenu::RemoveCover( char * id )
