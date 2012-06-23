@@ -474,7 +474,7 @@ void CMenu::_game(bool launch)
 			{
 				_hideGame();
 				dir_discHdr *hdr = m_cf.getHdr();
-				if(currentPartition != SD && hdr->type == TYPE_GC_GAME)
+				if(currentPartition != SD && hdr->type == TYPE_GC_GAME && m_show_dml != 1)
 				{
 					bool foundOnSD = false;
 					CList<dir_discHdr> tmplist;

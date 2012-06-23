@@ -180,7 +180,7 @@ private:
 	u32 m_mainBtnInit2;
 	u32 m_mainLblInit;
 	u32 m_mainLblUser[6];
-	bool m_show_dml;
+	u8 m_show_dml;
 	bool m_new_dml;
 	bool m_GameTDBLoaded;
 //Main Config menus
@@ -998,7 +998,7 @@ private:
 	const char *_domainFromView(void);
 	const char *_cfDomain(bool selected = false);	
 	void UpdateCache(u32 view = COVERFLOW_MAX);
-	bool MIOSisDML();
+	int MIOSisDML();
 	void RemoveCover( char * id );
 	SFont _font(CMenu::FontSet &fontSet, const char *domain, const char *key, u32 fontSize, u32 lineSpacing, u32 weight, u32 index, const char *genKey);
 	STexture _texture(TexSet &texSet, const char *domain, const char *key, STexture def);
