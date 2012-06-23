@@ -6,8 +6,8 @@ Styring:
 -- Minus / Plus  =  Spring hurtig igennem spil
 -- A  =  Vælg spil
 -- B+A  =  Indlæs spil omgående
--- B+Home  =  Genindlæs Wiiflow
--- Home  =  Forlad WiiFlow til Wii menu
+-- B+Home  =  Genindlæs WiiFlow
+-- Home  =  Åben hjem menu / Forlad WiiFlow til Wii menu
 -- 1 / 2  =  Forrige / næste coverflow måde
 -- B+Venstre / B+Højre  =  Skift sang
 -- B+Op / B+Ned  =  Alfabetisk søgen
@@ -17,12 +17,12 @@ Styring:
 
 -- A på stjerne ikon  =  Favoriter
 -- B på stjerne ikon  =  Kategorier
--- A på gear ikon  =  Wiiflow indstillinger
+-- A på gear ikon  =  WiiFlow indstillinger
 -- B på Gear ikon = Opdatere cache
 -- A på USB, DML, Kanal, Emu eller Homebrew ikon  = Skift til en af disse muligheder (coverflow view)
 -- B på USB, DML, Kanal, Emu eller Homebrew ikon  =  Aktivere/Deaktivere Emu Nand og skift til rigtig Wii Nand
 -- A på hjem ikon  =  Forlad WiiFlow til Wii menu
--- B på Hjem ikon  =  viser kilde menu (source menu)
+-- Hold B i 3 sekunder / B på hjem ikon (wiimote_gestures aktiveret i wiiflow.ini)  =  viser kilde menu (source menu)
 -- A på disc ikon (Spil disc i drev)  =  Indlæser spil disc
 -- A på spørgsmåls tegn ikon  =  Viser tak til, denne hjælpe fil og mulighed for at opdatere WiiFlow.
 
@@ -36,7 +36,7 @@ Styring:
 ---Højre (i spil info)  =  Spil beskrivelse
 ---Venstre  (i spil beskrivelse)  =  Spil Info
 -- A på stjerne ikon  =  Favorit valg (Gul = valgt til Favorit)
--- B på stjerne ikno = Star Icon  =  Fastsæt Kategorier for spil 
+-- B på stjerne ikon  =  Fastsæt Kategorier for spil 
 -- A på hånd ikon  =  Forældre lås (Rød = låst)
 -- A på gear ikon  =  Spil indstillinger
 -- A på X ikon  =   Slet spil
@@ -49,7 +49,7 @@ Styring:
 -- B+Minus / B+Plus  =  Forrige / næste side
 -- B  =  Hurtiger justering (B+A i stedet for kun A til at klikke på en knap)
 -- B+1  =  Kopier hele coverflow
--- B+2  =  udpak coverflow\n\
+-- B+2  =  udpak coverflow
 
 TIPS for at indlæse spil der ikke virker (crash):
 Hvis et spil låser sig fast (sort skræm) se efter om det er et PAL spil.
