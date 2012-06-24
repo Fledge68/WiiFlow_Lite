@@ -23,9 +23,10 @@ DML_CFG *DMLCfg = NULL;
 
 void GC_SetVideoMode(u8 videomode)
 {
-	syssram *sram = __SYS_LockSram();
-	static GXRModeObj *vmode;
-	int vmode_reg = 0;
+	syssram *sram;
+	sram = __SYS_LockSram();
+	static GXRModeObj *rmode;
+	int memflag = 0;
 
 	if((VIDEO_HaveComponentCable() && (CONF_GetProgressiveScan() > 0)) || videomode > 3)
 		sram->flags |= 0x80; //set progressive flag
@@ -34,7 +35,7 @@ void GC_SetVideoMode(u8 videomode)
 
 	if(videomode == 1 || videomode == 3 || videomode == 5)
 	{
-		vmode_reg = 1;
+		memflag = 1;
 		sram->flags |= 0x01; // Set bit 0 to set the video mode to PAL
 		sram->ntd |= 0x40; //set pal60 flag
 	}
@@ -45,38 +46,54 @@ void GC_SetVideoMode(u8 videomode)
 	}
 
 	if(videomode == 1)
-		vmode = &TVPal528IntDf;
+	{
+		if(DMLCfg != NULL)
+			DMLCfg->VideoMode |= DML_VID_FORCE_PAL50;
+		rmode = &TVPal528IntDf;
+	}
 	else if(videomode == 2)
-		vmode = &TVNtsc480IntDf;
+	{
+		if(DMLCfg != NULL)
+			DMLCfg->VideoMode |= DML_VID_FORCE_NTSC;
+		rmode = &TVNtsc480IntDf;
+	}
 	else if(videomode == 3)
 	{
-		vmode = &TVEurgb60Hz480IntDf;
-		vmode_reg = 5;
+		if(DMLCfg != NULL)
+			DMLCfg->VideoMode |= DML_VID_FORCE_PAL60;
+		rmode = &TVEurgb60Hz480IntDf;
+		memflag = 5;
 	}
-	else if(videomode == 4)
-		vmode = &TVNtsc480Prog;
-	else if(videomode == 5)
+	else if(videomode == 4 ||videomode == 6)
 	{
-		vmode = &TVNtsc480Prog;
-		vmode_reg = 5;
+		if(DMLCfg != NULL)
+			DMLCfg->VideoMode |= DML_VID_FORCE_PROG;
+		rmode = &TVNtsc480Prog;
+	}
+	else if(videomode == 5 || videomode == 7)
+	{
+		if(DMLCfg != NULL)
+			DMLCfg->VideoMode |= DML_VID_FORCE_PROG;
+		rmode = &TVNtsc480Prog;
+		memflag = 5;
 	}
 
 	__SYS_UnlockSram(1); // 1 -> write changes
 	while(!__SYS_SyncSram());
 
 	/* Set video mode register */
-	*(vu32 *)0x800000CC = vmode_reg;
+	*(vu32 *)0x800000CC = memflag;
 	DCFlushRange((void *)(0x800000CC), 4);
 
 	/* Set video mode */
-	if(vmode != 0)
-		VIDEO_Configure(vmode);
+	if (rmode != 0)
+		VIDEO_Configure(rmode);
 
 	/* Setup video  */
 	VIDEO_SetBlack(TRUE);
 	VIDEO_Flush();
 	VIDEO_WaitVSync();
-	if(vmode->viTVMode & VI_NON_INTERLACE)
+	if(rmode->viTVMode & VI_NON_INTERLACE)
 		VIDEO_WaitVSync();
 }
 
@@ -153,7 +170,7 @@ void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, boo
 
 	DMLCfg->Magicbytes = 0xD1050CF6;
 	DMLCfg->CfgVersion = 0x00000001;
-	DMLCfg->VideoMode |= DML_VID_DML_AUTO;
+	DMLCfg->VideoMode |= DML_VID_FORCE;
 
 	DMLCfg->Config |= DML_CFG_ACTIVITY_LED; //Sorry but I like it lol, option will may follow
 	DMLCfg->Config |= DML_CFG_PADHOOK; //Makes life easier, l+z+b+digital down...
