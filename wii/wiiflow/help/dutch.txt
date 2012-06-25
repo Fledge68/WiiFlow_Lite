@@ -1,0 +1,59 @@
+
+Bediening:
+- Hoofd menu (coverflow) :
+-- Op / Neer  =  Vorig / volgend spel (verticaal)
+-- Links / Rechts  =  Vorig / volgend spel (horizontaal)
+-- Min / Plus  =  Snel navigeren door spellen
+-- A  =  Selecteer spel
+-- B+A  =  Start spel meteen
+-- B+Home  =  Herladen Wiiflow
+-- Home  =  Naar Wii menu
+-- 1 / 2  =  Vorige / volgende coverflow modus
+-- B+Links / B+Rechts  =  Verander Lied
+-- B+OP / B+NEER  =  Alphabetisch zoeken
+-- B+Onscreen Arrows  =  Alphabetisch zoeken
+-- B+Minus  =  Verander van Partitie
+-- B+Plus  =  Sorteer spellen
+
+-- A op Ster Icoon  =  Favoriten
+-- B op Ster Icoon  =  Categoriën
+-- A op Rad Icoon  =  Wiiflow instellingen
+-- B op Rad Icoon  =  Ververs cache
+-- A op USB, DML, Kanalen, Emu, of Homebrew Icoon  =  Ga naar volgende weergave
+-- B op USB, DML, Kanalen, Emu, of Homebrew Icoon  =  Schakel Emu-NAND In/Uit en ga naar Kanalen weergave
+-- A op Home Icoon  =  Naar Wii menu
+-- Druk op B voor 3 seconden / B op Home Icoon (wiimote_gestures ingeschakeld)  =  Ga naar Bron menu
+-- A op Disc Icoon (spel Disc in Drive)  =  Start spel disc
+-- A op Vraagteken Icoon  =  Toon eerbetuiging, dit help bestand en controle van een nieuwe versie
+
+- Spel :
+-- A op voorkant  =  Laat achterkant zien
+-- A buiten scherm  =  Start spel
+-- B  =  Terug naar coverflow
+-- Op / Neer  =  Vorig / volgend spel (verticaal)
+-- Links / Rechts  =  Vorig / volgend spel (horizontaal)
+-- Plus  =  spel Info
+---Rechts (in spel Info)  =  spel Beschrijving
+---Links  (in spel Beschr)  =  spel Informatie
+-- A op Ster Icoon  =  Schakelen Favoriet (Geel = Favoriet)
+-- B op Ster Icoon  =  Stel Categoriën in voor spel
+-- A op Hand Icoon  =  Ouderlijk Slot (Rood = op slot)
+-- A op Rad Icoon  =  Spel Instellingen
+-- A op X Icoon  =   Verwijderen Spel
+
+- Instellingen menu's :
+-- Min / Plus  =  Vorige / volgende pagina
+-- Links / Rechts  =  Vorige / volgende pagina
+
+- Coverflow Aanpassings instellingen :
+-- B+Min / B+Plus  =  Vorige / volgende pagina
+-- B  =  Sneller aanpassen (B+A inplaats van alleen A op een knop)
+-- B+1  =  Kopieer complete coverflow
+-- B+2  =  Plak coverflow
+
+TIPS voor spellen die vastlopen:
+Als het spel vastloopt met een zwart scherm bij starten, controleer dan of het een PAL spel is.
+  (Druk op Plus op het spel scherm) Als het PAL is, verander dan de videomodus van het spel naar "PAL 50Hz" in het instellingen scherm.
+  Er is ook een componenten connectie nodig en verander de WII instellingen naar 480p video modus.
+
+Als een spel vastloopt, probeer dan het spel opnieuw the starten. Als deze blijft vastlopen, Zet dan de NAND Emulatie "Uit" in het instellingen scherm.
