@@ -48,7 +48,7 @@ public:
 	void getDimensions(u32 id, int &x, int &y, u32 &width, u32 &height);
 	void hide(u32 id, int dx, int dy, float scaleX, float scaleY, bool instant = false);
 	void hide(u32 id, bool instant = false);
-	void show(u32 id, bool instant = false, bool synopsis = false);
+	void show(u32 id, bool instant = false);
 	void mouse(int chan, int x, int y);
 	void up(void);
 	void down(void);

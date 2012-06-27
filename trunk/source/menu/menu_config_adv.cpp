@@ -78,9 +78,9 @@ static void listThemes(const char * path, vector<string> &themes)
 		dir = readdir(d);
 		while (dir != 0)
 		{
-			string fileName = upperCase(dir->d_name);
-			def = def || fileName == "DEFAULT.INI";
-			if (fileName.size() > 4 && fileName.substr(fileName.size() - 4, 4) == ".INI")
+			string fileName = dir->d_name;
+			def = def || (upperCase(fileName) == "DEFAULT.INI");
+			if (fileName.size() > 4 && fileName.substr(fileName.size() - 4, 4) == ".ini")
 				themes.push_back(fileName.substr(0, fileName.size() - 4));
 			dir = readdir(d);
 		}

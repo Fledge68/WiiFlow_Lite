@@ -674,8 +674,7 @@ bool GameTDB::GetGenres(const char * id, string & gen)
         {
             ptr++;
             while(*ptr == ' ') ptr++;
-            genre[genre_num].push_back('\0');
-            genre_num++;
+			genre_num++;
             continue;
         }
 
