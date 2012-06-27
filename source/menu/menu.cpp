@@ -1392,7 +1392,7 @@ u32 CMenu::_addLabel(CMenu::SThemeData &theme, const char *domain, SFont font, c
 	y = m_theme.getInt(domain, "y", y);
 	width = m_theme.getInt(domain, "width", width);
 	height = m_theme.getInt(domain, "height", height);
-	font = _font(theme.fontSet, domain, "font", LABELFONT);
+	font = _font(theme.fontSet, domain, "font", BUTTONFONT);
 	STexture texBg = _texture(theme.texSet, domain, "background_texture", bg);
 	style = _textStyle(domain, "style", style);
 

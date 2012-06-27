@@ -239,7 +239,7 @@ void CMenu::_showSystem(void)
 	m_btnMgr.show(m_systemLblVersionTxt);
 	m_btnMgr.show(m_systemLblVersion);
 	m_btnMgr.show(m_systemBtnBack);
-	m_btnMgr.show(m_systemLblInfo,false,true);
+	m_btnMgr.show(m_systemLblInfo,false);
 	m_btnMgr.show(m_systemLblVerSelectVal);
 	m_btnMgr.show(m_systemBtnVerSelectM);
 	m_btnMgr.show(m_systemBtnVerSelectP);

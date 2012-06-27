@@ -104,7 +104,7 @@ void CMenu::_gameinfo(void)
 		}	
 		if(first && page == 1)
 		{
-			m_btnMgr.moveBy(m_gameinfoLblSynopsis, 0, -(30));
+			m_btnMgr.moveBy(m_gameinfoLblSynopsis, 0, -1);
 			amount_of_skips++;
 			first = false;
 		}
@@ -131,7 +131,7 @@ void CMenu::_gameinfo(void)
 			amount_of_skips = 0;
 						
 			m_btnMgr.reset(m_gameinfoLblSynopsis);
-			m_btnMgr.setText(m_gameinfoLblSynopsis, wfmt(L"%s", gameinfo.Synopsis.c_str()), true); //, line, false);
+			m_btnMgr.setText(m_gameinfoLblSynopsis, wfmt(L"%s", gameinfo.Synopsis.c_str()));
 
 			m_btnMgr.hide(m_gameinfoLblID, true);
 			m_btnMgr.hide(m_gameinfoLblDev, true);
@@ -157,7 +157,7 @@ void CMenu::_gameinfo(void)
 				else
 					m_btnMgr.show(m_gameinfoLblUser[i]);
 			
-			m_btnMgr.show(m_gameinfoLblSynopsis,false,true);
+			m_btnMgr.show(m_gameinfoLblSynopsis,false);
 		}
 		else if (BTN_LEFT_PRESSED && !(m_thrdWorking && m_thrdStop))
 		{
@@ -266,7 +266,7 @@ void CMenu::_initGameInfoMenu(CMenu::SThemeData &theme)
 	m_gameinfoLblRlsdate = _addText(theme, "GAMEINFO/RLSDATE", theme.txtFont, L"", 40, 230, 460, 56, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
 	m_gameinfoLblRegion = _addText(theme, "GAMEINFO/REGION", theme.txtFont, L"", 40, 260, 460, 56, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
 	m_gameinfoLblRating = _addLabel(theme, "GAMEINFO/RATING", theme.titleFont, L"", 550, 380, 48, 60, theme.titleFontColor, 0, m_rating);
-	m_gameinfoLblSynopsis = _addText(theme, "GAMEINFO/SYNOPSIS", theme.txtFont, L"", 20, 150, 600, 400, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
+	m_gameinfoLblSynopsis = _addText(theme, "GAMEINFO/SYNOPSIS", theme.txtFont, L"", 40, 120, 560, 280, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
 	m_gameinfoLblWifiplayers = _addLabel(theme, "GAMEINFO/WIFIPLAYERS", theme.txtFont, L"", 550, 110, 68, 60, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP,m_wifi);
 
 	_addUserLabels(theme, m_gameinfoLblUser, 1, 1, "GAMEINFO");
@@ -291,7 +291,7 @@ void CMenu::_initGameInfoMenu(CMenu::SThemeData &theme)
 	_setHideAnim(m_gameinfoLblID, "GAMEINFO/GAMEID",0, -100, 0.f, 0.f);
 	_setHideAnim(m_gameinfoLblTitle, "GAMEINFO/TITLE", 0, -100, 0.f, 0.f);
 	_setHideAnim(m_gameinfoLblRating, "GAMEINFO/RATING", 100, 0, 0.f, 0.f);
-	_setHideAnim(m_gameinfoLblSynopsis, "GAMEINFO/SYNOPSIS", 0, 100, 0.f, 0.f);
+	_setHideAnim(m_gameinfoLblSynopsis, "GAMEINFO/SYNOPSIS", 0, 700, 1.f, 1.f);
 	_setHideAnim(m_gameinfoLblRegion, "GAMEINFO/REGION", 0, -100, 0.f, 0.f);
 	_setHideAnim(m_gameinfoLblDev, "GAMEINFO/DEVELOPER", 0, -100, 0.f, 0.f);
 	_setHideAnim(m_gameinfoLblPublisher, "GAMEINFO/PUBLISHER", 0, -100, 0.f, 0.f);

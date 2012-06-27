@@ -42,7 +42,7 @@ void CMenu::_about(void)
 		}	
 		if(first)
 		{
-			m_btnMgr.moveBy(m_aboutLblInfo, 0, -(pixels_to_skip * 10));
+			m_btnMgr.moveBy(m_aboutLblInfo, 0, -1);
 			amount_of_skips++;
 			first = false;
 		}
@@ -86,7 +86,7 @@ void CMenu::_showAbout(void)
 	_setBg(m_aboutBg, m_aboutBg);
 	m_btnMgr.show(m_aboutLblTitle);
 	m_btnMgr.show(m_aboutLblIOS);
-	m_btnMgr.show(m_aboutLblInfo,false,true);
+	m_btnMgr.show(m_aboutLblInfo,false);
 	for (u32 i = 0; i < ARRAY_SIZE(m_aboutLblUser); ++i)
 	{
 		if (m_aboutLblUser[i] != -1u)
@@ -100,7 +100,7 @@ void CMenu::_initAboutMenu(CMenu::SThemeData &theme)
 	_addUserLabels(theme, m_aboutLblUser, ARRAY_SIZE(m_aboutLblUser), "ABOUT");
 	m_aboutBg = _texture(theme.texSet, "ABOUT/BG", "texture", theme.bg);
 	m_aboutLblTitle = _addTitle(theme, "ABOUT/TITLE", theme.titleFont, L"", 20, 30, 600, 75, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
-	m_aboutLblInfo = _addText(theme, "ABOUT/INFO", theme.txtFont, L"", 20, 200, 600, 280, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
+	m_aboutLblInfo = _addText(theme, "ABOUT/INFO", theme.txtFont, L"", 40, 120, 560, 280, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
 	m_aboutLblIOS = _addLabel(theme, "ABOUT/IOS", theme.txtFont, L"", 240, 400, 360, 56, theme.txtFontColor, FTGX_JUSTIFY_RIGHT | FTGX_ALIGN_MIDDLE);
 
 	_setHideAnim(m_aboutLblTitle, "ABOUT/TITLE", 0, 100, 0.f, 0.f);
