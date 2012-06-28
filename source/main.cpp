@@ -42,7 +42,7 @@ int main(int argc, char **argv)
 	CVideo vid;
 	vid.init();
 
-	MEM2_init(49); //Thats everything we can get anyways
+	MEM2_init(46); //Should be safe to use
 	vid.waitMessage(0.2f);
 
 	AllocSDGeckoBuffer();
