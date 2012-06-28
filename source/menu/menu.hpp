@@ -1078,7 +1078,9 @@ private:
 	struct SOption { const char id[10]; const wchar_t text[16]; };
 	static const string _translations[23];
 	static const SOption _languages[11];
-	static const SOption _videoModes[7];
+
+	static const SOption _GlobalVideoModes[6];
+	static const SOption _VideoModes[7];
 	
 	static const SOption _GlobalDMLvideoModes[6];
 	static const SOption _GlobalGClanguages[7];

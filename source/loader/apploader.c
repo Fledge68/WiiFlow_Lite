@@ -101,7 +101,6 @@ void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipa
 	NewSuperMarioBrosPatch();
 
 	patchVideoModes(dst, len, vidMode, vmode, patchVidModes);
-
 	if(hooktype != 0 && dogamehooks(dst, len, false))
 		hookpatched = true;
 	if(vipatch)
