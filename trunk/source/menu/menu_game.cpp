@@ -97,14 +97,23 @@ const CMenu::SOption CMenu::_languages[11] = {
 	{ "lngkor", L"Korean" }
 };
 
-const CMenu::SOption CMenu::_videoModes[7] = {
-	{ "viddef", L"Default" },
+const CMenu::SOption CMenu::_GlobalVideoModes[6] = {
+	{ "vidgame", L"Game" },
+	{ "vidsys", L"System" },
 	{ "vidp50", L"PAL 50Hz" },
 	{ "vidp60", L"PAL 60Hz" },
 	{ "vidntsc", L"NTSC" },
-	{ "vidpatch", L"Auto Patch" },
-	{ "vidsys", L"System" },	
-	{ "vidprog", L"Progressive" }
+	{ "vidprog", L"Progressive" },
+};
+
+const CMenu::SOption CMenu::_VideoModes[7] = {
+	{ "viddef", L"Default" },
+	{ "vidgame", L"Game" },
+	{ "vidsys", L"System" },
+	{ "vidp50", L"PAL 50Hz" },
+	{ "vidp60", L"PAL 60Hz" },
+	{ "vidntsc", L"NTSC" },
+	{ "vidprog", L"Progressive" },
 };
 
 const CMenu::SOption CMenu::_GlobalDMLvideoModes[6] = {
@@ -904,29 +913,30 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	}
 
 	forwarder = m_gcfg2.getBool(id, "custom", forwarder) || strncmp(id.c_str(), "WIMC", 4) == 0;
-	
+
 	bool vipatch = m_gcfg2.testOptBool(id, "vipatch", m_cfg.getBool("GENERAL", "vipatch", false));
 	bool cheat = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool("NAND", "cheat", false));
 	bool countryPatch = m_gcfg2.testOptBool(id, "country_patch", m_cfg.getBool("GENERAL", "country_patch", false));
-	u8 videoMode = (u8)min((u32)m_gcfg2.getInt(id, "video_mode", 0), ARRAY_SIZE(CMenu::_videoModes) - 1u);
+
+	u8 videoMode = (u8)min((u32)m_gcfg2.getInt(id, "video_mode", 0), ARRAY_SIZE(CMenu::_VideoModes) - 1u);
+	videoMode = (videoMode == 0) ? (u8)min((u32)m_cfg.getInt("GENERAL", "video_mode", 0), ARRAY_SIZE(CMenu::_GlobalVideoModes) - 1) : videoMode-1;
+
 	int language = min((u32)m_gcfg2.getInt(id, "language", 0), ARRAY_SIZE(CMenu::_languages) - 1u);
+	language = (language == 0) ? min((u32)m_cfg.getInt("GENERAL", "game_language", 0), ARRAY_SIZE(CMenu::_languages) - 1) : language;
+
 	const char *rtrn = m_gcfg2.getBool(id, "returnto", true) ? m_cfg.getString("GENERAL", "returnto").c_str() : NULL;
 	u8 patchVidMode = min((u32)m_gcfg2.getInt(id, "patch_video_modes", 0), ARRAY_SIZE(CMenu::_vidModePatch) - 1u);
 	int aspectRatio = min((u32)m_gcfg2.getInt(id, "aspect_ratio", 0), ARRAY_SIZE(CMenu::_AspectRatio) - 1u)-1;
-	
+
 	if(!forwarder)
 	{
 		hooktype = (u32) m_gcfg2.getInt(id, "hooktype", 0);
 		debuggerselect = m_gcfg2.getBool(id, "debugger", false) ? 1 : 0;
 
-		if ((debuggerselect || cheat) && hooktype == 0) 
+		if((debuggerselect || cheat) && hooktype == 0) 
 			hooktype = 1;
-		if (!debuggerselect && !cheat) 
+		if(!debuggerselect && !cheat) 
 			hooktype = 0;
-		if (videoMode == 0)	
-			videoMode = (u8)min((u32)m_cfg.getInt("GENERAL", "video_mode", 0), ARRAY_SIZE(CMenu::_videoModes) - 1);
-		if (language == 0)	
-			language = min((u32)m_cfg.getInt("GENERAL", "game_language", 0), ARRAY_SIZE(CMenu::_languages) - 1);
 	}
 
 	m_cfg.setString("NAND", "current_item", id);
@@ -949,14 +959,6 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	m_gcfg2.save(true);
 	m_cat.save(true);
 	m_cfg.save(true);
-	
-	/*if(!emu_disabled && emulate_mode == 1)
-	{
-		char basepath[64];
-		snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[emuPartition], emuPath.c_str());
-		Nand::Instance()->CreateConfig(basepath);
-		Nand::Instance()->Do_Region_Change(id);
-	}*/
 
 	CheckGameSoundThread();
 	m_vid.CheckWaitThread(true);
@@ -1145,8 +1147,13 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	bool vipatch = m_gcfg2.testOptBool(id, "vipatch", m_cfg.getBool("GENERAL", "vipatch", false));
 	bool cheat = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool("GAMES", "cheat", false));
 	bool countryPatch = m_gcfg2.testOptBool(id, "country_patch", m_cfg.getBool("GENERAL", "country_patch", false));
-	u8 videoMode = (u8)min((u32)m_gcfg2.getInt(id, "video_mode", 0), ARRAY_SIZE(CMenu::_videoModes) - 1u);
+
+	u8 videoMode = (u8)min((u32)m_gcfg2.getInt(id, "video_mode", 0), ARRAY_SIZE(CMenu::_VideoModes) - 1u);
+	videoMode = (videoMode == 0) ? (u8)min((u32)m_cfg.getInt("GENERAL", "video_mode", 0), ARRAY_SIZE(CMenu::_GlobalVideoModes) - 1) : videoMode-1;
+
 	int language = min((u32)m_gcfg2.getInt(id, "language", 0), ARRAY_SIZE(CMenu::_languages) - 1u);
+	language = (language == 0) ? min((u32)m_cfg.getInt("GENERAL", "game_language", 0), ARRAY_SIZE(CMenu::_languages) - 1) : language;
+
 	const char *rtrn = m_gcfg2.getBool(id, "returnto", true) ? m_cfg.getString("GENERAL", "returnto").c_str() : NULL;
 	int aspectRatio = min((u32)m_gcfg2.getInt(id, "aspect_ratio", 0), ARRAY_SIZE(CMenu::_AspectRatio) - 1u)-1;
 
@@ -1232,8 +1239,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	u32 cheatSize = 0, gameconfigSize = 0;
 
 	CheckGameSoundThread();
-	if(videoMode == 0)	videoMode = (u8)min((u32)m_cfg.getInt("GENERAL", "video_mode", 0), ARRAY_SIZE(CMenu::_videoModes) - 1);
-	if(language == 0)	language = min((u32)m_cfg.getInt("GENERAL", "game_language", 0), ARRAY_SIZE(CMenu::_languages) - 1);
 	m_cfg.setString("GAMES", "current_item", id);
 	m_gcfg1.setInt("PLAYCOUNT", id, m_gcfg1.getInt("PLAYCOUNT", id, 0) + 1);
 	m_gcfg1.setUInt("LASTPLAYED", id, time(NULL));

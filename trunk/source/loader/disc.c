@@ -98,11 +98,11 @@ GXRModeObj * __Disc_SelectVMode(u8 videoselected, u64 chantitle)
 	else
 		Region = diskid[3];
 
-	switch (videoselected)
+	switch(videoselected)
 	{
 		case 0: // DEFAULT (DISC/GAME)
 			/* Select video mode */
-			switch (Region)
+			switch(Region)
 			{
 				case 'W':
 					break; // Don't overwrite wiiware video modes.
@@ -112,7 +112,7 @@ GXRModeObj * __Disc_SelectVMode(u8 videoselected, u64 chantitle)
 				case 'P':
 				case 'X':
 				case 'Y':
-					if (CONF_GetVideo() != CONF_VIDEO_PAL)
+					if(CONF_GetVideo() != CONF_VIDEO_PAL)
 					{
 						vmode_reg = VI_PAL;
 						vmode = progressive ? &TVNtsc480Prog : &TVNtsc480IntDf;
@@ -122,7 +122,7 @@ GXRModeObj * __Disc_SelectVMode(u8 videoselected, u64 chantitle)
 				case 'E':
 				case 'J':
 				default:
-					if (CONF_GetVideo() != CONF_VIDEO_NTSC)
+					if(CONF_GetVideo() != CONF_VIDEO_NTSC)
 					{
 						vmode_reg = VI_NTSC;
 						vmode = progressive ? &TVNtsc480Prog : &TVEurgb60Hz480IntDf;
@@ -130,24 +130,23 @@ GXRModeObj * __Disc_SelectVMode(u8 videoselected, u64 chantitle)
 					break;
 			}
 			break;
-		case 1: // PAL50
+		case 1: // SYSTEM
+			break;
+		case 2: // PAL50
 			vmode =  &TVPal528IntDf;
 			vmode_reg = vmode->viTVMode >> 2;
 			break;
-		case 2: // PAL60
+		case 3: // PAL60
 			vmode = progressive ? &TVNtsc480Prog : &TVEurgb60Hz480IntDf;
 			vmode_reg = progressive ? TVEurgb60Hz480Prog.viTVMode >> 2 : vmode->viTVMode >> 2;
 			break;
-		case 3: // NTSC
+		case 4: // NTSC
 			vmode = progressive ? &TVNtsc480Prog : &TVNtsc480IntDf;
 			vmode_reg = vmode->viTVMode >> 2;
 			break;
-		case 4: // AUTO PATCH TO SYSTEM
-		case 5: // SYSTEM
-			break;
-		case 6: // PROGRESSIVE 480P(NTSC + PATCH ALL)
+		case 5: // PROGRESSIVE 480P
 			vmode = &TVNtsc480Prog;
-			vmode_reg = vmode->viTVMode >> 2;
+			vmode_reg = Region == 'P' ? TVEurgb60Hz480Prog.viTVMode >> 2 : vmode->viTVMode >> 2;
 			break;
 		default:
 			break;
