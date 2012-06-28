@@ -18,15 +18,14 @@ Controls:
 -- A on Star Icon  =  Favorites
 -- B on Star Icon  =  Categories
 -- A on Gear Icon  =  WiiFlow settings
--- B on Gear Icon  =  Refresh cache
 -- A on USB, DML, Channels, Emu, or Homebrew Icon  =  Switch to that view
 -- B on USB, DML, Channels, Emu, or Homebrew Icon  =  Enable/Disable Emu-NAND and switch to Channels view
--- A on Home Icon  =  Exit to Wii menu
+-- A on Home Icon  =  Open Home Menu / Exit WiiFlow
 -- Hold B for 3 seconds / B on Home Icon (wiimote_gestures enabled)  =  Display Source menu
 -- A on Disc Icon (Game Disc in Drive)  =  Launch game disc
--- A on Question Mark Icon  =  Display credits and this help file, and update WiiFlow
+-- A on Question Mark Icon  =  Display credits and this help file
 
-- Game :
+- Game:
 -- A on box  =  Show the backside
 -- A out of screen  =  Launch game
 -- B  =  Back to coverflow
@@ -41,11 +40,11 @@ Controls:
 -- A on Gear Icon  =  Game Settings
 -- A on X Icon  =   Delete Game
 
-- Settings menus :
+- Settings menus:
 -- Minus / Plus  =  Previous / next page
 -- Left / Right  =  Previous / next page
 
-- Coverflow Adjust settings :
+- Coverflow Adjust settings:
 -- B+Minus / B+Plus  =  Previous / next page
 -- B  =  Faster adjustment (B+A instead of just A to click a button)
 -- B+1  =  Copy whole coverflow
@@ -54,6 +53,6 @@ Controls:
 TIPS for running games that crash:
 If the game just locks up with a black screen at launch then check to see if it is a PAL game.
   (Press the Plus button on the game screen.)  If it is PAL, then set the game's video mode to "PAL 50Hz" in the game's setting screen.
-  You will need to use a component connection to the TV and have your WII set to 480p video mode.
+  You can also use a Component Cable and set your Wii to 480p to fix that problem.
 
 If a game crashes, then try running the game again.  If it continually crashes, then turn the USB Emulation to \"Off\" in the game's setting screen.

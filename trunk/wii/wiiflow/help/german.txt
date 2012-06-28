@@ -1,0 +1,58 @@
+﻿
+Bedienung:
+- Hauptmenü (Coverflow):
+-- Hoch / Runter  =  vorheriges / nächstes Spiel (Vertikal)
+-- Links / Rechts  =  vorheriges / nächstes Spiel (Horizontal)
+-- Minus / Plus  =  Spiele schnell durchsuchen
+-- A  =  Spiel auswählen
+-- B+A  =  Spiel sofort Starten
+-- B+Home  =  WiiFlow neu laden
+-- Home  =  Home Menü öffnen / WiiFlow beenden
+-- 1 / 2  =  vorheriger / nächster Coverflow Modus
+-- B+Left / B+Right  =  Song wählen
+-- B+UP / B+DOWN  =  Alphabetische Suche
+-- B+Bildschirmpfeile  =  Alphabetische Suche
+-- B+Minus  =  Partition wechseln
+-- B+Plus  =  Spiele sortieren
+
+-- A auf Stern Icon  =  Favoriten
+-- B auf Stern Icon  =  Kategorien
+-- A auf Zahnrad Icon  =  WiiFlow Einstellungen
+-- A auf USB, DML, Kanäle, Emu, oder Homebrew Icon  =  Ansicht wechseln
+-- B auf USB, DML, Kanäle, Emu, oder Homebrew Icon  =  Emu-NAND ein/ausschalten und zur Kanäle Ansicht wechseln
+-- A auf Haus Icon  =  Home Menü öffnen / WiiFlow beenden
+-- B für 3 Sekunden halten / B auf Haus Icon (wenn wiimote_gestures ein)  =  Quellen Menü öffnen
+-- A auf Disk Icon (Spiel in DVD Laufwerk)  =  Spiel im Laufwerk starten
+-- A auf Fragezeichen Icon  =  Credits und diese Hilfe anzeigen
+
+- Spiel:
+-- A auf Box  =  Rückseite anzeigen
+-- A außerhalb des Bildschirms  =  Spiel starten
+-- B  =  zurück zum Coverflow
+-- Hoch / Runter  =  vorheriges / nächstes Spiel (Vertikal)
+-- Links / Rechts  =  vorheriges / nächstes Spiel (Horizontal)
+-- Plus  =  Spielinformation
+---Rechts (in Spielinformation)  =  Spielbeschreibung
+---Links  (in Spielinformation)  =  Spielinformation
+-- A auf Stern Icon  =  Zum Favoriten setzen (Gelb = Favorit)
+-- B auf Stern Icon  =  Kategorien für Spiel setzen
+-- A auf Hand Icon  =  Kindersicherung (Rot = gesperrt)
+-- A auf Gear Icon  =  Spieleinstellungen
+-- A auf X Icon  =   Spiel löschen
+
+- Einstellungen:
+-- Minus / Plus  =  vorherige / nächste Seite
+-- Links / Rechts  =  vorherige / nächste Seite
+
+- Coverflow Einstellungen:
+-- B+Minus / B+Plus  =  vorherige / nächste Seite
+-- B  =  Schneller einstellen (B+A anstelle von A auf Button)
+-- B+1  =  Coverflow kopieren
+-- B+2  =  Coverflow einfügen
+
+TIPPS um Spiele die nicht funktionieren zu starten:
+Falls ein Spiel einfach einfriert und einen schwarzen Bildschirm verursacht stelle sicher ob das Spiel aus deiner Region kommt.
+  (gehe in die Spieleinstellungen.)  Falls es nicht aus deiner Region kommt, stelle den Videomodus auf die Region des Spiels.
+  Du kannst auch ein Komponentenkabel benutzen und deine Wii auf 480p stellen.
+
+Falls ein Spiel abstürzt versuche es einfach erneuert. Falls das nicht helfen sollte, stelle sicher das die Speicherstandemulation auf \"Aus\" in den Spieleinstellugnen gestellt ist.
