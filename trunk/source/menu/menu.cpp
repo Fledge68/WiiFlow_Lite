@@ -1665,14 +1665,22 @@ void CMenu::_initCF(void)
 					tempname.assign(&tempname[tempname.find_last_of("/") + 1]);
 				string coverFolder(m_plugin.GetCoverFolderName(m_gameList[i].settings[0]));
 				if(EnabledPlugins.size() == 0) //all plugins
-					m_cf.addItem(&m_gameList[i], fmt("%s/%s/%s.png", m_picDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s/%s.png", m_boxPicDir.c_str(), coverFolder.c_str(), tempname.c_str()), playcount, lastPlayed);
+				{
+					if(coverFolder.size() > 0)
+						m_cf.addItem(&m_gameList[i], fmt("%s/%s/%s.png", m_picDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s/%s.png", m_boxPicDir.c_str(), coverFolder.c_str(), tempname.c_str()), playcount, lastPlayed);
+					else
+						m_cf.addItem(&m_gameList[i], fmt("%s/%s.png", m_picDir.c_str(), tempname.c_str()), fmt("%s/%s.png", m_boxPicDir.c_str(), tempname.c_str()), playcount, lastPlayed);
+				}
 				else
 				{
 					for(u8 j = 0; j < EnabledPlugins.size(); j++)
 					{
 						if(EnabledPlugins[j] == true && m_gameList[i].settings[0] == m_plugin.getPluginMagic(j))
 						{
-							m_cf.addItem(&m_gameList[i], fmt("%s/%s/%s.png", m_picDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s/%s.png", m_boxPicDir.c_str(), coverFolder.c_str(), tempname.c_str()), playcount, lastPlayed);
+							if(coverFolder.size() > 0)
+								m_cf.addItem(&m_gameList[i], fmt("%s/%s/%s.png", m_picDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s/%s.png", m_boxPicDir.c_str(), coverFolder.c_str(), tempname.c_str()), playcount, lastPlayed);
+							else
+								m_cf.addItem(&m_gameList[i], fmt("%s/%s.png", m_picDir.c_str(), tempname.c_str()), fmt("%s/%s.png", m_boxPicDir.c_str(), tempname.c_str()), playcount, lastPlayed);
 							break;
 						}
 					}
