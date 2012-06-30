@@ -1,6 +1,6 @@
 ﻿
 Styring:
-- Hoved menu (coverflow) :
+- Hoved menu (coverflow):
 -- Op / Ned  =  Forrige / næste spil (Lodret)
 -- Venstre / Højre  =  Forrige / næste spil (Vandret)
 -- Minus / Plus  =  Spring hurtig igennem spil
@@ -18,15 +18,14 @@ Styring:
 -- A på stjerne ikon  =  Favoriter
 -- B på stjerne ikon  =  Kategorier
 -- A på gear ikon  =  WiiFlow indstillinger
--- B på Gear ikon = Opdatere cache
 -- A på USB, DML, Kanal, Emu eller Homebrew ikon  = Skift til en af disse muligheder (coverflow view)
 -- B på USB, DML, Kanal, Emu eller Homebrew ikon  =  Aktivere/Deaktivere Emu Nand og skift til rigtig Wii Nand
--- A på hjem ikon  =  Forlad WiiFlow til Wii menu
+-- A på hjem ikon  =   Åben hjem menu / Forlad WiiFlow til Wii menu
 -- Hold B i 3 sekunder / B på hjem ikon (wiimote_gestures aktiveret i wiiflow.ini)  =  viser kilde menu (source menu)
 -- A på disc ikon (Spil disc i drev)  =  Indlæser spil disc
 -- A på spørgsmåls tegn ikon  =  Viser tak til, denne hjælpe fil og mulighed for at opdatere WiiFlow.
 
-- Spil :
+- Spil:
 -- A på box  =  Viser bagsiden
 -- A ude af skræmen  =  Indlæser spil
 -- B  =  Tilbage til coverflow
@@ -41,11 +40,11 @@ Styring:
 -- A på gear ikon  =  Spil indstillinger
 -- A på X ikon  =   Slet spil
 
-- Indstillings menu :
+- Indstillings menu:
 -- Minus / Plus  =  Forrige / næste side
 -- Venstre / Højre  =  Forrige / næste side
 
-- Coverflow justering indstillinger :
+- Coverflow justering indstillinger:
 -- B+Minus / B+Plus  =  Forrige / næste side
 -- B  =  Hurtiger justering (B+A i stedet for kun A til at klikke på en knap)
 -- B+1  =  Kopier hele coverflow
@@ -54,6 +53,6 @@ Styring:
 TIPS for at indlæse spil der ikke virker (crash):
 Hvis et spil låser sig fast (sort skræm) se efter om det er et PAL spil.
   (pres på plus knappen efter at have valgt spil.) Hvis det er et PAL spil sæt spillets video måde til "PAL 50Hz" i spil indstillinger.
-  Du behøver at bruger en component forbindelse til Fjernsynet og din wii skal have 480p video måde valgt.
+Du kan også vælge at bruge et component kabel og sætte din Wii til 480p for at løse dette problem.
 
 Hvis et spil fryser, prøv at indlæse spillet igen. Hvis det bliver ved med at fryser, prøv at sætte USB emulering til "Fra" i spil indstillinger.  
