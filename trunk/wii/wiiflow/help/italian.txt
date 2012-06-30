@@ -1,0 +1,58 @@
+
+Controlli:
+- Menu principale (coverflow):
+-- Su / giu = Precedente / prossimo gioco (verticale)
+-- Sinistra / Destra = Precedente / prossimo game (orizontale)
+-- Meno / più = Scorri velocemente tra i giochi
+-- A = Seleziona gioco
+-- B+A = Avvia gioco immediatamente
+-- B+home = Ricarica wiiflow
+-- Home = Esci al menu di sistema
+-- 1 / 2 = Precedente / prossima modalità coverflow
+-- B+sinistra / B+destra = Cambia canzone
+-- B+su / B+giu = Ricerca alfabetica
+-- B+frecce sullo schermo = Ricerca alfabetica
+-- B+meno = Cambia partizione
+-- B+più = Ordina giochi
+
+-- A sull’icona a stella = Favoriti
+-- B sull’icona a stella = Categorie
+-- A sull’icona a ingranaggio = Impostazioni
+-- A sull’icona a USB, DM(L), canali, emulatori o homebrew = Vai a questa modalità
+-- B sull’icona a USB, DML, canali, emulatori o homebrew = Abilita/disabilita la nand emulata e vai alla modalità canali
+-- A sull’icona home = Mostra menu home / esci da wiiflow
+-- Premi B per 3 secondi/ B sull'icona a home(se è abilitato wii_gestures) = Mostra menu sorgente
+-- A sull’icona a disco (se è presente un disco) = Avvia il disco
+-- A sull’icona a punto di domanda = Mostra i ringraziamenti, questo file di aiuto e aggiorna wiiflow
+
+- Gioco:
+-- A sulla cover = Mostra lato anteriore/posteriore
+-- A fuori dallo schermo = Avvia gioco
+-- B = Ritorna alla coverflow
+-- Su / giu = Precedente / prossimo gioco (verticale)
+-- Sinistra / destra = Precedente / prossimo gioco (orizzontale)
+-- Piu = Informazioni sul gioco 
+-- Destra (in informazioni sul gioco) = Descrizione del gioco
+-- Sinistra (in descrizione del gioco) = Informazioni sul gioco
+-- A sull’icona a stella = Imposta come favorito (giallo = favorito)
+-- B sull’icona a stella = Seleziona categorie per il gioco
+-- A sull’icona a mano = Blocco età (rosso = bloccato)
+-- A sull’icona a ingranaggio = Impostazioni gioco
+-- A sull’icona a X = Elimina gioco
+
+- Impostazioni:
+-- Meno / più = Precedente / prossima pagina
+-- Sinistra / destra = Precedente / prossima pagina
+
+- Impostazioni modifiche coverflow:
+-- B+meno / B+piu = Precedente / prossima pagina
+-- B = Modifiche più rapide (B+A invece di A per cliccare un pulsante)
+-- B+1 = Copia l’intera coverflow
+-- B+2 = Incolla la coverflow\n\
+
+CONSIGLI per avviare giochi che crashano:
+Se il gioco si blocca mostrando una schermata nera all’avvio, controlla se è un gioco PAL.
+(Premi il pulsante “+” sulla schermata del giocon.) Se è PAL, imposta la modalità video a “PAL 50Hz” nelle impostazioni del gioco.
+Puoi anchge usare un cavo component e settare la wii a 480p per risolvere il problema.
+
+Se un gioco crasha, prova a riavviarlo. Se continua a crashare, imposta la emulazione USB a “OFF” nelle impostazioni del gioco.
