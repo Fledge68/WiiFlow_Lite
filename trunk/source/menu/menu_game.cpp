@@ -828,8 +828,7 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id)
 {
 	gprintf("Game ID# %s requested IOS %d.  User selected %d\n", id.c_str(), gameIOS, userIOS);
-
-	if (userIOS > 0 && _installed_cios.size() > 0)
+	if(userIOS)
 	{
 		for(CIOSItr itr = _installed_cios.begin(); itr != _installed_cios.end(); itr++)
 		{
@@ -840,6 +839,9 @@ int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id)
 			}
 		}
 	}
+	else if(gameIOS != 57)
+		gameIOS = 56;
+	gprintf("Changed requested IOS to %d.\n", gameIOS);
 
 	// remap IOS to CIOS
 	if(gameIOS < 0x64)
