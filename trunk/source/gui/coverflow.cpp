@@ -2017,7 +2017,7 @@ bool CCoverFlow::findId(const char *id, bool instant)
 	for (i = 0; i < m_items.size(); ++i)
 		if (memcmp(&m_items[i].hdr->id, id, strlen(id)) == 0)
 			break;
-		else if (strlen(id) > 6 && memcmp(&m_items[i].hdr->path[string(m_items[i].hdr->path).find_last_of("/")], id, strlen(id)) == 0)
+		else if (strlen(id) > 6 && memcmp(&m_items[i].hdr->path[string(m_items[i].hdr->path).find_last_of("/")+1], id, strlen(id)) == 0)
 			break;
 	if (i >= m_items.size())
 		return false;
