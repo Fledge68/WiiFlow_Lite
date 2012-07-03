@@ -43,6 +43,7 @@ class BannerWindow
 		void Animate(void);
 		void ChangeGame(Banner *banner);
 		void DrawRectangle(f32 x, f32 y, f32 width, f32 height, GXColor color, u8 filled);
+		void ReSetup_GX(void);
 
 		static const float fBannerWidth = 608.f;
 		static const float fBannerHeight = 448.f;
