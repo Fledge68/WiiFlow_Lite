@@ -58,7 +58,9 @@ extern u32 sector_size;
 extern int mainIOS;
 static u64 sm_title_id[8]  ATTRIBUTE_ALIGN(32);
 
-bool m_zoom_banner;
+bool m_zoom_banner = false;
+u32 m_gameBtnPlayFull;
+u32 m_gameBtnBackFull;
 
 const string CMenu::_translations[23] = {
 	"Default",
@@ -306,11 +308,13 @@ void CMenu::_hideGame(bool instant)
 	m_gameSelected = false;
 	m_fa.unload();
 	m_cf.showCover();
-	
 	m_btnMgr.hide(m_gameBtnPlay, instant);
+	m_btnMgr.hide(m_gameBtnBack, instant);
+	m_btnMgr.hide(m_gameBtnPlayFull, instant);
+	m_btnMgr.hide(m_gameBtnBackFull, instant);
 	m_btnMgr.hide(m_gameBtnDelete, instant);
 	m_btnMgr.hide(m_gameBtnSettings, instant);
-	m_btnMgr.hide(m_gameBtnBack, instant);
+
 	m_btnMgr.hide(m_gameBtnFavoriteOn, instant);
 	m_btnMgr.hide(m_gameBtnFavoriteOff, instant);
 	m_btnMgr.hide(m_gameBtnAdultOn, instant);
@@ -335,12 +339,22 @@ void CMenu::_showGame(void)
 	}
 	else
 		_setBg(m_mainBg, m_mainBgLQ);
-		
-	m_btnMgr.show(m_gameBtnPlay);
-	m_btnMgr.show(m_gameBtnBack);
-	for (u32 i = 0; i < ARRAY_SIZE(m_gameLblUser); ++i)
-		if (m_gameLblUser[i] != -1u)
-			m_btnMgr.show(m_gameLblUser[i]);
+
+	if(!m_zoom_banner)
+	{
+		for(u32 i = 0; i < ARRAY_SIZE(m_gameLblUser); ++i)
+		{
+			if(m_gameLblUser[i] != -1u)
+				m_btnMgr.show(m_gameLblUser[i]);
+		}
+		m_btnMgr.show(m_gameBtnPlay);
+		m_btnMgr.show(m_gameBtnBack);
+	}
+	else
+	{
+		m_btnMgr.show(m_gameBtnPlayFull);
+		m_btnMgr.show(m_gameBtnBackFull);
+	}
 }
 
 static void setLanguage(int l)
@@ -470,7 +484,7 @@ void CMenu::_game(bool launch)
 				m_gcfg1.setBool("FAVORITES", id, !m_gcfg1.getBool("FAVORITES", id, false));
 			else if(m_btnMgr.selected(m_gameBtnAdultOn) || m_btnMgr.selected(m_gameBtnAdultOff))
 				m_gcfg1.setBool("ADULTONLY", id, !m_gcfg1.getBool("ADULTONLY", id, false));
-			else if(m_btnMgr.selected(m_gameBtnBack))
+			else if(m_btnMgr.selected(m_gameBtnBack) || m_btnMgr.selected(m_gameBtnBackFull))
 			{
 				//m_gameSound.Stop();
 				//CheckGameSoundThread();
@@ -479,11 +493,13 @@ void CMenu::_game(bool launch)
 				{
 					m_banner.ZoomOut();
 					m_zoom_banner = false;
+					m_show_zone_game = false;
 				}
 				else
 				{
 					m_banner.ZoomIn();
 					m_zoom_banner = true;
+					m_show_zone_game = false;
 				}
 			}
 			else if(m_btnMgr.selected(m_gameBtnSettings))
@@ -495,7 +511,7 @@ void CMenu::_game(bool launch)
 				if(!m_gameSound.IsPlaying()) 
 					startGameSound = -6;
 			}
-			else if(launch || m_btnMgr.selected(m_gameBtnPlay) || (!WPadIR_Valid(0) && !WPadIR_Valid(1) && !WPadIR_Valid(2) && !WPadIR_Valid(3) && m_btnMgr.selected((u32)-1)))
+			else if(launch || m_btnMgr.selected(m_gameBtnPlay) || m_btnMgr.selected(m_gameBtnPlayFull) || (!WPadIR_Valid(0) && !WPadIR_Valid(1) && !WPadIR_Valid(2) && !WPadIR_Valid(3) && m_btnMgr.selected((u32)-1)))
 			{
 				_hideGame();
 				dir_discHdr *hdr = m_cf.getHdr();
@@ -592,30 +608,37 @@ void CMenu::_game(bool launch)
 			m_fa.unload();
 			_setBg(m_mainBg, m_mainBgLQ);
 		}
-		if(m_show_zone_game)
+		if(m_show_zone_game && !m_zoom_banner)
 		{
 			bool b = m_gcfg1.getBool("FAVORITES", id, false);
 			m_btnMgr.show(b ? m_gameBtnFavoriteOn : m_gameBtnFavoriteOff);
 			m_btnMgr.hide(b ? m_gameBtnFavoriteOff : m_gameBtnFavoriteOn);
 			m_btnMgr.show(m_gameBtnPlay);
 			m_btnMgr.show(m_gameBtnBack);
-			for (u32 i = 0; i < ARRAY_SIZE(m_gameLblUser); ++i)
-				if (m_gameLblUser[i] != -1u)
+			m_btnMgr.hide(m_gameBtnPlayFull);
+			m_btnMgr.hide(m_gameBtnBackFull);
+			for(u32 i = 0; i < ARRAY_SIZE(m_gameLblUser); ++i)
+			{
+				if(m_gameLblUser[i] != -1u)
 					m_btnMgr.show(m_gameLblUser[i]);
-
-			if (!m_locked)
+			}
+			if(!m_locked)
 			{
 				b = m_gcfg1.getBool("ADULTONLY", id, false);
 				m_btnMgr.show(b ? m_gameBtnAdultOn : m_gameBtnAdultOff);
 				m_btnMgr.hide(b ? m_gameBtnAdultOff : m_gameBtnAdultOn);
 				m_btnMgr.show(m_gameBtnSettings);
 			}
-
 			if ((m_cf.getHdr()->type != TYPE_HOMEBREW && m_cf.getHdr()->type != TYPE_CHANNEL) && !m_locked)
 				m_btnMgr.show(m_gameBtnDelete);
 		}
 		else
 		{
+			if(m_zoom_banner)
+			{
+				m_btnMgr.show(m_gameBtnPlayFull);
+				m_btnMgr.show(m_gameBtnBackFull);
+			}
 			m_btnMgr.hide(m_gameBtnFavoriteOn);
 			m_btnMgr.hide(m_gameBtnFavoriteOff);
 			m_btnMgr.hide(m_gameBtnAdultOn);
@@ -1424,6 +1447,8 @@ void CMenu::_initGameMenu(CMenu::SThemeData &theme)
 	m_gameBtnAdultOff = _addPicButton(theme, "GAME/ADULTONLY_OFF", texAdultOff, texAdultOffSel, 532, 170, 48, 48);
 	m_gameBtnSettings = _addPicButton(theme, "GAME/SETTINGS_BTN", texSettings, texSettingsSel, 460, 242, 48, 48);
 	m_gameBtnDelete = _addPicButton(theme, "GAME/DELETE_BTN", texDelete, texDeleteSel, 532, 242, 48, 48);
+	m_gameBtnPlayFull = _addButton(theme, "GAME/PLAY_FULL_BTN", theme.btnFont, L"", 100, 380, 200, 56, theme.btnFontColor);
+	m_gameBtnBackFull = _addButton(theme, "GAME/BACK_FULL_BTN", theme.btnFont, L"", 340, 380, 200, 56, theme.btnFontColor);
 
 	m_gameButtonsZone.x = m_theme.getInt("GAME/ZONES", "buttons_x", 0);
 	m_gameButtonsZone.y = m_theme.getInt("GAME/ZONES", "buttons_y", 0);
@@ -1439,16 +1464,18 @@ void CMenu::_initGameMenu(CMenu::SThemeData &theme)
 	_setHideAnim(m_gameBtnAdultOff, "GAME/ADULTONLY_OFF", 0, 0, -1.5f, -1.5f);
 	_setHideAnim(m_gameBtnSettings, "GAME/SETTINGS_BTN", 0, 0, -1.5f, -1.5f);
 	_setHideAnim(m_gameBtnDelete, "GAME/DELETE_BTN", 0, 0, -1.5f, -1.5f);
+	_setHideAnim(m_gameBtnPlayFull, "GAME/PLAY_FULL_BTN", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameBtnBackFull, "GAME/BACK_FULL_BTN", 200, 0, 1.f, 0.f);
 	_hideGame(true);
 	_textGame();
-
-	m_zoom_banner = false;
 }
 
 void CMenu::_textGame(void)
 {
 	m_btnMgr.setText(m_gameBtnPlay, _t("gm1", L"Play"));
 	m_btnMgr.setText(m_gameBtnBack, _t("gm2", L"Back"));
+	m_btnMgr.setText(m_gameBtnPlayFull, _t("gm1", L"Play"));
+	m_btnMgr.setText(m_gameBtnBackFull, _t("gm2", L"Back"));
 }
 
 struct IMD5Header

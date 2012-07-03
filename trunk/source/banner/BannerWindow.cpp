@@ -23,6 +23,7 @@
 
 void BannerWindow::LoadBanner(Banner *banner, CVideo *vid, u8 *font1, u8 *font2)
 {
+	changing = true;
 	MaxAnimSteps = 30;
 	returnVal = -1;
 	reducedVol = false;
@@ -41,8 +42,11 @@ void BannerWindow::LoadBanner(Banner *banner, CVideo *vid, u8 *font1, u8 *font2)
 	AnimZoomOut = false;
 	AnimationRunning = false;
 	BannerAlpha = 255.f;
+	BGAlpha = 255.f;
+
 	ChangeGame(banner);
 	gameSelected = 1;
+	changing = false;
 }
 
 void BannerWindow::DeleteBanner()
@@ -53,6 +57,7 @@ void BannerWindow::DeleteBanner()
 
 BannerWindow::BannerWindow()
 {
+	changing = false;
 	AnimStep = 20;
 	gameSelected = 0;
 	gameBanner = new AnimatedBanner;
@@ -60,7 +65,7 @@ BannerWindow::BannerWindow()
 
 void BannerWindow::ChangeGame(Banner *banner)
 {
-	gameSelected = 0;
+	gameBanner->Clear();
 	gameBanner->LoadFont(sysFont1, sysFont2);
 	gameBanner->LoadBanner(banner);
 }
@@ -168,7 +173,11 @@ void BannerWindow::Animate(void)
 void BannerWindow::Draw(void)
 {
 	// draw a black background image first
-	//DrawRectangle(0.0f, 0.0f, ScreenProps.x, ScreenProps.y, (GXColor) {0, 0, 0, BGAlpha}, true);
+	if(AnimStep >= MaxAnimSteps)
+		DrawRectangle(0.0f, 0.0f, video->width(), video->height(), (GXColor) {0, 0, 0, BGAlpha}, true);
+
+	if(changing)
+		return;
 
 	// Run window animation
 	Animate();
@@ -184,7 +193,7 @@ void BannerWindow::Draw(void)
 	guMtxScaleApply(modelview,mv1, 1.f, -1.f, 1.f);
 	guMtxTransApply(mv1,mv1, 0.5f * ScreenProps.x, 0.5f * ScreenProps.y, 0.f);
 	guMtxTransApply(mv2,mv2, -0.5f * fBannerWidth, 0.5f * fBannerHeight, 0.f);
-	guMtxTransApply(mv3,mv3, 0.5f * fBannerWidth, -0.5f * fBannerHeight + 102.f, 0.f);
+	guMtxTransApply(mv3,mv3, 0.5f * fBannerWidth, -0.5f * fBannerHeight + 104.f, 0.f);
 	guMtxConcat(mv1, mv2, mv2);
 	guMtxConcat(mv1, mv3, mv3);
 
