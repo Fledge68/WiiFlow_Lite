@@ -246,7 +246,7 @@ void Animator::ProcessHermiteKey(const KeyType& type, float value)
 //	<< " target: " << (int)type.target
 //	<< " value: " << value
 //	<< '\n';
-	gprintf("Animator::ProcessHermiteKey\n");
+	gprintf("Animator::ProcessHermiteKey, type.index: %d, value: %f\n", type.index, value);
 }
 
 void Animator::ProcessStepKey(const KeyType& type, StepKeyHandler::KeyData data)
@@ -256,5 +256,5 @@ void Animator::ProcessStepKey(const KeyType& type, StepKeyHandler::KeyData data)
 //	<< " target: " << (int)type.target
 //	<< " data:" << (int)data.data1 << " " << (int)data.data2
 //	<< '\n';
-	gprintf("Animator::ProcessStepKey\n");
+	gprintf("Animator::ProcessStepKey, type.index: %d, data: %d %d", type.index, data.data1, data.data2);
 }
