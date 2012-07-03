@@ -1741,7 +1741,8 @@ void CMenu::_mainLoopCommon(bool withCF, bool blockReboot, bool adjusting)
 			m_cf.draw();
 			m_vid.setup2DProjection(false, true);
 			m_cf.drawEffect();
-			m_cf.drawText(adjusting);
+			if(!m_banner.GetSelectedGame())
+				m_cf.drawText(adjusting);
 			m_vid.renderAAPass(i);
 		}
 		m_vid.setup2DProjection();
@@ -1758,7 +1759,8 @@ void CMenu::_mainLoopCommon(bool withCF, bool blockReboot, bool adjusting)
 			m_cf.draw();
 			m_vid.setup2DProjection();
 			m_cf.drawEffect();
-			m_cf.drawText(adjusting);
+			if(!m_banner.GetSelectedGame())
+				m_cf.drawText(adjusting);
 		}
 	}
 

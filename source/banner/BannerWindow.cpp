@@ -142,10 +142,10 @@ void BannerWindow::Animate(void)
 
 		f32 ratioX = xDiff * 2.f / iconWidth;
 		f32 ratioY = yDiff * 2.f / iconHeight;
-		stepx1 = ((ScreenProps.x * 0.1f - xDiff) - (AnimPosX + 0.1f * fIconWidth - 0.1f * iconWidth)) * ratioX;
-		stepx2 = ((ScreenProps.x * 0.1f + xDiff) - (AnimPosX + 0.1f * fIconWidth + 0.1f * iconWidth)) * ratioX;
-		stepy1 = ((ScreenProps.y * 0.7f - yDiff) - (AnimPosY + 0.7f * fIconHeight - 0.7f * iconHeight)) * ratioY;
-		stepy2 = ((ScreenProps.y * 0.7f + yDiff) - (AnimPosY + 0.7f * fIconHeight + 0.7f * iconHeight)) * ratioY;
+		stepx1 = ((ScreenProps.x * 0.1f - xDiff) - (AnimPosX + 0.5f * fIconWidth - 0.5f * iconWidth)) * ratioX;
+		stepx2 = ((ScreenProps.x * 0.1f + xDiff) - (AnimPosX + 0.5f * fIconWidth + 0.5f * iconWidth)) * ratioX;
+		stepy1 = ((ScreenProps.y * 0.9f - yDiff) - (AnimPosY + 0.5f * fIconHeight - 0.5f * iconHeight)) * ratioY;
+		stepy2 = ((ScreenProps.y * 0.9f + yDiff) - (AnimPosY + 0.5f * fIconHeight + 0.5f * iconHeight)) * ratioY;
 
 		//! This works good for banners
 		top = (ScreenProps.y * 0.5f - yDiff) + stepy1 * curAnimStep;
