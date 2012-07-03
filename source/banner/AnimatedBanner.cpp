@@ -29,19 +29,20 @@ distribution.
 #include "lz77.h"
 #include "ash.h"
 
-AnimatedBanner::AnimatedBanner(u8 *font1, u8 *font2)
+AnimatedBanner::AnimatedBanner()
 {
-	first = true;
 	layout_banner = NULL;
 	newBanner = NULL;
+}
+
+void AnimatedBanner::LoadFont(u8 *font1, u8 *font2)
+{
 	sysFont1 = font1;
 	sysFont2 = font2;
 }
 
 void AnimatedBanner::Clear()
 {
-	if(first)
-		return;
 	if(layout_banner)
 	{
 		delete layout_banner;
@@ -56,9 +57,7 @@ void AnimatedBanner::Clear()
 
 bool AnimatedBanner::LoadBanner(Banner *banner)
 {
-	first = false;
 	Clear();
-
 	u32 banner_bin_size;
 	const u8 *banner_bin = banner->GetFile((char*)"banner.bin", &banner_bin_size);
 	if(banner_bin == NULL)

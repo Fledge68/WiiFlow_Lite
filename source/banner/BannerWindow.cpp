@@ -55,17 +55,13 @@ BannerWindow::BannerWindow()
 {
 	AnimStep = 20;
 	gameSelected = 0;
-	firstRun = true;
+	gameBanner = new AnimatedBanner;
 }
 
 void BannerWindow::ChangeGame(Banner *banner)
 {
 	gameSelected = 0;
-	if(firstRun)
-	{
-		gameBanner = new AnimatedBanner(sysFont1, sysFont2);
-		firstRun = false;
-	}
+	gameBanner->LoadFont(sysFont1, sysFont2);
 	gameBanner->LoadBanner(banner);
 }
 

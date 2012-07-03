@@ -32,7 +32,8 @@ distribution.
 class AnimatedBanner
 {
 public:
-	AnimatedBanner(u8 *font1, u8 *font2);
+	AnimatedBanner();
+	void LoadFont(u8 *font1, u8 *font2);
 	void Clear();
 
 	bool LoadBanner(Banner *banner);
@@ -45,7 +46,6 @@ protected:
 	u8 *newBanner;
 	u8 *sysFont1;
 	u8 *sysFont2;
-	bool first;
 };
 
 #endif
