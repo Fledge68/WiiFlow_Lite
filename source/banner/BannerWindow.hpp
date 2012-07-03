@@ -65,6 +65,7 @@ class BannerWindow
 		bool AnimZoomOut;
 		bool AnimationRunning;
 		bool oldAnimationRunning;
+		bool changing;
 
 		u8 BGAlpha;
 		u8 BannerAlpha;
