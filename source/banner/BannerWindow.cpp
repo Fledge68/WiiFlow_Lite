@@ -184,7 +184,7 @@ void BannerWindow::Draw(void)
 	guMtxScaleApply(modelview,mv1, 1.f, -1.f, 1.f);
 	guMtxTransApply(mv1,mv1, 0.5f * ScreenProps.x, 0.5f * ScreenProps.y, 0.f);
 	guMtxTransApply(mv2,mv2, -0.5f * fBannerWidth, 0.5f * fBannerHeight, 0.f);
-	guMtxTransApply(mv3,mv3, 0.5f * fBannerWidth, -0.5f * fBannerHeight, 0.f);
+	guMtxTransApply(mv3,mv3, 0.5f * fBannerWidth, -0.5f * fBannerHeight + 102.f, 0.f);
 	guMtxConcat(mv1, mv2, mv2);
 	guMtxConcat(mv1, mv3, mv3);
 
