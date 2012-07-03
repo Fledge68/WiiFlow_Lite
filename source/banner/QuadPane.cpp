@@ -69,6 +69,9 @@ void QuadPane::Draw(const BannerResources& resources, u8 render_alpha, const flo
 	if(!header)
 		return;
 
+	if(ws_scale < 0)
+		gprintf("%f\n", ws_scale);
+
 	if (material_index < resources.materials.size())
 	{
 		bool modulate_color = IsModulateColor(header->vertex_colors, render_alpha);
