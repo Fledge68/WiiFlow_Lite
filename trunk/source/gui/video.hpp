@@ -58,6 +58,7 @@ public:
 	void setup2DProjection(bool setViewPort = true, bool noScale = false);
 	u32 width(void) const { return m_rmode->fbWidth; }
 	u32 height(void) const { return m_rmode->efbHeight; }
+	GXRModeObj *vid_mode(void) const { return m_rmode; }
 	u32 width2D(void) { return m_width2D; }
 	u32 height2D(void) { return m_height2D; }
 	bool wide(void) const { return m_wide; }

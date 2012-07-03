@@ -25,6 +25,7 @@
 #include "gc/fileOps.h"
 #include "Gekko.h"
 #include "GameTDB.hpp"
+#include "BannerWindow.hpp"
 
 // Sounds
 extern const u8 click_wav[];
@@ -108,6 +109,10 @@ extern const u8 butzhcnoff_png[];
 extern const u8 butzhcnoffs_png[];
 extern const u8 checkbox_png[];
 extern const u8 checkboxs_png[];
+
+SmartBuf m_wbf1_font;
+SmartBuf m_wbf2_font;
+BannerWindow m_banner;
 
 CMenu::CMenu(CVideo &vid) :
 	m_vid(vid)
@@ -472,7 +477,7 @@ void CMenu::cleanup(bool ios_reload)
 	m_cf.stopCoverLoader();
 	m_cf.clear();
 	ClearGameSoundThreadStack();
-
+	m_banner.DeleteBanner();
 	m_plugin.Cleanup();
 
 	_stopSounds();
@@ -1758,11 +1763,12 @@ void CMenu::_mainLoopCommon(bool withCF, bool blockReboot, bool adjusting)
 	}
 
 	m_fa.draw();
+	if(m_banner.GetSelectedGame())
+		m_banner.Draw();
 
 	m_btnMgr.draw();
 	ScanInput();
 
-	m_vid.setup2DProjection();
 	m_vid.render();
 	if(!blockReboot)
 	{
@@ -2324,12 +2330,10 @@ retry:
 			u8 *u8_font_archive = ISFS_GetFile((u8 *) u8_font_filename, &size, 0);
 			//gprintf("Opened fontfile: %s: %d bytes\n", u8_font_filename, size);
 
-			if (u8_font_archive != NULL)
+			if(u8_font_archive != NULL)
 			{
 				const u8 *font_file = u8_get_file_by_index(u8_font_archive, 1, &size); // There is only one file in that app
-
 				//gprintf("Extracted font: %d\n", size);
-
 				m_base_font = smartMem2Alloc(size);
 				memcpy(m_base_font.get(), font_file, size);
 				if(!!m_base_font)
@@ -2337,6 +2341,26 @@ retry:
 				MEM2_free(u8_font_archive);
 			}
 			break;
+		}
+		else if(memcmp(cm[i].sha1, WFB_HASH, 20) == 0)
+		{
+			// Name found, load it and unpack it
+			char font_filename[32] ATTRIBUTE_ALIGN(32);
+			strcpy(font_filename, "/shared1/XXXXXXXX.app"); // Faster than sprintf
+			memcpy(font_filename+9, cm[i].filename, 8);
+			u8 *u8_font_archive = ISFS_GetFile((u8 *)font_filename, &size, 0);
+			if(u8_font_archive != NULL)
+			{
+				const u8 *font_file1 = u8_get_file(u8_font_archive, "wbf1.brfna", &size);
+				m_wbf1_font = smartMem2Alloc(size);
+				memcpy(m_wbf1_font.get(), font_file1, size);
+
+				const u8 *font_file2 = u8_get_file(u8_font_archive, "wbf2.brfna", &size);
+				m_wbf2_font = smartMem2Alloc(size);
+				memcpy(m_wbf2_font.get(), font_file2, size);
+
+				MEM2_free(u8_font_archive);
+			}
 		}
 	}
 
@@ -2353,6 +2377,9 @@ void CMenu::_cleanupDefaultFont()
 {
 	m_base_font.release();
 	m_base_font_size = 0;
+
+	m_wbf1_font.release();
+	m_wbf2_font.release();
 }
 
 const char *CMenu::_domainFromView()
