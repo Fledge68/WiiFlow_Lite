@@ -73,7 +73,6 @@ private:
 	Config m_titles;
 	Config m_version;
 	Plugin m_plugin;
-	Channels m_channels;
 	vector<string> m_homebrewArgs;
 	SmartBuf m_base_font;
 	u32 m_base_font_size;
@@ -147,10 +146,6 @@ private:
 	STexture m_gameBgLQ;
 	STexture m_mainBgLQ;
 	STexture m_categoryBg;
-	// 
-	u32 m_errorLblMessage;
-	u32 m_errorLblIcon;
-	u32 m_errorLblUser[4];
 //Main Coverflow
 	u32 m_mainBtnConfig;
 	u32 m_mainBtnInfo;
@@ -677,7 +672,7 @@ private:
 	lwp_t m_gameSoundThread;
 	bool m_gamesound_changed;
 	u8 m_bnrSndVol;
-	
+
 	bool m_video_playing;
 
 private:

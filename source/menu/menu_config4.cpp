@@ -16,6 +16,8 @@ static inline int loopNum(int i, int s)
 int currentChannelIndex = -1;
 int amountOfChannels = -1;
 
+Channels m_channels;
+
 const CMenu::SOption CMenu::_exitTo[6] = {
 	{ "def", L"Default" },
 	{ "menu", L"System Menu" },

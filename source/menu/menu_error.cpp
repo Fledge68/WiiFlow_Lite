@@ -3,6 +3,9 @@
 #include "gecko.h"
 
 extern const u8 error_png[];
+u32 m_errorLblMessage;
+u32 m_errorLblIcon;
+u32 m_errorLblUser[4];
 
 void CMenu::error(const wstringEx &msg)
 {

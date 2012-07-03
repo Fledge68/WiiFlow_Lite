@@ -45,7 +45,7 @@ s32 __decompressLZ77_11(u8 *in, u32 inputLen, u8 **output, u32 *outputLen)
         compressedPos += 0x4;
     }
  
-    printf("Decompressed size : %i\n", decompressedSize);
+    //printf("Decompressed size : %i\n", decompressedSize);
  
     out = MEM2_alloc(ALIGN32(decompressedSize));
 	if (out == NULL)
@@ -132,7 +132,7 @@ s32 __decompressLZ77_10(u8 *in, u8 **output, u32 *outputLen)
 	 
 	//int compressionType = (packBytes(in[0], in[1], in[2], in[3]) >> 4) & 0xF;
 	 
-	printf("Decompressed size : %i\n", decompressedSize);
+	//printf("Decompressed size : %i\n", decompressedSize);
 	 
 	out = MEM2_alloc(ALIGN32(decompressedSize));
 	if (out == NULL)
@@ -200,15 +200,15 @@ int decompressLZ77content(u8 *buffer, u32 length, u8 **output, u32 *outputLen)
 	switch (buffer[0])
     {
         case LZ77_0x10_FLAG:
-            printf("LZ77 variant 0x10 compressed content...unpacking may take a while...\n");
+            //printf("LZ77 variant 0x10 compressed content...unpacking may take a while...\n");
             ret = __decompressLZ77_10(buffer, output, outputLen);
 			break;
         case LZ77_0x11_FLAG:
-            printf("LZ77 variant 0x11 compressed content...unpacking may take a while...\n");
+            //printf("LZ77 variant 0x11 compressed content...unpacking may take a while...\n");
             ret = __decompressLZ77_11(buffer, length, output, outputLen);
 			break;
         default:
-            printf("Not compressed ...\n");
+            //printf("Not compressed ...\n");
 			ret = -1;
 			break;
     }

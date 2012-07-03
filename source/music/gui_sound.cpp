@@ -480,7 +480,7 @@ void GuiSound::UncompressSoundbin(const u8 * snd, u32 len, bool isallocated)
 	if(isallocated)
 	{
 		void *p = (void *)snd;
-		MEM1_free(p);
+		free(p);
 	}
 
 	allocated = true;

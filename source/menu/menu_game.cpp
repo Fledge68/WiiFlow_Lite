@@ -17,6 +17,7 @@
 #include "wip.h"
 #include "channel_launcher.h"
 #include "devicemounter/sdhc.h"
+#include "BannerWindow.hpp"
 
 #include <network.h>
 #include <errno.h>
@@ -56,6 +57,8 @@ extern const u32 gc_ogg_size;
 extern u32 sector_size;
 extern int mainIOS;
 static u64 sm_title_id[8]  ATTRIBUTE_ALIGN(32);
+
+bool m_zoom_banner;
 
 const string CMenu::_translations[23] = {
 	"Default",
@@ -359,17 +362,19 @@ void CMenu::_game(bool launch)
 		m_gameSelected = true;
 	}
 
+	extern BannerWindow m_banner;
+	string id(m_cf.getId());
 	s8 startGameSound = 1;
 	while(true)
 	{
 		if(startGameSound < 1)
 			startGameSound++;
 
-		string id(m_cf.getId());
 		u64 chantitle = m_cf.getChanTitle();
 
 		if(startGameSound == -5)
 		{
+			id = m_cf.getId();
 			_playGameSound();
 			_showGame();
 		}
@@ -392,6 +397,7 @@ void CMenu::_game(bool launch)
 			m_gameSound.FreeMemory();
 			CheckGameSoundThread();
 			ClearGameSoundThreadStack();
+			m_banner.DeleteBanner();
 			break;
 		}
 		else if(BTN_PLUS_PRESSED && m_GameTDBLoaded && (m_cf.getHdr()->type == TYPE_WII_GAME || m_cf.getHdr()->type == TYPE_GC_GAME || m_cf.getHdr()->type == TYPE_CHANNEL))
@@ -466,9 +472,19 @@ void CMenu::_game(bool launch)
 				m_gcfg1.setBool("ADULTONLY", id, !m_gcfg1.getBool("ADULTONLY", id, false));
 			else if(m_btnMgr.selected(m_gameBtnBack))
 			{
-				m_gameSound.Stop();
-				CheckGameSoundThread();
-				break;
+				//m_gameSound.Stop();
+				//CheckGameSoundThread();
+				//break;
+				if(m_zoom_banner)
+				{
+					m_banner.ZoomOut();
+					m_zoom_banner = false;
+				}
+				else
+				{
+					m_banner.ZoomIn();
+					m_zoom_banner = true;
+				}
 			}
 			else if(m_btnMgr.selected(m_gameBtnSettings))
 			{
@@ -1425,6 +1441,8 @@ void CMenu::_initGameMenu(CMenu::SThemeData &theme)
 	_setHideAnim(m_gameBtnDelete, "GAME/DELETE_BTN", 0, 0, -1.5f, -1.5f);
 	_hideGame(true);
 	_textGame();
+
+	m_zoom_banner = false;
 }
 
 void CMenu::_textGame(void)
@@ -1476,7 +1494,12 @@ void CMenu::_gameSoundThread(CMenu *m)
 	}
 	_extractBannerTitle(banner, GetLanguage(m->m_loc.getString(m->m_curLanguage, "gametdb_code", "EN").c_str()));
 
+	extern SmartBuf m_wbf1_font;
+	extern SmartBuf m_wbf2_font;
+	extern BannerWindow m_banner;
+
 	const u8 *soundBin = banner->GetFile((char *) "sound.bin", &sndSize);
+	m_banner.LoadBanner(banner, &m->m_vid, m_wbf1_font.get(), m_wbf2_font.get());
 	delete banner;
 
 	if (soundBin == NULL || (((IMD5Header *)soundBin)->fcc != 'IMD5' && ((IMD5Header *)soundBin)->fcc != 'RIFF'))
