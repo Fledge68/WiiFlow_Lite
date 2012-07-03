@@ -216,6 +216,9 @@ void BannerWindow::Draw(void)
 		gameBanner->getBanner()->AdvanceFrame();
 	}
 
+	// Setup GX
+	ReSetup_GX();
+
 	//if(AnimationRunning)
 	GX_SetScissor(0, 0, video->width(), video->height());
 
@@ -264,4 +267,32 @@ void BannerWindow::DrawRectangle(f32 x, f32 y, f32 width, f32 height, GXColor co
 	}
 	GX_End();
 	GX_SetTevOp(GX_TEVSTAGE0, GX_MODULATE);
+}
+
+void BannerWindow::ReSetup_GX(void)
+{
+	// channel control
+	GX_SetNumChans(1);
+	GX_SetChanCtrl(GX_COLOR0A0,GX_DISABLE,GX_SRC_REG,GX_SRC_VTX,GX_LIGHTNULL,GX_DF_NONE,GX_AF_NONE);
+
+	// texture gen.
+	GX_SetNumTexGens(1);
+	GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
+	// texture environment
+	GX_SetNumTevStages(1);
+	GX_SetNumIndStages(0);
+	GX_SetTevOp(GX_TEVSTAGE0, GX_MODULATE);
+	GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+	GX_SetTevSwapMode(GX_TEVSTAGE0, GX_TEV_SWAP0, GX_TEV_SWAP0);
+	GX_SetTevKColorSel(GX_TEVSTAGE0, GX_TEV_KCSEL_1_4);
+	GX_SetTevKAlphaSel(GX_TEVSTAGE0, GX_TEV_KASEL_1);
+	GX_SetTevDirect(GX_TEVSTAGE0);
+	// swap table
+	GX_SetTevSwapModeTable(GX_TEV_SWAP0, GX_CH_RED, GX_CH_GREEN, GX_CH_BLUE, GX_CH_ALPHA);
+	GX_SetTevSwapModeTable(GX_TEV_SWAP1, GX_CH_RED, GX_CH_RED, GX_CH_RED, GX_CH_ALPHA);
+	GX_SetTevSwapModeTable(GX_TEV_SWAP2, GX_CH_GREEN, GX_CH_GREEN, GX_CH_GREEN, GX_CH_ALPHA);
+	GX_SetTevSwapModeTable(GX_TEV_SWAP3, GX_CH_BLUE, GX_CH_BLUE, GX_CH_BLUE, GX_CH_ALPHA);
+	// alpha compare and blend mode
+	GX_SetAlphaCompare(GX_ALWAYS, 0, GX_AOP_AND, GX_ALWAYS, 0);
+	GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_SET);
 }
