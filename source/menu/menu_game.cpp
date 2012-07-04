@@ -255,15 +255,15 @@ static Banner *_extractChannelBnr(const u64 chantitle)
 
 static Banner *_extractBnr(dir_discHdr *hdr)
 {
+	u32 size = 0;
 	Banner *banner = NULL;
 	wbfs_disc_t *disc = WBFS_OpenDisc((u8 *) &hdr->id, (char *) hdr->path);
 	if (disc != NULL)
 	{
 		void *bnr = NULL;
-		if (wbfs_extract_file(disc, (char *) "opening.bnr", &bnr) > 0)
-		{
-			banner = new Banner((u8 *) bnr);
-		}
+		size = wbfs_extract_file(disc, (char *) "opening.bnr", &bnr);
+		if(size > 0)
+			banner = new Banner((u8 *)bnr, size);
 		WBFS_CloseDisc(disc);
 	}
 	return banner;
@@ -1493,6 +1493,7 @@ void CMenu::_gameSoundThread(CMenu *m)
 		m->m_gamesound_changed = true;
 		return;
 	}
+	bool custom = false;
 
 	u8 *custom_bnr_file = NULL;
 	u32 custom_bnr_size = 0;
@@ -1513,6 +1514,8 @@ void CMenu::_gameSoundThread(CMenu *m)
 	}
 	if(fp)
 	{
+		custom = true;
+		gprintf("Custom Banner detected for: %s\n", m->m_cf.getHdr()->id);
 		fseek(fp, 0, SEEK_END);
 		custom_bnr_size = ftell(fp);
 		fseek(fp, 0, SEEK_SET);
@@ -1525,7 +1528,7 @@ void CMenu::_gameSoundThread(CMenu *m)
 	m->m_gamesound_changed = false;
 	u32 sndSize = 0;
 
-	Banner *banner = custom_bnr_file != NULL ? new Banner((u8 *)custom_bnr_file) : 
+	Banner *banner = custom_bnr_file != NULL ? new Banner((u8 *)custom_bnr_file, custom_bnr_size) : 
 		(m->m_gameSoundHdr->type == TYPE_WII_GAME ? _extractBnr(m->m_gameSoundHdr) : (m->m_gameSoundHdr->type == TYPE_CHANNEL ?
 		_extractChannelBnr(TITLE_ID(m->m_gameSoundHdr->settings[0],m->m_gameSoundHdr->settings[1])) : NULL));
 	m->m_gameSoundHdr = NULL;
@@ -1536,6 +1539,14 @@ void CMenu::_gameSoundThread(CMenu *m)
 		m_banner->DeleteBanner();
 		delete banner;
 		return;
+	}
+	else if(!custom)
+	{
+		char custom_banner[256];
+		snprintf(custom_banner, sizeof(custom_banner), "%s/%.6s.bnr", m->m_bannerDir.c_str(), m->m_cf.getHdr()->id);
+		FILE *fp = fopen(custom_banner, "wb");
+		fwrite(banner->GetBannerFile(), 1, banner->GetBannerFileSize(), fp);
+		fclose(fp);
 	}
 	_extractBannerTitle(banner, GetLanguage(m->m_loc.getString(m->m_curLanguage, "gametdb_code", "EN").c_str()));
 
