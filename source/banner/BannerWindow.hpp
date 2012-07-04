@@ -34,15 +34,14 @@ class BannerWindow
 		void DeleteBanner();
 		void LoadBanner(Banner *banner, CVideo *vid, u8 *font1, u8 *font2);
 		int GetSelectedGame() { return gameSelected; }
+		bool GetZoomSetting() { return AnimZoom; }
 		void Draw(void);
-		void ZoomIn(void);
-		void PauseZoom(void);
-		void ZoomOut(void);
+		bool ToogleZoom(void);
 	protected:
 		int MainLoop();
 		void Animate(void);
 		void ChangeGame(Banner *banner);
-		void DrawRectangle(f32 x, f32 y, f32 width, f32 height, GXColor color, u8 filled);
+		void DrawRectangle(f32 x, f32 y, f32 width, f32 height, GXColor color);
 		void ReSetup_GX(void);
 
 		static const float fBannerWidth = 608.f;
@@ -61,23 +60,20 @@ class BannerWindow
 		int AnimStep;
 		float AnimPosX, AnimPosY;
 		float fAnimScale;
-		bool AnimZoomIn;
-		bool AnimZoomOut;
+		bool AnimZoom;
 		bool AnimationRunning;
-		bool oldAnimationRunning;
 		bool changing;
-
-		u8 BGAlpha;
-		u8 BannerAlpha;
 
 		Mtx modelview;
 		Mtx44 projection;
-		Mtx44 originalProjection;
 		Vec2f ScreenProps;
 
 		AnimatedBanner *gameBanner;
 		u8 *sysFont1;
 		u8 *sysFont2;
+		bool FontLoaded;
 };
+
+extern BannerWindow *m_banner;
 
 #endif
