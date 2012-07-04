@@ -60,7 +60,7 @@ typedef struct
 class Banner
 {
 	public:
-		Banner(u8 *bnr, u32 bnr_size, u64 title = 0);
+		Banner(u8 *bnr, u32 bnr_size, u64 title = 0, bool custom = false);
 		~Banner();
 		
 		bool IsValid();

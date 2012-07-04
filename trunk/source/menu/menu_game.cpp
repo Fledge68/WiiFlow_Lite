@@ -1551,7 +1551,7 @@ void CMenu::_gameSoundThread(CMenu *m)
 	m->m_gamesound_changed = false;
 	u32 sndSize = 0;
 
-	Banner *banner = custom_bnr_file != NULL ? new Banner((u8 *)custom_bnr_file, custom_bnr_size) : 
+	Banner *banner = custom_bnr_file != NULL ? new Banner((u8 *)custom_bnr_file, custom_bnr_size, 0, true) : 
 		(m->m_gameSoundHdr->type == TYPE_WII_GAME ? _extractBnr(m->m_gameSoundHdr) : (m->m_gameSoundHdr->type == TYPE_CHANNEL ?
 		_extractChannelBnr(TITLE_ID(m->m_gameSoundHdr->settings[0],m->m_gameSoundHdr->settings[1])) : NULL));
 	m->m_gameSoundHdr = NULL;
