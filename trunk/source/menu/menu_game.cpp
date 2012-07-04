@@ -512,7 +512,11 @@ void CMenu::_game(bool launch)
 			{
 				_hideGame();
 				m_gameSelected = true;
+
+				m_banner->ToogleZoom();
 				_gameSettings();
+				m_banner->ToogleZoom();
+
 				_showGame();
 				if(!m_gameSound.IsPlaying()) 
 					startGameSound = -6;
