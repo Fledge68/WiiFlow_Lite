@@ -49,6 +49,7 @@ extern const u8 favoritesoff_png[];
 extern const u8 favoritesoffs_png[];
 extern const u8 delete_png[];
 extern const u8 deletes_png[];
+extern const u8 blank_png[];
 
 //sounds
 extern const u8 gc_ogg[];
@@ -61,6 +62,8 @@ static u64 sm_title_id[8]  ATTRIBUTE_ALIGN(32);
 bool m_zoom_banner = false;
 u32 m_gameBtnPlayFull;
 u32 m_gameBtnBackFull;
+u32 m_gameBtnToogle;
+u32 m_gameBtnToogleFull;
 
 const string CMenu::_translations[23] = {
 	"Default",
@@ -314,6 +317,8 @@ void CMenu::_hideGame(bool instant)
 	m_btnMgr.hide(m_gameBtnBackFull, instant);
 	m_btnMgr.hide(m_gameBtnDelete, instant);
 	m_btnMgr.hide(m_gameBtnSettings, instant);
+	m_btnMgr.hide(m_gameBtnToogle, instant);
+	m_btnMgr.hide(m_gameBtnToogleFull, instant);
 
 	m_btnMgr.hide(m_gameBtnFavoriteOn, instant);
 	m_btnMgr.hide(m_gameBtnFavoriteOff, instant);
@@ -349,11 +354,13 @@ void CMenu::_showGame(void)
 		}
 		m_btnMgr.show(m_gameBtnPlay);
 		m_btnMgr.show(m_gameBtnBack);
+		m_btnMgr.show(m_gameBtnToogle);
 	}
 	else
 	{
 		m_btnMgr.show(m_gameBtnPlayFull);
 		m_btnMgr.show(m_gameBtnBackFull);
+		m_btnMgr.show(m_gameBtnToogleFull);
 	}
 }
 
@@ -489,9 +496,14 @@ void CMenu::_game(bool launch)
 				m_gcfg1.setBool("ADULTONLY", id, !m_gcfg1.getBool("ADULTONLY", id, false));
 			else if(m_btnMgr.selected(m_gameBtnBack) || m_btnMgr.selected(m_gameBtnBackFull))
 			{
-				//m_gameSound.Stop();
-				//CheckGameSoundThread();
-				//break;
+				m_gameSound.FreeMemory();
+				CheckGameSoundThread();
+				ClearGameSoundThreadStack();
+				m_banner->DeleteBanner();
+				break;
+			}
+			else if(m_btnMgr.selected(m_gameBtnToogle) || m_btnMgr.selected(m_gameBtnToogleFull))
+			{
 				m_zoom_banner = m_banner->ToogleZoom();
 				m_cfg.setBool(_domainFromView(), "show_full_banner", m_zoom_banner);
 				m_show_zone_game = false;
@@ -610,8 +622,10 @@ void CMenu::_game(bool launch)
 			m_btnMgr.hide(b ? m_gameBtnFavoriteOff : m_gameBtnFavoriteOn);
 			m_btnMgr.show(m_gameBtnPlay);
 			m_btnMgr.show(m_gameBtnBack);
+			m_btnMgr.show(m_gameBtnToogle);
 			m_btnMgr.hide(m_gameBtnPlayFull);
 			m_btnMgr.hide(m_gameBtnBackFull);
+			m_btnMgr.hide(m_gameBtnToogleFull);
 			for(u32 i = 0; i < ARRAY_SIZE(m_gameLblUser); ++i)
 			{
 				if(m_gameLblUser[i] != -1u)
@@ -633,6 +647,7 @@ void CMenu::_game(bool launch)
 			{
 				m_btnMgr.show(m_gameBtnPlayFull);
 				m_btnMgr.show(m_gameBtnBackFull);
+				m_btnMgr.show(m_gameBtnToogleFull);
 			}
 			m_btnMgr.hide(m_gameBtnFavoriteOn);
 			m_btnMgr.hide(m_gameBtnFavoriteOff);
@@ -642,6 +657,7 @@ void CMenu::_game(bool launch)
 			m_btnMgr.hide(m_gameBtnDelete);
 			m_btnMgr.hide(m_gameBtnPlay);
 			m_btnMgr.hide(m_gameBtnBack);
+			m_btnMgr.hide(m_gameBtnToogle);
 			for (u32 i = 0; i < ARRAY_SIZE(m_gameLblUser); ++i)
 				if (m_gameLblUser[i] != -1u)
 					m_btnMgr.hide(m_gameLblUser[i]);
@@ -1415,6 +1431,7 @@ void CMenu::_initGameMenu(CMenu::SThemeData &theme)
 	STexture texDeleteSel;
 	STexture texSettings;
 	STexture texSettingsSel;
+	STexture texToogleBanner;
 	STexture bgLQ;
 
 	texFavOn.fromPNG(favoriteson_png);
@@ -1429,6 +1446,8 @@ void CMenu::_initGameMenu(CMenu::SThemeData &theme)
 	texDeleteSel.fromPNG(deletes_png);
 	texSettings.fromPNG(btngamecfg_png);
 	texSettingsSel.fromPNG(btngamecfgs_png);
+	texToogleBanner.fromPNG(blank_png);
+
 	_addUserLabels(theme, m_gameLblUser, ARRAY_SIZE(m_gameLblUser), "GAME");
 	m_gameBg = _texture(theme.texSet, "GAME/BG", "texture", theme.bg);
 	if (m_theme.loaded() && STexture::TE_OK == bgLQ.fromPNGFile(fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString("GAME/BG", "texture").c_str()), GX_TF_CMPR, ALLOC_MEM2, 64, 64))
@@ -1444,6 +1463,8 @@ void CMenu::_initGameMenu(CMenu::SThemeData &theme)
 	m_gameBtnDelete = _addPicButton(theme, "GAME/DELETE_BTN", texDelete, texDeleteSel, 532, 272, 48, 48);
 	m_gameBtnPlayFull = _addButton(theme, "GAME/PLAY_FULL_BTN", theme.btnFont, L"", 100, 380, 200, 56, theme.btnFontColor);
 	m_gameBtnBackFull = _addButton(theme, "GAME/BACK_FULL_BTN", theme.btnFont, L"", 340, 380, 200, 56, theme.btnFontColor);
+	m_gameBtnToogle = _addPicButton(theme, "GAME/TOOGLE_BTN", texToogleBanner, texToogleBanner, 385, 31, 236, 127);
+	m_gameBtnToogleFull = _addPicButton(theme, "GAME/TOOGLE_FULL_BTN", texToogleBanner, texToogleBanner, 20, 12, 608, 344);
 
 	m_gameButtonsZone.x = m_theme.getInt("GAME/ZONES", "buttons_x", 0);
 	m_gameButtonsZone.y = m_theme.getInt("GAME/ZONES", "buttons_y", 0);
@@ -1461,6 +1482,8 @@ void CMenu::_initGameMenu(CMenu::SThemeData &theme)
 	_setHideAnim(m_gameBtnDelete, "GAME/DELETE_BTN", 0, 0, -1.5f, -1.5f);
 	_setHideAnim(m_gameBtnPlayFull, "GAME/PLAY_FULL_BTN", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameBtnBackFull, "GAME/BACK_FULL_BTN", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameBtnToogle, "GAME/TOOGLE_BTN", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameBtnToogleFull, "GAME/TOOGLE_FULL_BTN", 200, 0, 1.f, 0.f);
 	_hideGame(true);
 	_textGame();
 }
