@@ -42,7 +42,7 @@
 #define IMET_OFFSET			0x40
 #define IMET_SIGNATURE		0x494d4554
 
-Banner::Banner(u8 *bnr, u32 bnr_size, u64 title)
+Banner::Banner(u8 *bnr, u32 bnr_size, u64 title, bool custom)
 {
 	this->title = title;
 	opening = bnr;
@@ -53,13 +53,10 @@ Banner::Banner(u8 *bnr, u32 bnr_size, u64 title)
 	
 	IMET *imet = (IMET *) opening;
 	if (imet->sig != IMET_SIGNATURE)
-	{
 		imet = (IMET *) (opening + IMET_OFFSET);
-	}
-	
-	if (imet->sig == IMET_SIGNATURE)
+
+	if(imet->sig == IMET_SIGNATURE)
 	{
-		/*
 		unsigned char md5[16];
 		unsigned char imetmd5[16];
 
@@ -67,14 +64,10 @@ Banner::Banner(u8 *bnr, u32 bnr_size, u64 title)
 		memset(imet->md5, 0, 16);
 		
 		MD5(md5, (unsigned char*)(imet), sizeof(IMET));
-		if (memcmp(imetmd5, md5, 16) == 0)
-		{*/
+		if(memcmp(imetmd5, md5, 16) == 0 || custom)
 			this->imet = imet;
-		/*}
 		else
-		{
 			gprintf("Invalid md5, banner not valid for title %08x\n", title);
-		}*/
 	}
 	else
 	{
