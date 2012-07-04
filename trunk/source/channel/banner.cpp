@@ -42,10 +42,11 @@
 #define IMET_OFFSET			0x40
 #define IMET_SIGNATURE		0x494d4554
 
-Banner::Banner(u8 *bnr, u64 title)
+Banner::Banner(u8 *bnr, u32 bnr_size, u64 title)
 {
 	this->title = title;
 	opening = bnr;
+	opening_size = bnr_size;
 	imet = NULL;
 	
 	if (opening == NULL) return;
@@ -150,10 +151,9 @@ const u8 *Banner::GetFile(char *name, u32 *size)
 Banner * Banner::GetBanner(u64 title, char *appname, bool isfs, bool imetOnly)
 {
 	void *buf = NULL;
+	u32 size = 0;
 	if (isfs)
 	{
-		u32 size = 0;
-		
 		buf = ISFS_GetFile((u8 *)appname, &size, imetOnly ? sizeof(IMET) + IMET_OFFSET : 0);
 		if (size == 0) 
 		{
@@ -165,8 +165,9 @@ Banner * Banner::GetBanner(u64 title, char *appname, bool isfs, bool imetOnly)
 	else
 	{
 		FILE *fp = fopen(appname, "rb");
-		if (fp == NULL) return NULL;
-		
+		if(fp == NULL)
+			return NULL;
+
 		u32 size = sizeof(IMET) + IMET_OFFSET;
 		if (!imetOnly)
 		{
@@ -183,5 +184,5 @@ Banner * Banner::GetBanner(u64 title, char *appname, bool isfs, bool imetOnly)
 		fclose(fp);
 	}
 
-	return new Banner((u8 *)buf, title);
+	return new Banner((u8 *)buf, size, title);
 }

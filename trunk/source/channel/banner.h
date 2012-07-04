@@ -60,7 +60,7 @@ typedef struct
 class Banner
 {
 	public:
-		Banner(u8 *bnr, u64 title = 0);
+		Banner(u8 *bnr, u32 bnr_size, u64 title = 0);
 		~Banner();
 		
 		bool IsValid();
@@ -68,11 +68,13 @@ class Banner
 		bool GetName(u8 *name, int language);
 		bool GetName(wchar_t *name, int language);
 		const u8 *GetFile(char *name, u32 *size);
-		
+
 		static Banner *GetBanner(u64 title, char *appname, bool isfs, bool imetOnly = false);
-		
+		u8 *GetBannerFile() { return opening; }
+		u32 GetBannerFileSize() { return opening_size; }
 	private:
 		u8 *opening;
+		u32 opening_size;
 		u64 title;
 		IMET *imet;
 		
