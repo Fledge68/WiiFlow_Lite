@@ -323,7 +323,7 @@ string Plugin::GenerateCoverLink(dir_discHdr gameHeader, string url, Config &Che
 			infile.seekg(0x0e, ios::beg);
 			infile.read((char*)&buffer, 8);
 			infile.close();
-			snprintf(crc_string, sizeof(crc_string), "%08x", SWAP32(buffer));
+			snprintf(crc_string, sizeof(crc_string), "%08x", (u32)__builtin_bswap32(buffer));
 		}
 		else if(strstr(gameHeader.path, ".7z") != NULL)
 		{
@@ -339,7 +339,7 @@ string Plugin::GenerateCoverLink(dir_discHdr gameHeader, string url, Config &Che
 			infile.seekg(-13, ios::cur);
 			infile.read((char*)&buffer, 8);
 			infile.close();
-			snprintf(crc_string, sizeof(crc_string), "%08x", SWAP32(buffer));
+			snprintf(crc_string, sizeof(crc_string), "%08x", (u32)__builtin_bswap32(buffer));
 		}
 		else
 			snprintf(crc_string, sizeof(crc_string), "%08x", crc32file(gameHeader.path));
