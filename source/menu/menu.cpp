@@ -283,6 +283,7 @@ void CMenu::init(void)
 	m_app_update_zip = sfmt("%s/update.zip", m_appDir.c_str());
 	m_data_update_zip = sfmt("%s/update.zip", m_dataDir.c_str());
 
+	m_bannerDir = m_cfg.getString("GENERAL", "dir_banners", sfmt("%s/banners", m_dataDir.c_str()));
 	m_pluginsDir = m_cfg.getString("GENERAL", "dir_plugins", sfmt("%s/plugins", m_dataDir.c_str()));
 	m_cacheDir = m_cfg.getString("GENERAL", "dir_cache", sfmt("%s/cache", m_dataDir.c_str()));
 	m_settingsDir = m_cfg.getString("GENERAL", "dir_settings", sfmt("%s/settings", m_dataDir.c_str()));
@@ -346,6 +347,8 @@ void CMenu::init(void)
 	fsop_MakeFolder((char *)m_wipDir.c_str());
 	fsop_MakeFolder((char *)m_listCacheDir.c_str());
 	fsop_MakeFolder((char *)m_helpDir.c_str());
+	fsop_MakeFolder((char *)m_pluginsDir.c_str());
+	fsop_MakeFolder((char *)m_bannerDir.c_str());
 
 	// INI files
 	m_cat.load(fmt("%s/" CAT_FILENAME, m_settingsDir.c_str()));

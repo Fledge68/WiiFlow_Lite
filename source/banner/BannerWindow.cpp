@@ -47,9 +47,10 @@ void BannerWindow::LoadBanner(Banner *banner, CVideo *vid, u8 *font1, u8 *font2)
 	changing = false;
 }
 
-void BannerWindow::DeleteBanner()
+void BannerWindow::DeleteBanner(bool gamechange)
 {
-	gameSelected = 0;
+	if(!gamechange)
+		gameSelected = 0;
 	gameBanner->Clear();
 }
 

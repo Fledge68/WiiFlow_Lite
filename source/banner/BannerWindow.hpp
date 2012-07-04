@@ -31,7 +31,7 @@ class BannerWindow
 {
 	public:
 		BannerWindow();
-		void DeleteBanner();
+		void DeleteBanner(bool gamechange = false);
 		void LoadBanner(Banner *banner, CVideo *vid, u8 *font1, u8 *font2);
 		int GetSelectedGame() { return gameSelected; }
 		bool GetZoomSetting() { return AnimZoom; }

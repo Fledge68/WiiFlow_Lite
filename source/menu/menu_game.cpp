@@ -600,6 +600,7 @@ void CMenu::_game(bool launch)
 			m_gameSound.Stop();
 			m_gameSelected = false;
 			m_fa.unload();
+			m_banner->DeleteBanner(true);
 			_setBg(m_mainBg, m_mainBgLQ);
 		}
 		if(m_show_zone_game && !m_zoom_banner)
@@ -1485,31 +1486,54 @@ unsigned int gameSoundThreadStackSize = (unsigned int)32768;
 
 void CMenu::_gameSoundThread(CMenu *m)
 {
-	if(m->m_cf.getHdr()->type == TYPE_GC_GAME)
+	if(m->m_cf.getHdr()->type == TYPE_PLUGIN)
 	{
-		m->m_gameSound.Load(gc_ogg, gc_ogg_size, false);
-		m->m_gamesound_changed = true;
-		return;
-	}
-	else if(m->m_cf.getHdr()->type == TYPE_PLUGIN)
-	{
+		m_banner->DeleteBanner();
 		m->m_gameSound.Load(m->m_plugin.GetBannerSound(m->m_cf.getHdr()->settings[0]), m->m_plugin.GetBannerSoundSize(), false);
 		m->m_gamesound_changed = true;
 		return;
+	}
+
+	u8 *custom_bnr_file = NULL;
+	u32 custom_bnr_size = 0;
+	char custom_banner[256];
+	snprintf(custom_banner, sizeof(custom_banner), "%s/%.6s.bnr", m->m_bannerDir.c_str(), m->m_cf.getHdr()->id);
+	FILE *fp = fopen(custom_banner, "rb");
+	if(!fp)
+	{
+		snprintf(custom_banner, sizeof(custom_banner), "%s/%.3s.bnr", m->m_bannerDir.c_str(), m->m_cf.getHdr()->id);
+		fp = fopen(custom_banner, "rb");
+		if(!fp && m->m_cf.getHdr()->type == TYPE_GC_GAME)
+		{
+			m_banner->DeleteBanner();
+			m->m_gameSound.Load(gc_ogg, gc_ogg_size, false);
+			m->m_gamesound_changed = true;
+			return;
+		}
+	}
+	if(fp)
+	{
+		fseek(fp, 0, SEEK_END);
+		custom_bnr_size = ftell(fp);
+		fseek(fp, 0, SEEK_SET);
+		custom_bnr_file = (u8*)MEM2_alloc(custom_bnr_size);
+		fread(custom_bnr_file, 1, custom_bnr_size, fp);
+		fclose(fp);
 	}
 
 	m->m_gameSoundHdr = m->m_cf.getHdr();
 	m->m_gamesound_changed = false;
 	u32 sndSize = 0;
 
-	Banner *banner = m->m_gameSoundHdr->type == TYPE_WII_GAME ?
-		_extractBnr(m->m_gameSoundHdr) : m->m_gameSoundHdr->type == TYPE_CHANNEL ?
-		_extractChannelBnr(TITLE_ID(m->m_gameSoundHdr->settings[0],m->m_gameSoundHdr->settings[1])) : NULL;
+	Banner *banner = custom_bnr_file != NULL ? new Banner((u8 *)custom_bnr_file) : 
+		(m->m_gameSoundHdr->type == TYPE_WII_GAME ? _extractBnr(m->m_gameSoundHdr) : (m->m_gameSoundHdr->type == TYPE_CHANNEL ?
+		_extractChannelBnr(TITLE_ID(m->m_gameSoundHdr->settings[0],m->m_gameSoundHdr->settings[1])) : NULL));
 	m->m_gameSoundHdr = NULL;
 
 	if (banner == NULL || !banner->IsValid())
 	{
 		gprintf("no valid banner found\n");
+		m_banner->DeleteBanner();
 		delete banner;
 		return;
 	}
