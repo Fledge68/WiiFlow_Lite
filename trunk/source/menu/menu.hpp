@@ -83,13 +83,13 @@ private:
 	s16 m_showtimer;
 	string m_curLanguage;
 	string m_curGameId;
-	string m_curChanId;
 
 	u8 m_numCFVersions;
 
 	string m_themeDataDir;
 	string m_appDir;
 	string m_dataDir;
+	string m_bannerDir;
 	string m_pluginsDir;
 	string m_picDir;
 	string m_boxPicDir;

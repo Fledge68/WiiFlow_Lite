@@ -58,6 +58,7 @@ Banner::Banner(u8 *bnr, u64 title)
 	
 	if (imet->sig == IMET_SIGNATURE)
 	{
+		/*
 		unsigned char md5[16];
 		unsigned char imetmd5[16];
 
@@ -66,13 +67,13 @@ Banner::Banner(u8 *bnr, u64 title)
 		
 		MD5(md5, (unsigned char*)(imet), sizeof(IMET));
 		if (memcmp(imetmd5, md5, 16) == 0)
-		{
+		{*/
 			this->imet = imet;
-		}
+		/*}
 		else
 		{
 			gprintf("Invalid md5, banner not valid for title %08x\n", title);
-		}
+		}*/
 	}
 	else
 	{
