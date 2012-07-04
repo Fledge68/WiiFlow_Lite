@@ -376,7 +376,10 @@ void CMenu::_game(bool launch)
 		m_gameSelected = true;
 	}
 
-	extern BannerWindow m_banner;
+	m_zoom_banner = m_cfg.getBool(_domainFromView(), "show_full_banner", false);
+	if(m_banner->GetZoomSetting() != m_zoom_banner)
+		m_banner->ToogleZoom();
+
 	string id(m_cf.getId());
 	s8 startGameSound = 1;
 	while(true)
@@ -411,7 +414,7 @@ void CMenu::_game(bool launch)
 			m_gameSound.FreeMemory();
 			CheckGameSoundThread();
 			ClearGameSoundThreadStack();
-			m_banner.DeleteBanner();
+			m_banner->DeleteBanner();
 			break;
 		}
 		else if(BTN_PLUS_PRESSED && m_GameTDBLoaded && (m_cf.getHdr()->type == TYPE_WII_GAME || m_cf.getHdr()->type == TYPE_GC_GAME || m_cf.getHdr()->type == TYPE_CHANNEL))
@@ -489,18 +492,9 @@ void CMenu::_game(bool launch)
 				//m_gameSound.Stop();
 				//CheckGameSoundThread();
 				//break;
-				if(m_zoom_banner)
-				{
-					m_banner.ZoomOut();
-					m_zoom_banner = false;
-					m_show_zone_game = false;
-				}
-				else
-				{
-					m_banner.ZoomIn();
-					m_zoom_banner = true;
-					m_show_zone_game = false;
-				}
+				m_zoom_banner = m_banner->ToogleZoom();
+				m_cfg.setBool(_domainFromView(), "show_full_banner", m_zoom_banner);
+				m_show_zone_game = false;
 			}
 			else if(m_btnMgr.selected(m_gameBtnSettings))
 			{
@@ -1441,12 +1435,12 @@ void CMenu::_initGameMenu(CMenu::SThemeData &theme)
 
 	m_gameBtnPlay = _addButton(theme, "GAME/PLAY_BTN", theme.btnFont, L"", 420, 344, 200, 56, theme.btnFontColor);
 	m_gameBtnBack = _addButton(theme, "GAME/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 56, theme.btnFontColor);
-	m_gameBtnFavoriteOn = _addPicButton(theme, "GAME/FAVORITE_ON", texFavOn, texFavOnSel, 460, 170, 48, 48);
-	m_gameBtnFavoriteOff = _addPicButton(theme, "GAME/FAVORITE_OFF", texFavOff, texFavOffSel, 460, 170, 48, 48);
-	m_gameBtnAdultOn = _addPicButton(theme, "GAME/ADULTONLY_ON", texAdultOn, texAdultOnSel, 532, 170, 48, 48);
-	m_gameBtnAdultOff = _addPicButton(theme, "GAME/ADULTONLY_OFF", texAdultOff, texAdultOffSel, 532, 170, 48, 48);
-	m_gameBtnSettings = _addPicButton(theme, "GAME/SETTINGS_BTN", texSettings, texSettingsSel, 460, 242, 48, 48);
-	m_gameBtnDelete = _addPicButton(theme, "GAME/DELETE_BTN", texDelete, texDeleteSel, 532, 242, 48, 48);
+	m_gameBtnFavoriteOn = _addPicButton(theme, "GAME/FAVORITE_ON", texFavOn, texFavOnSel, 460, 200, 48, 48);
+	m_gameBtnFavoriteOff = _addPicButton(theme, "GAME/FAVORITE_OFF", texFavOff, texFavOffSel, 460, 200, 48, 48);
+	m_gameBtnAdultOn = _addPicButton(theme, "GAME/ADULTONLY_ON", texAdultOn, texAdultOnSel, 532, 200, 48, 48);
+	m_gameBtnAdultOff = _addPicButton(theme, "GAME/ADULTONLY_OFF", texAdultOff, texAdultOffSel, 532, 200, 48, 48);
+	m_gameBtnSettings = _addPicButton(theme, "GAME/SETTINGS_BTN", texSettings, texSettingsSel, 460, 272, 48, 48);
+	m_gameBtnDelete = _addPicButton(theme, "GAME/DELETE_BTN", texDelete, texDeleteSel, 532, 272, 48, 48);
 	m_gameBtnPlayFull = _addButton(theme, "GAME/PLAY_FULL_BTN", theme.btnFont, L"", 100, 380, 200, 56, theme.btnFontColor);
 	m_gameBtnBackFull = _addButton(theme, "GAME/BACK_FULL_BTN", theme.btnFont, L"", 340, 380, 200, 56, theme.btnFontColor);
 
@@ -1523,10 +1517,9 @@ void CMenu::_gameSoundThread(CMenu *m)
 
 	extern SmartBuf m_wbf1_font;
 	extern SmartBuf m_wbf2_font;
-	extern BannerWindow m_banner;
 
 	const u8 *soundBin = banner->GetFile((char *) "sound.bin", &sndSize);
-	m_banner.LoadBanner(banner, &m->m_vid, m_wbf1_font.get(), m_wbf2_font.get());
+	m_banner->LoadBanner(banner, &m->m_vid, m_wbf1_font.get(), m_wbf2_font.get());
 	delete banner;
 
 	if (soundBin == NULL || (((IMD5Header *)soundBin)->fcc != 'IMD5' && ((IMD5Header *)soundBin)->fcc != 'RIFF'))

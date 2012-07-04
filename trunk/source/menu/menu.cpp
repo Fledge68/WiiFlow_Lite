@@ -112,7 +112,6 @@ extern const u8 checkboxs_png[];
 
 SmartBuf m_wbf1_font;
 SmartBuf m_wbf2_font;
-BannerWindow m_banner;
 
 CMenu::CMenu(CVideo &vid) :
 	m_vid(vid)
@@ -143,6 +142,7 @@ CMenu::CMenu(CVideo &vid) :
 	m_base_font_size = 0;
 	m_current_view = COVERFLOW_USB;
 	m_Emulator_boot = false;
+	m_banner = new BannerWindow;
 }
 
 void CMenu::init(void)
@@ -477,7 +477,7 @@ void CMenu::cleanup(bool ios_reload)
 	m_cf.stopCoverLoader();
 	m_cf.clear();
 	ClearGameSoundThreadStack();
-	m_banner.DeleteBanner();
+	m_banner->DeleteBanner();
 	m_plugin.Cleanup();
 
 	_stopSounds();
@@ -1741,7 +1741,7 @@ void CMenu::_mainLoopCommon(bool withCF, bool blockReboot, bool adjusting)
 			m_cf.draw();
 			m_vid.setup2DProjection(false, true);
 			m_cf.drawEffect();
-			if(!m_banner.GetSelectedGame())
+			if(!m_banner->GetSelectedGame())
 				m_cf.drawText(adjusting);
 			m_vid.renderAAPass(i);
 		}
@@ -1759,14 +1759,14 @@ void CMenu::_mainLoopCommon(bool withCF, bool blockReboot, bool adjusting)
 			m_cf.draw();
 			m_vid.setup2DProjection();
 			m_cf.drawEffect();
-			if(!m_banner.GetSelectedGame())
+			if(!m_banner->GetSelectedGame())
 				m_cf.drawText(adjusting);
 		}
 	}
 
 	m_fa.draw();
-	if(m_banner.GetSelectedGame())
-		m_banner.Draw();
+	if(m_banner->GetSelectedGame())
+		m_banner->Draw();
 
 	m_btnMgr.draw();
 	ScanInput();

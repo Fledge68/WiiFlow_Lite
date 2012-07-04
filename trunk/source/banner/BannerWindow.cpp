@@ -21,6 +21,8 @@
 #include "gx_addons.h"
 #include "gecko.h"
 
+BannerWindow *m_banner;
+
 void BannerWindow::LoadBanner(Banner *banner, CVideo *vid, u8 *font1, u8 *font2)
 {
 	changing = true;
@@ -38,11 +40,7 @@ void BannerWindow::LoadBanner(Banner *banner, CVideo *vid, u8 *font1, u8 *font2)
 
 	AnimPosX = 0.5f * (ScreenProps.x - fIconWidth);
 	AnimPosY = 0.5f * (ScreenProps.y - fIconHeight);
-	AnimZoomIn = false;
-	AnimZoomOut = false;
 	AnimationRunning = false;
-	BannerAlpha = 255.f;
-	BGAlpha = 255.f;
 
 	ChangeGame(banner);
 	gameSelected = 1;
@@ -57,7 +55,9 @@ void BannerWindow::DeleteBanner()
 
 BannerWindow::BannerWindow()
 {
+	FontLoaded = false;
 	changing = false;
+	AnimZoom = false;
 	AnimStep = 20;
 	gameSelected = 0;
 	gameBanner = new AnimatedBanner;
@@ -66,62 +66,39 @@ BannerWindow::BannerWindow()
 void BannerWindow::ChangeGame(Banner *banner)
 {
 	gameBanner->Clear();
-	gameBanner->LoadFont(sysFont1, sysFont2);
+	if(!FontLoaded)
+	{
+		gameBanner->LoadFont(sysFont1, sysFont2);
+		FontLoaded = true;
+	}
 	gameBanner->LoadBanner(banner);
 }
 
-void BannerWindow::ZoomIn(void)
+bool BannerWindow::ToogleZoom(void)
 {
-	AnimZoomIn = true;
-	AnimZoomOut = false;
-	if(AnimStep <= 20)
-		AnimStep++;
-}
-
-void BannerWindow::PauseZoom(void)
-{
-	AnimZoomIn = false;
-	AnimZoomOut = false;
-}
-
-void BannerWindow::ZoomOut(void)
-{
-	AnimZoomIn = false;
-	AnimZoomOut = true;
-	if(AnimStep >= MaxAnimSteps)
-		AnimStep--;
+	if(AnimZoom)
+	{
+		AnimStep = 30;
+		AnimZoom = false;
+	}
+	else
+	{
+		AnimStep = 20;
+		AnimZoom = true;
+	}
+	return AnimZoom;
 }
 
 void BannerWindow::Animate(void)
 {
 	// animation is on going
-	if(AnimStep < MaxAnimSteps)
+	if(AnimStep <= MaxAnimSteps)
 	{
 		AnimationRunning = true;
-		if(AnimZoomIn && AnimStep < MaxAnimSteps)
+		if(AnimZoom && AnimStep < MaxAnimSteps)
 			AnimStep++;
-		else if(AnimZoomOut && AnimStep > 20)
+		else if(!AnimZoom && AnimStep > 20)
 			AnimStep--;
-
-		/*
-		// zoom in animation
-		if(AnimZoomIn) {
-			BGAlpha = std::min(255.f * AnimStep * 2.f / MaxAnimSteps, 255.f);
-			//if(AnimStep < 0.4f * MaxAnimSteps)
-				//BannerAlpha = 0;
-			//else
-				//BannerAlpha = std::min(255.f * (AnimStep - 0.4f * MaxAnimSteps) / (0.6f * MaxAnimSteps), 255.f);
-		}
-		// zoom out animation
-		else {
-			BGAlpha = std::min(255.f * (MaxAnimSteps-AnimStep) * 2.f / MaxAnimSteps, 255.f);
-			//if((MaxAnimSteps - AnimStep) < 0.4f * MaxAnimSteps)
-				//BannerAlpha = 0;
-			//else
-				//BannerAlpha = std::min(255.f * ((MaxAnimSteps - AnimStep) - 0.4f * MaxAnimSteps) / (0.6f * MaxAnimSteps), 255.f);
-		}
-		*/
-
 		float curAnimStep = ((float)(MaxAnimSteps - AnimStep)/(float)MaxAnimSteps);
 
 		float stepx1 = -AnimPosX;
@@ -133,10 +110,6 @@ void BannerWindow::Animate(void)
 		float bottom = AnimPosY + fIconHeight + stepy2 * curAnimStep;
 		float left = AnimPosX + stepx1 * curAnimStep;
 		float right = AnimPosX + fIconWidth + stepx2 * curAnimStep;
-
-		// set main projection of all GUI stuff if we are using the banner browser
-		//if(dynamic_cast<GuiBannerGrid *>(browserMenu->GetGameBrowser()) != NULL)
-		//	guOrtho(FSProjection2D, top, bottom, left, right, 0, 10000);
 
 		float xDiff = 0.5f * (video->wide() ? (video->vid_50hz() ? 616 : 620.0f) : 608.0f);
 		float yDiff = 0.5f * (video->vid_50hz() ? 448.0f : 470.0f);
@@ -163,28 +136,20 @@ void BannerWindow::Animate(void)
 	}
 	// last animation step
 	else if(AnimationRunning)
-	{
-		// set back original projection and stop animation/render of the browser (save some CPU ;P)
-		//memcpy(&video->projMtx, &originalProjection, sizeof(Mtx44));
 		AnimationRunning = false;
-	}
 }
 
 void BannerWindow::Draw(void)
 {
 	// draw a black background image first
 	if(AnimStep >= MaxAnimSteps)
-		DrawRectangle(0.0f, 0.0f, video->width(), video->height(), (GXColor) {0, 0, 0, BGAlpha}, true);
+		DrawRectangle(0.0f, 0.0f, video->width(), video->height(), (GXColor) {0, 0, 0, 255.f});
 
 	if(changing)
 		return;
 
 	// Run window animation
 	Animate();
-
-	// no banner alpha means its the start of the animation
-	if(BannerAlpha == 0)
-		return;
 
 	// cut the unneeded crap
 	Mtx mv1, mv2, mv3;
@@ -221,14 +186,12 @@ void BannerWindow::Draw(void)
 
 	if(gameBanner->getBanner())
 	{
-		gameBanner->getBanner()->Render(modelview, ScreenProps, video->wide(), BannerAlpha);
+		gameBanner->getBanner()->Render(modelview, ScreenProps, video->wide(), 255.f);
 		gameBanner->getBanner()->AdvanceFrame();
 	}
 
 	// Setup GX
 	ReSetup_GX();
-
-	//if(AnimationRunning)
 	GX_SetScissor(0, 0, video->width(), video->height());
 
 	// Clear and back to previous projection
@@ -237,7 +200,7 @@ void BannerWindow::Draw(void)
 	GX_InvalidateTexAll();
 }
 
-void BannerWindow::DrawRectangle(f32 x, f32 y, f32 width, f32 height, GXColor color, u8 filled)
+void BannerWindow::DrawRectangle(f32 x, f32 y, f32 width, f32 height, GXColor color)
 {
 	Mtx modelViewMtx;
 	guMtxIdentity(modelViewMtx);
@@ -250,26 +213,13 @@ void BannerWindow::DrawRectangle(f32 x, f32 y, f32 width, f32 height, GXColor co
 	GX_SetVtxDesc(GX_VA_CLR0, GX_DIRECT);
 	GX_SetVtxDesc(GX_VA_TEX0, GX_NONE);
 
-	u8 fmt;
-	long n;
 	int i;
 	f32 x2 = x + width;
 	f32 y2 = y + height;
 	guVector v[] = { { x, y, 0.0f }, { x2, y, 0.0f }, { x2, y2, 0.0f }, { x, y2, 0.0f }, { x, y, 0.0f } };
 
-	if (!filled)
-	{
-		fmt = GX_LINESTRIP;
-		n = 5;
-	}
-	else
-	{
-		fmt = GX_TRIANGLEFAN;
-		n = 4;
-	}
-
-	GX_Begin(fmt, GX_VTXFMT0, n);
-	for (i = 0; i < n; i++)
+	GX_Begin(GX_TRIANGLEFAN, GX_VTXFMT0, 4);
+	for(i = 0; i < 4; i++)
 	{
 		GX_Position3f32(v[i].x, v[i].y, v[i].z);
 		GX_Color4u8(color.r, color.g, color.b, color.a);
