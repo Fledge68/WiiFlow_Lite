@@ -284,9 +284,17 @@ void CMenu::init(void)
 	m_app_update_zip = sfmt("%s/update.zip", m_appDir.c_str());
 	m_data_update_zip = sfmt("%s/update.zip", m_dataDir.c_str());
 
-	m_bannerDir = m_cfg.getString("GENERAL", "dir_banners", sfmt("%s/banners", m_dataDir.c_str()));
+	m_customBnrDir = m_cfg.getString("GENERAL", "dir_custom_banners", sfmt("%s/custom_banners", m_dataDir.c_str()));
 	m_pluginsDir = m_cfg.getString("GENERAL", "dir_plugins", sfmt("%s/plugins", m_dataDir.c_str()));
+
 	m_cacheDir = m_cfg.getString("GENERAL", "dir_cache", sfmt("%s/cache", m_dataDir.c_str()));
+	m_listCacheDir = m_cfg.getString("GENERAL", "dir_list_cache", sfmt("%s/lists", m_cacheDir.c_str()));
+	m_bnrCacheDir = m_cfg.getString("GENERAL", "dir_banner_cache", sfmt("%s/banners", m_cacheDir.c_str()));
+
+	m_txtCheatDir = m_cfg.getString("GENERAL", "dir_txtcheat", sfmt("%s/codes", m_dataDir.c_str()));
+	m_cheatDir = m_cfg.getString("GENERAL", "dir_cheat", sfmt("%s/gct", m_txtCheatDir.c_str()));
+	m_wipDir = m_cfg.getString("GENERAL", "dir_wip", sfmt("%s/wip", m_txtCheatDir.c_str()));
+
 	m_settingsDir = m_cfg.getString("GENERAL", "dir_settings", sfmt("%s/settings", m_dataDir.c_str()));
 	m_languagesDir = m_cfg.getString("GENERAL", "dir_languages", sfmt("%s/languages", m_dataDir.c_str()));
 	m_boxPicDir = m_cfg.getString("GENERAL", "dir_box_covers", sfmt("%s/boxcovers", m_dataDir.c_str()));
@@ -296,10 +304,6 @@ void CMenu::init(void)
 	m_videoDir = m_cfg.getString("GENERAL", "dir_trailers", sfmt("%s/trailers", m_dataDir.c_str()));
 	m_fanartDir = m_cfg.getString("GENERAL", "dir_fanart", sfmt("%s/fanart", m_dataDir.c_str()));
 	m_screenshotDir = m_cfg.getString("GENERAL", "dir_screenshot", sfmt("%s/screenshots", m_dataDir.c_str()));
-	m_txtCheatDir = m_cfg.getString("GENERAL", "dir_txtcheat", sfmt("%s/codes", m_dataDir.c_str()));
-	m_cheatDir = m_cfg.getString("GENERAL", "dir_cheat", sfmt("%s/gct", m_txtCheatDir.c_str()));
-	m_wipDir = m_cfg.getString("GENERAL", "dir_wip", sfmt("%s/wip", m_txtCheatDir.c_str()));
-	m_listCacheDir = m_cfg.getString("GENERAL", "dir_list_cache", sfmt("%s/lists", m_cacheDir.c_str()));
 	m_helpDir = m_cfg.getString("GENERAL", "dir_help", sfmt("%s/help", m_dataDir.c_str()));
 	
 	DeviceHandler::SetWatchdog(m_cfg.getUInt("GENERAL", "watchdog_timeout", 10));
@@ -328,12 +332,22 @@ void CMenu::init(void)
 			}
 		}
 	}
-
 	m_cf.init(m_base_font, m_base_font_size, m_vid.vid_50hz());
 
 	//Make important folders first.
 	fsop_MakeFolder((char *)m_dataDir.c_str()); //D'OH!
+
+	fsop_MakeFolder((char *)m_customBnrDir.c_str());
+	fsop_MakeFolder((char *)m_pluginsDir.c_str());
+
 	fsop_MakeFolder((char *)m_cacheDir.c_str());
+	fsop_MakeFolder((char *)m_listCacheDir.c_str());
+	fsop_MakeFolder((char *)m_bnrCacheDir.c_str());
+
+	fsop_MakeFolder((char *)m_txtCheatDir.c_str());
+	fsop_MakeFolder((char *)m_cheatDir.c_str());
+	fsop_MakeFolder((char *)m_wipDir.c_str());
+
 	fsop_MakeFolder((char *)m_settingsDir.c_str());
 	fsop_MakeFolder((char *)m_languagesDir.c_str());
 	fsop_MakeFolder((char *)m_boxPicDir.c_str());
@@ -343,13 +357,7 @@ void CMenu::init(void)
 	fsop_MakeFolder((char *)m_videoDir.c_str());
 	fsop_MakeFolder((char *)m_fanartDir.c_str());
 	fsop_MakeFolder((char *)m_screenshotDir.c_str());
-	fsop_MakeFolder((char *)m_txtCheatDir.c_str());
-	fsop_MakeFolder((char *)m_cheatDir.c_str());
-	fsop_MakeFolder((char *)m_wipDir.c_str());
-	fsop_MakeFolder((char *)m_listCacheDir.c_str());
 	fsop_MakeFolder((char *)m_helpDir.c_str());
-	fsop_MakeFolder((char *)m_pluginsDir.c_str());
-	fsop_MakeFolder((char *)m_bannerDir.c_str());
 
 	// INI files
 	m_cat.load(fmt("%s/" CAT_FILENAME, m_settingsDir.c_str()));

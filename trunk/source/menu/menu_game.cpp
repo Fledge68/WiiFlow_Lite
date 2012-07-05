@@ -1523,44 +1523,65 @@ void CMenu::_gameSoundThread(CMenu *m)
 		m->m_gamesound_changed = true;
 		return;
 	}
-	bool custom = false;
 
+	bool custom = false;
 	u8 *custom_bnr_file = NULL;
 	u32 custom_bnr_size = 0;
-	char custom_banner[256];
-	snprintf(custom_banner, sizeof(custom_banner), "%s/%.6s.bnr", m->m_bannerDir.c_str(), m->m_cf.getHdr()->id);
-	FILE *fp = fopen(custom_banner, "rb");
-	if(!fp)
-	{
-		snprintf(custom_banner, sizeof(custom_banner), "%s/%.3s.bnr", m->m_bannerDir.c_str(), m->m_cf.getHdr()->id);
-		fp = fopen(custom_banner, "rb");
-		if(!fp && m->m_cf.getHdr()->type == TYPE_GC_GAME)
-		{
-			m_banner->DeleteBanner();
-			m->m_gameSound.Load(gc_ogg, gc_ogg_size, false);
-			m->m_gamesound_changed = true;
-			return;
-		}
-	}
+
+	bool cached = false;
+	u8 *cached_bnr_file = NULL;
+	u32 cached_bnr_size = 0;
+
+	char cached_banner[256];
+	snprintf(cached_banner, sizeof(cached_banner), "%s/%.6s.bnr", m->m_bnrCacheDir.c_str(), m->m_cf.getHdr()->id);
+	FILE *fp = fopen(cached_banner, "rb");
 	if(fp)
 	{
-		custom = true;
-		gprintf("Custom Banner detected for: %s\n", m->m_cf.getHdr()->id);
+		cached = true;
 		fseek(fp, 0, SEEK_END);
-		custom_bnr_size = ftell(fp);
+		cached_bnr_size = ftell(fp);
 		fseek(fp, 0, SEEK_SET);
-		custom_bnr_file = (u8*)MEM2_alloc(custom_bnr_size);
-		fread(custom_bnr_file, 1, custom_bnr_size, fp);
+		cached_bnr_file = (u8*)MEM2_alloc(cached_bnr_size);
+		fread(cached_bnr_file, 1, cached_bnr_size, fp);
 		fclose(fp);
 	}
-
+	else
+	{
+		char custom_banner[256];
+		snprintf(custom_banner, sizeof(custom_banner), "%s/%.6s.bnr", m->m_customBnrDir.c_str(), m->m_cf.getHdr()->id);
+		FILE *fp = fopen(custom_banner, "rb");
+		if(!fp)
+		{
+			snprintf(custom_banner, sizeof(custom_banner), "%s/%.3s.bnr", m->m_customBnrDir.c_str(), m->m_cf.getHdr()->id);
+			fp = fopen(custom_banner, "rb");
+			if(!fp && m->m_cf.getHdr()->type == TYPE_GC_GAME)
+			{
+				m_banner->DeleteBanner();
+				m->m_gameSound.Load(gc_ogg, gc_ogg_size, false);
+				m->m_gamesound_changed = true;
+				return;
+			}
+		}
+		if(fp)
+		{
+			custom = true;
+			gprintf("Custom Banner detected for: %s\n", m->m_cf.getHdr()->id);
+			fseek(fp, 0, SEEK_END);
+			custom_bnr_size = ftell(fp);
+			fseek(fp, 0, SEEK_SET);
+			custom_bnr_file = (u8*)MEM2_alloc(custom_bnr_size);
+			fread(custom_bnr_file, 1, custom_bnr_size, fp);
+			fclose(fp);
+		}
+	}
 	m->m_gameSoundHdr = m->m_cf.getHdr();
 	m->m_gamesound_changed = false;
 	u32 sndSize = 0;
 
-	Banner *banner = custom_bnr_file != NULL ? new Banner((u8 *)custom_bnr_file, custom_bnr_size, 0, true) : 
+	Banner *banner = cached ? new Banner((u8 *)cached_bnr_file, cached_bnr_size) : 
+		(custom ? new Banner((u8 *)custom_bnr_file, custom_bnr_size, 0, true) : 
 		(m->m_gameSoundHdr->type == TYPE_WII_GAME ? _extractBnr(m->m_gameSoundHdr) : (m->m_gameSoundHdr->type == TYPE_CHANNEL ?
-		_extractChannelBnr(TITLE_ID(m->m_gameSoundHdr->settings[0],m->m_gameSoundHdr->settings[1])) : NULL));
+		_extractChannelBnr(TITLE_ID(m->m_gameSoundHdr->settings[0],m->m_gameSoundHdr->settings[1])) : NULL)));
 	m->m_gameSoundHdr = NULL;
 
 	if (banner == NULL || !banner->IsValid())
@@ -1570,11 +1591,9 @@ void CMenu::_gameSoundThread(CMenu *m)
 		delete banner;
 		return;
 	}
-	else if(!custom)
+	else if(!custom && !cached)
 	{
-		char custom_banner[256];
-		snprintf(custom_banner, sizeof(custom_banner), "%s/%.6s.bnr", m->m_bannerDir.c_str(), m->m_cf.getHdr()->id);
-		FILE *fp = fopen(custom_banner, "wb");
+		FILE *fp = fopen(cached_banner, "wb");
 		fwrite(banner->GetBannerFile(), 1, banner->GetBannerFileSize(), fp);
 		fclose(fp);
 	}
