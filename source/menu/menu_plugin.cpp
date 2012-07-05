@@ -76,21 +76,21 @@ void CMenu::_updatePluginCheckboxes(void)
 			j = m_max_plugins;
 		for(u8 i = 0; i < j; ++i)
 		{
-			m_btnMgr.show(m_pluginLblCat[i]);
 			if((EnabledPlugins.size() == 0) || (i != 0 && EnabledPlugins.size() >= i && EnabledPlugins[i - 1] == true))
 				m_pluginBtn[i] = m_pluginBtnCats[i];
 			else
 				m_pluginBtn[i] = m_pluginBtnCat[i];
 			m_btnMgr.show(m_pluginBtn[i]);
+			m_btnMgr.show(m_pluginLblCat[i]);
 		}
 	}
 	else
 	{
 		for(int i = 11; i < m_max_plugins; ++i)
 		{
-			m_btnMgr.show(m_pluginLblCat[i]);
 			m_pluginBtn[i] = m_pluginBtnCat[i];
 			m_btnMgr.show(m_pluginBtn[i]);
+			m_btnMgr.show(m_pluginLblCat[i]);
 		}
 	}
 }

@@ -91,22 +91,22 @@ void CMenu::_updateCheckboxes(void)
 		{
 			if(i == 0 && gameSet)
 				continue;
-			m_btnMgr.show(m_categoryLblCat[i]);
 			if(catflags[i] == '1')
 				m_btnMgr.show(m_categoryBtnCats[i]);
 			else
 				m_btnMgr.show(m_categoryBtnCat[i]);
+			m_btnMgr.show(m_categoryLblCat[i]);
 		}
 	}
 	else
 	{
 		for(int i = 11; i < m_max_categories; ++i)
 		{
-			m_btnMgr.show(m_categoryLblCat[i]);
 			if(catflags[i] == '1')
 				m_btnMgr.show(m_categoryBtnCats[i]);
 			else
 				m_btnMgr.show(m_categoryBtnCat[i]);
+			m_btnMgr.show(m_categoryLblCat[i]);
 		}
 	}
 }
