@@ -1076,7 +1076,7 @@ void CMenu::_buildMenus(void)
 	_initSystemMenu(theme);
 	_initGameInfoMenu(theme);
 	_initNandEmuMenu(theme);
-	_initHomeMenu(theme);
+	_initHomeAndExitToMenu(theme);
 
 	_loadCFCfg(theme);
 }

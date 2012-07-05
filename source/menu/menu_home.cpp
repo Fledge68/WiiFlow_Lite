@@ -3,12 +3,18 @@
 #include "svnrev.h"
 
 u32 m_homeLblTitle;
+u32 m_exittoLblTitle;
 
 u32 m_homeBtnSettings;
 u32 m_homeBtnReloadCache;
 u32 m_homeBtnUpdate;
 u32 m_homeBtnAbout;
-u32 m_homeBtnExit;
+u32 m_homeBtnExitTo; // Exit To
+
+u32 m_homeBtnExitToHBC;
+u32 m_homeBtnExitToMenu;
+u32 m_homeBtnExitToPriiloader;
+u32 m_homeBtnExitToBootmii;
 
 STexture m_homeBg;
 
@@ -66,25 +72,71 @@ bool CMenu::_Home(void)
 					break;
 				_showHome();
 			}
-			else if(m_btnMgr.selected(m_homeBtnExit))
+			else if(m_btnMgr.selected(m_homeBtnExitTo))
 			{
-				exitHandler();
+				exit = _ExitTo();
+				break;
+			}
+		}
+		else if(BTN_HOME_PRESSED)
+		{
+		    exitHandler(0);
+			exit = true;
+			break;
+		}
+		else if(BTN_B_PRESSED)
+		    break;
+	}	
+
+	_hideHome();
+	return exit;
+}
+
+bool CMenu::_ExitTo(void)
+{
+	bool exit = false;
+
+	SetupInput();
+	
+	_hideHome();
+	_showExitTo();
+
+	while(1)
+	{
+		_mainLoopCommon();
+		if(BTN_A_PRESSED)
+		{
+			if(m_btnMgr.selected(m_homeBtnExitToHBC))
+			{
+				
+				exitHandler(1);
+				exit = true;
+				break;
+			}
+			else if(m_btnMgr.selected(m_homeBtnExitToMenu))
+			{
+				exitHandler(2);
+				exit = true;
+				break;
+			}
+			else if(m_btnMgr.selected(m_homeBtnExitToPriiloader))
+			{
+				exitHandler(3);
+				exit = true;
+				break;
+			}
+			else if(m_btnMgr.selected(m_homeBtnExitToBootmii))
+			{
+				exitHandler(4);
 				exit = true;
 				break;
 			}
 		}
 		else if(BTN_B_PRESSED)
-		{
 			break;
-		}
-		else if(BTN_HOME_PRESSED)
-		{
-			exitHandler();
-			exit = true;
-			break;
-		}
 	}
-	_hideHome();
+	
+	_hideExitTo();
 	return exit;
 }
 
@@ -97,7 +149,18 @@ void CMenu::_showHome(void)
 	m_btnMgr.show(m_homeBtnReloadCache);
 	m_btnMgr.show(m_homeBtnUpdate);
 	m_btnMgr.show(m_homeBtnAbout);
-	m_btnMgr.show(m_homeBtnExit);
+	m_btnMgr.show(m_homeBtnExitTo);
+}
+
+void CMenu::_showExitTo(void)
+{
+	_setBg(m_homeBg, m_homeBg);
+	m_btnMgr.show(m_exittoLblTitle);
+
+	m_btnMgr.show(m_homeBtnExitToHBC);
+	m_btnMgr.show(m_homeBtnExitToMenu);
+	m_btnMgr.show(m_homeBtnExitToPriiloader);
+	m_btnMgr.show(m_homeBtnExitToBootmii);
 }
 
 void CMenu::_hideHome(bool instant)
@@ -108,11 +171,22 @@ void CMenu::_hideHome(bool instant)
 	m_btnMgr.hide(m_homeBtnReloadCache, instant);
 	m_btnMgr.hide(m_homeBtnUpdate, instant);
 	m_btnMgr.hide(m_homeBtnAbout, instant);
-	m_btnMgr.hide(m_homeBtnExit, instant);
+	m_btnMgr.hide(m_homeBtnExitTo, instant);
 }
 
-void CMenu::_initHomeMenu(CMenu::SThemeData &theme)
+void CMenu::_hideExitTo(bool instant)
 {
+	m_btnMgr.hide(m_exittoLblTitle, instant);
+
+	m_btnMgr.hide(m_homeBtnExitToHBC, instant);
+	m_btnMgr.hide(m_homeBtnExitToMenu, instant);
+	m_btnMgr.hide(m_homeBtnExitToPriiloader, instant);
+	m_btnMgr.hide(m_homeBtnExitToBootmii, instant);
+}
+
+void CMenu::_initHomeAndExitToMenu(CMenu::SThemeData &theme)
+{
+    //Home Menu
 	STexture emptyTex;
 	m_homeBg = _texture(theme.texSet, "HOME/BG", "texture", theme.bg);
 
@@ -124,16 +198,34 @@ void CMenu::_initHomeMenu(CMenu::SThemeData &theme)
 	m_homeBtnReloadCache = _addButton(theme, "HOME/RELOAD_CACHE", theme.btnFont, L"", 220, 180, 200, 56, theme.btnFontColor);
 	m_homeBtnUpdate = _addButton(theme, "HOME/UPDATE", theme.btnFont, L"", 220, 240, 200, 56, theme.btnFontColor);
 	m_homeBtnAbout = _addButton(theme, "HOME/ABOUT", theme.btnFont, L"", 220, 300, 200, 56, theme.btnFontColor);
-	m_homeBtnExit = _addButton(theme, "HOME/EXIT", theme.btnFont, L"", 220, 360, 200, 56, theme.btnFontColor);
+	m_homeBtnExitTo = _addButton(theme, "HOME/EXIT_TO", theme.btnFont, L"", 220, 360, 200, 56, theme.btnFontColor);
 
 	_setHideAnim(m_homeBtnSettings, "HOME/SETTINGS", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_homeBtnReloadCache, "HOME/RELOAD_CACHE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_homeBtnUpdate, "HOME/UPDATE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_homeBtnAbout, "HOME/ABOUT", 0, 0, -2.f, 0.f);
-	_setHideAnim(m_homeBtnExit, "HOME/EXIT", 0, 0, -2.f, 0.f);
+	_setHideAnim(m_homeBtnExitTo, "HOME/EXIT_TO", 0, 0, -2.f, 0.f);
 
 	_textHome();
 	_hideHome(true);
+	
+	//ExitTo Menu	
+	m_exittoLblTitle = _addTitle(theme, "EXIT_TO/TITLE", theme.titleFont, L"", 20, 30, 600, 75, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+
+	_setHideAnim(m_exittoLblTitle, "EXIT_TO/TITLE", 0, 100, 0.f, 0.f);
+
+	m_homeBtnExitToHBC = _addButton(theme, "EXIT_TO/HBC", theme.btnFont, L"", 220, 120, 200, 56, theme.btnFontColor);
+	m_homeBtnExitToMenu = _addButton(theme, "EXIT_TO/MENU", theme.btnFont, L"", 220, 180, 200, 56, theme.btnFontColor);
+	m_homeBtnExitToPriiloader = _addButton(theme, "EXIT_TO/PRIILOADER", theme.btnFont, L"", 220, 240, 200, 56, theme.btnFontColor);
+	m_homeBtnExitToBootmii = _addButton(theme, "EXIT_TO/BOOTMII", theme.btnFont, L"", 220, 300, 200, 56, theme.btnFontColor);
+
+	_setHideAnim(m_homeBtnExitToHBC, "EXIT_TO/HBC", 0, 0, -2.f, 0.f);
+	_setHideAnim(m_homeBtnExitToMenu, "EXIT_TO/MENU", 0, 0, -2.f, 0.f);
+	_setHideAnim(m_homeBtnExitToPriiloader, "EXIT_TO/PRIILOADER", 0, 0, -2.f, 0.f);
+	_setHideAnim(m_homeBtnExitToBootmii, "EXIT_TO/BOOTMII", 0, 0, -2.f, 0.f);
+
+	_textExitTo();
+	_hideExitTo(true);
 }
 
 void CMenu::_textHome(void)
@@ -144,5 +236,15 @@ void CMenu::_textHome(void)
 	m_btnMgr.setText(m_homeBtnReloadCache, _t("home2", L"Reload Cache"));
 	m_btnMgr.setText(m_homeBtnUpdate, _t("home3", L"Update"));
 	m_btnMgr.setText(m_homeBtnAbout, _t("home4", L"About"));
-	m_btnMgr.setText(m_homeBtnExit, _t("home5", L"Exit"));
+	m_btnMgr.setText(m_homeBtnExitTo, _t("home5", L"Exit To"));
+}
+
+void CMenu::_textExitTo(void)
+{
+	m_btnMgr.setText(m_exittoLblTitle, _t("exit_to", L"Exit To"));
+	
+	m_btnMgr.setText(m_homeBtnExitToHBC, _t("hbc", L"Homebrew Channel"));
+	m_btnMgr.setText(m_homeBtnExitToMenu, _t("menu", L"System Menu"));
+	m_btnMgr.setText(m_homeBtnExitToPriiloader, _t("prii", L"Priiloader"));
+	m_btnMgr.setText(m_homeBtnExitToBootmii, _t("bootmii", L"Bootmii"));
 }

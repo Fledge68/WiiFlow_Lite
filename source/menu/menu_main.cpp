@@ -213,20 +213,20 @@ void CMenu::LoadView(void)
 	m_btnMgr.show(m_mainLblNotice);
 }
 
-void CMenu::exitHandler(void)
+void CMenu::exitHandler(int ExitTo)
 {
 	gprintf("Exit WiiFlow called\n");
 	bool exitSet = false;
 	if(!m_locked && !m_disable_exit)
 	{
 		exitSet = true;
-		if(BTN_PLUS_HELD)
+		if(ExitTo == 1) // HBC
 			Sys_ExitTo(EXIT_TO_HBC);
-		else if(BTN_MINUS_HELD)
+		else if(ExitTo == 2) // System Menu
 			Sys_ExitTo(EXIT_TO_MENU);
-		else if(BTN_1_HELD)
+		else if(ExitTo == 3) // Priiloader
 			Sys_ExitTo(EXIT_TO_PRIILOADER);
-		else if(BTN_2_HELD)	//Check that the files are there, or ios will hang.
+		else if(ExitTo == 4) //Bootmii, check that the files are there, or ios will hang.
 		{
 			struct stat dummy;
 			if(DeviceHandler::Instance()->IsInserted(SD) && 
@@ -238,9 +238,8 @@ void CMenu::exitHandler(void)
 			else
 				Sys_ExitTo(EXIT_TO_HBC);
 		}
-		else
-			exitSet = false;
 	}
+	
 	m_reload = (BTN_B_HELD || m_disable_exit);
 	if(!exitSet && !m_reload)
 	{

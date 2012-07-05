@@ -35,7 +35,7 @@ Spayrosam, Bluescreen81, Chappy23, fledge68, \
 BlindDude, Bubba, DJTaz, OggZee, entropy, \
 Usptactical, WiiPower, Hermes, Spidy1000, \
 Dimok, Kovani, Drexyl, DvZ, Etheboss, stfour, \
-GaiaKnight, nibb, NJ7, Plasma, Pakatus, \
+GaiaKnight, nibb, NJ7, Plasma, Pakatus, giantpune, \
 wolf, ravmn, spidercaleb, Ziggy34, xFede, \
 And to anyone who has donated or \
 contributed to Wiiflow that we missed!"
@@ -47,8 +47,10 @@ tgames.fr.nf"
 
 #define THANKS_CODE \
 "CFG Loader, uLoader, USB Loader GX, \
-NeoGamma, WiiXplorer, Mighty Channels, \
-Triiforce, postLoader" 
+NeoGamma, Wii Banner Player Project, \
+Mighty Channels, WiiXplorer, Triiforce, \
+postLoader"
+
 
 #define WIINNERTAG_URL 			"http://www.wiinnertag.com/wiinnertag_scripts/update_sign.php?key={KEY}&game_id={ID6}"
 #define DUTAG_URL				"http://tag.darkumbra.net/{KEY}.update={ID6}"
