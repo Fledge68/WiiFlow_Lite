@@ -143,6 +143,7 @@ CMenu::CMenu(CVideo &vid) :
 	m_current_view = COVERFLOW_USB;
 	m_Emulator_boot = false;
 	m_banner = new BannerWindow;
+	m_music = new MusicPlayer;
 }
 
 void CMenu::init(void)
@@ -419,7 +420,7 @@ void CMenu::init(void)
 	}
 		
 	m_btnMgr.init(m_vid);
-	MusicPlayer::Instance()->Init(m_cfg, m_musicDir, sfmt("%s/music", m_themeDataDir.c_str()));
+	m_music->Init(m_cfg, m_musicDir, sfmt("%s/music", m_themeDataDir.c_str()));
 
 	_buildMenus();
 
@@ -488,7 +489,7 @@ void CMenu::cleanup(bool ios_reload)
 	if (!ios_reload)
 		m_cameraSound.release();
 
-	MusicPlayer::DestroyInstance();
+	m_music->cleanup();
 	SoundHandler::DestroyInstance();
 	soundDeinit();
 
@@ -1787,7 +1788,7 @@ void CMenu::_mainLoopCommon(bool withCF, bool blockReboot, bool adjusting)
 		Sys_Test();
 	}
 
-	if(withCF && m_gameSelected && m_gamesound_changed && (m_gameSoundHdr == NULL) && !m_gameSound.IsPlaying() && MusicPlayer::Instance()->GetVolume() == 0)
+	if(withCF && m_gameSelected && m_gamesound_changed && (m_gameSoundHdr == NULL) && !m_gameSound.IsPlaying() && m_music->GetVolume() == 0)
 	{
 		CheckGameSoundThread();
 		m_gameSound.Play(m_bnrSndVol);
@@ -1796,7 +1797,7 @@ void CMenu::_mainLoopCommon(bool withCF, bool blockReboot, bool adjusting)
 	else if(!m_gameSelected)
 		m_gameSound.Stop();
 
-	MusicPlayer::Instance()->Tick(m_video_playing || (m_gameSelected && 
+	m_music->Tick(m_video_playing || (m_gameSelected && 
 		m_gameSound.IsLoaded()) ||  m_gameSound.IsPlaying());
 
 	//Take Screenshot
@@ -2217,11 +2218,11 @@ void CMenu::_stopSounds(void)
 	// Fade out sounds
 	int fade_rate = m_cfg.getInt("GENERAL", "music_fade_rate", 8);
 
-	if(!MusicPlayer::Instance()->IsStopped())
+	if(!m_music->IsStopped())
 	{
-		while(MusicPlayer::Instance()->GetVolume() > 0 || m_gameSound.GetVolume() > 0)
+		while(m_music->GetVolume() > 0 || m_gameSound.GetVolume() > 0)
 		{
-			MusicPlayer::Instance()->Tick(true);
+			m_music->Tick(true);
 			if(m_gameSound.GetVolume() > 0)
 				m_gameSound.SetVolume(m_gameSound.GetVolume() < fade_rate ? 0 : m_gameSound.GetVolume() - fade_rate);
 			VIDEO_WaitVSync();
@@ -2230,7 +2231,7 @@ void CMenu::_stopSounds(void)
 	m_btnMgr.stopSounds();
 	m_cf.stopSound();
 
-	MusicPlayer::Instance()->Stop();
+	m_music->Stop();
 	m_gameSound.Stop();
 }
 

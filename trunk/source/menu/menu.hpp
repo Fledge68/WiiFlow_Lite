@@ -60,7 +60,7 @@ private:
 	CVideo &m_vid;
 	CCursor m_cursor[WPAD_MAX_WIIMOTES];
 	CButtonsMgr m_btnMgr;
-
+	MusicPlayer *m_music;
 	CCoverFlow m_cf;
 	CFanart m_fa;
 	CachedList<dir_discHdr> m_gameList;

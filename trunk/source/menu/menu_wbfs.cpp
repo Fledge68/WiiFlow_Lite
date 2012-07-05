@@ -432,7 +432,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						m_thrdMessageAdded = false;
 						m_cf.stopCoverLoader();
 						_stopSounds();
-						MusicPlayer::DestroyInstance();
+						m_music->cleanup();
 						SoundHandler::DestroyInstance();
 						soundDeinit();
 						Nand::Instance()->Disable_Emu();

@@ -461,6 +461,7 @@ void CMenu::_game(bool launch)
 				}
 				movie.Stop();
 				_showGame();
+				m_music->Play();
 				m_video_playing = false;
 				//m_gameSound.play(m_bnrSndVol);
 			}

@@ -101,14 +101,14 @@ int CMenu::_configSnd(void)
 				int musicVol = min(m_cfg.getInt("GENERAL", "sound_volume_music", 255) + step, 255);
 				m_cfg.setInt("GENERAL", "sound_volume_music", musicVol);
 				_showConfigSnd();
-				MusicPlayer::Instance()->SetVolume(MusicPlayer::Instance()->GetVolume(), musicVol);
+				m_music->SetVolume(m_music->GetVolume(), musicVol);
 			}
 			else if (m_btnMgr.selected(m_configSndBtnMusicVolM))
 			{
 				int musicVol = max(m_cfg.getInt("GENERAL", "sound_volume_music", 255) - step, 0);
 				m_cfg.setInt("GENERAL", "sound_volume_music", musicVol);
 				_showConfigSnd();
-				MusicPlayer::Instance()->SetVolume(MusicPlayer::Instance()->GetVolume(), musicVol);
+				m_music->SetVolume(m_music->GetVolume(), musicVol);
 			}
 			else if (m_btnMgr.selected(m_configSndBtnCFVolP))
 			{

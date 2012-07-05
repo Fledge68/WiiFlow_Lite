@@ -18,12 +18,11 @@ enum MusicDirectory
 class MusicPlayer
 {
 public:
-	static MusicPlayer *Instance();
-	static void DestroyInstance();
-
+	MusicPlayer();
+	void cleanup();
 	void Init(Config &cfg, std::string musicDir, std::string themeMusicDir);
 	void Tick(bool attenuate);
-	
+
 	void SetVolume(int volume);
 	void SetVolume(int volume, int max_volume);
 	int GetVolume() { return m_music != NULL ? m_music_current_volume : 0; };
@@ -38,8 +37,6 @@ public:
 	bool IsStopped() { return m_stopped; };
 private:
 	~MusicPlayer();
-
-	static MusicPlayer *instance;
 
 	void LoadCurrentFile();
 
