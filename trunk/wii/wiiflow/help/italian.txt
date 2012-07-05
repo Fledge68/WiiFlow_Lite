@@ -8,7 +8,7 @@ Controlli:
 -- B+A = Avvia gioco immediatamente
 -- B+home = Ricarica wiiflow
 -- Home = Mostra menu principale
--- Home (nel menu principale) = Esci al menu di sistema
+-- Home (nel menu principale) = Esci a ...vedi impostazioni globali
 -- 1 / 2 = Precedente / prossima modalità coverflow
 -- B+sinistra / B+destra = Cambia canzone
 -- B+su / B+giù = Ricerca alfabetica
@@ -21,7 +21,7 @@ Controlli:
 -- A sull’icona a ingranaggio = Impostazioni
 -- A sull’icona a USB, DM(L), canali, emulatori o homebrew = Vai a questa modalità
 -- B sull’icona a USB, DM(L), canali, emulatori o homebrew = Abilita/disabilita la nand emulata e vai alla modalità canali
--- A sull’icona home = Mostra menu principale / esci da wiiflow
+-- A sull’icona a casa = Mostra menu principale
 -- Premi B per 3 secondi/ B sull'icona a home(se è abilitato wii_gestures) = Mostra menu sorgente
 -- A sull’icona a disco (se è presente un disco) = Avvia il disco
 -- A sull’icona a punto di domanda = Mostra i ringraziamenti, questo file di aiuto e aggiorna wiiflow
