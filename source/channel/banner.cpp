@@ -62,8 +62,9 @@ Banner::Banner(u8 *bnr, u32 bnr_size, u64 title, bool custom)
 
 		memcpy(imetmd5, imet->md5, 16);
 		memset(imet->md5, 0, 16);
-		
 		MD5(md5, (unsigned char*)(imet), sizeof(IMET));
+		memcpy(imet->md5, imetmd5, 16);
+
 		if(memcmp(imetmd5, md5, 16) == 0 || custom)
 			this->imet = imet;
 		else

@@ -89,13 +89,14 @@ private:
 	string m_themeDataDir;
 	string m_appDir;
 	string m_dataDir;
-	string m_bannerDir;
 	string m_pluginsDir;
+	string m_customBnrDir;
 	string m_picDir;
 	string m_boxPicDir;
-	string m_cpicDir;
 	string m_boxcPicDir;
 	string m_cacheDir;
+	string m_listCacheDir;
+	string m_bnrCacheDir;
 	string m_themeDir;
 	string m_musicDir;
 	string m_txtCheatDir;
@@ -106,7 +107,6 @@ private:
 	string m_screenshotDir;
 	string m_settingsDir;
 	string m_languagesDir;
-	string m_listCacheDir;
 	string m_DMLgameDir;
 	string m_helpDir;
 	
