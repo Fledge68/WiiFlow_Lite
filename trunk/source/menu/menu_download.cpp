@@ -300,8 +300,8 @@ void CMenu::_hideDownload(bool instant)
 	m_btnMgr.hide(m_downloadLblCovers, instant);
 	m_btnMgr.hide(m_downloadLblGameTDBDownload, instant);
 	m_btnMgr.hide(m_downloadLblGameTDB, instant);
-	for (u32 i = 0; i < ARRAY_SIZE(m_downloadLblUser); ++i)
-		if (m_downloadLblUser[i] != -1u)
+	for(u8 i = 0; i < ARRAY_SIZE(m_downloadLblUser); ++i)
+		if(m_downloadLblUser[i] != (u16)-1)
 			m_btnMgr.hide(m_downloadLblUser[i], instant);
 }
 
@@ -322,8 +322,8 @@ void CMenu::_showDownload(void)
 		m_btnMgr.show(m_downloadLblGameTDBDownload);
 		m_btnMgr.show(m_downloadBtnGameTDBDownload);
 	}
-	for (u32 i = 0; i < ARRAY_SIZE(m_downloadLblUser); ++i)
-		if (m_downloadLblUser[i] != -1u)
+	for(u8 i = 0; i < ARRAY_SIZE(m_downloadLblUser); ++i)
+		if(m_downloadLblUser[i] != (u16)-1)
 			m_btnMgr.show(m_downloadLblUser[i]);	
 }
 

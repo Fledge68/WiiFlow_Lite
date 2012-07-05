@@ -13,10 +13,10 @@ const int pixels_to_skip = 10;
 extern const u8 english_txt[];
 
 //About menu
-u32 m_aboutLblTitle;
-u32 m_aboutLblInfo;
-u32 m_aboutLblUser[4];
-u32 m_aboutLblIOS;
+u16 m_aboutLblTitle;
+u16 m_aboutLblInfo;
+u16 m_aboutLblUser[4];
+u16 m_aboutLblIOS;
 
 void CMenu::_about(void)
 {
@@ -74,9 +74,9 @@ void CMenu::_hideAbout(bool instant)
 	m_btnMgr.hide(m_aboutLblTitle, instant);
 	m_btnMgr.hide(m_aboutLblIOS, instant);
 	m_btnMgr.hide(m_aboutLblInfo, instant);
-	for (u32 i = 0; i < ARRAY_SIZE(m_aboutLblUser); ++i)
+	for (u8 i = 0; i < ARRAY_SIZE(m_aboutLblUser); ++i)
 	{
-		if (m_aboutLblUser[i] != -1u)
+		if(m_aboutLblUser[i] != (u16)-1)
 			m_btnMgr.hide(m_aboutLblUser[i], instant);
 	}
 }
@@ -87,9 +87,9 @@ void CMenu::_showAbout(void)
 	m_btnMgr.show(m_aboutLblTitle);
 	m_btnMgr.show(m_aboutLblIOS);
 	m_btnMgr.show(m_aboutLblInfo,false);
-	for (u32 i = 0; i < ARRAY_SIZE(m_aboutLblUser); ++i)
+	for(u8 i = 0; i < ARRAY_SIZE(m_aboutLblUser); ++i)
 	{
-		if (m_aboutLblUser[i] != -1u)
+		if(m_aboutLblUser[i] != (u16)-1)
 			m_btnMgr.show(m_aboutLblUser[i]);
 	}
 }

@@ -1246,7 +1246,7 @@ u16 CMenu::_textStyle(const char *domain, const char *key, u16 def)
 	return textStyle;
 }
 
-u32 CMenu::_addButton(CMenu::SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color)
+u16 CMenu::_addButton(CMenu::SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color)
 {
 	SButtonTextureSet btnTexSet;
 	CColor c(color);
@@ -1277,7 +1277,7 @@ u32 CMenu::_addButton(CMenu::SThemeData &theme, const char *domain, SFont font, 
 	return m_btnMgr.addButton(font, text, x, y, width, height, c, btnTexSet, clickSound, hoverSound);
 }
 
-u32 CMenu::_addSelButton(CMenu::SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color)
+u16 CMenu::_addSelButton(CMenu::SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color)
 {
 	SButtonTextureSet btnTexSet;
 	CColor c(color);
@@ -1308,7 +1308,7 @@ u32 CMenu::_addSelButton(CMenu::SThemeData &theme, const char *domain, SFont fon
 	return m_btnMgr.addButton(font, text, x, y, width, height, c, btnTexSet, clickSound, hoverSound);
 }
 
-u32 CMenu::_addPicButton(CMenu::SThemeData &theme, const char *domain, STexture &texNormal, STexture &texSelected, int x, int y, u32 width, u32 height)
+u16 CMenu::_addPicButton(CMenu::SThemeData &theme, const char *domain, STexture &texNormal, STexture &texSelected, int x, int y, u32 width, u32 height)
 {
 	x = m_theme.getInt(domain, "x", x);
 	y = m_theme.getInt(domain, "y", y);
@@ -1328,7 +1328,7 @@ u32 CMenu::_addPicButton(CMenu::SThemeData &theme, const char *domain, STexture 
 	return m_btnMgr.addPicButton(tex1, tex2, x, y, width, height, clickSound, hoverSound);
 }
 
-u32 CMenu::_addTitle(CMenu::SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, u16 style)
+u16 CMenu::_addTitle(CMenu::SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, u16 style)
 {
 	CColor c(color);
 
@@ -1349,7 +1349,7 @@ u32 CMenu::_addTitle(CMenu::SThemeData &theme, const char *domain, SFont font, c
 	return m_btnMgr.addLabel(font, text, x, y, width, height, c, style);
 }
 
-u32 CMenu::_addText(CMenu::SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, u16 style)
+u16 CMenu::_addText(CMenu::SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, u16 style)
 {
 	CColor c(color);
 
@@ -1370,7 +1370,7 @@ u32 CMenu::_addText(CMenu::SThemeData &theme, const char *domain, SFont font, co
 	return m_btnMgr.addLabel(font, text, x, y, width, height, c, style);
 }
 
-u32 CMenu::_addLabel(CMenu::SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, u16 style)
+u16 CMenu::_addLabel(CMenu::SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, u16 style)
 {
 	CColor c(color);
 
@@ -1391,7 +1391,7 @@ u32 CMenu::_addLabel(CMenu::SThemeData &theme, const char *domain, SFont font, c
 	return m_btnMgr.addLabel(font, text, x, y, width, height, c, style);
 }
 
-u32 CMenu::_addLabel(CMenu::SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, u16 style, STexture &bg)
+u16 CMenu::_addLabel(CMenu::SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, u16 style, STexture &bg)
 {
 	CColor c(color);
 
@@ -1413,7 +1413,7 @@ u32 CMenu::_addLabel(CMenu::SThemeData &theme, const char *domain, SFont font, c
 	return m_btnMgr.addLabel(font, text, x, y, width, height, c, style, texBg);
 }
 
-u32 CMenu::_addProgressBar(CMenu::SThemeData &theme, const char *domain, int x, int y, u32 width, u32 height)
+u16 CMenu::_addProgressBar(CMenu::SThemeData &theme, const char *domain, int x, int y, u32 width, u32 height)
 {
 	SButtonTextureSet btnTexSet;
 
@@ -1437,7 +1437,7 @@ u32 CMenu::_addProgressBar(CMenu::SThemeData &theme, const char *domain, int x, 
 	return m_btnMgr.addProgressBar(x, y, width, height, btnTexSet);
 }
 
-void CMenu::_setHideAnim(u32 id, const char *domain, int dx, int dy, float scaleX, float scaleY)
+void CMenu::_setHideAnim(u16 id, const char *domain, int dx, int dy, float scaleX, float scaleY)
 {
 	dx = m_theme.getInt(domain, "effect_x", dx);
 	dy = m_theme.getInt(domain, "effect_y", dy);
@@ -1463,15 +1463,15 @@ void CMenu::_setHideAnim(u32 id, const char *domain, int dx, int dy, float scale
 	m_btnMgr.hide(id, dx, dy, scaleX, scaleY, true);
 }
 
-void CMenu::_addUserLabels(CMenu::SThemeData &theme, u32 *ids, u32 size, const char *domain)
+void CMenu::_addUserLabels(CMenu::SThemeData &theme, u16 *ids, u32 size, const char *domain)
 {
 	_addUserLabels(theme, ids, 0, size, domain);
 }
 
-void CMenu::_addUserLabels(CMenu::SThemeData &theme, u32 *ids, u32 start, u32 size, const char *domain)
+void CMenu::_addUserLabels(CMenu::SThemeData &theme, u16 *ids, u32 start, u32 size, const char *domain)
 {
 
-	for (u32 i = start; i < start + size; ++i)
+	for(u32 i = start; i < start + size; ++i)
 	{
 		string dom(sfmt("%s/USER%i", domain, i + 1));
 		if (m_theme.hasDomain(dom))
@@ -1481,7 +1481,7 @@ void CMenu::_addUserLabels(CMenu::SThemeData &theme, u32 *ids, u32 start, u32 si
 			_setHideAnim(ids[i], dom.c_str(), -50, 0, 0.f, 0.f);
 		}
 		else
-			ids[i] = -1u;
+			ids[i] = (u16)-1;
 	}
 }
 

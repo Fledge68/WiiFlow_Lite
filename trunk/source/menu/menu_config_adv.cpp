@@ -33,8 +33,8 @@ void CMenu::_hideConfigAdv(bool instant)
 	m_btnMgr.hide(m_configAdvBtnCurLanguageP, instant);
 	m_btnMgr.hide(m_configAdvLblCFTheme, instant);
 	m_btnMgr.hide(m_configAdvBtnCFTheme, instant);
-	for (u32 i = 0; i < ARRAY_SIZE(m_configAdvLblUser); ++i)
-		if (m_configAdvLblUser[i] != -1u)
+	for(u8 i = 0; i < ARRAY_SIZE(m_configAdvLblUser); ++i)
+		if(m_configAdvLblUser[i] != (u16)-1)
 			m_btnMgr.hide(m_configAdvLblUser[i], instant);
 }
 
@@ -57,8 +57,8 @@ void CMenu::_showConfigAdv(void)
 		m_btnMgr.show(m_configAdvLblCFTheme);
 		m_btnMgr.show(m_configAdvBtnCFTheme);
 	}
-	for (u32 i = 0; i < ARRAY_SIZE(m_configAdvLblUser); ++i)
-		if (m_configAdvLblUser[i] != -1u)
+	for(u32 i = 0; i < ARRAY_SIZE(m_configAdvLblUser); ++i)
+		if(m_configAdvLblUser[i] != (u16)-1)
 			m_btnMgr.show(m_configAdvLblUser[i]);
 
 	m_btnMgr.setText(m_configAdvLblCurLanguage, m_curLanguage);

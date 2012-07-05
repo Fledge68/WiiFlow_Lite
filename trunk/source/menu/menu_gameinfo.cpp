@@ -129,7 +129,7 @@ void CMenu::_gameinfo(void)
 		{
 			page = 1;
 			amount_of_skips = 0;
-						
+
 			m_btnMgr.reset(m_gameinfoLblSynopsis);
 			m_btnMgr.setText(m_gameinfoLblSynopsis, wfmt(L"%s", gameinfo.Synopsis.c_str()));
 
@@ -142,17 +142,17 @@ void CMenu::_gameinfo(void)
 			m_btnMgr.hide(m_gameinfoLblRating, true);
 			m_btnMgr.hide(m_gameinfoLblWifiplayers, true);
 
-			for (u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControlsReq); ++i)
-				if (m_gameinfoLblControlsReq[i] != -1u)
+			for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControlsReq); ++i)
+				if(m_gameinfoLblControlsReq[i] != (u16)-1)
 					m_btnMgr.hide(m_gameinfoLblControlsReq[i], true);
 			
-			for (u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControls); ++i)
-				if (m_gameinfoLblControls[i] != -1u)
+			for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControls); ++i)
+				if(m_gameinfoLblControls[i] != (u16)-1)
 					m_btnMgr.hide(m_gameinfoLblControls[i], true);
 			
 			// When showing synopsis, only show user labels 2 and 3
-			for (u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblUser); ++i)
-				if (i < ARRAY_SIZE(m_gameinfoLblUser) / 2)
+			for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblUser); ++i)
+				if(i < ARRAY_SIZE(m_gameinfoLblUser) / 2)
 					m_btnMgr.hide(m_gameinfoLblUser[i], true);
 				else
 					m_btnMgr.show(m_gameinfoLblUser[i]);
@@ -172,21 +172,21 @@ void CMenu::_gameinfo(void)
 			m_btnMgr.show(m_gameinfoLblRating);
 			m_btnMgr.show(m_gameinfoLblWifiplayers);
 
-			for (u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControlsReq); ++i)
-				if (m_gameinfoLblControlsReq[i] != -1u && i < cnt_controlsreq)
+			for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControlsReq); ++i)
+				if(m_gameinfoLblControlsReq[i] != (u16)-1 && i < cnt_controlsreq)
 					m_btnMgr.show(m_gameinfoLblControlsReq[i]);
-				
-			for (u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControls); ++i)
-				if (m_gameinfoLblControls[i] != -1u && i < cnt_controls)
+
+			for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControls); ++i)
+				if(m_gameinfoLblControls[i] != (u16)-1 && i < cnt_controls)
 					m_btnMgr.show(m_gameinfoLblControls[i]);
-				
+
 			// When showing synopsis, only show user labels 2 and 3
-			for (u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblUser); ++i)
-				if (i < ARRAY_SIZE(m_gameinfoLblUser) / 2)
+			for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblUser); ++i)
+				if(i < ARRAY_SIZE(m_gameinfoLblUser) / 2)
 					m_btnMgr.show(m_gameinfoLblUser[i]);
 				else
 					m_btnMgr.hide(m_gameinfoLblUser[i], true);
-				
+
 			m_btnMgr.hide(m_gameinfoLblSynopsis,true);
 		}
 
@@ -208,15 +208,15 @@ void CMenu::_hideGameInfo(bool instant)
 	m_btnMgr.hide(m_gameinfoLblRating, instant);
 	m_btnMgr.hide(m_gameinfoLblWifiplayers, instant);
 	
-	for (u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControlsReq); ++i)
-		if (m_gameinfoLblControlsReq[i] != -1u)
+	for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControlsReq); ++i)
+		if(m_gameinfoLblControlsReq[i] != (u16)-1)
 			m_btnMgr.hide(m_gameinfoLblControlsReq[i], instant);
 
-	for (u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblUser); ++i)
+	for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblUser); ++i)
 		m_btnMgr.hide(m_gameinfoLblUser[i], instant);
 
-	for (u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControls); ++i)
-		if (m_gameinfoLblControls[i] != -1u)
+	for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControls); ++i)
+		if(m_gameinfoLblControls[i] != (u16)-1)
 			m_btnMgr.hide(m_gameinfoLblControls[i], instant);
 }
 
@@ -238,16 +238,16 @@ void CMenu::_showGameInfo(void)
 		m_btnMgr.show(m_gameinfoLblGenre);
 		m_btnMgr.show(m_gameinfoLblWifiplayers);
 
-		for (u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblUser); ++i)
-			if (i < ARRAY_SIZE(m_gameinfoLblUser) / 2)
+		for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblUser); ++i)
+			if(i < ARRAY_SIZE(m_gameinfoLblUser) / 2)
 				m_btnMgr.show(m_gameinfoLblUser[i]);
 		
-		for (u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControlsReq); ++i)
-			if (m_gameinfoLblControlsReq[i] != -1u && i < cnt_controlsreq)
+		for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControlsReq); ++i)
+			if(m_gameinfoLblControlsReq[i] != (u16)-1 && i < cnt_controlsreq)
 				m_btnMgr.show(m_gameinfoLblControlsReq[i]);
 			
-		for (u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControls); ++i)
-			if (m_gameinfoLblControls[i] != -1u && i < cnt_controls)
+		for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControls); ++i)
+			if(m_gameinfoLblControls[i] != (u16)-1 && i < cnt_controls)
 				m_btnMgr.show(m_gameinfoLblControls[i]);
 	}
 }
@@ -274,14 +274,14 @@ void CMenu::_initGameInfoMenu(CMenu::SThemeData &theme)
 
 	m_gameinfoLblTitle = _addLabel(theme, "GAMEINFO/TITLE", theme.titleFont, L"", 20, 30, 600, 75, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 
-	for (u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControlsReq); ++i)
+	for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControlsReq); ++i)
 	{
 		string dom(sfmt("GAMEINFO/CONTROLSREQ%i", i + 1));
 		m_gameinfoLblControlsReq[i] = _addLabel(theme, dom.c_str(), theme.txtFont, L"", 40 + (i*60), 310, 60, 40, theme.txtFontColor, 0, emptyTex);
 		_setHideAnim(m_gameinfoLblControlsReq[i], dom.c_str(), 0, -100, 0.f, 0.f);
 	}
 
-	for (u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControls); ++i)
+	for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControls); ++i)
 	{
 		string dom(sfmt("GAMEINFO/CONTROLS%i", i + 1));
 		m_gameinfoLblControls[i] = _addLabel(theme, dom.c_str(), theme.txtFont, L"", 40 + (i*60), 380, 60, 40, theme.txtFontColor, 0, emptyTex);

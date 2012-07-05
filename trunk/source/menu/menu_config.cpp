@@ -33,8 +33,8 @@ void CMenu::_hideConfig(bool instant)
 	m_btnMgr.hide(m_configBtnSetCode, instant);
 	m_btnMgr.hide(m_configLblCfg4, instant);
 	m_btnMgr.hide(m_configBtnCfg4, instant);
-	for (u32 i = 0; i < ARRAY_SIZE(m_configLblUser); ++i)
-		if (m_configLblUser[i] != -1u)
+	for(u8 i = 0; i < ARRAY_SIZE(m_configLblUser); ++i)
+		if(m_configLblUser[i] != (u16)-1)
 			m_btnMgr.hide(m_configLblUser[i], instant);
 }
 
@@ -68,8 +68,8 @@ void CMenu::_showConfig(void)
 		for(u8 i = 0; strncmp((const char *)&partitionname[i], "\0", 1) != 0; i++)
 			partitionname[i] = toupper(partitionname[i]);
 
-		for (u32 i = 0; i < ARRAY_SIZE(m_configLblUser); ++i)
-			if (m_configLblUser[i] != -1u)
+		for(u8 i = 0; i < ARRAY_SIZE(m_configLblUser); ++i)
+			if(m_configLblUser[i] != (u16)-1)
 				m_btnMgr.show(m_configLblUser[i]);
 		
 		m_btnMgr.setText(m_configLblPartition, (string)partitionname);

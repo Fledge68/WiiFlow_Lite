@@ -18,8 +18,8 @@ void CMenu::_hideWBFS(bool instant)
 	m_btnMgr.hide(m_wbfsBtnGo, instant);
 	m_btnMgr.hide(m_wbfsLblDialog);
 	m_btnMgr.hide(m_wbfsLblMessage);
-	for (u32 i = 0; i < ARRAY_SIZE(m_wbfsLblUser); ++i)
-		if (m_wbfsLblUser[i] != -1u)
+	for(u8 i = 0; i < ARRAY_SIZE(m_wbfsLblUser); ++i)
+		if(m_wbfsLblUser[i] != (u16)-1)
 			m_btnMgr.hide(m_wbfsLblUser[i], instant);
 }
 
@@ -45,8 +45,8 @@ void CMenu::_showWBFS(CMenu::WBFS_OP op)
 	m_btnMgr.show(m_wbfsBtnBack);
 	m_btnMgr.show(m_wbfsBtnGo);
 	m_btnMgr.show(m_wbfsLblDialog);
-	for (u32 i = 0; i < ARRAY_SIZE(m_wbfsLblUser); ++i)
-		if (m_wbfsLblUser[i] != -1u)
+	for(u8 i = 0; i < ARRAY_SIZE(m_wbfsLblUser); ++i)
+		if(m_wbfsLblUser[i] != (u16)-1)
 			m_btnMgr.show(m_wbfsLblUser[i]);
 }
 

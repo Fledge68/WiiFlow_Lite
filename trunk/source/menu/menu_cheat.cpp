@@ -277,8 +277,8 @@ void CMenu::_hideCheatSettings(bool instant)
 		m_btnMgr.hide(m_cheatLblItem[i], instant);
 	}
 	
-	for (u32 i = 0; i < ARRAY_SIZE(m_cheatLblUser); ++i)
-		if (m_cheatLblUser[i] != -1u)
+	for(u8 i = 0; i < ARRAY_SIZE(m_cheatLblUser); ++i)
+		if(m_cheatLblUser[i] != (u16)-1)
 			m_btnMgr.hide(m_cheatLblUser[i], instant);
 }
 
@@ -288,8 +288,8 @@ void CMenu::_showCheatSettings(void)
 	m_btnMgr.show(m_cheatBtnBack);
 	m_btnMgr.show(m_cheatLblTitle);
 
-	for (u32 i = 0; i < ARRAY_SIZE(m_cheatLblUser); ++i)
-		if (m_cheatLblUser[i] != -1u)
+	for(u8 i = 0; i < ARRAY_SIZE(m_cheatLblUser); ++i)
+		if(m_cheatLblUser[i] != (u16)-1)
 			m_btnMgr.show(m_cheatLblUser[i]);
 
 	if (m_cheatfile.getCnt() > 0)

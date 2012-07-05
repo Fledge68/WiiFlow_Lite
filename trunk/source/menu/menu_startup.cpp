@@ -22,20 +22,20 @@ string m_sourceDir;
 Config m_source;
 
 // Source menu
-u32 m_sourceLblNotice;
-u32 m_sourceLblPage;
-u32 m_sourceBtnPageM;
-u32 m_sourceBtnPageP;
-u32 m_sourceBtnBack;
-u32 m_sourceLblTitle;
-u32 m_sourceBtnSource[36];
-u32 m_sourceLblUser[4];
+u16 m_sourceLblNotice;
+u16 m_sourceLblPage;
+u16 m_sourceBtnPageM;
+u16 m_sourceBtnPageP;
+u16 m_sourceBtnBack;
+u16 m_sourceLblTitle;
+u16 m_sourceBtnSource[36];
+u16 m_sourceLblUser[4];
 STexture m_sourceBg;
-u32 m_sourceBtnDML;
-u32 m_sourceBtnEmu;
-u32 m_sourceBtnUsb;
-u32 m_sourceBtnChannel;
-u32 m_sourceBtnHomebrew;
+u16 m_sourceBtnDML;
+u16 m_sourceBtnEmu;
+u16 m_sourceBtnUsb;
+u16 m_sourceBtnChannel;
+u16 m_sourceBtnHomebrew;
 
 void CMenu::_hideSource(bool instant)
 {
@@ -51,32 +51,32 @@ void CMenu::_hideSource(bool instant)
 	m_btnMgr.hide(m_sourceBtnDML, instant);
 	m_btnMgr.hide(m_sourceBtnEmu, instant);
 
-	for (u32 i = 0; i < ARRAY_SIZE(m_sourceLblUser); ++i)
+	u8 i = 0;
+	for(i = 0; i < ARRAY_SIZE(m_sourceLblUser); ++i)
 	{
-		if (m_sourceLblUser[i] != -1u)
+		if(m_sourceLblUser[i] != (u16)-1)
 			m_btnMgr.hide(m_sourceLblUser[i], instant);
 	}
 
-	for (int i = 0; i < 36; ++i)
-	{
+	for(i = 0; i < 36; ++i)
 		m_btnMgr.hide(m_sourceBtnSource[i]);
-	}
 }
 
 void CMenu::_showSource(void)
 {
 	_setBg(m_sourceBg, m_sourceBg);
-	
-	for (u32 i = 0; i < ARRAY_SIZE(m_sourceLblUser); ++i)
+
+	u8 i = 0;
+	for(i = 0; i < ARRAY_SIZE(m_sourceLblUser); ++i)
 	{
-		if (m_sourceLblUser[i] != -1u)
+		if(m_sourceLblUser[i] != (u16)-1)
 			m_btnMgr.show(m_sourceLblUser[i]);
 	}
 
 	m_btnMgr.show(m_sourceLblTitle);
 	m_btnMgr.show(m_sourceBtnBack);
 	
-	for (int i = 12; i < 36; ++i)
+	for(i = 12; i < 36; ++i)
 	{
 		string source = m_source.getString(fmt("BUTTON_%i", i), "source", "");
 		if (!source.empty())
@@ -96,12 +96,12 @@ void CMenu::_updateSourceBtns(void)
 		m_btnMgr.show(m_sourceBtnPageM);
 		m_btnMgr.show(m_sourceBtnPageP);
 	}
-	for (int i = 0; i < 36; ++i)
+	for (u8 i = 0; i < 36; ++i)
 		m_btnMgr.hide(m_sourceBtnSource[i]);		
 
-	int j = (Source_curPage - 1) * 12;
+	u8 j = (Source_curPage - 1) * 12;
 	
-	for (int i = j; i < (j + 12); ++i)
+	for (u8 i = j; i < (j + 12); ++i)
 	{	
 		string source = m_source.getString(fmt("BUTTON_%i", i), "source", "");
 		if (!source.empty())

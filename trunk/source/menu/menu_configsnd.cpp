@@ -23,8 +23,8 @@ void CMenu::_hideConfigSnd(bool instant)
 	m_btnMgr.hide(m_configSndLblCFVolVal, instant);
 	m_btnMgr.hide(m_configSndBtnCFVolP, instant);
 	m_btnMgr.hide(m_configSndBtnCFVolM, instant);
-	for (u32 i = 0; i < ARRAY_SIZE(m_configSndLblUser); ++i)
-		if (m_configSndLblUser[i] != -1u)
+	for(u8 i = 0; i < ARRAY_SIZE(m_configSndLblUser); ++i)
+		if(m_configSndLblUser[i] != (u16)-1)
 			m_btnMgr.hide(m_configSndLblUser[i], instant);
 }
 
@@ -48,8 +48,8 @@ void CMenu::_showConfigSnd(void)
 	m_btnMgr.show(m_configSndLblCFVolVal);
 	m_btnMgr.show(m_configSndBtnCFVolP);
 	m_btnMgr.show(m_configSndBtnCFVolM);
-	for (u32 i = 0; i < ARRAY_SIZE(m_configSndLblUser); ++i)
-		if (m_configSndLblUser[i] != -1u)
+	for(u8 i = 0; i < ARRAY_SIZE(m_configSndLblUser); ++i)
+		if(m_configSndLblUser[i] != (u16)-1)
 			m_btnMgr.show(m_configSndLblUser[i]);
 
 	m_btnMgr.setText(m_configSndLblGuiVolVal, wfmt(L"%i", m_cfg.getInt("GENERAL", "sound_volume_gui", 255)));

@@ -29,7 +29,7 @@ bool CButtonsMgr::init(CVideo &vid)
 	return true;
 }
 
-u32 CButtonsMgr::addButton(SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color,
+u16 CButtonsMgr::addButton(SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color,
 	const SButtonTextureSet &texSet, const SmartGuiSound &clickSound, const SmartGuiSound &hoverSound)
 {
 	CButtonsMgr::SButton *b = new CButtonsMgr::SButton;
@@ -56,13 +56,13 @@ u32 CButtonsMgr::addButton(SFont font, const wstringEx &text, int x, int y, u32 
 	b->moveByX = 0;
 	b->moveByY = 0;
 
-	u32 sz = m_elts.size();
+	u16 sz = m_elts.size();
 	m_elts.push_back(elt);
 
 	return m_elts.size() > sz ? m_elts.size() - 1 : -2;
 }
 
-void CButtonsMgr::reset(u32 id, bool instant)
+void CButtonsMgr::reset(u16 id, bool instant)
 {
 	if (id < m_elts.size())
 	{
@@ -81,7 +81,7 @@ void CButtonsMgr::reset(u32 id, bool instant)
 	}
 }
 
-void CButtonsMgr::moveBy(u32 id, int x, int y, bool instant)
+void CButtonsMgr::moveBy(u16 id, int x, int y, bool instant)
 {
 	if (id < m_elts.size())
 	{
@@ -100,7 +100,7 @@ void CButtonsMgr::moveBy(u32 id, int x, int y, bool instant)
 	}
 }
 
-void CButtonsMgr::getDimensions(u32 id, int &x, int &y, u32 &width, u32 &height)
+void CButtonsMgr::getDimensions(u16 id, int &x, int &y, u32 &width, u32 &height)
 {
 	if (id < m_elts.size())
 	{
@@ -119,7 +119,7 @@ void CButtonsMgr::getDimensions(u32 id, int &x, int &y, u32 &width, u32 &height)
 	}
 }
 
-void CButtonsMgr::hide(u32 id, int dx, int dy, float scaleX, float scaleY, bool instant)
+void CButtonsMgr::hide(u16 id, int dx, int dy, float scaleX, float scaleY, bool instant)
 {
 	if (id < m_elts.size())
 	{
@@ -146,7 +146,7 @@ void CButtonsMgr::hide(u32 id, int dx, int dy, float scaleX, float scaleY, bool 
 	}
 }
 
-void CButtonsMgr::hide(u32 id, bool instant)
+void CButtonsMgr::hide(u16 id, bool instant)
 {
 	if (id < m_elts.size())
 	{
@@ -173,7 +173,7 @@ void CButtonsMgr::setSoundVolume(int vol)
 	m_soundVolume = min(max(0, vol), 0xFF);
 }
 
-void CButtonsMgr::show(u32 id, bool instant)
+void CButtonsMgr::show(u16 id, bool instant)
 {
 	if (id < m_elts.size())
 	{
@@ -245,7 +245,7 @@ void CButtonsMgr::mouse(int chan, int x, int y)
 	}
 }
 
-bool CButtonsMgr::selected(u32 button)
+bool CButtonsMgr::selected(u16 button)
 {
 	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 	{
@@ -324,14 +324,14 @@ void CButtonsMgr::noClick(bool noclick)
 	m_noclick = noclick;
 }
 
-void CButtonsMgr::click(u32 id)
+void CButtonsMgr::click(u16 id)
 {
 	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 	{
 		WPAD_Rumble(chan, 0);
 		PAD_ControlMotor(chan, 0);
 
-		if (id == (u32)-1) id = m_selected[chan];
+		if (id == (u16)-1) id = m_selected[chan];
 		if (id < m_elts.size() && m_elts[id]->t == CButtonsMgr::GUIELT_BUTTON)
 		{
 			CButtonsMgr::SButton &b = *((CButtonsMgr::SButton *)m_elts[id].get());
@@ -384,7 +384,7 @@ void CButtonsMgr::tick(void)
 
 }
 
-u32 CButtonsMgr::addLabel(SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, u16 style, const STexture &bg)
+u16 CButtonsMgr::addLabel(SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, u16 style, const STexture &bg)
 {
 	CButtonsMgr::SLabel *b = new CButtonsMgr::SLabel;
 	SmartPtr<CButtonsMgr::SElement> elt(b);
@@ -409,13 +409,13 @@ u32 CButtonsMgr::addLabel(SFont font, const wstringEx &text, int x, int y, u32 w
 	b->moveByX = 0;
 	b->moveByY = 0;
 
-	u32 sz = m_elts.size();
+	u16 sz = m_elts.size();
 	m_elts.push_back(elt);
 
 	return m_elts.size() > sz ? m_elts.size() - 1 : -2;
 }
 
-u32 CButtonsMgr::addProgressBar(int x, int y, u32 width, u32 height, SButtonTextureSet &texSet)
+u16 CButtonsMgr::addProgressBar(int x, int y, u32 width, u32 height, SButtonTextureSet &texSet)
 {
 	CButtonsMgr::SProgressBar *b = new CButtonsMgr::SProgressBar;
 	SmartPtr<CButtonsMgr::SElement> elt(b);
@@ -437,33 +437,31 @@ u32 CButtonsMgr::addProgressBar(int x, int y, u32 width, u32 height, SButtonText
 	b->moveByX = 0;
 	b->moveByY = 0;
 
-	u32 sz = m_elts.size();
+	u16 sz = m_elts.size();
 	m_elts.push_back(elt);
 
 	return m_elts.size() > sz ? m_elts.size() - 1 : -2;
 }
 
-u32 CButtonsMgr::addPicButton(STexture &texNormal, STexture &texSelected, int x, int y, u32 width, u32 height, const SmartGuiSound &clickSound, const SmartGuiSound &hoverSound)
+u16 CButtonsMgr::addPicButton(STexture &texNormal, STexture &texSelected, int x, int y, u32 width, u32 height, const SmartGuiSound &clickSound, const SmartGuiSound &hoverSound)
 {
 	SButtonTextureSet texSet;
 
 	texSet.center = texNormal;
 	texSet.centerSel = texSelected;
-	u32 i = addButton(SFont(), wstringEx(), x, y, width, height, CColor(), texSet, clickSound, hoverSound);
-	return i;
+	return addButton(SFont(), wstringEx(), x, y, width, height, CColor(), texSet, clickSound, hoverSound);
 }
 
-u32 CButtonsMgr::addPicButton(const u8 *pngNormal, const u8 *pngSelected, int x, int y, u32 width, u32 height, const SmartGuiSound &clickSound, const SmartGuiSound &hoverSound)
+u16 CButtonsMgr::addPicButton(const u8 *pngNormal, const u8 *pngSelected, int x, int y, u32 width, u32 height, const SmartGuiSound &clickSound, const SmartGuiSound &hoverSound)
 {
 	SButtonTextureSet texSet;
 
 	texSet.center.fromPNG(pngNormal);
 	texSet.centerSel.fromPNG(pngSelected);
-	u32 i = addButton(SFont(), wstringEx(), x, y, width, height, CColor(), texSet, clickSound, hoverSound);
-	return i;
+	return addButton(SFont(), wstringEx(), x, y, width, height, CColor(), texSet, clickSound, hoverSound);
 }
 
-void CButtonsMgr::setText(u32 id, const wstringEx &text, bool unwrap)
+void CButtonsMgr::setText(u16 id, const wstringEx &text, bool unwrap)
 {
 	if (id < m_elts.size())
 	{
@@ -485,7 +483,7 @@ void CButtonsMgr::setText(u32 id, const wstringEx &text, bool unwrap)
 	}
 }
 
-void CButtonsMgr::setText(u32 id, const wstringEx &text, u32 startline,bool unwrap)
+void CButtonsMgr::setText(u16 id, const wstringEx &text, u32 startline,bool unwrap)
 {
 	if (id < m_elts.size())
 	{
@@ -507,7 +505,7 @@ void CButtonsMgr::setText(u32 id, const wstringEx &text, u32 startline,bool unwr
 	}
 }
 
-void CButtonsMgr::setTexture(u32 id, STexture &bg)
+void CButtonsMgr::setTexture(u16 id, STexture &bg)
 {
 	if (id < m_elts.size())
 	{
@@ -526,7 +524,7 @@ void CButtonsMgr::setTexture(u32 id, STexture &bg)
 	}
 }
 
-void CButtonsMgr::setTexture(u32 id, STexture &bg, int width, int height)
+void CButtonsMgr::setTexture(u16 id, STexture &bg, int width, int height)
 {
 	if (id < m_elts.size())
 	{
@@ -547,7 +545,7 @@ void CButtonsMgr::setTexture(u32 id, STexture &bg, int width, int height)
 	}
 }
 
-void CButtonsMgr::setProgress(u32 id, float f, bool instant)
+void CButtonsMgr::setProgress(u16 id, float f, bool instant)
 {
 	if (m_elts[id]->t == CButtonsMgr::GUIELT_PROGRESS)
 	{

@@ -3,9 +3,9 @@
 #include "gecko.h"
 
 extern const u8 error_png[];
-u32 m_errorLblMessage;
-u32 m_errorLblIcon;
-u32 m_errorLblUser[4];
+u16 m_errorLblMessage;
+u16 m_errorLblIcon;
+u16 m_errorLblUser[4];
 
 void CMenu::error(const wstringEx &msg)
 {
@@ -44,8 +44,8 @@ void CMenu::_hideError(bool instant)
 {
 	m_btnMgr.hide(m_errorLblIcon, instant);
 	m_btnMgr.hide(m_errorLblMessage, instant);
-	for (u32 i = 0; i < ARRAY_SIZE(m_errorLblUser); ++i)
-		if (m_errorLblUser[i] != -1u)
+	for(u8 i = 0; i < ARRAY_SIZE(m_errorLblUser); ++i)
+		if(m_errorLblUser[i] != (u16)-1)
 			m_btnMgr.hide(m_errorLblUser[i], instant);
 }
 
@@ -54,8 +54,8 @@ void CMenu::_showError(void)
 	_setBg(m_errorBg, m_errorBg);
 	m_btnMgr.show(m_errorLblMessage);
 	m_btnMgr.show(m_errorLblIcon);
-	for (u32 i = 0; i < ARRAY_SIZE(m_errorLblUser); ++i)
-		if (m_errorLblUser[i] != -1u)
+	for(u8 i = 0; i < ARRAY_SIZE(m_errorLblUser); ++i)
+		if(m_errorLblUser[i] != (u16)-1)
 			m_btnMgr.show(m_errorLblUser[i]);
 }
 

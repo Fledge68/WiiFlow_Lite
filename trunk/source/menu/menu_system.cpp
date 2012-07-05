@@ -227,8 +227,8 @@ void CMenu::_hideSystem(bool instant)
 	m_btnMgr.hide(m_systemLblVerSelectVal);
 	m_btnMgr.hide(m_systemBtnVerSelectM);
 	m_btnMgr.hide(m_systemBtnVerSelectP);
-	for (u32 i = 0; i < ARRAY_SIZE(m_systemLblUser); ++i)
-		if (m_systemLblUser[i] != -1u)
+	for(u8 i = 0; i < ARRAY_SIZE(m_systemLblUser); ++i)
+		if(m_systemLblUser[i] != (u16)-1)
 			m_btnMgr.hide(m_systemLblUser[i], instant);
 }
 
@@ -244,8 +244,8 @@ void CMenu::_showSystem(void)
 	m_btnMgr.show(m_systemBtnVerSelectM);
 	m_btnMgr.show(m_systemBtnVerSelectP);
 	m_btnMgr.show(m_systemBtnDownload);
-	for (u32 i = 0; i < ARRAY_SIZE(m_systemLblUser); ++i)
-		if (m_systemLblUser[i] != -1u)
+	for(u8 i = 0; i < ARRAY_SIZE(m_systemLblUser); ++i)
+		if(m_systemLblUser[i] != (u16)-1)
 			m_btnMgr.show(m_systemLblUser[i]);
 	_textSystem();
 }
