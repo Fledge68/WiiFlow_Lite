@@ -2,27 +2,22 @@
 
 using namespace std;
 
-MusicPlayer *MusicPlayer::instance = NULL;
-
-MusicPlayer *MusicPlayer::Instance() 
+MusicPlayer::MusicPlayer()
 {
-	if (instance == NULL)
-		instance = new MusicPlayer();
-
-	return instance; 
+	m_music = NULL;
 }
 
-void MusicPlayer::DestroyInstance()
+void MusicPlayer::cleanup()
 {
-	if (instance != NULL)
-		delete instance;
-
-	instance = NULL;
+	if (m_music != NULL)
+	{
+		m_music->Stop();
+		delete m_music;
+	}
 }
 
 void MusicPlayer::Init(Config &cfg, string musicDir, string themeMusicDir) 
 {
-	m_music = NULL;
 	m_manual_stop = true;
 	m_stopped = true;
 	m_fade_rate = cfg.getInt("GENERAL", "music_fade_rate", 8);

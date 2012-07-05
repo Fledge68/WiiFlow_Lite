@@ -30,7 +30,6 @@
 #include "wiiuse/wpad.h"
 
 #include "WiiMovie.hpp"
-#include "musicplayer.h"
 #include "gecko.h"
 #include "mem2.hpp"
 
@@ -98,8 +97,6 @@ WiiMovie::~WiiMovie()
     LWP_MutexDestroy(mutex);
 
     ASND_StopVoice(10);
-	MusicPlayer::Instance()->Play();
-	
 	if (ReadThread != LWP_THREAD_NULL)
 	{
 		LWP_ResumeThread(ReadThread);

@@ -273,7 +273,7 @@ int CMenu::main(void)
 		_initAsyncNetwork();
 
 	SetupInput(true);
-	MusicPlayer::Instance()->Play();
+	m_music->Play();
 	
 	GameTDB m_gametdb; 
  	m_gametdb.OpenFile(fmt("%s/wiitdb.xml", m_settingsDir.c_str()));
@@ -543,14 +543,14 @@ int CMenu::main(void)
 			else if(BTN_MINUS_PRESSED)
 			{
 				if(b_lr_mode)
-					MusicPlayer::Instance()->Previous();
+					m_music->Previous();
 				else
 					m_cf.pageUp();
 			}
 			else if(BTN_PLUS_PRESSED)
 			{
 				if(b_lr_mode)
-					MusicPlayer::Instance()->Next();
+					m_music->Next();
 				else
 					m_cf.pageDown();
 			}
@@ -593,7 +593,7 @@ int CMenu::main(void)
 				if(b_lr_mode)
 					m_cf.pageUp();
 				else
-					MusicPlayer::Instance()->Previous();
+					m_music->Previous();
 			}
 			else if(BTN_RIGHT_PRESSED)
 			{
@@ -601,7 +601,7 @@ int CMenu::main(void)
 				if(b_lr_mode)
 					m_cf.pageDown();
 				else
-					MusicPlayer::Instance()->Next();
+					m_music->Next();
 			}
 			else if(BTN_PLUS_PRESSED && !m_locked)
 			{
