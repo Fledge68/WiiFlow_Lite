@@ -412,6 +412,7 @@ void CMenu::_game(bool launch)
 		if (BTN_B_PRESSED && (m_btnMgr.selected(m_gameBtnFavoriteOn) || m_btnMgr.selected(m_gameBtnFavoriteOff)))
 		{
 			_hideGame();
+			m_banner->DeleteBanner();
 			_CategorySettings(true);
 			_showGame();
 			continue;
@@ -427,6 +428,7 @@ void CMenu::_game(bool launch)
 		else if(BTN_PLUS_PRESSED && m_GameTDBLoaded && (m_cf.getHdr()->type == TYPE_WII_GAME || m_cf.getHdr()->type == TYPE_GC_GAME || m_cf.getHdr()->type == TYPE_CHANNEL))
 		{
 			_hideGame();
+			m_banner->DeleteBanner();
 			m_gameSelected = true;
 			_gameinfo();
 			_showGame();
