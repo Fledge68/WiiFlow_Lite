@@ -7,16 +7,16 @@ u32 Plugin_curPage;
 u8 Plugin_lastBtn;
 
 // Plugin menu
-u32 m_pluginLblPage;
-u32 m_pluginBtnPageM;
-u32 m_pluginBtnPageP;
-u32 m_pluginBtnBack;
-u32 m_pluginLblTitle;
-u32 m_pluginLblCat[21];
-u32 m_pluginBtn[21];
-u32 m_pluginBtnCat[21];
-u32 m_pluginBtnCats[21];
-u32 m_pluginLblUser[4];
+u16 m_pluginLblPage;
+u16 m_pluginBtnPageM;
+u16 m_pluginBtnPageP;
+u16 m_pluginBtnBack;
+u16 m_pluginLblTitle;
+u16 m_pluginLblCat[21];
+u16 m_pluginBtn[21];
+u16 m_pluginBtnCat[21];
+u16 m_pluginBtnCats[21];
+u16 m_pluginLblUser[4];
 u8 m_max_plugins;
 STexture m_pluginBg;
 
@@ -27,9 +27,9 @@ void CMenu::_hidePluginSettings(bool instant)
 	m_btnMgr.hide(m_pluginLblPage, instant);
 	m_btnMgr.hide(m_pluginBtnPageM, instant);
 	m_btnMgr.hide(m_pluginBtnPageP, instant);
-	for(u32 i = 0; i < ARRAY_SIZE(m_pluginLblUser); ++i)
+	for(u8 i = 0; i < ARRAY_SIZE(m_pluginLblUser); ++i)
 	{
-		if(m_pluginLblUser[i] != -1u)
+		if(m_pluginLblUser[i] != (u16)-1)
 			m_btnMgr.hide(m_pluginLblUser[i], instant);
 	}
 
@@ -43,9 +43,9 @@ void CMenu::_hidePluginSettings(bool instant)
 void CMenu::_showPluginSettings(void)
 {
 	_setBg(m_pluginBg, m_pluginBg);
-	for(u32 i = 0; i < ARRAY_SIZE(m_pluginLblUser); ++i)
+	for(u8 i = 0; i < ARRAY_SIZE(m_pluginLblUser); ++i)
 	{
-		if(m_pluginLblUser[i] != -1u)
+		if(m_pluginLblUser[i] != (u16)-1)
 			m_btnMgr.show(m_pluginLblUser[i]);
 	}
 	m_btnMgr.show(m_pluginLblTitle);
@@ -205,7 +205,7 @@ void CMenu::_initPluginSettingsMenu(CMenu::SThemeData &theme)
 	_setHideAnim(m_pluginBtnPageM, "PLUGIN/PAGE_MINUS", 0, 200, 1.f, 0.f);
 	_setHideAnim(m_pluginBtnPageP, "PLUGIN/PAGE_PLUS", 0, 200, 1.f, 0.f);
 	_setHideAnim(m_pluginBtnBack, "PLUGIN/BACK_BTN", 0, 200, 1.f, 0.f);
-	for(int i = 0; i < 21; ++i)
+	for(u8 i = 0; i < 21; ++i)
 	{
 		_setHideAnim(m_pluginBtnCat[i], fmt("PLUGIN/PLUGIN_%i_BTN", i), 0, 0, 1.f, 0.f);
 		_setHideAnim(m_pluginBtnCats[i], fmt("PLUGIN/PLUGIN_%i_BTNS", i), 0, 0, 1.f, 0.f);

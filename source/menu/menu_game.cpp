@@ -60,10 +60,10 @@ extern int mainIOS;
 static u64 sm_title_id[8]  ATTRIBUTE_ALIGN(32);
 
 bool m_zoom_banner = false;
-u32 m_gameBtnPlayFull;
-u32 m_gameBtnBackFull;
-u32 m_gameBtnToogle;
-u32 m_gameBtnToogleFull;
+u16 m_gameBtnPlayFull;
+u16 m_gameBtnBackFull;
+u16 m_gameBtnToogle;
+u16 m_gameBtnToogleFull;
 
 const string CMenu::_translations[23] = {
 	"Default",
@@ -324,8 +324,8 @@ void CMenu::_hideGame(bool instant)
 	m_btnMgr.hide(m_gameBtnFavoriteOff, instant);
 	m_btnMgr.hide(m_gameBtnAdultOn, instant);
 	m_btnMgr.hide(m_gameBtnAdultOff, instant);
-	for (u32 i = 0; i < ARRAY_SIZE(m_gameLblUser); ++i)
-		if (m_gameLblUser[i] != -1u)
+	for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser); ++i)
+		if(m_gameLblUser[i] != (u16)-1)
 			m_btnMgr.hide(m_gameLblUser[i], instant);
 }
 
@@ -347,9 +347,9 @@ void CMenu::_showGame(void)
 
 	if(!m_zoom_banner)
 	{
-		for(u32 i = 0; i < ARRAY_SIZE(m_gameLblUser); ++i)
+		for(u16 i = 0; i < ARRAY_SIZE(m_gameLblUser); ++i)
 		{
-			if(m_gameLblUser[i] != -1u)
+			if(m_gameLblUser[i] != (u16)-1)
 				m_btnMgr.show(m_gameLblUser[i]);
 		}
 		m_btnMgr.show(m_gameBtnPlay);
@@ -523,7 +523,7 @@ void CMenu::_game(bool launch)
 				if(!m_gameSound.IsPlaying()) 
 					startGameSound = -6;
 			}
-			else if(launch || m_btnMgr.selected(m_gameBtnPlay) || m_btnMgr.selected(m_gameBtnPlayFull) || (!WPadIR_Valid(0) && !WPadIR_Valid(1) && !WPadIR_Valid(2) && !WPadIR_Valid(3) && m_btnMgr.selected((u32)-1)))
+			else if(launch || m_btnMgr.selected(m_gameBtnPlay) || m_btnMgr.selected(m_gameBtnPlayFull) || (!WPadIR_Valid(0) && !WPadIR_Valid(1) && !WPadIR_Valid(2) && !WPadIR_Valid(3) && m_btnMgr.selected((u16)-1)))
 			{
 				_hideGame();
 				dir_discHdr *hdr = m_cf.getHdr();
@@ -632,9 +632,9 @@ void CMenu::_game(bool launch)
 			m_btnMgr.hide(m_gameBtnPlayFull);
 			m_btnMgr.hide(m_gameBtnBackFull);
 			m_btnMgr.hide(m_gameBtnToogleFull);
-			for(u32 i = 0; i < ARRAY_SIZE(m_gameLblUser); ++i)
+			for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser); ++i)
 			{
-				if(m_gameLblUser[i] != -1u)
+				if(m_gameLblUser[i] != (u16)-1)
 					m_btnMgr.show(m_gameLblUser[i]);
 			}
 			if(!m_locked)
@@ -664,8 +664,8 @@ void CMenu::_game(bool launch)
 			m_btnMgr.hide(m_gameBtnPlay);
 			m_btnMgr.hide(m_gameBtnBack);
 			m_btnMgr.hide(m_gameBtnToogle);
-			for (u32 i = 0; i < ARRAY_SIZE(m_gameLblUser); ++i)
-				if (m_gameLblUser[i] != -1u)
+			for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser); ++i)
+				if (m_gameLblUser[i] != (u16)-1)
 					m_btnMgr.hide(m_gameLblUser[i]);
 		}
 	}

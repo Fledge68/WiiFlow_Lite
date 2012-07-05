@@ -7,14 +7,14 @@ extern const u8 deletes_png[];
 
 void CMenu::_hideCode(bool instant)
 {
-	for (int i = 0; i < 10; ++i)
+	for(u8 i = 0; i < 10; ++i)
 		m_btnMgr.hide(m_codeBtnKey[i], instant);
 	m_btnMgr.hide(m_codeBtnBack, instant);
 	m_btnMgr.hide(m_codeBtnErase, instant);
 	m_btnMgr.hide(m_codeBtnAge, instant);
 	m_btnMgr.hide(m_codeLblTitle, instant);
-	for (u32 i = 0; i < ARRAY_SIZE(m_codeLblUser); ++i)
-		if (m_codeLblUser[i] != -1u)
+	for(u8 i = 0; i < ARRAY_SIZE(m_codeLblUser); ++i)
+		if(m_codeLblUser[i] != (u16)-1)
 			m_btnMgr.hide(m_codeLblUser[i], instant);
 	m_btnMgr.hide(m_codeLblAge, true);
 }
@@ -22,12 +22,12 @@ void CMenu::_hideCode(bool instant)
 void CMenu::_showCode(void)
 {
 	_setBg(m_codeBg, m_codeBg);
-	for (int i = 0; i < 10; ++i)
+	for(u8 i = 0; i < 10; ++i)
 		m_btnMgr.show(m_codeBtnKey[i]);
 	m_btnMgr.show(m_codeBtnBack);
 	m_btnMgr.show(m_codeLblTitle);
-	for (u32 i = 0; i < ARRAY_SIZE(m_codeLblUser); ++i)
-		if (m_codeLblUser[i] != -1u)
+	for(u8 i = 0; i < ARRAY_SIZE(m_codeLblUser); ++i)
+		if(m_codeLblUser[i] != (u16)-1)
 			m_btnMgr.show(m_codeLblUser[i]);
 	m_btnMgr.hide(m_codeLblAge, true);
 }

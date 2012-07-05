@@ -69,8 +69,8 @@ void CMenu::_hideMain(bool instant)
 	m_btnMgr.hide(m_mainBtnFavoritesOff, instant);
 	m_btnMgr.hide(m_mainLblLetter, instant);
 	m_btnMgr.hide(m_mainLblNotice, instant);
-	for (u32 i = 0; i < ARRAY_SIZE(m_mainLblUser); ++i)
-		if (m_mainLblUser[i] != -1u)
+	for(u8 i = 0; i < ARRAY_SIZE(m_mainLblUser); ++i)
+		if(m_mainLblUser[i] != (u16)-1)
 			m_btnMgr.hide(m_mainLblUser[i], instant);
 }
 
@@ -135,8 +135,8 @@ void CMenu::_showMain(void)
 			break;
 	}
 
-	for (u32 i = 1; i < ARRAY_SIZE(m_mainLblUser); ++i)
-		if (m_mainLblUser[i] != -1u)
+	for(u8 i = 0; i < ARRAY_SIZE(m_mainLblUser); ++i)
+		if(m_mainLblUser[i] != (u16)-1)
 			m_btnMgr.show(m_mainLblUser[i]);
 
 	if(m_gameList.empty())

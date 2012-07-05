@@ -89,8 +89,8 @@ void CMenu::_hideGameSettings(bool instant)
 	m_btnMgr.hide(m_gameSettingsLblFlashSave, instant);
 	m_btnMgr.hide(m_gameSettingsBtnFlashSave, instant);
 
-	for (u32 i = 0; i < ARRAY_SIZE(m_gameSettingsLblUser); ++i)
-		if (m_gameSettingsLblUser[i] != -1u)
+	for(u8 i = 0; i < ARRAY_SIZE(m_gameSettingsLblUser); ++i)
+		if(m_gameSettingsLblUser[i] != (u16)-1)
 			m_btnMgr.hide(m_gameSettingsLblUser[i], instant);
 }
 
@@ -361,10 +361,10 @@ void CMenu::_showGameSettings(void)
 		m_btnMgr.hide(m_gameSettingsLblFlashSave);
 		m_btnMgr.hide(m_gameSettingsBtnFlashSave);
 	}
-	
+
 	u32 i = 0;
-	for (i = 0; i < ARRAY_SIZE(m_gameSettingsLblUser); ++i)
-		if (m_gameSettingsLblUser[i] != -1u)
+	for(i = 0; i < ARRAY_SIZE(m_gameSettingsLblUser); ++i)
+		if(m_gameSettingsLblUser[i] != (u16)-1)
 			m_btnMgr.show(m_gameSettingsLblUser[i]);
 
 	string id(m_cf.getId());

@@ -41,8 +41,8 @@ void CMenu::_hideConfig4(bool instant)
 	m_btnMgr.hide(m_config4LblReturnToVal, instant);
 	m_btnMgr.hide(m_config4BtnReturnToM, instant);
 	m_btnMgr.hide(m_config4BtnReturnToP, instant);
-	for (u32 i = 0; i < ARRAY_SIZE(m_config4LblUser); ++i)
-		if (m_config4LblUser[i] != -1u)
+	for(u8 i = 0; i < ARRAY_SIZE(m_config4LblUser); ++i)
+		if(m_config4LblUser[i] != (u16)-1)
 			m_btnMgr.hide(m_config4LblUser[i], instant);
 }
 
@@ -61,8 +61,8 @@ void CMenu::_showConfig4(void)
 	m_btnMgr.show(m_config4BtnReturnToM);
 	m_btnMgr.show(m_config4BtnReturnToP);
 
-	for (u32 i = 0; i < ARRAY_SIZE(m_config4LblUser); ++i)
-		if (m_config4LblUser[i] != -1u)
+	for(u32 i = 0; i < ARRAY_SIZE(m_config4LblUser); ++i)
+		if(m_config4LblUser[i] != (u16)-1)
 			m_btnMgr.show(m_config4LblUser[i]);
  
 	int i;

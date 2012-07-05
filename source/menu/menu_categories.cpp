@@ -15,9 +15,9 @@ void CMenu::_hideCategorySettings(bool instant)
 	m_btnMgr.hide(m_categoryLblPage, instant);
 	m_btnMgr.hide(m_categoryBtnPageM, instant);
 	m_btnMgr.hide(m_categoryBtnPageP, instant);
-	for(u32 i = 0; i < ARRAY_SIZE(m_categoryLblUser); ++i)
+	for(u8 i = 0; i < ARRAY_SIZE(m_categoryLblUser); ++i)
 	{
-		if(m_categoryLblUser[i] != -1u)
+		if(m_categoryLblUser[i] != (u16)-1u)
 			m_btnMgr.hide(m_categoryLblUser[i], instant);
 	}
 
@@ -25,16 +25,16 @@ void CMenu::_hideCategorySettings(bool instant)
 	{
 		m_btnMgr.hide(m_categoryLblCat[i]);
 		m_btnMgr.hide(m_categoryBtnCat[i]);
-		m_btnMgr.hide(m_categoryBtnCats[i]);		
+		m_btnMgr.hide(m_categoryBtnCats[i]);
 	}
 }
 
 void CMenu::_showCategorySettings(void)
 {
 	_setBg(m_categoryBg, m_categoryBg);
-	for(u32 i = 0; i < ARRAY_SIZE(m_categoryLblUser); ++i)
+	for(u8 i = 0; i < ARRAY_SIZE(m_categoryLblUser); ++i)
 	{
-		if(m_categoryLblUser[i] != -1u)
+		if(m_categoryLblUser[i] != (u16)-1)
 			m_btnMgr.show(m_categoryLblUser[i]);
 	}
 	m_btnMgr.show(m_categoryLblTitle);
@@ -51,7 +51,7 @@ void CMenu::_updateCheckboxes(void)
 		m_btnMgr.show(m_categoryBtnPageM);
 		m_btnMgr.show(m_categoryBtnPageP);
 	}
-	for(int i = 0; i < 21; ++i)
+	for(u8 i = 0; i < 21; ++i)
 	{
 		m_btnMgr.hide(m_categoryBtnCat[i]);
 		m_btnMgr.hide(m_categoryBtnCats[i]);
