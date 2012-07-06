@@ -57,14 +57,48 @@ void AnimatedBanner::Clear()
 
 bool AnimatedBanner::LoadBanner(Banner *banner)
 {
-	Clear();
 	u32 banner_bin_size;
 	const u8 *banner_bin = banner->GetFile((char*)"banner.bin", &banner_bin_size);
 	if(banner_bin == NULL)
 		return false;
+	return LoadBannerBin(banner_bin, banner_bin_size);
+}
 
+bool AnimatedBanner::LoadBannerBin(const u8 *banner_bin, u32 banner_bin_size)
+{
+	Clear();
 	layout_banner = LoadLayout(banner_bin, banner_bin_size, "banner", CONF_GetLanguageString());
 	return (layout_banner != NULL);
+}
+
+void AnimatedBanner::SetBannerText(const char *text_name, const wchar_t *wText)
+{
+	if(!layout_banner || !wText)
+		return;
+
+	Textbox *tbox = dynamic_cast<Textbox *>(layout_banner->FindPane(text_name));
+	if(tbox)
+	{
+		int len = wcslen(wText);
+		u16 *text_char16 = new u16[len+1];
+
+		for(int i = 0; i < len; i++)
+			text_char16[i] = (u16) wText[i];
+		text_char16[len] = 0;
+
+		tbox->SetText(text_char16);
+	}
+}
+
+void AnimatedBanner::SetBannerTexture(const char *tex_name, const u8 *data, float width, float height, u8 fmt)
+{
+	if(!layout_banner)
+		return;
+
+	Texture *texture = layout_banner->FindTexture( tex_name );
+	if(texture != NULL && data != NULL) {
+		texture->LoadTextureData(data, width, height, fmt);
+	}
 }
 
 Layout* AnimatedBanner::LoadLayout(const u8 *bnr, u32 bnr_size, const std::string& lyt_name, const std::string &language)

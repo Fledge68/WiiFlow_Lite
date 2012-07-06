@@ -21,17 +21,16 @@
  * 3. This notice may not be removed or altered from any source
  * distribution.
  *
- * gc_disc.cpp
+ * gc_disc_dump.cpp
  *
  ***************************************************************************/
- 
 #include <stdio.h>
 #include <unistd.h>
 #include <ogcsys.h>
 #include <sys/statvfs.h>
 
 #include "mem2.hpp"
-#include "gc_disc.hpp"
+#include "gc_disc_dump.hpp"
 #include "DeviceHandler.hpp"
 #include "disc.h"
 #include "utils.h"

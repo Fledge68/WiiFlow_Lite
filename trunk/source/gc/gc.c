@@ -159,9 +159,9 @@ int GC_GameIsInstalled(char *discid, const char* partition, const char* dmlgamed
 	return 0;
 }
 
-void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats, bool debugger, u8 NMM, u8 nodisc, u8 DMLvideoMode)
+void DML_New_SetOptions(const char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats, bool debugger, u8 NMM, u8 nodisc, u8 DMLvideoMode)
 {
-	gprintf("Wiiflow DML: Launch game 'sd:/games/%s/game.iso' through memory (new method)\n", GamePath);
+	gprintf("Wiiflow DML: Launch game '%s' through memory (new method)\n", GamePath);
 
 	DMLCfg = (DML_CFG*)MEM1_alloc(sizeof(DML_CFG));
 	if(DMLCfg == NULL)
@@ -177,10 +177,7 @@ void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, boo
 
 	if(GamePath != NULL)
 	{
-		if(GC_GameIsInstalled(GamePath, "sd", "%s:/games") == 2)
-			snprintf(DMLCfg->GamePath, sizeof(DMLCfg->GamePath), "/games/%s/", GamePath);
-		else
-			snprintf(DMLCfg->GamePath, sizeof(DMLCfg->GamePath), "/games/%s/game.iso", GamePath);
+		strncpy(DMLCfg->GamePath, GamePath, sizeof(DMLCfg->GamePath));
 		DMLCfg->Config |= DML_CFG_GAME_PATH;
 	}
 
@@ -215,7 +212,7 @@ void DML_New_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, boo
 
 void DML_Old_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats)
 {
-	gprintf("Wiiflow DML: Launch game 'sd:/games/%s/game.iso' through boot.bin (old method)\n", GamePath);
+	gprintf("Wiiflow DML: Launch game '%s' through boot.bin (old method)\n", GamePath);
 	FILE *f;
 	f = fopen("sd:/games/boot.bin", "wb");
 	fwrite(GamePath, 1, strlen(GamePath) + 1, f);

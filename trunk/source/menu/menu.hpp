@@ -22,7 +22,7 @@
 #include "gct.h"
 #include "DeviceHandler.hpp"
 #include "musicplayer.h"
-#include "loader/gc_disc.hpp" 
+#include "loader/gc_disc_dump.hpp" 
 
 //Also in wbfs.h
 #define PART_FS_WBFS 0

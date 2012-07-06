@@ -77,7 +77,8 @@ void CList<T>::GetPaths(vector<string> &pathlist, string containing, string dire
 					if(!depth_limit)
 						temp_pathlist.push_back(sfmt("%s/%s", temp_pathlist[0].c_str(), ent->d_name));
 					else if(dml && !FoundFile && strncasecmp(ent->d_name, "sys", 3) == 0 &&
-						fsop_FileExist(fmt("%s/%s/boot.bin", temp_pathlist[0].c_str(), ent->d_name)))
+						fsop_FileExist(fmt("%s/%s/boot.bin", temp_pathlist[0].c_str(), ent->d_name)) &&
+						!fsop_FileExist(fmt("%s/game.iso", temp_pathlist[0].c_str())))
 					{
 						FoundFile = true;
 						//gprintf("Pushing %s to the list.\n", sfmt("%s/%s/boot.bin", temp_pathlist[0].c_str(), ent->d_name).c_str());
@@ -215,12 +216,12 @@ void CList<dir_discHdr>::GetHeaders(vector<string> pathlist, vector<dir_discHdr>
 
 					if(gc_hdr.gc_magic == GC_MAGIC)
 					{
+						strcpy(tmp.path, (*itr).c_str());
 						strncpy(tmp.id, (char*)gc_hdr.id, 6);
 						(*itr)[(*itr).find_last_of('/')] = 0;
 						if(strcasecmp(filename, "boot.bin") == 0)
 							(*itr)[(*itr).find_last_of('/')] = 0;
 						(*itr).assign(&(*itr)[(*itr).find_last_of('/') + 1]);
-						strcpy(tmp.path, (*itr).c_str());
 						GTitle = custom_titles.getString("TITLES", tmp.id);
 						tmp.casecolor = 0;
 						int ccolor = custom_titles.getColor("COVERS", tmp.id, tmp.casecolor).intVal();
