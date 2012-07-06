@@ -142,5 +142,6 @@ int main(int argc, char **argv)
 	} while (ret == 1);
 
 	Sys_Exit();
+	exit(1);
 	return 0;
-};
+}
