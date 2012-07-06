@@ -1,4 +1,3 @@
-
 #define APP_NAME				"WiiFlow"
 #define APP_VERSION				"Mod 3.1"
 
@@ -46,9 +45,8 @@ ohloh.net, wiifanart.com, wiiflowiki.com, \
 tgames.fr.nf"
 
 #define THANKS_CODE \
-"CFG Loader, uLoader, USB Loader GX, \
-NeoGamma, Wii Banner Player Project, \
-Mighty Channels, WiiXplorer, Triiforce, \
+"CFG Loader, Wii Banner Player Project, USB Loader GX, \
+uLoader, NeoGamma, Mighty Channels, WiiXplorer, Triiforce, \
 postLoader"
 
 

@@ -2,6 +2,8 @@
 #include "menu.hpp"
 #include "svnrev.h"
 
+#define SET_EXIT(X)	exitHandler(X); exit = true; break;
+
 u32 m_homeLblTitle;
 u32 m_exittoLblTitle;
 
@@ -9,7 +11,7 @@ u32 m_homeBtnSettings;
 u32 m_homeBtnReloadCache;
 u32 m_homeBtnUpdate;
 u32 m_homeBtnAbout;
-u32 m_homeBtnExitTo; // Exit To
+u32 m_homeBtnExitTo;
 
 u32 m_homeBtnExitToHBC;
 u32 m_homeBtnExitToMenu;
@@ -73,16 +75,19 @@ bool CMenu::_Home(void)
 				_showHome();
 			}
 			else if(m_btnMgr.selected(m_homeBtnExitTo))
-			{
-				exit = _ExitTo();
+			{					
+				if(m_locked)
+				{
+					SET_EXIT(0);
+				}
+				else
+					exit = _ExitTo();
 				break;
 			}
 		}
 		else if(BTN_HOME_PRESSED)
 		{
-		    exitHandler(0);
-			exit = true;
-			break;
+			SET_EXIT(0);
 		}
 		else if(BTN_B_PRESSED)
 		    break;
@@ -108,32 +113,31 @@ bool CMenu::_ExitTo(void)
 		{
 			if(m_btnMgr.selected(m_homeBtnExitToHBC))
 			{
-				
-				exitHandler(1);
-				exit = true;
-				break;
+				SET_EXIT(1);
 			}
 			else if(m_btnMgr.selected(m_homeBtnExitToMenu))
 			{
-				exitHandler(2);
-				exit = true;
-				break;
+				SET_EXIT(2);
 			}
 			else if(m_btnMgr.selected(m_homeBtnExitToPriiloader))
 			{
-				exitHandler(3);
-				exit = true;
-				break;
+				SET_EXIT(3);
 			}
 			else if(m_btnMgr.selected(m_homeBtnExitToBootmii))
 			{
-				exitHandler(4);
-				exit = true;
-				break;
+				SET_EXIT(4);
 			}
 		}
 		else if(BTN_B_PRESSED)
+		{
+		    _hideExitTo();
+		    exit = _Home();
 			break;
+		}
+		else if(BTN_HOME_PRESSED)
+		{
+			SET_EXIT(0);
+		}
 	}
 	
 	_hideExitTo();
@@ -230,7 +234,7 @@ void CMenu::_initHomeAndExitToMenu(CMenu::SThemeData &theme)
 
 void CMenu::_textHome(void)
 {
-	m_btnMgr.setText(m_homeLblTitle, wfmt(_fmt("appname", L"%s (%s-r%s)"), APP_NAME, APP_VERSION, SVN_REV), false);
+	m_btnMgr.setText(m_homeLblTitle, wfmt( L"%s (%s-r%s)", APP_NAME, APP_VERSION, SVN_REV), false);
 	
 	m_btnMgr.setText(m_homeBtnSettings, _t("home1", L"Settings"));
 	m_btnMgr.setText(m_homeBtnReloadCache, _t("home2", L"Reload Cache"));
