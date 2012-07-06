@@ -261,12 +261,15 @@ void BannerWindow::ReSetup_GX(void)
 	// texture environment
 	GX_SetNumTevStages(1);
 	GX_SetNumIndStages(0);
-	GX_SetTevOp(GX_TEVSTAGE0, GX_MODULATE);
-	GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
-	GX_SetTevSwapMode(GX_TEVSTAGE0, GX_TEV_SWAP0, GX_TEV_SWAP0);
-	GX_SetTevKColorSel(GX_TEVSTAGE0, GX_TEV_KCSEL_1_4);
-	GX_SetTevKAlphaSel(GX_TEVSTAGE0, GX_TEV_KASEL_1);
-	GX_SetTevDirect(GX_TEVSTAGE0);
+	for(u8 i = 0; i < video->getAA(); i++)
+	{
+		GX_SetTevOp(i, GX_MODULATE);
+		GX_SetTevOrder(i, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+		GX_SetTevSwapMode(i, GX_TEV_SWAP0, GX_TEV_SWAP0);
+		GX_SetTevKColorSel(i, GX_TEV_KCSEL_1_4);
+		GX_SetTevKAlphaSel(i, GX_TEV_KASEL_1);
+		GX_SetTevDirect(i);
+	}
 	// swap table
 	GX_SetTevSwapModeTable(GX_TEV_SWAP0, GX_CH_RED, GX_CH_GREEN, GX_CH_BLUE, GX_CH_ALPHA);
 	GX_SetTevSwapModeTable(GX_TEV_SWAP1, GX_CH_RED, GX_CH_RED, GX_CH_RED, GX_CH_ALPHA);
