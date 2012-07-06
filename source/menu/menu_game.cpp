@@ -35,6 +35,7 @@
 #include "types.h"
 #include "gc/gc.h"
 #include "gc/fileOps.h"
+#include "gc/gcdisc.hpp"
 #include "Gekko.h"
 
 extern const u8 btngamecfg_png[];
@@ -807,7 +808,17 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 		}
 
 		if(m_new_dml)
-			DML_New_SetOptions(hdr->path, CheatPath, NewCheatPath, cheats, DML_debug, NMM, nodisc, DMLvideoMode);
+		{
+			string path;
+			if(strcasestr(hdr->path, "boot.bin") != NULL)
+			{
+				path = &hdr->path[string(hdr->path).find_first_of(":/")+1];
+				path.erase(path.end() - 12, path.end());
+			}
+			else
+				path = &hdr->path[string(hdr->path).find_first_of(":/")+1];
+			DML_New_SetOptions(path.c_str(), CheatPath, NewCheatPath, cheats, DML_debug, NMM, nodisc, DMLvideoMode);
+		}
 		else
 			DML_Old_SetOptions(hdr->path, CheatPath, NewCheatPath, cheats);
 
@@ -1524,6 +1535,9 @@ void CMenu::_gameSoundThread(CMenu *m)
 		return;
 	}
 
+	extern SmartBuf m_wbf1_font;
+	extern SmartBuf m_wbf2_font;
+
 	bool custom = false;
 	u8 *custom_bnr_file = NULL;
 	u32 custom_bnr_size = 0;
@@ -1556,9 +1570,14 @@ void CMenu::_gameSoundThread(CMenu *m)
 			fp = fopen(custom_banner, "rb");
 			if(!fp && m->m_cf.getHdr()->type == TYPE_GC_GAME)
 			{
-				m_banner->DeleteBanner();
+				GC_Disc disc;
+				disc.init(m->m_cf.getHdr()->path);
+				u8 *opening_bnr = disc.GetGameCubeBanner();
+				if(opening_bnr != NULL)
+					m_banner->CreateGCBanner(opening_bnr, &m->m_vid, m_wbf1_font.get(), m_wbf2_font.get(), m->m_cf.getHdr()->title);
 				m->m_gameSound.Load(gc_ogg, gc_ogg_size, false);
 				m->m_gamesound_changed = true;
+				disc.clear();
 				return;
 			}
 		}
@@ -1598,9 +1617,6 @@ void CMenu::_gameSoundThread(CMenu *m)
 		fclose(fp);
 	}
 	_extractBannerTitle(banner, GetLanguage(m->m_loc.getString(m->m_curLanguage, "gametdb_code", "EN").c_str()));
-
-	extern SmartBuf m_wbf1_font;
-	extern SmartBuf m_wbf2_font;
 
 	const u8 *soundBin = banner->GetFile((char *) "sound.bin", &sndSize);
 	m_banner->LoadBanner(banner, &m->m_vid, m_wbf1_font.get(), m_wbf2_font.get());

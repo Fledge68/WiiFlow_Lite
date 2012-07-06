@@ -27,14 +27,31 @@
 
 #define FAVORITE_STARS  5
 
+typedef struct _GC_OpeningBnr
+{
+	u32 magic;					  // BNR1 or BNR2
+	u8 pad[0x1C];
+	u8 tpl_data[0x1800];			// 96x32 pixel format GX_TF_RGB5A3
+	struct
+	{
+		u8 disc_title[0x20];		// Gamename
+		u8 developer_short[0x20];   // Company/Developer
+		u8 full_title[0x40];		// Full Game Title
+		u8 developer[0x40];		 // Company/Developer Full name, or description
+		u8 long_description[0x80];  // Game Description
+	} description[6];			   // 6 only on BNR2 => English, German, French, Spanish, Italian, Dutch ??
+} GC_OpeningBnr;
+
 class BannerWindow
 {
 	public:
 		BannerWindow();
 		void DeleteBanner(bool gamechange = false);
 		void LoadBanner(Banner *banner, CVideo *vid, u8 *font1, u8 *font2);
+		void LoadBannerBin(u8 *bnr, u32 bnr_size, CVideo *vid, u8 *font1, u8 *font2);
 		int GetSelectedGame() { return gameSelected; }
 		bool GetZoomSetting() { return AnimZoom; }
+		void CreateGCBanner(u8 *bnr, CVideo *vid, u8 *font1, u8 *font2, const wchar_t *title);
 		void Draw(void);
 		bool ToogleZoom(void);
 	protected:
@@ -43,6 +60,7 @@ class BannerWindow
 		void ChangeGame(Banner *banner);
 		void DrawRectangle(f32 x, f32 y, f32 width, f32 height, GXColor color);
 		void ReSetup_GX(void);
+		void Init(CVideo *vid, u8 *font1, u8 *font2);
 
 		static const float fBannerWidth = 608.f;
 		static const float fBannerHeight = 448.f;

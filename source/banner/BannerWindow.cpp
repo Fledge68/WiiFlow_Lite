@@ -23,9 +23,11 @@
 
 BannerWindow *m_banner;
 
-void BannerWindow::LoadBanner(Banner *banner, CVideo *vid, u8 *font1, u8 *font2)
+extern const u8 custombanner_bin[];
+extern const u32 custombanner_bin_size;
+
+void BannerWindow::Init(CVideo *vid, u8 *font1, u8 *font2)
 {
-	changing = true;
 	MaxAnimSteps = 30;
 	returnVal = -1;
 	reducedVol = false;
@@ -42,7 +44,19 @@ void BannerWindow::LoadBanner(Banner *banner, CVideo *vid, u8 *font1, u8 *font2)
 	AnimPosY = 0.5f * (ScreenProps.y - fIconHeight);
 	AnimationRunning = false;
 
-	ChangeGame(banner);
+	gameBanner->Clear();
+	if(!FontLoaded)
+	{
+		gameBanner->LoadFont(sysFont1, sysFont2);
+		FontLoaded = true;
+	}
+}
+
+void BannerWindow::LoadBanner(Banner *banner, CVideo *vid, u8 *font1, u8 *font2)
+{
+	changing = true;
+	Init(vid, font1, font2);
+	gameBanner->LoadBanner(banner);
 	gameSelected = 1;
 	changing = false;
 }
@@ -64,15 +78,21 @@ BannerWindow::BannerWindow()
 	gameBanner = new AnimatedBanner;
 }
 
-void BannerWindow::ChangeGame(Banner *banner)
+void BannerWindow::LoadBannerBin(u8 *bnr, u32 bnr_size, CVideo *vid, u8 *font1, u8 *font2)
 {
-	gameBanner->Clear();
-	if(!FontLoaded)
-	{
-		gameBanner->LoadFont(sysFont1, sysFont2);
-		FontLoaded = true;
-	}
-	gameBanner->LoadBanner(banner);
+	changing = true;
+	Init(vid, font1, font2);
+	gameBanner->LoadBannerBin(bnr, bnr_size);
+	gameSelected = 1;
+	changing = false;
+}
+
+void BannerWindow::CreateGCBanner(u8 *bnr, CVideo *vid, u8 *font1, u8 *font2, const wchar_t *title)
+{
+	GC_OpeningBnr *openingBnr = (GC_OpeningBnr *)bnr;
+	LoadBannerBin((u8*)custombanner_bin, (u32)custombanner_bin_size, vid, font1, font2);
+	gameBanner->SetBannerTexture("GCIcon.tpl", openingBnr->tpl_data, 96, 32, GX_TF_RGB5A3);
+	gameBanner->SetBannerText("T_GameTitle", title);
 }
 
 bool BannerWindow::ToogleZoom(void)

@@ -21,12 +21,12 @@
  * 3. This notice may not be removed or altered from any source
  * distribution.
  *
- * gc_disc.hpp
+ * gc_disc_dump.hpp
  *
  ***************************************************************************/
 
-#ifndef GC_DISC_H_
-#define GC_DISC_H_
+#ifndef GC_DISC_DUMP_H_
+#define GC_DISC_DUMP_H_
 
 typedef void (*progress_callback_t)(int status,int total,void *user_data);
 typedef void (*message_callback_t)(int message, int info, char *cinfo, void *user_data);
@@ -37,6 +37,33 @@ enum spcall
 	BL,
 	MB,
 	GB,
+};
+
+struct FST
+{
+	union
+	{
+		struct
+		{
+			u32 Type		:8;
+			u32 NameOffset	:24;
+		};
+		u32 TypeName;
+	};
+	union
+	{
+		struct
+		{
+			u32 FileOffset;
+			u32 FileLength;
+		};
+		struct
+		{
+			u32 ParentOffset;
+			u32 NextOffset;
+		};
+		u32 entry[2];
+	};
 };
 
 class GCDump
@@ -100,32 +127,6 @@ private:
 	u32 MultiGameDump;
 	u32 Gamesize[10];
 	u64 NextOffset;
-	typedef struct
-	{
-		union
-		{
-			struct
-			{
-				u32 Type		:8;
-				u32 NameOffset	:24;
-			};
-			u32 TypeName;
-		};
-		union
-		{
-			struct
-			{
-				u32 FileOffset;
-				u32 FileLength;
-			};
-			struct
-			{
-				u32 ParentOffset;
-				u32 NextOffset;
-			};
-			u32 entry[2];
-		};
-	} FST;
 	s32 __DiscReadRaw(void *outbuf, u64 offset, u32 length);
 	s32 __DiscWrite(char * path, u64 offset, u32 length, u8 *ReadBuffer);
 	s32 __DiscWriteFile(FILE *f, u64 offset, u32 length, u8 *ReadBuffer);

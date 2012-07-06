@@ -2,7 +2,7 @@
 #include "menu.hpp"
 #include "loader/wbfs.h"
 #include "lockMutex.hpp"
-#include "loader/gc_disc.hpp"
+#include "loader/gc_disc_dump.hpp"
 #include "gc.h"
 #include "fileOps.h"
 #include "music/SoundHandler.hpp"
