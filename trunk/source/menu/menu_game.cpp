@@ -707,7 +707,7 @@ void CMenu::_directlaunch(const string &id)
 			_launch(&m_gameList[0]); // Launch will exit wiiflow
 		}
 	}
-	error(sfmt("Cannot find the game with ID: %s", id.c_str()));
+	error(sfmt("errgame1", L"Cannot find the game with ID: %s", id.c_str()));
 }
 
 void CMenu::_launch(dir_discHdr *hdr)
@@ -924,7 +924,7 @@ int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id)
 	{
 		if(_installed_cios.size() <= 0)
 		{
-			error(sfmt("No cios found!"));
+			error(sfmt("errgame2", L"No cios found!"));
 			Sys_LoadMenu();
 		}
 		u8 IOS[3];
@@ -950,7 +950,7 @@ int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id)
 		}
 		if(!found)
 		{
-			error(sfmt("Couldn't find a cIOS using base %i, or 56/57", IOS[0]));
+			error(sfmt("errgame3", L"Couldn't find a cIOS using base %i, or 56/57", IOS[0]));
 			return LOAD_IOS_FAILED;
 		}
 	}
@@ -961,7 +961,7 @@ int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id)
 		if(!loadIOS(gameIOS, true))
 		{
 			_reload_wifi_gecko();
-			error(sfmt("Couldn't load IOS %i", gameIOS));
+			error(sfmt("errgame4", L"Couldn't load IOS %i", gameIOS));
 			return LOAD_IOS_FAILED;
 		}
 		return LOAD_IOS_SUCCEEDED;
@@ -1057,7 +1057,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		if(Nand::Instance()->Enable_Emu() < 0)
 		{
 			Nand::Instance()->Disable_Emu();
-			error(L"Enabling emu failed!");
+			error(_t("errgame5", L"Enabling emu failed!"));
 
 			return;
 		}
@@ -1104,7 +1104,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 			}
 			if(!found)
 			{
-				error(sfmt("Couldn't find a cIOS using base %i, or 56/57", IOS[0]));
+				error(sfmt("errgame3", L"Couldn't find a cIOS using base %i, or 56/57", IOS[0]));
 				return;
 			}
 		}
@@ -1115,7 +1115,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 			if(!loadIOS(gameIOS, false))
 			{
 				_reload_wifi_gecko();
-				error(sfmt("Couldn't reload to cIOS %i", gameIOS));
+				error(sfmt("errgame4", L"Couldn't reload to cIOS %i", gameIOS));
 				return;
 			}
 			if(!emu_disabled)
@@ -1131,7 +1131,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 				if(Nand::Instance()->Enable_Emu() < 0)
 				{
 					Nand::Instance()->Disable_Emu();
-					error(L"Enabling emu after reload failed!");
+					error(_t("errgame6", L"Enabling emu after reload failed!"));
 					Sys_LoadMenu();
 					return;
 				}
@@ -1177,12 +1177,12 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		Disc_SetUSB(NULL);
 		if (WDVD_GetCoverStatus(&cover) < 0)
 		{
-			error(L"WDVDGetCoverStatus Failed!");
+			error(_t("errgame7", L"WDVDGetCoverStatus Failed!"));
 			if (BTN_B_PRESSED) return;
 		}
 		if (!(cover & 0x2))
 		{
-			error(L"Please insert a game disc.");
+			error(_t("errgame8", L"Please insert a game disc."));
 			do {
 				WDVD_GetCoverStatus(&cover);
 				if (BTN_B_PRESSED) return;
@@ -1191,7 +1191,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		/* Open Disc */
 		if (Disc_Open() < 0) 
 		{
-			error(L"Cannot Read DVD.");
+			error(_t("wbfsoperr2", L"Disc_Open failed"));
 			if (BTN_B_PRESSED) return;
 		}
 
@@ -1200,7 +1200,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		{
 			if (Disc_IsGC() < 0) 
 			{
-				error(L"This is not a Wii or GC disc");
+				error(_t("errgame9", L"This is not a Wii or GC disc"));
 				if (BTN_B_PRESSED) return;
 			}
 			else
@@ -1372,7 +1372,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		if(Nand::Instance()->Enable_Emu() < 0)
 		{
 			Nand::Instance()->Disable_Emu();
-			error(L"Enabling emu after reload failed!");
+			error(_t("errgame6", L"Enabling emu after reload failed!"));
 			if (iosLoaded) Sys_LoadMenu();
 			return;
 		}
@@ -1406,14 +1406,14 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		if (ret < 0)
 		{
 			gprintf("Set USB failed: %d\n", ret);
-			error(wfmt(L"Set USB failed: %d\n", ret));
+			error(wfmt(_fmt("errgame10", L"Set USB failed: %d"), ret));
 			if (iosLoaded) Sys_LoadMenu();
 			return;
 		}
 
 		if (Disc_Open() < 0)
 		{
-			error(L"Disc_Open failed");
+			error(_t("wbfsoperr2", L"Disc_Open failed"));
 			if (iosLoaded) Sys_LoadMenu();
 			return;
 		}

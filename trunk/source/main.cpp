@@ -107,9 +107,6 @@ int main(int argc, char **argv)
 		if(DeviceHandler::Instance()->IsInserted(SD))
 			deviceAvailable = true;
 
-		if(!deviceAvailable)
-			Sys_Exit();
-
 		bool dipOK = Disc_Init() >= 0;
 
 		CMenu menu(vid);
@@ -118,12 +115,17 @@ int main(int argc, char **argv)
 		mainMenu = &menu;
 		if (!iosOK)
 		{
-			menu.error(sfmt("d2x cIOS %i rev6 or later is required", mainIOS));
+			menu.terror("errboot1", L"d2x cIOSs rev6 or later are required!\ncIOSs 249 base 56 and 250 base 57 are enough for all your games.\nMore cIOSs could make wiiflow unstable!");
+			break;
+		}
+		else if (!deviceAvailable)
+		{
+			menu.terror("errboot2", L"Could not find a device to save configuration files on!");
 			break;
 		}
 		else if (!dipOK)
 		{
-			menu.error(L"Could not initialize the DIP module!");
+			menu.terror("errboot3", L"Could not initialize the DIP module!");
 			break;
 		}
 		else

@@ -44,6 +44,7 @@ public:
 	~CMenu(void) {cleanup();}
 	void init(void);
 	void error(const wstringEx &msg);
+	void terror(const char *key, const wchar_t *msg) { error(_fmt(key, msg)); }
 	void exitHandler(int ExitTo);
 	int main(void);
 	void cleanup(bool ios_reload = false);

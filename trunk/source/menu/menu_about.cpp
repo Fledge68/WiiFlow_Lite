@@ -112,7 +112,7 @@ void CMenu::_initAboutMenu(CMenu::SThemeData &theme)
 
 void CMenu::_textAbout(void)
 {
-	m_btnMgr.setText(m_aboutLblTitle, wfmt(_fmt("appname", L"%s (%s-r%s)"), APP_NAME, APP_VERSION, SVN_REV), false);
+	m_btnMgr.setText(m_aboutLblTitle, wfmt( L"%s (%s-r%s)", APP_NAME, APP_VERSION, SVN_REV), false);
 
 	wstringEx help_text;
 	FILE *f = fopen(fmt("%s/%s.txt", m_helpDir.c_str(), m_curLanguage.c_str()), "r");
