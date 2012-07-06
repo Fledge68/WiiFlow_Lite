@@ -12,8 +12,8 @@ void CMEM2Alloc::init(unsigned int size)
 {
 	m_baseAddress = (SBlock *) std::max(((u32)SYS_GetArena2Lo() + 31) & ~31, IOS_RELOAD_AREA);
 	m_endAddress = (SBlock *)((char *)m_baseAddress + std::min(size * 0x100000, SYS_GetArena2Size() & ~31));
-	if (m_endAddress > (SBlock *) 0x93300000) //rest is reserved for usb/usb2/network and other stuff... (0xE0000 bytes)
-		m_endAddress = (SBlock *) 0x93300000;
+	if (m_endAddress > (SBlock *) 0x93100000) //rest is reserved for usb/usb2/network and other stuff... (0xE0000 bytes)
+		m_endAddress = (SBlock *) 0x93100000;
 	SYS_SetArena2Lo(m_endAddress);
 	LWP_MutexInit(&m_mutex, 0);
 }
