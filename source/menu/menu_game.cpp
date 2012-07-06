@@ -410,7 +410,7 @@ void CMenu::_game(bool launch)
 			m_gameSelected = true;
 			startGameSound = 1;
 		}
-		if (BTN_B_PRESSED && (m_btnMgr.selected(m_gameBtnFavoriteOn) || m_btnMgr.selected(m_gameBtnFavoriteOff)))
+		if(BTN_B_PRESSED && (m_btnMgr.selected(m_gameBtnFavoriteOn) || m_btnMgr.selected(m_gameBtnFavoriteOff)))
 		{
 			_hideGame();
 			m_banner->DeleteBanner();
@@ -597,21 +597,29 @@ void CMenu::_game(bool launch)
 		}
 		if((startGameSound == 1 || startGameSound < -8) && (BTN_UP_REPEAT || RIGHT_STICK_UP))
 		{
+			if(m_gameSoundThread != LWP_THREAD_NULL)
+				CheckGameSoundThread();
 			m_cf.up();
 			startGameSound = -10;
 		}
 		if((startGameSound == 1 || startGameSound < -8) && (BTN_RIGHT_REPEAT || RIGHT_STICK_RIGHT))
 		{
+			if(m_gameSoundThread != LWP_THREAD_NULL)
+				CheckGameSoundThread();
 			m_cf.right();
 			startGameSound = -10;
 		}
 		if((startGameSound == 1 || startGameSound < -8) && (BTN_DOWN_REPEAT || RIGHT_STICK_DOWN))
 		{
+			if(m_gameSoundThread != LWP_THREAD_NULL)
+				CheckGameSoundThread();
 			m_cf.down();
 			startGameSound = -10;
 		}
 		if((startGameSound == 1 || startGameSound < -8) && (BTN_LEFT_REPEAT || RIGHT_STICK_LEFT))
 		{
+			if(m_gameSoundThread != LWP_THREAD_NULL)
+				CheckGameSoundThread();
 			m_cf.left();
 			startGameSound = -10;
 		}
@@ -1523,15 +1531,16 @@ struct IMD5Header
 } __attribute__((packed));
 
 SmartBuf gameSoundThreadStack;
-unsigned int gameSoundThreadStackSize = (unsigned int)32768;
-
+u32 gameSoundThreadStackSize = (u32)32768;
 void CMenu::_gameSoundThread(CMenu *m)
 {
+	m->m_gameSoundHdr = m->m_cf.getHdr();
 	if(m->m_cf.getHdr()->type == TYPE_PLUGIN)
 	{
 		m_banner->DeleteBanner();
 		m->m_gameSound.Load(m->m_plugin.GetBannerSound(m->m_cf.getHdr()->settings[0]), m->m_plugin.GetBannerSoundSize(), false);
 		m->m_gamesound_changed = true;
+		m->m_gameSoundHdr = NULL;
 		return;
 	}
 
@@ -1578,6 +1587,7 @@ void CMenu::_gameSoundThread(CMenu *m)
 				m->m_gameSound.Load(gc_ogg, gc_ogg_size, false);
 				m->m_gamesound_changed = true;
 				disc.clear();
+				m->m_gameSoundHdr = NULL;
 				return;
 			}
 		}
@@ -1593,7 +1603,6 @@ void CMenu::_gameSoundThread(CMenu *m)
 			fclose(fp);
 		}
 	}
-	m->m_gameSoundHdr = m->m_cf.getHdr();
 	m->m_gamesound_changed = false;
 	u32 sndSize = 0;
 
@@ -1601,13 +1610,13 @@ void CMenu::_gameSoundThread(CMenu *m)
 		(custom ? new Banner((u8 *)custom_bnr_file, custom_bnr_size, 0, true) : 
 		(m->m_gameSoundHdr->type == TYPE_WII_GAME ? _extractBnr(m->m_gameSoundHdr) : (m->m_gameSoundHdr->type == TYPE_CHANNEL ?
 		_extractChannelBnr(TITLE_ID(m->m_gameSoundHdr->settings[0],m->m_gameSoundHdr->settings[1])) : NULL)));
-	m->m_gameSoundHdr = NULL;
 
 	if (banner == NULL || !banner->IsValid())
 	{
 		gprintf("no valid banner found\n");
 		m_banner->DeleteBanner();
 		delete banner;
+		m->m_gameSoundHdr = NULL;
 		return;
 	}
 	else if(!custom && !cached)
@@ -1627,11 +1636,13 @@ void CMenu::_gameSoundThread(CMenu *m)
 		gprintf("Failed to load banner sound!\n\n");
 		if(soundBin != NULL)
 			delete soundBin;
+		m->m_gameSoundHdr = NULL;
 		return;
 	}
 
 	m->m_gameSound.Load(soundBin, sndSize, false);
 	m->m_gamesound_changed = true;
+	m->m_gameSoundHdr = NULL;
 }
 
 void CMenu::_playGameSound(void)
@@ -1640,7 +1651,8 @@ void CMenu::_playGameSound(void)
 	if(m_bnrSndVol == 0) 
 		return;
 
-	CheckGameSoundThread();
+	if(m_gameSoundThread != LWP_THREAD_NULL)
+		CheckGameSoundThread();
 	if(!gameSoundThreadStack.get())
 		gameSoundThreadStack = smartMem2Alloc(gameSoundThreadStackSize);
 
@@ -1652,6 +1664,8 @@ void CMenu::CheckGameSoundThread()
 	if(LWP_ThreadIsSuspended(m_gameSoundThread))
 		LWP_ResumeThread(m_gameSoundThread);
 
+	while(m_gameSoundHdr != NULL)
+		usleep(50);
 	LWP_JoinThread(m_gameSoundThread, NULL);
 	m_gameSoundThread = LWP_THREAD_NULL;
 }
