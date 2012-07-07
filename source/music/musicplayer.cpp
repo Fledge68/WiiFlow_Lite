@@ -2,6 +2,8 @@
 
 using namespace std;
 
+MusicPlayer *m_music;
+
 MusicPlayer::MusicPlayer()
 {
 	m_music = NULL;

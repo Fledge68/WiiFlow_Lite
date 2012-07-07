@@ -57,4 +57,6 @@ private:
 	u32 *m_songCount;
 };
 
+extern MusicPlayer *m_music;
+
 #endif
