@@ -23,14 +23,8 @@ extern "C"
 { 
 	extern void __exception_setreload(int t);
 
-	void ShowError(const wstringEx &error)
-	{
-		mainMenu->error(error);
-	}
-	void HideWaitMessage() 
-	{
-		mainMenu->_hideWaitMessage();
-	}
+	void ShowError(const wstringEx &error) { mainMenu->error(error); }
+	void HideWaitMessage() { mainMenu->_hideWaitMessage(); }
 }
 
 int main(int argc, char **argv)
@@ -69,29 +63,28 @@ int main(int argc, char **argv)
 		else if (argv[i] != NULL && strcasestr(argv[i], "EMULATOR_MAGIC") != NULL)
 			Emulator_boot = true;
 	}
-	gprintf("Loading cIOS: %d\n", mainIOS);	
+	Close_Inputs();
 
 	// Load Custom IOS
+	gprintf("Loading cIOS: %d\n", mainIOS);	
 	bool iosOK = loadIOS(mainIOS, false);
-	
-	ISFS_Initialize();
 
 	u8 mainIOSBase = 0;
+	ISFS_Initialize();
 	iosOK = iosOK && cIOSInfo::D2X(mainIOS, &mainIOSBase);
 	gprintf("Loaded cIOS: %u has base %u\n", mainIOS, mainIOSBase);	
-
-	Open_Inputs(); //init wiimote early
 
 	// Init
 	Sys_Init();
 	Sys_ExitTo(EXIT_TO_HBC);
 
-	int ret = 0;
+	int ret = 1;
 
-	do 
+	while(ret == 1) 
 	{
-		bool deviceAvailable = false;
+		Open_Inputs(); //(re)init wiimote
 
+		bool deviceAvailable = false;
 		u8 timeout = 0;
 		while(!deviceAvailable && timeout++ != 20)
 		{
@@ -109,40 +102,35 @@ int main(int argc, char **argv)
 
 		bool dipOK = Disc_Init() >= 0;
 
-		CMenu menu(vid);
-		menu.init();
+		mainMenu = new CMenu(vid);
+		mainMenu->init();
 
-		mainMenu = &menu;
-		if (!iosOK)
+		if(!iosOK)
 		{
-			menu.terror("errboot1", L"d2x cIOSs rev6 or later are required!\ncIOSs 249 base 56 and 250 base 57 are enough for all your games.\nMore cIOSs could make wiiflow unstable!");
+			mainMenu->terror("errboot1", L"d2x cIOSs rev6 or later are required!\ncIOSs 249 base 56 and 250 base 57 are enough for all your games.\nMore cIOSs could make wiiflow unstable!");
 			break;
 		}
-		else if (!deviceAvailable)
+		else if(!deviceAvailable)
 		{
-			menu.terror("errboot2", L"Could not find a device to save configuration files on!");
+			mainMenu->terror("errboot2", L"Could not find a device to save configuration files on!");
 			break;
 		}
-		else if (!dipOK)
+		else if(!dipOK)
 		{
-			menu.terror("errboot3", L"Could not initialize the DIP module!");
+			mainMenu->terror("errboot3", L"Could not initialize the DIP module!");
 			break;
 		}
+		else if(gameid != NULL && strlen(gameid) == 6)
+			mainMenu->directlaunch(gameid);
 		else
 		{
-			if (gameid != NULL && strlen(gameid) == 6)
-				menu._directlaunch(gameid);
-			else
-			{
-				if(Emulator_boot)
-					menu.m_Emulator_boot = true;
-				ret = menu.main();
-			}
+			if(Emulator_boot)
+				mainMenu->m_Emulator_boot = true;
+			ret = mainMenu->main();
 		}
-		if(ret == 1)
-			Open_Inputs(); //reinit wiimote
-	} while (ret == 1);
+	}
 
+	ISFS_Deinitialize();
 	Sys_Exit();
 	exit(1);
 	return 0;
