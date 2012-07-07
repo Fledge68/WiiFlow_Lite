@@ -179,26 +179,26 @@ void CMenu::_initPluginSettingsMenu(CMenu::SThemeData &theme)
 	m_pluginLblPage = _addLabel(theme, "PLUGIN/PAGE_BTN", theme.btnFont, L"", 256, 400, 100, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_pluginBtnPageM = _addPicButton(theme, "PLUGIN/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 200, 400, 56, 56);
 	m_pluginBtnPageP = _addPicButton(theme, "PLUGIN/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 356, 400, 56, 56);
-	m_pluginLblCat[0] = _addLabel(theme, "PLUGIN/PLUGIN_0", theme.lblFont, L"", 85, 390, 100, 48, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_pluginBtnCat[0] = _addPicButton(theme, "PLUGIN/PLUGIN_0_BTN", theme.checkboxoff, theme.checkboxoffs, 30, 390, 44, 48);
 	m_pluginBtnCats[0] = _addPicButton(theme, "PLUGIN/PLUGIN_0_BTNS", theme.checkboxon, theme.checkboxons, 30, 390, 44, 48);
+	m_pluginLblCat[0] = _addLabel(theme, "PLUGIN/PLUGIN_0", theme.lblFont, L"", 85, 390, 100, 48, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	for(int i = 1; i < 6; ++i)
 	{ 	// Page 1
-		m_pluginLblCat[i] = _addLabel(theme, fmt("PLUGIN/PLUGIN_%i", i), theme.lblFont, L"", 85, (42+i*58), 230, 48, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 		m_pluginBtnCat[i] = _addPicButton(theme, fmt("PLUGIN/PLUGIN_%i_BTN", i), theme.checkboxoff, theme.checkboxoffs, 30, (42+i*58), 44, 48);
 		m_pluginBtnCats[i] = _addPicButton(theme, fmt("PLUGIN/PLUGIN_%i_BTNS", i), theme.checkboxon, theme.checkboxons, 30, (42+i*58), 44, 48);
+		m_pluginLblCat[i] = _addLabel(theme, fmt("PLUGIN/PLUGIN_%i", i), theme.lblFont, L"", 85, (42+i*58), 230, 48, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 		// right half
-		m_pluginLblCat[i+5] = _addLabel(theme, fmt("PLUGIN/PLUGIN_%i", i+5), theme.txtFont, L"", 380, (42+i*58), 230, 48, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 		m_pluginBtnCat[i+5] = _addPicButton(theme, fmt("PLUGIN/PLUGIN_%i_BTN", i+5), theme.checkboxoff, theme.checkboxoffs, 325, (42+i*58), 44, 48);
 		m_pluginBtnCats[i+5] = _addPicButton(theme, fmt("PLUGIN/PLUGIN_%i_BTNS", i+5), theme.checkboxon, theme.checkboxons, 325, (42+i*58), 44, 48);
+		m_pluginLblCat[i+5] = _addLabel(theme, fmt("PLUGIN/PLUGIN_%i", i+5), theme.txtFont, L"", 380, (42+i*58), 230, 48, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 		// Page 2
-		m_pluginLblCat[i+10] = _addLabel(theme, fmt("PLUGIN/PLUGIN_%i", i+10), theme.lblFont, L"", 85, (42+i*58), 230, 48, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 		m_pluginBtnCat[i+10] = _addPicButton(theme, fmt("PLUGIN/PLUGIN_%i_BTN", i+10), theme.checkboxoff, theme.checkboxoffs, 30, (42+i*58), 44, 48);
 		m_pluginBtnCats[i+10] = _addPicButton(theme, fmt("PLUGIN/PLUGIN_%i_BTNS", i+10), theme.checkboxon, theme.checkboxons, 30, (42+i*58), 44, 48);
+		m_pluginLblCat[i+10] = _addLabel(theme, fmt("PLUGIN/PLUGIN_%i", i+10), theme.lblFont, L"", 85, (42+i*58), 230, 48, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 		// right half
-		m_pluginLblCat[i+15] = _addLabel(theme, fmt("PLUGIN/PLUGIN_%i", i+15), theme.txtFont, L"", 380, (42+i*58), 230, 48, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 		m_pluginBtnCat[i+15] = _addPicButton(theme, fmt("PLUGIN/PLUGIN_%i_BTN", i+15), theme.checkboxoff, theme.checkboxoffs, 325, (42+i*58), 44, 48);
 		m_pluginBtnCats[i+15] = _addPicButton(theme, fmt("PLUGIN/PLUGIN_%i_BTNS", i+15), theme.checkboxon, theme.checkboxons, 325, (42+i*58), 44, 48);
+		m_pluginLblCat[i+15] = _addLabel(theme, fmt("PLUGIN/PLUGIN_%i", i+15), theme.txtFont, L"", 380, (42+i*58), 230, 48, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	}
 	_setHideAnim(m_pluginLblTitle, "PLUGIN/TITLE", 0, -200, 0.f, 1.f);
 	_setHideAnim(m_pluginLblPage, "PLUGIN/PAGE_BTN", 0, 200, 1.f, 0.f);
