@@ -2,8 +2,6 @@
 #include "menu.hpp"
 #include "svnrev.h"
 
-#define SET_EXIT(X)	exitHandler(X); exit = true; break;
-
 u32 m_homeLblTitle;
 u32 m_exittoLblTitle;
 
@@ -22,8 +20,6 @@ STexture m_homeBg;
 
 bool CMenu::_Home(void)
 {
-	bool exit = false;
-
 	SetupInput();
 	_showHome();
 
@@ -39,7 +35,7 @@ bool CMenu::_Home(void)
 				_config(1);
 				if(prevTheme != m_cfg.getString("GENERAL", "theme") || m_reload == true)
 				{
-					exit = true;
+					m_exit = true;
 					m_reload = true;
 					break;
 				}
@@ -75,35 +71,33 @@ bool CMenu::_Home(void)
 				_showHome();
 			}
 			else if(m_btnMgr.selected(m_homeBtnExitTo))
-			{					
+			{
+				_hideHome();
 				if(m_locked)
-				{
-					SET_EXIT(0);
-				}
-				else
-					exit = _ExitTo();
-				break;
+					exitHandler(0);
+				else 
+					_ExitTo();
+				if(m_exit)
+					break;
+				_showHome();
 			}
 		}
 		else if(BTN_HOME_PRESSED)
 		{
-			SET_EXIT(0);
+			exitHandler(0);
+			break;
 		}
 		else if(BTN_B_PRESSED)
-		    break;
+			break;
 	}	
 
 	_hideHome();
-	return exit;
+	return m_exit;
 }
 
 bool CMenu::_ExitTo(void)
 {
-	bool exit = false;
-
 	SetupInput();
-	
-	_hideHome();
 	_showExitTo();
 
 	while(1)
@@ -113,35 +107,35 @@ bool CMenu::_ExitTo(void)
 		{
 			if(m_btnMgr.selected(m_homeBtnExitToHBC))
 			{
-				SET_EXIT(1);
+				exitHandler(1);
+				break;
 			}
 			else if(m_btnMgr.selected(m_homeBtnExitToMenu))
 			{
-				SET_EXIT(2);
+				exitHandler(2);
+				break;
 			}
 			else if(m_btnMgr.selected(m_homeBtnExitToPriiloader))
 			{
-				SET_EXIT(3);
+				exitHandler(3);
+				break;
 			}
 			else if(m_btnMgr.selected(m_homeBtnExitToBootmii))
 			{
-				SET_EXIT(4);
+				exitHandler(4);
+				break;
 			}
-		}
-		else if(BTN_B_PRESSED)
-		{
-		    _hideExitTo();
-		    exit = _Home();
-			break;
 		}
 		else if(BTN_HOME_PRESSED)
 		{
-			SET_EXIT(0);
+			exitHandler(0);
+			break;
 		}
+		else if(BTN_B_PRESSED)
+			break;
 	}
-	
 	_hideExitTo();
-	return exit;
+	return m_exit;
 }
 
 void CMenu::_showHome(void)
