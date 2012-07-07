@@ -683,7 +683,7 @@ void CMenu::_game(bool launch)
 	_hideGame();
 }
 
-void CMenu::_directlaunch(const string &id)
+void CMenu::directlaunch(const string &id)
 {
 	m_directLaunch = true;
 

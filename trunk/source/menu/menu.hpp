@@ -973,7 +973,7 @@ private:
 	vector<dir_discHdr> _searchGamesByType(const char type);
 	vector<dir_discHdr> _searchGamesByRegion(const char region); */
 public:
-	void _directlaunch(const string &id);
+	void directlaunch(const string &id);
 private:
 	bool m_use_wifi_gecko;
 	void _reload_wifi_gecko();
