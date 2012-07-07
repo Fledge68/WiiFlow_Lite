@@ -216,10 +216,9 @@ void CMenu::LoadView(void)
 void CMenu::exitHandler(int ExitTo)
 {
 	gprintf("Exit WiiFlow called\n");
-	bool exitSet = false;
 	if(!m_locked && !m_disable_exit)
 	{
-		exitSet = true;
+		m_exit = true;
 		if(ExitTo == 1) // HBC
 			Sys_ExitTo(EXIT_TO_HBC);
 		else if(ExitTo == 2) // System Menu
@@ -241,7 +240,7 @@ void CMenu::exitHandler(int ExitTo)
 	}
 	
 	m_reload = (BTN_B_HELD || m_disable_exit);
-	if(!exitSet && !m_reload)
+	if(m_exit && !m_reload) //D'oh!
 	{
 		// Mark exiting to prevent soundhandler from restarting
 		extern bool exiting;
