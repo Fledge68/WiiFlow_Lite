@@ -775,11 +775,8 @@ void CMenu::_launch(dir_discHdr *hdr)
 
 void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 {
-	char id[7];
-	strncpy(id, hdr->id, sizeof(id));
-
-	char path[256];
-	strncpy(path, hdr->path, sizeof(path));
+	string id(hdr->id);
+	string path(hdr->path);
 
 	Nand::Instance()->Disable_Emu();
 
@@ -787,7 +784,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 	m_gcfg1.setUInt("LASTPLAYED", id, time(NULL));
 
 	if(has_enabled_providers() && _initNetwork() == 0)
-		add_game_to_card(id);
+		add_game_to_card(id.c_str());
 
 	u8 GClanguage = min((u32)m_gcfg2.getInt(id, "gc_language", 0), ARRAY_SIZE(CMenu::_GClanguages) - 1u);
 	GClanguage = (GClanguage == 0) ? min((u32)m_cfg.getInt("DML", "game_language", 0), ARRAY_SIZE(CMenu::_GlobalGClanguages) - 1u) : GClanguage-1;
@@ -814,22 +811,22 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 
 		if(cheats)
 		{
-			snprintf(CheatPath, sizeof(CheatPath), "%s/%s", m_cheatDir.c_str(), fmt("%s.gct", id));
-			snprintf(NewCheatPath, sizeof(NewCheatPath), "%s/%s/%s", fmt(DML_DIR, "sd"), path, fmt("%s.gct", id));
+			snprintf(CheatPath, sizeof(CheatPath), "%s/%s", m_cheatDir.c_str(), fmt("%s.gct", id.c_str()));
+			snprintf(NewCheatPath, sizeof(NewCheatPath), "%s/%s/%s", fmt(DML_DIR, "sd"), path.c_str(), fmt("%s.gct", id.c_str()));
 		}
 
 		string newPath;
-		if(strcasestr(path, "boot.bin") != NULL)
+		if(strcasestr(path.c_str(), "boot.bin") != NULL)
 		{
-			newPath = &path[string(path).find_first_of(":/")+1];
+			newPath = &path[path.find_first_of(":/")+1];
 			newPath.erase(newPath.end() - 12, newPath.end());
 		}
 		else
-			newPath = &path[string(path).find_first_of(":/")+1];
+			newPath = &path[path.find_first_of(":/")+1];
 		if(m_new_dml)
 			DML_New_SetOptions(newPath.c_str(), CheatPath, NewCheatPath, cheats, DML_debug, NMM, nodisc, DMLvideoMode);
 		else
-			DML_Old_SetOptions(path, CheatPath, NewCheatPath, cheats);
+			DML_Old_SetOptions((char*)path.c_str(), CheatPath, NewCheatPath, cheats);
 
 		if(!nodisc || !m_new_dml)
 		{
@@ -968,7 +965,6 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	u32 ios = 0;
 	u32 entry = 0;	
 	Nand::Instance()->Disable_Emu();
-
 	string id = string(hdr->id);
 
 	bool forwarder = true;
@@ -1147,25 +1143,20 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		if(WII_LaunchTitle(gameTitle) < 0)
 			Sys_LoadMenu();	
 	}
-	
 	if(!BootChannel(entry, gameTitle, ios, videoMode, vipatch, countryPatch, patchVidMode, aspectRatio))
 		Sys_LoadMenu();
 }
 
 void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 {
-	char id[7];
-	strncpy(id, hdr->id, sizeof(id));
-
-	char path[256];
-	strncpy(path, hdr->path, sizeof(path));
+	string id(hdr->id);
+	string path(hdr->path);
 
 	Nand::Instance()->Disable_Emu();
 
-	if (dvd)
+	if(dvd)
 	{
 		u32 cover = 0;
-
 		Disc_SetUSB(NULL);
 		if (WDVD_GetCoverStatus(&cover) < 0)
 		{
@@ -1186,7 +1177,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			error(_t("wbfsoperr2", L"Disc_Open failed"));
 			if (BTN_B_PRESSED) return;
 		}
-
 		/* Check disc */
 		if (Disc_IsWii() < 0)
 		{
@@ -1200,20 +1190,23 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 				/* Read GC disc header */
 				struct gc_discHdr *gcHeader = (struct gc_discHdr *)MEM2_alloc(sizeof(struct gc_discHdr));
 				Disc_ReadGCHeader(gcHeader);
-				memcpy(id, gcHeader->id, 6);
+				id = string((const char*)gcHeader->id);
 				MEM2_free(gcHeader);
 				/* Launching GC Game */
 				_launchGC(hdr, false);
 			}
 		}
-
-		/* Read header */
-		struct discHdr *header = (struct discHdr *)MEM2_alloc(sizeof(struct discHdr));
-		Disc_ReadHeader(header);
-		for (int i = 0;i < 6; i++)
-			id[i] = header->id[i];
-		MEM2_free(header);
+		else
+		{
+			/* Read header */
+			struct discHdr *header = (struct discHdr *)MEM2_alloc(sizeof(struct discHdr));
+			Disc_ReadHeader(header);
+			id = string((const char*)header->id);
+			MEM2_free(header);
+		}
+		gprintf("Game ID: %s\n", id.c_str());
 	}
+
 	bool vipatch = m_gcfg2.testOptBool(id, "vipatch", m_cfg.getBool("GENERAL", "vipatch", false));
 	bool cheat = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool("GAMES", "cheat", false));
 	bool countryPatch = m_gcfg2.testOptBool(id, "country_patch", m_cfg.getBool("GENERAL", "country_patch", false));
@@ -1292,7 +1285,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		}
 	}
 
-	if(!dvd && get_frag_list((u8 *)id, path, currentPartition == 0 ? 0x200 : sector_size) < 0)
+	if(!dvd && get_frag_list((u8 *)id.c_str(), (char*)path.c_str(), currentPartition == 0 ? 0x200 : sector_size) < 0)
 		return;
 
 	u8 patchVidMode = min((u32)m_gcfg2.getInt(id, "patch_video_modes", 0), ARRAY_SIZE(CMenu::_vidModePatch) - 1u);
@@ -1302,7 +1295,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	if ((debuggerselect || cheat) && hooktype == 0) hooktype = 1;
 	if (!debuggerselect && !cheat) hooktype = 0;
 
-	if(strstr(id, "RPWE41") || strstr(id, "RPWZ41") || strstr(id, "SPXP41")) // Prince of Persia, Rival Swords
+	if(id == "RPWE41" || id == "RPWZ41" || id == "SPXP41") // Prince of Persia, Rival Swords
 		debuggerselect = false;
 
 	SmartBuf cheatFile, gameconfig;
@@ -1314,7 +1307,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	m_gcfg1.setUInt("LASTPLAYED", id, time(NULL));
 
 	if(has_enabled_providers() && _initNetwork() == 0)
-		add_game_to_card(id);
+		add_game_to_card(id.c_str());
 
 	int userIOS = 0;
 	m_gcfg2.getInt(id, "ios", &userIOS);
@@ -1322,13 +1315,15 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	setLanguage(language);
 
 	if(cheat)
-		_loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", id));
+		_loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", id.c_str()));
 	_loadFile(gameconfig, gameconfigSize, m_txtCheatDir.c_str(), "gameconfig.txt");
 
 	load_wip_patches((u8 *)m_wipDir.c_str(), (u8 *) &id);
 	app_gameconfig_load((u8 *) &id, gameconfig.get(), gameconfigSize);
 	ocarina_load_code(cheatFile.get(), cheatSize);
-	u8 gameIOS = GetRequestedGameIOS(hdr);
+	u8 gameIOS = 0;
+	if(!dvd)
+		gameIOS = GetRequestedGameIOS(hdr);
 
 	m_gcfg1.save(true);
 	m_gcfg2.save(true);
@@ -1390,9 +1385,9 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		}
 	}
 
-	if (!dvd)
+	if(!dvd)
 	{
-		s32 ret = Disc_SetUSB((u8 *)id);
+		s32 ret = Disc_SetUSB((u8 *)id.c_str());
 		if (ret < 0)
 		{
 			gprintf("Set USB failed: %d\n", ret);
