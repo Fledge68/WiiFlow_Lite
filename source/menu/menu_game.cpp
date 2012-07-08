@@ -843,7 +843,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 	m_cat.save(true);
 	m_cfg.save(true);
 	cleanup();
-
+	ISFS_Deinitialize();
 	USBStorage_Deinit();
 	SDHC_Init();
 
@@ -877,6 +877,7 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 	cleanup(); // wifi and sd gecko doesnt work anymore after cleanup
 
 	LoadHomebrew(filepath);
+	ISFS_Deinitialize();
 	USBStorage_Deinit();
 	AddBootArgument(filepath);
 	for(u32 i = 0; i < arguments.size(); ++i)
@@ -1044,7 +1045,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 
 			return;
 		}
-	}		
+	}
 
 	if(!forwarder)
 	{
@@ -1121,7 +1122,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 			}
 		}		
 	}	
-	
+	ISFS_Deinitialize();
 	if(rtrn != NULL && strlen(rtrn) == 4)
 	{			
 		int rtrnID = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
@@ -1404,7 +1405,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		}
 	}
 	IOSReloadBlock(IOS_GetVersion(), true);
-
+	ISFS_Deinitialize();
 	USBStorage_Deinit();
 	if(currentPartition == 0)
 		SDHC_Init();

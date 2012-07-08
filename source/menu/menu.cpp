@@ -502,7 +502,6 @@ void CMenu::cleanup()
 
 	if(!m_reload)
 	{
-		ISFS_Deinitialize();
 		DeviceHandler::DestroyInstance();
 		m_vid.CheckWaitThread(true);
 		m_vid.cleanup();
