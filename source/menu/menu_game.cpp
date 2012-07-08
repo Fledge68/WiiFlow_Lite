@@ -17,6 +17,7 @@
 #include "wip.h"
 #include "channel_launcher.h"
 #include "devicemounter/sdhc.h"
+#include "devicemounter/usbstorage.h"
 #include "BannerWindow.hpp"
 
 #include <network.h>
@@ -772,11 +773,13 @@ void CMenu::_launch(dir_discHdr *hdr)
 	}
 }
 
-extern "C" {extern void USBStorage_Deinit(void);}
-
 void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 {
-	char* id = (char *)hdr->id;
+	char id[7];
+	strncpy(id, hdr->id, sizeof(id));
+
+	char path[256];
+	strncpy(path, hdr->path, sizeof(path));
 
 	Nand::Instance()->Disable_Emu();
 
@@ -812,23 +815,21 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 		if(cheats)
 		{
 			snprintf(CheatPath, sizeof(CheatPath), "%s/%s", m_cheatDir.c_str(), fmt("%s.gct", id));
-			snprintf(NewCheatPath, sizeof(NewCheatPath), "%s/%s/%s", fmt(DML_DIR, "sd"), hdr->path, fmt("%s.gct", id));
+			snprintf(NewCheatPath, sizeof(NewCheatPath), "%s/%s/%s", fmt(DML_DIR, "sd"), path, fmt("%s.gct", id));
 		}
 
-		if(m_new_dml)
+		string newPath;
+		if(strcasestr(path, "boot.bin") != NULL)
 		{
-			string path;
-			if(strcasestr(hdr->path, "boot.bin") != NULL)
-			{
-				path = &hdr->path[string(hdr->path).find_first_of(":/")+1];
-				path.erase(path.end() - 12, path.end());
-			}
-			else
-				path = &hdr->path[string(hdr->path).find_first_of(":/")+1];
-			DML_New_SetOptions(path.c_str(), CheatPath, NewCheatPath, cheats, DML_debug, NMM, nodisc, DMLvideoMode);
+			newPath = &path[string(path).find_first_of(":/")+1];
+			newPath.erase(newPath.end() - 12, newPath.end());
 		}
 		else
-			DML_Old_SetOptions(hdr->path, CheatPath, NewCheatPath, cheats);
+			newPath = &path[string(path).find_first_of(":/")+1];
+		if(m_new_dml)
+			DML_New_SetOptions(newPath.c_str(), CheatPath, NewCheatPath, cheats, DML_debug, NMM, nodisc, DMLvideoMode);
+		else
+			DML_Old_SetOptions(path, CheatPath, NewCheatPath, cheats);
 
 		if(!nodisc || !m_new_dml)
 		{
@@ -844,9 +845,8 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 	m_gcfg2.save(true);
 	m_cat.save(true);
 	m_cfg.save(true);
-
 	cleanup();
-	Close_Inputs();
+
 	USBStorage_Deinit();
 	SDHC_Init();
 
@@ -876,19 +876,10 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 	m_cat.save(true);
 	m_cfg.save(true);
 
-	while(net_get_status() == -EBUSY)
-		usleep(100);
-
-	m_vid.CheckWaitThread(true);
 	Playlog_Delete();
-	cleanup();
-	// wifi and sd gecko doesnt work anymore after cleanup
-	Close_Inputs();
-	m_vid.cleanup();
-	wiiLightOff();
+	cleanup(); // wifi and sd gecko doesnt work anymore after cleanup
 
 	LoadHomebrew(filepath);
-	DeviceHandler::DestroyInstance();
 	USBStorage_Deinit();
 	AddBootArgument(filepath);
 	for(u32 i = 0; i < arguments.size(); ++i)
@@ -978,7 +969,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	u32 entry = 0;	
 	Nand::Instance()->Disable_Emu();
 
-	string id = string((const char *)hdr->id);
+	string id = string(hdr->id);
 
 	bool forwarder = true;
 	for (u8 num = 0; num < ARRAY_SIZE(systems); num++)
@@ -1032,18 +1023,14 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	int emulate_mode = min(max(0, m_cfg.getInt("NAND", "emulation", 1)), (int)ARRAY_SIZE(CMenu::_NandEmu) - 1);
 	
 	int userIOS = m_gcfg2.getInt(id, "ios", 0);
+	u64 gameTitle = TITLE_ID(hdr->settings[0],hdr->settings[1]);
 
 	m_gcfg1.save(true);
 	m_gcfg2.save(true);
 	m_cat.save(true);
 	m_cfg.save(true);
-
-	CheckGameSoundThread();
-	m_vid.CheckWaitThread(true);
 	cleanup();
-	USBStorage_Deinit();
-	Close_Inputs();
-	
+
 	if(!emu_disabled)
 	{		
 		Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
@@ -1065,13 +1052,13 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 
 	if(!forwarder)
 	{
-		entry = channel.Load(TITLE_ID(hdr->settings[0],hdr->settings[1]), &ios);
+		entry = channel.Load(gameTitle, &ios);
 		setLanguage(language);
 
 		SmartBuf cheatFile;
 		u32 cheatSize = 0;
 		if (cheat)
-			_loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", hdr->id));
+			_loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", id.c_str()));
 		
 		ocarina_load_code(cheatFile.get(), cheatSize);
 
@@ -1157,17 +1144,22 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	if(forwarder)
 	{
 		WII_Initialize();
-		if(WII_LaunchTitle(TITLE_ID(hdr->settings[0],hdr->settings[1])) < 0)
+		if(WII_LaunchTitle(gameTitle) < 0)
 			Sys_LoadMenu();	
 	}
 	
-	if(!BootChannel(entry, TITLE_ID(hdr->settings[0],hdr->settings[1]), ios, videoMode, vipatch, countryPatch, patchVidMode, aspectRatio))
+	if(!BootChannel(entry, gameTitle, ios, videoMode, vipatch, countryPatch, patchVidMode, aspectRatio))
 		Sys_LoadMenu();
 }
 
 void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 {
-	string id = string((const char *) hdr->id);
+	char id[7];
+	strncpy(id, hdr->id, sizeof(id));
+
+	char path[256];
+	strncpy(path, hdr->path, sizeof(path));
+
 	Nand::Instance()->Disable_Emu();
 
 	if (dvd)
@@ -1208,7 +1200,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 				/* Read GC disc header */
 				struct gc_discHdr *gcHeader = (struct gc_discHdr *)MEM2_alloc(sizeof(struct gc_discHdr));
 				Disc_ReadGCHeader(gcHeader);
-				memcpy(hdr->id, gcHeader->id, 6);
+				memcpy(id, gcHeader->id, 6);
 				MEM2_free(gcHeader);
 				/* Launching GC Game */
 				_launchGC(hdr, false);
@@ -1299,8 +1291,8 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			Nand::Instance()->Do_Region_Change(id);
 		}
 	}
-	
-	if (!dvd && get_frag_list((u8 *)hdr->id, (char *) hdr->path, currentPartition == 0 ? 0x200 : sector_size) < 0)
+
+	if(!dvd && get_frag_list((u8 *)id, path, currentPartition == 0 ? 0x200 : sector_size) < 0)
 		return;
 
 	u8 patchVidMode = min((u32)m_gcfg2.getInt(id, "patch_video_modes", 0), ARRAY_SIZE(CMenu::_vidModePatch) - 1u);
@@ -1310,7 +1302,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	if ((debuggerselect || cheat) && hooktype == 0) hooktype = 1;
 	if (!debuggerselect && !cheat) hooktype = 0;
 
-	if (id == "RPWE41" || id == "RPWZ41" || id == "SPXP41") // Prince of Persia, Rival Swords
+	if(strstr(id, "RPWE41") || strstr(id, "RPWZ41") || strstr(id, "SPXP41")) // Prince of Persia, Rival Swords
 		debuggerselect = false;
 
 	SmartBuf cheatFile, gameconfig;
@@ -1322,38 +1314,36 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	m_gcfg1.setUInt("LASTPLAYED", id, time(NULL));
 
 	if(has_enabled_providers() && _initNetwork() == 0)
-		add_game_to_card(id.c_str());
+		add_game_to_card(id);
 
 	int userIOS = 0;
 	m_gcfg2.getInt(id, "ios", &userIOS);
+
+	setLanguage(language);
+
+	if(cheat)
+		_loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", id));
+	_loadFile(gameconfig, gameconfigSize, m_txtCheatDir.c_str(), "gameconfig.txt");
+
+	load_wip_patches((u8 *)m_wipDir.c_str(), (u8 *) &id);
+	app_gameconfig_load((u8 *) &id, gameconfig.get(), gameconfigSize);
+	ocarina_load_code(cheatFile.get(), cheatSize);
+	u8 gameIOS = GetRequestedGameIOS(hdr);
 
 	m_gcfg1.save(true);
 	m_gcfg2.save(true);
 	m_cat.save(true);
 	m_cfg.save(true);
-
-	setLanguage(language);
-
-	if(cheat)
-		_loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", hdr->id));
-
-	_loadFile(gameconfig, gameconfigSize, m_txtCheatDir.c_str(), "gameconfig.txt");
-
-	load_wip_patches((u8 *)m_wipDir.c_str(), (u8 *) &hdr->id);	
-	app_gameconfig_load((u8 *) &hdr->id, gameconfig.get(), gameconfigSize);
-	ocarina_load_code(cheatFile.get(), cheatSize);
-
-	if (!m_use_wifi_gecko)
-		net_wc24cleanup();
+	cleanup(); // wifi and sd gecko doesnt work anymore after cleanup
 
 	bool iosLoaded = false;
 
-	if (!dvd)
+	if(!dvd)
 	{
-		int result = _loadIOS(GetRequestedGameIOS(hdr), userIOS, id);
-		if (result == LOAD_IOS_FAILED)
+		int result = _loadIOS(gameIOS, userIOS, id);
+		if(result == LOAD_IOS_FAILED)
 			return;
-		if (result == LOAD_IOS_SUCCEEDED)
+		if(result == LOAD_IOS_SUCCEEDED)
 			iosLoaded = true;
 	}
 	
@@ -1373,7 +1363,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		{
 			Nand::Instance()->Disable_Emu();
 			error(_t("errgame6", L"Enabling emu after reload failed!"));
-			if (iosLoaded) Sys_LoadMenu();
+			Sys_LoadMenu();
 			return;
 		}
 		if(!DeviceHandler::Instance()->IsInserted(currentPartition))
@@ -1402,7 +1392,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 
 	if (!dvd)
 	{
-		s32 ret = Disc_SetUSB((u8 *)hdr->id);
+		s32 ret = Disc_SetUSB((u8 *)id);
 		if (ret < 0)
 		{
 			gprintf("Set USB failed: %d\n", ret);
@@ -1420,13 +1410,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	}
 	IOSReloadBlock(IOS_GetVersion(), true);
 
-	while(net_get_status() == -EBUSY)
-		usleep(100);
-
-	m_vid.CheckWaitThread(true);
-	cleanup();
-	// wifi and sd gecko doesnt work anymore after cleanup
-	Close_Inputs();
 	USBStorage_Deinit();
 	if(currentPartition == 0)
 		SDHC_Init();

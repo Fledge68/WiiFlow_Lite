@@ -836,8 +836,10 @@ int CMenu::main(void)
 	coverStatus = LWP_THREAD_NULL;
 	if(coverstatus_stack.get())
 		coverstatus_stack.release();
+	if(!m_reload)
+		return 0;
 	cleanup();
-	return m_reload ? 1 : 0;
+	return 1;
 }
 
 void CMenu::_initMainMenu(CMenu::SThemeData &theme)

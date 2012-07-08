@@ -19,6 +19,8 @@ class MusicPlayer
 {
 public:
 	MusicPlayer();
+	~MusicPlayer();
+
 	void cleanup();
 	void Init(Config &cfg, std::string musicDir, std::string themeMusicDir);
 	void Tick(bool attenuate);
@@ -36,8 +38,6 @@ public:
 	
 	bool IsStopped() { return m_stopped; };
 private:
-	~MusicPlayer();
-
 	void LoadCurrentFile();
 
 	CachedList<std::string> m_music_files;

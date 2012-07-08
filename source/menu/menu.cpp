@@ -481,45 +481,40 @@ void CMenu::init(void)
 
 bool cleaned_up = false;
 
-void CMenu::cleanup(bool ios_reload)
+void CMenu::cleanup()
 {
 	if(cleaned_up)
 		return;
 
 	m_cf.stopCoverLoader();
+	_cleanupDefaultFont();
 	m_cf.clear();
-	ClearGameSoundThreadStack();
+
 	m_banner->DeleteBanner();
 	m_plugin.Cleanup();
 
 	_stopSounds();
-
-	if (!ios_reload)
-		m_cameraSound.release();
-
-	m_music->cleanup();
+	delete m_music;
+	m_cameraSound.release();
+	ClearGameSoundThreadStack();
 	SoundHandler::DestroyInstance();
 	soundDeinit();
 
 	if(!m_reload)
 	{
+		ISFS_Deinitialize();
 		DeviceHandler::DestroyInstance();
+		m_vid.CheckWaitThread(true);
 		m_vid.cleanup();
-		wiiLightOff();
 	}
+	wiiLightOff();
+	_deinitNetwork();
 
-	if (!ios_reload)
-	{
-		LWP_MutexDestroy(m_mutex);
-		m_mutex = 0;
-	}
+	LWP_MutexDestroy(m_mutex);
+	m_mutex = 0;
 
-	if (!ios_reload)
-		_cleanupDefaultFont();
-
-	if (!ios_reload || (!m_use_wifi_gecko && ios_reload)) 
-		_deinitNetwork();
 	ClearLogBuffer();
+	Close_Inputs();
 
 	cleaned_up = true;
 	gprintf(" \nMemory cleaned up\n");
@@ -527,11 +522,11 @@ void CMenu::cleanup(bool ios_reload)
 
 void CMenu::_reload_wifi_gecko(void)
 {
-	if (m_use_wifi_gecko)
+	if(m_use_wifi_gecko)
 	{
 		_initAsyncNetwork();
-		while(net_get_status() == -EBUSY);
-		usleep(1000);
+		while(net_get_status() == -EBUSY)
+			usleep(100);
 	}
 }
 
