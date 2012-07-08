@@ -129,8 +129,8 @@ int main(int argc, char **argv)
 			ret = mainMenu->main();
 		}
 	}
+	delete mainMenu;
 
-	ISFS_Deinitialize();
 	Sys_Exit();
 	exit(1);
 	return 0;

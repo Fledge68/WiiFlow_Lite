@@ -451,6 +451,8 @@ int CMenu::_initNetwork()
 
 void CMenu::_deinitNetwork()
 {
+	while(net_get_status() == -EBUSY)
+		usleep(100);
 	net_wc24cleanup();
 	net_deinit();
 	m_networkInit = false;

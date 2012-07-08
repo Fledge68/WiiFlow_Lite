@@ -70,7 +70,7 @@ void *CMEM2Alloc::allocate(unsigned int s)
 	}
 	// Search for a free block
 	SBlock *i;
-	SBlock *j;
+	SBlock *j = m_first;
 	for (i = m_first; i != 0; i = i->next)
 	{
 		if (i->f && i->s >= s)
