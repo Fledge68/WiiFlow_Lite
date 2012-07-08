@@ -28,8 +28,8 @@ extern const u8 loading_png[];
 extern const u8 flatnopic_png[];
 extern const u8 flatloading_png[];
 
-static const int black_len = 15;
-static const char* black[black_len] = {"RZZJEL","RZNJ01","SEKJ99","SX3J01","SX3P01","R5WJA4","RUYJ99","S3HJ08","SJBJ01","CKBE88","CCPE01","SMMP01","MDUE01","APR","AFR"};
+static const int black_len = 16;
+static const char* black[black_len] = {"RZZJEL","RZNJ01","SEKJ99","SX3J01","SX3P01","R5WJA4","RUYJ99","S3HJ08","SJBJ01","CKBE88","CCPE01","SMMP01","MDUE01","SL2J01","APR","AFR"};
 
 static const int red_len = 2;
 static const char* red[red_len] = {"SMN","HBW"};

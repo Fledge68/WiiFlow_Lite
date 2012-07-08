@@ -47,10 +47,10 @@ FreeTypeGX::FreeTypeGX(uint8_t textureFormat, uint8_t positionFormat)
 FreeTypeGX::~FreeTypeGX()
 {
 	this->unloadFont();
-	if (this->ftLibrary != 0)
+	if (this->ftLibrary != NULL)
 	{
 		FT_Done_FreeType(this->ftLibrary);
-		this->ftLibrary = 0;
+		this->ftLibrary = NULL;
 	}
 }
 
