@@ -881,7 +881,7 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 	cleanup(); // wifi and sd gecko doesnt work anymore after cleanup
 
 	LoadHomebrew(filepath);
-	ISFS_Deinitialize();
+	//ISFS_Deinitialize();
 	USBStorage_Deinit();
 	AddBootArgument(filepath);
 	for(u32 i = 0; i < arguments.size(); ++i)
