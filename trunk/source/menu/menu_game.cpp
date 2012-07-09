@@ -417,6 +417,8 @@ void CMenu::_game(bool launch)
 			m_banner->DeleteBanner();
 			_CategorySettings(true);
 			_showGame();
+			if (!m_gameSound.IsPlaying()) 
+				startGameSound = -6;
 			continue;
 		}
 		if(BTN_HOME_PRESSED || BTN_B_PRESSED)
