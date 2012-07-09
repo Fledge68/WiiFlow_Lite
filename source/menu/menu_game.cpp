@@ -870,8 +870,6 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 	if(channel.GetRequestedIOS(RETURN_CHANNEL) != 0)
 		title = RETURN_CHANNEL;
 
-	gprintf("Filepath of homebrew: %s\n",filepath);
-
 	m_gcfg1.save(true);
 	m_gcfg2.save(true);
 	m_cat.save(true);
@@ -879,18 +877,16 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 
 	Playlog_Delete();
 	cleanup(); // wifi and sd gecko doesnt work anymore after cleanup
+	MEM2_wrap(0);
 
 	LoadHomebrew(filepath);
-	//ISFS_Deinitialize();
-	USBStorage_Deinit();
 	AddBootArgument(filepath);
 	for(u32 i = 0; i < arguments.size(); ++i)
-	{
-		gprintf("Boot argument: %s\n", arguments[i].c_str());
 		AddBootArgument(arguments[i].c_str());
-	}
-	gprintf("Return to Channel: %08x %08x\n", TITLE_UPPER(title), TITLE_LOWER(title));
-	gprintf("Booting Homebrew application...\n");
+
+	ISFS_Deinitialize();
+	USBStorage_Deinit();
+	MEM2_clear();
 	BootHomebrew(title);
 }
 

@@ -7,6 +7,7 @@
 #include <string>
 #include "smartptr.hpp"
 #include "gecko.h"
+#include "mem2.hpp"
 
 #define EXECUTE_ADDR	((u8 *)0x92000000)
 #define BOOTER_ADDR		((u8 *)0x93000000)
@@ -23,8 +24,8 @@ extern const u32 stub_bin_size;
 typedef void (*entrypoint) (void);
 extern "C" { void __exception_closeall(); }
 
-static u8 *homebrewbuffer = EXECUTE_ADDR;
-static u32 homebrewsize = 0;
+u8 *tmpbuffer = NULL;
+u32 tmpbuffer_size = 0;
 static vector<string> Arguments;
 
 static u32 stubtitlepositions[8] = { 0x80001bf2, 0x80001bf3, 0x80001c06, 0x80001c07,
@@ -61,10 +62,11 @@ int LoadHomebrew(const char *filepath)
 	u32 filesize = ftell(file);
 	rewind(file);
 
-	fread(homebrewbuffer, 1, filesize, file);
+	tmpbuffer_size = filesize;
+	tmpbuffer = (u8*)MEM1_alloc(tmpbuffer_size);
+	fread(tmpbuffer, 1, tmpbuffer_size, file);
 	fclose(file);
 
-	homebrewsize += filesize;
 	return 1;
 }
 
@@ -137,25 +139,24 @@ static void writeStub(u64 chan_title)
 
 int BootHomebrew(u64 chan_title)
 {
+	writeStub(chan_title);
 	struct __argv args;
-	if (!IsDollZ(homebrewbuffer))
+	if (!IsDollZ(tmpbuffer))
 		SetupARGV(&args);
 
 	memcpy(BOOTER_ADDR, app_booter_bin, app_booter_bin_size);
 	DCFlushRange(BOOTER_ADDR, app_booter_bin_size);
+
+	memcpy(EXECUTE_ADDR, tmpbuffer, tmpbuffer_size);
+	DCFlushRange(EXECUTE_ADDR, tmpbuffer_size);
+	MEM1_free(tmpbuffer);
 
 	entrypoint entry = (entrypoint)BOOTER_ADDR;
 
 	memmove(ARGS_ADDR, &args, sizeof(args));
 	DCFlushRange(ARGS_ADDR, sizeof(args) + args.length);
 
-	writeStub(chan_title);
-
-	/* Shutdown IOS subsystems */
-	u32 level = IRQ_Disable();
-	__IOS_ShutdownSubsystems();
-	__exception_closeall();
+	SYS_ResetSystem(SYS_SHUTDOWN, 0, 0);
 	entry();
-	IRQ_Restore(level);
 	return 0;
 }
