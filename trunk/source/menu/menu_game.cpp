@@ -521,7 +521,9 @@ void CMenu::_game(bool launch)
 				m_gameSelected = true;
 
 				m_banner->ToogleZoom();
+				m_banner->SetBrightness(200.f);
 				_gameSettings();
+				m_banner->SetBrightness(0.f);
 				m_banner->ToogleZoom();
 
 				_showGame();

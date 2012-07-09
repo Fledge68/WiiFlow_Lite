@@ -54,6 +54,7 @@ class BannerWindow
 		void CreateGCBanner(u8 *bnr, CVideo *vid, u8 *font1, u8 *font2, const wchar_t *title);
 		void Draw(void);
 		bool ToogleZoom(void);
+		void SetBrightness(float b);
 	protected:
 		int MainLoop();
 		void Animate(void);
@@ -72,7 +73,7 @@ class BannerWindow
 		int returnVal;
 		int gameSelected;
 		dir_discHdr dvdheader;
-
+		float Brightness;
 		int MaxAnimSteps;
 
 		int AnimStep;
