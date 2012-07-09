@@ -43,6 +43,7 @@ void BannerWindow::Init(CVideo *vid, u8 *font1, u8 *font2)
 	AnimPosX = 0.5f * (ScreenProps.x - fIconWidth);
 	AnimPosY = 0.5f * (ScreenProps.y - fIconHeight);
 	AnimationRunning = false;
+	Brightness = 0.f;
 
 	gameBanner->Clear();
 	if(!FontLoaded)
@@ -217,8 +218,15 @@ void BannerWindow::Draw(void)
 
 	// Clear and back to previous projection
 	video->setup2DProjection();
-	GX_InvVtxCache();
-	GX_InvalidateTexAll();
+
+	// If wanted
+	if(Brightness > 1.f)
+		DrawRectangle(0.0f, 0.0f, video->width(), video->height(), (GXColor) {0, 0, 0, Brightness});
+}
+
+void BannerWindow::SetBrightness(float b)
+{
+	Brightness = b;
 }
 
 void BannerWindow::DrawRectangle(f32 x, f32 y, f32 width, f32 height, GXColor color)
