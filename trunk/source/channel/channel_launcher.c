@@ -224,7 +224,7 @@ bool Identify_GenerateTik(signed_blob **outbuf, u32 *outlen)
 	return true;
 }
 
-bool Identify(u64 titleid, u32 *ios)
+bool Identify(u64 titleid)
 {
 	char filepath[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
 
@@ -238,8 +238,6 @@ bool Identify(u64 titleid, u32 *ios)
 		return false;
 	}
 	gprintf("Success!\n");
-
-	*ios = (u32)(tmdBuffer[0x18b]);
 
 	u32 tikSize;
 	signed_blob *tikBuffer = NULL;

@@ -15,7 +15,7 @@ void PatchChannel(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryStrin
 
 u8 *GetDol(u64 title, u32 bootcontent);
 
-bool Identify(u64 titleid, u32 *ios);
+bool Identify(u64 titleid);
 bool Identify_GenerateTik(signed_blob **outbuf, u32 *outlen);
 
 #ifdef __cplusplus
