@@ -216,7 +216,7 @@ void CMenu::LoadView(void)
 void CMenu::exitHandler(int ExitTo)
 {
 	gprintf("Exit WiiFlow called\n");
-	if(!m_locked && !m_disable_exit)
+	if(!m_disable_exit)
 	{
 		m_exit = true;
 		if(ExitTo == 1) // HBC
