@@ -24,8 +24,8 @@ extern const u32 stub_bin_size;
 typedef void (*entrypoint) (void);
 extern "C" { void __exception_closeall(); }
 
-u8 *tmpbuffer = NULL;
-u32 tmpbuffer_size = 0;
+u32 buffer_size = 0;
+
 static vector<string> Arguments;
 
 static u32 stubtitlepositions[8] = { 0x80001bf2, 0x80001bf3, 0x80001c06, 0x80001c07,
@@ -62,9 +62,9 @@ int LoadHomebrew(const char *filepath)
 	u32 filesize = ftell(file);
 	rewind(file);
 
-	tmpbuffer_size = filesize;
-	tmpbuffer = (u8*)MEM1_alloc(tmpbuffer_size);
-	fread(tmpbuffer, 1, tmpbuffer_size, file);
+	buffer_size = filesize;
+	fread(EXECUTE_ADDR, 1, buffer_size, file);
+	DCFlushRange(EXECUTE_ADDR, buffer_size);
 	fclose(file);
 
 	return 1;
@@ -141,15 +141,11 @@ int BootHomebrew(u64 chan_title)
 {
 	writeStub(chan_title);
 	struct __argv args;
-	if (!IsDollZ(tmpbuffer))
+	if (!IsDollZ(EXECUTE_ADDR))
 		SetupARGV(&args);
 
 	memcpy(BOOTER_ADDR, app_booter_bin, app_booter_bin_size);
 	DCFlushRange(BOOTER_ADDR, app_booter_bin_size);
-
-	memcpy(EXECUTE_ADDR, tmpbuffer, tmpbuffer_size);
-	DCFlushRange(EXECUTE_ADDR, tmpbuffer_size);
-	MEM1_free(tmpbuffer);
 
 	entrypoint entry = (entrypoint)BOOTER_ADDR;
 
