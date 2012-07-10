@@ -84,6 +84,11 @@ class BannerWindow
 		bool AnimationRunning;
 		bool changing;
 
+		float xDiff, yDiff;
+		float iconWidth, iconHeight;
+		float stepx1, stepx2, stepy1, stepy2;
+		f32 ratioX, ratioY;
+
 		Mtx modelview;
 		Mtx44 projection;
 		Vec2f ScreenProps;

@@ -45,6 +45,21 @@ void BannerWindow::Init(CVideo *vid, u8 *font1, u8 *font2)
 	AnimationRunning = false;
 	Brightness = 0.f;
 
+	// this just looks better for banner/icon ratio
+	xDiff = 0.5f * (video->wide() ? (video->vid_50hz() ? 616 : 620.0f) : 608.0f);
+	yDiff = 0.5f * (video->vid_50hz() ? 448.0f : 470.0f);
+
+	iconWidth = fIconWidth - 20;
+	iconHeight = fIconHeight - 20;
+
+	ratioX = xDiff * 2.f / iconWidth;
+	ratioY = yDiff * 2.f / iconHeight;
+
+	stepx1 = ((ScreenProps.x * 0.1f - xDiff) - (AnimPosX + 0.5f * fIconWidth - 0.5f * iconWidth)) * ratioX;
+	stepx2 = ((ScreenProps.x * 0.1f + xDiff) - (AnimPosX + 0.5f * fIconWidth + 0.5f * iconWidth)) * ratioX;
+	stepy1 = ((ScreenProps.y * 0.9f - yDiff) - (AnimPosY + 0.5f * fIconHeight - 0.5f * iconHeight)) * ratioY;
+	stepy2 = ((ScreenProps.y * 0.9f + yDiff) - (AnimPosY + 0.5f * fIconHeight + 0.5f * iconHeight)) * ratioY;
+
 	gameBanner->Clear();
 	if(!FontLoaded)
 	{
@@ -123,38 +138,14 @@ void BannerWindow::Animate(void)
 			AnimStep--;
 		float curAnimStep = ((float)(MaxAnimSteps - AnimStep)/(float)MaxAnimSteps);
 
-		float stepx1 = -AnimPosX;
-		float stepy1 = -AnimPosY;
-		float stepx2 = (640 - 1) - (AnimPosX + fIconWidth);
-		float stepy2 = (480 - 1) - (AnimPosY + fIconHeight);
-
-		float top = AnimPosY + stepy1 * curAnimStep;
-		float bottom = AnimPosY + fIconHeight + stepy2 * curAnimStep;
-		float left = AnimPosX + stepx1 * curAnimStep;
-		float right = AnimPosX + fIconWidth + stepx2 * curAnimStep;
-
-		float xDiff = 0.5f * (video->wide() ? (video->vid_50hz() ? 616 : 620.0f) : 608.0f);
-		float yDiff = 0.5f * (video->vid_50hz() ? 448.0f : 470.0f);
-
-		// this just looks better for banner/icon ratio
-		float iconWidth = fIconWidth - 20;
-		float iconHeight = fIconHeight - 20;
-
-		f32 ratioX = xDiff * 2.f / iconWidth;
-		f32 ratioY = yDiff * 2.f / iconHeight;
-		stepx1 = ((ScreenProps.x * 0.1f - xDiff) - (AnimPosX + 0.5f * fIconWidth - 0.5f * iconWidth)) * ratioX;
-		stepx2 = ((ScreenProps.x * 0.1f + xDiff) - (AnimPosX + 0.5f * fIconWidth + 0.5f * iconWidth)) * ratioX;
-		stepy1 = ((ScreenProps.y * 0.9f - yDiff) - (AnimPosY + 0.5f * fIconHeight - 0.5f * iconHeight)) * ratioY;
-		stepy2 = ((ScreenProps.y * 0.9f + yDiff) - (AnimPosY + 0.5f * fIconHeight + 0.5f * iconHeight)) * ratioY;
-
 		//! This works good for banners
-		top = (ScreenProps.y * 0.5f - yDiff) + stepy1 * curAnimStep;
-		bottom = (ScreenProps.y * 0.5f + yDiff) + stepy2 * curAnimStep;
-		left = (ScreenProps.x * 0.5f - xDiff) + stepx1 * curAnimStep;
-		right = (ScreenProps.x * 0.5f + xDiff) + stepx2 * curAnimStep;
+		float top = (ScreenProps.y * 0.5f - yDiff) + stepy1 * curAnimStep;
+		float bottom = (ScreenProps.y * 0.5f + yDiff) + stepy2 * curAnimStep;
+		float left = (ScreenProps.x * 0.5f - xDiff) + stepx1 * curAnimStep;
+		float right = (ScreenProps.x * 0.5f + xDiff) + stepx2 * curAnimStep;
 
 		// set banner projection
-		guOrtho(projection,top, bottom, left, right,-100,10000);
+		guOrtho(projection, top, bottom, left, right, -100, 10000);
 	}
 	// last animation step
 	else if(AnimationRunning)
