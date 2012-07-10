@@ -7,7 +7,7 @@ Bediening:
 -- A  =  Selecteer spel
 -- B+A  =  Start spel meteen
 -- B+Home  =  Herladen Wiiflow
--- Home  =  Naar Wii menu
+-- Home  =  Openen Home Menu / Wiiflow Sluiten
 -- 1 / 2  =  Vorige / volgende coverflow modus
 -- B+Links / B+Rechts  =  Verander Lied
 -- B+OP / B+NEER  =  Alphabetisch zoeken
@@ -15,13 +15,12 @@ Bediening:
 -- B+Minus  =  Verander van Partitie
 -- B+Plus  =  Sorteer spellen
 
--- A op Ster Icoon  =  Favoriten
+-- A op Ster Icoon  =  Favorieten
 -- B op Ster Icoon  =  Categoriën
 -- A op Rad Icoon  =  Wiiflow instellingen
--- B op Rad Icoon  =  Ververs cache
 -- A op USB, DML, Kanalen, Emu, of Homebrew Icoon  =  Ga naar volgende weergave
 -- B op USB, DML, Kanalen, Emu, of Homebrew Icoon  =  Schakel Emu-NAND In/Uit en ga naar Kanalen weergave
--- A op Home Icoon  =  Naar Wii menu
+-- A op Home Icoon  =  Openen Home Menu / Wiiflow Sluiten
 -- Druk op B voor 3 seconden / B op Home Icoon (wiimote_gestures ingeschakeld)  =  Ga naar Bron menu
 -- A op Disc Icoon (spel Disc in Drive)  =  Start spel disc
 -- A op Vraagteken Icoon  =  Toon eerbetuiging, dit help bestand en controle van een nieuwe versie
@@ -47,7 +46,7 @@ Bediening:
 
 - Coverflow Aanpassings instellingen :
 -- B+Min / B+Plus  =  Vorige / volgende pagina
--- B  =  Sneller aanpassen (B+A inplaats van alleen A op een knop)
+-- B  =  Sneller aanpassen (B+A inplaats van alleen met A op een knop)
 -- B+1  =  Kopieer complete coverflow
 -- B+2  =  Plak coverflow
 
