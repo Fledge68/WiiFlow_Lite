@@ -47,11 +47,8 @@ FreeTypeGX::FreeTypeGX(uint8_t textureFormat, uint8_t positionFormat)
 FreeTypeGX::~FreeTypeGX()
 {
 	this->unloadFont();
-	if (this->ftLibrary != NULL)
-	{
-		FT_Done_FreeType(this->ftLibrary);
-		this->ftLibrary = NULL;
-	}
+	FT_Done_Face(this->ftFace);
+	FT_Done_FreeType(this->ftLibrary);
 }
 
 /**
@@ -130,21 +127,13 @@ uint16_t FreeTypeGX::loadFont(const uint8_t* fontBuffer, FT_Long bufferSize, FT_
  */
 void FreeTypeGX::unloadFont()
 {
-	for( std::map<wchar_t, ftgxCharData>::iterator i = this->fontData.begin(); i != this->fontData.end(); i++)
-	{
-		if(i->second.glyphDataTexture != NULL)
-		{
-			MEM2_free(i->second.glyphDataTexture);
-			i->second.glyphDataTexture = NULL;
-		}
-	}
+	if(this->fontData.size() == 0)
+		return;
 
+	std::map<wchar_t, ftgxCharData>::iterator itr;
+	for(itr = this->fontData.begin(); itr != this->fontData.end(); itr++)
+		MEM2_free(itr->second.glyphDataTexture);
 	this->fontData.clear();
-	if (this->ftFace != NULL)
-	{
-		FT_Done_Face(this->ftFace);
-		this->ftFace = NULL;
-	}
 }
 
 /**
