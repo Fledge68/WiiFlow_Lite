@@ -1415,8 +1415,8 @@ void CMenu::_initGameMenu(CMenu::SThemeData &theme)
 	m_gameBtnAdultOff = _addPicButton(theme, "GAME/ADULTONLY_OFF", texAdultOff, texAdultOffSel, 532, 200, 48, 48);
 	m_gameBtnSettings = _addPicButton(theme, "GAME/SETTINGS_BTN", texSettings, texSettingsSel, 460, 272, 48, 48);
 	m_gameBtnDelete = _addPicButton(theme, "GAME/DELETE_BTN", texDelete, texDeleteSel, 532, 272, 48, 48);
-	m_gameBtnPlayFull = _addButton(theme, "GAME/PLAY_FULL_BTN", theme.btnFont, L"", 100, 380, 200, 56, theme.btnFontColor);
-	m_gameBtnBackFull = _addButton(theme, "GAME/BACK_FULL_BTN", theme.btnFont, L"", 340, 380, 200, 56, theme.btnFontColor);
+	m_gameBtnPlayFull = _addButton(theme, "GAME/PLAY_FULL_BTN", theme.btnFont, L"", 340, 390, 200, 56, theme.btnFontColor);
+	m_gameBtnBackFull = _addButton(theme, "GAME/BACK_FULL_BTN", theme.btnFont, L"", 100, 390, 200, 56, theme.btnFontColor);
 	m_gameBtnToogle = _addPicButton(theme, "GAME/TOOGLE_BTN", texToogleBanner, texToogleBanner, 385, 31, 236, 127);
 	m_gameBtnToogleFull = _addPicButton(theme, "GAME/TOOGLE_FULL_BTN", texToogleBanner, texToogleBanner, 20, 12, 608, 344);
 
