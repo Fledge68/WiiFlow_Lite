@@ -51,10 +51,11 @@ class BannerWindow
 		void LoadBannerBin(u8 *bnr, u32 bnr_size, CVideo *vid, u8 *font1, u8 *font2);
 		int GetSelectedGame() { return gameSelected; }
 		bool GetZoomSetting() { return AnimZoom; }
+		bool GetInGameSettings() { return (Brightness > 1.f ? true : false); }
 		void CreateGCBanner(u8 *bnr, CVideo *vid, u8 *font1, u8 *font2, const wchar_t *title);
 		void Draw(void);
 		bool ToogleZoom(void);
-		void SetBrightness(float b);
+		void ToogleGameSettings();
 	protected:
 		int MainLoop();
 		void Animate(void);

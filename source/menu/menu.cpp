@@ -134,6 +134,7 @@ CMenu::CMenu(CVideo &vid) :
 	m_bgCrossFade = 0;
 	m_bnrSndVol = 0;
 	m_gameSettingsPage = 0;
+	m_bnr_settings = true;
 	m_directLaunch = false;
 	m_exit = false;
 	m_initialCoverStatusComplete = false;
@@ -453,6 +454,8 @@ void CMenu::init(void)
 	if (m_cfg.getBool("GENERAL", "favorites_on_startup", false))
 		m_favorites = m_cfg.getBool(domain, "favorites", false);
 	m_max_categories = m_cat.getInt("GENERAL", "numcategories", 21);
+
+	m_bnr_settings = m_cfg.getBool("GENERAL", "banner_in_settings", true);
 
 	m_cfg.setString("GAMERCARD", "gamercards", "wiinnertag|dutag");
 	m_cfg.getString("GAMERCARD", "wiinnertag_url", WIINNERTAG_URL);
@@ -1771,7 +1774,7 @@ void CMenu::_mainLoopCommon(bool withCF, bool blockReboot, bool adjusting)
 	}
 
 	m_fa.draw();
-	if(m_banner->GetSelectedGame())
+	if(m_banner->GetSelectedGame() && (!m_banner->GetInGameSettings() || (m_banner->GetInGameSettings() && m_bnr_settings)))
 		m_banner->Draw();
 
 	m_btnMgr.draw();

@@ -224,9 +224,10 @@ void BannerWindow::Draw(void)
 		DrawRectangle(0.0f, 0.0f, video->width(), video->height(), (GXColor) {0, 0, 0, Brightness});
 }
 
-void BannerWindow::SetBrightness(float b)
+void BannerWindow::ToogleGameSettings()
 {
-	Brightness = b;
+	ToogleZoom();
+	Brightness = (Brightness > 1.f ? 0.f : 200.f);
 }
 
 void BannerWindow::DrawRectangle(f32 x, f32 y, f32 width, f32 height, GXColor color)
