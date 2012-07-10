@@ -886,7 +886,7 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 
 	ISFS_Deinitialize();
 	USBStorage_Deinit();
-	MEM2_clear();
+	//MEM2_clear();
 	BootHomebrew(title);
 }
 
