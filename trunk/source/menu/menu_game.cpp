@@ -520,11 +520,9 @@ void CMenu::_game(bool launch)
 				_hideGame();
 				m_gameSelected = true;
 
-				m_banner->ToogleZoom();
-				m_banner->SetBrightness(200.f);
+				m_banner->ToogleGameSettings();
 				_gameSettings();
-				m_banner->SetBrightness(0.f);
-				m_banner->ToogleZoom();
+				m_banner->ToogleGameSettings();
 
 				_showGame();
 				if(!m_gameSound.IsPlaying()) 

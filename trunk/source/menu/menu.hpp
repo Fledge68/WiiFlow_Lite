@@ -77,6 +77,7 @@ private:
 	SmartBuf m_base_font;
 	u32 m_base_font_size;
 	u8 m_aa;
+	bool m_bnr_settings;
 	bool m_directLaunch;
 	bool m_locked;
 	bool m_favorites;
