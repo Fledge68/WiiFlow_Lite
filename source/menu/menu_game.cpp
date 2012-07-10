@@ -963,7 +963,7 @@ static const char systems[11] = { 'C', 'E', 'F', 'J', 'L', 'M', 'N', 'P', 'Q', '
 void CMenu::_launchChannel(dir_discHdr *hdr)
 {
 	Channels channel;
-	u32 ios = 0;
+	u32 gameIOS = 0;
 	u32 entry = 0;	
 	Nand::Instance()->Disable_Emu();
 	string id = string(hdr->id);
@@ -1028,8 +1028,24 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	m_cfg.save(true);
 	cleanup();
 
+	if(!forwarder)
+	{
+		if(!emu_disabled)
+		{
+			Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
+			Nand::Instance()->Enable_Emu();
+		}
+		gameIOS = channel.GetRequestedIOS(gameTitle);
+		if(!emu_disabled)
+		{
+			Nand::Instance()->Disable_Emu();
+			usleep(1000);
+		}
+		if(_loadIOS(gameIOS, userIOS, id) == LOAD_IOS_FAILED)
+			return;
+	}
 	if(!emu_disabled)
-	{		
+	{
 		Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
 		DeviceHandler::Instance()->UnMount(emuPartition);
 
@@ -1042,97 +1058,31 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		{
 			Nand::Instance()->Disable_Emu();
 			error(_t("errgame5", L"Enabling emu failed!"));
-
 			return;
 		}
 	}
-
 	if(!forwarder)
 	{
-		entry = channel.Load(gameTitle, &ios);
+		entry = channel.Load(gameTitle);
 		setLanguage(language);
-
 		SmartBuf cheatFile;
 		u32 cheatSize = 0;
-		if (cheat)
+		if(cheat)
 			_loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", id.c_str()));
-		
 		ocarina_load_code(cheatFile.get(), cheatSize);
+	}
 
-		int gameIOS = userIOS == 0 ? ios : userIOS;
-		
-		gprintf("%s IOS %u\n", userIOS == 0 ? "Game requested" : "User requested", gameIOS);
-		
-		if (gameIOS != mainIOS && gameIOS <= 0x50)
-		{
-			u8 IOS[3];
-			IOS[0] = gameIOS;
-			IOS[1] = 56;
-			IOS[2] = 57;
-			bool found = false;
-			for(u8 num = 0; num < 3; num++)
-			{
-				if(found)
-					break;
-				if(IOS[num] == 0)
-					continue;
-				for(CIOSItr itr = _installed_cios.begin(); itr != _installed_cios.end(); itr++)
-				{
-					if(itr->second == IOS[num] || itr->first == IOS[num])
-					{
-						gameIOS = itr->first;
-						found = true;
-						break;
-					}
-				}
-			}
-			if(!found)
-			{
-				error(sfmt("errgame3", L"Couldn't find a cIOS using base %i, or 56/57", IOS[0]));
-				return;
-			}
-		}
-
-		if(gameIOS != mainIOS)
-		{
-			gprintf("Reloading IOS into %d\n", gameIOS);
-			if(!loadIOS(gameIOS, false))
-			{
-				_reload_wifi_gecko();
-				error(sfmt("errgame4", L"Couldn't reload to cIOS %i", gameIOS));
-				return;
-			}
-			if(!emu_disabled)
-			{
-				Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
-				DeviceHandler::Instance()->UnMount(emuPartition);
-
-				if(emulate_mode == 1)
-					Nand::Instance()->Set_FullMode(true);
-				else
-					Nand::Instance()->Set_FullMode(false);
-
-				if(Nand::Instance()->Enable_Emu() < 0)
-				{
-					Nand::Instance()->Disable_Emu();
-					error(_t("errgame6", L"Enabling emu after reload failed!"));
-					Sys_LoadMenu();
-					return;
-				}
-			}
-		}		
-	}	
 	ISFS_Deinitialize();
 	if(rtrn != NULL && strlen(rtrn) == 4)
-	{			
+	{
 		int rtrnID = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
-		
+
 		static ioctlv vector[1]  ATTRIBUTE_ALIGN(32);
 		sm_title_id[0] = (((u64)(0x00010001) << 32) | (rtrnID&0xFFFFFFFF));
-		
+
 		vector[0].data = sm_title_id;
 		vector[0].len = 8;
-		
+
 		s32 ESHandle = IOS_Open("/dev/es", 0);
 		gprintf("Return to channel %s. Using new d2x way\n", IOS_Ioctlv(ESHandle, 0xA1, 1, 0, vector) != -101 ? "Succeeded" : "Failed!" );
 		IOS_Close(ESHandle);
@@ -1144,7 +1094,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		if(WII_LaunchTitle(gameTitle) < 0)
 			Sys_LoadMenu();	
 	}
-	if(!BootChannel(entry, gameTitle, ios, videoMode, vipatch, countryPatch, patchVidMode, aspectRatio))
+	else if(!BootChannel(entry, gameTitle, gameIOS, videoMode, vipatch, countryPatch, patchVidMode, aspectRatio))
 		Sys_LoadMenu();
 }
 
@@ -1331,6 +1281,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	m_cat.save(true);
 	m_cfg.save(true);
 	cleanup(); // wifi and sd gecko doesnt work anymore after cleanup
+	ISFS_Deinitialize();
 
 	bool iosLoaded = false;
 
@@ -1405,7 +1356,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		}
 	}
 	IOSReloadBlock(IOS_GetVersion(), true);
-	ISFS_Deinitialize();
+
 	USBStorage_Deinit();
 	if(currentPartition == 0)
 		SDHC_Init();

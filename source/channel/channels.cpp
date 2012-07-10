@@ -73,7 +73,7 @@ Channels::~Channels()
 {
 }
 
-u32 Channels::Load(u64 title, u32 *ios)
+u32 Channels::Load(u64 title)
 {
 	char app[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
 	u32 bootcontent;
@@ -84,7 +84,7 @@ u32 Channels::Load(u64 title, u32 *ios)
 
 	u8 *data = GetDol(title, bootcontent);
 
-	Identify(title, ios);
+	Identify(title);
 	entry = LoadChannel(data);
 	free(data);
 
@@ -107,7 +107,7 @@ u8 Channels::GetRequestedIOS(u64 title)
 		IOS = titleTMD[0x18B];
 
 	MEM2_free(titleTMD);
-
+	gprintf("Requested Game IOS: %i\n", IOS);
 	return IOS;
 }
 

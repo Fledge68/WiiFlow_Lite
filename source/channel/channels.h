@@ -54,7 +54,7 @@ class Channels
 
 		void Init(u32 channelType, string lang, bool reload = false);
 
-		u32 Load(u64 title, u32 *ios);
+		u32 Load(u64 title);
 		u8 GetRequestedIOS(u64 title);
 
 		int Count();
