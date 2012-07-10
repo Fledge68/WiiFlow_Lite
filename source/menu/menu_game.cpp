@@ -1042,6 +1042,20 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		if(_loadIOS(gameIOS, userIOS, id) == LOAD_IOS_FAILED)
 			return;
 	}
+	if(rtrn != NULL && strlen(rtrn) == 4)
+	{
+		int rtrnID = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
+
+		static ioctlv vector[1]  ATTRIBUTE_ALIGN(32);
+		sm_title_id[0] = (((u64)(0x00010001) << 32) | (rtrnID&0xFFFFFFFF));
+
+		vector[0].data = sm_title_id;
+		vector[0].len = 8;
+
+		s32 ESHandle = IOS_Open("/dev/es", 0);
+		gprintf("Return to channel %s %s. Using new d2x way\n", rtrn, IOS_Ioctlv(ESHandle, 0xA1, 1, 0, vector) != -101 ? "Succeeded" : "Failed!" );
+		IOS_Close(ESHandle);
+	}
 	if(!emu_disabled)
 	{
 		Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
@@ -1069,22 +1083,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 			_loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", id.c_str()));
 		ocarina_load_code(cheatFile.get(), cheatSize);
 	}
-
 	ISFS_Deinitialize();
-	if(rtrn != NULL && strlen(rtrn) == 4)
-	{
-		int rtrnID = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
-
-		static ioctlv vector[1]  ATTRIBUTE_ALIGN(32);
-		sm_title_id[0] = (((u64)(0x00010001) << 32) | (rtrnID&0xFFFFFFFF));
-
-		vector[0].data = sm_title_id;
-		vector[0].len = 8;
-
-		s32 ESHandle = IOS_Open("/dev/es", 0);
-		gprintf("Return to channel %s. Using new d2x way\n", IOS_Ioctlv(ESHandle, 0xA1, 1, 0, vector) != -101 ? "Succeeded" : "Failed!" );
-		IOS_Close(ESHandle);
-	}
 
 	if(forwarder)
 	{
