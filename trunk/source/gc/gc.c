@@ -21,7 +21,7 @@ u32 __SYS_UnlockSram(u32 write);
 u32 __SYS_SyncSram(void);
 DML_CFG *DMLCfg = NULL;
 
-void GC_SetVideoMode(u8 videomode)
+void GC_SetVideoMode(u8 videomode, bool force)
 {
 	syssram *sram;
 	sram = __SYS_LockSram();
@@ -47,32 +47,32 @@ void GC_SetVideoMode(u8 videomode)
 
 	if(videomode == 1)
 	{
-		if(DMLCfg != NULL)
+		if(DMLCfg != NULL && force)
 			DMLCfg->VideoMode |= DML_VID_FORCE_PAL50;
 		rmode = &TVPal528IntDf;
 	}
 	else if(videomode == 2)
 	{
-		if(DMLCfg != NULL)
+		if(DMLCfg != NULL && force)
 			DMLCfg->VideoMode |= DML_VID_FORCE_NTSC;
 		rmode = &TVNtsc480IntDf;
 	}
 	else if(videomode == 3)
 	{
-		if(DMLCfg != NULL)
+		if(DMLCfg != NULL && force)
 			DMLCfg->VideoMode |= DML_VID_FORCE_PAL60;
 		rmode = &TVEurgb60Hz480IntDf;
 		memflag = 5;
 	}
 	else if(videomode == 4 ||videomode == 6)
 	{
-		if(DMLCfg != NULL)
+		if(DMLCfg != NULL && force)
 			DMLCfg->VideoMode |= DML_VID_FORCE_PROG;
 		rmode = &TVNtsc480Prog;
 	}
 	else if(videomode == 5 || videomode == 7)
 	{
-		if(DMLCfg != NULL)
+		if(DMLCfg != NULL && force)
 			DMLCfg->VideoMode |= DML_VID_FORCE_PROG;
 		rmode = &TVNtsc480Prog;
 		memflag = 5;
@@ -159,7 +159,7 @@ int GC_GameIsInstalled(char *discid, const char* partition, const char* dmlgamed
 	return 0;
 }
 
-void DML_New_SetOptions(const char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats, bool debugger, u8 NMM, u8 nodisc, u8 DMLvideoMode)
+void DML_New_SetOptions(const char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats, bool debugger, u8 NMM, u8 nodisc, u8 DMLvideoMode, bool force)
 {
 	gprintf("Wiiflow DML: Launch game '%s' through memory (new method)\n", GamePath);
 
@@ -170,7 +170,10 @@ void DML_New_SetOptions(const char *GamePath, char *CheatPath, char *NewCheatPat
 
 	DMLCfg->Magicbytes = 0xD1050CF6;
 	DMLCfg->CfgVersion = 0x00000001;
-	DMLCfg->VideoMode |= DML_VID_FORCE;
+	if(force)
+		DMLCfg->VideoMode |= DML_VID_FORCE;
+	else
+		DMLCfg->VideoMode |= DML_VID_DML_AUTO;
 
 	DMLCfg->Config |= DML_CFG_ACTIVITY_LED; //Sorry but I like it lol, option will may follow
 	DMLCfg->Config |= DML_CFG_PADHOOK; //Makes life easier, l+z+b+digital down...
