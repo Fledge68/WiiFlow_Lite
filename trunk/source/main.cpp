@@ -129,7 +129,7 @@ int main(int argc, char **argv)
 			ret = mainMenu->main();
 		}
 	}
-	delete mainMenu;
+	mainMenu->cleanup();
 
 	ISFS_Deinitialize();
 	Sys_Exit();
