@@ -826,7 +826,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 		else
 			newPath = &path[path.find_first_of(":/")+1];
 		if(m_new_dml)
-			DML_New_SetOptions(newPath.c_str(), CheatPath, NewCheatPath, cheats, DML_debug, NMM, nodisc, DMLvideoMode);
+			DML_New_SetOptions(newPath.c_str(), CheatPath, NewCheatPath, cheats, DML_debug, NMM, nodisc, DMLvideoMode, false);
 		else
 			DML_Old_SetOptions((char*)path.c_str(), CheatPath, NewCheatPath, cheats);
 
@@ -849,7 +849,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 	USBStorage_Deinit();
 	SDHC_Init();
 
-	GC_SetVideoMode(DMLvideoMode);
+	GC_SetVideoMode(DMLvideoMode, false);
 	GC_SetLanguage(GClanguage);
 	DML_New_WriteOptions();
 
