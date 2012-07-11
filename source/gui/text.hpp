@@ -25,7 +25,7 @@ public:
 	bool fromBuffer(const SmartBuf &buffer, u32 bufferSize, u32 size, u32 lspacing, u32 w = 0, u32 idx = 0, const char *genKey = NULL);
 	bool fromFile(const char *filename, u32 size, u32 lspacing, u32 w = 0, u32 idx = 0);
 	SFont(void) : data(SmartBuf(NULL, SmartBuf::SRCALL_MEM2)), dataSize(0), font(SmartPtr<FreeTypeGX>(new FreeTypeGX)), lineSpacing(0), weight(0), index(0) { }
-	~SFont(void) { font.release(); }
+	~SFont(void) { }
 };
 
 class CText
