@@ -126,7 +126,9 @@ void DML_New_WriteOptions()
 
 
 // Devolution
+u8 *loader_bin = NULL;
 static gconfig *DEVO_CONFIG = (gconfig*)0x80000020;
+#define LAUNCH() ((void(*)(void))loader_bin)()
 
 bool DEVO_Installed(const char* path)
 {
@@ -142,8 +144,23 @@ bool DEVO_Installed(const char* path)
 	return devo;
 }
 
-void DEVO_SetOptions(const char *path, const char *partition)
-{
+void DEVO_SetOptions(const char *path, const char *partition, const char* loader)
+{	
+	//Read in loader.bin
+	char loader_path[256];
+	snprintf(loader_path, sizeof(loader_path), "%s/loader.bin", loader);
+	FILE *f = fopen(loader_path, "rb");
+	if(f)
+	{
+		fseek(f, 0, SEEK_END);
+		u32 size = ftell(f);
+		rewind(f);
+		loader_bin = (u8*)MEM2_alloc(size);
+		fread(loader_bin, 1, size, f);
+		fclose(f);
+	}
+
+	//start writing cfg to mem
 	struct stat st;
 	char full_path[256];
 	int data_fd;
@@ -204,24 +221,11 @@ void DEVO_SetOptions(const char *path, const char *partition)
 	DCFlushRange(lowmem, 64);
 }
 
-u8 *loader_bin = NULL;
-#define LAUNCH() ((void(*)(void))loader_bin)()
-
-void DEVO_Boot(const char* path)
+void DEVO_Boot()
 {
-	char loader_path[256];
-	snprintf(loader_path, sizeof(loader_path), "%s/loader.bin", path);
-	FILE *f = fopen(loader_path, "rb");
-	if(f)
-	{
-		fseek(f, 0, SEEK_END);
-		u32 size = ftell(f);
-		rewind(f);
-		loader_bin = (u8*)MEM2_alloc(size);
-		fread(loader_bin, 1, size, f);
-		puts((const char*)loader_bin + 4);
-		LAUNCH();
-	}
+	// the Devolution blob has an ID string at offset 4
+	puts((const char*)loader_bin + 4);
+	LAUNCH();
 }
 
 
