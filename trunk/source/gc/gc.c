@@ -1,7 +1,6 @@
 #include <gccore.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <dirent.h>
 #include <string.h>
 #include "gc.h"
 #include "gecko.h"
@@ -9,6 +8,188 @@
 #include "utils.h"
 #include "memory/mem2.hpp"
 
+// for directory parsing and low-level file I/O
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <dirent.h>
+
+// DIOS-MIOS
+DML_CFG *DMLCfg = NULL;
+
+void DML_New_SetOptions(const char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats, bool debugger, u8 NMM, u8 nodisc, u8 DMLvideoMode, bool force)
+{
+	gprintf("Wiiflow DML: Launch game '%s' through memory (new method)\n", GamePath);
+
+	DMLCfg = (DML_CFG*)MEM1_alloc(sizeof(DML_CFG));
+	if(DMLCfg == NULL)
+		return;
+	memset(DMLCfg, 0, sizeof(DML_CFG));
+
+	DMLCfg->Magicbytes = 0xD1050CF6;
+	DMLCfg->CfgVersion = 0x00000001;
+	if(force)
+		DMLCfg->VideoMode |= DML_VID_FORCE;
+	else
+		DMLCfg->VideoMode |= DML_VID_DML_AUTO;
+
+	DMLCfg->Config |= DML_CFG_ACTIVITY_LED; //Sorry but I like it lol, option will may follow
+	DMLCfg->Config |= DML_CFG_PADHOOK; //Makes life easier, l+z+b+digital down...
+
+	if(GamePath != NULL)
+	{
+		strncpy(DMLCfg->GamePath, GamePath, sizeof(DMLCfg->GamePath));
+		DMLCfg->Config |= DML_CFG_GAME_PATH;
+	}
+
+	if(CheatPath != NULL && NewCheatPath != NULL && cheats)
+	{
+		char *ptr;
+		if(strstr(CheatPath, "sd:/") == NULL)
+		{
+			fsop_CopyFile(CheatPath, NewCheatPath, NULL, NULL);
+			ptr = &NewCheatPath[3];
+		}
+		else
+			ptr = &CheatPath[3];
+		strncpy(DMLCfg->CheatPath, ptr, sizeof(DMLCfg->CheatPath));
+		DMLCfg->Config |= DML_CFG_CHEAT_PATH;
+	}
+
+	if(cheats)
+		DMLCfg->Config |= DML_CFG_CHEATS;
+	if(debugger)
+		DMLCfg->Config |= DML_CFG_DEBUGGER;
+	if(NMM > 0)
+		DMLCfg->Config |= DML_CFG_NMM;
+	if(NMM > 1)
+		DMLCfg->Config |= DML_CFG_NMM_DEBUG;
+	if(nodisc > 0)
+		DMLCfg->Config |= DML_CFG_NODISC;
+
+	if(DMLvideoMode > 3)
+		DMLCfg->VideoMode |= DML_VID_PROG_PATCH;
+}
+
+void DML_Old_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats)
+{
+	gprintf("Wiiflow DML: Launch game '%s' through boot.bin (old method)\n", GamePath);
+	FILE *f;
+	f = fopen("sd:/games/boot.bin", "wb");
+	fwrite(GamePath, 1, strlen(GamePath) + 1, f);
+	fclose(f);
+
+	if(cheats && strstr(CheatPath, NewCheatPath) == NULL)
+		fsop_CopyFile(CheatPath, NewCheatPath, NULL, NULL);
+
+	//Tell DML to boot the game from sd card
+	*(vu32*)0x80001800 = 0xB002D105;
+	DCFlushRange((void *)(0x80001800), 4);
+	ICInvalidateRange((void *)(0x80001800), 4);
+
+	*(vu32*)0xCC003024 |= 7;
+}
+
+void DML_New_SetBootDiscOption()
+{
+	gprintf("Booting GC game\n");
+
+	DMLCfg = (DML_CFG*)MEM1_alloc(sizeof(DML_CFG));
+	if(DMLCfg == NULL)
+		return;
+	memset(DMLCfg, 0, sizeof(DML_CFG));
+
+	DMLCfg->Magicbytes = 0xD1050CF6;
+	DMLCfg->CfgVersion = 0x00000001;
+	DMLCfg->VideoMode |= DML_VID_DML_AUTO;
+
+	DMLCfg->Config |= DML_CFG_BOOT_DISC;
+}
+
+void DML_New_WriteOptions()
+{
+	if(DMLCfg == NULL)
+		return;
+
+	//Write options into memory
+	memcpy((void *)0x80001700, DMLCfg, sizeof(DML_CFG));
+	DCFlushRange((void *)(0x80001700), sizeof(DML_CFG));
+
+	//DML v1.2+
+	memcpy((void *)0x81200000, DMLCfg, sizeof(DML_CFG));
+	DCFlushRange((void *)(0x81200000), sizeof(DML_CFG));
+
+	MEM1_free(DMLCfg);
+}
+
+
+// Devolution
+static gconfig *DEVO_CONFIG = (gconfig*)0x80000020;
+
+void DEVO_SetOptions(const char *path, const char *partition)
+{
+	struct stat st;
+	char full_path[256];
+	int data_fd;
+
+	stat(path, &st);
+	u8 *lowmem = (u8*)0x80000000;
+	FILE *iso_file = fopen(path, "rb");
+	fread(lowmem, 1, 32, iso_file);
+	fclose(iso_file);
+
+	// fill out the Devolution config struct
+	memset(DEVO_CONFIG, 0, sizeof(*DEVO_CONFIG));
+	DEVO_CONFIG->signature = 0x3EF9DB23;
+	DEVO_CONFIG->version = 0x00000100;
+	DEVO_CONFIG->device_signature = st.st_dev;
+	DEVO_CONFIG->disc1_cluster = st.st_ino;
+
+	// make sure these directories exist, they are required for Devolution to function correctly
+	snprintf(full_path, sizeof(full_path), "%s:/apps", partition);
+	fsop_MakeFolder(full_path);
+	snprintf(full_path, sizeof(full_path), "%s:/apps/gc_devo", partition);
+	fsop_MakeFolder(full_path);
+
+	// find or create a 16MB memcard file for emulation
+	// this file can be located anywhere since it's passed by cluster, not name
+	// it must be at least 16MB though
+	snprintf(full_path, sizeof(full_path), "%s:/apps/gc_devo/memcard.bin", partition);
+
+	// check if file doesn't exist or is less than 16MB
+	if(stat(full_path, &st) == -1 || st.st_size < 16<<20)
+	{
+		// need to enlarge or create it
+		data_fd = open(full_path, O_WRONLY|O_CREAT);
+		if (data_fd>=0)
+		{
+			// make it 16MB
+			printf("Resizing memcard file...\n");
+			ftruncate(data_fd, 16<<20);
+			if (fstat(data_fd, &st)==-1 || st.st_size < 16<<20)
+			{
+				// it still isn't big enough. Give up.
+				st.st_ino = 0;
+			}
+			close(data_fd);
+		}
+		else
+		{
+			// couldn't open or create the memory card file
+			st.st_ino = 0;
+		}
+	}
+
+	// set FAT cluster for start of memory card file
+	// if this is zero memory card emulation will not be used
+	DEVO_CONFIG->memcard_cluster = st.st_ino;
+
+	// flush disc ID and Devolution config out to memory
+	DCFlushRange(lowmem, 64);
+}
+
+
+// General
 #define SRAM_ENGLISH 0
 #define SRAM_GERMAN 1
 #define SRAM_FRENCH 2
@@ -19,7 +200,6 @@
 syssram* __SYS_LockSram();
 u32 __SYS_UnlockSram(u32 write);
 u32 __SYS_SyncSram(void);
-DML_CFG *DMLCfg = NULL;
 
 void GC_SetVideoMode(u8 videomode, bool force)
 {
@@ -157,109 +337,4 @@ int GC_GameIsInstalled(char *discid, const char* partition, const char* dmlgamed
 		}
 	}
 	return 0;
-}
-
-void DML_New_SetOptions(const char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats, bool debugger, u8 NMM, u8 nodisc, u8 DMLvideoMode, bool force)
-{
-	gprintf("Wiiflow DML: Launch game '%s' through memory (new method)\n", GamePath);
-
-	DMLCfg = (DML_CFG*)MEM1_alloc(sizeof(DML_CFG));
-	if(DMLCfg == NULL)
-		return;
-	memset(DMLCfg, 0, sizeof(DML_CFG));
-
-	DMLCfg->Magicbytes = 0xD1050CF6;
-	DMLCfg->CfgVersion = 0x00000001;
-	if(force)
-		DMLCfg->VideoMode |= DML_VID_FORCE;
-	else
-		DMLCfg->VideoMode |= DML_VID_DML_AUTO;
-
-	DMLCfg->Config |= DML_CFG_ACTIVITY_LED; //Sorry but I like it lol, option will may follow
-	DMLCfg->Config |= DML_CFG_PADHOOK; //Makes life easier, l+z+b+digital down...
-
-	if(GamePath != NULL)
-	{
-		strncpy(DMLCfg->GamePath, GamePath, sizeof(DMLCfg->GamePath));
-		DMLCfg->Config |= DML_CFG_GAME_PATH;
-	}
-
-	if(CheatPath != NULL && NewCheatPath != NULL && cheats)
-	{
-		char *ptr;
-		if(strstr(CheatPath, "sd:/") == NULL)
-		{
-			fsop_CopyFile(CheatPath, NewCheatPath, NULL, NULL);
-			ptr = &NewCheatPath[3];
-		}
-		else
-			ptr = &CheatPath[3];
-		strncpy(DMLCfg->CheatPath, ptr, sizeof(DMLCfg->CheatPath));
-		DMLCfg->Config |= DML_CFG_CHEAT_PATH;
-	}
-
-	if(cheats)
-		DMLCfg->Config |= DML_CFG_CHEATS;
-	if(debugger)
-		DMLCfg->Config |= DML_CFG_DEBUGGER;
-	if(NMM > 0)
-		DMLCfg->Config |= DML_CFG_NMM;
-	if(NMM > 1)
-		DMLCfg->Config |= DML_CFG_NMM_DEBUG;
-	if(nodisc > 0)
-		DMLCfg->Config |= DML_CFG_NODISC;
-
-	if(DMLvideoMode > 3)
-		DMLCfg->VideoMode |= DML_VID_PROG_PATCH;
-}
-
-void DML_Old_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats)
-{
-	gprintf("Wiiflow DML: Launch game '%s' through boot.bin (old method)\n", GamePath);
-	FILE *f;
-	f = fopen("sd:/games/boot.bin", "wb");
-	fwrite(GamePath, 1, strlen(GamePath) + 1, f);
-	fclose(f);
-
-	if(cheats && strstr(CheatPath, NewCheatPath) == NULL)
-		fsop_CopyFile(CheatPath, NewCheatPath, NULL, NULL);
-
-	//Tell DML to boot the game from sd card
-	*(vu32*)0x80001800 = 0xB002D105;
-	DCFlushRange((void *)(0x80001800), 4);
-	ICInvalidateRange((void *)(0x80001800), 4);
-
-	*(vu32*)0xCC003024 |= 7;
-}
-
-void DML_New_SetBootDiscOption()
-{
-	gprintf("Booting GC game\n");
-
-	DMLCfg = (DML_CFG*)MEM1_alloc(sizeof(DML_CFG));
-	if(DMLCfg == NULL)
-		return;
-	memset(DMLCfg, 0, sizeof(DML_CFG));
-
-	DMLCfg->Magicbytes = 0xD1050CF6;
-	DMLCfg->CfgVersion = 0x00000001;
-	DMLCfg->VideoMode |= DML_VID_DML_AUTO;
-
-	DMLCfg->Config |= DML_CFG_BOOT_DISC;
-}
-
-void DML_New_WriteOptions()
-{
-	if(DMLCfg == NULL)
-		return;
-
-	//Write options into memory
-	memcpy((void *)0x80001700, DMLCfg, sizeof(DML_CFG));
-	DCFlushRange((void *)(0x80001700), sizeof(DML_CFG));
-
-	//DML v1.2+
-	memcpy((void *)0x81200000, DMLCfg, sizeof(DML_CFG));
-	DCFlushRange((void *)(0x81200000), sizeof(DML_CFG));
-
-	MEM1_free(DMLCfg);
 }

@@ -6,6 +6,7 @@ extern "C"
 #ifndef GC_H_
 #define GC_H_
 
+// DIOS-MIOS
 typedef struct DML_CFG
 {
 	u32 Magicbytes;			//0xD1050CF6
@@ -45,14 +46,31 @@ enum dmlvideomode
 	DML_VID_PROG_PATCH	= (1<<4),
 };
 
-void GC_SetVideoMode(u8 videomode, bool force);
-void GC_SetLanguage(u8 lang);
-int GC_GameIsInstalled(char *discid, const char* partition, const char* dmlgamedir);
-
 void DML_New_SetOptions(const char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats, bool debugger, u8 NMM, u8 nodisc, u8 DMLvideoMode, bool force);
 void DML_Old_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats);
 void DML_New_SetBootDiscOption();
 void DML_New_WriteOptions();
+
+
+// Devolution
+typedef struct global_config
+{
+	u32 signature;			//0x3EF9DB23
+	u16 version;			//0x00000100
+	u16 device_signature;
+	u32 memcard_cluster;
+	u32 disc1_cluster;
+	u32 disc2_cluster;
+} gconfig;
+
+void DEVO_SetOptions(const char* path, const char *partition);
+
+
+// General
+void GC_SetVideoMode(u8 videomode, bool force);
+void GC_SetLanguage(u8 lang);
+int GC_GameIsInstalled(char *discid, const char* partition, const char* dmlgamedir);
+
 #endif //GC_H_
 
 #ifdef __cplusplus
