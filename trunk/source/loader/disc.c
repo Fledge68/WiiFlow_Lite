@@ -248,7 +248,7 @@ s32 Disc_Init(void)
 	return WDVD_Init();
 }
 
-s32 Disc_Open(void)
+s32 Disc_Open(bool boot_disc)
 {
 	/* Reset drive */
 	s32 ret = WDVD_Reset();
@@ -260,7 +260,8 @@ s32 Disc_Open(void)
 	ret = WDVD_ReadDiskId(diskid);
 
 	/* Directly set Audio Streaming for GC*/
-	gprintf("Setting Audio Streaming for GC Games: 0x%08x\n", WDVD_SetStreaming());
+	if(boot_disc)
+		gprintf("Setting Audio Streaming for GC Games: 0x%08x\n", WDVD_SetStreaming());
 
 	return ret;
 }

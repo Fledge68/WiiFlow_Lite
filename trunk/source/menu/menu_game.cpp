@@ -1120,7 +1120,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			} while(!(cover & 0x2));
 		}
 		/* Open Disc */
-		if (Disc_Open() < 0) 
+		if (Disc_Open(true) < 0)
 		{
 			error(_t("wbfsoperr2", L"Disc_Open failed"));
 			if (BTN_B_PRESSED) return;
@@ -1308,6 +1308,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			IOS_Close(ESHandle);
 		}
 	}
+	IOSReloadBlock(IOS_GetVersion(), true);
 	if(emulate_mode)
 	{
 		Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
@@ -1342,14 +1343,13 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			return;
 		}
 
-		if (Disc_Open() < 0)
+		if (Disc_Open(false) < 0)
 		{
 			error(_t("wbfsoperr2", L"Disc_Open failed"));
 			if (iosLoaded) Sys_LoadMenu();
 			return;
 		}
 	}
-	IOSReloadBlock(IOS_GetVersion(), true);
 
 	USBStorage_Deinit();
 	if(currentPartition == 0)
