@@ -46,7 +46,7 @@ enum dmlvideomode
 	DML_VID_PROG_PATCH	= (1<<4),
 };
 
-void DML_New_SetOptions(const char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats, bool debugger, u8 NMM, u8 nodisc, u8 DMLvideoMode, bool force);
+void DML_New_SetOptions(const char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats, bool debugger, u8 NMM, u8 nodisc, u8 DMLvideoMode, u8 videoSetting);
 void DML_Old_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats);
 void DML_New_SetBootDiscOption();
 void DML_New_WriteOptions();
@@ -63,11 +63,13 @@ typedef struct global_config
 	u32 disc2_cluster;
 } gconfig;
 
+bool DEVO_Installed(const char* path);
 void DEVO_SetOptions(const char* path, const char *partition);
+void DEVO_Boot(const char* path);
 
 
 // General
-void GC_SetVideoMode(u8 videomode, bool force);
+void GC_SetVideoMode(u8 videomode, u8 videoSetting);
 void GC_SetLanguage(u8 lang);
 int GC_GameIsInstalled(char *discid, const char* partition, const char* dmlgamedir);
 

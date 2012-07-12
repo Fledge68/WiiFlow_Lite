@@ -532,7 +532,7 @@ void CMenu::_game(bool launch)
 			{
 				_hideGame();
 				dir_discHdr *hdr = m_cf.getHdr();
-				if(currentPartition != SD && hdr->type == TYPE_GC_GAME && m_show_dml != 1)
+				if(currentPartition != SD && hdr->type == TYPE_GC_GAME && (m_show_dml != 1 || !m_devo_installed))
 				{
 					bool foundOnSD = false;
 					CList<dir_discHdr> tmplist;
@@ -788,20 +788,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 	if(has_enabled_providers() && _initNetwork() == 0)
 		add_game_to_card(id.c_str());
 
-	bool devo = false;
-	u8 *loader_bin = NULL;
-	FILE *f = fopen(fmt("%s/loader.bin", m_dataDir.c_str()), "rb");
-	if(f)
-	{
-		devo = true;
-		fseek(f, 0, SEEK_END);
-		u32 size = ftell(f);
-		rewind(f);
-		loader_bin = (u8*)MEM2_alloc(size);
-		fread(loader_bin, 1, size, f);
-		puts((const char*)loader_bin + 4);
-		fclose(f);
-	}
+	u8 videoSetting = min(m_cfg.getInt("DML", "video_setting", 1), 2);
 
 	u8 GClanguage = min((u32)m_gcfg2.getInt(id, "gc_language", 0), ARRAY_SIZE(CMenu::_GClanguages) - 1u);
 	GClanguage = (GClanguage == 0) ? min((u32)m_cfg.getInt("DML", "game_language", 0), ARRAY_SIZE(CMenu::_GlobalGClanguages) - 1u) : GClanguage-1;
@@ -813,7 +800,9 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 	else if((id[3] != 'P') && (DMLvideoMode == 0))
 		DMLvideoMode = 2;
 
-	if(DML)
+	if(m_devo_installed && strcasestr(path.c_str(), "boot.bin") == NULL)
+		DEVO_SetOptions(path.c_str(), DeviceName[currentPartition]);
+	else if(DML)
 	{
 		m_cfg.setString("DML", "current_item", id);
 
@@ -839,13 +828,9 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 			newPath.erase(newPath.end() - 12, newPath.end());
 		}
 		else
-		{
 			newPath = &path[path.find_first_of(":/")+1];
-			if(devo)
-				DEVO_SetOptions(path.c_str(), DeviceName[currentPartition]);
-		}
 		if(m_new_dml)
-			DML_New_SetOptions(newPath.c_str(), CheatPath, NewCheatPath, cheats, DML_debug, NMM, nodisc, DMLvideoMode, false);
+			DML_New_SetOptions(newPath.c_str(), CheatPath, NewCheatPath, cheats, DML_debug, NMM, nodisc, DMLvideoMode, videoSetting);
 		else
 			DML_Old_SetOptions((char*)path.c_str(), CheatPath, NewCheatPath, cheats);
 
@@ -868,9 +853,9 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 	USBStorage_Deinit();
 	SDHC_Init();
 
-	GC_SetVideoMode(DMLvideoMode, false);
+	GC_SetVideoMode(DMLvideoMode, videoSetting);
 	GC_SetLanguage(GClanguage);
-	if(!devo)
+	if(!m_devo_installed || strcasestr(path.c_str(), "boot.bin") != NULL)
 	{
 		DML_New_WriteOptions();
 		WII_Initialize();
@@ -878,10 +863,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 			Sys_LoadMenu();
 	}
 	else
-	{
-		#define LAUNCH() ((void(*)(void))loader_bin)()
-		LAUNCH();
-	}
+		DEVO_Boot(m_dataDir.c_str());
 }
 
 void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)

@@ -17,7 +17,7 @@
 // DIOS-MIOS
 DML_CFG *DMLCfg = NULL;
 
-void DML_New_SetOptions(const char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats, bool debugger, u8 NMM, u8 nodisc, u8 DMLvideoMode, bool force)
+void DML_New_SetOptions(const char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats, bool debugger, u8 NMM, u8 nodisc, u8 DMLvideoMode, u8 videoSetting)
 {
 	gprintf("Wiiflow DML: Launch game '%s' through memory (new method)\n", GamePath);
 
@@ -28,10 +28,12 @@ void DML_New_SetOptions(const char *GamePath, char *CheatPath, char *NewCheatPat
 
 	DMLCfg->Magicbytes = 0xD1050CF6;
 	DMLCfg->CfgVersion = 0x00000001;
-	if(force)
-		DMLCfg->VideoMode |= DML_VID_FORCE;
-	else
+	if(videoSetting == 0)
+		DMLCfg->VideoMode |= DML_VID_NONE;
+	else if(videoSetting == 1)
 		DMLCfg->VideoMode |= DML_VID_DML_AUTO;
+	else
+		DMLCfg->VideoMode |= DML_VID_FORCE;
 
 	DMLCfg->Config |= DML_CFG_ACTIVITY_LED; //Sorry but I like it lol, option will may follow
 	DMLCfg->Config |= DML_CFG_PADHOOK; //Makes life easier, l+z+b+digital down...
@@ -126,6 +128,20 @@ void DML_New_WriteOptions()
 // Devolution
 static gconfig *DEVO_CONFIG = (gconfig*)0x80000020;
 
+bool DEVO_Installed(const char* path)
+{
+	bool devo = false;
+	char loader_path[256];
+	snprintf(loader_path, sizeof(loader_path), "%s/loader.bin", path);
+	FILE *f = fopen(loader_path, "rb");
+	if(f)
+	{
+		devo = true;
+		fclose(f);
+	}
+	return devo;
+}
+
 void DEVO_SetOptions(const char *path, const char *partition)
 {
 	struct stat st;
@@ -188,6 +204,26 @@ void DEVO_SetOptions(const char *path, const char *partition)
 	DCFlushRange(lowmem, 64);
 }
 
+u8 *loader_bin = NULL;
+#define LAUNCH() ((void(*)(void))loader_bin)()
+
+void DEVO_Boot(const char* path)
+{
+	char loader_path[256];
+	snprintf(loader_path, sizeof(loader_path), "%s/loader.bin", path);
+	FILE *f = fopen(loader_path, "rb");
+	if(f)
+	{
+		fseek(f, 0, SEEK_END);
+		u32 size = ftell(f);
+		rewind(f);
+		loader_bin = (u8*)MEM2_alloc(size);
+		fread(loader_bin, 1, size, f);
+		puts((const char*)loader_bin + 4);
+		LAUNCH();
+	}
+}
+
 
 // General
 #define SRAM_ENGLISH 0
@@ -201,7 +237,7 @@ syssram* __SYS_LockSram();
 u32 __SYS_UnlockSram(u32 write);
 u32 __SYS_SyncSram(void);
 
-void GC_SetVideoMode(u8 videomode, bool force)
+void GC_SetVideoMode(u8 videomode, u8 videoSetting)
 {
 	syssram *sram;
 	sram = __SYS_LockSram();
@@ -227,32 +263,32 @@ void GC_SetVideoMode(u8 videomode, bool force)
 
 	if(videomode == 1)
 	{
-		if(DMLCfg != NULL && force)
+		if(DMLCfg != NULL && videoSetting == 2)
 			DMLCfg->VideoMode |= DML_VID_FORCE_PAL50;
 		rmode = &TVPal528IntDf;
 	}
 	else if(videomode == 2)
 	{
-		if(DMLCfg != NULL && force)
+		if(DMLCfg != NULL && videoSetting == 2)
 			DMLCfg->VideoMode |= DML_VID_FORCE_NTSC;
 		rmode = &TVNtsc480IntDf;
 	}
 	else if(videomode == 3)
 	{
-		if(DMLCfg != NULL && force)
+		if(DMLCfg != NULL && videoSetting == 2)
 			DMLCfg->VideoMode |= DML_VID_FORCE_PAL60;
 		rmode = &TVEurgb60Hz480IntDf;
 		memflag = 5;
 	}
 	else if(videomode == 4 ||videomode == 6)
 	{
-		if(DMLCfg != NULL && force)
+		if(DMLCfg != NULL && videoSetting == 2)
 			DMLCfg->VideoMode |= DML_VID_FORCE_PROG;
 		rmode = &TVNtsc480Prog;
 	}
 	else if(videomode == 5 || videomode == 7)
 	{
-		if(DMLCfg != NULL && force)
+		if(DMLCfg != NULL && videoSetting == 2)
 			DMLCfg->VideoMode |= DML_VID_FORCE_PROG;
 		rmode = &TVNtsc480Prog;
 		memflag = 5;

@@ -63,8 +63,6 @@ int main(int argc, char **argv)
 		else if (argv[i] != NULL && strcasestr(argv[i], "EMULATOR_MAGIC") != NULL)
 			Emulator_boot = true;
 	}
-	Close_Inputs();
-
 	// Load Custom IOS
 	gprintf("Loading cIOS: %d\n", mainIOS);	
 	bool iosOK = loadIOS(mainIOS, false);

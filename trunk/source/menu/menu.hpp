@@ -177,6 +177,7 @@ private:
 	u16 m_mainLblInit;
 	u16 m_mainLblUser[6];
 	u8 m_show_dml;
+	bool m_devo_installed;
 	bool m_new_dml;
 	bool m_GameTDBLoaded;
 //Main Config menus
