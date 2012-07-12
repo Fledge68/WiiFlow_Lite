@@ -319,7 +319,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 							out = true;
 							break;
 						}
-						if (Disc_Open() < 0)
+						if (Disc_Open(true) < 0)
 						{
 							error(_t("wbfsoperr2", L"Disc_Open failed"));
 							out = true;

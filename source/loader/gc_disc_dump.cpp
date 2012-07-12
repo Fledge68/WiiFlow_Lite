@@ -199,7 +199,7 @@ bool GCDump::__WaitForDisc(u8 dsc, u32 msg)
 			if(Disc_Wait() < 0)
 				continue;
 
-			if(Disc_Open() < 0)
+			if(Disc_Open(true) < 0)
 			{
 				MEM2_free(ReadBuffer);
 				return false;
