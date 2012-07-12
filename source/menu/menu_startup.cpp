@@ -211,7 +211,7 @@ bool CMenu::_Source()
 			}
 			if(m_btnMgr.selected(m_sourceBtnDML))
 			{
-				if (!m_show_dml) _showSourceNotice();
+				if (!m_show_dml && !m_devo_installed) _showSourceNotice();
 				else
 				{
 					m_current_view = COVERFLOW_DML;
@@ -258,7 +258,7 @@ bool CMenu::_Source()
 					}
 					if (source == "dml")
 					{
-						if (!m_show_dml) _showSourceNotice();
+						if (!m_show_dml && !m_devo_installed) _showSourceNotice();
 						else
 						{
 							m_current_view = COVERFLOW_DML;

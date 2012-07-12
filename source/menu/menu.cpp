@@ -23,6 +23,7 @@
 #include "cios.hpp"
 #include "loader/playlog.h"
 #include "gc/fileOps.h"
+#include "gc/gc.h"
 #include "Gekko.h"
 #include "GameTDB.hpp"
 #include "BannerWindow.hpp"
@@ -267,6 +268,7 @@ void CMenu::init(void)
 	}
 	else
 		m_show_dml = MIOSisDML();
+
 	m_new_dml = m_cfg.getBool("DML", "dml_r52+", true);
 	m_DMLgameDir = sfmt("%%s:/%s", m_cfg.getString("DML", "dir_usb_games", "games").c_str());
 
@@ -367,6 +369,7 @@ void CMenu::init(void)
 	m_theme.load(fmt("%s.ini", m_themeDataDir.c_str()));
 	m_plugin.init(m_pluginsDir);
 
+	m_devo_installed = DEVO_Installed(m_dataDir.c_str());
 	u8 defaultMenuLanguage = 7; //English
 	switch (CONF_GetLanguage())
 	{
@@ -427,7 +430,7 @@ void CMenu::init(void)
 			m_vid.wide(), pShadowColor, pShadowX, pShadowY, pShadowBlur, chan);
 		WPAD_SetVRes(chan, m_vid.width() + m_cursor[chan].width(), m_vid.height() + m_cursor[chan].height());
 	}
-		
+
 	m_btnMgr.init(m_vid);
 	m_music->Init(m_cfg, m_musicDir, sfmt("%s/music", m_themeDataDir.c_str()));
 

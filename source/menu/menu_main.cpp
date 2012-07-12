@@ -122,7 +122,7 @@ void CMenu::_showMain(void)
 				m_btnMgr.show(m_mainBtnUsb);
 			break;
 		default:
-			if(m_show_dml)
+			if(m_show_dml || m_devo_installed)
 				m_btnMgr.show(m_mainBtnDML);
 			else if (show_channel)
 				m_btnMgr.show(m_mainBtnChannel);
@@ -326,7 +326,7 @@ int CMenu::main(void)
 			u32 lastView = m_current_view;
 			if(BTN_UP_PRESSED) 
 				m_current_view = COVERFLOW_USB;
-			else if(BTN_DOWN_PRESSED && m_show_dml)
+			else if(BTN_DOWN_PRESSED && (m_show_dml ||m_devo_installed))
 				m_current_view = COVERFLOW_DML;
 			else if(BTN_LEFT_PRESSED && show_emu)
 				m_current_view =  COVERFLOW_EMU;
@@ -360,7 +360,7 @@ int CMenu::main(void)
 			else if(m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML) || m_btnMgr.selected(m_mainBtnHomebrew) || m_btnMgr.selected(m_mainBtnEmu))
 			{
 				if(m_current_view == COVERFLOW_USB) 
-					m_current_view = m_show_dml ? COVERFLOW_DML : (show_channel ? COVERFLOW_CHANNEL : (show_emu ? COVERFLOW_EMU : ((show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB)));
+					m_current_view = (m_show_dml || m_devo_installed) ? COVERFLOW_DML : (show_channel ? COVERFLOW_CHANNEL : (show_emu ? COVERFLOW_EMU : ((show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB)));
 				else if(m_current_view == COVERFLOW_DML)
 					m_current_view = show_channel ? COVERFLOW_CHANNEL : ((show_emu ? COVERFLOW_EMU : (show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB));
 				else if(m_current_view == COVERFLOW_CHANNEL)
@@ -782,7 +782,7 @@ int CMenu::main(void)
 					m_btnMgr.show(m_mainBtnUsb);
 					break;
 				default:
-					if(m_show_dml)
+					if(m_show_dml || m_devo_installed)
 						m_btnMgr.show(m_mainBtnDML);
 					else if(show_channel)
 						m_btnMgr.show(m_mainBtnChannel);
