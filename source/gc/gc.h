@@ -64,8 +64,8 @@ typedef struct global_config
 } gconfig;
 
 bool DEVO_Installed(const char* path);
-void DEVO_SetOptions(const char* path, const char *partition);
-void DEVO_Boot(const char* path);
+void DEVO_SetOptions(const char* path, const char *partition, const char *loader);
+void DEVO_Boot();
 
 
 // General

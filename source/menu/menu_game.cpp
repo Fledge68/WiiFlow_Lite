@@ -801,7 +801,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 		DMLvideoMode = 2;
 
 	if(m_devo_installed && strcasestr(path.c_str(), "boot.bin") == NULL)
-		DEVO_SetOptions(path.c_str(), DeviceName[currentPartition]);
+		DEVO_SetOptions(path.c_str(), DeviceName[currentPartition], m_dataDir.c_str());
 	else if(DML)
 	{
 		m_cfg.setString("DML", "current_item", id);
@@ -814,13 +814,11 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 		nodisc = (nodisc == 0) ? m_cfg.getInt("DML", "no_disc_patch", 0) : nodisc-1;
 		bool cheats = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool("DML", "cheat", false));
 		bool DML_debug = m_gcfg2.getBool(id, "debugger", false);
-
 		if(cheats)
 		{
 			snprintf(CheatPath, sizeof(CheatPath), "%s/%s", m_cheatDir.c_str(), fmt("%s.gct", id.c_str()));
 			snprintf(NewCheatPath, sizeof(NewCheatPath), "%s/%s/%s", fmt(DML_DIR, "sd"), path.c_str(), fmt("%s.gct", id.c_str()));
 		}
-
 		string newPath;
 		if(strcasestr(path.c_str(), "boot.bin") != NULL)
 		{
@@ -863,7 +861,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 			Sys_LoadMenu();
 	}
 	else
-		DEVO_Boot(m_dataDir.c_str());
+		DEVO_Boot();
 }
 
 void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
