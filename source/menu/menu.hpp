@@ -463,6 +463,9 @@ private:
 	u16 m_gameSettingsBtnNoDVD_P;
 	u16 m_gameSettingsBtnNoDVD_M;
 
+	u16 m_gameSettingsLblDevoMemcardEmu;
+	u16 m_gameSettingsBtnDevoMemcardEmu;
+
 	u16 m_gameSettingsLblCustom;
 	u16 m_gameSettingsBtnCustom;
 

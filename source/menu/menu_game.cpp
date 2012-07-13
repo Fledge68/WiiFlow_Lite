@@ -803,7 +803,10 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 		DMLvideoMode = 2;
 
 	if(m_devo_installed && strcasestr(path.c_str(), "boot.bin") == NULL)
-		DEVO_SetOptions(path.c_str(), DeviceName[currentPartition], m_dataDir.c_str());
+	{
+		bool memcard_emu = m_gcfg2.getBool(id, "devo_memcard_emu", false);
+		DEVO_SetOptions(path.c_str(), DeviceName[currentPartition], m_dataDir.c_str(), memcard_emu);
+	}
 	else if(DML)
 	{
 		m_cfg.setString("DML", "current_item", id);
