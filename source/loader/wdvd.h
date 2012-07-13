@@ -27,6 +27,7 @@ s32 WDVD_Eject(void);
 s32 WDVD_Read_Disc_BCA(void *);
 s32 WDVD_SetFragList(int device, void *fraglist, int size);
 s32 WDVD_SetStreaming(void);
+s32 WDVD_NEEK_LoadDisc(u32 id, u32 magic);
 
 #ifdef __cplusplus
 }

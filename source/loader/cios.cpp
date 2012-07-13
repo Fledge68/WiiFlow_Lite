@@ -36,11 +36,26 @@
 
 #define ARRAY_SIZE(a)		(sizeof a / sizeof a[0])
 
-static u32 allowedBases[] = { 37, 38, 53, 55, 56, 57, 58 };
+static u32 allowedBases[] = { 37, 38, 53, 55, 56, 57, 58 }; 
+static u32 boot2version = 0;
+
+bool cIOSInfo::neek2o(void)
+{
+	if(!boot2version)
+		ES_GetBoot2Version(&boot2version);
+	
+	return boot2version > 4 ? true : false;
+}
 
 /* Check if the cIOS is a D2X. */
 bool cIOSInfo::D2X(u8 ios, u8 *base)
 {
+	if(neek2o())
+	{
+		*base = (u8)IOS_GetVersion();
+		return true;
+	}		
+
 	iosinfo_t *info = GetInfo(ios);
 	if(!info)
 		return false;
