@@ -393,3 +393,17 @@ s32 WDVD_SetStreaming(void)
 
 	return (ret == 1) ? 0 : -ret;
 }
+
+s32 WDVD_NEEK_LoadDisc(u32 id, u32 magic)
+{
+	u32 *vec = (u32*)memalign(32, sizeof(u32) * 2);
+	vec[0] = id;
+	vec[1] = magic;
+
+	s32 ret = IOS_Ioctl(di_fd, 0x25, vec, sizeof(u32) * 2, NULL, 0);
+
+	gprintf("Load disc: (%08x)(%08x)(%d)(%d)\n", id, magic, ret, di_fd);
+	free(vec);
+
+	return ret;
+}

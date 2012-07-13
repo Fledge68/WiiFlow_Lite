@@ -199,15 +199,22 @@ void CMenu::_enableNandEmu(bool fromconfig)
 	_cfNeedsUpdate();
 	bool disable = m_cfg.getBool("NAND", "disable", true) && m_current_view == COVERFLOW_CHANNEL && !m_tempView;	
 	
-	if(!disable)
+	if(!disable || cIOSInfo::neek2o())
 	{
-		Nand::Instance()->Disable_Emu();
 		bool isD2XnewerThanV6 = false;
-		iosinfo_t * iosInfo = cIOSInfo::GetInfo(mainIOS);
-		if (iosInfo->version > 6)
+		if(!cIOSInfo::neek2o())
+		{
+			Nand::Instance()->Disable_Emu();			
+			iosinfo_t * iosInfo = cIOSInfo::GetInfo(mainIOS);
+			if (iosInfo->version > 6)
+				isD2XnewerThanV6 = true;
+			if(m_current_view == COVERFLOW_CHANNEL && !m_cfg.getBool("NAND", "disable", true) && !m_tempView)
+				Nand::Instance()->Enable_Emu();
+		}
+		else
+		{
 			isD2XnewerThanV6 = true;
-		if(m_current_view == COVERFLOW_CHANNEL && !m_cfg.getBool("NAND", "disable", true) && !m_tempView)
-			Nand::Instance()->Enable_Emu();
+		}
 		u8 limiter = 0;
 		s8 direction = m_btnMgr.selected(m_configBtnPartitionP) ? 1 : -1;
 		if (!fromconfig)

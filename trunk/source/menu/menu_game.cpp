@@ -25,6 +25,7 @@
 
 #include "loader/frag.h"
 #include "loader/fst.h"
+#include "cios.hpp"
 
 #include "gui/WiiMovie.hpp"
 #include "gui/GameTDB.hpp"
@@ -58,6 +59,7 @@ extern const u8 gc_ogg[];
 extern const u32 gc_ogg_size;
 
 extern u32 sector_size;
+extern u32 boot2version;
 extern int mainIOS;
 static u64 sm_title_id[8]  ATTRIBUTE_ALIGN(32);
 
@@ -897,6 +899,17 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id)
 {
 	gprintf("Game ID# %s requested IOS %d.  User selected %d\n", id.c_str(), gameIOS, userIOS);
+	if(cIOSInfo::neek2o())
+	{
+		if(!loadIOS(gameIOS, true))
+		{
+			_reload_wifi_gecko();
+			error(sfmt("errgame4", L"Couldn't load IOS %i", gameIOS));
+			return LOAD_IOS_FAILED;
+		}
+		return LOAD_IOS_SUCCEEDED;
+	}	
+	
 	if(userIOS)
 	{
 		for(CIOSItr itr = _installed_cios.begin(); itr != _installed_cios.end(); itr++)
@@ -982,7 +995,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		}
 	}
 
-	forwarder = m_gcfg2.getBool(id, "custom", forwarder) || strncmp(id.c_str(), "WIMC", 4) == 0;
+	forwarder = m_gcfg2.getBool(id, "custom", forwarder) || strncmp(id.c_str(), "WIMC", 4) == 0 || cIOSInfo::neek2o();
 
 	bool vipatch = m_gcfg2.testOptBool(id, "vipatch", m_cfg.getBool("GENERAL", "vipatch", false));
 	bool cheat = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool("NAND", "cheat", false));
@@ -1031,7 +1044,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	m_cat.save(true);
 	m_cfg.save(true);
 	cleanup();
-
+	
 	if(!forwarder)
 	{
 		if(!emu_disabled)
@@ -1062,7 +1075,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		gprintf("Return to channel %s %s. Using new d2x way\n", rtrn, IOS_Ioctlv(ESHandle, 0xA1, 1, 0, vector) != -101 ? "Succeeded" : "Failed!" );
 		IOS_Close(ESHandle);
 	}
-	if(!emu_disabled)
+	if(!emu_disabled && !cIOSInfo::neek2o())
 	{
 		Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
 		DeviceHandler::Instance()->UnMount(emuPartition);
@@ -1108,22 +1121,34 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 
 	Nand::Instance()->Disable_Emu();
 
+	if(cIOSInfo::neek2o())
+	{
+		int discID = id.c_str()[0] << 24 | id.c_str()[1] << 16 | id.c_str()[2] << 8 | id.c_str()[3];
+		WDVD_NEEK_LoadDisc((discID&0xFFFFFFFF), 0x5D1C9EA3);
+		dvd = true;
+		sleep(1);
+	}
+
 	if(dvd)
 	{
 		u32 cover = 0;
-		Disc_SetUSB(NULL);
-		if (WDVD_GetCoverStatus(&cover) < 0)
+		
+		if(!cIOSInfo::neek2o())
 		{
-			error(_t("errgame7", L"WDVDGetCoverStatus Failed!"));
-			if (BTN_B_PRESSED) return;
-		}
-		if (!(cover & 0x2))
-		{
-			error(_t("errgame8", L"Please insert a game disc."));
-			do {
-				WDVD_GetCoverStatus(&cover);
+			Disc_SetUSB(NULL);
+			if (WDVD_GetCoverStatus(&cover) < 0)
+			{
+				error(_t("errgame7", L"WDVDGetCoverStatus Failed!"));
 				if (BTN_B_PRESSED) return;
-			} while(!(cover & 0x2));
+			}
+			if (!(cover & 0x2))
+			{
+				error(_t("errgame8", L"Please insert a game disc."));
+				do {
+					WDVD_GetCoverStatus(&cover);
+					if (BTN_B_PRESSED) return;
+				} while(!(cover & 0x2));
+			}
 		}
 		/* Open Disc */
 		if (Disc_Open(true) < 0)
@@ -1276,7 +1301,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	app_gameconfig_load((u8 *) &id, gameconfig.get(), gameconfigSize);
 	ocarina_load_code(cheatFile.get(), cheatSize);
 	u8 gameIOS = 0;
-	if(!dvd)
+	if(!dvd || cIOSInfo::neek2o())
 		gameIOS = GetRequestedGameIOS(hdr);
 
 	m_gcfg1.save(true);
@@ -1288,7 +1313,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 
 	bool iosLoaded = false;
 
-	if(!dvd)
+	if(!dvd || cIOSInfo::neek2o())
 	{
 		int result = _loadIOS(gameIOS, userIOS, id);
 		if(result == LOAD_IOS_FAILED)
@@ -1315,7 +1340,8 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		}
 	}
 	IOSReloadBlock(IOS_GetVersion(), true);
-	if(emulate_mode)
+	
+	if(emulate_mode && !cIOSInfo::neek2o())
 	{
 		Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
 		DeviceHandler::Instance()->UnMount(emuPartition);

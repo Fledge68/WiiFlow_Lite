@@ -16,8 +16,9 @@ typedef struct _iosinfo_t
 class cIOSInfo
 {
 	public:
+		static bool neek2o(void);
 		static bool D2X(u8 ios, u8 *base);
-		static iosinfo_t *GetInfo(u8 ios);
+		static iosinfo_t *GetInfo(u8 ios);		
 };
 
 #endif
