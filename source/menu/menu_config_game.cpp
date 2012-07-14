@@ -52,6 +52,10 @@ void CMenu::_hideGameSettings(bool instant)
 	m_btnMgr.hide(m_gameSettingsBtnNoDVD_M, instant);
 	m_btnMgr.hide(m_gameSettingsLblDevoMemcardEmu, instant);
 	m_btnMgr.hide(m_gameSettingsBtnDevoMemcardEmu, instant);
+	m_btnMgr.hide(m_gameSettingsLblGCLoader, instant);
+	m_btnMgr.hide(m_gameSettingsLblGCLoader_Val, instant);
+	m_btnMgr.hide(m_gameSettingsBtnGCLoader_P, instant);
+	m_btnMgr.hide(m_gameSettingsBtnGCLoader_M, instant);
 	m_btnMgr.hide(m_gameSettingsLblCustom, instant);
 	m_btnMgr.hide(m_gameSettingsBtnCustom, instant);
 	m_btnMgr.hide(m_gameSettingsLblOcarina, instant);
@@ -279,6 +283,11 @@ void CMenu::_showGameSettings(void)
 
 			m_btnMgr.show(m_gameSettingsLblDevoMemcardEmu);
 			m_btnMgr.show(m_gameSettingsBtnDevoMemcardEmu);
+
+			m_btnMgr.show(m_gameSettingsLblGCLoader);
+			m_btnMgr.show(m_gameSettingsLblGCLoader_Val);
+			m_btnMgr.show(m_gameSettingsBtnGCLoader_P);
+			m_btnMgr.show(m_gameSettingsBtnGCLoader_M);
 		}
 	}
 	else
@@ -307,7 +316,7 @@ void CMenu::_showGameSettings(void)
 			m_btnMgr.hide(m_gameSettingsLblNMM_Val);
 			m_btnMgr.hide(m_gameSettingsBtnNMM_P);
 			m_btnMgr.hide(m_gameSettingsBtnNMM_M);
-			
+
 			m_btnMgr.hide(m_gameSettingsLblNoDVD);
 			m_btnMgr.hide(m_gameSettingsLblNoDVD_Val);
 			m_btnMgr.hide(m_gameSettingsBtnNoDVD_P);
@@ -315,6 +324,11 @@ void CMenu::_showGameSettings(void)
 
 			m_btnMgr.hide(m_gameSettingsLblDevoMemcardEmu);
 			m_btnMgr.hide(m_gameSettingsBtnDevoMemcardEmu);
+
+			m_btnMgr.hide(m_gameSettingsLblGCLoader);
+			m_btnMgr.hide(m_gameSettingsLblGCLoader_Val);
+			m_btnMgr.hide(m_gameSettingsBtnGCLoader_P);
+			m_btnMgr.hide(m_gameSettingsBtnGCLoader_M);
 		}
 	}
 	if (m_gameSettingsPage == 4)
@@ -392,6 +406,8 @@ void CMenu::_showGameSettings(void)
 		m_btnMgr.setText(m_gameSettingsLblNMM_Val, _t(CMenu::_NMM[i].id, CMenu::_NMM[i].text));
 		i = min((u32)m_gcfg2.getInt(id, "no_disc_patch", 0), ARRAY_SIZE(CMenu::_NoDVD) - 1u);
 		m_btnMgr.setText(m_gameSettingsLblNoDVD_Val, _t(CMenu::_NoDVD[i].id, CMenu::_NoDVD[i].text));
+		i = min((u32)m_gcfg2.getInt(id, "gc_loader", 0), ARRAY_SIZE(CMenu::_GCLoader) - 1u);
+		m_btnMgr.setText(m_gameSettingsLblGCLoader_Val, _t(CMenu::_GCLoader[i].id, CMenu::_GCLoader[i].text));
 	}
 	else
 	{
@@ -568,6 +584,12 @@ void CMenu::_gameSettings(void)
 				m_gcfg2.setInt(id, "no_disc_patch", (int)loopNum((u32)m_gcfg2.getInt(id, "no_disc_patch", 0) + direction, ARRAY_SIZE(CMenu::_NoDVD)));
 				_showGameSettings();
 			}
+			else if(m_btnMgr.selected(m_gameSettingsBtnGCLoader_P) || m_btnMgr.selected(m_gameSettingsBtnGCLoader_M))
+			{
+				s8 direction = m_btnMgr.selected(m_gameSettingsBtnGCLoader_P) ? 1 : -1;
+				m_gcfg2.setInt(id, "gc_loader", (int)loopNum((u32)m_gcfg2.getInt(id, "gc_loader", 0) + direction, ARRAY_SIZE(CMenu::_GCLoader)));
+				_showGameSettings();
+			}
 			else if (m_btnMgr.selected(m_gameSettingsBtnIOSM) || m_btnMgr.selected(m_gameSettingsBtnIOSP))
 			{
 				if( _installed_cios.size() > 0)
@@ -739,7 +761,7 @@ void CMenu::_initGameSettingsMenu(CMenu::SThemeData &theme)
 	m_gameSettingsLblAspectRatioVal = _addLabel(theme, "GAME_SETTINGS/ASPECT_RATIO_BTN", theme.btnFont, L"", 386, 310, 158, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_gameSettingsBtnAspectRatioM = _addPicButton(theme, "GAME_SETTINGS/ASPECT_RATIO_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 330, 310, 56, 56);
 	m_gameSettingsBtnAspectRatioP = _addPicButton(theme, "GAME_SETTINGS/ASPECT_RATIO_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 310, 56, 56);
-	
+
 	//DML Page 3
 	m_gameSettingsLblNMM = _addLabel(theme, "GAME_SETTINGS/DML_NMM", theme.lblFont, L"", 40, 130, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsLblNMM_Val = _addLabel(theme, "GAME_SETTINGS/DML_NMM_BTN", theme.btnFont, L"", 386, 130, 158, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
@@ -753,6 +775,11 @@ void CMenu::_initGameSettingsMenu(CMenu::SThemeData &theme)
 
 	m_gameSettingsLblDevoMemcardEmu = _addLabel(theme, "GAME_SETTINGS/DEVO_MEMCARD_EMU", theme.lblFont, L"", 40, 250, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsBtnDevoMemcardEmu = _addButton(theme, "GAME_SETTINGS/DEVO_MEMCARD_EMU_BTN", theme.btnFont, L"", 330, 250, 270, 56, theme.btnFontColor);
+
+	m_gameSettingsLblGCLoader = _addLabel(theme, "GAME_SETTINGS/GC_LOADER", theme.lblFont, L"", 40, 310, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsLblGCLoader_Val = _addLabel(theme, "GAME_SETTINGS/GC_LOADER_BTN", theme.btnFont, L"", 386, 310, 158, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_gameSettingsBtnGCLoader_M = _addPicButton(theme, "GAME_SETTINGS/GC_LOADER_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 330, 310, 56, 56);
+	m_gameSettingsBtnGCLoader_P = _addPicButton(theme, "GAME_SETTINGS/GC_LOADER_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 310, 56, 56);
 
 	//Page 4
  	m_gameSettingsLblCustom = _addLabel(theme, "GAME_SETTINGS/CUSTOM", theme.lblFont, L"", 40, 130, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
@@ -836,6 +863,10 @@ void CMenu::_initGameSettingsMenu(CMenu::SThemeData &theme)
 	_setHideAnim(m_gameSettingsBtnNoDVD_M, "GAME_SETTINGS/NO_DVD_PATCH_MINUS", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsLblDevoMemcardEmu, "GAME_SETTINGS/DEVO_MEMCARD_EMU", -200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnDevoMemcardEmu, "GAME_SETTINGS/DEVO_MEMCARD_EMU_BTN", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsLblGCLoader, "GAME_SETTINGS/GC_LOADER", -200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsLblGCLoader_Val, "GAME_SETTINGS/GC_LOADER_BTN", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsBtnGCLoader_P, "GAME_SETTINGS/GC_LOADER_PLUS", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsBtnGCLoader_M, "GAME_SETTINGS/GC_LOADER_MINUS", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsLblHooktype, "GAME_SETTINGS/HOOKTYPE", -200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsLblHooktypeVal, "GAME_SETTINGS/HOOKTYPE_BTN", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnHooktypeM, "GAME_SETTINGS/HOOKTYPE_MINUS", 200, 0, 1.f, 0.f);
@@ -891,4 +922,5 @@ void CMenu::_textGameSettings(void)
 	m_btnMgr.setText(m_gameSettingsLblFlashSave, _t("cfgg32", L"Flash Save to NAND"));
 	m_btnMgr.setText(m_gameSettingsBtnFlashSave, _t("cfgg33", L"Flash"));
 	m_btnMgr.setText(m_gameSettingsLblDevoMemcardEmu, _t("cfgg34", L"Devolution Memcard Emulator"));
+	m_btnMgr.setText(m_gameSettingsLblGCLoader, _t("cfgg35", L"GameCube Loader"));
 }

@@ -210,13 +210,18 @@ const CMenu::SOption CMenu::_NoDVD[3] = {
 	{ "NoDVDon", L"Enabled" },
 };
 
+const CMenu::SOption CMenu::_GCLoader[3] = {
+	{ "GC_Def", L"Default" },
+	{ "GC_DM", L"DIOS-MIOS" },
+	{ "GC_Devo", L"Devolution" },
+};
+
 const CMenu::SOption CMenu::_vidModePatch[4] = {
 	{ "vmpnone", L"None" },
 	{ "vmpnormal", L"Normal" },
 	{ "vmpmore", L"More" },
 	{ "vmpall", L"All" }
 };
-
 
 const CMenu::SOption CMenu::_hooktype[8] = {
 	{ "disabled", L"Disabled" },
@@ -805,17 +810,17 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	else if((id[3] != 'P') && (DMLvideoMode == 0))
 		DMLvideoMode = 2;
 
-	if(disc)
-		DML_New_SetBootDiscOption();
-	else if(m_devo_installed && strcasestr(path.c_str(), "boot.bin") == NULL)
-	{
-		bool memcard_emu = m_gcfg2.getBool(id, "devo_memcard_emu", false);
-		DEVO_SetOptions(path.c_str(), DeviceName[currentPartition], m_dataDir.c_str(), memcard_emu);
-	}
-	else
-	{
-		m_cfg.setString("DML", "current_item", id);
+	u8 loader = min((u32)m_gcfg2.getInt(id, "gc_loader", 0), ARRAY_SIZE(CMenu::_GCLoader) - 1u);
 
+	if(disc)
+	{
+		loader = 0;
+		DML_New_SetBootDiscOption();
+	}
+	else if(loader == 1 || (loader == 0 && (strcasestr(path.c_str(), "boot.bin") != NULL || !m_devo_installed)))
+	{
+		loader = 1;
+		m_cfg.setString("DML", "current_item", id);
 		char CheatPath[256];
 		char NewCheatPath[255];
 		u8 NMM = min((u32)m_gcfg2.getInt(id, "dml_nmm", 0), ARRAY_SIZE(CMenu::_NMM) - 1u);
@@ -849,6 +854,12 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 			WDVD_Close();
 		}
 	}
+	else if(loader == 2 || (loader == 0 && m_devo_installed && strcasestr(path.c_str(), "boot.bin") == NULL))
+	{
+		loader = 2;
+		bool memcard_emu = m_gcfg2.getBool(id, "devo_memcard_emu", false);
+		DEVO_SetOptions(path.c_str(), DeviceName[currentPartition], m_dataDir.c_str(), memcard_emu);
+	}
 
 	m_gcfg1.save(true);
 	m_gcfg2.save(true);
@@ -862,7 +873,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 #endif
 	GC_SetVideoMode(DMLvideoMode, videoSetting);
 	GC_SetLanguage(GClanguage);
-	if(!disc && m_devo_installed && strcasestr(path.c_str(), "boot.bin") == NULL)
+	if(loader == 2)
 		DEVO_Boot();
 
 	DML_New_WriteOptions();
