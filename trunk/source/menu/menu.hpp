@@ -466,6 +466,11 @@ private:
 	u16 m_gameSettingsLblDevoMemcardEmu;
 	u16 m_gameSettingsBtnDevoMemcardEmu;
 
+	u16 m_gameSettingsLblGCLoader;
+	u16 m_gameSettingsLblGCLoader_Val;
+	u16 m_gameSettingsBtnGCLoader_P;
+	u16 m_gameSettingsBtnGCLoader_M;
+
 	u16 m_gameSettingsLblCustom;
 	u16 m_gameSettingsBtnCustom;
 
@@ -1097,6 +1102,7 @@ private:
 	static const SOption _AspectRatio[3];
 	static const SOption _NMM[4];
 	static const SOption _NoDVD[3];
+	static const SOption _GCLoader[3];
 	static const SOption _vidModePatch[4];
 	static const SOption _hooktype[8];
 	static const SOption _exitTo[6];
