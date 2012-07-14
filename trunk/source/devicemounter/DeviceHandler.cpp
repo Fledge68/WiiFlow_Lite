@@ -29,13 +29,13 @@
 #include <ogc/mutex.h>
 #include <ogc/system.h>
 #include <sdcard/gcsd.h>
-
+#include <sdcard/wiisd_io.h>
+#include "cios.hpp"
 #include "DeviceHandler.hpp"
 #include "wbfs.h"
 #include "usbstorage.h"
 
 #ifdef DOLPHIN
-#include <sdcard/wiisd_io.h>
 const DISC_INTERFACE __io_sdhc = __io_wiisd;
 #else
 extern const DISC_INTERFACE __io_sdhc;
@@ -133,7 +133,10 @@ bool DeviceHandler::MountSD()
 {
     if(!sd)
 	{
-        sd = new PartitionHandle(&__io_sdhc);
+		if(cIOSInfo::neek2o())
+			sd = new PartitionHandle(&__io_wiisd);
+		else
+			sd = new PartitionHandle(&__io_sdhc);
 		if(sd->GetPartitionCount() < 1)
 		{
 			delete sd;

@@ -29,7 +29,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <malloc.h>
-
+#include "cios.hpp"
 #include "PartitionHandle.h"
 #include "utils.h"
 #include "ntfs.h"
@@ -37,8 +37,9 @@
 #include "ext2.h"
 #include "wbfs.h"
 #include <sdcard/gcsd.h>
-#ifdef DOLPHIN
 #include <sdcard/wiisd_io.h>
+
+#ifdef DOLPHIN
 const DISC_INTERFACE __io_sdhc = __io_wiisd;
 #else
 extern const DISC_INTERFACE __io_sdhc;
@@ -142,9 +143,9 @@ bool PartitionHandle::Mount(int pos, const char * name)
 	}
 	else if(strncmp(GetFSName(pos), "WBFS", 4) == 0)
 	{
-		if (interface == &__io_usbstorage)
+		if(interface == &__io_usbstorage)
 			SetWbfsHandle(pos, wbfs_open_partition(__WBFS_ReadUSB, __WBFS_WriteUSB, NULL, sector_size, GetSecCount(pos), GetLBAStart(pos), 0));
-		else if (interface == &__io_sdhc)
+		else if((cIOSInfo::neek2o() && interface == &__io_wiisd) || (!cIOSInfo::neek2o() && interface == &__io_sdhc))
 			SetWbfsHandle(pos, wbfs_open_partition(__WBFS_ReadSDHC, __WBFS_WriteSDHC, NULL, sector_size, GetSecCount(pos), GetLBAStart(pos), 0));
 
 		if(GetWbfsHandle(pos)) return true;
