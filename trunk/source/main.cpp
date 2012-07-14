@@ -63,6 +63,7 @@ int main(int argc, char **argv)
 		else if (argv[i] != NULL && strcasestr(argv[i], "EMULATOR_MAGIC") != NULL)
 			Emulator_boot = true;
 	}
+#ifndef DOLPHIN
 	// Load Custom IOS
 	gprintf("Loading cIOS: %d\n", mainIOS);	
 	bool iosOK = loadIOS(mainIOS, false);
@@ -71,6 +72,9 @@ int main(int argc, char **argv)
 	ISFS_Initialize();
 	iosOK = iosOK && cIOSInfo::D2X(mainIOS, &mainIOSBase);
 	gprintf("Loaded cIOS: %u has base %u\n", mainIOS, mainIOSBase);	
+#else
+	bool iosOK = true;
+#endif
 
 	// Init
 	Sys_Init();
@@ -81,7 +85,7 @@ int main(int argc, char **argv)
 	while(ret == 1) 
 	{
 		Open_Inputs(); //(re)init wiimote
-
+#ifndef DOLPHIN
 		bool deviceAvailable = false;
 		u8 timeout = 0;
 		while(!deviceAvailable && timeout++ != 20)
@@ -97,7 +101,11 @@ int main(int argc, char **argv)
 		}
 		if(DeviceHandler::Instance()->IsInserted(SD))
 			deviceAvailable = true;
-
+#else
+		bool deviceAvailable = true;
+		DeviceHandler::Instance()->MountAll();
+		sleep(1);
+#endif
 		bool dipOK = Disc_Init() >= 0;
 
 		mainMenu = new CMenu(vid);
@@ -128,8 +136,9 @@ int main(int argc, char **argv)
 		}
 	}
 	mainMenu->cleanup();
-
+#ifndef DOLPHIN
 	ISFS_Deinitialize();
+#endif
 	Sys_Exit();
 	exit(1);
 	return 0;

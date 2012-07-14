@@ -16,8 +16,6 @@
 #include "loader/wbfs.h"
 #include "wip.h"
 #include "channel_launcher.h"
-#include "devicemounter/sdhc.h"
-#include "devicemounter/usbstorage.h"
 #include "BannerWindow.hpp"
 
 #include <network.h>
@@ -39,6 +37,11 @@
 #include "gc/fileOps.h"
 #include "gc/gcdisc.hpp"
 #include "Gekko.h"
+
+#ifndef DOLPHIN
+#include "devicemounter/sdhc.h"
+#include "devicemounter/usbstorage.h"
+#endif
 
 extern const u8 btngamecfg_png[];
 extern const u8 btngamecfgs_png[];
@@ -852,10 +855,11 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 	m_cat.save(true);
 	m_cfg.save(true);
 	cleanup();
+#ifndef DOLPHIN
 	ISFS_Deinitialize();
 	USBStorage_Deinit();
 	SDHC_Init();
-
+#endif
 	GC_SetVideoMode(DMLvideoMode, videoSetting);
 	GC_SetLanguage(GClanguage);
 	if(!m_devo_installed || strcasestr(path.c_str(), "boot.bin") != NULL)
@@ -892,9 +896,10 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 	AddBootArgument(filepath);
 	for(u32 i = 0; i < arguments.size(); ++i)
 		AddBootArgument(arguments[i].c_str());
-
+#ifndef DOLPHIN
 	ISFS_Deinitialize();
 	USBStorage_Deinit();
+#endif
 	//MEM2_clear();
 	BootHomebrew(title);
 }
@@ -1105,8 +1110,9 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 			_loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", id.c_str()));
 		ocarina_load_code(cheatFile.get(), cheatSize);
 	}
+#ifndef DOLPHIN
 	ISFS_Deinitialize();
-
+#endif
 	if(forwarder)
 	{
 		WII_Initialize();
@@ -1312,10 +1318,9 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	m_cat.save(true);
 	m_cfg.save(true);
 	cleanup(); // wifi and sd gecko doesnt work anymore after cleanup
+#ifndef DOLPHIN
 	ISFS_Deinitialize();
-
 	bool iosLoaded = false;
-
 	if(!dvd || cIOSInfo::neek2o())
 	{
 		int result = _loadIOS(gameIOS, userIOS, id);
@@ -1324,6 +1329,9 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		if(result == LOAD_IOS_SUCCEEDED)
 			iosLoaded = true;
 	}
+#else
+	bool iosLoaded = true;
+#endif
 	if(!m_directLaunch)
 	{
 		if (rtrn != NULL && strlen(rtrn) == 4)
@@ -1385,11 +1393,11 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			return;
 		}
 	}
-
+#ifndef DOLPHIN
 	USBStorage_Deinit();
 	if(currentPartition == 0)
 		SDHC_Init();
-
+#endif
 	/* Find game partition offset */
 	u64 offset;
 	s32 ret = Disc_FindPartition(&offset);

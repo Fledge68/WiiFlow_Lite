@@ -37,6 +37,12 @@
 #include "ext2.h"
 #include "wbfs.h"
 #include <sdcard/gcsd.h>
+#ifdef DOLPHIN
+#include <sdcard/wiisd_io.h>
+const DISC_INTERFACE __io_sdhc = __io_wiisd;
+#else
+extern const DISC_INTERFACE __io_sdhc;
+#endif
 
 #define PARTITION_TYPE_DOS33_EXTENDED		0x05 /* DOS 3.3+ extended partition */
 #define PARTITION_TYPE_WIN95_EXTENDED		0x0F /* Windows 95 extended partition */
@@ -44,8 +50,6 @@
 
 #define CACHE 32
 #define SECTORS 64
-
-extern const DISC_INTERFACE __io_sdhc;
 
 extern u32 sector_size;
 

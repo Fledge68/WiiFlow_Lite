@@ -52,3 +52,5 @@ postLoader"
 
 #define WIINNERTAG_URL 			"http://www.wiinnertag.com/wiinnertag_scripts/update_sign.php?key={KEY}&game_id={ID6}"
 #define DUTAG_URL				"http://tag.darkumbra.net/{KEY}.update={ID6}"
+
+//#define DOLPHIN				true
