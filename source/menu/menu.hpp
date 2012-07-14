@@ -988,7 +988,7 @@ private:
 	void _launchGame(dir_discHdr *hdr, bool dvd);
 	void _launchChannel(dir_discHdr *hdr);
 	void _launchHomebrew(const char *filepath, vector<string> arguments);
-	void _launchGC(dir_discHdr *hdr, bool DML);
+	void _launchGC(dir_discHdr *hdr, bool disc);
 	void _setAA(int aa);
 	void _loadCFCfg(SThemeData &theme);
 	void _loadCFLayout(int version, bool forceAA = false, bool otherScrnFmt = false);

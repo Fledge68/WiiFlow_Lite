@@ -770,7 +770,7 @@ void CMenu::_launch(dir_discHdr *hdr)
 	}
 	else if(hdr->type == TYPE_GC_GAME)
 	{
-		_launchGC(hdr, true);
+		_launchGC(hdr, false);
 		return;
 	}
 	else if(hdr->type == TYPE_CHANNEL)
@@ -780,7 +780,7 @@ void CMenu::_launch(dir_discHdr *hdr)
 	}
 }
 
-void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
+void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 {
 	string id(hdr->id);
 	string path(hdr->path);
@@ -805,12 +805,14 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 	else if((id[3] != 'P') && (DMLvideoMode == 0))
 		DMLvideoMode = 2;
 
-	if(m_devo_installed && strcasestr(path.c_str(), "boot.bin") == NULL)
+	if(disc)
+		DML_New_SetBootDiscOption();
+	else if(m_devo_installed && strcasestr(path.c_str(), "boot.bin") == NULL)
 	{
 		bool memcard_emu = m_gcfg2.getBool(id, "devo_memcard_emu", false);
 		DEVO_SetOptions(path.c_str(), DeviceName[currentPartition], m_dataDir.c_str(), memcard_emu);
 	}
-	else if(DML)
+	else
 	{
 		m_cfg.setString("DML", "current_item", id);
 
@@ -847,8 +849,6 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 			WDVD_Close();
 		}
 	}
-	else
-		DML_New_SetBootDiscOption();
 
 	m_gcfg1.save(true);
 	m_gcfg2.save(true);
@@ -862,15 +862,13 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool DML)
 #endif
 	GC_SetVideoMode(DMLvideoMode, videoSetting);
 	GC_SetLanguage(GClanguage);
-	if(!m_devo_installed || strcasestr(path.c_str(), "boot.bin") != NULL)
-	{
-		DML_New_WriteOptions();
-		WII_Initialize();
-		if(WII_LaunchTitle(0x100000100LL) < 0)
-			Sys_LoadMenu();
-	}
-	else
+	if(!disc && m_devo_installed && strcasestr(path.c_str(), "boot.bin") == NULL)
 		DEVO_Boot();
+
+	DML_New_WriteOptions();
+	WII_Initialize();
+	if(WII_LaunchTitle(0x100000100LL) < 0)
+		Sys_LoadMenu();
 }
 
 void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
@@ -1141,7 +1139,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	if(dvd)
 	{
 		u32 cover = 0;
-		
+		#ifndef DOLPHIN
 		if(!cIOSInfo::neek2o())
 		{
 			Disc_SetUSB(NULL);
@@ -1159,6 +1157,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 				} while(!(cover & 0x2));
 			}
 		}
+		#endif
 		/* Open Disc */
 		if (Disc_Open(true) < 0)
 		{
@@ -1178,10 +1177,10 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 				/* Read GC disc header */
 				struct gc_discHdr *gcHeader = (struct gc_discHdr *)MEM2_alloc(sizeof(struct gc_discHdr));
 				Disc_ReadGCHeader(gcHeader);
-				id = string((const char*)gcHeader->id);
+				strncpy(hdr->id, (char*)gcHeader->id, 6);
 				MEM2_free(gcHeader);
 				/* Launching GC Game */
-				_launchGC(hdr, false);
+				_launchGC(hdr, true);
 			}
 		}
 		else
