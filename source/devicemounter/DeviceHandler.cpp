@@ -34,7 +34,12 @@
 #include "wbfs.h"
 #include "usbstorage.h"
 
+#ifdef DOLPHIN
+#include <sdcard/wiisd_io.h>
+const DISC_INTERFACE __io_sdhc = __io_wiisd;
+#else
 extern const DISC_INTERFACE __io_sdhc;
+#endif
 
 DeviceHandler * DeviceHandler::instance = NULL;
 unsigned int DeviceHandler::watchdog_timeout = 10;

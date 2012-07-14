@@ -68,6 +68,7 @@ u32 IOSPATCH_AHBPROT()
 
 bool loadIOS(int ios, bool launch_game)
 {
+#ifndef DOLPHIN
 	gprintf("Reloading into IOS %i from %i (AHBPROT: %u)...\n", ios, IOS_GetVersion(), HAVE_AHBPROT);
 
 	Close_Inputs();
@@ -90,4 +91,7 @@ bool loadIOS(int ios, bool launch_game)
 		Open_Inputs();
 
 	return iosOK;
+#else
+	return true;
+#endif
 }
