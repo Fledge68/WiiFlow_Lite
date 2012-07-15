@@ -99,7 +99,8 @@ PartitionHandle::~PartitionHandle()
 	UnMountAll();
 
 	//shutdown device
-	interface->shutdown();
+	if(!cIOSInfo::neek2o())
+		interface->shutdown();
 }
 
 bool PartitionHandle::IsMounted(int pos)

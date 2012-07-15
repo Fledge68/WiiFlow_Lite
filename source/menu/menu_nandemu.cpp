@@ -198,23 +198,16 @@ void CMenu::_enableNandEmu(bool fromconfig)
 {
 	_cfNeedsUpdate();
 	bool disable = m_cfg.getBool("NAND", "disable", true) && m_current_view == COVERFLOW_CHANNEL && !m_tempView;	
-	
-	if(!disable || cIOSInfo::neek2o())
+
+	if(!disable && !cIOSInfo::neek2o())
 	{
 		bool isD2XnewerThanV6 = false;
-		if(!cIOSInfo::neek2o())
-		{
-			Nand::Instance()->Disable_Emu();			
-			iosinfo_t * iosInfo = cIOSInfo::GetInfo(mainIOS);
-			if (iosInfo->version > 6)
-				isD2XnewerThanV6 = true;
-			if(m_current_view == COVERFLOW_CHANNEL && !m_cfg.getBool("NAND", "disable", true) && !m_tempView)
-				Nand::Instance()->Enable_Emu();
-		}
-		else
-		{
+		Nand::Instance()->Disable_Emu();
+		iosinfo_t * iosInfo = cIOSInfo::GetInfo(mainIOS);
+		if (iosInfo->version > 6)
 			isD2XnewerThanV6 = true;
-		}
+		if(m_current_view == COVERFLOW_CHANNEL && !m_cfg.getBool("NAND", "disable", true) && !m_tempView)
+			Nand::Instance()->Enable_Emu();
 		u8 limiter = 0;
 		s8 direction = m_btnMgr.selected(m_configBtnPartitionP) ? 1 : -1;
 		if (!fromconfig)
@@ -230,7 +223,6 @@ void CMenu::_enableNandEmu(bool fromconfig)
 			if (limiter > 10) break;
 			limiter++;
 		}
-
 		gprintf("Next item: %s\n", DeviceName[currentPartition]);
 		if(m_tempView)
 			m_cfg.setInt("GAMES", "savepartition", currentPartition);

@@ -2005,7 +2005,7 @@ bool CMenu::_loadChannelList(void)
 	m_partRequest = m_cfg.getInt("NAND", "partition", 0);
 	int emuPartition = _FindEmuPart(&emuPath, m_partRequest, false);
 
-	bool disable_emu = m_cfg.getBool("NAND", "disable", true);
+	bool disable_emu = (m_cfg.getBool("NAND", "disable", true) || cIOSInfo::neek2o());
 	static bool last_emu_state = disable_emu;
 
 	if(emuPartition < 0)
@@ -2032,6 +2032,7 @@ bool CMenu::_loadChannelList(void)
 		Nand::Instance()->PreNandCfg(basepath, m_cfg.getBool("NAND", "miis_from_real", true));
 		first = false;
 	}
+	string nandpath = sfmt("%s:%s/", DeviceName[currentPartition], emuPath.empty() ? "" : emuPath.c_str());
 
 	if(!disable_emu)
 	{
@@ -2049,14 +2050,12 @@ bool CMenu::_loadChannelList(void)
 		}
 		else
 			failed = false;
+		gprintf("nandpath = %s\n", nandpath.c_str());
 	}
 
 	if(!DeviceHandler::Instance()->IsInserted(currentPartition))
 		DeviceHandler::Instance()->Mount(currentPartition);
 
-	string nandpath = sfmt("%s:%s/", DeviceName[currentPartition], emuPath.empty() ? "" : emuPath.c_str());
-	gprintf("nandpath = %s\n", nandpath.c_str());
-	
 	if(!failed) 
 	{
 		m_gameList.LoadChannels(disable_emu ? "" : nandpath, 0, m_cfg.getString("NAND", "lastlanguage", "EN").c_str());
