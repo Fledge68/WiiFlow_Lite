@@ -803,12 +803,15 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	u8 GClanguage = min((u32)m_gcfg2.getInt(id, "gc_language", 0), ARRAY_SIZE(CMenu::_GClanguages) - 1u);
 	GClanguage = (GClanguage == 0) ? min((u32)m_cfg.getInt("DML", "game_language", 0), ARRAY_SIZE(CMenu::_GlobalGClanguages) - 1u) : GClanguage-1;
 
-	u8 DMLvideoMode = min((u32)m_gcfg2.getInt(id, "dml_video_mode", 0), ARRAY_SIZE(CMenu::_DMLvideoModes) - 1u);
-	DMLvideoMode = (DMLvideoMode == 0) ? min((u32)m_cfg.getInt("DML", "video_mode", 0), ARRAY_SIZE(CMenu::_GlobalDMLvideoModes) - 1u) : DMLvideoMode-1;
-	if((id[3] == 'P') && (DMLvideoMode == 0))
-		DMLvideoMode = 1;
-	else if((id[3] != 'P') && (DMLvideoMode == 0))
-		DMLvideoMode = 2;
+	u8 videoMode = min((u32)m_gcfg2.getInt(id, "dml_video_mode", 0), ARRAY_SIZE(CMenu::_DMLvideoModes) - 1u);
+	videoMode = (videoMode == 0) ? min((u32)m_cfg.getInt("DML", "video_mode", 0), ARRAY_SIZE(CMenu::_GlobalDMLvideoModes) - 1u) : videoMode-1;
+	if(videoMode == 0)
+	{
+		if(id.c_str()[3] == 'E' || id.c_str()[3] == 'J')
+			videoMode = 2; //NTSC 480i
+		else
+			videoMode = 1; //PAL 576i
+	}
 
 	u8 loader = min((u32)m_gcfg2.getInt(id, "gc_loader", 0), ARRAY_SIZE(CMenu::_GCLoader) - 1u);
 
@@ -843,7 +846,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		else
 			newPath = &path[path.find_first_of(":/")+1];
 		if(m_new_dml)
-			DML_New_SetOptions(newPath.c_str(), CheatPath, NewCheatPath, cheats, DML_debug, NMM, nodisc, DMLvideoMode, videoSetting);
+			DML_New_SetOptions(newPath.c_str(), CheatPath, NewCheatPath, cheats, DML_debug, NMM, nodisc, videoMode, videoSetting);
 		else
 			DML_Old_SetOptions((char*)path.c_str(), CheatPath, NewCheatPath, cheats);
 
@@ -871,7 +874,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	USBStorage_Deinit();
 	SDHC_Init();
 #endif
-	GC_SetVideoMode(DMLvideoMode, videoSetting);
+	GC_SetVideoMode(videoMode, videoSetting);
 	GC_SetLanguage(GClanguage);
 	if(loader == 2)
 		DEVO_Boot();
