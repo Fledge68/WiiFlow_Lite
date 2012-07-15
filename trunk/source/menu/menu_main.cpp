@@ -174,7 +174,7 @@ void CMenu::_showMain(void)
 				break;
 		}
 	}
-	else if(m_current_view == COVERFLOW_CHANNEL && !m_cfg.getBool("NAND", "disable", true))
+	else if(!cIOSInfo::neek2o() && m_current_view == COVERFLOW_CHANNEL && !m_cfg.getBool("NAND", "disable", true))
 		Nand::Instance()->Enable_Emu();
 }
 
@@ -465,7 +465,7 @@ int CMenu::main(void)
 						_showMain();
 					continue;
 				}
-				else
+				else if(!cIOSInfo::neek2o())
 				{
 					m_cfg.setBool("NAND", "disable", !m_cfg.getBool("NAND", "disable", true));
 					gprintf("EmuNand is %s\n", m_cfg.getBool("NAND", "disable", true) ? "Disabled" : "Enabled");
@@ -634,7 +634,7 @@ int CMenu::main(void)
 				SourceMenuTimeout = 0;
 				bool block = m_current_view == COVERFLOW_CHANNEL && m_cfg.getBool("NAND", "disable", true);
 				char *partition;
-				if(!block)
+				if(!block && !cIOSInfo::neek2o())
 				{
 					_showWaitMessage();
 					_hideMain();
@@ -674,12 +674,9 @@ int CMenu::main(void)
 				snprintf(gui_name, sizeof(gui_name), "%s [%s]", _domainFromView(),partition);
 				m_btnMgr.setText(m_mainLblNotice, (string)gui_name);
 				m_btnMgr.show(m_mainLblNotice);
-				if(!block)
-				{
-					_loadList();
-					_showMain();
-					_initCF();
-				}
+				_loadList();
+				_showMain();
+				_initCF();
 			}
 			else if(!enable_wmote_roll)
 			{

@@ -5,6 +5,7 @@
 #include "gecko.h"
 #include "defines.h"
 #include "nand.hpp"
+#include "cios.hpp"
 
 static const int g_curPage = 4;
 
@@ -97,7 +98,7 @@ void CMenu::_showConfig4(void)
 		}
 	}
 
-	if(m_current_view == COVERFLOW_CHANNEL && m_cfg.getInt("NAND", "emulation", 0) > 0)
+	if(!cIOSInfo::neek2o() && m_current_view == COVERFLOW_CHANNEL && m_cfg.getInt("NAND", "emulation", 0) > 0)
 		Nand::Instance()->Enable_Emu();
 
 	m_btnMgr.setText(m_config4LblReturnToVal, channelName);
