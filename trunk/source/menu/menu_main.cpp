@@ -632,9 +632,9 @@ int CMenu::main(void)
 			else if(BTN_MINUS_PRESSED && !m_locked)
 			{
 				SourceMenuTimeout = 0;
-				bool block = m_current_view == COVERFLOW_CHANNEL && m_cfg.getBool("NAND", "disable", true);
+				bool block = m_current_view == COVERFLOW_CHANNEL && (m_cfg.getBool("NAND", "disable", true) || cIOSInfo::neek2o());
 				char *partition;
-				if(!block && !cIOSInfo::neek2o())
+				if(!block)
 				{
 					_showWaitMessage();
 					_hideMain();
@@ -674,9 +674,12 @@ int CMenu::main(void)
 				snprintf(gui_name, sizeof(gui_name), "%s [%s]", _domainFromView(),partition);
 				m_btnMgr.setText(m_mainLblNotice, (string)gui_name);
 				m_btnMgr.show(m_mainLblNotice);
-				_loadList();
-				_showMain();
-				_initCF();
+				if(!block)
+				{
+					_loadList();
+					_showMain();
+					_initCF();
+				}
 			}
 			else if(!enable_wmote_roll)
 			{
