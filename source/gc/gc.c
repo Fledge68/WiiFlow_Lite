@@ -19,7 +19,7 @@ DML_CFG *DMLCfg = NULL;
 
 void DML_New_SetOptions(const char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats, bool debugger, u8 NMM, u8 nodisc, u8 DMLvideoMode, u8 videoSetting)
 {
-	gprintf("Wiiflow DML: Launch game '%s' through memory (new method)\n", GamePath);
+	gprintf("Wiiflow GC: Launch game '%s' through memory (new method)\n", GamePath);
 
 	DMLCfg = (DML_CFG*)MEM1_alloc(sizeof(DML_CFG));
 	if(DMLCfg == NULL)
@@ -75,7 +75,7 @@ void DML_New_SetOptions(const char *GamePath, char *CheatPath, char *NewCheatPat
 
 void DML_Old_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats)
 {
-	gprintf("Wiiflow DML: Launch game '%s' through boot.bin (old method)\n", GamePath);
+	gprintf("Wiiflow GC: Launch game '%s' through boot.bin (old method)\n", GamePath);
 	FILE *f;
 	f = fopen("sd:/games/boot.bin", "wb");
 	fwrite(GamePath, 1, strlen(GamePath) + 1, f);
@@ -128,7 +128,7 @@ void DML_New_WriteOptions()
 // Devolution
 u8 *loader_bin = NULL;
 static gconfig *DEVO_CONFIG = (gconfig*)0x80000020;
-#define LAUNCH() ((void(*)(void))loader_bin)()
+#define DEVO_Entry() ((void(*)(void))loader_bin)()
 
 bool DEVO_Installed(const char* path)
 {
@@ -164,11 +164,13 @@ void DEVO_SetOptions(const char *path, const char *partition, const char* loader
 	struct stat st;
 	char full_path[256];
 	int data_fd;
+	char gameID[7];
 
 	stat(path, &st);
-	u8 *lowmem = (u8*)0x80000000;
 	FILE *iso_file = fopen(path, "rb");
-	fread(lowmem, 1, 32, iso_file);
+	fread(&gameID, 1, 6, iso_file);
+	fseek(f, 0, SEEK_SET);
+	fread((u8*)0x80000000, 1, 32, iso_file);
 	fclose(iso_file);
 
 	// fill out the Devolution config struct
@@ -189,7 +191,10 @@ void DEVO_SetOptions(const char *path, const char *partition, const char* loader
 		// find or create a 16MB memcard file for emulation
 		// this file can be located anywhere since it's passed by cluster, not name
 		// it must be at least 16MB though
-		snprintf(full_path, sizeof(full_path), "%s:/apps/gc_devo/memcard.bin", partition);
+		if(gameID[3] == 'J') //Japanese Memory Card
+			snprintf(full_path, sizeof(full_path), "%s:/apps/gc_devo/memcard_jap.bin", partition);
+		else
+			snprintf(full_path, sizeof(full_path), "%s:/apps/gc_devo/memcard.bin", partition);
 
 		// check if file doesn't exist or is less than 16MB
 		if(stat(full_path, &st) == -1 || st.st_size < 16<<20)
@@ -223,14 +228,15 @@ void DEVO_SetOptions(const char *path, const char *partition, const char* loader
 	DEVO_CONFIG->memcard_cluster = st.st_ino;
 
 	// flush disc ID and Devolution config out to memory
-	DCFlushRange(lowmem, 64);
+	DCFlushRange((void*)0x80000000, 64);
 }
 
 void DEVO_Boot()
 {
 	// the Devolution blob has an ID string at offset 4
 	puts((const char*)loader_bin + 4);
-	LAUNCH();
+	gprintf("WiiFlow GC: Devolution initialized. Booting game...\n \n");
+	DEVO_Entry();
 }
 
 
