@@ -2034,9 +2034,9 @@ bool CMenu::_loadChannelList(void)
 	}
 	string nandpath = sfmt("%s:%s/", DeviceName[currentPartition], emuPath.empty() ? "" : emuPath.c_str());
 
+	Nand::Instance()->Disable_Emu();
 	if(!disable_emu)
 	{
-		Nand::Instance()->Disable_Emu();
 		if(!DeviceHandler::Instance()->IsInserted(lastPartition))
 			DeviceHandler::Instance()->Mount(lastPartition);
 
@@ -2287,7 +2287,8 @@ void CMenu::_load_installed_cioses()
 	{
 		if(cIOSInfo::D2X(slot, &base))
 		{
-			gprintf("Found base %u in slot %u\n", base, slot);
+			if(!cIOSInfo::neek2o())
+				gprintf("Found base %u in slot %u\n", base, slot);
 			_installed_cios[slot] = base;
 		}
 	}
