@@ -216,6 +216,7 @@ void CMenu::LoadView(void)
 void CMenu::exitHandler(int ExitTo)
 {
 	gprintf("Exit WiiFlow called\n");
+	Nand::Instance()->Disable_Emu();
 	if(!m_disable_exit)
 	{
 		m_exit = true;

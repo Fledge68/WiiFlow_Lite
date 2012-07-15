@@ -32,19 +32,25 @@
 #include "cios.hpp"
 #include "utils.h"
 #include "mem2.hpp"
+#include "gecko.h"
 #include "fs.h"
 
 #define ARRAY_SIZE(a)		(sizeof a / sizeof a[0])
 
 static u32 allowedBases[] = { 37, 38, 53, 55, 56, 57, 58 }; 
-static u32 boot2version = 0;
+static bool checked = false;
+static bool neek = false;
 
 bool cIOSInfo::neek2o(void)
 {
-	if(!boot2version)
-		ES_GetBoot2Version(&boot2version);
-	
-	return boot2version > 4 ? true : false;
+	if(!checked)
+	{
+		u32 num = 0;
+		neek = !(ISFS_ReadDir("/sneek", NULL, &num));
+		gprintf("WiiFlow is in %s mode\n", neek ? "neek2o" : "real nand");
+		checked = true;
+	}
+	return neek;
 }
 
 /* Check if the cIOS is a D2X. */
