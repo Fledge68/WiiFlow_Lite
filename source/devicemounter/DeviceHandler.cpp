@@ -30,7 +30,7 @@
 #include <ogc/system.h>
 #include <sdcard/gcsd.h>
 #include <sdcard/wiisd_io.h>
-#include "cios.hpp"
+#include "cios.h"
 #include "DeviceHandler.hpp"
 #include "wbfs.h"
 #include "usbstorage.h"
@@ -133,7 +133,7 @@ bool DeviceHandler::MountSD()
 {
     if(!sd)
 	{
-		if(cIOSInfo::neek2o())
+		if(neek2o())
 			sd = new PartitionHandle(&__io_wiisd);
 		else
 			sd = new PartitionHandle(&__io_sdhc);
@@ -322,19 +322,22 @@ wbfs_t * DeviceHandler::GetWbfsHandle(int dev)
 
 s32 DeviceHandler::Open_WBFS(int dev)
 {
-	u32 part_lba;
+	u32 part_lba, part_idx = 1;
 	u32 part_fs = GetFSType(dev);
 	char *partition = (char *)DeviceName[dev];
 
 	if(dev == SD && IsInserted(dev))
 		part_lba = Instance()->sd->GetLBAStart(dev);
 	else if(dev >= USB1 && dev <= USB8 && IsInserted(dev))
+	{
+		part_idx = dev;
 		part_lba = Instance()->usb->GetLBAStart(dev - USB1);
+	}
 	else if(dev == GCSDA && IsInserted(dev))
 		part_lba = Instance()->gca->GetLBAStart(dev);
 	else if(dev == GCSDB && IsInserted(dev))
 		part_lba = Instance()->gcb->GetLBAStart(dev);
 	else return -1;
 
-	return WBFS_Init(GetWbfsHandle(dev), part_fs, part_lba, partition, dev);
+	return WBFS_Init(GetWbfsHandle(dev), part_fs, part_idx, part_lba, partition, dev);
 }

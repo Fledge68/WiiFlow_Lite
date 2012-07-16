@@ -26,22 +26,21 @@
 
 #include <gctypes.h>
 #include <malloc.h>
-#include <cstdio>
-#include <cstring>
+#include <string.h>
+#include <stdio.h>
 
-#include "cios.hpp"
+#include "cios.h"
 #include "utils.h"
 #include "mem2.hpp"
 #include "gecko.h"
 #include "fs.h"
+#include "mload.h"
 
-#define ARRAY_SIZE(a)		(sizeof a / sizeof a[0])
-
-static u32 allowedBases[] = { 37, 38, 53, 55, 56, 57, 58 }; 
 static bool checked = false;
 static bool neek = false;
+extern u32 get_ios_base();
 
-bool cIOSInfo::neek2o(void)
+bool neek2o(void)
 {
 	if(!checked)
 	{
@@ -54,7 +53,7 @@ bool cIOSInfo::neek2o(void)
 }
 
 /* Check if the cIOS is a D2X. */
-bool cIOSInfo::D2X(u8 ios, u8 *base)
+bool D2X(u8 ios, u8 *base)
 {
 	if(neek2o())
 	{
@@ -75,7 +74,7 @@ bool cIOSInfo::D2X(u8 ios, u8 *base)
  * @return pointer to iosinfo_t on success else NULL. The user is responsible for freeing the buffer.
  */
 
-iosinfo_t *cIOSInfo::GetInfo(u8 ios)
+iosinfo_t *GetInfo(u8 ios)
 {
 	u32 TMD_Length;
 	if (ES_GetStoredTMDSize(TITLE_ID(1, ios), &TMD_Length) < 0) return NULL;
@@ -102,18 +101,9 @@ iosinfo_t *cIOSInfo::GetInfo(u8 ios)
 
 	iosinfo_t *iosinfo = (iosinfo_t *)buffer;
 
-	bool baseMatch = false;
-	for(u8 i = 0; i < ARRAY_SIZE(allowedBases); i++)
-		if(iosinfo->baseios == allowedBases[i])
-		{
-			baseMatch = true;
-			break;
-		}
-
 	if(iosinfo->magicword != 0x1ee7c105					/* Magic Word */
 		|| iosinfo->magicversion != 1					/* Magic Version */
 		|| iosinfo->version < 6							/* Version */
-		|| !baseMatch									/* Base */
 		|| strncasecmp(iosinfo->name, "d2x", 3) != 0)	/* Name */
 	{
 		MEM2_free(buffer);
@@ -121,4 +111,56 @@ iosinfo_t *cIOSInfo::GetInfo(u8 ios)
 	}
 
 	return iosinfo;
+}
+
+int get_ios_type(u8 slot)
+{
+	u8 base = 0;
+	switch(slot)
+	{
+		case 222:
+		case 223:
+		case 224:
+			if(IOS_GetRevision() == 1)
+				return IOS_TYPE_KWIIRK;
+			else
+				return IOS_TYPE_HERMES;
+		case 245:
+		case 246:
+		case 247:
+		case 248:
+		case 249:
+		case 250:
+		case 251:
+			if(D2X(slot, &base))
+				return IOS_TYPE_D2X;
+			else
+				return IOS_TYPE_WANIN;
+		default:
+			if(D2X(slot, &base))
+				return IOS_TYPE_D2X;
+			else
+				return IOS_TYPE_NO_CIOS;
+	}
+}
+
+int is_ios_type(int type, u8 slot)
+{
+	return (get_ios_type(slot) == type);
+}
+
+bool shadow_mload()
+{
+	if(!is_ios_type(IOS_TYPE_HERMES, IOS_GetVersion()))
+		return false;
+	int v51 = (5 << 4) & 1;
+	if (mload_get_version() >= v51)
+	{
+		// shadow /dev/mload supported in hermes cios v5.1
+		//IOS_Open("/dev/usb123/OFF",0);// this disables ehc completely
+		IOS_Open("/dev/mload/OFF",0);
+		gprintf("Shadow mload\n");
+		return true;
+	}
+	return false;
 }

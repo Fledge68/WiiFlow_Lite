@@ -20,7 +20,7 @@
 #include "fs.h"
 #include "U8Archive.h"
 #include "nand.hpp"
-#include "cios.hpp"
+#include "cios.h"
 #include "loader/playlog.h"
 #include "gc/fileOps.h"
 #include "gc/gc.h"
@@ -2005,7 +2005,7 @@ bool CMenu::_loadChannelList(void)
 	m_partRequest = m_cfg.getInt("NAND", "partition", 0);
 	int emuPartition = _FindEmuPart(&emuPath, m_partRequest, false);
 
-	bool disable_emu = (m_cfg.getBool("NAND", "disable", true) || cIOSInfo::neek2o());
+	bool disable_emu = (m_cfg.getBool("NAND", "disable", true) || neek2o());
 	static bool last_emu_state = disable_emu;
 
 	if(emuPartition < 0)
@@ -2275,21 +2275,56 @@ bool CMenu::_loadFile(SmartBuf &buffer, u32 &size, const char *path, const char 
 
 void CMenu::_load_installed_cioses()
 {
-	if (_installed_cios.size() > 0)
+	if(_installed_cios.size() > 0)
 		return;
 
 	gprintf("Loading cIOS map\n");
-
 	_installed_cios[0] = 1;
-	u8 base = 0;
 
-	for (u8 slot = 200; slot < 254; slot++)
+	// Do sjizzle
+	u32 count;
+	u32 ret = ES_GetNumTitles(&count);
+	if(ret || !count)
 	{
-		if(cIOSInfo::D2X(slot, &base))
+		gprintf("Cannot count...aaaah\n");
+		return;
+	}
+
+	static u64 title_list[256] ATTRIBUTE_ALIGN(32);
+	if(ES_GetTitles(title_list, count) > 0)
+	{
+		gprintf("Cannot get titles...\n");
+		return;
+	}
+
+	for(u32 i = 0; i < count; i++)
+	{
+		u32 tmd_size;
+		if(ES_GetStoredTMDSize(title_list[i], &tmd_size) > 0)
+			continue;
+		static u8 tmd_buf[MAX_SIGNED_TMD_SIZE] ATTRIBUTE_ALIGN(32);
+		signed_blob *s_tmd = (signed_blob *)tmd_buf;
+		if(ES_GetStoredTMD(title_list[i], s_tmd, tmd_size) > 0)
+			continue;
+
+		const tmd *t = (const tmd *)SIGNATURE_PAYLOAD(s_tmd);
+		
+		u32 kind = t->title_id >> 32;
+
+		if(kind == 1)
 		{
-			if(!cIOSInfo::neek2o())
-				gprintf("Found base %u in slot %u\n", base, slot);
-			_installed_cios[slot] = base;
+			u32 title_l = t->title_id & 0xFFFFFFFF;
+			if(title_l == 0 || title_l == 2 || title_l == 0x100 || title_l == 0x101 || title_l == 0xEC || title_l < 222)
+				continue;
+			u8 base = 1;
+			// We have an ios
+			u32 version = t->title_version;
+			if(tmd_buf[4] == 0 && (version < 100 || version == 0xFFFF || D2X(title_l, &base))) // Signature is empty
+			{
+				// Probably an cios
+				gprintf("Found cIOS base %u in slot %u\n", base, title_l);
+				_installed_cios[title_l] = base;
+			}
 		}
 	}
 }

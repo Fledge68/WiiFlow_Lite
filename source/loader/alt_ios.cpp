@@ -10,60 +10,72 @@
 #include "sys.h"
 #include "wbfs.h"
 #include "gecko.h"
+#include "cios.h"
+#include "types.h"
+
+// mload from uloader by Hermes
+#include "mload.h"
+#include "ehcmodule_5.h"
+#include "dip_plugin_249.h"
+#include "odip_frag.h"
+#include "mload_modules.h"
 
 extern "C" {extern u8 currentPartition;}
 extern int __Arena2Lo;
+u8 use_port1 = 0;
 
 #define HAVE_AHBPROT ((*(vu32*)0xcd800064 == 0xFFFFFFFF) ? 1 : 0)
-#define MEM_REG_BASE 0xd8b4000
-#define MEM_PROT (MEM_REG_BASE + 0x20a)
 
-static void disable_memory_protection()
+static int load_ehc_module_ex(void)
 {
-	gprintf("Disable memory protection...");
-	int mem_prot = read32(MEM_PROT);
-	gprintf("current value: %08X...", mem_prot);
-    write32(MEM_PROT, mem_prot & 0x0000FFFF);
-	gprintf("done\n");
+	ehcmodule = ehcmodule_5;
+	size_ehcmodule = size_ehcmodule_5;
+	dip_plugin = odip_frag;
+	size_dip_plugin = size_odip_frag;
+
+	u8 *ehc_cfg = search_for_ehcmodule_cfg((u8 *)ehcmodule, size_ehcmodule);
+	if (ehc_cfg)
+	{
+		ehc_cfg += 12;
+		ehc_cfg[0] = use_port1;
+		gprintf("EHC Port info = %i\n", ehc_cfg[0]);
+		DCFlushRange((void *) (((u32)ehc_cfg[0]) & ~31), 32);
+	}
+	if(use_port1)   // release port 0 and use port 1
+	{
+		u32 dat=0;
+		u32 addr;
+
+		// get EHCI base registers
+		mload_getw((void *) 0x0D040000, &addr);
+
+		addr&=0xff;
+		addr+=0x0D040000;
+
+		mload_getw((void *) (addr+0x44), &dat);
+		if((dat & 0x2001)==1) 
+			mload_setw((void *) (addr+0x44), 0x2000);
+
+		mload_getw((void *) (addr+0x48), &dat);
+
+		if((dat & 0x2000)==0x2000)
+			mload_setw((void *) (addr+0x48), 0x1001);
+	}
+	load_ehc_module();
+
+	return 0;
 }
 
-static u32 apply_patch(const u8 *pattern, u32 pattern_size, const u8 *patch, u32 patch_size, u32 patch_offset)
+void load_dip_249()
 {
-	//gprintf("Applying AHBPROT patch...");
-    u8 *ptr_start = (u8*)*((u32*)0x80003134), *ptr_end = (u8*)0x94000000;
-    u32 found = 0;
-    u8 *location = NULL;
-    while (ptr_start < (ptr_end - patch_size))
-	{
-        if (!memcmp(ptr_start, pattern, pattern_size))
-		{
-            found++;
-            location = ptr_start + patch_offset;
-            u8 *start = location;
-            u32 i;
-            for (i = 0; i < patch_size; i++)
-                *location++ = patch[i];
+	gprintf("Starting mload\n");
+	if(mload_init() < 0)
+		return;
 
-            DCFlushRange((u8 *)(((u32)start) >> 5 << 5), (patch_size >> 5 << 5) + 64);
-            ICInvalidateRange((u8 *)(((u32)start) >> 5 << 5), (patch_size >> 5 << 5) + 64);
-        }
-        ptr_start++;
-    }
-	//gprintf("done\n");
-    return found;
-}
-
-const u8 es_set_ahbprot_pattern[] = { 0x68, 0x5B, 0x22, 0xEC, 0x00, 0x52, 0x18, 0x9B, 0x68, 0x1B, 0x46, 0x98, 0x07, 0xDB };
-const u8 es_set_ahbprot_patch[]   = { 0x01 };
-
-u32 IOSPATCH_AHBPROT()
-{
-    if (HAVE_AHBPROT)
-	{
-        disable_memory_protection();
-        return apply_patch((const u8 *) es_set_ahbprot_pattern, sizeof(es_set_ahbprot_pattern), (const u8 *) es_set_ahbprot_patch, sizeof(es_set_ahbprot_patch), 25);
-    }
-    return 0;
+	gprintf("Loading 249 dip...");
+	int ret = mload_module((void *) dip_plugin_249, size_dip_plugin_249);
+	gprintf("%d\n", ret);
+	mload_close();
 }
 
 bool loadIOS(int ios, bool launch_game)
@@ -76,10 +88,16 @@ bool loadIOS(int ios, bool launch_game)
 
 	WDVD_Close();
 	USBStorage_Deinit();
+	mload_close();
 
 	bool iosOK = IOS_ReloadIOS(ios) == 0;
+	ISFS_Initialize();
 
-	gprintf("%s, Current IOS: %i\n", iosOK ? "OK" : "FAILED!", IOS_GetVersion());
+	gprintf("%s, Current IOS: %i Base: %i\n", iosOK ? "OK" : "FAILED!", IOS_GetVersion(), get_ios_base());
+	if(is_ios_type(IOS_TYPE_HERMES, IOS_GetVersion()))
+		load_ehc_module_ex();
+	else if(is_ios_type(IOS_TYPE_WANIN, IOS_GetVersion()))
+		load_dip_249();
 
  	if(launch_game)
 	{
@@ -94,4 +112,16 @@ bool loadIOS(int ios, bool launch_game)
 #else
 	return true;
 #endif
+}
+
+u32 get_ios_base()
+{
+	u32 revision = IOS_GetRevision();
+	if (is_ios_type(IOS_TYPE_WANIN, IOS_GetVersion()) && revision >= 17)
+		return wanin_mload_get_IOS_base();
+	
+	else if (is_ios_type(IOS_TYPE_HERMES, IOS_GetVersion()) && revision >= 4)
+		return mload_get_IOS_base();
+
+	return 0;
 }

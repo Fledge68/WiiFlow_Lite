@@ -15,6 +15,7 @@
 #include "sha1.h"
 #include "fs.h"
 #include "mem2.hpp"
+#include "mload.h"
 
 /* Variables */
 static bool reset = false;

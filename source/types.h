@@ -16,6 +16,15 @@ enum
     TYPE_END
 };
 
+enum
+{
+	IOS_TYPE_D2X = 0,
+	IOS_TYPE_WANIN,
+	IOS_TYPE_HERMES,
+	IOS_TYPE_KWIIRK,
+	IOS_TYPE_NO_CIOS,
+};
+
 #define NoGameID(x)			(x == TYPE_PLUGIN || x == TYPE_HOMEBREW)
 
 #ifdef __cplusplus

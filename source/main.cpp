@@ -12,7 +12,7 @@
 #include "homebrew.h"
 #include "gecko.h"
 #include "wifi_gecko.h"
-#include "cios.hpp"
+#include "cios.h"
 #include "nand.hpp"
 #include "defines.h"
 #include "svnrev.h"
@@ -69,8 +69,10 @@ int main(int argc, char **argv)
 	bool iosOK = loadIOS(mainIOS, false);
 
 	u8 mainIOSBase = 0;
-	ISFS_Initialize();
-	iosOK = iosOK && cIOSInfo::D2X(mainIOS, &mainIOSBase);
+	D2X(mainIOS, &mainIOSBase);
+	if(!mainIOSBase)
+		mainIOSBase = get_ios_base();
+	iosOK = iosOK && mainIOSBase > 0;
 	gprintf("Loaded cIOS: %u has base %u\n", mainIOS, mainIOSBase);	
 #else
 	bool iosOK = true;

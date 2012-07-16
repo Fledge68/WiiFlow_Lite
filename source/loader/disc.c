@@ -23,6 +23,7 @@
 #include "memory.h"
 #include "gecko.h"
 #include "utils.h"
+#include "cios.h"
 
 /* Constants */
 #define PTABLE_OFFSET	0x40000
@@ -57,7 +58,8 @@ void __Disc_SetLowMem()
 	*(vu32*)0xCD00643C	= 0x00000000; // 32Mhz on Bus
 
 	/* Fix for Sam & Max (WiiPower) */
-	*GameID_Address		= 0x80000000;
+	if (!is_ios_type(IOS_TYPE_HERMES, IOS_GetVersion()))
+		*GameID_Address	= 0x80000000;
 
 	/* Copy disc ID */
 	memcpy((void *)Online_Check, (void *)Disc_ID, 4);
@@ -291,9 +293,13 @@ s32 Disc_Wait(void)
 
 s32 Disc_SetUSB(const u8 *id)
 {
-	if (id) return set_frag_list((u8 *) id);
+	if(id)
+		return set_frag_list((u8 *) id);
 
-	return WDVD_SetUSBMode(wbfsDev, (u8 *) id, -1);
+	s32 part = -1;
+	if(is_ios_type(IOS_TYPE_HERMES, IOS_GetVersion()))
+		part = wbfs_part_idx ? wbfs_part_idx - 1 : 0;
+	return WDVD_SetUSBMode(wbfsDev, (u8 *) id, part);
 }
 
 s32 Disc_ReadHeader(void *outbuf)
@@ -397,18 +403,21 @@ s32 Disc_BootPartition()
 	return 0;
 }
 
-void RunApploader(u64 offset, u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, int aspectRatio)
+void RunApploader(u64 offset, u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, int aspectRatio, u32 returnTo)
 {
 	WDVD_OpenPartition(offset);
 
-	/* Setup low memory */;
+	/* hide cios devices */
+	shadow_mload();
+
+	/* Setup low memory */
 	__Disc_SetLowMem();
 
 	/* Select an appropriate video mode */
 	__Disc_SelectVMode(vidMode, 0);
 
 	/* Run apploader */
-	Apploader_Run(&p_entry, vidMode, vmode, vipatch, countryString, patchVidMode, aspectRatio);
+	Apploader_Run(&p_entry, vidMode, vmode, vipatch, countryString, patchVidMode, aspectRatio, returnTo);
 
 	appentrypoint = (u32)p_entry;
 }

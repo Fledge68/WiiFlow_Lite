@@ -33,6 +33,7 @@ extern u32 sector_size;
 
 // partition
 int wbfs_part_fs  = PART_FS_WBFS;
+u32 wbfs_part_idx = 0;
 u32 wbfs_part_lba = 0;
 u8 wbfs_mounted = 0;
 
@@ -196,6 +197,7 @@ bool WBFS_Close()
 {
 	wbfs_part_fs = 0;
 	wbfs_part_lba = 0;
+	wbfs_part_idx = 0;
 	strcpy(wbfs_fs_drive, "");
 	wbfs_mounted = 0;
 
@@ -207,7 +209,7 @@ bool WBFS_Mounted()
 	return wbfs_mounted != 0;
 }
 
-s32 WBFS_Init(wbfs_t * handle, u32 part_fs, u32 part_lba, char *partition, u8 current)
+s32 WBFS_Init(wbfs_t * handle, u32 part_fs, u32 part_idx, u32 part_lba, char *partition, u8 current)
 {
 	WBFS_Close();
 
@@ -218,6 +220,7 @@ s32 WBFS_Init(wbfs_t * handle, u32 part_fs, u32 part_lba, char *partition, u8 cu
 
 	wbfs_part_fs  = part_fs;
 	wbfs_part_lba = part_lba;
+	wbfs_part_idx = part_idx;
 
 	currentPartition = current;
 

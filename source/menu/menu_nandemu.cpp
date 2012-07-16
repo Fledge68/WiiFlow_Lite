@@ -2,7 +2,7 @@
 #include "menu.hpp"
 #include "nand.hpp"
 #include "sys.h"
-#include "loader/cios.hpp"
+#include "loader/cios.h"
 #include "loader/alt_ios.h"
 #include "lockMutex.hpp"
 #include "gecko/gecko.h"
@@ -197,16 +197,16 @@ bool CMenu::_checkSave(string id, bool nand)
 void CMenu::_enableNandEmu(bool fromconfig)
 {
 	_cfNeedsUpdate();
-	bool disable = (m_cfg.getBool("NAND", "disable", true) || cIOSInfo::neek2o()) && m_current_view == COVERFLOW_CHANNEL && !m_tempView;	
+	bool disable = (m_cfg.getBool("NAND", "disable", true) || neek2o()) && m_current_view == COVERFLOW_CHANNEL && !m_tempView;	
 
 	if(!disable)
 	{
 		bool isD2XnewerThanV6 = false;
 		Nand::Instance()->Disable_Emu();
-		iosinfo_t * iosInfo = cIOSInfo::GetInfo(mainIOS);
-		if(iosInfo->version > 6 || cIOSInfo::neek2o())
+		iosinfo_t * iosInfo = GetInfo(mainIOS);
+		if(iosInfo->version > 6 || neek2o())
 			isD2XnewerThanV6 = true;
-		if(m_current_view == COVERFLOW_CHANNEL && !m_cfg.getBool("NAND", "disable", true) && !cIOSInfo::neek2o() && !m_tempView)
+		if(m_current_view == COVERFLOW_CHANNEL && !m_cfg.getBool("NAND", "disable", true) && !neek2o() && !m_tempView)
 			Nand::Instance()->Enable_Emu();
 		u8 limiter = 0;
 		s8 direction = m_btnMgr.selected(m_configBtnPartitionP) ? 1 : -1;
