@@ -2,7 +2,7 @@
 #include "menu.hpp"
 #include "nand.hpp"
 #include "sys.h"
-#include "loader/cios.hpp"
+#include "loader/cios.h"
 #include "loader/alt_ios.h"
 #include "gecko/gecko.h"
 
@@ -62,7 +62,7 @@ void CMenu::_showConfig(void)
 		m_btnMgr.show(m_configLblDownload);
 		m_btnMgr.show(m_configBtnDownload);
 	
-		bool disable = (m_cfg.getBool("NAND", "disable", true) || cIOSInfo::neek2o()) && m_current_view == COVERFLOW_CHANNEL && !m_tempView;
+		bool disable = (m_cfg.getBool("NAND", "disable", true) || neek2o()) && m_current_view == COVERFLOW_CHANNEL && !m_tempView;
 		char *partitionname = disable ? (char *)"NAND" : (char *)DeviceName[m_tempView ? m_cfg.getInt("GAMES", "savepartition", 0) : m_cfg.getInt(_domainFromView(), "partition", 0)];
 
 		for(u8 i = 0; strncmp((const char *)&partitionname[i], "\0", 1) != 0; i++)
@@ -215,7 +215,7 @@ int CMenu::_config1(void)
 	
 	if (currentPartition != bCurrentPartition)
 	{	
-		bool disable = (m_cfg.getBool("NAND", "disable", true) || cIOSInfo::neek2o()) && m_current_view == COVERFLOW_CHANNEL && !m_tempView;
+		bool disable = (m_cfg.getBool("NAND", "disable", true) || neek2o()) && m_current_view == COVERFLOW_CHANNEL && !m_tempView;
 
 		if(!disable)
 		{

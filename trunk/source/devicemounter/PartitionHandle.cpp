@@ -29,7 +29,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <malloc.h>
-#include "cios.hpp"
+#include "cios.h"
 #include "PartitionHandle.h"
 #include "utils.h"
 #include "ntfs.h"
@@ -99,7 +99,7 @@ PartitionHandle::~PartitionHandle()
 	UnMountAll();
 
 	//shutdown device
-	if(!cIOSInfo::neek2o())
+	if(!neek2o())
 		interface->shutdown();
 }
 
@@ -146,7 +146,7 @@ bool PartitionHandle::Mount(int pos, const char * name)
 	{
 		if(interface == &__io_usbstorage)
 			SetWbfsHandle(pos, wbfs_open_partition(__WBFS_ReadUSB, __WBFS_WriteUSB, NULL, sector_size, GetSecCount(pos), GetLBAStart(pos), 0));
-		else if((cIOSInfo::neek2o() && interface == &__io_wiisd) || (!cIOSInfo::neek2o() && interface == &__io_sdhc))
+		else if((neek2o() && interface == &__io_wiisd) || (!neek2o() && interface == &__io_sdhc))
 			SetWbfsHandle(pos, wbfs_open_partition(__WBFS_ReadSDHC, __WBFS_WriteSDHC, NULL, sector_size, GetSecCount(pos), GetLBAStart(pos), 0));
 
 		if(GetWbfsHandle(pos)) return true;

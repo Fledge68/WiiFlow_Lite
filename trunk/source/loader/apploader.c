@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <ogcsys.h>
 #include <string.h>
-
+#include "mload_modules.h"
 #include "apploader.h"
 #include "wdvd.h"
 #include "patchcode.h"
@@ -12,6 +12,8 @@
 #include "sys.h"
 #include "gecko.h"
 #include "fst.h"
+#include "cios.h"
+#include "types.h"
 
 /* Apploader function pointers */
 typedef int   (*app_main)(void **dst, int *size, int *offset);
@@ -28,14 +30,15 @@ static u8 *appldr = (u8 *) 0x81200000;
 /* Variables */
 static u32 buffer[0x20] ATTRIBUTE_ALIGN(32);
 
-void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio);
-void PatchCountryStrings(void *Address, int Size);
-bool Remove_001_Protection(void *Address, int Size);
-bool PrinceOfPersiaPatch();
-bool NewSuperMarioBrosPatch();
+void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo);
+static void patch_NoDiscinDrive(void *buffer, u32 len);
+static void Anti_002_fix(void *Address, int Size);
+static bool Remove_001_Protection(void *Address, int Size);
+static bool PrinceOfPersiaPatch();
+static bool NewSuperMarioBrosPatch();
 bool hookpatched = false;
 
-s32 Apploader_Run(entry_point *entry, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio)
+s32 Apploader_Run(entry_point *entry, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo)
 {
 	void *dst = NULL;
 	int len = 0;
@@ -72,7 +75,7 @@ s32 Apploader_Run(entry_point *entry, u8 vidMode, GXRModeObj *vmode, bool vipatc
 	{
 		/* Read data from DVD */
 		WDVD_Read(dst, len, (u64)(offset << 2));
-		maindolpatches(dst, len, vidMode, vmode, vipatch, countryString, patchVidModes, aspectRatio);
+		maindolpatches(dst, len, vidMode, vmode, vipatch, countryString, patchVidModes, aspectRatio, returnTo);
 	}
 
 	free_wip();
@@ -95,11 +98,13 @@ s32 Apploader_Run(entry_point *entry, u8 vidMode, GXRModeObj *vmode, bool vipatc
 	return 0;
 }
 
-void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio)
+void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo)
 {
 	PrinceOfPersiaPatch();
 	NewSuperMarioBrosPatch();
-
+	// Patch NoDiscInDrive only for IOS 249 < rev13 or IOS 222/223/224
+	if((is_ios_type(IOS_TYPE_WANIN, IOS_GetVersion()) && IOS_GetRevision() < 13) || (is_ios_type(IOS_TYPE_HERMES, IOS_GetVersion())))
+		patch_NoDiscinDrive(dst, len);
 	patchVideoModes(dst, len, vidMode, vmode, patchVidModes);
 	if(hooktype != 0 && dogamehooks(dst, len, false))
 		hookpatched = true;
@@ -107,10 +112,14 @@ void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipa
 		vidolpatcher(dst, len);
 	if(configbytes[0] != 0xCD)
 		langpatcher(dst, len);
+	if(is_ios_type(IOS_TYPE_WANIN, IOS_GetVersion()) && IOS_GetRevision() < 13)
+		Anti_002_fix(dst, len);
 	if(countryString)
 		PatchCountryStrings(dst, len); // Country Patch by WiiPower
 	if(aspectRatio != -1)
 		PatchAspectRatio(dst, len, aspectRatio);
+	if(returnTo)
+		PatchReturnTo(dst, len, returnTo);
 
 	Remove_001_Protection(dst, len);
 
@@ -120,82 +129,36 @@ void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipa
 	ICInvalidateRange(dst, len);
 }
 
-void PatchCountryStrings(void *Address, int Size)
+static void patch_NoDiscinDrive(void *buffer, u32 len)
 {
-	u8 SearchPattern[4] = {0x00, 0x00, 0x00, 0x00};
-	u8 PatchData[4] = {0x00, 0x00, 0x00, 0x00};
-	u8 *Addr = (u8*)Address;
-	int wiiregion = CONF_GetRegion();
+	static const u8 oldcode[] = {0x54, 0x60, 0xF7, 0xFF, 0x40, 0x82, 0x00, 0x0C, 0x54, 0x60, 0x07, 0xFF, 0x41, 0x82, 0x00, 0x0C};
+	static const u8 newcode[] = {0x54, 0x60, 0xF7, 0xFF, 0x40, 0x82, 0x00, 0x0C, 0x54, 0x60, 0x07, 0xFF, 0x48, 0x00, 0x00, 0x0C};
+	u32 n;
 
-	switch (wiiregion)
+/* Patch cover register */
+	for(n = 0; n < len - sizeof oldcode; n += 4) // n is not 4 aligned here, so you can get an out of buffer thing
 	{
-		case CONF_REGION_JP:
-			SearchPattern[0] = 0x00;
-			SearchPattern[1] = 'J';
-			SearchPattern[2] = 'P';
-			break;
-		case CONF_REGION_EU:
-			SearchPattern[0] = 0x02;
-			SearchPattern[1] = 'E';
-			SearchPattern[2] = 'U';
-			break;
-		case CONF_REGION_KR:
-			SearchPattern[0] = 0x04;
-			SearchPattern[1] = 'K';
-			SearchPattern[2] = 'R';
-			break;
-		case CONF_REGION_CN:
-			SearchPattern[0] = 0x05;
-			SearchPattern[1] = 'C';
-			SearchPattern[2] = 'N';
-			break;
-		case CONF_REGION_US:
-		default:
-			SearchPattern[0] = 0x01;
-			SearchPattern[1] = 'U';
-			SearchPattern[2] = 'S';
+		if (memcmp(buffer + n, (void *)oldcode, sizeof oldcode) == 0)
+			memcpy(buffer + n, (void *)newcode, sizeof newcode);
 	}
-	switch (((const u8 *)0x80000000)[3])
-	{
-		case 'J':
-			PatchData[1] = 'J';
-			PatchData[2] = 'P';
-			break;
-		case 'D':
-		case 'F':
-		case 'P':
-		case 'X':
-		case 'Y':
-			PatchData[1] = 'E';
-			PatchData[2] = 'U';
-			break;
-
-		case 'E':
-		default:
-			PatchData[1] = 'U';
-			PatchData[2] = 'S';
-	}
-	while (Size >= 4)
-		if (Addr[0] == SearchPattern[0] && Addr[1] == SearchPattern[1] && Addr[2] == SearchPattern[2] && Addr[3] == SearchPattern[3])
-		{
-			//*Addr = PatchData[0];
-			Addr += 1;
-			*Addr = PatchData[1];
-			Addr += 1;
-			*Addr = PatchData[2];
-			Addr += 1;
-			//*Addr = PatchData[3];
-			Addr += 1;
-			Size -= 4;
-		}
-		else
-		{
-			Addr += 4;
-			Size -= 4;
-		}
 }
 
-bool PrinceOfPersiaPatch()
+static void Anti_002_fix(void *Address, int Size)
+{
+	static const u8 SearchPattern[] = {0x2C, 0x00, 0x00, 0x00, 0x48, 0x00, 0x02, 0x14, 0x3C, 0x60, 0x80, 0x00};
+	static const u8 PatchData[] =   {0x2C, 0x00, 0x00, 0x00, 0x40, 0x82, 0x02, 0x14, 0x3C, 0x60, 0x80, 0x00};
+	void *Addr = Address;
+	void *Addr_end = Address + Size;
+
+	while(Addr <= Addr_end - sizeof SearchPattern)
+	{
+		if(memcmp(Addr, SearchPattern, sizeof SearchPattern) == 0) 
+			memcpy(Addr, PatchData, sizeof PatchData);
+		Addr += 4;
+	}
+}
+
+static bool PrinceOfPersiaPatch()
 {
 	if (memcmp("SPX", (char *) 0x80000000, 3) != 0 && memcmp("RPW", (char *) 0x80000000, 3) != 0)
 		return false;
@@ -227,7 +190,7 @@ bool PrinceOfPersiaPatch()
 	return true;
 }
 
-bool NewSuperMarioBrosPatch()
+static bool NewSuperMarioBrosPatch()
 {
 	WIP_Code * CodeList = NULL;
 
@@ -285,7 +248,7 @@ bool NewSuperMarioBrosPatch()
 	return CodeList != NULL;
 }
 
-bool Remove_001_Protection(void *Address, int Size)
+static bool Remove_001_Protection(void *Address, int Size)
 {
 	static const u8 SearchPattern[] = {0x40, 0x82, 0x00, 0x0C, 0x38, 0x60, 0x00, 0x01, 0x48, 0x00, 0x02, 0x44, 0x38, 0x61, 0x00, 0x18};
 	static const u8 PatchData[] = {0x40, 0x82, 0x00, 0x04, 0x38, 0x60, 0x00, 0x01, 0x48, 0x00, 0x02, 0x44, 0x38, 0x61, 0x00, 0x18};

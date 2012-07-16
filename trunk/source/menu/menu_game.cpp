@@ -23,7 +23,7 @@
 
 #include "loader/frag.h"
 #include "loader/fst.h"
-#include "cios.hpp"
+#include "cios.h"
 
 #include "gui/WiiMovie.hpp"
 #include "gui/GameTDB.hpp"
@@ -919,7 +919,7 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id)
 {
 	gprintf("Game ID# %s requested IOS %d.  User selected %d\n", id.c_str(), gameIOS, userIOS);
-	if(cIOSInfo::neek2o())
+	if(neek2o())
 	{
 		if(!loadIOS(gameIOS, true))
 		{
@@ -1015,7 +1015,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		}
 	}
 
-	forwarder = m_gcfg2.getBool(id, "custom", forwarder) || strncmp(id.c_str(), "WIMC", 4) == 0 || cIOSInfo::neek2o();
+	forwarder = m_gcfg2.getBool(id, "custom", forwarder) || strncmp(id.c_str(), "WIMC", 4) == 0 || neek2o();
 
 	bool vipatch = m_gcfg2.testOptBool(id, "vipatch", m_cfg.getBool("GENERAL", "vipatch", false));
 	bool cheat = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool("NAND", "cheat", false));
@@ -1095,7 +1095,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		gprintf("Return to channel %s %s. Using new d2x way\n", rtrn, IOS_Ioctlv(ESHandle, 0xA1, 1, 0, vector) != -101 ? "Succeeded" : "Failed!" );
 		IOS_Close(ESHandle);
 	}
-	if(!emu_disabled && !cIOSInfo::neek2o())
+	if(!emu_disabled && !neek2o())
 	{
 		Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
 		DeviceHandler::Instance()->UnMount(emuPartition);
@@ -1142,7 +1142,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 
 	Nand::Instance()->Disable_Emu();
 
-	if(cIOSInfo::neek2o())
+	if(neek2o())
 	{
 		int discID = id.c_str()[0] << 24 | id.c_str()[1] << 16 | id.c_str()[2] << 8 | id.c_str()[3];
 		WDVD_NEEK_LoadDisc((discID&0xFFFFFFFF), 0x5D1C9EA3);
@@ -1154,7 +1154,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	{
 		u32 cover = 0;
 		#ifndef DOLPHIN
-		if(!cIOSInfo::neek2o())
+		if(!neek2o())
 		{
 			Disc_SetUSB(NULL);
 			if (WDVD_GetCoverStatus(&cover) < 0)
@@ -1300,7 +1300,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		debuggerselect = false;
 
 	SmartBuf cheatFile, gameconfig;
-	u32 cheatSize = 0, gameconfigSize = 0;
+	u32 cheatSize = 0, gameconfigSize = 0, returnTo = 0;
 
 	CheckGameSoundThread();
 	m_cfg.setString("GAMES", "current_item", id);
@@ -1323,8 +1323,10 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	app_gameconfig_load((u8 *) &id, gameconfig.get(), gameconfigSize);
 	ocarina_load_code(cheatFile.get(), cheatSize);
 	u8 gameIOS = 0;
-	if(!dvd || cIOSInfo::neek2o())
+	if(!dvd || neek2o())
 		gameIOS = GetRequestedGameIOS(hdr);
+	if(rtrn != NULL && strlen(rtrn) == 4)
+		returnTo = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
 
 	m_gcfg1.save(true);
 	m_gcfg2.save(true);
@@ -1332,9 +1334,8 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	m_cfg.save(true);
 	cleanup(); // wifi and sd gecko doesnt work anymore after cleanup
 #ifndef DOLPHIN
-	ISFS_Deinitialize();
 	bool iosLoaded = false;
-	if(!dvd || cIOSInfo::neek2o())
+	if(!dvd || neek2o())
 	{
 		int result = _loadIOS(gameIOS, userIOS, id);
 		if(result == LOAD_IOS_FAILED)
@@ -1345,27 +1346,24 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 #else
 	bool iosLoaded = true;
 #endif
-	if(!m_directLaunch)
+	u8 base;
+	if(D2X(IOS_GetVersion(), &base))
 	{
-		if (rtrn != NULL && strlen(rtrn) == 4)
+		if(!m_directLaunch && returnTo)
 		{
-			int rtrnID = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
-
 			static ioctlv vector[1]  ATTRIBUTE_ALIGN(32);
-
-			sm_title_id[0] = (((u64)(0x00010001) << 32) | (rtrnID&0xFFFFFFFF));
-
+			sm_title_id[0] = (((u64)(0x00010001) << 32) | (returnTo&0xFFFFFFFF));
 			vector[0].data = sm_title_id;
 			vector[0].len = 8;
-
 			s32 ESHandle = IOS_Open("/dev/es", 0);
 			gprintf("Return to channel %s %s. Using new d2x way\n", rtrn, IOS_Ioctlv(ESHandle, 0xA1, 1, 0, vector) != -101 ? "succeeded" : "failed!");
 			IOS_Close(ESHandle);
+			returnTo = 0;
 		}
+		IOSReloadBlock(IOS_GetVersion(), true);
 	}
-	IOSReloadBlock(IOS_GetVersion(), true);
 	
-	if(emulate_mode && !cIOSInfo::neek2o())
+	if(emulate_mode && !neek2o())
 	{
 		Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
 		DeviceHandler::Instance()->UnMount(emuPartition);
@@ -1407,6 +1405,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		}
 	}
 #ifndef DOLPHIN
+	ISFS_Deinitialize();
 	USBStorage_Deinit();
 	if(currentPartition == 0)
 		SDHC_Init();
@@ -1417,7 +1416,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	if(ret < 0)
 		return;
 
-	RunApploader(offset, videoMode, vipatch, countryPatch, patchVidMode, aspectRatio);
+	RunApploader(offset, videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, returnTo);
 	gprintf("Booting game\n");
 	Disc_BootPartition();
 }

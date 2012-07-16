@@ -6,7 +6,7 @@
 #include "sys.h"
 #include "alt_ios.h"
 #include "defines.h"
-#include "cios.hpp"
+#include "cios.h"
 
 const int pixels_to_skip = 10;
 
@@ -159,8 +159,10 @@ void CMenu::_textAbout(void)
 		);
 
 	Nand::Instance()->Disable_Emu();
-	iosinfo_t * iosInfo = cIOSInfo::GetInfo(mainIOS);
+	iosinfo_t * iosInfo = GetInfo(mainIOS);
 	if(iosInfo != NULL)
+	{
 		m_btnMgr.setText(m_aboutLblIOS, wfmt(_fmt("ios", L"IOS%i base %i v%i"), mainIOS, iosInfo->baseios, iosInfo->version), true);
-	MEM2_free(iosInfo);
+		MEM2_free(iosInfo);
+	}
 }

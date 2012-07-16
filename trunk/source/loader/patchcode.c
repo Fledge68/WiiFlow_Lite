@@ -246,6 +246,145 @@ void vidolpatcher(void *addr, u32 len)
 	}
 }
 
+//giantpune's magic super patch to return to channels
+
+static u32 ad[ 4 ] = { 0, 0, 0, 0 };//these variables are global on the off chance the different parts needed
+static u8 found = 0;			//to find in the dol are found in different sections of the dol
+static u8 returnToPatched = 0;
+
+bool PatchReturnTo( void *Address, int Size, u32 id )
+{
+	if( !id || returnToPatched )
+		return 0;
+	//gprintf("PatchReturnTo( %p, %08x, %08x )\n", Address, Size, id );
+
+	//new __OSLoadMenu() (SM2.0 and higher)
+	u8 SearchPattern[ 12 ] = 	{ 0x38, 0x80, 0x00, 0x02, 0x38, 0x60, 0x00, 0x01, 0x38, 0xa0, 0x00, 0x00 }; //li r4,2
+	//li r3,1
+	//li r5,0
+	//old _OSLoadMenu() (used in launch games)
+	u8 SearchPatternB[ 12 ] = 	{ 0x38, 0xC0, 0x00, 0x02, 0x38, 0xA0, 0x00, 0x01, 0x38, 0xE0, 0x00, 0x00 }; //li r6,2
+	//li r5,1
+	//li r7,0
+	//identifier for the safe place
+	u8 SearchPattern2[ 12 ] = 	{ 0x4D, 0x65, 0x74, 0x72, 0x6F, 0x77, 0x65, 0x72, 0x6B, 0x73, 0x20, 0x54 }; //"Metrowerks T"
+
+	u8 oldSDK = 0;
+	found = 0;
+
+	void *Addr = Address;
+	void *Addr_end = Address+Size;
+
+	while (Addr <= Addr_end - 12 )
+	{
+		//find a safe place or the patch to hang out
+		if ( ! ad[ 3 ] && memcmp( Addr, SearchPattern2, 12 ) == 0 )
+		{
+			ad[ 3 ] = (u32)Addr + 0x30;
+		}
+		//find __OSLaunchMenu() and remember some addresses in it
+		else if ( memcmp( Addr, SearchPattern, 12 )==0 )
+		{
+			ad[ found++ ] = (u32)Addr;
+		}
+		else if ( ad[ 0 ] && memcmp( Addr, SearchPattern, 8 )==0 ) //after the first match is found, only search the first 8 bytes for the other 2
+		{
+			if( !ad[ 1 ] ) ad[ found++ ] = (u32)Addr;
+			else if( !ad[ 2 ] ) ad[ found++ ] = (u32)Addr;
+			if( found >= 3 )break;
+		}
+		Addr += 4;
+	}
+	//check for the older-ass version of the SDK
+	if( found < 3 && ad[ 3 ] )
+	{
+		Addr = Address;
+		ad[ 0 ] = 0;
+		ad[ 1 ] = 0;
+		ad[ 2 ] = 0;
+		found = 0;
+		oldSDK = 1;
+
+		while (Addr <= Addr_end - 12 )
+		{
+			//find __OSLaunchMenu() and remember some addresses in it
+			if ( memcmp( Addr, SearchPatternB, 12 )==0 )
+			{
+				ad[ found++ ] = (u32)Addr;
+			}
+			else if ( ad[ 0 ] && memcmp( Addr, SearchPatternB, 8 ) == 0 ) //after the first match is found, only search the first 8 bytes for the other 2
+			{
+				if( !ad[ 1 ] ) ad[ found++ ] = (u32)Addr;
+				else if( !ad[ 2 ] ) ad[ found++ ] = (u32)Addr;
+				if( found >= 3 )break;
+			}
+			Addr += 4;
+		}
+	}
+
+	//if the function is found
+	if( found == 3 && ad[ 3 ] )
+	{
+		//gprintf("patch __OSLaunchMenu( 0x00010001, 0x%08x )\n", id);
+		u32 nop = 0x60000000;
+
+		//the magic that writes the TID to the registers
+		u8 jump[ 20 ] = { 0x3C, 0x60, 0x00, 0x01,				//lis r3,1
+						  0x60, 0x63, 0x00, 0x01,				//ori r3,r3,1
+						  0x3C, 0x80, (u8)( id >> 24 ), (u8)( id >> 16 ),	//lis r4,(u16)(tid >> 16)
+						  0x60, 0x84, (u8)( id >> 8 ), (u8)id,			//ori r4,r4,(u16)(tid)
+						  0x4E, 0x80, 0x00, 0x20
+						};				//blr
+
+		if( oldSDK )
+		{
+			jump[ 1 ] = 0xA0; //3CA00001					//lis r5,1
+			jump[ 5 ] = 0xA5; //60A50001					//ori r5,r5,1
+			jump[ 9 ] = 0xC0; //3CC0AF1B					//lis r6,(u16)(tid >> 16)
+			jump[ 13 ] = 0xC6;//60C6F516					//ori r6,r6,(u16)(tid)
+		}
+
+		void* addr = (u32*)ad[ 3 ];
+
+		//write new stuff to in a unused part of the main.dol
+		memcpy( addr, jump, sizeof( jump ) );
+
+		//ES_GetTicketViews()
+		u32 newval = ( ad[ 3 ] - ad[ 0 ] );
+		newval &= 0x03FFFFFC;
+		newval |= 0x48000001;
+		addr = (u32*)ad[ 0 ];
+		memcpy( addr, &newval, sizeof( u32 ) );					//bl ad[ 3 ]
+		memcpy( addr + 4, &nop, sizeof( u32 ) );				//nop
+		//gprintf("\t%08x -> %08x\n", addr, newval );
+
+		//ES_GetTicketViews() again
+		newval = ( ad[ 3 ] - ad[ 1 ] );
+		newval &= 0x03FFFFFC;
+		newval |= 0x48000001;
+		addr = (u32*)ad[ 1 ];
+		memcpy( addr, &newval, sizeof( u32 ) );					//bl ad[ 3 ]
+		memcpy( addr + 4, &nop, sizeof( u32 ) );				//nop
+		//gprintf("\t%08x -> %08x\n", addr, newval );
+
+		//ES_LaunchTitle()
+		newval = ( ad[ 3 ] - ad[ 2 ] );
+		newval &= 0x03FFFFFC;
+		newval |= 0x48000001;
+		addr = (u32*)ad[ 2 ];
+		memcpy( addr, &newval, sizeof( u32 ) );					//bl ad[ 3 ]
+		memcpy( addr + 4, &nop, sizeof( u32 ) );				//nop
+		//gprintf("\t%08x -> %08x\n", addr, newval );
+
+		returnToPatched = 1;
+	}
+
+	if(returnToPatched)
+		gprintf("Return to %08X patched with old method.\n", id);
+
+	return returnToPatched;
+}
+
 s32 IOSReloadBlock(u8 reqios, bool enable)
 {
 	s32 ESHandle = IOS_Open("/dev/es", 0);
@@ -306,5 +445,82 @@ void PatchAspectRatio(void *addr, u32 len, u8 aspect)
 			break;
 		}
 		addr_start += 4;
+	}
+}
+
+void PatchCountryStrings(void *Address, int Size)
+{
+	u8 SearchPattern[4] = {0x00, 0x00, 0x00, 0x00};
+	u8 PatchData[4] = {0x00, 0x00, 0x00, 0x00};
+	u8 *Addr = (u8*)Address;
+	int wiiregion = CONF_GetRegion();
+
+	switch(wiiregion)
+	{
+		case CONF_REGION_JP:
+			SearchPattern[0] = 0x00;
+			SearchPattern[1] = 'J';
+			SearchPattern[2] = 'P';
+			break;
+		case CONF_REGION_EU:
+			SearchPattern[0] = 0x02;
+			SearchPattern[1] = 'E';
+			SearchPattern[2] = 'U';
+			break;
+		case CONF_REGION_KR:
+			SearchPattern[0] = 0x04;
+			SearchPattern[1] = 'K';
+			SearchPattern[2] = 'R';
+			break;
+		case CONF_REGION_CN:
+			SearchPattern[0] = 0x05;
+			SearchPattern[1] = 'C';
+			SearchPattern[2] = 'N';
+			break;
+		case CONF_REGION_US:
+		default:
+			SearchPattern[0] = 0x01;
+			SearchPattern[1] = 'U';
+			SearchPattern[2] = 'S';
+	}
+	switch(((const u8 *)0x80000000)[3])
+	{
+		case 'J':
+			PatchData[1] = 'J';
+			PatchData[2] = 'P';
+			break;
+		case 'D':
+		case 'F':
+		case 'P':
+		case 'X':
+		case 'Y':
+			PatchData[1] = 'E';
+			PatchData[2] = 'U';
+			break;
+
+		case 'E':
+		default:
+			PatchData[1] = 'U';
+			PatchData[2] = 'S';
+	}
+	while (Size >= 4)
+	{
+		if(Addr[0] == SearchPattern[0] && Addr[1] == SearchPattern[1] && Addr[2] == SearchPattern[2] && Addr[3] == SearchPattern[3])
+		{
+			//*Addr = PatchData[0];
+			Addr += 1;
+			*Addr = PatchData[1];
+			Addr += 1;
+			*Addr = PatchData[2];
+			Addr += 1;
+			//*Addr = PatchData[3];
+			Addr += 1;
+			Size -= 4;
+		}
+		else
+		{
+			Addr += 4;
+			Size -= 4;
+		}
 	}
 }

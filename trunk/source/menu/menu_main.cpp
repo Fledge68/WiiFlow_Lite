@@ -12,7 +12,7 @@
 #include "gecko.h"
 #include "sys.h"
 #include "disc.h"
-#include "loader/cios.hpp"
+#include "loader/cios.h"
 #include "loader/alt_ios.h"
 #include "GameTDB.hpp"
 
@@ -174,7 +174,7 @@ void CMenu::_showMain(void)
 				break;
 		}
 	}
-	else if(!cIOSInfo::neek2o() && m_current_view == COVERFLOW_CHANNEL && !m_cfg.getBool("NAND", "disable", true))
+	else if(!neek2o() && m_current_view == COVERFLOW_CHANNEL && !m_cfg.getBool("NAND", "disable", true))
 		Nand::Instance()->Enable_Emu();
 }
 
@@ -466,7 +466,7 @@ int CMenu::main(void)
 						_showMain();
 					continue;
 				}
-				else if(!cIOSInfo::neek2o())
+				else if(!neek2o())
 				{
 					m_cfg.setBool("NAND", "disable", !m_cfg.getBool("NAND", "disable", true));
 					gprintf("EmuNand is %s\n", m_cfg.getBool("NAND", "disable", true) ? "Disabled" : "Enabled");
@@ -633,7 +633,7 @@ int CMenu::main(void)
 			else if(BTN_MINUS_PRESSED && !m_locked)
 			{
 				SourceMenuTimeout = 0;
-				bool block = m_current_view == COVERFLOW_CHANNEL && (m_cfg.getBool("NAND", "disable", true) || cIOSInfo::neek2o());
+				bool block = m_current_view == COVERFLOW_CHANNEL && (m_cfg.getBool("NAND", "disable", true) || neek2o());
 				char *partition;
 				if(!block)
 				{
@@ -641,7 +641,7 @@ int CMenu::main(void)
 					_hideMain();
 					Nand::Instance()->Disable_Emu();
 					bool isD2XnewerThanV6 = false;
-					iosinfo_t * iosInfo = cIOSInfo::GetInfo(mainIOS);
+					iosinfo_t * iosInfo = GetInfo(mainIOS);
 					if (iosInfo->version > 6)
 						isD2XnewerThanV6 = true;
 					if(m_current_view == COVERFLOW_CHANNEL && m_cfg.getInt("NAND", "emulation", 0))

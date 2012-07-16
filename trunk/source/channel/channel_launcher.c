@@ -22,7 +22,6 @@
 					(u32)(_al__##name))&((alignment)-1))))
 
 GXRModeObj * __Disc_SelectVMode(u8 videoselected, u64 chantitle);
-void PatchCountryStrings(void *Address, int Size);
 void __Disc_SetLowMem(void);
 void __Disc_SetVMode(void);
 void __Disc_SetTime(void);
