@@ -861,7 +861,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	{
 		loader = 2;
 		bool memcard_emu = m_gcfg2.getBool(id, "devo_memcard_emu", false);
-		DEVO_SetOptions(path.c_str(), DeviceName[currentPartition], m_dataDir.c_str(), memcard_emu);
+		DEVO_SetOptions(path.c_str(), DeviceName[currentPartition], m_dataDir.c_str(), id.c_str(), memcard_emu);
 	}
 
 	m_gcfg1.save(true);

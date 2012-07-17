@@ -152,7 +152,11 @@ int BootHomebrew(u64 chan_title)
 	memmove(ARGS_ADDR, &args, sizeof(args));
 	DCFlushRange(ARGS_ADDR, sizeof(args) + args.length);
 
-	SYS_ResetSystem(SYS_SHUTDOWN, 0, 0);
+	/* Shutdown IOS subsystems */
+	u32 level = IRQ_Disable();
+	__IOS_ShutdownSubsystems();
+	__exception_closeall();
 	entry();
+	IRQ_Restore(level);
 	return 0;
 }

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <ogc/machine/processor.h>
 #include "gc.h"
 #include "gecko.h"
 #include "fileOps.h"
@@ -127,6 +128,7 @@ void DML_New_WriteOptions()
 
 // Devolution
 u8 *loader_bin = NULL;
+extern void __exception_closeall();
 static gconfig *DEVO_CONFIG = (gconfig*)0x80000020;
 #define DEVO_Entry() ((void(*)(void))loader_bin)()
 
@@ -144,7 +146,7 @@ bool DEVO_Installed(const char* path)
 	return devo;
 }
 
-void DEVO_SetOptions(const char *path, const char *partition, const char* loader, bool memcard_emu)
+void DEVO_SetOptions(const char *path, const char *partition, const char* loader, const char *gameID, bool memcard_emu)
 {	
 	//Read in loader.bin
 	char loader_path[256];
@@ -162,14 +164,10 @@ void DEVO_SetOptions(const char *path, const char *partition, const char* loader
 
 	//start writing cfg to mem
 	struct stat st;
-	char full_path[256];
 	int data_fd;
-	char gameID[7];
 
 	stat(path, &st);
 	FILE *iso_file = fopen(path, "rb");
-	fread(&gameID, 1, 6, iso_file);
-	fseek(f, 0, SEEK_SET);
 	fread((u8*)0x80000000, 1, 32, iso_file);
 	fclose(iso_file);
 
@@ -181,6 +179,7 @@ void DEVO_SetOptions(const char *path, const char *partition, const char* loader
 	DEVO_CONFIG->disc1_cluster = st.st_ino;
 
 	// make sure these directories exist, they are required for Devolution to function correctly
+	char full_path[256];
 	snprintf(full_path, sizeof(full_path), "%s:/apps", partition);
 	fsop_MakeFolder(full_path);
 	snprintf(full_path, sizeof(full_path), "%s:/apps/gc_devo", partition);
@@ -235,8 +234,14 @@ void DEVO_Boot()
 {
 	// the Devolution blob has an ID string at offset 4
 	puts((const char*)loader_bin + 4);
-	gprintf("WiiFlow GC: Devolution initialized. Booting game...\n \n");
+	gprintf("WiiFlow GC: Devolution initialized. Booting game...\n");
+
+	/* Shutdown IOS subsystems */
+	u32 level = IRQ_Disable();
+	__IOS_ShutdownSubsystems();
+	__exception_closeall();
 	DEVO_Entry();
+	IRQ_Restore(level);
 }
 
 
