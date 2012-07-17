@@ -521,6 +521,25 @@ void CMenu::cleanup()
 	ClearLogBuffer();
 	Close_Inputs();
 
+	for(TexSet::iterator texture = theme.texSet.begin(); texture != theme.texSet.end(); texture++)
+	{
+		if(texture->second.data.get())
+			texture->second.data.release();
+	}
+	theme.texSet.clear();
+	for(FontSet::iterator font = theme.fontSet.begin(); font != theme.fontSet.end(); font++)
+	{
+		if(font->second.data.get())
+			font->second.data.release();
+	}
+	theme.fontSet.clear();
+	for(SoundSet::iterator sound = theme.soundSet.begin(); sound != theme.soundSet.end(); sound++)
+	{
+		if(sound->second.get())
+			sound->second.release();
+	}
+	theme.soundSet.clear();
+
 	cleaned_up = true;
 	gprintf(" \nMemory cleaned up\n");
 }
@@ -859,9 +878,8 @@ void CMenu::_loadCFLayout(int version, bool forceAA, bool otherScrnFmt)
 
 void CMenu::_buildMenus(void)
 {
-	SThemeData theme;
-
-	if(!m_base_font.get()) _loadDefaultFont(CONF_GetLanguage() == CONF_LANG_KOREAN);
+	if(!m_base_font.get())
+		_loadDefaultFont(CONF_GetLanguage() == CONF_LANG_KOREAN);
 	
 	// Default fonts
 	theme.btnFont = _font(theme.fontSet, "GENERAL", "button_font", BUTTONFONT);
@@ -1186,6 +1204,7 @@ STexture CMenu::_texture(CMenu::TexSet &texSet, const char *domain, const char *
 			STexture tex;
 			if (STexture::TE_OK == tex.fromPNGFile(fmt("%s/%s", m_themeDataDir.c_str(), filename.c_str()), GX_TF_RGBA8, ALLOC_MEM2))
 			{
+				def.data.release();
 				texSet[filename] = tex;
 				return tex;
 			}
