@@ -93,11 +93,17 @@ bool loadIOS(int ios, bool launch_game)
 	bool iosOK = IOS_ReloadIOS(ios) == 0;
 	ISFS_Initialize();
 
-	gprintf("%s, Current IOS: %i Base: %i\n", iosOK ? "OK" : "FAILED!", IOS_GetVersion(), get_ios_base());
+	gprintf("%s, Current IOS: %i\n", iosOK ? "OK" : "FAILED!", IOS_GetVersion());
 	if(is_ios_type(IOS_TYPE_HERMES, IOS_GetVersion()))
+	{
 		load_ehc_module_ex();
-	else if(is_ios_type(IOS_TYPE_WANIN, IOS_GetVersion()))
+		gprintf("Hermes cIOS Base IOS%i\n", get_ios_base());
+	}
+	else if(is_ios_type(IOS_TYPE_WANIN, IOS_GetVersion()) && IOS_GetRevision() >= 18)
+	{
 		load_dip_249();
+		gprintf("Waninkoko cIOS Base IOS%i\n", get_ios_base());
+	}
 
  	if(launch_game)
 	{
