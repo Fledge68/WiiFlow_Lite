@@ -696,7 +696,7 @@ private:
 	typedef pair<string, u32> FontDesc;
 	typedef map<FontDesc, SFont> FontSet;
 	typedef map<string, STexture> TexSet;
-	typedef map<string, SmartGuiSound > SoundSet;
+	typedef map<string, SmartGuiSound> SoundSet;
 	struct SThemeData
 	{
 		TexSet texSet;
@@ -791,6 +791,7 @@ private:
 		SmartGuiSound hoverSound;
 		SmartGuiSound cameraSound;
 	};
+	SThemeData theme;
 	struct SCFParamDesc
 	{
 		enum
