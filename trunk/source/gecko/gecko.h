@@ -17,6 +17,7 @@ extern "C" {
 	bool InitGecko();
 	void AllocSDGeckoBuffer();
 	void ClearLogBuffer();
+	void GeckoDisable();
 
 #ifdef __cplusplus
 }
