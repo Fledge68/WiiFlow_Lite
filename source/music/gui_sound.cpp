@@ -31,7 +31,7 @@
 #include "WavDecoder.hpp"
 #include "loader/sys.h"
 
-#define MAX_SND_VOICES		16
+#define MAX_SND_VOICES	16
 
 using namespace std;
 
@@ -56,8 +56,7 @@ static inline int GetFirstUnusedVoice()
 extern "C" void SoundCallback(s32 voice)
 {
 	SoundDecoder * decoder = SoundHandler::Instance()->Decoder(voice);
-	if(!decoder) 
-		return;
+	if(!decoder) return;
 
 	if(decoder->IsBufferReady())
 	{
@@ -70,7 +69,7 @@ extern "C" void SoundCallback(s32 voice)
 	else if(decoder->IsEOF())
 		ASND_StopVoice(voice);
 	else
-	SoundHandler::Instance()->ThreadSignal();
+		SoundHandler::Instance()->ThreadSignal();
 }
 
 GuiSound::GuiSound()
@@ -99,13 +98,12 @@ GuiSound::GuiSound(GuiSound *g)
 	voice = -1;
 
 	Init();
-	if (g == NULL) 
-		return;
-
+	if (g == NULL) return;
+	
 	if (g->sound != NULL)
 	{
-		u8 *snd = (u8 *)MEM1_alloc(g->length);
-		memcpy(snd, g->sound, length);
+		u8 * snd = (u8 *) malloc(g->length);
+		memcpy(snd, g->sound, g->length);
 		Load(snd, g->length, true);
 	}
 	else
@@ -127,7 +125,7 @@ void GuiSound::Init()
 		voice = GetFirstUnusedVoice();
 	if(voice > 0)
 		VoiceUsed[voice] = true;
-
+	
 	volume = 255;
 	SoundEffectLength = 0;
 	loop = false;
@@ -144,9 +142,11 @@ void GuiSound::FreeMemory()
 
 	if(allocated)
 	{
-		MEM1_free(sound);
+		free(sound);
 		allocated = false;
 	}
+	sound = NULL;
+	length = 0;
 	filepath = "";
 
 	SoundEffectLength = 0;
@@ -161,8 +161,7 @@ bool GuiSound::Load(const char * filepath)
 
 	FILE * f = fopen(filepath, "rb");
 	if(!f)
-	{	
-		gprintf("Failed to load file %s!!\n", filepath);
+	{	gprintf("Failed to load file %s!!\n", filepath);
 		return false;
 	}
 
@@ -174,14 +173,12 @@ bool GuiSound::Load(const char * filepath)
 	gprintf("Loading %s using voice %d\n", filepath, voice);
 	SoundDecoder * decoder = SoundHandler::Instance()->Decoder(voice);
 	if(!decoder)
-	{	
-		gprintf("No Decoder!!!\n");
+	{	gprintf("No Decoder!!!\n");
 		return false;
 	}
-
+	
 	if(!decoder->IsBufferReady())
-	{	
-		gprintf("Buffer not ready!!\n");
+	{	gprintf("Buffer not ready!!n");
 		SoundHandler::Instance()->RemoveDecoder(voice);
 		return false;
 	}
@@ -197,26 +194,29 @@ bool GuiSound::Load(const u8 * snd, u32 len, bool isallocated)
 	FreeMemory();
 	this->voice = voice;
 
-	if(!snd)
-		return false;
+	if(!snd) return false;
 
 	if(!isallocated && *((u32 *) snd) == 'RIFF')
 		return LoadSoundEffect(snd, len);
 
 	if(*((u32 *) snd) == 'IMD5')
+	{
 		UncompressSoundbin(snd, len, isallocated);
+	}
 	else
 	{
 		sound = (u8 *) snd;
 		length = len;
 		allocated = isallocated;
 	}
-
+	
 	SoundHandler::Instance()->AddDecoder(this->voice, sound, length);
 
 	SoundDecoder * decoder = SoundHandler::Instance()->Decoder(voice);
 	if(!decoder)
+	{
 		return false;
+	}
 
 	if(!decoder->IsBufferReady())
 	{
@@ -237,15 +237,15 @@ bool GuiSound::LoadSoundEffect(const u8 * snd, u32 len)
 	decoder.Rewind();
 
 	u32 done = 0;
-	sound = (u8 *)MEM1_alloc(4096);
+	sound = (u8 *)malloc(4096);
 	memset(sound, 0, 4096);
 
 	while(1)
 	{
-		u8 * tmpsnd = (u8 *)MEM1_realloc(sound, done+4096);
+		u8 * tmpsnd = (u8 *)realloc(sound, done+4096);
 		if(!tmpsnd)
 		{
-			MEM1_free(sound);
+			free(sound);
 			return false;
 		}
 
@@ -253,12 +253,12 @@ bool GuiSound::LoadSoundEffect(const u8 * snd, u32 len)
 
 		int read = decoder.Read(sound+done, 4096, done);
 		if(read <= 0)
-		break;
+			break;
 
 		done += read;
 	}
 
-	sound = (u8 *)MEM1_realloc(sound, done);
+	sound = (u8 *)realloc(sound, done);
 	SoundEffectLength = done;
 	allocated = true;
 
@@ -274,15 +274,10 @@ void GuiSound::Play(int vol, bool restart)
 		return;
 	}
 
-	if(IsPlaying() && !restart)
-		return;
-
-	if(voice < 0 || voice >= 16)
-		return;
+	if((IsPlaying() && !restart) || voice < 0 || voice >= 16) return;
 
 	SoundDecoder * decoder = SoundHandler::Instance()->Decoder(voice);
-	if(!decoder)
-		return;
+	if(!decoder) return;
 
 	ASND_StopVoice(voice);
 	if(decoder->IsEOF())
@@ -307,20 +302,18 @@ void GuiSound::Play()
 
 void GuiSound::Stop()
 {
-	if (!IsPlaying()) return;
-
-	if(voice < 0 || voice >= 16)
+	volume = 0;
+	if (!IsPlaying() || voice < 0 || voice >= 16)
 		return;
 
 	ASND_StopVoice(voice);
 
 	SoundDecoder * decoder = SoundHandler::Instance()->Decoder(voice);
-	if(!decoder)
-		return;
+	if(!decoder) return;
 
 	decoder->ClearBuffer();
 	Rewind();
-
+	
 	SoundHandler::Instance()->ThreadSignal();
 }
 
@@ -357,10 +350,7 @@ int GuiSound::GetVolume()
 
 void GuiSound::SetVolume(int vol)
 {
-	if(voice < 0 || voice >= 16)
-		return;
-
-	if(vol < 0)
+	if(voice < 0 || voice >= 16 || vol < 0)
 		return;
 
 	volume = vol;
@@ -372,8 +362,7 @@ void GuiSound::SetLoop(u8 l)
 	loop = l;
 
 	SoundDecoder * decoder = SoundHandler::Instance()->Decoder(voice);
-	if(!decoder)
-		return;
+	if(!decoder) return;
 
 	decoder->SetLoop(l == 1);
 }
@@ -381,16 +370,15 @@ void GuiSound::SetLoop(u8 l)
 void GuiSound::Rewind()
 {
 	SoundDecoder * decoder = SoundHandler::Instance()->Decoder(voice);
-	if(!decoder)
-		return;
+	if(!decoder) return;
 
 	decoder->Rewind();
 }
 
 struct _LZ77Info
 {
-	u16 length : 4;
-	u16 offset : 12;
+		u16 length : 4;
+		u16 offset : 12;
 } __attribute__((packed));
 
 typedef struct _LZ77Info LZ77Info;
@@ -407,10 +395,9 @@ u8 * uncompressLZ77(const u8 *inBuf, u32 inLength, u32 * size)
 	const u8 *inBufEnd = inBuf + inLength;
 	inBuf += 8;
 
-	buffer = (u8 *)MEM1_alloc(uncSize);
+	buffer = (u8 *)malloc(uncSize);
 
-	if (!buffer)
-		return buffer;
+	if (!buffer) return buffer;
 
 	u8 *bufCur = buffer;
 	u8 *bufEnd = buffer + uncSize;
@@ -428,7 +415,7 @@ u8 * uncompressLZ77(const u8 *inBuf, u32 inLength, u32 * size)
 				inBuf += sizeof (LZ77Info);
 				int length = info->length + 3;
 				if (bufCur - info->offset - 1 < buffer || bufCur + length > bufEnd)
-				return buffer;
+					return buffer;
 				memcpy(bufCur, bufCur - info->offset - 1, length);
 				bufCur += length;
 			}
@@ -452,8 +439,7 @@ void GuiSound::UncompressSoundbin(const u8 * snd, u32 len, bool isallocated)
 	const u8 * file = snd+32;
 
 	length = len-32;
-	if (length <= 0) 
-		return;
+	if (length <= 0) return;
 
 	if(*((u32 *) file) == 'LZ77')
 	{
@@ -468,7 +454,7 @@ void GuiSound::UncompressSoundbin(const u8 * snd, u32 len, bool isallocated)
 	}
 	else
 	{
-		sound = (u8 *)MEM1_alloc(length);
+		sound = (u8 *)malloc(length);
 		if (!sound)
 		{
 			length = 0;

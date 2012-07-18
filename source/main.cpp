@@ -88,19 +88,18 @@ int main(int argc, char **argv)
 	{
 		Open_Inputs(); //(re)init wiimote
 #ifndef DOLPHIN
+		const DISC_INTERFACE *handle = DeviceHandler::GetUSB0Interface();
 		bool deviceAvailable = false;
 		u8 timeout = 0;
+		DeviceHandler::Instance()->MountSD();
 		while(!deviceAvailable && timeout++ != 20)
 		{
-			DeviceHandler::Instance()->MountAll();
-			sleep(1);
-
-			for(u8 device = USB1; device <= USB8; device++)
-			{
-				if(DeviceHandler::Instance()->IsInserted(device))
-					deviceAvailable = true;
-			}
+			deviceAvailable = (handle->startup() && handle->isInserted());
+			if(deviceAvailable)
+				break;
+			usleep(50000);
 		}
+		DeviceHandler::Instance()->MountAllUSB();
 		if(DeviceHandler::Instance()->IsInserted(SD))
 			deviceAvailable = true;
 #else

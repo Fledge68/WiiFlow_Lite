@@ -309,7 +309,7 @@ void CMenu::init(void)
 	m_screenshotDir = m_cfg.getString("GENERAL", "dir_screenshot", sfmt("%s/screenshots", m_dataDir.c_str()));
 	m_helpDir = m_cfg.getString("GENERAL", "dir_help", sfmt("%s/help", m_dataDir.c_str()));
 	
-	DeviceHandler::SetWatchdog(m_cfg.getUInt("GENERAL", "watchdog_timeout", 10));
+	//DeviceHandler::SetWatchdog(m_cfg.getUInt("GENERAL", "watchdog_timeout", 10));
 
 	const char *domain = _domainFromView();
 	const char *checkDir = m_current_view == COVERFLOW_HOMEBREW ? HOMEBREW_DIR : GAMES_DIR;
@@ -491,7 +491,7 @@ void CMenu::cleanup()
 {
 	if(cleaned_up)
 		return;
-
+	gprintf("MEM1_freesize(): %i\nMEM2_freesize(): %i\n", MEM1_freesize(), MEM2_freesize());
 	m_cf.stopCoverLoader();
 	_cleanupDefaultFont();
 	m_cf.clear();
@@ -542,6 +542,7 @@ void CMenu::cleanup()
 
 	cleaned_up = true;
 	gprintf(" \nMemory cleaned up\n");
+	gprintf("MEM1_freesize(): %i\nMEM2_freesize(): %i\n", MEM1_freesize(), MEM2_freesize());
 }
 
 void CMenu::_reload_wifi_gecko(void)
