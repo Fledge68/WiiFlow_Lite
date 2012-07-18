@@ -407,9 +407,6 @@ void RunApploader(u64 offset, u8 vidMode, bool vipatch, bool countryString, u8 p
 {
 	WDVD_OpenPartition(offset);
 
-	/* hide cios devices */
-	shadow_mload();
-
 	/* Setup low memory */
 	__Disc_SetLowMem();
 

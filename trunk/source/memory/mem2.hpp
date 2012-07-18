@@ -21,7 +21,6 @@ void MEM2_init(unsigned int mem2Size);
 void MEM2_cleanup(void);
 void MEM2_clear(void);
 void MEM2_free(void *p);
-void MEM2_wrap(int v);
 void *MEM2_alloc(unsigned int s);
 void *MEM2_memalign(unsigned int a, unsigned int s);
 void *MEM2_realloc(void *p, unsigned int s);
