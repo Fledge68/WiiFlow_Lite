@@ -869,8 +869,8 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	m_cfg.save(true);
 	cleanup();
 #ifndef DOLPHIN
-	ISFS_Deinitialize();
 	USBStorage2_Deinit();
+	USB_Deinitialize();
 	SDHC_Init();
 #endif
 	GC_SetVideoMode(videoMode, videoSetting);
@@ -901,17 +901,15 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 
 	Playlog_Delete();
 	cleanup(); // wifi and sd gecko doesnt work anymore after cleanup
-	MEM2_wrap(0);
 
 	LoadHomebrew(filepath);
 	AddBootArgument(filepath);
 	for(u32 i = 0; i < arguments.size(); ++i)
 		AddBootArgument(arguments[i].c_str());
 #ifndef DOLPHIN
-	ISFS_Deinitialize();
 	USBStorage2_Deinit();
+	USB_Deinitialize();
 #endif
-	//MEM2_clear();
 	BootHomebrew(title);
 }
 
@@ -1121,9 +1119,6 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 			_loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", id.c_str()));
 		ocarina_load_code(cheatFile.get(), cheatSize);
 	}
-#ifndef DOLPHIN
-	ISFS_Deinitialize();
-#endif
 	if(forwarder)
 	{
 		WII_Initialize();
@@ -1402,17 +1397,21 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			return;
 		}
 	}
-#ifndef DOLPHIN
-	ISFS_Deinitialize();
-	USBStorage2_Deinit();
-	if(currentPartition == 0)
-		SDHC_Init();
-#endif
 	/* Find game partition offset */
 	u64 offset;
 	s32 ret = Disc_FindPartition(&offset);
 	if(ret < 0)
 		return;
+
+#ifndef DOLPHIN
+	shadow_mload();
+
+	USBStorage2_Deinit();
+	USB_Deinitialize();
+
+	if(currentPartition == 0)
+		SDHC_Init();
+#endif
 
 	RunApploader(offset, videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, returnTo);
 	gprintf("Booting game\n");

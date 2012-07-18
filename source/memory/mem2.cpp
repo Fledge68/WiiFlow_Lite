@@ -11,8 +11,6 @@
 // Forbid the use of MEM2 through malloc
 u32 MALLOC_MEM2 = 0;
 
-int wrapMEM2 = 1;
-
 static CMEM2Alloc g_mem2gp;
 
 extern "C"
@@ -96,15 +94,10 @@ unsigned int MEM2_freesize()
 	return g_mem2gp.FreeSize();
 }
 
-void MEM2_wrap(int v)
-{
-	wrapMEM2 = v;
-}
-
 void *__wrap_malloc(size_t size)
 {
 	void *p;
-	if(wrapMEM2 && (SYS_GetArena1Lo() >= MAX_MEM1_ARENA_LO || size >= MEM2_PRIORITY_SIZE))
+	if(SYS_GetArena1Lo() >= MAX_MEM1_ARENA_LO || size >= MEM2_PRIORITY_SIZE)
 	{
 		p = g_mem2gp.allocate(size);
 		if(p != 0) 
@@ -120,7 +113,7 @@ void *__wrap_malloc(size_t size)
 void *__wrap_calloc(size_t n, size_t size)
 {
 	void *p;
-	if(wrapMEM2 && (SYS_GetArena1Lo() >= MAX_MEM1_ARENA_LO || (n * size) >= MEM2_PRIORITY_SIZE))
+	if(SYS_GetArena1Lo() >= MAX_MEM1_ARENA_LO || (n * size) >= MEM2_PRIORITY_SIZE)
 	{
 		p = g_mem2gp.allocate(n * size);
 		if (p != 0)
@@ -143,7 +136,7 @@ void *__wrap_calloc(size_t n, size_t size)
 void *__wrap_memalign(size_t a, size_t size)
 {
 	void *p;
-	if(wrapMEM2 && (SYS_GetArena1Lo() >= MAX_MEM1_ARENA_LO || size >= MEM2_PRIORITY_SIZE))
+	if(SYS_GetArena1Lo() >= MAX_MEM1_ARENA_LO || size >= MEM2_PRIORITY_SIZE)
 	{
 		p = MEM2_memalign(a, size);
 		if (p != 0)

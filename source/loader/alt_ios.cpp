@@ -85,11 +85,11 @@ bool loadIOS(int ios, bool launch_game)
 
 	Close_Inputs();
 	DeviceHandler::Instance()->UnMountAll();
-
 	WDVD_Close();
 	USBStorage2_Deinit();
 	mload_close();
 
+	ISFS_Deinitialize();
 	bool iosOK = IOS_ReloadIOS(ios) == 0;
 	ISFS_Initialize();
 
