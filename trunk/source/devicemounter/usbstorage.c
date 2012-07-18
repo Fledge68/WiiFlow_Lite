@@ -1,299 +1,336 @@
 /*-------------------------------------------------------------
 
-usbstorage_starlet.c -- USB mass storage support, inside starlet
-Copyright (C) 2009 Kwiirk
+ usbstorage_starlet.c -- USB mass storage support, inside starlet
+ Copyright (C) 2011 Dimok
+ Copyright (C) 2011 Rodries
+ Copyright (C) 2009 Kwiirk
 
-If this driver is linked before libogc, this will replace the original 
-usbstorage driver by svpe from libogc
-This software is provided 'as-is', without any express or implied
-warranty.  In no event will the authors be held liable for any
-damages arising from the use of this software.
+ If this driver is linked before libogc, this will replace the original
+ usbstorage driver by svpe from libogc
+ This software is provided 'as-is', without any express or implied
+ warranty.  In no event will the authors be held liable for any
+ damages arising from the use of this software.
 
-Permission is granted to anyone to use this software for any
-purpose, including commercial applications, and to alter it and
-redistribute it freely, subject to the following restrictions:
+ Permission is granted to anyone to use this software for any
+ purpose, including commercial applications, and to alter it and
+ redistribute it freely, subject to the following restrictions:
 
-1.	The origin of this software must not be misrepresented; you
-must not claim that you wrote the original software. If you use
-this software in a product, an acknowledgment in the product
-documentation would be appreciated but is not required.
+ 1.  The origin of this software must not be misrepresented; you
+ must not claim that you wrote the original software. If you use
+ this software in a product, an acknowledgment in the product
+ documentation would be appreciated but is not required.
 
-2.	Altered source versions must be plainly marked as such, and
-must not be misrepresented as being the original software.
+ 2.  Altered source versions must be plainly marked as such, and
+ must not be misrepresented as being the original software.
 
-3.	This notice may not be removed or altered from any source
-distribution.
+ 3.  This notice may not be removed or altered from any source
+ distribution.
 
--------------------------------------------------------------*/
+ -------------------------------------------------------------*/
 
 #include <gccore.h>
 #include <malloc.h>
 #include <stdio.h>
 #include <string.h>
-
+#include "usbstorage.h"
+#include "memory/mem2.hpp"
 #include "gecko.h"
+
 
 /* IOCTL commands */
 #define UMS_BASE			(('U'<<24)|('M'<<16)|('S'<<8))
-#define USB_IOCTL_UMS_INIT	        (UMS_BASE+0x1)
-#define USB_IOCTL_UMS_GET_CAPACITY      (UMS_BASE+0x2)
-#define USB_IOCTL_UMS_READ_SECTORS      (UMS_BASE+0x3)
-#define USB_IOCTL_UMS_WRITE_SECTORS	(UMS_BASE+0x4)
-#define USB_IOCTL_UMS_READ_STRESS	(UMS_BASE+0x5)
-#define USB_IOCTL_UMS_SET_VERBOSE	(UMS_BASE+0x6)
+#define USB_IOCTL_UMS_INIT			  (UMS_BASE+0x1)
+#define USB_IOCTL_UMS_GET_CAPACITY	  (UMS_BASE+0x2)
+#define USB_IOCTL_UMS_READ_SECTORS	  (UMS_BASE+0x3)
+#define USB_IOCTL_UMS_WRITE_SECTORS	 (UMS_BASE+0x4)
+#define USB_IOCTL_UMS_READ_STRESS	   (UMS_BASE+0x5)
+#define USB_IOCTL_UMS_SET_VERBOSE	   (UMS_BASE+0x6)
+#define USB_IOCTL_UMS_UMOUNT			(UMS_BASE+0x10)
+#define USB_IOCTL_UMS_WATCHDOG		  (UMS_BASE+0x80)
 
-#define USB_IOCTL_UMS_WATCHDOG		(UMS_BASE+0x80)
+#define USB_IOCTL_UMS_TESTMODE		  (UMS_BASE+0x81)
+#define USB_IOCTL_SET_PORT				(UMS_BASE+0x83)
 
-#define UMS_HEAPSIZE			0x8000
-#define USB_MEM2_SIZE           0x10000
+#define WBFS_BASE (('W'<<24)|('F'<<16)|('S'<<8))
+#define USB_IOCTL_WBFS_OPEN_DISC			(WBFS_BASE+0x1)
+#define USB_IOCTL_WBFS_READ_DISC			(WBFS_BASE+0x2)
+#define USB_IOCTL_WBFS_SET_DEVICE		   (WBFS_BASE+0x50)
+#define USB_IOCTL_WBFS_SET_FRAGLIST		 (WBFS_BASE+0x51)
+
+#define isMEM2Buffer(p) (((u32) p & 0x10000000) != 0)
+
+#define MAX_SECTOR_SIZE		 4096
+#define MAX_BUFFER_SECTORS	  128
+#define UMS_HEAPSIZE			2*1024
 
 /* Variables */
 static char fs[] ATTRIBUTE_ALIGN(32) = "/dev/usb2";
 static char fs2[] ATTRIBUTE_ALIGN(32) = "/dev/usb123";
 static char fs3[] ATTRIBUTE_ALIGN(32) = "/dev/usb/ehc";
- 
+
+static u8 * mem2_ptr = NULL;
 static s32 hid = -1, fd = -1;
-u32 sector_size;
-static void *usb_buf2;
+static u32 usb2_port = -1;  //current USB port
+bool hddInUse[2] = { false, false };
+u32 hdd_sector_size[2] = { 512, 512 };
 
-extern void* SYS_AllocArena2MemLo(u32 size,u32 align);
-
-inline s32 __USBStorage_isMEM2Buffer(const void *buffer)
+s32 USBStorage2_Init(u32 port)
 {
-	u32 high_addr = ((u32)buffer) >> 24;
-
-	return (high_addr == 0x90) || (high_addr == 0xD0);
-}
-
-
-u32 USBStorage_GetCapacity(u32 *_sector_size)
-{
-	if (fd >= 0)
-	{
-		u32 ret;
-
-		ret = IOS_IoctlvFormat(hid, fd, USB_IOCTL_UMS_GET_CAPACITY, ":i", &sector_size);
-
-		static bool first = true;
-		if (first)
-		{
-			gprintf("\nSECTORS:  %lu\n", ret);
-			gprintf("SEC SIZE: %lu\n", sector_size);
-			u32 size = ((((ret / 1024U) * sector_size) / 1024U) / 1024U);
-			if(size >= 1000U)
-			{
-				 gprintf("HDD SIZE: %lu.%lu TB [%u]\n", size / 1024U, (size * 100U) % 1024U, sector_size);
-			}
-			else
-			{
-				 gprintf("HDD SIZE: %lu GB [%u]\n", size, sector_size);
-			}
-			first = false;
-		}
-
-		if (ret && _sector_size)
-			*_sector_size = sector_size;
-
-		return ret;
-	}
-
-	return 0;
-}
-
-s32 USBStorage_OpenDev()
-{
-	/* Already open */
-	if (fd >= 0) return fd;
+	if(hddInUse[port])
+		return 0;
 
 	/* Create heap */
 	if (hid < 0)
 	{
 		hid = iosCreateHeap(UMS_HEAPSIZE);
-		if (hid < 0) return IPC_ENOMEM;  // = -22
+		if (hid < 0) return IPC_ENOMEM;
 	}
-
-	// allocate buf2
-	if (usb_buf2 == NULL) usb_buf2 = SYS_AllocArena2MemLo(USB_MEM2_SIZE, 32);
 
 	/* Open USB device */
-	fd = IOS_Open(fs, 0);
+	if (fd < 0) fd = IOS_Open(fs, 0);
 	if (fd < 0) fd = IOS_Open(fs2, 0);
 	if (fd < 0) fd = IOS_Open(fs3, 0);
-	return fd;
-}
-
-s32 USBStorage_SetWatchdog(u32 seconds)
-{
 	if (fd < 0) return fd;
 
-	static ioctlv vector[1] ATTRIBUTE_ALIGN(32);		
-	static u32 secs[8] ATTRIBUTE_ALIGN(32);
-
-	secs[0] = seconds;
-	vector[0].data = secs;
-    vector[0].len = 4;
-
-	return IOS_Ioctlv(fd, USB_IOCTL_UMS_WATCHDOG, 1, 0, vector);
-}
-
-s32 USBStorage_Init(void)
-{
-	s32 ret;
-	USBStorage_OpenDev();
-	if (fd < 0)	return fd;
+	USBStorage2_SetPort(port);
 
 	/* Initialize USB storage */
-	ret = IOS_IoctlvFormat(hid, fd, USB_IOCTL_UMS_INIT, ":");
+	IOS_IoctlvFormat(hid, fd, USB_IOCTL_UMS_INIT, ":");
 
 	/* Get device capacity */
-	ret = USBStorage_GetCapacity(NULL);
-	if (!ret) goto err;
+	if (USBStorage2_GetCapacity(port, &hdd_sector_size[port]) == 0)
+		return IPC_ENOENT;
 
-	return 0;
+	hddInUse[port] = true;
 
-err:
-	/* Close USB device */
-	if (fd >= 0)
-	{
-		IOS_Close(fd);
-		fd = -1;
-	}
-/* 
-	if (hid > 0) {
-		iosDestroyHeap(hid);
-		hid = -1;
-	} */
-	//USB_Deinitialize(); //Screwing up inputs even worse if i do this here..grr
-	return -1;
+	return 0; // 0->HDD, 1->DVD
 }
 
-void USBStorage_Deinit(void)
+void USBStorage2_Deinit()
 {
 	/* Close USB device */
 	if (fd >= 0)
 	{
-		IOS_Close(fd);
+		IOS_Close(fd);  // not sure to close the fd is needed
 		fd = -1;
 	}
-/* 	if (hid > 0) {
-		iosDestroyHeap(hid);
-		hid = -1;
-	} */
-	USB_Deinitialize();
 }
 
-s32 USBStorage_ReadSectors(u32 sector, u32 numSectors, void *buffer)
+s32 USBStorage2_SetPort(u32 port)
 {
-	void *buf = (void *)buffer;
-	u32	len = (sector_size * numSectors);
-	s32 ret;
+	//! Port = 2 is handle in the loader, no need to handle it in cIOS
+	if(port > 1)
+		return -1;
 
-	/* Device not opened */
-	if (fd < 0)
-		return fd;
+	if(port == usb2_port)
+		return 0;
 
-	/* MEM1 buffer */
-	if (!__USBStorage_isMEM2Buffer(buffer))
-	{
-		/* Allocate memory */
-		//buf = iosAlloc(hid, len);
-		buf = usb_buf2;
-		if (!buf) return IPC_ENOMEM;
-	}
+	s32 ret = -1;
+	usb2_port = port;
 
-	/* Read data */
-	ret = IOS_IoctlvFormat(hid, fd, USB_IOCTL_UMS_READ_SECTORS, "ii:d", sector, numSectors, buf, len);
-
-	/* Copy data */
-	if (buf != buffer)
-	{
-		memcpy(buffer, buf, len);
-		//iosFree(hid, buf);
-	}
+	gprintf("Changing USB port to port %i....\n", port);
+	//must be called before USBStorage2_Init (default port 0)
+	if (fd >= 0)
+		ret = IOS_IoctlvFormat(hid, fd, USB_IOCTL_SET_PORT, "i:", usb2_port);
 
 	return ret;
 }
 
-s32 USBStorage_WriteSectors(u32 sector, u32 numSectors, const void *buffer)
+s32 USBStorage2_GetPort()
 {
-	void *buf = (void *)buffer;
-	u32 len = (sector_size * numSectors);
-	s32 ret;
+	return usb2_port;
+}
+
+s32 USBStorage2_GetCapacity(u32 port, u32 *_sector_size)
+{
+	if (fd >= 0)
+	{
+		s32 ret;
+		u32 sector_size = 0;
+		USBStorage2_SetPort(port);
+
+		ret = IOS_IoctlvFormat(hid, fd, USB_IOCTL_UMS_GET_CAPACITY, ":i", &sector_size);
+
+		if (ret && _sector_size) *_sector_size = sector_size;
+
+		return ret;
+	}
+
+	return IPC_ENOENT;
+}
+
+s32 USBStorage2_ReadSectors(u32 port, u32 sector, u32 numSectors, void *buffer)
+{
+	u8 *buf = (u8 *) buffer;
+	s32 ret = -1;
 
 	/* Device not opened */
 	if (fd < 0) return fd;
 
-	/* MEM1 buffer */
-	if (!__USBStorage_isMEM2Buffer(buffer))
+	if (!mem2_ptr)
+		mem2_ptr = (u8 *) MEM2_alloc(MAX_SECTOR_SIZE * MAX_BUFFER_SECTORS);
+
+	USBStorage2_SetPort(port);
+
+	s32 read_secs, read_size;
+
+	while(numSectors > 0)
 	{
-		/* Allocate memory */
-		//buf = iosAlloc(hid, len);
-		buf = usb_buf2;
-		if (!buf) return IPC_ENOMEM;
+		read_secs = numSectors > MAX_BUFFER_SECTORS ? MAX_BUFFER_SECTORS : numSectors;
+		read_size = read_secs*hdd_sector_size[port];
 
-		/* Copy data */
-		memcpy(buf, buffer, len);
+		// Do not read more than MAX_BUFFER_SECTORS sectors at once and create a mem overflow!
+		if (!isMEM2Buffer(buffer))
+		{
+			ret = IOS_IoctlvFormat(hid, fd, USB_IOCTL_UMS_READ_SECTORS, "ii:d", sector, read_secs, mem2_ptr, read_size);
+			if(ret < 0)
+				return ret;
+
+			memcpy(buf, mem2_ptr, read_size);
+		}
+		else
+		{
+			/* Read data */
+			ret = IOS_IoctlvFormat(hid, fd, USB_IOCTL_UMS_READ_SECTORS, "ii:d", sector, read_secs, buf, read_size);
+			if(ret < 0)
+				return ret;
+		}
+
+		sector += read_secs;
+		numSectors -= read_secs;
+		buf += read_size;
 	}
-
-	/* Write data */
-	ret = IOS_IoctlvFormat(hid, fd, USB_IOCTL_UMS_WRITE_SECTORS, "ii:d", sector, numSectors, buf, len);
-
-	/* Free memory */
-	//if (buf != buffer)
-	//	iosFree(hid, buf);
 
 	return ret;
 }
 
-// DISC_INTERFACE methods
-
-static bool __io_usb_IsInserted(void)
+s32 USBStorage2_WriteSectors(u32 port, u32 sector, u32 numSectors, const void *buffer)
 {
-	s32 ret;
-	u32 sec_size;
-	if (fd < 0) 
-		return false;
+	u8 *buf = (u8 *) buffer;
+	s32 ret = -1;
 
-	ret = USBStorage_GetCapacity(&sec_size);
-	if (ret == 0) 
-		return false;
+	/* Device not opened */
+	if (fd < 0) return fd;
+
+	/* Device not opened */
+	if (!mem2_ptr)
+		mem2_ptr = (u8 *) MEM2_alloc(MAX_SECTOR_SIZE * MAX_BUFFER_SECTORS);
+
+	USBStorage2_SetPort(port);
+
+	s32 write_size, write_secs;
+
+	while(numSectors > 0)
+	{
+		write_secs = numSectors > MAX_BUFFER_SECTORS ? MAX_BUFFER_SECTORS : numSectors;
+		write_size = write_secs*hdd_sector_size[port];
+
+		/* MEM1 buffer */
+		if (!isMEM2Buffer(buffer))
+		{
+			// Do not read more than MAX_BUFFER_SECTORS sectors at once and create a mem overflow!
+			memcpy(mem2_ptr, buf, write_size);
+
+			ret = IOS_IoctlvFormat(hid, fd, USB_IOCTL_UMS_WRITE_SECTORS, "ii:d", sector, write_secs, mem2_ptr, write_size);
+			if(ret < 0)
+				return ret;
+		}
+		else
+		{
+			/* Write data */
+			ret = IOS_IoctlvFormat(hid, fd, USB_IOCTL_UMS_WRITE_SECTORS, "ii:d", sector, write_secs, buf, write_size);
+			if(ret < 0)
+				return ret;
+		}
+
+		sector += write_secs;
+		numSectors -= write_secs;
+		buf += write_size;
+	}
+
+	return ret;
+}
+
+s32 USBStorage2_GetSectorSize()
+{
+	return hdd_sector_size[usb2_port];
+}
+
+static bool __usbstorage_Startup(void)
+{
+	return USBStorage2_Init(0) >= 0;
+}
+
+static bool __usbstorage_IsInserted(void)
+{
+	return (USBStorage2_GetCapacity(0, NULL) != 0);
+}
+
+static bool __usbstorage_ReadSectors(u32 sector, u32 numSectors, void *buffer)
+{
+	return (USBStorage2_ReadSectors(0, sector, numSectors, buffer) >= 0);
+}
+
+static bool __usbstorage_WriteSectors(u32 sector, u32 numSectors, const void *buffer)
+{
+	return (USBStorage2_WriteSectors(0, sector, numSectors, buffer) >= 0);
+}
+
+static bool __usbstorage_ClearStatus(void)
+{
 	return true;
 }
 
-static bool __io_usb_Startup(void)
+static bool __usbstorage_Shutdown(void)
 {
-	if (USBStorage_Init() < 0) return false;
-	return __io_usb_IsInserted();
-}
-
-bool __io_usb_ReadSectors(u32 sector, u32 count, void *buffer)
-{
-	return USBStorage_ReadSectors(sector, count, buffer) >= 0;
-}
-
-bool __io_usb_WriteSectors(u32 sector, u32 count, void *buffer)
-{
-	return USBStorage_WriteSectors(sector, count, buffer) >= 0;
-}
-
-static bool __io_usb_ClearStatus(void)
-{
+	hddInUse[0] = false;
+	hdd_sector_size[0] = 512;
 	return true;
 }
 
-static bool __io_usb_Shutdown(void)
+const DISC_INTERFACE __io_usbstorage2_port0 = {
+	DEVICE_TYPE_WII_UMS, FEATURE_MEDIUM_CANREAD | FEATURE_MEDIUM_CANWRITE | FEATURE_WII_USB,
+	(FN_MEDIUM_STARTUP) &__usbstorage_Startup,
+	(FN_MEDIUM_ISINSERTED) &__usbstorage_IsInserted,
+	(FN_MEDIUM_READSECTORS) &__usbstorage_ReadSectors,
+	(FN_MEDIUM_WRITESECTORS) &__usbstorage_WriteSectors,
+	(FN_MEDIUM_CLEARSTATUS) &__usbstorage_ClearStatus,
+	(FN_MEDIUM_SHUTDOWN) &__usbstorage_Shutdown
+};
+
+static bool __usbstorage_Startup2(void)
 {
-	// do nothing
+	return USBStorage2_Init(1) >= 0;
+}
+
+static bool __usbstorage_IsInserted2(void)
+{
+	return (USBStorage2_GetCapacity(1, NULL) != 0);
+}
+
+static bool __usbstorage_ReadSectors2(u32 sector, u32 numSectors, void *buffer)
+{
+	return (USBStorage2_ReadSectors(1, sector, numSectors, buffer) >= 0);
+}
+
+static bool __usbstorage_WriteSectors2(u32 sector, u32 numSectors, const void *buffer)
+{
+	return (USBStorage2_WriteSectors(1, sector, numSectors, buffer) >= 0);
+}
+
+static bool __usbstorage_Shutdown2(void)
+{
+	hddInUse[1] = false;
+	hdd_sector_size[1] = 512;
 	return true;
 }
 
-DISC_INTERFACE __io_usbstorage = {
-	DEVICE_TYPE_WII_USB,
-	FEATURE_MEDIUM_CANREAD | FEATURE_MEDIUM_CANWRITE | FEATURE_WII_USB,
-	(FN_MEDIUM_STARTUP)      &__io_usb_Startup,
-	(FN_MEDIUM_ISINSERTED)   &__io_usb_IsInserted,
-	(FN_MEDIUM_READSECTORS)  &__io_usb_ReadSectors,
-	(FN_MEDIUM_WRITESECTORS) &__io_usb_WriteSectors,
-	(FN_MEDIUM_CLEARSTATUS)  &__io_usb_ClearStatus,
-	(FN_MEDIUM_SHUTDOWN)     &__io_usb_Shutdown
+const DISC_INTERFACE __io_usbstorage2_port1 = {
+	DEVICE_TYPE_WII_UMS, FEATURE_MEDIUM_CANREAD | FEATURE_MEDIUM_CANWRITE | FEATURE_WII_USB,
+	(FN_MEDIUM_STARTUP) &__usbstorage_Startup2,
+	(FN_MEDIUM_ISINSERTED) &__usbstorage_IsInserted2,
+	(FN_MEDIUM_READSECTORS) &__usbstorage_ReadSectors2,
+	(FN_MEDIUM_WRITESECTORS) &__usbstorage_WriteSectors2,
+	(FN_MEDIUM_CLEARSTATUS) &__usbstorage_ClearStatus,
+	(FN_MEDIUM_SHUTDOWN) &__usbstorage_Shutdown2
 };

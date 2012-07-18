@@ -61,7 +61,6 @@ extern const u8 blank_png[];
 extern const u8 gc_ogg[];
 extern const u32 gc_ogg_size;
 
-extern u32 sector_size;
 extern u32 boot2version;
 extern int mainIOS;
 static u64 sm_title_id[8]  ATTRIBUTE_ALIGN(32);
@@ -871,7 +870,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	cleanup();
 #ifndef DOLPHIN
 	ISFS_Deinitialize();
-	USBStorage_Deinit();
+	USBStorage2_Deinit();
 	SDHC_Init();
 #endif
 	GC_SetVideoMode(videoMode, videoSetting);
@@ -910,7 +909,7 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 		AddBootArgument(arguments[i].c_str());
 #ifndef DOLPHIN
 	ISFS_Deinitialize();
-	USBStorage_Deinit();
+	USBStorage2_Deinit();
 #endif
 	//MEM2_clear();
 	BootHomebrew(title);
@@ -1285,8 +1284,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			Nand::Instance()->Do_Region_Change(id);
 		}
 	}
-
-	if(!dvd && get_frag_list((u8 *)id.c_str(), (char*)path.c_str(), currentPartition == 0 ? 0x200 : sector_size) < 0)
+	if(!dvd && get_frag_list((u8 *)id.c_str(), (char*)path.c_str(), currentPartition == 0 ? 0x200 : USBStorage2_GetSectorSize()) < 0)
 		return;
 
 	u8 patchVidMode = min((u32)m_gcfg2.getInt(id, "patch_video_modes", 0), ARRAY_SIZE(CMenu::_vidModePatch) - 1u);
@@ -1406,7 +1404,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	}
 #ifndef DOLPHIN
 	ISFS_Deinitialize();
-	USBStorage_Deinit();
+	USBStorage2_Deinit();
 	if(currentPartition == 0)
 		SDHC_Init();
 #endif

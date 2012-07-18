@@ -29,8 +29,6 @@
 /* WBFS device */
 s32 wbfsDev = WBFS_MIN_DEVICE;
 
-extern u32 sector_size;
-
 // partition
 int wbfs_part_fs  = PART_FS_WBFS;
 u32 wbfs_part_idx = 0;
@@ -99,7 +97,7 @@ s32 __WBFS_ReadUSB(void* fp, u32 lba, u32 count, void *iobuf)
 	/* Do reads */
 	while (cnt < count)
 	{
-		fp = ((u8 *)iobuf) + (cnt * sector_size);
+		fp = ((u8 *)iobuf) + (cnt * USBStorage2_GetSectorSize());
 		u32 sectors = (count - cnt);
 
 		/* Read sectors is too big */
@@ -107,7 +105,7 @@ s32 __WBFS_ReadUSB(void* fp, u32 lba, u32 count, void *iobuf)
 			sectors = MAX_NB_SECTORS;
 
 		/* USB read */
-		s32 ret = USBStorage_ReadSectors(lba + cnt, sectors, fp);
+		s32 ret = USBStorage2_ReadSectors(USBStorage2_GetPort(), lba + cnt, sectors, fp);
 		if (ret < 0) return ret;
 
 		/* Increment counter */
@@ -124,7 +122,7 @@ s32 __WBFS_WriteUSB(void* fp, u32 lba, u32 count, void *iobuf)
 	/* Do writes */
 	while (cnt < count)
 	{
-		fp = ((u8 *)iobuf) + (cnt * sector_size);
+		fp = ((u8 *)iobuf) + (cnt * USBStorage2_GetSectorSize());
 		u32 sectors = (count - cnt);
 
 		/* Write sectors is too big */
@@ -132,7 +130,7 @@ s32 __WBFS_WriteUSB(void* fp, u32 lba, u32 count, void *iobuf)
 			sectors = MAX_NB_SECTORS;
 
 		/* USB write */
-		s32 ret = USBStorage_WriteSectors(lba + cnt, sectors, fp);
+		s32 ret = USBStorage2_WriteSectors(USBStorage2_GetPort(), lba + cnt, sectors, fp);
 		if (ret < 0) return ret;
 
 		/* Increment counter */
@@ -149,7 +147,7 @@ s32 __WBFS_ReadSDHC(void* fp, u32 lba, u32 count, void *iobuf)
 	/* Do reads */
 	while (cnt < count)
 	{
-		fp = ((u8 *)iobuf) + (cnt * sector_size);
+		fp = ((u8 *)iobuf) + (cnt * 512);
 		u32 sectors = (count - cnt);
 
 		/* Read sectors is too big */
@@ -175,7 +173,7 @@ s32 __WBFS_WriteSDHC(void* fp, u32 lba, u32 count, void *iobuf)
 	/* Do writes */
 	while (cnt < count)
 	{
-		fp = ((u8 *)iobuf) + (cnt * sector_size);
+		fp = ((u8 *)iobuf) + (cnt * 512);
 		u32 sectors = (count - cnt);
 
 		/* Write sectors is too big */
@@ -231,6 +229,7 @@ s32 WBFS_Init(wbfs_t * handle, u32 part_fs, u32 part_idx, u32 part_lba, char *pa
 
 s32 WBFS_Format(u32 lba, u32 size)
 {
+	u32 sector_size = (currentPartition == 0) ? 512 : USBStorage2_GetSectorSize();
 	u32 wbfs_sector_size = sector_size;
 	u32 partition_num_sec = size;
 
@@ -310,7 +309,7 @@ s32 WBFS_GameSize(u8 *discid, char *path, f32 *size)
 
 s32 WBFS_DVD_Size(u64 *comp_size, u64 *real_size)
 {
-	if (wbfs_part_fs) return WBFS_Ext_DVD_Size(comp_size, real_size);
+	if (wbfs_part_fs) return WBFS_Ext_DVD_Size(comp_size, real_size, (currentPartition == 0));
 
 	u32 comp_sec = 0, last_sec = 0;
 

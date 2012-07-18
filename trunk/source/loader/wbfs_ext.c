@@ -26,8 +26,6 @@
 #define MAX_FAT_PATH 1024
 #define TITLE_LEN 64
 
-extern u32 sector_size;
-
 char wbfs_fs_drive[16];
 char wbfs_ext_dir[16] = "/wbfs";
 char invalid_path[] = "/\\:|<>?*\"'";
@@ -46,6 +44,7 @@ char* strcopy(char *dest, const char *src, int size)
 
 wbfs_disc_t* WBFS_Ext_OpenDisc(u8 *discid, char *fname)
 {
+	bool sd = strstr(fname, "sd") != NULL;
 	if (strcasecmp(strrchr(fname,'.'), ".iso") == 0)
 	{
 		// .iso file
@@ -58,7 +57,7 @@ wbfs_disc_t* WBFS_Ext_OpenDisc(u8 *discid, char *fname)
 			return NULL;
 
 		// mark with a special wbfs_part
-		wbfs_iso_file.wbfs_sec_sz = sector_size;
+		wbfs_iso_file.wbfs_sec_sz = sd ? 512 : USBStorage2_GetSectorSize();
 		iso_file->p = &wbfs_iso_file;
 		iso_file->header = (void*)fd;
 		return iso_file;
@@ -116,12 +115,13 @@ s32 WBFS_Ext_DiskSpace(f32 *used, f32 *free)
 
 wbfs_t* WBFS_Ext_OpenPart(char *fname)
 {
+	bool sd = strstr(fname, "sd") != NULL;
 	if(split_open(&split, fname) < 0)
 		return NULL;
 
 	wbfs_set_force_mode(1);
 	wbfs_t *part = wbfs_open_partition(split_read_sector, 0, //readonly //split_write_sector,
-		&split, sector_size, split.total_sec, 0, 0);
+		&split, sd ? 512 : USBStorage2_GetSectorSize(), split.total_sec, 0, 0);
 	wbfs_set_force_mode(0);
 
 	if (!part)
@@ -223,17 +223,16 @@ s32 WBFS_Ext_AddGame(progress_callback_t spinner, void *spinner_data)
 	return ret < 0 ? ret : 0;
 }
 
-s32 WBFS_Ext_DVD_Size(u64 *comp_size, u64 *real_size)
+s32 WBFS_Ext_DVD_Size(u64 *comp_size, u64 *real_size, bool sd)
 {
 	u64 size = (u64)143432*2*0x8000ULL;
 	u32 n_sector = size / 512;
 
 	// init a temporary dummy part
 	// as a placeholder for wbfs_size_disc
-	wbfs_t *part = wbfs_open_partition(
-			0, 0,
-			NULL, sector_size, n_sector, 0, 1);
-	if (!part) return -1;
+	wbfs_t *part = wbfs_open_partition(0, 0, NULL, sd ? 512 : USBStorage2_GetSectorSize(), n_sector, 0, 1);
+	if (!part)
+		return -1;
 
 	u32 comp_sec = 0, last_sec = 0;
 	s32 ret = wbfs_size_disc(part, __WBFS_ReadDVD, NULL, ONLY_GAME_PARTITION, &comp_sec, &last_sec);

@@ -27,95 +27,96 @@
 #define DEVICE_HANDLER_HPP_
 
 #include "PartitionHandle.h"
+#include "usbstorage.h"
+#include "libwbfs/libwbfs.h"
 
+/**
+ * libogc device names.
+ */
 enum
 {
-    SD = 0,
-    USB1,
-    USB2,
-    USB3,
-    USB4,
-    USB5,
-    USB6,
-    USB7,
-    USB8,
-    GCSDA,
-    GCSDB,
-    MAXDEVICES
+	SD = 0,
+	USB1,
+	USB2,
+	USB3,
+	USB4,
+	USB5,
+	USB6,
+	USB7,
+	USB8,
+	MAXDEVICES
 };
 
-const char DeviceName[MAXDEVICES][6] =
+/**
+ * libogc device names.
+ */
+const char DeviceName[MAXDEVICES][8] =
 {
-    "sd",
-    "usb1",
-    "usb2",
-    "usb3",
-    "usb4",
-    "usb5",
-    "usb6",
-    "usb7",
-    "usb8",
-    "gca",
-    "gcb",
+	"sd",
+	"usb1",
+	"usb2",
+	"usb3",
+	"usb4",
+	"usb5",
+	"usb6",
+	"usb7",
+	"usb8",
 };
 
 class DeviceHandler
 {
-    public:
+	public:
 		static DeviceHandler * Instance();
 		static void DestroyInstance();
 
-        bool MountAll();
-        void UnMountAll();
-        bool Mount(int dev);
-        bool IsInserted(int dev);
-        void UnMount(int dev);
+		bool MountAll();
+		void UnMountAll();
+		bool Mount(int dev);
+		bool IsInserted(int dev);
+		void UnMount(int dev);
 
-        //! Individual Mounts/UnMounts...
+		//! Individual Mounts/UnMounts...
 		bool MountSD();
-		bool MountUSB(int part);
 		bool MountAllUSB();
-		bool MountGCA();
-		bool MountGCB();
+		bool MountUSBPort1();
 
-		bool SD_Inserted() { if(sd) return sd->IsInserted(); return false; };
-		bool USB_Inserted() { if(usb) return usb->IsInserted(); return false; };
-		bool GCA_Inserted() { if(gca) return gca->IsInserted(); return false; };
-		bool GCB_Inserted() { if(gcb) return gcb->IsInserted(); return false; };
+		bool SD_Inserted() { if(sd) return sd->IsInserted(); return false; }
+		bool USB0_Inserted() { if(usb0) return usb0->IsInserted(); return false; }
+		bool USB1_Inserted() { if(usb1) return usb1->IsInserted(); return false; }
 
-		void UnMountSD() { if(sd) delete sd; sd = NULL; };
+		void UnMountSD() { if(sd) delete sd; sd = NULL; }
 		void UnMountUSB(int pos);
 		void UnMountAllUSB();
-		void UnMountGCA() { if(gca) delete gca; gca = NULL; };
-		void UnMountGCB() { if(gcb) delete gcb; gcb = NULL; };
 
-		const PartitionHandle * GetSDHandle() { return sd; };
-		const PartitionHandle * GetUSBHandle() { return usb; };
-		const PartitionHandle * GetGCAHandle() { return gca; };
-		const PartitionHandle * GetGCBHandle() { return gcb; };
+		PartitionHandle * GetSDHandle() const { return sd; }
+		PartitionHandle * GetUSB0Handle() const { return usb0; }
+		PartitionHandle * GetUSB1Handle() const { return usb1; }
 
-		static bool SetWatchdog(unsigned int timeout);
+		PartitionHandle * GetUSBHandleFromPartition(int part) const;
+		static const DISC_INTERFACE *GetUSB0Interface() { return &__io_usbstorage2_port0; }
+		static const DISC_INTERFACE *GetUSB1Interface() { return &__io_usbstorage2_port1; }
+
 		static int PathToDriveType(const char * path);
-        static const char * GetFSName(int dev);
+		static const char * GetFSName(int dev);
 		static int GetFSType(int dev);
-		s16 GetMountedCount(int dev);
-        static const char * PathToFSName(const char * path) { return GetFSName(PathToDriveType(path)); };
-		static wbfs_t * GetWbfsHandle(int dev);
-		//static u32 GetLBAStart(int dev);
+		static u16 GetUSBPartitionCount();
+		static const char * PathToFSName(const char * path) { return GetFSName(PathToDriveType(path)); }
+		static wbfs_t *GetWbfsHandle(int dev);
 		s32 Open_WBFS(int dev);
+		static int PartitionToUSBPort(int part);
+		static int PartitionToPortPartition(int part);
+	private:
+		DeviceHandler() : sd(0), gca(0), gcb(0), usb0(0), usb1(0) { }
+		~DeviceHandler();
+		bool MountUSB(int part);
 
-    private:
-        DeviceHandler() : sd(0), usb(0), gca(0), gcb(0) { };
-        ~DeviceHandler();
-		static bool InternalSetWatchdog(unsigned int timeout);
+		static DeviceHandler *instance;
 
-		static DeviceHandler * instance;
-		static unsigned int watchdog_timeout;
-
-        PartitionHandle * sd;
-        PartitionHandle * usb;
-        PartitionHandle * gca;
-        PartitionHandle * gcb;
+		PartitionHandle * sd;
+		PartitionHandle * gca;
+		PartitionHandle * gcb;
+		PartitionHandle * usb0;
+		PartitionHandle * usb1;
 };
 
 #endif
