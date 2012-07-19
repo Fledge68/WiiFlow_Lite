@@ -127,7 +127,7 @@ void DML_New_WriteOptions()
 
 
 // Devolution
-u8 *loader_bin = NULL;
+u8 *loader_bin = (u8*)0x93100000;
 extern void __exception_closeall();
 static gconfig *DEVO_CONFIG = (gconfig*)0x80000020;
 #define DEVO_Entry() ((void(*)(void))loader_bin)()
@@ -147,7 +147,7 @@ bool DEVO_Installed(const char* path)
 }
 
 void DEVO_SetOptions(const char *path, const char *partition, const char* loader, const char *gameID, bool memcard_emu)
-{	
+{
 	//Read in loader.bin
 	char loader_path[256];
 	snprintf(loader_path, sizeof(loader_path), "%s/loader.bin", loader);
@@ -157,8 +157,9 @@ void DEVO_SetOptions(const char *path, const char *partition, const char* loader
 		fseek(f, 0, SEEK_END);
 		u32 size = ftell(f);
 		rewind(f);
-		loader_bin = (u8*)MEM2_alloc(size);
+		memset(loader_bin, 0, size);
 		fread(loader_bin, 1, size, f);
+		DCFlushRange(loader_bin, size);
 		fclose(f);
 	}
 
@@ -232,16 +233,16 @@ void DEVO_SetOptions(const char *path, const char *partition, const char* loader
 
 void DEVO_Boot()
 {
-	// the Devolution blob has an ID string at offset 4
+	u32 cookie;
 	puts((const char*)loader_bin + 4);
 	gprintf("WiiFlow GC: Devolution initialized. Booting game...\n");
 
-	/* Shutdown IOS subsystems */
-	u32 level = IRQ_Disable();
-	__IOS_ShutdownSubsystems();
+	/* cleaning up and load dol */
+	SYS_ResetSystem(SYS_SHUTDOWN, 0, 0);
+	_CPU_ISR_Disable(cookie);
 	__exception_closeall();
 	DEVO_Entry();
-	IRQ_Restore(level);
+	_CPU_ISR_Restore(cookie);
 }
 
 
