@@ -65,9 +65,9 @@ void __Disc_SetLowMem()
 	memcpy((void *)Online_Check, (void *)Disc_ID, 4);
 }
 
-GXRModeObj * __Disc_SelectVMode(u8 videoselected, u64 chantitle)
+GXRModeObj *Disc_SelectVMode(u8 videoselected, u64 chantitle, u32 *rmode_reg)
 {
-	vmode = VIDEO_GetPreferredMode(0);
+	GXRModeObj *rmode = VIDEO_GetPreferredMode(0);
 
 	/* Get video mode configuration */
 	bool progressive = (CONF_GetProgressiveScan() > 0) && VIDEO_HaveComponentCable();
@@ -78,19 +78,19 @@ GXRModeObj * __Disc_SelectVMode(u8 videoselected, u64 chantitle)
 		case CONF_VIDEO_PAL:
 			if (CONF_GetEuRGB60() > 0)
 			{
-				vmode_reg = VI_EURGB60;
-				vmode = progressive ? &TVNtsc480Prog : &TVEurgb60Hz480IntDf;
+				*rmode_reg = VI_EURGB60;
+				rmode = progressive ? &TVNtsc480Prog : &TVEurgb60Hz480IntDf;
 			}
 			else
-				vmode_reg = VI_PAL;
+				*rmode_reg = VI_PAL;
 			break;
 
 		case CONF_VIDEO_MPAL:
-			vmode_reg = VI_MPAL;
+			*rmode_reg = VI_MPAL;
 			break;
 
 		case CONF_VIDEO_NTSC:
-			vmode_reg = VI_NTSC;
+			*rmode_reg = VI_NTSC;
 			break;
 	}
 
@@ -116,8 +116,8 @@ GXRModeObj * __Disc_SelectVMode(u8 videoselected, u64 chantitle)
 				case 'Y':
 					if(CONF_GetVideo() != CONF_VIDEO_PAL)
 					{
-						vmode_reg = VI_PAL;
-						vmode = progressive ? &TVNtsc480Prog : &TVNtsc480IntDf;
+						*rmode_reg = VI_PAL;
+						rmode = progressive ? &TVNtsc480Prog : &TVNtsc480IntDf;
 					}
 					break;
 				// NTSC
@@ -126,8 +126,8 @@ GXRModeObj * __Disc_SelectVMode(u8 videoselected, u64 chantitle)
 				default:
 					if(CONF_GetVideo() != CONF_VIDEO_NTSC)
 					{
-						vmode_reg = VI_NTSC;
-						vmode = progressive ? &TVNtsc480Prog : &TVEurgb60Hz480IntDf;
+						*rmode_reg = VI_NTSC;
+						rmode = progressive ? &TVNtsc480Prog : &TVEurgb60Hz480IntDf;
 					}
 					break;
 			}
@@ -135,43 +135,51 @@ GXRModeObj * __Disc_SelectVMode(u8 videoselected, u64 chantitle)
 		case 1: // SYSTEM
 			break;
 		case 2: // PAL50
-			vmode =  &TVPal528IntDf;
-			vmode_reg = vmode->viTVMode >> 2;
+			rmode =  &TVPal528IntDf;
+			*rmode_reg = rmode->viTVMode >> 2;
 			break;
 		case 3: // PAL60
-			vmode = progressive ? &TVNtsc480Prog : &TVEurgb60Hz480IntDf;
-			vmode_reg = progressive ? TVEurgb60Hz480Prog.viTVMode >> 2 : vmode->viTVMode >> 2;
+			rmode = progressive ? &TVNtsc480Prog : &TVEurgb60Hz480IntDf;
+			*rmode_reg = progressive ? TVEurgb60Hz480Prog.viTVMode >> 2 : rmode->viTVMode >> 2;
 			break;
 		case 4: // NTSC
-			vmode = progressive ? &TVNtsc480Prog : &TVNtsc480IntDf;
-			vmode_reg = vmode->viTVMode >> 2;
+			rmode = progressive ? &TVNtsc480Prog : &TVNtsc480IntDf;
+			*rmode_reg = rmode->viTVMode >> 2;
 			break;
 		case 5: // PROGRESSIVE 480P
-			vmode = &TVNtsc480Prog;
-			vmode_reg = Region == 'P' ? TVEurgb60Hz480Prog.viTVMode >> 2 : vmode->viTVMode >> 2;
+			rmode = &TVNtsc480Prog;
+			*rmode_reg = Region == 'P' ? TVEurgb60Hz480Prog.viTVMode >> 2 : rmode->viTVMode >> 2;
 			break;
 		default:
 			break;
 	}
-
-	return vmode;
+	return rmode;
 }
 
-void __Disc_SetVMode(void)
+void Disc_SetVMode(GXRModeObj *rmode, u32 rmode_reg)
 {
 	/* Set video mode register */
-	*(vu32 *)0x800000CC = vmode_reg;
-	DCFlushRange((void *)(0x800000CC), 4);
+	*Video_Mode = rmode_reg;
+	DCFlushRange((void*)Video_Mode, 4);
 
 	/* Set video mode */
-	if(vmode != 0)
-		VIDEO_Configure(vmode);
+	if(rmode != 0)
+		VIDEO_Configure(rmode);
 
 	/* Setup video */
+	VIDEO_SetBlack(FALSE);
+	VIDEO_Flush();
+	VIDEO_WaitVSync();
+	if(rmode->viTVMode & VI_NON_INTERLACE)
+		VIDEO_WaitVSync();
+	else while(VIDEO_GetNextField())
+		VIDEO_WaitVSync();
+
+	/* Set black and flush */
 	VIDEO_SetBlack(TRUE);
 	VIDEO_Flush();
 	VIDEO_WaitVSync();
-	if(vmode->viTVMode & VI_NON_INTERLACE)
+	if(rmode->viTVMode & VI_NON_INTERLACE)
 		VIDEO_WaitVSync();
 	else while(VIDEO_GetNextField())
 		VIDEO_WaitVSync();
@@ -363,7 +371,7 @@ s32 Disc_BootPartition()
 	__Disc_SetTime();
 
 	/* Set an appropriate video mode */
-	__Disc_SetVMode();
+	Disc_SetVMode(vmode, vmode_reg);
 
 	/* Shutdown IOS subsystems */
 	u32 level = IRQ_Disable();
@@ -411,7 +419,7 @@ void RunApploader(u64 offset, u8 vidMode, bool vipatch, bool countryString, u8 p
 	__Disc_SetLowMem();
 
 	/* Select an appropriate video mode */
-	__Disc_SelectVMode(vidMode, 0);
+	vmode = Disc_SelectVMode(vidMode, 0, &vmode_reg);
 
 	/* Run apploader */
 	Apploader_Run(&p_entry, vidMode, vmode, vipatch, countryString, patchVidMode, aspectRatio, returnTo);

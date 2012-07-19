@@ -8,6 +8,7 @@
 #include "fileOps.h"
 #include "utils.h"
 #include "memory/mem2.hpp"
+#include "loader/disc.h"
 
 // for directory parsing and low-level file I/O
 #include <sys/types.h>
@@ -262,8 +263,8 @@ void GC_SetVideoMode(u8 videomode, u8 videoSetting)
 {
 	syssram *sram;
 	sram = __SYS_LockSram();
-	static GXRModeObj *rmode;
-	int memflag = 0;
+	GXRModeObj *vmode = VIDEO_GetPreferredMode(0);
+	int vmode_reg = 0;
 
 	if((VIDEO_HaveComponentCable() && (CONF_GetProgressiveScan() > 0)) || videomode > 3)
 		sram->flags |= 0x80; //set progressive flag
@@ -272,7 +273,7 @@ void GC_SetVideoMode(u8 videomode, u8 videoSetting)
 
 	if(videomode == 1 || videomode == 3 || videomode == 5)
 	{
-		memflag = 1;
+		vmode_reg = 1;
 		sram->flags |= 0x01; // Set bit 0 to set the video mode to PAL
 		sram->ntd |= 0x40; //set pal60 flag
 	}
@@ -286,52 +287,40 @@ void GC_SetVideoMode(u8 videomode, u8 videoSetting)
 	{
 		if(DMLCfg != NULL && videoSetting == 2)
 			DMLCfg->VideoMode |= DML_VID_FORCE_PAL50;
-		rmode = &TVPal528IntDf;
+		vmode = &TVPal528IntDf;
 	}
 	else if(videomode == 2)
 	{
 		if(DMLCfg != NULL && videoSetting == 2)
 			DMLCfg->VideoMode |= DML_VID_FORCE_NTSC;
-		rmode = &TVNtsc480IntDf;
+		vmode = &TVNtsc480IntDf;
 	}
 	else if(videomode == 3)
 	{
 		if(DMLCfg != NULL && videoSetting == 2)
 			DMLCfg->VideoMode |= DML_VID_FORCE_PAL60;
-		rmode = &TVEurgb60Hz480IntDf;
-		memflag = 5;
+		vmode = &TVEurgb60Hz480IntDf;
+		vmode_reg = 5;
 	}
 	else if(videomode == 4 ||videomode == 6)
 	{
 		if(DMLCfg != NULL && videoSetting == 2)
 			DMLCfg->VideoMode |= DML_VID_FORCE_PROG;
-		rmode = &TVNtsc480Prog;
+		vmode = &TVNtsc480Prog;
 	}
 	else if(videomode == 5 || videomode == 7)
 	{
 		if(DMLCfg != NULL && videoSetting == 2)
 			DMLCfg->VideoMode |= DML_VID_FORCE_PROG;
-		rmode = &TVNtsc480Prog;
-		memflag = 5;
+		vmode = &TVNtsc480Prog;
+		vmode_reg = 5;
 	}
 
 	__SYS_UnlockSram(1); // 1 -> write changes
 	while(!__SYS_SyncSram());
 
-	/* Set video mode register */
-	*(vu32 *)0x800000CC = memflag;
-	DCFlushRange((void *)(0x800000CC), 4);
-
-	/* Set video mode */
-	if (rmode != 0)
-		VIDEO_Configure(rmode);
-
-	/* Setup video  */
-	VIDEO_SetBlack(TRUE);
-	VIDEO_Flush();
-	VIDEO_WaitVSync();
-	if(rmode->viTVMode & VI_NON_INTERLACE)
-		VIDEO_WaitVSync();
+	/* Set an appropriate video mode */
+	Disc_SetVMode(vmode, vmode_reg);
 }
 
 u8 get_wii_language()
