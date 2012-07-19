@@ -871,13 +871,13 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 #ifndef DOLPHIN
 	USBStorage2_Deinit();
 	USB_Deinitialize();
-	SDHC_Init();
 #endif
 	GC_SetVideoMode(videoMode, videoSetting);
 	GC_SetLanguage(GClanguage);
 	if(loader == 2)
 		DEVO_Boot();
 
+	SDHC_Init();
 	DML_New_WriteOptions();
 	WII_Initialize();
 	if(WII_LaunchTitle(0x100000100LL) < 0)
@@ -887,7 +887,6 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 {
 	Nand::Instance()->Disable_Emu();
-	m_reload = true;
 
 	Channels channel;
 	u64 title = SYSTEM_MENU;
@@ -906,9 +905,11 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 	AddBootArgument(filepath);
 	for(u32 i = 0; i < arguments.size(); ++i)
 		AddBootArgument(arguments[i].c_str());
+
 #ifndef DOLPHIN
 	USBStorage2_Deinit();
 	USB_Deinitialize();
+	SDHC_Close();
 #endif
 	BootHomebrew(title);
 }

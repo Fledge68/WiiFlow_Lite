@@ -147,16 +147,17 @@ int BootHomebrew(u64 chan_title)
 	memcpy(BOOTER_ADDR, app_booter_bin, app_booter_bin_size);
 	DCFlushRange(BOOTER_ADDR, app_booter_bin_size);
 
-	entrypoint entry = (entrypoint)BOOTER_ADDR;
+	entrypoint exeEntryPoint = (entrypoint)BOOTER_ADDR;
+	u32 cookie;
 
 	memmove(ARGS_ADDR, &args, sizeof(args));
 	DCFlushRange(ARGS_ADDR, sizeof(args) + args.length);
 
-	/* Shutdown IOS subsystems */
-	u32 level = IRQ_Disable();
-	__IOS_ShutdownSubsystems();
+	/* cleaning up and load dol */
+	SYS_ResetSystem(SYS_SHUTDOWN, 0, 0);
+	_CPU_ISR_Disable(cookie);
 	__exception_closeall();
-	entry();
-	IRQ_Restore(level);
+	exeEntryPoint();
+	_CPU_ISR_Restore(cookie);
 	return 0;
 }
