@@ -106,6 +106,9 @@ s32	Disc_IsGC(void);
 s32	Disc_BootPartition();
 s32 Disc_FindPartition(u64 *outbuf);
 
+GXRModeObj *Disc_SelectVMode(u8 videoselected, u64 chantitle, u32 *rmode_reg);
+void Disc_SetVMode(GXRModeObj *rmode, u32 rmode_reg);
+
 void RunApploader(u64 offset, u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, int aspectRatio, u32 returnTo);
 
 #ifdef __cplusplus

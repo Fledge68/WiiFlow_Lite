@@ -21,9 +21,7 @@
 					type *name = (type*)(((u32)(_al__##name)) + ((alignment) - (( \
 					(u32)(_al__##name))&((alignment)-1))))
 
-GXRModeObj * __Disc_SelectVMode(u8 videoselected, u64 chantitle);
 void __Disc_SetLowMem(void);
-void __Disc_SetVMode(void);
 void __Disc_SetTime(void);
 void _unstub_start();
 u32 entryPoint;
@@ -49,7 +47,8 @@ s32 BootChannel(u32 entry, u64 chantitle, u32 ios, u8 vidMode, bool vipatch, boo
 	entryPoint = entry;
 
 	/* Select an appropriate video mode */
-	GXRModeObj * vmode = __Disc_SelectVMode(vidMode, chantitle);
+	u32 vmode_reg = 0;
+	GXRModeObj *vmode = Disc_SelectVMode(vidMode, chantitle, &vmode_reg);
 
 	/* Set time */
 	__Disc_SetTime();
@@ -65,7 +64,7 @@ s32 BootChannel(u32 entry, u64 chantitle, u32 ios, u8 vidMode, bool vipatch, boo
 	entrypoint appJump = (entrypoint)entryPoint;
 
 	/* Set an appropriate video mode */
-	__Disc_SetVMode();
+	Disc_SetVMode(vmode, vmode_reg);
 
     // IOS Version Check
     *(vu32*)0x80003140 = ((ios << 16)) | 0xFFFF;
