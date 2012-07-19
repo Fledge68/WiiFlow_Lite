@@ -47,7 +47,7 @@ public:
 	void terror(const char *key, const wchar_t *msg) { error(_fmt(key, msg)); }
 	void exitHandler(int ExitTo);
 	int main(void);
-	void cleanup();
+	void cleanup(bool hb = false);
 	u8 m_current_view;
 private:
 	struct SZone
