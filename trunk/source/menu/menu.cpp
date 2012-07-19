@@ -270,6 +270,7 @@ void CMenu::init(void)
 		m_show_dml = MIOSisDML();
 
 	m_new_dml = m_cfg.getBool("DML", "dml_r52+", true);
+	m_new_dm_cfg = m_cfg.getBool("DML", "dm_r2.1+", true);
 	m_DMLgameDir = sfmt("%%s:/%s", m_cfg.getString("DML", "dir_usb_games", "games").c_str());
 
 	m_cfg.getString("NAND", "path", "");

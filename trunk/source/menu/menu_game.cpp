@@ -817,7 +817,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	if(disc)
 	{
 		loader = 0;
-		DML_New_SetBootDiscOption();
+		DML_New_SetBootDiscOption(m_new_dm_cfg);
 	}
 	else if(loader == 1 || (loader == 0 && (strcasestr(path.c_str(), "boot.bin") != NULL || !m_devo_installed)))
 	{
@@ -845,7 +845,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		else
 			newPath = &path[path.find_first_of(":/")+1];
 		if(m_new_dml)
-			DML_New_SetOptions(newPath.c_str(), CheatPath, NewCheatPath, cheats, DML_debug, NMM, nodisc, videoMode, videoSetting);
+			DML_New_SetOptions(newPath.c_str(), CheatPath, NewCheatPath, cheats, DML_debug, NMM, nodisc, videoMode, videoSetting, m_new_dm_cfg);
 		else
 			DML_Old_SetOptions((char*)path.c_str(), CheatPath, NewCheatPath, cheats);
 

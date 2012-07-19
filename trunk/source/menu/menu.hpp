@@ -179,6 +179,7 @@ private:
 	u8 m_show_dml;
 	bool m_devo_installed;
 	bool m_new_dml;
+	bool m_new_dm_cfg;
 	bool m_GameTDBLoaded;
 //Main Config menus
 	u16 m_configLblPage;

@@ -19,7 +19,7 @@
 // DIOS-MIOS
 DML_CFG *DMLCfg = NULL;
 
-void DML_New_SetOptions(const char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats, bool debugger, u8 NMM, u8 nodisc, u8 DMLvideoMode, u8 videoSetting)
+void DML_New_SetOptions(const char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats, bool debugger, u8 NMM, u8 nodisc, u8 DMLvideoMode, u8 videoSetting, bool new_dm_cfg)
 {
 	gprintf("Wiiflow GC: Launch game '%s' through memory (new method)\n", GamePath);
 
@@ -29,7 +29,11 @@ void DML_New_SetOptions(const char *GamePath, char *CheatPath, char *NewCheatPat
 	memset(DMLCfg, 0, sizeof(DML_CFG));
 
 	DMLCfg->Magicbytes = 0xD1050CF6;
-	DMLCfg->CfgVersion = 0x00000001;
+	if(new_dm_cfg)
+		DMLCfg->CfgVersion = 0x00000002;
+	else
+		DMLCfg->CfgVersion = 0x00000001;
+
 	if(videoSetting == 0)
 		DMLCfg->VideoMode |= DML_VID_NONE;
 	else if(videoSetting == 1)
@@ -94,7 +98,7 @@ void DML_Old_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, boo
 	*(vu32*)0xCC003024 |= 7;
 }
 
-void DML_New_SetBootDiscOption()
+void DML_New_SetBootDiscOption(bool new_dm_cfg)
 {
 	gprintf("Booting GC game\n");
 
@@ -104,7 +108,10 @@ void DML_New_SetBootDiscOption()
 	memset(DMLCfg, 0, sizeof(DML_CFG));
 
 	DMLCfg->Magicbytes = 0xD1050CF6;
-	DMLCfg->CfgVersion = 0x00000001;
+	if(new_dm_cfg)
+		DMLCfg->CfgVersion = 0x00000002;
+	else
+		DMLCfg->CfgVersion = 0x00000001;
 	DMLCfg->VideoMode |= DML_VID_DML_AUTO;
 
 	DMLCfg->Config |= DML_CFG_BOOT_DISC;
