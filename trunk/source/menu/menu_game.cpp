@@ -899,9 +899,10 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 	m_cfg.save(true);
 
 	Playlog_Delete();
-	cleanup(); // wifi and sd gecko doesnt work anymore after cleanup
+	cleanup(true); // wifi and sd gecko doesnt work anymore after cleanup
 
 	LoadHomebrew(filepath);
+	DeviceHandler::DestroyInstance(); //homebrew loaded, we can unmount devices now
 	AddBootArgument(filepath);
 	for(u32 i = 0; i < arguments.size(); ++i)
 		AddBootArgument(arguments[i].c_str());

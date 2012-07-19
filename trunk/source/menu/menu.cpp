@@ -488,7 +488,7 @@ void CMenu::init(void)
 
 bool cleaned_up = false;
 
-void CMenu::cleanup()
+void CMenu::cleanup(bool hb)
 {
 	if(cleaned_up)
 		return;
@@ -509,7 +509,8 @@ void CMenu::cleanup()
 
 	if(!m_reload)
 	{
-		DeviceHandler::DestroyInstance();
+		if(!hb)
+			DeviceHandler::DestroyInstance();
 		m_vid.CheckWaitThread(true);
 		m_vid.cleanup();
 	}
