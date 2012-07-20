@@ -277,6 +277,7 @@ void CMenu::init(void)
 	m_cfg.getInt("NAND", "partition", 0);
 	m_cfg.getBool("NAND", "disable", true);
 
+	_installed_cios.clear();
 	_load_installed_cioses();
 
 	snprintf(m_app_update_drive, sizeof(m_app_update_drive), "%s:/", drive);
@@ -2303,51 +2304,22 @@ void CMenu::_load_installed_cioses()
 	gprintf("Loading cIOS map\n");
 	_installed_cios[0] = 1;
 
-	// Do sjizzle
-	u32 count;
-	u32 ret = ES_GetNumTitles(&count);
-	if(ret || !count)
+	for(u8 slot = 200; slot < 254; slot++)
 	{
-		gprintf("Cannot count...aaaah\n");
-		return;
-	}
-
-	static u64 title_list[256] ATTRIBUTE_ALIGN(32);
-	if(ES_GetTitles(title_list, count) > 0)
-	{
-		gprintf("Cannot get titles...\n");
-		return;
-	}
-
-	for(u32 i = 0; i < count; i++)
-	{
-		u32 tmd_size;
-		if(ES_GetStoredTMDSize(title_list[i], &tmd_size) > 0)
-			continue;
-		static u8 tmd_buf[MAX_SIGNED_TMD_SIZE] ATTRIBUTE_ALIGN(32);
-		signed_blob *s_tmd = (signed_blob *)tmd_buf;
-		if(ES_GetStoredTMD(title_list[i], s_tmd, tmd_size) > 0)
-			continue;
-
-		const tmd *t = (const tmd *)SIGNATURE_PAYLOAD(s_tmd);
-		
-		u32 kind = t->title_id >> 32;
-
-		if(kind == 1)
+		u8 base = 1;
+		iosinfo_t *info = GetInfo(slot);
+		if(D2X(slot, &base))
 		{
-			u32 title_l = t->title_id & 0xFFFFFFFF;
-			if(title_l == 0 || title_l == 2 || title_l == 0x100 || title_l == 0x101 || title_l == 0xEC || title_l < 222)
-				continue;
-			u8 base = 1;
-			// We have an ios
-			u32 version = t->title_version;
-			if(tmd_buf[4] == 0 && (version < 100 || version == 0xFFFF || D2X(title_l, &base))) // Signature is empty
-			{
-				// Probably an cios
-				gprintf("Found cIOS base %u in slot %u\n", base, title_l);
-				_installed_cios[title_l] = base;
-			}
+			gprintf("Found d2x base %u in slot %u\n", base, slot);
+			_installed_cios[slot] = base;
 		}
+		else if(info != NULL && !is_ios_type(IOS_TYPE_NO_CIOS, slot))
+		{
+			gprintf("Found cIOS in slot %u\n", slot);
+			_installed_cios[slot] = 1;
+		}
+		if(info != NULL)
+			MEM2_free(info);
 	}
 }
 

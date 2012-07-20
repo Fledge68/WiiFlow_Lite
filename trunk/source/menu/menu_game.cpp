@@ -941,7 +941,7 @@ int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id)
 		}
 	}
 	else if(gameIOS != 57)
-		gameIOS = 56;
+		gameIOS = mainIOS;
 	gprintf("Changed requested IOS to %d.\n", gameIOS);
 
 	// remap IOS to CIOS

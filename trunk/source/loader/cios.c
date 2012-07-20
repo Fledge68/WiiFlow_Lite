@@ -64,6 +64,16 @@ bool D2X(u8 ios, u8 *base)
 	iosinfo_t *info = GetInfo(ios);
 	if(!info)
 		return false;
+
+	if(info->magicword != 0x1ee7c105					/* Magic Word */
+		|| info->magicversion != 1					/* Magic Version */
+		|| info->version < 6							/* Version */
+		|| strncasecmp(info->name, "d2x", 3) != 0)	/* Name */
+	{
+		MEM2_free(info);
+		return false;
+	}
+
 	*base = (u8)info->baseios;
 	MEM2_free(info);
 	return true;
@@ -100,16 +110,6 @@ iosinfo_t *GetInfo(u8 ios)
 		return NULL;
 
 	iosinfo_t *iosinfo = (iosinfo_t *)buffer;
-
-	if(iosinfo->magicword != 0x1ee7c105					/* Magic Word */
-		|| iosinfo->magicversion != 1					/* Magic Version */
-		|| iosinfo->version < 6							/* Version */
-		|| strncasecmp(iosinfo->name, "d2x", 3) != 0)	/* Name */
-	{
-		MEM2_free(buffer);
-		return NULL;
-	}
-
 	return iosinfo;
 }
 
@@ -121,6 +121,7 @@ int get_ios_type(u8 slot)
 		case 222:
 		case 223:
 		case 224:
+		case 225:
 			if(IOS_GetRevision() == 1)
 				return IOS_TYPE_KWIIRK;
 			else
