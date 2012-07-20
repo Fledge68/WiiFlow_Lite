@@ -299,15 +299,15 @@ s32 Disc_Wait(void)
 	return 0;
 }
 
-s32 Disc_SetUSB(const u8 *id)
+s32 Disc_SetUSB(const u8 *id, bool frag)
 {
-	if(id)
+	if(id && frag)
 		return set_frag_list((u8 *) id);
 
 	s32 part = -1;
 	if(is_ios_type(IOS_TYPE_HERMES, IOS_GetVersion()))
 		part = wbfs_part_idx ? wbfs_part_idx - 1 : 0;
-	return WDVD_SetUSBMode(wbfsDev, (u8 *) id, part);
+	return WDVD_SetUSBMode(wbfsDev, (u8*)id, part);
 }
 
 s32 Disc_ReadHeader(void *outbuf)

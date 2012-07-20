@@ -152,8 +152,7 @@ bool PartitionHandle::Mount(int pos, const char * name, bool forceFAT)
 			return true;
 		}
 	}
-
-	if(strncmp(GetFSName(pos), "NTFS", 4) == 0 || strcmp(GetFSName(pos), "GUID-Entry") == 0)
+	else if(strncmp(GetFSName(pos), "NTFS", 4) == 0 || strcmp(GetFSName(pos), "GUID-Entry") == 0)
 	{
 		if(ntfsMount(MountNameList[pos].c_str(), interface, GetLBAStart(pos), CACHE, SECTORS, NTFS_SHOW_HIDDEN_FILES | NTFS_RECOVER))
 		{
@@ -161,8 +160,7 @@ bool PartitionHandle::Mount(int pos, const char * name, bool forceFAT)
 			return true;
 		}
 	}
-
-	if(strncmp(GetFSName(pos), "LINUX", 5) == 0 || strcmp(GetFSName(pos), "GUID-Entry") == 0)
+	else if(strncmp(GetFSName(pos), "LINUX", 5) == 0 || strcmp(GetFSName(pos), "GUID-Entry") == 0)
 	{
 		if(ext2Mount(MountNameList[pos].c_str(), interface, GetLBAStart(pos), CACHE, SECTORS, EXT2_FLAG_DEFAULT))
 		{
@@ -177,7 +175,10 @@ bool PartitionHandle::Mount(int pos, const char * name, bool forceFAT)
 		else if(interface == &__io_sdhc)
 			SetWbfsHandle(pos, wbfs_open_partition(__WBFS_ReadSDHC, __WBFS_WriteSDHC, NULL, 512, GetSecCount(pos), GetLBAStart(pos), 0));
 		if(GetWbfsHandle(pos))
+		{
+			PartitionList[pos].FSName = "WBFS";
 			return true;
+		}
 	}
 
 	MountNameList[pos].clear();
