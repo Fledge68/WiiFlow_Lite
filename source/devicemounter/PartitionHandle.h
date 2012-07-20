@@ -28,7 +28,6 @@
 
 #include <gccore.h>
 #include "libwbfs/libwbfs.h"
-#include "usbstorage.h"
 #include <string>
 #include <vector>
 

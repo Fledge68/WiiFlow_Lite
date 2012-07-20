@@ -29,17 +29,11 @@
 #include <ogc/mutex.h>
 #include <ogc/system.h>
 #include <sdcard/gcsd.h>
-#include <sdcard/wiisd_io.h>
 #include "cios.h"
 #include "DeviceHandler.hpp"
 #include "wbfs.h"
 #include "usbstorage.h"
-
-#ifdef DOLPHIN
-const DISC_INTERFACE __io_sdhc = __io_wiisd;
-#else
-extern const DISC_INTERFACE __io_sdhc;
-#endif
+#include "sdhc.h"
 
 DeviceHandler * DeviceHandler::instance = NULL;
 
@@ -50,19 +44,15 @@ DeviceHandler::~DeviceHandler()
 
 DeviceHandler * DeviceHandler::Instance()
 {
-	if (instance == NULL)
-	{
+	if(instance == NULL)
 		instance = new DeviceHandler();
-	}
 	return instance;
 }
 
 void DeviceHandler::DestroyInstance()
 {
 	if(instance)
-	{
 		delete instance;
-	}
 	instance = NULL;
 }
 
@@ -134,19 +124,28 @@ void DeviceHandler::UnMount(int dev)
 
 bool DeviceHandler::MountSD()
 {
-    if(!sd)
+	if(sd)
 	{
-		if(neek2o())
-			sd = new PartitionHandle(&__io_wiisd);
-		else
-			sd = new PartitionHandle(&__io_sdhc);
-		if(sd->GetPartitionCount() < 1)
-		{
-			delete sd;
-			sd = NULL;
-			return false;
-		}
-    }
+		delete sd;
+		sd = NULL;
+	}
+	sd = new PartitionHandle(&__io_sdhc);
+	if(sd->GetPartitionCount() < 1)
+	{
+		delete sd;
+		sdhc_mode_sd = 1;
+		gprintf("Couldn't find SD Card. Trying __io_wiisd mode\n");
+		sd = new PartitionHandle(&__io_sdhc);
+	}
+	if(sd->GetPartitionCount() < 1)
+	{
+		delete sd;
+		sd = NULL;
+		sdhc_mode_sd = 0;
+		gprintf("SD Card not found.\n");
+		return false;
+	}
+	gprintf("SD Card found.\n");
 
 	//! Mount only one SD Partition
 	return sd->Mount(0, DeviceName[SD], true);

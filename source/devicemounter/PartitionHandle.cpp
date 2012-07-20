@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <malloc.h>
+#include <sdcard/gcsd.h>
 #include "cios.h"
 #include "PartitionHandle.h"
 #include "utils.h"
@@ -34,14 +35,8 @@
 #include "fat.h"
 #include "ext2.h"
 #include "wbfs.h"
-#include <sdcard/gcsd.h>
-#include <sdcard/wiisd_io.h>
-
-#ifdef DOLPHIN
-const DISC_INTERFACE __io_sdhc = __io_wiisd;
-#else
-extern const DISC_INTERFACE __io_sdhc;
-#endif
+#include "usbstorage.h"
+#include "sdhc.h"
 
 #define PARTITION_TYPE_DOS33_EXTENDED		0x05 /* DOS 3.3+ extended partition */
 #define PARTITION_TYPE_WIN95_EXTENDED		0x0F /* Windows 95 extended partition */
@@ -179,7 +174,7 @@ bool PartitionHandle::Mount(int pos, const char * name, bool forceFAT)
 	{
 		if(interface == &__io_usbstorage2_port0 || interface == &__io_usbstorage2_port1)
 			SetWbfsHandle(pos, wbfs_open_partition(__WBFS_ReadUSB, __WBFS_WriteUSB, NULL, USBStorage2_GetSectorSize(), GetSecCount(pos), GetLBAStart(pos), 0));
-		else if((neek2o() && interface == &__io_wiisd) || (!neek2o() && interface == &__io_sdhc))
+		else if(interface == &__io_sdhc)
 			SetWbfsHandle(pos, wbfs_open_partition(__WBFS_ReadSDHC, __WBFS_WriteSDHC, NULL, 512, GetSecCount(pos), GetLBAStart(pos), 0));
 		if(GetWbfsHandle(pos))
 			return true;
