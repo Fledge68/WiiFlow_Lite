@@ -21,6 +21,7 @@ typedef struct _iosinfo_t
 bool neek2o(void);
 bool D2X(u8 ios, u8 *base);
 iosinfo_t *GetInfo(u8 ios);
+signed_blob *GetTMD(u8 ios, u32 *TMD_Length);
 int is_ios_type(int type, u8 slot);
 int get_ios_type(u8 slot);
 bool shadow_mload();

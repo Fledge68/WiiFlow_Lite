@@ -79,6 +79,23 @@ bool D2X(u8 ios, u8 *base)
 	return true;
 }
 
+signed_blob *GetTMD(u8 ios, u32 *TMD_Length)
+{
+	if(ES_GetStoredTMDSize(TITLE_ID(1, ios), TMD_Length) < 0)
+		return NULL;
+
+	signed_blob *TMD = (signed_blob*)MEM2_alloc(ALIGN32(*TMD_Length));
+	if(TMD == NULL)
+		return NULL;
+
+	if(ES_GetStoredTMD(TITLE_ID(1, ios), TMD, *TMD_Length) < 0)
+	{
+		MEM2_free(TMD);
+		return NULL;
+	}
+	return TMD;
+}
+
 /*
  * Reads the ios info struct from the .app file.
  * @return pointer to iosinfo_t on success else NULL. The user is responsible for freeing the buffer.
@@ -87,17 +104,9 @@ bool D2X(u8 ios, u8 *base)
 iosinfo_t *GetInfo(u8 ios)
 {
 	u32 TMD_Length;
-	if (ES_GetStoredTMDSize(TITLE_ID(1, ios), &TMD_Length) < 0) return NULL;
-
-	signed_blob *TMD = (signed_blob*)MEM2_alloc(ALIGN32(TMD_Length));
-	if (TMD == NULL)
+	signed_blob *TMD = GetTMD(ios, &TMD_Length);
+	if(TMD == NULL)
 		return NULL;
-
-	if (ES_GetStoredTMD(TITLE_ID(1, ios), TMD, TMD_Length) < 0)
-	{
-		MEM2_free(TMD);
-		return NULL;
-	}
 
 	char filepath[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
 	sprintf(filepath, "/title/00000001/%08x/content/%08x.app", ios, *(u8 *)((u32)TMD+0x1E7));
@@ -113,8 +122,43 @@ iosinfo_t *GetInfo(u8 ios)
 	return iosinfo;
 }
 
+u32 Title_GetSize_FromTMD(tmd *tmd_data)
+{
+	u32 cnt, size = 0;
+
+	/* Calculate title size */
+	for (cnt = 0; cnt < tmd_data->num_contents; cnt++) {
+		tmd_content *content = &tmd_data->contents[cnt];
+
+		/* Add content size */
+		size += content->size;
+	}
+
+	return size;
+}
+
 int get_ios_type(u8 slot)
 {
+	u32 TMD_Length;
+	signed_blob *TMD_Buffer = GetTMD(slot, &TMD_Length);
+	if(TMD_Buffer == NULL)
+		return IOS_TYPE_NO_CIOS;
+
+	tmd *iosTMD = (tmd*)SIGNATURE_PAYLOAD(TMD_Buffer);
+	if(Title_GetSize_FromTMD(iosTMD) < 0x100000 || iosTMD->title_version == 65280)
+	{
+		MEM2_free(TMD_Buffer);
+		return IOS_TYPE_NO_CIOS;
+	}
+
+	iosinfo_t *info = GetInfo(slot);
+	if(info == NULL)
+	{
+		MEM2_free(TMD_Buffer);
+		return IOS_TYPE_NO_CIOS;
+	}
+	MEM2_free(info);
+
 	u8 base = 0;
 	switch(slot)
 	{
@@ -122,7 +166,7 @@ int get_ios_type(u8 slot)
 		case 223:
 		case 224:
 		case 225:
-			if(IOS_GetRevision() == 1)
+			if(iosTMD->title_version == 1)
 				return IOS_TYPE_KWIIRK;
 			else
 				return IOS_TYPE_HERMES;
@@ -143,6 +187,7 @@ int get_ios_type(u8 slot)
 			else
 				return IOS_TYPE_NO_CIOS;
 	}
+	MEM2_free(TMD_Buffer);
 }
 
 int is_ios_type(int type, u8 slot)

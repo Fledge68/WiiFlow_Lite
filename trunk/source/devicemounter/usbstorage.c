@@ -72,6 +72,7 @@ static s32 hid = -1, fd = -1;
 static u32 usb2_port = -1;  //current USB port
 bool hddInUse[2] = { false, false };
 u32 hdd_sector_size[2] = { 512, 512 };
+bool first = false;
 
 extern void* SYS_AllocArena2MemLo(u32 size,u32 align);
 
@@ -137,6 +138,7 @@ s32 USBStorage2_SetPort(u32 port)
 
 	s32 ret = -1;
 	usb2_port = port;
+	first = true;
 
 	gprintf("Changing USB port to port %i....\n", port);
 	//must be called before USBStorage2_Init (default port 0)
@@ -161,7 +163,21 @@ s32 USBStorage2_GetCapacity(u32 port, u32 *_sector_size)
 
 		ret = IOS_IoctlvFormat(hid, fd, USB_IOCTL_UMS_GET_CAPACITY, ":i", &sector_size);
 
-		if (ret && _sector_size) *_sector_size = sector_size;
+		if(first)
+		{
+			gprintf(" * * * * * * * * * * * *\n");
+			gprintf(" * HDD Information\n * Sectors: %lu\n", ret);
+			u32 size = ((((ret / 1024U) * sector_size) / 1024U) / 1024U);
+			if(size >= 1000U)
+				gprintf(" * Size [Sector Size]: %lu.%lu TB [%u]\n", size / 1024U, (size * 100U) % 1024U, sector_size);
+			else
+				gprintf(" * Size [Sector Size]: %lu GB [%u]\n", size, sector_size);
+			gprintf(" * * * * * * * * * * * *\n");
+			first = false;
+		}
+
+		if(ret && _sector_size)
+			*_sector_size = sector_size;
 
 		return ret;
 	}

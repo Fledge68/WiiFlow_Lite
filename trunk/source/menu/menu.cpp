@@ -278,7 +278,13 @@ void CMenu::init(void)
 	m_cfg.getBool("NAND", "disable", true);
 
 	_installed_cios.clear();
-	_load_installed_cioses();
+	if(!neek2o())
+		_load_installed_cioses();
+	else
+	{
+		extern int mainIOS;
+		_installed_cios[mainIOS] = mainIOS;
+	}
 
 	snprintf(m_app_update_drive, sizeof(m_app_update_drive), "%s:/", drive);
 	m_dataDir = sfmt("%s:/%s", drive, APPDATA_DIR);
@@ -2298,28 +2304,22 @@ bool CMenu::_loadFile(SmartBuf &buffer, u32 &size, const char *path, const char 
 
 void CMenu::_load_installed_cioses()
 {
-	if(_installed_cios.size() > 0)
-		return;
-
 	gprintf("Loading cIOS map\n");
 	_installed_cios[0] = 1;
 
 	for(u8 slot = 200; slot < 254; slot++)
 	{
 		u8 base = 1;
-		iosinfo_t *info = GetInfo(slot);
 		if(D2X(slot, &base))
 		{
 			gprintf("Found d2x base %u in slot %u\n", base, slot);
 			_installed_cios[slot] = base;
 		}
-		else if(info != NULL && !is_ios_type(IOS_TYPE_NO_CIOS, slot))
+		else if(!is_ios_type(IOS_TYPE_NO_CIOS, slot))
 		{
 			gprintf("Found cIOS in slot %u\n", slot);
-			_installed_cios[slot] = 1;
+			_installed_cios[slot] = slot;
 		}
-		if(info != NULL)
-			MEM2_free(info);
 	}
 }
 
