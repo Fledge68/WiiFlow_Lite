@@ -1152,7 +1152,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		#ifndef DOLPHIN
 		if(!neek2o())
 		{
-			Disc_SetUSB(NULL);
+			Disc_SetUSB(NULL, false);
 			if (WDVD_GetCoverStatus(&cover) < 0)
 			{
 				error(_t("errgame7", L"WDVDGetCoverStatus Failed!"));
@@ -1281,7 +1281,8 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			Nand::Instance()->Do_Region_Change(id);
 		}
 	}
-	if(!dvd && get_frag_list((u8 *)id.c_str(), (char*)path.c_str(), currentPartition == 0 ? 0x200 : USBStorage2_GetSectorSize()) < 0)
+	bool wbfs_partition = (DeviceHandler::Instance()->GetFSType(currentPartition) == PART_FS_WBFS);
+	if(!dvd && !wbfs_partition && get_frag_list((u8 *)id.c_str(), (char*)path.c_str(), currentPartition == 0 ? 0x200 : USBStorage2_GetSectorSize()) < 0)
 		return;
 
 	u8 patchVidMode = min((u32)m_gcfg2.getInt(id, "patch_video_modes", 0), ARRAY_SIZE(CMenu::_vidModePatch) - 1u);
@@ -1383,7 +1384,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	}
 	if(!dvd)
 	{
-		s32 ret = Disc_SetUSB((u8 *)id.c_str());
+		s32 ret = Disc_SetUSB((u8*)id.c_str(), !wbfs_partition);
 		if (ret < 0)
 		{
 			gprintf("Set USB failed: %d\n", ret);

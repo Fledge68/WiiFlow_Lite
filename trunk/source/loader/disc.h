@@ -97,7 +97,7 @@ extern "C" {
 s32	Disc_Init(void);
 s32	Disc_Open(bool);
 s32	Disc_Wait(void);
-s32	Disc_SetUSB(const u8 *);
+s32	Disc_SetUSB(const u8 *id, bool frag);
 s32	Disc_ReadHeader(void *);
 s32 Disc_ReadGCHeader(void *);
 s32 Disc_Type(bool);

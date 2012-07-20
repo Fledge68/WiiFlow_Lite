@@ -312,7 +312,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						m_btnMgr.hide(m_wbfsBtnBack);
 						m_btnMgr.show(m_wbfsLblMessage);
 						m_btnMgr.setText(m_wbfsLblMessage, L"");
-						Disc_SetUSB(NULL);
+						Disc_SetUSB(NULL, false);
 						if (Disc_Wait() < 0)
 						{
 							error(_t("wbfsoperr1", L"Disc_Wait failed"));
