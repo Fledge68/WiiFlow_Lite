@@ -17,12 +17,19 @@
 #include "gecko.h"
 #include "types.h"
 
-extern const u8 dvdskin_png[];
-extern const u8 dvdskin_red_png[];
-extern const u8 dvdskin_black_png[];
-extern const u8 dvdskin_yellow_png[];
-extern const u8 dvdskin_greenone_png[];
-extern const u8 dvdskin_greentwo_png[];
+extern const u8 dvdskin_jpg[];
+extern const u32 dvdskin_jpg_size;
+extern const u8 dvdskin_red_jpg[];
+extern const u32 dvdskin_red_jpg_size;
+extern const u8 dvdskin_black_jpg[];
+extern const u32 dvdskin_black_jpg_size;
+extern const u8 dvdskin_yellow_jpg[];
+extern const u32 dvdskin_yellow_jpg_size;
+extern const u8 dvdskin_greenone_jpg[];
+extern const u32 dvdskin_greenone_jpg_size;
+extern const u8 dvdskin_greentwo_jpg[];
+extern const u32 dvdskin_greentwo_jpg_size;
+
 extern const u8 nopic_png[];
 extern const u8 loading_png[];
 extern const u8 flatnopic_png[];
@@ -176,6 +183,7 @@ CCoverFlow::CCoverFlow(void)
 	m_minDelay = 5;
 	m_jump = 0;
 	m_mutex = 0;
+	m_dvdskin_loaded = false;
 	m_loadingCovers = false;
 	m_moved = false;
 	m_selected = false;
@@ -647,6 +655,28 @@ void CCoverFlow::clear(void)
 	stopCoverLoader(true);
 	m_covers.clear();
 	m_items.clear();
+}
+
+void CCoverFlow::shutdown(void)
+{
+	gprintf("Cleanup Coverflow\n");
+	clear();
+
+	m_dvdSkin.data.release();
+	m_dvdSkin_Red.data.release();
+	m_dvdSkin_Black.data.release();
+	m_dvdSkin_Yellow.data.release();
+	m_dvdSkin_GreenOne.data.release();
+	m_dvdSkin_GreenTwo.data.release();
+	for(u8 i = 0; i < 4; i++)
+	{
+		if(m_sound[i].get())
+			m_sound[i].release();
+	}
+	m_hoverSound.release();
+	m_selectSound.release();
+	m_cancelSound.release();
+	LWP_MutexDestroy(m_mutex);
 }
 
 void CCoverFlow::reserve(u32 capacity)
@@ -1799,14 +1829,24 @@ bool CCoverFlow::start(const char *id)
 		sort(m_items.begin(), m_items.end(), CCoverFlow::_sortByWifiPlayers);
 
 	// Load resident textures
-	if (STexture::TE_OK != m_dvdSkin.fromPNG(dvdskin_png)) return false;
-	if (STexture::TE_OK != m_dvdSkin_Red.fromPNG(dvdskin_red_png)) return false;
-	if (STexture::TE_OK != m_dvdSkin_Black.fromPNG(dvdskin_black_png)) return false;
-	if (STexture::TE_OK != m_dvdSkin_Yellow.fromPNG(dvdskin_yellow_png)) return false;
-	if (STexture::TE_OK != m_dvdSkin_GreenOne.fromPNG(dvdskin_greenone_png)) return false;
-	if (STexture::TE_OK != m_dvdSkin_GreenTwo.fromPNG(dvdskin_greentwo_png)) return false;
+	if(!m_dvdskin_loaded)
+	{
+		if(m_dvdSkin.fromJPG(dvdskin_jpg, dvdskin_jpg_size) != STexture::TE_OK)
+			return false;
+		if(m_dvdSkin_Red.fromJPG(dvdskin_red_jpg, dvdskin_red_jpg_size) != STexture::TE_OK)
+			return false;
+		if(m_dvdSkin_Black.fromJPG(dvdskin_black_jpg, dvdskin_black_jpg_size) != STexture::TE_OK)
+			return false;
+		if(m_dvdSkin_Yellow.fromJPG(dvdskin_yellow_jpg, dvdskin_yellow_jpg_size) != STexture::TE_OK)
+			return false;
+		if(m_dvdSkin_GreenOne.fromJPG(dvdskin_greenone_jpg, dvdskin_greenone_jpg_size) != STexture::TE_OK)
+			return false;
+		if(m_dvdSkin_GreenTwo.fromJPG(dvdskin_greentwo_jpg, dvdskin_greentwo_jpg_size) != STexture::TE_OK)
+			return false;
+		m_dvdskin_loaded = true;
+	}
 
-	if (m_box)
+	if(m_box)
 	{
 		if (m_pngLoadCover.empty() || STexture::TE_OK != m_loadingTexture.fromPNGFile(m_pngLoadCover.c_str(), GX_TF_CMPR, ALLOC_MEM2, 32, 512))
 			if (STexture::TE_OK != m_loadingTexture.fromPNG(loading_png, GX_TF_CMPR, ALLOC_MEM2, 32, 512)) return false;

@@ -330,4 +330,6 @@ class JpgVideoFile : public VideoFile
    VideoFrame _currFrame;
 };
 
+void decodeRealJpeg(const u8* data, int size, VideoFrame& dest);
+
 #endif //THAKIS_GCVID_H

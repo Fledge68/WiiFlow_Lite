@@ -70,7 +70,7 @@ public:
 	int stencilVal(int x, int y);
 	void hideWaitMessage();
 	void waitMessage(float delay);
-	void waitMessage(const vector<STexture> &tex, float delay, bool useWiiLight = true);
+	void waitMessage(const vector<STexture> &tex, float delay);
 	void waitMessage(const STexture &tex);
 	void CheckWaitThread(bool force = false);
 	s32 TakeScreenshot(const char *);
@@ -102,7 +102,6 @@ private:
 	float m_waitMessageDelay;
 	bool m_showWaitMessage;
 	volatile bool m_showingWaitMessages;
-	bool m_useWiiLight;
 	vector<STexture> m_waitMessages;
 	// 
 	static const int _stencilWidth;

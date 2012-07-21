@@ -43,6 +43,7 @@ public:
 	bool init(const SmartBuf &font, u32 font_size, bool vid_50hz);
 	// Cover list management
 	void clear(void);
+	void shutdown(void);
 	void reserve(u32 capacity);
 	void addItem(dir_discHdr *hdr, const char *picPath, const char *boxPicPath, int playcount = 0, unsigned int lastPlayed = 0);
 	bool empty(void) const { return m_items.empty(); }
@@ -259,6 +260,7 @@ private:
 	bool m_fanartPlaying;
 	bool m_box;
 	bool m_useHQcover;
+	bool m_dvdskin_loaded;
 	u32 m_range;
 	u32 m_rows;
 	u32 m_columns;
