@@ -7,11 +7,23 @@
 
 #define DEFAULT_FIFO_SIZE	(256 * 1024)
 
-extern const u8 wait_01_png[];
-extern const u8 wait_02_png[];
-extern const u8 wait_03_png[];
-extern const u8 wait_04_png[];
-extern const u8 wait_05_png[];
+extern const u8 wait_01_jpg[];
+extern const u32 wait_01_jpg_size;
+extern const u8 wait_02_jpg[];
+extern const u32 wait_02_jpg_size;
+extern const u8 wait_03_jpg[];
+extern const u32 wait_03_jpg_size;
+extern const u8 wait_04_jpg[];
+extern const u32 wait_04_jpg_size;
+extern const u8 wait_05_jpg[];
+extern const u32 wait_05_jpg_size;
+extern const u8 wait_06_jpg[];
+extern const u32 wait_06_jpg_size;
+extern const u8 wait_07_jpg[];
+extern const u32 wait_07_jpg_size;
+extern const u8 wait_08_jpg[];
+extern const u32 wait_08_jpg_size;
+
 vector<STexture> m_defaultWaitMessages;
 
 const float CVideo::_jitter2[2][2] = {
@@ -489,45 +501,38 @@ void CVideo::_showWaitMessages(CVideo *m)
 	m->waitMessage(*waitItr);
 	waitItr += PNGfadeDirection;
 
-	if (m->m_useWiiLight)
-	{
-		wiiLightSetLevel(0);
-		wiiLightOn();
-	}
+	wiiLightSetLevel(0);
+	wiiLightOn();
 
-	while (m->m_showWaitMessage)
+	while(m->m_showWaitMessage)
 	{
-		if (m->m_useWiiLight)
+		currentLightLevel += (fadeStep * fadeDirection);
+		if(currentLightLevel >= 255) 
 		{
-			currentLightLevel += (fadeStep * fadeDirection);
-			if (currentLightLevel >= 255) 
-			{
-				currentLightLevel = 255;
-				fadeDirection = -1;
-			}
-			else if (currentLightLevel <= 0)
-			{
-				currentLightLevel = 0;
-				fadeDirection = 1;
-			}
-			wiiLightSetLevel(currentLightLevel);
+			currentLightLevel = 255;
+			fadeDirection = -1;
 		}
-		
-		if (waitFrames == 0)
+		else if(currentLightLevel <= 0)
+		{
+			currentLightLevel = 0;
+			fadeDirection = 1;
+		}
+		wiiLightSetLevel(currentLightLevel);
+
+		if(waitFrames == 0)
 		{
 			m->waitMessage(*waitItr);
 			waitItr += PNGfadeDirection;
 
-			if(waitItr + 1 == m->m_waitMessages.end() || waitItr == m->m_waitMessages.begin())
-				PNGfadeDirection *= (-1);
+			if(waitItr == m->m_waitMessages.end())
+				waitItr = m->m_waitMessages.begin();
 
 			waitFrames = frames;
 		}
 		waitFrames--;
 		VIDEO_WaitVSync();
 	}
-	if (m->m_useWiiLight)
-		wiiLightOff();
+	wiiLightOff();
 	m->m_showingWaitMessages = false;
 	gprintf("Stop showing images\n");
 }
@@ -561,28 +566,29 @@ void CVideo::waitMessage(float delay)
 {
 	if(m_defaultWaitMessages.size() == 0)
 	{
-		STexture m_wTextures[5];
-		m_wTextures[0].fromPNG(wait_01_png);
-		m_wTextures[1].fromPNG(wait_02_png);
-		m_wTextures[2].fromPNG(wait_03_png);
-		m_wTextures[3].fromPNG(wait_04_png);
-		m_wTextures[4].fromPNG(wait_05_png);
-		for (int i = 0; i < 5; i++)
+		STexture m_wTextures[8];
+		m_wTextures[0].fromJPG(wait_01_jpg, wait_01_jpg_size);
+		m_wTextures[1].fromJPG(wait_02_jpg, wait_02_jpg_size);
+		m_wTextures[2].fromJPG(wait_03_jpg, wait_03_jpg_size);
+		m_wTextures[3].fromJPG(wait_04_jpg, wait_04_jpg_size);
+		m_wTextures[4].fromJPG(wait_05_jpg, wait_05_jpg_size);
+		m_wTextures[5].fromJPG(wait_06_jpg, wait_06_jpg_size);
+		m_wTextures[6].fromJPG(wait_07_jpg, wait_07_jpg_size);
+		m_wTextures[7].fromJPG(wait_08_jpg, wait_08_jpg_size);
+		for(int i = 0; i < 8; i++)
 			m_defaultWaitMessages.push_back(m_wTextures[i]);
 	}
 	waitMessage(vector<STexture>(), delay);
 }
 
-void CVideo::waitMessage(const vector<STexture> &tex, float delay, bool useWiiLight)
+void CVideo::waitMessage(const vector<STexture> &tex, float delay)
 {
 	hideWaitMessage();
 
-	m_useWiiLight = useWiiLight;
-
-	if (tex.size() == 0)
+	if(tex.size() == 0)
 	{
 		m_waitMessages = m_defaultWaitMessages;
-		m_waitMessageDelay = 0.3f;
+		m_waitMessageDelay = 0.2f;
 	}
 	else
 	{
@@ -593,7 +599,7 @@ void CVideo::waitMessage(const vector<STexture> &tex, float delay, bool useWiiLi
 
 	if (m_waitMessages.size() == 1)
 		waitMessage(m_waitMessages[0]);
-	else if (m_waitMessages.size() > 1)
+	else if(m_waitMessages.size() > 1)
 	{
 		CheckWaitThread();
 		m_showWaitMessage = true;

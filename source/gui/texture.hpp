@@ -19,7 +19,8 @@ struct STexture
 	// This function doesn't use MEM2 if the PNG is loaded from memory and there's no mip mapping
 	TexErr fromPNG(const u8 *buffer, u8 f = -1, Alloc alloc = ALLOC_MEM2, u32 minMipSize = 0, u32 maxMipSize = 0);
 	TexErr fromPNGFile(const char *filename, u8 f = -1, Alloc alloc = ALLOC_MEM2, u32 minMipSize = 0, u32 maxMipSize = 0);
-	TexErr fromRAW(const u8 *buffer, u32 w, u32 h, u8 f = -1, Alloc alloc = ALLOC_MEM2);
+	TexErr fromRAW(const u8 *buffer, u32 w, u32 h, Alloc alloc = ALLOC_MEM2);
+	TexErr fromJPG(const u8 *buffer, const u32 buffer_size);
 private:
 	static void _resize(u8 *dst, u32 dstWidth, u32 dstHeight, const u8 *src, u32 srcWidth, u32 srcHeight);
 	static void _resizeD2x2(u8 *dst, const u8 *src, u32 srcWidth, u32 srcHeight);

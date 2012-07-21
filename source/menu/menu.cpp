@@ -36,7 +36,6 @@ extern const u32 hover_wav_size;
 extern const u8 camera_wav[];
 extern const u32 camera_wav_size;
 // Pics
-extern const u8 wait_png[];
 extern const u8 btnplus_png[];
 extern const u8 btnpluss_png[];
 extern const u8 btnminus_png[];
@@ -500,10 +499,7 @@ void CMenu::cleanup(bool hb)
 	if(cleaned_up)
 		return;
 	gprintf("MEM1_freesize(): %i\nMEM2_freesize(): %i\n", MEM1_freesize(), MEM2_freesize());
-	m_cf.stopCoverLoader();
 	_cleanupDefaultFont();
-	m_cf.clear();
-
 	m_banner->DeleteBanner();
 	m_plugin.Cleanup();
 
@@ -520,7 +516,11 @@ void CMenu::cleanup(bool hb)
 			DeviceHandler::DestroyInstance();
 		m_vid.CheckWaitThread(true);
 		m_vid.cleanup();
+		m_cf.shutdown();
 	}
+	else
+		m_cf.clear();
+
 	wiiLightOff();
 	_deinitNetwork();
 
@@ -2331,11 +2331,7 @@ void CMenu::_hideWaitMessage()
 void CMenu::_showWaitMessage()
 {
 	TexSet texSet;
-	m_vid.waitMessage(
-		_textures(texSet, "GENERAL", "waitmessage"),
-		m_theme.getFloat("GENERAL", "waitmessage_delay", 0.f),
-		m_theme.getBool("GENERAL", "waitmessage_wiilight",	m_cfg.getBool("GENERAL", "waitmessage_wiilight", true))
-	);
+	m_vid.waitMessage(_textures(texSet, "GENERAL", "waitmessage"), m_theme.getFloat("GENERAL", "waitmessage_delay", 0.f));
 }
 
 typedef struct map_entry

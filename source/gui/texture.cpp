@@ -4,6 +4,7 @@
 
 #include "texture.hpp"
 #include "pngu.h"
+#include "gcvid.h"
 
 using namespace std;
 
@@ -217,51 +218,40 @@ STexture::TexErr STexture::fromPNGFile(const char *filename, u8 f, Alloc alloc, 
 	return !!ptrPng ? fromPNG(ptrPng.get(), f, alloc, minMipSize, maxMipSize) : STexture::TE_NOMEM;
 }
 
-STexture::TexErr STexture::fromRAW(const u8 *buffer, u32 w, u32 h, u8 f, Alloc alloc)
+STexture::TexErr STexture::fromRAW(const u8 *buffer, u32 w, u32 h, Alloc alloc)
 {
-	SmartBuf tmpData;
+	SmartBuf rawData;
+	format = GX_TF_RGBA8;
 
-	switch (f)
-	{
-		case GX_TF_RGBA8:
-		case GX_TF_RGB565:
-		case GX_TF_CMPR:
-			break;
-		default:
-			f = GX_TF_RGBA8;
-	}
-
-	switch (alloc)
+	switch(alloc)
 	{
 		case ALLOC_MEM2:
-			tmpData = smartMem2Alloc(GX_GetTexBufferSize(w, h, f, GX_FALSE, 0));
+			rawData = smartMem2Alloc(GX_GetTexBufferSize(w, h, format, GX_FALSE, 0));
 			break;
 		case ALLOC_MALLOC:
-			tmpData = smartMemAlign32(GX_GetTexBufferSize(w, h, f, GX_FALSE, 0));
+			rawData = smartMemAlign32(GX_GetTexBufferSize(w, h, format, GX_FALSE, 0));
 			break;
 	}
-	if (!tmpData) return STexture::TE_NOMEM;
+	if(rawData.get() == NULL)
+		return STexture::TE_NOMEM;
 
-	format = f;
 	width = w;
 	height = h;
 	maxLOD = 0;
-	data = tmpData;
-	switch (f)
-	{
-		case GX_TF_RGBA8:
-			STexture::_convertToFlippedRGBA8(tmpData.get(), buffer, width, height);
-			break;
-		case GX_TF_RGB565:
-			STexture::_convertToRGB565(tmpData.get(), buffer, width, height);
-			break;
-		case GX_TF_CMPR:
-			STexture::_convertToCMPR(tmpData.get(), buffer, width, height);
-			break;
-	}
+	STexture::_convertToFlippedRGBA8(rawData.get(), buffer, width, height);
+	data = rawData;
 	DCFlushRange(data.get(), GX_GetTexBufferSize(width, height, format, GX_FALSE, 0));
 
 	return STexture::TE_OK;
+}
+
+STexture::TexErr STexture::fromJPG(const u8 *buffer, const u32 buffer_size)
+{
+	VideoFrame VideoF;
+	decodeRealJpeg(buffer, buffer_size, VideoF);
+	if(!VideoF.getData())
+		return STexture::TE_ERROR;
+	return fromRAW(VideoF.getData(), VideoF.getWidth(), VideoF.getHeight());
 }
 
 STexture::TexErr STexture::fromPNG(const u8 *buffer, u8 f, Alloc alloc, u32 minMipSize, u32 maxMipSize)

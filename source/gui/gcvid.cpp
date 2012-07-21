@@ -693,8 +693,6 @@ void convertToRealJpeg(u8* dest, const u8* src, int srcSize, int start, int end)
 	}
 }
 
-void decodeRealJpeg(const u8* data, int size, VideoFrame& dest);
-
 void decodeJpeg(const u8* data, int size, VideoFrame& dest)
 {
 	//convert format so jpeglib understands it...
