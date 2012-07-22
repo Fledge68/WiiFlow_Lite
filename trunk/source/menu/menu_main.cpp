@@ -875,7 +875,7 @@ void CMenu::_initMainMenu(CMenu::SThemeData &theme)
 	STexture emptyTex;
 
 	m_mainBg = _texture(theme.texSet, "MAIN/BG", "texture", theme.bg);
-	if (m_theme.loaded() && STexture::TE_OK == bgLQ.fromPNGFile(fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString("MAIN/BG", "texture").c_str()), GX_TF_CMPR, ALLOC_MEM2, 64, 64))
+	if (m_theme.loaded() && STexture::TE_OK == bgLQ.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString("MAIN/BG", "texture").c_str()), GX_TF_CMPR, ALLOC_MEM2, 64, 64))
 		m_mainBgLQ = bgLQ;
 
 	texQuit.fromPNG(btnquit_png);

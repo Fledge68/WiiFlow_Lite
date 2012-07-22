@@ -29,7 +29,7 @@ bool CCursor::init(const char *png, bool wideFix, CColor shadowColor, float shad
 	m_wideFix = wideFix;
 	m_x = -1;
 	m_y = -1;
-	if (STexture::TE_OK != m_texture.fromPNGFile(png, GX_TF_RGBA8))
+	if (STexture::TE_OK != m_texture.fromImageFile(png))
 	{
  		if (chan == 0)
 			ok = STexture::TE_OK == m_texture.fromPNG(player1_point_png, GX_TF_RGBA8);

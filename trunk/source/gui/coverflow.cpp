@@ -1848,18 +1848,18 @@ bool CCoverFlow::start(const char *id)
 
 	if(m_box)
 	{
-		if (m_pngLoadCover.empty() || STexture::TE_OK != m_loadingTexture.fromPNGFile(m_pngLoadCover.c_str(), GX_TF_CMPR, ALLOC_MEM2, 32, 512))
+		if (m_pngLoadCover.empty() || STexture::TE_OK != m_loadingTexture.fromImageFile(m_pngLoadCover.c_str(), GX_TF_CMPR, ALLOC_MEM2, 32, 512))
 			if (STexture::TE_OK != m_loadingTexture.fromPNG(loading_png, GX_TF_CMPR, ALLOC_MEM2, 32, 512)) return false;
 
-		if (m_pngNoCover.empty() || STexture::TE_OK != m_noCoverTexture.fromPNGFile(m_pngNoCover.c_str(), GX_TF_CMPR, ALLOC_MEM2, 32, 512))
+		if (m_pngNoCover.empty() || STexture::TE_OK != m_noCoverTexture.fromImageFile(m_pngNoCover.c_str(), GX_TF_CMPR, ALLOC_MEM2, 32, 512))
 			if (STexture::TE_OK != m_noCoverTexture.fromPNG(nopic_png, GX_TF_CMPR, ALLOC_MEM2, 32, 512)) return false;
 	}
 	else
 	{
-		if (m_pngLoadCoverFlat.empty() || STexture::TE_OK != m_loadingTexture.fromPNGFile(m_pngLoadCoverFlat.c_str(), GX_TF_CMPR, ALLOC_MEM2, 32, 512))
+		if (m_pngLoadCoverFlat.empty() || STexture::TE_OK != m_loadingTexture.fromImageFile(m_pngLoadCoverFlat.c_str(), GX_TF_CMPR, ALLOC_MEM2, 32, 512))
 			if (STexture::TE_OK != m_loadingTexture.fromPNG(flatloading_png, GX_TF_CMPR, ALLOC_MEM2, 32, 512)) return false;
 
-		if (m_pngNoCoverFlat.empty() || STexture::TE_OK != m_noCoverTexture.fromPNGFile(m_pngNoCoverFlat.c_str(), GX_TF_CMPR, ALLOC_MEM2, 32, 512))
+		if (m_pngNoCoverFlat.empty() || STexture::TE_OK != m_noCoverTexture.fromImageFile(m_pngNoCoverFlat.c_str(), GX_TF_CMPR, ALLOC_MEM2, 32, 512))
 			if (STexture::TE_OK != m_noCoverTexture.fromPNG(flatnopic_png, GX_TF_CMPR, ALLOC_MEM2, 32, 512)) return false;
 	}
 		
@@ -2577,7 +2577,7 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq)
 	STexture tex;
 
 	const char *path = box ? m_items[i].boxPicPath.c_str() : m_items[i].picPath.c_str();
-	if (STexture::TE_OK != tex.fromPNGFile(path, textureFmt, ALLOC_MEM2, 32)) return false;
+	if (STexture::TE_OK != tex.fromImageFile(path, textureFmt, ALLOC_MEM2, 32)) return false;
 
 	if (!m_loadingCovers) return false;
 
