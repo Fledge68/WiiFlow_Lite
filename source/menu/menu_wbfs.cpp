@@ -158,7 +158,7 @@ int CMenu::_GCgameInstaller(void *obj)
 	GCDump m_gcdump;
 
 	bool skip = m.m_cfg.getBool("DML", "skip_on_error", false);
-	bool comp = m.m_cfg.getBool("DML", "compressed_dump", true);
+	bool comp = m.m_cfg.getBool("DML", "compressed_dump", false);
 	bool wexf = m.m_cfg.getBool("DML", "write_ex_files", true);
 	bool alig = m.m_cfg.getBool("DML", "force_32k_align_files", false);
 	u32 nretry = m.m_cfg.getUInt("DML", "num_retries", 5);
@@ -313,6 +313,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						m_btnMgr.show(m_wbfsLblMessage);
 						m_btnMgr.setText(m_wbfsLblMessage, L"");
 						Disc_SetUSB(NULL, false);
+						Disc_Init();
 						if (Disc_Wait() < 0)
 						{
 							error(_t("wbfsoperr1", L"Disc_Wait failed"));
