@@ -17,7 +17,7 @@ bool fsop_DirExist(char *path);
 void fsop_MakeFolder(char *path);
 bool fsop_CopyFile(char *source, char *target, progress_callback_t spinner, void *spinner_data);
 bool fsop_CopyFolder(char *source, char *target, progress_callback_t spinner, void *spinner_data);
-void fsop_deleteFile(char *source);
+void fsop_deleteFile(const char *source);
 void fsop_deleteFolder(char *source);
 
 #endif
