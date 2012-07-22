@@ -52,6 +52,8 @@ void CMenu::_hideGameSettings(bool instant)
 	m_btnMgr.hide(m_gameSettingsBtnNoDVD_M, instant);
 	m_btnMgr.hide(m_gameSettingsLblDevoMemcardEmu, instant);
 	m_btnMgr.hide(m_gameSettingsBtnDevoMemcardEmu, instant);
+	m_btnMgr.hide(m_gameSettingsLblDM_Widescreen, instant);
+	m_btnMgr.hide(m_gameSettingsBtnDM_Widescreen, instant);
 	m_btnMgr.hide(m_gameSettingsLblGCLoader, instant);
 	m_btnMgr.hide(m_gameSettingsLblGCLoader_Val, instant);
 	m_btnMgr.hide(m_gameSettingsBtnGCLoader_P, instant);
@@ -158,6 +160,11 @@ void CMenu::_showGameSettings(void)
 			m_btnMgr.show(m_gameSettingsLblGClanguageVal);
 			m_btnMgr.show(m_gameSettingsBtnGClanguageP);
 			m_btnMgr.show(m_gameSettingsBtnGClanguageM);
+
+			m_btnMgr.show(m_gameSettingsLblGCLoader);
+			m_btnMgr.show(m_gameSettingsLblGCLoader_Val);
+			m_btnMgr.show(m_gameSettingsBtnGCLoader_P);
+			m_btnMgr.show(m_gameSettingsBtnGCLoader_M);
 		}
 		else
 		{
@@ -190,6 +197,11 @@ void CMenu::_showGameSettings(void)
 			m_btnMgr.hide(m_gameSettingsLblDMLVideo);
 			m_btnMgr.hide(m_gameSettingsBtnDMLVideoP);
 			m_btnMgr.hide(m_gameSettingsBtnDMLVideoM);
+
+			m_btnMgr.hide(m_gameSettingsLblGCLoader);
+			m_btnMgr.hide(m_gameSettingsLblGCLoader_Val);
+			m_btnMgr.hide(m_gameSettingsBtnGCLoader_P);
+			m_btnMgr.hide(m_gameSettingsBtnGCLoader_M);
 		}
 		else
 		{
@@ -286,10 +298,8 @@ void CMenu::_showGameSettings(void)
 			m_btnMgr.show(m_gameSettingsLblDevoMemcardEmu);
 			m_btnMgr.show(m_gameSettingsBtnDevoMemcardEmu);
 
-			m_btnMgr.show(m_gameSettingsLblGCLoader);
-			m_btnMgr.show(m_gameSettingsLblGCLoader_Val);
-			m_btnMgr.show(m_gameSettingsBtnGCLoader_P);
-			m_btnMgr.show(m_gameSettingsBtnGCLoader_M);
+			m_btnMgr.show(m_gameSettingsLblDM_Widescreen);
+			m_btnMgr.show(m_gameSettingsBtnDM_Widescreen);
 		}
 	}
 	else
@@ -327,10 +337,8 @@ void CMenu::_showGameSettings(void)
 			m_btnMgr.hide(m_gameSettingsLblDevoMemcardEmu);
 			m_btnMgr.hide(m_gameSettingsBtnDevoMemcardEmu);
 
-			m_btnMgr.hide(m_gameSettingsLblGCLoader);
-			m_btnMgr.hide(m_gameSettingsLblGCLoader_Val);
-			m_btnMgr.hide(m_gameSettingsBtnGCLoader_P);
-			m_btnMgr.hide(m_gameSettingsBtnGCLoader_M);
+			m_btnMgr.hide(m_gameSettingsLblDM_Widescreen);
+			m_btnMgr.hide(m_gameSettingsBtnDM_Widescreen);
 		}
 	}
 	if (m_gameSettingsPage == 4)
@@ -403,6 +411,7 @@ void CMenu::_showGameSettings(void)
 	m_btnMgr.setText(m_gameSettingsBtnOcarina, _optBoolToString(m_gcfg2.getOptBool(id, "cheat")));
 	if(m_cf.getHdr()->type == TYPE_GC_GAME)
 	{
+		m_btnMgr.setText(m_gameSettingsBtnDM_Widescreen, _optBoolToString(m_gcfg2.getOptBool(id, "dm_widescreen", 0)));
 		m_btnMgr.setText(m_gameSettingsBtnDevoMemcardEmu, _optBoolToString(m_gcfg2.getOptBool(id, "devo_memcard_emu", 0)));
 		i = min((u32)m_gcfg2.getInt(id, "dml_video_mode", 0), ARRAY_SIZE(CMenu::_DMLvideoModes) - 1u);
 		m_btnMgr.setText(m_gameSettingsLblDMLVideo, _t(CMenu::_DMLvideoModes[i].id, CMenu::_DMLvideoModes[i].text));
@@ -556,6 +565,15 @@ void CMenu::_gameSettings(void)
 					m_gcfg2.remove(id, "devo_memcard_emu");
 				else
 					m_gcfg2.setBool(id, "devo_memcard_emu", true);
+				_showGameSettings();
+			}
+			else if(m_btnMgr.selected(m_gameSettingsBtnDM_Widescreen))
+			{
+				bool booloption = m_gcfg2.getBool(id, "dm_widescreen");
+				if(booloption != false)
+					m_gcfg2.remove(id, "dm_widescreen");
+				else
+					m_gcfg2.setBool(id, "dm_widescreen", true);
 				_showGameSettings();
 			}
 			else if (m_btnMgr.selected(m_gameSettingsBtnLanguageP) || m_btnMgr.selected(m_gameSettingsBtnLanguageM))
@@ -760,7 +778,7 @@ void CMenu::_initGameSettingsMenu(CMenu::SThemeData &theme)
 
 	m_gameSettingsLblCheat = _addLabel(theme, "GAME_SETTINGS/CHEAT", theme.lblFont, L"", 40, 310, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsBtnCheat = _addButton(theme, "GAME_SETTINGS/CHEAT_BTN", theme.btnFont, L"", 330, 310, 270, 56, theme.btnFontColor);
-	
+
 	// Page 3
 	m_gameSettingsLblCountryPatch = _addLabel(theme, "GAME_SETTINGS/COUNTRY_PATCH", theme.lblFont, L"", 40, 130, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsBtnCountryPatch = _addButton(theme, "GAME_SETTINGS/COUNTRY_PATCH_BTN", theme.btnFont, L"", 330, 130, 270, 56, theme.btnFontColor);
@@ -796,6 +814,9 @@ void CMenu::_initGameSettingsMenu(CMenu::SThemeData &theme)
 	m_gameSettingsLblGCLoader_Val = _addLabel(theme, "GAME_SETTINGS/GC_LOADER_BTN", theme.btnFont, L"", 386, 310, 158, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_gameSettingsBtnGCLoader_M = _addPicButton(theme, "GAME_SETTINGS/GC_LOADER_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 330, 310, 56, 56);
 	m_gameSettingsBtnGCLoader_P = _addPicButton(theme, "GAME_SETTINGS/GC_LOADER_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 310, 56, 56);
+
+	m_gameSettingsLblDM_Widescreen = _addLabel(theme, "GAME_SETTINGS/DM_WIDESCREEN", theme.lblFont, L"", 40, 310, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsBtnDM_Widescreen = _addButton(theme, "GAME_SETTINGS/DM_WIDESCREEN_BTN", theme.btnFont, L"", 330, 310, 270, 56, theme.btnFontColor);
 
 	//Page 4
  	m_gameSettingsLblCustom = _addLabel(theme, "GAME_SETTINGS/CUSTOM", theme.lblFont, L"", 40, 130, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
@@ -884,6 +905,8 @@ void CMenu::_initGameSettingsMenu(CMenu::SThemeData &theme)
 	_setHideAnim(m_gameSettingsBtnNoDVD_M, "GAME_SETTINGS/NO_DVD_PATCH_MINUS", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsLblDevoMemcardEmu, "GAME_SETTINGS/DEVO_MEMCARD_EMU", -200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnDevoMemcardEmu, "GAME_SETTINGS/DEVO_MEMCARD_EMU_BTN", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsLblDM_Widescreen, "GAME_SETTINGS/DM_WIDESCREEN", -200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsBtnDM_Widescreen, "GAME_SETTINGS/DM_WIDESCREEN_BTN", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsLblGCLoader, "GAME_SETTINGS/GC_LOADER", -200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsLblGCLoader_Val, "GAME_SETTINGS/GC_LOADER_BTN", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnGCLoader_P, "GAME_SETTINGS/GC_LOADER_PLUS", 200, 0, 1.f, 0.f);
@@ -945,4 +968,5 @@ void CMenu::_textGameSettings(void)
 	m_btnMgr.setText(m_gameSettingsBtnFlashSave, _t("cfgg33", L"Flash"));
 	m_btnMgr.setText(m_gameSettingsLblDevoMemcardEmu, _t("cfgg34", L"Devolution Memcard Emulator"));
 	m_btnMgr.setText(m_gameSettingsLblGCLoader, _t("cfgg35", L"GameCube Loader"));
+	m_btnMgr.setText(m_gameSettingsLblDM_Widescreen, _t("cfgg36", L"DM Widescreen Patch"));
 }

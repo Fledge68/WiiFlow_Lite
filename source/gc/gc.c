@@ -19,7 +19,7 @@
 // DIOS-MIOS
 DML_CFG *DMLCfg = NULL;
 
-void DML_New_SetOptions(const char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats, bool debugger, u8 NMM, u8 nodisc, u8 DMLvideoMode, u8 videoSetting, bool new_dm_cfg)
+void DML_New_SetOptions(const char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats, bool debugger, u8 NMM, u8 nodisc, u8 DMLvideoMode, u8 videoSetting, bool widescreen, bool new_dm_cfg)
 {
 	gprintf("Wiiflow GC: Launch game '%s' through memory (new method)\n", GamePath);
 
@@ -73,7 +73,14 @@ void DML_New_SetOptions(const char *GamePath, char *CheatPath, char *NewCheatPat
 	if(NMM > 1)
 		DMLCfg->Config |= DML_CFG_NMM_DEBUG;
 	if(nodisc > 0)
-		DMLCfg->Config |= DML_CFG_NODISC;
+	{
+		if(new_dm_cfg)
+			DMLCfg->Config |= DML_CFG_NODISC_CFG2;
+		else
+			DMLCfg->Config |= DML_CFG_NODISC_CFG1;
+	}
+	if(widescreen && new_dm_cfg)
+		DMLCfg->Config |= DML_CFG_FORCE_WIDE;
 
 	if(DMLvideoMode > 3)
 		DMLCfg->VideoMode |= DML_VID_PROG_PATCH;

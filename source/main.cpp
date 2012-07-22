@@ -114,7 +114,7 @@ int main(int argc, char **argv)
 
 		if(!iosOK)
 		{
-			mainMenu->terror("errboot1", L"d2x cIOSs rev6 or later are required!\ncIOSs 249 base 56 and 250 base 57 are enough for all your games.\nMore cIOSs could make wiiflow unstable!");
+			mainMenu->terror("errboot1", L"No cIOS found!\ncIOS d2x 249 base 56 and 250 base 57 are enough for all your games.");
 			break;
 		}
 		else if(!deviceAvailable)

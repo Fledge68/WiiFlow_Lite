@@ -832,6 +832,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		nodisc = (nodisc == 0) ? m_cfg.getInt("DML", "no_disc_patch", 0) : nodisc-1;
 		bool cheats = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool("DML", "cheat", false));
 		bool DML_debug = m_gcfg2.getBool(id, "debugger", false);
+		bool DM_Widescreen = m_gcfg2.getBool(id, "dm_widescreen", false);
 		if(cheats)
 		{
 			snprintf(CheatPath, sizeof(CheatPath), "%s/%s", m_cheatDir.c_str(), fmt("%s.gct", id.c_str()));
@@ -846,7 +847,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		else
 			newPath = &path[path.find_first_of(":/")+1];
 		if(m_new_dml)
-			DML_New_SetOptions(newPath.c_str(), CheatPath, NewCheatPath, cheats, DML_debug, NMM, nodisc, videoMode, videoSetting, m_new_dm_cfg);
+			DML_New_SetOptions(newPath.c_str(), CheatPath, NewCheatPath, cheats, DML_debug, NMM, nodisc, videoMode, videoSetting, DM_Widescreen, m_new_dm_cfg);
 		else
 			DML_Old_SetOptions((char*)path.c_str(), CheatPath, NewCheatPath, cheats);
 
@@ -950,7 +951,7 @@ int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id)
 	{
 		if(_installed_cios.size() <= 0)
 		{
-			error(sfmt("errgame2", L"No cios found!"));
+			error(sfmt("errgame2", L"No cIOS found!"));
 			Sys_LoadMenu();
 		}
 		u8 IOS[3];
@@ -975,10 +976,7 @@ int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id)
 			}
 		}
 		if(!found)
-		{
-			error(sfmt("errgame3", L"Couldn't find a cIOS using base %i, or 56/57", IOS[0]));
 			return LOAD_IOS_FAILED;
-		}
 	}
 
 	if(gameIOS != mainIOS)
