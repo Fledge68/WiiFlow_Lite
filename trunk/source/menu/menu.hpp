@@ -467,6 +467,9 @@ private:
 	u16 m_gameSettingsLblDevoMemcardEmu;
 	u16 m_gameSettingsBtnDevoMemcardEmu;
 
+	u16 m_gameSettingsLblDM_Widescreen;
+	u16 m_gameSettingsBtnDM_Widescreen;
+
 	u16 m_gameSettingsLblGCLoader;
 	u16 m_gameSettingsLblGCLoader_Val;
 	u16 m_gameSettingsBtnGCLoader_P;
