@@ -2058,7 +2058,7 @@ bool CMenu::_loadChannelList(void)
 	{
 		char basepath[64];		
 		snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[currentPartition], emuPath.c_str());
-		Nand::Instance()->PreNandCfg(basepath, m_cfg.getBool("NAND", "miis_from_real", true));
+		Nand::Instance()->PreNandCfg(basepath, m_cfg.getBool("NAND", "real_nand_miis", false), m_cfg.getBool("NAND", "real_nand_config", false));
 		first = false;
 	}
 	string nandpath = sfmt("%s:%s/", DeviceName[currentPartition], emuPath.empty() ? "" : emuPath.c_str());

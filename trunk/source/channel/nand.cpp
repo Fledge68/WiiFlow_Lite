@@ -606,7 +606,7 @@ s32 Nand::__DumpNandFile(const char *source, const char *dest)
 	}
 
 	if(fsop_FileExist(dest))
-		remove(dest);
+		fsop_deleteFile(dest);
 
 	FILE *file = fopen(dest, "wb");
 	if (!file)
@@ -781,19 +781,7 @@ void Nand::CreatePath(const char *path, ...)
 				break;
 		}
 
-		DIR *d;
-		d = opendir(folder);
-
-		if(!d)
-		{	
-			gprintf("Creating folder: \"%s\"\n", folder);
-			fsop_MakeFolder(folder);
-		}
-		else
-		{
-			gprintf("Folder \"%s\" exists\n", folder);
-			closedir(d);
-		}
+		fsop_MakeFolder(folder);
 		free(folder);
 	}
 	va_end(args);
@@ -929,28 +917,24 @@ s32 Nand::CreateConfig(const char *path)
 	fake = false;
 	showprogress = false;
 
-	bzero(cfgpath, MAX_FAT_PATH+1);	
-	bzero(settxtpath, MAX_FAT_PATH+1);
-
+	memset(cfgpath, 0, sizeof(cfgpath));
 	snprintf(cfgpath, sizeof(cfgpath), "%s%s", path, SYSCONFPATH);
-	snprintf(settxtpath, sizeof(settxtpath), "%s%s", path, TXTPATH);
-	snprintf(settxtpath, sizeof(settxtpath), "%s%s", path, TXTPATH);
-
 	__DumpNandFile(SYSCONFPATH, cfgpath);
+
+	memset(settxtpath, 0, sizeof(settxtpath));
+	snprintf(settxtpath, sizeof(settxtpath), "%s%s", path, TXTPATH);
 	__DumpNandFile(TXTPATH, settxtpath);
-	return 0;	
+
+	return 0;
 }
 
-s32 Nand::PreNandCfg(const char *path, bool miis)
+s32 Nand::PreNandCfg(const char *path, bool miis, bool realconfig)
 {
 	CreatePath(path);
 	CreatePath("%s/shared2", path);
 	CreatePath("%s/shared2/sys", path);
-	if(miis)
-	{
-		CreatePath("%s/shared2/menu", path);
-		CreatePath("%s/shared2/menu/FaceLib", path);
-	}
+	CreatePath("%s/shared2/menu", path);
+	CreatePath("%s/shared2/menu/FaceLib", path);
 	CreatePath("%s/title", path);
 	CreatePath("%s/title/00000001", path);
 	CreatePath("%s/title/00000001/00000002", path);
@@ -961,16 +945,21 @@ s32 Nand::PreNandCfg(const char *path, bool miis)
 	fake = false;
 	showprogress = false;
 
-	snprintf(dest, sizeof(dest), "%s%s", path, SYSCONFPATH);
-	__DumpNandFile(SYSCONFPATH, dest);
-	snprintf(dest, sizeof(dest), "%s%s", path, TXTPATH);
-	__DumpNandFile(TXTPATH, dest);
+	if(realconfig)
+	{
+		snprintf(dest, sizeof(dest), "%s%s", path, SYSCONFPATH);
+		__DumpNandFile(SYSCONFPATH, dest);
+
+		snprintf(dest, sizeof(dest), "%s%s", path, TXTPATH);
+		__DumpNandFile(TXTPATH, dest);
+	}
+
 	if(miis)
 	{
 		snprintf(dest, sizeof(dest), "%s%s", path, MIIPATH);
 		__DumpNandFile(MIIPATH, dest);
 	}
-	return 0;	
+	return 0;
 }
 
 s32 Nand::Do_Region_Change(string id)

@@ -76,7 +76,7 @@ class Nand
 		
 		void CreateTitleTMD(const char *path, dir_discHdr *hdr);
 		s32 CreateConfig(const char *path);
-		s32 PreNandCfg(const char *path, bool miis);
+		s32 PreNandCfg(const char *path, bool miis, bool realconfig);
 		s32 Do_Region_Change(string id);
 		s32 FlashToNAND(const char *source, const char *dest, dump_callback_t i_dumper, void *i_data);
 		s32 DoNandDump(const char *source, const char *dest, dump_callback_t i_dumper, void *i_data);

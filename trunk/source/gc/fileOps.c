@@ -353,7 +353,7 @@ void fsop_deleteFolder(char *source)
 	unlink(source);
 }
 
-void fsop_deleteFile(char *source)
+void fsop_deleteFile(const char *source)
 {
 	if(fsop_FileExist(source))
 	{
