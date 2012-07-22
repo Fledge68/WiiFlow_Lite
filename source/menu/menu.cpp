@@ -1187,7 +1187,7 @@ vector<STexture> CMenu::_textures(TexSet &texSet, const char *domain, const char
 					textures.push_back(i->second);
 				}
 				STexture tex;
-				if (STexture::TE_OK == tex.fromPNGFile(fmt("%s/%s", m_themeDataDir.c_str(), filename.c_str()), GX_TF_RGBA8, ALLOC_MEM2))
+				if (STexture::TE_OK == tex.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), filename.c_str())))
 				{
 					texSet[filename] = tex;
 					textures.push_back(tex);
@@ -1212,7 +1212,7 @@ STexture CMenu::_texture(CMenu::TexSet &texSet, const char *domain, const char *
 				return i->second;
 
 			STexture tex;
-			if (STexture::TE_OK == tex.fromPNGFile(fmt("%s/%s", m_themeDataDir.c_str(), filename.c_str()), GX_TF_RGBA8, ALLOC_MEM2))
+			if (STexture::TE_OK == tex.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), filename.c_str())))
 			{
 				def.data.release();
 				texSet[filename] = tex;

@@ -411,9 +411,9 @@ void CMenu::_initSourceMenu(CMenu::SThemeData &theme)
 		STexture texConsoleImgs;
 	
 		ImgName = m_source.getString(fmt("BUTTON_%i", i),"image", "default.png");
-		texConsoleImg.fromPNGFile(fmt("%s/%s", m_sourceDir.c_str(), ImgName.c_str()), GX_TF_RGBA8, ALLOC_MEM2);
+		texConsoleImg.fromImageFile(fmt("%s/%s", m_sourceDir.c_str(), ImgName.c_str()));
 		ImgName = m_source.getString(fmt("BUTTON_%i", i),"image_s", "default.png");
-		texConsoleImgs.fromPNGFile(fmt("%s/%s", m_sourceDir.c_str(), ImgName.c_str()), GX_TF_RGBA8, ALLOC_MEM2);
+		texConsoleImgs.fromImageFile(fmt("%s/%s", m_sourceDir.c_str(), ImgName.c_str()));
 	
 		page = i / 12;
 		row = (i / 4 ) - (page * 3);
