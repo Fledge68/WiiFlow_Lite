@@ -254,6 +254,25 @@ bool GCDump::__WaitForDisc(u8 dsc, u32 msg)
 	return done;
 }
 
+bool GCDump::__CheckMDHack(u32 ID)
+{
+	/********************************************************************/
+	/**** Because some lazy gamedevs don't set a proper max FST size ****/
+	/*** on their first disc some games need a hardcoded hack. Please ***/
+	/****** report unsupported games so we can add an entry for it ******/
+	/********************************************************************/
+	switch(ID >> 8)
+	{
+		case 0x475153: /*** Tales of Symphonia ***/
+			return true;
+		break;
+		default:
+			return false;
+		break;
+	}
+	return false;
+}
+
 s32 GCDump::DumpGame()
 {	
 	static gc_discHdr gcheader ATTRIBUTE_ALIGN(32);
@@ -295,25 +314,28 @@ s32 GCDump::DumpGame()
 		
 		Asciify2(gcheader.title);
 
-		snprintf(folder, sizeof(folder), fmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition));
-		if(!fsop_DirExist(folder))
+		if(!Disc)
 		{
-			gprintf("Creating directory: %s\n", folder);
-			fsop_MakeFolder(folder);
-		}
-		memset(folder, 0, sizeof(folder));
-		snprintf(folder, sizeof(folder), "%s/%s [%.06s]%s", fmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition), gcheader.title, (char *)gcheader.id, Disc ? "2" : "");
-		if(!fsop_DirExist(folder))
-		{
-			gprintf("Creating directory: %s\n", folder);
-			fsop_MakeFolder(folder);
-		}
-		else
-		{
-			gprintf("Skipping game: %s (Already installed)(%d)\n", gcheader.title, Gamesize[MultiGameDump]);
-			gc_done += Gamesize[MultiGameDump];
-			MultiGameDump++;
-			continue;
+			snprintf(folder, sizeof(folder), fmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition));
+			if(!fsop_DirExist(folder))
+			{
+				gprintf("Creating directory: %s\n", folder);
+				fsop_MakeFolder(folder);
+			}
+			memset(folder, 0, sizeof(folder));
+			snprintf(folder, sizeof(folder), "%s/%s [%.06s]", fmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition), gcheader.title, (char *)gcheader.id);
+			if(!fsop_DirExist(folder))
+			{
+				gprintf("Creating directory: %s\n", folder);
+				fsop_MakeFolder(folder);
+			}
+			else
+			{
+				gprintf("Skipping game: %s (Already installed)(%d)\n", gcheader.title, Gamesize[MultiGameDump]);
+				gc_done += Gamesize[MultiGameDump];
+				MultiGameDump++;
+				continue;
+			}
 		}
 
 		ret = __DiscReadRaw(ReadBuffer, NextOffset, 0x440);
@@ -374,10 +396,10 @@ s32 GCDump::DumpGame()
 		gprintf("Data Offset    : 0x%08x\n", FSTOffset+FSTSize);
 		gprintf("Disc size      : %d\n", DiscSize);
 
-		if(writeexfiles)
+		if(writeexfiles && !Disc)
 		{
 			memset(folder, 0, sizeof(folder));
-			snprintf(folder, sizeof(folder), "%s/%s [%.06s]%s/sys", fmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition), gcheader.title, (char *)gcheader.id, Disc ? "2" : "");
+			snprintf(folder, sizeof(folder), "%s/%s [%.06s]/sys", fmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition), gcheader.title, (char *)gcheader.id);
 			if(!fsop_DirExist(folder))
 			{
 				gprintf("Creating directory: %s\n", folder);
@@ -397,8 +419,18 @@ s32 GCDump::DumpGame()
 			gc_done += __DiscWrite(gamepath, 0x2440+NextOffset, ApploaderSize, ReadBuffer);
 		}
 
-		snprintf(gamepath, sizeof(gamepath), "%s/%s [%.06s]%s/game.iso", fmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition), gcheader.title, (char *)gcheader.id, Disc ? "2" : "");
-
+		if(!Disc)
+		{
+			snprintf(gamepath, sizeof(gamepath), "%s/%s [%.06s]/game.iso", fmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition), gcheader.title, (char *)gcheader.id);
+		}
+		else
+		{
+			char *ptz = (char *)NULL;
+			ptz = strstr(gamepath, "game.iso");
+			if(ptz != NULL)				
+				strncpy(ptz, "gam1.iso", 8);
+		}
+		
 		gprintf("Writing %s\n", gamepath);
 		if(compressed)
 		{
@@ -480,7 +512,7 @@ s32 GCDump::DumpGame()
 		}
 		MEM2_free(FSTBuffer);
 
-		if(FSTTotal > FSTSize && !multigamedisc)
+		if((FSTTotal > FSTSize || __CheckMDHack(ID)) && !multigamedisc)
 		{
 			if(Disc)
 			{
@@ -630,7 +662,7 @@ s32 GCDump::CheckSpace(u32 *needed, bool comp)
 		size += multisize;
 		Gamesize[MultiGameDump] = multisize;
 
-		if(FSTTotal > FSTSize && !multigamedisc)
+		if((FSTTotal > FSTSize || __CheckMDHack(ID)) && !multigamedisc)
 		{
 			if(Disc == 0 && !scnddisc)
 				__WaitForDisc(1, 1);

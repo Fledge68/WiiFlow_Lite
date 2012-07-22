@@ -58,6 +58,8 @@ void CMenu::_hideGameSettings(bool instant)
 	m_btnMgr.hide(m_gameSettingsBtnGCLoader_M, instant);
 	m_btnMgr.hide(m_gameSettingsLblCustom, instant);
 	m_btnMgr.hide(m_gameSettingsBtnCustom, instant);
+	m_btnMgr.hide(m_gameSettingsLblLaunchNK, instant);
+	m_btnMgr.hide(m_gameSettingsBtnLaunchNK, instant);
 	m_btnMgr.hide(m_gameSettingsLblOcarina, instant);
 	m_btnMgr.hide(m_gameSettingsBtnOcarina, instant);
 	m_btnMgr.hide(m_gameSettingsLblCheat, instant);
@@ -337,6 +339,8 @@ void CMenu::_showGameSettings(void)
 		{
 			m_btnMgr.show(m_gameSettingsLblCustom);
 			m_btnMgr.show(m_gameSettingsBtnCustom);
+			m_btnMgr.show(m_gameSettingsLblLaunchNK);
+			m_btnMgr.show(m_gameSettingsBtnLaunchNK);
 		}
 		else if(m_cf.getHdr()->type == TYPE_WII_GAME)
 		{
@@ -359,6 +363,8 @@ void CMenu::_showGameSettings(void)
 	{
 		m_btnMgr.hide(m_gameSettingsLblCustom);
 		m_btnMgr.hide(m_gameSettingsBtnCustom);
+		m_btnMgr.hide(m_gameSettingsLblLaunchNK);
+		m_btnMgr.hide(m_gameSettingsBtnLaunchNK);
 	
 		m_btnMgr.hide(m_gameSettingsLblEmulationVal);
 		m_btnMgr.hide(m_gameSettingsLblEmulation);
@@ -376,12 +382,12 @@ void CMenu::_showGameSettings(void)
 	if (m_gameSettingsPage == 5)
 	{
 		m_btnMgr.show(m_gameSettingsLblFlashSave);
-		m_btnMgr.show(m_gameSettingsBtnFlashSave);
+		m_btnMgr.show(m_gameSettingsBtnFlashSave);		
 	}
 	else
 	{
 		m_btnMgr.hide(m_gameSettingsLblFlashSave);
-		m_btnMgr.hide(m_gameSettingsBtnFlashSave);
+		m_btnMgr.hide(m_gameSettingsBtnFlashSave);		
 	}
 
 	u32 i = 0;
@@ -421,6 +427,7 @@ void CMenu::_showGameSettings(void)
 		i = min((u32)m_gcfg2.getInt(id, "aspect_ratio", 0), ARRAY_SIZE(CMenu::_AspectRatio) - 1u);
 		m_btnMgr.setText(m_gameSettingsLblAspectRatioVal, _t(CMenu::_AspectRatio[i].id, CMenu::_AspectRatio[i].text));
 		m_btnMgr.setText(m_gameSettingsBtnCustom, _optBoolToString(m_gcfg2.getOptBool(id, "custom", 0)));
+		m_btnMgr.setText(m_gameSettingsBtnLaunchNK, _optBoolToString(m_gcfg2.getOptBool(id, "useneek", 0)));
 	}
 
 	int j = 0;
@@ -531,6 +538,15 @@ void CMenu::_gameSettings(void)
 					m_gcfg2.remove(id, "custom");
 				else
 					m_gcfg2.setBool(id, "custom", true);
+				_showGameSettings();
+			}
+			else if (m_btnMgr.selected(m_gameSettingsBtnLaunchNK))
+			{
+				bool booloption = m_gcfg2.getBool(id, "useneek");
+				if (booloption != false)
+					m_gcfg2.remove(id, "useneek");
+				else
+					m_gcfg2.setBool(id, "useneek", true);
 				_showGameSettings();
 			}
 			else if(m_btnMgr.selected(m_gameSettingsBtnDevoMemcardEmu))
@@ -795,6 +811,9 @@ void CMenu::_initGameSettingsMenu(CMenu::SThemeData &theme)
  	m_gameSettingsBtnIOSM = _addPicButton(theme, "GAME_SETTINGS/IOS_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 330, 190, 56, 56);
  	m_gameSettingsBtnIOSP = _addPicButton(theme, "GAME_SETTINGS/IOS_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 190, 56, 56);
 
+	m_gameSettingsLblLaunchNK = _addLabel(theme, "GAME_SETTINGS/LAUNCHNEEK", theme.lblFont, L"", 40, 250, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsBtnLaunchNK =  _addButton(theme, "GAME_SETTINGS/LAUNCHNEEK_BTN", theme.btnFont, L"", 330, 250, 240, 56, theme.btnFontColor);
+	
 	m_gameSettingsLblExtractSave = _addLabel(theme, "GAME_SETTINGS/EXTRACT_SAVE", theme.lblFont, L"", 40, 310, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsBtnExtractSave = _addButton(theme, "GAME_SETTINGS/EXTRACT_SAVE_BTN", theme.btnFont, L"", 330, 310, 270, 56, theme.btnFontColor);
 
@@ -815,6 +834,8 @@ void CMenu::_initGameSettingsMenu(CMenu::SThemeData &theme)
 	_setHideAnim(m_gameSettingsBtnVideoP, "GAME_SETTINGS/VIDEO_PLUS", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsLblCustom, "GAME_SETTINGS/CUSTOM", -200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnCustom, "GAME_SETTINGS/CUSTOM_BTN", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsLblLaunchNK, "GAME_SETTINGS/LAUNCHNEEK", -200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsBtnLaunchNK, "GAME_SETTINGS/LAUNCHNEEK_BTN", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsLblDMLGameVideo, "GAME_SETTINGS/DML_VIDEO", -200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsLblDMLVideo, "GAME_SETTINGS/DML_VIDEO_BTN", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnDMLVideoM, "GAME_SETTINGS/DML_VIDEO_MINUS", 200, 0, 1.f, 0.f);
@@ -917,6 +938,7 @@ void CMenu::_textGameSettings(void)
 	m_btnMgr.setText(m_gameSettingsLblNMM, _t("cfgg28", L"NMM"));
 	m_btnMgr.setText(m_gameSettingsLblNoDVD, _t("cfgg29", L"No DVD Patch"));
 	m_btnMgr.setText(m_gameSettingsLblCustom, _t("custom", L"Custom"));
+	m_btnMgr.setText(m_gameSettingsLblLaunchNK, _t("neek1", L"Launch Title with neek2o"));
 	m_btnMgr.setText(m_gameSettingsLblExtractSave, _t("cfgg30", L"Extract Save from NAND"));
 	m_btnMgr.setText(m_gameSettingsBtnExtractSave, _t("cfgg31", L"Extract"));
 	m_btnMgr.setText(m_gameSettingsLblFlashSave, _t("cfgg32", L"Flash Save to NAND"));

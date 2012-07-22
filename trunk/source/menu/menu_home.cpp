@@ -1,6 +1,8 @@
 
 #include "menu.hpp"
 #include "svnrev.h"
+#include "cios.h"
+#include "nk.h"
 
 u32 m_homeLblTitle;
 u32 m_exittoLblTitle;
@@ -15,6 +17,7 @@ u32 m_homeBtnExitToHBC;
 u32 m_homeBtnExitToMenu;
 u32 m_homeBtnExitToPriiloader;
 u32 m_homeBtnExitToBootmii;
+u32 m_homeBtnExitToNeek;
 
 STexture m_homeBg;
 
@@ -84,7 +87,7 @@ bool CMenu::_Home(void)
 		}
 		else if(BTN_HOME_PRESSED)
 		{
-			exitHandler(0);
+			exitHandler(0);			
 			break;
 		}
 		else if(BTN_B_PRESSED)
@@ -125,6 +128,15 @@ bool CMenu::_ExitTo(void)
 				exitHandler(4);
 				break;
 			}
+			else if(m_btnMgr.selected(m_homeBtnExitToNeek))
+			{
+				if(!Launch_nk(0x1000144574641LL, NULL))
+				{
+					error(sfmt("errneek1", L"Cannot launch neek2o. Verify your neek2o setup"));
+					exitHandler(2);
+				}				
+				break;
+			}
 		}
 		else if(BTN_HOME_PRESSED)
 		{
@@ -146,7 +158,7 @@ void CMenu::_showHome(void)
 	m_btnMgr.show(m_homeBtnSettings);
 	m_btnMgr.show(m_homeBtnReloadCache);
 	m_btnMgr.show(m_homeBtnUpdate);
-	m_btnMgr.show(m_homeBtnAbout);
+	m_btnMgr.show(m_homeBtnAbout);	
 	m_btnMgr.show(m_homeBtnExitTo);
 }
 
@@ -159,6 +171,7 @@ void CMenu::_showExitTo(void)
 	m_btnMgr.show(m_homeBtnExitToMenu);
 	m_btnMgr.show(m_homeBtnExitToPriiloader);
 	m_btnMgr.show(m_homeBtnExitToBootmii);
+	m_btnMgr.show(m_homeBtnExitToNeek);
 }
 
 void CMenu::_hideHome(bool instant)
@@ -168,7 +181,7 @@ void CMenu::_hideHome(bool instant)
 	m_btnMgr.hide(m_homeBtnSettings, instant);
 	m_btnMgr.hide(m_homeBtnReloadCache, instant);
 	m_btnMgr.hide(m_homeBtnUpdate, instant);
-	m_btnMgr.hide(m_homeBtnAbout, instant);
+	m_btnMgr.hide(m_homeBtnAbout, instant);	
 	m_btnMgr.hide(m_homeBtnExitTo, instant);
 }
 
@@ -180,6 +193,7 @@ void CMenu::_hideExitTo(bool instant)
 	m_btnMgr.hide(m_homeBtnExitToMenu, instant);
 	m_btnMgr.hide(m_homeBtnExitToPriiloader, instant);
 	m_btnMgr.hide(m_homeBtnExitToBootmii, instant);
+	m_btnMgr.hide(m_homeBtnExitToNeek, instant);
 }
 
 void CMenu::_initHomeAndExitToMenu(CMenu::SThemeData &theme)
@@ -216,11 +230,12 @@ void CMenu::_initHomeAndExitToMenu(CMenu::SThemeData &theme)
 	m_homeBtnExitToMenu = _addButton(theme, "EXIT_TO/MENU", theme.btnFont, L"", 220, 180, 200, 56, theme.btnFontColor);
 	m_homeBtnExitToPriiloader = _addButton(theme, "EXIT_TO/PRIILOADER", theme.btnFont, L"", 220, 240, 200, 56, theme.btnFontColor);
 	m_homeBtnExitToBootmii = _addButton(theme, "EXIT_TO/BOOTMII", theme.btnFont, L"", 220, 300, 200, 56, theme.btnFontColor);
-
+	m_homeBtnExitToNeek = _addButton(theme, "EXIT_TO/NEEK", theme.btnFont, L"", 220, 360, 200, 56, theme.btnFontColor);
 	_setHideAnim(m_homeBtnExitToHBC, "EXIT_TO/HBC", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_homeBtnExitToMenu, "EXIT_TO/MENU", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_homeBtnExitToPriiloader, "EXIT_TO/PRIILOADER", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_homeBtnExitToBootmii, "EXIT_TO/BOOTMII", 0, 0, -2.f, 0.f);
+	_setHideAnim(m_homeBtnExitToNeek, "EXIT_TO/NEEK", 0, 0, -2.f, 0.f);
 
 	_textExitTo();
 	_hideExitTo(true);
@@ -245,4 +260,8 @@ void CMenu::_textExitTo(void)
 	m_btnMgr.setText(m_homeBtnExitToMenu, _t("menu", L"System Menu"));
 	m_btnMgr.setText(m_homeBtnExitToPriiloader, _t("prii", L"Priiloader"));
 	m_btnMgr.setText(m_homeBtnExitToBootmii, _t("bootmii", L"Bootmii"));
+	if(!neek2o())
+		m_btnMgr.setText(m_homeBtnExitToNeek, _t("neek2o", L"neek2o"));
+	else
+		m_btnMgr.setText(m_homeBtnExitToNeek, _t("real", L"Real Nand"));
 }

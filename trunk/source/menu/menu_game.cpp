@@ -33,6 +33,7 @@
 #include "gecko.h"
 #include "homebrew.h"
 #include "types.h"
+#include "nk.h"
 #include "gc/gc.h"
 #include "gc/fileOps.h"
 #include "gc/gcdisc.hpp"
@@ -1057,17 +1058,30 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	
 	int userIOS = m_gcfg2.getInt(id, "ios", 0);
 	u64 gameTitle = TITLE_ID(hdr->settings[0],hdr->settings[1]);
+	bool useNK2o = m_gcfg2.getBool(id, "useneek", false);
 
 	m_gcfg1.save(true);
 	m_gcfg2.save(true);
 	m_cat.save(true);
 	m_cfg.save(true);
+	
+	if(useNK2o && !emu_disabled)
+	{
+		cleanup(true);
+		if(!Launch_nk(gameTitle, emuPath.c_str()))
+		{
+			error(_t("errneek1", L"Cannot launch neek2o. Verify your neek2o setup"));
+			Sys_LoadMenu();
+		}
+		while(1);
+	}
+	
 	cleanup();
 	
 	if(!forwarder)
 	{
 		if(!emu_disabled)
-		{
+		{			
 			Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
 			Nand::Instance()->Enable_Emu();
 		}
@@ -1150,6 +1164,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	{
 		u32 cover = 0;
 		#ifndef DOLPHIN
+		Disc_Init();
 		if(!neek2o())
 		{
 			Disc_SetUSB(NULL, false);

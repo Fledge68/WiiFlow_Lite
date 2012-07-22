@@ -132,5 +132,6 @@ private:
 	s32 __DiscWriteFile(FILE *f, u64 offset, u32 length, u8 *ReadBuffer);
 	void __AnalizeMultiDisc();
 	bool __WaitForDisc(u8 dsc, u32 msg);
+	bool __CheckMDHack(u32 ID);
 };
 #endif

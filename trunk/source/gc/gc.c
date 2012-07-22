@@ -148,20 +148,31 @@ bool DEVO_Installed(const char* path)
 	FILE *f = fopen(loader_path, "rb");
 	if(f)
 	{
-		devo = true;
+		u8 *tbuf = (u8 *)MEM2_alloc(0x04);
+		fread(tbuf, 1, 4, f);
+		if(*(vu32*)tbuf == 0x4800004c)
+			devo = true;
+			
+		MEM2_free(tbuf);
 		fclose(f);
 	}
 	return devo;
 }
 
-void DEVO_SetOptions(const char *path, const char *partition, const char* loader, const char *gameID, bool memcard_emu)
+void DEVO_ShowReport(void)
+{
+	gprintf("\n%.72s\n\n", (char *)0x93100004);
+}
+
+void DEVO_SetOptions(const char *isopath, const char *partition, const char *loader, const char *gameID, bool memcard_emu)
 {
 	//Read in loader.bin
 	char loader_path[256];
 	snprintf(loader_path, sizeof(loader_path), "%s/loader.bin", loader);
 	FILE *f = fopen(loader_path, "rb");
 	if(f)
-	{
+	{	
+		gprintf("Read devolution loader: \"%s\"\n", loader_path);
 		fseek(f, 0, SEEK_END);
 		u32 size = ftell(f);
 		rewind(f);
@@ -170,15 +181,21 @@ void DEVO_SetOptions(const char *path, const char *partition, const char* loader
 		DCFlushRange(loader_bin, size);
 		fclose(f);
 	}
+	else
+		gprintf("Uh oh!! What now?\n");
+		
+	DEVO_ShowReport();	
 
 	//start writing cfg to mem
 	struct stat st;
 	int data_fd;
+	char iso2path[256];
 
-	stat(path, &st);
-	FILE *iso_file = fopen(path, "rb");
-	fread((u8*)0x80000000, 1, 32, iso_file);
-	fclose(iso_file);
+	stat(isopath, &st);
+	f = fopen(isopath, "rb");
+	gprintf("Read iso file: \"%s\"\n", isopath);
+	fread((u8*)0x80000000, 1, 32, f);
+	fclose(f);
 
 	// fill out the Devolution config struct
 	memset(DEVO_CONFIG, 0, sizeof(*DEVO_CONFIG));
@@ -186,6 +203,22 @@ void DEVO_SetOptions(const char *path, const char *partition, const char* loader
 	DEVO_CONFIG->version = 0x00000100;
 	DEVO_CONFIG->device_signature = st.st_dev;
 	DEVO_CONFIG->disc1_cluster = st.st_ino;
+	
+	// If 2nd iso file tell Devo about it
+	strcpy(iso2path, isopath);
+	char *ptz = (char *)NULL;
+	ptz = strstr(iso2path, "game.iso");
+	if(ptz != NULL)				
+		strncpy(ptz, "gam1.iso", 8);
+		
+	f = fopen(iso2path, "rb");
+	if(f)
+	{
+		gprintf("Found 2nd iso file for multi DVD game: \"%s\"\n", iso2path);
+		stat(iso2path, &st);
+		DEVO_CONFIG->disc2_cluster = st.st_ino;
+		fclose(f);		
+	}
 
 	// make sure these directories exist, they are required for Devolution to function correctly
 	char full_path[256];

@@ -474,6 +474,8 @@ private:
 
 	u16 m_gameSettingsLblCustom;
 	u16 m_gameSettingsBtnCustom;
+	u16 m_gameSettingsLblLaunchNK;
+	u16 m_gameSettingsBtnLaunchNK;
 
 	u16 m_gameSettingsLblOcarina;
 	u16 m_gameSettingsBtnOcarina;
