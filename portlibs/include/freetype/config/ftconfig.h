@@ -1,10 +1,11 @@
+/* ftconfig.h.  Generated from ftconfig.in by configure.  */
 /***************************************************************************/
 /*                                                                         */
-/*  ftconfig.h                                                             */
+/*  ftconfig.in                                                            */
 /*                                                                         */
-/*    ANSI-specific configuration file (specification only).               */
+/*    UNIX-specific configuration file (specification only).               */
 /*                                                                         */
-/*  Copyright 1996-2004, 2006-2008, 2010-2011 by                           */
+/*  Copyright 1996-2004, 2006-2009, 2011 by                                */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -31,9 +32,8 @@
   /* contains system-specific files that are always included first when    */
   /* building the library.                                                 */
   /*                                                                       */
-  /* This ANSI version should stay in `include/freetype/config'.           */
-  /*                                                                       */
   /*************************************************************************/
+
 
 #ifndef __FTCONFIG_H__
 #define __FTCONFIG_H__
@@ -58,6 +58,11 @@ FT_BEGIN_HEADER
   /*************************************************************************/
 
 
+#define HAVE_UNISTD_H 1
+#define HAVE_FCNTL_H 1
+#define HAVE_STDINT_H 1
+
+
   /* There are systems (like the Texas Instruments 'C54x) where a `char' */
   /* has 16 bits.  ANSI C says that sizeof(char) is always 1.  Since an  */
   /* `int' has 16 bits also for this system, sizeof(int) gives 1 which   */
@@ -70,6 +75,22 @@ FT_BEGIN_HEADER
 #define FT_CHAR_BIT  CHAR_BIT
 #endif
 
+
+/* #undef FT_USE_AUTOCONF_SIZEOF_TYPES */
+#ifdef FT_USE_AUTOCONF_SIZEOF_TYPES
+
+#define SIZEOF_INT 4
+#define SIZEOF_LONG 4
+#define FT_SIZEOF_INT  SIZEOF_INT
+#define FT_SIZEOF_LONG SIZEOF_LONG
+
+#else /* !FT_USE_AUTOCONF_SIZEOF_TYPES */
+
+  /* Following cpp computation of the bit length of int and long */
+  /* is copied from default include/freetype/config/ftconfig.h.  */
+  /* If any improvement is required for this file, it should be  */
+  /* applied to the original header file for the builders that   */
+  /* does not use configure script.                              */
 
   /* The size of an `int' type.  */
 #if                                 FT_UINT_MAX == 0xFFFFUL
@@ -93,6 +114,8 @@ FT_BEGIN_HEADER
 #else
 #error "Unsupported size of `long' type!"
 #endif
+
+#endif /* !FT_USE_AUTOCONF_SIZEOF_TYPES */
 
 
   /* FT_UNUSED is a macro used to indicate that a given parameter is not  */
@@ -143,73 +166,29 @@ FT_BEGIN_HEADER
 #endif
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Section>                                                             */
-  /*    basic_types                                                        */
-  /*                                                                       */
-  /*************************************************************************/
-
-
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Type>                                                                */
-  /*    FT_Int16                                                           */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    A typedef for a 16bit signed integer type.                         */
-  /*                                                                       */
-  typedef signed short  FT_Int16;
-
-
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Type>                                                                */
-  /*    FT_UInt16                                                          */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    A typedef for a 16bit unsigned integer type.                       */
-  /*                                                                       */
-  typedef unsigned short  FT_UInt16;
-
-  /* */
-
-
-  /* this #if 0 ... #endif clause is for documentation purposes */
-#if 0
-
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Type>                                                                */
-  /*    FT_Int32                                                           */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    A typedef for a 32bit signed integer type.  The size depends on    */
-  /*    the configuration.                                                 */
-  /*                                                                       */
-  typedef signed XXX  FT_Int32;
-
-
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Type>                                                                */
-  /*    FT_UInt32                                                          */
-  /*                                                                       */
-  /*    A typedef for a 32bit unsigned integer type.  The size depends on  */
-  /*    the configuration.                                                 */
-  /*                                                                       */
-  typedef unsigned XXX  FT_UInt32;
-
-  /* */
-
+  /* Fix compiler warning with sgi compiler */
+#if defined( __sgi ) && !defined( __GNUC__ )
+#if defined( _COMPILER_VERSION ) && ( _COMPILER_VERSION >= 730 )
+#pragma set woff 3505
+#endif
 #endif
 
-#if FT_SIZEOF_INT == (32 / FT_CHAR_BIT)
+
+  /*************************************************************************/
+  /*                                                                       */
+  /* IntN types                                                            */
+  /*                                                                       */
+  /*   Used to guarantee the size of some specific integers.               */
+  /*                                                                       */
+  typedef signed short    FT_Int16;
+  typedef unsigned short  FT_UInt16;
+
+#if FT_SIZEOF_INT == 4
 
   typedef signed int      FT_Int32;
   typedef unsigned int    FT_UInt32;
 
-#elif FT_SIZEOF_LONG == (32 / FT_CHAR_BIT)
+#elif FT_SIZEOF_LONG == 4
 
   typedef signed long     FT_Int32;
   typedef unsigned long   FT_UInt32;
@@ -220,12 +199,12 @@ FT_BEGIN_HEADER
 
 
   /* look up an integer type that is at least 32 bits */
-#if FT_SIZEOF_INT >= (32 / FT_CHAR_BIT)
+#if FT_SIZEOF_INT >= 4
 
   typedef int            FT_Fast;
   typedef unsigned int   FT_UFast;
 
-#elif FT_SIZEOF_LONG >= (32 / FT_CHAR_BIT)
+#elif FT_SIZEOF_LONG >= 4
 
   typedef long           FT_Fast;
   typedef unsigned long  FT_UFast;
@@ -235,7 +214,7 @@ FT_BEGIN_HEADER
 
   /* determine whether we have a 64-bit int type for platforms without */
   /* Autoconf                                                          */
-#if FT_SIZEOF_LONG == (64 / FT_CHAR_BIT)
+#if FT_SIZEOF_LONG == 8
 
   /* FT_LONG64 must be defined if a 64-bit type is available */
 #define FT_LONG64
@@ -271,7 +250,7 @@ FT_BEGIN_HEADER
 #define FT_LONG64
 #define FT_INT64  long long int
 
-#endif /* FT_SIZEOF_LONG == (64 / FT_CHAR_BIT) */
+#endif /* FT_SIZEOF_LONG == 8 */
 
 
   /*************************************************************************/
@@ -285,7 +264,10 @@ FT_BEGIN_HEADER
 
 #ifdef __STDC__
 
-  /* undefine the 64-bit macros in strict ANSI compilation mode */
+  /* Undefine the 64-bit macros in strict ANSI compilation mode.  */
+  /* Since `#undef' doesn't survive in configuration header files */
+  /* we use the postprocessing facility of AC_CONFIG_HEADERS to   */
+  /* replace the leading `/' with `#'.                            */
 #undef FT_LONG64
 #undef FT_INT64
 

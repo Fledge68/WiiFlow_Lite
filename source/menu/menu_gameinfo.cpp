@@ -48,14 +48,21 @@ extern const u8		keyboard_png[];
 extern const u8		wiispeak_png[];
 
 //Ratings
-extern const u8		norating_png[];
+extern const u8		norating_jpg[];
+extern const u32	norating_jpg_size;
 
-extern const u8		esrb_ec_png[];
-extern const u8		esrb_e_png[];
-extern const u8		esrb_eten_png[];
-extern const u8		esrb_t_png[];
-extern const u8		esrb_m_png[];
-extern const u8		esrb_ao_png[];
+extern const u8		esrb_ec_jpg[];
+extern const u32	esrb_ec_jpg_size;
+extern const u8		esrb_e_jpg[];
+extern const u32	esrb_e_jpg_size;
+extern const u8		esrb_eten_jpg[];
+extern const u32	esrb_eten_jpg_size;
+extern const u8		esrb_t_jpg[];
+extern const u32	esrb_t_jpg_size;
+extern const u8		esrb_m_jpg[];
+extern const u32	esrb_m_jpg_size;
+extern const u8		esrb_ao_jpg[];
+extern const u32	esrb_ao_jpg_size;
 
 extern const u8		cero_a_png[];
 extern const u8		cero_b_png[];
@@ -343,7 +350,7 @@ void CMenu::_textGameInfo(void)
 		}
 		
 		//Ratings
-		m_rating.fromPNG(norating_png);
+		m_rating.fromJPG(norating_jpg, norating_jpg_size);
 		switch(gameinfo.RatingType)
 		{
 			case GAMETDB_RATING_TYPE_CERO:
@@ -360,17 +367,17 @@ void CMenu::_textGameInfo(void)
 				break;
 			case GAMETDB_RATING_TYPE_ESRB:
 				if (gameinfo.RatingValue == "E")
-					m_rating.fromPNG(esrb_e_png);
+					m_rating.fromJPG(esrb_e_jpg, esrb_e_jpg_size);
 				else if (gameinfo.RatingValue == "EC")
-					m_rating.fromPNG(esrb_ec_png);
+					m_rating.fromJPG(esrb_ec_jpg, esrb_ec_jpg_size);
 				else if (gameinfo.RatingValue == "E10+")
-					m_rating.fromPNG(esrb_eten_png);
+					m_rating.fromJPG(esrb_eten_jpg, esrb_eten_jpg_size);
 				else if (gameinfo.RatingValue == "T")
-					m_rating.fromPNG(esrb_t_png);
+					m_rating.fromJPG(esrb_t_jpg, esrb_t_jpg_size);
 				else if (gameinfo.RatingValue == "M")
-					m_rating.fromPNG(esrb_m_png);
+					m_rating.fromJPG(esrb_m_jpg, esrb_m_jpg_size);
 				else if (gameinfo.RatingValue == "AO")
-					m_rating.fromPNG(esrb_ao_png);
+					m_rating.fromJPG(esrb_ao_jpg, esrb_ao_jpg_size);
 				break;
 			case GAMETDB_RATING_TYPE_PEGI:
 				if (gameinfo.RatingValue == "3")
