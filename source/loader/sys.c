@@ -8,7 +8,8 @@
 #include <string.h>
 
 #include "wiiuse/wpad.h"
-#include "mem2.hpp"
+#include "memory/mem2.hpp"
+#include "memory/memory.h"
 #include "sys.h"
 #include "gecko.h"
 #include "channel_launcher.h"
@@ -30,7 +31,6 @@ static bool return_to_disable = false;
 static bool return_to_bootmii = false;
 
 extern void __exception_closeall();
-static vu16* const _dspReg = (u16*)0xCC005000;
 extern u32 __PADDisableRecalibration(s32 disable);
 
 void __Wpad_PowerCallback()
@@ -89,12 +89,22 @@ void Sys_ExitTo(int option)
 
 	//magic word to force wii menu in priiloader.
 	if(return_to_menu)
-		*(vu32*)0x8132FFFB = 0x50756e65;
+	{
+		*Priiloader_CFG1 = 0x50756E65;
+		*Priiloader_CFG2 = 0x50756E65;
+	}
 	else if(return_to_priiloader)
-		*(vu32*)0x8132FFFB = 0x4461636f;
+	{
+		*Priiloader_CFG1 = 0x4461636F;
+		*Priiloader_CFG2 = 0x4461636F;
+	}
 	else
-		*(vu32*)0x8132FFFB = 0xffffffff;
-	DCFlushRange((void *)(0x8132FFFB), 4);
+	{
+		*Priiloader_CFG1 = 0xFFFFFFFF;
+		*Priiloader_CFG2 = 0xFFFFFFFF;
+	}
+	DCFlushRange((void*)Priiloader_CFG1, 4);
+	DCFlushRange((void*)Priiloader_CFG2, 4);
 }
 
 void Sys_Exit(void)
