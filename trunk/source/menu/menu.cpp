@@ -40,7 +40,8 @@ extern const u8 btnplus_png[];
 extern const u8 btnpluss_png[];
 extern const u8 btnminus_png[];
 extern const u8 btnminuss_png[];
-extern const u8 background_png[];
+extern const u8 background_jpg[];
+extern const u32 background_jpg_size;
 extern const u8 butleft_png[];
 extern const u8 butcenter_png[];
 extern const u8 butright_png[];
@@ -1077,8 +1078,8 @@ void CMenu::_buildMenus(void)
 	theme.btnTexMinusS.fromPNG(btnminuss_png);
 	theme.btnTexMinusS = _texture(theme.texSet, "GENERAL", "minus_button_texture_selected", theme.btnTexMinusS); 
 	// Default background
-	theme.bg.fromPNG(background_png, GX_TF_RGBA8, ALLOC_MEM2);
-	m_mainBgLQ.fromPNG(background_png, GX_TF_CMPR, ALLOC_MEM2, 64, 64);
+	theme.bg.fromJPG(background_jpg, background_jpg_size);
+	m_mainBgLQ.fromJPG(background_jpg, background_jpg_size, GX_TF_CMPR, ALLOC_MEM2, 64, 64);
 	m_gameBgLQ = m_mainBgLQ;
 
 	// Build menus

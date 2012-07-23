@@ -33,7 +33,8 @@ extern const u32 dvdskin_greentwo_jpg_size;
 extern const u8 nopic_png[];
 extern const u8 loading_png[];
 extern const u8 flatnopic_png[];
-extern const u8 flatloading_png[];
+extern const u8 flatloading_jpg[];
+extern const u32 flatloading_jpg_size;
 
 static const int black_len = 16;
 static const char* black[black_len] = {"RZZJEL","RZNJ01","SEKJ99","SX3J01","SX3P01","R5WJA4","RUYJ99","S3HJ08","SJBJ01","CKBE88","CCPE01","SMMP01","MDUE01","SL2J01","APR","AFR"};
@@ -1857,7 +1858,7 @@ bool CCoverFlow::start(const char *id)
 	else
 	{
 		if (m_pngLoadCoverFlat.empty() || STexture::TE_OK != m_loadingTexture.fromImageFile(m_pngLoadCoverFlat.c_str(), GX_TF_CMPR, ALLOC_MEM2, 32, 512))
-			if (STexture::TE_OK != m_loadingTexture.fromPNG(flatloading_png, GX_TF_CMPR, ALLOC_MEM2, 32, 512)) return false;
+			if (STexture::TE_OK != m_loadingTexture.fromJPG(flatloading_jpg, flatloading_jpg_size, GX_TF_CMPR, ALLOC_MEM2, 32, 512)) return false;
 
 		if (m_pngNoCoverFlat.empty() || STexture::TE_OK != m_noCoverTexture.fromImageFile(m_pngNoCoverFlat.c_str(), GX_TF_CMPR, ALLOC_MEM2, 32, 512))
 			if (STexture::TE_OK != m_noCoverTexture.fromPNG(flatnopic_png, GX_TF_CMPR, ALLOC_MEM2, 32, 512)) return false;
