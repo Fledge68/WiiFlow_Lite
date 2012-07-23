@@ -27,6 +27,9 @@ extern "C"
 #define	 Online_Check	((vu32*)0x80003180)
 #define	 GameID_Address	((vu32*)0x80003184)
 
+#define Priiloader_CFG1	((vu32*)0x8132FFFB)
+#define Priiloader_CFG2	((vu32*)0x817FEFF0)
+
 #ifdef __cplusplus
 }
 #endif
