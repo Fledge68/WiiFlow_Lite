@@ -53,37 +53,39 @@ typedef struct
 
 # define UnsignedToFloat(u)		 (((double)((long)(u - 2147483647L - 1))) + 2147483648.0)
 
-static double ConvertFromIeeeExtended(const unsigned char* bytes)
+static double ConvertFromIeeeExtended(const u8* bytes)
 {
 	double	f;
 	int	expon;
-	unsigned long hiMant, loMant;
+	u64 hiMant, loMant;
 
 	expon = ((bytes[0] & 0x7F) << 8) | (bytes[1] & 0xFF);
-	hiMant	=	((unsigned long)(bytes[2] & 0xFF) << 24)
-			|	((unsigned long)(bytes[3] & 0xFF) << 16)
-			|	((unsigned long)(bytes[4] & 0xFF) << 8)
-			|	((unsigned long)(bytes[5] & 0xFF));
-	loMant	=	((unsigned long)(bytes[6] & 0xFF) << 24)
-			|	((unsigned long)(bytes[7] & 0xFF) << 16)
-			|	((unsigned long)(bytes[8] & 0xFF) << 8)
-			|	((unsigned long)(bytes[9] & 0xFF));
 
-	if (expon == 0 && hiMant == 0 && loMant == 0) {
+	hiMant	=	((u64)(bytes[2] & 0xFF) << 24)
+			|	((u64)(bytes[3] & 0xFF) << 16)
+			|	((u64)(bytes[4] & 0xFF) << 8)
+			|	((u64)(bytes[5] & 0xFF));
+
+	loMant	=	((u64)(bytes[6] & 0xFF) << 24)
+			|	((u64)(bytes[7] & 0xFF) << 16)
+			|	((u64)(bytes[8] & 0xFF) << 8)
+			|	((u64)(bytes[9] & 0xFF));
+
+	if(expon == 0 && hiMant == 0 && loMant == 0)
 		f = 0;
-	}
-	else {
-		if (expon == 0x7FFF) {
+	else 
+	{
+		if(expon == 0x7FFF)
 			f = HUGE_VAL;
-		}
-		else {
+		else
+		{
 			expon -= 16383;
-			f  = ldexp(UnsignedToFloat(hiMant), expon-=31);
+			f = ldexp(UnsignedToFloat(hiMant), expon-=31);
 			f += ldexp(UnsignedToFloat(loMant), expon-=32);
 		}
 	}
 
-	if (bytes[0] & 0x80)
+	if(bytes[0] & 0x80)
 		return -f;
 	else
 		return f;
@@ -227,9 +229,7 @@ int AifDecoder::Read(u8 * buffer, int buffer_size, int)
 
 	int read = file_fd->read(buffer, buffer_size);
 	if(read > 0)
-	{
 		CurPos += read;
-	}
 
 	return read;
 }

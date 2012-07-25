@@ -64,6 +64,7 @@ public:
 	bool wide(void) const { return m_wide; }
 	bool vid_50hz(void) const { return m_50hz; }
 	u8 getAA(void) const { return m_aa; }
+	bool showingWaitMessage() { return m_showingWaitMessages; }
 	void set2DViewport(u32 w, u32 h, int x, int y);
 	void prepareStencil(void);
 	void renderStencil(void);

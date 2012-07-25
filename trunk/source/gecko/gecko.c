@@ -16,7 +16,6 @@
 /* init-globals */
 bool geckoinit = false;
 bool textVideoInit = false;
-bool geckoDisable = false;
 bool bufferMessages = true;
 bool WriteToSD = false;
 
@@ -108,8 +107,6 @@ void WriteToFile(char* tmp)
 //using the gprintf from crediar because it is smaller than mine
 void gprintf( const char *format, ... )
 {
-	if(geckoDisable)
-		return;
 	char *tmp = NULL;
 	va_list va;
 	va_start(va, format);
@@ -182,11 +179,6 @@ bool InitGecko()
 	}
 	else
 		return false;
-}
-
-void GeckoDisable()
-{
-	geckoDisable = true;
 }
 
 void AllocSDGeckoBuffer()

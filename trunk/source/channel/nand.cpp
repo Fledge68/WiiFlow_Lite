@@ -315,7 +315,7 @@ s32 Nand::__configread(void)
 	configloaded = configloaded ? false : true;
 
 	if(tbdec && configloaded)
-		return 1;		
+		return 1;
 
 	return 0;
 }
@@ -422,10 +422,10 @@ u32 Nand::__configsetsetting(const char *item, const char *val)
 void Nand::__FATify(char *ptr, const char *str)
 {
 	char ctr;
-	while ((ctr = *(str++)) != '\0') 
+	while((ctr = *(str++)) != '\0') 
 	{
 		const char *esc;
-		switch (ctr) 
+		switch(ctr) 
 		{
 			case '"':
 				esc = "&qt;";
@@ -468,13 +468,20 @@ void Nand::__NANDify(char *str)
 	{
 		if(c == '&') 
 		{
-			if(!strncmp(src, "qt;", 3)) c = '"';    
-			else if (!strncmp(src, "st;", 3)) c = '*';            
-			else if (!strncmp(src, "cl;", 3)) c = ':';            
-			else if (!strncmp(src, "lt;", 3)) c = '<';      
-			else if (!strncmp(src, "gt;", 3)) c = '>';    
-			else if (!strncmp(src, "qm;", 3)) c = '?';    
-			else if (!strncmp(src, "vb;", 3)) c = '|';     
+			if(!strncmp(src, "qt;", 3))
+				c = '"';
+			else if(!strncmp(src, "st;", 3))
+				c = '*';
+			else if(!strncmp(src, "cl;", 3))
+				c = ':';
+			else if(!strncmp(src, "lt;", 3))
+				c = '<';
+			else if(!strncmp(src, "gt;", 3))
+				c = '>';
+			else if(!strncmp(src, "qm;", 3))
+				c = '?';
+			else if(!strncmp(src, "vb;", 3))
+				c = '|';
 
 			if (c != '&')
 				src += 3;
@@ -558,7 +565,7 @@ s32 Nand::__FlashNandFile(const char *source, const char *dest)
 			const char *file = strrchr(dest, '/')+1;
 			dumper(NandDone, NandSize, fsize, FileDone, FilesDone, FoldersDone, (char *)file, data);
 		}
-	}	
+	}
 	gprintf(" done!\n");
 	FilesDone++;
 	if(showprogress)
@@ -568,13 +575,13 @@ s32 Nand::__FlashNandFile(const char *source, const char *dest)
 	}
 	ISFS_Close(fd);
 	MEM2_free(buffer);
-	fclose(file);	
+	fclose(file);
 	return 1;
 }
 
 s32 Nand::__DumpNandFile(const char *source, const char *dest)
 {
-	FileDone = 0;	
+	FileDone = 0;
 	s32 fd = ISFS_Open(source, ISFS_OPEN_READ);
 	if (fd < 0) 
 	{
@@ -667,8 +674,8 @@ s32 Nand::__DumpNandFile(const char *source, const char *dest)
 		dumper(NandDone, NandSize, status->file_length, FileDone, FilesDone, FoldersDone, (char *)file, data);
 	}
 	gprintf(" done!\n");
-	fclose(file);	
-	ISFS_Close(fd);	
+	fclose(file);
+	ISFS_Close(fd);
 	MEM2_free(status);
 	MEM2_free(buffer);
 
@@ -705,16 +712,16 @@ s32 Nand::__FlashNandFolder(const char *source, const char *dest)
 
 		if(ent->d_type == DT_DIR)
 		{
-			__NANDify(ndest);	
+			__NANDify(ndest);
 			if(!fake)
 			{
 				ISFS_CreateDir(ndest, 0, 3, 3, 3);
 				FoldersDone++;
 			}
-			__FlashNandFolder(nsource, ndest);			
+			__FlashNandFolder(nsource, ndest);
 		}
 		else
-		{			
+		{
 			__NANDify(ndest);
 			__FlashNandFile(nsource, ndest);
 		}
@@ -730,18 +737,18 @@ s32 Nand::__DumpNandFolder(const char *source, const char *dest)
 	char ndest[MAX_FAT_PATH];
 	char tdest[MAX_FAT_PATH];
 
-	__GetNameList(source, &names, &cnt);	
+	__GetNameList(source, &names, &cnt);
 
 	for(i = 0; i < cnt; i++) 
 	{
 		if(source[strlen(source)-1] == '/')
 			snprintf(nsource, sizeof(nsource), "%s%s", source, names[i].name);
 		else
-			snprintf(nsource, sizeof(nsource), "%s/%s", source, names[i].name);		
+			snprintf(nsource, sizeof(nsource), "%s/%s", source, names[i].name);
 
 		if(!names[i].type)
 		{
-			__FATify(tdest, nsource);			
+			__FATify(tdest, nsource);
 			snprintf(ndest, sizeof(ndest), "%s%s", dest, tdest);
 			__DumpNandFile(nsource, ndest);
 		}
@@ -749,7 +756,7 @@ s32 Nand::__DumpNandFolder(const char *source, const char *dest)
 		{
 			if(!fake)
 			{
-				__FATify(tdest, nsource);						
+				__FATify(tdest, nsource);
 				CreatePath("%s%s", dest, tdest);
 				FoldersDone++;
 			}
@@ -769,7 +776,7 @@ void Nand::CreatePath(const char *path, ...)
 	if((vasprintf(&folder, path, args) >= 0) && folder)
 	{
 		if(folder[strlen(folder)-1] == '/')
-			folder[strlen(folder)-1] = 0;		
+			folder[strlen(folder)-1] = 0;
 
 		char *check = folder;
 		while (true)
@@ -840,9 +847,9 @@ s32 Nand::FlashToNAND(const char *source, const char *dest, dump_callback_t i_du
 	data = i_data;
 	dumper = i_dumper;
 	fake = false;
-	showprogress = true;	
+	showprogress = true;
 	__FlashNandFolder(source, dest);
-	return 0;	
+	return 0;
 }
 
 s32 Nand::DoNandDump(const char *source, const char *dest, dump_callback_t i_dumper, void *i_data)
@@ -851,7 +858,7 @@ s32 Nand::DoNandDump(const char *source, const char *dest, dump_callback_t i_dum
 	dumper = i_dumper;
 	fake = false;
 	showprogress = true;
-	u32 temp = 0;	
+	u32 temp = 0;
 	s32 ret = ISFS_ReadDir(source, NULL, &temp);
 	if(ret < 0)
 	{
@@ -862,10 +869,8 @@ s32 Nand::DoNandDump(const char *source, const char *dest, dump_callback_t i_dum
 		__DumpNandFile(source, ndest);
 	}
 	else
-	{		
 		__DumpNandFolder(source, dest);
-	}	
-	return 0;	
+	return 0;
 }
 
 s32 Nand::CalcFlashSize(const char *source, dump_callback_t i_dumper, void *i_data)
@@ -874,8 +879,8 @@ s32 Nand::CalcFlashSize(const char *source, dump_callback_t i_dumper, void *i_da
 	dumper = i_dumper;
 	fake = true;
 	showprogress = true;
-	__FlashNandFolder(source, "");	
-	return NandSize;	
+	__FlashNandFolder(source, "");
+	return NandSize;
 }
 
 s32 Nand::CalcDumpSpace(const char *source, dump_callback_t i_dumper, void *i_data)
@@ -883,17 +888,17 @@ s32 Nand::CalcDumpSpace(const char *source, dump_callback_t i_dumper, void *i_da
 	data = i_data;
 	dumper = i_dumper;
 	fake = true;
-	showprogress = true;		
+	showprogress = true;
 
-	u32 temp = 0;	
+	u32 temp = 0;
 
 	s32 ret = ISFS_ReadDir(source, NULL, &temp);
-	if(ret < 0)		
+	if(ret < 0)
 		__DumpNandFile(source, "");
 	else
 		__DumpNandFolder(source, "");
 
-	return NandSize;	
+	return NandSize;
 }
 
 void Nand::ResetCounters(void)
@@ -1021,5 +1026,5 @@ s32 Nand::Do_Region_Change(string id)
 		}
 	}
 	__configwrite();
-	return 1;	
+	return 1;
 }

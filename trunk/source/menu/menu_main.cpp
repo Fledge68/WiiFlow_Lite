@@ -188,10 +188,11 @@ int CMenu::GetCoverStatusAsync(CMenu *m)
 
 void CMenu::LoadView(void)
 {
-	_showWaitMessage();
-	_hideMain();
-	
 	m_curGameId = m_cf.getId();
+
+	_hideMain(true);
+	m_cf.clear();
+	_showWaitMessage();
 
 	_loadList();
 	_showMain();
@@ -418,8 +419,10 @@ int CMenu::main(void)
 			}
 			else if(m_btnMgr.selected(m_mainBtnDVD))
 			{
-				_showWaitMessage();
 				_hideMain(true);
+				m_cf.clear();
+				_showWaitMessage();
+
 				dir_discHdr hdr;
 				memset(&hdr, 0, sizeof(dir_discHdr));
 				memcpy(&hdr.id, "dvddvd", 6);

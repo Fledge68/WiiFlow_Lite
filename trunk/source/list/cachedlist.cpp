@@ -38,13 +38,13 @@ void CachedList<T>::Load(string path, string containing, string m_lastLanguage, 
 		struct stat filestat, discinfo, cache;
 		gprintf("%s\n", path.c_str());
 		if(stat(path.c_str(), &filestat) == -1) 
-			return;			
+			return;
 		
 		bool update_lang = m_lastLanguage != m_curLanguage;
 		bool noDB = stat(m_database.c_str(), &cache) == -1;
 		bool mtimes = filestat.st_mtime > cache.st_mtime;
 		if(strcasestr(m_discinf.c_str(), "wbfs") != NULL && stat(m_discinf.c_str(), &discinfo) != -1)		
-			ditimes = discinfo.st_mtime > cache.st_mtime;		
+			ditimes = discinfo.st_mtime > cache.st_mtime;
 
 		m_update = update_lang || noDB || mtimes || ditimes;
 		if(m_update) 
@@ -94,7 +94,7 @@ void CachedList<T>::Load(string path, string containing, string m_lastLanguage, 
 		remove(path.c_str());
 		
 		m_loaded = true;
-		m_update = false;		
+		m_update = false;
 		
 		if(!music && pathlist.size() > 0)
 		{
@@ -103,7 +103,7 @@ void CachedList<T>::Load(string path, string containing, string m_lastLanguage, 
 		}
 	}
 	else
-	{		
+	{
 		CCache<T>(*this, m_database, LOAD);
 		m_loaded = true;
 	}

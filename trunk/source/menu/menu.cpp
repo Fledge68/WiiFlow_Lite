@@ -1812,8 +1812,9 @@ void CMenu::_mainLoopCommon(bool withCF, bool blockReboot, bool adjusting)
 
 	m_btnMgr.draw();
 	ScanInput();
+	if(!m_vid.showingWaitMessage())
+		m_vid.render();
 
-	m_vid.render();
 	if(!blockReboot)
 	{
 		if(withCF && Sys_Exiting())
