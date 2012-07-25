@@ -53,6 +53,8 @@ wbfs_disc_t* WBFS_Ext_OpenDisc(u8 *discid, char *fname)
 		if (fd == -1) return NULL;
 
 		wbfs_disc_t *iso_file = MEM2_alloc(sizeof(wbfs_disc_t));
+		memset(iso_file, 0, sizeof(wbfs_disc_t));
+
 		if (iso_file == NULL) 
 			return NULL;
 

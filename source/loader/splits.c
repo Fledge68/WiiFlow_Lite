@@ -12,7 +12,7 @@
 #include <ctype.h>
 
 #include "splits.h"
-#include "gecko/gecko.h"
+#include "gecko.h"
 
 #define off64_t off_t
 #define FMT_llu "%llu"
@@ -21,7 +21,7 @@
 #define split_error(x)		do { gprintf("\nsplit error: %s\n\n",x); } while(0)
 
 // 1 cluster less than 4gb
-u64 OPT_split_size = (u64) 4LL * 1024 * 1024 * 1024 - 32 * 1024;
+u64 OPT_split_size = (u64)4LL * 1024 * 1024 * 1024 - 32 * 1024;
 // 1 cluster less than 2gb
 //u64 OPT_split_size = (u64)2LL * 1024 * 1024 * 1024 - 32 * 1024;
 
@@ -88,7 +88,7 @@ int split_fill(split_info_t *s, int idx, u64 size)
 	int fd = split_open_file(s, idx);
 	
 	off64_t fsize = lseek(fd, 0, SEEK_END);
-	if ((u64)fsize < size) 
+	if((u64)fsize < size)
 	{
 //		gprintf("TRUNC %d "FMT_lld" "FMT_lld"\n", idx, size, fsize); // Wpad_WaitButtons();
 		ftruncate(fd, size);
@@ -149,7 +149,7 @@ int split_get_file(split_info_t *s, u32 lba, u32 *sec_count, int fill)
 int split_read_sector(void *_fp, u32 lba, u32 count, void *buf)
 {
 	split_info_t *s = _fp;
-	int fd;                                 
+	int fd;
 	u64 off = lba;
 	off *= 512ULL;
 	int i;

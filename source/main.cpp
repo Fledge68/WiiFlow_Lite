@@ -37,7 +37,7 @@ int main(int argc, char **argv)
 	vid.init();
 
 	MEM2_init(47); //Should be safe to use
-	vid.waitMessage(0.2f);
+	vid.waitMessage(0.1f);
 
 	AllocSDGeckoBuffer();
 	gprintf(" \nWelcome to %s (%s-r%s)!\nThis is the debug output.\n", APP_NAME, APP_VERSION, SVN_REV);

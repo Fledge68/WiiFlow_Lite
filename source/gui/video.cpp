@@ -489,7 +489,7 @@ void CVideo::_showWaitMessages(CVideo *m)
 	m->m_showingWaitMessages = true;
 	u32 frames = m->m_waitMessageDelay * 50;
 	u32 waitFrames = frames;
-	
+
 	u8 fadeStep = 2 * (u32) (255.f / (waitFrames * m->m_waitMessages.size()));
 	s8 fadeDirection = 1;
 	s8 PNGfadeDirection = 1;
@@ -497,10 +497,11 @@ void CVideo::_showWaitMessages(CVideo *m)
 
 	vector<STexture>::iterator waitItr = m->m_waitMessages.begin();
 	gprintf("Going to show a wait message screen, delay: %d, # images: %d\n", waitFrames, m->m_waitMessages.size());
+	m->_clearScreen();
 
-	m->waitMessage(*waitItr);
-	waitItr += PNGfadeDirection;
-
+	m->prepare();
+	m->setup2DProjection();
+	GX_SetNumChans(0);
 	wiiLightSetLevel(0);
 	wiiLightOn();
 
@@ -523,16 +524,15 @@ void CVideo::_showWaitMessages(CVideo *m)
 		{
 			m->waitMessage(*waitItr);
 			waitItr += PNGfadeDirection;
-
 			if(waitItr == m->m_waitMessages.end())
 				waitItr = m->m_waitMessages.begin();
-
 			waitFrames = frames;
 		}
-		waitFrames--;
 		VIDEO_WaitVSync();
+		waitFrames--;
 	}
 	wiiLightOff();
+	GX_SetNumChans(1);
 	m->m_showingWaitMessages = false;
 	gprintf("Stop showing images\n");
 }
@@ -584,26 +584,23 @@ void CVideo::waitMessage(float delay)
 void CVideo::waitMessage(const vector<STexture> &tex, float delay)
 {
 	hideWaitMessage();
-
 	if(tex.size() == 0)
 	{
 		m_waitMessages = m_defaultWaitMessages;
-		m_waitMessageDelay = 0.2f;
+		m_waitMessageDelay = 0.1f;
 	}
 	else
 	{
 		m_waitMessages = tex;
 		m_waitMessageDelay = delay;
 	}
-	_clearScreen();
 
-	if (m_waitMessages.size() == 1)
+	if(m_waitMessages.size() == 1)
 		waitMessage(m_waitMessages[0]);
 	else if(m_waitMessages.size() > 1)
 	{
-		CheckWaitThread();
 		m_showWaitMessage = true;
-		unsigned int stack_size = (unsigned int)32768;
+		u32 stack_size = (u32)32768;
 		waitThreadStack = smartMem2Alloc(stack_size);
 		LWP_CreateThread(&waitThread, (void *(*)(void *))CVideo::_showWaitMessages, (void *)this, waitThreadStack.get(), stack_size, LWP_PRIO_IDLE);
 	}
@@ -614,9 +611,6 @@ void CVideo::waitMessage(const STexture &tex)
 	Mtx modelViewMtx;
 	GXTexObj texObj;
 
-	prepare();
-	setup2DProjection();
-	GX_SetNumChans(0);
 	GX_ClearVtxDesc();
 	GX_SetVtxDesc(GX_VA_POS, GX_DIRECT);
 	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
@@ -648,7 +642,6 @@ void CVideo::waitMessage(const STexture &tex)
 	GX_TexCoord2f32(0.f, 1.f);
 	GX_End();
 	render();
-	GX_SetNumChans(1);
 }
 
 s32 CVideo::TakeScreenshot(const char *path)

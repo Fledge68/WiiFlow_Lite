@@ -14,42 +14,42 @@ static u32 Counter = 0;
 
 void do_wip_code(u8 * dst, u32 len)
 {
-    if(!CodeList)
-        return;
+	if(!CodeList)
+		return;
 
-    if(Counter < 3)
-    {
-        Counter++;
-        return;
-    }
+	if(Counter < 3)
+	{
+		Counter++;
+		return;
+	}
 
-    u32 i = 0;
-    s32 n = 0;
-    s32 offset = 0;
+	u32 i = 0;
+	s32 n = 0;
+	s32 offset = 0;
 
-    for(i = 0; i < CodesCount; i++)
-    {
-        for(n = 0; n < 4; n++)
-        {
-            offset = CodeList[i].offset+n-ProcessedLength;
+	for(i = 0; i < CodesCount; i++)
+	{
+		for(n = 0; n < 4; n++)
+		{
+			offset = CodeList[i].offset+n-ProcessedLength;
 
-            if(offset < 0 || (u32)offset >= len)
-                continue;
+			if(offset < 0 || (u32)offset >= len)
+				continue;
 
-            if(dst[offset] == ((u8 *)&CodeList[i].srcaddress)[n])
-            {
-                dst[offset] = ((u8 *)&CodeList[i].dstaddress)[n];
-                gprintf("WIP: %08X Address Patched.\n", CodeList[i].offset + n);
-            }
-            else
-            {
-                gprintf("WIP: %08X Address does not match with WIP entry.\n", CodeList[i].offset+n);
-                gprintf("Destination: %02X | Should be: %02X.\n", dst[offset], ((u8 *)&CodeList[i].srcaddress)[n]);
-            }
-        }
-    }
-    ProcessedLength += len;
-    Counter++;
+			if(dst[offset] == ((u8 *)&CodeList[i].srcaddress)[n])
+			{
+				dst[offset] = ((u8 *)&CodeList[i].dstaddress)[n];
+				gprintf("WIP: %08X Address Patched.\n", CodeList[i].offset + n);
+			}
+			else
+			{
+				gprintf("WIP: %08X Address does not match with WIP entry.\n", CodeList[i].offset+n);
+				gprintf("Destination: %02X | Should be: %02X.\n", dst[offset], ((u8 *)&CodeList[i].srcaddress)[n]);
+			}
+		}
+	}
+	ProcessedLength += len;
+	Counter++;
 }
 
 //! for internal patches only
@@ -58,7 +58,7 @@ void do_wip_code(u8 * dst, u32 len)
 //! if set was successful the codelist will be freed when it's done
 bool set_wip_list(WIP_Code * list, int size)
 {
-	if (!CodeList && size > 0)
+	if(!CodeList && size > 0)
 	{
 		CodeList = list;
 		CodesCount = size;
@@ -70,18 +70,18 @@ bool set_wip_list(WIP_Code * list, int size)
 
 void wip_reset_counter()
 {
-    ProcessedLength = 0;
-    //alternative dols don't need a skip. only main.dol.
-    Counter = 3;
+	ProcessedLength = 0;
+	//alternative dols don't need a skip. only main.dol.
+	Counter = 3;
 }
 
 void free_wip()
 {
 	if(CodeList)
-        MEM2_free(CodeList);
+		MEM2_free(CodeList);
 
-    CodesCount = 0;
-    ProcessedLength = 0;
+	CodesCount = 0;
+	ProcessedLength = 0;
 }
 
 int load_wip_patches(u8 *dir, u8 *gameid)
@@ -89,54 +89,53 @@ int load_wip_patches(u8 *dir, u8 *gameid)
 	char filepath[150];
 	char GameID[8];
 	memset(GameID, 0, sizeof(GameID));
-    memcpy(GameID, gameid, 6);
+	memcpy(GameID, gameid, 6);
 	snprintf(filepath, sizeof(filepath), "%s/%s.wip", dir, GameID);
 
-	FILE * fp = fopen(filepath, "rb");
-	if (!fp)
+	FILE *fp = fopen(filepath, "rb");
+	if(!fp)
 	{
-        memset(GameID, 0, sizeof(GameID));
-        memcpy(GameID, gameid, 3);
+		memset(GameID, 0, sizeof(GameID));
+		memcpy(GameID, gameid, 3);
 		snprintf(filepath, sizeof(filepath), "%s/%s.wip", dir, GameID);
 		fp = fopen(filepath, "rb");
 	}
 
-    if (!fp)
-        return -1;
+	if(!fp)
+		return -1;
 
-    char line[255];
-    gprintf("\nLoading WIP code from %s.\n", filepath);
+	char line[255];
+	gprintf("\nLoading WIP code from %s.\n", filepath);
 
-    while (fgets(line, sizeof(line), fp))
-    {
-        if (line[0] == '#') continue;
+	while(fgets(line, sizeof(line), fp))
+	{
+		if(line[0] == '#' || strlen(line) < 26)
+			continue;
 
-        if(strlen(line) < 26) continue;
+		u32 offset = (u32) strtoul(line, NULL, 16);
+		u32 srcaddress = (u32) strtoul(line+9, NULL, 16);
+		u32 dstaddress = (u32) strtoul(line+18, NULL, 16);
 
-        u32 offset = (u32) strtoul(line, NULL, 16);
-        u32 srcaddress = (u32) strtoul(line+9, NULL, 16);
-        u32 dstaddress = (u32) strtoul(line+18, NULL, 16);
-
-        if(!CodeList)
+		if(!CodeList)
 			CodeList = MEM2_alloc(sizeof(WIP_Code));
 
-        WIP_Code *tmp = MEM2_realloc(CodeList, (CodesCount+1)*sizeof(WIP_Code));
-        if(!tmp)
-        {
-            MEM2_free(CodeList);
-            fclose(fp);
-            return -1;
-        }
+		WIP_Code *tmp = MEM2_realloc(CodeList, (CodesCount+1)*sizeof(WIP_Code));
+		if(!tmp)
+		{
+			MEM2_free(CodeList);
+			fclose(fp);
+			return -1;
+		}
 
-        CodeList = tmp;
+		CodeList = tmp;
 
-        CodeList[CodesCount].offset = offset;
-        CodeList[CodesCount].srcaddress = srcaddress;
-        CodeList[CodesCount].dstaddress = dstaddress;
-        CodesCount++;
-    }
-    fclose(fp);
-    gprintf("\n");
+		CodeList[CodesCount].offset = offset;
+		CodeList[CodesCount].srcaddress = srcaddress;
+		CodeList[CodesCount].dstaddress = dstaddress;
+		CodesCount++;
+	}
+	fclose(fp);
+	gprintf("\n");
 
 	return 0;
 }

@@ -1427,7 +1427,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 
 	if(currentPartition == 0)
 		SDHC_Init();
-	GeckoDisable();
 #endif
 
 	RunApploader(offset, videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, returnTo);

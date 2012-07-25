@@ -12,8 +12,6 @@
 #define likely(x)	 __builtin_expect(!!(x), 1)
 #define unlikely(x)	 __builtin_expect(!!(x), 0)
 
-#define read_le32_unaligned(x) ((x)[0]|((x)[1]<<8)|((x)[2]<<16)|((x)[3]<<24))
-
 #define ERROR(x) do {wbfs_error(x);goto error;}while(0)
 #define ALIGN_LBA(x) (((x)+p->hd_sec_sz-1)&(~(p->hd_sec_sz-1)))
 
@@ -36,6 +34,8 @@ static u8 size_to_shift(u32 size)
 	}
 	return ret - 1;
 }
+
+#define read_le32_unaligned(x) ((x)[0]|((x)[1]<<8)|((x)[2]<<16)|((x)[3]<<24))
 
 wbfs_t *wbfs_open_hd(rw_sector_callback_t read_hdsector, rw_sector_callback_t write_hdsector, void *callback_data, int hd_sector_size, int num_hd_sector __attribute((unused)), int reset)
 {
@@ -64,7 +64,6 @@ wbfs_t *wbfs_open_hd(rw_sector_callback_t read_hdsector, rw_sector_callback_t wr
 	wbfs_iofree(tmp_buffer);
 	if(reset)// XXX make a empty hd partition..
 	{
-		
 	}
 	return 0;
 }

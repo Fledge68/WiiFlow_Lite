@@ -14,17 +14,9 @@
 #include "gecko.h"
 #include "mem2.hpp"
 
-#define STACK_ALIGN(type, name, cnt, alignment)         \
-					u8 _al__##name[((sizeof(type)*(cnt)) + (alignment) + \
-					(((sizeof(type)*(cnt))%(alignment)) > 0 ? ((alignment) - \
-					((sizeof(type)*(cnt))%(alignment))) : 0))]; \
-					type *name = (type*)(((u32)(_al__##name)) + ((alignment) - (( \
-					(u32)(_al__##name))&((alignment)-1))))
-
 void __Disc_SetLowMem(void);
 void __Disc_SetTime(void);
 void _unstub_start();
-u32 entryPoint;
 
 extern void __exception_closeall();
 
@@ -40,6 +32,8 @@ typedef struct _dolheader
 	u32 entry_point;
 	u32 padding[7];
 } __attribute__((packed)) dolheader;
+
+u32 entryPoint;
 
 s32 BootChannel(u32 entry, u64 chantitle, u32 ios, u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, int aspectRatio)
 {
