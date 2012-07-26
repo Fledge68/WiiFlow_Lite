@@ -19,7 +19,7 @@
 // DIOS-MIOS
 DML_CFG *DMLCfg = NULL;
 
-void DML_New_SetOptions(const char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats, bool debugger, u8 NMM, u8 nodisc, u8 DMLvideoMode, u8 videoSetting, bool widescreen, bool new_dm_cfg)
+void DML_New_SetOptions(const char *GamePath, char *CheatPath, char *NewCheatPath, const char *partition, bool cheats, bool debugger, u8 NMM, u8 nodisc, u8 DMLvideoMode, u8 videoSetting, bool widescreen, bool new_dm_cfg)
 {
 	gprintf("Wiiflow GC: Launch game '%s' through memory (new method)\n", GamePath);
 
@@ -53,7 +53,7 @@ void DML_New_SetOptions(const char *GamePath, char *CheatPath, char *NewCheatPat
 	if(CheatPath != NULL && NewCheatPath != NULL && cheats)
 	{
 		char *ptr;
-		if(strstr(CheatPath, "sd:/") == NULL)
+		if(strstr(CheatPath, partition) == NULL)
 		{
 			fsop_CopyFile(CheatPath, NewCheatPath, NULL, NULL);
 			ptr = &NewCheatPath[3];

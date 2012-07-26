@@ -835,7 +835,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		if(cheats)
 		{
 			snprintf(CheatPath, sizeof(CheatPath), "%s/%s", m_cheatDir.c_str(), fmt("%s.gct", id.c_str()));
-			snprintf(NewCheatPath, sizeof(NewCheatPath), "%s/%s/%s", fmt(DML_DIR, "sd"), path.c_str(), fmt("%s.gct", id.c_str()));
+			snprintf(NewCheatPath, sizeof(NewCheatPath), "%s/%s/%s", fmt(DML_DIR, DeviceName[currentPartition]), path.c_str(), fmt("%s.gct", id.c_str()));
 		}
 		string newPath;
 		if(strcasestr(path.c_str(), "boot.bin") != NULL)
@@ -846,7 +846,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		else
 			newPath = &path[path.find_first_of(":/")+1];
 		if(m_new_dml)
-			DML_New_SetOptions(newPath.c_str(), CheatPath, NewCheatPath, cheats, DML_debug, NMM, nodisc, videoMode, videoSetting, DM_Widescreen, m_new_dm_cfg);
+			DML_New_SetOptions(newPath.c_str(), CheatPath, NewCheatPath, DeviceName[currentPartition], cheats, DML_debug, NMM, nodisc, videoMode, videoSetting, DM_Widescreen, m_new_dm_cfg);
 		else
 			DML_Old_SetOptions((char*)path.c_str(), CheatPath, NewCheatPath, cheats);
 
