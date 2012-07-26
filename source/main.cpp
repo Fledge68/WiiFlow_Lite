@@ -66,7 +66,7 @@ int main(int argc, char **argv)
 #ifndef DOLPHIN
 	// Load Custom IOS
 	gprintf("Loading cIOS: %d\n", mainIOS);	
-	bool iosOK = loadIOS(mainIOS, false);
+	bool iosOK = loadIOS(mainIOS, false, false);
 
 	u8 mainIOSBase = 0;
 	D2X(mainIOS, &mainIOSBase);

@@ -40,7 +40,6 @@
 #include "Gekko.h"
 
 #ifndef DOLPHIN
-#include "devicemounter/sdhc.h"
 #include "devicemounter/usbstorage.h"
 #endif
 
@@ -879,7 +878,6 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	if(loader == 2)
 		DEVO_Boot();
 
-	SDHC_Init();
 	DML_New_WriteOptions();
 	WII_Initialize();
 	if(WII_LaunchTitle(0x100000100LL) < 0)
@@ -912,17 +910,16 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 #ifndef DOLPHIN
 	USBStorage2_Deinit();
 	USB_Deinitialize();
-	SDHC_Close();
 #endif
 	BootHomebrew(title);
 }
 
-int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id)
+int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id, bool emu_channel)
 {
 	gprintf("Game ID# %s requested IOS %d.  User selected %d\n", id.c_str(), gameIOS, userIOS);
 	if(neek2o())
 	{
-		if(!loadIOS(gameIOS, true))
+		if(!loadIOS(gameIOS, true, emu_channel))
 		{
 			_reload_wifi_gecko();
 			error(sfmt("errgame4", L"Couldn't load IOS %i", gameIOS));
@@ -982,7 +979,7 @@ int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id)
 	if(gameIOS != mainIOS)
 	{
 		gprintf("Reloading IOS into %d\n", gameIOS);
-		if(!loadIOS(gameIOS, true))
+		if(!loadIOS(gameIOS, true, false))
 		{
 			_reload_wifi_gecko();
 			error(sfmt("errgame4", L"Couldn't load IOS %i", gameIOS));
@@ -1089,7 +1086,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 			Nand::Instance()->Disable_Emu();
 			usleep(1000);
 		}
-		if(_loadIOS(gameIOS, userIOS, id) == LOAD_IOS_FAILED)
+		if(_loadIOS(gameIOS, userIOS, id, !emu_disabled) == LOAD_IOS_FAILED)
 			return;
 	}
 	if(rtrn != NULL && strlen(rtrn) == 4)
@@ -1109,8 +1106,6 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	if(!emu_disabled && !neek2o())
 	{
 		Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
-		DeviceHandler::Instance()->UnMount(emuPartition);
-
 		if(emulate_mode == 1)
 			Nand::Instance()->Set_FullMode(true);
 		else
@@ -1346,7 +1341,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	bool iosLoaded = false;
 	if(!dvd || neek2o())
 	{
-		int result = _loadIOS(gameIOS, userIOS, id);
+		int result = _loadIOS(gameIOS, userIOS, id, false);
 		if(result == LOAD_IOS_FAILED)
 			return;
 		if(result == LOAD_IOS_SUCCEEDED)
@@ -1420,13 +1415,9 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		return;
 
 #ifndef DOLPHIN
-	shadow_mload();
-
 	USBStorage2_Deinit();
 	USB_Deinitialize();
-
-	if(currentPartition == 0)
-		SDHC_Init();
+	shadow_mload();
 #endif
 
 	RunApploader(offset, videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, returnTo);

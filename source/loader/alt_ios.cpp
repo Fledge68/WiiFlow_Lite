@@ -78,7 +78,7 @@ void load_dip_249()
 	mload_close();
 }
 
-bool loadIOS(int ios, bool launch_game)
+bool loadIOS(int ios, bool launch_game, bool emu_channel)
 {
 #ifndef DOLPHIN
 	gprintf("Reloading into IOS %i from %i (AHBPROT: %u)...\n", ios, IOS_GetVersion(), HAVE_AHBPROT);
@@ -104,15 +104,17 @@ bool loadIOS(int ios, bool launch_game)
 		load_dip_249();
 		gprintf("Waninkoko cIOS Base IOS%i\n", get_ios_base());
 	}
-
- 	if(launch_game)
+	if(!emu_channel)
 	{
-		DeviceHandler::Instance()->MountAll();
-		DeviceHandler::Instance()->Open_WBFS(currentPartition);
-		Disc_Init();
+		if(launch_game)
+		{
+			DeviceHandler::Instance()->Mount(currentPartition);
+			DeviceHandler::Instance()->Open_WBFS(currentPartition);
+			Disc_Init();
+		}
+		else
+			Open_Inputs();
 	}
-	else
-		Open_Inputs();
 
 	return iosOK;
 #else
