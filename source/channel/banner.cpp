@@ -79,7 +79,7 @@ Banner::Banner(u8 *bnr, u32 bnr_size, u64 title, bool custom)
 Banner::~Banner()
 {
 	if(opening != NULL)
-		MEM2_free(opening);
+		free(opening);
 }
 
 bool Banner::IsValid()
