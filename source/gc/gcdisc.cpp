@@ -30,8 +30,10 @@ using namespace std;
 void GC_Disc::init(char *path)
 {
 	opening_bnr = NULL;
+	FSTable = NULL;
+
 	strncpy(GamePath, path, sizeof(GamePath));
-	FILE *f;
+	FILE *f = NULL;
 	if(strcasestr(GamePath, "boot.bin") != NULL)
 	{
 		GameType = TYPE_FST;
@@ -39,6 +41,8 @@ void GC_Disc::init(char *path)
 		fst.erase(fst.end() - 8, fst.end());
 		fst.append("fst.bin");
 		f = fopen(fst.c_str(), "rb");
+		if(f == NULL)
+			return;
 		fseek(f, 0, SEEK_END);
 		u32 size = ftell(f);
 		fseek(f, 0, SEEK_SET);
@@ -49,7 +53,11 @@ void GC_Disc::init(char *path)
 	{
 		GameType = TYPE_ISO;
 		f = fopen(GamePath, "rb");
+		if(f == NULL)
+			return;
 		u8 *ReadBuffer = (u8*)MEM2_alloc(0x440);
+		if(ReadBuffer == NULL)
+			return;
 		fread(ReadBuffer, 1, 0x440, f);
 		u32 FSTOffset = *(vu32*)(ReadBuffer+0x424);
 		u32 FSTSize = *(vu32*)(ReadBuffer+0x428);
@@ -77,6 +85,8 @@ void GC_Disc::clear()
 void GC_Disc::Read_FST(FILE *f, u32 FST_size)
 {
 	FSTable = (u8*)MEM2_alloc(FST_size);
+	if(FSTable == NULL)
+		return;
 	fread(FSTable, 1, FST_size, f);
 
 	FSTEnt = *(vu32*)(FSTable+0x08);
@@ -85,6 +95,8 @@ void GC_Disc::Read_FST(FILE *f, u32 FST_size)
 
 u8 *GC_Disc::GetGameCubeBanner()
 {
+	if(FSTable == NULL)
+		return NULL;
 	FILE *f = NULL;
 	FST *fst = (FST *)(FSTable);
 	for(u32 i = 1; i < FSTEnt; ++i)
