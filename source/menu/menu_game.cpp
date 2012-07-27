@@ -839,8 +839,8 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		}
 		else
 		{
-			NewCheatPath = sfmt("%s%s", path.c_str(), fmt("%s.gct", id.c_str()));
-			path.erase(path.end() - 19, path.end() - 11);
+			NewCheatPath = sfmt("%s/%s", path.c_str(), fmt("%s.gct", id.c_str()));
+			NewCheatPath.erase(NewCheatPath.end() - 19, NewCheatPath.end() - 10);
 		}
 		if(cheats)
 			snprintf(CheatPath, sizeof(CheatPath), "%s/%s", m_cheatDir.c_str(), fmt("%s.gct", id.c_str()));
