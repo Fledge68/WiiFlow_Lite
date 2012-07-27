@@ -12,13 +12,12 @@ en exposed s_fsop fsop structure can be used by callback to update operation sta
 #include <math.h>
 #include <ogcsys.h>
 #include <ogc/lwp_watchdog.h>
-
+#include <malloc.h>
 #include <dirent.h>
 #include <unistd.h>
 #include <sys/statvfs.h>
 
 #include "fileOps.h"
-#include "memory/mem2.hpp"
 #include "utils.h"
 #include "gecko.h"
 
@@ -205,7 +204,7 @@ bool fsop_CopyFile(char *source, char *target, progress_callback_t spinner, void
 	u8 *threadStack = NULL;
 	lwp_t hthread = LWP_THREAD_NULL;
 
-	buff = MEM2_alloc(block * 2);
+	buff = malloc(block * 2);
 	if(buff == NULL)
 		return false;
 
@@ -215,9 +214,12 @@ bool fsop_CopyFile(char *source, char *target, progress_callback_t spinner, void
 	blockInfo[1] = 0;
 	u32 bytes = 0;
 
-	threadStack = MEM2_alloc(STACKSIZE);
+	threadStack = malloc(STACKSIZE);
 	if(threadStack == NULL)
+	{
+		free(buff);
 		return false;
+	}
 
 	LWP_CreateThread(&hthread, thread_CopyFileReader, NULL, threadStack, STACKSIZE, 30);
 
@@ -259,14 +261,14 @@ bool fsop_CopyFile(char *source, char *target, progress_callback_t spinner, void
 		usleep(5);
 
 	LWP_JoinThread(hthread, NULL);
-	MEM2_free(threadStack);
+	free(threadStack);
 
 	stopThread = 1;
 	DCFlushRange(&stopThread, sizeof(stopThread));
 
 	fclose(fs);
 	fclose(ft);
-	MEM2_free(buff);
+	free(buff);
 
 	if(err)
 	{

@@ -55,13 +55,13 @@ void GC_Disc::init(char *path)
 		f = fopen(GamePath, "rb");
 		if(f == NULL)
 			return;
-		u8 *ReadBuffer = (u8*)MEM2_alloc(0x440);
+		u8 *ReadBuffer = (u8*)malloc(0x440);
 		if(ReadBuffer == NULL)
 			return;
 		fread(ReadBuffer, 1, 0x440, f);
 		u32 FSTOffset = *(vu32*)(ReadBuffer+0x424);
 		u32 FSTSize = *(vu32*)(ReadBuffer+0x428);
-		MEM2_free(ReadBuffer);
+		free(ReadBuffer);
 		fseek(f, FSTOffset, SEEK_SET);
 		Read_FST(f, FSTSize);
 		fclose(f);
@@ -72,19 +72,19 @@ void GC_Disc::clear()
 {
 	if(opening_bnr)
 	{
-		MEM2_free(opening_bnr);
+		free(opening_bnr);
 		opening_bnr = NULL;
 	}
 	if(FSTable)
 	{
-		MEM2_free(FSTable);
+		free(FSTable);
 		FSTable = NULL;
 	}
 }
 
 void GC_Disc::Read_FST(FILE *f, u32 FST_size)
 {
-	FSTable = (u8*)MEM2_alloc(FST_size);
+	FSTable = (u8*)malloc(FST_size);
 	if(FSTable == NULL)
 		return;
 	fread(FSTable, 1, FST_size, f);
@@ -119,7 +119,7 @@ u8 *GC_Disc::GetGameCubeBanner()
 			}
 			if(f)
 			{
-				opening_bnr = (u8*)MEM2_alloc(fst[i].FileLength);
+				opening_bnr = (u8*)malloc(fst[i].FileLength);
 				fread(opening_bnr, 1, fst[i].FileLength, f);
 				fclose(f);
 			}

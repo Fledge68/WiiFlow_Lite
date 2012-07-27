@@ -12,14 +12,13 @@
  * -----------
  *
  ******************************************************************************/
-
 #include <gccore.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
- 
+#include <malloc.h>
+
 #include "lz77.h"
-#include "mem2.hpp"
 #include "utils.h"
 
 u32 packBytes(int a, int b, int c, int d)
@@ -47,7 +46,7 @@ s32 __decompressLZ77_11(u8 *in, u32 inputLen, u8 **output, u32 *outputLen)
  
     //printf("Decompressed size : %i\n", decompressedSize);
  
-    out = MEM2_alloc(ALIGN32(decompressedSize));
+    out = malloc(ALIGN32(decompressedSize));
 	if (out == NULL)
 	{
 		printf("Out of memory\n");
@@ -134,7 +133,7 @@ s32 __decompressLZ77_10(u8 *in, u8 **output, u32 *outputLen)
 	 
 	//printf("Decompressed size : %i\n", decompressedSize);
 	 
-	out = MEM2_alloc(ALIGN32(decompressedSize));
+	out = malloc(ALIGN32(decompressedSize));
 	if (out == NULL)
 	{
 		printf("Out of memory\n");

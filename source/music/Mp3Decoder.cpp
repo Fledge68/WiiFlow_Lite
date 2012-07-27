@@ -28,9 +28,9 @@
 #include <limits.h>
 #include <unistd.h>
 #include <math.h>
+#include <malloc.h>
 
 #include "Mp3Decoder.hpp"
-#include "mem2.hpp"
 
 Mp3Decoder::Mp3Decoder(const char * filepath)
 	: SoundDecoder(filepath)
@@ -74,13 +74,13 @@ Mp3Decoder::~Mp3Decoder()
 	mad_frame_finish(&Frame);
 	mad_stream_finish(&Stream);
 
-	MEM2_free(ReadBuffer);
+	free(ReadBuffer);
 }
 
 void Mp3Decoder::OpenFile()
 {
 	GuardPtr = NULL;
-	ReadBuffer = (u8 *)MEM2_alloc(SoundBlockSize * SoundBlocks);
+	ReadBuffer = (u8 *)malloc(SoundBlockSize * SoundBlocks);
 	if(!ReadBuffer)
 	{
 		if(file_fd)

@@ -43,14 +43,14 @@ void AnimatedBanner::LoadFont(u8 *font1, u8 *font2)
 
 void AnimatedBanner::Clear()
 {
-	if(layout_banner)
+	if(layout_banner != NULL)
 	{
 		delete layout_banner;
 		layout_banner = NULL;
 	}
-	if(newBanner)
+	if(newBanner != NULL)
 	{
-		delete newBanner;
+		free(newBanner);
 		newBanner = NULL;
 	}
 }
@@ -58,13 +58,15 @@ void AnimatedBanner::Clear()
 bool AnimatedBanner::LoadBanner(Banner *banner)
 {
 	u32 banner_bin_size;
-	const u8 *banner_bin = banner->GetFile((char*)"banner.bin", &banner_bin_size);
+	u8 *banner_bin = banner->GetFile((char*)"banner.bin", &banner_bin_size);
 	if(banner_bin == NULL)
 		return false;
-	return LoadBannerBin(banner_bin, banner_bin_size);
+	bool ret = LoadBannerBin(banner_bin, banner_bin_size);
+	free(banner_bin);
+	return ret;
 }
 
-bool AnimatedBanner::LoadBannerBin(const u8 *banner_bin, u32 banner_bin_size)
+bool AnimatedBanner::LoadBannerBin(u8 *banner_bin, u32 banner_bin_size)
 {
 	Clear();
 	layout_banner = LoadLayout(banner_bin, banner_bin_size, "banner", CONF_GetLanguageString());
@@ -101,10 +103,12 @@ void AnimatedBanner::SetBannerTexture(const char *tex_name, const u8 *data, floa
 	}
 }
 
-Layout* AnimatedBanner::LoadLayout(const u8 *bnr, u32 bnr_size, const std::string& lyt_name, const std::string &language)
+Layout* AnimatedBanner::LoadLayout(u8 *bnr, u32 bnr_size, const std::string& lyt_name, const std::string &language)
 {
 	u32 brlyt_size = 0;
 	newBanner = DecompressCopy(bnr, bnr_size, &bnr_size);
+	if(newBanner == NULL)
+		return NULL;
 
 	const u8 *brlyt = u8_get_file(newBanner, (char*)fmt("%s.brlyt", lyt_name.c_str()), &brlyt_size);
 	if(!brlyt)
@@ -147,43 +151,39 @@ Layout* AnimatedBanner::LoadLayout(const u8 *bnr, u32 bnr_size, const std::strin
 	return layout;
 }
 
-u8 *AnimatedBanner::DecompressCopy( const u8 * stuff, u32 len, u32 *size )
+u8 *DecompressCopy(u8 *stuff, u32 len, u32 *size)
 {
 	// check for IMD5 header and skip it
-	if( len > 0x40 && *(u32*)stuff == 0x494d4435 )// IMD5
+	if(len > 0x40 && *(u32*)stuff == 0x494d4435) // IMD5
 	{
 		stuff += 0x20;
 		len -= 0x20;
 	}
 
-	u8* ret = NULL;
+	u8 *ret = NULL;
 	// determine if it needs to be decompressed
-	if( IsAshCompressed( stuff, len ) )
+	if(IsAshCompressed(stuff, len))
 	{
 		//u32 len2 = len;
 		// ASH0
-		ret = DecompressAsh( stuff, len );
-		if( !ret )
+		ret = DecompressAsh(stuff, len);
+		if(!ret)
 		{
-			gprintf( "out of memory\n" );
+			gprintf("out of memory\n");
 			return NULL;
 		}
 	}
-	else if( isLZ77compressed( (u8*)stuff ) )
+	else if(isLZ77compressed(stuff))
 	{
 		// LZ77 with no magic word
-		if( decompressLZ77content( (u8*)stuff, len, &ret, &len ) )
-		{
+		if(decompressLZ77content(stuff, len, &ret, &len))
 			return NULL;
-		}
 	}
-	else if( *(u32*)( stuff ) == 0x4C5A3737 )// LZ77
+	else if(*(u32*)(stuff) == 0x4C5A3737) // LZ77
 	{
 		// LZ77 with a magic word
-		if( decompressLZ77content( (u8*)stuff + 4, len - 4, &ret, &len ) )
-		{
+		if(decompressLZ77content(stuff + 4, len - 4, &ret, &len ))
 			return NULL;
-		}
 	}
 	else
 	{
@@ -196,12 +196,10 @@ u8 *AnimatedBanner::DecompressCopy( const u8 * stuff, u32 len, u32 *size )
 		}
 		memcpy( ret, stuff, len );
 	}
-	if( size )
-	{
+	if(size)
 		*size = len;
-	}
 
 	// flush the cache so if there are any textures in this data, it will be ready for the GX
-	DCFlushRange( ret, len );
+	DCFlushRange(ret, len);
 	return ret;
 }

@@ -7,6 +7,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <gccore.h>
+#include <malloc.h>
 
 #include "utils.h"
 #include "mem2.hpp"
@@ -16,11 +17,18 @@
 #define wbfs_fatal(x)		do { gprintf(x); wd_last_error = 1; } while(0)
 #define wbfs_error(x)		do { gprintf(x); wd_last_error = 2; } while(0)
 
-#define wbfs_malloc(x)		MEM2_alloc(x)
-#define wbfs_free(x)		MEM2_free(x)
+/* Thanks to cfg-loader */
+#define wbfs_malloc(x)		calloc(x, 1)
+#define wbfs_free(x)		free(x)
 
-#define wbfs_ioalloc(x)		MEM2_memalign(32, x)
-#define wbfs_iofree(x)		MEM2_free(x)
+static inline void *wbfs_ioalloc(size_t x)
+{
+	void *p = memalign(32, x);
+	if(p)
+		memset(p, 0, x);
+	return p;
+}
+#define wbfs_iofree(x)		free(x)
 
 #define wbfs_be16(x)		(*((u16*)(x)))
 #define wbfs_be32(x)		(*((u32*)(x)))

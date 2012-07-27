@@ -27,13 +27,13 @@
 
 #include "Gekko.h"
 
-#define HW_GPIO             0xCD0000C0;
-#define DISC_SLOT_LED       0x20
+#define HW_GPIOB_OUT		0xCD0000C0;
+#define DISC_SLOT_LED		0x20
 
 lwp_t light_thread = LWP_THREAD_NULL;
 
 void *light_loop();
-vu32 *light_reg = (u32*) HW_GPIO;
+vu32 *light_reg = (u32*)HW_GPIOB_OUT;
 bool light_on = false;
 u8 light_level = 0;
 
@@ -43,7 +43,7 @@ struct timespec light_timeoff;
 void wiiLightOn()
 {
 	light_on = true;
-
+	light_level = 0;
 	if(light_thread == LWP_THREAD_NULL)
 		LWP_CreateThread(&light_thread, light_loop, NULL, NULL, 0, LWP_PRIO_HIGHEST);
 }
@@ -51,7 +51,7 @@ void wiiLightOn()
 void wiiLightOff()
 {
 	light_on = false;
-
+	light_level = 0;
 	LWP_JoinThread(light_thread, NULL);
 	light_thread = LWP_THREAD_NULL;
 	*light_reg &= ~DISC_SLOT_LED;
@@ -93,7 +93,7 @@ void *light_loop()
 		*light_reg |= DISC_SLOT_LED;
 		nanosleep(&timeon);
 		// Turn off the light (if required) and sleep for a bit
-		if (timeoff.tv_nsec > 0)
+		if(timeoff.tv_nsec > 0)
 			*light_reg &= ~DISC_SLOT_LED;
 		nanosleep(&timeoff);
 	}

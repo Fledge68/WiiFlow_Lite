@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <malloc.h>
 
 #include "disc.h"
 #include "patchcode.h"
@@ -12,7 +13,6 @@
 #include "utils.h"
 #include "fs.h"
 #include "gecko.h"
-#include "mem2.hpp"
 
 void __Disc_SetLowMem(void);
 void __Disc_SetTime(void);
@@ -199,8 +199,9 @@ void PatchChannel(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryStrin
 
 bool Identify_GenerateTik(signed_blob **outbuf, u32 *outlen)
 {
-	signed_blob *buffer = (signed_blob *)MEM2_alloc(STD_SIGNED_TIK_SIZE);
-	if (!buffer) return false;
+	signed_blob *buffer = (signed_blob *)memalign(32, ALIGN32(STD_SIGNED_TIK_SIZE));
+	if(!buffer)
+		return false;
 	memset(buffer, 0, STD_SIGNED_TIK_SIZE);
 
 	sig_rsa2048 *signature = (sig_rsa2048 *)buffer;
@@ -249,8 +250,8 @@ bool Identify(u64 titleid)
 	if (certBuffer == NULL || certSize == 0)
 	{
 		gprintf("Failed!\n");
-		MEM2_free(tmdBuffer);
-		MEM2_free(tikBuffer);
+		free(tmdBuffer);
+		free(tikBuffer);
 		return false;
 	}
 	gprintf("Success!\n");
@@ -279,9 +280,9 @@ bool Identify(u64 titleid)
 		}
 	}
 	
-	MEM2_free(tmdBuffer);
-	MEM2_free(tikBuffer);
-	MEM2_free(certBuffer);
+	free(tmdBuffer);
+	free(tikBuffer);
+	free(certBuffer);
 
 	return ret < 0 ? false : true;
 }
@@ -305,10 +306,10 @@ u8 *GetDol(u64 title, u32 bootcontent)
 			if (decompressLZ77content(data, contentSize, &decompressed, &size) < 0)
 			{
 				gprintf("Decompression failed\n");
-				MEM2_free(data);
+				free(data);
 				return NULL;
 			}
-			MEM2_free(data);
+			free(data);
 			data = decompressed;
 		}	
 		return data;

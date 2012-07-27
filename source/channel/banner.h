@@ -67,19 +67,18 @@ class Banner
 
 		bool GetName(u8 *name, int language);
 		bool GetName(wchar_t *name, int language);
-		const u8 *GetFile(char *name, u32 *size);
+		u8 *GetFile(char *name, u32 *size);
 
 		static Banner *GetBanner(u64 title, char *appname, bool isfs, bool imetOnly = false);
 		u8 *GetBannerFile() { return opening; }
 		u32 GetBannerFileSize() { return opening_size; }
-	private:
+	protected:
 		u8 *opening;
 		u32 opening_size;
 		u64 title;
 		IMET *imet;
-		
-		u16 *GetName(int language);
 
+		u16 *GetName(int language);
 		static bool GetChannelNameFromApp(u64 title, wchar_t* name, int language);
 };
 

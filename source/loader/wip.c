@@ -78,7 +78,7 @@ void wip_reset_counter()
 void free_wip()
 {
 	if(CodeList)
-		MEM2_free(CodeList);
+		free(CodeList);
 
 	CodesCount = 0;
 	ProcessedLength = 0;
@@ -122,7 +122,7 @@ int load_wip_patches(u8 *dir, u8 *gameid)
 		WIP_Code *tmp = MEM2_realloc(CodeList, (CodesCount+1)*sizeof(WIP_Code));
 		if(!tmp)
 		{
-			MEM2_free(CodeList);
+			free(CodeList);
 			fclose(fp);
 			return -1;
 		}

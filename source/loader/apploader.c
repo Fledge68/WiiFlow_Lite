@@ -167,7 +167,7 @@ static bool PrinceOfPersiaPatch()
 	if (memcmp("SPX", (char *) 0x80000000, 3) != 0 && memcmp("RPW", (char *) 0x80000000, 3) != 0)
 		return false;
 
-	WIP_Code * CodeList = MEM2_alloc(5 * sizeof(WIP_Code));
+	WIP_Code * CodeList = malloc(5 * sizeof(WIP_Code));
 	CodeList[0].offset = 0x007AAC6A;
 	CodeList[0].srcaddress = 0x7A6B6F6A;
 	CodeList[0].dstaddress = 0x6F6A7A6B;
@@ -186,7 +186,7 @@ static bool PrinceOfPersiaPatch()
 
 	if (set_wip_list(CodeList, 5) == false)
 	{
-		MEM2_free(CodeList);
+		free(CodeList);
 		CodeList = NULL;
 		return false;
 	}
@@ -200,7 +200,7 @@ static bool NewSuperMarioBrosPatch()
 
 	if (memcmp("SMNE01", (char *) 0x80000000, 6) == 0)
 	{
-		CodeList = MEM2_alloc(3 * sizeof(WIP_Code));
+		CodeList = malloc(3 * sizeof(WIP_Code));
 		if(!CodeList)
 			return false;
 		CodeList[0].offset = 0x001AB610;
@@ -215,7 +215,7 @@ static bool NewSuperMarioBrosPatch()
 	}
 	else if (memcmp("SMNP01", (char *) 0x80000000, 6) == 0)
 	{
-		CodeList = MEM2_alloc(3 * sizeof(WIP_Code));
+		CodeList = malloc(3 * sizeof(WIP_Code));
 		if(!CodeList)
 			return false;
 		CodeList[0].offset = 0x001AB750;
@@ -230,7 +230,7 @@ static bool NewSuperMarioBrosPatch()
 	}
 	else if (memcmp("SMNJ01", (char *) 0x80000000, 6) == 0)
 	{
-		CodeList = MEM2_alloc(3 * sizeof(WIP_Code));
+		CodeList = malloc(3 * sizeof(WIP_Code));
 		if(!CodeList)
 			return false;
 		CodeList[0].offset = 0x001AB420;
@@ -245,7 +245,7 @@ static bool NewSuperMarioBrosPatch()
 	}
 	if (CodeList && set_wip_list(CodeList, 3) == false)
 	{
-		MEM2_free(CodeList);
+		free(CodeList);
 		CodeList = NULL;
 		return false;
 	}

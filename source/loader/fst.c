@@ -68,7 +68,7 @@ int app_gameconfig_load(u8 *discid, const u8 *gameconfig, u32 tempgameconfsize)
 
 	if (gameconf == NULL)
 	{
-		gameconf = MEM2_alloc(65536);
+		gameconf = malloc(65536);
 		if (gameconf == NULL)
 			return -1;
 	}
@@ -242,7 +242,7 @@ int app_gameconfig_load(u8 *discid, const u8 *gameconfig, u32 tempgameconfsize)
 			if (i != tempgameconfsize) while ((tempgameconf[i] != 10 && tempgameconf[i] != 13) && (i != 0)) i--;
 		}
 	}
-	MEM2_free(gameconf);
+	free(gameconf);
 	return 0;
 }
 
@@ -443,7 +443,7 @@ int ocarina_do_code(u64 chantitle)
 	{
 		memcpy(codelist, code_buf, code_size);
 		DCFlushRange(codelist, (u32)codelistend - (u32)codelist);
-		MEM2_free(code_buf);
+		free(code_buf);
 	}
 
 	// TODO What's this???

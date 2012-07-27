@@ -120,12 +120,13 @@ void CMenu::_textAbout(void)
 	{
 		fseek(f, 0, SEEK_END);
 		u32 fsize = ftell(f);
-		char *help = (char*)MEM2_alloc(fsize+1); //+1 for null character
+		char *help = (char*)malloc(fsize + 1); //+1 for null character
+		memset(help, 0, fsize + 1);
 		fseek(f, 0, SEEK_SET);
 		fread(help, 1, fsize, f);
 		help[fsize] = '\0';
 		help_text.fromUTF8(help);
-		MEM2_free(help);
+		free(help);
 		fclose(f);
 	}
 	else
@@ -163,6 +164,6 @@ void CMenu::_textAbout(void)
 	if(iosInfo != NULL)
 	{
 		m_btnMgr.setText(m_aboutLblIOS, wfmt(_fmt("ios", L"IOS%i base %i v%i"), mainIOS, iosInfo->baseios, iosInfo->version), true);
-		MEM2_free(iosInfo);
+		free(iosInfo);
 	}
 }

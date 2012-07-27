@@ -84,13 +84,11 @@ public:
 private:
 	//!Initializes the GuiSound object by setting the default values
 	void Init();
-	//!Special sound case for sound.bin
-	void UncompressSoundbin(const u8 * snd, u32 len, bool isallocated);
 protected:
 	std::string filepath;
 	u8 *sound; //!< Pointer to the sound data
 	u32 length; //!< Length of sound data
-	s32 voice; //!< Currently assigned ASND voice channel
+	s8 voice; //!< Currently assigned ASND voice channel
 	int volume; //!< Sound volume (0-100)
 	u8 loop; //!< Loop sound playback
 	u32 SoundEffectLength; //!< Check if it is an app soundeffect for faster playback

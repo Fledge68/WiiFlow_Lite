@@ -33,9 +33,9 @@
 #include <cstdlib>
 #include <stdarg.h>
 #include <dirent.h>
+#include <malloc.h>
 
 #include "nand.hpp"
-#include "mem2.hpp"
 #include "wbfs.h"
 #include "gecko.h"
 #include "fileOps.h"
@@ -248,7 +248,7 @@ void Nand::__GetNameList(const char *source, namelist **entries, int *count)
 	char entrypath[ISFS_MAXPATH];
 
 	s32 ret = ISFS_ReadDir(source, NULL, &numentries);
-	names = (char *)MEM2_alloc((ISFS_MAXPATH) * numentries);
+	names = (char *)memalign(32, ALIGN32((ISFS_MAXPATH) * numentries));
 	if(names == NULL)
 		return;
 
@@ -257,19 +257,22 @@ void Nand::__GetNameList(const char *source, namelist **entries, int *count)
 
 	if(*entries != NULL)
 	{
-		MEM2_free(*entries);
+		free(*entries);
 		*entries = NULL;
 	}
 
-	*entries = (namelist *)MEM2_alloc(sizeof(namelist) * numentries);	
+	*entries = (namelist *)malloc(sizeof(namelist) * numentries);
 	if(*entries == NULL)
+	{
+		free(names);
 		return;
+	}
 
 	for(i = 0, k = 0; i < numentries; i++)
 	{
 		for(j = 0; names[k] != 0; j++, k++)
 			curentry[j] = names[k];
-		
+
 		curentry[j] = 0;
 		k++;
 
@@ -279,17 +282,17 @@ void Nand::__GetNameList(const char *source, namelist **entries, int *count)
 			snprintf(entrypath, sizeof(entrypath), "%s%s", source, curentry);
 		else
 			snprintf(entrypath, sizeof(entrypath), "%s/%s", source, curentry);
-		
+
 		ret = ISFS_ReadDir(entrypath, NULL, &l);		
 		(*entries)[i].type = ret < 0 ? 0 : 1;
 	}	
-	MEM2_free(names);
+	free(names);
 }
 
 s32 Nand::__configread(void)
 {	
-	confbuffer = (u8 *)MEM2_alloc(0x4000);
-	txtbuffer = (char *)MEM2_alloc(0x100);
+	confbuffer = (u8 *)malloc(0x4000);
+	txtbuffer = (char *)malloc(0x100);
 	if(confbuffer == NULL || txtbuffer == NULL)
 		return -1;
 
@@ -349,8 +352,8 @@ s32 Nand::__configwrite(void)
 				return 1;
 		}
 	}
-	MEM2_free(confbuffer);
-	MEM2_free(txtbuffer);
+	free(confbuffer);
+	free(txtbuffer);
 	return 0;
 }
 
@@ -526,7 +529,7 @@ s32 Nand::__FlashNandFile(const char *source, const char *dest)
 		return fd;
 	}
 
-	u8 *buffer = (u8 *)MEM2_alloc(BLOCK);
+	u8 *buffer = (u8 *)memalign(32, ALIGN32(BLOCK));
 	if(buffer == NULL)
 		return -1;
 
@@ -543,7 +546,7 @@ s32 Nand::__FlashNandFile(const char *source, const char *dest)
 			gprintf(" failed\nError: fread(%p, 1, %d, %s) %d\n", buffer, size, source, ret);
 			ISFS_Close(fd);
 			fclose(file);
-			MEM2_free(buffer);
+			free(buffer);
 			return ret;
 		}
 
@@ -553,7 +556,7 @@ s32 Nand::__FlashNandFile(const char *source, const char *dest)
 			gprintf(" failed\nError: ISFS_Write(%d, %p, %d) %d\n", fd, buffer, size, ret);
 			ISFS_Close(fd);
 			fclose(file);
-			MEM2_free(buffer);
+			free(buffer);
 			return ret;
 		}
 		toread -= size;
@@ -574,7 +577,7 @@ s32 Nand::__FlashNandFile(const char *source, const char *dest)
 		dumper(NandDone, NandSize, fsize, FileDone, FilesDone, FoldersDone, (char *)file, data);
 	}
 	ISFS_Close(fd);
-	MEM2_free(buffer);
+	free(buffer);
 	fclose(file);
 	return 1;
 }
@@ -589,16 +592,16 @@ s32 Nand::__DumpNandFile(const char *source, const char *dest)
 		return fd;
 	}
 
-	fstats *status = (fstats *)MEM2_alloc(sizeof(fstats));
+	fstats *status = (fstats *)memalign(32, ALIGN32(sizeof(fstats)));
 	if(status == NULL)
 		return -1;
 
 	s32 ret = ISFS_GetFileStats(fd, status);
-	if (ret < 0)
+	if(ret < 0)
 	{
 		gprintf("Error: ISFS_GetFileStats(%d) %d\n", fd, ret);
 		ISFS_Close(fd);
-		MEM2_free(status);
+		free(status);
 		return ret;
 	}
 
@@ -608,7 +611,7 @@ s32 Nand::__DumpNandFile(const char *source, const char *dest)
 		if(showprogress)
 			dumper(NandSize, 0x1f400000, 0x1f400000, NandSize, FilesDone, FoldersDone, (char *)"", data);
 		ISFS_Close(fd);
-		MEM2_free(status);
+		free(status);
 		return 0;
 	}
 
@@ -616,18 +619,22 @@ s32 Nand::__DumpNandFile(const char *source, const char *dest)
 		fsop_deleteFile(dest);
 
 	FILE *file = fopen(dest, "wb");
-	if (!file)
+	if(!file)
 	{
 		gprintf("Error opening destination: \"%s\"\n", dest);
 		ISFS_Close(fd);
+		free(status);
 		return 0;
 	}
 
 	gprintf("Dumping: %s (%ukb)...", source, (status->file_length / 0x400)+1);
 
-	u8 *buffer = (u8 *)MEM2_alloc(BLOCK);
+	u8 *buffer = (u8 *)memalign(32, ALIGN32(BLOCK));
 	if(buffer == NULL)
+	{
+		free(status);
 		return -1;
+	}
 
 	u32 toread = status->file_length;
 	while(toread > 0)
@@ -642,8 +649,8 @@ s32 Nand::__DumpNandFile(const char *source, const char *dest)
 			gprintf(" failed\nError: ISFS_Read(%d, %p, %d) %d\n", fd, buffer, size, ret);
 			ISFS_Close(fd);
 			fclose(file);
-			MEM2_free(status);
-			MEM2_free(buffer);
+			free(status);
+			free(buffer);
 			return ret;
 		}
 
@@ -653,8 +660,8 @@ s32 Nand::__DumpNandFile(const char *source, const char *dest)
 			gprintf(" failed\nError writing to destination: \"%s\" (%d)\n", dest, ret);
 			ISFS_Close(fd);
 			fclose(file);
-			MEM2_free(status);
-			MEM2_free(buffer);
+			free(status);
+			free(buffer);
 			return ret;
 		}
 		toread -= size;
@@ -676,8 +683,8 @@ s32 Nand::__DumpNandFile(const char *source, const char *dest)
 	gprintf(" done!\n");
 	fclose(file);
 	ISFS_Close(fd);
-	MEM2_free(status);
-	MEM2_free(buffer);
+	free(status);
+	free(buffer);
 
 	return 0;
 }
@@ -764,7 +771,7 @@ s32 Nand::__DumpNandFolder(const char *source, const char *dest)
 			__DumpNandFolder(nsource, dest);
 		}
 	}
-	MEM2_free(names);
+	free(names);
 	return 0;
 }
 
@@ -822,7 +829,7 @@ void Nand::CreateTitleTMD(const char *path, dir_discHdr *hdr)
 	struct stat filestat;
 	if (stat(nandpath, &filestat) == 0)
 	{
-		MEM2_free(titleTMD);
+		free(titleTMD);
 		gprintf("%s Exists!\n", nandpath);
 		return;
 	}
@@ -838,7 +845,7 @@ void Nand::CreateTitleTMD(const char *path, dir_discHdr *hdr)
 	else 
 		gprintf("Creating title TMD: %s failed (%i)\n", nandpath, file);
 
-	MEM2_free(titleTMD);
+	free(titleTMD);
 }
 
 s32 Nand::FlashToNAND(const char *source, const char *dest, dump_callback_t i_dumper, void *i_data)

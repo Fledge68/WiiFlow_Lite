@@ -169,9 +169,9 @@ int get_frag_list(u8 *id, char *path, const u32 hdd_sector_size)
 	bool isWBFS = wbfs_part_fs != PART_FS_WBFS && strcasestr(strrchr(fname,'.'), ".wbfs") != 0;
 
 	struct stat st;
-	FragList *fs = MEM2_alloc(sizeof(FragList));
-	FragList *fa = MEM2_alloc(sizeof(FragList));
-	FragList *fw = MEM2_alloc(sizeof(FragList));
+	FragList *fs = malloc(sizeof(FragList));
+	FragList *fa = malloc(sizeof(FragList));
+	FragList *fw = malloc(sizeof(FragList));
 	if(fs == NULL || fa == NULL || fw == NULL)
 		goto out;
 
@@ -241,7 +241,7 @@ int get_frag_list(u8 *id, char *path, const u32 hdd_sector_size)
 		frag_concat(fa, fs);
 	}
 
-	frag_list = MEM1_alloc(ALIGN32(sizeof(FragList)));
+	frag_list = malloc(ALIGN32(sizeof(FragList)));
 	if(frag_list == NULL)
 		goto out;
 
@@ -276,22 +276,22 @@ int get_frag_list(u8 *id, char *path, const u32 hdd_sector_size)
 out:
 	if(ret_val && frag_list != NULL)
 	{
-		MEM1_free(frag_list);
+		free(frag_list);
 		frag_list = NULL;
 	}
 	if(fs != NULL)
 	{
-		MEM2_free(fs);
+		free(fs);
 		fs = NULL;
 	}
 	if(fa != NULL)
 	{
-		MEM2_free(fa);
+		free(fa);
 		fa = NULL;
 	}
 	if(fw != NULL)
 	{
-		MEM2_free(fw);
+		free(fw);
 		fw = NULL;
 	}
 	return ret_val;

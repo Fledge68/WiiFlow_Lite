@@ -52,7 +52,7 @@ wbfs_disc_t* WBFS_Ext_OpenDisc(u8 *discid, char *fname)
 		int fd = open(fname, O_RDONLY);
 		if (fd == -1) return NULL;
 
-		wbfs_disc_t *iso_file = MEM2_alloc(sizeof(wbfs_disc_t));
+		wbfs_disc_t *iso_file = malloc(sizeof(wbfs_disc_t));
 		memset(iso_file, 0, sizeof(wbfs_disc_t));
 
 		if (iso_file == NULL) 
@@ -81,7 +81,7 @@ void WBFS_Ext_CloseDisc(wbfs_disc_t* disc)
 	if (part == &wbfs_iso_file)
 	{
 		close((int)disc->header);
-		MEM2_free(disc);
+		free(disc);
 		return;
 	}
 

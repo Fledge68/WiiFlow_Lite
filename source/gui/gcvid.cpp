@@ -280,7 +280,7 @@ void VideoFrame::resize(int width, int height)
 	_p = 3*width;
 	_p += (4 - _p%4)%4;
 
-	_data = (u8 *)MEM2_alloc(_p * _h);
+	_data = (u8 *)malloc(_p * _h);
 }
 
 int VideoFrame::getWidth() const
@@ -301,7 +301,7 @@ const u8* VideoFrame::getData() const
 void VideoFrame::dealloc()
 {
 	if(_data != NULL)
-		MEM2_free(_data);
+		free(_data);
 	_w = _h = _p = 0;
 }
 
