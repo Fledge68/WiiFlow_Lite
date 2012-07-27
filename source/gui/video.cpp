@@ -502,6 +502,7 @@ void CVideo::_showWaitMessages(CVideo *m)
 	m->prepare();
 	m->setup2DProjection();
 	GX_SetNumChans(0);
+	wiiLightSetLevel(0);
 	wiiLightOn();
 
 	while(m->m_showWaitMessage)
