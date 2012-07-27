@@ -106,7 +106,7 @@ u8 Channels::GetRequestedIOS(u64 title)
 	if(size > 0x18B)
 		IOS = titleTMD[0x18B];
 
-	MEM2_free(titleTMD);
+	free(titleTMD);
 	gprintf("Requested Game IOS: %i\n", IOS);
 	return IOS;
 }
@@ -122,7 +122,7 @@ u64* Channels::GetChannelList(u32* count)
 
 	if(ES_GetTitles(titles, countall) < 0)
 	{
-		MEM2_free(titles);
+		free(titles);
 		return NULL;
 	}
 
@@ -143,7 +143,7 @@ u64* Channels::GetChannelList(u32* count)
 			channels[(*count)++] = titles[i];
 		}
 	}
-	MEM2_free(titles);
+	free(titles);
 
 	return(u64*)MEM2_realloc(channels, *count * sizeof(u64));
 }
@@ -173,7 +173,7 @@ bool Channels::GetAppNameFromTmd(u64 title, char *app, bool dol, u32 *bootconten
 		}
 	}
 
-	MEM2_free(data);
+	free(data);
 
 	return ret;
 }
@@ -250,7 +250,7 @@ void Channels::Search(u32 channelType, string lang)
 		}
 	}
 
-	MEM2_free(list);
+	free(list);
 }
 
 wchar_t * Channels::GetName(int index)

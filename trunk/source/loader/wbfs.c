@@ -67,7 +67,7 @@ s32 __WBFS_ReadDVD(void *fp, u32 lba, u32 len, void *iobuf)
 	if (mod)
 	{
 		/* Allocate memory */
-		fp = MEM2_alloc(0x20);
+		fp = malloc(0x20);
 		if (!fp)
 			return -1;
 
@@ -85,7 +85,7 @@ s32 __WBFS_ReadDVD(void *fp, u32 lba, u32 len, void *iobuf)
 
 out:
 	/* Free memory */
-	MEM2_free(fp);
+	free(fp);
 
 	return ret;
 }

@@ -18,9 +18,9 @@
 #include <ogcsys.h>
 #include <stdio.h>
 #include <string.h>
+#include <malloc.h>
 
 #include "plugin.hpp"
-#include "memory/mem2.hpp"
 #include "gui/text.hpp"
 #include "gecko/gecko.h"
 #include "devicemounter/PartitionHandle.h"
@@ -51,7 +51,7 @@ void Plugin::Cleanup()
 	for(u8 pos = 0; pos < Plugins.size(); pos++)
 	{
 		if(Plugins[pos].BannerSound != NULL)
-			MEM2_free(Plugins[pos].BannerSound);
+			free(Plugins[pos].BannerSound);
 	}
 }
 
@@ -86,7 +86,7 @@ bool Plugin::AddPlugin(Config &plugin)
 		size = infile.tellg();
 		infile.seekg(0, ios::beg);
 		//Don't free that, otherwise you would delete the sound
-		char* FileReadBuffer = (char*)MEM2_alloc(size);
+		char* FileReadBuffer = (char*)malloc(size);
 		infile.read(FileReadBuffer, size);
 		NewPlugin.BannerSound = (u8*)FileReadBuffer;
 		NewPlugin.BannerSoundSize = size;

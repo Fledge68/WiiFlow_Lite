@@ -566,7 +566,7 @@ unsigned char * MD5fromFile(unsigned char *dst, const char *src)
     else
         blksize = 1048576;
 
-    unsigned char * buffer = MEM2_alloc(blksize);
+    unsigned char * buffer = malloc(blksize);
     if(buffer == NULL)
 	{
 	    //no memory
@@ -581,7 +581,7 @@ unsigned char * MD5fromFile(unsigned char *dst, const char *src)
 	} while(read > 0);
 
     fclose(file);
-    MEM2_free(buffer);
+    free(buffer);
 
     (void)auth_md5CloseCtx( ctx, dst );       /* Close the context.   */
 

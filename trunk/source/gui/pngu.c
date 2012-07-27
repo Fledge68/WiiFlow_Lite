@@ -59,7 +59,7 @@ IMGCTX PNGU_SelectImageFromBuffer (const void *buffer)
 {
 	if (!buffer) return NULL;
 
-	IMGCTX ctx = MEM2_alloc(sizeof (struct _IMGCTX));
+	IMGCTX ctx = malloc(sizeof (struct _IMGCTX));
 	if (!ctx) return NULL;
 
 	ctx->buffer = (void *) buffer;
@@ -79,7 +79,7 @@ IMGCTX PNGU_SelectImageFromDevice (const char *filename)
 	if (!filename)
 		return NULL;
 
-	IMGCTX ctx = MEM2_alloc(sizeof (struct _IMGCTX));
+	IMGCTX ctx = malloc(sizeof (struct _IMGCTX));
 	if (ctx == NULL)
 		return NULL;
 
@@ -87,11 +87,11 @@ IMGCTX PNGU_SelectImageFromDevice (const char *filename)
 	ctx->source = PNGU_SOURCE_DEVICE;
 	ctx->cursor = 0;
 
-	ctx->filename = MEM2_alloc(strlen (filename) + 1);
+	ctx->filename = malloc(strlen (filename) + 1);
 	if (ctx->filename == NULL)
 	{
 		if(ctx != NULL)
-			MEM2_free(ctx);
+			free(ctx);
 		return NULL;
 	}
 	strcpy(ctx->filename, filename);
@@ -109,14 +109,14 @@ void PNGU_ReleaseImageContext (IMGCTX ctx)
 		return;
 
 	if(ctx->filename)
-		MEM2_free(ctx->filename);
+		free(ctx->filename);
 
 	if((ctx->propRead) && (ctx->prop.trans))
-		MEM2_free(ctx->prop.trans);
+		free(ctx->prop.trans);
 
 	pngu_free_info(ctx);
 
-	MEM2_free(ctx);
+	free(ctx);
 }
 
 
@@ -156,8 +156,8 @@ int PNGU_DecodeToYCbYCr (IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, void *buff
 															*(ctx->row_pointers[y]+x*6+3), *(ctx->row_pointers[y]+x*6+4), *(ctx->row_pointers[y]+x*6+5));
 	
 	// Free resources
-	MEM2_free(ctx->img_data);
-	MEM2_free(ctx->row_pointers);
+	free(ctx->img_data);
+	free(ctx->row_pointers);
 
 	// Success
 	return PNGU_OK;
@@ -180,8 +180,8 @@ int PNGU_DecodeToRGB565 (IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, void *buff
 				(((PNGU_u16) (ctx->row_pointers[y][x*3+2] & 0xF8)) >> 3);
 	
 	// Free resources
-	MEM2_free(ctx->img_data);
-	MEM2_free(ctx->row_pointers);
+	free(ctx->img_data);
+	free(ctx->row_pointers);
 
 	// Success
 	return PNGU_OK;
@@ -216,8 +216,8 @@ int PNGU_DecodeToRGBA8 (IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, void *buffe
 	}
 	
 	// Free resources
-	MEM2_free(ctx->img_data);
-	MEM2_free(ctx->row_pointers);
+	free(ctx->img_data);
+	free(ctx->row_pointers);
 
 	// Success
 	return PNGU_OK;
@@ -279,8 +279,8 @@ int PNGU_DecodeTo4x4RGB565 (IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, void *b
 	}
 
 	// Free resources
-	MEM2_free(ctx->img_data);
-	MEM2_free(ctx->row_pointers);
+	free(ctx->img_data);
+	free(ctx->row_pointers);
 
 	// Success
 	return PNGU_OK;
@@ -526,8 +526,8 @@ int PNGU_DecodeTo4x4RGB5A3 (IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, void *b
 	}
 	
 	// Free resources
-	MEM2_free(ctx->img_data);
-	MEM2_free(ctx->row_pointers);
+	free(ctx->img_data);
+	free(ctx->row_pointers);
 
 	// Success
 	return PNGU_OK;
@@ -650,8 +650,8 @@ int PNGU_DecodeTo4x4RGBA8 (IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, void *bu
 	}
 	
 	// Free resources
-	MEM2_free(ctx->img_data);
-	MEM2_free(ctx->row_pointers);
+	free(ctx->img_data);
+	free(ctx->row_pointers);
 
 	// Success
 	return PNGU_OK;
@@ -768,8 +768,8 @@ int PNGU_DecodeToCMPR(IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, void *buffer)
 				outBuf += 4;
 			}
 	// Free resources
-	MEM2_free(ctx->img_data);
-	MEM2_free(ctx->row_pointers);
+	free(ctx->img_data);
+	free(ctx->row_pointers);
 
 	// Success
 	return PNGU_OK;
@@ -839,7 +839,7 @@ int PNGU_EncodeFromYCbYCr(IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, void *buf
 	if (rowbytes % 4)
 		rowbytes = ((rowbytes / 4) + 1) * 4; // Add extra padding so each row starts in a 4 byte boundary
 
-	ctx->img_data = MEM2_alloc(rowbytes * height);
+	ctx->img_data = malloc(rowbytes * height);
 	if (!ctx->img_data)
 	{
 		png_destroy_write_struct (&(ctx->png_ptr), (png_infopp)NULL);
@@ -848,7 +848,7 @@ int PNGU_EncodeFromYCbYCr(IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, void *buf
 		return PNGU_LIB_ERROR;
 	}
 
-	ctx->row_pointers = MEM2_alloc(sizeof (png_bytep) * height);
+	ctx->row_pointers = malloc(sizeof (png_bytep) * height);
 	if (!ctx->row_pointers)
 	{
 		png_destroy_write_struct (&(ctx->png_ptr), (png_infopp)NULL);
@@ -880,8 +880,8 @@ int PNGU_EncodeFromYCbYCr(IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, void *buf
 	png_write_end (ctx->png_ptr, (png_infop) NULL);
 
 	// Free resources
-	MEM2_free(ctx->img_data);
-	MEM2_free(ctx->row_pointers);
+	free(ctx->img_data);
+	free(ctx->row_pointers);
 	png_destroy_write_struct (&(ctx->png_ptr), &(ctx->info_ptr));
 	if (ctx->source == PNGU_SOURCE_DEVICE)
 		fclose (ctx->fd);
@@ -1060,7 +1060,7 @@ int pngu_info (IMGCTX ctx)
 		{
 			if (ctx->prop.numTrans)
 			{
-				ctx->prop.trans = MEM2_alloc(sizeof (PNGUCOLOR) * ctx->prop.numTrans);
+				ctx->prop.trans = malloc(sizeof (PNGUCOLOR) * ctx->prop.numTrans);
 				if (ctx->prop.trans)
 				{
 					for (i = 0; i < ctx->prop.numTrans; i++)
@@ -1079,7 +1079,7 @@ int pngu_info (IMGCTX ctx)
 		{
 			if (ctx->prop.numTrans)
 			{
-				ctx->prop.trans = MEM2_alloc(sizeof (PNGUCOLOR) * ctx->prop.numTrans);
+				ctx->prop.trans = malloc(sizeof (PNGUCOLOR) * ctx->prop.numTrans);
 				if (ctx->prop.trans)
 					for (i = 0; i < ctx->prop.numTrans; i++)
 						ctx->prop.trans[i].r = ctx->prop.trans[i].g = ctx->prop.trans[i].b = 
@@ -1126,8 +1126,8 @@ int pngu_decode (IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, PNGU_u32 stripAlph
 	{
 		error:
 		memcpy(png_jmpbuf(ctx->png_ptr), save_jmp, sizeof(save_jmp));
-		MEM2_free(ctx->row_pointers);
-		MEM2_free(ctx->img_data);
+		free(ctx->row_pointers);
+		free(ctx->img_data);
 		pngu_free_info (ctx);
 		//printf("*** This is a corrupted image!!\n"); sleep(5);
 		return mem_err ? PNGU_LIB_ERROR : -666;
@@ -1161,14 +1161,14 @@ int pngu_decode (IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, PNGU_u32 stripAlph
 	if (rowbytes % 4)
 		rowbytes = ((rowbytes / 4) + 1) * 4; // Add extra padding so each row starts in a 4 byte boundary
 
-	ctx->img_data = MEM2_alloc(rowbytes * ctx->prop.imgHeight);
+	ctx->img_data = malloc(rowbytes * ctx->prop.imgHeight);
 	if (!ctx->img_data)
 	{
 		mem_err = 1;
 		goto error;
 	}
 
-	ctx->row_pointers = MEM2_alloc(sizeof (png_bytep) * ctx->prop.imgHeight);
+	ctx->row_pointers = malloc(sizeof (png_bytep) * ctx->prop.imgHeight);
 	if (!ctx->row_pointers)
 	{
 		mem_err = 1;

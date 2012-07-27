@@ -49,10 +49,11 @@ Banner::Banner(u8 *bnr, u32 bnr_size, u64 title, bool custom)
 	opening_size = bnr_size;
 	imet = NULL;
 	
-	if (opening == NULL) return;
+	if(opening == NULL)
+		return;
 	
-	IMET *imet = (IMET *) opening;
-	if (imet->sig != IMET_SIGNATURE)
+	IMET *imet = (IMET *)opening;
+	if(imet->sig != IMET_SIGNATURE)
 		imet = (IMET *) (opening + IMET_OFFSET);
 
 	if(imet->sig == IMET_SIGNATURE)
@@ -125,21 +126,29 @@ bool Banner::GetName(wchar_t *name, int language)
 	if (imet == NULL) return false;
 
 	u16 *channelname = GetName(language);
-	if (channelname)
+	if(channelname)
 	{
-		for (int i = 0; i < IMET_MAX_NAME_LEN; i++)
-		{
+		for(int i = 0; i < IMET_MAX_NAME_LEN; i++)
 			name[i] = channelname[i];
-		}
 		return true;
 	}
 	return false;
 }
 
-const u8 *Banner::GetFile(char *name, u32 *size)
+u8 *Banner::GetFile(char *name, u32 *size)
 {
 	const u8 *bnrArc = (const u8 *)(((u8 *) imet) + sizeof(IMET));
-	return u8_get_file(bnrArc, name, size);
+	const u8* curfile = u8_get_file(bnrArc, name, size);
+	if(curfile == NULL || *size == 0)
+		return NULL;
+
+	//I like to have stuff in a separate memory region
+	u8 *file = (u8*)malloc(*size);
+	if(file == NULL)
+		return NULL;
+
+	memcpy(file, curfile, (*size));
+	return file;
 }
 
 Banner * Banner::GetBanner(u64 title, char *appname, bool isfs, bool imetOnly)
@@ -152,7 +161,7 @@ Banner * Banner::GetBanner(u64 title, char *appname, bool isfs, bool imetOnly)
 		if (size == 0) 
 		{
 			if(buf != NULL)
-				MEM2_free(buf);
+				free(buf);
 			return NULL;
 		}
 	}
@@ -170,7 +179,7 @@ Banner * Banner::GetBanner(u64 title, char *appname, bool isfs, bool imetOnly)
 			fseek(fp, 0, SEEK_SET);
 		}
 
-		buf = MEM2_alloc(size);
+		buf = malloc(size);
 		if(!buf)
 			return NULL;
 

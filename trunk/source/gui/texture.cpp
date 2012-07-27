@@ -199,7 +199,7 @@ STexture::TexErr STexture::fromImageFile(const char *filename, u8 f, Alloc alloc
 	u8 *Image = NULL;
 	if(fileSize)
 	{
-		Image = (u8*)MEM2_alloc(fileSize);
+		Image = (u8*)malloc(fileSize);
 		if(Image != NULL)
 			fread(Image, 1, fileSize, file);
 	}
@@ -212,7 +212,7 @@ STexture::TexErr STexture::fromImageFile(const char *filename, u8 f, Alloc alloc
 			result = fromPNG(Image, f, alloc, minMipSize, maxMipSize);
 		else
 			result = fromJPG(Image, fileSize, f, alloc, minMipSize, maxMipSize);
-		MEM2_free(Image);
+		free(Image);
 	}
 	return result;
 }

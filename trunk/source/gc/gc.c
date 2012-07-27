@@ -2,13 +2,8 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <malloc.h>
 #include <ogc/machine/processor.h>
-#include "gc.h"
-#include "gecko.h"
-#include "fileOps.h"
-#include "utils.h"
-#include "memory/mem2.hpp"
-#include "loader/disc.h"
 
 // for directory parsing and low-level file I/O
 #include <sys/types.h>
@@ -16,14 +11,20 @@
 #include <fcntl.h>
 #include <dirent.h>
 
+#include "gc.h"
+#include "gecko.h"
+#include "fileOps.h"
+#include "utils.h"
+#include "loader/disc.h"
+
 // DIOS-MIOS
 DML_CFG *DMLCfg = NULL;
 
-void DML_New_SetOptions(const char *GamePath, char *CheatPath, char *NewCheatPath, const char *partition, bool cheats, bool debugger, u8 NMM, u8 nodisc, u8 DMLvideoMode, u8 videoSetting, bool widescreen, bool new_dm_cfg)
+void DML_New_SetOptions(const char *GamePath, char *CheatPath, const char *NewCheatPath, const char *partition, bool cheats, bool debugger, u8 NMM, u8 nodisc, u8 DMLvideoMode, u8 videoSetting, bool widescreen, bool new_dm_cfg)
 {
 	gprintf("Wiiflow GC: Launch game '%s' through memory (new method)\n", GamePath);
 
-	DMLCfg = (DML_CFG*)MEM1_alloc(sizeof(DML_CFG));
+	DMLCfg = (DML_CFG*)malloc(sizeof(DML_CFG));
 	if(DMLCfg == NULL)
 		return;
 	memset(DMLCfg, 0, sizeof(DML_CFG));
@@ -55,12 +56,13 @@ void DML_New_SetOptions(const char *GamePath, char *CheatPath, char *NewCheatPat
 		char *ptr;
 		if(strstr(CheatPath, partition) == NULL)
 		{
-			fsop_CopyFile(CheatPath, NewCheatPath, NULL, NULL);
-			ptr = &NewCheatPath[3];
+			fsop_CopyFile(CheatPath, (char*)NewCheatPath, NULL, NULL);
+			ptr = strstr(NewCheatPath, ":/") + 1;
 		}
 		else
-			ptr = &CheatPath[3];
+			ptr = strstr(CheatPath, ":/") + 1;
 		strncpy(DMLCfg->CheatPath, ptr, sizeof(DMLCfg->CheatPath));
+		gprintf("Cheat Path: %s\n", ptr);
 		DMLCfg->Config |= DML_CFG_CHEAT_PATH;
 	}
 
@@ -86,16 +88,13 @@ void DML_New_SetOptions(const char *GamePath, char *CheatPath, char *NewCheatPat
 		DMLCfg->VideoMode |= DML_VID_PROG_PATCH;
 }
 
-void DML_Old_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats)
+void DML_Old_SetOptions(const char *GamePath)
 {
 	gprintf("Wiiflow GC: Launch game '%s' through boot.bin (old method)\n", GamePath);
 	FILE *f;
 	f = fopen("sd:/games/boot.bin", "wb");
 	fwrite(GamePath, 1, strlen(GamePath) + 1, f);
 	fclose(f);
-
-	if(cheats && strstr(CheatPath, NewCheatPath) == NULL)
-		fsop_CopyFile(CheatPath, NewCheatPath, NULL, NULL);
 
 	//Tell DML to boot the game from sd card
 	*(vu32*)0x80001800 = 0xB002D105;
@@ -109,7 +108,7 @@ void DML_New_SetBootDiscOption(bool new_dm_cfg)
 {
 	gprintf("Booting GC game\n");
 
-	DMLCfg = (DML_CFG*)MEM1_alloc(sizeof(DML_CFG));
+	DMLCfg = (DML_CFG*)malloc(sizeof(DML_CFG));
 	if(DMLCfg == NULL)
 		return;
 	memset(DMLCfg, 0, sizeof(DML_CFG));
@@ -137,7 +136,7 @@ void DML_New_WriteOptions()
 	memcpy((void *)0x81200000, DMLCfg, sizeof(DML_CFG));
 	DCFlushRange((void *)(0x81200000), sizeof(DML_CFG));
 
-	MEM1_free(DMLCfg);
+	free(DMLCfg);
 }
 
 
@@ -155,12 +154,12 @@ bool DEVO_Installed(const char* path)
 	FILE *f = fopen(loader_path, "rb");
 	if(f)
 	{
-		u8 *tbuf = (u8 *)MEM2_alloc(0x04);
+		u8 *tbuf = (u8 *)malloc(0x04);
 		fread(tbuf, 1, 4, f);
 		if(*(vu32*)tbuf == 0x4800004c)
 			devo = true;
 			
-		MEM2_free(tbuf);
+		free(tbuf);
 		fclose(f);
 	}
 	return devo;
@@ -205,7 +204,7 @@ void DEVO_SetOptions(const char *isopath, const char *partition, const char *loa
 	fclose(f);
 
 	// fill out the Devolution config struct
-	memset(DEVO_CONFIG, 0, sizeof(*DEVO_CONFIG));
+	memset(DEVO_CONFIG, 0, sizeof(gconfig));
 	DEVO_CONFIG->signature = 0x3EF9DB23;
 	DEVO_CONFIG->version = 0x00000100;
 	DEVO_CONFIG->device_signature = st.st_dev;

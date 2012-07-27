@@ -145,7 +145,8 @@ CMenu::CMenu(CVideo &vid) :
 	m_current_view = COVERFLOW_USB;
 	m_Emulator_boot = false;
 	m_banner = new BannerWindow;
-	m_music = new MusicPlayer;
+	m_music = new MusicPlayer; //Voice 0
+	m_gameSound = new GuiSound; //Voice 1
 }
 
 void CMenu::init(void)
@@ -1827,17 +1828,17 @@ void CMenu::_mainLoopCommon(bool withCF, bool blockReboot, bool adjusting)
 		Sys_Test();
 	}
 
-	if(withCF && m_gameSelected && m_gamesound_changed && (m_gameSoundHdr == NULL) && !m_gameSound.IsPlaying() && m_music->GetVolume() == 0)
+	if(withCF && m_gameSelected && m_gamesound_changed && (m_gameSoundHdr == NULL) && !m_gameSound->IsPlaying() && m_music->GetVolume() == 0)
 	{
 		CheckGameSoundThread();
-		m_gameSound.Play(m_bnrSndVol);
+		m_gameSound->Play(m_bnrSndVol);
 		m_gamesound_changed = false;
 	}
 	else if(!m_gameSelected)
-		m_gameSound.Stop();
+		m_gameSound->Stop();
 
 	m_music->Tick(m_video_playing || (m_gameSelected && 
-		m_gameSound.IsLoaded()) ||  m_gameSound.IsPlaying());
+		m_gameSound->IsLoaded()) ||  m_gameSound->IsPlaying());
 
 	//Take Screenshot
 	if(gc_btnsPressed & PAD_TRIGGER_Z)
@@ -2258,11 +2259,11 @@ void CMenu::_stopSounds(void)
 
 	if(!m_music->IsStopped())
 	{
-		while(m_music->GetVolume() > 0 || m_gameSound.GetVolume() > 0)
+		while(m_music->GetVolume() > 0 || m_gameSound->GetVolume() > 0)
 		{
 			m_music->Tick(true);
-			if(m_gameSound.GetVolume() > 0)
-				m_gameSound.SetVolume(m_gameSound.GetVolume() < fade_rate ? 0 : m_gameSound.GetVolume() - fade_rate);
+			if(m_gameSound->GetVolume() > 0)
+				m_gameSound->SetVolume(m_gameSound->GetVolume() < fade_rate ? 0 : m_gameSound->GetVolume() - fade_rate);
 			VIDEO_WaitVSync();
 		}
 	}
@@ -2270,7 +2271,7 @@ void CMenu::_stopSounds(void)
 	m_cf.stopSound();
 
 	m_music->Stop();
-	m_gameSound.Stop();
+	m_gameSound->Stop();
 }
 
 bool CMenu::_loadFile(SmartBuf &buffer, u32 &size, const char *path, const char *file)
@@ -2379,7 +2380,7 @@ retry:
 				memcpy(m_base_font.get(), font_file, size);
 				if(!!m_base_font)
 					m_base_font_size = size;
-				MEM2_free(u8_font_archive);
+				free(u8_font_archive);
 			}
 			break;
 		}
@@ -2400,7 +2401,7 @@ retry:
 				m_wbf2_font = smartMem2Alloc(size);
 				memcpy(m_wbf2_font.get(), font_file2, size);
 
-				MEM2_free(u8_font_archive);
+				free(u8_font_archive);
 			}
 		}
 	}
@@ -2411,7 +2412,7 @@ retry:
 		goto retry;
 	}
 
-	MEM2_free(content);
+	free(content);
 }
 
 void CMenu::_cleanupDefaultFont()
@@ -2491,16 +2492,16 @@ int CMenu::MIOSisDML()
 					if(*(vu32*)(appfile+j) == 0x4C697465)
 					{
 						gprintf("DIOS-MIOS Lite is installed as MIOS\n");
-						MEM2_free(appfile);
+						free(appfile);
 						return 2;
 					}
 				}
 				gprintf("DIOS-MIOS is installed as MIOS\n");
-				MEM2_free(appfile);
+				free(appfile);
 				return 1;
 			}
 		}
-		MEM2_free(appfile);
+		free(appfile);
 	}
 	gprintf("DIOS-MIOS (Lite) not found\n");
 	return 0;

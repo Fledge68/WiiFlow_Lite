@@ -23,10 +23,10 @@
  * nk.c
  *
  ***************************************************************************/
-
 #include <stdio.h>
 #include <ogcsys.h>
 #include <string.h>
+#include <malloc.h>
 
 #include "mem2.hpp"
 #include "nk.h"
@@ -58,13 +58,11 @@ s32 Launch_nk(u64 TitleID, const char *nandpath)
 		DCFlushRange((void *)0x91000000, fsize);
 	}
 	else
-	{
 		return 0;
-	}
-		
+
 	fclose(file);
 	
-	memcfg *MC = (memcfg*)MEM1_alloc(sizeof(memcfg));
+	memcfg *MC = (memcfg*)malloc(sizeof(memcfg));
 	if(MC == NULL)
 		return 0;
 	
@@ -81,7 +79,7 @@ s32 Launch_nk(u64 TitleID, const char *nandpath)
 	
 	memcpy((void *)0x81200000, MC, sizeof(memcfg));
 	DCFlushRange((void *)(0x81200000), sizeof(memcfg));	
-	MEM1_free(MC);
+	free(MC);
 	
 	/*** Thnx giantpune! ***/
 	void *mini = MEM1_memalign(32, armboot_size);  

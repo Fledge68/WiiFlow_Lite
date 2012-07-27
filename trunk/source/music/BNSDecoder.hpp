@@ -30,7 +30,7 @@
 
 typedef struct _SoundBlock
 {
-	u8 *buffer;
+	u8 * buffer;
 	u32 size;
 	u8 format;
 	u32 frequency;
@@ -44,7 +44,7 @@ class BNSDecoder : public SoundDecoder
 public:
 	BNSDecoder(const char * filepath);
 	BNSDecoder(const u8 * snd, int len);
-	~BNSDecoder();
+	virtual ~BNSDecoder();
 	int GetFormat() { return SoundData.format; };
 	int GetSampleRate() { return SoundData.frequency; };
 	int Read(u8 * buffer, int buffer_size, int pos);
@@ -53,7 +53,5 @@ protected:
 	void CloseFile();
 	SoundBlock SoundData;
 };
-
-SoundBlock DecodefromBNS(const u8 *buffer, u32 size);
 
 #endif

@@ -75,7 +75,7 @@ WiiMovie::WiiMovie(const char * filepath)
 	}
 
 	PlayThreadStack = NULL;
-	ThreadStack = (u8 *)MEM2_alloc(32768);
+	ThreadStack = (u8 *)malloc(32768);
 	if (!ThreadStack)
 		return;
 
@@ -109,7 +109,7 @@ WiiMovie::~WiiMovie()
 	}
 	if (ThreadStack != NULL)
 	{
-		MEM2_free(ThreadStack);
+		free(ThreadStack);
 		ThreadStack = NULL;
 	}
 
@@ -127,7 +127,7 @@ bool WiiMovie::Play(bool loop)
 
 	gprintf("Start playing video\n");
 
-	PlayThreadStack = (u8 *)MEM2_alloc(32768);
+	PlayThreadStack = (u8 *)malloc(32768);
 	if (PlayThreadStack == NULL)
 		return false;
 
@@ -155,7 +155,7 @@ void WiiMovie::Stop()
 	gprintf("Playing thread stopped\n");
 
 	if(PlayThreadStack != NULL)
-		MEM2_free(PlayThreadStack);
+		free(PlayThreadStack);
 }
 
 void WiiMovie::SetVolume(int vol)

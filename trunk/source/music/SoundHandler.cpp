@@ -24,15 +24,15 @@
  * for WiiXplorer 2010
  ***************************************************************************/
 #include <unistd.h>
+#include <malloc.h>
+
 #include "SoundHandler.hpp"
 #include "Mp3Decoder.hpp"
 #include "OggDecoder.hpp"
 #include "WavDecoder.hpp"
 #include "AifDecoder.hpp"
 #include "BNSDecoder.hpp"
-
 #include "gecko/gecko.h"
-#include "mem2.hpp"
 
 SoundHandler * SoundHandler::instance = NULL;
 
@@ -43,11 +43,11 @@ SoundHandler::SoundHandler()
 	for(u32 i = 0; i < MAX_DECODERS; ++i)
 		DecoderList[i] = NULL;
 
-	ThreadStack = (u8 *)MEM2_memalign(32, 32768);
+	ThreadStack = (u8 *)memalign(32, 32768);
 	if(!ThreadStack)
 		return;
 
-	LWP_CreateThread(&SoundThread, UpdateThread, this, ThreadStack, 32768, 80);
+	LWP_CreateThread(&SoundThread, UpdateThread, this, ThreadStack, 32768, LWP_PRIO_HIGHEST);
 	gprintf("SHND: Running sound thread\n");
 }
 
@@ -61,7 +61,7 @@ SoundHandler::~SoundHandler()
 	SoundThread = LWP_THREAD_NULL;
 	if(ThreadStack != NULL)
 	{
-		MEM2_free(ThreadStack);
+		free(ThreadStack);
 		ThreadStack = NULL;
 	}
 
@@ -99,13 +99,19 @@ void SoundHandler::AddDecoder(int voice, const char * filepath)
 void SoundHandler::AddDecoder(int voice, const u8 * snd, int len)
 {
 	if(voice < 0 || voice >= MAX_DECODERS)
+	{
+		gprintf("SoundHandler: Invalid voice!\n");
 		return;
+	}
 
-	if (snd == NULL || len == 0)
+	if(snd == NULL || len == 0)
+	{
+		gprintf("SoundHandler: Invalid sound!\n");
 		return;
+	}
 
 	if(DecoderList[voice] != NULL)
-	RemoveDecoder(voice);
+		RemoveDecoder(voice);
 
 	DecoderList[voice] = GetSoundDecoder(snd, len);
 }

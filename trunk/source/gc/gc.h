@@ -49,8 +49,8 @@ enum dmlvideomode
 	DML_VID_PROG_PATCH	= (1<<4),
 };
 
-void DML_New_SetOptions(const char *GamePath, char *CheatPath, char *NewCheatPath, const char *partition, bool cheats, bool debugger, u8 NMM, u8 nodisc, u8 DMLvideoMode, u8 videoSetting, bool widescreen, bool new_dm_cfg);
-void DML_Old_SetOptions(char *GamePath, char *CheatPath, char *NewCheatPath, bool cheats);
+void DML_New_SetOptions(const char *GamePath, char *CheatPath, const char *NewCheatPath, const char *partition, bool cheats, bool debugger, u8 NMM, u8 nodisc, u8 DMLvideoMode, u8 videoSetting, bool widescreen, bool new_dm_cfg);
+void DML_Old_SetOptions(const char *GamePath);
 void DML_New_SetBootDiscOption(bool new_dm_cfg);
 void DML_New_WriteOptions();
 

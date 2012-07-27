@@ -23,13 +23,13 @@
  *
  * for WiiXplorer 2010
  ***************************************************************************/
- 
+#include <malloc.h>
 #include <string.h>
 #include <math.h>
 #include <unistd.h>
-
-#include "mem2.hpp"
 #include "BNSDecoder.hpp"
+
+SoundBlock DecodefromBNS(const u8 *buffer, u32 size);
 
 BNSDecoder::BNSDecoder(const char * filepath)
 	: SoundDecoder(filepath)
@@ -61,12 +61,15 @@ BNSDecoder::~BNSDecoder()
 	while(Decoding)
 		usleep(100);
 
-	MEM2_free(SoundData.buffer);
+	if(SoundData.buffer != NULL)
+		free(SoundData.buffer);
+
+	SoundData.buffer = NULL;
 }
 
 void BNSDecoder::OpenFile()
 {
-	u8 *tempbuff = new (std::nothrow) u8[file_fd->size()];
+	u8 * tempbuff = new (std::nothrow) u8[file_fd->size()];
 	if(!tempbuff)
 	{
 		CloseFile();
@@ -77,7 +80,7 @@ void BNSDecoder::OpenFile()
 
 	while(done < file_fd->size())
 	{
-		int read = file_fd->read(tempbuff, file_fd->size());
+		int read = file_fd->read(tempbuff+done, file_fd->size()-done);
 		if(read > 0)
 			done += read;
 		else
@@ -264,7 +267,7 @@ static u8 * decodeBNS(u32 &size, const BNSInfo &bnsInfo, const BNSData &bnsData)
 	int numBlocks = (bnsData.size - 8) / 8;
 	int numSamples = numBlocks * 14;
 	const BNSADPCMBlock *inputBuf = (const BNSADPCMBlock *)&bnsData.data;
-	u8 * buffer = (u8 *)MEM2_alloc(numSamples * sizeof (s16));
+	u8 * buffer = (u8 *) malloc(numSamples * sizeof (s16));
 	s16 *outputBuf;
 
 	if (!buffer)
@@ -321,7 +324,7 @@ SoundBlock DecodefromBNS(const u8 *buffer, u32 size)
 	// Check sizes
 	if (size < hdr.size || size < hdr.infoOffset + hdr.infoSize || size < hdr.dataOffset + hdr.dataSize
 		|| hdr.infoSize < 0x60 || hdr.dataSize < sizeof dataChunk
-		|| infoChunk.size != hdr.infoSize || dataChunk.size != hdr.dataSize)
+		|| infoChunk.size != hdr.infoSize || dataChunk.size > hdr.dataSize)
 		return OutBlock;
 	// Check format
 	if (infoChunk.codecNum != 0)	// Only codec i've found : 0 = ADPCM. Maybe there's also 1 and 2 for PCM 8 or 16 bits ?
@@ -344,7 +347,7 @@ SoundBlock DecodefromBNS(const u8 *buffer, u32 size)
 	}
 	else
 	{
-		OutBlock.buffer = (u8*)MEM2_alloc(dataChunk.size);
+		OutBlock.buffer = (u8*) malloc(dataChunk.size);
 		if (!OutBlock.buffer)
 			return OutBlock;
 		memcpy(OutBlock.buffer, &dataChunk.data, dataChunk.size);

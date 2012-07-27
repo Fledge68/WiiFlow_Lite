@@ -74,11 +74,6 @@ void *MEM2_alloc(unsigned int s)
 	return g_mem2gp.allocate(s);
 }
 
-void *MEM2_memalign(unsigned int a, unsigned int s)
-{
-	return g_mem2gp.allocate(ALIGN(a, s));
-}
-
 void *MEM2_realloc(void *p, unsigned int s)
 {
 	return g_mem2gp.reallocate(p, s);
@@ -138,15 +133,19 @@ void *__wrap_memalign(size_t a, size_t size)
 	void *p;
 	if(SYS_GetArena1Lo() >= MAX_MEM1_ARENA_LO || size >= MEM2_PRIORITY_SIZE)
 	{
-		p = MEM2_memalign(a, size);
-		if (p != 0)
-			return p;
+		if(a <= 32 && 32 % a == 0)
+		{
+			p = g_mem2gp.allocate(size);
+			if (p != 0)
+				return p;
+		}
 		return __real_memalign(a, size);
 	}
 	p = __real_memalign(a, size);
-	if(p != 0)
+	if(p != 0 || a > 32 || 32 % a != 0)
 		return p;
-	return MEM2_memalign(a, size);
+
+	return g_mem2gp.allocate(size);
 }
 
 void __wrap_free(void *p)

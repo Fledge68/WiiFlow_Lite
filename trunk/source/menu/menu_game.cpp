@@ -426,13 +426,13 @@ void CMenu::_game(bool launch)
 			m_banner->DeleteBanner();
 			_CategorySettings(true);
 			_showGame();
-			if (!m_gameSound.IsPlaying()) 
+			if (!m_gameSound->IsPlaying()) 
 				startGameSound = -6;
 			continue;
 		}
 		if(BTN_HOME_PRESSED || BTN_B_PRESSED)
 		{
-			m_gameSound.FreeMemory();
+			m_gameSound->FreeMemory();
 			CheckGameSoundThread();
 			ClearGameSoundThreadStack();
 			m_banner->DeleteBanner();
@@ -445,7 +445,7 @@ void CMenu::_game(bool launch)
 			m_gameSelected = true;
 			_gameinfo();
 			_showGame();
-			if (!m_gameSound.IsPlaying()) 
+			if (!m_gameSound->IsPlaying()) 
 				startGameSound = -6;
 		}
 		else if(BTN_MINUS_PRESSED)
@@ -476,7 +476,7 @@ void CMenu::_game(bool launch)
 				_showGame();
 				m_music->Play();
 				m_video_playing = false;
-				//m_gameSound.play(m_bnrSndVol);
+				//m_gameSound->play(m_bnrSndVol);
 			}
 		}
 		else if((BTN_1_PRESSED) || (BTN_2_PRESSED))
@@ -499,7 +499,7 @@ void CMenu::_game(bool launch)
 					_hideGame();
 					if(_wbfsOp(CMenu::WO_REMOVE_GAME))
 					{
-						m_gameSound.Stop();
+						m_gameSound->Stop();
 						CheckGameSoundThread();
 						break;
 					}
@@ -512,7 +512,7 @@ void CMenu::_game(bool launch)
 				m_gcfg1.setBool("ADULTONLY", id, !m_gcfg1.getBool("ADULTONLY", id, false));
 			else if(m_btnMgr.selected(m_gameBtnBack) || m_btnMgr.selected(m_gameBtnBackFull))
 			{
-				m_gameSound.FreeMemory();
+				m_gameSound->FreeMemory();
 				CheckGameSoundThread();
 				ClearGameSoundThreadStack();
 				m_banner->DeleteBanner();
@@ -534,7 +534,7 @@ void CMenu::_game(bool launch)
 				m_banner->ToogleGameSettings();
 
 				_showGame();
-				if(!m_gameSound.IsPlaying()) 
+				if(!m_gameSound->IsPlaying()) 
 					startGameSound = -6;
 			}
 			else if(launch || m_btnMgr.selected(m_gameBtnPlay) || m_btnMgr.selected(m_gameBtnPlayFull) || (!WPadIR_Valid(0) && !WPadIR_Valid(1) && !WPadIR_Valid(2) && !WPadIR_Valid(3) && m_btnMgr.selected((u16)-1)))
@@ -637,7 +637,7 @@ void CMenu::_game(bool launch)
 		}
 		if(startGameSound == -10)
 		{
-			m_gameSound.Stop();
+			m_gameSound->Stop();
 			m_gameSelected = false;
 			m_fa.unload();
 			m_banner->DeleteBanner(true);
@@ -824,31 +824,31 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		loader = 1;
 		m_cfg.setString("DML", "current_item", id);
 		char CheatPath[256];
-		char NewCheatPath[255];
 		u8 NMM = min((u32)m_gcfg2.getInt(id, "dml_nmm", 0), ARRAY_SIZE(CMenu::_NMM) - 1u);
 		NMM = (NMM == 0) ? m_cfg.getInt("DML", "dml_nmm", 0) : NMM-1;
 		u8 nodisc = min((u32)m_gcfg2.getInt(id, "no_disc_patch", 0), ARRAY_SIZE(CMenu::_NoDVD) - 1u);
 		nodisc = (nodisc == 0) ? m_cfg.getInt("DML", "no_disc_patch", 0) : nodisc-1;
 		bool cheats = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool("DML", "cheat", false));
+		string NewCheatPath;
 		bool DML_debug = m_gcfg2.getBool(id, "debugger", false);
 		bool DM_Widescreen = m_gcfg2.getBool(id, "dm_widescreen", false);
-		if(cheats)
-		{
-			snprintf(CheatPath, sizeof(CheatPath), "%s/%s", m_cheatDir.c_str(), fmt("%s.gct", id.c_str()));
-			snprintf(NewCheatPath, sizeof(NewCheatPath), "%s/%s/%s", fmt(DML_DIR, DeviceName[currentPartition]), path.c_str(), fmt("%s.gct", id.c_str()));
-		}
-		string newPath;
 		if(strcasestr(path.c_str(), "boot.bin") != NULL)
 		{
-			newPath = &path[path.find_first_of(":/")+1];
-			newPath.erase(newPath.end() - 12, newPath.end());
+			path.erase(path.end() - 12, path.end());
+			NewCheatPath = sfmt("%s%s", path.c_str(), fmt("%s.gct", id.c_str()));
 		}
 		else
-			newPath = &path[path.find_first_of(":/")+1];
+		{
+			NewCheatPath = sfmt("%s%s", path.c_str(), fmt("%s.gct", id.c_str()));
+			path.erase(path.end() - 19, path.end() - 11);
+		}
+		if(cheats)
+			snprintf(CheatPath, sizeof(CheatPath), "%s/%s", m_cheatDir.c_str(), fmt("%s.gct", id.c_str()));
+		string newPath = &path[path.find_first_of(":/")+1];
 		if(m_new_dml)
-			DML_New_SetOptions(newPath.c_str(), CheatPath, NewCheatPath, DeviceName[currentPartition], cheats, DML_debug, NMM, nodisc, videoMode, videoSetting, DM_Widescreen, m_new_dm_cfg);
+			DML_New_SetOptions(newPath.c_str(), CheatPath, NewCheatPath.c_str(), DeviceName[currentPartition], cheats, DML_debug, NMM, nodisc, videoMode, videoSetting, DM_Widescreen, m_new_dm_cfg);
 		else
-			DML_Old_SetOptions((char*)path.c_str(), CheatPath, NewCheatPath, cheats);
+			DML_Old_SetOptions(newPath.c_str());
 
 		if(!nodisc || !m_new_dml)
 		{
@@ -1193,10 +1193,10 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			else
 			{
 				/* Read GC disc header */
-				struct gc_discHdr *gcHeader = (struct gc_discHdr *)MEM2_alloc(sizeof(struct gc_discHdr));
+				struct gc_discHdr *gcHeader = (struct gc_discHdr *)malloc(sizeof(struct gc_discHdr));
 				Disc_ReadGCHeader(gcHeader);
 				strncpy(hdr->id, (char*)gcHeader->id, 6);
-				MEM2_free(gcHeader);
+				free(gcHeader);
 				/* Launching GC Game */
 				_launchGC(hdr, true);
 			}
@@ -1204,10 +1204,10 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		else
 		{
 			/* Read header */
-			struct discHdr *header = (struct discHdr *)MEM2_alloc(sizeof(struct discHdr));
+			struct discHdr *header = (struct discHdr *)malloc(sizeof(struct discHdr));
 			Disc_ReadHeader(header);
 			id = string((const char*)header->id);
-			MEM2_free(header);
+			free(header);
 		}
 		gprintf("Game ID: %s\n", id.c_str());
 	}
@@ -1518,10 +1518,11 @@ u32 gameSoundThreadStackSize = (u32)32768;
 void CMenu::_gameSoundThread(CMenu *m)
 {
 	m->m_gameSoundHdr = m->m_cf.getHdr();
+
 	if(m->m_cf.getHdr()->type == TYPE_PLUGIN)
 	{
 		m_banner->DeleteBanner();
-		m->m_gameSound.Load(m->m_plugin.GetBannerSound(m->m_cf.getHdr()->settings[0]), m->m_plugin.GetBannerSoundSize(), false);
+		m->m_gameSound->Load(m->m_plugin.GetBannerSound(m->m_cf.getHdr()->settings[0]), m->m_plugin.GetBannerSoundSize(), false);
 		m->m_gamesound_changed = true;
 		m->m_gameSoundHdr = NULL;
 		return;
@@ -1547,7 +1548,13 @@ void CMenu::_gameSoundThread(CMenu *m)
 		fseek(fp, 0, SEEK_END);
 		cached_bnr_size = ftell(fp);
 		fseek(fp, 0, SEEK_SET);
-		cached_bnr_file = (u8*)MEM2_alloc(cached_bnr_size);
+		cached_bnr_file = (u8*)malloc(cached_bnr_size);
+		if(cached_bnr_file == NULL)
+		{
+			m_banner->DeleteBanner();
+			m->m_gameSoundHdr = NULL;
+			return;
+		}
 		fread(cached_bnr_file, 1, cached_bnr_size, fp);
 		fclose(fp);
 	}
@@ -1567,64 +1574,79 @@ void CMenu::_gameSoundThread(CMenu *m)
 				u8 *opening_bnr = disc.GetGameCubeBanner();
 				if(opening_bnr != NULL)
 					m_banner->CreateGCBanner(opening_bnr, &m->m_vid, m_wbf1_font.get(), m_wbf2_font.get(), m->m_cf.getHdr()->title);
-				m->m_gameSound.Load(gc_ogg, gc_ogg_size, false);
+				m->m_gameSound->Load(gc_ogg, gc_ogg_size, false);
 				m->m_gamesound_changed = true;
-				disc.clear();
 				m->m_gameSoundHdr = NULL;
+				disc.clear();
 				return;
 			}
 		}
 		if(fp)
 		{
 			custom = true;
-			gprintf("Custom Banner detected for: %s\n", m->m_cf.getHdr()->id);
 			fseek(fp, 0, SEEK_END);
 			custom_bnr_size = ftell(fp);
 			fseek(fp, 0, SEEK_SET);
-			custom_bnr_file = (u8*)MEM2_alloc(custom_bnr_size);
+			custom_bnr_file = (u8*)malloc(custom_bnr_size);
+			if(custom_bnr_file == NULL)
+			{
+				m_banner->DeleteBanner();
+				m->m_gameSoundHdr = NULL;
+				return;
+			}
 			fread(custom_bnr_file, 1, custom_bnr_size, fp);
 			fclose(fp);
 		}
 	}
 	m->m_gamesound_changed = false;
 	u32 sndSize = 0;
+	u8 *soundBin = NULL;
 
-	Banner *banner = cached ? new Banner((u8 *)cached_bnr_file, cached_bnr_size) : 
+	Banner *banner = cached ? new Banner(cached_bnr_file, cached_bnr_size) : 
 		(custom ? new Banner((u8 *)custom_bnr_file, custom_bnr_size, 0, true) : 
 		(m->m_gameSoundHdr->type == TYPE_WII_GAME ? _extractBnr(m->m_gameSoundHdr) : (m->m_gameSoundHdr->type == TYPE_CHANNEL ?
 		_extractChannelBnr(TITLE_ID(m->m_gameSoundHdr->settings[0],m->m_gameSoundHdr->settings[1])) : NULL)));
-
-	if (banner == NULL || !banner->IsValid())
+	if(banner != NULL && banner->IsValid())
 	{
-		gprintf("no valid banner found\n");
+		m_banner->LoadBanner(banner, &m->m_vid, m_wbf1_font.get(), m_wbf2_font.get());
+		soundBin = banner->GetFile((char *)"sound.bin", &sndSize);
+	}
+	if(banner == NULL || soundBin == NULL || sndSize == 0)
+	{
 		m_banner->DeleteBanner();
-		delete banner;
 		m->m_gameSoundHdr = NULL;
+		delete banner;
 		return;
 	}
-	else if(!custom && !cached)
+	if(!custom && !cached)
 	{
 		FILE *fp = fopen(cached_banner, "wb");
 		fwrite(banner->GetBannerFile(), 1, banner->GetBannerFileSize(), fp);
 		fclose(fp);
 	}
-	_extractBannerTitle(banner, GetLanguage(m->m_loc.getString(m->m_curLanguage, "gametdb_code", "EN").c_str()));
-
-	const u8 *soundBin = banner->GetFile((char *) "sound.bin", &sndSize);
-	m_banner->LoadBanner(banner, &m->m_vid, m_wbf1_font.get(), m_wbf2_font.get());
 	delete banner;
 
-	if (soundBin == NULL || (((IMD5Header *)soundBin)->fcc != 'IMD5' && ((IMD5Header *)soundBin)->fcc != 'RIFF'))
+	if(((IMD5Header *)soundBin)->fcc == 'IMD5')
 	{
-		gprintf("Failed to load banner sound!\n\n");
-		if(soundBin != NULL)
-			delete soundBin;
-		m->m_gameSoundHdr = NULL;
-		return;
+		u32 newSize = 0;
+		u8 *newSound = DecompressCopy(soundBin, sndSize, &newSize);
+		if(newSound == NULL || newSize == 0 || !m->m_gameSound->Load(newSound, newSize))
+		{
+			if(newSound != NULL)
+				free(newSound);
+			m_banner->DeleteBanner();
+			m->m_gameSoundHdr = NULL;
+			return;
+		}
+		free(soundBin);
 	}
+	else
+		m->m_gameSound->Load(soundBin, sndSize);
 
-	m->m_gameSound.Load(soundBin, sndSize, false);
-	m->m_gamesound_changed = true;
+	if(m->m_gameSound->IsLoaded())
+		m->m_gamesound_changed = true;
+	else
+		m_banner->DeleteBanner();
 	m->m_gameSoundHdr = NULL;
 }
 
@@ -1638,17 +1660,20 @@ void CMenu::_playGameSound(void)
 		CheckGameSoundThread();
 	if(!gameSoundThreadStack.get())
 		gameSoundThreadStack = smartMem2Alloc(gameSoundThreadStackSize);
-
 	LWP_CreateThread(&m_gameSoundThread, (void *(*)(void *))CMenu::_gameSoundThread, (void *)this, gameSoundThreadStack.get(), gameSoundThreadStackSize, 60);
 }
 
 void CMenu::CheckGameSoundThread()
 {
+	if(m_gameSoundThread == LWP_THREAD_NULL)
+		return;
+
 	if(LWP_ThreadIsSuspended(m_gameSoundThread))
 		LWP_ResumeThread(m_gameSoundThread);
 
 	while(m_gameSoundHdr != NULL)
 		usleep(50);
+
 	LWP_JoinThread(m_gameSoundThread, NULL);
 	m_gameSoundThread = LWP_THREAD_NULL;
 }

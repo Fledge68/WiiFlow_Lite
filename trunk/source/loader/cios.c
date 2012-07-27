@@ -31,7 +31,6 @@
 
 #include "cios.h"
 #include "utils.h"
-#include "mem2.hpp"
 #include "gecko.h"
 #include "fs.h"
 #include "mload.h"
@@ -70,12 +69,12 @@ bool D2X(u8 ios, u8 *base)
 		|| info->version < 6							/* Version */
 		|| strncasecmp(info->name, "d2x", 3) != 0)	/* Name */
 	{
-		MEM2_free(info);
+		free(info);
 		return false;
 	}
 
 	*base = (u8)info->baseios;
-	MEM2_free(info);
+	free(info);
 	return true;
 }
 
@@ -84,13 +83,13 @@ signed_blob *GetTMD(u8 ios, u32 *TMD_Length)
 	if(ES_GetStoredTMDSize(TITLE_ID(1, ios), TMD_Length) < 0)
 		return NULL;
 
-	signed_blob *TMD = (signed_blob*)MEM2_alloc(ALIGN32(*TMD_Length));
+	signed_blob *TMD = (signed_blob*)memalign(32, ALIGN32(*TMD_Length));
 	if(TMD == NULL)
 		return NULL;
 
 	if(ES_GetStoredTMD(TITLE_ID(1, ios), TMD, *TMD_Length) < 0)
 	{
-		MEM2_free(TMD);
+		free(TMD);
 		return NULL;
 	}
 	return TMD;
@@ -111,7 +110,7 @@ iosinfo_t *GetInfo(u8 ios)
 	char filepath[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
 	sprintf(filepath, "/title/00000001/%08x/content/%08x.app", ios, *(u8 *)((u32)TMD+0x1E7));
 
-	MEM2_free(TMD);
+	free(TMD);
 
 	u32 size = 0;
 	u8 *buffer = ISFS_GetFile((u8 *)filepath, &size, sizeof(iosinfo_t));
@@ -147,17 +146,17 @@ int get_ios_type(u8 slot)
 	tmd *iosTMD = (tmd*)SIGNATURE_PAYLOAD(TMD_Buffer);
 	if(Title_GetSize_FromTMD(iosTMD) < 0x100000 || iosTMD->title_version == 65280)
 	{
-		MEM2_free(TMD_Buffer);
+		free(TMD_Buffer);
 		return IOS_TYPE_NO_CIOS;
 	}
 
 	iosinfo_t *info = GetInfo(slot);
 	if(info == NULL)
 	{
-		MEM2_free(TMD_Buffer);
+		free(TMD_Buffer);
 		return IOS_TYPE_NO_CIOS;
 	}
-	MEM2_free(info);
+	free(info);
 
 	u8 base = 0;
 	switch(slot)
@@ -187,7 +186,7 @@ int get_ios_type(u8 slot)
 			else
 				return IOS_TYPE_NO_CIOS;
 	}
-	MEM2_free(TMD_Buffer);
+	free(TMD_Buffer);
 }
 
 int is_ios_type(int type, u8 slot)

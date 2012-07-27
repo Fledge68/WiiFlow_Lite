@@ -274,8 +274,8 @@ void CVideo::cleanup(void)
 	}
 	free(MEM_K1_TO_K0(m_frameBuf[0]));
 	free(MEM_K1_TO_K0(m_frameBuf[1]));
-	MEM1_free(m_stencil);
-	MEM1_free(m_fifo);
+	free(m_stencil);
+	free(m_fifo);
 }
 
 void CVideo::prepareAAPass(int aaStep)
@@ -502,7 +502,6 @@ void CVideo::_showWaitMessages(CVideo *m)
 	m->prepare();
 	m->setup2DProjection();
 	GX_SetNumChans(0);
-	wiiLightSetLevel(0);
 	wiiLightOn();
 
 	while(m->m_showWaitMessage)

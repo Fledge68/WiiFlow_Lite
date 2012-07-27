@@ -404,7 +404,7 @@ bool CMenu::_isNetworkAvailable()
 	if (buf && size > 4)
 	{
 		retval = buf[4] > 0; // There is a valid connection defined.
-		MEM2_free(buf);
+		free(buf);
 	}
 	return retval;
 }

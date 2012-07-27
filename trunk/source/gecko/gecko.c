@@ -20,6 +20,7 @@ bool bufferMessages = true;
 bool WriteToSD = false;
 
 char *tmpfilebuffer = NULL;
+u32 tmpbuffersize = filebuffer + 1 * sizeof(char);
 
 static ssize_t __out_write(struct _reent *r __attribute__((unused)), int fd __attribute__((unused)), const char *ptr, size_t len)
 {
@@ -71,7 +72,7 @@ void ClearLogBuffer()
 {
 	if(tmpfilebuffer == NULL)
 		return;
-	MEM2_free(tmpfilebuffer);
+	free(tmpfilebuffer);
 	tmpfilebuffer = NULL;
 }
 
@@ -87,7 +88,7 @@ void WriteToFile(char* tmp)
 	}
 	else
 	{
-		MEM2_free(tmpfilebuffer);
+		free(tmpfilebuffer);
 		tmpfilebuffer = NULL;
 		return;
 	}
@@ -98,7 +99,7 @@ void WriteToFile(char* tmp)
 		if(outfile)
 		{
 			fwrite(tmpfilebuffer, 1, strlen(tmpfilebuffer), outfile);
-			memset(tmpfilebuffer, 0, sizeof(tmpfilebuffer));
+			memset(tmpfilebuffer, 0, tmpbuffersize);
 			fclose(outfile);
 		}
 	}
@@ -183,7 +184,7 @@ bool InitGecko()
 
 void AllocSDGeckoBuffer()
 {
-	tmpfilebuffer = (char*)MEM2_alloc(filebuffer + 1 * sizeof(char));
+	tmpfilebuffer = (char*)malloc(tmpbuffersize);
 	if(tmpfilebuffer != NULL)
-		memset(tmpfilebuffer, 0, sizeof(tmpfilebuffer));
+		memset(tmpfilebuffer, 0, tmpbuffersize);
 }
