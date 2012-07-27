@@ -2760,7 +2760,7 @@ int CCoverFlow::_coverLoader(CCoverFlow *cf)
 	bool update;
 	u32 i;
 
-	u32 bufferSize = min(cf->m_numBufCovers * cf->m_rows, 80u);
+	u32 bufferSize = min(cf->m_numBufCovers * max(2u, cf->m_rows), 80u);
 
 	while(cf->m_loadingCovers)
 	{
