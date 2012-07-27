@@ -305,8 +305,9 @@ void CCoverFlow::setHQcover(bool HQ)
 
 void CCoverFlow::setBufferSize(u32 numCovers)
 {
-	if (!m_covers.empty()) return;
-	m_numBufCovers = min(max(3u, numCovers / 2u), 400u);
+	if(!m_covers.empty())
+		return;
+	m_numBufCovers = min(max(4u, numCovers / 2u), 40u);
 }
 
 void CCoverFlow::setTextures(const string &loadingPic, const string &loadingPicFlat, const string &noCoverPic, const string &noCoverPicFlat)
@@ -2741,10 +2742,12 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq)
 			}
 			//
 			fclose(file);
-			if (success) return CCoverFlow::CL_OK;
+			if(success)
+				return CCoverFlow::CL_OK;
 		}
 	}
-	if (allocFailed) return CCoverFlow::CL_NOMEM;
+	if(allocFailed)
+		return CCoverFlow::CL_NOMEM;
 
 	// If not found, load the PNG
 	return _loadCoverTexPNG(i, box, hq) ? CCoverFlow::CL_OK : CCoverFlow::CL_ERROR;
@@ -2757,7 +2760,7 @@ int CCoverFlow::_coverLoader(CCoverFlow *cf)
 	bool update;
 	u32 i;
 
-	u32 bufferSize = cf->m_range + cf->m_numBufCovers;
+	u32 bufferSize = min(cf->m_numBufCovers * cf->m_rows, 80u);
 
 	while(cf->m_loadingCovers)
 	{
