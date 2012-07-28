@@ -32,7 +32,7 @@
 Celtiore, Jiiwah, FluffyKiwi, Roku93, Yardape8000, \
 Spayrosam, Bluescreen81, Chappy23, fledge68, \
 BlindDude, Bubba, DJTaz, OggZee, entropy, \
-Usptactical, WiiPower, Hermes, Spidy1000, \
+Usptactical, WiiPower, Hermes, Spidy1000, megazig, \
 Dimok, Kovani, Drexyl, DvZ, Etheboss, stfour, \
 GaiaKnight, nibb, NJ7, Plasma, Pakatus, giantpune, \
 wolf, ravmn, spidercaleb, Ziggy34, xFede, \

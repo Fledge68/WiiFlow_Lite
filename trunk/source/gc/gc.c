@@ -141,7 +141,7 @@ void DML_New_WriteOptions()
 
 
 // Devolution
-u8 *loader_bin = (u8*)0x93100000;
+u8 *loader_bin = NULL;
 extern void __exception_closeall();
 static gconfig *DEVO_CONFIG = (gconfig*)0x80000020;
 #define DEVO_Entry() ((void(*)(void))loader_bin)()
@@ -167,7 +167,7 @@ bool DEVO_Installed(const char* path)
 
 void DEVO_ShowReport(void)
 {
-	gprintf("\n%.72s\n\n", (char *)0x93100004);
+	gprintf("%s\n", (char*)loader_bin + 4);
 }
 
 void DEVO_SetOptions(const char *isopath, const char *partition, const char *loader, const char *gameID, bool memcard_emu)
@@ -177,20 +177,22 @@ void DEVO_SetOptions(const char *isopath, const char *partition, const char *loa
 	snprintf(loader_path, sizeof(loader_path), "%s/loader.bin", loader);
 	FILE *f = fopen(loader_path, "rb");
 	if(f)
-	{	
-		gprintf("Read devolution loader: \"%s\"\n", loader_path);
+	{
+		gprintf("Read Devolution Loader: \"%s\"\n", loader_path);
 		fseek(f, 0, SEEK_END);
 		u32 size = ftell(f);
 		rewind(f);
-		memset(loader_bin, 0, size);
+		loader_bin = malloc(size);
 		fread(loader_bin, 1, size, f);
-		DCFlushRange(loader_bin, size);
 		fclose(f);
 	}
 	else
-		gprintf("Uh oh!! What now?\n");
-		
-	DEVO_ShowReport();	
+	{
+		gprintf("Devolution loader.bin not found!\n");
+		return;
+	}
+
+	DEVO_ShowReport();
 
 	//start writing cfg to mem
 	struct stat st;
@@ -199,7 +201,7 @@ void DEVO_SetOptions(const char *isopath, const char *partition, const char *loa
 
 	stat(isopath, &st);
 	f = fopen(isopath, "rb");
-	gprintf("Read iso file: \"%s\"\n", isopath);
+	gprintf("Read ISO File: \"%s\"\n", isopath);
 	fread((u8*)0x80000000, 1, 32, f);
 	fclose(f);
 
@@ -214,16 +216,16 @@ void DEVO_SetOptions(const char *isopath, const char *partition, const char *loa
 	strcpy(iso2path, isopath);
 	char *ptz = (char *)NULL;
 	ptz = strstr(iso2path, "game.iso");
-	if(ptz != NULL)				
+	if(ptz != NULL)
 		strncpy(ptz, "gam1.iso", 8);
-		
+
 	f = fopen(iso2path, "rb");
 	if(f)
 	{
 		gprintf("Found 2nd iso file for multi DVD game: \"%s\"\n", iso2path);
 		stat(iso2path, &st);
 		DEVO_CONFIG->disc2_cluster = st.st_ino;
-		fclose(f);		
+		fclose(f);
 	}
 
 	// make sure these directories exist, they are required for Devolution to function correctly
@@ -281,8 +283,6 @@ void DEVO_SetOptions(const char *isopath, const char *partition, const char *loa
 void DEVO_Boot()
 {
 	u32 cookie;
-	puts((const char*)loader_bin + 4);
-	gprintf("WiiFlow GC: Devolution initialized. Booting game...\n");
 
 	/* cleaning up and load dol */
 	SYS_ResetSystem(SYS_SHUTDOWN, 0, 0);
