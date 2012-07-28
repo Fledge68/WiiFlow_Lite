@@ -876,8 +876,10 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	GC_SetVideoMode(videoMode, videoSetting);
 	GC_SetLanguage(GClanguage);
 	if(loader == 2)
+	{
+		writeStub();
 		DEVO_Boot();
-
+	}
 	DML_New_WriteOptions();
 	WII_Initialize();
 	if(WII_LaunchTitle(0x100000100LL) < 0)
@@ -887,11 +889,6 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 {
 	Nand::Instance()->Disable_Emu();
-
-	Channels channel;
-	u64 title = SYSTEM_MENU;
-	if(channel.GetRequestedIOS(RETURN_CHANNEL) != 0)
-		title = RETURN_CHANNEL;
 
 	m_gcfg1.save(true);
 	m_gcfg2.save(true);
@@ -911,7 +908,8 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 	USBStorage2_Deinit();
 	USB_Deinitialize();
 #endif
-	BootHomebrew(title);
+	writeStub();
+	BootHomebrew();
 }
 
 int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id, bool emu_channel)

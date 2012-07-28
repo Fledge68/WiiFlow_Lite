@@ -1,8 +1,9 @@
 #ifndef _BOOTHOMEBREW_H_
 #define _BOOTHOMEBREW_H_
 
-int BootHomebrew(u64 chan_title);
+int BootHomebrew();
 void AddBootArgument(const char * arg);
 int LoadHomebrew(const char * filepath);
+void writeStub();
 
 #endif
