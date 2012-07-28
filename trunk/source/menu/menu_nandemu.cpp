@@ -877,7 +877,7 @@ void CMenu::_initNandEmuMenu(CMenu::SThemeData &theme)
 	m_nandemuBtnPartition = _addButton(theme, "NANDEMU/PARTITION", theme.titleFont, L"", 72, 360, 496, 56, theme.titleFontColor);
 	m_nandemuLblInit = _addLabel(theme, "NANDEMU/INIT", theme.lblFont, L"", 40, 40, 560, 140, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 
-	_setHideAnim(m_nandemuLblTitle, "NANDEMU/TITLE", 0, 0, -2.f, 0.f);
+	_setHideAnim(m_nandemuLblTitle, "NANDEMU/TITLE", 0, -100, 0.f, 0.f);
 	_setHideAnim(m_nandfileLblMessage, "NANDEMU/FMESSAGE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_nandemuLblMessage, "NANDEMU/MESSAGE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_nandfileLblDialog, "NANDEMU/FDIALOG", 0, 0, -2.f, 0.f);

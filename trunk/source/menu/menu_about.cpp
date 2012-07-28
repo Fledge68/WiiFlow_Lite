@@ -99,13 +99,13 @@ void CMenu::_initAboutMenu(CMenu::SThemeData &theme)
 	STexture emptyTex;
 	_addUserLabels(theme, m_aboutLblUser, ARRAY_SIZE(m_aboutLblUser), "ABOUT");
 	m_aboutBg = _texture(theme.texSet, "ABOUT/BG", "texture", theme.bg);
-	m_aboutLblTitle = _addTitle(theme, "ABOUT/TITLE", theme.titleFont, L"", 20, 30, 600, 75, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_aboutLblTitle = _addTitle(theme, "ABOUT/TITLE", theme.titleFont, L"", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 	m_aboutLblInfo = _addText(theme, "ABOUT/INFO", theme.txtFont, L"", 40, 120, 560, 280, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
 	m_aboutLblIOS = _addLabel(theme, "ABOUT/IOS", theme.txtFont, L"", 240, 400, 360, 56, theme.txtFontColor, FTGX_JUSTIFY_RIGHT | FTGX_ALIGN_MIDDLE);
 
-	_setHideAnim(m_aboutLblTitle, "ABOUT/TITLE", 0, 100, 0.f, 0.f);
+	_setHideAnim(m_aboutLblTitle, "ABOUT/TITLE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_aboutLblInfo, "ABOUT/INFO", 0, 100, 0.f, 0.f);
-	_setHideAnim(m_aboutLblIOS, "ABOUT/IOS", 0, 100, 0.f, 0.f);
+	_setHideAnim(m_aboutLblIOS, "ABOUT/IOS", 0, 0, -2.f, 0.f);
 
 	_hideAbout(true);
 }

@@ -202,15 +202,15 @@ void CMenu::_initHomeAndExitToMenu(CMenu::SThemeData &theme)
 	STexture emptyTex;
 	m_homeBg = _texture(theme.texSet, "HOME/BG", "texture", theme.bg);
 
-	m_homeLblTitle = _addTitle(theme, "HOME/TITLE", theme.titleFont, L"", 20, 30, 600, 75, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_homeLblTitle = _addTitle(theme, "HOME/TITLE", theme.titleFont, L"", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 
-	_setHideAnim(m_homeLblTitle, "HOME/TITLE", 0, 100, 0.f, 0.f);
+	_setHideAnim(m_homeLblTitle, "HOME/TITLE", 0, 0, -2.f, 0.f);
 
-	m_homeBtnSettings = _addButton(theme, "HOME/SETTINGS", theme.btnFont, L"", 220, 120, 200, 56, theme.btnFontColor);
-	m_homeBtnReloadCache = _addButton(theme, "HOME/RELOAD_CACHE", theme.btnFont, L"", 220, 180, 200, 56, theme.btnFontColor);
-	m_homeBtnUpdate = _addButton(theme, "HOME/UPDATE", theme.btnFont, L"", 220, 240, 200, 56, theme.btnFontColor);
-	m_homeBtnAbout = _addButton(theme, "HOME/ABOUT", theme.btnFont, L"", 220, 300, 200, 56, theme.btnFontColor);
-	m_homeBtnExitTo = _addButton(theme, "HOME/EXIT_TO", theme.btnFont, L"", 220, 360, 200, 56, theme.btnFontColor);
+	m_homeBtnSettings = _addButton(theme, "HOME/SETTINGS", theme.btnFont, L"", 220, 120, 270, 56, theme.btnFontColor);
+	m_homeBtnReloadCache = _addButton(theme, "HOME/RELOAD_CACHE", theme.btnFont, L"", 220, 180, 270, 56, theme.btnFontColor);
+	m_homeBtnUpdate = _addButton(theme, "HOME/UPDATE", theme.btnFont, L"", 220, 240, 270, 56, theme.btnFontColor);
+	m_homeBtnAbout = _addButton(theme, "HOME/ABOUT", theme.btnFont, L"", 220, 300, 270, 56, theme.btnFontColor);
+	m_homeBtnExitTo = _addButton(theme, "HOME/EXIT_TO", theme.btnFont, L"", 220, 360, 270, 56, theme.btnFontColor);
 
 	_setHideAnim(m_homeBtnSettings, "HOME/SETTINGS", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_homeBtnReloadCache, "HOME/RELOAD_CACHE", 0, 0, -2.f, 0.f);
@@ -222,15 +222,15 @@ void CMenu::_initHomeAndExitToMenu(CMenu::SThemeData &theme)
 	_hideHome(true);
 	
 	//ExitTo Menu	
-	m_exittoLblTitle = _addTitle(theme, "EXIT_TO/TITLE", theme.titleFont, L"", 20, 30, 600, 75, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_exittoLblTitle = _addTitle(theme, "EXIT_TO/TITLE", theme.titleFont, L"", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 
-	_setHideAnim(m_exittoLblTitle, "EXIT_TO/TITLE", 0, 100, 0.f, 0.f);
+	_setHideAnim(m_exittoLblTitle, "EXIT_TO/TITLE", 0, 0, -2.f, 0.f);
 
-	m_homeBtnExitToHBC = _addButton(theme, "EXIT_TO/HBC", theme.btnFont, L"", 220, 120, 200, 56, theme.btnFontColor);
-	m_homeBtnExitToMenu = _addButton(theme, "EXIT_TO/MENU", theme.btnFont, L"", 220, 180, 200, 56, theme.btnFontColor);
-	m_homeBtnExitToPriiloader = _addButton(theme, "EXIT_TO/PRIILOADER", theme.btnFont, L"", 220, 240, 200, 56, theme.btnFontColor);
-	m_homeBtnExitToBootmii = _addButton(theme, "EXIT_TO/BOOTMII", theme.btnFont, L"", 220, 300, 200, 56, theme.btnFontColor);
-	m_homeBtnExitToNeek = _addButton(theme, "EXIT_TO/NEEK", theme.btnFont, L"", 220, 360, 200, 56, theme.btnFontColor);
+	m_homeBtnExitToHBC = _addButton(theme, "EXIT_TO/HBC", theme.btnFont, L"", 220, 120, 270, 56, theme.btnFontColor);
+	m_homeBtnExitToMenu = _addButton(theme, "EXIT_TO/MENU", theme.btnFont, L"", 220, 180, 270, 56, theme.btnFontColor);
+	m_homeBtnExitToPriiloader = _addButton(theme, "EXIT_TO/PRIILOADER", theme.btnFont, L"", 220, 240, 270, 56, theme.btnFontColor);
+	m_homeBtnExitToBootmii = _addButton(theme, "EXIT_TO/BOOTMII", theme.btnFont, L"", 220, 300, 270, 56, theme.btnFontColor);
+	m_homeBtnExitToNeek = _addButton(theme, "EXIT_TO/NEEK", theme.btnFont, L"", 220, 360, 270, 56, theme.btnFontColor);
 	_setHideAnim(m_homeBtnExitToHBC, "EXIT_TO/HBC", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_homeBtnExitToMenu, "EXIT_TO/MENU", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_homeBtnExitToPriiloader, "EXIT_TO/PRIILOADER", 0, 0, -2.f, 0.f);
