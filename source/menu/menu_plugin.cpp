@@ -200,11 +200,11 @@ void CMenu::_initPluginSettingsMenu(CMenu::SThemeData &theme)
 		m_pluginBtnCats[i+15] = _addPicButton(theme, fmt("PLUGIN/PLUGIN_%i_BTNS", i+15), theme.checkboxon, theme.checkboxons, 325, (42+i*58), 44, 48);
 		m_pluginLblCat[i+15] = _addLabel(theme, fmt("PLUGIN/PLUGIN_%i", i+15), theme.txtFont, L"", 380, (42+i*58), 230, 48, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	}
-	_setHideAnim(m_pluginLblTitle, "PLUGIN/TITLE", 0, -200, 0.f, 1.f);
-	_setHideAnim(m_pluginLblPage, "PLUGIN/PAGE_BTN", 0, 200, 1.f, 0.f);
-	_setHideAnim(m_pluginBtnPageM, "PLUGIN/PAGE_MINUS", 0, 200, 1.f, 0.f);
-	_setHideAnim(m_pluginBtnPageP, "PLUGIN/PAGE_PLUS", 0, 200, 1.f, 0.f);
-	_setHideAnim(m_pluginBtnBack, "PLUGIN/BACK_BTN", 0, 200, 1.f, 0.f);
+	_setHideAnim(m_pluginLblTitle, "PLUGIN/TITLE", 0, 0, -2.f, 0.f);
+	_setHideAnim(m_pluginLblPage, "PLUGIN/PAGE_BTN", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_pluginBtnPageM, "PLUGIN/PAGE_MINUS", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_pluginBtnPageP, "PLUGIN/PAGE_PLUS", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_pluginBtnBack, "PLUGIN/BACK_BTN", 0, 0, 1.f, -1.f);
 	for(u8 i = 0; i < 21; ++i)
 	{
 		_setHideAnim(m_pluginBtnCat[i], fmt("PLUGIN/PLUGIN_%i_BTN", i), 0, 0, 1.f, 0.f);

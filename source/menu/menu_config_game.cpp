@@ -738,6 +738,7 @@ void CMenu::_initGameSettingsMenu(CMenu::SThemeData &theme)
 	// Page 1
 	m_gameSettingsLblCover = _addLabel(theme, "GAME_SETTINGS/COVER", theme.lblFont, L"", 40, 130, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsBtnCover = _addButton(theme, "GAME_SETTINGS/COVER_BTN", theme.btnFont, L"", 330, 130, 270, 56, theme.btnFontColor);
+	
 	m_gameSettingsLblCategoryMain = _addLabel(theme, "GAME_SETTINGS/CAT_MAIN", theme.lblFont, L"", 40, 190, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsBtnCategoryMain = _addButton(theme, "GAME_SETTINGS/CAT_MAIN_BTN", theme.btnFont, L"", 330, 190, 270, 56, theme.btnFontColor);
 	
@@ -819,21 +820,21 @@ void CMenu::_initGameSettingsMenu(CMenu::SThemeData &theme)
 	m_gameSettingsBtnDM_Widescreen = _addButton(theme, "GAME_SETTINGS/DM_WIDESCREEN_BTN", theme.btnFont, L"", 330, 310, 270, 56, theme.btnFontColor);
 
 	//Page 4
- 	m_gameSettingsLblCustom = _addLabel(theme, "GAME_SETTINGS/CUSTOM", theme.lblFont, L"", 40, 130, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsBtnCustom =  _addButton(theme, "GAME_SETTINGS/CUSTOM_BTN", theme.btnFont, L"", 330, 130, 240, 56, theme.btnFontColor);
+ 	m_gameSettingsLblCustom = _addLabel(theme, "GAME_SETTINGS/CUSTOM", theme.lblFont, L"", 40, 130, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsBtnCustom =  _addButton(theme, "GAME_SETTINGS/CUSTOM_BTN", theme.btnFont, L"", 330, 130, 270, 56, theme.btnFontColor);
 	
 	m_gameSettingsLblEmulation = _addLabel(theme, "GAME_SETTINGS/EMU_SAVE", theme.lblFont, L"", 40, 130, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsLblEmulationVal = _addLabel(theme, "GAME_SETTINGS/EMU_SAVE_BTN", theme.btnFont, L"", 386, 130, 158, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_gameSettingsBtnEmulationM = _addPicButton(theme, "GAME_SETTINGS/EMU_SAVE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 330, 130, 56, 56);
 	m_gameSettingsBtnEmulationP = _addPicButton(theme, "GAME_SETTINGS/EMU_SAVE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 130, 56, 56);
 	
-	m_gameSettingsLblGameIOS = _addLabel(theme, "GAME_SETTINGS/IOS", theme.lblFont, L"", 40, 190, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsLblGameIOS = _addLabel(theme, "GAME_SETTINGS/IOS", theme.lblFont, L"", 40, 190, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
  	m_gameSettingsLblIOS = _addLabel(theme, "GAME_SETTINGS/IOS_BTN", theme.btnFont, L"", 386, 190, 158, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
  	m_gameSettingsBtnIOSM = _addPicButton(theme, "GAME_SETTINGS/IOS_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 330, 190, 56, 56);
  	m_gameSettingsBtnIOSP = _addPicButton(theme, "GAME_SETTINGS/IOS_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 190, 56, 56);
 
-	m_gameSettingsLblLaunchNK = _addLabel(theme, "GAME_SETTINGS/LAUNCHNEEK", theme.lblFont, L"", 40, 250, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsBtnLaunchNK =  _addButton(theme, "GAME_SETTINGS/LAUNCHNEEK_BTN", theme.btnFont, L"", 330, 250, 240, 56, theme.btnFontColor);
+	m_gameSettingsLblLaunchNK = _addLabel(theme, "GAME_SETTINGS/LAUNCHNEEK", theme.lblFont, L"", 40, 250, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsBtnLaunchNK =  _addButton(theme, "GAME_SETTINGS/LAUNCHNEEK_BTN", theme.btnFont, L"", 330, 250, 270, 56, theme.btnFontColor);
 	
 	m_gameSettingsLblExtractSave = _addLabel(theme, "GAME_SETTINGS/EXTRACT_SAVE", theme.lblFont, L"", 40, 310, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsBtnExtractSave = _addButton(theme, "GAME_SETTINGS/EXTRACT_SAVE_BTN", theme.btnFont, L"", 330, 310, 270, 56, theme.btnFontColor);

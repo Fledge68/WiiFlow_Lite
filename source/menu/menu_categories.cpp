@@ -236,11 +236,11 @@ void CMenu::_initCategorySettingsMenu(CMenu::SThemeData &theme)
 		m_categoryBtnCats[i+15] = _addPicButton(theme, fmt("CATEGORY/CAT_%i_BTNS", i+15), theme.checkboxon, theme.checkboxons, 325, (42+i*58), 44, 48);
 		m_categoryLblCat[i+15] = _addLabel(theme, fmt("CATEGORY/CAT_%i", i+15), theme.txtFont, L"", 380, (42+i*58), 230, 48, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	}
-	_setHideAnim(m_categoryLblTitle, "CATEGORY/TITLE", 0, -200, 0.f, 1.f);
-	_setHideAnim(m_categoryLblPage, "CATEGORY/PAGE_BTN", 0, 200, 1.f, 0.f);
-	_setHideAnim(m_categoryBtnPageM, "CATEGORY/PAGE_MINUS", 0, 200, 1.f, 0.f);
-	_setHideAnim(m_categoryBtnPageP, "CATEGORY/PAGE_PLUS", 0, 200, 1.f, 0.f);
-	_setHideAnim(m_categoryBtnBack, "CATEGORY/BACK_BTN", 0, 200, 1.f, 0.f);
+	_setHideAnim(m_categoryLblTitle, "CATEGORY/TITLE", 0, 0, -2.f, 0.f);
+	_setHideAnim(m_categoryLblPage, "CATEGORY/PAGE_BTN", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_categoryBtnPageM, "CATEGORY/PAGE_MINUS", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_categoryBtnPageP, "CATEGORY/PAGE_PLUS", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_categoryBtnBack, "CATEGORY/BACK_BTN", 0, 0, 1.f, -1.f);
 	for(int i = 0; i < 21; ++i)
 	{
 		_setHideAnim(m_categoryBtnCat[i], fmt("CATEGORY/CAT_%i_BTN", i), 0, 0, 1.f, 0.f);
