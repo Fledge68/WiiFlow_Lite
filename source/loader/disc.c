@@ -198,7 +198,7 @@ s32 Disc_FindPartition(u64 *outbuf)
 	u64 offset = 0;
 	u32 cnt;
 
-	u32 *TMP_Buffer = (u32*)malloc(TMP_Buffer_size);
+	u32 *TMP_Buffer = (u32*)memalign(32, TMP_Buffer_size);
 	if(!TMP_Buffer)
 		return -1;
 
@@ -303,13 +303,18 @@ s32 Disc_Wait(void)
 
 s32 Disc_SetUSB(const u8 *id, bool frag)
 {
-	if(id && frag)
-		return set_frag_list((u8 *) id);
-
-	s32 part = -1;
-	if(is_ios_type(IOS_TYPE_HERMES, IOS_GetVersion()))
-		part = wbfs_part_idx ? wbfs_part_idx - 1 : 0;
-	return WDVD_SetUSBMode(wbfsDev, (u8*)id, part);
+	/* ENABLE USB in cIOS */
+	if(id)
+	{
+		if(frag)
+			return set_frag_list();
+		s32 part = -1;
+		if(is_ios_type(IOS_TYPE_HERMES, IOS_GetVersion()))
+			part = wbfs_part_idx ? wbfs_part_idx - 1 : 0;
+		return WDVD_SetUSBMode(wbfsDev, (u8*)id, part);
+	}
+	/* DISABLE USB in cIOS */
+	return WDVD_SetUSBMode(0, NULL, -1);
 }
 
 s32 Disc_ReadHeader(void *outbuf)
