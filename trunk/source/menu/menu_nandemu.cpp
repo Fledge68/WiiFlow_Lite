@@ -1,13 +1,12 @@
 
 #include "menu.hpp"
-#include "nand.hpp"
-#include "sys.h"
-#include "loader/cios.h"
-#include "loader/alt_ios.h"
-#include "lockMutex.hpp"
-#include "gecko/gecko.h"
 #include "defines.h"
-#include "fileOps.h"
+#include "lockMutex.hpp"
+#include "channel/nand.hpp"
+#include "fileOps/fileOps.h"
+#include "loader/alt_ios.h"
+#include "loader/cios.h"
+#include "loader/sys.h"
 
 // NandEmulation menu
 u16 m_nandemuLblTitle;

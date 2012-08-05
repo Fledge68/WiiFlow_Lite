@@ -16,10 +16,10 @@
  ****************************************************************************/
 #include <unistd.h>
 #include "BannerWindow.hpp"
-#include "menu.hpp"
-#include "utils.h"
 #include "gx_addons.h"
-#include "gecko.h"
+#include "gecko/gecko.h"
+#include "loader/utils.h"
+#include "menu/menu.hpp"
 
 BannerWindow *m_banner;
 

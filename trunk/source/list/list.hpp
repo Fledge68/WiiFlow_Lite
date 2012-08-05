@@ -8,13 +8,13 @@
 #include <sys/stat.h> 
 #include <unistd.h>
 
-#include "DeviceHandler.hpp"
-#include "wbfs_ext.h"
-#include "libwbfs/libwbfs.h"
-#include "disc.h"
-#include "text.hpp"
 #include "cache.hpp"
 #include "config/config.hpp"
+#include "devicemounter/DeviceHandler.hpp"
+#include "gui/text.hpp"
+#include "loader/disc.h"
+#include "loader/wbfs_ext.h"
+#include "libwbfs/libwbfs.h"
 
 template <typename T>
 class CList

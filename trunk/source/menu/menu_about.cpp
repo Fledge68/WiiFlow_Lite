@@ -1,12 +1,11 @@
 
 #include "menu.hpp"
-#include "nand.hpp"
-#include "svnrev.h"
-
-#include "sys.h"
-#include "alt_ios.h"
 #include "defines.h"
-#include "cios.h"
+#include "svnrev.h"
+#include "channel/nand.hpp"
+#include "loader/alt_ios.h"
+#include "loader/cios.h"
+#include "loader/sys.h"
 
 const int pixels_to_skip = 10;
 

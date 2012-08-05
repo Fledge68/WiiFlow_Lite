@@ -35,7 +35,7 @@
 #include <unistd.h>
 
 #include "ZipFile.h"
-#include "gc/fileOps.h"
+#include "fileOps/fileOps.h"
 
 ZipFile::ZipFile(const char *filepath)
 {

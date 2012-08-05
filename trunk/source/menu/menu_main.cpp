@@ -1,20 +1,19 @@
 
-#include "menu.hpp"
-#include "nand.hpp"
-#include "loader/wdvd.h"
-#include "network/gcard.h"
-#include "DeviceHandler.hpp"
 #include <unistd.h>
 #include <fstream>
 #include <sys/stat.h>
 
-#include "wbfs.h"
-#include "gecko.h"
-#include "sys.h"
-#include "disc.h"
-#include "loader/cios.h"
+#include "menu.hpp"
+#include "channel/nand.hpp"
+#include "devicemounter/DeviceHandler.hpp"
+#include "gui/GameTDB.hpp"
 #include "loader/alt_ios.h"
-#include "GameTDB.hpp"
+#include "loader/cios.h"
+#include "loader/disc.h"
+#include "loader/sys.h"
+#include "loader/wbfs.h"
+#include "loader/wdvd.h"
+#include "network/gcard.h"
 
 extern const u8 btnconfig_png[];
 extern const u8 btnconfigs_png[];

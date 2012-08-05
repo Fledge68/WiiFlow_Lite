@@ -28,10 +28,10 @@
 #include <string.h>
 #include <malloc.h>
 
-#include "mem2.hpp"
 #include "nk.h"
 #include "cios.h"
 #include "armboot.h"
+#include "memory/mem2.hpp"
 
 s32 Launch_nk(u64 TitleID, const char *nandpath)
 {

@@ -9,9 +9,6 @@
 #include <sys/statvfs.h>
 #include <ctype.h>
 
-#include "libwbfs/libwbfs.h"
-#include "sdhc.h"
-#include "usbstorage.h"
 #include "utils.h"
 #include "wbfs.h"
 #include "wdvd.h"
@@ -20,8 +17,12 @@
 #include "wbfs_ext.h"
 #include "sys.h"
 #include "disc.h"
-#include "gecko.h"
-#include "mem2.hpp"
+
+#include "devicemounter/sdhc.h"
+#include "devicemounter/usbstorage.h"
+#include "libwbfs/libwbfs.h"
+#include "gecko/gecko.h"
+#include "memory/mem2.hpp"
 
 /* Constants */
 #define MAX_NB_SECTORS	32

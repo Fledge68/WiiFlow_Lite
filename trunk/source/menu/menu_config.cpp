@@ -1,10 +1,9 @@
 
 #include "menu.hpp"
-#include "nand.hpp"
-#include "sys.h"
-#include "loader/cios.h"
+#include "channel/nand.hpp"
 #include "loader/alt_ios.h"
-#include "gecko/gecko.h"
+#include "loader/cios.h"
+#include "loader/sys.h"
 
 const int CMenu::_nbCfgPages = 6;
 static const int g_curPage = 1;

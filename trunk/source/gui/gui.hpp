@@ -4,15 +4,15 @@
 #ifndef __GUI_HPP
 #define __GUI_HPP
 
-#include "wiiuse/wpad.h"
 #include <ogc/pad.h>
+#include "wiiuse/wpad.h"
 
 #include "video.hpp"
 #include "FreeTypeGX.h"
-#include "wstringEx.hpp"
-#include "smartptr.hpp"
 #include "text.hpp"
-#include "gui_sound.h"
+#include "memory/smartptr.hpp"
+#include "music/gui_sound.h"
+#include "wstringEx/wstringEx.hpp"
 
 struct SButtonTextureSet
 {

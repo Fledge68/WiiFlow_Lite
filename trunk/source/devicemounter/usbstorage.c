@@ -27,15 +27,13 @@
  distribution.
 
  -------------------------------------------------------------*/
-
 #include <gccore.h>
 #include <malloc.h>
 #include <stdio.h>
 #include <string.h>
-#include "usbstorage.h"
-#include "memory/mem2.hpp"
-#include "gecko.h"
 
+#include "usbstorage.h"
+#include "gecko/gecko.h"
 
 /* IOCTL commands */
 #define UMS_BASE			(('U'<<24)|('M'<<16)|('S'<<8))

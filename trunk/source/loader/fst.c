@@ -18,25 +18,23 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <gccore.h>
 #include <sys/unistd.h>
 #include <ogc/ipc.h>
-#include "fst.h"
 
-#include "gecko.h"
+#include "fst.h"
 #include "sys.h"
-#include "mem2.hpp"
 
 #include "patchcode.h"
-
 #include "codehandler.h"
 #include "codehandleronly.h"
 #include "multidol.h"
+
+#include "gecko/gecko.h"
+#include "memory/mem2.hpp"
 
 #define FSTDIRTYPE 1
 #define FSTFILETYPE 0

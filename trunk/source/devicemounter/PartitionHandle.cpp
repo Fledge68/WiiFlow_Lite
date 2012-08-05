@@ -28,15 +28,15 @@
 #include <string.h>
 #include <malloc.h>
 #include <sdcard/gcsd.h>
-#include "cios.h"
 #include "PartitionHandle.h"
-#include "utils.h"
 #include "ntfs.h"
 #include "fat.h"
 #include "ext2.h"
-#include "wbfs.h"
-#include "usbstorage.h"
 #include "sdhc.h"
+#include "usbstorage.h"
+#include "loader/cios.h"
+#include "loader/utils.h"
+#include "loader/wbfs.h"
 
 #define PARTITION_TYPE_DOS33_EXTENDED		0x05 /* DOS 3.3+ extended partition */
 #define PARTITION_TYPE_WIN95_EXTENDED		0x0F /* Windows 95 extended partition */

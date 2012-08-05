@@ -36,9 +36,9 @@
 #include <malloc.h>
 
 #include "nand.hpp"
-#include "wbfs.h"
-#include "gecko.h"
-#include "fileOps.h"
+#include "fileOps/fileOps.h"
+#include "gecko/gecko.h"
+#include "loader/wbfs.h"
 
 u8 *confbuffer ATTRIBUTE_ALIGN(32);
 u8 CCode[0x1008];

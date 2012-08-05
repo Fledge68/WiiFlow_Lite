@@ -2,33 +2,29 @@
 #define __MENU_HPP
 //#define SHOWMEM 1
 //#define SHOWMEMGECKO
-#include "wiiuse/wpad.h"
+
 #include <ogc/pad.h>
 #include <vector>
-
-#include "cachedlist.hpp"
-#include "plugin/plugin.hpp"
-
 #include <map>
-#include "gui_sound.h"
-#include "cursor.hpp"
-#include "gui.hpp"
-#include "coverflow.hpp"
-#include "fanart.hpp"
-#include "loader/disc.h"
-#include "btnmap.h"
-#include "banner.h"
-#include "channels.h"
-#include "gct.h"
-#include "DeviceHandler.hpp"
-#include "musicplayer.h"
-#include "loader/gc_disc_dump.hpp" 
 
-//Also in wbfs.h
-#define PART_FS_WBFS 0
-#define PART_FS_FAT  1
-#define PART_FS_NTFS 2
-#define PART_FS_EXT  3
+#include "btnmap.h"
+#include "channel/banner.h"
+#include "channel/channels.h"
+#include "cheats/gct.h"
+#include "devicemounter/DeviceHandler.hpp"
+#include "gecko/gecko.h"
+#include "gui/coverflow.hpp"
+#include "gui/cursor.hpp"
+#include "gui/fanart.hpp"
+#include "gui/gui.hpp"
+#include "list/cachedlist.hpp"
+#include "loader/disc.h"
+#include "loader/gc_disc_dump.hpp"
+#include "loader/wbfs.h"
+#include "music/gui_sound.h"
+#include "music/musicplayer.h"
+#include "plugin/plugin.hpp"
+#include "wiiuse/wpad.h"
 
 using namespace std;
 

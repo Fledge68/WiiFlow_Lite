@@ -10,8 +10,9 @@
 #include <sys/iosupport.h>
 #include <stdarg.h>
 
-#include "mem2.hpp"
+#include "gecko.h"
 #include "wifi_gecko.h"
+#include "memory/mem2.hpp"
 
 /* init-globals */
 bool geckoinit = false;
@@ -175,11 +176,11 @@ bool InitGecko()
 	u32 geckoattached = usb_isgeckoalive(EXI_CHANNEL_1);
 	if(geckoattached)
 	{
+		geckoinit = true;
 		usb_flush(EXI_CHANNEL_1);
-		return true;
+		puts("USB Gecko inited.");
 	}
-	else
-		return false;
+	return geckoinit;
 }
 
 void AllocSDGeckoBuffer()

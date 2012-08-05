@@ -1,10 +1,10 @@
-#include "loader/wbfs.h"
-#include "libwbfs/wiidisc.h"
+
 #include "menu.hpp"
 #include "types.h"
-
+#include "gecko/gecko.h"
+#include "loader/wbfs.h"
 #include "loader/sys.h"
-#include "gecko.h"
+#include "libwbfs/wiidisc.h"
 
 #define ARRAY_SIZE(a)	(sizeof a / sizeof a[0])
 

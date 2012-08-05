@@ -25,22 +25,19 @@
  *
  * for WiiXplorer 2010
  ***************************************************************************/
-
-#include "mem2.hpp"
-
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 
+#include "channel_launcher.h"
 #include "channels.h"
 #include "banner.h"
-#include "wstringEx.hpp"
-#include "gecko.h"
-#include "fs.h"
-#include "config.hpp"
-#include "text.hpp"
-
-#include "channel_launcher.h"
+#include "config/config.hpp"
+#include "gecko/gecko.h"
+#include "gui/text.hpp"
+#include "loader/fs.h"
+#include "memory/mem2.hpp"
+#include "wstringEx/wstringEx.hpp"
 
 #define DOWNLOADED_CHANNELS	0x00010001
 #define SYSTEM_CHANNELS		0x00010002

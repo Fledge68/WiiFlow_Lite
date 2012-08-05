@@ -1,14 +1,14 @@
 
 #include "menu.hpp"
-#include "loader/wbfs.h"
-#include "lockMutex.hpp"
-#include "loader/gc_disc_dump.hpp"
-#include "gc.h"
-#include "fileOps.h"
-#include "music/SoundHandler.hpp"
-#include "channel/nand.hpp"
 #include "types.h"
-#include "wdvd.h"
+#include "lockMutex.hpp"
+#include "channel/nand.hpp"
+#include "gc/gc.hpp"
+#include "fileOps/fileOps.h"
+#include "loader/wbfs.h"
+#include "loader/wdvd.h"
+#include "loader/gc_disc_dump.hpp"
+#include "music/SoundHandler.hpp"
 
 void CMenu::_hideWBFS(bool instant)
 {

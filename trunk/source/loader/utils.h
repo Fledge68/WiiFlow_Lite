@@ -34,9 +34,6 @@ u64 le64(u64);
 u32 le32(u32);
 u16 le16(u16);
 
-typedef volatile unsigned short vu16;
-typedef volatile unsigned int vu32;
-
 bool str_replace(char *str, const char *olds, const char *news, int size);
 bool str_replace_all(char *str, const char *olds, const char *news, int size);
 

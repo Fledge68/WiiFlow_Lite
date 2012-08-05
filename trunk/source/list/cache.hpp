@@ -5,7 +5,7 @@
 #include <ogcsys.h> 
 #include <fstream>
 #include <vector>
-#include "disc.h"
+#include "loader/disc.h"
 
 //#include "gecko.h"
 using namespace std;

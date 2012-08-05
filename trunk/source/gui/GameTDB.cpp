@@ -26,11 +26,11 @@
 #include <string>
 #include <cstring>
 #include "GameTDB.hpp"
-#include "config.hpp"
 #include "video.hpp"
-#include "gecko.h"
 #include "defines.h"
 #include "text.hpp"
+#include "config/config.hpp"
+#include "gecko/gecko.h"
 
 #define NAME_OFFSET_DB	"gametdb_offsets.bin"
 #define MAXREADSIZE		1024*1024   //Cache size only for parsing the offsets: 1MB

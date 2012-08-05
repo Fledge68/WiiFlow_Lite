@@ -12,7 +12,6 @@ extern "C" {
 #define WBFS_MIN_DEVICE		1
 #define WBFS_MAX_DEVICE		2
 
-//also menu.hpp
 #define PART_FS_WBFS 0
 #define PART_FS_FAT  1
 #define PART_FS_NTFS 2

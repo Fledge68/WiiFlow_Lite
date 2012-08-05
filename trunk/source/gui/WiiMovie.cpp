@@ -27,11 +27,10 @@
  ***************************************************************************/
 #include <unistd.h>
 #include <asndlib.h>
-#include "wiiuse/wpad.h"
 
 #include "WiiMovie.hpp"
-#include "gecko.h"
-#include "mem2.hpp"
+#include "gecko/gecko.h"
+#include "memory/mem2.hpp"
 
 #define SND_BUFFERS     8
 #define FRAME_BUFFERS	8

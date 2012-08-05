@@ -29,11 +29,11 @@
 #include <ogc/mutex.h>
 #include <ogc/system.h>
 #include <sdcard/gcsd.h>
-#include "cios.h"
 #include "DeviceHandler.hpp"
-#include "wbfs.h"
-#include "usbstorage.h"
 #include "sdhc.h"
+#include "usbstorage.h"
+#include "loader/cios.h"
+#include "loader/wbfs.h"
 
 DeviceHandler * DeviceHandler::instance = NULL;
 

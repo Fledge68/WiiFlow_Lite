@@ -9,10 +9,10 @@
 #include <gccore.h>
 #include <malloc.h>
 
-#include "utils.h"
-#include "mem2.hpp"
 #include "gecko/gecko.h"
 #include "loader/disc.h"
+#include "loader/utils.h"
+#include "memory/mem2.hpp"
 
 #define wbfs_fatal(x)		do { gprintf(x); wd_last_error = 1; } while(0)
 #define wbfs_error(x)		do { gprintf(x); wd_last_error = 2; } while(0)

@@ -26,8 +26,6 @@
 #ifndef WIFI_GECKO_H_
 #define WIFI_GECKO_H_
 
-#include "utils.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif

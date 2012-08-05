@@ -4,7 +4,7 @@
 #include "gcvid.h"
 #include "Timer.h"
 #include "texture.hpp"
-#include "BufferCircle.hpp"
+#include "music/BufferCircle.hpp"
 
 using namespace std;
 

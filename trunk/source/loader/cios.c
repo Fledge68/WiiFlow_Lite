@@ -23,7 +23,6 @@
  * 3. This notice may not be removed or altered from any source
  * distribution.
  ***************************************************************************/
-
 #include <gctypes.h>
 #include <malloc.h>
 #include <string.h>
@@ -31,9 +30,10 @@
 
 #include "cios.h"
 #include "utils.h"
-#include "gecko.h"
 #include "fs.h"
 #include "mload.h"
+#include "gecko/gecko.h"
+#include "memory/mem2.hpp"
 
 static bool checked = false;
 static bool neek = false;
@@ -83,10 +83,9 @@ signed_blob *GetTMD(u8 ios, u32 *TMD_Length)
 	if(ES_GetStoredTMDSize(TITLE_ID(1, ios), TMD_Length) < 0)
 		return NULL;
 
-	signed_blob *TMD = (signed_blob*)memalign(32, ALIGN32(*TMD_Length));
+	signed_blob *TMD = (signed_blob*)MEM2_alloc(*TMD_Length);
 	if(TMD == NULL)
 		return NULL;
-
 	if(ES_GetStoredTMD(TITLE_ID(1, ios), TMD, *TMD_Length) < 0)
 	{
 		free(TMD);
@@ -149,13 +148,13 @@ int get_ios_type(u8 slot)
 		free(TMD_Buffer);
 		return IOS_TYPE_NO_CIOS;
 	}
+	u32 title_rev = iosTMD->title_version;
+	free(TMD_Buffer);
+	iosTMD = NULL;
 
 	iosinfo_t *info = GetInfo(slot);
 	if(info == NULL)
-	{
-		free(TMD_Buffer);
 		return IOS_TYPE_NO_CIOS;
-	}
 	free(info);
 
 	u8 base = 0;
@@ -165,7 +164,7 @@ int get_ios_type(u8 slot)
 		case 223:
 		case 224:
 		case 225:
-			if(iosTMD->title_version == 1)
+			if(title_rev == 1)
 				return IOS_TYPE_KWIIRK;
 			else
 				return IOS_TYPE_HERMES;
@@ -186,7 +185,6 @@ int get_ios_type(u8 slot)
 			else
 				return IOS_TYPE_NO_CIOS;
 	}
-	free(TMD_Buffer);
 }
 
 int is_ios_type(int type, u8 slot)

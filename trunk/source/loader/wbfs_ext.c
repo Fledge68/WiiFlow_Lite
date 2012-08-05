@@ -11,17 +11,18 @@
 #include <sys/statvfs.h>
 #include <ctype.h>
 
-#include "libwbfs/libwbfs.h"
-#include "sdhc.h"
-#include "usbstorage.h"
 #include "wbfs.h"
 #include "wdvd.h"
 #include "splits.h"
 #include "wbfs_ext.h"
 #include "utils.h"
 #include "disc.h"
-#include "gecko.h"
-#include "gc/fileOps.h"
+
+#include "devicemounter/sdhc.h"
+#include "devicemounter/usbstorage.h"
+#include "fileOps/fileOps.h"
+#include "gecko/gecko.h"
+#include "libwbfs/libwbfs.h"
 
 #define MAX_FAT_PATH 1024
 #define TITLE_LEN 64

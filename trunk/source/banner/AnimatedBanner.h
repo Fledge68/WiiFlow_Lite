@@ -26,8 +26,8 @@ distribution.
 #define _ANIMATEDBANNER_H_
 
 #include "Layout.h"
-#include "disc.h"
 #include "channel/banner.h"
+#include "loader/disc.h"
 
 class AnimatedBanner
 {

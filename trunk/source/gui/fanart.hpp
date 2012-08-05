@@ -7,9 +7,9 @@
 #include <gccore.h>
 #include <string>
 
-#include "config.hpp"
-#include "texture.hpp"
 #include "gui.hpp"
+#include "texture.hpp"
+#include "config/config.hpp"
 
 class CFanartElement
 {

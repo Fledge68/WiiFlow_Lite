@@ -3,9 +3,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "mem2.hpp"
-#include "gecko.h"
+
 #include "wip.h"
+#include "gecko/gecko.h"
+#include "memory/mem2.hpp"
 
 static WIP_Code * CodeList = NULL;
 static u32 CodesCount = 0;

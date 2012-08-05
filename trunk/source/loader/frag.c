@@ -7,17 +7,17 @@
 #include "ntfs.h"
 #include "ntfsfile_frag.h"
 
-#include "libwbfs/libwbfs.h"
 #include "wbfs.h"
 #include "wbfs_ext.h"
-#include "usbstorage.h"
 #include "frag.h"
 #include "utils.h"
 #include "sys.h"
 #include "wdvd.h"
-#include "gecko.h"
 #include "ext2_frag.h"
 #include "fatfile_frag.h"
+#include "devicemounter/usbstorage.h"
+#include "gecko/gecko.h"
+#include "libwbfs/libwbfs.h"
 
 FragList *frag_list = NULL;
 

@@ -1,12 +1,11 @@
+#include <dirent.h>
+#include <sys/types.h>
+#include <sys/param.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #include "menu.hpp"
-#include "wbfs.h"
-
-#include <dirent.h>
-#include <sys/types.h> 
-#include <sys/param.h> 
-#include <sys/stat.h> 
-#include <unistd.h> 
+#include "loader/wbfs.h"
 
 using namespace std;
 

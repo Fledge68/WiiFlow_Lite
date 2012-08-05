@@ -19,11 +19,11 @@
 
 #include <gccore.h>
 
-#include "disc.h"
 #include "AnimatedBanner.h"
-#include "gui_sound.h"
-#include "video.hpp"
 #include "channel/banner.h"
+#include "gui/video.hpp"
+#include "loader/disc.h"
+#include "music/gui_sound.h"
 
 #define FAVORITE_STARS  5
 

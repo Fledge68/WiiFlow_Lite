@@ -1,8 +1,8 @@
 
 #include "menu.hpp"
 #include "svnrev.h"
-#include "cios.h"
-#include "nk.h"
+#include "loader/cios.h"
+#include "loader/nk.h"
 
 u32 m_homeLblTitle;
 u32 m_exittoLblTitle;

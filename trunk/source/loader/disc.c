@@ -5,7 +5,6 @@
 #include <unistd.h>
 #include <ogc/lwp_threads.h>
 #include <ogc/lwp_watchdog.h>
-#include "wiiuse/wpad.h"
 #include <ogc/machine/processor.h>
 
 #include "apploader.h"
@@ -18,12 +17,14 @@
 #include "wbfs.h"
 #include "patchcode.h"
 #include "frag.h"
-#include "usbstorage.h"
 #include "wip.h"
-#include "memory.h"
-#include "gecko.h"
+
 #include "utils.h"
 #include "cios.h"
+
+#include "devicemounter/usbstorage.h"
+#include "gecko/gecko.h"
+#include "memory/memory.h"
 
 /* Constants */
 #define PTABLE_OFFSET	0x40000

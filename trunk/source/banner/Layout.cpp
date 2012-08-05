@@ -23,7 +23,7 @@ distribution.
 */
 #include "Layout.h"
 #include "WiiFont.h"
-#include "U8Archive.h"
+#include "unzip/U8Archive.h"
 
 Layout::Layout(u8 *font1, u8 *font2)
 	: header(0)

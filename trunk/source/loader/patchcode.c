@@ -26,7 +26,7 @@
 
 #include "apploader.h"
 #include "patchcode.h"
-#include "gecko.h"
+#include "gecko/gecko.h"
 
 extern void patchhook(u32 address, u32 len);
 extern void patchhook2(u32 address, u32 len);

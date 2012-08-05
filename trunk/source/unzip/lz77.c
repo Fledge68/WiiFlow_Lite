@@ -19,7 +19,7 @@
 #include <malloc.h>
 
 #include "lz77.h"
-#include "utils.h"
+#include "loader/utils.h"
 
 u32 packBytes(int a, int b, int c, int d)
 {

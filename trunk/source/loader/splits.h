@@ -3,7 +3,7 @@
 extern "C" {
 #endif
 
-#include "devicemounter/libwbfs/libwbfs.h"
+#include "libwbfs/libwbfs.h"
 
 #define MAX_SPLIT 10
 

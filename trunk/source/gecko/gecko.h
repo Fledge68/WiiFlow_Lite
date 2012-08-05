@@ -6,7 +6,8 @@
 extern "C" {
 #endif
 
-extern bool geckoinit;
+#include <gccore.h>
+
 extern bool bufferMessages;
 extern bool WriteToSD;
 

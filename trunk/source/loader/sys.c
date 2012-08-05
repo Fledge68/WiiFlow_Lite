@@ -7,16 +7,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "wiiuse/wpad.h"
-#include "memory/mem2.hpp"
-#include "memory/memory.h"
-#include "sys.h"
-#include "gecko.h"
-#include "channel_launcher.h"
 #include "sha1.h"
 #include "fs.h"
-#include "mem2.hpp"
 #include "mload.h"
+#include "sys.h"
+#include "channel/channel_launcher.h"
+#include "gecko/gecko.h"
+#include "memory/mem2.hpp"
+#include "memory/memory.h"
+#include "wiiuse/wpad.h"
 
 /* Variables */
 static bool reset = false;

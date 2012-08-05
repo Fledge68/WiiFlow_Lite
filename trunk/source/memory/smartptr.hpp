@@ -7,9 +7,9 @@
 #include <algorithm>
 #include <malloc.h>
 
-#include "utils.h"
 #include "mem2.hpp"
-#include "gui_sound.h"
+#include "loader/utils.h"
+#include "music/gui_sound.h"
 
 template <class T> class SmartPtr
 {

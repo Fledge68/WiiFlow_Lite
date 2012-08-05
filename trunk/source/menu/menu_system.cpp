@@ -1,13 +1,10 @@
-#include "svnrev.h"
-#include "menu.hpp"
 
+#include "menu.hpp"
+#include "svnrev.h"
+#include "defines.h"
+#include "lockMutex.hpp"
 #include "loader/sys.h"
 #include "loader/wbfs.h"
-#include "gecko.h"
-#include "lockMutex.hpp"
-#include "defines.h"
-
-#define newIOS 249
 
 extern int mainIOS;
 

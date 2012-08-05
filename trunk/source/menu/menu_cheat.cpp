@@ -1,12 +1,11 @@
 #include <string.h>
 #include <gccore.h>
 
-#include "text.hpp"
-#include "lockMutex.hpp"
-
 #include "menu.hpp"
-#include "http.h"
-#include "sys.h"
+#include "lockMutex.hpp"
+#include "gui/text.hpp"
+#include "loader/sys.h"
+#include "network/http.h"
 
 #define GECKOURL "http://geckocodes.org/codes/%c/%s.txt"
 #define CHEATSPERPAGE 4

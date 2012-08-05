@@ -2,8 +2,6 @@
 #include <ogcsys.h>
 #include <string.h>
 
-#include "gecko.h"
-
 #define MAX_BLOCKSIZE           0x10000
 
 u64 le64(u64 x)

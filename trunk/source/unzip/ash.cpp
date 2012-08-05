@@ -14,16 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ****************************************************************************/
-#include "ash.h"
-#include "gecko.h"
-
 #include <stdlib.h>
 #include <stdio.h>
 //#include <memory.h>
 #include <malloc.h>
 #include <string.h>
 
-
+#include "ash.h"
+#include "gecko/gecko.h"
 
 bool IsAshCompressed( const u8 *stuff, u32 len )
 {
