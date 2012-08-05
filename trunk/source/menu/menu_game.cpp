@@ -1185,7 +1185,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			else
 			{
 				/* Read GC disc header */
-				struct gc_discHdr *gcHeader = (struct gc_discHdr *)malloc(sizeof(struct gc_discHdr));
+				struct gc_discHdr *gcHeader = (struct gc_discHdr *)memalign(32, sizeof(struct gc_discHdr));
 				Disc_ReadGCHeader(gcHeader);
 				strncpy(hdr->id, (char*)gcHeader->id, 6);
 				free(gcHeader);
@@ -1196,7 +1196,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		else
 		{
 			/* Read header */
-			struct discHdr *header = (struct discHdr *)malloc(sizeof(struct discHdr));
+			struct discHdr *header = (struct discHdr *)memalign(32, sizeof(struct discHdr));
 			Disc_ReadHeader(header);
 			id = string((const char*)header->id);
 			free(header);
@@ -1358,7 +1358,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		}
 		IOSReloadBlock(IOS_GetVersion(), true);
 	}
-	
 	if(emulate_mode && !neek2o())
 	{
 		Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
@@ -1370,7 +1369,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			Nand::Instance()->Set_FullMode(true);
 		else
 			Nand::Instance()->Set_FullMode(false);
-
 		if(Nand::Instance()->Enable_Emu() < 0)
 		{
 			Nand::Instance()->Disable_Emu();
@@ -1385,21 +1383,23 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	if(!dvd)
 	{
 		s32 ret = Disc_SetUSB((u8*)id.c_str(), !wbfs_partition);
-		if (ret < 0)
+		if(ret < 0)
 		{
 			gprintf("Set USB failed: %d\n", ret);
 			error(wfmt(_fmt("errgame10", L"Set USB failed: %d"), ret));
-			if (iosLoaded) Sys_LoadMenu();
+			if(iosLoaded)
+				Sys_LoadMenu();
 			return;
 		}
-
-		if (Disc_Open(false) < 0)
+		if(Disc_Open(false) < 0)
 		{
 			error(_t("wbfsoperr2", L"Disc_Open failed"));
-			if (iosLoaded) Sys_LoadMenu();
+			if(iosLoaded)
+				Sys_LoadMenu();
 			return;
 		}
 	}
+
 	/* Find game partition offset */
 	u64 offset;
 	s32 ret = Disc_FindPartition(&offset);
@@ -1411,6 +1411,14 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	USB_Deinitialize();
 	shadow_mload();
 #endif
+
+	/* Last check if the Disc ID is correct */
+	char discid[32] ATTRIBUTE_ALIGN(32);
+	memset(discid, 0, sizeof(discid));
+	WDVD_UnencryptedRead(discid, 32, 0);
+	gprintf("WDVD_UnencryptedRead ID: %s (expected: %s)\n", discid, id.c_str());
+	if(strncasecmp(id.c_str(), discid, 6) != 0)
+		return;
 
 	RunApploader(offset, videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, returnTo);
 	gprintf("Booting game\n");

@@ -44,7 +44,7 @@ int frag_get(FragList *ff, u32 offset, u32 count,
 
 int frag_remap(FragList *ff, FragList *log, FragList *phy);
 int get_frag_list(u8 *id, char *path, const u32 hdd_sector_size);
-int set_frag_list(u8 *id);
+int set_frag_list();
 
 #ifdef __cplusplus
 }
