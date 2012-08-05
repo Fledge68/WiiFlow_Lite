@@ -32,12 +32,12 @@
 #include <ogc/conf.h>
 #include <ogc/isfs.h>
 
-#include "memory/smartptr.hpp"
 #include "banner.h"
 #include "MD5.h"
+#include "gecko/gecko.h"
 #include "loader/fs.h"
-#include "gecko.h"
-#include "U8Archive.h"
+#include "memory/smartptr.hpp"
+#include "unzip/U8Archive.h"
 
 #define IMET_OFFSET			0x40
 #define IMET_SIGNATURE		0x494d4554

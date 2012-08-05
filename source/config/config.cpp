@@ -2,9 +2,8 @@
 #include <fstream>
 
 #include "config.hpp"
-#include "text.hpp"
-#include "DeviceHandler.hpp"
-#include "gecko.h"
+#include "gecko/gecko.h"
+#include "gui/text.hpp"
 
 static const char *g_whitespaces = " \f\n\r\t\v";
 static const int g_floatPrecision = 10;

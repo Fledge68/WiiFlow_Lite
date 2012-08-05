@@ -11,11 +11,11 @@
 #include "coverflow.hpp"
 #include "pngu.h"
 #include "boxmesh.hpp"
-#include "wstringEx.hpp"
 #include "lockMutex.hpp"
 #include "fonts.h"
-#include "gecko.h"
 #include "types.h"
+#include "gecko/gecko.h"
+#include "wstringEx/wstringEx.hpp"
 
 extern const u8 dvdskin_jpg[];
 extern const u32 dvdskin_jpg_size;

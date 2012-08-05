@@ -1,47 +1,41 @@
 
-#include "menu.hpp"
-#include "loader/patchcode.h"
-
-#include "loader/sys.h"
-#include "loader/wdvd.h"
-#include "loader/alt_ios.h"
-#include "loader/playlog.h"
 #include <ogc/machine/processor.h>
 #include <ogc/lwp_threads.h>
 #include <unistd.h>
 #include <time.h>
-#include "network/http.h"
-#include "network/gcard.h"
-#include "DeviceHandler.hpp"
-#include "loader/wbfs.h"
-#include "wip.h"
-#include "channel_launcher.h"
-#include "BannerWindow.hpp"
-
 #include <network.h>
 #include <errno.h>
 
-#include "loader/frag.h"
-#include "loader/fst.h"
-#include "cios.h"
-
+#include "menu.hpp"
+#include "types.h"
+#include "banner/BannerWindow.hpp"
+#include "channel/channel_launcher.h"
+#include "channel/channels.h"
+#include "channel/nand.hpp"
+#include "devicemounter/DeviceHandler.hpp"
+#include "devicemounter/usbstorage.h"
+#include "fileOps/fileOps.h"
+#include "gc/gc.hpp"
+#include "gc/gcdisc.hpp"
+#include "gecko/gecko.h"
 #include "gui/WiiMovie.hpp"
 #include "gui/GameTDB.hpp"
-#include "channels.h"
-#include "nand.hpp"
-#include "alt_ios.h"
-#include "gecko.h"
-#include "homebrew.h"
-#include "types.h"
-#include "nk.h"
-#include "gc/gc.h"
-#include "gc/fileOps.h"
-#include "gc/gcdisc.hpp"
-#include "Gekko.h"
-
-#ifndef DOLPHIN
-#include "devicemounter/usbstorage.h"
-#endif
+#include "gui/Gekko.h"
+#include "homebrew/homebrew.h"
+#include "loader/alt_ios.h"
+#include "loader/patchcode.h"
+#include "loader/sys.h"
+#include "loader/wdvd.h"
+#include "loader/alt_ios.h"
+#include "loader/playlog.h"
+#include "loader/wbfs.h"
+#include "loader/wip.h"
+#include "loader/frag.h"
+#include "loader/fst.h"
+#include "loader/cios.h"
+#include "loader/nk.h"
+#include "network/http.h"
+#include "network/gcard.h"
 
 extern const u8 btngamecfg_png[];
 extern const u8 btngamecfgs_png[];

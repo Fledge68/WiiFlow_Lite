@@ -1,6 +1,6 @@
 
 #include "menu.hpp"
-#include "gecko.h"
+#include "gecko/gecko.h"
 
 extern const u8 error_png[];
 u16 m_errorLblMessage;

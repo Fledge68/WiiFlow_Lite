@@ -2,10 +2,9 @@
 #define _MUSICPLAYER_H
 
 #include <string>
-#include "config/config.hpp"
-
-#include "cachedlist.hpp"
 #include "gui_sound.h"
+#include "config/config.hpp"
+#include "list/cachedlist.hpp"
 
 enum MusicDirectory
 {

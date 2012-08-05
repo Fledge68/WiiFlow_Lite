@@ -29,17 +29,17 @@
 #include <ogcsys.h>
 #include <sys/statvfs.h>
 
-#include "mem2.hpp"
 #include "gc_disc_dump.hpp"
-#include "DeviceHandler.hpp"
 #include "disc.h"
 #include "utils.h"
 #include "wdvd.h"
-#include "text.hpp"
-#include "gecko.h"
-#include "fileOps.h"
+#include "devicemounter/DeviceHandler.hpp"
+#include "fileOps/fileOps.h"
+#include "gecko/gecko.h"
+#include "gui/Gekko.h"
+#include "gui/text.hpp"
+#include "memory/mem2.hpp"
 #include "defines.h"
-#include "Gekko.h"
 
 using namespace std;
 

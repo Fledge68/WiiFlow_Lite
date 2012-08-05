@@ -5,11 +5,10 @@
 #include <vector>
 #include <string>
 
-#include "wstringEx.hpp"
 #include "FreeTypeGX.h"
 #include "video.hpp"
-
-#include "smartptr.hpp"
+#include "memory/smartptr.hpp"
+#include "wstringEx/wstringEx.hpp"
 
 using namespace std;
 

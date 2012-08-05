@@ -49,7 +49,7 @@
 extern "C" {
 #endif
 
-#include "utils.h"
+#include "loader/utils.h"
 
 #ifndef _ZLIB_H
 #include "zlib.h"

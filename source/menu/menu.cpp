@@ -1,9 +1,3 @@
-#include "menu.hpp"
-#include "loader/sys.h"
-#include "loader/wbfs.h"
-#include "loader/alt_ios.h"
-
-#include "network/gcard.h"
 
 #include <fstream>
 #include <sys/stat.h>
@@ -13,20 +7,24 @@
 #include <network.h>
 #include <errno.h>
 
-#include "gecko.h"
+#include "menu.hpp"
 #include "types.h"
 #include "fonts.h"
-#include "music/SoundHandler.hpp"
-#include "fs.h"
-#include "U8Archive.h"
-#include "nand.hpp"
-#include "cios.h"
+#include "banner/BannerWindow.hpp"
+#include "channel/nand.hpp"
+#include "fileOps/fileOps.h"
+#include "gc/gc.hpp"
+#include "gui/Gekko.h"
+#include "gui/GameTDB.hpp"
+#include "loader/alt_ios.h"
+#include "loader/cios.h"
+#include "loader/fs.h"
 #include "loader/playlog.h"
-#include "gc/fileOps.h"
-#include "gc/gc.h"
-#include "Gekko.h"
-#include "GameTDB.hpp"
-#include "BannerWindow.hpp"
+#include "loader/sys.h"
+#include "loader/wbfs.h"
+#include "music/SoundHandler.hpp"
+#include "network/gcard.h"
+#include "unzip/U8Archive.h"
 
 // Sounds
 extern const u8 click_wav[];

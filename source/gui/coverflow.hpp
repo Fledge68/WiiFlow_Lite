@@ -11,13 +11,13 @@
 #include <ogc/pad.h>
 
 #include "video.hpp"
-#include "smartptr.hpp"
 #include "FreeTypeGX.h"
 #include "text.hpp"
-#include "config.hpp"
-#include "gui_sound.h"
-#include "disc.h"
-#include "utils.h"
+#include "config/config.hpp"
+#include "loader/disc.h"
+#include "loader/utils.h"
+#include "memory/smartptr.hpp"
+#include "music/gui_sound.h"
 
 using namespace std;
 

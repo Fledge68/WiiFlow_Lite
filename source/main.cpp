@@ -1,21 +1,23 @@
-#include "video.hpp"
-#include "menu/menu.hpp"
-#include "loader/disc.h"
 
+#include <ogc/system.h>
+#include <unistd.h>
+
+#include "defines.h"
+#include "svnrev.h"
+
+#include "channel/nand.hpp"
+#include "devicemounter/DeviceHandler.hpp"
+#include "gecko/gecko.h"
+#include "gecko/wifi_gecko.h"
+#include "gui/video.hpp"
+#include "gui/text.hpp"
+#include "homebrew/homebrew.h"
+#include "loader/disc.h"
 #include "loader/alt_ios.h"
 #include "loader/sys.h"
 #include "loader/wbfs.h"
-#include "text.hpp"
-#include <ogc/system.h>
-#include <unistd.h>
-#include "DeviceHandler.hpp"
-#include "homebrew.h"
-#include "gecko.h"
-#include "wifi_gecko.h"
-#include "cios.h"
-#include "nand.hpp"
-#include "defines.h"
-#include "svnrev.h"
+#include "loader/cios.h"
+#include "menu/menu.hpp"
 
 CMenu *mainMenu;
 
@@ -30,7 +32,7 @@ extern "C"
 int main(int argc, char **argv)
 {
 	__exception_setreload(5);
-	geckoinit = InitGecko();
+	InitGecko();
 
 	// Init video
 	CVideo vid;
@@ -105,7 +107,6 @@ int main(int argc, char **argv)
 #else
 		bool deviceAvailable = true;
 		DeviceHandler::Instance()->MountAll();
-		sleep(1);
 #endif
 		bool dipOK = Disc_Init() >= 0;
 

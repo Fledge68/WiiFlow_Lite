@@ -1,6 +1,7 @@
-#include "menu.hpp"
-#include "gecko.h"
+
 #include <stdlib.h>
+
+#include "menu.hpp"
 
 static const u32 g_repeatDelay = 25;
 

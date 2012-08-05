@@ -2,7 +2,7 @@
 #include "pngu.h"
 #include "boxmesh.hpp"
 #include "text.hpp"
-#include "gecko.h"
+#include "gecko/gecko.h"
 
 using namespace std;
 

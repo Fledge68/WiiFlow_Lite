@@ -13,14 +13,13 @@ More info : http://frontier-dev.net
 
 #include "pngu.h"
 #include "png.h"
-#include "mem2.hpp"
-#include "utils.h"
 #include "gecko/gecko.h"
+#include "loader/utils.h"
+#include "memory/mem2.hpp"
 
 // Constants
 #define PNGU_SOURCE_BUFFER			1
 #define PNGU_SOURCE_DEVICE			2
-
 
 // Prototypes of helper functions
 int pngu_info (IMGCTX ctx);
@@ -29,7 +28,6 @@ void pngu_free_info (IMGCTX ctx);
 void pngu_read_data_from_buffer (png_structp png_ptr, png_bytep data, png_size_t length);
 void pngu_write_data_to_buffer (png_structp png_ptr, png_bytep data, png_size_t length);
 int pngu_clamp (int value, int min, int max);
-
 
 // PNGU Image context struct
 struct _IMGCTX

@@ -25,12 +25,14 @@
  ***************************************************************************/
 #include <unistd.h>
 #include <string.h>
-#include "SoundHandler.hpp"
+
 #include "gui_sound.h"
+#include "SoundHandler.hpp"
 #include "musicplayer.h"
 #include "WavDecoder.hpp"
 #include "loader/sys.h"
 #include "banner/AnimatedBanner.h"
+#include "memory/mem2.hpp"
 
 #define MAX_SND_VOICES	16
 
@@ -105,7 +107,7 @@ GuiSound::GuiSound(GuiSound *g)
 
 	if(g->sound != NULL)
 	{
-		u8 *snd = (u8 *)malloc(g->length);
+		u8 *snd = (u8 *)MEM2_memalign(32, g->length);
 		memcpy(snd, g->sound, g->length);
 		Load(snd, g->length, true);
 	}
@@ -228,12 +230,12 @@ bool GuiSound::LoadSoundEffect(const u8 * snd, u32 len)
 	decoder.Rewind();
 
 	u32 done = 0;
-	sound = (u8 *)malloc(4096);
+	sound = (u8 *)MEM2_memalign(32, 4096);
 	memset(sound, 0, 4096);
 
 	while(1)
 	{
-		u8 * tmpsnd = (u8 *)realloc(sound, done+4096);
+		u8 * tmpsnd = (u8 *)MEM2_realloc(sound, done+4096);
 		if(!tmpsnd)
 		{
 			free(sound);
@@ -249,7 +251,7 @@ bool GuiSound::LoadSoundEffect(const u8 * snd, u32 len)
 		done += read;
 	}
 
-	sound = (u8 *)realloc(sound, done);
+	sound = (u8 *)MEM2_realloc(sound, done);
 	SoundEffectLength = done;
 	allocated = true;
 

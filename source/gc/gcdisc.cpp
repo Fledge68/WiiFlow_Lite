@@ -19,11 +19,11 @@
 #include <string.h>
 #include <string>
 
+#include "gc.hpp"
 #include "gcdisc.hpp"
 #include "loader/gc_disc_dump.hpp"
-#include "mem2.hpp"
-#include "gecko.h"
-#include "gc.h"
+#include "gecko/gecko.h"
+#include "memory/mem2.hpp"
 
 using namespace std;
 

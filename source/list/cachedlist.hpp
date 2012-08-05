@@ -3,8 +3,8 @@
 
 #include "list.hpp"
 #include "cache.hpp"
-#include "gecko.h"
 #include "config/config.hpp"
+#include "gecko/gecko.h"
 
 using namespace std;
 

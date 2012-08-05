@@ -40,7 +40,7 @@ woven in by Terry Thorsen 1/2003.
 #include <string.h>
 #include "zlib.h"
 #include "unzip.h"
-#include "mem2.hpp"
+#include "memory/mem2.hpp"
 
 #ifdef STDC
 #  include <stddef.h>

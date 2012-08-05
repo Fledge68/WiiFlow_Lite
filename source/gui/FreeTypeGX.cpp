@@ -18,12 +18,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with FreeTypeGX.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-#include "FreeTypeGX.h"
-
-#include "mem2.hpp"
-
 #include <stdio.h>
+#include "FreeTypeGX.h"
+#include "memory/mem2.hpp"
 
 /**
  * Default constructor for the FreeTypeGX class.

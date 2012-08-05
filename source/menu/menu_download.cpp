@@ -1,27 +1,24 @@
-#include "menu.hpp"
-#include "svnrev.h"
-#include "loader/sys.h"
-#include "loader/wbfs.h"
-#include "http.h"
-#include "pngu.h"
-#include "types.h"
-
-#include "loader/fs.h"
-#include "loader/wdvd.h"
-#include "usbstorage.h"
-#include "unzip/ZipFile.h"
-
 #include <network.h>
-
-#include "gecko.h"
-#include "wifi_gecko.h"
-#include <fstream>
-#include "lockMutex.hpp"
-#include "nand.hpp"
-#include "GameTDB.hpp"
-
 #include <ogc/lwp_watchdog.h>
 #include <time.h>
+#include <fstream>
+
+#include "menu.hpp"
+#include "svnrev.h"
+#include "types.h"
+#include "lockMutex.hpp"
+#include "channel/nand.hpp"
+#include "devicemounter/usbstorage.h"
+#include "gecko/gecko.h"
+#include "gecko/wifi_gecko.h"
+#include "gui/GameTDB.hpp"
+#include "gui/pngu.h"
+#include "loader/fs.h"
+#include "loader/sys.h"
+#include "loader/wbfs.h"
+#include "loader/wdvd.h"
+#include "network/http.h"
+#include "unzip/ZipFile.h"
 
 #define TAG_GAME_ID		"{gameid}"
 #define TAG_LOC			"{loc}"
@@ -30,13 +27,6 @@
 #define TITLES_URL		"http://www.gametdb.com/titles.txt?LANG=%s"
 #define GAMETDB_URL		"http://www.gametdb.com/wiitdb.zip?LANG=%s&FALLBACK=TRUE&WIIWARE=TRUE&GAMECUBE=TRUE"
 #define UPDATE_URL_VERSION	"http://dl.dropbox.com/u/25620767/WiiflowMod/versions.txt"
-
-#define STACK_ALIGN(type, name, cnt, alignment)         \
-					u8 _al__##name[((sizeof(type)*(cnt)) + (alignment) + \
-					(((sizeof(type)*(cnt))%(alignment)) > 0 ? ((alignment) - \
-					((sizeof(type)*(cnt))%(alignment))) : 0))]; \
-					type *name = (type*)(((u32)(_al__##name)) + ((alignment) - (( \
-					(u32)(_al__##name))&((alignment)-1))))
 
 static const char FMT_BPIC_URL[] = "http://art.gametdb.com/{console}/coverfullHQ/{loc}/{gameid}.png"\
 "|http://art.gametdb.com/{console}/coverfull/{loc}/{gameid}.png";

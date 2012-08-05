@@ -25,7 +25,7 @@ distribution.
 #define BANNER_TOOLS_H_
 
 #include <gctypes.h>
-#include "gecko.h"
+#include "gecko/gecko.h"
 
 #define MAKE_FOURCC(a, b, c, d) ((a) * (1 << 24) + (b) * (1 << 16) + (c) * (1 << 8) + (d) * (1 << 0))
 

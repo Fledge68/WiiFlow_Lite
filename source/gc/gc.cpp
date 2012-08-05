@@ -1,3 +1,19 @@
+/****************************************************************************
+ * Copyright (C) 2012 FIX94
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ ****************************************************************************/
 #include <gccore.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -11,10 +27,10 @@
 #include <fcntl.h>
 #include <dirent.h>
 
-#include "gc.h"
-#include "gecko.h"
-#include "fileOps.h"
-#include "utils.h"
+#include "gc/gc.hpp"
+#include "gecko/gecko.h"
+#include "fileOps/fileOps.h"
+#include "loader/utils.h"
 #include "loader/disc.h"
 
 // DIOS-MIOS
@@ -142,7 +158,7 @@ void DML_New_WriteOptions()
 
 // Devolution
 u8 *loader_bin = NULL;
-extern void __exception_closeall();
+extern "C" { extern void __exception_closeall(); }
 static gconfig *DEVO_CONFIG = (gconfig*)0x80000020;
 #define DEVO_Entry() ((void(*)(void))loader_bin)()
 
@@ -182,8 +198,9 @@ void DEVO_SetOptions(const char *isopath, const char *partition, const char *loa
 		fseek(f, 0, SEEK_END);
 		u32 size = ftell(f);
 		rewind(f);
-		loader_bin = malloc(size);
+		loader_bin = (u8*)memalign(32, size);
 		fread(loader_bin, 1, size, f);
+		DCFlushRange(loader_bin, ALIGN32(size));
 		fclose(f);
 	}
 	else
@@ -301,9 +318,11 @@ void DEVO_Boot()
 #define SRAM_ITALIAN 4
 #define SRAM_DUTCH 5
 
+extern "C" {
 syssram* __SYS_LockSram();
 u32 __SYS_UnlockSram(u32 write);
 u32 __SYS_SyncSram(void);
+}
 
 void GC_SetVideoMode(u8 videomode, u8 videoSetting)
 {

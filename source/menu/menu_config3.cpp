@@ -1,9 +1,6 @@
 
 #include "menu.hpp"
 
-
-#define ARRAY_SIZE(a)	(sizeof a / sizeof a[0])
-
 static const int g_curPage = 3;
 
 template <class T> static inline T loopNum(T i, T s)

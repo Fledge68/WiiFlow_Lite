@@ -32,7 +32,7 @@
 #include <vector>
 #include <string>
 
-#include "smartptr.hpp"
+#include "memory/smartptr.hpp"
 #include "banner.h"
 
 #define IMET_MAX_NAME_LEN 0x2a

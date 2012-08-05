@@ -1,9 +1,11 @@
-#include "pngu.h"
-#include "video.hpp"
+
 #include <string.h>
+
+#include "video.hpp"
+#include "pngu.h"
 #include "Gekko.h"
-#include "gecko.h"
-#include "utils.h"
+#include "gecko/gecko.h"
+#include "loader/utils.h"
 
 #define DEFAULT_FIFO_SIZE	(256 * 1024)
 
@@ -119,11 +121,9 @@ void CVideo::setAA(u8 aa, bool alpha, int width, int height)
 void CVideo::init(void)
 {
 	VIDEO_Init();
-	VIDEO_SetBlack(TRUE);
 	m_wide = CONF_GetAspectRatio() == CONF_ASPECT_16_9;
 	m_rmode = VIDEO_GetPreferredMode(NULL);
 	u32 type = CONF_GetVideo();
-
 	m_50hz = false;
 	if(m_rmode == &TVPal528IntDf)
 	{
@@ -133,7 +133,7 @@ void CVideo::init(void)
 	m_rmode->viWidth = m_wide ? 700 : 672;
 
 	//CONF_VIDEO_NTSC and CONF_VIDEO_MPAL and m_rmode TVEurgb60Hz480IntDf are the same max height and width.
-	if (type == CONF_VIDEO_PAL && m_rmode != &TVEurgb60Hz480IntDf)
+	if(type == CONF_VIDEO_PAL && m_rmode != &TVEurgb60Hz480IntDf)
 	{
 		m_rmode->viHeight = VI_MAX_HEIGHT_PAL;
 		m_rmode->viXOrigin = (VI_MAX_WIDTH_PAL - m_rmode->viWidth) / 2;
@@ -147,15 +147,22 @@ void CVideo::init(void)
 	}
 
 	s8 hoffset = 0;  //Use horizontal offset set in wii menu.
-	if (CONF_GetDisplayOffsetH(&hoffset) == 0)
+	if(CONF_GetDisplayOffsetH(&hoffset) == 0)
 		m_rmode->viXOrigin += hoffset;
+
+	VIDEO_Configure(m_rmode);
+	VIDEO_SetBlack(FALSE);
+	VIDEO_Flush();
+	VIDEO_WaitVSync();
+	if(m_rmode->viTVMode & VI_NON_INTERLACE)
+		VIDEO_WaitVSync();
+	else while(VIDEO_GetNextField())
+		VIDEO_WaitVSync();
 
 	m_frameBuf[0] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(m_rmode));
 	m_frameBuf[1] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(m_rmode));
-	VIDEO_Configure(m_rmode);
-	VIDEO_Flush();
 	m_curFB = 0;
-	m_fifo = MEM1_memalign(32, DEFAULT_FIFO_SIZE);
+	m_fifo = memalign(32, DEFAULT_FIFO_SIZE);
 	memset(m_fifo, 0, DEFAULT_FIFO_SIZE);
 	GX_Init(m_fifo, DEFAULT_FIFO_SIZE);
 	GX_SetCopyClear(CColor(0), 0x00FFFFFF);
@@ -185,15 +192,9 @@ void CVideo::init(void)
 	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
 	for(u32 i = 0; i < 8; i++)
 		GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0+i, GX_TEX_ST, GX_F32, 0);
-	_clearScreen();
-	VIDEO_SetBlack(FALSE);
-	VIDEO_Flush();
-	VIDEO_WaitVSync();
-	if(m_rmode->viTVMode & VI_NON_INTERLACE)
-		VIDEO_WaitVSync();
-
-	m_stencil = MEM1_memalign(32, CVideo::_stencilWidth * CVideo::_stencilHeight);
+	m_stencil = memalign(32, CVideo::_stencilWidth * CVideo::_stencilHeight);
 	memset(m_stencil, 0, CVideo::_stencilWidth * CVideo::_stencilHeight);
+	_clearScreen();
 }
 
 void CVideo::_clearScreen()

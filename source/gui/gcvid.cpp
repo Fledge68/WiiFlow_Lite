@@ -32,8 +32,8 @@
 #include <cassert>
 
 #include "gcvid.h"
-#include "utils.h"
-#include "mem2.hpp"
+#include "loader/utils.h"
+#include "memory/mem2.hpp"
 
 using namespace std;
 
@@ -784,18 +784,13 @@ void decodeRealJpeg(const u8* data, int size, VideoFrame& dest)
 
 	jpeg_read_header(&cinfo, TRUE);
 
-#if 1
-	//set quality/speed parameters to speed:
-	cinfo.do_fancy_upsampling = FALSE;
-	cinfo.do_block_smoothing = FALSE;
-
-	//this actually slows decoding down:
-	//cinfo.dct_method = JDCT_FASTEST;
-#endif
+	cinfo.do_fancy_upsampling = TRUE;
+	cinfo.do_block_smoothing = TRUE;
+	cinfo.dct_method = JDCT_ISLOW;
 
 	jpeg_start_decompress(&cinfo);
 
-	dest.resize(cinfo.output_width, cinfo.output_height);
+	dest.resize(ALIGN(4, cinfo.output_width), ALIGN(4, cinfo.output_height));
 
 	if(cinfo.num_components == 3)
 	{

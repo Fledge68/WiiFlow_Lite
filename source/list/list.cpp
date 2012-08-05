@@ -1,11 +1,11 @@
 #include "list.hpp"
-#include "gecko.h"
-#include "GameTDB.hpp"
-#include "config.hpp"
 #include "types.h"
-#include "channels.h"
-#include "gc.h"
-#include "fileOps.h"
+#include "channel/channels.h"
+#include "config/config.hpp"
+#include "fileOps/fileOps.h"
+#include "gecko/gecko.h"
+#include "gc/gc.hpp"
+#include "gui/GameTDB.hpp"
 
 template <typename T>
 void CList<T>::GetPaths(vector<string> &pathlist, string containing, string directory, bool wbfs_fs, bool dml, bool depth_limit)

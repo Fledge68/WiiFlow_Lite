@@ -19,17 +19,20 @@ TARGET		:=	boot
 BUILD		:=	build
 SOURCES		:=	source \
 				source/banner \
+				source/channel \
 				source/cheats \
 				source/config \
 				source/data \
 				source/devicemounter \
+				source/devicemounter/libwbfs \
+				source/fileOps \
 				source/gc \
 				source/gecko \
 				source/gui \
+				source/homebrew \
+				source/libwbfs \
 				source/list \
 				source/loader \
-				source/channel \
-				source/homebrew \
 				source/memory \
 				source/menu \
 				source/music \
@@ -37,35 +40,14 @@ SOURCES		:=	source \
 				source/plugin \
 				source/unzip \
 				source/xml \
-				source/wstringEx \
-				source/devicemounter/libwbfs
+				source/wstringEx
 
 DATA		:=	data \
 				data/images \
 				data/sounds \
 				data/help
 
-INCLUDES	:=	source \
-				source/banner \
-				source/cheats \
-				source/config \
-				source/devicemounter \
-				source/gc \
-				source/gecko \
-				source/gui \
-				source/list \
-				source/loader \
-				source/channel \
-				source/homebrew \
-				source/memory \
-				source/menu \
-				source/music \
-				source/network \
-				source/plugin \
-				source/unzip \
-				source/wstringEx \
-				source/xml
-				
+INCLUDES	:=	source
 #---------------------------------------------------------------------------------
 # Default build shell script options
 #---------------------------------------------------------------------------------

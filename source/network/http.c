@@ -1,9 +1,12 @@
-#include "http.h"
-#include "gecko.h"
+
 #include <stdlib.h>
 #include <fcntl.h>
 #include <ogc/lwp_watchdog.h>
 #include <time.h>
+
+#include "http.h"
+#include "gecko/gecko.h"
+
 /**
  * Emptyblock is a statically defined variable for functions to return if they are unable
  * to complete a request

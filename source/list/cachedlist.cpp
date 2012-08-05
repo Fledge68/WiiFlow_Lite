@@ -97,10 +97,8 @@ void CachedList<T>::Load(string path, string containing, string m_lastLanguage, 
 		m_update = false;
 		
 		if(!music && pathlist.size() > 0)
-		{
 			Save();
-			pathlist.clear();
-		}
+		pathlist.clear();
 	}
 	else
 	{

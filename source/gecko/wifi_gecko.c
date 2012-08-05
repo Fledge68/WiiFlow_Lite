@@ -31,6 +31,7 @@
 #include <network.h>
 #include <errno.h>
 #include "wifi_gecko.h"
+#include "loader/utils.h"
 
 // set to use TCP socket instead of UDP
 #define WIFI_GECKO_USE_TCP	(0)

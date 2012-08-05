@@ -5,9 +5,9 @@
 #include <ogc/machine/processor.h>
 #include <vector>
 #include <string>
-#include "smartptr.hpp"
-#include "gecko.h"
-#include "mem2.hpp"
+#include "gecko/gecko.h"
+#include "memory/mem2.hpp"
+#include "memory/smartptr.hpp"
 
 #define EXECUTE_ADDR	((u8 *)0x92000000)
 #define BOOTER_ADDR		((u8 *)0x93000000)

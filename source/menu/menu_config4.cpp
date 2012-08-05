@@ -1,11 +1,11 @@
 
 #include "menu.hpp"
-#include "loader/sys.h"
-#include "channels.h"
-#include "gecko.h"
 #include "defines.h"
-#include "nand.hpp"
-#include "cios.h"
+#include "channel/channels.h"
+#include "channel/nand.hpp"
+#include "gecko/gecko.h"
+#include "loader/cios.h"
+#include "loader/sys.h"
 
 static const int g_curPage = 4;
 

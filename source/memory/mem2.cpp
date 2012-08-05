@@ -5,8 +5,8 @@
 
 #include "mem2.hpp"
 #include "mem2alloc.hpp"
-#include "gecko.h"
-#include "utils.h"
+#include "gecko/gecko.h"
+#include "loader/utils.h"
 
 // Forbid the use of MEM2 through malloc
 u32 MALLOC_MEM2 = 0;
@@ -72,6 +72,12 @@ void MEM2_free(void *p)
 void *MEM2_alloc(unsigned int s)
 {
 	return g_mem2gp.allocate(s);
+}
+
+/* Placeholder, will be needed with new memory manager */
+void *MEM2_memalign(unsigned int /* alignment */, unsigned int s)
+{
+	return MEM2_alloc(s);
 }
 
 void *MEM2_realloc(void *p, unsigned int s)

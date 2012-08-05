@@ -1,16 +1,16 @@
 
 #include <ogc/machine/processor.h>
 
-#include "DeviceHandler.hpp"
-#include "wdvd.h"
-#include "disc.h"
-#include "usbstorage.h"
-#include "mem2.hpp"
 #include "alt_ios.h"
+#include "cios.h"
+#include "disc.h"
 #include "sys.h"
 #include "wbfs.h"
-#include "gecko.h"
-#include "cios.h"
+#include "wdvd.h"
+#include "devicemounter/DeviceHandler.hpp"
+#include "devicemounter/usbstorage.h"
+#include "gecko/gecko.h"
+#include "memory/mem2.hpp"
 #include "types.h"
 
 // mload from uloader by Hermes

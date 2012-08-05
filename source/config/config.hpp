@@ -4,13 +4,10 @@
 
 #include <map>
 #include <string>
-
-#include "video.hpp"
-#include "smartptr.hpp"
-#include "wstringEx.hpp"
-
-class CColor;
-class Vector3D;
+#include <vector>
+#include "gui/vector.hpp"
+#include "gui/video.hpp"
+#include "wstringEx/wstringEx.hpp"
 
 class Config
 {

@@ -22,12 +22,12 @@ misrepresented as being the original software.
 distribution.
 */
 #include <malloc.h>
-#include "U8Archive.h"
 #include "LanguageCode.h"
 #include "AnimatedBanner.h"
-#include "text.hpp"
-#include "lz77.h"
-#include "ash.h"
+#include "gui/text.hpp"
+#include "unzip/U8Archive.h"
+#include "unzip/lz77.h"
+#include "unzip/ash.h"
 
 AnimatedBanner::AnimatedBanner()
 {

@@ -1,6 +1,8 @@
+
 #include <stdio.h>
 #include <ogcsys.h>
 #include <string.h>
+
 #include "mload_modules.h"
 #include "apploader.h"
 #include "wdvd.h"
@@ -10,10 +12,10 @@
 #include "wip.h"
 #include "wbfs.h"
 #include "sys.h"
-#include "gecko.h"
 #include "fst.h"
 #include "cios.h"
 #include "types.h"
+#include "gecko/gecko.h"
 
 /* Apploader function pointers */
 typedef int   (*app_main)(void **dst, int *size, int *offset);

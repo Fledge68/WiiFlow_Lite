@@ -5,7 +5,7 @@
 #include <gccore.h>
 #include <vector>
 
-#include "smartptr.hpp"
+#include "memory/smartptr.hpp"
 #include "vector.hpp"
 #include "texture.hpp"
 

@@ -84,7 +84,6 @@
 #include <ctype.h>
 
 #include "MD5.h"
-#include "mem2.hpp"
 
 /* -------------------------------------------------------------------------- **
  * Static Constants:

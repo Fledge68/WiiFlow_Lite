@@ -4,7 +4,7 @@
 
 #include <gccore.h>
 
-#include "smartptr.hpp"
+#include "memory/smartptr.hpp"
 
 struct STexture
 {

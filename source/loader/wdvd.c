@@ -2,7 +2,7 @@
 #include <string.h>
 #include <malloc.h>
 #include <ogcsys.h>
-#include "gecko.h"
+#include "gecko/gecko.h"
 
 /* Constants */
 #define IOCTL_DI_READID					0x70

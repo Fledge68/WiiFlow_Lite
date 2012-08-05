@@ -1,18 +1,18 @@
-#include "channel_launcher.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <malloc.h>
 
-#include "disc.h"
-#include "patchcode.h"
-#include "videopatch.h"
-#include "fst.h"
-#include "lz77.h"
-#include "utils.h"
-#include "fs.h"
-#include "gecko.h"
+#include "channel_launcher.h"
+#include "gecko/gecko.h"
+#include "loader/disc.h"
+#include "loader/fs.h"
+#include "loader/fst.h"
+#include "loader/patchcode.h"
+#include "loader/utils.h"
+#include "loader/videopatch.h"
+#include "unzip/lz77.h"
 
 void __Disc_SetLowMem(void);
 void __Disc_SetTime(void);
