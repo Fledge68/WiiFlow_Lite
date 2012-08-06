@@ -14,6 +14,8 @@ extern const u8 btnemu_png[];
 extern const u8 btnemus_png[];
 extern const u8 btnhomebrew_png[];
 extern const u8 btnhomebrews_png[];
+extern const u8 favoriteson_png[];
+extern const u8 favoritesons_png[];
 
 int Source_curPage;
 int pages;
@@ -26,9 +28,8 @@ u16 m_sourceLblNotice;
 u16 m_sourceLblPage;
 u16 m_sourceBtnPageM;
 u16 m_sourceBtnPageP;
-u16 m_sourceBtnBack;
 u16 m_sourceLblTitle;
-u16 m_sourceBtnSource[36];
+u16 m_sourceBtnSource[12];
 u16 m_sourceLblUser[4];
 STexture m_sourceBg;
 u16 m_sourceBtnDML;
@@ -40,7 +41,6 @@ u16 m_sourceBtnHomebrew;
 void CMenu::_hideSource(bool instant)
 {
 	m_btnMgr.hide(m_sourceLblTitle, instant);
-	m_btnMgr.hide(m_sourceBtnBack, instant);
 	m_btnMgr.hide(m_sourceLblNotice, instant);
 	m_btnMgr.hide(m_sourceLblPage, instant);
 	m_btnMgr.hide(m_sourceBtnPageM, instant);
@@ -58,7 +58,7 @@ void CMenu::_hideSource(bool instant)
 			m_btnMgr.hide(m_sourceLblUser[i], instant);
 	}
 
-	for(i = 0; i < 36; ++i)
+	for(i = 0; i < 12; ++i)
 		m_btnMgr.hide(m_sourceBtnSource[i]);
 }
 
@@ -74,7 +74,6 @@ void CMenu::_showSource(void)
 	}
 
 	m_btnMgr.show(m_sourceLblTitle);
-	m_btnMgr.show(m_sourceBtnBack);
 	
 	for(i = 12; i < 36; ++i)
 	{
@@ -96,17 +95,40 @@ void CMenu::_updateSourceBtns(void)
 		m_btnMgr.show(m_sourceBtnPageM);
 		m_btnMgr.show(m_sourceBtnPageP);
 	}
-	for (u8 i = 0; i < 36; ++i)
-		m_btnMgr.hide(m_sourceBtnSource[i]);		
+	for (u8 i = 0; i < 12; ++i)
+		m_btnMgr.hide(m_sourceBtnSource[i], true);		
 
+	string ImgName;
 	u8 j = (Source_curPage - 1) * 12;
 	
-	for (u8 i = j; i < (j + 12); ++i)
-	{	
-		string source = m_source.getString(fmt("BUTTON_%i", i), "source", "");
+	for (u8 i = 0; i < 12; ++i)
+	{
+		STexture texConsoleImg;
+		STexture texConsoleImgs;
+		
+		ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image", "");
+		if(!STexture::TE_OK == texConsoleImg.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), ImgName.c_str()), GX_TF_RGBA8, ALLOC_MEM2))
+		{
+			if(!STexture::TE_OK ==	texConsoleImg.fromImageFile(fmt("%s/%s", m_sourceDir.c_str(), ImgName.c_str()), GX_TF_RGBA8, ALLOC_MEM2))
+			{
+				texConsoleImg.fromPNG(favoriteson_png);
+			}
+		}
+		ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image_s", "");
+		if(!STexture::TE_OK == texConsoleImgs.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), ImgName.c_str()), GX_TF_RGBA8, ALLOC_MEM2))
+		{
+			if(!STexture::TE_OK ==	texConsoleImgs.fromImageFile(fmt("%s/%s", m_sourceDir.c_str(), ImgName.c_str()), GX_TF_RGBA8, ALLOC_MEM2))
+			{
+				texConsoleImgs.fromPNG(favoritesons_png);
+			}
+		}
+
+		m_btnMgr.setBtnTexture(m_sourceBtnSource[i], texConsoleImg, texConsoleImgs);
+
+		string source = m_source.getString(fmt("BUTTON_%i", i + j), "source", "");
 		if (!source.empty())
 			m_btnMgr.show(m_sourceBtnSource[i]);
-	}	
+	}
 }
 
 void CMenu::_showSourceNotice(void)
@@ -199,11 +221,6 @@ bool CMenu::_Source()
 		}
 		if(BTN_A_PRESSED)
 		{
-			if(m_btnMgr.selected(m_sourceBtnBack))
-			{
-				back = true;
-				break;
-			}
 			if(m_btnMgr.selected(m_sourceBtnUsb))
 			{
 				m_current_view = COVERFLOW_USB;
@@ -245,11 +262,12 @@ bool CMenu::_Source()
 					break;
 				}
 			}
-			for(int i = 0; i < 36; ++i)
+			u8 j = (Source_curPage - 1) * 12;
+			for(int i = 0; i < 12; ++i)
 			{
 				if(m_btnMgr.selected(m_sourceBtnSource[i]))
 				{
-					string source = m_source.getString(fmt("BUTTON_%i", i), "source", "");
+					string source = m_source.getString(fmt("BUTTON_%i", i + j), "source", "");
 					if (source == "wii")
 					{
 						m_current_view = COVERFLOW_USB;
@@ -322,21 +340,21 @@ bool CMenu::_Source()
 							imgSelected = true;
 							
 							u32 sourceMagic;
-							sscanf(m_source.getString(fmt("BUTTON_%i", i), "magic","").c_str(), "%08x", &sourceMagic);
+							sscanf(m_source.getString(fmt("BUTTON_%i", i + j), "magic","").c_str(), "%08x", &sourceMagic);
 							
-							for (u8 j = 0; j < numPlugins; ++j)
+							for (u8 k = 0; k < numPlugins; ++k)
 							{
-								if (sourceMagic == m_plugin.getPluginMagic(j))
+								if (sourceMagic == m_plugin.getPluginMagic(k))
 								{
-									m_plugin.SetEnablePlugin(m_cfg, j, 2);
+									m_plugin.SetEnablePlugin(m_cfg, k, 2);
 								}
 								else
 								{
-									m_plugin.SetEnablePlugin(m_cfg, j, 1);
+									m_plugin.SetEnablePlugin(m_cfg, k, 1);
 								}
 							}
 							
-							int layout = m_source.getInt(fmt("BUTTON_%i", i), "emuflow", 0);
+							int layout = m_source.getInt(fmt("BUTTON_%i", i + j), "emuflow", 0);
 							if(layout != 0)
 								m_cfg.setInt("EMULATOR", "last_cf_mode", layout);
 							break;
@@ -390,7 +408,6 @@ void CMenu::_initSourceMenu(CMenu::SThemeData &theme)
 	_addUserLabels(theme, m_sourceLblUser, ARRAY_SIZE(m_sourceLblUser), "SOURCE");
 	m_sourceBg = _texture(theme.texSet, "SOURCE/BG", "texture", theme.bg);
 	m_sourceLblTitle = _addTitle(theme, "SOURCE/TITLE", theme.titleFont, L"", 20, 20, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
-	m_sourceBtnBack = _addButton(theme, "SOURCE/BACK_BTN", theme.btnFont, L"", 424, 400, 210, 56, theme.btnFontColor);
 	m_sourceLblNotice = _addLabel(theme, "SOURCE/NOTICE", theme.btnFont, L"", 20, 400, 600, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_TOP);
 	m_sourceLblPage = _addLabel(theme, "SOURCE/PAGE_BTN", theme.btnFont, L"", 62, 400, 98, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_sourceBtnPageM = _addPicButton(theme, "SOURCE/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 10, 400, 52, 56);
@@ -400,27 +417,37 @@ void CMenu::_initSourceMenu(CMenu::SThemeData &theme)
 
 	if(!m_source.loaded())
 		m_source.load(fmt("%s/%s", m_sourceDir.c_str(), SOURCE_FILENAME));
-	int page;
+
 	int row;
 	int col;
 	string ImgName;
 	
-	for ( int i = 0; i < 36; ++i)
+	for ( int i = 0; i < 12; ++i)
 	{
 		STexture texConsoleImg;
 		STexture texConsoleImgs;
 	
-		ImgName = m_source.getString(fmt("BUTTON_%i", i),"image", "default.png");
-		texConsoleImg.fromImageFile(fmt("%s/%s", m_sourceDir.c_str(), ImgName.c_str()));
-		ImgName = m_source.getString(fmt("BUTTON_%i", i),"image_s", "default.png");
-		texConsoleImgs.fromImageFile(fmt("%s/%s", m_sourceDir.c_str(), ImgName.c_str()));
+		ImgName = m_source.getString(fmt("BUTTON_%i", i),"image", "");
+		if(!STexture::TE_OK == texConsoleImg.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), ImgName.c_str()), GX_TF_RGBA8, ALLOC_MEM2))
+		{
+			if(!STexture::TE_OK ==	texConsoleImg.fromImageFile(fmt("%s/%s", m_sourceDir.c_str(), ImgName.c_str()), GX_TF_RGBA8, ALLOC_MEM2))
+			{
+				texConsoleImg.fromPNG(favoriteson_png);
+			}
+		}
+		ImgName = m_source.getString(fmt("BUTTON_%i", i),"image_s", "");
+		if(!STexture::TE_OK == texConsoleImgs.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), ImgName.c_str()), GX_TF_RGBA8, ALLOC_MEM2))
+		{
+			if(!STexture::TE_OK ==	texConsoleImgs.fromImageFile(fmt("%s/%s", m_sourceDir.c_str(), ImgName.c_str()), GX_TF_RGBA8, ALLOC_MEM2))
+			{
+				texConsoleImgs.fromPNG(favoritesons_png);
+			}
+		}
 	
-		page = i / 12;
-		row = (i / 4 ) - (page * 3);
-		col = (i - (page * 12)) - (row * 4);
+		row = i / 4;
+		col = i - (row * 4);
 		m_sourceBtnSource[i] = _addPicButton(theme, fmt("SOURCE/SOURCE_BTN_%i", i), texConsoleImg, texConsoleImgs, (30 + 150 * col), (90 + 100 * row), 120, 90);
 	}
-	
 	_setHideAnim(m_sourceBtnChannel, "SOURCE/CHANNEL_BTN", 0, 40, 0.f, 0.f);
 	_setHideAnim(m_sourceBtnHomebrew, "SOURCE/HOMEBREW_BTN", 0, 40, 0.f, 0.f);
 	_setHideAnim(m_sourceBtnUsb, "SOURCE/USB_BTN", 0, 40, 0.f, 0.f);
@@ -431,9 +458,8 @@ void CMenu::_initSourceMenu(CMenu::SThemeData &theme)
 	_setHideAnim(m_sourceLblPage, "SOURCE/PAGE_BTN", 0, 200, 1.f, 0.f);
 	_setHideAnim(m_sourceBtnPageM, "SOURCE/PAGE_MINUS", 0, 200, 1.f, 0.f);
 	_setHideAnim(m_sourceBtnPageP, "SOURCE/PAGE_PLUS", 0, 200, 1.f, 0.f);
-	_setHideAnim(m_sourceBtnBack, "SOURCE/BACK_BTN", 0, 200, 1.f, 0.f);
 
-	for(int i = 0; i < 36; ++i)
+	for(int i = 0; i < 12; ++i)
 	{
 		_setHideAnim(m_sourceBtnSource[i], fmt("SOURCE/SOURCE_BTN_%i", i), 0, 0, 1.f, 0.f);
 	}
@@ -444,6 +470,5 @@ void CMenu::_initSourceMenu(CMenu::SThemeData &theme)
 void CMenu::_textSource(void)
 {
 	m_btnMgr.setText(m_sourceLblTitle, _t("stup1", L"Select Source"));
-	m_btnMgr.setText(m_sourceBtnBack, _t("stup2", L"Exit"));
 	m_btnMgr.setText(m_sourceLblNotice, _t("NMMOff", L"** DISABLED **"));
 }
