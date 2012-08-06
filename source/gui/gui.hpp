@@ -40,6 +40,7 @@ public:
 	u16 addProgressBar(int x, int y, u32 width, u32 height, SButtonTextureSet &texSet);
 	void setText(u16 id, const wstringEx &text, bool unwrap = false);
 	void setText(u16 id, const wstringEx &text, u32 startline, bool unwrap = false);
+	void setBtnTexture(u16 id, STexture &texNormal, STexture &texSelected);
 	void setTexture(u16 id ,STexture &bg);
 	void setTexture(u16 id, STexture &bg, int width, int height);
 	void setProgress(u16 id, float f, bool instant = false);
