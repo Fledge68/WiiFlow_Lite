@@ -328,7 +328,7 @@ void CMenu::_cfTheme(void)
 		{
 			m_theme.clear();
 			m_theme.unload();
-			m_theme.load(fmt("%s/%s.ini", m_themeDir.c_str(), m_cfg.getString("GENERAL", "theme", "defaut").c_str()));
+			m_theme.load(fmt("%s/%s.ini", m_themeDir.c_str(), m_cfg.getString("GENERAL", "theme", "default").c_str()));
 			break;
 		}
 		else if (BTN_UP_PRESSED)
@@ -409,7 +409,7 @@ void CMenu::_cfTheme(void)
 			{
 				m_theme.clear();
 				m_theme.unload();
-				m_theme.load(fmt("%s/%s.ini", m_themeDir.c_str(), m_cfg.getString("GENERAL", "theme", "defaut").c_str()));
+				m_theme.load(fmt("%s/%s.ini", m_themeDir.c_str(), m_cfg.getString("GENERAL", "theme", "default").c_str()));
 				break;
 			}
 			else if (m_btnMgr.selected(m_cfThemeBtnAlt))

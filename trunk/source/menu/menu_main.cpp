@@ -191,7 +191,8 @@ void CMenu::LoadView(void)
 
 	_hideMain(true);
 	m_cf.clear();
-	_showWaitMessage();
+	if(!m_vid.showingWaitMessage())
+		_showWaitMessage();
 
 	_loadList();
 	_showMain();
@@ -253,16 +254,13 @@ int CMenu::main(void)
 {
 	wstringEx curLetter;
 	string prevTheme = m_cfg.getString("GENERAL", "theme", "default");
-	bool use_grab = m_cfg.getBool("GENERAL", "use_grab", false);
+	parental_homebrew = m_cfg.getBool("HOMEBREW", "parental", false);	
 	show_homebrew = !m_cfg.getBool("HOMEBREW", "disable", false);
 	show_channel = !m_cfg.getBool("GENERAL", "hidechannel", false);
 	show_emu = !m_cfg.getBool("EMULATOR", "disable", false);
 	bool dpad_mode = m_cfg.getBool("GENERAL", "dpad_mode", false);
 	bool b_lr_mode = m_cfg.getBool("GENERAL", "b_lr_mode", false);
-	parental_homebrew = m_cfg.getBool("HOMEBREW", "parental", false);	
-
-	if(m_Emulator_boot)
-		m_current_view = COVERFLOW_EMU;
+	bool use_grab = m_cfg.getBool("GENERAL", "use_grab", false);
 
 	m_reload = false;
 	static u32 disc_check = 0;
@@ -282,28 +280,24 @@ int CMenu::main(void)
 		m_GameTDBLoaded=true;
 		m_gametdb.CloseFile();
 	}
-	if (m_cfg.getBool("GENERAL", "startup_menu", false)) 
-	{
-		m_vid.hideWaitMessage();
-		_Source();
-	}
+	if(m_Emulator_boot)
+		m_current_view = COVERFLOW_EMU;
+
 	if (m_cfg.getBool("GENERAL", "update_cache", false))
 	{
 		UpdateCache();
 		m_gameList.Update();
 	}
-	_loadList();
-	if(m_Emulator_boot)
+	LoadView();
+	if (m_cfg.getBool("GENERAL", "startup_menu", false)) 
 	{
-		_loadCFLayout(m_cfg.getInt(_domainFromView(), "last_cf_mode", 1));
-		m_cf.applySettings();
+		_hideMain();
+		if(!_Source())
+			LoadView();
+		else
+		_showMain();
 	}
-
-	_showMain();
-	m_vid.CheckWaitThread(true);
-	m_curGameId.clear();
-	_initCF();
-
+	
 	lwp_t coverStatus = LWP_THREAD_NULL;
 	unsigned int stack_size = (unsigned int)32768;
 	SmartBuf coverstatus_stack = smartMem2Alloc(stack_size);	
@@ -401,7 +395,7 @@ int CMenu::main(void)
 			{
 				_hideMain();
 				_config(1);
-				if(prevTheme != m_cfg.getString("GENERAL", "theme") || m_reload == true)
+				if(prevTheme != m_cfg.getString("GENERAL", "theme"))
 				{
 					m_reload = true;
 					break;
@@ -412,8 +406,6 @@ int CMenu::main(void)
 			{
 				_hideMain();
 				_about();
-				if(m_exit)
-					break;
 				_showMain();
 			}
 			else if(m_btnMgr.selected(m_mainBtnDVD))
@@ -708,7 +700,6 @@ int CMenu::main(void)
 			_hideMain();
 			_CategorySettings();
 			_showMain();
-			m_curGameId = m_cf.getId();
 			_initCF();
 		}
 		if(use_grab)
@@ -829,10 +820,12 @@ int CMenu::main(void)
 				m_cf.mouse(m_vid, chan, -1, -1);
 		}
 	}
+	if(m_reload)
+		_showWaitMessage();
 
 	gprintf("Saving configuration files\n");
 	m_cfg.save();
-	m_cat.save();
+	m_cat.unload();
 //	m_loc.save();
 	gprintf("Wait for dvd\n");
 	LWP_JoinThread(coverStatus, NULL);
