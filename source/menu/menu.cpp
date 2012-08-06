@@ -608,10 +608,6 @@ void CMenu::_loadCFCfg(SThemeData &theme)
 	m_cf.setFont(_font(theme.fontSet, domain, "font", TITLEFONT), m_theme.getColor(domain, "font_color", CColor(0xFFFFFFFF)));
 	// Coverflow Count
 	m_numCFVersions = min(max(2, m_theme.getInt("_COVERFLOW", "number_of_modes", 2)), 15);
-	for (u32 i = 1; i <= m_numCFVersions; ++i)
-		_loadCFLayout(i);
-
-	_loadCFLayout(m_cfg.getInt(_domainFromView(), "last_cf_mode" , 1));
 }
 
 Vector3D CMenu::_getCFV3D(const string &domain, const string &key, const Vector3D &def, bool otherScrnFmt)
