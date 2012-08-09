@@ -59,7 +59,8 @@ s32 Apploader_Run(entry_point *entry, u8 vidMode, GXRModeObj *vmode, bool vipatc
 	/* Calculate apploader length */
 	appldr_len = buffer[5] + buffer[6];
 
-	SYS_SetArena1Hi((void *)0x816FFFF0); //Kills the possibility of codedumps with gprintf
+	/* Clear Apploader region (important buffers are under that) */
+	memset((void*)0x81200000, 0, 0x500000);
 
 	/* Read apploader code */
 	ret = WDVD_Read(appldr, appldr_len, APPLDR_OFFSET + 0x20);
