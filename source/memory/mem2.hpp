@@ -26,6 +26,7 @@ void *MEM2_memalign(unsigned int /* alignment */, unsigned int s);
 void *MEM2_realloc(void *p, unsigned int s);
 unsigned int MEM2_usableSize(void *p);
 unsigned int MEM2_freesize();
+void DisableMEM1allocR();
 
 #ifdef __cplusplus
 }

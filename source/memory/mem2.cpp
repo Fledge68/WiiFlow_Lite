@@ -23,6 +23,20 @@ extern __typeof(memalign) __real_memalign;
 extern __typeof(free) __real_free;
 extern __typeof(malloc_usable_size) __real_malloc_usable_size;
 
+extern __typeof(_malloc_r) __real__malloc_r;
+extern __typeof(_calloc_r) __real__calloc_r;
+extern __typeof(_realloc_r) __real__realloc_r;
+extern __typeof(_memalign_r) __real__memalign_r;
+extern __typeof(_free_r) __real__free_r;
+extern __typeof(_malloc_usable_size_r) __real__malloc_usable_size_r;
+
+bool first_mem = true;
+
+void DisableMEM1allocR()
+{
+	first_mem = false;
+}
+
 void *MEM1_alloc(unsigned int s)
 {
 	return __real_malloc(s);
@@ -111,6 +125,14 @@ void *__wrap_malloc(size_t size)
 	return g_mem2gp.allocate(size);
 }
 
+void *__wrap__malloc_r(struct _reent *r, size_t size)
+{
+	if(first_mem)
+		return __real__malloc_r(r, size);
+
+	return MEM2_alloc(size);
+}
+
 void *__wrap_calloc(size_t n, size_t size)
 {
 	void *p;
@@ -134,6 +156,17 @@ void *__wrap_calloc(size_t n, size_t size)
 	return p;
 }
 
+void *__wrap__calloc_r(struct _reent *r, size_t n, size_t size)
+{
+	if(first_mem)
+		return __real__calloc_r(r, n, size);
+
+	void *p = MEM2_alloc(n*size);
+	if(p)
+		memset(p, 0, n*size);
+	return p;
+}
+
 void *__wrap_memalign(size_t a, size_t size)
 {
 	void *p;
@@ -154,6 +187,14 @@ void *__wrap_memalign(size_t a, size_t size)
 	return g_mem2gp.allocate(size);
 }
 
+void *__wrap__memalign_r(struct _reent *r, size_t a, size_t size)
+{
+	if(first_mem)
+		return __real__memalign_r(r, a, size);
+
+	return MEM2_alloc(size);
+}
+
 void __wrap_free(void *p)
 {
 	if(!p)
@@ -163,6 +204,14 @@ void __wrap_free(void *p)
 		g_mem2gp.release(p);
 	else
 		__real_free(p);
+}
+
+void __wrap__free_r(struct _reent *r, void *p)
+{
+	if(first_mem)
+		__real__free_r(r, p);
+	else
+		MEM2_free(p);
 }
 
 void *__wrap_realloc(void *p, size_t size)
@@ -199,11 +248,27 @@ void *__wrap_realloc(void *p, size_t size)
 	return n;
 }
 
+void *__wrap__realloc_r(struct _reent *r, void *p, size_t size)
+{
+	if(first_mem)
+		return __real__realloc_r(r, p, size);
+
+	return MEM2_realloc(p, size);
+}
+
 size_t __wrap_malloc_usable_size(void *p)
 {
 	if(((u32)p & 0x10000000) != 0)
 		return CMEM2Alloc::usableSize(p);
 	return __real_malloc_usable_size(p);
+}
+
+size_t __wrap__malloc_usable_size_r(struct _reent *r, void *p)
+{
+	if(first_mem)
+		return __real__malloc_usable_size_r(r, p);
+
+	return CMEM2Alloc::usableSize(p);
 }
 
 } ///extern "C"
