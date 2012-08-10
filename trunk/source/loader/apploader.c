@@ -53,21 +53,20 @@ s32 Apploader_Run(entry_point *entry, u8 vidMode, GXRModeObj *vmode, bool vipatc
 
 	/* Read apploader header */
 	ret = WDVD_Read(buffer, 0x20, APPLDR_OFFSET);
-	if (ret < 0)
+	if(ret < 0)
 		return ret;
 
 	/* Calculate apploader length */
 	appldr_len = buffer[5] + buffer[6];
-
-	/* Clear Apploader region (important buffers are under that) */
-	memset((void*)0x81200000, 0, 0x500000);
 
 	/* Read apploader code */
 	ret = WDVD_Read(appldr, appldr_len, APPLDR_OFFSET + 0x20);
 	if(ret < 0)
 		return ret;
 
+	/* Flush into memory */
 	DCFlushRange(appldr, appldr_len);
+	ICInvalidateRange(appldr, appldr_len);
 
 	/* Set apploader entry function */
 	app_entry appldr_entry = (app_entry)buffer[4];
@@ -78,7 +77,7 @@ s32 Apploader_Run(entry_point *entry, u8 vidMode, GXRModeObj *vmode, bool vipatc
 	/* Initialize apploader */
 	appldr_init(gprintf);
 
-	while (appldr_main(&dst, &len, &offset))
+	while(appldr_main(&dst, &len, &offset))
 	{
 		/* Read data from DVD */
 		WDVD_Read(dst, len, (u64)(offset << 2));
@@ -86,7 +85,7 @@ s32 Apploader_Run(entry_point *entry, u8 vidMode, GXRModeObj *vmode, bool vipatc
 	}
 
 	free_wip();
-	if (hooktype != 0)
+	if(hooktype != 0)
 	{
 		if(hookpatched)
 			ocarina_do_code();
@@ -99,7 +98,6 @@ s32 Apploader_Run(entry_point *entry, u8 vidMode, GXRModeObj *vmode, bool vipatc
 
 	/* ERROR 002 fix (WiiPower) */
 	*(u32 *)0x80003140 = *(u32 *)0x80003188;
-
 	DCFlushRange((void*)0x80000000, 0x3f00);
 
 	return 0;
