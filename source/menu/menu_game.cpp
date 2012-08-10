@@ -493,8 +493,10 @@ void CMenu::_game(bool launch)
 					_hideGame();
 					if(_wbfsOp(CMenu::WO_REMOVE_GAME))
 					{
-						m_gameSound->Stop();
+						m_gameSound->FreeMemory();
 						CheckGameSoundThread();
+						ClearGameSoundThreadStack();
+						m_banner->DeleteBanner();
 						break;
 					}
 					_showGame();
@@ -1421,9 +1423,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		return;
 
 	DisableMEM1allocR();
-	RunApploader(offset, videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, returnTo);
-	gprintf("Booting game\n");
-	Disc_BootPartition();
+	Disc_BootWiiGame(offset, videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, returnTo);
 }
 
 void CMenu::_initGameMenu(CMenu::SThemeData &theme)

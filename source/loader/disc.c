@@ -388,7 +388,7 @@ s32 Disc_BootPartition()
 	/* Originally from tueidj - taken from NeoGamma (thx) */
 	*(vu32*)0xCC003024 = 1;
 
-	if (hooktype != 0)
+	if(hooktype != 0)
 	{
 		asm volatile (
 			"lis %r3, appentrypoint@h\n"
@@ -418,8 +418,9 @@ s32 Disc_BootPartition()
 	return 0;
 }
 
-void RunApploader(u64 offset, u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, int aspectRatio, u32 returnTo)
+void Disc_BootWiiGame(u64 offset, u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, int aspectRatio, u32 returnTo)
 {
+	/* Open Partition */
 	WDVD_OpenPartition(offset);
 
 	/* Setup low memory */
@@ -430,6 +431,9 @@ void RunApploader(u64 offset, u8 vidMode, bool vipatch, bool countryString, u8 p
 
 	/* Run apploader */
 	Apploader_Run(&p_entry, vidMode, vmode, vipatch, countryString, patchVidMode, aspectRatio, returnTo);
-
 	appentrypoint = (u32)p_entry;
+
+	/* Boot Game */
+	gprintf("Entry Point: 0x%08x\n", appentrypoint);
+	Disc_BootPartition();
 }
