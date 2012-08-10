@@ -120,6 +120,7 @@ void CVideo::setAA(u8 aa, bool alpha, int width, int height)
 
 void CVideo::init(void)
 {
+	/* General Video Init */
 	VIDEO_Init();
 	m_wide = CONF_GetAspectRatio() == CONF_ASPECT_16_9;
 	m_rmode = VIDEO_GetPreferredMode(NULL);
@@ -150,15 +151,7 @@ void CVideo::init(void)
 	if(CONF_GetDisplayOffsetH(&hoffset) == 0)
 		m_rmode->viXOrigin += hoffset;
 
-	VIDEO_Configure(m_rmode);
-	VIDEO_SetBlack(FALSE);
-	VIDEO_Flush();
-	VIDEO_WaitVSync();
-	if(m_rmode->viTVMode & VI_NON_INTERLACE)
-		VIDEO_WaitVSync();
-	else while(VIDEO_GetNextField())
-		VIDEO_WaitVSync();
-
+	/* GX Init */
 	m_frameBuf[0] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(m_rmode));
 	m_frameBuf[1] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(m_rmode));
 	m_curFB = 0;
@@ -194,7 +187,15 @@ void CVideo::init(void)
 		GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0+i, GX_TEX_ST, GX_F32, 0);
 	m_stencil = memalign(32, CVideo::_stencilWidth * CVideo::_stencilHeight);
 	memset(m_stencil, 0, CVideo::_stencilWidth * CVideo::_stencilHeight);
+
+	/* Configure Video */
+	VIDEO_Configure(m_rmode);
 	_clearScreen();
+	VIDEO_SetBlack(FALSE);
+	VIDEO_Flush();
+	VIDEO_WaitVSync();
+	if(m_rmode->viTVMode & VI_NON_INTERLACE)
+		VIDEO_WaitVSync();
 }
 
 void CVideo::_clearScreen()
