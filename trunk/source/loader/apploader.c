@@ -108,7 +108,7 @@ void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipa
 	PrinceOfPersiaPatch();
 	NewSuperMarioBrosPatch();
 	// Patch NoDiscInDrive only for IOS 249 < rev13 or IOS 222/223/224
-	if((is_ios_type(IOS_TYPE_WANIN, IOS_GetVersion()) && IOS_GetRevision() < 13) || (is_ios_type(IOS_TYPE_HERMES, IOS_GetVersion())))
+	if((CurrentIOS.Type == IOS_TYPE_WANIN && CurrentIOS.Revision < 13) || CurrentIOS.Type == IOS_TYPE_HERMES)
 		patch_NoDiscinDrive(dst, len);
 	patchVideoModes(dst, len, vidMode, vmode, patchVidModes);
 	if(hooktype != 0 && dogamehooks(dst, len, false))
@@ -117,7 +117,7 @@ void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipa
 		vidolpatcher(dst, len);
 	if(configbytes[0] != 0xCD)
 		langpatcher(dst, len);
-	if(is_ios_type(IOS_TYPE_WANIN, IOS_GetVersion()) && IOS_GetRevision() < 13)
+	if(CurrentIOS.Type == IOS_TYPE_WANIN && CurrentIOS.Revision < 13)
 		Anti_002_fix(dst, len);
 	if(countryString)
 		PatchCountryStrings(dst, len); // Country Patch by WiiPower

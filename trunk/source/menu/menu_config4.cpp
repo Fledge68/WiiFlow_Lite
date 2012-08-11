@@ -5,6 +5,7 @@
 #include "channel/nand.hpp"
 #include "gecko/gecko.h"
 #include "loader/cios.h"
+#include "loader/nk.h"
 #include "loader/sys.h"
 
 static const int g_curPage = 4;

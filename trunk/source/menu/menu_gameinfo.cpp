@@ -2,7 +2,6 @@
 #include "menu.hpp"
 
 #include "gui/GameTDB.hpp"
-#include "loader/alt_ios.h"
 #include "loader/sys.h"
 
 extern const u8		wifi1_png[];

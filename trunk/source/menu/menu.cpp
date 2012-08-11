@@ -19,6 +19,7 @@
 #include "loader/alt_ios.h"
 #include "loader/cios.h"
 #include "loader/fs.h"
+#include "loader/nk.h"
 #include "loader/playlog.h"
 #include "loader/sys.h"
 #include "loader/wbfs.h"
@@ -280,10 +281,7 @@ void CMenu::init(void)
 	if(!neek2o())
 		_load_installed_cioses();
 	else
-	{
-		extern int mainIOS;
-		_installed_cios[mainIOS] = mainIOS;
-	}
+		_installed_cios[CurrentIOS.Version] = CurrentIOS.Version;
 
 	snprintf(m_app_update_drive, sizeof(m_app_update_drive), "%s:/", drive);
 	m_dataDir = sfmt("%s:/%s", drive, APPDATA_DIR);
@@ -2307,12 +2305,12 @@ void CMenu::_load_installed_cioses()
 	for(u8 slot = 200; slot < 254; slot++)
 	{
 		u8 base = 1;
-		if(D2X(slot, &base))
+		if(IOS_D2X(slot, &base))
 		{
 			gprintf("Found d2x base %u in slot %u\n", base, slot);
 			_installed_cios[slot] = base;
 		}
-		else if(!is_ios_type(IOS_TYPE_NO_CIOS, slot))
+		else if(IOS_GetType(slot) != IOS_TYPE_NO_CIOS)
 		{
 			gprintf("Found cIOS in slot %u\n", slot);
 			_installed_cios[slot] = slot;

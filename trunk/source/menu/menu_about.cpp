@@ -158,11 +158,5 @@ void CMenu::_textAbout(void)
 			false
 		);
 
-	Nand::Instance()->Disable_Emu();
-	iosinfo_t * iosInfo = GetInfo(mainIOS);
-	if(iosInfo != NULL)
-	{
-		m_btnMgr.setText(m_aboutLblIOS, wfmt(_fmt("ios", L"IOS%i base %i v%i"), mainIOS, iosInfo->baseios, iosInfo->version), true);
-		free(iosInfo);
-	}
+	m_btnMgr.setText(m_aboutLblIOS, wfmt(_fmt("ios", L"IOS%i base %i v%i"), CurrentIOS.Version, CurrentIOS.Base, CurrentIOS.Revision), true);
 }
