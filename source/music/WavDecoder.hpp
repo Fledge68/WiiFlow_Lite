@@ -53,6 +53,29 @@ typedef struct
 	u32 size;
 } SWaveChunk;
 
+typedef struct
+{
+	u32 magicDATA;
+	u32 size;
+	/* Bleh */
+	u32 Manufacturer;
+	u32 Product;
+	u32 SamplePeriod;
+	u32 MIDIUnityNote;
+	u32 MIDIPitchFraction;
+	u32 SMPTEFormat;
+	u32 SMPTEOffset;
+	u32 SampleLoops;
+	u32 SamplerData;
+	/* The important stuff */
+	u32 Identifier;
+	u32 Type;
+	u32 Start;
+	u32 End;
+	u32 Fraction;
+	u32 PlayCount;
+} SWaveSmplChunk;
+
 class WavDecoder : public SoundDecoder
 {
 public:
