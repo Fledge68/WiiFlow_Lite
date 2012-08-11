@@ -59,6 +59,7 @@ WavDecoder::~WavDecoder()
 
 void WavDecoder::OpenFile()
 {
+	DataOffset = 0;
 	SWaveHdr Header;
 	SWaveFmtChunk FmtChunk;
 	memset(&Header, 0, sizeof(SWaveHdr));
@@ -77,13 +78,19 @@ void WavDecoder::OpenFile()
 		CloseFile();
 		return;
 	}
-	else if(FmtChunk.magicFMT != 'fmt ')
+	if(FmtChunk.magicFMT == 'bext') //Stupid metadata
+	{
+		DataOffset += le32(FmtChunk.size) + 8;
+		file_fd->seek(sizeof(SWaveHdr) + le32(FmtChunk.size) + 8, SEEK_SET);
+		file_fd->read((u8 *)&FmtChunk, sizeof(SWaveFmtChunk));
+	}
+	if(FmtChunk.magicFMT != 'fmt ')
 	{
 		CloseFile();
 		return;
 	}
 
-	DataOffset = sizeof(SWaveHdr)+le32(FmtChunk.size)+8;
+	DataOffset += sizeof(SWaveHdr) + le32(FmtChunk.size) + 8;
 	file_fd->seek(DataOffset, SEEK_SET);
 	SWaveChunk DataChunk;
 	file_fd->read((u8 *) &DataChunk, sizeof(SWaveChunk));
