@@ -130,6 +130,12 @@ void SoundDecoder::Decode()
 				Rewind();
 				continue;
 			}
+			else if(LoopStart)
+			{
+				Rewind();
+				CurPos = LoopStart;
+				continue;
+			}
 			else
 			{
 				EndOfFile = true;

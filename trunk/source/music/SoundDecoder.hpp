@@ -68,6 +68,7 @@ public:
 	virtual bool IsLastBufferReady() { return SoundBuffer.IsLastBufferReady(); };
 	virtual bool IsEOF() { return EndOfFile; };
 	virtual void SetLoop(bool l) { Loop = l; };
+	virtual void SetLoopStart(int s) { LoopStart = s; };
 	virtual u8 GetSoundType() { return SoundType; };
 	virtual void ClearBuffer() { SoundBuffer.ClearBuffer(); };
 	virtual bool IsStereo() { return (GetFormat() == VOICE_STEREO_16BIT || GetFormat() == VOICE_STEREO_8BIT); };
@@ -82,6 +83,7 @@ protected:
 	int SoundBlockSize;
 	int CurPos;
 	bool Loop;
+	int LoopStart;
 	bool EndOfFile;
 	bool Decoding;
 	bool ExitRequested;

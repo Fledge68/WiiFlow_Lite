@@ -121,6 +121,22 @@ void WavDecoder::OpenFile()
 	else if(le16(FmtChunk.channels) == 2 && le16(FmtChunk.bps) == 16 && le16(FmtChunk.alignment) <= 4)
 		Format = VOICE_STEREO_16BIT;
 
+	SWaveChunk LoopChunk;
+	SWaveSmplChunk SmplChunk;
+	SmplChunk.Start = 0;
+	file_fd->seek(DataOffset + DataSize, SEEK_SET);
+	while(file_fd->read((u8 *)&LoopChunk, sizeof(SWaveChunk)) == sizeof(SWaveChunk))
+	{
+		if(LoopChunk.magicDATA == 'smpl')
+		{
+			file_fd->seek(-8, SEEK_CUR);
+			file_fd->read((u8*)&SmplChunk, sizeof(SWaveSmplChunk));
+			SmplChunk.Start = ((le32(SmplChunk.Start) * le16(FmtChunk.channels) * le16(FmtChunk.bps) / 8) + 8091) & ~8091;
+			break;
+		}
+		file_fd->seek(le32(LoopChunk.size), SEEK_CUR);
+	}
+	SetLoopStart(SmplChunk.Start);
 	Decode();
 }
 
