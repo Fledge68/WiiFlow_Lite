@@ -4,8 +4,8 @@
 #include "lockMutex.hpp"
 #include "channel/nand.hpp"
 #include "fileOps/fileOps.h"
-#include "loader/alt_ios.h"
 #include "loader/cios.h"
+#include "loader/nk.h"
 #include "loader/sys.h"
 
 // NandEmulation menu
@@ -201,9 +201,7 @@ void CMenu::_enableNandEmu(bool fromconfig)
 	if(!disable)
 	{
 		bool isD2XnewerThanV6 = false;
-		Nand::Instance()->Disable_Emu();
-		iosinfo_t * iosInfo = GetInfo(mainIOS);
-		if(iosInfo->version > 6 || neek2o())
+		if(CurrentIOS.Revision > 6 && CurrentIOS.Type == IOS_TYPE_D2X)
 			isD2XnewerThanV6 = true;
 		if(m_current_view == COVERFLOW_CHANNEL && !m_cfg.getBool("NAND", "disable", true) && !neek2o() && !m_tempView)
 			Nand::Instance()->Enable_Emu();

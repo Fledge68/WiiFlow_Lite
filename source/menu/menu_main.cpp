@@ -10,6 +10,7 @@
 #include "loader/alt_ios.h"
 #include "loader/cios.h"
 #include "loader/disc.h"
+#include "loader/nk.h"
 #include "loader/sys.h"
 #include "loader/wbfs.h"
 #include "loader/wdvd.h"
@@ -153,6 +154,7 @@ void CMenu::_showMain(void)
 				if(!m_cfg.getBool("NAND", "disable", true))
 				{
 					Nand::Instance()->Disable_Emu();
+					DeviceHandler::Instance()->MountAll();
 					_hideMain();
 					if(!_AutoCreateNand())
 						m_cfg.setBool("NAND", "disable", true);
@@ -633,10 +635,8 @@ int CMenu::main(void)
 				{
 					_showWaitMessage();
 					_hideMain();
-					Nand::Instance()->Disable_Emu();
 					bool isD2XnewerThanV6 = false;
-					iosinfo_t * iosInfo = GetInfo(mainIOS);
-					if (iosInfo->version > 6)
+					if(CurrentIOS.Revision > 6 && CurrentIOS.Type == IOS_TYPE_D2X)
 						isD2XnewerThanV6 = true;
 					if(m_current_view == COVERFLOW_CHANNEL && m_cfg.getInt("NAND", "emulation", 0))
 						Nand::Instance()->Enable_Emu();

@@ -8,9 +8,6 @@ extern "C" {
 #endif
 
 bool loadIOS(int ios, bool launch_game, bool emu_channel);
-u32 get_ios_base();
-
-extern int mainIOS;
 
 #ifdef __cplusplus
 }

@@ -24,6 +24,7 @@ CMenu *mainMenu;
 extern "C" 
 { 
 	extern void __exception_setreload(int t);
+	extern int mainIOS;
 
 	void ShowError(const wstringEx &error) { mainMenu->error(error); }
 	void HideWaitMessage() { mainMenu->_hideWaitMessage(); }
@@ -69,13 +70,7 @@ int main(int argc, char **argv)
 	// Load Custom IOS
 	gprintf("Loading cIOS: %d\n", mainIOS);	
 	bool iosOK = loadIOS(mainIOS, false, false);
-
-	u8 mainIOSBase = 0;
-	D2X(mainIOS, &mainIOSBase);
-	if(!mainIOSBase)
-		mainIOSBase = get_ios_base();
-	iosOK = iosOK && mainIOSBase > 0;
-	gprintf("Loaded cIOS: %u has base %u\n", mainIOS, mainIOSBase);	
+	iosOK = iosOK && CurrentIOS.Type != IOS_TYPE_NO_CIOS;
 #else
 	bool iosOK = true;
 #endif

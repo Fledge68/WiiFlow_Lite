@@ -34,7 +34,7 @@
 #include "ext2.h"
 #include "sdhc.h"
 #include "usbstorage.h"
-#include "loader/cios.h"
+#include "loader/nk.h"
 #include "loader/utils.h"
 #include "loader/wbfs.h"
 

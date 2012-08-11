@@ -29,9 +29,24 @@
 #include <malloc.h>
 
 #include "nk.h"
-#include "cios.h"
 #include "armboot.h"
 #include "memory/mem2.hpp"
+#include "gecko/gecko.h"
+
+bool checked = false;
+bool neek = false;
+
+bool neek2o(void)
+{
+	if(!checked)
+	{
+		u32 num = 0;
+		neek = !(ISFS_ReadDir("/sneek", NULL, &num));
+		gprintf("WiiFlow is in %s mode\n", neek ? "neek2o" : "real nand");
+		checked = true;
+	}
+	return neek;
+}
 
 s32 Launch_nk(u64 TitleID, const char *nandpath)
 {

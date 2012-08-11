@@ -56,7 +56,6 @@ extern const u8 gc_ogg[];
 extern const u32 gc_ogg_size;
 
 extern u32 boot2version;
-extern int mainIOS;
 static u64 sm_title_id[8]  ATTRIBUTE_ALIGN(32);
 
 bool m_zoom_banner = false;
@@ -934,7 +933,7 @@ int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id, bool emu_channel)
 		}
 	}
 	else if(gameIOS != 57)
-		gameIOS = mainIOS;
+		gameIOS = CurrentIOS.Version;
 	gprintf("Changed requested IOS to %d.\n", gameIOS);
 
 	// remap IOS to CIOS
@@ -970,7 +969,7 @@ int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id, bool emu_channel)
 			return LOAD_IOS_FAILED;
 	}
 
-	if(gameIOS != mainIOS)
+	if(gameIOS != CurrentIOS.Version)
 	{
 		gprintf("Reloading IOS into %d\n", gameIOS);
 		if(!loadIOS(gameIOS, true, false))
@@ -1053,7 +1052,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	m_gcfg2.save(true);
 	m_cat.save(true);
 	m_cfg.save(true);
-	
+
 	if(useNK2o && !emu_disabled)
 	{
 		cleanup(true);
@@ -1064,9 +1063,9 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		}
 		while(1);
 	}
-	
-	cleanup();
-	
+	else
+		cleanup();
+
 	if(!forwarder)
 	{
 		if(!emu_disabled)
@@ -1083,12 +1082,12 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		if(_loadIOS(gameIOS, userIOS, id, !emu_disabled) == LOAD_IOS_FAILED)
 			return;
 	}
-	if(rtrn != NULL && strlen(rtrn) == 4)
+	if(CurrentIOS.Type == IOS_TYPE_D2X && rtrn != NULL && strlen(rtrn) == 4)
 	{
 		int rtrnID = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
 
 		static ioctlv vector[1]  ATTRIBUTE_ALIGN(32);
-		sm_title_id[0] = (((u64)(0x00010001) << 32) | (rtrnID&0xFFFFFFFF));
+		sm_title_id[0] = (((u64)(0x00010001) << 32) | (rtrnID & 0xFFFFFFFF));
 
 		vector[0].data = sm_title_id;
 		vector[0].len = 8;
@@ -1344,13 +1343,12 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 #else
 	bool iosLoaded = true;
 #endif
-	u8 base;
-	if(D2X(IOS_GetVersion(), &base))
+	if(CurrentIOS.Type == IOS_TYPE_D2X)
 	{
 		if(!m_directLaunch && returnTo)
 		{
 			static ioctlv vector[1]  ATTRIBUTE_ALIGN(32);
-			sm_title_id[0] = (((u64)(0x00010001) << 32) | (returnTo&0xFFFFFFFF));
+			sm_title_id[0] = (((u64)(0x00010001) << 32) | (returnTo & 0xFFFFFFFF));
 			vector[0].data = sm_title_id;
 			vector[0].len = 8;
 			s32 ESHandle = IOS_Open("/dev/es", 0);
@@ -1358,7 +1356,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			IOS_Close(ESHandle);
 			returnTo = 0;
 		}
-		IOSReloadBlock(IOS_GetVersion(), true);
+		IOSReloadBlock(CurrentIOS.Version, true);
 	}
 	if(emulate_mode && !neek2o())
 	{
@@ -1411,15 +1409,23 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 #ifndef DOLPHIN
 	USBStorage2_Deinit();
 	USB_Deinitialize();
-	shadow_mload();
+	if(CurrentIOS.Type == IOS_TYPE_HERMES)
+	{
+		if(dvd)
+			Hermes_Disable_EHC();
+		else
+			Hermes_shadow_mload();
+	}
 #endif
 
 	/* Last check if the Disc ID is correct */
-	char discid[32] ATTRIBUTE_ALIGN(32);
-	memset(discid, 0, sizeof(discid));
-	WDVD_UnencryptedRead(discid, 32, 0);
-	gprintf("WDVD_UnencryptedRead ID: %s (expected: %s)\n", discid, id.c_str());
-	if(strncasecmp(id.c_str(), discid, 6) != 0)
+	void *ReadBuffer = MEM2_memalign(32, 32);
+	WDVD_UnencryptedRead(ReadBuffer, 32, 0);
+	string ReadedID((char*)ReadBuffer, 6);
+	MEM2_free(ReadBuffer);
+
+	gprintf("WDVD_UnencryptedRead ID: %s (expected: %s)\n", ReadedID.c_str(), id.c_str());
+	if(strncasecmp(id.c_str(), ReadedID.c_str(), 6) != 0)
 		return;
 
 	DisableMEM1allocR();

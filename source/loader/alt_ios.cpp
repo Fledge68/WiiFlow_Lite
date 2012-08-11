@@ -4,6 +4,7 @@
 #include "alt_ios.h"
 #include "cios.h"
 #include "disc.h"
+#include "nk.h"
 #include "sys.h"
 #include "wbfs.h"
 #include "wdvd.h"
@@ -81,7 +82,16 @@ void load_dip_249()
 bool loadIOS(int ios, bool launch_game, bool emu_channel)
 {
 #ifndef DOLPHIN
-	gprintf("Reloading into IOS %i from %i (AHBPROT: %u)...\n", ios, IOS_GetVersion(), HAVE_AHBPROT);
+	if(neek2o())
+	{
+		memset(&CurrentIOS, 0, sizeof(IOS_Info));
+		CurrentIOS.Version = 254;
+		CurrentIOS.Type = IOS_TYPE_D2X;
+		CurrentIOS.Base = 254;
+		CurrentIOS.Revision = 999;
+		DCFlushRange(&CurrentIOS, sizeof(IOS_Info));
+		return true;
+	}
 
 	Close_Inputs();
 	DeviceHandler::Instance()->UnMountAll();
@@ -89,21 +99,17 @@ bool loadIOS(int ios, bool launch_game, bool emu_channel)
 	USBStorage2_Deinit();
 	mload_close();
 
+	gprintf("Reloading into IOS %i from %i (AHBPROT: %u)...\n", ios, IOS_GetVersion(), HAVE_AHBPROT);
 	ISFS_Deinitialize();
 	bool iosOK = IOS_ReloadIOS(ios) == 0;
 	ISFS_Initialize();
 
-	gprintf("%s, Current IOS: %i\n", iosOK ? "OK" : "FAILED!", IOS_GetVersion());
-	if(is_ios_type(IOS_TYPE_HERMES, IOS_GetVersion()))
-	{
+	IOS_GetCurrentIOSInfo();
+	if(CurrentIOS.Type == IOS_TYPE_HERMES)
 		load_ehc_module_ex();
-		gprintf("Hermes cIOS Base IOS%i\n", get_ios_base());
-	}
-	else if(is_ios_type(IOS_TYPE_WANIN, IOS_GetVersion()) && IOS_GetRevision() >= 18)
-	{
+	else if(CurrentIOS.Type == IOS_TYPE_WANIN && CurrentIOS.Revision >= 18)
 		load_dip_249();
-		gprintf("Waninkoko cIOS Base IOS%i\n", get_ios_base());
-	}
+
 	if(!emu_channel)
 	{
 		if(launch_game)
@@ -120,16 +126,4 @@ bool loadIOS(int ios, bool launch_game, bool emu_channel)
 #else
 	return true;
 #endif
-}
-
-u32 get_ios_base()
-{
-	u32 revision = IOS_GetRevision();
-	if (is_ios_type(IOS_TYPE_WANIN, IOS_GetVersion()) && revision >= 17)
-		return wanin_mload_get_IOS_base();
-	
-	else if (is_ios_type(IOS_TYPE_HERMES, IOS_GetVersion()) && revision >= 4)
-		return mload_get_IOS_base();
-
-	return 0;
 }

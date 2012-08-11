@@ -24,7 +24,6 @@ if [ $GENERATE -eq 1 ];
 then
 
 	cat <<EOF > $FILENAME
-#include "alt_ios.h"
 int mainIOS = $VERSION;
 EOF
 fi

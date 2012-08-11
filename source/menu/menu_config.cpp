@@ -1,8 +1,7 @@
 
 #include "menu.hpp"
 #include "channel/nand.hpp"
-#include "loader/alt_ios.h"
-#include "loader/cios.h"
+#include "loader/nk.h"
 #include "loader/sys.h"
 
 const int CMenu::_nbCfgPages = 6;
