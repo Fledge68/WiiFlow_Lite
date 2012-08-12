@@ -65,6 +65,7 @@ void SoundDecoder::Init()
 	SoundBlocks = 8; //Settings.SoundblockCount;
 	SoundBlockSize = 8092; //Settings.SoundblockSize;
 	CurPos = 0;
+	LoopStart = 0;
 	Loop = false;
 	EndOfFile = false;
 	Decoding = false;

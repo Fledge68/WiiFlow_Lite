@@ -58,7 +58,7 @@ ios			:=	249
 CFLAGS	 =	-g -O2 -Wall -Wextra -Wno-multichar $(MACHDEP) $(INCLUDE) -DHAVE_CONFIG_H
 CXXFLAGS =	$(CFLAGS)
 
-LDFLAGS	 =	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map,--section-start,.init=0x80A00000,-wrap,malloc,-wrap,_malloc_r,-wrap,free,-wrap,_free_r,-wrap,memalign,-wrap,_memalign_r,-wrap,calloc,-wrap,_calloc_r,-wrap,realloc,-wrap,_realloc_r,-wrap,malloc_usable_size,-wrap,_malloc_usable_size_r
+LDFLAGS	 =	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map,--section-start,.init=0x80A00000,-wrap,malloc,-wrap,free,-wrap,memalign,-wrap,calloc,-wrap,realloc,-wrap,malloc_usable_size
 
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project

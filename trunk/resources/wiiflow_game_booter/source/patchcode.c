@@ -26,7 +26,6 @@
 
 #include "apploader.h"
 #include "patchcode.h"
-#include "gecko/gecko.h"
 
 extern void patchhook(u32 address, u32 len);
 extern void patchhook2(u32 address, u32 len);
@@ -379,9 +378,6 @@ bool PatchReturnTo( void *Address, int Size, u32 id )
 		returnToPatched = 1;
 	}
 
-	if(returnToPatched)
-		gprintf("Return to %08X patched with old method.\n", id);
-
 	return returnToPatched;
 }
 
@@ -390,10 +386,7 @@ s32 IOSReloadBlock(u8 reqios, bool enable)
 	s32 ESHandle = IOS_Open("/dev/es", 0);
 
 	if (ESHandle < 0)
-	{
-		gprintf("Reload IOS Block failed, cannot open /dev/es\n");
 		return ESHandle;
-	}
 
 	static ioctlv vector[2] ATTRIBUTE_ALIGN(32);
 	static u32 mode ATTRIBUTE_ALIGN(32);
@@ -410,8 +403,6 @@ s32 IOSReloadBlock(u8 reqios, bool enable)
 	}
 
 	s32 r = IOS_Ioctlv(ESHandle, 0xA0, 2, 0, vector);
-	gprintf("%s Block IOS Reload for cIOS%uv%u %s\n", (enable ? "Enable" : "Disable"), IOS_GetVersion(), IOS_GetRevision() % 100, r < 0 ? "FAILED!" : "SUCCEEDED!");
-
 	IOS_Close(ESHandle);
 
 	return r;
@@ -441,7 +432,6 @@ void PatchAspectRatio(void *addr, u32 len, u8 aspect)
 		   && (memcmp(addr_start + 4 + sizeof(aspect_searchpattern1), aspect_searchpattern2, sizeof(aspect_searchpattern2)) == 0))
 		{
 			*((u32 *)(addr_start+0x44)) = (0x38600000 | aspect);
-			gprintf("Aspect ratio patched to: %s\n", aspect ? "16:9" : "4:3");
 			break;
 		}
 		addr_start += 4;

@@ -1,10 +1,6 @@
 #ifndef _CHAN_LAUNCHER
 #define _CHAN_LAUNCHER
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
-
 #include <gctypes.h>
 #include <gccore.h>
 
@@ -17,9 +13,5 @@ u8 *GetDol(u64 title, u32 bootcontent);
 
 bool Identify(u64 titleid);
 bool Identify_GenerateTik(signed_blob **outbuf, u32 *outlen);
-
-#ifdef __cplusplus
-}
-#endif	/* __cplusplus */
 
 #endif	/* _CHAN_LAUNCHER */

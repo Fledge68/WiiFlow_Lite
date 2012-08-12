@@ -23,7 +23,7 @@
 #include "gui/Gekko.h"
 #include "homebrew/homebrew.h"
 #include "loader/alt_ios.h"
-#include "loader/patchcode.h"
+#include "loader/external_booter.hpp"
 #include "loader/sys.h"
 #include "loader/wdvd.h"
 #include "loader/alt_ios.h"
@@ -983,6 +983,33 @@ int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id, bool emu_channel)
 	return LOAD_IOS_NOT_NEEDED;
 }
 
+s32 IOSReloadBlock(u8 reqios, bool enable)
+{
+	s32 ESHandle = IOS_Open("/dev/es", 0);
+
+	if (ESHandle < 0)
+		return ESHandle;
+
+	static ioctlv vector[2] ATTRIBUTE_ALIGN(32);
+	static u32 mode ATTRIBUTE_ALIGN(32);
+	static u32 ios ATTRIBUTE_ALIGN(32);
+
+	mode = enable ? 2 : 0;
+	vector[0].data = &mode;
+	vector[0].len  = sizeof(u32);
+
+	if (enable) {
+		ios = reqios;
+		vector[1].data = &ios;
+		vector[1].len  = sizeof(u32);
+	}
+
+	s32 r = IOS_Ioctlv(ESHandle, 0xA0, 2, 0, vector);
+	IOS_Close(ESHandle);
+
+	return r;
+}
+
 static const char systems[11] = { 'C', 'E', 'F', 'J', 'L', 'M', 'N', 'P', 'Q', 'W', 'H' };
 
 void CMenu::_launchChannel(dir_discHdr *hdr)
@@ -1111,7 +1138,13 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 			return;
 		}
 	}
-	if(!forwarder)
+	if(forwarder)
+	{
+		WII_Initialize();
+		if(WII_LaunchTitle(gameTitle) < 0)
+			Sys_LoadMenu();	
+	}
+	else 
 	{
 		entry = channel.Load(gameTitle);
 		setLanguage(language);
@@ -1120,15 +1153,8 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		if(cheat)
 			_loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", id.c_str()));
 		ocarina_load_code(cheatFile.get(), cheatSize);
+		BootChannel(entry, gameTitle, gameIOS, videoMode, vipatch, countryPatch, patchVidMode, aspectRatio);
 	}
-	if(forwarder)
-	{
-		WII_Initialize();
-		if(WII_LaunchTitle(gameTitle) < 0)
-			Sys_LoadMenu();	
-	}
-	else if(!BootChannel(entry, gameTitle, gameIOS, videoMode, vipatch, countryPatch, patchVidMode, aspectRatio))
-		Sys_LoadMenu();
 }
 
 void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
@@ -1399,16 +1425,11 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			return;
 		}
 	}
-
-	/* Find game partition offset */
-	u64 offset;
-	s32 ret = Disc_FindPartition(&offset);
-	if(ret < 0)
-		return;
-
 #ifndef DOLPHIN
 	USBStorage2_Deinit();
 	USB_Deinitialize();
+#endif
+
 	if(CurrentIOS.Type == IOS_TYPE_HERMES)
 	{
 		if(dvd)
@@ -1416,20 +1437,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		else
 			Hermes_shadow_mload();
 	}
-#endif
-
-	/* Last check if the Disc ID is correct */
-	void *ReadBuffer = MEM2_memalign(32, 32);
-	WDVD_UnencryptedRead(ReadBuffer, 32, 0);
-	string ReadedID((char*)ReadBuffer, 6);
-	MEM2_free(ReadBuffer);
-
-	gprintf("WDVD_UnencryptedRead ID: %s (expected: %s)\n", ReadedID.c_str(), id.c_str());
-	if(strncasecmp(id.c_str(), ReadedID.c_str(), 6) != 0)
-		return;
-
-	DisableMEM1allocR();
-	Disc_BootWiiGame(offset, videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, returnTo);
+	WiiFlow_ExternalBooter(videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, returnTo, TYPE_WII_GAME);
 }
 
 void CMenu::_initGameMenu(CMenu::SThemeData &theme)

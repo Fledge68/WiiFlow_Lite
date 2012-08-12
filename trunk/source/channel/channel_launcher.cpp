@@ -7,18 +7,12 @@
 #include "channel_launcher.h"
 #include "gecko/gecko.h"
 #include "loader/disc.h"
+#include "loader/external_booter.hpp"
 #include "loader/fs.h"
 #include "loader/fst.h"
-#include "loader/patchcode.h"
 #include "loader/utils.h"
-#include "loader/videopatch.h"
 #include "unzip/lz77.h"
-
-void __Disc_SetLowMem(void);
-void __Disc_SetTime(void);
-void _unstub_start();
-
-extern void __exception_closeall();
+#include "types.h"
 
 typedef void (*entrypoint) (void);
 
@@ -33,33 +27,12 @@ typedef struct _dolheader
 	u32 padding[7];
 } __attribute__((packed)) dolheader;
 
-u32 entryPoint;
+void *dolchunkoffset[18];
+u32	dolchunksize[18];
+u32	dolchunkcount;
 
 s32 BootChannel(u32 entry, u64 chantitle, u32 ios, u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, int aspectRatio)
 {
-	gprintf("Loading Channel...\n");
-	entryPoint = entry;
-
-	/* Select an appropriate video mode */
-	u32 vmode_reg = 0;
-	GXRModeObj *vmode = Disc_SelectVMode(vidMode, chantitle, &vmode_reg);
-
-	/* Set time */
-	__Disc_SetTime();
-	
-	/* Set low memory */
-	__Disc_SetLowMem();
-
-	if (hooktype != 0)
-		ocarina_do_code();
-
-	PatchChannel(vidMode, vmode, vipatch, countryString, patchVidMode, aspectRatio);
-
-	entrypoint appJump = (entrypoint)entryPoint;
-
-	/* Set an appropriate video mode */
-	Disc_SetVMode(vmode, vmode_reg);
-
     // IOS Version Check
     *(vu32*)0x80003140 = ((ios << 16)) | 0xFFFF;
     *(vu32*)0x80003188 = ((ios << 16)) | 0xFFFF;
@@ -71,69 +44,10 @@ s32 BootChannel(u32 entry, u64 chantitle, u32 ios, u8 vidMode, bool vipatch, boo
     *(vu32 *)0x80000000 = TITLE_LOWER(chantitle);
 	DCFlushRange((void *)0x80000000, 4);
 
-	gprintf("Jumping to entrypoint %08x\n", entryPoint);
-
-	/* Shutdown IOS subsystems */
-	u32 level = IRQ_Disable();
-	__IOS_ShutdownSubsystems();
-	__exception_closeall();
-
-	/* Originally from tueidj - taken from NeoGamma (thx) */
-	*(vu32*)0xCC003024 = 1;
-
-	if (entryPoint != 0x3400)
-	{
-		if(hooktype != 0)
-		{
-			asm volatile (
-				"lis %r3, entryPoint@h\n"
-				"ori %r3, %r3, entryPoint@l\n"
-				"lwz %r3, 0(%r3)\n"
-				"mtlr %r3\n"
-				"lis %r3, 0x8000\n"
-				"ori %r3, %r3, 0x18A8\n"
-				"nop\n"
-				"mtctr %r3\n"
-				"bctr\n"
-			);
-		}
-		else
-			appJump();
-	}
- 	else if(hooktype != 0)
-	{
-		asm volatile (
-			"lis %r3, returnpoint@h\n"
-			"ori %r3, %r3, returnpoint@l\n"
-			"mtlr %r3\n"
-			"lis %r3, 0x8000\n"
-			"ori %r3, %r3, 0x18A8\n"
-			"nop\n"
-			"mtctr %r3\n"
-			"bctr\n"
-			"returnpoint:\n"
-			"bl DCDisable\n"
-			"bl ICDisable\n"
-			"li %r3, 0\n"
-			"mtsrr1 %r3\n"
-			"lis %r4, entryPoint@h\n"
-			"ori %r4,%r4,entryPoint@l\n"
-			"lwz %r4, 0(%r4)\n"
-			"mtsrr0 %r4\n"
-			"rfi\n"
-		);
-	}
-	else
-		_unstub_start();
-
-	IRQ_Restore(level);
-
+	ExternalBooter_ChannelSetup(dolchunkoffset, dolchunksize, dolchunkcount, entry);
+	WiiFlow_ExternalBooter(vidMode, vipatch, countryString, patchVidMode, aspectRatio, 0, TYPE_CHANNEL);
 	return 0;
 }
-
-void *dolchunkoffset[18];
-u32	dolchunksize[18];
-u32	dolchunkcount;
 
 u32 LoadChannel(u8 *buffer)
 {
@@ -163,7 +77,7 @@ u32 LoadChannel(u8 *buffer)
 		dolchunkoffset[dolchunkcount] = (void *)dolfile->section_start[i];
 		dolchunksize[dolchunkcount] = dolfile->section_size[i];			
 
-		gprintf("Moving section %u from offset %08x to %08x-%08x...\n", i, dolfile->section_pos[i], dolchunkoffset[dolchunkcount], dolchunkoffset[dolchunkcount]+dolchunksize[dolchunkcount]);
+		gprintf("Moving section %u from offset %08x to %08x-%08x...\n", i, dolfile->section_pos[i], dolchunkoffset[dolchunkcount], (u32)dolchunkoffset[dolchunkcount]+dolchunksize[dolchunkcount]);
 		memmove(dolchunkoffset[dolchunkcount], buffer + dolfile->section_pos[i], dolchunksize[dolchunkcount]);
 		DCFlushRange(dolchunkoffset[dolchunkcount], dolchunksize[dolchunkcount]);
 		ICInvalidateRange(dolchunkoffset[dolchunkcount], dolchunksize[dolchunkcount]);
@@ -171,30 +85,6 @@ u32 LoadChannel(u8 *buffer)
 		dolchunkcount++;
 	}
 	return dolfile->entry_point;
-}
-
-void PatchChannel(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio)
-{
-	bool hookpatched = false;
-
-	u32 i;
-	for (i=0; i < dolchunkcount; i++)
-	{		
-		patchVideoModes(dolchunkoffset[i], dolchunksize[i], vidMode, vmode, patchVidModes);
-		if (vipatch) vidolpatcher(dolchunkoffset[i], dolchunksize[i]);
-		if (configbytes[0] != 0xCD) langpatcher(dolchunkoffset[i], dolchunksize[i]);
-		if (countryString) PatchCountryStrings(dolchunkoffset[i], dolchunksize[i]);
-		if (aspectRatio != -1) PatchAspectRatio(dolchunkoffset[i], dolchunksize[i], aspectRatio);
-
-		if (hooktype != 0)
-			if (dogamehooks(dolchunkoffset[i], dolchunksize[i], true))
-				hookpatched = true;
-	}
-	if (hooktype != 0 && !hookpatched)
-	{
-		gprintf("Error: Could not patch the hook\n");
-		gprintf("Ocarina and debugger won't work\n");
-	}
 }
 
 bool Identify_GenerateTik(signed_blob **outbuf, u32 *outlen)

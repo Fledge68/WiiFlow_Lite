@@ -32,6 +32,7 @@
 #include "fileOps/fileOps.h"
 #include "loader/utils.h"
 #include "loader/disc.h"
+#include "memory/memory.h"
 
 // DIOS-MIOS
 DML_CFG *DMLCfg = NULL;
@@ -384,8 +385,31 @@ void GC_SetVideoMode(u8 videomode, u8 videoSetting)
 	__SYS_UnlockSram(1); // 1 -> write changes
 	while(!__SYS_SyncSram());
 
-	/* Set an appropriate video mode */
-	Disc_SetVMode(vmode, vmode_reg);
+	/* Set video mode register */
+	*Video_Mode = vmode_reg;
+	DCFlushRange((void*)Video_Mode, 4);
+
+	/* Set video mode */
+	if(vmode != 0)
+		VIDEO_Configure(vmode);
+
+	/* Setup video */
+	VIDEO_SetBlack(FALSE);
+	VIDEO_Flush();
+	VIDEO_WaitVSync();
+	if(vmode->viTVMode & VI_NON_INTERLACE)
+		VIDEO_WaitVSync();
+	else while(VIDEO_GetNextField())
+		VIDEO_WaitVSync();
+
+	/* Set black and flush */
+	VIDEO_SetBlack(TRUE);
+	VIDEO_Flush();
+	VIDEO_WaitVSync();
+	if(vmode->viTVMode & VI_NON_INTERLACE)
+		VIDEO_WaitVSync();
+	else while(VIDEO_GetNextField())
+		VIDEO_WaitVSync();
 }
 
 u8 get_wii_language()

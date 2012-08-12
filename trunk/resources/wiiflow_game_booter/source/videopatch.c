@@ -147,39 +147,6 @@ GXRModeObj TVMpal480Prog =
     }
 };
 
-GXRModeObj TVPal576IntDfScale =
-{
-    VI_TVMODE_PAL_INT,      // viDisplayMode
-    640,             // fbWidth
-    480,             // efbHeight
-    576,             // xfbHeight
-    40,         // viXOrigin
-    0,        // viYOrigin
-    640,             // viWidth
-    576,             // viHeight
-    VI_XFBMODE_DF,   // xFBmode
-    GX_FALSE,        // field_rendering
-    GX_FALSE,        // aa
-
-    // sample points arranged in increasing Y order
-	{
-		{6,6},{6,6},{6,6},  // pix 0, 3 sample points, 1/12 units, 4 bits each
-		{6,6},{6,6},{6,6},  // pix 1
-		{6,6},{6,6},{6,6},  // pix 2
-		{6,6},{6,6},{6,6}   // pix 3
-	},
-    // vertical filter[7], 1/64 units, 6 bits each
-	{
-		 8,         // line n-1
-		 8,         // line n-1
-		10,         // line n
-		12,         // line n
-		10,         // line n
-		 8,         // line n+1
-		 8          // line n+1
-	}
-};
-
 static const GXRModeObj *g_vidmodes[] = {
 	&TVNtsc480Int,
 	&TVNtsc480IntDf,
@@ -247,7 +214,6 @@ static GXRModeObj* PAL2NTSC[]={
 	&TVPal528Int,			&TVNtsc480IntAa,
 	&TVPal528IntDf,			&TVNtsc480IntDf,
 	&TVPal574IntDfScale,	&TVNtsc480IntDf,
-	&TVPal576IntDfScale,	&TVNtsc480IntDf,
 	&TVEurgb60Hz240Ds,		&TVNtsc240Ds,
 	&TVEurgb60Hz240DsAa,	&TVNtsc240DsAa,
 	&TVEurgb60Hz240Int,		&TVNtsc240Int,
