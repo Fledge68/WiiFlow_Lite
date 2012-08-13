@@ -508,16 +508,11 @@ void CMenu::cleanup(bool hb)
 	SoundHandler::DestroyInstance();
 	soundDeinit();
 
-	if(!m_reload)
-	{
-		if(!hb)
-			DeviceHandler::DestroyInstance();
-		m_vid.CheckWaitThread(true);
-		m_vid.cleanup();
-		m_cf.shutdown();
-	}
-	else
-		m_cf.clear();
+	if(!hb)
+		DeviceHandler::DestroyInstance();
+	m_vid.CheckWaitThread(true);
+	m_vid.cleanup();
+	m_cf.shutdown();
 
 	wiiLightOff();
 	_deinitNetwork();
