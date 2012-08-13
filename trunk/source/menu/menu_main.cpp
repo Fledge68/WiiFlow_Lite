@@ -220,7 +220,7 @@ void CMenu::exitHandler(int ExitTo)
 {
 	gprintf("Exit WiiFlow called\n");
 	Nand::Instance()->Disable_Emu();
-	if(!m_disable_exit)
+	if(!m_disable_exit || ExitTo == 0)
 	{
 		m_exit = true;
 		if(ExitTo == 1) // HBC
@@ -244,7 +244,7 @@ void CMenu::exitHandler(int ExitTo)
 	}
 	
 	m_reload = (BTN_B_HELD || m_disable_exit);
-	if(m_exit && !m_reload) //D'oh!
+	if(m_exit)
 	{
 		// Mark exiting to prevent soundhandler from restarting
 		extern bool exiting;
@@ -821,8 +821,13 @@ int CMenu::main(void)
 		}
 	}
 	if(m_reload)
+	{
+		m_cf.clear();
 		_showWaitMessage();
-
+		exitHandler(0); //Making wiiflow ready to boot something
+		_launchHomebrew(fmt("%s/boot.dol", m_appDir.c_str()), m_homebrewArgs);
+		return 0;
+	}
 	gprintf("Saving configuration files\n");
 	m_cfg.save();
 	m_cat.unload();
@@ -832,10 +837,7 @@ int CMenu::main(void)
 	coverStatus = LWP_THREAD_NULL;
 	if(coverstatus_stack.get())
 		coverstatus_stack.release();
-	if(!m_reload)
-		return 0;
-	cleanup();
-	return 1;
+	return 0;
 }
 
 void CMenu::_initMainMenu(CMenu::SThemeData &theme)

@@ -562,6 +562,7 @@ void CMenu::_game(bool launch)
 
 				m_cf.clear();
 				_showWaitMessage();
+				exitHandler(0); //Making wiiflow ready to boot something
 
 				if(hdr->type != TYPE_HOMEBREW && hdr->type != TYPE_PLUGIN)
 				{
