@@ -1533,6 +1533,7 @@ u32 gameSoundThreadStackSize = (u32)32768;
 void CMenu::_gameSoundThread(CMenu *m)
 {
 	m->m_gameSoundHdr = m->m_cf.getHdr();
+	m->m_gamesound_changed = false;
 
 	if(m->m_cf.getHdr()->type == TYPE_PLUGIN)
 	{
@@ -1566,6 +1567,7 @@ void CMenu::_gameSoundThread(CMenu *m)
 		cached_bnr_file = (u8*)malloc(cached_bnr_size);
 		if(cached_bnr_file == NULL)
 		{
+			m->m_gameSound->FreeMemory();
 			m_banner->DeleteBanner();
 			m->m_gameSoundHdr = NULL;
 			return;
@@ -1605,6 +1607,7 @@ void CMenu::_gameSoundThread(CMenu *m)
 			custom_bnr_file = (u8*)malloc(custom_bnr_size);
 			if(custom_bnr_file == NULL)
 			{
+				m->m_gameSound->FreeMemory();
 				m_banner->DeleteBanner();
 				m->m_gameSoundHdr = NULL;
 				return;
@@ -1613,7 +1616,6 @@ void CMenu::_gameSoundThread(CMenu *m)
 			fclose(fp);
 		}
 	}
-	m->m_gamesound_changed = false;
 	u32 sndSize = 0;
 	u8 *soundBin = NULL;
 
@@ -1626,8 +1628,9 @@ void CMenu::_gameSoundThread(CMenu *m)
 		m_banner->LoadBanner(banner, &m->m_vid, m_wbf1_font.get(), m_wbf2_font.get());
 		soundBin = banner->GetFile((char *)"sound.bin", &sndSize);
 	}
-	if(banner == NULL || soundBin == NULL || sndSize == 0)
+	else
 	{
+		m->m_gameSound->FreeMemory();
 		m_banner->DeleteBanner();
 		m->m_gameSoundHdr = NULL;
 		delete banner;
@@ -1640,28 +1643,38 @@ void CMenu::_gameSoundThread(CMenu *m)
 		fclose(fp);
 	}
 	delete banner;
-
-	if(((IMD5Header *)soundBin)->fcc == 'IMD5')
+	if(soundBin != NULL)
 	{
-		u32 newSize = 0;
-		u8 *newSound = DecompressCopy(soundBin, sndSize, &newSize);
-		if(newSound == NULL || newSize == 0 || !m->m_gameSound->Load(newSound, newSize))
+		if(((IMD5Header *)soundBin)->fcc == 'IMD5')
 		{
-			if(newSound != NULL)
-				free(newSound);
-			m_banner->DeleteBanner();
-			m->m_gameSoundHdr = NULL;
-			return;
+			u32 newSize = 0;
+			u8 *newSound = DecompressCopy(soundBin, sndSize, &newSize);
+			if(newSound == NULL || newSize == 0 || !m->m_gameSound->Load(newSound, newSize))
+			{
+				m->m_gameSound->FreeMemory();
+				m_banner->DeleteBanner();
+				m->m_gameSoundHdr = NULL;
+				return;
+			}
+			free(soundBin);
 		}
-		free(soundBin);
+		else
+			m->m_gameSound->Load(soundBin, sndSize);
+
+		if(m->m_gameSound->IsLoaded())
+			m->m_gamesound_changed = true;
+		else
+		{
+			m->m_gameSound->FreeMemory();
+			m_banner->DeleteBanner();
+		}
 	}
 	else
-		m->m_gameSound->Load(soundBin, sndSize);
-
-	if(m->m_gameSound->IsLoaded())
+	{
+		gprintf("WARNING: No sound found in banner!\n");
 		m->m_gamesound_changed = true;
-	else
-		m_banner->DeleteBanner();
+		m->m_gameSound->FreeMemory();
+	}
 	m->m_gameSoundHdr = NULL;
 }
 
