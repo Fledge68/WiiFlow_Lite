@@ -16,9 +16,11 @@ u16 m_aboutLblTitle;
 u16 m_aboutLblInfo;
 u16 m_aboutLblUser[4];
 u16 m_aboutLblIOS;
+bool showHelp;
 
-void CMenu::_about(void)
+void CMenu::_about(bool help)
 {
+	showHelp = help;
 	int amount_of_skips = 0;
 	int thanks_x = 0, thanks_y = 0;
 	u32 thanks_w = 0, thanks_h = 0;
@@ -99,7 +101,7 @@ void CMenu::_initAboutMenu(CMenu::SThemeData &theme)
 	_addUserLabels(theme, m_aboutLblUser, ARRAY_SIZE(m_aboutLblUser), "ABOUT");
 	m_aboutBg = _texture(theme.texSet, "ABOUT/BG", "texture", theme.bg);
 	m_aboutLblTitle = _addTitle(theme, "ABOUT/TITLE", theme.titleFont, L"", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
-	m_aboutLblInfo = _addText(theme, "ABOUT/INFO", theme.txtFont, L"", 40, 120, 560, 280, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
+	m_aboutLblInfo = _addText(theme, "ABOUT/INFO", theme.txtFont, L"", 40, 115, 560, 270, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
 	m_aboutLblIOS = _addLabel(theme, "ABOUT/IOS", theme.txtFont, L"", 240, 400, 360, 56, theme.txtFontColor, FTGX_JUSTIFY_RIGHT | FTGX_ALIGN_MIDDLE);
 
 	_setHideAnim(m_aboutLblTitle, "ABOUT/TITLE", 0, 0, -2.f, 0.f);
@@ -111,43 +113,48 @@ void CMenu::_initAboutMenu(CMenu::SThemeData &theme)
 
 void CMenu::_textAbout(void)
 {
-	m_btnMgr.setText(m_aboutLblTitle, wfmt( L"%s (%s-r%s)", APP_NAME, APP_VERSION, SVN_REV), false);
-
-	wstringEx help_text;
-	FILE *f = fopen(fmt("%s/%s.txt", m_helpDir.c_str(), m_curLanguage.c_str()), "r");
-	if(f)
+	if(showHelp)
 	{
-		fseek(f, 0, SEEK_END);
-		u32 fsize = ftell(f);
-		char *help = (char*)malloc(fsize + 1); //+1 for null character
-		memset(help, 0, fsize + 1);
-		fseek(f, 0, SEEK_SET);
-		fread(help, 1, fsize, f);
-		help[fsize] = '\0';
-		help_text.fromUTF8(help);
-		free(help);
-		fclose(f);
+		m_btnMgr.setText(m_aboutLblTitle, _t("about10", L"Help Guide"));
+		wstringEx help_text;
+		FILE *f = fopen(fmt("%s/%s.txt", m_helpDir.c_str(), m_curLanguage.c_str()), "r");
+		if(f)
+		{
+			fseek(f, 0, SEEK_END);
+			u32 fsize = ftell(f);
+			char *help = (char*)MEM2_alloc(fsize+1); //+1 for null character
+			fseek(f, 0, SEEK_SET);
+			fread(help, 1, fsize, f);
+			help[fsize] = '\0';
+			help_text.fromUTF8(help);
+			MEM2_free(help);
+			fclose(f);
+		}
+		else
+			help_text.fromUTF8((char*)english_txt);
+
+		m_btnMgr.setText(m_aboutLblInfo, wfmt(L"%s", help_text.toUTF8().c_str()), false);
 	}
 	else
-		help_text.fromUTF8((char*)english_txt);
+	{
+		m_btnMgr.setText(m_aboutLblTitle, wfmt( L"%s (%s-r%s)", APP_NAME, APP_VERSION, SVN_REV), false);
+	
+		wstringEx developers(wfmt(_fmt("about6", L"\nCurrent Developers:\n%s"), DEVELOPERS));
+		wstringEx pDevelopers(wfmt(_fmt("about7", L"Past Developers:\n%s"), PAST_DEVELOPERS));
 
-	wstringEx developers(wfmt(_fmt("about6", L"\nCurrent Developers:\n%s"), DEVELOPERS));
-	wstringEx pDevelopers(wfmt(_fmt("about7", L"Past Developers:\n%s"), PAST_DEVELOPERS));
+		wstringEx origLoader(wfmt(_fmt("about1", L"Original Loader By:\n%s"), LOADER_AUTHOR));
+		wstringEx origGUI(wfmt(_fmt("about2", L"Original GUI By:\n%s"), GUI_AUTHOR));
 
-	wstringEx origLoader(wfmt(_fmt("about1", L"Original Loader By:\n%s"), LOADER_AUTHOR));
-	wstringEx origGUI(wfmt(_fmt("about2", L"Original GUI By:\n%s"), GUI_AUTHOR));
+		wstringEx codethx(wfmt(_fmt("about8", L"Bits of Code Obtained From:\n%s"), THANKS_CODE));
+		wstringEx sites(wfmt(_fmt("about9", L"Supporting Websites:\n%s"), THANKS_SITES));
 
-	wstringEx codethx(wfmt(_fmt("about8", L"Bits of Code Obtained From:\n%s"), THANKS_CODE));
-	wstringEx sites(wfmt(_fmt("about9", L"Supporting Websites:\n%s"), THANKS_SITES));
+		wstringEx translator(wfmt(L", %s", m_loc.getWString(m_curLanguage, "translation_author").toUTF8().c_str()));
+		wstringEx thanks(wfmt(_fmt("about4", L"Thanks To:\n%s"), THANKS));
+		if(translator.size() > 3)
+			thanks.append(translator);
 
-	wstringEx translator(wfmt(L", %s", m_loc.getWString(m_curLanguage, "translation_author").toUTF8().c_str()));
-	wstringEx thanks(wfmt(_fmt("about4", L"Thanks To:\n%s"), THANKS));
-	if(translator.size() > 3)
-		thanks.append(translator);
-
-	m_btnMgr.setText(m_aboutLblInfo,
-			wfmt(L"%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s",
-			help_text.toUTF8().c_str(),
+		m_btnMgr.setText(m_aboutLblInfo,
+			wfmt(L"%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s",
 			developers.toUTF8().c_str(),
 			pDevelopers.toUTF8().c_str(),
 			origLoader.toUTF8().c_str(),
@@ -157,6 +164,7 @@ void CMenu::_textAbout(void)
 			thanks.toUTF8().c_str()),
 			false
 		);
+	}
 
 	m_btnMgr.setText(m_aboutLblIOS, wfmt(_fmt("ios", L"IOS%i base %i v%i"), CurrentIOS.Version, CurrentIOS.Base, CurrentIOS.Revision), true);
 }

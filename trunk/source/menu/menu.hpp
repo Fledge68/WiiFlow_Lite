@@ -1,6 +1,6 @@
 #ifndef __MENU_HPP
 #define __MENU_HPP
-//#define SHOWMEM 1
+//#define SHOWMEM
 //#define SHOWMEMGECKO
 
 #include <ogc/pad.h>
@@ -966,7 +966,7 @@ private:
 	void _game(bool launch = false);
 	void _download(string gameId = string());
 	void _code(void);
-	void _about(void);
+	void _about(bool help = false);
 	bool _wbfsOp(WBFS_OP op);
 	void _cfTheme(void);
 	void _system(void);
@@ -975,7 +975,7 @@ private:
 	void _CheatSettings();
 	bool _Source();
 	void _PluginSettings();
-	void _CategorySettings(bool fromGameSet=false);
+	void _CategorySettings(bool fromGameSet = false);
 	bool _Home();
 	bool _ExitTo();
 	//
