@@ -10,6 +10,7 @@ u32 m_exittoLblTitle;
 u32 m_homeBtnSettings;
 u32 m_homeBtnReloadCache;
 u32 m_homeBtnUpdate;
+u32 m_homeBtnHelp;
 u32 m_homeBtnAbout;
 u32 m_homeBtnExitTo;
 
@@ -64,6 +65,14 @@ bool CMenu::_Home(void)
 				}
 				_showHome();
 				m_cf.startCoverLoader();
+			}
+			else if(m_btnMgr.selected(m_homeBtnHelp))
+			{
+				_hideHome();
+				_about(true);
+				if(m_exit)
+					break;
+				_showHome();
 			}
 			else if(m_btnMgr.selected(m_homeBtnAbout))
 			{
@@ -158,6 +167,7 @@ void CMenu::_showHome(void)
 	m_btnMgr.show(m_homeBtnSettings);
 	m_btnMgr.show(m_homeBtnReloadCache);
 	m_btnMgr.show(m_homeBtnUpdate);
+	m_btnMgr.show(m_homeBtnHelp);
 	m_btnMgr.show(m_homeBtnAbout);	
 	m_btnMgr.show(m_homeBtnExitTo);
 }
@@ -181,6 +191,7 @@ void CMenu::_hideHome(bool instant)
 	m_btnMgr.hide(m_homeBtnSettings, instant);
 	m_btnMgr.hide(m_homeBtnReloadCache, instant);
 	m_btnMgr.hide(m_homeBtnUpdate, instant);
+	m_btnMgr.hide(m_homeBtnHelp, instant);
 	m_btnMgr.hide(m_homeBtnAbout, instant);	
 	m_btnMgr.hide(m_homeBtnExitTo, instant);
 }
@@ -206,15 +217,17 @@ void CMenu::_initHomeAndExitToMenu(CMenu::SThemeData &theme)
 
 	_setHideAnim(m_homeLblTitle, "HOME/TITLE", 0, 0, -2.f, 0.f);
 
-	m_homeBtnSettings = _addButton(theme, "HOME/SETTINGS", theme.btnFont, L"", 220, 120, 270, 56, theme.btnFontColor);
-	m_homeBtnReloadCache = _addButton(theme, "HOME/RELOAD_CACHE", theme.btnFont, L"", 220, 180, 270, 56, theme.btnFontColor);
-	m_homeBtnUpdate = _addButton(theme, "HOME/UPDATE", theme.btnFont, L"", 220, 240, 270, 56, theme.btnFontColor);
-	m_homeBtnAbout = _addButton(theme, "HOME/ABOUT", theme.btnFont, L"", 220, 300, 270, 56, theme.btnFontColor);
-	m_homeBtnExitTo = _addButton(theme, "HOME/EXIT_TO", theme.btnFont, L"", 220, 360, 270, 56, theme.btnFontColor);
+	m_homeBtnSettings = _addButton(theme, "HOME/SETTINGS", theme.btnFont, L"", 60, 120, 250, 56, theme.btnFontColor);
+	m_homeBtnReloadCache = _addButton(theme, "HOME/RELOAD_CACHE", theme.btnFont, L"", 60, 230, 250, 56, theme.btnFontColor);
+	m_homeBtnUpdate = _addButton(theme, "HOME/UPDATE", theme.btnFont, L"", 60, 340, 250, 56, theme.btnFontColor);
+	m_homeBtnHelp = _addButton(theme, "HOME/HELP", theme.btnFont, L"", 330, 120, 250, 56, theme.btnFontColor);
+	m_homeBtnAbout = _addButton(theme, "HOME/ABOUT", theme.btnFont, L"", 330, 230, 250, 56, theme.btnFontColor);
+	m_homeBtnExitTo = _addButton(theme, "HOME/EXIT_TO", theme.btnFont, L"", 330, 340, 250, 56, theme.btnFontColor);
 
 	_setHideAnim(m_homeBtnSettings, "HOME/SETTINGS", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_homeBtnReloadCache, "HOME/RELOAD_CACHE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_homeBtnUpdate, "HOME/UPDATE", 0, 0, -2.f, 0.f);
+	_setHideAnim(m_homeBtnHelp, "HOME/HELP", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_homeBtnAbout, "HOME/ABOUT", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_homeBtnExitTo, "HOME/EXIT_TO", 0, 0, -2.f, 0.f);
 
@@ -226,11 +239,11 @@ void CMenu::_initHomeAndExitToMenu(CMenu::SThemeData &theme)
 
 	_setHideAnim(m_exittoLblTitle, "EXIT_TO/TITLE", 0, 0, -2.f, 0.f);
 
-	m_homeBtnExitToHBC = _addButton(theme, "EXIT_TO/HBC", theme.btnFont, L"", 220, 120, 270, 56, theme.btnFontColor);
-	m_homeBtnExitToMenu = _addButton(theme, "EXIT_TO/MENU", theme.btnFont, L"", 220, 180, 270, 56, theme.btnFontColor);
-	m_homeBtnExitToPriiloader = _addButton(theme, "EXIT_TO/PRIILOADER", theme.btnFont, L"", 220, 240, 270, 56, theme.btnFontColor);
-	m_homeBtnExitToBootmii = _addButton(theme, "EXIT_TO/BOOTMII", theme.btnFont, L"", 220, 300, 270, 56, theme.btnFontColor);
-	m_homeBtnExitToNeek = _addButton(theme, "EXIT_TO/NEEK", theme.btnFont, L"", 220, 360, 270, 56, theme.btnFontColor);
+	m_homeBtnExitToHBC = _addButton(theme, "EXIT_TO/HBC", theme.btnFont, L"", 185, 120, 270, 56, theme.btnFontColor);
+	m_homeBtnExitToMenu = _addButton(theme, "EXIT_TO/MENU", theme.btnFont, L"", 185, 180, 270, 56, theme.btnFontColor);
+	m_homeBtnExitToPriiloader = _addButton(theme, "EXIT_TO/PRIILOADER", theme.btnFont, L"", 185, 240, 270, 56, theme.btnFontColor);
+	m_homeBtnExitToBootmii = _addButton(theme, "EXIT_TO/BOOTMII", theme.btnFont, L"", 185, 300, 270, 56, theme.btnFontColor);
+	m_homeBtnExitToNeek = _addButton(theme, "EXIT_TO/NEEK", theme.btnFont, L"", 185, 360, 270, 56, theme.btnFontColor);
 	_setHideAnim(m_homeBtnExitToHBC, "EXIT_TO/HBC", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_homeBtnExitToMenu, "EXIT_TO/MENU", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_homeBtnExitToPriiloader, "EXIT_TO/PRIILOADER", 0, 0, -2.f, 0.f);
@@ -248,6 +261,7 @@ void CMenu::_textHome(void)
 	m_btnMgr.setText(m_homeBtnSettings, _t("home1", L"Settings"));
 	m_btnMgr.setText(m_homeBtnReloadCache, _t("home2", L"Reload Cache"));
 	m_btnMgr.setText(m_homeBtnUpdate, _t("home3", L"Update"));
+	m_btnMgr.setText(m_homeBtnHelp, _t("home6", L"Help"));
 	m_btnMgr.setText(m_homeBtnAbout, _t("home4", L"About"));
 	m_btnMgr.setText(m_homeBtnExitTo, _t("home5", L"Exit To"));
 }

@@ -30,7 +30,7 @@
 #define THANKS \
 "Lustar, CedWii, Benjay, Domi78, Oops, \
 Celtiore, Jiiwah, FluffyKiwi, Roku93, Yardape8000, \
-Spayrosam, Bluescreen81, Chappy23, fledge68, \
+Spayrosam, Bluescreen81, Chappy23, Fledge68, \
 BlindDude, Bubba, DJTaz, OggZee, entropy, \
 Usptactical, WiiPower, Hermes, Spidy1000, megazig, \
 Dimok, Kovani, Drexyl, DvZ, Etheboss, stfour, \
