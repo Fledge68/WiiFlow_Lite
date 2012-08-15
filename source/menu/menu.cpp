@@ -510,7 +510,6 @@ void CMenu::cleanup(bool hb)
 
 	if(!hb)
 		DeviceHandler::DestroyInstance();
-	m_vid.CheckWaitThread(true);
 	m_vid.cleanup();
 	m_cf.shutdown();
 

@@ -64,7 +64,7 @@ public:
 	bool wide(void) const { return m_wide; }
 	bool vid_50hz(void) const { return m_50hz; }
 	u8 getAA(void) const { return m_aa; }
-	bool showingWaitMessage() { return m_showingWaitMessages; }
+	bool showingWaitMessage() { return m_showingWaitMessages || m_showWaitMessage; }
 	void set2DViewport(u32 w, u32 h, int x, int y);
 	void prepareStencil(void);
 	void renderStencil(void);
@@ -73,7 +73,6 @@ public:
 	void waitMessage(float delay);
 	void waitMessage(const vector<STexture> &tex, float delay);
 	void waitMessage(const STexture &tex);
-	void CheckWaitThread(bool force = false);
 	s32 TakeScreenshot(const char *);
 	void shiftViewPort(float x, float y);
 private:

@@ -1,5 +1,6 @@
 
 #include <string.h>
+#include <unistd.h>
 
 #include "video.hpp"
 #include "pngu.h"
@@ -259,7 +260,7 @@ void CVideo::cleanup(void)
 	_clearScreen();
 	VIDEO_SetBlack(TRUE);
 	VIDEO_Flush();
-
+	hideWaitMessage();
 	GX_DrawDone();
 	GX_AbortFrame();
 
@@ -267,13 +268,13 @@ void CVideo::cleanup(void)
 	{
 		if(m_aaBuffer[i].get())
 			m_aaBuffer[i].release();
-			
-		m_aaBufferSize[i] = 0;	
+		m_aaBufferSize[i] = 0;
 	}
 	for(u8 i = 0; i < m_defaultWaitMessages.size(); i++)
-	{
 		m_defaultWaitMessages[i].data.release();
-	}
+	if(waitThreadStack.get())
+		waitThreadStack.release();
+
 	free(MEM_K1_TO_K0(m_frameBuf[0]));
 	free(MEM_K1_TO_K0(m_frameBuf[1]));
 	free(m_stencil);
@@ -498,15 +499,14 @@ void CVideo::_showWaitMessages(CVideo *m)
 	s16 currentLightLevel = 0;
 
 	vector<STexture>::iterator waitItr = m->m_waitMessages.begin();
-	gprintf("Going to show a wait message screen, delay: %d, # images: %d\n", waitFrames, m->m_waitMessages.size());
 	m->_clearScreen();
 
 	m->prepare();
 	m->setup2DProjection();
-	GX_SetNumChans(0);
 	wiiLightSetLevel(0);
 	wiiLightOn();
 
+	gprintf("Wait Message Thread: Start\nDelay: %d, Images: %d\n", waitFrames, m->m_waitMessages.size());
 	while(m->m_showWaitMessage)
 	{
 		currentLightLevel += (fadeStep * fadeDirection);
@@ -530,38 +530,27 @@ void CVideo::_showWaitMessages(CVideo *m)
 				waitItr = m->m_waitMessages.begin();
 			waitFrames = frames;
 		}
-		VIDEO_WaitVSync();
+		else
+			VIDEO_WaitVSync();
 		waitFrames--;
 	}
 	wiiLightOff();
-	GX_SetNumChans(1);
+	gprintf("Wait Message Thread: End\n");
 	m->m_showingWaitMessages = false;
-	gprintf("Stop showing images\n");
 }
 
 void CVideo::hideWaitMessage()
 {
 	m_showWaitMessage = false;
-	CheckWaitThread();
-	wiiLightOff();
-}
-
-void CVideo::CheckWaitThread(bool force)
-{
-	if ((!m_showingWaitMessages && waitThread != LWP_THREAD_NULL) || force)
+	if(waitThread != LWP_THREAD_NULL)
 	{
-		m_showWaitMessage = false;
-		gprintf("Now hide wait message\n");
-
 		if(LWP_ThreadIsSuspended(waitThread))
 			LWP_ResumeThread(waitThread);
-
+		while(m_showingWaitMessages)
+			usleep(100);
 		LWP_JoinThread(waitThread, NULL);
-
-		if(waitThreadStack.get())
-			waitThreadStack.release();
-		waitThread = LWP_THREAD_NULL;
 	}
+	waitThread = LWP_THREAD_NULL;
 }
 
 void CVideo::waitMessage(float delay)
@@ -602,9 +591,9 @@ void CVideo::waitMessage(const vector<STexture> &tex, float delay)
 	else if(m_waitMessages.size() > 1)
 	{
 		m_showWaitMessage = true;
-		u32 stack_size = (u32)32768;
-		waitThreadStack = smartMem2Alloc(stack_size);
-		LWP_CreateThread(&waitThread, (void *(*)(void *))CVideo::_showWaitMessages, (void *)this, waitThreadStack.get(), stack_size, LWP_PRIO_IDLE);
+		if(!waitThreadStack.get())
+			waitThreadStack = smartMem2Alloc(8092);
+		LWP_CreateThread(&waitThread, (void *(*)(void *))CVideo::_showWaitMessages, (void *)this, waitThreadStack.get(), 8092, LWP_PRIO_HIGHEST);
 	}
 }
 

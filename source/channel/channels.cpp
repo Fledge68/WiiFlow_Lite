@@ -44,9 +44,6 @@
 #define RF_NEWS_CHANNEL		0x48414741
 #define RF_FORECAST_CHANNEL	0x48414641
 
-extern "C" void ShowError(const wstringEx &error);
-#define error(x) //ShowError(x)
-
 Channels::Channels()
 {
 }

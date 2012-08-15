@@ -23,11 +23,8 @@ CMenu *mainMenu;
 
 extern "C" 
 { 
-	extern void __exception_setreload(int t);
-	extern int mainIOS;
-
-	void ShowError(const wstringEx &error) { mainMenu->error(error); }
-	void HideWaitMessage() { mainMenu->_hideWaitMessage(); }
+extern void __exception_setreload(int t);
+extern int mainIOS;
 }
 
 int main(int argc, char **argv)
