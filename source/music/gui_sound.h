@@ -81,6 +81,8 @@ public:
 	void SetVolume(int v);
 	//!\param l Loop (true to loop)
 	void SetLoop(u8 l);
+	//!Needed for music etc
+	void SetVoice(s8 v);
 private:
 	//!Initializes the GuiSound object by setting the default values
 	void Init();

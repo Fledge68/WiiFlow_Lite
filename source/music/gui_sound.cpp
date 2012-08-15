@@ -373,6 +373,11 @@ void GuiSound::Rewind()
 	decoder->Rewind();
 }
 
+void GuiSound::SetVoice(s8 v)
+{
+	this->voice = v;
+}
+
 void soundInit(void)
 {
 	ASND_Init();

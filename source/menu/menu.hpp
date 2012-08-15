@@ -678,7 +678,7 @@ private:
 	volatile float m_fileProgress;
 	volatile bool m_thrdMessageAdded;
 	volatile bool m_gameSelected;
-	GuiSound *m_gameSound;
+	GuiSound m_gameSound;
 	SmartGuiSound m_cameraSound;
 	dir_discHdr *m_gameSoundHdr;
 	lwp_t m_gameSoundThread;

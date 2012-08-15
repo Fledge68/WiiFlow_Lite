@@ -140,12 +140,12 @@ CMenu::CMenu(CVideo &vid) :
 	m_initialCoverStatusComplete = false;
 	m_reload = false;
 	m_gamesound_changed = false;
+	m_video_playing = false;
 	m_base_font_size = 0;
 	m_current_view = COVERFLOW_USB;
 	m_Emulator_boot = false;
 	m_banner = new BannerWindow;
-	m_music = new MusicPlayer; //Voice 0
-	m_gameSound = new GuiSound; //Voice 1
+	m_gameSound.SetVoice(1);
 }
 
 void CMenu::init(void)
@@ -437,7 +437,7 @@ void CMenu::init(void)
 	}
 
 	m_btnMgr.init(m_vid);
-	m_music->Init(m_cfg, m_musicDir, sfmt("%s/music", m_themeDataDir.c_str()));
+	m_music.Init(m_cfg, m_musicDir, sfmt("%s/music", m_themeDataDir.c_str()));
 
 	_buildMenus();
 
@@ -502,7 +502,7 @@ void CMenu::cleanup(bool hb)
 	m_plugin.Cleanup();
 
 	_stopSounds();
-	delete m_music;
+	m_music.cleanup();
 	m_cameraSound.release();
 	ClearGameSoundThreadStack();
 	SoundHandler::DestroyInstance();
@@ -1814,17 +1814,17 @@ void CMenu::_mainLoopCommon(bool withCF, bool blockReboot, bool adjusting)
 		Sys_Test();
 	}
 
-	if(withCF && m_gameSelected && m_gamesound_changed && (m_gameSoundHdr == NULL) && !m_gameSound->IsPlaying() && m_music->GetVolume() == 0)
+	if(withCF && m_gameSelected && m_gamesound_changed && (m_gameSoundHdr == NULL) && !m_gameSound.IsPlaying() && m_music.GetVolume() == 0)
 	{
 		CheckGameSoundThread();
-		m_gameSound->Play(m_bnrSndVol);
+		m_gameSound.Play(m_bnrSndVol);
 		m_gamesound_changed = false;
 	}
 	else if(!m_gameSelected)
-		m_gameSound->Stop();
+		m_gameSound.Stop();
 
-	m_music->Tick(m_video_playing || (m_gameSelected && 
-		m_gameSound->IsLoaded()) ||  m_gameSound->IsPlaying());
+	m_music.Tick(m_video_playing || (m_gameSelected && 
+		m_gameSound.IsLoaded()) ||  m_gameSound.IsPlaying());
 
 	//Take Screenshot
 	if(gc_btnsPressed & PAD_TRIGGER_Z)
@@ -2243,21 +2243,21 @@ void CMenu::_stopSounds(void)
 	// Fade out sounds
 	int fade_rate = m_cfg.getInt("GENERAL", "music_fade_rate", 8);
 
-	if(!m_music->IsStopped())
+	if(!m_music.IsStopped())
 	{
-		while(m_music->GetVolume() > 0 || m_gameSound->GetVolume() > 0)
+		while(m_music.GetVolume() > 0 || m_gameSound.GetVolume() > 0)
 		{
-			m_music->Tick(true);
-			if(m_gameSound->GetVolume() > 0)
-				m_gameSound->SetVolume(m_gameSound->GetVolume() < fade_rate ? 0 : m_gameSound->GetVolume() - fade_rate);
+			m_music.Tick(true);
+			if(m_gameSound.GetVolume() > 0)
+				m_gameSound.SetVolume(m_gameSound.GetVolume() < fade_rate ? 0 : m_gameSound.GetVolume() - fade_rate);
 			VIDEO_WaitVSync();
 		}
 	}
 	m_btnMgr.stopSounds();
 	m_cf.stopSound();
 
-	m_music->Stop();
-	m_gameSound->Stop();
+	m_music.Stop();
+	m_gameSound.Stop();
 }
 
 bool CMenu::_loadFile(SmartBuf &buffer, u32 &size, const char *path, const char *file)
