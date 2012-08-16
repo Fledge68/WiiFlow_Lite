@@ -62,8 +62,8 @@ SoundDecoder::~SoundDecoder()
 void SoundDecoder::Init()
 {
 	SoundType = SOUND_RAW;
-	SoundBlocks = 8; //Settings.SoundblockCount;
-	SoundBlockSize = 8092; //Settings.SoundblockSize;
+	SoundBlocks = 8;
+	SoundBlockSize = 8192;
 	CurPos = 0;
 	LoopStart = 0;
 	Loop = false;
