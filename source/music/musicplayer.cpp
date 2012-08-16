@@ -1,6 +1,10 @@
-#include "musicplayer.h"
 
-using namespace std;
+#include <dirent.h>
+#include <cstdio>
+
+#include "musicplayer.h"
+#include "fileOps/fileOps.h"
+#include "gui/text.hpp"
 
 MusicPlayer m_music;
 
@@ -17,15 +21,9 @@ void MusicPlayer::Init(Config &cfg, string musicDir, string themeMusicDir)
 
 	SetVolume(0);
 	MusicFile.SetVoice(0);
-
-	MusicDirectory dir = (MusicDirectory)cfg.getInt("GENERAL", "music_directories", NORMAL_MUSIC | THEME_MUSIC);
-	m_music_files.Init(cfg.getString("GENERAL", "dir_list_cache"), std::string(), std::string(), std::string(), false);
-
-	if(dir & THEME_MUSIC)
-		m_music_files.Load(themeMusicDir, ".ogg|.mp3", "EN", cfg); //|.mod|.xm|.s3m|.wav|.aiff");
-
-	if(dir & NORMAL_MUSIC)
-		m_music_files.Load(musicDir, ".ogg|.mp3", "EN", cfg); //|.mod|.xm|.s3m|.wav|.aiff");
+	m_music_files.clear();
+	ScanDirectories(themeMusicDir.c_str());
+	ScanDirectories(musicDir.c_str());
 	
 	if(cfg.getBool("GENERAL", "randomize_music", true) && m_music_files.size() > 0)
 	{
@@ -33,6 +31,23 @@ void MusicPlayer::Init(Config &cfg, string musicDir, string themeMusicDir)
 		random_shuffle(m_music_files.begin(), m_music_files.end());
 	}
 	m_current_music = m_music_files.begin();
+}
+
+void MusicPlayer::ScanDirectories(const char *directory)
+{
+	struct dirent *pent = NULL;
+	DIR *pdir = opendir(directory);
+	while((pent = readdir(pdir)) != NULL) 
+	{
+		if(strcmp(pent->d_name, ".") == 0 || strcmp(pent->d_name, "..") == 0)
+			continue;
+		string CurrentItem = sfmt("%s/%s", directory, pent->d_name);
+		if(fsop_DirExist(CurrentItem.c_str()))
+			ScanDirectories(CurrentItem.c_str());
+		else if(strcasestr(pent->d_name, ".mp3") != NULL || strcasestr(pent->d_name, ".ogg")  != NULL)
+			m_music_files.push_back(CurrentItem);
+	}
+	closedir(pdir);
 }
 
 void MusicPlayer::SetVolume(u8 volume)

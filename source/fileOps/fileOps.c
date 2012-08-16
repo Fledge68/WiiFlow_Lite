@@ -123,7 +123,7 @@ bool fsop_FileExist(const char *fn)
 	return false;
 }
 
-bool fsop_DirExist(char *path)
+bool fsop_DirExist(const char *path)
 {
 	DIR *dir;
 

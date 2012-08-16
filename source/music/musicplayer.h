@@ -4,19 +4,14 @@
 #include <string>
 #include "gui_sound.h"
 #include "config/config.hpp"
-#include "list/cachedlist.hpp"
 
-enum MusicDirectory
-{
-	NORMAL_MUSIC = 1,
-	THEME_MUSIC = 2
-};
+using namespace std;
 
 class MusicPlayer
 {
 public:
 	void cleanup();
-	void Init(Config &cfg, std::string musicDir, std::string themeMusicDir);
+	void Init(Config &cfg, string musicDir, string themeMusicDir);
 	void Tick(bool attenuate);
 
 	void SetVolume(u8 volume);
@@ -32,6 +27,7 @@ public:
 
 protected:
 	void LoadCurrentFile();
+	void ScanDirectories(const char *directory);
 
 	u8 m_music_volume;
 	u8 m_music_current_volume;
@@ -39,8 +35,8 @@ protected:
 	bool m_stopped;
 
 	GuiSound MusicFile;
-	CachedList<std::string> m_music_files;
-	vector<std::string>::iterator m_current_music;
+	vector<string> m_music_files;
+	vector<string>::iterator m_current_music;
 };
 
 extern MusicPlayer m_music;
