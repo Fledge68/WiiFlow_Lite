@@ -59,7 +59,7 @@ private:
 	CButtonsMgr m_btnMgr;
 	CCoverFlow m_cf;
 	CFanart m_fa;
-	CachedList<dir_discHdr> m_gameList;
+	CachedList m_gameList;
 	Config m_cfg;
 	Config m_loc;
 	Config m_cat;
