@@ -25,23 +25,22 @@ enum CMode
 	REMOVE
 };
 
-template <typename T>
 class CCache
 {
 	public:
-		 CCache(T &tmp, string path, u32 index, CMode mode);								/* Load/Save One */
-		 CCache(vector<T> &list, string path, CMode mode);								/* Load/Save All */
-		 CCache(vector<T> &list, string path, T tmp, CMode mode);						/* Add One */
-		 CCache(vector<T> &list, string path, u32 index, CMode mode);					/* Remove One */
+		 CCache(dir_discHdr &tmp, string path, u32 index, CMode mode);								/* Load/Save One */
+		 CCache(vector<dir_discHdr> &list, string path, CMode mode);								/* Load/Save All */
+		 CCache(vector<dir_discHdr> &list, string path, dir_discHdr tmp, CMode mode);						/* Add One */
+		 CCache(vector<dir_discHdr> &list, string path, u32 index, CMode mode);					/* Remove One */
 		~CCache();
 	private:
-		void SaveAll(vector<T> list);
-		void SaveOne(T tmp, u32 index);
-		void LoadAll(vector<T> &list);
-		void LoadOne(T &tmp, u32 index);
+		void SaveAll(vector<dir_discHdr> list);
+		void SaveOne(dir_discHdr tmp, u32 index);
+		void LoadAll(vector<dir_discHdr> &list);
+		void LoadOne(dir_discHdr &tmp, u32 index);
 		
-		void AddOne(vector<T> &list, T tmp);
-		void RemoveOne(vector<T> &list, u32 index);
+		void AddOne(vector<dir_discHdr> &list, dir_discHdr tmp);
+		void RemoveOne(vector<dir_discHdr> &list, u32 index);
 
 		FILE *cache;
 		string filename;
