@@ -131,7 +131,7 @@ void WavDecoder::OpenFile()
 		{
 			file_fd->seek(-8, SEEK_CUR);
 			file_fd->read((u8*)&SmplChunk, sizeof(SWaveSmplChunk));
-			SmplChunk.Start = ((le32(SmplChunk.Start) * le16(FmtChunk.channels) * le16(FmtChunk.bps) / 8) + 8091) & ~8091;
+			SmplChunk.Start = ((le32(SmplChunk.Start) * le16(FmtChunk.channels) * le16(FmtChunk.bps) / 8) + 8191) & ~8191;
 			break;
 		}
 		file_fd->seek(le32(LoopChunk.size), SEEK_CUR);

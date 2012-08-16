@@ -592,8 +592,8 @@ void CVideo::waitMessage(const vector<STexture> &tex, float delay)
 	{
 		m_showWaitMessage = true;
 		if(!waitThreadStack.get())
-			waitThreadStack = smartMem2Alloc(8092);
-		LWP_CreateThread(&waitThread, (void *(*)(void *))CVideo::_showWaitMessages, (void *)this, waitThreadStack.get(), 8092, LWP_PRIO_HIGHEST);
+			waitThreadStack = smartMem2Alloc(8192);
+		LWP_CreateThread(&waitThread, (void *(*)(void *))CVideo::_showWaitMessages, (void *)this, waitThreadStack.get(), 8192, LWP_PRIO_HIGHEST);
 	}
 }
 
