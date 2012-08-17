@@ -514,20 +514,25 @@ int CMenu::main(void)
 			}
 		}
 		else if(WROLL_LEFT)
+		{
 			m_cf.left();
+			SourceMenuTimeout = 0;
+		}
 		else if(WROLL_RIGHT)
+		{
 			m_cf.right();
-
+			SourceMenuTimeout = 0;
+		}
 		if(!BTN_B_HELD)
 		{
 			SourceMenuTimeout = 0;
 			if(BTN_UP_REPEAT || RIGHT_STICK_UP)
 				m_cf.up();
-			else if((BTN_RIGHT_REPEAT || RIGHT_STICK_RIGHT) || WROLL_RIGHT)
+			else if(BTN_RIGHT_REPEAT || RIGHT_STICK_RIGHT)
 				m_cf.right();
 			else if(BTN_DOWN_REPEAT ||  RIGHT_STICK_DOWN)
 				m_cf.down();
-			else if((BTN_LEFT_REPEAT || RIGHT_STICK_LEFT) || WROLL_LEFT)
+			else if(BTN_LEFT_REPEAT || RIGHT_STICK_LEFT)
 				m_cf.left();
 			else if(BTN_1_PRESSED || BTN_2_PRESSED)
 			{
@@ -682,24 +687,22 @@ int CMenu::main(void)
 					_initCF();
 				}
 			}
-			else if(!enable_wmote_roll)
+			if(!SourceMenuTimeout && !bheld)
 			{
-				if(!SourceMenuTimeout && !bheld)
-				{
-					SourceMenuTimeout = time(0);
-					bheld = true;
-				}
-				if(SourceMenuTimeout && (time(0) - SourceMenuTimeout > 1)) //Source Menu requested
-				{
-					SourceMenuTimeout = 0;
-					_hideMain();
-					if(!_Source()) //Different source selected
-						LoadView();
-					else
-						_showMain();
-					continue;
-				}
+				SourceMenuTimeout = time(0);
+				bheld = true;
 			}
+			if(SourceMenuTimeout && (time(0) - SourceMenuTimeout > 1)) //Source Menu requested
+			{
+				SourceMenuTimeout = 0;
+				_hideMain();
+				if(!_Source()) //Different source selected
+					LoadView();
+				else
+					_showMain();
+				continue;
+			}
+
 		}
 
 		if(done==0 && m_cat.getBool("GENERAL", "category_on_start", false))
