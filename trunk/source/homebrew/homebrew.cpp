@@ -6,8 +6,6 @@
 #include <vector>
 #include <string>
 #include "gecko/gecko.h"
-#include "memory/mem2.hpp"
-#include "memory/smartptr.hpp"
 
 #define EXECUTE_ADDR	((u8 *)0x92000000)
 #define BOOTER_ADDR		((u8 *)0x93000000)
@@ -28,16 +26,17 @@ u32 buffer_size = 0;
 
 static vector<string> Arguments;
 
-bool IsDollZ (u8 *buff)
+static bool IsDollZ(u8 *buf)
 {
-	u8 dollz_stamp[] = {0x3C};
-	int dollz_offs = 0x100;
+	u8 cmp1[] = {0x3C};
+	return memcmp(&buf[0x100], cmp1, sizeof(cmp1)) == 0;
+}
 
-	int ret = memcmp (&buff[dollz_offs], dollz_stamp, sizeof(dollz_stamp));
-	if (ret == 0)
-		return true;
-
-	return false;
+static bool IsSpecialELF(u8 *buf)
+{
+	u32 cmp1[] = {0x7F454C46};
+	u8 cmp2[] = {0x00};
+	return memcmp(buf, cmp1, sizeof(cmp1)) == 0 && memcmp(&buf[0x24], cmp2, sizeof(cmp2)) == 0;
 }
 
 void AddBootArgument(const char * argv)
@@ -119,8 +118,10 @@ void writeStub()
 int BootHomebrew()
 {
 	struct __argv args;
-	if (!IsDollZ(EXECUTE_ADDR))
+	if(!IsDollZ(EXECUTE_ADDR) && !IsSpecialELF(EXECUTE_ADDR))
 		SetupARGV(&args);
+	else
+		gprintf("Homebrew Boot Arguments disabled\n");
 
 	memcpy(BOOTER_ADDR, app_booter_bin, app_booter_bin_size);
 	DCFlushRange(BOOTER_ADDR, app_booter_bin_size);
