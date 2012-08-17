@@ -125,7 +125,7 @@ int CMenu::_gameInstaller(void *obj)
 	f32 free, used;
 	WBFS_DiskSpace(&used, &free);
 	WBFS_DVD_Size(&comp_size, &real_size);
-	
+
 	if((f32)comp_size + (f32)128*1024 >= free * GB_SIZE)
 	{
 		LWP_MutexLock(m.m_mutex);
@@ -320,7 +320,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 							out = true;
 							break;
 						}
-						if (Disc_Open(true) < 0)
+						if (Disc_Open(false) < 0)
 						{
 							error(_t("wbfsoperr2", L"Disc_Open failed"));
 							out = true;
@@ -329,7 +329,6 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						if (Disc_IsWii() == 0)
 						{
 							Disc_ReadHeader(&header);
-						
 							if(_searchGamesByID((const char *) header.id).size() != 0)
 							{
 								error(_t("wbfsoperr4", L"Game already installed"));

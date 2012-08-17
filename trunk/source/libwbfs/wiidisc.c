@@ -304,7 +304,7 @@ wiidisc_t *wd_open_disc(read_wiidisc_callback_t read, void *fp)
 	d->fp = fp;
 	d->part_sel = ALL_PARTITIONS;
 	d->tmp_buffer = wbfs_ioalloc(0x8000);
-	d->tmp_buffer2 = wbfs_malloc(0x8000);
+	d->tmp_buffer2 = wbfs_ioalloc(0x8000);
 	return d;
 }
 

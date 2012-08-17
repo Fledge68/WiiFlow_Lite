@@ -52,7 +52,7 @@ s32 Disc_Open(bool boot_disc)
 
 	/* Directly set Audio Streaming for GC*/
 	if(boot_disc)
-		gprintf("Setting Audio Streaming for GC Games: 0x%08x\n", WDVD_SetStreaming());
+		gprintf("Setting Audio Streaming for GC Games %s\n", WDVD_SetStreaming() == 0 ? "succeed" : "failed");
 
 	return ret;
 }
