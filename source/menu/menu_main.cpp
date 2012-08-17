@@ -263,6 +263,7 @@ int CMenu::main(void)
 	bool dpad_mode = m_cfg.getBool("GENERAL", "dpad_mode", false);
 	bool b_lr_mode = m_cfg.getBool("GENERAL", "b_lr_mode", false);
 	bool use_grab = m_cfg.getBool("GENERAL", "use_grab", false);
+	bool bheld = false;
 
 	m_reload = false;
 	static u32 disc_check = 0;
@@ -317,6 +318,11 @@ int CMenu::main(void)
 			if(coverstatus_stack.get())
 				coverstatus_stack.release();
 			WDVD_GetCoverStatus(&disc_check);
+		}
+		if(bheld && !BTN_B_HELD)
+		{
+			bheld = false;
+			SourceMenuTimeout = 0;
 		}
 		if(dpad_mode && (BTN_UP_PRESSED || BTN_DOWN_PRESSED || BTN_LEFT_PRESSED || BTN_RIGHT_PRESSED) && (m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML) || m_btnMgr.selected(m_mainBtnHomebrew) || m_btnMgr.selected(m_mainBtnEmu)))
 		{
@@ -678,9 +684,12 @@ int CMenu::main(void)
 			}
 			else if(!enable_wmote_roll)
 			{
-				if(!SourceMenuTimeout)
+				if(!SourceMenuTimeout && !bheld)
+				{
 					SourceMenuTimeout = time(0);
-				else if(time(0) - SourceMenuTimeout > 1) //Source Menu requested
+					bheld = true;
+				}
+				if(SourceMenuTimeout && (time(0) - SourceMenuTimeout > 1)) //Source Menu requested
 				{
 					SourceMenuTimeout = 0;
 					_hideMain();
