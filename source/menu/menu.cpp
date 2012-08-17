@@ -2151,7 +2151,6 @@ bool CMenu::_loadHomebrewList()
 
 	Config tmpcfg;
 	gprintf("%s\n", DeviceName[currentPartition]);
-	DeviceHandler::Instance()->Open_WBFS(currentPartition);
 	m_gameList.Load(sfmt(HOMEBREW_DIR, DeviceName[currentPartition]), ".dol|.elf", m_cfg.getString("HOMEBREW", "lastlanguage", "EN").c_str(), tmpcfg);
 	m_cfg.setString("HOMEBREW", "lastlanguage", m_loc.getString(m_curLanguage, "gametdb_code", "EN"));
 	m_cfg.save();
@@ -2166,7 +2165,6 @@ bool CMenu::_loadDmlList()
 
 	Config tmpcfg;
 	gprintf("%s\n", DeviceName[currentPartition]);
-	DeviceHandler::Instance()->Open_WBFS(currentPartition);
 	if(currentPartition != SD)
 		m_gameList.Load(sfmt(m_DMLgameDir.c_str(), DeviceName[currentPartition]), "boot.bin|.iso", m_cfg.getString("DML", "lastlanguage", "EN").c_str(), tmpcfg);
 	else
@@ -2183,8 +2181,6 @@ bool CMenu::_loadEmuList()
 		return false;
 
 	gprintf("%s\n", DeviceName[currentPartition]);
-	DeviceHandler::Instance()->Open_WBFS(currentPartition);
-
 	DIR *pdir;
 	struct dirent *pent;
 

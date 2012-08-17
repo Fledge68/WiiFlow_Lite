@@ -622,7 +622,7 @@ u32 wbfs_size_disc(wbfs_t *p,read_wiidisc_callback_t read_src_wii_disc,
 	u32 wii_sec_per_wbfs_sect = 1 << (p->wbfs_sec_sz_s - p->wii_sec_sz_s);
        wiidisc_t *d = 0;
 
-	u8 *used = wbfs_malloc(p->n_wii_sec_per_disc);
+	u8 *used = wbfs_ioalloc(p->n_wii_sec_per_disc);
 	if(!used) 
 		ERROR("unable to alloc memory\n");
 

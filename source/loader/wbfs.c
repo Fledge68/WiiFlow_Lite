@@ -68,7 +68,7 @@ s32 __WBFS_ReadDVD(void *fp, u32 lba, u32 len, void *iobuf)
 	if (mod)
 	{
 		/* Allocate memory */
-		fp = malloc(0x20);
+		fp = memalign(0x20, 0x20);
 		if (!fp)
 			return -1;
 
@@ -269,10 +269,7 @@ s32 WBFS_AddGame(progress_callback_t spinner, void *spinner_data)
 	if (!hdd) return -1;
 
 	/* Add game to device */
-	partition_selector_t part_sel = ONLY_GAME_PARTITION;
-	int copy_1_1 = 0;
-
-	s32 ret = wbfs_add_disc(hdd, __WBFS_ReadDVD, NULL, spinner, spinner_data, part_sel, copy_1_1);
+	s32 ret = wbfs_add_disc(hdd, __WBFS_ReadDVD, NULL, spinner, spinner_data, REMOVE_UPDATE_PARTITION, 0);
 
 	return ret < 0 ? ret : 0;
 }
@@ -310,7 +307,7 @@ s32 WBFS_GameSize(u8 *discid, char *path, f32 *size)
 
 s32 WBFS_DVD_Size(u64 *comp_size, u64 *real_size)
 {
-	if (wbfs_part_fs) return WBFS_Ext_DVD_Size(comp_size, real_size, (currentPartition == 0));
+	if (wbfs_part_fs) return WBFS_Ext_DVD_Size(comp_size, real_size);
 
 	u32 comp_sec = 0, last_sec = 0;
 
@@ -318,9 +315,7 @@ s32 WBFS_DVD_Size(u64 *comp_size, u64 *real_size)
 	if (!hdd) return -1;
 
 	/* Add game to device */
-	partition_selector_t part_sel = ONLY_GAME_PARTITION;
-
-	s32 ret = wbfs_size_disc(hdd, __WBFS_ReadDVD, NULL, part_sel, &comp_sec, &last_sec);
+	s32 ret = wbfs_size_disc(hdd, __WBFS_ReadDVD, NULL, REMOVE_UPDATE_PARTITION, &comp_sec, &last_sec);
 	if (ret < 0) return ret;
 
 	*comp_size = ((u64)hdd->wii_sec_sz) * comp_sec;
