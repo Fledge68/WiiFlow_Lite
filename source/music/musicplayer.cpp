@@ -102,14 +102,14 @@ void MusicPlayer::Tick(bool attenuate)
 	{
 		SetVolume(m_music_current_volume + m_fade_rate > m_music_volume ? m_music_volume
 				: m_music_current_volume + m_fade_rate);
-		if(!MusicFile.IsPlaying())
-			Next();
 	}
 	else if(attenuate && m_music_current_volume > 0)
 	{
 		SetVolume(m_music_current_volume - m_fade_rate < 0 ? 0
 				: m_music_current_volume - m_fade_rate);
 	}
+	if(!attenuate && !MusicFile.IsPlaying())
+		Next();
 }
 
 void MusicPlayer::LoadCurrentFile()
