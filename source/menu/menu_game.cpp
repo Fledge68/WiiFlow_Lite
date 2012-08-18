@@ -873,6 +873,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	GC_SetLanguage(GClanguage);
 	if(loader == 2)
 	{
+		loadIOS(58, true, true);
 		writeStub();
 		DEVO_Boot();
 	}
@@ -904,6 +905,7 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 	USBStorage2_Deinit();
 	USB_Deinitialize();
 #endif
+	loadIOS(58, true, true);
 	writeStub();
 	BootHomebrew();
 }
