@@ -387,7 +387,7 @@ void CMenu::_game(bool launch)
 		m_gameSelected = true;
 	}
 
-	m_zoom_banner = m_cfg.getBool(_domainFromView(), "show_full_banner", false);
+	m_zoom_banner = m_cfg.getBool(_domainFromView(), "show_full_banner", false) && !NoGameID(m_cf.getHdr()->type);
 	if(m_banner->GetZoomSetting() != m_zoom_banner)
 		m_banner->ToogleZoom();
 
@@ -513,7 +513,7 @@ void CMenu::_game(bool launch)
 				m_banner->DeleteBanner();
 				break;
 			}
-			else if(m_btnMgr.selected(m_gameBtnToogle) || m_btnMgr.selected(m_gameBtnToogleFull))
+			else if((m_btnMgr.selected(m_gameBtnToogle) || m_btnMgr.selected(m_gameBtnToogleFull)) && !NoGameID(m_cf.getHdr()->type))
 			{
 				m_zoom_banner = m_banner->ToogleZoom();
 				m_cfg.setBool(_domainFromView(), "show_full_banner", m_zoom_banner);
@@ -639,7 +639,7 @@ void CMenu::_game(bool launch)
 			m_banner->DeleteBanner(true);
 			_setBg(m_mainBg, m_mainBgLQ);
 		}
-		if(m_show_zone_game && (!m_zoom_banner || NoGameID(m_cf.getHdr()->type))
+		if(m_show_zone_game && !m_zoom_banner)
 		{
 			bool b = m_gcfg1.getBool("FAVORITES", id, false);
 			m_btnMgr.show(b ? m_gameBtnFavoriteOn : m_gameBtnFavoriteOff);
