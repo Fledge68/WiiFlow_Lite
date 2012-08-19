@@ -32,7 +32,6 @@
 #include "alt_ios.h"
 #include "utils.h"
 #include "fs.h"
-#include "nk.h"
 #include "mload.h"
 #include "gecko/gecko.h"
 #include "memory/mem2.hpp"
@@ -96,12 +95,6 @@ u32 Title_GetSize_FromTMD(tmd *tmd_data)
 /* Check if the cIOS is a D2X. */
 bool IOS_D2X(u8 ios, u8 *base)
 {
-	if(neek2o())
-	{
-		*base = (u8)IOS_GetVersion();
-		return true;
-	}		
-
 	iosinfo_t *info = IOS_GetInfo(ios);
 	if(!info)
 		return false;
