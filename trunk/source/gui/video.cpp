@@ -493,7 +493,6 @@ void CVideo::_showWaitMessages(CVideo *m)
 	u32 frames = m->m_waitMessageDelay * 50;
 	u32 waitFrames = frames;
 
-	u8 fadeStep = 2 * (u32) (255.f / (waitFrames * m->m_waitMessages.size()));
 	s8 fadeDirection = 1;
 	s8 PNGfadeDirection = 1;
 	s16 currentLightLevel = 0;
@@ -509,7 +508,7 @@ void CVideo::_showWaitMessages(CVideo *m)
 	gprintf("Wait Message Thread: Start\nDelay: %d, Images: %d\n", waitFrames, m->m_waitMessages.size());
 	while(m->m_showWaitMessage)
 	{
-		currentLightLevel += (fadeStep * fadeDirection);
+		currentLightLevel += fadeDirection * 5;
 		if(currentLightLevel >= 255) 
 		{
 			currentLightLevel = 255;
@@ -526,8 +525,8 @@ void CVideo::_showWaitMessages(CVideo *m)
 		{
 			m->waitMessage(*waitItr);
 			waitItr += PNGfadeDirection;
-			if(waitItr == m->m_waitMessages.end())
-				waitItr = m->m_waitMessages.begin();
+			if(waitItr + 1 == m->m_waitMessages.end() || waitItr == m->m_waitMessages.begin())
+				PNGfadeDirection *= (-1);
 			waitFrames = frames;
 		}
 		else
@@ -578,7 +577,7 @@ void CVideo::waitMessage(const vector<STexture> &tex, float delay)
 	if(tex.size() == 0)
 	{
 		m_waitMessages = m_defaultWaitMessages;
-		m_waitMessageDelay = 0.1f;
+		m_waitMessageDelay = 0.15f;
 	}
 	else
 	{
