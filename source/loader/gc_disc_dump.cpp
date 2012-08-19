@@ -330,9 +330,7 @@ s32 GCDump::DumpGame()
 			else
 			{
 				gprintf("Skipping game: %s (Already installed)(%d)\n", gcheader.title, Gamesize[MultiGameDump]);
-				gc_done += Gamesize[MultiGameDump];
-				MultiGameDump++;
-				continue;
+				break;
 			}
 		}
 
@@ -418,17 +416,14 @@ s32 GCDump::DumpGame()
 		}
 
 		if(!Disc)
-		{
 			snprintf(gamepath, sizeof(gamepath), "%s/%s [%.06s]/game.iso", fmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition), gcheader.title, (char *)gcheader.id);
-		}
 		else
 		{
 			char *ptz = (char *)NULL;
 			ptz = strstr(gamepath, "game.iso");
-			if(ptz != NULL)				
+			if(ptz != NULL)
 				strncpy(ptz, "gam1.iso", 8);
 		}
-		
 		gprintf("Writing %s\n", gamepath);
 		if(compressed)
 		{

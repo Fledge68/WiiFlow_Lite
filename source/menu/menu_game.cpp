@@ -639,7 +639,7 @@ void CMenu::_game(bool launch)
 			m_banner->DeleteBanner(true);
 			_setBg(m_mainBg, m_mainBgLQ);
 		}
-		if(m_show_zone_game && !m_zoom_banner)
+		if(m_show_zone_game && (!m_zoom_banner || NoGameID(m_cf.getHdr()->type))
 		{
 			bool b = m_gcfg1.getBool("FAVORITES", id, false);
 			m_btnMgr.show(b ? m_gameBtnFavoriteOn : m_gameBtnFavoriteOff);
