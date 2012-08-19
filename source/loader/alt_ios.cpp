@@ -112,17 +112,6 @@ static void PatchAHB()
 bool loadIOS(int ios, bool launch_game, bool emu_channel)
 {
 #ifndef DOLPHIN
-	if(neek2o())
-	{
-		memset(&CurrentIOS, 0, sizeof(IOS_Info));
-		CurrentIOS.Version = 254;
-		CurrentIOS.Type = IOS_TYPE_D2X;
-		CurrentIOS.Base = 254;
-		CurrentIOS.Revision = 999;
-		DCFlushRange(&CurrentIOS, sizeof(IOS_Info));
-		return true;
-	}
-
 	Close_Inputs();
 	DeviceHandler::Instance()->UnMountAll();
 	WDVD_Close();

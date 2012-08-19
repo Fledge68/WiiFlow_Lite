@@ -415,12 +415,10 @@ s32 GCDump::DumpGame()
 			gc_done += __DiscWrite(gamepath, 0x2440+NextOffset, ApploaderSize, ReadBuffer);
 		}
 
-		if(!Disc)
-			snprintf(gamepath, sizeof(gamepath), "%s/%s [%.06s]/game.iso", fmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition), gcheader.title, (char *)gcheader.id);
-		else
+		snprintf(gamepath, sizeof(gamepath), "%s/%s [%.06s]/game.iso", fmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition), gcheader.title, (char *)gcheader.id);
+		if(Disc)
 		{
-			char *ptz = (char *)NULL;
-			ptz = strstr(gamepath, "game.iso");
+			char *ptz = strstr(gamepath, "game.iso");
 			if(ptz != NULL)
 				strncpy(ptz, "gam1.iso", 8);
 		}

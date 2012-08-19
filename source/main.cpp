@@ -17,6 +17,7 @@
 #include "loader/sys.h"
 #include "loader/wbfs.h"
 #include "loader/cios.h"
+#include "loader/nk.h"
 #include "menu/menu.hpp"
 
 CMenu *mainMenu;
@@ -44,32 +45,48 @@ int main(int argc, char **argv)
 
 	char *gameid = NULL;
 	bool Emulator_boot = false;
+	bool iosOK = false;
 
-	for (int i = 0; i < argc; i++)
+	for(u8 i = 0; i < argc; i++)
 	{
-		if (argv[i] != NULL && strcasestr(argv[i], "ios=") != NULL && strlen(argv[i]) > 4)
+		if(argv[i] != NULL && strcasestr(argv[i], "ios=") != NULL && strlen(argv[i]) > 4)
 		{
-			while(argv[i][0] && !isdigit(argv[i][0])) argv[i]++;
+			while(argv[i][0] && !isdigit(argv[i][0]))
+				argv[i]++;
 			if (atoi(argv[i]) < 254 && atoi(argv[i]) > 0)
 				mainIOS = atoi(argv[i]);
 		}
-		else if (strlen(argv[i]) == 6)
+		else if(strlen(argv[i]) == 6)
 		{
 			gameid = argv[i];
-			for (int i=0; i < 5; i++)
-				if (!isalnum(gameid[i]))
+			for(u8 i = 0; i < 5; i++)
+			{
+				if(!isalnum(gameid[i]))
 					gameid = NULL;
+			}
 		}
-		else if (argv[i] != NULL && strcasestr(argv[i], "EMULATOR_MAGIC") != NULL)
+		else if(argv[i] != NULL && strcasestr(argv[i], "EMULATOR_MAGIC") != NULL)
 			Emulator_boot = true;
 	}
 #ifndef DOLPHIN
 	// Load Custom IOS
-	gprintf("Loading cIOS: %d\n", mainIOS);	
-	bool iosOK = loadIOS(mainIOS, false, false);
-	iosOK = iosOK && CurrentIOS.Type != IOS_TYPE_NO_CIOS;
+	if(neek2o())
+	{
+		iosOK = true;
+		memset(&CurrentIOS, 0, sizeof(IOS_Info));
+		CurrentIOS.Version = 254;
+		CurrentIOS.Type = IOS_TYPE_D2X;
+		CurrentIOS.Base = 254;
+		CurrentIOS.Revision = 999;
+		DCFlushRange(&CurrentIOS, sizeof(IOS_Info));
+	}
+	else
+	{
+		gprintf("Loading cIOS: %d\n", mainIOS);	
+		iosOK = loadIOS(mainIOS, false, false) && CurrentIOS.Type != IOS_TYPE_NO_CIOS;
+	}
 #else
-	bool iosOK = true;
+	iosOK = true;
 #endif
 
 	// Init
