@@ -492,6 +492,7 @@ void Asciify2( char *str )
 				case '<':
 				case '>':
 				case '?':
+				case ':':
 					str[i] = '_';
 				break;
 			}

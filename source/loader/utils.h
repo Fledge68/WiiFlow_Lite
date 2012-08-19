@@ -15,7 +15,6 @@
 
 #define ALIGN(n, x)			(((x) + (n - 1)) & ~(n - 1))
 #define ALIGN32(x)			(((x) + 31) & ~31)
-#define ALIGNED(x)			__attribute__((aligned(x)))
 
 #define TITLE_ID(x,y)		(((u64)(x) << 32) | (y))
 #define TITLE_UPPER(x)		((u32)((x) >> 32))
