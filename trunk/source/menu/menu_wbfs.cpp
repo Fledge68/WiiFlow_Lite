@@ -377,14 +377,17 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 					case CMenu::WO_REMOVE_GAME:
 						if(m_cf.getHdr()->type == TYPE_GC_GAME)
 						{
-							char source[300];
-							snprintf(source, sizeof(source), "%s/%s", fmt((currentPartition != SD) ? m_DMLgameDir.c_str() : DML_DIR, DeviceName[currentPartition]), (char *)m_cf.getHdr()->path);
-							fsop_deleteFolder(source);
+							string GC_Path(m_cf.getHdr()->path);
+							if(strcasestr(GC_Path.c_str(), "boot.bin") != NULL)
+								GC_Path.erase(GC_Path.end() - 13, GC_Path.end());
+							else
+								GC_Path.erase(GC_Path.end() - 9, GC_Path.end());
+							fsop_deleteFolder(GC_Path.c_str());
 							upd_dml = true;
 						}
 						else if(m_cf.getHdr()->type == TYPE_PLUGIN)
 						{
-							fsop_deleteFile((char*)m_cf.getHdr()->path);
+							fsop_deleteFile(m_cf.getHdr()->path);
 							upd_emu = true;
 						}
 						else if(m_cf.getHdr()->type == TYPE_WII_GAME)

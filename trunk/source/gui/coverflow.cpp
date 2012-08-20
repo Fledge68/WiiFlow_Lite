@@ -1286,7 +1286,9 @@ void CCoverFlow::_drawCover(int i, bool mirror, CCoverFlow::DrawMode dm)
 
 STexture &CCoverFlow::_coverTexture(int i)
 {
-	return m_noCoverTexture;
+	if (!m_items[i].texture.data)
+		return m_items[i].state == CCoverFlow::STATE_Loading ? m_loadingTexture : m_noCoverTexture;
+	return m_items[i].texture;
 }
 
 void CCoverFlow::_drawCoverFlat(int i, bool mirror, CCoverFlow::DrawMode dm)
@@ -1845,7 +1847,24 @@ bool CCoverFlow::start(const char *id)
 			return false;
 		m_dvdskin_loaded = true;
 	}
-	m_noCoverTexture.fromPNG(flatnopic_png, GX_TF_CMPR, ALLOC_MEM2, 32, 512);
+
+	if(m_box)
+	{
+		if (m_pngLoadCover.empty() || STexture::TE_OK != m_loadingTexture.fromImageFile(m_pngLoadCover.c_str(), GX_TF_CMPR, ALLOC_MEM2, 32, 512))
+			if (STexture::TE_OK != m_loadingTexture.fromPNG(loading_png, GX_TF_CMPR, ALLOC_MEM2, 32, 512)) return false;
+
+		if (m_pngNoCover.empty() || STexture::TE_OK != m_noCoverTexture.fromImageFile(m_pngNoCover.c_str(), GX_TF_CMPR, ALLOC_MEM2, 32, 512))
+			if (STexture::TE_OK != m_noCoverTexture.fromPNG(nopic_png, GX_TF_CMPR, ALLOC_MEM2, 32, 512)) return false;
+	}
+	else
+	{
+		if (m_pngLoadCoverFlat.empty() || STexture::TE_OK != m_loadingTexture.fromImageFile(m_pngLoadCoverFlat.c_str(), GX_TF_CMPR, ALLOC_MEM2, 32, 512))
+			if (STexture::TE_OK != m_loadingTexture.fromJPG(flatloading_jpg, flatloading_jpg_size, GX_TF_CMPR, ALLOC_MEM2, 32, 512)) return false;
+
+		if (m_pngNoCoverFlat.empty() || STexture::TE_OK != m_noCoverTexture.fromImageFile(m_pngNoCoverFlat.c_str(), GX_TF_CMPR, ALLOC_MEM2, 32, 512))
+			if (STexture::TE_OK != m_noCoverTexture.fromPNG(flatnopic_png, GX_TF_CMPR, ALLOC_MEM2, 32, 512)) return false;
+	}
+		
 	m_covers.clear();
 	m_covers.resize(m_range);
 	m_jump = 0;

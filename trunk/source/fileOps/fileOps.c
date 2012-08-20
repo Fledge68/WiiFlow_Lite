@@ -328,7 +328,7 @@ bool fsop_CopyFolder(char *source, char *target, progress_callback_t spinner, vo
 	return doCopyFolder(source, target, spinner, spinner_data);
 }
 
-void fsop_deleteFolder(char *source)
+void fsop_deleteFolder(const char *source)
 {
 	DIR *pdir;
 	struct dirent *pent;
