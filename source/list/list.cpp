@@ -44,28 +44,22 @@ void CList<T>::GetPaths(vector<string> &pathlist, string containing, string dire
 		}
 		closedir(dir_itr);
 
-		bool FoundFile;
 		while(temp_pathlist.size())
 		{
 			while((dir_itr = opendir(temp_pathlist[0].c_str())) && !dir_itr)
 				temp_pathlist.erase(temp_pathlist.begin());
-
-			FoundFile = false;
 
 			/* Read subdirectory */
 			while((ent = readdir(dir_itr)) != NULL)
 			{
 				if(ent->d_name[0] == '.')
 					continue;
-				if(dml && FoundFile)
-					break;
 				if(ent->d_type == DT_REG)
 				{
 					for(vector<string>::iterator compare = compares.begin(); compare != compares.end(); compare++)
 					{
 						if(strcasestr(ent->d_name, (*compare).c_str()) != NULL)
 						{
-							FoundFile = true;
 							//gprintf("Pushing %s to the list.\n", sfmt("%s/%s", temp_pathlist[0].c_str(), ent->d_name).c_str());
 							pathlist.push_back(sfmt("%s/%s", temp_pathlist[0].c_str(), ent->d_name));
 							break;
@@ -76,11 +70,8 @@ void CList<T>::GetPaths(vector<string> &pathlist, string containing, string dire
 				{
 					if(!depth_limit)
 						temp_pathlist.push_back(sfmt("%s/%s", temp_pathlist[0].c_str(), ent->d_name));
-					else if(dml && !FoundFile && strncasecmp(ent->d_name, "sys", 3) == 0 &&
-						fsop_FileExist(fmt("%s/%s/boot.bin", temp_pathlist[0].c_str(), ent->d_name)) &&
-						!fsop_FileExist(fmt("%s/game.iso", temp_pathlist[0].c_str())))
+					else if(dml && strncasecmp(ent->d_name, "sys", 3) == 0 && fsop_DirExist(fmt("%s/root", temp_pathlist[0].c_str())))
 					{
-						FoundFile = true;
 						//gprintf("Pushing %s to the list.\n", sfmt("%s/%s/boot.bin", temp_pathlist[0].c_str(), ent->d_name).c_str());
 						pathlist.push_back(sfmt("%s/%s/boot.bin", temp_pathlist[0].c_str(), ent->d_name));
 					}
@@ -108,20 +99,6 @@ void CList<T>::GetPaths(vector<string> &pathlist, string containing, string dire
 }
 
 template <>
-void CList<string>::GetHeaders(vector<string> pathlist, vector<string> &headerlist, string, string, string, Config&)
-{
-	//gprintf("Getting headers for CList<string>\n");
-
-	if(pathlist.size() < 1)
-		return;
-
-	headerlist.reserve(pathlist.size() + headerlist.size());
-
-	for(vector<string>::iterator itr = pathlist.begin(); itr != pathlist.end(); itr++)
-		headerlist.push_back((*itr).c_str());
-}
-
-template <>
 void CList<dir_discHdr>::GetHeaders(vector<string> pathlist, vector<dir_discHdr> &headerlist, string settingsDir, string curLanguage, string DMLgameUSBDir, Config &plugin)
 {
 	if(pathlist.size() < 1)
@@ -133,6 +110,7 @@ void CList<dir_discHdr>::GetHeaders(vector<string> pathlist, vector<dir_discHdr>
 	vector<char*> GC_SD_IDs;
 	bool GC_SD_IDs_loaded = false;
 
+	discHdr gc_hdr;
 	dir_discHdr tmp;
 	u32 count = 0;
 	string GTitle;
@@ -200,7 +178,7 @@ void CList<dir_discHdr>::GetHeaders(vector<string> pathlist, vector<dir_discHdr>
 		{
 			char* filename = &(*itr)[(*itr).find_last_of('/')+1];
 			const char* dml_partition = DeviceName[DeviceHandler::Instance()->PathToDriveType((*itr).c_str())];
-			if((strcasecmp(filename, "game.iso") == 0 || strcasecmp(filename, "boot.bin") == 0) && strstr((*itr).c_str(), sfmt((strncmp(dml_partition, "sd", 2) != 0) ? DMLgameUSBDir.c_str() : DML_DIR, dml_partition).c_str()) != NULL)
+			if(strcasecmp(filename, "game.iso") == 0 || strcasecmp(filename, "gam1.iso") == 0 || strcasecmp(filename, "boot.bin") == 0)
 			{
 				FILE *fp = fopen((*itr).c_str(), "rb");
 				if(fp)
@@ -209,7 +187,7 @@ void CList<dir_discHdr>::GetHeaders(vector<string> pathlist, vector<dir_discHdr>
 					fseek(fp, 6, SEEK_SET);
 					fread(gc_disc, 1, 1, fp);
 
-					discHdr gc_hdr;
+					memset(&gc_hdr, 0, sizeof(discHdr));
 					fseek(fp, 0, SEEK_SET);
 					fread(&gc_hdr, sizeof(discHdr), 1, fp);
 					fclose(fp);
