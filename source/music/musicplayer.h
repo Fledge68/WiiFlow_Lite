@@ -35,8 +35,6 @@ protected:
 	bool m_stopped;
 
 	GuiSound MusicFile;
-	vector<string> m_music_files;
-	vector<string>::iterator m_current_music;
 };
 
 extern MusicPlayer m_music;
