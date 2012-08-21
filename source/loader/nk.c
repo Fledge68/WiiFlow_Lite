@@ -41,7 +41,6 @@ bool neek2o(void)
 	if(!checked)
 	{
 		u32 num = 0;
-		ISFS_Initialize();
 		neek = !(ISFS_ReadDir("/sneek", NULL, &num));
 		gprintf("WiiFlow is in %s mode\n", neek ? "neek2o" : "real nand");
 		checked = true;

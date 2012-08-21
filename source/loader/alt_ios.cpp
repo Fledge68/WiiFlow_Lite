@@ -8,10 +8,12 @@
 #include "sys.h"
 #include "wbfs.h"
 #include "wdvd.h"
+#include "channel/nand.hpp"
 #include "devicemounter/DeviceHandler.hpp"
 #include "devicemounter/usbstorage.h"
 #include "gecko/gecko.h"
 #include "memory/mem2.hpp"
+#include "memory/memory.h"
 #include "types.h"
 
 // mload from uloader by Hermes
@@ -21,11 +23,8 @@
 #include "odip_frag.h"
 #include "mload_modules.h"
 
-extern "C" {extern u8 currentPartition;}
-extern int __Arena2Lo;
+extern "C" { extern u8 currentPartition; }
 u8 use_port1 = 0;
-
-#define HAVE_AHBPROT	((*(vu32*)0xcd800064 == 0xFFFFFFFF) ? 1 : 0)
 
 static int load_ehc_module_ex(void)
 {
@@ -79,36 +78,6 @@ void load_dip_249()
 	mload_close();
 }
 
-/* Thanks to postloader for that patch */
-#define MEM2_PROT		0x0D8B420A
-#define ES_MODULE_START	(u16*)0x939F0000
-
-static const u16 ticket_check[] = {
-    0x685B,          // ldr r3,[r3,#4] ; get TMD pointer
-    0x22EC, 0x0052,  // movls r2, 0x1D8
-    0x189B,          // adds r3, r3, r2; add offset of access rights field in TMD
-    0x681B,          // ldr r3, [r3]   ; load access rights (haxxme!)
-    0x4698,          // mov r8, r3     ; store it for the DVD video bitcheck later
-    0x07DB           // lsls r3, r3, #31; check AHBPROT bit
-};
-
-static void PatchAHB()
-{
-	// Disable memory protection
-	write16(MEM2_PROT, 2);
-
-	for(u16 *patchme = ES_MODULE_START; patchme < ES_MODULE_START + 0x4000; patchme++) 
-	{
-		if(!memcmp(patchme, ticket_check, sizeof(ticket_check))) 
-		{
-			// write16/uncached poke doesn't work for this. Go figure.
-			patchme[4] = 0x23FF; // li r3, 0xFF
-			DCFlushRange(patchme + 4, 2);
-			break;
-		}
-	}
-}
-
 bool loadIOS(int ios, bool launch_game, bool emu_channel)
 {
 #ifndef DOLPHIN
@@ -119,12 +88,10 @@ bool loadIOS(int ios, bool launch_game, bool emu_channel)
 	mload_close();
 
 	gprintf("Reloading into IOS %i from %i...\n", ios, IOS_GetVersion());
-	if(HAVE_AHBPROT && ios == 58) //IOS58 with AHBPROT patched out for Homebrew
-		PatchAHB();
-
-	ISFS_Deinitialize();
+	Nand::Instance()->DeInit_ISFS();
 	bool iosOK = IOS_ReloadIOS(ios) == 0;
-	ISFS_Initialize();
+	Nand::Instance()->Init_ISFS();
+	gprintf("AHBPROT after IOS Reload: %u\n", (*HW_AHBPROT == 0xFFFFFFFF));
 
 	IOS_GetCurrentIOSInfo();
 	if(CurrentIOS.Type == IOS_TYPE_HERMES)
@@ -132,7 +99,6 @@ bool loadIOS(int ios, bool launch_game, bool emu_channel)
 	else if(CurrentIOS.Type == IOS_TYPE_WANIN && CurrentIOS.Revision >= 18)
 		load_dip_249();
 
-	gprintf("AHBPROT after IOS Reload: %u\n", HAVE_AHBPROT);
 	if(!emu_channel)
 	{
 		if(launch_game)

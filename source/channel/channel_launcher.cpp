@@ -11,6 +11,7 @@
 #include "loader/fs.h"
 #include "loader/fst.h"
 #include "loader/utils.h"
+#include "memory/memory.h"
 #include "unzip/lz77.h"
 #include "types.h"
 
@@ -33,16 +34,16 @@ u32	dolchunkcount;
 
 s32 BootChannel(u32 entry, u64 chantitle, u32 ios, u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, int aspectRatio)
 {
-    // IOS Version Check
-    *(vu32*)0x80003140 = ((ios << 16)) | 0xFFFF;
-    *(vu32*)0x80003188 = ((ios << 16)) | 0xFFFF;
-    DCFlushRange((void *)0x80003140, 4);
-    DCFlushRange((void *)0x80003188, 4);
+	// IOS Version Check
+	*Real_IOSVersion = ((ios << 16)) | 0xFFFF;
+	*Game_IOSVersion = ((ios << 16)) | 0xFFFF;
+	DCFlushRange((void*)Real_IOSVersion, 4);
+	DCFlushRange((void*)Game_IOSVersion, 4);
 
-    // Game ID Online Check
-    memset((void *)0x80000000, 0, 4);
-    *(vu32 *)0x80000000 = TITLE_LOWER(chantitle);
-	DCFlushRange((void *)0x80000000, 4);
+	// Game ID Online Check
+	memset((void*)Disc_ID, 0, 4);
+	*Disc_ID = TITLE_LOWER(chantitle);
+	DCFlushRange((void*)Disc_ID, 4);
 
 	ExternalBooter_ChannelSetup(dolchunkoffset, dolchunksize, dolchunkcount, entry);
 	WiiFlow_ExternalBooter(vidMode, vipatch, countryString, patchVidMode, aspectRatio, 0, TYPE_CHANNEL);

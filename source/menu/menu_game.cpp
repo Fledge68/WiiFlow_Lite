@@ -878,6 +878,8 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		DEVO_Boot();
 	}
 	DML_New_WriteOptions();
+
+	Nand::Instance()->DeInit_ISFS();
 	WII_Initialize();
 	if(WII_LaunchTitle(0x100000100LL) < 0)
 		Sys_LoadMenu();
@@ -1143,6 +1145,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	}
 	if(forwarder)
 	{
+		Nand::Instance()->DeInit_ISFS();
 		WII_Initialize();
 		if(WII_LaunchTitle(gameTitle) < 0)
 			Sys_LoadMenu();	
