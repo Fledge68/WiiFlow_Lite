@@ -264,6 +264,7 @@ int CMenu::main(void)
 	bool b_lr_mode = m_cfg.getBool("GENERAL", "b_lr_mode", false);
 	bool use_grab = m_cfg.getBool("GENERAL", "use_grab", false);
 	bool bheld = false;
+	bool bUsed = false;
 
 	m_reload = false;
 	static u32 disc_check = 0;
@@ -299,14 +300,14 @@ int CMenu::main(void)
 			LoadView();
 		else
 		_showMain();
+		if(BTN_B_HELD)
+			bUsed = true;
 	}
 	
 	lwp_t coverStatus = LWP_THREAD_NULL;
 	unsigned int stack_size = (unsigned int)32768;
 	SmartBuf coverstatus_stack = smartMem2Alloc(stack_size);	
 	LWP_CreateThread(&coverStatus, (void *(*)(void *))CMenu::GetCoverStatusAsync, (void *)this, coverstatus_stack.get(), stack_size, 40);
-
-	time_t SourceMenuTimeout = 0;
 
 	while(true)
 	{
@@ -322,7 +323,21 @@ int CMenu::main(void)
 		if(bheld && !BTN_B_HELD)
 		{
 			bheld = false;
-			SourceMenuTimeout = 0;
+			if(bUsed)
+			{
+				bUsed = false;
+			}
+			else
+			{
+				_hideMain();
+				if(!_Source()) //Different source selected
+					LoadView();
+				else
+					_showMain();
+				if(BTN_B_HELD)
+					bUsed = true;
+				continue;
+			}
 		}
 		if(dpad_mode && (BTN_UP_PRESSED || BTN_DOWN_PRESSED || BTN_LEFT_PRESSED || BTN_RIGHT_PRESSED) && (m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML) || m_btnMgr.selected(m_mainBtnHomebrew) || m_btnMgr.selected(m_mainBtnEmu)))
 		{
@@ -346,6 +361,8 @@ int CMenu::main(void)
 			if(_Home()) //exit wiiflow
 				break;
 			_showMain();
+			if(BTN_B_HELD)
+				bUsed = true;
 		}
 		else if(BTN_A_PRESSED)
 		{
@@ -359,6 +376,8 @@ int CMenu::main(void)
 				if(_Home()) //exit wiiflow
 					break;
 				_showMain();
+				if(BTN_B_HELD)
+					bUsed = true;
 			}
 			else if(m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML) || m_btnMgr.selected(m_mainBtnHomebrew) || m_btnMgr.selected(m_mainBtnEmu))
 			{
@@ -386,6 +405,8 @@ int CMenu::main(void)
 						break;
 					}
 					_showMain();
+					if(BTN_B_HELD)
+						bUsed = true;
 				}
 			}
 			else if(m_btnMgr.selected(m_mainBtnInit2))
@@ -398,6 +419,8 @@ int CMenu::main(void)
 					break;
 				}
 				_showMain();
+				if(BTN_B_HELD)
+					bUsed = true;
 			}
 			else if(m_btnMgr.selected(m_mainBtnConfig))
 			{
@@ -409,12 +432,16 @@ int CMenu::main(void)
 					break;
 				}
 				_showMain();
+				if(BTN_B_HELD)
+					bUsed = true;
 			}
 			else if(m_btnMgr.selected(m_mainBtnInfo))
 			{
 				_hideMain();
 				_about();
 				_showMain();
+				if(BTN_B_HELD)
+					bUsed = true;
 			}
 			else if(m_btnMgr.selected(m_mainBtnDVD))
 			{
@@ -427,6 +454,8 @@ int CMenu::main(void)
 				memcpy(&hdr.id, "dvddvd", 6);
 				_launchGame(&hdr, true);
 				_showMain();
+				if(BTN_B_HELD)
+					bUsed = true;
 			}
 			else if(m_btnMgr.selected(m_mainBtnFavoritesOn) || m_btnMgr.selected(m_mainBtnFavoritesOff))
 			{
@@ -441,6 +470,8 @@ int CMenu::main(void)
 				_game(BTN_B_HELD);
 				if(m_exit)
 					break;
+				if(BTN_B_HELD)
+					bUsed = true;
 				m_cf.cancel();
 				_showMain();
 			}
@@ -453,6 +484,8 @@ int CMenu::main(void)
 				// Event handler to show categories for selection
 				_hideMain();
 				_CategorySettings();
+				if(BTN_B_HELD)
+					bUsed = true;
 				_showMain();
 				_initCF();
 			}
@@ -466,10 +499,13 @@ int CMenu::main(void)
 						LoadView();
 					else
 						_showMain();
+					if(BTN_B_HELD)
+						bUsed = true;
 					continue;
 				}
 				else if(!neek2o())
 				{
+					bUsed = true;
 					m_cfg.setBool("NAND", "disable", !m_cfg.getBool("NAND", "disable", true));
 					gprintf("EmuNand is %s\n", m_cfg.getBool("NAND", "disable", true) ? "Disabled" : "Enabled");
 					m_current_view = COVERFLOW_CHANNEL;
@@ -478,6 +514,7 @@ int CMenu::main(void)
 			}
 			else if(m_btnMgr.selected(m_mainBtnNext) || m_btnMgr.selected(m_mainBtnPrev))
 			{
+				bUsed = true;
 				const char *domain = _domainFromView();
 				int sorting = m_cfg.getInt(domain, "sort", SORT_ALPHA);
 				if (sorting != SORT_ALPHA && sorting != SORT_PLAYERS && sorting != SORT_WIFIPLAYERS && sorting != SORT_GAMEID)
@@ -510,22 +547,24 @@ int CMenu::main(void)
 					LoadView();
 				else
 					_showMain();
+				if(BTN_B_HELD)
+					bUsed = true;
 				continue;
 			}
 		}
 		else if(WROLL_LEFT)
 		{
 			m_cf.left();
-			SourceMenuTimeout = 0;
+			bUsed = true;
 		}
 		else if(WROLL_RIGHT)
 		{
 			m_cf.right();
-			SourceMenuTimeout = 0;
+			bUsed = true;
 		}
 		if(!BTN_B_HELD)
 		{
-			SourceMenuTimeout = 0;
+			//SourceMenuTimeout = 0;
 			if(BTN_UP_REPEAT || RIGHT_STICK_UP)
 				m_cf.up();
 			else if(BTN_RIGHT_REPEAT || RIGHT_STICK_RIGHT)
@@ -563,11 +602,12 @@ int CMenu::main(void)
 		}
 		else
 		{
+			bheld = true;
 			const char *domain = _domainFromView();
 			//Search by Alphabet
 			if(BTN_DOWN_PRESSED || BTN_UP_PRESSED)
 			{
-				SourceMenuTimeout = 0;
+				bUsed = true;
 				int sorting = m_cfg.getInt(domain, "sort", SORT_ALPHA);
 				if(sorting != SORT_ALPHA && sorting != SORT_PLAYERS && sorting != SORT_WIFIPLAYERS && sorting != SORT_GAMEID)
 				{
@@ -595,7 +635,7 @@ int CMenu::main(void)
 			}
 			else if(BTN_LEFT_PRESSED)
 			{
-				SourceMenuTimeout = 0;
+				bUsed = true;
 				if(b_lr_mode)
 					m_cf.pageUp();
 				else
@@ -603,7 +643,7 @@ int CMenu::main(void)
 			}
 			else if(BTN_RIGHT_PRESSED)
 			{
-				SourceMenuTimeout = 0;
+				bUsed = true;
 				if(b_lr_mode)
 					m_cf.pageDown();
 				else
@@ -611,7 +651,7 @@ int CMenu::main(void)
 			}
 			else if(BTN_PLUS_PRESSED && !m_locked)
 			{
-				SourceMenuTimeout = 0;
+				bUsed = true;
 				u32 sort = 0;
 				sort = loopNum((m_cfg.getInt(domain, "sort", 0)) + 1, SORT_MAX - 1);
 				m_cf.setSorting((Sorting)sort);
@@ -639,7 +679,7 @@ int CMenu::main(void)
 			}
 			else if(BTN_MINUS_PRESSED && !m_locked)
 			{
-				SourceMenuTimeout = 0;
+				bUsed = true;
 				bool block = m_current_view == COVERFLOW_CHANNEL && (m_cfg.getBool("NAND", "disable", true) || neek2o());
 				char *partition;
 				if(!block)
@@ -687,22 +727,6 @@ int CMenu::main(void)
 					_initCF();
 				}
 			}
-			if(!SourceMenuTimeout && !bheld)
-			{
-				SourceMenuTimeout = time(0);
-				bheld = true;
-			}
-			if(SourceMenuTimeout && (time(0) - SourceMenuTimeout > 1)) //Source Menu requested
-			{
-				SourceMenuTimeout = 0;
-				_hideMain();
-				if(!_Source()) //Different source selected
-					LoadView();
-				else
-					_showMain();
-				continue;
-			}
-
 		}
 
 		if(done==0 && m_cat.getBool("GENERAL", "category_on_start", false))
@@ -711,6 +735,8 @@ int CMenu::main(void)
 			// show categories menu
 			_hideMain();
 			_CategorySettings();
+			if(BTN_B_HELD)
+				bUsed = true;
 			_showMain();
 			_initCF();
 		}
