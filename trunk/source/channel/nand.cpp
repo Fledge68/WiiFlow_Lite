@@ -26,7 +26,7 @@
  * Nand/Emulation Handling Class for Wiiflow
  *
  ***************************************************************************/
- 
+#include <ogc/machine/processor.h>
 #include <stdio.h>
 #include <ogcsys.h>
 #include <string.h>
@@ -39,6 +39,7 @@
 #include "fileOps/fileOps.h"
 #include "gecko/gecko.h"
 #include "loader/wbfs.h"
+#include "memory/memory.h"
 
 u8 *confbuffer ATTRIBUTE_ALIGN(32);
 u8 CCode[0x1008];
@@ -1034,4 +1035,53 @@ s32 Nand::Do_Region_Change(string id)
 	}
 	__configwrite();
 	return 1;
+}
+
+extern "C" { extern s32 MagicPatches(s32); }
+
+void Nand::Init_ISFS()
+{
+	gprintf("Init ISFS\n");
+	ISFS_Initialize();
+	if(*HW_AHBPROT == 0xFFFFFFFF) //AHBPROT patched out
+	{
+		PatchAHB();
+		MagicPatches(1);
+	}
+}
+
+void Nand::DeInit_ISFS()
+{
+	gprintf("Deinit ISFS\n");
+	ISFS_Deinitialize();
+	if(*HW_AHBPROT == 0xFFFFFFFF) //AHBPROT patched out
+		MagicPatches(0);
+}
+
+/* Thanks to postloader for that patch */
+#define ES_MODULE_START	(u16*)0x939F0000
+
+static const u16 ticket_check[] = {
+    0x685B,          // ldr r3,[r3,#4] ; get TMD pointer
+    0x22EC, 0x0052,  // movls r2, 0x1D8
+    0x189B,          // adds r3, r3, r2; add offset of access rights field in TMD
+    0x681B,          // ldr r3, [r3]   ; load access rights (haxxme!)
+    0x4698,          // mov r8, r3     ; store it for the DVD video bitcheck later
+    0x07DB           // lsls r3, r3, #31; check AHBPROT bit
+};
+
+void Nand::PatchAHB()
+{
+	// Disable memory protection
+	write16(MEM_PROT, 2);
+	for(u16 *patchme = ES_MODULE_START; patchme < ES_MODULE_START + 0x4000; patchme++) 
+	{
+		if(!memcmp(patchme, ticket_check, sizeof(ticket_check))) 
+		{
+			// write16/uncached poke doesn't work for this. Go figure.
+			patchme[4] = 0x23FF; // li r3, 0xFF
+			DCFlushRange(patchme + 4, 2);
+			break;
+		}
+	}
 }

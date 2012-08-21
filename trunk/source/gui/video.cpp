@@ -257,10 +257,12 @@ void CVideo::cleanup(void)
 {
 	gprintf("Cleaning up video...\n");
 
+	hideWaitMessage();
 	_clearScreen();
+
 	VIDEO_SetBlack(TRUE);
 	VIDEO_Flush();
-	hideWaitMessage();
+
 	GX_DrawDone();
 	GX_AbortFrame();
 

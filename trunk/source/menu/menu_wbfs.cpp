@@ -439,7 +439,6 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						SoundHandler::DestroyInstance();
 						soundDeinit();
 						Nand::Instance()->Disable_Emu();
-						Nand::DestroyInstance();
 						LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_GCcopyGame, (void *)this, 0, 8 * 1024, 64);
 						break;
 				}

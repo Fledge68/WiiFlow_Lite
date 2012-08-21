@@ -123,6 +123,7 @@ export OFILES	:=	$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) \
 					$(JPGFILES:.jpg=.jpg.o) $(PNGFILES:.png=.png.o) $(DOLFILES:.dol=.dol.o) \
 					$(OGGFILES:.ogg=.ogg.o) $(WAVFILES:.wav=.wav.o) $(MP3FILES:.mp3=.mp3.o) \
 					$(ELFFILES:.elf=.elf.o) $(BINFILES:.bin=.bin.o) $(TXTFILES:.txt=.txt.o) \
+					$(CURDIR)/data/magic_patcher.o
 
 #---------------------------------------------------------------------------------
 # build a list of include paths

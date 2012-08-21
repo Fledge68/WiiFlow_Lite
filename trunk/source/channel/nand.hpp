@@ -53,82 +53,85 @@ using namespace std;
 
 class Nand
 {
-	public:
-		static Nand * Instance();
-		static void DestroyInstance();
+public:
+	static Nand * Instance();
+	static void DestroyInstance();
 
-		/* Prototypes */
-		void Init(string path, u32 partition, bool disable = false);
-		s32 Enable_Emu();
-		s32 Disable_Emu();
+	/* Prototypes */
+	void Init(string path, u32 partition, bool disable = false);
+	s32 Enable_Emu();
+	s32 Disable_Emu();
 
-		void Set_Partition(u32 partition) { Partition = partition; };
-		void Set_FullMode(bool fullmode) { FullMode = fullmode ? 0x100 : 0; };
-		void Set_RCMode(bool rcmode) { FullMode = rcmode ? 0x40 : 0; };
-		void Set_SSMode(bool ssmode) { FullMode = ssmode ? 0x60 : 0; };
+	void Set_Partition(u32 partition) { Partition = partition; };
+	void Set_FullMode(bool fullmode) { FullMode = fullmode ? 0x100 : 0; };
+	void Set_RCMode(bool rcmode) { FullMode = rcmode ? 0x40 : 0; };
+	void Set_SSMode(bool ssmode) { FullMode = ssmode ? 0x60 : 0; };
 
+	void Init_ISFS();
+	void DeInit_ISFS();
 
-		const char * Get_NandPath(void) { return NandPath; };
-		u32 Get_Partition(void) { return Partition; };
+	const char * Get_NandPath(void) { return NandPath; };
+	u32 Get_Partition(void) { return Partition; };
 
-		void Set_NandPath(string path);
-		void CreatePath(const char *path, ...);
-		
-		void CreateTitleTMD(const char *path, dir_discHdr *hdr);
-		s32 CreateConfig(const char *path);
-		s32 PreNandCfg(const char *path, bool miis, bool realconfig);
-		s32 Do_Region_Change(string id);
-		s32 FlashToNAND(const char *source, const char *dest, dump_callback_t i_dumper, void *i_data);
-		s32 DoNandDump(const char *source, const char *dest, dump_callback_t i_dumper, void *i_data);
-		s32 CalcFlashSize(const char *source, dump_callback_t i_dumper, void *i_data);
-		s32 CalcDumpSpace(const char *source, dump_callback_t i_dumper, void *i_data);
-		void ResetCounters(void);
+	void Set_NandPath(string path);
+	void CreatePath(const char *path, ...);
+
+	void CreateTitleTMD(const char *path, dir_discHdr *hdr);
+	s32 CreateConfig(const char *path);
+	s32 PreNandCfg(const char *path, bool miis, bool realconfig);
+	s32 Do_Region_Change(string id);
+	s32 FlashToNAND(const char *source, const char *dest, dump_callback_t i_dumper, void *i_data);
+	s32 DoNandDump(const char *source, const char *dest, dump_callback_t i_dumper, void *i_data);
+	s32 CalcFlashSize(const char *source, dump_callback_t i_dumper, void *i_data);
+	s32 CalcDumpSpace(const char *source, dump_callback_t i_dumper, void *i_data);
+	void ResetCounters(void);
+
+private:
+	Nand() : MountedDevice(0), EmuDevice(REAL_NAND), Disabled(true), Partition(0), FullMode(0x100), NandPath() {}
+	~Nand(void){}
+
+	/* Prototypes */
+	s32 Nand_Mount(NandDevice *Device);
+	s32 Nand_Unmount(NandDevice *Device);
+	s32 Nand_Enable(NandDevice *Device);
+	s32 Nand_Disable(void);
+	void PatchAHB(void);
+	void __Dec_Enc_TB(void);
+	void __configshifttxt(char *str);
+	void __GetNameList(const char *source, namelist **entries, int *count);
+	s32 __configread(void);
+	s32 __configwrite(void);
+	u32 __configsetbyte(const char *item, u8 val);
+	u32 __configsetbigarray(const char *item, void *val, u32 size);
+	u32 __configsetsetting(const char *item, const char *val);
+	void __NANDify(char *str);
+	void __FATify(char *dst, const char *src);
+	s32 __Unescaped2x(const char *path);
+	s32 __FlashNandFile(const char *source, const char *dest);
+	s32 __FlashNandFolder(const char *source, const char *dest);
+	s32 __DumpNandFile(const char *source, const char *dest);
+	s32 __DumpNandFolder(const char *source, const char *dest);
+
+	u32 MountedDevice;
+	u32 EmuDevice;
+	u32 NandSize;
+	u32 NandDone;
+	u32 FileDone;
+	u32 FilesDone;
+	u32 FoldersDone;
+	bool Disabled;
+	bool fake;
+	bool showprogress;
 	
-	private:
-		Nand() : MountedDevice(0), EmuDevice(REAL_NAND), Disabled(true), Partition(0), FullMode(0x100), NandPath() {}
-		~Nand(void){}
+	void *data;
+	dump_callback_t dumper;
+	u32 Partition ATTRIBUTE_ALIGN(32);
+	u32 FullMode ATTRIBUTE_ALIGN(32);
+	char NandPath[32] ATTRIBUTE_ALIGN(32);
+	char cfgpath[1024];
+	char settxtpath[1024];
 
-		/* Prototypes */
-		s32 Nand_Mount(NandDevice *Device);
-		s32 Nand_Unmount(NandDevice *Device);
-		s32 Nand_Enable(NandDevice *Device);
-		s32 Nand_Disable(void);
-		void __Dec_Enc_TB(void);
-		void __configshifttxt(char *str);
-		void __GetNameList(const char *source, namelist **entries, int *count);
-		s32 __configread(void);
-		s32 __configwrite(void);
-		u32 __configsetbyte(const char *item, u8 val);
-		u32 __configsetbigarray(const char *item, void *val, u32 size);
-		u32 __configsetsetting(const char *item, const char *val);
-		void __NANDify(char *str);
-		void __FATify(char *dst, const char *src);
-		s32 __Unescaped2x(const char *path);
-		s32 __FlashNandFile(const char *source, const char *dest);
-		s32 __FlashNandFolder(const char *source, const char *dest);
-		s32 __DumpNandFile(const char *source, const char *dest);
-		s32 __DumpNandFolder(const char *source, const char *dest);
-
-		u32 MountedDevice;
-		u32 EmuDevice;
-		u32 NandSize;
-		u32 NandDone;
-		u32 FileDone;
-		u32 FilesDone;
-		u32 FoldersDone;
-		bool Disabled;
-		bool fake;
-		bool showprogress;
-		
-		void *data;
-		dump_callback_t dumper;
-		u32 Partition ATTRIBUTE_ALIGN(32);
-		u32 FullMode ATTRIBUTE_ALIGN(32);
-		char NandPath[32] ATTRIBUTE_ALIGN(32);
-		char cfgpath[1024];
-		char settxtpath[1024];
-
-		static Nand * instance;
+	static Nand * instance;
 };
 
 #endif

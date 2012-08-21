@@ -23,7 +23,7 @@
 CMenu *mainMenu;
 
 extern "C" 
-{ 
+{
 extern void __exception_setreload(int t);
 extern int mainIOS;
 }
@@ -37,6 +37,7 @@ int main(int argc, char **argv)
 	CVideo vid;
 	vid.init();
 
+	Nand::Instance()->Init_ISFS();
 	MEM2_init(47); //Should be safe to use
 	vid.waitMessage(0.15f);
 
@@ -147,9 +148,7 @@ int main(int argc, char **argv)
 		}
 	}
 	mainMenu->cleanup();
-#ifndef DOLPHIN
-	ISFS_Deinitialize();
-#endif
+	Nand::Instance()->DeInit_ISFS();
 	Sys_Exit();
 	exit(1);
 	return 0;
