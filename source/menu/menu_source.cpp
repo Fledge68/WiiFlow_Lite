@@ -59,7 +59,7 @@ void CMenu::_hideSource(bool instant)
 	}
 
 	for(i = 0; i < 12; ++i)
-		m_btnMgr.hide(m_sourceBtnSource[i]);
+		m_btnMgr.hide(m_sourceBtnSource[i], instant);
 }
 
 void CMenu::_showSource(void)
