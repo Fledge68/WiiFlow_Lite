@@ -416,11 +416,11 @@ void CMenu::init(void)
 		m_curLanguage = CMenu::_translations[0];
 		m_loc.load(fmt("%s/%s.ini", m_languagesDir.c_str(), m_curLanguage.c_str()));
 	}
-	
-	bool extcheck = m_cfg.getBool("GENERAL", "extended_list_check", true);
+	bool extcheck = m_cfg.getBool("GENERAL", "extended_list_check", false);
+	bool skipcheck = m_cfg.getBool("GENERAL", "skip_list_check", false);
 	m_tempView = false;
 	
-	m_gameList.Init(m_listCacheDir, m_settingsDir, m_loc.getString(m_curLanguage, "gametdb_code", "EN"), m_DMLgameDir, extcheck);
+	m_gameList.Init(m_listCacheDir, m_settingsDir, m_loc.getString(m_curLanguage, "gametdb_code", "EN"), m_DMLgameDir, extcheck, skipcheck);
 
 	m_aa = 3;
 
