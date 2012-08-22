@@ -1087,12 +1087,13 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 
 	if(useNK2o && !emu_disabled)
 	{
-		cleanup(true);
-		if(!Launch_nk(gameTitle, emuPath.c_str()))
+		if(!Load_Neek2o_Kernel())
 		{
 			error(_t("errneek1", L"Cannot launch neek2o. Verify your neek2o setup"));
 			Sys_LoadMenu();
 		}
+		cleanup();
+		Launch_nk(gameTitle, emuPath.c_str());
 		while(1);
 	}
 	else

@@ -12,22 +12,24 @@
 #include "mload.h"
 #include "sys.h"
 #include "channel/channel_launcher.h"
+#include "loader/nk.h"
 #include "gecko/gecko.h"
 #include "memory/mem2.hpp"
 #include "memory/memory.h"
 #include "wiiuse/wpad.h"
 
 /* Variables */
-static bool reset = false;
-static bool shutdown = false;
+bool reset = false;
+bool shutdown = false;
 bool exiting = false;
 
-static bool priiloader_def = false;
-static bool return_to_hbc = false;
-static bool return_to_menu = false;
-static bool return_to_priiloader = false;
-static bool return_to_disable = false;
-static bool return_to_bootmii = false;
+bool priiloader_def = false;
+bool return_to_hbc = false;
+bool return_to_menu = false;
+bool return_to_priiloader = false;
+bool return_to_disable = false;
+bool return_to_bootmii = false;
+bool return_to_neek2o = false;
 
 extern void __exception_closeall();
 extern u32 __PADDisableRecalibration(s32 disable);
@@ -85,6 +87,7 @@ void Sys_ExitTo(int option)
 	return_to_priiloader = option == EXIT_TO_PRIILOADER;
 	return_to_disable = option == EXIT_TO_DISABLE;
 	return_to_bootmii = option == EXIT_TO_BOOTMII;
+	return_to_neek2o = option == EXIT_TO_NEEK2O;
 
 	//magic word to force wii menu in priiloader.
 	if(return_to_menu)
@@ -113,6 +116,12 @@ void Sys_Exit(void)
 
 	/* Shutdown Inputs */
 	Close_Inputs();
+
+	if(return_to_neek2o)
+	{
+		Launch_nk(0x1000144574641LL, NULL);
+		while(1);
+	}
 
 	WII_Initialize();
 	if(return_to_menu || return_to_priiloader || priiloader_def)

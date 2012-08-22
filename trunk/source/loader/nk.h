@@ -25,6 +25,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 s32 Launch_nk(u64 TitleID, const char *nandpath);
+bool Load_Neek2o_Kernel();
 bool neek2o(void);
 
 #ifdef __cplusplus
