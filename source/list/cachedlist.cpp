@@ -35,24 +35,24 @@ void CachedList::Load(string path, string containing, string m_lastLanguage, Con
 		gprintf("%s\n", path.c_str());
 		if(stat(path.c_str(), &filestat) == -1) 
 			return;
-		
+
 		bool update_lang = m_lastLanguage != m_curLanguage;
 		bool noDB = stat(m_database.c_str(), &cache) == -1;
 		bool mtimes = filestat.st_mtime > cache.st_mtime;
 		if(strcasestr(m_discinf.c_str(), "wbfs") != NULL && stat(m_discinf.c_str(), &discinfo) != -1)		
 			ditimes = discinfo.st_mtime > cache.st_mtime;
 
-		m_update = update_lang || noDB || mtimes || ditimes;
+		m_update = update_lang || noDB || (!m_skipcheck && (mtimes || ditimes));
 		if(m_update) 
 			gprintf("Cache of %s is being updated because:\n", path.c_str());
 		if(update_lang) 
 			gprintf("Languages are different!\nOld language string: %s\nNew language string: %s\n", m_lastLanguage.c_str(), m_curLanguage.c_str());
 		if(noDB) 
 			gprintf("A database was not found!\n");
-		if(mtimes || ditimes) 
+		if(!m_skipcheck && (mtimes || ditimes)) 
 			gprintf("The WBFS folder was modified!\nCache date: %i\nFolder date: %i\n", cache.st_mtime, filestat.st_mtime);
 
-		if(m_extcheck && !m_update)
+		if(m_extcheck && !m_update && !m_skipcheck)
 		{
 			bool m_chupdate = false;
 			DIR *dir = opendir(path.c_str());
@@ -66,7 +66,7 @@ void CachedList::Load(string path, string containing, string m_lastLanguage, Con
 					break;
 			}
 			m_update = m_chupdate;
-		}	
+		}
 	}
 
 	if(update_games) 
