@@ -1045,17 +1045,29 @@ void Nand::Init_ISFS()
 	ISFS_Initialize();
 	if(*HW_AHBPROT == 0xFFFFFFFF) //AHBPROT patched out
 	{
+		// Disable memory protection
+		write16(MEM_PROT, 0);
+		// Do patches
 		PatchAHB();
 		MagicPatches(1);
+		// Enable memory protection
+		write16(MEM_PROT, 1);
 	}
 }
 
 void Nand::DeInit_ISFS()
 {
 	gprintf("Deinit ISFS\n");
-	ISFS_Deinitialize();
 	if(*HW_AHBPROT == 0xFFFFFFFF) //AHBPROT patched out
+	{
+		// Disable memory protection
+		write16(MEM_PROT, 0);
+		// Do patches
 		MagicPatches(0);
+		// Enable memory protection
+		write16(MEM_PROT, 1);
+	}
+	ISFS_Deinitialize();
 }
 
 /* Thanks to postloader for that patch */
@@ -1072,8 +1084,6 @@ static const u16 ticket_check[] = {
 
 void Nand::PatchAHB()
 {
-	// Disable memory protection
-	write16(MEM_PROT, 2);
 	for(u16 *patchme = ES_MODULE_START; patchme < ES_MODULE_START + 0x4000; patchme++) 
 	{
 		if(!memcmp(patchme, ticket_check, sizeof(ticket_check))) 
