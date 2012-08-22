@@ -139,11 +139,13 @@ bool CMenu::_ExitTo(void)
 			}
 			else if(m_btnMgr.selected(m_homeBtnExitToNeek))
 			{
-				if(!Launch_nk(0x1000144574641LL, NULL))
+				if(!Load_Neek2o_Kernel())
 				{
 					error(sfmt("errneek1", L"Cannot launch neek2o. Verify your neek2o setup"));
 					exitHandler(2);
-				}				
+				}
+				else
+					exitHandler(5);
 				break;
 			}
 		}

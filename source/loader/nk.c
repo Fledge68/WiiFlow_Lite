@@ -35,6 +35,8 @@
 
 bool checked = false;
 bool neek = false;
+u32 kernelSize = 0;
+void *Kernel = NULL;
 
 bool neek2o(void)
 {
@@ -48,66 +50,72 @@ bool neek2o(void)
 	return neek;
 }
 
+bool Load_Neek2o_Kernel()
+{
+	if(neek2o())
+		return true;
+
+	FILE *file = NULL;
+	file = fopen("usb1:/sneek/kernel.bin", "rb");
+	if(!file)
+		file = fopen("sd:/sneek/kernel.bin", "rb");
+	if(file) 
+	{
+		fseek(file , 0 , SEEK_END);
+		kernelSize = ftell(file);
+		rewind(file);
+		Kernel = malloc(kernelSize);
+		if(!Kernel)
+		{
+			fclose(file);
+			return false;
+		}
+		fread(Kernel, 1, kernelSize, file);
+		fclose(file);
+		return true;
+	}
+	return false;
+}
+
 s32 Launch_nk(u64 TitleID, const char *nandpath)
 {
 	if(neek2o())
 	{
-		SYS_ResetSystem(SYS_RESTART, 0, 0);		
+		SYS_ResetSystem(SYS_RESTART, 0, 0);
 		return 1;
 	}
+	memcpy((void*)0x91000000, Kernel, kernelSize);
+	DCFlushRange((void*)0x91000000, kernelSize);
+	free(Kernel);
 
-	FILE *file = NULL;
-	long fsize;
-
-	file = fopen( "usb1:/sneek/kernel.bin", "rb" );
-
-	if(!file)
-		file = fopen( "sd:/sneek/kernel.bin", "rb" );
-
-	if(file) 
-	{
-		fseek(file , 0 , SEEK_END);
-		fsize = ftell(file);
-		rewind(file);
-		fread((void *)0x91000000, 1, fsize, file);
-		DCFlushRange((void *)0x91000000, fsize);
-	}
-	else
-		return 0;
-
-	fclose(file);
-	
 	memcfg *MC = (memcfg*)malloc(sizeof(memcfg));
 	if(MC == NULL)
 		return 0;
-	
 	memset(MC, 0, sizeof(memcfg));
-
 	MC->magic = 0x666c6f77;
 	MC->titleid = TitleID;
-	
+
 	if(nandpath != NULL)
 	{
 		strcpy(MC->nandpath, nandpath);
 		MC->config |= NCON_EXT_NAND_PATH;
 	}
-	
 	memcpy((void *)0x81200000, MC, sizeof(memcfg));
-	DCFlushRange((void *)(0x81200000), sizeof(memcfg));	
+	DCFlushRange((void *)(0x81200000), sizeof(memcfg));
 	free(MC);
-	
+
 	/*** Thnx giantpune! ***/
-	void *mini = MEM1_memalign(32, armboot_size);  
-	if(!mini) 
-		return 0; 
-  
-	memcpy(mini, armboot, armboot_size);  
-	DCFlushRange(mini, armboot_size);   
-	*(u32*)0xc150f000 = 0x424d454d;  
-	asm volatile("eieio");  
-	*(u32*)0xc150f004 = MEM_VIRTUAL_TO_PHYSICAL(mini);  
-	asm volatile("eieio");  
-	IOS_ReloadIOS(0xfe);  
+	void *mini = MEM1_memalign(32, armboot_size);
+	if(!mini)
+		return 0;
+ 
+	memcpy(mini, armboot, armboot_size);
+	DCFlushRange(mini, armboot_size);
+	*(u32*)0xc150f000 = 0x424d454d;
+	asm volatile("eieio");
+	*(u32*)0xc150f004 = MEM_VIRTUAL_TO_PHYSICAL(mini);
+	asm volatile("eieio");
+	IOS_ReloadIOS(0xfe);
 	MEM1_free(mini);
 	return 1;
 }

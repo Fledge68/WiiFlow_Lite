@@ -241,8 +241,9 @@ void CMenu::exitHandler(int ExitTo)
 			else
 				Sys_ExitTo(EXIT_TO_HBC);
 		}
+		else if(ExitTo == 5) //Neek2o kernel
+			Sys_ExitTo(EXIT_TO_NEEK2O);
 	}
-	
 	m_reload = (BTN_B_HELD || m_disable_exit);
 	if(m_exit)
 	{
