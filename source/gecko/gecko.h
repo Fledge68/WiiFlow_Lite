@@ -15,8 +15,6 @@ extern bool WriteToSD;
 void gprintf(const char *format, ...);
 void ghexdump(void *d, int len);
 bool InitGecko();
-void AllocSDGeckoBuffer();
-void ClearLogBuffer();
 
 #ifdef __cplusplus
 }

@@ -1,8 +1,6 @@
 //Enable the line below to always write SD log
 //#define sd_write_log
 
-#define filebuffer 1024
-
 #include <gccore.h>
 #include <malloc.h>
 #include <stdio.h>
@@ -19,9 +17,7 @@ bool geckoinit = false;
 bool textVideoInit = false;
 bool bufferMessages = true;
 bool WriteToSD = false;
-
-char *tmpfilebuffer = NULL;
-u32 tmpbuffersize = filebuffer + 1 * sizeof(char);
+char tmpfilebuffer[1024];
 
 static ssize_t __out_write(struct _reent *r __attribute__((unused)), int fd __attribute__((unused)), const char *ptr, size_t len)
 {
@@ -69,30 +65,13 @@ static void USBGeckoOutput()
 	devoptab_list[STD_ERR] = &gecko_out;
 }
 
-void ClearLogBuffer()
-{
-	if(tmpfilebuffer == NULL)
-		return;
-	free(tmpfilebuffer);
-	tmpfilebuffer = NULL;
-}
-
 void WriteToFile(char* tmp)
 {
-	if(tmpfilebuffer == NULL)
+	if(!bufferMessages)
 		return;
 
-	if(bufferMessages)
-	{
-		if((strlen(tmpfilebuffer) + strlen(tmp)) < filebuffer)
-			strcat(tmpfilebuffer, tmp);
-	}
-	else
-	{
-		free(tmpfilebuffer);
-		tmpfilebuffer = NULL;
-		return;
-	}
+	if((strlen(tmpfilebuffer) + strlen(tmp)) < 1024)
+		strcat(tmpfilebuffer, tmp);
 
 	if(WriteToSD)
 	{
@@ -100,7 +79,7 @@ void WriteToFile(char* tmp)
 		if(outfile)
 		{
 			fwrite(tmpfilebuffer, 1, strlen(tmpfilebuffer), outfile);
-			memset(tmpfilebuffer, 0, tmpbuffersize);
+			memset(tmpfilebuffer, 0, 1024);
 			fclose(outfile);
 		}
 	}
@@ -168,6 +147,7 @@ bool InitGecko()
 		return geckoinit;
 
 	USBGeckoOutput();
+	memset(tmpfilebuffer, 0, 1024);
 
 	#ifdef sd_write_log
 		WriteToSD = true;
@@ -181,11 +161,4 @@ bool InitGecko()
 		puts("USB Gecko inited.");
 	}
 	return geckoinit;
-}
-
-void AllocSDGeckoBuffer()
-{
-	tmpfilebuffer = (char*)malloc(tmpbuffersize);
-	if(tmpfilebuffer != NULL)
-		memset(tmpfilebuffer, 0, tmpbuffersize);
 }

@@ -938,7 +938,7 @@ int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id, bool emu_channel)
 		}
 	}
 	else if(gameIOS != 57)
-		gameIOS = CurrentIOS.Version;
+		gameIOS = mainIOS;
 	gprintf("Changed requested IOS to %d.\n", gameIOS);
 
 	// remap IOS to CIOS

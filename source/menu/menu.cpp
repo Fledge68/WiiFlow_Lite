@@ -515,12 +515,10 @@ void CMenu::cleanup(bool hb)
 
 	wiiLightOff();
 	_deinitNetwork();
+	Close_Inputs();
 
 	LWP_MutexDestroy(m_mutex);
 	m_mutex = 0;
-
-	ClearLogBuffer();
-	Close_Inputs();
 
 	for(TexSet::iterator texture = theme.texSet.begin(); texture != theme.texSet.end(); texture++)
 	{
@@ -2300,7 +2298,7 @@ void CMenu::_load_installed_cioses()
 			gprintf("Found d2x base %u in slot %u\n", base, slot);
 			_installed_cios[slot] = base;
 		}
-		else if(IOS_GetType(slot) != IOS_TYPE_NO_CIOS)
+		else if(CustomIOS(IOS_GetType(slot)))
 		{
 			gprintf("Found cIOS in slot %u\n", slot);
 			_installed_cios[slot] = slot;

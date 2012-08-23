@@ -69,7 +69,7 @@ class DeviceHandler
 		static DeviceHandler * Instance();
 		static void DestroyInstance();
 
-		bool MountAll();
+		void MountAll();
 		void UnMountAll();
 		bool Mount(int dev);
 		bool IsInserted(int dev);

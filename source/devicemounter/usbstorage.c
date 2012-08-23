@@ -33,6 +33,7 @@
 #include <string.h>
 
 #include "usbstorage.h"
+#include "usbstorage_libogc.h"
 #include "gecko/gecko.h"
 
 /* IOCTL commands */
@@ -71,6 +72,7 @@ static u32 usb2_port = -1;  //current USB port
 bool hddInUse[2] = { false, false };
 u32 hdd_sector_size[2] = { 512, 512 };
 bool first = false;
+int usb_libogc_mode = 0;
 
 extern void* SYS_AllocArena2MemLo(u32 size,u32 align);
 
@@ -85,29 +87,35 @@ s32 USBStorage2_Init(u32 port)
 	if(hddInUse[port])
 		return 0;
 
-	/* Create heap */
-	if (hid < 0)
+	if(usb_libogc_mode)
+		__io_usbstorage_ogc.startup();
+	else
 	{
-		hid = iosCreateHeap(UMS_HEAPSIZE);
-		if (hid < 0) return IPC_ENOMEM;
-	}
-	/* allocate buf2 */
-	if(mem2_ptr == NULL)
-		mem2_ptr = SYS_AllocArena2MemLo(USB_MEM2_SIZE, 32);
+		/* Create heap */
+		if(hid < 0)
+		{
+			hid = iosCreateHeap(UMS_HEAPSIZE);
+			if (hid < 0) return IPC_ENOMEM;
+		}
+		/* allocate buf2 */
+		if(mem2_ptr == NULL)
+			mem2_ptr = SYS_AllocArena2MemLo(USB_MEM2_SIZE, 32);
 
-	/* Open USB device */
-	if (fd < 0) fd = IOS_Open(fs, 0);
-	if (fd < 0) fd = IOS_Open(fs2, 0);
-	if (fd < 0) fd = IOS_Open(fs3, 0);
-	if (fd < 0) return fd;
+		/* Open USB device */
+		if (fd < 0) fd = IOS_Open(fs, 0);
+		if (fd < 0) fd = IOS_Open(fs2, 0);
+		if (fd < 0) fd = IOS_Open(fs3, 0);
+		if (fd < 0) return fd;
+	}
 
 	USBStorage2_SetPort(port);
 
 	/* Initialize USB storage */
-	IOS_IoctlvFormat(hid, fd, USB_IOCTL_UMS_INIT, ":");
+	if(!usb_libogc_mode)
+		IOS_IoctlvFormat(hid, fd, USB_IOCTL_UMS_INIT, ":");
 
 	/* Get device capacity */
-	if (USBStorage2_GetCapacity(port, &hdd_sector_size[port]) == 0)
+	if(USBStorage2_GetCapacity(port, &hdd_sector_size[port]) == 0)
 		return IPC_ENOENT;
 
 	hddInUse[port] = true;
@@ -117,6 +125,12 @@ s32 USBStorage2_Init(u32 port)
 
 void USBStorage2_Deinit()
 {
+	if(usb_libogc_mode)
+	{
+		__io_usbstorage_ogc.shutdown();
+		return;
+	}
+
 	/* Close USB device */
 	if (fd >= 0)
 	{
@@ -140,7 +154,7 @@ s32 USBStorage2_SetPort(u32 port)
 
 	gprintf("Changing USB port to port %i....\n", port);
 	//must be called before USBStorage2_Init (default port 0)
-	if (fd >= 0)
+	if(fd >= 0 && !usb_libogc_mode)
 		ret = IOS_IoctlvFormat(hid, fd, USB_IOCTL_SET_PORT, "i:", usb2_port);
 
 	return ret;
@@ -153,38 +167,44 @@ s32 USBStorage2_GetPort()
 
 s32 USBStorage2_GetCapacity(u32 port, u32 *_sector_size)
 {
-	if (fd >= 0)
-	{
-		s32 ret;
-		u32 sector_size = 0;
-		USBStorage2_SetPort(port);
+	if((usb_libogc_mode && !__io_usbstorage_ogc.isInserted()) || (!usb_libogc_mode && fd < 0))
+		return 0;
 
+	s32 ret;
+	u32 sector_size = 0;
+	USBStorage2_SetPort(port);
+	if(usb_libogc_mode)
+	{
+		sector_size = USB_OGC_GetSectorSize();
+		ret = USB_OGC_GetCapacity();
+	}
+	else
 		ret = IOS_IoctlvFormat(hid, fd, USB_IOCTL_UMS_GET_CAPACITY, ":i", &sector_size);
 
-		if(first)
-		{
-			gprintf(" * * * * * * * * * * * *\n");
-			gprintf(" * HDD Information\n * Sectors: %lu\n", ret);
-			u32 size = ((((ret / 1024U) * sector_size) / 1024U) / 1024U);
-			if(size >= 1000U)
-				gprintf(" * Size [Sector Size]: %lu.%lu TB [%u]\n", size / 1024U, (size * 100U) % 1024U, sector_size);
-			else
-				gprintf(" * Size [Sector Size]: %lu GB [%u]\n", size, sector_size);
-			gprintf(" * * * * * * * * * * * *\n");
-			first = false;
-		}
-
-		if(ret && _sector_size)
-			*_sector_size = sector_size;
-
-		return ret;
+	if(first)
+	{
+		gprintf(" * * * * * * * * * * * *\n");
+		gprintf(" * HDD Information\n * Sectors: %lu\n", ret);
+		u32 size = ((((ret / 1024U) * sector_size) / 1024U) / 1024U);
+		if(size >= 1000U)
+			gprintf(" * Size [Sector Size]: %lu.%lu TB [%u]\n", size / 1024U, (size * 100U) % 1024U, sector_size);
+		else
+			gprintf(" * Size [Sector Size]: %lu GB [%u]\n", size, sector_size);
+		gprintf(" * * * * * * * * * * * *\n");
+		first = false;
 	}
 
-	return IPC_ENOENT;
+	if(ret && _sector_size)
+		*_sector_size = sector_size;
+
+	return ret;
 }
 
 s32 USBStorage2_ReadSectors(u32 port, u32 sector, u32 numSectors, void *buffer)
 {
+	if(usb_libogc_mode)
+		return __io_usbstorage_ogc.readSectors(sector, numSectors, buffer);
+
 	bool isMEM2Buffer = __USBStorage_isMEM2Buffer(buffer);
 	u8 *buf = (u8 *)buffer;
 	s32 ret = -1;
@@ -231,6 +251,9 @@ s32 USBStorage2_ReadSectors(u32 port, u32 sector, u32 numSectors, void *buffer)
 
 s32 USBStorage2_WriteSectors(u32 port, u32 sector, u32 numSectors, const void *buffer)
 {
+	if(usb_libogc_mode)
+		return __io_usbstorage_ogc.writeSectors(sector, numSectors, buffer);
+
 	bool isMEM2Buffer = __USBStorage_isMEM2Buffer(buffer);
 	u8 *buf = (u8 *)buffer;
 	s32 ret = -1;

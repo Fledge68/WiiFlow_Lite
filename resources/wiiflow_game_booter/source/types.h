@@ -6,6 +6,7 @@
 extern "C" {
 #endif
 
+
 enum
 {
     TYPE_WII_GAME = 0,
@@ -15,6 +16,8 @@ enum
     TYPE_HOMEBREW,
     TYPE_END
 };
+#define NoGameID(x)			(x == TYPE_PLUGIN || x == TYPE_HOMEBREW)
+
 
 enum
 {
@@ -22,10 +25,10 @@ enum
 	IOS_TYPE_WANIN,
 	IOS_TYPE_HERMES,
 	IOS_TYPE_KWIIRK,
-	IOS_TYPE_NO_CIOS,
+	IOS_TYPE_NORMAL_IOS,
+	IOS_TYPE_STUB,
 };
-
-#define NoGameID(x)			(x == TYPE_PLUGIN || x == TYPE_HOMEBREW)
+#define CustomIOS(x)		(x != IOS_TYPE_NORMAL_IOS && x != IOS_TYPE_STUB)
 
 #ifdef __cplusplus
 }
