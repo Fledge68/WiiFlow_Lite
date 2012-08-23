@@ -36,9 +36,14 @@
 #include <malloc.h>
 
 #include "nand.hpp"
+#include "devicemounter/DeviceHandler.hpp"
 #include "fileOps/fileOps.h"
 #include "gecko/gecko.h"
+#include "loader/alt_ios.h"
+#include "loader/cios.h"
+#include "loader/sys.h"
 #include "loader/wbfs.h"
+#include "music/musicplayer.h"
 #include "memory/memory.h"
 
 u8 *confbuffer ATTRIBUTE_ALIGN(32);
@@ -154,6 +159,13 @@ s32 Nand::Enable_Emu()
 {
 	if(emu_enabled)
 		return 0;
+	if(CurrentIOS.Type == IOS_TYPE_NORMAL_IOS)
+	{
+		m_music.Stop();
+		loadIOS(mainIOS, false, false);
+		DeviceHandler::Instance()->MountAll();
+		m_music.Next();
+	}
 
 	NandDevice *Device = &NandDeviceList[EmuDevice];
 

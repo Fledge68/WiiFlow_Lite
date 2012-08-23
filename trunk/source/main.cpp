@@ -19,14 +19,9 @@
 #include "loader/cios.h"
 #include "loader/nk.h"
 #include "menu/menu.hpp"
+#include "memory/memory.h"
 
 CMenu *mainMenu;
-
-extern "C" 
-{
-extern void __exception_setreload(int t);
-extern int mainIOS;
-}
 
 int main(int argc, char **argv)
 {
@@ -40,8 +35,6 @@ int main(int argc, char **argv)
 	Nand::Instance()->Init_ISFS();
 	MEM2_init(47); //Should be safe to use
 	vid.waitMessage(0.15f);
-
-	AllocSDGeckoBuffer();
 	gprintf(" \nWelcome to %s (%s-r%s)!\nThis is the debug output.\n", APP_NAME, APP_VERSION, SVN_REV);
 
 	char *gameid = NULL;
@@ -81,10 +74,15 @@ int main(int argc, char **argv)
 		CurrentIOS.Revision = 999;
 		DCFlushRange(&CurrentIOS, sizeof(IOS_Info));
 	}
-	else
+	else if(*HW_AHBPROT != 0xFFFFFFFF)
 	{
 		gprintf("Loading cIOS: %d\n", mainIOS);	
-		iosOK = loadIOS(mainIOS, false, false) && CurrentIOS.Type != IOS_TYPE_NO_CIOS;
+		iosOK = loadIOS(mainIOS, false, false) && CustomIOS(CurrentIOS.Type);
+	}
+	else
+	{
+		gprintf("Using IOS%d and AHBPROT patched out\n", IOS_GetVersion());
+		iosOK = loadIOS(IOS_GetVersion(), false, false);
 	}
 #else
 	iosOK = true;
@@ -100,10 +98,10 @@ int main(int argc, char **argv)
 	{
 		Open_Inputs(); //(re)init wiimote
 #ifndef DOLPHIN
+		DeviceHandler::Instance()->MountSD();
 		const DISC_INTERFACE *handle = DeviceHandler::GetUSB0Interface();
 		bool deviceAvailable = false;
 		u8 timeout = 0;
-		DeviceHandler::Instance()->MountSD();
 		while(!deviceAvailable && timeout++ != 20)
 		{
 			deviceAvailable = (handle->startup() && handle->isInserted());

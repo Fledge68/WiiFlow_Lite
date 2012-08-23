@@ -56,17 +56,10 @@ void DeviceHandler::DestroyInstance()
 	instance = NULL;
 }
 
-bool DeviceHandler::MountAll()
+void DeviceHandler::MountAll()
 {
-	bool result = false;
-
-	for(u32 i = SD; i < MAXDEVICES; i++)
-	{
-		if(Mount(i))
-			result = true;
-	}
-
-	return result;
+	MountSD();
+	MountAllUSB();
 }
 
 void DeviceHandler::UnMountAll()
@@ -172,6 +165,11 @@ bool DeviceHandler::MountUSB(int pos)
 
 bool DeviceHandler::MountAllUSB()
 {
+	if(CurrentIOS.Type == IOS_TYPE_NORMAL_IOS)
+		usb_libogc_mode = 1;
+	else
+		usb_libogc_mode = 0;
+
 	if(!usb0)
 		usb0 = new PartitionHandle(GetUSB0Interface());
 	//if(!usb1 && (Settings.USBPort == 1 || Settings.USBPort == 2))

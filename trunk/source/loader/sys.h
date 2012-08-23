@@ -36,6 +36,9 @@ void Sys_ExitTo(int);
 void Open_Inputs(void);
 void Close_Inputs(void);
 
+extern void __exception_setreload(int t);
+extern int mainIOS;
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

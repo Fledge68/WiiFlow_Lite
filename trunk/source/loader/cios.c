@@ -118,13 +118,13 @@ u8 IOS_GetType(u8 slot)
 	u32 TMD_Length;
 	signed_blob *TMD_Buffer = GetTMD(slot, &TMD_Length);
 	if(TMD_Buffer == NULL)
-		return IOS_TYPE_NO_CIOS;
+		return IOS_TYPE_STUB;
 
 	tmd *iosTMD = (tmd*)SIGNATURE_PAYLOAD(TMD_Buffer);
 	if(Title_GetSize_FromTMD(iosTMD) < 0x100000 || iosTMD->title_version == 65280)
 	{
 		MEM2_free(TMD_Buffer);
-		return IOS_TYPE_NO_CIOS;
+		return IOS_TYPE_STUB;
 	}
 	u32 title_rev = iosTMD->title_version;
 	MEM2_free(TMD_Buffer);
@@ -156,7 +156,7 @@ u8 IOS_GetType(u8 slot)
 			if(IOS_D2X(slot, &base))
 				return IOS_TYPE_D2X;
 			else
-				return IOS_TYPE_NO_CIOS;
+				return IOS_TYPE_NORMAL_IOS;
 	}
 }
 

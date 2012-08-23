@@ -86,12 +86,16 @@ bool loadIOS(int ios, bool launch_game, bool emu_channel)
 	WDVD_Close();
 	USBStorage2_Deinit();
 	mload_close();
+	bool iosOK = true;
 
-	gprintf("Reloading into IOS %i from %i...\n", ios, IOS_GetVersion());
-	Nand::Instance()->DeInit_ISFS();
-	bool iosOK = IOS_ReloadIOS(ios) == 0;
-	Nand::Instance()->Init_ISFS();
-	gprintf("AHBPROT after IOS Reload: %u\n", (*HW_AHBPROT == 0xFFFFFFFF));
+	if(ios != IOS_GetVersion())
+	{
+		gprintf("Reloading into IOS %i from %i...\n", ios, IOS_GetVersion());
+		Nand::Instance()->DeInit_ISFS();
+		iosOK = IOS_ReloadIOS(ios) == 0;
+		Nand::Instance()->Init_ISFS();
+		gprintf("AHBPROT after IOS Reload: %u\n", (*HW_AHBPROT == 0xFFFFFFFF));
+	}
 
 	IOS_GetCurrentIOSInfo();
 	if(CurrentIOS.Type == IOS_TYPE_HERMES)
