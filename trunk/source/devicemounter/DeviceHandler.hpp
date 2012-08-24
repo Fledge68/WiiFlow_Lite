@@ -69,6 +69,8 @@ class DeviceHandler
 		static DeviceHandler * Instance();
 		static void DestroyInstance();
 
+		void SetModes();
+
 		void MountAll();
 		void UnMountAll();
 		bool Mount(int dev);

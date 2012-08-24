@@ -20,6 +20,7 @@
 #include <string.h>
 #include <malloc.h>
 #include <ogc/machine/processor.h>
+#include <sdcard/wiisd_io.h>
 
 // for directory parsing and low-level file I/O
 #include <sys/types.h>
@@ -28,6 +29,7 @@
 #include <dirent.h>
 
 #include "gc/gc.hpp"
+#include "fat.h"
 #include "gecko/gecko.h"
 #include "fileOps/fileOps.h"
 #include "loader/utils.h"
@@ -182,12 +184,7 @@ bool DEVO_Installed(const char* path)
 	return devo;
 }
 
-void DEVO_ShowReport(void)
-{
-	gprintf("%s\n", (char*)loader_bin + 4);
-}
-
-void DEVO_SetOptions(const char *isopath, const char *partition, const char *loader, const char *gameID, bool memcard_emu)
+void DEVO_GetLoader(const char *loader)
 {
 	//Read in loader.bin
 	char loader_path[256];
@@ -209,8 +206,13 @@ void DEVO_SetOptions(const char *isopath, const char *partition, const char *loa
 		gprintf("Devolution loader.bin not found!\n");
 		return;
 	}
+	gprintf("%s\n", (char*)loader_bin + 4);
+}
 
-	DEVO_ShowReport();
+void DEVO_SetOptions(const char *isopath, const char *partition, const char *gameID, bool memcard_emu)
+{
+	// re-mount device we need
+	fatMountSimple(partition, strncasecmp(partition, "sd", 2) ? &__io_usbstorage : &__io_wiisd);
 
 	//start writing cfg to mem
 	struct stat st;
@@ -218,7 +220,7 @@ void DEVO_SetOptions(const char *isopath, const char *partition, const char *loa
 	char iso2path[256];
 
 	stat(isopath, &st);
-	f = fopen(isopath, "rb");
+	FILE *f = fopen(isopath, "rb");
 	gprintf("Read ISO File: \"%s\"\n", isopath);
 	fread((u8*)0x80000000, 1, 32, f);
 	fclose(f);
@@ -296,6 +298,8 @@ void DEVO_SetOptions(const char *isopath, const char *partition, const char *loa
 
 	// flush disc ID and Devolution config out to memory
 	DCFlushRange((void*)0x80000000, 64);
+
+	fatUnmount(partition);
 }
 
 void DEVO_Boot()

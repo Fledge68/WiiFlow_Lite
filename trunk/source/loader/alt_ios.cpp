@@ -14,6 +14,7 @@
 #include "gecko/gecko.h"
 #include "memory/mem2.hpp"
 #include "memory/memory.h"
+#include "music/musicplayer.h"
 #include "types.h"
 
 // mload from uloader by Hermes
@@ -81,15 +82,16 @@ void load_dip_249()
 bool loadIOS(int ios, bool launch_game, bool emu_channel)
 {
 #ifndef DOLPHIN
-	Close_Inputs();
-	DeviceHandler::Instance()->UnMountAll();
-	WDVD_Close();
-	USBStorage2_Deinit();
-	mload_close();
 	bool iosOK = true;
-
 	if(ios != IOS_GetVersion())
 	{
+		m_music.Stop();
+		Close_Inputs();
+		DeviceHandler::Instance()->UnMountAll();
+		WDVD_Close();
+		USBStorage2_Deinit();
+		mload_close();
+
 		gprintf("Reloading into IOS %i from %i...\n", ios, IOS_GetVersion());
 		Nand::Instance()->DeInit_ISFS();
 		iosOK = IOS_ReloadIOS(ios) == 0;
@@ -102,6 +104,7 @@ bool loadIOS(int ios, bool launch_game, bool emu_channel)
 		load_ehc_module_ex();
 	else if(CurrentIOS.Type == IOS_TYPE_WANIN && CurrentIOS.Revision >= 18)
 		load_dip_249();
+	DeviceHandler::Instance()->SetModes();
 
 	if(!emu_channel)
 	{
@@ -112,7 +115,10 @@ bool loadIOS(int ios, bool launch_game, bool emu_channel)
 			Disc_Init();
 		}
 		else
+		{
+			DeviceHandler::Instance()->MountAll();
 			Open_Inputs();
+		}
 	}
 
 	return iosOK;
