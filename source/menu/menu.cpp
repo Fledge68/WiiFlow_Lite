@@ -213,7 +213,7 @@ void CMenu::init(void)
 		WriteToSD = m_cfg.getBool("DEBUG", "sd_write_log", false);
 		bufferMessages = WriteToSD;
 	}
-
+	useMainIOS = m_cfg.getBool("GENERAL", "force_cios_load", false);
 	bool onUSB = m_cfg.getBool("GENERAL", "data_on_usb", strncmp(drive, "usb", 3) == 0);
 
 	drive = check; //reset the drive variable for the check
@@ -417,7 +417,7 @@ void CMenu::init(void)
 		m_loc.load(fmt("%s/%s.ini", m_languagesDir.c_str(), m_curLanguage.c_str()));
 	}
 	bool extcheck = m_cfg.getBool("GENERAL", "extended_list_check", false);
-	bool skipcheck = m_cfg.getBool("GENERAL", "skip_list_check", false);
+	bool skipcheck = m_cfg.getBool("GENERAL", "skip_list_check", true);
 	m_tempView = false;
 	
 	m_gameList.Init(m_listCacheDir, m_settingsDir, m_loc.getString(m_curLanguage, "gametdb_code", "EN"), m_DMLgameDir, extcheck, skipcheck);
@@ -492,7 +492,7 @@ void CMenu::init(void)
 
 bool cleaned_up = false;
 
-void CMenu::cleanup(bool hb)
+void CMenu::cleanup()
 {
 	if(cleaned_up)
 		return;
@@ -508,8 +508,6 @@ void CMenu::cleanup(bool hb)
 	SoundHandler::DestroyInstance();
 	soundDeinit();
 
-	if(!hb)
-		DeviceHandler::DestroyInstance();
 	m_vid.cleanup();
 	m_cf.shutdown();
 

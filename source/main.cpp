@@ -22,6 +22,7 @@
 #include "memory/memory.h"
 
 CMenu *mainMenu;
+bool useMainIOS;
 
 int main(int argc, char **argv)
 {
@@ -34,7 +35,6 @@ int main(int argc, char **argv)
 
 	Nand::Instance()->Init_ISFS();
 	MEM2_init(47); //Should be safe to use
-	vid.waitMessage(0.15f);
 	gprintf(" \nWelcome to %s (%s-r%s)!\nThis is the debug output.\n", APP_NAME, APP_VERSION, SVN_REV);
 
 	char *gameid = NULL;
@@ -92,56 +92,47 @@ int main(int argc, char **argv)
 	Sys_Init();
 	Sys_ExitTo(EXIT_TO_HBC);
 
-	int ret = 1;
-
-	while(ret == 1) 
-	{
-		Open_Inputs(); //(re)init wiimote
+	Open_Inputs(); //(re)init wiimote
 #ifndef DOLPHIN
-		const DISC_INTERFACE *handle = DeviceHandler::GetUSB0Interface();
-		bool deviceAvailable = false;
-		u8 timeout = 0;
-		while(!deviceAvailable && timeout++ != 20)
-		{
-			deviceAvailable = (handle->startup() && handle->isInserted());
-			if(deviceAvailable)
-				break;
-			usleep(50000);
-		}
-#endif
-		DeviceHandler::Instance()->MountAll();
-		if(DeviceHandler::Instance()->IsInserted(SD))
-			deviceAvailable = true;
-		bool dipOK = Disc_Init() >= 0;
-
-		mainMenu = new CMenu(vid);
-		mainMenu->init();
-
-		if(!iosOK)
-		{
-			mainMenu->terror("errboot1", L"No cIOS found!\ncIOS d2x 249 base 56 and 250 base 57 are enough for all your games.");
+	const DISC_INTERFACE *handle = DeviceHandler::GetUSB0Interface();
+	bool deviceAvailable = false;
+	u8 timeout = time(NULL);
+	while(!deviceAvailable && time(NULL) - timeout < 20)
+	{
+		deviceAvailable = (handle->startup() && handle->isInserted());
+		if(deviceAvailable)
 			break;
-		}
-		else if(!deviceAvailable)
-		{
-			mainMenu->terror("errboot2", L"Could not find a device to save configuration files on!");
-			break;
-		}
-		else if(!dipOK)
-		{
-			mainMenu->terror("errboot3", L"Could not initialize the DIP module!");
-			break;
-		}
-		else if(gameid != NULL && strlen(gameid) == 6)
-			mainMenu->directlaunch(gameid);
-		else
-		{
-			if(Emulator_boot)
-				mainMenu->m_Emulator_boot = true;
-			ret = mainMenu->main();
-		}
+		usleep(50000);
 	}
+#endif
+	DeviceHandler::Instance()->MountAll();
+	if(DeviceHandler::Instance()->IsInserted(SD))
+		deviceAvailable = true;
+	vid.waitMessage(0.15f);
+	bool dipOK = Disc_Init() >= 0;
+
+	mainMenu = new CMenu(vid);
+	mainMenu->init();
+	if(CurrentIOS.Version != mainIOS && useMainIOS)
+		iosOK = loadIOS(mainIOS, false, false) && CustomIOS(CurrentIOS.Type);
+
+	if(!iosOK)
+		mainMenu->terror("errboot1", L"No cIOS found!\ncIOS d2x 249 base 56 and 250 base 57 are enough for all your games.");
+	else if(!deviceAvailable)
+		mainMenu->terror("errboot2", L"Could not find a device to save configuration files on!");
+	else if(!dipOK)
+		mainMenu->terror("errboot3", L"Could not initialize the DIP module!");
+	else if(gameid != NULL && strlen(gameid) == 6)
+		mainMenu->directlaunch(gameid);
+	else
+	{
+		if(Emulator_boot)
+			mainMenu->m_Emulator_boot = true;
+		mainMenu->main();
+	}
+
 	mainMenu->cleanup();
+	DeviceHandler::Instance()->UnMountAll();
 	Nand::Instance()->DeInit_ISFS();
 	Sys_Exit();
 	exit(1);

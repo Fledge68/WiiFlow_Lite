@@ -30,6 +30,8 @@
 
 #include "gc/gc.hpp"
 #include "fat.h"
+#include "devicemounter/sdhc.h"
+#include "devicemounter/usbstorage_libogc.h"
 #include "gecko/gecko.h"
 #include "fileOps/fileOps.h"
 #include "loader/utils.h"
@@ -212,7 +214,7 @@ void DEVO_GetLoader(const char *loader)
 void DEVO_SetOptions(const char *isopath, const char *partition, const char *gameID, bool memcard_emu)
 {
 	// re-mount device we need
-	fatMountSimple(partition, strncasecmp(partition, "sd", 2) ? &__io_usbstorage : &__io_wiisd);
+	fatMountSimple(partition, strncasecmp(partition, "sd", 2) ? &__io_usbstorage_ogc : &__io_sdhc);
 
 	//start writing cfg to mem
 	struct stat st;

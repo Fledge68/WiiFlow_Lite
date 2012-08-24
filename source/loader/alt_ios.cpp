@@ -81,23 +81,24 @@ void load_dip_249()
 
 bool loadIOS(int ios, bool launch_game, bool emu_channel)
 {
+	bool ret = true;
+	m_music.Stop();
+	Close_Inputs();
+	DeviceHandler::Instance()->UnMountAll();
+	WDVD_Close();
+	USBStorage2_Deinit();
+
 #ifndef DOLPHIN
-	bool iosOK = true;
+	mload_close();
 	if(ios != IOS_GetVersion())
 	{
-		m_music.Stop();
-		Close_Inputs();
-		DeviceHandler::Instance()->UnMountAll();
-		WDVD_Close();
-		USBStorage2_Deinit();
-		mload_close();
-
 		gprintf("Reloading into IOS %i from %i...\n", ios, IOS_GetVersion());
 		Nand::Instance()->DeInit_ISFS();
-		iosOK = IOS_ReloadIOS(ios) == 0;
+		ret = IOS_ReloadIOS(ios) == 0;
 		Nand::Instance()->Init_ISFS();
 		gprintf("AHBPROT after IOS Reload: %u\n", (*HW_AHBPROT == 0xFFFFFFFF));
 	}
+#endif
 
 	IOS_GetCurrentIOSInfo();
 	if(CurrentIOS.Type == IOS_TYPE_HERMES)
@@ -120,9 +121,5 @@ bool loadIOS(int ios, bool launch_game, bool emu_channel)
 			Open_Inputs();
 		}
 	}
-
-	return iosOK;
-#else
-	return true;
-#endif
+	return ret;
 }
