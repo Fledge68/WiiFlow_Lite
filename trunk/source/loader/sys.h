@@ -38,6 +38,7 @@ void Close_Inputs(void);
 
 extern void __exception_setreload(int t);
 extern int mainIOS;
+extern bool useMainIOS;
 
 #ifdef __cplusplus
 }

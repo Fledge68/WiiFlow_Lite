@@ -866,6 +866,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	m_cfg.save(true);
 	cleanup();
 
+	DeviceHandler::Instance()->UnMountAll();
 #ifndef DOLPHIN
 	USBStorage2_Deinit();
 	USB_Deinitialize();
@@ -898,10 +899,10 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 	m_cfg.save(true);
 
 	Playlog_Delete();
-	cleanup(true); // wifi and sd gecko doesnt work anymore after cleanup
-
+	cleanup(); // wifi and sd gecko doesnt work anymore after cleanup
 	LoadHomebrew(filepath);
-	DeviceHandler::DestroyInstance(); //homebrew loaded, we can unmount devices now
+	DeviceHandler::Instance()->UnMountAll(); //homebrew loaded, we can unmount devices now
+
 	AddBootArgument(filepath);
 	for(u32 i = 0; i < arguments.size(); ++i)
 		AddBootArgument(arguments[i].c_str());
@@ -987,6 +988,12 @@ int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id, bool emu_channel)
 			return LOAD_IOS_FAILED;
 		}
 		return LOAD_IOS_SUCCEEDED;
+	}
+	else
+	{
+		DeviceHandler::Instance()->Mount(currentPartition);
+		DeviceHandler::Instance()->Open_WBFS(currentPartition);
+		Disc_Init();
 	}
 	return LOAD_IOS_NOT_NEEDED;
 }
@@ -1087,6 +1094,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	m_gcfg2.save(true);
 	m_cat.save(true);
 	m_cfg.save(true);
+	cleanup();
 
 	if(useNK2o && !emu_disabled)
 	{
@@ -1095,17 +1103,16 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 			error(_t("errneek1", L"Cannot launch neek2o. Verify your neek2o setup"));
 			Sys_LoadMenu();
 		}
-		cleanup();
+		DeviceHandler::Instance()->UnMountAll();
 		Launch_nk(gameTitle, emuPath.c_str());
 		while(1);
 	}
-	else
-		cleanup();
+	DeviceHandler::Instance()->UnMountAll();
 
 	if(!forwarder)
 	{
 		if(!emu_disabled)
-		{			
+		{
 			Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
 			Nand::Instance()->Enable_Emu();
 		}
@@ -1366,6 +1373,8 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	m_cat.save(true);
 	m_cfg.save(true);
 	cleanup(); // wifi and sd gecko doesnt work anymore after cleanup
+	DeviceHandler::Instance()->UnMountAll();
+
 #ifndef DOLPHIN
 	bool iosLoaded = false;
 	if(!dvd || neek2o())

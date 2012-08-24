@@ -28,10 +28,7 @@
 
 using namespace std;
 
-extern "C" 
-{
-	extern u8 currentPartition;
-}
+extern "C" { extern u8 currentPartition; }
 
 class CMenu
 {
@@ -43,7 +40,7 @@ public:
 	void terror(const char *key, const wchar_t *msg) { error(_fmt(key, msg)); }
 	void exitHandler(int ExitTo);
 	int main(void);
-	void cleanup(bool hb = false);
+	void cleanup(void);
 	u8 m_current_view;
 private:
 	struct SZone
