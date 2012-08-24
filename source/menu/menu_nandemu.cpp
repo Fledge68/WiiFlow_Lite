@@ -200,7 +200,7 @@ void CMenu::_enableNandEmu(bool fromconfig)
 
 	if(!disable)
 	{
-		bool isD2XnewerThanV6 = false;
+		bool isD2XnewerThanV6 = (CurrentIOS.Type == IOS_TYPE_NEEK2O);
 		if(CurrentIOS.Revision > 6 && CurrentIOS.Type == IOS_TYPE_D2X)
 			isD2XnewerThanV6 = true;
 		if(m_current_view == COVERFLOW_CHANNEL && !m_cfg.getBool("NAND", "disable", true) && !neek2o() && !m_tempView)

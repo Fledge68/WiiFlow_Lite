@@ -809,6 +809,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	}
 
 	u8 loader = min((u32)m_gcfg2.getInt(id, "gc_loader", 0), ARRAY_SIZE(CMenu::_GCLoader) - 1u);
+	bool memcard_emu = m_gcfg2.getBool(id, "devo_memcard_emu", false);
 
 	if(disc)
 	{
@@ -856,8 +857,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	else if(loader == 2 || (loader == 0 && m_devo_installed && strcasestr(path.c_str(), "boot.bin") == NULL))
 	{
 		loader = 2;
-		bool memcard_emu = m_gcfg2.getBool(id, "devo_memcard_emu", false);
-		DEVO_SetOptions(path.c_str(), DeviceName[currentPartition], m_dataDir.c_str(), id.c_str(), memcard_emu);
+		DEVO_GetLoader(m_dataDir.c_str());
 	}
 
 	m_gcfg1.save(true);
@@ -865,21 +865,24 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	m_cat.save(true);
 	m_cfg.save(true);
 	cleanup();
+
 #ifndef DOLPHIN
 	USBStorage2_Deinit();
 	USB_Deinitialize();
+	Nand::Instance()->DeInit_ISFS();
 #endif
+
 	GC_SetVideoMode(videoMode, videoSetting);
 	GC_SetLanguage(GClanguage);
 	if(loader == 2)
 	{
 		loadIOS(58, true, true);
 		writeStub();
+		DEVO_SetOptions(path.c_str(), DeviceName[currentPartition], id.c_str(), memcard_emu);
 		DEVO_Boot();
 	}
-	DML_New_WriteOptions();
 
-	Nand::Instance()->DeInit_ISFS();
+	DML_New_WriteOptions();
 	WII_Initialize();
 	if(WII_LaunchTitle(0x100000100LL) < 0)
 		Sys_LoadMenu();

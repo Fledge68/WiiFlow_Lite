@@ -115,35 +115,33 @@ void DeviceHandler::UnMount(int dev)
 		UnMountUSB(dev-USB1);
 }
 
+void DeviceHandler::SetModes()
+{
+	/* Set for USB */
+	if(CurrentIOS.Type == IOS_TYPE_NORMAL_IOS)
+		usb_libogc_mode = 1;
+	else
+		usb_libogc_mode = 0;
+	/* Set for SD */
+	if(CurrentIOS.Type == IOS_TYPE_D2X)
+		sdhc_mode_sd = 0;
+	else
+		sdhc_mode_sd = 1;
+}
+
 bool DeviceHandler::MountSD()
 {
-	if(sd)
-	{
-		delete sd;
-		sd = NULL;
-	}
-	sd = new PartitionHandle(&__io_sdhc);
-	if(sd->GetPartitionCount() < 1)
-	{
-		delete sd;
-		sdhc_mode_sd = 1;
-		gprintf("Couldn't find SD Card. Trying __io_wiisd mode\n");
+	if(!sd)
 		sd = new PartitionHandle(&__io_sdhc);
-	}
-	if(sd->GetPartitionCount() < 1)
+	if(sd && sd->GetPartitionCount() < 1)
 	{
 		delete sd;
 		sd = NULL;
-		sdhc_mode_sd = 0;
-		gprintf("SD Card not found.\n");
 		return false;
 	}
-	gprintf("SD Card found.\n");
-
 	//! Mount only one SD Partition
 	return sd->Mount(0, DeviceName[SD], true);
 }
-
 
 bool DeviceHandler::MountUSB(int pos)
 {
@@ -165,36 +163,21 @@ bool DeviceHandler::MountUSB(int pos)
 
 bool DeviceHandler::MountAllUSB()
 {
-	if(CurrentIOS.Type == IOS_TYPE_NORMAL_IOS)
-		usb_libogc_mode = 1;
-	else
-		usb_libogc_mode = 0;
-
 	if(!usb0)
 		usb0 = new PartitionHandle(GetUSB0Interface());
-	//if(!usb1 && (Settings.USBPort == 1 || Settings.USBPort == 2))
-		//usb1 = new PartitionHandle(GetUSB1Interface());
-
 	if(usb0 && usb0->GetPartitionCount() < 1)
 	{
 		delete usb0;
 		usb0 = NULL;
+		return false;
 	}
-	if(usb1 && usb1->GetPartitionCount() < 1)
-	{
-		delete usb1;
-		usb1 = NULL;
-	}
-
 	bool result = false;
 	int partCount = GetUSBPartitionCount();
-
 	for(int i = 0; i < partCount; i++)
 	{
 		if(MountUSB(i))
 			result = true;
 	}
-
 	return result;
 }
 

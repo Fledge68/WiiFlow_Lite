@@ -69,7 +69,7 @@ int main(int argc, char **argv)
 		iosOK = true;
 		memset(&CurrentIOS, 0, sizeof(IOS_Info));
 		CurrentIOS.Version = 254;
-		CurrentIOS.Type = IOS_TYPE_D2X;
+		CurrentIOS.Type = IOS_TYPE_NEEK2O;
 		CurrentIOS.Base = 254;
 		CurrentIOS.Revision = 999;
 		DCFlushRange(&CurrentIOS, sizeof(IOS_Info));
@@ -77,12 +77,12 @@ int main(int argc, char **argv)
 	else if(*HW_AHBPROT != 0xFFFFFFFF)
 	{
 		gprintf("Loading cIOS: %d\n", mainIOS);	
-		iosOK = loadIOS(mainIOS, false, false) && CustomIOS(CurrentIOS.Type);
+		iosOK = loadIOS(mainIOS, true, true) && CustomIOS(CurrentIOS.Type);
 	}
 	else
 	{
-		gprintf("Using IOS%d and AHBPROT patched out\n", IOS_GetVersion());
-		iosOK = loadIOS(IOS_GetVersion(), false, false);
+		gprintf("AHBPROT patched out, use IOS58\n");
+		iosOK = loadIOS(58, true, true);
 	}
 #else
 	iosOK = true;
@@ -98,7 +98,6 @@ int main(int argc, char **argv)
 	{
 		Open_Inputs(); //(re)init wiimote
 #ifndef DOLPHIN
-		DeviceHandler::Instance()->MountSD();
 		const DISC_INTERFACE *handle = DeviceHandler::GetUSB0Interface();
 		bool deviceAvailable = false;
 		u8 timeout = 0;
@@ -109,13 +108,10 @@ int main(int argc, char **argv)
 				break;
 			usleep(50000);
 		}
-		DeviceHandler::Instance()->MountAllUSB();
+#endif
+		DeviceHandler::Instance()->MountAll();
 		if(DeviceHandler::Instance()->IsInserted(SD))
 			deviceAvailable = true;
-#else
-		bool deviceAvailable = true;
-		DeviceHandler::Instance()->MountAll();
-#endif
 		bool dipOK = Disc_Init() >= 0;
 
 		mainMenu = new CMenu(vid);
