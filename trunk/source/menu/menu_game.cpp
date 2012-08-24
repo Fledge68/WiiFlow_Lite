@@ -1104,8 +1104,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 			Sys_LoadMenu();
 		}
 		DeviceHandler::Instance()->UnMountAll();
-		Launch_nk(gameTitle, emuPath.c_str());
-		while(1);
+		Launch_nk(gameTitle, emuPath.size() > 1 ? emuPath.c_str() : NULL);
 	}
 	DeviceHandler::Instance()->UnMountAll();
 
