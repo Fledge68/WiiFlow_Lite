@@ -73,6 +73,7 @@ int main(int argc, char **argv)
 		CurrentIOS.Base = 254;
 		CurrentIOS.Revision = 999;
 		DCFlushRange(&CurrentIOS, sizeof(IOS_Info));
+		DeviceHandler::Instance()->SetModes();
 	}
 	else if(*HW_AHBPROT != 0xFFFFFFFF)
 	{
