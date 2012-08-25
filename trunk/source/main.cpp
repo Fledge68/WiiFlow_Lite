@@ -75,15 +75,15 @@ int main(int argc, char **argv)
 		DCFlushRange(&CurrentIOS, sizeof(IOS_Info));
 		DeviceHandler::Instance()->SetModes();
 	}
-	else if(*HW_AHBPROT != 0xFFFFFFFF)
+	else if(AHBRPOT_Patched())
 	{
 		gprintf("Loading cIOS: %d\n", mainIOS);	
-		iosOK = loadIOS(mainIOS, true, true) && CustomIOS(CurrentIOS.Type);
+		iosOK = loadIOS(mainIOS, false) && CustomIOS(CurrentIOS.Type);
 	}
 	else
 	{
 		gprintf("AHBPROT patched out, use IOS58\n");
-		iosOK = loadIOS(58, true, true);
+		iosOK = loadIOS(58, false);
 	}
 #else
 	iosOK = true;
@@ -112,7 +112,7 @@ int main(int argc, char **argv)
 	mainMenu = new CMenu(vid);
 	mainMenu->init();
 	if(CurrentIOS.Version != mainIOS && useMainIOS)
-		iosOK = loadIOS(mainIOS, false, false) && CustomIOS(CurrentIOS.Type);
+		iosOK = loadIOS(mainIOS, true) && CustomIOS(CurrentIOS.Type);
 	if(DeviceHandler::Instance()->IsInserted(SD) || DeviceHandler::Instance()->IsInserted(USB1))
 		deviceAvailable = true;
 

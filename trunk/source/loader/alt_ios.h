@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-bool loadIOS(int ios, bool launch_game, bool emu_channel);
+bool loadIOS(int ios, bool MountDevices);
 
 #ifdef __cplusplus
 }

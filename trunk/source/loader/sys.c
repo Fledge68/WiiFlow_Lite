@@ -158,3 +158,8 @@ void Sys_LoadMenu(void)
 	/* Return to the Wii system menu */
 	SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
 }
+
+bool AHBRPOT_Patched(void)
+{
+	return (*HW_AHBPROT == 0xFFFFFFFF);
+}
