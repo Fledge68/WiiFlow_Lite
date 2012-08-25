@@ -10,6 +10,7 @@
 #include "wdvd.h"
 #include "channel/nand.hpp"
 #include "devicemounter/DeviceHandler.hpp"
+#include "devicemounter/sdhc.h"
 #include "devicemounter/usbstorage.h"
 #include "gecko/gecko.h"
 #include "memory/mem2.hpp"
@@ -79,14 +80,14 @@ void load_dip_249()
 	mload_close();
 }
 
-bool loadIOS(int ios, bool launch_game, bool emu_channel)
+bool loadIOS(int ios, bool MountDevices)
 {
 	bool ret = true;
 	m_music.Stop();
 	Close_Inputs();
 	DeviceHandler::Instance()->UnMountAll();
-	WDVD_Close();
 	USBStorage2_Deinit();
+	SDHC_Close();
 
 #ifndef DOLPHIN
 	mload_close();
@@ -94,9 +95,11 @@ bool loadIOS(int ios, bool launch_game, bool emu_channel)
 	{
 		gprintf("Reloading into IOS %i from %i...\n", ios, IOS_GetVersion());
 		Nand::Instance()->DeInit_ISFS();
+		WDVD_Close();
 		ret = IOS_ReloadIOS(ios) == 0;
+		WDVD_Init();
 		Nand::Instance()->Init_ISFS();
-		gprintf("AHBPROT after IOS Reload: %u\n", (*HW_AHBPROT == 0xFFFFFFFF));
+		gprintf("AHBPROT after IOS Reload: %u\n", AHBRPOT_Patched());
 	}
 #endif
 
@@ -106,20 +109,8 @@ bool loadIOS(int ios, bool launch_game, bool emu_channel)
 	else if(CurrentIOS.Type == IOS_TYPE_WANIN && CurrentIOS.Revision >= 18)
 		load_dip_249();
 	DeviceHandler::Instance()->SetModes();
+	if(MountDevices)
+		DeviceHandler::Instance()->MountAll();
 
-	if(!emu_channel)
-	{
-		if(launch_game)
-		{
-			DeviceHandler::Instance()->Mount(currentPartition);
-			DeviceHandler::Instance()->Open_WBFS(currentPartition);
-			Disc_Init();
-		}
-		else
-		{
-			DeviceHandler::Instance()->MountAll();
-			Open_Inputs();
-		}
-	}
 	return ret;
 }

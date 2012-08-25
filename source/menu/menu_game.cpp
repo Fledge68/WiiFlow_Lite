@@ -13,6 +13,7 @@
 #include "channel/channels.h"
 #include "channel/nand.hpp"
 #include "devicemounter/DeviceHandler.hpp"
+#include "devicemounter/sdhc.h"
 #include "devicemounter/usbstorage.h"
 #include "fileOps/fileOps.h"
 #include "gc/gc.hpp"
@@ -867,17 +868,16 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	cleanup();
 
 	DeviceHandler::Instance()->UnMountAll();
-#ifndef DOLPHIN
-	USBStorage2_Deinit();
-	USB_Deinitialize();
 	Nand::Instance()->DeInit_ISFS();
-#endif
 
 	GC_SetVideoMode(videoMode, videoSetting);
 	GC_SetLanguage(GClanguage);
 	if(loader == 2)
 	{
-		loadIOS(58, true, true);
+		if(AHBRPOT_Patched())
+			loadIOS(58, false);
+		else //use cIOS instead to make sure Devolution works anyways
+			loadIOS(mainIOS, false);
 		writeStub();
 		DEVO_SetOptions(path.c_str(), DeviceName[currentPartition], id.c_str(), memcard_emu);
 		DEVO_Boot();
@@ -906,22 +906,17 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 	AddBootArgument(filepath);
 	for(u32 i = 0; i < arguments.size(); ++i)
 		AddBootArgument(arguments[i].c_str());
-
-#ifndef DOLPHIN
-	USBStorage2_Deinit();
-	USB_Deinitialize();
-#endif
-	loadIOS(58, true, true);
+	loadIOS(58, false);
 	writeStub();
 	BootHomebrew();
 }
 
-int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id, bool emu_channel)
+int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id)
 {
 	gprintf("Game ID# %s requested IOS %d.  User selected %d\n", id.c_str(), gameIOS, userIOS);
 	if(neek2o())
 	{
-		if(!loadIOS(gameIOS, true, emu_channel))
+		if(!loadIOS(gameIOS, false))
 		{
 			_reload_wifi_gecko();
 			error(sfmt("errgame4", L"Couldn't load IOS %i", gameIOS));
@@ -981,19 +976,13 @@ int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id, bool emu_channel)
 	if(gameIOS != CurrentIOS.Version)
 	{
 		gprintf("Reloading IOS into %d\n", gameIOS);
-		if(!loadIOS(gameIOS, true, false))
+		if(!loadIOS(gameIOS, true))
 		{
 			_reload_wifi_gecko();
 			error(sfmt("errgame4", L"Couldn't load IOS %i", gameIOS));
 			return LOAD_IOS_FAILED;
 		}
 		return LOAD_IOS_SUCCEEDED;
-	}
-	else
-	{
-		DeviceHandler::Instance()->Mount(currentPartition);
-		DeviceHandler::Instance()->Open_WBFS(currentPartition);
-		Disc_Init();
 	}
 	return LOAD_IOS_NOT_NEEDED;
 }
@@ -1121,7 +1110,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 			Nand::Instance()->Disable_Emu();
 			usleep(1000);
 		}
-		if(_loadIOS(gameIOS, userIOS, id, !emu_disabled) == LOAD_IOS_FAILED)
+		if(_loadIOS(gameIOS, userIOS, id) == LOAD_IOS_FAILED)
 			return;
 	}
 	if(CurrentIOS.Type == IOS_TYPE_D2X && rtrn != NULL && strlen(rtrn) == 4)
@@ -1278,7 +1267,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		emulate_mode = 0;	
 
 	if(!dvd && emulate_mode)
-	{		
+	{
 		if(emuPartition < 0)
 		{
 			if(emulate_mode == 4)
@@ -1302,9 +1291,9 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 				Nand::Instance()->CreatePath("%s:/wiiflow", DeviceName[emuPartition]);
 				Nand::Instance()->CreatePath("%s:/wiiflow/nandemu", DeviceName[emuPartition]);
 			}
-		}		
+		}
 	
-		char basepath[64];		
+		char basepath[64];
 		snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[emuPartition], emuPath.c_str());
 		
 		if(emulate_mode == 2 || emulate_mode > 3)
@@ -1316,7 +1305,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 				if(!_AutoExtractSave(id))
 					Nand::Instance()->CreateTitleTMD(basepath, hdr);
 				_showWaitMessage();
-			}			
+			}
 		}
 		if(emulate_mode > 2)
 		{
@@ -1324,6 +1313,22 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			Nand::Instance()->Do_Region_Change(id);
 		}
 	}
+
+#ifndef DOLPHIN
+	bool iosLoaded = false;
+	if(!dvd || neek2o())
+	{
+		int result = _loadIOS(GetRequestedGameIOS(hdr), m_gcfg2.getInt(id, "ios"), id);
+		if(result == LOAD_IOS_FAILED)
+			return;
+		if(result == LOAD_IOS_SUCCEEDED)
+			iosLoaded = true;
+	}
+#else
+	bool iosLoaded = true;
+#endif
+
+	DeviceHandler::Instance()->Open_WBFS(currentPartition);
 	bool wbfs_partition = (DeviceHandler::Instance()->GetFSType(currentPartition) == PART_FS_WBFS);
 	if(!dvd && !wbfs_partition && get_frag_list((u8 *)id.c_str(), (char*)path.c_str(), currentPartition == 0 ? 0x200 : USBStorage2_GetSectorSize()) < 0)
 		return;
@@ -1349,9 +1354,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	if(has_enabled_providers() && _initNetwork() == 0)
 		add_game_to_card(id.c_str());
 
-	int userIOS = 0;
-	m_gcfg2.getInt(id, "ios", &userIOS);
-
 	setLanguage(language);
 
 	if(cheat)
@@ -1361,9 +1363,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	load_wip_patches((u8 *)m_wipDir.c_str(), (u8 *) &id);
 	app_gameconfig_load((u8 *) &id, gameconfig.get(), gameconfigSize);
 	ocarina_load_code(cheatFile.get(), cheatSize);
-	u8 gameIOS = 0;
-	if(!dvd || neek2o())
-		gameIOS = GetRequestedGameIOS(hdr);
 	if(rtrn != NULL && strlen(rtrn) == 4)
 		returnTo = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
 
@@ -1374,19 +1373,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	cleanup(); // wifi and sd gecko doesnt work anymore after cleanup
 	DeviceHandler::Instance()->UnMountAll();
 
-#ifndef DOLPHIN
-	bool iosLoaded = false;
-	if(!dvd || neek2o())
-	{
-		int result = _loadIOS(gameIOS, userIOS, id, false);
-		if(result == LOAD_IOS_FAILED)
-			return;
-		if(result == LOAD_IOS_SUCCEEDED)
-			iosLoaded = true;
-	}
-#else
-	bool iosLoaded = true;
-#endif
 	if(CurrentIOS.Type == IOS_TYPE_D2X)
 	{
 		if(!m_directLaunch && returnTo)
@@ -1446,8 +1432,8 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 #ifndef DOLPHIN
 	USBStorage2_Deinit();
 	USB_Deinitialize();
+	SDHC_Close();
 #endif
-
 	if(CurrentIOS.Type == IOS_TYPE_HERMES)
 	{
 		if(dvd)

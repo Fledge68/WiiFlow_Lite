@@ -214,7 +214,7 @@ void DEVO_GetLoader(const char *loader)
 void DEVO_SetOptions(const char *isopath, const char *partition, const char *gameID, bool memcard_emu)
 {
 	// re-mount device we need
-	fatMountSimple(partition, strncasecmp(partition, "sd", 2) ? &__io_usbstorage_ogc : &__io_sdhc);
+	fatMountSimple(partition, strncasecmp(partition, "sd", 2) ? &__io_usbstorage_ogc : &__io_wiisd);
 
 	//start writing cfg to mem
 	struct stat st;

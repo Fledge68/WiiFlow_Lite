@@ -158,7 +158,7 @@ s32 Nand::Enable_Emu()
 	if(emu_enabled)
 		return 0;
 	if(CurrentIOS.Type == IOS_TYPE_NORMAL_IOS)
-		loadIOS(mainIOS, false, false);
+		loadIOS(mainIOS, true);
 
 	NandDevice *Device = &NandDeviceList[EmuDevice];
 
@@ -1048,7 +1048,7 @@ void Nand::Init_ISFS()
 {
 	gprintf("Init ISFS\n");
 	ISFS_Initialize();
-	if(*HW_AHBPROT == 0xFFFFFFFF) //AHBPROT patched out
+	if(AHBRPOT_Patched())
 	{
 		// Disable memory protection
 		write16(MEM_PROT, 0);
@@ -1063,7 +1063,7 @@ void Nand::Init_ISFS()
 void Nand::DeInit_ISFS()
 {
 	gprintf("Deinit ISFS\n");
-	if(*HW_AHBPROT == 0xFFFFFFFF) //AHBPROT patched out
+	if(AHBRPOT_Patched())
 	{
 		// Disable memory protection
 		write16(MEM_PROT, 0);
