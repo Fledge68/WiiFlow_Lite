@@ -15,6 +15,7 @@ public:
 	void Tick(bool attenuate);
 
 	void SetVolume(u8 volume);
+	void SetMaxVolume(u8 volume);
 	u8 GetVolume() { return m_music_current_volume; };
 	u8 GetMaxVolume() { return m_music_volume; };
 

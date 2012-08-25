@@ -50,6 +50,12 @@ void MusicPlayer::ScanDirectories(const char *directory)
 	closedir(pdir);
 }
 
+void MusicPlayer::SetMaxVolume(u8 volume)
+{
+	m_music_volume = volume;
+	SetVolume(volume);
+}
+
 void MusicPlayer::SetVolume(u8 volume)
 {
 	m_music_current_volume = volume;
