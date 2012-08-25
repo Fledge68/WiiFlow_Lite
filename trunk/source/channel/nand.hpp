@@ -68,7 +68,7 @@ public:
 	void Set_SSMode(bool ssmode) { FullMode = ssmode ? 0x60 : 0; };
 
 	void Init_ISFS();
-	void DeInit_ISFS();
+	void DeInit_ISFS(bool KeepPatches = false);
 
 	const char * Get_NandPath(void) { return NandPath; };
 	u32 Get_Partition(void) { return Partition; };
