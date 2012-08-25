@@ -98,17 +98,14 @@ int main(int argc, char **argv)
 	const DISC_INTERFACE *handle = DeviceHandler::GetUSB0Interface();
 	bool deviceAvailable = false;
 	u8 timeout = time(NULL);
-	while(!deviceAvailable && time(NULL) - timeout < 20)
+	while(time(NULL) - timeout < 20)
 	{
-		deviceAvailable = (handle->startup() && handle->isInserted());
-		if(deviceAvailable)
+		if(handle->startup() && handle->isInserted())
 			break;
 		usleep(50000);
 	}
 #endif
 	DeviceHandler::Instance()->MountAll();
-	if(DeviceHandler::Instance()->IsInserted(SD))
-		deviceAvailable = true;
 	vid.waitMessage(0.15f);
 	bool dipOK = Disc_Init() >= 0;
 
@@ -116,6 +113,8 @@ int main(int argc, char **argv)
 	mainMenu->init();
 	if(CurrentIOS.Version != mainIOS && useMainIOS)
 		iosOK = loadIOS(mainIOS, false, false) && CustomIOS(CurrentIOS.Type);
+	if(DeviceHandler::Instance()->IsInserted(SD) || DeviceHandler::Instance()->IsInserted(USB1))
+		deviceAvailable = true;
 
 	if(!iosOK)
 		mainMenu->terror("errboot1", L"No cIOS found!\ncIOS d2x 249 base 56 and 250 base 57 are enough for all your games.");
