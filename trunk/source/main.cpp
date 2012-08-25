@@ -75,7 +75,7 @@ int main(int argc, char **argv)
 		DCFlushRange(&CurrentIOS, sizeof(IOS_Info));
 		DeviceHandler::Instance()->SetModes();
 	}
-	else if(AHBRPOT_Patched())
+	else if(!AHBRPOT_Patched())
 	{
 		gprintf("Loading cIOS: %d\n", mainIOS);	
 		iosOK = loadIOS(mainIOS, false) && CustomIOS(CurrentIOS.Type);
