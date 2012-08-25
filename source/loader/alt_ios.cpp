@@ -84,7 +84,6 @@ bool loadIOS(int ios, bool MountDevices)
 {
 	bool ret = true;
 	m_music.Stop();
-	Close_Inputs();
 	DeviceHandler::Instance()->UnMountAll();
 	USBStorage2_Deinit();
 	SDHC_Close();
@@ -93,13 +92,14 @@ bool loadIOS(int ios, bool MountDevices)
 	mload_close();
 	if(ios != IOS_GetVersion())
 	{
+		WDVD_Close();
+		Close_Inputs();
 		gprintf("Reloading into IOS %i from %i...\n", ios, IOS_GetVersion());
 		Nand::Instance()->DeInit_ISFS();
-		WDVD_Close();
 		ret = IOS_ReloadIOS(ios) == 0;
-		WDVD_Init();
 		Nand::Instance()->Init_ISFS();
 		gprintf("AHBPROT after IOS Reload: %u\n", AHBRPOT_Patched());
+		WDVD_Init();
 	}
 #endif
 

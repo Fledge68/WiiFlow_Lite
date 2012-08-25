@@ -90,7 +90,7 @@ void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 pat
 	memcpy((void *)0x90000000, &normalCFG, sizeof(the_CFG));
 	DCFlushRange((void *)(0x90000000), sizeof(the_CFG));
 
-	Nand::Instance()->DeInit_ISFS();
+	Nand::Instance()->DeInit_ISFS(true); //cIOS loves magic :P
 	memcpy(EXECUTE_ADDR, wii_game_booter_dol, wii_game_booter_dol_size);
 	DCFlushRange(EXECUTE_ADDR, wii_game_booter_dol_size);
 	BootHomebrew();

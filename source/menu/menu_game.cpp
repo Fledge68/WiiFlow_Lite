@@ -987,33 +987,6 @@ int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id)
 	return LOAD_IOS_NOT_NEEDED;
 }
 
-s32 IOSReloadBlock(u8 reqios, bool enable)
-{
-	s32 ESHandle = IOS_Open("/dev/es", 0);
-
-	if (ESHandle < 0)
-		return ESHandle;
-
-	static ioctlv vector[2] ATTRIBUTE_ALIGN(32);
-	static u32 mode ATTRIBUTE_ALIGN(32);
-	static u32 ios ATTRIBUTE_ALIGN(32);
-
-	mode = enable ? 2 : 0;
-	vector[0].data = &mode;
-	vector[0].len  = sizeof(u32);
-
-	if (enable) {
-		ios = reqios;
-		vector[1].data = &ios;
-		vector[1].len  = sizeof(u32);
-	}
-
-	s32 r = IOS_Ioctlv(ESHandle, 0xA0, 2, 0, vector);
-	IOS_Close(ESHandle);
-
-	return r;
-}
-
 static const char systems[11] = { 'C', 'E', 'F', 'J', 'L', 'M', 'N', 'P', 'Q', 'W', 'H' };
 
 void CMenu::_launchChannel(dir_discHdr *hdr)
@@ -1072,7 +1045,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	m_partRequest = m_cfg.getInt("NAND", "partition", 0);
 	int emuPartition = _FindEmuPart(&emuPath, m_partRequest, false);
 	
-	bool emu_disabled = m_cfg.getBool("NAND", "disable", true);
+	bool emu_disabled = (m_cfg.getBool("NAND", "disable", true) || neek2o());
 	int emulate_mode = min(max(0, m_cfg.getInt("NAND", "emulation", 1)), (int)ARRAY_SIZE(CMenu::_NandEmu) - 1);
 	
 	int userIOS = m_gcfg2.getInt(id, "ios", 0);
@@ -1097,7 +1070,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	}
 	DeviceHandler::Instance()->UnMountAll();
 
-	if(!forwarder)
+	if(!forwarder || neek2o())
 	{
 		if(!emu_disabled)
 		{
@@ -1127,7 +1100,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		gprintf("Return to channel %s %s. Using new d2x way\n", rtrn, IOS_Ioctlv(ESHandle, 0xA1, 1, 0, vector) != -101 ? "Succeeded" : "Failed!" );
 		IOS_Close(ESHandle);
 	}
-	if(!emu_disabled && !neek2o())
+	if(!emu_disabled)
 	{
 		Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
 		if(emulate_mode == 1)
@@ -1167,6 +1140,8 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	string id(hdr->id);
 	string path(hdr->path);
 
+	m_gameSound.Stop();
+	CheckGameSoundThread();
 	Nand::Instance()->Disable_Emu();
 
 	if(neek2o())
@@ -1257,15 +1232,14 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	
 	u8 emulate_mode = min((u32)m_gcfg2.getInt(id, "emulate_save", 0), ARRAY_SIZE(CMenu::_SaveEmu) - 1u);
 
-	if (emulate_mode == 0)
+	if(emulate_mode == 0)
 	{
 		emulate_mode = min(max(0, m_cfg.getInt("GAMES", "save_emulation", 0)), (int)ARRAY_SIZE(CMenu::_GlobalSaveEmu) - 1);
 		if(emulate_mode != 0)
 			emulate_mode++;
 	}
 	else if(emulate_mode == 1)
-		emulate_mode = 0;	
-
+		emulate_mode = 0;
 	if(!dvd && emulate_mode)
 	{
 		if(emuPartition < 0)
@@ -1292,7 +1266,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 				Nand::Instance()->CreatePath("%s:/wiiflow/nandemu", DeviceName[emuPartition]);
 			}
 		}
-	
 		char basepath[64];
 		snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[emuPartition], emuPath.c_str());
 		
@@ -1313,7 +1286,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			Nand::Instance()->Do_Region_Change(id);
 		}
 	}
-
 #ifndef DOLPHIN
 	bool iosLoaded = false;
 	if(!dvd || neek2o())
@@ -1346,7 +1318,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	SmartBuf cheatFile, gameconfig;
 	u32 cheatSize = 0, gameconfigSize = 0, returnTo = 0;
 
-	CheckGameSoundThread();
 	m_cfg.setString("GAMES", "current_item", id);
 	m_gcfg1.setInt("PLAYCOUNT", id, m_gcfg1.getInt("PLAYCOUNT", id, 0) + 1);
 	m_gcfg1.setUInt("LASTPLAYED", id, time(NULL));
@@ -1375,18 +1346,31 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 
 	if(CurrentIOS.Type == IOS_TYPE_D2X)
 	{
+		/* Open ES Module */
+		s32 ESHandle = IOS_Open("/dev/es", 0);
+		/* IOS Reload Block */
+		static ioctlv block_vector[2] ATTRIBUTE_ALIGN(32);
+		static u32 mode ATTRIBUTE_ALIGN(32);
+		static u32 ios ATTRIBUTE_ALIGN(32);
+		mode = 2;
+		block_vector[0].data = &mode;
+		block_vector[0].len  = sizeof(u32);
+		ios = IOS_GetVersion();
+		block_vector[1].data = &ios;
+		block_vector[1].len  = sizeof(u32);
+		gprintf("Block IOS Reload for %i %s\n", ios, IOS_Ioctlv(ESHandle, 0xA0, 2, 0, block_vector) < 0 ? "failed!" : "succeeded");
+		/* Return to */
 		if(!m_directLaunch && returnTo)
 		{
-			static ioctlv vector[1]  ATTRIBUTE_ALIGN(32);
+			static ioctlv rtn_vector[1]  ATTRIBUTE_ALIGN(32);
 			sm_title_id[0] = (((u64)(0x00010001) << 32) | (returnTo & 0xFFFFFFFF));
-			vector[0].data = sm_title_id;
-			vector[0].len = 8;
-			s32 ESHandle = IOS_Open("/dev/es", 0);
-			gprintf("Return to channel %s %s. Using new d2x way\n", rtrn, IOS_Ioctlv(ESHandle, 0xA1, 1, 0, vector) != -101 ? "succeeded" : "failed!");
-			IOS_Close(ESHandle);
+			rtn_vector[0].data = sm_title_id;
+			rtn_vector[0].len = sizeof(u64);
+			gprintf("Return to channel %s %s. Using new d2x way\n", rtrn, IOS_Ioctlv(ESHandle, 0xA1, 1, 0, rtn_vector) != -101 ? "succeeded" : "failed!");
 			returnTo = 0;
 		}
-		IOSReloadBlock(CurrentIOS.Version, true);
+		/* Close ES Module */
+		IOS_Close(ESHandle);
 	}
 	if(emulate_mode && !neek2o())
 	{
