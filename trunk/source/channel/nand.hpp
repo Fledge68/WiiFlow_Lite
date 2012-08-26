@@ -111,6 +111,7 @@ private:
 	s32 __FlashNandFolder(const char *source, const char *dest);
 	s32 __DumpNandFile(const char *source, const char *dest);
 	s32 __DumpNandFolder(const char *source, const char *dest);
+	int __makedir(char *newdir);
 
 	u32 MountedDevice;
 	u32 EmuDevice;

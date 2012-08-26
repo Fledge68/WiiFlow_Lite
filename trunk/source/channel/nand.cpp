@@ -790,7 +790,7 @@ void Nand::CreatePath(const char *path, ...)
 			folder[strlen(folder)-1] = 0;
 
 		char *check = folder;
-		while (true)
+		while(true)
 		{
 			check = strstr(folder, "//");
 			if (check != NULL)
@@ -798,8 +798,7 @@ void Nand::CreatePath(const char *path, ...)
 			else
 				break;
 		}
-
-		fsop_MakeFolder(folder);
+		__makedir(folder);
 		free(folder);
 	}
 	va_end(args);
@@ -1097,4 +1096,65 @@ void Nand::PatchAHB()
 			break;
 		}
 	}
+}
+
+
+/*
+   part of miniunz.c
+   Version 1.01e, February 12th, 2005
+
+   Copyright (C) 1998-2005 Gilles Vollant
+*/
+#include <errno.h>
+#include <fcntl.h>
+#include <utime.h>
+
+struct stat exists;
+static int mymkdir(const char* dirname) 
+{
+	if(stat(dirname, &exists) == 0)
+		return 0;
+	return mkdir(dirname, S_IREAD | S_IWRITE);
+}
+
+int Nand::__makedir(char *newdir)
+{
+	if(stat(newdir, &exists) == 0)
+		return 0;
+
+	int len = (int)strlen(newdir);
+	if(len <= 0)
+		return 0;
+
+	char *buffer = (char*)MEM2_alloc(len + 1);
+	strcpy(buffer, newdir);
+
+	if(buffer[len-1] == '/')
+		buffer[len-1] = '\0';
+	if(mymkdir(buffer) == 0)
+	{
+		MEM2_free(buffer);
+		return 1;
+	}
+
+	char *p = buffer + 1;
+	while(1)
+	{
+		char hold;
+		while(*p && *p != '\\' && *p != '/')
+			p++;
+		hold = *p;
+		*p = 0;
+		if((mymkdir(buffer) == -1) && (errno == ENOENT))
+		{
+			gprintf("couldn't create directory %s\n",buffer);
+			MEM2_free(buffer);
+			return 0;
+		}
+		if(hold == 0)
+			break;
+		*p++ = hold;
+	}
+	MEM2_free(buffer);
+	return 1;
 }
