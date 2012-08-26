@@ -92,11 +92,8 @@ int main(int argc, char **argv)
 	// Init
 	Sys_Init();
 	Sys_ExitTo(EXIT_TO_HBC);
-
-	Open_Inputs(); //(re)init wiimote
 #ifndef DOLPHIN
 	const DISC_INTERFACE *handle = DeviceHandler::GetUSB0Interface();
-	bool deviceAvailable = false;
 	u8 timeout = time(NULL);
 	while(time(NULL) - timeout < 20)
 	{
@@ -110,15 +107,20 @@ int main(int argc, char **argv)
 	bool dipOK = Disc_Init() >= 0;
 
 	mainMenu = new CMenu(vid);
+	Open_Inputs();
 	mainMenu->init();
-	if(CurrentIOS.Version != mainIOS && useMainIOS)
-		iosOK = loadIOS(mainIOS, true) && CustomIOS(CurrentIOS.Type);
-	if(DeviceHandler::Instance()->IsInserted(SD) || DeviceHandler::Instance()->IsInserted(USB1))
-		deviceAvailable = true;
-
+	if(CurrentIOS.Version != mainIOS && !neek2o())
+	{
+		if(useMainIOS || (!DeviceHandler::Instance()->IsInserted(SD) && !DeviceHandler::Instance()->IsInserted(USB1)))
+		{
+			iosOK = loadIOS(mainIOS, true) && CustomIOS(CurrentIOS.Type);
+			Open_Inputs();
+			mainMenu->init();
+		}
+	}
 	if(!iosOK)
 		mainMenu->terror("errboot1", L"No cIOS found!\ncIOS d2x 249 base 56 and 250 base 57 are enough for all your games.");
-	else if(!deviceAvailable)
+	else if(!DeviceHandler::Instance()->IsInserted(SD) && !DeviceHandler::Instance()->IsInserted(USB1))
 		mainMenu->terror("errboot2", L"Could not find a device to save configuration files on!");
 	else if(!dipOK)
 		mainMenu->terror("errboot3", L"Could not initialize the DIP module!");
@@ -130,7 +132,7 @@ int main(int argc, char **argv)
 			mainMenu->m_Emulator_boot = true;
 		mainMenu->main();
 	}
-
+	//Exit WiiFlow, no game booted...
 	mainMenu->cleanup();
 	DeviceHandler::Instance()->UnMountAll();
 	Nand::Instance()->DeInit_ISFS();

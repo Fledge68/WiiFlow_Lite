@@ -170,34 +170,31 @@ s32 USBStorage2_GetCapacity(u32 port, u32 *_sector_size)
 	if((usb_libogc_mode && !__io_usbstorage_ogc.isInserted()) || (!usb_libogc_mode && fd < 0))
 		return 0;
 
-	s32 ret;
-	u32 sector_size = 0;
+	u32 numSectors = 0;
+	u32 sectorSize = 0;
 	USBStorage2_SetPort(port);
 	if(usb_libogc_mode)
-	{
-		sector_size = USB_OGC_GetSectorSize();
-		ret = USB_OGC_GetCapacity();
-	}
+		USB_OGC_GetCapacity(&numSectors, &sectorSize);
 	else
-		ret = IOS_IoctlvFormat(hid, fd, USB_IOCTL_UMS_GET_CAPACITY, ":i", &sector_size);
+		numSectors = IOS_IoctlvFormat(hid, fd, USB_IOCTL_UMS_GET_CAPACITY, ":i", &sectorSize);
 
 	if(first)
 	{
 		gprintf(" * * * * * * * * * * * *\n");
-		gprintf(" * HDD Information\n * Sectors: %lu\n", ret);
-		u32 size = ((((ret / 1024U) * sector_size) / 1024U) / 1024U);
+		gprintf(" * HDD Information\n * Sectors: %lu\n", numSectors);
+		u32 size = ((((numSectors / 1024U) * sectorSize) / 1024U) / 1024U);
 		if(size >= 1000U)
-			gprintf(" * Size [Sector Size]: %lu.%lu TB [%u]\n", size / 1024U, (size * 100U) % 1024U, sector_size);
+			gprintf(" * Size [Sector Size]: %lu.%lu TB [%u]\n", size / 1024U, (size * 100U) % 1024U, sectorSize);
 		else
-			gprintf(" * Size [Sector Size]: %lu GB [%u]\n", size, sector_size);
+			gprintf(" * Size [Sector Size]: %lu GB [%u]\n", size, sectorSize);
 		gprintf(" * * * * * * * * * * * *\n");
 		first = false;
 	}
 
-	if(ret && _sector_size)
-		*_sector_size = sector_size;
+	if(numSectors && _sector_size)
+		*_sector_size = sectorSize;
 
-	return ret;
+	return numSectors;
 }
 
 s32 USBStorage2_ReadSectors(u32 port, u32 sector, u32 numSectors, void *buffer)

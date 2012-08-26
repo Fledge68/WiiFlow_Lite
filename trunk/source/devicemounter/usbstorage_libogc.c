@@ -1006,20 +1006,9 @@ DISC_INTERFACE __io_usbstorage_ogc = {
 	(FN_MEDIUM_SHUTDOWN)&__usbstorage_ogc_Shutdown
 };
 
-u32 USB_OGC_GetSectorSize()
+u32 USB_OGC_GetCapacity(u32 *numSectors, u32 *sectorSize)
 {
-	u32 numSectors = 0;
-	u32 sectorsize = 0;
-	USBStorage_OGC_ReadCapacity(&__usbfd, __lun, &sectorsize, &numSectors);
-	return sectorsize;
-}
-
-u32 USB_OGC_GetCapacity()
-{
-	u32 numSectors = 0;
-	u32 sectorsize = 0;
-	USBStorage_OGC_ReadCapacity(&__usbfd, __lun, &sectorsize, &numSectors);
-	return numSectors;
+	return USBStorage_OGC_ReadCapacity(&__usbfd, __lun, sectorSize, numSectors);
 }
 
 #endif /* HW_RVL */

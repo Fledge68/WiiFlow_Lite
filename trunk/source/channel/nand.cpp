@@ -43,6 +43,7 @@
 #include "loader/sys.h"
 #include "loader/wbfs.h"
 #include "memory/memory.h"
+#include "wiiuse/wpad.h"
 
 u8 *confbuffer ATTRIBUTE_ALIGN(32);
 u8 CCode[0x1008];
@@ -157,11 +158,6 @@ s32 Nand::Enable_Emu()
 {
 	if(emu_enabled)
 		return 0;
-	if(CurrentIOS.Type == IOS_TYPE_NORMAL_IOS)
-	{
-		loadIOS(mainIOS, true);
-		Open_Inputs();
-	}
 	NandDevice *Device = &NandDeviceList[EmuDevice];
 
 	s32 ret = Nand_Mount(Device);
