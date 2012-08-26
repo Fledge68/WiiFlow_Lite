@@ -580,9 +580,11 @@ void CMenu::_game(bool launch)
 								GC_Path.erase(GC_Path.end() - 13, GC_Path.end());
 							else
 								GC_Path.erase(GC_Path.end() - 9, GC_Path.end());
+							u32 Place = GC_Path.find_last_of("/");
+							GC_Path = hdr->path;
 							memset(hdr->path, 0, sizeof(hdr->path));
 							snprintf(folder, sizeof(folder), DML_DIR, DeviceName[SD]);
-							snprintf(hdr->path, sizeof(hdr->path), "%s/%s", folder, &GC_Path[GC_Path.find_last_of("/")]+1);
+							snprintf(hdr->path, sizeof(hdr->path), "%s/%s", folder, &GC_Path[Place]+1);
 						}
 						else
 							break;
