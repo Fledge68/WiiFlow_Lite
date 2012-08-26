@@ -125,13 +125,14 @@ int CMenu::_FindEmuPart(string *emuPath, int part, bool searchvalid)
 		}
 	}
 
-	if(_TestEmuNand(emuPartition, tmpPath.c_str(), true) && DeviceHandler::Instance()->IsInserted(emuPartition) && DeviceHandler::Instance()->GetFSType(emuPartition) == PART_FS_FAT)
-	{	
+	if(((_TestEmuNand(emuPartition, tmpPath.c_str(), true) && m_current_view == COVERFLOW_USB) || m_current_view == COVERFLOW_CHANNEL) 
+		&& DeviceHandler::Instance()->IsInserted(emuPartition) && DeviceHandler::Instance()->GetFSType(emuPartition) == PART_FS_FAT)
+	{
 		*emuPath = tmpPath;
 		return emuPartition;
-	}		
+	}
 	else
-	{	
+	{
 		emuPartition = part;
 		bool fllscn = emuPartition == -1;
 		for(u8 i = emuPartition; i <= USB8; ++i)

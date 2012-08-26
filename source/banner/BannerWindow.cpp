@@ -35,6 +35,7 @@ void BannerWindow::Init(CVideo *vid, u8 *font1, u8 *font2)
 	ScreenProps.y = 400; //400
 	sysFont1 = font1;
 	sysFont2 = font2;
+	ShowBanner = true;
 
 	video = vid;
 	guMtxIdentity(modelview);
@@ -75,6 +76,7 @@ void BannerWindow::LoadBanner(Banner *banner, CVideo *vid, u8 *font1, u8 *font2)
 	gameBanner->LoadBanner(banner);
 	gameSelected = 1;
 	changing = false;
+	ShowBanner = true;
 }
 
 void BannerWindow::DeleteBanner(bool gamechange)
@@ -86,6 +88,7 @@ void BannerWindow::DeleteBanner(bool gamechange)
 
 BannerWindow::BannerWindow()
 {
+	ShowBanner = true;
 	FontLoaded = false;
 	changing = false;
 	AnimZoom = false;
@@ -101,6 +104,7 @@ void BannerWindow::LoadBannerBin(u8 *bnr, u32 bnr_size, CVideo *vid, u8 *font1, 
 	gameBanner->LoadBannerBin(bnr, bnr_size);
 	gameSelected = 1;
 	changing = false;
+	ShowBanner = true;
 }
 
 void BannerWindow::CreateGCBanner(u8 *bnr, CVideo *vid, u8 *font1, u8 *font2, const wchar_t *title)
@@ -154,6 +158,9 @@ void BannerWindow::Animate(void)
 
 void BannerWindow::Draw(void)
 {
+	if(!ShowBanner)
+		return;
+
 	// draw a black background image first
 	if(AnimStep >= MaxAnimSteps)
 		DrawRectangle(0.0f, 0.0f, video->width(), video->height(), (GXColor) {0, 0, 0, 255.f});

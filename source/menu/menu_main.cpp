@@ -428,13 +428,18 @@ int CMenu::main(void)
 			}
 			else if(m_btnMgr.selected(m_mainBtnDVD))
 			{
+				/* Cleanup for Disc Booter */
 				_hideMain(true);
 				m_cf.clear();
 				_showWaitMessage();
-
+				m_gameSound.Stop();
+				CheckGameSoundThread();
+				Nand::Instance()->Disable_Emu();
+				/* Create Fake Header */
 				dir_discHdr hdr;
 				memset(&hdr, 0, sizeof(dir_discHdr));
 				memcpy(&hdr.id, "dvddvd", 6);
+				/* Boot the Disc */
 				_launchGame(&hdr, true);
 				_showMain();
 				if(BTN_B_HELD)

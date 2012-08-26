@@ -392,7 +392,6 @@ void CMenu::_game(bool launch)
 	if(m_banner->GetZoomSetting() != m_zoom_banner)
 		m_banner->ToogleZoom();
 
-	string id(m_cf.getId());
 	s8 startGameSound = 1;
 	while(true)
 	{
@@ -403,7 +402,6 @@ void CMenu::_game(bool launch)
 
 		if(startGameSound == -5)
 		{
-			id = m_cf.getId();
 			_playGameSound();
 			_showGame();
 		}
@@ -417,9 +415,10 @@ void CMenu::_game(bool launch)
 		if(BTN_B_PRESSED && (m_btnMgr.selected(m_gameBtnFavoriteOn) || m_btnMgr.selected(m_gameBtnFavoriteOff)))
 		{
 			_hideGame();
-			m_banner->DeleteBanner();
+			m_banner->SetShowBanner(false);
 			_CategorySettings(true);
 			_showGame();
+			m_banner->SetShowBanner(true);
 			if(!m_gameSound.IsPlaying()) 
 				startGameSound = -6;
 			continue;
@@ -435,26 +434,29 @@ void CMenu::_game(bool launch)
 		else if(BTN_PLUS_PRESSED && m_GameTDBLoaded && (m_cf.getHdr()->type == TYPE_WII_GAME || m_cf.getHdr()->type == TYPE_GC_GAME || m_cf.getHdr()->type == TYPE_CHANNEL))
 		{
 			_hideGame();
-			m_banner->DeleteBanner();
+			m_banner->SetShowBanner(false);
 			m_gameSelected = true;
 			_gameinfo();
 			_showGame();
-			if(!m_gameSound.IsPlaying()) 
+			m_banner->SetShowBanner(true);
+			if(!m_gameSound.IsPlaying())
 				startGameSound = -6;
 		}
 		else if(BTN_MINUS_PRESSED)
 		{
-			string videoPath = sfmt("%s/%.3s.thp", m_videoDir.c_str(), id.c_str());
+			string videoPath = sfmt("%s/%.3s.thp", m_videoDir.c_str(), m_cf.getId().c_str());
 
 			FILE *file = fopen(videoPath.c_str(), "rb");
 			if(file)
 			{
+				m_gameSound.Stop();
+				m_banner->SetShowBanner(false);
 				fclose(file);
 				_hideGame();
 				WiiMovie movie(videoPath.c_str());
 				movie.SetScreenSize(m_cfg.getInt("GENERAL", "tv_width", 640), m_cfg.getInt("GENERAL", "tv_height", 480), m_cfg.getInt("GENERAL", "tv_x", 0), m_cfg.getInt("GENERAL", "tv_y", 0));
 				movie.SetVolume(m_cfg.getInt("GENERAL", "sound_volume_bnr", 255));
-				//_stopSounds();		
+				//_stopSounds();
 				movie.Play();
 
 				m_video_playing = true;
@@ -470,7 +472,9 @@ void CMenu::_game(bool launch)
 				_showGame();
 				m_music.Play();
 				m_video_playing = false;
-				//m_gameSound->play(m_bnrSndVol);
+				m_banner->SetShowBanner(true);
+				if(!m_gameSound.IsPlaying())
+					startGameSound = -6;
 			}
 		}
 		else if((BTN_1_PRESSED) || (BTN_2_PRESSED))
@@ -491,6 +495,7 @@ void CMenu::_game(bool launch)
 				if(!m_locked)
 				{
 					_hideGame();
+					m_banner->SetShowBanner(false);
 					if(_wbfsOp(CMenu::WO_REMOVE_GAME))
 					{
 						m_gameSound.FreeMemory();
@@ -499,13 +504,16 @@ void CMenu::_game(bool launch)
 						m_banner->DeleteBanner();
 						break;
 					}
+					m_banner->SetShowBanner(true);
+					if(!m_gameSound.IsPlaying())
+						startGameSound = -6;
 					_showGame();
 				}
 			}
 			else if(m_btnMgr.selected(m_gameBtnFavoriteOn) || m_btnMgr.selected(m_gameBtnFavoriteOff))
-				m_gcfg1.setBool("FAVORITES", id, !m_gcfg1.getBool("FAVORITES", id, false));
+				m_gcfg1.setBool("FAVORITES", m_cf.getId(), !m_gcfg1.getBool("FAVORITES", m_cf.getId(), false));
 			else if(m_btnMgr.selected(m_gameBtnAdultOn) || m_btnMgr.selected(m_gameBtnAdultOff))
-				m_gcfg1.setBool("ADULTONLY", id, !m_gcfg1.getBool("ADULTONLY", id, false));
+				m_gcfg1.setBool("ADULTONLY", m_cf.getId(), !m_gcfg1.getBool("ADULTONLY", m_cf.getId(), false));
 			else if(m_btnMgr.selected(m_gameBtnBack) || m_btnMgr.selected(m_gameBtnBackFull))
 			{
 				m_gameSound.FreeMemory();
@@ -536,8 +544,14 @@ void CMenu::_game(bool launch)
 			else if(launch || m_btnMgr.selected(m_gameBtnPlay) || m_btnMgr.selected(m_gameBtnPlayFull) || (!WPadIR_Valid(0) && !WPadIR_Valid(1) && !WPadIR_Valid(2) && !WPadIR_Valid(3) && m_btnMgr.selected((u16)-1)))
 			{
 				_hideGame();
+				m_gameSound.FreeMemory();
+				CheckGameSoundThread();
+				ClearGameSoundThreadStack();
+				m_banner->DeleteBanner();
 				dir_discHdr *hdr = m_cf.getHdr();
-				if(currentPartition != SD && hdr->type == TYPE_GC_GAME && m_show_dml == 2 && !m_devo_installed)
+				m_gcfg2.load(fmt("%s/" GAME_SETTINGS2_FILENAME, m_settingsDir.c_str()));
+				if(currentPartition != SD && hdr->type == TYPE_GC_GAME && m_show_dml == 2 && (strstr(hdr->path, ".iso") == NULL ||
+				!m_devo_installed || min((u32)m_gcfg2.getInt(hdr->id, "gc_loader", 0), ARRAY_SIZE(CMenu::_GCLoader) - 1u) == 1))
 				{
 					bool foundOnSD = false;
 					CList<dir_discHdr> tmplist;
@@ -556,8 +570,23 @@ void CMenu::_game(bool launch)
 							break;
 						}
 					}
-					if(!foundOnSD && !_wbfsOp(CMenu::WO_COPY_GAME))
-						break;
+					if(!foundOnSD)
+					{
+						if(_wbfsOp(CMenu::WO_COPY_GAME))
+						{
+							char folder[50];
+							string GC_Path(hdr->path);
+							if(strcasestr(GC_Path.c_str(), "boot.bin") != NULL)
+								GC_Path.erase(GC_Path.end() - 13, GC_Path.end());
+							else
+								GC_Path.erase(GC_Path.end() - 9, GC_Path.end());
+							memset(hdr->path, 0, sizeof(hdr->path));
+							snprintf(folder, sizeof(folder), DML_DIR, DeviceName[SD]);
+							snprintf(hdr->path, sizeof(hdr->path), "%s/%s", folder, &GC_Path[GC_Path.find_last_of("/")]+1);
+						}
+						else
+							break;
+					}
 					currentPartition = SD;
 				}
 
@@ -570,18 +599,18 @@ void CMenu::_game(bool launch)
 					// Get banner_title
 					Banner *banner = hdr->type == TYPE_CHANNEL ? _extractChannelBnr(chantitle) : (hdr->type == TYPE_WII_GAME ? _extractBnr(hdr) : NULL);
 					if(banner != NULL)
-					{						
+					{
 						if(banner->IsValid())
 							_extractBannerTitle(banner, GetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str()));
 						delete banner;
 					}
 					banner = NULL;
 
-					if(Playlog_Update(id.c_str(), banner_title) < 0)
+					if(Playlog_Update(m_cf.getId().c_str(), banner_title) < 0)
 						Playlog_Delete();
 				}
 
-				gprintf("Launching game %s\n", id.c_str());
+				gprintf("Launching game %s\n", m_cf.getId().c_str());
 				_launch(hdr);
 
 				if(m_exit)
@@ -592,7 +621,7 @@ void CMenu::_game(bool launch)
 
 				for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 					WPAD_SetVRes(chan, m_vid.width() + m_cursor[chan].width(), m_vid.height() + m_cursor[chan].height());
-
+				m_gcfg2.unload();
 				_showGame();
 				_initCF();
 				m_cf.select();
@@ -642,7 +671,7 @@ void CMenu::_game(bool launch)
 		}
 		if(m_show_zone_game && !m_zoom_banner)
 		{
-			bool b = m_gcfg1.getBool("FAVORITES", id, false);
+			bool b = m_gcfg1.getBool("FAVORITES", m_cf.getId(), false);
 			m_btnMgr.show(b ? m_gameBtnFavoriteOn : m_gameBtnFavoriteOff);
 			m_btnMgr.hide(b ? m_gameBtnFavoriteOff : m_gameBtnFavoriteOn);
 			m_btnMgr.show(m_gameBtnPlay);
@@ -658,7 +687,7 @@ void CMenu::_game(bool launch)
 			}
 			if(!m_locked)
 			{
-				b = m_gcfg1.getBool("ADULTONLY", id, false);
+				b = m_gcfg1.getBool("ADULTONLY", m_cf.getId(), false);
 				m_btnMgr.show(b ? m_gameBtnAdultOn : m_gameBtnAdultOff);
 				m_btnMgr.hide(b ? m_gameBtnAdultOff : m_gameBtnAdultOn);
 				m_btnMgr.show(m_gameBtnSettings);
@@ -721,12 +750,15 @@ void CMenu::directlaunch(const string &id)
 
 void CMenu::_launch(dir_discHdr *hdr)
 {
-	m_gcfg2.load(fmt("%s/" GAME_SETTINGS2_FILENAME, m_settingsDir.c_str()));
+	/* No need to do that separate */
+	Nand::Instance()->Disable_Emu();
+	/* Lets boot that shit */
 	if(hdr->type == TYPE_WII_GAME)
-	{
 		_launchGame(hdr, false);
-		return;
-	}
+	else if(hdr->type == TYPE_GC_GAME)
+		_launchGC(hdr, false);
+	else if(hdr->type == TYPE_CHANNEL)
+		_launchChannel(hdr);
 	else if(hdr->type == TYPE_PLUGIN)
 	{
 		string title(&hdr->path[string(hdr->path).find_last_of("/")+1]);
@@ -758,7 +790,6 @@ void CMenu::_launch(dir_discHdr *hdr)
 			m_cfg.setString("EMULATOR", "current_item", gametitle);
 		}
 		_launchHomebrew(fmt("%s/%s", m_pluginsDir.c_str(), m_plugin.GetDolName(hdr->settings[0])), arguments);
-		return;
 	}
 	else if(hdr->type == TYPE_HOMEBREW)
 	{
@@ -767,17 +798,6 @@ void CMenu::_launch(dir_discHdr *hdr)
 		if(!fsop_FileExist((const char*)gamepath))
 			snprintf(gamepath, sizeof(gamepath), "%s/boot.elf", hdr->path);
 		_launchHomebrew(gamepath, m_homebrewArgs);
-		return;
-	}
-	else if(hdr->type == TYPE_GC_GAME)
-	{
-		_launchGC(hdr, false);
-		return;
-	}
-	else if(hdr->type == TYPE_CHANNEL)
-	{
-		_launchChannel(hdr);
-		return;
 	}
 }
 
@@ -785,9 +805,6 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 {
 	string id(hdr->id);
 	string path(hdr->path);
-
-	Nand::Instance()->Disable_Emu();
-
 	m_gcfg1.setInt("PLAYCOUNT", id, m_gcfg1.getInt("PLAYCOUNT", id, 0) + 1);
 	m_gcfg1.setUInt("LASTPLAYED", id, time(NULL));
 
@@ -891,8 +908,6 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 
 void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 {
-	Nand::Instance()->Disable_Emu();
-
 	m_gcfg1.save(true);
 	m_gcfg2.save(true);
 	m_cat.save(true);
@@ -993,8 +1008,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 {
 	Channels channel;
 	u32 gameIOS = 0;
-	u32 entry = 0;	
-	Nand::Instance()->Disable_Emu();
+	u32 entry = 0;
 	string id = string(hdr->id);
 
 	bool forwarder = true;
@@ -1139,11 +1153,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 {
 	string id(hdr->id);
 	string path(hdr->path);
-
-	m_gameSound.Stop();
-	CheckGameSoundThread();
-	Nand::Instance()->Disable_Emu();
-
 	if(neek2o())
 	{
 		int discID = id.c_str()[0] << 24 | id.c_str()[1] << 16 | id.c_str()[2] << 8 | id.c_str()[3];

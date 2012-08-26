@@ -61,7 +61,7 @@ bool fsop_GetFileSizeBytes(char *path, size_t *filesize)	// for me stats st_size
 /*
 Recursive fsop_GetFolderBytes
 */
-u64 fsop_GetFolderBytes(char *source)
+u64 fsop_GetFolderBytes(const char *source)
 {
 	DIR *pdir;
 	struct dirent *pent;
@@ -93,7 +93,7 @@ u64 fsop_GetFolderBytes(char *source)
 	return bytes;
 }
 
-u32 fsop_GetFolderKb(char *source)
+u32 fsop_GetFolderKb(const char *source)
 {
 	u32 ret = (u32)round((double)fsop_GetFolderBytes (source) / 1000.0);
 
