@@ -885,8 +885,6 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	cleanup();
 
 	DeviceHandler::Instance()->UnMountAll();
-	Nand::Instance()->DeInit_ISFS();
-
 	GC_SetVideoMode(videoMode, videoSetting);
 	GC_SetLanguage(GClanguage);
 	if(loader == 2)
@@ -895,15 +893,30 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 			loadIOS(58, false);
 		else //use cIOS instead to make sure Devolution works anyways
 			loadIOS(mainIOS, false);
-		writeStub();
+		USBStorage2_Deinit();
+		USB_Deinitialize();
+		SDHC_Close();
 		DEVO_SetOptions(path.c_str(), DeviceName[currentPartition], id.c_str(), memcard_emu);
-		DEVO_Boot();
 	}
 
-	DML_New_WriteOptions();
-	WII_Initialize();
-	if(WII_LaunchTitle(0x100000100LL) < 0)
-		Sys_LoadMenu();
+#ifndef DOLPHIN
+	USBStorage2_Deinit();
+	USB_Deinitialize();
+	SDHC_Close();
+#endif
+	Nand::Instance()->DeInit_ISFS();
+	if(loader == 2)
+	{
+		writeStub();
+		DEVO_Boot();
+	}
+	else
+	{
+		DML_New_WriteOptions();
+		WII_Initialize();
+		WII_LaunchTitle(0x100000100LL);
+	}
+	Sys_LoadMenu();
 }
 
 void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
@@ -922,6 +935,12 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 	for(u32 i = 0; i < arguments.size(); ++i)
 		AddBootArgument(arguments[i].c_str());
 	loadIOS(58, false);
+#ifndef DOLPHIN
+	USBStorage2_Deinit();
+	USB_Deinitialize();
+	SDHC_Close();
+#endif
+	Nand::Instance()->DeInit_ISFS();
 	writeStub();
 	BootHomebrew();
 }
@@ -1422,11 +1441,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			return;
 		}
 	}
-#ifndef DOLPHIN
-	USBStorage2_Deinit();
-	USB_Deinitialize();
-	SDHC_Close();
-#endif
 	if(CurrentIOS.Type == IOS_TYPE_HERMES)
 	{
 		if(dvd)

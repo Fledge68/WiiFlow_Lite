@@ -75,15 +75,15 @@ int main(int argc, char **argv)
 		DCFlushRange(&CurrentIOS, sizeof(IOS_Info));
 		DeviceHandler::Instance()->SetModes();
 	}
-	else if(!AHBRPOT_Patched())
-	{
-		gprintf("Loading cIOS: %d\n", mainIOS);	
-		iosOK = loadIOS(mainIOS, false) && CustomIOS(CurrentIOS.Type);
-	}
-	else
+	else if(AHBRPOT_Patched() && IOS_GetVersion() == 58)
 	{
 		gprintf("AHBPROT patched out, use IOS58\n");
 		iosOK = loadIOS(58, false);
+	}
+	else
+	{
+		gprintf("Loading cIOS: %d\n", mainIOS);	
+		iosOK = loadIOS(mainIOS, false) && CustomIOS(CurrentIOS.Type);
 	}
 #else
 	iosOK = true;
