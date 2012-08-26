@@ -229,15 +229,19 @@ int CMenu::_GCcopyGame(void *obj)
 	char folder[50];
 	char source[300];
 	char target[300];
-	snprintf(folder, sizeof(folder), m.m_DMLgameDir.c_str(), DeviceName[currentPartition]);
-	snprintf(source, sizeof(source), "%s/%s", folder, m.m_cf.getHdr()->path);
-	memset(folder, 0, sizeof(folder));
+
+	string GC_Path(m.m_cf.getHdr()->path);
+	if(strcasestr(GC_Path.c_str(), "boot.bin") != NULL)
+		GC_Path.erase(GC_Path.end() - 13, GC_Path.end());
+	else
+		GC_Path.erase(GC_Path.end() - 9, GC_Path.end());
+	strncpy(source, GC_Path.c_str(), sizeof(source));
 	snprintf(folder, sizeof(folder), DML_DIR, DeviceName[SD]);
-	snprintf(target, sizeof(target), "%s/%s", folder, m.m_cf.getHdr()->path);
+	snprintf(target, sizeof(target), "%s/%s", folder, &GC_Path[GC_Path.find_last_of("/")]+1);
 
 	LWP_MutexLock(m.m_mutex);
 	m._setThrdMsg(L"", 0);
-	gprintf("Copying from:\n%s\nto:\n%s\n",source,target);
+	gprintf("Copying from:\n%s\nto:\n%s\n", source, target);
 	LWP_MutexUnlock(m.m_mutex);
 	if (!fsop_DirExist(folder))
 		fsop_MakeFolder(folder);
@@ -409,14 +413,15 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 					case CMenu::WO_FORMAT:
 						break;
 					case CMenu::WO_COPY_GAME:
-						char folder[50];
-						char source[300];
-						snprintf(folder, sizeof(folder), m_DMLgameDir.c_str(), DeviceName[currentPartition]);
-						snprintf(source, sizeof(source), "%s/%s", folder, m_cf.getHdr()->path);
-						if(fsop_GetFreeSpaceKb((char*)"sd:/")<fsop_GetFolderKb(source))
+						string GC_Path(m_cf.getHdr()->path);
+						if(strcasestr(GC_Path.c_str(), "boot.bin") != NULL)
+							GC_Path.erase(GC_Path.end() - 13, GC_Path.end());
+						else
+							GC_Path.erase(GC_Path.end() - 9, GC_Path.end());
+						if(fsop_GetFreeSpaceKb((char*)"sd:/")<fsop_GetFolderKb(GC_Path.c_str()))
 						{
 							m_btnMgr.hide(m_wbfsBtnGo);
-							_setThrdMsg(wfmt(_fmt("wbfsop24", L"Not enough space: %d blocks needed, %d available"), fsop_GetFolderKb(source), fsop_GetFreeSpaceKb((char*)"sd:/")), 0.f);
+							_setThrdMsg(wfmt(_fmt("wbfsop24", L"Not enough space: %d blocks needed, %d available"), fsop_GetFolderKb(GC_Path.c_str()), fsop_GetFreeSpaceKb((char*)"sd:/")), 0.f);
 							break;
 						}
 

@@ -56,6 +56,8 @@ class BannerWindow
 		void Draw(void);
 		bool ToogleZoom(void);
 		void ToogleGameSettings();
+		bool GetShowBanner() { return ShowBanner; }
+		void SetShowBanner(bool show) { ShowBanner = show; }
 	protected:
 		int MainLoop();
 		void Animate(void);
@@ -83,6 +85,7 @@ class BannerWindow
 		bool AnimZoom;
 		bool AnimationRunning;
 		bool changing;
+		bool ShowBanner;
 
 		float xDiff, yDiff;
 		float iconWidth, iconHeight;
