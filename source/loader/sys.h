@@ -32,6 +32,8 @@ bool Sys_Exiting(void);
 void Sys_Test(void);
 void Sys_Exit(void);
 void Sys_ExitTo(int);
+int Sys_GetExitTo(void);
+void Sys_SetNeekPath(const char*);
 
 void Open_Inputs(void);
 void Close_Inputs(void);

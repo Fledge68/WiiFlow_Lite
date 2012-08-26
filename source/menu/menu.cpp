@@ -137,7 +137,6 @@ CMenu::CMenu(CVideo &vid) :
 	m_bnr_settings = true;
 	m_directLaunch = false;
 	m_exit = false;
-	m_initialCoverStatusComplete = false;
 	m_reload = false;
 	m_gamesound_changed = false;
 	m_video_playing = false;
@@ -2051,6 +2050,13 @@ bool CMenu::_loadChannelList(void)
 	Nand::Instance()->Disable_Emu();
 	if(!disable_emu)
 	{
+		if(CurrentIOS.Type == IOS_TYPE_NORMAL_IOS)
+		{
+			loadIOS(mainIOS, true);
+			Open_Inputs();
+			for(int chan = WPAD_MAX_WIIMOTES-2; chan >= 0; chan--)
+				WPAD_SetVRes(chan, m_vid.width() + m_cursor[chan].width(), m_vid.height() + m_cursor[chan].height());
+		}
 		if(!DeviceHandler::Instance()->IsInserted(lastPartition))
 			DeviceHandler::Instance()->Mount(lastPartition);
 

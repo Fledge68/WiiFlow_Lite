@@ -179,14 +179,6 @@ void CMenu::_showMain(void)
 		Nand::Instance()->Enable_Emu();
 }
 
-int CMenu::GetCoverStatusAsync(CMenu *m)
-{
-	u32 disc_check = 0;
-	WDVD_GetCoverStatus(&disc_check);
-	m->m_initialCoverStatusComplete = true;
-	return 0;
-}
-
 void CMenu::LoadView(void)
 {
 	m_curGameId = m_cf.getId();
@@ -268,7 +260,7 @@ int CMenu::main(void)
 	bool bUsed = false;
 
 	m_reload = false;
-	static u32 disc_check = 0;
+	u32 disc_check = 0;
 	int done = 0;
 
 	if (m_cfg.getBool("GENERAL", "async_network", false) || has_enabled_providers())
@@ -304,23 +296,13 @@ int CMenu::main(void)
 		if(BTN_B_HELD)
 			bUsed = true;
 	}
-	
-	lwp_t coverStatus = LWP_THREAD_NULL;
-	unsigned int stack_size = (unsigned int)32768;
-	SmartBuf coverstatus_stack = smartMem2Alloc(stack_size);	
-	LWP_CreateThread(&coverStatus, (void *(*)(void *))CMenu::GetCoverStatusAsync, (void *)this, coverstatus_stack.get(), stack_size, 40);
 
 	while(true)
 	{
+		/* IMPORTANT check if a disc is inserted */
+		WDVD_GetCoverStatus(&disc_check);
+		/* Main Loop */
 		_mainLoopCommon(true);
-		if(m_initialCoverStatusComplete)
-		{
-			LWP_JoinThread(coverStatus, NULL);
-			coverStatus = LWP_THREAD_NULL;
-			if(coverstatus_stack.get())
-				coverstatus_stack.release();
-			WDVD_GetCoverStatus(&disc_check);
-		}
 		if(bheld && !BTN_B_HELD)
 		{
 			bheld = false;
@@ -867,15 +849,16 @@ int CMenu::main(void)
 		_launchHomebrew(fmt("%s/boot.dol", m_appDir.c_str()), m_homebrewArgs);
 		return 0;
 	}
+	else if(Sys_GetExitTo() == EXIT_TO_NEEK2O)
+	{
+		string emuPath;
+		_FindEmuPart(&emuPath, m_cfg.getInt("NAND", "partition", 0), false);
+		Sys_SetNeekPath(emuPath.size() > 1 ? emuPath.c_str() : NULL);
+	}
 	gprintf("Saving configuration files\n");
 	m_cfg.save();
 	m_cat.unload();
 //	m_loc.save();
-	gprintf("Wait for dvd\n");
-	LWP_JoinThread(coverStatus, NULL);
-	coverStatus = LWP_THREAD_NULL;
-	if(coverstatus_stack.get())
-		coverstatus_stack.release();
 	return 0;
 }
 

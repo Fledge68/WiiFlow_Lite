@@ -30,8 +30,7 @@ s32 USBStorage_OGC_StartStop(usbstorage_handle *dev, u8 lun, u8 lo_ej, u8 start,
 
 extern DISC_INTERFACE __io_usbstorage_ogc;
 
-u32 USB_OGC_GetSectorSize();
-u32 USB_OGC_GetCapacity();
+u32 USB_OGC_GetCapacity(u32 *numSectors, u32 *sectorSize);
 
 #ifdef __cplusplus
    }

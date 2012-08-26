@@ -581,8 +581,7 @@ private:
 	SZone m_mainButtonsZone3;
 	SZone m_gameButtonsZone;
 	bool m_reload;
-	bool m_initialCoverStatusComplete;
-	
+
 	WPADData *wd[WPAD_MAX_WIIMOTES];
 	void LeftStick();
 	u8 pointerhidedelay[WPAD_MAX_WIIMOTES];
@@ -1050,7 +1049,6 @@ private:
 	bool _isNetworkAvailable();
 	int _initNetwork();
 	void _deinitNetwork();
-	static int GetCoverStatusAsync(CMenu *m);
 	void LoadView(void);
 	void _getGrabStatus(void);
 	static void _addDiscProgress(int status, int total, void *user_data);

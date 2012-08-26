@@ -22,17 +22,10 @@
 bool reset = false;
 bool shutdown = false;
 bool exiting = false;
-
-bool priiloader_def = false;
-bool return_to_hbc = false;
-bool return_to_menu = false;
-bool return_to_priiloader = false;
-bool return_to_disable = false;
-bool return_to_bootmii = false;
-bool return_to_neek2o = false;
+u8 ExitOption = 0;
+const char *NeekPath = NULL;
 
 extern void __exception_closeall();
-extern u32 __PADDisableRecalibration(s32 disable);
 
 void __Wpad_PowerCallback()
 {
@@ -79,23 +72,20 @@ void Sys_Test(void)
 	else if (shutdown) SYS_ResetSystem(SYS_POWEROFF, 0, 0);
 }
 
+int Sys_GetExitTo(void)
+{
+	return ExitOption;
+}
 void Sys_ExitTo(int option)
 {
-	priiloader_def = option == PRIILOADER_DEF;
-	return_to_hbc = option == EXIT_TO_HBC;
-	return_to_menu = option == EXIT_TO_MENU;
-	return_to_priiloader = option == EXIT_TO_PRIILOADER;
-	return_to_disable = option == EXIT_TO_DISABLE;
-	return_to_bootmii = option == EXIT_TO_BOOTMII;
-	return_to_neek2o = option == EXIT_TO_NEEK2O;
-
+	ExitOption = option;
 	//magic word to force wii menu in priiloader.
-	if(return_to_menu)
+	if(ExitOption == EXIT_TO_MENU)
 	{
 		*Priiloader_CFG1 = 0x50756E65;
 		*Priiloader_CFG2 = 0x50756E65;
 	}
-	else if(return_to_priiloader)
+	else if(ExitOption == EXIT_TO_PRIILOADER)
 	{
 		*Priiloader_CFG1 = 0x4461636F;
 		*Priiloader_CFG2 = 0x4461636F;
@@ -111,29 +101,24 @@ void Sys_ExitTo(int option)
 
 void Sys_Exit(void)
 {
-	if(return_to_disable)
+	if(ExitOption == EXIT_TO_DISABLE)
 		return;
 
 	/* Shutdown Inputs */
 	Close_Inputs();
-
-	if(return_to_neek2o)
-	{
-		Launch_nk(0x1000144574641LL, NULL);
-		while(1);
-	}
-
 	WII_Initialize();
-	if(return_to_menu || return_to_priiloader || priiloader_def)
-		Sys_LoadMenu();
-	else if(return_to_bootmii)
-		IOS_ReloadIOS(254);
-
-	//else
-	WII_LaunchTitle(HBC_108);
-	WII_LaunchTitle(HBC_JODI);
-	WII_LaunchTitle(HBC_HAXX);
-	SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
+	if(ExitOption == EXIT_TO_NEEK2O)
+		Launch_nk(0x1000144574641LL, NeekPath);
+	else if(ExitOption == EXIT_TO_BOOTMII)
+		IOS_ReloadIOS(0xfe);
+	else if(ExitOption == EXIT_TO_HBC)
+	{
+		WII_LaunchTitle(HBC_108);
+		WII_LaunchTitle(HBC_JODI);
+		WII_LaunchTitle(HBC_HAXX);
+	}
+	//else boot system menu
+	Sys_LoadMenu();
 }
 
 void __Sys_ResetCallback(void)
@@ -162,4 +147,9 @@ void Sys_LoadMenu(void)
 bool AHBRPOT_Patched(void)
 {
 	return (*HW_AHBPROT == 0xFFFFFFFF);
+}
+
+void Sys_SetNeekPath(const char *Path)
+{
+	NeekPath = Path;
 }
