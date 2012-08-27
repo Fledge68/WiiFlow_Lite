@@ -165,6 +165,18 @@ void CMenu::_textAbout(void)
 			false
 		);
 	}
-
-	m_btnMgr.setText(m_aboutLblIOS, wfmt(_fmt("ios", L"IOS%i base %i v%i"), CurrentIOS.Version, CurrentIOS.Base, CurrentIOS.Revision), true);
+	
+	switch(IOS_GetType(CurrentIOS.Version))
+	{
+		case IOS_TYPE_D2X:
+		case IOS_TYPE_WANIN:
+		case IOS_TYPE_HERMES:
+		case IOS_TYPE_KWIIRK:
+			m_btnMgr.setText(m_aboutLblIOS, wfmt(_fmt("ios", L"IOS%i base %i v%i"), CurrentIOS.Version, CurrentIOS.Base, CurrentIOS.Revision), true);
+			break;
+		case IOS_TYPE_NEEK2O:
+		case IOS_TYPE_NORMAL_IOS:
+			m_btnMgr.setText(m_aboutLblIOS, wfmt( L"IOS%i v%i", CurrentIOS.Version, CurrentIOS.Revision), true);
+			break;
+	}
 }
