@@ -1060,14 +1060,17 @@ void Nand::Init_ISFS()
 void Nand::DeInit_ISFS(bool KeepPatches)
 {
 	gprintf("Deinit ISFS\n");
-	if(AHBRPOT_Patched() && !KeepPatches)
+	if(AHBRPOT_Patched())
 	{
 		// Disable memory protection
 		write16(MEM_PROT, 0);
-		// Do patches
-		MagicPatches(0);
-		// Enable memory protection
-		write16(MEM_PROT, 1);
+		if(!KeepPatches)
+		{
+			// Do patches
+			MagicPatches(0);
+			// Enable memory protection
+			write16(MEM_PROT, 1);
+		}
 	}
 	ISFS_Deinitialize();
 }
