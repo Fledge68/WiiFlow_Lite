@@ -266,6 +266,9 @@ bool GCDump::__CheckMDHack(u32 ID)
 	switch(ID >> 8)
 	{
 		case 0x475153: /*** Tales of Symphonia ***/
+		case 0x474b42: /*** Baten Kaitos: Eternal Wings and the Lost Ocean ***/
+		case 0x473341: /*** The Lord of the Rings: The Third Age ***/
+		case 0x473554: /*** Tiger Woods PGA Tour 2005 ***/
 			return true;
 		break;
 		default:
