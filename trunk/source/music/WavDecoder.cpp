@@ -124,6 +124,7 @@ void WavDecoder::OpenFile()
 	SWaveChunk LoopChunk;
 	SWaveSmplChunk SmplChunk;
 	SmplChunk.Start = 0;
+	SmplChunk.End = 0;
 	file_fd->seek(DataOffset + DataSize, SEEK_SET);
 	while(file_fd->read((u8 *)&LoopChunk, sizeof(SWaveChunk)) == sizeof(SWaveChunk))
 	{
@@ -132,11 +133,13 @@ void WavDecoder::OpenFile()
 			file_fd->seek(-8, SEEK_CUR);
 			file_fd->read((u8*)&SmplChunk, sizeof(SWaveSmplChunk));
 			SmplChunk.Start = ((le32(SmplChunk.Start) * le16(FmtChunk.channels) * le16(FmtChunk.bps) / 8) + 8191) & ~8191;
+			SmplChunk.End = ((le32(SmplChunk.End) * le16(FmtChunk.channels) * le16(FmtChunk.bps) / 8) + 8191) & ~8191;
 			break;
 		}
 		file_fd->seek(le32(LoopChunk.size), SEEK_CUR);
 	}
 	SetLoopStart(SmplChunk.Start);
+	SetLoopEnd(SmplChunk.End);
 	Decode();
 }
 
