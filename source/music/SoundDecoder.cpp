@@ -66,6 +66,7 @@ void SoundDecoder::Init()
 	SoundBlockSize = 8192;
 	CurPos = 0;
 	LoopStart = 0;
+	LoopEnd = 0;
 	Loop = false;
 	EndOfFile = false;
 	Decoding = false;
@@ -126,15 +127,11 @@ void SoundDecoder::Decode()
 
 		if(ret <= 0)
 		{
-			if(Loop)
+			if(Loop || LoopStart || LoopEnd)
 			{
 				Rewind();
-				continue;
-			}
-			else if(LoopStart)
-			{
-				Rewind();
-				CurPos = LoopStart;
+				if(LoopStart)
+					CurPos = LoopStart;
 				continue;
 			}
 			else

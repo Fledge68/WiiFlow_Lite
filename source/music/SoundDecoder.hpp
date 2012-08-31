@@ -69,6 +69,7 @@ public:
 	virtual bool IsEOF() { return EndOfFile; };
 	virtual void SetLoop(bool l) { Loop = l; };
 	virtual void SetLoopStart(int s) { LoopStart = s; };
+	virtual void SetLoopEnd(int e) { LoopEnd = e; };
 	virtual u8 GetSoundType() { return SoundType; };
 	virtual void ClearBuffer() { SoundBuffer.ClearBuffer(); };
 	virtual bool IsStereo() { return (GetFormat() == VOICE_STEREO_16BIT || GetFormat() == VOICE_STEREO_8BIT); };
@@ -84,6 +85,7 @@ protected:
 	int CurPos;
 	bool Loop;
 	int LoopStart;
+	int LoopEnd;
 	bool EndOfFile;
 	bool Decoding;
 	bool ExitRequested;
