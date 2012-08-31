@@ -50,7 +50,7 @@ Styring:
 -- B+1  =  Kopier hele coverflow
 -- B+2  =  udpak coverflow
 
-TIPS for at indlæse spil der ikke virker (crash):
+TIPS til at indlæse spil der ikke virker (crash):
 Hvis et spil låser sig fast (sort skræm) se efter om det er et PAL spil.
   (pres på plus knappen efter at have valgt spil.) Hvis det er et PAL spil sæt spillets video måde til "PAL 50Hz" i spil indstillinger.
 Du kan også vælge at bruge et component kabel og sætte din Wii til 480p for at løse dette problem.

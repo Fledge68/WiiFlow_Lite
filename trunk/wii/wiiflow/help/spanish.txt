@@ -1,59 +1,58 @@
-
 Controles:
-- Menu Principal (coverflow) :
--- Arriba / Abajo  =  Previo / proximo juego (vertical)
--- Izquierda / Derecha  =  Previo / proximo Juego (horizontal)
--- Menos / M·s  =  Paso Rapido de los Juegos
+- Men√∫ Principal (coverflow) :
+-- Arriba / Abajo  =  Previo / pr√≥ximo juego (vertical)
+-- Izquierda / Derecha  =  Previo / pr√≥ximo Juego (horizontal)
+-- Menos / Mas  =  Paso R√°pido de los Juegos
 -- A  =  Seleccionar Juego
 -- B+A  =  Lanzar juego inmediatamente
--- B+Home  =  Recaga WiiFlow
--- Home  =  Abre Men˙ Home / Salir WiiFlow
--- 1 / 2  =  Previo / roximo modo coverflow
--- B+Izquierda / B+Derecha  =  Canbia canciÛn
--- B+Arriba / B+Abajo  =  Busqueda Alfabetica
--- B+Flechas en pantalla  =  Busqueda Alfabetica
--- B+Menos  =  Cambia Particion
--- B+M·s  =  Ordena Juegos
+-- B+Home  =  Recarga WiiFlow
+-- Home  =  Abre Men√∫ Home / Salir WiiFlow
+-- 1 / 2  =  Previo / pr√≥ximo modo coverflow
+-- B+Izquierda / B+Derecha  =  Cambia canci√≥n
+-- B+Arriba / B+Abajo  =  B√∫squeda Alfab√©tica
+-- B+Flechas en pantalla  =  B√∫squeda Alfab√©tica
+-- B+Menos  =  Cambia Partici√≥n
+-- B+M√°s  =  Ordena Juegos
 
 -- A en Icono Inicio  =  Favoritos
--- B en Icono Inicio  =  Categorias
--- A en Icono de engranaje  =  WiiFlow settings
--- B en Icono de engranaje  =  Refresh cache
--- A en USB, DML, Chanales, Emu, o Icono Homebrew  =  Cambia a esa Vista
--- B en USB, DML, Chanales, Emu, o Icono Homebrew  =  Activa/Desactiva Emu-NAND y cambia a vista de canales
--- A en Icono Home  =  Salir a Menu Wii
--- Presionar B durante 3 segundos / B en Icono Home (wiimote_gestos Activado)  =  Muestra el men˙ Source
+-- B en Icono Inicio  =  Categor√≠as
+-- A en Icono de engranaje  =  WiiFlow Ajustes
+-- B en Icono de engranaje  =  Refrescar cache
+-- A en USB, DML, Canales, Emu, o Icono Homebrew  =  Cambia a esa Vista
+-- B en USB, DML, Canales, Emu, o Icono Homebrew  =  Activa/Desactiva Emu-NAND y cambia a vista de canales
+-- A en Icono Home  =  Salir a Men√∫ Wii
+-- Presionar B durante 3 segundos / B en Icono Home (wiimote_gestos Activado)  =  Muestra el men√∫ Source
 -- A en Icono Disco (Disco Juego en Unidad)  =  Lanzar disco de juego 
--- A en Icono InterrogaciÛn   =  Muestra creditos y este arcghivo ayuda, y actualiza WiiFlow
+-- A en Icono Interrogaci√≥n   =  Muestra cr√©ditos y este archivo ayuda, y actualiza WiiFlow
 
 - Juego :
 -- A en Caja  =  Muestra la parte trasera
--- A fura de pantalla  =  Lanza el juego
+-- A fuera de pantalla  =  Lanza el juego
 -- B  =  Regresa a coverflow
--- Arriba / Abajo  =  Previo / Proximo Juego (vertical)
--- Izquierda / Derecha  =  Previo / Proximo Juego (horizontal)
--- M·s  =  Info del Juego
----Derecha (en Info del Juego)  =  Descripcion del juego
----Izquierda  (en DescripciÛn del Juego)  =  Info del juego
+-- Arriba / Abajo  =  Previo / Pr√≥ximo Juego (vertical)
+-- Izquierda / Derecha  =  Previo / Pr√≥ximo Juego (horizontal)
+-- M√°s  =  Info del Juego
+---Derecha (en Info del Juego)  =  Descripci√≥n del juego
+---Izquierda  (en Descripci√≥n del Juego)  =  Info del juego
 -- A en Icono Inicio  =  Activar favorito (Amarillo = Favorito)
--- B en Icono Inicio  =  Establecer categorÌas de juego
+-- B en Icono Inicio  =  Establecer categor√≠as de juego
 -- A en Icono Mano  =  Bloqueo Parental (Rejo = Bloqueado)
 -- A en Icono de engranaje  =  Ajustes de juego
 -- A en Icono X  =   Borra Juego
 
-- Menus Ajustes :
--- Menos / M·s  =  Previou / Proxima pagina
--- Izquierda / Derecha  =  Previou / Proxima pagina
+- Men√∫s Ajustes :
+-- Menos / Mas  =  Previo / Pr√≥xima pagina
+-- Izquierda / Derecha  =  Previo / Pr√≥xima pagina
 
-- Coverflow Ajuste ConfiguraciÛn :
--- B+Menos / B+M·s  =  Previo / Proxima pagina
--- B  =  Ajuste m·s r·pido (B+A en lugar de 'A' para hacer clic en un botÛn)
+- Coverflow Ajuste Configuraci√≥n :
+-- B+Menos / B+M√°s  =  Previo / Pr√≥xima pagina
+-- B  =  Ajuste m√°s r√°pido (B+A en lugar de 'A' para hacer clic en un bot√≥n)
 -- B+1  =  Copia todo coverflow
 -- B+2  =  Pasa coverflow
 
-CONSEJOS para juegos ejecut·ndose que se bloquean:
-Si el juego solo se bloquea con una pantalla en negro en el lanzamiento a continuaciÛn, comprobar para ver si es un juego PAL.
-  (Pulse el botÛn M·s en la pantalla del juego.) Si se trata de PAL, a continuaciÛn, establecer el modo de juego de vÌdeo a "PAL 50 Hz" en la pantalla de configuraciÛn del juego.
-  Usted tendr· que utilizar una conexiÛn de componentes a la TV y tener tu Wii en modo de vÌdeo 480p.
+CONSEJOS para juegos que se bloquean:
+Si el juego solo se bloquea con una pantalla en negro en el lanzamiento, comprobar si es un juego PAL.
+  (Pulse el bot√≥n M√°s en la pantalla del juego.) Si se trata de PAL, establecer el modo de juego de v√≠deo a "PAL 50 Hz" en la configuraci√≥n del juego.
+  Usted tendr√° que utilizar una conexi√≥n de componentes a la TV y tener tu Wii en modo de v√≠deo 480p.
 
-Si un juego se bloquea, a continuaciÛn, intente ejecutar el juego de nuevo. Si se bloquea continuamente, luego gire a la emulaciÛn de USB a \ "No \" en la pantalla de configuraciÛn del juego.
+Si un juego se bloquea, a continuaci√≥n, intente ejecutar el juego de nuevo. Si se bloquea continuamente, cambie la emulaci√≥n de USB a "No" en la configuraci√≥n del juego.  

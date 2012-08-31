@@ -19,7 +19,7 @@ Commandes :
 -- B sur l'icône Étoile  =  Catégories
 -- A sur l'icône Maison  =  Afficher le menu général/Quitter WiiFlow
 -- B sur l'icône Maison  =  Basculer sur le menu source
--- B pressé pendant 3 secondes/B sur l'icône Maison (wiimote_gestures activé)  =  Afficher le menu source
+-- B  =  Afficher le menu source
 
 - Jeux :
 -- A sur la boîte  =  Voir la face arrière/face avant
@@ -49,7 +49,7 @@ Commandes :
 -- Bouton A  =  Bouton A
 -- Bouton B  =  Bouton B
 -- Bouton 1  =  Bouton Y
--- Bouton 2  =  Bouton X 
+-- Bouton 2  =  Bouton X
 
 - Guitare
 -- Bouton A  =  Bouton Vert
