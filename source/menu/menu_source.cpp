@@ -453,11 +453,11 @@ void CMenu::_initSourceMenu(CMenu::SThemeData &theme)
 	_setHideAnim(m_sourceBtnUsb, "SOURCE/USB_BTN", 0, 40, 0.f, 0.f);
 	_setHideAnim(m_sourceBtnDML, "SOURCE/DML_BTN", 0, 40, 0.f, 0.f);
 	_setHideAnim(m_sourceBtnEmu, "SOURCE/EMU_BTN", 0, 40, 0.f, 0.f);
-	_setHideAnim(m_sourceLblTitle, "SOURCE/TITLE", 0, -200, 0.f, 1.f);
+	_setHideAnim(m_sourceLblTitle, "SOURCE/TITLE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_sourceLblNotice, "SOURCE/NOTICE", 0, 0, 1.f, 0.f);
-	_setHideAnim(m_sourceLblPage, "SOURCE/PAGE_BTN", 0, 200, 1.f, 0.f);
-	_setHideAnim(m_sourceBtnPageM, "SOURCE/PAGE_MINUS", 0, 200, 1.f, 0.f);
-	_setHideAnim(m_sourceBtnPageP, "SOURCE/PAGE_PLUS", 0, 200, 1.f, 0.f);
+	_setHideAnim(m_sourceLblPage, "SOURCE/PAGE_BTN", 0, 0, -1.f, 1.f);
+	_setHideAnim(m_sourceBtnPageM, "SOURCE/PAGE_MINUS", 0, 0, -1.f, 1.f);
+	_setHideAnim(m_sourceBtnPageP, "SOURCE/PAGE_PLUS", 0, 0, -1.f, 1.f);
 
 	for(int i = 0; i < 12; ++i)
 	{

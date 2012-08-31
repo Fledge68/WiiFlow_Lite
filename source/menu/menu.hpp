@@ -139,7 +139,6 @@ private:
 	STexture m_gameSettingsBg;
 	STexture m_gameBgLQ;
 	STexture m_mainBgLQ;
-	STexture m_categoryBg;
 //Main Coverflow
 	u16 m_mainBtnConfig;
 	u16 m_mainBtnInfo;
@@ -556,18 +555,6 @@ private:
 	STexture m_wifi;
 	STexture m_controlsreq[4];
 	STexture m_controls[4];
-// Category menu
-	u16 m_categoryLblPage;
-	u16 m_categoryBtnPageM;
-	u16 m_categoryBtnPageP;
-	u16 m_categoryBtnBack;
-	u16 m_categoryLblTitle;
-	u16 m_categoryLblCat[21];
-	u16 m_categoryBtn[21];
-	u16 m_categoryBtnCat[21];
-	u16 m_categoryBtnCats[21];
-	u16 m_categoryLblUser[4];
-	u8 m_max_categories;
 // NandEmulation
 	string m_saveExtGameId;
 	bool m_forceext;
@@ -680,7 +667,7 @@ private:
 	lwp_t m_gameSoundThread;
 	bool m_gamesound_changed;
 	u8 m_bnrSndVol;
-
+	u8 m_max_categories;
 	bool m_video_playing;
 
 private:
@@ -775,6 +762,10 @@ private:
 		STexture checkboxoffs;
 		STexture checkboxon;
 		STexture checkboxons;
+		STexture checkboxHid;
+		STexture checkboxHids;
+		STexture checkboxReq;
+		STexture checkboxReqs;
 		STexture pbarTexL;
 		STexture pbarTexR;
 		STexture pbarTexC;

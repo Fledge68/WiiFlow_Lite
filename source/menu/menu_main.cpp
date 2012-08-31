@@ -717,7 +717,7 @@ int CMenu::main(void)
 			}
 		}
 
-		if(done==0 && m_cat.getBool("GENERAL", "category_on_start", false))
+		if(done==0 && m_cfg.getBool("GENERAL", "category_on_start", false))
 		{
 			done = 1; //set done so it doesnt keep doing it
 			// show categories menu
