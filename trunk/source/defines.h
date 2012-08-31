@@ -10,7 +10,7 @@
 #define DML_DIR					"%s:/games"
 #define CFG_FILENAME			"wiiflow.ini"
 #define LANG_FILENAME			"languages.ini"
-#define CAT_FILENAME			"categories.ini"
+#define CAT_FILENAME			"categories_v4.ini"
 #define SOURCE_FILENAME			"source_menu.ini"
 #define TITLES_FILENAME			"titles.ini"
 #define CTITLES_FILENAME		"custom_titles.ini"

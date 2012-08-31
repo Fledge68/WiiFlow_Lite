@@ -109,6 +109,8 @@ extern const u8 butzhcnoff_png[];
 extern const u8 butzhcnoffs_png[];
 extern const u8 checkbox_png[];
 extern const u8 checkboxs_png[];
+extern const u8 checkboxhid_png[];
+extern const u8 checkboxreq_png[];
 
 SmartBuf m_wbf1_font;
 SmartBuf m_wbf2_font;
@@ -460,7 +462,6 @@ void CMenu::init(void)
 	
 	if (m_cfg.getBool("GENERAL", "favorites_on_startup", false))
 		m_favorites = m_cfg.getBool(domain, "favorites", false);
-	m_max_categories = m_cat.getInt("GENERAL", "numcategories", 21);
 
 	m_bnr_settings = m_cfg.getBool("GENERAL", "banner_in_settings", true);
 
@@ -1038,6 +1039,14 @@ void CMenu::_buildMenus(void)
 	theme.checkboxon = _texture(theme.texSet, "GENERAL", "checkbox_on", theme.checkboxon);
 	theme.checkboxons.fromPNG(checkboxs_png);
 	theme.checkboxons = _texture(theme.texSet, "GENERAL", "checkbox_on_selected", theme.checkboxons);
+	theme.checkboxHid.fromPNG(checkboxhid_png);
+    theme.checkboxHid = _texture(theme.texSet, "GENERAL", "checkbox_Hid", theme.checkboxHid);
+	theme.checkboxHids.fromPNG(checkboxhid_png);
+	theme.checkboxHids = _texture(theme.texSet, "GENERAL", "checkbox_Hid_selected", theme.checkboxHids);
+	theme.checkboxReq.fromPNG(checkboxreq_png);
+	theme.checkboxReq = _texture(theme.texSet, "GENERAL", "checkbox_Req", theme.checkboxReq);
+	theme.checkboxReqs.fromPNG(checkboxreq_png);
+	theme.checkboxReqs = _texture(theme.texSet, "GENERAL", "checkbox_Req_selected", theme.checkboxReqs);
 
 	theme.pbarTexL.fromPNG(pbarleft_png);
 	theme.pbarTexL = _texture(theme.texSet, "GENERAL", "progressbar_texture_left", theme.pbarTexL); 
@@ -1511,8 +1520,10 @@ void CMenu::_initCF(void)
 	Config dump, gameAgeList;
 	GameTDB gametdb;
 	const char *domain = _domainFromView();
+	
 	m_cf.clear();
 	m_cf.reserve(m_gameList.size());
+	
 	vector<bool> EnabledPlugins;
 	if(m_current_view == COVERFLOW_EMU)
 		EnabledPlugins = m_plugin.GetEnabledPlugins(m_cfg);
@@ -1521,6 +1532,7 @@ void CMenu::_initCF(void)
 	if(dumpGameLst) dump.load(fmt("%s/" TITLES_DUMP_FILENAME, m_settingsDir.c_str()));
 
 	m_gcfg1.load(fmt("%s/" GAME_SETTINGS1_FILENAME, m_settingsDir.c_str()));
+	
 	int ageLock = m_cfg.getInt("GENERAL", "age_lock");
 	if (ageLock < 2 || ageLock > 19)
 		ageLock = 19;
@@ -1534,7 +1546,18 @@ void CMenu::_initCF(void)
 			gametdb.SetLanguageCode(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
 		}
 	}
-	const char *catviews = m_cat.getString(domain, "categories", "100000000000000000000").c_str();
+	
+	m_max_categories = m_cat.getInt(fmt("%s/GENERAL", domain), "numcategories", 6);
+	string catDef = "1";
+	catDef.append(m_max_categories - 1, '0');
+	string catSettings = m_cat.getString(fmt("%s/GENERAL", domain), "categories", catDef).c_str();
+		if (catSettings.length() < m_max_categories)  
+		{
+			catSettings.append((m_max_categories - catSettings.length()), '0');
+			m_cat.setString(fmt("%s/GENERAL", domain), "categories", catSettings);
+		}
+	const char *categories = m_cat.getString(fmt("%s/GENERAL", domain), "categories").c_str();
+	
 	for (u32 i = 0; i < m_gameList.size(); ++i)
 	{
 		string id;
@@ -1575,13 +1598,6 @@ void CMenu::_initCF(void)
 			if(m_gameList[i].type == TYPE_CHANNEL && chantitle == HBC_108)
 				strncpy(m_gameList[i].id, "JODI", 6);
 			id = string(m_gameList[i].id);
-		}
-
-		string idcats = m_cat.getString("CATEGORIES", id, "").c_str();
-		if (idcats.length() < 21 && idcats.length() > 0)  
-		{
-			idcats.append((21-idcats.length()), '0');
-			m_cat.setString("CATEGORIES", id, idcats);
 		}
 
 		bool ageLocked = false;
@@ -1661,24 +1677,55 @@ void CMenu::_initCF(void)
 			&& (!m_locked || !m_gcfg1.getBool("ADULTONLY", id, false))
 			&& !ageLocked)
 		{
-			if(catviews[0] == '0')
+			string idcats = m_cat.getString(domain, id, catDef).c_str();
+			if (idcats.length() < m_max_categories)  
 			{
-				const char *idcats = m_cat.getString("CATEGORIES", id, "").c_str();
-				if(strlen(idcats) == 0)
-					continue;
-				else
+				idcats.append((m_max_categories - idcats.length()), '0');
+				m_cat.setString(domain, id, idcats);
+			}
+			if(categories[0] == '0')// if '1' skip checking cats and show all games
+			{
+				const char *idCats = m_cat.getString(domain, id).c_str();
+				bool inaCat = false;
+				bool inHiddenCat = false;
+				bool noHiddenCats = true;
+				bool SelectedCats = false;
+				int reqCount = 0;
+				int reqMatch = 0;
+				
+				for(u8 j = 1; j < m_max_categories; ++j)
 				{
-					bool idinacat = false;
-					for(u32 j = 1; j<m_max_categories; ++j)
+					if(categories[j] == '3')
 					{
-						if(catviews[j] == '1' && idcats[j] == '1') 
-						{
-							idinacat = true;
-							break;
-						}
+						reqCount++;
+						if(idCats[j] == '1')
+							reqMatch++;
+							inaCat = true;
 					}
-					if(!idinacat)
+					else if(categories[j] == '1')
+					{
+						SelectedCats = true;
+						if(idCats[j] == '1')
+							inaCat = true;
+					}
+					else if(categories[j] == '2')
+					{
+						noHiddenCats = false;
+						if(idCats[j] == '1')
+							inHiddenCat = true;
+					}
+				}
+				//continue; means don't add game to list (don't show)
+				if(inHiddenCat)
+					continue;
+				if(reqCount != reqMatch)
+					continue;
+				if(!inaCat)
+				{
+					if(noHiddenCats)
 						continue;
+					else if(SelectedCats)
+							continue;
 				}
 			}
 			int playcount = m_gcfg1.getInt("PLAYCOUNT", id, 0);
