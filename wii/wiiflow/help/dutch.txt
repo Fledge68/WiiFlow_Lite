@@ -23,7 +23,7 @@ Bediening:
 -- A op Home Icoon  =  Openen Home Menu / Wiiflow Sluiten
 -- Druk op B voor 3 seconden / B op Home Icoon (wiimote_gestures ingeschakeld)  =  Ga naar Bron menu
 -- A op Disc Icoon (spel Disc in Drive)  =  Start spel disc
--- A op Vraagteken Icoon  =  Toon eerbetuiging, dit help bestand en controle van een nieuwe versie
+-- A op Vraagteken Icoon  =  Toon eerbetuiging en controle van een nieuwe versie
 
 - Spel :
 -- A op voorkant  =  Laat achterkant zien
