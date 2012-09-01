@@ -480,18 +480,7 @@ int CMenu::main(void)
 			//Events to Switch off/on nand emu
 			else if(m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML)|| m_btnMgr.selected(m_mainBtnEmu) || m_btnMgr.selected(m_mainBtnHomebrew))
 			{
-				if(m_cfg.getBool("GENERAL", "b_on_mode_to_source", false))
-				{
-					_hideMain();
-					if(!_Source()) //Different source selected
-						LoadView();
-					else
-						_showMain();
-					if(BTN_B_HELD)
-						bUsed = true;
-					continue;
-				}
-				else if(!neek2o())
+				if(!neek2o())
 				{
 					bUsed = true;
 					m_cfg.setBool("NAND", "disable", !m_cfg.getBool("NAND", "disable", true));
@@ -528,17 +517,6 @@ int CMenu::main(void)
 					m_btnMgr.show(m_mainLblNotice);
 				}
 			}
-			else if(enable_wmote_roll && m_btnMgr.selected(m_mainBtnQuit))
-			{
-				_hideMain();
-				if(!_Source()) //Different source selected
-					LoadView();
-				else
-					_showMain();
-				if(BTN_B_HELD)
-					bUsed = true;
-				continue;
-			}
 		}
 		else if(WROLL_LEFT)
 		{
@@ -552,7 +530,6 @@ int CMenu::main(void)
 		}
 		if(!BTN_B_HELD)
 		{
-			//SourceMenuTimeout = 0;
 			if(BTN_UP_REPEAT || RIGHT_STICK_UP)
 				m_cf.up();
 			else if(BTN_RIGHT_REPEAT || RIGHT_STICK_RIGHT)
