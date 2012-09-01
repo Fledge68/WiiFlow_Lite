@@ -94,7 +94,6 @@ extern "C" {
 #endif /* __cplusplus */
 
 /* Prototypes */
-s32	Disc_Init(void);
 s32	Disc_Open(bool);
 s32	Disc_Wait(void);
 s32	Disc_SetUSB(const u8 *id, bool frag);

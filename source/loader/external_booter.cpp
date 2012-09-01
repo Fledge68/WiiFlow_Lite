@@ -19,6 +19,7 @@
 #include "external_booter.hpp"
 #include "cios.h"
 #include "fst.h"
+#include "wdvd.h"
 #include "channel/nand.hpp"
 #include "devicemounter/sdhc.h"
 #include "devicemounter/usbstorage.h"
@@ -98,6 +99,7 @@ void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 pat
 	SDHC_Close();
 #endif
 	Nand::Instance()->DeInit_ISFS(true); //cIOS loves magic :P
+	WDVD_Close(); //We init that in the booter anyways
 
 	memcpy(EXECUTE_ADDR, wii_game_booter_dol, wii_game_booter_dol_size);
 	DCFlushRange(EXECUTE_ADDR, wii_game_booter_dol_size);

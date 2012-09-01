@@ -288,26 +288,22 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 	}
 	m_thrdStop = false;
 	m_thrdMessageAdded = false;
-	while (true)
+	while(true)
 	{
 		_mainLoopCommon(false, m_thrdWorking);
-		if ((BTN_HOME_PRESSED || BTN_B_PRESSED) && !m_thrdWorking)
-		{
+		if((BTN_HOME_PRESSED || BTN_B_PRESSED) && !m_thrdWorking)
 			break;
-		}
-		else if (BTN_UP_PRESSED)
+		else if(BTN_UP_PRESSED)
 			m_btnMgr.up();
-		else if (BTN_DOWN_PRESSED)
+		else if(BTN_DOWN_PRESSED)
 			m_btnMgr.down();
-		if (BTN_A_PRESSED && !m_thrdWorking)
+		if(BTN_A_PRESSED && !m_thrdWorking)
 		{
-			if (m_btnMgr.selected(m_wbfsBtnBack))
-			{
+			if(m_btnMgr.selected(m_wbfsBtnBack))
 				break;
-			}
-			else if (m_btnMgr.selected(m_wbfsBtnGo))
+			else if(m_btnMgr.selected(m_wbfsBtnGo))
 			{
-				switch (op)
+				switch(op)
 				{
 					case CMenu::WO_ADD_GAME:
 						m_btnMgr.show(m_wbfsPBar);
@@ -317,7 +313,6 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						m_btnMgr.show(m_wbfsLblMessage);
 						m_btnMgr.setText(m_wbfsLblMessage, L"");
 						Disc_SetUSB(NULL, false);
-						Disc_Init();
 						if (Disc_Wait() < 0)
 						{
 							error(_t("wbfsoperr1", L"Disc_Wait failed"));
@@ -447,12 +442,12 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_GCcopyGame, (void *)this, 0, 8 * 1024, 64);
 						break;
 				}
-				if (out)
+				if(out)
 					break;
 			}
 		}
 
-		if (m_thrdMessageAdded)
+		if(m_thrdMessageAdded)
 		{
 			LockMutex lock(m_mutex);
 			m_thrdMessageAdded = false;
@@ -460,13 +455,10 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 				m_btnMgr.setText(m_wbfsLblDialog, m_thrdMessage);
 			m_btnMgr.setProgress(m_wbfsPBar, m_thrdProgress);
 			m_btnMgr.setText(m_wbfsLblMessage, wfmt( L"%i%%", (int)(m_thrdProgress * 100.f)));
-			if (!m_thrdWorking)
+			if(!m_thrdWorking)
 			{
 				if(op == CMenu::WO_ADD_GAME)
-				{
 					WDVD_StopMotor();
-					WDVD_Close();
-				}
 				m_btnMgr.show(m_wbfsBtnBack);
 			}
 		}

@@ -868,11 +868,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 			DML_Old_SetOptions(newPath.c_str());
 
 		if(!nodisc || !m_new_dml)
-		{
-			WDVD_Init();
 			WDVD_StopMotor();
-			WDVD_Close();
-		}
 	}
 	else if(loader == 2 || (loader == 0 && m_devo_installed && strcasestr(path.c_str(), "boot.bin") == NULL))
 	{
@@ -907,16 +903,18 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	SDHC_Close();
 #endif
 	Nand::Instance()->DeInit_ISFS();
-	if(loader == 2)
-	{
-		writeStub();
-		DEVO_Boot();
-	}
-	else
+	WDVD_Close();
+
+	if(loader == 1 || disc)
 	{
 		DML_New_WriteOptions();
 		WII_Initialize();
 		WII_LaunchTitle(0x100000100LL);
+	}
+	else if(loader == 2)
+	{
+		writeStub();
+		DEVO_Boot();
 	}
 	Sys_LoadMenu();
 }
@@ -943,6 +941,8 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 	SDHC_Close();
 #endif
 	Nand::Instance()->DeInit_ISFS();
+	WDVD_Close();
+
 	writeStub();
 	BootHomebrew();
 }
@@ -1153,6 +1153,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	if(forwarder)
 	{
 		Nand::Instance()->DeInit_ISFS();
+		WDVD_Close();
 		WII_Initialize();
 		if(WII_LaunchTitle(gameTitle) < 0)
 			Sys_LoadMenu();	
@@ -1186,23 +1187,26 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	{
 		u32 cover = 0;
 		#ifndef DOLPHIN
-		Disc_Init();
 		if(!neek2o())
 		{
 			Disc_SetUSB(NULL, false);
-			if (WDVD_GetCoverStatus(&cover) < 0)
+			if(WDVD_GetCoverStatus(&cover) < 0)
 			{
 				error(_t("errgame7", L"WDVDGetCoverStatus Failed!"));
 				if (BTN_B_PRESSED) return;
 			}
-			if (!(cover & 0x2))
+			if(!(cover & 0x2))
 			{
 				error(_t("errgame8", L"Please insert a game disc."));
-				do {
+				do
+				{
 					WDVD_GetCoverStatus(&cover);
-					if (BTN_B_PRESSED) return;
+					if(BTN_B_PRESSED)
+						return;
 				} while(!(cover & 0x2));
 			}
+			if(CurrentIOS.Version != mainIOS)
+				loadIOS(mainIOS, true);
 		}
 		#endif
 		/* Open Disc */

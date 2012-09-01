@@ -2061,7 +2061,7 @@ const wstringEx CMenu::_fmt(const char *key, const wchar_t *def)
 bool CMenu::_loadChannelList(void)
 {
 	string emuPath;
-	
+
 	m_partRequest = m_cfg.getInt("NAND", "partition", 0);
 	int emuPartition = _FindEmuPart(&emuPath, m_partRequest, false);
 
@@ -2070,24 +2070,24 @@ bool CMenu::_loadChannelList(void)
 
 	if(emuPartition < 0)
 		emuPartition = _FindEmuPart(&emuPath, m_partRequest, true);
-	
+
 	if(emuPartition < 0)
 		return false;
-	else	
+	else
 		currentPartition = emuPartition; 
-	
+
 	static u8 lastPartition = currentPartition;
 
 	static bool first = true;
 	static bool failed = false;
 
 	bool changed = lastPartition != currentPartition || last_emu_state != disable_emu || first || failed;
-	
+
 	gprintf("%s, which is %s\n", disable_emu ? "NAND" : DeviceName[emuPartition], changed ? "refreshing." : "cached.");
 
 	if(first && !disable_emu)
 	{
-		char basepath[64];		
+		char basepath[64];
 		snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[currentPartition], emuPath.c_str());
 		Nand::Instance()->PreNandCfg(basepath, m_cfg.getBool("NAND", "real_nand_miis", false), m_cfg.getBool("NAND", "real_nand_config", false));
 		first = false;
@@ -2097,7 +2097,7 @@ bool CMenu::_loadChannelList(void)
 	Nand::Instance()->Disable_Emu();
 	if(!disable_emu)
 	{
-		if(CurrentIOS.Type == IOS_TYPE_NORMAL_IOS)
+		if(CurrentIOS.Version != mainIOS)
 		{
 			loadIOS(mainIOS, true);
 			Open_Inputs();
