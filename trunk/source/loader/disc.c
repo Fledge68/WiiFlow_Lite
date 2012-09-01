@@ -33,12 +33,6 @@ u32 appentrypoint;
 static u32 *buffer = (u32 *)0x93000000;
 static u8  *diskid = (u8  *)0x80000000;
 
-s32 Disc_Init(void)
-{
-	/* Init DVD subsystem */
-	return WDVD_Init();
-}
-
 s32 Disc_Open(bool boot_disc)
 {
 	/* Reset drive */

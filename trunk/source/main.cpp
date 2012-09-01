@@ -12,7 +12,7 @@
 #include "gui/video.hpp"
 #include "gui/text.hpp"
 #include "homebrew/homebrew.h"
-#include "loader/disc.h"
+#include "loader/wdvd.h"
 #include "loader/alt_ios.h"
 #include "loader/sys.h"
 #include "loader/wbfs.h"
@@ -104,7 +104,7 @@ int main(int argc, char **argv)
 #endif
 	DeviceHandler::Instance()->MountAll();
 	vid.waitMessage(0.15f);
-	bool dipOK = Disc_Init() >= 0;
+	bool dipOK = WDVD_Init() >= 0;
 
 	mainMenu = new CMenu(vid);
 	Open_Inputs();
@@ -136,6 +136,8 @@ int main(int argc, char **argv)
 	mainMenu->cleanup();
 	DeviceHandler::Instance()->UnMountAll();
 	Nand::Instance()->DeInit_ISFS();
+	WDVD_Close();
+
 	Sys_Exit();
 	exit(1);
 	return 0;

@@ -95,7 +95,7 @@ s32 Nand::Nand_Mount(NandDevice *Device)
 		return fd;
 
 	static ioctlv vector[1] ATTRIBUTE_ALIGN(32);	
-	
+
 	vector[0].data = &Partition;
 	vector[0].len = sizeof(u32);
 
@@ -108,7 +108,8 @@ s32 Nand::Nand_Mount(NandDevice *Device)
 s32 Nand::Nand_Unmount(NandDevice *Device)
 {
 	s32 fd = IOS_Open("fat", 0);
-	if (fd < 0) return fd;
+	if(fd < 0)
+		return fd;
 
 	s32 ret = IOS_Ioctlv(fd, Device->Unmount, 0, 0, NULL);
 	IOS_Close(fd);
@@ -120,7 +121,7 @@ s32 Nand::Nand_Enable(NandDevice *Device)
 {
 	gprintf("Enabling NAND Emulator\n");
 	s32 fd = IOS_Open("/dev/fs", 0);
-	if (fd < 0)
+	if(fd < 0)
 		return fd;
 
 	int NandPathlen = strlen(NandPath) + 1;
