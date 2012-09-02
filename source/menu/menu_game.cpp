@@ -882,7 +882,6 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	m_cfg.save(true);
 	cleanup();
 
-	DeviceHandler::Instance()->UnMountAll();
 	GC_SetVideoMode(videoMode, videoSetting);
 	GC_SetLanguage(GClanguage);
 	if(loader == 2)
@@ -891,20 +890,9 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 			loadIOS(58, false);
 		else //use cIOS instead to make sure Devolution works anyways
 			loadIOS(mainIOS, false);
-		USBStorage2_Deinit();
-		USB_Deinitialize();
-		SDHC_Close();
 		DEVO_SetOptions(path.c_str(), DeviceName[currentPartition], id.c_str(), memcard_emu);
 	}
-
-#ifndef DOLPHIN
-	USBStorage2_Deinit();
-	USB_Deinitialize();
-	SDHC_Close();
-#endif
-	Nand::Instance()->DeInit_ISFS();
-	WDVD_Close();
-
+	ShutdownBeforeExit();
 	if(loader == 1 || disc)
 	{
 		DML_New_WriteOptions();
@@ -928,21 +916,14 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 
 	Playlog_Delete();
 	cleanup(); // wifi and sd gecko doesnt work anymore after cleanup
-	LoadHomebrew(filepath);
-	DeviceHandler::Instance()->UnMountAll(); //homebrew loaded, we can unmount devices now
 
+	LoadHomebrew(filepath);
 	AddBootArgument(filepath);
 	for(u32 i = 0; i < arguments.size(); ++i)
 		AddBootArgument(arguments[i].c_str());
-	loadIOS(58, false);
-#ifndef DOLPHIN
-	USBStorage2_Deinit();
-	USB_Deinitialize();
-	SDHC_Close();
-#endif
-	Nand::Instance()->DeInit_ISFS();
-	WDVD_Close();
 
+	loadIOS(58, false);
+	ShutdownBeforeExit();
 	writeStub();
 	BootHomebrew();
 }
@@ -1100,7 +1081,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 			error(_t("errneek1", L"Cannot launch neek2o. Verify your neek2o setup"));
 			Sys_LoadMenu();
 		}
-		DeviceHandler::Instance()->UnMountAll();
+		ShutdownBeforeExit();
 		Launch_nk(gameTitle, emuPath.size() > 1 ? emuPath.c_str() : NULL);
 	}
 	DeviceHandler::Instance()->UnMountAll();
@@ -1152,8 +1133,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	}
 	if(forwarder)
 	{
-		Nand::Instance()->DeInit_ISFS();
-		WDVD_Close();
+		ShutdownBeforeExit();
 		WII_Initialize();
 		if(WII_LaunchTitle(gameTitle) < 0)
 			Sys_LoadMenu();	

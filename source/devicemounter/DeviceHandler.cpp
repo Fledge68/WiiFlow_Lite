@@ -62,7 +62,7 @@ void DeviceHandler::MountAll()
 	MountAllUSB();
 }
 
-void DeviceHandler::UnMountAll()
+void DeviceHandler::UnMountAll(bool ShutdownUSB)
 {
 	for(u32 i = SD; i < MAXDEVICES; i++)
 		UnMount(i);
@@ -77,6 +77,11 @@ void DeviceHandler::UnMountAll()
 	sd = NULL;
 	usb0 = NULL;
 	usb1 = NULL;
+
+	USBStorage2_Deinit();
+	SDHC_Close();
+	if(ShutdownUSB)
+		USB_Deinitialize();
 }
 
 bool DeviceHandler::Mount(int dev)

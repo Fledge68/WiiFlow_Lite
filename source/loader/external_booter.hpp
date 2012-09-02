@@ -31,5 +31,6 @@ extern u32 hooktype;
 void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, 
 							int aspectRatio, u32 returnTo, u8 BootType);
 void ExternalBooter_ChannelSetup(void *dolchunkoffset[18], u32 dolchunksize[18], u32 dolchunkcount, u32 StartPoint);
+void ShutdownBeforeExit(bool KeepPatches = false);
 
 #endif

@@ -66,9 +66,9 @@ static char fs[] ATTRIBUTE_ALIGN(32) = "/dev/usb2";
 static char fs2[] ATTRIBUTE_ALIGN(32) = "/dev/usb123";
 static char fs3[] ATTRIBUTE_ALIGN(32) = "/dev/usb/ehc";
 
-static u8 * mem2_ptr = NULL;
-static s32 hid = -1, fd = -1;
-static u32 usb2_port = -1;  //current USB port
+u8 *mem2_ptr = NULL;
+s32 hid = -1, fd = -1;
+s8 usb2_port = -1;  //current USB port
 bool hddInUse[2] = { false, false };
 u32 hdd_sector_size[2] = { 512, 512 };
 bool first = false;
@@ -84,35 +84,36 @@ inline s32 __USBStorage_isMEM2Buffer(const void *buffer)
 
 s32 USBStorage2_Init(u32 port)
 {
+	/* allocate buf2 */
+	if(mem2_ptr == NULL)
+		mem2_ptr = SYS_AllocArena2MemLo(USB_MEM2_SIZE, 32);
+
+	if(usb_libogc_mode)
+	{
+		__io_usbstorage_ogc.startup();
+		return (USBStorage2_GetCapacity(port, &hdd_sector_size[port]) == 0) ? IPC_ENOENT : 0;
+	}
+
 	if(hddInUse[port])
 		return 0;
 
-	if(usb_libogc_mode)
-		__io_usbstorage_ogc.startup();
-	else
+	/* Create heap */
+	if(hid < 0)
 	{
-		/* Create heap */
-		if(hid < 0)
-		{
-			hid = iosCreateHeap(UMS_HEAPSIZE);
-			if (hid < 0) return IPC_ENOMEM;
-		}
-		/* allocate buf2 */
-		if(mem2_ptr == NULL)
-			mem2_ptr = SYS_AllocArena2MemLo(USB_MEM2_SIZE, 32);
-
-		/* Open USB device */
-		if (fd < 0) fd = IOS_Open(fs, 0);
-		if (fd < 0) fd = IOS_Open(fs2, 0);
-		if (fd < 0) fd = IOS_Open(fs3, 0);
-		if (fd < 0) return fd;
+		hid = iosCreateHeap(UMS_HEAPSIZE);
+		if (hid < 0) return IPC_ENOMEM;
 	}
+
+	/* Open USB device */
+	if (fd < 0) fd = IOS_Open(fs, 0);
+	if (fd < 0) fd = IOS_Open(fs2, 0);
+	if (fd < 0) fd = IOS_Open(fs3, 0);
+	if (fd < 0) return fd;
 
 	USBStorage2_SetPort(port);
 
 	/* Initialize USB storage */
-	if(!usb_libogc_mode)
-		IOS_IoctlvFormat(hid, fd, USB_IOCTL_UMS_INIT, ":");
+	IOS_IoctlvFormat(hid, fd, USB_IOCTL_UMS_INIT, ":");
 
 	/* Get device capacity */
 	if(USBStorage2_GetCapacity(port, &hdd_sector_size[port]) == 0)
@@ -125,24 +126,25 @@ s32 USBStorage2_Init(u32 port)
 
 void USBStorage2_Deinit()
 {
-	if(usb_libogc_mode)
-	{
-		__io_usbstorage_ogc.shutdown();
-		return;
-	}
-
 	/* Close USB device */
-	if (fd >= 0)
-	{
+	if(usb_libogc_mode)
+		__io_usbstorage_ogc.shutdown();
+	else if(fd >= 0)
 		IOS_Close(fd);  // not sure to close the fd is needed
-		fd = -1;
+
+	/* Reset Variables */
+	if(usb2_port == 0 || usb2_port == 1)
+	{
+		hddInUse[usb2_port] = false;
+		usb2_port = -1;
 	}
+	fd = -1;
 }
 
-s32 USBStorage2_SetPort(u32 port)
+s32 USBStorage2_SetPort(s8 port)
 {
 	//! Port = 2 is handle in the loader, no need to handle it in cIOS
-	if(port > 1)
+	if(port > 1 || port < 0)
 		return -1;
 
 	if(port == usb2_port)
@@ -160,7 +162,7 @@ s32 USBStorage2_SetPort(u32 port)
 	return ret;
 }
 
-s32 USBStorage2_GetPort()
+s8 USBStorage2_GetPort()
 {
 	return usb2_port;
 }
@@ -178,7 +180,7 @@ s32 USBStorage2_GetCapacity(u32 port, u32 *_sector_size)
 	else
 		numSectors = IOS_IoctlvFormat(hid, fd, USB_IOCTL_UMS_GET_CAPACITY, ":i", &sectorSize);
 
-	if(first)
+	if(first && numSectors && sectorSize)
 	{
 		gprintf(" * * * * * * * * * * * *\n");
 		gprintf(" * HDD Information\n * Sectors: %lu\n", numSectors);
@@ -296,7 +298,9 @@ s32 USBStorage2_WriteSectors(u32 port, u32 sector, u32 numSectors, const void *b
 
 s32 USBStorage2_GetSectorSize()
 {
-	return hdd_sector_size[usb2_port];
+	if(usb2_port == 0 || usb2_port == 1)
+		return hdd_sector_size[usb2_port];
+	return 0;
 }
 
 static bool __usbstorage_Startup(void)
