@@ -29,9 +29,12 @@
 #include <ogc/mutex.h>
 #include <ogc/system.h>
 #include <sdcard/gcsd.h>
+#include <sdcard/wiisd_io.h>
 #include "DeviceHandler.hpp"
+#include "defines.h"
 #include "sdhc.h"
 #include "usbstorage.h"
+#include "usbstorage_libogc.h"
 #include "loader/cios.h"
 #include "loader/wbfs.h"
 
@@ -59,7 +62,9 @@ void DeviceHandler::DestroyInstance()
 void DeviceHandler::MountAll()
 {
 	MountSD();
+#ifndef DOLPHIN
 	MountAllUSB();
+#endif
 }
 
 void DeviceHandler::UnMountAll(bool ShutdownUSB)
@@ -168,6 +173,9 @@ bool DeviceHandler::MountUSB(int pos)
 
 bool DeviceHandler::MountAllUSB()
 {
+	/* Wait for our slowass HDD */
+	WaitForDevice(GetUSB0Interface());
+	/* Get Partitions and Mount them */
 	if(!usb0)
 		usb0 = new PartitionHandle(GetUSB0Interface());
 	if(usb0 && usb0->GetPartitionCount() < 1)
@@ -380,4 +388,35 @@ PartitionHandle *DeviceHandler::GetUSBHandleFromPartition(int part) const
 		return usb0;
 	else
 		return usb1;
+}
+
+void DeviceHandler::WaitForDevice(const DISC_INTERFACE *Handle)
+{
+	if(Handle == NULL)
+		return;
+	time_t timeout = time(NULL);
+	while(time(NULL) - timeout < 20)
+	{
+		if(Handle->startup() && Handle->isInserted())
+			break;
+		usleep(50000);
+	}
+}
+
+bool DeviceHandler::MountDevolution(int CurrentPartition)
+{
+	int NewPartition = (CurrentPartition == SD ? CurrentPartition : CurrentPartition - 1);
+	const DISC_INTERFACE *handle = (CurrentPartition == SD) ? &__io_wiisd : &__io_usbstorage_ogc;
+	/* We need to wait for the device to get ready for a remount */
+	WaitForDevice(handle);
+	/* Only mount the partition we need */
+	OGC_Device = new PartitionHandle(handle);
+	return OGC_Device->Mount(NewPartition, DeviceName[CurrentPartition], true);
+}
+
+void DeviceHandler::UnMountDevolution(int CurrentPartition)
+{
+	int NewPartition = (CurrentPartition == SD ? CurrentPartition : CurrentPartition - 1);
+	OGC_Device->UnMount(NewPartition);
+	delete OGC_Device;
 }

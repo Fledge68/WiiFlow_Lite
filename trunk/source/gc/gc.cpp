@@ -20,7 +20,6 @@
 #include <string.h>
 #include <malloc.h>
 #include <ogc/machine/processor.h>
-#include <sdcard/wiisd_io.h>
 
 // for directory parsing and low-level file I/O
 #include <sys/types.h>
@@ -29,9 +28,7 @@
 #include <dirent.h>
 
 #include "gc/gc.hpp"
-#include "fat.h"
-#include "devicemounter/sdhc.h"
-#include "devicemounter/usbstorage_libogc.h"
+#include "devicemounter/DeviceHandler.hpp"
 #include "gecko/gecko.h"
 #include "fileOps/fileOps.h"
 #include "loader/utils.h"
@@ -211,10 +208,10 @@ void DEVO_GetLoader(const char *loader)
 	gprintf("%s\n", (char*)loader_bin + 4);
 }
 
-void DEVO_SetOptions(const char *isopath, const char *partition, const char *gameID, bool memcard_emu)
+void DEVO_SetOptions(const char *isopath, int CurrentPartition, const char *gameID, bool memcard_emu)
 {
 	// re-mount device we need
-	fatMountSimple(partition, strncasecmp(partition, "sd", 2) ? &__io_usbstorage_ogc : &__io_wiisd);
+	DeviceHandler::Instance()->MountDevolution(CurrentPartition);
 
 	//start writing cfg to mem
 	struct stat st;
@@ -252,9 +249,9 @@ void DEVO_SetOptions(const char *isopath, const char *partition, const char *gam
 
 	// make sure these directories exist, they are required for Devolution to function correctly
 	char full_path[256];
-	snprintf(full_path, sizeof(full_path), "%s:/apps", partition);
+	snprintf(full_path, sizeof(full_path), "%s:/apps", DeviceName[CurrentPartition]);
 	fsop_MakeFolder(full_path);
-	snprintf(full_path, sizeof(full_path), "%s:/apps/gc_devo", partition);
+	snprintf(full_path, sizeof(full_path), "%s:/apps/gc_devo", DeviceName[CurrentPartition]);
 	fsop_MakeFolder(full_path);
 
 	if(memcard_emu)
@@ -263,9 +260,9 @@ void DEVO_SetOptions(const char *isopath, const char *partition, const char *gam
 		// this file can be located anywhere since it's passed by cluster, not name
 		// it must be at least 16MB though
 		if(gameID[3] == 'J') //Japanese Memory Card
-			snprintf(full_path, sizeof(full_path), "%s:/apps/gc_devo/memcard_jap.bin", partition);
+			snprintf(full_path, sizeof(full_path), "%s:/apps/gc_devo/memcard_jap.bin", DeviceName[CurrentPartition]);
 		else
-			snprintf(full_path, sizeof(full_path), "%s:/apps/gc_devo/memcard.bin", partition);
+			snprintf(full_path, sizeof(full_path), "%s:/apps/gc_devo/memcard.bin", DeviceName[CurrentPartition]);
 
 		// check if file doesn't exist or is less than 16MB
 		if(stat(full_path, &st) == -1 || st.st_size < 16<<20)
@@ -301,7 +298,7 @@ void DEVO_SetOptions(const char *isopath, const char *partition, const char *gam
 	// flush disc ID and Devolution config out to memory
 	DCFlushRange((void*)0x80000000, 64);
 
-	fatUnmount(partition);
+	DeviceHandler::Instance()->UnMountDevolution(CurrentPartition);
 }
 
 void DEVO_Boot()

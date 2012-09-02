@@ -156,7 +156,7 @@ s32 USBStorage2_SetPort(s8 port)
 
 	gprintf("Changing USB port to port %i....\n", port);
 	//must be called before USBStorage2_Init (default port 0)
-	if(fd >= 0 && !usb_libogc_mode)
+	if(fd >= 0)
 		ret = IOS_IoctlvFormat(hid, fd, USB_IOCTL_SET_PORT, "i:", usb2_port);
 
 	return ret;

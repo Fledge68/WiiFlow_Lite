@@ -884,25 +884,24 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 
 	GC_SetVideoMode(videoMode, videoSetting);
 	GC_SetLanguage(GClanguage);
-	if(loader == 2)
+
+	if(loader == 2 && !disc)
 	{
 		if(AHBRPOT_Patched())
 			loadIOS(58, false);
 		else //use cIOS instead to make sure Devolution works anyways
 			loadIOS(mainIOS, false);
-		DEVO_SetOptions(path.c_str(), DeviceName[currentPartition], id.c_str(), memcard_emu);
-	}
-	ShutdownBeforeExit();
-	if(loader == 1 || disc)
-	{
-		DML_New_WriteOptions();
-		WII_Initialize();
-		WII_LaunchTitle(0x100000100LL);
-	}
-	else if(loader == 2)
-	{
+		ShutdownBeforeExit();
+		DEVO_SetOptions(path.c_str(), currentPartition, id.c_str(), memcard_emu);
 		writeStub();
 		DEVO_Boot();
+	}
+	else
+	{
+		DML_New_WriteOptions();
+		ShutdownBeforeExit();
+		WII_Initialize();
+		WII_LaunchTitle(0x100000100LL);
 	}
 	Sys_LoadMenu();
 }
