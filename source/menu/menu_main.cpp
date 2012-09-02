@@ -480,7 +480,18 @@ int CMenu::main(void)
 			//Events to Switch off/on nand emu
 			else if(m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML)|| m_btnMgr.selected(m_mainBtnEmu) || m_btnMgr.selected(m_mainBtnHomebrew))
 			{
-				if(!neek2o())
+				if(m_cfg.getBool("GENERAL", "b_on_mode_to_source", false))
+				{
+					_hideMain();
+					if(!_Source()) //Different source selected
+						LoadView();
+					else
+						_showMain();
+					if(BTN_B_HELD)
+						bUsed = true;
+					continue;
+				}
+				else if(!neek2o())
 				{
 					bUsed = true;
 					m_cfg.setBool("NAND", "disable", !m_cfg.getBool("NAND", "disable", true));
