@@ -81,7 +81,7 @@ typedef struct global_config
 
 bool DEVO_Installed(const char *path);
 void DEVO_GetLoader(const char *loader);
-void DEVO_SetOptions(const char *isopath, const char *partition, const char *gameID, bool memcard_emum);
+void DEVO_SetOptions(const char *isopath, int CurrentPartition, const char *gameID, bool memcard_emum);
 void DEVO_Boot();
 
 // General

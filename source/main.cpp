@@ -93,16 +93,7 @@ int main(int argc, char **argv)
 	// Init
 	Sys_Init();
 	Sys_ExitTo(EXIT_TO_HBC);
-#ifndef DOLPHIN
-	const DISC_INTERFACE *handle = DeviceHandler::GetUSB0Interface();
-	u8 timeout = time(NULL);
-	while(time(NULL) - timeout < 20)
-	{
-		if(handle->startup() && handle->isInserted())
-			break;
-		usleep(50000);
-	}
-#endif
+
 	DeviceHandler::Instance()->MountAll();
 	vid.waitMessage(0.15f);
 	bool dipOK = WDVD_Init() >= 0;

@@ -85,6 +85,7 @@ class DeviceHandler
 		bool SD_Inserted() { if(sd) return sd->IsInserted(); return false; }
 		bool USB0_Inserted() { if(usb0) return usb0->IsInserted(); return false; }
 		bool USB1_Inserted() { if(usb1) return usb1->IsInserted(); return false; }
+		void WaitForDevice(const DISC_INTERFACE *Handle);
 
 		void UnMountSD() { if(sd) delete sd; sd = NULL; }
 		void UnMountUSB(int pos);
@@ -107,8 +108,12 @@ class DeviceHandler
 		s32 Open_WBFS(int dev);
 		static int PartitionToUSBPort(int part);
 		static int PartitionToPortPartition(int part);
+
+		/* Special Devolution Stuff */
+		bool MountDevolution(int CurrentPartition);
+		void UnMountDevolution(int CurrentPartition);
 	private:
-		DeviceHandler() : sd(0), gca(0), gcb(0), usb0(0), usb1(0) { }
+		DeviceHandler() : sd(0), gca(0), gcb(0), usb0(0), usb1(0), OGC_Device(0) { }
 		~DeviceHandler();
 		bool MountUSB(int part);
 
@@ -119,6 +124,9 @@ class DeviceHandler
 		PartitionHandle * gcb;
 		PartitionHandle * usb0;
 		PartitionHandle * usb1;
+
+		/* Special Devolution Stuff */
+		PartitionHandle *OGC_Device;
 };
 
 #endif
