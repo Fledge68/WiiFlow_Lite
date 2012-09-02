@@ -874,7 +874,7 @@ void CMenu::_buildMenus(void)
 {
 	if(!m_base_font.get())
 		_loadDefaultFont(CONF_GetLanguage() == CONF_LANG_KOREAN);
-	
+
 	// Default fonts
 	theme.btnFont = _font(theme.fontSet, "GENERAL", "button_font", BUTTONFONT);
 	theme.btnFontColor = m_theme.getColor("GENERAL", "button_font_color", 0xD0BFDFFF);
@@ -884,47 +884,48 @@ void CMenu::_buildMenus(void)
 
 	theme.titleFont = _font(theme.fontSet, "GENERAL", "title_font", TITLEFONT);
 	theme.titleFontColor = m_theme.getColor("GENERAL", "title_font_color", 0xFFFFFFFF);
-	
+
 	theme.txtFont = _font(theme.fontSet, "GENERAL", "text_font", TEXTFONT);
 	theme.txtFontColor = m_theme.getColor("GENERAL", "text_font_color", 0xFFFFFFFF);
-	
+
 	theme.selsbtnFontColor = m_theme.getColor("GENERAL", "selsbtn_font_color", 0xFA5882FF);
 	theme.selubtnFontColor = m_theme.getColor("GENERAL", "selubtn_font_color", 0xD0BFDFFF);
-	
+
 	// Default Sounds
 	theme.clickSound	= _sound(theme.soundSet, "GENERAL", "click_sound", click_wav, click_wav_size, string("default_btn_click"), false);
 	theme.hoverSound	= _sound(theme.soundSet, "GENERAL", "hover_sound", hover_wav, hover_wav_size, string("default_btn_hover"), false);
 	theme.cameraSound	= _sound(theme.soundSet, "GENERAL", "camera_sound", camera_wav, camera_wav_size, string("default_camera"), false);
 	m_cameraSound = theme.cameraSound;
+
 	// Default textures
 	theme.btnTexL.fromPNG(butleft_png);
 	theme.btnTexL = _texture(theme.texSet, "GENERAL", "button_texture_left", theme.btnTexL); 
 	theme.btnTexR.fromPNG(butright_png);
 	theme.btnTexR = _texture(theme.texSet, "GENERAL", "button_texture_right", theme.btnTexR); 
-	 theme.btnTexC.fromPNG(butcenter_png);
-	 theme.btnTexC = _texture(theme.texSet, "GENERAL", "button_texture_center", theme.btnTexC); 
+	theme.btnTexC.fromPNG(butcenter_png);
+	theme.btnTexC = _texture(theme.texSet, "GENERAL", "button_texture_center", theme.btnTexC); 
 	theme.btnTexLS.fromPNG(butsleft_png);
 	theme.btnTexLS = _texture(theme.texSet, "GENERAL", "button_texture_left_selected", theme.btnTexLS); 
 	theme.btnTexRS.fromPNG(butsright_png);
 	theme.btnTexRS = _texture(theme.texSet, "GENERAL", "button_texture_right_selected", theme.btnTexRS); 
-	 theme.btnTexCS.fromPNG(butscenter_png);
-	 theme.btnTexCS = _texture(theme.texSet, "GENERAL", "button_texture_center_selected", theme.btnTexCS); 
+	theme.btnTexCS.fromPNG(butscenter_png);
+	theme.btnTexCS = _texture(theme.texSet, "GENERAL", "button_texture_center_selected", theme.btnTexCS); 
 
 	theme.btnTexLH.fromPNG(buthleft_png);
 	theme.btnTexLH = _texture(theme.texSet, "GENERAL", "button_texture_hlleft", theme.btnTexLH); 
 	theme.btnTexRH.fromPNG(buthright_png);
 	theme.btnTexRH = _texture(theme.texSet, "GENERAL", "button_texture_hlright", theme.btnTexRH); 
-	 theme.btnTexCH.fromPNG(buthcenter_png);
-	 theme.btnTexCH = _texture(theme.texSet, "GENERAL", "button_texture_hlcenter", theme.btnTexCH); 
+	theme.btnTexCH.fromPNG(buthcenter_png);
+	theme.btnTexCH = _texture(theme.texSet, "GENERAL", "button_texture_hlcenter", theme.btnTexCH); 
 	theme.btnTexLSH.fromPNG(buthsleft_png);
 	theme.btnTexLSH = _texture(theme.texSet, "GENERAL", "button_texture_hlleft_selected", theme.btnTexLSH); 
 	theme.btnTexRSH.fromPNG(buthsright_png);
 	theme.btnTexRSH = _texture(theme.texSet, "GENERAL", "button_texture_hlright_selected", theme.btnTexRSH); 
-	 theme.btnTexCSH.fromPNG(buthscenter_png);
-	 theme.btnTexCSH = _texture(theme.texSet, "GENERAL", "button_texture_hlcenter_selected", theme.btnTexCSH); 
+	theme.btnTexCSH.fromPNG(buthscenter_png);
+	theme.btnTexCSH = _texture(theme.texSet, "GENERAL", "button_texture_hlcenter_selected", theme.btnTexCSH); 
 
 	theme.btnAUOn.fromPNG(butauon_png);
-       	theme.btnAUOn = _texture(theme.texSet, "GENERAL", "button_au_on", theme.btnAUOn);
+	theme.btnAUOn = _texture(theme.texSet, "GENERAL", "button_au_on", theme.btnAUOn);
 	theme.btnAUOns.fromPNG(butauons_png);
 	theme.btnAUOns = _texture(theme.texSet, "GENERAL", "button_au_on_selected", theme.btnAUOns);
 	theme.btnAUOff.fromPNG(butauoff_png);
@@ -933,7 +934,7 @@ void CMenu::_buildMenus(void)
 	theme.btnAUOffs = _texture(theme.texSet, "GENERAL", "button_au_off_selected", theme.btnAUOffs);
 
 	theme.btnENOn.fromPNG(butenon_png);
-       	theme.btnENOn = _texture(theme.texSet, "GENERAL", "button_en_on", theme.btnENOn);
+	theme.btnENOn = _texture(theme.texSet, "GENERAL", "button_en_on", theme.btnENOn);
 	theme.btnENOns.fromPNG(butenons_png);
 	theme.btnENOns = _texture(theme.texSet, "GENERAL", "button_en_on_selected", theme.btnENOns);
 	theme.btnENOff.fromPNG(butenoff_png);
@@ -942,7 +943,7 @@ void CMenu::_buildMenus(void)
 	theme.btnENOffs = _texture(theme.texSet, "GENERAL", "button_en_off_selected", theme.btnENOffs);
 
 	theme.btnJAOn.fromPNG(butjaon_png);
-       	theme.btnJAOn = _texture(theme.texSet, "GENERAL", "button_ja_on", theme.btnJAOn);
+	theme.btnJAOn = _texture(theme.texSet, "GENERAL", "button_ja_on", theme.btnJAOn);
 	theme.btnJAOns.fromPNG(butjaons_png);
 	theme.btnJAOns = _texture(theme.texSet, "GENERAL", "button_ja_on_selected", theme.btnJAOns);
 	theme.btnJAOff.fromPNG(butjaoff_png);
@@ -951,7 +952,7 @@ void CMenu::_buildMenus(void)
 	theme.btnJAOffs = _texture(theme.texSet, "GENERAL", "button_ja_off_selected", theme.btnJAOffs);
 
 	theme.btnFROn.fromPNG(butfron_png);
-       	theme.btnFROn = _texture(theme.texSet, "GENERAL", "button_fr_on", theme.btnFROn);
+	theme.btnFROn = _texture(theme.texSet, "GENERAL", "button_fr_on", theme.btnFROn);
 	theme.btnFROns.fromPNG(butfrons_png);
 	theme.btnFROns = _texture(theme.texSet, "GENERAL", "button_fr_on_selected", theme.btnFROns);
 	theme.btnFROff.fromPNG(butfroff_png);
@@ -960,7 +961,7 @@ void CMenu::_buildMenus(void)
 	theme.btnFROffs = _texture(theme.texSet, "GENERAL", "button_fr_off_selected", theme.btnFROffs);
 
 	theme.btnDEOn.fromPNG(butdeon_png);
-       	theme.btnDEOn = _texture(theme.texSet, "GENERAL", "button_de_on", theme.btnDEOn);
+	theme.btnDEOn = _texture(theme.texSet, "GENERAL", "button_de_on", theme.btnDEOn);
 	theme.btnDEOns.fromPNG(butdeons_png);
 	theme.btnDEOns = _texture(theme.texSet, "GENERAL", "button_de_on_selected", theme.btnDEOns);
 	theme.btnDEOff.fromPNG(butdeoff_png);
@@ -969,7 +970,7 @@ void CMenu::_buildMenus(void)
 	theme.btnDEOffs = _texture(theme.texSet, "GENERAL", "button_de_off_selected", theme.btnDEOffs);
 
 	theme.btnESOn.fromPNG(buteson_png);
-       	theme.btnESOn = _texture(theme.texSet, "GENERAL", "button_es_on", theme.btnESOn);
+	theme.btnESOn = _texture(theme.texSet, "GENERAL", "button_es_on", theme.btnESOn);
 	theme.btnESOns.fromPNG(butesons_png);
 	theme.btnESOns = _texture(theme.texSet, "GENERAL", "button_es_on_selected", theme.btnESOns);
 	theme.btnESOff.fromPNG(butesoff_png);
@@ -978,7 +979,7 @@ void CMenu::_buildMenus(void)
 	theme.btnESOffs = _texture(theme.texSet, "GENERAL", "button_es_off_selected", theme.btnESOffs);
 
 	theme.btnITOn.fromPNG(butiton_png);
-       	theme.btnITOn = _texture(theme.texSet, "GENERAL", "button_it_on", theme.btnITOn);
+	theme.btnITOn = _texture(theme.texSet, "GENERAL", "button_it_on", theme.btnITOn);
 	theme.btnITOns.fromPNG(butitons_png);
 	theme.btnITOns = _texture(theme.texSet, "GENERAL", "button_it_on_selected", theme.btnITOns);
 	theme.btnITOff.fromPNG(butitoff_png);
@@ -987,7 +988,7 @@ void CMenu::_buildMenus(void)
 	theme.btnITOffs = _texture(theme.texSet, "GENERAL", "button_it_off_selected", theme.btnITOffs);
 
 	theme.btnNLOn.fromPNG(butnlon_png);
-       	theme.btnNLOn = _texture(theme.texSet, "GENERAL", "button_nl_on", theme.btnNLOn);
+	theme.btnNLOn = _texture(theme.texSet, "GENERAL", "button_nl_on", theme.btnNLOn);
 	theme.btnNLOns.fromPNG(butnlons_png);
 	theme.btnNLOns = _texture(theme.texSet, "GENERAL", "button_nl_on_selected", theme.btnNLOns);
 	theme.btnNLOff.fromPNG(butnloff_png);
@@ -996,7 +997,7 @@ void CMenu::_buildMenus(void)
 	theme.btnNLOffs = _texture(theme.texSet, "GENERAL", "button_nl_off_selected", theme.btnNLOffs);
 
 	theme.btnPTOn.fromPNG(butpton_png);
-       	theme.btnPTOn = _texture(theme.texSet, "GENERAL", "button_pt_on", theme.btnPTOn);
+	theme.btnPTOn = _texture(theme.texSet, "GENERAL", "button_pt_on", theme.btnPTOn);
 	theme.btnPTOns.fromPNG(butptons_png);
 	theme.btnPTOns = _texture(theme.texSet, "GENERAL", "button_pt_on_selected", theme.btnPTOns);
 	theme.btnPTOff.fromPNG(butptoff_png);
@@ -1005,7 +1006,7 @@ void CMenu::_buildMenus(void)
 	theme.btnPTOffs = _texture(theme.texSet, "GENERAL", "button_pt_off_selected", theme.btnPTOffs);
 
 	theme.btnRUOn.fromPNG(butruon_png);
-       	theme.btnRUOn = _texture(theme.texSet, "GENERAL", "button_ru_on", theme.btnRUOn);
+	theme.btnRUOn = _texture(theme.texSet, "GENERAL", "button_ru_on", theme.btnRUOn);
 	theme.btnRUOns.fromPNG(butruons_png);
 	theme.btnRUOns = _texture(theme.texSet, "GENERAL", "button_ru_on_selected", theme.btnRUOns);
 	theme.btnRUOff.fromPNG(butruoff_png);
@@ -1014,7 +1015,7 @@ void CMenu::_buildMenus(void)
 	theme.btnRUOffs = _texture(theme.texSet, "GENERAL", "button_ru_off_selected", theme.btnRUOffs);
 
 	theme.btnKOOn.fromPNG(butkoon_png);
-       	theme.btnKOOn = _texture(theme.texSet, "GENERAL", "button_ko_on", theme.btnKOOn);
+	theme.btnKOOn = _texture(theme.texSet, "GENERAL", "button_ko_on", theme.btnKOOn);
 	theme.btnKOOns.fromPNG(butkoons_png);
 	theme.btnKOOns = _texture(theme.texSet, "GENERAL", "button_ko_on_selected", theme.btnKOOns);
 	theme.btnKOOff.fromPNG(butkooff_png);
@@ -1023,7 +1024,7 @@ void CMenu::_buildMenus(void)
 	theme.btnKOOffs = _texture(theme.texSet, "GENERAL", "button_ko_off_selected", theme.btnKOOffs);
 
 	theme.btnZHCNOn.fromPNG(butzhcnon_png);
-       	theme.btnZHCNOn = _texture(theme.texSet, "GENERAL", "button_zhcn_on", theme.btnZHCNOn);
+	theme.btnZHCNOn = _texture(theme.texSet, "GENERAL", "button_zhcn_on", theme.btnZHCNOn);
 	theme.btnZHCNOns.fromPNG(butzhcnons_png);
 	theme.btnZHCNOns = _texture(theme.texSet, "GENERAL", "button_zhcn_on_selected", theme.btnZHCNOns);
 	theme.btnZHCNOff.fromPNG(butzhcnoff_png);
@@ -1032,7 +1033,7 @@ void CMenu::_buildMenus(void)
 	theme.btnZHCNOffs = _texture(theme.texSet, "GENERAL", "button_zhcn_off_selected", theme.btnZHCNOffs);
 
 	theme.checkboxoff.fromPNG(checkbox_png);
-    theme.checkboxoff = _texture(theme.texSet, "GENERAL", "checkbox_off", theme.checkboxoff);
+	theme.checkboxoff = _texture(theme.texSet, "GENERAL", "checkbox_off", theme.checkboxoff);
 	theme.checkboxoffs.fromPNG(checkbox_png);
 	theme.checkboxoffs = _texture(theme.texSet, "GENERAL", "checkbox_off_selected", theme.checkboxoffs);
 	theme.checkboxon.fromPNG(checkboxs_png);
@@ -1040,7 +1041,7 @@ void CMenu::_buildMenus(void)
 	theme.checkboxons.fromPNG(checkboxs_png);
 	theme.checkboxons = _texture(theme.texSet, "GENERAL", "checkbox_on_selected", theme.checkboxons);
 	theme.checkboxHid.fromPNG(checkboxhid_png);
-    theme.checkboxHid = _texture(theme.texSet, "GENERAL", "checkbox_Hid", theme.checkboxHid);
+	theme.checkboxHid = _texture(theme.texSet, "GENERAL", "checkbox_Hid", theme.checkboxHid);
 	theme.checkboxHids.fromPNG(checkboxhid_png);
 	theme.checkboxHids = _texture(theme.texSet, "GENERAL", "checkbox_Hid_selected", theme.checkboxHids);
 	theme.checkboxReq.fromPNG(checkboxreq_png);
@@ -1068,6 +1069,7 @@ void CMenu::_buildMenus(void)
 	theme.btnTexMinus = _texture(theme.texSet, "GENERAL", "minus_button_texture", theme.btnTexMinus); 
 	theme.btnTexMinusS.fromPNG(btnminuss_png);
 	theme.btnTexMinusS = _texture(theme.texSet, "GENERAL", "minus_button_texture_selected", theme.btnTexMinusS); 
+
 	// Default background
 	theme.bg.fromJPG(background_jpg, background_jpg_size);
 	m_mainBgLQ.fromJPG(background_jpg, background_jpg_size, GX_TF_CMPR, ALLOC_MEM2, 64, 64);
