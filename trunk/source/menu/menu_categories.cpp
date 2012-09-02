@@ -33,14 +33,14 @@ void CMenu::_hideCategorySettings(bool instant)
 	m_btnMgr.hide(m_categoryBtnPageP, instant);
 	m_btnMgr.hide(m_categoryBtnClear, instant);
 	m_btnMgr.hide(m_categoryBtnBack, instant);
-	
+
 	for(u8 i = 0; i < ARRAY_SIZE(m_categoryLblUser); ++i)
 	{
 		if(m_categoryLblUser[i] != (u16)-1u)
 			m_btnMgr.hide(m_categoryLblUser[i], instant);
 	}
 
-	for(int i = 1; i < 11; ++i)
+	for(u8 i = 1; i < 11; ++i)
 	{
 		m_btnMgr.hide(m_categoryLblCat[i]);
 		m_btnMgr.hide(m_categoryBtnCat[i]);
@@ -53,17 +53,14 @@ void CMenu::_hideCategorySettings(bool instant)
 void CMenu::_showCategorySettings(void)
 {
 	_setBg(m_categoryBg, m_categoryBg);
-	
 	for(u8 i = 0; i < ARRAY_SIZE(m_categoryLblUser); ++i)
 	{
 		if(m_categoryLblUser[i] != (u16)-1)
 			m_btnMgr.show(m_categoryLblUser[i]);
 	}
-	
 	m_btnMgr.show(m_categoryLblTitle);
 	m_btnMgr.show(m_categoryBtnClear);
 	m_btnMgr.show(m_categoryBtnBack);
-	
 	_updateCheckboxes();
 }
 
@@ -77,7 +74,7 @@ void CMenu::_updateCheckboxes(void)
 		m_btnMgr.hide(m_categoryBtnCatReq[i], true);
 		m_btnMgr.hide(m_categoryLblCat[i], true);
 	}
-	
+
 	if(m_max_categories > 11)
 	{
 		m_btnMgr.setText(m_categoryLblPage, wfmt(L"%i / %i", curPage, ((m_max_categories - 2) / 10) + 1));
@@ -85,8 +82,7 @@ void CMenu::_updateCheckboxes(void)
 		m_btnMgr.show(m_categoryBtnPageM);
 		m_btnMgr.show(m_categoryBtnPageP);
 	}
-
-	for(int i = 1; i < 11; ++i)
+	for(u8 i = 1; i < 11; ++i)
 	{
 		int j = i + ((curPage - 1) * 10);
 		if(j == m_max_categories)
@@ -123,7 +119,6 @@ void CMenu::_CategorySettings(bool fromGameSet)
 	SetupInput();
 	curPage = 1;
 	gameSet = fromGameSet;
-	
 	if(fromGameSet)
 	{
 		if(m_current_view != COVERFLOW_EMU)
@@ -147,17 +142,13 @@ void CMenu::_CategorySettings(bool fromGameSet)
 		catSettings = m_cat.getString(fmt("%s/GENERAL", _domainFromView()), "categories").c_str();
 		m_btnMgr.setText(m_categoryLblTitle, _t("cat1", L"Select Categories"));
 	}
-		
 	memset(&m_categories, '0', m_max_categories);
 	memcpy(&m_categories, catSettings, m_max_categories);
-		
 	_showCategorySettings();
-	
 	while(true)
 	{
 		_mainLoopCommon();
 		m_cf.tick();
-		
 		if(!m_btnMgr.selected(lastBtn))
 			m_btnMgr.noHover(false);
 			
@@ -186,20 +177,16 @@ void CMenu::_CategorySettings(bool fromGameSet)
 			//m_cat.save();
 			break;
 		}
-		
 		else if(BTN_UP_PRESSED)
 			m_btnMgr.up();
-			
 		else if(BTN_DOWN_PRESSED)
 			m_btnMgr.down();
-		
 		if(BTN_PLUS_PRESSED && fromGameSet)
 		{
 			char newCatSettings[m_max_categories + 1];
 			memset(&newCatSettings, 0, sizeof(newCatSettings));
 			memcpy(&newCatSettings, &m_categories, sizeof(m_categories));
 			m_cat.setString(_domainFromView(), id, newCatSettings);
-			
 			_hideCategorySettings();
 			m_cf.right();
 			curPage = 1;
@@ -221,17 +208,14 @@ void CMenu::_CategorySettings(bool fromGameSet)
 			
 			memset(&m_categories, '0', m_max_categories);
 			memcpy(&m_categories, catSettings, m_max_categories);
-		
 			_showCategorySettings();
 		}
-		
 		if(BTN_MINUS_PRESSED && fromGameSet)
 		{
 			char newCatSettings[m_max_categories + 1];
 			memset(&newCatSettings, 0, sizeof(newCatSettings));
 			memcpy(&newCatSettings, &m_categories, sizeof(m_categories));
 			m_cat.setString(_domainFromView(), id, newCatSettings);
-			
 			_hideCategorySettings();
 			m_cf.left();
 			curPage = 1;
@@ -253,36 +237,28 @@ void CMenu::_CategorySettings(bool fromGameSet)
 			
 			memset(&m_categories, '0', m_max_categories);
 			memcpy(&m_categories, catSettings, m_max_categories);
-		
 			_showCategorySettings();
 		}
-	
 		if((BTN_LEFT_PRESSED && m_max_categories>11) || (BTN_A_PRESSED && m_btnMgr.selected(m_categoryBtnPageM)))
 		{
 			lastBtn = m_categoryBtnPageM;
 			m_btnMgr.noHover(true);
-			
 			curPage--;
 			if(curPage < 1)
 				curPage = ((m_max_categories - 2) / 10) + 1;
-			
 			if(BTN_LEFT_PRESSED || BTN_MINUS_PRESSED)
 				m_btnMgr.click(m_categoryBtnPageM);
-				
 			_updateCheckboxes();
 		}
 		else if((BTN_RIGHT_PRESSED && m_max_categories>11) || (BTN_A_PRESSED && m_btnMgr.selected(m_categoryBtnPageP)))
 		{
 			lastBtn = m_categoryBtnPageP;
 			m_btnMgr.noHover(true);
-			
 			curPage++;
 			if(curPage > ((m_max_categories - 2) / 10) + 1)
 				curPage = 1;
-			
 			if(BTN_RIGHT_PRESSED || BTN_PLUS_PRESSED)
 				m_btnMgr.click(m_categoryBtnPageP);
-				
 			_updateCheckboxes();
 		}
 		if(BTN_A_PRESSED)
@@ -294,8 +270,7 @@ void CMenu::_CategorySettings(bool fromGameSet)
 					m_categories[j] = '0';
 				_updateCheckboxes();
 			}
-			
-			for(int i = 1; i < 11; ++i)
+			for(u8 i = 1; i < 11; ++i)
 			{
 				if(m_btnMgr.selected(m_categoryBtnCat[i]) || m_btnMgr.selected(m_categoryBtnCats[i]) || m_btnMgr.selected(m_categoryBtnCatHid[i]) || m_btnMgr.selected(m_categoryBtnCatReq[i]))
 				{
@@ -307,7 +282,6 @@ void CMenu::_CategorySettings(bool fromGameSet)
 					else if(m_btnMgr.selected(m_categoryBtnCatReq[i]))
 						lastBtn = m_categoryBtnCatReq[i];
 					m_btnMgr.noHover(true);
-					
 					int j = i + ((curPage - 1) * 10);
 					if(fromGameSet)
 					{
@@ -319,12 +293,10 @@ void CMenu::_CategorySettings(bool fromGameSet)
 						if(m_categories[0] == '1' && m_categories[j] != '0')
 							m_categories[0] = '0';
 					}
-					
 					m_btnMgr.hide(m_categoryBtnCat[i], true);
 					m_btnMgr.hide(m_categoryBtnCats[i], true);
 					m_btnMgr.hide(m_categoryBtnCatHid[i], true);
 					m_btnMgr.hide(m_categoryBtnCatReq[i], true);
-					
 					if(m_categories[0] =='1' && !fromGameSet)
 						m_btnMgr.show(m_categoryBtnCat[i]);
 					else
@@ -362,9 +334,8 @@ void CMenu::_initCategorySettingsMenu(CMenu::SThemeData &theme)
 	m_categoryLblPage = _addLabel(theme, "CATEGORY/PAGE_BTN", theme.btnFont, L"", 76, 400, 100, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_categoryBtnPageP = _addPicButton(theme, "CATEGORY/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 176, 400, 56, 56);
 	m_categoryBtnBack = _addButton(theme, "CATEGORY/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 56, theme.btnFontColor);
-	m_categoryBtnClear = _addButton(theme, "CATEGORY/CLEAR_BTN", theme.btnFont, L"", 255, 400, 150, 56, theme.btnFontColor);	
-	
-	for(int i = 1; i < 6; ++i)
+	m_categoryBtnClear = _addButton(theme, "CATEGORY/CLEAR_BTN", theme.btnFont, L"", 255, 400, 150, 56, theme.btnFontColor);
+	for(u8 i = 1; i < 6; ++i)
 	{ 	// left half
 		m_categoryBtnCat[i] = _addPicButton(theme, fmt("CATEGORY/CAT_%i_BTN", i), theme.checkboxoff, theme.checkboxoffs, 30, (42+i*58), 44, 48);
 		m_categoryBtnCats[i] = _addPicButton(theme, fmt("CATEGORY/CAT_%i_BTNS", i), theme.checkboxon, theme.checkboxons, 30, (42+i*58), 44, 48);
@@ -384,8 +355,7 @@ void CMenu::_initCategorySettingsMenu(CMenu::SThemeData &theme)
 	_setHideAnim(m_categoryBtnPageP, "CATEGORY/PAGE_PLUS", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_categoryBtnClear, "CATEGORY/CLEAR_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_categoryBtnBack, "CATEGORY/BACK_BTN", 0, 0, 1.f, -1.f);
-	
-	for(int i = 1; i < 11; ++i)
+	for(u8 i = 1; i < 11; ++i)
 	{
 		_setHideAnim(m_categoryBtnCat[i], fmt("CATEGORY/CAT_%i_BTN", i), 0, 0, 1.f, 0.f);
 		_setHideAnim(m_categoryBtnCats[i], fmt("CATEGORY/CAT_%i_BTNS", i), 0, 0, 1.f, 0.f);
