@@ -72,7 +72,7 @@ class DeviceHandler
 		void SetModes();
 
 		void MountAll();
-		void UnMountAll();
+		void UnMountAll(bool ShutdownUSB = false);
 		bool Mount(int dev);
 		bool IsInserted(int dev);
 		void UnMount(int dev);

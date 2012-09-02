@@ -21,8 +21,8 @@ s32 USBStorage2_ReadSectors(u32 port, u32 sector, u32 numSectors, void *buffer);
 s32 USBStorage2_WriteSectors(u32 port, u32 sector, u32 numSectors, const void *buffer);
 s32 USBStorage2_GetSectorSize();
 
-s32 USBStorage2_SetPort(u32 port);
-s32 USBStorage2_GetPort();
+s32 USBStorage2_SetPort(s8 port);
+s8 USBStorage2_GetPort();
 
 extern int usb_libogc_mode;
 

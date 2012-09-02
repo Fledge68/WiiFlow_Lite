@@ -12,6 +12,7 @@
 #include "gui/video.hpp"
 #include "gui/text.hpp"
 #include "homebrew/homebrew.h"
+#include "loader/external_booter.hpp"
 #include "loader/wdvd.h"
 #include "loader/alt_ios.h"
 #include "loader/sys.h"
@@ -134,10 +135,7 @@ int main(int argc, char **argv)
 	}
 	//Exit WiiFlow, no game booted...
 	mainMenu->cleanup();
-	DeviceHandler::Instance()->UnMountAll();
-	Nand::Instance()->DeInit_ISFS();
-	WDVD_Close();
-
+	ShutdownBeforeExit();
 	Sys_Exit();
 	exit(1);
 	return 0;

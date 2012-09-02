@@ -85,11 +85,8 @@ bool loadIOS(int ios, bool MountDevices)
 	bool ret = true;
 	m_music.Stop();
 	DeviceHandler::Instance()->UnMountAll();
-	USBStorage2_Deinit();
-	SDHC_Close();
 
 #ifndef DOLPHIN
-	mload_close();
 	if(ios != IOS_GetVersion())
 	{
 		WDVD_Close();
