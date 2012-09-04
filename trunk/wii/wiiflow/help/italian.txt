@@ -1,4 +1,4 @@
-
+﻿
 Comandi:
 - Menu principale (coverflow):
 -- Su / giù = Precedente / prossimo gioco (verticale)

@@ -1,3 +1,4 @@
+﻿
 Commandes :
 - Page principale (coverflow) :
 -- Haut/Bas  =  Jeu précédent/suivant (vertical)
