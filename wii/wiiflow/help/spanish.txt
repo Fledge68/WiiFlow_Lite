@@ -1,3 +1,4 @@
+﻿
 Controles:
 - Menú Principal (coverflow) :
 -- Arriba / Abajo  =  Previo / próximo juego (vertical)
@@ -55,4 +56,4 @@ Si el juego solo se bloquea con una pantalla en negro en el lanzamiento, comprob
   (Pulse el botón Más en la pantalla del juego.) Si se trata de PAL, establecer el modo de juego de vídeo a "PAL 50 Hz" en la configuración del juego.
   Usted tendrá que utilizar una conexión de componentes a la TV y tener tu Wii en modo de vídeo 480p.
 
-Si un juego se bloquea, a continuación, intente ejecutar el juego de nuevo. Si se bloquea continuamente, cambie la emulación de USB a "No" en la configuración del juego.  
+Si un juego se bloquea, a continuación, intente ejecutar el juego de nuevo. Si se bloquea continuamente, cambie la emulación de USB a "No" en la configuración del juego.

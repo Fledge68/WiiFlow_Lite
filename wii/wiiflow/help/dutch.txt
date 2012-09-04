@@ -1,4 +1,4 @@
-
+ï»¿
 Bediening:
 - Hoofd menu (coverflow) :
 -- Op / Neer  =  Vorig / volgend spel (verticaal)
@@ -16,7 +16,7 @@ Bediening:
 -- B+Plus  =  Sorteer spellen
 
 -- A op Ster Icoon  =  Favorieten
--- B op Ster Icoon  =  Categoriën
+-- B op Ster Icoon  =  CategoriÃ«n
 -- A op Rad Icoon  =  Wiiflow instellingen
 -- A op USB, DML, Kanalen, Emu, of Homebrew Icoon  =  Ga naar volgende weergave
 -- B op USB, DML, Kanalen, Emu, of Homebrew Icoon  =  Schakel Emu-NAND In/Uit en ga naar Kanalen weergave
@@ -35,7 +35,7 @@ Bediening:
 ---Rechts (in spel Info)  =  spel Beschrijving
 ---Links  (in spel Beschr)  =  spel Informatie
 -- A op Ster Icoon  =  Schakelen Favoriet (Geel = Favoriet)
--- B op Ster Icoon  =  Stel Categoriën in voor spel
+-- B op Ster Icoon  =  Stel CategoriÃ«n in voor spel
 -- A op Hand Icoon  =  Ouderlijk Slot (Rood = op slot)
 -- A op Rad Icoon  =  Spel Instellingen
 -- A op X Icoon  =   Verwijderen Spel
