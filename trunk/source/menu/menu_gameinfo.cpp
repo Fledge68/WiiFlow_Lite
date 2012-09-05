@@ -1,4 +1,3 @@
-
 #include "menu.hpp"
 
 #include "gui/GameTDB.hpp"
@@ -546,9 +545,6 @@ void CMenu::_textGameInfo(void)
 
 		cnt_controlsreq = x;
 
-		//for(unsigned int i = 0;i<ARRAY_SIZE(m_gameinfoLblControlsReq);i++)
-			//m_btnMgr.setTexture(m_gameinfoLblControlsReq[i] ,m_controlsreq[i]);
-
 		//check optional controlls
 		wiimote=0,
 		nunchuk=0,
@@ -680,11 +676,9 @@ void CMenu::_textGameInfo(void)
 		}
 
 		cnt_controls = x;
-		//for(unsigned int i = 0;i<ARRAY_SIZE(m_gameinfoLblControls);i++)
-			//m_btnMgr.setTexture(m_gameinfoLblControls[i] ,m_controls[i]);
 	}
 	else
-		m_btnMgr.setText(m_gameinfoLblTitle, wfmt(L"%s", "No Gameinfo"), true);
+		m_btnMgr.setText(m_gameinfoLblTitle, wfmt(_fmt("gameinfo6",L"No Gameinfo"), true));
 
 	gametdb.CloseFile();
 

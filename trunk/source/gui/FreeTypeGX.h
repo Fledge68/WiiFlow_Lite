@@ -177,7 +177,7 @@ typedef struct ftgxCharData_ {
 	uint16_t renderOffsetMax;	/**< Texture Y axis bearing maximum value. */
 	uint16_t renderOffsetMin;	/**< Texture Y axis bearing minimum value. */
 
-	uint32_t* glyphDataTexture;	/**< Glyph texture bitmap data buffer. */
+	uint8_t* glyphDataTexture;	/**< Glyph texture bitmap data buffer. */
 } ftgxCharData;
 
 /*! \struct ftgxDataOffset_
@@ -228,12 +228,8 @@ class FreeTypeGX {
 		float xPos;
 		float yPos;
 
-		uint8_t textureFormat;		/**< Defined texture format of the target EFB. */
 		uint8_t positionFormat;		/**< Defined position format of the texture. */
 		std::map<wchar_t, ftgxCharData> fontData; /**< Map which holds the glyph data structures for the corresponding characters. */
-
-		static uint16_t adjustTextureWidth(uint16_t textureWidth, uint8_t textureFormat);
-		static uint16_t adjustTextureHeight(uint16_t textureHeight, uint8_t textureFormat);
 
 		static uint16_t getStyleOffsetWidth(uint16_t width, uint16_t format);
 		static uint16_t getStyleOffsetHeight(ftgxDataOffset offset, uint16_t format);
@@ -248,7 +244,7 @@ class FreeTypeGX {
 		void drawTextFeature(uint16_t x, uint16_t y, uint16_t width, ftgxDataOffset offsetData, uint16_t format, GXColor color);
 		
 	public:
-		FreeTypeGX(uint8_t textureFormat = GX_TF_RGBA8, uint8_t positionFormat = GX_POS_XYZ);
+		FreeTypeGX(uint8_t positionFormat = GX_POS_XYZ);
 		~FreeTypeGX();
 
 		static wchar_t* charToWideChar(char* p);
