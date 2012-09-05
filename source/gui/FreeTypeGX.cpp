@@ -24,15 +24,12 @@
 
 /**
  * Default constructor for the FreeTypeGX class.
- * 
- * @param textureFormat	Optional format (GX_TF_*) of the texture as defined by the libogc gx.h header file. If not specified default value is GX_TF_RGBA8.
  * @param positionFormat	Optional positional format (GX_POS_*) of the texture as defined by the libogc gx.h header file. If not specified default value is GX_POS_XYZ.
  */ 
-FreeTypeGX::FreeTypeGX(uint8_t textureFormat, uint8_t positionFormat)
+FreeTypeGX::FreeTypeGX(uint8_t positionFormat)
 {
 	FT_Init_FreeType(&this->ftLibrary);
 
-	this->textureFormat = textureFormat;
 	this->positionFormat = positionFormat;
     reset();
 	this->ftFace = 0;
@@ -134,70 +131,6 @@ void FreeTypeGX::unloadFont()
 }
 
 /**
- * Adjusts the texture data buffer to necessary width for a given texture format.
- * 
- * This routine determines adjusts the given texture width into the required width to hold the necessary texture data for proper alignment.
- * 
- * @param textureWidth	The initial guess for the texture width.
- * @param textureFormat	The texture format to which the data is to be converted.
- * @return The correctly adjusted texture width.
- */
-uint16_t FreeTypeGX::adjustTextureWidth(uint16_t textureWidth, uint8_t textureFormat)
-{
-	uint16_t alignment;
-	
-	switch(textureFormat) {
-		case GX_TF_I4:		/* 8x8 Tiles - 4-bit Intensity */
-		case GX_TF_I8:		/* 8x4 Tiles - 8-bit Intensity */
-		case GX_TF_IA4:		/* 8x4 Tiles - 4-bit Intensity, , 4-bit Alpha */
-			alignment = 8;
-			break;
-
-		case GX_TF_IA8:		/* 4x4 Tiles - 8-bit Intensity, 8-bit Alpha */
-		case GX_TF_RGB565:	/* 4x4 Tiles - RGB565 Format */
-		case GX_TF_RGB5A3:	/* 4x4 Tiles - RGB5A3 Format */
-		case GX_TF_RGBA8:	/* 4x4 Tiles - RGBA8 Dual Cache Line Format */
-		default:
-			alignment = 4;
-			break;
-	}
-	return textureWidth % alignment == 0 ? textureWidth : alignment + textureWidth - (textureWidth % alignment);
-
-}
-
-/**
- * Adjusts the texture data buffer to necessary height for a given texture format.
- * 
- * This routine determines adjusts the given texture height into the required height to hold the necessary texture data for proper alignment.
- * 
- * @param textureHeight	The initial guess for the texture height.
- * @param textureFormat	The texture format to which the data is to be converted.
- * @return The correctly adjusted texture height.
- */
-uint16_t FreeTypeGX::adjustTextureHeight(uint16_t textureHeight, uint8_t textureFormat)
-{
-	uint16_t alignment;
-	
-	switch(textureFormat) {
-		case GX_TF_I4:		/* 8x8 Tiles - 4-bit Intensity */
-			alignment = 8;
-			break;
-
-		case GX_TF_I8:		/* 8x4 Tiles - 8-bit Intensity */
-		case GX_TF_IA4:		/* 8x4 Tiles - 4-bit Intensity, , 4-bit Alpha */
-		case GX_TF_IA8:		/* 4x4 Tiles - 8-bit Intensity, 8-bit Alpha */
-		case GX_TF_RGB565:	/* 4x4 Tiles - RGB565 Format */
-		case GX_TF_RGB5A3:	/* 4x4 Tiles - RGB5A3 Format */
-		case GX_TF_RGBA8:	/* 4x4 Tiles - RGBA8 Dual Cache Line Format */
-		default:
-			alignment = 4;
-			break;
-	}
-	return textureHeight % alignment == 0 ? textureHeight : alignment + textureHeight - (textureHeight % alignment);
-
-}
-
-/**
  * Caches the given font glyph in the instance font texture buffer.
  *
  * This routine renders and stores the requested glyph's bitmap and relevant information into its own quickly addressible
@@ -221,8 +154,8 @@ ftgxCharData *FreeTypeGX::cacheGlyphData(wchar_t charCode)
 			FT_Bitmap *glyphBitmap = &this->ftSlot->bitmap;
 			FT_Bitmap_Embolden(this->ftLibrary, glyphBitmap, this->ftWeight, this->ftWeight);
 
-			textureWidth = adjustTextureWidth(glyphBitmap->width, this->textureFormat);
-			textureHeight = adjustTextureHeight(glyphBitmap->rows, this->textureFormat);
+			textureWidth = glyphBitmap->width % 8 == 0 ? glyphBitmap->width : 8 + glyphBitmap->width - (glyphBitmap->width % 8);
+			textureHeight = glyphBitmap->rows % 8 == 0 ? glyphBitmap->rows : 8 + glyphBitmap->rows - (glyphBitmap->rows % 8);
 
 			this->fontData[charCode] = (ftgxCharData)
 			{
@@ -273,36 +206,44 @@ uint16_t FreeTypeGX::cacheGlyphDataComplete()
  * Each byte is converted from the bitmap's intensity value into the a uint32_t RGBA value.
  *
  * @param bmp   A pointer to the most recently rendered glyph's bitmap.
- * @param charData      A pointer to an allocated ftgxCharData structure whose data represent that of the last rendered glyph.
- *
- * Optimized for RGBA8 use by Dimok.
+ * @param charData  A pointer to an allocated ftgxCharData structure whose data represent that of the last rendered glyph.
  */
+
 void FreeTypeGX::loadGlyphData(FT_Bitmap *bmp, ftgxCharData *charData)
 {
-    int length = charData->textureWidth * charData->textureHeight * 4;
+        int glyphSize = (charData->textureWidth * charData->textureHeight) >> 1;
 
-        uint8_t * glyphData = (uint8_t *) MEM2_alloc(length);
-        if(!glyphData) return;
-
-        memset(glyphData, 0x00, length);
+        uint8_t *glyphData = (uint8_t *) MEM2_alloc(glyphSize);
+		if(glyphData < 0)
+			return;
+        memset(glyphData, 0x00, glyphSize);
 
         uint8_t *src = (uint8_t *)bmp->buffer;
-        uint32_t offset;
+        uint8_t *dst = glyphData;
+        int32_t pos, x1, y1, x, y;
 
-        for (int imagePosY = 0; imagePosY < bmp->rows; ++imagePosY)
+        for(y1 = 0; y1 < bmp->rows; y1 += 8)
         {
-                for (int imagePosX = 0; imagePosX < bmp->width; ++imagePosX)
+                for(x1 = 0; x1 < bmp->width; x1 += 8)
                 {
-                    offset = ((((imagePosY >> 2) * (charData->textureWidth >> 2) + (imagePosX >> 2)) << 5) + ((imagePosY & 3) << 2) + (imagePosX & 3)) << 1;
-                        glyphData[offset] = *src;
-                        glyphData[offset+1] = *src;
-                        glyphData[offset+32] = *src;
-                        glyphData[offset+33] = *src;
-                        ++src;
+                        for(y = y1; y < (y1 + 8); y++)
+                        {
+                                for(x = x1; x < (x1 + 8); x += 2, dst++)
+                                {
+                                        if(x >= bmp->width || y >= bmp->rows)
+                                                continue;
+
+                                        pos = y * bmp->width + x;
+                                        *dst = (src[pos] & 0xF0);
+
+                                        if(x+1 < bmp->width)
+                                                *dst |= (src[pos + 1] >> 4);
+                                }
+                        }
                 }
         }
-        DCFlushRange(glyphData, length);
-        charData->glyphDataTexture = (uint32_t *) glyphData;
+        DCFlushRange(glyphData, glyphSize);
+        charData->glyphDataTexture = glyphData;
 }
 
 /**
@@ -388,7 +329,7 @@ uint16_t FreeTypeGX::drawText(uint16_t x, uint16_t y, wchar_t *text, GXColor col
 				x_pos += pairDelta.x >> 6;
 			}
 
-			GX_InitTexObj(&glyphTexture, glyphData->glyphDataTexture, glyphData->textureWidth, glyphData->textureHeight, this->textureFormat, GX_CLAMP, GX_CLAMP, GX_FALSE);
+			GX_InitTexObj(&glyphTexture, glyphData->glyphDataTexture, glyphData->textureWidth, glyphData->textureHeight, GX_TF_I4, GX_CLAMP, GX_CLAMP, GX_FALSE);
 			this->copyTextureToFramebuffer(&glyphTexture, this->positionFormat, glyphData->textureWidth, glyphData->textureHeight, x_pos - x_offset, y - glyphData->renderOffsetY - y_offset, color);
 
 			x_pos += glyphData->glyphAdvanceX;
