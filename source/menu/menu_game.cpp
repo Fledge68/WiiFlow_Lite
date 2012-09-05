@@ -1083,8 +1083,6 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		ShutdownBeforeExit();
 		Launch_nk(gameTitle, emuPath.size() > 1 ? emuPath.c_str() : NULL);
 	}
-	DeviceHandler::Instance()->UnMountAll();
-
 	if(!forwarder || neek2o())
 	{
 		if(!emu_disabled)
@@ -1094,10 +1092,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		}
 		gameIOS = channel.GetRequestedIOS(gameTitle);
 		if(!emu_disabled)
-		{
 			Nand::Instance()->Disable_Emu();
-			usleep(1000);
-		}
 		if(_loadIOS(gameIOS, userIOS, id) == LOAD_IOS_FAILED)
 			return;
 	}
@@ -1165,7 +1160,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	if(dvd)
 	{
 		u32 cover = 0;
-		#ifndef DOLPHIN
+#ifndef DOLPHIN
 		if(!neek2o())
 		{
 			Disc_SetUSB(NULL, false);
@@ -1184,23 +1179,24 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 						return;
 				} while(!(cover & 0x2));
 			}
-			if(CurrentIOS.Version != mainIOS)
-				loadIOS(mainIOS, true);
 		}
-		#endif
+#endif
+		_TempLoadIOS();
 		/* Open Disc */
-		if (Disc_Open(true) < 0)
+		if(Disc_Open(true) < 0)
 		{
 			error(_t("wbfsoperr2", L"Disc_Open failed"));
-			if (BTN_B_PRESSED) return;
+			if(BTN_B_PRESSED)
+				return;
 		}
 		/* Check disc */
-		if (Disc_IsWii() < 0)
+		if(Disc_IsWii() < 0)
 		{
 			if (Disc_IsGC() < 0) 
 			{
 				error(_t("errgame9", L"This is not a Wii or GC disc"));
-				if (BTN_B_PRESSED) return;
+				if(BTN_B_PRESSED)
+					return;
 			}
 			else
 			{
@@ -1355,8 +1351,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	m_cat.save(true);
 	m_cfg.save(true);
 	cleanup(); // wifi and sd gecko doesnt work anymore after cleanup
-	DeviceHandler::Instance()->UnMountAll();
-
 	if(CurrentIOS.Type == IOS_TYPE_D2X)
 	{
 		/* Open ES Module */

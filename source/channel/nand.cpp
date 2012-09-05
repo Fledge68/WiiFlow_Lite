@@ -188,6 +188,7 @@ s32 Nand::Disable_Emu()
 	MountedDevice = 0;
 
 	emu_enabled = false;
+	usleep(1000);
 	return 0;
 }
 

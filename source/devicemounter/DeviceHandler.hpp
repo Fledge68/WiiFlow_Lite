@@ -72,7 +72,7 @@ class DeviceHandler
 		void SetModes();
 
 		void MountAll();
-		void UnMountAll(bool ShutdownUSB = false);
+		void UnMountAll();
 		bool Mount(int dev);
 		bool IsInserted(int dev);
 		void UnMount(int dev);
@@ -85,6 +85,7 @@ class DeviceHandler
 		bool SD_Inserted() { if(sd) return sd->IsInserted(); return false; }
 		bool USB0_Inserted() { if(usb0) return usb0->IsInserted(); return false; }
 		bool USB1_Inserted() { if(usb1) return usb1->IsInserted(); return false; }
+		bool UsablePartitionMounted();
 		void WaitForDevice(const DISC_INTERFACE *Handle);
 
 		void UnMountSD() { if(sd) delete sd; sd = NULL; }

@@ -8,6 +8,7 @@
 #include "sys.h"
 #include "wbfs.h"
 #include "wdvd.h"
+#include "external_booter.hpp"
 #include "channel/nand.hpp"
 #include "devicemounter/DeviceHandler.hpp"
 #include "devicemounter/sdhc.h"
@@ -82,17 +83,17 @@ void load_dip_249()
 
 bool loadIOS(int ios, bool MountDevices)
 {
+	int CurIOS = IOS_GetVersion();
 	bool ret = true;
-	m_music.Stop();
-	DeviceHandler::Instance()->UnMountAll();
 
 #ifndef DOLPHIN
-	if(ios != IOS_GetVersion())
+	if(ios != CurIOS)
 	{
 		WDVD_Close();
 		Close_Inputs();
-		gprintf("Reloading into IOS %i from %i...\n", ios, IOS_GetVersion());
-		Nand::Instance()->DeInit_ISFS();
+		m_music.Stop();
+		gprintf("Reloading into IOS %i from %i...\n", ios, CurIOS);
+		ShutdownBeforeExit();
 		ret = IOS_ReloadIOS(ios) == 0;
 		Nand::Instance()->Init_ISFS();
 		gprintf("AHBPROT after IOS Reload: %u\n", AHBRPOT_Patched());
@@ -106,7 +107,7 @@ bool loadIOS(int ios, bool MountDevices)
 	else if(CurrentIOS.Type == IOS_TYPE_WANIN && CurrentIOS.Revision >= 18)
 		load_dip_249();
 	DeviceHandler::Instance()->SetModes();
-	if(MountDevices)
+	if(MountDevices && ios != CurIOS)
 		DeviceHandler::Instance()->MountAll();
 
 	return ret;

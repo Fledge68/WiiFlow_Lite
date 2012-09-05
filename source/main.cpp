@@ -23,7 +23,7 @@
 #include "memory/memory.h"
 
 CMenu *mainMenu;
-bool useMainIOS;
+bool useMainIOS = false;
 
 int main(int argc, char **argv)
 {
@@ -96,33 +96,36 @@ int main(int argc, char **argv)
 
 	DeviceHandler::Instance()->MountAll();
 	vid.waitMessage(0.15f);
-	bool dipOK = WDVD_Init() >= 0;
 
 	mainMenu = new CMenu(vid);
 	Open_Inputs();
 	mainMenu->init();
 	if(CurrentIOS.Version != mainIOS && !neek2o())
 	{
-		if(useMainIOS || (!DeviceHandler::Instance()->IsInserted(SD) && !DeviceHandler::Instance()->IsInserted(USB1)))
+		if(useMainIOS || !DeviceHandler::Instance()->UsablePartitionMounted())
 		{
 			iosOK = loadIOS(mainIOS, true) && CustomIOS(CurrentIOS.Type);
 			Open_Inputs();
 			mainMenu->init();
 		}
 	}
+	if(CurrentIOS.Version == mainIOS)
+		useMainIOS = true; //Needed for later checks
+
 	if(!iosOK)
 		mainMenu->terror("errboot1", L"No cIOS found!\ncIOS d2x 249 base 56 and 250 base 57 are enough for all your games.");
-	else if(!DeviceHandler::Instance()->IsInserted(SD) && !DeviceHandler::Instance()->IsInserted(USB1))
+	else if(!DeviceHandler::Instance()->UsablePartitionMounted())
 		mainMenu->terror("errboot2", L"Could not find a device to save configuration files on!");
-	else if(!dipOK)
+	else if(WDVD_Init() < 0)
 		mainMenu->terror("errboot3", L"Could not initialize the DIP module!");
-	else if(gameid != NULL && strlen(gameid) == 6)
-		mainMenu->directlaunch(gameid);
-	else
+	else 
 	{
 		if(Emulator_boot)
 			mainMenu->m_Emulator_boot = true;
-		mainMenu->main();
+		if(gameid != NULL && strlen(gameid) == 6)
+			mainMenu->directlaunch(gameid);
+		else
+			mainMenu->main();
 	}
 	//Exit WiiFlow, no game booted...
 	mainMenu->cleanup();

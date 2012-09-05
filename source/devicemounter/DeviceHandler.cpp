@@ -67,7 +67,7 @@ void DeviceHandler::MountAll()
 #endif
 }
 
-void DeviceHandler::UnMountAll(bool ShutdownUSB)
+void DeviceHandler::UnMountAll()
 {
 	for(u32 i = SD; i < MAXDEVICES; i++)
 		UnMount(i);
@@ -84,9 +84,8 @@ void DeviceHandler::UnMountAll(bool ShutdownUSB)
 	usb1 = NULL;
 
 	USBStorage2_Deinit();
+	USB_Deinitialize();
 	SDHC_Close();
-	if(ShutdownUSB)
-		USB_Deinitialize();
 }
 
 bool DeviceHandler::Mount(int dev)
@@ -419,4 +418,14 @@ void DeviceHandler::UnMountDevolution(int CurrentPartition)
 	int NewPartition = (CurrentPartition == SD ? CurrentPartition : CurrentPartition - 1);
 	OGC_Device->UnMount(NewPartition);
 	delete OGC_Device;
+}
+
+bool DeviceHandler::UsablePartitionMounted()
+{
+	for(u8 i = SD; i < MAXDEVICES; i++)
+	{
+		if(IsInserted(i) && !GetWbfsHandle(i)) //Everything besides WBFS for configuration
+			return true;
+	}
+	return false;
 }

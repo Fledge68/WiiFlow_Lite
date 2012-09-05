@@ -2099,13 +2099,7 @@ bool CMenu::_loadChannelList(void)
 	Nand::Instance()->Disable_Emu();
 	if(!disable_emu)
 	{
-		if(CurrentIOS.Version != mainIOS)
-		{
-			loadIOS(mainIOS, true);
-			Open_Inputs();
-			for(int chan = WPAD_MAX_WIIMOTES-2; chan >= 0; chan--)
-				WPAD_SetVRes(chan, m_vid.width() + m_cursor[chan].width(), m_vid.height() + m_cursor[chan].height());
-		}
+		_TempLoadIOS();
 		if(!DeviceHandler::Instance()->IsInserted(lastPartition))
 			DeviceHandler::Instance()->Mount(lastPartition);
 
@@ -2145,8 +2139,11 @@ bool CMenu::_loadList(void)
 	if((m_current_view == COVERFLOW_CHANNEL && m_cfg.getBool("NAND", "disable", true)) || m_current_view != COVERFLOW_CHANNEL)
 		Nand::Instance()->Disable_Emu();
 
-	if(m_cfg.getBool(_domainFromView(), "update_cache")) m_gameList.Update(m_current_view);
+	if(m_cfg.getBool(_domainFromView(), "update_cache"))
+		m_gameList.Update(m_current_view);
 
+	/* Make sure if coming from Emu NAND the IOS is set back */
+	_TempLoadIOS(IOS_TYPE_NORMAL_IOS);
 	gprintf("Loading items of ");
 
 	bool retval;
@@ -2562,4 +2559,26 @@ void CMenu::RemoveCover( char * id )
 		fclose(fp);
 		remove(fmt("%s/%s.wfc", m_cacheDir.c_str(), id));
 	}	
+}
+
+void CMenu::_TempLoadIOS(int IOS)
+{
+#ifndef DOLPHIN
+	/* Only temp reload in IOS58 mode */
+	if(useMainIOS || neek2o())
+		return;
+
+	if(IOS == IOS_TYPE_NORMAL_IOS)
+		IOS = 58;
+	else if(IOS == 0)
+		IOS = mainIOS;
+
+	if(CurrentIOS.Version != IOS)
+	{
+		loadIOS(IOS, true);
+		Open_Inputs();
+		for(int chan = WPAD_MAX_WIIMOTES-2; chan >= 0; chan--)
+			WPAD_SetVRes(chan, m_vid.width() + m_cursor[chan].width(), m_vid.height() + m_cursor[chan].height());
+	}
+#endif
 }
