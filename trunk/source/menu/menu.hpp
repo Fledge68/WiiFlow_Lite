@@ -1072,7 +1072,8 @@ private:
 	static void _gameSoundThread(CMenu *m);
 
 	static void _load_installed_cioses();
-	//
+	void _TempLoadIOS(int IOS = 0);
+
 	struct SOption { const char id[10]; const wchar_t text[16]; };
 	static const string _translations[23];
 	static const SOption _languages[11];

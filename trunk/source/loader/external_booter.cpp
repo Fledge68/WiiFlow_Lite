@@ -111,7 +111,7 @@ void ExternalBooter_ChannelSetup(void *dolchunkoffset[18], u32 dolchunksize[18],
 
 void ShutdownBeforeExit(bool KeepPatches)
 {
-	DeviceHandler::Instance()->UnMountAll(true); //Shutdown USB as well
+	DeviceHandler::Instance()->UnMountAll();
 	Nand::Instance()->DeInit_ISFS(KeepPatches);
 	WDVD_Close();
 }

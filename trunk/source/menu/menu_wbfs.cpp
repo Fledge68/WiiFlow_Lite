@@ -306,6 +306,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 				switch(op)
 				{
 					case CMenu::WO_ADD_GAME:
+						_TempLoadIOS();
 						m_btnMgr.show(m_wbfsPBar);
 						m_btnMgr.setProgress(m_wbfsPBar, 0.f);
 						m_btnMgr.hide(m_wbfsBtnGo);
@@ -370,7 +371,6 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						{
 							error(_t("wbfsoperr3", L"This is not a Wii or GC disc!"));
 							out = true;
-							break;
 						}
 						break;
 					case CMenu::WO_REMOVE_GAME:
@@ -458,7 +458,10 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 			if(!m_thrdWorking)
 			{
 				if(op == CMenu::WO_ADD_GAME)
+				{
 					WDVD_StopMotor();
+					_TempLoadIOS(IOS_TYPE_NORMAL_IOS);
+				}
 				m_btnMgr.show(m_wbfsBtnBack);
 			}
 		}
