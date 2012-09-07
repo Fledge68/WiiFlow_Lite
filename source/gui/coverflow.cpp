@@ -227,7 +227,7 @@ CCoverFlow::CCoverFlow(void)
 	LWP_MutexInit(&m_mutex, 0);
 }
 
-bool CCoverFlow::init(const SmartBuf &font, u32 font_size, bool vid_50hz)
+bool CCoverFlow::init(u8 *font, u32 font_size, bool vid_50hz)
 {
 	// Load font
 	m_font.fromBuffer(font, font_size, TITLEFONT);

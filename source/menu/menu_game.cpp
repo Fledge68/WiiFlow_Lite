@@ -1533,10 +1533,6 @@ void CMenu::_gameSoundThread(CMenu *m)
 		m->m_gameSoundHdr = NULL;
 		return;
 	}
-
-	extern SmartBuf m_wbf1_font;
-	extern SmartBuf m_wbf2_font;
-
 	bool custom = false;
 	u8 *custom_bnr_file = NULL;
 	u32 custom_bnr_size = 0;
@@ -1580,7 +1576,7 @@ void CMenu::_gameSoundThread(CMenu *m)
 				disc.init(m->m_cf.getHdr()->path);
 				u8 *opening_bnr = disc.GetGameCubeBanner();
 				if(opening_bnr != NULL)
-					m_banner->CreateGCBanner(opening_bnr, &m->m_vid, m_wbf1_font.get(), m_wbf2_font.get(), m->m_cf.getHdr()->title);
+					m_banner->CreateGCBanner(opening_bnr, &m->m_vid, m->m_wbf1_font, m->m_wbf2_font, m->m_cf.getHdr()->title);
 				m->m_gameSound.Load(gc_ogg, gc_ogg_size, false);
 				m->m_gamesound_changed = true;
 				m->m_gameSoundHdr = NULL;
@@ -1615,7 +1611,7 @@ void CMenu::_gameSoundThread(CMenu *m)
 		_extractChannelBnr(TITLE_ID(m->m_gameSoundHdr->settings[0],m->m_gameSoundHdr->settings[1])) : NULL)));
 	if(banner != NULL && banner->IsValid())
 	{
-		m_banner->LoadBanner(banner, &m->m_vid, m_wbf1_font.get(), m_wbf2_font.get());
+		m_banner->LoadBanner(banner, &m->m_vid, m->m_wbf1_font, m->m_wbf2_font);
 		soundBin = banner->GetFile((char *)"sound.bin", &sndSize);
 	}
 	else
