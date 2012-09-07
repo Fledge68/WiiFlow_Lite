@@ -1009,7 +1009,6 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 {
 	Channels channel;
 	u32 gameIOS = 0;
-	u32 entry = 0;
 	string id = string(hdr->id);
 
 	bool forwarder = true;
@@ -1038,6 +1037,8 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	u8 patchVidMode = min((u32)m_gcfg2.getInt(id, "patch_video_modes", 0), ARRAY_SIZE(CMenu::_vidModePatch) - 1u);
 	int aspectRatio = min((u32)m_gcfg2.getInt(id, "aspect_ratio", 0), ARRAY_SIZE(CMenu::_AspectRatio) - 1u)-1;
 
+	SmartBuf cheatFile;
+	u32 cheatSize = 0;
 	if(!forwarder)
 	{
 		hooktype = (u32) m_gcfg2.getInt(id, "hooktype", 0);
@@ -1047,6 +1048,8 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 			hooktype = 1;
 		if(!debuggerselect && !cheat) 
 			hooktype = 0;
+		if(cheat && hooktype)
+			_loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", id.c_str()));
 	}
 
 	m_cfg.setString("NAND", "current_item", id);
@@ -1135,10 +1138,6 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	else 
 	{
 		setLanguage(language);
-		SmartBuf cheatFile;
-		u32 cheatSize = 0;
-		if(cheat)
-			_loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", id.c_str()));
 		ocarina_load_code(cheatFile.get(), cheatSize);
 		Identify(gameTitle);
 		ExternalBooter_ChannelSetup(gameTitle);
