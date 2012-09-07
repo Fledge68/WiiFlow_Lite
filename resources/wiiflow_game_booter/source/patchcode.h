@@ -26,8 +26,8 @@
 extern "C" {
 #endif
 // Globals
-u32 hooktype;
-u8 configbytes[2];
+extern u32 hooktype;
+extern u8 configbytes[2];
 
 // Function prototypes
 bool dogamehooks(void *addr, u32 len, bool channel);
