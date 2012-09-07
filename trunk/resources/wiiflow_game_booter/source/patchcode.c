@@ -27,6 +27,9 @@
 #include "apploader.h"
 #include "patchcode.h"
 
+u32 hooktype;
+u8 configbytes[2];
+
 extern void patchhook(u32 address, u32 len);
 extern void patchhook2(u32 address, u32 len);
 extern void patchhook3(u32 address, u32 len);
@@ -379,33 +382,6 @@ bool PatchReturnTo( void *Address, int Size, u32 id )
 	}
 
 	return returnToPatched;
-}
-
-s32 IOSReloadBlock(u8 reqios, bool enable)
-{
-	s32 ESHandle = IOS_Open("/dev/es", 0);
-
-	if (ESHandle < 0)
-		return ESHandle;
-
-	static ioctlv vector[2] ATTRIBUTE_ALIGN(32);
-	static u32 mode ATTRIBUTE_ALIGN(32);
-	static u32 ios ATTRIBUTE_ALIGN(32);
-
-	mode = enable ? 2 : 0;
-	vector[0].data = &mode;
-	vector[0].len  = sizeof(u32);
-
-	if (enable) {
-		ios = reqios;
-		vector[1].data = &ios;
-		vector[1].len  = sizeof(u32);
-	}
-
-	s32 r = IOS_Ioctlv(ESHandle, 0xA0, 2, 0, vector);
-	IOS_Close(ESHandle);
-
-	return r;
 }
 
 void PatchAspectRatio(void *addr, u32 len, u8 aspect)
