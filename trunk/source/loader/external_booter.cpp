@@ -54,10 +54,7 @@ typedef struct _the_CFG {
 	u32 gameconfsize;
 	u8 BootType;
 	/* needed for channels */
-	void *dolchunkoffset[18];
-	u32	dolchunksize[18];
-	u32	dolchunkcount;
-	u32 startPoint;
+	u64 title;
 } the_CFG;
 
 the_CFG normalCFG;
@@ -98,15 +95,9 @@ void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 pat
 	BootHomebrew();
 }
 
-void ExternalBooter_ChannelSetup(void *dolchunkoffset[18], u32 dolchunksize[18], u32 dolchunkcount, u32 StartPoint)
+void ExternalBooter_ChannelSetup(u64 title)
 {
-	for(u8 i = 0; i < 18; i++)
-	{
-		normalCFG.dolchunkoffset[i] = dolchunkoffset[i];
-		normalCFG.dolchunksize[i] = dolchunksize[i];
-	}
-	normalCFG.dolchunkcount = dolchunkcount;
-	normalCFG.startPoint = StartPoint;
+	normalCFG.title = title;
 }
 
 void ShutdownBeforeExit(bool KeepPatches)

@@ -82,7 +82,7 @@ s32 Apploader_Run(entry_point *entry, u8 vidMode, GXRModeObj *vmode, bool vipatc
 
 	free_wip();
 	if(hooktype != 0 && hookpatched)
-		ocarina_do_code();
+		ocarina_do_code(0);
 
 	/* Set entry point from apploader */
 	*entry = appldr_final();
