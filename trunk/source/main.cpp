@@ -35,7 +35,7 @@ int main(int argc, char **argv)
 	vid.init();
 
 	Nand::Instance()->Init_ISFS();
-	MEM2_init(47); //Should be safe to use
+	MEM_init(); //Inits both mem1lo and mem2
 	gprintf(" \nWelcome to %s (%s-r%s)!\nThis is the debug output.\n", APP_NAME, APP_VERSION, SVN_REV);
 
 	char *gameid = NULL;

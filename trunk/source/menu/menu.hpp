@@ -67,8 +67,10 @@ private:
 	Config m_version;
 	Plugin m_plugin;
 	vector<string> m_homebrewArgs;
-	SmartBuf m_base_font;
+	u8 *m_base_font;
 	u32 m_base_font_size;
+	u8 *m_wbf1_font;
+	u8 *m_wbf2_font;
 	u8 m_aa;
 	bool m_bnr_settings;
 	bool m_directLaunch;

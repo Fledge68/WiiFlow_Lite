@@ -112,9 +112,6 @@ extern const u8 checkboxs_png[];
 extern const u8 checkboxhid_png[];
 extern const u8 checkboxreq_png[];
 
-SmartBuf m_wbf1_font;
-SmartBuf m_wbf2_font;
-
 CMenu::CMenu(CVideo &vid) :
 	m_vid(vid)
 {
@@ -142,7 +139,10 @@ CMenu::CMenu(CVideo &vid) :
 	m_reload = false;
 	m_gamesound_changed = false;
 	m_video_playing = false;
+	m_base_font = NULL;
 	m_base_font_size = 0;
+	m_wbf1_font = NULL;
+	m_wbf2_font = NULL;
 	m_current_view = COVERFLOW_USB;
 	m_Emulator_boot = false;
 	m_banner = new BannerWindow;
@@ -872,7 +872,7 @@ void CMenu::_loadCFLayout(int version, bool forceAA, bool otherScrnFmt)
 
 void CMenu::_buildMenus(void)
 {
-	if(!m_base_font.get())
+	if(!m_base_font)
 		_loadDefaultFont(CONF_GetLanguage() == CONF_LANG_KOREAN);
 
 	// Default fonts
@@ -2406,10 +2406,12 @@ retry:
 			{
 				const u8 *font_file = u8_get_file_by_index(u8_font_archive, 1, &size); // There is only one file in that app
 				//gprintf("Extracted font: %d\n", size);
-				m_base_font = smartMem2Alloc(size);
-				memcpy(m_base_font.get(), font_file, size);
-				if(!!m_base_font)
-					m_base_font_size = size;
+				if(m_base_font)
+					MEM1_free(m_base_font);
+				m_base_font = (u8*)MEM1_alloc(size);
+				memcpy(m_base_font, font_file, size);
+				DCFlushRange(m_base_font, size);
+				m_base_font_size = size;
 				free(u8_font_archive);
 			}
 			break;
@@ -2424,12 +2426,18 @@ retry:
 			if(u8_font_archive != NULL)
 			{
 				const u8 *font_file1 = u8_get_file(u8_font_archive, "wbf1.brfna", &size);
-				m_wbf1_font = smartMem2Alloc(size);
-				memcpy(m_wbf1_font.get(), font_file1, size);
-
+				if(m_wbf1_font)
+					MEM1_lo_free(m_wbf1_font);
+				m_wbf1_font = (u8*)MEM1_lo_alloc(size);
+				memcpy(m_wbf1_font, font_file1, size);
+				DCFlushRange(m_wbf1_font, size);
+	
 				const u8 *font_file2 = u8_get_file(u8_font_archive, "wbf2.brfna", &size);
-				m_wbf2_font = smartMem2Alloc(size);
-				memcpy(m_wbf2_font.get(), font_file2, size);
+				if(m_wbf2_font)
+					MEM1_lo_free(m_wbf2_font);
+				m_wbf2_font = (u8*)MEM1_lo_alloc(size);
+				memcpy(m_wbf2_font, font_file2, size);
+				DCFlushRange(m_wbf2_font, size);
 
 				free(u8_font_archive);
 			}
@@ -2447,11 +2455,10 @@ retry:
 
 void CMenu::_cleanupDefaultFont()
 {
-	m_base_font.release();
+	MEM1_lo_free(m_base_font);
 	m_base_font_size = 0;
-
-	m_wbf1_font.release();
-	m_wbf2_font.release();
+	MEM1_lo_free(m_wbf1_font);
+	MEM1_lo_free(m_wbf2_font);
 }
 
 const char *CMenu::_domainFromView()

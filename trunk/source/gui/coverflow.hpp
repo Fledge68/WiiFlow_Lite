@@ -40,7 +40,7 @@ public:
 	CCoverFlow(void);
 	~CCoverFlow(void);
 	// 
-	bool init(const SmartBuf &font, u32 font_size, bool vid_50hz);
+	bool init(u8 *font, u32 font_size, bool vid_50hz);
 	// Cover list management
 	void clear(void);
 	void shutdown(void);

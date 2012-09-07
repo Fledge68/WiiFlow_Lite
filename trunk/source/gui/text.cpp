@@ -178,7 +178,7 @@ vector<wstringEx> stringToVector(const wstringEx &text, char sep)
 	return v;
 }
 
-bool SFont::fromBuffer(const SmartBuf &buffer, u32 bufferSize, u32 size, u32 lspacing, u32 w, u32 idx, const char *)
+bool SFont::fromBuffer(u8 *buffer, u32 bufferSize, u32 size, u32 lspacing, u32 w, u32 idx, const char *)
 {
 	if (!buffer || !font) return false;
 
@@ -192,7 +192,7 @@ bool SFont::fromBuffer(const SmartBuf &buffer, u32 bufferSize, u32 size, u32 lsp
 	data = smartMem2Alloc(bufferSize);
 	if(!data) return false;
 
-	memcpy(data.get(), buffer.get(), bufferSize);
+	memcpy(data.get(), buffer, bufferSize);
 	dataSize = bufferSize;
 
 	font->loadFont(data.get(), dataSize, size, weight, index, false);

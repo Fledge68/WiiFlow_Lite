@@ -8,9 +8,18 @@
 #include "gecko/gecko.h"
 #include "loader/utils.h"
 
+#define MEM2_PRIORITY_SIZE	0x1000
+
 // Forbid the use of MEM2 through malloc
 u32 MALLOC_MEM2 = 0;
 
+void *MEM1_lo_start = (void*)0x80004000;
+void *MEM1_lo_end = (void*)0x80A00000;
+
+void *MEM2_start = (void*)0x90200000;
+void *MEM2_end = (void*)0x93100000;
+
+static CMEM2Alloc g_mem1lo;
 static CMEM2Alloc g_mem2gp;
 
 extern "C"
@@ -23,35 +32,65 @@ extern __typeof(memalign) __real_memalign;
 extern __typeof(free) __real_free;
 extern __typeof(malloc_usable_size) __real_malloc_usable_size;
 
+void MEM_init()
+{
+	g_mem1lo.init(MEM1_lo_start, MEM1_lo_end); //about 10mb
+	g_mem1lo.clear();
+
+	g_mem2gp.init(MEM2_start, MEM2_end); //about 47mb
+	g_mem2gp.clear();
+}
+
+void *MEM1_lo_alloc(unsigned int s)
+{
+	return g_mem1lo.allocate(s);
+}
+
+void MEM1_lo_free(void *p)
+{
+	if(!p)
+		return;
+	g_mem1lo.release(p);
+}
+
 void *MEM1_alloc(unsigned int s)
 {
-	return __real_malloc(s);
+	void *p = g_mem1lo.allocate(s);
+	if(!p)
+		p = __real_malloc(s);
+	return p;
 }
 
 void *MEM1_memalign(unsigned int a, unsigned int s)
 {
-	return __real_memalign(a, s);
+	void *p = g_mem1lo.allocate(s);
+	if(!p)
+		p = __real_memalign(a, s);
+	return p;
 }
 
 void *MEM1_realloc(void *p, unsigned int s)
 {
+	if(!p)
+		return NULL;
+	if((u32)p > (u32)MEM1_lo_start && (u32)p < (u32)MEM1_lo_end)
+		return g_mem1lo.reallocate(p, s);
 	return __real_realloc(p, s);
 }
 
 void MEM1_free(void *p)
 {
-	__real_free(p);
+	if(!p)
+		return;
+	if((u32)p > (u32)MEM1_lo_start && (u32)p < (u32)MEM1_lo_end)
+		g_mem1lo.release(p);
+	else
+		__real_free(p);
 }
 
 unsigned int MEM1_freesize()
 {
 	return SYS_GetArena1Size();
-}
-
-void MEM2_init(unsigned int mem2Size)
-{
-	g_mem2gp.init(mem2Size);
-	g_mem2gp.clear();
 }
 
 void MEM2_cleanup(void)
@@ -66,6 +105,8 @@ void MEM2_clear(void)
 
 void MEM2_free(void *p)
 {
+	if(!p)
+		return;
 	g_mem2gp.release(p);
 }
 
@@ -82,11 +123,15 @@ void *MEM2_memalign(unsigned int /* alignment */, unsigned int s)
 
 void *MEM2_realloc(void *p, unsigned int s)
 {
+	if(!p)
+		return NULL;
 	return g_mem2gp.reallocate(p, s);
 }
 
 unsigned int MEM2_usableSize(void *p)
 {
+	if(!p)
+		return 0;
 	return g_mem2gp.usableSize(p);
 }
 
@@ -98,11 +143,11 @@ unsigned int MEM2_freesize()
 void *__wrap_malloc(size_t size)
 {
 	void *p;
-	if(SYS_GetArena1Lo() >= MAX_MEM1_ARENA_LO || size >= MEM2_PRIORITY_SIZE)
+	if(size >= MEM2_PRIORITY_SIZE)
 	{
 		p = g_mem2gp.allocate(size);
 		if(p != 0) 
-			return p; 
+			return p;
 		return __real_malloc(size);
 	}
 	p = __real_malloc(size);
@@ -114,7 +159,7 @@ void *__wrap_malloc(size_t size)
 void *__wrap_calloc(size_t n, size_t size)
 {
 	void *p;
-	if(SYS_GetArena1Lo() >= MAX_MEM1_ARENA_LO || (n * size) >= MEM2_PRIORITY_SIZE)
+	if((n * size) >= MEM2_PRIORITY_SIZE)
 	{
 		p = g_mem2gp.allocate(n * size);
 		if (p != 0)
@@ -137,7 +182,7 @@ void *__wrap_calloc(size_t n, size_t size)
 void *__wrap_memalign(size_t a, size_t size)
 {
 	void *p;
-	if(SYS_GetArena1Lo() >= MAX_MEM1_ARENA_LO || size >= MEM2_PRIORITY_SIZE)
+	if(size >= MEM2_PRIORITY_SIZE)
 	{
 		if(a <= 32 && 32 % a == 0)
 		{
@@ -162,7 +207,7 @@ void __wrap_free(void *p)
 	if(((u32)p & 0x10000000) != 0)
 		g_mem2gp.release(p);
 	else
-		__real_free(p);
+		MEM1_free(p);
 }
 
 void *__wrap_realloc(void *p, size_t size)
