@@ -32,7 +32,7 @@ extern u8 debuggerselect;
 
 void app_gameconfig_set(u32 *gameconfig, u32 tempgameconfsize);
 void ocarina_set_codes(void *list, u8 *listend, u8 *cheats, u32 cheatSize);
-int ocarina_do_code();
+int ocarina_do_code(u64 chantitle);
 
 #ifdef __cplusplus
 }

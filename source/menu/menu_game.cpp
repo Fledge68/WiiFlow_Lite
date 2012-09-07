@@ -1134,14 +1134,15 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	}
 	else 
 	{
-		entry = channel.Load(gameTitle);
 		setLanguage(language);
 		SmartBuf cheatFile;
 		u32 cheatSize = 0;
 		if(cheat)
 			_loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", id.c_str()));
 		ocarina_load_code(cheatFile.get(), cheatSize);
-		BootChannel(entry, gameTitle, gameIOS, videoMode, vipatch, countryPatch, patchVidMode, aspectRatio);
+		Identify(gameTitle);
+		ExternalBooter_ChannelSetup(gameTitle);
+		BootChannel(gameTitle, gameIOS, videoMode, vipatch, countryPatch, patchVidMode, aspectRatio);
 	}
 }
 

@@ -26,7 +26,10 @@
 #include "patchcode.h"
 #include "cios.h"
 #include "disc.h"
+#include "fs.h"
 #include "fst.h"
+#include "lz77.h"
+#include "utils.h"
 #include "videopatch.h"
 
 using namespace std;
@@ -51,10 +54,7 @@ typedef struct _the_CFG {
 	u32 gameconfsize;
 	u8 BootType;
 	/* needed for channels */
-	void *dolchunkoffset[18];
-	u32	dolchunksize[18];
-	u32	dolchunkcount;
-	u32 startPoint;
+	u64 title;
 } the_CFG;
 
 static the_CFG *conf = (the_CFG*)0x90000000;
@@ -68,19 +68,144 @@ u32 AppEntrypoint;
 
 extern "C" { extern void __exception_closeall(); }
 
+typedef struct _dolheader
+{
+	u32 section_pos[18];
+	u32 section_start[18];
+	u32 section_size[18];
+	u32 bss_start;
+	u32 bss_size;
+	u32 entry_point;
+	u32 padding[7];
+} __attribute__((packed)) dolheader;
+
+void *dolchunkoffset[18];
+u32	dolchunksize[18];
+u32	dolchunkcount;
+
 void PatchChannel(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio)
 {
-	for(u32 i = 0; i < conf->dolchunkcount; i++)
+	for(u32 i = 0; i < dolchunkcount; i++)
 	{		
-		patchVideoModes(conf->dolchunkoffset[i], conf->dolchunksize[i], vidMode, vmode, patchVidModes);
-		if(vipatch) vidolpatcher(conf->dolchunkoffset[i], conf->dolchunksize[i]);
-		if(configbytes[0] != 0xCD) langpatcher(conf->dolchunkoffset[i], conf->dolchunksize[i]);
-		if(countryString) PatchCountryStrings(conf->dolchunkoffset[i], conf->dolchunksize[i]);
-		if(aspectRatio != -1) PatchAspectRatio(conf->dolchunkoffset[i], conf->dolchunksize[i], aspectRatio);
+		patchVideoModes(dolchunkoffset[i], dolchunksize[i], vidMode, vmode, patchVidModes);
+		if(vipatch) vidolpatcher(dolchunkoffset[i], dolchunksize[i]);
+		if(configbytes[0] != 0xCD) langpatcher(dolchunkoffset[i], dolchunksize[i]);
+		if(countryString) PatchCountryStrings(dolchunkoffset[i], dolchunksize[i]);
+		if(aspectRatio != -1) PatchAspectRatio(dolchunkoffset[i], dolchunksize[i], aspectRatio);
 
 		if(hooktype != 0)
-			dogamehooks(conf->dolchunkoffset[i], conf->dolchunksize[i], true);
+			dogamehooks(dolchunkoffset[i], dolchunksize[i], true);
 	}
+}
+
+static u8 *GetDol(u32 bootcontent)
+{
+	char filepath[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
+	sprintf(filepath, "/title/%08x/%08x/content/%08x.app", TITLE_UPPER(conf->title), TITLE_LOWER(conf->title), bootcontent);
+
+	u32 contentSize = 0;
+
+	u8 *data = ISFS_GetFile((u8 *) &filepath, &contentSize, -1);
+	if(data != NULL && contentSize != 0)
+	{
+		if(isLZ77compressed(data))
+		{
+			u8 *decompressed;
+			u32 size = 0;
+			if(decompressLZ77content(data, contentSize, &decompressed, &size) < 0)
+			{
+				free(data);
+				return NULL;
+			}
+			free(data);
+			data = decompressed;
+		}	
+		return data;
+	}
+	return NULL;
+}
+
+static bool GetAppNameFromTmd(char *app, bool dol, u32 *bootcontent)
+{
+	bool ret = false;
+
+	char tmd[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
+	sprintf(tmd, "/title/%08x/%08x/content/title.tmd", TITLE_UPPER(conf->title), TITLE_LOWER(conf->title));
+
+	u32 size;
+	u8 *data = ISFS_GetFile((u8 *) &tmd, &size, -1);
+	if (data == NULL || size < 0x208)
+		return ret;
+
+	_tmd *tmd_file = (_tmd *)SIGNATURE_PAYLOAD((u32 *)data);
+	u16 i;
+	for(i = 0; i < tmd_file->num_contents; ++i)
+	{
+		if(tmd_file->contents[i].index == (dol ? tmd_file->boot_index : 0))
+		{
+			*bootcontent = tmd_file->contents[i].cid;
+			sprintf(app, "/title/%08x/%08x/content/%08x.app", TITLE_UPPER(conf->title), TITLE_LOWER(conf->title), *bootcontent);
+			ret = true;
+			break;
+		}
+	}
+
+	free(data);
+
+	return ret;
+}
+
+static u32 MoveDol(u8 *buffer)
+{
+	dolchunkcount = 0;
+	dolheader *dolfile = (dolheader *)buffer;
+
+	if(dolfile->bss_start)
+	{
+		if(!(dolfile->bss_start & 0x80000000))
+			dolfile->bss_start |= 0x80000000;
+
+		memset((void *)dolfile->bss_start, 0, dolfile->bss_size);
+		DCFlushRange((void *)dolfile->bss_start, dolfile->bss_size);
+		ICInvalidateRange((void *)dolfile->bss_start, dolfile->bss_size);
+	}
+
+	int i;
+	for(i = 0; i < 18; i++)
+	{
+		if(!dolfile->section_size[i]) 
+			continue;
+		if(dolfile->section_pos[i] < sizeof(dolheader)) 
+			continue;
+		if(!(dolfile->section_start[i] & 0x80000000)) 
+			dolfile->section_start[i] |= 0x80000000;
+
+		dolchunkoffset[dolchunkcount] = (void *)dolfile->section_start[i];
+		dolchunksize[dolchunkcount] = dolfile->section_size[i];			
+
+		//gprintf("Moving section %u from offset %08x to %08x-%08x...\n", i, dolfile->section_pos[i], dolchunkoffset[dolchunkcount], (u32)dolchunkoffset[dolchunkcount]+dolchunksize[dolchunkcount]);
+		memmove(dolchunkoffset[dolchunkcount], buffer + dolfile->section_pos[i], dolchunksize[dolchunkcount]);
+		DCFlushRange(dolchunkoffset[dolchunkcount], dolchunksize[dolchunkcount]);
+		ICInvalidateRange(dolchunkoffset[dolchunkcount], dolchunksize[dolchunkcount]);
+
+		dolchunkcount++;
+	}
+	return dolfile->entry_point;
+}
+
+u32 LoadChannel()
+{
+	char app[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
+	u32 bootcontent;
+	u32 entry = 0;
+
+	if(!GetAppNameFromTmd(app, true, &bootcontent))
+		return entry;
+
+	u8 *data = GetDol(bootcontent);
+	entry = MoveDol(data);
+	free(data);
+	return entry;
 }
 
 int main()
@@ -118,12 +243,13 @@ int main()
 	}
 	else if(conf->BootType == TYPE_CHANNEL)
 	{
-		if(hooktype != 0)
-			ocarina_do_code();
-
+		ISFS_Initialize();
+		AppEntrypoint = LoadChannel();
 		PatchChannel(conf->vidMode, vmode, conf->vipatch, conf->countryString, 
 					conf->patchVidMode, conf->aspectRatio);
-		AppEntrypoint = conf->startPoint;
+		if(hooktype != 0)
+			ocarina_do_code(conf->title);
+		ISFS_Deinitialize();
 	}
 
 	/* Set time */

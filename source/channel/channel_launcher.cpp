@@ -15,24 +15,7 @@
 #include "unzip/lz77.h"
 #include "types.h"
 
-typedef void (*entrypoint) (void);
-
-typedef struct _dolheader
-{
-	u32 section_pos[18];
-	u32 section_start[18];
-	u32 section_size[18];
-	u32 bss_start;
-	u32 bss_size;
-	u32 entry_point;
-	u32 padding[7];
-} __attribute__((packed)) dolheader;
-
-void *dolchunkoffset[18];
-u32	dolchunksize[18];
-u32	dolchunkcount;
-
-s32 BootChannel(u32 entry, u64 chantitle, u32 ios, u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, int aspectRatio)
+s32 BootChannel(u64 chantitle, u32 ios, u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, int aspectRatio)
 {
 	// IOS Version Check
 	*Real_IOSVersion = ((ios << 16)) | 0xFFFF;
@@ -45,47 +28,8 @@ s32 BootChannel(u32 entry, u64 chantitle, u32 ios, u8 vidMode, bool vipatch, boo
 	*Disc_ID = TITLE_LOWER(chantitle);
 	DCFlushRange((void*)Disc_ID, 4);
 
-	ExternalBooter_ChannelSetup(dolchunkoffset, dolchunksize, dolchunkcount, entry);
 	WiiFlow_ExternalBooter(vidMode, vipatch, countryString, patchVidMode, aspectRatio, 0, TYPE_CHANNEL);
 	return 0;
-}
-
-u32 LoadChannel(u8 *buffer)
-{
-	dolchunkcount = 0;
-	dolheader *dolfile = (dolheader *)buffer;
-
-	if(dolfile->bss_start)
-	{
-		if(!(dolfile->bss_start & 0x80000000))
-			dolfile->bss_start |= 0x80000000;
-
-		memset((void *)dolfile->bss_start, 0, dolfile->bss_size);
-		DCFlushRange((void *)dolfile->bss_start, dolfile->bss_size);
-		ICInvalidateRange((void *)dolfile->bss_start, dolfile->bss_size);
-	}
-
-	int i;
-	for(i = 0; i < 18; i++)
-	{
-		if(!dolfile->section_size[i]) 
-			continue;
-		if(dolfile->section_pos[i] < sizeof(dolheader)) 
-			continue;
-		if(!(dolfile->section_start[i] & 0x80000000)) 
-			dolfile->section_start[i] |= 0x80000000;
-
-		dolchunkoffset[dolchunkcount] = (void *)dolfile->section_start[i];
-		dolchunksize[dolchunkcount] = dolfile->section_size[i];			
-
-		gprintf("Moving section %u from offset %08x to %08x-%08x...\n", i, dolfile->section_pos[i], dolchunkoffset[dolchunkcount], (u32)dolchunkoffset[dolchunkcount]+dolchunksize[dolchunkcount]);
-		memmove(dolchunkoffset[dolchunkcount], buffer + dolfile->section_pos[i], dolchunksize[dolchunkcount]);
-		DCFlushRange(dolchunkoffset[dolchunkcount], dolchunksize[dolchunkcount]);
-		ICInvalidateRange(dolchunkoffset[dolchunkcount], dolchunksize[dolchunkcount]);
-
-		dolchunkcount++;
-	}
-	return dolfile->entry_point;
 }
 
 bool Identify_GenerateTik(signed_blob **outbuf, u32 *outlen)
@@ -176,35 +120,4 @@ bool Identify(u64 titleid)
 	free(certBuffer);
 
 	return ret < 0 ? false : true;
-}
-
-u8 *GetDol(u64 title, u32 bootcontent)
-{
-	char filepath[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
-	sprintf(filepath, "/title/%08x/%08x/content/%08x.app", TITLE_UPPER(title), TITLE_LOWER(title), bootcontent);
-	
-	gprintf("Loading DOL: %s...", filepath);
-	u32 contentSize = 0;
-	u8 *data = ISFS_GetFile((u8 *) &filepath, &contentSize, -1);
-	if (data != NULL && contentSize != 0)
-	{	
-		gprintf("Done!\n");
-	
-		if (isLZ77compressed(data))
-		{
-			u8 *decompressed;
-			u32 size = 0;
-			if (decompressLZ77content(data, contentSize, &decompressed, &size) < 0)
-			{
-				gprintf("Decompression failed\n");
-				free(data);
-				return NULL;
-			}
-			free(data);
-			data = decompressed;
-		}	
-		return data;
-	}
-	gprintf("Failed!\n");
-	return NULL;
 }
