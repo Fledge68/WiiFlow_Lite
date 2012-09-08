@@ -81,9 +81,16 @@ int main()
 	}
 	else if(conf->BootType == TYPE_CHANNEL)
 	{
+		/* Re-Init ISFS */
+		ISFS_Initialize();
+
+		/* Load and Patch Channel */
 		AppEntrypoint = LoadChannel();
 		PatchChannel(conf->vidMode, vmode, conf->vipatch, conf->countryString, 
 					conf->patchVidMode, conf->aspectRatio);
+
+		/* De-Init ISFS */
+		ISFS_Deinitialize();
 	}
 
 	/* Set time */
