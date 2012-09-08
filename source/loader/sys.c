@@ -64,12 +64,24 @@ bool Sys_Exiting(void)
 	return reset || shutdown || exiting;
 }
 
+void Sys_Shutdown(void)
+{
+	/* via hollywood registers first */
+	*HW_GPIO_OUT |= (1<<1);
+	/* If it failed just do the libogc way */
+	SYS_ResetSystem(SYS_SHUTDOWN, 0, 0);
+}
+
 void Sys_Test(void)
 {
-	if(reset || shutdown) Close_Inputs();
-
-	if (reset) SYS_ResetSystem(SYS_RESTART, 0, 0);
-	else if (shutdown) SYS_ResetSystem(SYS_POWEROFF, 0, 0);
+	if(reset || shutdown)
+	{
+		Close_Inputs();
+		if(reset)
+			SYS_ResetSystem(SYS_RESTART, 0, 0);
+		else
+			Sys_Shutdown();
+	}
 }
 
 int Sys_GetExitTo(void)
