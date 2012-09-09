@@ -53,13 +53,12 @@ void CMenu::_code(void)
 		m_btnMgr.show(m_codeBtnAge);
 		m_btnMgr.show(m_codeBtnErase);
 	}
-	while (true)
+	while(!m_exit)
 	{
 		int c = -1;
 		_mainLoopCommon();
 		if (BTN_HOME_PRESSED)
 			goBack = true;
-
 		if (WPadIR_ANY())
 		{
 			if (BTN_B_PRESSED)

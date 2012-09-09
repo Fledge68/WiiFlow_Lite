@@ -3,6 +3,7 @@
 #include "svnrev.h"
 #include "loader/cios.h"
 #include "loader/nk.h"
+#include "loader/sys.h"
 
 u32 m_homeLblTitle;
 u32 m_exittoLblTitle;
@@ -28,7 +29,7 @@ bool CMenu::_Home(void)
 	_showHome();
 
 	string prevTheme = m_cfg.getString("GENERAL", "theme", "default");
-	while(1)
+	while(!m_exit)
 	{
 		_mainLoopCommon();
 		if(BTN_A_PRESSED)
@@ -86,7 +87,7 @@ bool CMenu::_Home(void)
 			{
 				_hideHome();
 				if(m_locked)
-					exitHandler(0);
+					exitHandler(PRIILOADER_DEF);
 				else 
 					_ExitTo();
 				if(m_exit)
@@ -96,12 +97,12 @@ bool CMenu::_Home(void)
 		}
 		else if(BTN_HOME_PRESSED)
 		{
-			exitHandler(0);			
+			exitHandler(PRIILOADER_DEF);	
 			break;
 		}
 		else if(BTN_B_PRESSED)
 			break;
-	}	
+	}
 
 	_hideHome();
 	return m_exit;
@@ -112,29 +113,29 @@ bool CMenu::_ExitTo(void)
 	SetupInput();
 	_showExitTo();
 
-	while(1)
+	while(!m_exit)
 	{
 		_mainLoopCommon();
 		if(BTN_A_PRESSED)
 		{
 			if(m_btnMgr.selected(m_homeBtnExitToHBC))
 			{
-				exitHandler(1);
+				exitHandler(EXIT_TO_HBC);
 				break;
 			}
 			else if(m_btnMgr.selected(m_homeBtnExitToMenu))
 			{
-				exitHandler(2);
+				exitHandler(EXIT_TO_MENU);
 				break;
 			}
 			else if(m_btnMgr.selected(m_homeBtnExitToPriiloader))
 			{
-				exitHandler(3);
+				exitHandler(EXIT_TO_PRIILOADER);
 				break;
 			}
 			else if(m_btnMgr.selected(m_homeBtnExitToBootmii))
 			{
-				exitHandler(4);
+				exitHandler(EXIT_TO_BOOTMII);
 				break;
 			}
 			else if(m_btnMgr.selected(m_homeBtnExitToNeek))
@@ -142,16 +143,16 @@ bool CMenu::_ExitTo(void)
 				if(!Load_Neek2o_Kernel())
 				{
 					error(sfmt("errneek1", L"Cannot launch neek2o. Verify your neek2o setup"));
-					exitHandler(2);
+					exitHandler(PRIILOADER_DEF);
 				}
 				else
-					exitHandler(5);
+					exitHandler(EXIT_TO_BOOTMII);
 				break;
 			}
 		}
 		else if(BTN_HOME_PRESSED)
 		{
-			exitHandler(0);
+			exitHandler(PRIILOADER_DEF);
 			break;
 		}
 		else if(BTN_B_PRESSED)

@@ -446,8 +446,6 @@ void CMenu::init(void)
 	m_btnMgr.setRumble(m_cfg.getBool("GENERAL", "rumble", true));
 
 	int exit_to = m_cfg.getInt("GENERAL", "exit_to", 0);
-	m_disable_exit = exit_to == EXIT_TO_DISABLE;
-
 	if(exit_to == EXIT_TO_BOOTMII && (!DeviceHandler::Instance()->IsInserted(SD) || 
 	stat(fmt("%s:/bootmii/armboot.bin",DeviceName[SD]), &dummy) != 0 || 
 	stat(fmt("%s:/bootmii/ppcboot.elf", DeviceName[SD]), &dummy) != 0))
@@ -1786,7 +1784,7 @@ void CMenu::_initCF(void)
 	m_cf.startCoverLoader();
 }
 
-void CMenu::_mainLoopCommon(bool withCF, bool blockReboot, bool adjusting)
+void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 {
 	if(withCF)
 		m_cf.tick();
@@ -1846,17 +1844,8 @@ void CMenu::_mainLoopCommon(bool withCF, bool blockReboot, bool adjusting)
 	if(!m_vid.showingWaitMessage())
 		m_vid.render();
 
-	if(!blockReboot)
-	{
-		if(withCF && Sys_Exiting())
-			m_cf.clear();
-		if(Sys_Exiting())
-		{
-			m_cat.save();
-			m_cfg.save();
-		}
-		Sys_Test();
-	}
+	if(Sys_Exiting())
+		exitHandler(BUTTON_CALLBACK);
 
 	if(withCF && m_gameSelected && m_gamesound_changed && (m_gameSoundHdr == NULL) && !m_gameSound.IsPlaying() && m_music.GetVolume() == 0)
 	{

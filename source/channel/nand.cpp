@@ -1045,7 +1045,7 @@ extern "C" { extern s32 MagicPatches(s32); }
 
 void Nand::Init_ISFS()
 {
-	gprintf("Init ISFS\n");
+	//gprintf("Init ISFS\n");
 	ISFS_Initialize();
 	if(AHBRPOT_Patched())
 	{
@@ -1061,7 +1061,7 @@ void Nand::Init_ISFS()
 
 void Nand::DeInit_ISFS(bool KeepPatches)
 {
-	gprintf("Deinit ISFS\n");
+	//gprintf("Deinit ISFS\n");
 	if(AHBRPOT_Patched())
 	{
 		// Disable memory protection

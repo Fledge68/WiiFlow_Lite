@@ -648,8 +648,6 @@ private:
 	bool m_show_zone_game;
 
 	volatile bool m_exit;
-	volatile bool m_disable_exit;
-	
 	volatile bool m_networkInit;
 	volatile bool m_thrdStop;
 	volatile bool m_thrdWorking;
@@ -968,7 +966,7 @@ private:
 	bool _Home();
 	bool _ExitTo();
 	//
-	void _mainLoopCommon(bool withCF = false, bool blockReboot = false, bool adjusting = false);
+	void _mainLoopCommon(bool withCF = false, bool adjusting = false);
 	// 
 	vector<dir_discHdr> _searchGamesByID(const char *gameId);
 /* 	vector<dir_discHdr> _searchGamesByTitle(wchar_t letter);
@@ -1097,7 +1095,7 @@ private:
 	static const SOption _GCLoader[3];
 	static const SOption _vidModePatch[4];
 	static const SOption _hooktype[8];
-	static const SOption _exitTo[6];
+	static const SOption _exitTo[5];
 	static map<u8, u8> _installed_cios;
 	typedef map<u8, u8>::iterator CIOSItr;
 	static int _version[9];

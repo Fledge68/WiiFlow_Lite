@@ -101,7 +101,7 @@ void CMenu::_PluginSettings()
 	Plugin_curPage = 1;
 	_textPluginSettings();
 	_showPluginSettings();
-	while(true)
+	while(!m_exit)
 	{
 		_mainLoopCommon();
 		if(!m_btnMgr.selected(Plugin_lastBtn))
@@ -222,7 +222,7 @@ void CMenu::_textPluginSettings(void)
 	m_btnMgr.setText(m_pluginLblTitle, _t("cfgpl1", L"Select Plugins"));
 	m_btnMgr.setText(m_pluginBtnBack, _t("cd1", L"Back"));
 	u8 i = 0;
-	while(true)
+	while(!m_exit)
 	{
 		if(i == 0)
 			m_btnMgr.setText(m_pluginLblCat[i], _t("dl25", L"All"));

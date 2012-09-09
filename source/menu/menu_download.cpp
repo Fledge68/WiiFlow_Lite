@@ -1222,9 +1222,9 @@ void CMenu::_download(string gameId)
 	else
 		m_coverDLGameId = gameId;
 
-	while(true)
+	while(!m_exit)
 	{
-		_mainLoopCommon(false, m_thrdWorking);
+		_mainLoopCommon();
 		if ((BTN_HOME_PRESSED || BTN_B_PRESSED) && !m_thrdWorking)
 		{
 			if(settingsmenu)

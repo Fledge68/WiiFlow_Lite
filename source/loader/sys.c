@@ -52,7 +52,7 @@ void Close_Inputs(void)
 	u32 cnt;
 
 	/* Disconnect Wiimotes */
-	for (cnt = 0; cnt < 4; cnt++)
+	for(cnt = 0; cnt < 4; cnt++)
 		WPAD_Disconnect(cnt);
 
 	/* Shutdown Wiimote subsystem */
@@ -68,20 +68,9 @@ void Sys_Shutdown(void)
 {
 	/* via hollywood registers first */
 	*HW_GPIO_OUT |= (1<<1);
+	usleep(50000);
 	/* If it failed just do the libogc way */
 	SYS_ResetSystem(SYS_SHUTDOWN, 0, 0);
-}
-
-void Sys_Test(void)
-{
-	if(reset || shutdown)
-	{
-		Close_Inputs();
-		if(reset)
-			SYS_ResetSystem(SYS_RESTART, 0, 0);
-		else
-			Sys_Shutdown();
-	}
 }
 
 int Sys_GetExitTo(void)
@@ -129,8 +118,11 @@ void Sys_Exit(void)
 		WII_LaunchTitle(HBC_JODI);
 		WII_LaunchTitle(HBC_HAXX);
 	}
-	//else boot system menu
-	Sys_LoadMenu();
+	else if(ExitOption == BUTTON_CALLBACK)
+		Sys_Shutdown();
+	/* else Return to Menu */
+	SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
+	exit(1);
 }
 
 void __Sys_ResetCallback(void)
@@ -148,12 +140,6 @@ void Sys_Init(void)
 	/* Set RESET/POWER button callback */
 	SYS_SetResetCallback(__Sys_ResetCallback);
 	SYS_SetPowerCallback(__Sys_PowerCallback);
-}
-
-void Sys_LoadMenu(void)
-{
-	/* Return to the Wii system menu */
-	SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
 }
 
 bool AHBRPOT_Patched(void)

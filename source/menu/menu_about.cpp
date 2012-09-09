@@ -32,15 +32,11 @@ void CMenu::_about(bool help)
 	SetupInput();
 	_showAbout();
 
-	while(1)
+	while(!m_exit)
 	{
 		_mainLoopCommon();
-
-		if (amount_of_skips == 0)
-		{
-			// Check dimensions in the loop, because the animation can have an effect
+		if(amount_of_skips == 0) // Check dimensions in the loop, because the animation can have an effect
 			m_btnMgr.getDimensions(m_aboutLblInfo, thanks_x, thanks_y, thanks_w, thanks_h); // Get original dimensions
-		}	
 		if(first)
 		{
 			m_btnMgr.moveBy(m_aboutLblInfo, 0, -1);

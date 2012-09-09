@@ -23,13 +23,13 @@ enum
 	EXIT_TO_DISABLE,
 	EXIT_TO_BOOTMII,
 	EXIT_TO_NEEK2O,
+	BUTTON_CALLBACK,
 };
 
 /* Prototypes */
 void Sys_Init(void);
-void Sys_LoadMenu(void);
+void Sys_Shutdown(void);
 bool Sys_Exiting(void);
-void Sys_Test(void);
 void Sys_Exit(void);
 void Sys_ExitTo(int);
 int Sys_GetExitTo(void);

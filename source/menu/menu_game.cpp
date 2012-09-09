@@ -393,7 +393,7 @@ void CMenu::_game(bool launch)
 		m_banner->ToogleZoom();
 
 	s8 startGameSound = 1;
-	while(true)
+	while(!m_exit)
 	{
 		if(startGameSound < 1)
 			startGameSound++;
@@ -594,7 +594,7 @@ void CMenu::_game(bool launch)
 
 				m_cf.clear();
 				_showWaitMessage();
-				exitHandler(0); //Making wiiflow ready to boot something
+				exitHandler(PRIILOADER_DEF); //Making wiiflow ready to boot something
 
 				if(hdr->type != TYPE_HOMEBREW && hdr->type != TYPE_PLUGIN)
 				{
@@ -903,7 +903,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		WII_Initialize();
 		WII_LaunchTitle(0x100000100LL);
 	}
-	Sys_LoadMenu();
+	Sys_Exit();
 }
 
 void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
@@ -962,7 +962,7 @@ int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id)
 		if(_installed_cios.size() <= 0)
 		{
 			error(sfmt("errgame2", L"No cIOS found!"));
-			Sys_LoadMenu();
+			Sys_Exit();
 		}
 		u8 IOS[3];
 		IOS[0] = gameIOS;
@@ -1081,7 +1081,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		if(!Load_Neek2o_Kernel())
 		{
 			error(_t("errneek1", L"Cannot launch neek2o. Verify your neek2o setup"));
-			Sys_LoadMenu();
+			Sys_Exit();
 		}
 		ShutdownBeforeExit();
 		Launch_nk(gameTitle, emuPath.size() > 1 ? emuPath.c_str() : NULL);
@@ -1097,7 +1097,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		if(!emu_disabled)
 			Nand::Instance()->Disable_Emu();
 		if(_loadIOS(gameIOS, userIOS, id) == LOAD_IOS_FAILED)
-			return;
+			Sys_Exit();
 	}
 	if(CurrentIOS.Type == IOS_TYPE_D2X && rtrn != NULL && strlen(rtrn) == 4)
 	{
@@ -1125,15 +1125,14 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		{
 			Nand::Instance()->Disable_Emu();
 			error(_t("errgame5", L"Enabling emu failed!"));
-			return;
+			Sys_Exit();
 		}
 	}
 	if(forwarder)
 	{
 		ShutdownBeforeExit();
 		WII_Initialize();
-		if(WII_LaunchTitle(gameTitle) < 0)
-			Sys_LoadMenu();	
+		WII_LaunchTitle(gameTitle);
 	}
 	else 
 	{
@@ -1143,6 +1142,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		ExternalBooter_ChannelSetup(gameTitle);
 		BootChannel(gameTitle, gameIOS, videoMode, vipatch, countryPatch, patchVidMode, aspectRatio);
 	}
+	Sys_Exit();
 }
 
 void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
@@ -1167,7 +1167,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			if(WDVD_GetCoverStatus(&cover) < 0)
 			{
 				error(_t("errgame7", L"WDVDGetCoverStatus Failed!"));
-				if (BTN_B_PRESSED) return;
+				Sys_Exit();
 			}
 			if(!(cover & 0x2))
 			{
@@ -1186,8 +1186,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		if(Disc_Open(true) < 0)
 		{
 			error(_t("wbfsoperr2", L"Disc_Open failed"));
-			if(BTN_B_PRESSED)
-				return;
+			Sys_Exit();
 		}
 		/* Check disc */
 		if(Disc_IsWii() < 0)
@@ -1195,8 +1194,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			if (Disc_IsGC() < 0) 
 			{
 				error(_t("errgame9", L"This is not a Wii or GC disc"));
-				if(BTN_B_PRESSED)
-					return;
+				Sys_Exit();
 			}
 			else
 			{
@@ -1296,23 +1294,18 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		}
 	}
 #ifndef DOLPHIN
-	bool iosLoaded = false;
 	if(!dvd || neek2o())
 	{
 		int result = _loadIOS(GetRequestedGameIOS(hdr), m_gcfg2.getInt(id, "ios"), id);
 		if(result == LOAD_IOS_FAILED)
-			return;
-		if(result == LOAD_IOS_SUCCEEDED)
-			iosLoaded = true;
+			Sys_Exit();
 	}
-#else
-	bool iosLoaded = true;
 #endif
 
 	DeviceHandler::Instance()->Open_WBFS(currentPartition);
 	bool wbfs_partition = (DeviceHandler::Instance()->GetFSType(currentPartition) == PART_FS_WBFS);
 	if(!dvd && !wbfs_partition && get_frag_list((u8 *)id.c_str(), (char*)path.c_str(), currentPartition == 0 ? 0x200 : USBStorage2_GetSectorSize()) < 0)
-		return;
+		Sys_Exit();
 
 	u8 patchVidMode = min((u32)m_gcfg2.getInt(id, "patch_video_modes", 0), ARRAY_SIZE(CMenu::_vidModePatch) - 1u);
 	hooktype = (u32) m_gcfg2.getInt(id, "hooktype", 0); // hooktype is defined in patchcode.h
@@ -1394,8 +1387,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		{
 			Nand::Instance()->Disable_Emu();
 			error(_t("errgame6", L"Enabling emu after reload failed!"));
-			Sys_LoadMenu();
-			return;
+			Sys_Exit();
 		}
 		if(!DeviceHandler::Instance()->IsInserted(currentPartition))
 			DeviceHandler::Instance()->Mount(currentPartition);
@@ -1408,16 +1400,12 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		{
 			gprintf("Set USB failed: %d\n", ret);
 			error(wfmt(_fmt("errgame10", L"Set USB failed: %d"), ret));
-			if(iosLoaded)
-				Sys_LoadMenu();
-			return;
+			Sys_Exit();
 		}
 		if(Disc_Open(false) < 0)
 		{
 			error(_t("wbfsoperr2", L"Disc_Open failed"));
-			if(iosLoaded)
-				Sys_LoadMenu();
-			return;
+			Sys_Exit();
 		}
 	}
 	if(CurrentIOS.Type == IOS_TYPE_HERMES)

@@ -107,7 +107,7 @@ int CMenu::_configAdv(void)
 			break;
 		}
 	_showConfigAdv();
-	while (true)
+	while(!m_exit)
 	{
 		change = _configCommon();
 		if (change != CONFIG_PAGE_NO_CHANGE)

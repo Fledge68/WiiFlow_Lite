@@ -107,7 +107,7 @@ int CMenu::_config3(void)
 	int change = CONFIG_PAGE_NO_CHANGE;
 
 	_showConfig3();
-	while (true)
+	while(!m_exit)
 	{
 		change = _configCommon();
 		if (change != CONFIG_PAGE_NO_CHANGE)
