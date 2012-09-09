@@ -288,9 +288,9 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 	}
 	m_thrdStop = false;
 	m_thrdMessageAdded = false;
-	while(true)
+	while(!m_exit)
 	{
-		_mainLoopCommon(false, m_thrdWorking);
+		_mainLoopCommon();
 		if((BTN_HOME_PRESSED || BTN_B_PRESSED) && !m_thrdWorking)
 			break;
 		else if(BTN_UP_PRESSED)

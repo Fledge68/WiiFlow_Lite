@@ -131,6 +131,5 @@ int main(int argc, char **argv)
 	mainMenu->cleanup();
 	ShutdownBeforeExit();
 	Sys_Exit();
-	exit(1);
 	return 0;
 }

@@ -64,7 +64,7 @@ int CMenu::_configScreen(void)
 	SetupInput();
 
 	_showConfigScreen();
-	while (true)
+	while(!m_exit)
 	{
 		change = _configCommon();
 		if (change != CONFIG_PAGE_NO_CHANGE)

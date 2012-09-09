@@ -189,14 +189,12 @@ bool CMenu::_Source()
 		m_btnMgr.show(m_sourceBtnEmu);
 	}
 	else
-	{
 		_updateSourceBtns();
-	}
-	
-	while(true)
+
+	while(!m_exit)
 	{
 		_mainLoopCommon();
-		if (BTN_HOME_PRESSED || BTN_B_PRESSED)
+		if(BTN_HOME_PRESSED || BTN_B_PRESSED)
 		{
 			back = true;
 			break;

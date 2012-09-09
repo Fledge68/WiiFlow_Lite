@@ -210,39 +210,19 @@ void CMenu::LoadView(void)
 
 void CMenu::exitHandler(int ExitTo)
 {
-	gprintf("Exit WiiFlow called\n");
-	Nand::Instance()->Disable_Emu();
-	if(!m_disable_exit || ExitTo == 0)
+	m_exit = true;
+	if(ExitTo == EXIT_TO_BOOTMII) //Bootmii, check that the files are there, or ios will hang.
 	{
-		m_exit = true;
-		if(ExitTo == 1) // HBC
-			Sys_ExitTo(EXIT_TO_HBC);
-		else if(ExitTo == 2) // System Menu
-			Sys_ExitTo(EXIT_TO_MENU);
-		else if(ExitTo == 3) // Priiloader
-			Sys_ExitTo(EXIT_TO_PRIILOADER);
-		else if(ExitTo == 4) //Bootmii, check that the files are there, or ios will hang.
-		{
-			struct stat dummy;
-			if(DeviceHandler::Instance()->IsInserted(SD) && 
-				stat(fmt("%s:/bootmii/armboot.bin", DeviceName[SD]), &dummy) == 0 && 
-				stat(fmt("%s:/bootmii/ppcboot.elf", DeviceName[SD]), &dummy) == 0)
-			{
-				Sys_ExitTo(EXIT_TO_BOOTMII);
-			}
-			else
-				Sys_ExitTo(EXIT_TO_HBC);
-		}
-		else if(ExitTo == 5) //Neek2o kernel
-			Sys_ExitTo(EXIT_TO_NEEK2O);
+		struct stat dummy;
+		if(!DeviceHandler::Instance()->IsInserted(SD) || 
+		stat("sd:/bootmii/armboot.bin", &dummy) != 0 || 
+		stat("sd:/bootmii/ppcboot.elf", &dummy) != 0)
+			ExitTo = EXIT_TO_HBC;
 	}
-	m_reload = (BTN_B_HELD || m_disable_exit);
-	if(m_exit)
-	{
-		// Mark exiting to prevent soundhandler from restarting
-		extern bool exiting;
-		exiting = true;
-	}
+	Sys_ExitTo(ExitTo);
+	// Mark exiting to prevent soundhandler from restarting
+	extern bool exiting;
+	exiting = true;
 }
 
 int CMenu::main(void)
@@ -297,7 +277,7 @@ int CMenu::main(void)
 			bUsed = true;
 	}
 
-	while(true)
+	while(!m_exit)
 	{
 		/* IMPORTANT check if a disc is inserted */
 		WDVD_GetCoverStatus(&disc_check);
@@ -838,7 +818,7 @@ int CMenu::main(void)
 	{
 		m_cf.clear();
 		_showWaitMessage();
-		exitHandler(0); //Making wiiflow ready to boot something
+		exitHandler(PRIILOADER_DEF); //Making wiiflow ready to boot something
 		_launchHomebrew(fmt("%s/boot.dol", m_appDir.c_str()), m_homebrewArgs);
 		return 0;
 	}

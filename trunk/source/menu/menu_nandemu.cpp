@@ -325,9 +325,9 @@ int CMenu::_NandEmuCfg(void)
 	m_thrdMessageAdded = false;
 	m_nandext = false;
 
-	while(true)
+	while(!m_exit)
 	{
-		_mainLoopCommon(false, m_thrdWorking);
+		_mainLoopCommon();
 		if((BTN_HOME_PRESSED || BTN_B_PRESSED) && !m_thrdWorking)
 			break;
 		else if(BTN_UP_PRESSED)
@@ -428,9 +428,9 @@ int CMenu::_FlashSave(string gameId)
 
 	m_saveExtGameId = gameId;
 
-	while(true)
+	while(!m_exit)
 	{
-		_mainLoopCommon(false, m_thrdWorking);
+		_mainLoopCommon();
 		if(m_forceext)
 		{
 			m_forceext = false;	
@@ -523,9 +523,9 @@ int CMenu::_AutoExtractSave(string gameId)
 
 	m_saveExtGameId = gameId;
 
-	while(true)
+	while(!m_exit)
 	{
-		_mainLoopCommon(false, m_thrdWorking);
+		_mainLoopCommon();
 		if((BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnExtract))) || m_forceext)
 		{
 			m_forceext = false;
@@ -618,9 +618,9 @@ int CMenu::_AutoCreateNand(void)
 	m_btnMgr.show(m_nandemuBtnPartition);	
 	m_btnMgr.show(m_nandemuLblInit);	
 
-	while(true)
+	while(!m_exit)
 	{
-		_mainLoopCommon(false, m_thrdWorking);
+		_mainLoopCommon();
 		if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnExtract)))
 		{
 			m_fulldump =  true;

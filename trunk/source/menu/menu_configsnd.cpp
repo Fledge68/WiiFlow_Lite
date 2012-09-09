@@ -65,7 +65,7 @@ int CMenu::_configSnd(void)
 	int step = 1;
 
 	_showConfigSnd();
-	while (true)
+	while(!m_exit)
 	{
 		change = _configCommon();
 		if (change != CONFIG_PAGE_NO_CHANGE)

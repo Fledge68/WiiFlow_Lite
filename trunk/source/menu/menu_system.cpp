@@ -29,15 +29,11 @@ void CMenu::_system()
 	m_thrdStop = false;
 	m_thrdMessageAdded = false;
 	m_showtimer = -1;
-	while (true)
+	while(!m_exit)
 	{
-		_mainLoopCommon(false, m_thrdWorking);
-
-		if (amount_of_skips == 0)
-		{
-			// Check dimensions in the loop, because the animation can have an effect
+		_mainLoopCommon();
+		if(amount_of_skips == 0) // Check dimensions in the loop, because the animation can have an effect
 			m_btnMgr.getDimensions(m_systemLblInfo, update_x, update_y, update_w, update_h); // Get original dimensions
-		}
 		if(first)
 		{
 			m_btnMgr.moveBy(m_systemLblInfo, 0, -(pixels_to_skip * 10));

@@ -20,12 +20,11 @@ int amountOfChannels = -1;
 
 Channels m_channels;
 
-const CMenu::SOption CMenu::_exitTo[6] = {
+const CMenu::SOption CMenu::_exitTo[5] = {
 	{ "def", L"Default" },
 	{ "menu", L"System Menu" },
 	{ "hbc", L"HBC" },
 	{ "prii", L"Priiloader" },
-	{ "disabled", L"Disabled" },
 	{ "bootmii", L"BootMii" }
 };
 
@@ -110,7 +109,7 @@ int CMenu::_config4(void)
 	int change = CONFIG_PAGE_NO_CHANGE;
 
 	_showConfig4();
-	while (true)
+	while(!m_exit)
 	{
 		change = _configCommon();
 		if (change != CONFIG_PAGE_NO_CHANGE)
@@ -122,7 +121,6 @@ int CMenu::_config4(void)
 				int exit_to = (int)loopNum((u32)m_cfg.getInt("GENERAL", "exit_to", 0) + 1, ARRAY_SIZE(CMenu::_exitTo));
 				m_cfg.setInt("GENERAL", "exit_to", exit_to);
 				Sys_ExitTo(exit_to);
-				m_disable_exit = exit_to == EXIT_TO_DISABLE;
 				_showConfig4();
 			}
 			else if (m_btnMgr.selected(m_config4BtnSaveFavMode))

@@ -145,19 +145,17 @@ void CMenu::_CategorySettings(bool fromGameSet)
 	memset(&m_categories, '0', m_max_categories);
 	memcpy(&m_categories, catSettings, m_max_categories);
 	_showCategorySettings();
-	while(true)
+	while(!m_exit)
 	{
 		_mainLoopCommon();
 		m_cf.tick();
 		if(!m_btnMgr.selected(lastBtn))
 			m_btnMgr.noHover(false);
-			
 		if(BTN_HOME_PRESSED || BTN_B_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_categoryBtnBack)))
 		{
 			char newCatSettings[m_max_categories + 1];
 			memset(&newCatSettings, 0, sizeof(newCatSettings));
 			memcpy(&newCatSettings, &m_categories, sizeof(m_categories));
-
 			if(!fromGameSet)
 			{
 				newCatSettings[0] = '1';
@@ -173,7 +171,6 @@ void CMenu::_CategorySettings(bool fromGameSet)
 			}
 			else
 				m_cat.setString(_domainFromView(), id, newCatSettings);
-
 			//m_cat.save();
 			break;
 		}

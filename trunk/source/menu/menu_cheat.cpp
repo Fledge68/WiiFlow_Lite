@@ -92,10 +92,10 @@ void CMenu::_CheatSettings()
 	else 
 		m_btnMgr.setText(m_cheatLblTitle,L"");
 	
-	while (true)
+	while(!m_exit)
 	{
 		_mainLoopCommon();
-		if (BTN_HOME_PRESSED || BTN_B_PRESSED)
+		if(BTN_HOME_PRESSED || BTN_B_PRESSED)
 			break;
 		else if (BTN_UP_PRESSED)
 			m_btnMgr.up();
@@ -185,9 +185,9 @@ void CMenu::_CheatSettings()
 				m_thrdWorking = true;
 				lwp_t thread = LWP_THREAD_NULL;
 				LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_downloadCheatFileAsync, (void *)this, 0, 8192, 40);
-				while (m_thrdWorking)
+				while(m_thrdWorking)
 				{
-					_mainLoopCommon(false, m_thrdWorking);
+					_mainLoopCommon();
 					if ((BTN_HOME_PRESSED || BTN_B_PRESSED) && !m_thrdWorking)
 						break;
 					if (BTN_A_PRESSED && !(m_thrdWorking && m_thrdStop))

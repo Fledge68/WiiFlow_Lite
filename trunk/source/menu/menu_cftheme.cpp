@@ -321,27 +321,27 @@ void CMenu::_cfTheme(void)
 	_showCFTheme(curParam, cfVersion, wide);
 	_loadCFLayout(cfVersion, true, wide != m_vid.wide());
 	m_cf.applySettings();
-	while (true)
+	while(!m_exit)
 	{
-		_mainLoopCommon(true, false, curParam == 5 || curParam == 6 || curParam == 7);
-		if (BTN_HOME_PRESSED)
+		_mainLoopCommon(true);
+		if(BTN_HOME_PRESSED)
 		{
 			m_theme.clear();
 			m_theme.unload();
 			m_theme.load(fmt("%s/%s.ini", m_themeDir.c_str(), m_cfg.getString("GENERAL", "theme", "default").c_str()));
 			break;
 		}
-		else if (BTN_UP_PRESSED)
+		else if(BTN_UP_PRESSED)
 			m_btnMgr.up();
-		else if (BTN_DOWN_PRESSED)
+		else if(BTN_DOWN_PRESSED)
 			m_btnMgr.down();
-		if (BTN_B_HELD && BTN_1_PRESSED)
+		if(BTN_B_HELD && BTN_1_PRESSED)
 		{
 			copyVersion = cfVersion;
 			copySelected = m_cf.selected();
 			copyWide = wide;
 		}
-		else if (copyVersion > 0 && BTN_B_HELD && BTN_2_PRESSED)
+		else if(copyVersion > 0 && BTN_B_HELD && BTN_2_PRESSED)
 		{
 			string domSrc(sfmt(_cfDomain(copySelected), copyVersion));
 			string domDst(sfmt(_cfDomain(m_cf.selected()), cfVersion));

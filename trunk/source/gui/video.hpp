@@ -100,7 +100,7 @@ private:
 	float m_vpW;
 	float m_vpH;
 	float m_waitMessageDelay;
-	bool m_showWaitMessage;
+	volatile bool m_showWaitMessage;
 	volatile bool m_showingWaitMessages;
 	vector<STexture> m_waitMessages;
 	// 
