@@ -146,7 +146,13 @@ bool CMenu::_ExitTo(void)
 					exitHandler(PRIILOADER_DEF);
 				}
 				else
-					exitHandler(EXIT_TO_BOOTMII);
+				{
+					bool nkWiiflow = m_cfg.getBool("NEEK2O", "launchwiiflow", true);
+					if(nkWiiflow)
+						exitHandler(EXIT_TO_WFNK2O);
+					else
+						exitHandler(EXIT_TO_SMNK2O);
+				}
 				break;
 			}
 		}

@@ -275,7 +275,7 @@ void CMenu::init(void)
 	m_DMLgameDir = sfmt("%%s:/%s", m_cfg.getString("DML", "dir_usb_games", "games").c_str());
 
 	m_cfg.getString("NAND", "path", "");
-	m_cfg.getInt("NAND", "partition", 0);
+	m_cfg.getInt("NAND", "partition", 1);
 	m_cfg.getBool("NAND", "disable", true);
 
 	_installed_cios.clear();
@@ -2051,29 +2051,35 @@ const wstringEx CMenu::_fmt(const char *key, const wchar_t *def)
 
 bool CMenu::_loadChannelList(void)
 {
-	string emuPath;
-
-	m_partRequest = m_cfg.getInt("NAND", "partition", 0);
-	int emuPartition = _FindEmuPart(&emuPath, m_partRequest, false);
+	string emuPath;	
+	int emuPartition = -1;
 
 	bool disable_emu = (m_cfg.getBool("NAND", "disable", true) || neek2o());
 	static bool last_emu_state = disable_emu;
 
-	if(emuPartition < 0)
-		emuPartition = _FindEmuPart(&emuPath, m_partRequest, true);
+	if(!disable_emu)
+	{
+		m_partRequest = m_cfg.getInt("NAND", "partition", 1);
+		emuPartition = _FindEmuPart(&emuPath, m_partRequest, false);
+	
+		if(emuPartition < 0)
+			emuPartition = _FindEmuPart(&emuPath, m_partRequest, true);
 
-	if(emuPartition < 0)
-		return false;
-	else
-		currentPartition = emuPartition; 
+		if(emuPartition < 0)
+			return false;
+		else
+			currentPartition = emuPartition;
+	}
 
 	static u8 lastPartition = currentPartition;
 
 	static bool first = true;
-	static bool failed = false;
 
-	bool changed = lastPartition != currentPartition || last_emu_state != disable_emu || first || failed;
+	bool changed = lastPartition != currentPartition || last_emu_state != disable_emu || first;
 
+	if(changed)
+		UpdateCache(COVERFLOW_CHANNEL);
+	
 	gprintf("%s, which is %s\n", disable_emu ? "NAND" : DeviceName[emuPartition], changed ? "refreshing." : "cached.");
 
 	if(first && !disable_emu)
@@ -2096,24 +2102,20 @@ bool CMenu::_loadChannelList(void)
 
 		Nand::Instance()->Init(emuPath.c_str(), currentPartition, disable_emu);
 		if(Nand::Instance()->Enable_Emu() < 0)
-		{
 			Nand::Instance()->Disable_Emu();
-			failed = true;
-		}
-		else
-			failed = false;
-		gprintf("nandpath = %s\n", nandpath.c_str());
-	}
 
+		gprintf("Using path: \"%s\" for NAND emulation\n", nandpath.c_str());
+	}
+	
 	if(!DeviceHandler::Instance()->IsInserted(currentPartition))
 		DeviceHandler::Instance()->Mount(currentPartition);
 
-	if(!failed) 
+	if(Nand::Instance()->EmulationEnabled() || disable_emu) 
 	{
 		m_gameList.LoadChannels(disable_emu ? "" : nandpath, 0, m_cfg.getString("NAND", "lastlanguage", "EN").c_str());
 		m_cfg.setString("NAND", "lastlanguage", m_loc.getString(m_curLanguage, "gametdb_code", "EN"));
 		m_cfg.save();
-	}
+	}	
 
 	lastPartition = currentPartition;
 	last_emu_state = disable_emu;

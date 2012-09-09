@@ -77,7 +77,7 @@ bool Load_Neek2o_Kernel()
 	return false;
 }
 
-s32 Launch_nk(u64 TitleID, const char *nandpath)
+s32 Launch_nk(u64 TitleID, const char *nandpath, u64 ReturnTo)
 {
 	if(neek2o())
 	{
@@ -93,7 +93,13 @@ s32 Launch_nk(u64 TitleID, const char *nandpath)
 		return 0;
 	memset(MC, 0, sizeof(memcfg));
 	MC->magic = 0x666c6f77;
-	MC->titleid = TitleID;
+	if(TitleID)
+		MC->titleid = TitleID;
+	if(ReturnTo)
+	{
+		MC->returnto = ReturnTo;
+		MC->config |= NCON_EXT_RETURN_TO;
+	}
 
 	if(nandpath != NULL)
 	{

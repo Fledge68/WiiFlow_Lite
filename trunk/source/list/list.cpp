@@ -413,6 +413,7 @@ void CList<dir_discHdr>::GetChannels(vector<dir_discHdr> &headerlist, string set
 	}
 
 	u32 count = m_channels.Count();
+	gprintf("PFFF: Channel count: %d\n", count);
 
 	headerlist.reserve(count);
 

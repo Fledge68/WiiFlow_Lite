@@ -822,7 +822,7 @@ int CMenu::main(void)
 		_launchHomebrew(fmt("%s/boot.dol", m_appDir.c_str()), m_homebrewArgs);
 		return 0;
 	}
-	else if(Sys_GetExitTo() == EXIT_TO_NEEK2O)
+	else if(Sys_GetExitTo() == EXIT_TO_SMNK2O || Sys_GetExitTo() == EXIT_TO_WFNK2O)
 	{
 		string emuPath;
 		_FindEmuPart(&emuPath, m_cfg.getInt("NAND", "partition", 0), false);

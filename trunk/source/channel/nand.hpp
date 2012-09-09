@@ -61,6 +61,7 @@ public:
 	void Init(string path, u32 partition, bool disable = false);
 	s32 Enable_Emu();
 	s32 Disable_Emu();
+	bool EmulationEnabled(void);
 
 	void Set_Partition(u32 partition) { Partition = partition; };
 	void Set_FullMode(bool fullmode) { FullMode = fullmode ? 0x100 : 0; };
@@ -94,7 +95,7 @@ private:
 	s32 Nand_Mount(NandDevice *Device);
 	s32 Nand_Unmount(NandDevice *Device);
 	s32 Nand_Enable(NandDevice *Device);
-	s32 Nand_Disable(void);
+	s32 Nand_Disable(void);	
 	void PatchAHB(void);
 	void __Dec_Enc_TB(void);
 	void __configshifttxt(char *str);
