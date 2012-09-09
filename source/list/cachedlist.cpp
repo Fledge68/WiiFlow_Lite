@@ -123,9 +123,8 @@ void CachedList::LoadChannels(string path, u32 channelType, string m_lastLanguag
 		//gprintf("%s\n", m_database.c_str());
 		struct stat filestat, cache;
 
-		string newpath = sfmt("%s%s", path.c_str(), "title");
-
-		if(stat(newpath.c_str(), &filestat) == -1) return;
+		/***     Removed that stupid check overhere!      ***/
+		/*** Will replace it soon with something better!! ***/
 
 		m_update = force_update[COVERFLOW_CHANNEL] || m_lastLanguage != m_curLanguage || stat(m_database.c_str(), &cache) == -1 || filestat.st_mtime > cache.st_mtime;
 	}

@@ -108,8 +108,10 @@ void Sys_Exit(void)
 	/* Shutdown Inputs */
 	Close_Inputs();
 	WII_Initialize();
-	if(ExitOption == EXIT_TO_NEEK2O)
-		Launch_nk(0x1000144574641LL, NeekPath);
+	if(ExitOption == EXIT_TO_WFNK2O)
+		Launch_nk(0x1000144574641LL, NeekPath, 0);
+	else if(ExitOption == EXIT_TO_SMNK2O)
+		Launch_nk(0, NeekPath, 0);
 	else if(ExitOption == EXIT_TO_BOOTMII)
 		IOS_ReloadIOS(0xfe);
 	else if(ExitOption == EXIT_TO_HBC)

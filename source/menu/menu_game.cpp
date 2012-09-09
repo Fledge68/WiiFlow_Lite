@@ -1083,13 +1083,19 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 			error(_t("errneek1", L"Cannot launch neek2o. Verify your neek2o setup"));
 			Sys_Exit();
 		}
+		
+		int rtrnID = 0;
+		if(rtrn != NULL && strlen(rtrn) == 4)
+			rtrnID = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
+
 		ShutdownBeforeExit();
-		Launch_nk(gameTitle, emuPath.size() > 1 ? emuPath.c_str() : NULL);
+		Launch_nk(gameTitle, emuPath.size() > 1 ? emuPath.c_str() : NULL, rtrnID ? (((u64)(0x00010001) << 32) | (rtrnID & 0xFFFFFFFF)) : rtrnID);
 	}
 	if(!forwarder || neek2o())
 	{
 		if(!emu_disabled)
 		{
+			DeviceHandler::Instance()->UnMount(emuPartition);
 			Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
 			Nand::Instance()->Enable_Emu();
 		}
@@ -1099,7 +1105,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		if(_loadIOS(gameIOS, userIOS, id) == LOAD_IOS_FAILED)
 			Sys_Exit();
 	}
-	if(CurrentIOS.Type == IOS_TYPE_D2X && rtrn != NULL && strlen(rtrn) == 4)
+	if((CurrentIOS.Type == IOS_TYPE_D2X || neek2o()) && rtrn != NULL && strlen(rtrn) == 4)
 	{
 		int rtrnID = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
 
@@ -1273,6 +1279,11 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 				Nand::Instance()->CreatePath("%s:/wiiflow/nandemu", DeviceName[emuPartition]);
 			}
 		}
+		
+		m_cfg.setInt("GAMES", "savepartition", emuPartition);
+		m_cfg.setString("GAMES", "savepath", emuPath);
+		m_cfg.save();
+		
 		char basepath[64];
 		snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[emuPartition], emuPath.c_str());
 		

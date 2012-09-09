@@ -61,14 +61,14 @@ static bool _saveExists(const char *path)
 
 bool CMenu::_TestEmuNand(int epart, const char *path, bool indept)
 {
-	bool haveValidENand = true;
 	char basepath[64];
 	char testpath[MAX_FAT_PATH];
 	snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[epart], path);
+
 	DIR *d;
 	d = opendir(basepath);
 	if(!d)
-		haveValidENand = false;
+		return false;
 	else
 		closedir(d);
 		
@@ -77,29 +77,22 @@ bool CMenu::_TestEmuNand(int epart, const char *path, bool indept)
 		// Check Wiimotes && Region
 		snprintf(testpath, sizeof(testpath), "%s:%s/shared2/sys/SYSCONF", DeviceName[epart], path);
 		if(!fsop_FileExist(testpath))
-		{
-			//gprintf("Nandcheck: SYSCONF not found\n");
-			haveValidENand = false;
-		}
+			return false;
 		snprintf(testpath, sizeof(testpath), "%s:%s/title/00000001/00000002/data/setting.txt", DeviceName[epart], path);
 		if(!fsop_FileExist(testpath))
-		{
-			//gprintf("Nandcheck: setting.txt not found\n");
-			haveValidENand = false;
-		}
+			return false;
 		// Check Mii's
 		snprintf(testpath, sizeof(testpath), "%s:%s/shared2/menu/FaceLib/RFL_DB.dat", DeviceName[epart], path);
 		if(!fsop_FileExist(testpath))
-		{
-			//gprintf("Nandcheck: Mii's not found\n");
-			haveValidENand = false;
-		}
+			return false;
 	}
-	return haveValidENand;
+	return true;
 }
 
 int CMenu::_FindEmuPart(string *emuPath, int part, bool searchvalid)
 {
+	Nand::Instance()->Disable_Emu();
+
 	int emuPartition = -1;	
 	string tmpPath;
 	if(m_current_view == COVERFLOW_CHANNEL)
@@ -124,42 +117,42 @@ int CMenu::_FindEmuPart(string *emuPath, int part, bool searchvalid)
 			tmpPath = m_cfg.getString("GAMES", "savepath", STDEMU_DIR);
 		}
 	}
-
-	if(_TestEmuNand(emuPartition, tmpPath.c_str(), true) && DeviceHandler::Instance()->IsInserted(emuPartition) && DeviceHandler::Instance()->GetFSType(emuPartition) == PART_FS_FAT)
+	
+	if(!DeviceHandler::Instance()->IsInserted(emuPartition))
+		DeviceHandler::Instance()->Mount(emuPartition);
+		
+	if(_TestEmuNand(emuPartition, tmpPath.c_str(), true) && DeviceHandler::Instance()->PartitionUsableForNandEmu(emuPartition))
 	{
 		*emuPath = tmpPath;
 		return emuPartition;
 	}
 	else
 	{
-		emuPartition = part;
 		bool fllscn = emuPartition == -1;
-		for(u8 i = emuPartition; i <= USB8; ++i)
+		for(u8 i = part; i <= USB8; ++i)
 		{
-			if(!DeviceHandler::Instance()->IsInserted(emuPartition) || DeviceHandler::Instance()->GetFSType(emuPartition) != PART_FS_FAT)
-			{
-				emuPartition++;
+			if(!DeviceHandler::Instance()->IsInserted(i))
+				DeviceHandler::Instance()->Mount(i);
+
+			if(!DeviceHandler::Instance()->PartitionUsableForNandEmu(i))
 				continue;
-			}
-			else
+
+			if(_TestEmuNand(i, tmpPath.c_str(), true) || searchvalid)
 			{
-				if(_TestEmuNand(i, tmpPath.c_str(), true) || searchvalid)
-				{
-					if(m_current_view == COVERFLOW_CHANNEL)
-						m_cfg.setInt("NAND", "partition", i);
-					else if(m_current_view == COVERFLOW_USB)
-						m_cfg.setInt("GAMES", "savepartition", i);
+				if(m_current_view == COVERFLOW_CHANNEL)
+					m_cfg.setInt("NAND", "partition", i);
+				else if(m_current_view == COVERFLOW_USB)
+					m_cfg.setInt("GAMES", "savepartition", i);
 					
-					*emuPath = tmpPath;
-					m_cfg.save();
+				*emuPath = tmpPath;
+				m_cfg.save();
 		
-					return i;
-				}
+				return i;
 			}
 		
 			if(i == USB8 && !fllscn)
 			{
-				i = 0;
+				i = -1;
 				fllscn = true;
 			}
 		}

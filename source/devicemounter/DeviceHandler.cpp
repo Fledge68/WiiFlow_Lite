@@ -429,3 +429,11 @@ bool DeviceHandler::UsablePartitionMounted()
 	}
 	return false;
 }
+
+bool DeviceHandler::PartitionUsableForNandEmu(int Partition)
+{
+	if(IsInserted(Partition) && GetFSType(Partition) == PART_FS_FAT)
+		return true;
+		
+	return false;
+}

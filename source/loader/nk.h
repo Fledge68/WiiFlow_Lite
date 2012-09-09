@@ -5,6 +5,8 @@ enum ExtNANDCfg
 {
 	NCON_EXT_DI_PATH		= (1<<0),
 	NCON_EXT_NAND_PATH		= (1<<1),
+	NCON_HIDE_EXT_PATH		= (1<<2),
+	NCON_EXT_RETURN_TO		= (1<<3),
 };
 
 typedef struct _memcfg
@@ -12,10 +14,9 @@ typedef struct _memcfg
 	u32 magic;
 	u64 titleid;
 	u32 config;
+	u64 returnto;
 	u32 paddinga;
 	u32 paddingb;
-	u32 paddingc;
-	u32 paddingd;
 	char dipath[256];
 	char nandpath[256];
 } memcfg;
@@ -24,7 +25,7 @@ typedef struct _memcfg
 extern "C" {
 #endif /* __cplusplus */
 
-s32 Launch_nk(u64 TitleID, const char *nandpath);
+s32 Launch_nk(u64 TitleID, const char *nandpath, u64 ReturnTo);
 bool Load_Neek2o_Kernel();
 bool neek2o(void);
 
