@@ -1075,6 +1075,9 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	m_cat.save(true);
 	m_cfg.save(true);
 	cleanup();
+	
+	if(useNK2o && emuPartition != 1)
+		useNK2o = false;
 
 	if(useNK2o && !emu_disabled)
 	{
