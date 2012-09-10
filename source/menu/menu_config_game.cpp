@@ -347,8 +347,11 @@ void CMenu::_showGameSettings(void)
 		{
 			m_btnMgr.show(m_gameSettingsLblCustom);
 			m_btnMgr.show(m_gameSettingsBtnCustom);
-			m_btnMgr.show(m_gameSettingsLblLaunchNK);
-			m_btnMgr.show(m_gameSettingsBtnLaunchNK);
+			if(m_cfg.getInt("NAND", "partition", 0) == 1)
+			{
+				m_btnMgr.show(m_gameSettingsLblLaunchNK);
+				m_btnMgr.show(m_gameSettingsBtnLaunchNK);
+			}
 		}
 		else if(m_cf.getHdr()->type == TYPE_WII_GAME)
 		{
