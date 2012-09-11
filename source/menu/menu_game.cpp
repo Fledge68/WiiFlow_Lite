@@ -511,9 +511,9 @@ void CMenu::_game(bool launch)
 				}
 			}
 			else if(m_btnMgr.selected(m_gameBtnFavoriteOn) || m_btnMgr.selected(m_gameBtnFavoriteOff))
-				m_gcfg1.setBool("FAVORITES", m_cf.getId(), !m_gcfg1.getBool("FAVORITES", m_cf.getId(), false));
+				m_gcfg1.setBool("FAVORITES", _getId(), !m_gcfg1.getBool("FAVORITES", _getId(), false));
 			else if(m_btnMgr.selected(m_gameBtnAdultOn) || m_btnMgr.selected(m_gameBtnAdultOff))
-				m_gcfg1.setBool("ADULTONLY", m_cf.getId(), !m_gcfg1.getBool("ADULTONLY", m_cf.getId(), false));
+				m_gcfg1.setBool("ADULTONLY", _getId(), !m_gcfg1.getBool("ADULTONLY", _getId(), false));
 			else if(m_btnMgr.selected(m_gameBtnBack) || m_btnMgr.selected(m_gameBtnBackFull))
 			{
 				m_gameSound.FreeMemory();
@@ -673,7 +673,7 @@ void CMenu::_game(bool launch)
 		}
 		if(m_show_zone_game && !m_zoom_banner)
 		{
-			bool b = m_gcfg1.getBool("FAVORITES", m_cf.getId(), false);
+			bool b = m_gcfg1.getBool("FAVORITES", _getId(), false);
 			m_btnMgr.show(b ? m_gameBtnFavoriteOn : m_gameBtnFavoriteOff);
 			m_btnMgr.hide(b ? m_gameBtnFavoriteOff : m_gameBtnFavoriteOn);
 			m_btnMgr.show(m_gameBtnPlay);
@@ -689,7 +689,7 @@ void CMenu::_game(bool launch)
 			}
 			if(!m_locked)
 			{
-				b = m_gcfg1.getBool("ADULTONLY", m_cf.getId(), false);
+				b = m_gcfg1.getBool("ADULTONLY", _getId(), false);
 				m_btnMgr.show(b ? m_gameBtnAdultOn : m_gameBtnAdultOff);
 				m_btnMgr.hide(b ? m_gameBtnAdultOff : m_gameBtnAdultOn);
 				m_btnMgr.show(m_gameBtnSettings);
@@ -795,10 +795,12 @@ void CMenu::_launch(dir_discHdr *hdr)
 	}
 	else if(hdr->type == TYPE_HOMEBREW)
 	{
+		string title(&hdr->path[string(hdr->path).find_last_of("/")+1]);
 		char gamepath[128];
 		snprintf(gamepath, sizeof(gamepath), "%s/boot.dol", hdr->path);
 		if(!fsop_FileExist((const char*)gamepath))
 			snprintf(gamepath, sizeof(gamepath), "%s/boot.elf", hdr->path);
+		m_cfg.setString("HOMEBREW", "current_item", title);
 		_launchHomebrew(gamepath, m_homebrewArgs);
 	}
 }

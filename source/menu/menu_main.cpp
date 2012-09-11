@@ -188,6 +188,9 @@ void CMenu::LoadView(void)
 	if(!m_vid.showingWaitMessage())
 		_showWaitMessage();
 
+	m_favorites = false;
+	if (m_cfg.getBool("GENERAL", "save_favorites_mode", false))
+		m_favorites = m_cfg.getBool(_domainFromView(), "favorites", false);
 	_loadList();
 	_showMain();
 	_initCF();
@@ -428,7 +431,7 @@ int CMenu::main(void)
 			else if(m_btnMgr.selected(m_mainBtnFavoritesOn) || m_btnMgr.selected(m_mainBtnFavoritesOff))
 			{
 				m_favorites = !m_favorites;
-				m_cfg.setInt("GENERAL", "favorites", m_favorites);
+				m_cfg.setBool(_domainFromView(), "favorites", m_favorites);
 				m_curGameId = m_cf.getId();
 				_initCF();
 			}
@@ -830,7 +833,7 @@ int CMenu::main(void)
 	}
 	gprintf("Saving configuration files\n");
 	m_cfg.save();
-	m_cat.unload();
+	m_cat.save();
 //	m_loc.save();
 	return 0;
 }

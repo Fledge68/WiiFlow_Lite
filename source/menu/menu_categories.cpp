@@ -121,19 +121,7 @@ void CMenu::_CategorySettings(bool fromGameSet)
 	gameSet = fromGameSet;
 	if(fromGameSet)
 	{
-		if(m_current_view != COVERFLOW_EMU)
-			id = m_cf.getId();
-		else
-		{
-			dir_discHdr *hdr = m_cf.getHdr();
-			string tempname(hdr->path);
-			tempname.erase(0, tempname.find_first_of('/')+1);
-			string dirName = tempname.substr(0, tempname.find_first_of('/')+1);
-			tempname.assign(&tempname[tempname.find_last_of('/') + 1]);
-			if(tempname.find_last_of('.') != string::npos)
-			tempname.erase(tempname.find_last_of('.'), tempname.size() - tempname.find_last_of('.'));
-			id = dirName+tempname;
-		}
+		id = _getId();
 		catSettings = m_cat.getString(_domainFromView(), id, "").c_str();
 		m_btnMgr.setText(m_categoryLblTitle, m_cf.getTitle());
 	}
@@ -187,19 +175,7 @@ void CMenu::_CategorySettings(bool fromGameSet)
 			_hideCategorySettings();
 			m_cf.right();
 			curPage = 1;
-			if(m_current_view != COVERFLOW_EMU)
-				id = m_cf.getId();
-			else
-			{
-				dir_discHdr *hdr = m_cf.getHdr();
-				string tempname(hdr->path);
-				tempname.erase(0, tempname.find_first_of('/')+1);
-				string dirName = tempname.substr(0, tempname.find_first_of('/')+1);
-				tempname.assign(&tempname[tempname.find_last_of('/') + 1]);
-				if(tempname.find_last_of('.') != string::npos)
-					tempname.erase(tempname.find_last_of('.'), tempname.size() - tempname.find_last_of('.'));
-				id = dirName+tempname;
-			}
+			id = _getId();
 			catSettings = m_cat.getString(_domainFromView(), id, "").c_str();
 			m_btnMgr.setText(m_categoryLblTitle, m_cf.getTitle());
 			
@@ -216,19 +192,7 @@ void CMenu::_CategorySettings(bool fromGameSet)
 			_hideCategorySettings();
 			m_cf.left();
 			curPage = 1;
-			if(m_current_view != COVERFLOW_EMU)
-				id = m_cf.getId();
-			else
-			{
-				dir_discHdr *hdr = m_cf.getHdr();
-				string tempname(hdr->path);
-				tempname.erase(0, tempname.find_first_of('/')+1);
-				string dirName = tempname.substr(0, tempname.find_first_of('/')+1);
-				tempname.assign(&tempname[tempname.find_last_of('/') + 1]);
-				if(tempname.find_last_of('.') != string::npos)
-					tempname.erase(tempname.find_last_of('.'), tempname.size() - tempname.find_last_of('.'));
-				id = dirName+tempname;
-			}
+			id = _getId();
 			catSettings = m_cat.getString(_domainFromView(), id, "").c_str();
 			m_btnMgr.setText(m_categoryLblTitle, m_cf.getTitle());
 			

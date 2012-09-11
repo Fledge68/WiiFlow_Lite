@@ -457,10 +457,6 @@ void CMenu::init(void)
 	m_cf.setSoundVolume(m_cfg.getInt("GENERAL", "sound_volume_coverflow", 255));
 	m_btnMgr.setSoundVolume(m_cfg.getInt("GENERAL", "sound_volume_gui", 255));
 	m_bnrSndVol = m_cfg.getInt("GENERAL", "sound_volume_bnr", 255);
-	
-	if (m_cfg.getBool("GENERAL", "favorites_on_startup", false))
-		m_favorites = m_cfg.getBool(domain, "favorites", false);
-
 	m_bnr_settings = m_cfg.getBool("GENERAL", "banner_in_settings", true);
 
 	m_cfg.setString("GAMERCARD", "gamercards", "wiinnertag|dutag");
@@ -2450,6 +2446,38 @@ void CMenu::_cleanupDefaultFont()
 	m_base_font_size = 0;
 	MEM1_lo_free(m_wbf1_font);
 	MEM1_lo_free(m_wbf2_font);
+}
+
+string CMenu::_getId()
+{
+	string id;
+	if(m_current_view != COVERFLOW_EMU && m_current_view != COVERFLOW_HOMEBREW)
+		id = m_cf.getId();
+	else
+	{
+		dir_discHdr *hdr = m_cf.getHdr();
+		string tempname(hdr->path);
+		if(m_current_view == COVERFLOW_HOMEBREW)
+		{
+			tempname.assign(&tempname[tempname.find_last_of('/') + 1]);
+			id = tempname;
+		}
+		else if(m_current_view == COVERFLOW_EMU)
+		{
+			if(!m_plugin.isScummVM(hdr->settings[0]))
+			{
+				tempname.erase(0, tempname.find_first_of('/')+1);
+				string dirName = tempname.substr(0, tempname.find_first_of('/')+1);
+				tempname.assign(&tempname[tempname.find_last_of('/') + 1]);
+				if(tempname.find_last_of('.') != string::npos)
+				tempname.erase(tempname.find_last_of('.'), tempname.size() - tempname.find_last_of('.'));
+				id = dirName+tempname;
+			}
+			else
+				id = tempname;
+		}
+	}
+	return id;
 }
 
 const char *CMenu::_domainFromView()

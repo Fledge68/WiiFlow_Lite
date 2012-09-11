@@ -69,7 +69,7 @@ void CMenu::_showConfig4(void)
 	int i;
 	i = min(max(0, m_cfg.getInt("GENERAL", "exit_to", 0)), (int)ARRAY_SIZE(CMenu::_exitTo) - 1);
 	m_btnMgr.setText(m_config4BtnHome, _t(CMenu::_exitTo[i].id, CMenu::_exitTo[i].text));
-	m_btnMgr.setText(m_config4BtnSaveFavMode, m_cfg.getBool("GENERAL", "favorites_on_startup") ? _t("on", L"On") : _t("off", L"Off"));
+	m_btnMgr.setText(m_config4BtnSaveFavMode, m_cfg.getBool("GENERAL", "save_favorites_mode") ? _t("on", L"On") : _t("off", L"Off"));
 	m_btnMgr.setText(m_config4BtnCategoryOnBoot, m_cat.getBool("GENERAL", "category_on_start") ? _t("on", L"On") : _t("off", L"Off"));
 
 	Config titles, custom_titles;
@@ -125,7 +125,7 @@ int CMenu::_config4(void)
 			}
 			else if (m_btnMgr.selected(m_config4BtnSaveFavMode))
 			{
-				m_cfg.setBool("GENERAL", "favorites_on_startup", !m_cfg.getBool("GENERAL", "favorites_on_startup"));
+				m_cfg.setBool("GENERAL", "save_favorites_mode", !m_cfg.getBool("GENERAL", "save_favorites_mode"));
 				_showConfig4();
 			}
 			else if (m_btnMgr.selected(m_config4BtnCategoryOnBoot))
