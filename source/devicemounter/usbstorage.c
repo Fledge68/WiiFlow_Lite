@@ -34,6 +34,7 @@
 
 #include "usbstorage.h"
 #include "usbstorage_libogc.h"
+#include "usbthread.h"
 #include "gecko/gecko.h"
 
 /* IOCTL commands */
@@ -90,6 +91,7 @@ s32 USBStorage2_Init(u32 port)
 
 	if(usb_libogc_mode)
 	{
+		USBKeepAliveThreadReset();
 		__io_usbstorage_ogc.startup();
 		return (USBStorage2_GetCapacity(port, &hdd_sector_size[port]) == 0) ? IPC_ENOENT : 0;
 	}
@@ -128,7 +130,10 @@ void USBStorage2_Deinit()
 {
 	/* Close USB device */
 	if(usb_libogc_mode)
+	{
+		USBKeepAliveThreadReset();
 		__io_usbstorage_ogc.shutdown();
+	}
 	else if(fd >= 0)
 		IOS_Close(fd);  // not sure to close the fd is needed
 
@@ -176,7 +181,10 @@ s32 USBStorage2_GetCapacity(u32 port, u32 *_sector_size)
 	u32 sectorSize = 0;
 	USBStorage2_SetPort(port);
 	if(usb_libogc_mode)
+	{
+		USBKeepAliveThreadReset();
 		USB_OGC_GetCapacity(&numSectors, &sectorSize);
+	}
 	else
 		numSectors = IOS_IoctlvFormat(hid, fd, USB_IOCTL_UMS_GET_CAPACITY, ":i", &sectorSize);
 
@@ -201,12 +209,19 @@ s32 USBStorage2_GetCapacity(u32 port, u32 *_sector_size)
 
 s32 USBStorage2_ReadSectors(u32 port, u32 sector, u32 numSectors, void *buffer)
 {
+	s32 ret = -1;
+
 	if(usb_libogc_mode)
-		return __io_usbstorage_ogc.readSectors(sector, numSectors, buffer);
+	{
+		USBKeepAliveThreadReset();
+		reading = true;
+		ret = __io_usbstorage_ogc.readSectors(sector, numSectors, buffer);
+		reading = false;
+		return ret;
+	}
 
 	bool isMEM2Buffer = __USBStorage_isMEM2Buffer(buffer);
 	u8 *buf = (u8 *)buffer;
-	s32 ret = -1;
 
 	/* Device not opened */
 	if(fd < 0)
@@ -251,7 +266,10 @@ s32 USBStorage2_ReadSectors(u32 port, u32 sector, u32 numSectors, void *buffer)
 s32 USBStorage2_WriteSectors(u32 port, u32 sector, u32 numSectors, const void *buffer)
 {
 	if(usb_libogc_mode)
+	{
+		USBKeepAliveThreadReset();
 		return __io_usbstorage_ogc.writeSectors(sector, numSectors, buffer);
+	}
 
 	bool isMEM2Buffer = __USBStorage_isMEM2Buffer(buffer);
 	u8 *buf = (u8 *)buffer;

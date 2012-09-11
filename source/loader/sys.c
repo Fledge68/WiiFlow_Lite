@@ -44,7 +44,7 @@ void Open_Inputs(void)
 	
 	WPAD_SetDataFormat(WPAD_CHAN_ALL, WPAD_FMT_BTNS_ACC_IR);
 	
-	WPAD_SetIdleTimeout(60*5); // idle after 5 minutes
+	WPAD_SetIdleTimeout(60 * 2); // idle after 2 minutes
 }
 
 void Close_Inputs(void)

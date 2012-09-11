@@ -33,6 +33,7 @@
 #include "DeviceHandler.hpp"
 #include "defines.h"
 #include "sdhc.h"
+#include "usbthread.h"
 #include "usbstorage.h"
 #include "usbstorage_libogc.h"
 #include "loader/cios.h"
@@ -69,6 +70,9 @@ void DeviceHandler::MountAll()
 
 void DeviceHandler::UnMountAll()
 {
+	/* Kill possible USB thread */
+	KillUSBKeepAliveThread();
+
 	for(u32 i = SD; i < MAXDEVICES; i++)
 		UnMount(i);
 
@@ -172,6 +176,8 @@ bool DeviceHandler::MountUSB(int pos)
 
 bool DeviceHandler::MountAllUSB()
 {
+	/* Kill possible USB thread */
+	KillUSBKeepAliveThread();
 	/* Wait for our slowass HDD */
 	WaitForDevice(GetUSB0Interface());
 	/* Get Partitions and Mount them */
@@ -190,9 +196,12 @@ bool DeviceHandler::MountAllUSB()
 		if(MountUSB(i))
 			result = true;
 	}
+	if(result && usb_libogc_mode)
+		CreateUSBKeepAliveThread();
 	return result;
 }
 
+/*
 bool DeviceHandler::MountUSBPort1()
 {
 	if(!usb1)// && (Settings.USBPort == 1 || Settings.USBPort == 2))
@@ -219,6 +228,7 @@ bool DeviceHandler::MountUSBPort1()
 
 	return result;
 }
+*/
 
 void DeviceHandler::UnMountUSB(int pos)
 {
@@ -303,7 +313,6 @@ int DeviceHandler::GetFSType(int dev)
 
 	return -1;
 }
-
 
 u16 DeviceHandler::GetUSBPartitionCount()
 {
