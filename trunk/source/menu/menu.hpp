@@ -994,6 +994,7 @@ private:
 	void _buildMenus(void);
 	void _loadDefaultFont(bool korean);
 	void _cleanupDefaultFont();
+	string _getId(void);
 	const char *_domainFromView(void);
 	const char *_cfDomain(bool selected = false);	
 	void UpdateCache(u32 view = COVERFLOW_MAX);
