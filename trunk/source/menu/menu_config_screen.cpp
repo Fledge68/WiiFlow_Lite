@@ -24,7 +24,7 @@ void CMenu::_hideConfigScreen(bool instant)
 	m_btnMgr.hide(m_configScreenBtnTVYM, instant);
 	m_btnMgr.hide(m_configScreenBtnTVYP, instant);
 	for(u8 i = 0; i < ARRAY_SIZE(m_configScreenLblUser); ++i)
-		if(m_configScreenLblUser[i] != (u16)-1)
+		if(m_configScreenLblUser[i] != -1)
 			m_btnMgr.hide(m_configScreenLblUser[i], instant);
 }
 
@@ -49,7 +49,7 @@ void CMenu::_showConfigScreen(void)
 	m_btnMgr.show(m_configScreenBtnTVYM);
 	m_btnMgr.show(m_configScreenBtnTVYP);
 	for(u8 i = 0; i < ARRAY_SIZE(m_configScreenLblUser); ++i)
-		if(m_configScreenLblUser[i] != (u16)-1)
+		if(m_configScreenLblUser[i] != -1)
 			m_btnMgr.show(m_configScreenLblUser[i]);
 
 	m_btnMgr.setText(m_configScreenLblTVWidthVal, wfmt(L"%i", 640 * 640 / max(1, m_cfg.getInt("GENERAL", "tv_width", 640))));

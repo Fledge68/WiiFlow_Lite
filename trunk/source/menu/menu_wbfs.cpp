@@ -19,7 +19,7 @@ void CMenu::_hideWBFS(bool instant)
 	m_btnMgr.hide(m_wbfsLblDialog);
 	m_btnMgr.hide(m_wbfsLblMessage);
 	for(u8 i = 0; i < ARRAY_SIZE(m_wbfsLblUser); ++i)
-		if(m_wbfsLblUser[i] != (u16)-1)
+		if(m_wbfsLblUser[i] != -1)
 			m_btnMgr.hide(m_wbfsLblUser[i], instant);
 }
 
@@ -46,16 +46,16 @@ void CMenu::_showWBFS(CMenu::WBFS_OP op)
 	m_btnMgr.show(m_wbfsBtnGo);
 	m_btnMgr.show(m_wbfsLblDialog);
 	for(u8 i = 0; i < ARRAY_SIZE(m_wbfsLblUser); ++i)
-		if(m_wbfsLblUser[i] != (u16)-1)
+		if(m_wbfsLblUser[i] != -1)
 			m_btnMgr.show(m_wbfsLblUser[i]);
 }
 
 static void slotLight(bool state)
 {
 	if (state)
-		*(u32 *)0xCD0000C0 |= 0x20;        
+		*(u32 *)0xCD0000C0 |= 0x20;
 	else
-		*(u32 *)0xCD0000C0 &= ~0x20;        
+		*(u32 *)0xCD0000C0 &= ~0x20;
 }
 
 void CMenu::_addDiscProgress(int status, int total, void *user_data)
