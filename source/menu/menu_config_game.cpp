@@ -13,7 +13,8 @@ static inline int loopNum(int i, int s)
 	return i < 0 ? (s - (-i % s)) % s : i % s;
 }
 
-u32 g_numGCfPages = 5;
+u8 g_numGCfPages = 5;
+u8 m_gameSettingsPage = 0;
 
 void CMenu::_hideGameSettings(bool instant)
 {
@@ -100,7 +101,7 @@ void CMenu::_hideGameSettings(bool instant)
 	m_btnMgr.hide(m_gameSettingsBtnFlashSave, instant);
 
 	for(u8 i = 0; i < ARRAY_SIZE(m_gameSettingsLblUser); ++i)
-		if(m_gameSettingsLblUser[i] != (u16)-1)
+		if(m_gameSettingsLblUser[i] != -1)
 			m_btnMgr.hide(m_gameSettingsLblUser[i], instant);
 }
 
@@ -403,7 +404,7 @@ void CMenu::_showGameSettings(void)
 
 	u32 i = 0;
 	for(i = 0; i < ARRAY_SIZE(m_gameSettingsLblUser); ++i)
-		if(m_gameSettingsLblUser[i] != (u16)-1)
+		if(m_gameSettingsLblUser[i] != -1)
 			m_btnMgr.show(m_gameSettingsLblUser[i]);
 
 	string id(m_cf.getId());

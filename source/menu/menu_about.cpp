@@ -12,10 +12,10 @@ const int pixels_to_skip = 10;
 extern const u8 english_txt[];
 
 //About menu
-u16 m_aboutLblTitle;
-u16 m_aboutLblInfo;
-u16 m_aboutLblUser[4];
-u16 m_aboutLblIOS;
+s16 m_aboutLblTitle;
+s16 m_aboutLblInfo;
+s16 m_aboutLblUser[4];
+s16 m_aboutLblIOS;
 bool showHelp;
 
 void CMenu::_about(bool help)
@@ -73,7 +73,7 @@ void CMenu::_hideAbout(bool instant)
 	m_btnMgr.hide(m_aboutLblInfo, instant);
 	for (u8 i = 0; i < ARRAY_SIZE(m_aboutLblUser); ++i)
 	{
-		if(m_aboutLblUser[i] != (u16)-1)
+		if(m_aboutLblUser[i] != -1)
 			m_btnMgr.hide(m_aboutLblUser[i], instant);
 	}
 }
@@ -86,7 +86,7 @@ void CMenu::_showAbout(void)
 	m_btnMgr.show(m_aboutLblInfo,false);
 	for(u8 i = 0; i < ARRAY_SIZE(m_aboutLblUser); ++i)
 	{
-		if(m_aboutLblUser[i] != (u16)-1)
+		if(m_aboutLblUser[i] != -1)
 			m_btnMgr.show(m_aboutLblUser[i]);
 	}
 }

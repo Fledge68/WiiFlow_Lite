@@ -7,16 +7,16 @@ u32 Plugin_curPage;
 u8 Plugin_lastBtn;
 
 // Plugin menu
-u16 m_pluginLblPage;
-u16 m_pluginBtnPageM;
-u16 m_pluginBtnPageP;
-u16 m_pluginBtnBack;
-u16 m_pluginLblTitle;
-u16 m_pluginLblCat[21];
-u16 m_pluginBtn[21];
-u16 m_pluginBtnCat[21];
-u16 m_pluginBtnCats[21];
-u16 m_pluginLblUser[4];
+s16 m_pluginLblPage;
+s16 m_pluginBtnPageM;
+s16 m_pluginBtnPageP;
+s16 m_pluginBtnBack;
+s16 m_pluginLblTitle;
+s16 m_pluginLblCat[21];
+s16 m_pluginBtn[21];
+s16 m_pluginBtnCat[21];
+s16 m_pluginBtnCats[21];
+s16 m_pluginLblUser[4];
 u8 m_max_plugins;
 STexture m_pluginBg;
 
@@ -29,7 +29,7 @@ void CMenu::_hidePluginSettings(bool instant)
 	m_btnMgr.hide(m_pluginBtnPageP, instant);
 	for(u8 i = 0; i < ARRAY_SIZE(m_pluginLblUser); ++i)
 	{
-		if(m_pluginLblUser[i] != (u16)-1)
+		if(m_pluginLblUser[i] != -1)
 			m_btnMgr.hide(m_pluginLblUser[i], instant);
 	}
 
@@ -45,7 +45,7 @@ void CMenu::_showPluginSettings(void)
 	_setBg(m_pluginBg, m_pluginBg);
 	for(u8 i = 0; i < ARRAY_SIZE(m_pluginLblUser); ++i)
 	{
-		if(m_pluginLblUser[i] != (u16)-1)
+		if(m_pluginLblUser[i] != -1)
 			m_btnMgr.show(m_pluginLblUser[i]);
 	}
 	m_btnMgr.show(m_pluginLblTitle);

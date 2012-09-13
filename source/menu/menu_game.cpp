@@ -60,10 +60,10 @@ extern u32 boot2version;
 static u64 sm_title_id[8]  ATTRIBUTE_ALIGN(32);
 
 bool m_zoom_banner = false;
-u16 m_gameBtnPlayFull;
-u16 m_gameBtnBackFull;
-u16 m_gameBtnToogle;
-u16 m_gameBtnToogleFull;
+s16 m_gameBtnPlayFull;
+s16 m_gameBtnBackFull;
+s16 m_gameBtnToogle;
+s16 m_gameBtnToogleFull;
 
 const string CMenu::_translations[23] = {
 	"Default",
@@ -330,7 +330,7 @@ void CMenu::_hideGame(bool instant)
 	m_btnMgr.hide(m_gameBtnAdultOn, instant);
 	m_btnMgr.hide(m_gameBtnAdultOff, instant);
 	for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser); ++i)
-		if(m_gameLblUser[i] != (u16)-1)
+		if(m_gameLblUser[i] != -1)
 			m_btnMgr.hide(m_gameLblUser[i], instant);
 }
 
@@ -352,9 +352,9 @@ void CMenu::_showGame(void)
 
 	if(!m_zoom_banner)
 	{
-		for(u16 i = 0; i < ARRAY_SIZE(m_gameLblUser); ++i)
+		for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser); ++i)
 		{
-			if(m_gameLblUser[i] != (u16)-1)
+			if(m_gameLblUser[i] != -1)
 				m_btnMgr.show(m_gameLblUser[i]);
 		}
 		m_btnMgr.show(m_gameBtnPlay);
@@ -541,7 +541,7 @@ void CMenu::_game(bool launch)
 				if(!m_gameSound.IsPlaying()) 
 					startGameSound = -6;
 			}
-			else if(launch || m_btnMgr.selected(m_gameBtnPlay) || m_btnMgr.selected(m_gameBtnPlayFull) || (!WPadIR_Valid(0) && !WPadIR_Valid(1) && !WPadIR_Valid(2) && !WPadIR_Valid(3) && m_btnMgr.selected((u16)-1)))
+			else if(launch || m_btnMgr.selected(m_gameBtnPlay) || m_btnMgr.selected(m_gameBtnPlayFull) || !m_show_zone_game)
 			{
 				_hideGame();
 				m_gameSound.FreeMemory();
@@ -684,7 +684,7 @@ void CMenu::_game(bool launch)
 			m_btnMgr.hide(m_gameBtnToogleFull);
 			for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser); ++i)
 			{
-				if(m_gameLblUser[i] != (u16)-1)
+				if(m_gameLblUser[i] != -1)
 					m_btnMgr.show(m_gameLblUser[i]);
 			}
 			if(!m_locked)
@@ -715,7 +715,7 @@ void CMenu::_game(bool launch)
 			m_btnMgr.hide(m_gameBtnBack);
 			m_btnMgr.hide(m_gameBtnToogle);
 			for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser); ++i)
-				if (m_gameLblUser[i] != (u16)-1)
+				if (m_gameLblUser[i] != -1)
 					m_btnMgr.hide(m_gameLblUser[i]);
 		}
 	}

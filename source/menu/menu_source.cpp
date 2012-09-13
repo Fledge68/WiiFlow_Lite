@@ -24,19 +24,19 @@ string m_sourceDir;
 Config m_source;
 
 // Source menu
-u16 m_sourceLblNotice;
-u16 m_sourceLblPage;
-u16 m_sourceBtnPageM;
-u16 m_sourceBtnPageP;
-u16 m_sourceLblTitle;
-u16 m_sourceBtnSource[12];
-u16 m_sourceLblUser[4];
+s16 m_sourceLblNotice;
+s16 m_sourceLblPage;
+s16 m_sourceBtnPageM;
+s16 m_sourceBtnPageP;
+s16 m_sourceLblTitle;
+s16 m_sourceBtnSource[12];
+s16 m_sourceLblUser[4];
 STexture m_sourceBg;
-u16 m_sourceBtnDML;
-u16 m_sourceBtnEmu;
-u16 m_sourceBtnUsb;
-u16 m_sourceBtnChannel;
-u16 m_sourceBtnHomebrew;
+s16 m_sourceBtnDML;
+s16 m_sourceBtnEmu;
+s16 m_sourceBtnUsb;
+s16 m_sourceBtnChannel;
+s16 m_sourceBtnHomebrew;
 
 void CMenu::_hideSource(bool instant)
 {
@@ -54,7 +54,7 @@ void CMenu::_hideSource(bool instant)
 	u8 i = 0;
 	for(i = 0; i < ARRAY_SIZE(m_sourceLblUser); ++i)
 	{
-		if(m_sourceLblUser[i] != (u16)-1)
+		if(m_sourceLblUser[i] != -1)
 			m_btnMgr.hide(m_sourceLblUser[i], instant);
 	}
 
@@ -69,7 +69,7 @@ void CMenu::_showSource(void)
 	u8 i = 0;
 	for(i = 0; i < ARRAY_SIZE(m_sourceLblUser); ++i)
 	{
-		if(m_sourceLblUser[i] != (u16)-1)
+		if(m_sourceLblUser[i] != -1)
 			m_btnMgr.show(m_sourceLblUser[i]);
 	}
 

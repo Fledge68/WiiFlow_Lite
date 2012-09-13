@@ -4,18 +4,18 @@
 #include <gccore.h>
 
 // Category menu
-u16 m_categoryLblPage;
-u16 m_categoryBtnPageM;
-u16 m_categoryBtnPageP;
-u16 m_categoryBtnClear;
-u16 m_categoryBtnBack;
-u16 m_categoryLblTitle;
-u16 m_categoryLblCat[11];
-u16 m_categoryBtnCat[11];
-u16 m_categoryBtnCats[11];
-u16 m_categoryBtnCatHid[11];
-u16 m_categoryBtnCatReq[11];
-u16 m_categoryLblUser[4];
+s16 m_categoryLblPage;
+s16 m_categoryBtnPageM;
+s16 m_categoryBtnPageP;
+s16 m_categoryBtnClear;
+s16 m_categoryBtnBack;
+s16 m_categoryLblTitle;
+s16 m_categoryLblCat[11];
+s16 m_categoryBtnCat[11];
+s16 m_categoryBtnCats[11];
+s16 m_categoryBtnCatHid[11];
+s16 m_categoryBtnCatReq[11];
+s16 m_categoryLblUser[4];
 STexture m_categoryBg;
 
 u8 m_categories[51];
@@ -36,7 +36,7 @@ void CMenu::_hideCategorySettings(bool instant)
 
 	for(u8 i = 0; i < ARRAY_SIZE(m_categoryLblUser); ++i)
 	{
-		if(m_categoryLblUser[i] != (u16)-1u)
+		if(m_categoryLblUser[i] != -1)
 			m_btnMgr.hide(m_categoryLblUser[i], instant);
 	}
 
@@ -55,7 +55,7 @@ void CMenu::_showCategorySettings(void)
 	_setBg(m_categoryBg, m_categoryBg);
 	for(u8 i = 0; i < ARRAY_SIZE(m_categoryLblUser); ++i)
 	{
-		if(m_categoryLblUser[i] != (u16)-1)
+		if(m_categoryLblUser[i] != -1)
 			m_btnMgr.show(m_categoryLblUser[i]);
 	}
 	m_btnMgr.show(m_categoryLblTitle);

@@ -39,7 +39,7 @@ void CMenu::_hideConfig3(bool instant)
 	m_btnMgr.hide(m_config3LblOcarina, instant);
 	m_btnMgr.hide(m_config3BtnOcarina, instant);
 	for(u8 i = 0; i < ARRAY_SIZE(m_config3LblUser); ++i)
-		if(m_config3LblUser[i] != (u16)-1)
+		if(m_config3LblUser[i] != -1)
 			m_btnMgr.hide(m_config3LblUser[i], instant);
 }
 
@@ -75,7 +75,7 @@ void CMenu::_showConfig3(void)
 	m_btnMgr.show(m_config3BtnOcarina);
 
 	for(u8 i = 0; i < ARRAY_SIZE(m_config3LblUser); ++i)
-		if(m_config3LblUser[i] != (u16)-1)
+		if(m_config3LblUser[i] != -1)
 			m_btnMgr.show(m_config3LblUser[i]);
 
 	int i;
