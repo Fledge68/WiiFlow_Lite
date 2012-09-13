@@ -922,6 +922,8 @@ private:
 	void _updateSourceBtns(void);
 	void _updatePluginCheckboxes(void);
 	void _updateCheckboxes(void);
+	void _getIDCats(void);
+	void _setIDCats(void);
 	void _setBg(const STexture &tex, const STexture &lqTex);
 	void _updateBg(void);
 	void _drawBg(void);

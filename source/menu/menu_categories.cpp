@@ -23,6 +23,7 @@ u8 curPage;
 u8 lastBtn;
 const char *catSettings;
 string id;
+string catDomain;
 bool gameSet;
 
 void CMenu::_hideCategorySettings(bool instant)
@@ -87,79 +88,169 @@ void CMenu::_updateCheckboxes(void)
 		int j = i + ((curPage - 1) * 10);
 		if(j == m_max_categories)
 			break;
-		if(m_categories[0] == '1' && !gameSet)
-			m_btnMgr.show(m_categoryBtnCat[i]);
-		else
+		switch(m_categories[j])
 		{
-			switch(m_categories[j])
-			{
-				case '0':
-					m_btnMgr.show(m_categoryBtnCat[i]);
-					break;
-				case '1':
-					m_btnMgr.show(m_categoryBtnCats[i]);
-					break;
-				case '2':
-					m_btnMgr.show(m_categoryBtnCatHid[i]);
-					break;
-				default:
-					m_btnMgr.show(m_categoryBtnCatReq[i]);
-					break;
-			}
+			case '0':
+				m_btnMgr.show(m_categoryBtnCat[i]);
+				break;
+			case '1':
+				m_btnMgr.show(m_categoryBtnCats[i]);
+				break;
+			case '2':
+				m_btnMgr.show(m_categoryBtnCatHid[i]);
+				break;
+			default:
+				m_btnMgr.show(m_categoryBtnCatReq[i]);
+				break;
 		}
 
-		m_btnMgr.setText(m_categoryLblCat[i], m_cat.getWString(fmt("%s/GENERAL", _domainFromView()), fmt("cat%d",j), wfmt(L"Category %i",j).c_str()));	
+		m_btnMgr.setText(m_categoryLblCat[i], m_cat.getWString(fmt("%s/GENERAL", catDomain.c_str()), fmt("cat%d",j), wfmt(L"Category %i",j).c_str()));	
 		m_btnMgr.show(m_categoryLblCat[i]);
 	}
 
 }
 
+void CMenu::_getIDCats(void)
+{
+	id = _getId();
+	const char *idCats = m_cat.getString(catDomain, id, "").c_str();
+	memset(&m_categories, '0', m_max_categories);
+	u8 numIdCats = strlen(idCats);
+	if(numIdCats != 0)
+	{
+		for(u8 j = 0; j < numIdCats; ++j)
+		{
+			int k = (static_cast<int>(idCats[j])) - 32;
+			m_categories[k] = '1';
+		}
+	}
+	m_btnMgr.setText(m_categoryLblTitle, m_cf.getTitle());
+}
+
+void CMenu::_setIDCats(void)
+{
+	string newIdCats = "";
+	for(int i = 1; i < m_max_categories; i++)
+	{
+		if(m_categories[i] == '1')
+		{
+			char cCh = static_cast<char>( i + 32);
+			newIdCats = newIdCats + cCh;
+		}
+	}
+	m_cat.setString(catDomain, id, newIdCats);
+}
+	
 void CMenu::_CategorySettings(bool fromGameSet)
 {
 	SetupInput();
 	curPage = 1;
 	gameSet = fromGameSet;
-	if(fromGameSet)
+	
+	catDomain = _domainFromView();
+	u8 pos = 0;
+	vector<bool> EnabledPlugins;
+	if(m_current_view == COVERFLOW_EMU)
 	{
-		id = _getId();
-		catSettings = m_cat.getString(_domainFromView(), id, "").c_str();
-		m_btnMgr.setText(m_categoryLblTitle, m_cf.getTitle());
+		EnabledPlugins = m_plugin.GetEnabledPlugins(m_cfg);
+		if(EnabledPlugins.size() != 0)
+		{
+			char PluginMagicWord[9];
+			u8 enabledPluginsCount = 0;
+			for(u8 i = 0; i < EnabledPlugins.size(); i++)
+			{
+				snprintf(PluginMagicWord, sizeof(PluginMagicWord), "%08x", m_plugin.getPluginMagic(i));
+				if(m_cfg.getBool("PLUGIN", PluginMagicWord, true))
+				{
+					pos = i;
+					enabledPluginsCount++;
+				}
+			}
+			if(enabledPluginsCount == 1)
+				catDomain = (m_plugin.GetPluginName(pos)).toUTF8();
+		}
 	}
+	m_max_categories = m_cat.getInt(fmt("%s/GENERAL", catDomain.c_str()), "numcategories", 6);
+	if(fromGameSet)
+		_getIDCats();
 	else
 	{
-		catSettings = m_cat.getString(fmt("%s/GENERAL", _domainFromView()), "categories").c_str();
+		const char *requiredCats = m_cat.getString(fmt("%s/GENERAL", catDomain.c_str()), "required_categories").c_str();
+		const char *selectedCats = m_cat.getString(fmt("%s/GENERAL", catDomain.c_str()), "selected_categories").c_str();
+		const char *hiddenCats = m_cat.getString(fmt("%s/GENERAL", catDomain.c_str()), "hidden_categories").c_str();
+		u8 numReqCats = strlen(requiredCats);
+		u8 numSelCats = strlen(selectedCats);
+		u8 numHidCats = strlen(hiddenCats);
+		memset(&m_categories, '0', m_max_categories);
+		
+		if(numReqCats != 0)
+		{
+			for(u8 j = 0; j < numReqCats; ++j)
+			{
+				int k = (static_cast<int>(requiredCats[j])) - 32;
+				m_categories[k] = '3';
+			}
+		}
+		if(numSelCats != 0)
+		{
+			for(u8 j = 0; j < numSelCats; ++j)
+			{
+				int k = (static_cast<int>(selectedCats[j])) - 32;
+				m_categories[k] = '1';
+			}
+		}
+		if(numHidCats != 0)
+		{
+			for(u8 j = 0; j < numHidCats; ++j)
+			{
+				int k = (static_cast<int>(hiddenCats[j])) - 32;
+				m_categories[k] = '2';
+			}
+		}		
 		m_btnMgr.setText(m_categoryLblTitle, _t("cat1", L"Select Categories"));
 	}
-	memset(&m_categories, '0', m_max_categories);
-	memcpy(&m_categories, catSettings, m_max_categories);
 	_showCategorySettings();
+	
 	while(!m_exit)
 	{
 		_mainLoopCommon();
 		m_cf.tick();
 		if(!m_btnMgr.selected(lastBtn))
 			m_btnMgr.noHover(false);
+			
 		if(BTN_HOME_PRESSED || BTN_B_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_categoryBtnBack)))
 		{
-			char newCatSettings[m_max_categories + 1];
-			memset(&newCatSettings, 0, sizeof(newCatSettings));
-			memcpy(&newCatSettings, &m_categories, sizeof(m_categories));
 			if(!fromGameSet)
 			{
-				newCatSettings[0] = '1';
-				for(u8 i = 1; i < m_max_categories; i++)
+				string newReqCats = "";
+				string newSelCats = "";
+				string newHidCats = "";
+				for(int i = 1; i < m_max_categories; i++)
 				{
-					if(newCatSettings[i] != '0')
+					if(m_categories[i] == '1')
 					{
-						newCatSettings[0] = '0';
-						break;
+						char cCh = static_cast<char>( i + 32);
+						newSelCats = newSelCats + cCh;
+					}
+					else if(m_categories[i] == '2')
+					{
+						char cCh = static_cast<char>( i + 32);
+						newHidCats = newHidCats + cCh;
+					}
+					else if(m_categories[i] == '3')
+					{
+						char cCh = static_cast<char>( i + 32);
+						newReqCats = newReqCats + cCh;
 					}
 				}
-				m_cat.setString(fmt("%s/GENERAL", _domainFromView()), "categories", newCatSettings);
+				m_cat.setString(fmt("%s/GENERAL", catDomain.c_str()), "selected_categories", newSelCats);
+				m_cat.setString(fmt("%s/GENERAL", catDomain.c_str()), "hidden_categories", newHidCats);
+				m_cat.setString(fmt("%s/GENERAL", catDomain.c_str()), "required_categories", newReqCats);
 			}
 			else
-				m_cat.setString(_domainFromView(), id, newCatSettings);
-			//m_cat.save();
+				_setIDCats();
+
+			m_cat.save();
 			break;
 		}
 		else if(BTN_UP_PRESSED)
@@ -168,36 +259,20 @@ void CMenu::_CategorySettings(bool fromGameSet)
 			m_btnMgr.down();
 		if(BTN_PLUS_PRESSED && fromGameSet)
 		{
-			char newCatSettings[m_max_categories + 1];
-			memset(&newCatSettings, 0, sizeof(newCatSettings));
-			memcpy(&newCatSettings, &m_categories, sizeof(m_categories));
-			m_cat.setString(_domainFromView(), id, newCatSettings);
+			_setIDCats();
 			_hideCategorySettings();
 			m_cf.right();
 			curPage = 1;
-			id = _getId();
-			catSettings = m_cat.getString(_domainFromView(), id, "").c_str();
-			m_btnMgr.setText(m_categoryLblTitle, m_cf.getTitle());
-			
-			memset(&m_categories, '0', m_max_categories);
-			memcpy(&m_categories, catSettings, m_max_categories);
+			_getIDCats();
 			_showCategorySettings();
 		}
 		if(BTN_MINUS_PRESSED && fromGameSet)
 		{
-			char newCatSettings[m_max_categories + 1];
-			memset(&newCatSettings, 0, sizeof(newCatSettings));
-			memcpy(&newCatSettings, &m_categories, sizeof(m_categories));
-			m_cat.setString(_domainFromView(), id, newCatSettings);
+			_setIDCats();
 			_hideCategorySettings();
 			m_cf.left();
 			curPage = 1;
-			id = _getId();
-			catSettings = m_cat.getString(_domainFromView(), id, "").c_str();
-			m_btnMgr.setText(m_categoryLblTitle, m_cf.getTitle());
-			
-			memset(&m_categories, '0', m_max_categories);
-			memcpy(&m_categories, catSettings, m_max_categories);
+			_getIDCats();
 			_showCategorySettings();
 		}
 		if((BTN_LEFT_PRESSED && m_max_categories>11) || (BTN_A_PRESSED && m_btnMgr.selected(m_categoryBtnPageM)))
@@ -243,6 +318,7 @@ void CMenu::_CategorySettings(bool fromGameSet)
 					else if(m_btnMgr.selected(m_categoryBtnCatReq[i]))
 						lastBtn = m_categoryBtnCatReq[i];
 					m_btnMgr.noHover(true);
+					
 					int j = i + ((curPage - 1) * 10);
 					if(fromGameSet)
 					{
@@ -258,25 +334,20 @@ void CMenu::_CategorySettings(bool fromGameSet)
 					m_btnMgr.hide(m_categoryBtnCats[i], true);
 					m_btnMgr.hide(m_categoryBtnCatHid[i], true);
 					m_btnMgr.hide(m_categoryBtnCatReq[i], true);
-					if(m_categories[0] =='1' && !fromGameSet)
-						m_btnMgr.show(m_categoryBtnCat[i]);
-					else
+					switch(m_categories[j])
 					{
-						switch(m_categories[j])
-						{
-							case '0':
-								m_btnMgr.show(m_categoryBtnCat[i]);
-								break;
-							case '1':
-								m_btnMgr.show(m_categoryBtnCats[i]);
-								break;
-							case '2':
-								m_btnMgr.show(m_categoryBtnCatHid[i]);
-								break;
-							default:
-								m_btnMgr.show(m_categoryBtnCatReq[i]);
-								break;
-						}
+						case '0':
+							m_btnMgr.show(m_categoryBtnCat[i]);
+							break;
+						case '1':
+							m_btnMgr.show(m_categoryBtnCats[i]);
+							break;
+						case '2':
+							m_btnMgr.show(m_categoryBtnCatHid[i]);
+							break;
+						default:
+							m_btnMgr.show(m_categoryBtnCatReq[i]);
+							break;
 					}
 					break;
 				}

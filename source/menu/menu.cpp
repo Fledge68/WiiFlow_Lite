@@ -1542,17 +1542,23 @@ void CMenu::_initCF(void)
 		}
 	}
 	
-	m_max_categories = m_cat.getInt(fmt("%s/GENERAL", domain), "numcategories", 6);
-	string catDef = "1";
-	catDef.append(m_max_categories - 1, '0');
-	string catSettings = m_cat.getString(fmt("%s/GENERAL", domain), "categories", catDef).c_str();
-		if (catSettings.length() < m_max_categories)  
+	// check for single plugin selected
+	u8 pos = 0;
+	u8 enabledPluginsCount = 0;
+	if(m_current_view == COVERFLOW_EMU && EnabledPlugins.size() != 0)
+	{
+		char PluginMagicWord[9];
+		for(u8 i = 0; i < EnabledPlugins.size(); i++)
 		{
-			catSettings.append((m_max_categories - catSettings.length()), '0');
-			m_cat.setString(fmt("%s/GENERAL", domain), "categories", catSettings);
+			snprintf(PluginMagicWord, sizeof(PluginMagicWord), "%08x", m_plugin.getPluginMagic(i));
+			if(m_cfg.getBool("PLUGIN", PluginMagicWord, true))
+			{
+				pos = i;
+				enabledPluginsCount++;
+			}
 		}
-	const char *categories = m_cat.getString(fmt("%s/GENERAL", domain), "categories").c_str();
-	
+	}
+
 	for (u32 i = 0; i < m_gameList.size(); ++i)
 	{
 		string id;
@@ -1600,7 +1606,7 @@ void CMenu::_initCF(void)
 		{
 			int ageRated = min(max(gameAgeList.getInt(domain, id), 0), 19);
 
-			if(ageRated == 0 && (m_current_view == COVERFLOW_USB || m_current_view == COVERFLOW_CHANNEL))
+			if(ageRated == 0 && (m_gameList[i].type == TYPE_WII_GAME || m_gameList[i].type == TYPE_CHANNEL))
 			{
 				GameXMLInfo gameinfo;
 				if(gametdb.IsLoaded() && gametdb.GetGameXMLInfo(id.c_str(), &gameinfo))
@@ -1672,54 +1678,99 @@ void CMenu::_initCF(void)
 			&& (!m_locked || !m_gcfg1.getBool("ADULTONLY", id, false))
 			&& !ageLocked)
 		{
-			string idcats = m_cat.getString(domain, id, catDef).c_str();
-			if (idcats.length() < m_max_categories)  
+			string catDomain;
+			switch(m_gameList[i].type)
 			{
-				idcats.append((m_max_categories - idcats.length()), '0');
-				m_cat.setString(domain, id, idcats);
+				case TYPE_CHANNEL:
+					catDomain = "NAND";
+					break;
+				case TYPE_HOMEBREW:
+					catDomain = "HOMEBREW";
+					break;
+				case TYPE_GC_GAME:
+					catDomain = "DML";
+					break;
+				case TYPE_PLUGIN:
+					catDomain = "EMULATOR";
+					break;
+				default:
+					catDomain = "GAMES";
 			}
-			if(categories[0] == '0')// if '1' skip checking cats and show all games
+			if(enabledPluginsCount == 1)
 			{
-				const char *idCats = m_cat.getString(domain, id).c_str();
+				catDomain = (m_plugin.GetPluginName(pos)).toUTF8();
+				if(m_gameList[i].settings[0] != m_plugin.getPluginMagic(pos))
+					continue;
+			}
+			const char *requiredCats = m_cat.getString(fmt("%s/GENERAL", catDomain.c_str()), "required_categories").c_str();
+			const char *selectedCats = m_cat.getString(fmt("%s/GENERAL", catDomain.c_str()), "selected_categories").c_str();
+			const char *hiddenCats = m_cat.getString(fmt("%s/GENERAL", catDomain.c_str()), "hidden_categories").c_str();
+			u8 numReqCats = strlen(requiredCats);
+			u8 numSelCats = strlen(selectedCats);
+			u8 numHidCats = strlen(hiddenCats);
+			
+			if(numReqCats != 0 || numSelCats != 0 || numHidCats != 0) // if all 0 skip checking cats and show all games
+			{
+				const char *idCats = m_cat.getString(catDomain, id).c_str();
+				u8 numIdCats = strlen(idCats);
 				bool inaCat = false;
 				bool inHiddenCat = false;
-				bool noHiddenCats = true;
-				bool SelectedCats = false;
-				int reqCount = 0;
 				int reqMatch = 0;
-				
-				for(u8 j = 1; j < m_max_categories; ++j)
+				if(numIdCats != 0)
 				{
-					if(categories[j] == '3')
+					for(u8 j = 0; j < numIdCats; ++j)
 					{
-						reqCount++;
-						if(idCats[j] == '1')
-							reqMatch++;
-							inaCat = true;
-					}
-					else if(categories[j] == '1')
-					{
-						SelectedCats = true;
-						if(idCats[j] == '1')
-							inaCat = true;
-					}
-					else if(categories[j] == '2')
-					{
-						noHiddenCats = false;
-						if(idCats[j] == '1')
-							inHiddenCat = true;
+						int k = (static_cast<int>(idCats[j])) - 32;
+						if(k <= 0)
+							continue;
+						bool match = false;
+						if(numReqCats != 0)
+						{
+							for(u8 l = 0; l < numReqCats; ++l)
+							{
+								if(k == (static_cast<int>(requiredCats[l]) - 32))
+								{
+									match = true;
+									reqMatch++;
+									inaCat = true;
+								}
+							}
+						}
+						if(match)
+							continue;
+						if(numSelCats != 0)
+						{
+							for(u8 l = 0; l < numSelCats; ++l)
+							{
+								if(k == (static_cast<int>(selectedCats[l]) - 32))
+								{
+									match = true;
+									inaCat = true;
+								}
+							}
+						}
+						if(match)
+							continue;
+						if(numHidCats != 0)
+						{
+							for(u8 l = 0; l < numHidCats; ++l)
+							{
+								if(k == (static_cast<int>(hiddenCats[l]) - 32))
+									inHiddenCat = true;
+							}
+						}
 					}
 				}
 				//continue; means don't add game to list (don't show)
 				if(inHiddenCat)
 					continue;
-				if(reqCount != reqMatch)
+				if(numReqCats != reqMatch)
 					continue;
 				if(!inaCat)
 				{
-					if(noHiddenCats)
+					if(numHidCats == 0)
 						continue;
-					else if(SelectedCats)
+					else if(numSelCats > 0)
 							continue;
 				}
 			}
@@ -2450,18 +2501,18 @@ void CMenu::_cleanupDefaultFont()
 string CMenu::_getId()
 {
 	string id;
-	if(m_current_view != COVERFLOW_EMU && m_current_view != COVERFLOW_HOMEBREW)
+	if(!NoGameID(m_cf.getHdr()->type))
 		id = m_cf.getId();
 	else
 	{
 		dir_discHdr *hdr = m_cf.getHdr();
 		string tempname(hdr->path);
-		if(m_current_view == COVERFLOW_HOMEBREW)
+		if(hdr->type == TYPE_HOMEBREW)
 		{
 			tempname.assign(&tempname[tempname.find_last_of('/') + 1]);
 			id = tempname;
 		}
-		else if(m_current_view == COVERFLOW_EMU)
+		else if(hdr->type == TYPE_PLUGIN)
 		{
 			if(!m_plugin.isScummVM(hdr->settings[0]))
 			{
