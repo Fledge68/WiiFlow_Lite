@@ -194,7 +194,7 @@ void CMenu::init(void)
 	if(drive == check) // Should not happen
 	{
 		_buildMenus();
-		error(L"No available partitions found!");
+		error(_fmt("errboot4", L"No available partitions found!"));
 		m_exit = true;
 		return;
 	}
@@ -250,12 +250,12 @@ void CMenu::init(void)
 		_buildMenus();
 		if(DeviceHandler::Instance()->IsInserted(SD))
 		{
-			error(L"data_on_usb=yes and No available usb partitions for data!\nUsing SD.");
+			error(_fmt("erroboot5", L"data_on_usb=yes and No available usb partitions for data!\nUsing SD."));
 			drive = DeviceName[SD];
 		}
 		else
 		{
-			error(L"No available usb partitions for data and no SD inserted!\nExitting.");
+			error(_fmt("erroboot6", L"No available usb partitions for data and no SD inserted!\nExitting."));
 			m_exit = true;
 			return;
 		}
