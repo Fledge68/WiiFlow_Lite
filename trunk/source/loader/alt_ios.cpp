@@ -91,7 +91,7 @@ bool loadIOS(int ios, bool MountDevices)
 	{
 		WDVD_Close();
 		Close_Inputs();
-		m_music.Stop();
+		m_music.StopAndSetPos();
 		gprintf("Reloading into IOS %i from %i...\n", ios, CurIOS);
 		ShutdownBeforeExit();
 		ret = IOS_ReloadIOS(ios) == 0;

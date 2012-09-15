@@ -127,6 +127,16 @@ int OggDecoder::Rewind()
 	return ret;
 }
 
+int OggDecoder::Tell()
+{
+	return ov_raw_tell(&ogg_file);
+}
+
+int OggDecoder::Seek(int pos)
+{
+	return ov_raw_seek(&ogg_file, pos);
+}
+
 int OggDecoder::Read(u8 * buffer, int buffer_size, int)
 {
 	if(!file_fd)

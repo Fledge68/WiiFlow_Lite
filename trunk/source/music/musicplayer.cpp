@@ -3,6 +3,7 @@
 #include <cstdio>
 
 #include "musicplayer.h"
+#include "SoundHandler.hpp"
 #include "fileOps/fileOps.h"
 #include "gui/text.hpp"
 
@@ -16,6 +17,7 @@ void MusicPlayer::cleanup()
 void MusicPlayer::Init(Config &cfg, string musicDir, string themeMusicDir) 
 {
 	m_stopped = true;
+	CurrentPosition = 0;
 	m_fade_rate = cfg.getInt("GENERAL", "music_fade_rate", 8);
 	m_music_volume = cfg.getInt("GENERAL", "sound_volume_music", 255);
 
@@ -78,12 +80,26 @@ void MusicPlayer::Next()
 {
 	if(m_music_files.empty())
 		return;
-
+	if(CurrentPosition)
+	{
+		LoadCurrentFile();
+		MusicFile.Pause();
+		SoundHandler::Instance()->Decoder(MusicFile.GetVoice())->Seek(CurrentPosition);
+		CurrentPosition = 0;
+		MusicFile.Resume();
+		return;
+	}
 	m_current_music++;
 	if (m_current_music == m_music_files.end())
 		m_current_music = m_music_files.begin();
 	
 	LoadCurrentFile();
+}
+
+void MusicPlayer::StopAndSetPos()
+{
+	CurrentPosition = SoundHandler::Instance()->Decoder(MusicFile.GetVoice())->Tell();
+	Stop();
 }
 
 void MusicPlayer::Play()
