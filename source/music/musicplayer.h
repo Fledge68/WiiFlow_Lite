@@ -23,6 +23,7 @@ public:
 	void Next();
 	void Play();
 	void Stop();
+	void StopAndSetPos();
 
 	bool IsStopped() { return m_stopped; };
 
@@ -33,6 +34,7 @@ protected:
 	u8 m_music_volume;
 	u8 m_music_current_volume;
 	u8 m_fade_rate;
+	int CurrentPosition;
 	bool m_stopped;
 
 	GuiSound MusicFile;

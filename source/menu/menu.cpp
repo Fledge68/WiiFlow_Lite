@@ -2140,7 +2140,10 @@ bool CMenu::_loadChannelList(void)
 	Nand::Instance()->Disable_Emu();
 	if(!disable_emu)
 	{
-		_TempLoadIOS();
+		if(useMainIOS)
+			m_music.StopAndSetPos();
+		else
+			_TempLoadIOS();
 		if(!DeviceHandler::Instance()->IsInserted(lastPartition))
 			DeviceHandler::Instance()->Mount(lastPartition);
 

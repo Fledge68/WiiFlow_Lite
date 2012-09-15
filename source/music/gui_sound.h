@@ -83,6 +83,8 @@ public:
 	void SetLoop(u8 l);
 	//!Needed for music etc
 	void SetVoice(s8 v);
+	//!Needed for music :P
+	s8 GetVoice() { return voice; }
 private:
 	//!Initializes the GuiSound object by setting the default values
 	void Init();
