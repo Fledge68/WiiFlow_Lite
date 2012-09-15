@@ -250,12 +250,12 @@ void CMenu::init(void)
 		_buildMenus();
 		if(DeviceHandler::Instance()->IsInserted(SD))
 		{
-			error(_fmt("erroboot5", L"data_on_usb=yes and No available usb partitions for data!\nUsing SD."));
+			error(_fmt("errboot5", L"data_on_usb=yes and No available usb partitions for data!\nUsing SD."));
 			drive = DeviceName[SD];
 		}
 		else
 		{
-			error(_fmt("erroboot6", L"No available usb partitions for data and no SD inserted!\nExitting."));
+			error(_fmt("errboot6", L"No available usb partitions for data and no SD inserted!\nExiting."));
 			m_exit = true;
 			return;
 		}
