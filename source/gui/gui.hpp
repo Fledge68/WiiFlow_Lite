@@ -51,6 +51,7 @@ public:
 	void hide(s16 id, bool instant = false);
 	void show(s16 id, bool instant = false);
 	void mouse(int chan, int x, int y);
+	void setMouse(bool enable);
 	void up(void);
 	void down(void);
 	void draw(void);
@@ -148,6 +149,7 @@ private:
 	u8 m_soundVolume;
 	bool m_noclick;
 	bool m_nohover;
+	bool m_mouse;
 	CVideo m_vid;
 private:
 	void _drawBtn(const SButton &b, bool selected, bool click);

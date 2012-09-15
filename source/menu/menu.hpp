@@ -630,7 +630,7 @@ private:
 
 	bool WPadIR_Valid(int chan);
 	bool WPadIR_ANY(void);
-	
+
 	void ShowZone(SZone zone, bool &showZone);
 	void ShowMainZone(void);
 	void ShowMainZone2(void);
@@ -638,6 +638,7 @@ private:
 	void ShowPrevZone(void);
 	void ShowNextZone(void);
 	void ShowGameZone(void);
+	bool ShowPointer(void);
 	bool m_show_zone_main;
 	bool m_show_zone_main2;
 	bool m_show_zone_main3;

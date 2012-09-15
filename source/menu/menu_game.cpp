@@ -541,7 +541,7 @@ void CMenu::_game(bool launch)
 				if(!m_gameSound.IsPlaying()) 
 					startGameSound = -6;
 			}
-			else if(launch || m_btnMgr.selected(m_gameBtnPlay) || m_btnMgr.selected(m_gameBtnPlayFull) || !m_show_zone_game)
+			else if(launch || m_btnMgr.selected(m_gameBtnPlay) || m_btnMgr.selected(m_gameBtnPlayFull) || !ShowPointer())
 			{
 				_hideGame();
 				m_gameSound.FreeMemory();

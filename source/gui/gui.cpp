@@ -23,6 +23,7 @@ bool CButtonsMgr::init(CVideo &vid)
 	m_soundVolume = 0xFF;
 	m_noclick = false;
 	m_nohover = false;
+	m_mouse = false;
 	m_vid = vid;
 	soundInit();
 
@@ -211,35 +212,34 @@ void CButtonsMgr::mouse(int chan, int x, int y)
 	if (m_elts.empty()) return;
 
 	float w, h;
-	u16 s = 0;
-
-	if(m_selected[chan] > -1 && m_selected[chan] < (s32)m_elts.size())
+	u16 start = 0;
+	if(m_selected[chan] != -1 && m_selected[chan] < (s32)m_elts.size())
 	{
 		m_elts[m_selected[chan]]->targetScaleX = 1.f;
 		m_elts[m_selected[chan]]->targetScaleY = 1.f;
-		s = (u16)m_selected[chan];
+		start = (u16)m_selected[chan];
 	}
 	m_selected[chan] = -1;
-	for (int i = (int)m_elts.size() - 1; i >= 0; --i)
+	for(int i = (int)m_elts.size() - 1; i >= 0; --i)
 	{
 		CButtonsMgr::SElement &b = *m_elts[i];
-		if (b.t == CButtonsMgr::GUIELT_BUTTON)
+		if(b.t == CButtonsMgr::GUIELT_BUTTON)
 		{
 			SButton &but = *(CButtonsMgr::SButton *)&b;
 			w = (float)(but.w / 2);
 			h = (float)(but.h / 2);
-			if (but.visible && (float)x >= but.pos.x - w && (float)x < but.pos.x + w && (float)y >= but.pos.y - h && (float)y < but.pos.y + h)
+			if(but.visible && (float)x >= but.pos.x - w && (float)x < but.pos.x + w && (float)y >= but.pos.y - h && (float)y < but.pos.y + h)
 			{
 				m_selected[chan] = i;
 				but.targetScaleX = 1.05f;
 				but.targetScaleY = 1.05f;
 				// 
-				if (s != m_selected[chan])
+				if(start != m_selected[chan])
 				{
-					if (m_soundVolume > 0 && !!but.hoverSound)
+					if(m_soundVolume > 0 && !!but.hoverSound)
 						if(!m_nohover) 
 							but.hoverSound->Play(m_soundVolume);
-					if (m_rumbleEnabled)
+					if(m_rumbleEnabled)
 					{
 						m_rumble[chan] = 4;
 						if(wii_rumble[chan]) WPAD_Rumble(chan, 1);
@@ -252,15 +252,19 @@ void CButtonsMgr::mouse(int chan, int x, int y)
 	}
 }
 
+void CButtonsMgr::setMouse(bool enable)
+{
+	m_mouse = enable;
+}
+
 bool CButtonsMgr::selected(s16 button)
 {
-	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
+	for(int chan = WPAD_MAX_WIIMOTES - 1; chan >= 0; chan--)
 	{
 		if(m_selected[chan] == button)
 		{
-			if(m_selected[chan] != -1)
-				if(!m_noclick) 
-					click(m_selected[chan]);
+			if(m_selected[chan] != -1 && !m_noclick) 
+				click(m_selected[chan]);
 			return true;
 		}
 	}
@@ -269,54 +273,58 @@ bool CButtonsMgr::selected(s16 button)
 
 void CButtonsMgr::up(void)
 {
-	if (m_elts.empty()) return;
+	if(m_elts.empty() || m_mouse)
+		return;
+	u32 start = 0;
 	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 	{
-		if (m_selected[chan] < (s32)m_elts.size())
+		if(m_selected[chan] != -1 && m_selected[chan] < (s32)m_elts.size())
 		{
 			m_elts[m_selected[chan]]->targetScaleX = 1.f;
 			m_elts[m_selected[chan]]->targetScaleY = 1.f;
+			start = m_selected[chan];
 		}
-		u32 start = m_selected[chan];
 		m_selected[chan] = -1;
-		for (u32 i = 1; i <= m_elts.size(); ++i)
+	}
+	for(u32 i = 1; i <= m_elts.size(); ++i)
+	{
+		u32 j = loopNum(start - i, m_elts.size());
+		CButtonsMgr::SElement &b = *m_elts[j];
+		if (b.t == CButtonsMgr::GUIELT_BUTTON && b.visible)
 		{
-			u32 j = loopNum(start - i, m_elts.size());
-			CButtonsMgr::SElement &b = *m_elts[j];
-			if (b.t == CButtonsMgr::GUIELT_BUTTON && b.visible)
-			{
-				m_selected[chan] = j;
-				b.targetScaleX = 1.1f;
-				b.targetScaleY = 1.1f;
-				break;
-			}
+			m_selected[0] = j;
+			b.targetScaleX = 1.1f;
+			b.targetScaleY = 1.1f;
+			break;
 		}
 	}
 }
 
 void CButtonsMgr::down(void)
 {
-	if (m_elts.empty()) return;
+	if(m_elts.empty() || m_mouse)
+		return;
+	u32 start = 0;
 	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 	{
-		if (m_selected[chan] < (s32)m_elts.size())
+		if(m_selected[chan] != -1 && m_selected[chan] < (s32)m_elts.size())
 		{
 			m_elts[m_selected[chan]]->targetScaleX = 1.f;
 			m_elts[m_selected[chan]]->targetScaleY = 1.f;
+			start = m_selected[chan];
 		}
-		u32 start = m_selected[chan];
 		m_selected[chan] = -1;
-		for (u32 i = 1; i <= m_elts.size(); ++i)
+	}
+	for(u32 i = 1; i <= m_elts.size(); ++i)
+	{
+		u32 j = loopNum(start + i, m_elts.size());
+		CButtonsMgr::SElement &b = *m_elts[j];
+		if (b.t == CButtonsMgr::GUIELT_BUTTON && b.visible)
 		{
-			u32 j = loopNum(start + i, m_elts.size());
-			CButtonsMgr::SElement &b = *m_elts[j];
-			if (b.t == CButtonsMgr::GUIELT_BUTTON && b.visible)
-			{
-				m_selected[chan] = j;
-				b.targetScaleX = 1.1f;
-				b.targetScaleY = 1.1f;
-				break;
-			}
+			m_selected[0] = j;
+			b.targetScaleX = 1.1f;
+			b.targetScaleY = 1.1f;
+			break;
 		}
 	}
 }
