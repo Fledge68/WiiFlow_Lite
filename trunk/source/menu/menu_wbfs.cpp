@@ -115,7 +115,8 @@ int CMenu::_gameInstaller(void *obj)
 	CMenu &m = *(CMenu *)obj;
 	int ret;
 
-	if (!WBFS_Mounted())
+	DeviceHandler::Instance()->Open_WBFS(currentPartition);
+	if(!WBFS_Mounted())
 	{
 		m.m_thrdWorking = false;
 		return -1;
