@@ -103,6 +103,7 @@ void CMenu::ScanInput()
 	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 	{
 		m_btnMgr.setRumble(chan, WPadIR_Valid(chan), PAD_StickX(chan) < -20 || PAD_StickX(chan) > 20 || PAD_StickY(chan) < -20 || PAD_StickY(chan) > 20);
+		m_btnMgr.setMouse(WPadIR_Valid(chan) || m_show_pointer[chan]);
 		if(WPadIR_Valid(chan))
 		{
 			m_cursor[chan].draw(wd[chan]->ir.x, wd[chan]->ir.y, wd[chan]->ir.angle);
@@ -202,6 +203,16 @@ bool CMenu::WPadIR_Valid(int chan)
 	wd[chan] = WPAD_Data(chan);
 	if(wd[chan]->ir.valid)
 		return true;
+	return false;
+}
+
+bool CMenu::ShowPointer(void)
+{
+	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
+	{
+		if(WPadIR_Valid(chan) || m_show_pointer[chan])
+			return true;
+	}
 	return false;
 }
 
