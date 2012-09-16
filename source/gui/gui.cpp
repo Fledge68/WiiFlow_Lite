@@ -38,7 +38,8 @@ s16 CButtonsMgr::addButton(SFont font, const wstringEx &text, int x, int y, u32 
 
 	b->font = font;
 	b->visible = false;
-	b->text = text;
+	//b->text = text;
+	b->text.setText(b->font, text);
 	b->textColor = color;
 	b->x = x + width / 2;
 	b->y = y + height / 2;
@@ -379,6 +380,7 @@ void CButtonsMgr::SButton::tick(void)
 	CButtonsMgr::SElement::tick();
 	click += -click * 0.2f;
 	if (click < 0.01f) click = 0.f;
+	text.tick();
 }
 
 void CButtonsMgr::SProgressBar::tick(void)
@@ -483,10 +485,13 @@ void CButtonsMgr::setText(s16 id, const wstringEx &text, bool unwrap)
 	if (id < (s32)m_elts.size())
 	{
 		CButtonsMgr::SLabel *lbl;
+		CButtonsMgr::SButton *btn;
 		switch (m_elts[id]->t)
 		{
 			case CButtonsMgr::GUIELT_BUTTON:
-				((CButtonsMgr::SButton *)m_elts[id].get())->text = text;
+				//((CButtonsMgr::SButton *)m_elts[id].get())->text = text;
+				btn = (CButtonsMgr::SButton *)m_elts[id].get();
+				btn->text.setText(btn->font, text);
 				break;
 			case CButtonsMgr::GUIELT_LABEL:
 				lbl = (CButtonsMgr::SLabel *)m_elts[id].get();
@@ -506,10 +511,13 @@ void CButtonsMgr::setText(s16 id, const wstringEx &text, u32 startline,bool unwr
 	if (id < (s32)m_elts.size())
 	{
 		CButtonsMgr::SLabel *lbl;
+		CButtonsMgr::SButton *btn;
 		switch (m_elts[id]->t)
 		{
 			case CButtonsMgr::GUIELT_BUTTON:
 				//((CButtonsMgr::SButton *)m_elts[id].get())->text = text;
+				btn = (CButtonsMgr::SButton *)m_elts[id].get();
+				btn->text.setText(btn->font, text);
 				break;
 			case CButtonsMgr::GUIELT_LABEL:
 				lbl = (CButtonsMgr::SLabel *)m_elts[id].get();
@@ -591,7 +599,7 @@ void CButtonsMgr::setProgress(s16 id, float f, bool instant)
 	}
 }
 
-void CButtonsMgr::_drawBtn(const CButtonsMgr::SButton &b, bool selected, bool click)
+void CButtonsMgr::_drawBtn(CButtonsMgr::SButton &b, bool selected, bool click)
 {
 	GXTexObj texObjLeft;
 	GXTexObj texObjCenter;
@@ -699,10 +707,13 @@ void CButtonsMgr::_drawBtn(const CButtonsMgr::SButton &b, bool selected, bool cl
 	}
 	if (!b.font.font) return;
 	b.font.font->reset();
-	CColor txtColor(b.textColor.r, b.textColor.g, b.textColor.b, (u8)((int)b.textColor.a * (int)alpha / 0xFF));
+	//CColor txtColor(b.textColor.r, b.textColor.g, b.textColor.b, (u8)((int)b.textColor.a * (int)alpha / 0xFF));
 	b.font.font->setXScale(scaleX);
 	b.font.font->setYScale(scaleY);
-	b.font.font->drawText(0, 0, b.text.c_str(), txtColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	//b.font.font->drawText(0, 0, b.text.c_str(), txtColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	b.text.setColor(CColor(b.textColor.r, b.textColor.g, b.textColor.b, (u8)((int)b.textColor.a * (int)alpha / 0xFF)));
+	b.text.setFrame(b.w, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, true, true);
+	b.text.draw();
 }
 
 void CButtonsMgr::_drawLbl(CButtonsMgr::SLabel &b)
