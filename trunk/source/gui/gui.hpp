@@ -108,7 +108,7 @@ private:
 	{
 		SFont font;
 		SButtonTextureSet tex;
-		wstringEx text;
+		CText text;
 		CColor textColor;
 		float click;
 		SmartGuiSound clickSound;
@@ -152,7 +152,7 @@ private:
 	bool m_mouse;
 	CVideo m_vid;
 private:
-	void _drawBtn(const SButton &b, bool selected, bool click);
+	void _drawBtn(SButton &b, bool selected, bool click);
 	void _drawLbl(SLabel &b);
 	void _drawPBar(const SProgressBar &b);
 	static STexture _noTexture;
