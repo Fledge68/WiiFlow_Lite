@@ -11,7 +11,13 @@ MusicPlayer m_music;
 
 void MusicPlayer::cleanup()
 {
+	if(m_music_files.empty())
+		return;
+	MusicFile.Pause();
+	MusicFile.Stop();
 	MusicFile.FreeMemory();
+	m_music_files.clear();
+	m_stopped = true;
 }
 
 void MusicPlayer::Init(Config &cfg, string musicDir, string themeMusicDir) 
@@ -68,6 +74,8 @@ void MusicPlayer::Previous()
 {
 	if(m_music_files.empty())
 		return;
+	if(PosFromPrevFile())
+		return;
 	if(m_current_music == m_music_files.begin())
 		m_current_music = m_music_files.end();
 
@@ -80,15 +88,8 @@ void MusicPlayer::Next()
 {
 	if(m_music_files.empty())
 		return;
-	if(CurrentPosition)
-	{
-		LoadCurrentFile();
-		MusicFile.Pause();
-		SoundHandler::Instance()->Decoder(MusicFile.GetVoice())->Seek(CurrentPosition);
-		CurrentPosition = 0;
-		MusicFile.Resume();
+	if(PosFromPrevFile())
 		return;
-	}
 	m_current_music++;
 	if (m_current_music == m_music_files.end())
 		m_current_music = m_music_files.begin();
@@ -98,8 +99,22 @@ void MusicPlayer::Next()
 
 void MusicPlayer::StopAndSetPos()
 {
+	if(m_music_files.empty())
+		return;
 	CurrentPosition = SoundHandler::Instance()->Decoder(MusicFile.GetVoice())->Tell();
 	Stop();
+}
+
+bool MusicPlayer::PosFromPrevFile()
+{
+	if(!CurrentPosition)
+		return false;
+	LoadCurrentFile();
+	MusicFile.Pause();
+	SoundHandler::Instance()->Decoder(MusicFile.GetVoice())->Seek(CurrentPosition);
+	CurrentPosition = 0;
+	MusicFile.Resume();
+	return true;
 }
 
 void MusicPlayer::Play()

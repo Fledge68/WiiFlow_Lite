@@ -21,13 +21,14 @@ public:
 
 	void Previous();
 	void Next();
-	void Play();
-	void Stop();
 	void StopAndSetPos();
 
 	bool IsStopped() { return m_stopped; };
 
 protected:
+	void Play();
+	void Stop();
+	bool PosFromPrevFile();
 	void LoadCurrentFile();
 	void ScanDirectories(const char *directory);
 

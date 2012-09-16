@@ -248,34 +248,32 @@ int CMenu::main(void)
 
 	if (m_cfg.getBool("GENERAL", "async_network", false) || has_enabled_providers())
 		_initAsyncNetwork();
-
 	SetupInput(true);
-	m_music.Play();
-	
+
 	GameTDB m_gametdb; 
  	m_gametdb.OpenFile(fmt("%s/wiitdb.xml", m_settingsDir.c_str()));
-	m_GameTDBLoaded=false;
+	m_GameTDBLoaded = false;
  	if(m_gametdb.IsLoaded())
 	{
-		m_GameTDBLoaded=true;
+		m_GameTDBLoaded = true;
 		m_gametdb.CloseFile();
 	}
 	if(m_Emulator_boot)
 		m_current_view = COVERFLOW_EMU;
 
-	if (m_cfg.getBool("GENERAL", "update_cache", false))
+	if(m_cfg.getBool("GENERAL", "update_cache", false))
 	{
 		UpdateCache();
 		m_gameList.Update();
 	}
 	LoadView();
-	if (m_cfg.getBool("GENERAL", "startup_menu", false)) 
+	if(m_cfg.getBool("GENERAL", "startup_menu", false)) 
 	{
 		_hideMain();
 		if(!_Source())
 			LoadView();
 		else
-		_showMain();
+			_showMain();
 		if(BTN_B_HELD)
 			bUsed = true;
 	}
