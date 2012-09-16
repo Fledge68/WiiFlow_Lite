@@ -17,11 +17,15 @@ void MusicPlayer::cleanup()
 	MusicFile.Stop();
 	MusicFile.FreeMemory();
 	m_music_files.clear();
+	DisplayTime = 0;
+	m_changed = false;
 	m_stopped = true;
 }
 
 void MusicPlayer::Init(Config &cfg, string musicDir, string themeMusicDir) 
 {
+	DisplayTime = 0;
+	m_changed = false;
 	m_stopped = true;
 	CurrentPosition = 0;
 	m_fade_rate = cfg.getInt("GENERAL", "music_fade_rate", 8);
@@ -151,6 +155,25 @@ void MusicPlayer::Tick(bool attenuate)
 
 void MusicPlayer::LoadCurrentFile()
 {
+	m_changed = true;
 	MusicFile.Load((*m_current_music).c_str());
 	Play();
+}
+
+/* For our GUI */
+wstringEx MusicPlayer::GetFileName()
+{
+	wstringEx CurrentFile;
+	string CurrentFileStr((*m_current_music).begin()+(*m_current_music).find_last_of('/')+1, 
+			(*m_current_music).begin()+(*m_current_music).find_last_of('.'));
+	CurrentFile.fromUTF8(CurrentFileStr.c_str());
+	return CurrentFile;
+}
+
+bool MusicPlayer::SongChanged()
+{
+	if(!m_changed)
+		return false;
+	m_changed = false;
+	return true;
 }

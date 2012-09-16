@@ -174,7 +174,7 @@ bool GuiSound::Load(const char * filepath)
 	fclose(f);
 
 	SoundHandler::Instance()->AddDecoder(this->voice, filepath);
-	gprintf("gui_sound.cpp: Loading %s using voice %d\n", filepath, this->voice);
+	//gprintf("gui_sound.cpp: Loading %s using voice %d\n", filepath, this->voice);
 	SoundDecoder * decoder = SoundHandler::Instance()->Decoder(this->voice);
 	if(!decoder)
 	{
