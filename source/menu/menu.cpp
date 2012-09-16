@@ -489,7 +489,8 @@ void CMenu::cleanup()
 {
 	if(cleaned_up)
 		return;
-	gprintf("MEM1_freesize(): %i\nMEM2_freesize(): %i\n", MEM1_freesize(), MEM2_freesize());
+	//gprintf("MEM1_freesize(): %i\nMEM2_freesize(): %i\n", MEM1_freesize(), MEM2_freesize());
+	m_btnMgr.hide(m_mainLblCurMusic);
 	_cleanupDefaultFont();
 	m_banner->DeleteBanner();
 	m_plugin.Cleanup();
@@ -531,7 +532,7 @@ void CMenu::cleanup()
 	theme.soundSet.clear();
 
 	cleaned_up = true;
-	gprintf(" \nMemory cleaned up\n");
+	//gprintf(" \nMemory cleaned up\n");
 	gprintf("MEM1_freesize(): %i\nMEM2_freesize(): %i\n", MEM1_freesize(), MEM2_freesize());
 }
 
@@ -1904,6 +1905,18 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 
 	m_music.Tick(m_video_playing || (m_gameSelected && 
 		m_gameSound.IsLoaded()) ||  m_gameSound.IsPlaying());
+
+	if(m_music.SongChanged())
+	{
+		m_btnMgr.setText(m_mainLblCurMusic, m_music.GetFileName(), true);
+		m_btnMgr.show(m_mainLblCurMusic);
+		m_music.DisplayTime = time(NULL);
+	}
+	else if(m_music.DisplayTime > 0 && time(NULL) - m_music.DisplayTime > 3)
+	{
+		m_music.DisplayTime = 0;
+		m_btnMgr.hide(m_mainLblCurMusic);
+	}
 
 	//Take Screenshot
 	if(gc_btnsPressed & PAD_TRIGGER_Z)

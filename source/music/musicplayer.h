@@ -4,6 +4,7 @@
 #include <string>
 #include "gui_sound.h"
 #include "config/config.hpp"
+#include "wstringEx/wstringEx.hpp"
 
 using namespace std;
 
@@ -25,6 +26,10 @@ public:
 
 	bool IsStopped() { return m_stopped; };
 
+	/* For our GUI */
+	wstringEx GetFileName();
+	bool SongChanged();
+	time_t DisplayTime;
 protected:
 	void Play();
 	void Stop();
@@ -37,6 +42,7 @@ protected:
 	u8 m_fade_rate;
 	int CurrentPosition;
 	bool m_stopped;
+	bool m_changed;
 
 	GuiSound MusicFile;
 	vector<string> m_music_files;

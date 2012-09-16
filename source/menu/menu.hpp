@@ -147,8 +147,9 @@ private:
 	s16 m_mainBtnFavoritesOn;
 	s16 m_mainBtnFavoritesOff;
 	s16 m_mainLblLetter;
+	s16 m_mainLblCurMusic;
 #ifdef SHOWMEM
-	u32 m_mem2FreeSize;
+	s16 m_mem2FreeSize;
 #endif
 #ifdef SHOWMEMGECKO
 	unsigned int mem1old;
