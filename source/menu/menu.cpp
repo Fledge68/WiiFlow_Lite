@@ -2339,8 +2339,6 @@ void CMenu::_stopSounds(void)
 	}
 	m_btnMgr.stopSounds();
 	m_cf.stopSound();
-
-	m_music.Stop();
 	m_gameSound.Stop();
 }
 

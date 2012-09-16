@@ -449,6 +449,7 @@ void CMenu::_game(bool launch)
 			FILE *file = fopen(videoPath.c_str(), "rb");
 			if(file)
 			{
+				m_music.StopAndSetPos();
 				m_gameSound.Stop();
 				m_banner->SetShowBanner(false);
 				fclose(file);
@@ -470,7 +471,6 @@ void CMenu::_game(bool launch)
 				}
 				movie.Stop();
 				_showGame();
-				m_music.Play();
 				m_video_playing = false;
 				m_banner->SetShowBanner(true);
 				if(!m_gameSound.IsPlaying())
