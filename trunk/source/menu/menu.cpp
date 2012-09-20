@@ -2655,7 +2655,7 @@ void CMenu::_TempLoadIOS(int IOS)
 {
 #ifndef DOLPHIN
 	/* Only temp reload in IOS58 mode */
-	if(useMainIOS || neek2o())
+	if(useMainIOS || neek2o() || Sys_DolphinMode())
 		return;
 
 	if(IOS == IOS_TYPE_NORMAL_IOS)

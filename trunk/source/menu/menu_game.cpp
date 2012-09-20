@@ -1180,8 +1180,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	if(dvd)
 	{
 		u32 cover = 0;
-#ifndef DOLPHIN
-		if(!neek2o())
+		if(!neek2o() && !Sys_DolphinMode())
 		{
 			Disc_SetUSB(NULL, false);
 			if(WDVD_GetCoverStatus(&cover) < 0)
@@ -1200,7 +1199,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 				} while(!(cover & 0x2));
 			}
 		}
-#endif
 		_TempLoadIOS();
 		/* Open Disc */
 		if(Disc_Open(true) < 0)
@@ -1357,13 +1355,11 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	m_cfg.save(true);
 	cleanup(); // wifi and sd gecko doesnt work anymore after cleanup
 
-#ifndef DOLPHIN
-	if(!dvd || neek2o())
+	if((!dvd || neek2o()) && !Sys_DolphinMode())
 	{
 		if(_loadIOS(gameIOS, userIOS, id) == LOAD_IOS_FAILED)
 			Sys_Exit();
 	}
-#endif
 	DeviceHandler::Instance()->Open_WBFS(currentPartition);
 	bool wbfs_partition = (DeviceHandler::Instance()->GetFSType(currentPartition) == PART_FS_WBFS);
 	if(!dvd && !wbfs_partition && get_frag_list((u8 *)id.c_str(), (char*)path.c_str(), currentPartition == 0 ? 0x200 : USBStorage2_GetSectorSize()) < 0)

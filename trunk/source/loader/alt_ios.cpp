@@ -86,7 +86,6 @@ bool loadIOS(int ios, bool MountDevices)
 	int CurIOS = IOS_GetVersion();
 	bool ret = true;
 
-#ifndef DOLPHIN
 	if(ios != CurIOS)
 	{
 		WDVD_Close();
@@ -99,7 +98,6 @@ bool loadIOS(int ios, bool MountDevices)
 		gprintf("AHBPROT after IOS Reload: %u\n", AHBRPOT_Patched());
 		WDVD_Init();
 	}
-#endif
 
 	IOS_GetCurrentIOSInfo();
 	if(CurrentIOS.Type == IOS_TYPE_HERMES)
