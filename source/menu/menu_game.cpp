@@ -1061,9 +1061,9 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	if(!forwarder && has_enabled_providers() && _initNetwork() == 0)
 		add_game_to_card(id.c_str());
 
-	string emuPath;
-	m_partRequest = m_cfg.getInt("NAND", "partition", 0);
-	int emuPartition = _FindEmuPart(&emuPath, m_partRequest, false);
+	string emuPath = m_cfg.getString("NAND", "path", STDEMU_DIR);;
+	//m_partRequest = m_cfg.getInt("NAND", "partition", 0);
+	//int emuPartition = _FindEmuPart(&emuPath, m_partRequest, false);
 	
 	bool emu_disabled = (m_cfg.getBool("NAND", "disable", true) || neek2o());
 	int emulate_mode = min(max(0, m_cfg.getInt("NAND", "emulation", 1)), (int)ARRAY_SIZE(CMenu::_NandEmu) - 1);
@@ -1077,8 +1077,8 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	m_cat.save(true);
 	m_cfg.save(true);
 	cleanup();
-	
-	if(useNK2o && emuPartition != 1)
+
+	if(useNK2o && currentPartition != 1)
 		useNK2o = false;
 
 	if(useNK2o && !emu_disabled)
@@ -1100,8 +1100,8 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	{
 		if(!emu_disabled)
 		{
-			DeviceHandler::Instance()->UnMount(emuPartition);
-			Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
+			DeviceHandler::Instance()->UnMount(currentPartition);
+			Nand::Instance()->Init(emuPath.c_str(), currentPartition, false);
 			Nand::Instance()->Enable_Emu();
 		}
 		gameIOS = channel.GetRequestedIOS(gameTitle);
@@ -1126,7 +1126,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	}
 	if(!emu_disabled)
 	{
-		Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
+		Nand::Instance()->Init(emuPath.c_str(), currentPartition, false);
 		if(emulate_mode == 1)
 			Nand::Instance()->Set_FullMode(true);
 		else

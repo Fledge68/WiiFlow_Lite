@@ -2448,7 +2448,7 @@ retry:
 			// Name found, load it and unpack it
 			char u8_font_filename[22] = {0};
 			strcpy(u8_font_filename, "/shared1/XXXXXXXX.app"); // Faster than sprintf
-            memcpy(u8_font_filename+9, cm[i].filename, 8);
+			memcpy(u8_font_filename+9, cm[i].filename, 8);
 
 			u8 *u8_font_archive = ISFS_GetFile((u8 *) u8_font_filename, &size, 0);
 			//gprintf("Opened fontfile: %s: %d bytes\n", u8_font_filename, size);
@@ -2458,8 +2458,8 @@ retry:
 				const u8 *font_file = u8_get_file_by_index(u8_font_archive, 1, &size); // There is only one file in that app
 				//gprintf("Extracted font: %d\n", size);
 				if(m_base_font)
-					MEM1_free(m_base_font);
-				m_base_font = (u8*)MEM1_alloc(size);
+					MEM1_lo_free(m_base_font);
+				m_base_font = (u8*)MEM1_lo_alloc(size);
 				memcpy(m_base_font, font_file, size);
 				DCFlushRange(m_base_font, size);
 				m_base_font_size = size;

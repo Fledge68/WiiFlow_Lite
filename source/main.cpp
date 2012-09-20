@@ -106,7 +106,7 @@ int main(int argc, char **argv)
 		{
 			iosOK = loadIOS(mainIOS, true) && CustomIOS(CurrentIOS.Type);
 			Open_Inputs();
-			mainMenu->init();
+			//mainMenu->init();
 		}
 	}
 	if(CurrentIOS.Version == mainIOS)
