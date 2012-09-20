@@ -384,7 +384,7 @@ private:
 	s16 m_gameBtnDelete;
 	s16 m_gameBtnSettings;
 	s16 m_gameBtnBack;
-	s16 m_gameLblUser[4];
+	s16 m_gameLblUser[5];
 // Parental code menu	
 	s16 m_codeLblTitle;
 	s16 m_codeBtnKey[10];
