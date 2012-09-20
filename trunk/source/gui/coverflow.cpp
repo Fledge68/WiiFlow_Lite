@@ -635,7 +635,7 @@ void CCoverFlow::stopCoverLoader(bool empty)
 				m_items[i].state = CCoverFlow::STATE_Loading;
 			}
 		}
-		gprintf("Coverflow stopped!\n");
+		//gprintf("Coverflow stopped!\n");
 	}
 }
 
@@ -649,7 +649,7 @@ void CCoverFlow::startCoverLoader(void)
 
 	unsigned int stack_size = (unsigned int)8192;
 	LWP_CreateThread(&coverLoaderThread, (void *(*)(void *))CCoverFlow::_coverLoader, (void *)this, 0, stack_size, 20);
-	gprintf("Coverflow started!\n");
+	//gprintf("Coverflow started!\n");
 }
 
 void CCoverFlow::clear(void)
