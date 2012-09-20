@@ -352,7 +352,7 @@ void CMenu::_showGame(void)
 
 	if(!m_zoom_banner)
 	{
-		for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser); ++i)
+		for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser) - 1; ++i)
 		{
 			if(m_gameLblUser[i] != -1)
 				m_btnMgr.show(m_gameLblUser[i]);
@@ -682,7 +682,9 @@ void CMenu::_game(bool launch)
 			m_btnMgr.hide(m_gameBtnPlayFull);
 			m_btnMgr.hide(m_gameBtnBackFull);
 			m_btnMgr.hide(m_gameBtnToogleFull);
-			for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser); ++i)
+			if(m_gameLblUser[4] != -1 && !NoGameID(m_cf.getHdr()->type))
+				m_btnMgr.show(m_gameLblUser[4]);
+			for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser) - 1; ++i)
 			{
 				if(m_gameLblUser[i] != -1)
 					m_btnMgr.show(m_gameLblUser[i]);
@@ -714,7 +716,14 @@ void CMenu::_game(bool launch)
 			m_btnMgr.hide(m_gameBtnPlay);
 			m_btnMgr.hide(m_gameBtnBack);
 			m_btnMgr.hide(m_gameBtnToogle);
-			for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser); ++i)
+			if(m_gameLblUser[4] != -1)
+			{
+				if(!NoGameID(m_cf.getHdr()->type) && !m_zoom_banner)
+					m_btnMgr.show(m_gameLblUser[4]);
+				else
+					m_btnMgr.hide(m_gameLblUser[4], true);
+			}
+			for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser) - 1; ++i)
 				if (m_gameLblUser[i] != -1)
 					m_btnMgr.hide(m_gameLblUser[i]);
 		}
