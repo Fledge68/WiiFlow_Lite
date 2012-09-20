@@ -63,9 +63,8 @@ int main(int argc, char **argv)
 		else if(argv[i] != NULL && strcasestr(argv[i], "EMULATOR_MAGIC") != NULL)
 			Emulator_boot = true;
 	}
-#ifndef DOLPHIN
 	// Load Custom IOS
-	if(neek2o())
+	if(neek2o() || Sys_DolphinMode())
 	{
 		iosOK = true;
 		memset(&CurrentIOS, 0, sizeof(IOS_Info));
@@ -86,10 +85,6 @@ int main(int argc, char **argv)
 		gprintf("Loading cIOS: %d\n", mainIOS);	
 		iosOK = loadIOS(mainIOS, false) && CustomIOS(CurrentIOS.Type);
 	}
-#else
-	iosOK = true;
-#endif
-
 	// Init
 	Sys_Init();
 	Sys_ExitTo(EXIT_TO_HBC);
@@ -100,7 +95,7 @@ int main(int argc, char **argv)
 	mainMenu = new CMenu(vid);
 	Open_Inputs();
 	mainMenu->init();
-	if(CurrentIOS.Version != mainIOS && !neek2o())
+	if(CurrentIOS.Version != mainIOS && !neek2o() && !Sys_DolphinMode())
 	{
 		if(useMainIOS || !DeviceHandler::Instance()->UsablePartitionMounted())
 		{

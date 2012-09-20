@@ -31,12 +31,13 @@
 #include <sdcard/gcsd.h>
 #include <sdcard/wiisd_io.h>
 #include "DeviceHandler.hpp"
-#include "defines.h"
+#include "fat.h"
 #include "sdhc.h"
 #include "usbthread.h"
 #include "usbstorage.h"
 #include "usbstorage_libogc.h"
 #include "loader/cios.h"
+#include "loader/sys.h"
 #include "loader/wbfs.h"
 
 DeviceHandler * DeviceHandler::instance = NULL;
@@ -62,14 +63,23 @@ void DeviceHandler::DestroyInstance()
 
 void DeviceHandler::MountAll()
 {
+	if(Sys_DolphinMode())
+	{
+		DolphinSD = fatMountSimple("sd", &__io_wiisd);
+		return;
+	}
 	MountSD();
-#ifndef DOLPHIN
 	MountAllUSB();
-#endif
 }
 
 void DeviceHandler::UnMountAll()
 {
+	if(Sys_DolphinMode())
+	{
+		fatUnmount("sd");
+		DolphinSD = false;
+		return;
+	}
 	/* Kill possible USB thread */
 	KillUSBKeepAliveThread();
 
@@ -106,7 +116,7 @@ bool DeviceHandler::Mount(int dev)
 bool DeviceHandler::IsInserted(int dev)
 {
 	if(dev == SD)
-		return SD_Inserted() && sd->IsMounted(0);
+		return Sys_DolphinMode() ? DolphinSD : SD_Inserted() && sd->IsMounted(0);
 
 	else if(dev >= USB1 && dev <= USB8)
 	{
@@ -431,6 +441,9 @@ void DeviceHandler::UnMountDevolution(int CurrentPartition)
 
 bool DeviceHandler::UsablePartitionMounted()
 {
+	if(Sys_DolphinMode())
+		return DolphinSD;
+
 	for(u8 i = SD; i < MAXDEVICES; i++)
 	{
 		if(IsInserted(i) && !GetWbfsHandle(i)) //Everything besides WBFS for configuration
@@ -443,6 +456,6 @@ bool DeviceHandler::PartitionUsableForNandEmu(int Partition)
 {
 	if(IsInserted(Partition) && GetFSType(Partition) == PART_FS_FAT)
 		return true;
-		
+
 	return false;
 }
