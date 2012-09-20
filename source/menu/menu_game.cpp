@@ -1022,8 +1022,10 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 			break;
 		}
 	}
-
 	forwarder = m_gcfg2.getBool(id, "custom", forwarder) || strncmp(id.c_str(), "WIMC", 4) == 0 || neek2o();
+	bool emu_disabled = (m_cfg.getBool("NAND", "disable", true) || neek2o());
+	if(!emu_disabled && !neek2o())
+		forwarder = false;
 
 	bool vipatch = m_gcfg2.testOptBool(id, "vipatch", m_cfg.getBool("GENERAL", "vipatch", false));
 	bool cheat = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool("NAND", "cheat", false));
@@ -1064,13 +1066,11 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	string emuPath = m_cfg.getString("NAND", "path", STDEMU_DIR);;
 	//m_partRequest = m_cfg.getInt("NAND", "partition", 0);
 	//int emuPartition = _FindEmuPart(&emuPath, m_partRequest, false);
-	
-	bool emu_disabled = (m_cfg.getBool("NAND", "disable", true) || neek2o());
 	int emulate_mode = min(max(0, m_cfg.getInt("NAND", "emulation", 1)), (int)ARRAY_SIZE(CMenu::_NandEmu) - 1);
 	
 	int userIOS = m_gcfg2.getInt(id, "ios", 0);
 	u64 gameTitle = TITLE_ID(hdr->settings[0],hdr->settings[1]);
-	bool useNK2o = m_gcfg2.getBool(id, "useneek", false);
+	bool useNK2o = (m_gcfg2.getBool(id, "useneek", false) && !neek2o());
 
 	m_gcfg1.save(true);
 	m_gcfg2.save(true);
@@ -1309,19 +1309,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			Nand::Instance()->Do_Region_Change(id);
 		}
 	}
-#ifndef DOLPHIN
-	if(!dvd || neek2o())
-	{
-		int result = _loadIOS(GetRequestedGameIOS(hdr), m_gcfg2.getInt(id, "ios"), id);
-		if(result == LOAD_IOS_FAILED)
-			Sys_Exit();
-	}
-#endif
-
-	DeviceHandler::Instance()->Open_WBFS(currentPartition);
-	bool wbfs_partition = (DeviceHandler::Instance()->GetFSType(currentPartition) == PART_FS_WBFS);
-	if(!dvd && !wbfs_partition && get_frag_list((u8 *)id.c_str(), (char*)path.c_str(), currentPartition == 0 ? 0x200 : USBStorage2_GetSectorSize()) < 0)
-		Sys_Exit();
 
 	u8 patchVidMode = min((u32)m_gcfg2.getInt(id, "patch_video_modes", 0), ARRAY_SIZE(CMenu::_vidModePatch) - 1u);
 	hooktype = (u32) m_gcfg2.getInt(id, "hooktype", 0); // hooktype is defined in patchcode.h
@@ -1348,18 +1335,30 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	if(cheat)
 		_loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", id.c_str()));
 	_loadFile(gameconfig, gameconfigSize, m_txtCheatDir.c_str(), "gameconfig.txt");
-
 	load_wip_patches((u8 *)m_wipDir.c_str(), (u8 *) &id);
-	app_gameconfig_load((u8 *) &id, gameconfig.get(), gameconfigSize);
-	ocarina_load_code(cheatFile.get(), cheatSize);
+
 	if(rtrn != NULL && strlen(rtrn) == 4)
 		returnTo = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
+	int userIOS = m_gcfg2.getInt(id, "ios", 0);
+	int gameIOS = GetRequestedGameIOS(hdr);
 
 	m_gcfg1.save(true);
 	m_gcfg2.save(true);
 	m_cat.save(true);
 	m_cfg.save(true);
 	cleanup(); // wifi and sd gecko doesnt work anymore after cleanup
+
+#ifndef DOLPHIN
+	if(!dvd || neek2o())
+	{
+		if(_loadIOS(gameIOS, userIOS, id) == LOAD_IOS_FAILED)
+			Sys_Exit();
+	}
+#endif
+	DeviceHandler::Instance()->Open_WBFS(currentPartition);
+	bool wbfs_partition = (DeviceHandler::Instance()->GetFSType(currentPartition) == PART_FS_WBFS);
+	if(!dvd && !wbfs_partition && get_frag_list((u8 *)id.c_str(), (char*)path.c_str(), currentPartition == 0 ? 0x200 : USBStorage2_GetSectorSize()) < 0)
+		Sys_Exit();
 	if(CurrentIOS.Type == IOS_TYPE_D2X)
 	{
 		/* Open ES Module */
@@ -1423,6 +1422,16 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			error(_t("wbfsoperr2", L"Disc_Open failed"));
 			Sys_Exit();
 		}
+	}
+	if(gameconfig.get() != NULL)
+	{
+		app_gameconfig_load((u8*)&id, gameconfig.get(), gameconfigSize);
+		gameconfig.release();
+	}
+	if(cheatFile.get() != NULL)
+	{
+		ocarina_load_code(cheatFile.get(), cheatSize);
+		cheatFile.release();
 	}
 	if(CurrentIOS.Type == IOS_TYPE_HERMES)
 	{

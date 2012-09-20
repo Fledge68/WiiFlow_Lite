@@ -255,7 +255,7 @@ int ocarina_load_code(const u8 *cheat, u32 cheatSize)
 
 	if(code_size <= 0)
 	{
-		gprintf("Ocarina: No codes found\n");
+		//gprintf("Ocarina: No codes found\n");
 		code_buf = NULL;
 		code_size = 0;
 		return 0;
@@ -269,7 +269,7 @@ int ocarina_load_code(const u8 *cheat, u32 cheatSize)
 		return 0;
 	}
 
-	gprintf("Ocarina: Codes found.\n");
+	//gprintf("Ocarina: Codes found.\n");
 	DCFlushRange(code_buf, code_size);
 	return code_size;
 }
