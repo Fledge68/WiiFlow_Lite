@@ -71,9 +71,7 @@ void *MEM1_memalign(unsigned int a, unsigned int s)
 
 void *MEM1_realloc(void *p, unsigned int s)
 {
-	if(!p)
-		return NULL;
-	if((u32)p > (u32)MEM1_lo_start && (u32)p < (u32)MEM1_lo_end)
+	if(!p || ((u32)p > (u32)MEM1_lo_start && (u32)p < (u32)MEM1_lo_end))
 		return g_mem1lo.reallocate(p, s);
 	return __real_realloc(p, s);
 }
@@ -123,15 +121,11 @@ void *MEM2_memalign(unsigned int /* alignment */, unsigned int s)
 
 void *MEM2_realloc(void *p, unsigned int s)
 {
-	if(!p)
-		return NULL;
 	return g_mem2gp.reallocate(p, s);
 }
 
 unsigned int MEM2_usableSize(void *p)
 {
-	if(!p)
-		return 0;
 	return g_mem2gp.usableSize(p);
 }
 
@@ -214,15 +208,15 @@ void *__wrap_realloc(void *p, size_t size)
 {
 	void *n;
 	// ptr from mem2
-	if (((u32)p & 0x10000000) != 0 || (p == 0 && size > MEM2_PRIORITY_SIZE))
+	if(((u32)p & 0x10000000) != 0 || (p == 0 && size > MEM2_PRIORITY_SIZE))
 	{
 		n = g_mem2gp.reallocate(p, size);
-		if (n != 0)
+		if(n != 0)
 			return n;
 		n = __real_malloc(size);
-		if (n == 0)
+		if(n == 0)
 			return 0;
-		if (p != 0)
+		if(p != 0)
 		{
 			memcpy(n, p, MEM2_usableSize(p) < size ? MEM2_usableSize(p) : size);
 			g_mem2gp.release(p);
@@ -231,12 +225,12 @@ void *__wrap_realloc(void *p, size_t size)
 	}
 	// ptr from malloc
 	n = __real_realloc(p, size);
-	if (n != 0)
+	if(n != 0)
 		return n;
 	n = g_mem2gp.allocate(size);
-	if (n == 0)
+	if(n == 0)
 		return 0;
-	if (p != 0)
+	if(p != 0)
 	{
 		memcpy(n, p, __real_malloc_usable_size(p) < size ? __real_malloc_usable_size(p) : size);
 		__real_free(p);
