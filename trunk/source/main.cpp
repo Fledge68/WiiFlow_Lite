@@ -34,6 +34,7 @@ int main(int argc, char **argv)
 	CVideo vid;
 	vid.init();
 
+	DeviceHandle.Init();
 	Nand::Instance()->Init_ISFS();
 	MEM_init(); //Inits both mem1lo and mem2
 	gprintf(" \nWelcome to %s (%s-r%s)!\nThis is the debug output.\n", APP_NAME, APP_VERSION, SVN_REV);
@@ -73,7 +74,7 @@ int main(int argc, char **argv)
 		CurrentIOS.Base = 254;
 		CurrentIOS.Revision = 999;
 		DCFlushRange(&CurrentIOS, sizeof(IOS_Info));
-		DeviceHandler::Instance()->SetModes();
+		DeviceHandle.SetModes();
 	}
 	else if(AHBRPOT_Patched() && IOS_GetVersion() == 58)
 	{
@@ -89,7 +90,7 @@ int main(int argc, char **argv)
 	Sys_Init();
 	Sys_ExitTo(EXIT_TO_HBC);
 
-	DeviceHandler::Instance()->MountAll();
+	DeviceHandle.MountAll();
 	vid.waitMessage(0.15f);
 
 	mainMenu = new CMenu(vid);
@@ -97,7 +98,7 @@ int main(int argc, char **argv)
 	mainMenu->init();
 	if(CurrentIOS.Version != mainIOS && !neek2o() && !Sys_DolphinMode())
 	{
-		if(useMainIOS || !DeviceHandler::Instance()->UsablePartitionMounted())
+		if(useMainIOS || !DeviceHandle.UsablePartitionMounted())
 		{
 			iosOK = loadIOS(mainIOS, true) && CustomIOS(CurrentIOS.Type);
 			Open_Inputs();
@@ -109,7 +110,7 @@ int main(int argc, char **argv)
 
 	if(!iosOK)
 		mainMenu->terror("errboot1", L"No cIOS found!\ncIOS d2x 249 base 56 and 250 base 57 are enough for all your games.");
-	else if(!DeviceHandler::Instance()->UsablePartitionMounted())
+	else if(!DeviceHandle.UsablePartitionMounted())
 		mainMenu->terror("errboot2", L"Could not find a device to save configuration files on!");
 	else if(WDVD_Init() < 0)
 		mainMenu->terror("errboot3", L"Could not initialize the DIP module!");

@@ -102,7 +102,7 @@ void ExternalBooter_ChannelSetup(u64 title)
 
 void ShutdownBeforeExit(bool KeepPatches)
 {
-	DeviceHandler::Instance()->UnMountAll();
+	DeviceHandle.UnMountAll();
 	Nand::Instance()->DeInit_ISFS(KeepPatches);
 	WDVD_Close();
 }

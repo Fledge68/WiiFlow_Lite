@@ -22,7 +22,7 @@
 #include "loader/gc_disc_dump.hpp"
 #include "loader/wbfs.h"
 #include "music/gui_sound.h"
-#include "music/musicplayer.h"
+#include "music/MusicPlayer.hpp"
 #include "plugin/plugin.hpp"
 #include "wiiuse/wpad.h"
 

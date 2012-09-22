@@ -1,6 +1,6 @@
 /****************************************************************************
- * Copyright (C) 2010
- * by Dimok
+ * Copyright (C) 2010 by Dimok
+ *           (C) 2012 by FIX94
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any
@@ -20,8 +20,6 @@
  *
  * 3. This notice may not be removed or altered from any source
  * distribution.
- *
- * for WiiXplorer 2010
  ***************************************************************************/
 #include <malloc.h>
 #include <unistd.h>
@@ -40,25 +38,17 @@
 #include "loader/sys.h"
 #include "loader/wbfs.h"
 
-DeviceHandler * DeviceHandler::instance = NULL;
+DeviceHandler DeviceHandle;
 
-DeviceHandler::~DeviceHandler()
+void DeviceHandler::Init()
 {
-	UnMountAll();
-}
-
-DeviceHandler * DeviceHandler::Instance()
-{
-	if(instance == NULL)
-		instance = new DeviceHandler();
-	return instance;
-}
-
-void DeviceHandler::DestroyInstance()
-{
-	if(instance)
-		delete instance;
-	instance = NULL;
+	sd = NULL;
+	gca = NULL;
+	gcb = NULL;
+	usb0 = NULL;
+	usb1 = NULL;
+	OGC_Device = NULL;
+	DolphinSD = false;
 }
 
 void DeviceHandler::MountAll()
@@ -121,7 +111,7 @@ bool DeviceHandler::IsInserted(int dev)
 	else if(dev >= USB1 && dev <= USB8)
 	{
 		int portPart = PartitionToPortPartition(dev-USB1);
-		PartitionHandle *usb = instance->GetUSBHandleFromPartition(dev-USB1);
+		PartitionHandle *usb = GetUSBHandleFromPartition(dev-USB1);
 		if(usb)
 			return usb->IsMounted(portPart);
 	}
@@ -211,35 +201,6 @@ bool DeviceHandler::MountAllUSB()
 	return result;
 }
 
-/*
-bool DeviceHandler::MountUSBPort1()
-{
-	if(!usb1)// && (Settings.USBPort == 1 || Settings.USBPort == 2))
-		usb1 = new PartitionHandle(GetUSB1Interface());
-
-	if(usb1 && usb1->GetPartitionCount() < 1)
-	{
-		delete usb1;
-		usb1 = NULL;
-		return false;
-	}
-
-	bool result = false;
-	int partCount = GetUSBPartitionCount();
-	int partCount0 = 0;
-	if(usb0)
-		partCount0 = usb0->GetPartitionCount();
-
-	for(int i = partCount0; i < partCount; i++)
-	{
-		if(MountUSB(i))
-			result = true;
-	}
-
-	return result;
-}
-*/
-
 void DeviceHandler::UnMountUSB(int pos)
 {
 	if(pos >= GetUSBPartitionCount())
@@ -266,7 +227,7 @@ void DeviceHandler::UnMountAllUSB()
 	usb1 = NULL;
 }
 
-int DeviceHandler::PathToDriveType(const char * path)
+int DeviceHandler::PathToDriveType(const char *path)
 {
 	if(!path)
 		return -1;
@@ -280,25 +241,23 @@ int DeviceHandler::PathToDriveType(const char * path)
 	return -1;
 }
 
-const char * DeviceHandler::GetFSName(int dev)
+const char *DeviceHandler::GetFSName(int dev)
 {
-	if(dev == SD && DeviceHandler::instance->sd)
-	{
-		return DeviceHandler::instance->sd->GetFSName(0);
-	}
+	if(dev == SD && sd)
+		return sd->GetFSName(0);
 	else if(dev >= USB1 && dev <= USB8)
 	{
 		int partCount0 = 0;
 		int partCount1 = 0;
-		if(DeviceHandler::instance->usb0)
-			partCount0 += DeviceHandler::instance->usb0->GetPartitionCount();
-		if(DeviceHandler::instance->usb1)
-			partCount1 += DeviceHandler::instance->usb1->GetPartitionCount();
+		if(usb0)
+			partCount0 += usb0->GetPartitionCount();
+		if(usb1)
+			partCount1 += usb1->GetPartitionCount();
 
-		if(dev-USB1 < partCount0 && DeviceHandler::instance->usb0)
-			return DeviceHandler::instance->usb0->GetFSName(dev-USB1);
-		else if(DeviceHandler::instance->usb1)
-			return DeviceHandler::instance->usb1->GetFSName(dev-USB1-partCount0);
+		if(dev-USB1 < partCount0 && usb0)
+			return usb0->GetFSName(dev-USB1);
+		else if(usb1)
+			return usb1->GetFSName(dev-USB1-partCount0);
 	}
 
 	return "";
@@ -306,9 +265,6 @@ const char * DeviceHandler::GetFSName(int dev)
 
 int DeviceHandler::GetFSType(int dev)
 {
-	if(!instance)
-		return -1;
-
 	const char *FSName = GetFSName(dev);
 	if(!FSName) return -1;
 
@@ -326,43 +282,39 @@ int DeviceHandler::GetFSType(int dev)
 
 u16 DeviceHandler::GetUSBPartitionCount()
 {
-	if(!instance)
-		return 0;
-
 	u16 partCount0 = 0;
 	u16 partCount1 = 0;
-	if(instance->usb0)
-		partCount0 = instance->usb0->GetPartitionCount();
-	if(instance->usb1)
-		partCount1 = instance->usb1->GetPartitionCount();
+	if(usb0)
+		partCount0 = usb0->GetPartitionCount();
+	if(usb1)
+		partCount1 = usb1->GetPartitionCount();
 
 	return partCount0+partCount1;
 }
 
 wbfs_t * DeviceHandler::GetWbfsHandle(int dev)
 {
-    if(dev == SD && DeviceHandler::instance->sd)
-        return DeviceHandler::instance->sd->GetWbfsHandle(0);
-	else if(dev >= USB1 && dev <= USB8 && DeviceHandler::instance->usb0)
-        return DeviceHandler::instance->usb0->GetWbfsHandle(dev-USB1);
-	else if(dev >= USB1 && dev <= USB8 && DeviceHandler::instance->usb1)
-        return DeviceHandler::instance->usb1->GetWbfsHandle(dev-USB1);
-
-    return NULL;
+	if(dev == SD && sd)
+		return sd->GetWbfsHandle(0);
+	else if(dev >= USB1 && dev <= USB8 && usb0)
+		return usb0->GetWbfsHandle(dev-USB1);
+	else if(dev >= USB1 && dev <= USB8 && usb1)
+		return usb1->GetWbfsHandle(dev-USB1);
+	return NULL;
 }
 
-s32 DeviceHandler::Open_WBFS(int dev)
+s32 DeviceHandler::OpenWBFS(int dev)
 {
 	u32 part_lba, part_idx = 1;
 	u32 part_fs = GetFSType(dev);
 	char *partition = (char *)DeviceName[dev];
 
 	if(dev == SD && IsInserted(dev))
-		part_lba = Instance()->sd->GetLBAStart(dev);
+		part_lba = sd->GetLBAStart(dev);
 	else if(dev >= USB1 && dev <= USB8 && IsInserted(dev))
 	{
 		part_idx = dev;
-		part_lba = Instance()->usb0->GetLBAStart(dev - USB1);
+		part_lba = usb0->GetLBAStart(dev - USB1);
 	}
 	else
 		return -1;
@@ -372,14 +324,11 @@ s32 DeviceHandler::Open_WBFS(int dev)
 
 int DeviceHandler::PartitionToUSBPort(int part)
 {
-	if(!DeviceHandler::instance)
-		return 0;
-
 	u16 partCount0 = 0;
-	if(DeviceHandler::instance->usb0)
-		partCount0 = instance->usb0->GetPartitionCount();
+	if(usb0)
+		partCount0 = usb0->GetPartitionCount();
 
-	if(!instance->usb0 || part >= partCount0)
+	if(!usb0 || part >= partCount0)
 		return 1;
 	else
 		return 0;
@@ -387,20 +336,17 @@ int DeviceHandler::PartitionToUSBPort(int part)
 
 int DeviceHandler::PartitionToPortPartition(int part)
 {
-	if(!DeviceHandler::instance)
-		return 0;
-
 	u16 partCount0 = 0;
-	if(instance->usb0)
-		partCount0 = instance->usb0->GetPartitionCount();
+	if(usb0)
+		partCount0 = usb0->GetPartitionCount();
 
-	if(!instance->usb0 || part >= partCount0)
+	if(!usb0 || part >= partCount0)
 		return part-partCount0;
 	else
 		return part;
 }
 
-PartitionHandle *DeviceHandler::GetUSBHandleFromPartition(int part) const
+PartitionHandle *DeviceHandler::GetUSBHandleFromPartition(int part)
 {
 	if(PartitionToUSBPort(part) == 0)
 		return usb0;

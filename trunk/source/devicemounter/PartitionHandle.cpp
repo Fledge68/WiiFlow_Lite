@@ -1,6 +1,6 @@
  /****************************************************************************
- * Copyright (C) 2010
- * by Dimok
+ * Copyright (C) 2010 by Dimok
+ *           (C) 2012 by FIX94
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any
@@ -20,8 +20,6 @@
  *
  * 3. This notice may not be removed or altered from any source
  * distribution.
- *
- * for WiiXplorer 2010
  ***************************************************************************/
 #include <gccore.h>
 #include <stdio.h>
@@ -265,8 +263,7 @@ int PartitionHandle::FindPartitions()
 		if(le32(partition->block_count) > 0 && !IsExisting(le32(partition->lba_start)))
 		{
 			AddPartition(PartFromType(partition->type), le32(partition->lba_start),
-									  le32(partition->block_count), (partition->status == PARTITION_BOOTABLE),
-									  partition->type, i);
+					le32(partition->block_count), (partition->status == PARTITION_BOOTABLE), partition->type, i);
 		}
 	}
 
@@ -299,8 +296,7 @@ void PartitionHandle::CheckEBR(u8 PartNum, sec_t ebr_lba)
 		if(le32(ebr->partition.block_count) > 0 && !IsExisting(ebr_lba + next_erb_lba + le32(ebr->partition.lba_start)))
 		{
 			AddPartition(PartFromType(ebr->partition.type), ebr_lba + next_erb_lba + le32(ebr->partition.lba_start),
-									  le32(ebr->partition.block_count), (ebr->partition.status == PARTITION_BOOTABLE),
-									  ebr->partition.type, PartNum);
+					le32(ebr->partition.block_count), (ebr->partition.status == PARTITION_BOOTABLE), ebr->partition.type, PartNum);
 		}
 		// Get the start sector of the current partition
 		// and the next extended boot record in the chain

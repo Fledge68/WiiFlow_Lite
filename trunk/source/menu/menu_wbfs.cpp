@@ -115,18 +115,16 @@ int CMenu::_gameInstaller(void *obj)
 	CMenu &m = *(CMenu *)obj;
 	int ret;
 
-	DeviceHandler::Instance()->Open_WBFS(currentPartition);
+	DeviceHandle.OpenWBFS(currentPartition);
 	if(!WBFS_Mounted())
 	{
 		m.m_thrdWorking = false;
 		return -1;
 	}
-
 	u64 comp_size = 0, real_size = 0;
 	f32 free, used;
 	WBFS_DiskSpace(&used, &free);
 	WBFS_DVD_Size(&comp_size, &real_size);
-
 	if((f32)comp_size + (f32)128*1024 >= free * GB_SIZE)
 	{
 		LWP_MutexLock(m.m_mutex);
@@ -149,6 +147,7 @@ int CMenu::_gameInstaller(void *obj)
 		LWP_MutexUnlock(m.m_mutex);
 		slotLight(true);
 	}
+	WBFS_Close();
 	m.m_thrdWorking = false;
 	return ret;
 }
@@ -173,7 +172,7 @@ int CMenu::_GCgameInstaller(void *obj)
 	int ret;	
 	m.m_progress = 0.f;
 
-	if (!DeviceHandler::Instance()->IsInserted(currentPartition))
+	if (!DeviceHandle.IsInserted(currentPartition))
 	{
 		m.m_thrdWorking = false;
 		return -1;
@@ -307,6 +306,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 				switch(op)
 				{
 					case CMenu::WO_ADD_GAME:
+						MusicPlayer.Stop();
 						_TempLoadIOS();
 						m_btnMgr.show(m_wbfsPBar);
 						m_btnMgr.setProgress(m_wbfsPBar, 0.f);
@@ -436,7 +436,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						m_thrdMessageAdded = false;
 						m_cf.stopCoverLoader();
 						_stopSounds();
-						m_music.cleanup();
+						MusicPlayer.Cleanup();
 						SoundHandler::DestroyInstance();
 						soundDeinit();
 						Nand::Instance()->Disable_Emu();
@@ -461,6 +461,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 				if(op == CMenu::WO_ADD_GAME)
 				{
 					WDVD_StopMotor();
+					MusicPlayer.Stop();
 					_TempLoadIOS(IOS_TYPE_NORMAL_IOS);
 				}
 				m_btnMgr.show(m_wbfsBtnBack);

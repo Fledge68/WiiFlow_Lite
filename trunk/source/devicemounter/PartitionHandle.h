@@ -1,6 +1,6 @@
  /****************************************************************************
- * Copyright (C) 2010
- * by Dimok
+ * Copyright (C) 2010 by Dimok
+ *           (C) 2012 by FIX94
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any
@@ -20,8 +20,6 @@
  *
  * 3. This notice may not be removed or altered from any source
  * distribution.
- *
- * for WiiXplorer 2010
  ***************************************************************************/
 #ifndef PARTITION_HANDLE_H
 #define PARTITION_HANDLE_H
@@ -33,80 +31,80 @@
 
 using namespace std;
 
-#define MAX_PARTITIONS		  32 /* Maximum number of partitions that can be found */
-#define MAX_MOUNTS			  10 /* Maximum number of mounts available at one time */
-#define MAX_SYMLINK_DEPTH	   10 /* Maximum search depth when resolving symbolic links */
+#define MAX_PARTITIONS			32 /* Maximum number of partitions that can be found */
+#define MAX_MOUNTS				10 /* Maximum number of mounts available at one time */
+#define MAX_SYMLINK_DEPTH		10 /* Maximum search depth when resolving symbolic links */
 
-#define MBR_SIGNATURE		   0x55AA
-#define EBR_SIGNATURE		   MBR_SIGNATURE
+#define MBR_SIGNATURE			0x55AA
+#define EBR_SIGNATURE			MBR_SIGNATURE
 
-#define PARTITION_BOOTABLE	  0x80 /* Bootable (active) */
-#define PARTITION_NONBOOTABLE   0x00 /* Non-bootable */
-#define PARTITION_TYPE_GPT	  0xEE /* Indicates that a GPT header is available */
+#define PARTITION_BOOTABLE		0x80 /* Bootable (active) */
+#define PARTITION_NONBOOTABLE	0x00 /* Non-bootable */
+#define PARTITION_TYPE_GPT		0xEE /* Indicates that a GPT header is available */
 
-#define GUID_SYSTEM_PARTITION	   0x0000000000000001LL	/* System partition (disk partitioning utilities must reserve the partition as is) */
+#define GUID_SYSTEM_PARTITION		0x0000000000000001LL	/* System partition (disk partitioning utilities must reserve the partition as is) */
 #define GUID_READ_ONLY_PARTITION	0x0800000000000000LL	/* Read-only partition */
-#define GUID_HIDDEN_PARTITION	   0x2000000000000000LL	/* Hidden partition */
-#define GUID_NO_AUTOMOUNT_PARTITION 0x4000000000000000LL	/* Do not automount (e.g., do not assign drive letter) */
+#define GUID_HIDDEN_PARTITION		0x2000000000000000LL	/* Hidden partition */
+#define GUID_NO_AUTOMOUNT_PARTITION	0x4000000000000000LL	/* Do not automount (e.g., do not assign drive letter) */
 
 #define BYTES_PER_SECTOR		512  /* Default in libogc */
 #define MAX_BYTES_PER_SECTOR	4096 /* Max bytes per sector */
 
 typedef struct _PARTITION_RECORD {
-	u8 status;							  /* Partition status; see above */
-	u8 chs_start[3];						/* Cylinder-head-sector address to first block of partition */
-	u8 type;								/* Partition type; see above */
-	u8 chs_end[3];						  /* Cylinder-head-sector address to last block of partition */
-	u32 lba_start;						  /* Local block address to first sector of partition */
-	u32 block_count;						/* Number of blocks in partition */
+	u8 status;							/* Partition status; see above */
+	u8 chs_start[3];					/* Cylinder-head-sector address to first block of partition */
+	u8 type;							/* Partition type; see above */
+	u8 chs_end[3];						/* Cylinder-head-sector address to last block of partition */
+	u32 lba_start;						/* Local block address to first sector of partition */
+	u32 block_count;					/* Number of blocks in partition */
 } __attribute__((__packed__)) PARTITION_RECORD;
 
 
 typedef struct _MASTER_BOOT_RECORD {
-	u8 code_area[446];					  /* Code area; normally empty */
-	PARTITION_RECORD partitions[4];		 /* 4 primary partitions */
-	u16 signature;						  /* MBR signature; 0xAA55 */
+	u8 code_area[446];					/* Code area; normally empty */
+	PARTITION_RECORD partitions[4];		/* 4 primary partitions */
+	u16 signature;						/* MBR signature; 0xAA55 */
 } __attribute__((__packed__)) MASTER_BOOT_RECORD;
 
 typedef struct _EXTENDED_BOOT_RECORD {
-	u8 code_area[446];					  /* Code area; normally empty */
-	PARTITION_RECORD partition;			 /* Primary partition */
-	PARTITION_RECORD next_ebr;			  /* Next extended boot record in the chain */
-	u8 reserved[32];						/* Normally empty */
-	u16 signature;						  /* EBR signature; 0xAA55 */
+	u8 code_area[446];					/* Code area; normally empty */
+	PARTITION_RECORD partition;			/* Primary partition */
+	PARTITION_RECORD next_ebr;			/* Next extended boot record in the chain */
+	u8 reserved[32];					/* Normally empty */
+	u16 signature;						/* EBR signature; 0xAA55 */
 } __attribute__((__packed__)) EXTENDED_BOOT_RECORD;
 
 typedef struct _GUID_PART_ENTRY
 {
-	u8 part_type_guid[16];	  /* Partition type GUID */
-	u8 uniq_part_guid[16];	  /* Unique partition GUID */
-	u64 part_first_lba;		 /* First LBA (little-endian) */
-	u64 part_last_lba;		  /* Last LBA (inclusive, usually odd) */
+	u8 part_type_guid[16];		/* Partition type GUID */
+	u8 uniq_part_guid[16];		/* Unique partition GUID */
+	u64 part_first_lba;			/* First LBA (little-endian) */
+	u64 part_last_lba;			/* Last LBA (inclusive, usually odd) */
 	u64 attribute_flags;		/* GUID Attribute flags (e.g. bit 60 denotes read-only) */
 	char partition_name[72];	/* Partition name (36 UTF-16LE code units) */
 } __attribute__((__packed__)) GUID_PART_ENTRY;
 
 typedef struct _GPT_HEADER
 {
-	char magic[8];			  /* "EFI PART" */
-	u32 revision;			   /* For version 1.0 */
+	char magic[8];				/* "EFI PART" */
+	u32 revision;				/* For version 1.0 */
 	u32 header_size;			/* Header size in bytes */
-	u32 checksum;			   /* CRC32 of header (0 to header size), with this field zeroed during calculation */
-	u32 reserved;			   /* must be 0 */
-	u64 header_lba;			 /* Current LBA (location of this header copy) */
-	u64 backup_lba;			 /* Backup LBA (location of the other header copy) */
-	u64 first_part_lba;		 /* First usable LBA for partitions (primary partition table last LBA + 1) */
-	u64 last_part_lba;		  /* Last usable LBA (secondary partition table first LBA - 1) */
-	u8 disk_guid[16];		   /* Disk GUID (also referred as UUID on UNIXes) */
-	u64 part_table_lba;		 /* Partition entries starting LBA (always 2 in primary copy) */
-	u32 part_entries;		   /* Number of partition entries */
+	u32 checksum;				/* CRC32 of header (0 to header size), with this field zeroed during calculation */
+	u32 reserved;				/* must be 0 */
+	u64 header_lba;				/* Current LBA (location of this header copy) */
+	u64 backup_lba;				/* Backup LBA (location of the other header copy) */
+	u64 first_part_lba;			/* First usable LBA for partitions (primary partition table last LBA + 1) */
+	u64 last_part_lba;			/* Last usable LBA (secondary partition table first LBA - 1) */
+	u8 disk_guid[16];			/* Disk GUID (also referred as UUID on UNIXes) */
+	u64 part_table_lba;			/* Partition entries starting LBA (always 2 in primary copy) */
+	u32 part_entries;			/* Number of partition entries */
 	u32 part_entry_size;		/* Size of a partition entry (usually 128) */
 	u32 part_entry_checksum;	/* CRC32 of partition array */
 	u8 zeros[420];
 } __attribute__((__packed__)) GPT_HEADER;
 
 typedef struct _PartitionFS {
-	const char * FSName;
+	const char *FSName;
 	u64 LBA_Start;
 	u64 SecCount;
 	bool Bootable;
