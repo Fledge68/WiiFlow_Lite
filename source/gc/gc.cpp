@@ -211,7 +211,7 @@ void DEVO_GetLoader(const char *loader)
 void DEVO_SetOptions(const char *isopath, int CurrentPartition, const char *gameID, bool memcard_emu)
 {
 	// re-mount device we need
-	DeviceHandler::Instance()->MountDevolution(CurrentPartition);
+	DeviceHandle.MountDevolution(CurrentPartition);
 
 	//start writing cfg to mem
 	struct stat st;
@@ -298,7 +298,7 @@ void DEVO_SetOptions(const char *isopath, int CurrentPartition, const char *game
 	// flush disc ID and Devolution config out to memory
 	DCFlushRange((void*)0x80000000, 64);
 
-	DeviceHandler::Instance()->UnMountDevolution(CurrentPartition);
+	DeviceHandle.UnMountDevolution(CurrentPartition);
 }
 
 void DEVO_Boot()

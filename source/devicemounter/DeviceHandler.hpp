@@ -1,6 +1,6 @@
 /****************************************************************************
- * Copyright (C) 2010
- * by Dimok
+ * Copyright (C) 2010 by Dimok
+ *           (C) 2012 by FIX94
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any
@@ -20,8 +20,6 @@
  *
  * 3. This notice may not be removed or altered from any source
  * distribution.
- *
- * for WiiXplorer 2010
  ***************************************************************************/
 #ifndef DEVICE_HANDLER_HPP_
 #define DEVICE_HANDLER_HPP_
@@ -66,11 +64,8 @@ const char DeviceName[MAXDEVICES][8] =
 class DeviceHandler
 {
 public:
-	static DeviceHandler * Instance();
-	static void DestroyInstance();
-
+	void Init();
 	void SetModes();
-
 	void MountAll();
 	void UnMountAll();
 	bool Mount(int dev);
@@ -97,40 +92,37 @@ public:
 	PartitionHandle * GetUSB0Handle() const { return usb0; }
 	PartitionHandle * GetUSB1Handle() const { return usb1; }
 
-	PartitionHandle * GetUSBHandleFromPartition(int part) const;
-	static const DISC_INTERFACE *GetUSB0Interface() { return &__io_usbstorage2_port0; }
-	static const DISC_INTERFACE *GetUSB1Interface() { return &__io_usbstorage2_port1; }
+	PartitionHandle * GetUSBHandleFromPartition(int part);
+	const DISC_INTERFACE *GetUSB0Interface() { return &__io_usbstorage2_port0; }
+	const DISC_INTERFACE *GetUSB1Interface() { return &__io_usbstorage2_port1; }
 
-	static int PathToDriveType(const char * path);
-	static const char * GetFSName(int dev);
-	static int GetFSType(int dev);
-	static u16 GetUSBPartitionCount();
-	static const char * PathToFSName(const char * path) { return GetFSName(PathToDriveType(path)); }
-	static wbfs_t *GetWbfsHandle(int dev);
-	s32 Open_WBFS(int dev);
-	static int PartitionToUSBPort(int part);
-	static int PartitionToPortPartition(int part);
+	int PathToDriveType(const char *path);
+	const char * GetFSName(int dev);
+	int GetFSType(int dev);
+	u16 GetUSBPartitionCount();
+	const char *PathToFSName(const char *path) { return GetFSName(PathToDriveType(path)); }
+	wbfs_t *GetWbfsHandle(int dev);
+	s32 OpenWBFS(int dev);
+	int PartitionToUSBPort(int part);
+	int PartitionToPortPartition(int part);
 
 	/* Special Devolution Stuff */
 	bool MountDevolution(int CurrentPartition);
 	void UnMountDevolution(int CurrentPartition);
 private:
-	DeviceHandler() : sd(0), gca(0), gcb(0), usb0(0), usb1(0), OGC_Device(0), DolphinSD(false) { }
-	~DeviceHandler();
 	bool MountUSB(int part);
 
-	static DeviceHandler *instance;
-
-	PartitionHandle * sd;
-	PartitionHandle * gca;
-	PartitionHandle * gcb;
-	PartitionHandle * usb0;
-	PartitionHandle * usb1;
-
+	PartitionHandle *sd;
+	PartitionHandle *gca;
+	PartitionHandle *gcb;
+	PartitionHandle *usb0;
+	PartitionHandle *usb1;
 	/* Special Devolution Stuff */
 	PartitionHandle *OGC_Device;
 	/* Dolphin Stuff */
 	bool DolphinSD;
 };
+
+extern DeviceHandler DeviceHandle;
 
 #endif

@@ -16,7 +16,6 @@
 #include "gecko/gecko.h"
 #include "memory/mem2.hpp"
 #include "memory/memory.h"
-#include "music/musicplayer.h"
 #include "types.h"
 
 // mload from uloader by Hermes
@@ -90,7 +89,6 @@ bool loadIOS(int ios, bool MountDevices)
 	{
 		WDVD_Close();
 		Close_Inputs();
-		m_music.StopAndSetPos();
 		gprintf("Reloading into IOS %i from %i...\n", ios, CurIOS);
 		ShutdownBeforeExit();
 		ret = IOS_ReloadIOS(ios) == 0;
@@ -104,9 +102,9 @@ bool loadIOS(int ios, bool MountDevices)
 		load_ehc_module_ex();
 	else if(CurrentIOS.Type == IOS_TYPE_WANIN && CurrentIOS.Revision >= 18)
 		load_dip_249();
-	DeviceHandler::Instance()->SetModes();
+	DeviceHandle.SetModes();
 	if(MountDevices && ios != CurIOS)
-		DeviceHandler::Instance()->MountAll();
+		DeviceHandle.MountAll();
 
 	return ret;
 }

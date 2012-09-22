@@ -28,7 +28,7 @@
 
 #include "gui_sound.h"
 #include "SoundHandler.hpp"
-#include "musicplayer.h"
+#include "MusicPlayer.hpp"
 #include "WavDecoder.hpp"
 #include "loader/sys.h"
 #include "banner/AnimatedBanner.h"

@@ -87,8 +87,8 @@ void CList<T>::GetPaths(vector<string> &pathlist, string containing, string dire
 		if(strcasestr(containing.c_str(), ".dol") != 0)
 			return;
 
-		int partition = DeviceHandler::Instance()->PathToDriveType(directory.c_str());
-		wbfs_t* handle = DeviceHandler::Instance()->GetWbfsHandle(partition);
+		int partition = DeviceHandle.PathToDriveType(directory.c_str());
+		wbfs_t* handle = DeviceHandle.GetWbfsHandle(partition);
 		if(!handle)
 			return;
 
@@ -177,7 +177,7 @@ void CList<dir_discHdr>::GetHeaders(vector<string> pathlist, vector<dir_discHdr>
 				 || (*itr).rfind(".bin")  != string::npos || (*itr).rfind(".BIN")  != string::npos)
 		{
 			char* filename = &(*itr)[(*itr).find_last_of('/')+1];
-			const char* dml_partition = DeviceName[DeviceHandler::Instance()->PathToDriveType((*itr).c_str())];
+			const char* dml_partition = DeviceName[DeviceHandle.PathToDriveType((*itr).c_str())];
 			if(strcasecmp(filename, "game.iso") == 0 || strcasecmp(filename, "gam1.iso") == 0 || strcasecmp(filename, "boot.bin") == 0)
 			{
 				FILE *fp = fopen((*itr).c_str(), "rb");
@@ -312,10 +312,10 @@ void CList<dir_discHdr>::GetHeaders(vector<string> pathlist, vector<dir_discHdr>
 				continue;
 			}
 		}
-		else if(strncasecmp(DeviceHandler::Instance()->PathToFSName((*itr).c_str()), "WBFS", 4) == 0)
+		else if(strncasecmp(DeviceHandle.PathToFSName((*itr).c_str()), "WBFS", 4) == 0)
 		{
-			u8 partition = DeviceHandler::Instance()->PathToDriveType((*itr).c_str());
-			wbfs_t* handle = DeviceHandler::Instance()->GetWbfsHandle(partition);
+			u8 partition = DeviceHandle.PathToDriveType((*itr).c_str());
+			wbfs_t* handle = DeviceHandle.GetWbfsHandle(partition);
 			if(!handle)
 				return;
 

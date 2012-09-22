@@ -197,7 +197,7 @@ bool WBFS_Close()
 	wbfs_part_fs = 0;
 	wbfs_part_lba = 0;
 	wbfs_part_idx = 0;
-	strcpy(wbfs_fs_drive, "");
+	memset(wbfs_fs_drive, 0, sizeof(wbfs_fs_drive));
 	wbfs_mounted = 0;
 
 	return 0;

@@ -265,6 +265,7 @@ static Banner *_extractBnr(dir_discHdr *hdr)
 {
 	u32 size = 0;
 	Banner *banner = NULL;
+	DeviceHandle.OpenWBFS(currentPartition);
 	wbfs_disc_t *disc = WBFS_OpenDisc((u8 *) &hdr->id, (char *) hdr->path);
 	if (disc != NULL)
 	{
@@ -274,6 +275,7 @@ static Banner *_extractBnr(dir_discHdr *hdr)
 			banner = new Banner((u8 *)bnr, size);
 		WBFS_CloseDisc(disc);
 	}
+	WBFS_Close();
 	return banner;
 }
 
@@ -449,7 +451,7 @@ void CMenu::_game(bool launch)
 			FILE *file = fopen(videoPath.c_str(), "rb");
 			if(file)
 			{
-				m_music.StopAndSetPos();
+				MusicPlayer.Stop();
 				m_gameSound.Stop();
 				m_banner->SetShowBanner(false);
 				fclose(file);
@@ -544,6 +546,7 @@ void CMenu::_game(bool launch)
 			else if(launch || m_btnMgr.selected(m_gameBtnPlay) || m_btnMgr.selected(m_gameBtnPlayFull) || !ShowPointer())
 			{
 				_hideGame();
+				MusicPlayer.Stop();
 				m_gameSound.FreeMemory();
 				CheckGameSoundThread();
 				ClearGameSoundThreadStack();
@@ -738,15 +741,13 @@ void CMenu::directlaunch(const string &id)
 
 	for (int i = USB1; i < USB8; i++)
 	{
-		if(!DeviceHandler::Instance()->IsInserted(i)) continue;
+		if(!DeviceHandle.IsInserted(i)) continue;
 
-		DeviceHandler::Instance()->Open_WBFS(i);
+		DeviceHandle.OpenWBFS(i);
 		CList<dir_discHdr> list;
 		string path = sfmt(GAMES_DIR, DeviceName[i]);
 		vector<string> pathlist;
-		list.GetPaths(pathlist, id.c_str(), path,
-			strncasecmp(DeviceHandler::Instance()->PathToFSName(path.c_str()), "WBFS", 4) == 0);
-
+		list.GetPaths(pathlist, id.c_str(), path, strncasecmp(DeviceHandle.PathToFSName(path.c_str()), "WBFS", 4) == 0);
 		m_gameList.clear();
 		Config nullCfg;
 		list.GetHeaders(pathlist, m_gameList, m_settingsDir, m_curLanguage, m_DMLgameDir, nullCfg);
@@ -755,6 +756,7 @@ void CMenu::directlaunch(const string &id)
 			gprintf("Game found on partition #%i\n", i);
 			_launch(&m_gameList[0]); // Launch will exit wiiflow
 		}
+		WBFS_Close();
 	}
 	error(sfmt("errgame1", L"Cannot find the game with ID: %s", id.c_str()));
 }
@@ -1109,7 +1111,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	{
 		if(!emu_disabled)
 		{
-			DeviceHandler::Instance()->UnMount(emuPartition);
+			DeviceHandle.UnMount(emuPartition);
 			Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
 			Nand::Instance()->Enable_Emu();
 		}
@@ -1360,10 +1362,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		if(_loadIOS(gameIOS, userIOS, id) == LOAD_IOS_FAILED)
 			Sys_Exit();
 	}
-	DeviceHandler::Instance()->Open_WBFS(currentPartition);
-	bool wbfs_partition = (DeviceHandler::Instance()->GetFSType(currentPartition) == PART_FS_WBFS);
-	if(!dvd && !wbfs_partition && get_frag_list((u8 *)id.c_str(), (char*)path.c_str(), currentPartition == 0 ? 0x200 : USBStorage2_GetSectorSize()) < 0)
-		Sys_Exit();
 	if(CurrentIOS.Type == IOS_TYPE_D2X)
 	{
 		/* Open ES Module */
@@ -1395,7 +1393,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	if(emulate_mode && !neek2o())
 	{
 		Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
-		DeviceHandler::Instance()->UnMount(emuPartition);
+		DeviceHandle.UnMount(emuPartition);
 
 		if(emulate_mode == 3)
 			Nand::Instance()->Set_RCMode(true);
@@ -1409,12 +1407,16 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			error(_t("errgame6", L"Enabling emu after reload failed!"));
 			Sys_Exit();
 		}
-		if(!DeviceHandler::Instance()->IsInserted(currentPartition))
-			DeviceHandler::Instance()->Mount(currentPartition);
-		DeviceHandler::Instance()->Mount(emuPartition);
+		if(!DeviceHandle.IsInserted(currentPartition))
+			DeviceHandle.Mount(currentPartition);
+		DeviceHandle.Mount(emuPartition);
 	}
 	if(!dvd)
 	{
+		DeviceHandle.OpenWBFS(currentPartition);
+		bool wbfs_partition = (DeviceHandle.GetFSType(currentPartition) == PART_FS_WBFS);
+		if(!wbfs_partition && get_frag_list((u8 *)id.c_str(), (char*)path.c_str(), currentPartition == 0 ? 0x200 : USBStorage2_GetSectorSize()) < 0)
+			Sys_Exit();
 		s32 ret = Disc_SetUSB((u8*)id.c_str(), !wbfs_partition);
 		if(ret < 0)
 		{
@@ -1427,6 +1429,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			error(_t("wbfsoperr2", L"Disc_Open failed"));
 			Sys_Exit();
 		}
+		WBFS_Close();
 	}
 	if(gameconfig.get() != NULL)
 	{

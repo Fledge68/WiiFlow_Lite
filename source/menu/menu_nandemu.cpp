@@ -118,10 +118,10 @@ int CMenu::_FindEmuPart(string *emuPath, int part, bool searchvalid)
 		}
 	}
 	
-	if(!DeviceHandler::Instance()->IsInserted(emuPartition))
-		DeviceHandler::Instance()->Mount(emuPartition);
+	if(!DeviceHandle.IsInserted(emuPartition))
+		DeviceHandle.Mount(emuPartition);
 		
-	if(_TestEmuNand(emuPartition, tmpPath.c_str(), true) && DeviceHandler::Instance()->PartitionUsableForNandEmu(emuPartition))
+	if(_TestEmuNand(emuPartition, tmpPath.c_str(), true) && DeviceHandle.PartitionUsableForNandEmu(emuPartition))
 	{
 		*emuPath = tmpPath;
 		return emuPartition;
@@ -131,10 +131,10 @@ int CMenu::_FindEmuPart(string *emuPath, int part, bool searchvalid)
 		bool fllscn = emuPartition == -1;
 		for(u8 i = part; i <= USB8; ++i)
 		{
-			if(!DeviceHandler::Instance()->IsInserted(i))
-				DeviceHandler::Instance()->Mount(i);
+			if(!DeviceHandle.IsInserted(i))
+				DeviceHandle.Mount(i);
 
-			if(!DeviceHandler::Instance()->PartitionUsableForNandEmu(i))
+			if(!DeviceHandle.PartitionUsableForNandEmu(i))
 				continue;
 
 			if(_TestEmuNand(i, tmpPath.c_str(), true) || searchvalid)
@@ -203,11 +203,11 @@ void CMenu::_enableNandEmu(bool fromconfig)
 		if (!fromconfig)
 			direction = 0;
 		currentPartition = loopNum(currentPartition + direction, (int)USB8);
-		while(!DeviceHandler::Instance()->IsInserted(currentPartition) ||
-			(m_current_view == COVERFLOW_CHANNEL && (DeviceHandler::Instance()->GetFSType(currentPartition) != PART_FS_FAT ||
-				(!isD2XnewerThanV6 && DeviceHandler::Instance()->PathToDriveType(m_appDir.c_str()) == currentPartition) ||
-				(!isD2XnewerThanV6 && DeviceHandler::Instance()->PathToDriveType(m_dataDir.c_str()) == currentPartition))) ||
-			((m_current_view == COVERFLOW_HOMEBREW || m_current_view == COVERFLOW_DML) && DeviceHandler::Instance()->GetFSType(currentPartition) == PART_FS_WBFS))
+		while(!DeviceHandle.IsInserted(currentPartition) ||
+			(m_current_view == COVERFLOW_CHANNEL && (DeviceHandle.GetFSType(currentPartition) != PART_FS_FAT ||
+				(!isD2XnewerThanV6 && DeviceHandle.PathToDriveType(m_appDir.c_str()) == currentPartition) ||
+				(!isD2XnewerThanV6 && DeviceHandle.PathToDriveType(m_dataDir.c_str()) == currentPartition))) ||
+			((m_current_view == COVERFLOW_HOMEBREW || m_current_view == COVERFLOW_DML) && DeviceHandle.GetFSType(currentPartition) == PART_FS_WBFS))
 		{
 			currentPartition = loopNum(currentPartition + direction, (int)USB8);
 			if (limiter > 10) break;

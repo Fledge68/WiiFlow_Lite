@@ -158,7 +158,7 @@ void CMenu::init(void)
 	Playlog_Delete();
 
 	for(int i = SD; i <= USB8; i++) //Find the first partition with a wiiflow.ini
-		if (DeviceHandler::Instance()->IsInserted(i) && DeviceHandler::Instance()->GetFSType(i) != PART_FS_WBFS && stat(fmt("%s:/%s/" CFG_FILENAME, DeviceName[i], APPDATA_DIR2), &dummy) == 0)
+		if (DeviceHandle.IsInserted(i) && DeviceHandle.GetFSType(i) != PART_FS_WBFS && stat(fmt("%s:/%s/" CFG_FILENAME, DeviceName[i], APPDATA_DIR2), &dummy) == 0)
 		{
 			drive = DeviceName[i];
 			break;
@@ -166,7 +166,7 @@ void CMenu::init(void)
 
 	if(drive == check) //No wiiflow.ini found
 		for(int i = SD; i <= USB8; i++) //Find the first partition with a boot.dol
-			if (DeviceHandler::Instance()->IsInserted(i) && DeviceHandler::Instance()->GetFSType(i) != PART_FS_WBFS && stat(fmt("%s:/%s/boot.dol", DeviceName[i], APPDATA_DIR2), &dummy) == 0)
+			if (DeviceHandle.IsInserted(i) && DeviceHandle.GetFSType(i) != PART_FS_WBFS && stat(fmt("%s:/%s/boot.dol", DeviceName[i], APPDATA_DIR2), &dummy) == 0)
 			{
 				drive = DeviceName[i];
 				break;
@@ -174,7 +174,7 @@ void CMenu::init(void)
 			
 	if(drive == check) //No boot.dol found
 		for(int i = SD; i <= USB8; i++) //Find the first partition with apps/wiiflow folder
-			if (DeviceHandler::Instance()->IsInserted(i) && DeviceHandler::Instance()->GetFSType(i) != PART_FS_WBFS && stat(fmt("%s:/%s", DeviceName[i], APPDATA_DIR2), &dummy) == 0)
+			if (DeviceHandle.IsInserted(i) && DeviceHandle.GetFSType(i) != PART_FS_WBFS && stat(fmt("%s:/%s", DeviceName[i], APPDATA_DIR2), &dummy) == 0)
 			{
 				drive = DeviceName[i];
 				break;
@@ -182,7 +182,7 @@ void CMenu::init(void)
 
 	if(drive == check) //No apps/wiiflow folder found
 		for(int i = SD; i <= USB8; i++) // Find the first writable partition
-			if (DeviceHandler::Instance()->IsInserted(i) && DeviceHandler::Instance()->GetFSType(i) != PART_FS_WBFS)
+			if (DeviceHandle.IsInserted(i) && DeviceHandle.GetFSType(i) != PART_FS_WBFS)
 			{
 				drive = DeviceName[i];
 				fsop_MakeFolder((char *)fmt("%s:/%s", DeviceName[i], APPDATA_DIR2)); //Make the apps dir, so saving wiiflow.ini does not fail.
@@ -221,17 +221,17 @@ void CMenu::init(void)
 	if (onUSB)
 	{
 		for(int i = USB1; i <= USB8; i++) //Look for first partition with a wiiflow folder in root
-			if (DeviceHandler::Instance()->IsInserted(i) && DeviceHandler::Instance()->GetFSType(i) != PART_FS_WBFS && stat(fmt("%s:/%s", DeviceName[i], APPDATA_DIR), &dummy) == 0)
+			if (DeviceHandle.IsInserted(i) && DeviceHandle.GetFSType(i) != PART_FS_WBFS && stat(fmt("%s:/%s", DeviceName[i], APPDATA_DIR), &dummy) == 0)
 			{
 				drive = DeviceName[i];
 				break;
 			}
 	}
-	else if(DeviceHandler::Instance()->IsInserted(SD)) drive = DeviceName[SD];
+	else if(DeviceHandle.IsInserted(SD)) drive = DeviceName[SD];
 
 	if(drive == check && onUSB) //No wiiflow folder found in root of any usb partition, and data_on_usb=yes
 		for(int i = USB1; i <= USB8; i++) // Try first USB partition with wbfs folder.
-			if (DeviceHandler::Instance()->IsInserted(i) && DeviceHandler::Instance()->GetFSType(i) != PART_FS_WBFS && stat(fmt(GAMES_DIR, DeviceName[i]), &dummy) == 0)
+			if (DeviceHandle.IsInserted(i) && DeviceHandle.GetFSType(i) != PART_FS_WBFS && stat(fmt(GAMES_DIR, DeviceName[i]), &dummy) == 0)
 			{
 				drive = DeviceName[i];
 				break;
@@ -239,7 +239,7 @@ void CMenu::init(void)
 
 	if(drive == check && onUSB) // No wbfs folder found and data_on_usb=yes
 		for(int i = USB1; i <= USB8; i++) // Try first available USB partition.
-			if (DeviceHandler::Instance()->IsInserted(i) && DeviceHandler::Instance()->GetFSType(i) != PART_FS_WBFS)
+			if (DeviceHandle.IsInserted(i) && DeviceHandle.GetFSType(i) != PART_FS_WBFS)
 			{
 				drive = DeviceName[i];
 				break;
@@ -248,7 +248,7 @@ void CMenu::init(void)
 	if(drive == check)
 	{	
 		_buildMenus();
-		if(DeviceHandler::Instance()->IsInserted(SD))
+		if(DeviceHandle.IsInserted(SD))
 		{
 			error(_fmt("errboot5", L"data_on_usb=yes and No available usb partitions for data!\nUsing SD."));
 			drive = DeviceName[SD];
@@ -320,7 +320,7 @@ void CMenu::init(void)
 	const char *checkDir = m_current_view == COVERFLOW_HOMEBREW ? HOMEBREW_DIR : GAMES_DIR;
 
 	u8 partition = m_cfg.getInt(domain, "partition", 0);  //Auto find a valid partition and fix old ini partition settings.
-	if(m_current_view != COVERFLOW_CHANNEL && (partition > USB8 || !DeviceHandler::Instance()->IsInserted(partition)))
+	if(m_current_view != COVERFLOW_CHANNEL && (partition > USB8 || !DeviceHandle.IsInserted(partition)))
 	{
 		m_cfg.remove(domain, "partition");
 		for(int i = SD; i <= USB8+1; i++) // Find a usb partition with the wbfs folder or wbfs file system, else leave it blank (defaults to 1 later)
@@ -330,8 +330,8 @@ void CMenu::init(void)
 				m_current_view = COVERFLOW_CHANNEL;
 				break;
 			}
-			if (DeviceHandler::Instance()->IsInserted(i)
-				&& ((m_current_view == COVERFLOW_USB && DeviceHandler::Instance()->GetFSType(i) == PART_FS_WBFS)
+			if (DeviceHandle.IsInserted(i)
+				&& ((m_current_view == COVERFLOW_USB && DeviceHandle.GetFSType(i) == PART_FS_WBFS)
 				|| stat(fmt(checkDir, DeviceName[i]), &dummy) == 0))
 			{
 				gprintf("Setting Emu NAND to Partition: %i\n",currentPartition);
@@ -437,7 +437,7 @@ void CMenu::init(void)
 	}
 
 	m_btnMgr.init(m_vid);
-	m_music.Init(m_cfg, m_musicDir, sfmt("%s/music", m_themeDataDir.c_str()));
+	MusicPlayer.Init(m_cfg, m_musicDir, sfmt("%s/music", m_themeDataDir.c_str()));
 
 	_buildMenus();
 
@@ -445,7 +445,7 @@ void CMenu::init(void)
 	m_btnMgr.setRumble(m_cfg.getBool("GENERAL", "rumble", true));
 
 	int exit_to = m_cfg.getInt("GENERAL", "exit_to", 0);
-	if(exit_to == EXIT_TO_BOOTMII && (!DeviceHandler::Instance()->IsInserted(SD) || 
+	if(exit_to == EXIT_TO_BOOTMII && (!DeviceHandle.IsInserted(SD) || 
 	stat(fmt("%s:/bootmii/armboot.bin",DeviceName[SD]), &dummy) != 0 || 
 	stat(fmt("%s:/bootmii/ppcboot.elf", DeviceName[SD]), &dummy) != 0))
 		exit_to = EXIT_TO_HBC;
@@ -496,7 +496,7 @@ void CMenu::cleanup()
 	m_plugin.Cleanup();
 
 	_stopSounds();
-	m_music.cleanup();
+	MusicPlayer.Cleanup();
 	m_cameraSound.release();
 	ClearGameSoundThreadStack();
 	SoundHandler::DestroyInstance();
@@ -1894,7 +1894,7 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 	if(Sys_Exiting())
 		exitHandler(BUTTON_CALLBACK);
 
-	if(withCF && m_gameSelected && m_gamesound_changed && (m_gameSoundHdr == NULL) && !m_gameSound.IsPlaying() && m_music.GetVolume() == 0)
+	if(withCF && m_gameSelected && m_gamesound_changed && (m_gameSoundHdr == NULL) && !m_gameSound.IsPlaying() && MusicPlayer.GetVolume() == 0)
 	{
 		CheckGameSoundThread();
 		m_gameSound.Play(m_bnrSndVol);
@@ -1903,18 +1903,18 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 	else if(!m_gameSelected)
 		m_gameSound.Stop();
 
-	m_music.Tick(m_video_playing || (m_gameSelected && 
+	MusicPlayer.Tick(m_video_playing || (m_gameSelected && 
 		m_gameSound.IsLoaded()) ||  m_gameSound.IsPlaying());
 
-	if(m_music.SongChanged())
+	if(MusicPlayer.SongChanged())
 	{
-		m_btnMgr.setText(m_mainLblCurMusic, m_music.GetFileName(), true);
+		m_btnMgr.setText(m_mainLblCurMusic, MusicPlayer.GetFileName(), true);
 		m_btnMgr.show(m_mainLblCurMusic);
-		m_music.DisplayTime = time(NULL);
+		MusicPlayer.DisplayTime = time(NULL);
 	}
-	else if(m_music.DisplayTime > 0 && time(NULL) - m_music.DisplayTime > 3)
+	else if(MusicPlayer.DisplayTime > 0 && time(NULL) - MusicPlayer.DisplayTime > 3)
 	{
-		m_music.DisplayTime = 0;
+		MusicPlayer.DisplayTime = 0;
 		m_btnMgr.hide(m_mainLblCurMusic);
 	}
 
@@ -2153,14 +2153,12 @@ bool CMenu::_loadChannelList(void)
 	Nand::Instance()->Disable_Emu();
 	if(!disable_emu)
 	{
-		if(useMainIOS)
-			m_music.StopAndSetPos();
-		else
-			_TempLoadIOS();
-		if(!DeviceHandler::Instance()->IsInserted(lastPartition))
-			DeviceHandler::Instance()->Mount(lastPartition);
+		MusicPlayer.Stop();
+		_TempLoadIOS();
+		if(!DeviceHandle.IsInserted(lastPartition))
+			DeviceHandle.Mount(lastPartition);
 
-		DeviceHandler::Instance()->UnMount(currentPartition);
+		DeviceHandle.UnMount(currentPartition);
 
 		Nand::Instance()->Init(emuPath.c_str(), currentPartition, disable_emu);
 		if(Nand::Instance()->Enable_Emu() < 0)
@@ -2169,8 +2167,8 @@ bool CMenu::_loadChannelList(void)
 		gprintf("Using path: \"%s\" for NAND emulation\n", nandpath.c_str());
 	}
 	
-	if(!DeviceHandler::Instance()->IsInserted(currentPartition))
-		DeviceHandler::Instance()->Mount(currentPartition);
+	if(!DeviceHandle.IsInserted(currentPartition))
+		DeviceHandle.Mount(currentPartition);
 
 	if(Nand::Instance()->EmulationEnabled() || disable_emu) 
 	{
@@ -2189,14 +2187,15 @@ bool CMenu::_loadList(void)
 {
 	m_cf.clear();
 	m_gameList.clear();
-	if((m_current_view == COVERFLOW_CHANNEL && m_cfg.getBool("NAND", "disable", true)) || m_current_view != COVERFLOW_CHANNEL)
+	if((m_current_view == COVERFLOW_CHANNEL && m_cfg.getBool("NAND", "disable", true))
+	|| (m_current_view != COVERFLOW_CHANNEL && Nand::Instance()->EmulationEnabled()))
+	{
+		MusicPlayer.Stop();
 		Nand::Instance()->Disable_Emu();
-
+		_TempLoadIOS(IOS_TYPE_NORMAL_IOS);
+	}
 	if(m_cfg.getBool(_domainFromView(), "update_cache"))
 		m_gameList.Update(m_current_view);
-
-	/* Make sure if coming from Emu NAND the IOS is set back */
-	_TempLoadIOS(IOS_TYPE_NORMAL_IOS);
 	gprintf("Loading items of ");
 
 	bool retval;
@@ -2232,22 +2231,23 @@ bool CMenu::_loadList(void)
 bool CMenu::_loadGameList(void)
 {
 	currentPartition = m_cfg.getInt("GAMES", "partition", 1);
-	if(!DeviceHandler::Instance()->IsInserted(currentPartition))
+	if(!DeviceHandle.IsInserted(currentPartition))
 		return false;
 
 	Config tmpcfg;
 	gprintf("%s\n", DeviceName[currentPartition]);
-	DeviceHandler::Instance()->Open_WBFS(currentPartition);
+	DeviceHandle.OpenWBFS(currentPartition);
 	m_gameList.Load(sfmt(GAMES_DIR, DeviceName[currentPartition]), ".wbfs|.iso", m_cfg.getString("GAMES", "lastlanguage", "EN").c_str(), tmpcfg);
 	m_cfg.setString("GAMES", "lastlanguage", m_loc.getString(m_curLanguage, "gametdb_code", "EN"));
 	m_cfg.save();
+	WBFS_Close();
 	return m_gameList.size() > 0 ? true : false;
 }
 
 bool CMenu::_loadHomebrewList()
 {
-	currentPartition = m_cfg.getInt("HOMEBREW", "partition", DeviceHandler::Instance()->PathToDriveType(m_appDir.c_str()));
-	if(!DeviceHandler::Instance()->IsInserted(currentPartition))
+	currentPartition = m_cfg.getInt("HOMEBREW", "partition", DeviceHandle.PathToDriveType(m_appDir.c_str()));
+	if(!DeviceHandle.IsInserted(currentPartition))
 		return false;
 
 	Config tmpcfg;
@@ -2261,7 +2261,7 @@ bool CMenu::_loadHomebrewList()
 bool CMenu::_loadDmlList()
 {
 	currentPartition = m_cfg.getInt("DML", "partition", 0);
-	if(!DeviceHandler::Instance()->IsInserted(currentPartition))
+	if(!DeviceHandle.IsInserted(currentPartition))
 		return false;
 
 	Config tmpcfg;
@@ -2278,7 +2278,7 @@ bool CMenu::_loadDmlList()
 bool CMenu::_loadEmuList()
 {
 	currentPartition = m_cfg.getInt("EMULATOR", "partition", 0);
-	if(!DeviceHandler::Instance()->IsInserted(currentPartition))
+	if(!DeviceHandle.IsInserted(currentPartition))
 		return false;
 
 	gprintf("%s\n", DeviceName[currentPartition]);
@@ -2340,11 +2340,11 @@ void CMenu::_stopSounds(void)
 	// Fade out sounds
 	int fade_rate = m_cfg.getInt("GENERAL", "music_fade_rate", 8);
 
-	if(!m_music.IsStopped())
+	if(!MusicPlayer.IsStopped())
 	{
-		while(m_music.GetVolume() > 0 || m_gameSound.GetVolume() > 0)
+		while(MusicPlayer.GetVolume() > 0 || m_gameSound.GetVolume() > 0)
 		{
-			m_music.Tick(true);
+			MusicPlayer.Tick(true);
 			if(m_gameSound.GetVolume() > 0)
 				m_gameSound.SetVolume(m_gameSound.GetVolume() < fade_rate ? 0 : m_gameSound.GetVolume() - fade_rate);
 			VIDEO_WaitVSync();
@@ -2653,7 +2653,6 @@ void CMenu::RemoveCover( char * id )
 
 void CMenu::_TempLoadIOS(int IOS)
 {
-#ifndef DOLPHIN
 	/* Only temp reload in IOS58 mode */
 	if(useMainIOS || neek2o() || Sys_DolphinMode())
 		return;
@@ -2670,5 +2669,4 @@ void CMenu::_TempLoadIOS(int IOS)
 		for(int chan = WPAD_MAX_WIIMOTES-2; chan >= 0; chan--)
 			WPAD_SetVRes(chan, m_vid.width() + m_cursor[chan].width(), m_vid.height() + m_cursor[chan].height());
 	}
-#endif
 }

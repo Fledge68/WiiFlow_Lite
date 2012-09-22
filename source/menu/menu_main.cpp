@@ -154,7 +154,7 @@ void CMenu::_showMain(void)
 				if(!m_cfg.getBool("NAND", "disable", true))
 				{
 					Nand::Instance()->Disable_Emu();
-					DeviceHandler::Instance()->MountAll();
+					DeviceHandle.MountAll();
 					_hideMain();
 					if(!_AutoCreateNand())
 						m_cfg.setBool("NAND", "disable", true);
@@ -217,7 +217,7 @@ void CMenu::exitHandler(int ExitTo)
 	if(ExitTo == EXIT_TO_BOOTMII) //Bootmii, check that the files are there, or ios will hang.
 	{
 		struct stat dummy;
-		if(!DeviceHandler::Instance()->IsInserted(SD) || 
+		if(!DeviceHandle.IsInserted(SD) || 
 		stat("sd:/bootmii/armboot.bin", &dummy) != 0 || 
 		stat("sd:/bootmii/ppcboot.elf", &dummy) != 0)
 			ExitTo = EXIT_TO_HBC;
@@ -545,14 +545,14 @@ int CMenu::main(void)
 			else if(BTN_MINUS_PRESSED)
 			{
 				if(b_lr_mode)
-					m_music.Previous();
+					MusicPlayer.Previous();
 				else
 					m_cf.pageUp();
 			}
 			else if(BTN_PLUS_PRESSED)
 			{
 				if(b_lr_mode)
-					m_music.Next();
+					MusicPlayer.Next();
 				else
 					m_cf.pageDown();
 			}
@@ -596,7 +596,7 @@ int CMenu::main(void)
 				if(b_lr_mode)
 					m_cf.pageUp();
 				else
-					m_music.Previous();
+					MusicPlayer.Previous();
 			}
 			else if(BTN_RIGHT_PRESSED)
 			{
@@ -604,7 +604,7 @@ int CMenu::main(void)
 				if(b_lr_mode)
 					m_cf.pageDown();
 				else
-					m_music.Next();
+					MusicPlayer.Next();
 			}
 			else if(BTN_PLUS_PRESSED && !m_locked)
 			{
@@ -650,11 +650,11 @@ int CMenu::main(void)
 						Nand::Instance()->Enable_Emu();
 					u8 limiter = 0;
 					currentPartition = loopNum(currentPartition + 1, (int)USB8);
-					while(!DeviceHandler::Instance()->IsInserted(currentPartition) ||
-						((m_current_view == COVERFLOW_CHANNEL || m_current_view == COVERFLOW_EMU) && (DeviceHandler::Instance()->GetFSType(currentPartition) != PART_FS_FAT ||
-							(!isD2XnewerThanV6 && DeviceHandler::Instance()->PathToDriveType(m_appDir.c_str()) == currentPartition) ||
-							(!isD2XnewerThanV6 && DeviceHandler::Instance()->PathToDriveType(m_dataDir.c_str()) == currentPartition))) ||
-						((m_current_view == COVERFLOW_HOMEBREW || m_current_view == COVERFLOW_DML) && DeviceHandler::Instance()->GetFSType(currentPartition) == PART_FS_WBFS))
+					while(!DeviceHandle.IsInserted(currentPartition) ||
+						((m_current_view == COVERFLOW_CHANNEL || m_current_view == COVERFLOW_EMU) && (DeviceHandle.GetFSType(currentPartition) != PART_FS_FAT ||
+							(!isD2XnewerThanV6 && DeviceHandle.PathToDriveType(m_appDir.c_str()) == currentPartition) ||
+							(!isD2XnewerThanV6 && DeviceHandle.PathToDriveType(m_dataDir.c_str()) == currentPartition))) ||
+						((m_current_view == COVERFLOW_HOMEBREW || m_current_view == COVERFLOW_DML) && DeviceHandle.GetFSType(currentPartition) == PART_FS_WBFS))
 					{
 						currentPartition = loopNum(currentPartition + 1, (int)USB8);
 						if(limiter > 10) break;
