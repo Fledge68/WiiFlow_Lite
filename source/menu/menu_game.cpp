@@ -267,7 +267,7 @@ static Banner *_extractBnr(dir_discHdr *hdr)
 	Banner *banner = NULL;
 	DeviceHandle.OpenWBFS(currentPartition);
 	wbfs_disc_t *disc = WBFS_OpenDisc((u8 *) &hdr->id, (char *) hdr->path);
-	if (disc != NULL)
+	if(disc != NULL)
 	{
 		void *bnr = NULL;
 		size = wbfs_extract_file(disc, (char *) "opening.bnr", &bnr);
@@ -299,17 +299,17 @@ static u8 GetRequestedGameIOS(dir_discHdr *hdr)
 {
 	u8 IOS = 0;
 
+	DeviceHandle.OpenWBFS(currentPartition);
 	wbfs_disc_t *disc = WBFS_OpenDisc((u8 *) &hdr->id, (char *) hdr->path);
-	if (!disc) return IOS;
-
-	u8 *titleTMD = NULL;
-	u32 tmd_size = wbfs_extract_file(disc, (char *) "TMD", (void **)&titleTMD);
-	WBFS_CloseDisc(disc);
-
-	if(!titleTMD) return IOS;
-
-	if(tmd_size > 0x18B)
-		IOS = titleTMD[0x18B];
+	if(disc != NULL)
+	{
+		u8 *titleTMD = NULL;
+		u32 tmd_size = wbfs_extract_file(disc, (char *) "TMD", (void **)&titleTMD);
+		if(titleTMD != NULL && tmd_size > 0x18B)
+			IOS = titleTMD[0x18B];
+		WBFS_CloseDisc(disc);
+	}
+	WBFS_Close();
 	return IOS;
 }
 
