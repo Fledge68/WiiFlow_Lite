@@ -341,7 +341,7 @@ STexture::TexErr STexture::fromRAW(const u8 *buffer, u32 w, u32 h, u8 f, Alloc a
 STexture::TexErr STexture::fromJPG(const u8 *buffer, const u32 buffer_size, u8 f, Alloc alloc, u32 minMipSize, u32 maxMipSize)
 {
 	VideoFrame VideoF;
-	decodeRealJpeg(buffer, buffer_size, VideoF);
+	decodeRealJpeg(buffer, buffer_size, VideoF, true);
 	if(!VideoF.getData() || (VideoF.getWidth() % 4) != 0 || (VideoF.getHeight() % 4) != 0)
 		return TE_ERROR;
 	return fromRAW(VideoF.getData(), VideoF.getWidth(), VideoF.getHeight(), f, alloc, minMipSize, maxMipSize);

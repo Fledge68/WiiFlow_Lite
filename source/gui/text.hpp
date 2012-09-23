@@ -58,7 +58,7 @@ private:
 
 enum {
 	MAX_MSG_SIZE	= 1024,
-	MAX_USES		= 16,
+	MAX_USES		= 8,
 };
 
 const char *fmt(const char *format, ...);

@@ -2139,7 +2139,6 @@ bool CMenu::_loadChannelList(void)
 	if(changed)
 		UpdateCache(COVERFLOW_CHANNEL);
 	
-	gprintf("%s, which is %s\n", disable_emu ? "NAND" : DeviceName[emuPartition], changed ? "refreshing." : "cached.");
 
 	if(first && !disable_emu)
 	{
@@ -2196,29 +2195,24 @@ bool CMenu::_loadList(void)
 	}
 	if(m_cfg.getBool(_domainFromView(), "update_cache"))
 		m_gameList.Update(m_current_view);
-	gprintf("Loading items of ");
+	gprintf("Switching Views\n");
 
 	bool retval;
 	switch(m_current_view)
 	{
 		case COVERFLOW_CHANNEL:
-			gprintf("channel view from ");
 			retval = _loadChannelList();
 			break;
 		case COVERFLOW_HOMEBREW:
-			gprintf("homebrew view from ");
 			retval = _loadHomebrewList();
 			break;
 		case COVERFLOW_DML:
-			gprintf("dml view from ");
 			retval = _loadDmlList();
 			break;
 		case COVERFLOW_EMU:
-			gprintf("emu view from ");
 			retval = _loadEmuList();
 			break;
 		default:
-			gprintf("usb view from ");
 			retval = _loadGameList();
 			break;
 	}
@@ -2235,7 +2229,6 @@ bool CMenu::_loadGameList(void)
 		return false;
 
 	Config tmpcfg;
-	gprintf("%s\n", DeviceName[currentPartition]);
 	DeviceHandle.OpenWBFS(currentPartition);
 	m_gameList.Load(sfmt(GAMES_DIR, DeviceName[currentPartition]), ".wbfs|.iso", m_cfg.getString("GAMES", "lastlanguage", "EN").c_str(), tmpcfg);
 	m_cfg.setString("GAMES", "lastlanguage", m_loc.getString(m_curLanguage, "gametdb_code", "EN"));
@@ -2251,7 +2244,6 @@ bool CMenu::_loadHomebrewList()
 		return false;
 
 	Config tmpcfg;
-	gprintf("%s\n", DeviceName[currentPartition]);
 	m_gameList.Load(sfmt(HOMEBREW_DIR, DeviceName[currentPartition]), ".dol|.elf", m_cfg.getString("HOMEBREW", "lastlanguage", "EN").c_str(), tmpcfg);
 	m_cfg.setString("HOMEBREW", "lastlanguage", m_loc.getString(m_curLanguage, "gametdb_code", "EN"));
 	m_cfg.save();
@@ -2265,7 +2257,6 @@ bool CMenu::_loadDmlList()
 		return false;
 
 	Config tmpcfg;
-	gprintf("%s\n", DeviceName[currentPartition]);
 	if(currentPartition != SD)
 		m_gameList.Load(sfmt(m_DMLgameDir.c_str(), DeviceName[currentPartition]), "boot.bin|.iso", m_cfg.getString("DML", "lastlanguage", "EN").c_str(), tmpcfg);
 	else
@@ -2281,7 +2272,6 @@ bool CMenu::_loadEmuList()
 	if(!DeviceHandle.IsInserted(currentPartition))
 		return false;
 
-	gprintf("%s\n", DeviceName[currentPartition]);
 	DIR *pdir;
 	struct dirent *pent;
 
@@ -2564,7 +2554,6 @@ const char *CMenu::_domainFromView()
 
 void CMenu::UpdateCache(u32 view)
 {
-	gprintf("UpdateCache(%ld)\n", view);
 	if(view == COVERFLOW_MAX)
 	{
 		UpdateCache(COVERFLOW_USB);

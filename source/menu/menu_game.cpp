@@ -446,9 +446,9 @@ void CMenu::_game(bool launch)
 		}
 		else if(BTN_MINUS_PRESSED)
 		{
-			string videoPath = sfmt("%s/%.3s.thp", m_videoDir.c_str(), m_cf.getId().c_str());
+			const char *videoPath = fmt("%s/%.3s.thp", m_videoDir.c_str(), m_cf.getId().c_str());
 
-			FILE *file = fopen(videoPath.c_str(), "rb");
+			FILE *file = fopen(videoPath, "r");
 			if(file)
 			{
 				MusicPlayer.Stop();
@@ -456,22 +456,36 @@ void CMenu::_game(bool launch)
 				m_banner->SetShowBanner(false);
 				fclose(file);
 				_hideGame();
-				WiiMovie movie(videoPath.c_str());
+				/* Backup Background */
+				STexture Current_LQ_BG = m_lqBg;
+				STexture Current_HQ_BG = m_curBg;
+				STexture EmptyBG;
+				_setBg(EmptyBG, EmptyBG);
+				/* Lets play the movie */
+				WiiMovie movie(videoPath);
 				movie.SetScreenSize(m_cfg.getInt("GENERAL", "tv_width", 640), m_cfg.getInt("GENERAL", "tv_height", 480), m_cfg.getInt("GENERAL", "tv_x", 0), m_cfg.getInt("GENERAL", "tv_y", 0));
 				movie.SetVolume(m_cfg.getInt("GENERAL", "sound_volume_bnr", 255));
-				//_stopSounds();
-				movie.Play();
-
 				m_video_playing = true;
-
-				STexture videoBg;
-				while(!BTN_B_PRESSED && !BTN_A_PRESSED && !BTN_HOME_PRESSED && movie.GetNextFrame(&videoBg))
+				movie.Play();
+				m_banner->ReSetup_GX();
+				m_vid.setup2DProjection();
+				while(!BTN_B_PRESSED && !BTN_A_PRESSED && !BTN_HOME_PRESSED && movie.GetNextFrame(&m_curBg))
 				{
-					_setBg(videoBg, videoBg);
-					m_bgCrossFade = 10;
-					_mainLoopCommon(); // Redraw the background every frame
+					/* Draw movie BG and render */
+					_drawBg();
+					m_vid.render();
+					m_curBg.data.release();
+					/* Check if we want to stop */
+					WPAD_ScanPads();
+					PAD_ScanPads();
+					ButtonsPressed();
 				}
 				movie.Stop();
+				m_curBg.data.release();
+				/* Finished, so lets re-setup the background */
+				_setBg(Current_HQ_BG, Current_LQ_BG);
+				_updateBg();
+				/* Get back into our coverflow */
 				_showGame();
 				m_video_playing = false;
 				m_banner->SetShowBanner(true);

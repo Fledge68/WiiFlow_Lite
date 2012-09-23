@@ -65,12 +65,12 @@ static void USBGeckoOutput()
 	devoptab_list[STD_ERR] = &gecko_out;
 }
 
-void WriteToFile(char* tmp)
+static void WriteToFile(char* tmp, int len)
 {
 	if(!bufferMessages)
 		return;
 
-	if((strlen(tmpfilebuffer) + strlen(tmp)) < 1024)
+	if((strlen(tmpfilebuffer) + len) < 1024)
 		strcat(tmpfilebuffer, tmp);
 
 	if(WriteToSD)
@@ -85,21 +85,17 @@ void WriteToFile(char* tmp)
 	}
 }
 
-//using the gprintf from crediar because it is smaller than mine
-void gprintf( const char *format, ... )
+char gprintfBuffer[256];
+void gprintf(const char *format, ...)
 {
-	char *tmp = NULL;
 	va_list va;
 	va_start(va, format);
-	if((vasprintf(&tmp, format, va) >= 0) && tmp)
-	{
-		WriteToFile(tmp);
-		WifiGecko_Send(tmp, strlen(tmp));
-		__out_write(NULL, 0, tmp, strlen(tmp));
-		free(tmp);
-	}
+	int len = vsnprintf(gprintfBuffer, 255, format, va);
+	__out_write(NULL, 0, gprintfBuffer, len);
+	WifiGecko_Send(gprintfBuffer, len);
+	WriteToFile(gprintfBuffer, len);
 	va_end(va);
-} 
+}
 
 char ascii(char s)
 {
@@ -141,6 +137,7 @@ void ghexdump(void *d, int len)
 	}
 }
 
+const char *initstr = "USB Gecko inited.\n";
 bool InitGecko()
 {
 	if(geckoinit)
@@ -149,16 +146,16 @@ bool InitGecko()
 	USBGeckoOutput();
 	memset(tmpfilebuffer, 0, 1024);
 
-	#ifdef sd_write_log
-		WriteToSD = true;
-	#endif
+#ifdef sd_write_log
+	WriteToSD = true;
+#endif
 
 	u32 geckoattached = usb_isgeckoalive(EXI_CHANNEL_1);
 	if(geckoattached)
 	{
 		geckoinit = true;
 		usb_flush(EXI_CHANNEL_1);
-		puts("USB Gecko inited.");
+		__out_write(NULL, 0, initstr, strlen(initstr));
 	}
 	return geckoinit;
 }
