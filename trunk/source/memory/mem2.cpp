@@ -14,7 +14,7 @@
 u32 MALLOC_MEM2 = 0;
 
 void *MEM1_lo_start = (void*)0x80004000;
-void *MEM1_lo_end = (void*)0x80A00000;
+void *MEM1_lo_end = (void*)0x80620000;
 
 void *MEM2_start = (void*)0x90200000;
 void *MEM2_end = (void*)0x93100000;
@@ -34,7 +34,7 @@ extern __typeof(malloc_usable_size) __real_malloc_usable_size;
 
 void MEM_init()
 {
-	g_mem1lo.init(MEM1_lo_start, MEM1_lo_end); //about 10mb
+	g_mem1lo.init(MEM1_lo_start, MEM1_lo_end); //about 6mb
 	g_mem1lo.clear();
 
 	g_mem2gp.init(MEM2_start, MEM2_end); //about 47mb
@@ -55,24 +55,16 @@ void MEM1_lo_free(void *p)
 
 void *MEM1_alloc(unsigned int s)
 {
-	void *p = g_mem1lo.allocate(s);
-	if(!p)
-		p = __real_malloc(s);
-	return p;
+	return __real_malloc(s);
 }
 
 void *MEM1_memalign(unsigned int a, unsigned int s)
 {
-	void *p = g_mem1lo.allocate(s);
-	if(!p)
-		p = __real_memalign(a, s);
-	return p;
+	return __real_memalign(a, s);
 }
 
 void *MEM1_realloc(void *p, unsigned int s)
 {
-	if(!p || ((u32)p > (u32)MEM1_lo_start && (u32)p < (u32)MEM1_lo_end))
-		return g_mem1lo.reallocate(p, s);
 	return __real_realloc(p, s);
 }
 
@@ -80,10 +72,7 @@ void MEM1_free(void *p)
 {
 	if(!p)
 		return;
-	if((u32)p > (u32)MEM1_lo_start && (u32)p < (u32)MEM1_lo_end)
-		g_mem1lo.release(p);
-	else
-		__real_free(p);
+	__real_free(p);
 }
 
 unsigned int MEM1_freesize()

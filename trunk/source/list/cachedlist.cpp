@@ -3,7 +3,7 @@
 
 void CachedList::Load(string path, string containing, string m_lastLanguage, Config &m_plugin)													/* Load All */
 {
-	gprintf("\nLoading files containing %s in %s\n", containing.c_str(), path.c_str());
+	//gprintf("\nLoading files containing %s in %s\n", containing.c_str(), path.c_str());
 	m_loaded = false;
 	m_database = sfmt("%s/%s.db", m_cacheDir.c_str(), (make_db_name(path)).c_str());
 
@@ -17,7 +17,7 @@ void CachedList::Load(string path, string containing, string m_lastLanguage, Con
 	bool ditimes = false;
 	if(!m_wbfsFS)
 	{
-		gprintf("Database file: %s\n", m_database.c_str());
+		//gprintf("Database file: %s\n", m_database.c_str());
 		
 		update_games = strcasestr(path.c_str(), "wbfs") != NULL && force_update[COVERFLOW_USB];
 		update_homebrew = strcasestr(path.c_str(), "apps") != NULL && force_update[COVERFLOW_HOMEBREW];
@@ -26,13 +26,13 @@ void CachedList::Load(string path, string containing, string m_lastLanguage, Con
 		const char* partition = DeviceName[DeviceHandle.PathToDriveType(path.c_str())];
 		update_dml = strcasestr(path.c_str(), fmt(strncmp(partition, "sd", 2) != 0 ? m_DMLgameDir.c_str() : "%s:/games", partition)) != NULL && force_update[COVERFLOW_DML];
 
-		gprintf("update_games=%d update_homebrew=%d update_dml=%d, update_emu=%d\n", update_games, update_homebrew, update_dml, update_emu);
+		//gprintf("update_games=%d update_homebrew=%d update_dml=%d, update_emu=%d\n", update_games, update_homebrew, update_dml, update_emu);
 		if(update_games || update_homebrew || update_dml || update_emu)
 			remove(m_database.c_str());
 
 		m_discinf = sfmt("%s/disc.info", path.c_str());
 		struct stat filestat, discinfo, cache;
-		gprintf("%s\n", path.c_str());
+		//gprintf("%s\n", path.c_str());
 		if(stat(path.c_str(), &filestat) == -1) 
 			return;
 
@@ -43,7 +43,7 @@ void CachedList::Load(string path, string containing, string m_lastLanguage, Con
 			ditimes = discinfo.st_mtime > cache.st_mtime;
 
 		m_update = update_lang || noDB || (!m_skipcheck && (mtimes || ditimes));
-		if(m_update) 
+		/*if(m_update) 
 			gprintf("Cache of %s is being updated because:\n", path.c_str());
 		if(update_lang) 
 			gprintf("Languages are different!\nOld language string: %s\nNew language string: %s\n", m_lastLanguage.c_str(), m_curLanguage.c_str());
@@ -51,7 +51,7 @@ void CachedList::Load(string path, string containing, string m_lastLanguage, Con
 			gprintf("A database was not found!\n");
 		if(!m_skipcheck && (mtimes || ditimes)) 
 			gprintf("The WBFS folder was modified!\nCache date: %i\nFolder date: %i\n", cache.st_mtime, filestat.st_mtime);
-
+		*/
 		if(m_extcheck && !m_update && !m_skipcheck)
 		{
 			bool m_chupdate = false;
@@ -78,8 +78,8 @@ void CachedList::Load(string path, string containing, string m_lastLanguage, Con
 
 	if(m_update || m_wbfsFS)
 	{
-		gprintf("Calling list to update filelist\n");
-		
+		gprintf("Updating Cache\n");
+
 		vector<string> pathlist;
 		list.GetPaths(pathlist, containing, path, m_wbfsFS, (update_dml || (m_update && strcasestr(path.c_str(), ":/games") != NULL)), !update_emu);
 		list.GetHeaders(pathlist, *this, m_settingsDir, m_curLanguage, m_DMLgameDir, m_plugin);
@@ -133,9 +133,9 @@ void CachedList::LoadChannels(string path, u32 channelType, string m_lastLanguag
 
 	if(m_update)
 	{
-		gprintf("Updating channels\n");
+		//gprintf("Updating channels\n");
 		list.GetChannels(*this, m_settingsDir, channelType, m_curLanguage);
-		
+
 		m_loaded = true;
 		m_update = false;
 

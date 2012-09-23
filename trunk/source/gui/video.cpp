@@ -255,7 +255,7 @@ void CVideo::prepare(void)
 
 void CVideo::cleanup(void)
 {
-	gprintf("Cleaning up video...\n");
+	//gprintf("Cleaning up video...\n");
 
 	hideWaitMessage();
 	_clearScreen();
@@ -507,7 +507,7 @@ void CVideo::_showWaitMessages(CVideo *m)
 	wiiLightSetLevel(0);
 	wiiLightOn();
 
-	gprintf("Wait Message Thread: Start\nDelay: %d, Images: %d\n", waitFrames, m->m_waitMessages.size());
+	//gprintf("Wait Message Thread: Start\nDelay: %d, Images: %d\n", waitFrames, m->m_waitMessages.size());
 	while(m->m_showWaitMessage)
 	{
 		currentLightLevel += fadeDirection * 5;
@@ -536,7 +536,7 @@ void CVideo::_showWaitMessages(CVideo *m)
 		waitFrames--;
 	}
 	wiiLightOff();
-	gprintf("Wait Message Thread: End\n");
+	//gprintf("Wait Message Thread: End\n");
 	m->m_showingWaitMessages = false;
 }
 

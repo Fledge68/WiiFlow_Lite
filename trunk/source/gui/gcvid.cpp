@@ -752,7 +752,7 @@ void jpegErrorHandler(j_common_ptr cinfo)
 	//MessageBox(g_hWnd, buff, "JpegLib error:", MB_OK);
 }
 
-void decodeRealJpeg(const u8* data, int size, VideoFrame& dest)
+void decodeRealJpeg(const u8* data, int size, VideoFrame& dest, bool fancy)
 {
 	if(g_isLoading)
 		return;
@@ -783,15 +783,21 @@ void decodeRealJpeg(const u8* data, int size, VideoFrame& dest)
 	cinfo.src = &sourceMgr;
 
 	jpeg_read_header(&cinfo, TRUE);
-
-	cinfo.do_fancy_upsampling = TRUE;
-	cinfo.do_block_smoothing = TRUE;
-	cinfo.dct_method = JDCT_ISLOW;
-
-	jpeg_start_decompress(&cinfo);
-
-	dest.resize(ALIGN(4, cinfo.output_width), ALIGN(4, cinfo.output_height));
-
+	if(fancy)
+	{
+		cinfo.do_fancy_upsampling = TRUE;
+		cinfo.do_block_smoothing = TRUE;
+		cinfo.dct_method = JDCT_ISLOW;
+		jpeg_start_decompress(&cinfo);
+		dest.resize(ALIGN(4, cinfo.output_width), ALIGN(4, cinfo.output_height));
+	}
+	else
+	{
+		cinfo.do_fancy_upsampling = FALSE;
+		cinfo.do_block_smoothing = FALSE;
+		jpeg_start_decompress(&cinfo);
+		dest.resize(cinfo.output_width, cinfo.output_height);
+	}
 	if(cinfo.num_components == 3)
 	{
 		int y = 0;

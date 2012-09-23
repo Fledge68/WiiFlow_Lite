@@ -105,7 +105,7 @@ void CList<dir_discHdr>::GetHeaders(vector<string> pathlist, vector<dir_discHdr>
 		return;
 
 	headerlist.reserve(pathlist.size() + headerlist.size());
-	gprintf("Getting headers for paths in pathlist (%d)\n", pathlist.size());
+	//gprintf("Getting headers for paths in pathlist (%d)\n", pathlist.size());
 
 	vector<char*> GC_SD_IDs;
 	bool GC_SD_IDs_loaded = false;

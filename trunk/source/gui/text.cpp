@@ -1,36 +1,27 @@
 #include "text.hpp"
 
-static const wchar_t *g_whitespaces = L" \f\n\r\t\v";
+int currentStr = 0;
+char fmt_buffer[MAX_USES][MAX_MSG_SIZE];
+char general_buffer[MAX_MSG_SIZE];
 
 // Simplified use of sprintf
 const char *fmt(const char *format, ...)
 {
-	static int currentStr = 0;
-	currentStr = (currentStr + 1) % MAX_USES;
-
 	va_list va;
 	va_start(va, format);
-	static char buffer[MAX_USES][MAX_MSG_SIZE];
-	vsnprintf(buffer[currentStr], MAX_MSG_SIZE, format, va);
-	buffer[currentStr][MAX_MSG_SIZE - 1] = '\0';
+	currentStr = (currentStr + 1) % MAX_USES;
+	vsnprintf(fmt_buffer[currentStr], MAX_MSG_SIZE - 1, format, va);
 	va_end(va);
-
-	return buffer[currentStr];
+	return fmt_buffer[currentStr];
 }
 
 string sfmt(const char *format, ...)
 {
 	va_list va;
 	va_start(va, format);
-	u32 length = vsnprintf(0, 0, format, va) + 1;
+	int len = vsnprintf(general_buffer, MAX_MSG_SIZE - 1, format, va);
 	va_end(va);
-	char *tmp = new char[length + 1];
-	va_start(va, format);
-	vsnprintf(tmp, length, format, va);
-	va_end(va);
-	string s = tmp;
-	delete[] tmp;
-	return s;
+	return string(general_buffer, len);
 }
 
 static inline bool fmtCount(const wstringEx &format, int &i, int &s)
@@ -86,20 +77,13 @@ bool checkFmt(const wstringEx &ref, const wstringEx &format)
 
 wstringEx wfmt(const wstringEx &format, ...)
 {
-	// Don't care about performance
 	va_list va;
-	string f(format.toUTF8());
 	va_start(va, format);
-	u32 length = vsnprintf(0, 0, f.c_str(), va) + 1;
+	vsnprintf(general_buffer, MAX_MSG_SIZE - 1, format.toUTF8().c_str(), va);
 	va_end(va);
-	char *tmp = new char[length + 1];
-	va_start(va, format);
-	vsnprintf(tmp, length, f.c_str(), va);
-	va_end(va);
-	wstringEx ws;
-	ws.fromUTF8(tmp);
-	delete[] tmp;
-	return ws;
+	wstringEx wide_buffer;
+	wide_buffer.fromUTF8(general_buffer);
+	return wide_buffer;
 }
 
 string vectorToString(const vector<string> &vect, string sep)
@@ -233,6 +217,7 @@ bool SFont::fromFile(const char *filename, u32 size, u32 lspacing, u32 w, u32 id
 	return true;
 }
 
+static const wchar_t *g_whitespaces = L" \f\n\r\t\v";
 void CText::setText(SFont font, const wstringEx &t)
 {
 	CText::SWord w;

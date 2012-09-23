@@ -58,12 +58,12 @@ class BannerWindow
 		void ToogleGameSettings();
 		bool GetShowBanner() { return ShowBanner; }
 		void SetShowBanner(bool show) { ShowBanner = show; }
+		void ReSetup_GX(void);
 	protected:
 		int MainLoop();
 		void Animate(void);
 		void ChangeGame(Banner *banner);
 		void DrawRectangle(f32 x, f32 y, f32 width, f32 height, GXColor color);
-		void ReSetup_GX(void);
 		void Init(CVideo *vid, u8 *font1, u8 *font2);
 
 		static const float fBannerWidth = 608.f;

@@ -59,7 +59,7 @@ WiiMovie::WiiMovie(const char * filepath)
 		return;
     }
 
-    SndChannels = (Video->getNumChannels() == 2) ? VOICE_STEREO_16BIT : VOICE_MONO_16BIT;
+    SndChannels = (Video->getNumChannels() > 1) ? VOICE_STEREO_16BIT : VOICE_MONO_16BIT;
     SndFrequence = Video->getFrequency();
 	fps = Video->getFps();
     maxSoundSize = Video->getMaxAudioSamples()*Video->getNumChannels()*2;
@@ -263,7 +263,7 @@ void WiiMovie::ReadNextFrame()
 
     u32 FramesNeeded = (u32) (PlayTime.elapsed()*fps);
 
-	gprintf("Reading needed frames: %d\n", FramesNeeded);
+	//gprintf("Reading needed frames: %d\n", FramesNeeded);
 
     while(VideoFrameCount < FramesNeeded)
     {
@@ -273,7 +273,7 @@ void WiiMovie::ReadNextFrame()
 
         ++VideoFrameCount;
 
-		gprintf("Loaded video frame: %d\n", VideoFrameCount);
+		//gprintf("Loaded video frame: %d\n", VideoFrameCount);
 
         if(Video->hasSound())
         {
@@ -298,7 +298,7 @@ void WiiMovie::ReadNextFrame()
             if(ASND_StatusVoice(10) == SND_UNUSED && SoundBuffer.IsBufferReady())
             {
                 ASND_StopVoice(10);
-                ASND_SetVoice(10, SndChannels == 2 ? VOICE_STEREO_16BIT : VOICE_MONO_16BIT, SndFrequence, 0, SoundBuffer.GetBuffer(), SoundBuffer.GetBufferSize(), volume, volume, THPSoundCallback);
+                ASND_SetVoice(10, SndChannels, SndFrequence, 0, SoundBuffer.GetBuffer(), SoundBuffer.GetBufferSize(), volume, volume, THPSoundCallback);
                 SoundBuffer.LoadNext();
             }
         }
