@@ -188,21 +188,3 @@ void IOS_GetCurrentIOSInfo()
 		CurrentIOS.Base = CurrentIOS.Version;
 	DCFlushRange(&CurrentIOS, sizeof(IOS_Info));
 }
-
-bool Hermes_shadow_mload()
-{
-	int v51 = (5 << 4) & 1;
-	if(mload_get_version() >= v51)
-	{
-		IOS_Open("/dev/mload/OFF",0); // shadow /dev/mload supported in hermes cios v5.1
-		gprintf("Shadow mload\n");
-		return true;
-	}
-	return false;
-}
-
-void Hermes_Disable_EHC()
-{
-	IOS_Open("/dev/usb123/OFF", 0);// this disables ehc completely
-	gprintf("Hermes EHC Disabled\n");
-}

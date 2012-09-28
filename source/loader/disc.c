@@ -74,22 +74,6 @@ s32 Disc_Wait(void)
 	return 0;
 }
 
-s32 Disc_SetUSB(const u8 *id, bool frag)
-{
-	/* ENABLE USB in cIOS */
-	if(id)
-	{
-		if(frag)
-			return set_frag_list();
-		s32 part = -1;
-		if(CurrentIOS.Type == IOS_TYPE_HERMES)
-			part = wbfs_part_idx ? wbfs_part_idx - 1 : 0;
-		return WDVD_SetUSBMode(wbfsDev, (u8*)id, part);
-	}
-	/* DISABLE USB in cIOS */
-	return WDVD_SetUSBMode(0, NULL, -1);
-}
-
 s32 Disc_ReadHeader(void *outbuf)
 {
 	/* Read Wii disc header */
