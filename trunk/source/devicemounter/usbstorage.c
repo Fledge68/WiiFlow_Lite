@@ -321,6 +321,15 @@ s32 USBStorage2_GetSectorSize()
 	return 0;
 }
 
+s32 USBStorage2_WBFS_SetDevice(int dev)
+{
+	s32 retval = 0;
+	s32 ret = IOS_IoctlvFormat(hid, fd, USB_IOCTL_WBFS_SET_DEVICE, "i:i", dev, &retval);
+	if(retval)
+		return retval;
+	return ret;
+}
+
 static bool __usbstorage_Startup(void)
 {
 	return USBStorage2_Init(0) >= 0;

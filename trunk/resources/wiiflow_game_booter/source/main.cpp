@@ -29,6 +29,7 @@
 #include "disc.h"
 #include "fst.h"
 #include "wdvd.h"
+#include "gecko.h"
 
 using namespace std;
 IOS_Info CurrentIOS;
@@ -40,11 +41,19 @@ GXRModeObj *vmode = NULL;
 
 u32 AppEntrypoint;
 
-extern "C" { extern void __exception_closeall(); }
+extern "C" {
+extern void __exception_closeall();
+extern s32 wbfsDev;
+extern u32 wbfs_part_idx;
+extern FragList *frag_list;
+}
 
 int main()
 {
 	VIDEO_Init();
+	InitGecko();
+	gprintf("WiiFlow External Booter by FIX94\n");
+
 	configbytes[0] = conf->configbytes[0];
 	configbytes[1] = conf->configbytes[1];
 	hooktype = conf->hooktype;
@@ -52,44 +61,44 @@ int main()
 	CurrentIOS = conf->IOS;
 	app_gameconfig_set(conf->gameconf, conf->gameconfsize);
 	ocarina_set_codes(conf->codelist, conf->codelistend, conf->cheats, conf->cheatSize);
-
-	/* Set low memory */
-	Disc_SetLowMem();
-
-	/* Select an appropriate video mode */
-	vmode = Disc_SelectVMode(conf->vidMode, &vmode_reg);
+	frag_list = conf->fragments;
+	wbfsDev = conf->wbfsDevice;
+	wbfs_part_idx = conf->wbfsPart;
 
 	if(conf->BootType == TYPE_WII_GAME)
 	{
-		/* Re-Init DI */
 		WDVD_Init();
-
-		/* Find Partition */
+		if(conf->GameBootType == TYPE_WII_DISC)
+			Disc_SetUSB(NULL, false);
+		else
+			Disc_SetUSB((u8*)conf->gameID, conf->GameBootType == TYPE_WII_WBFS_EXT);
+		Disc_Open();
+		Disc_SetLowMem();
 		u64 offset = 0;
 		Disc_FindPartition(&offset);
-
-		/* Open Partition */
+		gprintf("Partition Offset: %08x\n", offset);
 		WDVD_OpenPartition(offset);
-
-		/* Run apploader */
+		vmode = Disc_SelectVMode(conf->vidMode, &vmode_reg);
 		Apploader_Run(&p_entry, conf->vidMode, vmode, conf->vipatch, conf->countryString, conf->patchVidMode, 
 					conf->aspectRatio, conf->returnTo);
 		AppEntrypoint = (u32)p_entry;
-
-		/* De-Init DI */
+		if(CurrentIOS.Type == IOS_TYPE_HERMES)
+		{
+			if(conf->GameBootType == TYPE_WII_DISC)
+				Hermes_Disable_EHC();
+			else
+				Hermes_shadow_mload(conf->mload_rev);
+		}
 		WDVD_Close();
 	}
 	else if(conf->BootType == TYPE_CHANNEL)
 	{
-		/* Re-Init ISFS */
 		ISFS_Initialize();
-
-		/* Load and Patch Channel */
 		AppEntrypoint = LoadChannel();
+		Disc_SetLowMem();
+		vmode = Disc_SelectVMode(conf->vidMode, &vmode_reg);
 		PatchChannel(conf->vidMode, vmode, conf->vipatch, conf->countryString, 
 					conf->patchVidMode, conf->aspectRatio);
-
-		/* De-Init ISFS */
 		ISFS_Deinitialize();
 	}
 

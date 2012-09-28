@@ -10,6 +10,7 @@
 #include "cios.h"
 #include "fst.h"
 #include "wip.h"
+#include "gecko.h"
 
 /* Apploader function pointers */
 typedef int   (*app_main)(void **dst, int *size, int *offset);
@@ -33,8 +34,6 @@ static bool Remove_001_Protection(void *Address, int Size);
 static bool PrinceOfPersiaPatch();
 static bool NewSuperMarioBrosPatch();
 bool hookpatched = false;
-
-static void no_print(const char*a __attribute__((unused)),...){}
 
 s32 Apploader_Run(entry_point *entry, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo)
 {
@@ -71,7 +70,7 @@ s32 Apploader_Run(entry_point *entry, u8 vidMode, GXRModeObj *vmode, bool vipatc
 	appldr_entry(&appldr_init, &appldr_main, &appldr_final);
 
 	/* Initialize apploader */
-	appldr_init(no_print);
+	appldr_init(gprintf);
 
 	while(appldr_main(&dst, &len, &offset))
 	{

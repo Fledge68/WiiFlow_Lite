@@ -18,27 +18,36 @@
 #define _CFG_HPP_
 
 #include "cios.h"
+#include "frag.h"
 
 typedef struct _the_CFG {
+	/* needed for wii games */
+	char gameID[7];
+	FragList *fragments;
+	s32 wbfsDevice;
+	u32 wbfsPart;
+	u8 GameBootType;
+	u8 mload_rev;
+	/* needed for channels */
+	u64 title;
+	/* General Stuff */
+	IOS_Info IOS;
+	u8 BootType;
 	u8 vidMode;
+	u8 patchVidMode;
+	u8 configbytes[2];
+	u8 debugger;
 	bool vipatch;
 	bool countryString;
-	u8 patchVidMode;
 	int aspectRatio;
-	u32 returnTo;
-	u8 configbytes[2];
-	IOS_Info IOS;
 	void *codelist;
 	u8 *codelistend;
 	u8 *cheats;
 	u32 cheatSize;
 	u32 hooktype;
-	u8 debugger;
 	u32 *gameconf;
 	u32 gameconfsize;
-	u8 BootType;
-	/* needed for channels */
-	u64 title;
+	u32 returnTo;
 } the_CFG;
 
 static the_CFG *conf = (the_CFG*)0x90000000;

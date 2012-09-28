@@ -311,10 +311,8 @@ int set_frag_list()
 	else ghexdump(frag_list, size); */
 
 	int ret = WDVD_SetFragList(wbfsDev, frag_list, size);
-
-	free(frag_list);
-	frag_list = NULL;
-
+/*	free(frag_list);
+	frag_list = NULL; */
 	if(ret)
 		return ret;
 	return 0;

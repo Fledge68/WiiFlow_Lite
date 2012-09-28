@@ -6,6 +6,12 @@
 extern "C" {
 #endif
 
+enum
+{
+	TYPE_WII_DISC = 0,
+	TYPE_WII_WBFS,
+	TYPE_WII_WBFS_EXT,
+};
 
 enum
 {
@@ -17,7 +23,6 @@ enum
     TYPE_END
 };
 #define NoGameID(x)			(x == TYPE_PLUGIN || x == TYPE_HOMEBREW)
-
 
 enum
 {

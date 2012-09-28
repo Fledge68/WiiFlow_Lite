@@ -119,8 +119,6 @@ private:
 	PartitionHandle *usb1;
 	/* Special Devolution Stuff */
 	PartitionHandle *OGC_Device;
-	/* Dolphin Stuff */
-	bool DolphinSD;
 };
 
 extern DeviceHandler DeviceHandle;

@@ -1198,7 +1198,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		u32 cover = 0;
 		if(!neek2o() && !Sys_DolphinMode())
 		{
-			Disc_SetUSB(NULL, false);
 			if(WDVD_GetCoverStatus(&cover) < 0)
 			{
 				error(_t("errgame7", L"WDVDGetCoverStatus Failed!"));
@@ -1404,7 +1403,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		/* Close ES Module */
 		IOS_Close(ESHandle);
 	}
-	if(emulate_mode && !neek2o())
+	if(emulate_mode && !neek2o() && CurrentIOS.Type == IOS_TYPE_D2X)
 	{
 		Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
 		DeviceHandle.UnMount(emuPartition);
@@ -1425,24 +1424,13 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			DeviceHandle.Mount(currentPartition);
 		DeviceHandle.Mount(emuPartition);
 	}
+	bool wbfs_partition = false;
 	if(!dvd)
 	{
 		DeviceHandle.OpenWBFS(currentPartition);
-		bool wbfs_partition = (DeviceHandle.GetFSType(currentPartition) == PART_FS_WBFS);
+		wbfs_partition = (DeviceHandle.GetFSType(currentPartition) == PART_FS_WBFS);
 		if(!wbfs_partition && get_frag_list((u8 *)id.c_str(), (char*)path.c_str(), currentPartition == 0 ? 0x200 : USBStorage2_GetSectorSize()) < 0)
 			Sys_Exit();
-		s32 ret = Disc_SetUSB((u8*)id.c_str(), !wbfs_partition);
-		if(ret < 0)
-		{
-			gprintf("Set USB failed: %d\n", ret);
-			error(wfmt(_fmt("errgame10", L"Set USB failed: %d"), ret));
-			Sys_Exit();
-		}
-		if(Disc_Open(false) < 0)
-		{
-			error(_t("wbfsoperr2", L"Disc_Open failed"));
-			Sys_Exit();
-		}
 		WBFS_Close();
 	}
 	if(gameconfig.get() != NULL)
@@ -1455,13 +1443,9 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		ocarina_load_code(cheatFile.get(), cheatSize);
 		cheatFile.release();
 	}
-	if(CurrentIOS.Type == IOS_TYPE_HERMES)
-	{
-		if(dvd)
-			Hermes_Disable_EHC();
-		else
-			Hermes_shadow_mload();
-	}
+	if(CurrentIOS.Type == IOS_TYPE_HERMES && currentPartition == 0)
+		USBStorage2_WBFS_SetDevice(1);
+	ExternalBooter_WiiGameSetup(wbfs_partition, dvd, id.c_str());
 	WiiFlow_ExternalBooter(videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, returnTo, TYPE_WII_GAME);
 }
 

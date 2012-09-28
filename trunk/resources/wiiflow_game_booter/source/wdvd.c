@@ -2,6 +2,7 @@
 #include <string.h>
 #include <malloc.h>
 #include <ogcsys.h>
+#include "gecko.h"
 
 /* Constants */
 #define IOCTL_DI_READID					0x70
@@ -295,6 +296,7 @@ s32 WDVD_GetCoverStatus(u32 *status)
 
 s32 WDVD_SetUSBMode(u32 mode, const u8 *id, s32 partition) 
 {
+	gprintf("WDVD_SetUSBMode, Mode: %i, ID: %s, Partition: %i\n", mode, id, partition);
     memset(inbuf, 0, sizeof(inbuf));
 
     /* Set USB mode */
@@ -334,6 +336,7 @@ s32 WDVD_Read_Disc_BCA(void *buf)
 
 s32 WDVD_SetFragList(int device, void *fraglist, int size)
 {
+	gprintf("WDVD_SetFragList, Device: %i, Size %d\n", device, size);
 	memset(inbuf, 0, sizeof(inbuf));
 	memset(outbuf, 0, sizeof(outbuf));
 

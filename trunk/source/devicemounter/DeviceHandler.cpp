@@ -48,28 +48,16 @@ void DeviceHandler::Init()
 	usb0 = NULL;
 	usb1 = NULL;
 	OGC_Device = NULL;
-	DolphinSD = false;
 }
 
 void DeviceHandler::MountAll()
 {
-	if(Sys_DolphinMode())
-	{
-		DolphinSD = fatMountSimple("sd", &__io_wiisd);
-		return;
-	}
 	MountSD();
 	MountAllUSB();
 }
 
 void DeviceHandler::UnMountAll()
 {
-	if(Sys_DolphinMode())
-	{
-		fatUnmount("sd");
-		DolphinSD = false;
-		return;
-	}
 	/* Kill possible USB thread */
 	KillUSBKeepAliveThread();
 
@@ -106,7 +94,7 @@ bool DeviceHandler::Mount(int dev)
 bool DeviceHandler::IsInserted(int dev)
 {
 	if(dev == SD)
-		return Sys_DolphinMode() ? DolphinSD : SD_Inserted() && sd->IsMounted(0);
+		return SD_Inserted() && sd->IsMounted(0);
 
 	else if(dev >= USB1 && dev <= USB8)
 	{
@@ -130,30 +118,35 @@ void DeviceHandler::UnMount(int dev)
 
 void DeviceHandler::SetModes()
 {
-	/* Set for USB */
 	if(CurrentIOS.Type == IOS_TYPE_NORMAL_IOS)
-		usb_libogc_mode = 1;
-	else
-		usb_libogc_mode = 0;
-	/* Set for SD */
-	if(CurrentIOS.Type == IOS_TYPE_D2X)
-		sdhc_mode_sd = 0;
-	else
+	{
 		sdhc_mode_sd = 1;
+		usb_libogc_mode = 1;
+	}
+	else
+	{
+		sdhc_mode_sd = 0;
+		usb_libogc_mode = 0;
+	}
 }
 
 bool DeviceHandler::MountSD()
 {
 	if(!sd)
-		sd = new PartitionHandle(&__io_sdhc);
-	if(sd && sd->GetPartitionCount() < 1)
 	{
-		delete sd;
-		sd = NULL;
-		return false;
+		if(CurrentIOS.Type == IOS_TYPE_HERMES)
+		{	/* Slowass Hermes SDHC Module */
+			for(int i = 0; i < 50; i++)
+			{
+				if(SDHC_Init())
+					break;
+				usleep(1000);
+			}
+		}
+		sd = new PartitionHandle(&__io_sdhc);
 	}
 	//! Mount only one SD Partition
-	return sd->Mount(0, DeviceName[SD], true);
+	return sd->Mount(0, DeviceName[SD], true); /* Force FAT */
 }
 
 bool DeviceHandler::MountUSB(int pos)
@@ -183,12 +176,6 @@ bool DeviceHandler::MountAllUSB()
 	/* Get Partitions and Mount them */
 	if(!usb0)
 		usb0 = new PartitionHandle(GetUSB0Interface());
-	if(usb0 && usb0->GetPartitionCount() < 1)
-	{
-		delete usb0;
-		usb0 = NULL;
-		return false;
-	}
 	bool result = false;
 	int partCount = GetUSBPartitionCount();
 	for(int i = 0; i < partCount; i++)
@@ -196,6 +183,8 @@ bool DeviceHandler::MountAllUSB()
 		if(MountUSB(i))
 			result = true;
 	}
+	if(!result)
+		result = usb0->Mount(0, DeviceName[USB1], true); /* Force FAT */
 	if(result && usb_libogc_mode)
 		CreateUSBKeepAliveThread();
 	return result;
@@ -387,9 +376,6 @@ void DeviceHandler::UnMountDevolution(int CurrentPartition)
 
 bool DeviceHandler::UsablePartitionMounted()
 {
-	if(Sys_DolphinMode())
-		return DolphinSD;
-
 	for(u8 i = SD; i < MAXDEVICES; i++)
 	{
 		if(IsInserted(i) && !GetWbfsHandle(i)) //Everything besides WBFS for configuration

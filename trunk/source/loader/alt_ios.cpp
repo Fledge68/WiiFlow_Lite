@@ -22,7 +22,6 @@
 #include "mload.h"
 #include "ehcmodule_5.h"
 #include "dip_plugin_249.h"
-#include "odip_frag.h"
 #include "mload_modules.h"
 
 extern "C" { extern u8 currentPartition; }
@@ -30,13 +29,8 @@ u8 use_port1 = 0;
 
 static int load_ehc_module_ex(void)
 {
-	ehcmodule = ehcmodule_5;
-	size_ehcmodule = size_ehcmodule_5;
-	dip_plugin = odip_frag;
-	size_dip_plugin = size_odip_frag;
-
-	u8 *ehc_cfg = search_for_ehcmodule_cfg((u8 *)ehcmodule, size_ehcmodule);
-	if (ehc_cfg)
+	u8 *ehc_cfg = search_for_ehcmodule_cfg((u8 *)ehcmodule_5, size_ehcmodule_5);
+	if(ehc_cfg)
 	{
 		ehc_cfg += 12;
 		ehc_cfg[0] = use_port1;
@@ -64,7 +58,6 @@ static int load_ehc_module_ex(void)
 			mload_setw((void *) (addr+0x48), 0x1001);
 	}
 	load_ehc_module();
-
 	return 0;
 }
 
@@ -75,7 +68,7 @@ void load_dip_249()
 		return;
 
 	gprintf("Loading 249 dip...");
-	int ret = mload_module((void *) dip_plugin_249, size_dip_plugin_249);
+	int ret = mload_module((void *)dip_plugin_249, size_dip_plugin_249);
 	gprintf("%d\n", ret);
 	mload_close();
 }

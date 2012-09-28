@@ -17,8 +17,9 @@
 #include <gccore.h>
 #include <string.h>
 #include "external_booter.hpp"
-#include "cios.h"
+#include "Config.hpp"
 #include "fst.h"
+#include "mload.h"
 #include "wdvd.h"
 #include "channel/nand.hpp"
 #include "devicemounter/DeviceHandler.hpp"
@@ -34,28 +35,6 @@ extern "C" {
 u8 configbytes[2];
 u32 hooktype;
 };
-
-typedef struct _the_CFG {
-	u8 vidMode;
-	bool vipatch;
-	bool countryString;
-	u8 patchVidMode;
-	int aspectRatio;
-	u32 returnTo;
-	u8 configbytes[2];
-	IOS_Info IOS;
-	void *codelist;
-	u8 *codelistend;
-	u8 *cheats;
-	u32 cheatSize;
-	u32 hooktype;
-	u8 debugger;
-	u32 *gameconf;
-	u32 gameconfsize;
-	u8 BootType;
-	/* needed for channels */
-	u64 title;
-} the_CFG;
 
 the_CFG normalCFG;
 
@@ -93,6 +72,19 @@ void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 pat
 	memcpy(EXECUTE_ADDR, wii_game_booter_dol, wii_game_booter_dol_size);
 	DCFlushRange(EXECUTE_ADDR, wii_game_booter_dol_size);
 	BootHomebrew();
+}
+
+extern FragList *frag_list;
+extern s32 wbfsDev;
+extern u32 wbfs_part_idx;
+void ExternalBooter_WiiGameSetup(bool wbfs, bool dvd, const char *ID)
+{
+	normalCFG.GameBootType = dvd ? TYPE_WII_DISC : (wbfs ? TYPE_WII_WBFS : TYPE_WII_WBFS_EXT);
+	strncpy(normalCFG.gameID, ID, 6);
+	normalCFG.fragments = frag_list;
+	normalCFG.wbfsDevice = wbfsDev;
+	normalCFG.wbfsPart = wbfs_part_idx;
+	normalCFG.mload_rev = mload_get_version();
 }
 
 void ExternalBooter_ChannelSetup(u64 title)
