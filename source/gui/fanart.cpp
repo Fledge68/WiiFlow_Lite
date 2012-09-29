@@ -24,58 +24,70 @@ void CFanart::unload()
 	m_cfg.unload();
 	m_loaded = false;
 	m_elms.clear();
+	if(m_bg.data.get() != NULL)
+		m_bg.data.release();
+	if(m_bglq.data.get() != NULL)
+		m_bglq.data.release();
 }
 
 bool CFanart::load(Config &m_globalConfig, const char *path, const char *id)
 {
 	bool retval = false;
 
-	if (!m_globalConfig.getBool("FANART", "enable_fanart", true))
+	if(!m_globalConfig.getBool("FANART", "enable_fanart", true))
 		return retval;
-	
+
 	unload();
 
-	const char *dir = fmt("%s/%s", path, id);
+	char dir[64];
+	memset(dir,0, 64);
+	strncpy(dir, fmt("%s/%s", path, id), 63);
 	STexture fanBg, fanBgLq;
-	
+
 	STexture::TexErr texErr = fanBg.fromImageFile(fmt("%s/background.png", dir));
-	if (texErr == STexture::TE_ERROR)
+	if(texErr == STexture::TE_ERROR)
 	{
-		dir = fmt("%s/%.3s", path, id);
+		memset(dir,0, 64);
+		strncpy(dir, fmt("%s/%.3s", path, id), 63);
 		texErr = fanBg.fromImageFile(fmt("%s/background.png", dir));
 	}
 
 	if (texErr == STexture::TE_OK)
 	{
-		m_cfg.load(fmt("%s/%s.ini", dir, id));
-		if (!m_cfg.loaded()) m_cfg.load(fmt("%s/%.3s.ini", dir, id));
-
+		char cfg_char[64];
+		memset(cfg_char,0, 64);
+		strncpy(cfg_char, fmt("%s/%s.ini", dir, id), 63);
+		m_cfg.load(cfg_char);
+		if(!m_cfg.loaded())
+		{
+			memset(cfg_char,0, 64);
+			strncpy(cfg_char, fmt("%s/%.3s.ini", dir, id), 63);
+			m_cfg.load(cfg_char);
+		}
 		fanBgLq.fromImageFile(fmt("%s/background_lq.png", dir));
-		
-		for (int i = 1; i <= 6; i++)
+		for(int i = 1; i <= 6; i++)
 		{
 			CFanartElement elm(m_cfg, dir, i);
 			if (elm.IsValid()) m_elms.push_back(elm);
 		}
-		
 		m_loaded = true;
 		retval = true;
-        m_defaultDelay = m_globalConfig.getInt("FANART", "delay_after_animation", 200);
-        m_delayAfterAnimation = m_cfg.getInt("GENERAL", "delay_after_animation", m_defaultDelay);
-        m_allowArtworkOnTop = m_globalConfig.getBool("FANART", "allow_artwork_on_top", true);
-	    m_globalHideCover = m_globalConfig.getOptBool("FANART", "hidecover", 2); // 0 is false, 1 is true, 2 is default
-	    m_globalShowCoverAfterAnimation = m_globalConfig.getOptBool("FANART", "show_cover_after_animation", 2);
-   	}
-	
+		m_defaultDelay = m_globalConfig.getInt("FANART", "delay_after_animation", 200);
+		m_delayAfterAnimation = m_cfg.getInt("GENERAL", "delay_after_animation", m_defaultDelay);
+		m_allowArtworkOnTop = m_globalConfig.getBool("FANART", "allow_artwork_on_top", true);
+		m_globalHideCover = m_globalConfig.getOptBool("FANART", "hidecover", 2); // 0 is false, 1 is true, 2 is default
+		m_globalShowCoverAfterAnimation = m_globalConfig.getOptBool("FANART", "show_cover_after_animation", 2);
+	}
+
 	m_bg = fanBg;
 	m_bglq = fanBgLq;
-	
+
 	return retval;
 }
 
 void CFanart::getBackground(STexture &hq, STexture &lq)
 {
-	if (m_loaded)
+	if(m_loaded)
 	{
 		hq = m_bg;
 		lq = m_bglq;
@@ -89,7 +101,7 @@ CColor CFanart::getTextColor(CColor themeTxtColor)
 
 bool CFanart::hideCover()
 {
-	if (!isLoaded())
+	if(!m_loaded)
 		return false; // If no fanart is loaded, return false
 /*
 
@@ -107,20 +119,20 @@ fanart_showafter defaults to False
 8  default      default/True     default          True           False     False
 9    *                *               *            *               *       True   
 */
-    // rules 1 and 2
-	if (m_globalHideCover != 2)
+	// rules 1 and 2
+	if(m_globalHideCover != 2)
 		return m_globalHideCover == 1;
-    // rule 3
-    if (!m_cfg.getBool("GENERAL", "hidecover", true))
-        return false;
-    // rules 4, 5 and 6
-    if (m_globalShowCoverAfterAnimation != 2)
-        return m_globalShowCoverAfterAnimation == 0 || !isAnimationComplete();
-    // rules 7 and 8
-    if (m_cfg.getBool("GENERAL", "show_cover_after_animation", false))
-        return !isAnimationComplete();
-    // rule 9
-    return true;
+	// rule 3
+	if(!m_cfg.getBool("GENERAL", "hidecover", true))
+		return false;
+	// rules 4, 5 and 6
+	if(m_globalShowCoverAfterAnimation != 2)
+		return m_globalShowCoverAfterAnimation == 0 || !isAnimationComplete();
+	// rules 7 and 8
+	if(m_cfg.getBool("GENERAL", "show_cover_after_animation", false))
+		return !isAnimationComplete();
+	// rule 9
+	return true;
 }
 
 bool CFanart::isLoaded()
@@ -136,19 +148,20 @@ bool CFanart::isAnimationComplete()
 void CFanart::tick()
 {
 	m_animationComplete = true;
-	for (u32 i = 0; i < m_elms.size(); ++i)
+	for(u32 i = 0; i < m_elms.size(); ++i)
 	{
 		m_elms[i].tick();
-		if (!m_elms[i].IsAnimationComplete())
+		if(!m_elms[i].IsAnimationComplete())
 			m_animationComplete = false;
 	}
-    if (m_animationComplete && m_delayAfterAnimation > 0)
-        m_delayAfterAnimation--;
+	if(m_animationComplete && m_delayAfterAnimation > 0)
+		m_delayAfterAnimation--;
 }
 
 void CFanart::draw(bool front)
 {
-	if (!m_allowArtworkOnTop && front)
+	if(!m_loaded) return; //derp
+	if(!m_allowArtworkOnTop && front)
 		return;	// It's not allowed to draw fanart on top, it has already been drawn
 
 	GX_SetNumChans(1);
@@ -167,9 +180,9 @@ void CFanart::draw(bool front)
 	GX_SetAlphaUpdate(GX_TRUE);
 	GX_SetCullMode(GX_CULL_NONE);
 	GX_SetZMode(GX_DISABLE, GX_LEQUAL, GX_TRUE);
-	
-	for (u32 i = 0; i < m_elms.size(); ++i)
-		if (!m_allowArtworkOnTop || ((front && m_elms[i].ShowOnTop()) || !front))
+
+	for(u32 i = 0; i < m_elms.size(); ++i)
+		if(!m_allowArtworkOnTop || ((front && m_elms[i].ShowOnTop()) || !front))
 			m_elms[i].draw();
 }
 
@@ -180,9 +193,9 @@ CFanartElement::CFanartElement(Config &cfg, const char *dir, int artwork)
 	if (!m_isValid)	return;
 
 	const char *section = fmt("artwork%d", artwork);
-	
+
 	m_show_on_top = cfg.getBool(section, "show_on_top", true);
-	
+
 	m_x = cfg.getInt(section, "x", 0);
 	m_y = cfg.getInt(section, "y", 0);
 	m_scaleX = cfg.getFloat(section, "scale_x", 1.f);
@@ -198,7 +211,7 @@ CFanartElement::CFanartElement(Config &cfg, const char *dir, int artwork)
 	m_event_scaleY = m_event_duration == 0 ? m_scaleY : cfg.getInt(section, "event_scale_y", m_scaleY);
 	m_event_alpha = m_event_duration == 0 ? m_alpha : min(cfg.getInt(section, "event_alpha", m_alpha), 255); // Not from m_alpha, because the animation can start less translucent than m_alpha
 	m_event_angle = m_event_duration == 0 ? m_angle : cfg.getFloat(section, "event_angle", m_angle);
-	
+
 	m_step_x = m_event_duration == 0 ? 0 : (m_x - m_event_x) / m_event_duration;
 	m_step_y = m_event_duration == 0 ? 0 : (m_y - m_event_y) / m_event_duration;
 	m_step_scaleX = m_event_duration == 0 ? 0 : (m_scaleX - m_event_scaleX) / m_event_duration;
@@ -209,6 +222,8 @@ CFanartElement::CFanartElement(Config &cfg, const char *dir, int artwork)
 
 CFanartElement::~CFanartElement(void)
 {
+	if(m_art.data.get() != NULL)
+		m_art.data.release();
 }
 
 bool CFanartElement::IsValid()
@@ -228,71 +243,69 @@ bool CFanartElement::ShowOnTop()
 
 void CFanartElement::tick()
 {
-	if (m_delay > 0)
+	if(m_delay > 0)
 	{
 		m_delay--;
 		return;
 	}
 
-	if ((m_step_x < 0 && m_event_x > m_x) || (m_step_x > 0 && m_event_x < m_x))
+	if((m_step_x < 0 && m_event_x > m_x) || (m_step_x > 0 && m_event_x < m_x))
 		m_event_x = (int) (m_event_x + m_step_x);
-	if ((m_step_y < 0 && m_event_y > m_y) || (m_step_y > 0 && m_event_y < m_y))
+	if((m_step_y < 0 && m_event_y > m_y) || (m_step_y > 0 && m_event_y < m_y))
 		m_event_y = (int) (m_event_y + m_step_y);
-	if ((m_step_alpha < 0 && m_event_alpha > m_alpha) || (m_step_alpha > 0 && m_event_alpha < m_alpha))
+	if((m_step_alpha < 0 && m_event_alpha > m_alpha) || (m_step_alpha > 0 && m_event_alpha < m_alpha))
 		m_event_alpha = (int) (m_event_alpha + m_step_alpha);
-	if ((m_step_scaleX < 0 && m_event_scaleX > m_scaleX) || (m_step_scaleX > 0 && m_event_scaleX < m_scaleX))
+	if((m_step_scaleX < 0 && m_event_scaleX > m_scaleX) || (m_step_scaleX > 0 && m_event_scaleX < m_scaleX))
 		m_event_scaleX += m_step_scaleX;
-	if ((m_step_scaleY < 0 && m_event_scaleY > m_scaleY) || (m_step_scaleY > 0 && m_event_scaleY < m_scaleY))
+	if((m_step_scaleY < 0 && m_event_scaleY > m_scaleY) || (m_step_scaleY > 0 && m_event_scaleY < m_scaleY))
 		m_event_scaleY += m_step_scaleY;
-	if ((m_step_angle < 0 && m_event_angle > m_angle) || (m_step_angle > 0 && m_event_angle < m_angle))
+	if((m_step_angle < 0 && m_event_angle > m_angle) || (m_step_angle > 0 && m_event_angle < m_angle))
 		m_event_angle = (int) (m_event_angle + m_step_angle);
-	
-	if (m_event_duration > 0)
-	{
+
+	if(m_event_duration > 0)
 		m_event_duration--;
-	}
 }
 
 void CFanartElement::draw()
 {
-	if (m_event_alpha == 0 || m_event_scaleX == 0.f || m_event_scaleY == 0.f || m_delay > 0)
+	if(m_event_alpha == 0 || m_event_scaleX == 0.f || m_event_scaleY == 0.f || m_delay > 0)
 		return;
-	
+
 	GXTexObj artwork;
 	Mtx modelViewMtx, idViewMtx, rotViewMtxZ;
 
 	guMtxIdentity(idViewMtx);
 	guMtxScaleApply(idViewMtx, idViewMtx, m_event_scaleX, m_event_scaleY, 1.f);
-	
+
 	guMtxRotAxisDeg(rotViewMtxZ, &_GRRaxisz, m_event_angle);
 	guMtxConcat(rotViewMtxZ, idViewMtx, modelViewMtx);
-	
+
 	guMtxTransApply(modelViewMtx, modelViewMtx, m_event_x, m_event_y, 0.f);
 	GX_LoadPosMtxImm(modelViewMtx, GX_PNMTX0);
 
 	GX_InitTexObj(&artwork, m_art.data.get(), m_art.width, m_art.height, m_art.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 	GX_LoadTexObj(&artwork, GX_TEXMAP0);
-	
+
 	float w = (float)(m_art.width / 2); // * m_event_scaleX;
 	float h = (float)(m_art.height / 2); // * m_event_scaleY;
 
 	GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
-	
+
 	// Draw top left
 	GX_Position3f32(-w, -h, 0.f);
 	GX_Color4u8(0xFF, 0xFF, 0xFF, m_event_alpha);
 	GX_TexCoord2f32(0.f, 0.f);
-	
+
 	// Draw top right
 	GX_Position3f32(w, -h, 0.f);
 	GX_Color4u8(0xFF, 0xFF, 0xFF, m_event_alpha);
 	GX_TexCoord2f32(1.f, 0.f);
-	
+
 	// Draw bottom right
 	GX_Position3f32(w, h, 0.f);
 	GX_Color4u8(0xFF, 0xFF, 0xFF, m_event_alpha);
 	GX_TexCoord2f32(1.f, 1.f);
-	
+
 	// Draw bottom left
 	GX_Position3f32(-w, h, 0.f);
 	GX_Color4u8(0xFF, 0xFF, 0xFF, m_event_alpha);
