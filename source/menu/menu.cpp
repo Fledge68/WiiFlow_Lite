@@ -146,6 +146,7 @@ CMenu::CMenu(CVideo &vid) :
 	m_Emulator_boot = false;
 	m_banner = new BannerWindow;
 	m_gameSound.SetVoice(1);
+	m_music_info = true;
 }
 
 void CMenu::init(void)
@@ -438,6 +439,7 @@ void CMenu::init(void)
 
 	m_btnMgr.init(m_vid);
 	MusicPlayer.Init(m_cfg, m_musicDir, sfmt("%s/music", m_themeDataDir.c_str()));
+	m_music_info = m_cfg.getBool("GENERAL", "display_music_info", true);
 
 	_buildMenus();
 
@@ -1906,7 +1908,7 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 	MusicPlayer.Tick(m_video_playing || (m_gameSelected && 
 		m_gameSound.IsLoaded()) ||  m_gameSound.IsPlaying());
 
-	if(MusicPlayer.SongChanged())
+	if(MusicPlayer.SongChanged() && m_music_info)
 	{
 		m_btnMgr.setText(m_mainLblCurMusic, MusicPlayer.GetFileName(), true);
 		m_btnMgr.show(m_mainLblCurMusic);
