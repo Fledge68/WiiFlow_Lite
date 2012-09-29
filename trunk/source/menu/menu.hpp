@@ -76,6 +76,7 @@ private:
 	bool m_directLaunch;
 	bool m_locked;
 	bool m_favorites;
+	bool m_music_info;
 	s16 m_showtimer;
 	string m_curLanguage;
 	string m_curGameId;
