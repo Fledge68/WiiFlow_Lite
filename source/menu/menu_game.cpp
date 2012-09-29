@@ -1431,6 +1431,8 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		wbfs_partition = (DeviceHandle.GetFSType(currentPartition) == PART_FS_WBFS);
 		if(!wbfs_partition && get_frag_list((u8 *)id.c_str(), (char*)path.c_str(), currentPartition == 0 ? 0x200 : USBStorage2_GetSectorSize()) < 0)
 			Sys_Exit();
+		if(currentPartition == 0)
+			USBStorage2_WBFS_SetDevice(1);
 		WBFS_Close();
 	}
 	if(gameconfig.get() != NULL)
@@ -1443,8 +1445,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		ocarina_load_code(cheatFile.get(), cheatSize);
 		cheatFile.release();
 	}
-	if(CurrentIOS.Type == IOS_TYPE_HERMES && currentPartition == 0)
-		USBStorage2_WBFS_SetDevice(1);
 	ExternalBooter_WiiGameSetup(wbfs_partition, dvd, id.c_str());
 	WiiFlow_ExternalBooter(videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, returnTo, TYPE_WII_GAME);
 }

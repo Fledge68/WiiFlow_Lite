@@ -336,7 +336,7 @@ s32 WDVD_Read_Disc_BCA(void *buf)
 
 s32 WDVD_SetFragList(int device, void *fraglist, int size)
 {
-	gprintf("WDVD_SetFragList, Device: %i, Size %d\n", device, size);
+	gprintf("WDVD_SetFragList, Device: %i, Size: %i\n", device, size);
 	memset(inbuf, 0, sizeof(inbuf));
 	memset(outbuf, 0, sizeof(outbuf));
 

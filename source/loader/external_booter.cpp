@@ -23,7 +23,9 @@
 #include "wdvd.h"
 #include "channel/nand.hpp"
 #include "devicemounter/DeviceHandler.hpp"
+#include "gui/text.hpp"
 #include "homebrew/homebrew.h"
+#include "memory/mem2.hpp"
 
 /* External WiiFlow Game Booter */
 #define EXECUTE_ADDR	((u8 *)0x92000000)
@@ -36,8 +38,6 @@ u8 configbytes[2];
 u32 hooktype;
 };
 
-the_CFG normalCFG;
-
 extern u8 *code_buf;
 extern u32 code_size;
 extern void *codelist;
@@ -45,6 +45,7 @@ extern u8 *codelistend;
 extern u32 gameconfsize;
 extern u32 *gameconf;
 
+the_CFG normalCFG;
 void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, int aspectRatio, u32 returnTo, u8 BootType)
 {
 	normalCFG.vidMode = vidMode;
@@ -65,10 +66,14 @@ void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 pat
 	normalCFG.gameconf = gameconf;
 	normalCFG.gameconfsize = gameconfsize;
 	normalCFG.BootType = BootType;
-	memcpy((void *)0x90000000, &normalCFG, sizeof(the_CFG));
-	DCFlushRange((void *)(0x90000000), sizeof(the_CFG));
 
 	ShutdownBeforeExit(true);
+	/* Copy CFG into new memory region */
+	void *GameCFG = MEM1_lo_alloc(sizeof(the_CFG));
+	memcpy(GameCFG, &normalCFG, sizeof(the_CFG));
+	DCFlushRange(GameCFG, sizeof(the_CFG));
+	AddBootArgument(fmt("%08x", GameCFG));
+	/* Copy booter into apploader region */
 	memcpy(EXECUTE_ADDR, wii_game_booter_dol, wii_game_booter_dol_size);
 	DCFlushRange(EXECUTE_ADDR, wii_game_booter_dol_size);
 	BootHomebrew();
@@ -79,6 +84,7 @@ extern s32 wbfsDev;
 extern u32 wbfs_part_idx;
 void ExternalBooter_WiiGameSetup(bool wbfs, bool dvd, const char *ID)
 {
+	memset(&normalCFG, 0, sizeof(the_CFG));
 	normalCFG.GameBootType = dvd ? TYPE_WII_DISC : (wbfs ? TYPE_WII_WBFS : TYPE_WII_WBFS_EXT);
 	strncpy(normalCFG.gameID, ID, 6);
 	normalCFG.fragments = frag_list;
@@ -89,7 +95,8 @@ void ExternalBooter_WiiGameSetup(bool wbfs, bool dvd, const char *ID)
 
 void ExternalBooter_ChannelSetup(u64 title)
 {
-	normalCFG.title = title;
+	memset(&normalCFG, 0, sizeof(the_CFG));
+	memcpy(&normalCFG.title, &title, sizeof(u64));
 }
 
 void ShutdownBeforeExit(bool KeepPatches)

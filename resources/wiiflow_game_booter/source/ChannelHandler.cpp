@@ -32,9 +32,7 @@
 #include <unistd.h>
 #include <malloc.h>
 
-#include "Config.hpp"
 #include "ChannelHandler.hpp"
-
 #include "patchcode.h"
 #include "cios.h"
 #include "fs.h"
@@ -52,10 +50,10 @@ u32 bootcontent;
 
 char filepath[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
 
-static u8 *GetDol(u32 bootcontent)
+static u8 *GetDol(u32 bootcontent, u64 title)
 {
 	memset(filepath, 0, ISFS_MAXPATH);
-	sprintf(filepath, "/title/%08x/%08x/content/%08x.app", TITLE_UPPER(conf->title), TITLE_LOWER(conf->title), bootcontent);
+	sprintf(filepath, "/title/%08x/%08x/content/%08x.app", TITLE_UPPER(title), TITLE_LOWER(title), bootcontent);
 
 	u32 contentSize = 0;
 
@@ -79,12 +77,12 @@ static u8 *GetDol(u32 bootcontent)
 	return NULL;
 }
 
-static bool GetAppNameFromTmd(bool dol, u32 *bootcontent)
+static bool GetAppNameFromTmd(bool dol, u32 *bootcontent, u64 title)
 {
 	bool ret = false;
 
 	memset(filepath, 0, ISFS_MAXPATH);
-	sprintf(filepath, "/title/%08x/%08x/content/title.tmd", TITLE_UPPER(conf->title), TITLE_LOWER(conf->title));
+	sprintf(filepath, "/title/%08x/%08x/content/title.tmd", TITLE_UPPER(title), TITLE_LOWER(title));
 
 	u32 size;
 	u8 *data = ISFS_GetFile((u8 *) &filepath, &size, -1);
@@ -140,19 +138,19 @@ static u32 MoveDol(u8 *buffer)
 	return dolfile->entry_point;
 }
 
-u32 LoadChannel()
+u32 LoadChannel(u64 title)
 {
 	u32 entry = 0;
 
-	GetAppNameFromTmd(true, &bootcontent);
-	u8 *data = GetDol(bootcontent);
+	GetAppNameFromTmd(true, &bootcontent, title);
+	u8 *data = GetDol(bootcontent, title);
 	entry = MoveDol(data);
 	free(data);
 
 	return entry;
 }
 
-void PatchChannel(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio)
+void PatchChannel(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u64 title)
 {
 	bool hook = false;
 	for(u8 i = 0; i < dolchunkcount; i++)
@@ -168,5 +166,5 @@ void PatchChannel(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryStrin
 		ICInvalidateRange(dolchunkoffset[i], dolchunksize[i]);
 	}
 	if(hook)
-		ocarina_do_code(conf->title);
+		ocarina_do_code(title);
 }
