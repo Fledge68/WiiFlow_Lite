@@ -1883,9 +1883,9 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 				m_cf.drawText(adjusting);
 		}
 	}
-
-	m_fa.draw();
-	if(m_banner->GetSelectedGame() && (!m_banner->GetInGameSettings() || (m_banner->GetInGameSettings() && m_bnr_settings)))
+	if(m_fa.isLoaded())
+		m_fa.draw();
+	else if(m_banner->GetSelectedGame() && (!m_banner->GetInGameSettings() || (m_banner->GetInGameSettings() && m_bnr_settings)))
 		m_banner->Draw();
 
 	m_btnMgr.draw();
