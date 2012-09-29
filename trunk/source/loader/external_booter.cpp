@@ -30,8 +30,8 @@
 /* External WiiFlow Game Booter */
 #define EXECUTE_ADDR	((u8 *)0x92000000)
 
-extern const u8 wii_game_booter_dol[];
-extern const u32 wii_game_booter_dol_size;
+extern const u8 wiiflow_game_booter_dol[];
+extern const u32 wiiflow_game_booter_dol_size;
 
 extern "C" {
 u8 configbytes[2];
@@ -74,8 +74,8 @@ void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 pat
 	DCFlushRange(GameCFG, sizeof(the_CFG));
 	AddBootArgument(fmt("%08x", GameCFG));
 	/* Copy booter into apploader region */
-	memcpy(EXECUTE_ADDR, wii_game_booter_dol, wii_game_booter_dol_size);
-	DCFlushRange(EXECUTE_ADDR, wii_game_booter_dol_size);
+	memcpy(EXECUTE_ADDR, wiiflow_game_booter_dol, wiiflow_game_booter_dol_size);
+	DCFlushRange(EXECUTE_ADDR, wiiflow_game_booter_dol_size);
 	BootHomebrew();
 }
 
