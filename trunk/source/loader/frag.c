@@ -169,9 +169,9 @@ int get_frag_list(u8 *id, char *path, const u32 hdd_sector_size)
 	bool isWBFS = wbfs_part_fs != PART_FS_WBFS && strcasestr(strrchr(fname,'.'), ".wbfs") != 0;
 
 	struct stat st;
-	FragList *fs = malloc(sizeof(FragList));
-	FragList *fa = malloc(sizeof(FragList));
-	FragList *fw = malloc(sizeof(FragList));
+	FragList *fs = MEM1_lo_alloc(sizeof(FragList));
+	FragList *fa = MEM1_lo_alloc(sizeof(FragList));
+	FragList *fw = MEM1_lo_alloc(sizeof(FragList));
 	if(fs == NULL || fa == NULL || fw == NULL)
 		goto out;
 
@@ -241,7 +241,7 @@ int get_frag_list(u8 *id, char *path, const u32 hdd_sector_size)
 		frag_concat(fa, fs);
 	}
 
-	frag_list = malloc(sizeof(FragList));
+	frag_list = MEM1_lo_alloc(sizeof(FragList));
 	if(frag_list == NULL)
 		goto out;
 
@@ -270,50 +270,29 @@ int get_frag_list(u8 *id, char *path, const u32 hdd_sector_size)
 	}
 	else
 		memcpy(frag_list, fa, sizeof(FragList)); // .iso files do not need a remap, just copy
-
+	DCFlushRange(frag_list, sizeof(FragList));
 	ret_val = 0;
 
 out:
 	if(ret_val && frag_list != NULL)
 	{
-		free(frag_list);
+		MEM1_lo_free(frag_list);
 		frag_list = NULL;
 	}
 	if(fs != NULL)
 	{
-		free(fs);
+		MEM1_lo_free(fs);
 		fs = NULL;
 	}
 	if(fa != NULL)
 	{
-		free(fa);
+		MEM1_lo_free(fa);
 		fa = NULL;
 	}
 	if(fw != NULL)
 	{
-		free(fw);
+		MEM1_lo_free(fw);
 		fw = NULL;
 	}
 	return ret_val;
-}
-
-int set_frag_list()
-{
-	if (frag_list == NULL)
-		return -2;
-
-	// (+1 for header which is same size as fragment)
-	int size = sizeof(Fragment) * (frag_list->num + 1);
-	DCFlushRange(frag_list, size);
-
- 	gprintf("Calling WDVD_SetFragList, frag list size %d\n", size);
-/*	if (size > 400) ghexdump(frag_list, 400);
-	else ghexdump(frag_list, size); */
-
-	int ret = WDVD_SetFragList(wbfsDev, frag_list, size);
-/*	free(frag_list);
-	frag_list = NULL; */
-	if(ret)
-		return ret;
-	return 0;
 }

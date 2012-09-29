@@ -48,59 +48,65 @@ extern u32 wbfs_part_idx;
 extern FragList *frag_list;
 }
 
-int main()
+the_CFG normalCFG;
+int main(int argc, char *argv[])
 {
+	if(!argc)
+		return 0;
+	memcpy(&normalCFG, (void*)strtoul(argv[0], NULL, 16), sizeof(the_CFG));
+
 	VIDEO_Init();
 	InitGecko();
 	gprintf("WiiFlow External Booter by FIX94\n");
 
-	configbytes[0] = conf->configbytes[0];
-	configbytes[1] = conf->configbytes[1];
-	hooktype = conf->hooktype;
-	debuggerselect = conf->debugger;
-	CurrentIOS = conf->IOS;
-	app_gameconfig_set(conf->gameconf, conf->gameconfsize);
-	ocarina_set_codes(conf->codelist, conf->codelistend, conf->cheats, conf->cheatSize);
-	frag_list = conf->fragments;
-	wbfsDev = conf->wbfsDevice;
-	wbfs_part_idx = conf->wbfsPart;
+	configbytes[0] = normalCFG.configbytes[0];
+	configbytes[1] = normalCFG.configbytes[1];
+	hooktype = normalCFG.hooktype;
+	debuggerselect = normalCFG.debugger;
+	CurrentIOS = normalCFG.IOS;
+	app_gameconfig_set(normalCFG.gameconf, normalCFG.gameconfsize);
+	ocarina_set_codes(normalCFG.codelist, normalCFG.codelistend, normalCFG.cheats, normalCFG.cheatSize);
+	frag_list = normalCFG.fragments;
+	wbfsDev = normalCFG.wbfsDevice;
+	wbfs_part_idx = normalCFG.wbfsPart;
 
-	if(conf->BootType == TYPE_WII_GAME)
+	if(normalCFG.BootType == TYPE_WII_GAME)
 	{
 		WDVD_Init();
-		if(conf->GameBootType == TYPE_WII_DISC)
+		if(normalCFG.GameBootType == TYPE_WII_DISC)
+		{
 			Disc_SetUSB(NULL, false);
+			if(CurrentIOS.Type == IOS_TYPE_HERMES)
+				Hermes_Disable_EHC();
+		}
 		else
-			Disc_SetUSB((u8*)conf->gameID, conf->GameBootType == TYPE_WII_WBFS_EXT);
+		{
+			Disc_SetUSB((u8*)normalCFG.gameID, normalCFG.GameBootType == TYPE_WII_WBFS_EXT);
+			if(CurrentIOS.Type == IOS_TYPE_HERMES)
+				Hermes_shadow_mload(normalCFG.mload_rev);
+		}
 		Disc_Open();
 		Disc_SetLowMem();
 		u64 offset = 0;
 		Disc_FindPartition(&offset);
-		gprintf("Partition Offset: %08x\n", offset);
 		WDVD_OpenPartition(offset);
-		vmode = Disc_SelectVMode(conf->vidMode, &vmode_reg);
-		Apploader_Run(&p_entry, conf->vidMode, vmode, conf->vipatch, conf->countryString, conf->patchVidMode, 
-					conf->aspectRatio, conf->returnTo);
+		vmode = Disc_SelectVMode(normalCFG.vidMode, &vmode_reg);
+		Apploader_Run(&p_entry, normalCFG.vidMode, vmode, normalCFG.vipatch, normalCFG.countryString, normalCFG.patchVidMode, 
+					normalCFG.aspectRatio, normalCFG.returnTo);
 		AppEntrypoint = (u32)p_entry;
-		if(CurrentIOS.Type == IOS_TYPE_HERMES)
-		{
-			if(conf->GameBootType == TYPE_WII_DISC)
-				Hermes_Disable_EHC();
-			else
-				Hermes_shadow_mload(conf->mload_rev);
-		}
 		WDVD_Close();
 	}
-	else if(conf->BootType == TYPE_CHANNEL)
+	else if(normalCFG.BootType == TYPE_CHANNEL)
 	{
 		ISFS_Initialize();
-		AppEntrypoint = LoadChannel();
 		Disc_SetLowMem();
-		vmode = Disc_SelectVMode(conf->vidMode, &vmode_reg);
-		PatchChannel(conf->vidMode, vmode, conf->vipatch, conf->countryString, 
-					conf->patchVidMode, conf->aspectRatio);
+		AppEntrypoint = LoadChannel(normalCFG.title);
+		vmode = Disc_SelectVMode(normalCFG.vidMode, &vmode_reg);
+		PatchChannel(normalCFG.vidMode, vmode, normalCFG.vipatch, normalCFG.countryString, 
+					normalCFG.patchVidMode, normalCFG.aspectRatio, normalCFG.title);
 		ISFS_Deinitialize();
 	}
+	gprintf("Entrypoint: %08x\n", AppEntrypoint);
 
 	/* Set time */
 	Disc_SetTime();

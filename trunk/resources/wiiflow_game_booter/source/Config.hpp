@@ -50,6 +50,4 @@ typedef struct _the_CFG {
 	u32 returnTo;
 } the_CFG;
 
-static the_CFG *conf = (the_CFG*)0x90000000;
-
 #endif /* _CFG_HPP_ */
