@@ -788,34 +788,28 @@ void CMenu::_launch(dir_discHdr *hdr)
 		_launchChannel(hdr);
 	else if(hdr->type == TYPE_PLUGIN)
 	{
-		string title(&hdr->path[string(hdr->path).find_last_of("/")+1]);
-		string wiiflow_dol(m_dol);
-		if(strstr(wiiflow_dol.c_str(), "sd:/") == NULL)
-			wiiflow_dol.erase(3,1);
-		string path((char*)hdr->path, size_t(strlen((char*)hdr->path) - title.size()));
-		vector<string> arguments;
-		gprintf("Game title: %s\n", title.c_str());
-		if(m_plugin.isMplayerCE(hdr->settings[0]))
-			arguments = m_plugin.CreateMplayerCEArguments(string(hdr->path).c_str());
-		else if(strstr(path.c_str(), ":/") != NULL)
+		string title;
+		string path(hdr->path);
+		if(path.find(':') != string::npos)
 		{
-			if(strstr(path.c_str(), "sd:/") == NULL)
-				path.erase(3,1);
-			arguments.push_back(path);
-			arguments.push_back(title);
-			if(m_plugin.UseReturnLoader(hdr->settings[0]))
-				arguments.push_back(sfmt("%s/WiiFlowLoader.dol",m_pluginsDir.c_str()));
-			else
-				arguments.push_back(wiiflow_dol);
-			m_cfg.setString("EMULATOR", "current_item", title);
+			path.erase(path.begin(), path.begin() + path.find_first_of('/') + 1);
+			title = string(path.begin() + path.find_last_of('/') + 1, path.end());
+			path.erase(path.end() - title.size() - 1, path.end());
 		}
 		else
 		{
-			arguments.push_back(title);
 			char gametitle[64];
-			wcstombs(gametitle, hdr->title, sizeof(gametitle));
-			m_cfg.setString("EMULATOR", "current_item", gametitle);
+			wcstombs(gametitle, hdr->title, 63);
+			title = gametitle;
 		}
+		string loader(m_pluginsDir);
+		if(loader.find("usb") != string::npos)
+			loader.erase(3,1);
+		loader.append("/WiiFlowLoader.dol");
+		m_cfg.setString("EMULATOR", "current_item", title);
+		string device(currentPartition == 0 ? "sd" : 
+			(DeviceHandle.GetFSType(currentPartition) == PART_FS_NTFS ? "ntfs" : "usb"));
+		vector<string> arguments = m_plugin.CreateArgs(device, path, title, loader, hdr->settings[0]);
 		_launchHomebrew(fmt("%s/%s", m_pluginsDir.c_str(), m_plugin.GetDolName(hdr->settings[0])), arguments);
 	}
 	else if(hdr->type == TYPE_HOMEBREW)
@@ -920,7 +914,6 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 			loadIOS(mainIOS, false);
 		ShutdownBeforeExit();
 		DEVO_SetOptions(path.c_str(), currentPartition, id.c_str(), memcard_emu);
-		writeStub();
 		DEVO_Boot();
 	}
 	else
@@ -946,11 +939,12 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 	LoadHomebrew(filepath);
 	AddBootArgument(filepath);
 	for(u32 i = 0; i < arguments.size(); ++i)
+	{
+		gprintf("Argument: %s\n", arguments[i].c_str());
 		AddBootArgument(arguments[i].c_str());
-
+	}
 	loadIOS(58, false);
 	ShutdownBeforeExit();
-	writeStub();
 	BootHomebrew();
 }
 
@@ -1545,7 +1539,7 @@ void CMenu::_gameSoundThread(CMenu *m)
 	if(m->m_cf.getHdr()->type == TYPE_PLUGIN)
 	{
 		m_banner->DeleteBanner();
-		m->m_gameSound.Load(m->m_plugin.GetBannerSound(m->m_cf.getHdr()->settings[0]), m->m_plugin.GetBannerSoundSize(), false);
+		m->m_gameSound.Load(m->m_plugin.GetBannerSound(m->m_cf.getHdr()->settings[0]), m->m_plugin.GetBannerSoundSize());
 		m->m_gamesound_changed = true;
 		m->m_gameSoundHdr = NULL;
 		return;

@@ -1574,12 +1574,10 @@ void CMenu::_initCF(void)
 		}
 		else if(m_gameList[i].type == TYPE_PLUGIN)
 		{
-			if(!m_plugin.isScummVM(m_gameList[i].settings[0]))
+			if(tempname.find(':') != string::npos)
 			{
 				if(tempname.empty() || tempname.find_first_of('/') == string::npos)
-				{
 					continue;
-				}
 				tempname.erase(0, tempname.find_first_of('/')+1);
 				string dirName = tempname.substr(0, tempname.find_first_of('/')+1);
 				if (tempname.find_first_of('/') == string::npos)
@@ -2295,7 +2293,7 @@ bool CMenu::_loadEmuList()
 			{
 				m_plugin.AddPlugin(m_plugin_cfg);
 				m_gameList.clear();
-				if(strcasestr(m_plugin_cfg.getString("PLUGIN","romDir","").c_str(), "scummvm.ini") == NULL)
+				if(m_plugin_cfg.getString("PLUGIN","romDir","").find("scummvm.ini") == string::npos)
 				{
 					m_gameList.Load(sfmt("%s:/%s", DeviceName[currentPartition], m_plugin_cfg.getString("PLUGIN","romDir","").c_str()), m_plugin_cfg.getString("PLUGIN","fileTypes","").c_str(), m_cfg.getString("EMULATOR", "lastlanguage", "EN").c_str(), m_plugin_cfg);
 					for(vector<dir_discHdr>::iterator tmp_itr = m_gameList.begin(); tmp_itr != m_gameList.end(); tmp_itr++)
@@ -2520,7 +2518,7 @@ string CMenu::_getId()
 		}
 		else if(hdr->type == TYPE_PLUGIN)
 		{
-			if(!m_plugin.isScummVM(hdr->settings[0]))
+			if(tempname.find(':') != string::npos)
 			{
 				tempname.erase(0, tempname.find_first_of('/')+1);
 				string dirName = tempname.substr(0, tempname.find_first_of('/')+1);

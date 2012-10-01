@@ -1,7 +1,4 @@
 #include "menu.hpp"
-
-#include <string.h>
-#include <gccore.h>
 #include "defines.h"
 
 extern const u8 btnchannel_png[];
@@ -331,15 +328,13 @@ bool CMenu::_Source()
 					}
 					if (source == "plugin")
 					{
-						if (!show_emu) _showSourceNotice();
+						if(!show_emu)
+							_showSourceNotice();
 						else
 						{
 							m_current_view = COVERFLOW_EMU;
 							imgSelected = true;
-							
-							u32 sourceMagic;
-							sscanf(m_source.getString(fmt("BUTTON_%i", i + j), "magic","").c_str(), "%08x", &sourceMagic);
-							
+							u32 sourceMagic = strtoul(m_source.getString(fmt("BUTTON_%i", i + j), "magic","").c_str(), NULL, 16);
 							for (u8 k = 0; k < numPlugins; ++k)
 							{
 								if (sourceMagic == m_plugin.getPluginMagic(k))
