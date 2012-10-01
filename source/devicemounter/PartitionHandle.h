@@ -154,16 +154,16 @@ public:
 	//! Get the disc interface of this handle
 	const DISC_INTERFACE * GetDiscInterface() { return interface; };
 	//! Get the wbfs mount handle
-	wbfs_t *GetWbfsHandle(int pos) { if(valid(pos)) return PartitionList[pos].wbfshandle; else return 0; };
+	wbfs_t *GetWbfsHandle(int pos);
 	//! Set the wbfs mount handle
-	bool SetWbfsHandle(int pos, wbfs_t * wbfshandle) { if(valid(pos)) {PartitionList[pos].wbfshandle = wbfshandle; return true;} else return false; };
+	bool SetWbfsHandle(int pos, wbfs_t *wbfshandle);
 protected:
-	bool valid(int pos) { return (pos >= 0 && pos < (int) PartitionList.size()); }
-	void AddPartition(const char * name, u64 lba_start, u64 sec_count, bool bootable, u8 part_type, u8 part_num);
+	bool valid(int pos) { return (pos >= 0 && pos < (int)PartitionList.size()); };
+	void AddPartition(const char *name, u64 lba_start, u64 sec_count, bool bootable, u8 part_type, u8 part_num);
 	bool IsExisting(u64 lba);
-	int FindPartitions();
+	s8 FindPartitions();
 	void CheckEBR(u8 PartNum, sec_t ebr_lba);
-	int CheckGPT(u8 PartNum);
+	s8 CheckGPT(u8 PartNum);
 
 	const DISC_INTERFACE *interface;
 	vector<PartitionFS> PartitionList;
