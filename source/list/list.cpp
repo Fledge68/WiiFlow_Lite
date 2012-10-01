@@ -150,7 +150,7 @@ void CList<dir_discHdr>::GetHeaders(vector<string> pathlist, vector<dir_discHdr>
 					{
 						strncpy(tmp.path, (*itr).c_str(), sizeof(tmp.path));
 						strncpy(tmp.id, "PLUGIN", sizeof(tmp.id));
-						sscanf(plugin.getString("PLUGIN","coverColor","").c_str(), "%08x", &tmp.casecolor);
+						tmp.casecolor = strtoul(plugin.getString("PLUGIN","coverColor","").c_str(), NULL, 16);
 
 						char tempname[64];
 						(*itr).assign(&(*itr)[(*itr).find_last_of('/') + 1]);
@@ -164,7 +164,7 @@ void CList<dir_discHdr>::GetHeaders(vector<string> pathlist, vector<dir_discHdr>
 						Asciify(tmp.title);
 
 						//gprintf("Found: %ls\n", tmp.title);
-						sscanf(plugin.getString("PLUGIN","magic","").c_str(), "%08x", &tmp.settings[0]); //Plugin magic
+						tmp.settings[0] = strtoul(plugin.getString("PLUGIN","magic","").c_str(), NULL, 16); //Plugin magic
 						tmp.type = TYPE_PLUGIN;
 						headerlist.push_back(tmp);
 						break;

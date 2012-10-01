@@ -31,11 +31,9 @@
 static const string emptyString;
 static const string emptyString2("/");
 static char* emptyChar = (char*)" ";
-u32 ScummVM_magic;
 
 void Plugin::init(string m_pluginsDir)
 {
-	ScummVM_magic = 0;
 	pluginsDir = m_pluginsDir;
 	//Ready to add plugins
 	adding = true;
@@ -48,11 +46,8 @@ void Plugin::EndAdd()
 
 void Plugin::Cleanup()
 {
-	for(u8 pos = 0; pos < Plugins.size(); pos++)
-	{
-		if(Plugins[pos].BannerSound != NULL)
-			free(Plugins[pos].BannerSound);
-	}
+	Plugins.clear();
+	adding = true;
 }
 
 bool Plugin::AddPlugin(Config &plugin)
@@ -61,45 +56,36 @@ bool Plugin::AddPlugin(Config &plugin)
 		return false;
 
 	PluginOptions NewPlugin;
-	NewPlugin.DolName = plugin.getString("PLUGIN","dolFile","");
-	NewPlugin.coverFolder = plugin.getString("PLUGIN","coverFolder","");
-	sscanf(plugin.getString("PLUGIN","magic","").c_str(), "%08x", &NewPlugin.magicWord);
-	sscanf(plugin.getString("PLUGIN","coverColor","").c_str(), "%08x", &NewPlugin.caseColor);
-	NewPlugin.ReturnLoader = plugin.getBool("PLUGIN","ReturnLoader");
-
-	string PluginName = plugin.getString("PLUGIN","displayname","");
+	NewPlugin.DolName = plugin.getString(PLUGIN_DOMAIN, "dolFile",emptyChar);
+	NewPlugin.coverFolder = plugin.getString(PLUGIN_DOMAIN, "coverFolder",emptyChar);
+	NewPlugin.magicWord = strtoul(plugin.getString(PLUGIN_DOMAIN, "magic",emptyChar).c_str(), NULL, 16);
+	NewPlugin.caseColor = strtoul(plugin.getString(PLUGIN_DOMAIN, "coverColor",emptyChar).c_str(), NULL, 16);
+	NewPlugin.Args = plugin.getStrings(PLUGIN_DOMAIN, "arguments", '|');
+	string PluginName = plugin.getString(PLUGIN_DOMAIN, "displayname",emptyChar);
 	if(PluginName == emptyString || PluginName == emptyString2)
 	{
 		PluginName = NewPlugin.DolName;
 		PluginName.erase(PluginName.end() - 4, PluginName.end());
 	}
 	NewPlugin.DisplayName.fromUTF8(PluginName.c_str());
-	NewPlugin.consoleCoverID = plugin.getString("PLUGIN","consoleCoverID","");
+	NewPlugin.consoleCoverID = plugin.getString(PLUGIN_DOMAIN,"consoleCoverID",emptyChar);
 
-	string bannerfilepath = sfmt("%s/%s", pluginsDir.c_str(), plugin.getString("PLUGIN","bannerSound","").c_str());
-	ifstream infile;
-	infile.open(bannerfilepath.c_str(), ios::binary);
-	if(infile.is_open())
+	const char *bannerfilepath = fmt("%s/%s", pluginsDir.c_str(), plugin.getString(PLUGIN_DOMAIN,"bannerSound",emptyChar).c_str());
+	FILE *fp = fopen(bannerfilepath, "rb");
+	if(fp != NULL)
 	{
-		int size;
-		infile.seekg(0, ios::end);
-		size = infile.tellg();
-		infile.seekg(0, ios::beg);
-		//Don't free that, otherwise you would delete the sound
-		char* FileReadBuffer = (char*)malloc(size);
-		infile.read(FileReadBuffer, size);
-		NewPlugin.BannerSound = (u8*)FileReadBuffer;
-		NewPlugin.BannerSoundSize = size;
-		Plugins.push_back(NewPlugin);
-		infile.close();
-		return true;
+		fseek(fp, 0, SEEK_END);
+		NewPlugin.BannerSound = string(bannerfilepath);
+		NewPlugin.BannerSoundSize = ftell(fp);
+		rewind(fp);
+		fclose(fp);
 	}
 	else
 	{
-		NewPlugin.BannerSound = 0;
+		NewPlugin.BannerSound = std::string();
 		NewPlugin.BannerSoundSize = 0;
-		Plugins.push_back(NewPlugin);
 	}
+	Plugins.push_back(NewPlugin);
 	return false;
 }
 
@@ -113,17 +99,20 @@ s8 Plugin::GetPluginPosition(u32 magic)
 	return -1;
 }
 
-bool Plugin::UseReturnLoader(u32 magic)
-{
-	if((Plugin_Pos = GetPluginPosition(magic)) >= 0)
-		return Plugins[Plugin_Pos].ReturnLoader;
-	return false;
-}
-
 u8* Plugin::GetBannerSound(u32 magic)
 {
 	if((Plugin_Pos = GetPluginPosition(magic)) >= 0)
-		return Plugins[Plugin_Pos].BannerSound;
+	{
+		u8 *FileReadBuffer = NULL;
+		FILE *fp = fopen(Plugins[Plugin_Pos].BannerSound.c_str(), "rb");
+		if(fp)
+		{
+			FileReadBuffer = (u8*)MEM2_alloc(Plugins[Plugin_Pos].BannerSoundSize);
+			fread(FileReadBuffer, 1, Plugins[Plugin_Pos].BannerSoundSize, fp);
+			fclose(fp);
+		}
+		return FileReadBuffer;
+	}
 	return NULL;
 }
 
@@ -168,11 +157,11 @@ void Plugin::SetEnablePlugin(Config &cfg, u8 pos, u8 ForceMode)
 		char PluginMagicWord[9];
 		snprintf(PluginMagicWord, sizeof(PluginMagicWord), "%08x", Plugins[pos].magicWord);
 		if(ForceMode == 1)
-			cfg.setBool("PLUGIN", PluginMagicWord, false);
+			cfg.setBool(PLUGIN_DOMAIN, PluginMagicWord, false);
 		else if(ForceMode == 2)
-			cfg.setBool("PLUGIN", PluginMagicWord, true);
+			cfg.setBool(PLUGIN_DOMAIN, PluginMagicWord, true);
 		else
-			cfg.setBool("PLUGIN", PluginMagicWord, cfg.getBool("PLUGIN", PluginMagicWord) ? false : true);
+			cfg.setBool(PLUGIN_DOMAIN, PluginMagicWord, cfg.getBool(PLUGIN_DOMAIN, PluginMagicWord) ? false : true);
 	}
 }
 
@@ -184,7 +173,7 @@ vector<bool> Plugin::GetEnabledPlugins(Config &cfg)
 	for(u8 i = 0; i < Plugins.size(); i++)
 	{
 		snprintf(PluginMagicWord, sizeof(PluginMagicWord), "%08x", Plugins[i].magicWord);
-		if(cfg.getBool("PLUGIN", PluginMagicWord, true))
+		if(cfg.getBool(PLUGIN_DOMAIN, PluginMagicWord, true))
 		{
 			enabledPluginsNumber++;
 			enabledPlugins.push_back(true);
@@ -208,7 +197,6 @@ vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, string Device)
 	vector<dir_discHdr> gameHeader;
 	if(!ini.loaded())
 		return gameHeader;
-	ScummVM_magic = Plugins[Plugins.size()-1].magicWord;
 
 	string game(ini.firstDomain());
 	string GameName;
@@ -225,7 +213,7 @@ vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, string Device)
 			continue;
 		}
 		memset(&tmp, 0, sizeof(dir_discHdr));
-		strncpy((char*)tmp.id, "PLUGIN", sizeof(tmp.id));
+		strncpy((char*)tmp.id, PLUGIN_DOMAIN, sizeof(tmp.id));
 		tmp.casecolor = Plugins.back().caseColor;
 		wstringEx tmpString;
 		tmpString.fromUTF8(GameName.c_str());
@@ -240,54 +228,27 @@ vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, string Device)
 	return gameHeader;
 }
 
-/* Thanks to dimok for this */
-vector<string> Plugin::CreateMplayerCEArguments(const char *filepath)
+vector<string> Plugin::CreateArgs(string device, string path, string title, string loader, u32 magic)
 {
 	vector<string> args;
-	char dst[1024];
-
-	int i = 0;
-	char device[10];
-
-	while(filepath[i] != ':')
+	Plugin_Pos = GetPluginPosition(magic);
+	if(Plugin_Pos < 0)
+		return args;
+	for(vector<string>::iterator arg = Plugins[Plugin_Pos].Args.begin();
+								arg != Plugins[Plugin_Pos].Args.end(); arg++)
 	{
-		device[i] = filepath[i];
-		device[i+1] = 0;
-		i++;
+		string Argument(*arg);
+		if(Argument.find(PLUGIN_DEV) != string::npos)
+			Argument.replace(Argument.find(PLUGIN_DEV), strlen(PLUGIN_DEV), device);
+		if(Argument.find(PLUGIN_PATH) != string::npos)
+			Argument.replace(Argument.find(PLUGIN_PATH), strlen(PLUGIN_PATH), path);
+		if(Argument.find(PLUGIN_NAME) != string::npos)
+			Argument.replace(Argument.find(PLUGIN_NAME), strlen(PLUGIN_NAME), title);
+		if(Argument.find(PLUGIN_LDR) != string::npos)
+			Argument.replace(Argument.find(PLUGIN_LDR), strlen(PLUGIN_LDR), loader);
+		args.push_back(Argument);
 	}
-
-	char * ptr = (char *) &filepath[i];
-
-	while(ptr[0] != '/' || ptr[1] == '/')
-		ptr++;
-
-	if(strncmp(DeviceHandle.PathToFSName(filepath), "NTF", 3) == 0)
-	{
-		sprintf(dst, "ntfs:%s", ptr);
-	}
-	else if(strncmp(device, "usb", 3) == 0)
-	{
-		sprintf(dst, "usb:%s", ptr);
-	}
-	else
-	{
-		sprintf(dst, "%s:%s", device, ptr);
-	}
-
-	args.push_back(dst);
 	return args;
-}
-
-bool Plugin::isMplayerCE(u32 magic)
-{
-	if((Plugin_Pos = GetPluginPosition(magic)) >= 0)
-		return (Plugins[Plugin_Pos].magicWord == 0x4D504345);
-	return false;
-}
-
-bool Plugin::isScummVM(u32 magic)
-{
-	return (magic == ScummVM_magic);
 }
 
 string Plugin::GenerateCoverLink(dir_discHdr gameHeader, string url, Config &Checksums)

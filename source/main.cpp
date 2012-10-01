@@ -116,6 +116,7 @@ int main(int argc, char **argv)
 		mainMenu->terror("errboot3", L"Could not initialize the DIP module!");
 	else 
 	{
+		writeStub();
 		if(Emulator_boot)
 			mainMenu->m_Emulator_boot = true;
 		if(gameid != NULL && strlen(gameid) == 6)
