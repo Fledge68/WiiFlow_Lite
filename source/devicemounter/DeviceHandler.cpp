@@ -53,7 +53,8 @@ void DeviceHandler::Init()
 void DeviceHandler::MountAll()
 {
 	MountSD();
-	MountAllUSB();
+	if(!Sys_DolphinMode())
+		MountAllUSB();
 }
 
 void DeviceHandler::UnMountAll()
@@ -118,15 +119,14 @@ void DeviceHandler::UnMount(int dev)
 
 void DeviceHandler::SetModes()
 {
-	if(CurrentIOS.Type == IOS_TYPE_NORMAL_IOS)
-	{
-		sdhc_mode_sd = 1;
-		usb_libogc_mode = 1;
-	}
-	else
-	{
-		sdhc_mode_sd = 0;
+	sdhc_mode_sd = 1;
+	usb_libogc_mode = 1;
+	if(CustomIOS(CurrentIOS.Type))
+	{	/* For USB you can use every cIOS */
 		usb_libogc_mode = 0;
+		/* But not for SD */
+		if(CurrentIOS.Type != IOS_TYPE_NEEK2O)
+			sdhc_mode_sd = 0;
 	}
 }
 
