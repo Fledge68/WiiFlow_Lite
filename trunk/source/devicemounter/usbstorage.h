@@ -24,8 +24,6 @@ s32 USBStorage2_GetSectorSize();
 s32 USBStorage2_SetPort(s8 port);
 s8 USBStorage2_GetPort();
 
-s32 USBStorage2_WBFS_SetDevice(int dev);
-
 extern int usb_libogc_mode;
 
 #define DEVICE_TYPE_WII_UMS (('W'<<24)|('U'<<16)|('M'<<8)|'S')

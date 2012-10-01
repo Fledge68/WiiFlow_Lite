@@ -51,12 +51,6 @@
 #define USB_IOCTL_UMS_TESTMODE			(UMS_BASE+0x81)
 #define USB_IOCTL_SET_PORT				(UMS_BASE+0x83)
 
-#define WBFS_BASE			(('W'<<24)|('F'<<16)|('S'<<8))
-#define USB_IOCTL_WBFS_OPEN_DISC		(WBFS_BASE+0x1)
-#define USB_IOCTL_WBFS_READ_DISC		(WBFS_BASE+0x2)
-#define USB_IOCTL_WBFS_SET_DEVICE		(WBFS_BASE+0x50)
-#define USB_IOCTL_WBFS_SET_FRAGLIST		(WBFS_BASE+0x51)
-
 #define MAX_SECTOR_SIZE			4096
 #define MAX_BUFFER_SECTORS		128
 #define UMS_HEAPSIZE			2*1024
@@ -319,15 +313,6 @@ s32 USBStorage2_GetSectorSize()
 	if(usb2_port == 0 || usb2_port == 1)
 		return hdd_sector_size[usb2_port];
 	return 0;
-}
-
-s32 USBStorage2_WBFS_SetDevice(int dev)
-{
-	s32 retval = 0;
-	s32 ret = IOS_IoctlvFormat(hid, fd, USB_IOCTL_WBFS_SET_DEVICE, "i:i", dev, &retval);
-	if(retval)
-		return retval;
-	return ret;
 }
 
 static bool __usbstorage_Startup(void)
