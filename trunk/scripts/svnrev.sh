@@ -31,8 +31,6 @@ EOF
 
 	if [ -n "$rev_old" ]; then
 		echo "Changed Rev $rev_old to $rev_new" >&2
-	else
-		echo "svnrev.h created" >&2
 	fi
 
 	rev_new=`expr $rev_new + 1`
