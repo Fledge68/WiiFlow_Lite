@@ -3,10 +3,13 @@
 
 void CachedList::Load(string path, string containing, string m_lastLanguage, Config &m_plugin)													/* Load All */
 {
+	const char* partition = DeviceName[DeviceHandle.PathToDriveType(path.c_str())];
 	//gprintf("\nLoading files containing %s in %s\n", containing.c_str(), path.c_str());
 	m_loaded = false;
-	m_database = sfmt("%s/%s.db", m_cacheDir.c_str(), (make_db_name(path)).c_str());
-
+	if(m_plugin.loaded())
+		m_database = sfmt("%s/%s_%s.db", m_cacheDir.c_str(), partition, lowerCase(m_plugin.getString("PLUGIN","magic")).c_str());
+	else
+		m_database = sfmt("%s/%s.db", m_cacheDir.c_str(), (make_db_name(path)).c_str());
 	m_wbfsFS = strncasecmp(DeviceHandle.PathToFSName(path.c_str()), "WBFS", 4) == 0;
 	
 	bool update_games = false;
@@ -18,12 +21,9 @@ void CachedList::Load(string path, string containing, string m_lastLanguage, Con
 	if(!m_wbfsFS)
 	{
 		//gprintf("Database file: %s\n", m_database.c_str());
-		
 		update_games = strcasestr(path.c_str(), "wbfs") != NULL && force_update[COVERFLOW_USB];
 		update_homebrew = strcasestr(path.c_str(), "apps") != NULL && force_update[COVERFLOW_HOMEBREW];
-		update_emu = strcasestr(path.c_str(), m_plugin.getString("PLUGIN","romDir","").c_str()) != NULL && force_update[COVERFLOW_EMU];
-
-		const char* partition = DeviceName[DeviceHandle.PathToDriveType(path.c_str())];
+		update_emu = m_plugin.loaded() && force_update[COVERFLOW_EMU];
 		update_dml = strcasestr(path.c_str(), fmt(strncmp(partition, "sd", 2) != 0 ? m_DMLgameDir.c_str() : "%s:/games", partition)) != NULL && force_update[COVERFLOW_DML];
 
 		//gprintf("update_games=%d update_homebrew=%d update_dml=%d, update_emu=%d\n", update_games, update_homebrew, update_dml, update_emu);
@@ -133,7 +133,7 @@ void CachedList::LoadChannels(string path, u32 channelType, string m_lastLanguag
 
 	if(m_update)
 	{
-		//gprintf("Updating channels\n");
+		gprintf("Updating channels\n");
 		list.GetChannels(*this, m_settingsDir, channelType, m_curLanguage);
 
 		m_loaded = true;

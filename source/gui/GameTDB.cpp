@@ -74,13 +74,13 @@ bool GameTDB::OpenFile(const char *filepath)
 	if(!filepath)
 		return false;
 
-	gprintf("Trying to open '%s'...", filepath);
+	//gprintf("Trying to open '%s'...", filepath);
 	file = fopen(filepath, "rb");
 	if(file)
 	{
 		this->filepath = filepath;
 
-		gprintf("success\n");
+		//gprintf("success\n");
 
 		int pos;
 		string OffsetsPath = filepath;
@@ -89,7 +89,7 @@ bool GameTDB::OpenFile(const char *filepath)
 		else
 			OffsetsPath.clear(); //! Relative path
 
-		gprintf("Checking game offsets\n");
+		//gprintf("Checking game offsets\n");
 		LoadGameOffsets(OffsetsPath.c_str());
 		/*if (!isParsed)
 		{
@@ -97,7 +97,7 @@ bool GameTDB::OpenFile(const char *filepath)
 		CheckTitlesIni(OffsetsPath.c_str());
 		}*/
 	}
-	else gprintf("failed\n");
+	//else gprintf("failed\n");
 
 	isLoaded = (file != NULL);
 	return isLoaded;
@@ -1024,7 +1024,7 @@ int GameTDB::GetCaseVersions(const char *id)
 	char *data = GetGameNode(id);
 	if(!data)
 	{
-		gprintf("GameTDB: GameNode for %s not found\n", id);
+		//gprintf("GameTDB: GameNode for %s not found\n", id);
 		return altcase;
 	}
 
