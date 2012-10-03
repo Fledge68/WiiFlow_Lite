@@ -115,7 +115,7 @@ void CMenu::_showMain(void)
 		case COVERFLOW_HOMEBREW:
 			m_btnMgr.show(m_mainBtnUsb);
 			break;
-		case COVERFLOW_EMU:
+		case COVERFLOW_PLUGIN:
 			if (show_homebrew && (parental_homebrew || !m_locked))
 				m_btnMgr.show(m_mainBtnHomebrew);
 			else
@@ -168,7 +168,7 @@ void CMenu::_showMain(void)
 				m_btnMgr.show(m_mainBtnInit2);
 				m_btnMgr.show(m_mainLblInit);
 				break;
-			case COVERFLOW_EMU:
+			case COVERFLOW_PLUGIN:
 				m_btnMgr.setText(m_mainLblInit, _t("main5", L"Welcome to WiiFlow. I have not found any plugins. Select partition to select your partition type."), true);
 				m_btnMgr.show(m_mainBtnInit2);
 				m_btnMgr.show(m_mainLblInit);
@@ -259,12 +259,12 @@ int CMenu::main(void)
 		m_gametdb.CloseFile();
 	}
 	if(m_Emulator_boot)
-		m_current_view = COVERFLOW_EMU;
+		m_current_view = COVERFLOW_PLUGIN;
 
 	if(m_cfg.getBool("GENERAL", "update_cache", false))
 	{
 		UpdateCache();
-		m_gameList.Update();
+		//m_gameList.Update();
 	}
 	LoadView();
 	if(m_cfg.getBool("GENERAL", "startup_menu", false)) 
@@ -311,7 +311,7 @@ int CMenu::main(void)
 			else if(BTN_DOWN_PRESSED && (m_show_dml ||m_devo_installed))
 				m_current_view = COVERFLOW_DML;
 			else if(BTN_LEFT_PRESSED && show_emu)
-				m_current_view =  COVERFLOW_EMU;
+				m_current_view =  COVERFLOW_PLUGIN;
 			else if(BTN_RIGHT_PRESSED && show_channel)
 				m_current_view = COVERFLOW_CHANNEL;
 			if(lastView == m_current_view) 
@@ -346,12 +346,12 @@ int CMenu::main(void)
 			else if(m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML) || m_btnMgr.selected(m_mainBtnHomebrew) || m_btnMgr.selected(m_mainBtnEmu))
 			{
 				if(m_current_view == COVERFLOW_USB) 
-					m_current_view = (m_show_dml || m_devo_installed) ? COVERFLOW_DML : (show_channel ? COVERFLOW_CHANNEL : (show_emu ? COVERFLOW_EMU : ((show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB)));
+					m_current_view = (m_show_dml || m_devo_installed) ? COVERFLOW_DML : (show_channel ? COVERFLOW_CHANNEL : (show_emu ? COVERFLOW_PLUGIN : ((show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB)));
 				else if(m_current_view == COVERFLOW_DML)
-					m_current_view = show_channel ? COVERFLOW_CHANNEL : ((show_emu ? COVERFLOW_EMU : (show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB));
+					m_current_view = show_channel ? COVERFLOW_CHANNEL : ((show_emu ? COVERFLOW_PLUGIN : (show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB));
 				else if(m_current_view == COVERFLOW_CHANNEL)
-					m_current_view = (show_emu ? COVERFLOW_EMU : (show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB);
-				else if(m_current_view == COVERFLOW_EMU)
+					m_current_view = (show_emu ? COVERFLOW_PLUGIN : (show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB);
+				else if(m_current_view == COVERFLOW_PLUGIN)
 					m_current_view = (show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB;
 				else if(m_current_view == COVERFLOW_HOMEBREW)
 					m_current_view = COVERFLOW_USB;
@@ -651,7 +651,7 @@ int CMenu::main(void)
 					u8 limiter = 0;
 					currentPartition = loopNum(currentPartition + 1, (int)USB8);
 					while(!DeviceHandle.IsInserted(currentPartition) ||
-						((m_current_view == COVERFLOW_CHANNEL || m_current_view == COVERFLOW_EMU) && (DeviceHandle.GetFSType(currentPartition) != PART_FS_FAT ||
+						((m_current_view == COVERFLOW_CHANNEL || m_current_view == COVERFLOW_PLUGIN) && (DeviceHandle.GetFSType(currentPartition) != PART_FS_FAT ||
 							(!isD2XnewerThanV6 && DeviceHandle.PathToDriveType(m_appDir.c_str()) == currentPartition) ||
 							(!isD2XnewerThanV6 && DeviceHandle.PathToDriveType(m_dataDir.c_str()) == currentPartition))) ||
 						((m_current_view == COVERFLOW_HOMEBREW || m_current_view == COVERFLOW_DML) && DeviceHandle.GetFSType(currentPartition) == PART_FS_WBFS))
@@ -761,7 +761,7 @@ int CMenu::main(void)
 					else
 						m_btnMgr.show(m_mainBtnUsb);
 					break;
-				case COVERFLOW_EMU:
+				case COVERFLOW_PLUGIN:
 					if(show_homebrew && (parental_homebrew || !m_locked))
 						m_btnMgr.show(m_mainBtnHomebrew);
 					else

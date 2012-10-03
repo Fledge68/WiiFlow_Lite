@@ -1,3 +1,6 @@
+#include <dirent.h>
+#include <unistd.h>
+
 #include "menu.hpp"
 #include "defines.h"
 
@@ -253,7 +256,7 @@ bool CMenu::_Source()
 				if (!show_emu) _showSourceNotice();
 				else
 				{
-					m_current_view = COVERFLOW_EMU;
+					m_current_view = COVERFLOW_PLUGIN;
 					break;
 				}
 			}
@@ -316,7 +319,7 @@ bool CMenu::_Source()
 						if (!show_emu) _showSourceNotice();
 						else
 						{
-							m_current_view = COVERFLOW_EMU;
+							m_current_view = COVERFLOW_PLUGIN;
 							imgSelected = true;
 							
 							for (u8 j = 0; j < numPlugins; ++j)
@@ -332,7 +335,7 @@ bool CMenu::_Source()
 							_showSourceNotice();
 						else
 						{
-							m_current_view = COVERFLOW_EMU;
+							m_current_view = COVERFLOW_PLUGIN;
 							imgSelected = true;
 							u32 sourceMagic = strtoul(m_source.getString(fmt("BUTTON_%i", i + j), "magic","").c_str(), NULL, 16);
 							for (u8 k = 0; k < numPlugins; ++k)

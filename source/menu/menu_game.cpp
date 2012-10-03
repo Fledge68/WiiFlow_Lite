@@ -571,22 +571,21 @@ void CMenu::_game(bool launch)
 				!m_devo_installed || min((u32)m_gcfg2.getInt(hdr->id, "gc_loader", 0), ARRAY_SIZE(CMenu::_GCLoader) - 1u) == 1))
 				{
 					bool foundOnSD = false;
-					CList<dir_discHdr> tmplist;
-					vector<string> pathlist;
-					tmplist.GetPaths(pathlist, ".iso|.bin", "sd:/games", false, true);
-					vector<dir_discHdr> tmpGameList;
-					Config nullCfg;
-					tmplist.GetHeaders(pathlist, tmpGameList, m_settingsDir, m_curLanguage, m_DMLgameDir, nullCfg);
-					for(u8 i = 0; i < tmpGameList.size(); i++)
+					ListGenerator SD_List;
+					string gameDir(fmt(DML_DIR, DeviceName[SD]));
+					string cacheDir(fmt("%s/%s_gamecube.db", m_cacheDir.c_str(), DeviceName[SD]));
+					SD_List.CreateList(COVERFLOW_DML, SD, gameDir, stringToVector(".iso", '|'), cacheDir, false);
+					for(vector<dir_discHdr>::iterator List = SD_List.begin(); List != SD_List.end(); List++)
 					{
-						if(strncasecmp(tmpGameList.at(i).id, hdr->id, 6) == 0)
+						if(strncasecmp(hdr->id, List->id, 6) == 0)
 						{
 							foundOnSD = true;
 							memset(hdr->path, 0, sizeof(hdr->path));
-							strncpy(hdr->path, tmpGameList.at(i).path, sizeof(hdr->path));
+							strncpy(hdr->path, List->path, sizeof(hdr->path));
 							break;
 						}
 					}
+					SD_List.clear();
 					if(!foundOnSD)
 					{
 						if(_wbfsOp(CMenu::WO_COPY_GAME))
@@ -749,30 +748,28 @@ void CMenu::_game(bool launch)
 	_hideGame();
 }
 
-void CMenu::directlaunch(const string &id)
+void CMenu::directlaunch(const char *GameID)
 {
 	m_directLaunch = true;
-
-	for (int i = USB1; i < USB8; i++)
+	for(currentPartition = SD; currentPartition < USB8; currentPartition++)
 	{
-		if(!DeviceHandle.IsInserted(i)) continue;
-
-		DeviceHandle.OpenWBFS(i);
-		CList<dir_discHdr> list;
-		string path = sfmt(GAMES_DIR, DeviceName[i]);
-		vector<string> pathlist;
-		list.GetPaths(pathlist, id.c_str(), path, strncasecmp(DeviceHandle.PathToFSName(path.c_str()), "WBFS", 4) == 0);
-		m_gameList.clear();
-		Config nullCfg;
-		list.GetHeaders(pathlist, m_gameList, m_settingsDir, m_curLanguage, m_DMLgameDir, nullCfg);
-		if(m_gameList.size() > 0)
-		{
-			gprintf("Game found on partition #%i\n", i);
-			_launch(&m_gameList[0]); // Launch will exit wiiflow
-		}
+		if(!DeviceHandle.IsInserted(currentPartition))
+			continue;
+		DeviceHandle.OpenWBFS(currentPartition);
+		string gameDir(fmt(GAMES_DIR, DeviceName[currentPartition]));
+		string cacheDir(fmt("%s/%s_wii.db", m_cacheDir.c_str(), DeviceName[currentPartition]));
+		m_gameList.CreateList(COVERFLOW_USB, currentPartition, gameDir, stringToVector(".wbfs|.iso", '|'), cacheDir, false);
 		WBFS_Close();
+		for(u32 i = 0; i < m_gameList.size(); i++)
+		{
+			if(strncasecmp(GameID, m_gameList[i].id, 6) == 0)
+			{
+				_launchGame(&m_gameList[i], false); // Launch will exit wiiflow
+				break;
+			}
+		}
 	}
-	error(sfmt("errgame1", L"Cannot find the game with ID: %s", id.c_str()));
+	error(sfmt("errgame1", L"Cannot find the game with ID: %s", GameID));
 }
 
 void CMenu::_launch(dir_discHdr *hdr)

@@ -201,7 +201,7 @@ int CMenu::_config1(void)
 				_cfNeedsUpdate();
 				m_cf.stopCoverLoader(true);
 				_hideConfig();
-				if(m_current_view != COVERFLOW_EMU)
+				if(m_current_view != COVERFLOW_PLUGIN)
 					_NandEmuCfg();
 				else
 					_PluginSettings();
@@ -286,7 +286,7 @@ void CMenu::_textConfig(void)
 	m_btnMgr.setText(m_configBtnSetCode, _t("cfg7", L"Set code"));
 	m_btnMgr.setText(m_configLblPartitionName, _t("cfgp1", L"Game Partition"));
 	m_btnMgr.setText(m_configBtnBack, _t("cfg10", L"Back"));
-	if(m_current_view != COVERFLOW_EMU)
+	if(m_current_view != COVERFLOW_PLUGIN)
 	{
 		m_btnMgr.setText(m_configLblCfg4, _t("cfg13", L"NAND Emulation Settings"));
 		m_btnMgr.setText(m_configBtnCfg4, _t("cfg14", L"Set"));

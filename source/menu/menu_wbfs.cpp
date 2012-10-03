@@ -470,7 +470,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 	_hideWBFS();
 	if (done && (op == CMenu::WO_REMOVE_GAME || op == CMenu::WO_ADD_GAME))
 	{
-		m_gameList.SetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());			
+		//m_gameList.SetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());			
 		
 		if(upd_dml)
 			UpdateCache(COVERFLOW_DML);
@@ -479,7 +479,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 			UpdateCache(COVERFLOW_USB);
 
 		if(upd_emu)
-			UpdateCache(COVERFLOW_EMU);
+			UpdateCache(COVERFLOW_PLUGIN);
 
 		_loadList();
 		_initCF();
@@ -487,7 +487,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 	}
 	else if(done && op == CMenu::WO_COPY_GAME)
 	{
-		m_gameList.SetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
+		//m_gameList.SetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
 		if(upd_dml)
 		{
 			UpdateCache(COVERFLOW_DML);

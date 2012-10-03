@@ -171,8 +171,8 @@ int CMenu::_configAdv(void)
 	_hideConfigAdv();
 	if (m_gameList.empty() || lang_changed)
 	{
-		if(lang_changed)
-			m_gameList.SetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
+		//if(lang_changed)
+			//m_gameList.SetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
 		
 		_loadList();
 	}
