@@ -2054,7 +2054,7 @@ int CMenu::_gametdbDownloaderAsync()
 				remove(offsetspath.c_str());
 
 				// Update cache
-				m_gameList.SetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
+				//m_gameList.SetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
 				UpdateCache();
 				
 				LWP_MutexLock(m_mutex);

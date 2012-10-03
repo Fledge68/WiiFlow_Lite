@@ -17,7 +17,7 @@
 #include "gui/cursor.hpp"
 #include "gui/fanart.hpp"
 #include "gui/gui.hpp"
-#include "list/cachedlist.hpp"
+#include "list/ListGenerator.hpp"
 #include "loader/disc.h"
 #include "loader/gc_disc_dump.hpp"
 #include "loader/wbfs.h"
@@ -56,7 +56,7 @@ private:
 	CButtonsMgr m_btnMgr;
 	CCoverFlow m_cf;
 	CFanart m_fa;
-	CachedList m_gameList;
+	ListGenerator m_gameList;
 	Config m_cfg;
 	Config m_loc;
 	Config m_cat;
@@ -976,7 +976,7 @@ private:
 	vector<dir_discHdr> _searchGamesByType(const char type);
 	vector<dir_discHdr> _searchGamesByRegion(const char region); */
 public:
-	void directlaunch(const string &id);
+	void directlaunch(const char *GameID);
 private:
 	bool m_use_wifi_gecko;
 	void _reload_wifi_gecko();

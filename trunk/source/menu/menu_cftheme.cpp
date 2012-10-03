@@ -554,7 +554,7 @@ const char *CMenu::_cfDomain(bool selected)
 {
 	switch(m_current_view)
 	{
-		case COVERFLOW_EMU:
+		case COVERFLOW_PLUGIN:
 			return selected ? "_EMUFLOW_%i_S" : "_EMUFLOW_%i";
 		case COVERFLOW_HOMEBREW:
 			return selected ? "_BREWFLOW_%i_S" : "_BREWFLOW_%i";

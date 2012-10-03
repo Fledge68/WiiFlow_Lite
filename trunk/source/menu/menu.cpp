@@ -417,11 +417,9 @@ void CMenu::init(void)
 		m_curLanguage = CMenu::_translations[0];
 		m_loc.load(fmt("%s/%s.ini", m_languagesDir.c_str(), m_curLanguage.c_str()));
 	}
-	bool extcheck = m_cfg.getBool("GENERAL", "extended_list_check", false);
-	bool skipcheck = m_cfg.getBool("GENERAL", "skip_list_check", true);
 	m_tempView = false;
-	
-	m_gameList.Init(m_listCacheDir, m_settingsDir, m_loc.getString(m_curLanguage, "gametdb_code", "EN"), m_DMLgameDir, extcheck, skipcheck);
+
+	m_gameList.Init(m_settingsDir, m_loc.getString(m_curLanguage, "gametdb_code", "EN"));
 
 	m_aa = 3;
 
@@ -648,9 +646,9 @@ float CMenu::_getCFFloat(const string &domain, const string &key, float def, boo
 void CMenu::_loadCFLayout(int version, bool forceAA, bool otherScrnFmt)
 {
 	bool homebrew = m_current_view == COVERFLOW_HOMEBREW;
-	bool smallbox = (homebrew || m_current_view == COVERFLOW_EMU) && m_cfg.getBool(_domainFromView(), "smallbox", true);
-	string domain(homebrew ? fmt("_BREWFLOW_%i", version) : m_current_view == COVERFLOW_EMU ? fmt("_EMUFLOW_%i", version) : fmt("_COVERFLOW_%i", version));
-	string domainSel(homebrew ? fmt("_BREWFLOW_%i_S", version) : m_current_view == COVERFLOW_EMU ? fmt("_EMUFLOW_%i_S", version) : fmt("_COVERFLOW_%i_S", version));
+	bool smallbox = (homebrew || m_current_view == COVERFLOW_PLUGIN) && m_cfg.getBool(_domainFromView(), "smallbox", true);
+	string domain(homebrew ? fmt("_BREWFLOW_%i", version) : m_current_view == COVERFLOW_PLUGIN ? fmt("_EMUFLOW_%i", version) : fmt("_COVERFLOW_%i", version));
+	string domainSel(homebrew ? fmt("_BREWFLOW_%i_S", version) : m_current_view == COVERFLOW_PLUGIN ? fmt("_EMUFLOW_%i_S", version) : fmt("_COVERFLOW_%i_S", version));
 	bool sf = otherScrnFmt;
 
 	int max_fsaa = m_theme.getInt(domain, "max_fsaa", 3);
@@ -1523,7 +1521,7 @@ void CMenu::_initCF(void)
 	m_cf.reserve(m_gameList.size());
 	
 	vector<bool> EnabledPlugins;
-	if(m_current_view == COVERFLOW_EMU)
+	if(m_current_view == COVERFLOW_PLUGIN)
 		EnabledPlugins = m_plugin.GetEnabledPlugins(m_cfg);
 
  	bool dumpGameLst = m_cfg.getBool(domain, "dump_list", true);
@@ -1548,7 +1546,7 @@ void CMenu::_initCF(void)
 	// check for single plugin selected
 	u8 pos = 0;
 	u8 enabledPluginsCount = 0;
-	if(m_current_view == COVERFLOW_EMU && EnabledPlugins.size() != 0)
+	if(m_current_view == COVERFLOW_PLUGIN && EnabledPlugins.size() != 0)
 	{
 		char PluginMagicWord[9];
 		for(u8 i = 0; i < EnabledPlugins.size(); i++)
@@ -2171,10 +2169,11 @@ bool CMenu::_loadChannelList(void)
 
 	if(Nand::Instance()->EmulationEnabled() || disable_emu) 
 	{
-		m_gameList.LoadChannels(disable_emu ? "" : nandpath, 0, m_cfg.getString("NAND", "lastlanguage", "EN").c_str());
-		m_cfg.setString("NAND", "lastlanguage", m_loc.getString(m_curLanguage, "gametdb_code", "EN"));
-		m_cfg.save();
-	}	
+		string cacheDir(fmt("%s/%s_channels.db", m_cacheDir.c_str(), disable_emu ? "nand" : DeviceName[currentPartition]));
+		bool updateCache = disable_emu ? true : m_cfg.getBool(_domainFromView(), "update_cache");
+		m_gameList.CreateList(m_current_view, currentPartition, std::string(), 
+					stringToVector(std::string(), '|'), cacheDir, updateCache);
+	}
 
 	lastPartition = currentPartition;
 	last_emu_state = disable_emu;
@@ -2185,7 +2184,6 @@ bool CMenu::_loadChannelList(void)
 bool CMenu::_loadList(void)
 {
 	m_cf.clear();
-	m_gameList.clear();
 	if((m_current_view == COVERFLOW_CHANNEL && m_cfg.getBool("NAND", "disable", true))
 	|| (m_current_view != COVERFLOW_CHANNEL && Nand::Instance()->EmulationEnabled()))
 	{
@@ -2193,8 +2191,6 @@ bool CMenu::_loadList(void)
 		Nand::Instance()->Disable_Emu();
 		_TempLoadIOS(IOS_TYPE_NORMAL_IOS);
 	}
-	if(m_cfg.getBool(_domainFromView(), "update_cache"))
-		m_gameList.Update(m_current_view);
 	gprintf("Switching Views\n");
 
 	bool retval;
@@ -2209,7 +2205,7 @@ bool CMenu::_loadList(void)
 		case COVERFLOW_DML:
 			retval = _loadDmlList();
 			break;
-		case COVERFLOW_EMU:
+		case COVERFLOW_PLUGIN:
 			retval = _loadEmuList();
 			break;
 		default:
@@ -2224,67 +2220,65 @@ bool CMenu::_loadList(void)
 
 bool CMenu::_loadGameList(void)
 {
-	currentPartition = m_cfg.getInt("GAMES", "partition", 1);
+	currentPartition = m_cfg.getInt("GAMES", "partition", USB1);
 	if(!DeviceHandle.IsInserted(currentPartition))
 		return false;
 
-	Config tmpcfg;
 	DeviceHandle.OpenWBFS(currentPartition);
-	m_gameList.Load(sfmt(GAMES_DIR, DeviceName[currentPartition]), ".wbfs|.iso", m_cfg.getString("GAMES", "lastlanguage", "EN").c_str(), tmpcfg);
-	m_cfg.setString("GAMES", "lastlanguage", m_loc.getString(m_curLanguage, "gametdb_code", "EN"));
-	m_cfg.save();
+	string gameDir(fmt(GAMES_DIR, DeviceName[currentPartition]));
+	string cacheDir(fmt("%s/%s_wii.db", m_cacheDir.c_str(), DeviceName[currentPartition]));
+	bool updateCache = m_cfg.getBool(_domainFromView(), "update_cache");
+	m_gameList.CreateList(m_current_view, currentPartition, gameDir, stringToVector(".wbfs|.iso", '|'), cacheDir, updateCache);
 	WBFS_Close();
+
 	return m_gameList.size() > 0 ? true : false;
 }
 
 bool CMenu::_loadHomebrewList()
 {
-	currentPartition = m_cfg.getInt("HOMEBREW", "partition", DeviceHandle.PathToDriveType(m_appDir.c_str()));
+	currentPartition = m_cfg.getInt("HOMEBREW", "partition", SD);
 	if(!DeviceHandle.IsInserted(currentPartition))
 		return false;
 
-	Config tmpcfg;
-	m_gameList.Load(sfmt(HOMEBREW_DIR, DeviceName[currentPartition]), ".dol|.elf", m_cfg.getString("HOMEBREW", "lastlanguage", "EN").c_str(), tmpcfg);
-	m_cfg.setString("HOMEBREW", "lastlanguage", m_loc.getString(m_curLanguage, "gametdb_code", "EN"));
-	m_cfg.save();
+	string gameDir(fmt(HOMEBREW_DIR, DeviceName[currentPartition]));
+	string cacheDir(fmt("%s/%s_homebrew.db", m_cacheDir.c_str(), DeviceName[currentPartition]));
+	bool updateCache = m_cfg.getBool(_domainFromView(), "update_cache");
+	m_gameList.CreateList(m_current_view, currentPartition, gameDir, stringToVector(".dol|.elf", '|'), cacheDir, updateCache);
+
 	return m_gameList.size() > 0 ? true : false;
 }
 
 bool CMenu::_loadDmlList()
 {
-	currentPartition = m_cfg.getInt("DML", "partition", 0);
+	currentPartition = m_cfg.getInt("DML", "partition", USB1);
 	if(!DeviceHandle.IsInserted(currentPartition))
 		return false;
 
-	Config tmpcfg;
-	if(currentPartition != SD)
-		m_gameList.Load(sfmt(m_DMLgameDir.c_str(), DeviceName[currentPartition]), "boot.bin|.iso", m_cfg.getString("DML", "lastlanguage", "EN").c_str(), tmpcfg);
-	else
-		m_gameList.Load(sfmt(DML_DIR, DeviceName[currentPartition]), "boot.bin|.iso", m_cfg.getString("DML", "lastlanguage", "EN").c_str(), tmpcfg);
-	m_cfg.setString("DML", "lastlanguage", m_loc.getString(m_curLanguage, "gametdb_code", "EN"));
-	m_cfg.save();
+	string gameDir(fmt(currentPartition == SD ? DML_DIR : m_DMLgameDir.c_str(), DeviceName[currentPartition]));
+	string cacheDir(fmt("%s/%s_gamecube.db", m_cacheDir.c_str(), DeviceName[currentPartition]));
+	bool updateCache = m_cfg.getBool(_domainFromView(), "update_cache");
+	m_gameList.CreateList(m_current_view, currentPartition, gameDir, stringToVector(".iso", '|'), cacheDir, updateCache);
+
 	return m_gameList.size() > 0 ? true : false;
 }
 
 bool CMenu::_loadEmuList()
 {
-	currentPartition = m_cfg.getInt("EMULATOR", "partition", 0);
+	currentPartition = m_cfg.getInt("EMULATOR", "partition", SD);
 	if(!DeviceHandle.IsInserted(currentPartition))
 		return false;
+	bool updateCache = m_cfg.getBool(_domainFromView(), "update_cache");
 
 	DIR *pdir;
 	struct dirent *pent;
 
-	pdir = opendir(m_pluginsDir.c_str());
-
 	vector<dir_discHdr> emuList;
 	Config m_plugin_cfg;
 
-	while ((pent = readdir(pdir)) != NULL)
+	pdir = opendir(m_pluginsDir.c_str());
+	while((pent = readdir(pdir)) != NULL)
 	{
-		// Skip it
-		if (strcmp(pent->d_name, ".") == 0 || strcmp(pent->d_name, "..") == 0 
-		|| strcasecmp(pent->d_name, "plugins.ini") == 0 || strcasecmp(pent->d_name, "scummvm.ini") == 0)
+		if(strcmp(pent->d_name, ".") == 0 || strcmp(pent->d_name, "..") == 0 || strcasecmp(pent->d_name, "scummvm.ini") == 0)
 			continue;
 		if(strcasestr(pent->d_name, ".ini") != NULL)
 		{
@@ -2292,10 +2286,15 @@ bool CMenu::_loadEmuList()
 			if(m_plugin_cfg.loaded())
 			{
 				m_plugin.AddPlugin(m_plugin_cfg);
-				m_gameList.clear();
-				if(m_plugin_cfg.getString("PLUGIN","romDir","").find("scummvm.ini") == string::npos)
+				if(m_plugin_cfg.getString(PLUGIN_DOMAIN,"romDir").find("scummvm.ini") == string::npos)
 				{
-					m_gameList.Load(sfmt("%s:/%s", DeviceName[currentPartition], m_plugin_cfg.getString("PLUGIN","romDir","").c_str()), m_plugin_cfg.getString("PLUGIN","fileTypes","").c_str(), m_cfg.getString("EMULATOR", "lastlanguage", "EN").c_str(), m_plugin_cfg);
+					string gameDir(fmt("%s:/%s", DeviceName[currentPartition], m_plugin_cfg.getString(PLUGIN_DOMAIN,"romDir").c_str()));
+					string cacheDir(fmt("%s/%s_%s.db", m_cacheDir.c_str(), DeviceName[currentPartition], m_plugin_cfg.getString(PLUGIN_DOMAIN,"magic").c_str()));
+					string FileTypes(m_plugin_cfg.getString(PLUGIN_DOMAIN,"fileTypes"));
+					u32 CaseColor = strtoul(m_plugin_cfg.getString(PLUGIN_DOMAIN,"coverColor").c_str(), NULL, 16);
+					u32 MagicWord = strtoul(m_plugin_cfg.getString(PLUGIN_DOMAIN,"magic").c_str(), NULL, 16);
+					m_gameList.CreateList(m_current_view, currentPartition, gameDir, 
+					stringToVector(FileTypes, '|'), cacheDir, updateCache, CaseColor, MagicWord);
 					for(vector<dir_discHdr>::iterator tmp_itr = m_gameList.begin(); tmp_itr != m_gameList.end(); tmp_itr++)
 						emuList.push_back(*tmp_itr);
 				}
@@ -2319,8 +2318,6 @@ bool CMenu::_loadEmuList()
 	emuList.clear();
 	//If we return to the coverflow before wiiflow quit we dont need to reload plugins
 	m_plugin.EndAdd();
-	m_cfg.setString("EMULATOR", "lastlanguage", m_loc.getString(m_curLanguage, "gametdb_code", "EN"));
-	m_cfg.save();
 
 	return m_gameList.size() > 0 ? true : false;
 }
@@ -2544,7 +2541,7 @@ const char *CMenu::_domainFromView()
 			return "HOMEBREW";
 		case COVERFLOW_DML:
 			return "DML";
-		case COVERFLOW_EMU:
+		case COVERFLOW_PLUGIN:
 			return "EMULATOR";
 		default:
 			return "GAMES";
@@ -2559,7 +2556,7 @@ void CMenu::UpdateCache(u32 view)
 		UpdateCache(COVERFLOW_USB);
 		UpdateCache(COVERFLOW_HOMEBREW);
 		UpdateCache(COVERFLOW_DML);
-		UpdateCache(COVERFLOW_EMU);
+		UpdateCache(COVERFLOW_PLUGIN);
 		UpdateCache(COVERFLOW_CHANNEL);
 		return;
 	}
@@ -2576,7 +2573,7 @@ void CMenu::UpdateCache(u32 view)
 		case COVERFLOW_DML:
 			domain = "DML";
 			break;
-		case COVERFLOW_EMU:
+		case COVERFLOW_PLUGIN:
 			domain = "EMULATOR";
 			break;
 		default:
