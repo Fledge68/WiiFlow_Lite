@@ -28,11 +28,7 @@
 #include "types.h"
 #include "crc32.h"
 
-static const string emptyString;
-static const string emptyString2("/");
-static char* emptyChar = (char*)" ";
-
-void Plugin::init(string m_pluginsDir)
+void Plugin::init(const string& m_pluginsDir)
 {
 	pluginsDir = m_pluginsDir;
 	//Ready to add plugins
@@ -56,21 +52,21 @@ bool Plugin::AddPlugin(Config &plugin)
 		return false;
 
 	PluginOptions NewPlugin;
-	NewPlugin.DolName = plugin.getString(PLUGIN_DOMAIN, "dolFile",emptyChar);
-	NewPlugin.coverFolder = plugin.getString(PLUGIN_DOMAIN, "coverFolder",emptyChar);
-	NewPlugin.magicWord = strtoul(plugin.getString(PLUGIN_DOMAIN, "magic",emptyChar).c_str(), NULL, 16);
-	NewPlugin.caseColor = strtoul(plugin.getString(PLUGIN_DOMAIN, "coverColor",emptyChar).c_str(), NULL, 16);
+	NewPlugin.DolName = plugin.getString(PLUGIN_DOMAIN, "dolFile");
+	NewPlugin.coverFolder = plugin.getString(PLUGIN_DOMAIN, "coverFolder");
+	NewPlugin.magicWord = strtoul(plugin.getString(PLUGIN_DOMAIN, "magic").c_str(), NULL, 16);
+	NewPlugin.caseColor = strtoul(plugin.getString(PLUGIN_DOMAIN, "coverColor").c_str(), NULL, 16);
 	NewPlugin.Args = plugin.getStrings(PLUGIN_DOMAIN, "arguments", '|');
-	string PluginName = plugin.getString(PLUGIN_DOMAIN, "displayname",emptyChar);
-	if(PluginName == emptyString || PluginName == emptyString2)
+	string PluginName = plugin.getString(PLUGIN_DOMAIN, "displayname");
+	if(PluginName.size() < 2)
 	{
 		PluginName = NewPlugin.DolName;
 		PluginName.erase(PluginName.end() - 4, PluginName.end());
 	}
 	NewPlugin.DisplayName.fromUTF8(PluginName.c_str());
-	NewPlugin.consoleCoverID = plugin.getString(PLUGIN_DOMAIN,"consoleCoverID",emptyChar);
+	NewPlugin.consoleCoverID = plugin.getString(PLUGIN_DOMAIN,"consoleCoverID");
 
-	const char *bannerfilepath = fmt("%s/%s", pluginsDir.c_str(), plugin.getString(PLUGIN_DOMAIN,"bannerSound",emptyChar).c_str());
+	const char *bannerfilepath = fmt("%s/%s", pluginsDir.c_str(), plugin.getString(PLUGIN_DOMAIN,"bannerSound").c_str());
 	FILE *fp = fopen(bannerfilepath, "rb");
 	if(fp != NULL)
 	{
@@ -128,14 +124,14 @@ char* Plugin::GetDolName(u32 magic)
 {
 	if((Plugin_Pos = GetPluginPosition(magic)) >= 0)
 		return (char*)Plugins[Plugin_Pos].DolName.c_str();
-	return emptyChar;
+	return NULL;
 }
 
 char* Plugin::GetCoverFolderName(u32 magic)
 {
 	if((Plugin_Pos = GetPluginPosition(magic)) >= 0)
 		return (char*)Plugins[Plugin_Pos].coverFolder.c_str();
-	return emptyChar;
+	return NULL;
 }
 
 bool Plugin::PluginExist(u8 pos)
@@ -155,7 +151,8 @@ void Plugin::SetEnablePlugin(Config &cfg, u8 pos, u8 ForceMode)
 	if(pos < Plugins.size())
 	{
 		char PluginMagicWord[9];
-		snprintf(PluginMagicWord, sizeof(PluginMagicWord), "%08x", Plugins[pos].magicWord);
+		memset(PluginMagicWord, 0, sizeof(PluginMagicWord));
+		strncpy(PluginMagicWord, fmt("%08x", Plugins[pos].magicWord), 8);
 		if(ForceMode == 1)
 			cfg.setBool(PLUGIN_DOMAIN, PluginMagicWord, false);
 		else if(ForceMode == 2)
@@ -165,14 +162,15 @@ void Plugin::SetEnablePlugin(Config &cfg, u8 pos, u8 ForceMode)
 	}
 }
 
-vector<bool> Plugin::GetEnabledPlugins(Config &cfg)
+const vector<bool> *Plugin::GetEnabledPlugins(Config &cfg)
 {
-	vector<bool> enabledPlugins;
+	enabledPlugins.clear();
 	char PluginMagicWord[9];
 	u8 enabledPluginsNumber = 0;
 	for(u8 i = 0; i < Plugins.size(); i++)
 	{
-		snprintf(PluginMagicWord, sizeof(PluginMagicWord), "%08x", Plugins[i].magicWord);
+		memset(PluginMagicWord, 0, sizeof(PluginMagicWord));
+		strncpy(PluginMagicWord, fmt("%08x", Plugins[i].magicWord), 8);
 		if(cfg.getBool(PLUGIN_DOMAIN, PluginMagicWord, true))
 		{
 			enabledPluginsNumber++;
@@ -183,7 +181,7 @@ vector<bool> Plugin::GetEnabledPlugins(Config &cfg)
 	}
 	if(enabledPluginsNumber == Plugins.size())
 		enabledPlugins.clear();
-	return enabledPlugins;
+	return &enabledPlugins;
 }
 
 u32 Plugin::getPluginMagic(u8 pos)
@@ -191,51 +189,48 @@ u32 Plugin::getPluginMagic(u8 pos)
 	return Plugins[pos].magicWord;
 }
 
-vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, string Device)
+vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, const char *Device)
 {
 	gprintf("Parsing scummvm.ini\n");
 	vector<dir_discHdr> gameHeader;
 	if(!ini.loaded())
 		return gameHeader;
 
-	string game(ini.firstDomain());
-	string GameName;
-	dir_discHdr tmp;
+	const string *GameDomain = &ini.firstDomain();
+	dir_discHdr ListElement;
 	while(1)
 	{
-		if(game == emptyString || game == emptyString2)
+		if(GameDomain->size() < 2)
 			break;
-		GameName = ini.getString(game, "description");
-		if(GameName == emptyString || GameName == emptyString2 ||
-		strncasecmp(ini.getWString(game, "path").toUTF8().c_str(), Device.c_str(), 2) != 0)
+		const string &GameName = ini.getString(*GameDomain, "description");
+		if(GameName.size() < 2 || ini.getString(*GameDomain, "path").find(Device) == string::npos)
 		{
-			game = ini.nextDomain();
+			GameDomain = &ini.nextDomain();
 			continue;
 		}
-		memset(&tmp, 0, sizeof(dir_discHdr));
-		strncpy((char*)tmp.id, PLUGIN_DOMAIN, sizeof(tmp.id));
-		tmp.casecolor = Plugins.back().caseColor;
-		wstringEx tmpString;
-		tmpString.fromUTF8(GameName.c_str());
-		wcsncpy(tmp.title, tmpString.c_str(), 64);
-		strncpy(tmp.path, game.c_str(), sizeof(tmp.path));
-		gprintf("Found: %ls\n", tmp.title);
-		tmp.settings[0] = Plugins.back().magicWord;
-		tmp.type = TYPE_PLUGIN;
-		gameHeader.push_back(tmp);
-		game = ini.nextDomain();
+		memset((void*)&ListElement, 0, sizeof(dir_discHdr));
+		strncpy((char*)ListElement.id, PLUGIN_DOMAIN, 6);
+		ListElement.casecolor = Plugins.back().caseColor;
+		mbstowcs(ListElement.title, GameName.c_str(), 63);
+		strncpy(ListElement.path, GameDomain->c_str(), sizeof(ListElement.path));
+		gprintf("Found: %s\n", GameDomain->c_str());
+		ListElement.settings[0] = Plugins.back().magicWord;
+		ListElement.type = TYPE_PLUGIN;
+		gameHeader.push_back(ListElement);
+		GameDomain = &ini.nextDomain();
 	}
 	return gameHeader;
 }
 
-vector<string> Plugin::CreateArgs(string device, string path, string title, string loader, u32 magic)
+vector<string> Plugin::CreateArgs(const string& device, const string& path, 
+						const string& title, const string& loader, u32 magic)
 {
 	vector<string> args;
 	Plugin_Pos = GetPluginPosition(magic);
 	if(Plugin_Pos < 0)
 		return args;
-	for(vector<string>::iterator arg = Plugins[Plugin_Pos].Args.begin();
-								arg != Plugins[Plugin_Pos].Args.end(); arg++)
+	for(vector<string>::const_iterator arg = Plugins[Plugin_Pos].Args.begin();
+								arg != Plugins[Plugin_Pos].Args.end(); ++arg)
 	{
 		string Argument(*arg);
 		if(Argument.find(PLUGIN_DEV) != string::npos)
@@ -251,8 +246,9 @@ vector<string> Plugin::CreateArgs(string device, string path, string title, stri
 	return args;
 }
 
-string Plugin::GenerateCoverLink(dir_discHdr gameHeader, string url, Config &Checksums)
+string Plugin::GenerateCoverLink(dir_discHdr gameHeader, const string& constURL, Config &Checksums)
 {
+	string url(constURL);
 	Plugin_Pos = GetPluginPosition(gameHeader.settings[0]);
 
 	if(url.find(TAG_LOC) != url.npos)
@@ -266,12 +262,13 @@ string Plugin::GenerateCoverLink(dir_discHdr gameHeader, string url, Config &Che
 		strncpy(gamePath, &gameHeader.path[string(gameHeader.path).find_last_of("/")+1], sizeof(gamePath));
 	else
 		strncpy(gamePath, gameHeader.path, sizeof(gamePath));
-	string cachedCRC = Checksums.getString("CHECKSUMS", gamePath, emptyString);
+	const string& cachedCRC = Checksums.getString("CHECKSUMS", gamePath);
 	char crc_string[9];
-	if(cachedCRC != emptyString)
+	memset(crc_string, 0, sizeof(crc_string));
+	if(cachedCRC.size() > 1)
 	{
 		gprintf("CRC32 of %s is cached\n", gamePath);
-		snprintf(crc_string, sizeof(crc_string), "%s", cachedCRC.c_str());
+		strncpy(crc_string, cachedCRC.c_str(), 8);
 	}
 	else
 	{
@@ -284,7 +281,7 @@ string Plugin::GenerateCoverLink(dir_discHdr gameHeader, string url, Config &Che
 			infile.seekg(0x0e, ios::beg);
 			infile.read((char*)&buffer, 8);
 			infile.close();
-			snprintf(crc_string, sizeof(crc_string), "%08x", (u32)__builtin_bswap32(buffer));
+			strncpy(crc_string, fmt("%08x", (u32)__builtin_bswap32(buffer)), 8);
 		}
 		else if(strstr(gameHeader.path, ".7z") != NULL)
 		{
@@ -300,10 +297,10 @@ string Plugin::GenerateCoverLink(dir_discHdr gameHeader, string url, Config &Che
 			infile.seekg(-13, ios::cur);
 			infile.read((char*)&buffer, 8);
 			infile.close();
-			snprintf(crc_string, sizeof(crc_string), "%08x", (u32)__builtin_bswap32(buffer));
+			strncpy(crc_string, fmt("%08x", (u32)__builtin_bswap32(buffer)), 8);
 		}
 		else
-			snprintf(crc_string, sizeof(crc_string), "%08x", crc32file(gameHeader.path));
+			strncpy(crc_string, fmt("%08x", crc32file(gameHeader.path)), 8);
 		Checksums.setString("CHECKSUMS", gamePath, crc_string);
 		Checksums.save();
 	}
