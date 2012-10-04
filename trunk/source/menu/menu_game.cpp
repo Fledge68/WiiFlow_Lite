@@ -258,7 +258,7 @@ static void _extractBannerTitle(Banner *bnr, int language)
 
 static Banner *_extractChannelBnr(const u64 chantitle)
 {
-	return Channels::GetBanner(chantitle);
+	return ChannelHandle.GetBanner(chantitle);
 }
 
 static Banner *_extractBnr(dir_discHdr *hdr)
@@ -1027,7 +1027,6 @@ static const char systems[11] = { 'C', 'E', 'F', 'J', 'L', 'M', 'N', 'P', 'Q', '
 
 void CMenu::_launchChannel(dir_discHdr *hdr)
 {
-	Channels channel;
 	u32 gameIOS = 0;
 	string id = string(hdr->id);
 
@@ -1122,7 +1121,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 			Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
 			Nand::Instance()->Enable_Emu();
 		}
-		gameIOS = channel.GetRequestedIOS(gameTitle);
+		gameIOS = ChannelHandle.GetRequestedIOS(gameTitle);
 		if(!emu_disabled)
 			Nand::Instance()->Disable_Emu();
 		if(_loadIOS(gameIOS, userIOS, id) == LOAD_IOS_FAILED)

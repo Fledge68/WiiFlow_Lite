@@ -27,14 +27,18 @@ ListGenerator m_gameList;
 
 void ListGenerator::Init(const char *settingsDir, const char *Language)
 {
-	gameTDB_Path = fmt("%s/wiitdb.xml", settingsDir);
-	CustomTitlesPath = fmt("%s/" CTITLES_FILENAME, settingsDir);
-	gameTDB_Language = Language;
+	if(settingsDir != NULL)
+	{
+		gameTDB_Path = fmt("%s/wiitdb.xml", settingsDir);
+		CustomTitlesPath = fmt("%s/" CTITLES_FILENAME, settingsDir);
+	}
+	if(Language != NULL) gameTDB_Language = Language;
 }
 
 void ListGenerator::Cleanup()
 {
 	this->clear(); //clear gamelist
+	InternalList.clear(); //clear pathlist
 }
 
 void ListGenerator::OpenConfigs()
@@ -53,21 +57,21 @@ void ListGenerator::CloseConfigs()
 		CustomTitles.unload();
 }
 
-void ListGenerator::CreateList(u32 Flow, u32 Device, const string& Path,
-const vector<string>& FileTypes, const string& DBName, bool UpdateCache, u32 Color, u32 Magic)
+void ListGenerator::CreateList(u32 Flow, u32 Device, const string& Path, const vector<string>& FileTypes, 
+								const string& DBName, bool UpdateCache, u32 Color, u32 Magic)
 {
 	Cleanup();
-	if(UpdateCache)
+	if(!DBName.empty())
 	{
-		gprintf("Force Update Cache\n");
-		fsop_deleteFile(DBName.c_str());
-	}
-	else
-	{
-		CCache(*this, DBName, LOAD);
-		if(!this->empty())
-			return;
-		fsop_deleteFile(DBName.c_str());
+		if(UpdateCache)
+			fsop_deleteFile(DBName.c_str());
+		else
+		{
+			CCache(*this, DBName, LOAD);
+			if(!this->empty())
+				return;
+			fsop_deleteFile(DBName.c_str());
+		}
 	}
 	OpenConfigs();
 	if(Flow == COVERFLOW_USB)
@@ -78,7 +82,7 @@ const vector<string>& FileTypes, const string& DBName, bool UpdateCache, u32 Col
 			Create_Wii_EXT_List(Path, FileTypes);
 	}
 	else if(Flow == COVERFLOW_CHANNEL)
-		CreateChannelList();
+		Create_Channel_List();
 	else if(DeviceHandle.GetFSType(Device) != PART_FS_WBFS)
 	{
 		if(Flow == COVERFLOW_DML)
@@ -89,7 +93,7 @@ const vector<string>& FileTypes, const string& DBName, bool UpdateCache, u32 Col
 			Create_Homebrew_List(Path, FileTypes);
 	}
 	CloseConfigs();
-	if(!this->empty()) /* Write a new Cache */
+	if(!this->empty() && !DBName.empty()) /* Write a new Cache */
 		CCache(*this, DBName, SAVE);
 }
 
@@ -136,7 +140,6 @@ void ListGenerator::Create_GC_List(const string& Path, const vector<string>& Fil
 		{
 			Name->erase(Name->begin() + Name->find("root"), Name->end());
 			Name->append("sys/boot.bin");
-			gprintf("FST Name: %s\n", Name->c_str());
 			fp = fopen(Name->c_str(), "rb");
 		}
 		if(fp)
@@ -178,7 +181,7 @@ void ListGenerator::Create_Plugin_List(const string& Path, const vector<string>&
 void ListGenerator::Create_Homebrew_List(const string& Path, const vector<string>& FileTypes)
 {
 	dir_discHdr ListElement;
-	GetFiles(Path.c_str(), FileTypes, InternalList, false, 4);
+	GetFiles(Path.c_str(), FileTypes, InternalList, false);
 	for(vector<string>::iterator Name = InternalList.begin(); Name != InternalList.end(); Name++)
 	{
 		if(Name->find("boot.") == string::npos)
@@ -202,12 +205,12 @@ void ListGenerator::Create_Homebrew_List(const string& Path, const vector<string
 		this->push_back(ListElement);
 		continue;
 	}
+	InternalList.clear();
 }
 
-void ListGenerator::CreateChannelList()
+void ListGenerator::Create_Channel_List()
 {
 	u32 GameColor = 1;
-	Channels ChannelHandle;
 	dir_discHdr ListElement;
 	ChannelHandle.Init(0, gameTDB_Language, true);
 	for(int i = 0; i < ChannelHandle.Count(); i++)
@@ -238,6 +241,7 @@ void ListGenerator::CreateChannelList()
 		ListElement.type = TYPE_CHANNEL;
 		this->push_back(ListElement);
 	}
+	InternalList.clear();
 }
 
 void ListGenerator::AddISO(const char *GameID, const char *GameTitle, const char *GamePath, u32 GameColor, u8 Type)
@@ -245,8 +249,8 @@ void ListGenerator::AddISO(const char *GameID, const char *GameTitle, const char
 	dir_discHdr ListElement;
 	memset((void*)&ListElement, 0, sizeof(dir_discHdr));
 	ListElement.index = this->size();
-	strncpy(ListElement.id, GameID, 6);
-	strncpy(ListElement.path, GamePath, sizeof(ListElement.path));
+	if(GameID != NULL) strncpy(ListElement.id, GameID, 6);
+	if(GamePath != NULL) strncpy(ListElement.path, GamePath, sizeof(ListElement.path));
 	ListElement.casecolor = CustomTitles.getColor("COVERS", ListElement.id, GameColor).intVal();
 	string CustomTitle = CustomTitles.getString("TITLES", ListElement.id);
 	if(gameTDB.IsLoaded())
@@ -260,7 +264,7 @@ void ListGenerator::AddISO(const char *GameID, const char *GameTitle, const char
 	}
 	if(CustomTitle.size() > 0)
 		mbstowcs(ListElement.title, CustomTitle.c_str(), 63);
-	else
+	else if(GameTitle != NULL)
 		mbstowcs(ListElement.title, GameTitle, 63);
 	Asciify(ListElement.title);
 

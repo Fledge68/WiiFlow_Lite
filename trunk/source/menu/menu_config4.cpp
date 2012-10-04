@@ -18,8 +18,6 @@ static inline int loopNum(int i, int s)
 int currentChannelIndex = -1;
 int amountOfChannels = -1;
 
-Channels m_channels;
-
 const CMenu::SOption CMenu::_exitTo[5] = {
 	{ "def", L"Default" },
 	{ "menu", L"System Menu" },
@@ -78,29 +76,22 @@ void CMenu::_showConfig4(void)
 
 	wstringEx channelName = m_loc.getWString(m_curLanguage, "disabled", L"Disabled");
 
-	string langCode = m_loc.getString(m_curLanguage, "gametdb_code", "EN");
-
 	Nand::Instance()->Disable_Emu();
-
-	m_channels.Init(0x00010001, langCode, true);
-	amountOfChannels = m_channels.Count();
+	ChannelHandle.Init(0, m_loc.getString(m_curLanguage, "gametdb_code", "EN"), true);
+	amountOfChannels = ChannelHandle.Count();
 
 	string currentChanId = m_cfg.getString("GENERAL", "returnto" );
 	if (currentChanId.size() > 0)
 	{
 		for (int i = 0; i < amountOfChannels; i++)
 		{
-			if (currentChanId == m_channels.GetId(i))
+			if (currentChanId == ChannelHandle.GetId(i))
 			{
-				channelName = custom_titles.getWString("TITLES", currentChanId, titles.getWString("TITLES", currentChanId, m_channels.GetName(i)));
+				channelName = custom_titles.getWString("TITLES", currentChanId, titles.getWString("TITLES", currentChanId, ChannelHandle.GetName(i)));
 				break;
 			}
 		}
 	}
-
-	if(!neek2o() && m_current_view == COVERFLOW_CHANNEL && m_cfg.getInt("NAND", "emulation", 0) > 0)
-		Nand::Instance()->Enable_Emu();
-
 	m_btnMgr.setText(m_config4LblReturnToVal, channelName);
 }
 
@@ -139,7 +130,7 @@ int CMenu::_config4(void)
 				if (currentChannelIndex == -1)
 					m_cfg.remove("GENERAL", "returnto");
 				else
-					m_cfg.setString("GENERAL", "returnto", m_channels.GetId(currentChannelIndex));
+					m_cfg.setString("GENERAL", "returnto", ChannelHandle.GetId(currentChannelIndex));
 				_showConfig4();
 			}
 			else if (m_btnMgr.selected(m_config4BtnReturnToM))
@@ -149,11 +140,13 @@ int CMenu::_config4(void)
 				if (currentChannelIndex == -1)
 					m_cfg.remove("GENERAL", "returnto");
 				else
-					m_cfg.setString("GENERAL", "returnto", m_channels.GetId(currentChannelIndex));
+					m_cfg.setString("GENERAL", "returnto", ChannelHandle.GetId(currentChannelIndex));
 				_showConfig4();
 			}
 		}
 	}
+	if(!neek2o() && m_current_view == COVERFLOW_CHANNEL && m_cfg.getBool("NAND", "disable", true)  == false)
+		Nand::Instance()->Enable_Emu();
 	_hideConfig4();
 	return change;
 }

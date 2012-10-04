@@ -80,4 +80,6 @@ class Channels
 		
 };
 
+extern Channels ChannelHandle;
+
 #endif
