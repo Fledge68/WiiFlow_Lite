@@ -147,7 +147,7 @@ void CMenu::_PluginSettings()
 				break;
 			}
 			u32 IteratorHelp = (Plugin_curPage - 1) * 10;
-			for(u8 i = 1; i < min(IteratorHelp+10, (u32)m_max_plugins)-IteratorHelp+1; ++i)
+			for(u8 i = 0; i < min(IteratorHelp+10, (u32)m_max_plugins)-IteratorHelp+1; ++i)
 			{
 				if(m_btnMgr.selected(m_pluginBtn[i]))
 				{
@@ -155,16 +155,9 @@ void CMenu::_PluginSettings()
 					m_btnMgr.noHover(true);
 					if(i == 0)
 					{
-						int j = 0;
-						bool EnableAll = (m_plugin.GetEnabledPlugins(m_cfg)->size());
-						while(true)
-						{
-								if(m_plugin.PluginExist(j+IteratorHelp-1))
-									m_plugin.SetEnablePlugin(m_cfg, j+IteratorHelp-1, EnableAll ? 2 : 1);
-								else
-									break;
-							j++;
-						}
+						bool EnableAll = m_plugin.GetEnabledPlugins(m_cfg)->size();
+						for(u8 j = 0; m_plugin.PluginExist(j); j++)
+							m_plugin.SetEnablePlugin(m_cfg, j, EnableAll ? 2 : 1);
 					}
 					else
 						m_plugin.SetEnablePlugin(m_cfg, i+IteratorHelp-1);
