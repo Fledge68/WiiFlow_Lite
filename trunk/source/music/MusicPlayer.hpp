@@ -28,7 +28,7 @@ class Musicplayer
 {
 public:
 	void Cleanup();
-	void Init(Config &cfg, string musicDir, string themeMusicDir);
+	void Init(Config &cfg, const string& musicDir, const string& themeMusicDir);
 	void Tick(bool attenuate);
 
 	void SetVolume(u8 volume);
@@ -49,7 +49,6 @@ public:
 protected:
 	bool PosFromPrevFile();
 	void LoadCurrentFile();
-	void ScanDirectories(const char *directory);
 
 	u8 Volume;
 	u8 CurrentVolume;

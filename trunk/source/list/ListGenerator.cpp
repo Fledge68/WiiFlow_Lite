@@ -23,10 +23,12 @@
 #include "fileOps/fileOps.h"
 #include "gui/text.hpp"
 
-void ListGenerator::Init(string settingsDir, string Language)
+ListGenerator m_gameList;
+
+void ListGenerator::Init(const char *settingsDir, const char *Language)
 {
-	gameTDB_Path = fmt("%s/wiitdb.xml", settingsDir.c_str());
-	CustomTitlesPath = fmt("%s/" CTITLES_FILENAME, settingsDir.c_str());
+	gameTDB_Path = fmt("%s/wiitdb.xml", settingsDir);
+	CustomTitlesPath = fmt("%s/" CTITLES_FILENAME, settingsDir);
 	gameTDB_Language = Language;
 }
 
@@ -51,8 +53,8 @@ void ListGenerator::CloseConfigs()
 		CustomTitles.unload();
 }
 
-void ListGenerator::CreateList(u32 Flow, u32 Device, string Path, vector<string> FileTypes, 
-								string DBName, bool UpdateCache, u32 Color, u32 Magic)
+void ListGenerator::CreateList(u32 Flow, u32 Device, const string& Path,
+const vector<string>& FileTypes, const string& DBName, bool UpdateCache, u32 Color, u32 Magic)
 {
 	Cleanup();
 	if(UpdateCache)
@@ -93,63 +95,68 @@ void ListGenerator::CreateList(u32 Flow, u32 Device, string Path, vector<string>
 
 void ListGenerator::Create_Wii_WBFS_List(wbfs_t *handle)
 {
-	discHdr Header;
 	for(u32 i = 0; i < wbfs_count_discs(handle); i++)
 	{
-		memset((void*)&Header, 0, sizeof(discHdr));
-		s32 ret = wbfs_get_disc_info(handle, i, (u8*)&Header, sizeof(discHdr), NULL);
-		if(ret == 0 && Header.magic == WII_MAGIC)
-			AddISO((const char*)Header.id, (const char*)Header.title, " ", 1, TYPE_WII_GAME);
+		memset((void*)&WiiGameHeader, 0, sizeof(discHdr));
+		s32 ret = wbfs_get_disc_info(handle, i, (u8*)&WiiGameHeader, sizeof(discHdr), NULL);
+		if(ret == 0 && WiiGameHeader.magic == WII_MAGIC)
+			AddISO((const char*)WiiGameHeader.id, (const char*)WiiGameHeader.title, 
+					NULL, 1, TYPE_WII_GAME);
 	}
 }
 
-void ListGenerator::Create_Wii_EXT_List(string Path, vector<string> FileTypes)
+void ListGenerator::Create_Wii_EXT_List(const string& Path, const vector<string>& FileTypes)
 {
-	vector<string> FileList;
-	GetFiles(Path.c_str(), FileTypes, &FileList);
-	discHdr Header;
-	for(vector<string>::iterator Name = FileList.begin(); Name != FileList.end(); Name++)
+	GetFiles(Path.c_str(), FileTypes, InternalList, false);
+	for(vector<string>::iterator Name = InternalList.begin(); Name != InternalList.end(); Name++)
 	{
-		memset((void*)&Header, 0, sizeof(discHdr));
+		memset((void*)&WiiGameHeader, 0, sizeof(discHdr));
 		FILE *fp = fopen(Name->c_str(), "rb");
 		if(fp)
 		{
 			fseek(fp, strcasestr(Name->c_str(), ".wbfs") != NULL ? 512 : 0, SEEK_SET);
-			fread((void*)&Header, 1, sizeof(discHdr), fp);
-			if(Header.magic == WII_MAGIC)
-				AddISO((const char*)Header.id, (const char*)Header.title, Name->c_str(), 1, TYPE_WII_GAME);
+			fread((void*)&WiiGameHeader, 1, sizeof(discHdr), fp);
+			if(WiiGameHeader.magic == WII_MAGIC)
+				AddISO((const char*)WiiGameHeader.id, (const char*)WiiGameHeader.title, 
+						Name->c_str(), 1, TYPE_WII_GAME);
 			fclose(fp);
 		}
 	}
-	FileList.clear();
+	InternalList.clear();
 }
 
-void ListGenerator::Create_GC_List(string Path, vector<string> FileTypes)
+void ListGenerator::Create_GC_List(const string& Path, const vector<string>& FileTypes)
 {
-	vector<string> FileList;
-	GetFiles(Path.c_str(), FileTypes, &FileList, true);
-	gc_discHdr Header;
-	for(vector<string>::iterator Name = FileList.begin(); Name != FileList.end(); Name++)
+	GetFiles(Path.c_str(), FileTypes, InternalList, true);
+	for(vector<string>::iterator Name = InternalList.begin(); Name != InternalList.end(); Name++)
 	{
-		memset((void*)&Header, 0, sizeof(gc_discHdr));
+		memset((void*)&GCGameHeader, 0, sizeof(gc_discHdr));
 		FILE *fp = fopen(Name->c_str(), "rb");
+		if(!fp && Name->find("root") != string::npos) //fst folder
+		{
+			Name->erase(Name->begin() + Name->find("root"), Name->end());
+			Name->append("sys/boot.bin");
+			gprintf("FST Name: %s\n", Name->c_str());
+			fp = fopen(Name->c_str(), "rb");
+		}
 		if(fp)
 		{
-			fread((void*)&Header, 1, sizeof(gc_discHdr), fp);
-			if(Header.magic == GC_MAGIC)
-				AddISO((const char*)Header.id, (const char*)Header.title, Name->c_str(), 0, TYPE_GC_GAME);
+			fread((void*)&GCGameHeader, 1, sizeof(gc_discHdr), fp);
+			if(GCGameHeader.magic == GC_MAGIC)
+				AddISO((const char*)GCGameHeader.id, (const char*)GCGameHeader.title,
+						Name->c_str(), 0, TYPE_GC_GAME);
 			fclose(fp);
 		}
 	}
-	FileList.clear();
+	InternalList.clear();
 }
 
-void ListGenerator::Create_Plugin_List(string Path, vector<string> FileTypes, u32 Color, u32 Magic)
+void ListGenerator::Create_Plugin_List(const string& Path, const vector<string>& FileTypes, 
+									u32 Color, u32 Magic)
 {
 	dir_discHdr ListElement;
-	vector<string> FileList;
-	GetFiles(Path.c_str(), FileTypes, &FileList, false, 20);
-	for(vector<string>::iterator Name = FileList.begin(); Name != FileList.end(); Name++)
+	GetFiles(Path.c_str(), FileTypes, InternalList, false, 30);
+	for(vector<string>::const_iterator Name = InternalList.begin(); Name != InternalList.end(); ++Name)
 	{
 		memset((void*)&ListElement, 0, sizeof(dir_discHdr));
 		ListElement.index = this->size();
@@ -165,15 +172,14 @@ void ListGenerator::Create_Plugin_List(string Path, vector<string> FileTypes, u3
 		ListElement.type = TYPE_PLUGIN;
 		this->push_back(ListElement);
 	}
-	FileList.clear();
+	InternalList.clear();
 }
 
-void ListGenerator::Create_Homebrew_List(string Path, vector<string> FileTypes)
+void ListGenerator::Create_Homebrew_List(const string& Path, const vector<string>& FileTypes)
 {
 	dir_discHdr ListElement;
-	vector<string> FileList;
-	GetFiles(Path.c_str(), FileTypes, &FileList, false, 4);
-	for(vector<string>::iterator Name = FileList.begin(); Name != FileList.end(); Name++)
+	GetFiles(Path.c_str(), FileTypes, InternalList, false, 4);
+	for(vector<string>::iterator Name = InternalList.begin(); Name != InternalList.end(); Name++)
 	{
 		if(Name->find("boot.") == string::npos)
 			continue;
@@ -204,9 +210,7 @@ void ListGenerator::CreateChannelList()
 	Channels ChannelHandle;
 	dir_discHdr ListElement;
 	ChannelHandle.Init(0, gameTDB_Language, true);
-	u32 count = ChannelHandle.Count();
-	this->reserve(count);
-	for(u32 i = 0; i < count; ++i)
+	for(int i = 0; i < ChannelHandle.Count(); i++)
 	{
 		Channel *chan = ChannelHandle.GetChannel(i);
 		if(chan->id == NULL) 
@@ -264,8 +268,18 @@ void ListGenerator::AddISO(const char *GameID, const char *GameTitle, const char
 	this->push_back(ListElement); //I am a vector! :P
 }
 
-void ListGenerator::GetFiles(const char *Path, vector<string> FileTypes, 
-				vector<string> *FileList, bool gc, u32 max_depth, u32 depth)
+bool ListGenerator::IsFileSupported(const char *File, const vector<string>& FileTypes)
+{
+	for(vector<string>::const_iterator cmp = FileTypes.begin(); cmp != FileTypes.end(); ++cmp)
+	{
+		if(strcasecmp(File, cmp->c_str()) == 0)
+			return true;
+	}
+	return false;
+}
+
+void ListGenerator::GetFiles(const char *Path, const vector<string>& FileTypes, 
+				vector<string>& FileList, bool CompareFolders, u32 max_depth, u32 depth)
 {
 	struct dirent *pent = NULL;
 	vector<string> SubPaths;
@@ -279,8 +293,11 @@ void ListGenerator::GetFiles(const char *Path, vector<string> FileTypes,
 		string CurrentItem = sfmt("%s/%s", Path, pent->d_name);
 		if(pent->d_type == DT_DIR)
 		{
-			if(gc && depth == 2 && strcasecmp(pent->d_name, "root") == 0) //fst
-				FileList->push_back(CurrentItem);
+			if(CompareFolders && IsFileSupported(pent->d_name, FileTypes))
+			{
+				FileList.push_back(CurrentItem);
+				continue;
+			}
 			else if(depth < max_depth)
 				SubPaths.push_back(CurrentItem); //thanks to libntfs for a complicated way
 		}
@@ -288,18 +305,15 @@ void ListGenerator::GetFiles(const char *Path, vector<string> FileTypes,
 		{
 			const char *FileName = strstr(pent->d_name, ".");
 			if(FileName == NULL) FileName = pent->d_name;
-			for(vector<string>::iterator cmp = FileTypes.begin(); cmp != FileTypes.end(); cmp++)
+			if(IsFileSupported(FileName, FileTypes))
 			{
-				if(strcasecmp(FileName, cmp->c_str()) == 0)
-				{
-					FileList->push_back(CurrentItem);
-					break;
-				}
+				FileList.push_back(CurrentItem);
+				continue;
 			}
 		}
 	}
 	closedir(pdir);
 	for(vector<string>::iterator SubPath = SubPaths.begin(); SubPath != SubPaths.end(); SubPath++)
-		GetFiles(SubPath->c_str(), FileTypes, FileList, gc, max_depth, depth + 1);
+		GetFiles(SubPath->c_str(), FileTypes, FileList, CompareFolders, max_depth, depth + 1);
 	SubPaths.clear();
 }

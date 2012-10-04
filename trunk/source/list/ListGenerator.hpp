@@ -32,20 +32,22 @@ using namespace std;
 class ListGenerator : public vector<dir_discHdr>
 {
 public:
-	void Init(string settingsDir, string Language);
+	void Init(const char *settingsDir, const char *Language);
 	void Cleanup();
-	void CreateList(u32 Flow, u32 Device, string Path, vector<string> FileTypes, 
-				string DBName, bool UpdateCache, u32 Color = 0, u32 Magic = 0);
+	void CreateList(u32 Flow, u32 Device, const string& Path, const vector<string>& FileTypes, 
+				const string& DBName, bool UpdateCache, u32 Color = 0, u32 Magic = 0);
+	void GetFiles(const char *Path, const vector<string>& FileTypes, vector<string>& FileList,
+				bool CompareFolders, u32 max_depth = 2, u32 depth = 1);
 private:
 	void Create_Wii_WBFS_List(wbfs_t *handle);
-	void Create_Wii_EXT_List(string Path, vector<string> FileTypes);
-	void Create_GC_List(string Path, vector<string> FileTypes);
-	void Create_Plugin_List(string Path, vector<string> FileTypes, u32 Color, u32 Magic);
-	void Create_Homebrew_List(string Path, vector<string> FileTypes);
+	void Create_Wii_EXT_List(const string& Path, const vector<string>& FileTypes);
+	void Create_GC_List(const string& Path, const vector<string>& FileTypes);
+	void Create_Plugin_List(const string& Path, const vector<string>& FileTypes,
+							u32 Color, u32 Magic);
+	void Create_Homebrew_List(const string& Path, const vector<string>& FileTypes);
 	void CreateChannelList();
-	void GetFiles(const char *Path, vector<string> FileTypes, vector<string> *FileList, 
-				bool gc = false, u32 max_depth = 2, u32 depth = 1);
 	void AddISO(const char *GameID, const char *GameTitle, const char *GamePath, u32 GameColor, u8 Type);
+	bool IsFileSupported(const char *File, const vector<string>& FileTypes);
 	void OpenConfigs();
 	void CloseConfigs();
 	string gameTDB_Path;
@@ -53,6 +55,11 @@ private:
 	string gameTDB_Language;
 	GameTDB gameTDB;
 	Config CustomTitles;
+	vector<string> InternalList;
+	discHdr WiiGameHeader;
+	gc_discHdr GCGameHeader;
 };
+
+extern ListGenerator m_gameList;
 
 #endif /*_LISTGENERATOR_HPP_*/

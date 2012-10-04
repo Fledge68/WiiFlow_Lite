@@ -419,7 +419,7 @@ void CMenu::init(void)
 	}
 	m_tempView = false;
 
-	m_gameList.Init(m_settingsDir, m_loc.getString(m_curLanguage, "gametdb_code", "EN"));
+	m_gameList.Init(m_settingsDir.c_str(), m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
 
 	m_aa = 3;
 
@@ -2171,8 +2171,9 @@ bool CMenu::_loadChannelList(void)
 	{
 		string cacheDir(fmt("%s/%s_channels.db", m_cacheDir.c_str(), disable_emu ? "nand" : DeviceName[currentPartition]));
 		bool updateCache = disable_emu ? true : m_cfg.getBool(_domainFromView(), "update_cache");
+		vector<string> NullVector;
 		m_gameList.CreateList(m_current_view, currentPartition, std::string(), 
-					stringToVector(std::string(), '|'), cacheDir, updateCache);
+					NullVector, cacheDir, updateCache);
 	}
 
 	lastPartition = currentPartition;
@@ -2257,7 +2258,8 @@ bool CMenu::_loadDmlList()
 	string gameDir(fmt(currentPartition == SD ? DML_DIR : m_DMLgameDir.c_str(), DeviceName[currentPartition]));
 	string cacheDir(fmt("%s/%s_gamecube.db", m_cacheDir.c_str(), DeviceName[currentPartition]));
 	bool updateCache = m_cfg.getBool(_domainFromView(), "update_cache");
-	m_gameList.CreateList(m_current_view, currentPartition, gameDir, stringToVector(".iso", '|'), cacheDir, updateCache);
+	m_gameList.CreateList(m_current_view, currentPartition, gameDir,
+			stringToVector(".iso|root", '|'),cacheDir, updateCache);
 
 	return m_gameList.size() > 0 ? true : false;
 }
@@ -2269,52 +2271,50 @@ bool CMenu::_loadEmuList()
 		return false;
 	bool updateCache = m_cfg.getBool(_domainFromView(), "update_cache");
 
-	DIR *pdir;
-	struct dirent *pent;
-
 	vector<dir_discHdr> emuList;
 	Config m_plugin_cfg;
 
-	pdir = opendir(m_pluginsDir.c_str());
-	while((pent = readdir(pdir)) != NULL)
+	vector<string> INI_List;
+	m_gameList.clear();
+	m_gameList.GetFiles(m_pluginsDir.c_str(), stringToVector(".ini", '|'), INI_List, false, 1);
+	for(vector<string>::const_iterator Name = INI_List.begin(); Name != INI_List.end(); ++Name)
 	{
-		if(strcmp(pent->d_name, ".") == 0 || strcmp(pent->d_name, "..") == 0 || strcasecmp(pent->d_name, "scummvm.ini") == 0)
+		if(Name->find("scummvm.ini") != string::npos)
 			continue;
-		if(strcasestr(pent->d_name, ".ini") != NULL)
+		m_plugin_cfg.load(Name->c_str());
+		if(m_plugin_cfg.loaded())
 		{
-			m_plugin_cfg.load(fmt("%s/%s", m_pluginsDir.c_str(), pent->d_name));
-			if(m_plugin_cfg.loaded())
+			m_plugin.AddPlugin(m_plugin_cfg);
+			if(m_plugin_cfg.getString(PLUGIN_DOMAIN,"romDir").find("scummvm.ini") == string::npos)
 			{
-				m_plugin.AddPlugin(m_plugin_cfg);
-				if(m_plugin_cfg.getString(PLUGIN_DOMAIN,"romDir").find("scummvm.ini") == string::npos)
-				{
-					string gameDir(fmt("%s:/%s", DeviceName[currentPartition], m_plugin_cfg.getString(PLUGIN_DOMAIN,"romDir").c_str()));
-					string cacheDir(fmt("%s/%s_%s.db", m_cacheDir.c_str(), DeviceName[currentPartition], m_plugin_cfg.getString(PLUGIN_DOMAIN,"magic").c_str()));
-					string FileTypes(m_plugin_cfg.getString(PLUGIN_DOMAIN,"fileTypes"));
-					u32 CaseColor = strtoul(m_plugin_cfg.getString(PLUGIN_DOMAIN,"coverColor").c_str(), NULL, 16);
-					u32 MagicWord = strtoul(m_plugin_cfg.getString(PLUGIN_DOMAIN,"magic").c_str(), NULL, 16);
-					m_gameList.CreateList(m_current_view, currentPartition, gameDir, 
-					stringToVector(FileTypes, '|'), cacheDir, updateCache, CaseColor, MagicWord);
-					for(vector<dir_discHdr>::iterator tmp_itr = m_gameList.begin(); tmp_itr != m_gameList.end(); tmp_itr++)
-						emuList.push_back(*tmp_itr);
-				}
-				else
-				{
-					Config scummvm;
-					vector<dir_discHdr> scummvmList;
-					scummvm.load(fmt("%s/%s", m_pluginsDir.c_str(), "scummvm.ini"));
-					scummvmList = m_plugin.ParseScummvmINI(scummvm, string(DeviceName[currentPartition]));
-					for(vector<dir_discHdr>::iterator tmp_itr = scummvmList.begin(); tmp_itr != scummvmList.end(); tmp_itr++)
-						emuList.push_back(*tmp_itr);
-				}
+				string gameDir(fmt("%s:/%s", DeviceName[currentPartition], m_plugin_cfg.getString(PLUGIN_DOMAIN,"romDir").c_str()));
+				string cacheDir(fmt("%s/%s_%s.db", m_cacheDir.c_str(), DeviceName[currentPartition], m_plugin_cfg.getString(PLUGIN_DOMAIN,"magic").c_str()));
+				vector<string> FileTypes = stringToVector(m_plugin_cfg.getString(PLUGIN_DOMAIN,"fileTypes"), '|');
+				u32 CaseColor = strtoul(m_plugin_cfg.getString(PLUGIN_DOMAIN,"coverColor").c_str(), NULL, 16);
+				u32 MagicWord = strtoul(m_plugin_cfg.getString(PLUGIN_DOMAIN,"magic").c_str(), NULL, 16);
+				m_gameList.CreateList(m_current_view, currentPartition, gameDir, 
+						FileTypes, cacheDir, updateCache, CaseColor, MagicWord);
+				for(vector<dir_discHdr>::iterator tmp_itr = m_gameList.begin(); tmp_itr != m_gameList.end(); tmp_itr++)
+					emuList.push_back(*tmp_itr);
 			}
-			m_plugin_cfg.unload();
+			else
+			{
+				Config scummvm;
+				vector<dir_discHdr> scummvmList;
+				scummvm.load(fmt("%s/%s", m_pluginsDir.c_str(), "scummvm.ini"));
+				scummvmList = m_plugin.ParseScummvmINI(scummvm, string(DeviceName[currentPartition]));
+				for(vector<dir_discHdr>::iterator tmp_itr = scummvmList.begin(); tmp_itr != scummvmList.end(); tmp_itr++)
+					emuList.push_back(*tmp_itr);
+			}
 		}
+		m_plugin_cfg.unload();
 	}
-	closedir(pdir);
 	m_gameList.clear();
 	for(vector<dir_discHdr>::iterator tmp_itr = emuList.begin(); tmp_itr != emuList.end(); tmp_itr++)
+	{
+		tmp_itr->index = m_gameList.size();
 		m_gameList.push_back(*tmp_itr);
+	}
 	emuList.clear();
 	//If we return to the coverflow before wiiflow quit we dont need to reload plugins
 	m_plugin.EndAdd();
