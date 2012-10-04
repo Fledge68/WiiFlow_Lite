@@ -1079,23 +1079,23 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	m_cat.save(true);
 	m_cfg.save(true);
 	cleanup();
-
-	if(useNK2o && NAND_Emu)
+	if(NAND_Emu && !neek2o())
 	{
-		if(!Load_Neek2o_Kernel())
+		if(useNK2o)
 		{
-			error(_t("errneek1", L"Cannot launch neek2o. Verify your neek2o setup"));
-			Sys_Exit();
-		}
-		int rtrnID = 0;
-		if(rtrn != NULL && strlen(rtrn) == 4)
-			rtrnID = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
+			if(!Load_Neek2o_Kernel())
+			{
+				error(_t("errneek1", L"Cannot launch neek2o. Verify your neek2o setup"));
+				Sys_Exit();
+			}
+			int rtrnID = 0;
+			if(rtrn != NULL && strlen(rtrn) == 4)
+				rtrnID = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
 
-		ShutdownBeforeExit();
-		Launch_nk(gameTitle, emuPath.size() > 1 ? emuPath.c_str() : NULL, rtrnID ? (((u64)(0x00010001) << 32) | (rtrnID & 0xFFFFFFFF)) : rtrnID);
-	}
-	if(NAND_Emu)
-	{
+			ShutdownBeforeExit();
+			Launch_nk(gameTitle, emuPath.size() > 1 ? emuPath.c_str() : NULL, rtrnID ? (((u64)(0x00010001) << 32) | (rtrnID & 0xFFFFFFFF)) : rtrnID);
+			while(1);
+		}
 		DeviceHandle.UnMount(emuPartition);
 		Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
 		Nand::Instance()->Enable_Emu();
@@ -1118,20 +1118,6 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		gprintf("Return to channel %s %s. Using new d2x way\n", rtrn, IOS_Ioctlv(ESHandle, 0xA1, 1, 0, vector) != -101 ? "Succeeded" : "Failed!" );
 		IOS_Close(ESHandle);
 	}
-	if(NAND_Emu)
-	{
-		Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
-		if(emulate_mode == 1)
-			Nand::Instance()->Set_FullMode(true);
-		else
-			Nand::Instance()->Set_FullMode(false);
-		if(Nand::Instance()->Enable_Emu() < 0)
-		{
-			Nand::Instance()->Disable_Emu();
-			error(_t("errgame5", L"Enabling emu failed!"));
-			Sys_Exit();
-		}
-	}
 	if(WII_Launch)
 	{
 		ShutdownBeforeExit();
@@ -1140,6 +1126,20 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	}
 	else
 	{
+		if(NAND_Emu)
+		{
+			Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
+			if(emulate_mode == 1)
+				Nand::Instance()->Set_FullMode(true);
+			else
+				Nand::Instance()->Set_FullMode(false);
+			if(Nand::Instance()->Enable_Emu() < 0)
+			{
+				Nand::Instance()->Disable_Emu();
+				error(_t("errgame5", L"Enabling emu failed!"));
+				Sys_Exit();
+			}
+		}
 		setLanguage(language);
 		ocarina_load_code(cheatFile.get(), cheatSize);
 		Identify(gameTitle);
