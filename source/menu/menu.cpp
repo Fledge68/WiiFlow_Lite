@@ -1520,7 +1520,7 @@ void CMenu::_initCF(void)
 	m_cf.clear();
 	m_cf.reserve(m_gameList.size());
 	
-	vector<bool> EnabledPlugins;
+	const vector<bool> *EnabledPlugins;
 	if(m_current_view == COVERFLOW_PLUGIN)
 		EnabledPlugins = m_plugin.GetEnabledPlugins(m_cfg);
 
@@ -1546,10 +1546,10 @@ void CMenu::_initCF(void)
 	// check for single plugin selected
 	u8 pos = 0;
 	u8 enabledPluginsCount = 0;
-	if(m_current_view == COVERFLOW_PLUGIN && EnabledPlugins.size() != 0)
+	if(m_current_view == COVERFLOW_PLUGIN && EnabledPlugins->size() != 0)
 	{
 		char PluginMagicWord[9];
-		for(u8 i = 0; i < EnabledPlugins.size(); i++)
+		for(u8 i = 0; i < EnabledPlugins->size(); i++)
 		{
 			snprintf(PluginMagicWord, sizeof(PluginMagicWord), "%08x", m_plugin.getPluginMagic(i));
 			if(m_cfg.getBool("PLUGIN", PluginMagicWord, true))
@@ -1785,7 +1785,7 @@ void CMenu::_initCF(void)
 				if(tempname.find_last_of("/") != string::npos)
 					tempname.assign(&tempname[tempname.find_last_of("/") + 1]);
 				string coverFolder(m_plugin.GetCoverFolderName(m_gameList[i].settings[0]));
-				if(EnabledPlugins.size() == 0) //all plugins
+				if(EnabledPlugins->size() == 0) //all plugins
 				{
 					if(coverFolder.size() > 0)
 						m_cf.addItem(&m_gameList[i], fmt("%s/%s/%s.png", m_picDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s/%s.png", m_boxPicDir.c_str(), coverFolder.c_str(), tempname.c_str()), playcount, lastPlayed);
@@ -1794,9 +1794,9 @@ void CMenu::_initCF(void)
 				}
 				else
 				{
-					for(u8 j = 0; j < EnabledPlugins.size(); j++)
+					for(u8 j = 0; j < EnabledPlugins->size(); j++)
 					{
-						if(EnabledPlugins[j] == true && m_gameList[i].settings[0] == m_plugin.getPluginMagic(j))
+						if(EnabledPlugins->at(j) == true && m_gameList[i].settings[0] == m_plugin.getPluginMagic(j))
 						{
 							if(coverFolder.size() > 0)
 								m_cf.addItem(&m_gameList[i], fmt("%s/%s/%s.png", m_picDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s/%s.png", m_boxPicDir.c_str(), coverFolder.c_str(), tempname.c_str()), playcount, lastPlayed);
@@ -2302,7 +2302,7 @@ bool CMenu::_loadEmuList()
 				Config scummvm;
 				vector<dir_discHdr> scummvmList;
 				scummvm.load(fmt("%s/%s", m_pluginsDir.c_str(), "scummvm.ini"));
-				scummvmList = m_plugin.ParseScummvmINI(scummvm, string(DeviceName[currentPartition]));
+				scummvmList = m_plugin.ParseScummvmINI(scummvm, DeviceName[currentPartition]);
 				for(vector<dir_discHdr>::iterator tmp_itr = scummvmList.begin(); tmp_itr != scummvmList.end(); tmp_itr++)
 					emuList.push_back(*tmp_itr);
 			}

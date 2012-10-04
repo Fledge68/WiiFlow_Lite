@@ -922,6 +922,7 @@ private:
 	void _showHome(void);
 	void _showExitTo(void);
 	void _updateSourceBtns(void);
+	void _updatePluginText(void);
 	void _updatePluginCheckboxes(void);
 	void _updateCheckboxes(void);
 	void _getIDCats(void);

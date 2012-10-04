@@ -149,15 +149,14 @@ void CMenu::_CategorySettings(bool fromGameSet)
 	
 	catDomain = _domainFromView();
 	u8 pos = 0;
-	vector<bool> EnabledPlugins;
 	if(m_current_view == COVERFLOW_PLUGIN)
 	{
-		EnabledPlugins = m_plugin.GetEnabledPlugins(m_cfg);
-		if(EnabledPlugins.size() != 0)
+		const vector<bool> *EnabledPlugins = m_plugin.GetEnabledPlugins(m_cfg);
+		if(EnabledPlugins->size() != 0)
 		{
 			char PluginMagicWord[9];
 			u8 enabledPluginsCount = 0;
-			for(u8 i = 0; i < EnabledPlugins.size(); i++)
+			for(u8 i = 0; i < EnabledPlugins->size(); i++)
 			{
 				snprintf(PluginMagicWord, sizeof(PluginMagicWord), "%08x", m_plugin.getPluginMagic(i));
 				if(m_cfg.getBool("PLUGIN", PluginMagicWord, true))

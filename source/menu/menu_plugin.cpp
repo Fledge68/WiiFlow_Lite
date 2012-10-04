@@ -3,7 +3,8 @@
 #include <string.h>
 #include <gccore.h>
 
-u32 Plugin_curPage;
+u8 Plugin_curPage;
+u8 Plugin_Pages;
 u8 Plugin_lastBtn;
 
 // Plugin menu
@@ -12,10 +13,10 @@ s16 m_pluginBtnPageM;
 s16 m_pluginBtnPageP;
 s16 m_pluginBtnBack;
 s16 m_pluginLblTitle;
-s16 m_pluginLblCat[21];
-s16 m_pluginBtn[21];
-s16 m_pluginBtnCat[21];
-s16 m_pluginBtnCats[21];
+s16 m_pluginLblCat[11];
+s16 m_pluginBtn[11];
+s16 m_pluginBtnCat[11];
+s16 m_pluginBtnCats[11];
 s16 m_pluginLblUser[4];
 u8 m_max_plugins;
 STexture m_pluginBg;
@@ -32,8 +33,7 @@ void CMenu::_hidePluginSettings(bool instant)
 		if(m_pluginLblUser[i] != -1)
 			m_btnMgr.hide(m_pluginLblUser[i], instant);
 	}
-
-	for(int i = 0; i < 21; ++i)
+	for(u8 i = 0; i < 11; ++i)
 	{
 		m_btnMgr.hide(m_pluginLblCat[i]);
 		m_btnMgr.hide(m_pluginBtn[i]);
@@ -53,54 +53,56 @@ void CMenu::_showPluginSettings(void)
 	_updatePluginCheckboxes();
 }
 
+void CMenu::_updatePluginText(void)
+{
+	u32 IteratorHelp = (Plugin_curPage - 1) * 10;
+	for(u8 i = 1; i < min(IteratorHelp+10, (u32)m_max_plugins)-IteratorHelp+1; i++)
+		m_btnMgr.setText(m_pluginLblCat[i], m_plugin.GetPluginName(i+IteratorHelp-1));
+}
+
 void CMenu::_updatePluginCheckboxes(void)
 {
 	if(m_max_plugins > 10)
 	{
-		m_btnMgr.setText(m_pluginLblPage, wfmt(L"%i / 2", Plugin_curPage));
+		m_btnMgr.setText(m_pluginLblPage, wfmt(L"%i / %i", Plugin_curPage, Plugin_Pages));
 		m_btnMgr.show(m_pluginLblPage);
 		m_btnMgr.show(m_pluginBtnPageM);
 		m_btnMgr.show(m_pluginBtnPageP);
 	}
-	for(int i = 0; i < 21; ++i)
+	for(int i = 0; i < 11; ++i)
 	{
 		m_btnMgr.hide(m_pluginBtn[i]);
 		m_btnMgr.hide(m_pluginLblCat[i]);
 	}
-
-	vector<bool> EnabledPlugins = m_plugin.GetEnabledPlugins(m_cfg);
-	if(Plugin_curPage == 1)
-	{
-		int j = 11;
-		if(m_max_plugins < 11)
-			j = m_max_plugins;
-		for(u8 i = 0; i < j; ++i)
-		{
-			if((EnabledPlugins.size() == 0) || (i != 0 && EnabledPlugins.size() >= i && EnabledPlugins[i - 1] == true))
-				m_pluginBtn[i] = m_pluginBtnCats[i];
-			else
-				m_pluginBtn[i] = m_pluginBtnCat[i];
-			m_btnMgr.show(m_pluginBtn[i]);
-			m_btnMgr.show(m_pluginLblCat[i]);
-		}
-	}
+	const vector<bool> *EnabledPlugins = m_plugin.GetEnabledPlugins(m_cfg);
+	/* ALL Button */
+	if(EnabledPlugins->size() == 0)
+		m_pluginBtn[0] = m_pluginBtnCats[0];
 	else
+		m_pluginBtn[0] = m_pluginBtnCat[0];
+	m_btnMgr.show(m_pluginBtn[0]);
+	m_btnMgr.show(m_pluginLblCat[0]);
+	/* Single Plugins */
+	u32 IteratorHelp = (Plugin_curPage - 1) * 10;
+	for(u8 i = 1; i < min(IteratorHelp+10, (u32)m_max_plugins)-IteratorHelp+1; ++i)
 	{
-		for(int i = 11; i < m_max_plugins; ++i)
-		{
+		if(EnabledPlugins->size() == 0 || EnabledPlugins->at(i+IteratorHelp-1) == true)
+			m_pluginBtn[i] = m_pluginBtnCats[i];
+		else
 			m_pluginBtn[i] = m_pluginBtnCat[i];
-			m_btnMgr.show(m_pluginBtn[i]);
-			m_btnMgr.show(m_pluginLblCat[i]);
-		}
+		m_btnMgr.show(m_pluginBtn[i]);
+		m_btnMgr.show(m_pluginLblCat[i]);
 	}
 }
 
 void CMenu::_PluginSettings()
 {
 	SetupInput();
+	Plugin_Pages = 1;
 	Plugin_curPage = 1;
 	_textPluginSettings();
 	_showPluginSettings();
+	_updatePluginText();
 	while(!m_exit)
 	{
 		_mainLoopCommon();
@@ -119,19 +121,23 @@ void CMenu::_PluginSettings()
 		{
 			Plugin_lastBtn = m_pluginBtnPageM;
 			m_btnMgr.noHover(true);
-			Plugin_curPage = Plugin_curPage == 1 ? 2 : 1;
+			Plugin_curPage--;
+			if(Plugin_curPage == 0) Plugin_curPage = Plugin_Pages;
 			if(BTN_LEFT_PRESSED || BTN_MINUS_PRESSED)
 				m_btnMgr.click(m_pluginBtnPageM);
 			_updatePluginCheckboxes();
+			_updatePluginText();
 		}
 		else if(((BTN_PLUS_PRESSED || BTN_RIGHT_PRESSED)) || (BTN_A_PRESSED && m_btnMgr.selected(m_pluginBtnPageP)))
 		{
 			Plugin_lastBtn = m_pluginBtnPageP;
 			m_btnMgr.noHover(true);
-			Plugin_curPage = Plugin_curPage == 1 ? 2 : 1;
+			Plugin_curPage++;
+			if(Plugin_curPage > Plugin_Pages) Plugin_curPage = 1;
 			if(BTN_RIGHT_PRESSED || BTN_PLUS_PRESSED)
 				m_btnMgr.click(m_pluginBtnPageP);
 			_updatePluginCheckboxes();
+			_updatePluginText();
 		}
 		if(BTN_A_PRESSED)
 		{
@@ -140,7 +146,8 @@ void CMenu::_PluginSettings()
 				m_cfg.save();
 				break;
 			}
-			for(int i = 0; i < 21; ++i)
+			u32 IteratorHelp = (Plugin_curPage - 1) * 10;
+			for(u8 i = 1; i < min(IteratorHelp+10, (u32)m_max_plugins)-IteratorHelp+1; ++i)
 			{
 				if(m_btnMgr.selected(m_pluginBtn[i]))
 				{
@@ -149,18 +156,18 @@ void CMenu::_PluginSettings()
 					if(i == 0)
 					{
 						int j = 0;
-						bool EnableAll = (m_plugin.GetEnabledPlugins(m_cfg).size());
+						bool EnableAll = (m_plugin.GetEnabledPlugins(m_cfg)->size());
 						while(true)
 						{
-								if(m_plugin.PluginExist(j))
-									m_plugin.SetEnablePlugin(m_cfg, j, EnableAll ? 2 : 1);
+								if(m_plugin.PluginExist(j+IteratorHelp-1))
+									m_plugin.SetEnablePlugin(m_cfg, j+IteratorHelp-1, EnableAll ? 2 : 1);
 								else
 									break;
 							j++;
 						}
 					}
 					else
-						m_plugin.SetEnablePlugin(m_cfg, i - 1);
+						m_plugin.SetEnablePlugin(m_cfg, i+IteratorHelp-1);
 					_updatePluginCheckboxes();
 					break;
 				}
@@ -191,27 +198,21 @@ void CMenu::_initPluginSettingsMenu(CMenu::SThemeData &theme)
 		m_pluginBtnCat[i+5] = _addPicButton(theme, fmt("PLUGIN/PLUGIN_%i_BTN", i+5), theme.checkboxoff, theme.checkboxoffs, 325, (42+i*58), 44, 48);
 		m_pluginBtnCats[i+5] = _addPicButton(theme, fmt("PLUGIN/PLUGIN_%i_BTNS", i+5), theme.checkboxon, theme.checkboxons, 325, (42+i*58), 44, 48);
 		m_pluginLblCat[i+5] = _addLabel(theme, fmt("PLUGIN/PLUGIN_%i", i+5), theme.txtFont, L"", 380, (42+i*58), 230, 48, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-		// Page 2
-		m_pluginBtnCat[i+10] = _addPicButton(theme, fmt("PLUGIN/PLUGIN_%i_BTN", i+10), theme.checkboxoff, theme.checkboxoffs, 30, (42+i*58), 44, 48);
-		m_pluginBtnCats[i+10] = _addPicButton(theme, fmt("PLUGIN/PLUGIN_%i_BTNS", i+10), theme.checkboxon, theme.checkboxons, 30, (42+i*58), 44, 48);
-		m_pluginLblCat[i+10] = _addLabel(theme, fmt("PLUGIN/PLUGIN_%i", i+10), theme.lblFont, L"", 85, (42+i*58), 230, 48, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-		// right half
-		m_pluginBtnCat[i+15] = _addPicButton(theme, fmt("PLUGIN/PLUGIN_%i_BTN", i+15), theme.checkboxoff, theme.checkboxoffs, 325, (42+i*58), 44, 48);
-		m_pluginBtnCats[i+15] = _addPicButton(theme, fmt("PLUGIN/PLUGIN_%i_BTNS", i+15), theme.checkboxon, theme.checkboxons, 325, (42+i*58), 44, 48);
-		m_pluginLblCat[i+15] = _addLabel(theme, fmt("PLUGIN/PLUGIN_%i", i+15), theme.txtFont, L"", 380, (42+i*58), 230, 48, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	}
 	_setHideAnim(m_pluginLblTitle, "PLUGIN/TITLE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_pluginLblPage, "PLUGIN/PAGE_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_pluginBtnPageM, "PLUGIN/PAGE_MINUS", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_pluginBtnPageP, "PLUGIN/PAGE_PLUS", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_pluginBtnBack, "PLUGIN/BACK_BTN", 0, 0, 1.f, -1.f);
-	for(u8 i = 0; i < 21; ++i)
+	for(u8 i = 0; i < 11; ++i)
 	{
 		_setHideAnim(m_pluginBtnCat[i], fmt("PLUGIN/PLUGIN_%i_BTN", i), 0, 0, 1.f, 0.f);
 		_setHideAnim(m_pluginBtnCats[i], fmt("PLUGIN/PLUGIN_%i_BTNS", i), 0, 0, 1.f, 0.f);
 		_setHideAnim(m_pluginLblCat[i], fmt("PLUGIN/PLUGIN_%i", i), 0, 0, 1.f, 0.f);
 		m_pluginBtn[i] = m_pluginBtnCat[i];
 	}
+	Plugin_curPage = 1;
+	Plugin_Pages = 1;
 	m_max_plugins = 0;
 	_hidePluginSettings(true);
 	_textPluginSettings();
@@ -228,10 +229,9 @@ void CMenu::_textPluginSettings(void)
 			m_btnMgr.setText(m_pluginLblCat[i], _t("dl25", L"All"));
 		else
 		{
-			if(m_plugin.PluginExist(i - 1))
-				m_btnMgr.setText(m_pluginLblCat[i], m_plugin.GetPluginName(i - 1));
-			else
+			if(!m_plugin.PluginExist(i - 1))
 			{
+				Plugin_Pages = (i-1)/10;
 				m_max_plugins = i;
 				break;
 			}
