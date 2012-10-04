@@ -56,7 +56,6 @@ private:
 	CButtonsMgr m_btnMgr;
 	CCoverFlow m_cf;
 	CFanart m_fa;
-	ListGenerator m_gameList;
 	Config m_cfg;
 	Config m_loc;
 	Config m_cat;

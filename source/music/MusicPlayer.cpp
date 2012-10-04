@@ -14,15 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ****************************************************************************/
-#include <dirent.h>
 #include <cstdio>
-
 #include "MusicPlayer.hpp"
 #include "SoundHandler.hpp"
-#include "fileOps/fileOps.h"
+#include "list/ListGenerator.hpp"
 #include "gui/text.hpp"
 #include "gecko/gecko.h"
 
+#define	MUSIC_DEPTH 10
 Musicplayer MusicPlayer;
 
 void Musicplayer::Cleanup()
@@ -35,7 +34,7 @@ void Musicplayer::Cleanup()
 	FileNames.clear();
 }
 
-void Musicplayer::Init(Config &cfg, string musicDir, string themeMusicDir) 
+void Musicplayer::Init(Config &cfg, const string& musicDir, const string& themeMusicDir) 
 {
 	Cleanup();
 	FadeRate = cfg.getInt("GENERAL", "music_fade_rate", 8);
@@ -44,31 +43,15 @@ void Musicplayer::Init(Config &cfg, string musicDir, string themeMusicDir)
 	SetVolume(0);
 	MusicFile.SetVoice(0);
 
-	ScanDirectories(themeMusicDir.c_str());
-	ScanDirectories(musicDir.c_str());
+	vector<string> Types = stringToVector(".mp3|.ogg", '|');
+	m_gameList.GetFiles(musicDir.c_str(), Types, FileNames, false, MUSIC_DEPTH);
+	m_gameList.GetFiles(themeMusicDir.c_str(), Types, FileNames, false, MUSIC_DEPTH);
 	if(cfg.getBool("GENERAL", "randomize_music", true) && FileNames.size() > 0)
 	{
 		srand(unsigned(time(NULL)));
 		random_shuffle(FileNames.begin(), FileNames.end());
 	}
 	CurrentFileName = FileNames.begin();
-}
-
-void Musicplayer::ScanDirectories(const char *directory)
-{
-	struct dirent *pent = NULL;
-	DIR *pdir = opendir(directory);
-	while((pent = readdir(pdir)) != NULL) 
-	{
-		if(strcmp(pent->d_name, ".") == 0 || strcmp(pent->d_name, "..") == 0)
-			continue;
-		string CurrentItem = sfmt("%s/%s", directory, pent->d_name);
-		if(fsop_DirExist(CurrentItem.c_str()))
-			ScanDirectories(CurrentItem.c_str());
-		else if(strcasestr(pent->d_name, ".mp3") != NULL || strcasestr(pent->d_name, ".ogg")  != NULL)
-			FileNames.push_back(CurrentItem);
-	}
-	closedir(pdir);
 }
 
 void Musicplayer::SetMaxVolume(u8 volume)

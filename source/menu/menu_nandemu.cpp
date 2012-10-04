@@ -785,14 +785,14 @@ int CMenu::_NandDumper(void *obj)
 		if(m.m_saveExtGameId.empty())
 		{
 			m.m_nandexentry = 0;
-			saveList.reserve(m.m_gameList.size());
-			for(u32 i = 0; i < m.m_gameList.size() && !m.m_thrdStop; ++i)
+			saveList.reserve(m_gameList.size());
+			for(u32 i = 0; i < m_gameList.size() && !m.m_thrdStop; ++i)
 			{
 				LWP_MutexLock(m.m_mutex);
 				m._setDumpMsg(m._t("cfgne18", L"Listing game saves to extract..."), 0.f, 0.f);
 				LWP_MutexUnlock(m.m_mutex);					
 
-				string id((const char *)m.m_gameList[i].id, 4);
+				string id((const char *)m_gameList[i].id, 4);
 
 				if(!missingOnly || !m._checkSave(id, false))
 				{
