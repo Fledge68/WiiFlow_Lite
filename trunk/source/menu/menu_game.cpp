@@ -573,7 +573,7 @@ void CMenu::_game(bool launch)
 					bool foundOnSD = false;
 					ListGenerator SD_List;
 					string gameDir(fmt(DML_DIR, DeviceName[SD]));
-					string cacheDir(fmt("%s/%s_gamecube.db", m_cacheDir.c_str(), DeviceName[SD]));
+					string cacheDir(fmt("%s/%s_gamecube.db", m_listCacheDir.c_str(), DeviceName[SD]));
 					SD_List.CreateList(COVERFLOW_DML, SD, gameDir,
 							stringToVector(".iso|root", '|'), cacheDir, false);
 					for(vector<dir_discHdr>::iterator List = SD_List.begin(); List != SD_List.end(); List++)
@@ -758,7 +758,7 @@ void CMenu::directlaunch(const char *GameID)
 			continue;
 		DeviceHandle.OpenWBFS(currentPartition);
 		string gameDir(fmt(GAMES_DIR, DeviceName[currentPartition]));
-		string cacheDir(fmt("%s/%s_wii.db", m_cacheDir.c_str(), DeviceName[currentPartition]));
+		string cacheDir(fmt("%s/%s_wii.db", m_listCacheDir.c_str(), DeviceName[currentPartition]));
 		m_gameList.CreateList(COVERFLOW_USB, currentPartition, gameDir,
 				stringToVector(".wbfs|.iso", '|'), cacheDir, false);
 		WBFS_Close();

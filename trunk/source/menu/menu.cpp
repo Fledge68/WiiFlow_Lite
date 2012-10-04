@@ -2171,7 +2171,7 @@ bool CMenu::_loadChannelList(void)
 	{
 		string cacheDir;
 		if(!disable_emu)
-			cacheDir = fmt("%s/%s_channels.db", m_cacheDir.c_str(), DeviceName[currentPartition]);
+			cacheDir = fmt("%s/%s_channels.db", m_listCacheDir.c_str(), DeviceName[currentPartition]);
 		bool updateCache = m_cfg.getBool(_domainFromView(), "update_cache");
 		vector<string> NullVector;
 		m_gameList.CreateList(m_current_view, currentPartition, std::string(), 
@@ -2229,7 +2229,7 @@ bool CMenu::_loadGameList(void)
 
 	DeviceHandle.OpenWBFS(currentPartition);
 	string gameDir(fmt(GAMES_DIR, DeviceName[currentPartition]));
-	string cacheDir(fmt("%s/%s_wii.db", m_cacheDir.c_str(), DeviceName[currentPartition]));
+	string cacheDir(fmt("%s/%s_wii.db", m_listCacheDir.c_str(), DeviceName[currentPartition]));
 	bool updateCache = m_cfg.getBool(_domainFromView(), "update_cache");
 	m_gameList.CreateList(m_current_view, currentPartition, gameDir, stringToVector(".wbfs|.iso", '|'), cacheDir, updateCache);
 	WBFS_Close();
@@ -2244,7 +2244,7 @@ bool CMenu::_loadHomebrewList()
 		return false;
 
 	string gameDir(fmt(HOMEBREW_DIR, DeviceName[currentPartition]));
-	string cacheDir(fmt("%s/%s_homebrew.db", m_cacheDir.c_str(), DeviceName[currentPartition]));
+	string cacheDir(fmt("%s/%s_homebrew.db", m_listCacheDir.c_str(), DeviceName[currentPartition]));
 	bool updateCache = m_cfg.getBool(_domainFromView(), "update_cache");
 	m_gameList.CreateList(m_current_view, currentPartition, gameDir, stringToVector(".dol|.elf", '|'), cacheDir, updateCache);
 
@@ -2258,7 +2258,7 @@ bool CMenu::_loadDmlList()
 		return false;
 
 	string gameDir(fmt(currentPartition == SD ? DML_DIR : m_DMLgameDir.c_str(), DeviceName[currentPartition]));
-	string cacheDir(fmt("%s/%s_gamecube.db", m_cacheDir.c_str(), DeviceName[currentPartition]));
+	string cacheDir(fmt("%s/%s_gamecube.db", m_listCacheDir.c_str(), DeviceName[currentPartition]));
 	bool updateCache = m_cfg.getBool(_domainFromView(), "update_cache");
 	m_gameList.CreateList(m_current_view, currentPartition, gameDir,
 			stringToVector(".iso|root", '|'),cacheDir, updateCache);
@@ -2290,7 +2290,7 @@ bool CMenu::_loadEmuList()
 			if(m_plugin_cfg.getString(PLUGIN_DOMAIN,"romDir").find("scummvm.ini") == string::npos)
 			{
 				string gameDir(fmt("%s:/%s", DeviceName[currentPartition], m_plugin_cfg.getString(PLUGIN_DOMAIN,"romDir").c_str()));
-				string cacheDir(fmt("%s/%s_%s.db", m_cacheDir.c_str(), DeviceName[currentPartition], m_plugin_cfg.getString(PLUGIN_DOMAIN,"magic").c_str()));
+				string cacheDir(fmt("%s/%s_%s.db", m_listCacheDir.c_str(), DeviceName[currentPartition], m_plugin_cfg.getString(PLUGIN_DOMAIN,"magic").c_str()));
 				vector<string> FileTypes = stringToVector(m_plugin_cfg.getString(PLUGIN_DOMAIN,"fileTypes"), '|');
 				u32 CaseColor = strtoul(m_plugin_cfg.getString(PLUGIN_DOMAIN,"coverColor").c_str(), NULL, 16);
 				u32 MagicWord = strtoul(m_plugin_cfg.getString(PLUGIN_DOMAIN,"magic").c_str(), NULL, 16);
