@@ -1023,26 +1023,13 @@ int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id)
 	return LOAD_IOS_NOT_NEEDED;
 }
 
-static const char systems[11] = { 'C', 'E', 'F', 'J', 'L', 'M', 'N', 'P', 'Q', 'W', 'H' };
-
 void CMenu::_launchChannel(dir_discHdr *hdr)
 {
 	u32 gameIOS = 0;
 	string id = string(hdr->id);
 
-	bool forwarder = true;
-	for (u8 num = 0; num < ARRAY_SIZE(systems); num++)
-	{
-		if(id[0] == systems[num])
-		{
-			forwarder = false;
-			break;
-		}
-	}
-	forwarder = m_gcfg2.getBool(id, "custom", forwarder) || strncmp(id.c_str(), "WIMC", 4) == 0 || neek2o();
-	bool emu_disabled = (m_cfg.getBool("NAND", "disable", true) || neek2o());
-	if(!emu_disabled && !neek2o())
-		forwarder = false;
+	bool NAND_Emu = !m_cfg.getBool("NAND", "disable", true);
+	bool WII_Launch = neek2o() || (m_gcfg2.getBool(id, "custom", false) && !NAND_Emu);
 
 	bool vipatch = m_gcfg2.testOptBool(id, "vipatch", m_cfg.getBool("GENERAL", "vipatch", false));
 	bool cheat = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool("NAND", "cheat", false));
@@ -1060,7 +1047,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 
 	SmartBuf cheatFile;
 	u32 cheatSize = 0;
-	if(!forwarder)
+	if(!WII_Launch)
 	{
 		hooktype = (u32) m_gcfg2.getInt(id, "hooktype", 0);
 		debuggerselect = m_gcfg2.getBool(id, "debugger", false) ? 1 : 0;
@@ -1071,14 +1058,12 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 			hooktype = 0;
 		if(cheat && hooktype)
 			_loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", id.c_str()));
+		if(has_enabled_providers() && _initNetwork() == 0)
+			add_game_to_card(id.c_str());
 	}
-
 	m_cfg.setString("NAND", "current_item", id);
 	m_gcfg1.setInt("PLAYCOUNT", id, m_gcfg1.getInt("PLAYCOUNT", id, 0) + 1); 
 	m_gcfg1.setUInt("LASTPLAYED", id, time(NULL));
-
-	if(!forwarder && has_enabled_providers() && _initNetwork() == 0)
-		add_game_to_card(id.c_str());
 
 	string emuPath;
 	m_partRequest = m_cfg.getInt("NAND", "partition", 0);
@@ -1095,17 +1080,13 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	m_cfg.save(true);
 	cleanup();
 
-	/*if(useNK2o && emuPartition != 1)
-		useNK2o = false;*/
-
-	if(useNK2o && !emu_disabled)
+	if(useNK2o && NAND_Emu)
 	{
 		if(!Load_Neek2o_Kernel())
 		{
 			error(_t("errneek1", L"Cannot launch neek2o. Verify your neek2o setup"));
 			Sys_Exit();
 		}
-		
 		int rtrnID = 0;
 		if(rtrn != NULL && strlen(rtrn) == 4)
 			rtrnID = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
@@ -1113,20 +1094,16 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		ShutdownBeforeExit();
 		Launch_nk(gameTitle, emuPath.size() > 1 ? emuPath.c_str() : NULL, rtrnID ? (((u64)(0x00010001) << 32) | (rtrnID & 0xFFFFFFFF)) : rtrnID);
 	}
-	if(!forwarder || neek2o())
+	if(NAND_Emu)
 	{
-		if(!emu_disabled)
-		{
-			DeviceHandle.UnMount(emuPartition);
-			Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
-			Nand::Instance()->Enable_Emu();
-		}
-		gameIOS = ChannelHandle.GetRequestedIOS(gameTitle);
-		if(!emu_disabled)
-			Nand::Instance()->Disable_Emu();
-		if(_loadIOS(gameIOS, userIOS, id) == LOAD_IOS_FAILED)
-			Sys_Exit();
+		DeviceHandle.UnMount(emuPartition);
+		Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
+		Nand::Instance()->Enable_Emu();
 	}
+	gameIOS = ChannelHandle.GetRequestedIOS(gameTitle);
+	Nand::Instance()->Disable_Emu();
+	if(_loadIOS(gameIOS, WII_Launch ? gameIOS : userIOS, id) == LOAD_IOS_FAILED)
+		Sys_Exit();
 	if((CurrentIOS.Type == IOS_TYPE_D2X || neek2o()) && rtrn != NULL && strlen(rtrn) == 4)
 	{
 		int rtrnID = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
@@ -1141,14 +1118,13 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		gprintf("Return to channel %s %s. Using new d2x way\n", rtrn, IOS_Ioctlv(ESHandle, 0xA1, 1, 0, vector) != -101 ? "Succeeded" : "Failed!" );
 		IOS_Close(ESHandle);
 	}
-	if(!emu_disabled)
+	if(NAND_Emu)
 	{
 		Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
 		if(emulate_mode == 1)
 			Nand::Instance()->Set_FullMode(true);
 		else
 			Nand::Instance()->Set_FullMode(false);
-
 		if(Nand::Instance()->Enable_Emu() < 0)
 		{
 			Nand::Instance()->Disable_Emu();
@@ -1156,13 +1132,13 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 			Sys_Exit();
 		}
 	}
-	if(forwarder)
+	if(WII_Launch)
 	{
 		ShutdownBeforeExit();
 		WII_Initialize();
 		WII_LaunchTitle(gameTitle);
 	}
-	else 
+	else
 	{
 		setLanguage(language);
 		ocarina_load_code(cheatFile.get(), cheatSize);
