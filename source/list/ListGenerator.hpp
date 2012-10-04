@@ -45,7 +45,7 @@ private:
 	void Create_Plugin_List(const string& Path, const vector<string>& FileTypes,
 							u32 Color, u32 Magic);
 	void Create_Homebrew_List(const string& Path, const vector<string>& FileTypes);
-	void CreateChannelList();
+	void Create_Channel_List();
 	void AddISO(const char *GameID, const char *GameTitle, const char *GamePath, u32 GameColor, u8 Type);
 	bool IsFileSupported(const char *File, const vector<string>& FileTypes);
 	void OpenConfigs();

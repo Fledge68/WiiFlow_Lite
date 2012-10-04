@@ -2169,8 +2169,10 @@ bool CMenu::_loadChannelList(void)
 
 	if(Nand::Instance()->EmulationEnabled() || disable_emu) 
 	{
-		string cacheDir(fmt("%s/%s_channels.db", m_cacheDir.c_str(), disable_emu ? "nand" : DeviceName[currentPartition]));
-		bool updateCache = disable_emu ? true : m_cfg.getBool(_domainFromView(), "update_cache");
+		string cacheDir;
+		if(!disable_emu)
+			cacheDir = fmt("%s/%s_channels.db", m_cacheDir.c_str(), DeviceName[currentPartition]);
+		bool updateCache = m_cfg.getBool(_domainFromView(), "update_cache");
 		vector<string> NullVector;
 		m_gameList.CreateList(m_current_view, currentPartition, std::string(), 
 					NullVector, cacheDir, updateCache);

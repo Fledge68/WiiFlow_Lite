@@ -44,6 +44,8 @@
 #define RF_NEWS_CHANNEL		0x48414741
 #define RF_FORECAST_CHANNEL	0x48414641
 
+Channels ChannelHandle;
+
 Channels::Channels()
 {
 }
