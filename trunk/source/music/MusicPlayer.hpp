@@ -58,8 +58,6 @@ protected:
 	bool MusicChanged;
 
 	GuiSound MusicFile;
-	vector<string> FileNames;
-	vector<string>::iterator CurrentFileName;
 };
 
 extern Musicplayer MusicPlayer;

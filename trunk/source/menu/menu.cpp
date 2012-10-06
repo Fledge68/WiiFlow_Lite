@@ -2266,6 +2266,13 @@ bool CMenu::_loadDmlList()
 	return m_gameList.size() > 0 ? true : false;
 }
 
+static vector<string> INI_List;
+static void GrabINIFiles(char *FullPath)
+{
+	//Just push back
+	INI_List.push_back(FullPath);
+}
+
 bool CMenu::_loadEmuList()
 {
 	currentPartition = m_cfg.getInt("EMULATOR", "partition", SD);
@@ -2276,9 +2283,9 @@ bool CMenu::_loadEmuList()
 	vector<dir_discHdr> emuList;
 	Config m_plugin_cfg;
 
-	vector<string> INI_List;
+	INI_List.clear();
 	m_gameList.clear();
-	m_gameList.GetFiles(m_pluginsDir.c_str(), stringToVector(".ini", '|'), INI_List, false, 1);
+	GetFiles(m_pluginsDir.c_str(), stringToVector(".ini", '|'), GrabINIFiles, false, 1);
 	for(vector<string>::const_iterator Name = INI_List.begin(); Name != INI_List.end(); ++Name)
 	{
 		if(Name->find("scummvm.ini") != string::npos)
@@ -2292,10 +2299,9 @@ bool CMenu::_loadEmuList()
 				string gameDir(fmt("%s:/%s", DeviceName[currentPartition], m_plugin_cfg.getString(PLUGIN_DOMAIN,"romDir").c_str()));
 				string cacheDir(fmt("%s/%s_%s.db", m_listCacheDir.c_str(), DeviceName[currentPartition], m_plugin_cfg.getString(PLUGIN_DOMAIN,"magic").c_str()));
 				vector<string> FileTypes = stringToVector(m_plugin_cfg.getString(PLUGIN_DOMAIN,"fileTypes"), '|');
-				u32 CaseColor = strtoul(m_plugin_cfg.getString(PLUGIN_DOMAIN,"coverColor").c_str(), NULL, 16);
-				u32 MagicWord = strtoul(m_plugin_cfg.getString(PLUGIN_DOMAIN,"magic").c_str(), NULL, 16);
-				m_gameList.CreateList(m_current_view, currentPartition, gameDir, 
-						FileTypes, cacheDir, updateCache, CaseColor, MagicWord);
+				m_gameList.Color = strtoul(m_plugin_cfg.getString(PLUGIN_DOMAIN,"coverColor").c_str(), NULL, 16);
+				m_gameList.Magic = strtoul(m_plugin_cfg.getString(PLUGIN_DOMAIN,"magic").c_str(), NULL, 16);
+				m_gameList.CreateList(m_current_view, currentPartition, gameDir, FileTypes, cacheDir, updateCache);
 				for(vector<dir_discHdr>::iterator tmp_itr = m_gameList.begin(); tmp_itr != m_gameList.end(); tmp_itr++)
 					emuList.push_back(*tmp_itr);
 			}

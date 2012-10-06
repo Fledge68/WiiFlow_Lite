@@ -35,31 +35,20 @@ public:
 	void Init(const char *settingsDir, const char *Language);
 	void Cleanup();
 	void CreateList(u32 Flow, u32 Device, const string& Path, const vector<string>& FileTypes, 
-				const string& DBName, bool UpdateCache, u32 Color = 0, u32 Magic = 0);
-	void GetFiles(const char *Path, const vector<string>& FileTypes, vector<string>& FileList,
-				bool CompareFolders, u32 max_depth = 2, u32 depth = 1);
+				const string& DBName, bool UpdateCache);
+	u32 Color;
+	u32 Magic;
 private:
-	void Create_Wii_WBFS_List(wbfs_t *handle);
-	void Create_Wii_EXT_List(const string& Path, const vector<string>& FileTypes);
-	void Create_GC_List(const string& Path, const vector<string>& FileTypes);
-	void Create_Plugin_List(const string& Path, const vector<string>& FileTypes,
-							u32 Color, u32 Magic);
-	void Create_Homebrew_List(const string& Path, const vector<string>& FileTypes);
-	void Create_Channel_List();
-	void AddISO(const char *GameID, const char *GameTitle, const char *GamePath, u32 GameColor, u8 Type);
-	bool IsFileSupported(const char *File, const vector<string>& FileTypes);
 	void OpenConfigs();
 	void CloseConfigs();
 	string gameTDB_Path;
 	string CustomTitlesPath;
 	string gameTDB_Language;
-	GameTDB gameTDB;
-	Config CustomTitles;
-	vector<string> InternalList;
-	discHdr WiiGameHeader;
-	gc_discHdr GCGameHeader;
 };
 
+typedef void (*FileAdder)(char *Path);
+void GetFiles(const char *Path, const vector<string>& FileTypes, 
+			FileAdder AddFile, bool CompareFolders, u32 max_depth = 2, u32 depth = 1);
 extern ListGenerator m_gameList;
 
 #endif /*_LISTGENERATOR_HPP_*/
