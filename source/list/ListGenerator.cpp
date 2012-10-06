@@ -24,6 +24,12 @@
 #include "gui/text.hpp"
 
 ListGenerator m_gameList;
+static Config CustomTitles;
+static GameTDB gameTDB;
+
+static dir_discHdr ListElement;
+static discHdr WiiGameHeader;
+static gc_discHdr GCGameHeader;
 
 void ListGenerator::Init(const char *settingsDir, const char *Language)
 {
@@ -38,7 +44,6 @@ void ListGenerator::Init(const char *settingsDir, const char *Language)
 void ListGenerator::Cleanup()
 {
 	this->clear(); //clear gamelist
-	InternalList.clear(); //clear pathlist
 }
 
 void ListGenerator::OpenConfigs()
@@ -57,198 +62,11 @@ void ListGenerator::CloseConfigs()
 		CustomTitles.unload();
 }
 
-void ListGenerator::CreateList(u32 Flow, u32 Device, const string& Path, const vector<string>& FileTypes, 
-								const string& DBName, bool UpdateCache, u32 Color, u32 Magic)
+static void AddISO(const char *GameID, const char *GameTitle, const char *GamePath, 
+							u32 GameColor, u8 Type)
 {
-	Cleanup();
-	if(!DBName.empty())
-	{
-		if(UpdateCache)
-			fsop_deleteFile(DBName.c_str());
-		else
-		{
-			CCache(*this, DBName, LOAD);
-			if(!this->empty())
-				return;
-			fsop_deleteFile(DBName.c_str());
-		}
-	}
-	OpenConfigs();
-	if(Flow == COVERFLOW_USB)
-	{
-		if(DeviceHandle.GetFSType(Device) == PART_FS_WBFS)
-			Create_Wii_WBFS_List(DeviceHandle.GetWbfsHandle(Device));
-		else
-			Create_Wii_EXT_List(Path, FileTypes);
-	}
-	else if(Flow == COVERFLOW_CHANNEL)
-		Create_Channel_List();
-	else if(DeviceHandle.GetFSType(Device) != PART_FS_WBFS)
-	{
-		if(Flow == COVERFLOW_DML)
-			Create_GC_List(Path, FileTypes);
-		else if(Flow == COVERFLOW_PLUGIN)
-			Create_Plugin_List(Path, FileTypes, Color, Magic);
-		else if(Flow == COVERFLOW_HOMEBREW)
-			Create_Homebrew_List(Path, FileTypes);
-	}
-	CloseConfigs();
-	if(!this->empty() && !DBName.empty()) /* Write a new Cache */
-		CCache(*this, DBName, SAVE);
-}
-
-void ListGenerator::Create_Wii_WBFS_List(wbfs_t *handle)
-{
-	for(u32 i = 0; i < wbfs_count_discs(handle); i++)
-	{
-		memset((void*)&WiiGameHeader, 0, sizeof(discHdr));
-		s32 ret = wbfs_get_disc_info(handle, i, (u8*)&WiiGameHeader, sizeof(discHdr), NULL);
-		if(ret == 0 && WiiGameHeader.magic == WII_MAGIC)
-			AddISO((const char*)WiiGameHeader.id, (const char*)WiiGameHeader.title, 
-					NULL, 1, TYPE_WII_GAME);
-	}
-}
-
-void ListGenerator::Create_Wii_EXT_List(const string& Path, const vector<string>& FileTypes)
-{
-	GetFiles(Path.c_str(), FileTypes, InternalList, false);
-	for(vector<string>::iterator Name = InternalList.begin(); Name != InternalList.end(); Name++)
-	{
-		memset((void*)&WiiGameHeader, 0, sizeof(discHdr));
-		FILE *fp = fopen(Name->c_str(), "rb");
-		if(fp)
-		{
-			fseek(fp, strcasestr(Name->c_str(), ".wbfs") != NULL ? 512 : 0, SEEK_SET);
-			fread((void*)&WiiGameHeader, 1, sizeof(discHdr), fp);
-			if(WiiGameHeader.magic == WII_MAGIC)
-				AddISO((const char*)WiiGameHeader.id, (const char*)WiiGameHeader.title, 
-						Name->c_str(), 1, TYPE_WII_GAME);
-			fclose(fp);
-		}
-	}
-	InternalList.clear();
-}
-
-void ListGenerator::Create_GC_List(const string& Path, const vector<string>& FileTypes)
-{
-	GetFiles(Path.c_str(), FileTypes, InternalList, true);
-	for(vector<string>::iterator Name = InternalList.begin(); Name != InternalList.end(); Name++)
-	{
-		memset((void*)&GCGameHeader, 0, sizeof(gc_discHdr));
-		FILE *fp = fopen(Name->c_str(), "rb");
-		if(!fp && Name->find("root") != string::npos) //fst folder
-		{
-			Name->erase(Name->begin() + Name->find("root"), Name->end());
-			Name->append("sys/boot.bin");
-			fp = fopen(Name->c_str(), "rb");
-		}
-		if(fp)
-		{
-			fread((void*)&GCGameHeader, 1, sizeof(gc_discHdr), fp);
-			if(GCGameHeader.magic == GC_MAGIC)
-				AddISO((const char*)GCGameHeader.id, (const char*)GCGameHeader.title,
-						Name->c_str(), 0, TYPE_GC_GAME);
-			fclose(fp);
-		}
-	}
-	InternalList.clear();
-}
-
-void ListGenerator::Create_Plugin_List(const string& Path, const vector<string>& FileTypes, 
-									u32 Color, u32 Magic)
-{
-	dir_discHdr ListElement;
-	GetFiles(Path.c_str(), FileTypes, InternalList, false, 30);
-	for(vector<string>::const_iterator Name = InternalList.begin(); Name != InternalList.end(); ++Name)
-	{
-		memset((void*)&ListElement, 0, sizeof(dir_discHdr));
-		ListElement.index = this->size();
-		strncpy(ListElement.path, Name->c_str(), sizeof(ListElement.path));
-		strncpy(ListElement.id, "PLUGIN", 6);
-
-		string Title(Name->begin() + Name->find_last_of('/') + 1, Name->begin() + Name->find_last_of('.'));
-		mbstowcs(ListElement.title, Title.c_str(), 63);
-		Asciify(ListElement.title);
-
-		ListElement.settings[0] = Magic; //Plugin magic
-		ListElement.casecolor = Color;
-		ListElement.type = TYPE_PLUGIN;
-		this->push_back(ListElement);
-	}
-	InternalList.clear();
-}
-
-void ListGenerator::Create_Homebrew_List(const string& Path, const vector<string>& FileTypes)
-{
-	dir_discHdr ListElement;
-	GetFiles(Path.c_str(), FileTypes, InternalList, false);
-	for(vector<string>::iterator Name = InternalList.begin(); Name != InternalList.end(); Name++)
-	{
-		if(Name->find("boot.") == string::npos)
-			continue;
-		memset((void*)&ListElement, 0, sizeof(dir_discHdr));
-		ListElement.index = this->size();
-		Name->erase(Name->begin() + Name->find_last_of('/'), Name->end());
-		strncpy(ListElement.path, Name->c_str(), sizeof(ListElement.path));
-		strncpy(ListElement.id, "HB_APP", 6);
-
-		string FolderTitle(Name->begin() + Name->find_last_of('/') + 1, Name->end());
-		ListElement.casecolor = CustomTitles.getColor("COVERS", FolderTitle.c_str(), 1).intVal();
-		string CustomTitle = CustomTitles.getString("TITLES", FolderTitle.c_str());		
-		if(CustomTitle.size() > 0)
-			mbstowcs(ListElement.title, CustomTitle.c_str(), 63);
-		else
-			mbstowcs(ListElement.title, FolderTitle.c_str(), 63);
-		Asciify(ListElement.title);
-
-		ListElement.type = TYPE_HOMEBREW;
-		this->push_back(ListElement);
-		continue;
-	}
-	InternalList.clear();
-}
-
-void ListGenerator::Create_Channel_List()
-{
-	u32 GameColor = 1;
-	dir_discHdr ListElement;
-	ChannelHandle.Init(0, gameTDB_Language, true);
-	for(int i = 0; i < ChannelHandle.Count(); i++)
-	{
-		Channel *chan = ChannelHandle.GetChannel(i);
-		if(chan->id == NULL) 
-			continue; // Skip invalid channels
-		memset((void*)&ListElement, 0, sizeof(dir_discHdr));
-		ListElement.index = this->size();
-		ListElement.settings[0] = TITLE_UPPER(chan->title);
-		ListElement.settings[1] = TITLE_LOWER(chan->title);
-		strncpy(ListElement.id, chan->id, 4);
-		ListElement.casecolor = CustomTitles.getColor("COVERS", ListElement.id, GameColor).intVal();
-		string CustomTitle = CustomTitles.getString("TITLES", ListElement.id);
-		if(gameTDB.IsLoaded())
-		{
-			if(ListElement.casecolor == GameColor)
-				ListElement.casecolor = gameTDB.GetCaseColor(ListElement.id);
-			if(CustomTitle.size() == 0)
-				gameTDB.GetTitle(ListElement.id, CustomTitle);
-			ListElement.wifi = gameTDB.GetWifiPlayers(ListElement.id);
-			ListElement.players = gameTDB.GetPlayers(ListElement.id);
-		}
-		if(CustomTitle.size() > 0)
-			mbstowcs(ListElement.title, CustomTitle.c_str(), 63);
-		else
-			wcsncpy(ListElement.title, chan->name, 64);
-		ListElement.type = TYPE_CHANNEL;
-		this->push_back(ListElement);
-	}
-	InternalList.clear();
-}
-
-void ListGenerator::AddISO(const char *GameID, const char *GameTitle, const char *GamePath, u32 GameColor, u8 Type)
-{
-	dir_discHdr ListElement;
 	memset((void*)&ListElement, 0, sizeof(dir_discHdr));
-	ListElement.index = this->size();
+	ListElement.index = m_gameList.size();
 	if(GameID != NULL) strncpy(ListElement.id, GameID, 6);
 	if(GamePath != NULL) strncpy(ListElement.path, GamePath, sizeof(ListElement.path));
 	ListElement.casecolor = CustomTitles.getColor("COVERS", ListElement.id, GameColor).intVal();
@@ -269,10 +87,172 @@ void ListGenerator::AddISO(const char *GameID, const char *GameTitle, const char
 	Asciify(ListElement.title);
 
 	ListElement.type = Type;
-	this->push_back(ListElement); //I am a vector! :P
+	m_gameList.push_back(ListElement);
 }
 
-bool ListGenerator::IsFileSupported(const char *File, const vector<string>& FileTypes)
+static void Create_Wii_WBFS_List(wbfs_t *handle)
+{
+	for(u32 i = 0; i < wbfs_count_discs(handle); i++)
+	{
+		memset((void*)&WiiGameHeader, 0, sizeof(discHdr));
+		s32 ret = wbfs_get_disc_info(handle, i, (u8*)&WiiGameHeader, sizeof(discHdr), NULL);
+		if(ret == 0 && WiiGameHeader.magic == WII_MAGIC)
+			AddISO((const char*)WiiGameHeader.id, (const char*)WiiGameHeader.title, 
+					NULL, 1, TYPE_WII_GAME);
+	}
+}
+
+static void Create_Wii_EXT_List(char *FullPath)
+{
+	FILE *fp = fopen(FullPath, "rb");
+	if(fp)
+	{
+		fseek(fp, strcasestr(FullPath, ".wbfs") != NULL ? 512 : 0, SEEK_SET);
+		fread((void*)&WiiGameHeader, 1, sizeof(discHdr), fp);
+		if(WiiGameHeader.magic == WII_MAGIC)
+			AddISO((const char*)WiiGameHeader.id, (const char*)WiiGameHeader.title, 
+					FullPath, 1, TYPE_WII_GAME);
+		fclose(fp);
+	}
+}
+
+static void Create_GC_List(char *FullPath)
+{
+	static const char *FST_APPEND = "sys/boot.bin";
+
+	FILE *fp = fopen(FullPath, "rb");
+	if(!fp && strstr(FullPath, "/root") != NULL) //fst folder
+	{
+		*(strstr(FullPath, "/root") + 1) = '\0';
+		if(strlen(FullPath) + strlen(FST_APPEND) < 255) strcat(FullPath, FST_APPEND);
+		fp = fopen(FullPath, "rb");
+	}
+	if(fp)
+	{
+		fread((void*)&GCGameHeader, 1, sizeof(gc_discHdr), fp);
+		if(GCGameHeader.magic == GC_MAGIC)
+			AddISO((const char*)GCGameHeader.id, (const char*)GCGameHeader.title,
+					FullPath, 0, TYPE_GC_GAME);
+		fclose(fp);
+	}
+}
+
+static void Create_Plugin_List(char *FullPath)
+{
+	memset((void*)&ListElement, 0, sizeof(dir_discHdr));
+
+	strncpy(ListElement.path, FullPath, sizeof(ListElement.path));
+	strncpy(ListElement.id, "PLUGIN", 6);
+	*strchr(FullPath, '.') = '\0';
+	mbstowcs(ListElement.title, strrchr(FullPath, '/') + 1, 63);
+	Asciify(ListElement.title);
+
+	ListElement.settings[0] = m_gameList.Magic; //Plugin magic
+	ListElement.casecolor = m_gameList.Color;
+	ListElement.type = TYPE_PLUGIN;
+	m_gameList.push_back(ListElement);
+}
+
+static void Create_Homebrew_List(char *FullPath)
+{
+	if(strcasestr(FullPath, "boot.") == NULL)
+		return;
+	memset((void*)&ListElement, 0, sizeof(dir_discHdr));
+	ListElement.index = m_gameList.size();
+	*strrchr(FullPath, '/') = '\0';
+	strncpy(ListElement.path, FullPath, sizeof(ListElement.path));
+	strncpy(ListElement.id, "HB_APP", 6);
+
+	static const char *FolderTitle = strrchr(FullPath, '/') + 1;
+	ListElement.casecolor = CustomTitles.getColor("COVERS", FolderTitle, 1).intVal();
+	const string &CustomTitle = CustomTitles.getString("TITLES", FolderTitle);
+	if(CustomTitle.size() > 0)
+		mbstowcs(ListElement.title, CustomTitle.c_str(), 63);
+	else
+		mbstowcs(ListElement.title, FolderTitle, 63);
+	Asciify(ListElement.title);
+
+	ListElement.type = TYPE_HOMEBREW;
+	m_gameList.push_back(ListElement);
+}
+
+static void Create_Channel_List()
+{
+	for(int i = 0; i < ChannelHandle.Count(); i++)
+	{
+		Channel *chan = ChannelHandle.GetChannel(i);
+		if(chan->id == NULL) 
+			continue; // Skip invalid channels
+		memset((void*)&ListElement, 0, sizeof(dir_discHdr));
+		ListElement.index = m_gameList.size();
+		ListElement.settings[0] = TITLE_UPPER(chan->title);
+		ListElement.settings[1] = TITLE_LOWER(chan->title);
+		strncpy(ListElement.id, chan->id, 4);
+		ListElement.casecolor = CustomTitles.getColor("COVERS", ListElement.id, 1).intVal();
+		string CustomTitle = CustomTitles.getString("TITLES", ListElement.id);
+		if(gameTDB.IsLoaded())
+		{
+			if(ListElement.casecolor == 1)
+				ListElement.casecolor = gameTDB.GetCaseColor(ListElement.id);
+			if(CustomTitle.size() == 0)
+				gameTDB.GetTitle(ListElement.id, CustomTitle);
+			ListElement.wifi = gameTDB.GetWifiPlayers(ListElement.id);
+			ListElement.players = gameTDB.GetPlayers(ListElement.id);
+		}
+		if(CustomTitle.size() > 0)
+			mbstowcs(ListElement.title, CustomTitle.c_str(), 63);
+		else
+			wcsncpy(ListElement.title, chan->name, 64);
+		ListElement.type = TYPE_CHANNEL;
+		m_gameList.push_back(ListElement);
+	}
+}
+
+void ListGenerator::CreateList(u32 Flow, u32 Device, const string& Path, const vector<string>& FileTypes, 
+								const string& DBName, bool UpdateCache)
+{
+	Cleanup();
+	if(!DBName.empty())
+	{
+		if(UpdateCache)
+			fsop_deleteFile(DBName.c_str());
+		else
+		{
+			CCache(*this, DBName, LOAD);
+			if(!this->empty())
+				return;
+			fsop_deleteFile(DBName.c_str());
+		}
+	}
+	if(Flow != COVERFLOW_PLUGIN)
+		OpenConfigs();
+	if(Flow == COVERFLOW_USB)
+	{
+		if(DeviceHandle.GetFSType(Device) == PART_FS_WBFS)
+			Create_Wii_WBFS_List(DeviceHandle.GetWbfsHandle(Device));
+		else
+			GetFiles(Path.c_str(), FileTypes, Create_Wii_EXT_List, false);
+	}
+	else if(Flow == COVERFLOW_CHANNEL)
+	{
+		ChannelHandle.Init(0, gameTDB_Language, true);
+		Create_Channel_List();
+	}
+	else if(DeviceHandle.GetFSType(Device) != PART_FS_WBFS)
+	{
+		if(Flow == COVERFLOW_DML)
+			GetFiles(Path.c_str(), FileTypes, Create_GC_List, true);
+		else if(Flow == COVERFLOW_PLUGIN)
+			GetFiles(Path.c_str(), FileTypes, Create_Plugin_List, false, 30);
+		else if(Flow == COVERFLOW_HOMEBREW)
+			GetFiles(Path.c_str(), FileTypes, Create_Homebrew_List, false);
+	}
+	CloseConfigs();
+	if(!this->empty() && !DBName.empty()) /* Write a new Cache */
+		CCache(*this, DBName, SAVE);
+}
+
+static inline bool IsFileSupported(const char *File, const vector<string>& FileTypes)
 {
 	for(vector<string>::const_iterator cmp = FileTypes.begin(); cmp != FileTypes.end(); ++cmp)
 	{
@@ -282,42 +262,52 @@ bool ListGenerator::IsFileSupported(const char *File, const vector<string>& File
 	return false;
 }
 
-void ListGenerator::GetFiles(const char *Path, const vector<string>& FileTypes, 
-				vector<string>& FileList, bool CompareFolders, u32 max_depth, u32 depth)
+void GetFiles(const char *Path, const vector<string>& FileTypes, 
+				FileAdder AddFile, bool CompareFolders, u32 max_depth, u32 depth)
 {
-	struct dirent *pent = NULL;
-	vector<string> SubPaths;
-	DIR *pdir = opendir(Path);
+	static const char *NewFileName = NULL;
+	static dirent *pent = NULL;
+	static DIR *pdir = NULL;
+
+	pdir = opendir(Path);
 	if(pdir == NULL)
+		return;
+	char *FullPathChar = (char*)MEM2_alloc(256);
+	if(FullPathChar == NULL)
 		return;
 	while((pent = readdir(pdir)) != NULL)
 	{
-		if(strcmp(pent->d_name, ".") == 0 || strcmp(pent->d_name, "..") == 0)
+		if(pent->d_name[0] == '.')
 			continue;
-		string CurrentItem = sfmt("%s/%s", Path, pent->d_name);
+		memset(FullPathChar, 0, 256);
+		strncpy(FullPathChar, fmt("%s/%s", Path, pent->d_name), 255);
 		if(pent->d_type == DT_DIR)
 		{
 			if(CompareFolders && IsFileSupported(pent->d_name, FileTypes))
 			{
-				FileList.push_back(CurrentItem);
+				AddFile(FullPathChar);
 				continue;
 			}
 			else if(depth < max_depth)
-				SubPaths.push_back(CurrentItem); //thanks to libntfs for a complicated way
+			{
+				u64 currentPos = telldir(pdir);
+				closedir(pdir); //thanks libntfs
+				GetFiles(FullPathChar, FileTypes, AddFile, CompareFolders, max_depth, depth + 1);
+				pdir = opendir(Path);
+				seekdir(pdir, currentPos);
+			}
 		}
 		else if(pent->d_type == DT_REG)
 		{
-			const char *FileName = strstr(pent->d_name, ".");
-			if(FileName == NULL) FileName = pent->d_name;
-			if(IsFileSupported(FileName, FileTypes))
+			NewFileName = strchr(pent->d_name, '.');
+			if(NewFileName == NULL) NewFileName = pent->d_name;
+			if(IsFileSupported(NewFileName, FileTypes))
 			{
-				FileList.push_back(CurrentItem);
+				AddFile(FullPathChar);
 				continue;
 			}
 		}
 	}
+	MEM2_free(FullPathChar);
 	closedir(pdir);
-	for(vector<string>::iterator SubPath = SubPaths.begin(); SubPath != SubPaths.end(); SubPath++)
-		GetFiles(SubPath->c_str(), FileTypes, FileList, CompareFolders, max_depth, depth + 1);
-	SubPaths.clear();
 }

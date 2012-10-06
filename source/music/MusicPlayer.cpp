@@ -24,6 +24,9 @@
 #define	MUSIC_DEPTH 10
 Musicplayer MusicPlayer;
 
+static vector<string> FileNames;
+static vector<string>::const_iterator CurrentFileName;
+
 void Musicplayer::Cleanup()
 {
 	Stop();
@@ -32,6 +35,12 @@ void Musicplayer::Cleanup()
 	MusicChanged = false;
 	MusicStopped = true;
 	FileNames.clear();
+}
+
+static inline void FileNameAdder(char *Path)
+{
+	/* No need for more checks */
+	FileNames.push_back(Path);
 }
 
 void Musicplayer::Init(Config &cfg, const string& musicDir, const string& themeMusicDir) 
@@ -44,8 +53,8 @@ void Musicplayer::Init(Config &cfg, const string& musicDir, const string& themeM
 	MusicFile.SetVoice(0);
 
 	vector<string> Types = stringToVector(".mp3|.ogg", '|');
-	m_gameList.GetFiles(musicDir.c_str(), Types, FileNames, false, MUSIC_DEPTH);
-	m_gameList.GetFiles(themeMusicDir.c_str(), Types, FileNames, false, MUSIC_DEPTH);
+	GetFiles(musicDir.c_str(), Types, FileNameAdder, false, MUSIC_DEPTH);
+	GetFiles(themeMusicDir.c_str(), Types, FileNameAdder, false, MUSIC_DEPTH);
 	if(cfg.getBool("GENERAL", "randomize_music", true) && FileNames.size() > 0)
 	{
 		srand(unsigned(time(NULL)));
@@ -73,7 +82,7 @@ void Musicplayer::Previous()
 
 	if(CurrentFileName == FileNames.begin())
 		CurrentFileName = FileNames.end();
-	CurrentFileName--;
+	--CurrentFileName;
 	LoadCurrentFile();
 }
 
@@ -82,7 +91,7 @@ void Musicplayer::Next()
 	if(FileNames.empty() || PosFromPrevFile())
 		return;
 
-	CurrentFileName++;
+	++CurrentFileName;
 	if(CurrentFileName == FileNames.end())
 		CurrentFileName = FileNames.begin();
 	LoadCurrentFile();
