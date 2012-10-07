@@ -240,7 +240,7 @@ wchar_t * Channels::GetName(int index)
 	return channels.at(index).name;
 }
 
-int Channels::Count() 
+u32 Channels::Count() 
 { 
 	return channels.size(); 
 }
