@@ -116,15 +116,15 @@ static void Create_Wii_EXT_List(char *FullPath)
 	}
 }
 
+static const char *FST_APPEND = "sys/boot.bin";
+static const u8 FST_APPEND_SIZE = strlen(FST_APPEND);
 static void Create_GC_List(char *FullPath)
 {
-	static const char *FST_APPEND = "sys/boot.bin";
-
 	FILE *fp = fopen(FullPath, "rb");
 	if(!fp && strstr(FullPath, "/root") != NULL) //fst folder
 	{
 		*(strstr(FullPath, "/root") + 1) = '\0';
-		if(strlen(FullPath) + strlen(FST_APPEND) < 255) strcat(FullPath, FST_APPEND);
+		if(strlen(FullPath) + FST_APPEND_SIZE < 256) strcat(FullPath, FST_APPEND);
 		fp = fopen(FullPath, "rb");
 	}
 	if(fp)
@@ -176,11 +176,12 @@ static void Create_Homebrew_List(char *FullPath)
 	m_gameList.push_back(ListElement);
 }
 
+static Channel *chan = NULL;
 static void Create_Channel_List()
 {
-	for(int i = 0; i < ChannelHandle.Count(); i++)
+	for(u32 i = 0; i < ChannelHandle.Count(); i++)
 	{
-		Channel *chan = ChannelHandle.GetChannel(i);
+		chan = ChannelHandle.GetChannel(i);
 		if(chan->id == NULL) 
 			continue; // Skip invalid channels
 		memset((void*)&ListElement, 0, sizeof(dir_discHdr));
@@ -272,14 +273,14 @@ void GetFiles(const char *Path, const vector<string>& FileTypes,
 	pdir = opendir(Path);
 	if(pdir == NULL)
 		return;
-	char *FullPathChar = (char*)MEM2_alloc(256);
+	char FullPathChar[256];
 	if(FullPathChar == NULL)
 		return;
+	memset(FullPathChar, 0, 256);
 	while((pent = readdir(pdir)) != NULL)
 	{
 		if(pent->d_name[0] == '.')
 			continue;
-		memset(FullPathChar, 0, 256);
 		strncpy(FullPathChar, fmt("%s/%s", Path, pent->d_name), 255);
 		if(pent->d_type == DT_DIR)
 		{
@@ -308,6 +309,5 @@ void GetFiles(const char *Path, const vector<string>& FileTypes,
 			}
 		}
 	}
-	MEM2_free(FullPathChar);
 	closedir(pdir);
 }
