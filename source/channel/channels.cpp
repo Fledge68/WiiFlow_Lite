@@ -233,7 +233,7 @@ void Channels::Search(u32 channelType, string lang)
 
 wchar_t * Channels::GetName(int index)
 {
-	if (index < 0 || index > Count() - 1)
+	if (index < 0 || index > (int)Count() - 1)
 	{
 		return (wchar_t *) "";
 	}
@@ -247,18 +247,18 @@ u32 Channels::Count()
 
 char * Channels::GetId(int index)
 {
-	if (index < 0 || index > Count() - 1) return (char *) "";
+	if (index < 0 || index > (int)Count() - 1) return (char *) "";
 	return channels.at(index).id;
 }
 
 u64 Channels::GetTitle(int index)
 {
-	if (index < 0 || index > Count() - 1) return 0;
+	if (index < 0 || index > (int)Count() - 1) return 0;
 	return channels.at(index).title;
 }
 
 Channel * Channels::GetChannel(int index)
 {
-	if (index < 0 || index > Count() - 1) return NULL;
+	if (index < 0 || index > (int)Count() - 1) return NULL;
 	return &channels.at(index);
 }
