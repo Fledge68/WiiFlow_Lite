@@ -125,3 +125,14 @@ u32 crc32file(char *name)
 	u32 crc32 = oldcrc32 = ~oldcrc32;
 	return crc32;
 }
+
+u32 crc32buffer(const u8 *buffer, const u32 len)
+{
+	u32 i;
+	u32 oldcrc32 = 0xFFFFFFFF;
+	for(i = 0; i < len; i++)
+		oldcrc32 = UPDC32(buffer[i], oldcrc32);
+
+	u32 crc32 = oldcrc32 = ~oldcrc32;
+	return crc32;
+}
