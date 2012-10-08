@@ -269,6 +269,7 @@ void GetFiles(const char *Path, const vector<string>& FileTypes,
 	static const char *NewFileName = NULL;
 	static dirent *pent = NULL;
 	static DIR *pdir = NULL;
+	vector<string> SubPaths;
 
 	pdir = opendir(Path);
 	if(pdir == NULL)
@@ -289,14 +290,8 @@ void GetFiles(const char *Path, const vector<string>& FileTypes,
 				AddFile(FullPathChar);
 				continue;
 			}
-			else if(depth < max_depth)
-			{
-				u64 currentPos = telldir(pdir);
-				closedir(pdir); //thanks libntfs
-				GetFiles(FullPathChar, FileTypes, AddFile, CompareFolders, max_depth, depth + 1);
-				pdir = opendir(Path);
-				seekdir(pdir, currentPos);
-			}
+			else if(depth < max_depth) //thanks libntfs (fail opendir) and thanks seekdir (slowass speed)
+				SubPaths.push_back(FullPathChar);
 		}
 		else if(pent->d_type == DT_REG)
 		{
@@ -310,4 +305,7 @@ void GetFiles(const char *Path, const vector<string>& FileTypes,
 		}
 	}
 	closedir(pdir);
+	for(vector<string>::const_iterator p = SubPaths.begin(); p != SubPaths.end(); ++p)
+		GetFiles(p->c_str(), FileTypes, AddFile, CompareFolders, max_depth, depth + 1);
+	SubPaths.clear();
 }

@@ -55,7 +55,7 @@ ios			:=	249
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-CFLAGS	 =	-g -O2 -Wall -Wextra -Wno-multichar $(MACHDEP) $(INCLUDE) -DHAVE_CONFIG_H
+CFLAGS	 =	-g -O1 -Wall -Wextra -Wno-multichar $(MACHDEP) $(INCLUDE) -DHAVE_CONFIG_H
 CXXFLAGS =	$(CFLAGS)
 
 LDFLAGS	 =	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map,--section-start,.init=0x80620000,-wrap,malloc,-wrap,free,-wrap,memalign,-wrap,calloc,-wrap,realloc,-wrap,malloc_usable_size
@@ -191,56 +191,56 @@ $(BUILD)/alt_ios_gen.o: alt_ios_gen.c
 #---------------------------------------------------------------------------------
 %.txt.o:	%.txt
 	@echo $(notdir $<)
-	@bin2s -a 32 $< | $(AS) -o $(@)
+	@bin2s $< | $(AS) -o $(@)
 
 #---------------------------------------------------------------------------------
 # This rule links in binary data with the .jpg extension
 #---------------------------------------------------------------------------------
 %.jpg.o	:	%.jpg
 	@echo $(notdir $<)
-	@bin2s -a 32 $< | $(AS) -o $(@)
+	@bin2s $< | $(AS) -o $(@)
 
 #---------------------------------------------------------------------------------
 # This rule links in binary data with the .png extension
 #---------------------------------------------------------------------------------
 %.png.o	:	%.png
 	@echo $(notdir $<)
-	@bin2s -a 32 $< | $(AS) -o $(@)
+	@bin2s $< | $(AS) -o $(@)
 
 #---------------------------------------------------------------------------------
 # This rule links in binary data with the .ogg extension
 #---------------------------------------------------------------------------------
 %.ogg.o : %.ogg
 	@echo $(notdir $<)
-	@bin2s -a 32 $< | $(AS) -o $(@)
+	@bin2s $< | $(AS) -o $(@)
 
 #---------------------------------------------------------------------------------
 # This rule links in binary data with the .wav extension
 #---------------------------------------------------------------------------------
 %.wav.o	:	%.wav
 	@echo $(notdir $<)
-	@bin2s -a 32 $< | $(AS) -o $(@)
+	@bin2s $< | $(AS) -o $(@)
 
 #---------------------------------------------------------------------------------
 # This rule links in binary data with the .bin extension
 #---------------------------------------------------------------------------------
 %.bin.o	:	%.bin
 	@echo $(notdir $<)
-	@bin2s -a 32 $< | $(AS) -o $(@)
+	@bin2s $< | $(AS) -o $(@)
 
 #---------------------------------------------------------------------------------
 # This rule links in binary data with the .dol extension
 #---------------------------------------------------------------------------------
 %.dol.o : %.dol
 	@echo $(notdir $<)
-	@bin2s -a 32 $< | $(AS) -o $(@)
+	@bin2s $< | $(AS) -o $(@)
 
 #---------------------------------------------------------------------------------
 # This rule links in binary data with the .elf extension
 #---------------------------------------------------------------------------------
 %.elf.o : %.elf
 	@echo $(notdir $<)
-	@bin2s -a 32 $< | $(AS) -o $(@)
+	@bin2s $< | $(AS) -o $(@)
 
 -include $(DEPENDS)
 
