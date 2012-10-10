@@ -24,7 +24,6 @@ SOURCES		:=	source \
 				source/config \
 				source/data \
 				source/devicemounter \
-				source/devicemounter/libwbfs \
 				source/fileOps \
 				source/gc \
 				source/gecko \
@@ -55,10 +54,10 @@ ios			:=	249
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-CFLAGS	 =	-g -O2 -Wall -Wextra -Wno-multichar $(MACHDEP) $(INCLUDE) -DHAVE_CONFIG_H
-CXXFLAGS =	$(CFLAGS)
+CFLAGS	 :=	-g -O2 -Wall -Wextra $(MACHDEP) $(INCLUDE) -DHAVE_CONFIG_H
+CXXFLAGS :=	$(CFLAGS)
 
-LDFLAGS	 =	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map,--section-start,.init=0x80620000,-wrap,malloc,-wrap,free,-wrap,memalign,-wrap,calloc,-wrap,realloc,-wrap,malloc_usable_size
+LDFLAGS	 :=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map,--section-start,.init=0x80620000,-wrap,malloc,-wrap,free,-wrap,memalign,-wrap,calloc,-wrap,realloc,-wrap,malloc_usable_size
 
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
@@ -86,28 +85,11 @@ export DEPSDIR	:=	$(CURDIR)/$(BUILD)
 #---------------------------------------------------------------------------------
 # automatically build a list of object files for our project
 #---------------------------------------------------------------------------------
-SVNREV		:=	$(shell bash ./scripts/svnrev.sh)
-
-export CFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
-export CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
-
+CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
+CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
 sFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
 SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.S)))
-
-TXTFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.txt)))
-
-BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.bin)))
-TTFFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.ttf)))
-PNGFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.png)))
-JPGFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.jpg)))
-
-MP3FILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.mp3)))
-OGGFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.ogg)))
-PCMFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.pcm)))
-WAVFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.wav)))
-
-DOLFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.dol)))
-ELFFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.elf)))
+BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
 
 #---------------------------------------------------------------------------------
 # use CXX for linking C++ projects, CC for standard C
@@ -120,10 +102,8 @@ endif
 
 export OFILES	:=	$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) \
 					$(sFILES:.s=.o) $(SFILES:.S=.o) \
-					$(JPGFILES:.jpg=.jpg.o) $(PNGFILES:.png=.png.o) $(DOLFILES:.dol=.dol.o) \
-					$(OGGFILES:.ogg=.ogg.o) $(WAVFILES:.wav=.wav.o) $(MP3FILES:.mp3=.mp3.o) \
-					$(ELFFILES:.elf=.elf.o) $(BINFILES:.bin=.bin.o) $(TXTFILES:.txt=.txt.o) \
-					$(CURDIR)/data/magic_patcher.o
+					$(addsuffix .o,$(BINFILES)) \
+					$(CURDIR)/data/binary/magic_patcher.o
 
 #---------------------------------------------------------------------------------
 # build a list of include paths
@@ -146,8 +126,9 @@ export OUTPUT	:=	$(CURDIR)/$(TARGET)
 #---------------------------------------------------------------------------------
 $(BUILD):
 	@echo Building for  IOS $(ios).
-	@bash ./scripts/buildtype.sh $(ios)
 	@[ -d $@ ] || mkdir -p $@
+	@bash $(CURDIR)/scripts/svnrev.sh
+	@bash $(CURDIR)/scripts/buildtype.sh $(ios)
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile.main
 
 #---------------------------------------------------------------------------------
@@ -181,66 +162,56 @@ DEPENDS	:=	$(OFILES:.o=.d)
 # main targets
 #---------------------------------------------------------------------------------
 $(OUTPUT).dol: $(OUTPUT).elf
-$(OUTPUT).elf: $(OFILES) alt_ios_gen.o
-
-#---------------------------------------------------------------------------------
-$(BUILD)/alt_ios_gen.o: alt_ios_gen.c
+$(OUTPUT).elf: $(OFILES)
 
 #---------------------------------------------------------------------------------
 # This rule links in binary data with the .txt extension
 #---------------------------------------------------------------------------------
 %.txt.o:	%.txt
 	@echo $(notdir $<)
-	@bin2s $< | $(AS) -o $(@)
+	@$(bin2o)
 
 #---------------------------------------------------------------------------------
 # This rule links in binary data with the .jpg extension
 #---------------------------------------------------------------------------------
 %.jpg.o	:	%.jpg
 	@echo $(notdir $<)
-	@bin2s $< | $(AS) -o $(@)
+	@$(bin2o)
 
 #---------------------------------------------------------------------------------
 # This rule links in binary data with the .png extension
 #---------------------------------------------------------------------------------
 %.png.o	:	%.png
 	@echo $(notdir $<)
-	@bin2s $< | $(AS) -o $(@)
+	@$(bin2o)
 
 #---------------------------------------------------------------------------------
 # This rule links in binary data with the .ogg extension
 #---------------------------------------------------------------------------------
 %.ogg.o : %.ogg
 	@echo $(notdir $<)
-	@bin2s $< | $(AS) -o $(@)
+	@$(bin2o)
 
 #---------------------------------------------------------------------------------
 # This rule links in binary data with the .wav extension
 #---------------------------------------------------------------------------------
 %.wav.o	:	%.wav
 	@echo $(notdir $<)
-	@bin2s $< | $(AS) -o $(@)
+	@$(bin2o)
 
 #---------------------------------------------------------------------------------
 # This rule links in binary data with the .bin extension
 #---------------------------------------------------------------------------------
 %.bin.o	:	%.bin
 	@echo $(notdir $<)
-	@bin2s $< | $(AS) -o $(@)
+	@$(bin2o)
 
 #---------------------------------------------------------------------------------
 # This rule links in binary data with the .dol extension
 #---------------------------------------------------------------------------------
 %.dol.o : %.dol
 	@echo $(notdir $<)
-	@bin2s $< | $(AS) -o $(@)
-
-#---------------------------------------------------------------------------------
-# This rule links in binary data with the .elf extension
-#---------------------------------------------------------------------------------
-%.elf.o : %.elf
-	@echo $(notdir $<)
-	@bin2s $< | $(AS) -o $(@)
+	@$(bin2o)
 
 -include $(DEPENDS)
 

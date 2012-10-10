@@ -202,7 +202,7 @@ bool GuiSound::Load(const u8 * snd, u32 len, bool isallocated)
 	if(!snd)
 		return false;
 
-	if(!isallocated && *((u32 *) snd) == 'RIFF')
+	if(!isallocated && memcmp(snd, "RIFF", 4) == 0)
 		return LoadSoundEffect(snd, len);
 
 	sound = (u8*)snd;

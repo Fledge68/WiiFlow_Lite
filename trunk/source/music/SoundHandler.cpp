@@ -203,26 +203,16 @@ SoundDecoder * SoundHandler::GetSoundDecoder(const char * filepath)
 /* 	gprintf("SHND: Searching decoder for magic\n");
 	ghexdump((u8 *) &magic, 4); */
 
-	if(magic == 'OggS')
-	{
+	if(memcmp(&magic, "OggS", 4) == 0)
 		return new OggDecoder(filepath);
-	}
-	else if(magic == 'RIFF')
-	{
+	else if(memcmp(&magic, "RIFF", 4) == 0)
 		return new WavDecoder(filepath);
-	}
-	else if(magic == 'BNS ')
-	{
+	else if(memcmp(&magic, "BNS ", 4) == 0)
 		return new BNSDecoder(filepath);
-	}
-	else if(magic == 'FORM')
-	{
+	else if(memcmp(&magic, "FORM", 4) == 0)
 		return new AifDecoder(filepath);
-	}
 	else if(CheckMP3Signature((u8 *) &magic) == true)
-	{
 		return new Mp3Decoder(filepath);
-	}
 
 	return new SoundDecoder(filepath);
 }
@@ -241,28 +231,18 @@ SoundDecoder * SoundHandler::GetSoundDecoder(const u8 * sound, int length)
 	if(counter >= length)
 		return NULL;
 
-	u32 * magic = (u32 *) check;
+	u32 * magic = (u32 *)check;
 
-	if(magic[0] == 'OggS')
-	{
+	if(memcmp(&magic[0], "OggS", 4) == 0)
 		return new OggDecoder(sound, length);
-	}
-	else if(magic[0] == 'RIFF')
-	{
+	else if(memcmp(&magic[0], "RIFF", 4) == 0)
 		return new WavDecoder(sound, length);
-	}
-	else if(magic[0] == 'BNS ')
-	{
+	else if(memcmp(&magic[0], "BNS ", 4) == 0)
 		return new BNSDecoder(sound, length);
-	}
-	else if(magic[0] == 'FORM')
-	{
+	else if(memcmp(&magic[0], "FORM", 4) == 0)
 		return new AifDecoder(sound, length);
-	}
 	else if(CheckMP3Signature(check) == true)
-	{
 		return new Mp3Decoder(sound, length);
-	}
 
 	return new SoundDecoder(sound, length);
 }

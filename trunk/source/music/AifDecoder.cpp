@@ -122,12 +122,12 @@ void AifDecoder::OpenFile()
 	SWaveHdr Header;
 	file_fd->read((u8 *) &Header, sizeof(SWaveHdr));
 
-	if (Header.magicRIFF != 'FORM')
+	if(memcmp(&Header.magicRIFF, "FORM", 4) != 0)
 	{
 		CloseFile();
 		return;
 	}
-	else if(Header.magicWAVE != 'AIFF')
+	else if(memcmp(&Header.magicWAVE, "AIFF", 4) != 0)
 	{
 		CloseFile();
 		return;
@@ -144,7 +144,7 @@ void AifDecoder::OpenFile()
 			return;
 		}
 
-		if(magic == 'COMM')
+		if(memcmp(&magic, "COMM", 4) == 0)
 			break;
 		else
 			file_fd->seek(-3, SEEK_CUR);
@@ -156,7 +156,7 @@ void AifDecoder::OpenFile()
 	SAIFFCommChunk CommHdr;
 	file_fd->read((u8 *) &CommHdr, sizeof(SAIFFCommChunk));
 
-	if(CommHdr.fccCOMM != 'COMM')
+	if(memcmp(&CommHdr.fccCOMM, "COMM", 4) != 0)
 	{
 		CloseFile();
 		return;
@@ -175,7 +175,7 @@ void AifDecoder::OpenFile()
 		file_fd->seek(chunkHdr.size, SEEK_CUR);
 		ret = file_fd->read((u8 *) &chunkHdr, sizeof(SWaveChunk));
 	}
-	while(ret > 0 && chunkHdr.magicDATA != 'SSND');
+	while(ret > 0 && memcmp(&chunkHdr.magicDATA, "SSND", 4) != 0);
 
 	// Seek back to start of SSND chunk
 	file_fd->seek(-sizeof(SWaveChunk), SEEK_CUR);
@@ -183,7 +183,7 @@ void AifDecoder::OpenFile()
 	SAIFFSSndChunk SSndChunk;
 	file_fd->read((u8 *) &SSndChunk, sizeof(SAIFFSSndChunk));
 
-	if(SSndChunk.fccSSND != 'SSND')
+	if(memcmp(&SSndChunk.fccSSND, "SSND", 4) != 0)
 	{
 		CloseFile();
 		return;
