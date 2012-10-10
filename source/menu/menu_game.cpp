@@ -1616,7 +1616,7 @@ void CMenu::_gameSoundThread(CMenu *m)
 	delete banner;
 	if(soundBin != NULL)
 	{
-		if(((IMD5Header *)soundBin)->fcc == 'IMD5')
+		if(memcmp(&((IMD5Header *)soundBin)->fcc, "IMD5", 4) == 0)
 		{
 			u32 newSize = 0;
 			u8 *newSound = DecompressCopy(soundBin, sndSize, &newSize);

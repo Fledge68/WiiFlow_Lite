@@ -68,23 +68,24 @@ void WavDecoder::OpenFile()
 	file_fd->read((u8 *) &Header, sizeof(SWaveHdr));
 	file_fd->read((u8 *) &FmtChunk, sizeof(SWaveFmtChunk));
 
-	if(Header.magicRIFF != 'RIFF')
+	if(memcmp(&Header.magicRIFF, "RIFF", 4) != 0)
 	{
 		CloseFile();
 		return;
 	}
-	else if(Header.magicWAVE != 'WAVE')
+	else if(memcmp(&Header.magicWAVE, "WAVE", 4) != 0)
 	{
 		CloseFile();
 		return;
 	}
-	if(FmtChunk.magicFMT == 'bext') //Stupid metadata
+
+	if(memcmp(&FmtChunk.magicFMT, "bext", 4) == 0) //Stupid metadata
 	{
 		DataOffset += le32(FmtChunk.size) + 8;
 		file_fd->seek(sizeof(SWaveHdr) + le32(FmtChunk.size) + 8, SEEK_SET);
 		file_fd->read((u8 *)&FmtChunk, sizeof(SWaveFmtChunk));
 	}
-	if(FmtChunk.magicFMT != 'fmt ')
+	if(memcmp(&FmtChunk.magicFMT, "fmt ", 4) != 0)
 	{
 		CloseFile();
 		return;
@@ -95,7 +96,7 @@ void WavDecoder::OpenFile()
 	SWaveChunk DataChunk;
 	file_fd->read((u8 *) &DataChunk, sizeof(SWaveChunk));
 
-	while(DataChunk.magicDATA != 'data')
+	while(memcmp(&DataChunk.magicDATA, "data", 4) != 0)
 	{
 		DataOffset += 8+le32(DataChunk.size);
 		file_fd->seek(DataOffset, SEEK_SET);
@@ -128,7 +129,7 @@ void WavDecoder::OpenFile()
 	file_fd->seek(DataOffset + DataSize, SEEK_SET);
 	while(file_fd->read((u8 *)&LoopChunk, sizeof(SWaveChunk)) == sizeof(SWaveChunk))
 	{
-		if(LoopChunk.magicDATA == 'smpl')
+		if(memcmp(&LoopChunk.magicDATA, "smpl", 4) == 0)
 		{
 			file_fd->seek(-8, SEEK_CUR);
 			file_fd->read((u8*)&SmplChunk, sizeof(SWaveSmplChunk));

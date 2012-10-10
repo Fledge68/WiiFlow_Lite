@@ -313,9 +313,9 @@ SoundBlock DecodefromBNS(const u8 *buffer, u32 size)
 	memset(&OutBlock, 0, sizeof(SoundBlock));
 
 	const BNSHeader &hdr = *(BNSHeader *)buffer;
-	if (size < sizeof hdr)
+	if(size < sizeof hdr)
 		return OutBlock;
-	if (hdr.fccBNS != 'BNS ')
+	if(memcmp(&hdr.fccBNS, "BNS ", 4) != 0)
 		return OutBlock;
 	// Find info and data
 	BNSInfo infoChunk;
