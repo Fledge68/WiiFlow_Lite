@@ -68,7 +68,7 @@ static void AddISO(const char *GameID, const char *GameTitle, const char *GamePa
 	memset((void*)&ListElement, 0, sizeof(dir_discHdr));
 	ListElement.index = m_gameList.size();
 	if(GameID != NULL) strncpy(ListElement.id, GameID, 6);
-	if(GamePath != NULL) strncpy(ListElement.path, GamePath, sizeof(ListElement.path));
+	if(GamePath != NULL) strncpy(ListElement.path, GamePath, sizeof(ListElement.path) - 1);
 	ListElement.casecolor = CustomTitles.getColor("COVERS", ListElement.id, GameColor).intVal();
 	string CustomTitle = CustomTitles.getString("TITLES", ListElement.id);
 	if(gameTDB.IsLoaded())
@@ -116,6 +116,7 @@ static void Create_Wii_EXT_List(char *FullPath)
 	}
 }
 
+static u8 gc_disc[1];
 static const char *FST_APPEND = "sys/boot.bin";
 static const u8 FST_APPEND_SIZE = strlen(FST_APPEND);
 static void Create_GC_List(char *FullPath)
@@ -124,15 +125,22 @@ static void Create_GC_List(char *FullPath)
 	if(!fp && strstr(FullPath, "/root") != NULL) //fst folder
 	{
 		*(strstr(FullPath, "/root") + 1) = '\0';
-		if(strlen(FullPath) + FST_APPEND_SIZE < 256) strcat(FullPath, FST_APPEND);
+		if(strlen(FullPath) + FST_APPEND_SIZE < MAX_MSG_SIZE) strcat(FullPath, FST_APPEND);
 		fp = fopen(FullPath, "rb");
 	}
 	if(fp)
 	{
 		fread((void*)&GCGameHeader, 1, sizeof(gc_discHdr), fp);
 		if(GCGameHeader.magic == GC_MAGIC)
+		{
 			AddISO((const char*)GCGameHeader.id, (const char*)GCGameHeader.title,
 					FullPath, 0, TYPE_GC_GAME);
+			/* Check for disc 2 */
+			fseek(fp, 6, SEEK_SET);
+			fread(gc_disc, 1, 1, fp);
+			if(gc_disc[0])
+				wcslcat(m_gameList.back().title, L" disc 2", 63);
+		}
 		fclose(fp);
 	}
 }
@@ -141,7 +149,7 @@ static void Create_Plugin_List(char *FullPath)
 {
 	memset((void*)&ListElement, 0, sizeof(dir_discHdr));
 
-	strncpy(ListElement.path, FullPath, sizeof(ListElement.path));
+	strncpy(ListElement.path, FullPath, sizeof(ListElement.path) - 1);
 	strncpy(ListElement.id, "PLUGIN", 6);
 	*strchr(FullPath, '.') = '\0';
 	mbstowcs(ListElement.title, strrchr(FullPath, '/') + 1, 63);
@@ -160,7 +168,7 @@ static void Create_Homebrew_List(char *FullPath)
 	memset((void*)&ListElement, 0, sizeof(dir_discHdr));
 	ListElement.index = m_gameList.size();
 	*strrchr(FullPath, '/') = '\0';
-	strncpy(ListElement.path, FullPath, sizeof(ListElement.path));
+	strncpy(ListElement.path, FullPath, sizeof(ListElement.path) - 1);
 	strncpy(ListElement.id, "HB_APP", 6);
 
 	static const char *FolderTitle = strrchr(FullPath, '/') + 1;
@@ -267,6 +275,7 @@ void GetFiles(const char *Path, const vector<string>& FileTypes,
 				FileAdder AddFile, bool CompareFolders, u32 max_depth, u32 depth)
 {
 	static const char *NewFileName = NULL;
+	static char *FullPathChar = NULL;
 	static dirent *pent = NULL;
 	static DIR *pdir = NULL;
 	vector<string> SubPaths;
@@ -274,15 +283,11 @@ void GetFiles(const char *Path, const vector<string>& FileTypes,
 	pdir = opendir(Path);
 	if(pdir == NULL)
 		return;
-	char FullPathChar[256];
-	if(FullPathChar == NULL)
-		return;
-	memset(FullPathChar, 0, 256);
 	while((pent = readdir(pdir)) != NULL)
 	{
 		if(pent->d_name[0] == '.')
 			continue;
-		strncpy(FullPathChar, fmt("%s/%s", Path, pent->d_name), 255);
+		FullPathChar = fmt("%s/%s", Path, pent->d_name);
 		if(pent->d_type == DT_DIR)
 		{
 			if(CompareFolders && IsFileSupported(pent->d_name, FileTypes))

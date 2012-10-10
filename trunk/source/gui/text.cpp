@@ -1,16 +1,18 @@
+
 #include "text.hpp"
 
 int currentStr = 0;
-char fmt_buffer[MAX_USES][MAX_MSG_SIZE];
-char general_buffer[MAX_MSG_SIZE];
+static char fmt_buffer[MAX_USES][MAX_MSG_SIZE];
+static char general_buffer[MAX_MSG_SIZE];
 
 // Simplified use of sprintf
-const char *fmt(const char *format, ...)
+char *fmt(const char *format, ...)
 {
 	va_list va;
 	va_start(va, format);
 	currentStr = (currentStr + 1) % MAX_USES;
 	vsnprintf(fmt_buffer[currentStr], MAX_MSG_SIZE - 1, format, va);
+	fmt_buffer[currentStr][MAX_MSG_SIZE - 1] = '\0';
 	va_end(va);
 	return fmt_buffer[currentStr];
 }
@@ -19,7 +21,8 @@ string sfmt(const char *format, ...)
 {
 	va_list va;
 	va_start(va, format);
-	int len = vsnprintf(general_buffer, MAX_MSG_SIZE - 1, format, va);
+	size_t len = vsnprintf(general_buffer, MAX_MSG_SIZE - 1, format, va);
+	general_buffer[MAX_MSG_SIZE - 1] = '\0';
 	va_end(va);
 	return string(general_buffer, len);
 }
@@ -80,6 +83,7 @@ wstringEx wfmt(const wstringEx &format, ...)
 	va_list va;
 	va_start(va, format);
 	vsnprintf(general_buffer, MAX_MSG_SIZE - 1, format.toUTF8().c_str(), va);
+	general_buffer[MAX_MSG_SIZE - 1] = '\0';
 	va_end(va);
 	wstringEx wide_buffer;
 	wide_buffer.fromUTF8(general_buffer);
