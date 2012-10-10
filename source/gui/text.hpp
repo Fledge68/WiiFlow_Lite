@@ -61,7 +61,7 @@ enum {
 	MAX_USES		= 8,
 };
 
-const char *fmt(const char *format, ...);
+char *fmt(const char *format, ...);
 std::string sfmt(const char *format, ...);
 wstringEx wfmt(const wstringEx &format, ...);
 bool checkFmt(const wstringEx &ref, const wstringEx &format);

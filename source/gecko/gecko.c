@@ -17,7 +17,8 @@ bool geckoinit = false;
 bool textVideoInit = false;
 bool bufferMessages = true;
 bool WriteToSD = false;
-char tmpfilebuffer[1024];
+#define SDWRITE_SIZE	1024
+char sdwritebuffer[SDWRITE_SIZE];
 
 static ssize_t __out_write(struct _reent *r __attribute__((unused)), int fd __attribute__((unused)), const char *ptr, size_t len)
 {
@@ -65,36 +66,39 @@ static void USBGeckoOutput()
 	devoptab_list[STD_ERR] = &gecko_out;
 }
 
-static void WriteToFile(char* tmp, int len)
+static void WriteToFile(const char* tmp, size_t len)
 {
 	if(!bufferMessages)
 		return;
 
-	if((strlen(tmpfilebuffer) + len) < 1024)
-		strcat(tmpfilebuffer, tmp);
+	if((strlen(sdwritebuffer) + len) < SDWRITE_SIZE)
+		strcat(sdwritebuffer, tmp);
 
 	if(WriteToSD)
 	{
 		FILE *outfile = fopen("sd:/wiiflow.log", "a");
 		if(outfile)
 		{
-			fwrite(tmpfilebuffer, 1, strlen(tmpfilebuffer), outfile);
-			memset(tmpfilebuffer, 0, 1024);
+			fwrite(sdwritebuffer, 1, strlen(sdwritebuffer), outfile);
+			memset(sdwritebuffer, 0, SDWRITE_SIZE);
 			fclose(outfile);
 		}
 	}
 }
 
-char gprintfBuffer[256];
+#define GPRINTF_SIZE	256
+static char gprintfBuffer[GPRINTF_SIZE];
 void gprintf(const char *format, ...)
 {
 	va_list va;
 	va_start(va, format);
-	int len = vsnprintf(gprintfBuffer, 255, format, va);
+	size_t len = vsnprintf(gprintfBuffer, GPRINTF_SIZE - 1, format, va);
+	gprintfBuffer[GPRINTF_SIZE - 1] = '\0';
+	va_end(va);
+
 	__out_write(NULL, 0, gprintfBuffer, len);
 	WifiGecko_Send(gprintfBuffer, len);
 	WriteToFile(gprintfBuffer, len);
-	va_end(va);
 }
 
 char ascii(char s)
@@ -137,14 +141,15 @@ void ghexdump(void *d, int len)
 	}
 }
 
-const char *initstr = "USB Gecko inited.\n";
+static const char *initstr = "USB Gecko inited.\n";
 bool InitGecko()
 {
 	if(geckoinit)
 		return geckoinit;
 
 	USBGeckoOutput();
-	memset(tmpfilebuffer, 0, 1024);
+	memset(sdwritebuffer, 0, SDWRITE_SIZE);
+	memset(gprintfBuffer, 0, GPRINTF_SIZE);
 
 #ifdef sd_write_log
 	WriteToSD = true;
