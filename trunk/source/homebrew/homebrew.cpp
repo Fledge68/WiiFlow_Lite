@@ -66,7 +66,7 @@ int LoadHomebrew(const char *filepath)
 	return 1;
 }
 
-static int SetupARGV(struct __argv * args)
+int SetupARGV(struct __argv * args)
 {
 	if(!args) 
 		return -1;

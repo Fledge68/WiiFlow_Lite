@@ -1,114 +1,64 @@
-#---------------------------------------------------------------------------------
-# Clear the implicit built in rules
-#---------------------------------------------------------------------------------
-.SUFFIXES:
-#---------------------------------------------------------------------------------
-ifeq ($(strip $(DEVKITPPC)),)
-$(error "Please set DEVKITPPC in your environment. export DEVKITPPC=<path to>devkitPPC")
-endif
 
-include $(DEVKITPPC)/wii_rules
+#PREFIX = powerpc-gekko-
+PREFIX = $(DEVKITPPC)/bin/powerpc-eabi-
+#PREFIX = /home/megazig/Wii/bootmii-utils/bin/powerpc-elf-
 
-#---------------------------------------------------------------------------------
-# TARGET is the name of the output
-# BUILD is the directory where object files & intermediate files will be placed
-# SOURCES is a list of directories containing source code
-# INCLUDES is a list of directories containing extra header files
-#---------------------------------------------------------------------------------
-TARGET		:=	boot
-BUILD		:=	build
-SOURCES		:=	source
-DATA		:=	data
-INCLUDES	:=	source
-#---------------------------------------------------------------------------------
-# options for code generation
-#---------------------------------------------------------------------------------
-CFLAGS	 =	-g -O1 -Wall -Wextra -Wno-multichar $(MACHDEP) $(INCLUDE) -DHAVE_CONFIG_H
-CXXFLAGS =	$(CFLAGS)
+AR = $(PREFIX)ar
+AS = $(PREFIX)as
+CC = $(PREFIX)gcc
+CXX = $(PREFIX)g++
+LD = $(PREFIX)ld
+OBJCOPY = $(PREFIX)objcopy
+RANLIB = $(PREFIX)ranlib
+STRIP = $(PREFIX)strip
 
-LDFLAGS	 =	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map,--section-start,.init=0x80A00000
+MACHDEP = -mcpu=750 -mno-eabi -mhard-float -DTINY -DDEBUG
+#CFLAGS = $(MACHDEP) -Os -Wall -pipe -ffunction-sections -finline-functions-called-once -mno-sdata --combine -fwhole-program -ffreestanding
+CFLAGS = $(MACHDEP) -O1 -Wall -pipe -ffunction-sections -finline-functions-called-once -mno-sdata
+LDFLAGS = $(MACHDEP) -n -nostartfiles -nostdlib -Wl,-T,link.ld -L.
+ASFLAGS = -D_LANGUAGE_ASSEMBLY -DHW_RVL -DTINY
 
-#---------------------------------------------------------------------------------
-# any extra libraries we wish to link with the project
-#---------------------------------------------------------------------------------
-LIBS	:=	-logc
+TARGET_LINKED = boot.elf
+TARGET = booter.bin
 
-#---------------------------------------------------------------------------------
-# list of directories containing libraries, this must be the top level containing
-# include and lib
-#---------------------------------------------------------------------------------
-LIBDIRS	:=	$(CURDIR)
-#---------------------------------------------------------------------------------
-# no real need to edit anything past this point unless you need to add additional
-# rules for different file extensions
-#---------------------------------------------------------------------------------
-ifneq ($(BUILD),$(notdir $(CURDIR)))
-#---------------------------------------------------------------------------------
-export OUTPUT	:=	$(CURDIR)/$(TARGET)
+CFILES = apploader.c cios.c cache.c debug.c di.c disc.c ios.c patchcode.c usb.c utils.c main.c
+#OBJS = crt0.o _all.o
+OBJS = crt0.o apploader.o cios.o cache.o debug.o di.o disc.o ios.o patchcode.o patchhook.o usb.o utils.o main.o
 
-export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
-					$(foreach dir,$(DATA),$(CURDIR)/$(dir))
+DEPDIR = .deps
 
-export DEPSDIR	:=	$(CURDIR)/$(BUILD)
+LIBS = 
 
-#---------------------------------------------------------------------------------
-# automatically build a list of object files for our project
-#---------------------------------------------------------------------------------
-export CFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
-export CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
+all: $(TARGET)
 
-sFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
-SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.S)))
-#---------------------------------------------------------------------------------
-# use CXX for linking C++ projects, CC for standard C
-#---------------------------------------------------------------------------------
-ifeq ($(strip $(CPPFILES)),)
-	export LD	:=	$(CC)
-else
-	export LD	:=	$(CXX)
-endif
+%.o: %.s
+	@echo " ASSEMBLE    $<"
+	@$(CC) $(CFLAGS) $(DEFINES) $(ASFLAGS) -c $< -o $@
 
-export OFILES	:=	$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(sFILES:.s=.o) $(SFILES:.S=.o)
-#---------------------------------------------------------------------------------
-# build a list of include paths
-#---------------------------------------------------------------------------------
-export INCLUDE	:=	$(foreach dir,$(INCLUDES), -I$(CURDIR)/$(dir)) \
-					$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
-					-I$(CURDIR)/$(BUILD) \
-					-I$(LIBOGC_INC)
+%.o: %.S
+	@echo " ASSEMBLE    $<"
+	@$(CC) $(CFLAGS) $(DEFINES) $(ASFLAGS) -c $< -o $@
 
-#---------------------------------------------------------------------------------
-# build a list of library paths
-#---------------------------------------------------------------------------------
-export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib) \
-					-L$(LIBOGC_LIB)
+%.o: %.c
+	@echo " COMPILE     $<"
+	@$(CC) $(CFLAGS) $(DEFINES) -c $< -o $@
 
-export OUTPUT	:=	$(CURDIR)/$(TARGET)
+%.o: %.cpp
+	@echo " COMPILE     $<"
+	@$(CXX) $(CFLAGS) $(DEFINES) -c $< -o $@
 
-#---------------------------------------------------------------------------------
-.PHONY: $(BUILD) all clean
-#---------------------------------------------------------------------------------
-$(BUILD):
-	@[ -d $@ ] || mkdir -p $@
-	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
+#_all.o: $(CFILES)
+#	@echo " COMPILE ALL "
+#	@mkdir -p $(DEPDIR)
+#	@$(CC) $(CFLAGS) $(DEFINES) -Wp,-MMD,$(DEPDIR)/$(*F).d,-MQ,"$@",-MP -c $(CFILES) -o $@
 
-#---------------------------------------------------------------------------------
+$(TARGET_LINKED): $(OBJS)
+	@echo " LINK        $@"
+	@$(CC) -g -o $@ $(LDFLAGS) $(OBJS) $(LIBS)
+
+$(TARGET): $(TARGET_LINKED)
+	@echo " OBJCOPY     $@"
+	@$(OBJCOPY) -O binary $< $@
+
 clean:
-	@echo clean ...
-	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).dol
-
-#---------------------------------------------------------------------------------
-else
-
-DEPENDS	:=	$(OFILES:.o=.d)
-
-#---------------------------------------------------------------------------------
-# main targets
-#---------------------------------------------------------------------------------
-$(OUTPUT).dol: $(OUTPUT).elf
-$(OUTPUT).elf: $(OFILES)
--include $(DEPENDS)
-
-#---------------------------------------------------------------------------------
-endif
-#---------------------------------------------------------------------------------
+	rm -rf $(TARGET_LINKED) $(TARGET) $(OBJS) $(DEPDIR)

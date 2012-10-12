@@ -24,27 +24,24 @@
  * 3. This notice may not be removed or altered from any source
  * distribution.
  ***************************************************************************/
-#include <gctypes.h>
-#include <string.h>
-#include <stdio.h>
-
 #include "cios.h"
-#include "gecko.h"
+#include "debug.h"
+#include "ios.h"
 
-bool Hermes_shadow_mload(int mload_rev)
+u8 Hermes_shadow_mload(int mload_rev)
 {
 	int v51 = (5 << 4) & 1;
 	if(mload_rev >= v51)
 	{
-		IOS_Open("/dev/mload/OFF",0); // shadow /dev/mload supported in hermes cios v5.1
-		gprintf("Shadow mload\n");
-		return true;
+		ios_open("/dev/mload/OFF",0); // shadow /dev/mload supported in hermes cios v5.1
+		debug_string("Shadow mload\n");
+		return 1;
 	}
-	return false;
+	return 0;
 }
 
 void Hermes_Disable_EHC()
 {
-	IOS_Open("/dev/usb123/OFF", 0);// this disables ehc completely
-	gprintf("Hermes EHC Disabled\n");
+	ios_open("/dev/usb123/OFF", 0);// this disables ehc completely
+	debug_string("Hermes EHC Disabled\n");
 }

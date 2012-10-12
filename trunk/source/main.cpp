@@ -5,6 +5,7 @@
 #include "defines.h"
 #include "svnrev.h"
 
+#include "booter/external_booter.hpp"
 #include "channel/nand.hpp"
 #include "devicemounter/DeviceHandler.hpp"
 #include "gecko/gecko.h"
@@ -12,7 +13,7 @@
 #include "gui/video.hpp"
 #include "gui/text.hpp"
 #include "homebrew/homebrew.h"
-#include "loader/external_booter.hpp"
+#include "loader/alt_ios_gen.h"
 #include "loader/wdvd.h"
 #include "loader/alt_ios.h"
 #include "loader/sys.h"
@@ -24,9 +25,9 @@
 
 CMenu *mainMenu;
 bool useMainIOS = false;
-
 int main(int argc, char **argv)
 {
+	mainIOS = DOL_MAIN_IOS;
 	__exception_setreload(5);
 	InitGecko();
 

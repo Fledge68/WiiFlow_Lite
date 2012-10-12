@@ -2,10 +2,11 @@
 
 #include <string.h>
 #include <gccore.h>
+#include <cmath>
 
-u8 Plugin_curPage;
-u8 Plugin_Pages;
-u8 Plugin_lastBtn;
+u8 m_max_plugins = 0;
+u8 Plugin_curPage = 1;
+u8 Plugin_Pages = 1;
 
 // Plugin menu
 s16 m_pluginLblPage;
@@ -18,7 +19,6 @@ s16 m_pluginBtn[11];
 s16 m_pluginBtnCat[11];
 s16 m_pluginBtnCats[11];
 s16 m_pluginLblUser[4];
-u8 m_max_plugins;
 STexture m_pluginBg;
 
 void CMenu::_hidePluginSettings(bool instant)
@@ -74,9 +74,9 @@ void CMenu::_updatePluginCheckboxes(void)
 		m_btnMgr.hide(m_pluginBtn[i]);
 		m_btnMgr.hide(m_pluginLblCat[i]);
 	}
-	const vector<bool> *EnabledPlugins = m_plugin.GetEnabledPlugins(m_cfg);
+	const vector<bool> &EnabledPlugins = m_plugin.GetEnabledPlugins(m_cfg);
 	/* ALL Button */
-	if(EnabledPlugins->size() == 0)
+	if(EnabledPlugins.size() == 0)
 		m_pluginBtn[0] = m_pluginBtnCats[0];
 	else
 		m_pluginBtn[0] = m_pluginBtnCat[0];
@@ -86,7 +86,7 @@ void CMenu::_updatePluginCheckboxes(void)
 	u32 IteratorHelp = (Plugin_curPage - 1) * 10;
 	for(u8 i = 1; i < min(IteratorHelp+10, (u32)m_max_plugins)-IteratorHelp+1; ++i)
 	{
-		if(EnabledPlugins->size() == 0 || EnabledPlugins->at(i+IteratorHelp-1) == true)
+		if(EnabledPlugins.size() == 0 || EnabledPlugins.at(i+IteratorHelp-1) == true)
 			m_pluginBtn[i] = m_pluginBtnCats[i];
 		else
 			m_pluginBtn[i] = m_pluginBtnCat[i];
@@ -97,17 +97,21 @@ void CMenu::_updatePluginCheckboxes(void)
 
 void CMenu::_PluginSettings()
 {
+	u8 i = 0;
+	while(m_plugin.PluginExist(i)) i++;
+	Plugin_Pages = static_cast<int>(ceil(static_cast<float>(i)/static_cast<float>(10)));
+	m_max_plugins = i;
+	//gprintf("Plugins found: %i, Pages: %i\n", m_max_plugins, Plugin_Pages);
+	if(Plugin_Pages == 0)
+		return;
+	/* Only use Plugin Settings if Plugins are found */
 	SetupInput();
-	Plugin_Pages = 1;
 	Plugin_curPage = 1;
-	_textPluginSettings();
 	_showPluginSettings();
 	_updatePluginText();
 	while(!m_exit)
 	{
 		_mainLoopCommon();
-		if(!m_btnMgr.selected(Plugin_lastBtn))
-			m_btnMgr.noHover(false);
 		if(BTN_HOME_PRESSED || BTN_B_PRESSED)
 		{
 			m_cfg.save();
@@ -119,8 +123,6 @@ void CMenu::_PluginSettings()
 			m_btnMgr.down();
 		if((BTN_MINUS_PRESSED || BTN_LEFT_PRESSED) || (BTN_A_PRESSED && m_btnMgr.selected(m_pluginBtnPageM)))
 		{
-			Plugin_lastBtn = m_pluginBtnPageM;
-			m_btnMgr.noHover(true);
 			Plugin_curPage--;
 			if(Plugin_curPage == 0) Plugin_curPage = Plugin_Pages;
 			if(BTN_LEFT_PRESSED || BTN_MINUS_PRESSED)
@@ -130,8 +132,6 @@ void CMenu::_PluginSettings()
 		}
 		else if(((BTN_PLUS_PRESSED || BTN_RIGHT_PRESSED)) || (BTN_A_PRESSED && m_btnMgr.selected(m_pluginBtnPageP)))
 		{
-			Plugin_lastBtn = m_pluginBtnPageP;
-			m_btnMgr.noHover(true);
 			Plugin_curPage++;
 			if(Plugin_curPage > Plugin_Pages) Plugin_curPage = 1;
 			if(BTN_RIGHT_PRESSED || BTN_PLUS_PRESSED)
@@ -151,11 +151,9 @@ void CMenu::_PluginSettings()
 			{
 				if(m_btnMgr.selected(m_pluginBtn[i]))
 				{
-					Plugin_lastBtn = m_pluginBtn[i];
-					m_btnMgr.noHover(true);
 					if(i == 0)
 					{
-						bool EnableAll = m_plugin.GetEnabledPlugins(m_cfg)->size();
+						bool EnableAll = m_plugin.GetEnabledPlugins(m_cfg).size();
 						for(u8 j = 0; m_plugin.PluginExist(j); j++)
 							m_plugin.SetEnablePlugin(m_cfg, j, EnableAll ? 2 : 1);
 					}
@@ -204,9 +202,6 @@ void CMenu::_initPluginSettingsMenu(CMenu::SThemeData &theme)
 		_setHideAnim(m_pluginLblCat[i], fmt("PLUGIN/PLUGIN_%i", i), 0, 0, 1.f, 0.f);
 		m_pluginBtn[i] = m_pluginBtnCat[i];
 	}
-	Plugin_curPage = 1;
-	Plugin_Pages = 1;
-	m_max_plugins = 0;
 	_hidePluginSettings(true);
 	_textPluginSettings();
 }
@@ -215,20 +210,5 @@ void CMenu::_textPluginSettings(void)
 {
 	m_btnMgr.setText(m_pluginLblTitle, _t("cfgpl1", L"Select Plugins"));
 	m_btnMgr.setText(m_pluginBtnBack, _t("cd1", L"Back"));
-	u8 i = 0;
-	while(!m_exit)
-	{
-		if(i == 0)
-			m_btnMgr.setText(m_pluginLblCat[i], _t("dl25", L"All"));
-		else
-		{
-			if(!m_plugin.PluginExist(i - 1))
-			{
-				Plugin_Pages = (i-1)/10;
-				m_max_plugins = i;
-				break;
-			}
-		}
-		i++;
-	}
+	m_btnMgr.setText(m_pluginLblCat[0], _t("dl25", L"All"));
 }

@@ -1,16 +1,14 @@
 
-#include <stdio.h>
-#include <ogcsys.h>
-#include <string.h>
-#include <malloc.h>
 #include "apploader.h"
-#include "wdvd.h"
 #include "patchcode.h"
-#include "videopatch.h"
 #include "cios.h"
 #include "fst.h"
 #include "wip.h"
-#include "gecko.h"
+#include "debug.h"
+#include "utils.h"
+#include "di.h"
+#include "cache.h"
+#include "config.h"
 
 /* Apploader function pointers */
 typedef int   (*app_main)(void **dst, int *size, int *offset);
@@ -21,47 +19,49 @@ typedef void  (*app_entry)(void (**init)(void (*report)(const char *fmt, ...)), 
 /* Apploader pointers */
 static u8 *appldr = (u8 *)0x81200000;
 
-/* Constants */
-#define APPLDR_OFFSET	0x2440
-
 /* Variables */
-static u32 buffer[0x20] ATTRIBUTE_ALIGN(32);
+static u32 buffer[0x20] __attribute__((aligned(32)));
 
-void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo);
+void maindolpatches(void *dst, int len, u8 vidMode, u8 vipatch, u8 countryString, u8 patchVidModes, int aspectRatio, u32 returnTo);
 static void patch_NoDiscinDrive(void *buffer, u32 len);
 static void Anti_002_fix(void *Address, int Size);
-static bool Remove_001_Protection(void *Address, int Size);
-static bool PrinceOfPersiaPatch();
-static bool NewSuperMarioBrosPatch();
-bool hookpatched = false;
+static u8 Remove_001_Protection(void *Address, int Size);
+//static u8 PrinceOfPersiaPatch();
+//static u8 NewSuperMarioBrosPatch();
+u8 hookpatched = 0;
 
-s32 Apploader_Run(entry_point *entry, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo)
+static void simple_report(const char *fmt, ...)
+{
+	debug_string(fmt);
+}
+
+u32 Apploader_Run(u8 vidMode, u8 vipatch, u8 countryString, u8 patchVidModes, int aspectRatio, u32 returnTo)
 {
 	void *dst = NULL;
 	int len = 0;
 	int offset = 0;
 	u32 appldr_len;
 	s32 ret;
+	u32 Entry = 0;
 	app_init  appldr_init;
 	app_main  appldr_main;
 	app_final appldr_final;
 
 	/* Read apploader header */
-	ret = WDVD_Read(buffer, 0x20, APPLDR_OFFSET);
+	ret = di_read(buffer, 0x20, 0x910);
 	if(ret < 0)
-		return ret;
+		return Entry;
 
 	/* Calculate apploader length */
 	appldr_len = buffer[5] + buffer[6];
 
 	/* Read apploader code */
-	ret = WDVD_Read(appldr, appldr_len, APPLDR_OFFSET + 0x20);
+	ret = di_read(appldr, appldr_len, 0x918);
 	if(ret < 0)
 		return ret;
 
 	/* Flush into memory */
-	DCFlushRange(appldr, appldr_len);
-	ICInvalidateRange(appldr, appldr_len);
+	sync_after_write(appldr, appldr_len);
 
 	/* Set apploader entry function */
 	app_entry appldr_entry = (app_entry)buffer[4];
@@ -70,58 +70,51 @@ s32 Apploader_Run(entry_point *entry, u8 vidMode, GXRModeObj *vmode, bool vipatc
 	appldr_entry(&appldr_init, &appldr_main, &appldr_final);
 
 	/* Initialize apploader */
-	appldr_init(gprintf);
+	appldr_init(simple_report);
 
 	while(appldr_main(&dst, &len, &offset))
 	{
 		/* Read data from DVD */
-		WDVD_Read(dst, len, (u64)(offset << 2));
-		maindolpatches(dst, len, vidMode, vmode, vipatch, countryString, patchVidModes, aspectRatio, returnTo);
+		di_read(dst, len, offset);
+		maindolpatches(dst, len, vidMode, vipatch, countryString, patchVidModes, aspectRatio, returnTo);
+		sync_after_write(dst, len);
 	}
 
-	free_wip();
+	/*free_wip();
 	if(hooktype != 0 && hookpatched)
-		ocarina_do_code(0);
+		ocarina_do_code(0);*/
 
 	/* Set entry point from apploader */
-	*entry = appldr_final();
+	//*entry = appldr_final();
+	Entry = (u32)appldr_final();
 
-	/* ERROR 002 fix (WiiPower) */
-	*(u32 *)0x80003140 = *(u32 *)0x80003188;
-	DCFlushRange((void*)0x80000000, 0x3f00);
-
-	return 0;
+	return Entry;
 }
 
-void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo)
+void maindolpatches(void *dst, int len, u8 vidMode, u8 vipatch, u8 countryString, u8 patchVidModes, int aspectRatio, u32 returnTo)
 {
-	PrinceOfPersiaPatch();
-	NewSuperMarioBrosPatch();
+	//PrinceOfPersiaPatch();
+	//NewSuperMarioBrosPatch();
 	// Patch NoDiscInDrive only for IOS 249 < rev13 or IOS 222/223/224
 	if((CurrentIOS.Type == IOS_TYPE_WANIN && CurrentIOS.Revision < 13) || CurrentIOS.Type == IOS_TYPE_HERMES)
 		patch_NoDiscinDrive(dst, len);
-	patchVideoModes(dst, len, vidMode, vmode, patchVidModes);
-	if(hooktype != 0 && dogamehooks(dst, len, false))
-		hookpatched = true;
+	//patchVideoModes(dst, len, vidMode, vmode, patchVidModes);
+	//if(conf->hooktype != 0 && dogamehooks(dst, len, 0))
+	//	hookpatched = 1;
 	if(vipatch)
 		vidolpatcher(dst, len);
 	if(configbytes[0] != 0xCD)
 		langpatcher(dst, len);
 	if(CurrentIOS.Type == IOS_TYPE_WANIN && CurrentIOS.Revision < 13)
 		Anti_002_fix(dst, len);
-	if(countryString)
-		PatchCountryStrings(dst, len); // Country Patch by WiiPower
+	//if(conf->countryString)
+	//	PatchCountryStrings(dst, len); // Country Patch by WiiPower
 	if(aspectRatio != -1)
 		PatchAspectRatio(dst, len, aspectRatio);
-	if(returnTo)
+	if(returnTo > 0)
 		PatchReturnTo(dst, len, returnTo);
-
 	Remove_001_Protection(dst, len);
-
-	do_wip_code((u8 *)dst, len);
-
-	DCFlushRange(dst, len);
-	ICInvalidateRange(dst, len);
+	//do_wip_code((u8 *)dst, len);
 }
 
 static void patch_NoDiscinDrive(void *buffer, u32 len)
@@ -152,13 +145,13 @@ static void Anti_002_fix(void *Address, int Size)
 		Addr += 4;
 	}
 }
-
-static bool PrinceOfPersiaPatch()
+/*
+static u8 PrinceOfPersiaPatch()
 {
 	if (memcmp("SPX", (char *) 0x80000000, 3) != 0 && memcmp("RPW", (char *) 0x80000000, 3) != 0)
-		return false;
+		return 0;
 
-	WIP_Code * CodeList = malloc(5 * sizeof(WIP_Code));
+	WIP_Code CodeList[5*sizeof(WIP_Code)];
 	CodeList[0].offset = 0x007AAC6A;
 	CodeList[0].srcaddress = 0x7A6B6F6A;
 	CodeList[0].dstaddress = 0x6F6A7A6B;
@@ -175,25 +168,18 @@ static bool PrinceOfPersiaPatch()
 	CodeList[4].srcaddress = 0x82806F3F;
 	CodeList[4].dstaddress = 0x6F3F8280;
 
-	if (set_wip_list(CodeList, 5) == false)
-	{
-		free(CodeList);
-		CodeList = NULL;
-		return false;
-	}
+	if (set_wip_list(CodeList, 5) == 0)
+		return 0;
 
-	return true;
+	return 1;
 }
 
-static bool NewSuperMarioBrosPatch()
+static u8 NewSuperMarioBrosPatch()
 {
-	WIP_Code * CodeList = NULL;
+	WIP_Code CodeList[3 * sizeof(WIP_Code)];
 
 	if (memcmp("SMNE01", (char *) 0x80000000, 6) == 0)
 	{
-		CodeList = malloc(3 * sizeof(WIP_Code));
-		if(!CodeList)
-			return false;
 		CodeList[0].offset = 0x001AB610;
 		CodeList[0].srcaddress = 0x9421FFD0;
 		CodeList[0].dstaddress = 0x4E800020;
@@ -206,9 +192,6 @@ static bool NewSuperMarioBrosPatch()
 	}
 	else if (memcmp("SMNP01", (char *) 0x80000000, 6) == 0)
 	{
-		CodeList = malloc(3 * sizeof(WIP_Code));
-		if(!CodeList)
-			return false;
 		CodeList[0].offset = 0x001AB750;
 		CodeList[0].srcaddress = 0x9421FFD0;
 		CodeList[0].dstaddress = 0x4E800020;
@@ -221,9 +204,6 @@ static bool NewSuperMarioBrosPatch()
 	}
 	else if (memcmp("SMNJ01", (char *) 0x80000000, 6) == 0)
 	{
-		CodeList = malloc(3 * sizeof(WIP_Code));
-		if(!CodeList)
-			return false;
 		CodeList[0].offset = 0x001AB420;
 		CodeList[0].srcaddress = 0x9421FFD0;
 		CodeList[0].dstaddress = 0x4E800020;
@@ -234,16 +214,12 @@ static bool NewSuperMarioBrosPatch()
 		CodeList[2].srcaddress = 0xDA000000;
 		CodeList[2].dstaddress = 0x71000000;
 	}
-	if (CodeList && set_wip_list(CodeList, 3) == false)
-	{
-		free(CodeList);
-		CodeList = NULL;
-		return false;
-	}
-	return CodeList != NULL;
+	if(set_wip_list(CodeList, 3) == 0)
+		return 0;
+	return 1;
 }
-
-static bool Remove_001_Protection(void *Address, int Size)
+*/
+static u8 Remove_001_Protection(void *Address, int Size)
 {
 	static const u8 SearchPattern[] = {0x40, 0x82, 0x00, 0x0C, 0x38, 0x60, 0x00, 0x01, 0x48, 0x00, 0x02, 0x44, 0x38, 0x61, 0x00, 0x18};
 	static const u8 PatchData[] = {0x40, 0x82, 0x00, 0x04, 0x38, 0x60, 0x00, 0x01, 0x48, 0x00, 0x02, 0x44, 0x38, 0x61, 0x00, 0x18};
@@ -255,8 +231,8 @@ static bool Remove_001_Protection(void *Address, int Size)
 		if (memcmp(Addr, SearchPattern, sizeof SearchPattern) == 0) 
 		{
 			memcpy(Addr, PatchData, sizeof PatchData);
-			return true;
+			return 1;
 		}
 	}
-	return false;
+	return 0;
 }

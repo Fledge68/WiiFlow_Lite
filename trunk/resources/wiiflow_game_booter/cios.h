@@ -2,7 +2,6 @@
 #ifndef _CIOSINFO_H_
 #define _CIOSINFO_H_
 
-#include <gccore.h>
 #include "types.h"
 
 #ifdef __cplusplus
@@ -24,14 +23,8 @@ typedef struct _IOS_Info {
 	u8 Type;
 	u8 Base;
 } IOS_Info;
-
 extern IOS_Info CurrentIOS;
-void IOS_GetCurrentIOSInfo();
-
-bool IOS_D2X(u8 ios, u8 *base);
-u8 IOS_GetType(u8 slot);
-
-bool Hermes_shadow_mload(int mload_rev);
+u8 Hermes_shadow_mload(int mload_rev);
 void Hermes_Disable_EHC();
 
 #ifdef __cplusplus

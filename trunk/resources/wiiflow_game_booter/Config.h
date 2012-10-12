@@ -14,8 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ****************************************************************************/
-#ifndef _CFG_HPP_
-#define _CFG_HPP_
+#ifndef _CFG_H_
+#define _CFG_H_
 
 #include "cios.h"
 #include "frag.h"
@@ -37,8 +37,8 @@ typedef struct _the_CFG {
 	u8 patchVidMode;
 	u8 configbytes[2];
 	u8 debugger;
-	bool vipatch;
-	bool countryString;
+	u8 vipatch;
+	u8 countryString;
 	int aspectRatio;
 	void *codelist;
 	u8 *codelistend;

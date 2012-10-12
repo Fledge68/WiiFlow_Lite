@@ -162,7 +162,7 @@ void Plugin::SetEnablePlugin(Config &cfg, u8 pos, u8 ForceMode)
 	}
 }
 
-const vector<bool> *Plugin::GetEnabledPlugins(Config &cfg)
+const vector<bool> &Plugin::GetEnabledPlugins(Config &cfg)
 {
 	enabledPlugins.clear();
 	char PluginMagicWord[9];
@@ -181,7 +181,7 @@ const vector<bool> *Plugin::GetEnabledPlugins(Config &cfg)
 	}
 	if(enabledPluginsNumber == Plugins.size())
 		enabledPlugins.clear();
-	return &enabledPlugins;
+	return enabledPlugins;
 }
 
 u32 Plugin::getPluginMagic(u8 pos)
@@ -189,7 +189,7 @@ u32 Plugin::getPluginMagic(u8 pos)
 	return Plugins[pos].magicWord;
 }
 
-vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, const char *Device)
+vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, const char *Device, u32 MagicWord)
 {
 	gprintf("Parsing scummvm.ini\n");
 	vector<dir_discHdr> gameHeader;
@@ -203,7 +203,7 @@ vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, const char *Device)
 		if(GameDomain->size() < 2)
 			break;
 		const string &GameName = ini.getString(*GameDomain, "description");
-		if(GameName.size() < 2 || ini.getString(*GameDomain, "path").find(Device) == string::npos)
+		if(GameName.size() < 2 || strncasecmp(Device, ini.getString(*GameDomain, "path").c_str(), 2) != 0)
 		{
 			GameDomain = &ini.nextDomain();
 			continue;
@@ -214,7 +214,7 @@ vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, const char *Device)
 		mbstowcs(ListElement.title, GameName.c_str(), 63);
 		strncpy(ListElement.path, GameDomain->c_str(), sizeof(ListElement.path));
 		gprintf("Found: %s\n", GameDomain->c_str());
-		ListElement.settings[0] = Plugins.back().magicWord;
+		ListElement.settings[0] = MagicWord;
 		ListElement.type = TYPE_PLUGIN;
 		gameHeader.push_back(ListElement);
 		GameDomain = &ini.nextDomain();

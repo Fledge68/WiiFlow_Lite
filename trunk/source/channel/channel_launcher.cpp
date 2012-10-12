@@ -5,9 +5,9 @@
 #include <malloc.h>
 
 #include "channel_launcher.h"
+#include "booter/external_booter.hpp"
 #include "gecko/gecko.h"
 #include "loader/disc.h"
-#include "loader/external_booter.hpp"
 #include "loader/fs.h"
 #include "loader/fst.h"
 #include "loader/utils.h"

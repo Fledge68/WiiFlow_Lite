@@ -162,7 +162,7 @@ int CMenu::_config1(void)
 
 	s32 bCurrentPartition = currentPartition;
 
-	gprintf("Current Partition: %d\n", currentPartition);
+	//gprintf("Current Partition: %d\n", currentPartition);
 	
 	_showConfig();
 	_textConfig();
@@ -222,7 +222,7 @@ int CMenu::_config1(void)
 			for(u8 i = 0; strncmp((const char *)&newpartition[i], "\0", 1) != 0; i++)
 				newpartition[i] = toupper(newpartition[i]);
 
-			gprintf("Switching partition to %s\n", newpartition);
+			//gprintf("Switching partition to %s\n", newpartition);
 			_showWaitMessage();
 			_loadList();
 			_hideWaitMessage();

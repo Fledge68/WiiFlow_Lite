@@ -30,12 +30,12 @@ extern u32 hooktype;
 extern u8 configbytes[2];
 
 // Function prototypes
-bool dogamehooks(void *addr, u32 len, bool channel);
+u8 dogamehooks(void *addr, u32 len, u8 channel);
 void langpatcher(void *addr, u32 len);
 void vidolpatcher(void *addr, u32 len);
 void PatchCountryStrings(void *Address, int Size);
 void PatchAspectRatio(void *addr, u32 len, u8 aspect);
-bool PatchReturnTo(void *Address, int Size, u32 id);
+u8 PatchReturnTo(void *Address, int Size, u32 id);
 
 #ifdef __cplusplus
 }

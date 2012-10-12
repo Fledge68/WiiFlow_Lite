@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-#include "gctypes.h"
+#include "types.h"
 
 typedef struct
 {

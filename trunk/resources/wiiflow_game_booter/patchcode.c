@@ -18,14 +18,11 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <gccore.h>
-#include <sys/unistd.h>
-
+#include "utils.h"
 #include "apploader.h"
 #include "patchcode.h"
+#include "cache.h"
+#include "debug.h"
 
 u32 hooktype;
 u8 configbytes[2];
@@ -100,7 +97,7 @@ const u32 langpatch[3] = {0x7C600775, 0x40820010, 0x38000000};
 static const u32 oldpatch002[3] = {0x2C000000, 0x40820214, 0x3C608000};
 static const u32 newpatch002[3] = {0x2C000000, 0x48000214, 0x3C608000};
 
-bool dogamehooks(void *addr, u32 len, bool channel)
+u8 dogamehooks(void *addr, u32 len, u8 channel)
 {
 	/*
 	0 No Hook
@@ -115,21 +112,21 @@ bool dogamehooks(void *addr, u32 len, bool channel)
 
 	void *addr_start = addr;
 	void *addr_end = addr+len;
-	bool hookpatched = false;
+	u8 hookpatched = 0;
 
 	while(addr_start < addr_end)
 	{
 		switch(hooktype)
 		{
 			case 0x00:
-				hookpatched = true;
+				hookpatched = 1;
 				break;
 
 			case 0x01:
 				if(memcmp(addr_start, viwiihooks, sizeof(viwiihooks))==0)
 				{
 					patchhook((u32)addr_start, len);
-					hookpatched = true;
+					hookpatched = 1;
 				}
 				break;
 
@@ -137,13 +134,13 @@ bool dogamehooks(void *addr, u32 len, bool channel)
 				if(memcmp(addr_start, kpadhooks, sizeof(kpadhooks))==0)
 				{
 					patchhook((u32)addr_start, len);
-					hookpatched = true;
+					hookpatched = 1;
 				}
 
 				if(memcmp(addr_start, kpadoldhooks, sizeof(kpadoldhooks))==0)
 				{
 					patchhook((u32)addr_start, len);
-					hookpatched = true;
+					hookpatched = 1;
 				}
 				break;
 
@@ -151,7 +148,7 @@ bool dogamehooks(void *addr, u32 len, bool channel)
 				if(memcmp(addr_start, joypadhooks, sizeof(joypadhooks))==0)
 				{
 					patchhook((u32)addr_start, len);
-					hookpatched = true;
+					hookpatched = 1;
 				}
 				break;
 
@@ -159,7 +156,7 @@ bool dogamehooks(void *addr, u32 len, bool channel)
 				if(memcmp(addr_start, gxdrawhooks, sizeof(gxdrawhooks))==0)
 				{
 					patchhook((u32)addr_start, len);
-					hookpatched = true;
+					hookpatched = 1;
 				}
 				break;
 
@@ -167,7 +164,7 @@ bool dogamehooks(void *addr, u32 len, bool channel)
 				if(memcmp(addr_start, gxflushhooks, sizeof(gxflushhooks))==0)
 				{
 					patchhook((u32)addr_start, len);
-					hookpatched = true;
+					hookpatched = 1;
 				}
 				break;
 
@@ -175,7 +172,7 @@ bool dogamehooks(void *addr, u32 len, bool channel)
 				if(memcmp(addr_start, ossleepthreadhooks, sizeof(ossleepthreadhooks))==0)
 				{
 					patchhook((u32)addr_start, len);
-					hookpatched = true;
+					hookpatched = 1;
 				}
 				break;
 
@@ -183,7 +180,7 @@ bool dogamehooks(void *addr, u32 len, bool channel)
 				if(memcmp(addr_start, axnextframehooks, sizeof(axnextframehooks))==0)
 				{
 					patchhook((u32)addr_start, len);
-					hookpatched = true;
+					hookpatched = 1;
 				}
 				break;
 
@@ -191,7 +188,7 @@ bool dogamehooks(void *addr, u32 len, bool channel)
 				/* if(memcmp(addr_start, customhook, customhooksize)==0)
 				{
 					patchhook((u32)addr_start, len);
-					hookpatched = true;
+					hookpatched = 1;
 				} */
 				break;
 		}
@@ -200,15 +197,15 @@ bool dogamehooks(void *addr, u32 len, bool channel)
 			if(channel && memcmp(addr_start, multidolchanhooks, sizeof(multidolchanhooks))==0)
 			{
 				*(((u32*)addr_start)+1) = 0x7FE802A6;
-				DCFlushRange(((u32*)addr_start)+1, 4);
+				sync_after_write(((u32*)addr_start)+1, 4);
 
 				multidolhook((u32)addr_start+sizeof(multidolchanhooks)-4);
-				hookpatched = true;
+				hookpatched = 1;
 			}
 			else if(!channel && memcmp(addr_start, multidolhooks, sizeof(multidolhooks))==0)
 			{
 				multidolhook((u32)addr_start+sizeof(multidolhooks)-4);
-				hookpatched = true;
+				hookpatched = 1;
 			}			
 		}
 		addr_start += 4;
@@ -254,11 +251,12 @@ static u32 ad[ 4 ] = { 0, 0, 0, 0 };//these variables are global on the off chan
 static u8 found = 0;			//to find in the dol are found in different sections of the dol
 static u8 returnToPatched = 0;
 
-bool PatchReturnTo( void *Address, int Size, u32 id )
+u8 PatchReturnTo( void *Address, int Size, u32 id )
 {
-	if( !id || returnToPatched )
+	if(returnToPatched == 1)
 		return 0;
 	//gprintf("PatchReturnTo( %p, %08x, %08x )\n", Address, Size, id );
+	//debug_string("PatchReturnTo ID:"); debug_uint(id); debug_string("\n");
 
 	//new __OSLoadMenu() (SM2.0 and higher)
 	u8 SearchPattern[ 12 ] = 	{ 0x38, 0x80, 0x00, 0x02, 0x38, 0x60, 0x00, 0x01, 0x38, 0xa0, 0x00, 0x00 }; //li r4,2
@@ -358,6 +356,7 @@ bool PatchReturnTo( void *Address, int Size, u32 id )
 		addr = (u32*)ad[ 0 ];
 		memcpy( addr, &newval, sizeof( u32 ) );					//bl ad[ 3 ]
 		memcpy( addr + 4, &nop, sizeof( u32 ) );				//nop
+		debug_uint((u32)addr); debug_string(" -> "); debug_uint(newval); debug_string("\n");
 		//gprintf("\t%08x -> %08x\n", addr, newval );
 
 		//ES_GetTicketViews() again
@@ -367,6 +366,7 @@ bool PatchReturnTo( void *Address, int Size, u32 id )
 		addr = (u32*)ad[ 1 ];
 		memcpy( addr, &newval, sizeof( u32 ) );					//bl ad[ 3 ]
 		memcpy( addr + 4, &nop, sizeof( u32 ) );				//nop
+		debug_uint((u32)addr); debug_string(" -> "); debug_uint(newval); debug_string("\n");
 		//gprintf("\t%08x -> %08x\n", addr, newval );
 
 		//ES_LaunchTitle()
@@ -376,6 +376,7 @@ bool PatchReturnTo( void *Address, int Size, u32 id )
 		addr = (u32*)ad[ 2 ];
 		memcpy( addr, &newval, sizeof( u32 ) );					//bl ad[ 3 ]
 		memcpy( addr + 4, &nop, sizeof( u32 ) );				//nop
+		debug_uint((u32)addr); debug_string(" -> "); debug_uint(newval); debug_string("\n");
 		//gprintf("\t%08x -> %08x\n", addr, newval );
 
 		returnToPatched = 1;
@@ -413,7 +414,7 @@ void PatchAspectRatio(void *addr, u32 len, u8 aspect)
 		addr_start += 4;
 	}
 }
-
+#if 0
 void PatchCountryStrings(void *Address, int Size)
 {
 	u8 SearchPattern[4] = {0x00, 0x00, 0x00, 0x00};
@@ -490,3 +491,4 @@ void PatchCountryStrings(void *Address, int Size)
 		}
 	}
 }
+#endif
