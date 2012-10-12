@@ -63,13 +63,13 @@ public:
 	u32 getPluginMagic(u8 pos);
 	bool PluginExist(u8 pos);
 	void SetEnablePlugin(Config &cfg, u8 pos, u8 ForceMode = 0);
-	const vector<bool> *GetEnabledPlugins(Config &cfg);
+	const vector<bool> &GetEnabledPlugins(Config &cfg);
 	vector<string> CreateArgs(const string& device, const string& path, 
 				const string& title, const string& loader, u32 magic);
 	void init(const string& m_pluginsDir);
 	void Cleanup();
 	void EndAdd();
-	vector<dir_discHdr> ParseScummvmINI(Config &ini, const char *Device);
+	vector<dir_discHdr> ParseScummvmINI(Config &ini, const char *Device, u32 MagicWord);
 private:
 	s8 GetPluginPosition(u32 magic);
 	vector<PluginOptions> Plugins;

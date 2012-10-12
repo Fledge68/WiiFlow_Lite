@@ -8,7 +8,6 @@ $(error "Please set DEVKITPPC in your environment. export DEVKITPPC=<path to>dev
 endif
 
 include $(DEVKITPPC)/wii_rules
-
 #---------------------------------------------------------------------------------
 # TARGET is the name of the output
 # BUILD is the directory where object files & intermediate files will be placed
@@ -18,6 +17,7 @@ include $(DEVKITPPC)/wii_rules
 TARGET		:=	boot
 BUILD		:=	build
 SOURCES		:=	source \
+				source/booter \
 				source/banner \
 				source/channel \
 				source/cheats \
@@ -43,10 +43,10 @@ SOURCES		:=	source \
 
 DATA		:=	data \
 				data/images \
-				data/sounds \
-				data/help
-
+				data/help \
+				data/sounds
 INCLUDES	:=	source
+
 #---------------------------------------------------------------------------------
 # Default build shell script options
 #---------------------------------------------------------------------------------
@@ -54,10 +54,14 @@ ios			:=	249
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-CFLAGS	 :=	-g -O2 -Wall -Wextra $(MACHDEP) $(INCLUDE) -DHAVE_CONFIG_H
-CXXFLAGS :=	$(CFLAGS)
+CFLAGS		=	-g -ggdb -Os -Wall -Wno-multichar -Wno-unused-parameter -Wextra $(MACHDEP) $(INCLUDE) -DBUILD_IOS=$(IOS)
+CXXFLAGS	=	$(CFLAGS)
+LDFLAGS		=	-g -ggdb $(MACHDEP) -Wl,-Map,$(notdir $@).map,--section-start,.init=0x80620000,-wrap,malloc,-wrap,free,-wrap,memalign,-wrap,calloc,-wrap,realloc,-wrap,malloc_usable_size
 
-LDFLAGS	 :=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map,--section-start,.init=0x80620000,-wrap,malloc,-wrap,free,-wrap,memalign,-wrap,calloc,-wrap,realloc,-wrap,malloc_usable_size
+ifeq ($(BUILDMODE),channel)
+CFLAGS += -DFULLCHANNEL
+CXXFLAGS += -DFULLCHANNEL
+endif
 
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
@@ -75,21 +79,30 @@ LIBDIRS	:=	$(CURDIR)/portlibs
 #---------------------------------------------------------------------------------
 ifneq ($(BUILD),$(notdir $(CURDIR)))
 #---------------------------------------------------------------------------------
-export OUTPUT	:=	$(CURDIR)/$(TARGET)
-
+export PROJECTDIR := $(CURDIR)
+export OUTPUT	:=	$(CURDIR)/$(TARGETDIR)/$(TARGET)
 export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
 					$(foreach dir,$(DATA),$(CURDIR)/$(dir))
-
 export DEPSDIR	:=	$(CURDIR)/$(BUILD)
 
 #---------------------------------------------------------------------------------
 # automatically build a list of object files for our project
 #---------------------------------------------------------------------------------
-CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
-CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
+SVNREV		:=	$(shell bash ./scripts/svnrev.sh)
+IOSTYPE		:=  $(shell bash ./scripts/buildtype.sh $(ios))
+export CFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
+export CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
 sFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
 SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.S)))
-BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
+ELFFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.elf)))
+BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.bin)))
+TTFFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.ttf)))
+PNGFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.png)))
+OGGFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.ogg)))
+WAVFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.wav)))
+DOLFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.dol)))
+TXTFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.txt)))
+JPGFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.jpg)))
 
 #---------------------------------------------------------------------------------
 # use CXX for linking C++ projects, CC for standard C
@@ -102,56 +115,42 @@ endif
 
 export OFILES	:=	$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) \
 					$(sFILES:.s=.o) $(SFILES:.S=.o) \
-					$(addsuffix .o,$(BINFILES)) \
+					$(PNGFILES:.png=.png.o) $(JPGFILES:.jpg=.jpg.o) \
+					$(OGGFILES:.ogg=.ogg.o) $(TXTFILES:.txt=.txt.o) \
+					$(WAVFILES:.wav=.wav.o) $(addsuffix .o,$(BINFILES)) \
 					$(CURDIR)/data/binary/magic_patcher.o
 
 #---------------------------------------------------------------------------------
 # build a list of include paths
 #---------------------------------------------------------------------------------
-export INCLUDE	:=	$(foreach dir,$(INCLUDES), -I$(CURDIR)/$(dir)) \
+export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
 					$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
-					-I$(CURDIR)/$(BUILD) \
-					-I$(LIBOGC_INC)
+					-I$(CURDIR)/$(BUILD) -I$(LIBOGC_INC) \
+					-I$(PORTLIBS)/include
 
 #---------------------------------------------------------------------------------
 # build a list of library paths
 #---------------------------------------------------------------------------------
-export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib) \
-					-L$(LIBOGC_LIB)
+export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib) -L$(CURDIR)/source/libs/libfat/ \
+					-L$(CURDIR)/source/libs/libntfs/ -L$(CURDIR)/source/libs/libext2fs/ \
+					-L$(LIBOGC_LIB) -L$(PORTLIBS)/lib
 
 export OUTPUT	:=	$(CURDIR)/$(TARGET)
+.PHONY: $(BUILD) all clean
 
 #---------------------------------------------------------------------------------
-.PHONY: $(BUILD) all clean run
-#---------------------------------------------------------------------------------
 $(BUILD):
-	@echo Building for  IOS $(ios).
 	@[ -d $@ ] || mkdir -p $@
-	@bash $(CURDIR)/scripts/svnrev.sh
-	@bash $(CURDIR)/scripts/buildtype.sh $(ios)
+	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile.main
+
+#---------------------------------------------------------------------------------
+all:
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile.main
 
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
-	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).dol $(CURDIR)/data/wiiflow_game_booter.dol \
-	$(CURDIR)/source/loader/alt_ios_gen.c $(CURDIR)/source/svnrev.h
-
-#---------------------------------------------------------------------------------
-run:
-	wiiload $(TARGET).dol
-
-#---------------------------------------------------------------------------------
-gdb:
-	@echo Loading GDB with symbols from boot.elf, type quit to exit.
-	@powerpc-eabi-gdb boot.elf
-
-#---------------------------------------------------------------------------------
-addr:
-	@echo Loading addr2line with symbols from boot.elf..
-	@echo Press ctrl+c to exit.
-	@echo Enter an address from the stack dump:
-	@powerpc-eabi-addr2line -f -e boot.elf
+	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).dol
 
 #---------------------------------------------------------------------------------
 else
@@ -162,57 +161,37 @@ DEPENDS	:=	$(OFILES:.o=.d)
 # main targets
 #---------------------------------------------------------------------------------
 $(OUTPUT).dol: $(OUTPUT).elf
-$(OUTPUT).elf: $(OFILES) alt_ios_gen.o
-$(BUILD)/alt_ios_gen.o: alt_ios_gen.c
+$(OUTPUT).elf: $(OFILES)
 
 #---------------------------------------------------------------------------------
-# This rule links in binary data with the .txt extension
+# This rule links in binary data with .ttf, .png, and .mp3 extensions
 #---------------------------------------------------------------------------------
-%.txt.o:	%.txt
+
+%.png.o : %.png
 	@echo $(notdir $<)
-	@$(bin2o)
+	@bin2s -a 32 $< | $(AS) -o $(@)
 
-#---------------------------------------------------------------------------------
-# This rule links in binary data with the .jpg extension
-#---------------------------------------------------------------------------------
-%.jpg.o	:	%.jpg
+%.ogg.o : %.ogg
 	@echo $(notdir $<)
-	@$(bin2o)
+	@bin2s -a 32 $< | $(AS) -o $(@)
 
-#---------------------------------------------------------------------------------
-# This rule links in binary data with the .png extension
-#---------------------------------------------------------------------------------
-%.png.o	:	%.png
+%.wav.o : %.wav
 	@echo $(notdir $<)
-	@$(bin2o)
+	@bin2s -a 32 $< | $(AS) -o $(@)
 
-#---------------------------------------------------------------------------------
-# This rule links in binary data with the .ogg extension
-#---------------------------------------------------------------------------------
-%.ogg.o :	%.ogg
-	@echo $(notdir $<)
-	@$(bin2o)
-
-#---------------------------------------------------------------------------------
-# This rule links in binary data with the .wav extension
-#---------------------------------------------------------------------------------
-%.wav.o	:	%.wav
-	@echo $(notdir $<)
-	@$(bin2o)
-
-#---------------------------------------------------------------------------------
-# This rule links in binary data with the .bin extension
-#---------------------------------------------------------------------------------
 %.bin.o	:	%.bin
 	@echo $(notdir $<)
-	@$(bin2o)
+	@bin2s -a 32 $< | $(AS) -o $(@)
 
-#---------------------------------------------------------------------------------
-# This rule links in binary data with the .dol extension
-#---------------------------------------------------------------------------------
-%.dol.o :	%.dol
+%.txt.o	:	%.txt
 	@echo $(notdir $<)
-	@$(bin2o)
+	@bin2s -a 32 $< | $(AS) -o $(@)
+	
+%.jpg.o	:	%.jpg
+	@echo $(notdir $<)
+	@bin2s -a 32 $< | $(AS) -o $(@)
+
+export PATH		:=	$(PROJECTDIR)/gettext-bin:$(PATH)
 
 -include $(DEPENDS)
 

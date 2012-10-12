@@ -18,6 +18,7 @@
 #include "gui/fanart.hpp"
 #include "gui/gui.hpp"
 #include "list/ListGenerator.hpp"
+#include "loader/alt_ios_gen.h"
 #include "loader/disc.h"
 #include "loader/gc_disc_dump.hpp"
 #include "loader/wbfs.h"

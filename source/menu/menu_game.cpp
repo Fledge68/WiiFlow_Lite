@@ -9,6 +9,7 @@
 #include "menu.hpp"
 #include "types.h"
 #include "banner/BannerWindow.hpp"
+#include "booter/external_booter.hpp"
 #include "channel/channel_launcher.h"
 #include "channel/channels.h"
 #include "channel/nand.hpp"
@@ -24,7 +25,6 @@
 #include "gui/Gekko.h"
 #include "homebrew/homebrew.h"
 #include "loader/alt_ios.h"
-#include "loader/external_booter.hpp"
 #include "loader/sys.h"
 #include "loader/wdvd.h"
 #include "loader/alt_ios.h"
@@ -1330,7 +1330,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	if(rtrn != NULL && strlen(rtrn) == 4)
 		returnTo = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
 	int userIOS = m_gcfg2.getInt(id, "ios", 0);
-	int gameIOS = GetRequestedGameIOS(hdr);
+	int gameIOS = dvd ? userIOS : GetRequestedGameIOS(hdr);
 
 	m_gcfg1.save(true);
 	m_gcfg2.save(true);
@@ -1342,34 +1342,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	{
 		if(_loadIOS(gameIOS, userIOS, id) == LOAD_IOS_FAILED)
 			Sys_Exit();
-	}
-	if(CurrentIOS.Type == IOS_TYPE_D2X)
-	{
-		/* Open ES Module */
-		s32 ESHandle = IOS_Open("/dev/es", 0);
-		/* IOS Reload Block */
-		static ioctlv block_vector[2] ATTRIBUTE_ALIGN(32);
-		static u32 mode ATTRIBUTE_ALIGN(32);
-		static u32 ios ATTRIBUTE_ALIGN(32);
-		mode = 2;
-		block_vector[0].data = &mode;
-		block_vector[0].len  = sizeof(u32);
-		ios = IOS_GetVersion();
-		block_vector[1].data = &ios;
-		block_vector[1].len  = sizeof(u32);
-		gprintf("Block IOS Reload for %i %s\n", ios, IOS_Ioctlv(ESHandle, 0xA0, 2, 0, block_vector) < 0 ? "failed!" : "succeeded");
-		/* Return to */
-		if(!m_directLaunch && returnTo)
-		{
-			static ioctlv rtn_vector[1]  ATTRIBUTE_ALIGN(32);
-			sm_title_id[0] = (((u64)(0x00010001) << 32) | (returnTo & 0xFFFFFFFF));
-			rtn_vector[0].data = sm_title_id;
-			rtn_vector[0].len = sizeof(u64);
-			gprintf("Return to channel %s %s. Using new d2x way\n", rtrn, IOS_Ioctlv(ESHandle, 0xA1, 1, 0, rtn_vector) != -101 ? "succeeded" : "failed!");
-			returnTo = 0;
-		}
-		/* Close ES Module */
-		IOS_Close(ESHandle);
 	}
 	if(emulate_mode && !neek2o() && CurrentIOS.Type == IOS_TYPE_D2X)
 	{
@@ -1411,6 +1383,8 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		ocarina_load_code(cheatFile.get(), cheatSize);
 		cheatFile.release();
 	}
+	//loadIOS(250, false);
+	usleep(10000);
 	ExternalBooter_WiiGameSetup(wbfs_partition, dvd, id.c_str());
 	WiiFlow_ExternalBooter(videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, returnTo, TYPE_WII_GAME);
 }

@@ -23,3 +23,17 @@ void *memcpy(void *dst, const void *src, size_t len)
 
 	return dst;
 }
+
+void *memmove(void *dst, const void *src, size_t len)
+{
+	size_t i;
+	unsigned char Current;
+	for (i = 0; i < len; i++)
+	{
+		Current = ((unsigned char *)src)[i];
+		((unsigned char *)src)[i] = 0x00;
+		((unsigned char *)dst)[i] = Current;
+	}
+
+	return dst;
+}

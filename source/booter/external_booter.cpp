@@ -16,22 +16,28 @@
  ****************************************************************************/
 #include <gccore.h>
 #include <string.h>
+#include <ogc/machine/processor.h>
+
 #include "external_booter.hpp"
-#include "Config.hpp"
-#include "fst.h"
-#include "mload.h"
-#include "wdvd.h"
+#include "booter.h"
+#include "Config.h"
 #include "channel/nand.hpp"
 #include "devicemounter/DeviceHandler.hpp"
 #include "gui/text.hpp"
+#include "loader/fst.h"
+#include "loader/mload.h"
+#include "loader/wdvd.h"
 #include "homebrew/homebrew.h"
 #include "memory/mem2.hpp"
+#include "plugin/crc32.h"
+
+typedef void (*entrypoint) (void);
+extern "C" { void __exception_closeall(); }
 
 /* External WiiFlow Game Booter */
-#define EXECUTE_ADDR	((u8 *)0x92000000)
-
-extern const u8 wiiflow_game_booter_dol[];
-extern const u32 wiiflow_game_booter_dol_size;
+#define BOOTER_ADDR		((u8 *)0x80F00000)
+static the_CFG *BooterConfig = (the_CFG*)0x93100000;
+static entrypoint exeEntryPoint = (entrypoint)BOOTER_ADDR;
 
 extern "C" {
 u8 configbytes[2];
@@ -45,6 +51,8 @@ extern u8 *codelistend;
 extern u32 gameconfsize;
 extern u32 *gameconf;
 
+u32 cookie;
+__argv args;
 the_CFG normalCFG;
 void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, int aspectRatio, u32 returnTo, u8 BootType)
 {
@@ -69,14 +77,17 @@ void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 pat
 
 	ShutdownBeforeExit(true);
 	/* Copy CFG into new memory region */
-	void *GameCFG = MEM1_lo_alloc(sizeof(the_CFG));
-	memcpy(GameCFG, &normalCFG, sizeof(the_CFG));
-	DCFlushRange(GameCFG, sizeof(the_CFG));
-	AddBootArgument(fmt("%08x", GameCFG));
-	/* Copy booter into apploader region */
-	memcpy(EXECUTE_ADDR, wiiflow_game_booter_dol, wiiflow_game_booter_dol_size);
-	DCFlushRange(EXECUTE_ADDR, wiiflow_game_booter_dol_size);
-	BootHomebrew();
+	memcpy(BooterConfig, &normalCFG, sizeof(the_CFG));
+	DCFlushRange(BooterConfig, sizeof(the_CFG));
+	/* Copy in booter */
+	memcpy(BOOTER_ADDR, booter, booter_size);
+	DCFlushRange(BOOTER_ADDR, booter_size);
+	/* Boot it */
+	//SYS_ResetSystem(SYS_SHUTDOWN, 0, 0);
+	_CPU_ISR_Disable(cookie);
+	__exception_closeall();
+	exeEntryPoint();
+	_CPU_ISR_Restore(cookie);
 }
 
 extern FragList *frag_list;
