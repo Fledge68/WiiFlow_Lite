@@ -23,7 +23,7 @@
 #include "menu/menu.hpp"
 #include "memory/memory.h"
 
-CMenu *mainMenu;
+CMenu mainMenu;
 bool useMainIOS = false;
 int main(int argc, char **argv)
 {
@@ -32,8 +32,7 @@ int main(int argc, char **argv)
 	InitGecko();
 
 	// Init video
-	CVideo vid;
-	vid.init();
+	m_vid.init();
 
 	DeviceHandle.Init();
 	Nand::Instance()->Init_ISFS();
@@ -92,11 +91,10 @@ int main(int argc, char **argv)
 	Sys_ExitTo(EXIT_TO_HBC);
 
 	DeviceHandle.MountAll();
-	vid.waitMessage(0.15f);
+	m_vid.waitMessage(0.15f);
 
-	mainMenu = new CMenu(vid);
 	Open_Inputs();
-	mainMenu->init();
+	mainMenu.init();
 	if(CurrentIOS.Version != mainIOS && !neek2o() && !Sys_DolphinMode())
 	{
 		if(useMainIOS || !DeviceHandle.UsablePartitionMounted())
@@ -108,25 +106,24 @@ int main(int argc, char **argv)
 	}
 	if(CurrentIOS.Version == mainIOS)
 		useMainIOS = true; //Needed for later checks
-
 	if(!iosOK)
-		mainMenu->terror("errboot1", L"No cIOS found!\ncIOS d2x 249 base 56 and 250 base 57 are enough for all your games.");
+		mainMenu.terror("errboot1", L"No cIOS found!\ncIOS d2x 249 base 56 and 250 base 57 are enough for all your games.");
 	else if(!DeviceHandle.UsablePartitionMounted())
-		mainMenu->terror("errboot2", L"Could not find a device to save configuration files on!");
+		mainMenu.terror("errboot2", L"Could not find a device to save configuration files on!");
 	else if(WDVD_Init() < 0)
-		mainMenu->terror("errboot3", L"Could not initialize the DIP module!");
+		mainMenu.terror("errboot3", L"Could not initialize the DIP module!");
 	else 
 	{
 		writeStub();
 		if(Emulator_boot)
-			mainMenu->m_Emulator_boot = true;
+			mainMenu.m_Emulator_boot = true;
 		if(gameid != NULL && strlen(gameid) == 6)
-			mainMenu->directlaunch(gameid);
+			mainMenu.directlaunch(gameid);
 		else
-			mainMenu->main();
+			mainMenu.main();
 	}
 	//Exit WiiFlow, no game booted...
-	mainMenu->cleanup();
+	mainMenu.cleanup();
 	ShutdownBeforeExit();
 	Sys_Exit();
 	return 0;

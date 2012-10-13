@@ -13,8 +13,13 @@
 
 #include "types.h"
 #include "utils.h"
+#include "cache.h"
 
-#ifndef TINY
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 void *memset(void *ptr, int c, int size) {
 	char* ptr2 = ptr;
 	while(size--) *ptr2++ = (char)c;
@@ -33,7 +38,6 @@ int strlen(const char *ptr) {
 	while(*ptr++) i++;
 	return i;
 }
-#endif
 
 int memcmp(const void *s1, const void *s2, size_t n)
 {
@@ -41,17 +45,25 @@ int memcmp(const void *s1, const void *s2, size_t n)
      const unsigned char *us2 = (const unsigned char *) s2;
      while (n-- != 0) {
          if (*us1 != *us2)
-#ifdef TINY
-             return 1;
-#else
              return (*us1 < *us2) ? -1 : +1;
-#endif
          us1++;
          us2++;
      }
      return 0;
 }
 
+void memset32(u32 *addr, u32 data, u32 count) 
+{
+	int sc = count;
+	void *sa = addr;
+	while(count--)
+		*addr++ = data;
+	sync_after_write(sa, 4*sc);
+}
+
+#ifdef __cplusplus
+}
+#endif
 
 // Timebase frequency is core frequency / 8.  Ignore roundoff, this
 // doesn't have to be very accurate.

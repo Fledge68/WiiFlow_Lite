@@ -47,12 +47,12 @@ class BannerWindow
 	public:
 		BannerWindow();
 		void DeleteBanner(bool gamechange = false);
-		void LoadBanner(Banner *banner, CVideo *vid, u8 *font1, u8 *font2);
-		void LoadBannerBin(u8 *bnr, u32 bnr_size, CVideo *vid, u8 *font1, u8 *font2);
+		void LoadBanner(Banner *banner, u8 *font1, u8 *font2);
+		void LoadBannerBin(u8 *bnr, u32 bnr_size, u8 *font1, u8 *font2);
 		int GetSelectedGame() { return gameSelected; }
 		bool GetZoomSetting() { return AnimZoom; }
 		bool GetInGameSettings() { return (Brightness > 1.f ? true : false); }
-		void CreateGCBanner(u8 *bnr, CVideo *vid, u8 *font1, u8 *font2, const wchar_t *title);
+		void CreateGCBanner(u8 *bnr, u8 *font1, u8 *font2, const wchar_t *title);
 		void Draw(void);
 		bool ToogleZoom(void);
 		void ToogleGameSettings();
@@ -64,14 +64,13 @@ class BannerWindow
 		void Animate(void);
 		void ChangeGame(Banner *banner);
 		void DrawRectangle(f32 x, f32 y, f32 width, f32 height, GXColor color);
-		void Init(CVideo *vid, u8 *font1, u8 *font2);
+		void Init(u8 *font1, u8 *font2);
 
 		static const float fBannerWidth = 608.f;
 		static const float fBannerHeight = 448.f;
 		static const float fIconWidth = 128.f;
 		static const float fIconHeight = 96.f;
 
-		CVideo *video;
 		bool reducedVol;
 		int returnVal;
 		int gameSelected;
@@ -102,6 +101,6 @@ class BannerWindow
 		bool FontLoaded;
 };
 
-extern BannerWindow *m_banner;
+extern BannerWindow m_banner;
 
 #endif

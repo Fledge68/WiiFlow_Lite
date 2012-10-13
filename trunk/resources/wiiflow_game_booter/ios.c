@@ -14,6 +14,7 @@
 #include "ios.h"
 #include "cache.h"
 #include "utils.h"
+#include "di.h"
 
 #define virt_to_phys(x) ((u32*)(((u32)(x))&0x3FFFFFFF))
 #define phys_to_virt(x) ((u32*)(((u32)(x))|0x80000000))

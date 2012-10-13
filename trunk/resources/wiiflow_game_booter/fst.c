@@ -18,15 +18,10 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <gccore.h>
-#include <sys/unistd.h>
-#include <ogc/ipc.h>
-
+#include "types.h"
+#include "utils.h"
+#include "cache.h"
 #include "fst.h"
-
 #include "patchcode.h"
 #include "codehandler.h"
 #include "codehandleronly.h"
@@ -104,7 +99,7 @@ void app_pokevalues()
 					*((u32 *) (*(gameconf + i + 1))) == *(gameconf + i + 2))
 				{
 					*((u32 *) (*(gameconf + i + 3))) = *(gameconf + i + 4);
-					DCFlushRange((void *) *(gameconf + i + 3), 4);
+					sync_after_write((void *) *(gameconf + i + 3), 4);
 				}
 				i += 4;
 			}
@@ -154,7 +149,7 @@ void load_handler()
 			memcpy((void*)0x80001CE2, ((u8*) &codelist) + 2, 2);
 			memcpy((void*)0x80001F5A, &codelist, 2);
 			memcpy((void*)0x80001F5E, ((u8*) &codelist) + 2, 2);
-			DCFlushRange((void*)0x80001800,codehandler_size);
+			sync_after_write((void*)0x80001800,codehandler_size);
 		}
 		else
 		{
@@ -163,13 +158,13 @@ void load_handler()
 			memcpy((void*)0x80001800,codehandleronly,codehandleronly_size);
 			memcpy((void*)0x80001906, &codelist, 2);
 			memcpy((void*)0x8000190A, ((u8*) &codelist) + 2, 2);
-			DCFlushRange((void*)0x80001800,codehandleronly_size);
+			sync_after_write((void*)0x80001800,codehandleronly_size);
 		}
 
 		// Load multidol handler
 		memset((void*)0x80001000,0,multidol_size);
 		memcpy((void*)0x80001000,multidol,multidol_size);
-		DCFlushRange((void*)0x80001000,multidol_size);
+		sync_after_write((void*)0x80001000,multidol_size);
 		switch(hooktype)
 		{
 			case 0x01:
@@ -216,7 +211,7 @@ void load_handler()
 				//memcpy((void*)0x80001198,wpadbuttonsdown2hooks+3,4);
 				break;
 		}
-		DCFlushRange((void*)0x80001198,16);
+		sync_after_write((void*)0x80001198,16);
 	}
 	memcpy((void *)0x80001800, (void*)0x80000000, 6);
 }
@@ -241,7 +236,7 @@ int ocarina_do_code(u64 chantitle)
 	if(chantitle != 0)
 	{
 		memcpy((void *)0x80001800, gameidbuffer, 8);
-		DCFlushRange((void *)0x80001800, 8);
+		sync_after_write((void *)0x80001800, 8);
 	}
 	
 	if(codelist)
@@ -251,7 +246,7 @@ int ocarina_do_code(u64 chantitle)
 	if(code_size > 0 && code_buf)
 	{
 		memcpy(codelist, code_buf, code_size);
-		DCFlushRange(codelist, (u32)codelistend - (u32)codelist);
+		sync_after_write(codelist, (u32)codelistend - (u32)codelist);
 	}
 
 	// TODO What's this???

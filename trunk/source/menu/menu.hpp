@@ -18,7 +18,6 @@
 #include "gui/fanart.hpp"
 #include "gui/gui.hpp"
 #include "list/ListGenerator.hpp"
-#include "loader/alt_ios_gen.h"
 #include "loader/disc.h"
 #include "loader/gc_disc_dump.hpp"
 #include "loader/wbfs.h"
@@ -34,9 +33,8 @@ extern "C" { extern u8 currentPartition; }
 class CMenu
 {
 public:
-	CMenu(CVideo &vid);
-	~CMenu(void) {cleanup();}
-	void init(void);
+	CMenu();
+	void init();
 	void error(const wstringEx &msg);
 	void terror(const char *key, const wchar_t *msg) { error(_fmt(key, msg)); }
 	void exitHandler(int ExitTo);
@@ -52,7 +50,6 @@ private:
 		int h;
 		bool hide;
 	};
-	CVideo &m_vid;
 	CCursor m_cursor[WPAD_MAX_WIIMOTES];
 	CButtonsMgr m_btnMgr;
 	CCoverFlow m_cf;

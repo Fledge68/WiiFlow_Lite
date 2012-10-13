@@ -112,8 +112,7 @@ extern const u8 checkboxs_png[];
 extern const u8 checkboxhid_png[];
 extern const u8 checkboxreq_png[];
 
-CMenu::CMenu(CVideo &vid) :
-	m_vid(vid)
+CMenu::CMenu()
 {
 	m_aa = 0;
 	m_thrdWorking = false;
@@ -144,12 +143,11 @@ CMenu::CMenu(CVideo &vid) :
 	m_wbf2_font = NULL;
 	m_current_view = COVERFLOW_USB;
 	m_Emulator_boot = false;
-	m_banner = new BannerWindow;
 	m_gameSound.SetVoice(1);
 	m_music_info = true;
 }
 
-void CMenu::init(void)
+void CMenu::init()
 {
 	const char *drive = "empty";
 	const char *check = "empty";
@@ -492,7 +490,7 @@ void CMenu::cleanup()
 	//gprintf("MEM1_freesize(): %i\nMEM2_freesize(): %i\n", MEM1_freesize(), MEM2_freesize());
 	m_btnMgr.hide(m_mainLblCurMusic);
 	_cleanupDefaultFont();
-	m_banner->DeleteBanner();
+	m_banner.DeleteBanner();
 	m_plugin.Cleanup();
 
 	_stopSounds();
@@ -917,7 +915,7 @@ void CMenu::_buildMenus(void)
 	theme.btnTexRSH = _texture(theme.texSet, "GENERAL", "button_texture_hlright_selected", theme.btnTexRSH); 
 	theme.btnTexCSH.fromPNG(buthscenter_png);
 	theme.btnTexCSH = _texture(theme.texSet, "GENERAL", "button_texture_hlcenter_selected", theme.btnTexCSH); 
-/*
+
 	theme.btnAUOn.fromPNG(butauon_png);
 	theme.btnAUOn = _texture(theme.texSet, "GENERAL", "button_au_on", theme.btnAUOn);
 	theme.btnAUOns.fromPNG(butauons_png);
@@ -1025,7 +1023,7 @@ void CMenu::_buildMenus(void)
 	theme.btnZHCNOff = _texture(theme.texSet, "GENERAL", "button_zhcn_off", theme.btnZHCNOff);
 	theme.btnZHCNOffs.fromPNG(butzhcnoffs_png);
 	theme.btnZHCNOffs = _texture(theme.texSet, "GENERAL", "button_zhcn_off_selected", theme.btnZHCNOffs);
-*/
+
 	theme.checkboxoff.fromPNG(checkbox_png);
 	theme.checkboxoff = _texture(theme.texSet, "GENERAL", "checkbox_off", theme.checkboxoff);
 	theme.checkboxoffs.fromPNG(checkbox_png);
@@ -1855,7 +1853,7 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 			m_cf.draw();
 			m_vid.setup2DProjection(false, true);
 			m_cf.drawEffect();
-			if(!m_banner->GetSelectedGame())
+			if(!m_banner.GetSelectedGame())
 				m_cf.drawText(adjusting);
 			m_vid.renderAAPass(i);
 		}
@@ -1873,14 +1871,14 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 			m_cf.draw();
 			m_vid.setup2DProjection();
 			m_cf.drawEffect();
-			if(!m_banner->GetSelectedGame())
+			if(!m_banner.GetSelectedGame())
 				m_cf.drawText(adjusting);
 		}
 	}
 	if(m_fa.isLoaded())
 		m_fa.draw();
-	else if(m_banner->GetSelectedGame() && (!m_banner->GetInGameSettings() || (m_banner->GetInGameSettings() && m_bnr_settings)))
-		m_banner->Draw();
+	else if(m_banner.GetSelectedGame() && (!m_banner.GetInGameSettings() || (m_banner.GetInGameSettings() && m_bnr_settings)))
+		m_banner.Draw();
 
 	m_btnMgr.draw();
 	ScanInput();
