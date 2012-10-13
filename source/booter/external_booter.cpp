@@ -17,7 +17,8 @@
 #include <gccore.h>
 #include <string.h>
 #include <ogc/machine/processor.h>
-
+#include <ogc/lwp_threads.h>
+#include <ogc/cache.h>
 #include "external_booter.hpp"
 #include "booter.h"
 #include "Config.h"
@@ -82,12 +83,15 @@ void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 pat
 	/* Copy in booter */
 	memcpy(BOOTER_ADDR, booter, booter_size);
 	DCFlushRange(BOOTER_ADDR, booter_size);
-	/* Boot it */
-	//SYS_ResetSystem(SYS_SHUTDOWN, 0, 0);
-	_CPU_ISR_Disable(cookie);
+	/* Shutdown IOS subsystems */
+	u32 level = IRQ_Disable();
+	__IOS_ShutdownSubsystems();
+	__lwp_thread_closeall();
 	__exception_closeall();
+	/* Boot it */
 	exeEntryPoint();
-	_CPU_ISR_Restore(cookie);
+	/* Fail */
+	IRQ_Restore(level);
 }
 
 extern FragList *frag_list;

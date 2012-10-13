@@ -81,6 +81,7 @@ const int CVideo::_stencilHeight = 128;
 static lwp_t waitThread = LWP_THREAD_NULL;
 SmartBuf waitThreadStack;
 
+CVideo m_vid;
 CVideo::CVideo(void) :
 	m_rmode(NULL), m_frameBuf(), m_curFB(0), m_fifo(NULL),
 	m_yScale(0.0f), m_xfbHeight(0), m_wide(false),

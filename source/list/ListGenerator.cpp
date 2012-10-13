@@ -24,12 +24,12 @@
 #include "gui/text.hpp"
 
 ListGenerator m_gameList;
-static Config CustomTitles;
-static GameTDB gameTDB;
+Config CustomTitles;
+GameTDB gameTDB;
 
-static dir_discHdr ListElement;
-static discHdr WiiGameHeader;
-static gc_discHdr GCGameHeader;
+dir_discHdr ListElement;
+discHdr WiiGameHeader;
+gc_discHdr GCGameHeader;
 
 void ListGenerator::Init(const char *settingsDir, const char *Language)
 {
@@ -116,9 +116,9 @@ static void Create_Wii_EXT_List(char *FullPath)
 	}
 }
 
-static u8 gc_disc[1];
-static const char *FST_APPEND = "sys/boot.bin";
-static const u8 FST_APPEND_SIZE = strlen(FST_APPEND);
+u8 gc_disc[1];
+const char *FST_APPEND = "sys/boot.bin";
+const u8 FST_APPEND_SIZE = strlen(FST_APPEND);
 static void Create_GC_List(char *FullPath)
 {
 	FILE *fp = fopen(FullPath, "rb");
@@ -161,6 +161,7 @@ static void Create_Plugin_List(char *FullPath)
 	m_gameList.push_back(ListElement);
 }
 
+const char *FolderTitle = NULL;
 static void Create_Homebrew_List(char *FullPath)
 {
 	if(strcasestr(FullPath, "boot.") == NULL)
@@ -171,7 +172,7 @@ static void Create_Homebrew_List(char *FullPath)
 	strncpy(ListElement.path, FullPath, sizeof(ListElement.path) - 1);
 	strncpy(ListElement.id, "HB_APP", 6);
 
-	static const char *FolderTitle = strrchr(FullPath, '/') + 1;
+	FolderTitle = strrchr(FullPath, '/') + 1;
 	ListElement.casecolor = CustomTitles.getColor("COVERS", FolderTitle, 1).intVal();
 	const string &CustomTitle = CustomTitles.getString("TITLES", FolderTitle);
 	if(CustomTitle.size() > 0)
@@ -184,7 +185,7 @@ static void Create_Homebrew_List(char *FullPath)
 	m_gameList.push_back(ListElement);
 }
 
-static Channel *chan = NULL;
+Channel *chan = NULL;
 static void Create_Channel_List()
 {
 	for(u32 i = 0; i < ChannelHandle.Count(); i++)
@@ -271,13 +272,13 @@ static inline bool IsFileSupported(const char *File, const vector<string>& FileT
 	return false;
 }
 
+const char *NewFileName = NULL;
+char *FullPathChar = NULL;
+dirent *pent = NULL;
+DIR *pdir = NULL;
 void GetFiles(const char *Path, const vector<string>& FileTypes, 
 				FileAdder AddFile, bool CompareFolders, u32 max_depth, u32 depth)
 {
-	static const char *NewFileName = NULL;
-	static char *FullPathChar = NULL;
-	static dirent *pent = NULL;
-	static DIR *pdir = NULL;
 	vector<string> SubPaths;
 
 	pdir = opendir(Path);

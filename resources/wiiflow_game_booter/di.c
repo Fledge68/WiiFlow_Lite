@@ -183,9 +183,8 @@ int di_readdiscid(void *dst)
 int WDVD_SetFragList(int device, void *fraglist, int size)
 {
 	debug_string("WDVD_SetFragList\n");
-	debug_uint(device);
-	debug_uint((u32)fraglist);
-	debug_uint(size);
+	memset(inbuf, 0, 0x20);
+
 	/* Set FRAG mode */
 	inbuf[0] = 0xF9000000;
 	inbuf[1] = device;

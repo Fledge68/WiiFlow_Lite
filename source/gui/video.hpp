@@ -121,4 +121,5 @@ private:
 	CVideo(const CVideo &);
 };
 
+extern CVideo m_vid;
 #endif //!defined(__VIDEO_HPP)

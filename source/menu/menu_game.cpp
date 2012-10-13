@@ -391,8 +391,8 @@ void CMenu::_game(bool launch)
 	}
 
 	m_zoom_banner = m_cfg.getBool(_domainFromView(), "show_full_banner", false) && !NoGameID(m_cf.getHdr()->type);
-	if(m_banner->GetZoomSetting() != m_zoom_banner)
-		m_banner->ToogleZoom();
+	if(m_banner.GetZoomSetting() != m_zoom_banner)
+		m_banner.ToogleZoom();
 
 	s8 startGameSound = 1;
 	while(!m_exit)
@@ -417,10 +417,10 @@ void CMenu::_game(bool launch)
 		if(BTN_B_PRESSED && (m_btnMgr.selected(m_gameBtnFavoriteOn) || m_btnMgr.selected(m_gameBtnFavoriteOff)))
 		{
 			_hideGame();
-			m_banner->SetShowBanner(false);
+			m_banner.SetShowBanner(false);
 			_CategorySettings(true);
 			_showGame();
-			m_banner->SetShowBanner(true);
+			m_banner.SetShowBanner(true);
 			if(!m_gameSound.IsPlaying()) 
 				startGameSound = -6;
 			continue;
@@ -430,17 +430,17 @@ void CMenu::_game(bool launch)
 			m_gameSound.FreeMemory();
 			CheckGameSoundThread();
 			ClearGameSoundThreadStack();
-			m_banner->DeleteBanner();
+			m_banner.DeleteBanner();
 			break;
 		}
 		else if(BTN_PLUS_PRESSED && m_GameTDBLoaded && (m_cf.getHdr()->type == TYPE_WII_GAME || m_cf.getHdr()->type == TYPE_GC_GAME || m_cf.getHdr()->type == TYPE_CHANNEL))
 		{
 			_hideGame();
-			m_banner->SetShowBanner(false);
+			m_banner.SetShowBanner(false);
 			m_gameSelected = true;
 			_gameinfo();
 			_showGame();
-			m_banner->SetShowBanner(true);
+			m_banner.SetShowBanner(true);
 			if(!m_gameSound.IsPlaying())
 				startGameSound = -6;
 		}
@@ -453,7 +453,7 @@ void CMenu::_game(bool launch)
 			{
 				MusicPlayer.Stop();
 				m_gameSound.Stop();
-				m_banner->SetShowBanner(false);
+				m_banner.SetShowBanner(false);
 				fclose(file);
 				_hideGame();
 				/* Backup Background */
@@ -467,7 +467,7 @@ void CMenu::_game(bool launch)
 				movie.SetVolume(m_cfg.getInt("GENERAL", "sound_volume_bnr", 255));
 				m_video_playing = true;
 				movie.Play();
-				m_banner->ReSetup_GX();
+				m_banner.ReSetup_GX();
 				m_vid.setup2DProjection();
 				while(!BTN_B_PRESSED && !BTN_A_PRESSED && !BTN_HOME_PRESSED && movie.GetNextFrame(&m_curBg))
 				{
@@ -488,7 +488,7 @@ void CMenu::_game(bool launch)
 				/* Get back into our coverflow */
 				_showGame();
 				m_video_playing = false;
-				m_banner->SetShowBanner(true);
+				m_banner.SetShowBanner(true);
 				if(!m_gameSound.IsPlaying())
 					startGameSound = -6;
 			}
@@ -511,16 +511,16 @@ void CMenu::_game(bool launch)
 				if(!m_locked)
 				{
 					_hideGame();
-					m_banner->SetShowBanner(false);
+					m_banner.SetShowBanner(false);
 					if(_wbfsOp(CMenu::WO_REMOVE_GAME))
 					{
 						m_gameSound.FreeMemory();
 						CheckGameSoundThread();
 						ClearGameSoundThreadStack();
-						m_banner->DeleteBanner();
+						m_banner.DeleteBanner();
 						break;
 					}
-					m_banner->SetShowBanner(true);
+					m_banner.SetShowBanner(true);
 					if(!m_gameSound.IsPlaying())
 						startGameSound = -6;
 					_showGame();
@@ -535,12 +535,12 @@ void CMenu::_game(bool launch)
 				m_gameSound.FreeMemory();
 				CheckGameSoundThread();
 				ClearGameSoundThreadStack();
-				m_banner->DeleteBanner();
+				m_banner.DeleteBanner();
 				break;
 			}
 			else if((m_btnMgr.selected(m_gameBtnToogle) || m_btnMgr.selected(m_gameBtnToogleFull)) && !NoGameID(m_cf.getHdr()->type))
 			{
-				m_zoom_banner = m_banner->ToogleZoom();
+				m_zoom_banner = m_banner.ToogleZoom();
 				m_cfg.setBool(_domainFromView(), "show_full_banner", m_zoom_banner);
 				m_show_zone_game = false;
 			}
@@ -549,9 +549,9 @@ void CMenu::_game(bool launch)
 				_hideGame();
 				m_gameSelected = true;
 
-				m_banner->ToogleGameSettings();
+				m_banner.ToogleGameSettings();
 				_gameSettings();
-				m_banner->ToogleGameSettings();
+				m_banner.ToogleGameSettings();
 
 				_showGame();
 				if(!m_gameSound.IsPlaying()) 
@@ -564,7 +564,7 @@ void CMenu::_game(bool launch)
 				m_gameSound.FreeMemory();
 				CheckGameSoundThread();
 				ClearGameSoundThreadStack();
-				m_banner->DeleteBanner();
+				m_banner.DeleteBanner();
 				dir_discHdr *hdr = m_cf.getHdr();
 				m_gcfg2.load(fmt("%s/" GAME_SETTINGS2_FILENAME, m_settingsDir.c_str()));
 				if(currentPartition != SD && hdr->type == TYPE_GC_GAME && m_show_dml == 2 && (strstr(hdr->path, ".iso") == NULL ||
@@ -685,7 +685,7 @@ void CMenu::_game(bool launch)
 			m_gameSound.Stop();
 			m_gameSelected = false;
 			m_fa.unload();
-			m_banner->DeleteBanner(true);
+			m_banner.DeleteBanner(true);
 			_setBg(m_mainBg, m_mainBgLQ);
 		}
 		if(m_show_zone_game && !m_zoom_banner)
@@ -1343,6 +1343,34 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		if(_loadIOS(gameIOS, userIOS, id) == LOAD_IOS_FAILED)
 			Sys_Exit();
 	}
+	if(CurrentIOS.Type == IOS_TYPE_D2X)
+	{
+		/* Open ES Module */
+		s32 ESHandle = IOS_Open("/dev/es", 0);
+		/* IOS Reload Block */
+		static ioctlv block_vector[2] ATTRIBUTE_ALIGN(32);
+		static u32 mode ATTRIBUTE_ALIGN(32);
+		static u32 ios ATTRIBUTE_ALIGN(32);
+		mode = 2;
+		block_vector[0].data = &mode;
+		block_vector[0].len  = sizeof(u32);
+		ios = IOS_GetVersion();
+		block_vector[1].data = &ios;
+		block_vector[1].len  = sizeof(u32);
+		gprintf("Block IOS Reload for %i %s\n", ios, IOS_Ioctlv(ESHandle, 0xA0, 2, 0, block_vector) < 0 ? "failed!" : "succeeded");
+		/* Return to */
+		if(!m_directLaunch && returnTo)
+		{
+			static ioctlv rtn_vector[1]  ATTRIBUTE_ALIGN(32);
+			sm_title_id[0] = (((u64)(0x00010001) << 32) | (returnTo & 0xFFFFFFFF));
+			rtn_vector[0].data = sm_title_id;
+			rtn_vector[0].len = sizeof(u64);
+			gprintf("Return to channel %s %s. Using new d2x way\n", rtrn, IOS_Ioctlv(ESHandle, 0xA1, 1, 0, rtn_vector) != -101 ? "succeeded" : "failed!");
+			returnTo = 0;
+		}
+		/* Close ES Module */
+		IOS_Close(ESHandle);
+	}
 	if(emulate_mode && !neek2o() && CurrentIOS.Type == IOS_TYPE_D2X)
 	{
 		Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
@@ -1383,8 +1411,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		ocarina_load_code(cheatFile.get(), cheatSize);
 		cheatFile.release();
 	}
-	//loadIOS(250, false);
-	usleep(10000);
 	ExternalBooter_WiiGameSetup(wbfs_partition, dvd, id.c_str());
 	WiiFlow_ExternalBooter(videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, returnTo, TYPE_WII_GAME);
 }
@@ -1486,7 +1512,7 @@ void CMenu::_gameSoundThread(CMenu *m)
 
 	if(m->m_cf.getHdr()->type == TYPE_PLUGIN)
 	{
-		m_banner->DeleteBanner();
+		m_banner.DeleteBanner();
 		m->m_gameSound.Load(m->m_plugin.GetBannerSound(m->m_cf.getHdr()->settings[0]), m->m_plugin.GetBannerSoundSize());
 		m->m_gamesound_changed = true;
 		m->m_gameSoundHdr = NULL;
@@ -1513,7 +1539,7 @@ void CMenu::_gameSoundThread(CMenu *m)
 		if(cached_bnr_file == NULL)
 		{
 			m->m_gameSound.FreeMemory();
-			m_banner->DeleteBanner();
+			m_banner.DeleteBanner();
 			m->m_gameSoundHdr = NULL;
 			return;
 		}
@@ -1535,7 +1561,7 @@ void CMenu::_gameSoundThread(CMenu *m)
 				disc.init(m->m_cf.getHdr()->path);
 				u8 *opening_bnr = disc.GetGameCubeBanner();
 				if(opening_bnr != NULL)
-					m_banner->CreateGCBanner(opening_bnr, &m->m_vid, m->m_wbf1_font, m->m_wbf2_font, m->m_cf.getHdr()->title);
+					m_banner.CreateGCBanner(opening_bnr, m->m_wbf1_font, m->m_wbf2_font, m->m_cf.getHdr()->title);
 				m->m_gameSound.Load(gc_ogg, gc_ogg_size, false);
 				m->m_gamesound_changed = true;
 				m->m_gameSoundHdr = NULL;
@@ -1553,7 +1579,7 @@ void CMenu::_gameSoundThread(CMenu *m)
 			if(custom_bnr_file == NULL)
 			{
 				m->m_gameSound.FreeMemory();
-				m_banner->DeleteBanner();
+				m_banner.DeleteBanner();
 				m->m_gameSoundHdr = NULL;
 				return;
 			}
@@ -1570,13 +1596,13 @@ void CMenu::_gameSoundThread(CMenu *m)
 		_extractChannelBnr(TITLE_ID(m->m_gameSoundHdr->settings[0],m->m_gameSoundHdr->settings[1])) : NULL)));
 	if(banner != NULL && banner->IsValid())
 	{
-		m_banner->LoadBanner(banner, &m->m_vid, m->m_wbf1_font, m->m_wbf2_font);
+		m_banner.LoadBanner(banner, m->m_wbf1_font, m->m_wbf2_font);
 		soundBin = banner->GetFile((char *)"sound.bin", &sndSize);
 	}
 	else
 	{
 		m->m_gameSound.FreeMemory();
-		m_banner->DeleteBanner();
+		m_banner.DeleteBanner();
 		m->m_gameSoundHdr = NULL;
 		delete banner;
 		return;
@@ -1597,7 +1623,7 @@ void CMenu::_gameSoundThread(CMenu *m)
 			if(newSound == NULL || newSize == 0 || !m->m_gameSound.Load(newSound, newSize))
 			{
 				m->m_gameSound.FreeMemory();
-				m_banner->DeleteBanner();
+				m_banner.DeleteBanner();
 				m->m_gameSoundHdr = NULL;
 				return;
 			}
@@ -1611,7 +1637,7 @@ void CMenu::_gameSoundThread(CMenu *m)
 		else
 		{
 			m->m_gameSound.FreeMemory();
-			m_banner->DeleteBanner();
+			m_banner.DeleteBanner();
 		}
 	}
 	else

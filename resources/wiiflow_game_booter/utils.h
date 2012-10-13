@@ -12,10 +12,20 @@
 
 #include "types.h"
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 void *memset(void *,int,int);
+void memset32(u32 *addr, u32 data, u32 count) __attribute__ ((externally_visible));
 void *memcpy(void *ptr, const void *src, int size);
 int memcmp(const void *s1, const void *s2, size_t n);
 int strlen(const char *ptr);
 void udelay(u32 us);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

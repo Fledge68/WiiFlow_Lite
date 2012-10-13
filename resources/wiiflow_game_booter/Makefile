@@ -21,9 +21,11 @@ ASFLAGS = -D_LANGUAGE_ASSEMBLY -DHW_RVL -DTINY
 TARGET_LINKED = boot.elf
 TARGET = booter.bin
 
-CFILES = apploader.c cios.c cache.c debug.c di.c disc.c ios.c patchcode.c usb.c utils.c main.c
+CFILES = apploader.c cios.c cache.c debug.c di.c disc.c ios.c patchcode.c usb.c utils.c video.c \
+fst.c multidol.c wip.c main.c
 #OBJS = crt0.o _all.o
-OBJS = crt0.o apploader.o cios.o cache.o debug.o di.o disc.o ios.o patchcode.o patchhook.o usb.o utils.o main.o
+OBJS = crt0.o apploader.o cios.o cache.o debug.o di.o disc.o ios.o patchcode.o patchhook.o usb.o utils.o video.o \
+fst.o multidol.o wip.o main.o
 
 DEPDIR = .deps
 
