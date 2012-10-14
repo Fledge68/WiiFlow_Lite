@@ -18,24 +18,26 @@
 #define SECONDS_TO_2000 946684800LL
 #define TICKS_PER_SECOND 60750000LL
 
-typedef struct
+typedef union 
 {
-	u32 checksum;
-	union
+	struct 
 	{
-		u32 data[31];
-		struct
-		{
-			u8 name[84];
-			u64 ticks_boot;
-			u64 ticks_last;
-			char title_id[6];
-			char unknown[18];
-		} ATTRIBUTE_PACKED;
+		u32 checksum;
+		u16 name[0x28];
+		u32 padding1;
+		u64 ticks_boot;
+		u64 ticks_last;
+		char title_id[6];
+		u16 padding2[9];
 	};
-} playrec_struct;
+	struct 
+	{
+		u32 _checksum;
+		u32 data[0x1f];
+	};
+} __attribute__((packed)) playtime_t;
 
-playrec_struct playrec_buf;
+playtime_t playrec_buf;
 
 // Thanks to Dr. Clipper
 u64 getWiiTime(void)
@@ -46,6 +48,7 @@ u64 getWiiTime(void)
 
 int Playlog_Update(const char ID[6], const u8 title[84])
 {
+	gprintf("Update Play log\n");
 	u32 sum = 0;
 	u8 i;
 
@@ -73,9 +76,9 @@ int Playlog_Update(const char ID[6], const u8 title[84])
 
 	//Update channel name and ID
 	memcpy(playrec_buf.name, title, 84);
-	memcpy(playrec_buf.title_id, ID, 6);
+	strcpy(playrec_buf.title_id, ID);
 
-	memset(playrec_buf.unknown, 0, 18);
+	memset(playrec_buf.padding2, 0, 18);
 
 	//Calculate and update checksum
 	for(i=0; i<31; i++)
