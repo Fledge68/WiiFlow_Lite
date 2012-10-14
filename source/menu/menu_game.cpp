@@ -1401,15 +1401,15 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			Sys_Exit();
 		WBFS_Close();
 	}
-	if(gameconfig.get() != NULL)
-	{
-		app_gameconfig_load((u8*)&id, gameconfig.get(), gameconfigSize);
-		gameconfig.release();
-	}
 	if(cheatFile.get() != NULL)
 	{
 		ocarina_load_code(cheatFile.get(), cheatSize);
 		cheatFile.release();
+	}
+	if(gameconfig.get() != NULL)
+	{
+		app_gameconfig_load(id.c_str(), gameconfig.get(), gameconfigSize);
+		gameconfig.release();
 	}
 	ExternalBooter_WiiGameSetup(wbfs_partition, dvd, id.c_str());
 	WiiFlow_ExternalBooter(videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, returnTo, TYPE_WII_GAME);

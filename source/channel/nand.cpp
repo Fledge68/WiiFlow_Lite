@@ -40,6 +40,7 @@
 #include "gecko/gecko.h"
 #include "loader/alt_ios.h"
 #include "loader/cios.h"
+#include "loader/nk.h"
 #include "loader/sys.h"
 #include "loader/wbfs.h"
 #include "memory/memory.h"
@@ -1052,10 +1053,8 @@ s32 Nand::Do_Region_Change(string id)
 
 extern "C" { extern s32 MagicPatches(s32); }
 
-void Nand::Init_ISFS()
+void Nand::Enable_ISFS_Patches(void)
 {
-	//gprintf("Init ISFS\n");
-	ISFS_Initialize();
 	if(AHBRPOT_Patched())
 	{
 		// Disable memory protection
@@ -1068,22 +1067,33 @@ void Nand::Init_ISFS()
 	}
 }
 
-void Nand::DeInit_ISFS(bool KeepPatches)
+void Nand::Disable_ISFS_Patches(void)
 {
-	//gprintf("Deinit ISFS\n");
 	if(AHBRPOT_Patched())
 	{
 		// Disable memory protection
 		write16(MEM_PROT, 0);
-		if(!KeepPatches)
-		{
-			// Do patches
-			MagicPatches(0);
-			// Enable memory protection
-			write16(MEM_PROT, 1);
-		}
+		// Do patches
+		MagicPatches(0);
+		// Enable memory protection
+		write16(MEM_PROT, 1);
 	}
+}
+
+void Nand::Init_ISFS()
+{
+	//gprintf("Init ISFS\n");
+	if(IOS_GetVersion() == 58 && !neek2o())
+		Enable_ISFS_Patches();
+	ISFS_Initialize();
+}
+
+void Nand::DeInit_ISFS()
+{
+	//gprintf("Deinit ISFS\n");
 	ISFS_Deinitialize();
+	if(IOS_GetVersion() == 58 && !neek2o())
+		Disable_ISFS_Patches();
 }
 
 /* Thanks to postloader for that patch */
@@ -1112,6 +1122,18 @@ void Nand::PatchAHB()
 	}
 }
 
+void Nand::Patch_AHB()
+{
+	if(AHBRPOT_Patched())
+	{
+		// Disable memory protection
+		write16(MEM_PROT, 0);
+		// Do patches
+		PatchAHB();
+		// Enable memory protection
+		write16(MEM_PROT, 1);
+	}
+}
 
 /*
    part of miniunz.c
