@@ -625,11 +625,11 @@ void CMenu::_game(bool launch)
 					}
 					banner = NULL;
 
-					if(Playlog_Update(m_cf.getId().c_str(), banner_title) < 0)
+					if(Playlog_Update((char *)hdr->id, banner_title) < 0)
 						Playlog_Delete();
 				}
 
-				gprintf("Launching game %s\n", m_cf.getId().c_str());
+				gprintf("Launching game %s\n", (char *)hdr->id);
 				_launch(hdr);
 
 				if(m_exit)
@@ -1156,9 +1156,11 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	if(neek2o())
 	{
 		int discID = id.c_str()[0] << 24 | id.c_str()[1] << 16 | id.c_str()[2] << 8 | id.c_str()[3];
-		WDVD_NEEK_LoadDisc((discID&0xFFFFFFFF), 0x5D1C9EA3);
-		dvd = true;
-		sleep(1);
+		if(WDVD_NEEK_LoadDisc((discID&0xFFFFFFFF), 0x5D1C9EA3) > 0)
+		{
+			dvd = true;
+			sleep(3);
+		}
 	}
 
 	if(dvd)
@@ -1329,8 +1331,8 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 
 	if(rtrn != NULL && strlen(rtrn) == 4)
 		returnTo = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
-	int userIOS = m_gcfg2.getInt(id, "ios", 0);
-	int gameIOS = dvd ? userIOS : GetRequestedGameIOS(hdr);
+	int userIOS = m_gcfg2.getInt(id, "ios", 0);	
+	int gameIOS = dvd && !neek2o() ? userIOS : GetRequestedGameIOS(hdr);
 
 	m_gcfg1.save(true);
 	m_gcfg2.save(true);
