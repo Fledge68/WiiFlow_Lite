@@ -14,24 +14,40 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ****************************************************************************/
-#ifndef EXTERNAL_BOOTER_HPP
-#define EXTERNAL_BOOTER_HPP
+#ifndef _CFG_HPP_
+#define _CFG_HPP_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "cios.h"
+#include "frag.h"
 
-extern u8 configbytes[2];
-extern u32 hooktype;
+typedef struct _the_CFG {
+	/* needed for wii games */
+	char gameID[7];
+	FragList *fragments;
+	s32 wbfsDevice;
+	u32 wbfsPart;
+	u8 GameBootType;
+	u8 mload_rev;
+	/* needed for channels */
+	u64 title;
+	/* General Stuff */
+	IOS_Info IOS;
+	u8 BootType;
+	u8 vidMode;
+	u8 patchVidMode;
+	u8 configbytes[2];
+	u8 debugger;
+	bool vipatch;
+	bool countryString;
+	int aspectRatio;
+	void *codelist;
+	u8 *codelistend;
+	u8 *cheats;
+	u32 cheatSize;
+	u32 hooktype;
+	u32 *gameconf;
+	u32 gameconfsize;
+	u32 returnTo;
+} the_CFG;
 
-#ifdef __cplusplus
-}
-#endif
-
-void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, 
-							int aspectRatio, u32 returnTo, u8 BootType);
-void ExternalBooter_ChannelSetup(u64 title);
-void ExternalBooter_WiiGameSetup(bool wbfs, bool dvd, const char *ID);
-void ShutdownBeforeExit();
-
-#endif
+#endif /* _CFG_HPP_ */

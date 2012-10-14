@@ -83,6 +83,7 @@ bool loadIOS(int ios, bool MountDevices)
 		WDVD_Close();
 		Close_Inputs();
 		gprintf("Reloading into IOS %i from %i...\n", ios, CurIOS);
+		Nand::Instance()->Patch_AHB(); //No AHBPROT for the next IOS
 		ShutdownBeforeExit();
 		ret = IOS_ReloadIOS(ios) == 0;
 		Nand::Instance()->Init_ISFS();

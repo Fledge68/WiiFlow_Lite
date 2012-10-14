@@ -68,8 +68,9 @@ public:
 	void Set_RCMode(bool rcmode) { FullMode = rcmode ? 0x40 : 0; };
 	void Set_SSMode(bool ssmode) { FullMode = ssmode ? 0x60 : 0; };
 
+	void Patch_AHB();
 	void Init_ISFS();
-	void DeInit_ISFS(bool KeepPatches = false);
+	void DeInit_ISFS();
 
 	const char * Get_NandPath(void) { return NandPath; };
 	u32 Get_Partition(void) { return Partition; };
@@ -96,7 +97,11 @@ private:
 	s32 Nand_Unmount(NandDevice *Device);
 	s32 Nand_Enable(NandDevice *Device);
 	s32 Nand_Disable(void);	
+
 	void PatchAHB(void);
+	void Enable_ISFS_Patches(void);
+	void Disable_ISFS_Patches(void);
+
 	void __Dec_Enc_TB(void);
 	void __configshifttxt(char *str);
 	void __GetNameList(const char *source, namelist **entries, int *count);

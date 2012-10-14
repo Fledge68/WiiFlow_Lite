@@ -19,23 +19,26 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef __FST_H__
-#define __FST_H__
+#ifndef __PATCHCODE_H__
+#define __PATCHCODE_H__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+// Globals
+extern u32 hooktype;
+extern u8 configbytes[2];
 
-extern u8 debuggerselect;
-
-#define MAX_GCT_SIZE 2056
-
-int app_gameconfig_load(const char *discid, u8 *tempgameconf, u32 tempgameconfsize);
-int ocarina_load_code(const u8 *cheat, u32 cheatSize);
-int ocarina_do_code();
+// Function prototypes
+bool dogamehooks(void *addr, u32 len, bool channel);
+void langpatcher(void *addr, u32 len);
+void vidolpatcher(void *addr, u32 len);
+void PatchCountryStrings(void *Address, int Size);
+void PatchAspectRatio(void *addr, u32 len, u8 aspect);
+bool PatchReturnTo(void *Address, int Size, u32 id);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif
+#endif // __PATCHCODE_H__

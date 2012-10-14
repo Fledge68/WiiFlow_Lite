@@ -55,28 +55,21 @@ extern const u32 axnextframehooks[4];
 extern const u32 wpadbuttonsdownhooks[4];
 extern const u32 wpadbuttonsdown2hooks[4];
 
-int app_gameconfig_load(u8 *discid, const u8 *gameconfig, u32 tempgameconfsize)
+int app_gameconfig_load(const char *discid, u8 *tempgameconf, u32 tempgameconfsize)
 {
-	gameconfsize = 0;
-
 	if (gameconf == NULL)
 	{
-		gameconf = malloc(65536);
+		gameconf = (u32*) MEM2_alloc(65536);
 		if (gameconf == NULL)
 			return -1;
 	}
-	
-	if (gameconfig == NULL || tempgameconfsize == 0)
-		return -2;
-	
-	u8 *tempgameconf = (u8 *)gameconfig;
-
 	u32 ret;
 	s32 gameidmatch, maxgameidmatch = -1, maxgameidmatch2 = -1;
 	u32 i, numnonascii, parsebufpos;
 	u32 codeaddr, codeval, codeaddr2, codeval2, codeoffset;
 	u32 temp, tempoffset = 0;
 	char parsebuffer[18];
+
 	// Remove non-ASCII characters
 	numnonascii = 0;
 	for (i = 0; i < tempgameconfsize; i++)
@@ -84,7 +77,7 @@ int app_gameconfig_load(u8 *discid, const u8 *gameconfig, u32 tempgameconfsize)
 		if (tempgameconf[i] < 9 || tempgameconf[i] > 126)
 			numnonascii++;
 		else
-			tempgameconf[i-numnonascii] = tempgameconf[i];
+			tempgameconf[i - numnonascii] = tempgameconf[i];
 	}
 	tempgameconfsize -= numnonascii;
 
@@ -99,9 +92,11 @@ int app_gameconfig_load(u8 *discid, const u8 *gameconfig, u32 tempgameconfsize)
 			maxgameidmatch2 = -1;
 			while (maxgameidmatch != maxgameidmatch2)
 			{
-				while (i != tempgameconfsize && tempgameconf[i] != ':') i++;
+				while (i != tempgameconfsize && tempgameconf[i] != ':')
+					i++;
 				if (i == tempgameconfsize) break;
-				while ((tempgameconf[i] != 10 && tempgameconf[i] != 13) && (i != 0)) i--;
+				while ((tempgameconf[i] != 10 && tempgameconf[i] != 13) && (i != 0))
+					i--;
 				if (i != 0) i++;
 				parsebufpos = 0;
 				gameidmatch = 0;
@@ -118,8 +113,7 @@ int app_gameconfig_load(u8 *discid, const u8 *gameconfig, u32 tempgameconfsize)
 						parsebuffer[parsebufpos++] = tempgameconf[i++];
 					else if (tempgameconf[i] == ' ')
 						break;
-					else
-						i++;
+					else i++;
 					if (parsebufpos == 8) break;
 				}
 				parsebuffer[parsebufpos] = 0;
@@ -128,114 +122,124 @@ int app_gameconfig_load(u8 *discid, const u8 *gameconfig, u32 tempgameconfsize)
 					gameidmatch = 0;
 					goto idmatch;
 				}
-				if (strncmp((char *) discid, parsebuffer, strlen(parsebuffer)) == 0)
+				if (strncasecmp(discid, parsebuffer, strlen(parsebuffer)) == 0)
 				{
 					gameidmatch += strlen(parsebuffer);
-				idmatch:
-					if (gameidmatch > maxgameidmatch2)
+					idmatch: if (gameidmatch > maxgameidmatch2)
+					{
 						maxgameidmatch2 = gameidmatch;
+					}
 				}
-				while ((i != tempgameconfsize) && (tempgameconf[i] != 10 && tempgameconf[i] != 13)) i++;
+				while ((i != tempgameconfsize) && (tempgameconf[i] != 10 && tempgameconf[i] != 13))
+					i++;
 			}
 			while (i != tempgameconfsize && tempgameconf[i] != ':')
 			{
 				parsebufpos = 0;
 				while ((i != tempgameconfsize) && (tempgameconf[i] != 10 && tempgameconf[i] != 13))
 				{
-					if (tempgameconf[i] != 0 && tempgameconf[i] != ' ' && tempgameconf[i] != '(' && tempgameconf[i] != ':')
+					if (tempgameconf[i] != 0 && tempgameconf[i] != ' ' && tempgameconf[i] != '(' && tempgameconf[i]
+							!= ':')
 						parsebuffer[parsebufpos++] = tempgameconf[i++];
 					else if (tempgameconf[i] == ' ' || tempgameconf[i] == '(' || tempgameconf[i] == ':')
 						break;
-					else
-						i++;
+					else i++;
 					if (parsebufpos == 17) break;
 				}
 				parsebuffer[parsebufpos] = 0;
-				if (strncasecmp("codeliststart", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 13)
+				//if (!autobootcheck)
 				{
-					sscanf((char *)(tempgameconf + i), " = %x", (unsigned int *)&codelist);
-				}
-				if (strncasecmp("codelistend", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 11)
-				{
-					sscanf((char *)(tempgameconf + i), " = %x", (unsigned int *)&codelistend);
-				}
-				if (strncasecmp("poke", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 4)
-				{
-					ret = sscanf((char *)tempgameconf + i, "( %x , %x", &codeaddr, &codeval);
-					if (ret == 2)
+					if (strncasecmp("codeliststart", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer)
+							== 13)
 					{
-						*(gameconf + (gameconfsize / 4)) = 0;
-						gameconfsize += 4;
-						*(gameconf + (gameconfsize / 4)) = 0;
-						gameconfsize += 8;
-						*(gameconf + (gameconfsize / 4)) = codeaddr;
-						gameconfsize += 4;
-						*(gameconf + (gameconfsize / 4)) = codeval;
-						gameconfsize += 4;
-						DCFlushRange((void *) (gameconf + (gameconfsize / 4) - 5), 20);
+						sscanf((char *) (tempgameconf + i), " = %x", (unsigned int *) &codelist);
 					}
-				}
-				if (strncasecmp("pokeifequal", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 11)
-				{
-					ret = sscanf((char *)(tempgameconf + i), "( %x , %x , %x , %x", &codeaddr, &codeval, &codeaddr2, &codeval2);
-					if (ret == 4)
+					if (strncasecmp("codelistend", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 11)
 					{
-						*(gameconf + (gameconfsize / 4)) = 0;
-						gameconfsize += 4;
-						*(gameconf + (gameconfsize / 4)) = codeaddr;
-						gameconfsize += 4;
-						*(gameconf + (gameconfsize / 4)) = codeval;
-						gameconfsize += 4;
-						*(gameconf + (gameconfsize / 4)) = codeaddr2;
-						gameconfsize += 4;
-						*(gameconf + (gameconfsize / 4)) = codeval2;
-						gameconfsize += 4;
-						DCFlushRange((void *) (gameconf + (gameconfsize / 4) - 5), 20);
+						sscanf((char *) (tempgameconf + i), " = %x", (unsigned int *) &codelistend);
 					}
-				}
-				if (strncasecmp("searchandpoke", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 13)
-				{
-					ret = sscanf((char *)(tempgameconf + i), "( %x%n", &codeval, &tempoffset);
-					if (ret == 1)
+					if (strncasecmp("poke", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 4)
 					{
-						gameconfsize += 4;
-						temp = 0;
-						while (ret == 1)
+						ret = sscanf((char *) tempgameconf + i, "( %x , %x", &codeaddr, &codeval);
+						if (ret == 2)
 						{
+							*(gameconf + (gameconfsize / 4)) = 0;
+							gameconfsize += 4;
+							*(gameconf + (gameconfsize / 4)) = 0;
+							gameconfsize += 8;
+							*(gameconf + (gameconfsize / 4)) = codeaddr;
+							gameconfsize += 4;
 							*(gameconf + (gameconfsize / 4)) = codeval;
 							gameconfsize += 4;
-							temp++;
-							i += tempoffset;
-							ret = sscanf((char *)(tempgameconf + i), " %x%n", &codeval, &tempoffset);
+							DCFlushRange((void *) (gameconf + (gameconfsize / 4) - 5), 20);
 						}
-						*(gameconf + (gameconfsize / 4) - temp - 1) = temp;
-						ret = sscanf((char *)(tempgameconf + i), " , %x , %x , %x , %x", &codeaddr, &codeaddr2, &codeoffset, &codeval2);
+					}
+					if (strncasecmp("pokeifequal", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 11)
+					{
+						ret = sscanf((char *) (tempgameconf + i), "( %x , %x , %x , %x", &codeaddr, &codeval,
+								&codeaddr2, &codeval2);
 						if (ret == 4)
 						{
+							*(gameconf + (gameconfsize / 4)) = 0;
+							gameconfsize += 4;
 							*(gameconf + (gameconfsize / 4)) = codeaddr;
+							gameconfsize += 4;
+							*(gameconf + (gameconfsize / 4)) = codeval;
 							gameconfsize += 4;
 							*(gameconf + (gameconfsize / 4)) = codeaddr2;
 							gameconfsize += 4;
-							*(gameconf + (gameconfsize / 4)) = codeoffset;
-							gameconfsize += 4;
 							*(gameconf + (gameconfsize / 4)) = codeval2;
 							gameconfsize += 4;
-							DCFlushRange((void *) (gameconf + (gameconfsize / 4) - temp - 5), temp * 4 + 20);
+							DCFlushRange((void *) (gameconf + (gameconfsize / 4) - 5), 20);
 						}
-						else
-							gameconfsize -= temp * 4 + 4;
+					}
+					if (strncasecmp("searchandpoke", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer)
+							== 13)
+					{
+						ret = sscanf((char *) (tempgameconf + i), "( %x%n", &codeval, &tempoffset);
+						if (ret == 1)
+						{
+							gameconfsize += 4;
+							temp = 0;
+							while (ret == 1)
+							{
+								*(gameconf + (gameconfsize / 4)) = codeval;
+								gameconfsize += 4;
+								temp++;
+								i += tempoffset;
+								ret = sscanf((char *) (tempgameconf + i), " %x%n", &codeval, &tempoffset);
+							}
+							*(gameconf + (gameconfsize / 4) - temp - 1) = temp;
+							ret = sscanf((char *) (tempgameconf + i), " , %x , %x , %x , %x", &codeaddr, &codeaddr2,
+									&codeoffset, &codeval2);
+							if (ret == 4)
+							{
+								*(gameconf + (gameconfsize / 4)) = codeaddr;
+								gameconfsize += 4;
+								*(gameconf + (gameconfsize / 4)) = codeaddr2;
+								gameconfsize += 4;
+								*(gameconf + (gameconfsize / 4)) = codeoffset;
+								gameconfsize += 4;
+								*(gameconf + (gameconfsize / 4)) = codeval2;
+								gameconfsize += 4;
+								DCFlushRange((void *) (gameconf + (gameconfsize / 4) - temp - 5), temp * 4 + 20);
+							}
+							else gameconfsize -= temp * 4 + 4;
+						}
+
 					}
 				}
 				if (tempgameconf[i] != ':')
 				{
-					while ((i != tempgameconfsize) && (tempgameconf[i] != 10 && tempgameconf[i] != 13)) i++;
+					while ((i != tempgameconfsize) && (tempgameconf[i] != 10 && tempgameconf[i] != 13))
+						i++;
 					if (i != tempgameconfsize) i++;
 				}
 			}
-			if (i != tempgameconfsize) while ((tempgameconf[i] != 10 && tempgameconf[i] != 13) && (i != 0)) i--;
+			if (i != tempgameconfsize) while ((tempgameconf[i] != 10 && tempgameconf[i] != 13) && (i != 0))
+				i--;
 		}
 	}
-	free(tempgameconf);
 	return 0;
 }
 
@@ -260,15 +264,6 @@ int ocarina_load_code(const u8 *cheat, u32 cheatSize)
 		code_size = 0;
 		return 0;
 	}
-
-	if (code_size > (u32)codelistend - (u32)codelist)
-	{
-		gprintf("Ocarina: Too many codes found\n");
-		code_buf = NULL;
-		code_size = 0;
-		return 0;
-	}
-
 	//gprintf("Ocarina: Codes found.\n");
 	DCFlushRange(code_buf, code_size);
 	return code_size;

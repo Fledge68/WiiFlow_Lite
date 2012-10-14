@@ -36,7 +36,7 @@ typedef void (*entrypoint) (void);
 extern "C" { void __exception_closeall(); }
 
 /* External WiiFlow Game Booter */
-#define BOOTER_ADDR		((u8 *)0x80F00000)
+#define BOOTER_ADDR		((u8 *)0x80B00000)
 static the_CFG *BooterConfig = (the_CFG*)0x93100000;
 static entrypoint exeEntryPoint = (entrypoint)BOOTER_ADDR;
 
@@ -76,7 +76,7 @@ void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 pat
 	normalCFG.gameconfsize = gameconfsize;
 	normalCFG.BootType = BootType;
 
-	ShutdownBeforeExit(true);
+	ShutdownBeforeExit();
 	/* Copy CFG into new memory region */
 	memcpy(BooterConfig, &normalCFG, sizeof(the_CFG));
 	DCFlushRange(BooterConfig, sizeof(the_CFG));
@@ -84,14 +84,14 @@ void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 pat
 	memcpy(BOOTER_ADDR, booter, booter_size);
 	DCFlushRange(BOOTER_ADDR, booter_size);
 	/* Shutdown IOS subsystems */
-	u32 level = IRQ_Disable();
 	__IOS_ShutdownSubsystems();
-	__lwp_thread_closeall();
-	__exception_closeall();
-	/* Boot it */
-	exeEntryPoint();
-	/* Fail */
-	IRQ_Restore(level);
+ 	u32 level = IRQ_Disable();
+ 	__lwp_thread_closeall();
+ 	__exception_closeall();
+ 	/* Boot it */
+ 	exeEntryPoint();
+ 	/* Fail */
+ 	IRQ_Restore(level);
 }
 
 extern FragList *frag_list;
@@ -114,9 +114,9 @@ void ExternalBooter_ChannelSetup(u64 title)
 	memcpy(&normalCFG.title, &title, sizeof(u64));
 }
 
-void ShutdownBeforeExit(bool KeepPatches)
+void ShutdownBeforeExit()
 {
 	DeviceHandle.UnMountAll();
-	Nand::Instance()->DeInit_ISFS(KeepPatches);
+	Nand::Instance()->DeInit_ISFS();
 	WDVD_Close();
 }
