@@ -93,7 +93,7 @@ bool CMenu::_TestEmuNand(int epart, const char *path, bool indept)
 
 int CMenu::_FindEmuPart(string *emuPath, int part, bool searchvalid)
 {
-	Nand::Instance()->Disable_Emu();
+	NandHandle.Disable_Emu();
 
 	int emuPartition = -1;	
 	string tmpPath;
@@ -199,7 +199,7 @@ void CMenu::_enableNandEmu(bool fromconfig)
 		if(CurrentIOS.Revision > 6 && CurrentIOS.Type == IOS_TYPE_D2X)
 			isD2XnewerThanV6 = true;
 		if(m_current_view == COVERFLOW_CHANNEL && !m_cfg.getBool("NAND", "disable", true) && !neek2o() && !m_tempView)
-			Nand::Instance()->Enable_Emu();
+			NandHandle.Enable_Emu();
 		u8 limiter = 0;
 		s8 direction = m_btnMgr.selected(m_configBtnPartitionP) ? 1 : -1;
 		if (!fromconfig)
@@ -548,14 +548,14 @@ int CMenu::_AutoExtractSave(string gameId)
 		{
 			char basepath[MAX_FAT_PATH];	
 			snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[emuPartition], emuPath.c_str());	
-			Nand::Instance()->CreatePath("%s/import", basepath);
-			Nand::Instance()->CreatePath("%s/meta", basepath);
-			Nand::Instance()->CreatePath("%s/shared1", basepath);
-			Nand::Instance()->CreatePath("%s/shared2", basepath);
-			Nand::Instance()->CreatePath("%s/sys", basepath);
-			Nand::Instance()->CreatePath("%s/title", basepath);
-			Nand::Instance()->CreatePath("%s/ticket", basepath);	
-			Nand::Instance()->CreatePath("%s/tmp", basepath);
+			NandHandle.CreatePath("%s/import", basepath);
+			NandHandle.CreatePath("%s/meta", basepath);
+			NandHandle.CreatePath("%s/shared1", basepath);
+			NandHandle.CreatePath("%s/shared2", basepath);
+			NandHandle.CreatePath("%s/sys", basepath);
+			NandHandle.CreatePath("%s/title", basepath);
+			NandHandle.CreatePath("%s/ticket", basepath);	
+			NandHandle.CreatePath("%s/tmp", basepath);
 			_hideNandEmu();			
 			return 0;
 		}
@@ -722,11 +722,11 @@ int CMenu::_NandFlasher(void *obj)
 		snprintf(source, sizeof(source), "%s:%s/title/00010004/%08x", DeviceName[emuPartition], emuPath.c_str(), flashID);
 		snprintf(dest, sizeof(dest), "/title/00010004/%08x", flashID);
 	}
-	Nand::Instance()->ResetCounters();
+	NandHandle.ResetCounters();
 	m.m_nandexentry = 1;
-	m.m_dumpsize = Nand::Instance()->CalcFlashSize(source, CMenu::_ShowProgress, obj);
+	m.m_dumpsize = NandHandle.CalcFlashSize(source, CMenu::_ShowProgress, obj);
 	m_nandext = true;
-	Nand::Instance()->FlashToNAND(source, dest, CMenu::_ShowProgress, obj);
+	NandHandle.FlashToNAND(source, dest, CMenu::_ShowProgress, obj);
 	
 	m.m_thrdWorking = false;
 	LWP_MutexLock(m.m_mutex);
@@ -748,7 +748,7 @@ int CMenu::_NandDumper(void *obj)
 	m.m_filesdone = 0;
 	m.m_foldersdone = 0;
 
-	Nand::Instance()->ResetCounters();
+	NandHandle.ResetCounters();
 
 	if(m.m_current_view == COVERFLOW_CHANNEL)
 		m.m_partRequest = m.m_cfg.getInt("NAND", "partition", -1);	
@@ -772,9 +772,9 @@ int CMenu::_NandDumper(void *obj)
 
 	if(m_fulldump)
 	{
-		m.m_dumpsize = Nand::Instance()->CalcDumpSpace("/", CMenu::_ShowProgress, obj);
+		m.m_dumpsize = NandHandle.CalcDumpSpace("/", CMenu::_ShowProgress, obj);
 		m_nandext = true;
-		Nand::Instance()->DoNandDump("/", basepath, CMenu::_ShowProgress, obj);
+		NandHandle.DoNandDump("/", basepath, CMenu::_ShowProgress, obj);
 	}
 	else
 	{
@@ -818,7 +818,7 @@ int CMenu::_NandDumper(void *obj)
 			if(!m._checkSave(saveList[i], true))
 				snprintf(source, sizeof(source), "/title/00010004/%08x", savePath);
 
-			m.m_dumpsize = Nand::Instance()->CalcDumpSpace(source, CMenu::_ShowProgress, obj);	
+			m.m_dumpsize = NandHandle.CalcDumpSpace(source, CMenu::_ShowProgress, obj);	
 		}		
 		for(u32 i = 0; i < saveList.size() && !m.m_thrdStop; ++i)
 		{
@@ -829,7 +829,7 @@ int CMenu::_NandDumper(void *obj)
 				snprintf(source, sizeof(source), "/title/00010004/%08x",  savePath);
 
 			m_nandext = true;
-			Nand::Instance()->DoNandDump(source, basepath, CMenu::_ShowProgress, obj);
+			NandHandle.DoNandDump(source, basepath, CMenu::_ShowProgress, obj);
 		}
 	}
 

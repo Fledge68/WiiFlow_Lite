@@ -58,7 +58,7 @@ static inline int GetFirstUnusedVoice()
 
 extern "C" void SoundCallback(s32 voice)
 {
-	SoundDecoder *decoder = SoundHandler::Instance()->Decoder(voice);
+	SoundDecoder *decoder = SoundHandle.Decoder(voice);
 	if(!decoder)
 		return;
 
@@ -67,13 +67,13 @@ extern "C" void SoundCallback(s32 voice)
 		if(ASND_AddVoice(voice, decoder->GetBuffer(), decoder->GetBufferSize()) == SND_OK)
 		{
 			decoder->LoadNext();
-			SoundHandler::Instance()->ThreadSignal();
+			SoundHandle.ThreadSignal();
 		}
 	}
 	else if(decoder->IsEOF())
 		ASND_StopVoice(voice);
 	else
-		SoundHandler::Instance()->ThreadSignal();
+		SoundHandle.ThreadSignal();
 }
 
 GuiSound::GuiSound()
@@ -143,7 +143,7 @@ void GuiSound::FreeMemory()
 
 	// Prevent reinitialization of SoundHandler since we're exiting
 	if(!Sys_Exiting())
-		SoundHandler::Instance()->RemoveDecoder(this->voice);
+		SoundHandle.RemoveDecoder(this->voice);
 
 	if(allocated && sound != NULL)
 		free(sound);
@@ -173,9 +173,9 @@ bool GuiSound::Load(const char * filepath)
 	fread(&magic, 1, 4, f);
 	fclose(f);
 
-	SoundHandler::Instance()->AddDecoder(this->voice, filepath);
+	SoundHandle.AddDecoder(this->voice, filepath);
 	//gprintf("gui_sound.cpp: Loading %s using voice %d\n", filepath, this->voice);
-	SoundDecoder * decoder = SoundHandler::Instance()->Decoder(this->voice);
+	SoundDecoder *decoder = SoundHandle.Decoder(this->voice);
 	if(!decoder)
 	{
 		gprintf("gui_sound.cpp: No Decoder!\n");
@@ -185,7 +185,7 @@ bool GuiSound::Load(const char * filepath)
 	if(!decoder->IsBufferReady())
 	{
 		gprintf("gui_sound.cpp: Buffer not ready!\n");
-		SoundHandler::Instance()->RemoveDecoder(this->voice);
+		SoundHandle.RemoveDecoder(this->voice);
 		return false;
 	}
 
@@ -209,11 +209,11 @@ bool GuiSound::Load(const u8 * snd, u32 len, bool isallocated)
 	length = len;
 	allocated = isallocated;
 
-	SoundHandler::Instance()->AddDecoder(this->voice, sound, length);
-	SoundDecoder *decoder = SoundHandler::Instance()->Decoder(this->voice);
+	SoundHandle.AddDecoder(this->voice, sound, length);
+	SoundDecoder *decoder = SoundHandle.Decoder(this->voice);
 	if(!decoder || !decoder->IsBufferReady())
 	{
-		SoundHandler::Instance()->RemoveDecoder(this->voice);
+		SoundHandle.RemoveDecoder(this->voice);
 		return false;
 	}
 
@@ -270,7 +270,7 @@ void GuiSound::Play(int vol, bool restart)
 	if((IsPlaying() && !restart) || this->voice < 0 || this->voice >= 16)
 		return;
 
-	SoundDecoder *decoder = SoundHandler::Instance()->Decoder(this->voice);
+	SoundDecoder *decoder = SoundHandle.Decoder(this->voice);
 	if(!decoder)
 		return;
 
@@ -285,7 +285,7 @@ void GuiSound::Play(int vol, bool restart)
 	u8 * curbuffer = decoder->GetBuffer();
 	int bufsize = decoder->GetBufferSize();
 	decoder->LoadNext();
-	SoundHandler::Instance()->ThreadSignal();
+	SoundHandle.ThreadSignal();
 
 	ASND_SetVoice(this->voice, decoder->GetFormat(), decoder->GetSampleRate(), 0, curbuffer, bufsize, vol, vol, SoundCallback);
 }
@@ -303,14 +303,14 @@ void GuiSound::Stop()
 
 	ASND_StopVoice(this->voice);
 
-	SoundDecoder *decoder = SoundHandler::Instance()->Decoder(this->voice);
+	SoundDecoder *decoder = SoundHandle.Decoder(this->voice);
 	if(!decoder)
 		return;
 
 	decoder->ClearBuffer();
 	Rewind();
 
-	SoundHandler::Instance()->ThreadSignal();
+	SoundHandle.ThreadSignal();
 }
 
 void GuiSound::Pause()
@@ -357,7 +357,7 @@ void GuiSound::SetLoop(u8 l)
 {
 	loop = l;
 
-	SoundDecoder *decoder = SoundHandler::Instance()->Decoder(this->voice);
+	SoundDecoder *decoder = SoundHandle.Decoder(this->voice);
 	if(!decoder)
 		return;
 
@@ -366,7 +366,7 @@ void GuiSound::SetLoop(u8 l)
 
 void GuiSound::Rewind()
 {
-	SoundDecoder *decoder = SoundHandler::Instance()->Decoder(this->voice);
+	SoundDecoder *decoder = SoundHandle.Decoder(this->voice);
 	if(!decoder)
 		return;
 

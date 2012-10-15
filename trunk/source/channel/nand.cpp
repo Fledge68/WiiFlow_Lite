@@ -57,6 +57,8 @@ bool tbdec = false;
 bool configloaded = false;
 bool emu_enabled = false;
 
+Nand NandHandle;
+
 static NandDevice NandDeviceList[] = 
 {
 	{ "Disable",						0,	0x00,	0x00 },
@@ -64,22 +66,17 @@ static NandDevice NandDeviceList[] =
 	{ "USB 2.0 Mass Storage Device",	2,	0xF2,	0xF3 },
 };
 
-Nand * Nand::instance = NULL;
-
-Nand * Nand::Instance()
+void Nand::Init()
 {
-	if(instance == NULL)
-		instance = new Nand();
-	return instance;
+	MountedDevice = 0;
+	EmuDevice = REAL_NAND;
+	Disabled = true;
+	Partition = 0;
+	FullMode = 0x100;
+	memset(NandPath, 0, sizeof(NandPath)); 
 }
 
-void Nand::DestroyInstance()
-{
-	if(instance) delete instance;
-	instance = NULL;
-}
-
-void Nand::Init(string path, u32 partition, bool disable)
+void Nand::SetPaths(string path, u32 partition, bool disable)
 {
 	EmuDevice = disable ? REAL_NAND : partition == 0 ? EMU_SD : EMU_USB;
 	Partition = disable ? REAL_NAND : partition > 0 ? partition - 1 : partition;

@@ -247,24 +247,20 @@ static inline int loopNum(int i, int s)
 }
 
 
-static void _extractBannerTitle(Banner *bnr, int language)
+static void _extractBannerTitle(int language)
 {
-	if (bnr != NULL)
-	{
-		memset(banner_title, 0, 84);
-		bnr->GetName(banner_title, language);
-	}
+	memset(banner_title, 0, 84);
+	CurrentBanner.GetName(banner_title, language);
 }
 
-static Banner *_extractChannelBnr(const u64 chantitle)
+static void _extractChannelBnr(const u64 chantitle)
 {
-	return ChannelHandle.GetBanner(chantitle);
+	ChannelHandle.GetBanner(chantitle);
 }
 
-static Banner *_extractBnr(dir_discHdr *hdr)
+static void _extractBnr(dir_discHdr *hdr)
 {
 	u32 size = 0;
-	Banner *banner = NULL;
 	DeviceHandle.OpenWBFS(currentPartition);
 	wbfs_disc_t *disc = WBFS_OpenDisc((u8 *) &hdr->id, (char *) hdr->path);
 	if(disc != NULL)
@@ -272,11 +268,10 @@ static Banner *_extractBnr(dir_discHdr *hdr)
 		void *bnr = NULL;
 		size = wbfs_extract_file(disc, (char *) "opening.bnr", &bnr);
 		if(size > 0)
-			banner = new Banner((u8 *)bnr, size);
+			CurrentBanner.SetBanner((u8*)bnr, size);
 		WBFS_CloseDisc(disc);
 	}
 	WBFS_Close();
-	return banner;
 }
 
 static int GetLanguage(const char *lang)
@@ -613,22 +608,22 @@ void CMenu::_game(bool launch)
 				_showWaitMessage();
 				exitHandler(PRIILOADER_DEF); //Making wiiflow ready to boot something
 
+				CurrentBanner.ClearBanner();
+				// Get banner_title
+				if(hdr->type == TYPE_CHANNEL)
+					_extractChannelBnr(chantitle);
+				else if(hdr->type == TYPE_WII_GAME)
+					_extractBnr(hdr);
+				if(CurrentBanner.IsValid())
+				{
+					_extractBannerTitle(GetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str()));
+					CurrentBanner.ClearBanner();
+				}
 				if(hdr->type != TYPE_HOMEBREW && hdr->type != TYPE_PLUGIN)
 				{
-					// Get banner_title
-					Banner *banner = hdr->type == TYPE_CHANNEL ? _extractChannelBnr(chantitle) : (hdr->type == TYPE_WII_GAME ? _extractBnr(hdr) : NULL);
-					if(banner != NULL)
-					{
-						if(banner->IsValid())
-							_extractBannerTitle(banner, GetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str()));
-						delete banner;
-					}
-					banner = NULL;
-
 					if(Playlog_Update((char *)hdr->id, banner_title) < 0)
 						Playlog_Delete();
 				}
-
 				gprintf("Launching game %s\n", (char *)hdr->id);
 				_launch(hdr);
 
@@ -777,7 +772,7 @@ void CMenu::directlaunch(const char *GameID)
 void CMenu::_launch(dir_discHdr *hdr)
 {
 	/* No need to do that separate */
-	Nand::Instance()->Disable_Emu();
+	NandHandle.Disable_Emu();
 	/* Lets boot that shit */
 	if(hdr->type == TYPE_WII_GAME)
 		_launchGame(hdr, false);
@@ -1097,11 +1092,11 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 			while(1);
 		}
 		DeviceHandle.UnMount(emuPartition);
-		Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
-		Nand::Instance()->Enable_Emu();
+		NandHandle.SetPaths(emuPath.c_str(), emuPartition, false);
+		NandHandle.Enable_Emu();
 	}
 	gameIOS = ChannelHandle.GetRequestedIOS(gameTitle);
-	Nand::Instance()->Disable_Emu();
+	NandHandle.Disable_Emu();
 	if(_loadIOS(gameIOS, WII_Launch ? gameIOS : userIOS, id) == LOAD_IOS_FAILED)
 		Sys_Exit();
 	if((CurrentIOS.Type == IOS_TYPE_D2X || neek2o()) && rtrn != NULL && strlen(rtrn) == 4)
@@ -1128,14 +1123,14 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	{
 		if(NAND_Emu)
 		{
-			Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
+			NandHandle.SetPaths(emuPath.c_str(), emuPartition, false);
 			if(emulate_mode == 1)
-				Nand::Instance()->Set_FullMode(true);
+				NandHandle.Set_FullMode(true);
 			else
-				Nand::Instance()->Set_FullMode(false);
-			if(Nand::Instance()->Enable_Emu() < 0)
+				NandHandle.Set_FullMode(false);
+			if(NandHandle.Enable_Emu() < 0)
 			{
-				Nand::Instance()->Disable_Emu();
+				NandHandle.Disable_Emu();
 				error(_t("errgame5", L"Enabling emu failed!"));
 				Sys_Exit();
 			}
@@ -1272,8 +1267,8 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			else
 			{
 				emuPartition = _FindEmuPart(&emuPath, 1, true);
-				Nand::Instance()->CreatePath("%s:/wiiflow", DeviceName[emuPartition]);
-				Nand::Instance()->CreatePath("%s:/wiiflow/nandemu", DeviceName[emuPartition]);
+				NandHandle.CreatePath("%s:/wiiflow", DeviceName[emuPartition]);
+				NandHandle.CreatePath("%s:/wiiflow/nandemu", DeviceName[emuPartition]);
 			}
 		}
 		
@@ -1291,14 +1286,14 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 				m_forceext = false;
 				_hideWaitMessage();
 				if(!_AutoExtractSave(id))
-					Nand::Instance()->CreateTitleTMD(basepath, hdr);
+					NandHandle.CreateTitleTMD(basepath, hdr);
 				_showWaitMessage();
 			}
 		}
 		if(emulate_mode > 2)
 		{
-			Nand::Instance()->CreateConfig(basepath);
-			Nand::Instance()->Do_Region_Change(id);
+			NandHandle.CreateConfig(basepath);
+			NandHandle.Do_Region_Change(id);
 		}
 	}
 
@@ -1375,18 +1370,18 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	}
 	if(emulate_mode && !neek2o() && CurrentIOS.Type == IOS_TYPE_D2X)
 	{
-		Nand::Instance()->Init(emuPath.c_str(), emuPartition, false);
+		NandHandle.SetPaths(emuPath.c_str(), emuPartition, false);
 		DeviceHandle.UnMount(emuPartition);
 
 		if(emulate_mode == 3)
-			Nand::Instance()->Set_RCMode(true);
+			NandHandle.Set_RCMode(true);
 		else if(emulate_mode == 4)
-			Nand::Instance()->Set_FullMode(true);
+			NandHandle.Set_FullMode(true);
 		else
-			Nand::Instance()->Set_FullMode(false);
-		if(Nand::Instance()->Enable_Emu() < 0)
+			NandHandle.Set_FullMode(false);
+		if(NandHandle.Enable_Emu() < 0)
 		{
-			Nand::Instance()->Disable_Emu();
+			NandHandle.Disable_Emu();
 			error(_t("errgame6", L"Enabling emu after reload failed!"));
 			Sys_Exit();
 		}
@@ -1509,9 +1504,9 @@ SmartBuf gameSoundThreadStack;
 u32 gameSoundThreadStackSize = (u32)32768;
 void CMenu::_gameSoundThread(CMenu *m)
 {
+	CurrentBanner.ClearBanner();
 	m->m_gameSoundHdr = m->m_cf.getHdr();
 	m->m_gamesound_changed = false;
-
 	if(m->m_cf.getHdr()->type == TYPE_PLUGIN)
 	{
 		m_banner.DeleteBanner();
@@ -1529,7 +1524,8 @@ void CMenu::_gameSoundThread(CMenu *m)
 	u32 cached_bnr_size = 0;
 
 	char cached_banner[256];
-	snprintf(cached_banner, sizeof(cached_banner), "%s/%.6s.bnr", m->m_bnrCacheDir.c_str(), m->m_cf.getHdr()->id);
+	cached_banner[255] = '\0';
+	strncpy(cached_banner, fmt("%s/%.6s.bnr", m->m_bnrCacheDir.c_str(), m->m_cf.getHdr()->id), 255);
 	FILE *fp = fopen(cached_banner, "rb");
 	if(fp)
 	{
@@ -1537,7 +1533,7 @@ void CMenu::_gameSoundThread(CMenu *m)
 		fseek(fp, 0, SEEK_END);
 		cached_bnr_size = ftell(fp);
 		fseek(fp, 0, SEEK_SET);
-		cached_bnr_file = (u8*)malloc(cached_bnr_size);
+		cached_bnr_file = (u8*)MEM2_alloc(cached_bnr_size);
 		if(cached_bnr_file == NULL)
 		{
 			m->m_gameSound.FreeMemory();
@@ -1551,25 +1547,13 @@ void CMenu::_gameSoundThread(CMenu *m)
 	else
 	{
 		char custom_banner[256];
-		snprintf(custom_banner, sizeof(custom_banner), "%s/%.6s.bnr", m->m_customBnrDir.c_str(), m->m_cf.getHdr()->id);
+		custom_banner[255] = '\0';
+		strncpy(custom_banner, fmt("%s/%.6s.bnr", m->m_customBnrDir.c_str(), m->m_cf.getHdr()->id), 255);
 		FILE *fp = fopen(custom_banner, "rb");
 		if(!fp)
 		{
-			snprintf(custom_banner, sizeof(custom_banner), "%s/%.3s.bnr", m->m_customBnrDir.c_str(), m->m_cf.getHdr()->id);
+			strncpy(custom_banner, fmt("%s/%.3s.bnr", m->m_customBnrDir.c_str(), m->m_cf.getHdr()->id), 255);
 			fp = fopen(custom_banner, "rb");
-			if(!fp && m->m_cf.getHdr()->type == TYPE_GC_GAME)
-			{
-				GC_Disc disc;
-				disc.init(m->m_cf.getHdr()->path);
-				u8 *opening_bnr = disc.GetGameCubeBanner();
-				if(opening_bnr != NULL)
-					m_banner.CreateGCBanner(opening_bnr, m->m_wbf1_font, m->m_wbf2_font, m->m_cf.getHdr()->title);
-				m->m_gameSound.Load(gc_ogg, gc_ogg_size, false);
-				m->m_gamesound_changed = true;
-				m->m_gameSoundHdr = NULL;
-				disc.clear();
-				return;
-			}
 		}
 		if(fp)
 		{
@@ -1577,7 +1561,7 @@ void CMenu::_gameSoundThread(CMenu *m)
 			fseek(fp, 0, SEEK_END);
 			custom_bnr_size = ftell(fp);
 			fseek(fp, 0, SEEK_SET);
-			custom_bnr_file = (u8*)malloc(custom_bnr_size);
+			custom_bnr_file = (u8*)MEM2_alloc(custom_bnr_size);
 			if(custom_bnr_file == NULL)
 			{
 				m->m_gameSound.FreeMemory();
@@ -1588,34 +1572,50 @@ void CMenu::_gameSoundThread(CMenu *m)
 			fread(custom_bnr_file, 1, custom_bnr_size, fp);
 			fclose(fp);
 		}
+		if(!fp && m->m_cf.getHdr()->type == TYPE_GC_GAME)
+		{
+			GC_Disc disc;
+			disc.init(m->m_cf.getHdr()->path);
+			u8 *opening_bnr = disc.GetGameCubeBanner();
+			if(opening_bnr != NULL)
+				m_banner.CreateGCBanner(opening_bnr, m->m_wbf1_font, m->m_wbf2_font, m->m_cf.getHdr()->title);
+			m->m_gameSound.Load(gc_ogg, gc_ogg_size, false);
+			m->m_gamesound_changed = true;
+			m->m_gameSoundHdr = NULL;
+			disc.clear();
+			return;
+		}
 	}
+
 	u32 sndSize = 0;
 	u8 *soundBin = NULL;
-
-	Banner *banner = cached ? new Banner(cached_bnr_file, cached_bnr_size) : 
-		(custom ? new Banner((u8 *)custom_bnr_file, custom_bnr_size, 0, true) : 
-		(m->m_gameSoundHdr->type == TYPE_WII_GAME ? _extractBnr(m->m_gameSoundHdr) : (m->m_gameSoundHdr->type == TYPE_CHANNEL ?
-		_extractChannelBnr(TITLE_ID(m->m_gameSoundHdr->settings[0],m->m_gameSoundHdr->settings[1])) : NULL)));
-	if(banner != NULL && banner->IsValid())
-	{
-		m_banner.LoadBanner(banner, m->m_wbf1_font, m->m_wbf2_font);
-		soundBin = banner->GetFile((char *)"sound.bin", &sndSize);
-	}
-	else
+	if(cached)
+		CurrentBanner.SetBanner(cached_bnr_file, cached_bnr_size);
+	else if(custom)
+		CurrentBanner.SetBanner(custom_bnr_file, custom_bnr_size, 0, true);
+	else if(m->m_gameSoundHdr->type == TYPE_WII_GAME)
+		_extractBnr(m->m_gameSoundHdr);
+	else if(m->m_gameSoundHdr->type == TYPE_CHANNEL)
+		_extractChannelBnr(TITLE_ID(m->m_gameSoundHdr->settings[0],
+									m->m_gameSoundHdr->settings[1]));
+	if(!CurrentBanner.IsValid())
 	{
 		m->m_gameSound.FreeMemory();
 		m_banner.DeleteBanner();
 		m->m_gameSoundHdr = NULL;
-		delete banner;
+		CurrentBanner.ClearBanner();
 		return;
 	}
-	if(!custom && !cached)
+	if(!custom && !cached && CurrentBanner.GetBannerFileSize() > 0)
 	{
 		FILE *fp = fopen(cached_banner, "wb");
-		fwrite(banner->GetBannerFile(), 1, banner->GetBannerFileSize(), fp);
+		fwrite(CurrentBanner.GetBannerFile(), 1, CurrentBanner.GetBannerFileSize(), fp);
 		fclose(fp);
 	}
-	delete banner;
+	m_banner.LoadBanner(m->m_wbf1_font, m->m_wbf2_font);
+	soundBin = CurrentBanner.GetFile((char *)"sound.bin", &sndSize);
+	CurrentBanner.ClearBanner();
+
 	if(soundBin != NULL)
 	{
 		if(memcmp(&((IMD5Header *)soundBin)->fcc, "IMD5", 4) == 0)

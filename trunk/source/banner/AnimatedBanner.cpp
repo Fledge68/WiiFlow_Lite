@@ -29,6 +29,7 @@ distribution.
 #include "unzip/lz77.h"
 #include "unzip/ash.h"
 
+AnimatedBanner gameBanner;
 AnimatedBanner::AnimatedBanner()
 {
 	layout_banner = NULL;
@@ -55,10 +56,10 @@ void AnimatedBanner::Clear()
 	}
 }
 
-bool AnimatedBanner::LoadBanner(Banner *banner)
+bool AnimatedBanner::LoadBanner()
 {
 	u32 banner_bin_size;
-	u8 *banner_bin = banner->GetFile((char*)"banner.bin", &banner_bin_size);
+	u8 *banner_bin = CurrentBanner.GetFile((char*)"banner.bin", &banner_bin_size);
 	if(banner_bin == NULL)
 		return false;
 	bool ret = LoadBannerBin(banner_bin, banner_bin_size);

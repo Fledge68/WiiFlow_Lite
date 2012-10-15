@@ -143,12 +143,13 @@ CMenu::CMenu()
 	m_wbf2_font = NULL;
 	m_current_view = COVERFLOW_USB;
 	m_Emulator_boot = false;
-	m_gameSound.SetVoice(1);
 	m_music_info = true;
 }
 
 void CMenu::init()
 {
+	SoundHandle.Init();
+	m_gameSound.SetVoice(1);
 	const char *drive = "empty";
 	const char *check = "empty";
 	struct stat dummy;
@@ -497,7 +498,7 @@ void CMenu::cleanup()
 	MusicPlayer.Cleanup();
 	m_cameraSound.release();
 	ClearGameSoundThreadStack();
-	SoundHandler::DestroyInstance();
+	SoundHandle.Cleanup();
 	soundDeinit();
 
 	m_vid.cleanup();
@@ -2138,12 +2139,12 @@ bool CMenu::_loadChannelList(void)
 	{
 		char basepath[64];
 		snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[currentPartition], emuPath.c_str());
-		Nand::Instance()->PreNandCfg(basepath, m_cfg.getBool("NAND", "real_nand_miis", false), m_cfg.getBool("NAND", "real_nand_config", false));
+		NandHandle.PreNandCfg(basepath, m_cfg.getBool("NAND", "real_nand_miis", false), m_cfg.getBool("NAND", "real_nand_config", false));
 		first = false;
 	}
 	string nandpath = sfmt("%s:%s/", DeviceName[currentPartition], emuPath.empty() ? "" : emuPath.c_str());
 
-	Nand::Instance()->Disable_Emu();
+	NandHandle.Disable_Emu();
 	if(!disable_emu)
 	{
 		MusicPlayer.Stop();
@@ -2153,9 +2154,9 @@ bool CMenu::_loadChannelList(void)
 
 		DeviceHandle.UnMount(currentPartition);
 
-		Nand::Instance()->Init(emuPath.c_str(), currentPartition, disable_emu);
-		if(Nand::Instance()->Enable_Emu() < 0)
-			Nand::Instance()->Disable_Emu();
+		NandHandle.SetPaths(emuPath.c_str(), currentPartition, disable_emu);
+		if(NandHandle.Enable_Emu() < 0)
+			NandHandle.Disable_Emu();
 
 		gprintf("Using path: \"%s\" for NAND emulation\n", nandpath.c_str());
 	}
@@ -2163,7 +2164,7 @@ bool CMenu::_loadChannelList(void)
 	if(!DeviceHandle.IsInserted(currentPartition))
 		DeviceHandle.Mount(currentPartition);
 
-	if(Nand::Instance()->EmulationEnabled() || disable_emu) 
+	if(NandHandle.EmulationEnabled() || disable_emu) 
 	{
 		string cacheDir;
 		if(!disable_emu)
@@ -2184,10 +2185,10 @@ bool CMenu::_loadList(void)
 {
 	m_cf.clear();
 	if((m_current_view == COVERFLOW_CHANNEL && m_cfg.getBool("NAND", "disable", true))
-	|| (m_current_view != COVERFLOW_CHANNEL && Nand::Instance()->EmulationEnabled()))
+	|| (m_current_view != COVERFLOW_CHANNEL && NandHandle.EmulationEnabled()))
 	{
 		MusicPlayer.Stop();
-		Nand::Instance()->Disable_Emu();
+		NandHandle.Disable_Emu();
 		_TempLoadIOS(IOS_TYPE_NORMAL_IOS);
 	}
 	gprintf("Switching Views\n");

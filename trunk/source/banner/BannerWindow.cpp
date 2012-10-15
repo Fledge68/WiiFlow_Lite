@@ -60,19 +60,19 @@ void BannerWindow::Init(u8 *font1, u8 *font2)
 	stepy1 = ((ScreenProps.y * 0.9f - yDiff) - (AnimPosY + 0.5f * fIconHeight - 0.5f * iconHeight)) * ratioY;
 	stepy2 = ((ScreenProps.y * 0.9f + yDiff) - (AnimPosY + 0.5f * fIconHeight + 0.5f * iconHeight)) * ratioY;
 
-	gameBanner->Clear();
+	gameBanner.Clear();
 	if(!FontLoaded)
 	{
-		gameBanner->LoadFont(sysFont1, sysFont2);
+		gameBanner.LoadFont(sysFont1, sysFont2);
 		FontLoaded = true;
 	}
 }
 
-void BannerWindow::LoadBanner(Banner *banner, u8 *font1, u8 *font2)
+void BannerWindow::LoadBanner(u8 *font1, u8 *font2)
 {
 	changing = true;
 	Init(font1, font2);
-	gameBanner->LoadBanner(banner);
+	gameBanner.LoadBanner();
 	gameSelected = 1;
 	changing = false;
 	ShowBanner = true;
@@ -82,7 +82,7 @@ void BannerWindow::DeleteBanner(bool gamechange)
 {
 	if(!gamechange)
 		gameSelected = 0;
-	gameBanner->Clear();
+	gameBanner.Clear();
 }
 
 BannerWindow::BannerWindow()
@@ -93,14 +93,13 @@ BannerWindow::BannerWindow()
 	AnimZoom = false;
 	AnimStep = 20;
 	gameSelected = 0;
-	gameBanner = new AnimatedBanner;
 }
 
 void BannerWindow::LoadBannerBin(u8 *bnr, u32 bnr_size, u8 *font1, u8 *font2)
 {
 	changing = true;
 	Init(font1, font2);
-	gameBanner->LoadBannerBin(bnr, bnr_size);
+	gameBanner.LoadBannerBin(bnr, bnr_size);
 	gameSelected = 1;
 	changing = false;
 	ShowBanner = true;
@@ -110,8 +109,8 @@ void BannerWindow::CreateGCBanner(u8 *bnr, u8 *font1, u8 *font2, const wchar_t *
 {
 	GC_OpeningBnr *openingBnr = (GC_OpeningBnr *)bnr;
 	LoadBannerBin((u8*)custombanner_bin, (u32)custombanner_bin_size, font1, font2);
-	gameBanner->SetBannerTexture("GCIcon.tpl", openingBnr->tpl_data, 96, 32, GX_TF_RGB5A3);
-	gameBanner->SetBannerText("T_GameTitle", title);
+	gameBanner.SetBannerTexture("GCIcon.tpl", openingBnr->tpl_data, 96, 32, GX_TF_RGB5A3);
+	gameBanner.SetBannerText("T_GameTitle", title);
 }
 
 bool BannerWindow::ToogleZoom(void)
@@ -203,10 +202,10 @@ void BannerWindow::Draw(void)
 	// load projection matrix
 	GX_LoadProjectionMtx(projection, GX_ORTHOGRAPHIC);
 
-	if(gameBanner->getBanner())
+	if(gameBanner.getBanner())
 	{
-		gameBanner->getBanner()->Render(modelview, ScreenProps, m_vid.wide(), 255.f);
-		gameBanner->getBanner()->AdvanceFrame();
+		gameBanner.getBanner()->Render(modelview, ScreenProps, m_vid.wide(), 255.f);
+		gameBanner.getBanner()->AdvanceFrame();
 	}
 
 	// Setup GX

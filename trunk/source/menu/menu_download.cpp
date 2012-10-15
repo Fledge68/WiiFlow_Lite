@@ -427,7 +427,7 @@ s32 CMenu::_networkComplete(s32 ok, void *usrData)
 
 int CMenu::_initNetwork()
 {
-	Nand::Instance()->Disable_Emu();
+	NandHandle.Disable_Emu();
 	while (net_get_status() == -EBUSY || m_thrdNetwork) {}; // Async initialization may be busy, wait to see if it succeeds.
 	if (m_networkInit) return 0;
 	if (!_isNetworkAvailable()) return -2;

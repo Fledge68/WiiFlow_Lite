@@ -49,10 +49,8 @@ typedef struct
 class Channels
 {
 public:
-	Channels();
-	~Channels();
-
 	void Init(u32 channelType, string lang, bool reload = false);
+	void Cleanup();
 
 	u32 Load(u64 title);
 	u8 GetRequestedIOS(u64 title);
@@ -63,7 +61,7 @@ public:
 	u64 GetTitle(int index);
 	Channel *GetChannel(int index);
 
-	static Banner * GetBanner(u64 title, bool imetOnly = false);
+	void GetBanner(u64 title, bool imetOnly = false);
 private:
 	bool init;
 	u32 channelType;
@@ -71,10 +69,10 @@ private:
 
 	vector<Channel> channels;
 
-	static int GetLanguage(const char *lang);
+	int GetLanguage(const char *lang);
 	u64* GetChannelList(u32* count);
-	static bool GetAppNameFromTmd(u64 title, char* app, bool dol = false, u32* bootcontent = NULL);
-	static bool GetChannelNameFromApp(u64 title, wchar_t* name, int language);
+	bool GetAppNameFromTmd(u64 title, char* app, bool dol = false, u32* bootcontent = NULL);
+	bool GetChannelNameFromApp(u64 title, wchar_t* name, int language);
 
 	void Search(u32 channelType, string lang);
 };

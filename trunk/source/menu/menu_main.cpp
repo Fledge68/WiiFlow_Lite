@@ -153,7 +153,7 @@ void CMenu::_showMain(void)
 			case COVERFLOW_CHANNEL:
 				if(!m_cfg.getBool("NAND", "disable", true))
 				{
-					Nand::Instance()->Disable_Emu();
+					NandHandle.Disable_Emu();
 					DeviceHandle.MountAll();
 					_hideMain();
 					if(!_AutoCreateNand())
@@ -176,7 +176,7 @@ void CMenu::_showMain(void)
 		}
 	}
 	else if(!neek2o() && m_current_view == COVERFLOW_CHANNEL && !m_cfg.getBool("NAND", "disable", true))
-		Nand::Instance()->Enable_Emu();
+		NandHandle.Enable_Emu();
 }
 
 void CMenu::LoadView(void)
@@ -415,7 +415,7 @@ int CMenu::main(void)
 				_showWaitMessage();
 				m_gameSound.Stop();
 				CheckGameSoundThread();
-				Nand::Instance()->Disable_Emu();
+				NandHandle.Disable_Emu();
 				/* Create Fake Header */
 				dir_discHdr hdr;
 				memset(&hdr, 0, sizeof(dir_discHdr));
@@ -647,7 +647,7 @@ int CMenu::main(void)
 					if(CurrentIOS.Revision > 6 && CurrentIOS.Type == IOS_TYPE_D2X)
 						isD2XnewerThanV6 = true;
 					if(m_current_view == COVERFLOW_CHANNEL && m_cfg.getInt("NAND", "emulation", 0))
-						Nand::Instance()->Enable_Emu();
+						NandHandle.Enable_Emu();
 					u8 limiter = 0;
 					currentPartition = loopNum(currentPartition + 1, (int)USB8);
 					while(!DeviceHandle.IsInserted(currentPartition) ||

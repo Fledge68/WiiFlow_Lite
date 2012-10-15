@@ -33,9 +33,9 @@ int main(int argc, char **argv)
 	gprintf(" \nWelcome to %s (%s-r%s)!\nThis is the debug output.\n", APP_NAME, APP_VERSION, SVN_REV);
 
 	m_vid.init(); // Init video
-	Nand::Instance()->Init_ISFS(); //Just init ISFS, no patches yet
 	MEM_init(); //Inits both mem1lo and mem2
 	DeviceHandle.Init();
+	NandHandle.Init();
 
 	char *gameid = NULL;
 	bool Emulator_boot = false;
@@ -62,7 +62,9 @@ int main(int argc, char **argv)
 		else if(argv[i] != NULL && strcasestr(argv[i], "EMULATOR_MAGIC") != NULL)
 			Emulator_boot = true;
 	}
-	// Load Custom IOS
+	/* Init ISFS */
+	NandHandle.Init_ISFS();
+	/* Handle (c)IOS Loading */
 	if(neek2o() || Sys_DolphinMode())
 	{
 		iosOK = true;
