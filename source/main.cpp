@@ -29,15 +29,13 @@ int main(int argc, char **argv)
 {
 	mainIOS = DOL_MAIN_IOS;
 	__exception_setreload(5);
-	InitGecko();
-
-	// Init video
-	m_vid.init();
-
-	DeviceHandle.Init();
-	Nand::Instance()->Init_ISFS();
-	MEM_init(); //Inits both mem1lo and mem2
+	InitGecko(); //USB Gecko and SD buffer
 	gprintf(" \nWelcome to %s (%s-r%s)!\nThis is the debug output.\n", APP_NAME, APP_VERSION, SVN_REV);
+
+	m_vid.init(); // Init video
+	Nand::Instance()->Init_ISFS(); //Just init ISFS, no patches yet
+	MEM_init(); //Inits both mem1lo and mem2
+	DeviceHandle.Init();
 
 	char *gameid = NULL;
 	bool Emulator_boot = false;

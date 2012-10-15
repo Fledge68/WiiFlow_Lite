@@ -1057,6 +1057,7 @@ void Nand::Enable_ISFS_Patches(void)
 {
 	if(AHBRPOT_Patched())
 	{
+		gprintf("Enabling ISFS Patches\n");
 		// Disable memory protection
 		write16(MEM_PROT, 0);
 		// Do patches
@@ -1071,6 +1072,7 @@ void Nand::Disable_ISFS_Patches(void)
 {
 	if(AHBRPOT_Patched())
 	{
+		gprintf("Disabling ISFS Patches\n");
 		// Disable memory protection
 		write16(MEM_PROT, 0);
 		// Do patches
@@ -1082,15 +1084,15 @@ void Nand::Disable_ISFS_Patches(void)
 
 void Nand::Init_ISFS()
 {
-	//gprintf("Init ISFS\n");
+	gprintf("Init ISFS\n");
+	ISFS_Initialize();
 	if(IOS_GetVersion() == 58 && !neek2o())
 		Enable_ISFS_Patches();
-	ISFS_Initialize();
 }
 
 void Nand::DeInit_ISFS()
 {
-	//gprintf("Deinit ISFS\n");
+	gprintf("Deinit ISFS\n");
 	ISFS_Deinitialize();
 	if(IOS_GetVersion() == 58 && !neek2o())
 		Disable_ISFS_Patches();
