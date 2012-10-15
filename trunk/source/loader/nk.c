@@ -45,6 +45,11 @@ bool neek2o(void)
 		s32 ESHandle = IOS_Open("/dev/es", 0);
 		neek = IOS_Ioctlv(ESHandle, 0xA2, 0, 0, NULL) == 0x666c6f77;
 		IOS_Close(ESHandle);
+		if(!neek)
+		{
+			u32 num = 0;
+			neek = (ISFS_ReadDir("/sneek", NULL, &num) == 0);
+		}
 		gprintf("WiiFlow is in %s mode\n", neek ? "neek2o" : "real nand");
 		checked = true;
 	}
