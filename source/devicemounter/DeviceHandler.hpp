@@ -77,20 +77,15 @@ public:
 	bool MountAllUSB();
 	bool MountUSBPort1();
 
-	bool SD_Inserted() { if(sd) return sd->IsInserted(); return false; }
-	bool USB0_Inserted() { if(usb0) return usb0->IsInserted(); return false; }
-	bool USB1_Inserted() { if(usb1) return usb1->IsInserted(); return false; }
+	bool SD_Inserted() { return sd.IsInserted(); }
+	bool USB0_Inserted() { return usb0.IsInserted(); }
 	bool UsablePartitionMounted();
 	bool PartitionUsableForNandEmu(int Partition);
 	void WaitForDevice(const DISC_INTERFACE *Handle);
 
-	void UnMountSD() { if(sd) delete sd; sd = NULL; }
+	void UnMountSD() { sd.UnMountAll(); }
 	void UnMountUSB(int pos);
 	void UnMountAllUSB();
-
-	PartitionHandle * GetSDHandle() const { return sd; }
-	PartitionHandle * GetUSB0Handle() const { return usb0; }
-	PartitionHandle * GetUSB1Handle() const { return usb1; }
 
 	PartitionHandle * GetUSBHandleFromPartition(int part);
 	const DISC_INTERFACE *GetUSB0Interface() { return &__io_usbstorage2_port0; }
@@ -112,13 +107,10 @@ public:
 private:
 	bool MountUSB(int part);
 
-	PartitionHandle *sd;
-	PartitionHandle *gca;
-	PartitionHandle *gcb;
-	PartitionHandle *usb0;
-	PartitionHandle *usb1;
+	PartitionHandle sd;
+	PartitionHandle usb0;
 	/* Special Devolution Stuff */
-	PartitionHandle *OGC_Device;
+	PartitionHandle OGC_Device;
 };
 
 extern DeviceHandler DeviceHandle;

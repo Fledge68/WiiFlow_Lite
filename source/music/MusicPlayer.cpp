@@ -103,7 +103,7 @@ bool Musicplayer::PosFromPrevFile()
 		return false;
 
 	MusicFile.Load((*CurrentFileName).c_str());
-	SoundHandler::Instance()->Decoder(MusicFile.GetVoice())->Seek(CurrentPosition);
+	SoundHandle.Decoder(MusicFile.GetVoice())->Seek(CurrentPosition);
 	SetVolume(CurrentVolume);
 	MusicFile.Play();
 	CurrentPosition = 0;
@@ -117,7 +117,7 @@ void Musicplayer::Stop()
 	if(!MusicFile.IsPlaying())
 		return;
 	MusicFile.Pause();
-	CurrentPosition = SoundHandler::Instance()->Decoder(MusicFile.GetVoice())->Tell();
+	CurrentPosition = SoundHandle.Decoder(MusicFile.GetVoice())->Tell();
 	MusicFile.FreeMemory();
 	MusicStopped = true;
 }

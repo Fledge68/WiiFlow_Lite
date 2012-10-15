@@ -436,9 +436,9 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						m_cf.stopCoverLoader();
 						_stopSounds();
 						MusicPlayer.Cleanup();
-						SoundHandler::DestroyInstance();
+						SoundHandle.Cleanup();
 						soundDeinit();
-						Nand::Instance()->Disable_Emu();
+						NandHandle.Disable_Emu();
 						LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_GCcopyGame, (void *)this, 0, 8 * 1024, 64);
 						break;
 				}

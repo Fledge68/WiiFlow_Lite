@@ -42,12 +42,9 @@ DeviceHandler DeviceHandle;
 
 void DeviceHandler::Init()
 {
-	sd = NULL;
-	gca = NULL;
-	gcb = NULL;
-	usb0 = NULL;
-	usb1 = NULL;
-	OGC_Device = NULL;
+	sd.Init();
+	usb0.Init();
+	OGC_Device.Init();
 }
 
 void DeviceHandler::MountAll()
@@ -64,21 +61,12 @@ void DeviceHandler::UnMountAll()
 
 	for(u32 i = SD; i < MAXDEVICES; i++)
 		UnMount(i);
-
-	if(sd)
-		delete sd;
-	if(usb0)
-		delete usb0;
-	if(usb1)
-		delete usb1;
-
-	sd = NULL;
-	usb0 = NULL;
-	usb1 = NULL;
-
 	USBStorage2_Deinit();
 	USB_Deinitialize();
 	SDHC_Close();
+
+	sd.Cleanup();
+	usb0.Cleanup();
 }
 
 bool DeviceHandler::Mount(int dev)
@@ -95,14 +83,11 @@ bool DeviceHandler::Mount(int dev)
 bool DeviceHandler::IsInserted(int dev)
 {
 	if(dev == SD)
-		return SD_Inserted() && sd->IsMounted(0);
-
+		return SD_Inserted() && sd.IsMounted(0);
 	else if(dev >= USB1 && dev <= USB8)
 	{
 		int portPart = PartitionToPortPartition(dev-USB1);
-		PartitionHandle *usb = GetUSBHandleFromPartition(dev-USB1);
-		if(usb)
-			return usb->IsMounted(portPart);
+		return usb0.IsMounted(portPart);
 	}
 
 	return false;
@@ -112,7 +97,6 @@ void DeviceHandler::UnMount(int dev)
 {
 	if(dev == SD)
 		UnMountSD();
-
 	else if(dev >= USB1 && dev <= USB8)
 		UnMountUSB(dev-USB1);
 }
@@ -132,7 +116,7 @@ void DeviceHandler::SetModes()
 
 bool DeviceHandler::MountSD()
 {
-	if(!sd)
+	if(!sd.IsInserted() || !sd.IsMounted(0))
 	{
 		if(CurrentIOS.Type == IOS_TYPE_HERMES)
 		{	/* Slowass Hermes SDHC Module */
@@ -143,26 +127,22 @@ bool DeviceHandler::MountSD()
 				usleep(1000);
 			}
 		}
-		sd = new PartitionHandle(&__io_sdhc);
+		sd.SetDevice(&__io_sdhc);
+		//! Mount only one SD Partition
+		return sd.Mount(0, DeviceName[SD], true); /* Force FAT */
 	}
-	//! Mount only one SD Partition
-	return sd->Mount(0, DeviceName[SD], true); /* Force FAT */
+	return true;
 }
 
 bool DeviceHandler::MountUSB(int pos)
 {
-	if(!usb0 && !usb1)
-		return false;
-
 	if(pos >= GetUSBPartitionCount())
 		return false;
 
 	int portPart = PartitionToPortPartition(pos);
 
-	if(PartitionToUSBPort(pos) == 0 && usb0)
-		return usb0->Mount(portPart, DeviceName[USB1+pos]);
-	else if(usb1)
-		return usb1->Mount(portPart, DeviceName[USB1+pos]);
+	if(PartitionToUSBPort(pos) == 0)
+		return usb0.Mount(portPart, DeviceName[USB1+pos]);
 
 	return false;
 }
@@ -174,8 +154,8 @@ bool DeviceHandler::MountAllUSB()
 	/* Wait for our slowass HDD */
 	WaitForDevice(GetUSB0Interface());
 	/* Get Partitions and Mount them */
-	if(!usb0)
-		usb0 = new PartitionHandle(GetUSB0Interface());
+	if(!usb0.IsInserted() || !usb0.IsMounted(0))
+		usb0.SetDevice(GetUSB0Interface());
 	bool result = false;
 	int partCount = GetUSBPartitionCount();
 	for(int i = 0; i < partCount; i++)
@@ -184,7 +164,7 @@ bool DeviceHandler::MountAllUSB()
 			result = true;
 	}
 	if(!result)
-		result = usb0->Mount(0, DeviceName[USB1], true); /* Force FAT */
+		result = usb0.Mount(0, DeviceName[USB1], true); /* Force FAT */
 	if(result && usb_libogc_mode)
 		CreateUSBKeepAliveThread();
 	return result;
@@ -197,10 +177,10 @@ void DeviceHandler::UnMountUSB(int pos)
 
 	int portPart = PartitionToPortPartition(pos);
 
-	if(PartitionToUSBPort(pos) == 0 && usb0)
-		return usb0->UnMount(portPart);
-	else if(usb1)
-		return usb1->UnMount(portPart);
+	if(PartitionToUSBPort(pos) == 0)
+		return usb0.UnMount(portPart);
+	//else if(usb1)
+	//	return usb1->UnMount(portPart);
 }
 
 void DeviceHandler::UnMountAllUSB()
@@ -209,11 +189,6 @@ void DeviceHandler::UnMountAllUSB()
 
 	for(int i = 0; i < partCount; i++)
 		UnMountUSB(i);
-
-	delete usb0;
-	usb0 = NULL;
-	delete usb1;
-	usb1 = NULL;
 }
 
 int DeviceHandler::PathToDriveType(const char *path)
@@ -232,21 +207,21 @@ int DeviceHandler::PathToDriveType(const char *path)
 
 const char *DeviceHandler::GetFSName(int dev)
 {
-	if(dev == SD && sd)
-		return sd->GetFSName(0);
+	if(dev == SD)
+		return sd.GetFSName(0);
 	else if(dev >= USB1 && dev <= USB8)
 	{
 		int partCount0 = 0;
-		int partCount1 = 0;
-		if(usb0)
-			partCount0 += usb0->GetPartitionCount();
-		if(usb1)
-			partCount1 += usb1->GetPartitionCount();
+		//int partCount1 = 0;
+		//if(usb0)
+		partCount0 += usb0.GetPartitionCount();
+		//if(usb1)
+		//	partCount1 += usb1->GetPartitionCount();
 
-		if(dev-USB1 < partCount0 && usb0)
-			return usb0->GetFSName(dev-USB1);
-		else if(usb1)
-			return usb1->GetFSName(dev-USB1-partCount0);
+		if(dev-USB1 < partCount0)
+			return usb0.GetFSName(dev-USB1);
+		//else if(usb1)
+		//	return usb1->GetFSName(dev-USB1-partCount0);
 	}
 
 	return "";
@@ -273,22 +248,21 @@ u16 DeviceHandler::GetUSBPartitionCount()
 {
 	u16 partCount0 = 0;
 	u16 partCount1 = 0;
-	if(usb0)
-		partCount0 = usb0->GetPartitionCount();
-	if(usb1)
-		partCount1 = usb1->GetPartitionCount();
+	partCount0 = usb0.GetPartitionCount();
+	//if(usb1)
+	//	partCount1 = usb1->GetPartitionCount();
 
 	return partCount0+partCount1;
 }
 
 wbfs_t * DeviceHandler::GetWbfsHandle(int dev)
 {
-	if(dev == SD && sd)
-		return sd->GetWbfsHandle(0);
-	else if(dev >= USB1 && dev <= USB8 && usb0)
-		return usb0->GetWbfsHandle(dev-USB1);
-	else if(dev >= USB1 && dev <= USB8 && usb1)
-		return usb1->GetWbfsHandle(dev-USB1);
+	if(dev == SD)
+		return sd.GetWbfsHandle(0);
+	else if(dev >= USB1 && dev <= USB8)
+		return usb0.GetWbfsHandle(dev-USB1);
+	//else if(dev >= USB1 && dev <= USB8 && usb1)
+	//	return usb1->GetWbfsHandle(dev-USB1);
 	return NULL;
 }
 
@@ -299,11 +273,11 @@ s32 DeviceHandler::OpenWBFS(int dev)
 	char *partition = (char *)DeviceName[dev];
 
 	if(dev == SD && IsInserted(dev))
-		part_lba = sd->GetLBAStart(dev);
+		part_lba = sd.GetLBAStart(dev);
 	else if(dev >= USB1 && dev <= USB8 && IsInserted(dev))
 	{
 		part_idx = dev;
-		part_lba = usb0->GetLBAStart(dev - USB1);
+		part_lba = usb0.GetLBAStart(dev - USB1);
 	}
 	else
 		return -1;
@@ -314,10 +288,9 @@ s32 DeviceHandler::OpenWBFS(int dev)
 int DeviceHandler::PartitionToUSBPort(int part)
 {
 	u16 partCount0 = 0;
-	if(usb0)
-		partCount0 = usb0->GetPartitionCount();
-
-	if(!usb0 || part >= partCount0)
+	//if(usb0)
+	partCount0 = usb0.GetPartitionCount();
+	if(part >= partCount0)
 		return 1;
 	else
 		return 0;
@@ -326,15 +299,15 @@ int DeviceHandler::PartitionToUSBPort(int part)
 int DeviceHandler::PartitionToPortPartition(int part)
 {
 	u16 partCount0 = 0;
-	if(usb0)
-		partCount0 = usb0->GetPartitionCount();
+	//if(usb0)
+	partCount0 = usb0.GetPartitionCount();
 
-	if(!usb0 || part >= partCount0)
+	if(part >= partCount0)
 		return part-partCount0;
 	else
 		return part;
 }
-
+/*
 PartitionHandle *DeviceHandler::GetUSBHandleFromPartition(int part)
 {
 	if(PartitionToUSBPort(part) == 0)
@@ -342,7 +315,7 @@ PartitionHandle *DeviceHandler::GetUSBHandleFromPartition(int part)
 	else
 		return usb1;
 }
-
+*/
 void DeviceHandler::WaitForDevice(const DISC_INTERFACE *Handle)
 {
 	if(Handle == NULL)
@@ -363,15 +336,15 @@ bool DeviceHandler::MountDevolution(int CurrentPartition)
 	/* We need to wait for the device to get ready for a remount */
 	WaitForDevice(handle);
 	/* Only mount the partition we need */
-	OGC_Device = new PartitionHandle(handle);
-	return OGC_Device->Mount(NewPartition, DeviceName[CurrentPartition], true);
+	OGC_Device.SetDevice(handle);
+	return OGC_Device.Mount(NewPartition, DeviceName[CurrentPartition], true);
 }
 
 void DeviceHandler::UnMountDevolution(int CurrentPartition)
 {
 	int NewPartition = (CurrentPartition == SD ? CurrentPartition : CurrentPartition - 1);
-	OGC_Device->UnMount(NewPartition);
-	delete OGC_Device;
+	OGC_Device.UnMount(NewPartition);
+	OGC_Device.Cleanup();
 }
 
 bool DeviceHandler::UsablePartitionMounted()

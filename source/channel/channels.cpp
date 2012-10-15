@@ -46,10 +46,6 @@
 
 Channels ChannelHandle;
 
-Channels::Channels()
-{
-}
-
 void Channels::Init(u32 channelType, string lang, bool reload)
 {
 	if (reload) init = !reload;
@@ -65,8 +61,9 @@ void Channels::Init(u32 channelType, string lang, bool reload)
 	}
 }
 
-Channels::~Channels()
+void Channels::Cleanup()
 {
+	this->channels.clear();
 }
 
 u8 Channels::GetRequestedIOS(u64 title)
@@ -156,16 +153,16 @@ bool Channels::GetAppNameFromTmd(u64 title, char *app, bool dol, u32 *bootconten
 	return ret;
 }
 
-Banner * Channels::GetBanner(u64 title, bool imetOnly)
+void Channels::GetBanner(u64 title, bool imetOnly)
 {
 	char app[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
 	u32 cid;
 	if (!GetAppNameFromTmd(title, app, false, &cid))
 	{
 		gprintf("No title found\n");
-		return NULL;
+		return;
 	}
-	return Banner::GetBanner(title, app, true, imetOnly);
+	CurrentBanner.GetBanner(title, app, true, imetOnly);
 }
 
 bool Channels::GetChannelNameFromApp(u64 title, wchar_t* name, int language)
@@ -175,14 +172,13 @@ bool Channels::GetChannelNameFromApp(u64 title, wchar_t* name, int language)
 	if (language > CONF_LANG_KOREAN)
 		language = CONF_LANG_ENGLISH;
 
-	Banner *banner = GetBanner(title, true);
-	if (banner != NULL)
+	GetBanner(title, true);
+	if(CurrentBanner.IsValid())
 	{
-		ret = banner->GetName(name, language);
-		delete banner;
-		banner = NULL;
+		ret = CurrentBanner.GetName(name, language);
+		CurrentBanner.ClearBanner();
 	}
-	
+
 	return ret;
 }
 

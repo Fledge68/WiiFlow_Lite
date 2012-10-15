@@ -42,22 +42,32 @@
 #define IMET_OFFSET			0x40
 #define IMET_SIGNATURE		0x494d4554
 
-Banner::Banner(u8 *bnr, u32 bnr_size, u64 title, bool custom)
+Banner CurrentBanner;
+
+Banner::Banner()
 {
+	opening = NULL;
+	opening_size = 0;
+	title = 0;
+	imet = NULL;
+}
+
+void Banner::SetBanner(u8 *bnr, u32 bnr_size, u64 title, bool custom)
+{
+	ClearBanner();
+	if(bnr == NULL || bnr_size == 0)
+		return;
+
 	this->title = title;
 	opening = bnr;
 	opening_size = bnr_size;
-	imet = NULL;
-	
-	if(opening == NULL)
-		return;
-	
-	IMET *imet = (IMET *)opening;
+	imet = (IMET *)opening;
 	if(imet->sig != IMET_SIGNATURE)
 		imet = (IMET *) (opening + IMET_OFFSET);
 
 	if(imet->sig == IMET_SIGNATURE)
 	{
+		DCFlushRange(opening, opening_size);
 		unsigned char md5[16];
 		unsigned char imetmd5[16];
 
@@ -72,15 +82,15 @@ Banner::Banner(u8 *bnr, u32 bnr_size, u64 title, bool custom)
 			gprintf("Invalid md5, banner not valid for title %08x\n", title);
 	}
 	else
-	{
 		gprintf("Invalid signature found, banner not valid for title %08x\n", title);
-	}
 }
 
-Banner::~Banner()
+void Banner::ClearBanner()
 {
 	if(opening != NULL)
 		free(opening);
+	opening = NULL;
+	opening_size = 0;
 }
 
 bool Banner::IsValid()
@@ -151,7 +161,7 @@ u8 *Banner::GetFile(char *name, u32 *size)
 	return file;
 }
 
-Banner * Banner::GetBanner(u64 title, char *appname, bool isfs, bool imetOnly)
+void Banner::GetBanner(u64 title, char *appname, bool isfs, bool imetOnly)
 {
 	void *buf = NULL;
 	u32 size = 0;
@@ -162,14 +172,14 @@ Banner * Banner::GetBanner(u64 title, char *appname, bool isfs, bool imetOnly)
 		{
 			if(buf != NULL)
 				free(buf);
-			return NULL;
+			return;
 		}
 	}
 	else
 	{
 		FILE *fp = fopen(appname, "rb");
 		if(fp == NULL)
-			return NULL;
+			return;
 
 		u32 size = sizeof(IMET) + IMET_OFFSET;
 		if (!imetOnly)
@@ -181,11 +191,10 @@ Banner * Banner::GetBanner(u64 title, char *appname, bool isfs, bool imetOnly)
 
 		buf = malloc(size);
 		if(!buf)
-			return NULL;
+			return;
 
 		fread(buf, size, 1, fp);
 		fclose(fp);
 	}
-
-	return new Banner((u8 *)buf, size, title);
+	SetBanner((u8 *)buf, size, title);
 }

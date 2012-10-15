@@ -74,30 +74,38 @@ static inline const char *PartFromType(int type)
 	}
 }
 
-PartitionHandle::PartitionHandle(const DISC_INTERFACE *discio)
-	: interface(discio)
+void PartitionHandle::Init()
 {
+	interface = NULL;
+}
+
+void PartitionHandle::SetDevice(const DISC_INTERFACE *discio)
+{
+	Cleanup();
+	interface = discio;
+
 	// Sanity check
-	if (!interface)
+	if(!interface)
 		return;
 
 	// Start the device and check that it is inserted
-	if (!interface->startup())
+	if(!interface->startup())
 		return;
 
-	if (!interface->isInserted())
+	if(!interface->isInserted())
 		return;
 
 	FindPartitions();
 }
 
-PartitionHandle::~PartitionHandle()
+void PartitionHandle::Cleanup()
 {
-	 UnMountAll();
-
-	//shutdown device
-	if(!neek2o())
+	UnMountAll();
+	if(interface != NULL)
 		interface->shutdown();
+	interface = NULL;
+	PartitionList.clear();
+	MountNameList.clear();
 }
 
 bool PartitionHandle::IsMounted(int pos)

@@ -35,34 +35,32 @@
 class SoundHandler
 {
 public:
-	static SoundHandler * Instance();
-	static void DestroyInstance();
+	void Init();
+	void Cleanup();
 
-	void AddDecoder(int voice, const char * filepath);
-	void AddDecoder(int voice, const u8 * snd, int len);
+	void AddDecoder(int voice, const char *filepath);
+	void AddDecoder(int voice, const u8 *snd, int len);
 	void RemoveDecoder(int voice);
-	void DestroyDecoder(SoundDecoder * decoder);
+	void DestroyDecoder(SoundDecoder *decoder);
 
-	SoundDecoder * Decoder(int i) { return ((i < 0 || i >= MAX_DECODERS) ? NULL : DecoderList[i]); };
+	SoundDecoder *Decoder(int i) { return ((i < 0 || i >= MAX_DECODERS) ? NULL : DecoderList[i]); };
 	void ThreadSignal() { LWP_ThreadSignal(ThreadQueue); };
 	bool IsDecoding() { return Decoding; };
 protected:
-	SoundHandler();
-	~SoundHandler();
-	static void * UpdateThread(void *arg);
+	static void *UpdateThread(void *arg);
 	void InternalSoundUpdates();
 	void ClearDecoderList();
-	SoundDecoder * GetSoundDecoder(const char * filepath);
-	SoundDecoder * GetSoundDecoder(const u8 * sound, int length);
+	SoundDecoder *GetSoundDecoder(const char *filepath);
+	SoundDecoder *GetSoundDecoder(const u8 *sound, int length);
 
-	static SoundHandler * instance;
-	u8 * ThreadStack;
+	u8 *ThreadStack;
 	lwp_t SoundThread;
 	lwpq_t ThreadQueue;
 	bool Decoding;
 	bool ExitRequested;
 
-	SoundDecoder * DecoderList[MAX_DECODERS];
+	SoundDecoder *DecoderList[MAX_DECODERS];
 };
+extern SoundHandler SoundHandle;
 
 #endif

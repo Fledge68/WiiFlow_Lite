@@ -34,9 +34,9 @@
 #include "gecko/gecko.h"
 #include "memory/mem2.hpp"
 
-SoundHandler * SoundHandler::instance = NULL;
+SoundHandler SoundHandle;
 
-SoundHandler::SoundHandler()
+void SoundHandler::Init()
 {
 	Decoding = false;
 	ExitRequested = false;
@@ -51,7 +51,7 @@ SoundHandler::SoundHandler()
 	gprintf("SHND: Running sound thread\n");
 }
 
-SoundHandler::~SoundHandler()
+void SoundHandler::Cleanup()
 {
 	gprintf("SHND: Stopping sound thread\n");
 
@@ -67,22 +67,6 @@ SoundHandler::~SoundHandler()
 
 	ClearDecoderList();
 	gprintf("SHND: Stopped sound thread\n");
-}
-
-SoundHandler * SoundHandler::Instance()
-{
-	if (instance == NULL)
-		instance = new SoundHandler();
-	return instance;
-}
-
-void SoundHandler::DestroyInstance()
-{
-	if(instance)
-	{
-		delete instance;
-		instance = NULL;
-	}
 }
 
 void SoundHandler::AddDecoder(int voice, const char * filepath)

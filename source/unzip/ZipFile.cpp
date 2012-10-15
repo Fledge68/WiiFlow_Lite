@@ -36,6 +36,7 @@
 
 #include "ZipFile.h"
 #include "fileOps/fileOps.h"
+#include "memory/mem2.hpp"
 
 ZipFile::ZipFile(const char *filepath)
 {
@@ -61,10 +62,9 @@ bool ZipFile::ExtractAll(const char *dest)
 
 	bool Stop = false;
 
-	u32 blocksize = 1024 * 50;
-	u8 *buffer = new u8[blocksize];
-
-	if(!buffer)
+	u32 blocksize = 1024*50;
+	u8 *buffer = (u8*)MEM2_memalign(32, blocksize);
+	if(buffer == NULL)
 		return false;
 
 	char writepath[MAXPATHLEN];
@@ -126,8 +126,7 @@ bool ZipFile::ExtractAll(const char *dest)
 		if(unzGoToNextFile(File) != UNZ_OK)
 			Stop = true;
 	}
-
-	delete[] buffer;
+	MEM2_free(buffer);
 	buffer = NULL;
 
 	return true;

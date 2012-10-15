@@ -36,7 +36,7 @@ public:
 	void LoadFont(u8 *font1, u8 *font2);
 	void Clear();
 
-	bool LoadBanner(Banner *banner);
+	bool LoadBanner();
 	bool LoadBannerBin(u8 *banner_bin, u32 banner_bin_size);
 	Layout *getBanner() const { return layout_banner; }
 	void SetBannerTexture(const char *tex_name, const u8 *data, float width, float height, u8 fmt);
@@ -51,4 +51,5 @@ protected:
 
 u8 *DecompressCopy(u8 *stuff, u32 len, u32 *size);
 
+extern AnimatedBanner gameBanner;
 #endif

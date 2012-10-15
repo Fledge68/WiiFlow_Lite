@@ -117,10 +117,11 @@ typedef struct _PartitionFS {
 class PartitionHandle
 {
 public:
-	//! Constructor reads the MBR and all EBRs and lists up the Partitions
-	PartitionHandle(const DISC_INTERFACE *discio);
-	//! Destructor unmounts drives
-	~PartitionHandle();
+	void Init();
+	//! Read the MBR and all EBRs and lists up the Partitions
+	void SetDevice(const DISC_INTERFACE *discio);
+	//! Unmount drives
+	void Cleanup();
 	//! Is Drive inserted
 	bool IsInserted() { if(!interface) return false; else return interface->isInserted(); };
 	//! Is the partition Mounted

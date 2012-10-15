@@ -54,11 +54,10 @@ using namespace std;
 class Nand
 {
 public:
-	static Nand * Instance();
-	static void DestroyInstance();
+	void Init();
 
 	/* Prototypes */
-	void Init(string path, u32 partition, bool disable = false);
+	void SetPaths(string path, u32 partition, bool disable = false);
 	s32 Enable_Emu();
 	s32 Disable_Emu();
 	bool EmulationEnabled(void);
@@ -89,9 +88,6 @@ public:
 	void ResetCounters(void);
 
 private:
-	Nand() : MountedDevice(0), EmuDevice(REAL_NAND), Disabled(true), Partition(0), FullMode(0x100), NandPath() {}
-	~Nand(void){}
-
 	/* Prototypes */
 	s32 Nand_Mount(NandDevice *Device);
 	s32 Nand_Unmount(NandDevice *Device);
@@ -137,8 +133,7 @@ private:
 	char NandPath[32] ATTRIBUTE_ALIGN(32);
 	char cfgpath[1024];
 	char settxtpath[1024];
-
-	static Nand * instance;
 };
 
+extern Nand NandHandle;
 #endif

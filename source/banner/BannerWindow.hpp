@@ -47,7 +47,7 @@ class BannerWindow
 	public:
 		BannerWindow();
 		void DeleteBanner(bool gamechange = false);
-		void LoadBanner(Banner *banner, u8 *font1, u8 *font2);
+		void LoadBanner(u8 *font1, u8 *font2);
 		void LoadBannerBin(u8 *bnr, u32 bnr_size, u8 *font1, u8 *font2);
 		int GetSelectedGame() { return gameSelected; }
 		bool GetZoomSetting() { return AnimZoom; }
@@ -95,7 +95,6 @@ class BannerWindow
 		Mtx44 projection;
 		Vec2f ScreenProps;
 
-		AnimatedBanner *gameBanner;
 		u8 *sysFont1;
 		u8 *sysFont2;
 		bool FontLoaded;
