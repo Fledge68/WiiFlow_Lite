@@ -258,23 +258,23 @@ void DEVO_SetOptions(const char *isopath, int CurrentPartition, const char *game
 	{
 		// find or create a 16MB memcard file for emulation
 		// this file can be located anywhere since it's passed by cluster, not name
-		// it must be at least 16MB though
+		// it must be at least 512KB (smallest possible memcard = 59 blocks)
 		if(gameID[3] == 'J') //Japanese Memory Card
 			snprintf(full_path, sizeof(full_path), "%s:/apps/gc_devo/memcard_jap.bin", DeviceName[CurrentPartition]);
 		else
 			snprintf(full_path, sizeof(full_path), "%s:/apps/gc_devo/memcard.bin", DeviceName[CurrentPartition]);
 
-		// check if file doesn't exist or is less than 16MB
-		if(stat(full_path, &st) == -1 || st.st_size < 16<<20)
+		// check if file doesn't exist
+		if(stat(full_path, &st) == -1 || st.st_size < (1<<19))
 		{
 			// need to enlarge or create it
 			data_fd = open(full_path, O_WRONLY|O_CREAT);
 			if(data_fd >= 0)
 			{
-				// make it 16MB
+				// try to make it 16MB (largest possible memcard = 2043 blocks)
 				gprintf("Resizing memcard file...\n");
 				ftruncate(data_fd, 16<<20);
-				if(fstat(data_fd, &st) == -1 || st.st_size < 16<<20)
+				if(fstat(data_fd, &st) == -1 || st.st_size < (1<<19))
 				{
 					// it still isn't big enough. Give up.
 					st.st_ino = 0;
