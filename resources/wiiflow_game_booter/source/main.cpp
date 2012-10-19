@@ -35,6 +35,7 @@ using namespace std;
 IOS_Info CurrentIOS;
 
 /* Boot Variables */
+u32 GameIOS = 0;
 u32 vmode_reg = 0;
 entry_point p_entry;
 GXRModeObj *vmode = NULL;
@@ -63,6 +64,7 @@ int main()
 	hooktype = normalCFG.hooktype;
 	debuggerselect = normalCFG.debugger;
 	CurrentIOS = normalCFG.IOS;
+	set_wip_list(normalCFG.wip_list, normalCFG.wip_count);
 	app_gameconfig_set(normalCFG.gameconf, normalCFG.gameconfsize);
 	ocarina_set_codes(normalCFG.codelist, normalCFG.codelistend, normalCFG.cheats, normalCFG.cheatSize);
 	frag_list = normalCFG.fragments;
@@ -86,11 +88,9 @@ int main()
 		}
 		prog10();
 		Disc_Open();
-		Disc_SetLowMem();
-		prog10();
 		u64 offset = 0;
 		Disc_FindPartition(&offset);
-		WDVD_OpenPartition(offset);
+		WDVD_OpenPartition(offset, &GameIOS);
 		vmode = Disc_SelectVMode(normalCFG.vidMode, &vmode_reg);
 		prog10();
 		Apploader_Run(&p_entry, normalCFG.vidMode, vmode, normalCFG.vipatch, normalCFG.countryString, normalCFG.patchVidMode, 
@@ -101,21 +101,23 @@ int main()
 	else if(normalCFG.BootType == TYPE_CHANNEL)
 	{
 		ISFS_Initialize();
-		Disc_SetLowMem();
-		prog10();
-		AppEntrypoint = LoadChannel(normalCFG.title);
+		AppEntrypoint = LoadChannel(normalCFG.title, &GameIOS);
 		vmode = Disc_SelectVMode(normalCFG.vidMode, &vmode_reg);
 		PatchChannel(normalCFG.vidMode, vmode, normalCFG.vipatch, normalCFG.countryString, 
 					normalCFG.patchVidMode, normalCFG.aspectRatio, normalCFG.title);
 		ISFS_Deinitialize();
 	}
-	gprintf("Entrypoint: %08x\n", AppEntrypoint);
+	gprintf("Entrypoint: %08x, Requested Game IOS: %i\n", AppEntrypoint, GameIOS);
 	setprog(320);
+
+	/* Setup Low Memory */
+	Disc_SetLowMem(GameIOS);
 
 	/* Set time */
 	Disc_SetTime();
 
 	/* Set an appropriate video mode */
+	video_clear();
 	Disc_SetVMode(vmode, vmode_reg);
 
 	/* Shutdown IOS subsystems */

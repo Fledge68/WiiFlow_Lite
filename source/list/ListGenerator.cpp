@@ -245,7 +245,7 @@ void ListGenerator::CreateList(u32 Flow, u32 Device, const string& Path, const v
 	}
 	else if(Flow == COVERFLOW_CHANNEL)
 	{
-		ChannelHandle.Init(0, gameTDB_Language, true);
+		ChannelHandle.Init(gameTDB_Language);
 		Create_Channel_List();
 	}
 	else if(DeviceHandle.GetFSType(Device) != PART_FS_WBFS)

@@ -91,6 +91,8 @@ void Banner::ClearBanner()
 		free(opening);
 	opening = NULL;
 	opening_size = 0;
+	title = 0;
+	imet = NULL;
 }
 
 bool Banner::IsValid()

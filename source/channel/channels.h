@@ -46,10 +46,10 @@ typedef struct
 	wchar_t name[IMET_MAX_NAME_LEN+1];
 } Channel;
 
-class Channels
+class Channels : private vector<Channel>
 {
 public:
-	void Init(u32 channelType, string lang, bool reload = false);
+	void Init(string lang);
 	void Cleanup();
 
 	u32 Load(u64 title);
@@ -63,18 +63,14 @@ public:
 
 	void GetBanner(u64 title, bool imetOnly = false);
 private:
-	bool init;
-	u32 channelType;
 	string langCode;
-
-	vector<Channel> channels;
 
 	int GetLanguage(const char *lang);
 	u64* GetChannelList(u32* count);
 	bool GetAppNameFromTmd(u64 title, char* app, bool dol = false, u32* bootcontent = NULL);
 	bool GetChannelNameFromApp(u64 title, wchar_t* name, int language);
 
-	void Search(u32 channelType, string lang);
+	void Search();
 };
 
 extern Channels ChannelHandle;

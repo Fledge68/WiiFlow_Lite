@@ -16,6 +16,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 void video_init(void);
+void video_clear(void);
 void prog(int p);
 void prog10(void);
 void setprog(int p);

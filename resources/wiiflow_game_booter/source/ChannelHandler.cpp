@@ -78,7 +78,7 @@ static u8 *GetDol(u32 bootcontent, u64 title)
 	return NULL;
 }
 
-static bool GetAppNameFromTmd(bool dol, u32 *bootcontent, u64 title)
+static bool GetAppNameFromTmd(bool dol, u32 *bootcontent, u64 title, u32 *IOS)
 {
 	bool ret = false;
 
@@ -89,6 +89,7 @@ static bool GetAppNameFromTmd(bool dol, u32 *bootcontent, u64 title)
 	u8 *data = ISFS_GetFile((u8 *) &filepath, &size, -1);
 	if(data == NULL || size < 0x208)
 		return ret;
+	*IOS = data[0x18B];
 
 	_tmd *tmd_file = (_tmd *)SIGNATURE_PAYLOAD((u32 *)data);
 	for(u16 i = 0; i < tmd_file->num_contents; ++i)
@@ -100,7 +101,6 @@ static bool GetAppNameFromTmd(bool dol, u32 *bootcontent, u64 title)
 			break;
 		}
 	}
-
 	free(data);
 
 	return ret;
@@ -140,11 +140,11 @@ static u32 MoveDol(u8 *buffer)
 	return dolfile->entry_point;
 }
 
-u32 LoadChannel(u64 title)
+u32 LoadChannel(u64 title, u32 *IOS)
 {
 	u32 entry = 0;
 
-	GetAppNameFromTmd(true, &bootcontent, title);
+	GetAppNameFromTmd(true, &bootcontent, title, IOS);
 	u8 *data = GetDol(bootcontent, title);
 	entry = MoveDol(data);
 	free(data);

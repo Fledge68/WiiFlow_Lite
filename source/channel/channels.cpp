@@ -41,29 +41,23 @@
 
 #define DOWNLOADED_CHANNELS	0x00010001
 #define SYSTEM_CHANNELS		0x00010002
+#define GAME_CHANNELS		0x00010004
+
 #define RF_NEWS_CHANNEL		0x48414741
 #define RF_FORECAST_CHANNEL	0x48414641
 
 Channels ChannelHandle;
 
-void Channels::Init(u32 channelType, string lang, bool reload)
+void Channels::Init(string lang)
 {
-	if (reload) init = !reload;
-	if (!init || channelType != this->channelType ||
-		lang != this->langCode)
-	{
-		this->channelType = channelType;
-		this->langCode = lang;
-	
-		this->channels.clear();
-		Search(channelType, lang);
-		init = true;
-	}
+	this->langCode = lang;
+	this->clear();
+	Search();
 }
 
 void Channels::Cleanup()
 {
-	this->channels.clear();
+	this->clear();
 }
 
 u8 Channels::GetRequestedIOS(u64 title)
@@ -86,41 +80,24 @@ u8 Channels::GetRequestedIOS(u64 title)
 	return IOS;
 }
 
-u64* Channels::GetChannelList(u32* count)
+u64 *Channels::GetChannelList(u32 *count)
 {
+	*count = 0;
 	u32 countall;
-	if (ES_GetNumTitles(&countall) < 0 || !countall) return NULL;
+	if(ES_GetNumTitles(&countall) < 0 || countall == 0)
+		return NULL;
 
-	u64* titles = (u64*)MEM2_alloc(countall * sizeof(u64));
-	if (!titles)
+	u64 *titles = (u64*)MEM2_alloc(countall*sizeof(u64));
+	if(titles == NULL)
 		return NULL;
 
 	if(ES_GetTitles(titles, countall) < 0)
 	{
-		free(titles);
+		MEM2_free(titles);
 		return NULL;
 	}
-
-	u64* channels = (u64*)MEM2_alloc(countall * sizeof(u64));
-	if (!channels)
-		return NULL;
-
-	*count = 0;
-	for (u32 i = 0; i < countall; i++)
-	{
-		u32 type = TITLE_UPPER(titles[i]);
-
-		if (type == DOWNLOADED_CHANNELS || type == SYSTEM_CHANNELS)
-		{
- 			if (TITLE_LOWER(titles[i]) == RF_NEWS_CHANNEL ||	// skip region free news and forecast channel
-				TITLE_LOWER(titles[i]) == RF_FORECAST_CHANNEL)
-				continue;
-			channels[(*count)++] = titles[i];
-		}
-	}
-	free(titles);
-
-	return(u64*)MEM2_realloc(channels, *count * sizeof(u64));
+	*count = countall;
+	return titles;
 }
 
 bool Channels::GetAppNameFromTmd(u64 title, char *app, bool dol, u32 *bootcontent)
@@ -155,9 +132,10 @@ bool Channels::GetAppNameFromTmd(u64 title, char *app, bool dol, u32 *bootconten
 
 void Channels::GetBanner(u64 title, bool imetOnly)
 {
+	CurrentBanner.ClearBanner();
 	char app[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
 	u32 cid;
-	if (!GetAppNameFromTmd(title, app, false, &cid))
+	if(!GetAppNameFromTmd(title, app, false, &cid))
 	{
 		gprintf("No title found\n");
 		return;
@@ -198,33 +176,34 @@ int Channels::GetLanguage(const char *lang)
 	return CONF_LANG_ENGLISH; // Default to EN
 }
 
-void Channels::Search(u32 channelType, string lang)
+void Channels::Search()
 {
 	u32 count;
-	u64* list = GetChannelList(&count);
-	if (list == NULL)
+	u64 *list = GetChannelList(&count);
+	if(list == NULL)
 		return;
 
-	int language = lang.size() == 0 ? CONF_GetLanguage() : GetLanguage(lang.c_str());
+	int language = langCode.size() == 0 ? CONF_GetLanguage() : GetLanguage(langCode.c_str());
 
-	for (u32 i = 0; i < count; i++)
+	for(u32 i = 0; i < count; i++)
 	{
-		if (channelType == 0 || channelType == TITLE_UPPER(list[i]))
+		u32 Type = TITLE_UPPER(list[i]);
+		if(Type == SYSTEM_CHANNELS || Type == DOWNLOADED_CHANNELS || Type == GAME_CHANNELS)
 		{
-			Channel channel;
-			if (GetChannelNameFromApp(list[i], channel.name, language))
+			Channel CurrentChan;
+			memset(&CurrentChan, 0, sizeof(Channel));
+			if(GetChannelNameFromApp(list[i], CurrentChan.name, language))
 			{
-				channel.title = list[i];
-
-				u32 title_h = (u32)channel.title;
-				sprintf(channel.id, "%c%c%c%c", title_h >> 24, title_h >> 16, title_h >> 8, title_h);
-			
-				channels.push_back(channel);
+				u32 Title = TITLE_LOWER(list[i]);
+				if(Title == RF_NEWS_CHANNEL || Title == RF_FORECAST_CHANNEL)
+					continue; //skip region free news and forecast channel
+				CurrentChan.title = list[i];
+				memcpy(CurrentChan.id, &Title, sizeof(CurrentChan.id));
+				this->push_back(CurrentChan);
 			}
 		}
 	}
-
-	free(list);
+	MEM2_free(list);
 }
 
 wchar_t * Channels::GetName(int index)
@@ -233,28 +212,28 @@ wchar_t * Channels::GetName(int index)
 	{
 		return (wchar_t *) "";
 	}
-	return channels.at(index).name;
+	return this->at(index).name;
 }
 
 u32 Channels::Count() 
 { 
-	return channels.size(); 
+	return this->size(); 
 }
 
 char * Channels::GetId(int index)
 {
 	if (index < 0 || index > (int)Count() - 1) return (char *) "";
-	return channels.at(index).id;
+	return this->at(index).id;
 }
 
 u64 Channels::GetTitle(int index)
 {
 	if (index < 0 || index > (int)Count() - 1) return 0;
-	return channels.at(index).title;
+	return this->at(index).title;
 }
 
 Channel * Channels::GetChannel(int index)
 {
 	if (index < 0 || index > (int)Count() - 1) return NULL;
-	return &channels.at(index);
+	return &this->at(index);
 }

@@ -9,7 +9,7 @@ extern "C" {
 s32 Disc_Open();
 s32 Disc_FindPartition(u64 *outbuf);
 s32	Disc_SetUSB(const u8 *id, bool frag);
-void Disc_SetLowMem();
+void Disc_SetLowMem(u32 IOS);
 void Disc_SetTime();
 
 GXRModeObj *Disc_SelectVMode(u8 videoselected, u32 *rmode_reg);

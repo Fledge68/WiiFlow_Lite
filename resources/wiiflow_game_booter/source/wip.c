@@ -7,7 +7,7 @@
 #include "wip.h"
 #include "gecko.h"
 
-static WIP_Code * CodeList = NULL;
+static WIP_Code *CodeList = NULL;
 static u32 CodesCount = 0;
 static u32 ProcessedLength = 0;
 static u32 Counter = 0;
@@ -56,15 +56,17 @@ void do_wip_code(u8 * dst, u32 len)
 //! .wip files override internal patches
 //! the codelist has to be freed if the set fails
 //! if set was successful the codelist will be freed when it's done
-bool set_wip_list(WIP_Code * list, int size)
+bool set_wip_list(WIP_Code *list, int size)
 {
-	if(!CodeList && size > 0)
+	if(CodeList == NULL && size > 0)
 	{
-		CodeList = list;
+		WIP_Code *newlist = malloc(size * sizeof(WIP_Code));
+		memcpy(newlist, list, size * sizeof(WIP_Code));
+		DCFlushRange(newlist, size * sizeof(WIP_Code));
+		CodeList = newlist;
 		CodesCount = size;
 		return true;
 	}
-
 	return false;
 }
 
@@ -77,65 +79,8 @@ void wip_reset_counter()
 
 void free_wip()
 {
-	if(CodeList)
+	if(CodeList != NULL)
 		free(CodeList);
-
 	CodesCount = 0;
 	ProcessedLength = 0;
-}
-
-int load_wip_patches(u8 *dir, u8 *gameid)
-{
-	char filepath[150];
-	char GameID[8];
-	memset(GameID, 0, sizeof(GameID));
-	memcpy(GameID, gameid, 6);
-	snprintf(filepath, sizeof(filepath), "%s/%s.wip", dir, GameID);
-
-	FILE *fp = fopen(filepath, "rb");
-	if(!fp)
-	{
-		memset(GameID, 0, sizeof(GameID));
-		memcpy(GameID, gameid, 3);
-		snprintf(filepath, sizeof(filepath), "%s/%s.wip", dir, GameID);
-		fp = fopen(filepath, "rb");
-	}
-
-	if(!fp)
-		return -1;
-
-	char line[255];
-	//printf("\nLoading WIP code from %s.\n", filepath);
-
-	while(fgets(line, sizeof(line), fp))
-	{
-		if(line[0] == '#' || strlen(line) < 26)
-			continue;
-
-		u32 offset = (u32) strtoul(line, NULL, 16);
-		u32 srcaddress = (u32) strtoul(line+9, NULL, 16);
-		u32 dstaddress = (u32) strtoul(line+18, NULL, 16);
-
-		if(!CodeList)
-			CodeList = malloc(sizeof(WIP_Code));
-
-		WIP_Code *tmp = realloc(CodeList, (CodesCount+1)*sizeof(WIP_Code));
-		if(!tmp)
-		{
-			free(CodeList);
-			fclose(fp);
-			return -1;
-		}
-
-		CodeList = tmp;
-
-		CodeList[CodesCount].offset = offset;
-		CodeList[CodesCount].srcaddress = srcaddress;
-		CodeList[CodesCount].dstaddress = dstaddress;
-		CodesCount++;
-	}
-	fclose(fp);
-	//printf("\n");
-
-	return 0;
 }

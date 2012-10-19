@@ -77,7 +77,7 @@ void CMenu::_showConfig4(void)
 	wstringEx channelName = m_loc.getWString(m_curLanguage, "disabled", L"Disabled");
 
 	NandHandle.Disable_Emu();
-	ChannelHandle.Init(0, m_loc.getString(m_curLanguage, "gametdb_code", "EN"), true);
+	ChannelHandle.Init(m_loc.getString(m_curLanguage, "gametdb_code", "EN"));
 	amountOfChannels = ChannelHandle.Count();
 
 	string currentChanId = m_cfg.getString("GENERAL", "returnto" );
