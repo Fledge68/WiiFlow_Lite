@@ -11,6 +11,7 @@
 #include "fst.h"
 #include "wip.h"
 #include "gecko.h"
+#include "memory.h"
 #include "video_tinyload.h"
 
 /* Apploader function pointers */
@@ -32,8 +33,8 @@ void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipa
 static void patch_NoDiscinDrive(void *buffer, u32 len);
 static void Anti_002_fix(void *Address, int Size);
 static bool Remove_001_Protection(void *Address, int Size);
-static bool PrinceOfPersiaPatch();
-static bool NewSuperMarioBrosPatch();
+static void PrinceOfPersiaPatch();
+static void NewSuperMarioBrosPatch();
 bool hookpatched = false;
 
 s32 Apploader_Run(entry_point *entry, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo)
@@ -93,25 +94,21 @@ s32 Apploader_Run(entry_point *entry, u8 vidMode, GXRModeObj *vmode, bool vipatc
 	/* Set entry point from apploader */
 	*entry = appldr_final();
 
-	/* ERROR 002 fix (WiiPower) */
-	*(u32 *)0x80003140 = *(u32 *)0x80003188;
-	DCFlushRange((void*)0x80000000, 0x3f00);
-
 	return 0;
 }
 
 void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo)
 {
-	// Patch NoDiscInDrive only for IOS 249 < rev13 or IOS 222/223/224
-	if((CurrentIOS.Type == IOS_TYPE_WANIN && CurrentIOS.Revision < 13) || CurrentIOS.Type == IOS_TYPE_HERMES)
-		patch_NoDiscinDrive(dst, len);
+	do_wip_code((u8 *)dst, len);
+	Remove_001_Protection(dst, len);
 	if(CurrentIOS.Type == IOS_TYPE_WANIN && CurrentIOS.Revision < 13)
 		Anti_002_fix(dst, len);
-	Remove_001_Protection(dst, len);
+	if((CurrentIOS.Type == IOS_TYPE_WANIN && CurrentIOS.Revision < 13) || CurrentIOS.Type == IOS_TYPE_HERMES)
+		patch_NoDiscinDrive(dst, len);
 
+	if(hooktype != 0 && hookpatched == false)
+		hookpatched = dogamehooks(dst, len, false);
 	patchVideoModes(dst, len, vidMode, vmode, patchVidModes);
-	if(hooktype != 0 && dogamehooks(dst, len, false))
-		hookpatched = true;
 	if(vipatch)
 		vidolpatcher(dst, len);
 	if(configbytes[0] != 0xCD)
@@ -122,7 +119,6 @@ void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipa
 		PatchAspectRatio(dst, len, aspectRatio);
 	if(returnTo)
 		PatchReturnTo(dst, len, returnTo);
-	do_wip_code((u8 *)dst, len);
 }
 
 static void patch_NoDiscinDrive(void *buffer, u32 len)
@@ -154,12 +150,12 @@ static void Anti_002_fix(void *Address, int Size)
 	}
 }
 
-static bool PrinceOfPersiaPatch()
+static void PrinceOfPersiaPatch()
 {
-	if (memcmp("SPX", (char *) 0x80000000, 3) != 0 && memcmp("RPW", (char *) 0x80000000, 3) != 0)
-		return false;
+	if(memcmp("SPX", (char*)Disc_ID, 3) != 0 && memcmp("RPW", (char*)Disc_ID, 3) != 0)
+		return;
 
-	WIP_Code * CodeList = malloc(5 * sizeof(WIP_Code));
+	WIP_Code CodeList[5];
 	CodeList[0].offset = 0x007AAC6A;
 	CodeList[0].srcaddress = 0x7A6B6F6A;
 	CodeList[0].dstaddress = 0x6F6A7A6B;
@@ -175,26 +171,14 @@ static bool PrinceOfPersiaPatch()
 	CodeList[4].offset = 0x007AAC9D;
 	CodeList[4].srcaddress = 0x82806F3F;
 	CodeList[4].dstaddress = 0x6F3F8280;
-
-	if (set_wip_list(CodeList, 5) == false)
-	{
-		free(CodeList);
-		CodeList = NULL;
-		return false;
-	}
-
-	return true;
+	set_wip_list(CodeList, 5);
 }
 
-static bool NewSuperMarioBrosPatch()
+static void NewSuperMarioBrosPatch()
 {
-	WIP_Code * CodeList = NULL;
-
-	if (memcmp("SMNE01", (char *) 0x80000000, 6) == 0)
+	WIP_Code CodeList[3];
+	if(memcmp("SMNE01", (char*)Disc_ID, 6) == 0)
 	{
-		CodeList = malloc(3 * sizeof(WIP_Code));
-		if(!CodeList)
-			return false;
 		CodeList[0].offset = 0x001AB610;
 		CodeList[0].srcaddress = 0x9421FFD0;
 		CodeList[0].dstaddress = 0x4E800020;
@@ -204,12 +188,10 @@ static bool NewSuperMarioBrosPatch()
 		CodeList[2].offset = 0x001CED6B;
 		CodeList[2].srcaddress = 0xDA000000;
 		CodeList[2].dstaddress = 0x71000000;
+		set_wip_list(CodeList, 3);
 	}
-	else if (memcmp("SMNP01", (char *) 0x80000000, 6) == 0)
+	else if(memcmp("SMNP01", (char*)Disc_ID, 6) == 0)
 	{
-		CodeList = malloc(3 * sizeof(WIP_Code));
-		if(!CodeList)
-			return false;
 		CodeList[0].offset = 0x001AB750;
 		CodeList[0].srcaddress = 0x9421FFD0;
 		CodeList[0].dstaddress = 0x4E800020;
@@ -219,12 +201,10 @@ static bool NewSuperMarioBrosPatch()
 		CodeList[2].offset = 0x001CEEA8;
 		CodeList[2].srcaddress = 0x388000DA;
 		CodeList[2].dstaddress = 0x38800071;
+		set_wip_list(CodeList, 3);
 	}
-	else if (memcmp("SMNJ01", (char *) 0x80000000, 6) == 0)
+	else if(memcmp("SMNJ01", (char*)Disc_ID, 6) == 0)
 	{
-		CodeList = malloc(3 * sizeof(WIP_Code));
-		if(!CodeList)
-			return false;
 		CodeList[0].offset = 0x001AB420;
 		CodeList[0].srcaddress = 0x9421FFD0;
 		CodeList[0].dstaddress = 0x4E800020;
@@ -234,14 +214,8 @@ static bool NewSuperMarioBrosPatch()
 		CodeList[2].offset = 0x001CEB7B;
 		CodeList[2].srcaddress = 0xDA000000;
 		CodeList[2].dstaddress = 0x71000000;
+		set_wip_list(CodeList, 3);
 	}
-	if (CodeList && set_wip_list(CodeList, 3) == false)
-	{
-		free(CodeList);
-		CodeList = NULL;
-		return false;
-	}
-	return CodeList != NULL;
 }
 
 static bool Remove_001_Protection(void *Address, int Size)
@@ -251,9 +225,9 @@ static bool Remove_001_Protection(void *Address, int Size)
 	u8 *Addr_end = Address + Size;
 	u8 *Addr;
 
-	for (Addr = Address; Addr <= Addr_end - sizeof SearchPattern; Addr += 4)
+	for(Addr = Address; Addr <= Addr_end - sizeof SearchPattern; Addr += 4)
 	{
-		if (memcmp(Addr, SearchPattern, sizeof SearchPattern) == 0) 
+		if(memcmp(Addr, SearchPattern, sizeof SearchPattern) == 0) 
 		{
 			memcpy(Addr, PatchData, sizeof PatchData);
 			return true;

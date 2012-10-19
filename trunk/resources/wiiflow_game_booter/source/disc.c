@@ -31,7 +31,7 @@ s32 Disc_Open()
 	return ret;
 }
 
-void Disc_SetLowMem()
+void Disc_SetLowMem(u32 IOS)
 {
 	/* Setup low memory */
 	*Sys_Magic			= 0x0D15EA5E; // Standard Boot Code
@@ -52,6 +52,14 @@ void Disc_SetLowMem()
 
 	/* Copy disc ID */
 	memcpy((void *)Online_Check, (void *)Disc_ID, 4);
+
+	/* Error 002 Fix (thanks WiiPower and uLoader) */
+	*(vu32*)0x80003140 = (IOS << 16) | 0xffff;
+	//*(u32 *)0x80003140 = *(u32 *)0x80003188; // removes 002-Error (by WiiPower: http://gbatemp.net/index.php?showtopic=158885&hl=)
+	*(vu32*)0x80003188 = *(vu32*)0x80003140;
+
+	/* Flush everything */
+	DCFlushRange((void*)0x80000000, 0x3f00);
 }
 
 s32 Disc_FindPartition(u64 *outbuf)

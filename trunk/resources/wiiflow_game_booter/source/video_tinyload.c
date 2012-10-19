@@ -100,3 +100,11 @@ void video_init(void)
 	
 	prog(0);
 }
+
+void video_clear(void)
+{
+	memset32(framebuffer, COLOR_BLACK, 320*574);
+	// this sets VI to black, but I can't fit it in yet...
+	viw(0x0, oldvtrdcr);
+	*(vu64*)(0xCC00200c) = oldvtovte;
+}

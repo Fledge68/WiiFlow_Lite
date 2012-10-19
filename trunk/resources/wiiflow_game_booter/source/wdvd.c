@@ -169,7 +169,7 @@ s32 WDVD_Eject(void)
 	return (ret == 1) ? 0 : -ret;
 }
 
-s32 WDVD_OpenPartition(u64 offset)
+s32 WDVD_OpenPartition(u64 offset, u32 *IOS)
 {
 	if (di_fd < 0)
 		return di_fd;
@@ -196,7 +196,7 @@ s32 WDVD_OpenPartition(u64 offset)
 	Vectors[4].len		= 0x20;
 
 	ret = IOS_Ioctlv(di_fd, IOCTL_DI_OPENPART, 3, 2, (ioctlv *)Vectors);
-
+	*IOS = (u32)(Tmd_Buffer[0x18b]);
 	if (ret < 0)
 		return ret;
 

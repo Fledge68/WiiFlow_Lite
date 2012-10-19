@@ -12,10 +12,8 @@ typedef struct
 	u32 dstaddress;
 } WIP_Code;
 
-bool set_wip_list(WIP_Code *list, int size);
-void wip_reset_counter();
-void free_wip();
-void do_wip_code(u8 *dst, u32 len);
+u32 get_wip_count();
+WIP_Code *get_wip_list();
 int load_wip_patches(u8 *dir, u8 *gameid);
 
 #ifdef __cplusplus

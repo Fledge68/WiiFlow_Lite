@@ -19,6 +19,7 @@
 
 #include "loader/cios.h"
 #include "loader/frag.h"
+#include "loader/wip.h"
 
 typedef struct _the_CFG {
 	/* needed for wii games */
@@ -28,6 +29,8 @@ typedef struct _the_CFG {
 	u32 wbfsPart;
 	u8 GameBootType;
 	u8 mload_rev;
+	WIP_Code *wip_list;
+	u32 wip_count;
 	/* needed for channels */
 	u64 title;
 	/* General Stuff */

@@ -19,6 +19,7 @@
 
 #include "cios.h"
 #include "frag.h"
+#include "wip.h"
 
 typedef struct _the_CFG {
 	/* needed for wii games */
@@ -28,6 +29,8 @@ typedef struct _the_CFG {
 	u32 wbfsPart;
 	u8 GameBootType;
 	u8 mload_rev;
+	WIP_Code *wip_list;
+	u32 wip_count;
 	/* needed for channels */
 	u64 title;
 	/* General Stuff */
@@ -37,8 +40,8 @@ typedef struct _the_CFG {
 	u8 patchVidMode;
 	u8 configbytes[2];
 	u8 debugger;
-	bool vipatch;
-	bool countryString;
+	u8 vipatch;
+	u8 countryString;
 	int aspectRatio;
 	void *codelist;
 	u8 *codelistend;

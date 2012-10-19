@@ -75,6 +75,8 @@ void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 pat
 	normalCFG.gameconf = gameconf;
 	normalCFG.gameconfsize = gameconfsize;
 	normalCFG.BootType = BootType;
+	normalCFG.wip_list = get_wip_list();
+	normalCFG.wip_count = get_wip_count();
 
 	ShutdownBeforeExit();
 	/* Copy CFG into new memory region */
