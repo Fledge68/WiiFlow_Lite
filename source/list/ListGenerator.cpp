@@ -145,14 +145,16 @@ static void Create_GC_List(char *FullPath)
 	}
 }
 
+const char *FolderTitle = NULL;
 static void Create_Plugin_List(char *FullPath)
 {
 	memset((void*)&ListElement, 0, sizeof(dir_discHdr));
 
 	strncpy(ListElement.path, FullPath, sizeof(ListElement.path) - 1);
 	strncpy(ListElement.id, "PLUGIN", 6);
-	*strchr(FullPath, '.') = '\0';
-	mbstowcs(ListElement.title, strrchr(FullPath, '/') + 1, 63);
+	*strrchr(FullPath, '.') = '\0';
+	FolderTitle = strrchr(FullPath, '/') + 1;
+	mbstowcs(ListElement.title, FolderTitle, 63);
 	Asciify(ListElement.title);
 
 	ListElement.settings[0] = m_gameList.Magic; //Plugin magic
@@ -161,7 +163,6 @@ static void Create_Plugin_List(char *FullPath)
 	m_gameList.push_back(ListElement);
 }
 
-const char *FolderTitle = NULL;
 static void Create_Homebrew_List(char *FullPath)
 {
 	if(strcasestr(FullPath, "boot.") == NULL)
@@ -301,7 +302,7 @@ void GetFiles(const char *Path, const vector<string>& FileTypes,
 		}
 		else if(pent->d_type == DT_REG)
 		{
-			NewFileName = strchr(pent->d_name, '.');
+			NewFileName = strrchr(pent->d_name, '.');
 			if(NewFileName == NULL) NewFileName = pent->d_name;
 			if(IsFileSupported(NewFileName, FileTypes))
 			{
