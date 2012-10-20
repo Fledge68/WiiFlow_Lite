@@ -154,6 +154,7 @@ void load_handler()
 			memcpy((void*)0x80001F5A, &codelist, 2);
 			memcpy((void*)0x80001F5E, ((u8*) &codelist) + 2, 2);
 			DCFlushRange((void*)0x80001800,codehandler_size);
+			ICInvalidateRange((void*)0x80001000,codehandler_size);
 		}
 		else
 		{
@@ -163,12 +164,13 @@ void load_handler()
 			memcpy((void*)0x80001906, &codelist, 2);
 			memcpy((void*)0x8000190A, ((u8*) &codelist) + 2, 2);
 			DCFlushRange((void*)0x80001800,codehandleronly_size);
+			ICInvalidateRange((void*)0x80001000,codehandleronly_size);
 		}
-
 		// Load multidol handler
 		memset((void*)0x80001000,0,multidol_size);
 		memcpy((void*)0x80001000,multidol,multidol_size);
 		DCFlushRange((void*)0x80001000,multidol_size);
+		ICInvalidateRange((void*)0x80001000,multidol_size);
 		switch(hooktype)
 		{
 			case 0x01:
@@ -217,29 +219,16 @@ void load_handler()
 		}
 		DCFlushRange((void*)0x80001198,16);
 	}
-	memcpy((void *)0x80001800, (void*)0x80000000, 6);
 }
 
-int ocarina_do_code(u64 chantitle)
+int ocarina_do_code()
 {
 	//if (!code_buf) return 0;  // Need the handler loaded for hooking other than cheats!
 
-	memset((void *)0x80001800, 0, 0x1800);
-
-	char gameidbuffer[8];
-	memset(gameidbuffer, 0, 8);
-	if(chantitle != 0)
-	{
-		gameidbuffer[0] = (chantitle & 0xff000000) >> 24;
-		gameidbuffer[1] = (chantitle & 0x00ff0000) >> 16;
-		gameidbuffer[2] = (chantitle & 0x0000ff00) >> 8;
-		gameidbuffer[3] = chantitle & 0x000000ff;
-	}
-	else
-		strncpy(gameidbuffer, (char*)Disc_ID, 6);
+	memset((void*)0x80001800, 0, 0x1800);
 	load_handler();
-	memcpy((void *)0x80001800, gameidbuffer, 8);
-	DCFlushRange((void *)0x80001800, 8);
+	memcpy((void*)0x80001800, (void*)Disc_ID, 8);
+	DCFlushRange((void*)0x80001800, 0x1800);
 
 	if(codelist)
 		memset(codelist, 0, (u32)codelistend - (u32)codelist);

@@ -7,7 +7,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 s32 Disc_Open();
-s32 Disc_FindPartition(u64 *outbuf);
+s32 Disc_FindPartition(u32 *outbuf);
 s32	Disc_SetUSB(const u8 *id, bool frag);
 void Disc_SetLowMem(u32 IOS);
 void Disc_SetTime();

@@ -87,13 +87,12 @@ void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 pat
 	DCFlushRange(BOOTER_ADDR, booter_size);
 	/* Shutdown IOS subsystems */
 	__IOS_ShutdownSubsystems();
- 	u32 level = IRQ_Disable();
- 	__lwp_thread_closeall();
- 	__exception_closeall();
- 	/* Boot it */
- 	exeEntryPoint();
- 	/* Fail */
- 	IRQ_Restore(level);
+	u32 level = IRQ_Disable();
+	__exception_closeall();
+	/* Boot it */
+	exeEntryPoint();
+	/* Fail */
+	IRQ_Restore(level);
 }
 
 extern FragList *frag_list;

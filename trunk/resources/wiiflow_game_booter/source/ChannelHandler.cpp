@@ -152,22 +152,26 @@ u32 LoadChannel(u64 title, u32 *IOS)
 	return entry;
 }
 
-void PatchChannel(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u64 title)
+void PatchChannel(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio)
 {
-	bool hook = false;
+	bool hookpatched = false;
 	for(u8 i = 0; i < dolchunkcount; i++)
 	{		
 		patchVideoModes(dolchunkoffset[i], dolchunksize[i], vidMode, vmode, patchVidModes);
-		if(vipatch) vidolpatcher(dolchunkoffset[i], dolchunksize[i]);
-		if(configbytes[0] != 0xCD) langpatcher(dolchunkoffset[i], dolchunksize[i]);
-		if(countryString) PatchCountryStrings(dolchunkoffset[i], dolchunksize[i]);
-		if(aspectRatio != -1) PatchAspectRatio(dolchunkoffset[i], dolchunksize[i], aspectRatio);
-		if(hooktype != 0 && dogamehooks(dolchunkoffset[i], dolchunksize[i], true))
-			hook = true;
+		if(vipatch)
+			vidolpatcher(dolchunkoffset[i], dolchunksize[i]);
+		if(configbytes[0] != 0xCD)
+			langpatcher(dolchunkoffset[i], dolchunksize[i]);
+		if(countryString)
+			PatchCountryStrings(dolchunkoffset[i], dolchunksize[i]);
+		if(aspectRatio != -1)
+			PatchAspectRatio(dolchunkoffset[i], dolchunksize[i], aspectRatio);
+		if(hooktype != 0 && hookpatched == false)
+			hookpatched = dogamehooks(dolchunkoffset[i], dolchunksize[i], true);
 		DCFlushRange(dolchunkoffset[i], dolchunksize[i]);
 		ICInvalidateRange(dolchunkoffset[i], dolchunksize[i]);
-		prog(5);
+		prog10();
 	}
-	if(hook)
-		ocarina_do_code(title);
+	if(hookpatched)
+		ocarina_do_code();
 }

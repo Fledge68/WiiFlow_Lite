@@ -95,13 +95,13 @@ s32 WDVD_ReadDiskId(void *id)
 	return -ret;
 }
 
-s32 WDVD_Seek(u64 offset)
+s32 WDVD_Seek(u32 offset)
 {
 	memset(inbuf, 0, sizeof(inbuf));
 
 	/* Drive seek */
 	inbuf[0] = IOCTL_DI_SEEK << 24;
-	inbuf[1] = (u32)(offset >> 2);
+	inbuf[1] = offset;
 
 	s32 ret = IOS_Ioctl(di_fd, IOCTL_DI_SEEK, inbuf, sizeof(inbuf), outbuf, sizeof(outbuf));
 	if (ret < 0) return ret;
@@ -109,67 +109,7 @@ s32 WDVD_Seek(u64 offset)
 	return (ret == 1) ? 0 : -ret;
 }
 
-s32 WDVD_Offset(u64 offset) 
-{
-    //u32 *off = (u32 *)((void *)&offset);
-	union { u64 off64; u32 off32[2]; } off;
-	off.off64 = offset;
-
-    memset(inbuf, 0, sizeof(inbuf));
-
-    /* Set offset */
-    inbuf[0] = IOCTL_DI_OFFSET << 24;
-    inbuf[1] = (off.off32[0]) ? 1: 0;
-    inbuf[2] = (off.off32[1] >> 2);
-
-    s32 ret = IOS_Ioctl(di_fd, IOCTL_DI_OFFSET, inbuf, sizeof(inbuf), outbuf, sizeof(outbuf));
-    if (ret < 0) return ret;
-
-    return (ret == 1) ? 0 : -ret;
-}
-
-s32 WDVD_StopLaser(void)
-{
-	memset(inbuf, 0, sizeof(inbuf));
-
-	/* Stop laser */
-	inbuf[0] = IOCTL_DI_STOPLASER << 24;
-
-	s32 ret = IOS_Ioctl(di_fd, IOCTL_DI_STOPLASER, inbuf, sizeof(inbuf), outbuf, sizeof(outbuf));
-	if (ret < 0) return ret;
-
-	return (ret == 1) ? 0 : -ret;
-}
-
-s32 WDVD_StopMotor(void)
-{
-	memset(inbuf, 0, sizeof(inbuf));
-
-	/* Stop motor */
-	inbuf[0] = IOCTL_DI_STOPMOTOR << 24;
-
-	s32 ret = IOS_Ioctl(di_fd, IOCTL_DI_STOPMOTOR, inbuf, sizeof(inbuf), outbuf, sizeof(outbuf));
-	if (ret < 0) return ret;
-
-	return (ret == 1) ? 0 : -ret;
-}
-
-s32 WDVD_Eject(void)
-{
-	memset(inbuf, 0, sizeof(inbuf));
-
-	/* Stop motor */
-	inbuf[0] = IOCTL_DI_STOPMOTOR << 24;
-	/* Eject DVD */
-	inbuf[1] = 1;
-
-	s32 ret = IOS_Ioctl(di_fd, IOCTL_DI_STOPMOTOR, inbuf, sizeof(inbuf), outbuf, sizeof(outbuf));
-	if (ret < 0) return ret;
-
-	return (ret == 1) ? 0 : -ret;
-}
-
-s32 WDVD_OpenPartition(u64 offset, u32 *IOS)
+s32 WDVD_OpenPartition(u32 offset, u32 *IOS)
 {
 	if (di_fd < 0)
 		return di_fd;
@@ -182,7 +122,7 @@ s32 WDVD_OpenPartition(u64 offset, u32 *IOS)
 	memset(outbuf, 0, sizeof outbuf);
 
 	inbuf[0] = IOCTL_DI_OPENPART << 24;
-	inbuf[1] = offset >> 2;
+	inbuf[1] = offset;
 
 	Vectors[0].data		= inbuf;
 	Vectors[0].len		= 0x20;
@@ -216,14 +156,14 @@ s32 WDVD_ClosePartition(void)
 	return (ret == 1) ? 0 : -ret;
 }
 
-s32 WDVD_UnencryptedRead(void *buf, u32 len, u64 offset)
+s32 WDVD_UnencryptedRead(void *buf, u32 len, u32 offset)
 {
 	memset(inbuf, 0, sizeof(inbuf));
 
 	/* Unencrypted read */
 	inbuf[0] = IOCTL_DI_UNENCREAD << 24;
 	inbuf[1] = len;
-	inbuf[2] = (u32)(offset >> 2);
+	inbuf[2] = offset;
 
 	s32 ret = IOS_Ioctl(di_fd, IOCTL_DI_UNENCREAD, inbuf, sizeof(inbuf), buf, len);
 	if (ret < 0) return ret;
@@ -231,14 +171,14 @@ s32 WDVD_UnencryptedRead(void *buf, u32 len, u64 offset)
 	return (ret == 1) ? 0 : -ret;
 }
 
-s32 WDVD_Read(void *buf, u32 len, u64 offset)
+s32 WDVD_Read(void *buf, u32 len, u32 offset)
 {
 	memset(inbuf, 0, sizeof(inbuf));
 
 	/* Disc read */
 	inbuf[0] = IOCTL_DI_READ << 24;
 	inbuf[1] = len;
-	inbuf[2] = (u32)(offset >> 2);
+	inbuf[2] = offset;
 
 	s32 ret = IOS_Ioctl(di_fd, IOCTL_DI_READ, inbuf, sizeof(inbuf), buf, len);
 	if (ret < 0) return ret;

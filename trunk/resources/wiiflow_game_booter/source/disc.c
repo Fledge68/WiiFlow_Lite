@@ -13,21 +13,17 @@
 #include "wdvd.h"
 
 /* Constants */
-#define PTABLE_OFFSET	0x40000
-
-static u8 *diskid = (u8*)0x80000000;
+#define PART_INFO_OFFSET	0x10000
 
 s32 Disc_Open()
 {
 	/* Reset drive */
 	s32 ret = WDVD_Reset();
-	if (ret < 0) return ret;
-
-	memset(diskid, 0, 32);
+	if(ret < 0)
+		return ret;
 
 	/* Read disc ID */
-	ret = WDVD_ReadDiskId(diskid);
-
+	ret = WDVD_ReadDiskId((u8*)Disc_ID);
 	return ret;
 }
 
@@ -41,85 +37,65 @@ void Disc_SetLowMem(u32 IOS)
 	*Bus_Speed			= 0x0E7BE2C0; // Console Bus Speed
 	*CPU_Speed			= 0x2B73A840; // Console CPU Speed
 	*Assembler			= 0x38A00040; // Assembler
-	*(vu32*)0x800000E4	= 0x80431A80;
+	*OS_Thread			= 0x80431A80; // Thread Init
 	*Dev_Debugger		= 0x81800000; // Dev Debugger Monitor Address
 	*Simulated_Mem		= 0x01800000; // Simulated Memory Size
+	*GameID_Address		= 0x80000000; // Fix for Sam & Max (WiiPower)
 	*(vu32*)0xCD00643C	= 0x00000000; // 32Mhz on Bus
-
-	/* Fix for Sam & Max (WiiPower) */
-	if(CurrentIOS.Type != IOS_TYPE_HERMES)
-		*GameID_Address	= 0x80000000;
 
 	/* Copy disc ID */
 	memcpy((void *)Online_Check, (void *)Disc_ID, 4);
 
 	/* Error 002 Fix (thanks WiiPower and uLoader) */
-	*(vu32*)0x80003140 = (IOS << 16) | 0xffff;
-	//*(u32 *)0x80003140 = *(u32 *)0x80003188; // removes 002-Error (by WiiPower: http://gbatemp.net/index.php?showtopic=158885&hl=)
-	*(vu32*)0x80003188 = *(vu32*)0x80003140;
+	*Current_IOS = (IOS << 16) | 0xffff;
+	*Apploader_IOS = (IOS << 16) | 0xffff;
 
 	/* Flush everything */
 	DCFlushRange((void*)0x80000000, 0x3f00);
 }
 
-s32 Disc_FindPartition(u64 *outbuf)
-{
-	u8 TMP_Buffer_size = 0x20;
-	u64 offset = 0;
-	u32 cnt;
+/* Thanks Tinyload */
+static struct {
+	u32 offset;
+	u32 type;
+} partition_table[32] ATTRIBUTE_ALIGN(32);
 
-	u32 *TMP_Buffer = (u32*)memalign(32, TMP_Buffer_size);
-	if(!TMP_Buffer)
-		return -1;
+static struct {
+	u32 count;
+	u32 offset;
+	u32 pad[6];
+} part_table_info ATTRIBUTE_ALIGN(32);
+
+s32 Disc_FindPartition(u32 *outbuf)
+{
+	u32 offset = 0;
+	u32 cnt = 0;
 
 	/* Read partition info */
-	s32 ret = WDVD_UnencryptedRead(TMP_Buffer, TMP_Buffer_size, PTABLE_OFFSET);
+	s32 ret = WDVD_UnencryptedRead(&part_table_info, sizeof(part_table_info), PART_INFO_OFFSET);
 	if(ret < 0)
-	{
-		free(TMP_Buffer);
 		return ret;
-	}
-
-	/* Get data */
-	u32 nb_partitions = TMP_Buffer[0];
-	u64 table_offset  = TMP_Buffer[1] << 2;
-	
-	if(nb_partitions > 8)
-	{
-		free(TMP_Buffer);
-		return -1;
-	}
-
-	memset(TMP_Buffer, 0, TMP_Buffer_size);
 
 	/* Read partition table */
-	ret = WDVD_UnencryptedRead(TMP_Buffer, TMP_Buffer_size, table_offset);
-	if (ret < 0)
-	{
-		free(TMP_Buffer);
+	ret = WDVD_UnencryptedRead(&partition_table, sizeof(partition_table), part_table_info.offset);
+	if(ret < 0)
 		return ret;
-	}
 
 	/* Find game partition */
-	for(cnt = 0; cnt < nb_partitions; cnt++)
+	for(cnt = 0; cnt < part_table_info.count; cnt++)
 	{
-		u32 type = TMP_Buffer[cnt * 2 + 1];
-
 		/* Game partition */
-		if(!type)
-			offset = TMP_Buffer[cnt * 2] << 2;
+		if(partition_table[cnt].type == 0)
+			offset = partition_table[cnt].offset;
 	}
-	free(TMP_Buffer);
 
 	/* No game partition found */
-	if (!offset)
+	if(offset == 0)
 		return -1;
+	WDVD_Seek(offset);
 
 	/* Set output buffer */
 	*outbuf = offset;
-
-	WDVD_Seek(offset);
-
 	return 0;
 }
 
@@ -158,13 +134,12 @@ GXRModeObj *Disc_SelectVMode(u8 videoselected, u32 *rmode_reg)
 			break;
 	}
 
-	char Region = diskid[3];
-
+	const char DiscRegion = ((u8*)Disc_ID)[3];
 	switch(videoselected)
 	{
 		case 0: // DEFAULT (DISC/GAME)
 			/* Select video mode */
-			switch(Region)
+			switch(DiscRegion)
 			{
 				case 'W':
 					break; // Don't overwrite wiiware video modes.
@@ -208,7 +183,7 @@ GXRModeObj *Disc_SelectVMode(u8 videoselected, u32 *rmode_reg)
 			break;
 		case 5: // PROGRESSIVE 480P
 			rmode = &TVNtsc480Prog;
-			*rmode_reg = Region == 'P' ? TVEurgb60Hz480Prog.viTVMode >> 2 : rmode->viTVMode >> 2;
+			*rmode_reg = DiscRegion == 'P' ? TVEurgb60Hz480Prog.viTVMode >> 2 : rmode->viTVMode >> 2;
 			break;
 		default:
 			break;
