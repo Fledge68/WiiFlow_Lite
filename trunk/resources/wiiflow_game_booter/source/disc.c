@@ -27,13 +27,28 @@ s32 Disc_Open()
 	return ret;
 }
 
+void Disc_SetLowMemPre()
+{
+	/* Setup low memory before Apploader */
+	*BI2				= 0x817E5480; // BI2
+	*(vu32*)0xCD00643C	= 0x00000000; // 32Mhz on Bus
+
+	/* Clear Disc ID */
+	memset((u8*)Disc_ID, 0, 32);
+
+	/* For WiiRD */
+	memset((void*)0x80001800, 0, 0x1800);
+
+	/* Flush everything */
+	DCFlushRange((void*)0x80000000, 0x3f00);
+}
+
 void Disc_SetLowMem(u32 IOS)
 {
 	/* Setup low memory */
 	*Sys_Magic			= 0x0D15EA5E; // Standard Boot Code
 	*Sys_Version		= 0x00000001; // Version
 	*Arena_L			= 0x00000000; // Arena Low
-	*BI2				= 0x817E5480; // BI2
 	*Bus_Speed			= 0x0E7BE2C0; // Console Bus Speed
 	*CPU_Speed			= 0x2B73A840; // Console CPU Speed
 	*Assembler			= 0x38A00040; // Assembler
@@ -41,10 +56,12 @@ void Disc_SetLowMem(u32 IOS)
 	*Dev_Debugger		= 0x81800000; // Dev Debugger Monitor Address
 	*Simulated_Mem		= 0x01800000; // Simulated Memory Size
 	*GameID_Address		= 0x80000000; // Fix for Sam & Max (WiiPower)
-	*(vu32*)0xCD00643C	= 0x00000000; // 32Mhz on Bus
 
-	/* Copy disc ID */
-	memcpy((void *)Online_Check, (void *)Disc_ID, 4);
+	/* Copy Disc ID */
+	memcpy((void*)Online_Check, (void*)Disc_ID, 4);
+
+	/* For WiiRD */
+	memcpy((void*)0x80001800, (void*)Disc_ID, 8);
 
 	/* Error 002 Fix (thanks WiiPower and uLoader) */
 	*Current_IOS = (IOS << 16) | 0xffff;

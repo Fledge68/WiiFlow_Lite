@@ -140,95 +140,89 @@ void app_pokevalues()
 
 void load_handler()
 {
-	if (hooktype != 0x00)
+	if(debuggerselect == 0x01)
 	{
-		if (debuggerselect == 0x01)
-		{
-			//printf("Debbugger selected is gecko\n");
-			memset((void*)0x80001800,0,codehandler_size);
-			memcpy((void*)0x80001800,codehandler,codehandler_size);
-			//if (pausedstartoption == 0x01)
-			//	*(u32*)0x80002798 = 1;
-			memcpy((void*)0x80001CDE, &codelist, 2);
-			memcpy((void*)0x80001CE2, ((u8*) &codelist) + 2, 2);
-			memcpy((void*)0x80001F5A, &codelist, 2);
-			memcpy((void*)0x80001F5E, ((u8*) &codelist) + 2, 2);
-			DCFlushRange((void*)0x80001800,codehandler_size);
-			ICInvalidateRange((void*)0x80001000,codehandler_size);
-		}
-		else
-		{
-			//printf("Debbugger selected is not gecko\n");
-			memset((void*)0x80001800,0,codehandleronly_size);
-			memcpy((void*)0x80001800,codehandleronly,codehandleronly_size);
-			memcpy((void*)0x80001906, &codelist, 2);
-			memcpy((void*)0x8000190A, ((u8*) &codelist) + 2, 2);
-			DCFlushRange((void*)0x80001800,codehandleronly_size);
-			ICInvalidateRange((void*)0x80001000,codehandleronly_size);
-		}
-		// Load multidol handler
-		memset((void*)0x80001000,0,multidol_size);
-		memcpy((void*)0x80001000,multidol,multidol_size);
-		DCFlushRange((void*)0x80001000,multidol_size);
-		ICInvalidateRange((void*)0x80001000,multidol_size);
-		switch(hooktype)
-		{
-			case 0x01:
-				memcpy((void*)0x8000119C,viwiihooks,12);
-				memcpy((void*)0x80001198,viwiihooks+3,4);
-				break;
-			case 0x02:
-				memcpy((void*)0x8000119C,kpadhooks,12);
-				memcpy((void*)0x80001198,kpadhooks+3,4);
-				break;
-			case 0x03:
-				memcpy((void*)0x8000119C,joypadhooks,12);
-				memcpy((void*)0x80001198,joypadhooks+3,4);
-				break;
-			case 0x04:
-				memcpy((void*)0x8000119C,gxdrawhooks,12);
-				memcpy((void*)0x80001198,gxdrawhooks+3,4);
-				break;
-			case 0x05:
-				memcpy((void*)0x8000119C,gxflushhooks,12);
-				memcpy((void*)0x80001198,gxflushhooks+3,4);
-				break;
-			case 0x06:
-				memcpy((void*)0x8000119C,ossleepthreadhooks,12);
-				memcpy((void*)0x80001198,ossleepthreadhooks+3,4);
-				break;
-			case 0x07:
-				memcpy((void*)0x8000119C,axnextframehooks,12);
-				memcpy((void*)0x80001198,axnextframehooks+3,4);
-				break;
-			case 0x08:
-				//if (customhooksize == 16)
-				//{
-				//	memcpy((void*)0x8000119C,customhook,12);
-				//	memcpy((void*)0x80001198,customhook+3,4);
-				//}
-				break;
-			case 0x09:
-				//memcpy((void*)0x8000119C,wpadbuttonsdownhooks,12);
-				//memcpy((void*)0x80001198,wpadbuttonsdownhooks+3,4);
-				break;
-			case 0x0A:
-				//memcpy((void*)0x8000119C,wpadbuttonsdown2hooks,12);
-				//memcpy((void*)0x80001198,wpadbuttonsdown2hooks+3,4);
-				break;
-		}
-		DCFlushRange((void*)0x80001198,16);
+		//printf("Debbugger selected is gecko\n");
+		memset((void*)0x80001800,0,codehandler_size);
+		memcpy((void*)0x80001800,codehandler,codehandler_size);
+		//if (pausedstartoption == 0x01)
+		//	*(u32*)0x80002798 = 1;
+		memcpy((void*)0x80001CDE, &codelist, 2);
+		memcpy((void*)0x80001CE2, ((u8*) &codelist) + 2, 2);
+		memcpy((void*)0x80001F5A, &codelist, 2);
+		memcpy((void*)0x80001F5E, ((u8*) &codelist) + 2, 2);
+		DCFlushRange((void*)0x80001800,codehandler_size);
+		ICInvalidateRange((void*)0x80001800,codehandler_size);
 	}
+	else
+	{
+		//printf("Debbugger selected is not gecko\n");
+		memset((void*)0x80001800,0,codehandleronly_size);
+		memcpy((void*)0x80001800,codehandleronly,codehandleronly_size);
+		memcpy((void*)0x80001906, &codelist, 2);
+		memcpy((void*)0x8000190A, ((u8*) &codelist) + 2, 2);
+		DCFlushRange((void*)0x80001800,codehandleronly_size);
+		ICInvalidateRange((void*)0x80001800,codehandleronly_size);
+	}
+
+	// Load multidol handler
+	memset((void*)0x80001000,0,multidol_size);
+	memcpy((void*)0x80001000,multidol,multidol_size);
+	DCFlushRange((void*)0x80001000,multidol_size);
+	ICInvalidateRange((void*)0x80001000,multidol_size);
+	switch(hooktype)
+	{
+		case 0x01:
+			memcpy((void*)0x8000119C,viwiihooks,12);
+			memcpy((void*)0x80001198,viwiihooks+3,4);
+			break;
+		case 0x02:
+			memcpy((void*)0x8000119C,kpadhooks,12);
+			memcpy((void*)0x80001198,kpadhooks+3,4);
+			break;
+		case 0x03:
+			memcpy((void*)0x8000119C,joypadhooks,12);
+			memcpy((void*)0x80001198,joypadhooks+3,4);
+			break;
+		case 0x04:
+			memcpy((void*)0x8000119C,gxdrawhooks,12);
+			memcpy((void*)0x80001198,gxdrawhooks+3,4);
+			break;
+		case 0x05:
+			memcpy((void*)0x8000119C,gxflushhooks,12);
+			memcpy((void*)0x80001198,gxflushhooks+3,4);
+			break;
+		case 0x06:
+			memcpy((void*)0x8000119C,ossleepthreadhooks,12);
+			memcpy((void*)0x80001198,ossleepthreadhooks+3,4);
+			break;
+		case 0x07:
+			memcpy((void*)0x8000119C,axnextframehooks,12);
+			memcpy((void*)0x80001198,axnextframehooks+3,4);
+			break;
+		case 0x08:
+			//if (customhooksize == 16)
+			//{
+			//	memcpy((void*)0x8000119C,customhook,12);
+			//	memcpy((void*)0x80001198,customhook+3,4);
+			//}
+			break;
+		case 0x09:
+			//memcpy((void*)0x8000119C,wpadbuttonsdownhooks,12);
+			//memcpy((void*)0x80001198,wpadbuttonsdownhooks+3,4);
+			break;
+		case 0x0A:
+			//memcpy((void*)0x8000119C,wpadbuttonsdown2hooks,12);
+			//memcpy((void*)0x80001198,wpadbuttonsdown2hooks+3,4);
+			break;
+	}
+	DCFlushRange((void*)0x80001198,16);
 }
 
 int ocarina_do_code()
 {
 	//if (!code_buf) return 0;  // Need the handler loaded for hooking other than cheats!
-
-	memset((void*)0x80001800, 0, 0x1800);
 	load_handler();
-	memcpy((void*)0x80001800, (void*)Disc_ID, 8);
-	DCFlushRange((void*)0x80001800, 0x1800);
 
 	if(codelist)
 		memset(codelist, 0, (u32)codelistend - (u32)codelist);

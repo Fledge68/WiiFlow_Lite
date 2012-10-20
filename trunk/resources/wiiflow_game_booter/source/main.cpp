@@ -79,7 +79,9 @@ int main()
 	}
 	prog10();
 
-	memset((u8*)Disc_ID, 0, 32);
+	/* Setup Low Memory */
+	Disc_SetLowMemPre();
+
 	if(normalCFG.BootType == TYPE_WII_GAME)
 	{
 		WDVD_Init();
