@@ -27,6 +27,7 @@
 #include "apploader.h"
 #include "patchcode.h"
 #include "memory.h"
+#include "gecko.h"
 
 u32 hooktype;
 u8 configbytes[2];
@@ -323,7 +324,7 @@ bool PatchReturnTo( void *Address, int Size, u32 id )
 	//if the function is found
 	if( found == 3 && ad[ 3 ] )
 	{
-		//gprintf("patch __OSLaunchMenu( 0x00010001, 0x%08x )\n", id);
+		gprintf("patch __OSLaunchMenu( 0x00010001, 0x%08x )\n", id);
 		u32 nop = 0x60000000;
 
 		//the magic that writes the TID to the registers

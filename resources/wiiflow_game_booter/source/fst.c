@@ -74,19 +74,19 @@ void ocarina_set_codes(void *list, u8 *listend, u8 *cheats, u32 cheatSize)
 	code_size = cheatSize;
 	if(code_size <= 0)
 	{
-		gprintf("Ocarina: No codes found\n");
+		//gprintf("Ocarina: No codes found\n");
 		code_buf = NULL;
 		code_size = 0;
 		return;
 	}
 	if (code_size > (u32)codelistend - (u32)codelist)
 	{
-		gprintf("Ocarina: Too many codes found\n");
+		gprintf("Ocarina: Too many codes found.\n");
 		code_buf = NULL;
 		code_size = 0;
 		return;
 	}
-	gprintf("Ocarina: Codes found.\n");
+	//gprintf("Ocarina: Codes found.\n");
 }
 
 void app_pokevalues()
@@ -142,34 +142,43 @@ void load_handler()
 {
 	if(debuggerselect == 0x01)
 	{
-		//printf("Debbugger selected is gecko\n");
-		memset((void*)0x80001800,0,codehandler_size);
-		memcpy((void*)0x80001800,codehandler,codehandler_size);
+		gprintf("Ocarina: Debugger selected.\n");
+		memcpy((void*)0x80001800, codehandler, codehandler_size);
 		//if (pausedstartoption == 0x01)
 		//	*(u32*)0x80002798 = 1;
-		memcpy((void*)0x80001CDE, &codelist, 2);
-		memcpy((void*)0x80001CE2, ((u8*) &codelist) + 2, 2);
-		memcpy((void*)0x80001F5A, &codelist, 2);
-		memcpy((void*)0x80001F5E, ((u8*) &codelist) + 2, 2);
-		DCFlushRange((void*)0x80001800,codehandler_size);
-		ICInvalidateRange((void*)0x80001800,codehandler_size);
+		if(code_size > 0 && code_buf)
+		{
+			gprintf("Ocarina: Codes found.\n");
+			memcpy((void*)0x80001CDE, &codelist, 2);
+			memcpy((void*)0x80001CE2, ((u8*) &codelist) + 2, 2);
+			memcpy((void*)0x80001F5A, &codelist, 2);
+			memcpy((void*)0x80001F5E, ((u8*) &codelist) + 2, 2);
+		}
+		else
+			gprintf("Ocarina: No Codes found.\n");
+		DCFlushRange((void*)0x80001800, codehandler_size);
+		ICInvalidateRange((void*)0x80001800, codehandler_size);
 	}
 	else
 	{
-		//printf("Debbugger selected is not gecko\n");
-		memset((void*)0x80001800,0,codehandleronly_size);
-		memcpy((void*)0x80001800,codehandleronly,codehandleronly_size);
-		memcpy((void*)0x80001906, &codelist, 2);
-		memcpy((void*)0x8000190A, ((u8*) &codelist) + 2, 2);
-		DCFlushRange((void*)0x80001800,codehandleronly_size);
-		ICInvalidateRange((void*)0x80001800,codehandleronly_size);
+		gprintf("Ocarina: No Debugger selected.\n");
+		memcpy((void*)0x80001800, codehandleronly, codehandleronly_size);
+		if(code_size > 0 && code_buf)
+		{
+			gprintf("Ocarina: Codes found.\n");
+			memcpy((void*)0x80001906, &codelist, 2);
+			memcpy((void*)0x8000190A, ((u8*) &codelist) + 2, 2);
+		}
+		else
+			gprintf("Ocarina: No Codes found.\n");
+		DCFlushRange((void*)0x80001800, codehandleronly_size);
+		ICInvalidateRange((void*)0x80001800, codehandleronly_size);
 	}
 
 	// Load multidol handler
-	memset((void*)0x80001000,0,multidol_size);
-	memcpy((void*)0x80001000,multidol,multidol_size);
-	DCFlushRange((void*)0x80001000,multidol_size);
-	ICInvalidateRange((void*)0x80001000,multidol_size);
+	memcpy((void*)0x80001000, multidol, multidol_size);
+	DCFlushRange((void*)0x80001000, multidol_size);
+	ICInvalidateRange((void*)0x80001000, multidol_size);
 	switch(hooktype)
 	{
 		case 0x01:
