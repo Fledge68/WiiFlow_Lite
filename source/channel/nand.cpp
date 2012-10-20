@@ -40,7 +40,6 @@
 #include "gecko/gecko.h"
 #include "loader/alt_ios.h"
 #include "loader/cios.h"
-#include "loader/nk.h"
 #include "loader/sys.h"
 #include "loader/wbfs.h"
 #include "memory/memory.h"
@@ -1083,7 +1082,7 @@ void Nand::Init_ISFS()
 {
 	gprintf("Init ISFS\n");
 	ISFS_Initialize();
-	if(IOS_GetVersion() == 58 && !neek2o())
+	if(IOS_GetVersion() == 58)
 		Enable_ISFS_Patches();
 }
 
@@ -1091,7 +1090,7 @@ void Nand::DeInit_ISFS()
 {
 	gprintf("Deinit ISFS\n");
 	ISFS_Deinitialize();
-	if(IOS_GetVersion() == 58 && !neek2o())
+	if(IOS_GetVersion() == 58)
 		Disable_ISFS_Patches();
 }
 

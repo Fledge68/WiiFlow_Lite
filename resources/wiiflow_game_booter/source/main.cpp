@@ -26,6 +26,8 @@
 #include "video_tinyload.h"
 #include "apploader.h"
 #include "patchcode.h"
+#include "memory.h"
+#include "utils.h"
 #include "disc.h"
 #include "fst.h"
 #include "wdvd.h"
@@ -70,7 +72,14 @@ int main()
 	frag_list = normalCFG.fragments;
 	wbfsDev = normalCFG.wbfsDevice;
 	wbfs_part_idx = normalCFG.wbfsPart;
+	if(CurrentIOS.Type == IOS_TYPE_D2X)
+	{
+		s32 ret = BlockIOSReload();
+		gprintf("Block IOS Reload using d2x %s.\n", ret < 0 ? "failed" : "succeeded");
+	}
+	prog10();
 
+	memset((u8*)Disc_ID, 0, 32);
 	if(normalCFG.BootType == TYPE_WII_GAME)
 	{
 		WDVD_Init();
@@ -86,13 +95,12 @@ int main()
 			if(CurrentIOS.Type == IOS_TYPE_HERMES)
 				Hermes_shadow_mload(normalCFG.mload_rev);
 		}
-		prog10();
+		prog(20);
 		Disc_Open();
-		u64 offset = 0;
+		u32 offset = 0;
 		Disc_FindPartition(&offset);
 		WDVD_OpenPartition(offset, &GameIOS);
 		vmode = Disc_SelectVMode(normalCFG.vidMode, &vmode_reg);
-		prog10();
 		Apploader_Run(&p_entry, normalCFG.vidMode, vmode, normalCFG.vipatch, normalCFG.countryString, normalCFG.patchVidMode, 
 					normalCFG.aspectRatio, normalCFG.returnTo);
 		AppEntrypoint = (u32)p_entry;
@@ -101,10 +109,11 @@ int main()
 	else if(normalCFG.BootType == TYPE_CHANNEL)
 	{
 		ISFS_Initialize();
+		*Disc_ID = TITLE_LOWER(normalCFG.title);
 		AppEntrypoint = LoadChannel(normalCFG.title, &GameIOS);
 		vmode = Disc_SelectVMode(normalCFG.vidMode, &vmode_reg);
 		PatchChannel(normalCFG.vidMode, vmode, normalCFG.vipatch, normalCFG.countryString, 
-					normalCFG.patchVidMode, normalCFG.aspectRatio, normalCFG.title);
+					normalCFG.patchVidMode, normalCFG.aspectRatio);
 		ISFS_Deinitialize();
 	}
 	gprintf("Entrypoint: %08x, Requested Game IOS: %i\n", AppEntrypoint, GameIOS);

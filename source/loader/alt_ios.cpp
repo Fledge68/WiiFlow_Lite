@@ -82,12 +82,12 @@ bool loadIOS(int ios, bool MountDevices)
 	{
 		WDVD_Close();
 		Close_Inputs();
-		gprintf("Reloading into IOS %i from %i...\n", ios, CurIOS);
 		NandHandle.Patch_AHB(); //No AHBPROT for the next IOS
 		ShutdownBeforeExit();
+		gprintf("Reloading into IOS %i from %i...\n", ios, CurIOS);
 		ret = IOS_ReloadIOS(ios) == 0;
-		NandHandle.Init_ISFS();
 		gprintf("AHBPROT after IOS Reload: %u\n", AHBRPOT_Patched());
+		NandHandle.Init_ISFS();
 		WDVD_Init();
 	}
 

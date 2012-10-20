@@ -189,3 +189,20 @@ void IOS_GetCurrentIOSInfo()
 		CurrentIOS.Base = CurrentIOS.Version;
 	DCFlushRange(&CurrentIOS, sizeof(IOS_Info));
 }
+
+s32 D2X_PatchReturnTo(u32 returnTo)
+{
+	/* Open ES Module */
+	s32 ESHandle = IOS_Open("/dev/es", 0);
+	/* Return to */
+	static ioctlv rtn_vector[1]  ATTRIBUTE_ALIGN(32);
+	static u64 sm_title_id[8]  ATTRIBUTE_ALIGN(32);
+	sm_title_id[0] = ((u64)(0x00010001) << 32) | returnTo;
+	rtn_vector[0].data = sm_title_id;
+	rtn_vector[0].len = sizeof(u64);
+	s32 ret = IOS_Ioctlv(ESHandle, 0xA1, 1, 0, rtn_vector);
+	gprintf("Return to channel %.4s using d2x %s.\n", &returnTo, ret < 0 ? "failed" : "succeeded");
+	/* Close ES Module */
+	IOS_Close(ESHandle);
+	return ret;
+}

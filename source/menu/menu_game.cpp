@@ -56,9 +56,6 @@ extern const u8 blank_png[];
 extern const u8 gc_ogg[];
 extern const u32 gc_ogg_size;
 
-extern u32 boot2version;
-static u64 sm_title_id[8]  ATTRIBUTE_ALIGN(32);
-
 bool m_zoom_banner = false;
 s16 m_gameBtnPlayFull;
 s16 m_gameBtnBackFull;
@@ -1024,7 +1021,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	string id = string(hdr->id);
 
 	bool NAND_Emu = !m_cfg.getBool("NAND", "disable", true);
-	bool WII_Launch = neek2o() || (m_gcfg2.getBool(id, "custom", false) && !NAND_Emu);
+	bool WII_Launch = (m_gcfg2.getBool(id, "custom", false) && (!NAND_Emu || neek2o()));
 
 	bool vipatch = m_gcfg2.testOptBool(id, "vipatch", m_cfg.getBool("GENERAL", "vipatch", false));
 	bool cheat = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool("NAND", "cheat", false));
@@ -1039,6 +1036,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	const char *rtrn = m_gcfg2.getBool(id, "returnto", true) ? m_cfg.getString("GENERAL", "returnto").c_str() : NULL;
 	u8 patchVidMode = min((u32)m_gcfg2.getInt(id, "patch_video_modes", 0), ARRAY_SIZE(CMenu::_vidModePatch) - 1u);
 	int aspectRatio = min((u32)m_gcfg2.getInt(id, "aspect_ratio", 0), ARRAY_SIZE(CMenu::_AspectRatio) - 1u)-1;
+	u32 returnTo = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
 
 	SmartBuf cheatFile;
 	u32 cheatSize = 0;
@@ -1074,6 +1072,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	m_cat.save(true);
 	m_cfg.save(true);
 	cleanup();
+
 	if(NAND_Emu && !neek2o())
 	{
 		if(useNK2o)
@@ -1083,12 +1082,9 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 				error(_t("errneek1", L"Cannot launch neek2o. Verify your neek2o setup"));
 				Sys_Exit();
 			}
-			int rtrnID = 0;
-			if(rtrn != NULL && strlen(rtrn) == 4)
-				rtrnID = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
-
 			ShutdownBeforeExit();
-			Launch_nk(gameTitle, emuPath.size() > 1 ? emuPath.c_str() : NULL, rtrnID ? (((u64)(0x00010001) << 32) | (rtrnID & 0xFFFFFFFF)) : rtrnID);
+			Launch_nk(gameTitle, emuPath.size() > 1 ? emuPath.c_str() : NULL, 
+				returnTo ? (((u64)(0x00010001) << 32) | (returnTo & 0xFFFFFFFF)) : 0);
 			while(1);
 		}
 		DeviceHandle.UnMount(emuPartition);
@@ -1096,23 +1092,30 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		NandHandle.Enable_Emu();
 	}
 	gameIOS = ChannelHandle.GetRequestedIOS(gameTitle);
-	NandHandle.Disable_Emu();
-	if(_loadIOS(gameIOS, WII_Launch ? gameIOS : userIOS, id) == LOAD_IOS_FAILED)
+	if(NAND_Emu && !neek2o())
+		NandHandle.Disable_Emu();
+	if(_loadIOS(gameIOS, userIOS, id) == LOAD_IOS_FAILED)
 		Sys_Exit();
-	if((CurrentIOS.Type == IOS_TYPE_D2X || neek2o()) && rtrn != NULL && strlen(rtrn) == 4)
+	if((CurrentIOS.Type == IOS_TYPE_D2X || neek2o()) && returnTo != 0)
 	{
-		int rtrnID = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
-
-		static ioctlv vector[1]  ATTRIBUTE_ALIGN(32);
-		sm_title_id[0] = (((u64)(0x00010001) << 32) | (rtrnID & 0xFFFFFFFF));
-
-		vector[0].data = sm_title_id;
-		vector[0].len = 8;
-
-		s32 ESHandle = IOS_Open("/dev/es", 0);
-		gprintf("Return to channel %s %s. Using new d2x way\n", rtrn, IOS_Ioctlv(ESHandle, 0xA1, 1, 0, vector) != -101 ? "Succeeded" : "Failed!" );
-		IOS_Close(ESHandle);
+		if(D2X_PatchReturnTo(returnTo) >= 0)
+			memset(&returnTo, 0, sizeof(u32));
 	}
+	if(NAND_Emu && !neek2o())
+	{
+		NandHandle.SetPaths(emuPath.c_str(), emuPartition, false);
+		if(emulate_mode == 1)
+			NandHandle.Set_FullMode(true);
+		else
+			NandHandle.Set_FullMode(false);
+		if(NandHandle.Enable_Emu() < 0)
+		{
+			NandHandle.Disable_Emu();
+			error(_t("errgame5", L"Enabling emu failed!"));
+			Sys_Exit();
+		}
+	}
+
 	if(WII_Launch)
 	{
 		ShutdownBeforeExit();
@@ -1121,25 +1124,11 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	}
 	else
 	{
-		if(NAND_Emu)
-		{
-			NandHandle.SetPaths(emuPath.c_str(), emuPartition, false);
-			if(emulate_mode == 1)
-				NandHandle.Set_FullMode(true);
-			else
-				NandHandle.Set_FullMode(false);
-			if(NandHandle.Enable_Emu() < 0)
-			{
-				NandHandle.Disable_Emu();
-				error(_t("errgame5", L"Enabling emu failed!"));
-				Sys_Exit();
-			}
-		}
 		setLanguage(language);
 		ocarina_load_code(cheatFile.get(), cheatSize);
 		Identify(gameTitle);
 		ExternalBooter_ChannelSetup(gameTitle);
-		BootChannel(gameTitle, gameIOS, videoMode, vipatch, countryPatch, patchVidMode, aspectRatio);
+		WiiFlow_ExternalBooter(videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, 0, TYPE_CHANNEL);
 	}
 	Sys_Exit();
 }
@@ -1298,12 +1287,9 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	}
 	bool cheat = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool("GAMES", "cheat", false));
 	debuggerselect = m_gcfg2.getBool(id, "debugger", false) ? 1 : 0; // debuggerselect is defined in fst.h
-	hooktype = (u32)m_gcfg2.getInt(id, "hooktype", 0); // hooktype is defined in patchcode.h
-	if(!debuggerselect && !cheat)
-		hooktype = 0;
-
 	if(id == "RPWE41" || id == "RPWZ41" || id == "SPXP41") // Prince of Persia, Rival Swords
 		debuggerselect = false;
+	hooktype = (u32)m_gcfg2.getInt(id, "hooktype", 0); // hooktype is defined in patchcode.h
 
 	SmartBuf cheatFile, gameconfig;
 	u32 cheatSize = 0, gameconfigSize = 0, returnTo = 0;
@@ -1317,10 +1303,12 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 
 	setLanguage(language);
 
+	load_wip_patches((u8 *)m_wipDir.c_str(), (u8 *) &id);
 	if(cheat)
 		_loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", id.c_str()));
 	_loadFile(gameconfig, gameconfigSize, m_txtCheatDir.c_str(), "gameconfig.txt");
-	load_wip_patches((u8 *)m_wipDir.c_str(), (u8 *) &id);
+	if(!debuggerselect && !cheatFile.get())
+		hooktype = 0;
 
 	if(rtrn != NULL && strlen(rtrn) == 4)
 		returnTo = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
@@ -1338,33 +1326,10 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		if(_loadIOS(gameIOS, userIOS, id) == LOAD_IOS_FAILED)
 			Sys_Exit();
 	}
-	if(CurrentIOS.Type == IOS_TYPE_D2X)
+	if(CurrentIOS.Type == IOS_TYPE_D2X && returnTo != 0 && !m_directLaunch)
 	{
-		/* Open ES Module */
-		s32 ESHandle = IOS_Open("/dev/es", 0);
-		/* IOS Reload Block */
-		static ioctlv block_vector[2] ATTRIBUTE_ALIGN(32);
-		static u32 mode ATTRIBUTE_ALIGN(32);
-		static u32 ios ATTRIBUTE_ALIGN(32);
-		mode = 2;
-		block_vector[0].data = &mode;
-		block_vector[0].len  = sizeof(u32);
-		ios = IOS_GetVersion();
-		block_vector[1].data = &ios;
-		block_vector[1].len  = sizeof(u32);
-		gprintf("Block IOS Reload for %i %s\n", ios, IOS_Ioctlv(ESHandle, 0xA0, 2, 0, block_vector) < 0 ? "failed!" : "succeeded");
-		/* Return to */
-		if(!m_directLaunch && returnTo)
-		{
-			static ioctlv rtn_vector[1]  ATTRIBUTE_ALIGN(32);
-			sm_title_id[0] = (((u64)(0x00010001) << 32) | (returnTo & 0xFFFFFFFF));
-			rtn_vector[0].data = sm_title_id;
-			rtn_vector[0].len = sizeof(u64);
-			gprintf("Return to channel %s %s. Using new d2x way\n", rtrn, IOS_Ioctlv(ESHandle, 0xA1, 1, 0, rtn_vector) != -101 ? "succeeded" : "failed!");
-			returnTo = 0;
-		}
-		/* Close ES Module */
-		IOS_Close(ESHandle);
+		if(D2X_PatchReturnTo(returnTo) >= 0)
+			memset(&returnTo, 0, sizeof(u32));
 	}
 	if(emulate_mode && !neek2o() && CurrentIOS.Type == IOS_TYPE_D2X)
 	{

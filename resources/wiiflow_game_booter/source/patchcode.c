@@ -26,6 +26,7 @@
 
 #include "apploader.h"
 #include "patchcode.h"
+#include "memory.h"
 
 u32 hooktype;
 u8 configbytes[2];
@@ -218,24 +219,20 @@ bool dogamehooks(void *addr, u32 len, bool channel)
 
 void langpatcher(void *addr, u32 len)
 {
-
 	void *addr_start = addr;
 	void *addr_end = addr+len;
 
 	while(addr_start < addr_end)
 	{
-
 		if(memcmp(addr_start, langpatch, sizeof(langpatch))==0)
 			if(configbytes[0] != 0xCD)
 				langvipatch((u32)addr_start, len, configbytes[0]);
-
 		addr_start += 4;
 	}
 }
 
 void vidolpatcher(void *addr, u32 len)
 {
-
 	void *addr_start = addr;
 	void *addr_end = addr+len;
 
@@ -243,7 +240,6 @@ void vidolpatcher(void *addr, u32 len)
 	{
 		if(memcmp(addr_start, vipatchcode, sizeof(vipatchcode))==0)
 			vipatch((u32)addr_start, len);
-
 		addr_start += 4;
 	}
 }
@@ -449,7 +445,9 @@ void PatchCountryStrings(void *Address, int Size)
 			SearchPattern[1] = 'U';
 			SearchPattern[2] = 'S';
 	}
-	switch(((const u8 *)0x80000000)[3])
+
+	const char DiscRegion = ((u8*)Disc_ID)[3];
+	switch(DiscRegion)
 	{
 		case 'J':
 			PatchData[1] = 'J';
@@ -489,4 +487,24 @@ void PatchCountryStrings(void *Address, int Size)
 			Size -= 4;
 		}
 	}
+}
+
+s32 BlockIOSReload(void)
+{
+	/* Open ES Module */
+	s32 ESHandle = IOS_Open("/dev/es", 0);
+	/* IOS Reload Block */
+	static ioctlv block_vector[2] ATTRIBUTE_ALIGN(32);
+	static u32 mode ATTRIBUTE_ALIGN(32);
+	static u32 ios ATTRIBUTE_ALIGN(32);
+	mode = 2;
+	block_vector[0].data = &mode;
+	block_vector[0].len  = sizeof(u32);
+	ios = IOS_GetVersion();
+	block_vector[1].data = &ios;
+	block_vector[1].len  = sizeof(u32);
+	s32 ret = IOS_Ioctlv(ESHandle, 0xA0, 2, 0, block_vector);
+	/* Close ES Module */
+	IOS_Close(ESHandle);
+	return ret;
 }

@@ -36,6 +36,7 @@ void vidolpatcher(void *addr, u32 len);
 void PatchCountryStrings(void *Address, int Size);
 void PatchAspectRatio(void *addr, u32 len, u8 aspect);
 bool PatchReturnTo(void *Address, int Size, u32 id);
+s32 BlockIOSReload(void);
 
 #ifdef __cplusplus
 }

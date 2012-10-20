@@ -24,7 +24,8 @@ typedef void  (*app_entry)(void (**init)(void (*report)(const char *fmt, ...)), 
 static u8 *appldr = (u8 *)0x81200000;
 
 /* Constants */
-#define APPLDR_OFFSET	0x2440
+#define APPLDR_OFFSET	0x910
+#define APPLDR_CODE		0x918
 
 /* Variables */
 static u32 buffer[0x20] ATTRIBUTE_ALIGN(32);
@@ -60,7 +61,7 @@ s32 Apploader_Run(entry_point *entry, u8 vidMode, GXRModeObj *vmode, bool vipatc
 	appldr_len = buffer[5] + buffer[6];
 
 	/* Read apploader code */
-	ret = WDVD_Read(appldr, appldr_len, APPLDR_OFFSET + 0x20);
+	ret = WDVD_Read(appldr, appldr_len, APPLDR_CODE);
 	if(ret < 0)
 		return ret;
 
@@ -80,16 +81,17 @@ s32 Apploader_Run(entry_point *entry, u8 vidMode, GXRModeObj *vmode, bool vipatc
 	while(appldr_main(&dst, &len, &offset))
 	{
 		/* Read data from DVD */
-		WDVD_Read(dst, len, (u64)(offset << 2));
-		maindolpatches(dst, len, vidMode, vmode, vipatch, countryString, patchVidModes, aspectRatio, returnTo);
+		WDVD_Read(dst, len, offset);
+		maindolpatches(dst, len, vidMode, vmode, vipatch, countryString, 
+						patchVidModes, aspectRatio, returnTo);
 		DCFlushRange(dst, len);
 		ICInvalidateRange(dst, len);
-		prog10();
+		prog(20);
 	}
 
 	free_wip();
 	if(hooktype != 0 && hookpatched)
-		ocarina_do_code(0);
+		ocarina_do_code();
 
 	/* Set entry point from apploader */
 	*entry = appldr_final();

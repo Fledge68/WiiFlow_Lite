@@ -31,8 +31,7 @@ void IOS_GetCurrentIOSInfo();
 bool IOS_D2X(u8 ios, u8 *base);
 u8 IOS_GetType(u8 slot);
 
-bool Hermes_shadow_mload();
-void Hermes_Disable_EHC();
+s32 D2X_PatchReturnTo(u32 returnTo);
 
 #ifdef __cplusplus
 }
