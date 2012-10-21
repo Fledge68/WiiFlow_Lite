@@ -1,6 +1,4 @@
-#include <stdio.h>
 #include <string.h>
-#include <malloc.h>
 #include <ogcsys.h>
 #include "gecko.h"
 
@@ -36,30 +34,24 @@ static s32 di_fd = -1;
 s32 WDVD_Init(void)
 {
 	/* Open "/dev/di" */
-	if (di_fd < 0) {
+	if(di_fd < 0)
+	{
 		di_fd = IOS_Open(di_fs, 0);
 		if (di_fd < 0)
 			return di_fd;
 	}
-
 	return 0;
 }
 
 s32 WDVD_Close(void)
 {
 	/* Close "/dev/di" */
-	if (di_fd >= 0) {
+	if(di_fd >= 0)
+	{
 		IOS_Close(di_fd);
 		di_fd = -1;
 	}
-
 	return 0;
-}
-
-s32 WDVD_GetHandle(void)
-{
-	/* Return di handle */
-	return di_fd;
 }
 
 s32 WDVD_Reset(void)
@@ -71,28 +63,9 @@ s32 WDVD_Reset(void)
 	inbuf[1] = 1;
 
 	s32 ret = IOS_Ioctl(di_fd, IOCTL_DI_RESET, inbuf, sizeof(inbuf), outbuf, sizeof(outbuf));
-	if (ret < 0) return ret;
-
+	if(ret < 0)
+		return ret;
 	return (ret == 1) ? 0 : -ret;
-}
-
-s32 WDVD_ReadDiskId(void *id)
-{
-	memset(inbuf, 0, sizeof(inbuf));
-
-	/* Read disc ID */
-	inbuf[0] = IOCTL_DI_READID << 24;
-
-	s32 ret = IOS_Ioctl(di_fd, IOCTL_DI_READID, inbuf, sizeof(inbuf), outbuf, sizeof(outbuf));
-	if (ret < 0) return ret;
-
-	if (ret == 1)
-	{
-		memcpy(id, outbuf, sizeof(dvddiskid));
-		return 0;
-	}
-
-	return -ret;
 }
 
 s32 WDVD_Seek(u32 offset)
@@ -104,16 +77,57 @@ s32 WDVD_Seek(u32 offset)
 	inbuf[1] = offset;
 
 	s32 ret = IOS_Ioctl(di_fd, IOCTL_DI_SEEK, inbuf, sizeof(inbuf), outbuf, sizeof(outbuf));
-	if (ret < 0) return ret;
+	if(ret < 0)
+		return ret;
+	return (ret == 1) ? 0 : -ret;
+}
 
+s32 WDVD_ReadDiskId(void *id)
+{
+	memset(inbuf, 0, sizeof(inbuf));
+
+	/* Read disc ID */
+	inbuf[0] = IOCTL_DI_READID << 24;
+
+	s32 ret = IOS_Ioctl(di_fd, IOCTL_DI_READID, inbuf, sizeof(inbuf), outbuf, sizeof(outbuf));
+	if(ret < 0)
+		return ret;
+	memcpy(id, outbuf, sizeof(dvddiskid));
+	return (ret == 1) ? 0 : -ret;
+}
+
+s32 WDVD_Read(void *buf, u32 len, u32 offset)
+{
+	memset(inbuf, 0, sizeof(inbuf));
+
+	/* Disc read */
+	inbuf[0] = IOCTL_DI_READ << 24;
+	inbuf[1] = len;
+	inbuf[2] = offset;
+
+	s32 ret = IOS_Ioctl(di_fd, IOCTL_DI_READ, inbuf, sizeof(inbuf), buf, len);
+	if(ret < 0)
+		return ret;
+	return (ret == 1) ? 0 : -ret;
+}
+
+s32 WDVD_UnencryptedRead(void *buf, u32 len, u32 offset)
+{
+	memset(inbuf, 0, sizeof(inbuf));
+
+	/* Unencrypted read */
+	inbuf[0] = IOCTL_DI_UNENCREAD << 24;
+	inbuf[1] = len;
+	inbuf[2] = offset;
+
+	s32 ret = IOS_Ioctl(di_fd, IOCTL_DI_UNENCREAD, inbuf, sizeof(inbuf), buf, len);
+	if(ret < 0)
+		return ret;
 	return (ret == 1) ? 0 : -ret;
 }
 
 s32 WDVD_OpenPartition(u32 offset, u32 *IOS)
 {
-	if (di_fd < 0)
-		return di_fd;
-
 	static u8 Tmd_Buffer[0x4A00] ATTRIBUTE_ALIGN(32);
 	static ioctlv Vectors[5] ATTRIBUTE_ALIGN(32);
 	s32 ret;
@@ -136,144 +150,37 @@ s32 WDVD_OpenPartition(u32 offset, u32 *IOS)
 	Vectors[4].len		= 0x20;
 
 	ret = IOS_Ioctlv(di_fd, IOCTL_DI_OPENPART, 3, 2, (ioctlv *)Vectors);
-	*IOS = (u32)(Tmd_Buffer[0x18b]);
-	if (ret < 0)
+	if(ret < 0)
 		return ret;
-
+	*IOS = (u32)(Tmd_Buffer[0x18b]);
 	return (ret == 1) ? 0 : -ret;
-}
-
-s32 WDVD_ClosePartition(void)
-{
-	memset(inbuf, 0, sizeof(inbuf));
-
-	/* Close partition */
-	inbuf[0] = IOCTL_DI_CLOSEPART << 24;
-
-	s32 ret = IOS_Ioctl(di_fd, IOCTL_DI_CLOSEPART, inbuf, sizeof(inbuf), NULL, 0);
-	if (ret < 0) return ret;
-
-	return (ret == 1) ? 0 : -ret;
-}
-
-s32 WDVD_UnencryptedRead(void *buf, u32 len, u32 offset)
-{
-	memset(inbuf, 0, sizeof(inbuf));
-
-	/* Unencrypted read */
-	inbuf[0] = IOCTL_DI_UNENCREAD << 24;
-	inbuf[1] = len;
-	inbuf[2] = offset;
-
-	s32 ret = IOS_Ioctl(di_fd, IOCTL_DI_UNENCREAD, inbuf, sizeof(inbuf), buf, len);
-	if (ret < 0) return ret;
-
-	return (ret == 1) ? 0 : -ret;
-}
-
-s32 WDVD_Read(void *buf, u32 len, u32 offset)
-{
-	memset(inbuf, 0, sizeof(inbuf));
-
-	/* Disc read */
-	inbuf[0] = IOCTL_DI_READ << 24;
-	inbuf[1] = len;
-	inbuf[2] = offset;
-
-	s32 ret = IOS_Ioctl(di_fd, IOCTL_DI_READ, inbuf, sizeof(inbuf), buf, len);
-	if (ret < 0) return ret;
-
-	return (ret == 1) ? 0 : -ret;
-}
-
-s32 WDVD_LowRequestError(u32 *error)
-{
-	memset(inbuf, 0, sizeof(inbuf));
-	
-	inbuf[0] = IOCTL_DI_REQUESTERROR << 24;
-	
-	s32 ret = IOS_Ioctl(di_fd, IOCTL_DI_REQUESTERROR, inbuf, sizeof(inbuf), outbuf, sizeof(outbuf));
-	if (ret < 0) return ret;
-	
-	if (ret == 1) 	
-		memcpy(error, outbuf, sizeof(u32));
-
-	return (ret == 1) ? 0 : -ret;
-}
-
-s32 WDVD_WaitForDisc(void)
-{
-	memset(inbuf, 0, sizeof(inbuf));
-
-	/* Wait for disc */
-	inbuf[0] = IOCTL_DI_WAITCVRCLOSE << 24;
-
-	s32 ret = IOS_Ioctl(di_fd, IOCTL_DI_WAITCVRCLOSE, inbuf, sizeof(inbuf), outbuf, sizeof(outbuf));
-	if (ret < 0) return ret;
-
-	return (ret == 1) ? 0 : -ret;
-}
-
-s32 WDVD_GetCoverStatus(u32 *status)
-{
-	memset(inbuf, 0, sizeof(inbuf));
-
-	/* Get cover status */
-	inbuf[0] = IOCTL_DI_GETCOVER << 24;
-
-	s32 ret = IOS_Ioctl(di_fd, IOCTL_DI_GETCOVER, inbuf, sizeof(inbuf), outbuf, sizeof(outbuf));
-	if (ret < 0) return ret;
-
-	if (ret == 1) {
-		/* Copy cover status */
-		memcpy(status, outbuf, sizeof(u32));
-
-		return 0;
-	}
-
-	return -ret;
 }
 
 s32 WDVD_SetUSBMode(u32 mode, const u8 *id, s32 partition) 
 {
-	gprintf("WDVD_SetUSBMode, Mode: %i, ID: %s, Partition: %i\n", mode, id, partition);
-    memset(inbuf, 0, sizeof(inbuf));
-
-    /* Set USB mode */
-    inbuf[0] = IOCTL_DI_SETWBFSMODE << 24;
-    inbuf[1] = mode;
-
-    /* Copy ID */
-    if(id)
-	{
-        memcpy(&inbuf[2], id, 6);
-		if(partition >= 0)
-			inbuf[5] = partition;
-    }
-
-    s32 ret = IOS_Ioctl(di_fd, IOCTL_DI_SETWBFSMODE, inbuf, sizeof(inbuf), outbuf, sizeof(outbuf));
-
-    if(ret < 0)
-		return ret;
-    return(ret == 1) ? 0 : -ret;
-}
-
-s32 WDVD_Read_Disc_BCA(void *buf)
-{
+	if(id)
+		gprintf("WDVD_SetUSBMode, Mode: %i, ID: %s, Partition: %i\n", mode, id, partition);
 	memset(inbuf, 0, sizeof(inbuf));
 
-	/* Disc read */
-	inbuf[0] = IOCTL_DI_DISC_BCA << 24;
-	//inbuf[1] = 64;
+	/* Set USB mode */
+	inbuf[0] = IOCTL_DI_SETWBFSMODE << 24;
+	inbuf[1] = mode;
 
-	s32 ret = IOS_Ioctl(di_fd, IOCTL_DI_DISC_BCA, inbuf, sizeof(inbuf), buf, 64);
-	if (ret < 0) return ret;
+	/* Copy ID */
+	if(id)
+	{
+		memcpy(&inbuf[2], id, 6);
+		if(partition >= 0)
+			inbuf[5] = partition;
+	}
 
-	return (ret == 1) ? 0 : -ret;
+	s32 ret = IOS_Ioctl(di_fd, IOCTL_DI_SETWBFSMODE, inbuf, sizeof(inbuf), outbuf, sizeof(outbuf));
+	if(ret < 0)
+		return ret;
+	return(ret == 1) ? 0 : -ret;
 }
 
 // frag
-
 s32 WDVD_SetFragList(int device, void *fraglist, int size)
 {
 	gprintf("WDVD_SetFragList, Device: %i, Size: %i\n", device, size);
@@ -288,63 +195,7 @@ s32 WDVD_SetFragList(int device, void *fraglist, int size)
 
 	DCFlushRange(fraglist, size);
 	s32 ret = IOS_Ioctl(di_fd, IOCTL_DI_SETFRAG, inbuf, sizeof(inbuf), outbuf, sizeof(outbuf));
-	if (ret < 0) return ret;
-
+	if(ret < 0)
+		return ret;
 	return (ret == 1) ? 0 : -ret;
-}
-
-s32 WDVD_hello(u32 *status)
-{
-	memset(inbuf, 0, sizeof(inbuf));
-
-	inbuf[0] = IOCTL_DI_HELLO << 24;
-
-	s32 ret = IOS_Ioctl(di_fd, IOCTL_DI_HELLO, inbuf, sizeof(inbuf), outbuf, sizeof(outbuf));
-	if (ret < 0) return ret;
-
-	if (ret == 1)
-	{
-		if (status) memcpy(status, outbuf, sizeof(u32));
-		return 0;
-	}
-
-	return -ret;
-}
-
-s32 WDVD_SetStreaming(void)
-{
-	memset(inbuf, 0, sizeof(inbuf));
-
-	inbuf[0] = IOCTL_DI_DVDAUDIOBUFFERCFG << 24;
-
-	if ((*(u32*)0x80000008)>>24)
-	{
-		inbuf[1] = 1;
-		if(((*(u32*)0x80000008)>>16) & 0xFF)
-			inbuf[2] = 10;
-		else
-			inbuf[2] = 0;
-	}
-	else
-	{	
-		inbuf[1] = 0;
-		inbuf[2] = 0;
-	}
-
-	s32 ret = IOS_Ioctl(di_fd, IOCTL_DI_DVDAUDIOBUFFERCFG, inbuf, sizeof(inbuf), outbuf, sizeof(outbuf));
-	if (ret < 0) return ret;
-
-	return (ret == 1) ? 0 : -ret;
-}
-
-s32 WDVD_NEEK_LoadDisc(u32 id, u32 magic)
-{
-	u32 *vec = (u32*)memalign(32, sizeof(u32) * 2);
-	vec[0] = id;
-	vec[1] = magic;
-
-	s32 ret = IOS_Ioctl(di_fd, 0x25, vec, sizeof(u32) * 2, NULL, 0);
-	free(vec);
-
-	return ret;
 }
