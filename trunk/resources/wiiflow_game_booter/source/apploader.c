@@ -27,10 +27,8 @@ static u8 *appldr = (u8 *)0x81200000;
 #define APPLDR_OFFSET	0x910
 #define APPLDR_CODE		0x918
 
-/* Variables */
-static u32 buffer[0x20] ATTRIBUTE_ALIGN(32);
-
-void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo);
+void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipatch, 
+				bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo);
 static void patch_NoDiscinDrive(void *buffer, u32 len);
 static void Anti_002_fix(void *Address, int Size);
 static bool Remove_001_Protection(void *Address, int Size);
@@ -38,7 +36,17 @@ static void PrinceOfPersiaPatch();
 static void NewSuperMarioBrosPatch();
 bool hookpatched = false;
 
-s32 Apploader_Run(entry_point *entry, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo)
+/* Thanks Tinyload */
+static struct
+{
+	char revision[16];
+	void *entry;
+	s32 size;
+	s32 trailersize;
+	s32 padding;
+} apploader_hdr ATTRIBUTE_ALIGN(32);
+
+u32 Apploader_Run(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo)
 {
 	PrinceOfPersiaPatch();
 	NewSuperMarioBrosPatch();
@@ -48,29 +56,31 @@ s32 Apploader_Run(entry_point *entry, u8 vidMode, GXRModeObj *vmode, bool vipatc
 	int offset = 0;
 	u32 appldr_len;
 	s32 ret;
+
+	app_entry appldr_entry;
 	app_init  appldr_init;
 	app_main  appldr_main;
 	app_final appldr_final;
 
 	/* Read apploader header */
-	ret = WDVD_Read(buffer, 0x20, APPLDR_OFFSET);
+	ret = WDVD_Read(&apploader_hdr, 0x20, APPLDR_OFFSET);
 	if(ret < 0)
-		return ret;
+		return 0;
 
 	/* Calculate apploader length */
-	appldr_len = buffer[5] + buffer[6];
+	appldr_len = apploader_hdr.size + apploader_hdr.trailersize;
 
 	/* Read apploader code */
 	ret = WDVD_Read(appldr, appldr_len, APPLDR_CODE);
 	if(ret < 0)
-		return ret;
+		return 0;
 
 	/* Flush into memory */
 	DCFlushRange(appldr, appldr_len);
 	ICInvalidateRange(appldr, appldr_len);
 
 	/* Set apploader entry function */
-	app_entry appldr_entry = (app_entry)buffer[4];
+	appldr_entry = apploader_hdr.entry;
 
 	/* Call apploader entry */
 	appldr_entry(&appldr_init, &appldr_main, &appldr_final);
@@ -88,15 +98,12 @@ s32 Apploader_Run(entry_point *entry, u8 vidMode, GXRModeObj *vmode, bool vipatc
 		ICInvalidateRange(dst, len);
 		prog(20);
 	}
-
 	free_wip();
 	if(hooktype != 0 && hookpatched)
 		ocarina_do_code();
 
 	/* Set entry point from apploader */
-	*entry = appldr_final();
-
-	return 0;
+	return (u32)appldr_final();
 }
 
 void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo)

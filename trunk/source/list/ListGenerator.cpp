@@ -152,8 +152,9 @@ static void Create_Plugin_List(char *FullPath)
 
 	strncpy(ListElement.path, FullPath, sizeof(ListElement.path) - 1);
 	strncpy(ListElement.id, "PLUGIN", 6);
-	*strrchr(FullPath, '.') = '\0';
+
 	FolderTitle = strrchr(FullPath, '/') + 1;
+	*strrchr(FolderTitle, '.') = '\0';
 	mbstowcs(ListElement.title, FolderTitle, 63);
 	Asciify(ListElement.title);
 

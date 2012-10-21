@@ -39,10 +39,9 @@ IOS_Info CurrentIOS;
 /* Boot Variables */
 u32 GameIOS = 0;
 u32 vmode_reg = 0;
-entry_point p_entry;
 GXRModeObj *vmode = NULL;
 
-u32 AppEntrypoint;
+u32 AppEntrypoint = 0;
 
 extern "C" {
 extern void __exception_closeall();
@@ -72,11 +71,6 @@ int main()
 	frag_list = normalCFG.fragments;
 	wbfsDev = normalCFG.wbfsDevice;
 	wbfs_part_idx = normalCFG.wbfsPart;
-	if(CurrentIOS.Type == IOS_TYPE_D2X)
-	{
-		s32 ret = BlockIOSReload();
-		gprintf("Block IOS Reload using d2x %s.\n", ret < 0 ? "failed" : "succeeded");
-	}
 	prog10();
 
 	/* Setup Low Memory */
@@ -85,6 +79,11 @@ int main()
 	if(normalCFG.BootType == TYPE_WII_GAME)
 	{
 		WDVD_Init();
+		if(CurrentIOS.Type == IOS_TYPE_D2X)
+		{
+			s32 ret = BlockIOSReload();
+			gprintf("Block IOS Reload using d2x %s.\n", ret < 0 ? "failed" : "succeeded");
+		}
 		if(normalCFG.GameBootType == TYPE_WII_DISC)
 		{
 			Disc_SetUSB(NULL, false);
@@ -103,17 +102,16 @@ int main()
 		Disc_FindPartition(&offset);
 		WDVD_OpenPartition(offset, &GameIOS);
 		vmode = Disc_SelectVMode(normalCFG.vidMode, &vmode_reg);
-		Apploader_Run(&p_entry, normalCFG.vidMode, vmode, normalCFG.vipatch, normalCFG.countryString, normalCFG.patchVidMode, 
-					normalCFG.aspectRatio, normalCFG.returnTo);
-		AppEntrypoint = (u32)p_entry;
+		AppEntrypoint = Apploader_Run(normalCFG.vidMode, vmode, normalCFG.vipatch, normalCFG.countryString,
+						normalCFG.patchVidMode, normalCFG.aspectRatio, normalCFG.returnTo);
 		WDVD_Close();
 	}
 	else if(normalCFG.BootType == TYPE_CHANNEL)
 	{
 		ISFS_Initialize();
 		*Disc_ID = TITLE_LOWER(normalCFG.title);
-		AppEntrypoint = LoadChannel(normalCFG.title, &GameIOS);
 		vmode = Disc_SelectVMode(normalCFG.vidMode, &vmode_reg);
+		AppEntrypoint = LoadChannel(normalCFG.title, &GameIOS);
 		PatchChannel(normalCFG.vidMode, vmode, normalCFG.vipatch, normalCFG.countryString, 
 					normalCFG.patchVidMode, normalCFG.aspectRatio);
 		ISFS_Deinitialize();
@@ -128,7 +126,6 @@ int main()
 	Disc_SetTime();
 
 	/* Set an appropriate video mode */
-	video_clear();
 	Disc_SetVMode(vmode, vmode_reg);
 
 	/* Shutdown IOS subsystems */
@@ -180,31 +177,30 @@ int main()
  			);
  		}
 	}
- 	else if (hooktype)
+ 	else if(hooktype)
 	{
 		asm volatile (
-				"lis %r3, AppEntrypoint@h\n"
-				"ori %r3, %r3, AppEntrypoint@l\n"
-				"lwz %r3, 0(%r3)\n"
-				"mtlr %r3\n"
-				"lis %r3, 0x8000\n"
-				"ori %r3, %r3, 0x18A8\n"
-				"nop\n"
-				"mtctr %r3\n"
-				"bctr\n"
+			"lis %r3, AppEntrypoint@h\n"
+			"ori %r3, %r3, AppEntrypoint@l\n"
+			"lwz %r3, 0(%r3)\n"
+			"mtlr %r3\n"
+			"lis %r3, 0x8000\n"
+			"ori %r3, %r3, 0x18A8\n"
+			"nop\n"
+			"mtctr %r3\n"
+			"bctr\n"
 		);
 	}
 	else
 	{
 		asm volatile (
-				"lis %r3, AppEntrypoint@h\n"
-				"ori %r3, %r3, AppEntrypoint@l\n"
-				"lwz %r3, 0(%r3)\n"
-				"mtlr %r3\n"
-				"blr\n"
+			"lis %r3, AppEntrypoint@h\n"
+			"ori %r3, %r3, AppEntrypoint@l\n"
+			"lwz %r3, 0(%r3)\n"
+			"mtlr %r3\n"
+			"blr\n"
 		);
 	}
-
 	IRQ_Restore(level);
 
 	return 0;

@@ -2109,7 +2109,6 @@ bool CMenu::_loadChannelList(void)
 	int emuPartition = -1;
 
 	bool disable_emu = (m_cfg.getBool("NAND", "disable", true) || neek2o());
-	static bool last_emu_state = disable_emu;
 
 	if(!disable_emu)
 	{
@@ -2125,59 +2124,32 @@ bool CMenu::_loadChannelList(void)
 			currentPartition = emuPartition;
 	}
 
-	static u8 lastPartition = currentPartition;
-
-	static bool first = true;
-
-	bool changed = lastPartition != currentPartition || last_emu_state != disable_emu || first;
-
-	if(changed)
-		UpdateCache(COVERFLOW_CHANNEL);
-	
-
-	if(first && !disable_emu)
+	if(!disable_emu)
 	{
 		char basepath[64];
 		snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[currentPartition], emuPath.c_str());
 		NandHandle.PreNandCfg(basepath, m_cfg.getBool("NAND", "real_nand_miis", false), m_cfg.getBool("NAND", "real_nand_config", false));
-		first = false;
 	}
-	string nandpath = sfmt("%s:%s/", DeviceName[currentPartition], emuPath.empty() ? "" : emuPath.c_str());
-
 	NandHandle.Disable_Emu();
 	if(!disable_emu)
 	{
 		MusicPlayer.Stop();
 		_TempLoadIOS();
-		if(!DeviceHandle.IsInserted(lastPartition))
-			DeviceHandle.Mount(lastPartition);
-
 		DeviceHandle.UnMount(currentPartition);
-
 		NandHandle.SetPaths(emuPath.c_str(), currentPartition, disable_emu);
 		if(NandHandle.Enable_Emu() < 0)
 			NandHandle.Disable_Emu();
-
-		gprintf("Using path: \"%s\" for NAND emulation\n", nandpath.c_str());
 	}
-	
 	if(!DeviceHandle.IsInserted(currentPartition))
 		DeviceHandle.Mount(currentPartition);
 
-	if(NandHandle.EmulationEnabled() || disable_emu) 
-	{
-		string cacheDir;
-		if(!disable_emu)
-			cacheDir = fmt("%s/%s_channels.db", m_listCacheDir.c_str(), DeviceName[currentPartition]);
-		bool updateCache = m_cfg.getBool(_domainFromView(), "update_cache");
-		vector<string> NullVector;
-		m_gameList.CreateList(m_current_view, currentPartition, std::string(), 
-					NullVector, cacheDir, updateCache);
-	}
-
-	lastPartition = currentPartition;
-	last_emu_state = disable_emu;
-
+	string cacheDir;
+	if(!disable_emu)
+		cacheDir = fmt("%s/%s_channels.db", m_listCacheDir.c_str(), DeviceName[currentPartition]);
+	bool updateCache = m_cfg.getBool(_domainFromView(), "update_cache");
+	vector<string> NullVector;
+	m_gameList.CreateList(m_current_view, currentPartition, std::string(), 
+				NullVector, cacheDir, updateCache);
 	return m_gameList.size() > 0 ? true : false;
 }
 

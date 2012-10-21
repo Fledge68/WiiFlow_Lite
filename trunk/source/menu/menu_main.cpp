@@ -815,7 +815,8 @@ int CMenu::main(void)
 				m_cf.mouse(m_vid, chan, -1, -1);
 		}
 	}
-	if(m_reload)
+	ScanInput();
+	if(m_reload || BTN_B_HELD)
 	{
 		m_cf.clear();
 		_showWaitMessage();

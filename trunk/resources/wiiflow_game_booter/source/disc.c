@@ -11,6 +11,7 @@
 #include "cios.h"
 #include "types.h"
 #include "wdvd.h"
+#include "video_tinyload.h"
 
 /* Constants */
 #define PART_INFO_OFFSET	0x10000
@@ -103,7 +104,10 @@ s32 Disc_FindPartition(u32 *outbuf)
 	{
 		/* Game partition */
 		if(partition_table[cnt].type == 0)
+		{
 			offset = partition_table[cnt].offset;
+			break;
+		}
 	}
 
 	/* No game partition found */
@@ -210,6 +214,9 @@ GXRModeObj *Disc_SelectVMode(u8 videoselected, u32 *rmode_reg)
 
 void Disc_SetVMode(GXRModeObj *rmode, u32 rmode_reg)
 {
+	/* Remove Load Bar */
+	video_clear();
+
 	/* Set video mode register */
 	*Video_Mode = rmode_reg;
 	DCFlushRange((void*)Video_Mode, 4);
