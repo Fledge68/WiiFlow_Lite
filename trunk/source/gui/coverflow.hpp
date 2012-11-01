@@ -45,7 +45,7 @@ public:
 	void clear(void);
 	void shutdown(void);
 	void reserve(u32 capacity);
-	void addItem(dir_discHdr *hdr, const char *picPath, const char *boxPicPath, int playcount = 0, unsigned int lastPlayed = 0);
+	void addItem(dir_discHdr *hdr, const char *picPath, const char *boxPicPath, const char *blankBoxPicPath, int playcount = 0, unsigned int lastPlayed = 0);
 	bool empty(void) const { return m_items.empty(); }
 	// 
 	bool start(const char *id = 0);
@@ -190,13 +190,14 @@ private:
 		dir_discHdr *hdr;
 		string picPath;
 		string boxPicPath;
+		string blankBoxPicPath;
 		int playcount;
 		unsigned int lastPlayed;
 		STexture texture;
 		volatile bool boxTexture;
 		volatile enum TexState state;
 		// 
-		CItem(dir_discHdr *itemHdr, const char *itemPic, const char *itemBoxPic, int playcount, unsigned int lastPlayed);
+		CItem(dir_discHdr *itemHdr, const char *itemPic, const char *itemBoxPic, const char *itemBlankBoxPic, int playcount, unsigned int lastPlayed);
 	};
 	struct CCover
 	{
@@ -324,8 +325,8 @@ private:
 	void _loadAllCovers(int i);
 	static bool _calcTexLQLOD(STexture &tex);
 	void _dropHQLOD(int i);
-	bool _loadCoverTexPNG(u32 i, bool box, bool hq);
-	CLRet _loadCoverTex(u32 i, bool box, bool hq);
+	bool _loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover);
+	CLRet _loadCoverTex(u32 i, bool box, bool hq, bool blankBoxCover);
 	bool _invisibleCover(u32 x, u32 y);
 	void _instantTarget(int i);
 	void _transposeCover(vector<CCover> &dst, u32 rows, u32 columns, int pos);
