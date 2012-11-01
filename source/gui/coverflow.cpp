@@ -73,10 +73,11 @@ CCoverFlow::CCover::CCover(void)
 	targetScale = Vector3D(1.f, 1.f, 1.f);
 }
 
-CCoverFlow::CItem::CItem(dir_discHdr *itemHdr, const char *itemPic, const char *itemBoxPic, int playcount, unsigned int lastPlayed) :
+CCoverFlow::CItem::CItem(dir_discHdr *itemHdr, const char *itemPic, const char *itemBoxPic, const char *itemBlankBoxPic, int playcount, unsigned int lastPlayed) :
 	hdr(itemHdr),
 	picPath(itemPic),
 	boxPicPath(itemBoxPic),
+	blankBoxPicPath(itemBlankBoxPic),
 	playcount(playcount),
 	lastPlayed(lastPlayed)
 {
@@ -686,10 +687,10 @@ void CCoverFlow::reserve(u32 capacity)
 	m_items.reserve(capacity);
 }
 
-void CCoverFlow::addItem(dir_discHdr *hdr, const char *picPath, const char *boxPicPath, int playcount, unsigned int lastPlayed)
+void CCoverFlow::addItem(dir_discHdr *hdr, const char *picPath, const char *boxPicPath, const char *blankBoxPicPath, int playcount, unsigned int lastPlayed)
 {
 	if (!m_covers.empty()) return;
-	m_items.push_back(CCoverFlow::CItem(hdr, picPath, boxPicPath, playcount, lastPlayed));
+	m_items.push_back(CCoverFlow::CItem(hdr, picPath, boxPicPath, blankBoxPicPath, playcount, lastPlayed));
 }
 
 // Draws a plane in the Z-Buffer only.
@@ -2571,14 +2572,14 @@ bool CCoverFlow::fullCoverCached(const char *id)
 	return found;
 }
 
-bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq)
+bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover)
 {
 	if (!m_loadingCovers) return false;
 
 	u8 textureFmt = m_compressTextures ? GX_TF_CMPR : GX_TF_RGB565;
 	STexture tex;
-
-	const char *path = box ? m_items[i].boxPicPath.c_str() : m_items[i].picPath.c_str();
+	
+	const char *path = box ? (blankBoxCover ? m_items[i].blankBoxPicPath.c_str() : m_items[i].boxPicPath.c_str()) : m_items[i].picPath.c_str();
 	if (STexture::TE_OK != tex.fromImageFile(path, textureFmt, ALLOC_MEM2, 32)) return false;
 
 	if (!m_loadingCovers) return false;
@@ -2598,7 +2599,13 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq)
 		if (!!zBuffer && (!m_compressCache || compress(zBuffer.get(), &zBufferSize, tex.data.get(), bufSize) == Z_OK))
 		{
 			char gamePath[256];
-			if(NoGameID(m_items[i].hdr->type))
+			if(blankBoxCover)
+			{
+				string tempName = m_items[i].blankBoxPicPath.c_str();
+				tempName.assign(&tempName[tempName.find_last_of('/') + 1]);
+				strncpy(gamePath, tempName.c_str(), sizeof(gamePath));
+			}
+			else if(NoGameID(m_items[i].hdr->type))
 			{
 				if(string(m_items[i].hdr->path).find_last_of("/") != string::npos)
 					strncpy(gamePath, &m_items[i].hdr->path[string(m_items[i].hdr->path).find_last_of("/")+1], sizeof(gamePath));
@@ -2664,7 +2671,7 @@ void CCoverFlow::_dropHQLOD(int i)
 	prevTex = newTex;
 }
 
-CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq)
+CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blankBoxCover)
 {
 	if (!m_loadingCovers) 
 		return CL_ERROR;
@@ -2675,7 +2682,13 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq)
 	if(!m_cachePath.empty())
 	{
 		char gamePath[256];
-		if(NoGameID(m_items[i].hdr->type))
+		if(blankBoxCover)
+		{
+				string tempName = m_items[i].blankBoxPicPath.c_str();
+				tempName.assign(&tempName[tempName.find_last_of('/') + 1]);
+				strncpy(gamePath, tempName.c_str(), sizeof(gamePath));
+		}
+		else if(NoGameID(m_items[i].hdr->type))
 		{
 			if(string(m_items[i].hdr->path).find_last_of("/") != string::npos)
 				strncpy(gamePath, &m_items[i].hdr->path[string(m_items[i].hdr->path).find_last_of("/")+1], sizeof(gamePath));
@@ -2696,7 +2709,7 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq)
 				fseek(file, 0, SEEK_SET);
 				fread(&header, 1, sizeof header, file);
 				// Try to find a matching cache file, otherwise try the PNG file, otherwise try again with the cache file with less constraints
-				if(header.newFmt != 0 && (((!box || header.full != 0) && (header.cmpr != 0) == m_compressTextures) || (!_loadCoverTexPNG(i, box, hq))))
+				if(header.newFmt != 0 && (((!box || header.full != 0) && (header.cmpr != 0) == m_compressTextures) || (!_loadCoverTexPNG(i, box, hq, blankBoxCover))))
 				{
 					STexture tex;
 					tex.format = header.cmpr != 0 ? GX_TF_CMPR : GX_TF_RGB565;
@@ -2750,7 +2763,7 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq)
 		return CCoverFlow::CL_NOMEM;
 
 	// If not found, load the PNG
-	return _loadCoverTexPNG(i, box, hq) ? CCoverFlow::CL_OK : CCoverFlow::CL_ERROR;
+	return _loadCoverTexPNG(i, box, hq, blankBoxCover) ? CCoverFlow::CL_OK : CCoverFlow::CL_ERROR;
 }
 
 int CCoverFlow::_coverLoader(CCoverFlow *cf)
@@ -2786,10 +2799,13 @@ int CCoverFlow::_coverLoader(CCoverFlow *cf)
 				continue;
 			else if(cf->m_useHQcover && firstItem == (u32)cf->m_hqCover && cf->m_items[i].state != CCoverFlow::STATE_Loading)
 				continue;
-			if((ret = cf->_loadCoverTex(i, cf->m_box, i == (u32)firstItem)) == CCoverFlow::CL_ERROR)
+			if((ret = cf->_loadCoverTex(i, cf->m_box, i == (u32)firstItem, false)) == CCoverFlow::CL_ERROR)
 			{
-				if ((ret = cf->_loadCoverTex(i, !cf->m_box, i == (u32)firstItem)) == CCoverFlow::CL_ERROR)
-					cf->m_items[i].state = CCoverFlow::STATE_NoCover;
+				if ((ret = cf->_loadCoverTex(i, !cf->m_box, i == (u32)firstItem, false)) == CCoverFlow::CL_ERROR)
+				{
+					if((ret = cf->_loadCoverTex(i, cf->m_box, i == (u32)firstItem, true)) == CCoverFlow::CL_ERROR)
+						cf->m_items[i].state = CCoverFlow::STATE_NoCover;
+				}
 			}
 		}
 		if(ret == CCoverFlow::CL_NOMEM && bufferSize > 3)

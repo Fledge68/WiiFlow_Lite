@@ -20,7 +20,7 @@ extern const u8 favoritesons_png[];
 int Source_curPage;
 int pages;
 u8 numPlugins;
-u8 maxBtns = 47;
+u8 maxBtns = 71;
 string m_sourceDir;
 Config m_source;
 

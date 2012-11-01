@@ -1775,6 +1775,30 @@ void CMenu::_initCF(void)
 
 			if(dumpGameLst)
 				dump.setWString(domain, id, m_gameList[i].title);
+			
+			string blankCoverKey;
+			switch(m_gameList[i].type)
+			{
+				case TYPE_CHANNEL:
+					blankCoverKey = "channels";
+					break;
+				case TYPE_HOMEBREW:
+					blankCoverKey = "homebrew";
+					break;
+				case TYPE_GC_GAME:
+					blankCoverKey = "gamecube";
+					break;
+				case TYPE_PLUGIN:
+					char PluginMagicWord[9];
+					memset(PluginMagicWord, 0, sizeof(PluginMagicWord));
+					strncpy(PluginMagicWord, fmt("%08x", m_gameList[i].settings[0]), 8);
+					blankCoverKey = PluginMagicWord;
+					break;
+				default:
+					blankCoverKey = "wii";
+			}
+			
+			string blankCoverName = m_theme.getString("BLANK_COVERS", blankCoverKey.c_str(), fmt("%s.jpg", blankCoverKey.c_str()));
 
 			if(m_gameList[i].type == TYPE_PLUGIN)
 			{
@@ -1785,9 +1809,9 @@ void CMenu::_initCF(void)
 				if(EnabledPlugins.size() == 0) //all plugins
 				{
 					if(coverFolder.size() > 0)
-						m_cf.addItem(&m_gameList[i], fmt("%s/%s/%s.png", m_picDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s/%s.png", m_boxPicDir.c_str(), coverFolder.c_str(), tempname.c_str()), playcount, lastPlayed);
+						m_cf.addItem(&m_gameList[i], fmt("%s/%s/%s.png", m_picDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s/%s.png", m_boxPicDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
 					else
-						m_cf.addItem(&m_gameList[i], fmt("%s/%s.png", m_picDir.c_str(), tempname.c_str()), fmt("%s/%s.png", m_boxPicDir.c_str(), tempname.c_str()), playcount, lastPlayed);
+						m_cf.addItem(&m_gameList[i], fmt("%s/%s.png", m_picDir.c_str(), tempname.c_str()), fmt("%s/%s.png", m_boxPicDir.c_str(), tempname.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
 				}
 				else
 				{
@@ -1796,18 +1820,18 @@ void CMenu::_initCF(void)
 						if(EnabledPlugins.at(j) == true && m_gameList[i].settings[0] == m_plugin.getPluginMagic(j))
 						{
 							if(coverFolder.size() > 0)
-								m_cf.addItem(&m_gameList[i], fmt("%s/%s/%s.png", m_picDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s/%s.png", m_boxPicDir.c_str(), coverFolder.c_str(), tempname.c_str()), playcount, lastPlayed);
+								m_cf.addItem(&m_gameList[i], fmt("%s/%s/%s.png", m_picDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s/%s.png", m_boxPicDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
 							else
-								m_cf.addItem(&m_gameList[i], fmt("%s/%s.png", m_picDir.c_str(), tempname.c_str()), fmt("%s/%s.png", m_boxPicDir.c_str(), tempname.c_str()), playcount, lastPlayed);
+								m_cf.addItem(&m_gameList[i], fmt("%s/%s.png", m_picDir.c_str(), tempname.c_str()), fmt("%s/%s.png", m_boxPicDir.c_str(), tempname.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
 							break;
 						}
 					}
 				}
 			}
 			else if(m_gameList[i].type == TYPE_HOMEBREW)
-				m_cf.addItem(&m_gameList[i], fmt("%s/icon.png", m_gameList[i].path), fmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str()), playcount, lastPlayed);
+				m_cf.addItem(&m_gameList[i], fmt("%s/icon.png", m_gameList[i].path), fmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
 			else
-				m_cf.addItem(&m_gameList[i], fmt("%s/%s.png", m_picDir.c_str(), id.c_str()), fmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str()), playcount, lastPlayed);
+				m_cf.addItem(&m_gameList[i], fmt("%s/%s.png", m_picDir.c_str(), id.c_str()), fmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
 		}
 	}
 	m_gcfg1.unload();
