@@ -1,15 +1,15 @@
 
 #include "menu.hpp"
-#include "defines.h"
-#include "svnrev.h"
 #include "channel/nand.hpp"
 #include "loader/alt_ios.h"
 #include "loader/cios.h"
 #include "loader/sys.h"
+#include "const_str.hpp"
 
 const int pixels_to_skip = 10;
 
 extern const u8 english_txt[];
+static const wstringEx ENGLISH_TXT_W((const char*)english_txt);
 
 //About menu
 s16 m_aboutLblTitle;
@@ -125,16 +125,15 @@ void CMenu::_textAbout(void)
 			help_text.fromUTF8(help);
 			MEM2_free(help);
 			fclose(f);
+			m_btnMgr.setText(m_aboutLblInfo, help_text);
 		}
 		else
-			help_text.fromUTF8((char*)english_txt);
-
-		m_btnMgr.setText(m_aboutLblInfo, wfmt(L"%s", help_text.toUTF8().c_str()), false);
+			m_btnMgr.setText(m_aboutLblInfo, ENGLISH_TXT_W);
 	}
 	else
 	{
-		m_btnMgr.setText(m_aboutLblTitle, wfmt( L"%s (%s-r%s)", APP_NAME, APP_VERSION, SVN_REV), false);
-	
+		m_btnMgr.setText(m_aboutLblTitle, VERSION_STRING);
+
 		wstringEx developers(wfmt(_fmt("about6", L"\nCurrent Developers:\n%s"), DEVELOPERS));
 		wstringEx pDevelopers(wfmt(_fmt("about7", L"Past Developers:\n%s"), PAST_DEVELOPERS));
 
@@ -157,11 +156,9 @@ void CMenu::_textAbout(void)
 			origGUI.toUTF8().c_str(),
 			codethx.toUTF8().c_str(),
 			sites.toUTF8().c_str(),
-			thanks.toUTF8().c_str()),
-			false
+			thanks.toUTF8().c_str())
 		);
 	}
-	
 	switch(IOS_GetType(CurrentIOS.Version))
 	{
 		case IOS_TYPE_D2X:

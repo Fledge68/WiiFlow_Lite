@@ -1,19 +1,19 @@
 
 #include "menu.hpp"
-#include "svnrev.h"
-#include "defines.h"
+#include "const_str.hpp"
 #include "lockMutex.hpp"
 #include "loader/sys.h"
 #include "loader/wbfs.h"
 
 int version_num = 0, num_versions = 0, i;
-int CMenu::_version[9] = {0, atoi(SVN_REV), atoi(SVN_REV), atoi(SVN_REV), atoi(SVN_REV), atoi(SVN_REV), atoi(SVN_REV), atoi(SVN_REV), atoi(SVN_REV)};
+const u32 SVN_REV_NUM = atoi(SVN_REV);
+int CMenu::_version[9] = {0, SVN_REV_NUM, SVN_REV_NUM, SVN_REV_NUM, SVN_REV_NUM, SVN_REV_NUM, SVN_REV_NUM, SVN_REV_NUM, SVN_REV_NUM};
 
 const int pixels_to_skip = 10;
 
 void CMenu::_system()
 {
-	int msg = 0, newVer = atoi(SVN_REV);
+	int msg = 0, newVer = SVN_REV_NUM;
 	lwp_t thread = LWP_THREAD_NULL;
 	wstringEx prevMsg;
 
@@ -62,11 +62,11 @@ void CMenu::_system()
 				m_btnMgr.hide(m_downloadPBar);
 				m_btnMgr.hide(m_downloadLblMessage[0], 0, 0, -2.f, 0.f);
 				m_btnMgr.hide(m_downloadLblMessage[1], 0, 0, -2.f, 0.f);
-				CMenu::_version[1] = m_version.getInt("GENERAL", "version", atoi(SVN_REV));
+				CMenu::_version[1] = m_version.getInt("GENERAL", "version", SVN_REV_NUM);
 				num_versions = m_version.getInt("GENERAL", "num_versions", 1);
 				for (i = 2; i < num_versions; i++)
 				{
-					CMenu::_version[i] = m_version.getInt(fmt("VERSION%i", i-1u), "version", atoi(SVN_REV));
+					CMenu::_version[i] = m_version.getInt(fmt("VERSION%i", i-1u), "version", SVN_REV_NUM);
 					//add the changelog info here
 				}
 				if (num_versions > 1 && version_num == 0) version_num = 1;
@@ -277,14 +277,12 @@ void CMenu::_textSystem(void)
 {
 	m_btnMgr.setText(m_systemLblTitle, _t("sys1", L"Update WiiFlow"));
 	m_btnMgr.setText(m_systemLblVersionTxt, _t("sys2", L"WiiFlow Version:"));
-	m_btnMgr.setText(m_systemLblVersion, wfmt(L"r%s", SVN_REV).c_str());
+	m_btnMgr.setText(m_systemLblVersion, SVN_REV_W);
 	m_btnMgr.setText(m_systemBtnBack, _t("sys3", L"Cancel"));
 	m_btnMgr.setText(m_systemBtnDownload, _t("sys4", L"Upgrade"));
 	i = min((u32)version_num, ARRAY_SIZE(CMenu::_version) -1u);
 	if (i == 0)
-	{
-		m_btnMgr.setText(m_systemLblVerSelectVal, wfmt(L"%i", atoi(SVN_REV)).c_str());
-	}
+		m_btnMgr.setText(m_systemLblVerSelectVal, SVN_REV_W);
 	else
 	{
 		m_btnMgr.setText(m_systemLblVerSelectVal, wstringEx(sfmt("%i", CMenu::_version[i])));

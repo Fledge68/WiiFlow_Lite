@@ -8,6 +8,7 @@
 
 #include "menu.hpp"
 #include "types.h"
+#include "const_str.hpp"
 #include "banner/BannerWindow.hpp"
 #include "booter/external_booter.hpp"
 #include "channel/channel_launcher.h"
@@ -845,10 +846,10 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 
 	if(disc)
 	{
-		loader = 0;
+		loader = 1;
 		DML_New_SetBootDiscOption(m_new_dm_cfg);
 	}
-	else if(loader == 1 || (loader == 0 && (strcasestr(path.c_str(), "boot.bin") != NULL || !m_devo_installed)))
+	else if(loader == 1 || strcasestr(path.c_str(), "boot.bin") != NULL || !m_devo_installed)
 	{
 		loader = 1;
 		m_cfg.setString("DML", "current_item", id);
@@ -875,18 +876,19 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 			snprintf(CheatPath, sizeof(CheatPath), "%s/%s", m_cheatDir.c_str(), fmt("%s.gct", id.c_str()));
 		string newPath = &path[path.find_first_of(":/")+1];
 		if(m_new_dml)
-			DML_New_SetOptions(newPath.c_str(), CheatPath, NewCheatPath.c_str(), DeviceName[currentPartition], cheats, DML_debug, NMM, nodisc, videoMode, videoSetting, DM_Widescreen, m_new_dm_cfg);
+			DML_New_SetOptions(newPath.c_str(), CheatPath, NewCheatPath.c_str(), DeviceName[currentPartition],
+							cheats, DML_debug, NMM, nodisc, videoMode, videoSetting, DM_Widescreen, m_new_dm_cfg);
 		else
 			DML_Old_SetOptions(newPath.c_str());
-
 		if(!nodisc || !m_new_dml)
 			WDVD_StopMotor();
 	}
-	else if(loader == 2 || (loader == 0 && m_devo_installed && strcasestr(path.c_str(), "boot.bin") == NULL))
+	else
 	{
 		loader = 2;
 		DEVO_GetLoader(m_dataDir.c_str());
 	}
+	bool DIOSMIOS = (loader == 1);
 
 	m_gcfg1.save(true);
 	m_gcfg2.save(true);
@@ -894,10 +896,17 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	m_cfg.save(true);
 	cleanup();
 
-	GC_SetVideoMode(videoMode, videoSetting);
+	GC_SetVideoMode(videoMode, videoSetting, DIOSMIOS);
 	GC_SetLanguage(GClanguage);
 
-	if(loader == 2 && !disc)
+	if(DIOSMIOS)
+	{
+		DML_New_WriteOptions();
+		ShutdownBeforeExit();
+		WII_Initialize();
+		WII_LaunchTitle(0x100000100LL);
+	}
+	else
 	{
 		if(AHBRPOT_Patched())
 			loadIOS(58, false);
@@ -906,13 +915,6 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		ShutdownBeforeExit();
 		DEVO_SetOptions(path.c_str(), currentPartition, id.c_str(), memcard_emu);
 		DEVO_Boot();
-	}
-	else
-	{
-		DML_New_WriteOptions();
-		ShutdownBeforeExit();
-		WII_Initialize();
-		WII_LaunchTitle(0x100000100LL);
 	}
 	Sys_Exit();
 }

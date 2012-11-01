@@ -1,9 +1,9 @@
 
 #include "menu.hpp"
-#include "svnrev.h"
 #include "loader/cios.h"
 #include "loader/nk.h"
 #include "loader/sys.h"
+#include "const_str.hpp"
 
 s16 m_homeLblTitle;
 s16 m_exittoLblTitle;
@@ -265,8 +265,7 @@ void CMenu::_initHomeAndExitToMenu(CMenu::SThemeData &theme)
 
 void CMenu::_textHome(void)
 {
-	m_btnMgr.setText(m_homeLblTitle, wfmt( L"%s (%s-r%s)", APP_NAME, APP_VERSION, SVN_REV), false);
-	
+	m_btnMgr.setText(m_homeLblTitle, VERSION_STRING);
 	m_btnMgr.setText(m_homeBtnSettings, _t("home1", L"Settings"));
 	m_btnMgr.setText(m_homeBtnReloadCache, _t("home2", L"Reload Cache"));
 	m_btnMgr.setText(m_homeBtnUpdate, _t("home3", L"Update"));
@@ -278,7 +277,6 @@ void CMenu::_textHome(void)
 void CMenu::_textExitTo(void)
 {
 	m_btnMgr.setText(m_exittoLblTitle, _t("exit_to", L"Exit To"));
-	
 	m_btnMgr.setText(m_homeBtnExitToHBC, _t("hbc", L"Homebrew Channel"));
 	m_btnMgr.setText(m_homeBtnExitToMenu, _t("menu", L"System Menu"));
 	m_btnMgr.setText(m_homeBtnExitToPriiloader, _t("prii", L"Priiloader"));

@@ -2591,28 +2591,17 @@ int CMenu::MIOSisDML()
 	return 0;
 }
 
-void CMenu::RemoveCover( char * id )
+void CMenu::RemoveCover(const char *id)
 {
-	FILE *fp = fopen(fmt("%s/%s.png", m_boxPicDir.c_str(), id), "rb");		
-	if (fp != NULL)
-	{
-		fclose(fp);
-		remove(fmt("%s/%s.png", m_boxPicDir.c_str(), id));
-	}
-
-	fp = fopen(fmt("%s/%s.png", m_picDir.c_str(), id), "rb");		
-	if (fp != NULL)
-	{
-		fclose(fp);
-		remove(fmt("%s/%s.png", m_picDir.c_str(), id));
-	}
-
-	fp = fopen(fmt("%s/%s.wfc", m_cacheDir.c_str(), id), "rb");		
-	if (fp != NULL)
-	{
-		fclose(fp);
-		remove(fmt("%s/%s.wfc", m_cacheDir.c_str(), id));
-	}	
+	const char *CoverPath = NULL;
+	if(id == NULL)
+		return;
+	CoverPath = fmt("%s/%s.png", m_boxPicDir.c_str(), id);
+	fsop_deleteFile(CoverPath);
+	CoverPath = fmt("%s/%s.png", m_picDir.c_str(), id);
+	fsop_deleteFile(CoverPath);
+	CoverPath = fmt("%s/%s.wfc", m_cacheDir.c_str(), id);		
+	fsop_deleteFile(CoverPath);
 }
 
 void CMenu::_TempLoadIOS(int IOS)

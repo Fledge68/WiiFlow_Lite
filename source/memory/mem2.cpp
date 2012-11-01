@@ -77,7 +77,7 @@ void MEM1_free(void *p)
 
 unsigned int MEM1_freesize()
 {
-	return SYS_GetArena1Size();
+	return (g_mem1lo.FreeSize() + SYS_GetArena1Size());
 }
 
 void MEM2_cleanup(void)

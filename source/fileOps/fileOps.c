@@ -100,7 +100,7 @@ u32 fsop_GetFolderKb(const char *source)
 	return ret;
 }
 
-u32 fsop_GetFreeSpaceKb(char *path) // Return free kb on the device passed
+u32 fsop_GetFreeSpaceKb(const char *path) // Return free kb on the device passed
 {
 	struct statvfs s;
 

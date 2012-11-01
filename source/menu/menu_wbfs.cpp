@@ -71,14 +71,14 @@ void CMenu::_addDiscProgress(int status, int total, void *user_data)
 	}
 }
 
-vector<dir_discHdr> CMenu::_searchGamesByID(const char *gameId)
+static inline bool _searchGamesByID(const char *gameId)
 {
-	vector<dir_discHdr> retval;
-	for (vector<dir_discHdr>::iterator itr = m_gameList.begin(); itr != m_gameList.end(); itr++)
-		if (strncmp((const char *) (*itr).id, gameId, strlen(gameId)) == 0)
-			retval.push_back(*itr);
-
-	return retval;
+	for(vector<dir_discHdr>::const_iterator itr = m_gameList.begin(); itr != m_gameList.end(); ++itr)
+	{
+		if(strncmp(itr->id, gameId, 6) == 0)
+			return true;
+	}
+	return false;
 }
 
 void CMenu::_Messenger(int message, int info, char *cinfo, void *user_data)
@@ -172,14 +172,14 @@ int CMenu::_GCgameInstaller(void *obj)
 	int ret;	
 	m.m_progress = 0.f;
 
-	if (!DeviceHandle.IsInserted(currentPartition))
+	if(!DeviceHandle.IsInserted(currentPartition))
 	{
 		m.m_thrdWorking = false;
 		return -1;
 	}
 
 	char partition[6];
-	snprintf(partition, sizeof(partition), "%s:/", DeviceName[currentPartition]);
+	strncpy(partition, fmt("%s:/", DeviceName[currentPartition]), sizeof(partition));
 
 	u32 needed = 0;
 
@@ -226,18 +226,24 @@ int CMenu::_GCgameInstaller(void *obj)
 int CMenu::_GCcopyGame(void *obj)
 {
 	CMenu &m = *(CMenu *)obj;
-	char folder[50];
-	char source[300];
-	char target[300];
 
 	string GC_Path(m.m_cf.getHdr()->path);
 	if(strcasestr(GC_Path.c_str(), "boot.bin") != NULL)
 		GC_Path.erase(GC_Path.end() - 13, GC_Path.end());
 	else
 		GC_Path.erase(GC_Path.end() - 9, GC_Path.end());
+
+	char source[300];
 	strncpy(source, GC_Path.c_str(), sizeof(source));
-	snprintf(folder, sizeof(folder), DML_DIR, DeviceName[SD]);
-	snprintf(target, sizeof(target), "%s/%s", folder, &GC_Path[GC_Path.find_last_of("/")]+1);
+	source[299] = '\0';
+
+	char folder[50];
+	strncpy(folder, fmt(DML_DIR, DeviceName[SD]), sizeof(folder));
+	folder[49] = '\0';
+
+	char target[300];
+	strncpy(target, fmt("%s/%s", folder, strrchr(source, '/') + 1), sizeof(target));
+	target[299] = '\0';
 
 	LWP_MutexLock(m.m_mutex);
 	m._setThrdMsg(L"", 0);
@@ -259,6 +265,8 @@ int CMenu::_GCcopyGame(void *obj)
 bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 {
 	lwp_t thread = 0;
+	char GameID[7];
+	GameID[6] = '\0';
 	static discHdr header ATTRIBUTE_ALIGN(32);
 	static gc_discHdr gcheader ATTRIBUTE_ALIGN(32);
 	bool done = false;
@@ -266,11 +274,9 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 	bool upd_dml = false;
 	bool upd_emu = false;
 	bool out = false;
-	struct AutoLight { AutoLight(void) { } ~AutoLight(void) { slotLight(false); } } aw;
 	string cfPos = m_cf.getNextId();
 
 	SetupInput();
-
 	_showWBFS(op);
 	switch (op)
 	{
@@ -329,14 +335,15 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						if (Disc_IsWii() == 0)
 						{
 							Disc_ReadHeader(&header);
-							if(_searchGamesByID((const char *) header.id).size() != 0)
+							memcpy(GameID, header.id, 6);
+							if(_searchGamesByID(GameID))
 							{
 								error(_t("wbfsoperr4", L"Game already installed"));
 								out = true;
 								break;
 							}
-							cfPos = string((char *)header.id);
-							m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsop6", L"Installing [%s] %s..."), string((const char *)header.id, sizeof header.id).c_str(), string((const char *)header.title, sizeof header.title).c_str()));
+							cfPos = string(GameID);
+							m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsop6", L"Installing [%s] %s..."), GameID, header.title));
 							done = true;
 							upd_usb = true;
 							m_thrdWorking = true;
@@ -347,19 +354,15 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						else if(Disc_IsGC() == 0)
 						{
 							Disc_ReadGCHeader(&gcheader);
-							
-							char gcfolder[300];
-							char dmlgamedir[50];
-							strncpy(dmlgamedir, (currentPartition != SD) ? m_DMLgameDir.c_str() : DML_DIR, sizeof(dmlgamedir));
-							snprintf(gcfolder, sizeof(gcfolder), "%s [%s]", gcheader.title, (char *)gcheader.id);
-							if(_searchGamesByID((const char *) gcheader.id).size() != 0)
+							memcpy(GameID, gcheader.id, 6);
+							if(_searchGamesByID(GameID))
 							{
 								error(_t("wbfsoperr4", L"Game already installed"));
 								out = true;
 								break;
 							}
-							cfPos = string((char *) gcheader.id);
-							m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsop6", L"Installing [%s] %s..."), string((const char *)gcheader.id, sizeof gcheader.id).c_str(), string((const char *)gcheader.title, sizeof gcheader.title).c_str()));
+							cfPos = string(GameID);
+							m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsop6", L"Installing [%s] %s..."), GameID, gcheader.title));
 							done = true;
 							upd_dml = true;
 							m_thrdWorking = true;
@@ -376,12 +379,14 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 					case CMenu::WO_REMOVE_GAME:
 						if(m_cf.getHdr()->type == TYPE_GC_GAME)
 						{
-							string GC_Path(m_cf.getHdr()->path);
-							if(strcasestr(GC_Path.c_str(), "boot.bin") != NULL)
+							if(strcasestr(m_cf.getHdr()->path, "boot.bin") != NULL)
+							{
+								string GC_Path(m_cf.getHdr()->path);
 								GC_Path.erase(GC_Path.end() - 13, GC_Path.end());
+								fsop_deleteFolder(GC_Path.c_str());
+							}
 							else
-								GC_Path.erase(GC_Path.end() - 9, GC_Path.end());
-							fsop_deleteFolder(GC_Path.c_str());
+								fsop_deleteFile(m_cf.getHdr()->path);
 							upd_dml = true;
 						}
 						else if(m_cf.getHdr()->type == TYPE_PLUGIN)
@@ -391,11 +396,11 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						}
 						else if(m_cf.getHdr()->type == TYPE_WII_GAME)
 						{
-							WBFS_RemoveGame((u8 *)m_cf.getId().c_str(), (char *) m_cf.getHdr()->path);
+							WBFS_RemoveGame((u8 *)m_cf.getId().c_str(), m_cf.getHdr()->path);
 							upd_usb = true;
 						}
-						if(m_cfg.getBool("GENERAL", "delete_cover_and_game", true))
-							RemoveCover((char *)m_cf.getId().c_str());
+						if(m_cfg.getBool("GENERAL", "delete_cover_and_game", false))
+							RemoveCover(m_cf.getId().c_str());
 						m_btnMgr.show(m_wbfsPBar);
 						m_btnMgr.setProgress(m_wbfsPBar, 0.f, true);
 						m_btnMgr.setProgress(m_wbfsPBar, 1.f);
@@ -413,32 +418,25 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 							GC_Path.erase(GC_Path.end() - 13, GC_Path.end());
 						else
 							GC_Path.erase(GC_Path.end() - 9, GC_Path.end());
-						if(fsop_GetFreeSpaceKb((char*)"sd:/")<fsop_GetFolderKb(GC_Path.c_str()))
+						if(fsop_GetFreeSpaceKb("sd:/") < fsop_GetFolderKb(GC_Path.c_str()))
 						{
 							m_btnMgr.hide(m_wbfsBtnGo);
-							_setThrdMsg(wfmt(_fmt("wbfsop24", L"Not enough space: %d blocks needed, %d available"), fsop_GetFolderKb(GC_Path.c_str()), fsop_GetFreeSpaceKb((char*)"sd:/")), 0.f);
+							_setThrdMsg(wfmt(_fmt("wbfsop24", L"Not enough space: %d blocks needed, %d available"), fsop_GetFolderKb(GC_Path.c_str()), fsop_GetFreeSpaceKb("sd:/")), 0.f);
 							break;
 						}
-
 						m_btnMgr.show(m_wbfsPBar);
 						m_btnMgr.setProgress(m_wbfsPBar, 0.f);
 						m_btnMgr.hide(m_wbfsBtnGo);
 						m_btnMgr.hide(m_wbfsBtnBack);
 						m_btnMgr.show(m_wbfsLblMessage);
 						m_btnMgr.setText(m_wbfsLblMessage, L"");
-						cfPos = string((char*)m_cf.getHdr()->id);
-						m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsop10", L"Copying [%s] %s..."), (u8*)m_cf.getHdr()->id, (u8*)m_cf.getTitle().toUTF8().c_str()));
+						cfPos = string(m_cf.getHdr()->id);
+						m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsop10", L"Copying [%s] %s..."), m_cf.getHdr()->id, m_cf.getTitle().toUTF8().c_str()));
 						done = true;
 						upd_dml = true;
 						m_thrdWorking = true;
 						m_thrdProgress = 0.f;
 						m_thrdMessageAdded = false;
-						m_cf.stopCoverLoader();
-						_stopSounds();
-						MusicPlayer.Cleanup();
-						SoundHandle.Cleanup();
-						soundDeinit();
-						NandHandle.Disable_Emu();
 						LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_GCcopyGame, (void *)this, 0, 8 * 1024, 64);
 						break;
 				}
@@ -454,7 +452,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 			if (!m_thrdMessage.empty())
 				m_btnMgr.setText(m_wbfsLblDialog, m_thrdMessage);
 			m_btnMgr.setProgress(m_wbfsPBar, m_thrdProgress);
-			m_btnMgr.setText(m_wbfsLblMessage, wfmt( L"%i%%", (int)(m_thrdProgress * 100.f)));
+			m_btnMgr.setText(m_wbfsLblMessage, wfmt(L"%i%%", (int)(m_thrdProgress * 100.f)));
 			if(!m_thrdWorking)
 			{
 				if(op == CMenu::WO_ADD_GAME)

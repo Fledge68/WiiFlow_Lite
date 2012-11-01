@@ -85,7 +85,7 @@ void DEVO_SetOptions(const char *isopath, int CurrentPartition, const char *game
 void DEVO_Boot();
 
 // General
-void GC_SetVideoMode(u8 videomode, u8 videoSetting);
+void GC_SetVideoMode(u8 videomode, u8 videoSetting, bool DIOSMIOS);
 void GC_SetLanguage(u8 lang);
 int GC_GameIsInstalled(char *discid, const char* partition, const char* dmlgamedir);
 

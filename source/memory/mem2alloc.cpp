@@ -1,19 +1,20 @@
 #include "mem2alloc.hpp"
 
 #include <ogc/system.h>
+#include <ogc/cache.h>
 #include <algorithm>
 #include <string.h>
 
 #define IOS_RELOAD_AREA		0x90200000
 
-#include "lockMutex.hpp" 
+#include "lockMutex.hpp"
 
 void CMEM2Alloc::init(unsigned int size)
 {
-	m_baseAddress = (SBlock *) std::max(((u32)SYS_GetArena2Lo() + 31) & ~31, IOS_RELOAD_AREA);
-	m_endAddress = (SBlock *)((char *)m_baseAddress + std::min(size * 0x100000, SYS_GetArena2Size() & ~31));
-	if (m_endAddress > (SBlock *) 0x93100000) //rest is reserved for usb/usb2/network and other stuff... (0xE0000 bytes)
-		m_endAddress = (SBlock *) 0x93100000;
+	m_baseAddress = (SBlock *)std::max(((u32)SYS_GetArena2Lo() + 31) & ~31, IOS_RELOAD_AREA);
+	m_endAddress = (SBlock *)((u8*)m_baseAddress + std::min(size * 0x100000, SYS_GetArena2Size() & ~31));
+	if (m_endAddress > (SBlock *)0x93100000) //rest is reserved for usb/usb2/network and other stuff... (0xE0000 bytes)
+		m_endAddress = (SBlock *)0x93100000;
 	SYS_SetArena2Lo(m_endAddress);
 	LWP_MutexInit(&m_mutex, 0);
 }
@@ -40,7 +41,9 @@ void CMEM2Alloc::cleanup(void)
 void CMEM2Alloc::clear(void)
 {
 	m_first = 0;
-	memset(m_baseAddress, 0, (u8 *)m_endAddress - (u8 *)m_baseAddress);
+	u32 Size = (u32)m_endAddress - (u32)m_baseAddress;
+	memset(m_baseAddress, 0, Size);
+	DCFlushRange(m_baseAddress, Size);
 }
 
 unsigned int CMEM2Alloc::usableSize(void *p)
@@ -211,7 +214,7 @@ unsigned int CMEM2Alloc::FreeSize()
 	LockMutex lock(m_mutex);
 
 	if (m_first == 0)
-		return (const char *) m_endAddress - (const char *) m_baseAddress;
+		return (u32)m_endAddress - (u32)m_baseAddress;
 
 	SBlock *i;
 	unsigned int size = 0;

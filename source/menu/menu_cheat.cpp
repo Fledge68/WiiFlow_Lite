@@ -90,9 +90,9 @@ void CMenu::_CheatSettings()
 	_textCheatSettings();
 	
 	if (txtavailable)
-		m_btnMgr.setText(m_cheatLblTitle,wfmt(L"%s",m_cheatfile.getGameName().c_str()));
+		m_btnMgr.setText(m_cheatLblTitle, m_cheatfile.getGameName());
 	else 
-		m_btnMgr.setText(m_cheatLblTitle,L"");
+		m_btnMgr.setText(m_cheatLblTitle, L"");
 	
 	while(!m_exit)
 	{
@@ -243,10 +243,10 @@ void CMenu::_CheatSettings()
 				txtavailable = m_cheatfile.openTxtfile(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id.c_str()));
 				_showCheatSettings();
 
-				if (txtavailable)
-					m_btnMgr.setText(m_cheatLblTitle,wfmt(L"%s",m_cheatfile.getGameName().c_str()));
+				if(txtavailable)
+					m_btnMgr.setText(m_cheatLblTitle, m_cheatfile.getGameName());
 				else 
-					m_btnMgr.setText(m_cheatLblTitle,L"");
+					m_btnMgr.setText(m_cheatLblTitle, L"");
 
 				if (m_cheatfile.getCnt() == 0)
 				{
@@ -308,7 +308,7 @@ void CMenu::_showCheatSettings(void)
 			// cheat in range?
 			if (((m_cheatSettingsPage-1)*CHEATSPERPAGE + i + 1) <= m_cheatfile.getCnt()) 
 			{
-				m_btnMgr.setText(m_cheatLblItem[i], wfmt(L"%s", m_cheatfile.getCheatName((m_cheatSettingsPage-1)*CHEATSPERPAGE + i).c_str()));
+				m_btnMgr.setText(m_cheatLblItem[i], m_cheatfile.getCheatName((m_cheatSettingsPage-1)*CHEATSPERPAGE + i));
 				m_btnMgr.setText(m_cheatBtnItem[i], _optBoolToString(m_cheatfile.sCheatSelected[(m_cheatSettingsPage-1)*CHEATSPERPAGE + i]));
 				
 				m_btnMgr.show(m_cheatLblItem[i], true);
