@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<app version="4.0.1">
+<app version="4.0.3">
   <name> WiiFlow</name>
   <coder>OverjoY, FIX94</coder>
-  <version>r431</version>
+  <version>r433</version>
   <release_date>TBD</release_date>
   <short_description>USB Loader / Nand Emulator</short_description>
   <long_description>

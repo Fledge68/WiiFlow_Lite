@@ -62,7 +62,7 @@ bool ZipFile::ExtractAll(const char *dest)
 
 	bool Stop = false;
 
-	u32 blocksize = 1024*50;
+	u32 blocksize = 1024 * 50;
 	u8 *buffer = (u8*)MEM2_memalign(32, blocksize);
 	if(buffer == NULL)
 		return false;

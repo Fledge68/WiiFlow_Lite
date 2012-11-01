@@ -40,6 +40,7 @@ public:
 	void exitHandler(int ExitTo);
 	int main(void);
 	void cleanup(void);
+	void _TempLoadIOS(int IOS = 0);
 	u8 m_current_view;
 private:
 	struct SZone
@@ -1074,7 +1075,6 @@ private:
 	static void _gameSoundThread(CMenu *m);
 
 	static void _load_installed_cioses();
-	void _TempLoadIOS(int IOS = 0);
 
 	struct SOption { const char id[10]; const wchar_t text[16]; };
 	static const string _translations[23];
