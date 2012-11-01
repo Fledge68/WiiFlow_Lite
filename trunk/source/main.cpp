@@ -99,9 +99,9 @@ int main(int argc, char **argv)
 	{
 		if(useMainIOS || !DeviceHandle.UsablePartitionMounted())
 		{
-			iosOK = loadIOS(mainIOS, true) && CustomIOS(CurrentIOS.Type);
-			Open_Inputs();
-			//mainMenu->init();
+			useMainIOS = false;
+			mainMenu._TempLoadIOS();
+			iosOK = CustomIOS(CurrentIOS.Type);
 		}
 	}
 	if(CurrentIOS.Version == mainIOS)
