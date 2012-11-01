@@ -74,6 +74,7 @@ private:
 	s8 GetPluginPosition(u32 magic);
 	vector<PluginOptions> Plugins;
 	vector<bool> enabledPlugins;
+	char PluginMagicWord[9];
 	s8 Plugin_Pos;
 	string pluginsDir;
 	bool adding;

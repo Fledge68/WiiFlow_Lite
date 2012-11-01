@@ -3,7 +3,7 @@
 
 int currentStr = 0;
 static char fmt_buffer[MAX_USES][MAX_MSG_SIZE];
-static char general_buffer[MAX_MSG_SIZE];
+static char general_buffer[MAX_MSG_SIZE * 2];
 
 // Simplified use of sprintf
 char *fmt(const char *format, ...)
@@ -449,9 +449,9 @@ void Asciify( wchar_t *str )
 {
 	const wchar_t *ptr = str;
 	wchar_t *ctr = str;
-	
+
 	while(*ptr != '\0')
-    {
+	{
 		switch(*ptr)
 		{
 			case 0x14c:
@@ -460,7 +460,7 @@ void Asciify( wchar_t *str )
 		}
 		*ctr = *ptr;
 		++ptr;
-		++ctr;	
+		++ctr;
 	}
 	*ctr = '\0';
 }

@@ -78,6 +78,8 @@ extern const u8		pegi_16_png[];
 extern const u8		pegi_18_png[];
 
 GameXMLInfo gameinfo;
+wstringEx gameinfo_Synopsis_w;
+wstringEx gameinfo_Title_w;
 
 static bool titlecheck = false;
 u8 cnt_controlsreq = 0, cnt_controls = 0;
@@ -133,9 +135,6 @@ void CMenu::_gameinfo(void)
 			page = 1;
 			amount_of_skips = 0;
 
-			m_btnMgr.reset(m_gameinfoLblSynopsis);
-			m_btnMgr.setText(m_gameinfoLblSynopsis, wfmt(L"%s", gameinfo.Synopsis.c_str()));
-
 			m_btnMgr.hide(m_gameinfoLblID, true);
 			m_btnMgr.hide(m_gameinfoLblDev, true);
 			m_btnMgr.hide(m_gameinfoLblRegion, true);
@@ -148,19 +147,20 @@ void CMenu::_gameinfo(void)
 			for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControlsReq); ++i)
 				if(m_gameinfoLblControlsReq[i] != -1)
 					m_btnMgr.hide(m_gameinfoLblControlsReq[i], true);
-			
+
 			for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControls); ++i)
 				if(m_gameinfoLblControls[i] != -1)
 					m_btnMgr.hide(m_gameinfoLblControls[i], true);
-			
+
 			// When showing synopsis, only show user labels 2 and 3
 			for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblUser); ++i)
 				if(i < ARRAY_SIZE(m_gameinfoLblUser) / 2)
 					m_btnMgr.hide(m_gameinfoLblUser[i], true);
 				else
 					m_btnMgr.show(m_gameinfoLblUser[i]);
-			
-			m_btnMgr.show(m_gameinfoLblSynopsis,false);
+
+			m_btnMgr.reset(m_gameinfoLblSynopsis);
+			m_btnMgr.show(m_gameinfoLblSynopsis, false);
 		}
 		else if (BTN_LEFT_PRESSED && !(m_thrdWorking && m_thrdStop))
 		{
@@ -313,23 +313,24 @@ void CMenu::_textGameInfo(void)
 	GameTDB gametdb;
 	gametdb.OpenFile(fmt("%s/wiitdb.xml", m_settingsDir.c_str()));
 	gametdb.SetLanguageCode(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
-		
+
 	titlecheck = gametdb.IsLoaded() && gametdb.GetGameXMLInfo(m_cf.getId().c_str(), &gameinfo);
 	if(titlecheck)
 	{
-		gprintf("ID: %s\nTitle: %s\n", gameinfo.GameID.c_str(), gameinfo.Title.c_str());
+		gameinfo_Title_w.fromUTF8(gameinfo.Title);
+		m_btnMgr.setText(m_gameinfoLblTitle, gameinfo_Title_w, true);
+		gameinfo_Synopsis_w.fromUTF8(gameinfo.Synopsis);
+		m_btnMgr.setText(m_gameinfoLblSynopsis, gameinfo_Synopsis_w);
+
 		m_btnMgr.setText(m_gameinfoLblID, wfmt(L"GameID: %s", gameinfo.GameID.c_str()), true);
-		m_btnMgr.setText(m_gameinfoLblTitle, wfmt(L"%s", gameinfo.Title.c_str()), true);
-		m_btnMgr.setText(m_gameinfoLblSynopsis, wfmt(L"%s", gameinfo.Synopsis.c_str()), false);
 		m_btnMgr.setText(m_gameinfoLblDev, wfmt(_fmt("gameinfo1",L"Developer: %s"), gameinfo.Developer.c_str()), true);
 		m_btnMgr.setText(m_gameinfoLblPublisher, wfmt(_fmt("gameinfo2",L"Publisher: %s"), gameinfo.Publisher.c_str()), true);
 		m_btnMgr.setText(m_gameinfoLblRegion, wfmt(_fmt("gameinfo3",L"Region: %s"), gameinfo.Region.c_str()), true);
 		m_btnMgr.setText(m_gameinfoLblGenre, wfmt(_fmt("gameinfo5",L"Genre: %s"), gameinfo.Genres.c_str()), true);
 
 		int year = gameinfo.PublishDate >> 16;
-        int day = gameinfo.PublishDate & 0xFF;
-        int month = (gameinfo.PublishDate >> 8) & 0xFF;
-		
+		int day = gameinfo.PublishDate & 0xFF;
+		int month = (gameinfo.PublishDate >> 8) & 0xFF;
 		switch(CONF_GetRegion())
 		{
 			case 0:

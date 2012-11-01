@@ -30,6 +30,7 @@
 
 void Plugin::init(const string& m_pluginsDir)
 {
+	PluginMagicWord[8] = '\0';
 	pluginsDir = m_pluginsDir;
 	//Ready to add plugins
 	adding = true;
@@ -150,8 +151,6 @@ void Plugin::SetEnablePlugin(Config &cfg, u8 pos, u8 ForceMode)
 {
 	if(pos < Plugins.size())
 	{
-		char PluginMagicWord[9];
-		memset(PluginMagicWord, 0, sizeof(PluginMagicWord));
 		strncpy(PluginMagicWord, fmt("%08x", Plugins[pos].magicWord), 8);
 		if(ForceMode == 1)
 			cfg.setBool(PLUGIN_DOMAIN, PluginMagicWord, false);
@@ -165,11 +164,9 @@ void Plugin::SetEnablePlugin(Config &cfg, u8 pos, u8 ForceMode)
 const vector<bool> &Plugin::GetEnabledPlugins(Config &cfg)
 {
 	enabledPlugins.clear();
-	char PluginMagicWord[9];
 	u8 enabledPluginsNumber = 0;
 	for(u8 i = 0; i < Plugins.size(); i++)
 	{
-		memset(PluginMagicWord, 0, sizeof(PluginMagicWord));
 		strncpy(PluginMagicWord, fmt("%08x", Plugins[i].magicWord), 8);
 		if(cfg.getBool(PLUGIN_DOMAIN, PluginMagicWord, true))
 		{
@@ -264,8 +261,8 @@ string Plugin::GenerateCoverLink(dir_discHdr gameHeader, const string& constURL,
 		strncpy(gamePath, gameHeader.path, sizeof(gamePath));
 	const string& cachedCRC = Checksums.getString("CHECKSUMS", gamePath);
 	char crc_string[9];
-	memset(crc_string, 0, sizeof(crc_string));
-	if(cachedCRC.size() > 1)
+	crc_string[8] = '\0';
+	if(cachedCRC.size() == 8)
 	{
 		gprintf("CRC32 of %s is cached\n", gamePath);
 		strncpy(crc_string, cachedCRC.c_str(), 8);

@@ -11,7 +11,7 @@ typedef void (*progress_callback_t)(int status,int total,void *user_data);
 bool fsop_GetFileSizeBytes(char *path, size_t *filesize);
 u64 fsop_GetFolderBytes(const char *source);
 u32 fsop_GetFolderKb(const char *source);
-u32 fsop_GetFreeSpaceKb(char *path);
+u32 fsop_GetFreeSpaceKb(const char *path);
 bool fsop_FileExist(const char *fn);
 bool fsop_DirExist(const char *path);
 void fsop_MakeFolder(char *path);

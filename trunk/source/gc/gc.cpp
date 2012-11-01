@@ -36,37 +36,33 @@
 #include "memory/memory.h"
 
 // DIOS-MIOS
-DML_CFG *DMLCfg = NULL;
+DML_CFG DMLCfg;
 
 void DML_New_SetOptions(const char *GamePath, char *CheatPath, const char *NewCheatPath, const char *partition, bool cheats, bool debugger, u8 NMM, u8 nodisc, u8 DMLvideoMode, u8 videoSetting, bool widescreen, bool new_dm_cfg)
 {
 	gprintf("Wiiflow GC: Launch game '%s' through memory (new method)\n", GamePath);
+	memset(&DMLCfg, 0, sizeof(DML_CFG));
 
-	DMLCfg = (DML_CFG*)malloc(sizeof(DML_CFG));
-	if(DMLCfg == NULL)
-		return;
-	memset(DMLCfg, 0, sizeof(DML_CFG));
-
-	DMLCfg->Magicbytes = 0xD1050CF6;
+	DMLCfg.Magicbytes = 0xD1050CF6;
 	if(new_dm_cfg)
-		DMLCfg->CfgVersion = 0x00000002;
+		DMLCfg.CfgVersion = 0x00000002;
 	else
-		DMLCfg->CfgVersion = 0x00000001;
+		DMLCfg.CfgVersion = 0x00000001;
 
 	if(videoSetting == 0)
-		DMLCfg->VideoMode |= DML_VID_NONE;
+		DMLCfg.VideoMode |= DML_VID_NONE;
 	else if(videoSetting == 1)
-		DMLCfg->VideoMode |= DML_VID_DML_AUTO;
+		DMLCfg.VideoMode |= DML_VID_DML_AUTO;
 	else
-		DMLCfg->VideoMode |= DML_VID_FORCE;
+		DMLCfg.VideoMode |= DML_VID_FORCE;
 
-	DMLCfg->Config |= DML_CFG_ACTIVITY_LED; //Sorry but I like it lol, option will may follow
-	DMLCfg->Config |= DML_CFG_PADHOOK; //Makes life easier, l+z+b+digital down...
+	DMLCfg.Config |= DML_CFG_ACTIVITY_LED; //Sorry but I like it lol, option will may follow
+	DMLCfg.Config |= DML_CFG_PADHOOK; //Makes life easier, l+z+b+digital down...
 
 	if(GamePath != NULL)
 	{
-		strncpy(DMLCfg->GamePath, GamePath, sizeof(DMLCfg->GamePath));
-		DMLCfg->Config |= DML_CFG_GAME_PATH;
+		strncpy(DMLCfg.GamePath, GamePath, sizeof(DMLCfg.GamePath));
+		DMLCfg.Config |= DML_CFG_GAME_PATH;
 	}
 
 	if(CheatPath != NULL && NewCheatPath != NULL && cheats)
@@ -79,31 +75,31 @@ void DML_New_SetOptions(const char *GamePath, char *CheatPath, const char *NewCh
 		}
 		else
 			ptr = strstr(CheatPath, ":/") + 1;
-		strncpy(DMLCfg->CheatPath, ptr, sizeof(DMLCfg->CheatPath));
+		strncpy(DMLCfg.CheatPath, ptr, sizeof(DMLCfg.CheatPath));
 		gprintf("Cheat Path: %s\n", ptr);
-		DMLCfg->Config |= DML_CFG_CHEAT_PATH;
+		DMLCfg.Config |= DML_CFG_CHEAT_PATH;
 	}
 
 	if(cheats)
-		DMLCfg->Config |= DML_CFG_CHEATS;
+		DMLCfg.Config |= DML_CFG_CHEATS;
 	if(debugger)
-		DMLCfg->Config |= DML_CFG_DEBUGGER;
-	if(NMM > 0)
-		DMLCfg->Config |= DML_CFG_NMM;
+		DMLCfg.Config |= DML_CFG_DEBUGGER;
+	if(NMM)
+		DMLCfg.Config |= DML_CFG_NMM;
 	if(NMM > 1)
-		DMLCfg->Config |= DML_CFG_NMM_DEBUG;
-	if(nodisc > 0)
+		DMLCfg.Config |= DML_CFG_NMM_DEBUG;
+	if(nodisc)
 	{
 		if(new_dm_cfg)
-			DMLCfg->Config |= DML_CFG_NODISC_CFG2;
+			DMLCfg.Config |= DML_CFG_NODISC_CFG2;
 		else
-			DMLCfg->Config |= DML_CFG_NODISC_CFG1;
+			DMLCfg.Config |= DML_CFG_NODISC_CFG1;
 	}
 	if(widescreen && new_dm_cfg)
-		DMLCfg->Config |= DML_CFG_FORCE_WIDE;
+		DMLCfg.Config |= DML_CFG_FORCE_WIDE;
 
 	if(DMLvideoMode > 3)
-		DMLCfg->VideoMode |= DML_VID_PROG_PATCH;
+		DMLCfg.VideoMode |= DML_VID_PROG_PATCH;
 }
 
 void DML_Old_SetOptions(const char *GamePath)
@@ -125,36 +121,27 @@ void DML_Old_SetOptions(const char *GamePath)
 void DML_New_SetBootDiscOption(bool new_dm_cfg)
 {
 	gprintf("Booting GC game\n");
+	memset(&DMLCfg, 0, sizeof(DML_CFG));
 
-	DMLCfg = (DML_CFG*)malloc(sizeof(DML_CFG));
-	if(DMLCfg == NULL)
-		return;
-	memset(DMLCfg, 0, sizeof(DML_CFG));
-
-	DMLCfg->Magicbytes = 0xD1050CF6;
+	DMLCfg.Magicbytes = 0xD1050CF6;
 	if(new_dm_cfg)
-		DMLCfg->CfgVersion = 0x00000002;
+		DMLCfg.CfgVersion = 0x00000002;
 	else
-		DMLCfg->CfgVersion = 0x00000001;
-	DMLCfg->VideoMode |= DML_VID_DML_AUTO;
+		DMLCfg.CfgVersion = 0x00000001;
+	DMLCfg.VideoMode |= DML_VID_DML_AUTO;
 
-	DMLCfg->Config |= DML_CFG_BOOT_DISC;
+	DMLCfg.Config |= DML_CFG_BOOT_DISC;
 }
 
 void DML_New_WriteOptions()
 {
-	if(DMLCfg == NULL)
-		return;
-
 	//Write options into memory
-	memcpy((void *)0x80001700, DMLCfg, sizeof(DML_CFG));
+	memcpy((void *)0x80001700, &DMLCfg, sizeof(DML_CFG));
 	DCFlushRange((void *)(0x80001700), sizeof(DML_CFG));
 
 	//DML v1.2+
-	memcpy((void *)0x81200000, DMLCfg, sizeof(DML_CFG));
+	memcpy((void *)0x81200000, &DMLCfg, sizeof(DML_CFG));
 	DCFlushRange((void *)(0x81200000), sizeof(DML_CFG));
-
-	free(DMLCfg);
 }
 
 
@@ -328,7 +315,7 @@ u32 __SYS_UnlockSram(u32 write);
 u32 __SYS_SyncSram(void);
 }
 
-void GC_SetVideoMode(u8 videomode, u8 videoSetting)
+void GC_SetVideoMode(u8 videomode, u8 videoSetting, bool DIOSMIOS)
 {
 	syssram *sram;
 	sram = __SYS_LockSram();
@@ -354,33 +341,33 @@ void GC_SetVideoMode(u8 videomode, u8 videoSetting)
 
 	if(videomode == 1)
 	{
-		if(DMLCfg != NULL && videoSetting == 2)
-			DMLCfg->VideoMode |= DML_VID_FORCE_PAL50;
+		if(DIOSMIOS && videoSetting == 2)
+			DMLCfg.VideoMode |= DML_VID_FORCE_PAL50;
 		vmode = &TVPal528IntDf;
 	}
 	else if(videomode == 2)
 	{
-		if(DMLCfg != NULL && videoSetting == 2)
-			DMLCfg->VideoMode |= DML_VID_FORCE_NTSC;
+		if(DIOSMIOS && videoSetting == 2)
+			DMLCfg.VideoMode |= DML_VID_FORCE_NTSC;
 		vmode = &TVNtsc480IntDf;
 	}
 	else if(videomode == 3)
 	{
-		if(DMLCfg != NULL && videoSetting == 2)
-			DMLCfg->VideoMode |= DML_VID_FORCE_PAL60;
+		if(DIOSMIOS && videoSetting == 2)
+			DMLCfg.VideoMode |= DML_VID_FORCE_PAL60;
 		vmode = &TVEurgb60Hz480IntDf;
 		vmode_reg = 5;
 	}
 	else if(videomode == 4 ||videomode == 6)
 	{
-		if(DMLCfg != NULL && videoSetting == 2)
-			DMLCfg->VideoMode |= DML_VID_FORCE_PROG;
+		if(DIOSMIOS && videoSetting == 2)
+			DMLCfg.VideoMode |= DML_VID_FORCE_PROG;
 		vmode = &TVNtsc480Prog;
 	}
 	else if(videomode == 5 || videomode == 7)
 	{
-		if(DMLCfg != NULL && videoSetting == 2)
-			DMLCfg->VideoMode |= DML_VID_FORCE_PROG;
+		if(DIOSMIOS && videoSetting == 2)
+			DMLCfg.VideoMode |= DML_VID_FORCE_PROG;
 		vmode = &TVNtsc480Prog;
 		vmode_reg = 5;
 	}

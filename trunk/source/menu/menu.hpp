@@ -967,13 +967,7 @@ private:
 	void _CategorySettings(bool fromGameSet = false);
 	bool _Home();
 	bool _ExitTo();
-	//
 	void _mainLoopCommon(bool withCF = false, bool adjusting = false);
-	// 
-	vector<dir_discHdr> _searchGamesByID(const char *gameId);
-/* 	vector<dir_discHdr> _searchGamesByTitle(wchar_t letter);
-	vector<dir_discHdr> _searchGamesByType(const char type);
-	vector<dir_discHdr> _searchGamesByRegion(const char region); */
 public:
 	void directlaunch(const char *GameID);
 private:
@@ -998,10 +992,10 @@ private:
 	void _cleanupDefaultFont();
 	string _getId(void);
 	const char *_domainFromView(void);
-	const char *_cfDomain(bool selected = false);	
+	const char *_cfDomain(bool selected = false);
 	void UpdateCache(u32 view = COVERFLOW_MAX);
 	int MIOSisDML();
-	void RemoveCover( char * id );
+	void RemoveCover(const char *id);
 	SFont _font(CMenu::FontSet &fontSet, const char *domain, const char *key, u32 fontSize, u32 lineSpacing, u32 weight, u32 index, const char *genKey);
 	STexture _texture(TexSet &texSet, const char *domain, const char *key, STexture def);
 	vector<STexture> _textures(TexSet &texSet, const char *domain, const char *key);

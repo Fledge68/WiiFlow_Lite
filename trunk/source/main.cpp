@@ -2,14 +2,11 @@
 #include <ogc/system.h>
 #include <unistd.h>
 
-#include "defines.h"
-#include "svnrev.h"
-
+#include "const_str.hpp"
 #include "booter/external_booter.hpp"
 #include "channel/nand.hpp"
 #include "devicemounter/DeviceHandler.hpp"
 #include "gecko/gecko.h"
-#include "gecko/wifi_gecko.h"
 #include "gui/video.hpp"
 #include "gui/text.hpp"
 #include "homebrew/homebrew.h"
@@ -25,12 +22,13 @@
 
 CMenu mainMenu;
 bool useMainIOS = false;
+
 int main(int argc, char **argv)
 {
 	mainIOS = DOL_MAIN_IOS;
 	__exception_setreload(5);
 	InitGecko(); //USB Gecko and SD buffer
-	gprintf(" \nWelcome to %s (%s-r%s)!\nThis is the debug output.\n", APP_NAME, APP_VERSION, SVN_REV);
+	gprintf(" \nWelcome to %s!\nThis is the debug output.\n", VERSION_STRING.c_str());
 
 	m_vid.init(); // Init video
 	MEM_init(); //Inits both mem1lo and mem2
