@@ -46,8 +46,8 @@ u32 CMenu::_downloadCheatFileAsync(void *obj)
 	}
 
 	u32 bufferSize = 0x080000;	// Maximum download size 512kb
-	SmartBuf buffer = smartAnyAlloc(bufferSize);
-	if (!buffer)
+	u8 *buffer = (u8*)MEM2_alloc(bufferSize);
+	if(buffer == NULL)
 	{
 		m->m_thrdWorking = false;
 		return -2;
@@ -56,7 +56,7 @@ u32 CMenu::_downloadCheatFileAsync(void *obj)
 	string id = m->m_cf.getId();
 	char type = id[0] == 'S' ? 'R' : id[0];
 
-	block cheatfile = downloadfile(buffer.get(), bufferSize, fmt(GECKOURL, type, id.c_str()), CMenu::_downloadProgress, m);
+	block cheatfile = downloadfile(buffer, bufferSize, fmt(GECKOURL, type, id.c_str()), CMenu::_downloadProgress, m);
 
 	if (cheatfile.data != NULL && cheatfile.size > 65 && cheatfile.data[0] != '<')
 	{
@@ -66,13 +66,13 @@ u32 CMenu::_downloadCheatFileAsync(void *obj)
 		{
 			fwrite(cheatfile.data, 1, cheatfile.size, file);
 			fclose(file);
-			buffer.release();
+			free(buffer);
 			m->m_thrdWorking = false;
 			return 0;
 		}
 	}
 
-	buffer.release();
+	free(buffer);
 	m->m_thrdWorking = false;
 	return -3;
 }
@@ -333,27 +333,27 @@ void CMenu::_showCheatSettings(void)
 }
 
 
-void CMenu::_initCheatSettingsMenu(CMenu::SThemeData &theme)
+void CMenu::_initCheatSettingsMenu()
 {
-	_addUserLabels(theme, m_cheatLblUser, ARRAY_SIZE(m_cheatLblUser), "CHEAT");
-	m_cheatBg = _texture(theme.texSet, "CHEAT/BG", "texture", theme.bg);
-	m_cheatLblTitle = _addLabel(theme, "CHEAT/TITLE", theme.titleFont, L"Cheats", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
-	m_cheatBtnBack = _addButton(theme, "CHEAT/BACK_BTN", theme.btnFont, L"", 460, 400, 150, 56, theme.btnFontColor);
-	m_cheatBtnApply = _addButton(theme, "CHEAT/APPLY_BTN", theme.btnFont, L"", 240, 400, 150, 56, theme.btnFontColor);
-	m_cheatBtnDownload = _addButton(theme, "CHEAT/DOWNLOAD_BTN", theme.btnFont, L"", 240, 400, 200, 56, theme.btnFontColor);
+	_addUserLabels(m_cheatLblUser, ARRAY_SIZE(m_cheatLblUser), "CHEAT");
+	m_cheatBg = _texture("CHEAT/BG", "texture", theme.bg, false);
+	m_cheatLblTitle = _addLabel("CHEAT/TITLE", theme.titleFont, L"Cheats", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_cheatBtnBack = _addButton("CHEAT/BACK_BTN", theme.btnFont, L"", 460, 400, 150, 56, theme.btnFontColor);
+	m_cheatBtnApply = _addButton("CHEAT/APPLY_BTN", theme.btnFont, L"", 240, 400, 150, 56, theme.btnFontColor);
+	m_cheatBtnDownload = _addButton("CHEAT/DOWNLOAD_BTN", theme.btnFont, L"", 240, 400, 200, 56, theme.btnFontColor);
 
-	m_cheatLblPage = _addLabel(theme, "CHEAT/PAGE_BTN", theme.btnFont, L"", 76, 400, 100, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_cheatBtnPageM = _addPicButton(theme, "CHEAT/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 20, 400, 56, 56);
-	m_cheatBtnPageP = _addPicButton(theme, "CHEAT/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 176, 400, 56, 56);
+	m_cheatLblPage = _addLabel("CHEAT/PAGE_BTN", theme.btnFont, L"", 76, 400, 100, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_cheatBtnPageM = _addPicButton("CHEAT/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 20, 400, 56, 56);
+	m_cheatBtnPageP = _addPicButton("CHEAT/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 176, 400, 56, 56);
 
-	m_cheatLblItem[0] = _addLabel(theme, "CHEAT/ITEM_0", theme.lblFont, L"", 40, 100, 460, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_cheatBtnItem[0] = _addButton(theme, "CHEAT/ITEM_0_BTN", theme.btnFont, L"", 500, 100, 120, 56, theme.btnFontColor);
-	m_cheatLblItem[1] = _addLabel(theme, "CHEAT/ITEM_1", theme.lblFont, L"", 40, 160, 460, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_cheatBtnItem[1] = _addButton(theme, "CHEAT/ITEM_1_BTN", theme.btnFont, L"", 500, 160, 120, 56, theme.btnFontColor);
-	m_cheatLblItem[2] = _addLabel(theme, "CHEAT/ITEM_2", theme.lblFont, L"", 40, 220, 460, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_cheatBtnItem[2] = _addButton(theme, "CHEAT/ITEM_2_BTN", theme.btnFont, L"", 500, 220, 120, 56, theme.btnFontColor);
-	m_cheatLblItem[3] = _addLabel(theme, "CHEAT/ITEM_3", theme.lblFont, L"", 40, 280, 460, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_cheatBtnItem[3] = _addButton(theme, "CHEAT/ITEM_3_BTN", theme.btnFont, L"", 500, 280, 120, 56, theme.btnFontColor);
+	m_cheatLblItem[0] = _addLabel("CHEAT/ITEM_0", theme.lblFont, L"", 40, 100, 460, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_cheatBtnItem[0] = _addButton("CHEAT/ITEM_0_BTN", theme.btnFont, L"", 500, 100, 120, 56, theme.btnFontColor);
+	m_cheatLblItem[1] = _addLabel("CHEAT/ITEM_1", theme.lblFont, L"", 40, 160, 460, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_cheatBtnItem[1] = _addButton("CHEAT/ITEM_1_BTN", theme.btnFont, L"", 500, 160, 120, 56, theme.btnFontColor);
+	m_cheatLblItem[2] = _addLabel("CHEAT/ITEM_2", theme.lblFont, L"", 40, 220, 460, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_cheatBtnItem[2] = _addButton("CHEAT/ITEM_2_BTN", theme.btnFont, L"", 500, 220, 120, 56, theme.btnFontColor);
+	m_cheatLblItem[3] = _addLabel("CHEAT/ITEM_3", theme.lblFont, L"", 40, 280, 460, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_cheatBtnItem[3] = _addButton("CHEAT/ITEM_3_BTN", theme.btnFont, L"", 500, 280, 120, 56, theme.btnFontColor);
 
 	_setHideAnim(m_cheatLblTitle, "CHEAT/TITLE", 0, 100, 0.f, 0.f);
 	_setHideAnim(m_cheatBtnApply, "CHEAT/APPLY_BTN", 0, 0, 1.f, -1.f);

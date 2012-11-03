@@ -25,7 +25,7 @@
  ***************************************************************************/
 #include <unistd.h>
 #include <string.h>
-
+#include <malloc.h>
 #include "gui_sound.h"
 #include "SoundHandler.hpp"
 #include "MusicPlayer.hpp"
@@ -169,10 +169,6 @@ bool GuiSound::Load(const char * filepath)
 		return false;
 	}
 
-	u32 magic;
-	fread(&magic, 1, 4, f);
-	fclose(f);
-
 	SoundHandle.AddDecoder(this->voice, filepath);
 	//gprintf("gui_sound.cpp: Loading %s using voice %d\n", filepath, this->voice);
 	SoundDecoder *decoder = SoundHandle.Decoder(this->voice);
@@ -199,7 +195,7 @@ bool GuiSound::Load(const u8 * snd, u32 len, bool isallocated)
 {
 	FreeMemory();
 
-	if(!snd)
+	if(snd == NULL || len == 0)
 		return false;
 
 	if(!isallocated && memcmp(snd, "RIFF", 4) == 0)

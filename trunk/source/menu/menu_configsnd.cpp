@@ -128,26 +128,26 @@ int CMenu::_configSnd(void)
 	return change;
 }
 
-void CMenu::_initConfigSndMenu(CMenu::SThemeData &theme)
+void CMenu::_initConfigSndMenu()
 {
-	_addUserLabels(theme, m_configSndLblUser, ARRAY_SIZE(m_configSndLblUser), "CONFIGSND");
-	m_configSndBg = _texture(theme.texSet, "CONFIGSND/BG", "texture", theme.bg);
-	m_configSndLblMusicVol = _addLabel(theme, "CONFIGSND/MUSIC_VOL", theme.lblFont, L"", 40, 130, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_configSndLblMusicVolVal = _addLabel(theme, "CONFIGSND/MUSIC_VOL_BTN", theme.btnFont, L"", 426, 130, 118, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_configSndBtnMusicVolM = _addPicButton(theme, "CONFIGSND/MUSIC_VOL_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 370, 130, 56, 56);
-	m_configSndBtnMusicVolP = _addPicButton(theme, "CONFIGSND/MUSIC_VOL_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 130, 56, 56);
-	m_configSndLblGuiVol = _addLabel(theme, "CONFIGSND/GUI_VOL", theme.lblFont, L"", 40, 190, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_configSndLblGuiVolVal = _addLabel(theme, "CONFIGSND/GUI_VOL_BTN", theme.btnFont, L"", 426, 190, 118, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_configSndBtnGuiVolM = _addPicButton(theme, "CONFIGSND/GUI_VOL_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 370, 190, 56, 56);
-	m_configSndBtnGuiVolP = _addPicButton(theme, "CONFIGSND/GUI_VOL_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 190, 56, 56);
-	m_configSndLblCFVol = _addLabel(theme, "CONFIGSND/CF_VOL", theme.lblFont, L"", 40, 250, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_configSndLblCFVolVal = _addLabel(theme, "CONFIGSND/CF_VOL_BTN", theme.btnFont, L"", 426, 250, 118, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_configSndBtnCFVolM = _addPicButton(theme, "CONFIGSND/CF_VOL_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 370, 250, 56, 56);
-	m_configSndBtnCFVolP = _addPicButton(theme, "CONFIGSND/CF_VOL_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 250, 56, 56);
-	m_configSndLblBnrVol = _addLabel(theme, "CONFIGSND/BNR_VOL", theme.lblFont, L"", 40, 310, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_configSndLblBnrVolVal = _addLabel(theme, "CONFIGSND/BNR_VOL_BTN", theme.btnFont, L"", 426, 310, 118, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_configSndBtnBnrVolM = _addPicButton(theme, "CONFIGSND/BNR_VOL_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 370, 310, 56, 56);
-	m_configSndBtnBnrVolP = _addPicButton(theme, "CONFIGSND/BNR_VOL_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 310, 56, 56);
+	_addUserLabels(m_configSndLblUser, ARRAY_SIZE(m_configSndLblUser), "CONFIGSND");
+	m_configSndBg = _texture("CONFIGSND/BG", "texture", theme.bg, false);
+	m_configSndLblMusicVol = _addLabel("CONFIGSND/MUSIC_VOL", theme.lblFont, L"", 40, 130, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_configSndLblMusicVolVal = _addLabel("CONFIGSND/MUSIC_VOL_BTN", theme.btnFont, L"", 426, 130, 118, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_configSndBtnMusicVolM = _addPicButton("CONFIGSND/MUSIC_VOL_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 370, 130, 56, 56);
+	m_configSndBtnMusicVolP = _addPicButton("CONFIGSND/MUSIC_VOL_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 130, 56, 56);
+	m_configSndLblGuiVol = _addLabel("CONFIGSND/GUI_VOL", theme.lblFont, L"", 40, 190, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_configSndLblGuiVolVal = _addLabel("CONFIGSND/GUI_VOL_BTN", theme.btnFont, L"", 426, 190, 118, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_configSndBtnGuiVolM = _addPicButton("CONFIGSND/GUI_VOL_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 370, 190, 56, 56);
+	m_configSndBtnGuiVolP = _addPicButton("CONFIGSND/GUI_VOL_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 190, 56, 56);
+	m_configSndLblCFVol = _addLabel("CONFIGSND/CF_VOL", theme.lblFont, L"", 40, 250, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_configSndLblCFVolVal = _addLabel("CONFIGSND/CF_VOL_BTN", theme.btnFont, L"", 426, 250, 118, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_configSndBtnCFVolM = _addPicButton("CONFIGSND/CF_VOL_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 370, 250, 56, 56);
+	m_configSndBtnCFVolP = _addPicButton("CONFIGSND/CF_VOL_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 250, 56, 56);
+	m_configSndLblBnrVol = _addLabel("CONFIGSND/BNR_VOL", theme.lblFont, L"", 40, 310, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_configSndLblBnrVolVal = _addLabel("CONFIGSND/BNR_VOL_BTN", theme.btnFont, L"", 426, 310, 118, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_configSndBtnBnrVolM = _addPicButton("CONFIGSND/BNR_VOL_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 370, 310, 56, 56);
+	m_configSndBtnBnrVolP = _addPicButton("CONFIGSND/BNR_VOL_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 310, 56, 56);
 	// 
 	_setHideAnim(m_configSndLblMusicVol, "CONFIGSND/MUSIC_VOL", 100, 0, -2.f, 0.f);
 	_setHideAnim(m_configSndLblMusicVolVal, "CONFIGSND/MUSIC_VOL_BTN", 0, 0, 1.f, -1.f);

@@ -1,5 +1,6 @@
-
+#include <algorithm>
 #include "text.hpp"
+#include "memory/mem2.hpp"
 
 int currentStr = 0;
 static char fmt_buffer[MAX_USES][MAX_MSG_SIZE];
@@ -166,31 +167,42 @@ vector<wstringEx> stringToVector(const wstringEx &text, char sep)
 	return v;
 }
 
-bool SFont::fromBuffer(u8 *buffer, u32 bufferSize, u32 size, u32 lspacing, u32 w, u32 idx, const char *)
+void SFont::ClearData(void)
 {
-	if (!buffer || !font) return false;
+	if(font != NULL)
+		delete font;
+	font = NULL;
+	if(data != NULL)
+		free(data);
+	data = NULL;
+	dataSize = 0;
+}
 
+bool SFont::fromBuffer(const u8 *buffer, const u32 bufferSize, u32 size, u32 lspacing, u32 w, u32 idx, const char *)
+{
+	if(buffer == NULL)
+		return false;
 	size = min(max(6u, size), 1000u);
 	lineSpacing = min(max(6u, lspacing), 1000u);
 	weight = min(w, 32u);
 	index = idx;
 
-	if(data.get())
-		data.release();
-	data = smartMem2Alloc(bufferSize);
-	if(!data) return false;
-
-	memcpy(data.get(), buffer, bufferSize);
+	if(data != NULL)
+		free(data);
+	data = (u8*)MEM2_alloc(bufferSize);
+	if(data == NULL) return false;
 	dataSize = bufferSize;
 
-	font->loadFont(data.get(), dataSize, size, weight, index, false);
+	memcpy(data, buffer, bufferSize);
+	DCFlushRange(data, dataSize);
 
+	font = new FreeTypeGX();
+	font->loadFont(data, dataSize, size, weight, index, false);
 	return true;
 }
 
 bool SFont::fromFile(const char *filename, u32 size, u32 lspacing, u32 w, u32 idx)
 {
-	if (!font) return false;
 	size = min(max(6u, size), 1000u);
 	weight = min(w, 32u);
 	index = idx = 0;
@@ -204,30 +216,33 @@ bool SFont::fromFile(const char *filename, u32 size, u32 lspacing, u32 w, u32 id
 	fseek(file, 0, SEEK_SET);
 	if (fileSize == 0) return false;
 
-	if(data.get())
-		data.release();
-	data = smartMem2Alloc(fileSize);
+	if(data != NULL)
+		free(data);
+	data = (u8*)MEM2_alloc(fileSize);
 	if (!data)
 	{
 		fclose(file);
 		return false;
 	}
 		
-	fread(data.get(), 1, fileSize, file);
-
+	fread(data, 1, fileSize, file);
 	dataSize = fileSize;
+	DCFlushRange(data, dataSize);
 
-	font->loadFont(data.get(), dataSize, size, weight, index, false);
+	font = new FreeTypeGX();
+	font->loadFont(data, dataSize, size, weight, index, false);
 	return true;
 }
 
 static const wchar_t *g_whitespaces = L" \f\n\r\t\v";
-void CText::setText(SFont font, const wstringEx &t)
+void CText::setText(const SFont &font, const wstringEx &t)
 {
 	CText::SWord w;
 	m_lines.clear();
-	if (!!font.font) m_font = font;
-	if (!m_font.font) return;
+	if(font.font != NULL)
+		m_font = font;
+	if(m_font.font == NULL)
+		return;
 
 	firstLine = 0;
 	// Don't care about performance
@@ -260,14 +275,16 @@ void CText::setText(SFont font, const wstringEx &t)
 	}
 }
 
-void CText::setText(SFont font, const wstringEx &t, u32 startline)
+void CText::setText(const SFont &font, const wstringEx &t, u32 startline)
 {
 	CText::SWord w;
 	totalHeight = 0;
 
 	m_lines.clear();
-	if (!!font.font) m_font = font;
-	if (!m_font.font) return;
+	if(font.font != NULL)
+		m_font = font;
+	if(m_font.font == NULL)
+		return;
 
 	firstLine = startline;
 	// Don't care about performance
@@ -300,15 +317,13 @@ void CText::setText(SFont font, const wstringEx &t, u32 startline)
 	}
 }
 
-
 void CText::setFrame(float width, u16 style, bool ignoreNewlines, bool instant)
 {
+	if(m_font.font == NULL)
+		return;
+
 	float shift;
-
 	totalHeight = 0;
-
-	if (!m_font.font) return;
-
 	float space = m_font.font->getWidth(L" ");
 	float posX = 0.f;
 	float posY = 0.f;
@@ -390,7 +405,8 @@ void CText::tick(void)
 
 void CText::draw(void)
 {
-	if (!m_font.font) return;
+	if(m_font.font == NULL)
+		return;
 
 	for (u32 k = firstLine; k < m_lines.size(); ++k)
 		for (u32 i = 0; i < m_lines[k].size(); ++i)

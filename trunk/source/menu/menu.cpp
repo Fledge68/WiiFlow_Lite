@@ -495,8 +495,9 @@ void CMenu::cleanup()
 	m_plugin.Cleanup();
 
 	_stopSounds();
+	_Theme_Cleanup();
 	MusicPlayer.Cleanup();
-	m_cameraSound.release();
+	m_gameSound.FreeMemory();
 	ClearGameSoundThreadStack();
 	SoundHandle.Cleanup();
 	soundDeinit();
@@ -511,28 +512,101 @@ void CMenu::cleanup()
 	LWP_MutexDestroy(m_mutex);
 	m_mutex = 0;
 
-	for(TexSet::iterator texture = theme.texSet.begin(); texture != theme.texSet.end(); texture++)
-	{
-		if(texture->second.data.get())
-			texture->second.data.release();
-	}
-	theme.texSet.clear();
-	for(FontSet::iterator font = theme.fontSet.begin(); font != theme.fontSet.end(); font++)
-	{
-		if(font->second.data.get())
-			font->second.data.release();
-	}
-	theme.fontSet.clear();
-	for(SoundSet::iterator sound = theme.soundSet.begin(); sound != theme.soundSet.end(); sound++)
-	{
-		if(sound->second.get())
-			sound->second.release();
-	}
-	theme.soundSet.clear();
-
 	cleaned_up = true;
 	//gprintf(" \nMemory cleaned up\n");
 	gprintf("MEM1_freesize(): %i\nMEM2_freesize(): %i\n", MEM1_freesize(), MEM2_freesize());
+}
+
+void CMenu::_Theme_Cleanup(void)
+{
+	theme.bg.Cleanup();
+	theme.btnTexL.Cleanup();
+	theme.btnTexR.Cleanup();
+	theme.btnTexC.Cleanup();
+	theme.btnTexLS.Cleanup();
+	theme.btnTexRS.Cleanup();
+	theme.btnTexCS.Cleanup();
+	theme.btnTexLH.Cleanup();
+	theme.btnTexRH.Cleanup();
+	theme.btnTexCH.Cleanup();
+	theme.btnTexLSH.Cleanup();
+	theme.btnTexRSH.Cleanup();
+	theme.btnTexCSH.Cleanup();
+	theme.btnAUOn.Cleanup();
+	theme.btnAUOns.Cleanup();
+	theme.btnAUOff.Cleanup();
+	theme.btnAUOffs.Cleanup();
+	theme.btnENOn.Cleanup();
+	theme.btnENOns.Cleanup();
+	theme.btnENOff.Cleanup();
+	theme.btnENOffs.Cleanup();
+	theme.btnJAOn.Cleanup();
+	theme.btnJAOns.Cleanup();
+	theme.btnJAOff.Cleanup();
+	theme.btnJAOffs.Cleanup();
+	theme.btnFROn.Cleanup();
+	theme.btnFROns.Cleanup();
+	theme.btnFROff.Cleanup();
+	theme.btnFROffs.Cleanup();
+	theme.btnDEOn.Cleanup();
+	theme.btnDEOns.Cleanup();
+	theme.btnDEOff.Cleanup();
+	theme.btnDEOffs.Cleanup();
+	theme.btnESOn.Cleanup();
+	theme.btnESOns.Cleanup();
+	theme.btnESOff.Cleanup();
+	theme.btnESOffs.Cleanup();
+	theme.btnITOn.Cleanup();
+	theme.btnITOns.Cleanup();
+	theme.btnITOff.Cleanup();
+	theme.btnITOffs.Cleanup();
+	theme.btnNLOn.Cleanup();
+	theme.btnNLOns.Cleanup();
+	theme.btnNLOff.Cleanup();
+	theme.btnNLOffs.Cleanup();
+	theme.btnPTOn.Cleanup();
+	theme.btnPTOns.Cleanup();
+	theme.btnPTOff.Cleanup();
+	theme.btnPTOffs.Cleanup();
+	theme.btnRUOn.Cleanup();
+	theme.btnRUOns.Cleanup();
+	theme.btnRUOff.Cleanup();
+	theme.btnRUOffs.Cleanup();
+	theme.btnKOOn.Cleanup();
+	theme.btnKOOns.Cleanup();
+	theme.btnKOOff.Cleanup();
+	theme.btnKOOffs.Cleanup();
+	theme.btnZHCNOn.Cleanup();
+	theme.btnZHCNOns.Cleanup();
+	theme.btnZHCNOff.Cleanup();
+	theme.btnZHCNOffs.Cleanup();
+	theme.checkboxoff.Cleanup();
+	theme.checkboxoffs.Cleanup();
+	theme.checkboxon.Cleanup();
+	theme.checkboxons.Cleanup();
+	theme.checkboxHid.Cleanup();
+	theme.checkboxHids.Cleanup();
+	theme.checkboxReq.Cleanup();
+	theme.checkboxReqs.Cleanup();
+	theme.pbarTexL.Cleanup();
+	theme.pbarTexR.Cleanup();
+	theme.pbarTexC.Cleanup();
+	theme.pbarTexLS.Cleanup();
+	theme.pbarTexRS.Cleanup();
+	theme.pbarTexCS.Cleanup();
+	theme.btnTexPlus.Cleanup();
+	theme.btnTexPlusS.Cleanup();
+	theme.btnTexMinus.Cleanup();
+	theme.btnTexMinusS.Cleanup();
+	for(TexSet::iterator texture = theme.texSet.begin(); texture != theme.texSet.end(); ++texture)
+		texture->second.Cleanup();
+	for(FontSet::iterator font = theme.fontSet.begin(); font != theme.fontSet.end(); ++font)
+		font->second.ClearData();
+	for(SoundSet::iterator sound = theme.soundSet.begin(); sound != theme.soundSet.end(); ++sound)
+		sound->second->FreeMemory();
+	theme.texSet.clear();
+	theme.fontSet.clear();
+	theme.soundSet.clear();
 }
 
 void CMenu::_reload_wifi_gecko(void)
@@ -565,7 +639,7 @@ void CMenu::_setAA(int aa)
 	}
 }
 
-void CMenu::_loadCFCfg(SThemeData &theme)
+void CMenu::_loadCFCfg()
 {
 	const char *domain = "_COVERFLOW";
 
@@ -574,10 +648,10 @@ void CMenu::_loadCFCfg(SThemeData &theme)
 	m_cf.setBufferSize(m_cfg.getInt("GENERAL", "cover_buffer", 20));
 	// Coverflow Sounds
 	m_cf.setSounds(
-		SmartGuiSound(new GuiSound(sfmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString(domain, "sound_flip").c_str()))),
+		new GuiSound(sfmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString(domain, "sound_flip").c_str())),
 		_sound(theme.soundSet, domain, "sound_hover", hover_wav, hover_wav_size, string("default_btn_hover"), false),
 		_sound(theme.soundSet, domain, "sound_select", click_wav, click_wav_size, string("default_btn_click"), false),
-		SmartGuiSound(new GuiSound(sfmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString(domain, "sound_cancel").c_str())))
+		new GuiSound(sfmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString(domain, "sound_cancel").c_str()))
 	);
 	// Textures
 	string texLoading = sfmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString(domain, "loading_cover_box").c_str());
@@ -865,9 +939,6 @@ void CMenu::_loadCFLayout(int version, bool forceAA, bool otherScrnFmt)
 
 void CMenu::_buildMenus(void)
 {
-	if(!m_base_font)
-		_loadDefaultFont(CONF_GetLanguage() == CONF_LANG_KOREAN);
-
 	// Default fonts
 	theme.btnFont = _font(theme.fontSet, "GENERAL", "button_font", BUTTONFONT);
 	theme.btnFontColor = m_theme.getColor("GENERAL", "button_font_color", 0xD0BFDFFF);
@@ -888,212 +959,211 @@ void CMenu::_buildMenus(void)
 	theme.clickSound	= _sound(theme.soundSet, "GENERAL", "click_sound", click_wav, click_wav_size, string("default_btn_click"), false);
 	theme.hoverSound	= _sound(theme.soundSet, "GENERAL", "hover_sound", hover_wav, hover_wav_size, string("default_btn_hover"), false);
 	theme.cameraSound	= _sound(theme.soundSet, "GENERAL", "camera_sound", camera_wav, camera_wav_size, string("default_camera"), false);
-	m_cameraSound = theme.cameraSound;
 
 	// Default textures
 	theme.btnTexL.fromPNG(butleft_png);
-	theme.btnTexL = _texture(theme.texSet, "GENERAL", "button_texture_left", theme.btnTexL); 
+	theme.btnTexL = _texture("GENERAL", "button_texture_left", theme.btnTexL); 
 	theme.btnTexR.fromPNG(butright_png);
-	theme.btnTexR = _texture(theme.texSet, "GENERAL", "button_texture_right", theme.btnTexR); 
+	theme.btnTexR = _texture("GENERAL", "button_texture_right", theme.btnTexR); 
 	theme.btnTexC.fromPNG(butcenter_png);
-	theme.btnTexC = _texture(theme.texSet, "GENERAL", "button_texture_center", theme.btnTexC); 
+	theme.btnTexC = _texture("GENERAL", "button_texture_center", theme.btnTexC); 
 	theme.btnTexLS.fromPNG(butsleft_png);
-	theme.btnTexLS = _texture(theme.texSet, "GENERAL", "button_texture_left_selected", theme.btnTexLS); 
+	theme.btnTexLS = _texture("GENERAL", "button_texture_left_selected", theme.btnTexLS); 
 	theme.btnTexRS.fromPNG(butsright_png);
-	theme.btnTexRS = _texture(theme.texSet, "GENERAL", "button_texture_right_selected", theme.btnTexRS); 
+	theme.btnTexRS = _texture("GENERAL", "button_texture_right_selected", theme.btnTexRS); 
 	theme.btnTexCS.fromPNG(butscenter_png);
-	theme.btnTexCS = _texture(theme.texSet, "GENERAL", "button_texture_center_selected", theme.btnTexCS); 
+	theme.btnTexCS = _texture("GENERAL", "button_texture_center_selected", theme.btnTexCS); 
 
 	theme.btnTexLH.fromPNG(buthleft_png);
-	theme.btnTexLH = _texture(theme.texSet, "GENERAL", "button_texture_hlleft", theme.btnTexLH); 
+	theme.btnTexLH = _texture("GENERAL", "button_texture_hlleft", theme.btnTexLH); 
 	theme.btnTexRH.fromPNG(buthright_png);
-	theme.btnTexRH = _texture(theme.texSet, "GENERAL", "button_texture_hlright", theme.btnTexRH); 
+	theme.btnTexRH = _texture("GENERAL", "button_texture_hlright", theme.btnTexRH); 
 	theme.btnTexCH.fromPNG(buthcenter_png);
-	theme.btnTexCH = _texture(theme.texSet, "GENERAL", "button_texture_hlcenter", theme.btnTexCH); 
+	theme.btnTexCH = _texture("GENERAL", "button_texture_hlcenter", theme.btnTexCH); 
 	theme.btnTexLSH.fromPNG(buthsleft_png);
-	theme.btnTexLSH = _texture(theme.texSet, "GENERAL", "button_texture_hlleft_selected", theme.btnTexLSH); 
+	theme.btnTexLSH = _texture("GENERAL", "button_texture_hlleft_selected", theme.btnTexLSH); 
 	theme.btnTexRSH.fromPNG(buthsright_png);
-	theme.btnTexRSH = _texture(theme.texSet, "GENERAL", "button_texture_hlright_selected", theme.btnTexRSH); 
+	theme.btnTexRSH = _texture("GENERAL", "button_texture_hlright_selected", theme.btnTexRSH); 
 	theme.btnTexCSH.fromPNG(buthscenter_png);
-	theme.btnTexCSH = _texture(theme.texSet, "GENERAL", "button_texture_hlcenter_selected", theme.btnTexCSH); 
+	theme.btnTexCSH = _texture("GENERAL", "button_texture_hlcenter_selected", theme.btnTexCSH); 
 
 	theme.btnAUOn.fromPNG(butauon_png);
-	theme.btnAUOn = _texture(theme.texSet, "GENERAL", "button_au_on", theme.btnAUOn);
+	theme.btnAUOn = _texture("GENERAL", "button_au_on", theme.btnAUOn);
 	theme.btnAUOns.fromPNG(butauons_png);
-	theme.btnAUOns = _texture(theme.texSet, "GENERAL", "button_au_on_selected", theme.btnAUOns);
+	theme.btnAUOns = _texture("GENERAL", "button_au_on_selected", theme.btnAUOns);
 	theme.btnAUOff.fromPNG(butauoff_png);
-	theme.btnAUOff = _texture(theme.texSet, "GENERAL", "button_au_off", theme.btnAUOff);
+	theme.btnAUOff = _texture("GENERAL", "button_au_off", theme.btnAUOff);
 	theme.btnAUOffs.fromPNG(butauoffs_png);
-	theme.btnAUOffs = _texture(theme.texSet, "GENERAL", "button_au_off_selected", theme.btnAUOffs);
+	theme.btnAUOffs = _texture("GENERAL", "button_au_off_selected", theme.btnAUOffs);
 
 	theme.btnENOn.fromPNG(butenon_png);
-	theme.btnENOn = _texture(theme.texSet, "GENERAL", "button_en_on", theme.btnENOn);
+	theme.btnENOn = _texture("GENERAL", "button_en_on", theme.btnENOn);
 	theme.btnENOns.fromPNG(butenons_png);
-	theme.btnENOns = _texture(theme.texSet, "GENERAL", "button_en_on_selected", theme.btnENOns);
+	theme.btnENOns = _texture("GENERAL", "button_en_on_selected", theme.btnENOns);
 	theme.btnENOff.fromPNG(butenoff_png);
-	theme.btnENOff = _texture(theme.texSet, "GENERAL", "button_en_off", theme.btnENOff);
+	theme.btnENOff = _texture("GENERAL", "button_en_off", theme.btnENOff);
 	theme.btnENOffs.fromPNG(butenoffs_png);
-	theme.btnENOffs = _texture(theme.texSet, "GENERAL", "button_en_off_selected", theme.btnENOffs);
+	theme.btnENOffs = _texture("GENERAL", "button_en_off_selected", theme.btnENOffs);
 
 	theme.btnJAOn.fromPNG(butjaon_png);
-	theme.btnJAOn = _texture(theme.texSet, "GENERAL", "button_ja_on", theme.btnJAOn);
+	theme.btnJAOn = _texture("GENERAL", "button_ja_on", theme.btnJAOn);
 	theme.btnJAOns.fromPNG(butjaons_png);
-	theme.btnJAOns = _texture(theme.texSet, "GENERAL", "button_ja_on_selected", theme.btnJAOns);
+	theme.btnJAOns = _texture("GENERAL", "button_ja_on_selected", theme.btnJAOns);
 	theme.btnJAOff.fromPNG(butjaoff_png);
-	theme.btnJAOff = _texture(theme.texSet, "GENERAL", "button_ja_off", theme.btnJAOff);
+	theme.btnJAOff = _texture("GENERAL", "button_ja_off", theme.btnJAOff);
 	theme.btnJAOffs.fromPNG(butjaoffs_png);
-	theme.btnJAOffs = _texture(theme.texSet, "GENERAL", "button_ja_off_selected", theme.btnJAOffs);
+	theme.btnJAOffs = _texture("GENERAL", "button_ja_off_selected", theme.btnJAOffs);
 
 	theme.btnFROn.fromPNG(butfron_png);
-	theme.btnFROn = _texture(theme.texSet, "GENERAL", "button_fr_on", theme.btnFROn);
+	theme.btnFROn = _texture("GENERAL", "button_fr_on", theme.btnFROn);
 	theme.btnFROns.fromPNG(butfrons_png);
-	theme.btnFROns = _texture(theme.texSet, "GENERAL", "button_fr_on_selected", theme.btnFROns);
+	theme.btnFROns = _texture("GENERAL", "button_fr_on_selected", theme.btnFROns);
 	theme.btnFROff.fromPNG(butfroff_png);
-	theme.btnFROff = _texture(theme.texSet, "GENERAL", "button_fr_off", theme.btnFROff);
+	theme.btnFROff = _texture("GENERAL", "button_fr_off", theme.btnFROff);
 	theme.btnFROffs.fromPNG(butfroffs_png);
-	theme.btnFROffs = _texture(theme.texSet, "GENERAL", "button_fr_off_selected", theme.btnFROffs);
+	theme.btnFROffs = _texture("GENERAL", "button_fr_off_selected", theme.btnFROffs);
 
 	theme.btnDEOn.fromPNG(butdeon_png);
-	theme.btnDEOn = _texture(theme.texSet, "GENERAL", "button_de_on", theme.btnDEOn);
+	theme.btnDEOn = _texture("GENERAL", "button_de_on", theme.btnDEOn);
 	theme.btnDEOns.fromPNG(butdeons_png);
-	theme.btnDEOns = _texture(theme.texSet, "GENERAL", "button_de_on_selected", theme.btnDEOns);
+	theme.btnDEOns = _texture("GENERAL", "button_de_on_selected", theme.btnDEOns);
 	theme.btnDEOff.fromPNG(butdeoff_png);
-	theme.btnDEOff = _texture(theme.texSet, "GENERAL", "button_de_off", theme.btnDEOff);
+	theme.btnDEOff = _texture("GENERAL", "button_de_off", theme.btnDEOff);
 	theme.btnDEOffs.fromPNG(butdeoffs_png);
-	theme.btnDEOffs = _texture(theme.texSet, "GENERAL", "button_de_off_selected", theme.btnDEOffs);
+	theme.btnDEOffs = _texture("GENERAL", "button_de_off_selected", theme.btnDEOffs);
 
 	theme.btnESOn.fromPNG(buteson_png);
-	theme.btnESOn = _texture(theme.texSet, "GENERAL", "button_es_on", theme.btnESOn);
+	theme.btnESOn = _texture("GENERAL", "button_es_on", theme.btnESOn);
 	theme.btnESOns.fromPNG(butesons_png);
-	theme.btnESOns = _texture(theme.texSet, "GENERAL", "button_es_on_selected", theme.btnESOns);
+	theme.btnESOns = _texture("GENERAL", "button_es_on_selected", theme.btnESOns);
 	theme.btnESOff.fromPNG(butesoff_png);
-	theme.btnESOff = _texture(theme.texSet, "GENERAL", "button_es_off", theme.btnESOff);
+	theme.btnESOff = _texture("GENERAL", "button_es_off", theme.btnESOff);
 	theme.btnESOffs.fromPNG(butesoffs_png);
-	theme.btnESOffs = _texture(theme.texSet, "GENERAL", "button_es_off_selected", theme.btnESOffs);
+	theme.btnESOffs = _texture("GENERAL", "button_es_off_selected", theme.btnESOffs);
 
 	theme.btnITOn.fromPNG(butiton_png);
-	theme.btnITOn = _texture(theme.texSet, "GENERAL", "button_it_on", theme.btnITOn);
+	theme.btnITOn = _texture("GENERAL", "button_it_on", theme.btnITOn);
 	theme.btnITOns.fromPNG(butitons_png);
-	theme.btnITOns = _texture(theme.texSet, "GENERAL", "button_it_on_selected", theme.btnITOns);
+	theme.btnITOns = _texture("GENERAL", "button_it_on_selected", theme.btnITOns);
 	theme.btnITOff.fromPNG(butitoff_png);
-	theme.btnITOff = _texture(theme.texSet, "GENERAL", "button_it_off", theme.btnITOff);
+	theme.btnITOff = _texture("GENERAL", "button_it_off", theme.btnITOff);
 	theme.btnITOffs.fromPNG(butitoffs_png);
-	theme.btnITOffs = _texture(theme.texSet, "GENERAL", "button_it_off_selected", theme.btnITOffs);
+	theme.btnITOffs = _texture("GENERAL", "button_it_off_selected", theme.btnITOffs);
 
 	theme.btnNLOn.fromPNG(butnlon_png);
-	theme.btnNLOn = _texture(theme.texSet, "GENERAL", "button_nl_on", theme.btnNLOn);
+	theme.btnNLOn = _texture("GENERAL", "button_nl_on", theme.btnNLOn);
 	theme.btnNLOns.fromPNG(butnlons_png);
-	theme.btnNLOns = _texture(theme.texSet, "GENERAL", "button_nl_on_selected", theme.btnNLOns);
+	theme.btnNLOns = _texture("GENERAL", "button_nl_on_selected", theme.btnNLOns);
 	theme.btnNLOff.fromPNG(butnloff_png);
-	theme.btnNLOff = _texture(theme.texSet, "GENERAL", "button_nl_off", theme.btnNLOff);
+	theme.btnNLOff = _texture("GENERAL", "button_nl_off", theme.btnNLOff);
 	theme.btnNLOffs.fromPNG(butnloffs_png);
-	theme.btnNLOffs = _texture(theme.texSet, "GENERAL", "button_nl_off_selected", theme.btnNLOffs);
+	theme.btnNLOffs = _texture("GENERAL", "button_nl_off_selected", theme.btnNLOffs);
 
 	theme.btnPTOn.fromPNG(butpton_png);
-	theme.btnPTOn = _texture(theme.texSet, "GENERAL", "button_pt_on", theme.btnPTOn);
+	theme.btnPTOn = _texture("GENERAL", "button_pt_on", theme.btnPTOn);
 	theme.btnPTOns.fromPNG(butptons_png);
-	theme.btnPTOns = _texture(theme.texSet, "GENERAL", "button_pt_on_selected", theme.btnPTOns);
+	theme.btnPTOns = _texture("GENERAL", "button_pt_on_selected", theme.btnPTOns);
 	theme.btnPTOff.fromPNG(butptoff_png);
-	theme.btnPTOff = _texture(theme.texSet, "GENERAL", "button_pt_off", theme.btnPTOff);
+	theme.btnPTOff = _texture("GENERAL", "button_pt_off", theme.btnPTOff);
 	theme.btnPTOffs.fromPNG(butptoffs_png);
-	theme.btnPTOffs = _texture(theme.texSet, "GENERAL", "button_pt_off_selected", theme.btnPTOffs);
+	theme.btnPTOffs = _texture("GENERAL", "button_pt_off_selected", theme.btnPTOffs);
 
 	theme.btnRUOn.fromPNG(butruon_png);
-	theme.btnRUOn = _texture(theme.texSet, "GENERAL", "button_ru_on", theme.btnRUOn);
+	theme.btnRUOn = _texture("GENERAL", "button_ru_on", theme.btnRUOn);
 	theme.btnRUOns.fromPNG(butruons_png);
-	theme.btnRUOns = _texture(theme.texSet, "GENERAL", "button_ru_on_selected", theme.btnRUOns);
+	theme.btnRUOns = _texture("GENERAL", "button_ru_on_selected", theme.btnRUOns);
 	theme.btnRUOff.fromPNG(butruoff_png);
-	theme.btnRUOff = _texture(theme.texSet, "GENERAL", "button_ru_off", theme.btnRUOff);
+	theme.btnRUOff = _texture("GENERAL", "button_ru_off", theme.btnRUOff);
 	theme.btnRUOffs.fromPNG(butruoffs_png);
-	theme.btnRUOffs = _texture(theme.texSet, "GENERAL", "button_ru_off_selected", theme.btnRUOffs);
+	theme.btnRUOffs = _texture("GENERAL", "button_ru_off_selected", theme.btnRUOffs);
 
 	theme.btnKOOn.fromPNG(butkoon_png);
-	theme.btnKOOn = _texture(theme.texSet, "GENERAL", "button_ko_on", theme.btnKOOn);
+	theme.btnKOOn = _texture("GENERAL", "button_ko_on", theme.btnKOOn);
 	theme.btnKOOns.fromPNG(butkoons_png);
-	theme.btnKOOns = _texture(theme.texSet, "GENERAL", "button_ko_on_selected", theme.btnKOOns);
+	theme.btnKOOns = _texture("GENERAL", "button_ko_on_selected", theme.btnKOOns);
 	theme.btnKOOff.fromPNG(butkooff_png);
-	theme.btnKOOff = _texture(theme.texSet, "GENERAL", "button_ko_off", theme.btnKOOff);
+	theme.btnKOOff = _texture("GENERAL", "button_ko_off", theme.btnKOOff);
 	theme.btnKOOffs.fromPNG(butkooffs_png);
-	theme.btnKOOffs = _texture(theme.texSet, "GENERAL", "button_ko_off_selected", theme.btnKOOffs);
+	theme.btnKOOffs = _texture("GENERAL", "button_ko_off_selected", theme.btnKOOffs);
 
 	theme.btnZHCNOn.fromPNG(butzhcnon_png);
-	theme.btnZHCNOn = _texture(theme.texSet, "GENERAL", "button_zhcn_on", theme.btnZHCNOn);
+	theme.btnZHCNOn = _texture("GENERAL", "button_zhcn_on", theme.btnZHCNOn);
 	theme.btnZHCNOns.fromPNG(butzhcnons_png);
-	theme.btnZHCNOns = _texture(theme.texSet, "GENERAL", "button_zhcn_on_selected", theme.btnZHCNOns);
+	theme.btnZHCNOns = _texture("GENERAL", "button_zhcn_on_selected", theme.btnZHCNOns);
 	theme.btnZHCNOff.fromPNG(butzhcnoff_png);
-	theme.btnZHCNOff = _texture(theme.texSet, "GENERAL", "button_zhcn_off", theme.btnZHCNOff);
+	theme.btnZHCNOff = _texture("GENERAL", "button_zhcn_off", theme.btnZHCNOff);
 	theme.btnZHCNOffs.fromPNG(butzhcnoffs_png);
-	theme.btnZHCNOffs = _texture(theme.texSet, "GENERAL", "button_zhcn_off_selected", theme.btnZHCNOffs);
+	theme.btnZHCNOffs = _texture("GENERAL", "button_zhcn_off_selected", theme.btnZHCNOffs);
 
 	theme.checkboxoff.fromPNG(checkbox_png);
-	theme.checkboxoff = _texture(theme.texSet, "GENERAL", "checkbox_off", theme.checkboxoff);
+	theme.checkboxoff = _texture("GENERAL", "checkbox_off", theme.checkboxoff);
 	theme.checkboxoffs.fromPNG(checkbox_png);
-	theme.checkboxoffs = _texture(theme.texSet, "GENERAL", "checkbox_off_selected", theme.checkboxoffs);
+	theme.checkboxoffs = _texture("GENERAL", "checkbox_off_selected", theme.checkboxoffs);
 	theme.checkboxon.fromPNG(checkboxs_png);
-	theme.checkboxon = _texture(theme.texSet, "GENERAL", "checkbox_on", theme.checkboxon);
+	theme.checkboxon = _texture("GENERAL", "checkbox_on", theme.checkboxon);
 	theme.checkboxons.fromPNG(checkboxs_png);
-	theme.checkboxons = _texture(theme.texSet, "GENERAL", "checkbox_on_selected", theme.checkboxons);
+	theme.checkboxons = _texture("GENERAL", "checkbox_on_selected", theme.checkboxons);
 	theme.checkboxHid.fromPNG(checkboxhid_png);
-	theme.checkboxHid = _texture(theme.texSet, "GENERAL", "checkbox_Hid", theme.checkboxHid);
+	theme.checkboxHid = _texture("GENERAL", "checkbox_Hid", theme.checkboxHid);
 	theme.checkboxHids.fromPNG(checkboxhid_png);
-	theme.checkboxHids = _texture(theme.texSet, "GENERAL", "checkbox_Hid_selected", theme.checkboxHids);
+	theme.checkboxHids = _texture("GENERAL", "checkbox_Hid_selected", theme.checkboxHids);
 	theme.checkboxReq.fromPNG(checkboxreq_png);
-	theme.checkboxReq = _texture(theme.texSet, "GENERAL", "checkbox_Req", theme.checkboxReq);
+	theme.checkboxReq = _texture("GENERAL", "checkbox_Req", theme.checkboxReq);
 	theme.checkboxReqs.fromPNG(checkboxreq_png);
-	theme.checkboxReqs = _texture(theme.texSet, "GENERAL", "checkbox_Req_selected", theme.checkboxReqs);
+	theme.checkboxReqs = _texture("GENERAL", "checkbox_Req_selected", theme.checkboxReqs);
 
 	theme.pbarTexL.fromPNG(pbarleft_png);
-	theme.pbarTexL = _texture(theme.texSet, "GENERAL", "progressbar_texture_left", theme.pbarTexL); 
+	theme.pbarTexL = _texture("GENERAL", "progressbar_texture_left", theme.pbarTexL);
 	theme.pbarTexR.fromPNG(pbarright_png);
-	theme.pbarTexR = _texture(theme.texSet, "GENERAL", "progressbar_texture_right", theme.pbarTexR); 
+	theme.pbarTexR = _texture("GENERAL", "progressbar_texture_right", theme.pbarTexR);
 	theme.pbarTexC.fromPNG(pbarcenter_png);
-	theme.pbarTexC = _texture(theme.texSet, "GENERAL", "progressbar_texture_center", theme.pbarTexC); 
+	theme.pbarTexC = _texture("GENERAL", "progressbar_texture_center", theme.pbarTexC);
 	theme.pbarTexLS.fromPNG(pbarlefts_png);
-	theme.pbarTexLS = _texture(theme.texSet, "GENERAL", "progressbar_texture_left_selected", theme.pbarTexLS); 
+	theme.pbarTexLS = _texture("GENERAL", "progressbar_texture_left_selected", theme.pbarTexLS);
 	theme.pbarTexRS.fromPNG(pbarrights_png);
-	theme.pbarTexRS = _texture(theme.texSet, "GENERAL", "progressbar_texture_right_selected", theme.pbarTexRS); 
+	theme.pbarTexRS = _texture("GENERAL", "progressbar_texture_right_selected", theme.pbarTexRS);
 	theme.pbarTexCS.fromPNG(pbarcenters_png);
-	theme.pbarTexCS = _texture(theme.texSet, "GENERAL", "progressbar_texture_center_selected", theme.pbarTexCS); 
+	theme.pbarTexCS = _texture("GENERAL", "progressbar_texture_center_selected", theme.pbarTexCS);
 	theme.btnTexPlus.fromPNG(btnplus_png);
-	theme.btnTexPlus = _texture(theme.texSet, "GENERAL", "plus_button_texture", theme.btnTexPlus); 
+	theme.btnTexPlus = _texture("GENERAL", "plus_button_texture", theme.btnTexPlus);
 	theme.btnTexPlusS.fromPNG(btnpluss_png);
-	theme.btnTexPlusS = _texture(theme.texSet, "GENERAL", "plus_button_texture_selected", theme.btnTexPlusS); 
+	theme.btnTexPlusS = _texture("GENERAL", "plus_button_texture_selected", theme.btnTexPlusS);
 	theme.btnTexMinus.fromPNG(btnminus_png);
-	theme.btnTexMinus = _texture(theme.texSet, "GENERAL", "minus_button_texture", theme.btnTexMinus); 
+	theme.btnTexMinus = _texture("GENERAL", "minus_button_texture", theme.btnTexMinus);
 	theme.btnTexMinusS.fromPNG(btnminuss_png);
-	theme.btnTexMinusS = _texture(theme.texSet, "GENERAL", "minus_button_texture_selected", theme.btnTexMinusS); 
+	theme.btnTexMinusS = _texture("GENERAL", "minus_button_texture_selected", theme.btnTexMinusS);
 
 	// Default background
 	theme.bg.fromJPG(background_jpg, background_jpg_size);
-	m_mainBgLQ.fromJPG(background_jpg, background_jpg_size, GX_TF_CMPR, ALLOC_MEM2, 64, 64);
+	m_mainBgLQ.fromJPG(background_jpg, background_jpg_size, GX_TF_CMPR, 64, 64);
 	m_gameBgLQ = m_mainBgLQ;
 
 	// Build menus
-	_initMainMenu(theme);
-	_initErrorMenu(theme);
-	_initConfigAdvMenu(theme);
-	_initConfigSndMenu(theme);
-	_initConfig4Menu(theme);
-	_initConfigScreenMenu(theme);
-	_initConfig3Menu(theme);
-	_initConfigMenu(theme);
-	_initGameMenu(theme);
-	_initDownloadMenu(theme);
-	_initCodeMenu(theme);
-	_initAboutMenu(theme);
-	_initWBFSMenu(theme);
-	_initCFThemeMenu(theme);
-	_initGameSettingsMenu(theme);
-	_initCheatSettingsMenu(theme); 
-	_initSourceMenu(theme);
-	_initPluginSettingsMenu(theme);
-	_initCategorySettingsMenu(theme);
-	_initSystemMenu(theme);
-	_initGameInfoMenu(theme);
-	_initNandEmuMenu(theme);
-	_initHomeAndExitToMenu(theme);
+	_initMainMenu();
+	_initErrorMenu();
+	_initConfigAdvMenu();
+	_initConfigSndMenu();
+	_initConfig4Menu();
+	_initConfigScreenMenu();
+	_initConfig3Menu();
+	_initConfigMenu();
+	_initGameMenu();
+	_initDownloadMenu();
+	_initCodeMenu();
+	_initAboutMenu();
+	_initWBFSMenu();
+	_initCFThemeMenu();
+	_initGameSettingsMenu();
+	_initCheatSettingsMenu(); 
+	_initSourceMenu();
+	_initPluginSettingsMenu();
+	_initCategorySettingsMenu();
+	_initSystemMenu();
+	_initGameInfoMenu();
+	_initNandEmuMenu();
+	_initHomeAndExitToMenu();
 
-	_loadCFCfg(theme);
+	_loadCFCfg();
 }
 
 typedef struct
@@ -1116,7 +1186,6 @@ SFont CMenu::_font(CMenu::FontSet &fontSet, const char *domain, const char *key,
 	if(filename.empty())
 		filename = m_theme.getString("GENERAL", genKey, genKey);
 	bool useDefault = filename == genKey;
-
 
 	for(u32 i = 0; i < 3; i++)
 	{
@@ -1145,7 +1214,7 @@ SFont CMenu::_font(CMenu::FontSet &fontSet, const char *domain, const char *key,
 		fontSet[CMenu::FontDesc(upperCase(filename.c_str()), fonts[0].res)] = retFont;
 		return retFont;
 	}
-	if(!m_base_font) _loadDefaultFont(CONF_GetLanguage() == CONF_LANG_KOREAN);
+	/* Fallback to default font */
 	if(retFont.fromBuffer(m_base_font, m_base_font_size, fonts[0].res, fonts[1].res, fonts[2].res, index))
 	{
 		// Default font
@@ -1155,7 +1224,7 @@ SFont CMenu::_font(CMenu::FontSet &fontSet, const char *domain, const char *key,
 	return retFont;
 }
 
-vector<STexture> CMenu::_textures(TexSet &texSet, const char *domain, const char *key)
+vector<STexture> CMenu::_textures(const char *domain, const char *key)
 {
 	vector<STexture> textures;
 
@@ -1166,17 +1235,14 @@ vector<STexture> CMenu::_textures(TexSet &texSet, const char *domain, const char
 		{
 			for (vector<string>::iterator itr = filenames.begin(); itr != filenames.end(); itr++)
 			{
-				string filename = *itr;
-
-				CMenu::TexSet::iterator i = texSet.find(filename);
-				if (i != texSet.end())
-				{
+				const string &filename = *itr;
+				TexSet::iterator i = theme.texSet.find(filename);
+				if (i != theme.texSet.end())
 					textures.push_back(i->second);
-				}
 				STexture tex;
 				if (STexture::TE_OK == tex.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), filename.c_str())))
 				{
-					texSet[filename] = tex;
+					theme.texSet[filename] = tex;
 					textures.push_back(tex);
 				}
 			}
@@ -1185,34 +1251,40 @@ vector<STexture> CMenu::_textures(TexSet &texSet, const char *domain, const char
 	return textures;
 }
 
-STexture CMenu::_texture(CMenu::TexSet &texSet, const char *domain, const char *key, STexture def)
+STexture CMenu::_texture(const char *domain, const char *key, STexture &def, bool freeDef)
 {
 	string filename;
 
-	if (m_theme.loaded())
+	if(m_theme.loaded())
 	{
+		/* Load from theme */
 		filename = m_theme.getString(domain, key);
-		if (!filename.empty())
+		if(!filename.empty())
 		{
-			CMenu::TexSet::iterator i = texSet.find(filename);
-			if (i != texSet.end())
+			TexSet::iterator i = theme.texSet.find(filename);
+			if(i != theme.texSet.end())
 				return i->second;
-
+			/* Load from image file */
 			STexture tex;
-			if (STexture::TE_OK == tex.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), filename.c_str())))
+			if(STexture::TE_OK == tex.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), filename.c_str())))
 			{
-				def.data.release();
-				texSet[filename] = tex;
+				if(freeDef && def.data != NULL)
+				{
+					free(def.data);
+					def.data = NULL;
+				}
+				theme.texSet[filename] = tex;
 				return tex;
 			}
 		}
 	}
-	texSet[filename] = def;
+	/* Fallback to default */
+	theme.texSet[filename] = def;
 	return def;
 }
 
 // Only for loading defaults and GENERAL domains!!
-SmartGuiSound CMenu::_sound(CMenu::SoundSet &soundSet, const char *domain, const char *key, const u8 * snd, u32 len, string name, bool isAllocated)
+GuiSound *CMenu::_sound(CMenu::SoundSet &soundSet, const char *domain, const char *key, const u8 * snd, u32 len, string name, bool isAllocated)
 {
 	string filename = m_theme.getString(domain, key, "");
 	if (filename.empty()) filename = name;
@@ -1221,17 +1293,16 @@ SmartGuiSound CMenu::_sound(CMenu::SoundSet &soundSet, const char *domain, const
 	if (i == soundSet.end())
 	{
 		if(strncmp(filename.c_str(), name.c_str(), name.size()) != 0)
-			soundSet[upperCase(filename.c_str())] = SmartGuiSound(new GuiSound(fmt("%s/%s", m_themeDataDir.c_str(), filename.c_str())));
+			soundSet[upperCase(filename.c_str())] = new GuiSound(fmt("%s/%s", m_themeDataDir.c_str(), filename.c_str()));
 		else
-			soundSet[upperCase(filename.c_str())] = SmartGuiSound(new GuiSound(snd, len, filename, isAllocated));
-
+			soundSet[upperCase(filename.c_str())] = new GuiSound(snd, len, filename, isAllocated);
 		return soundSet[upperCase(filename.c_str())];
 	}
 	return i->second;
 }
 
 //For buttons and labels only!!
-SmartGuiSound CMenu::_sound(CMenu::SoundSet &soundSet, const char *domain, const char *key, string name)
+GuiSound *CMenu::_sound(CMenu::SoundSet &soundSet, const char *domain, const char *key, string name)
 {
 	string filename = m_theme.getString(domain, key);
 	if (filename.empty())
@@ -1241,10 +1312,10 @@ SmartGuiSound CMenu::_sound(CMenu::SoundSet &soundSet, const char *domain, const
 		return soundSet[upperCase(name.c_str())];  // General/Default are already cached!
 	}
 
-	CMenu::SoundSet::iterator i = soundSet.find(upperCase(filename.c_str()));
+	SoundSet::iterator i = soundSet.find(upperCase(filename.c_str()));
 	if (i == soundSet.end())
 	{
-		soundSet[upperCase(filename.c_str())] = SmartGuiSound(new GuiSound(fmt("%s/%s", m_themeDataDir.c_str(), filename.c_str())));
+		soundSet[upperCase(filename.c_str())] = new GuiSound(fmt("%s/%s", m_themeDataDir.c_str(), filename.c_str()));
 		return soundSet[upperCase(filename.c_str())];
 	}
 	return i->second;
@@ -1271,7 +1342,7 @@ u16 CMenu::_textStyle(const char *domain, const char *key, u16 def)
 	return textStyle;
 }
 
-s16 CMenu::_addButton(CMenu::SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color)
+s16 CMenu::_addButton(const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color)
 {
 	SButtonTextureSet btnTexSet;
 	CColor c(color);
@@ -1281,28 +1352,28 @@ s16 CMenu::_addButton(CMenu::SThemeData &theme, const char *domain, SFont font, 
 	y = m_theme.getInt(domain, "y", y);
 	width = m_theme.getInt(domain, "width", width);
 	height = m_theme.getInt(domain, "height", height);
-	btnTexSet.left = _texture(theme.texSet, domain, "texture_left", theme.btnTexL);
-	btnTexSet.right = _texture(theme.texSet, domain, "texture_right", theme.btnTexR);
-	btnTexSet.center = _texture(theme.texSet, domain, "texture_center", theme.btnTexC);
-	btnTexSet.leftSel = _texture(theme.texSet, domain, "texture_left_selected", theme.btnTexLS);
-	btnTexSet.rightSel = _texture(theme.texSet, domain, "texture_right_selected", theme.btnTexRS);
-	btnTexSet.centerSel = _texture(theme.texSet, domain, "texture_center_selected", theme.btnTexCS);
+	btnTexSet.left = _texture(domain, "texture_left", theme.btnTexL, false);
+	btnTexSet.right = _texture(domain, "texture_right", theme.btnTexR, false);
+	btnTexSet.center = _texture(domain, "texture_center", theme.btnTexC, false);
+	btnTexSet.leftSel = _texture(domain, "texture_left_selected", theme.btnTexLS, false);
+	btnTexSet.rightSel = _texture(domain, "texture_right_selected", theme.btnTexRS, false);
+	btnTexSet.centerSel = _texture(domain, "texture_center_selected", theme.btnTexCS, false);
 
 	font = _font(theme.fontSet, domain, "font", BUTTONFONT);
 
-	SmartGuiSound clickSound = _sound(theme.soundSet, domain, "click_sound", theme.clickSound->GetName());
-	SmartGuiSound hoverSound = _sound(theme.soundSet, domain, "hover_sound", theme.hoverSound->GetName());
-	
+	GuiSound *clickSound = _sound(theme.soundSet, domain, "click_sound", theme.clickSound->GetName());
+	GuiSound *hoverSound = _sound(theme.soundSet, domain, "hover_sound", theme.hoverSound->GetName());
+
 	u16 btnPos = _textStyle(domain, "elmstyle", FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
 	if (btnPos & FTGX_JUSTIFY_RIGHT)
 		x = m_vid.width() - x - width;
 	if (btnPos & FTGX_ALIGN_BOTTOM)
 		y = m_vid.height() - y - height;
-	
+
 	return m_btnMgr.addButton(font, text, x, y, width, height, c, btnTexSet, clickSound, hoverSound);
 }
 
-s16 CMenu::_addSelButton(CMenu::SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color)
+s16 CMenu::_addSelButton(const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color)
 {
 	SButtonTextureSet btnTexSet;
 	CColor c(color);
@@ -1312,37 +1383,37 @@ s16 CMenu::_addSelButton(CMenu::SThemeData &theme, const char *domain, SFont fon
 	y = m_theme.getInt(domain, "y", y);
 	width = m_theme.getInt(domain, "width", width);
 	height = m_theme.getInt(domain, "height", height);
-	btnTexSet.left = _texture(theme.texSet, domain, "texture_left", theme.btnTexLH);
-	btnTexSet.right = _texture(theme.texSet, domain, "texture_right", theme.btnTexRH);
-	btnTexSet.center = _texture(theme.texSet, domain, "texture_center", theme.btnTexCH);
-	btnTexSet.leftSel = _texture(theme.texSet, domain, "texture_left_selected", theme.btnTexLSH);
-	btnTexSet.rightSel = _texture(theme.texSet, domain, "texture_right_selected", theme.btnTexRSH);
-	btnTexSet.centerSel = _texture(theme.texSet, domain, "texture_center_selected", theme.btnTexCSH);
-	
+	btnTexSet.left = _texture(domain, "texture_left", theme.btnTexLH, false);
+	btnTexSet.right = _texture(domain, "texture_right", theme.btnTexRH, false);
+	btnTexSet.center = _texture(domain, "texture_center", theme.btnTexCH, false);
+	btnTexSet.leftSel = _texture(domain, "texture_left_selected", theme.btnTexLSH, false);
+	btnTexSet.rightSel = _texture(domain, "texture_right_selected", theme.btnTexRSH, false);
+	btnTexSet.centerSel = _texture(domain, "texture_center_selected", theme.btnTexCSH, false);
+
 	font = _font(theme.fontSet, domain, "font", BUTTONFONT);
 
-	SmartGuiSound clickSound = _sound(theme.soundSet, domain, "click_sound", theme.clickSound->GetName());
-	SmartGuiSound hoverSound = _sound(theme.soundSet, domain, "hover_sound", theme.hoverSound->GetName());
-	
+	GuiSound *clickSound = _sound(theme.soundSet, domain, "click_sound", theme.clickSound->GetName());
+	GuiSound *hoverSound = _sound(theme.soundSet, domain, "hover_sound", theme.hoverSound->GetName());
+
 	u16 btnPos = _textStyle(domain, "elmstyle", FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
 	if (btnPos & FTGX_JUSTIFY_RIGHT)
 		x = m_vid.width() - x - width;
 	if (btnPos & FTGX_ALIGN_BOTTOM)
 		y = m_vid.height() - y - height;
-	
+
 	return m_btnMgr.addButton(font, text, x, y, width, height, c, btnTexSet, clickSound, hoverSound);
 }
 
-s16 CMenu::_addPicButton(CMenu::SThemeData &theme, const char *domain, STexture &texNormal, STexture &texSelected, int x, int y, u32 width, u32 height)
+s16 CMenu::_addPicButton(const char *domain, STexture &texNormal, STexture &texSelected, int x, int y, u32 width, u32 height)
 {
 	x = m_theme.getInt(domain, "x", x);
 	y = m_theme.getInt(domain, "y", y);
 	width = m_theme.getInt(domain, "width", width);
 	height = m_theme.getInt(domain, "height", height);
-	STexture tex1 = _texture(theme.texSet, domain, "texture_normal", texNormal);
-	STexture tex2 = _texture(theme.texSet, domain, "texture_selected", texSelected);
-	SmartGuiSound clickSound = _sound(theme.soundSet, domain, "click_sound", theme.clickSound->GetName());
-	SmartGuiSound hoverSound = _sound(theme.soundSet, domain, "hover_sound", theme.hoverSound->GetName());
+	STexture tex1 = _texture(domain, "texture_normal", texNormal, false);
+	STexture tex2 = _texture(domain, "texture_selected", texSelected, false);
+	GuiSound *clickSound = _sound(theme.soundSet, domain, "click_sound", theme.clickSound->GetName());
+	GuiSound *hoverSound = _sound(theme.soundSet, domain, "hover_sound", theme.hoverSound->GetName());
 
 	u16 btnPos = _textStyle(domain, "elmstyle", FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
 	if (btnPos & FTGX_JUSTIFY_RIGHT)
@@ -1353,7 +1424,7 @@ s16 CMenu::_addPicButton(CMenu::SThemeData &theme, const char *domain, STexture 
 	return m_btnMgr.addPicButton(tex1, tex2, x, y, width, height, clickSound, hoverSound);
 }
 
-s16 CMenu::_addTitle(CMenu::SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, s16 style)
+s16 CMenu::_addTitle(const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, s16 style)
 {
 	CColor c(color);
 
@@ -1374,7 +1445,7 @@ s16 CMenu::_addTitle(CMenu::SThemeData &theme, const char *domain, SFont font, c
 	return m_btnMgr.addLabel(font, text, x, y, width, height, c, style);
 }
 
-s16 CMenu::_addText(CMenu::SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, s16 style)
+s16 CMenu::_addText(const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, s16 style)
 {
 	CColor c(color);
 
@@ -1395,7 +1466,7 @@ s16 CMenu::_addText(CMenu::SThemeData &theme, const char *domain, SFont font, co
 	return m_btnMgr.addLabel(font, text, x, y, width, height, c, style);
 }
 
-s16 CMenu::_addLabel(CMenu::SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, s16 style)
+s16 CMenu::_addLabel(const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, s16 style)
 {
 	CColor c(color);
 
@@ -1416,7 +1487,7 @@ s16 CMenu::_addLabel(CMenu::SThemeData &theme, const char *domain, SFont font, c
 	return m_btnMgr.addLabel(font, text, x, y, width, height, c, style);
 }
 
-s16 CMenu::_addLabel(CMenu::SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, s16 style, STexture &bg)
+s16 CMenu::_addLabel(const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, s16 style, STexture &bg)
 {
 	CColor c(color);
 
@@ -1426,7 +1497,7 @@ s16 CMenu::_addLabel(CMenu::SThemeData &theme, const char *domain, SFont font, c
 	width = m_theme.getInt(domain, "width", width);
 	height = m_theme.getInt(domain, "height", height);
 	font = _font(theme.fontSet, domain, "font", BUTTONFONT);
-	STexture texBg = _texture(theme.texSet, domain, "background_texture", bg);
+	STexture texBg = _texture(domain, "background_texture", bg, false);
 	style = _textStyle(domain, "style", style);
 
 	u16 btnPos = _textStyle(domain, "elmstyle", FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
@@ -1438,7 +1509,7 @@ s16 CMenu::_addLabel(CMenu::SThemeData &theme, const char *domain, SFont font, c
 	return m_btnMgr.addLabel(font, text, x, y, width, height, c, style, texBg);
 }
 
-s16 CMenu::_addProgressBar(CMenu::SThemeData &theme, const char *domain, int x, int y, u32 width, u32 height)
+s16 CMenu::_addProgressBar(const char *domain, int x, int y, u32 width, u32 height)
 {
 	SButtonTextureSet btnTexSet;
 
@@ -1446,12 +1517,12 @@ s16 CMenu::_addProgressBar(CMenu::SThemeData &theme, const char *domain, int x, 
 	y = m_theme.getInt(domain, "y", y);
 	width = m_theme.getInt(domain, "width", width);
 	height = m_theme.getInt(domain, "height", height);
-	btnTexSet.left = _texture(theme.texSet, domain, "texture_left", theme.pbarTexL);
-	btnTexSet.right = _texture(theme.texSet, domain, "texture_right", theme.pbarTexR);
-	btnTexSet.center = _texture(theme.texSet, domain, "texture_center", theme.pbarTexC);
-	btnTexSet.leftSel = _texture(theme.texSet, domain, "texture_left_selected", theme.pbarTexLS);
-	btnTexSet.rightSel = _texture(theme.texSet, domain, "texture_right_selected", theme.pbarTexRS);
-	btnTexSet.centerSel = _texture(theme.texSet, domain, "texture_center_selected", theme.pbarTexCS);
+	btnTexSet.left = _texture(domain, "texture_left", theme.pbarTexL, false);
+	btnTexSet.right = _texture(domain, "texture_right", theme.pbarTexR, false);
+	btnTexSet.center = _texture(domain, "texture_center", theme.pbarTexC, false);
+	btnTexSet.leftSel = _texture(domain, "texture_left_selected", theme.pbarTexLS, false);
+	btnTexSet.rightSel = _texture(domain, "texture_right_selected", theme.pbarTexRS, false);
+	btnTexSet.centerSel = _texture(domain, "texture_center_selected", theme.pbarTexCS, false);
 
 	u16 btnPos = _textStyle(domain, "elmstyle", FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
 	if (btnPos & FTGX_JUSTIFY_RIGHT)
@@ -1488,12 +1559,12 @@ void CMenu::_setHideAnim(s16 id, const char *domain, int dx, int dy, float scale
 	m_btnMgr.hide(id, dx, dy, scaleX, scaleY, true);
 }
 
-void CMenu::_addUserLabels(CMenu::SThemeData &theme, s16 *ids, u32 size, const char *domain)
+void CMenu::_addUserLabels(s16 *ids, u32 size, const char *domain)
 {
-	_addUserLabels(theme, ids, 0, size, domain);
+	_addUserLabels(ids, 0, size, domain);
 }
 
-void CMenu::_addUserLabels(CMenu::SThemeData &theme, s16 *ids, u32 start, u32 size, const char *domain)
+void CMenu::_addUserLabels(s16 *ids, u32 start, u32 size, const char *domain)
 {
 
 	for(u32 i = start; i < start + size; ++i)
@@ -1502,7 +1573,7 @@ void CMenu::_addUserLabels(CMenu::SThemeData &theme, s16 *ids, u32 start, u32 si
 		if (m_theme.hasDomain(dom))
 		{
 			STexture emptyTex;
-			ids[i] = _addLabel(theme, dom.c_str(), theme.lblFont, L"", 40, 200, 64, 64, CColor(0xFFFFFFFF), 0, emptyTex);
+			ids[i] = _addLabel(dom.c_str(), theme.lblFont, L"", 40, 200, 64, 64, CColor(0xFFFFFFFF), 0, emptyTex);
 			_setHideAnim(ids[i], dom.c_str(), -50, 0, 0.f, 0.f);
 		}
 		else
@@ -1529,7 +1600,6 @@ void CMenu::_initCF(void)
 	int ageLock = m_cfg.getInt("GENERAL", "age_lock");
 	if (ageLock < 2 || ageLock > 19)
 		ageLock = 19;
-
 	if (ageLock < 19)
 	{
 		gameAgeList.load(fmt("%s/" AGE_LOCK_FILENAME, m_settingsDir.c_str()));
@@ -1539,7 +1609,6 @@ void CMenu::_initCF(void)
 			gametdb.SetLanguageCode(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
 		}
 	}
-	
 	// check for single plugin selected
 	u8 pos = 0;
 	u8 enabledPluginsCount = 0;
@@ -1556,18 +1625,17 @@ void CMenu::_initCF(void)
 			}
 		}
 	}
-
-	for (u32 i = 0; i < m_gameList.size(); ++i)
+	for(vector<dir_discHdr>::iterator element = m_gameList.begin(); element != m_gameList.end(); ++element)
 	{
 		string id;
-		string tempname(m_gameList[i].path);
-		u64 chantitle = TITLE_ID(m_gameList[i].settings[0],m_gameList[i].settings[1]);
-		if(m_gameList[i].type == TYPE_HOMEBREW)
+		string tempname = element->path;
+		u64 chantitle = TITLE_ID(element->settings[0],element->settings[1]);
+		if(element->type == TYPE_HOMEBREW)
 		{
 			tempname.assign(&tempname[tempname.find_last_of('/') + 1]);
 			id = tempname;
 		}
-		else if(m_gameList[i].type == TYPE_PLUGIN)
+		else if(element->type == TYPE_PLUGIN)
 		{
 			if(tempname.find(':') != string::npos)
 			{
@@ -1592,17 +1660,16 @@ void CMenu::_initCF(void)
 		}
 		else
 		{
-			if(m_gameList[i].type == TYPE_CHANNEL && chantitle == HBC_108)
-				strncpy(m_gameList[i].id, "JODI", 6);
-			id = string(m_gameList[i].id);
+			if(element->type == TYPE_CHANNEL && chantitle == HBC_108)
+				strncpy(element->id, "JODI", 6);
+			id = element->id;
 		}
-
 		bool ageLocked = false;
 		if (ageLock < 19)
 		{
 			int ageRated = min(max(gameAgeList.getInt(domain, id), 0), 19);
 
-			if(ageRated == 0 && (m_gameList[i].type == TYPE_WII_GAME || m_gameList[i].type == TYPE_CHANNEL))
+			if(ageRated == 0 && (element->type == TYPE_WII_GAME || element->type == TYPE_CHANNEL))
 			{
 				GameXMLInfo gameinfo;
 				if(gametdb.IsLoaded() && gametdb.GetGameXMLInfo(id.c_str(), &gameinfo))
@@ -1669,13 +1736,12 @@ void CMenu::_initCF(void)
 			if(ageRated > ageLock)
 				ageLocked = true;
 		}
-
 		if((!m_favorites || m_gcfg1.getBool("FAVORITES", id, false))
 			&& (!m_locked || !m_gcfg1.getBool("ADULTONLY", id, false))
 			&& !ageLocked)
 		{
 			string catDomain;
-			switch(m_gameList[i].type)
+			switch(element->type)
 			{
 				case TYPE_CHANNEL:
 					catDomain = "NAND";
@@ -1695,7 +1761,7 @@ void CMenu::_initCF(void)
 			if(enabledPluginsCount == 1)
 			{
 				catDomain = (m_plugin.GetPluginName(pos)).toUTF8();
-				if(m_gameList[i].settings[0] != m_plugin.getPluginMagic(pos))
+				if(element->settings[0] != m_plugin.getPluginMagic(pos))
 					continue;
 			}
 			const char *requiredCats = m_cat.getString(fmt("%s/GENERAL", catDomain.c_str()), "required_categories").c_str();
@@ -1704,7 +1770,6 @@ void CMenu::_initCF(void)
 			u8 numReqCats = strlen(requiredCats);
 			u8 numSelCats = strlen(selectedCats);
 			u8 numHidCats = strlen(hiddenCats);
-			
 			if(numReqCats != 0 || numSelCats != 0 || numHidCats != 0) // if all 0 skip checking cats and show all games
 			{
 				const char *idCats = m_cat.getString(catDomain, id).c_str();
@@ -1774,10 +1839,10 @@ void CMenu::_initCF(void)
 			unsigned int lastPlayed = m_gcfg1.getUInt("LASTPLAYED", id, 0);
 
 			if(dumpGameLst)
-				dump.setWString(domain, id, m_gameList[i].title);
-			
-			string blankCoverKey;
-			switch(m_gameList[i].type)
+				dump.setWString(domain, id, element->title);
+
+			const char *blankCoverKey = NULL;
+			switch(element->type)
 			{
 				case TYPE_CHANNEL:
 					blankCoverKey = "channels";
@@ -1791,47 +1856,45 @@ void CMenu::_initCF(void)
 				case TYPE_PLUGIN:
 					char PluginMagicWord[9];
 					memset(PluginMagicWord, 0, sizeof(PluginMagicWord));
-					strncpy(PluginMagicWord, fmt("%08x", m_gameList[i].settings[0]), 8);
+					strncpy(PluginMagicWord, fmt("%08x", element->settings[0]), 8);
 					blankCoverKey = PluginMagicWord;
 					break;
 				default:
 					blankCoverKey = "wii";
 			}
-			
-			string blankCoverName = m_theme.getString("BLANK_COVERS", blankCoverKey.c_str(), fmt("%s.jpg", blankCoverKey.c_str()));
-
-			if(m_gameList[i].type == TYPE_PLUGIN)
+			const string &blankCoverName = m_theme.getString("BLANK_COVERS", blankCoverKey, fmt("%s.jpg", blankCoverKey));
+			if(element->type == TYPE_PLUGIN)
 			{
-				string tempname(m_gameList[i].path);
+				string tempname(element->path);
 				if(tempname.find_last_of("/") != string::npos)
 					tempname.assign(&tempname[tempname.find_last_of("/") + 1]);
-				string coverFolder(m_plugin.GetCoverFolderName(m_gameList[i].settings[0]));
+				string coverFolder(m_plugin.GetCoverFolderName(element->settings[0]));
 				if(EnabledPlugins.size() == 0) //all plugins
 				{
 					if(coverFolder.size() > 0)
-						m_cf.addItem(&m_gameList[i], fmt("%s/%s/%s.png", m_picDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s/%s.png", m_boxPicDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
+						m_cf.addItem(&(*element), fmt("%s/%s/%s.png", m_picDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s/%s.png", m_boxPicDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
 					else
-						m_cf.addItem(&m_gameList[i], fmt("%s/%s.png", m_picDir.c_str(), tempname.c_str()), fmt("%s/%s.png", m_boxPicDir.c_str(), tempname.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
+						m_cf.addItem(&(*element), fmt("%s/%s.png", m_picDir.c_str(), tempname.c_str()), fmt("%s/%s.png", m_boxPicDir.c_str(), tempname.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
 				}
 				else
 				{
 					for(u8 j = 0; j < EnabledPlugins.size(); j++)
 					{
-						if(EnabledPlugins.at(j) == true && m_gameList[i].settings[0] == m_plugin.getPluginMagic(j))
+						if(EnabledPlugins.at(j) == true && element->settings[0] == m_plugin.getPluginMagic(j))
 						{
 							if(coverFolder.size() > 0)
-								m_cf.addItem(&m_gameList[i], fmt("%s/%s/%s.png", m_picDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s/%s.png", m_boxPicDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
+								m_cf.addItem(&(*element), fmt("%s/%s/%s.png", m_picDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s/%s.png", m_boxPicDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
 							else
-								m_cf.addItem(&m_gameList[i], fmt("%s/%s.png", m_picDir.c_str(), tempname.c_str()), fmt("%s/%s.png", m_boxPicDir.c_str(), tempname.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
+								m_cf.addItem(&(*element), fmt("%s/%s.png", m_picDir.c_str(), tempname.c_str()), fmt("%s/%s.png", m_boxPicDir.c_str(), tempname.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
 							break;
 						}
 					}
 				}
 			}
-			else if(m_gameList[i].type == TYPE_HOMEBREW)
-				m_cf.addItem(&m_gameList[i], fmt("%s/icon.png", m_gameList[i].path), fmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
+			else if(element->type == TYPE_HOMEBREW)
+				m_cf.addItem(&(*element), fmt("%s/icon.png", element->path), fmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
 			else
-				m_cf.addItem(&m_gameList[i], fmt("%s/%s.png", m_picDir.c_str(), id.c_str()), fmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
+				m_cf.addItem(&(*element), fmt("%s/%s.png", m_picDir.c_str(), id.c_str()), fmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
 		}
 	}
 	m_gcfg1.unload();
@@ -1840,14 +1903,14 @@ void CMenu::_initCF(void)
 		dump.save(true);
 		m_cfg.setBool(domain, "dump_list", false);
 	}
- 	m_cf.setBoxMode(m_cfg.getBool("GENERAL", "box_mode", true));
+	m_cf.setBoxMode(m_cfg.getBool("GENERAL", "box_mode", true));
 	m_cf.setCompression(m_cfg.getBool("GENERAL", "allow_texture_compression", true));
 	m_cf.setBufferSize(m_cfg.getInt("GENERAL", "cover_buffer", 20));
 	m_cf.setSorting((Sorting)m_cfg.getInt(domain, "sort", 0));
 	m_cf.setHQcover(m_cfg.getBool("GENERAL", "cover_use_hq", false));
 	if (m_curGameId.empty() || !m_cf.findId(m_curGameId.c_str(), true))
 		m_cf.findId(m_cfg.getString(domain, "current_item").c_str(), true);
-	m_cf.startCoverLoader();
+	m_cf.start();
 }
 
 void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
@@ -1949,8 +2012,8 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 		strftime(buffer,80,"%b-%d-20%y-%Hh%Mm%Ss.png",timeinfo);
 		gprintf("Screenshot taken and saved to: %s/%s\n", m_screenshotDir.c_str(), buffer);
 		m_vid.TakeScreenshot(fmt("%s/%s", m_screenshotDir.c_str(), buffer));
-		if(!!m_cameraSound)
-			m_cameraSound->Play(255);
+		if(theme.cameraSound != NULL)
+			theme.cameraSound->Play(255);
 	}
 
 #ifdef SHOWMEM
@@ -1976,7 +2039,8 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 void CMenu::_setBg(const STexture &tex, const STexture &lqTex)
 {
 	m_lqBg = lqTex;
-	if (tex.data.get() == m_nextBg.data.get()) return;
+	if(tex.data == m_nextBg.data)
+		return;
 	m_prevBg = m_curBg;
 	m_nextBg = tex;
 	m_bgCrossFade = 0xFF;
@@ -1996,9 +2060,11 @@ void CMenu::_updateBg(void)
 		m_curBg = m_nextBg;
 		return;
 	}
-	if (m_curBg.data.get() == m_prevBg.data.get())
-		m_curBg.data.release();
-
+	if(m_curBg.data == m_prevBg.data && m_curBg.data != NULL)
+	{
+		free(m_curBg.data);
+		m_curBg.data = NULL;
+	}
 	m_vid.prepare();
 	GX_SetViewport(0.f, 0.f, 640.f, 480.f, 0.f, 1.f);
 	guOrtho(projMtx, 0.f, 480.f, 0.f, 640.f, 0.f, 1000.0f);
@@ -2032,11 +2098,11 @@ void CMenu::_updateBg(void)
 	GX_SetZMode(GX_DISABLE, GX_ALWAYS, GX_FALSE);
 	guMtxIdentity(modelViewMtx);
 	GX_LoadPosMtxImm(modelViewMtx, GX_PNMTX0);
-	GX_InitTexObj(&texObj, m_nextBg.data.get(), m_nextBg.width, m_nextBg.height, m_nextBg.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+	GX_InitTexObj(&texObj, m_nextBg.data, m_nextBg.width, m_nextBg.height, m_nextBg.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 	GX_LoadTexObj(&texObj, GX_TEXMAP0);
-	if (!!m_prevBg.data)
+	if(m_prevBg.data != NULL)
 	{
-		GX_InitTexObj(&texObj2, m_prevBg.data.get(), m_prevBg.width, m_prevBg.height, m_prevBg.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+		GX_InitTexObj(&texObj2, m_prevBg.data, m_prevBg.width, m_prevBg.height, m_prevBg.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		GX_LoadTexObj(&texObj2, GX_TEXMAP1);
 	}
 	GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
@@ -2087,7 +2153,7 @@ void CMenu::_drawBg(void)
 	GX_SetZMode(GX_DISABLE, GX_ALWAYS, GX_FALSE);
 	guMtxIdentity(modelViewMtx);
 	GX_LoadPosMtxImm(modelViewMtx, GX_PNMTX0);
-	GX_InitTexObj(&texObj, m_curBg.data.get(), m_curBg.width, m_curBg.height, m_curBg.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+	GX_InitTexObj(&texObj, m_curBg.data, m_curBg.width, m_curBg.height, m_curBg.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 	GX_LoadTexObj(&texObj, GX_TEXMAP0);
 	GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
 	GX_Position3f32(0.f, 0.f, 0.f);
@@ -2344,7 +2410,7 @@ void CMenu::_stopSounds(void)
 	m_gameSound.Stop();
 }
 
-bool CMenu::_loadFile(SmartBuf &buffer, u32 &size, const char *path, const char *file)
+bool CMenu::_loadFile(u8 *buffer, u32 &size, const char *path, const char *file)
 {
 	size = 0;
 	FILE *fp = fopen(file == NULL ? path : fmt("%s/%s", path, file), "rb");
@@ -2354,24 +2420,24 @@ bool CMenu::_loadFile(SmartBuf &buffer, u32 &size, const char *path, const char 
 	fseek(fp, 0, SEEK_END);
 	u32 fileSize = ftell(fp);
 	fseek(fp, 0, SEEK_SET);
-	SmartBuf fileBuf = smartMem2Alloc(fileSize);
-	if (!fileBuf)
+	u8 *fileBuf = (u8*)MEM2_alloc(fileSize);
+	if (fileBuf == NULL)
 	{
 		fclose(fp);
 		return false;
 	}
-	if (fread(fileBuf.get(), 1, fileSize, fp) != fileSize)
+	if (fread(fileBuf, 1, fileSize, fp) != fileSize)
 	{
 		fclose(fp);
 		return false;
 	}
 	fclose(fp);
 
-	if(buffer.get())
-		buffer.release();
+	if(buffer != NULL)
+		free(buffer);
 	buffer = fileBuf;
 
-	size = fileSize;	
+	size = fileSize;
 	return true;
 }
 
@@ -2403,8 +2469,7 @@ void CMenu::_hideWaitMessage()
 
 void CMenu::_showWaitMessage()
 {
-	TexSet texSet;
-	m_vid.waitMessage(_textures(texSet, "GENERAL", "waitmessage"), m_theme.getFloat("GENERAL", "waitmessage_delay", 0.f));
+	m_vid.waitMessage(_textures("GENERAL", "waitmessage"), m_theme.getFloat("GENERAL", "waitmessage_delay", 0.f));
 }
 
 typedef struct map_entry

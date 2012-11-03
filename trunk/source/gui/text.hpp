@@ -7,38 +7,38 @@
 
 #include "FreeTypeGX.h"
 #include "video.hpp"
-#include "memory/smartptr.hpp"
 #include "wstringEx/wstringEx.hpp"
 
 using namespace std;
 
-struct SFont
+class SFont
 {
-	SmartBuf data;
-	size_t dataSize;
-	SmartPtr<FreeTypeGX> font;
+public:
+	SFont(void) : font(NULL), lineSpacing(0), weight(0), index(0), data(NULL), dataSize(0) { }
+	~SFont(void) { };
+	void ClearData(void);
+	bool fromBuffer(const u8 *buffer, const u32 bufferSize, u32 size, u32 lspacing, u32 w = 0, u32 idx = 0, const char *genKey = NULL);
+	bool fromFile(const char *filename, u32 size, u32 lspacing, u32 w = 0, u32 idx = 0);
+	FreeTypeGX *font;
 	u32 lineSpacing;
 	u32 weight;
 	u32 index;
-public:
-	bool fromBuffer(u8 *buffer, u32 bufferSize, u32 size, u32 lspacing, u32 w = 0, u32 idx = 0, const char *genKey = NULL);
-	bool fromFile(const char *filename, u32 size, u32 lspacing, u32 w = 0, u32 idx = 0);
-	SFont(void) : data(SmartBuf(NULL, SmartBuf::SRCALL_MEM2)), dataSize(0), font(SmartPtr<FreeTypeGX>(new FreeTypeGX)), lineSpacing(0), weight(0), index(0) { }
-	~SFont(void) { }
+private:
+	u8 *data;
+	size_t dataSize;
 };
 
 class CText
 {
 public:
-	void setText(SFont font, const wstringEx &t);
-	void setText(SFont font, const wstringEx &t, u32 startline);
+	void setText(const SFont &font, const wstringEx &t);
+	void setText(const SFont &font, const wstringEx &t, u32 startline);
 	void setColor(const CColor &c);
 	void setFrame(float width, u16 style, bool ignoreNewlines = false, bool instant = false);
 	void tick(void);
 	void draw(void);
 	int getTotalHeight();
 private:
-	
 	struct SWord
 	{
 		wstringEx text;

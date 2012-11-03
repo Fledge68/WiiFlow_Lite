@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ****************************************************************************/
 #include <cstdio>
+#include <algorithm>
 #include "MusicPlayer.hpp"
 #include "SoundHandler.hpp"
 #include "list/ListGenerator.hpp"

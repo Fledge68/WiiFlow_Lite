@@ -364,7 +364,7 @@ static bool checkPNGBuf(u8 *data)
 
 static bool checkPNGFile(const char *filename)
 {
-	SmartBuf buffer;
+	u8 *buffer = NULL;
 	FILE *file = fopen(filename, "rb");
 	if (file == NULL) return false;
 	fseek(file, 0, SEEK_END);
@@ -372,11 +372,12 @@ static bool checkPNGFile(const char *filename)
 	fseek(file, 0, SEEK_SET);
 	if (fileSize > 0)
 	{
-		buffer = smartAnyAlloc(fileSize);
-		if (!!buffer) fread(buffer.get(), 1, fileSize, file);
+		buffer = (u8*)MEM2_alloc(fileSize);
+		if(buffer != NULL)
+			fread(buffer, 1, fileSize, file);
 	}
 	fclose(file);
-	return !buffer ? false : checkPNGBuf(buffer.get());
+	return buffer == NULL ? false : checkPNGBuf(buffer);
 }
 
 void CMenu::_initAsyncNetwork()
@@ -459,14 +460,13 @@ int CMenu::_coverDownloader(bool missingOnly)
 	float dlWeight = 1.f - listWeight;
 
 	u32 bufferSize = 0x280000;	// Maximum download size 2 MB
-	SmartBuf buffer = smartAnyAlloc(bufferSize);
-	if(!buffer)
+	u8 *buffer = (u8*)MEM2_alloc(bufferSize);
+	if(buffer == NULL)
 	{
 		LWP_MutexLock(m_mutex);
 		_setThrdMsg(L"Not enough memory!", 1.f);
 		LWP_MutexUnlock(m_mutex);
 		m_thrdWorking = false;
-		buffer.release();
 		return 0;
 	}
 	bool savePNG = m_cfg.getBool("GENERAL", "keep_png", true);
@@ -539,7 +539,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 			_setThrdMsg(_t("dlmsg2", L"Network initialization failed!"), 1.f);
 			LWP_MutexUnlock(m_mutex);
 			m_thrdWorking = false;
-			buffer.release();
+			free(buffer);
 			return 0;
 		}
 		m_thrdStepLen = dlWeight / (float)nbSteps;
@@ -609,7 +609,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 									LWP_MutexLock(m_mutex);
 									_setThrdMsg(wfmt(_fmt("dlmsg3", L"Downloading from %s"), url.c_str()), m_thrdStep);
 									LWP_MutexUnlock(m_mutex);
-									download = downloadfile(buffer.get(), bufferSize, url.c_str(), CMenu::_downloadProgress, this);
+									download = downloadfile(buffer, bufferSize, url.c_str(), CMenu::_downloadProgress, this);
 
 									for( int o = 0; o < 12; ++o )
 									{
@@ -703,7 +703,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 											LWP_MutexLock(m_mutex);
 											_setThrdMsg(wfmt(_fmt("dlmsg3", L"Downloading from %s"), url.c_str()), m_thrdStep);
 											LWP_MutexUnlock(m_mutex);
-											download = downloadfile(buffer.get(), bufferSize, url.c_str(), CMenu::_downloadProgress, this);
+											download = downloadfile(buffer, bufferSize, url.c_str(), CMenu::_downloadProgress, this);
 										}
 									}
 
@@ -755,7 +755,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 									LWP_MutexLock(m_mutex);
 									_setThrdMsg(wfmt(_fmt("dlmsg3", L"Downloading from %s"), url.c_str()), m_thrdStep);
 									LWP_MutexUnlock(m_mutex);
-									download = downloadfile(buffer.get(), bufferSize, url.c_str(), CMenu::_downloadProgress, this);
+									download = downloadfile(buffer, bufferSize, url.c_str(), CMenu::_downloadProgress, this);
 									for( int o = 0; o < 12; ++o )
 									{
 										bool tdl = false;
@@ -851,7 +851,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 											LWP_MutexLock(m_mutex);
 											_setThrdMsg(wfmt(_fmt("dlmsg3", L"Downloading from %s"), url.c_str()), m_thrdStep);
 											LWP_MutexUnlock(m_mutex);
-											download = downloadfile(buffer.get(), bufferSize, url.c_str(), CMenu::_downloadProgress, this);
+											download = downloadfile(buffer, bufferSize, url.c_str(), CMenu::_downloadProgress, this);
 										}
 									}
 
@@ -902,7 +902,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 									LWP_MutexLock(m_mutex);
 									_setThrdMsg(wfmt(_fmt("dlmsg8", L"Full cover not found. Downloading from %s"), url.c_str()), listWeight + dlWeight * (float)step / (float)nbSteps);
 									LWP_MutexUnlock(m_mutex);
-									download = downloadfile(buffer.get(), bufferSize, url.c_str(), CMenu::_downloadProgress, this);
+									download = downloadfile(buffer, bufferSize, url.c_str(), CMenu::_downloadProgress, this);
 
 									for( int o = 0; o < 12; ++o )
 									{
@@ -998,7 +998,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 											LWP_MutexLock(m_mutex);
 											_setThrdMsg(wfmt(_fmt("dlmsg3", L"Downloading from %s"), url.c_str()), m_thrdStep);
 											LWP_MutexUnlock(m_mutex);
-											download = downloadfile(buffer.get(), bufferSize, url.c_str(), CMenu::_downloadProgress, this);
+											download = downloadfile(buffer, bufferSize, url.c_str(), CMenu::_downloadProgress, this);
 										}
 									}
 
@@ -1046,7 +1046,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 									LWP_MutexLock(m_mutex);
 									_setThrdMsg(wfmt(_fmt("dlmsg8", L"Full cover not found. Downloading from %s"), url.c_str()), listWeight + dlWeight * (float)step / (float)nbSteps);
 									LWP_MutexUnlock(m_mutex);
-									download = downloadfile(buffer.get(), bufferSize, url.c_str(), CMenu::_downloadProgress, this);
+									download = downloadfile(buffer, bufferSize, url.c_str(), CMenu::_downloadProgress, this);
 
 									for( int o = 0; o < 12; ++o )
 									{
@@ -1141,7 +1141,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 											LWP_MutexLock(m_mutex);
 											_setThrdMsg(wfmt(_fmt("dlmsg3", L"Downloading from %s"), url.c_str()), m_thrdStep);
 											LWP_MutexUnlock(m_mutex);
-											download = downloadfile(buffer.get(), bufferSize, url.c_str(), CMenu::_downloadProgress, this);
+											download = downloadfile(buffer, bufferSize, url.c_str(), CMenu::_downloadProgress, this);
 										}
 									}
 
@@ -1192,7 +1192,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 	LWP_MutexUnlock(m_mutex);
 	m_thrdWorking = false;
 	pluginCoverList.clear();
-	buffer.release();
+	free(buffer);
 	return 0;
 }
 
@@ -1534,57 +1534,57 @@ void CMenu::_download(string gameId)
 	_hideSettings();
 }
 
-void CMenu::_initDownloadMenu(CMenu::SThemeData &theme)
+void CMenu::_initDownloadMenu()
 {
 	// Download menu
-	_addUserLabels(theme, m_downloadLblUser, ARRAY_SIZE(m_downloadLblUser), "DOWNLOAD");
-	m_downloadBg = _texture(theme.texSet, "DOWNLOAD/BG", "texture", theme.bg);
-	m_downloadLblTitle = _addTitle(theme, "DOWNLOAD/TITLE", theme.titleFont, L"", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
-	m_downloadPBar = _addProgressBar(theme, "DOWNLOAD/PROGRESS_BAR", 40, 200, 560, 20);
-	m_downloadBtnCancel = _addButton(theme, "DOWNLOAD/CANCEL_BTN", theme.btnFont, L"", 420, 400, 200, 56, theme.btnFontColor);
-	m_downloadLblCovers = _addLabel(theme, "DOWNLOAD/COVERS", theme.btnFont, L"", 40, 130, 320, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_downloadBtnAll = _addButton(theme, "DOWNLOAD/ALL_BTN", theme.btnFont, L"", 370, 130, 230, 56, theme.btnFontColor);
-	m_downloadBtnMissing = _addButton(theme, "DOWNLOAD/MISSING_BTN", theme.btnFont, L"", 370, 190, 230, 56, theme.btnFontColor);
-	m_downloadLblCoverSet = _addLabel(theme, "DOWNLOAD/COVERSSET", theme.btnFont, L"", 40, 250, 320, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_downloadBtnCoverSet = _addButton(theme, "DOWNLOAD/COVERSET_BTN", theme.btnFont, L"", 370, 250, 230, 56, theme.btnFontColor);
-	m_downloadLblGameTDBDownload = _addLabel(theme, "DOWNLOAD/GAMETDB_DOWNLOAD", theme.btnFont, L"", 40, 310, 320, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_downloadBtnGameTDBDownload = _addButton(theme, "DOWNLOAD/GAMETDB_DOWNLOAD_BTN", theme.btnFont, L"", 370, 310, 230, 56, theme.btnFontColor);
-	m_downloadLblGameTDB = _addLabel(theme, "DOWNLOAD/GAMETDB", theme.lblFont, L"", 40, 390, 370, 60, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_downloadLblMessage[0] = _addLabel(theme, "DOWNLOAD/MESSAGE1", theme.lblFont, L"", 40, 228, 560, 100, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
-	m_downloadLblMessage[1] = _addLabel(theme, "DOWNLOAD/MESSAGE2", theme.lblFont, L"", 40, 228, 560, 100, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
+	_addUserLabels(m_downloadLblUser, ARRAY_SIZE(m_downloadLblUser), "DOWNLOAD");
+	m_downloadBg = _texture("DOWNLOAD/BG", "texture", theme.bg, false);
+	m_downloadLblTitle = _addTitle("DOWNLOAD/TITLE", theme.titleFont, L"", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_downloadPBar = _addProgressBar("DOWNLOAD/PROGRESS_BAR", 40, 200, 560, 20);
+	m_downloadBtnCancel = _addButton("DOWNLOAD/CANCEL_BTN", theme.btnFont, L"", 420, 400, 200, 56, theme.btnFontColor);
+	m_downloadLblCovers = _addLabel("DOWNLOAD/COVERS", theme.btnFont, L"", 40, 130, 320, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_downloadBtnAll = _addButton("DOWNLOAD/ALL_BTN", theme.btnFont, L"", 370, 130, 230, 56, theme.btnFontColor);
+	m_downloadBtnMissing = _addButton("DOWNLOAD/MISSING_BTN", theme.btnFont, L"", 370, 190, 230, 56, theme.btnFontColor);
+	m_downloadLblCoverSet = _addLabel("DOWNLOAD/COVERSSET", theme.btnFont, L"", 40, 250, 320, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_downloadBtnCoverSet = _addButton("DOWNLOAD/COVERSET_BTN", theme.btnFont, L"", 370, 250, 230, 56, theme.btnFontColor);
+	m_downloadLblGameTDBDownload = _addLabel("DOWNLOAD/GAMETDB_DOWNLOAD", theme.btnFont, L"", 40, 310, 320, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_downloadBtnGameTDBDownload = _addButton("DOWNLOAD/GAMETDB_DOWNLOAD_BTN", theme.btnFont, L"", 370, 310, 230, 56, theme.btnFontColor);
+	m_downloadLblGameTDB = _addLabel("DOWNLOAD/GAMETDB", theme.lblFont, L"", 40, 390, 370, 60, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_downloadLblMessage[0] = _addLabel("DOWNLOAD/MESSAGE1", theme.lblFont, L"", 40, 228, 560, 100, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
+	m_downloadLblMessage[1] = _addLabel("DOWNLOAD/MESSAGE2", theme.lblFont, L"", 40, 228, 560, 100, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
 
 	// Cover settings
-	m_downloadLblSetTitle = _addTitle(theme, "DOWNLOAD/SETTITLE", theme.titleFont, L"", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
-	m_downloadLblCoverPrio = _addLabel(theme, "DOWNLOAD/COVERPRIO", theme.lblFont, L"", 40, 100, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_downloadLblPrio = _addLabel(theme, "DOWNLOAD/PRIO_BTN", theme.btnFont, L"", 366, 100, 178, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_downloadBtnPrioM = _addPicButton(theme, "DOWNLOAD/PRIO_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 310, 100, 56, 56);
-	m_downloadBtnPrioP = _addPicButton(theme, "DOWNLOAD/PRIO_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 100, 56, 56);
-	m_downloadLblRegion = _addLabel(theme, "DOWNLOAD/REGION", theme.lblFont, L"", 40, 160, 600, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_downloadBtnEN = _addPicButton(theme, "DOWNLOAD/EN", theme.btnENOff, theme.btnENOffs, 60, 220, 120, 56);
-	m_downloadBtnJA = _addPicButton(theme, "DOWNLOAD/JA", theme.btnJAOff, theme.btnJAOffs, 195, 220, 120, 56);
-	m_downloadBtnFR = _addPicButton(theme, "DOWNLOAD/FR", theme.btnFROff, theme.btnFROffs, 330, 220, 120, 56);
-	m_downloadBtnDE = _addPicButton(theme, "DOWNLOAD/DE", theme.btnDEOff, theme.btnDEOffs, 465, 220, 120, 56);
-	m_downloadBtnES = _addPicButton(theme, "DOWNLOAD/ES", theme.btnESOff, theme.btnESOffs, 60, 280, 120, 56);
-	m_downloadBtnIT = _addPicButton(theme, "DOWNLOAD/IT", theme.btnITOff, theme.btnITOffs, 195, 280, 120, 56);
-	m_downloadBtnNL = _addPicButton(theme, "DOWNLOAD/NL", theme.btnNLOff, theme.btnNLOffs, 330, 280, 120, 56);
-	m_downloadBtnPT = _addPicButton(theme, "DOWNLOAD/PT", theme.btnPTOff, theme.btnPTOffs, 465, 280, 120, 56);
-	m_downloadBtnRU = _addPicButton(theme, "DOWNLOAD/RU", theme.btnRUOff, theme.btnRUOffs, 60, 340, 120, 56);
-	m_downloadBtnKO = _addPicButton(theme, "DOWNLOAD/KO", theme.btnKOOff, theme.btnKOOffs, 195, 340, 120, 56);
-	m_downloadBtnZHCN = _addPicButton(theme, "DOWNLOAD/ZHCN", theme.btnZHCNOff, theme.btnZHCNOffs, 330, 340, 120, 56);
-	m_downloadBtnAU = _addPicButton(theme, "DOWNLOAD/AU", theme.btnAUOff, theme.btnAUOffs, 465, 340, 120, 56);	
-	m_downloadBtnENs = _addPicButton(theme, "DOWNLOAD/ENS", theme.btnENOn, theme.btnENOns, 60, 220, 120, 56);
-	m_downloadBtnJAs = _addPicButton(theme, "DOWNLOAD/JAS", theme.btnJAOn, theme.btnJAOns, 195, 220, 120, 56);
-	m_downloadBtnFRs = _addPicButton(theme, "DOWNLOAD/FRS", theme.btnFROn, theme.btnFROns, 330, 220, 120, 56);
-	m_downloadBtnDEs = _addPicButton(theme, "DOWNLOAD/DES", theme.btnDEOn, theme.btnDEOns, 465, 220, 120, 56);
-	m_downloadBtnESs = _addPicButton(theme, "DOWNLOAD/ESS", theme.btnESOn, theme.btnESOns, 60, 280, 120, 56);
-	m_downloadBtnITs = _addPicButton(theme, "DOWNLOAD/ITS", theme.btnITOn, theme.btnITOns, 195, 280, 120, 56);
-	m_downloadBtnNLs = _addPicButton(theme, "DOWNLOAD/NLS", theme.btnNLOn, theme.btnNLOns, 330, 280, 120, 56);
-	m_downloadBtnPTs = _addPicButton(theme, "DOWNLOAD/PTS", theme.btnPTOn, theme.btnPTOns, 465, 280, 120, 56);
-	m_downloadBtnRUs = _addPicButton(theme, "DOWNLOAD/RUS", theme.btnRUOn, theme.btnRUOns, 60, 340, 120, 56);
-	m_downloadBtnKOs = _addPicButton(theme, "DOWNLOAD/KOS", theme.btnKOOn, theme.btnKOOns, 195, 340, 120, 56);
-	m_downloadBtnZHCNs = _addPicButton(theme, "DOWNLOAD/ZHCNS", theme.btnZHCNOn, theme.btnZHCNOns, 330, 340, 120, 56);
-	m_downloadBtnAUs = _addPicButton(theme, "DOWNLOAD/AUS", theme.btnAUOn, theme.btnAUOns, 465, 340, 120, 56);
-	m_downloadBtnBack = _addButton(theme, "DOWNLOAD/BACK_BTN", theme.btnFont, L"", 420, 410, 200, 56, theme.btnFontColor);
+	m_downloadLblSetTitle = _addTitle("DOWNLOAD/SETTITLE", theme.titleFont, L"", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_downloadLblCoverPrio = _addLabel("DOWNLOAD/COVERPRIO", theme.lblFont, L"", 40, 100, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_downloadLblPrio = _addLabel("DOWNLOAD/PRIO_BTN", theme.btnFont, L"", 366, 100, 178, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_downloadBtnPrioM = _addPicButton("DOWNLOAD/PRIO_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 310, 100, 56, 56);
+	m_downloadBtnPrioP = _addPicButton("DOWNLOAD/PRIO_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 100, 56, 56);
+	m_downloadLblRegion = _addLabel("DOWNLOAD/REGION", theme.lblFont, L"", 40, 160, 600, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_downloadBtnEN = _addPicButton("DOWNLOAD/EN", theme.btnENOff, theme.btnENOffs, 60, 220, 120, 56);
+	m_downloadBtnJA = _addPicButton("DOWNLOAD/JA", theme.btnJAOff, theme.btnJAOffs, 195, 220, 120, 56);
+	m_downloadBtnFR = _addPicButton("DOWNLOAD/FR", theme.btnFROff, theme.btnFROffs, 330, 220, 120, 56);
+	m_downloadBtnDE = _addPicButton("DOWNLOAD/DE", theme.btnDEOff, theme.btnDEOffs, 465, 220, 120, 56);
+	m_downloadBtnES = _addPicButton("DOWNLOAD/ES", theme.btnESOff, theme.btnESOffs, 60, 280, 120, 56);
+	m_downloadBtnIT = _addPicButton("DOWNLOAD/IT", theme.btnITOff, theme.btnITOffs, 195, 280, 120, 56);
+	m_downloadBtnNL = _addPicButton("DOWNLOAD/NL", theme.btnNLOff, theme.btnNLOffs, 330, 280, 120, 56);
+	m_downloadBtnPT = _addPicButton("DOWNLOAD/PT", theme.btnPTOff, theme.btnPTOffs, 465, 280, 120, 56);
+	m_downloadBtnRU = _addPicButton("DOWNLOAD/RU", theme.btnRUOff, theme.btnRUOffs, 60, 340, 120, 56);
+	m_downloadBtnKO = _addPicButton("DOWNLOAD/KO", theme.btnKOOff, theme.btnKOOffs, 195, 340, 120, 56);
+	m_downloadBtnZHCN = _addPicButton("DOWNLOAD/ZHCN", theme.btnZHCNOff, theme.btnZHCNOffs, 330, 340, 120, 56);
+	m_downloadBtnAU = _addPicButton("DOWNLOAD/AU", theme.btnAUOff, theme.btnAUOffs, 465, 340, 120, 56);	
+	m_downloadBtnENs = _addPicButton("DOWNLOAD/ENS", theme.btnENOn, theme.btnENOns, 60, 220, 120, 56);
+	m_downloadBtnJAs = _addPicButton("DOWNLOAD/JAS", theme.btnJAOn, theme.btnJAOns, 195, 220, 120, 56);
+	m_downloadBtnFRs = _addPicButton("DOWNLOAD/FRS", theme.btnFROn, theme.btnFROns, 330, 220, 120, 56);
+	m_downloadBtnDEs = _addPicButton("DOWNLOAD/DES", theme.btnDEOn, theme.btnDEOns, 465, 220, 120, 56);
+	m_downloadBtnESs = _addPicButton("DOWNLOAD/ESS", theme.btnESOn, theme.btnESOns, 60, 280, 120, 56);
+	m_downloadBtnITs = _addPicButton("DOWNLOAD/ITS", theme.btnITOn, theme.btnITOns, 195, 280, 120, 56);
+	m_downloadBtnNLs = _addPicButton("DOWNLOAD/NLS", theme.btnNLOn, theme.btnNLOns, 330, 280, 120, 56);
+	m_downloadBtnPTs = _addPicButton("DOWNLOAD/PTS", theme.btnPTOn, theme.btnPTOns, 465, 280, 120, 56);
+	m_downloadBtnRUs = _addPicButton("DOWNLOAD/RUS", theme.btnRUOn, theme.btnRUOns, 60, 340, 120, 56);
+	m_downloadBtnKOs = _addPicButton("DOWNLOAD/KOS", theme.btnKOOn, theme.btnKOOns, 195, 340, 120, 56);
+	m_downloadBtnZHCNs = _addPicButton("DOWNLOAD/ZHCNS", theme.btnZHCNOn, theme.btnZHCNOns, 330, 340, 120, 56);
+	m_downloadBtnAUs = _addPicButton("DOWNLOAD/AUS", theme.btnAUOn, theme.btnAUOns, 465, 340, 120, 56);
+	m_downloadBtnBack = _addButton("DOWNLOAD/BACK_BTN", theme.btnFont, L"", 420, 410, 200, 56, theme.btnFontColor);
 
 	// Download menu
 	_setHideAnim(m_downloadLblTitle, "DOWNLOAD/TITLE", 0, 0, -2.f, 0.f);
@@ -1689,8 +1689,8 @@ s8 CMenu::_versionTxtDownloaderInit(CMenu *m) //Handler to download versions txt
 s8 CMenu::_versionTxtDownloader() // code to download new version txt file
 {
 	u32 bufferSize = 0x010000;	// Maximum download size 64kb
-	SmartBuf buffer = smartAnyAlloc(bufferSize);
-	if (!buffer)
+	u8 *buffer = (u8*)MEM2_alloc(bufferSize);
+	if(buffer == NULL)
 	{
 		LWP_MutexLock(m_mutex);
 		_setThrdMsg(L"Not enough memory", 1.f);
@@ -1719,7 +1719,7 @@ s8 CMenu::_versionTxtDownloader() // code to download new version txt file
 		m_thrdStep = 0.2f;
 		m_thrdStepLen = 0.9f - 0.2f;
 		gprintf("TXT update URL: %s\n\n", m_cfg.getString("GENERAL", "updatetxturl", UPDATE_URL_VERSION).c_str());
-		download = downloadfile(buffer.get(), bufferSize, m_cfg.getString("GENERAL", "updatetxturl", UPDATE_URL_VERSION).c_str(),CMenu::_downloadProgress, this);
+		download = downloadfile(buffer, bufferSize, m_cfg.getString("GENERAL", "updatetxturl", UPDATE_URL_VERSION).c_str(),CMenu::_downloadProgress, this);
 		if (download.data == 0 || download.size < 19)
 		{
 			LWP_MutexLock(m_mutex);
@@ -1770,7 +1770,7 @@ s8 CMenu::_versionTxtDownloader() // code to download new version txt file
 		}
 	}
 	m_thrdWorking = false;
-	buffer.release();
+	free(buffer);
 	return 0;
 }
 
@@ -1815,8 +1815,8 @@ s8 CMenu::_versionDownloader() // code to download new version
 	filestr.close();
 
 	u32 bufferSize = max(m_app_update_size, m_data_update_size);	// Buffer for size of the biggest file.
-	SmartBuf buffer = smartAnyAlloc(bufferSize);
-	if (!buffer)
+	u8 *buffer = (u8*)MEM2_alloc(bufferSize);
+	if(buffer == NULL)
 	{
 		LWP_MutexLock(m_mutex);
 		_setThrdMsg(L"Not enough memory!", 1.f);
@@ -1837,7 +1837,7 @@ s8 CMenu::_versionDownloader() // code to download new version
 		LWP_MutexUnlock(m_mutex);
 		sleep(3);
 		m_thrdWorking = false;
-		buffer.release();
+		free(buffer);
 		return 0;
 	}
 
@@ -1851,7 +1851,7 @@ s8 CMenu::_versionDownloader() // code to download new version
 	gprintf("App Update URL: %s\n", m_app_update_url);
 	gprintf("Data Update URL: %s\n", m_data_update_url);
 
-	download = downloadfile(buffer.get(), bufferSize, m_app_update_url, CMenu::_downloadProgress, this);
+	download = downloadfile(buffer, bufferSize, m_app_update_url, CMenu::_downloadProgress, this);
 	if (download.data == 0 || download.size < m_app_update_size)
 	{
 		LWP_MutexLock(m_mutex);
@@ -1859,7 +1859,7 @@ s8 CMenu::_versionDownloader() // code to download new version
 		LWP_MutexUnlock(m_mutex);
 		sleep(3);
 		m_thrdWorking = false;
-		buffer.release();
+		free(buffer);
 		return 0;
 	}
 
@@ -1894,13 +1894,13 @@ s8 CMenu::_versionDownloader() // code to download new version
 		download.data = NULL;
 		download.size = 0;
 
-		//memset(&buffer, 0, bufferSize);  should we be clearing the buffer of any possible data before downloading?
+		memset(buffer, 0, bufferSize);  //should we be clearing the buffer of any possible data before downloading?
 
 		LWP_MutexLock(m_mutex);
 		_setThrdMsg(_t("dlmsg23", L"Updating data directory..."), 0.2f);
 		LWP_MutexUnlock(m_mutex);
 
-		download = downloadfile(buffer.get(), bufferSize, m_data_update_url, CMenu::_downloadProgress, this);
+		download = downloadfile(buffer, bufferSize, m_data_update_url, CMenu::_downloadProgress, this);
 		if (download.data == 0 || download.size < m_data_update_size)
 		{
 			LWP_MutexLock(m_mutex);
@@ -1967,7 +1967,7 @@ fail:
 	_setThrdMsg(_t("dlmsg15", L"Saving failed!"), 1.f);
 	LWP_MutexUnlock(m_mutex);
 out:
-	buffer.release();
+	free(buffer);
 	sleep(3);
 	m_thrdWorking = false;
 	return 0;
@@ -1984,8 +1984,8 @@ int CMenu::_gametdbDownloaderAsync()
 	string langCode;
 
 	u32 bufferSize = 0x800000; // 8 MB
-	SmartBuf buffer = smartAnyAlloc(bufferSize);
-	if (!buffer)
+	u8 *buffer = (u8*)MEM2_alloc(bufferSize);
+	if (buffer == NULL)
 	{
 		LWP_MutexLock(m_mutex);
 		_setThrdMsg(L"Not enough memory", 1.f);
@@ -2009,7 +2009,7 @@ int CMenu::_gametdbDownloaderAsync()
 		LWP_MutexUnlock(m_mutex);
 		m_thrdStep = 0.0f;
 		m_thrdStepLen = 1.0f;
-		download = downloadfile(buffer.get(), bufferSize, fmt(GAMETDB_URL, langCode.c_str()), CMenu::_downloadProgress, this);
+		download = downloadfile(buffer, bufferSize, fmt(GAMETDB_URL, langCode.c_str()), CMenu::_downloadProgress, this);
 		if (download.data == 0)
 		{
 			LWP_MutexLock(m_mutex);
@@ -2068,7 +2068,7 @@ int CMenu::_gametdbDownloaderAsync()
 			}
 		}
 	}
-	buffer.release();
+	free(buffer);
 	m_thrdWorking = false;
 	return 0;
 }

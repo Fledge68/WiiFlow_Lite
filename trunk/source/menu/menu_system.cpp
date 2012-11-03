@@ -241,22 +241,22 @@ void CMenu::_showSystem(void)
 	_textSystem();
 }
 
-void CMenu::_initSystemMenu(CMenu::SThemeData &theme)
+void CMenu::_initSystemMenu()
 {
 	STexture emptyTex;
 
-	_addUserLabels(theme, m_systemLblUser, ARRAY_SIZE(m_systemLblUser), "SYSTEM");		
-	m_systemBg = _texture(theme.texSet, "SYSTEM/BG", "texture", theme.bg);
-	m_systemLblTitle = _addTitle(theme, "SYSTEM/TITLE", theme.titleFont, L"", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
-	m_systemLblVersionTxt = _addLabel(theme, "SYSTEM/VERSION_TXT", theme.lblFont, L"", 40, 90, 220, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_systemLblVersion = _addLabel(theme, "SYSTEM/VERSION", theme.lblFont, L"", 260, 90, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_systemBtnDownload = _addButton(theme, "SYSTEM/DOWNLOAD_BTN", theme.btnFont, L"", 20, 410, 200, 56, theme.btnFontColor);
-	m_systemBtnBack = _addButton(theme, "SYSTEM/BACK_BTN", theme.btnFont, L"", 420, 410, 200, 56, theme.btnFontColor); 
+	_addUserLabels(m_systemLblUser, ARRAY_SIZE(m_systemLblUser), "SYSTEM");		
+	m_systemBg = _texture("SYSTEM/BG", "texture", theme.bg, false);
+	m_systemLblTitle = _addTitle("SYSTEM/TITLE", theme.titleFont, L"", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_systemLblVersionTxt = _addLabel("SYSTEM/VERSION_TXT", theme.lblFont, L"", 40, 90, 220, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_systemLblVersion = _addLabel("SYSTEM/VERSION", theme.lblFont, L"", 260, 90, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_systemBtnDownload = _addButton("SYSTEM/DOWNLOAD_BTN", theme.btnFont, L"", 20, 410, 200, 56, theme.btnFontColor);
+	m_systemBtnBack = _addButton("SYSTEM/BACK_BTN", theme.btnFont, L"", 420, 410, 200, 56, theme.btnFontColor); 
 
-	m_systemLblInfo = _addText(theme, "SYSTEM/INFO", theme.txtFont, L"", 20, 300, 600, 280, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
-	m_systemLblVerSelectVal = _addLabel(theme, "SYSTEM/VER_SELECT_BTN", theme.btnFont, L"", 296, 150, 50, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_systemBtnVerSelectM = _addPicButton(theme, "SYSTEM/VER_SELECT_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 240, 150, 56, 56);
-	m_systemBtnVerSelectP = _addPicButton(theme, "SYSTEM/VER_SELECT_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 346, 150, 56, 56);
+	m_systemLblInfo = _addText("SYSTEM/INFO", theme.txtFont, L"", 20, 300, 600, 280, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
+	m_systemLblVerSelectVal = _addLabel("SYSTEM/VER_SELECT_BTN", theme.btnFont, L"", 296, 150, 50, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_systemBtnVerSelectM = _addPicButton("SYSTEM/VER_SELECT_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 240, 150, 56, 56);
+	m_systemBtnVerSelectP = _addPicButton("SYSTEM/VER_SELECT_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 346, 150, 56, 56);
 	// 
 	_setHideAnim(m_systemLblTitle, "SYSTEM/TITLE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_systemBtnDownload, "SYSTEM/DOWNLOAD_BTN", 0, 0, -2.f, 0.f);

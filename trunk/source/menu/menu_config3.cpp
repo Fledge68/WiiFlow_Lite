@@ -154,32 +154,32 @@ int CMenu::_config3(void)
 	return change;
 }
 
-void CMenu::_initConfig3Menu(CMenu::SThemeData &theme)
+void CMenu::_initConfig3Menu()
 {
-	_addUserLabels(theme, m_config3LblUser, ARRAY_SIZE(m_config3LblUser), "CONFIG3");
-	m_config3Bg = _texture(theme.texSet, "CONFIG3/BG", "texture", theme.bg);
-	m_config3LblGameVideo = _addLabel(theme, "CONFIG3/VIDEO", theme.lblFont, L"", 40, 130, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_config3LblVideo = _addLabel(theme, "CONFIG3/VIDEO_BTN", theme.btnFont, L"", 386, 130, 158, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_config3BtnVideoM = _addPicButton(theme, "CONFIG3/VIDEO_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 330, 130, 56, 56);
-	m_config3BtnVideoP = _addPicButton(theme, "CONFIG3/VIDEO_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 130, 56, 56);
-	m_config3LblGameLanguage = _addLabel(theme, "CONFIG3/GAME_LANG", theme.lblFont, L"", 40, 190, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_config3LblLanguage = _addLabel(theme, "CONFIG3/GAME_LANG_BTN", theme.btnFont, L"", 386, 190, 158, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_config3BtnLanguageM = _addPicButton(theme, "CONFIG3/GAME_LANG_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 330, 190, 56, 56);
-	m_config3BtnLanguageP = _addPicButton(theme, "CONFIG3/GAME_LANG_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 190, 56, 56);
+	_addUserLabels(m_config3LblUser, ARRAY_SIZE(m_config3LblUser), "CONFIG3");
+	m_config3Bg = _texture("CONFIG3/BG", "texture", theme.bg, false);
+	m_config3LblGameVideo = _addLabel("CONFIG3/VIDEO", theme.lblFont, L"", 40, 130, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_config3LblVideo = _addLabel("CONFIG3/VIDEO_BTN", theme.btnFont, L"", 386, 130, 158, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_config3BtnVideoM = _addPicButton("CONFIG3/VIDEO_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 330, 130, 56, 56);
+	m_config3BtnVideoP = _addPicButton("CONFIG3/VIDEO_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 130, 56, 56);
+	m_config3LblGameLanguage = _addLabel("CONFIG3/GAME_LANG", theme.lblFont, L"", 40, 190, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_config3LblLanguage = _addLabel("CONFIG3/GAME_LANG_BTN", theme.btnFont, L"", 386, 190, 158, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_config3BtnLanguageM = _addPicButton("CONFIG3/GAME_LANG_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 330, 190, 56, 56);
+	m_config3BtnLanguageP = _addPicButton("CONFIG3/GAME_LANG_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 190, 56, 56);
 
-	m_config3LblDMLGameVideo = _addLabel(theme, "CONFIG3/DML_VIDEO", theme.lblFont, L"", 40, 130, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_config3LblDMLVideo = _addLabel(theme, "CONFIG3/DML_VIDEO_BTN", theme.btnFont, L"", 386, 130, 158, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_config3BtnDMLVideoM = _addPicButton(theme, "CONFIG3/DML_VIDEO_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 330, 130, 56, 56);
-	m_config3BtnDMLVideoP = _addPicButton(theme, "CONFIG3/DML_VIDEO_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 130, 56, 56);
-	m_config3LblDMLGameLanguage = _addLabel(theme, "CONFIG3/DML_LANG", theme.lblFont, L"", 40, 190, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_config3LblDMLLanguage = _addLabel(theme, "CONFIG3/DML_LANG_BTN", theme.btnFont, L"", 386, 190, 158, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_config3BtnDMLLanguageM = _addPicButton(theme, "CONFIG3/DML_LANG_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 330, 190, 56, 56);
-	m_config3BtnDMLLanguageP = _addPicButton(theme, "CONFIG3/DML_LANG_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 190, 56, 56);
+	m_config3LblDMLGameVideo = _addLabel("CONFIG3/DML_VIDEO", theme.lblFont, L"", 40, 130, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_config3LblDMLVideo = _addLabel("CONFIG3/DML_VIDEO_BTN", theme.btnFont, L"", 386, 130, 158, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_config3BtnDMLVideoM = _addPicButton("CONFIG3/DML_VIDEO_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 330, 130, 56, 56);
+	m_config3BtnDMLVideoP = _addPicButton("CONFIG3/DML_VIDEO_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 130, 56, 56);
+	m_config3LblDMLGameLanguage = _addLabel("CONFIG3/DML_LANG", theme.lblFont, L"", 40, 190, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_config3LblDMLLanguage = _addLabel("CONFIG3/DML_LANG_BTN", theme.btnFont, L"", 386, 190, 158, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_config3BtnDMLLanguageM = _addPicButton("CONFIG3/DML_LANG_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 330, 190, 56, 56);
+	m_config3BtnDMLLanguageP = _addPicButton("CONFIG3/DML_LANG_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 190, 56, 56);
 
-	m_config3LblAsyncNet = _addLabel(theme, "CONFIG3/ASYNCNET", theme.lblFont, L"", 40, 250, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_config3BtnAsyncNet = _addButton(theme, "CONFIG3/ASYNCNET_BTN", theme.btnFont, L"", 330, 250, 270, 56, theme.btnFontColor);
-	m_config3LblOcarina = _addLabel(theme, "CONFIG3/OCARINA", theme.lblFont, L"", 40, 310, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_config3BtnOcarina = _addButton(theme, "CONFIG3/OCARINA_BTN", theme.btnFont, L"", 330, 310, 270, 56, theme.btnFontColor);
+	m_config3LblAsyncNet = _addLabel("CONFIG3/ASYNCNET", theme.lblFont, L"", 40, 250, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_config3BtnAsyncNet = _addButton("CONFIG3/ASYNCNET_BTN", theme.btnFont, L"", 330, 250, 270, 56, theme.btnFontColor);
+	m_config3LblOcarina = _addLabel("CONFIG3/OCARINA", theme.lblFont, L"", 40, 310, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_config3BtnOcarina = _addButton("CONFIG3/OCARINA_BTN", theme.btnFont, L"", 330, 310, 270, 56, theme.btnFontColor);
 
 	_setHideAnim(m_config3LblGameVideo, "CONFIG3/VIDEO", 100, 0, -2.f, 0.f);
 	_setHideAnim(m_config3LblVideo, "CONFIG3/VIDEO_BTN", 0, 0, 1.f, -1.f);

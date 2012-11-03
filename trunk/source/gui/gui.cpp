@@ -9,7 +9,6 @@ template <class T> static inline T loopNum(T i, T s)
 }
 
 STexture CButtonsMgr::_noTexture;
-SmartGuiSound CButtonsMgr::_noSound = SmartGuiSound(new GuiSound());
 
 bool CButtonsMgr::init(CVideo &vid)
 {
@@ -31,10 +30,9 @@ bool CButtonsMgr::init(CVideo &vid)
 }
 
 s16 CButtonsMgr::addButton(SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color,
-	const SButtonTextureSet &texSet, const SmartGuiSound &clickSound, const SmartGuiSound &hoverSound)
+	const SButtonTextureSet &texSet, GuiSound *clickSound, GuiSound *hoverSound)
 {
-	CButtonsMgr::SButton *b = new CButtonsMgr::SButton;
-	SmartPtr<CButtonsMgr::SElement> elt(b);
+	SButton *b = new SButton;
 
 	b->font = font;
 	b->visible = false;
@@ -59,7 +57,7 @@ s16 CButtonsMgr::addButton(SFont font, const wstringEx &text, int x, int y, u32 
 	b->moveByY = 0;
 
 	u16 sz = m_elts.size();
-	m_elts.push_back(elt);
+	m_elts.push_back(b);
 
 	return m_elts.size() > sz ? m_elts.size() - 1 : -2;
 }
@@ -69,7 +67,7 @@ void CButtonsMgr::reset(s16 id, bool instant)
 	if (id == -1) return;
 	if (id < (s32)m_elts.size())
 	{
-		CButtonsMgr::SElement &b = *m_elts[id];
+		SElement &b = *m_elts[id];
 		b.x -= b.moveByX;
 		b.y -= b.moveByY;
 		if (instant)
@@ -114,10 +112,9 @@ void CButtonsMgr::getDimensions(s16 id, int &x, int &y, u32 &width, u32 &height)
 		y = b.targetPos.y;
 		width = b.w;
 		height = b.h;
-		if (b.t == GUIELT_LABEL)
+		if(b.t == GUIELT_LABEL)
 		{
-			CButtonsMgr::SLabel *s = (CButtonsMgr::SLabel *) m_elts[id].get();
-			
+			SLabel *s = (SLabel*)m_elts[id];
 			// Calculate height
 			height = s->text.getTotalHeight();
 		}
@@ -129,7 +126,7 @@ void CButtonsMgr::hide(s16 id, int dx, int dy, float scaleX, float scaleY, bool 
 	if (id == -1) return;
 	if (id < (s32)m_elts.size())
 	{
-		CButtonsMgr::SElement &b = *m_elts[id];
+		SElement &b = *m_elts[id];
 		b.hideParam.dx = dx;
 		b.hideParam.dy = dy;
 		b.hideParam.scaleX = scaleX;
@@ -165,13 +162,11 @@ void CButtonsMgr::hide(s16 id, bool instant)
 void CButtonsMgr::stopSounds(void)
 {
 	for (u32 i = 0; i < m_elts.size(); ++i)
-		if (m_elts[i]->t == CButtonsMgr::GUIELT_BUTTON)
+		if (m_elts[i]->t == GUIELT_BUTTON)
 		{
-			CButtonsMgr::SButton &b = (CButtonsMgr::SButton &)*m_elts[i];
-			if (!!b.hoverSound)
-				b.hoverSound->Stop();
-			if (!!b.clickSound)
-				b.clickSound->Stop();
+			SButton *b = (SButton*)m_elts[i];
+			b->hoverSound->Stop();
+			b->clickSound->Stop();
 		}
 }
 
@@ -185,13 +180,12 @@ void CButtonsMgr::show(s16 id, bool instant)
 	if (id == -1) return;
 	if (id < (s32)m_elts.size())
 	{
-		CButtonsMgr::SElement &b = *m_elts[id];
+		SElement &b = *m_elts[id];
 		b.visible = true;
 		b.targetScaleX = 1.0f;
 		b.targetScaleY = 1.0f;
 		b.targetPos = Vector3D((float)b.x, (float)b.y, 0);
 		b.targetAlpha = 0xFF;
-
 		if (instant)
 		{
 			b.scaleX = b.targetScaleX;
@@ -223,10 +217,10 @@ void CButtonsMgr::mouse(int chan, int x, int y)
 	m_selected[chan] = -1;
 	for(int i = (int)m_elts.size() - 1; i >= 0; --i)
 	{
-		CButtonsMgr::SElement &b = *m_elts[i];
-		if(b.t == CButtonsMgr::GUIELT_BUTTON)
+		SElement &b = *m_elts[i];
+		if(b.t == GUIELT_BUTTON)
 		{
-			SButton &but = *(CButtonsMgr::SButton *)&b;
+			SButton &but = *(SButton*)&b;
 			w = (float)(but.w / 2);
 			h = (float)(but.h / 2);
 			if(but.visible && (float)x >= but.pos.x - w && (float)x < but.pos.x + w && (float)y >= but.pos.y - h && (float)y < but.pos.y + h)
@@ -237,9 +231,11 @@ void CButtonsMgr::mouse(int chan, int x, int y)
 				// 
 				if(start != m_selected[chan])
 				{
-					if(m_soundVolume > 0 && !!but.hoverSound)
+					if(m_soundVolume > 0)
+					{
 						if(!m_nohover) 
 							but.hoverSound->Play(m_soundVolume);
+					}
 					if(m_rumbleEnabled)
 					{
 						m_rumble[chan] = 4;
@@ -290,8 +286,8 @@ void CButtonsMgr::up(void)
 	for(u32 i = 1; i <= m_elts.size(); ++i)
 	{
 		u32 j = loopNum(start - i, m_elts.size());
-		CButtonsMgr::SElement &b = *m_elts[j];
-		if (b.t == CButtonsMgr::GUIELT_BUTTON && b.visible)
+		SElement &b = *m_elts[j];
+		if (b.t == GUIELT_BUTTON && b.visible)
 		{
 			m_selected[0] = j;
 			b.targetScaleX = 1.1f;
@@ -319,8 +315,8 @@ void CButtonsMgr::down(void)
 	for(u32 i = 1; i <= m_elts.size(); ++i)
 	{
 		u32 j = loopNum(start + i, m_elts.size());
-		CButtonsMgr::SElement &b = *m_elts[j];
-		if (b.t == CButtonsMgr::GUIELT_BUTTON && b.visible)
+		SElement &b = *m_elts[j];
+		if (b.t == GUIELT_BUTTON && b.visible)
 		{
 			m_selected[0] = j;
 			b.targetScaleX = 1.1f;
@@ -349,13 +345,13 @@ void CButtonsMgr::click(s16 id)
 
 		if (id == -1) id = m_selected[chan];
 		if (id == -1) continue;
-		if (id < (s32)m_elts.size() && m_elts[id]->t == CButtonsMgr::GUIELT_BUTTON)
+		if (id < (s32)m_elts.size() && m_elts[id]->t == GUIELT_BUTTON)
 		{
-			CButtonsMgr::SButton &b = *((CButtonsMgr::SButton *)m_elts[id].get());
-			b.click = 1.f;
-			b.scaleX = 1.1f;
-			b.scaleY = 1.1f;
-			if (m_soundVolume > 0 && !!b.clickSound) b.clickSound->Play(m_soundVolume);
+			SButton *b = (SButton*)m_elts[id];
+			b->click = 1.f;
+			b->scaleX = 1.1f;
+			b->scaleY = 1.1f;
+			if (m_soundVolume > 0) b->clickSound->Play(m_soundVolume);
 		}
 	}
 }
@@ -404,8 +400,7 @@ void CButtonsMgr::tick(void)
 
 s16 CButtonsMgr::addLabel(SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, s16 style, const STexture &bg)
 {
-	CButtonsMgr::SLabel *b = new CButtonsMgr::SLabel;
-	SmartPtr<CButtonsMgr::SElement> elt(b);
+	SLabel *b = new SLabel;
 
 	b->font = font;
 	b->visible = false;
@@ -428,15 +423,14 @@ s16 CButtonsMgr::addLabel(SFont font, const wstringEx &text, int x, int y, u32 w
 	b->moveByY = 0;
 
 	u32 sz = m_elts.size();
-	m_elts.push_back(elt);
+	m_elts.push_back(b);
 
 	return m_elts.size() > sz ? m_elts.size() - 1 : -2;
 }
 
 s16 CButtonsMgr::addProgressBar(int x, int y, u32 width, u32 height, SButtonTextureSet &texSet)
 {
-	CButtonsMgr::SProgressBar *b = new CButtonsMgr::SProgressBar;
-	SmartPtr<CButtonsMgr::SElement> elt(b);
+	SProgressBar *b = new SProgressBar;
 
 	b->visible = false;
 	b->x = x + width / 2;
@@ -456,12 +450,12 @@ s16 CButtonsMgr::addProgressBar(int x, int y, u32 width, u32 height, SButtonText
 	b->moveByY = 0;
 
 	u32 sz = m_elts.size();
-	m_elts.push_back(elt);
+	m_elts.push_back(b);
 
 	return m_elts.size() > sz ? m_elts.size() - 1 : -2;
 }
 
-s16 CButtonsMgr::addPicButton(STexture &texNormal, STexture &texSelected, int x, int y, u32 width, u32 height, const SmartGuiSound &clickSound, const SmartGuiSound &hoverSound)
+s16 CButtonsMgr::addPicButton(STexture &texNormal, STexture &texSelected, int x, int y, u32 width, u32 height, GuiSound *clickSound, GuiSound *hoverSound)
 {
 	SButtonTextureSet texSet;
 
@@ -470,7 +464,7 @@ s16 CButtonsMgr::addPicButton(STexture &texNormal, STexture &texSelected, int x,
 	return addButton(SFont(), wstringEx(), x, y, width, height, CColor(), texSet, clickSound, hoverSound);
 }
 
-s16 CButtonsMgr::addPicButton(const u8 *pngNormal, const u8 *pngSelected, int x, int y, u32 width, u32 height, const SmartGuiSound &clickSound, const SmartGuiSound &hoverSound)
+s16 CButtonsMgr::addPicButton(const u8 *pngNormal, const u8 *pngSelected, int x, int y, u32 width, u32 height, GuiSound *clickSound, GuiSound *hoverSound)
 {
 	SButtonTextureSet texSet;
 
@@ -484,22 +478,21 @@ void CButtonsMgr::setText(s16 id, const wstringEx &text, bool unwrap)
 	if (id == -1) return;
 	if (id < (s32)m_elts.size())
 	{
-		CButtonsMgr::SLabel *lbl;
-		CButtonsMgr::SButton *btn;
+		SLabel *lbl = NULL;
+		SButton *btn = NULL;
 		switch (m_elts[id]->t)
 		{
-			case CButtonsMgr::GUIELT_BUTTON:
-				//((CButtonsMgr::SButton *)m_elts[id].get())->text = text;
-				btn = (CButtonsMgr::SButton *)m_elts[id].get();
+			case GUIELT_BUTTON:
+				btn = (SButton*)m_elts[id];
 				btn->text.setText(btn->font, text);
 				break;
-			case CButtonsMgr::GUIELT_LABEL:
-				lbl = (CButtonsMgr::SLabel *)m_elts[id].get();
+			case GUIELT_LABEL:
+				lbl = (SLabel*)m_elts[id];
 				lbl->text.setText(lbl->font, text);
 				if (unwrap) lbl->text.setFrame(100000, lbl->textStyle, true, true);
 				lbl->text.setFrame(lbl->w, lbl->textStyle, false, !unwrap);
 				break;
-			case CButtonsMgr::GUIELT_PROGRESS:
+			case GUIELT_PROGRESS:
 				break;
 		}
 	}
@@ -510,22 +503,22 @@ void CButtonsMgr::setText(s16 id, const wstringEx &text, u32 startline,bool unwr
 	if (id == -1) return;
 	if (id < (s32)m_elts.size())
 	{
-		CButtonsMgr::SLabel *lbl;
-		CButtonsMgr::SButton *btn;
-		switch (m_elts[id]->t)
+		SButton *btn = NULL;
+		SLabel *lbl = NULL;
+		switch(m_elts[id]->t)
 		{
-			case CButtonsMgr::GUIELT_BUTTON:
+			case GUIELT_BUTTON:
 				//((CButtonsMgr::SButton *)m_elts[id].get())->text = text;
-				btn = (CButtonsMgr::SButton *)m_elts[id].get();
+				btn = (SButton*)m_elts[id];
 				btn->text.setText(btn->font, text);
 				break;
-			case CButtonsMgr::GUIELT_LABEL:
-				lbl = (CButtonsMgr::SLabel *)m_elts[id].get();
+			case GUIELT_LABEL:
+				lbl = (SLabel*)m_elts[id];
 				lbl->text.setText(lbl->font, text, startline);
 				if (unwrap) lbl->text.setFrame(100000, lbl->textStyle, true, true);
 				lbl->text.setFrame(lbl->w, lbl->textStyle, false, !unwrap);
 				break;
-			case CButtonsMgr::GUIELT_PROGRESS:
+			case GUIELT_PROGRESS:
 				break;
 		}
 	}
@@ -541,8 +534,7 @@ void CButtonsMgr::setBtnTexture(s16 id, STexture &texNormal, STexture &texSelect
 
 	if (id < (s32)m_elts.size())
 	{
-		CButtonsMgr::SButton *b;
-		b = (CButtonsMgr::SButton *)m_elts[id].get();
+		SButton *b = (SButton*)m_elts[id];
 		b->tex = texSet;//change texture
 	}
 }
@@ -552,16 +544,16 @@ void CButtonsMgr::setTexture(s16 id, STexture &bg)
 	if (id == -1) return;
 	if (id < (s32)m_elts.size())
 	{
-		CButtonsMgr::SLabel *lbl;
-		switch (m_elts[id]->t)
+		SLabel *lbl = NULL;
+		switch(m_elts[id]->t)
 		{
-			case CButtonsMgr::GUIELT_BUTTON:
+			case GUIELT_BUTTON:
 				break;
-			case CButtonsMgr::GUIELT_LABEL:
-				lbl = (CButtonsMgr::SLabel *)m_elts[id].get();
+			case GUIELT_LABEL:
+				lbl = (SLabel*)m_elts[id];
 				lbl->texBg = bg;//change texture
 				break;
-			case CButtonsMgr::GUIELT_PROGRESS:
+			case GUIELT_PROGRESS:
 				break;
 		}
 	}
@@ -572,18 +564,18 @@ void CButtonsMgr::setTexture(s16 id, STexture &bg, int width, int height)
 	if (id == -1) return;
 	if (id < (s32)m_elts.size())
 	{
-		CButtonsMgr::SLabel *lbl;
-		switch (m_elts[id]->t)
+		SLabel *lbl = NULL;
+		switch(m_elts[id]->t)
 		{
-			case CButtonsMgr::GUIELT_BUTTON:
+			case GUIELT_BUTTON:
 				break;
-			case CButtonsMgr::GUIELT_LABEL:
-				lbl = (CButtonsMgr::SLabel *)m_elts[id].get();
+			case GUIELT_LABEL:
+				lbl = (SLabel*)m_elts[id];
 				lbl->texBg = bg;//change texture
 				lbl->w = width;
 				lbl->h = height;
 				break;
-			case CButtonsMgr::GUIELT_PROGRESS:
+			case GUIELT_PROGRESS:
 				break;
 		}
 	}
@@ -591,9 +583,9 @@ void CButtonsMgr::setTexture(s16 id, STexture &bg, int width, int height)
 
 void CButtonsMgr::setProgress(s16 id, float f, bool instant)
 {
-	if (m_elts[id]->t == CButtonsMgr::GUIELT_PROGRESS)
+	if(m_elts[id]->t == GUIELT_PROGRESS)
 	{
-		CButtonsMgr::SProgressBar *b = (CButtonsMgr::SProgressBar *)m_elts[id].get();
+		SProgressBar *b = (SProgressBar*)m_elts[id];
 		b->targetVal = std::min(std::max(0.f, f), 1.f);
 		if (instant) b->val = b->targetVal;
 	}
@@ -622,15 +614,15 @@ void CButtonsMgr::_drawBtn(CButtonsMgr::SButton &b, bool selected, bool click)
 	{
 		if (selected)
 		{
-			GX_InitTexObj(&texObjLeft, b.tex.leftSel.data.get(), b.tex.leftSel.width, b.tex.leftSel.height, b.tex.leftSel.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
-			GX_InitTexObj(&texObjCenter, b.tex.centerSel.data.get(), b.tex.centerSel.width, b.tex.centerSel.height, b.tex.centerSel.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
-			GX_InitTexObj(&texObjRight, b.tex.rightSel.data.get(), b.tex.rightSel.width, b.tex.rightSel.height, b.tex.rightSel.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+			GX_InitTexObj(&texObjLeft, b.tex.leftSel.data, b.tex.leftSel.width, b.tex.leftSel.height, b.tex.leftSel.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+			GX_InitTexObj(&texObjCenter, b.tex.centerSel.data, b.tex.centerSel.width, b.tex.centerSel.height, b.tex.centerSel.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+			GX_InitTexObj(&texObjRight, b.tex.rightSel.data, b.tex.rightSel.width, b.tex.rightSel.height, b.tex.rightSel.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		}
 		else
 		{
-			GX_InitTexObj(&texObjLeft, b.tex.left.data.get(), b.tex.left.width, b.tex.left.height, b.tex.left.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
-			GX_InitTexObj(&texObjCenter, b.tex.center.data.get(), b.tex.center.width, b.tex.center.height, b.tex.center.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
-			GX_InitTexObj(&texObjRight, b.tex.right.data.get(), b.tex.right.width, b.tex.right.height, b.tex.right.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+			GX_InitTexObj(&texObjLeft, b.tex.left.data, b.tex.left.width, b.tex.left.height, b.tex.left.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+			GX_InitTexObj(&texObjCenter, b.tex.center.data, b.tex.center.width, b.tex.center.height, b.tex.center.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+			GX_InitTexObj(&texObjRight, b.tex.right.data, b.tex.right.width, b.tex.right.height, b.tex.right.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		}
 		w = (float)(b.w / 2) * scaleX;
 		h = (float)(b.h / 2) * scaleY;
@@ -684,9 +676,9 @@ void CButtonsMgr::_drawBtn(CButtonsMgr::SButton &b, bool selected, bool click)
 	else if (!!b.tex.center.data && !!b.tex.centerSel.data)
 	{
 		if (selected)
-			GX_InitTexObj(&texObjLeft, b.tex.centerSel.data.get(), b.tex.centerSel.width, b.tex.centerSel.height, b.tex.centerSel.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+			GX_InitTexObj(&texObjLeft, b.tex.centerSel.data, b.tex.centerSel.width, b.tex.centerSel.height, b.tex.centerSel.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		else
-			GX_InitTexObj(&texObjLeft, b.tex.center.data.get(), b.tex.center.width, b.tex.center.height, b.tex.center.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+			GX_InitTexObj(&texObjLeft, b.tex.center.data, b.tex.center.width, b.tex.center.height, b.tex.center.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		w = (float)(b.w / 2) * scaleX;
 		h = (float)(b.h / 2) * scaleY;
 		GX_LoadTexObj(&texObjLeft, GX_TEXMAP0);
@@ -731,9 +723,9 @@ void CButtonsMgr::_drawLbl(CButtonsMgr::SLabel &b)
 	guMtxIdentity(modelViewMtx);
 	guMtxTransApply(modelViewMtx, modelViewMtx, b.pos.x, b.pos.y, 0.f);
 	GX_LoadPosMtxImm(modelViewMtx, GX_PNMTX0);
-	if (!!b.texBg.data)
+	if (b.texBg.data != NULL)
 	{
-		GX_InitTexObj(&texObj, b.texBg.data.get(), b.texBg.width, b.texBg.height, b.texBg.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+		GX_InitTexObj(&texObj, b.texBg.data, b.texBg.width, b.texBg.height, b.texBg.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		GX_LoadTexObj(&texObj, GX_TEXMAP0);
 		GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
 		GX_Position3f32(-w, -h, 0.f);
@@ -802,12 +794,12 @@ void CButtonsMgr::_drawPBar(const CButtonsMgr::SProgressBar &b)
 	{
 		GXTexObj texObjBg, texObjBgL, texObjBgR, texObjBar, texObjBarL, texObjBarR;
 		float w, h, wh, x1,x2, tx;
-		GX_InitTexObj(&texObjBarL, b.tex.leftSel.data.get(), b.tex.leftSel.width, b.tex.leftSel.height, b.tex.leftSel.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
-		GX_InitTexObj(&texObjBar, b.tex.centerSel.data.get(), b.tex.centerSel.width, b.tex.centerSel.height, b.tex.centerSel.format, GX_REPEAT, GX_CLAMP, GX_FALSE);
-		GX_InitTexObj(&texObjBarR, b.tex.rightSel.data.get(), b.tex.rightSel.width, b.tex.rightSel.height, b.tex.rightSel.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
-		GX_InitTexObj(&texObjBgL, b.tex.left.data.get(), b.tex.left.width, b.tex.left.height, b.tex.left.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
-		GX_InitTexObj(&texObjBg, b.tex.center.data.get(), b.tex.center.width, b.tex.center.height, b.tex.center.format, GX_REPEAT, GX_CLAMP, GX_FALSE);
-		GX_InitTexObj(&texObjBgR, b.tex.right.data.get(), b.tex.right.width, b.tex.right.height, b.tex.right.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+		GX_InitTexObj(&texObjBarL, b.tex.leftSel.data, b.tex.leftSel.width, b.tex.leftSel.height, b.tex.leftSel.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+		GX_InitTexObj(&texObjBar, b.tex.centerSel.data, b.tex.centerSel.width, b.tex.centerSel.height, b.tex.centerSel.format, GX_REPEAT, GX_CLAMP, GX_FALSE);
+		GX_InitTexObj(&texObjBarR, b.tex.rightSel.data, b.tex.rightSel.width, b.tex.rightSel.height, b.tex.rightSel.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+		GX_InitTexObj(&texObjBgL, b.tex.left.data, b.tex.left.width, b.tex.left.height, b.tex.left.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+		GX_InitTexObj(&texObjBg, b.tex.center.data, b.tex.center.width, b.tex.center.height, b.tex.center.format, GX_REPEAT, GX_CLAMP, GX_FALSE);
+		GX_InitTexObj(&texObjBgR, b.tex.right.data, b.tex.right.width, b.tex.right.height, b.tex.right.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		w = (float)(b.w / 2) * scaleX;
 		h = (float)(b.h / 2) * scaleY;
 		wh = (float)(b.h / 2) * scaleX;
@@ -931,12 +923,14 @@ void CButtonsMgr::draw(void)
 
 	for(s32 i = 0; i < (s32)m_elts.size(); ++i)
 	{
-		switch (m_elts[i]->t)
+		SButton *btn = NULL;
+		SLabel *lbl = NULL;
+		SProgressBar *prg = NULL;
+		switch(m_elts[i]->t)
 		{
-			case CButtonsMgr::GUIELT_BUTTON:
+			case GUIELT_BUTTON:
 			{
-				CButtonsMgr::SButton &b = (CButtonsMgr::SButton &)*m_elts[i];
-				
+				btn = (SButton*)m_elts[i];
 				bool drawSelected = false;
 				for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 				{
@@ -947,21 +941,21 @@ void CButtonsMgr::draw(void)
 					}
 				}
 
-				CButtonsMgr::_drawBtn(b, drawSelected, false);
-				if (b.click > 0.f)
-					CButtonsMgr::_drawBtn(b, true, true);
+				_drawBtn(*btn, drawSelected, false);
+				if (btn->click > 0.f)
+					_drawBtn(*btn, true, true);
 				break;
 			}
-			case CButtonsMgr::GUIELT_LABEL:
+			case GUIELT_LABEL:
 			{
-				CButtonsMgr::SLabel &b = (CButtonsMgr::SLabel &)*m_elts[i];
-				CButtonsMgr::_drawLbl(b);
+				lbl = (SLabel*)m_elts[i];
+				_drawLbl(*lbl);
 				break;
 			}
 			case CButtonsMgr::GUIELT_PROGRESS:
 			{
-				CButtonsMgr::SProgressBar &b = (CButtonsMgr::SProgressBar &)*m_elts[i];
-				CButtonsMgr::_drawPBar(b);
+				prg = (SProgressBar*)m_elts[i];
+				_drawPBar(*prg);
 				break;
 			}
 		}
