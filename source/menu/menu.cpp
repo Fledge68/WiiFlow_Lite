@@ -1668,60 +1668,59 @@ void CMenu::_initCF(void)
 		if (ageLock < 19)
 		{
 			int ageRated = min(max(gameAgeList.getInt(domain, id), 0), 19);
-
-			if(ageRated == 0 && (element->type == TYPE_WII_GAME || element->type == TYPE_CHANNEL))
+			if(ageRated == 0 && gametdb.IsLoaded() && (element->type == TYPE_WII_GAME || element->type == TYPE_CHANNEL))
 			{
-				GameXMLInfo gameinfo;
-				if(gametdb.IsLoaded() && gametdb.GetGameXMLInfo(id.c_str(), &gameinfo))
+				const char *RatingValue = NULL;
+				if(gametdb.GetRatingValue(id.c_str(), RatingValue))
 				{
-					switch(gameinfo.RatingType)
+					switch(gametdb.GetRating(id.c_str()))
 					{
 						case GAMETDB_RATING_TYPE_CERO:
-							if (gameinfo.RatingValue == "A")
+							if(RatingValue[0] == 'A')
 								ageRated = 3;
-							else if (gameinfo.RatingValue == "B")
+							else if(RatingValue[0] == 'B')
 								ageRated = 12;
-							else if (gameinfo.RatingValue == "D")
+							else if(RatingValue[0] == 'D')
 								ageRated = 15;
-							else if (gameinfo.RatingValue == "C")
+							else if(RatingValue[0] == 'C')
 								ageRated = 17;
-							else if (gameinfo.RatingValue == "Z")
+							else if(RatingValue[0] == 'Z')
 								ageRated = 18;
 							break;
 						case GAMETDB_RATING_TYPE_ESRB:
-							if (gameinfo.RatingValue == "E")
+							if(RatingValue[0] == 'E')
 								ageRated = 6;
-							else if (gameinfo.RatingValue == "EC")
+							else if(memcmp(RatingValue, "EC", 2) == 0)
 								ageRated = 3;
-							else if (gameinfo.RatingValue == "E10+")
+							else if(memcmp(RatingValue, "E10+", 4) == 0)
 								ageRated = 10;
-							else if (gameinfo.RatingValue == "T")
+							else if(RatingValue[0] == 'T')
 								ageRated = 13;
-							else if (gameinfo.RatingValue == "M")
+							else if(RatingValue[0] == 'M')
 								ageRated = 17;
-							else if (gameinfo.RatingValue == "AO")
+							else if(memcmp(RatingValue, "AO", 2) == 0)
 								ageRated = 18;
 							break;
 						case GAMETDB_RATING_TYPE_PEGI:
-							if (gameinfo.RatingValue == "3")
+							if(RatingValue[0] == '3')
 								ageRated = 3;
-							else if (gameinfo.RatingValue == "7")
+							else if(RatingValue[0] == '7')
 								ageRated = 7;
-							else if (gameinfo.RatingValue == "12")
+							else if(memcmp(RatingValue, "12", 2) == 0)
 								ageRated = 12;
-							else if (gameinfo.RatingValue == "16")
+							else if(memcmp(RatingValue, "16", 2) == 0)
 								ageRated = 16;
-							else if (gameinfo.RatingValue == "18")
+							else if(memcmp(RatingValue, "18", 2) == 0)
 								ageRated = 18;
 							break;
 						case GAMETDB_RATING_TYPE_GRB:
-							if (gameinfo.RatingValue == "A")
+							if(RatingValue[0] == 'A')
 								ageRated = 3;
-							else if (gameinfo.RatingValue == "12")
+							else if(memcmp(RatingValue, "12", 2) == 0)
 								ageRated = 12;
-							else if (gameinfo.RatingValue == "15")
+							else if(memcmp(RatingValue, "15", 2) == 0)
 								ageRated = 15;
-							else if (gameinfo.RatingValue == "18")
+							else if(memcmp(RatingValue, "18", 2) == 0)
 								ageRated = 18;
 							break;
 						default:

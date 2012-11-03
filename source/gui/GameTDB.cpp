@@ -31,7 +31,7 @@
 #include "text.hpp"
 #include "config/config.hpp"
 #include "gecko/gecko.h"
-
+#include "memory/mem2.hpp"
 #define NAME_OFFSET_DB	"gametdb_offsets.bin"
 #define MAXREADSIZE		1024*1024   //Cache size only for parsing the offsets: 1MB
 
@@ -54,12 +54,12 @@ static const ReplaceStruct Replacements[] =
 };
 
 GameTDB::GameTDB()
-	: isLoaded(false), isParsed(false), file(0), filepath(0), LangCode("EN"), GameNodeCache(0)
+	: isLoaded(false), isParsed(false), file(0), filepath(0), LangCode("EN"), GameNodeCache(NULL)
 {
 }
 
 GameTDB::GameTDB(const char *filepath)
-	: isLoaded(false), isParsed(false), file(0), filepath(0), LangCode("EN"), GameNodeCache(0)
+	: isLoaded(false), isParsed(false), file(0), filepath(0), LangCode("EN"), GameNodeCache(NULL)
 {
 	OpenFile(filepath);
 }
@@ -108,7 +108,7 @@ void GameTDB::CloseFile()
 	OffsetMap.clear();
 
 	if(GameNodeCache)
-		delete [] GameNodeCache;
+		MEM2_free(GameNodeCache);
 	GameNodeCache = NULL;
 
 	if(file)
@@ -143,24 +143,22 @@ bool GameTDB::LoadGameOffsets(const char *path)
 		bool result = ParseFile();
 		if(result)
 			SaveGameOffsets(OffsetDBPath.c_str());
-
 		return result;
 	}
 
-    u64 ExistingVersion = GetGameTDBVersion();
-    u64 Version = 0;
-    u32 NodeCount = 0;
+	u64 ExistingVersion = GetGameTDBVersion();
+	u64 Version = 0;
+	u32 NodeCount = 0;
 
 	fread(&Version, 1, sizeof(Version), fp);
 
 	if(ExistingVersion != Version)
 	{
-	fclose(fp);
-	bool result = ParseFile();
-	if(result)
-		SaveGameOffsets(OffsetDBPath.c_str());
-
-	return result;
+		fclose(fp);
+		bool result = ParseFile();
+		if(result)
+			SaveGameOffsets(OffsetDBPath.c_str());
+		return result;
 	}
 
 	fread(&NodeCount, 1, sizeof(NodeCount), fp);
@@ -171,7 +169,6 @@ bool GameTDB::LoadGameOffsets(const char *path)
 		bool result = ParseFile();
 		if(result)
 			SaveGameOffsets(OffsetDBPath.c_str());
-
 		return result;
 	}
 
@@ -183,7 +180,6 @@ bool GameTDB::LoadGameOffsets(const char *path)
 		bool result = ParseFile();
 		if(result)
 			SaveGameOffsets(OffsetDBPath.c_str());
-
 		return result;
 	}
 
@@ -262,13 +258,13 @@ char *GameTDB::LoadGameNode(const char *id)
 	if(!offset)
 		return NULL;
 
-	char *data = new (std::nothrow) char[offset->nodesize+1];
+	char *data = (char*)MEM2_alloc(offset->nodesize+1);
 	if(!data)
 		return NULL;
 
 	if((read = GetData(data, offset->gamenode, offset->nodesize)) != offset->nodesize)
 	{
-		delete [] data;
+		MEM2_free(data);
 		return NULL;
 	}
 
@@ -281,23 +277,21 @@ char *GameTDB::GetGameNode(const char *id)
 {
 	char *data = NULL;
 
-	if(GameNodeCache != 0 && strncmp(id, GameIDCache, strlen(GameIDCache)) == 0)
+	if(GameNodeCache != NULL && strncmp(id, GameIDCache, strlen(GameIDCache)) == 0)
 	{
-		data = new (std::nothrow) char[strlen(GameNodeCache)+1];
+		data = (char*)MEM2_alloc(strlen(GameNodeCache)+1);
 		if(data)
 			strcpy(data, GameNodeCache);
 	}
 	else
 	{
 		if(GameNodeCache)
-			delete [] GameNodeCache;
-
+			MEM2_free(GameNodeCache);
 		GameNodeCache = LoadGameNode(id);
-
 		if(GameNodeCache)
 		{
 			snprintf(GameIDCache, sizeof(GameIDCache), id);
-			data = new (std::nothrow) char[strlen(GameNodeCache)+1];
+			data = (char*)MEM2_alloc(strlen(GameNodeCache)+1);
 			if(data)
 				strcpy(data, GameNodeCache);
 		}
@@ -317,7 +311,7 @@ GameOffsets *GameTDB::GetGameOffset(const char *gameID)
 	return 0;
 }
 
-static inline char *CleanText(char *in_text)
+static inline char *CleanText(char * &in_text)
 {
 	if(!in_text)
 		return NULL;
@@ -409,7 +403,7 @@ bool GameTDB::ParseFile()
 	if(!file)
 		return false;
 
-	char *Line = new (std::nothrow) char[MAXREADSIZE+1];
+	char *Line = (char*)MEM2_alloc(MAXREADSIZE+1);
 	if(!Line)
 		return false;
 
@@ -454,59 +448,48 @@ bool GameTDB::ParseFile()
 			OffsetMap[size].nodesize = (gameEndNode-gameNode);
 			gameNode = gameEndNode;
 		}
-
 		if(readnew)
 			continue;
-
 		currentPos += read;
 	}
-
-	delete [] Line;
-
+	MEM2_free(Line);
 	return true;
 }
 
-bool GameTDB::FindTitle(char *data, string & title, string langCode)
+bool GameTDB::FindTitle(char *data, const char * &title, const string &langCode)
 {
 	char *language = SeekLang(data, langCode.c_str());
-	if(!language)
+	if(language == NULL)
 	{
 		language = SeekLang(data, "EN");
-		if(!language)
+		if(language == NULL)
 			return false;
 	}
+	title = GetNodeText(language, "<title>", "</title>");
 
-	char *the_title = GetNodeText(language, "<title>", "</title>");
-	if(!the_title)
+	if(title == NULL)
 		return false;
-
-	char tmp[64];
-	strncpy(tmp, the_title, sizeof(tmp) - 1);
-	tmp[sizeof(tmp) - 1] = '\0';
-	title=tmp;
 	return true;
 }
 
-bool GameTDB::GetTitle(const char *id, string & title)
+bool GameTDB::GetTitle(const char *id, const char * &title)
 {
-	title = "";
-	if(!id)
+	title = NULL;
+	if(id == NULL)
 		return false;
 
 	char *data = GetGameNode(id);
-	if(!data)
+	if(data == NULL)
 		return false;
-
 	bool retval = FindTitle(data, title, LangCode);
-
-	delete [] data;
+	MEM2_free(data);
 
 	return retval;
 }
 
-bool GameTDB::GetSynopsis(const char *id, string & synopsis)
+bool GameTDB::GetSynopsis(const char *id, const char * &synopsis)
 {
-	synopsis = "";
+	synopsis = NULL;
 	if(!id)
 		return false;
 
@@ -515,99 +498,73 @@ bool GameTDB::GetSynopsis(const char *id, string & synopsis)
 		return false;
 
 	char *language = SeekLang(data, LangCode.c_str());
-	if(!language)
+	if(language == NULL)
 	{
 		language = SeekLang(data, "EN");
-		if(!language)
+		if(language == NULL)
 		{
-			delete [] data;
+			MEM2_free(data);
 			return false;
 		}
 	}
+	synopsis = GetNodeText(language, "<synopsis>", "</synopsis>");
+	MEM2_free(data);
 
-	char *the_synopsis = GetNodeText(language, "<synopsis>", "</synopsis>");
-	if(!the_synopsis)
-	{
-		delete [] data;
+	if(synopsis == NULL)
 		return false;
-	}
-
-	synopsis = the_synopsis;
-
-	delete [] data;
-
 	return true;
 }
 
-bool GameTDB::GetRegion(const char *id, string & region)
+bool GameTDB::GetRegion(const char *id, const char * &region)
 {
-	region = "";
+	region = NULL;
 	if(!id)
 		return false;
 
 	char *data = GetGameNode(id);
 	if(!data)
 		return false;
+	region = GetNodeText(data, "<region>", "</region>");
+	MEM2_free(data);
 
-	char *the_region = GetNodeText(data, "<region>", "</region>");
-	if(!the_region)
-	{
-		delete [] data;
+	if(region == NULL)
 		return false;
-	}
-
-	region = the_region;
-
-	delete [] data;
-
 	return true;
 }
 
-bool GameTDB::GetDeveloper(const char *id, string & dev)
+bool GameTDB::GetDeveloper(const char *id, const char * &dev)
 {
-	dev = "";
+	dev = NULL;
+	if(id == NULL)
+		return false;
+
+	char *data = GetGameNode(id);
+	if(data == NULL)
+		return false;
+
+	dev = GetNodeText(data, "<developer>", "</developer>");
+	MEM2_free(data);
+
+	if(dev == NULL)
+		return false;
+	return true;
+}
+
+bool GameTDB::GetPublisher(const char *id, const char * &pub)
+{
+	pub = NULL;
 	if(!id)
 		return false;
 
 	char *data = GetGameNode(id);
-	if(!data)
+	if(data == NULL)
 		return false;
 
-	char *the_dev = GetNodeText(data, "<developer>", "</developer>");
-	if(!the_dev)
-	{
-		delete [] data;
+	pub = GetNodeText(data, "<publisher>", "</publisher>");
+	MEM2_free(data);
+
+	if(pub == NULL)
 		return false;
-	}
-
-	dev = the_dev;
-
-	delete [] data;
-
-	return true;
-}
-
-bool GameTDB::GetPublisher(const char *id, string & pub)
-{
-	pub = "";
-	if(!id)
-		return false;
-
-	char *data = GetGameNode(id);
-	if(!data)
-		return false;
-
-	char *the_pub = GetNodeText(data, "<publisher>", "</publisher>");
-	if(!the_pub)
-	{
-		delete [] data;
-		return false;
-	}
-
-	pub = the_pub;
-
-	delete [] data;
-
 	return true;
 }
 
@@ -623,7 +580,7 @@ u32 GameTDB::GetPublishDate(const char *id)
 	char *year_string = GetNodeText(data, "<date year=\"", "/>");
 	if(!year_string)
 	{
-		delete [] data;
+		MEM2_free(data);
 		return 0;
 	}
 
@@ -634,7 +591,7 @@ u32 GameTDB::GetPublishDate(const char *id)
 	char *month_string = strstr(year_string, "month=\"");
 	if(!month_string)
 	{
-		delete [] data;
+		MEM2_free(data);
 		return 0;
 	}
 
@@ -645,7 +602,7 @@ u32 GameTDB::GetPublishDate(const char *id)
 	char *day_string = strstr(month_string, "day=\"");
 	if(!day_string)
 	{
-		delete [] data;
+		MEM2_free(data);
 		return 0;
 	}
 
@@ -653,60 +610,27 @@ u32 GameTDB::GetPublishDate(const char *id)
 
 	day = atoi(day_string);
 
-	delete [] data;
+	MEM2_free(data);
 
 	return ((year & 0xFFFF) << 16 | (month & 0xFF) << 8 | (day & 0xFF));
 }
 
-bool GameTDB::GetGenres(const char *id, string & gen)
+bool GameTDB::GetGenres(const char *id, const char * &gen)
 {
-	vector<string> genre;
+	gen = NULL;
 
-	gen = "";
-	if(!id)
+	if(id == NULL)
 		return false;
 
 	char *data = GetGameNode(id);
-	if(!data)
+	if(data == NULL)
 		return false;
 
-	char *the_genre = GetNodeText(data, "<genre>", "</genre>");
-	if(!the_genre)
-	{
-		delete [] data;
+	gen = GetNodeText(data, "<genre>", "</genre>");
+	MEM2_free(data);
+
+	if(gen == NULL)
 		return false;
-	}
-
-	u32 genre_num = 0;
-	const char *ptr = the_genre;
-
-	while(*ptr != '\0')
-	{
-		if(genre_num >= genre.size())
-			genre.resize(genre_num+1);
-
-		if(*ptr == ',' || *ptr == '/' || *ptr == ';')
-		{
-			ptr++;
-			while(*ptr == ' ')
-				ptr++;
-			genre_num++;
-			continue;
-		}
-
-		if(genre[genre_num].size() == 0)
-			genre[genre_num].push_back(toupper((int)*ptr));
-		else
-			genre[genre_num].push_back(*ptr);
-
-		++ptr;
-	}
-	genre[genre_num].push_back('\0');
-
-	delete [] data;
-
-	gen = vectorToString(genre, ", ");
-
 	return true;
 }
 
@@ -743,7 +667,7 @@ int GameTDB::GetRating(const char *id)
 	char *rating_text = GetNodeText(data, "<rating type=\"", "/>");
 	if(!rating_text)
 	{
-		delete [] data;
+		MEM2_free(data);
 		return rating;
 	}
 
@@ -756,14 +680,14 @@ int GameTDB::GetRating(const char *id)
 	else if(strncmp(rating_text, "GRB", 4) == 0)
 		rating = GAMETDB_RATING_TYPE_GRB;
 
-	delete [] data;
+	MEM2_free(data);
 
 	return rating;
 }
 
-bool GameTDB::GetRatingValue(const char *id, string & rating_value)
+bool GameTDB::GetRatingValue(const char *id, const char * &rating_value)
 {
-	rating_value = "";
+	rating_value = NULL;
 	if(!id)
 		return false;
 
@@ -774,21 +698,15 @@ bool GameTDB::GetRatingValue(const char *id, string & rating_value)
 	char *rating_text = GetNodeText(data, "<rating type=\"", "/>");
 	if(!rating_text)
 	{
-		delete [] data;
+		MEM2_free(data);
 		return false;
 	}
 
-	char *value_text = GetNodeText(rating_text, "value=\"", "\"");
-	if(!value_text)
-	{
-		delete [] data;
+	rating_value = GetNodeText(rating_text, "value=\"", "\"");
+	MEM2_free(data);
+
+	if(rating_value == NULL)
 		return false;
-	}
-
-	rating_value = value_text;
-
-	delete [] data;
-
 	return true;
 }
 
@@ -805,7 +723,7 @@ int GameTDB::GetRatingDescriptors(const char *id, vector<string> & desc_list)
 	char *descriptor_text = GetNodeText(data, "<descriptor>", "</rating>");
 	if(!descriptor_text)
 	{
-		delete [] data;
+		MEM2_free(data);
 		return -1;
 	}
 
@@ -831,7 +749,7 @@ int GameTDB::GetRatingDescriptors(const char *id, vector<string> & desc_list)
 		++descriptor_text;
 	}
 
-	delete [] data;
+	MEM2_free(data);
 
 	return desc_list.size();
 }
@@ -850,7 +768,7 @@ int GameTDB::GetWifiPlayers(const char *id)
 	char *PlayersNode = GetNodeText(data, "<wi-fi players=\"", "\">");
 	if(!PlayersNode)
 	{
-		delete [] data;
+		MEM2_free(data);
 		return players;
 	}
 
@@ -872,7 +790,7 @@ int GameTDB::GetWifiFeatures(const char *id, vector<string> & feat_list)
 	char *feature_text = GetNodeText(data, "<feature>", "</wi-fi>");
 	if(!feature_text)
 	{
-		delete [] data;
+		MEM2_free(data);
 		return -1;
 	}
 
@@ -902,7 +820,7 @@ int GameTDB::GetWifiFeatures(const char *id, vector<string> & feat_list)
 		++feature_text;
 	}
 
-	delete [] data;
+	MEM2_free(data);
 
 	return feat_list.size();
 }
@@ -921,7 +839,7 @@ int GameTDB::GetPlayers(const char *id)
 	char *PlayersNode = GetNodeText(data, "<input players=\"", "\">");
 	if(!PlayersNode)
 	{
-		delete [] data;
+		MEM2_free(data);
 		return players;
 	}
 
@@ -943,7 +861,7 @@ int GameTDB::GetAccessories(const char *id, vector<Accessory> & acc_list)
 	char *ControlsNode = GetNodeText(data, "<control type=\"", "</input>");
 	if(!ControlsNode)
 	{
-		delete [] data;
+		MEM2_free(data);
 		return -1;
 	}
 
@@ -961,7 +879,7 @@ int GameTDB::GetAccessories(const char *id, vector<Accessory> & acc_list)
 		char *requiredField = strstr(ControlsNode, "required=\"");
 		if(!requiredField)
 		{
-			delete [] data;
+			MEM2_free(data);
 			return -1;
 		}
 
@@ -976,7 +894,7 @@ int GameTDB::GetAccessories(const char *id, vector<Accessory> & acc_list)
 		list_num++;
 	}
 
-	delete [] data;
+	MEM2_free(data);
 
 	return acc_list.size();
 }
@@ -1010,7 +928,7 @@ u32 GameTDB::GetCaseColor(const char *id)
 	if(color != 0xffffffff)
 		gprintf("GameTDB: Found alternate color(%x) for: %s\n", color, id);
 
-	delete [] data;
+	MEM2_free(data);
 	return color;
 }
 
@@ -1031,39 +949,13 @@ int GameTDB::GetCaseVersions(const char *id)
 	char *PlayersNode = GetNodeText(data, "case versions=\"", "\"");
 	if(!PlayersNode)
 	{
-		delete [] data;
+		MEM2_free(data);
 		return altcase;
 	}
 
 	altcase = atoi(PlayersNode);
 
 	return altcase;
-}
-
-bool GameTDB::GetGameXMLInfo(const char *id, GameXMLInfo *gameInfo)
-{
-	if(!id || !gameInfo)
-		return false;
-
-	gameInfo->GameID = id;
-
-	GetTitle(id, gameInfo->Title);
-	GetSynopsis(id, gameInfo->Synopsis);
-	GetRegion(id, gameInfo->Region);
-	GetDeveloper(id, gameInfo->Developer);
-	GetPublisher(id, gameInfo->Publisher);
-	gameInfo->PublishDate = GetPublishDate(id);
-	GetGenres(id, gameInfo->Genres);
-	gameInfo->RatingType = GetRating(id);
-	GetRatingValue(id, gameInfo->RatingValue);
-	GetRatingDescriptors(id, gameInfo->RatingDescriptors);
-	gameInfo->WifiPlayers = GetWifiPlayers(id);
-	GetWifiFeatures(id, gameInfo->WifiFeatures);
-	gameInfo->Players = GetPlayers(id);
-	GetAccessories(id, gameInfo->Accessories);
-	gameInfo->CaseColor = GetCaseColor(id);
-
-	return true;
 }
 
 bool GameTDB::IsLoaded()
