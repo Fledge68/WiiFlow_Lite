@@ -255,39 +255,39 @@ void CMenu::_showGameInfo(void)
 	}
 }
 
-void CMenu::_initGameInfoMenu(CMenu::SThemeData &theme)
+void CMenu::_initGameInfoMenu()
 {
 	STexture emptyTex;
-	_addUserLabels(theme, m_gameinfoLblUser, 0, 1, "GAMEINFO");
-	_addUserLabels(theme, m_gameinfoLblUser, 2, 1, "GAMEINFO");
+	_addUserLabels(m_gameinfoLblUser, 0, 1, "GAMEINFO");
+	_addUserLabels(m_gameinfoLblUser, 2, 1, "GAMEINFO");
 	
-	m_gameinfoBg = _texture(theme.texSet, "GAMEINFO/BG", "texture", theme.bg);
-	m_gameinfoLblID = _addText(theme, "GAMEINFO/GAMEID", theme.txtFont, L"", 40, 110, 420, 75, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
-	m_gameinfoLblGenre = _addText(theme, "GAMEINFO/GENRE", theme.txtFont, L"", 40, 140, 460, 56, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
-	m_gameinfoLblDev = _addText(theme, "GAMEINFO/DEVELOPER", theme.txtFont, L"", 40, 170, 460, 56, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
-	m_gameinfoLblPublisher = _addText(theme, "GAMEINFO/PUBLISHER", theme.txtFont, L"", 40, 200, 460, 56, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
-	m_gameinfoLblRlsdate = _addText(theme, "GAMEINFO/RLSDATE", theme.txtFont, L"", 40, 230, 460, 56, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
-	m_gameinfoLblRegion = _addText(theme, "GAMEINFO/REGION", theme.txtFont, L"", 40, 260, 460, 56, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
-	m_gameinfoLblRating = _addLabel(theme, "GAMEINFO/RATING", theme.titleFont, L"", 550, 380, 48, 60, theme.titleFontColor, 0, m_rating);
-	m_gameinfoLblSynopsis = _addText(theme, "GAMEINFO/SYNOPSIS", theme.txtFont, L"", 40, 120, 560, 280, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
-	m_gameinfoLblWifiplayers = _addLabel(theme, "GAMEINFO/WIFIPLAYERS", theme.txtFont, L"", 550, 110, 68, 60, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP,m_wifi);
+	m_gameinfoBg = _texture("GAMEINFO/BG", "texture", theme.bg, false);
+	m_gameinfoLblID = _addText("GAMEINFO/GAMEID", theme.txtFont, L"", 40, 110, 420, 75, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
+	m_gameinfoLblGenre = _addText("GAMEINFO/GENRE", theme.txtFont, L"", 40, 140, 460, 56, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
+	m_gameinfoLblDev = _addText("GAMEINFO/DEVELOPER", theme.txtFont, L"", 40, 170, 460, 56, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
+	m_gameinfoLblPublisher = _addText("GAMEINFO/PUBLISHER", theme.txtFont, L"", 40, 200, 460, 56, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
+	m_gameinfoLblRlsdate = _addText("GAMEINFO/RLSDATE", theme.txtFont, L"", 40, 230, 460, 56, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
+	m_gameinfoLblRegion = _addText("GAMEINFO/REGION", theme.txtFont, L"", 40, 260, 460, 56, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
+	m_gameinfoLblRating = _addLabel("GAMEINFO/RATING", theme.titleFont, L"", 550, 380, 48, 60, theme.titleFontColor, 0, m_rating);
+	m_gameinfoLblSynopsis = _addText("GAMEINFO/SYNOPSIS", theme.txtFont, L"", 40, 120, 560, 280, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
+	m_gameinfoLblWifiplayers = _addLabel("GAMEINFO/WIFIPLAYERS", theme.txtFont, L"", 550, 110, 68, 60, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP,m_wifi);
 
-	_addUserLabels(theme, m_gameinfoLblUser, 1, 1, "GAMEINFO");
-	_addUserLabels(theme, m_gameinfoLblUser, 3, 2, "GAMEINFO");
+	_addUserLabels(m_gameinfoLblUser, 1, 1, "GAMEINFO");
+	_addUserLabels(m_gameinfoLblUser, 3, 2, "GAMEINFO");
 
-	m_gameinfoLblTitle = _addLabel(theme, "GAMEINFO/TITLE", theme.titleFont, L"", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_gameinfoLblTitle = _addLabel("GAMEINFO/TITLE", theme.titleFont, L"", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 
 	for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControlsReq); ++i)
 	{
 		string dom(sfmt("GAMEINFO/CONTROLSREQ%i", i + 1));
-		m_gameinfoLblControlsReq[i] = _addLabel(theme, dom.c_str(), theme.txtFont, L"", 40 + (i*60), 310, 60, 40, theme.txtFontColor, 0, emptyTex);
+		m_gameinfoLblControlsReq[i] = _addLabel(dom.c_str(), theme.txtFont, L"", 40 + (i*60), 310, 60, 40, theme.txtFontColor, 0, emptyTex);
 		_setHideAnim(m_gameinfoLblControlsReq[i], dom.c_str(), 0, -100, 0.f, 0.f);
 	}
 
 	for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControls); ++i)
 	{
 		string dom(sfmt("GAMEINFO/CONTROLS%i", i + 1));
-		m_gameinfoLblControls[i] = _addLabel(theme, dom.c_str(), theme.txtFont, L"", 40 + (i*60), 380, 60, 40, theme.txtFontColor, 0, emptyTex);
+		m_gameinfoLblControls[i] = _addLabel(dom.c_str(), theme.txtFont, L"", 40 + (i*60), 380, 60, 40, theme.txtFontColor, 0, emptyTex);
 		_setHideAnim(m_gameinfoLblControls[i], dom.c_str(), 0, -100, 0.f, 0.f);
 	}
 	// 

@@ -31,12 +31,11 @@
 #include <stdio.h>
 #include <ogc/conf.h>
 #include <ogc/isfs.h>
-
+#include <malloc.h>
 #include "banner.h"
 #include "MD5.h"
 #include "gecko/gecko.h"
 #include "loader/fs.h"
-#include "memory/smartptr.hpp"
 #include "unzip/U8Archive.h"
 
 #define IMET_OFFSET			0x40

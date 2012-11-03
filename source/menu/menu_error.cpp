@@ -59,15 +59,15 @@ void CMenu::_showError(void)
 			m_btnMgr.show(m_errorLblUser[i]);
 }
 
-void CMenu::_initErrorMenu(CMenu::SThemeData &theme)
+void CMenu::_initErrorMenu()
 {
 	STexture texIcon;
 
 	texIcon.fromPNG(error_png);
-	_addUserLabels(theme, m_errorLblUser, ARRAY_SIZE(m_errorLblUser), "ERROR");
-	m_errorBg = _texture(theme.texSet, "ERROR/BG", "texture", theme.bg);
-	m_errorLblMessage = _addLabel(theme, "ERROR/MESSAGE", theme.lblFont, L"", 112, 20, 500, 440, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_errorLblIcon = _addLabel(theme, "ERROR/ICON", theme.lblFont, L"", 40, 200, 64, 64, theme.lblFontColor, 0, texIcon);
+	_addUserLabels(m_errorLblUser, ARRAY_SIZE(m_errorLblUser), "ERROR");
+	m_errorBg = _texture("ERROR/BG", "texture", theme.bg, false);
+	m_errorLblMessage = _addLabel("ERROR/MESSAGE", theme.lblFont, L"", 112, 20, 500, 440, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_errorLblIcon = _addLabel("ERROR/ICON", theme.lblFont, L"", 40, 200, 64, 64, theme.lblFontColor, 0, texIcon);
 	// 
 	_setHideAnim(m_errorLblMessage, "ERROR/MESSAGE", 0, 0, 0.f, 0.f);
 	_setHideAnim(m_errorLblIcon, "ERROR/ICON", -50, 0, 0.f, 0.f);

@@ -563,33 +563,33 @@ const char *CMenu::_cfDomain(bool selected)
 	}
 }
 
-void CMenu::_initCFThemeMenu(CMenu::SThemeData &theme)
+void CMenu::_initCFThemeMenu()
 {
 	STexture emptyTex;
 	string domain;
 	int x;
 	int y;
 
-	m_cfThemeBtnAlt = _addButton(theme, "CFTHEME/ALT_BTN", theme.btnFont, L"", 20, 20, 60, 30, theme.btnFontColor);
-	m_cfThemeBtnSelect = _addButton(theme, "CFTHEME/SELECT_BTN", theme.btnFont, L"", 80, 20, 60, 30, theme.btnFontColor);
-	m_cfThemeBtnWide = _addButton(theme, "CFTHEME/WIDE_BTN", theme.btnFont, L"", 20, 60, 60, 30, theme.btnFontColor);
-	m_cfThemeLblParam = _addLabel(theme, "CFTHEME/PARAM_BTN", theme.btnFont, L"", 176, 20, 300, 36, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_cfThemeBtnParamM = _addPicButton(theme, "CFTHEME/PARAM_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 140, 20, 36, 36);
-	m_cfThemeBtnParamP = _addPicButton(theme, "CFTHEME/PARAM_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 476, 20, 36, 36);
-	m_cfThemeBtnSave = _addButton(theme, "CFTHEME/SAVE_BTN", theme.btnFont, L"Save", 530, 20, 80, 40, theme.btnFontColor);
-	m_cfThemeBtnCancel = _addButton(theme, "CFTHEME/CANCEL_BTN", theme.btnFont, L"Cancel", 530, 70, 80, 40, theme.btnFontColor);
+	m_cfThemeBtnAlt = _addButton("CFTHEME/ALT_BTN", theme.btnFont, L"", 20, 20, 60, 30, theme.btnFontColor);
+	m_cfThemeBtnSelect = _addButton("CFTHEME/SELECT_BTN", theme.btnFont, L"", 80, 20, 60, 30, theme.btnFontColor);
+	m_cfThemeBtnWide = _addButton("CFTHEME/WIDE_BTN", theme.btnFont, L"", 20, 60, 60, 30, theme.btnFontColor);
+	m_cfThemeLblParam = _addLabel("CFTHEME/PARAM_BTN", theme.btnFont, L"", 176, 20, 300, 36, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_cfThemeBtnParamM = _addPicButton("CFTHEME/PARAM_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 140, 20, 36, 36);
+	m_cfThemeBtnParamP = _addPicButton("CFTHEME/PARAM_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 476, 20, 36, 36);
+	m_cfThemeBtnSave = _addButton("CFTHEME/SAVE_BTN", theme.btnFont, L"Save", 530, 20, 80, 40, theme.btnFontColor);
+	m_cfThemeBtnCancel = _addButton("CFTHEME/CANCEL_BTN", theme.btnFont, L"Cancel", 530, 70, 80, 40, theme.btnFontColor);
 	// 
 	for (int i = 0; i < 16; ++i)
 	{
 		domain = sfmt("CFTHEME/VAL%i%c_%%s", i / 3 + 1, (char)(i % 3) + 'A');
 		x = 20 + (i / 4) * 150;
 		y = 340 + (i % 4) * 32;
-		m_cfThemeLblVal[i] = _addLabel(theme, fmt(domain.c_str(), "BTN"), theme.btnFont, L"", x + 32, y, 86, 32, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-		m_cfThemeBtnValM[i] = _addPicButton(theme, fmt(domain.c_str(), "MINUS"), theme.btnTexMinus, theme.btnTexMinusS, x, y, 32, 32);
-		m_cfThemeBtnValP[i] = _addPicButton(theme, fmt(domain.c_str(), "PLUS"), theme.btnTexPlus, theme.btnTexPlusS, x + 118, y, 32, 32);
+		m_cfThemeLblVal[i] = _addLabel(fmt(domain.c_str(), "BTN"), theme.btnFont, L"", x + 32, y, 86, 32, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+		m_cfThemeBtnValM[i] = _addPicButton(fmt(domain.c_str(), "MINUS"), theme.btnTexMinus, theme.btnTexMinusS, x, y, 32, 32);
+		m_cfThemeBtnValP[i] = _addPicButton(fmt(domain.c_str(), "PLUS"), theme.btnTexPlus, theme.btnTexPlusS, x + 118, y, 32, 32);
 	}
 	for (int i = 0; i < 4; ++i)
-		m_cfThemeLblValTxt[i] = _addLabel(theme, fmt("CFTHEME/VAL%i_LBL", i + 1), theme.lblFont, L"", 20 + i * 150, 100, 150, 240, theme.lblFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_BOTTOM, emptyTex);
+		m_cfThemeLblValTxt[i] = _addLabel(fmt("CFTHEME/VAL%i_LBL", i + 1), theme.lblFont, L"", 20 + i * 150, 100, 150, 240, theme.lblFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_BOTTOM, emptyTex);
 	_hideCFTheme(true);
 }
 

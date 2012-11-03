@@ -8,7 +8,6 @@
 
 #include "menu.hpp"
 #include "types.h"
-#include "const_str.hpp"
 #include "banner/BannerWindow.hpp"
 #include "booter/external_booter.hpp"
 #include "channel/channel_launcher.h"
@@ -440,18 +439,18 @@ void CMenu::_game(bool launch)
 		else if(BTN_MINUS_PRESSED)
 		{
 			const char *videoPath = fmt("%s/%.3s.thp", m_videoDir.c_str(), m_cf.getId().c_str());
-
 			FILE *file = fopen(videoPath, "r");
 			if(file)
 			{
+				fclose(file);
 				MusicPlayer.Stop();
 				m_gameSound.Stop();
 				m_banner.SetShowBanner(false);
-				fclose(file);
 				_hideGame();
 				/* Backup Background */
 				STexture Current_LQ_BG = m_lqBg;
 				STexture Current_HQ_BG = m_curBg;
+				/* Set Background empty */
 				STexture EmptyBG;
 				_setBg(EmptyBG, EmptyBG);
 				/* Lets play the movie */
@@ -467,14 +466,15 @@ void CMenu::_game(bool launch)
 					/* Draw movie BG and render */
 					_drawBg();
 					m_vid.render();
-					m_curBg.data.release();
+					free(m_curBg.data);
 					/* Check if we want to stop */
 					WPAD_ScanPads();
 					PAD_ScanPads();
 					ButtonsPressed();
 				}
 				movie.Stop();
-				m_curBg.data.release();
+				free(m_curBg.data);
+				m_curBg.data = NULL;
 				/* Finished, so lets re-setup the background */
 				_setBg(Current_HQ_BG, Current_LQ_BG);
 				_updateBg();
@@ -1040,7 +1040,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	int aspectRatio = min((u32)m_gcfg2.getInt(id, "aspect_ratio", 0), ARRAY_SIZE(CMenu::_AspectRatio) - 1u)-1;
 	u32 returnTo = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
 
-	SmartBuf cheatFile;
+	u8 *cheatFile = NULL;
 	u32 cheatSize = 0;
 	if(!WII_Launch)
 	{
@@ -1127,7 +1127,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	else
 	{
 		setLanguage(language);
-		ocarina_load_code(cheatFile.get(), cheatSize);
+		ocarina_load_code(cheatFile, cheatSize);
 		Identify(gameTitle);
 		ExternalBooter_ChannelSetup(gameTitle);
 		WiiFlow_ExternalBooter(videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, 0, TYPE_CHANNEL);
@@ -1293,7 +1293,8 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		debuggerselect = false;
 	hooktype = (u32)m_gcfg2.getInt(id, "hooktype", 0); // hooktype is defined in patchcode.h
 
-	SmartBuf cheatFile, gameconfig;
+	u8 *cheatFile = NULL;
+	u8 *gameconfig = NULL;
 	u32 cheatSize = 0, gameconfigSize = 0, returnTo = 0;
 
 	m_cfg.setString("GAMES", "current_item", id);
@@ -1309,7 +1310,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	if(cheat)
 		_loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", id.c_str()));
 	_loadFile(gameconfig, gameconfigSize, m_txtCheatDir.c_str(), "gameconfig.txt");
-	if(!debuggerselect && !cheatFile.get())
+	if(!debuggerselect && cheatFile == NULL)
 		hooktype = 0;
 
 	if(rtrn != NULL && strlen(rtrn) == 4)
@@ -1363,21 +1364,21 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			Sys_Exit();
 		WBFS_Close();
 	}
-	if(cheatFile.get() != NULL)
+	if(cheatFile != NULL)
 	{
-		ocarina_load_code(cheatFile.get(), cheatSize);
-		cheatFile.release();
+		ocarina_load_code(cheatFile, cheatSize);
+		free(cheatFile);
 	}
-	if(gameconfig.get() != NULL)
+	if(gameconfig != NULL)
 	{
-		app_gameconfig_load(id.c_str(), gameconfig.get(), gameconfigSize);
-		gameconfig.release();
+		app_gameconfig_load(id.c_str(), gameconfig, gameconfigSize);
+		free(gameconfig);
 	}
 	ExternalBooter_WiiGameSetup(wbfs_partition, dvd, id.c_str());
 	WiiFlow_ExternalBooter(videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, returnTo, TYPE_WII_GAME);
 }
 
-void CMenu::_initGameMenu(CMenu::SThemeData &theme)
+void CMenu::_initGameMenu()
 {
 	CColor fontColor(0xD0BFDFFF);
 	STexture texFavOn;
@@ -1409,23 +1410,23 @@ void CMenu::_initGameMenu(CMenu::SThemeData &theme)
 	texSettingsSel.fromPNG(btngamecfgs_png);
 	texToogleBanner.fromPNG(blank_png);
 
-	_addUserLabels(theme, m_gameLblUser, ARRAY_SIZE(m_gameLblUser), "GAME");
-	m_gameBg = _texture(theme.texSet, "GAME/BG", "texture", theme.bg);
-	if (m_theme.loaded() && STexture::TE_OK == bgLQ.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString("GAME/BG", "texture").c_str()), GX_TF_CMPR, ALLOC_MEM2, 64, 64))
+	_addUserLabels(m_gameLblUser, ARRAY_SIZE(m_gameLblUser), "GAME");
+	m_gameBg = _texture("GAME/BG", "texture", theme.bg, false);
+	if (m_theme.loaded() && STexture::TE_OK == bgLQ.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString("GAME/BG", "texture").c_str()), GX_TF_CMPR, 64, 64))
 		m_gameBgLQ = bgLQ;
 
-	m_gameBtnPlay = _addButton(theme, "GAME/PLAY_BTN", theme.btnFont, L"", 420, 344, 200, 56, theme.btnFontColor);
-	m_gameBtnBack = _addButton(theme, "GAME/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 56, theme.btnFontColor);
-	m_gameBtnFavoriteOn = _addPicButton(theme, "GAME/FAVORITE_ON", texFavOn, texFavOnSel, 460, 200, 48, 48);
-	m_gameBtnFavoriteOff = _addPicButton(theme, "GAME/FAVORITE_OFF", texFavOff, texFavOffSel, 460, 200, 48, 48);
-	m_gameBtnAdultOn = _addPicButton(theme, "GAME/ADULTONLY_ON", texAdultOn, texAdultOnSel, 532, 200, 48, 48);
-	m_gameBtnAdultOff = _addPicButton(theme, "GAME/ADULTONLY_OFF", texAdultOff, texAdultOffSel, 532, 200, 48, 48);
-	m_gameBtnSettings = _addPicButton(theme, "GAME/SETTINGS_BTN", texSettings, texSettingsSel, 460, 272, 48, 48);
-	m_gameBtnDelete = _addPicButton(theme, "GAME/DELETE_BTN", texDelete, texDeleteSel, 532, 272, 48, 48);
-	m_gameBtnBackFull = _addButton(theme, "GAME/BACK_FULL_BTN", theme.btnFont, L"", 100, 390, 200, 56, theme.btnFontColor);
-	m_gameBtnPlayFull = _addButton(theme, "GAME/PLAY_FULL_BTN", theme.btnFont, L"", 340, 390, 200, 56, theme.btnFontColor);
-	m_gameBtnToogle = _addPicButton(theme, "GAME/TOOGLE_BTN", texToogleBanner, texToogleBanner, 385, 31, 236, 127);
-	m_gameBtnToogleFull = _addPicButton(theme, "GAME/TOOGLE_FULL_BTN", texToogleBanner, texToogleBanner, 20, 12, 608, 344);
+	m_gameBtnPlay = _addButton("GAME/PLAY_BTN", theme.btnFont, L"", 420, 344, 200, 56, theme.btnFontColor);
+	m_gameBtnBack = _addButton("GAME/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 56, theme.btnFontColor);
+	m_gameBtnFavoriteOn = _addPicButton("GAME/FAVORITE_ON", texFavOn, texFavOnSel, 460, 200, 48, 48);
+	m_gameBtnFavoriteOff = _addPicButton("GAME/FAVORITE_OFF", texFavOff, texFavOffSel, 460, 200, 48, 48);
+	m_gameBtnAdultOn = _addPicButton("GAME/ADULTONLY_ON", texAdultOn, texAdultOnSel, 532, 200, 48, 48);
+	m_gameBtnAdultOff = _addPicButton("GAME/ADULTONLY_OFF", texAdultOff, texAdultOffSel, 532, 200, 48, 48);
+	m_gameBtnSettings = _addPicButton("GAME/SETTINGS_BTN", texSettings, texSettingsSel, 460, 272, 48, 48);
+	m_gameBtnDelete = _addPicButton("GAME/DELETE_BTN", texDelete, texDeleteSel, 532, 272, 48, 48);
+	m_gameBtnBackFull = _addButton("GAME/BACK_FULL_BTN", theme.btnFont, L"", 100, 390, 200, 56, theme.btnFontColor);
+	m_gameBtnPlayFull = _addButton("GAME/PLAY_FULL_BTN", theme.btnFont, L"", 340, 390, 200, 56, theme.btnFontColor);
+	m_gameBtnToogle = _addPicButton("GAME/TOOGLE_BTN", texToogleBanner, texToogleBanner, 385, 31, 236, 127);
+	m_gameBtnToogleFull = _addPicButton("GAME/TOOGLE_FULL_BTN", texToogleBanner, texToogleBanner, 20, 12, 608, 344);
 
 	m_gameButtonsZone.x = m_theme.getInt("GAME/ZONES", "buttons_x", 0);
 	m_gameButtonsZone.y = m_theme.getInt("GAME/ZONES", "buttons_y", 0);
@@ -1465,7 +1466,7 @@ struct IMD5Header
 	u8 crypto[16];
 } __attribute__((packed));
 
-SmartBuf gameSoundThreadStack;
+u8 *gameSoundThreadStack;
 u32 gameSoundThreadStackSize = (u32)32768;
 void CMenu::_gameSoundThread(CMenu *m)
 {
@@ -1624,9 +1625,9 @@ void CMenu::_playGameSound(void)
 
 	if(m_gameSoundThread != LWP_THREAD_NULL)
 		CheckGameSoundThread();
-	if(!gameSoundThreadStack.get())
-		gameSoundThreadStack = smartMem2Alloc(gameSoundThreadStackSize);
-	LWP_CreateThread(&m_gameSoundThread, (void *(*)(void *))CMenu::_gameSoundThread, (void *)this, gameSoundThreadStack.get(), gameSoundThreadStackSize, 60);
+	if(gameSoundThreadStack == NULL)
+		gameSoundThreadStack = (u8*)MEM2_alloc(gameSoundThreadStackSize);
+	LWP_CreateThread(&m_gameSoundThread, (void *(*)(void *))CMenu::_gameSoundThread, (void *)this, gameSoundThreadStack, gameSoundThreadStackSize, 60);
 }
 
 void CMenu::CheckGameSoundThread()
@@ -1646,6 +1647,9 @@ void CMenu::CheckGameSoundThread()
 
 void CMenu::ClearGameSoundThreadStack()
 {
-	if(gameSoundThreadStack.get())
-		gameSoundThreadStack.release();
+	if(gameSoundThreadStack != NULL)
+	{
+		free(gameSoundThreadStack);
+		gameSoundThreadStack = NULL;
+	}
 }

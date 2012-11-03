@@ -661,7 +661,6 @@ private:
 	volatile bool m_thrdMessageAdded;
 	volatile bool m_gameSelected;
 	GuiSound m_gameSound;
-	SmartGuiSound m_cameraSound;
 	dir_discHdr *m_gameSoundHdr;
 	lwp_t m_gameSoundThread;
 	bool m_gamesound_changed;
@@ -680,7 +679,7 @@ private:
 	typedef pair<string, u32> FontDesc;
 	typedef map<FontDesc, SFont> FontSet;
 	typedef map<string, STexture> TexSet;
-	typedef map<string, SmartGuiSound> SoundSet;
+	typedef map<string, GuiSound*> SoundSet;
 	struct SThemeData
 	{
 		TexSet texSet;
@@ -775,9 +774,9 @@ private:
 		STexture btnTexPlusS;
 		STexture btnTexMinus;
 		STexture btnTexMinusS;
-		SmartGuiSound clickSound;
-		SmartGuiSound hoverSound;
-		SmartGuiSound cameraSound;
+		GuiSound *clickSound;
+		GuiSound *hoverSound;
+		GuiSound *cameraSound;
 	};
 	SThemeData theme;
 	struct SCFParamDesc
@@ -814,30 +813,30 @@ private:
 	bool _loadHomebrewList(void);
 	void _initCF(void);
 	// 
-	void _initMainMenu(SThemeData &theme);
-	void _initErrorMenu(SThemeData &theme);
-	void _initConfigMenu(SThemeData &theme);
-	void _initConfigAdvMenu(SThemeData &theme);
-	void _initConfig3Menu(SThemeData &theme);
-	void _initConfig4Menu(SThemeData &theme);
-	void _initConfigSndMenu(SThemeData &theme);
-	void _initConfigScreenMenu(SThemeData &theme);
-	void _initGameMenu(SThemeData &theme);
-	void _initDownloadMenu(SThemeData &theme);
-	void _initCodeMenu(SThemeData &theme);
-	void _initAboutMenu(SThemeData &theme);
-	void _initWBFSMenu(SThemeData &theme);
-	void _initCFThemeMenu(SThemeData &theme);
-	void _initGameSettingsMenu(SThemeData &theme);
-	void _initCheatSettingsMenu(SThemeData &theme);
+	void _initMainMenu();
+	void _initErrorMenu();
+	void _initConfigMenu();
+	void _initConfigAdvMenu();
+	void _initConfig3Menu();
+	void _initConfig4Menu();
+	void _initConfigSndMenu();
+	void _initConfigScreenMenu();
+	void _initGameMenu();
+	void _initDownloadMenu();
+	void _initCodeMenu();
+	void _initAboutMenu();
+	void _initWBFSMenu();
+	void _initCFThemeMenu();
+	void _initGameSettingsMenu();
+	void _initCheatSettingsMenu();
 	void _initCheatButtons();
-	void _initSourceMenu(SThemeData &theme);
-	void _initPluginSettingsMenu(SThemeData &theme);
-	void _initCategorySettingsMenu(SThemeData &theme);
-	void _initSystemMenu(SThemeData &theme);
-	void _initGameInfoMenu(SThemeData &theme);
-	void _initNandEmuMenu(CMenu::SThemeData &theme);
-	void _initHomeAndExitToMenu(CMenu::SThemeData &theme);
+	void _initSourceMenu();
+	void _initPluginSettingsMenu();
+	void _initCategorySettingsMenu();
+	void _initSystemMenu();
+	void _initGameInfoMenu();
+	void _initNandEmuMenu();
+	void _initHomeAndExitToMenu();
 	//
 	void _textSource(void);
 	void _textPluginSettings(void);
@@ -973,7 +972,7 @@ public:
 private:
 	bool m_use_wifi_gecko;
 	void _reload_wifi_gecko();
-	bool _loadFile(SmartBuf &buffer, u32 &size, const char *path, const char *file);
+	bool _loadFile(u8 *buffer, u32 &size, const char *path, const char *file);
 	int _loadIOS(u8 ios, int userIOS, string id);
 	void _launch(dir_discHdr *hdr);
 	void _launchGame(dir_discHdr *hdr, bool dvd);
@@ -981,7 +980,7 @@ private:
 	void _launchHomebrew(const char *filepath, vector<string> arguments);
 	void _launchGC(dir_discHdr *hdr, bool disc);
 	void _setAA(int aa);
-	void _loadCFCfg(SThemeData &theme);
+	void _loadCFCfg();
 	void _loadCFLayout(int version, bool forceAA = false, bool otherScrnFmt = false);
 	Vector3D _getCFV3D(const string &domain, const string &key, const Vector3D &def, bool otherScrnFmt = false);
 	int _getCFInt(const string &domain, const string &key, int def, bool otherScrnFmt = false);
@@ -990,6 +989,7 @@ private:
 	void _buildMenus(void);
 	void _loadDefaultFont(bool korean);
 	void _cleanupDefaultFont();
+	void _Theme_Cleanup();
 	string _getId(void);
 	const char *_domainFromView(void);
 	const char *_cfDomain(bool selected = false);
@@ -997,27 +997,27 @@ private:
 	int MIOSisDML();
 	void RemoveCover(const char *id);
 	SFont _font(CMenu::FontSet &fontSet, const char *domain, const char *key, u32 fontSize, u32 lineSpacing, u32 weight, u32 index, const char *genKey);
-	STexture _texture(TexSet &texSet, const char *domain, const char *key, STexture def);
-	vector<STexture> _textures(TexSet &texSet, const char *domain, const char *key);
+	STexture _texture(const char *domain, const char *key, STexture &def, bool freeDef = true);
+	vector<STexture> _textures(const char *domain, const char *key);
 	void _showWaitMessage();
 public:
 	void _hideWaitMessage();
 	bool m_Emulator_boot;
 private:
-	SmartGuiSound _sound(CMenu::SoundSet &soundSet, const char *domain, const char *key, const u8 * snd, u32 len, string name, bool isAllocated);
-	SmartGuiSound _sound(CMenu::SoundSet &soundSet, const char *domain, const char *key, string name);
+	GuiSound *_sound(CMenu::SoundSet &soundSet, const char *domain, const char *key, const u8 * snd, u32 len, string name, bool isAllocated);
+	GuiSound *_sound(CMenu::SoundSet &soundSet, const char *domain, const char *key, string name);
 	u16 _textStyle(const char *domain, const char *key, u16 def);
-	s16 _addButton(SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color);
-	s16 _addSelButton(SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color);
-	s16 _addPicButton(SThemeData &theme, const char *domain, STexture &texNormal, STexture &texSelected, int x, int y, u32 width, u32 height);
-	s16 _addTitle(SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, s16 style);
-	s16 _addText(SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, s16 style);
-	s16 _addLabel(SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, s16 style);
-	s16 _addLabel(SThemeData &theme, const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, s16 style, STexture &bg);
-	s16 _addProgressBar(SThemeData &theme, const char *domain, int x, int y, u32 width, u32 height);
+	s16 _addButton(const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color);
+	s16 _addSelButton(const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color);
+	s16 _addPicButton(const char *domain, STexture &texNormal, STexture &texSelected, int x, int y, u32 width, u32 height);
+	s16 _addTitle(const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, s16 style);
+	s16 _addText(const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, s16 style);
+	s16 _addLabel(const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, s16 style);
+	s16 _addLabel(const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, s16 style, STexture &bg);
+	s16 _addProgressBar(const char *domain, int x, int y, u32 width, u32 height);
 	void _setHideAnim(s16 id, const char *domain, int dx, int dy, float scaleX, float scaleY);
-	void _addUserLabels(CMenu::SThemeData &theme, s16 *ids, u32 size, const char *domain);
-	void _addUserLabels(CMenu::SThemeData &theme, s16 *ids, u32 start, u32 size, const char *domain);
+	void _addUserLabels(s16 *ids, u32 size, const char *domain);
+	void _addUserLabels(s16 *ids, u32 start, u32 size, const char *domain);
 	// 
 	const wstringEx _t(const char *key, const wchar_t *def = L"") { return m_loc.getWString(m_curLanguage, key, def); }
 	const wstringEx _fmt(const char *key, const wchar_t *def);

@@ -182,19 +182,16 @@ void CMenu::_showMain(void)
 void CMenu::LoadView(void)
 {
 	m_curGameId = m_cf.getId();
-
 	_hideMain(true);
 	m_cf.clear();
 	if(!m_vid.showingWaitMessage())
 		_showWaitMessage();
-
 	m_favorites = false;
 	if (m_cfg.getBool("GENERAL", "save_favorites_mode", false))
 		m_favorites = m_cfg.getBool(_domainFromView(), "favorites", false);
 	_loadList();
 	_showMain();
 	_initCF();
-
 	_loadCFLayout(m_cfg.getInt(_domainFromView(), "last_cf_mode", 1));
 	m_cf.applySettings();
 
@@ -669,9 +666,7 @@ int CMenu::main(void)
 
 				for(u8 i = 0; strncmp((const char *)&partition[i], "\0", 1) != 0; i++)
 					partition[i] = toupper(partition[i]);
-
-				gprintf("Next item: %s\n", partition);
-
+				//gprintf("Next item: %s\n", partition);
 				m_showtimer=60; 
 				char gui_name[20];
 				snprintf(gui_name, sizeof(gui_name), "%s [%s]", _domainFromView(),partition);
@@ -830,14 +825,14 @@ int CMenu::main(void)
 		_FindEmuPart(&emuPath, m_cfg.getInt("NAND", "partition", 0), false);
 		Sys_SetNeekPath(emuPath.size() > 1 ? emuPath.c_str() : NULL);
 	}
-	gprintf("Saving configuration files\n");
+	//gprintf("Saving configuration files\n");
 	m_cfg.save();
 	m_cat.save();
 //	m_loc.save();
 	return 0;
 }
 
-void CMenu::_initMainMenu(CMenu::SThemeData &theme)
+void CMenu::_initMainMenu()
 {
 	STexture texQuit;
 	STexture texQuitS;
@@ -868,8 +863,8 @@ void CMenu::_initMainMenu(CMenu::SThemeData &theme)
 	STexture bgLQ;
 	STexture emptyTex;
 
-	m_mainBg = _texture(theme.texSet, "MAIN/BG", "texture", theme.bg);
-	if (m_theme.loaded() && STexture::TE_OK == bgLQ.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString("MAIN/BG", "texture").c_str()), GX_TF_CMPR, ALLOC_MEM2, 64, 64))
+	m_mainBg = _texture("MAIN/BG", "texture", theme.bg, false);
+	if (m_theme.loaded() && STexture::TE_OK == bgLQ.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString("MAIN/BG", "texture").c_str()), GX_TF_CMPR, 64, 64))
 		m_mainBgLQ = bgLQ;
 
 	texQuit.fromPNG(btnquit_png);
@@ -899,29 +894,29 @@ void CMenu::_initMainMenu(CMenu::SThemeData &theme)
 	texFavOff.fromPNG(favoritesoff_png);
 	texFavOffS.fromPNG(favoritesoffs_png);
 
-	_addUserLabels(theme, m_mainLblUser, ARRAY_SIZE(m_mainLblUser), "MAIN");
+	_addUserLabels(m_mainLblUser, ARRAY_SIZE(m_mainLblUser), "MAIN");
 
-	m_mainBtnInfo = _addPicButton(theme, "MAIN/INFO_BTN", texInfo, texInfoS, 20, 400, 48, 48);
-	m_mainBtnConfig = _addPicButton(theme, "MAIN/CONFIG_BTN", texConfig, texConfigS, 70, 400, 48, 48);
-	m_mainBtnQuit = _addPicButton(theme, "MAIN/QUIT_BTN", texQuit, texQuitS, 570, 400, 48, 48);
-	m_mainBtnChannel = _addPicButton(theme, "MAIN/CHANNEL_BTN", texChannel, texChannels, 520, 400, 48, 48);
-	m_mainBtnHomebrew = _addPicButton(theme, "MAIN/HOMEBREW_BTN", texHomebrew, texHomebrews, 520, 400, 48, 48);
-	m_mainBtnUsb = _addPicButton(theme, "MAIN/USB_BTN", texUsb, texUsbs, 520, 400, 48, 48);
-	m_mainBtnDML = _addPicButton(theme, "MAIN/DML_BTN", texDML, texDMLs, 520, 400, 48, 48);
-	m_mainBtnEmu = _addPicButton(theme, "MAIN/EMU_BTN", texEmu, texEmus, 520, 400, 48, 48);
-	m_mainBtnDVD = _addPicButton(theme, "MAIN/DVD_BTN", texDVD, texDVDs, 470, 400, 48, 48);
-	m_mainBtnNext = _addPicButton(theme, "MAIN/NEXT_BTN", texNext, texNextS, 540, 146, 80, 80);
-	m_mainBtnPrev = _addPicButton(theme, "MAIN/PREV_BTN", texPrev, texPrevS, 20, 146, 80, 80);
-	m_mainBtnInit = _addButton(theme, "MAIN/BIG_SETTINGS_BTN", theme.titleFont, L"", 72, 180, 496, 56, theme.titleFontColor);
-	m_mainBtnInit2 = _addButton(theme, "MAIN/BIG_SETTINGS_BTN2", theme.titleFont, L"", 72, 290, 496, 56, theme.titleFontColor);
-	m_mainLblInit = _addLabel(theme, "MAIN/MESSAGE", theme.lblFont, L"", 40, 40, 560, 140, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_mainBtnFavoritesOn = _addPicButton(theme, "MAIN/FAVORITES_ON", texFavOn, texFavOnS, 300, 400, 56, 56);
-	m_mainBtnFavoritesOff = _addPicButton(theme, "MAIN/FAVORITES_OFF", texFavOff, texFavOffS, 300, 400, 56, 56);
-	m_mainLblLetter = _addLabel(theme, "MAIN/LETTER", theme.titleFont, L"", 540, 40, 80, 80, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, emptyTex);
-	m_mainLblNotice = _addLabel(theme, "MAIN/NOTICE", theme.titleFont, L"", 340, 40, 280, 80, theme.titleFontColor, FTGX_JUSTIFY_RIGHT | FTGX_ALIGN_MIDDLE, emptyTex);
-	m_mainLblCurMusic = _addLabel(theme, "MAIN/MUSIC", theme.btnFont, L"", 0, 20, 640, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_mainBtnInfo = _addPicButton("MAIN/INFO_BTN", texInfo, texInfoS, 20, 400, 48, 48);
+	m_mainBtnConfig = _addPicButton("MAIN/CONFIG_BTN", texConfig, texConfigS, 70, 400, 48, 48);
+	m_mainBtnQuit = _addPicButton("MAIN/QUIT_BTN", texQuit, texQuitS, 570, 400, 48, 48);
+	m_mainBtnChannel = _addPicButton("MAIN/CHANNEL_BTN", texChannel, texChannels, 520, 400, 48, 48);
+	m_mainBtnHomebrew = _addPicButton("MAIN/HOMEBREW_BTN", texHomebrew, texHomebrews, 520, 400, 48, 48);
+	m_mainBtnUsb = _addPicButton("MAIN/USB_BTN", texUsb, texUsbs, 520, 400, 48, 48);
+	m_mainBtnDML = _addPicButton("MAIN/DML_BTN", texDML, texDMLs, 520, 400, 48, 48);
+	m_mainBtnEmu = _addPicButton("MAIN/EMU_BTN", texEmu, texEmus, 520, 400, 48, 48);
+	m_mainBtnDVD = _addPicButton("MAIN/DVD_BTN", texDVD, texDVDs, 470, 400, 48, 48);
+	m_mainBtnNext = _addPicButton("MAIN/NEXT_BTN", texNext, texNextS, 540, 146, 80, 80);
+	m_mainBtnPrev = _addPicButton("MAIN/PREV_BTN", texPrev, texPrevS, 20, 146, 80, 80);
+	m_mainBtnInit = _addButton("MAIN/BIG_SETTINGS_BTN", theme.titleFont, L"", 72, 180, 496, 56, theme.titleFontColor);
+	m_mainBtnInit2 = _addButton("MAIN/BIG_SETTINGS_BTN2", theme.titleFont, L"", 72, 290, 496, 56, theme.titleFontColor);
+	m_mainLblInit = _addLabel("MAIN/MESSAGE", theme.lblFont, L"", 40, 40, 560, 140, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_mainBtnFavoritesOn = _addPicButton("MAIN/FAVORITES_ON", texFavOn, texFavOnS, 300, 400, 56, 56);
+	m_mainBtnFavoritesOff = _addPicButton("MAIN/FAVORITES_OFF", texFavOff, texFavOffS, 300, 400, 56, 56);
+	m_mainLblLetter = _addLabel("MAIN/LETTER", theme.titleFont, L"", 540, 40, 80, 80, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, emptyTex);
+	m_mainLblNotice = _addLabel("MAIN/NOTICE", theme.titleFont, L"", 340, 40, 280, 80, theme.titleFontColor, FTGX_JUSTIFY_RIGHT | FTGX_ALIGN_MIDDLE, emptyTex);
+	m_mainLblCurMusic = _addLabel("MAIN/MUSIC", theme.btnFont, L"", 0, 20, 640, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 #ifdef SHOWMEM	
-	m_mem2FreeSize = _addLabel(theme, "MEM2", theme.titleFont, L"", 40, 300, 480, 80, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, emptyTex);
+	m_mem2FreeSize = _addLabel("MEM2", theme.titleFont, L"", 40, 300, 480, 80, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, emptyTex);
 #endif
 	// 
 	m_mainPrevZone.x = m_theme.getInt("MAIN/ZONES", "prev_x", -32);

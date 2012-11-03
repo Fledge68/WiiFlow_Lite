@@ -380,7 +380,7 @@ bool CMenu::_Source()
 	return back;
 }
 
-void CMenu::_initSourceMenu(CMenu::SThemeData &theme)
+void CMenu::_initSourceMenu()
 {
 	STexture texDML;
 	STexture texDMLs;
@@ -404,19 +404,19 @@ void CMenu::_initSourceMenu(CMenu::SThemeData &theme)
 	texHomebrew.fromPNG(btnhomebrew_png);
 	texHomebrews.fromPNG(btnhomebrews_png);
 
-	m_sourceBtnChannel = _addPicButton(theme, "SOURCE/CHANNEL_BTN", texChannel, texChannels, 265, 260, 48, 48);
-	m_sourceBtnHomebrew = _addPicButton(theme, "SOURCE/HOMEBREW_BTN", texHomebrew, texHomebrews, 325, 260, 48, 48);
-	m_sourceBtnUsb = _addPicButton(theme, "SOURCE/USB_BTN", texUsb, texUsbs, 235, 200, 48, 48);
-	m_sourceBtnDML = _addPicButton(theme, "SOURCE/DML_BTN", texDML, texDMLs, 295, 200, 48, 48);
-	m_sourceBtnEmu = _addPicButton(theme, "SOURCE/EMU_BTN", texEmu, texEmus, 355, 200, 48, 48);
+	m_sourceBtnChannel = _addPicButton("SOURCE/CHANNEL_BTN", texChannel, texChannels, 265, 260, 48, 48);
+	m_sourceBtnHomebrew = _addPicButton("SOURCE/HOMEBREW_BTN", texHomebrew, texHomebrews, 325, 260, 48, 48);
+	m_sourceBtnUsb = _addPicButton("SOURCE/USB_BTN", texUsb, texUsbs, 235, 200, 48, 48);
+	m_sourceBtnDML = _addPicButton("SOURCE/DML_BTN", texDML, texDMLs, 295, 200, 48, 48);
+	m_sourceBtnEmu = _addPicButton("SOURCE/EMU_BTN", texEmu, texEmus, 355, 200, 48, 48);
 	
-	_addUserLabels(theme, m_sourceLblUser, ARRAY_SIZE(m_sourceLblUser), "SOURCE");
-	m_sourceBg = _texture(theme.texSet, "SOURCE/BG", "texture", theme.bg);
-	m_sourceLblTitle = _addTitle(theme, "SOURCE/TITLE", theme.titleFont, L"", 20, 20, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
-	m_sourceLblNotice = _addLabel(theme, "SOURCE/NOTICE", theme.btnFont, L"", 20, 400, 600, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_TOP);
-	m_sourceLblPage = _addLabel(theme, "SOURCE/PAGE_BTN", theme.btnFont, L"", 62, 400, 98, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_sourceBtnPageM = _addPicButton(theme, "SOURCE/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 10, 400, 52, 56);
-	m_sourceBtnPageP = _addPicButton(theme, "SOURCE/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 160, 400, 52, 56);
+	_addUserLabels(m_sourceLblUser, ARRAY_SIZE(m_sourceLblUser), "SOURCE");
+	m_sourceBg = _texture("SOURCE/BG", "texture", theme.bg, false);
+	m_sourceLblTitle = _addTitle("SOURCE/TITLE", theme.titleFont, L"", 20, 20, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_sourceLblNotice = _addLabel("SOURCE/NOTICE", theme.btnFont, L"", 20, 400, 600, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_TOP);
+	m_sourceLblPage = _addLabel("SOURCE/PAGE_BTN", theme.btnFont, L"", 62, 400, 98, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_sourceBtnPageM = _addPicButton("SOURCE/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 10, 400, 52, 56);
+	m_sourceBtnPageP = _addPicButton("SOURCE/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 160, 400, 52, 56);
 	
 	m_sourceDir = m_cfg.getString("GENERAL", "dir_Source", sfmt("%s/source_menu", m_dataDir.c_str()));
 
@@ -451,7 +451,7 @@ void CMenu::_initSourceMenu(CMenu::SThemeData &theme)
 	
 		row = i / 4;
 		col = i - (row * 4);
-		m_sourceBtnSource[i] = _addPicButton(theme, fmt("SOURCE/SOURCE_BTN_%i", i), texConsoleImg, texConsoleImgs, (30 + 150 * col), (90 + 100 * row), 120, 90);
+		m_sourceBtnSource[i] = _addPicButton(fmt("SOURCE/SOURCE_BTN_%i", i), texConsoleImg, texConsoleImgs, (30 + 150 * col), (90 + 100 * row), 120, 90);
 	}
 	_setHideAnim(m_sourceBtnChannel, "SOURCE/CHANNEL_BTN", 0, 40, 0.f, 0.f);
 	_setHideAnim(m_sourceBtnHomebrew, "SOURCE/HOMEBREW_BTN", 0, 40, 0.f, 0.f);

@@ -24,10 +24,16 @@ void CFanart::unload()
 	m_cfg.unload();
 	m_loaded = false;
 	m_elms.clear();
-	if(m_bg.data.get() != NULL)
-		m_bg.data.release();
-	if(m_bglq.data.get() != NULL)
-		m_bglq.data.release();
+	if(m_bg.data != NULL)
+	{
+		free(m_bg.data);
+		m_bg.data = NULL;
+	}
+	if(m_bglq.data != NULL)
+	{
+		free(m_bglq.data);
+		m_bglq.data = NULL;
+	}
 }
 
 bool CFanart::load(Config &m_globalConfig, const char *path, const char *id)
@@ -222,8 +228,11 @@ CFanartElement::CFanartElement(Config &cfg, const char *dir, int artwork)
 
 CFanartElement::~CFanartElement(void)
 {
-	if(m_art.data.get() != NULL)
-		m_art.data.release();
+	if(m_art.data != NULL)
+	{
+		free(m_art.data);
+		m_art.data = NULL;
+	}
 }
 
 bool CFanartElement::IsValid()
@@ -283,7 +292,7 @@ void CFanartElement::draw()
 	guMtxTransApply(modelViewMtx, modelViewMtx, m_event_x, m_event_y, 0.f);
 	GX_LoadPosMtxImm(modelViewMtx, GX_PNMTX0);
 
-	GX_InitTexObj(&artwork, m_art.data.get(), m_art.width, m_art.height, m_art.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+	GX_InitTexObj(&artwork, m_art.data, m_art.width, m_art.height, m_art.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 	GX_LoadTexObj(&artwork, GX_TEXMAP0);
 
 	float w = (float)(m_art.width / 2); // * m_event_scaleX;

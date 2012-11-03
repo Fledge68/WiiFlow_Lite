@@ -27,10 +27,9 @@
  ***************************************************************************/
 #include <unistd.h>
 #include <asndlib.h>
-
+#include <malloc.h>
 #include "WiiMovie.hpp"
 #include "gecko/gecko.h"
-#include "memory/mem2.hpp"
 
 #define SND_BUFFERS     8
 #define FRAME_BUFFERS	8
@@ -86,7 +85,7 @@ WiiMovie::WiiMovie(const char * filepath)
 WiiMovie::~WiiMovie()
 {
 	gprintf("Destructing WiiMovie object\n");
-    Playing = true;
+    Playing = false;
     ExitRequested = true;
 
 	Stop();
@@ -310,9 +309,7 @@ void WiiMovie::ReadNextFrame()
 void WiiMovie::LoadNextFrame()
 {
     if(!Video || !Playing)
-    {
         return;
-    }
 
     VideoFrame VideoF;
     LWP_MutexLock(mutex);
@@ -336,14 +333,15 @@ void WiiMovie::LoadNextFrame()
     }
 
 	STexture frame;
-	if (frame.fromRAW(VideoF.getData(), VideoF.getWidth(), VideoF.getHeight()) == STexture::TE_OK)
+	if(frame.fromTHP(VideoF.getData(), VideoF.getWidth(), VideoF.getHeight()) == STexture::TE_OK)
 		Frames.push_back(frame);
+	VideoF.dealloc();
 }
 
 bool WiiMovie::GetNextFrame(STexture *tex)
 {
-	if (!Video || Frames.size() == 0) return false;
-	
+	if(!Video || !Playing || Frames.size() == 0)
+		return false;
 	*tex = Frames.at(0);
 	Frames.erase(Frames.begin());
 	return true;

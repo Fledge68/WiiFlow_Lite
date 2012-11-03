@@ -1,7 +1,7 @@
 
 #include "cursor.hpp"
 #include "pngu.h"
-
+#include "memory/mem2.hpp"
 #include <algorithm>
 
 using namespace std;
@@ -49,16 +49,15 @@ bool CCursor::init(const char *png, bool wideFix, CColor shadowColor, float shad
 		m_shadow.height = m_texture.height;
 		m_shadow.maxLOD = 0;
 		m_shadow.format = GX_TF_I8;
-		m_shadow.data = smartMem2Alloc(GX_GetTexBufferSize(m_shadow.width, m_shadow.height, m_shadow.format, GX_FALSE, 0));
-		if (!!m_shadow.data)
+		m_shadow.data = (u8*)MEM2_alloc(GX_GetTexBufferSize(m_shadow.width, m_shadow.height, m_shadow.format, GX_FALSE, 0));
+		if(m_shadow.data != NULL)
 		{
-			const u8 *src = m_texture.data.get();
-			u8 *dst = m_shadow.data.get();
+			const u8 *src = m_texture.data;
+			u8 *dst = m_shadow.data;
 			u32 w = m_shadow.width;
 			for (u32 yy = 0; yy < m_shadow.height; ++yy)
 				for (u32 xx = 0; xx < m_shadow.width; ++xx)
 					dst[coordsI8(xx, yy, w)] = src[coordsRGBA8(xx, yy, w)];
-
 			if (blur) _blur();
 		}
 	}
@@ -94,12 +93,12 @@ void CCursor::draw(int x, int y, float a)
 	GX_SetCullMode(GX_CULL_NONE);
 	GX_SetZMode(GX_DISABLE, GX_LEQUAL, GX_TRUE);
 	// Shadow
-	if (!!m_shadow.data)
+	if(m_shadow.data != NULL)
 	{
 		guMtxIdentity(modelViewMtx);
 		guMtxTransApply(modelViewMtx, modelViewMtx, (float)x - w + m_shadowX * xScale, (float)y - h + m_shadowY, 0.f);
 		GX_LoadPosMtxImm(modelViewMtx, GX_PNMTX0);
-		GX_InitTexObj(&texObj, m_shadow.data.get(), m_shadow.width, m_shadow.height, m_shadow.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+		GX_InitTexObj(&texObj, m_shadow.data, m_shadow.width, m_shadow.height, m_shadow.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		GX_LoadTexObj(&texObj, GX_TEXMAP0);
 		GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
 		v = Vector3D(w, h, 0.f).rotateZ(a);
@@ -124,7 +123,7 @@ void CCursor::draw(int x, int y, float a)
 	guMtxIdentity(modelViewMtx);
 	guMtxTransApply(modelViewMtx, modelViewMtx, (float)x - w, (float)y - h, 0.f);
 	GX_LoadPosMtxImm(modelViewMtx, GX_PNMTX0);
-	GX_InitTexObj(&texObj, m_texture.data.get(), m_texture.width, m_texture.height, m_texture.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+	GX_InitTexObj(&texObj, m_texture.data, m_texture.width, m_texture.height, m_texture.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 	GX_LoadTexObj(&texObj, GX_TEXMAP0);
 	GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
 	v = Vector3D(w, h, 0.f).rotateZ(a);
@@ -152,24 +151,18 @@ void CCursor::_blur(void)
 	int w = m_shadow.width;
 	int h = m_shadow.height;
 	int div = 2 * radius + 1;
-	u8 *r = 0;
-	u8 *pic = m_shadow.data.get();
+	u8 *pic = m_shadow.data;
 	int sum;
 	int yp;
 	int yi;
 	int pass = 2;
-	SmartBuf xMinBuf = smartMem2Alloc(w * sizeof (int));
-	SmartBuf xMaxBuf = smartMem2Alloc(w * sizeof (int));
-	SmartBuf yMinBuf = smartMem2Alloc(h * sizeof (int));
-	SmartBuf yMaxBuf = smartMem2Alloc(h * sizeof (int));
-	SmartBuf buf = smartMem2Alloc(m_shadow.width * m_shadow.height);
-	if (!xMinBuf || !xMaxBuf || !yMinBuf || !yMaxBuf || !buf)
+	s32 *xmin = (s32*)MEM2_alloc(w * sizeof(s32));
+	s32 *xmax = (s32*)MEM2_alloc(w * sizeof(s32));
+	s32 *ymin = (s32*)MEM2_alloc(h * sizeof(s32));
+	s32 *ymax = (s32*)MEM2_alloc(h * sizeof(s32));
+	u8 *r = (u8*)MEM2_alloc(m_shadow.width * m_shadow.height);
+	if(!xmin || !xmax || !ymin || !ymax || !r)
 		return;
-	int *xmin = (int *)xMinBuf.get();
-	int *xmax = (int *)xMaxBuf.get();
-	int *ymin = (int *)yMinBuf.get();
-	int *ymax = (int *)yMaxBuf.get();
-	r = buf.get();
 	for (int i = 0; i < w; ++i)
 	{
 		xmax[i] = min(i + radius + 1, w - 1);
@@ -215,4 +208,9 @@ void CCursor::_blur(void)
 			}
 		}
 	}
+	free(xmin);
+	free(xmax);
+	free(ymin);
+	free(ymax);
+	free(r);
 }

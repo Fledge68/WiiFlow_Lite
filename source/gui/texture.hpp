@@ -4,29 +4,31 @@
 
 #include <gccore.h>
 
-#include "memory/smartptr.hpp"
-
-struct STexture
+class STexture
 {
-	SmartBuf data;
+public:
+	STexture(void) : data(NULL), width(0), height(0), format(-1), maxLOD(0) { }
+	void Cleanup();
+	u8 *data;
 	u32 width;
 	u32 height;
 	u8 format;
 	u8 maxLOD;
-	STexture(void) : data(), width(0), height(0), format(-1), maxLOD(0) { }
 	// Utility funcs
 	enum TexErr { TE_OK, TE_ERROR, TE_NOMEM };
 	// Get from PNG, if not found from JPG
-	TexErr fromImageFile(const char *filename, u8 f = -1, Alloc alloc = ALLOC_MEM2, u32 minMipSize = 0, u32 maxMipSize = 0);
+	TexErr fromImageFile(const char *filename, u8 f = -1, u32 minMipSize = 0, u32 maxMipSize = 0);
 	// This function doesn't use MEM2 if the PNG is loaded from memory and there's no mip mapping
-	TexErr fromPNG(const u8 *buffer, u8 f = -1, Alloc alloc = ALLOC_MEM2, u32 minMipSize = 0, u32 maxMipSize = 0);
-	TexErr fromRAW(const u8 *buffer, u32 w, u32 h, u8 f = -1, Alloc alloc = ALLOC_MEM2, u32 minMipSize = 0, u32 maxMipSize = 0);
-	TexErr fromJPG(const u8 *buffer, const u32 buffer_size, u8 f = -1, Alloc alloc = ALLOC_MEM2, u32 minMipSize = 0, u32 maxMipSize = 0);
+	TexErr fromPNG(const u8 *buffer, u8 f = -1, u32 minMipSize = 0, u32 maxMipSize = 0);
+	TexErr fromRAW(const u8 *buffer, u32 w, u32 h, u8 f = -1, u32 minMipSize = 0, u32 maxMipSize = 0);
+	TexErr fromJPG(const u8 *buffer, const u32 buffer_size, u8 f = -1, u32 minMipSize = 0, u32 maxMipSize = 0);
+	/* Just for THP */
+	TexErr fromTHP(const u8 *buffer, u32 w, u32 h);
 private:
-	static void _resize(u8 *dst, u32 dstWidth, u32 dstHeight, const u8 *src, u32 srcWidth, u32 srcHeight);
-	static void _resizeD2x2(u8 *dst, const u8 *src, u32 srcWidth, u32 srcHeight);
-	static SmartBuf _genMipMaps(const u8 *src, u32 width, u32 height, u8 maxLOD, u32 lod0Width, u32 lod0Height);
-	static void _calcMipMaps(u8 &maxLOD, u8 &minLOD, u32 &lod0Width, u32 &lod0Height, u32 width, u32 height, u32 minSize, u32 maxSize);
+	void _resize(u8 *dst, u32 dstWidth, u32 dstHeight, const u8 *src, u32 srcWidth, u32 srcHeight);
+	void _resizeD2x2(u8 *dst, const u8 *src, u32 srcWidth, u32 srcHeight);
+	u8 *_genMipMaps(u8 *src, u32 width, u32 height, u8 maxLOD, u32 lod0Width, u32 lod0Height);
+	void _calcMipMaps(u8 &maxLOD, u8 &minLOD, u32 &lod0Width, u32 &lod0Height, u32 width, u32 height, u32 minSize, u32 maxSize);
 };
 
 u32 fixGX_GetTexBufferSize(u16 wd, u16 ht, u32 fmt, u8 mipmap, u8 maxlod);

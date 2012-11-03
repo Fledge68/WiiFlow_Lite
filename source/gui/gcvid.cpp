@@ -302,6 +302,7 @@ void VideoFrame::dealloc()
 {
 	if(_data != NULL)
 		free(_data);
+	_data = NULL;
 	_w = _h = _p = 0;
 }
 

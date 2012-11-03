@@ -16,7 +16,6 @@
 #include "config/config.hpp"
 #include "loader/disc.h"
 #include "loader/utils.h"
-#include "memory/smartptr.hpp"
 #include "music/gui_sound.h"
 
 using namespace std;
@@ -40,7 +39,7 @@ public:
 	CCoverFlow(void);
 	~CCoverFlow(void);
 	// 
-	bool init(u8 *font, u32 font_size, bool vid_50hz);
+	bool init(const u8 *font, const u32 font_size, bool vid_50hz);
 	// Cover list management
 	void clear(void);
 	void shutdown(void);
@@ -48,7 +47,7 @@ public:
 	void addItem(dir_discHdr *hdr, const char *picPath, const char *boxPicPath, const char *blankBoxPicPath, int playcount = 0, unsigned int lastPlayed = 0);
 	bool empty(void) const { return m_items.empty(); }
 	// 
-	bool start(const char *id = 0);
+	bool start(const char *id = NULL);
 	void stopCoverLoader(bool empty = false);
 	void startCoverLoader(void);
 	// 
@@ -85,7 +84,7 @@ public:
 	bool getBoxMode(void) const { return m_box;}
 	void setBufferSize(u32 numCovers);
 	void setTextures(const string &loadingPic, const string &loadingPicFlat, const string &noCoverPic, const string &noCoverPicFlat);
-	void setFont(SFont font, const CColor &color);
+	void setFont(const SFont &font, const CColor &color);
 	void setRange(u32 rows, u32 columns);
 	void setBoxMode(bool box);
 	void setHQcover(bool HQ);
@@ -115,9 +114,9 @@ public:
 	void setRowAngles(bool selected, const Vector3D &top, const Vector3D &bottom);
 	void setCoverFlipping(const Vector3D &pos, const Vector3D &angle, const Vector3D &scale);
 	void setBlur(u32 blurResolution, u32 blurRadius, float blurFactor);
-	bool setSorting(Sorting sorting);
+	void setSorting(Sorting sorting);
 	// 
-	void setSounds(const SmartGuiSound &sound, const SmartGuiSound &hoverSound, const SmartGuiSound &selectSound, const SmartGuiSound &cancelSound);
+	void setSounds(GuiSound *sound, GuiSound *hoverSound, GuiSound *selectSound, GuiSound *cancelSound);
 	void setSoundVolume(u8 vol);
 	void stopSound(void);
 	// 
@@ -286,10 +285,10 @@ private:
 	Vector3D m_flipCoverAngle;
 	Vector3D m_flipCoverScale;
 	u8 sndCopyNum;
-	SmartGuiSound m_sound[4];
-	SmartGuiSound m_hoverSound;
-	SmartGuiSound m_selectSound;
-	SmartGuiSound m_cancelSound;
+	GuiSound *m_sound[4];
+	GuiSound *m_hoverSound;
+	GuiSound *m_selectSound;
+	GuiSound *m_cancelSound;
 	u8 m_soundVolume;
 	float m_lodBias;
 	u8 m_aniso;
@@ -332,8 +331,8 @@ private:
 	void _transposeCover(vector<CCover> &dst, u32 rows, u32 columns, int pos);
 	void _playSound(void);
 	
-	void _stopSound(SmartGuiSound snd);
-	void _playSound(SmartGuiSound snd);
+	void _stopSound(GuiSound *snd);
+	void _playSound(GuiSound *snd);
 
 	static bool _sortByPlayCount(CItem item1, CItem item2);
 	static bool _sortByLastPlayed(CItem item1, CItem item2);
