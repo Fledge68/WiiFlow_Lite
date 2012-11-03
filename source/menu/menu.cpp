@@ -2409,7 +2409,7 @@ void CMenu::_stopSounds(void)
 	m_gameSound.Stop();
 }
 
-bool CMenu::_loadFile(u8 *buffer, u32 &size, const char *path, const char *file)
+bool CMenu::_loadFile(u8 * &buffer, u32 &size, const char *path, const char *file)
 {
 	size = 0;
 	FILE *fp = fopen(file == NULL ? path : fmt("%s/%s", path, file), "rb");
