@@ -70,18 +70,18 @@ static void AddISO(const char *GameID, const char *GameTitle, const char *GamePa
 	if(GameID != NULL) strncpy(ListElement.id, GameID, 6);
 	if(GamePath != NULL) strncpy(ListElement.path, GamePath, sizeof(ListElement.path) - 1);
 	ListElement.casecolor = CustomTitles.getColor("COVERS", ListElement.id, GameColor).intVal();
-	string CustomTitle = CustomTitles.getString("TITLES", ListElement.id);
+	const char *CustomTitle = CustomTitles.getString("TITLES", ListElement.id).c_str();
 	if(gameTDB.IsLoaded())
 	{
 		if(ListElement.casecolor == GameColor)
 			ListElement.casecolor = gameTDB.GetCaseColor(ListElement.id);
-		if(CustomTitle.size() == 0)
-			gameTDB.GetTitle(ListElement.id, CustomTitle);
 		ListElement.wifi = gameTDB.GetWifiPlayers(ListElement.id);
 		ListElement.players = gameTDB.GetPlayers(ListElement.id);
+		if(CustomTitle == NULL || CustomTitle[0] == '\0')
+			gameTDB.GetTitle(ListElement.id, CustomTitle);
 	}
-	if(CustomTitle.size() > 0)
-		mbstowcs(ListElement.title, CustomTitle.c_str(), 63);
+	if(CustomTitle != NULL && CustomTitle[0] != '\0')
+		mbstowcs(ListElement.title, CustomTitle, 63);
 	else if(GameTitle != NULL)
 		mbstowcs(ListElement.title, GameTitle, 63);
 	Asciify(ListElement.title);
@@ -201,18 +201,18 @@ static void Create_Channel_List()
 		ListElement.settings[1] = TITLE_LOWER(chan->title);
 		strncpy(ListElement.id, chan->id, 4);
 		ListElement.casecolor = CustomTitles.getColor("COVERS", ListElement.id, 1).intVal();
-		string CustomTitle = CustomTitles.getString("TITLES", ListElement.id);
+		const char *CustomTitle = CustomTitles.getString("TITLES", ListElement.id).c_str();
 		if(gameTDB.IsLoaded())
 		{
 			if(ListElement.casecolor == 1)
 				ListElement.casecolor = gameTDB.GetCaseColor(ListElement.id);
-			if(CustomTitle.size() == 0)
-				gameTDB.GetTitle(ListElement.id, CustomTitle);
 			ListElement.wifi = gameTDB.GetWifiPlayers(ListElement.id);
 			ListElement.players = gameTDB.GetPlayers(ListElement.id);
+			if(CustomTitle == NULL || CustomTitle[0] == '\0')
+				gameTDB.GetTitle(ListElement.id, CustomTitle);
 		}
-		if(CustomTitle.size() > 0)
-			mbstowcs(ListElement.title, CustomTitle.c_str(), 63);
+		if(CustomTitle != NULL && CustomTitle[0] != '\0')
+			mbstowcs(ListElement.title, CustomTitle, 63);
 		else
 			wcsncpy(ListElement.title, chan->name, 64);
 		ListElement.type = TYPE_CHANNEL;
