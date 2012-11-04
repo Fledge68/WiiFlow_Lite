@@ -63,7 +63,6 @@ private:
 	Config m_theme;
 	Config m_titles;
 	Config m_version;
-	Plugin m_plugin;
 	vector<string> m_homebrewArgs;
 	u8 *m_base_font;
 	u32 m_base_font_size;
@@ -661,7 +660,7 @@ private:
 	volatile bool m_thrdMessageAdded;
 	volatile bool m_gameSelected;
 	GuiSound m_gameSound;
-	dir_discHdr *m_gameSoundHdr;
+	volatile bool m_soundThrdBusy;
 	lwp_t m_gameSoundThread;
 	bool m_gamesound_changed;
 	u8 m_bnrSndVol;
@@ -1004,8 +1003,8 @@ public:
 	void _hideWaitMessage();
 	bool m_Emulator_boot;
 private:
-	GuiSound *_sound(CMenu::SoundSet &soundSet, const char *domain, const char *key, const u8 * snd, u32 len, string name, bool isAllocated);
-	GuiSound *_sound(CMenu::SoundSet &soundSet, const char *domain, const char *key, string name);
+	GuiSound *_sound(CMenu::SoundSet &soundSet, const char *domain, const char *key, const u8 * snd, u32 len, const char *name, bool isAllocated);
+	GuiSound *_sound(CMenu::SoundSet &soundSet, const char *domain, const char *key, const char *name);
 	u16 _textStyle(const char *domain, const char *key, u16 def);
 	s16 _addButton(const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color);
 	s16 _addSelButton(const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color);
@@ -1065,7 +1064,6 @@ private:
 
 	void _playGameSound(void);
 	void CheckGameSoundThread(void);
-	void ClearGameSoundThreadStack(void);
 	static void _gameSoundThread(CMenu *m);
 
 	static void _load_installed_cioses();

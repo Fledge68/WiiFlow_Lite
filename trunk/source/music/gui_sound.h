@@ -40,14 +40,14 @@ public:
 	//!Constructor
 	//!\param sound Pointer to the sound data
 	//!\param filesize Length of sound data
-	GuiSound(std::string filepath, int voice = -1);
-	GuiSound(const u8 * snd, u32 len, std::string name, bool allocated = false, int voice = -1);
+	GuiSound(const char *path, int voice = -1);
+	GuiSound(const u8 * snd, u32 len, const char *name, bool allocated = false, int voice = -1);
 	//!Stops sound and frees all memory/closes files
 	void FreeMemory();
 	//!Destructor
 	~GuiSound();
 	//!Load a file and replace the old one
-	bool Load(const char * filepath);
+	bool Load(const char *path);
 	//!Load a file and replace the old one
 	bool Load(const u8 * snd, u32 len, bool allocated = true);
 	//!For quick playback of the internal soundeffects
@@ -67,7 +67,7 @@ public:
 	bool IsLoaded() { return sound != NULL; };
 	//!Get the filepath for finding sounds which already have an instance.
 	//!\return the current instance's filepath
-	std::string GetName() { return filepath; };
+	const char *GetName() { return filepath; };
 	//!Checks if the sound is currently playing
 	//!\return true if sound is playing, false otherwise
 	bool IsPlaying();
@@ -89,7 +89,7 @@ private:
 	//!Initializes the GuiSound object by setting the default values
 	void Init();
 protected:
-	std::string filepath;
+	char filepath[256];
 	u8 *sound; //!< Pointer to the sound data
 	u32 length; //!< Length of sound data
 	s8 voice; //!< Currently assigned ASND voice channel

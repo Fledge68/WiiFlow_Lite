@@ -127,7 +127,7 @@ CMenu::CMenu()
 	m_mutex = 0;
 	m_showtimer = 0;
 	m_gameSoundThread = LWP_THREAD_NULL;
-	m_gameSoundHdr = NULL;
+	m_soundThrdBusy = false;
 	m_numCFVersions = 0;
 	m_bgCrossFade = 0;
 	m_bnrSndVol = 0;
@@ -498,7 +498,6 @@ void CMenu::cleanup()
 	_Theme_Cleanup();
 	MusicPlayer.Cleanup();
 	m_gameSound.FreeMemory();
-	ClearGameSoundThreadStack();
 	SoundHandle.Cleanup();
 	soundDeinit();
 
@@ -648,10 +647,10 @@ void CMenu::_loadCFCfg()
 	m_cf.setBufferSize(m_cfg.getInt("GENERAL", "cover_buffer", 20));
 	// Coverflow Sounds
 	m_cf.setSounds(
-		new GuiSound(sfmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString(domain, "sound_flip").c_str())),
-		_sound(theme.soundSet, domain, "sound_hover", hover_wav, hover_wav_size, string("default_btn_hover"), false),
-		_sound(theme.soundSet, domain, "sound_select", click_wav, click_wav_size, string("default_btn_click"), false),
-		new GuiSound(sfmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString(domain, "sound_cancel").c_str()))
+		new GuiSound(fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString(domain, "sound_flip").c_str())),
+		_sound(theme.soundSet, domain, "sound_hover", hover_wav, hover_wav_size, "default_btn_hover", false),
+		_sound(theme.soundSet, domain, "sound_select", click_wav, click_wav_size, "default_btn_click", false),
+		new GuiSound(fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString(domain, "sound_cancel").c_str()))
 	);
 	// Textures
 	string texLoading = sfmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString(domain, "loading_cover_box").c_str());
@@ -956,9 +955,9 @@ void CMenu::_buildMenus(void)
 	theme.selubtnFontColor = m_theme.getColor("GENERAL", "selubtn_font_color", 0xD0BFDFFF);
 
 	// Default Sounds
-	theme.clickSound	= _sound(theme.soundSet, "GENERAL", "click_sound", click_wav, click_wav_size, string("default_btn_click"), false);
-	theme.hoverSound	= _sound(theme.soundSet, "GENERAL", "hover_sound", hover_wav, hover_wav_size, string("default_btn_hover"), false);
-	theme.cameraSound	= _sound(theme.soundSet, "GENERAL", "camera_sound", camera_wav, camera_wav_size, string("default_camera"), false);
+	theme.clickSound	= _sound(theme.soundSet, "GENERAL", "click_sound", click_wav, click_wav_size, "default_btn_click", false);
+	theme.hoverSound	= _sound(theme.soundSet, "GENERAL", "hover_sound", hover_wav, hover_wav_size, "default_btn_hover", false);
+	theme.cameraSound	= _sound(theme.soundSet, "GENERAL", "camera_sound", camera_wav, camera_wav_size, "default_camera", false);
 
 	// Default textures
 	theme.btnTexL.fromPNG(butleft_png);
@@ -1284,39 +1283,40 @@ STexture CMenu::_texture(const char *domain, const char *key, STexture &def, boo
 }
 
 // Only for loading defaults and GENERAL domains!!
-GuiSound *CMenu::_sound(CMenu::SoundSet &soundSet, const char *domain, const char *key, const u8 * snd, u32 len, string name, bool isAllocated)
+GuiSound *CMenu::_sound(CMenu::SoundSet &soundSet, const char *domain, const char *key, const u8 * snd, u32 len, const char *name, bool isAllocated)
 {
-	string filename = m_theme.getString(domain, key, "");
-	if (filename.empty()) filename = name;
+	const char *filename = m_theme.getString(domain, key, "").c_str();
+	if(filename == NULL)
+		filename = name;
 
-	CMenu::SoundSet::iterator i = soundSet.find(upperCase(filename.c_str()));
-	if (i == soundSet.end())
+	CMenu::SoundSet::iterator i = soundSet.find(upperCase(filename));
+	if(i == soundSet.end())
 	{
-		if(strncmp(filename.c_str(), name.c_str(), name.size()) != 0)
-			soundSet[upperCase(filename.c_str())] = new GuiSound(fmt("%s/%s", m_themeDataDir.c_str(), filename.c_str()));
+		if(strncmp(filename, name, strlen(name) != 0))
+			soundSet[upperCase(filename)] = new GuiSound(fmt("%s/%s", m_themeDataDir.c_str(), filename));
 		else
-			soundSet[upperCase(filename.c_str())] = new GuiSound(snd, len, filename, isAllocated);
-		return soundSet[upperCase(filename.c_str())];
+			soundSet[upperCase(filename)] = new GuiSound(snd, len, filename, isAllocated);
+		return soundSet[upperCase(filename)];
 	}
 	return i->second;
 }
 
 //For buttons and labels only!!
-GuiSound *CMenu::_sound(CMenu::SoundSet &soundSet, const char *domain, const char *key, string name)
+GuiSound *CMenu::_sound(CMenu::SoundSet &soundSet, const char *domain, const char *key, const char *name)
 {
-	string filename = m_theme.getString(domain, key);
-	if (filename.empty())
+	const char *filename = m_theme.getString(domain, key).c_str();
+	if(filename == NULL)
 	{
-		if(name.find_last_of('/') != string::npos)
-			name = name.substr(name.find_last_of('/')+1);
-		return soundSet[upperCase(name.c_str())];  // General/Default are already cached!
+		if(strrchr(name, '/') != NULL)
+			name = strrchr(name, '/') + 1;
+		return soundSet[upperCase(name)];  // General/Default are already cached!
 	}
 
-	SoundSet::iterator i = soundSet.find(upperCase(filename.c_str()));
-	if (i == soundSet.end())
+	SoundSet::iterator i = soundSet.find(upperCase(filename));
+	if(i == soundSet.end())
 	{
-		soundSet[upperCase(filename.c_str())] = new GuiSound(fmt("%s/%s", m_themeDataDir.c_str(), filename.c_str()));
-		return soundSet[upperCase(filename.c_str())];
+		soundSet[upperCase(filename)] = new GuiSound(fmt("%s/%s", m_themeDataDir.c_str(), filename));
+		return soundSet[upperCase(filename)];
 	}
 	return i->second;
 }
@@ -1907,9 +1907,10 @@ void CMenu::_initCF(void)
 	m_cf.setBufferSize(m_cfg.getInt("GENERAL", "cover_buffer", 20));
 	m_cf.setSorting((Sorting)m_cfg.getInt(domain, "sort", 0));
 	m_cf.setHQcover(m_cfg.getBool("GENERAL", "cover_use_hq", false));
+
+	m_cf.start();
 	if (m_curGameId.empty() || !m_cf.findId(m_curGameId.c_str(), true))
 		m_cf.findId(m_cfg.getString(domain, "current_item").c_str(), true);
-	m_cf.start();
 }
 
 void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
@@ -1975,7 +1976,7 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 	if(Sys_Exiting())
 		exitHandler(BUTTON_CALLBACK);
 
-	if(withCF && m_gameSelected && m_gamesound_changed && (m_gameSoundHdr == NULL) && !m_gameSound.IsPlaying() && MusicPlayer.GetVolume() == 0)
+	if(withCF && m_gameSelected && m_gamesound_changed && !m_soundThrdBusy && !m_gameSound.IsPlaying() && MusicPlayer.GetVolume() == 0)
 	{
 		CheckGameSoundThread();
 		m_gameSound.Play(m_bnrSndVol);

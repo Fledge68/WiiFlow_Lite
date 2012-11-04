@@ -82,19 +82,25 @@ GuiSound::GuiSound()
 	Init();
 }
 
-GuiSound::GuiSound(string filepath, int v)
+GuiSound::GuiSound(const char *path, int v)
 {
+	if(path == NULL)
+		return;
 	this->voice = v;
 	Init();
-	Load(filepath.c_str());
+	Load(path);
 }
 
-GuiSound::GuiSound(const u8 * snd, u32 len, string name, bool isallocated, int v)
+GuiSound::GuiSound(const u8 * snd, u32 len, const char *name, bool isallocated, int v)
 {
 	this->voice = v;
 	Init();
 	Load(snd, len, isallocated);
-	this->filepath = name;
+	if(name != NULL)
+	{
+		strncpy(this->filepath, name, 255);
+		this->filepath[255] = '\0';
+	}
 }
 
 GuiSound::GuiSound(GuiSound *g)
@@ -112,7 +118,7 @@ GuiSound::GuiSound(GuiSound *g)
 		Load(snd, g->length, true);
 	}
 	else
-		Load(g->filepath.c_str());
+		Load(g->filepath);
 }
 
 GuiSound::~GuiSound()
@@ -123,6 +129,7 @@ GuiSound::~GuiSound()
 
 void GuiSound::Init()
 {
+	memset(this->filepath, 0, 256);
 	sound = NULL;
 	length = 0;
 
@@ -148,29 +155,29 @@ void GuiSound::FreeMemory()
 	if(allocated && sound != NULL)
 		free(sound);
 	allocated = false;
+	memset(this->filepath, 0, 256);
 	sound = NULL;
 	length = 0;
-	filepath = "";
 
 	SoundEffectLength = 0;
 }
 
-bool GuiSound::Load(const char * filepath)
+bool GuiSound::Load(const char *path)
 {
 	FreeMemory();
 
-	if(!filepath || filepath[strlen(filepath)-1] == '/' || strlen(filepath) < 4)
+	if(path == NULL || path[strlen(path)-1] == '/')
 		return false;
 
-	FILE * f = fopen(filepath, "rb");
+	FILE *f = fopen(path, "rb");
 	if(!f)
 	{
-		gprintf("gui_sound.cpp: Failed to load file %s!!\n", filepath);
+		gprintf("gui_sound.cpp: Failed to load file %s!!\n", path);
 		return false;
 	}
 
-	SoundHandle.AddDecoder(this->voice, filepath);
-	//gprintf("gui_sound.cpp: Loading %s using voice %d\n", filepath, this->voice);
+	SoundHandle.AddDecoder(this->voice, path);
+	//gprintf("gui_sound.cpp: Loading %s using voice %d\n", path, this->voice);
 	SoundDecoder *decoder = SoundHandle.Decoder(this->voice);
 	if(!decoder)
 	{
@@ -185,13 +192,14 @@ bool GuiSound::Load(const char * filepath)
 		return false;
 	}
 
-	this->filepath = filepath;
+	strncpy(this->filepath, path, 255);
+	this->filepath[255] = '\0';	SetLoop(loop);
 	SetLoop(loop);
 
 	return true;
 }
 
-bool GuiSound::Load(const u8 * snd, u32 len, bool isallocated)
+bool GuiSound::Load(const u8 *snd, u32 len, bool isallocated)
 {
 	FreeMemory();
 

@@ -28,6 +28,7 @@
 #include "types.h"
 #include "crc32.h"
 
+Plugin m_plugin;
 void Plugin::init(const string& m_pluginsDir)
 {
 	PluginMagicWord[8] = '\0';
