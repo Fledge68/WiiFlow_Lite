@@ -259,14 +259,6 @@ int thpAudioDecode(s16 * destBuffer, const u8* srcBuffer, bool separateChannelsI
 	return numSamples;
 }
 
-
-VideoFrame::VideoFrame()
-: _data(NULL), _w(0), _h(0), _p(0)
-{}
-
-VideoFrame::~VideoFrame()
-{ dealloc(); }
-
 void VideoFrame::resize(int width, int height)
 {
 	if(width == _w && height == _h)

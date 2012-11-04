@@ -116,7 +116,7 @@ public:
 	void setBlur(u32 blurResolution, u32 blurRadius, float blurFactor);
 	void setSorting(Sorting sorting);
 	// 
-	void setSounds(GuiSound *sound, GuiSound *hoverSound, GuiSound *selectSound, GuiSound *cancelSound);
+	void setSounds(GuiSound *flipSound, GuiSound *hoverSound, GuiSound *selectSound, GuiSound *cancelSound);
 	void setSoundVolume(u8 vol);
 	void stopSound(void);
 	// 
@@ -236,6 +236,7 @@ private:
 	int m_jump;
 	mutex_t m_mutex;
 	volatile bool m_loadingCovers;
+	volatile bool m_coverThrdBusy;
 	volatile bool m_moved;
 	volatile int m_hqCover;
 	bool m_selected;
@@ -285,7 +286,7 @@ private:
 	Vector3D m_flipCoverAngle;
 	Vector3D m_flipCoverScale;
 	u8 sndCopyNum;
-	GuiSound *m_sound[4];
+	GuiSound *m_flipSound;
 	GuiSound *m_hoverSound;
 	GuiSound *m_selectSound;
 	GuiSound *m_cancelSound;
@@ -331,8 +332,8 @@ private:
 	void _transposeCover(vector<CCover> &dst, u32 rows, u32 columns, int pos);
 	void _playSound(void);
 	
-	void _stopSound(GuiSound *snd);
-	void _playSound(GuiSound *snd);
+	void _stopSound(GuiSound * &snd);
+	void _playSound(GuiSound * &snd);
 
 	static bool _sortByPlayCount(CItem item1, CItem item2);
 	static bool _sortByLastPlayed(CItem item1, CItem item2);

@@ -188,10 +188,29 @@ void STexture::Cleanup(void)
 	if(data != NULL)
 		free(data);
 	data = NULL;
+	dataSize = 0;
 	width = 0;
 	height = 0;
 	format = -1;
 	maxLOD = 0;
+}
+
+bool STexture::CopyTexture(const STexture &tex)
+{
+	Cleanup();
+	if(tex.data == NULL || tex.dataSize == 0)
+		return false;
+	data = (u8*)MEM2_alloc(tex.dataSize);
+	if(data == NULL)
+		return false;
+	dataSize = tex.dataSize;
+	memcpy(data, tex.data, dataSize);
+	DCFlushRange(data, dataSize);
+	width = tex.width;
+	height = tex.height;
+	format = tex.format;
+	maxLOD = tex.maxLOD;
+	return true;
 }
 
 STexture::TexErr STexture::fromImageFile(const char *filename, u8 f, u32 minMipSize, u32 maxMipSize)
@@ -230,23 +249,72 @@ STexture::TexErr STexture::fromImageFile(const char *filename, u8 f, u32 minMipS
 	return result;
 }
 
-STexture::TexErr STexture::fromRAW(const u8 *buffer, u32 w, u32 h, u8 f, u32 minMipSize, u32 maxMipSize)
+STexture::TexErr STexture::fromTHP(const u8 *src, u32 w, u32 h)
 {
-	// Convert our raw stuff to a usable format
-	u8 *rawData = (u8*)MEM2_alloc(w * h * 4);
-	if(rawData == NULL)
+	width = w;
+	height = h;
+	format = GX_TF_RGBA8;
+	dataSize = GX_GetTexBufferSize(width, height, format, GX_FALSE, 0);
+	data = (u8*)MEM2_alloc(dataSize);
+	if(data == NULL)
 		return TE_NOMEM;
-	_convertToFlippedRGBA(rawData, buffer, w, h);
+	for(u32 block = 0; block < height; block += 4)
+	{
+		for(u32 i = 0; i < width; i += 4)
+		{
+			for(u32 c = 0; c < 4; ++c)
+			{
+				for(u32 argb = 0; argb < 4; ++argb)
+				{
+					u32 y = h - 1 - (c + block);
+					u32 x = argb + i;
+					u32 src_offset = ((i + argb) + ((block + c) * width)) * 3;
+					u32 dst_offset = coordsRGBA8(x, y, width);
+					/* Alpha */
+					data[dst_offset] = 0xFF;
+					/* RGB */
+					data[dst_offset + 1] = src[src_offset];
+					data[dst_offset + 32] = src[src_offset + 1];
+					data[dst_offset + 33] = src[src_offset + 2];
+				}
+			}
+		}
+	}
+	DCFlushRange(data, dataSize);
+	return TE_OK;
+}
+
+STexture::TexErr STexture::fromJPG(const u8 *buffer, const u32 buffer_size, u8 f, u32 minMipSize, u32 maxMipSize)
+{
+	Cleanup();
+
+	// Decode our JPG to raw
+	VideoFrame VideoF;
+	decodeRealJpeg(buffer, buffer_size, VideoF, true);
+	if(!VideoF.getData())
+		return TE_ERROR;
+	data = VideoF.getData();
+	width = VideoF.getWidth();
+	height = VideoF.getHeight();
+
+	// Convert our raw stuff to a usable format
+	u8 *rawData = (u8*)MEM2_alloc(width * height * 4);
+	if(rawData == NULL)
+	{
+		Cleanup();
+		return TE_NOMEM;
+	}
+	_convertToFlippedRGBA(rawData, data, width, height);
+
+	//Free our raw stuff
+	VideoF.dealloc();
+	data = NULL;
 
 	//Let the real work begin
-	Cleanup();
-	u32 BufSize = 0;
 	u8 maxLODTmp = 0;
 	u8 minLODTmp = 0;
 	u32 baseWidth;
 	u32 baseHeight;
-	width = w;
-	height = h;
 
 	switch(f)
 	{
@@ -260,13 +328,15 @@ STexture::TexErr STexture::fromRAW(const u8 *buffer, u32 w, u32 h, u8 f, u32 min
 	format = f;
 
 	if (minMipSize > 0 || maxMipSize > 0)
-		_calcMipMaps(maxLODTmp, minLODTmp, baseWidth, baseHeight, w, h, minMipSize, maxMipSize);
+		_calcMipMaps(maxLODTmp, minLODTmp, baseWidth, baseHeight, width, height, minMipSize, maxMipSize);
 	if (maxLODTmp > 0)
 	{
 		rawData = _genMipMaps(rawData, width, height, maxLODTmp, baseWidth, baseHeight);
 		if(rawData == NULL)
+		{
+			Cleanup();
 			return TE_NOMEM;
-
+		}
 		u32 newWidth = baseWidth;
 		u32 newHeight = baseHeight;
 		for(int i = 0; i < minLODTmp; ++i)
@@ -274,10 +344,11 @@ STexture::TexErr STexture::fromRAW(const u8 *buffer, u32 w, u32 h, u8 f, u32 min
 			newWidth >>= 1;
 			newHeight >>= 1;
 		}
-		BufSize = fixGX_GetTexBufferSize(newWidth, newHeight, f, GX_TRUE, maxLODTmp - minLODTmp);
-		data = (u8*)MEM2_alloc(BufSize);
+		dataSize = fixGX_GetTexBufferSize(newWidth, newHeight, f, GX_TRUE, maxLODTmp - minLODTmp);
+		data = (u8*)MEM2_alloc(dataSize);
 		if(data == NULL)
 		{
+			Cleanup();
 			free(rawData);
 			return TE_NOMEM;
 		}
@@ -312,10 +383,11 @@ STexture::TexErr STexture::fromRAW(const u8 *buffer, u32 w, u32 h, u8 f, u32 min
 	}
 	else
 	{
-		BufSize = GX_GetTexBufferSize(w, h, format, GX_FALSE, 0);
-		data = (u8*)MEM2_alloc(BufSize);
+		dataSize = GX_GetTexBufferSize(width, height, format, GX_FALSE, 0);
+		data = (u8*)MEM2_alloc(dataSize);
 		if(data == NULL)
 		{
+			Cleanup();
 			free(rawData);
 			return TE_NOMEM;
 		}
@@ -332,56 +404,9 @@ STexture::TexErr STexture::fromRAW(const u8 *buffer, u32 w, u32 h, u8 f, u32 min
 				break;
 		}
 	}
-	DCFlushRange(data, BufSize);
+	DCFlushRange(data, dataSize);
 	free(rawData);
 	return TE_OK;
-}
-
-STexture::TexErr STexture::fromTHP(const u8 *src, u32 w, u32 h)
-{
-	width = w;
-	height = h;
-	format = GX_TF_RGBA8;
-	u32 BufSize = GX_GetTexBufferSize(width, height, format, GX_FALSE, 0);
-	data = (u8*)MEM2_alloc(BufSize);
-	if(data == NULL)
-		return TE_NOMEM;
-	for(u32 block = 0; block < height; block += 4)
-	{
-		for(u32 i = 0; i < width; i += 4)
-		{
-			for(u32 c = 0; c < 4; ++c)
-			{
-				for(u32 argb = 0; argb < 4; ++argb)
-				{
-					u32 y = h - 1 - (c + block);
-					u32 x = argb + i;
-					u32 src_offset = ((i + argb) + ((block + c) * width)) * 3;
-					u32 dst_offset = coordsRGBA8(x, y, width);
-					/* Alpha */
-					data[dst_offset] = 0xFF;
-					/* RGB */
-					data[dst_offset + 1] = src[src_offset];
-					data[dst_offset + 32] = src[src_offset + 1];
-					data[dst_offset + 33] = src[src_offset + 2];
-				}
-			}
-		}
-	}
-	DCFlushRange(data, BufSize);
-	return TE_OK;
-}
-
-STexture::TexErr STexture::fromJPG(const u8 *buffer, const u32 buffer_size, u8 f, u32 minMipSize, u32 maxMipSize)
-{
-	TexErr result = TE_ERROR;
-	VideoFrame VideoF;
-	decodeRealJpeg(buffer, buffer_size, VideoF, true);
-	if(!VideoF.getData())
-		return result;
-	result = fromRAW(VideoF.getData(), VideoF.getWidth(), VideoF.getHeight(), f, minMipSize, maxMipSize);
-	VideoF.dealloc();
-	return result;
 }
 
 STexture::TexErr STexture::fromPNG(const u8 *buffer, u8 f, u32 minMipSize, u32 maxMipSize)
@@ -448,14 +473,15 @@ STexture::TexErr STexture::fromPNG(const u8 *buffer, u8 f, u32 minMipSize, u32 m
 		u8 *pSrc = tmpData2;
 		if(minLODTmp > 0)
 			pSrc += fixGX_GetTexBufferSize(baseWidth, baseHeight, f, minLODTmp > 1 ? GX_TRUE : GX_FALSE, minLODTmp - 1);
-		u32 Size = fixGX_GetTexBufferSize(newWidth, newHeight, f, GX_TRUE, maxLODTmp - minLODTmp);
-		data = (u8*)MEM2_alloc(Size);
+		dataSize = fixGX_GetTexBufferSize(newWidth, newHeight, f, GX_TRUE, maxLODTmp - minLODTmp);
+		data = (u8*)MEM2_alloc(dataSize);
 		if(data == NULL)
 		{
+			Cleanup();
 			free(tmpData2);
 			return TE_NOMEM;
 		}
-		memset(data, 0, Size);
+		memset(data, 0, dataSize);
 		u8 *pDst = data;
 		for(u8 i = minLODTmp; i <= maxLODTmp; ++i)
 		{
@@ -481,18 +507,18 @@ STexture::TexErr STexture::fromPNG(const u8 *buffer, u8 f, u32 minMipSize, u32 m
 		format = f;
 		width = newWidth;
 		height = newHeight;
-		DCFlushRange(data, Size);
 	}
 	else
 	{
-		u32 Size = GX_GetTexBufferSize(pngWidth, pngHeight, f, GX_FALSE, 0);
-		data = (u8*)MEM2_alloc(Size);
+		dataSize = GX_GetTexBufferSize(pngWidth, pngHeight, f, GX_FALSE, 0);
+		data = (u8*)MEM2_alloc(dataSize);
 		if(data == NULL)
 		{
+			Cleanup();
 			PNGU_ReleaseImageContext(ctx);
 			return TE_NOMEM;
 		}
-		memset(data, 0, Size);
+		memset(data, 0, dataSize);
 		format = f;
 		width = pngWidth;
 		height = pngHeight;
@@ -510,8 +536,8 @@ STexture::TexErr STexture::fromPNG(const u8 *buffer, u8 f, u32 minMipSize, u32 m
 				break;
 		}
 		PNGU_ReleaseImageContext(ctx);
-		DCFlushRange(data, Size);
 	}
+	DCFlushRange(data, dataSize);
 	return TE_OK;
 }
 

@@ -20,6 +20,12 @@
 #define GAME_SETTINGS2_FILENAME	"gameconfig2.ini"
 #define PLUGIN_CRCS_FILENAME	"plugin_crc32.ini"
 
+#define WII_DOMAIN				"GAMES"
+#define GC_DOMAIN				"DML"
+#define CHANNEL_DOMAIN			"NAND"
+#define PLUGIN_DOMAIN			"EMULATOR"
+#define HOMEBREW_DOMAIN			"HOMEBREW"
+
 #define AGE_LOCK_DEFAULT		13
 
 #define DEVELOPERS				"OverjoY, FIX94"

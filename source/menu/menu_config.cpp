@@ -60,8 +60,8 @@ void CMenu::_showConfig(void)
 		m_btnMgr.show(m_configLblDownload);
 		m_btnMgr.show(m_configBtnDownload);
 	
-		bool disable = (m_cfg.getBool("NAND", "disable", true) || neek2o()) && m_current_view == COVERFLOW_CHANNEL && !m_tempView;
-		char *partitionname = disable ? (char *)"NAND" : (char *)DeviceName[m_tempView ? m_cfg.getInt("GAMES", "savepartition", 0) : m_cfg.getInt(_domainFromView(), "partition", 0)];
+		bool disable = (m_cfg.getBool(CHANNEL_DOMAIN, "disable", true) || neek2o()) && m_current_view == COVERFLOW_CHANNEL && !m_tempView;
+		char *partitionname = disable ? (char *)CHANNEL_DOMAIN : (char *)DeviceName[m_tempView ? m_cfg.getInt(WII_DOMAIN, "savepartition", 0) : m_cfg.getInt(_domainFromView(), "partition", 0)];
 
 		for(u8 i = 0; strncmp((const char *)&partitionname[i], "\0", 1) != 0; i++)
 			partitionname[i] = toupper(partitionname[i]);
@@ -213,11 +213,11 @@ int CMenu::_config1(void)
 	
 	if (currentPartition != bCurrentPartition)
 	{	
-		bool disable = (m_cfg.getBool("NAND", "disable", true) || neek2o()) && m_current_view == COVERFLOW_CHANNEL && !m_tempView;
+		bool disable = (m_cfg.getBool(CHANNEL_DOMAIN, "disable", true) || neek2o()) && m_current_view == COVERFLOW_CHANNEL && !m_tempView;
 
 		if(!disable)
 		{
-			char *newpartition = (char *)DeviceName[m_cfg.getInt(m_tempView ? "GAMES" : _domainFromView(), m_tempView ? "savepartition" : "partition", currentPartition)];
+			char *newpartition = (char *)DeviceName[m_cfg.getInt(m_tempView ? WII_DOMAIN : _domainFromView(), m_tempView ? "savepartition" : "partition", currentPartition)];
 
 			for(u8 i = 0; strncmp((const char *)&newpartition[i], "\0", 1) != 0; i++)
 				newpartition[i] = toupper(newpartition[i]);

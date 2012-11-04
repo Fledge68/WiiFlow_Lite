@@ -54,21 +54,21 @@ bool Plugin::AddPlugin(Config &plugin)
 		return false;
 
 	PluginOptions NewPlugin;
-	NewPlugin.DolName = plugin.getString(PLUGIN_DOMAIN, "dolFile");
-	NewPlugin.coverFolder = plugin.getString(PLUGIN_DOMAIN, "coverFolder");
-	NewPlugin.magicWord = strtoul(plugin.getString(PLUGIN_DOMAIN, "magic").c_str(), NULL, 16);
-	NewPlugin.caseColor = strtoul(plugin.getString(PLUGIN_DOMAIN, "coverColor").c_str(), NULL, 16);
-	NewPlugin.Args = plugin.getStrings(PLUGIN_DOMAIN, "arguments", '|');
-	string PluginName = plugin.getString(PLUGIN_DOMAIN, "displayname");
+	NewPlugin.DolName = plugin.getString(PLUGIN_INI_DEF, "dolFile");
+	NewPlugin.coverFolder = plugin.getString(PLUGIN_INI_DEF, "coverFolder");
+	NewPlugin.magicWord = strtoul(plugin.getString(PLUGIN_INI_DEF, "magic").c_str(), NULL, 16);
+	NewPlugin.caseColor = strtoul(plugin.getString(PLUGIN_INI_DEF, "coverColor").c_str(), NULL, 16);
+	NewPlugin.Args = plugin.getStrings(PLUGIN_INI_DEF, "arguments", '|');
+	string PluginName = plugin.getString(PLUGIN_INI_DEF, "displayname");
 	if(PluginName.size() < 2)
 	{
 		PluginName = NewPlugin.DolName;
 		PluginName.erase(PluginName.end() - 4, PluginName.end());
 	}
 	NewPlugin.DisplayName.fromUTF8(PluginName.c_str());
-	NewPlugin.consoleCoverID = plugin.getString(PLUGIN_DOMAIN,"consoleCoverID");
+	NewPlugin.consoleCoverID = plugin.getString(PLUGIN_INI_DEF,"consoleCoverID");
 
-	const char *bannerfilepath = fmt("%s/%s", pluginsDir.c_str(), plugin.getString(PLUGIN_DOMAIN,"bannerSound").c_str());
+	const char *bannerfilepath = fmt("%s/%s", pluginsDir.c_str(), plugin.getString(PLUGIN_INI_DEF,"bannerSound").c_str());
 	FILE *fp = fopen(bannerfilepath, "rb");
 	if(fp != NULL)
 	{
@@ -154,11 +154,11 @@ void Plugin::SetEnablePlugin(Config &cfg, u8 pos, u8 ForceMode)
 	{
 		strncpy(PluginMagicWord, fmt("%08x", Plugins[pos].magicWord), 8);
 		if(ForceMode == 1)
-			cfg.setBool(PLUGIN_DOMAIN, PluginMagicWord, false);
+			cfg.setBool(PLUGIN_INI_DEF, PluginMagicWord, false);
 		else if(ForceMode == 2)
-			cfg.setBool(PLUGIN_DOMAIN, PluginMagicWord, true);
+			cfg.setBool(PLUGIN_INI_DEF, PluginMagicWord, true);
 		else
-			cfg.setBool(PLUGIN_DOMAIN, PluginMagicWord, cfg.getBool(PLUGIN_DOMAIN, PluginMagicWord) ? false : true);
+			cfg.setBool(PLUGIN_INI_DEF, PluginMagicWord, cfg.getBool(PLUGIN_INI_DEF, PluginMagicWord) ? false : true);
 	}
 }
 
@@ -169,7 +169,7 @@ const vector<bool> &Plugin::GetEnabledPlugins(Config &cfg)
 	for(u8 i = 0; i < Plugins.size(); i++)
 	{
 		strncpy(PluginMagicWord, fmt("%08x", Plugins[i].magicWord), 8);
-		if(cfg.getBool(PLUGIN_DOMAIN, PluginMagicWord, true))
+		if(cfg.getBool(PLUGIN_INI_DEF, PluginMagicWord, true))
 		{
 			enabledPluginsNumber++;
 			enabledPlugins.push_back(true);
@@ -207,7 +207,7 @@ vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, const char *Device, u32
 			continue;
 		}
 		memset((void*)&ListElement, 0, sizeof(dir_discHdr));
-		strncpy((char*)ListElement.id, PLUGIN_DOMAIN, 6);
+		strncpy((char*)ListElement.id, PLUGIN_INI_DEF, 6);
 		ListElement.casecolor = Plugins.back().caseColor;
 		mbstowcs(ListElement.title, GameName.c_str(), 63);
 		strncpy(ListElement.path, GameDomain->c_str(), sizeof(ListElement.path));

@@ -157,11 +157,11 @@ int CMenu::_GCgameInstaller(void *obj)
 	CMenu &m = *(CMenu *)obj;
 	GCDump m_gcdump;
 
-	bool skip = m.m_cfg.getBool("DML", "skip_on_error", false);
-	bool comp = m.m_cfg.getBool("DML", "compressed_dump", false);
-	bool wexf = m.m_cfg.getBool("DML", "write_ex_files", true);
-	bool alig = m.m_cfg.getBool("DML", "force_32k_align_files", false);
-	u32 nretry = m.m_cfg.getUInt("DML", "num_retries", 5);
+	bool skip = m.m_cfg.getBool(GC_DOMAIN, "skip_on_error", false);
+	bool comp = m.m_cfg.getBool(GC_DOMAIN, "compressed_dump", false);
+	bool wexf = m.m_cfg.getBool(GC_DOMAIN, "write_ex_files", true);
+	bool alig = m.m_cfg.getBool(GC_DOMAIN, "force_32k_align_files", false);
+	u32 nretry = m.m_cfg.getUInt(GC_DOMAIN, "num_retries", 5);
 	u32 rsize = 1048576; //1MB
 
 	if(skip)

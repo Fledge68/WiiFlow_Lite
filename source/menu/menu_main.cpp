@@ -151,13 +151,13 @@ void CMenu::_showMain(void)
 				m_btnMgr.show(m_mainLblInit);
 				break;
 			case COVERFLOW_CHANNEL:
-				if(!m_cfg.getBool("NAND", "disable", true))
+				if(!m_cfg.getBool(CHANNEL_DOMAIN, "disable", true))
 				{
 					NandHandle.Disable_Emu();
 					DeviceHandle.MountAll();
 					_hideMain();
 					if(!_AutoCreateNand())
-						m_cfg.setBool("NAND", "disable", true);
+						m_cfg.setBool(CHANNEL_DOMAIN, "disable", true);
 					_loadList();
 					_showMain();
 					_initCF();
@@ -175,7 +175,7 @@ void CMenu::_showMain(void)
 				break;
 		}
 	}
-	else if(!neek2o() && m_current_view == COVERFLOW_CHANNEL && !m_cfg.getBool("NAND", "disable", true))
+	else if(!neek2o() && m_current_view == COVERFLOW_CHANNEL && !m_cfg.getBool(CHANNEL_DOMAIN, "disable", true))
 		NandHandle.Enable_Emu();
 }
 
@@ -195,8 +195,8 @@ void CMenu::LoadView(void)
 	_loadCFLayout(m_cfg.getInt(_domainFromView(), "last_cf_mode", 1));
 	m_cf.applySettings();
 
-	char *mode = (m_current_view == COVERFLOW_CHANNEL && m_cfg.getBool("NAND", "disable", true)) 
-		? (char *)"NAND" : (char *)DeviceName[currentPartition];
+	char *mode = (m_current_view == COVERFLOW_CHANNEL && m_cfg.getBool(CHANNEL_DOMAIN, "disable", true)) 
+		? (char *)CHANNEL_DOMAIN : (char *)DeviceName[currentPartition];
 
 	for(u8 i = 0; strncmp((const char *)&mode[i], "\0", 1) != 0; i++)
 			mode[i] = toupper(mode[i]);
@@ -229,10 +229,10 @@ int CMenu::main(void)
 {
 	wstringEx curLetter;
 	string prevTheme = m_cfg.getString("GENERAL", "theme", "default");
-	parental_homebrew = m_cfg.getBool("HOMEBREW", "parental", false);	
-	show_homebrew = !m_cfg.getBool("HOMEBREW", "disable", false);
+	parental_homebrew = m_cfg.getBool(HOMEBREW_DOMAIN, "parental", false);	
+	show_homebrew = !m_cfg.getBool(HOMEBREW_DOMAIN, "disable", false);
 	show_channel = !m_cfg.getBool("GENERAL", "hidechannel", false);
-	show_emu = !m_cfg.getBool("EMULATOR", "disable", false);
+	show_emu = !m_cfg.getBool(PLUGIN_DOMAIN, "disable", false);
 	bool dpad_mode = m_cfg.getBool("GENERAL", "dpad_mode", false);
 	bool b_lr_mode = m_cfg.getBool("GENERAL", "b_lr_mode", false);
 	bool use_grab = m_cfg.getBool("GENERAL", "use_grab", false);
@@ -472,8 +472,8 @@ int CMenu::main(void)
 				else if(!neek2o())
 				{
 					bUsed = true;
-					m_cfg.setBool("NAND", "disable", !m_cfg.getBool("NAND", "disable", true));
-					gprintf("EmuNand is %s\n", m_cfg.getBool("NAND", "disable", true) ? "Disabled" : "Enabled");
+					m_cfg.setBool(CHANNEL_DOMAIN, "disable", !m_cfg.getBool(CHANNEL_DOMAIN, "disable", true));
+					gprintf("EmuNand is %s\n", m_cfg.getBool(CHANNEL_DOMAIN, "disable", true) ? "Disabled" : "Enabled");
 					m_current_view = COVERFLOW_CHANNEL;
 					LoadView();
 				}
@@ -634,7 +634,7 @@ int CMenu::main(void)
 			else if(BTN_MINUS_PRESSED && !m_locked)
 			{
 				bUsed = true;
-				bool block = m_current_view == COVERFLOW_CHANNEL && (m_cfg.getBool("NAND", "disable", true) || neek2o());
+				bool block = m_current_view == COVERFLOW_CHANNEL && (m_cfg.getBool(CHANNEL_DOMAIN, "disable", true) || neek2o());
 				char *partition;
 				if(!block)
 				{
@@ -643,7 +643,7 @@ int CMenu::main(void)
 					bool isD2XnewerThanV6 = (CurrentIOS.Type == IOS_TYPE_NEEK2O);
 					if(CurrentIOS.Revision > 6 && CurrentIOS.Type == IOS_TYPE_D2X)
 						isD2XnewerThanV6 = true;
-					if(m_current_view == COVERFLOW_CHANNEL && m_cfg.getInt("NAND", "emulation", 0))
+					if(m_current_view == COVERFLOW_CHANNEL && m_cfg.getInt(CHANNEL_DOMAIN, "emulation", 0))
 						NandHandle.Enable_Emu();
 					u8 limiter = 0;
 					currentPartition = loopNum(currentPartition + 1, (int)USB8);
@@ -822,7 +822,7 @@ int CMenu::main(void)
 	else if(Sys_GetExitTo() == EXIT_TO_SMNK2O || Sys_GetExitTo() == EXIT_TO_WFNK2O)
 	{
 		string emuPath;
-		_FindEmuPart(&emuPath, m_cfg.getInt("NAND", "partition", 0), false);
+		_FindEmuPart(&emuPath, m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0), false);
 		Sys_SetNeekPath(emuPath.size() > 1 ? emuPath.c_str() : NULL);
 	}
 	//gprintf("Saving configuration files\n");
