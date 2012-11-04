@@ -79,4 +79,7 @@ private:
 	string pluginsDir;
 	bool adding;
 };
+
+extern Plugin m_plugin;
+
 #endif
