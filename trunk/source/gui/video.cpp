@@ -233,8 +233,13 @@ void CVideo::setup2DProjection(bool setViewPort, bool noScale)
 
 void CVideo::renderToTexture(STexture &tex, bool clear)
 {
-	if (!tex.data) tex.data = (u8*)MEM2_alloc(GX_GetTexBufferSize(tex.width, tex.height, tex.format, GX_FALSE, 0));
-	if (!tex.data) return;
+	if(tex.data == NULL)
+	{
+		tex.dataSize = GX_GetTexBufferSize(tex.width, tex.height, tex.format, GX_FALSE, 0);
+		tex.data = (u8*)MEM2_alloc(tex.dataSize);
+	}
+	if(tex.data == NULL)
+		return;
 	GX_DrawDone();
 	GX_SetCopyFilter(GX_FALSE, NULL, GX_FALSE, NULL);
 	GX_SetTexCopySrc(0, 0, tex.width, tex.height);
@@ -242,7 +247,7 @@ void CVideo::renderToTexture(STexture &tex, bool clear)
 	GX_CopyTex(tex.data, clear ? GX_TRUE : GX_FALSE);
 	GX_PixModeSync();
 	GX_SetCopyFilter(m_rmode->aa, m_rmode->sample_pattern, GX_TRUE, m_rmode->vfilter);
-	DCFlushRange(tex.data, GX_GetTexBufferSize(tex.width, tex.height, tex.format, GX_FALSE, 0));
+	DCFlushRange(tex.data, tex.dataSize);
 	GX_SetScissor(0, 0, m_rmode->fbWidth, m_rmode->efbHeight);
 }
 

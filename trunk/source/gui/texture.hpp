@@ -7,9 +7,11 @@
 class STexture
 {
 public:
-	STexture(void) : data(NULL), width(0), height(0), format(-1), maxLOD(0) { }
+	STexture(void) : data(NULL), dataSize(0), width(0), height(0), format(-1), maxLOD(0) { }
 	void Cleanup();
+	bool CopyTexture(const STexture &tex);
 	u8 *data;
+	u32 dataSize;
 	u32 width;
 	u32 height;
 	u8 format;
@@ -20,7 +22,6 @@ public:
 	TexErr fromImageFile(const char *filename, u8 f = -1, u32 minMipSize = 0, u32 maxMipSize = 0);
 	// This function doesn't use MEM2 if the PNG is loaded from memory and there's no mip mapping
 	TexErr fromPNG(const u8 *buffer, u8 f = -1, u32 minMipSize = 0, u32 maxMipSize = 0);
-	TexErr fromRAW(const u8 *buffer, u32 w, u32 h, u8 f = -1, u32 minMipSize = 0, u32 maxMipSize = 0);
 	TexErr fromJPG(const u8 *buffer, const u32 buffer_size, u8 f = -1, u32 minMipSize = 0, u32 maxMipSize = 0);
 	/* Just for THP */
 	TexErr fromTHP(const u8 *buffer, u32 w, u32 h);

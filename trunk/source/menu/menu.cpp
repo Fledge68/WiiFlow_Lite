@@ -261,7 +261,7 @@ void CMenu::init()
 		}
 	}
 
-	if(m_cfg.getBool("DML", "always_show_button", false))
+	if(m_cfg.getBool(GC_DOMAIN, "always_show_button", false))
 	{
 		gprintf("Force enabling DML view\n");
 		m_show_dml = true;
@@ -269,13 +269,13 @@ void CMenu::init()
 	else
 		m_show_dml = MIOSisDML();
 
-	m_new_dml = m_cfg.getBool("DML", "dml_r52+", true);
-	m_new_dm_cfg = m_cfg.getBool("DML", "dm_r2.1+", true);
-	m_DMLgameDir = sfmt("%%s:/%s", m_cfg.getString("DML", "dir_usb_games", "games").c_str());
+	m_new_dml = m_cfg.getBool(GC_DOMAIN, "dml_r52+", true);
+	m_new_dm_cfg = m_cfg.getBool(GC_DOMAIN, "dm_r2.1+", true);
+	m_DMLgameDir = sfmt("%%s:/%s", m_cfg.getString(GC_DOMAIN, "dir_usb_games", "games").c_str());
 
-	m_cfg.getString("NAND", "path", "");
-	m_cfg.getInt("NAND", "partition", 1);
-	m_cfg.getBool("NAND", "disable", true);
+	m_cfg.getString(CHANNEL_DOMAIN, "path", "");
+	m_cfg.getInt(CHANNEL_DOMAIN, "partition", 1);
+	m_cfg.getBool(CHANNEL_DOMAIN, "disable", true);
 
 	_installed_cios.clear();
 	if(!neek2o())
@@ -518,7 +518,13 @@ void CMenu::cleanup()
 
 void CMenu::_Theme_Cleanup(void)
 {
+	/* Backgrounds */
 	theme.bg.Cleanup();
+	m_prevBg.Cleanup();
+	m_nextBg.Cleanup();
+	m_curBg.Cleanup();
+	m_lqBg.Cleanup();
+	/* Buttons */
 	theme.btnTexL.Cleanup();
 	theme.btnTexR.Cleanup();
 	theme.btnTexC.Cleanup();
@@ -579,6 +585,11 @@ void CMenu::_Theme_Cleanup(void)
 	theme.btnZHCNOns.Cleanup();
 	theme.btnZHCNOff.Cleanup();
 	theme.btnZHCNOffs.Cleanup();
+	theme.btnTexPlus.Cleanup();
+	theme.btnTexPlusS.Cleanup();
+	theme.btnTexMinus.Cleanup();
+	theme.btnTexMinusS.Cleanup();
+	/* Checkboxes */
 	theme.checkboxoff.Cleanup();
 	theme.checkboxoffs.Cleanup();
 	theme.checkboxon.Cleanup();
@@ -587,16 +598,14 @@ void CMenu::_Theme_Cleanup(void)
 	theme.checkboxHids.Cleanup();
 	theme.checkboxReq.Cleanup();
 	theme.checkboxReqs.Cleanup();
+	/* Progress Bars */
 	theme.pbarTexL.Cleanup();
 	theme.pbarTexR.Cleanup();
 	theme.pbarTexC.Cleanup();
 	theme.pbarTexLS.Cleanup();
 	theme.pbarTexRS.Cleanup();
 	theme.pbarTexCS.Cleanup();
-	theme.btnTexPlus.Cleanup();
-	theme.btnTexPlusS.Cleanup();
-	theme.btnTexMinus.Cleanup();
-	theme.btnTexMinusS.Cleanup();
+	/* Other Theme Stuff */
 	for(TexSet::iterator texture = theme.texSet.begin(); texture != theme.texSet.end(); ++texture)
 		texture->second.Cleanup();
 	for(FontSet::iterator font = theme.fontSet.begin(); font != theme.fontSet.end(); ++font)
@@ -1286,13 +1295,13 @@ STexture CMenu::_texture(const char *domain, const char *key, STexture &def, boo
 GuiSound *CMenu::_sound(CMenu::SoundSet &soundSet, const char *domain, const char *key, const u8 * snd, u32 len, const char *name, bool isAllocated)
 {
 	const char *filename = m_theme.getString(domain, key, "").c_str();
-	if(filename == NULL)
+	if(filename == NULL || filename[0] == '\0')
 		filename = name;
 
-	CMenu::SoundSet::iterator i = soundSet.find(upperCase(filename));
+	CMenu::SoundSet::iterator i = soundSet.find(upperCase(name));
 	if(i == soundSet.end())
 	{
-		if(strncmp(filename, name, strlen(name) != 0))
+		if(filename != name)
 			soundSet[upperCase(filename)] = new GuiSound(fmt("%s/%s", m_themeDataDir.c_str(), filename));
 		else
 			soundSet[upperCase(filename)] = new GuiSound(snd, len, filename, isAllocated);
@@ -1305,7 +1314,7 @@ GuiSound *CMenu::_sound(CMenu::SoundSet &soundSet, const char *domain, const cha
 GuiSound *CMenu::_sound(CMenu::SoundSet &soundSet, const char *domain, const char *key, const char *name)
 {
 	const char *filename = m_theme.getString(domain, key).c_str();
-	if(filename == NULL)
+	if(filename == NULL || filename[0] == '\0')
 	{
 		if(strrchr(name, '/') != NULL)
 			name = strrchr(name, '/') + 1;
@@ -1743,19 +1752,19 @@ void CMenu::_initCF(void)
 			switch(element->type)
 			{
 				case TYPE_CHANNEL:
-					catDomain = "NAND";
+					catDomain = CHANNEL_DOMAIN;
 					break;
 				case TYPE_HOMEBREW:
-					catDomain = "HOMEBREW";
+					catDomain = HOMEBREW_DOMAIN;
 					break;
 				case TYPE_GC_GAME:
-					catDomain = "DML";
+					catDomain = GC_DOMAIN;
 					break;
 				case TYPE_PLUGIN:
-					catDomain = "EMULATOR";
+					catDomain = PLUGIN_DOMAIN;
 					break;
 				default:
-					catDomain = "GAMES";
+					catDomain = WII_DOMAIN;
 			}
 			if(enabledPluginsCount == 1)
 			{
@@ -2041,8 +2050,9 @@ void CMenu::_setBg(const STexture &tex, const STexture &lqTex)
 	m_lqBg = lqTex;
 	if(tex.data == m_nextBg.data)
 		return;
-	m_prevBg = m_curBg;
-	m_nextBg = tex;
+	m_prevBg.CopyTexture(m_curBg);
+	m_curBg.Cleanup();
+	m_nextBg.CopyTexture(tex);
 	m_bgCrossFade = 0xFF;
 }
 
@@ -2057,26 +2067,22 @@ void CMenu::_updateBg(void)
 	m_bgCrossFade = max(0, (int)m_bgCrossFade - 14);
 	if (m_bgCrossFade == 0)
 	{
+		m_curBg.Cleanup();
 		m_curBg = m_nextBg;
 		return;
-	}
-	if(m_curBg.data == m_prevBg.data && m_curBg.data != NULL)
-	{
-		free(m_curBg.data);
-		m_curBg.data = NULL;
 	}
 	m_vid.prepare();
 	GX_SetViewport(0.f, 0.f, 640.f, 480.f, 0.f, 1.f);
 	guOrtho(projMtx, 0.f, 480.f, 0.f, 640.f, 0.f, 1000.0f);
 	GX_LoadProjectionMtx(projMtx, GX_ORTHOGRAPHIC);
 	GX_ClearVtxDesc();
-	GX_SetNumTevStages(!m_prevBg.data ? 1 : 2);
+	GX_SetNumTevStages(m_prevBg.data == NULL ? 1 : 2);
 	GX_SetNumChans(0);
 	GX_SetVtxDesc(GX_VA_POS, GX_DIRECT);
 	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
 	GX_SetVtxDesc(GX_VA_TEX0, GX_DIRECT);
 	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
-	GX_SetNumTexGens(!m_prevBg.data ? 1 : 2);
+	GX_SetNumTexGens(m_prevBg.data == NULL ? 1 : 2);
 	GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
 	GX_SetTexCoordGen(GX_TEXCOORD1, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
 	GX_SetTevKColor(GX_KCOLOR0, CColor(m_bgCrossFade, 0xFF - m_bgCrossFade, 0, 0));
@@ -2121,8 +2127,9 @@ void CMenu::_updateBg(void)
 	m_curBg.format = GX_TF_RGBA8;
 	m_curBg.maxLOD = 0;
 	m_vid.renderToTexture(m_curBg, true);
-	if (!m_curBg.data)
+	if(m_curBg.data == NULL)
 	{
+		m_curBg.Cleanup();
 		m_curBg = m_nextBg;
 		m_bgCrossFade = 0;
 	}
@@ -2198,11 +2205,11 @@ bool CMenu::_loadChannelList(void)
 	string emuPath;	
 	int emuPartition = -1;
 
-	bool disable_emu = (m_cfg.getBool("NAND", "disable", true) || neek2o());
+	bool disable_emu = (m_cfg.getBool(CHANNEL_DOMAIN, "disable", true) || neek2o());
 
 	if(!disable_emu)
 	{
-		m_partRequest = m_cfg.getInt("NAND", "partition", 1);
+		m_partRequest = m_cfg.getInt(CHANNEL_DOMAIN, "partition", 1);
 		emuPartition = _FindEmuPart(&emuPath, m_partRequest, false);
 	
 		if(emuPartition < 0)
@@ -2218,7 +2225,7 @@ bool CMenu::_loadChannelList(void)
 	{
 		char basepath[64];
 		snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[currentPartition], emuPath.c_str());
-		NandHandle.PreNandCfg(basepath, m_cfg.getBool("NAND", "real_nand_miis", false), m_cfg.getBool("NAND", "real_nand_config", false));
+		NandHandle.PreNandCfg(basepath, m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_miis", false), m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_config", false));
 	}
 	NandHandle.Disable_Emu();
 	if(!disable_emu)
@@ -2246,14 +2253,14 @@ bool CMenu::_loadChannelList(void)
 bool CMenu::_loadList(void)
 {
 	m_cf.clear();
-	if((m_current_view == COVERFLOW_CHANNEL && m_cfg.getBool("NAND", "disable", true))
+	if((m_current_view == COVERFLOW_CHANNEL && m_cfg.getBool(CHANNEL_DOMAIN, "disable", true))
 	|| (m_current_view != COVERFLOW_CHANNEL && NandHandle.EmulationEnabled()))
 	{
 		MusicPlayer.Stop();
 		NandHandle.Disable_Emu();
 		_TempLoadIOS(IOS_TYPE_NORMAL_IOS);
 	}
-	gprintf("Switching Views\n");
+	gprintf("Switching View to %s\n", _domainFromView());
 
 	bool retval;
 	switch(m_current_view)
@@ -2282,14 +2289,15 @@ bool CMenu::_loadList(void)
 
 bool CMenu::_loadGameList(void)
 {
-	currentPartition = m_cfg.getInt("GAMES", "partition", USB1);
+	currentPartition = m_cfg.getInt(WII_DOMAIN, "partition", USB1);
 	if(!DeviceHandle.IsInserted(currentPartition))
 		return false;
 
+	m_gameList.clear();
 	DeviceHandle.OpenWBFS(currentPartition);
 	string gameDir(fmt(GAMES_DIR, DeviceName[currentPartition]));
 	string cacheDir(fmt("%s/%s_wii.db", m_listCacheDir.c_str(), DeviceName[currentPartition]));
-	bool updateCache = m_cfg.getBool(_domainFromView(), "update_cache");
+	bool updateCache = m_cfg.getBool(WII_DOMAIN, "update_cache");
 	m_gameList.CreateList(m_current_view, currentPartition, gameDir, stringToVector(".wbfs|.iso", '|'), cacheDir, updateCache);
 	WBFS_Close();
 
@@ -2298,13 +2306,14 @@ bool CMenu::_loadGameList(void)
 
 bool CMenu::_loadHomebrewList()
 {
-	currentPartition = m_cfg.getInt("HOMEBREW", "partition", SD);
+	currentPartition = m_cfg.getInt(HOMEBREW_DOMAIN, "partition", SD);
 	if(!DeviceHandle.IsInserted(currentPartition))
 		return false;
 
+	m_gameList.clear();
 	string gameDir(fmt(HOMEBREW_DIR, DeviceName[currentPartition]));
 	string cacheDir(fmt("%s/%s_homebrew.db", m_listCacheDir.c_str(), DeviceName[currentPartition]));
-	bool updateCache = m_cfg.getBool(_domainFromView(), "update_cache");
+	bool updateCache = m_cfg.getBool(HOMEBREW_DOMAIN, "update_cache");
 	m_gameList.CreateList(m_current_view, currentPartition, gameDir, stringToVector(".dol|.elf", '|'), cacheDir, updateCache);
 
 	return m_gameList.size() > 0 ? true : false;
@@ -2312,13 +2321,14 @@ bool CMenu::_loadHomebrewList()
 
 bool CMenu::_loadDmlList()
 {
-	currentPartition = m_cfg.getInt("DML", "partition", USB1);
+	currentPartition = m_cfg.getInt(GC_DOMAIN, "partition", USB1);
 	if(!DeviceHandle.IsInserted(currentPartition))
 		return false;
 
+	m_gameList.clear();
 	string gameDir(fmt(currentPartition == SD ? DML_DIR : m_DMLgameDir.c_str(), DeviceName[currentPartition]));
 	string cacheDir(fmt("%s/%s_gamecube.db", m_listCacheDir.c_str(), DeviceName[currentPartition]));
-	bool updateCache = m_cfg.getBool(_domainFromView(), "update_cache");
+	bool updateCache = m_cfg.getBool(GC_DOMAIN, "update_cache");
 	m_gameList.CreateList(m_current_view, currentPartition, gameDir,
 			stringToVector(".iso|root", '|'),cacheDir, updateCache);
 
@@ -2334,10 +2344,10 @@ static void GrabINIFiles(char *FullPath)
 
 bool CMenu::_loadEmuList()
 {
-	currentPartition = m_cfg.getInt("EMULATOR", "partition", SD);
+	currentPartition = m_cfg.getInt(PLUGIN_DOMAIN, "partition", SD);
 	if(!DeviceHandle.IsInserted(currentPartition))
 		return false;
-	bool updateCache = m_cfg.getBool(_domainFromView(), "update_cache");
+	bool updateCache = m_cfg.getBool(PLUGIN_DOMAIN, "update_cache");
 
 	vector<dir_discHdr> emuList;
 	Config m_plugin_cfg;
@@ -2353,13 +2363,13 @@ bool CMenu::_loadEmuList()
 		if(m_plugin_cfg.loaded())
 		{
 			m_plugin.AddPlugin(m_plugin_cfg);
-			u32 MagicWord = strtoul(m_plugin_cfg.getString(PLUGIN_DOMAIN,"magic").c_str(), NULL, 16);
-			if(m_plugin_cfg.getString(PLUGIN_DOMAIN,"romDir").find("scummvm.ini") == string::npos)
+			u32 MagicWord = strtoul(m_plugin_cfg.getString(PLUGIN_INI_DEF,"magic").c_str(), NULL, 16);
+			if(m_plugin_cfg.getString(PLUGIN_INI_DEF,"romDir").find("scummvm.ini") == string::npos)
 			{
-				string gameDir(fmt("%s:/%s", DeviceName[currentPartition], m_plugin_cfg.getString(PLUGIN_DOMAIN,"romDir").c_str()));
-				string cacheDir(fmt("%s/%s_%s.db", m_listCacheDir.c_str(), DeviceName[currentPartition], m_plugin_cfg.getString(PLUGIN_DOMAIN,"magic").c_str()));
-				vector<string> FileTypes = stringToVector(m_plugin_cfg.getString(PLUGIN_DOMAIN,"fileTypes"), '|');
-				m_gameList.Color = strtoul(m_plugin_cfg.getString(PLUGIN_DOMAIN,"coverColor").c_str(), NULL, 16);
+				string gameDir(fmt("%s:/%s", DeviceName[currentPartition], m_plugin_cfg.getString(PLUGIN_INI_DEF,"romDir").c_str()));
+				string cacheDir(fmt("%s/%s_%s.db", m_listCacheDir.c_str(), DeviceName[currentPartition], m_plugin_cfg.getString(PLUGIN_INI_DEF,"magic").c_str()));
+				vector<string> FileTypes = stringToVector(m_plugin_cfg.getString(PLUGIN_INI_DEF,"fileTypes"), '|');
+				m_gameList.Color = strtoul(m_plugin_cfg.getString(PLUGIN_INI_DEF,"coverColor").c_str(), NULL, 16);
 				m_gameList.Magic = MagicWord;
 				m_gameList.CreateList(m_current_view, currentPartition, gameDir, FileTypes, cacheDir, updateCache);
 				for(vector<dir_discHdr>::iterator tmp_itr = m_gameList.begin(); tmp_itr != m_gameList.end(); tmp_itr++)
@@ -2603,15 +2613,15 @@ const char *CMenu::_domainFromView()
 	switch(m_current_view)
 	{
 		case COVERFLOW_CHANNEL:
-			return "NAND";
+			return CHANNEL_DOMAIN;
 		case COVERFLOW_HOMEBREW:
-			return "HOMEBREW";
+			return HOMEBREW_DOMAIN;
 		case COVERFLOW_DML:
-			return "DML";
+			return GC_DOMAIN;
 		case COVERFLOW_PLUGIN:
-			return "EMULATOR";
+			return PLUGIN_DOMAIN;
 		default:
-			return "GAMES";
+			return WII_DOMAIN;
 	}
 	return "NULL";
 }
@@ -2632,19 +2642,19 @@ void CMenu::UpdateCache(u32 view)
 	switch(view)
 	{
 		case COVERFLOW_CHANNEL:
-			domain = "NAND";
+			domain = CHANNEL_DOMAIN;
 			break;
 		case COVERFLOW_HOMEBREW:
-			domain = "HOMEBREW";
+			domain = HOMEBREW_DOMAIN;
 			break;
 		case COVERFLOW_DML:
-			domain = "DML";
+			domain = GC_DOMAIN;
 			break;
 		case COVERFLOW_PLUGIN:
-			domain = "EMULATOR";
+			domain = PLUGIN_DOMAIN;
 			break;
 		default:
-			domain = "GAMES";
+			domain = WII_DOMAIN;
 	}
 
 	m_cfg.setBool(domain, "update_cache", true);

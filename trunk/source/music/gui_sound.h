@@ -89,7 +89,7 @@ private:
 	//!Initializes the GuiSound object by setting the default values
 	void Init();
 protected:
-	char filepath[256];
+	char filepath[1024]; /* Wasting Memory but who knows what people wanna load */
 	u8 *sound; //!< Pointer to the sound data
 	u32 length; //!< Length of sound data
 	s8 voice; //!< Currently assigned ASND voice channel

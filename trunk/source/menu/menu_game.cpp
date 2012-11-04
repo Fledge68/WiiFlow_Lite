@@ -472,8 +472,7 @@ void CMenu::_game(bool launch)
 					ButtonsPressed();
 				}
 				movie.Stop();
-				free(m_curBg.data);
-				m_curBg.data = NULL;
+				m_curBg.Cleanup();
 				/* Finished, so lets re-setup the background */
 				_setBg(Current_HQ_BG, Current_LQ_BG);
 				_updateBg();
@@ -794,7 +793,7 @@ void CMenu::_launch(dir_discHdr *hdr)
 		if(loader.find("usb") != string::npos)
 			loader.erase(3,1);
 		loader.append("/WiiFlowLoader.dol");
-		m_cfg.setString("EMULATOR", "current_item", title);
+		m_cfg.setString(PLUGIN_DOMAIN, "current_item", title);
 		string device(currentPartition == 0 ? "sd" : 
 			(DeviceHandle.GetFSType(currentPartition) == PART_FS_NTFS ? "ntfs" : "usb"));
 		vector<string> arguments = m_plugin.CreateArgs(device, path, title, loader, hdr->settings[0]);
@@ -807,7 +806,7 @@ void CMenu::_launch(dir_discHdr *hdr)
 		snprintf(gamepath, sizeof(gamepath), "%s/boot.dol", hdr->path);
 		if(!fsop_FileExist((const char*)gamepath))
 			snprintf(gamepath, sizeof(gamepath), "%s/boot.elf", hdr->path);
-		m_cfg.setString("HOMEBREW", "current_item", title);
+		m_cfg.setString(HOMEBREW_DOMAIN, "current_item", title);
 		_launchHomebrew(gamepath, m_homebrewArgs);
 	}
 }
@@ -816,19 +815,20 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 {
 	string id(hdr->id);
 	string path(hdr->path);
+	m_cfg.setString(GC_DOMAIN, "current_item", id);
 	m_gcfg1.setInt("PLAYCOUNT", id, m_gcfg1.getInt("PLAYCOUNT", id, 0) + 1);
 	m_gcfg1.setUInt("LASTPLAYED", id, time(NULL));
 
 	if(has_enabled_providers() && _initNetwork() == 0)
 		add_game_to_card(id.c_str());
 
-	u8 videoSetting = min(m_cfg.getInt("DML", "video_setting", 1), 2);
+	u8 videoSetting = min(m_cfg.getInt(GC_DOMAIN, "video_setting", 1), 2);
 
 	u8 GClanguage = min((u32)m_gcfg2.getInt(id, "gc_language", 0), ARRAY_SIZE(CMenu::_GClanguages) - 1u);
-	GClanguage = (GClanguage == 0) ? min((u32)m_cfg.getInt("DML", "game_language", 0), ARRAY_SIZE(CMenu::_GlobalGClanguages) - 1u) : GClanguage-1;
+	GClanguage = (GClanguage == 0) ? min((u32)m_cfg.getInt(GC_DOMAIN, "game_language", 0), ARRAY_SIZE(CMenu::_GlobalGClanguages) - 1u) : GClanguage-1;
 
 	u8 videoMode = min((u32)m_gcfg2.getInt(id, "dml_video_mode", 0), ARRAY_SIZE(CMenu::_DMLvideoModes) - 1u);
-	videoMode = (videoMode == 0) ? min((u32)m_cfg.getInt("DML", "video_mode", 0), ARRAY_SIZE(CMenu::_GlobalDMLvideoModes) - 1u) : videoMode-1;
+	videoMode = (videoMode == 0) ? min((u32)m_cfg.getInt(GC_DOMAIN, "video_mode", 0), ARRAY_SIZE(CMenu::_GlobalDMLvideoModes) - 1u) : videoMode-1;
 	if(videoMode == 0)
 	{
 		if(id.c_str()[3] == 'E' || id.c_str()[3] == 'J')
@@ -848,13 +848,13 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	else if(loader == 1 || strcasestr(path.c_str(), "boot.bin") != NULL || !m_devo_installed)
 	{
 		loader = 1;
-		m_cfg.setString("DML", "current_item", id);
+		m_cfg.setString(GC_DOMAIN, "current_item", id);
 		char CheatPath[256];
 		u8 NMM = min((u32)m_gcfg2.getInt(id, "dml_nmm", 0), ARRAY_SIZE(CMenu::_NMM) - 1u);
-		NMM = (NMM == 0) ? m_cfg.getInt("DML", "dml_nmm", 0) : NMM-1;
+		NMM = (NMM == 0) ? m_cfg.getInt(GC_DOMAIN, "dml_nmm", 0) : NMM-1;
 		u8 nodisc = min((u32)m_gcfg2.getInt(id, "no_disc_patch", 0), ARRAY_SIZE(CMenu::_NoDVD) - 1u);
-		nodisc = (nodisc == 0) ? m_cfg.getInt("DML", "no_disc_patch", 0) : nodisc-1;
-		bool cheats = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool("DML", "cheat", false));
+		nodisc = (nodisc == 0) ? m_cfg.getInt(GC_DOMAIN, "no_disc_patch", 0) : nodisc-1;
+		bool cheats = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool(GC_DOMAIN, "cheat", false));
 		string NewCheatPath;
 		bool DML_debug = m_gcfg2.getBool(id, "debugger", false);
 		bool DM_Widescreen = m_gcfg2.getBool(id, "dm_widescreen", false);
@@ -1018,11 +1018,11 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	u32 gameIOS = 0;
 	string id = string(hdr->id);
 
-	bool NAND_Emu = !m_cfg.getBool("NAND", "disable", true);
+	bool NAND_Emu = !m_cfg.getBool(CHANNEL_DOMAIN, "disable", true);
 	bool WII_Launch = (m_gcfg2.getBool(id, "custom", false) && (!NAND_Emu || neek2o()));
 
 	bool vipatch = m_gcfg2.testOptBool(id, "vipatch", m_cfg.getBool("GENERAL", "vipatch", false));
-	bool cheat = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool("NAND", "cheat", false));
+	bool cheat = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool(CHANNEL_DOMAIN, "cheat", false));
 	bool countryPatch = m_gcfg2.testOptBool(id, "country_patch", m_cfg.getBool("GENERAL", "country_patch", false));
 
 	u8 videoMode = (u8)min((u32)m_gcfg2.getInt(id, "video_mode", 0), ARRAY_SIZE(CMenu::_VideoModes) - 1u);
@@ -1052,14 +1052,14 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		if(has_enabled_providers() && _initNetwork() == 0)
 			add_game_to_card(id.c_str());
 	}
-	m_cfg.setString("NAND", "current_item", id);
+	m_cfg.setString(CHANNEL_DOMAIN, "current_item", id);
 	m_gcfg1.setInt("PLAYCOUNT", id, m_gcfg1.getInt("PLAYCOUNT", id, 0) + 1); 
 	m_gcfg1.setUInt("LASTPLAYED", id, time(NULL));
 
 	string emuPath;
-	m_partRequest = m_cfg.getInt("NAND", "partition", 0);
+	m_partRequest = m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0);
 	int emuPartition = _FindEmuPart(&emuPath, m_partRequest, false);
-	int emulate_mode = min(max(0, m_cfg.getInt("NAND", "emulation", 1)), (int)ARRAY_SIZE(CMenu::_NandEmu) - 1);
+	int emulate_mode = min(max(0, m_cfg.getInt(CHANNEL_DOMAIN, "emulation", 1)), (int)ARRAY_SIZE(CMenu::_NandEmu) - 1);
 	
 	int userIOS = m_gcfg2.getInt(id, "ios", 0);
 	u64 gameTitle = TITLE_ID(hdr->settings[0],hdr->settings[1]);
@@ -1217,16 +1217,16 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	int aspectRatio = min((u32)m_gcfg2.getInt(id, "aspect_ratio", 0), ARRAY_SIZE(CMenu::_AspectRatio) - 1u)-1;
 
 	string emuPath;
-	m_partRequest = m_cfg.getInt("GAMES", "savepartition", -1);
+	m_partRequest = m_cfg.getInt(WII_DOMAIN, "savepartition", -1);
 	if(m_partRequest == -1)
-		m_partRequest = m_cfg.getInt("NAND", "partition", 0);
+		m_partRequest = m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0);
 	int emuPartition = _FindEmuPart(&emuPath, m_partRequest, false);
 	
 	u8 emulate_mode = min((u32)m_gcfg2.getInt(id, "emulate_save", 0), ARRAY_SIZE(CMenu::_SaveEmu) - 1u);
 
 	if(emulate_mode == 0)
 	{
-		emulate_mode = min(max(0, m_cfg.getInt("GAMES", "save_emulation", 0)), (int)ARRAY_SIZE(CMenu::_GlobalSaveEmu) - 1);
+		emulate_mode = min(max(0, m_cfg.getInt(WII_DOMAIN, "save_emulation", 0)), (int)ARRAY_SIZE(CMenu::_GlobalSaveEmu) - 1);
 		if(emulate_mode != 0)
 			emulate_mode++;
 	}
@@ -1242,10 +1242,10 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 				while(true)
 				{
 					_AutoCreateNand();
-					if(_TestEmuNand(m_cfg.getInt("GAMES", "savepartition", 0), emuPath.c_str(), true))
+					if(_TestEmuNand(m_cfg.getInt(WII_DOMAIN, "savepartition", 0), emuPath.c_str(), true))
 					{
-						emuPartition = m_cfg.getInt("GAMES", "savepartition", -1);
-						string emuPath = m_cfg.getString("GAMES", "savepath", m_cfg.getString("NAND", "path", ""));						
+						emuPartition = m_cfg.getInt(WII_DOMAIN, "savepartition", -1);
+						string emuPath = m_cfg.getString(WII_DOMAIN, "savepath", m_cfg.getString(CHANNEL_DOMAIN, "path", ""));						
 						break;
 					}
 				}
@@ -1259,8 +1259,8 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			}
 		}
 		
-		m_cfg.setInt("GAMES", "savepartition", emuPartition);
-		m_cfg.setString("GAMES", "savepath", emuPath);
+		m_cfg.setInt(WII_DOMAIN, "savepartition", emuPartition);
+		m_cfg.setString(WII_DOMAIN, "savepath", emuPath);
 		m_cfg.save();
 		
 		char basepath[64];
@@ -1283,7 +1283,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			NandHandle.Do_Region_Change(id);
 		}
 	}
-	bool cheat = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool("GAMES", "cheat", false));
+	bool cheat = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool(WII_DOMAIN, "cheat", false));
 	debuggerselect = m_gcfg2.getBool(id, "debugger", false) ? 1 : 0; // debuggerselect is defined in fst.h
 	if(id == "RPWE41" || id == "RPWZ41" || id == "SPXP41") // Prince of Persia, Rival Swords
 		debuggerselect = false;
@@ -1293,7 +1293,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	u8 *gameconfig = NULL;
 	u32 cheatSize = 0, gameconfigSize = 0, returnTo = 0;
 
-	m_cfg.setString("GAMES", "current_item", id);
+	m_cfg.setString(WII_DOMAIN, "current_item", id);
 	m_gcfg1.setInt("PLAYCOUNT", id, m_gcfg1.getInt("PLAYCOUNT", id, 0) + 1);
 	m_gcfg1.setUInt("LASTPLAYED", id, time(NULL));
 

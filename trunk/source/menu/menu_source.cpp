@@ -171,10 +171,10 @@ bool CMenu::_Source()
 	m_plugin.EndAdd();
 
 	SetupInput();
-	bool show_homebrew = !m_cfg.getBool("HOMEBREW", "disable", false);
+	bool show_homebrew = !m_cfg.getBool(HOMEBREW_DOMAIN, "disable", false);
 	bool show_channel = !m_cfg.getBool("GENERAL", "hidechannel", false);
-	bool show_emu = !m_cfg.getBool("EMULATOR", "disable", false);
-	bool parental_homebrew = m_cfg.getBool("HOMEBREW", "parental", false);	
+	bool show_emu = !m_cfg.getBool(PLUGIN_DOMAIN, "disable", false);
+	bool parental_homebrew = m_cfg.getBool(HOMEBREW_DOMAIN, "parental", false);	
 	bool imgSelected = false;
 	m_showtimer = 0;
 	Source_curPage = 1;
@@ -293,7 +293,7 @@ bool CMenu::_Source()
 						else
 						{
 							m_current_view = COVERFLOW_CHANNEL;
-							m_cfg.setBool("NAND", "disable", false);
+							m_cfg.setBool(CHANNEL_DOMAIN, "disable", false);
 							imgSelected = true;
 							break;
 						}
@@ -304,7 +304,7 @@ bool CMenu::_Source()
 						else
 						{
 							m_current_view = COVERFLOW_CHANNEL;
-							m_cfg.setBool("NAND", "disable", true);
+							m_cfg.setBool(CHANNEL_DOMAIN, "disable", true);
 							imgSelected = true;
 							break;
 						}
@@ -358,10 +358,9 @@ bool CMenu::_Source()
 									}
 								}
 							}
-							
 							int layout = m_source.getInt(fmt("BUTTON_%i", i + j), "emuflow", 0);
 							if(layout != 0)
-								m_cfg.setInt("EMULATOR", "last_cf_mode", layout);
+								m_cfg.setInt(PLUGIN_DOMAIN, "last_cf_mode", layout);
 							break;
 						}
 					}

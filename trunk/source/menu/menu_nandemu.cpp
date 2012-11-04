@@ -99,24 +99,24 @@ int CMenu::_FindEmuPart(string *emuPath, int part, bool searchvalid)
 	string tmpPath;
 	if(m_current_view == COVERFLOW_CHANNEL)
 	{
-		emuPartition = m_cfg.getInt("NAND", "partition", 0);
-		tmpPath = m_cfg.getString("NAND", "path", "");
+		emuPartition = m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0);
+		tmpPath = m_cfg.getString(CHANNEL_DOMAIN, "path", "");
 		if(tmpPath.size() == 0)
 		{
-			m_cfg.setString("NAND", "path", STDEMU_DIR);
-			tmpPath = m_cfg.getString("NAND", "path", STDEMU_DIR);
+			m_cfg.setString(CHANNEL_DOMAIN, "path", STDEMU_DIR);
+			tmpPath = m_cfg.getString(CHANNEL_DOMAIN, "path", STDEMU_DIR);
 		}
 	}
 	else if(m_current_view == COVERFLOW_USB)
 	{
-		emuPartition = m_cfg.getInt("GAMES", "savepartition", -1);
+		emuPartition = m_cfg.getInt(WII_DOMAIN, "savepartition", -1);
 		if(emuPartition == -1)
-			emuPartition = m_cfg.getInt("NAND", "partition", 0);
-		tmpPath = m_cfg.getString("GAMES", "savepath", m_cfg.getString("NAND", "path", ""));
+			emuPartition = m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0);
+		tmpPath = m_cfg.getString(WII_DOMAIN, "savepath", m_cfg.getString(CHANNEL_DOMAIN, "path", ""));
 		if(tmpPath.size() == 0)
 		{
-			m_cfg.setString("GAMES", "savepath", STDEMU_DIR);
-			tmpPath = m_cfg.getString("GAMES", "savepath", STDEMU_DIR);
+			m_cfg.setString(WII_DOMAIN, "savepath", STDEMU_DIR);
+			tmpPath = m_cfg.getString(WII_DOMAIN, "savepath", STDEMU_DIR);
 		}
 	}
 	
@@ -142,9 +142,9 @@ int CMenu::_FindEmuPart(string *emuPath, int part, bool searchvalid)
 			if(_TestEmuNand(i, tmpPath.c_str(), true) || searchvalid)
 			{
 				if(m_current_view == COVERFLOW_CHANNEL)
-					m_cfg.setInt("NAND", "partition", i);
+					m_cfg.setInt(CHANNEL_DOMAIN, "partition", i);
 				else if(m_current_view == COVERFLOW_USB)
-					m_cfg.setInt("GAMES", "savepartition", i);
+					m_cfg.setInt(WII_DOMAIN, "savepartition", i);
 					
 				*emuPath = tmpPath;
 				m_cfg.save();
@@ -175,8 +175,8 @@ bool CMenu::_checkSave(string id, bool nand)
 	}
 	else
 	{	
-		int emuPartition = m_cfg.getInt("GAMES", "savepartition", -1);						
-		string emuPath = m_cfg.getString("GAMES", "savepath", "");
+		int emuPartition = m_cfg.getInt(WII_DOMAIN, "savepartition", -1);						
+		string emuPath = m_cfg.getString(WII_DOMAIN, "savepath", "");
 		if(emuPartition < 0 || emuPath.size() == 0)
 			return false;
 			
@@ -191,14 +191,14 @@ bool CMenu::_checkSave(string id, bool nand)
 void CMenu::_enableNandEmu(bool fromconfig)
 {
 	_cfNeedsUpdate();
-	bool disable = (m_cfg.getBool("NAND", "disable", true) || neek2o()) && m_current_view == COVERFLOW_CHANNEL && !m_tempView;	
+	bool disable = (m_cfg.getBool(CHANNEL_DOMAIN, "disable", true) || neek2o()) && m_current_view == COVERFLOW_CHANNEL && !m_tempView;	
 
 	if(!disable)
 	{
 		bool isD2XnewerThanV6 = (CurrentIOS.Type == IOS_TYPE_NEEK2O);
 		if(CurrentIOS.Revision > 6 && CurrentIOS.Type == IOS_TYPE_D2X)
 			isD2XnewerThanV6 = true;
-		if(m_current_view == COVERFLOW_CHANNEL && !m_cfg.getBool("NAND", "disable", true) && !neek2o() && !m_tempView)
+		if(m_current_view == COVERFLOW_CHANNEL && !m_cfg.getBool(CHANNEL_DOMAIN, "disable", true) && !neek2o() && !m_tempView)
 			NandHandle.Enable_Emu();
 		u8 limiter = 0;
 		s8 direction = m_btnMgr.selected(m_configBtnPartitionP) ? 1 : -1;
@@ -217,7 +217,7 @@ void CMenu::_enableNandEmu(bool fromconfig)
 		}
 		gprintf("Next item: %s\n", DeviceName[currentPartition]);
 		if(m_tempView)
-			m_cfg.setInt("GAMES", "savepartition", currentPartition);
+			m_cfg.setInt(WII_DOMAIN, "savepartition", currentPartition);
 		else
 			m_cfg.setInt(_domainFromView(), "partition", currentPartition);
 	}
@@ -282,7 +282,7 @@ void CMenu::_showNandEmu(void)
 	m_btnMgr.show(m_nandemuLblTitle);
 	m_btnMgr.show(m_nandemuBtnBack);
 	int i;
-	if(((m_current_view == COVERFLOW_CHANNEL && !m_cfg.getBool("NAND", "disable", true)) || m_current_view == COVERFLOW_USB) && !m_locked)
+	if(((m_current_view == COVERFLOW_CHANNEL && !m_cfg.getBool(CHANNEL_DOMAIN, "disable", true)) || m_current_view == COVERFLOW_USB) && !m_locked)
 	{
 		m_btnMgr.show(m_nandemuLblEmulation);
 		m_btnMgr.show(m_nandemuLblEmulationVal);
@@ -299,12 +299,12 @@ void CMenu::_showNandEmu(void)
 		m_btnMgr.show(m_nandemuBtnNandDump);
 		if (m_current_view == COVERFLOW_CHANNEL)
 		{
-			i = min(max(0, m_cfg.getInt("NAND", "emulation", 0)), (int)ARRAY_SIZE(CMenu::_NandEmu) - 1);
+			i = min(max(0, m_cfg.getInt(CHANNEL_DOMAIN, "emulation", 0)), (int)ARRAY_SIZE(CMenu::_NandEmu) - 1);
 			m_btnMgr.setText(m_nandemuLblEmulationVal, _t(CMenu::_NandEmu[i].id, CMenu::_NandEmu[i].text));
 		}
 		else if (m_current_view == COVERFLOW_USB)
 		{
-			i = min(max(0, m_cfg.getInt("GAMES", "save_emulation", 0)), (int)ARRAY_SIZE(CMenu::_GlobalSaveEmu) - 1);
+			i = min(max(0, m_cfg.getInt(WII_DOMAIN, "save_emulation", 0)), (int)ARRAY_SIZE(CMenu::_GlobalSaveEmu) - 1);
 			m_btnMgr.setText(m_nandemuLblEmulationVal, _t(CMenu::_GlobalSaveEmu[i].id, CMenu::_GlobalSaveEmu[i].text));
 		}
 	}
@@ -333,9 +333,9 @@ int CMenu::_NandEmuCfg(void)
 		{
 			s8 direction = m_btnMgr.selected(m_nandemuBtnEmulationP) ? 1 : -1;
 			if(m_current_view == COVERFLOW_CHANNEL)
-				m_cfg.setInt("NAND", "emulation", (int)loopNum((u32)m_cfg.getInt("NAND", "emulation", 0) + direction, ARRAY_SIZE(CMenu::_NandEmu)));
+				m_cfg.setInt(CHANNEL_DOMAIN, "emulation", (int)loopNum((u32)m_cfg.getInt(CHANNEL_DOMAIN, "emulation", 0) + direction, ARRAY_SIZE(CMenu::_NandEmu)));
 			else if(m_current_view == COVERFLOW_USB)
-				m_cfg.setInt("GAMES", "save_emulation", (int)loopNum((u32)m_cfg.getInt("GAMES", "save_emulation", 0) + direction, ARRAY_SIZE(CMenu::_GlobalSaveEmu)));
+				m_cfg.setInt(WII_DOMAIN, "save_emulation", (int)loopNum((u32)m_cfg.getInt(WII_DOMAIN, "save_emulation", 0) + direction, ARRAY_SIZE(CMenu::_GlobalSaveEmu)));
 			_showNandEmu();
 		}	
 		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnNandDump) || m_btnMgr.selected(m_nandemuBtnAll) || m_btnMgr.selected(m_nandemuBtnMissing)))
@@ -408,9 +408,9 @@ int CMenu::_NandEmuCfg(void)
 
 int CMenu::_FlashSave(string gameId)
 {
-	int emuPartition = m_cfg.getInt("GAMES", "savepartition", m_cfg.getInt("NAND", "partition", 0));			
+	int emuPartition = m_cfg.getInt(WII_DOMAIN, "savepartition", m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0));			
 	char basepath[MAX_FAT_PATH];	
-	snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[emuPartition], m_cfg.getString("GAMES", "savepath", m_cfg.getString("NAND", "path", "")).c_str());	
+	snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[emuPartition], m_cfg.getString(WII_DOMAIN, "savepath", m_cfg.getString(CHANNEL_DOMAIN, "path", "")).c_str());	
 
 	if(!_checkSave(gameId, false))
 		return 0;
@@ -486,9 +486,9 @@ int CMenu::_AutoExtractSave(string gameId)
 	string emuPath;
 
 	if(m_current_view == COVERFLOW_CHANNEL)
-		m_partRequest = m_cfg.getInt("NAND", "partition", -1);	
+		m_partRequest = m_cfg.getInt(CHANNEL_DOMAIN, "partition", -1);	
 	else if(m_current_view == COVERFLOW_USB)
-		m_partRequest = m_cfg.getInt("GAMES", "savepartition", -1);	
+		m_partRequest = m_cfg.getInt(WII_DOMAIN, "savepartition", -1);	
 	int emuPartition = _FindEmuPart(&emuPath, m_partRequest, false);
 	
 	if(emuPartition < 0)
@@ -705,9 +705,9 @@ int CMenu::_NandFlasher(void *obj)
 	char dest[ISFS_MAXPATH];
 	
 	if(m.m_current_view == COVERFLOW_CHANNEL)
-		m.m_partRequest = m.m_cfg.getInt("NAND", "partition", -1);	
+		m.m_partRequest = m.m_cfg.getInt(CHANNEL_DOMAIN, "partition", -1);	
 	else if(m.m_current_view == COVERFLOW_USB)
-		m.m_partRequest = m.m_cfg.getInt("GAMES", "savepartition", -1);
+		m.m_partRequest = m.m_cfg.getInt(WII_DOMAIN, "savepartition", -1);
 	
 	int emuPartition = m._FindEmuPart(&emuPath, m.m_partRequest, false);	
 	int flashID = m.m_saveExtGameId.c_str()[0] << 24 | m.m_saveExtGameId.c_str()[1] << 16 | m.m_saveExtGameId.c_str()[2] << 8 | m.m_saveExtGameId.c_str()[3];
@@ -751,9 +751,9 @@ int CMenu::_NandDumper(void *obj)
 	NandHandle.ResetCounters();
 
 	if(m.m_current_view == COVERFLOW_CHANNEL)
-		m.m_partRequest = m.m_cfg.getInt("NAND", "partition", -1);	
+		m.m_partRequest = m.m_cfg.getInt(CHANNEL_DOMAIN, "partition", -1);	
 	else if(m.m_current_view == COVERFLOW_USB)
-		m.m_partRequest = m.m_cfg.getInt("GAMES", "savepartition", -1);
+		m.m_partRequest = m.m_cfg.getInt(WII_DOMAIN, "savepartition", -1);
 
 	emuPartition = m._FindEmuPart(&emuPath, m.m_partRequest, true);
 

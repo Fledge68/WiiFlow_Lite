@@ -188,6 +188,7 @@ CCoverFlow::CCoverFlow(void)
 	m_mutex = 0;
 	m_dvdskin_loaded = false;
 	m_loadingCovers = false;
+	m_coverThrdBusy = false;
 	m_moved = false;
 	m_selected = false;
 	m_hideCover = false;
@@ -262,14 +263,12 @@ void CCoverFlow::simulateOtherScreenFormat(bool s)
 CCoverFlow::~CCoverFlow(void)
 {
 	clear();
-	if(m_sound[0])
-		delete m_sound[0];
-	if(m_hoverSound)
-		delete m_hoverSound;
-	if(m_selectSound)
-		delete m_selectSound;
-	if(m_cancelSound)
+	if(m_flipSound != NULL)
+		delete m_flipSound;
+	m_flipSound = NULL;
+	if(m_cancelSound != NULL)
 		delete m_cancelSound;
+	m_cancelSound = NULL;
 	LWP_MutexDestroy(m_mutex);
 }
 
@@ -582,10 +581,10 @@ void CCoverFlow::setSorting(Sorting sorting)
 	m_sorting = sorting;
 }
 
-void CCoverFlow::setSounds(GuiSound *sound, GuiSound *hoverSound, GuiSound *selectSound, GuiSound *cancelSound)
+void CCoverFlow::setSounds(GuiSound *flipSound, GuiSound *hoverSound, GuiSound *selectSound, GuiSound *cancelSound)
 {
 	//for(u8 i = 0; i < 4; i++)
-	m_sound[0] = sound;
+	m_flipSound = flipSound;
 	m_hoverSound = hoverSound;
 	m_selectSound = selectSound;
 	m_cancelSound = cancelSound;
@@ -596,13 +595,13 @@ void CCoverFlow::setSoundVolume(u8 vol)
 	m_soundVolume = vol;
 }
 
-void CCoverFlow::_stopSound(GuiSound *snd)
+void CCoverFlow::_stopSound(GuiSound * &snd)
 {
 	if(snd == NULL) return;
 	snd->Stop();
 }
 
-void CCoverFlow::_playSound(GuiSound *snd)
+void CCoverFlow::_playSound(GuiSound * &snd)
 {
 	if(snd == NULL) return;
 	snd->Play(m_soundVolume);
@@ -610,9 +609,11 @@ void CCoverFlow::_playSound(GuiSound *snd)
 
 void CCoverFlow::stopSound(void)
 {
-	for(u8 i = 0; i < 4; i++)
-		_stopSound(m_sound[i]);
+	//for(u8 i = 0; i < 4; i++)
+	_stopSound(m_flipSound);
 	_stopSound(m_hoverSound);
+	_stopSound(m_selectSound);
+	_stopSound(m_cancelSound);
 }
 
 void CCoverFlow::applySettings(void)
@@ -626,15 +627,15 @@ void CCoverFlow::applySettings(void)
 void CCoverFlow::stopCoverLoader(bool empty)
 {
 	m_loadingCovers = false;
-
-	if(coverLoaderThread != LWP_THREAD_NULL &&	!m_loadingCovers)
+	if(coverLoaderThread != LWP_THREAD_NULL)
 	{
 		if(LWP_ThreadIsSuspended(coverLoaderThread))
 			LWP_ResumeThread(coverLoaderThread);
+		while(m_coverThrdBusy)
+			usleep(50);
 
 		LWP_JoinThread(coverLoaderThread, NULL);
 		coverLoaderThread = LWP_THREAD_NULL;
-
 		if(empty)
 		{
 			for(u32 i = 0; i < m_items.size(); ++i)
@@ -679,17 +680,12 @@ void CCoverFlow::shutdown(void)
 	m_dvdSkin_GreenTwo.Cleanup();
 	m_loadingTexture.Cleanup();
 	m_noCoverTexture.Cleanup();
-	for(u8 i = 0; i < 4; i++)
-	{
-		if(m_sound[i] != NULL)
-			delete m_sound[i];
-		m_sound[i] = NULL;
-	}
-	if(m_hoverSound != NULL) delete m_hoverSound;
-	m_hoverSound = NULL;
-	if(m_selectSound) delete m_selectSound;
-	m_selectSound = NULL;
-	if(m_cancelSound) delete m_cancelSound;
+
+	if(m_flipSound != NULL)
+		delete m_flipSound;
+	m_flipSound = NULL;
+	if(m_cancelSound != NULL)
+		delete m_cancelSound;
 	m_cancelSound = NULL;
 	LWP_MutexDestroy(m_mutex);
 }
@@ -1926,13 +1922,14 @@ void CCoverFlow::right(void)
 
 void CCoverFlow::_playSound(void)
 {
-	if (m_soundVolume > 0)
+	/*if (m_soundVolume > 0)
 	{
 		sndCopyNum++;
 		if(sndCopyNum == 4) sndCopyNum = 0;
 		_playSound(m_sound[sndCopyNum]);
 		//gprintf("\n\nPlaying flipsound copy # %u\n\n", sndCopyNum);
-	}
+	}*/
+	_playSound(m_flipSound);
 }
 
 void CCoverFlow::_left(int repeatDelay, u32 step)
@@ -2790,6 +2787,7 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 
 int CCoverFlow::_coverLoader(CCoverFlow *cf)
 {
+	cf->m_coverThrdBusy = true;
 	CLRet ret;
 	u32 firstItem;
 	bool update;
@@ -2831,5 +2829,6 @@ int CCoverFlow::_coverLoader(CCoverFlow *cf)
 		if(ret == CL_NOMEM && bufferSize > 3)
 			bufferSize -= 2;
 	}
+	cf->m_coverThrdBusy = false;
 	return 0;
 }

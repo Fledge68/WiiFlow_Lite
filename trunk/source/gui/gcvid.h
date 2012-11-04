@@ -186,8 +186,8 @@ struct MthHeader
 class VideoFrame
 {
  public:
-  VideoFrame();
-  ~VideoFrame();
+  VideoFrame() : _data(NULL), _w(0), _h(0), _p(0) { };
+  ~VideoFrame() { };
 
   void resize(int width, int height);
 
