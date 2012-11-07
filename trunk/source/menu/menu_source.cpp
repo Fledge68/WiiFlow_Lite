@@ -109,17 +109,17 @@ void CMenu::_updateSourceBtns(void)
 		STexture texConsoleImgs;
 		
 		ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image", "");
-		if(!STexture::TE_OK == texConsoleImg.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), ImgName.c_str()), GX_TF_RGBA8, ALLOC_MEM2))
+		if(!STexture::TE_OK == texConsoleImg.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), ImgName.c_str())))
 		{
-			if(!STexture::TE_OK ==	texConsoleImg.fromImageFile(fmt("%s/%s", m_sourceDir.c_str(), ImgName.c_str()), GX_TF_RGBA8, ALLOC_MEM2))
+			if(!STexture::TE_OK ==	texConsoleImg.fromImageFile(fmt("%s/%s", m_sourceDir.c_str(), ImgName.c_str())))
 			{
 				texConsoleImg.fromPNG(favoriteson_png);
 			}
 		}
 		ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image_s", "");
-		if(!STexture::TE_OK == texConsoleImgs.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), ImgName.c_str()), GX_TF_RGBA8, ALLOC_MEM2))
+		if(!STexture::TE_OK == texConsoleImgs.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), ImgName.c_str())))
 		{
-			if(!STexture::TE_OK ==	texConsoleImgs.fromImageFile(fmt("%s/%s", m_sourceDir.c_str(), ImgName.c_str()), GX_TF_RGBA8, ALLOC_MEM2))
+			if(!STexture::TE_OK ==	texConsoleImgs.fromImageFile(fmt("%s/%s", m_sourceDir.c_str(), ImgName.c_str())))
 			{
 				texConsoleImgs.fromPNG(favoritesons_png);
 			}
@@ -432,17 +432,17 @@ void CMenu::_initSourceMenu()
 		STexture texConsoleImgs;
 	
 		ImgName = m_source.getString(fmt("BUTTON_%i", i),"image", "");
-		if(!STexture::TE_OK == texConsoleImg.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), ImgName.c_str()), GX_TF_RGBA8, ALLOC_MEM2))
+		if(!STexture::TE_OK == texConsoleImg.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), ImgName.c_str())))
 		{
-			if(!STexture::TE_OK ==	texConsoleImg.fromImageFile(fmt("%s/%s", m_sourceDir.c_str(), ImgName.c_str()), GX_TF_RGBA8, ALLOC_MEM2))
+			if(!STexture::TE_OK ==	texConsoleImg.fromImageFile(fmt("%s/%s", m_sourceDir.c_str(), ImgName.c_str())))
 			{
 				texConsoleImg.fromPNG(favoriteson_png);
 			}
 		}
 		ImgName = m_source.getString(fmt("BUTTON_%i", i),"image_s", "");
-		if(!STexture::TE_OK == texConsoleImgs.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), ImgName.c_str()), GX_TF_RGBA8, ALLOC_MEM2))
+		if(!STexture::TE_OK == texConsoleImgs.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), ImgName.c_str())))
 		{
-			if(!STexture::TE_OK ==	texConsoleImgs.fromImageFile(fmt("%s/%s", m_sourceDir.c_str(), ImgName.c_str()), GX_TF_RGBA8, ALLOC_MEM2))
+			if(!STexture::TE_OK ==	texConsoleImgs.fromImageFile(fmt("%s/%s", m_sourceDir.c_str(), ImgName.c_str())))
 			{
 				texConsoleImgs.fromPNG(favoritesons_png);
 			}
