@@ -80,7 +80,6 @@ const int CVideo::_stencilWidth = 128;
 const int CVideo::_stencilHeight = 128;
 
 static lwp_t waitThread = LWP_THREAD_NULL;
-u8 *waitThreadStack;
 
 CVideo m_vid;
 CVideo::CVideo(void) :
@@ -284,13 +283,16 @@ void CVideo::cleanup(void)
 	{
 		if(m_defaultWaitMessages[i].data != NULL)
 			free(m_defaultWaitMessages[i].data);
+		m_defaultWaitMessages[i].data = NULL;
 	}
-	if(waitThreadStack != NULL)
-		free(waitThreadStack);
 	free(MEM_K1_TO_K0(m_frameBuf[0]));
+	m_frameBuf[0] = NULL;
 	free(MEM_K1_TO_K0(m_frameBuf[1]));
+	m_frameBuf[1] = NULL;
 	free(m_stencil);
+	m_stencil = NULL;
 	free(m_fifo);
+	m_fifo = NULL;
 }
 
 void CVideo::prepareAAPass(int aaStep)
@@ -558,7 +560,7 @@ void CVideo::hideWaitMessage()
 		if(LWP_ThreadIsSuspended(waitThread))
 			LWP_ResumeThread(waitThread);
 		while(m_showingWaitMessages)
-			usleep(100);
+			usleep(50);
 		LWP_JoinThread(waitThread, NULL);
 	}
 	waitThread = LWP_THREAD_NULL;
@@ -602,9 +604,7 @@ void CVideo::waitMessage(const vector<STexture> &tex, float delay)
 	else if(m_waitMessages.size() > 1)
 	{
 		m_showWaitMessage = true;
-		if(waitThreadStack != NULL)
-			waitThreadStack = (u8*)MEM2_alloc(8192);
-		LWP_CreateThread(&waitThread, (void *(*)(void *))_showWaitMessages, (void *)this, waitThreadStack, 8192, LWP_PRIO_HIGHEST);
+		LWP_CreateThread(&waitThread, (void *(*)(void *))_showWaitMessages, (void *)this, NULL, 0, LWP_PRIO_HIGHEST);
 	}
 }
 

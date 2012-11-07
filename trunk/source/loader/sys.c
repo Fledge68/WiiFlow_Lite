@@ -21,7 +21,6 @@
 /* Variables */
 bool reset = false;
 bool shutdown = false;
-bool exiting = false;
 u8 ExitOption = 0;
 const char *NeekPath = NULL;
 
@@ -61,7 +60,7 @@ void Close_Inputs(void)
 
 bool Sys_Exiting(void)
 {
-	return reset || shutdown || exiting;
+	return reset || shutdown;
 }
 
 void Sys_Shutdown(void)

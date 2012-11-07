@@ -33,10 +33,4 @@ unsigned int MEM2_freesize();
 }
 #endif
 
-enum Alloc 
-{ 
-	ALLOC_MALLOC, 
-	ALLOC_MEM2, 
-};
-
 #endif // !defined(__MEM2_HPP)

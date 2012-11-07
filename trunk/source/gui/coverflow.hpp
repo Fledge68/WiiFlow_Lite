@@ -330,8 +330,7 @@ private:
 	bool _invisibleCover(u32 x, u32 y);
 	void _instantTarget(int i);
 	void _transposeCover(vector<CCover> &dst, u32 rows, u32 columns, int pos);
-	void _playSound(void);
-	
+
 	void _stopSound(GuiSound * &snd);
 	void _playSound(GuiSound * &snd);
 

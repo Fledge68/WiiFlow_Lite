@@ -215,6 +215,7 @@ bool STexture::CopyTexture(const STexture &tex)
 
 STexture::TexErr STexture::fromImageFile(const char *filename, u8 f, u32 minMipSize, u32 maxMipSize)
 {
+	Cleanup();
 	FILE *file = fopen(filename, "rb");
 	if(file == NULL)
 	{
@@ -257,7 +258,10 @@ STexture::TexErr STexture::fromTHP(const u8 *src, u32 w, u32 h)
 	dataSize = GX_GetTexBufferSize(width, height, format, GX_FALSE, 0);
 	data = (u8*)MEM2_alloc(dataSize);
 	if(data == NULL)
+	{
+		Cleanup();
 		return TE_NOMEM;
+	}
 	for(u32 block = 0; block < height; block += 4)
 	{
 		for(u32 i = 0; i < width; i += 4)
@@ -466,8 +470,10 @@ STexture::TexErr STexture::fromPNG(const u8 *buffer, u8 f, u32 minMipSize, u32 m
 
 		tmpData2 = _genMipMaps(tmpData2, imgProp.imgWidth, imgProp.imgHeight, maxLODTmp, baseWidth, baseHeight);
 		if(tmpData2 == NULL)
+		{
+			Cleanup();
 			return TE_NOMEM;
-
+		}
 		u32 nWidth = newWidth;
 		u32 nHeight = newHeight;
 		u8 *pSrc = tmpData2;
@@ -659,7 +665,10 @@ u8 *STexture::_genMipMaps(u8 *src, u32 width, u32 height, u8 maxLOD, u32 lod0Wid
 	u32 bufSize = fixGX_GetTexBufferSize(lod0Width, lod0Height, GX_TF_RGBA8, GX_TRUE, maxLOD);
 	u8 *dst = (u8*)MEM2_alloc(bufSize);
 	if(dst == NULL)
-		return src;
+	{
+		Cleanup();
+		return NULL;
+	}
 	memset(dst, 0, bufSize);
 	_resize(dst, lod0Width, lod0Height, src, width, height);
 	DCFlushRange(dst, lod0Width * lod0Height * 4);

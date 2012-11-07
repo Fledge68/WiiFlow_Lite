@@ -220,9 +220,6 @@ void CMenu::exitHandler(int ExitTo)
 			ExitTo = EXIT_TO_HBC;
 	}
 	Sys_ExitTo(ExitTo);
-	// Mark exiting to prevent soundhandler from restarting
-	extern bool exiting;
-	exiting = true;
 }
 
 int CMenu::main(void)
