@@ -227,6 +227,10 @@ CCoverFlow::CCoverFlow(void)
 	m_normal_speed = 0.1f;
 	m_selected_speed = 0.07f;
 	// 
+	m_flipSound = NULL;
+	m_hoverSound = NULL;
+	m_selectSound = NULL;
+	m_cancelSound = NULL;
 	LWP_MutexInit(&m_mutex, 0);
 }
 
@@ -262,13 +266,7 @@ void CCoverFlow::simulateOtherScreenFormat(bool s)
 
 CCoverFlow::~CCoverFlow(void)
 {
-	clear();
-	if(m_flipSound != NULL)
-		delete m_flipSound;
-	m_flipSound = NULL;
-	if(m_cancelSound != NULL)
-		delete m_cancelSound;
-	m_cancelSound = NULL;
+	shutdown();
 	LWP_MutexDestroy(m_mutex);
 }
 
@@ -670,16 +668,13 @@ void CCoverFlow::clear(void)
 void CCoverFlow::shutdown(void)
 {
 	gprintf("Cleanup Coverflow\n");
-	clear();
-
 	m_dvdSkin.Cleanup();
 	m_dvdSkin_Red.Cleanup();
 	m_dvdSkin_Black.Cleanup();
 	m_dvdSkin_Yellow.Cleanup();
 	m_dvdSkin_GreenOne.Cleanup();
 	m_dvdSkin_GreenTwo.Cleanup();
-	m_loadingTexture.Cleanup();
-	m_noCoverTexture.Cleanup();
+	clear();
 
 	if(m_flipSound != NULL)
 		delete m_flipSound;
@@ -1868,7 +1863,6 @@ bool CCoverFlow::start(const char *id)
 	{
 		if (m_pngLoadCoverFlat.empty() || STexture::TE_OK != m_loadingTexture.fromImageFile(m_pngLoadCoverFlat.c_str(), GX_TF_CMPR, 32, 512))
 			if (STexture::TE_OK != m_loadingTexture.fromJPG(flatloading_jpg, flatloading_jpg_size, GX_TF_CMPR, 32, 512)) return false;
-
 		if (m_pngNoCoverFlat.empty() || STexture::TE_OK != m_noCoverTexture.fromImageFile(m_pngNoCoverFlat.c_str(), GX_TF_CMPR, 32, 512))
 			if (STexture::TE_OK != m_noCoverTexture.fromPNG(flatnopic_png, GX_TF_CMPR, 32, 512)) return false;
 	}
@@ -1920,18 +1914,6 @@ void CCoverFlow::right(void)
 	_right(m_minDelay, m_rows >= 3 ? m_rows - 2 : 1);
 }
 
-void CCoverFlow::_playSound(void)
-{
-	/*if (m_soundVolume > 0)
-	{
-		sndCopyNum++;
-		if(sndCopyNum == 4) sndCopyNum = 0;
-		_playSound(m_sound[sndCopyNum]);
-		//gprintf("\n\nPlaying flipsound copy # %u\n\n", sndCopyNum);
-	}*/
-	_playSound(m_flipSound);
-}
-
 void CCoverFlow::_left(int repeatDelay, u32 step)
 {
 	int prev, arrStep;
@@ -1968,7 +1950,7 @@ void CCoverFlow::_left(int repeatDelay, u32 step)
 		_updateAllTargets();
 		_instantTarget(0);
 	}
-	_playSound();
+	_playSound(m_flipSound);
 	m_covers[m_range / 2].angle -= _coverMovesA();
 	m_covers[m_range / 2].pos -= _coverMovesP();
 }
@@ -2009,7 +1991,7 @@ void CCoverFlow::_right(int repeatDelay, u32 step)
 		_updateAllTargets();
 		_instantTarget(m_range - 1);
 	}
-	_playSound();
+	_playSound(m_flipSound);
 	m_covers[m_range / 2].angle -= _coverMovesA();
 	m_covers[m_range / 2].pos -= _coverMovesP();
 }

@@ -147,11 +147,8 @@ void GuiSound::Init()
 void GuiSound::FreeMemory()
 {
 	Stop();
-
-	// Prevent reinitialization of SoundHandler since we're exiting
-	if(!Sys_Exiting())
+	if(this->voice != -1)
 		SoundHandle.RemoveDecoder(this->voice);
-
 	if(allocated && sound != NULL)
 		free(sound);
 	allocated = false;

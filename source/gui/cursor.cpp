@@ -32,13 +32,13 @@ bool CCursor::init(const char *png, bool wideFix, CColor shadowColor, float shad
 	if (STexture::TE_OK != m_texture.fromImageFile(png))
 	{
  		if (chan == 0)
-			ok = STexture::TE_OK == m_texture.fromPNG(player1_point_png, GX_TF_RGBA8);
+			ok = STexture::TE_OK == m_texture.fromPNG(player1_point_png);
 		else if (chan == 1)
-			ok = STexture::TE_OK == m_texture.fromPNG(player2_point_png, GX_TF_RGBA8);
+			ok = STexture::TE_OK == m_texture.fromPNG(player2_point_png);
 		else if (chan == 2)
-			ok = STexture::TE_OK == m_texture.fromPNG(player3_point_png, GX_TF_RGBA8);
+			ok = STexture::TE_OK == m_texture.fromPNG(player3_point_png);
 		else if (chan == 3)
-			ok = STexture::TE_OK == m_texture.fromPNG(player4_point_png, GX_TF_RGBA8);
+			ok = STexture::TE_OK == m_texture.fromPNG(player4_point_png);
 	}
 	if (ok && shadow)
 	{
