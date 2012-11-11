@@ -18,7 +18,7 @@ s16 m_categoryBtnCatReq[11];
 s16 m_categoryLblUser[4];
 STexture m_categoryBg;
 
-u8 m_categories[51];
+vector<char> m_categories;
 u8 curPage;
 u8 lastBtn;
 const char *catSettings;
@@ -114,14 +114,13 @@ void CMenu::_getIDCats(void)
 {
 	id = _getId();
 	const char *idCats = m_cat.getString(catDomain, id, "").c_str();
-	memset(&m_categories, '0', m_max_categories);
 	u8 numIdCats = strlen(idCats);
 	if(numIdCats != 0)
 	{
 		for(u8 j = 0; j < numIdCats; ++j)
 		{
 			int k = (static_cast<int>(idCats[j])) - 32;
-			m_categories[k] = '1';
+			m_categories.at(k) = '1';
 		}
 	}
 	m_btnMgr.setText(m_categoryLblTitle, m_cf.getTitle());
@@ -132,7 +131,7 @@ void CMenu::_setIDCats(void)
 	string newIdCats = "";
 	for(int i = 1; i < m_max_categories; i++)
 	{
-		if(m_categories[i] == '1')
+		if(m_categories.at(i) == '1')
 		{
 			char cCh = static_cast<char>( i + 32);
 			newIdCats = newIdCats + cCh;
@@ -170,6 +169,8 @@ void CMenu::_CategorySettings(bool fromGameSet)
 		}
 	}
 	m_max_categories = m_cat.getInt(fmt("%s/GENERAL", catDomain.c_str()), "numcategories", 6);
+	m_categories.resize(m_max_categories, '0');
+	m_categories.assign(m_max_categories, '0');
 	if(fromGameSet)
 		_getIDCats();
 	else
@@ -180,14 +181,13 @@ void CMenu::_CategorySettings(bool fromGameSet)
 		u8 numReqCats = strlen(requiredCats);
 		u8 numSelCats = strlen(selectedCats);
 		u8 numHidCats = strlen(hiddenCats);
-		memset(&m_categories, '0', m_max_categories);
 		
 		if(numReqCats != 0)
 		{
 			for(u8 j = 0; j < numReqCats; ++j)
 			{
 				int k = (static_cast<int>(requiredCats[j])) - 32;
-				m_categories[k] = '3';
+				m_categories.at(k) = '3';
 			}
 		}
 		if(numSelCats != 0)
@@ -195,7 +195,7 @@ void CMenu::_CategorySettings(bool fromGameSet)
 			for(u8 j = 0; j < numSelCats; ++j)
 			{
 				int k = (static_cast<int>(selectedCats[j])) - 32;
-				m_categories[k] = '1';
+				m_categories.at(k) = '1';
 			}
 		}
 		if(numHidCats != 0)
@@ -203,7 +203,7 @@ void CMenu::_CategorySettings(bool fromGameSet)
 			for(u8 j = 0; j < numHidCats; ++j)
 			{
 				int k = (static_cast<int>(hiddenCats[j])) - 32;
-				m_categories[k] = '2';
+				m_categories.at(k) = '2';
 			}
 		}		
 		m_btnMgr.setText(m_categoryLblTitle, _t("cat1", L"Select Categories"));
@@ -226,17 +226,17 @@ void CMenu::_CategorySettings(bool fromGameSet)
 				string newHidCats = "";
 				for(int i = 1; i < m_max_categories; i++)
 				{
-					if(m_categories[i] == '1')
+					if(m_categories.at(i) == '1')
 					{
 						char cCh = static_cast<char>( i + 32);
 						newSelCats = newSelCats + cCh;
 					}
-					else if(m_categories[i] == '2')
+					else if(m_categories.at(i) == '2')
 					{
 						char cCh = static_cast<char>( i + 32);
 						newHidCats = newHidCats + cCh;
 					}
-					else if(m_categories[i] == '3')
+					else if(m_categories.at(i) == '3')
 					{
 						char cCh = static_cast<char>( i + 32);
 						newReqCats = newReqCats + cCh;
@@ -262,6 +262,7 @@ void CMenu::_CategorySettings(bool fromGameSet)
 			_hideCategorySettings();
 			m_cf.right();
 			curPage = 1;
+			m_categories.assign(m_max_categories, '0');
 			_getIDCats();
 			_showCategorySettings();
 		}
@@ -271,6 +272,7 @@ void CMenu::_CategorySettings(bool fromGameSet)
 			_hideCategorySettings();
 			m_cf.left();
 			curPage = 1;
+			m_categories.assign(m_max_categories, '0');			
 			_getIDCats();
 			_showCategorySettings();
 		}
@@ -300,9 +302,9 @@ void CMenu::_CategorySettings(bool fromGameSet)
 		{
 			if(m_btnMgr.selected(m_categoryBtnClear))
 			{
-				m_categories[0] = '1';
+				m_categories.at(0) = '1';
 				for(int j = 1; j < m_max_categories; ++j)
-					m_categories[j] = '0';
+					m_categories.at(j) = '0';
 				_updateCheckboxes();
 			}
 			for(u8 i = 1; i < 11; ++i)
@@ -321,19 +323,19 @@ void CMenu::_CategorySettings(bool fromGameSet)
 					int j = i + ((curPage - 1) * 10);
 					if(fromGameSet)
 					{
-						m_categories[j] = m_categories[j] == '0' ? '1' : '0';
+						m_categories.at(j) = m_categories.at(j) == '0' ? '1' : '0';
 					}
 					else
 					{
-						m_categories[j] = m_categories[j] == '0' ? '1' : m_categories[j] == '1' ? '2' : m_categories[j] == '2' ? '3' : '0';
-						if(m_categories[0] == '1' && m_categories[j] != '0')
-							m_categories[0] = '0';
+						m_categories.at(j) = m_categories.at(j) == '0' ? '1' : m_categories.at(j) == '1' ? '2' : m_categories.at(j) == '2' ? '3' : '0';
+						if(m_categories.at(0) == '1' && m_categories.at(j) != '0')
+							m_categories.at(0) = '0';
 					}
 					m_btnMgr.hide(m_categoryBtnCat[i], true);
 					m_btnMgr.hide(m_categoryBtnCats[i], true);
 					m_btnMgr.hide(m_categoryBtnCatHid[i], true);
 					m_btnMgr.hide(m_categoryBtnCatReq[i], true);
-					switch(m_categories[j])
+					switch(m_categories.at(j))
 					{
 						case '0':
 							m_btnMgr.show(m_categoryBtnCat[i]);

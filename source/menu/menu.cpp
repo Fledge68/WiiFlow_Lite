@@ -2363,7 +2363,10 @@ bool CMenu::_loadEmuList()
 		if(m_plugin_cfg.loaded())
 		{
 			m_plugin.AddPlugin(m_plugin_cfg);
-			u32 MagicWord = strtoul(m_plugin_cfg.getString(PLUGIN_INI_DEF,"magic").c_str(), NULL, 16);
+			const char *MagicNumber = m_plugin_cfg.getString(PLUGIN_INI_DEF,"magic").c_str();
+			if(!m_cfg.getBool("PLUGIN", MagicNumber, false))
+				continue;
+			u32 MagicWord = strtoul(MagicNumber, NULL, 16);	
 			if(m_plugin_cfg.getString(PLUGIN_INI_DEF,"romDir").find("scummvm.ini") == string::npos)
 			{
 				string gameDir(fmt("%s:/%s", DeviceName[currentPartition], m_plugin_cfg.getString(PLUGIN_INI_DEF,"romDir").c_str()));
