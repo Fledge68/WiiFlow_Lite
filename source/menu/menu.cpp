@@ -340,7 +340,7 @@ void CMenu::init()
 			}
 		}
 	}
-	m_cf.init(m_base_font, m_base_font_size, m_vid.vid_50hz());
+	CoverFlow.init(m_base_font, m_base_font_size, m_vid.vid_50hz());
 
 	//Make important folders first.
 	fsop_MakeFolder((char *)m_dataDir.c_str()); //D'OH!
@@ -434,7 +434,7 @@ void CMenu::init()
 		WPAD_SetVRes(chan, m_vid.width() + m_cursor[chan].width(), m_vid.height() + m_cursor[chan].height());
 	}
 
-	m_btnMgr.init(m_vid);
+	m_btnMgr.init();
 	MusicPlayer.Init(m_cfg, m_musicDir, sfmt("%s/music", m_themeDataDir.c_str()));
 	m_music_info = m_cfg.getBool("GENERAL", "display_music_info", true);
 
@@ -452,7 +452,7 @@ void CMenu::init()
 
 	LWP_MutexInit(&m_mutex, 0);
 
-	m_cf.setSoundVolume(m_cfg.getInt("GENERAL", "sound_volume_coverflow", 255));
+	CoverFlow.setSoundVolume(m_cfg.getInt("GENERAL", "sound_volume_coverflow", 255));
 	m_btnMgr.setSoundVolume(m_cfg.getInt("GENERAL", "sound_volume_gui", 255));
 	m_bnrSndVol = m_cfg.getInt("GENERAL", "sound_volume_bnr", 255);
 	m_bnr_settings = m_cfg.getBool("GENERAL", "banner_in_settings", true);
@@ -502,7 +502,7 @@ void CMenu::cleanup()
 	soundDeinit();
 
 	m_vid.cleanup();
-	m_cf.shutdown();
+	CoverFlow.shutdown();
 
 	wiiLightOff();
 	_deinitNetwork();
@@ -652,10 +652,10 @@ void CMenu::_loadCFCfg()
 	const char *domain = "_COVERFLOW";
 
 	//gprintf("Preparing to load sounds from %s\n", m_themeDataDir.c_str());
-	m_cf.setCachePath(m_cacheDir.c_str(), !m_cfg.getBool("GENERAL", "keep_png", true), m_cfg.getBool("GENERAL", "compress_cache", false));
-	m_cf.setBufferSize(m_cfg.getInt("GENERAL", "cover_buffer", 20));
+	CoverFlow.setCachePath(m_cacheDir.c_str(), !m_cfg.getBool("GENERAL", "keep_png", true), m_cfg.getBool("GENERAL", "compress_cache", false));
+	CoverFlow.setBufferSize(m_cfg.getInt("GENERAL", "cover_buffer", 20));
 	// Coverflow Sounds
-	m_cf.setSounds(
+	CoverFlow.setSounds(
 		new GuiSound(fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString(domain, "sound_flip").c_str())),
 		_sound(theme.soundSet, domain, "sound_hover", hover_wav, hover_wav_size, "default_btn_hover", false),
 		_sound(theme.soundSet, domain, "sound_select", click_wav, click_wav_size, "default_btn_click", false),
@@ -666,9 +666,9 @@ void CMenu::_loadCFCfg()
 	string texNoCover = sfmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString(domain, "missing_cover_box").c_str());
 	string texLoadingFlat = sfmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString(domain, "loading_cover_flat").c_str());
 	string texNoCoverFlat = sfmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString(domain, "missing_cover_flat").c_str());
-	m_cf.setTextures(texLoading, texLoadingFlat, texNoCover, texNoCoverFlat);
+	CoverFlow.setTextures(texLoading, texLoadingFlat, texNoCover, texNoCoverFlat);
 	// Font
-	m_cf.setFont(_font(theme.fontSet, domain, "font", TITLEFONT), m_theme.getColor(domain, "font_color", CColor(0xFFFFFFFF)));
+	CoverFlow.setFont(_font(theme.fontSet, domain, "font", TITLEFONT), m_theme.getColor(domain, "font_color", CColor(0xFFFFFFFF)));
 	// Coverflow Count
 	m_numCFVersions = min(max(2, m_theme.getInt("_COVERFLOW", "number_of_modes", 2)), 15);
 }
@@ -735,31 +735,31 @@ void CMenu::_loadCFLayout(int version, bool forceAA, bool otherScrnFmt)
 	int max_fsaa = m_theme.getInt(domain, "max_fsaa", 3);
 	_setAA(forceAA ? max_fsaa : min(max_fsaa, m_cfg.getInt("GENERAL", "max_fsaa", 3)));
 
-	m_cf.setTextureQuality(m_theme.getFloat(domain, "tex_lod_bias", -3.f),
+	CoverFlow.setTextureQuality(m_theme.getFloat(domain, "tex_lod_bias", -3.f),
 		m_theme.getInt(domain, "tex_aniso", 2),
 		m_theme.getBool(domain, "tex_edge_lod", true));
 
-	m_cf.setRange(_getCFInt(domain, "rows", (smallbox && homebrew) ? 5 : 1, sf), _getCFInt(domain, "columns", 9, sf));
+	CoverFlow.setRange(_getCFInt(domain, "rows", (smallbox && homebrew) ? 5 : 1, sf), _getCFInt(domain, "columns", 9, sf));
 
-	m_cf.setCameraPos(false,
+	CoverFlow.setCameraPos(false,
 		_getCFV3D(domain, "camera_pos", Vector3D(0.f, 1.5f, 5.f), sf),
 		_getCFV3D(domain, "camera_aim", Vector3D(0.f, 0.f, -1.f), sf));
 
-	m_cf.setCameraPos(true,
+	CoverFlow.setCameraPos(true,
 		_getCFV3D(domainSel, "camera_pos", Vector3D(0.f, 1.5f, 5.f), sf),
 		_getCFV3D(domainSel, "camera_aim", Vector3D(0.f, 0.f, -1.f), sf));
 
-	m_cf.setCameraOsc(false,
+	CoverFlow.setCameraOsc(false,
 		_getCFV3D(domain, "camera_osc_speed", Vector3D(2.f, 1.1f, 1.3f), sf),
 		_getCFV3D(domain, "camera_osc_amp", Vector3D(0.1f, 0.2f, 0.1f), sf));
 
-	m_cf.setCameraOsc(true,
+	CoverFlow.setCameraOsc(true,
 		_getCFV3D(domainSel, "camera_osc_speed", Vector3D(), sf),
 		_getCFV3D(domainSel, "camera_osc_amp", Vector3D(), sf));
 
 	float def_cvr_posX = (smallbox && homebrew) ? 1.f : 1.6f;
 	float def_cvr_posY = (smallbox && homebrew) ? -0.6f : 0.f;
-	m_cf.setCoverPos(false,
+	CoverFlow.setCoverPos(false,
 		_getCFV3D(domain, "left_pos", Vector3D(-def_cvr_posX, def_cvr_posY, 0.f), sf),
 		_getCFV3D(domain, "right_pos", Vector3D(def_cvr_posX, def_cvr_posY, 0.f), sf),
 		_getCFV3D(domain, "center_pos", Vector3D(0.f, def_cvr_posY, 1.f), sf),
@@ -767,47 +767,47 @@ void CMenu::_loadCFLayout(int version, bool forceAA, bool otherScrnFmt)
 
 	def_cvr_posX = (smallbox && homebrew) ? 1.f : 4.6f;
 	float def_cvr_posX1 = (smallbox && homebrew) ? 0.f : -0.6f;
-	m_cf.setCoverPos(true,
+	CoverFlow.setCoverPos(true,
 		_getCFV3D(domainSel, "left_pos", Vector3D(-def_cvr_posX, def_cvr_posY, 0.f), sf),
 		_getCFV3D(domainSel, "right_pos", Vector3D(def_cvr_posX, def_cvr_posY, 0.f), sf),
 		_getCFV3D(domainSel, "center_pos", Vector3D(def_cvr_posX1, 0.f, 2.6f), sf),
 		_getCFV3D(domainSel, "row_center_pos", Vector3D(0.f, def_cvr_posY, 0.f), sf));
 
-	m_cf.setCoverAngleOsc(false,
+	CoverFlow.setCoverAngleOsc(false,
 		m_theme.getVector3D(domain, "cover_osc_speed", Vector3D(2.f, 2.f, 0.f)),
 		m_theme.getVector3D(domain, "cover_osc_amp", Vector3D(5.f, 10.f, 0.f)));
 
-	m_cf.setCoverAngleOsc(true,
+	CoverFlow.setCoverAngleOsc(true,
 		m_theme.getVector3D(domainSel, "cover_osc_speed", Vector3D(2.1f, 2.1f, 0.f)),
 		m_theme.getVector3D(domainSel, "cover_osc_amp", Vector3D(2.f, 5.f, 0.f)));
 
-	m_cf.setCoverPosOsc(false,
+	CoverFlow.setCoverPosOsc(false,
 		m_theme.getVector3D(domain, "cover_pos_osc_speed"),
 		m_theme.getVector3D(domain, "cover_pos_osc_amp"));
 
-	m_cf.setCoverPosOsc(true,
+	CoverFlow.setCoverPosOsc(true,
 		m_theme.getVector3D(domainSel, "cover_pos_osc_speed"),
 		m_theme.getVector3D(domainSel, "cover_pos_osc_amp"));
 
 	float spacerX = (smallbox && homebrew) ? 1.f : 0.35f;
-	m_cf.setSpacers(false,
+	CoverFlow.setSpacers(false,
 		m_theme.getVector3D(domain, "left_spacer", Vector3D(-spacerX, 0.f, 0.f)),
 		m_theme.getVector3D(domain, "right_spacer", Vector3D(spacerX, 0.f, 0.f)));
 
-	m_cf.setSpacers(true,
+	CoverFlow.setSpacers(true,
 		m_theme.getVector3D(domainSel, "left_spacer", Vector3D(-spacerX, 0.f, 0.f)),
 		m_theme.getVector3D(domainSel, "right_spacer", Vector3D(spacerX, 0.f, 0.f)));
 
-	m_cf.setDeltaAngles(false,
+	CoverFlow.setDeltaAngles(false,
 		m_theme.getVector3D(domain, "left_delta_angle"),
 		m_theme.getVector3D(domain, "right_delta_angle"));
 
-	m_cf.setDeltaAngles(true,
+	CoverFlow.setDeltaAngles(true,
 		m_theme.getVector3D(domainSel, "left_delta_angle"),
 		m_theme.getVector3D(domainSel, "right_delta_angle"));
 
 	float angleY = (smallbox && homebrew) ? 0.f : 70.f;
-	m_cf.setAngles(false,
+	CoverFlow.setAngles(false,
 		m_theme.getVector3D(domain, "left_angle", Vector3D(0.f, angleY, 0.f)),
 		m_theme.getVector3D(domain, "right_angle", Vector3D(0.f, -angleY, 0.f)),
 		m_theme.getVector3D(domain, "center_angle"),
@@ -816,101 +816,101 @@ void CMenu::_loadCFLayout(int version, bool forceAA, bool otherScrnFmt)
 	angleY = (smallbox && homebrew) ? 0.f : 90.f;
 	float angleY1 = (smallbox && homebrew) ? 0.f : 380.f;
 	float angleX = (smallbox && homebrew) ? 0.f : -45.f;
-	m_cf.setAngles(true,
+	CoverFlow.setAngles(true,
 		m_theme.getVector3D(domainSel, "left_angle", Vector3D(angleX, angleY, 0.f)),
 		m_theme.getVector3D(domainSel, "right_angle", Vector3D(angleX, -angleY, 0.f)),
 		m_theme.getVector3D(domainSel, "center_angle", Vector3D(0.f, angleY1, 0.f)),
 		m_theme.getVector3D(domainSel, "row_center_angle"));
 
 	angleX = smallbox ? 0.f : 55.f;
-	m_cf.setTitleAngles(false,
+	CoverFlow.setTitleAngles(false,
 		_getCFFloat(domain, "text_left_angle", -angleX, sf),
 		_getCFFloat(domain, "text_right_angle", angleX, sf),
 		_getCFFloat(domain, "text_center_angle", 0.f, sf));
 
-	m_cf.setTitleAngles(true,
+	CoverFlow.setTitleAngles(true,
 		_getCFFloat(domainSel, "text_left_angle", -angleX, sf),
 		_getCFFloat(domainSel, "text_right_angle", angleX, sf),
 		_getCFFloat(domainSel, "text_center_angle", 0.f, sf));
 
-	m_cf.setTitlePos(false,
+	CoverFlow.setTitlePos(false,
 		_getCFV3D(domain, "text_left_pos", Vector3D(-4.f, 0.f, 1.3f), sf),
 		_getCFV3D(domain, "text_right_pos", Vector3D(4.f, 0.f, 1.3f), sf),
 		_getCFV3D(domain, "text_center_pos", Vector3D(0.f, 0.f, 2.6f), sf));
 
-	m_cf.setTitlePos(true,
+	CoverFlow.setTitlePos(true,
 		_getCFV3D(domainSel, "text_left_pos", Vector3D(-4.f, 0.f, 1.3f), sf),
 		_getCFV3D(domainSel, "text_right_pos", Vector3D(4.f, 0.f, 1.3f), sf),
 		_getCFV3D(domainSel, "text_center_pos", Vector3D(1.7f, 1.8f, 1.6f), sf));
 
-	m_cf.setTitleWidth(false,
+	CoverFlow.setTitleWidth(false,
 		_getCFFloat(domain, "text_side_wrap_width", 500.f, sf),
 		_getCFFloat(domain, "text_center_wrap_width", 500.f, sf));
 
-	m_cf.setTitleWidth(true,
+	CoverFlow.setTitleWidth(true,
 		_getCFFloat(domainSel, "text_side_wrap_width", 500.f, sf),
 		_getCFFloat(domainSel, "text_center_wrap_width", 310.f, sf));
 
-	m_cf.setTitleStyle(false,
+	CoverFlow.setTitleStyle(false,
 		_textStyle(domain.c_str(), "text_side_style", FTGX_ALIGN_MIDDLE | FTGX_JUSTIFY_CENTER),
 		_textStyle(domain.c_str(), "text_center_style", FTGX_ALIGN_MIDDLE | FTGX_JUSTIFY_CENTER));
 
-	m_cf.setTitleStyle(true,
+	CoverFlow.setTitleStyle(true,
 		_textStyle(domainSel.c_str(), "text_side_style", FTGX_ALIGN_MIDDLE | FTGX_JUSTIFY_CENTER),
 		_textStyle(domainSel.c_str(), "text_center_style", FTGX_ALIGN_TOP | FTGX_JUSTIFY_RIGHT));
 
-	m_cf.setColors(false,
+	CoverFlow.setColors(false,
 		m_theme.getColor(domain, "color_beg", 0xCFFFFFFF),
 		m_theme.getColor(domain, "color_end", 0x3FFFFFFF),
 		m_theme.getColor(domain, "color_off", 0x7FFFFFFF));
 
-	m_cf.setColors(true,
+	CoverFlow.setColors(true,
 		m_theme.getColor(domainSel, "color_beg", 0x7FFFFFFF),
 		m_theme.getColor(domainSel, "color_end", 0x1FFFFFFF),
 		m_theme.getColor(domain, "color_off", 0x7FFFFFFF));	// Mouse not used once a selection has been made
 
-	m_cf.setMirrorAlpha(m_theme.getFloat(domain, "mirror_alpha", 0.25f), m_theme.getFloat(domain, "title_mirror_alpha", 0.2f));	// Doesn't depend on selection
+	CoverFlow.setMirrorAlpha(m_theme.getFloat(domain, "mirror_alpha", 0.25f), m_theme.getFloat(domain, "title_mirror_alpha", 0.2f));	// Doesn't depend on selection
 
-	m_cf.setMirrorBlur(m_theme.getBool(domain, "mirror_blur", true));	// Doesn't depend on selection
+	CoverFlow.setMirrorBlur(m_theme.getBool(domain, "mirror_blur", true));	// Doesn't depend on selection
 
-	m_cf.setShadowColors(false,
+	CoverFlow.setShadowColors(false,
 		m_theme.getColor(domain, "color_shadow_center", 0x00000000),
 		m_theme.getColor(domain, "color_shadow_beg", 0x00000000),
 		m_theme.getColor(domain, "color_shadow_end", 0x00000000),
 		m_theme.getColor(domain, "color_shadow_off", 0x00000000));
 
-	m_cf.setShadowColors(true,
+	CoverFlow.setShadowColors(true,
 		m_theme.getColor(domainSel, "color_shadow_center", 0x0000007F),
 		m_theme.getColor(domainSel, "color_shadow_beg", 0x0000007F),
 		m_theme.getColor(domainSel, "color_shadow_end", 0x0000007F),
 		m_theme.getColor(domainSel, "color_shadow_off", 0x0000007F));
 
-	m_cf.setShadowPos(m_theme.getFloat(domain, "shadow_scale", 1.1f),
+	CoverFlow.setShadowPos(m_theme.getFloat(domain, "shadow_scale", 1.1f),
 		m_theme.getFloat(domain, "shadow_x"),
 		m_theme.getFloat(domain, "shadow_y"));
 
 	float spacerY = (smallbox && homebrew) ? 0.60f : 2.f; 
-	m_cf.setRowSpacers(false,
+	CoverFlow.setRowSpacers(false,
 		m_theme.getVector3D(domain, "top_spacer", Vector3D(0.f, spacerY, 0.f)),
 		m_theme.getVector3D(domain, "bottom_spacer", Vector3D(0.f, -spacerY, 0.f)));
 
-	m_cf.setRowSpacers(true,
+	CoverFlow.setRowSpacers(true,
 		m_theme.getVector3D(domainSel, "top_spacer", Vector3D(0.f, spacerY, 0.f)),
 		m_theme.getVector3D(domainSel, "bottom_spacer", Vector3D(0.f, -spacerY, 0.f)));
 
-	m_cf.setRowDeltaAngles(false,
+	CoverFlow.setRowDeltaAngles(false,
 		m_theme.getVector3D(domain, "top_delta_angle"),
 		m_theme.getVector3D(domain, "bottom_delta_angle"));
 
-	m_cf.setRowDeltaAngles(true,
+	CoverFlow.setRowDeltaAngles(true,
 		m_theme.getVector3D(domainSel, "top_delta_angle"),
 		m_theme.getVector3D(domainSel, "bottom_delta_angle"));
 
-	m_cf.setRowAngles(false,
+	CoverFlow.setRowAngles(false,
 		m_theme.getVector3D(domain, "top_angle"),
 		m_theme.getVector3D(domain, "bottom_angle"));
 
-	m_cf.setRowAngles(true,
+	CoverFlow.setRowAngles(true,
 		m_theme.getVector3D(domainSel, "top_angle"),
 		m_theme.getVector3D(domainSel, "bottom_angle"));
 
@@ -921,25 +921,25 @@ void CMenu::_loadCFLayout(int version, bool forceAA, bool otherScrnFmt)
 		: Vector3D(1.f, 0.5f, 1.f))
 	: Vector3D(1.f, 1.f, 1.f);
 
-	m_cf.setCoverScale(false,
+	CoverFlow.setCoverScale(false,
 		m_theme.getVector3D(domain, "left_scale", def_cvr_scale),
 		m_theme.getVector3D(domain, "right_scale", def_cvr_scale),
 		m_theme.getVector3D(domain, "center_scale", def_cvr_scale),
 		m_theme.getVector3D(domain, "row_center_scale", def_cvr_scale));
 
-	m_cf.setCoverScale(true,
+	CoverFlow.setCoverScale(true,
 		m_theme.getVector3D(domainSel, "left_scale", def_cvr_scale),
 		m_theme.getVector3D(domainSel, "right_scale", def_cvr_scale),
 		m_theme.getVector3D(domainSel, "center_scale", def_cvr_scale),
 		m_theme.getVector3D(domainSel, "row_center_scale", def_cvr_scale));
 
 	float flipX = (smallbox && homebrew) ? 359.f : 180.f;
-	m_cf.setCoverFlipping(
+	CoverFlow.setCoverFlipping(
 		_getCFV3D(domainSel, "flip_pos", Vector3D(), sf),
 		_getCFV3D(domainSel, "flip_angle", Vector3D(0.f, flipX, 0.f), sf),
 		_getCFV3D(domainSel, "flip_scale", def_cvr_scale, sf));
 
-	m_cf.setBlur(
+	CoverFlow.setBlur(
 		m_theme.getInt(domain, "blur_resolution", 1),
 		m_theme.getInt(domain, "blur_radius", 2),
 		m_theme.getFloat(domain, "blur_factor", 1.f));
@@ -1248,7 +1248,7 @@ vector<STexture> CMenu::_textures(const char *domain, const char *key)
 				if (i != theme.texSet.end())
 					textures.push_back(i->second);
 				STexture tex;
-				if (STexture::TE_OK == tex.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), filename.c_str())))
+				if(tex.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), filename.c_str())) == TE_OK)
 				{
 					theme.texSet[filename] = tex;
 					textures.push_back(tex);
@@ -1274,7 +1274,7 @@ STexture CMenu::_texture(const char *domain, const char *key, STexture &def, boo
 				return i->second;
 			/* Load from image file */
 			STexture tex;
-			if(STexture::TE_OK == tex.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), filename.c_str())))
+			if(tex.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), filename.c_str())) == TE_OK)
 			{
 				if(freeDef && def.data != NULL)
 				{
@@ -1596,8 +1596,8 @@ void CMenu::_initCF(void)
 	GameTDB gametdb;
 	const char *domain = _domainFromView();
 	
-	m_cf.clear();
-	m_cf.reserve(m_gameList.size());
+	CoverFlow.clear();
+	CoverFlow.reserve(m_gameList.size());
 	
 	const vector<bool> &EnabledPlugins = m_plugin.GetEnabledPlugins(m_cfg);
 
@@ -1880,9 +1880,9 @@ void CMenu::_initCF(void)
 				if(EnabledPlugins.size() == 0) //all plugins
 				{
 					if(coverFolder.size() > 0)
-						m_cf.addItem(&(*element), fmt("%s/%s/%s.png", m_picDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s/%s.png", m_boxPicDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
+						CoverFlow.addItem(&(*element), fmt("%s/%s/%s.png", m_picDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s/%s.png", m_boxPicDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
 					else
-						m_cf.addItem(&(*element), fmt("%s/%s.png", m_picDir.c_str(), tempname.c_str()), fmt("%s/%s.png", m_boxPicDir.c_str(), tempname.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
+						CoverFlow.addItem(&(*element), fmt("%s/%s.png", m_picDir.c_str(), tempname.c_str()), fmt("%s/%s.png", m_boxPicDir.c_str(), tempname.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
 				}
 				else
 				{
@@ -1891,18 +1891,18 @@ void CMenu::_initCF(void)
 						if(EnabledPlugins.at(j) == true && element->settings[0] == m_plugin.getPluginMagic(j))
 						{
 							if(coverFolder.size() > 0)
-								m_cf.addItem(&(*element), fmt("%s/%s/%s.png", m_picDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s/%s.png", m_boxPicDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
+								CoverFlow.addItem(&(*element), fmt("%s/%s/%s.png", m_picDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s/%s.png", m_boxPicDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
 							else
-								m_cf.addItem(&(*element), fmt("%s/%s.png", m_picDir.c_str(), tempname.c_str()), fmt("%s/%s.png", m_boxPicDir.c_str(), tempname.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
+								CoverFlow.addItem(&(*element), fmt("%s/%s.png", m_picDir.c_str(), tempname.c_str()), fmt("%s/%s.png", m_boxPicDir.c_str(), tempname.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
 							break;
 						}
 					}
 				}
 			}
 			else if(element->type == TYPE_HOMEBREW)
-				m_cf.addItem(&(*element), fmt("%s/icon.png", element->path), fmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
+				CoverFlow.addItem(&(*element), fmt("%s/icon.png", element->path), fmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
 			else
-				m_cf.addItem(&(*element), fmt("%s/%s.png", m_picDir.c_str(), id.c_str()), fmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
+				CoverFlow.addItem(&(*element), fmt("%s/%s.png", m_picDir.c_str(), id.c_str()), fmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
 		}
 	}
 	m_gcfg1.unload();
@@ -1911,33 +1911,34 @@ void CMenu::_initCF(void)
 		dump.save(true);
 		m_cfg.setBool(domain, "dump_list", false);
 	}
-	m_cf.setBoxMode(m_cfg.getBool("GENERAL", "box_mode", true));
-	m_cf.setCompression(m_cfg.getBool("GENERAL", "allow_texture_compression", true));
-	m_cf.setBufferSize(m_cfg.getInt("GENERAL", "cover_buffer", 20));
-	m_cf.setSorting((Sorting)m_cfg.getInt(domain, "sort", 0));
-	m_cf.setHQcover(m_cfg.getBool("GENERAL", "cover_use_hq", false));
+	CoverFlow.setBoxMode(m_cfg.getBool("GENERAL", "box_mode", true));
+	CoverFlow.setCompression(m_cfg.getBool("GENERAL", "allow_texture_compression", true));
+	CoverFlow.setBufferSize(m_cfg.getInt("GENERAL", "cover_buffer", 20));
+	CoverFlow.setSorting((Sorting)m_cfg.getInt(domain, "sort", 0));
+	CoverFlow.setHQcover(m_cfg.getBool("GENERAL", "cover_use_hq", false));
 
-	m_cf.start();
-	if (m_curGameId.empty() || !m_cf.findId(m_curGameId.c_str(), true))
-		m_cf.findId(m_cfg.getString(domain, "current_item").c_str(), true);
+	CoverFlow.start();
+	if (m_curGameId.empty() || !CoverFlow.findId(m_curGameId.c_str(), true))
+		CoverFlow.findId(m_cfg.getString(domain, "current_item").c_str(), true);
 }
 
 void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 {
 	if(withCF)
-		m_cf.tick();
+		CoverFlow.tick();
 	m_btnMgr.tick();
 	m_fa.tick();
-	m_cf.setFanartPlaying(m_fa.isLoaded());
-	m_cf.setFanartTextColor(m_fa.getTextColor(m_theme.getColor("_COVERFLOW", "font_color", CColor(0xFFFFFFFF))));
+	m_fa.hideCover() ? 	CoverFlow.hideCover() : CoverFlow.showCover();
+	CoverFlow.setFanartPlaying(m_fa.isLoaded());
+	CoverFlow.setFanartTextColor(m_fa.getTextColor(m_theme.getColor("_COVERFLOW", "font_color", CColor(0xFFFFFFFF))));
 
+	m_vid.prepare();
+	m_vid.setup2DProjection();
 	_updateBg();
-
-	m_fa.hideCover() ? 	m_cf.hideCover() : m_cf.showCover();
-
+	if(CoverFlow.getRenderTex())
+		CoverFlow.RenderTex();
 	if(withCF)
-		m_cf.makeEffectTexture(m_vid, m_lqBg);
-
+		CoverFlow.makeEffectTexture(m_lqBg);
 	if(withCF && m_aa > 0)
 	{
 		m_vid.setAA(m_aa, true);
@@ -1947,11 +1948,11 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 			m_vid.setup2DProjection(false, true);
 			_drawBg();
 			m_fa.draw(false);
-			m_cf.draw();
+			CoverFlow.draw();
 			m_vid.setup2DProjection(false, true);
-			m_cf.drawEffect();
+			CoverFlow.drawEffect();
 			if(!m_banner.GetSelectedGame())
-				m_cf.drawText(adjusting);
+				CoverFlow.drawText(adjusting);
 			m_vid.renderAAPass(i);
 		}
 		m_vid.setup2DProjection();
@@ -1959,17 +1960,15 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 	}
 	else
 	{
-		m_vid.prepare();
-		m_vid.setup2DProjection();
 		_drawBg();
 		m_fa.draw(false);
 		if(withCF)
 		{
-			m_cf.draw();
+			CoverFlow.draw();
 			m_vid.setup2DProjection();
-			m_cf.drawEffect();
+			CoverFlow.drawEffect();
 			if(!m_banner.GetSelectedGame())
-				m_cf.drawText(adjusting);
+				CoverFlow.drawText(adjusting);
 		}
 	}
 	if(m_fa.isLoaded())
@@ -2061,7 +2060,6 @@ void CMenu::_updateBg(void)
 	Mtx modelViewMtx;
 	GXTexObj texObj;
 	GXTexObj texObj2;
-	Mtx44 projMtx;
 
 	if (m_bgCrossFade == 0) return;
 	m_bgCrossFade = max(0, (int)m_bgCrossFade - 14);
@@ -2071,10 +2069,6 @@ void CMenu::_updateBg(void)
 		m_curBg = m_nextBg;
 		return;
 	}
-	m_vid.prepare();
-	GX_SetViewport(0.f, 0.f, 640.f, 480.f, 0.f, 1.f);
-	guOrtho(projMtx, 0.f, 480.f, 0.f, 640.f, 0.f, 1000.0f);
-	GX_LoadProjectionMtx(projMtx, GX_ORTHOGRAPHIC);
 	GX_ClearVtxDesc();
 	GX_SetNumTevStages(m_prevBg.data == NULL ? 1 : 2);
 	GX_SetNumChans(0);
@@ -2252,7 +2246,7 @@ bool CMenu::_loadChannelList(void)
 
 bool CMenu::_loadList(void)
 {
-	m_cf.clear();
+	CoverFlow.clear();
 	if((m_current_view == COVERFLOW_CHANNEL && m_cfg.getBool(CHANNEL_DOMAIN, "disable", true))
 	|| (m_current_view != COVERFLOW_CHANNEL && NandHandle.EmulationEnabled()))
 	{
@@ -2419,7 +2413,7 @@ void CMenu::_stopSounds(void)
 		}
 	}
 	m_btnMgr.stopSounds();
-	m_cf.stopSound();
+	CoverFlow.stopSound();
 	m_gameSound.Stop();
 }
 
@@ -2582,11 +2576,11 @@ void CMenu::_cleanupDefaultFont()
 string CMenu::_getId()
 {
 	string id;
-	if(!NoGameID(m_cf.getHdr()->type))
-		id = m_cf.getId();
+	if(!NoGameID(CoverFlow.getHdr()->type))
+		id = CoverFlow.getId();
 	else
 	{
-		dir_discHdr *hdr = m_cf.getHdr();
+		dir_discHdr *hdr = CoverFlow.getHdr();
 		string tempname(hdr->path);
 		if(hdr->type == TYPE_HOMEBREW)
 		{

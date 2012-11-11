@@ -53,7 +53,7 @@ u32 CMenu::_downloadCheatFileAsync(void *obj)
 		return -2;
 	}
 
-	string id = m->m_cf.getId();
+	string id = CoverFlow.getId();
 	char type = id[0] == 'S' ? 'R' : id[0];
 
 	block cheatfile = downloadfile(buffer, bufferSize, fmt(GECKOURL, type, id.c_str()), CMenu::_downloadProgress, m);
@@ -81,7 +81,7 @@ void CMenu::_CheatSettings()
 {
 	SetupInput();
 
-	string id = m_cf.getId();
+	string id = CoverFlow.getId();
 
 	m_cheatSettingsPage = 1;
 	int txtavailable = m_cheatfile.openTxtfile(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id.c_str())); 

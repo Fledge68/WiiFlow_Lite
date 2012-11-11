@@ -123,7 +123,7 @@ void CMenu::_getIDCats(void)
 			m_categories.at(k) = '1';
 		}
 	}
-	m_btnMgr.setText(m_categoryLblTitle, m_cf.getTitle());
+	m_btnMgr.setText(m_categoryLblTitle, CoverFlow.getTitle());
 }
 
 void CMenu::_setIDCats(void)
@@ -213,7 +213,7 @@ void CMenu::_CategorySettings(bool fromGameSet)
 	while(!m_exit)
 	{
 		_mainLoopCommon();
-		m_cf.tick();
+		CoverFlow.tick();
 		if(!m_btnMgr.selected(lastBtn))
 			m_btnMgr.noHover(false);
 			
@@ -260,7 +260,7 @@ void CMenu::_CategorySettings(bool fromGameSet)
 		{
 			_setIDCats();
 			_hideCategorySettings();
-			m_cf.right();
+			CoverFlow.right();
 			curPage = 1;
 			m_categories.assign(m_max_categories, '0');
 			_getIDCats();
@@ -270,7 +270,7 @@ void CMenu::_CategorySettings(bool fromGameSet)
 		{
 			_setIDCats();
 			_hideCategorySettings();
-			m_cf.left();
+			CoverFlow.left();
 			curPage = 1;
 			m_categories.assign(m_max_categories, '0');			
 			_getIDCats();

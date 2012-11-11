@@ -514,7 +514,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 				id = (const char *)m_gameList[i].id;
 				path = sfmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str());
 			}
-			if(!missingOnly || (!m_cf.fullCoverCached(id.c_str()) && !checkPNGFile(path.c_str())))
+			if(!missingOnly || (!CoverFlow.fullCoverCached(id.c_str()) && !checkPNGFile(path.c_str())))
 			{
 				if(m_gameList[i].type == TYPE_PLUGIN)
 					pluginCoverList.push_back(m_gameList[i]);
@@ -726,7 +726,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 									LWP_MutexLock(m_mutex);
 									_setThrdMsg(wfmt(_fmt("dlmsg10", L"Making %s"), sfmt("%s.wfc", coverList[i].c_str()).c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
 									LWP_MutexUnlock(m_mutex);
-									if (m_cf.preCacheCover(coverList[i].c_str(), download.data, true))
+									if (CoverFlow.preCacheCover(coverList[i].c_str(), download.data, true))
 									{
 										++count;
 										success = true;
@@ -874,7 +874,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 									LWP_MutexLock(m_mutex);
 									_setThrdMsg(wfmt(_fmt("dlmsg10", L"Making %s"), sfmt("%s.wfc", coverList[i].c_str()).c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
 									LWP_MutexUnlock(m_mutex);
-									if (m_cf.preCacheCover(coverList[i].c_str(), download.data, true))
+									if (CoverFlow.preCacheCover(coverList[i].c_str(), download.data, true))
 									{
 										++count;
 										success = true;
@@ -1021,7 +1021,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 									LWP_MutexLock(m_mutex);
 									_setThrdMsg(wfmt(_fmt("dlmsg10", L"Making %s"), sfmt("%s.wfc", coverList[i].c_str()).c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
 									LWP_MutexUnlock(m_mutex);
-									if (m_cf.preCacheCover(coverList[i].c_str(), download.data, false))
+									if (CoverFlow.preCacheCover(coverList[i].c_str(), download.data, false))
 									{
 										++countFlat;
 										success = true;
@@ -1164,7 +1164,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 									LWP_MutexLock(m_mutex);
 									_setThrdMsg(wfmt(_fmt("dlmsg10", L"Making %s"), sfmt("%s.wfc", coverList[i].c_str()).c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
 									LWP_MutexUnlock(m_mutex);
-									if (m_cf.preCacheCover(coverList[i].c_str(), download.data, false))
+									if (CoverFlow.preCacheCover(coverList[i].c_str(), download.data, false))
 									{
 										++countFlat;
 										success = true;
@@ -1210,13 +1210,13 @@ void CMenu::_download(string gameId)
 	m_thrdStop = false;
 	m_thrdMessageAdded = false;
 
-	if(gameId.size() && m_cf.getHdr()->type == TYPE_PLUGIN)
+	if(gameId.size() && CoverFlow.getHdr()->type == TYPE_PLUGIN)
 	{
 		char gamePath[256];
-		if(string(m_cf.getHdr()->path).find_last_of("/") != string::npos)
-			strncpy(gamePath, &m_cf.getHdr()->path[string(m_cf.getHdr()->path).find_last_of("/")+1], sizeof(gamePath));
+		if(string(CoverFlow.getHdr()->path).find_last_of("/") != string::npos)
+			strncpy(gamePath, &CoverFlow.getHdr()->path[string(CoverFlow.getHdr()->path).find_last_of("/")+1], sizeof(gamePath));
 		else
-			strncpy(gamePath, m_cf.getHdr()->path, sizeof(gamePath));
+			strncpy(gamePath, CoverFlow.getHdr()->path, sizeof(gamePath));
 		m_coverDLGameId = gamePath;
 	}
 	else

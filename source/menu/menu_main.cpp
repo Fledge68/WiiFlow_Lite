@@ -181,9 +181,9 @@ void CMenu::_showMain(void)
 
 void CMenu::LoadView(void)
 {
-	m_curGameId = m_cf.getId();
+	m_curGameId = CoverFlow.getId();
 	_hideMain(true);
-	m_cf.clear();
+	CoverFlow.clear();
 	if(!m_vid.showingWaitMessage())
 		_showWaitMessage();
 	m_favorites = false;
@@ -193,7 +193,7 @@ void CMenu::LoadView(void)
 	_showMain();
 	_initCF();
 	_loadCFLayout(m_cfg.getInt(_domainFromView(), "last_cf_mode", 1));
-	m_cf.applySettings();
+	CoverFlow.applySettings();
 
 	char *mode = (m_current_view == COVERFLOW_CHANNEL && m_cfg.getBool(CHANNEL_DOMAIN, "disable", true)) 
 		? (char *)CHANNEL_DOMAIN : (char *)DeviceName[currentPartition];
@@ -325,9 +325,9 @@ int CMenu::main(void)
 		else if(BTN_A_PRESSED)
 		{
 			if(m_btnMgr.selected(m_mainBtnPrev))
-				m_cf.pageUp();
+				CoverFlow.pageUp();
 		 	else if(m_btnMgr.selected(m_mainBtnNext))
-				m_cf.pageDown();
+				CoverFlow.pageDown();
 			else if(m_btnMgr.selected(m_mainBtnQuit))
 			{
 				_hideMain();
@@ -405,7 +405,7 @@ int CMenu::main(void)
 			{
 				/* Cleanup for Disc Booter */
 				_hideMain(true);
-				m_cf.clear();
+				CoverFlow.clear();
 				_showWaitMessage();
 				m_gameSound.Stop();
 				CheckGameSoundThread();
@@ -424,10 +424,10 @@ int CMenu::main(void)
 			{
 				m_favorites = !m_favorites;
 				m_cfg.setBool(_domainFromView(), "favorites", m_favorites);
-				m_curGameId = m_cf.getId();
+				m_curGameId = CoverFlow.getId();
 				_initCF();
 			}
-			else if(!m_cf.empty() && m_cf.select())
+			else if(!CoverFlow.empty() && CoverFlow.select())
 			{
 				_hideMain();
 				_game(BTN_B_HELD);
@@ -435,7 +435,7 @@ int CMenu::main(void)
 					break;
 				if(BTN_B_HELD)
 					bUsed = true;
-				m_cf.cancel();
+				CoverFlow.cancel();
 				_showMain();
 			}
 		}
@@ -482,11 +482,11 @@ int CMenu::main(void)
 				int sorting = m_cfg.getInt(domain, "sort", SORT_ALPHA);
 				if (sorting != SORT_ALPHA && sorting != SORT_PLAYERS && sorting != SORT_WIFIPLAYERS && sorting != SORT_GAMEID)
 				{
-					m_cf.setSorting((Sorting)SORT_ALPHA);
+					CoverFlow.setSorting((Sorting)SORT_ALPHA);
 					m_cfg.setInt(domain, "sort", SORT_ALPHA);
 				}
 				wchar_t c[2] = {0, 0};
-				m_btnMgr.selected(m_mainBtnPrev) ? m_cf.prevLetter(c) : m_cf.nextLetter(c);
+				m_btnMgr.selected(m_mainBtnPrev) ? CoverFlow.prevLetter(c) : CoverFlow.nextLetter(c);
 				m_showtimer = 60;
 				curLetter.clear();
 				curLetter = wstringEx(c);
@@ -506,24 +506,24 @@ int CMenu::main(void)
 		}
 		else if(WROLL_LEFT)
 		{
-			m_cf.left();
+			CoverFlow.left();
 			bUsed = true;
 		}
 		else if(WROLL_RIGHT)
 		{
-			m_cf.right();
+			CoverFlow.right();
 			bUsed = true;
 		}
 		if(!BTN_B_HELD)
 		{
 			if(BTN_UP_REPEAT || RIGHT_STICK_UP)
-				m_cf.up();
+				CoverFlow.up();
 			else if(BTN_RIGHT_REPEAT || RIGHT_STICK_RIGHT)
-				m_cf.right();
+				CoverFlow.right();
 			else if(BTN_DOWN_REPEAT ||  RIGHT_STICK_DOWN)
-				m_cf.down();
+				CoverFlow.down();
 			else if(BTN_LEFT_REPEAT || RIGHT_STICK_LEFT)
-				m_cf.left();
+				CoverFlow.left();
 			else if(BTN_1_PRESSED || BTN_2_PRESSED)
 			{
 				if (!m_btnMgr.selected(m_mainBtnQuit))
@@ -532,7 +532,7 @@ int CMenu::main(void)
 					s8 direction = BTN_1_PRESSED ? 1 : -1;
 					int cfVersion = 1+loopNum((m_cfg.getInt(domain, "last_cf_mode", 1)-1) + direction, m_numCFVersions);
 					_loadCFLayout(cfVersion);
-					m_cf.applySettings();
+					CoverFlow.applySettings();
 					m_cfg.setInt(domain, "last_cf_mode", cfVersion);
 				}
 			}
@@ -541,14 +541,14 @@ int CMenu::main(void)
 				if(b_lr_mode)
 					MusicPlayer.Previous();
 				else
-					m_cf.pageUp();
+					CoverFlow.pageUp();
 			}
 			else if(BTN_PLUS_PRESSED)
 			{
 				if(b_lr_mode)
 					MusicPlayer.Next();
 				else
-					m_cf.pageDown();
+					CoverFlow.pageDown();
 			}
 		}
 		else
@@ -562,11 +562,11 @@ int CMenu::main(void)
 				int sorting = m_cfg.getInt(domain, "sort", SORT_ALPHA);
 				if(sorting != SORT_ALPHA && sorting != SORT_PLAYERS && sorting != SORT_WIFIPLAYERS && sorting != SORT_GAMEID)
 				{
-					m_cf.setSorting((Sorting)SORT_ALPHA);
+					CoverFlow.setSorting((Sorting)SORT_ALPHA);
 					m_cfg.setInt(domain, "sort", SORT_ALPHA);
 				}
 				wchar_t c[2] = {0, 0};
-				BTN_UP_PRESSED ? m_cf.prevLetter(c) : m_cf.nextLetter(c);
+				BTN_UP_PRESSED ? CoverFlow.prevLetter(c) : CoverFlow.nextLetter(c);
 
 				curLetter.clear();
 				curLetter = wstringEx(c);
@@ -588,7 +588,7 @@ int CMenu::main(void)
 			{
 				bUsed = true;
 				if(b_lr_mode)
-					m_cf.pageUp();
+					CoverFlow.pageUp();
 				else
 					MusicPlayer.Previous();
 			}
@@ -596,7 +596,7 @@ int CMenu::main(void)
 			{
 				bUsed = true;
 				if(b_lr_mode)
-					m_cf.pageDown();
+					CoverFlow.pageDown();
 				else
 					MusicPlayer.Next();
 			}
@@ -605,7 +605,7 @@ int CMenu::main(void)
 				bUsed = true;
 				u32 sort = 0;
 				sort = loopNum((m_cfg.getInt(domain, "sort", 0)) + 1, SORT_MAX - 1);
-				m_cf.setSorting((Sorting)sort);
+				CoverFlow.setSorting((Sorting)sort);
 				m_cfg.setInt(domain, "sort", sort);
 				wstringEx curSort ;
 				if(sort == SORT_ALPHA)
@@ -802,15 +802,15 @@ int CMenu::main(void)
 		for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 		{
 			if(WPadIR_Valid(chan) || (m_show_pointer[chan] && !WPadIR_Valid(chan)))
-				m_cf.mouse(m_vid, chan, m_cursor[chan].x(), m_cursor[chan].y());
+				CoverFlow.mouse(chan, m_cursor[chan].x(), m_cursor[chan].y());
 			else
-				m_cf.mouse(m_vid, chan, -1, -1);
+				CoverFlow.mouse(chan, -1, -1);
 		}
 	}
 	ScanInput();
 	if(m_reload || BTN_B_HELD)
 	{
-		m_cf.clear();
+		CoverFlow.clear();
 		_showWaitMessage();
 		exitHandler(PRIILOADER_DEF); //Making wiiflow ready to boot something
 		_launchHomebrew(fmt("%s/boot.dol", m_appDir.c_str()), m_homebrewArgs);
@@ -861,7 +861,7 @@ void CMenu::_initMainMenu()
 	STexture emptyTex;
 
 	m_mainBg = _texture("MAIN/BG", "texture", theme.bg, false);
-	if (m_theme.loaded() && STexture::TE_OK == bgLQ.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString("MAIN/BG", "texture").c_str()), GX_TF_CMPR, 64, 64))
+	if(m_theme.loaded() && bgLQ.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString("MAIN/BG", "texture").c_str()), GX_TF_CMPR, 64, 64) == TE_OK)
 		m_mainBgLQ = bgLQ;
 
 	texQuit.fromPNG(btnquit_png);

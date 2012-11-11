@@ -103,28 +103,23 @@ void CMenu::_updateSourceBtns(void)
 	string ImgName;
 	u8 j = (Source_curPage - 1) * 12;
 	
-	for (u8 i = 0; i < 12; ++i)
+	for(u8 i = 0; i < 12; ++i)
 	{
 		STexture texConsoleImg;
 		STexture texConsoleImgs;
 		
 		ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image", "");
-		if(!STexture::TE_OK == texConsoleImg.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), ImgName.c_str())))
+		if(texConsoleImg.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), ImgName.c_str())) != TE_OK)
 		{
-			if(!STexture::TE_OK ==	texConsoleImg.fromImageFile(fmt("%s/%s", m_sourceDir.c_str(), ImgName.c_str())))
-			{
+			if(texConsoleImg.fromImageFile(fmt("%s/%s", m_sourceDir.c_str(), ImgName.c_str())) != TE_OK)
 				texConsoleImg.fromPNG(favoriteson_png);
-			}
 		}
 		ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image_s", "");
-		if(!STexture::TE_OK == texConsoleImgs.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), ImgName.c_str())))
+		if(texConsoleImgs.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), ImgName.c_str())) != TE_OK)
 		{
-			if(!STexture::TE_OK ==	texConsoleImgs.fromImageFile(fmt("%s/%s", m_sourceDir.c_str(), ImgName.c_str())))
-			{
+			if(texConsoleImgs.fromImageFile(fmt("%s/%s", m_sourceDir.c_str(), ImgName.c_str())) != TE_OK)
 				texConsoleImgs.fromPNG(favoritesons_png);
-			}
 		}
-
 		m_btnMgr.setBtnTexture(m_sourceBtnSource[i], texConsoleImg, texConsoleImgs);
 
 		string source = m_source.getString(fmt("BUTTON_%i", i + j), "source", "");
@@ -426,26 +421,22 @@ void CMenu::_initSourceMenu()
 	int col;
 	string ImgName;
 	
-	for ( int i = 0; i < 12; ++i)
+	for(u8 i = 0; i < 12; ++i)
 	{
 		STexture texConsoleImg;
 		STexture texConsoleImgs;
 	
 		ImgName = m_source.getString(fmt("BUTTON_%i", i),"image", "");
-		if(!STexture::TE_OK == texConsoleImg.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), ImgName.c_str())))
+		if(texConsoleImg.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), ImgName.c_str())) != TE_OK)
 		{
-			if(!STexture::TE_OK ==	texConsoleImg.fromImageFile(fmt("%s/%s", m_sourceDir.c_str(), ImgName.c_str())))
-			{
+			if(texConsoleImg.fromImageFile(fmt("%s/%s", m_sourceDir.c_str(), ImgName.c_str())) != TE_OK)
 				texConsoleImg.fromPNG(favoriteson_png);
-			}
 		}
 		ImgName = m_source.getString(fmt("BUTTON_%i", i),"image_s", "");
-		if(!STexture::TE_OK == texConsoleImgs.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), ImgName.c_str())))
+		if(texConsoleImgs.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), ImgName.c_str())) != TE_OK)
 		{
-			if(!STexture::TE_OK ==	texConsoleImgs.fromImageFile(fmt("%s/%s", m_sourceDir.c_str(), ImgName.c_str())))
-			{
+			if(texConsoleImgs.fromImageFile(fmt("%s/%s", m_sourceDir.c_str(), ImgName.c_str())) != TE_OK)
 				texConsoleImgs.fromPNG(favoritesons_png);
-			}
 		}
 	
 		row = i / 4;

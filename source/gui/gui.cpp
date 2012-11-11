@@ -10,7 +10,7 @@ template <class T> static inline T loopNum(T i, T s)
 
 STexture CButtonsMgr::_noTexture;
 
-bool CButtonsMgr::init(CVideo &vid)
+bool CButtonsMgr::init()
 {
 	m_elts.clear();
 	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
@@ -23,7 +23,6 @@ bool CButtonsMgr::init(CVideo &vid)
 	m_noclick = false;
 	m_nohover = false;
 	m_mouse = false;
-	m_vid = vid;
 	soundInit();
 
 	return true;

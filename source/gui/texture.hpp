@@ -4,10 +4,17 @@
 
 #include <gccore.h>
 
+enum TexErr
+{
+	TE_OK = 0,
+	TE_ERROR,
+	TE_NOMEM
+};
+
 class STexture
 {
 public:
-	STexture(void) : data(NULL), dataSize(0), width(0), height(0), format(-1), maxLOD(0) { }
+	STexture(void) : data(NULL), dataSize(0), width(0), height(0), format(-1), maxLOD(0), thread(false) { }
 	void Cleanup();
 	bool CopyTexture(const STexture &tex);
 	u8 *data;
@@ -16,8 +23,7 @@ public:
 	u32 height;
 	u8 format;
 	u8 maxLOD;
-	// Utility funcs
-	enum TexErr { TE_OK, TE_ERROR, TE_NOMEM };
+	bool thread;
 	// Get from PNG, if not found from JPG
 	TexErr fromImageFile(const char *filename, u8 f = -1, u32 minMipSize = 0, u32 maxMipSize = 0);
 	// This function doesn't use MEM2 if the PNG is loaded from memory and there's no mip mapping

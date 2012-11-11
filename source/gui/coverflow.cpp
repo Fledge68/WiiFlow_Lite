@@ -59,6 +59,8 @@ static inline int loopNum(int i, int s)
 	return i < 0 ? (s - (-i % s)) % s : i % s;
 }
 
+CCoverFlow CoverFlow;
+
 CCoverFlow::CCover::CCover(void) 
 {
 	index = 0;
@@ -189,6 +191,8 @@ CCoverFlow::CCoverFlow(void)
 	m_dvdskin_loaded = false;
 	m_loadingCovers = false;
 	m_coverThrdBusy = false;
+	m_renderTex = false;
+	m_renderingTex = NULL;
 	m_moved = false;
 	m_selected = false;
 	m_hideCover = false;
@@ -760,7 +764,7 @@ void CCoverFlow::_effectBg(const STexture &tex)
 	GX_End();
 }
 
-void CCoverFlow::_effectBlur(CVideo &vid, bool vertical)
+void CCoverFlow::_effectBlur(bool vertical)
 {
 	int kSize = m_blurRadius * 2 + 1;
 	GXTexObj texObj;
@@ -892,7 +896,7 @@ void CCoverFlow::_effectBlur(CVideo &vid, bool vertical)
 	GX_Position3f32(x, y + h, 0.f);
 	GX_TexCoord2f32(0.f, 1.f);
 	GX_End();
-	vid.renderToTexture(m_effectTex, true);
+	m_vid.renderToTexture(m_effectTex, true);
 }
 
 bool CCoverFlow::_effectVisible(void)
@@ -903,34 +907,34 @@ bool CCoverFlow::_effectVisible(void)
 		|| lo.shadowColorEnd.a > 0 || lo.shadowColorOff.a > 0;
 }
 
-void CCoverFlow::makeEffectTexture(CVideo &vid, const STexture &bg)
+void CCoverFlow::makeEffectTexture(const STexture &bg)
 {
 	if (!_effectVisible()) return;
 	int aa = 8;
 
 	GX_SetDither(GX_DISABLE);
-	vid.setAA(aa, true, m_effectTex.width, m_effectTex.height);
+	m_vid.setAA(aa, true, m_effectTex.width, m_effectTex.height);
 	for (int i = 0; i < aa; ++i)
 	{
-		vid.prepareAAPass(i);
-		vid.setup2DProjection(false, true);
+		m_vid.prepareAAPass(i);
+		m_vid.setup2DProjection(false, true);
 		_effectBg(bg);
 		if (m_mirrorBlur)
 			_draw(CCoverFlow::CFDR_NORMAL, true, false);
-		vid.shiftViewPort(m_shadowX, m_shadowY);
+		m_vid.shiftViewPort(m_shadowX, m_shadowY);
 		_draw(CCoverFlow::CFDR_SHADOW, false, true);
-		vid.renderAAPass(i);
+		m_vid.renderAAPass(i);
 	}
 	GX_SetPixelFmt(GX_PF_RGBA6_Z24, GX_ZC_LINEAR);
 	GX_InvVtxCache();
 	GX_InvalidateTexAll();
-	vid.setup2DProjection(false, true);
+	m_vid.setup2DProjection(false, true);
 	GX_SetViewport(0.f, 0.f, (float)m_effectTex.width, (float)m_effectTex.height, 0.f, 1.f);
 	GX_SetScissor(0, 0, m_effectTex.width, m_effectTex.height);
-	vid.drawAAScene();
-	vid.renderToTexture(m_effectTex, true);
-	_effectBlur(vid, false);
-	_effectBlur(vid, true);
+	m_vid.drawAAScene();
+	m_vid.renderToTexture(m_effectTex, true);
+	_effectBlur(false);
+	_effectBlur(true);
 	GX_SetDither(GX_ENABLE);
 }
 
@@ -1532,6 +1536,24 @@ u64 CCoverFlow::getChanTitle(void) const
 					m_items[loopNum(m_covers[m_range / 2].index + m_jump, m_items.size())].hdr->settings[1]);
 }
 
+bool CCoverFlow::getRenderTex(void)
+{
+	return m_renderTex;
+}
+
+void CCoverFlow::setRenderTex(bool val)
+{
+	m_renderTex = val;
+}
+
+void CCoverFlow::RenderTex(void)
+{
+	if(m_renderingTex == NULL || m_renderingTex->data == NULL)
+		return;
+	DrawTexture(m_renderingTex);
+	m_vid.renderToTexture(*m_renderingTex, true);
+	setRenderTex(false);
+}
 
 bool CCoverFlow::select(void)
 {
@@ -1837,34 +1859,46 @@ bool CCoverFlow::start(const char *id)
 	// Load resident textures
 	if(!m_dvdskin_loaded)
 	{
-		if(m_dvdSkin.fromJPG(dvdskin_jpg, dvdskin_jpg_size) != STexture::TE_OK)
+		if(m_dvdSkin.fromJPG(dvdskin_jpg, dvdskin_jpg_size) != TE_OK)
 			return false;
-		if(m_dvdSkin_Red.fromJPG(dvdskin_red_jpg, dvdskin_red_jpg_size) != STexture::TE_OK)
+		if(m_dvdSkin_Red.fromJPG(dvdskin_red_jpg, dvdskin_red_jpg_size) != TE_OK)
 			return false;
-		if(m_dvdSkin_Black.fromJPG(dvdskin_black_jpg, dvdskin_black_jpg_size) != STexture::TE_OK)
+		if(m_dvdSkin_Black.fromJPG(dvdskin_black_jpg, dvdskin_black_jpg_size) != TE_OK)
 			return false;
-		if(m_dvdSkin_Yellow.fromJPG(dvdskin_yellow_jpg, dvdskin_yellow_jpg_size) != STexture::TE_OK)
+		if(m_dvdSkin_Yellow.fromJPG(dvdskin_yellow_jpg, dvdskin_yellow_jpg_size) != TE_OK)
 			return false;
-		if(m_dvdSkin_GreenOne.fromJPG(dvdskin_greenone_jpg, dvdskin_greenone_jpg_size) != STexture::TE_OK)
+		if(m_dvdSkin_GreenOne.fromJPG(dvdskin_greenone_jpg, dvdskin_greenone_jpg_size) != TE_OK)
 			return false;
-		if(m_dvdSkin_GreenTwo.fromJPG(dvdskin_greentwo_jpg, dvdskin_greentwo_jpg_size) != STexture::TE_OK)
+		if(m_dvdSkin_GreenTwo.fromJPG(dvdskin_greentwo_jpg, dvdskin_greentwo_jpg_size) != TE_OK)
 			return false;
 		m_dvdskin_loaded = true;
 	}
 
 	if(m_box)
 	{
-		if (m_pngLoadCover.empty() || STexture::TE_OK != m_loadingTexture.fromImageFile(m_pngLoadCover.c_str(), GX_TF_CMPR, 32, 512))
-			if (STexture::TE_OK != m_loadingTexture.fromPNG(loading_png, GX_TF_CMPR, 32, 512)) return false;
-		if (m_pngNoCover.empty() || STexture::TE_OK != m_noCoverTexture.fromImageFile(m_pngNoCover.c_str(), GX_TF_CMPR, 32, 512))
-			if (STexture::TE_OK != m_noCoverTexture.fromPNG(nopic_png, GX_TF_CMPR, 32, 512)) return false;
+		if(m_pngLoadCover.empty() || m_loadingTexture.fromImageFile(m_pngLoadCover.c_str(), GX_TF_CMPR, 32, 512) != TE_OK)
+		{
+			if(m_loadingTexture.fromPNG(loading_png, GX_TF_CMPR, 32, 512) != TE_OK)
+				return false;
+		}
+		if(m_pngNoCover.empty() || m_noCoverTexture.fromImageFile(m_pngNoCover.c_str(), GX_TF_CMPR, 32, 512) != TE_OK)
+		{
+			if(m_noCoverTexture.fromPNG(nopic_png, GX_TF_CMPR, 32, 512) != TE_OK)
+				return false;
+		}
 	}
 	else
 	{
-		if (m_pngLoadCoverFlat.empty() || STexture::TE_OK != m_loadingTexture.fromImageFile(m_pngLoadCoverFlat.c_str(), GX_TF_CMPR, 32, 512))
-			if (STexture::TE_OK != m_loadingTexture.fromJPG(flatloading_jpg, flatloading_jpg_size, GX_TF_CMPR, 32, 512)) return false;
-		if (m_pngNoCoverFlat.empty() || STexture::TE_OK != m_noCoverTexture.fromImageFile(m_pngNoCoverFlat.c_str(), GX_TF_CMPR, 32, 512))
-			if (STexture::TE_OK != m_noCoverTexture.fromPNG(flatnopic_png, GX_TF_CMPR, 32, 512)) return false;
+		if(m_pngLoadCoverFlat.empty() || m_loadingTexture.fromImageFile(m_pngLoadCoverFlat.c_str(), GX_TF_CMPR, 32, 512) != TE_OK)
+		{
+			if(m_loadingTexture.fromJPG(flatloading_jpg, flatloading_jpg_size, GX_TF_CMPR, 32, 512) != TE_OK)
+				return false;
+		}
+		if(m_pngNoCoverFlat.empty() || m_noCoverTexture.fromImageFile(m_pngNoCoverFlat.c_str(), GX_TF_CMPR, 32, 512) != TE_OK)
+		{
+			if(m_noCoverTexture.fromPNG(flatnopic_png, GX_TF_CMPR, 32, 512) != TE_OK)
+				return false;
+		}
 	}
 	m_covers.clear();
 	m_covers.resize(m_range);
@@ -2003,7 +2037,7 @@ u32 CCoverFlow::_currentPos(void) const
 	return m_covers[m_range / 2].index;
 }
 
-void CCoverFlow::mouse(CVideo &vid, int chan, int x, int y)
+void CCoverFlow::mouse(int chan, int x, int y)
 {
 	if (m_covers.empty()) return;
 
@@ -2012,10 +2046,10 @@ void CCoverFlow::mouse(CVideo &vid, int chan, int x, int y)
 		m_mouse[chan] = -1;
 	else
 	{
-		vid.prepareStencil();
+		m_vid.prepareStencil();
 		_draw(CCoverFlow::CFDR_STENCIL, false, false);
-		vid.renderStencil();
-		m_mouse[chan] = vid.stencilVal(x, y) - 1;
+		m_vid.renderStencil();
+		m_mouse[chan] = m_vid.stencilVal(x, y) - 1;
 	}
 	if (m != m_mouse[chan])
 	{
@@ -2025,17 +2059,17 @@ void CCoverFlow::mouse(CVideo &vid, int chan, int x, int y)
 	}
 }
 
-bool CCoverFlow::mouseOver(CVideo &vid, int x, int y)
+bool CCoverFlow::mouseOver(int x, int y)
 {
 	if (m_covers.empty()) return false;
 
-	vid.prepareStencil();
+	m_vid.prepareStencil();
 	_draw(CCoverFlow::CFDR_STENCIL, false, false);
-	vid.renderStencil();
-	vid.prepareStencil();
+	m_vid.renderStencil();
+	m_vid.prepareStencil();
 	_draw(CCoverFlow::CFDR_STENCIL, false, false);
-	vid.renderStencil();
-	return vid.stencilVal(x, y) == (int)m_range / 2 + 1;
+	m_vid.renderStencil();
+	return m_vid.stencilVal(x, y) == (int)m_range / 2 + 1;
 }
 
 bool CCoverFlow::findId(const char *id, bool instant)
@@ -2519,20 +2553,21 @@ public:
 
 bool CCoverFlow::preCacheCover(const char *id, const u8 *png, bool full)
 {
-	if (m_cachePath.empty()) return false;
+	if(m_cachePath.empty())
+		return false;
 
 	STexture tex;
 	u8 textureFmt = m_compressTextures ? GX_TF_CMPR : GX_TF_RGB565;
-
-	if (STexture::TE_OK != tex.fromPNG(png, textureFmt, 32)) return false;
+	if(tex.fromPNG(png, textureFmt, 32) != TE_OK)
+		return false;
 
 	u32 bufSize = fixGX_GetTexBufferSize(tex.width, tex.height, tex.format, tex.maxLOD > 0 ? GX_TRUE : GX_FALSE, tex.maxLOD);
 	uLongf zBufferSize = m_compressCache ? bufSize + bufSize / 100 + 12 : bufSize;
 	u8 *zBuffer = m_compressCache ? (u8*)MEM2_alloc(zBufferSize) : tex.data;
-	if (!!zBuffer && (!m_compressCache || compress(zBuffer, &zBufferSize, tex.data, bufSize) == Z_OK))
+	if(zBuffer != NULL && (!m_compressCache || compress(zBuffer, &zBufferSize, tex.data, bufSize) == Z_OK))
 	{
 		FILE *file = fopen(fmt("%s/%s.wfc", m_cachePath.c_str(), id), "wb");
-		if (file != 0)
+		if(file != NULL)
 		{
 			SWFCHeader header(tex, full, m_compressCache);
 			fwrite(&header, 1, sizeof header, file);
@@ -2549,7 +2584,7 @@ bool CCoverFlow::fullCoverCached(const char *id)
 	bool found = false;
 
 	FILE *file = fopen(fmt("%s/%s.wfc", m_cachePath.c_str(), id), "rb");
-	if (file != 0)
+	if(file != NULL)
 	{
 		SWFCHeader header;
 		found = fread(&header, 1, sizeof header, file) == sizeof header
@@ -2566,12 +2601,19 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover)
 	if (!m_loadingCovers) return false;
 
 	u8 textureFmt = m_compressTextures ? GX_TF_CMPR : GX_TF_RGB565;
+	const char *path = box ? (blankBoxCover ? m_items[i].blankBoxPicPath.c_str() : 
+							m_items[i].boxPicPath.c_str()) : m_items[i].picPath.c_str();
 	STexture tex;
-	
-	const char *path = box ? (blankBoxCover ? m_items[i].blankBoxPicPath.c_str() : m_items[i].boxPicPath.c_str()) : m_items[i].picPath.c_str();
-	if (STexture::TE_OK != tex.fromImageFile(path, textureFmt, 32)) return false;
-
-	if (!m_loadingCovers) return false;
+	tex.thread = true;
+	m_renderingTex = &tex;
+	if(tex.fromImageFile(path, textureFmt, 32) != TE_OK)
+	{
+		m_renderingTex = NULL;
+		return false;
+	}
+	m_renderingTex = NULL;
+	if(!m_loadingCovers)
+		return false;
 
 	LWP_MutexLock(m_mutex);
 	m_items[i].texture.Cleanup();
@@ -2605,7 +2647,7 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover)
 			else
 				strncpy(gamePath, m_items[i].hdr->id, sizeof(gamePath));
 			FILE *file = fopen(fmt("%s/%s.wfc", m_cachePath.c_str(), gamePath), "wb");
-			if (file != 0)
+			if(file != NULL)
 			{
 				SWFCHeader header(tex, box, m_compressCache);
 				fwrite(&header, 1, sizeof header, file);

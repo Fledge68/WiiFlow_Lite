@@ -82,13 +82,13 @@ void CMenu::_showConfig(void)
 void CMenu::_cfNeedsUpdate(void)
 {
 	if (!m_cfNeedsUpdate)
-		m_cf.clear();
+		CoverFlow.clear();
 	m_cfNeedsUpdate = true;
 }
 
 void CMenu::_config(int page)
 {
-	m_curGameId = m_cf.getId();
+	m_curGameId = CoverFlow.getId();
 	m_cfNeedsUpdate = false;
 	int change = CONFIG_PAGE_NO_CHANGE;
 	while(!m_exit)
@@ -183,11 +183,11 @@ int CMenu::_config1(void)
 			if (m_btnMgr.selected(m_configBtnDownload))
 			{
 				_cfNeedsUpdate();
-				m_cf.stopCoverLoader(true);
+				CoverFlow.stopCoverLoader(true);
 				_hideConfig();
 				_download();
 				_showConfig();
-				m_cf.startCoverLoader();
+				CoverFlow.startCoverLoader();
 			}
 			else if ((m_btnMgr.selected(m_configBtnUnlock)) || (m_btnMgr.selected(m_configBtnSetCode)))
 				_code();
@@ -199,14 +199,14 @@ int CMenu::_config1(void)
 			else if (m_btnMgr.selected(m_configBtnCfg4))
 			{
 				_cfNeedsUpdate();
-				m_cf.stopCoverLoader(true);
+				CoverFlow.stopCoverLoader(true);
 				_hideConfig();
 				if(m_current_view != COVERFLOW_PLUGIN)
 					_NandEmuCfg();
 				else
 					_PluginSettings();
 				_showConfig();
-				m_cf.startCoverLoader();
+				CoverFlow.startCoverLoader();
 			}
 		}
 	}

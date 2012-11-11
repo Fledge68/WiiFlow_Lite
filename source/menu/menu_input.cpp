@@ -478,16 +478,16 @@ void CMenu::_getGrabStatus(void)
 		gGrabStatus[chan] = GBTN_B & PAD_ButtonsHeld(chan);
 		if((wGrabStatus[chan] && wX[chan] > 0 && wd[chan]->ir.x < wX[chan] - 30)
 		|| (gGrabStatus[chan] && gX[chan] > 0 && stickPointer_x[chan] < gX[chan]))
-			m_cf.left();
+			CoverFlow.left();
 		if((wGrabStatus[chan] && wX[chan] > 0 && wd[chan]->ir.x > wX[chan] + 30)
 		|| (gGrabStatus[chan] && gX[chan] > 0 && stickPointer_x[chan] > gX[chan]))
-			m_cf.right();
+			CoverFlow.right();
 		if((wGrabStatus[chan] && wY[chan] > 0 && wd[chan]->ir.y < wY[chan] - 30)
 		|| (gGrabStatus[chan] && gY[chan] > 0 && stickPointer_y[chan] < gY[chan]))
-			m_cf.up();
+			CoverFlow.up();
 		if((wGrabStatus[chan] && wY[chan] > 0 && wd[chan]->ir.y > wY[chan] + 30)
 		|| (gGrabStatus[chan] && gY[chan] > 0 && stickPointer_y[chan] > gY[chan]))
-			m_cf.down();
+			CoverFlow.down();
 		if(wGrabStatus[chan])
 		{
 			wX[chan] = wd[chan]->ir.x;

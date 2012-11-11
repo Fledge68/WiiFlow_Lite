@@ -26,7 +26,7 @@ struct SButtonTextureSet
 class CButtonsMgr
 {
 public:
-	bool init(CVideo &vid);
+	bool init();
 	void setRumble(bool enabled) { m_rumbleEnabled = enabled; }
 	void reserve(u32 capacity) { m_elts.reserve(capacity); }
 	s16 addButton(SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color,
@@ -149,7 +149,6 @@ private:
 	bool m_noclick;
 	bool m_nohover;
 	bool m_mouse;
-	CVideo m_vid;
 private:
 	void _drawBtn(SButton &b, bool selected, bool click);
 	void _drawLbl(SLabel &b);

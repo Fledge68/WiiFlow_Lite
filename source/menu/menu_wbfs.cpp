@@ -227,7 +227,7 @@ int CMenu::_GCcopyGame(void *obj)
 {
 	CMenu &m = *(CMenu *)obj;
 
-	string GC_Path(m.m_cf.getHdr()->path);
+	string GC_Path(CoverFlow.getHdr()->path);
 	if(strcasestr(GC_Path.c_str(), "boot.bin") != NULL)
 		GC_Path.erase(GC_Path.end() - 13, GC_Path.end());
 	else
@@ -274,7 +274,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 	bool upd_dml = false;
 	bool upd_emu = false;
 	bool out = false;
-	string cfPos = m_cf.getNextId();
+	string cfPos = CoverFlow.getNextId();
 
 	SetupInput();
 	_showWBFS(op);
@@ -284,7 +284,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 			m_btnMgr.setText(m_wbfsLblDialog, _t("wbfsadddlg", L"Please insert the disc you want to copy, then click on Go."));
 			break;
 		case CMenu::WO_REMOVE_GAME:
-			m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsremdlg", L"To permanently remove the game: %s, click on Go."), (u8*)m_cf.getTitle().toUTF8().c_str()));
+			m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsremdlg", L"To permanently remove the game: %s, click on Go."), (u8*)CoverFlow.getTitle().toUTF8().c_str()));
 			break;
 		case CMenu::WO_FORMAT:
 			break;
@@ -377,30 +377,30 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						}
 						break;
 					case CMenu::WO_REMOVE_GAME:
-						if(m_cf.getHdr()->type == TYPE_GC_GAME)
+						if(CoverFlow.getHdr()->type == TYPE_GC_GAME)
 						{
-							if(strcasestr(m_cf.getHdr()->path, "boot.bin") != NULL)
+							if(strcasestr(CoverFlow.getHdr()->path, "boot.bin") != NULL)
 							{
-								string GC_Path(m_cf.getHdr()->path);
+								string GC_Path(CoverFlow.getHdr()->path);
 								GC_Path.erase(GC_Path.end() - 13, GC_Path.end());
 								fsop_deleteFolder(GC_Path.c_str());
 							}
 							else
-								fsop_deleteFile(m_cf.getHdr()->path);
+								fsop_deleteFile(CoverFlow.getHdr()->path);
 							upd_dml = true;
 						}
-						else if(m_cf.getHdr()->type == TYPE_PLUGIN)
+						else if(CoverFlow.getHdr()->type == TYPE_PLUGIN)
 						{
-							fsop_deleteFile(m_cf.getHdr()->path);
+							fsop_deleteFile(CoverFlow.getHdr()->path);
 							upd_emu = true;
 						}
-						else if(m_cf.getHdr()->type == TYPE_WII_GAME)
+						else if(CoverFlow.getHdr()->type == TYPE_WII_GAME)
 						{
-							WBFS_RemoveGame((u8 *)m_cf.getId().c_str(), m_cf.getHdr()->path);
+							WBFS_RemoveGame((u8 *)CoverFlow.getId().c_str(), CoverFlow.getHdr()->path);
 							upd_usb = true;
 						}
 						if(m_cfg.getBool("GENERAL", "delete_cover_and_game", false))
-							RemoveCover(m_cf.getId().c_str());
+							RemoveCover(CoverFlow.getId().c_str());
 						m_btnMgr.show(m_wbfsPBar);
 						m_btnMgr.setProgress(m_wbfsPBar, 0.f, true);
 						m_btnMgr.setProgress(m_wbfsPBar, 1.f);
@@ -413,7 +413,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 					case CMenu::WO_FORMAT:
 						break;
 					case CMenu::WO_COPY_GAME:
-						string GC_Path(m_cf.getHdr()->path);
+						string GC_Path(CoverFlow.getHdr()->path);
 						if(strcasestr(GC_Path.c_str(), "boot.bin") != NULL)
 							GC_Path.erase(GC_Path.end() - 13, GC_Path.end());
 						else
@@ -430,8 +430,8 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						m_btnMgr.hide(m_wbfsBtnBack);
 						m_btnMgr.show(m_wbfsLblMessage);
 						m_btnMgr.setText(m_wbfsLblMessage, L"");
-						cfPos = string(m_cf.getHdr()->id);
-						m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsop10", L"Copying [%s] %s..."), m_cf.getHdr()->id, m_cf.getTitle().toUTF8().c_str()));
+						cfPos = string(CoverFlow.getHdr()->id);
+						m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsop10", L"Copying [%s] %s..."), CoverFlow.getHdr()->id, CoverFlow.getTitle().toUTF8().c_str()));
 						done = true;
 						upd_dml = true;
 						m_thrdWorking = true;
@@ -481,7 +481,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 
 		_loadList();
 		_initCF();
-		m_cf.findId(cfPos.c_str(), true);
+		CoverFlow.findId(cfPos.c_str(), true);
 	}
 	else if(done && op == CMenu::WO_COPY_GAME)
 	{

@@ -50,15 +50,14 @@ bool CFanart::load(Config &m_globalConfig, const char *path, const char *id)
 	strncpy(dir, fmt("%s/%s", path, id), 63);
 	STexture fanBg, fanBgLq;
 
-	STexture::TexErr texErr = fanBg.fromImageFile(fmt("%s/background.png", dir));
-	if(texErr == STexture::TE_ERROR)
+	TexErr texErr = fanBg.fromImageFile(fmt("%s/background.png", dir));
+	if(texErr == TE_ERROR)
 	{
 		memset(dir,0, 64);
 		strncpy(dir, fmt("%s/%.3s", path, id), 63);
 		texErr = fanBg.fromImageFile(fmt("%s/background.png", dir));
 	}
-
-	if (texErr == STexture::TE_OK)
+	if(texErr == TE_OK)
 	{
 		char cfg_char[64];
 		memset(cfg_char,0, 64);
@@ -195,7 +194,7 @@ void CFanart::draw(bool front)
 CFanartElement::CFanartElement(Config &cfg, const char *dir, int artwork)
 	: m_artwork(artwork), m_isValid(false)
 {
-	m_isValid = m_art.fromImageFile(fmt("%s/artwork%d.png", dir, artwork)) == STexture::TE_OK;
+	m_isValid = (m_art.fromImageFile(fmt("%s/artwork%d.png", dir, artwork)) == TE_OK);
 	if (!m_isValid)	return;
 
 	const char *section = fmt("artwork%d", artwork);
