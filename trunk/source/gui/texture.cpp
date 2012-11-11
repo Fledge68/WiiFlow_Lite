@@ -1,10 +1,13 @@
+#include <unistd.h>
 #include <string.h>
 #include <stdio.h>
 #include <ogcsys.h>
 #include <malloc.h>
 #include <cmath>
-#include "memory/mem2.hpp"
+
 #include "texture.hpp"
+#include "coverflow.hpp"
+#include "memory/mem2.hpp"
 #include "pngu.h"
 #include "gcvid.h"
 
@@ -55,6 +58,21 @@ static inline void _convertToFlippedRGBA(u8 *dst, const u8 *src, u32 width, u32 
 					dst[dst_offset + 3] = 0xFF;
 				}
 			}
+		}
+	}
+}
+
+static inline void _convertToRGBA(u8 *dst, const u8 *src, u32 width, u32 height)
+{
+	for (u32 y = 0; y < height; ++y)
+	{
+		for (u32 x = 0; x < width; ++x)
+		{
+			u32 i = (x + y * width) * 4;
+			dst[i] = src[coordsRGBA8(x, y, width) + 1];
+			dst[i + 1] = src[coordsRGBA8(x, y, width) + 32];
+			dst[i + 2] = src[coordsRGBA8(x, y, width) + 33];
+			dst[i + 3] = src[coordsRGBA8(x, y, width)];
 		}
 	}
 }
@@ -213,7 +231,7 @@ bool STexture::CopyTexture(const STexture &tex)
 	return true;
 }
 
-STexture::TexErr STexture::fromImageFile(const char *filename, u8 f, u32 minMipSize, u32 maxMipSize)
+TexErr STexture::fromImageFile(const char *filename, u8 f, u32 minMipSize, u32 maxMipSize)
 {
 	Cleanup();
 	FILE *file = fopen(filename, "rb");
@@ -250,7 +268,7 @@ STexture::TexErr STexture::fromImageFile(const char *filename, u8 f, u32 minMipS
 	return result;
 }
 
-STexture::TexErr STexture::fromTHP(const u8 *src, u32 w, u32 h)
+TexErr STexture::fromTHP(const u8 *src, u32 w, u32 h)
 {
 	width = w;
 	height = h;
@@ -288,7 +306,7 @@ STexture::TexErr STexture::fromTHP(const u8 *src, u32 w, u32 h)
 	return TE_OK;
 }
 
-STexture::TexErr STexture::fromJPG(const u8 *buffer, const u32 buffer_size, u8 f, u32 minMipSize, u32 maxMipSize)
+TexErr STexture::fromJPG(const u8 *buffer, const u32 buffer_size, u8 f, u32 minMipSize, u32 maxMipSize)
 {
 	Cleanup();
 
@@ -413,7 +431,7 @@ STexture::TexErr STexture::fromJPG(const u8 *buffer, const u32 buffer_size, u8 f
 	return TE_OK;
 }
 
-STexture::TexErr STexture::fromPNG(const u8 *buffer, u8 f, u32 minMipSize, u32 maxMipSize)
+TexErr STexture::fromPNG(const u8 *buffer, u8 f, u32 minMipSize, u32 maxMipSize)
 {
 	Cleanup();
 	u8 maxLODTmp = 0;
@@ -467,7 +485,24 @@ STexture::TexErr STexture::fromPNG(const u8 *buffer, u8 f, u32 minMipSize, u32 m
 		memset(tmpData2, 0, Size2);
 		PNGU_DecodeToRGBA8(ctx, imgProp.imgWidth, imgProp.imgHeight, tmpData2, 0, 0xFF);
 		PNGU_ReleaseImageContext(ctx);
-
+		if((imgProp.imgColorType == PNGU_COLOR_TYPE_GRAY_ALPHA 
+			|| imgProp.imgColorType == PNGU_COLOR_TYPE_RGB_ALPHA)
+			&& imgProp.imgWidth <= 640 && imgProp.imgHeight <= 480 && thread)
+		{
+			format = GX_TF_RGBA8;
+			width = imgProp.imgWidth;
+			height = imgProp.imgHeight;
+			dataSize = GX_GetTexBufferSize(width, height, format, GX_FALSE, 0);
+			data = (u8*)MEM2_alloc(dataSize);
+			_convertToRGBA8(data, tmpData2, width, height);
+			DCFlushRange(data, dataSize);
+			CoverFlow.setRenderTex(true);
+			while(CoverFlow.getRenderTex())
+				usleep(50);
+			_convertToRGBA(tmpData2, data, width, height);
+			DCFlushRange(tmpData2, Size2);
+			Cleanup();
+		}
 		tmpData2 = _genMipMaps(tmpData2, imgProp.imgWidth, imgProp.imgHeight, maxLODTmp, baseWidth, baseHeight);
 		if(tmpData2 == NULL)
 		{

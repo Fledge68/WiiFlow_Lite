@@ -309,7 +309,7 @@ void CMenu::_hideGame(bool instant)
 {
 	m_gameSelected = false;
 	m_fa.unload();
-	m_cf.showCover();
+	CoverFlow.showCover();
 	m_btnMgr.hide(m_gameBtnPlay, instant);
 	m_btnMgr.hide(m_gameBtnBack, instant);
 	m_btnMgr.hide(m_gameBtnPlayFull, instant);
@@ -330,16 +330,16 @@ void CMenu::_hideGame(bool instant)
 
 void CMenu::_showGame(void)
 {
-	m_cf.showCover();
+	CoverFlow.showCover();
 	
-	if (m_fa.load(m_cfg, m_fanartDir.c_str(), m_cf.getId().c_str()))
+	if (m_fa.load(m_cfg, m_fanartDir.c_str(), CoverFlow.getId().c_str()))
 	{
 		STexture bg, bglq;
 		m_fa.getBackground(bg, bglq);
 		_setBg(bg, bglq);
 
 		if (m_fa.hideCover())
-			m_cf.hideCover();
+			CoverFlow.hideCover();
 	}
 	else
 		_setBg(m_mainBg, m_mainBgLQ);
@@ -382,7 +382,7 @@ void CMenu::_game(bool launch)
 		m_gameSelected = true;
 	}
 
-	m_zoom_banner = m_cfg.getBool(_domainFromView(), "show_full_banner", false) && !NoGameID(m_cf.getHdr()->type);
+	m_zoom_banner = m_cfg.getBool(_domainFromView(), "show_full_banner", false) && !NoGameID(CoverFlow.getHdr()->type);
 	if(m_banner.GetZoomSetting() != m_zoom_banner)
 		m_banner.ToogleZoom();
 
@@ -392,7 +392,7 @@ void CMenu::_game(bool launch)
 		if(startGameSound < 1)
 			startGameSound++;
 
-		u64 chantitle = m_cf.getChanTitle();
+		u64 chantitle = CoverFlow.getChanTitle();
 
 		if(startGameSound == -5)
 		{
@@ -424,7 +424,7 @@ void CMenu::_game(bool launch)
 			m_banner.DeleteBanner();
 			break;
 		}
-		else if(BTN_PLUS_PRESSED && m_GameTDBLoaded && (m_cf.getHdr()->type == TYPE_WII_GAME || m_cf.getHdr()->type == TYPE_GC_GAME || m_cf.getHdr()->type == TYPE_CHANNEL))
+		else if(BTN_PLUS_PRESSED && m_GameTDBLoaded && (CoverFlow.getHdr()->type == TYPE_WII_GAME || CoverFlow.getHdr()->type == TYPE_GC_GAME || CoverFlow.getHdr()->type == TYPE_CHANNEL))
 		{
 			_hideGame();
 			m_banner.SetShowBanner(false);
@@ -437,7 +437,7 @@ void CMenu::_game(bool launch)
 		}
 		else if(BTN_MINUS_PRESSED)
 		{
-			const char *videoPath = fmt("%s/%.3s.thp", m_videoDir.c_str(), m_cf.getId().c_str());
+			const char *videoPath = fmt("%s/%.3s.thp", m_videoDir.c_str(), CoverFlow.getId().c_str());
 			FILE *file = fopen(videoPath, "r");
 			if(file)
 			{
@@ -490,7 +490,7 @@ void CMenu::_game(bool launch)
 			const char *domain = _domainFromView();
 			int cfVersion = 1+loopNum((m_cfg.getInt(domain, "last_cf_mode", 1)-1) + direction, m_numCFVersions);
 			_loadCFLayout(cfVersion);
-			m_cf.applySettings();
+			CoverFlow.applySettings();
 			m_cfg.setInt(domain, "last_cf_mode" , cfVersion);
 		}
 		else if(launch || BTN_A_PRESSED)
@@ -527,7 +527,7 @@ void CMenu::_game(bool launch)
 				m_banner.DeleteBanner();
 				break;
 			}
-			else if((m_btnMgr.selected(m_gameBtnToogle) || m_btnMgr.selected(m_gameBtnToogleFull)) && !NoGameID(m_cf.getHdr()->type))
+			else if((m_btnMgr.selected(m_gameBtnToogle) || m_btnMgr.selected(m_gameBtnToogleFull)) && !NoGameID(CoverFlow.getHdr()->type))
 			{
 				m_zoom_banner = m_banner.ToogleZoom();
 				m_cfg.setBool(_domainFromView(), "show_full_banner", m_zoom_banner);
@@ -553,7 +553,7 @@ void CMenu::_game(bool launch)
 				m_gameSound.FreeMemory();
 				CheckGameSoundThread();
 				m_banner.DeleteBanner();
-				dir_discHdr *hdr = m_cf.getHdr();
+				dir_discHdr *hdr = CoverFlow.getHdr();
 				m_gcfg2.load(fmt("%s/" GAME_SETTINGS2_FILENAME, m_settingsDir.c_str()));
 				if(currentPartition != SD && hdr->type == TYPE_GC_GAME && m_show_dml == 2 && (strstr(hdr->path, ".iso") == NULL ||
 				!m_devo_installed || min((u32)m_gcfg2.getInt(hdr->id, "gc_loader", 0), ARRAY_SIZE(CMenu::_GCLoader) - 1u) == 1))
@@ -597,7 +597,7 @@ void CMenu::_game(bool launch)
 					currentPartition = SD;
 				}
 
-				m_cf.clear();
+				CoverFlow.clear();
 				_showWaitMessage();
 				exitHandler(PRIILOADER_DEF); //Making wiiflow ready to boot something
 
@@ -631,41 +631,41 @@ void CMenu::_game(bool launch)
 				m_gcfg2.unload();
 				_showGame();
 				_initCF();
-				m_cf.select();
+				CoverFlow.select();
 			}
 			else 
 			{
 				for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
-					if (m_cf.mouseOver(m_vid, m_cursor[chan].x(), m_cursor[chan].y()))
-						m_cf.flip();
+					if (CoverFlow.mouseOver(m_cursor[chan].x(), m_cursor[chan].y()))
+						CoverFlow.flip();
 			}
 		}
 		if((startGameSound == 1 || startGameSound < -8) && (BTN_UP_REPEAT || RIGHT_STICK_UP))
 		{
 			if(m_gameSoundThread != LWP_THREAD_NULL)
 				CheckGameSoundThread();
-			m_cf.up();
+			CoverFlow.up();
 			startGameSound = -10;
 		}
 		if((startGameSound == 1 || startGameSound < -8) && (BTN_RIGHT_REPEAT || RIGHT_STICK_RIGHT))
 		{
 			if(m_gameSoundThread != LWP_THREAD_NULL)
 				CheckGameSoundThread();
-			m_cf.right();
+			CoverFlow.right();
 			startGameSound = -10;
 		}
 		if((startGameSound == 1 || startGameSound < -8) && (BTN_DOWN_REPEAT || RIGHT_STICK_DOWN))
 		{
 			if(m_gameSoundThread != LWP_THREAD_NULL)
 				CheckGameSoundThread();
-			m_cf.down();
+			CoverFlow.down();
 			startGameSound = -10;
 		}
 		if((startGameSound == 1 || startGameSound < -8) && (BTN_LEFT_REPEAT || RIGHT_STICK_LEFT))
 		{
 			if(m_gameSoundThread != LWP_THREAD_NULL)
 				CheckGameSoundThread();
-			m_cf.left();
+			CoverFlow.left();
 			startGameSound = -10;
 		}
 		if(startGameSound == -10)
@@ -687,7 +687,7 @@ void CMenu::_game(bool launch)
 			m_btnMgr.hide(m_gameBtnPlayFull);
 			m_btnMgr.hide(m_gameBtnBackFull);
 			m_btnMgr.hide(m_gameBtnToogleFull);
-			if(m_gameLblUser[4] != -1 && !NoGameID(m_cf.getHdr()->type))
+			if(m_gameLblUser[4] != -1 && !NoGameID(CoverFlow.getHdr()->type))
 				m_btnMgr.show(m_gameLblUser[4]);
 			for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser) - 1; ++i)
 			{
@@ -701,7 +701,7 @@ void CMenu::_game(bool launch)
 				m_btnMgr.hide(b ? m_gameBtnAdultOff : m_gameBtnAdultOn);
 				m_btnMgr.show(m_gameBtnSettings);
 			}
-			if ((m_cf.getHdr()->type != TYPE_HOMEBREW && m_cf.getHdr()->type != TYPE_CHANNEL) && !m_locked)
+			if ((CoverFlow.getHdr()->type != TYPE_HOMEBREW && CoverFlow.getHdr()->type != TYPE_CHANNEL) && !m_locked)
 				m_btnMgr.show(m_gameBtnDelete);
 		}
 		else
@@ -723,7 +723,7 @@ void CMenu::_game(bool launch)
 			m_btnMgr.hide(m_gameBtnToogle);
 			if(m_gameLblUser[4] != -1)
 			{
-				if(!NoGameID(m_cf.getHdr()->type) && !m_zoom_banner)
+				if(!NoGameID(CoverFlow.getHdr()->type) && !m_zoom_banner)
 					m_btnMgr.show(m_gameLblUser[4]);
 				else
 					m_btnMgr.hide(m_gameLblUser[4], true);
@@ -1408,7 +1408,7 @@ void CMenu::_initGameMenu()
 
 	_addUserLabels(m_gameLblUser, ARRAY_SIZE(m_gameLblUser), "GAME");
 	m_gameBg = _texture("GAME/BG", "texture", theme.bg, false);
-	if (m_theme.loaded() && STexture::TE_OK == bgLQ.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString("GAME/BG", "texture").c_str()), GX_TF_CMPR, 64, 64))
+	if(m_theme.loaded() && bgLQ.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString("GAME/BG", "texture").c_str()), GX_TF_CMPR, 64, 64) == TE_OK)
 		m_gameBgLQ = bgLQ;
 
 	m_gameBtnPlay = _addButton("GAME/PLAY_BTN", theme.btnFont, L"", 420, 344, 200, 56, theme.btnFontColor);
@@ -1468,7 +1468,7 @@ void CMenu::_gameSoundThread(CMenu *m)
 	m->m_gamesound_changed = false;
 	CurrentBanner.ClearBanner();
 
-	dir_discHdr *GameHdr = m->m_cf.getHdr();
+	dir_discHdr *GameHdr = CoverFlow.getHdr();
 	if(GameHdr->type == TYPE_PLUGIN)
 	{
 		m_banner.DeleteBanner();

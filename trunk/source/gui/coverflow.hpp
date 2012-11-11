@@ -71,14 +71,14 @@ public:
 	void flip(bool force = false, bool f = true);
 	void cancel(void);
 	bool selected(void) const { return m_selected; }
-	void makeEffectTexture(CVideo &vid, const STexture &bg);
+	void makeEffectTexture(const STexture &bg);
 	void drawText(bool withRectangle = false);
 	void draw(void);
 	void drawEffect(void);
 	void hideCover(void);
 	void showCover(void);
-	void mouse(CVideo &vid, int chan, int x, int y);
-	bool mouseOver(CVideo &vid, int x, int y);
+	void mouse(int chan, int x, int y);
+	bool mouseOver(int x, int y);
 	// Accessors for settings
 	void setCompression(bool enable) { m_compressTextures = enable; }
 	bool getBoxMode(void) const { return m_box;}
@@ -131,6 +131,10 @@ public:
 	dir_discHdr * getNextHdr(void) const;
 	wstringEx getTitle(void) const;
 	u64 getChanTitle(void) const;
+	//
+	bool getRenderTex(void);
+	void setRenderTex(bool);
+	void RenderTex(void);
 private:
 	enum DrawMode { CFDR_NORMAL, CFDR_STENCIL, CFDR_SHADOW };
 	struct SLayout
@@ -238,6 +242,10 @@ private:
 	volatile bool m_loadingCovers;
 	volatile bool m_coverThrdBusy;
 	volatile bool m_moved;
+	//
+	volatile bool m_renderTex;
+	STexture *m_renderingTex;
+	//
 	volatile int m_hqCover;
 	bool m_selected;
 	int m_tickCount;
@@ -299,7 +307,7 @@ private:
 	void _draw(DrawMode dm = CFDR_NORMAL, bool mirror = false, bool blend = true);
 	u32 _currentPos(void) const;
 	void _effectBg(const STexture &tex);
-	void _effectBlur(CVideo &vid, bool vertical);
+	void _effectBlur(bool vertical);
 	bool _effectVisible(void);
 	void _drawMirrorZ(void);
 	void _drawTitle(int i, bool mirror, bool rectangle);
@@ -348,5 +356,7 @@ private:
 	CCoverFlow(const CCoverFlow &);
 	CCoverFlow &operator=(const CCoverFlow &);
 };
+
+extern CCoverFlow CoverFlow;
 
 #endif // !defined(__COVERFLOW_HPP)

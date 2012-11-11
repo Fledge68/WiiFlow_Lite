@@ -318,7 +318,7 @@ void CMenu::_textGameInfo(void)
 	{
 		char GameID[7];
 		GameID[6] = '\0';
-		strncpy(GameID, m_cf.getId().c_str(), 6);
+		strncpy(GameID, CoverFlow.getId().c_str(), 6);
 		if(gametdb.GetTitle(GameID, TMP_Char))
 		{
 			gameinfo_Title_w.fromUTF8(TMP_Char);

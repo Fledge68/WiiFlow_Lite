@@ -53,7 +53,6 @@ private:
 	};
 	CCursor m_cursor[WPAD_MAX_WIIMOTES];
 	CButtonsMgr m_btnMgr;
-	CCoverFlow m_cf;
 	CFanart m_fa;
 	Config m_cfg;
 	Config m_loc;

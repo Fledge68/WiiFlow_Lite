@@ -226,34 +226,6 @@ void BannerWindow::ToogleGameSettings()
 	Brightness = (Brightness > 1.f ? 0.f : 200.f);
 }
 
-void BannerWindow::DrawRectangle(f32 x, f32 y, f32 width, f32 height, GXColor color)
-{
-	Mtx modelViewMtx;
-	guMtxIdentity(modelViewMtx);
-	GX_LoadPosMtxImm(modelViewMtx, GX_PNMTX0);
-
-	GX_SetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
-	GX_ClearVtxDesc();
-	GX_InvVtxCache();
-	GX_SetVtxDesc(GX_VA_POS, GX_DIRECT);
-	GX_SetVtxDesc(GX_VA_CLR0, GX_DIRECT);
-	GX_SetVtxDesc(GX_VA_TEX0, GX_NONE);
-
-	int i;
-	f32 x2 = x + width;
-	f32 y2 = y + height;
-	guVector v[] = { { x, y, 0.0f }, { x2, y, 0.0f }, { x2, y2, 0.0f }, { x, y2, 0.0f }, { x, y, 0.0f } };
-
-	GX_Begin(GX_TRIANGLEFAN, GX_VTXFMT0, 4);
-	for(i = 0; i < 4; i++)
-	{
-		GX_Position3f32(v[i].x, v[i].y, v[i].z);
-		GX_Color4u8(color.r, color.g, color.b, color.a);
-	}
-	GX_End();
-	GX_SetTevOp(GX_TEVSTAGE0, GX_MODULATE);
-}
-
 void BannerWindow::ReSetup_GX(void)
 {
 	// channel control

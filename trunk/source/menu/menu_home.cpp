@@ -55,7 +55,7 @@ bool CMenu::_Home(void)
 			}
 			else if(m_btnMgr.selected(m_homeBtnUpdate) && !m_locked)
 			{
-				m_cf.stopCoverLoader(true);
+				CoverFlow.stopCoverLoader(true);
 				_hideHome();
 				_system();
 				remove(m_ver.c_str());
@@ -65,7 +65,7 @@ bool CMenu::_Home(void)
 					break;
 				}
 				_showHome();
-				m_cf.startCoverLoader();
+				CoverFlow.startCoverLoader();
 			}
 			else if(m_btnMgr.selected(m_homeBtnHelp))
 			{

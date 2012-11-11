@@ -122,7 +122,7 @@ void CMenu::_showGameSettings(void)
 {
 	wstringEx title(_t("cfgg1", L"Settings"));
 	title += L" [";
-	title += wstringEx(m_cf.getId());
+	title += wstringEx(CoverFlow.getId());
 	title += L"]";
 	m_btnMgr.setText(m_gameSettingsLblTitle, title);
 	_setBg(m_gameSettingsBg, m_gameSettingsBg);
@@ -131,7 +131,7 @@ void CMenu::_showGameSettings(void)
 	m_btnMgr.show(m_gameSettingsBtnPageP);
 	m_btnMgr.show(m_gameSettingsBtnBack);
 	m_btnMgr.show(m_gameSettingsLblTitle);
-	if(m_cf.getHdr()->type == TYPE_GC_GAME)
+	if(CoverFlow.getHdr()->type == TYPE_GC_GAME)
 	{
 		if(m_new_dml)
 			g_numGCfPages = 3;
@@ -140,7 +140,7 @@ void CMenu::_showGameSettings(void)
 	}
 	else
 	{
-		if(m_current_view == COVERFLOW_USB && _checkSave(string((const char *)m_cf.getHdr()->id), false))
+		if(m_current_view == COVERFLOW_USB && _checkSave(string((const char *)CoverFlow.getHdr()->id), false))
 			g_numGCfPages = 5;
 		else 
 			g_numGCfPages = 4;
@@ -150,7 +150,7 @@ void CMenu::_showGameSettings(void)
 	{
 		m_btnMgr.show(m_gameSettingsLblCover);
 		m_btnMgr.show(m_gameSettingsBtnCover);
-		if(m_cf.getHdr()->type == TYPE_GC_GAME)
+		if(CoverFlow.getHdr()->type == TYPE_GC_GAME)
 		{
 			m_btnMgr.show(m_gameSettingsLblDMLGameVideo);
 			m_btnMgr.show(m_gameSettingsLblDMLVideo);
@@ -187,7 +187,7 @@ void CMenu::_showGameSettings(void)
 	{
 		m_btnMgr.hide(m_gameSettingsLblCover);
 		m_btnMgr.hide(m_gameSettingsBtnCover);
-		if(m_cf.getHdr()->type == TYPE_GC_GAME)
+		if(CoverFlow.getHdr()->type == TYPE_GC_GAME)
 		{
 			m_btnMgr.hide(m_gameSettingsLblGClanguage);
 			m_btnMgr.hide(m_gameSettingsLblGClanguageVal);
@@ -227,7 +227,7 @@ void CMenu::_showGameSettings(void)
 		m_btnMgr.show(m_gameSettingsBtnDebuggerP);
 		m_btnMgr.show(m_gameSettingsBtnDebuggerM);
 
-		if(m_cf.getHdr()->type != TYPE_GC_GAME)
+		if(CoverFlow.getHdr()->type != TYPE_GC_GAME)
 		{
 			m_btnMgr.show(m_gameSettingsLblHooktype);
 			m_btnMgr.show(m_gameSettingsLblHooktypeVal);
@@ -248,7 +248,7 @@ void CMenu::_showGameSettings(void)
 		m_btnMgr.hide(m_gameSettingsBtnDebuggerP);
 		m_btnMgr.hide(m_gameSettingsBtnDebuggerM);
 
-		if(m_cf.getHdr()->type != TYPE_GC_GAME)
+		if(CoverFlow.getHdr()->type != TYPE_GC_GAME)
 		{
 			m_btnMgr.hide(m_gameSettingsLblHooktype);
 			m_btnMgr.hide(m_gameSettingsLblHooktypeVal);
@@ -264,7 +264,7 @@ void CMenu::_showGameSettings(void)
 	}
 	if (m_gameSettingsPage == 3)
 	{
-		if(m_cf.getHdr()->type != TYPE_GC_GAME)
+		if(CoverFlow.getHdr()->type != TYPE_GC_GAME)
 		{
 			m_btnMgr.show(m_gameSettingsLblPatchVidModes);
 			m_btnMgr.show(m_gameSettingsLblPatchVidModesVal);
@@ -276,7 +276,7 @@ void CMenu::_showGameSettings(void)
 			m_btnMgr.show(m_gameSettingsLblCountryPatch);
 			m_btnMgr.show(m_gameSettingsBtnCountryPatch);
 
-			if(m_cf.getHdr()->type == TYPE_WII_GAME)
+			if(CoverFlow.getHdr()->type == TYPE_WII_GAME)
 			{
 				m_btnMgr.show(m_gameSettingsLblAspectRatio);
 				m_btnMgr.show(m_gameSettingsLblAspectRatioVal);
@@ -305,7 +305,7 @@ void CMenu::_showGameSettings(void)
 	}
 	else
 	{
-		if(m_cf.getHdr()->type != TYPE_GC_GAME)
+		if(CoverFlow.getHdr()->type != TYPE_GC_GAME)
 		{
 			m_btnMgr.hide(m_gameSettingsLblPatchVidModes);
 			m_btnMgr.hide(m_gameSettingsLblPatchVidModesVal);
@@ -344,7 +344,7 @@ void CMenu::_showGameSettings(void)
 	}
 	if (m_gameSettingsPage == 4)
 	{
-		if(m_cf.getHdr()->type == TYPE_CHANNEL)
+		if(CoverFlow.getHdr()->type == TYPE_CHANNEL)
 		{
 			m_btnMgr.show(m_gameSettingsLblCustom);
 			m_btnMgr.show(m_gameSettingsBtnCustom);
@@ -354,13 +354,13 @@ void CMenu::_showGameSettings(void)
 				m_btnMgr.show(m_gameSettingsBtnLaunchNK);
 			}
 		}
-		else if(m_cf.getHdr()->type == TYPE_WII_GAME)
+		else if(CoverFlow.getHdr()->type == TYPE_WII_GAME)
 		{
 			m_btnMgr.show(m_gameSettingsLblEmulationVal);
 			m_btnMgr.show(m_gameSettingsLblEmulation);
 			m_btnMgr.show(m_gameSettingsBtnEmulationP);
 			m_btnMgr.show(m_gameSettingsBtnEmulationM);
-			if(_checkSave(string((const char *)m_cf.getHdr()->id), true))
+			if(_checkSave(string((const char *)CoverFlow.getHdr()->id), true))
 			{
 				m_btnMgr.show(m_gameSettingsLblExtractSave);
 				m_btnMgr.show(m_gameSettingsBtnExtractSave);
@@ -407,13 +407,13 @@ void CMenu::_showGameSettings(void)
 		if(m_gameSettingsLblUser[i] != -1)
 			m_btnMgr.show(m_gameSettingsLblUser[i]);
 
-	string id(m_cf.getId());
+	string id(CoverFlow.getId());
 	int page = m_gameSettingsPage;
 	u32 maxpage = g_numGCfPages;
 
 	m_btnMgr.setText(m_gameSettingsLblPage, wfmt(L"%i / %i", page, maxpage));
 	m_btnMgr.setText(m_gameSettingsBtnOcarina, _optBoolToString(m_gcfg2.getOptBool(id, "cheat")));
-	if(m_cf.getHdr()->type == TYPE_GC_GAME)
+	if(CoverFlow.getHdr()->type == TYPE_GC_GAME)
 	{
 		m_btnMgr.setText(m_gameSettingsBtnDM_Widescreen, _optBoolToString(m_gcfg2.getOptBool(id, "dm_widescreen", 0)));
 		m_btnMgr.setText(m_gameSettingsBtnDevoMemcardEmu, _optBoolToString(m_gcfg2.getOptBool(id, "devo_memcard_emu", 0)));
@@ -475,7 +475,7 @@ void CMenu::_showGameSettings(void)
 void CMenu::_gameSettings(void)
 {
 	m_gcfg2.load(fmt("%s/" GAME_SETTINGS2_FILENAME, m_settingsDir.c_str()));
-	string id(m_cf.getId());
+	string id(CoverFlow.getId());
 
 	m_gameSettingsPage = 1;
 	_showGameSettings();
@@ -664,11 +664,11 @@ void CMenu::_gameSettings(void)
 			}
 			else if (m_btnMgr.selected(m_gameSettingsBtnCover))
 			{
-				m_cf.stopCoverLoader(true);
+				CoverFlow.stopCoverLoader(true);
 				_hideGameSettings();
 				_download(id);
 				_showGameSettings();
-				m_cf.startCoverLoader();
+				CoverFlow.startCoverLoader();
 			}
 			else if (m_btnMgr.selected(m_gameSettingsBtnCheat))
 			{
@@ -722,11 +722,11 @@ void CMenu::_gameSettings(void)
 		{	
 			if (m_btnMgr.selected(m_gameSettingsBtnCover))
 			{
-					m_cf.stopCoverLoader(true);	// Empty cover cache
-					remove(fmt("%s/%s.png", m_picDir.c_str(), m_cf.getId().c_str()));
-					remove(fmt("%s/%s.png", m_boxPicDir.c_str(), m_cf.getId().c_str()));
-					remove(fmt("%s/%s.wfc", m_cacheDir.c_str(), m_cf.getId().c_str()));
-					m_cf.startCoverLoader();
+					CoverFlow.stopCoverLoader(true);	// Empty cover cache
+					remove(fmt("%s/%s.png", m_picDir.c_str(), CoverFlow.getId().c_str()));
+					remove(fmt("%s/%s.png", m_boxPicDir.c_str(), CoverFlow.getId().c_str()));
+					remove(fmt("%s/%s.wfc", m_cacheDir.c_str(), CoverFlow.getId().c_str()));
+					CoverFlow.startCoverLoader();
 			}
 		}
 

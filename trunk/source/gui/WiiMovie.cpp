@@ -333,7 +333,7 @@ void WiiMovie::LoadNextFrame()
     }
 
 	STexture frame;
-	if(frame.fromTHP(VideoF.getData(), VideoF.getWidth(), VideoF.getHeight()) == STexture::TE_OK)
+	if(frame.fromTHP(VideoF.getData(), VideoF.getWidth(), VideoF.getHeight()) == TE_OK)
 		Frames.push_back(frame);
 	VideoF.dealloc();
 }

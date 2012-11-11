@@ -44,60 +44,59 @@ typedef struct _GC_OpeningBnr
 
 class BannerWindow
 {
-	public:
-		BannerWindow();
-		void DeleteBanner(bool gamechange = false);
-		void LoadBanner(u8 *font1, u8 *font2);
-		void LoadBannerBin(u8 *bnr, u32 bnr_size, u8 *font1, u8 *font2);
-		int GetSelectedGame() { return gameSelected; }
-		bool GetZoomSetting() { return AnimZoom; }
-		bool GetInGameSettings() { return (Brightness > 1.f ? true : false); }
-		void CreateGCBanner(u8 *bnr, u8 *font1, u8 *font2, const wchar_t *title);
-		void Draw(void);
-		bool ToogleZoom(void);
-		void ToogleGameSettings();
-		bool GetShowBanner() { return ShowBanner; }
-		void SetShowBanner(bool show) { ShowBanner = show; }
-		void ReSetup_GX(void);
-	protected:
-		int MainLoop();
-		void Animate(void);
-		void ChangeGame(Banner *banner);
-		void DrawRectangle(f32 x, f32 y, f32 width, f32 height, GXColor color);
-		void Init(u8 *font1, u8 *font2);
+public:
+	BannerWindow();
+	void DeleteBanner(bool gamechange = false);
+	void LoadBanner(u8 *font1, u8 *font2);
+	void LoadBannerBin(u8 *bnr, u32 bnr_size, u8 *font1, u8 *font2);
+	int GetSelectedGame() { return gameSelected; }
+	bool GetZoomSetting() { return AnimZoom; }
+	bool GetInGameSettings() { return (Brightness > 1.f ? true : false); }
+	void CreateGCBanner(u8 *bnr, u8 *font1, u8 *font2, const wchar_t *title);
+	void Draw(void);
+	bool ToogleZoom(void);
+	void ToogleGameSettings();
+	bool GetShowBanner() { return ShowBanner; }
+	void SetShowBanner(bool show) { ShowBanner = show; }
+	void ReSetup_GX(void);
+protected:
+	int MainLoop();
+	void Animate(void);
+	void ChangeGame(Banner *banner);
+	void Init(u8 *font1, u8 *font2);
 
-		static const float fBannerWidth = 608.f;
-		static const float fBannerHeight = 448.f;
-		static const float fIconWidth = 128.f;
-		static const float fIconHeight = 96.f;
+	static const float fBannerWidth = 608.f;
+	static const float fBannerHeight = 448.f;
+	static const float fIconWidth = 128.f;
+	static const float fIconHeight = 96.f;
 
-		bool reducedVol;
-		int returnVal;
-		int gameSelected;
-		dir_discHdr dvdheader;
-		float Brightness;
-		int MaxAnimSteps;
+	bool reducedVol;
+	int returnVal;
+	int gameSelected;
+	dir_discHdr dvdheader;
+	float Brightness;
+	int MaxAnimSteps;
 
-		int AnimStep;
-		float AnimPosX, AnimPosY;
-		float fAnimScale;
-		bool AnimZoom;
-		bool AnimationRunning;
-		bool changing;
-		bool ShowBanner;
+	int AnimStep;
+	float AnimPosX, AnimPosY;
+	float fAnimScale;
+	bool AnimZoom;
+	bool AnimationRunning;
+	bool changing;
+	bool ShowBanner;
 
-		float xDiff, yDiff;
-		float iconWidth, iconHeight;
-		float stepx1, stepx2, stepy1, stepy2;
-		f32 ratioX, ratioY;
+	float xDiff, yDiff;
+	float iconWidth, iconHeight;
+	float stepx1, stepx2, stepy1, stepy2;
+	f32 ratioX, ratioY;
 
-		Mtx modelview;
-		Mtx44 projection;
-		Vec2f ScreenProps;
+	Mtx modelview;
+	Mtx44 projection;
+	Vec2f ScreenProps;
 
-		u8 *sysFont1;
-		u8 *sysFont2;
-		bool FontLoaded;
+	u8 *sysFont1;
+	u8 *sysFont2;
+	bool FontLoaded;
 };
 
 extern BannerWindow m_banner;
