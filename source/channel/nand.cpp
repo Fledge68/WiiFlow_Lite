@@ -40,6 +40,7 @@
 #include "gecko/gecko.h"
 #include "loader/alt_ios.h"
 #include "loader/cios.h"
+#include "loader/fs.h"
 #include "loader/sys.h"
 #include "loader/wbfs.h"
 #include "memory/memory.h"
@@ -70,6 +71,7 @@ void Nand::Init()
 	MountedDevice = 0;
 	EmuDevice = REAL_NAND;
 	Disabled = true;
+	AccessPatched = false;
 	Partition = 0;
 	FullMode = 0x100;
 	memset(NandPath, 0, sizeof(NandPath)); 
@@ -1052,46 +1054,35 @@ extern "C" { extern s32 MagicPatches(s32); }
 void Nand::Enable_ISFS_Patches(void)
 {
 	if(AHBRPOT_Patched())
-	{
-		gprintf("Enabling ISFS Patches\n");
-		// Disable memory protection
-		write16(MEM_PROT, 0);
-		// Do patches
-		PatchAHB();
-		MagicPatches(1);
-		// Enable memory protection
-		write16(MEM_PROT, 1);
-	}
+		gprintf("Enabling ISFS Patches: %i\n", MagicPatches(1));
 }
 
 void Nand::Disable_ISFS_Patches(void)
 {
 	if(AHBRPOT_Patched())
-	{
-		gprintf("Disabling ISFS Patches\n");
-		// Disable memory protection
-		write16(MEM_PROT, 0);
-		// Do patches
-		MagicPatches(0);
-		// Enable memory protection
-		write16(MEM_PROT, 1);
-	}
+		gprintf("Disabling ISFS Patches: %i\n", MagicPatches(0));
 }
 
 void Nand::Init_ISFS()
 {
+	if(IOS_GetVersion() == 58)
+	{
+		Enable_ISFS_Patches();
+		AccessPatched = true;
+	}
 	gprintf("Init ISFS\n");
 	ISFS_Initialize();
-	if(IOS_GetVersion() == 58)
-		Enable_ISFS_Patches();
 }
 
 void Nand::DeInit_ISFS()
 {
 	gprintf("Deinit ISFS\n");
 	ISFS_Deinitialize();
-	if(IOS_GetVersion() == 58)
+	if(AccessPatched)
+	{
 		Disable_ISFS_Patches();
+		AccessPatched = false;
+	}
 }
 
 /* Thanks to postloader for that patch */

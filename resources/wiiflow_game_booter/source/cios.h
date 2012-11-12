@@ -20,6 +20,7 @@ typedef struct _iosinfo_t {
 
 typedef struct _IOS_Info {
 	u32 Revision;
+	u32 SubRevision;
 	u8 Version;
 	u8 Type;
 	u8 Base;
@@ -31,7 +32,7 @@ void IOS_GetCurrentIOSInfo();
 bool IOS_D2X(u8 ios, u8 *base);
 u8 IOS_GetType(u8 slot);
 
-bool Hermes_shadow_mload(int mload_rev);
+bool Hermes_shadow_mload();
 void Hermes_Disable_EHC();
 
 #ifdef __cplusplus

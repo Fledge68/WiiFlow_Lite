@@ -6,15 +6,16 @@
 
 #include "fs.h"
 #include "utils.h"
+#include "gecko/gecko.h"
 #include "memory/mem2.hpp"
 
 static fstats stats ATTRIBUTE_ALIGN(32);
 
-u8 *ISFS_GetFile(u8 *path, u32 *size, s32 length)
+u8 *ISFS_GetFile(const char *path, u32 *size, s32 length)
 {
 	*size = 0;
-	
-	s32 fd = ISFS_Open((const char *)path, ISFS_OPEN_READ);
+	//gprintf("ISFS_GetFile %s", path);
+	s32 fd = ISFS_Open(path, ISFS_OPEN_READ);
 	u8 *buf = NULL;
 
 	if(fd >= 0)
@@ -38,11 +39,13 @@ u8 *ISFS_GetFile(u8 *path, u32 *size, s32 length)
 		}
 		ISFS_Close(fd);
 	}
-
 	if(*size > 0)
 	{
+		//gprintf(" succeed!\n");
 		DCFlushRange(buf, *size);
 		ICInvalidateRange(buf, *size);
 	}
+	//else
+	//	gprintf(" failed!\n");
 	return buf;
 }

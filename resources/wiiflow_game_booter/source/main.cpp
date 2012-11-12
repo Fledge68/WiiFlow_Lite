@@ -94,7 +94,7 @@ int main()
 		{
 			Disc_SetUSB((u8*)normalCFG.gameID, normalCFG.GameBootType == TYPE_WII_WBFS_EXT);
 			if(CurrentIOS.Type == IOS_TYPE_HERMES)
-				Hermes_shadow_mload(normalCFG.mload_rev);
+				Hermes_shadow_mload();
 		}
 		prog(20);
 		Disc_Open();

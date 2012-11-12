@@ -28,7 +28,6 @@ typedef struct _the_CFG {
 	s32 wbfsDevice;
 	u32 wbfsPart;
 	u8 GameBootType;
-	u8 mload_rev;
 	WIP_Code *wip_list;
 	u32 wip_count;
 	/* needed for channels */

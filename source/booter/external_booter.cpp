@@ -106,7 +106,6 @@ void ExternalBooter_WiiGameSetup(bool wbfs, bool dvd, const char *ID)
 	normalCFG.fragments = frag_list;
 	normalCFG.wbfsDevice = wbfsDev;
 	normalCFG.wbfsPart = wbfs_part_idx;
-	normalCFG.mload_rev = mload_get_version();
 }
 
 void ExternalBooter_ChannelSetup(u64 title)

@@ -42,7 +42,7 @@ bool Identify(u64 titleid)
 	gprintf("Reading TMD...");
 	sprintf(filepath, "/title/%08x/%08x/content/title.tmd", TITLE_UPPER(titleid), TITLE_LOWER(titleid));
 	u32 tmdSize;
-	u8 *tmdBuffer = ISFS_GetFile((u8 *) &filepath, &tmdSize, -1);
+	u8 *tmdBuffer = ISFS_GetFile(filepath, &tmdSize, -1);
 	if (tmdBuffer == NULL || tmdSize == 0)
 	{
 		gprintf("Failed!\n");
@@ -62,9 +62,9 @@ bool Identify(u64 titleid)
 	gprintf("Success!\n");
 
 	gprintf("Reading certs...");
-	sprintf(filepath, "/sys/cert.sys");
+	strcpy(filepath, "/sys/cert.sys");
 	u32 certSize;
-	u8 *certBuffer = ISFS_GetFile((u8 *) &filepath, &certSize, -1);
+	u8 *certBuffer = ISFS_GetFile(filepath, &certSize, -1);
 	if (certBuffer == NULL || certSize == 0)
 	{
 		gprintf("Failed!\n");
