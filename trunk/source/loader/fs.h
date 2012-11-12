@@ -5,7 +5,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-u8 *ISFS_GetFile(u8 *path, u32 *size, s32 length);
+u8 *ISFS_GetFile(const char *path, u32 *size, s32 length);
 
 #ifdef __cplusplus
 }

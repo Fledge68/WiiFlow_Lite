@@ -31,10 +31,9 @@
 #include "cios.h"
 #include "gecko.h"
 
-bool Hermes_shadow_mload(int mload_rev)
+bool Hermes_shadow_mload()
 {
-	int v51 = (5 << 4) & 1;
-	if(mload_rev >= v51)
+	if(CurrentIOS.Revision >= 5 && CurrentIOS.SubRevision >= 1)
 	{
 		IOS_Open("/dev/mload/OFF",0); // shadow /dev/mload supported in hermes cios v5.1
 		gprintf("Shadow mload\n");

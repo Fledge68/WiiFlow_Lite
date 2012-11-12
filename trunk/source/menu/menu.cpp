@@ -188,8 +188,7 @@ void CMenu::init()
 				fsop_MakeFolder((char *)fmt("%s:/%s", DeviceName[i], APPDATA_DIR2)); //Make the apps dir, so saving wiiflow.ini does not fail.
 				break;
 			}
-
-	_loadDefaultFont(CONF_GetLanguage() == CONF_LANG_KOREAN);
+	loadDefaultFont();
 
 	if(drive == check) // Should not happen
 	{
@@ -212,6 +211,12 @@ void CMenu::init()
 	{
 		WriteToSD = m_cfg.getBool("DEBUG", "sd_write_log", false);
 		bufferMessages = WriteToSD;
+	}
+	int ForceIOS = min(m_cfg.getInt("GENERAL", "force_cios_rev", 0), 254);
+	if(ForceIOS > 0)
+	{
+		gprintf("Using IOS%i instead of IOS%i as main cIOS.\n", ForceIOS, mainIOS);
+		mainIOS = ForceIOS;
 	}
 	useMainIOS = m_cfg.getBool("GENERAL", "force_cios_load", false);
 	bool onUSB = m_cfg.getBool("GENERAL", "data_on_usb", strncmp(drive, "usb", 3) == 0);
@@ -2225,7 +2230,7 @@ bool CMenu::_loadChannelList(void)
 	if(!disable_emu)
 	{
 		MusicPlayer.Stop();
-		_TempLoadIOS();
+		TempLoadIOS();
 		DeviceHandle.UnMount(currentPartition);
 		NandHandle.SetPaths(emuPath.c_str(), currentPartition, disable_emu);
 		if(NandHandle.Enable_Emu() < 0)
@@ -2252,7 +2257,7 @@ bool CMenu::_loadList(void)
 	{
 		MusicPlayer.Stop();
 		NandHandle.Disable_Emu();
-		_TempLoadIOS(IOS_TYPE_NORMAL_IOS);
+		TempLoadIOS(IOS_TYPE_NORMAL_IOS);
 	}
 	gprintf("Switching View to %s\n", _domainFromView());
 
@@ -2485,68 +2490,59 @@ typedef struct map_entry
 	u8 sha1[20];
 } __attribute((packed)) map_entry_t;
 
-void CMenu::_loadDefaultFont(bool korean)
+void CMenu::loadDefaultFont(void)
 {
-	u32 size;
+	if(m_base_font != NULL)
+		return;
+
+	u32 size = 0;
 	bool retry = false;
+	bool korean = (CONF_GetLanguage() == CONF_LANG_KOREAN);
+	char ISFS_Filename[32] ATTRIBUTE_ALIGN(32);
 
 	// Read content.map from ISFS
-	u8 *content = ISFS_GetFile((u8 *) "/shared1/content.map", &size, 0);
+	strcpy(ISFS_Filename, "/shared1/content.map");
+	u8 *content = ISFS_GetFile(ISFS_Filename, &size, -1);
 	if(content == NULL)
 		return;
 
-	int items = size / sizeof(map_entry_t);
-
+	u32 items = size / sizeof(map_entry_t);
 	//gprintf("Open content.map, size %d, items %d\n", size, items);
+	map_entry_t *cm = (map_entry_t *)content;
 
-retry:	
+retry:
 	bool kor_font = (korean && !retry) || (!korean && retry);
-	map_entry_t *cm = (map_entry_t *) content;
-	for (int i = 0; i < items; i++)
+	for(u32 i = 0; i < items; i++)
 	{
-		if (memcmp(cm[i].sha1, kor_font ? WIIFONT_HASH_KOR : WIIFONT_HASH, 20) == 0)
+		if(m_base_font != NULL && m_wbf1_font != NULL && m_wbf2_font != NULL)
+			break;
+		if(memcmp(cm[i].sha1, kor_font ? WIIFONT_HASH_KOR : WIIFONT_HASH, 20) == 0 && m_base_font == NULL)
 		{
-			// Name found, load it and unpack it
-			char u8_font_filename[22] = {0};
-			strcpy(u8_font_filename, "/shared1/XXXXXXXX.app"); // Faster than sprintf
-			memcpy(u8_font_filename+9, cm[i].filename, 8);
-
-			u8 *u8_font_archive = ISFS_GetFile((u8 *) u8_font_filename, &size, 0);
-			//gprintf("Opened fontfile: %s: %d bytes\n", u8_font_filename, size);
-
+			sprintf(ISFS_Filename, "/shared1/%.8s.app", cm[i].filename);  //who cares about the few ticks more?
+			u8 *u8_font_archive = ISFS_GetFile(ISFS_Filename, &size, -1);
 			if(u8_font_archive != NULL)
 			{
 				const u8 *font_file = u8_get_file_by_index(u8_font_archive, 1, &size); // There is only one file in that app
 				//gprintf("Extracted font: %d\n", size);
-				if(m_base_font)
-					MEM1_lo_free(m_base_font);
 				m_base_font = (u8*)MEM1_lo_alloc(size);
 				memcpy(m_base_font, font_file, size);
 				DCFlushRange(m_base_font, size);
 				m_base_font_size = size;
 				free(u8_font_archive);
 			}
-			break;
 		}
-		else if(memcmp(cm[i].sha1, WFB_HASH, 20) == 0)
+		else if(memcmp(cm[i].sha1, WFB_HASH, 20) == 0 && m_wbf1_font == NULL && m_wbf2_font == NULL)
 		{
-			// Name found, load it and unpack it
-			char font_filename[32] ATTRIBUTE_ALIGN(32);
-			strcpy(font_filename, "/shared1/XXXXXXXX.app"); // Faster than sprintf
-			memcpy(font_filename+9, cm[i].filename, 8);
-			u8 *u8_font_archive = ISFS_GetFile((u8 *)font_filename, &size, 0);
+			sprintf(ISFS_Filename, "/shared1/%.8s.app", cm[i].filename);  //who cares about the few ticks more?
+			u8 *u8_font_archive = ISFS_GetFile(ISFS_Filename, &size, -1);
 			if(u8_font_archive != NULL)
 			{
 				const u8 *font_file1 = u8_get_file(u8_font_archive, "wbf1.brfna", &size);
-				if(m_wbf1_font)
-					MEM1_lo_free(m_wbf1_font);
 				m_wbf1_font = (u8*)MEM1_lo_alloc(size);
 				memcpy(m_wbf1_font, font_file1, size);
 				DCFlushRange(m_wbf1_font, size);
 	
 				const u8 *font_file2 = u8_get_file(u8_font_archive, "wbf2.brfna", &size);
-				if(m_wbf2_font)
-					MEM1_lo_free(m_wbf2_font);
 				m_wbf2_font = (u8*)MEM1_lo_alloc(size);
 				memcpy(m_wbf2_font, font_file2, size);
 				DCFlushRange(m_wbf2_font, size);
@@ -2555,22 +2551,23 @@ retry:
 			}
 		}
 	}
-
-	if (!retry)
+	if(!retry && m_base_font == NULL)
 	{
 		retry = true;
 		goto retry;
 	}
-
 	free(content);
 }
 
 void CMenu::_cleanupDefaultFont()
 {
 	MEM1_lo_free(m_base_font);
+	m_base_font = NULL;
 	m_base_font_size = 0;
 	MEM1_lo_free(m_wbf1_font);
+	m_wbf1_font = NULL;
 	MEM1_lo_free(m_wbf2_font);
+	m_wbf2_font = NULL;
 }
 
 string CMenu::_getId()
@@ -2660,7 +2657,9 @@ void CMenu::UpdateCache(u32 view)
 int CMenu::MIOSisDML()
 {
 	u32 size = 0;
-	u8 *appfile = ISFS_GetFile((u8*)"/title/00000001/00000101/content/0000000c.app", &size, 0);
+	char ISFS_Filename[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
+	strcpy(ISFS_Filename, "/title/00000001/00000101/content/0000000c.app");
+	u8 *appfile = ISFS_GetFile(ISFS_Filename, &size, -1);
 	if(appfile)
 	{
 		for(u32 i = 0; i < size; ++i) 
@@ -2700,7 +2699,7 @@ void CMenu::RemoveCover(const char *id)
 	fsop_deleteFile(CoverPath);
 }
 
-void CMenu::_TempLoadIOS(int IOS)
+void CMenu::TempLoadIOS(int IOS)
 {
 	/* Only temp reload in IOS58 mode */
 	if(useMainIOS || neek2o() || Sys_DolphinMode())

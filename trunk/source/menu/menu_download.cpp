@@ -391,7 +391,9 @@ bool CMenu::_isNetworkAvailable()
 {
 	bool retval = false;
 	u32 size;
-	u8 *buf = ISFS_GetFile((u8 *) "/shared2/sys/net/02/config.dat", &size, -1);
+	char ISFS_Filepath[32] ATTRIBUTE_ALIGN(32);
+	strcpy(ISFS_Filepath, "/shared2/sys/net/02/config.dat");
+	u8 *buf = ISFS_GetFile(ISFS_Filepath, &size, -1);
 	if (buf && size > 4)
 	{
 		retval = buf[4] > 0; // There is a valid connection defined.

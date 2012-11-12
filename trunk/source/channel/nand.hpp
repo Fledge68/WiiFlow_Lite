@@ -95,6 +95,7 @@ private:
 	s32 Nand_Disable(void);	
 
 	void PatchAHB(void);
+	bool ISFS_Check(void);
 	void Enable_ISFS_Patches(void);
 	void Disable_ISFS_Patches(void);
 
@@ -125,7 +126,8 @@ private:
 	bool Disabled;
 	bool fake;
 	bool showprogress;
-	
+	bool AccessPatched;
+
 	void *data;
 	dump_callback_t dumper;
 	u32 Partition ATTRIBUTE_ALIGN(32);

@@ -20,6 +20,7 @@ typedef struct _iosinfo_t {
 
 typedef struct _IOS_Info {
 	u32 Revision;
+	u32 SubRevision;
 	u8 Version;
 	u8 Type;
 	u8 Base;

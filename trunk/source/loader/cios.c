@@ -70,7 +70,7 @@ iosinfo_t *IOS_GetInfo(u8 ios)
 	MEM2_free(TMD);
 
 	u32 size = 0;
-	u8 *buffer = ISFS_GetFile((u8 *)filepath, &size, sizeof(iosinfo_t));
+	u8 *buffer = ISFS_GetFile(filepath, &size, sizeof(iosinfo_t));
 	if(buffer == NULL || size == 0)
 		return NULL;
 
@@ -164,29 +164,38 @@ u8 IOS_GetType(u8 slot)
 void IOS_GetCurrentIOSInfo()
 {
 	memset(&CurrentIOS, 0, sizeof(IOS_Info));
-	CurrentIOS.Revision = IOS_GetRevision();
 	CurrentIOS.Version = IOS_GetVersion();
+	CurrentIOS.Base = CurrentIOS.Version;
+	CurrentIOS.Revision = IOS_GetRevision();
+	CurrentIOS.SubRevision = 0;
 	CurrentIOS.Type = IOS_GetType(CurrentIOS.Version);
 	if(CurrentIOS.Type == IOS_TYPE_D2X)
 	{
 		iosinfo_t *iosInfo = IOS_GetInfo(CurrentIOS.Version);
 		CurrentIOS.Revision = iosInfo->version;
 		CurrentIOS.Base = iosInfo->baseios;
-		gprintf("D2X cIOS Base IOS%i\n", CurrentIOS.Base);
+		gprintf("D2X IOS%i[%i] v%i\n", CurrentIOS.Version, CurrentIOS.Base, 
+			CurrentIOS.Revision);
 		MEM2_free(iosInfo);
 	}
-	else if(CurrentIOS.Type == IOS_TYPE_WANIN && CurrentIOS.Revision >= 18)
+	else if(CurrentIOS.Type == IOS_TYPE_WANIN)
 	{
-		CurrentIOS.Base = wanin_mload_get_IOS_base();
-		gprintf("Waninkoko cIOS Base IOS%i\n", CurrentIOS.Base);
+		if(CurrentIOS.Revision >= 18)
+			CurrentIOS.Base = wanin_mload_get_IOS_base();
+		gprintf("Waninkoko IOS%i[%i] v%i\n", CurrentIOS.Version, CurrentIOS.Base, 
+			CurrentIOS.Revision);
 	}
-	else if(CurrentIOS.Type == IOS_TYPE_HERMES && CurrentIOS.Revision >= 4)
+	else if(CurrentIOS.Type == IOS_TYPE_HERMES)
 	{
 		CurrentIOS.Base = mload_get_IOS_base();
-		gprintf("Hermes cIOS Base IOS%i\n", CurrentIOS.Base);
+		if(CurrentIOS.Revision > 4)
+		{
+			CurrentIOS.Revision = mload_get_version() >> 4;
+			CurrentIOS.SubRevision = mload_get_version() & 0xF;
+		}
+		gprintf("Hermes IOS%i[%i] v%d.%d\n", CurrentIOS.Version, CurrentIOS.Base, 
+			CurrentIOS.Revision, CurrentIOS.SubRevision);
 	}
-	else
-		CurrentIOS.Base = CurrentIOS.Version;
 	DCFlushRange(&CurrentIOS, sizeof(IOS_Info));
 }
 

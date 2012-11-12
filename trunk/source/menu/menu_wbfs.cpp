@@ -313,7 +313,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 				{
 					case CMenu::WO_ADD_GAME:
 						MusicPlayer.Stop();
-						_TempLoadIOS();
+						TempLoadIOS();
 						m_btnMgr.show(m_wbfsPBar);
 						m_btnMgr.setProgress(m_wbfsPBar, 0.f);
 						m_btnMgr.hide(m_wbfsBtnGo);
@@ -459,7 +459,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 				{
 					WDVD_StopMotor();
 					MusicPlayer.Stop();
-					_TempLoadIOS(IOS_TYPE_NORMAL_IOS);
+					TempLoadIOS(IOS_TYPE_NORMAL_IOS);
 				}
 				m_btnMgr.show(m_wbfsBtnBack);
 			}

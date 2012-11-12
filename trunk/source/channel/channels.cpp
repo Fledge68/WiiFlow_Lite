@@ -68,7 +68,7 @@ u8 Channels::GetRequestedIOS(u64 title)
 	sprintf(tmd, "/title/%08x/%08x/content/title.tmd", TITLE_UPPER(title), TITLE_LOWER(title));
 
 	u32 size;
-	u8 *titleTMD = (u8 *)ISFS_GetFile((u8 *) &tmd, &size, -1);
+	u8 *titleTMD = (u8 *)ISFS_GetFile(tmd, &size, -1);
 	if(titleTMD == NULL)
 		return 0;
 
@@ -108,7 +108,7 @@ bool Channels::GetAppNameFromTmd(u64 title, char *app, bool dol, u32 *bootconten
 	sprintf(tmd, "/title/%08x/%08x/content/title.tmd", TITLE_UPPER(title), TITLE_LOWER(title));
 
 	u32 size;
-	u8 *data = ISFS_GetFile((u8 *) &tmd, &size, -1);
+	u8 *data = ISFS_GetFile(tmd, &size, -1);
 	if (data == NULL || size < 0x208)
 		return ret;
 

@@ -40,7 +40,8 @@ public:
 	void exitHandler(int ExitTo);
 	int main(void);
 	void cleanup(void);
-	void _TempLoadIOS(int IOS = 0);
+	void loadDefaultFont(void);
+	void TempLoadIOS(int IOS = 0);
 	u8 m_current_view;
 private:
 	struct SZone
@@ -985,7 +986,6 @@ private:
 	float _getCFFloat(const string &domain, const string &key, float def, bool otherScrnFmt = false);
 	void _cfParam(bool inc, int i, const SCFParamDesc &p, int cfVersion, bool wide);
 	void _buildMenus(void);
-	void _loadDefaultFont(bool korean);
 	void _cleanupDefaultFont();
 	void _Theme_Cleanup();
 	string _getId(void);

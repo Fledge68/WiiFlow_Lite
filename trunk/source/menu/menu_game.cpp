@@ -1166,7 +1166,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 				} while(!(cover & 0x2));
 			}
 		}
-		_TempLoadIOS();
+		TempLoadIOS();
 		/* Open Disc */
 		if(Disc_Open(true) < 0)
 		{
