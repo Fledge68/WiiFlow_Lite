@@ -40,11 +40,11 @@ u8 currentPartition = 1;
 
 /* WBFS HDD */
 wbfs_t *hdd = NULL;
-
+#if 0
 /* WBFS callbacks */
 static rw_sector_callback_t readCallback  = NULL;
 static rw_sector_callback_t writeCallback = NULL;
-
+#endif
 s32 __WBFS_ReadDVD(void *fp, u32 lba, u32 len, void *iobuf)
 {
 	s32 ret;
@@ -208,7 +208,7 @@ bool WBFS_Mounted()
 	return wbfs_mounted != 0;
 }
 
-s32 WBFS_Init(wbfs_t * handle, u32 part_fs, u32 part_idx, u32 part_lba, char *partition, u8 current)
+s32 WBFS_Init(wbfs_t * handle, u32 part_fs, u32 part_idx, u32 part_lba, const char *partition)
 {
 	WBFS_Close();
 
@@ -221,13 +221,11 @@ s32 WBFS_Init(wbfs_t * handle, u32 part_fs, u32 part_idx, u32 part_lba, char *pa
 	wbfs_part_lba = part_lba;
 	wbfs_part_idx = part_idx;
 
-	currentPartition = current;
-
 	wbfs_mounted = 1;
 
 	return 0;
 }
-
+#if 0
 s32 WBFS_Format(u32 lba, u32 size)
 {
 	u32 sector_size = (currentPartition == 0) ? 512 : USBStorage2_GetSectorSize();
@@ -251,7 +249,7 @@ s32 WBFS_Format(u32 lba, u32 size)
 
 	return 0;
 }
-
+#endif
 s32 WBFS_CheckGame(u8 *discid, char *path)
 {
 	/* Try to open game disc */

@@ -195,15 +195,12 @@ void CMenu::LoadView(void)
 	_loadCFLayout(m_cfg.getInt(_domainFromView(), "last_cf_mode", 1));
 	CoverFlow.applySettings();
 
-	char *mode = (m_current_view == COVERFLOW_CHANNEL && m_cfg.getBool(CHANNEL_DOMAIN, "disable", true)) 
-		? (char *)CHANNEL_DOMAIN : (char *)DeviceName[currentPartition];
-
-	for(u8 i = 0; strncmp((const char *)&mode[i], "\0", 1) != 0; i++)
-			mode[i] = toupper(mode[i]);
+	const char *mode = (m_current_view == COVERFLOW_CHANNEL && m_cfg.getBool(CHANNEL_DOMAIN, "disable", true)) 
+		? CHANNEL_DOMAIN : DeviceName[currentPartition];
 
 	m_showtimer=60;
 	char gui_name[20];
-	snprintf(gui_name, sizeof(gui_name), "%s [%s]", _domainFromView(),mode);
+	snprintf(gui_name, sizeof(gui_name), "%s [%s]", _domainFromView(), upperCase(mode).c_str());
 	m_btnMgr.setText(m_mainLblNotice, (string)gui_name);
 	m_btnMgr.show(m_mainLblNotice);
 }
@@ -632,7 +629,7 @@ int CMenu::main(void)
 			{
 				bUsed = true;
 				bool block = m_current_view == COVERFLOW_CHANNEL && (m_cfg.getBool(CHANNEL_DOMAIN, "disable", true) || neek2o());
-				char *partition;
+				const char *partition = NULL;
 				if(!block)
 				{
 					_showWaitMessage();
@@ -654,19 +651,16 @@ int CMenu::main(void)
 						if(limiter > 10) break;
 						limiter++;
 					}
-					partition = (char *)DeviceName[currentPartition];
+					partition = DeviceName[currentPartition];
 					gprintf("Setting Emu NAND to Partition: %i\n",currentPartition);
 					m_cfg.setInt(_domainFromView(), "partition", currentPartition);
 				}
 				else
-					partition = (char *)"NAND";
-
-				for(u8 i = 0; strncmp((const char *)&partition[i], "\0", 1) != 0; i++)
-					partition[i] = toupper(partition[i]);
+					partition = "NAND";
 				//gprintf("Next item: %s\n", partition);
 				m_showtimer=60; 
 				char gui_name[20];
-				snprintf(gui_name, sizeof(gui_name), "%s [%s]", _domainFromView(),partition);
+				snprintf(gui_name, sizeof(gui_name), "%s [%s]", _domainFromView(), upperCase(partition).c_str());
 				m_btnMgr.setText(m_mainLblNotice, (string)gui_name);
 				m_btnMgr.show(m_mainLblNotice);
 				if(!block)

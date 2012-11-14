@@ -1402,27 +1402,27 @@ void CCoverFlow::_drawCoverBox(int i, bool mirror, CCoverFlow::DrawMode dm)
 			GX_InitTexObj(&texObj, m_dvdSkin_GreenOne.data, m_dvdSkin_GreenOne.width, m_dvdSkin_GreenOne.height, m_dvdSkin_GreenOne.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		else if (casecolor == 0x00E360)
 			GX_InitTexObj(&texObj, m_dvdSkin_GreenTwo.data, m_dvdSkin_GreenTwo.width, m_dvdSkin_GreenTwo.height, m_dvdSkin_GreenTwo.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
-		else if(_checkCoverColor((char *)m_items[m_covers[i].index].hdr->id,red,red_len))
+		else if(_checkCoverColor(m_items[m_covers[i].index].hdr->id,red,red_len))
 		{
 			m_items[m_covers[i].index].hdr->casecolor = 0xFF0000;
 			GX_InitTexObj(&texObj, m_dvdSkin_Red.data, m_dvdSkin_Red.width, m_dvdSkin_Red.height, m_dvdSkin_Red.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		}
-		else if(_checkCoverColor((char *)m_items[m_covers[i].index].hdr->id,black,black_len))
+		else if(_checkCoverColor(m_items[m_covers[i].index].hdr->id,black,black_len))
 		{
 			m_items[m_covers[i].index].hdr->casecolor = 0x000000;
 			GX_InitTexObj(&texObj, m_dvdSkin_Black.data, m_dvdSkin_Black.width, m_dvdSkin_Black.height, m_dvdSkin_Black.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		}
-		else if(_checkCoverColor((char *)m_items[m_covers[i].index].hdr->id,yellow,yellow_len))
+		else if(_checkCoverColor(m_items[m_covers[i].index].hdr->id,yellow,yellow_len))
 		{
 			m_items[m_covers[i].index].hdr->casecolor = 0xFCFF00;
 			GX_InitTexObj(&texObj, m_dvdSkin_Yellow.data, m_dvdSkin_Yellow.width, m_dvdSkin_Yellow.height, m_dvdSkin_Yellow.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		}
-		else if(_checkCoverColor((char *)m_items[m_covers[i].index].hdr->id,greenOne,greenOne_len))
+		else if(_checkCoverColor(m_items[m_covers[i].index].hdr->id,greenOne,greenOne_len))
 		{
 			m_items[m_covers[i].index].hdr->casecolor = 0x01A300;
 			GX_InitTexObj(&texObj, m_dvdSkin_GreenOne.data, m_dvdSkin_GreenOne.width, m_dvdSkin_GreenOne.height, m_dvdSkin_GreenOne.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		}
-		else if(_checkCoverColor((char *)m_items[m_covers[i].index].hdr->id,greenTwo,greenTwo_len))
+		else if(_checkCoverColor(m_items[m_covers[i].index].hdr->id,greenTwo,greenTwo_len))
 		{
 			m_items[m_covers[i].index].hdr->casecolor = 0x00E360;
 			GX_InitTexObj(&texObj, m_dvdSkin_GreenTwo.data, m_dvdSkin_GreenTwo.width, m_dvdSkin_GreenTwo.height, m_dvdSkin_GreenTwo.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
@@ -1506,7 +1506,7 @@ string CCoverFlow::getId(void) const
 string CCoverFlow::getNextId(void) const
 {
 	if (m_covers.empty() || m_items.empty()) return "";
-	return string((char *) &m_items[loopNum(m_covers[m_range / 2].index + m_jump + 1, m_items.size())].hdr->id);
+	return string(m_items[loopNum(m_covers[m_range / 2].index + m_jump + 1, m_items.size())].hdr->id);
 }
 
 dir_discHdr * CCoverFlow::getHdr(void) const
@@ -1795,16 +1795,16 @@ bool CCoverFlow::_sortByLastPlayed(CItem item1, CItem item2)
 
 bool CCoverFlow::_sortByGameID(CItem item1, CItem item2)
 {
-	u32 s = min(strlen((char *) &item1.hdr->id), strlen((char *) &item2.hdr->id));
-	for (u32 k = 0; k < s; ++k)
+	u32 s = min(strlen(item1.hdr->id), strlen(item2.hdr->id));
+	for(u32 k = 0; k < s; ++k)
 	{
-		if (toupper(item1.hdr->id[k]) > toupper(item2.hdr->id[k]))
+		if(toupper(item1.hdr->id[k]) > toupper(item2.hdr->id[k]))
 			return false;
-		else if (toupper(item1.hdr->id[k]) < toupper(item2.hdr->id[k]))
+		else if(toupper(item1.hdr->id[k]) < toupper(item2.hdr->id[k]))
 			return true;
 	}
 
-	return strlen((char *) &item1.hdr->id) < strlen((char *) &item2.hdr->id);
+	return strlen(item1.hdr->id) < strlen(item2.hdr->id);
 }
 
 bool CCoverFlow::_sortByAlpha(CItem item1, CItem item2)
@@ -2081,7 +2081,7 @@ bool CCoverFlow::findId(const char *id, bool instant)
 		return false;
 	// 
 	for (i = 0; i < m_items.size(); ++i)
-		if (memcmp(&m_items[i].hdr->id, id, strlen(id)) == 0)
+		if(memcmp(m_items[i].hdr->id, id, strlen(id)) == 0)
 			break;
 		else if (strlen(id) > 6 && memcmp(&m_items[i].hdr->path[string(m_items[i].hdr->path).find_last_of("/")+1], id, strlen(id)) == 0)
 			break;
@@ -2380,16 +2380,16 @@ void CCoverFlow::nextID(wchar_t *c)
 
 	_completeJump();
 	u32 curPos = _currentPos();
-	char *system = (char *)m_items[curPos].hdr->id;
+	char *system = m_items[curPos].hdr->id;
 
 	for (i = 1; i < n; ++i)
-		if ((char)m_items[loopNum(curPos + i, n)].hdr->id[0] != system[0])
+		if (m_items[loopNum(curPos + i, n)].hdr->id[0] != system[0])
 			break;
 
 	if (i < n)
 	{
 		_setJump(i);
-		system = (char *)m_items[loopNum(curPos + i, n)].hdr->id;
+		system = m_items[loopNum(curPos + i, n)].hdr->id;
 	}
 
 	system[1] = '\0';
@@ -2405,13 +2405,13 @@ void CCoverFlow::prevID(wchar_t *c)
 
 	_completeJump();
 	u32 curPos = _currentPos();
-	char *system = (char *)m_items[curPos].hdr->id;
+	char *system = m_items[curPos].hdr->id;
 
-	for (i = 1; i < n; ++i)
-		if ((char)m_items[loopNum(curPos - i, n)].hdr->id[0] != system[0])
+	for(i = 1; i < n; ++i)
+		if(m_items[loopNum(curPos - i, n)].hdr->id[0] != system[0])
 		{
-			system = (char *)m_items[loopNum(curPos - i, n)].hdr->id;
-			while(i < n && (char)m_items[loopNum(curPos - i, n)].hdr->id[0] == system[0]) ++i;
+			system = m_items[loopNum(curPos - i, n)].hdr->id;
+			while(i < n && m_items[loopNum(curPos - i, n)].hdr->id[0] == system[0]) ++i;
 			i--;
 			break;
 		}
@@ -2419,11 +2419,11 @@ void CCoverFlow::prevID(wchar_t *c)
 	if (i < n)
 	{
 		_setJump(-i);
-		system = (char *)m_items[loopNum(curPos - i, n)].hdr->id;
+		system = m_items[loopNum(curPos - i, n)].hdr->id;
 	}
 
 	system[1] = '\0';
-	mbstowcs(c, system, 1); 	
+	mbstowcs(c, system, 1);
 
 	_updateAllTargets();
 }

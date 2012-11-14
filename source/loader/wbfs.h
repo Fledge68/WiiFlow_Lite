@@ -24,8 +24,7 @@ extern u32 wbfs_part_lba;
 extern char wbfs_fs_drive[16];
 
 /* Prototypes */
-s32 WBFS_Format(u32, u32);
-s32 WBFS_Init(wbfs_t *handle, u32 part_fs, u32 part_idx, u32 part_lba, char *partition, u8 current);
+s32 WBFS_Init(wbfs_t *handle, u32 part_fs, u32 part_idx, u32 part_lba, const char *partition);
 s32 WBFS_CheckGame(u8 *, char *);
 s32 WBFS_AddGame(progress_callback_t spinner, void *spinner_data);
 s32 WBFS_RemoveGame(u8 *, char *);

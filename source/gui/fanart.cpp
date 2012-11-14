@@ -23,17 +23,11 @@ void CFanart::unload()
 {
 	m_cfg.unload();
 	m_loaded = false;
+	for(vector<CFanartElement>::iterator Elm = m_elms.begin(); Elm != m_elms.end(); Elm++)
+		Elm->Cleanup();
 	m_elms.clear();
-	if(m_bg.data != NULL)
-	{
-		free(m_bg.data);
-		m_bg.data = NULL;
-	}
-	if(m_bglq.data != NULL)
-	{
-		free(m_bglq.data);
-		m_bglq.data = NULL;
-	}
+	m_bg.Cleanup();
+	m_bglq.Cleanup();
 }
 
 bool CFanart::load(Config &m_globalConfig, const char *path, const char *id)
@@ -46,30 +40,27 @@ bool CFanart::load(Config &m_globalConfig, const char *path, const char *id)
 	unload();
 
 	char dir[64];
-	memset(dir,0, 64);
+	dir[63] = '\0';
 	strncpy(dir, fmt("%s/%s", path, id), 63);
-	STexture fanBg, fanBgLq;
 
-	TexErr texErr = fanBg.fromImageFile(fmt("%s/background.png", dir));
+	TexErr texErr = m_bg.fromImageFile(fmt("%s/background.png", dir));
 	if(texErr == TE_ERROR)
 	{
-		memset(dir,0, 64);
 		strncpy(dir, fmt("%s/%.3s", path, id), 63);
-		texErr = fanBg.fromImageFile(fmt("%s/background.png", dir));
+		texErr = m_bg.fromImageFile(fmt("%s/background.png", dir));
 	}
 	if(texErr == TE_OK)
 	{
 		char cfg_char[64];
-		memset(cfg_char,0, 64);
+		cfg_char[63] = '\0';
 		strncpy(cfg_char, fmt("%s/%s.ini", dir, id), 63);
 		m_cfg.load(cfg_char);
 		if(!m_cfg.loaded())
 		{
-			memset(cfg_char,0, 64);
 			strncpy(cfg_char, fmt("%s/%.3s.ini", dir, id), 63);
 			m_cfg.load(cfg_char);
 		}
-		fanBgLq.fromImageFile(fmt("%s/background_lq.png", dir));
+		m_bglq.fromImageFile(fmt("%s/background_lq.png", dir));
 		for(int i = 1; i <= 6; i++)
 		{
 			CFanartElement elm(m_cfg, dir, i);
@@ -83,10 +74,6 @@ bool CFanart::load(Config &m_globalConfig, const char *path, const char *id)
 		m_globalHideCover = m_globalConfig.getOptBool("FANART", "hidecover", 2); // 0 is false, 1 is true, 2 is default
 		m_globalShowCoverAfterAnimation = m_globalConfig.getOptBool("FANART", "show_cover_after_animation", 2);
 	}
-
-	m_bg = fanBg;
-	m_bglq = fanBgLq;
-
 	return retval;
 }
 
@@ -225,13 +212,9 @@ CFanartElement::CFanartElement(Config &cfg, const char *dir, int artwork)
 	m_step_angle = m_event_duration == 0 ? 0 : (m_angle - m_event_angle) / m_event_duration;
 }
 
-CFanartElement::~CFanartElement(void)
+void CFanartElement::Cleanup(void)
 {
-	if(m_art.data != NULL)
-	{
-		free(m_art.data);
-		m_art.data = NULL;
-	}
+	m_art.Cleanup();
 }
 
 bool CFanartElement::IsValid()

@@ -38,7 +38,9 @@
 // DIOS-MIOS
 DML_CFG DMLCfg;
 
-void DML_New_SetOptions(const char *GamePath, char *CheatPath, const char *NewCheatPath, const char *partition, bool cheats, bool debugger, u8 NMM, u8 nodisc, u8 DMLvideoMode, u8 videoSetting, bool widescreen, bool new_dm_cfg)
+void DML_New_SetOptions(const char *GamePath, char *CheatPath, const char *NewCheatPath, 
+		const char *partition, bool cheats, bool debugger, u8 NMM, u8 nodisc, u8 DMLvideoMode, 
+		u8 videoSetting, bool widescreen, bool new_dm_cfg, bool activity_led)
 {
 	gprintf("Wiiflow GC: Launch game '%s' through memory (new method)\n", GamePath);
 	memset(&DMLCfg, 0, sizeof(DML_CFG));
@@ -56,7 +58,6 @@ void DML_New_SetOptions(const char *GamePath, char *CheatPath, const char *NewCh
 	else
 		DMLCfg.VideoMode |= DML_VID_FORCE;
 
-	DMLCfg.Config |= DML_CFG_ACTIVITY_LED; //Sorry but I like it lol, option will may follow
 	DMLCfg.Config |= DML_CFG_PADHOOK; //Makes life easier, l+z+b+digital down...
 
 	if(GamePath != NULL)
@@ -79,7 +80,8 @@ void DML_New_SetOptions(const char *GamePath, char *CheatPath, const char *NewCh
 		gprintf("Cheat Path: %s\n", ptr);
 		DMLCfg.Config |= DML_CFG_CHEAT_PATH;
 	}
-
+	if(activity_led)
+		DMLCfg.Config |= DML_CFG_ACTIVITY_LED;
 	if(cheats)
 		DMLCfg.Config |= DML_CFG_CHEATS;
 	if(debugger)
