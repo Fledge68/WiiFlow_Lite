@@ -15,7 +15,7 @@ class CFanartElement
 {
 public:
 	CFanartElement(Config &cfg, const char *dir, int artwork);
-	~CFanartElement(void);
+	void Cleanup(void);
 	
 	void draw();
 	void tick();

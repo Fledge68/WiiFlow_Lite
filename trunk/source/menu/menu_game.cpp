@@ -292,7 +292,7 @@ static u8 GetRequestedGameIOS(dir_discHdr *hdr)
 	u8 IOS = 0;
 
 	DeviceHandle.OpenWBFS(currentPartition);
-	wbfs_disc_t *disc = WBFS_OpenDisc((u8 *) &hdr->id, (char *) hdr->path);
+	wbfs_disc_t *disc = WBFS_OpenDisc((u8*)&hdr->id, hdr->path);
 	if(disc != NULL)
 	{
 		u8 *titleTMD = NULL;
@@ -503,7 +503,7 @@ void CMenu::_game(bool launch)
 				{
 					_hideGame();
 					m_banner.SetShowBanner(false);
-					if(_wbfsOp(CMenu::WO_REMOVE_GAME))
+					if(_wbfsOp(WO_REMOVE_GAME))
 					{
 						m_gameSound.FreeMemory();
 						CheckGameSoundThread();
@@ -683,7 +683,10 @@ void CMenu::_game(bool launch)
 			m_btnMgr.hide(b ? m_gameBtnFavoriteOff : m_gameBtnFavoriteOn);
 			m_btnMgr.show(m_gameBtnPlay);
 			m_btnMgr.show(m_gameBtnBack);
-			m_btnMgr.show(m_gameBtnToogle);
+			if(!m_fa.isLoaded())
+				m_btnMgr.show(m_gameBtnToogle);
+			else
+				m_btnMgr.hide(m_gameBtnToogle);
 			m_btnMgr.hide(m_gameBtnPlayFull);
 			m_btnMgr.hide(m_gameBtnBackFull);
 			m_btnMgr.hide(m_gameBtnToogleFull);
@@ -706,7 +709,7 @@ void CMenu::_game(bool launch)
 		}
 		else
 		{
-			if(m_zoom_banner)
+			if(m_zoom_banner && !m_fa.isLoaded())
 			{
 				m_btnMgr.show(m_gameBtnPlayFull);
 				m_btnMgr.show(m_gameBtnBackFull);
@@ -723,7 +726,7 @@ void CMenu::_game(bool launch)
 			m_btnMgr.hide(m_gameBtnToogle);
 			if(m_gameLblUser[4] != -1)
 			{
-				if(!NoGameID(CoverFlow.getHdr()->type) && !m_zoom_banner)
+				if(!NoGameID(CoverFlow.getHdr()->type) && !m_zoom_banner && !m_fa.isLoaded())
 					m_btnMgr.show(m_gameLblUser[4]);
 				else
 					m_btnMgr.hide(m_gameLblUser[4], true);
@@ -858,6 +861,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		string NewCheatPath;
 		bool DML_debug = m_gcfg2.getBool(id, "debugger", false);
 		bool DM_Widescreen = m_gcfg2.getBool(id, "dm_widescreen", false);
+		bool activity_led = m_cfg.getBool(GC_DOMAIN, "dml_activity_led", true);
 		if(strcasestr(path.c_str(), "boot.bin") != NULL)
 		{
 			path.erase(path.end() - 12, path.end());
@@ -873,7 +877,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		string newPath = &path[path.find_first_of(":/")+1];
 		if(m_new_dml)
 			DML_New_SetOptions(newPath.c_str(), CheatPath, NewCheatPath.c_str(), DeviceName[currentPartition],
-							cheats, DML_debug, NMM, nodisc, videoMode, videoSetting, DM_Widescreen, m_new_dm_cfg);
+				cheats, DML_debug, NMM, nodisc, videoMode, videoSetting, DM_Widescreen, m_new_dm_cfg, activity_led);
 		else
 			DML_Old_SetOptions(newPath.c_str());
 		if(!nodisc || !m_new_dml)

@@ -270,7 +270,7 @@ s32 DeviceHandler::OpenWBFS(int dev)
 {
 	u32 part_lba, part_idx = 1;
 	u32 part_fs = GetFSType(dev);
-	char *partition = (char *)DeviceName[dev];
+	const char *partition = DeviceName[dev];
 
 	if(dev == SD && IsInserted(dev))
 		part_lba = sd.GetLBAStart(dev);
@@ -282,7 +282,7 @@ s32 DeviceHandler::OpenWBFS(int dev)
 	else
 		return -1;
 
-	return WBFS_Init(GetWbfsHandle(dev), part_fs, part_idx, part_lba, partition, dev);
+	return WBFS_Init(GetWbfsHandle(dev), part_fs, part_idx, part_lba, partition);
 }
 
 int DeviceHandler::PartitionToUSBPort(int part)
