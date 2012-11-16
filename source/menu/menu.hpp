@@ -117,7 +117,7 @@ private:
 	/* End Updates */
 	// 
 	STexture m_prevBg;
-	STexture m_nextBg;
+	const STexture *m_nextBg;
 	STexture m_curBg;
 	STexture m_lqBg;
 	u8 m_bgCrossFade;
