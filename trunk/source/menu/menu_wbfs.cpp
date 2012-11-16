@@ -380,14 +380,25 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 					case CMenu::WO_REMOVE_GAME:
 						if(CF_Hdr->type == TYPE_GC_GAME)
 						{
+							char GC_Path[1024];
+							GC_Path[1023] = '\0';
 							if(strcasestr(CF_Hdr->path, "boot.bin") != NULL)
 							{
-								string GC_Path(CF_Hdr->path);
-								GC_Path.erase(GC_Path.end() - 13, GC_Path.end());
-								fsop_deleteFolder(GC_Path.c_str());
+								strncpy(GC_Path, CF_Hdr->path, 1023);
+								*strrchr(GC_Path, '/') = '\0'; //boot.bin
+								*strrchr(GC_Path, '/') = '\0'; //sys
+								fsop_deleteFolder(GC_Path);
 							}
 							else
-								fsop_deleteFile(CF_Hdr->path);
+							{
+								strncpy(GC_Path, CF_Hdr->path, 1023);
+								*strrchr(GC_Path, '/') = '\0'; //iso path
+								const char *cmp = fmt(currentPartition == SD ? DML_DIR : m_DMLgameDir.c_str(), DeviceName[currentPartition]);
+								if(strcasecmp(GC_Path, cmp) == 0)
+									fsop_deleteFile(CF_Hdr->path);
+								else
+									fsop_deleteFolder(GC_Path);
+							}
 							upd_dml = true;
 						}
 						else if(CF_Hdr->type == TYPE_PLUGIN)

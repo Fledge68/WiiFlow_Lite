@@ -446,9 +446,6 @@ void CMenu::_game(bool launch)
 				m_gameSound.Stop();
 				m_banner.SetShowBanner(false);
 				_hideGame();
-				/* Backup Background */
-				STexture Current_LQ_BG = m_lqBg;
-				STexture Current_HQ_BG = m_curBg;
 				/* Set Background empty */
 				STexture EmptyBG;
 				_setBg(EmptyBG, EmptyBG);
@@ -474,7 +471,7 @@ void CMenu::_game(bool launch)
 				movie.Stop();
 				m_curBg.Cleanup();
 				/* Finished, so lets re-setup the background */
-				_setBg(Current_HQ_BG, Current_LQ_BG);
+				_setBg(m_mainBg, m_mainBgLQ);
 				_updateBg();
 				/* Get back into our coverflow */
 				_showGame();
