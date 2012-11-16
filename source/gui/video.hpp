@@ -119,7 +119,7 @@ private:
 	CVideo(const CVideo &);
 };
 
-void DrawTexture(const STexture *tex);
+void DrawTexture(STexture * &tex);
 void DrawRectangle(f32 x, f32 y, f32 width, f32 height, GXColor color);
 
 extern CVideo m_vid;

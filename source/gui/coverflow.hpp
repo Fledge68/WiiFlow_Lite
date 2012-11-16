@@ -71,7 +71,7 @@ public:
 	void flip(bool force = false, bool f = true);
 	void cancel(void);
 	bool selected(void) const { return m_selected; }
-	void makeEffectTexture(const STexture &bg);
+	void makeEffectTexture(const STexture * &bg);
 	void drawText(bool withRectangle = false);
 	void draw(void);
 	void drawEffect(void);
@@ -306,7 +306,7 @@ private:
 private:
 	void _draw(DrawMode dm = CFDR_NORMAL, bool mirror = false, bool blend = true);
 	u32 _currentPos(void) const;
-	void _effectBg(const STexture &tex);
+	void _effectBg(const STexture * &tex);
 	void _effectBlur(bool vertical);
 	bool _effectVisible(void);
 	void _drawMirrorZ(void);

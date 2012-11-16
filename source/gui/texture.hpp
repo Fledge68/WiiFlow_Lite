@@ -16,7 +16,7 @@ class STexture
 public:
 	STexture(void) : data(NULL), dataSize(0), width(0), height(0), format(-1), maxLOD(0), thread(false) { }
 	void Cleanup();
-	bool CopyTexture(const STexture *tex);
+	bool CopyTexture(const STexture &tex);
 	u8 *data;
 	u32 dataSize;
 	u32 width;

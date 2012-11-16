@@ -77,13 +77,15 @@ bool CFanart::load(Config &m_globalConfig, const char *path, const char *id)
 	return retval;
 }
 
-void CFanart::getBackground(STexture &hq, STexture &lq)
+void CFanart::getBackground(const STexture * &hq, const STexture * &lq)
 {
 	if(m_loaded)
 	{
-		hq = m_bg;
-		lq = m_bglq;
+		hq = &m_bg;
+		lq = &m_bglq;
 	}
+	if(lq == NULL || lq->data == NULL)
+		lq = hq;
 }
 
 CColor CFanart::getTextColor(CColor themeTxtColor)

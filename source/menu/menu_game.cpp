@@ -334,10 +334,11 @@ void CMenu::_showGame(void)
 	
 	if (m_fa.load(m_cfg, m_fanartDir.c_str(), CoverFlow.getId().c_str()))
 	{
-		STexture bg, bglq;
+		const STexture *bg = NULL;
+		const STexture *bglq = NULL;
 		m_fa.getBackground(bg, bglq);
-		_setBg(bg, bglq);
-
+		if(bg != NULL && bglq != NULL)
+			_setBg(*bg, *bglq);
 		if (m_fa.hideCover())
 			CoverFlow.hideCover();
 	}
