@@ -725,11 +725,12 @@ void CCoverFlow::_drawMirrorZ(void)
 	GX_SetColorUpdate(GX_TRUE);
 }
 
-void CCoverFlow::_effectBg(const STexture &tex)
+void CCoverFlow::_effectBg(const STexture * &tex)
 {
 	Mtx modelViewMtx;
 	GXTexObj texObj;
-
+	if(tex == NULL || tex->data == NULL)
+		return;
 	GX_ClearVtxDesc();
 	GX_SetNumTevStages(1);
 	GX_SetNumChans(0);
@@ -750,7 +751,7 @@ void CCoverFlow::_effectBg(const STexture &tex)
 	GX_SetZMode(GX_DISABLE, GX_ALWAYS, GX_FALSE);
 	guMtxIdentity(modelViewMtx);
 	GX_LoadPosMtxImm(modelViewMtx, GX_PNMTX0);
-	GX_InitTexObj(&texObj, tex.data, tex.width, tex.height, tex.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+	GX_InitTexObj(&texObj, tex->data, tex->width, tex->height, tex->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 	GX_LoadTexObj(&texObj, GX_TEXMAP0);
 	GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
 	GX_Position3f32(0.f, 0.f, 0.f);
@@ -907,7 +908,7 @@ bool CCoverFlow::_effectVisible(void)
 		|| lo.shadowColorEnd.a > 0 || lo.shadowColorOff.a > 0;
 }
 
-void CCoverFlow::makeEffectTexture(const STexture &bg)
+void CCoverFlow::makeEffectTexture(const STexture * &bg)
 {
 	if (!_effectVisible()) return;
 	int aa = 8;

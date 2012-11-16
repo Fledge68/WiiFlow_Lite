@@ -145,6 +145,7 @@ CMenu::CMenu()
 	m_Emulator_boot = false;
 	m_music_info = true;
 	m_nextBg = NULL;
+	m_lqBg = NULL;
 }
 
 void CMenu::init()
@@ -529,7 +530,7 @@ void CMenu::_Theme_Cleanup(void)
 	m_prevBg.Cleanup();
 	m_nextBg = NULL;
 	m_curBg.Cleanup();
-	m_lqBg.Cleanup();
+	m_lqBg = NULL;
 	/* Buttons */
 	theme.btnTexL.Cleanup();
 	theme.btnTexR.Cleanup();
@@ -2053,10 +2054,10 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 
 void CMenu::_setBg(const STexture &tex, const STexture &lqTex)
 {
-	m_lqBg = lqTex;
+	m_lqBg = &lqTex;
 	if(m_nextBg == &tex)
 		return;
-	m_prevBg.CopyTexture(&m_curBg);
+	m_prevBg.CopyTexture(m_curBg);
 	m_curBg.Cleanup();
 	m_nextBg = &tex;
 	m_bgCrossFade = 0xFF;
@@ -2070,9 +2071,9 @@ void CMenu::_updateBg(void)
 
 	if (m_bgCrossFade == 0) return;
 	m_bgCrossFade = max(0, (int)m_bgCrossFade - 14);
-	if(m_bgCrossFade == 0)
+	if(m_bgCrossFade == 0 && m_nextBg != NULL)
 	{
-		m_curBg.CopyTexture(m_nextBg);
+		m_curBg.CopyTexture(*m_nextBg);
 		return;
 	}
 	GX_ClearVtxDesc();
@@ -2130,9 +2131,9 @@ void CMenu::_updateBg(void)
 	m_curBg.format = GX_TF_RGBA8;
 	m_curBg.maxLOD = 0;
 	m_vid.renderToTexture(m_curBg, true);
-	if(m_curBg.data == NULL)
+	if(m_curBg.data == NULL && m_nextBg != NULL)
 	{
-		m_curBg.CopyTexture(m_nextBg);
+		m_curBg.CopyTexture(*m_nextBg);
 		m_bgCrossFade = 0;
 	}
 }

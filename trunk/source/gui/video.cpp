@@ -654,7 +654,7 @@ s32 CVideo::TakeScreenshot(const char *path)
 	return ret;
 }
 
-void DrawTexture(const STexture *tex)
+void DrawTexture(STexture * &tex)
 {
 	if(tex == NULL)
 		return;

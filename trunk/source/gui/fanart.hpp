@@ -66,7 +66,7 @@ public:
 	bool isAnimationComplete();
 	bool isLoaded();
 	
-	void getBackground(STexture &hq, STexture &lq);
+	void getBackground(const STexture * &hq, const STexture * &lq);
 	CColor getTextColor(CColor themeTxtColor = CColor(0xFFFFFFFF));
 	bool hideCover();
 	void draw(bool front = true);

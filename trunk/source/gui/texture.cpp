@@ -213,23 +213,23 @@ void STexture::Cleanup(void)
 	maxLOD = 0;
 }
 
-bool STexture::CopyTexture(const STexture *tex)
+bool STexture::CopyTexture(const STexture &tex)
 {
-	if(tex == this || tex == NULL || tex->data == NULL || tex->dataSize == 0)
+	if(tex.data == NULL || tex.dataSize == 0 || tex.data == data)
 		return false;
-	if(dataSize != tex->dataSize)
+	if(dataSize != tex.dataSize)
 		Cleanup();
 	if(data == NULL)
-		data = (u8*)MEM2_alloc(tex->dataSize);
+		data = (u8*)MEM2_alloc(tex.dataSize);
 	if(data == NULL)
 		return false;
-	dataSize = tex->dataSize;
-	memcpy(data, tex->data, dataSize);
+	dataSize = tex.dataSize;
+	memcpy(data, tex.data, dataSize);
 	DCFlushRange(data, dataSize);
-	width = tex->width;
-	height = tex->height;
-	format = tex->format;
-	maxLOD = tex->maxLOD;
+	width = tex.width;
+	height = tex.height;
+	format = tex.format;
+	maxLOD = tex.maxLOD;
 	return true;
 }
 
