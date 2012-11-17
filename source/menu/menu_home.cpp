@@ -2,7 +2,6 @@
 #include "menu.hpp"
 #include "loader/cios.h"
 #include "loader/nk.h"
-#include "loader/sys.h"
 #include "const_str.hpp"
 
 s16 m_homeLblTitle;

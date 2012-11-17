@@ -19,6 +19,7 @@
 #include "gui/gui.hpp"
 #include "list/ListGenerator.hpp"
 #include "loader/disc.h"
+#include "loader/sys.h"
 #include "loader/gc_disc_dump.hpp"
 #include "loader/wbfs.h"
 #include "music/gui_sound.h"
@@ -27,8 +28,6 @@
 #include "wiiuse/wpad.h"
 
 using namespace std;
-
-extern "C" { extern u8 currentPartition; }
 
 class CMenu
 {

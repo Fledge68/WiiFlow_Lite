@@ -11,7 +11,6 @@
 #include "loader/cios.h"
 #include "loader/disc.h"
 #include "loader/nk.h"
-#include "loader/sys.h"
 #include "loader/wbfs.h"
 #include "loader/wdvd.h"
 #include "network/gcard.h"

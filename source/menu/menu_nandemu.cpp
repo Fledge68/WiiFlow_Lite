@@ -8,7 +8,6 @@
 #include "fileOps/fileOps.h"
 #include "loader/cios.h"
 #include "loader/nk.h"
-#include "loader/sys.h"
 
 // NandEmulation menu
 s16 m_nandemuLblTitle;

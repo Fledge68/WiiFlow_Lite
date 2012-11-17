@@ -25,7 +25,6 @@
 #include "gui/Gekko.h"
 #include "homebrew/homebrew.h"
 #include "loader/alt_ios.h"
-#include "loader/sys.h"
 #include "loader/wdvd.h"
 #include "loader/alt_ios.h"
 #include "loader/playlog.h"
@@ -911,7 +910,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		else //use cIOS instead to make sure Devolution works anyways
 			loadIOS(mainIOS, false);
 		ShutdownBeforeExit();
-		DEVO_SetOptions(path.c_str(), currentPartition, id.c_str(), memcard_emu);
+		DEVO_SetOptions(path.c_str(), id.c_str(), memcard_emu);
 		DEVO_Boot();
 	}
 	Sys_Exit();
@@ -1618,6 +1617,8 @@ void CMenu::_gameSoundThread(CMenu *m)
 	m->m_soundThrdBusy = false;
 }
 
+u8 *GameSoundStack = NULL;
+u32 GameSoundSize = 0x10000; //64kb
 void CMenu::_playGameSound(void)
 {
 	m_gamesound_changed = false;
@@ -1626,7 +1627,8 @@ void CMenu::_playGameSound(void)
 
 	if(m_gameSoundThread != LWP_THREAD_NULL)
 		CheckGameSoundThread();
-	LWP_CreateThread(&m_gameSoundThread, (void *(*)(void *))CMenu::_gameSoundThread, (void *)this, NULL, 0, 60);
+	GameSoundStack = (u8*)MEM2_alloc(GameSoundSize);
+	LWP_CreateThread(&m_gameSoundThread, (void *(*)(void *))CMenu::_gameSoundThread, (void*)this, GameSoundStack, GameSoundSize, 60);
 }
 
 void CMenu::CheckGameSoundThread()
@@ -1642,4 +1644,8 @@ void CMenu::CheckGameSoundThread()
 
 	LWP_JoinThread(m_gameSoundThread, NULL);
 	m_gameSoundThread = LWP_THREAD_NULL;
+
+	if(GameSoundStack)
+		free(GameSoundStack);
+	GameSoundStack = NULL;
 }

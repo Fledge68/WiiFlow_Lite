@@ -102,8 +102,8 @@ public:
 	int PartitionToPortPartition(int part);
 
 	/* Special Devolution Stuff */
-	bool MountDevolution(int CurrentPartition);
-	void UnMountDevolution(int CurrentPartition);
+	bool MountDevolution();
+	void UnMountDevolution();
 private:
 	bool MountUSB(int part);
 
