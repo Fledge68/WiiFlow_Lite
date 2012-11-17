@@ -1,7 +1,5 @@
 #include "menu.hpp"
-
 #include "gui/GameTDB.hpp"
-#include "loader/sys.h"
 
 extern const u8		wifi1_png[];
 extern const u8		wifi2_png[];

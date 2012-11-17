@@ -2,7 +2,6 @@
 #include "menu.hpp"
 #include "const_str.hpp"
 #include "lockMutex.hpp"
-#include "loader/sys.h"
 #include "loader/wbfs.h"
 
 int version_num = 0, num_versions = 0, i;

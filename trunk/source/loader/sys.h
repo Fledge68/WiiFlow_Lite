@@ -41,9 +41,12 @@ void Open_Inputs(void);
 void Close_Inputs(void);
 
 bool AHBRPOT_Patched(void);
+
+/* All our extern C stuff */
 extern void __exception_setreload(int t);
 extern int mainIOS;
 extern bool useMainIOS;
+extern u8 currentPartition;
 
 #ifdef __cplusplus
 }

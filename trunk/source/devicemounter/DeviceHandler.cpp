@@ -329,20 +329,20 @@ void DeviceHandler::WaitForDevice(const DISC_INTERFACE *Handle)
 	}
 }
 
-bool DeviceHandler::MountDevolution(int CurrentPartition)
+bool DeviceHandler::MountDevolution()
 {
-	int NewPartition = (CurrentPartition == SD ? CurrentPartition : CurrentPartition - 1);
-	const DISC_INTERFACE *handle = (CurrentPartition == SD) ? &__io_wiisd : &__io_usbstorage_ogc;
+	int NewPartition = (currentPartition == SD ? currentPartition : currentPartition - 1);
+	const DISC_INTERFACE *handle = (currentPartition == SD) ? &__io_wiisd : &__io_usbstorage_ogc;
 	/* We need to wait for the device to get ready for a remount */
 	WaitForDevice(handle);
 	/* Only mount the partition we need */
 	OGC_Device.SetDevice(handle);
-	return OGC_Device.Mount(NewPartition, DeviceName[CurrentPartition], true);
+	return OGC_Device.Mount(NewPartition, DeviceName[currentPartition], true);
 }
 
-void DeviceHandler::UnMountDevolution(int CurrentPartition)
+void DeviceHandler::UnMountDevolution()
 {
-	int NewPartition = (CurrentPartition == SD ? CurrentPartition : CurrentPartition - 1);
+	int NewPartition = (currentPartition == SD ? currentPartition : currentPartition - 1);
 	OGC_Device.UnMount(NewPartition);
 	OGC_Device.Cleanup();
 }

@@ -24,7 +24,6 @@
 #include "dip_plugin_249.h"
 #include "mload_modules.h"
 
-extern "C" { extern u8 currentPartition; }
 u8 use_port1 = 0;
 
 static int load_ehc_module_ex(void)

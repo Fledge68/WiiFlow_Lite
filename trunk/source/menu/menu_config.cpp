@@ -2,7 +2,6 @@
 #include "menu.hpp"
 #include "channel/nand.hpp"
 #include "loader/nk.h"
-#include "loader/sys.h"
 
 const int CMenu::_nbCfgPages = 6;
 static const int g_curPage = 1;

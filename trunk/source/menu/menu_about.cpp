@@ -3,7 +3,6 @@
 #include "channel/nand.hpp"
 #include "loader/alt_ios.h"
 #include "loader/cios.h"
-#include "loader/sys.h"
 #include "const_str.hpp"
 
 const int pixels_to_skip = 10;

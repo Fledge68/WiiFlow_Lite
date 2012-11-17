@@ -21,7 +21,6 @@
 #include "loader/fs.h"
 #include "loader/nk.h"
 #include "loader/playlog.h"
-#include "loader/sys.h"
 #include "loader/wbfs.h"
 #include "music/SoundHandler.hpp"
 #include "network/gcard.h"

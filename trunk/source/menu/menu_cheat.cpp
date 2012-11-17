@@ -4,7 +4,6 @@
 #include "menu.hpp"
 #include "lockMutex.hpp"
 #include "gui/text.hpp"
-#include "loader/sys.h"
 #include "network/http.h"
 
 #define GECKOURL "http://geckocodes.org/codes/%c/%s.txt"

@@ -14,7 +14,6 @@
 #include "gui/GameTDB.hpp"
 #include "gui/pngu.h"
 #include "loader/fs.h"
-#include "loader/sys.h"
 #include "loader/wbfs.h"
 #include "loader/wdvd.h"
 #include "network/http.h"
