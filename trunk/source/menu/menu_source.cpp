@@ -148,8 +148,8 @@ bool CMenu::_Source()
 
 	while((pent = readdir(pdir)) != NULL)
 	{
-		if(strcmp(pent->d_name, ".") == 0 || strcmp(pent->d_name, "..") == 0 
-		|| strcasecmp(pent->d_name, "plugins.ini") == 0 || strcasecmp(pent->d_name, "scummvm.ini") == 0)
+		if(pent->d_name[0] == '.'|| strcasecmp(pent->d_name, "plugins.ini") == 0 || 
+			strcasecmp(pent->d_name, "scummvm.ini") == 0)
 			continue;
 		if(strcasestr(pent->d_name, ".ini") != NULL)
 		{
@@ -412,7 +412,7 @@ void CMenu::_initSourceMenu()
 	m_sourceBtnPageM = _addPicButton("SOURCE/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 10, 400, 52, 56);
 	m_sourceBtnPageP = _addPicButton("SOURCE/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 160, 400, 52, 56);
 	
-	m_sourceDir = m_cfg.getString("GENERAL", "dir_Source", sfmt("%s/source_menu", m_dataDir.c_str()));
+	m_sourceDir = m_cfg.getString("GENERAL", "dir_Source", fmt("%s/source_menu", m_dataDir.c_str()));
 
 	if(!m_source.loaded())
 		m_source.load(fmt("%s/%s", m_sourceDir.c_str(), SOURCE_FILENAME));

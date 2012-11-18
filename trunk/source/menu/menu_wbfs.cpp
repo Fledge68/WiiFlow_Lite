@@ -267,8 +267,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 	lwp_t thread = 0;
 	char GameID[7];
 	GameID[6] = '\0';
-	static discHdr header ATTRIBUTE_ALIGN(32);
-	static gc_discHdr gcheader ATTRIBUTE_ALIGN(32);
+
 	bool done = false;
 	bool upd_usb = false;
 	bool upd_dml = false;
@@ -335,8 +334,8 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						}
 						if (Disc_IsWii() == 0)
 						{
-							Disc_ReadHeader(&header);
-							memcpy(GameID, header.id, 6);
+							Disc_ReadHeader(&wii_hdr);
+							memcpy(GameID, wii_hdr.id, 6);
 							if(_searchGamesByID(GameID))
 							{
 								error(_t("wbfsoperr4", L"Game already installed"));
@@ -344,7 +343,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 								break;
 							}
 							cfPos = string(GameID);
-							m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsop6", L"Installing [%s] %s..."), GameID, header.title));
+							m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsop6", L"Installing [%s] %s..."), GameID, wii_hdr.title));
 							done = true;
 							upd_usb = true;
 							m_thrdWorking = true;
@@ -354,8 +353,8 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						}
 						else if(Disc_IsGC() == 0)
 						{
-							Disc_ReadGCHeader(&gcheader);
-							memcpy(GameID, gcheader.id, 6);
+							Disc_ReadGCHeader(&gc_hdr);
+							memcpy(GameID, gc_hdr.id, 6);
 							if(_searchGamesByID(GameID))
 							{
 								error(_t("wbfsoperr4", L"Game already installed"));
@@ -363,7 +362,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 								break;
 							}
 							cfPos = string(GameID);
-							m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsop6", L"Installing [%s] %s..."), GameID, gcheader.title));
+							m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsop6", L"Installing [%s] %s..."), GameID, gc_hdr.title));
 							done = true;
 							upd_dml = true;
 							m_thrdWorking = true;

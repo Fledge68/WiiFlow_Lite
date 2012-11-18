@@ -44,7 +44,6 @@
 using namespace std;
 
 static u8 *FSTable ATTRIBUTE_ALIGN(32);
-static gc_discHdr gcheader ATTRIBUTE_ALIGN(32);
 
 void GCDump::__AnalizeMultiDisc()
 {
@@ -292,7 +291,7 @@ s32 GCDump::DumpGame()
 	NextOffset = 0;
 	Disc = 0;
 
-	char *FSTNameOff = (char *)NULL;
+	char *FSTNameOff = NULL;
 
 	char folder[MAX_FAT_PATH];
 	bzero(folder, MAX_FAT_PATH);
@@ -303,17 +302,17 @@ s32 GCDump::DumpGame()
 	{
 		u8 *FSTBuffer;
 		u32 wrote = 0;
-		memset(&gcheader, 0, sizeof(gcheader));
-		s32 ret = Disc_ReadGCHeader(&gcheader);
-		if(memcmp((char *)gcheader.id, "GCOPDV", 6) == 0)
+		memset(&gc_hdr, 0, sizeof(gc_hdr));
+		s32 ret = Disc_ReadGCHeader(&gc_hdr);
+		if(memcmp(gc_hdr.id, "GCOPDV", 6) == 0)
 		{
 			multigamedisc = true;
 			__AnalizeMultiDisc();
 			__DiscReadRaw(ReadBuffer, NextOffset, sizeof(gc_discHdr));
-			memcpy(gcheader.id, ReadBuffer, 6);
-			strcpy(gcheader.title, (char *)ReadBuffer+0x20);			
+			memcpy(gc_hdr.id, ReadBuffer, 6);
+			strcpy(gc_hdr.title, (char *)ReadBuffer+0x20);			
 		}
-		Asciify2(gcheader.title);
+		Asciify2(gc_hdr.title);
 
 		if(!Disc)
 		{
@@ -324,7 +323,7 @@ s32 GCDump::DumpGame()
 				fsop_MakeFolder(folder);
 			}
 			memset(folder, 0, sizeof(folder));
-			snprintf(folder, sizeof(folder), "%s/%s [%.06s]", fmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition), gcheader.title, (char *)gcheader.id);
+			snprintf(folder, sizeof(folder), "%s/%s [%.06s]", fmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition), gc_hdr.title, gc_hdr.id);
 			if(!fsop_DirExist(folder))
 			{
 				gprintf("Creating directory: %s\n", folder);
@@ -332,7 +331,7 @@ s32 GCDump::DumpGame()
 			}
 			else
 			{
-				gprintf("Skipping game: %s (Already installed)(%d)\n", gcheader.title, Gamesize[MultiGameDump]);
+				gprintf("Skipping game: %s (Already installed)(%d)\n", gc_hdr.title, Gamesize[MultiGameDump]);
 				break;
 			}
 		}
@@ -377,14 +376,14 @@ s32 GCDump::DumpGame()
 		FSTNameOff = (char*)(FSTable + FSTEnt * 0x0C);
 		FST *fst = (FST *)(FSTable);
 
-		snprintf(minfo, sizeof(minfo), "[%.06s] %s", (char *)gcheader.id, gcheader.title);
+		snprintf(minfo, sizeof(minfo), "[%.06s] %s", gc_hdr.id, gc_hdr.title);
 
 		if(FSTTotal > FSTSize)
 			message(4, Disc+1, minfo, u_data);
 		else
 			message(3, 0, minfo, u_data);
 
-		gprintf("Dumping: %s %s\n", gcheader.title, compressed ? "compressed" : "full");
+		gprintf("Dumping: %s %s\n", gc_hdr.title, compressed ? "compressed" : "full");
 
 		gprintf("Apploader size : %d\n", ApploaderSize);
 		gprintf("DOL offset     : 0x%08x\n", DOLOffset);
@@ -398,7 +397,7 @@ s32 GCDump::DumpGame()
 		if(writeexfiles && !Disc)
 		{
 			memset(folder, 0, sizeof(folder));
-			snprintf(folder, sizeof(folder), "%s/%s [%.06s]/sys", fmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition), gcheader.title, (char *)gcheader.id);
+			snprintf(folder, sizeof(folder), "%s/%s [%.06s]/sys", fmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition), gc_hdr.title, gc_hdr.id);
 			if(!fsop_DirExist(folder))
 			{
 				gprintf("Creating directory: %s\n", folder);
@@ -418,7 +417,7 @@ s32 GCDump::DumpGame()
 			gc_done += __DiscWrite(gamepath, 0x2440+NextOffset, ApploaderSize, ReadBuffer);
 		}
 
-		snprintf(gamepath, sizeof(gamepath), "%s/%s [%.06s]/game.iso", fmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition), gcheader.title, (char *)gcheader.id);
+		snprintf(gamepath, sizeof(gamepath), "%s/%s [%.06s]/game.iso", fmt((strncmp(gamepartition, "sd", 2) != 0) ? usb_dml_game_dir : DML_DIR, gamepartition), gc_hdr.title, gc_hdr.id);
 		if(Disc)
 		{
 			char *ptz = strstr(gamepath, "game.iso");
@@ -554,17 +553,17 @@ s32 GCDump::CheckSpace(u32 *needed, bool comp)
 	while(!gamedone)
 	{
 		u32 multisize = 0;
-		memset(&gcheader, 0, sizeof(gcheader));
-		Disc_ReadGCHeader(&gcheader);
-		if(memcmp((char *)gcheader.id, "GCOPDV", 6) == 0)
+		memset(&gc_hdr, 0, sizeof(gc_hdr));
+		Disc_ReadGCHeader(&gc_hdr);
+		if(memcmp(gc_hdr.id, "GCOPDV", 6) == 0)
 		{
 			multigamedisc = true;
 			__AnalizeMultiDisc();
 			__DiscReadRaw(ReadBuffer, NextOffset, sizeof(gc_discHdr));
-			memcpy(gcheader.id, ReadBuffer, sizeof(gcheader.id));
-			strcpy(gcheader.title, (char *)ReadBuffer+0x20);
+			memcpy(gc_hdr.id, ReadBuffer, sizeof(gc_hdr.id));
+			strcpy(gc_hdr.title, (char *)ReadBuffer+0x20);
 		}
-		Asciify2(gcheader.title);
+		Asciify2(gc_hdr.title);
 
 		s32 ret = __DiscReadRaw(ReadBuffer, NextOffset, 0x440);
 		if(ret > 0)
@@ -585,7 +584,7 @@ s32 GCDump::CheckSpace(u32 *needed, bool comp)
 		DataSize = *(vu32*)(ReadBuffer+0x438);
 		DiscSize =  DataSize + GamePartOffset;
 
-		snprintf(minfo, sizeof(minfo), "[%.06s] %s", (char *)gcheader.id, gcheader.title);
+		snprintf(minfo, sizeof(minfo), "[%.06s] %s", gc_hdr.id, gc_hdr.title);
 
 		message( 2, 0, minfo, u_data);
 

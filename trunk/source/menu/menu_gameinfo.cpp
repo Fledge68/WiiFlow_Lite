@@ -276,14 +276,14 @@ void CMenu::_initGameInfoMenu()
 
 	for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControlsReq); ++i)
 	{
-		string dom(sfmt("GAMEINFO/CONTROLSREQ%i", i + 1));
+		string dom(fmt("GAMEINFO/CONTROLSREQ%i", i + 1));
 		m_gameinfoLblControlsReq[i] = _addLabel(dom.c_str(), theme.txtFont, L"", 40 + (i*60), 310, 60, 40, theme.txtFontColor, 0, emptyTex);
 		_setHideAnim(m_gameinfoLblControlsReq[i], dom.c_str(), 0, -100, 0.f, 0.f);
 	}
 
 	for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControls); ++i)
 	{
-		string dom(sfmt("GAMEINFO/CONTROLS%i", i + 1));
+		string dom(fmt("GAMEINFO/CONTROLS%i", i + 1));
 		m_gameinfoLblControls[i] = _addLabel(dom.c_str(), theme.txtFont, L"", 40 + (i*60), 380, 60, 40, theme.txtFontColor, 0, emptyTex);
 		_setHideAnim(m_gameinfoLblControls[i], dom.c_str(), 0, -100, 0.f, 0.f);
 	}

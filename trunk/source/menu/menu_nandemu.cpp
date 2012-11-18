@@ -168,8 +168,8 @@ bool CMenu::_checkSave(string id, bool nand)
 	if(nand)
 	{
 		u32 temp = 0;	
-		if(ISFS_ReadDir(sfmt("/title/00010000/%08x", savePath).c_str(), NULL, &temp) < 0)
-			if(ISFS_ReadDir(sfmt("/title/00010004/%08x", savePath).c_str(), NULL, &temp) < 0)
+		if(ISFS_ReadDir(fmt("/title/00010000/%08x", savePath), NULL, &temp) < 0)
+			if(ISFS_ReadDir(fmt("/title/00010004/%08x", savePath), NULL, &temp) < 0)
 				return false;
 	}
 	else
@@ -180,8 +180,8 @@ bool CMenu::_checkSave(string id, bool nand)
 			return false;
 			
 		struct stat fstat;
-		if((stat(sfmt("%s:%s/title/00010000/%08x", DeviceName[emuPartition], emuPath.c_str(), savePath).c_str(), &fstat) != 0 ) 
-			&& (stat(sfmt("%s:%s/title/00010004/%08x", DeviceName[emuPartition], emuPath.c_str(), savePath).c_str(), &fstat) != 0))
+		if((stat(fmt("%s:%s/title/00010000/%08x", DeviceName[emuPartition], emuPath.c_str(), savePath), &fstat) != 0 ) 
+			&& (stat(fmt("%s:%s/title/00010004/%08x", DeviceName[emuPartition], emuPath.c_str(), savePath), &fstat) != 0))
 			return false;
 	}
 	return true;
@@ -708,15 +708,16 @@ int CMenu::_NandFlasher(void *obj)
 	else if(m.m_current_view == COVERFLOW_USB)
 		m.m_partRequest = m.m_cfg.getInt(WII_DOMAIN, "savepartition", -1);
 	
+	const char *SaveGameID = m.m_saveExtGameId.c_str();
 	int emuPartition = m._FindEmuPart(&emuPath, m.m_partRequest, false);	
-	int flashID = m.m_saveExtGameId.c_str()[0] << 24 | m.m_saveExtGameId.c_str()[1] << 16 | m.m_saveExtGameId.c_str()[2] << 8 | m.m_saveExtGameId.c_str()[3];
+	int flashID = SaveGameID[0] << 24 | SaveGameID[1] << 16 | SaveGameID[2] << 8 | SaveGameID[3];
 	
-	if(_saveExists(sfmt("%s:%s/title/00010000/%08x", DeviceName[emuPartition], emuPath.c_str(), flashID).c_str()))	
+	if(_saveExists(fmt("%s:%s/title/00010000/%08x", DeviceName[emuPartition], emuPath.c_str(), flashID)))	
 	{
 		snprintf(source, sizeof(source), "%s:%s/title/00010000/%08x", DeviceName[emuPartition], emuPath.c_str(), flashID);
 		snprintf(dest, sizeof(dest), "/title/00010000/%08x", flashID);
 	}
-	else if(_saveExists(sfmt("%s:%s/title/00010004/%08x", DeviceName[emuPartition], emuPath.c_str(), flashID).c_str()))
+	else if(_saveExists(fmt("%s:%s/title/00010004/%08x", DeviceName[emuPartition], emuPath.c_str(), flashID)))
 	{
 		snprintf(source, sizeof(source), "%s:%s/title/00010004/%08x", DeviceName[emuPartition], emuPath.c_str(), flashID);
 		snprintf(dest, sizeof(dest), "/title/00010004/%08x", flashID);

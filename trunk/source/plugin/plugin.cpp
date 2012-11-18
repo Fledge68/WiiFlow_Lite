@@ -122,17 +122,17 @@ u32 Plugin::GetBannerSoundSize()
 	return 0;
 }
 
-char* Plugin::GetDolName(u32 magic)
+const char *Plugin::GetDolName(u32 magic)
 {
 	if((Plugin_Pos = GetPluginPosition(magic)) >= 0)
-		return (char*)Plugins[Plugin_Pos].DolName.c_str();
+		return Plugins[Plugin_Pos].DolName.c_str();
 	return NULL;
 }
 
-char* Plugin::GetCoverFolderName(u32 magic)
+const char *Plugin::GetCoverFolderName(u32 magic)
 {
 	if((Plugin_Pos = GetPluginPosition(magic)) >= 0)
-		return (char*)Plugins[Plugin_Pos].coverFolder.c_str();
+		return Plugins[Plugin_Pos].coverFolder.c_str();
 	return NULL;
 }
 
@@ -207,7 +207,7 @@ vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, const char *Device, u32
 			continue;
 		}
 		memset((void*)&ListElement, 0, sizeof(dir_discHdr));
-		strncpy((char*)ListElement.id, PLUGIN_INI_DEF, 6);
+		strncpy(ListElement.id, PLUGIN_INI_DEF, 6);
 		ListElement.casecolor = Plugins.back().caseColor;
 		mbstowcs(ListElement.title, GameName.c_str(), 63);
 		strncpy(ListElement.path, GameDomain->c_str(), sizeof(ListElement.path));

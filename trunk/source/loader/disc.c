@@ -23,15 +23,9 @@
 #include "gecko/gecko.h"
 #include "memory/memory.h"
 
-/* Constants */
-#define PTABLE_OFFSET	0x40000
-
-//appentrypoint 
-u32 appentrypoint;
-	
-/* Disc pointers */
-static u32 *buffer = (u32 *)0x93000000;
-static u8  *diskid = (u8  *)0x80000000;
+struct discHdr wii_hdr ATTRIBUTE_ALIGN(32);
+struct gc_discHdr gc_hdr ATTRIBUTE_ALIGN(32);
+static u8 *diskid = (u8*)0x80000000;
 
 s32 Disc_Open(bool boot_disc)
 {
@@ -95,19 +89,17 @@ s32 Disc_Type(bool gc)
 	if (!gc)
 	{
 		check = WII_MAGIC;
-		struct discHdr *header = (struct discHdr *)buffer;
-		ret = Disc_ReadHeader(header);
-		magic = header->magic;
+		ret = Disc_ReadHeader(&wii_hdr);
+		magic = wii_hdr.magic;
 	}
 	else
 	{
 		check = GC_MAGIC;
-		struct gc_discHdr *header = (struct gc_discHdr *)buffer;
-		ret = Disc_ReadGCHeader(header);
-		if(strcmp((char *)header->id, "GCOPDV") == 0)
+		ret = Disc_ReadGCHeader(&gc_hdr);
+		if(strcmp((char *)gc_hdr.id, "GCOPDV") == 0)
 			magic = GC_MAGIC;
 		else
-			magic = header->magic;
+			magic = gc_hdr.magic;
 	}
 
 	if (ret < 0)

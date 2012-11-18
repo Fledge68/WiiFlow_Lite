@@ -28,9 +28,6 @@ Config CustomTitles;
 GameTDB gameTDB;
 
 dir_discHdr ListElement;
-discHdr WiiGameHeader;
-gc_discHdr GCGameHeader;
-
 void ListGenerator::Init(const char *settingsDir, const char *Language)
 {
 	if(settingsDir != NULL)
@@ -94,10 +91,10 @@ static void Create_Wii_WBFS_List(wbfs_t *handle)
 {
 	for(u32 i = 0; i < wbfs_count_discs(handle); i++)
 	{
-		memset((void*)&WiiGameHeader, 0, sizeof(discHdr));
-		s32 ret = wbfs_get_disc_info(handle, i, (u8*)&WiiGameHeader, sizeof(discHdr), NULL);
-		if(ret == 0 && WiiGameHeader.magic == WII_MAGIC)
-			AddISO((const char*)WiiGameHeader.id, (const char*)WiiGameHeader.title, 
+		memset((void*)&wii_hdr, 0, sizeof(discHdr));
+		s32 ret = wbfs_get_disc_info(handle, i, (u8*)&wii_hdr, sizeof(discHdr), NULL);
+		if(ret == 0 && wii_hdr.magic == WII_MAGIC)
+			AddISO((const char*)wii_hdr.id, (const char*)wii_hdr.title, 
 					NULL, 1, TYPE_WII_GAME);
 	}
 }
@@ -108,9 +105,9 @@ static void Create_Wii_EXT_List(char *FullPath)
 	if(fp)
 	{
 		fseek(fp, strcasestr(FullPath, ".wbfs") != NULL ? 512 : 0, SEEK_SET);
-		fread((void*)&WiiGameHeader, 1, sizeof(discHdr), fp);
-		if(WiiGameHeader.magic == WII_MAGIC)
-			AddISO((const char*)WiiGameHeader.id, (const char*)WiiGameHeader.title, 
+		fread((void*)&wii_hdr, 1, sizeof(discHdr), fp);
+		if(wii_hdr.magic == WII_MAGIC)
+			AddISO((const char*)wii_hdr.id, (const char*)wii_hdr.title, 
 					FullPath, 1, TYPE_WII_GAME);
 		fclose(fp);
 	}
@@ -130,10 +127,10 @@ static void Create_GC_List(char *FullPath)
 	}
 	if(fp)
 	{
-		fread((void*)&GCGameHeader, 1, sizeof(gc_discHdr), fp);
-		if(GCGameHeader.magic == GC_MAGIC)
+		fread((void*)&gc_hdr, 1, sizeof(gc_discHdr), fp);
+		if(gc_hdr.magic == GC_MAGIC)
 		{
-			AddISO((const char*)GCGameHeader.id, (const char*)GCGameHeader.title,
+			AddISO((const char*)gc_hdr.id, (const char*)gc_hdr.title,
 					FullPath, 0, TYPE_GC_GAME);
 			/* Check for disc 2 */
 			fseek(fp, 6, SEEK_SET);

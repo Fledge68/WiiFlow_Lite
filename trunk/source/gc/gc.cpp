@@ -18,7 +18,6 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
-#include <malloc.h>
 #include <ogc/machine/processor.h>
 
 // for directory parsing and low-level file I/O
@@ -36,6 +35,7 @@
 #include "loader/disc.h"
 #include "loader/sys.h"
 #include "memory/memory.h"
+#include "memory/mem2.hpp"
 
 // DIOS-MIOS
 DML_CFG DMLCfg;
@@ -70,14 +70,14 @@ void DML_New_SetOptions(const char *GamePath, char *CheatPath, const char *NewCh
 
 	if(CheatPath != NULL && NewCheatPath != NULL && cheats)
 	{
-		char *ptr;
-		if(strstr(CheatPath, partition) == NULL)
+		const char *ptr = NULL;
+		if(strncasecmp(CheatPath, partition, strlen(partition)) != 0)
 		{
-			fsop_CopyFile(CheatPath, (char*)NewCheatPath, NULL, NULL);
-			ptr = strstr(NewCheatPath, ":/") + 1;
+			fsop_CopyFile(CheatPath, NewCheatPath, NULL, NULL);
+			ptr = strchr(NewCheatPath, '/');
 		}
 		else
-			ptr = strstr(CheatPath, ":/") + 1;
+			ptr = strchr(CheatPath, '/');
 		strncpy(DMLCfg.CheatPath, ptr, sizeof(DMLCfg.CheatPath));
 		gprintf("DIOS-MIOS: Cheat Path %s\n", ptr);
 		DMLCfg.Config |= DML_CFG_CHEAT_PATH;
@@ -109,8 +109,7 @@ void DML_New_SetOptions(const char *GamePath, char *CheatPath, const char *NewCh
 void DML_Old_SetOptions(const char *GamePath)
 {
 	gprintf("DIOS-MIOS: Launch game '%s' through boot.bin (old method)\n", GamePath);
-	FILE *f;
-	f = fopen("sd:/games/boot.bin", "wb");
+	FILE *f = fopen("sd:/games/boot.bin", "wb");
 	fwrite(GamePath, 1, strlen(GamePath) + 1, f);
 	fclose(f);
 
@@ -124,7 +123,6 @@ void DML_Old_SetOptions(const char *GamePath)
 
 void DML_New_SetBootDiscOption(bool new_dm_cfg)
 {
-	gprintf("DIOS-MIOS: Booting Disc in Drive\n");
 	memset(&DMLCfg, 0, sizeof(DML_CFG));
 
 	DMLCfg.Magicbytes = 0xD1050CF6;
@@ -150,7 +148,9 @@ void DML_New_WriteOptions()
 
 
 // Devolution
+u8 *tmp_buffer = NULL;
 u8 *loader_bin = NULL;
+u32 loader_size = 0;
 extern "C" { extern void __exception_closeall(); }
 static gconfig *DEVO_CONFIG = (gconfig*)0x80000020;
 #define DEVO_Entry() ((void(*)(void))loader_bin)()
@@ -183,11 +183,10 @@ void DEVO_GetLoader(const char *path)
 	{
 		gprintf("Devolution: Reading %s\n", loader_path);
 		fseek(f, 0, SEEK_END);
-		u32 size = ftell(f);
+		loader_size = ftell(f);
 		rewind(f);
-		loader_bin = (u8*)memalign(32, size);
-		fread(loader_bin, 1, size, f);
-		DCFlushRange(loader_bin, size);
+		tmp_buffer = (u8*)MEM2_alloc(loader_size);
+		fread(tmp_buffer, 1, loader_size, f);
 		fclose(f);
 	}
 	else
@@ -195,7 +194,6 @@ void DEVO_GetLoader(const char *path)
 		gprintf("Devolution: Loader not found!\n");
 		return;
 	}
-	gprintf("%s\n", (u8*)loader_bin + 4);
 }
 
 void DEVO_SetOptions(const char *isopath, const char *gameID, bool memcard_emu)
@@ -292,9 +290,15 @@ void DEVO_SetOptions(const char *isopath, const char *gameID, bool memcard_emu)
 
 void DEVO_Boot()
 {
+	/* Move our loader into low MEM1 */
+	loader_bin = (u8*)MEM1_lo_alloc(loader_size);
+	memcpy(loader_bin, tmp_buffer, loader_size);
+	DCFlushRange(loader_bin, ALIGN32(loader_size));
+	MEM2_free(tmp_buffer);
+	gprintf("%s\n", (loader_bin+4));
+	/* cleaning up and load bin */
 	u32 cookie;
-
-	/* cleaning up and load dol */
+	gprintf("Jumping to Entry 0x%08x\n", loader_bin);
 	SYS_ResetSystem(SYS_SHUTDOWN, 0, 0);
 	_CPU_ISR_Disable(cookie);
 	__exception_closeall();

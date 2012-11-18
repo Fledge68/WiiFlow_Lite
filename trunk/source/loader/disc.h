@@ -102,6 +102,10 @@ s32 Disc_Type(bool);
 s32	Disc_IsWii(void);
 s32	Disc_IsGC(void);
 
+/* Headers for general usage */
+extern struct discHdr wii_hdr;
+extern struct gc_discHdr gc_hdr;
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
