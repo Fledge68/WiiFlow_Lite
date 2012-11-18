@@ -116,7 +116,10 @@ u32 crc32file(const char *name)
 	/* Check our filesize */
 	fseek(fp, 0, SEEK_END);
 	if(ftell(fp) > 0x40000000) //pfff over 1gb would take ages
+	{
+		fclose(fp);
 		return oldcrc32;
+	}
 	rewind(fp);
 	/* Get a Buffer and begin */
 	u8 *Buffer = (u8*)MEM2_alloc(FILEBUFFER);
