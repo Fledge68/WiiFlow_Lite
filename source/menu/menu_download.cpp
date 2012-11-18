@@ -507,13 +507,13 @@ int CMenu::_coverDownloader(bool missingOnly)
 					strncpy(gamePath, &m_gameList[i].path[string(m_gameList[i].path).find_last_of("/")+1], sizeof(gamePath));
 				else
 					strncpy(gamePath, m_gameList[i].path, sizeof(gamePath));
-				path = sfmt("%s/%s.png", m_boxPicDir.c_str(), gamePath);
+				path = fmt("%s/%s.png", m_boxPicDir.c_str(), gamePath);
 				id = path;
 			}
 			else
 			{
 				id = (const char *)m_gameList[i].id;
-				path = sfmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str());
+				path = fmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str());
 			}
 			if(!missingOnly || (!CoverFlow.fullCoverCached(id.c_str()) && !checkPNGFile(path.c_str())))
 			{
@@ -596,7 +596,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 							original = false;
 						if (!success && !m_thrdStop && original)
 						{
-							path = sfmt("%s/%s.png", m_boxPicDir.c_str(), coverList[i].c_str());
+							path = fmt("%s/%s.png", m_boxPicDir.c_str(), coverList[i].c_str());
 							if (!checkPNGFile(path.c_str()))
 							{
 								for (u32 j = 0; !success && j < fmtURLBox.size() && !m_thrdStop; ++j)
@@ -742,7 +742,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 						c_altCase = c_gameTDB.GetCaseVersions( coverList[i].c_str() );
 						if (!success && !m_thrdStop && c_gameTDB.IsLoaded() && c_altCase > 1 && custom)
 						{
-							path = sfmt("%s/%s.png", m_boxPicDir.c_str(), coverList[i].c_str());
+							path = fmt("%s/%s.png", m_boxPicDir.c_str(), coverList[i].c_str());
 							if (!checkPNGFile(path.c_str()))
 							{
 								for (u32 j = 0; !success && j < fmtURLCBox.size() && !m_thrdStop; ++j)
@@ -889,7 +889,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 							original = false;
 						if (!success && !m_thrdStop && original)
 						{
-							path = sfmt("%s/%s.png", m_picDir.c_str(), coverList[i].c_str());
+							path = fmt("%s/%s.png", m_picDir.c_str(), coverList[i].c_str());
 							if (!checkPNGFile(path.c_str()))
 							{
 								// Try to get the front cover
@@ -1036,7 +1036,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 							custom = true;
 						if (!success && !m_thrdStop && c_gameTDB.IsLoaded() && c_altCase > 1 && custom)
 						{	
-							path = sfmt("%s/%s.png", m_picDir.c_str(), coverList[i].c_str());
+							path = fmt("%s/%s.png", m_picDir.c_str(), coverList[i].c_str());
 							if (!checkPNGFile(path.c_str()))
 							{
 								// Try to get the front cover
@@ -2019,7 +2019,7 @@ int CMenu::_gametdbDownloaderAsync()
 		}
 		else
 		{
-			string zippath = sfmt("%s/wiitdb.zip", m_settingsDir.c_str());
+			string zippath = fmt("%s/wiitdb.zip", m_settingsDir.c_str());
 
 			gprintf("Downloading file to '%s'\n", zippath.c_str());
 
@@ -2051,7 +2051,7 @@ int CMenu::_gametdbDownloaderAsync()
 				remove(zippath.c_str());
 
 				// We should always remove the offsets file to make sure it's reloaded
-				string offsetspath = sfmt("%s/gametdb_offsets.bin", m_settingsDir.c_str());
+				string offsetspath = fmt("%s/gametdb_offsets.bin", m_settingsDir.c_str());
 				remove(offsetspath.c_str());
 
 				// Update cache

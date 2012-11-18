@@ -186,7 +186,6 @@ void CMenu::init()
 			if (DeviceHandle.IsInserted(i) && DeviceHandle.GetFSType(i) != PART_FS_WBFS)
 			{
 				drive = DeviceName[i];
-				fsop_MakeFolder((char *)fmt("%s:/%s", DeviceName[i], APPDATA_DIR2)); //Make the apps dir, so saving wiiflow.ini does not fail.
 				break;
 			}
 	loadDefaultFont();
@@ -198,21 +197,22 @@ void CMenu::init()
 		m_exit = true;
 		return;
 	}
-
-	m_appDir = sfmt("%s:/%s", drive, APPDATA_DIR2);
-	m_cfg.load(sfmt("%s/" CFG_FILENAME, m_appDir.c_str()).c_str());
+	/* Handle apps dir first, so handling wiiflow.ini does not fail */
+	m_appDir = fmt("%s:/%s", drive, APPDATA_DIR2);
+	gprintf("Wiiflow boot.dol Location: %s\n", m_appDir.c_str());
+	fsop_MakeFolder(m_appDir.c_str());
+	/* Load/Create our wiiflow.ini */
+	m_cfg.load(fmt("%s/" CFG_FILENAME, m_appDir.c_str()));
+	/* Check if we want WiFi/SD Gecko */
 	m_use_wifi_gecko = m_cfg.getBool("DEBUG", "wifi_gecko");
 	if (m_cfg.getBool("GENERAL", "async_network") || has_enabled_providers() || m_use_wifi_gecko)
 		_reload_wifi_gecko();
-
-	gprintf("Wiiflow boot.dol Location: %s\n", m_appDir.c_str());
-
-	//Gecko Output to SD
 	if(!WriteToSD)
 	{
 		WriteToSD = m_cfg.getBool("DEBUG", "sd_write_log", false);
 		bufferMessages = WriteToSD;
 	}
+	/* Check if we want a cIOS loaded */
 	int ForceIOS = min(m_cfg.getInt("GENERAL", "force_cios_rev", 0), 254);
 	if(ForceIOS > 0)
 	{
@@ -220,37 +220,45 @@ void CMenu::init()
 		mainIOS = ForceIOS;
 	}
 	useMainIOS = m_cfg.getBool("GENERAL", "force_cios_load", false);
+	/* Do our USB HDD Checks */
 	bool onUSB = m_cfg.getBool("GENERAL", "data_on_usb", strncmp(drive, "usb", 3) == 0);
-
 	drive = check; //reset the drive variable for the check
-
-	if (onUSB)
+	if(onUSB)
 	{
-		for(int i = USB1; i <= USB8; i++) //Look for first partition with a wiiflow folder in root
-			if (DeviceHandle.IsInserted(i) && DeviceHandle.GetFSType(i) != PART_FS_WBFS && stat(fmt("%s:/%s", DeviceName[i], APPDATA_DIR), &dummy) == 0)
+		for(u8 i = USB1; i <= USB8; i++) //Look for first partition with a wiiflow folder in root
+		{
+			if(DeviceHandle.IsInserted(i) && DeviceHandle.GetFSType(i) != PART_FS_WBFS && stat(fmt("%s:/%s", DeviceName[i], APPDATA_DIR), &dummy) == 0)
 			{
 				drive = DeviceName[i];
 				break;
 			}
+		}
 	}
-	else if(DeviceHandle.IsInserted(SD)) drive = DeviceName[SD];
+	else if(DeviceHandle.IsInserted(SD))
+		drive = DeviceName[SD];
 
 	if(drive == check && onUSB) //No wiiflow folder found in root of any usb partition, and data_on_usb=yes
-		for(int i = USB1; i <= USB8; i++) // Try first USB partition with wbfs folder.
-			if (DeviceHandle.IsInserted(i) && DeviceHandle.GetFSType(i) != PART_FS_WBFS && stat(fmt(GAMES_DIR, DeviceName[i]), &dummy) == 0)
+	{
+		for(u8 i = USB1; i <= USB8; i++) // Try first USB partition with wbfs folder.
+		{
+			if(DeviceHandle.IsInserted(i) && DeviceHandle.GetFSType(i) != PART_FS_WBFS && stat(fmt(GAMES_DIR, DeviceName[i]), &dummy) == 0)
 			{
 				drive = DeviceName[i];
 				break;
 			}
-
+		}
+	}
 	if(drive == check && onUSB) // No wbfs folder found and data_on_usb=yes
-		for(int i = USB1; i <= USB8; i++) // Try first available USB partition.
-			if (DeviceHandle.IsInserted(i) && DeviceHandle.GetFSType(i) != PART_FS_WBFS)
+	{
+		for(u8 i = USB1; i <= USB8; i++) // Try first available USB partition.
+		{
+			if(DeviceHandle.IsInserted(i) && DeviceHandle.GetFSType(i) != PART_FS_WBFS)
 			{
 				drive = DeviceName[i];
 				break;
 			}
-
+		}
+	}
 	if(drive == check)
 	{	
 		_buildMenus();
@@ -266,7 +274,7 @@ void CMenu::init()
 			return;
 		}
 	}
-
+	/* DIOS_MIOS stuff */
 	if(m_cfg.getBool(GC_DOMAIN, "always_show_button", false))
 	{
 		gprintf("Force enabling DML view\n");
@@ -274,15 +282,14 @@ void CMenu::init()
 	}
 	else
 		m_show_dml = MIOSisDML();
-
 	m_new_dml = m_cfg.getBool(GC_DOMAIN, "dml_r52+", true);
 	m_new_dm_cfg = m_cfg.getBool(GC_DOMAIN, "dm_r2.1+", true);
-	m_DMLgameDir = sfmt("%%s:/%s", m_cfg.getString(GC_DOMAIN, "dir_usb_games", "games").c_str());
-
+	m_DMLgameDir = fmt("%%s:/%s", m_cfg.getString(GC_DOMAIN, "dir_usb_games", "games").c_str());
+	/* Emu NAND */
 	m_cfg.getString(CHANNEL_DOMAIN, "path", "");
 	m_cfg.getInt(CHANNEL_DOMAIN, "partition", 1);
 	m_cfg.getBool(CHANNEL_DOMAIN, "disable", true);
-
+	/* Load cIOS Map */
 	_installed_cios.clear();
 	if(!neek2o())
 		_load_installed_cioses();
@@ -290,35 +297,35 @@ void CMenu::init()
 		_installed_cios[CurrentIOS.Version] = CurrentIOS.Version;
 
 	snprintf(m_app_update_drive, sizeof(m_app_update_drive), "%s:/", drive);
-	m_dataDir = sfmt("%s:/%s", drive, APPDATA_DIR);
+	m_dataDir = fmt("%s:/%s", drive, APPDATA_DIR);
 	gprintf("Data Directory: %s\n", m_dataDir.c_str());
 
-	m_dol = sfmt("%s/boot.dol", m_appDir.c_str());
-	m_ver = sfmt("%s/versions", m_appDir.c_str());
-	m_app_update_zip = sfmt("%s/update.zip", m_appDir.c_str());
-	m_data_update_zip = sfmt("%s/update.zip", m_dataDir.c_str());
+	m_dol = fmt("%s/boot.dol", m_appDir.c_str());
+	m_ver = fmt("%s/versions", m_appDir.c_str());
+	m_app_update_zip = fmt("%s/update.zip", m_appDir.c_str());
+	m_data_update_zip = fmt("%s/update.zip", m_dataDir.c_str());
 
-	m_customBnrDir = m_cfg.getString("GENERAL", "dir_custom_banners", sfmt("%s/custom_banners", m_dataDir.c_str()));
-	m_pluginsDir = m_cfg.getString("GENERAL", "dir_plugins", sfmt("%s/plugins", m_dataDir.c_str()));
+	m_customBnrDir = m_cfg.getString("GENERAL", "dir_custom_banners", fmt("%s/custom_banners", m_dataDir.c_str()));
+	m_pluginsDir = m_cfg.getString("GENERAL", "dir_plugins", fmt("%s/plugins", m_dataDir.c_str()));
 
-	m_cacheDir = m_cfg.getString("GENERAL", "dir_cache", sfmt("%s/cache", m_dataDir.c_str()));
-	m_listCacheDir = m_cfg.getString("GENERAL", "dir_list_cache", sfmt("%s/lists", m_cacheDir.c_str()));
-	m_bnrCacheDir = m_cfg.getString("GENERAL", "dir_banner_cache", sfmt("%s/banners", m_cacheDir.c_str()));
+	m_cacheDir = m_cfg.getString("GENERAL", "dir_cache", fmt("%s/cache", m_dataDir.c_str()));
+	m_listCacheDir = m_cfg.getString("GENERAL", "dir_list_cache", fmt("%s/lists", m_cacheDir.c_str()));
+	m_bnrCacheDir = m_cfg.getString("GENERAL", "dir_banner_cache", fmt("%s/banners", m_cacheDir.c_str()));
 
-	m_txtCheatDir = m_cfg.getString("GENERAL", "dir_txtcheat", sfmt("%s/codes", m_dataDir.c_str()));
-	m_cheatDir = m_cfg.getString("GENERAL", "dir_cheat", sfmt("%s/gct", m_txtCheatDir.c_str()));
-	m_wipDir = m_cfg.getString("GENERAL", "dir_wip", sfmt("%s/wip", m_txtCheatDir.c_str()));
+	m_txtCheatDir = m_cfg.getString("GENERAL", "dir_txtcheat", fmt("%s/codes", m_dataDir.c_str()));
+	m_cheatDir = m_cfg.getString("GENERAL", "dir_cheat", fmt("%s/gct", m_txtCheatDir.c_str()));
+	m_wipDir = m_cfg.getString("GENERAL", "dir_wip", fmt("%s/wip", m_txtCheatDir.c_str()));
 
-	m_settingsDir = m_cfg.getString("GENERAL", "dir_settings", sfmt("%s/settings", m_dataDir.c_str()));
-	m_languagesDir = m_cfg.getString("GENERAL", "dir_languages", sfmt("%s/languages", m_dataDir.c_str()));
-	m_boxPicDir = m_cfg.getString("GENERAL", "dir_box_covers", sfmt("%s/boxcovers", m_dataDir.c_str()));
-	m_picDir = m_cfg.getString("GENERAL", "dir_flat_covers", sfmt("%s/covers", m_dataDir.c_str()));
-	m_themeDir = m_cfg.getString("GENERAL", "dir_themes", sfmt("%s/themes", m_dataDir.c_str()));
-	m_musicDir = m_cfg.getString("GENERAL", "dir_music", sfmt("%s/music", m_dataDir.c_str())); 
-	m_videoDir = m_cfg.getString("GENERAL", "dir_trailers", sfmt("%s/trailers", m_dataDir.c_str()));
-	m_fanartDir = m_cfg.getString("GENERAL", "dir_fanart", sfmt("%s/fanart", m_dataDir.c_str()));
-	m_screenshotDir = m_cfg.getString("GENERAL", "dir_screenshot", sfmt("%s/screenshots", m_dataDir.c_str()));
-	m_helpDir = m_cfg.getString("GENERAL", "dir_help", sfmt("%s/help", m_dataDir.c_str()));
+	m_settingsDir = m_cfg.getString("GENERAL", "dir_settings", fmt("%s/settings", m_dataDir.c_str()));
+	m_languagesDir = m_cfg.getString("GENERAL", "dir_languages", fmt("%s/languages", m_dataDir.c_str()));
+	m_boxPicDir = m_cfg.getString("GENERAL", "dir_box_covers", fmt("%s/boxcovers", m_dataDir.c_str()));
+	m_picDir = m_cfg.getString("GENERAL", "dir_flat_covers", fmt("%s/covers", m_dataDir.c_str()));
+	m_themeDir = m_cfg.getString("GENERAL", "dir_themes", fmt("%s/themes", m_dataDir.c_str()));
+	m_musicDir = m_cfg.getString("GENERAL", "dir_music", fmt("%s/music", m_dataDir.c_str())); 
+	m_videoDir = m_cfg.getString("GENERAL", "dir_trailers", fmt("%s/trailers", m_dataDir.c_str()));
+	m_fanartDir = m_cfg.getString("GENERAL", "dir_fanart", fmt("%s/fanart", m_dataDir.c_str()));
+	m_screenshotDir = m_cfg.getString("GENERAL", "dir_screenshot", fmt("%s/screenshots", m_dataDir.c_str()));
+	m_helpDir = m_cfg.getString("GENERAL", "dir_help", fmt("%s/help", m_dataDir.c_str()));
 	
 	//DeviceHandler::SetWatchdog(m_cfg.getUInt("GENERAL", "watchdog_timeout", 10));
 
@@ -348,35 +355,35 @@ void CMenu::init()
 	}
 	CoverFlow.init(m_base_font, m_base_font_size, m_vid.vid_50hz());
 
-	//Make important folders first.
-	fsop_MakeFolder((char *)m_dataDir.c_str()); //D'OH!
+	/* Create our Folder Structure */
+	fsop_MakeFolder(m_dataDir.c_str()); //D'OH!
 
-	fsop_MakeFolder((char *)m_customBnrDir.c_str());
-	fsop_MakeFolder((char *)m_pluginsDir.c_str());
+	fsop_MakeFolder(m_customBnrDir.c_str());
+	fsop_MakeFolder(m_pluginsDir.c_str());
 
-	fsop_MakeFolder((char *)m_cacheDir.c_str());
-	fsop_MakeFolder((char *)m_listCacheDir.c_str());
-	fsop_MakeFolder((char *)m_bnrCacheDir.c_str());
+	fsop_MakeFolder(m_cacheDir.c_str());
+	fsop_MakeFolder(m_listCacheDir.c_str());
+	fsop_MakeFolder(m_bnrCacheDir.c_str());
 
-	fsop_MakeFolder((char *)m_txtCheatDir.c_str());
-	fsop_MakeFolder((char *)m_cheatDir.c_str());
-	fsop_MakeFolder((char *)m_wipDir.c_str());
+	fsop_MakeFolder(m_txtCheatDir.c_str());
+	fsop_MakeFolder(m_cheatDir.c_str());
+	fsop_MakeFolder(m_wipDir.c_str());
 
-	fsop_MakeFolder((char *)m_settingsDir.c_str());
-	fsop_MakeFolder((char *)m_languagesDir.c_str());
-	fsop_MakeFolder((char *)m_boxPicDir.c_str());
-	fsop_MakeFolder((char *)m_picDir.c_str());
-	fsop_MakeFolder((char *)m_themeDir.c_str());
-	fsop_MakeFolder((char *)m_musicDir.c_str());
-	fsop_MakeFolder((char *)m_videoDir.c_str());
-	fsop_MakeFolder((char *)m_fanartDir.c_str());
-	fsop_MakeFolder((char *)m_screenshotDir.c_str());
-	fsop_MakeFolder((char *)m_helpDir.c_str());
+	fsop_MakeFolder(m_settingsDir.c_str());
+	fsop_MakeFolder(m_languagesDir.c_str());
+	fsop_MakeFolder(m_boxPicDir.c_str());
+	fsop_MakeFolder(m_picDir.c_str());
+	fsop_MakeFolder(m_themeDir.c_str());
+	fsop_MakeFolder(m_musicDir.c_str());
+	fsop_MakeFolder(m_videoDir.c_str());
+	fsop_MakeFolder(m_fanartDir.c_str());
+	fsop_MakeFolder(m_screenshotDir.c_str());
+	fsop_MakeFolder(m_helpDir.c_str());
 
 	// INI files
 	m_cat.load(fmt("%s/" CAT_FILENAME, m_settingsDir.c_str()));
 	string themeName = m_cfg.getString("GENERAL", "theme", "default");
-	m_themeDataDir = sfmt("%s/%s", m_themeDir.c_str(), themeName.c_str());
+	m_themeDataDir = fmt("%s/%s", m_themeDir.c_str(), themeName.c_str());
 	m_theme.load(fmt("%s.ini", m_themeDataDir.c_str()));
 	m_plugin.init(m_pluginsDir);
 
@@ -441,7 +448,7 @@ void CMenu::init()
 	}
 
 	m_btnMgr.init();
-	MusicPlayer.Init(m_cfg, m_musicDir, sfmt("%s/music", m_themeDataDir.c_str()));
+	MusicPlayer.Init(m_cfg, m_musicDir, fmt("%s/music", m_themeDataDir.c_str()));
 	m_music_info = m_cfg.getBool("GENERAL", "display_music_info", true);
 
 	_buildMenus();
@@ -668,10 +675,10 @@ void CMenu::_loadCFCfg()
 		new GuiSound(fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString(domain, "sound_cancel").c_str()))
 	);
 	// Textures
-	string texLoading = sfmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString(domain, "loading_cover_box").c_str());
-	string texNoCover = sfmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString(domain, "missing_cover_box").c_str());
-	string texLoadingFlat = sfmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString(domain, "loading_cover_flat").c_str());
-	string texNoCoverFlat = sfmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString(domain, "missing_cover_flat").c_str());
+	string texLoading = fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString(domain, "loading_cover_box").c_str());
+	string texNoCover = fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString(domain, "missing_cover_box").c_str());
+	string texLoadingFlat = fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString(domain, "loading_cover_flat").c_str());
+	string texNoCoverFlat = fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString(domain, "missing_cover_flat").c_str());
 	CoverFlow.setTextures(texLoading, texLoadingFlat, texNoCover, texNoCoverFlat);
 	// Font
 	CoverFlow.setFont(_font(theme.fontSet, domain, "font", TITLEFONT), m_theme.getColor(domain, "font_color", CColor(0xFFFFFFFF)));
@@ -1584,7 +1591,7 @@ void CMenu::_addUserLabels(s16 *ids, u32 start, u32 size, const char *domain)
 
 	for(u32 i = start; i < start + size; ++i)
 	{
-		string dom(sfmt("%s/USER%i", domain, i + 1));
+		string dom(fmt("%s/USER%i", domain, i + 1));
 		if (m_theme.hasDomain(dom))
 		{
 			STexture emptyTex;
@@ -1620,7 +1627,7 @@ void CMenu::_initCF(void)
 		gameAgeList.load(fmt("%s/" AGE_LOCK_FILENAME, m_settingsDir.c_str()));
 		if (m_current_view == COVERFLOW_USB || m_current_view == COVERFLOW_CHANNEL)
 		{
-			gametdb.OpenFile(sfmt("%s/wiitdb.xml", m_settingsDir.c_str()).c_str());
+			gametdb.OpenFile(fmt("%s/wiitdb.xml", m_settingsDir.c_str()));
 			gametdb.SetLanguageCode(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
 		}
 	}

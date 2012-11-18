@@ -73,7 +73,6 @@ protected:
 	bool reducedVol;
 	int returnVal;
 	int gameSelected;
-	dir_discHdr dvdheader;
 	float Brightness;
 	int MaxAnimSteps;
 

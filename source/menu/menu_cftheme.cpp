@@ -175,8 +175,8 @@ void CMenu::_showCFTheme(u32 curParam, int version, bool wide)
 {
 	const CMenu::SCFParamDesc &p = CMenu::_cfParams[curParam];
 	bool selected = CoverFlow.selected();
-	string domUnsel(sfmt(_cfDomain(), version));
-	string domSel(sfmt(_cfDomain(true), version));
+	string domUnsel(fmt(_cfDomain(), version));
+	string domSel(fmt(_cfDomain(true), version));
 
 	CoverFlow.simulateOtherScreenFormat(p.scrnFmt && wide != m_vid.wide());
 	_setBg(m_mainBg, m_mainBgLQ);
@@ -343,8 +343,8 @@ void CMenu::_cfTheme(void)
 		}
 		else if(copyVersion > 0 && BTN_B_HELD && BTN_2_PRESSED)
 		{
-			string domSrc(sfmt(_cfDomain(copySelected), copyVersion));
-			string domDst(sfmt(_cfDomain(CoverFlow.selected()), cfVersion));
+			string domSrc(fmt(_cfDomain(copySelected), copyVersion));
+			string domDst(fmt(_cfDomain(CoverFlow.selected()), cfVersion));
 			if (copyVersion != cfVersion || copySelected != CoverFlow.selected())
 				m_theme.copyDomain(domDst, domSrc);
 			else if (copyWide != wide)
@@ -474,7 +474,7 @@ void CMenu::_cfParam(bool inc, int i, const CMenu::SCFParamDesc &p, int cfVersio
 	int k = i / 4;
 	string key(p.key[k]);
 	const char *d = _cfDomain((p.domain != CMenu::SCFParamDesc::PDD_NORMAL && CoverFlow.selected()) || p.domain == CMenu::SCFParamDesc::PDD_SELECTED);
-	string domain(sfmt(d, cfVersion));
+	string domain(fmt(d, cfVersion));
 	float step = p.step[k];
 	if (!wide && p.scrnFmt && (p.paramType[k] == CMenu::SCFParamDesc::PDT_V3D || p.paramType[k] == CMenu::SCFParamDesc::PDT_FLOAT || p.paramType[k] == CMenu::SCFParamDesc::PDT_INT))
 		key += "_4_3";
@@ -581,7 +581,7 @@ void CMenu::_initCFThemeMenu()
 	// 
 	for (int i = 0; i < 16; ++i)
 	{
-		domain = sfmt("CFTHEME/VAL%i%c_%%s", i / 3 + 1, (char)(i % 3) + 'A');
+		domain = fmt("CFTHEME/VAL%i%c_%%s", i / 3 + 1, (char)(i % 3) + 'A');
 		x = 20 + (i / 4) * 150;
 		y = 340 + (i % 4) * 32;
 		m_cfThemeLblVal[i] = _addLabel(fmt(domain.c_str(), "BTN"), theme.btnFont, L"", x + 32, y, 86, 32, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);

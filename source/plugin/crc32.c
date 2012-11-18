@@ -48,6 +48,9 @@
 #include <stdio.h>
 #include <ogc/system.h>
 #include "crc32.h"
+#include "memory/mem2.hpp"
+
+#define FILEBUFFER 0x200000 /* 2MB */
 
 static u32 crc_32_tab[] = { /* CRC polynomial 0xedb88320 */
 	0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f,
@@ -95,44 +98,37 @@ static u32 crc_32_tab[] = { /* CRC polynomial 0xedb88320 */
 	0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d
 };
 
-u32 crc32file(char *name)
-{
-	FILE *fin;
-	s32 c;
-
-	u32 oldcrc32 = 0xFFFFFFFF;
-	s32 charcnt = 0;
-
-	if((fin = fopen(name, "rb")) == NULL)
-	{
-		perror(name);
-		return oldcrc32;
-	}
-
-	while((c = getc(fin)) != EOF)
-	{
-		++charcnt;
-		oldcrc32 = UPDC32(c, oldcrc32);
-	}
-
-	if(ferror(fin))
-	{
-		perror(name);
-		charcnt = -1;
-	}
-	fclose(fin);
-
-	u32 crc32 = oldcrc32 = ~oldcrc32;
-	return crc32;
-}
-
-u32 crc32buffer(const u8 *buffer, const u32 len)
+u32 crc32buffer(const u8 *buffer, const u32 len, u32 oldcrc32)
 {
 	u32 i;
-	u32 oldcrc32 = 0xFFFFFFFF;
 	for(i = 0; i < len; i++)
 		oldcrc32 = UPDC32(buffer[i], oldcrc32);
+	return oldcrc32;
+}
 
-	u32 crc32 = oldcrc32 = ~oldcrc32;
-	return crc32;
+u32 crc32file(const char *name)
+{
+	FILE *fp = fopen(name, "rb");
+	if(fp == NULL)
+		return 0;
+	u32 Length = 0;
+	u32 oldcrc32 = 0xFFFFFFFF;
+	/* Check our filesize */
+	fseek(fp, 0, SEEK_END);
+	if(ftell(fp) > 0x40000000) //pfff over 1gb would take ages
+		return oldcrc32;
+	rewind(fp);
+	/* Get a Buffer and begin */
+	u8 *Buffer = (u8*)MEM2_alloc(FILEBUFFER);
+	while(1)
+	{
+		Length = fread(Buffer, 1, FILEBUFFER, fp);
+		if(Length == 0)
+			break;
+		oldcrc32 = crc32buffer(Buffer, Length, oldcrc32);
+	}
+	MEM2_free(Buffer);
+	fclose(fp);
+
+	return oldcrc32 = ~oldcrc32;
 }

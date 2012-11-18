@@ -611,10 +611,10 @@ void CMenu::_game(bool launch)
 				}
 				if(hdr->type != TYPE_HOMEBREW && hdr->type != TYPE_PLUGIN)
 				{
-					if(Playlog_Update((char *)hdr->id, banner_title) < 0)
+					if(Playlog_Update(hdr->id, banner_title) < 0)
 						Playlog_Delete();
 				}
-				gprintf("Launching game %s\n", (char *)hdr->id);
+				gprintf("Launching game %s\n", hdr->id);
 				_launch(hdr);
 
 				if(m_exit)
@@ -813,14 +813,14 @@ void CMenu::_launch(dir_discHdr *hdr)
 
 void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 {
-	string id(hdr->id);
-	string path(hdr->path);
+	const char *id = hdr->id;
+	const char *path = hdr->path;
 	m_cfg.setString(GC_DOMAIN, "current_item", id);
 	m_gcfg1.setInt("PLAYCOUNT", id, m_gcfg1.getInt("PLAYCOUNT", id, 0) + 1);
 	m_gcfg1.setUInt("LASTPLAYED", id, time(NULL));
 
 	if(has_enabled_providers() && _initNetwork() == 0)
-		add_game_to_card(id.c_str());
+		add_game_to_card(id);
 
 	u8 videoSetting = min(m_cfg.getInt(GC_DOMAIN, "video_setting", 1), 2);
 
@@ -831,7 +831,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	videoMode = (videoMode == 0) ? min((u32)m_cfg.getInt(GC_DOMAIN, "video_mode", 0), ARRAY_SIZE(CMenu::_GlobalDMLvideoModes) - 1u) : videoMode-1;
 	if(videoMode == 0)
 	{
-		if(id.c_str()[3] == 'E' || id.c_str()[3] == 'J')
+		if(id[3] == 'E' || id[3] == 'J')
 			videoMode = 2; //NTSC 480i
 		else
 			videoMode = 1; //PAL 576i
@@ -843,9 +843,10 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	if(disc)
 	{
 		loader = 1;
+		gprintf("Booting GC Disc: %s\n", id);
 		DML_New_SetBootDiscOption(m_new_dm_cfg);
 	}
-	else if(loader == 1 || strcasestr(path.c_str(), "boot.bin") != NULL || !m_devo_installed)
+	else if(loader == 1 || strcasestr(path, "boot.bin") != NULL || !m_devo_installed)
 	{
 		loader = 1;
 		m_cfg.setString(GC_DOMAIN, "current_item", id);
@@ -855,28 +856,29 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		u8 nodisc = min((u32)m_gcfg2.getInt(id, "no_disc_patch", 0), ARRAY_SIZE(CMenu::_NoDVD) - 1u);
 		nodisc = (nodisc == 0) ? m_cfg.getInt(GC_DOMAIN, "no_disc_patch", 0) : nodisc-1;
 		bool cheats = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool(GC_DOMAIN, "cheat", false));
-		string NewCheatPath;
 		bool DML_debug = m_gcfg2.getBool(id, "debugger", false);
 		bool DM_Widescreen = m_gcfg2.getBool(id, "dm_widescreen", false);
 		bool activity_led = m_cfg.getBool(GC_DOMAIN, "dml_activity_led", true);
-		if(strcasestr(path.c_str(), "boot.bin") != NULL)
+		/* Generate gct path */
+		char GC_Path[1024];
+		GC_Path[1023] = '\0';
+		strncpy(GC_Path, path, 1023);
+		if(strcasestr(path, "boot.bin") != NULL)
 		{
-			path.erase(path.end() - 12, path.end());
-			NewCheatPath = sfmt("%s%s", path.c_str(), fmt("%s.gct", id.c_str()));
+			*strrchr(GC_Path, '/') = '\0'; //boot.bin
+			*(strrchr(GC_Path, '/')+1) = '\0'; //sys
 		}
 		else
-		{
-			NewCheatPath = sfmt("%s/%s", path.c_str(), fmt("%s.gct", id.c_str()));
-			NewCheatPath.erase(NewCheatPath.end() - 19, NewCheatPath.end() - 10);
-		}
+			*(strrchr(GC_Path, '/')+1) = '\0'; //iso path
+		const char *NewCheatPath = fmt("%s%s.gct", GC_Path, id);
 		if(cheats)
-			snprintf(CheatPath, sizeof(CheatPath), "%s/%s", m_cheatDir.c_str(), fmt("%s.gct", id.c_str()));
-		string newPath = &path[path.find_first_of(":/")+1];
+			snprintf(CheatPath, sizeof(CheatPath), "%s/%s", m_cheatDir.c_str(), fmt("%s.gct", id));
+		const char *newPath = strcasestr(path, "boot.bin") == NULL ? strchr(path, '/') : strchr(GC_Path, '/');
 		if(m_new_dml)
-			DML_New_SetOptions(newPath.c_str(), CheatPath, NewCheatPath.c_str(), DeviceName[currentPartition],
+			DML_New_SetOptions(newPath, CheatPath, NewCheatPath, DeviceName[currentPartition],
 				cheats, DML_debug, NMM, nodisc, videoMode, videoSetting, DM_Widescreen, m_new_dm_cfg, activity_led);
 		else
-			DML_Old_SetOptions(newPath.c_str());
+			DML_Old_SetOptions(newPath);
 		if(!nodisc || !m_new_dml)
 			WDVD_StopMotor();
 	}
@@ -910,7 +912,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		else //use cIOS instead to make sure Devolution works anyways
 			loadIOS(mainIOS, false);
 		ShutdownBeforeExit();
-		DEVO_SetOptions(path.c_str(), id.c_str(), memcard_emu);
+		DEVO_SetOptions(path, id, memcard_emu);
 		DEVO_Boot();
 	}
 	Sys_Exit();
@@ -1185,21 +1187,18 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			else
 			{
 				/* Read GC disc header */
-				struct gc_discHdr *gcHeader = (struct gc_discHdr *)memalign(32, sizeof(struct gc_discHdr));
-				Disc_ReadGCHeader(gcHeader);
-				strncpy(hdr->id, (char*)gcHeader->id, 6);
-				free(gcHeader);
+				Disc_ReadGCHeader(&gc_hdr);
+				memcpy(hdr->id, gc_hdr.id, 6);
 				/* Launching GC Game */
 				_launchGC(hdr, true);
+				return;
 			}
 		}
 		else
 		{
 			/* Read header */
-			struct discHdr *header = (struct discHdr *)memalign(32, sizeof(struct discHdr));
-			Disc_ReadHeader(header);
-			id = string((const char*)header->id);
-			free(header);
+			Disc_ReadHeader(&wii_hdr);
+			id = string((char*)wii_hdr.id, 6);
 		}
 		gprintf("Game ID: %s\n", id.c_str());
 	}

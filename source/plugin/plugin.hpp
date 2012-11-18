@@ -54,10 +54,10 @@ class Plugin
 {
 public:
 	bool AddPlugin(Config &plugin);
-	u8* GetBannerSound(u32 magic);
+	u8 *GetBannerSound(u32 magic);
 	u32 GetBannerSoundSize();
-	char* GetDolName(u32 magic);
-	char* GetCoverFolderName(u32 magic);
+	const char *GetDolName(u32 magic);
+	const char *GetCoverFolderName(u32 magic);
 	string GenerateCoverLink(dir_discHdr gameHeader, const string& constURL, Config &Checksums);
 	wstringEx GetPluginName(u8 pos);
 	u32 getPluginMagic(u8 pos);

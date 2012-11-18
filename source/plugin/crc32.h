@@ -10,8 +10,7 @@ extern "C"
 #define UPDC32(octet, crc) (crc_32_tab[((crc)\
 			^ (octet)) & 0xff] ^ ((crc) >> 8))
 
-u32 crc32file(char *name);
-u32 crc32buffer(const u8 *s, const u32 len);
+u32 crc32file(const char *name);
 
 #ifdef __cplusplus
 }

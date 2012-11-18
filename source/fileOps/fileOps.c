@@ -35,7 +35,7 @@ static u64 folderSize = 0;
 u64 FolderProgressBytes;
 
 // return false if the file doesn't exist
-bool fsop_GetFileSizeBytes(char *path, size_t *filesize)	// for me stats st_size report always 0 :(
+bool fsop_GetFileSizeBytes(const char *path, size_t *filesize)	// for me stats st_size report always 0 :(
 {
 	FILE *f;
 	size_t size = 0;
@@ -73,11 +73,9 @@ u64 fsop_GetFolderBytes(const char *source)
 	while((pent = readdir(pdir)) != NULL) 
 	{
 		// Skip it
-		if(strcmp(pent->d_name, ".") == 0 || strcmp(pent->d_name, "..") == 0)
+		if(pent->d_name[0] == '.')
 			continue;
-
 		snprintf(newSource, sizeof(newSource), "%s/%s", source, pent->d_name);
-
 		// If it is a folder... recurse...
 		if(fsop_DirExist(newSource))
 			bytes += fsop_GetFolderBytes(newSource);
@@ -138,7 +136,7 @@ bool fsop_DirExist(const char *path)
 }
 
 
-void fsop_MakeFolder(char *path)
+void fsop_MakeFolder(const char *path)
 {
 	if(fsop_DirExist(path))
 		return;
@@ -168,9 +166,9 @@ static void *thread_CopyFileReader()
 	return 0;
 }
 
-bool fsop_CopyFile(char *source, char *target, progress_callback_t spinner, void *spinner_data)
+bool fsop_CopyFile(const char *source, const char *target, progress_callback_t spinner, void *spinner_data)
 {
-	gprintf("Creating file: %s\n",target);
+	gprintf("Creating file: %s\n", target);
 	int err = 0;
 
 	u32 size;
@@ -282,7 +280,7 @@ bool fsop_CopyFile(char *source, char *target, progress_callback_t spinner, void
 /*
 Recursive copyfolder
 */
-static bool doCopyFolder(char *source, char *target, progress_callback_t spinner, void *spinner_data)
+static bool doCopyFolder(const char *source, const char *target, progress_callback_t spinner, void *spinner_data)
 {
 	DIR *pdir;
 	struct dirent *pent;
@@ -290,20 +288,15 @@ static bool doCopyFolder(char *source, char *target, progress_callback_t spinner
 	bool ret = true;
 
 	// If target folder doesn't exist, create it !
-	if(!fsop_DirExist(target))
-	{
-		gprintf("Creating directory: %s\n",target);
-		fsop_MakeFolder(target);
-	}
+	fsop_MakeFolder(target);
 
 	pdir = opendir(source);
 
 	while((pent = readdir(pdir)) != NULL && ret == true) 
 	{
 		// Skip it
-		if(strcmp(pent->d_name, ".") == 0 || strcmp(pent->d_name, "..") == 0)
+		if(pent->d_name[0] == '.')
 			continue;
-
 		snprintf(newSource, sizeof(newSource), "%s/%s", source, pent->d_name);
 		snprintf(newTarget, sizeof(newTarget), "%s/%s", target, pent->d_name);
 
@@ -319,13 +312,18 @@ static bool doCopyFolder(char *source, char *target, progress_callback_t spinner
 	return ret;
 }
 
-bool fsop_CopyFolder(char *source, char *target, progress_callback_t spinner, void *spinner_data)
+bool fsop_CopyFolder(const char *source, const char *target, progress_callback_t spinner, void *spinner_data)
 {
 	gprintf("DML game USB->SD job started!\n");
 
 	FolderProgressBytes = 0;
 	folderSize = fsop_GetFolderBytes(source);
 	return doCopyFolder(source, target, spinner, spinner_data);
+}
+
+static inline void fsop_silentDelete(const char *source)
+{
+	remove(source);
 }
 
 void fsop_deleteFolder(const char *source)
@@ -339,27 +337,32 @@ void fsop_deleteFolder(const char *source)
 	while((pent = readdir(pdir)) != NULL) 
 	{
 		// Skip it
-		if(strcmp(pent->d_name, ".") == 0 || strcmp(pent->d_name, "..") == 0)
+		if(pent->d_name[0] == '.')
 			continue;
-
 		snprintf(newSource, sizeof(newSource), "%s/%s", source, pent->d_name);
-
 		// If it is a folder... recurse...
 		if(fsop_DirExist(newSource))
+		{
+			closedir(pdir);
 			fsop_deleteFolder(newSource);
-		else	// It is a file !
-			fsop_deleteFile(newSource);
+			pdir = opendir(source);
+		}
+		else // It is a file !
+		{
+			closedir(pdir);
+			fsop_silentDelete(newSource);
+			pdir = opendir(source);
+		}
 	}
 	closedir(pdir);
-	gprintf("Deleting directory: %s\n",source);
+	gprintf("Deleting directory: %s\n", source);
 	unlink(source);
 }
 
 void fsop_deleteFile(const char *source)
 {
-	if(fsop_FileExist(source))
-	{
-		gprintf("Deleting file: %s\n",source);
-		remove(source);
-	}
+	if(!fsop_FileExist(source))
+		return;
+	gprintf("Deleting file: %s\n", source);
+	fsop_silentDelete(source);
 }
