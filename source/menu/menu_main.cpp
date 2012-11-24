@@ -633,26 +633,8 @@ int CMenu::main(void)
 				{
 					_showWaitMessage();
 					_hideMain();
-					bool isD2XnewerThanV6 = (CurrentIOS.Type == IOS_TYPE_NEEK2O);
-					if(CurrentIOS.Revision > 6 && CurrentIOS.Type == IOS_TYPE_D2X)
-						isD2XnewerThanV6 = true;
-					if(m_current_view == COVERFLOW_CHANNEL && m_cfg.getInt(CHANNEL_DOMAIN, "emulation", 0))
-						NandHandle.Enable_Emu();
-					u8 limiter = 0;
-					currentPartition = loopNum(currentPartition + 1, (int)USB8);
-					while(!DeviceHandle.IsInserted(currentPartition) ||
-						((m_current_view == COVERFLOW_CHANNEL || m_current_view == COVERFLOW_PLUGIN) && (DeviceHandle.GetFSType(currentPartition) != PART_FS_FAT ||
-							(!isD2XnewerThanV6 && DeviceHandle.PathToDriveType(m_appDir.c_str()) == currentPartition) ||
-							(!isD2XnewerThanV6 && DeviceHandle.PathToDriveType(m_dataDir.c_str()) == currentPartition))) ||
-						((m_current_view == COVERFLOW_HOMEBREW || m_current_view == COVERFLOW_DML) && DeviceHandle.GetFSType(currentPartition) == PART_FS_WBFS))
-					{
-						currentPartition = loopNum(currentPartition + 1, (int)USB8);
-						if(limiter > 10) break;
-						limiter++;
-					}
+					_setPartition(1);
 					partition = DeviceName[currentPartition];
-					gprintf("Setting Emu NAND to Partition: %i\n",currentPartition);
-					m_cfg.setInt(_domainFromView(), "partition", currentPartition);
 				}
 				else
 					partition = "NAND";
@@ -1059,4 +1041,38 @@ wstringEx CMenu::_getNoticeTranslation(int sorting, wstringEx curLetter)
 	}
 	
 	return curLetter;
+}
+
+void CMenu::_setPartition(s8 direction)
+{
+	_cfNeedsUpdate();
+	bool disable = m_current_view == COVERFLOW_CHANNEL && !m_tempView && 
+				(m_cfg.getBool(CHANNEL_DOMAIN, "disable", true) || neek2o());
+	if(disable)
+		return;
+
+	if(m_current_view == COVERFLOW_CHANNEL)
+		NandHandle.Enable_Emu();
+
+	if(direction != 0)
+	{
+		u8 limiter = 0;
+		bool NeedFAT = m_current_view == COVERFLOW_CHANNEL || m_current_view == COVERFLOW_DML;
+		currentPartition = loopNum(currentPartition + direction, 8);
+		int FS_Type = DeviceHandle.GetFSType(currentPartition);
+		while(!DeviceHandle.IsInserted(currentPartition) || 
+			(m_current_view != COVERFLOW_USB && FS_Type == PART_FS_WBFS) ||
+			(NeedFAT && FS_Type != PART_FS_FAT))
+		{
+			currentPartition = loopNum(currentPartition + direction, 8);
+			FS_Type = DeviceHandle.GetFSType(currentPartition);
+			if(limiter > 10)
+				break;
+			limiter++;
+		}
+	}
+	if(m_tempView)
+		m_cfg.setInt(WII_DOMAIN, "savepartition", currentPartition);
+	else
+		m_cfg.setInt(_domainFromView(), "partition", currentPartition);
 }

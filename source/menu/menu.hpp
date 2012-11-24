@@ -898,7 +898,7 @@ private:
 	void _showConfig4(void);
 	void _showConfigAdv(void);
 	void _showConfigSnd(void);
-	void _enableNandEmu(bool fromconfig);
+	void _setPartition(s8 direction = 0);
 	void _showGame(void);
 	void _showDownload(void);
 	void _showSettings();

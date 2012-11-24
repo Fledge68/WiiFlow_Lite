@@ -86,7 +86,7 @@ bool DeviceHandler::IsInserted(int dev)
 		return SD_Inserted() && sd.IsMounted(0);
 	else if(dev >= USB1 && dev <= USB8)
 	{
-		int portPart = PartitionToPortPartition(dev-USB1);
+		int portPart = dev-1;//PartitionToPortPartition(dev-USB1);
 		return usb0.IsMounted(portPart);
 	}
 
@@ -139,7 +139,7 @@ bool DeviceHandler::MountUSB(int pos)
 	if(pos >= GetUSBPartitionCount())
 		return false;
 
-	int portPart = PartitionToPortPartition(pos);
+	int portPart = pos;//PartitionToPortPartition(pos);
 
 	if(PartitionToUSBPort(pos) == 0)
 		return usb0.Mount(portPart, DeviceName[USB1+pos]);
@@ -175,7 +175,7 @@ void DeviceHandler::UnMountUSB(int pos)
 	if(pos >= GetUSBPartitionCount())
 		return;
 
-	int portPart = PartitionToPortPartition(pos);
+	int portPart = pos;//PartitionToPortPartition(pos);
 
 	if(PartitionToUSBPort(pos) == 0)
 		return usb0.UnMount(portPart);

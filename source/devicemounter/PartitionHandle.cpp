@@ -39,6 +39,12 @@
 #define PARTITION_TYPE_DOS33_EXTENDED		0x05 /* DOS 3.3+ extended partition */
 #define PARTITION_TYPE_WIN95_EXTENDED		0x0F /* Windows 95 extended partition */
 
+/* Predefined Buffers */
+GUID_PART_ENTRY gpt_entry[MAX_BYTES_PER_SECTOR] ATTRIBUTE_ALIGN(32);
+MASTER_BOOT_RECORD mbr[MAX_BYTES_PER_SECTOR] ATTRIBUTE_ALIGN(32);
+u8 HeaderBuffer[MAX_BYTES_PER_SECTOR] ATTRIBUTE_ALIGN(32);
+u8 AddingBuffer[MAX_BYTES_PER_SECTOR] ATTRIBUTE_ALIGN(32);
+
 //! libfat stuff
 extern "C"
 {
@@ -234,8 +240,6 @@ bool PartitionHandle::IsExisting(u64 lba)
 
 s8 PartitionHandle::FindPartitions()
 {
-	MASTER_BOOT_RECORD mbr[MAX_BYTES_PER_SECTOR] ATTRIBUTE_ALIGN(32);
-
 	// Read the first sector on the device
 	if(!interface->readSectors(0, 1, mbr))
 		return -1;
@@ -268,9 +272,6 @@ s8 PartitionHandle::FindPartitions()
 
 	return 0;
 }
-
-static u8 HeaderBuffer[MAX_BYTES_PER_SECTOR] ATTRIBUTE_ALIGN(32);
-static u8 AddingBuffer[MAX_BYTES_PER_SECTOR] ATTRIBUTE_ALIGN(32);
 
 void PartitionHandle::CheckEBR(u8 PartNum, sec_t ebr_lba)
 {
@@ -319,12 +320,12 @@ s8 PartitionHandle::CheckGPT(u8 PartNum)
 	u64 next_lba = gpt_header->part_table_lba;
 	for(u32 i = 0; i < gpt_header->part_entries; ++i)
 	{
-		if(!interface->readSectors(next_lba, 1, AddingBuffer))
+		if(!interface->readSectors(next_lba, 1, gpt_entry))
 			break;
 
 		for(u32 n = 0; n < BYTES_PER_SECTOR/gpt_header->part_entry_size; ++n, ++i)
 		{
-			GUID_PART_ENTRY * part_entry = (GUID_PART_ENTRY *) (AddingBuffer + gpt_header->part_entry_size*n);
+			GUID_PART_ENTRY *part_entry = (gpt_entry + gpt_header->part_entry_size * n);
 
 			if(memcmp(part_entry->part_type_guid, TYPE_UNUSED, 16) == 0)
 				continue;
@@ -378,6 +379,7 @@ void PartitionHandle::AddPartition(const char *name, u64 lba_start, u64 sec_coun
 	PartitionEntry.Bootable = bootable;
 	PartitionEntry.PartitionType = part_type;
 	PartitionEntry.PartitionNum = part_num;
+	gprintf("Found a %s Partition with the number %i\n", name, part_num);
 	PartitionList.push_back(PartitionEntry);
 }
 
