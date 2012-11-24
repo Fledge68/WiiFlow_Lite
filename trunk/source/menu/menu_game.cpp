@@ -34,6 +34,7 @@
 #include "loader/fst.h"
 #include "loader/cios.h"
 #include "loader/nk.h"
+#include "memory/memory.h"
 #include "network/http.h"
 #include "network/gcard.h"
 
@@ -814,6 +815,9 @@ void CMenu::_launch(dir_discHdr *hdr)
 void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 {
 	const char *id = hdr->id;
+	memcpy((u8*)Disc_ID, id, 6);
+	DCFlushRange((u8*)Disc_ID, 32);
+
 	const char *path = hdr->path;
 	m_cfg.setString(GC_DOMAIN, "current_item", id);
 	m_gcfg1.setInt("PLAYCOUNT", id, m_gcfg1.getInt("PLAYCOUNT", id, 0) + 1);
