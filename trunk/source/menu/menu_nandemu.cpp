@@ -187,41 +187,6 @@ bool CMenu::_checkSave(string id, bool nand)
 	return true;
 }
 
-void CMenu::_enableNandEmu(bool fromconfig)
-{
-	_cfNeedsUpdate();
-	bool disable = (m_cfg.getBool(CHANNEL_DOMAIN, "disable", true) || neek2o()) && m_current_view == COVERFLOW_CHANNEL && !m_tempView;	
-
-	if(!disable)
-	{
-		bool isD2XnewerThanV6 = (CurrentIOS.Type == IOS_TYPE_NEEK2O);
-		if(CurrentIOS.Revision > 6 && CurrentIOS.Type == IOS_TYPE_D2X)
-			isD2XnewerThanV6 = true;
-		if(m_current_view == COVERFLOW_CHANNEL && !m_cfg.getBool(CHANNEL_DOMAIN, "disable", true) && !neek2o() && !m_tempView)
-			NandHandle.Enable_Emu();
-		u8 limiter = 0;
-		s8 direction = m_btnMgr.selected(m_configBtnPartitionP) ? 1 : -1;
-		if (!fromconfig)
-			direction = 0;
-		currentPartition = loopNum(currentPartition + direction, (int)USB8);
-		while(!DeviceHandle.IsInserted(currentPartition) ||
-			(m_current_view == COVERFLOW_CHANNEL && (DeviceHandle.GetFSType(currentPartition) != PART_FS_FAT ||
-				(!isD2XnewerThanV6 && DeviceHandle.PathToDriveType(m_appDir.c_str()) == currentPartition) ||
-				(!isD2XnewerThanV6 && DeviceHandle.PathToDriveType(m_dataDir.c_str()) == currentPartition))) ||
-			((m_current_view == COVERFLOW_HOMEBREW || m_current_view == COVERFLOW_DML) && DeviceHandle.GetFSType(currentPartition) == PART_FS_WBFS))
-		{
-			currentPartition = loopNum(currentPartition + direction, (int)USB8);
-			if (limiter > 10) break;
-			limiter++;
-		}
-		gprintf("Next item: %s\n", DeviceName[currentPartition]);
-		if(m_tempView)
-			m_cfg.setInt(WII_DOMAIN, "savepartition", currentPartition);
-		else
-			m_cfg.setInt(_domainFromView(), "partition", currentPartition);
-	}
-}
-
 void CMenu::_setDumpMsg(const wstringEx &msg, float totprog, float fileprog)
 {
 	if(m_thrdStop) return;

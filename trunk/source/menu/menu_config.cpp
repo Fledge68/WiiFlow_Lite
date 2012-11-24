@@ -171,7 +171,7 @@ int CMenu::_config1(void)
 
 		if (BTN_HOME_PRESSED || BTN_B_PRESSED)
 		{
-			_enableNandEmu(false);
+			_setPartition();
 			break;
 		}
 		if (BTN_A_PRESSED)
@@ -189,7 +189,8 @@ int CMenu::_config1(void)
 				_code();
 			else if ((m_btnMgr.selected(m_configBtnPartitionP) || m_btnMgr.selected(m_configBtnPartitionM)))
 			{
-				_enableNandEmu(true);
+				s8 direction = m_btnMgr.selected(m_configBtnPartitionP) ? 1 : -1;
+				_setPartition(direction);
 				_showConfig();
 			}
 			else if (m_btnMgr.selected(m_configBtnCfg4))
