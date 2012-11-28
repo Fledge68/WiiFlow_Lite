@@ -64,26 +64,12 @@ int main(int argc, char **argv)
 	NandHandle.Init_ISFS();
 	/* Handle (c)IOS Loading */
 	if(neek2o() || Sys_DolphinMode())
-	{
-		iosOK = true;
-		memset(&CurrentIOS, 0, sizeof(IOS_Info));
-		CurrentIOS.Version = 254;
-		CurrentIOS.Type = IOS_TYPE_NEEK2O;
-		CurrentIOS.Base = 254;
-		CurrentIOS.Revision = 999;
-		DCFlushRange(&CurrentIOS, sizeof(IOS_Info));
-		DeviceHandle.SetModes();
-	}
+		iosOK = loadIOS(IOS_GetVersion(), false);
 	else if(AHBRPOT_Patched() && IOS_GetVersion() == 58)
-	{
-		gprintf("AHBPROT patched out, use IOS58\n");
 		iosOK = loadIOS(58, false);
-	}
-	else
-	{
-		gprintf("Loading cIOS: %d\n", mainIOS);	
+	else /* cIOS wanted */
 		iosOK = loadIOS(mainIOS, false) && CustomIOS(CurrentIOS.Type);
-	}
+
 	// Init
 	Sys_Init();
 	Sys_ExitTo(EXIT_TO_HBC);

@@ -24,7 +24,6 @@
 #include <gccore.h>
 #include <stdio.h>
 #include <string.h>
-#include <malloc.h>
 #include <sdcard/gcsd.h>
 #include "PartitionHandle.h"
 #include "ntfs.h"
@@ -32,18 +31,14 @@
 #include "ext2.h"
 #include "sdhc.h"
 #include "usbstorage.h"
+#include "gui/text.hpp"
 #include "loader/nk.h"
 #include "loader/utils.h"
 #include "loader/wbfs.h"
+#include "memory/mem2.hpp"
 
 #define PARTITION_TYPE_DOS33_EXTENDED		0x05 /* DOS 3.3+ extended partition */
 #define PARTITION_TYPE_WIN95_EXTENDED		0x0F /* Windows 95 extended partition */
-
-/* Predefined Buffers */
-GUID_PART_ENTRY gpt_entry[MAX_BYTES_PER_SECTOR] ATTRIBUTE_ALIGN(32);
-MASTER_BOOT_RECORD mbr[MAX_BYTES_PER_SECTOR] ATTRIBUTE_ALIGN(32);
-u8 HeaderBuffer[MAX_BYTES_PER_SECTOR] ATTRIBUTE_ALIGN(32);
-u8 AddingBuffer[MAX_BYTES_PER_SECTOR] ATTRIBUTE_ALIGN(32);
 
 //! libfat stuff
 extern "C"
@@ -125,7 +120,7 @@ bool PartitionHandle::IsMounted(int pos)
 	return true;
 }
 
-bool PartitionHandle::Mount(int pos, const char * name, bool forceFAT)
+bool PartitionHandle::Mount(int pos, const char *name, bool forceFAT)
 {
 	if(valid(pos))
 		UnMount(pos);
@@ -133,20 +128,21 @@ bool PartitionHandle::Mount(int pos, const char * name, bool forceFAT)
 	if(!name)
 		return false;
 
-	if(pos >= (int) MountNameList.size())
-		MountNameList.resize(pos+1);
+	if(pos >= (int)MountNameList.size())
+		MountNameList.resize(pos + 1);
 
 	MountNameList[pos] = name;
+	const char *DeviceSyn = fmt("%s:", name);
 	//! Some stupid partition manager think they don't need to edit the freaken MBR.
 	//! So we need to check the first 64 sectors and see if some partition is there.
 	//! libfat does that by default so let's use it.
-	//! We do that only on sd not on usb.
 	if(forceFAT && (strlen(GetFSName(pos)) == 0 || strcmp(GetFSName(pos), "Unknown") == 0))
 	{
-		if (fatMount(MountNameList[pos].c_str(), interface, 0, CACHE, SECTORS))
+		if(fatMount(MountNameList[pos].c_str(), interface, 0, CACHE, SECTORS))
 		{
 			sec_t FAT_startSector = FindFirstValidPartition(interface);
 			AddPartition("FAT", FAT_startSector, 0xdeadbeaf, true, 0x0c, 0);
+			gprintf("FAT Partition at %s (forceFAT) mounted.\n", DeviceSyn);
 			SetWbfsHandle(pos, NULL);
 			return true;
 		}
@@ -157,10 +153,10 @@ bool PartitionHandle::Mount(int pos, const char * name, bool forceFAT)
 	SetWbfsHandle(pos, NULL);
 	if(strncmp(GetFSName(pos), "FAT", 3) == 0 || strcmp(GetFSName(pos), "GUID-Entry") == 0)
 	{
-		if (fatMount(MountNameList[pos].c_str(), interface, GetLBAStart(pos), CACHE, SECTORS))
+		if(fatMount(MountNameList[pos].c_str(), interface, GetLBAStart(pos), CACHE, SECTORS))
 		{
-			if(strcmp(GetFSName(pos), "GUID-Entry") == 0)
-				PartitionList[pos].FSName = "FAT";
+			gprintf("FAT Partition at %s mounted.\n", DeviceSyn);
+			PartitionList[pos].FSName = "FAT";
 			return true;
 		}
 	}
@@ -168,6 +164,7 @@ bool PartitionHandle::Mount(int pos, const char * name, bool forceFAT)
 	{
 		if(ntfsMount(MountNameList[pos].c_str(), interface, GetLBAStart(pos), CACHE, SECTORS, NTFS_SHOW_HIDDEN_FILES | NTFS_RECOVER))
 		{
+			gprintf("NTFS Partition at %s mounted.\n", DeviceSyn);
 			PartitionList[pos].FSName = "NTFS";
 			return true;
 		}
@@ -176,6 +173,7 @@ bool PartitionHandle::Mount(int pos, const char * name, bool forceFAT)
 	{
 		if(ext2Mount(MountNameList[pos].c_str(), interface, GetLBAStart(pos), CACHE, SECTORS, EXT2_FLAG_DEFAULT))
 		{
+			gprintf("EXT Partition at %s mounted.\n", DeviceSyn);
 			PartitionList[pos].FSName = "LINUX";
 			return true;
 		}
@@ -188,43 +186,47 @@ bool PartitionHandle::Mount(int pos, const char * name, bool forceFAT)
 			SetWbfsHandle(pos, wbfs_open_partition(__WBFS_ReadSDHC, __WBFS_WriteSDHC, NULL, 512, GetSecCount(pos), GetLBAStart(pos), 0));
 		if(GetWbfsHandle(pos))
 		{
+			gprintf("WBFS Partition at %s mounted.\n", DeviceSyn);
 			PartitionList[pos].FSName = "WBFS";
 			return true;
 		}
 	}
-
+	/* FAIL */
 	MountNameList[pos].clear();
-
 	return false;
 }
 
 void PartitionHandle::UnMount(int pos)
 {
-	if(!interface)
+	if(!interface || (pos >= (int)MountNameList.size()) || (MountNameList[pos].size() == 0))
 		return;
 
-	if(pos >= (int) MountNameList.size())
-		return;
-
-	if(MountNameList[pos].size() == 0)
-		return;
-
-	char DeviceSyn[20];
-	snprintf(DeviceSyn, sizeof(DeviceSyn), "%s:", MountNameList[pos].c_str());
-
-	wbfs_t* wbfshandle = GetWbfsHandle(pos);
-	if(wbfshandle) wbfs_close(wbfshandle);
-	SetWbfsHandle(pos, NULL);
 	WBFS_Close();
-
-	//closing all open Files write back the cache
-	fatUnmount(DeviceSyn);
-	//closing all open Files write back the cache
-	ntfsUnmount(DeviceSyn, true);
-	//closing all open Files write back the cache
-	ext2Unmount(DeviceSyn);
-	//Remove name from list
+	const char *DeviceSyn = fmt("%s:", MountName(pos));
+	if(strncmp(GetFSName(pos), "WBFS", 4) == 0)
+	{
+		wbfs_t *wbfshandle = GetWbfsHandle(pos);
+		if(wbfshandle) wbfs_close(wbfshandle);
+		gprintf("WBFS Partition at %s unmounted.\n", DeviceSyn);
+	}
+	else if(strncmp(GetFSName(pos), "FAT", 3) == 0)
+	{
+		fatUnmount(DeviceSyn);
+		gprintf("FAT Partition at %s unmounted.\n", DeviceSyn);
+	}
+	else if(strncmp(GetFSName(pos), "NTFS", 4) == 0)
+	{
+		ntfsUnmount(DeviceSyn, true);
+		gprintf("NTFS Partition at %s unmounted.\n", DeviceSyn);
+	}
+	else if(strncmp(GetFSName(pos), "LINUX", 5) == 0)
+	{
+		ext2Unmount(DeviceSyn);
+		gprintf("EXT Partition at %s unmounted.\n", DeviceSyn);
+	}
+	/* Remove name from list */
 	MountNameList[pos].clear();
+	SetWbfsHandle(pos, NULL);
 }
 
 bool PartitionHandle::IsExisting(u64 lba)
@@ -240,13 +242,23 @@ bool PartitionHandle::IsExisting(u64 lba)
 
 s8 PartitionHandle::FindPartitions()
 {
+	MASTER_BOOT_RECORD *mbr = (MASTER_BOOT_RECORD*)MEM2_alloc(MAX_BYTES_PER_SECTOR);
+	if(mbr == NULL)
+		return -1;
+
 	// Read the first sector on the device
 	if(!interface->readSectors(0, 1, mbr))
+	{
+		MEM2_free(mbr);
 		return -1;
+	}
 
 	// If this is the devices master boot record
 	if(mbr->signature != MBR_SIGNATURE)
+	{
+		MEM2_free(mbr);
 		return -1;
+	}
 
 	for(u8 i = 0; i < 4; i++)
 	{
@@ -269,22 +281,30 @@ s8 PartitionHandle::FindPartitions()
 					le32(partition->block_count), (partition->status == PARTITION_BOOTABLE), partition->type, i);
 		}
 	}
-
+	MEM2_free(mbr);
 	return 0;
 }
 
 void PartitionHandle::CheckEBR(u8 PartNum, sec_t ebr_lba)
 {
-	EXTENDED_BOOT_RECORD *ebr = (EXTENDED_BOOT_RECORD *)HeaderBuffer;
+	EXTENDED_BOOT_RECORD *ebr = (EXTENDED_BOOT_RECORD*)MEM2_alloc(MAX_BYTES_PER_SECTOR);
+	if(ebr == NULL)
+		return;
 	sec_t next_erb_lba = 0;
 
 	do
 	{
 		// Read and validate the extended boot record
 		if(!interface->readSectors(ebr_lba + next_erb_lba, 1, ebr))
+		{
+			MEM2_free(ebr);
 			return;
+		}
 		if(ebr->signature != EBR_SIGNATURE)
+		{
+			MEM2_free(ebr);
 			return;
+		}
 
 		if(le32(ebr->partition.block_count) > 0 && !IsExisting(ebr_lba + next_erb_lba + le32(ebr->partition.lba_start)))
 		{
@@ -296,6 +316,8 @@ void PartitionHandle::CheckEBR(u8 PartNum, sec_t ebr_lba)
 		next_erb_lba = le32(ebr->next_ebr.lba_start);
 	}
 	while(next_erb_lba > 0);
+
+	MEM2_free(ebr);
 }
 
 static const u8 TYPE_UNUSED[16] = { 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 };
@@ -304,28 +326,42 @@ static const u8 TYPE_LINUX_MS_BASIC_DATA[16] = { 0xA2,0xA0,0xD0,0xEB,0xE5,0xB9,0
 
 s8 PartitionHandle::CheckGPT(u8 PartNum)
 {
-	GPT_HEADER *gpt_header = (GPT_HEADER *)HeaderBuffer;
+	GPT_HEADER *gpt_header = (GPT_HEADER*)MEM2_alloc(MAX_BYTES_PER_SECTOR);
+	if(gpt_header == NULL)
+		return -1;
 
 	// Read and validate the extended boot record
 	if(!interface->readSectors(1, 1, gpt_header))
+	{
+		MEM2_free(gpt_header);
 		return -1;
+	}
 	if(strncmp(gpt_header->magic, "EFI PART", 8) != 0)
+	{
+		MEM2_free(gpt_header);
 		return -1;
+	}
 
 	gpt_header->part_table_lba = le64(gpt_header->part_table_lba);
 	gpt_header->part_entries = le32(gpt_header->part_entries);
 	gpt_header->part_entry_size = le32(gpt_header->part_entry_size);
 	gpt_header->part_entry_checksum = le32(gpt_header->part_entry_checksum);
 
+	u8 *sector_buf = (u8*)MEM2_alloc(MAX_BYTES_PER_SECTOR);
+	if(sector_buf == NULL)
+	{
+		MEM2_free(gpt_header);
+		return -1;
+	}
 	u64 next_lba = gpt_header->part_table_lba;
 	for(u32 i = 0; i < gpt_header->part_entries; ++i)
 	{
-		if(!interface->readSectors(next_lba, 1, gpt_entry))
+		if(!interface->readSectors(next_lba, 1, sector_buf))
 			break;
 
 		for(u32 n = 0; n < BYTES_PER_SECTOR/gpt_header->part_entry_size; ++n, ++i)
 		{
-			GUID_PART_ENTRY *part_entry = (gpt_entry + gpt_header->part_entry_size * n);
+			GUID_PART_ENTRY *part_entry = (GUID_PART_ENTRY*)(sector_buf+gpt_header->part_entry_size*n);
 
 			if(memcmp(part_entry->part_type_guid, TYPE_UNUSED, 16) == 0)
 				continue;
@@ -339,15 +375,24 @@ s8 PartitionHandle::CheckGPT(u8 PartNum)
 		}
 		next_lba++;
 	}
+	MEM2_free(sector_buf);
+	MEM2_free(gpt_header);
 	return 0;
 }
 
 void PartitionHandle::AddPartition(const char *name, u64 lba_start, u64 sec_count, bool bootable, u8 part_type, u8 part_num)
 {
-	if(!interface->readSectors(lba_start, 1, AddingBuffer))
+	u8 *buffer = (u8*)MEM2_alloc(MAX_BYTES_PER_SECTOR);
+	if(buffer == NULL)
 		return;
 
-	wbfs_head_t *head = (wbfs_head_t *)AddingBuffer;
+	if(!interface->readSectors(lba_start, 1, buffer))
+	{
+		MEM2_free(buffer);
+		return;
+	}
+
+	wbfs_head_t *head = (wbfs_head_t*)buffer;
 
 	if(head->magic == wbfs_htonl(WBFS_MAGIC))
 	{
@@ -356,16 +401,16 @@ void PartitionHandle::AddPartition(const char *name, u64 lba_start, u64 sec_coun
 		//! correct sector size in physical sectors (512 bytes per sector)
 		sec_count = (u64) head->n_hd_sec * (u64) (1 << head->hd_sec_sz_s) / (u64) BYTES_PER_SECTOR;
 	}
-	else if(*((u16 *) (AddingBuffer + 0x1FE)) == 0x55AA)
+	else if(*((u16 *)(buffer + 0x1FE)) == 0x55AA)
 	{
-		//! Partition typ can be missleading the correct partition format. Stupid lazy ass Partition Editors.
-		if((memcmp(AddingBuffer + 0x36, "FAT", 3) == 0 || memcmp(AddingBuffer + 0x52, "FAT", 3) == 0) &&
+		//! Partition type can be missleading the correct partition format. Stupid lazy ass Partition Editors.
+		if((memcmp(buffer + 0x36, "FAT", 3) == 0 || memcmp(buffer + 0x52, "FAT", 3) == 0) &&
 			strncmp(PartFromType(part_type), "FAT", 3) != 0)
 		{
 			name = "FAT32";
 			part_type = 0x0c;
 		}
-		if (memcmp(AddingBuffer + 0x03, "NTFS", 4) == 0)
+		if(memcmp(buffer + 0x03, "NTFS", 4) == 0)
 		{
 			name = "NTFS";
 			part_type = 0x07;
@@ -379,8 +424,8 @@ void PartitionHandle::AddPartition(const char *name, u64 lba_start, u64 sec_coun
 	PartitionEntry.Bootable = bootable;
 	PartitionEntry.PartitionType = part_type;
 	PartitionEntry.PartitionNum = part_num;
-	gprintf("Found a %s Partition with the number %i\n", name, part_num);
 	PartitionList.push_back(PartitionEntry);
+	MEM2_free(buffer);
 }
 
 wbfs_t *PartitionHandle::GetWbfsHandle(int pos)

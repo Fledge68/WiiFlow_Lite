@@ -31,6 +31,8 @@
 #include "cios.h"
 #include "alt_ios.h"
 #include "utils.h"
+#include "sys.h"
+#include "nk.h"
 #include "fs.h"
 #include "mload.h"
 #include "gecko/gecko.h"
@@ -116,6 +118,11 @@ bool IOS_D2X(u8 ios, u8 *base)
 
 u8 IOS_GetType(u8 slot)
 {
+	/* No more checks needed */
+	if(neek2o() || Sys_DolphinMode())
+		return IOS_TYPE_NEEK2O;
+
+	/* Lets do this */
 	u32 TMD_Length;
 	signed_blob *TMD_Buffer = GetTMD(slot, &TMD_Length);
 	if(TMD_Buffer == NULL)
@@ -129,7 +136,6 @@ u8 IOS_GetType(u8 slot)
 	}
 	u32 title_rev = iosTMD->title_version;
 	MEM2_free(TMD_Buffer);
-	iosTMD = NULL;
 
 	u8 base = 0;
 	switch(slot)
@@ -196,6 +202,8 @@ void IOS_GetCurrentIOSInfo()
 		gprintf("Hermes IOS%i[%i] v%d.%d\n", CurrentIOS.Version, CurrentIOS.Base, 
 			CurrentIOS.Revision, CurrentIOS.SubRevision);
 	}
+	else
+		gprintf("IOS%i v%i\n", CurrentIOS.Version, CurrentIOS.Revision);
 	DCFlushRange(&CurrentIOS, sizeof(IOS_Info));
 }
 
