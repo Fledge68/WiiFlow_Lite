@@ -115,8 +115,8 @@ private:
 	string m_ver;
 	/* End Updates */
 	// 
-	STexture m_prevBg;
 	STexture m_curBg;
+	const STexture *m_prevBg;
 	const STexture *m_nextBg;
 	const STexture *m_lqBg;
 	u8 m_bgCrossFade;

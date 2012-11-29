@@ -241,7 +241,7 @@ void CMenu::_initHomeAndExitToMenu()
 	m_homeBtnHelp = _addButton("HOME/HELP", theme.btnFont, L"", 330, 120, 250, 56, theme.btnFontColor);
 	m_homeBtnAbout = _addButton("HOME/ABOUT", theme.btnFont, L"", 330, 230, 250, 56, theme.btnFontColor);
 	m_homeBtnExitTo = _addButton("HOME/EXIT_TO", theme.btnFont, L"", 330, 340, 250, 56, theme.btnFontColor);
-	m_homeLblBattery = _addLabel("HOME/BATTERY", theme.btnFont, L"", 60, 420, 520, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_homeLblBattery = _addLabel("HOME/BATTERY", theme.btnFont, L"", 0, 420, 640, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 
 	_setHideAnim(m_homeBtnSettings, "HOME/SETTINGS", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_homeBtnReloadCache, "HOME/RELOAD_CACHE", 0, 0, -2.f, 0.f);
