@@ -20,6 +20,8 @@ s16 m_homeBtnExitToPriiloader;
 s16 m_homeBtnExitToBootmii;
 s16 m_homeBtnExitToNeek;
 
+s16 m_homeLblBattery;
+
 STexture m_homeBg;
 
 bool CMenu::_Home(void)
@@ -30,7 +32,11 @@ bool CMenu::_Home(void)
 	string prevTheme = m_cfg.getString("GENERAL", "theme", "default");
 	while(!m_exit)
 	{
+		/* battery gets refreshed in here... */
 		_mainLoopCommon();
+		/* and it always changes so... */
+		m_btnMgr.setText(m_homeLblBattery, wfmt(PLAYER_BATTERY_LABEL, min((float)wd[0]->battery_level/2, 100.f), 
+			min((float)wd[1]->battery_level/2, 100.f), min((float)wd[2]->battery_level/2, 100.f), min((float)wd[3]->battery_level/2, 100.f)));
 		if(BTN_A_PRESSED)
 		{
 			if(m_btnMgr.selected(m_homeBtnSettings))
@@ -178,6 +184,8 @@ void CMenu::_showHome(void)
 	m_btnMgr.show(m_homeBtnHelp);
 	m_btnMgr.show(m_homeBtnAbout);	
 	m_btnMgr.show(m_homeBtnExitTo);
+
+	m_btnMgr.show(m_homeLblBattery);
 }
 
 void CMenu::_showExitTo(void)
@@ -202,6 +210,8 @@ void CMenu::_hideHome(bool instant)
 	m_btnMgr.hide(m_homeBtnHelp, instant);
 	m_btnMgr.hide(m_homeBtnAbout, instant);	
 	m_btnMgr.hide(m_homeBtnExitTo, instant);
+
+	m_btnMgr.hide(m_homeLblBattery, instant);
 }
 
 void CMenu::_hideExitTo(bool instant)
@@ -231,6 +241,7 @@ void CMenu::_initHomeAndExitToMenu()
 	m_homeBtnHelp = _addButton("HOME/HELP", theme.btnFont, L"", 330, 120, 250, 56, theme.btnFontColor);
 	m_homeBtnAbout = _addButton("HOME/ABOUT", theme.btnFont, L"", 330, 230, 250, 56, theme.btnFontColor);
 	m_homeBtnExitTo = _addButton("HOME/EXIT_TO", theme.btnFont, L"", 330, 340, 250, 56, theme.btnFontColor);
+	m_homeLblBattery = _addLabel("HOME/BATTERY", theme.btnFont, L"", 60, 420, 520, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 
 	_setHideAnim(m_homeBtnSettings, "HOME/SETTINGS", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_homeBtnReloadCache, "HOME/RELOAD_CACHE", 0, 0, -2.f, 0.f);
@@ -238,6 +249,7 @@ void CMenu::_initHomeAndExitToMenu()
 	_setHideAnim(m_homeBtnHelp, "HOME/HELP", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_homeBtnAbout, "HOME/ABOUT", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_homeBtnExitTo, "HOME/EXIT_TO", 0, 0, -2.f, 0.f);
+	_setHideAnim(m_homeLblBattery, "HOME/BATTERY", 0, 0, -2.f, 0.f);
 
 	_textHome();
 	_hideHome(true);
