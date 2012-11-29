@@ -143,6 +143,7 @@ CMenu::CMenu()
 	m_current_view = COVERFLOW_USB;
 	m_Emulator_boot = false;
 	m_music_info = true;
+	m_prevBg = NULL;
 	m_nextBg = NULL;
 	m_lqBg = NULL;
 }
@@ -533,7 +534,7 @@ void CMenu::_Theme_Cleanup(void)
 {
 	/* Backgrounds */
 	theme.bg.Cleanup();
-	m_prevBg.Cleanup();
+	m_prevBg = NULL;
 	m_nextBg = NULL;
 	m_curBg.Cleanup();
 	m_lqBg = NULL;
@@ -1950,7 +1951,7 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 	_updateBg();
 	if(CoverFlow.getRenderTex())
 		CoverFlow.RenderTex();
-	if(withCF)
+	if(withCF && m_lqBg != NULL)
 		CoverFlow.makeEffectTexture(m_lqBg);
 	if(withCF && m_aa > 0)
 	{
@@ -2060,36 +2061,39 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 
 void CMenu::_setBg(const STexture &tex, const STexture &lqTex)
 {
-	m_lqBg = &lqTex;
+	/* Not setting same bg again */
 	if(m_nextBg == &tex)
 		return;
-	m_prevBg.CopyTexture(m_curBg);
-	m_curBg.Cleanup();
+	m_lqBg = &lqTex;
+	/* before setting new next bg set previous */
+	if(m_nextBg != NULL)
+		m_prevBg = m_nextBg;
 	m_nextBg = &tex;
 	m_bgCrossFade = 0xFF;
 }
 
 void CMenu::_updateBg(void)
 {
+	if(m_bgCrossFade == 0)
+		return;
+	m_bgCrossFade = max(0, (int)m_bgCrossFade - 14);
+
 	Mtx modelViewMtx;
 	GXTexObj texObj;
 	GXTexObj texObj2;
 
-	if (m_bgCrossFade == 0) return;
-	m_bgCrossFade = max(0, (int)m_bgCrossFade - 14);
-	if(m_bgCrossFade == 0 && m_nextBg != NULL)
-	{
-		m_curBg.CopyTexture(*m_nextBg);
-		return;
-	}
+	/* last pass so remove previous bg */
+	if(m_bgCrossFade == 0)
+		m_prevBg = NULL;
+
 	GX_ClearVtxDesc();
-	GX_SetNumTevStages(m_prevBg.data == NULL ? 1 : 2);
+	GX_SetNumTevStages(m_prevBg == NULL ? 1 : 2);
 	GX_SetNumChans(0);
 	GX_SetVtxDesc(GX_VA_POS, GX_DIRECT);
 	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
 	GX_SetVtxDesc(GX_VA_TEX0, GX_DIRECT);
 	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
-	GX_SetNumTexGens(m_prevBg.data == NULL ? 1 : 2);
+	GX_SetNumTexGens(m_prevBg == NULL ? 1 : 2);
 	GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
 	GX_SetTexCoordGen(GX_TEXCOORD1, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
 	GX_SetTevKColor(GX_KCOLOR0, CColor(m_bgCrossFade, 0xFF - m_bgCrossFade, 0, 0));
@@ -2116,9 +2120,9 @@ void CMenu::_updateBg(void)
 		GX_InitTexObj(&texObj, m_nextBg->data, m_nextBg->width, m_nextBg->height, m_nextBg->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		GX_LoadTexObj(&texObj, GX_TEXMAP0);
 	}
-	if(m_prevBg.data != NULL)
+	if(m_prevBg != NULL && m_prevBg->data != NULL)
 	{
-		GX_InitTexObj(&texObj2, m_prevBg.data, m_prevBg.width, m_prevBg.height, m_prevBg.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+		GX_InitTexObj(&texObj2, m_prevBg->data, m_prevBg->width, m_prevBg->height, m_prevBg->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		GX_LoadTexObj(&texObj2, GX_TEXMAP1);
 	}
 	GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
@@ -2137,11 +2141,6 @@ void CMenu::_updateBg(void)
 	m_curBg.format = GX_TF_RGBA8;
 	m_curBg.maxLOD = 0;
 	m_vid.renderToTexture(m_curBg, true);
-	if(m_curBg.data == NULL && m_nextBg != NULL)
-	{
-		m_curBg.CopyTexture(*m_nextBg);
-		m_bgCrossFade = 0;
-	}
 }
 
 void CMenu::_drawBg(void)
