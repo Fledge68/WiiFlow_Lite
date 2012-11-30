@@ -40,6 +40,7 @@ public:
 	void setText(s16 id, const wstringEx &text, bool unwrap = false);
 	void setText(s16 id, const wstringEx &text, u32 startline, bool unwrap = false);
 	void setBtnTexture(s16 id, STexture &texNormal, STexture &texSelected);
+	void freeBtnTexture(s16 id);
 	void setTexture(s16 id ,STexture &bg);
 	void setTexture(s16 id, STexture &bg, int width, int height);
 	void setProgress(s16 id, float f, bool instant = false);

@@ -526,15 +526,26 @@ void CButtonsMgr::setText(s16 id, const wstringEx &text, u32 startline,bool unwr
 void CButtonsMgr::setBtnTexture(s16 id, STexture &texNormal, STexture &texSelected)
 {
 	if (id == -1) return;
-	SButtonTextureSet texSet;
-
-	texSet.center = texNormal;
-	texSet.centerSel = texSelected;
-
 	if (id < (s32)m_elts.size())
 	{
 		SButton *b = (SButton*)m_elts[id];
-		b->tex = texSet;//change texture
+		/* free old textures */
+		b->tex.center.Cleanup();
+		b->tex.centerSel.Cleanup();
+		/*change textures */
+		b->tex.center = texNormal;
+		b->tex.centerSel = texSelected;
+	}
+}
+
+void CButtonsMgr::freeBtnTexture(s16 id)
+{
+	if(id == -1) return;
+	if(id < (s32)m_elts.size())
+	{
+		SButton *b = (SButton*)m_elts[id];
+		b->tex.center.Cleanup();
+		b->tex.centerSel.Cleanup();
 	}
 }
 
