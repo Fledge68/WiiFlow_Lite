@@ -60,7 +60,10 @@ void CMenu::_hideSource(bool instant)
 	}
 
 	for(i = 0; i < 12; ++i)
+	{
 		m_btnMgr.hide(m_sourceBtnSource[i], instant);
+		m_btnMgr.freeBtnTexture(m_sourceBtnSource[i]);
+	}
 }
 
 void CMenu::_showSource(void)
@@ -100,30 +103,30 @@ void CMenu::_updateSourceBtns(void)
 	for (u8 i = 0; i < 12; ++i)
 		m_btnMgr.hide(m_sourceBtnSource[i], true);		
 
-	string ImgName;
+	const char *ImgName = NULL;
 	u8 j = (Source_curPage - 1) * 12;
 	
 	for(u8 i = 0; i < 12; ++i)
 	{
 		STexture texConsoleImg;
 		STexture texConsoleImgs;
-		
-		ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image", "");
-		if(texConsoleImg.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), ImgName.c_str())) != TE_OK)
+
+		ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image", "").c_str();
+		if(texConsoleImg.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), ImgName)) != TE_OK)
 		{
-			if(texConsoleImg.fromImageFile(fmt("%s/%s", m_sourceDir.c_str(), ImgName.c_str())) != TE_OK)
+			if(texConsoleImg.fromImageFile(fmt("%s/%s", m_sourceDir.c_str(), ImgName)) != TE_OK)
 				texConsoleImg.fromPNG(favoriteson_png);
 		}
-		ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image_s", "");
-		if(texConsoleImgs.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), ImgName.c_str())) != TE_OK)
+		ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image_s", "").c_str();
+		if(texConsoleImgs.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), ImgName)) != TE_OK)
 		{
-			if(texConsoleImgs.fromImageFile(fmt("%s/%s", m_sourceDir.c_str(), ImgName.c_str())) != TE_OK)
+			if(texConsoleImgs.fromImageFile(fmt("%s/%s", m_sourceDir.c_str(), ImgName)) != TE_OK)
 				texConsoleImgs.fromPNG(favoritesons_png);
 		}
 		m_btnMgr.setBtnTexture(m_sourceBtnSource[i], texConsoleImg, texConsoleImgs);
 
-		string source = m_source.getString(fmt("BUTTON_%i", i + j), "source", "");
-		if (!source.empty())
+		const char *source = m_source.getString(fmt("BUTTON_%i", i + j), "source", "").c_str();
+		if(source != NULL && source[0] != '\0')
 			m_btnMgr.show(m_sourceBtnSource[i]);
 	}
 }
