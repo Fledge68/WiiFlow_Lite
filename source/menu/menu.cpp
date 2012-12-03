@@ -296,7 +296,7 @@ void CMenu::init()
 		_load_installed_cioses();
 	else
 		_installed_cios[CurrentIOS.Version] = CurrentIOS.Version;
-
+	/* Path Settings */
 	snprintf(m_app_update_drive, sizeof(m_app_update_drive), "%s:/", drive);
 	m_dataDir = fmt("%s:/%s", drive, APPDATA_DIR);
 	gprintf("Data Directory: %s\n", m_dataDir.c_str());
@@ -327,7 +327,13 @@ void CMenu::init()
 	m_fanartDir = m_cfg.getString("GENERAL", "dir_fanart", fmt("%s/fanart", m_dataDir.c_str()));
 	m_screenshotDir = m_cfg.getString("GENERAL", "dir_screenshot", fmt("%s/screenshots", m_dataDir.c_str()));
 	m_helpDir = m_cfg.getString("GENERAL", "dir_help", fmt("%s/help", m_dataDir.c_str()));
-	
+
+	/* Cache Reload Checks */
+	u32 ini_rev = m_cfg.getInt("GENERAL", "ini_rev", 0);
+	if(ini_rev != SVN_REV_NUM)
+		fsop_deleteFolder(m_listCacheDir.c_str());
+	m_cfg.setInt("GENERAL", "ini_rev", SVN_REV_NUM);
+
 	//DeviceHandler::SetWatchdog(m_cfg.getUInt("GENERAL", "watchdog_timeout", 10));
 
 	const char *domain = _domainFromView();
