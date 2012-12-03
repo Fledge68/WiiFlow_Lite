@@ -1093,6 +1093,7 @@ private:
 	static int _version[9];
 	static const SCFParamDesc _cfParams[];
 	static const int _nbCfgPages;
+	static const u32 SVN_REV_NUM;
 };
 
 #define ARRAY_SIZE(a)		(sizeof a / sizeof a[0])
