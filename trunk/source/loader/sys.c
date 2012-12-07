@@ -19,16 +19,13 @@
 #include "wiiuse/wpad.h"
 
 /* Variables */
-bool reset = false;
-bool shutdown = false;
-u8 ExitOption = 0;
+volatile bool reset = false;
+volatile bool shutdown = false;
+volatile u8 ExitOption = 0;
 const char *NeekPath = NULL;
-
-extern void __exception_closeall();
 
 void __Wpad_PowerCallback()
 {
-	/* Poweroff console */
 	shutdown = 1;
 }
 
