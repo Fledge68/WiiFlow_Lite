@@ -215,7 +215,8 @@ void CMenu::exitHandler(int ExitTo)
 		stat("sd:/bootmii/ppcboot.elf", &dummy) != 0)
 			ExitTo = EXIT_TO_HBC;
 	}
-	Sys_ExitTo(ExitTo);
+	if(ExitTo != WIIFLOW_DEF)
+		Sys_ExitTo(ExitTo);
 }
 
 int CMenu::main(void)

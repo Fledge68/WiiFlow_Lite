@@ -92,7 +92,7 @@ bool CMenu::_Home(void)
 			{
 				_hideHome();
 				if(m_locked)
-					exitHandler(PRIILOADER_DEF);
+					exitHandler(WIIFLOW_DEF);
 				else 
 					_ExitTo();
 				if(m_exit)
@@ -102,7 +102,7 @@ bool CMenu::_Home(void)
 		}
 		else if(BTN_HOME_PRESSED)
 		{
-			exitHandler(PRIILOADER_DEF);	
+			exitHandler(WIIFLOW_DEF);	
 			break;
 		}
 		else if(BTN_B_PRESSED)
@@ -163,7 +163,7 @@ bool CMenu::_ExitTo(void)
 		}
 		else if(BTN_HOME_PRESSED)
 		{
-			exitHandler(PRIILOADER_DEF);
+			exitHandler(WIIFLOW_DEF);
 			break;
 		}
 		else if(BTN_B_PRESSED)

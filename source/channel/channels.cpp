@@ -137,7 +137,7 @@ void Channels::GetBanner(u64 title, bool imetOnly)
 	u32 cid;
 	if(!GetAppNameFromTmd(title, app, false, &cid))
 	{
-		gprintf("No title found\n");
+		gprintf("No title found for %08x %08x\n", (u32)(title&0xFFFFFFFF),(u32)(title>>32));
 		return;
 	}
 	CurrentBanner.GetBanner(title, app, true, imetOnly);

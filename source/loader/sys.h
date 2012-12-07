@@ -8,6 +8,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define HBC_LULZ			0x000100014c554c5aULL
 #define HBC_108				0x00010001af1bf516ULL
 #define HBC_JODI			0x0001000148415858ULL
 #define HBC_HAXX			0x000100014a4f4449ULL
@@ -25,6 +26,7 @@ enum
 	EXIT_TO_WFNK2O,
 	EXIT_TO_SMNK2O,
 	BUTTON_CALLBACK,
+	WIIFLOW_DEF,
 };
 
 /* Prototypes */

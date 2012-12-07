@@ -112,6 +112,7 @@ void Sys_Exit(void)
 		IOS_ReloadIOS(0xfe);
 	else if(ExitOption == EXIT_TO_HBC)
 	{
+		WII_LaunchTitle(HBC_LULZ);
 		WII_LaunchTitle(HBC_108);
 		WII_LaunchTitle(HBC_JODI);
 		WII_LaunchTitle(HBC_HAXX);
