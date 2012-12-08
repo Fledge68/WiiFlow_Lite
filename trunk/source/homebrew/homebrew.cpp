@@ -3,13 +3,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <ogc/machine/processor.h>
+#include <ogc/lwp_threads.h>
 #include <vector>
 #include <string>
+#include "homebrew.h"
 #include "gecko/gecko.hpp"
-
-#define EXECUTE_ADDR	((u8 *)0x92000000)
-#define BOOTER_ADDR		((u8 *)0x93000000)
-#define ARGS_ADDR		((u8 *)0x93200000)
 
 using namespace std;
 
@@ -18,9 +16,6 @@ extern const u32 app_booter_bin_size;
 
 extern const u8 stub_bin[];
 extern const u32 stub_bin_size;
-
-typedef void (*entrypoint) (void);
-extern "C" { void __exception_closeall(); }
 
 u32 buffer_size = 0;
 
@@ -126,17 +121,17 @@ int BootHomebrew()
 	memcpy(BOOTER_ADDR, app_booter_bin, app_booter_bin_size);
 	DCFlushRange(BOOTER_ADDR, app_booter_bin_size);
 
-	entrypoint exeEntryPoint = (entrypoint)BOOTER_ADDR;
-	u32 cookie;
-
 	memmove(ARGS_ADDR, &args, sizeof(args));
 	DCFlushRange(ARGS_ADDR, sizeof(args) + args.length);
 
-	/* cleaning up and load dol */
-	SYS_ResetSystem(SYS_SHUTDOWN, 0, 0);
-	_CPU_ISR_Disable(cookie);
-	__exception_closeall();
-	exeEntryPoint();
-	_CPU_ISR_Restore(cookie);
+	JumpToBooter();
 	return 0;
+}
+
+#define BOOTER_ENTRY ((void(*)())BOOTER_ADDR)
+void JumpToBooter()
+{
+	/* cleaning up and load bin */
+	SYS_ResetSystem(SYS_SHUTDOWN, 0, 0);
+	__lwp_thread_stopmultitasking(BOOTER_ENTRY);
 }

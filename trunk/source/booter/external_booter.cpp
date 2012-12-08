@@ -32,13 +32,8 @@
 #include "memory/mem2.hpp"
 #include "plugin/crc32.h"
 
-typedef void (*entrypoint) (void);
-extern "C" { void __exception_closeall(); }
-
 /* External WiiFlow Game Booter */
-#define BOOTER_ADDR		((u8 *)0x80B00000)
 static the_CFG *BooterConfig = (the_CFG*)0x93100000;
-static entrypoint exeEntryPoint = (entrypoint)BOOTER_ADDR;
 
 extern "C" {
 u8 configbytes[2];
@@ -52,8 +47,6 @@ extern u8 *codelistend;
 extern u32 gameconfsize;
 extern u32 *gameconf;
 
-u32 cookie;
-__argv args;
 the_CFG normalCFG;
 void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, int aspectRatio, u32 returnTo, u8 BootType)
 {
@@ -85,14 +78,8 @@ void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 pat
 	/* Copy in booter */
 	memcpy(BOOTER_ADDR, booter, booter_size);
 	DCFlushRange(BOOTER_ADDR, booter_size);
-	/* Shutdown IOS subsystems */
-	__IOS_ShutdownSubsystems();
-	u32 level = IRQ_Disable();
-	__exception_closeall();
 	/* Boot it */
-	exeEntryPoint();
-	/* Fail */
-	IRQ_Restore(level);
+	JumpToBooter();
 }
 
 extern FragList *frag_list;

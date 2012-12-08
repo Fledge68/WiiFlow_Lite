@@ -166,6 +166,7 @@ void CMenu::_PluginSettings()
 		}
 	}
 	_hidePluginSettings();
+	_loadList();
 }
 
 void CMenu::_initPluginSettingsMenu()
