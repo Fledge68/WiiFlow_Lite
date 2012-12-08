@@ -2,15 +2,12 @@
 #ifndef _BOOTHOMEBREW_H_
 #define _BOOTHOMEBREW_H_
 
-#define EXECUTE_ADDR	((u8 *)0x92000000)
-#define BOOTER_ADDR		((u8 *)0x93000000)
-#define ARGS_ADDR		((u8 *)0x93200000)
+typedef void (*entry)(void);
 
-int BootHomebrew();
-int SetupARGV(struct __argv * args);
+void BootHomebrew();
 void AddBootArgument(const char * arg);
 int LoadHomebrew(const char * filepath);
-void JumpToBooter();
+void JumpToEntry(entry EntryPoint);
 void writeStub();
 
 #endif

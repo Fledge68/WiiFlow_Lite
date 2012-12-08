@@ -34,6 +34,8 @@
 
 /* External WiiFlow Game Booter */
 static the_CFG *BooterConfig = (the_CFG*)0x93100000;
+#define EXT_ADDR	((u8*)0x80B00000)
+#define EXT_ENTRY	((entry)EXT_ADDR)
 
 extern "C" {
 u8 configbytes[2];
@@ -76,10 +78,10 @@ void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 pat
 	memcpy(BooterConfig, &normalCFG, sizeof(the_CFG));
 	DCFlushRange(BooterConfig, sizeof(the_CFG));
 	/* Copy in booter */
-	memcpy(BOOTER_ADDR, booter, booter_size);
-	DCFlushRange(BOOTER_ADDR, booter_size);
+	memcpy(EXT_ADDR, booter, booter_size);
+	DCFlushRange(EXT_ADDR, booter_size);
 	/* Boot it */
-	JumpToBooter();
+	JumpToEntry(EXT_ENTRY);
 }
 
 extern FragList *frag_list;
