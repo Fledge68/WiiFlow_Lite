@@ -19,7 +19,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <ogc/machine/processor.h>
-
+#include <ogc/lwp_threads.h>
 // for directory parsing and low-level file I/O
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -153,7 +153,7 @@ u8 *loader_bin = NULL;
 u32 loader_size = 0;
 extern "C" { extern void __exception_closeall(); }
 static gconfig *DEVO_CONFIG = (gconfig*)0x80000020;
-#define DEVO_Entry() ((void(*)(void))loader_bin)()
+#define DEVO_Entry ((void(*)())loader_bin)
 
 bool DEVO_Installed(const char *path)
 {
@@ -297,13 +297,9 @@ void DEVO_Boot()
 	MEM2_free(tmp_buffer);
 	gprintf("%s\n", (loader_bin+4));
 	/* cleaning up and load bin */
-	u32 cookie;
 	gprintf("Jumping to Entry 0x%08x\n", loader_bin);
 	SYS_ResetSystem(SYS_SHUTDOWN, 0, 0);
-	_CPU_ISR_Disable(cookie);
-	__exception_closeall();
-	DEVO_Entry();
-	_CPU_ISR_Restore(cookie);
+	__lwp_thread_stopmultitasking(DEVO_Entry);
 }
 
 
