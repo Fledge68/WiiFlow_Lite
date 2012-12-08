@@ -9,6 +9,11 @@
 #include "homebrew.h"
 #include "gecko/gecko.hpp"
 
+#define EXECUTE_ADDR	((u8 *)0x92000000)
+#define BOOTER_ADDR		((u8 *)0x93000000)
+#define ARGS_ADDR		((u8 *)0x93200000)
+#define BOOTER_ENTRY	((entry)BOOTER_ADDR)
+
 using namespace std;
 
 extern const u8 app_booter_bin[];
@@ -110,9 +115,9 @@ void writeStub()
 	DCFlushRange((void*)0x80001800, stub_bin_size);
 }
 
-int BootHomebrew()
+void BootHomebrew()
 {
-	struct __argv args;
+	__argv args;
 	if(!IsDollZ(EXECUTE_ADDR) && !IsSpecialELF(EXECUTE_ADDR))
 		SetupARGV(&args);
 	else
@@ -124,14 +129,12 @@ int BootHomebrew()
 	memmove(ARGS_ADDR, &args, sizeof(args));
 	DCFlushRange(ARGS_ADDR, sizeof(args) + args.length);
 
-	JumpToBooter();
-	return 0;
+	JumpToEntry(BOOTER_ENTRY);
 }
 
-#define BOOTER_ENTRY ((void(*)())BOOTER_ADDR)
-void JumpToBooter()
+void JumpToEntry(entry EntryPoint)
 {
-	/* cleaning up and load bin */
+	gprintf("Jumping to %08x\n", EntryPoint);
 	SYS_ResetSystem(SYS_SHUTDOWN, 0, 0);
-	__lwp_thread_stopmultitasking(BOOTER_ENTRY);
+	__lwp_thread_stopmultitasking(EntryPoint);
 }

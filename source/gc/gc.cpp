@@ -31,6 +31,7 @@
 #include "devicemounter/DeviceHandler.hpp"
 #include "gecko/gecko.hpp"
 #include "fileOps/fileOps.h"
+#include "homebrew/homebrew.h"
 #include "loader/utils.h"
 #include "loader/disc.h"
 #include "loader/sys.h"
@@ -153,7 +154,7 @@ u8 *loader_bin = NULL;
 u32 loader_size = 0;
 extern "C" { extern void __exception_closeall(); }
 static gconfig *DEVO_CONFIG = (gconfig*)0x80000020;
-#define DEVO_Entry ((void(*)())loader_bin)
+#define DEVO_ENTRY ((entry)loader_bin)
 
 bool DEVO_Installed(const char *path)
 {
@@ -296,10 +297,8 @@ void DEVO_Boot()
 	DCFlushRange(loader_bin, ALIGN32(loader_size));
 	MEM2_free(tmp_buffer);
 	gprintf("%s\n", (loader_bin+4));
-	/* cleaning up and load bin */
-	gprintf("Jumping to Entry 0x%08x\n", loader_bin);
-	SYS_ResetSystem(SYS_SHUTDOWN, 0, 0);
-	__lwp_thread_stopmultitasking(DEVO_Entry);
+	/* Boot that binary */
+	JumpToEntry(DEVO_ENTRY);
 }
 
 
