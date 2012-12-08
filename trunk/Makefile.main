@@ -115,8 +115,7 @@ export OFILES	:=	$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) \
 					$(sFILES:.s=.o) $(SFILES:.S=.o) \
 					$(PNGFILES:.png=.png.o) $(JPGFILES:.jpg=.jpg.o) \
 					$(OGGFILES:.ogg=.ogg.o) $(TXTFILES:.txt=.txt.o) \
-					$(WAVFILES:.wav=.wav.o) $(addsuffix .o,$(BINFILES)) \
-					$(CURDIR)/data/binary/magic_patcher.o
+					$(WAVFILES:.wav=.wav.o) $(addsuffix .o,$(BINFILES))
 
 #---------------------------------------------------------------------------------
 # build a list of include paths
