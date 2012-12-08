@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ogcsys.h>
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 
 #define PLAYRECPATH "/title/00000001/00000002/data/play_rec.dat"
 #define SECONDS_TO_2000 946684800LL

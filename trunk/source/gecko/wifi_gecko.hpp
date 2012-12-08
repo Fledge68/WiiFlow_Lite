@@ -1,6 +1,6 @@
 /****************************************************************************
- * Copyright (C) 2010
- * by Dimok
+ * Copyright (C) 2010 by Dimok
+ *           (C) 2012 by FIX94
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any
@@ -20,23 +20,33 @@
  *
  * 3. This notice may not be removed or altered from any source
  * distribution.
- *
- * for WiiXplorer 2010
  ***************************************************************************/
-#ifndef WIFI_GECKO_H_
-#define WIFI_GECKO_H_
+#ifndef WIFI_GECKO_HPP_
+#define WIFI_GECKO_HPP_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <network.h>
 
-void WifiGecko_Init(const char *ip, u16 port);
-int WifiGecko_Connect();
-void WifiGecko_Close();
-int WifiGecko_Send(const char * data, int datasize);
+#define WIFIGECKO_SIZE	1024
 
-#ifdef __cplusplus
-}
-#endif
+class WifiGecko
+{
+public:
+	WifiGecko();
+	void Init(const char *ip, u16 port);
+	int Send(const char *data, int datasize);
+	void SetBuffer(bool buf);
+private:
+	int Connect();
+	void Close();
+
+	bool inited;
+	bool buffer;
+	const char *dest_ip;
+	u16 dest_port;
+	volatile int connection;
+	sockaddr_in connect_addr;
+	char wifigeckobuffer[WIFIGECKO_SIZE];
+};
+extern WifiGecko WiFiDebugger;
 
 #endif

@@ -13,7 +13,7 @@
 #include "devicemounter/DeviceHandler.hpp"
 #include "devicemounter/sdhc.h"
 #include "devicemounter/usbstorage.h"
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 #include "memory/mem2.hpp"
 #include "memory/memory.h"
 #include "types.h"

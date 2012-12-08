@@ -14,7 +14,7 @@
 #include "lockMutex.hpp"
 #include "fonts.h"
 #include "types.h"
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 #include "memory/mem2.hpp"
 #include "wstringEx/wstringEx.hpp"
 

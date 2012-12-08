@@ -13,7 +13,7 @@ More info : http://frontier-dev.net
 
 #include "pngu.h"
 #include "png.h"
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 #include "loader/utils.h"
 #include "memory/mem2.hpp"
 

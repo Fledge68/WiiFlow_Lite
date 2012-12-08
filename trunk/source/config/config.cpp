@@ -2,7 +2,7 @@
 #include <fstream>
 
 #include "config.hpp"
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 #include "gui/text.hpp"
 
 static const char *g_whitespaces = " \f\n\r\t\v";

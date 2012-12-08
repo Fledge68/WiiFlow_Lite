@@ -5,7 +5,7 @@
 
 #include "mem2.hpp"
 #include "mem2alloc.hpp"
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 #include "loader/utils.h"
 
 #define MEM2_PRIORITY_SIZE	0x1000

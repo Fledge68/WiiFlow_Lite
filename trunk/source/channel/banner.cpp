@@ -34,7 +34,7 @@
 #include <malloc.h>
 #include "banner.h"
 #include "MD5.h"
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 #include "loader/fs.h"
 #include "unzip/U8Archive.h"
 

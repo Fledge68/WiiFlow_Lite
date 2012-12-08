@@ -35,7 +35,7 @@
 #include "nk.h"
 #include "fs.h"
 #include "mload.h"
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 #include "memory/mem2.hpp"
 
 int mainIOS = 0;

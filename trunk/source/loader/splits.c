@@ -12,7 +12,7 @@
 #include <ctype.h>
 
 #include "splits.h"
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 
 #define off64_t off_t
 #define FMT_llu "%llu"

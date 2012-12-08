@@ -38,7 +38,7 @@
 #include "nand.hpp"
 #include "identify.h"
 #include "fileOps/fileOps.h"
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 #include "loader/alt_ios.h"
 #include "loader/cios.h"
 #include "loader/fs.h"

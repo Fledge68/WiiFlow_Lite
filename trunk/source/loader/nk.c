@@ -31,7 +31,7 @@
 #include "nk.h"
 #include "armboot.h"
 #include "memory/mem2.hpp"
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 
 bool checked = false;
 bool neek = false;

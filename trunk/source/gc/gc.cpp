@@ -29,7 +29,7 @@
 #include "gc/gc.hpp"
 #include "gui/text.hpp"
 #include "devicemounter/DeviceHandler.hpp"
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 #include "fileOps/fileOps.h"
 #include "loader/utils.h"
 #include "loader/disc.h"

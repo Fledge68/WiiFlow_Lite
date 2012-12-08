@@ -20,7 +20,7 @@
 #include "SoundHandler.hpp"
 #include "list/ListGenerator.hpp"
 #include "gui/text.hpp"
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 
 #define	MUSIC_DEPTH 10
 Musicplayer MusicPlayer;

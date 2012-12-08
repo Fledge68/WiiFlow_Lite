@@ -1,7 +1,6 @@
 
 #include "menu.hpp"
 #include "types.h"
-#include "gecko/gecko.h"
 #include "loader/wbfs.h"
 #include "libwbfs/wiidisc.h"
 

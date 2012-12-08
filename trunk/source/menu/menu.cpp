@@ -146,6 +146,9 @@ CMenu::CMenu()
 	m_prevBg = NULL;
 	m_nextBg = NULL;
 	m_lqBg = NULL;
+	m_use_sd_logging = false;
+	m_use_wifi_gecko = false;
+	init_network = false;
 }
 
 void CMenu::init()
@@ -204,15 +207,16 @@ void CMenu::init()
 	fsop_MakeFolder(m_appDir.c_str());
 	/* Load/Create our wiiflow.ini */
 	m_cfg.load(fmt("%s/" CFG_FILENAME, m_appDir.c_str()));
-	/* Check if we want WiFi/SD Gecko */
-	m_use_wifi_gecko = m_cfg.getBool("DEBUG", "wifi_gecko");
-	if (m_cfg.getBool("GENERAL", "async_network") || has_enabled_providers() || m_use_wifi_gecko)
-		_reload_wifi_gecko();
-	if(!WriteToSD)
-	{
-		WriteToSD = m_cfg.getBool("DEBUG", "sd_write_log", false);
-		bufferMessages = WriteToSD;
-	}
+	/* Check if we want WiFi Gecko */
+	m_use_wifi_gecko = m_cfg.getBool("DEBUG", "wifi_gecko", false);
+	WiFiDebugger.SetBuffer(m_use_wifi_gecko);
+	/* Check if we want SD Gecko */
+	m_use_sd_logging = m_cfg.getBool("DEBUG", "sd_write_log", false);
+	LogToSD_SetBuffer(m_use_sd_logging);
+	/* Init Network if wanted */
+	init_network = (m_cfg.getBool("GENERAL", "async_network") || has_enabled_providers() || m_use_wifi_gecko);
+	if(init_network)
+		_netInit();
 	/* Check if we want a cIOS loaded */
 	int ForceIOS = min(m_cfg.getInt("GENERAL", "force_cios_rev", 0), 254);
 	if(ForceIOS > 0)
@@ -525,7 +529,6 @@ void CMenu::cleanup()
 	CoverFlow.shutdown();
 
 	wiiLightOff();
-	_deinitNetwork();
 	Close_Inputs();
 
 	LWP_MutexDestroy(m_mutex);
@@ -534,6 +537,8 @@ void CMenu::cleanup()
 	cleaned_up = true;
 	//gprintf(" \nMemory cleaned up\n");
 	gprintf("MEM1_freesize(): %i\nMEM2_freesize(): %i\n", MEM1_freesize(), MEM2_freesize());
+	/* Lets deinit our possible wifi gecko here */
+	_deinitNetwork();
 }
 
 void CMenu::_Theme_Cleanup(void)
@@ -637,14 +642,13 @@ void CMenu::_Theme_Cleanup(void)
 	theme.soundSet.clear();
 }
 
-void CMenu::_reload_wifi_gecko(void)
+void CMenu::_netInit(void)
 {
-	if(m_use_wifi_gecko)
-	{
-		_initAsyncNetwork();
-		while(net_get_status() == -EBUSY)
-			usleep(100);
-	}
+	if(!init_network)
+		return;
+	_initAsyncNetwork();
+	while(net_get_status() == -EBUSY)
+		usleep(100);
 }
 
 void CMenu::_setAA(int aa)

@@ -9,7 +9,7 @@
 #include <gccore.h>
 #include <malloc.h>
 
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 #include "loader/disc.h"
 #include "loader/utils.h"
 #include "memory/mem2.hpp"

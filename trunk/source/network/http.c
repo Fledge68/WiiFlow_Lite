@@ -5,7 +5,7 @@
 #include <time.h>
 
 #include "http.h"
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 
 /**
  * Emptyblock is a statically defined variable for functions to return if they are unable

@@ -6,7 +6,7 @@
 #include "video.hpp"
 #include "pngu.h"
 #include "Gekko.h"
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 #include "loader/utils.h"
 
 #define DEFAULT_FIFO_SIZE	(256 * 1024)

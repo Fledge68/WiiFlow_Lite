@@ -12,7 +12,8 @@
 #include "channel/channels.h"
 #include "cheats/gct.h"
 #include "devicemounter/DeviceHandler.hpp"
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
+#include "gecko/wifi_gecko.hpp"
 #include "gui/coverflow.hpp"
 #include "gui/cursor.hpp"
 #include "gui/fanart.hpp"
@@ -969,7 +970,9 @@ public:
 	void directlaunch(const char *GameID);
 private:
 	bool m_use_wifi_gecko;
-	void _reload_wifi_gecko();
+	bool m_use_sd_logging;
+	bool init_network;
+	void _netInit();
 	bool _loadFile(u8 * &buffer, u32 &size, const char *path, const char *file);
 	int _loadIOS(u8 ios, int userIOS, string id);
 	void _launch(dir_discHdr *hdr);

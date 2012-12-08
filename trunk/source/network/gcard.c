@@ -4,7 +4,7 @@
 #include "gcard.h"
 #include "http.h"
 #include "loader/utils.h"
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 
 #define MAX_URL_SIZE 178 // 128 + 48 + 6
 

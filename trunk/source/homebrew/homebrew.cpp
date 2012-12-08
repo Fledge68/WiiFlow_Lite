@@ -5,7 +5,7 @@
 #include <ogc/machine/processor.h>
 #include <vector>
 #include <string>
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 
 #define EXECUTE_ADDR	((u8 *)0x92000000)
 #define BOOTER_ADDR		((u8 *)0x93000000)

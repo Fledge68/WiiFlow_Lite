@@ -22,7 +22,7 @@
 
 #include "usbthread.h"
 #include "usbstorage.h"
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 
 lwp_t USB_Thread = LWP_THREAD_NULL;
 volatile bool CheckUSB = false;

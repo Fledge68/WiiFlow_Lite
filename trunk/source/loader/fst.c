@@ -28,7 +28,7 @@
 #include "fst.h"
 #include "sys.h"
 
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 #include "memory/mem2.hpp"
 
 #define FSTDIRTYPE 1

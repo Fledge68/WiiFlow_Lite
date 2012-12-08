@@ -35,7 +35,7 @@
 #include "usbstorage.h"
 #include "usbstorage_libogc.h"
 #include "usbthread.h"
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 
 /* IOCTL commands */
 #define UMS_BASE			(('U'<<24)|('M'<<16)|('S'<<8))
