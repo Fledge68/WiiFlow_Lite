@@ -18,7 +18,7 @@ en exposed s_fsop fsop structure can be used by callback to update operation sta
 #include <sys/statvfs.h>
 
 #include "fileOps/fileOps.h"
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 #include "loader/utils.h"
 
 #define SET(a, b) a = b; DCFlushRange(&a, sizeof(a));

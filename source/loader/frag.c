@@ -16,7 +16,7 @@
 #include "ext2_frag.h"
 #include "fatfile_frag.h"
 #include "devicemounter/usbstorage.h"
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 #include "libwbfs/libwbfs.h"
 
 FragList *frag_list = NULL;

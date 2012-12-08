@@ -9,8 +9,6 @@
 #include "lockMutex.hpp"
 #include "channel/nand.hpp"
 #include "devicemounter/usbstorage.h"
-#include "gecko/gecko.h"
-#include "gecko/wifi_gecko.h"
 #include "gui/GameTDB.hpp"
 #include "gui/pngu.h"
 #include "loader/fs.h"
@@ -411,19 +409,13 @@ s32 CMenu::_networkComplete(s32 ok, void *usrData)
 	bool wifigecko = m->m_cfg.getBool("DEBUG", "wifi_gecko", false);
 	gprintf("NET: Network init complete, enabled wifi_gecko: %s\n", wifigecko ? "yes" : "no");
 
-	if (wifigecko)
+	if(wifigecko)
 	{
-		// Get ip
-		std::string ip = m->m_cfg.getString("DEBUG", "wifi_gecko_ip");
+		const string &ip = m->m_cfg.getString("DEBUG", "wifi_gecko_ip");
 		u16 port = m->m_cfg.getInt("DEBUG", "wifi_gecko_port", 4405);
-
-		if (ip.size() > 0 && port != 0)
-		{
-			gprintf("NET: WIFI Gecko to %s:%d\n", ip.c_str(), port);
-			WifiGecko_Init(ip.c_str(), port);
-		}
+		if(ip.size() > 0 && port != 0)
+			WiFiDebugger.Init(ip.c_str(), port);
 	}
-
 	return 0;
 }
 

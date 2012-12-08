@@ -22,7 +22,7 @@
 #include "gc.hpp"
 #include "gcdisc.hpp"
 #include "loader/gc_disc_dump.hpp"
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 #include "memory/mem2.hpp"
 
 using namespace std;

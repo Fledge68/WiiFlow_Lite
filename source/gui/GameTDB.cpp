@@ -30,7 +30,7 @@
 #include "defines.h"
 #include "text.hpp"
 #include "config/config.hpp"
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 #include "memory/mem2.hpp"
 #define NAME_OFFSET_DB	"gametdb_offsets.bin"
 #define MAXREADSIZE		1024*1024   //Cache size only for parsing the offsets: 1MB

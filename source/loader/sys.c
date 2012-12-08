@@ -13,7 +13,7 @@
 #include "sys.h"
 #include "channel/channel_launcher.h"
 #include "loader/nk.h"
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 #include "memory/mem2.hpp"
 #include "memory/memory.h"
 #include "wiiuse/wpad.h"

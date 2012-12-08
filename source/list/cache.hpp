@@ -7,7 +7,7 @@
 #include <vector>
 #include "loader/disc.h"
 
-//#include "gecko.h"
+//#include "gecko.hpp"
 using namespace std;
 
 const char io[4][5] = {

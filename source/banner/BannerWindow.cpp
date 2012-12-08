@@ -17,7 +17,7 @@
 #include <unistd.h>
 #include "BannerWindow.hpp"
 #include "gx_addons.h"
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 #include "loader/utils.h"
 #include "menu/menu.hpp"
 

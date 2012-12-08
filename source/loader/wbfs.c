@@ -21,7 +21,7 @@
 #include "devicemounter/sdhc.h"
 #include "devicemounter/usbstorage.h"
 #include "libwbfs/libwbfs.h"
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 #include "memory/mem2.hpp"
 
 /* Constants */

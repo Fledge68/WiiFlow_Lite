@@ -33,7 +33,7 @@
 #include "channels.h"
 #include "banner.h"
 #include "config/config.hpp"
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 #include "gui/text.hpp"
 #include "loader/fs.h"
 #include "memory/mem2.hpp"

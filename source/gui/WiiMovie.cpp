@@ -29,7 +29,7 @@
 #include <asndlib.h>
 #include <malloc.h>
 #include "WiiMovie.hpp"
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 
 #define SND_BUFFERS     8
 #define FRAME_BUFFERS	8

@@ -6,7 +6,7 @@
 
 #include "fs.h"
 #include "utils.h"
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 #include "memory/mem2.hpp"
 
 static fstats stats ATTRIBUTE_ALIGN(32);

@@ -3,7 +3,6 @@
 #include "defines.h"
 #include "channel/channels.h"
 #include "channel/nand.hpp"
-#include "gecko/gecko.h"
 #include "loader/cios.h"
 #include "loader/nk.h"
 

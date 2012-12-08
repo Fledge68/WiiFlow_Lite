@@ -21,7 +21,7 @@
 #include <string.h>
 
 #include "ash.h"
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 
 bool IsAshCompressed( const u8 *stuff, u32 len )
 {

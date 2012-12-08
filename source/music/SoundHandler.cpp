@@ -31,7 +31,7 @@
 #include "WavDecoder.hpp"
 #include "AifDecoder.hpp"
 #include "BNSDecoder.hpp"
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 #include "memory/mem2.hpp"
 
 SoundHandler SoundHandle;

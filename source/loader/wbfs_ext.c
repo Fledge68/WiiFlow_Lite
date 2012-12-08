@@ -21,7 +21,7 @@
 #include "devicemounter/sdhc.h"
 #include "devicemounter/usbstorage.h"
 #include "fileOps/fileOps.h"
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 #include "libwbfs/libwbfs.h"
 
 #define MAX_FAT_PATH 1024

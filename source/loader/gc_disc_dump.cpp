@@ -35,7 +35,7 @@
 #include "wdvd.h"
 #include "devicemounter/DeviceHandler.hpp"
 #include "fileOps/fileOps.h"
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 #include "gui/Gekko.h"
 #include "gui/text.hpp"
 #include "memory/mem2.hpp"

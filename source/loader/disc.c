@@ -20,7 +20,7 @@
 #include "cios.h"
 
 #include "devicemounter/usbstorage.h"
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 #include "memory/memory.h"
 
 struct discHdr wii_hdr ATTRIBUTE_ALIGN(32);

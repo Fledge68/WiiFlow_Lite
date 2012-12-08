@@ -22,7 +22,7 @@
 
 #include "plugin.hpp"
 #include "gui/text.hpp"
-#include "gecko/gecko.h"
+#include "gecko/gecko.hpp"
 #include "devicemounter/PartitionHandle.h"
 #include "devicemounter/DeviceHandler.hpp"
 #include "types.h"

@@ -19,7 +19,6 @@
 #include "fileOps/fileOps.h"
 #include "gc/gc.hpp"
 #include "gc/gcdisc.hpp"
-#include "gecko/gecko.h"
 #include "gui/WiiMovie.hpp"
 #include "gui/GameTDB.hpp"
 #include "gui/Gekko.h"
@@ -951,7 +950,7 @@ int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id)
 	{
 		if(!loadIOS(gameIOS, false))
 		{
-			_reload_wifi_gecko();
+			_netInit();
 			error(sfmt("errgame4", L"Couldn't load IOS %i", gameIOS));
 			return LOAD_IOS_FAILED;
 		}
@@ -1011,7 +1010,7 @@ int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id)
 		gprintf("Reloading IOS into %d\n", gameIOS);
 		if(!loadIOS(gameIOS, true))
 		{
-			_reload_wifi_gecko();
+			_netInit();
 			error(sfmt("errgame4", L"Couldn't load IOS %i", gameIOS));
 			return LOAD_IOS_FAILED;
 		}
