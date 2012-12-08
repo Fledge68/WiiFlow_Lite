@@ -13,6 +13,7 @@
 #include "channel/channel_launcher.h"
 #include "channel/channels.h"
 #include "channel/nand.hpp"
+#include "channel/identify.h"
 #include "devicemounter/DeviceHandler.hpp"
 #include "devicemounter/sdhc.h"
 #include "devicemounter/usbstorage.h"
@@ -943,10 +944,10 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 	BootHomebrew();
 }
 
-int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id)
+int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id, bool RealNAND_Channels)
 {
 	gprintf("Game ID# %s requested IOS %d.  User selected %d\n", id.c_str(), gameIOS, userIOS);
-	if(neek2o())
+	if(neek2o() || RealNAND_Channels)
 	{
 		if(!loadIOS(gameIOS, false))
 		{
@@ -1098,7 +1099,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	gameIOS = ChannelHandle.GetRequestedIOS(gameTitle);
 	if(NAND_Emu && !neek2o())
 		NandHandle.Disable_Emu();
-	if(_loadIOS(gameIOS, userIOS, id) == LOAD_IOS_FAILED)
+	if(_loadIOS(gameIOS, userIOS, id, !NAND_Emu) == LOAD_IOS_FAILED)
 		Sys_Exit();
 	if((CurrentIOS.Type == IOS_TYPE_D2X || neek2o()) && returnTo != 0)
 	{
@@ -1130,6 +1131,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	{
 		setLanguage(language);
 		ocarina_load_code(cheatFile, cheatSize);
+		Patch_Channel_Boot(); /* Patch for everything */
 		Identify(gameTitle);
 		ExternalBooter_ChannelSetup(gameTitle);
 		WiiFlow_ExternalBooter(videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, 0, TYPE_CHANNEL);

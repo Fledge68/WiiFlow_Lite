@@ -11,18 +11,19 @@
 #include "loader/fs.h"
 #include "loader/fst.h"
 #include "loader/utils.h"
+#include "memory/mem2.hpp"
 #include "memory/memory.h"
 #include "unzip/lz77.h"
 #include "types.h"
 
 bool Identify_GenerateTik(signed_blob **outbuf, u32 *outlen)
 {
-	signed_blob *buffer = (signed_blob *)memalign(32, ALIGN32(STD_SIGNED_TIK_SIZE));
+	signed_blob *buffer = (signed_blob*)MEM2_memalign(32, STD_SIGNED_TIK_SIZE);
 	if(!buffer)
 		return false;
 	memset(buffer, 0, STD_SIGNED_TIK_SIZE);
 
-	sig_rsa2048 *signature = (sig_rsa2048 *)buffer;
+	sig_rsa2048 *signature = (sig_rsa2048*)buffer;
 	signature->type = ES_SIG_RSA2048;
 
 	tik *tik_data  = (tik *)SIGNATURE_PAYLOAD(buffer);
@@ -38,8 +39,9 @@ bool Identify_GenerateTik(signed_blob **outbuf, u32 *outlen)
 bool Identify(u64 titleid)
 {
 	char filepath[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
+	memset(filepath, 0, ISFS_MAXPATH);
 
-	gprintf("Reading TMD...");
+	gprintf("Reading TMD for %08x %08x...", TITLE_UPPER(titleid), TITLE_LOWER(titleid));
 	sprintf(filepath, "/title/%08x/%08x/content/title.tmd", TITLE_UPPER(titleid), TITLE_LOWER(titleid));
 	u32 tmdSize;
 	u8 *tmdBuffer = ISFS_GetFile(filepath, &tmdSize, -1);
@@ -54,7 +56,7 @@ bool Identify(u64 titleid)
 	signed_blob *tikBuffer = NULL;
 
 	gprintf("Generating fake ticket...");
-	if(!Identify_GenerateTik(&tikBuffer,&tikSize))
+	if(!Identify_GenerateTik(&tikBuffer, &tikSize))
 	{
 		gprintf("Failed!\n");
 		return false;
@@ -62,8 +64,10 @@ bool Identify(u64 titleid)
 	gprintf("Success!\n");
 
 	gprintf("Reading certs...");
+	memset(filepath, 0, ISFS_MAXPATH);
 	strcpy(filepath, "/sys/cert.sys");
-	u32 certSize;
+
+	u32 certSize = 0;
 	u8 *certBuffer = ISFS_GetFile(filepath, &certSize, -1);
 	if (certBuffer == NULL || certSize == 0)
 	{
@@ -75,8 +79,12 @@ bool Identify(u64 titleid)
 	gprintf("Success!\n");
 
 	gprintf("ES_Identify\n");
-	s32 ret = ES_Identify((signed_blob*)certBuffer, certSize, (signed_blob*)tmdBuffer, tmdSize, tikBuffer, tikSize, NULL);
-	if (ret < 0)
+	u32 keyId = 0;
+	DCFlushRange(tmdBuffer, tmdSize);
+	DCFlushRange(tikBuffer, tikSize);
+	DCFlushRange(certBuffer, certSize);
+	s32 ret = ES_Identify((signed_blob*)certBuffer, certSize, (signed_blob*)tmdBuffer, tmdSize, tikBuffer, tikSize, &keyId);
+	if(ret < 0)
 	{
 		switch(ret)
 		{
@@ -97,7 +105,7 @@ bool Identify(u64 titleid)
 				break;
 		}
 	}
-	
+	gprintf("Key ID: %u\n", keyId);
 	free(tmdBuffer);
 	free(tikBuffer);
 	free(certBuffer);
