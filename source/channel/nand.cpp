@@ -36,6 +36,7 @@
 #include <malloc.h>
 
 #include "nand.hpp"
+#include "identify.h"
 #include "fileOps/fileOps.h"
 #include "gecko/gecko.h"
 #include "loader/alt_ios.h"
@@ -1049,18 +1050,30 @@ s32 Nand::Do_Region_Change(string id)
 	return 1;
 }
 
-extern "C" { extern s32 MagicPatches(s32); }
-
 void Nand::Enable_ISFS_Patches(void)
 {
 	if(AHBRPOT_Patched())
-		gprintf("Enabling ISFS Patches: %i\n", MagicPatches(1));
+	{
+		// Disable memory protection
+		write16(MEM_PROT, 0);
+		// Do patches
+		gprintf("Enabling ISFS Patches: %d\n", Patch_ISFS_Permission(true));
+		// Enable memory protection
+		write16(MEM_PROT, 1);
+	}
 }
 
 void Nand::Disable_ISFS_Patches(void)
 {
 	if(AHBRPOT_Patched())
-		gprintf("Disabling ISFS Patches: %i\n", MagicPatches(0));
+	{
+		// Disable memory protection
+		write16(MEM_PROT, 0);
+		// Do patches
+		gprintf("Disabling ISFS Patches: %d\n", Patch_ISFS_Permission(false));
+		// Enable memory protection
+		write16(MEM_PROT, 1);
+	}
 }
 
 void Nand::Init_ISFS()
