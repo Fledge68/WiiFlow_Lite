@@ -1053,38 +1053,24 @@ s32 Nand::Do_Region_Change(string id)
 void Nand::Enable_ISFS_Patches(void)
 {
 	if(AHBRPOT_Patched())
-	{
-		// Disable memory protection
-		write16(MEM_PROT, 0);
-		// Do patches
-		gprintf("Enabling ISFS Patches: %d\n", Patch_ISFS_Permission(true));
-		// Enable memory protection
-		write16(MEM_PROT, 1);
-	}
+		Patch_ISFS_Permission(true);
 }
 
 void Nand::Disable_ISFS_Patches(void)
 {
 	if(AHBRPOT_Patched())
-	{
-		// Disable memory protection
-		write16(MEM_PROT, 0);
-		// Do patches
-		gprintf("Disabling ISFS Patches: %d\n", Patch_ISFS_Permission(false));
-		// Enable memory protection
-		write16(MEM_PROT, 1);
-	}
+		Patch_ISFS_Permission(false);
 }
 
 void Nand::Init_ISFS()
 {
-	if(IOS_GetVersion() == 58)
+	gprintf("Init ISFS\n");
+	ISFS_Initialize();
+	if(IOS_GetType(IOS_GetVersion()) == IOS_TYPE_NORMAL_IOS)
 	{
 		Enable_ISFS_Patches();
 		AccessPatched = true;
 	}
-	gprintf("Init ISFS\n");
-	ISFS_Initialize();
 }
 
 void Nand::DeInit_ISFS()

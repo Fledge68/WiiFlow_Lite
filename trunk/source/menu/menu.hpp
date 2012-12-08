@@ -974,7 +974,7 @@ private:
 	bool init_network;
 	void _netInit();
 	bool _loadFile(u8 * &buffer, u32 &size, const char *path, const char *file);
-	int _loadIOS(u8 ios, int userIOS, string id);
+	int _loadIOS(u8 ios, int userIOS, string id, bool RealNAND_Channels = false);
 	void _launch(dir_discHdr *hdr);
 	void _launchGame(dir_discHdr *hdr, bool dvd);
 	void _launchChannel(dir_discHdr *hdr);

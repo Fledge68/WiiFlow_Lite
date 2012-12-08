@@ -7,6 +7,7 @@ extern "C"
 #define _PATCHER_H_
 
 bool Patch_ISFS_Permission(bool enable);
+void Patch_Channel_Boot(void);
 
 #endif
 
