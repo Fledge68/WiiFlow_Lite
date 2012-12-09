@@ -1073,11 +1073,11 @@ void Nand::Init_ISFS()
 	}
 }
 
-void Nand::DeInit_ISFS()
+void Nand::DeInit_ISFS(bool KeepPatches)
 {
 	gprintf("Deinit ISFS\n");
 	ISFS_Deinitialize();
-	if(AccessPatched)
+	if(AccessPatched && !KeepPatches)
 	{
 		Disable_ISFS_Patches();
 		AccessPatched = false;
