@@ -349,8 +349,10 @@ int CMenu::_coverDownloaderMissing(CMenu *m)
 
 static bool checkPNGBuf(u8 *data)
 {
-	PNGUPROP imgProp;
+	if(data == NULL)
+		return false;
 
+	PNGUPROP imgProp;
 	IMGCTX ctx = PNGU_SelectImageFromBuffer(data);
 	if (ctx == NULL)
 		return false;
@@ -363,18 +365,22 @@ static bool checkPNGFile(const char *filename)
 {
 	u8 *buffer = NULL;
 	FILE *file = fopen(filename, "rb");
-	if (file == NULL) return false;
+	if(file == NULL)
+		return false;
 	fseek(file, 0, SEEK_END);
-	long fileSize = ftell(file);
+	u32 fileSize = ftell(file);
 	fseek(file, 0, SEEK_SET);
-	if (fileSize > 0)
+	if(fileSize > 0)
 	{
 		buffer = (u8*)MEM2_alloc(fileSize);
 		if(buffer != NULL)
 			fread(buffer, 1, fileSize, file);
 	}
 	fclose(file);
-	return buffer == NULL ? false : checkPNGBuf(buffer);
+	bool ret = checkPNGBuf(buffer);
+	if(buffer != NULL)
+		MEM2_free(buffer);
+	return ret;
 }
 
 void CMenu::_initAsyncNetwork()

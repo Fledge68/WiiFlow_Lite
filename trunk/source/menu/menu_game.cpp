@@ -947,7 +947,7 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id, bool RealNAND_Channels)
 {
 	gprintf("Game ID# %s requested IOS %d.  User selected %d\n", id.c_str(), gameIOS, userIOS);
-	if(neek2o() || RealNAND_Channels)
+	if(neek2o() || (RealNAND_Channels && IOS_GetType(mainIOS) == IOS_TYPE_STUB))
 	{
 		if(!loadIOS(gameIOS, false))
 		{
@@ -1132,6 +1132,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		setLanguage(language);
 		ocarina_load_code(cheatFile, cheatSize);
 		Patch_Channel_Boot(); /* Patch for everything */
+		NandHandle.Patch_AHB(); /* Identify may takes it */
 		Identify(gameTitle);
 		ExternalBooter_ChannelSetup(gameTitle);
 		WiiFlow_ExternalBooter(videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, 0, TYPE_CHANNEL);

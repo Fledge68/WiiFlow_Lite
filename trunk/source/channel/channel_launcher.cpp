@@ -11,6 +11,7 @@
 #include "loader/fs.h"
 #include "loader/fst.h"
 #include "loader/utils.h"
+#include "loader/sys.h"
 #include "memory/mem2.hpp"
 #include "memory/memory.h"
 #include "unzip/lz77.h"
@@ -105,7 +106,7 @@ bool Identify(u64 titleid)
 				break;
 		}
 	}
-	gprintf("Key ID: %u\n", keyId);
+	gprintf("AHBPROT: %d, Key ID: %u\n", AHBRPOT_Patched(), keyId);
 	free(tmdBuffer);
 	free(tikBuffer);
 	free(certBuffer);
