@@ -1219,7 +1219,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	int language = min((u32)m_gcfg2.getInt(id, "language", 0), ARRAY_SIZE(CMenu::_languages) - 1u);
 	language = (language == 0) ? min((u32)m_cfg.getInt("GENERAL", "game_language", 0), ARRAY_SIZE(CMenu::_languages) - 1) : language;
 
-	const char *rtrn = m_gcfg2.getBool(id, "returnto", true) ? m_cfg.getString("GENERAL", "returnto").c_str() : NULL;
+	const char *rtrn = m_cfg.getString("GENERAL", "returnto", "").c_str();
 	int aspectRatio = min((u32)m_gcfg2.getInt(id, "aspect_ratio", 0), ARRAY_SIZE(CMenu::_AspectRatio) - 1u)-1;
 
 	string emuPath;
@@ -1315,7 +1315,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	if(!debuggerselect && cheatFile == NULL)
 		hooktype = 0;
 
-	if(rtrn != NULL && strlen(rtrn) == 4)
+	if(strlen(rtrn) == 4)
 		returnTo = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
 	int userIOS = m_gcfg2.getInt(id, "ios", 0);	
 	int gameIOS = dvd && !neek2o() ? userIOS : GetRequestedGameIOS(hdr);
