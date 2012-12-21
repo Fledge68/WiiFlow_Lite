@@ -157,4 +157,6 @@ private:
 	static STexture _noTexture;
 };
 
+extern CButtonsMgr m_btnMgr;
+
 #endif // !defined(__GUI_HPP)

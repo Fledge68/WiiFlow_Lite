@@ -20,8 +20,8 @@ void CMenu::_hideConfigAdv(bool instant)
 {
 	_hideConfigCommon(instant);
 
-	m_btnMgr.hide(m_configAdvLblInstall, instant);
-	m_btnMgr.hide(m_configAdvBtnInstall, instant);
+	m_btnMgr.hide(m_configAdvLblBootChange, instant);
+	m_btnMgr.hide(m_configAdvBtnBootChange, instant);
 	m_btnMgr.hide(m_configAdvLblTheme, instant);
 	m_btnMgr.hide(m_configAdvLblCurTheme, instant);
 	m_btnMgr.hide(m_configAdvBtnCurThemeM, instant);
@@ -45,10 +45,10 @@ void CMenu::_showConfigAdv(void)
 	m_btnMgr.show(m_configAdvBtnCurThemeM);
 	m_btnMgr.show(m_configAdvBtnCurThemeP);
 	m_btnMgr.show(m_configAdvLblTheme);
-	if( !m_locked )
+	if(!m_locked)
 	{
-		m_btnMgr.show(m_configAdvLblInstall);
-		m_btnMgr.show(m_configAdvBtnInstall);
+		m_btnMgr.show(m_configAdvLblBootChange);
+		m_btnMgr.show(m_configAdvBtnBootChange);
 		m_btnMgr.show(m_configAdvLblLanguage);
 		m_btnMgr.show(m_configAdvLblCurLanguage);
 		m_btnMgr.show(m_configAdvBtnCurLanguageM);
@@ -114,11 +114,10 @@ int CMenu::_configAdv(void)
 			break;
 		if (BTN_A_PRESSED)
 		{
-			if (m_btnMgr.selected(m_configAdvBtnInstall))
+			if(m_btnMgr.selected(m_configAdvBtnBootChange))
 			{
-				_cfNeedsUpdate();
 				_hideConfigAdv();
-				_wbfsOp(CMenu::WO_ADD_GAME);
+				_Boot();
 				_showConfigAdv();
 			}
 			else if (m_btnMgr.selected(m_configAdvBtnCurThemeP) || m_btnMgr.selected(m_configAdvBtnCurThemeM))
@@ -195,8 +194,8 @@ void CMenu::_initConfigAdvMenu()
 	m_configAdvBtnCurLanguageP = _addPicButton("CONFIG_ADV/LANGUAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 190, 56, 56);
 	m_configAdvLblCFTheme = _addLabel("CONFIG_ADV/CUSTOMIZE_CF", theme.lblFont, L"", 40, 250, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_configAdvBtnCFTheme = _addButton("CONFIG_ADV/CUSTOMIZE_CF_BTN", theme.btnFont, L"", 330, 250, 270, 56, theme.btnFontColor);
-	m_configAdvLblInstall = _addLabel("CONFIG_ADV/INSTALL", theme.lblFont, L"", 40, 310, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_configAdvBtnInstall = _addButton("CONFIG_ADV/INSTALL_BTN", theme.btnFont, L"", 330, 310, 270, 56, theme.btnFontColor);
+	m_configAdvLblBootChange = _addLabel("CONFIG_ADV/BOOT_CHANGE", theme.lblFont, L"", 40, 310, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_configAdvBtnBootChange = _addButton("CONFIG_ADV/BOOT_CHANGE_BTN", theme.btnFont, L"", 330, 310, 270, 56, theme.btnFontColor);
 
 	_setHideAnim(m_configAdvLblTheme, "CONFIG_ADV/THEME", 100, 0, -2.f, 0.f);
 	_setHideAnim(m_configAdvLblCurTheme, "CONFIG_ADV/THEME_BTN", 0, 0, 1.f, -1.f);
@@ -208,8 +207,8 @@ void CMenu::_initConfigAdvMenu()
 	_setHideAnim(m_configAdvBtnCurLanguageP, "CONFIG_ADV/LANGUAGE_PLUS", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_configAdvLblCFTheme, "CONFIG_ADV/CUSTOMIZE_CF", 100, 0, -2.f, 0.f);
 	_setHideAnim(m_configAdvBtnCFTheme, "CONFIG_ADV/CUSTOMIZE_CF_BTN", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_configAdvLblInstall, "CONFIG_ADV/INSTALL", 100, 0, -2.f, 0.f);
-	_setHideAnim(m_configAdvBtnInstall, "CONFIG_ADV/INSTALL_BTN", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_configAdvLblBootChange, "CONFIG_ADV/BOOT_CHANGE", 100, 0, -2.f, 0.f);
+	_setHideAnim(m_configAdvBtnBootChange, "CONFIG_ADV/BOOT_CHANGE_BTN", 0, 0, 1.f, -1.f);
 	_hideConfigAdv(true);
 	_textConfigAdv();
 }
@@ -220,6 +219,6 @@ void CMenu::_textConfigAdv(void)
 	m_btnMgr.setText(m_configAdvLblLanguage, _t("cfga6", L"Language"));
 	m_btnMgr.setText(m_configAdvLblCFTheme, _t("cfgc4", L"Adjust Coverflow"));
 	m_btnMgr.setText(m_configAdvBtnCFTheme, _t("cfgc5", L"Go"));
-	m_btnMgr.setText(m_configAdvLblInstall, _t("cfga2", L"Install game"));
-	m_btnMgr.setText(m_configAdvBtnInstall, _t("cfga3", L"Install"));
+	m_btnMgr.setText(m_configAdvLblBootChange, _t("cfgc8", L"Startup Settings"));
+	m_btnMgr.setText(m_configAdvBtnBootChange, _t("cfgc5", L"Go"));
 }

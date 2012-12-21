@@ -53,7 +53,6 @@ private:
 		bool hide;
 	};
 	CCursor m_cursor[WPAD_MAX_WIIMOTES];
-	CButtonsMgr m_btnMgr;
 	CFanart m_fa;
 	Config m_cfg;
 	Config m_loc;
@@ -202,8 +201,8 @@ private:
 	s16 m_configAdvBtnCurLanguageP;
 	s16 m_configAdvLblCFTheme;
 	s16 m_configAdvBtnCFTheme;
-	s16 m_configAdvLblInstall;
-	s16 m_configAdvBtnInstall;
+	s16 m_configAdvLblBootChange;
+	s16 m_configAdvBtnBootChange;
 	s16 m_configAdvLblUser[4];
 	s16 m_config3LblGameLanguage;
 	s16 m_config3LblLanguage;
@@ -810,6 +809,7 @@ private:
 	bool _loadEmuList(void);
 	bool _loadHomebrewList(void);
 	void _initCF(void);
+	void _initBoot(void);
 	// 
 	void _initMainMenu();
 	void _initErrorMenu();
@@ -860,6 +860,9 @@ private:
 	void _textNandEmu(void);
 	void _textHome(void);
 	void _textExitTo(void);
+	void _textBoot(void);
+	//
+	void _refreshBoot(void);
 	//
 	void _hideCheatSettings(bool instant = false);
 	void _hideError(bool instant = false);
@@ -964,6 +967,7 @@ private:
 	void _CategorySettings(bool fromGameSet = false);
 	bool _Home();
 	bool _ExitTo();
+	void _Boot();
 	void _mainLoopCommon(bool withCF = false, bool adjusting = false);
 public:
 	void directlaunch(const char *GameID);

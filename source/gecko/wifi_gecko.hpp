@@ -35,9 +35,9 @@ public:
 	void Init(const char *ip, u16 port);
 	int Send(const char *data, int datasize);
 	void SetBuffer(bool buf);
+	void Close();
 private:
 	int Connect();
-	void Close();
 
 	bool inited;
 	bool buffer;
