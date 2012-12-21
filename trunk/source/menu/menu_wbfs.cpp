@@ -12,9 +12,12 @@
 
 void CMenu::_hideWBFS(bool instant)
 {
+	m_btnMgr.hide(m_configLblPartitionName, instant);
+	m_btnMgr.hide(m_configLblPartition, instant);
+	m_btnMgr.hide(m_configBtnPartitionP, instant);
+	m_btnMgr.hide(m_configBtnPartitionM, instant);
 	m_btnMgr.hide(m_wbfsLblTitle, instant);
 	m_btnMgr.hide(m_wbfsPBar, instant);
-	m_btnMgr.hide(m_wbfsBtnBack, instant);
 	m_btnMgr.hide(m_wbfsBtnGo, instant);
 	m_btnMgr.hide(m_wbfsLblDialog);
 	m_btnMgr.hide(m_wbfsLblMessage);
@@ -28,21 +31,25 @@ void CMenu::_showWBFS(CMenu::WBFS_OP op)
 	_setBg(m_wbfsBg, m_wbfsBg);
 	switch (op)
 	{
-		case CMenu::WO_ADD_GAME:
+		case WO_ADD_GAME:
 				m_btnMgr.setText(m_wbfsLblTitle, _t("wbfsop1", L"Install Game"));
+				m_btnMgr.setText(m_configLblPartition, upperCase(DeviceName[currentPartition]));
+				m_btnMgr.show(m_configLblPartitionName);
+				m_btnMgr.show(m_configLblPartition);
+				m_btnMgr.show(m_configBtnPartitionP);
+				m_btnMgr.show(m_configBtnPartitionM);
 				break;
-		case CMenu::WO_REMOVE_GAME:
+		case WO_REMOVE_GAME:
 				m_btnMgr.setText(m_wbfsLblTitle, _t("wbfsop2", L"Delete Game"));
 				break;
-		case CMenu::WO_FORMAT:
+		case WO_FORMAT:
 //				m_btnMgr.setText(m_wbfsLblTitle, _t("wbfsop3", L"Format"));
 				break;
-		case CMenu::WO_COPY_GAME:
+		case WO_COPY_GAME:
 				m_btnMgr.setText(m_wbfsLblTitle, _t("wbfsop11", L"Copy Game"));
 				break;
 	};
 	m_btnMgr.show(m_wbfsLblTitle);
-	m_btnMgr.show(m_wbfsBtnBack);
 	m_btnMgr.show(m_wbfsBtnGo);
 	m_btnMgr.show(m_wbfsLblDialog);
 	for(u8 i = 0; i < ARRAY_SIZE(m_wbfsLblUser); ++i)
@@ -138,7 +145,7 @@ int CMenu::_gameInstaller(void *obj)
 		m._setThrdMsg(L"", 0);
 		LWP_MutexUnlock(m.m_mutex);
 		
-		ret = WBFS_AddGame(CMenu::_addDiscProgress, obj);
+		ret = WBFS_AddGame(_addDiscProgress, obj);
 		LWP_MutexLock(m.m_mutex);
 		if (ret == 0)
 			m._setThrdMsg(m._t("wbfsop8", L"Game installed"), 1.f);
@@ -167,7 +174,7 @@ int CMenu::_GCgameInstaller(void *obj)
 	if(skip)
 		rsize = 8192; // Use small chunks when skip on error is enabled
 
-	m_gcdump.Init(skip, comp, wexf, alig, nretry, rsize,DeviceName[currentPartition],m.m_DMLgameDir.c_str(), CMenu::_addDiscProgress, CMenu::_Messenger, obj);
+	m_gcdump.Init(skip, comp, wexf, alig, nretry, rsize,DeviceName[currentPartition],m.m_DMLgameDir.c_str(), _addDiscProgress, _Messenger, obj);
 	
 	int ret;	
 	m.m_progress = 0.f;
@@ -251,7 +258,7 @@ int CMenu::_GCcopyGame(void *obj)
 	LWP_MutexUnlock(m.m_mutex);
 	if (!fsop_DirExist(folder))
 		fsop_MakeFolder(folder);
-	fsop_CopyFolder(source, target, CMenu::_addDiscProgress, obj);
+	fsop_CopyFolder(source, target, _addDiscProgress, obj);
 	LWP_MutexLock(m.m_mutex);
 	m._setThrdMsg(m._t("wbfsop14", L"Game copied, press Back to boot the game."), 1.f);
 	gprintf("Game copied.\n");
@@ -280,15 +287,15 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 	_showWBFS(op);
 	switch (op)
 	{
-		case CMenu::WO_ADD_GAME:
+		case WO_ADD_GAME:
 			m_btnMgr.setText(m_wbfsLblDialog, _t("wbfsadddlg", L"Please insert the disc you want to copy, then click on Go."));
 			break;
-		case CMenu::WO_REMOVE_GAME:
+		case WO_REMOVE_GAME:
 			m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsremdlg", L"To permanently remove the game: %s, click on Go."), CoverFlow.getTitle().toUTF8().c_str()));
 			break;
-		case CMenu::WO_FORMAT:
+		case WO_FORMAT:
 			break;
-		case CMenu::WO_COPY_GAME:
+		case WO_COPY_GAME:
 			m_btnMgr.setText(m_wbfsLblDialog, _t("wbfscpydlg", L"If you are sure you want to copy this game to SD, click on Go."));
 			break;
 	}
@@ -305,19 +312,20 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 			m_btnMgr.down();
 		if(BTN_A_PRESSED && !m_thrdWorking)
 		{
-			if(m_btnMgr.selected(m_wbfsBtnBack))
-				break;
-			else if(m_btnMgr.selected(m_wbfsBtnGo))
+			if(m_btnMgr.selected(m_wbfsBtnGo))
 			{
 				switch(op)
 				{
-					case CMenu::WO_ADD_GAME:
+					case WO_ADD_GAME:
 						MusicPlayer.Stop();
 						TempLoadIOS();
+						m_btnMgr.hide(m_configLblPartitionName);
+						m_btnMgr.hide(m_configLblPartition);
+						m_btnMgr.hide(m_configBtnPartitionP);
+						m_btnMgr.hide(m_configBtnPartitionM);
 						m_btnMgr.show(m_wbfsPBar);
 						m_btnMgr.setProgress(m_wbfsPBar, 0.f);
 						m_btnMgr.hide(m_wbfsBtnGo);
-						m_btnMgr.hide(m_wbfsBtnBack);
 						m_btnMgr.show(m_wbfsLblMessage);
 						m_btnMgr.setText(m_wbfsLblMessage, L"");
 						if (Disc_Wait() < 0)
@@ -349,7 +357,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 							m_thrdWorking = true;
 							m_thrdProgress = 0.f;
 							m_thrdMessageAdded = false;
-							LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_gameInstaller, (void *)this, 0, 8 * 1024, 64);
+							LWP_CreateThread(&thread, (void *(*)(void *))_gameInstaller, (void *)this, 0, 8 * 1024, 64);
 						}
 						else if(Disc_IsGC() == 0)
 						{
@@ -368,7 +376,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 							m_thrdWorking = true;
 							m_thrdProgress = 0.f;
 							m_thrdMessageAdded = false;
-							LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_GCgameInstaller, (void *)this, 0, 8 * 1024, 64);
+							LWP_CreateThread(&thread, (void *(*)(void *))_GCgameInstaller, (void *)this, 0, 8 * 1024, 64);
 						}
 						else
 						{
@@ -376,7 +384,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 							out = true;
 						}
 						break;
-					case CMenu::WO_REMOVE_GAME:
+					case WO_REMOVE_GAME:
 						if(CF_Hdr->type == TYPE_GC_GAME)
 						{
 							char GC_Path[1024];
@@ -423,9 +431,9 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						m_btnMgr.setText(m_wbfsLblMessage, _t("wbfsop7", L"Game deleted"));
 						done = true;
 						break;
-					case CMenu::WO_FORMAT:
+					case WO_FORMAT:
 						break;
-					case CMenu::WO_COPY_GAME:
+					case WO_COPY_GAME:
 						string GC_Path(CF_Hdr->path);
 						if(strcasestr(GC_Path.c_str(), "boot.bin") != NULL)
 							GC_Path.erase(GC_Path.end() - 13, GC_Path.end());
@@ -440,7 +448,6 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						m_btnMgr.show(m_wbfsPBar);
 						m_btnMgr.setProgress(m_wbfsPBar, 0.f);
 						m_btnMgr.hide(m_wbfsBtnGo);
-						m_btnMgr.hide(m_wbfsBtnBack);
 						m_btnMgr.show(m_wbfsLblMessage);
 						m_btnMgr.setText(m_wbfsLblMessage, L"");
 						cfPos = string(CF_Hdr->id);
@@ -450,11 +457,17 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						m_thrdWorking = true;
 						m_thrdProgress = 0.f;
 						m_thrdMessageAdded = false;
-						LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_GCcopyGame, (void *)this, 0, 8 * 1024, 64);
+						LWP_CreateThread(&thread, (void *(*)(void *))_GCcopyGame, (void *)this, 0, 8 * 1024, 64);
 						break;
 				}
 				if(out)
 					break;
+			}
+			else if((m_btnMgr.selected(m_configBtnPartitionP) || m_btnMgr.selected(m_configBtnPartitionM)))
+			{
+				s8 direction = m_btnMgr.selected(m_configBtnPartitionP) ? 1 : -1;
+				_setPartition(direction);
+				m_btnMgr.setText(m_configLblPartition, upperCase(DeviceName[currentPartition]));
 			}
 		}
 
@@ -466,45 +479,38 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 				m_btnMgr.setText(m_wbfsLblDialog, m_thrdMessage);
 			m_btnMgr.setProgress(m_wbfsPBar, m_thrdProgress);
 			m_btnMgr.setText(m_wbfsLblMessage, wfmt(L"%i%%", (int)(m_thrdProgress * 100.f)));
-			if(!m_thrdWorking)
+			if(!m_thrdWorking && op == WO_ADD_GAME)
 			{
-				if(op == CMenu::WO_ADD_GAME)
-				{
-					WDVD_StopMotor();
-					MusicPlayer.Stop();
-					TempLoadIOS(IOS_TYPE_NORMAL_IOS);
-				}
-				m_btnMgr.show(m_wbfsBtnBack);
+				WDVD_StopMotor();
+				MusicPlayer.Stop();
+				TempLoadIOS(IOS_TYPE_NORMAL_IOS);
 			}
 		}
 	}
 	_hideWBFS();
-	if (done && (op == CMenu::WO_REMOVE_GAME || op == CMenu::WO_ADD_GAME))
+	if(done && (op == WO_REMOVE_GAME || op == WO_ADD_GAME))
 	{
-		//m_gameList.SetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());			
-		
+		//m_gameList.SetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());	
 		if(upd_dml)
 			UpdateCache(COVERFLOW_DML);
-
 		if(upd_usb)
 			UpdateCache(COVERFLOW_USB);
-
 		if(upd_emu)
 			UpdateCache(COVERFLOW_PLUGIN);
-
 		_loadList();
 		_initCF();
 		CoverFlow.findId(cfPos.c_str(), true);
 	}
-	else if(done && op == CMenu::WO_COPY_GAME)
+	else 
 	{
-		//m_gameList.SetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
-		if(upd_dml)
+		if(done && op == WO_COPY_GAME)
 		{
 			UpdateCache(COVERFLOW_DML);
 			currentPartition = SD;
 			UpdateCache(COVERFLOW_DML);
 		}
+		_loadList();
+		_initCF();
 	}
 	return done;
 }
@@ -517,14 +523,12 @@ void CMenu::_initWBFSMenu()
 	m_wbfsLblDialog = _addLabel("WBFS/DIALOG", theme.lblFont, L"", 40, 90, 560, 200, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_wbfsLblMessage = _addLabel("WBFS/MESSAGE", theme.lblFont, L"", 40, 300, 560, 100, theme.lblFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_TOP);
 	m_wbfsPBar = _addProgressBar("WBFS/PROGRESS_BAR", 40, 270, 560, 20);
-	m_wbfsBtnBack = _addButton("WBFS/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 56, theme.btnFontColor);
-	m_wbfsBtnGo = _addButton("WBFS/GO_BTN", theme.btnFont, L"", 245, 260, 150, 56, theme.btnFontColor);
+	m_wbfsBtnGo = _addButton("WBFS/GO_BTN", theme.btnFont, L"", 420, 400, 200, 56, theme.btnFontColor);
 
 	_setHideAnim(m_wbfsLblTitle, "WBFS/TITLE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_wbfsLblDialog, "WBFS/DIALOG", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_wbfsLblMessage, "WBFS/MESSAGE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_wbfsPBar, "WBFS/PROGRESS_BAR", 0, 0, -2.f, 0.f);
-	_setHideAnim(m_wbfsBtnBack, "WBFS/BACK_BTN", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_wbfsBtnGo, "WBFS/GO_BTN", 0, 0, -2.f, 0.f);
 	_hideWBFS(true);
 	_textWBFS();
@@ -532,6 +536,5 @@ void CMenu::_initWBFSMenu()
 
 void CMenu::_textWBFS(void)
 {
-	m_btnMgr.setText(m_wbfsBtnBack, _t("wbfsop4", L"Back"));
 	m_btnMgr.setText(m_wbfsBtnGo, _t("wbfsop5", L"Go"));
 }

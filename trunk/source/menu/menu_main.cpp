@@ -393,7 +393,7 @@ int CMenu::main(void)
 			else if(m_btnMgr.selected(m_mainBtnInfo))
 			{
 				_hideMain();
-				_about();
+				_about(true);
 				_showMain();
 				if(BTN_B_HELD)
 					bUsed = true;
