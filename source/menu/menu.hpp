@@ -383,7 +383,7 @@ private:
 	s16 m_gameBtnSettings;
 	s16 m_gameBtnBack;
 	s16 m_gameLblUser[5];
-// Parental code menu	
+// Parental code menu
 	s16 m_codeLblTitle;
 	s16 m_codeBtnKey[10];
 	s16 m_codeBtnBack;
@@ -394,7 +394,6 @@ private:
 //menu_wbfs
 	s16 m_wbfsLblTitle;
 	s16 m_wbfsPBar;
-	s16 m_wbfsBtnBack;
 	s16 m_wbfsBtnGo;
 	s16 m_wbfsLblDialog;
 	s16 m_wbfsLblMessage;
