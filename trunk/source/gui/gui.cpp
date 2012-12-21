@@ -10,6 +10,8 @@ template <class T> static inline T loopNum(T i, T s)
 
 STexture CButtonsMgr::_noTexture;
 
+CButtonsMgr m_btnMgr;
+
 bool CButtonsMgr::init()
 {
 	m_elts.clear();

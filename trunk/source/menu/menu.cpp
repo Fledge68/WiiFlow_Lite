@@ -215,8 +215,7 @@ void CMenu::init()
 	LogToSD_SetBuffer(m_use_sd_logging);
 	/* Init Network if wanted */
 	init_network = (m_cfg.getBool("GENERAL", "async_network") || has_enabled_providers() || m_use_wifi_gecko);
-	if(init_network)
-		_netInit();
+	_netInit();
 	/* Check if we want a cIOS loaded */
 	int ForceIOS = min(m_cfg.getInt("GENERAL", "force_cios_rev", 0), 254);
 	if(ForceIOS > 0)
@@ -539,6 +538,7 @@ void CMenu::cleanup()
 	gprintf("MEM1_freesize(): %i\nMEM2_freesize(): %i\n", MEM1_freesize(), MEM2_freesize());
 	/* Lets deinit our possible wifi gecko here */
 	_deinitNetwork();
+	net_wc24cleanup();
 }
 
 void CMenu::_Theme_Cleanup(void)
@@ -644,7 +644,7 @@ void CMenu::_Theme_Cleanup(void)
 
 void CMenu::_netInit(void)
 {
-	if(!init_network)
+	if(m_networkInit || !init_network || m_exit)
 		return;
 	_initAsyncNetwork();
 	while(net_get_status() == -EBUSY)
@@ -1194,6 +1194,7 @@ void CMenu::_buildMenus(void)
 	_initGameInfoMenu();
 	_initNandEmuMenu();
 	_initHomeAndExitToMenu();
+	_initBoot();
 
 	_loadCFCfg();
 }
@@ -2731,9 +2732,11 @@ void CMenu::TempLoadIOS(int IOS)
 
 	if(CurrentIOS.Version != IOS)
 	{
+		_deinitNetwork();
 		loadIOS(IOS, true);
 		Open_Inputs();
 		for(int chan = WPAD_MAX_WIIMOTES-2; chan >= 0; chan--)
 			WPAD_SetVRes(chan, m_vid.width() + m_cursor[chan].width(), m_vid.height() + m_cursor[chan].height());
+		_netInit();
 	}
 }

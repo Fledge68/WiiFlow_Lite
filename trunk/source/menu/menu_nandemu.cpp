@@ -695,8 +695,8 @@ int CMenu::_NandFlasher(void *obj)
 	
 	m.m_thrdWorking = false;
 	LWP_MutexLock(m.m_mutex);
-	m.m_btnMgr.hide(m_nandfilePBar);
-	m.m_btnMgr.hide(m_nandfileLblMessage);
+	m_btnMgr.hide(m_nandfilePBar);
+	m_btnMgr.hide(m_nandfileLblMessage);
 	m._setDumpMsg(m._t("cfgne30", L"Flashing save files finished!"), 1.f, 1.f);
 	LWP_MutexUnlock(m.m_mutex);
 	return 0;	
@@ -800,8 +800,8 @@ int CMenu::_NandDumper(void *obj)
 
 	m.m_thrdWorking = false;
 	LWP_MutexLock(m.m_mutex);
-	m.m_btnMgr.hide(m_nandfilePBar);
-	m.m_btnMgr.hide(m_nandfileLblMessage);
+	m_btnMgr.hide(m_nandfilePBar);
+	m_btnMgr.hide(m_nandfileLblMessage);
 	m._setDumpMsg(m._t("cfgne19", L"Extraction finished!"), 1.f, 1.f);
 	LWP_MutexUnlock(m.m_mutex);
 	return 0;

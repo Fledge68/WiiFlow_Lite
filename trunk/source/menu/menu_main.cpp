@@ -237,10 +237,7 @@ int CMenu::main(void)
 	u32 disc_check = 0;
 	int done = 0;
 
-	if (m_cfg.getBool("GENERAL", "async_network", false) || has_enabled_providers())
-		_initAsyncNetwork();
 	SetupInput(true);
-
 	GameTDB m_gametdb; 
  	m_gametdb.OpenFile(fmt("%s/wiitdb.xml", m_settingsDir.c_str()));
 	m_GameTDBLoaded = false;
