@@ -461,7 +461,10 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						break;
 				}
 				if(out)
+				{
+					TempLoadIOS(IOS_TYPE_NORMAL_IOS);
 					break;
+				}
 			}
 			else if((m_btnMgr.selected(m_configBtnPartitionP) || m_btnMgr.selected(m_configBtnPartitionM)))
 			{
@@ -470,7 +473,6 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 				m_btnMgr.setText(m_configLblPartition, upperCase(DeviceName[currentPartition]));
 			}
 		}
-
 		if(m_thrdMessageAdded)
 		{
 			LockMutex lock(m_mutex);
