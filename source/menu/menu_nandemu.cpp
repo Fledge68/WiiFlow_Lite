@@ -86,7 +86,7 @@ bool CMenu::_TestEmuNand(int epart, const char *path, bool indept)
 	return true;
 }
 
-int CMenu::_FindEmuPart(string &emuPath, int part, bool skipchecks)
+int CMenu::_FindEmuPart(string &emuPath, bool skipchecks)
 {
 	int emuPart = -1;
 	const char *tmpPath = NULL;
@@ -407,14 +407,9 @@ int CMenu::_FlashSave(string gameId)
 int CMenu::_AutoExtractSave(string gameId)
 {
 	string emuPath;
-
-	if(m_current_view == COVERFLOW_CHANNEL)
-		m_partRequest = m_cfg.getInt(CHANNEL_DOMAIN, "partition", -1);
-	else if(m_current_view == COVERFLOW_USB)
-		m_partRequest = m_cfg.getInt(WII_DOMAIN, "savepartition", -1);
-	int emuPartition = _FindEmuPart(emuPath, m_partRequest, false);
+	int emuPartition = _FindEmuPart(emuPath, false);
 	if(emuPartition < 0)
-		emuPartition = _FindEmuPart(emuPath, m_partRequest, true);
+		emuPartition = _FindEmuPart(emuPath, true);
 	if(!_checkSave(gameId, true))
 		return 1;
 
@@ -623,13 +618,8 @@ int CMenu::_NandFlasher(void *obj)
 	char source[MAX_FAT_PATH];
 	char dest[ISFS_MAXPATH];
 
-	if(m.m_current_view == COVERFLOW_CHANNEL)
-		m.m_partRequest = m.m_cfg.getInt(CHANNEL_DOMAIN, "partition", -1);	
-	else if(m.m_current_view == COVERFLOW_USB)
-		m.m_partRequest = m.m_cfg.getInt(WII_DOMAIN, "savepartition", -1);
-
 	const char *SaveGameID = m.m_saveExtGameId.c_str();
-	int emuPartition = m._FindEmuPart(emuPath, m.m_partRequest, false);	
+	int emuPartition = m._FindEmuPart(emuPath, false);	
 	int flashID = SaveGameID[0] << 24 | SaveGameID[1] << 16 | SaveGameID[2] << 8 | SaveGameID[3];
 
 	if(_saveExists(fmt("%s:%s/title/00010000/%08x", DeviceName[emuPartition], emuPath.c_str(), flashID)))
@@ -669,13 +659,7 @@ int CMenu::_NandDumper(void *obj)
 	m.m_foldersdone = 0;
 
 	NandHandle.ResetCounters();
-
-	if(m.m_current_view == COVERFLOW_CHANNEL)
-		m.m_partRequest = m.m_cfg.getInt(CHANNEL_DOMAIN, "partition", -1);
-	else if(m.m_current_view == COVERFLOW_USB)
-		m.m_partRequest = m.m_cfg.getInt(WII_DOMAIN, "savepartition", -1);
-
-	emuPartition = m._FindEmuPart(emuPath, m.m_partRequest, true);
+	emuPartition = m._FindEmuPart(emuPath, true);
 
 	if(emuPartition < 0)
 	{

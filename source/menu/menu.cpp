@@ -2223,10 +2223,9 @@ bool CMenu::_loadChannelList(void)
 	NANDemuView = (!neek2o() && m_cfg.getBool(CHANNEL_DOMAIN, "disable", true) == false);
 	if(NANDemuView)
 	{
-		m_partRequest = m_cfg.getInt(CHANNEL_DOMAIN, "partition", 1);
-		emuPartition = _FindEmuPart(emuPath, m_partRequest, false);
+		emuPartition = _FindEmuPart(emuPath, false);
 		if(emuPartition < 0)
-			emuPartition = _FindEmuPart(emuPath, m_partRequest, true);
+			emuPartition = _FindEmuPart(emuPath, true);
 		if(emuPartition < 0)
 			return false;
 
