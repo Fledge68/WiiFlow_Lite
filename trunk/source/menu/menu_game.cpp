@@ -1064,8 +1064,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	m_gcfg1.setUInt("LASTPLAYED", id, time(NULL));
 
 	string emuPath;
-	m_partRequest = m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0);
-	int emuPartition = _FindEmuPart(emuPath, m_partRequest, false);
+	int emuPartition = _FindEmuPart(emuPath, false);
 	int emulate_mode = min(max(0, m_cfg.getInt(CHANNEL_DOMAIN, "emulation", 1)), (int)ARRAY_SIZE(CMenu::_NandEmu) - 1);
 	
 	int userIOS = m_gcfg2.getInt(id, "ios", 0);
@@ -1222,10 +1221,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	int aspectRatio = min((u32)m_gcfg2.getInt(id, "aspect_ratio", 0), ARRAY_SIZE(CMenu::_AspectRatio) - 1u)-1;
 
 	string emuPath;
-	m_partRequest = m_cfg.getInt(WII_DOMAIN, "savepartition", -1);
-	if(m_partRequest == -1)
-		m_partRequest = m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0);
-	int emuPartition = _FindEmuPart(emuPath, m_partRequest, false);
+	int emuPartition = _FindEmuPart(emuPath, false);
 	
 	u8 emulate_mode = min((u32)m_gcfg2.getInt(id, "emulate_save", 0), ARRAY_SIZE(CMenu::_SaveEmu) - 1u);
 
@@ -1258,7 +1254,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			}
 			else
 			{
-				emuPartition = _FindEmuPart(emuPath, 1, true);
+				emuPartition = _FindEmuPart(emuPath, true);
 				NandHandle.CreatePath("%s:/wiiflow", DeviceName[emuPartition]);
 				NandHandle.CreatePath("%s:/wiiflow/nandemu", DeviceName[emuPartition]);
 			}
