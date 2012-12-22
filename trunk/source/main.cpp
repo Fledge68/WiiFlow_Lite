@@ -23,6 +23,7 @@
 CMenu mainMenu;
 bool useMainIOS = false;
 volatile bool NANDemuView = false;
+volatile bool networkInit = false;
 
 int main(int argc, char **argv)
 {

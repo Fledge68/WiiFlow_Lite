@@ -947,9 +947,10 @@ int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id, bool RealNAND_Channels)
 	gprintf("Game ID# %s requested IOS %d.  User selected %d\n", id.c_str(), gameIOS, userIOS);
 	if(neek2o() || (RealNAND_Channels && IOS_GetType(mainIOS) == IOS_TYPE_STUB))
 	{
-		if(!loadIOS(gameIOS, false))
+		bool ret = loadIOS(gameIOS, false);
+		_netInit();
+		if(ret == false)
 		{
-			_netInit();
 			error(sfmt("errgame4", L"Couldn't load IOS %i", gameIOS));
 			return LOAD_IOS_FAILED;
 		}
@@ -1007,9 +1008,10 @@ int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id, bool RealNAND_Channels)
 	if(gameIOS != CurrentIOS.Version)
 	{
 		gprintf("Reloading IOS into %d\n", gameIOS);
-		if(!loadIOS(gameIOS, true))
+		bool ret = loadIOS(gameIOS, true);
+		_netInit();
+		if(ret == false)
 		{
-			_netInit();
 			error(sfmt("errgame4", L"Couldn't load IOS %i", gameIOS));
 			return LOAD_IOS_FAILED;
 		}
@@ -1090,8 +1092,9 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 				returnTo ? (((u64)(0x00010001) << 32) | (returnTo & 0xFFFFFFFF)) : 0);
 			while(1) usleep(500);
 		}
-		NandHandle.SetPaths(emuPath.c_str(), DeviceName[emuPartition]);
 		NANDemuView = true;
+		NandHandle.SetNANDEmu(emuPartition); /* Init NAND Emu */
+		NandHandle.SetPaths(emuPath.c_str(), DeviceName[emuPartition]);
 	}
 	gameIOS = ChannelHandle.GetRequestedIOS(gameTitle);
 	if(_loadIOS(gameIOS, userIOS, id, !NAND_Emu) == LOAD_IOS_FAILED)
@@ -1103,6 +1106,8 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	}
 	if(NAND_Emu && !neek2o())
 	{
+		/* Enable our Emu NAND */
+		DeviceHandle.UnMount(emuPartition);
 		if(emulate_mode == 1)
 			NandHandle.Set_FullMode(true);
 		else
@@ -1113,8 +1118,8 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 			error(_t("errgame5", L"Enabling emu failed!"));
 			Sys_Exit();
 		}
+		DeviceHandle.Mount(emuPartition);
 	}
-
 	if(WII_Launch)
 	{
 		ShutdownBeforeExit();
@@ -1245,7 +1250,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 					if(_TestEmuNand(m_cfg.getInt(WII_DOMAIN, "savepartition", 0), emuPath.c_str(), true))
 					{
 						emuPartition = m_cfg.getInt(WII_DOMAIN, "savepartition", -1);
-						string emuPath = m_cfg.getString(WII_DOMAIN, "savepath", m_cfg.getString(CHANNEL_DOMAIN, "path", ""));						
+						emuPath = m_cfg.getString(WII_DOMAIN, "savepath", m_cfg.getString(CHANNEL_DOMAIN, "path", ""));						
 						break;
 					}
 				}
@@ -1260,7 +1265,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		}
 		m_cfg.setInt(WII_DOMAIN, "savepartition", emuPartition);
 		m_cfg.setString(WII_DOMAIN, "savepath", emuPath);
-		m_cfg.save();
 
 		if(emulate_mode == 2 || emulate_mode > 3)
 		{
@@ -1329,7 +1333,9 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	if(emulate_mode && !neek2o() && CurrentIOS.Type == IOS_TYPE_D2X)
 	{
 		NANDemuView = true;
+		NandHandle.SetNANDEmu(emuPartition); /* Init NAND Emu */
 		NandHandle.SetPaths(emuPath.c_str(), DeviceName[emuPartition]);
+		/* Enable our Emu NAND */
 		DeviceHandle.UnMount(emuPartition);
 		if(emulate_mode == 3)
 			NandHandle.Set_RCMode(true);
