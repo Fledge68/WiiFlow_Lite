@@ -37,6 +37,7 @@
 #include "nand.hpp"
 #include "gecko/gecko.hpp"
 #include "loader/fs.h"
+#include "loader/sys.h"
 #include "unzip/U8Archive.h"
 
 #define IMET_OFFSET			0x40
@@ -168,7 +169,7 @@ void Banner::GetBanner(u64 title, char *appname, bool imetOnly)
 	u8 *buf = NULL;
 	u32 size = 0;
 	s32 len = imetOnly ? sizeof(IMET) + IMET_OFFSET : -1;
-	if(NandHandle.EmulationEnabled())
+	if(NANDemuView)
 		buf = NandHandle.GetEmuFile(appname, &size, len);
 	else
 		buf = ISFS_GetFile(appname, &size, len);

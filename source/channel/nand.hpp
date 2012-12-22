@@ -106,8 +106,6 @@ private:
 
 	void PatchAHB(void);
 	bool ISFS_Check(void);
-	void Enable_ISFS_Patches(void);
-	void Disable_ISFS_Patches(void);
 
 	void __Dec_Enc_TB(void);
 	void __configshifttxt(char *str);
