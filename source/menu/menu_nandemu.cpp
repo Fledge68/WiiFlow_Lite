@@ -92,8 +92,6 @@ bool CMenu::_TestEmuNand(int epart, const char *path, bool indept)
 
 int CMenu::_FindEmuPart(string *emuPath, int part, bool searchvalid)
 {
-	NandHandle.Disable_Emu();
-
 	int emuPartition = -1;	
 	string tmpPath;
 	if(m_current_view == COVERFLOW_CHANNEL)
@@ -118,10 +116,6 @@ int CMenu::_FindEmuPart(string *emuPath, int part, bool searchvalid)
 			tmpPath = m_cfg.getString(WII_DOMAIN, "savepath", STDEMU_DIR);
 		}
 	}
-	
-	if(!DeviceHandle.IsInserted(emuPartition))
-		DeviceHandle.Mount(emuPartition);
-		
 	if(_TestEmuNand(emuPartition, tmpPath.c_str(), true) && DeviceHandle.PartitionUsableForNandEmu(emuPartition))
 	{
 		*emuPath = tmpPath;
@@ -132,12 +126,8 @@ int CMenu::_FindEmuPart(string *emuPath, int part, bool searchvalid)
 		bool fllscn = emuPartition == -1;
 		for(u8 i = part; i <= USB8; ++i)
 		{
-			if(!DeviceHandle.IsInserted(i))
-				DeviceHandle.Mount(i);
-
 			if(!DeviceHandle.PartitionUsableForNandEmu(i))
 				continue;
-
 			if(_TestEmuNand(i, tmpPath.c_str(), true) || searchvalid)
 			{
 				if(m_current_view == COVERFLOW_CHANNEL)
@@ -150,7 +140,6 @@ int CMenu::_FindEmuPart(string *emuPath, int part, bool searchvalid)
 		
 				return i;
 			}
-		
 			if(i == USB8 && !fllscn)
 			{
 				i = -1;
@@ -158,7 +147,6 @@ int CMenu::_FindEmuPart(string *emuPath, int part, bool searchvalid)
 			}
 		}
 	}
-	
 	return -1;
 }
 

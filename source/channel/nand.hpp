@@ -49,6 +49,12 @@ typedef struct _namelist
 	int type;
 } namelist;
 
+typedef struct _uid
+{
+	u64 TitleID;
+	u32 unused;
+} __attribute__((packed)) uid;
+
 using namespace std;
 
 class Nand
@@ -57,7 +63,7 @@ public:
 	void Init();
 
 	/* Prototypes */
-	void SetPaths(string path, u32 partition, bool disable = false);
+	void SetNANDEmu(u32 partition);
 	s32 Enable_Emu();
 	s32 Disable_Emu();
 	bool EmulationEnabled(void);
@@ -71,15 +77,19 @@ public:
 	void Init_ISFS();
 	void DeInit_ISFS(bool KeepPatches = false);
 
-	const char * Get_NandPath(void) { return NandPath; };
+	const char *Get_NandPath(void) { return NandPath; };
 	u32 Get_Partition(void) { return Partition; };
 
-	void Set_NandPath(string path);
-	void CreatePath(const char *path, ...);
+	u64 *GetChannels(u32 *count);
+	u8 *GetTMD(u64 title, u32 *size);
+	u8 *GetEmuFile(const char *path, u32 *size, s32 len = -1);
+	void SetPaths(const char *emuPath, const char *currentPart);
 
-	void CreateTitleTMD(const char *path, dir_discHdr *hdr);
-	s32 CreateConfig(const char *path);
-	s32 PreNandCfg(const char *path, bool miis, bool realconfig);
+	void CreatePath(const char *path, ...);
+	void CreateTitleTMD(dir_discHdr *hdr);
+	s32 CreateConfig();
+
+	s32 PreNandCfg(bool miis, bool realconfig);
 	s32 Do_Region_Change(string id);
 	s32 FlashToNAND(const char *source, const char *dest, dump_callback_t i_dumper, void *i_data);
 	s32 DoNandDump(const char *source, const char *dest, dump_callback_t i_dumper, void *i_data);
@@ -123,7 +133,6 @@ private:
 	u32 FileDone;
 	u32 FilesDone;
 	u32 FoldersDone;
-	bool Disabled;
 	bool fake;
 	bool showprogress;
 	bool AccessPatched;
@@ -133,6 +142,7 @@ private:
 	u32 Partition ATTRIBUTE_ALIGN(32);
 	u32 FullMode ATTRIBUTE_ALIGN(32);
 	char NandPath[32] ATTRIBUTE_ALIGN(32);
+	char FullNANDPath[64] ATTRIBUTE_ALIGN(32);
 	char cfgpath[1024];
 	char settxtpath[1024];
 };

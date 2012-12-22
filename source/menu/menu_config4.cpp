@@ -74,7 +74,6 @@ void CMenu::_showConfig4(void)
 
 	wstringEx channelName = m_loc.getWString(m_curLanguage, "disabled", L"Disabled");
 
-	NandHandle.Disable_Emu();
 	ChannelHandle.Init(m_loc.getString(m_curLanguage, "gametdb_code", "EN"));
 	amountOfChannels = ChannelHandle.Count();
 
@@ -143,8 +142,6 @@ int CMenu::_config4(void)
 			}
 		}
 	}
-	if(!neek2o() && m_current_view == COVERFLOW_CHANNEL && m_cfg.getBool(CHANNEL_DOMAIN, "disable", true)  == false)
-		NandHandle.Enable_Emu();
 	_hideConfig4();
 	return change;
 }

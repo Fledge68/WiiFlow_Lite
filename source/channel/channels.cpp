@@ -32,10 +32,12 @@
 #include "channel_launcher.h"
 #include "channels.h"
 #include "banner.h"
+#include "nand.hpp"
 #include "config/config.hpp"
 #include "gecko/gecko.hpp"
 #include "gui/text.hpp"
 #include "loader/fs.h"
+#include "loader/sys.h"
 #include "memory/mem2.hpp"
 #include "wstringEx/wstringEx.hpp"
 
@@ -63,12 +65,16 @@ void Channels::Cleanup()
 u8 Channels::GetRequestedIOS(u64 title)
 {
 	u8 IOS = 0;
-
-	char tmd[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
-	sprintf(tmd, "/title/%08x/%08x/content/title.tmd", TITLE_UPPER(title), TITLE_LOWER(title));
-
-	u32 size;
-	u8 *titleTMD = (u8 *)ISFS_GetFile(tmd, &size, -1);
+	u32 size = 0;
+	u8 *titleTMD = NULL;
+	if(NANDemuView)
+		titleTMD = NandHandle.GetTMD(title, &size);
+	else
+	{
+		char tmd[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
+		sprintf(tmd, "/title/%08x/%08x/content/title.tmd", TITLE_UPPER(title), TITLE_LOWER(title));
+		titleTMD = ISFS_GetFile(tmd, &size, -1);
+	}
 	if(titleTMD == NULL)
 		return 0;
 
@@ -100,15 +106,19 @@ u64 *Channels::GetChannelList(u32 *count)
 	return titles;
 }
 
-bool Channels::GetAppNameFromTmd(u64 title, char *app, bool dol, u32 *bootcontent)
+bool Channels::GetAppNameFromTmd(u64 title, char *app, u32 *bootcontent)
 {
 	bool ret = false;
-
-	char tmd[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
-	sprintf(tmd, "/title/%08x/%08x/content/title.tmd", TITLE_UPPER(title), TITLE_LOWER(title));
-
-	u32 size;
-	u8 *data = ISFS_GetFile(tmd, &size, -1);
+	u32 size = 0;
+	u8 *data = NULL;
+	if(NANDemuView)
+		data = NandHandle.GetTMD(title, &size);
+	else
+	{
+		char tmd[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
+		sprintf(tmd, "/title/%08x/%08x/content/title.tmd", TITLE_UPPER(title), TITLE_LOWER(title));
+		data = ISFS_GetFile(tmd, &size, -1);
+	}
 	if (data == NULL || size < 0x208)
 		return ret;
 
@@ -116,7 +126,7 @@ bool Channels::GetAppNameFromTmd(u64 title, char *app, bool dol, u32 *bootconten
 	u16 i;
 	for(i = 0; i < tmd_file->num_contents; ++i)
 	{
-		if(tmd_file->contents[i].index == (dol ? tmd_file->boot_index : 0))
+		if(tmd_file->contents[i].index == 0)
 		{
 			*bootcontent = tmd_file->contents[i].cid;
 			sprintf(app, "/title/%08x/%08x/content/%08x.app", TITLE_UPPER(title), TITLE_LOWER(title), *bootcontent);
@@ -132,15 +142,12 @@ bool Channels::GetAppNameFromTmd(u64 title, char *app, bool dol, u32 *bootconten
 
 void Channels::GetBanner(u64 title, bool imetOnly)
 {
+	u32 cid = 0;
 	CurrentBanner.ClearBanner();
 	char app[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
-	u32 cid;
-	if(!GetAppNameFromTmd(title, app, false, &cid))
-	{
-		gprintf("No title found for %08x %08x\n", (u32)(title&0xFFFFFFFF),(u32)(title>>32));
+	if(!GetAppNameFromTmd(title, app, &cid))
 		return;
-	}
-	CurrentBanner.GetBanner(title, app, true, imetOnly);
+	CurrentBanner.GetBanner(title, app, imetOnly);
 }
 
 bool Channels::GetChannelNameFromApp(u64 title, wchar_t* name, int language)
@@ -179,7 +186,11 @@ int Channels::GetLanguage(const char *lang)
 void Channels::Search()
 {
 	u32 count;
-	u64 *list = GetChannelList(&count);
+	u64 *list = NULL;
+	if(NANDemuView)
+		list = NandHandle.GetChannels(&count);
+	else
+		list = GetChannelList(&count);
 	if(list == NULL)
 		return;
 
@@ -190,20 +201,20 @@ void Channels::Search()
 		u32 Type = TITLE_UPPER(list[i]);
 		if(Type == SYSTEM_CHANNELS || Type == DOWNLOADED_CHANNELS || Type == GAME_CHANNELS)
 		{
+			u32 Title = TITLE_LOWER(list[i]);
+			if(Title == RF_NEWS_CHANNEL || Title == RF_FORECAST_CHANNEL)
+				continue; //skip region free news and forecast channel
 			Channel CurrentChan;
 			memset(&CurrentChan, 0, sizeof(Channel));
 			if(GetChannelNameFromApp(list[i], CurrentChan.name, language))
 			{
-				u32 Title = TITLE_LOWER(list[i]);
-				if(Title == RF_NEWS_CHANNEL || Title == RF_FORECAST_CHANNEL)
-					continue; //skip region free news and forecast channel
 				CurrentChan.title = list[i];
 				memcpy(CurrentChan.id, &Title, sizeof(CurrentChan.id));
 				this->push_back(CurrentChan);
 			}
 		}
 	}
-	MEM2_free(list);
+	free(list);
 }
 
 wchar_t * Channels::GetName(int index)

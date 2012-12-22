@@ -150,10 +150,8 @@ void CMenu::_showMain(void)
 				m_btnMgr.show(m_mainLblInit);
 				break;
 			case COVERFLOW_CHANNEL:
-				if(!m_cfg.getBool(CHANNEL_DOMAIN, "disable", true))
+				if(NANDemuView)
 				{
-					NandHandle.Disable_Emu();
-					DeviceHandle.MountAll();
 					_hideMain();
 					if(!_AutoCreateNand())
 						m_cfg.setBool(CHANNEL_DOMAIN, "disable", true);
@@ -174,8 +172,6 @@ void CMenu::_showMain(void)
 				break;
 		}
 	}
-	else if(!neek2o() && m_current_view == COVERFLOW_CHANNEL && !m_cfg.getBool(CHANNEL_DOMAIN, "disable", true))
-		NandHandle.Enable_Emu();
 }
 
 void CMenu::LoadView(void)
@@ -403,7 +399,6 @@ int CMenu::main(void)
 				_showWaitMessage();
 				m_gameSound.Stop();
 				CheckGameSoundThread();
-				NandHandle.Disable_Emu();
 				/* Create Fake Header */
 				dir_discHdr hdr;
 				memset(&hdr, 0, sizeof(dir_discHdr));
@@ -1043,15 +1038,9 @@ wstringEx CMenu::_getNoticeTranslation(int sorting, wstringEx curLetter)
 
 void CMenu::_setPartition(s8 direction)
 {
-	_cfNeedsUpdate();
-	bool disable = m_current_view == COVERFLOW_CHANNEL && !m_tempView && 
-				(m_cfg.getBool(CHANNEL_DOMAIN, "disable", true) || neek2o());
-	if(disable)
+	if(m_current_view == COVERFLOW_CHANNEL && NANDemuView == false)
 		return;
-
-	if(m_current_view == COVERFLOW_CHANNEL)
-		NandHandle.Enable_Emu();
-
+	_cfNeedsUpdate();
 	if(direction != 0)
 	{
 		u8 limiter = 0;

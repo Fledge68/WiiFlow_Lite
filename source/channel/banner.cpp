@@ -34,6 +34,7 @@
 #include <malloc.h>
 #include "banner.h"
 #include "MD5.h"
+#include "nand.hpp"
 #include "gecko/gecko.hpp"
 #include "loader/fs.h"
 #include "unzip/U8Archive.h"
@@ -162,40 +163,20 @@ u8 *Banner::GetFile(char *name, u32 *size)
 	return file;
 }
 
-void Banner::GetBanner(u64 title, char *appname, bool isfs, bool imetOnly)
+void Banner::GetBanner(u64 title, char *appname, bool imetOnly)
 {
-	void *buf = NULL;
+	u8 *buf = NULL;
 	u32 size = 0;
-	if (isfs)
-	{
-		buf = ISFS_GetFile(appname, &size, imetOnly ? sizeof(IMET) + IMET_OFFSET : 0);
-		if (size == 0) 
-		{
-			if(buf != NULL)
-				free(buf);
-			return;
-		}
-	}
+	s32 len = imetOnly ? sizeof(IMET) + IMET_OFFSET : -1;
+	if(NandHandle.EmulationEnabled())
+		buf = NandHandle.GetEmuFile(appname, &size, len);
 	else
+		buf = ISFS_GetFile(appname, &size, len);
+	if(size == 0)
 	{
-		FILE *fp = fopen(appname, "rb");
-		if(fp == NULL)
-			return;
-
-		u32 size = sizeof(IMET) + IMET_OFFSET;
-		if (!imetOnly)
-		{
-			fseek(fp, 0, SEEK_END);
-			size = ftell(fp);
-			fseek(fp, 0, SEEK_SET);
-		}
-
-		buf = malloc(size);
-		if(!buf)
-			return;
-
-		fread(buf, size, 1, fp);
-		fclose(fp);
+		if(buf != NULL)
+			free(buf);
+		return;
 	}
-	SetBanner((u8 *)buf, size, title);
+	SetBanner(buf, size, title);
 }

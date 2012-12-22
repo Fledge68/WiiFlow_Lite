@@ -2221,47 +2221,27 @@ const wstringEx CMenu::_fmt(const char *key, const wchar_t *def)
 
 bool CMenu::_loadChannelList(void)
 {
-	string emuPath;	
+	string emuPath;
+	string cacheDir;
 	int emuPartition = -1;
-
-	bool disable_emu = (m_cfg.getBool(CHANNEL_DOMAIN, "disable", true) || neek2o());
-
-	if(!disable_emu)
+	NANDemuView = (!neek2o() && m_cfg.getBool(CHANNEL_DOMAIN, "disable", true) == false);
+	if(NANDemuView)
 	{
 		m_partRequest = m_cfg.getInt(CHANNEL_DOMAIN, "partition", 1);
 		emuPartition = _FindEmuPart(&emuPath, m_partRequest, false);
 	
 		if(emuPartition < 0)
 			emuPartition = _FindEmuPart(&emuPath, m_partRequest, true);
-
 		if(emuPartition < 0)
 			return false;
-		else
-			currentPartition = emuPartition;
-	}
 
-	if(!disable_emu)
-	{
-		char basepath[64];
-		snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[currentPartition], emuPath.c_str());
-		NandHandle.PreNandCfg(basepath, m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_miis", false), m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_config", false));
-	}
-	NandHandle.Disable_Emu();
-	if(!disable_emu)
-	{
-		MusicPlayer.Stop();
-		TempLoadIOS();
-		DeviceHandle.UnMount(currentPartition);
-		NandHandle.SetPaths(emuPath.c_str(), currentPartition, disable_emu);
-		if(NandHandle.Enable_Emu() < 0)
-			NandHandle.Disable_Emu();
-	}
-	if(!DeviceHandle.IsInserted(currentPartition))
-		DeviceHandle.Mount(currentPartition);
-
-	string cacheDir;
-	if(!disable_emu)
+		currentPartition = emuPartition;
+		NandHandle.SetNANDEmu(currentPartition); /* Init NAND Emu */
+		NandHandle.SetPaths(emuPath.c_str(), DeviceName[currentPartition]);
+		NandHandle.PreNandCfg(m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_miis", false), 
+							m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_config", false));
 		cacheDir = fmt("%s/%s_channels.db", m_listCacheDir.c_str(), DeviceName[currentPartition]);
+	}
 	bool updateCache = m_cfg.getBool(_domainFromView(), "update_cache");
 	vector<string> NullVector;
 	m_gameList.CreateList(m_current_view, currentPartition, std::string(), 
@@ -2272,13 +2252,7 @@ bool CMenu::_loadChannelList(void)
 bool CMenu::_loadList(void)
 {
 	CoverFlow.clear();
-	if((m_current_view == COVERFLOW_CHANNEL && m_cfg.getBool(CHANNEL_DOMAIN, "disable", true))
-	|| (m_current_view != COVERFLOW_CHANNEL && NandHandle.EmulationEnabled()))
-	{
-		MusicPlayer.Stop();
-		NandHandle.Disable_Emu();
-		TempLoadIOS(IOS_TYPE_NORMAL_IOS);
-	}
+	NANDemuView = false;
 	gprintf("Switching View to %s\n", _domainFromView());
 
 	bool retval;

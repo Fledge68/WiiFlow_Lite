@@ -207,19 +207,12 @@ int CMenu::_config1(void)
 			}
 		}
 	}
-	
-	if (currentPartition != bCurrentPartition)
+	if(currentPartition != bCurrentPartition)
 	{	
-		bool disable = (m_cfg.getBool(CHANNEL_DOMAIN, "disable", true) || neek2o()) 
-						&& m_current_view == COVERFLOW_CHANNEL && !m_tempView;
-		if(!disable)
-		{
-			_showWaitMessage();
-			_loadList();
-			_hideWaitMessage();
-		}
+		_showWaitMessage();
+		_loadList();
+		_hideWaitMessage();
 	}
-
 	_hideConfig();
 	
 	return change;
