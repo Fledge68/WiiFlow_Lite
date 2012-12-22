@@ -787,7 +787,7 @@ int CMenu::main(void)
 	else if(Sys_GetExitTo() == EXIT_TO_SMNK2O || Sys_GetExitTo() == EXIT_TO_WFNK2O)
 	{
 		string emuPath;
-		_FindEmuPart(&emuPath, m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0), false);
+		_FindEmuPart(emuPath, m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0), false);
 		Sys_SetNeekPath(emuPath.size() > 1 ? emuPath.c_str() : NULL);
 	}
 	//gprintf("Saving configuration files\n");
