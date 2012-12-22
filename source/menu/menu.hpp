@@ -1058,7 +1058,7 @@ private:
 	void _stopSounds(void);
 	static int _NandDumper(void *obj);
 	static int _NandFlasher(void *obj);
-	int _FindEmuPart(string *emuPath, int part, bool searchvalid);
+	int _FindEmuPart(string &emuPath, int part, bool searchvalid);
 	bool _checkSave(string id, bool nand);
 	bool _TestEmuNand(int epart, const char *path, bool indept);	
 

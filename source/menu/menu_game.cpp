@@ -1065,7 +1065,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 
 	string emuPath;
 	m_partRequest = m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0);
-	int emuPartition = _FindEmuPart(&emuPath, m_partRequest, false);
+	int emuPartition = _FindEmuPart(emuPath, m_partRequest, false);
 	int emulate_mode = min(max(0, m_cfg.getInt(CHANNEL_DOMAIN, "emulation", 1)), (int)ARRAY_SIZE(CMenu::_NandEmu) - 1);
 	
 	int userIOS = m_gcfg2.getInt(id, "ios", 0);
@@ -1107,7 +1107,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	if(NAND_Emu && !neek2o())
 	{
 		/* Enable our Emu NAND */
-		DeviceHandle.UnMount(emuPartition);
+		DeviceHandle.UnMountAll();
 		if(emulate_mode == 1)
 			NandHandle.Set_FullMode(true);
 		else
@@ -1118,7 +1118,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 			error(_t("errgame5", L"Enabling emu failed!"));
 			Sys_Exit();
 		}
-		DeviceHandle.Mount(emuPartition);
+		DeviceHandle.MountAll();
 	}
 	if(WII_Launch)
 	{
@@ -1225,7 +1225,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	m_partRequest = m_cfg.getInt(WII_DOMAIN, "savepartition", -1);
 	if(m_partRequest == -1)
 		m_partRequest = m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0);
-	int emuPartition = _FindEmuPart(&emuPath, m_partRequest, false);
+	int emuPartition = _FindEmuPart(emuPath, m_partRequest, false);
 	
 	u8 emulate_mode = min((u32)m_gcfg2.getInt(id, "emulate_save", 0), ARRAY_SIZE(CMenu::_SaveEmu) - 1u);
 
@@ -1258,7 +1258,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			}
 			else
 			{
-				emuPartition = _FindEmuPart(&emuPath, 1, true);
+				emuPartition = _FindEmuPart(emuPath, 1, true);
 				NandHandle.CreatePath("%s:/wiiflow", DeviceName[emuPartition]);
 				NandHandle.CreatePath("%s:/wiiflow/nandemu", DeviceName[emuPartition]);
 			}
@@ -1336,7 +1336,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		NandHandle.SetNANDEmu(emuPartition); /* Init NAND Emu */
 		NandHandle.SetPaths(emuPath.c_str(), DeviceName[emuPartition]);
 		/* Enable our Emu NAND */
-		DeviceHandle.UnMount(emuPartition);
+		DeviceHandle.UnMountAll();
 		if(emulate_mode == 3)
 			NandHandle.Set_RCMode(true);
 		else if(emulate_mode == 4)
@@ -1349,7 +1349,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			error(_t("errgame6", L"Enabling emu after reload failed!"));
 			Sys_Exit();
 		}
-		DeviceHandle.Mount(emuPartition);
+		DeviceHandle.MountAll();
 	}
 	bool wbfs_partition = false;
 	if(!dvd)
