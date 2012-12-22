@@ -47,6 +47,7 @@ bool AHBRPOT_Patched(void);
 extern void __exception_setreload(int t);
 extern int mainIOS;
 extern bool useMainIOS;
+extern volatile bool NANDemuView;
 extern u8 currentPartition;
 
 #ifdef __cplusplus

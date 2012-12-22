@@ -65,7 +65,7 @@ private:
 
 	int GetLanguage(const char *lang);
 	u64* GetChannelList(u32* count);
-	bool GetAppNameFromTmd(u64 title, char* app, bool dol = false, u32* bootcontent = NULL);
+	bool GetAppNameFromTmd(u64 title, char* app, u32* bootcontent = NULL);
 	bool GetChannelNameFromApp(u64 title, wchar_t* name, int language);
 
 	void Search();

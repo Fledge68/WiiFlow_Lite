@@ -765,8 +765,6 @@ void CMenu::directlaunch(const char *GameID)
 
 void CMenu::_launch(dir_discHdr *hdr)
 {
-	/* No need to do that separate */
-	NandHandle.Disable_Emu();
 	/* Lets boot that shit */
 	if(hdr->type == TYPE_WII_GAME)
 		_launchGame(hdr, false);
@@ -1090,15 +1088,12 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 			ShutdownBeforeExit();
 			Launch_nk(gameTitle, emuPath.size() > 1 ? emuPath.c_str() : NULL, 
 				returnTo ? (((u64)(0x00010001) << 32) | (returnTo & 0xFFFFFFFF)) : 0);
-			while(1);
+			while(1) usleep(500);
 		}
-		DeviceHandle.UnMount(emuPartition);
-		NandHandle.SetPaths(emuPath.c_str(), emuPartition, false);
-		NandHandle.Enable_Emu();
+		NandHandle.SetPaths(emuPath.c_str(), DeviceName[emuPartition]);
+		NANDemuView = true;
 	}
 	gameIOS = ChannelHandle.GetRequestedIOS(gameTitle);
-	if(NAND_Emu && !neek2o())
-		NandHandle.Disable_Emu();
 	if(_loadIOS(gameIOS, userIOS, id, !NAND_Emu) == LOAD_IOS_FAILED)
 		Sys_Exit();
 	if((CurrentIOS.Type == IOS_TYPE_D2X || neek2o()) && returnTo != 0)
@@ -1108,7 +1103,6 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	}
 	if(NAND_Emu && !neek2o())
 	{
-		NandHandle.SetPaths(emuPath.c_str(), emuPartition, false);
 		if(emulate_mode == 1)
 			NandHandle.Set_FullMode(true);
 		else
@@ -1264,14 +1258,10 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 				NandHandle.CreatePath("%s:/wiiflow/nandemu", DeviceName[emuPartition]);
 			}
 		}
-		
 		m_cfg.setInt(WII_DOMAIN, "savepartition", emuPartition);
 		m_cfg.setString(WII_DOMAIN, "savepath", emuPath);
 		m_cfg.save();
-		
-		char basepath[64];
-		snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[emuPartition], emuPath.c_str());
-		
+
 		if(emulate_mode == 2 || emulate_mode > 3)
 		{
 			if(emulate_mode == 2)
@@ -1279,13 +1269,13 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 				m_forceext = false;
 				_hideWaitMessage();
 				if(!_AutoExtractSave(id))
-					NandHandle.CreateTitleTMD(basepath, hdr);
+					NandHandle.CreateTitleTMD(hdr);
 				_showWaitMessage();
 			}
 		}
 		if(emulate_mode > 2)
 		{
-			NandHandle.CreateConfig(basepath);
+			NandHandle.CreateConfig();
 			NandHandle.Do_Region_Change(id);
 		}
 	}
@@ -1338,9 +1328,9 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	}
 	if(emulate_mode && !neek2o() && CurrentIOS.Type == IOS_TYPE_D2X)
 	{
-		NandHandle.SetPaths(emuPath.c_str(), emuPartition, false);
+		NANDemuView = true;
+		NandHandle.SetPaths(emuPath.c_str(), DeviceName[emuPartition]);
 		DeviceHandle.UnMount(emuPartition);
-
 		if(emulate_mode == 3)
 			NandHandle.Set_RCMode(true);
 		else if(emulate_mode == 4)
@@ -1353,8 +1343,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			error(_t("errgame6", L"Enabling emu after reload failed!"));
 			Sys_Exit();
 		}
-		if(!DeviceHandle.IsInserted(currentPartition))
-			DeviceHandle.Mount(currentPartition);
 		DeviceHandle.Mount(emuPartition);
 	}
 	bool wbfs_partition = false;

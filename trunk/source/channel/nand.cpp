@@ -39,6 +39,7 @@
 #include "identify.h"
 #include "fileOps/fileOps.h"
 #include "gecko/gecko.hpp"
+#include "gui/text.hpp"
 #include "loader/alt_ios.h"
 #include "loader/cios.h"
 #include "loader/fs.h"
@@ -71,19 +72,16 @@ void Nand::Init()
 {
 	MountedDevice = 0;
 	EmuDevice = REAL_NAND;
-	Disabled = true;
 	AccessPatched = false;
 	Partition = 0;
 	FullMode = 0x100;
 	memset(NandPath, 0, sizeof(NandPath)); 
 }
 
-void Nand::SetPaths(string path, u32 partition, bool disable)
+void Nand::SetNANDEmu(u32 partition)
 {
-	EmuDevice = disable ? REAL_NAND : partition == 0 ? EMU_SD : EMU_USB;
-	Partition = disable ? REAL_NAND : partition > 0 ? partition - 1 : partition;
-	Set_NandPath(path);
-	Disabled = disable;
+	EmuDevice = partition == 0 ? EMU_SD : EMU_USB;
+	Partition = partition > 0 ? partition - 1 : partition;
 }
 
 s32 Nand::Nand_Mount(NandDevice *Device)
@@ -182,38 +180,23 @@ s32 Nand::Enable_Emu()
 s32 Nand::Disable_Emu()
 {
 	if(MountedDevice == 0 || !emu_enabled)
+	{
+		emu_enabled = false;
 		return 0;
-
-	NandDevice * Device = &NandDeviceList[MountedDevice];
+	}
+	emu_enabled = false;
+	NandDevice *Device = &NandDeviceList[MountedDevice];
 
 	Nand_Disable();
 	Nand_Unmount(Device);
 
 	MountedDevice = 0;
-
-	emu_enabled = false;
-	usleep(1000);
 	return 0;
 }
 
 bool Nand::EmulationEnabled(void)
 {
 	return emu_enabled;
-}
-
-void Nand::Set_NandPath(string path)
-{
-	if(isalnum(*(path.begin())))
-		path.insert(path.begin(), '/');
-	else
-		*(path.begin()) = '/';
-
-	if(path.size() <= 32)
-		memcpy(NandPath, path.c_str(), path.size());
-	else
-		memset(NandPath, 0, sizeof(NandPath));
-		
-	gprintf("NandPath = %s\n", NandPath);
 }
 
 void Nand::__Dec_Enc_TB(void) 
@@ -815,7 +798,7 @@ void Nand::CreatePath(const char *path, ...)
 	va_end(args);
 }
 
-void Nand::CreateTitleTMD(const char *path, dir_discHdr *hdr)
+void Nand::CreateTitleTMD(dir_discHdr *hdr)
 {
 	wbfs_disc_t *disc = WBFS_OpenDisc((u8 *)&hdr->id, (char *)hdr->path);
 	if(!disc) 
@@ -831,17 +814,14 @@ void Nand::CreateTitleTMD(const char *path, dir_discHdr *hdr)
 	u32 highTID = *(u32*)(titleTMD+0x18c);
 	u32 lowTID = *(u32*)(titleTMD+0x190);
 
-	CreatePath("%s/title/%08x/%08x/data", path, highTID, lowTID);
-	CreatePath("%s/title/%08x/%08x/content", path, highTID, lowTID);
+	CreatePath("%s/title/%08x/%08x/data", FullNANDPath, highTID, lowTID);
+	CreatePath("%s/title/%08x/%08x/content", FullNANDPath, highTID, lowTID);
 
 	char nandpath[MAX_FAT_PATH];
-	if(path[strlen(path)-1] == '/')
-		snprintf(nandpath, sizeof(nandpath), "%stitle/%08x/%08x/content/title.tmd", path, highTID, lowTID);
-	else
-		snprintf(nandpath, sizeof(nandpath), "%s/title/%08x/%08x/content/title.tmd", path, highTID, lowTID);
+	snprintf(nandpath, sizeof(nandpath), "%s/title/%08x/%08x/content/title.tmd", FullNANDPath, highTID, lowTID);
 
 	struct stat filestat;
-	if (stat(nandpath, &filestat) == 0)
+	if(stat(nandpath, &filestat) == 0)
 	{
 		free(titleTMD);
 		gprintf("%s Exists!\n", nandpath);
@@ -930,41 +910,41 @@ void Nand::ResetCounters(void)
 	NandDone = 0;
 }
  
-s32 Nand::CreateConfig(const char *path)
+s32 Nand::CreateConfig()
 {
-	CreatePath(path);
-	CreatePath("%s/shared2", path);
-	CreatePath("%s/shared2/sys", path);
-	CreatePath("%s/title", path);
-	CreatePath("%s/title/00000001", path);
-	CreatePath("%s/title/00000001/00000002", path);
-	CreatePath("%s/title/00000001/00000002/data", path);
+	CreatePath(FullNANDPath);
+	CreatePath("%s/shared2", FullNANDPath);
+	CreatePath("%s/shared2/sys", FullNANDPath);
+	CreatePath("%s/title", FullNANDPath);
+	CreatePath("%s/title/00000001", FullNANDPath);
+	CreatePath("%s/title/00000001/00000002", FullNANDPath);
+	CreatePath("%s/title/00000001/00000002/data", FullNANDPath);
 
 	fake = false;
 	showprogress = false;
 
 	memset(cfgpath, 0, sizeof(cfgpath));
-	snprintf(cfgpath, sizeof(cfgpath), "%s%s", path, SYSCONFPATH);
+	snprintf(cfgpath, sizeof(cfgpath), "%s%s", FullNANDPath, SYSCONFPATH);
 	__DumpNandFile(SYSCONFPATH, cfgpath);
 
 	memset(settxtpath, 0, sizeof(settxtpath));
-	snprintf(settxtpath, sizeof(settxtpath), "%s%s", path, TXTPATH);
+	snprintf(settxtpath, sizeof(settxtpath), "%s%s", FullNANDPath, TXTPATH);
 	__DumpNandFile(TXTPATH, settxtpath);
 
 	return 0;
 }
 
-s32 Nand::PreNandCfg(const char *path, bool miis, bool realconfig)
+s32 Nand::PreNandCfg(bool miis, bool realconfig)
 {
-	CreatePath(path);
-	CreatePath("%s/shared2", path);
-	CreatePath("%s/shared2/sys", path);
-	CreatePath("%s/shared2/menu", path);
-	CreatePath("%s/shared2/menu/FaceLib", path);
-	CreatePath("%s/title", path);
-	CreatePath("%s/title/00000001", path);
-	CreatePath("%s/title/00000001/00000002", path);
-	CreatePath("%s/title/00000001/00000002/data", path);
+	CreatePath(FullNANDPath);
+	CreatePath("%s/shared2", FullNANDPath);
+	CreatePath("%s/shared2/sys", FullNANDPath);
+	CreatePath("%s/shared2/menu", FullNANDPath);
+	CreatePath("%s/shared2/menu/FaceLib", FullNANDPath);
+	CreatePath("%s/title", FullNANDPath);
+	CreatePath("%s/title/00000001", FullNANDPath);
+	CreatePath("%s/title/00000001/00000002", FullNANDPath);
+	CreatePath("%s/title/00000001/00000002/data", FullNANDPath);
 
 	char dest[MAX_FAT_PATH];
 	
@@ -973,16 +953,15 @@ s32 Nand::PreNandCfg(const char *path, bool miis, bool realconfig)
 
 	if(realconfig)
 	{
-		snprintf(dest, sizeof(dest), "%s%s", path, SYSCONFPATH);
+		snprintf(dest, sizeof(dest), "%s%s", FullNANDPath, SYSCONFPATH);
 		__DumpNandFile(SYSCONFPATH, dest);
 
-		snprintf(dest, sizeof(dest), "%s%s", path, TXTPATH);
+		snprintf(dest, sizeof(dest), "%s%s", FullNANDPath, TXTPATH);
 		__DumpNandFile(TXTPATH, dest);
 	}
-
 	if(miis)
 	{
-		snprintf(dest, sizeof(dest), "%s%s", path, MIIPATH);
+		snprintf(dest, sizeof(dest), "%s%s", FullNANDPath, MIIPATH);
 		__DumpNandFile(MIIPATH, dest);
 	}
 	return 0;
@@ -1121,6 +1100,76 @@ void Nand::Patch_AHB()
 		// Enable memory protection
 		write16(MEM_PROT, 1);
 	}
+}
+
+u8 *Nand::GetEmuFile(const char *path, u32 *size, s32 len)
+{
+	u32 filesize = 0;
+	const char *tmp_path = fmt("%s%s", FullNANDPath, path);
+	bool ret = fsop_GetFileSizeBytes(tmp_path, &filesize);
+	if(ret == false || filesize == 0)
+		return NULL;
+
+	if(len > 0)
+		filesize = min(filesize, (u32)len);
+	u8 *tmp_buf = (u8*)MEM2_alloc(filesize);
+	FILE *f = fopen(tmp_path, "rb");
+	fread(tmp_buf, filesize, 1, f);
+	fclose(f);
+
+	DCFlushRange(tmp_buf, filesize);
+	*size = filesize;
+	return tmp_buf;
+}
+
+u64 *Nand::GetChannels(u32 *count)
+{
+	u32 size = 0;
+	u8 *uid_buf = GetEmuFile("/sys/uid.sys", &size);
+	if(uid_buf == NULL || size == 0)
+		return NULL;
+
+	uid *uid_file = (uid*)uid_buf;
+	u32 chans = size/sizeof(uid);
+	u64 *title_buf = (u64*)MEM2_alloc(chans*sizeof(u64));
+	for(u32 i = 0; i < chans; ++i)
+		title_buf[i] = uid_file[i].TitleID;
+	MEM2_free(uid_buf);
+
+	DCFlushRange(title_buf, chans);
+	*count = chans;
+	return title_buf;
+}
+
+u8 *Nand::GetTMD(u64 title, u32 *size)
+{
+	u32 tmd_size = 0;
+	const char *tmd_path = fmt("/title/%08x/%08x/content/title.tmd", 
+		 TITLE_UPPER(title), TITLE_LOWER(title));
+	u8 *tmd_buf = GetEmuFile(tmd_path, &tmd_size);
+
+	*size = tmd_size;
+	return tmd_buf;
+}
+
+void Nand::SetPaths(const char *emuPath, const char *currentPart)
+{
+	memset(&FullNANDPath, 0, sizeof(FullNANDPath));
+	strcat(FullNANDPath, fmt("%s:", currentPart));
+	if(emuPath[0] == '\0' || emuPath[0] == ' ')
+		return;
+	else if(emuPath[0] != '/' && emuPath[1] != '\0') //missing / before path
+		strcat(FullNANDPath, "/");
+
+	for(u32 i = 0; emuPath[i] != '\0'; i++)
+	{
+		if(emuPath[i] == '/' && emuPath[i+1] == '\0')
+			break;
+		strncat(FullNANDPath, &emuPath[i], 1);
+	}
+	gprintf("Emu NAND Full Path = %s\n", FullNANDPath);
+	strncpy(NandPath, fmt("/%s", strchr(FullNANDPath, ':') + 1), sizeof(NandPath));
+	gprintf("IOS Compatible NAND Path = %s\n", NandPath);
 }
 
 /*
