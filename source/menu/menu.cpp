@@ -121,7 +121,6 @@ CMenu::CMenu()
 	m_thrdStepLen = 0.f;
 	m_locked = false;
 	m_favorites = false;
-	m_networkInit = false;
 	m_thrdNetwork = false;
 	m_mutex = 0;
 	m_showtimer = 0;
@@ -536,9 +535,6 @@ void CMenu::cleanup()
 	cleaned_up = true;
 	//gprintf(" \nMemory cleaned up\n");
 	gprintf("MEM1_freesize(): %i\nMEM2_freesize(): %i\n", MEM1_freesize(), MEM2_freesize());
-	/* Lets deinit our possible wifi gecko here */
-	_deinitNetwork();
-	net_wc24cleanup();
 }
 
 void CMenu::_Theme_Cleanup(void)
@@ -644,7 +640,7 @@ void CMenu::_Theme_Cleanup(void)
 
 void CMenu::_netInit(void)
 {
-	if(m_networkInit || !init_network || m_exit)
+	if(networkInit || !init_network || m_exit)
 		return;
 	_initAsyncNetwork();
 	while(net_get_status() == -EBUSY)
@@ -2706,7 +2702,6 @@ void CMenu::TempLoadIOS(int IOS)
 
 	if(CurrentIOS.Version != IOS)
 	{
-		_deinitNetwork();
 		loadIOS(IOS, true);
 		Open_Inputs();
 		for(int chan = WPAD_MAX_WIIMOTES-2; chan >= 0; chan--)

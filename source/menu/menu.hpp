@@ -644,7 +644,6 @@ private:
 	bool m_show_zone_game;
 
 	volatile bool m_exit;
-	volatile bool m_networkInit;
 	volatile bool m_thrdStop;
 	volatile bool m_thrdWorking;
 	volatile bool m_thrdNetwork;
@@ -1039,7 +1038,6 @@ private:
 	void _initAsyncNetwork();
 	bool _isNetworkAvailable();
 	int _initNetwork();
-	void _deinitNetwork();
 	void LoadView(void);
 	void _getGrabStatus(void);
 	static void _addDiscProgress(int status, int total, void *user_data);

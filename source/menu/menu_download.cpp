@@ -409,7 +409,7 @@ s32 CMenu::_networkComplete(s32 ok, void *usrData)
 {
 	CMenu *m = (CMenu *) usrData;
 
-	m->m_networkInit = ok == 0;
+	networkInit = ok == 0;
 	m->m_thrdNetwork = false;
 
 	bool wifigecko = m->m_cfg.getBool("DEBUG", "wifi_gecko", false);
@@ -428,23 +428,14 @@ s32 CMenu::_networkComplete(s32 ok, void *usrData)
 int CMenu::_initNetwork()
 {
 	while (net_get_status() == -EBUSY || m_thrdNetwork) {}; // Async initialization may be busy, wait to see if it succeeds.
-	if (m_networkInit) return 0;
+	if (networkInit) return 0;
 	if (!_isNetworkAvailable()) return -2;
 
 	char ip[16];
 	int val = if_config(ip, NULL, NULL, true);
 	
-	m_networkInit = !val;
+	networkInit = !val;
 	return val;
-}
-
-void CMenu::_deinitNetwork()
-{
-	while(net_get_status() == -EBUSY)
-		usleep(100);
-	WiFiDebugger.Close();
-	net_deinit();
-	m_networkInit = false;
 }
 
 int CMenu::_coverDownloader(bool missingOnly)
