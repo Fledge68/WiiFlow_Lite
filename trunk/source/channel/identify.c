@@ -20,14 +20,10 @@ static bool apply_patch(char *name, const u8 *old, u32 old_size, const u8 *patch
 		{
 			found = true;
 			location = ptr + patch_offset;
-			u8 *start = location;
 			u32 i;
 			for(i = 0; i < patch_size; i++)
-			{
-				*location = patch[i];
-				location++;
-			}
-			DCFlushRange((u8 *)(((u32)start) >> 5 << 5), (patch_size >> 5 << 5) + 64);
+				location[i] = patch[i];
+			DCFlushRange(location, patch_size);
 			break;
 		}
 		ptr++;

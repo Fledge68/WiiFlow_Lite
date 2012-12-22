@@ -1029,27 +1029,15 @@ s32 Nand::Do_Region_Change(string id)
 	return 1;
 }
 
-void Nand::Enable_ISFS_Patches(void)
-{
-	if(AHBRPOT_Patched())
-		Patch_ISFS_Permission(true);
-}
-
-void Nand::Disable_ISFS_Patches(void)
-{
-	if(AHBRPOT_Patched())
-		Patch_ISFS_Permission(false);
-}
-
 void Nand::Init_ISFS()
 {
-	gprintf("Init ISFS\n");
-	ISFS_Initialize();
-	if(IOS_GetType(IOS_GetVersion()) == IOS_TYPE_NORMAL_IOS)
+	if(IOS_GetVersion() < 222)
 	{
-		Enable_ISFS_Patches();
+		Patch_ISFS_Permission(true);
 		AccessPatched = true;
 	}
+	gprintf("Init ISFS\n");
+	ISFS_Initialize();
 }
 
 void Nand::DeInit_ISFS(bool KeepPatches)
@@ -1058,7 +1046,7 @@ void Nand::DeInit_ISFS(bool KeepPatches)
 	ISFS_Deinitialize();
 	if(AccessPatched && !KeepPatches)
 	{
-		Disable_ISFS_Patches();
+		Patch_ISFS_Permission(false);
 		AccessPatched = false;
 	}
 }
