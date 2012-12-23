@@ -695,7 +695,7 @@ void CMenu::_gameSettings(void)
 				m_gcfg2.setBool(id, "debugger", true);
 				_showGameSettings();
 			}
-			else if (m_btnMgr.selected(m_gameSettingsBtnCategoryMain))
+			else if (m_btnMgr.selected(m_gameSettingsBtnCategoryMain) && !m_locked)
 			{
 				_hideGameSettings();
 				_CategorySettings(true);
