@@ -407,7 +407,7 @@ void CMenu::_game(bool launch)
 			m_gameSelected = true;
 			startGameSound = 1;
 		}
-		if(BTN_B_PRESSED && (m_btnMgr.selected(m_gameBtnFavoriteOn) || m_btnMgr.selected(m_gameBtnFavoriteOff)))
+		if(BTN_B_PRESSED && !m_locked && (m_btnMgr.selected(m_gameBtnFavoriteOn) || m_btnMgr.selected(m_gameBtnFavoriteOff)))
 		{
 			_hideGame();
 			m_banner.SetShowBanner(false);

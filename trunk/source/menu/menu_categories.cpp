@@ -302,9 +302,18 @@ void CMenu::_CategorySettings(bool fromGameSet)
 		{
 			if(m_btnMgr.selected(m_categoryBtnClear))
 			{
-				m_categories.at(0) = '1';
+				bool hiddenCat = false;
 				for(int j = 1; j < m_max_categories; ++j)
+				{
+					if(m_categories.at(j) == '2' && m_locked)
+					{	
+						hiddenCat = true;
+						continue;
+					}
 					m_categories.at(j) = '0';
+				}
+				if(!hiddenCat)
+					m_categories.at(0) = '1';
 				_updateCheckboxes();
 			}
 			for(u8 i = 1; i < 11; ++i)
@@ -327,6 +336,10 @@ void CMenu::_CategorySettings(bool fromGameSet)
 					}
 					else
 					{
+						if(m_locked && m_categories.at(j) == '2')
+							m_categories.at(j) = '1';
+						else if(m_locked && m_categories.at(j) == '1')
+							m_categories.at(j) = '2';
 						m_categories.at(j) = m_categories.at(j) == '0' ? '1' : m_categories.at(j) == '1' ? '2' : m_categories.at(j) == '2' ? '3' : '0';
 						if(m_categories.at(0) == '1' && m_categories.at(j) != '0')
 							m_categories.at(0) = '0';
