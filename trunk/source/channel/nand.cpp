@@ -1153,11 +1153,13 @@ void Nand::SetPaths(const char *emuPath, const char *currentPart)
 			break;
 		strncat(NandPath, &emuPath[i], 1);
 	}
-	gprintf("IOS Compatible NAND Path = %s\n", NandPath);
-
+	/* Our WiiFlow handle Path */
 	memset(&FullNANDPath, 0, sizeof(FullNANDPath));
 	strcat(FullNANDPath, fmt("%s:%s", currentPart, NandPath));
 	gprintf("Emu NAND Full Path = %s\n", FullNANDPath);
+	/* For d2x IOS Path */
+	if(strlen(NandPath) == 0) strcat(NandPath, "/");
+	gprintf("IOS Compatible NAND Path = %s\n", NandPath);
 }
 
 /*
