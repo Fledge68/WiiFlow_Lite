@@ -375,6 +375,7 @@ static void setLanguage(int l)
 void CMenu::_game(bool launch)
 {
 	m_gcfg1.load(fmt("%s/" GAME_SETTINGS1_FILENAME, m_settingsDir.c_str()));
+	m_zoom_banner = m_cfg.getBool(_domainFromView(), "show_full_banner", false) && !NoGameID(CoverFlow.getHdr()->type);
 	if(!launch)
 	{
 		SetupInput();
@@ -383,7 +384,7 @@ void CMenu::_game(bool launch)
 		m_gameSelected = true;
 	}
 
-	m_zoom_banner = m_cfg.getBool(_domainFromView(), "show_full_banner", false) && !NoGameID(CoverFlow.getHdr()->type);
+
 	if(m_banner.GetZoomSetting() != m_zoom_banner)
 		m_banner.ToogleZoom();
 
@@ -530,6 +531,9 @@ void CMenu::_game(bool launch)
 				m_zoom_banner = m_banner.ToogleZoom();
 				m_cfg.setBool(_domainFromView(), "show_full_banner", m_zoom_banner);
 				m_show_zone_game = false;
+				m_btnMgr.hide(m_gameBtnPlayFull);
+				m_btnMgr.hide(m_gameBtnBackFull);
+				m_btnMgr.hide(m_gameBtnToogleFull);
 			}
 			else if(m_btnMgr.selected(m_gameBtnSettings))
 			{
