@@ -81,7 +81,11 @@ void CMenu::_Boot(void)
 void CMenu::_refreshBoot(void)
 {
 	m_btnMgr.setText(m_bootBtnLoadCIOS, _optBoolToString(m_cfg.getBool("GENERAL", "force_cios_load", false)));
-	m_btnMgr.setText(m_bootLblCurCIOSrev, wfmt(L"%i", min(m_cfg.getInt("GENERAL", "force_cios_rev", 0), 254)));
+	u8 IOS_Revision = min(m_cfg.getInt("GENERAL", "force_cios_rev", 0), 254);
+	if(IOS_Revision > 0)
+		m_btnMgr.setText(m_bootLblCurCIOSrev, wfmt(L"%i", IOS_Revision));
+	else
+		m_btnMgr.setText(m_bootLblCurCIOSrev, L"AUTO");
 	showBoot();
 }
 

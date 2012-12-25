@@ -75,7 +75,16 @@ void Nand::Init()
 	AccessPatched = false;
 	Partition = 0;
 	FullMode = 0x100;
-	memset(NandPath, 0, sizeof(NandPath)); 
+	memset(NandPath, 0, sizeof(NandPath));
+}
+
+bool Nand::LoadDefaultIOS(void)
+{
+	Patch_AHB();
+	s32 ret = __IOS_LoadStartupIOS();
+	loadIOS(IOS_GetVersion(), false);
+	Init_ISFS();
+	return (ret == 0);
 }
 
 void Nand::SetNANDEmu(u32 partition)
@@ -1036,6 +1045,7 @@ void Nand::Init_ISFS()
 		Patch_ISFS_Permission(true);
 		AccessPatched = true;
 	}
+	usleep(1000);
 	gprintf("Init ISFS\n");
 	ISFS_Initialize();
 }
@@ -1044,6 +1054,7 @@ void Nand::DeInit_ISFS(bool KeepPatches)
 {
 	gprintf("Deinit ISFS\n");
 	ISFS_Deinitialize();
+	usleep(1000);
 	if(AccessPatched && !KeepPatches)
 	{
 		Patch_ISFS_Permission(false);

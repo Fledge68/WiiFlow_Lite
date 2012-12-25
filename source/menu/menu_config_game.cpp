@@ -442,17 +442,15 @@ void CMenu::_showGameSettings(void)
 	}
 
 	int j = 0;
-	if (m_gcfg2.getInt(id, "ios", &j) && _installed_cios.size() > 0)
+	if(m_gcfg2.getInt(id, "ios", &j) && _installed_cios.size() > 0)
 	{
 		CIOSItr itr = _installed_cios.find(j);
 		j = (itr == _installed_cios.end()) ? 0 : itr->first;
 	}
 	else j = 0;
 
-	if (j != 0)
-	{
-		m_btnMgr.setText(m_gameSettingsLblIOS, wstringEx(sfmt("%i", j)));
-	}
+	if(j > 0)
+		m_btnMgr.setText(m_gameSettingsLblIOS, wfmt(L"%i", j));
 	else
 		m_btnMgr.setText(m_gameSettingsLblIOS, L"AUTO");
 
