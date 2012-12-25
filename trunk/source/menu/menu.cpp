@@ -1611,6 +1611,25 @@ void CMenu::_addUserLabels(s16 *ids, u32 start, u32 size, const char *domain)
 	}
 }
 
+void CMenu::_checkForSinglePlugin(void)
+{
+	enabledPluginPos = 0;
+	enabledPluginsCount = 0;
+	const vector<bool> &EnabledPlugins = m_plugin.GetEnabledPlugins(m_cfg);
+	if(m_current_view == COVERFLOW_PLUGIN && EnabledPlugins.size() != 0)
+	{
+		for(u8 i = 0; i < EnabledPlugins.size(); i++)
+		{
+			if(EnabledPlugins.at(i))
+			{
+				enabledPluginPos = i;
+				enabledPluginsCount++;
+			}
+		}
+		snprintf(PluginMagicWord, sizeof(PluginMagicWord), "%08x", m_plugin.getPluginMagic(enabledPluginPos));
+	}
+}
+
 void CMenu::_initCF(void)
 {
 	Config dump, gameAgeList;
@@ -1619,8 +1638,6 @@ void CMenu::_initCF(void)
 	
 	CoverFlow.clear();
 	CoverFlow.reserve(m_gameList.size());
-	
-	const vector<bool> &EnabledPlugins = m_plugin.GetEnabledPlugins(m_cfg);
 
  	bool dumpGameLst = m_cfg.getBool(domain, "dump_list", true);
 	if(dumpGameLst) dump.load(fmt("%s/" TITLES_DUMP_FILENAME, m_settingsDir.c_str()));
@@ -1639,22 +1656,9 @@ void CMenu::_initCF(void)
 			gametdb.SetLanguageCode(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
 		}
 	}
-	// check for single plugin selected
-	u8 pos = 0;
-	u8 enabledPluginsCount = 0;
-	if(m_current_view == COVERFLOW_PLUGIN && EnabledPlugins.size() != 0)
-	{
-		char PluginMagicWord[9];
-		for(u8 i = 0; i < EnabledPlugins.size(); i++)
-		{
-			snprintf(PluginMagicWord, sizeof(PluginMagicWord), "%08x", m_plugin.getPluginMagic(i));
-			if(m_cfg.getBool("PLUGIN", PluginMagicWord, true))
-			{
-				pos = i;
-				enabledPluginsCount++;
-			}
-		}
-	}
+	_checkForSinglePlugin();
+	const vector<bool> &EnabledPlugins = m_plugin.GetEnabledPlugins(m_cfg);
+	
 	for(vector<dir_discHdr>::iterator element = m_gameList.begin(); element != m_gameList.end(); ++element)
 	{
 		string id;
@@ -1789,8 +1793,8 @@ void CMenu::_initCF(void)
 			}
 			if(enabledPluginsCount == 1)
 			{
-				catDomain = (m_plugin.GetPluginName(pos)).toUTF8();
-				if(element->settings[0] != m_plugin.getPluginMagic(pos))
+				catDomain = (m_plugin.GetPluginName(enabledPluginPos)).toUTF8();
+				if(element->settings[0] != m_plugin.getPluginMagic(enabledPluginPos))
 					continue;
 			}
 			const char *requiredCats = m_cat.getString(fmt("%s/GENERAL", catDomain.c_str()), "required_categories").c_str();

@@ -356,6 +356,12 @@ bool CMenu::_Source()
 									}
 								}
 							}
+							_checkForSinglePlugin();
+							if(enabledPluginsCount == 1)
+							{
+								currentPartition = m_cfg.getInt("PLUGINS/PARTITION", PluginMagicWord, 1) + 1;
+								_setPartition(-1);
+							}
 							int layout = m_source.getInt(fmt("BUTTON_%i", i + j), "emuflow", 0);
 							if(layout != 0)
 								m_cfg.setInt(PLUGIN_DOMAIN, "last_cf_mode", layout);
