@@ -65,12 +65,11 @@ int main(int argc, char **argv)
 	/* Init ISFS */
 	NandHandle.Init_ISFS();
 	/* Handle (c)IOS Loading */
-	if(neek2o() || Sys_DolphinMode())
+	if(neek2o() || Sys_DolphinMode()) /* wont reload anythin */
 		iosOK = loadIOS(IOS_GetVersion(), false);
-	else if((AHBRPOT_Patched() && IOS_GetVersion() == 58) || /* Normal HBC or FW Boot */
-	(!AHBRPOT_Patched() && IOS_GetType(mainIOS) == IOS_TYPE_STUB)) /* Maybe old HBC or WiiU */
-		iosOK = loadIOS(58, false);
-	else /* cIOS wanted */
+	else if(!CustomIOS(IOS_GetType(mainIOS))) /* safe reload */
+		iosOK = NandHandle.LoadDefaultIOS();
+	else /* cIOS found and on real nand, so just use it */
 		iosOK = loadIOS(mainIOS, false) && CustomIOS(CurrentIOS.Type);
 
 	// Init

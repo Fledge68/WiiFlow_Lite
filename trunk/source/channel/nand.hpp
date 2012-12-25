@@ -61,6 +61,7 @@ class Nand
 {
 public:
 	void Init();
+	bool LoadDefaultIOS(void);
 
 	/* Prototypes */
 	void SetNANDEmu(u32 partition);

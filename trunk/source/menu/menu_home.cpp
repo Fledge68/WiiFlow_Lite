@@ -275,7 +275,7 @@ void CMenu::_textHome(void)
 	m_btnMgr.setText(m_homeBtnReloadCache, _t("home2", L"Reload Cache"));
 	m_btnMgr.setText(m_homeBtnUpdate, _t("home3", L"Update"));
 	m_btnMgr.setText(m_homeBtnInstall, _t("home7", L"Install Game"));
-	m_btnMgr.setText(m_homeBtnAbout, _t("home4", L"About"));
+	m_btnMgr.setText(m_homeBtnAbout, _t("home4", L"Credits"));
 	m_btnMgr.setText(m_homeBtnExitTo, _t("home5", L"Exit To"));
 }
 
