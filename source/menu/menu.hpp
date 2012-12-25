@@ -43,6 +43,9 @@ public:
 	void loadDefaultFont(void);
 	void TempLoadIOS(int IOS = 0);
 	u8 m_current_view;
+	u8 enabledPluginPos;
+	u8 enabledPluginsCount;
+	char PluginMagicWord[9];
 private:
 	struct SZone
 	{
@@ -923,6 +926,7 @@ private:
 	void _updatePluginText(void);
 	void _updatePluginCheckboxes(void);
 	void _updateCheckboxes(void);
+	void _checkForSinglePlugin(void);
 	void _getIDCats(void);
 	void _setIDCats(void);
 	void _setBg(const STexture &tex, const STexture &lqTex);

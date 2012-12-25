@@ -1061,5 +1061,10 @@ void CMenu::_setPartition(s8 direction)
 	if(m_tempView)
 		m_cfg.setInt(WII_DOMAIN, "savepartition", currentPartition);
 	else
+	{
 		m_cfg.setInt(_domainFromView(), "partition", currentPartition);
+		_checkForSinglePlugin();
+		if(enabledPluginsCount == 1)
+			m_cfg.setInt("PLUGINS/PARTITION", PluginMagicWord, currentPartition);
+	}
 }
