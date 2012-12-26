@@ -5,6 +5,7 @@
 #include "const_str.hpp"
 #include "booter/external_booter.hpp"
 #include "channel/nand.hpp"
+#include "channel/nand_save.hpp"
 #include "devicemounter/DeviceHandler.hpp"
 #include "gecko/gecko.hpp"
 #include "gui/video.hpp"
@@ -64,13 +65,15 @@ int main(int argc, char **argv)
 	}
 	/* Init ISFS */
 	NandHandle.Init_ISFS();
+	if(InternalSave.CheckSave()) /* Maybe new IOS settings */
+		InternalSave.LoadIOS();
 	/* Handle (c)IOS Loading */
 	if(neek2o() || Sys_DolphinMode()) /* wont reload anythin */
 		iosOK = loadIOS(IOS_GetVersion(), false);
-	else if(!CustomIOS(IOS_GetType(mainIOS))) /* safe reload */
-		iosOK = NandHandle.LoadDefaultIOS();
-	else /* cIOS found and on real nand, so just use it */
+	else if(useMainIOS && CustomIOS(IOS_GetType(mainIOS))) /* Requested */
 		iosOK = loadIOS(mainIOS, false) && CustomIOS(CurrentIOS.Type);
+	else /* safe reload to the default IOS */
+		iosOK = NandHandle.LoadDefaultIOS();
 
 	// Init
 	Sys_Init();

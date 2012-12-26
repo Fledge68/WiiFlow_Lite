@@ -1,7 +1,23 @@
-
+/****************************************************************************
+ * Copyright (C) 2012 FIX94
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ ****************************************************************************/
 #include "menu.hpp"
 #include "const_str.hpp"
 #include "fileOps/fileOps.h"
+#include "channel/nand_save.hpp"
 
 s16 m_bootLblTitle;
 s16 m_bootLblLoadCIOS;
@@ -11,6 +27,8 @@ s16 m_bootLblCIOSrev;
 s16 m_bootLblCurCIOSrev;
 s16 m_bootLblCIOSrevM;
 s16 m_bootLblCIOSrevP;
+
+ios_settings_t settings;
 
 static void showBoot(void)
 {
@@ -40,6 +58,8 @@ void CMenu::_Boot(void)
 {
 	SetupInput();
 	_refreshBoot();
+	bool prev_load = m_cfg.getBool("GENERAL", "force_cios_load", false);
+	u8 prev_ios = min(m_cfg.getInt("GENERAL", "force_cios_rev", 0), 254);
 
 	while(!m_exit)
 	{
@@ -74,6 +94,15 @@ void CMenu::_Boot(void)
 			}
 			_refreshBoot();
 		}
+	}
+	bool cur_load = m_cfg.getBool("GENERAL", "force_cios_load", false);
+	u8 cur_ios = min(m_cfg.getInt("GENERAL", "force_cios_rev", 0), 254);
+	if(prev_load != cur_load || prev_ios != cur_ios)
+	{
+		memset(&settings, 0, sizeof(ios_settings_t));
+		settings.cios = min(m_cfg.getInt("GENERAL", "force_cios_rev", 0), 254);
+		settings.use_cios = m_cfg.getBool("GENERAL", "force_cios_load", false);
+		InternalSave.SaveIOS(settings);
 	}
 	hideBoot(false);
 }
