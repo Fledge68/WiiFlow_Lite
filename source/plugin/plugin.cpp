@@ -79,10 +79,7 @@ bool Plugin::AddPlugin(Config &plugin)
 		fclose(fp);
 	}
 	else
-	{
-		NewPlugin.BannerSound = std::string();
 		NewPlugin.BannerSoundSize = 0;
-	}
 	Plugins.push_back(NewPlugin);
 	return false;
 }
@@ -194,34 +191,34 @@ vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, const char *Device, u32
 	if(!ini.loaded())
 		return gameHeader;
 
-	const string *GameDomain = &ini.firstDomain();
+	const char *GameDomain = ini.firstDomain().c_str();
 	dir_discHdr ListElement;
 	while(1)
 	{
-		if(GameDomain->size() < 2)
+		if(strlen(GameDomain) < 2)
 			break;
-		const string &GameName = ini.getString(*GameDomain, "description");
-		if(GameName.size() < 2 || strncasecmp(Device, ini.getString(*GameDomain, "path").c_str(), 2) != 0)
+		const char *GameName = ini.getString(GameDomain, "description").c_str();
+		if(strlen(GameName) < 2 || strncasecmp(Device, ini.getString(GameDomain, "path").c_str(), 2) != 0)
 		{
-			GameDomain = &ini.nextDomain();
+			GameDomain = ini.nextDomain().c_str();
 			continue;
 		}
 		memset((void*)&ListElement, 0, sizeof(dir_discHdr));
 		strncpy(ListElement.id, PLUGIN_INI_DEF, 6);
 		ListElement.casecolor = Plugins.back().caseColor;
-		mbstowcs(ListElement.title, GameName.c_str(), 63);
-		strncpy(ListElement.path, GameDomain->c_str(), sizeof(ListElement.path));
-		gprintf("Found: %s\n", GameDomain->c_str());
+		mbstowcs(ListElement.title, GameName, 63);
+		strncpy(ListElement.path, GameDomain, sizeof(ListElement.path));
+		gprintf("Found: %s\n", GameDomain);
 		ListElement.settings[0] = MagicWord;
 		ListElement.type = TYPE_PLUGIN;
 		gameHeader.push_back(ListElement);
-		GameDomain = &ini.nextDomain();
+		GameDomain = ini.nextDomain().c_str();
 	}
 	return gameHeader;
 }
 
-vector<string> Plugin::CreateArgs(const string& device, const string& path, 
-						const string& title, const string& loader, u32 magic)
+vector<string> Plugin::CreateArgs(const char *device, const char *path, 
+						const char *title, const char *loader, u32 magic)
 {
 	vector<string> args;
 	Plugin_Pos = GetPluginPosition(magic);

@@ -176,7 +176,7 @@ void CMenu::_showMain(void)
 
 void CMenu::LoadView(void)
 {
-	m_curGameId = CoverFlow.getId();
+	m_curGameId = NULL;
 	_hideMain(true);
 	CoverFlow.clear();
 	if(!m_vid.showingWaitMessage())

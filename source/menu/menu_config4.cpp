@@ -77,12 +77,12 @@ void CMenu::_showConfig4(void)
 	ChannelHandle.Init(m_loc.getString(m_curLanguage, "gametdb_code", "EN"));
 	amountOfChannels = ChannelHandle.Count();
 
-	string currentChanId = m_cfg.getString("GENERAL", "returnto" );
-	if (currentChanId.size() > 0)
+	const string &currentChanId = m_cfg.getString("GENERAL", "returnto");
+	if(!currentChanId.empty())
 	{
-		for (int i = 0; i < amountOfChannels; i++)
+		for(int i = 0; i < amountOfChannels; i++)
 		{
-			if (currentChanId == ChannelHandle.GetId(i))
+			if(strncmp(currentChanId.c_str(), ChannelHandle.GetId(i), 4) == 0)
 			{
 				channelName = custom_titles.getWString("TITLES", currentChanId, titles.getWString("TITLES", currentChanId, ChannelHandle.GetName(i)));
 				break;

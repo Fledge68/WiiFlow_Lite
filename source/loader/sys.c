@@ -19,8 +19,8 @@
 #include "wiiuse/wpad.h"
 
 /* Variables */
-volatile bool reset = false;
-volatile bool shutdown = false;
+bool reset = false;
+bool shutdown = false;
 volatile u8 ExitOption = 0;
 const char *NeekPath = NULL;
 
@@ -57,6 +57,8 @@ void Close_Inputs(void)
 
 bool Sys_Exiting(void)
 {
+	DCFlushRange(&reset, 32);
+	DCFlushRange(&shutdown, 32);
 	return reset || shutdown;
 }
 

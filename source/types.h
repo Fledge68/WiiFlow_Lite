@@ -24,12 +24,12 @@ enum
 
 enum
 {
-    TYPE_WII_GAME = 0,
-    TYPE_GC_GAME,
-    TYPE_CHANNEL,
-    TYPE_PLUGIN,
-    TYPE_HOMEBREW,
-    TYPE_END
+	TYPE_WII_GAME = 0,
+	TYPE_GC_GAME,
+	TYPE_CHANNEL,
+	TYPE_PLUGIN,
+	TYPE_HOMEBREW,
+	TYPE_END
 };
 #define NoGameID(x)			(x == TYPE_PLUGIN || x == TYPE_HOMEBREW)
 

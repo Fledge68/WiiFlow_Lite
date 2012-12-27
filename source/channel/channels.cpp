@@ -231,9 +231,10 @@ u32 Channels::Count()
 	return this->size(); 
 }
 
-char * Channels::GetId(int index)
+const char *Channels::GetId(int index)
 {
-	if (index < 0 || index > (int)Count() - 1) return (char *) "";
+	if(index < 0 || index > (int)Count() - 1)
+		return "";
 	return this->at(index).id;
 }
 

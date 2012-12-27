@@ -85,7 +85,7 @@ bool WiiFont::Load(const u8 *file)
 			break;
 		default:
 			// ignore
-			gprintf("Uknown section %.4s\n", (char *) &section->magic);
+			gprintf("Unknown section %.4s\n", &section->magic);
 			break;
 		}
 	}

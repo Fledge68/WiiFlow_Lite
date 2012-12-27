@@ -336,7 +336,7 @@ vector<string> Config::getStrings(const string &domain, const string &key, char 
 
 	if(domain.empty() || key.empty())
 	{
-		if(defVal != std::string())
+		if(!defVal.empty())
 			retval.push_back(defVal);
 		return retval;
 	}
@@ -344,7 +344,7 @@ vector<string> Config::getStrings(const string &domain, const string &key, char 
 	string &data = m_domains[upperCase(domain)][lowerCase(key)];
 	if(data.empty())
 	{
-		if(defVal != std::string())
+		if(!defVal.empty())
 			retval.push_back(defVal);
 		return retval;
 	}

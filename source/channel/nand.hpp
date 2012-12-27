@@ -25,7 +25,7 @@
 
 #define BLOCK 2048
 
-typedef void (*dump_callback_t)(int dumpstat, int dumpprog, int filestat, int fileprog, int files, int folders, char *tmess, void *user_data);
+typedef void (*dump_callback_t)(int dumpstat, int dumpprog, int filestat, int fileprog, int files, int folders, const char *tmess, void *user_data);
 
 /* 'NAND Device' structure */
 typedef struct nandDevice

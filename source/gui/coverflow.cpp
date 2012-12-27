@@ -1499,16 +1499,16 @@ void CCoverFlow::_loadCover(int i, int item)
 	m_covers[i].title.setText(m_font, m_items[item].hdr->title);
 }
 
-string CCoverFlow::getId(void) const
+const char *CCoverFlow::getId(void) const
 {
 	if (m_covers.empty() || m_items.empty()) return "";
-	return string(m_items[loopNum(m_covers[m_range / 2].index + m_jump, m_items.size())].hdr->id);
+	return m_items[loopNum(m_covers[m_range / 2].index + m_jump, m_items.size())].hdr->id;
 }
 
-string CCoverFlow::getNextId(void) const
+const char *CCoverFlow::getNextId(void) const
 {
 	if (m_covers.empty() || m_items.empty()) return "";
-	return string(m_items[loopNum(m_covers[m_range / 2].index + m_jump + 1, m_items.size())].hdr->id);
+	return m_items[loopNum(m_covers[m_range / 2].index + m_jump + 1, m_items.size())].hdr->id;
 }
 
 dir_discHdr * CCoverFlow::getHdr(void) const
@@ -1595,6 +1595,12 @@ void CCoverFlow::cancel(void)
 	_unselect();
 	_updateAllTargets();
 	_playSound(m_cancelSound);
+}
+
+void CCoverFlow::defaultLoad(void)
+{
+	_loadAllCovers(0);
+	_updateAllTargets();
 }
 
 void CCoverFlow::_updateAllTargets(bool instant)
@@ -1840,7 +1846,7 @@ bool CCoverFlow::_sortByWifiPlayers(CItem item1, CItem item2)
 	return item1.hdr->wifi < item2.hdr->wifi;
 }
 
-bool CCoverFlow::start(const char *id)
+bool CCoverFlow::start()
 {
 	if (m_items.empty()) return true;
 
@@ -1907,10 +1913,6 @@ bool CCoverFlow::start(const char *id)
 	m_jump = 0;
 	m_selected = false;
 	m_moved = true;
-	if (id == 0 || !findId(id, true))
-		_loadAllCovers(0);
-	_updateAllTargets();
-	startCoverLoader();
 	return true;
 }
 
@@ -2074,20 +2076,22 @@ bool CCoverFlow::mouseOver(int x, int y)
 	return m_vid.stencilVal(x, y) == (int)m_range / 2 + 1;
 }
 
-bool CCoverFlow::findId(const char *id, bool instant)
+bool CCoverFlow::findId(const char *id, bool instant, bool path)
 {
 	LockMutex lock(m_mutex);
 	u32 i, curPos = _currentPos();
 
-	if (m_items.empty() || (instant && m_covers.empty()))
+	if(m_items.empty() || (instant && m_covers.empty()) || strlen(id) == 0)
 		return false;
 	// 
 	for (i = 0; i < m_items.size(); ++i)
-		if(memcmp(m_items[i].hdr->id, id, strlen(id)) == 0)
+	{
+		if(path && memcmp(strrchr(m_items[i].hdr->path, '/')+1, id, strlen(id)) == 0)
 			break;
-		else if (strlen(id) > 6 && memcmp(&m_items[i].hdr->path[string(m_items[i].hdr->path).find_last_of("/")+1], id, strlen(id)) == 0)
+		else if(!path && memcmp(m_items[i].hdr->id, id, strlen(id)) == 0)
 			break;
-	if (i >= m_items.size())
+	}
+	if(i >= m_items.size())
 		return false;
 	m_jump = 0;
 	if (instant)

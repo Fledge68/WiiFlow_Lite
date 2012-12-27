@@ -47,14 +47,15 @@ public:
 	void addItem(dir_discHdr *hdr, const char *picPath, const char *boxPicPath, const char *blankBoxPicPath, int playcount = 0, unsigned int lastPlayed = 0);
 	bool empty(void) const { return m_items.empty(); }
 	// 
-	bool start(const char *id = NULL);
+	bool start();
 	void stopCoverLoader(bool empty = false);
 	void startCoverLoader(void);
+	void defaultLoad(void);
 	// 
 	void simulateOtherScreenFormat(bool s);
 	// Commands
 	void tick(void);
-	bool findId(const char *id, bool instant = false);
+	bool findId(const char *id, bool instant = false, bool path = false);
 	void pageUp(void);
 	void pageDown(void);
 	void nextLetter(wchar_t *c);
@@ -125,8 +126,8 @@ public:
 	bool fullCoverCached(const char *id);
 	bool preCacheCover(const char *id, const u8 *png, bool full);
 	// 
-	string getId(void) const;
-	string getNextId(void) const;
+	const char *getId(void) const;
+	const char *getNextId(void) const;
 	dir_discHdr * getHdr(void) const;
 	dir_discHdr * getNextHdr(void) const;
 	wstringEx getTitle(void) const;
