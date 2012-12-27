@@ -31,12 +31,13 @@ public:
 	NandSave();
 	bool CheckSave();
 	void LoadIOS();
-	void SaveIOS(const ios_settings_t settings);
+	void SaveIOS(u8 ios, bool use_ios);
 private:
 	s32 fd;
 	s32 ret;
 	bool loaded;
 	char ISFS_Path[ISFS_MAXPATH];
+	ios_settings_t ios_settings;
 };
 
 extern NandSave InternalSave;

@@ -83,6 +83,8 @@ void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 pat
 	/* Copy in booter */
 	memcpy(EXT_ADDR, booter, booter_size);
 	DCFlushRange(EXT_ADDR, booter_size);
+	/* Wii Games will need it */
+	net_wc24cleanup();
 	/* Boot it */
 	JumpToEntry(EXT_ENTRY);
 }
@@ -111,6 +113,7 @@ void ShutdownBeforeExit(bool KeepPatches)
 	DeviceHandle.UnMountAll();
 	NandHandle.DeInit_ISFS(KeepPatches);
 	WDVD_Close();
+	Close_Inputs();
 	/* Deinit network */
 	if(networkInit == true)
 	{

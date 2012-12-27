@@ -1263,9 +1263,13 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 				NandHandle.CreatePath("%s:/wiiflow/nandemu", DeviceName[emuPartition]);
 			}
 		}
+		/* Init NAND Emu Settings */
+		NANDemuView = true;
+		NandHandle.SetNANDEmu(emuPartition);
+		NandHandle.SetPaths(emuPath.c_str(), DeviceName[emuPartition]);
+		/* Set them */
 		m_cfg.setInt(WII_DOMAIN, "savepartition", emuPartition);
 		m_cfg.setString(WII_DOMAIN, "savepath", emuPath);
-
 		if(emulate_mode == 2 || emulate_mode > 3)
 		{
 			if(emulate_mode == 2)
@@ -1332,9 +1336,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	}
 	if(emulate_mode && !neek2o() && CurrentIOS.Type == IOS_TYPE_D2X)
 	{
-		NANDemuView = true;
-		NandHandle.SetNANDEmu(emuPartition); /* Init NAND Emu */
-		NandHandle.SetPaths(emuPath.c_str(), DeviceName[emuPartition]);
 		/* Enable our Emu NAND */
 		DeviceHandle.UnMountAll();
 		if(emulate_mode == 3)
