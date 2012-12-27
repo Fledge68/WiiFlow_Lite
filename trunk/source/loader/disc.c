@@ -51,12 +51,13 @@ s32 Disc_Wait(void)
 	int icounter = 0;
 
 	/* Wait for disc */
-	while (!(cover & 0x2))
+	while(!(cover & 0x2))
 	{
 		/* Get cover status */
 		s32 ret = WDVD_GetCoverStatus(&cover);
-		if (ret < 0) return ret;
-			
+		if(ret < 0)
+			return ret;
+
 		// 10 tries to make sure it doesn´t "freeze" in Install dialog
 		// if no Game Disc is insert
 		icounter++;
@@ -64,7 +65,6 @@ s32 Disc_Wait(void)
 		if(icounter > 10)
 			return -1;
 	}
-
 	return 0;
 }
 
@@ -82,11 +82,11 @@ s32 Disc_ReadGCHeader(void *outbuf)
 
 s32 Disc_Type(bool gc)
 {
-	s32 ret;
-	u32 check;
-	u32 magic;
-	
-	if (!gc)
+	s32 ret = 0;
+	u32 check = 0;
+	u32 magic = 0;
+
+	if(!gc)
 	{
 		check = WII_MAGIC;
 		ret = Disc_ReadHeader(&wii_hdr);
@@ -96,7 +96,7 @@ s32 Disc_Type(bool gc)
 	{
 		check = GC_MAGIC;
 		ret = Disc_ReadGCHeader(&gc_hdr);
-		if(strcmp((char *)gc_hdr.id, "GCOPDV") == 0)
+		if(memcmp(gc_hdr.id, "GCOPDV", 6) == 0)
 			magic = GC_MAGIC;
 		else
 			magic = gc_hdr.magic;
@@ -104,7 +104,7 @@ s32 Disc_Type(bool gc)
 
 	if (ret < 0)
 		return ret;
-		
+
 	/* Check magic word */
 	if (magic != check) return -1;
 

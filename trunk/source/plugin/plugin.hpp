@@ -64,8 +64,8 @@ public:
 	bool PluginExist(u8 pos);
 	void SetEnablePlugin(Config &cfg, u8 pos, u8 ForceMode = 0);
 	const vector<bool> &GetEnabledPlugins(Config &cfg);
-	vector<string> CreateArgs(const string& device, const string& path, 
-				const string& title, const string& loader, u32 magic);
+	vector<string> CreateArgs(const char *device, const char *path, 
+				const char *title, const char *loader, u32 magic);
 	void init(const string& m_pluginsDir);
 	void Cleanup();
 	void EndAdd();

@@ -78,7 +78,7 @@ private:
 	bool m_music_info;
 	s16 m_showtimer;
 	string m_curLanguage;
-	string m_curGameId;
+	const char *m_curGameId;
 
 	u8 m_numCFVersions;
 
@@ -996,7 +996,7 @@ private:
 	void _buildMenus(void);
 	void _cleanupDefaultFont();
 	void _Theme_Cleanup();
-	string _getId(void);
+	const char *_getId(void);
 	const char *_domainFromView(void);
 	const char *_cfDomain(bool selected = false);
 	void UpdateCache(u32 view = COVERFLOW_MAX);
@@ -1046,7 +1046,7 @@ private:
 	void _getGrabStatus(void);
 	static void _addDiscProgress(int status, int total, void *user_data);
 	static void _Messenger(int message, int info, char *cinfo, void *user_data);
-	static void _ShowProgress(int dumpstat, int dumpprog, int filestat, int fileprog, int files, int folders, char *tmess, void *user_data);
+	static void _ShowProgress(int dumpstat, int dumpprog, int filestat, int fileprog, int files, int folders, const char *tmess, void *user_data);
 	static int _gameInstaller(void *obj);	
 	static int _GCgameInstaller(void *obj);
 	static int _GCcopyGame(void *obj);

@@ -309,8 +309,8 @@ s32 GCDump::DumpGame()
 			multigamedisc = true;
 			__AnalizeMultiDisc();
 			__DiscReadRaw(ReadBuffer, NextOffset, sizeof(gc_discHdr));
+			memcpy(gc_hdr.title, ReadBuffer + 0x20, 64);
 			memcpy(gc_hdr.id, ReadBuffer, 6);
-			strcpy(gc_hdr.title, (char *)ReadBuffer+0x20);			
 		}
 		Asciify2(gc_hdr.title);
 
@@ -560,8 +560,8 @@ s32 GCDump::CheckSpace(u32 *needed, bool comp)
 			multigamedisc = true;
 			__AnalizeMultiDisc();
 			__DiscReadRaw(ReadBuffer, NextOffset, sizeof(gc_discHdr));
-			memcpy(gc_hdr.id, ReadBuffer, sizeof(gc_hdr.id));
-			strcpy(gc_hdr.title, (char *)ReadBuffer+0x20);
+			memcpy(gc_hdr.title, ReadBuffer + 0x20, 64);
+			memcpy(gc_hdr.id, ReadBuffer, 6);
 		}
 		Asciify2(gc_hdr.title);
 
@@ -696,11 +696,11 @@ u32 GCDump::GetFreeSpace(char *path, u32 Value)
 		case KB:
 			return free/0x400;
 		case BL:
-			return (free/0x8000) >> 2;	
+			return (free/0x8000) >> 2;
 		case MB:
 			return free/0x100000;
 		case GB:
-			return free/0x40000000;		
+			return free/0x40000000;
 	}	
 	return 0;
 }

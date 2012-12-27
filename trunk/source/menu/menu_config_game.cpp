@@ -119,9 +119,7 @@ wstringEx CMenu::_optBoolToString(int i)
 void CMenu::_showGameSettings(void)
 {
 	wstringEx title(_t("cfgg1", L"Settings"));
-	title += L" [";
-	title += wstringEx(CoverFlow.getId());
-	title += L"]";
+	title.append(wfmt(L" [%.6s]", CoverFlow.getId()));
 	m_btnMgr.setText(m_gameSettingsLblTitle, title);
 	_setBg(m_gameSettingsBg, m_gameSettingsBg);
 	m_btnMgr.show(m_gameSettingsLblPage);
@@ -392,12 +390,12 @@ void CMenu::_showGameSettings(void)
 	if (m_gameSettingsPage == 5)
 	{
 		m_btnMgr.show(m_gameSettingsLblFlashSave);
-		m_btnMgr.show(m_gameSettingsBtnFlashSave);		
+		m_btnMgr.show(m_gameSettingsBtnFlashSave);
 	}
 	else
 	{
 		m_btnMgr.hide(m_gameSettingsLblFlashSave);
-		m_btnMgr.hide(m_gameSettingsBtnFlashSave);		
+		m_btnMgr.hide(m_gameSettingsBtnFlashSave);
 	}
 
 	u32 i = 0;
@@ -405,7 +403,7 @@ void CMenu::_showGameSettings(void)
 		if(m_gameSettingsLblUser[i] != -1)
 			m_btnMgr.show(m_gameSettingsLblUser[i]);
 
-	string id(CoverFlow.getId());
+	const char *id = CoverFlow.getId();
 	int page = m_gameSettingsPage;
 	u32 maxpage = g_numGCfPages;
 
@@ -471,7 +469,7 @@ void CMenu::_showGameSettings(void)
 void CMenu::_gameSettings(void)
 {
 	m_gcfg2.load(fmt("%s/" GAME_SETTINGS2_FILENAME, m_settingsDir.c_str()));
-	string id(CoverFlow.getId());
+	const char *id = CoverFlow.getId();
 
 	m_gameSettingsPage = 1;
 	_showGameSettings();
@@ -719,9 +717,9 @@ void CMenu::_gameSettings(void)
 			if (m_btnMgr.selected(m_gameSettingsBtnCover))
 			{
 					CoverFlow.stopCoverLoader(true);	// Empty cover cache
-					remove(fmt("%s/%s.png", m_picDir.c_str(), CoverFlow.getId().c_str()));
-					remove(fmt("%s/%s.png", m_boxPicDir.c_str(), CoverFlow.getId().c_str()));
-					remove(fmt("%s/%s.wfc", m_cacheDir.c_str(), CoverFlow.getId().c_str()));
+					remove(fmt("%s/%s.png", m_picDir.c_str(), id));
+					remove(fmt("%s/%s.png", m_boxPicDir.c_str(), id));
+					remove(fmt("%s/%s.wfc", m_cacheDir.c_str(), id));
 					CoverFlow.startCoverLoader();
 			}
 		}

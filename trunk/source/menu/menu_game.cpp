@@ -263,7 +263,7 @@ static void _extractBnr(dir_discHdr *hdr)
 	if(disc != NULL)
 	{
 		void *bnr = NULL;
-		size = wbfs_extract_file(disc, (char *) "opening.bnr", &bnr);
+		size = wbfs_extract_file(disc, (char*)"opening.bnr", &bnr);
 		if(size > 0)
 			CurrentBanner.SetBanner((u8*)bnr, size);
 		WBFS_CloseDisc(disc);
@@ -296,7 +296,7 @@ static u8 GetRequestedGameIOS(dir_discHdr *hdr)
 	if(disc != NULL)
 	{
 		u8 *titleTMD = NULL;
-		u32 tmd_size = wbfs_extract_file(disc, (char *) "TMD", (void **)&titleTMD);
+		u32 tmd_size = wbfs_extract_file(disc, (char*)"TMD", (void**)&titleTMD);
 		if(titleTMD != NULL && tmd_size > 0x18B)
 			IOS = titleTMD[0x18B];
 		WBFS_CloseDisc(disc);
@@ -331,8 +331,8 @@ void CMenu::_hideGame(bool instant)
 void CMenu::_showGame(void)
 {
 	CoverFlow.showCover();
-	
-	if (m_fa.load(m_cfg, m_fanartDir.c_str(), CoverFlow.getId().c_str()))
+
+	if(m_fa.load(m_cfg, m_fanartDir.c_str(), CoverFlow.getId()))
 	{
 		const STexture *bg = NULL;
 		const STexture *bglq = NULL;
@@ -439,7 +439,7 @@ void CMenu::_game(bool launch)
 		}
 		else if(BTN_MINUS_PRESSED)
 		{
-			const char *videoPath = fmt("%s/%.3s.thp", m_videoDir.c_str(), CoverFlow.getId().c_str());
+			const char *videoPath = fmt("%s/%.3s.thp", m_videoDir.c_str(), CoverFlow.getId());
 			FILE *file = fopen(videoPath, "r");
 			if(file)
 			{
@@ -778,40 +778,39 @@ void CMenu::_launch(dir_discHdr *hdr)
 		_launchChannel(hdr);
 	else if(hdr->type == TYPE_PLUGIN)
 	{
-		string title;
-		string path(hdr->path);
-		if(path.find(':') != string::npos)
+		char title[101];
+		memset(&title, 0, sizeof(title));
+		const char *path;
+		if(strchr(hdr->path, ':') != NULL)
 		{
-			path.erase(path.begin(), path.begin() + path.find_first_of('/') + 1);
-			title = string(path.begin() + path.find_last_of('/') + 1, path.end());
-			path.erase(path.end() - title.size() - 1, path.end());
+			strncpy(title, strrchr(hdr->path, '/') + 1, 100);
+			*strrchr(hdr->path, '/') = '\0';
+			path = strchr(hdr->path, '/') + 1;
 		}
 		else
 		{
-			char gametitle[64];
-			wcstombs(gametitle, hdr->title, 63);
-			title = gametitle;
+			path = hdr->path;
+			wcstombs(title, hdr->title, 63);
 		}
-		string loader(m_pluginsDir);
-		if(loader.find("usb") != string::npos)
-			loader.erase(3,1);
-		loader.append("/WiiFlowLoader.dol");
 		m_cfg.setString(PLUGIN_DOMAIN, "current_item", title);
-		string device(currentPartition == 0 ? "sd" : 
-			(DeviceHandle.GetFSType(currentPartition) == PART_FS_NTFS ? "ntfs" : "usb"));
+		const char *device = (currentPartition == 0 ? "sd" : (DeviceHandle.GetFSType(currentPartition) == PART_FS_NTFS ? "ntfs" : "usb"));
+		const char *loader = fmt("%s:/%s/WiiFlowLoader.dol", device, strchr(m_pluginsDir.c_str(), '/') + 1);
 		vector<string> arguments = m_plugin.CreateArgs(device, path, title, loader, hdr->settings[0]);
 		_launchHomebrew(fmt("%s/%s", m_pluginsDir.c_str(), m_plugin.GetDolName(hdr->settings[0])), arguments);
 	}
 	else if(hdr->type == TYPE_HOMEBREW)
 	{
-		string title(&hdr->path[string(hdr->path).find_last_of("/")+1]);
-		char gamepath[128];
-		snprintf(gamepath, sizeof(gamepath), "%s/boot.dol", hdr->path);
-		if(!fsop_FileExist((const char*)gamepath))
-			snprintf(gamepath, sizeof(gamepath), "%s/boot.elf", hdr->path);
-		m_cfg.setString(HOMEBREW_DOMAIN, "current_item", title);
-		_launchHomebrew(gamepath, m_homebrewArgs);
+		const char *gamepath = fmt("%s/boot.dol", hdr->path);
+		if(!fsop_FileExist(gamepath))
+			gamepath = fmt("%s/boot.elf", hdr->path);
+		if(fsop_FileExist(gamepath))
+		{
+			m_cfg.setString(HOMEBREW_DOMAIN, "current_item", strrchr(hdr->path, '/') + 1);
+			_launchHomebrew(gamepath, m_homebrewArgs);
+		}
 	}
+	ShutdownBeforeExit();
+	Sys_Exit();
 }
 
 void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
@@ -1579,7 +1578,7 @@ void CMenu::_gameSoundThread(CMenu *m)
 		fclose(fp);
 	}
 	m_banner.LoadBanner(m->m_wbf1_font, m->m_wbf2_font);
-	soundBin = CurrentBanner.GetFile((char *)"sound.bin", &sndSize);
+	soundBin = CurrentBanner.GetFile("sound.bin", &sndSize);
 	CurrentBanner.ClearBanner();
 
 	if(soundBin != NULL)

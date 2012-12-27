@@ -39,7 +39,7 @@ using namespace std;
 
 typedef struct
 {
-	u64  title;
+	u64 title;
 	char id[4];
 	wchar_t name[IMET_MAX_NAME_LEN+1];
 } Channel;
@@ -55,7 +55,7 @@ public:
 
 	u32 Count();
 	wchar_t *GetName(int index);
-	char *GetId(int index);
+	const char *GetId(int index);
 	u64 GetTitle(int index);
 	Channel *GetChannel(int index);
 

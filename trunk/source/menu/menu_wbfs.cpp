@@ -281,7 +281,9 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 	bool upd_emu = false;
 	bool out = false;
 	dir_discHdr *CF_Hdr = CoverFlow.getHdr();
-	string cfPos = CoverFlow.getNextId();
+	char cfPos[7];
+	cfPos[6] = '\0';
+	strncpy(cfPos, CoverFlow.getNextId(), 6);
 
 	SetupInput();
 	_showWBFS(op);
@@ -350,7 +352,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 								out = true;
 								break;
 							}
-							cfPos = string(GameID);
+							strncpy(cfPos, GameID, 6);
 							m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsop6", L"Installing [%s] %s..."), GameID, wii_hdr.title));
 							done = true;
 							upd_usb = true;
@@ -369,7 +371,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 								out = true;
 								break;
 							}
-							cfPos = string(GameID);
+							strncpy(cfPos, GameID, 6);
 							m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsop6", L"Installing [%s] %s..."), GameID, gc_hdr.title));
 							done = true;
 							upd_dml = true;
@@ -450,7 +452,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						m_btnMgr.hide(m_wbfsBtnGo);
 						m_btnMgr.show(m_wbfsLblMessage);
 						m_btnMgr.setText(m_wbfsLblMessage, L"");
-						cfPos = string(CF_Hdr->id);
+						strncpy(cfPos, CF_Hdr->id, 6);
 						m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsop10", L"Copying [%s] %s..."), CF_Hdr->id, CoverFlow.getTitle().toUTF8().c_str()));
 						done = true;
 						upd_dml = true;
@@ -501,7 +503,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 			UpdateCache(COVERFLOW_PLUGIN);
 		_loadList();
 		_initCF();
-		CoverFlow.findId(cfPos.c_str(), true);
+		CoverFlow.findId(cfPos, true);
 	}
 	else 
 	{

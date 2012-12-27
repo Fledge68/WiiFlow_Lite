@@ -155,7 +155,7 @@ void CMenu::_setDumpMsg(const wstringEx &msg, float totprog, float fileprog)
 	m_fileProgress = fileprog;
 }
 
-void CMenu::_ShowProgress(int dumpstat, int dumpprog, int filesize, int fileprog, int files, int folders, char *tmess, void *user_data)
+void CMenu::_ShowProgress(int dumpstat, int dumpprog, int filesize, int fileprog, int files, int folders, const char *tmess, void *user_data)
 {
 	CMenu &m = *(CMenu *)user_data;
 	m.m_progress = dumpprog == 0 ? 0.f : (float)dumpstat / (float)dumpprog;
@@ -634,9 +634,9 @@ int CMenu::_NandFlasher(void *obj)
 	}
 	NandHandle.ResetCounters();
 	m.m_nandexentry = 1;
-	m.m_dumpsize = NandHandle.CalcFlashSize(source, CMenu::_ShowProgress, obj);
+	m.m_dumpsize = NandHandle.CalcFlashSize(source, _ShowProgress, obj);
 	m_nandext = true;
-	NandHandle.FlashToNAND(source, dest, CMenu::_ShowProgress, obj);
+	NandHandle.FlashToNAND(source, dest, _ShowProgress, obj);
 
 	m.m_thrdWorking = false;
 	LWP_MutexLock(m.m_mutex);

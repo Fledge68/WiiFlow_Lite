@@ -19,12 +19,12 @@ int amount_of_providers = 0;
 
 u8 register_card_provider(const char *url, const char *key)
 {
-	if (strlen(url) > 0 && strlen(key) > 0 && strstr(url, "{KEY}") != NULL && strstr(url, "{ID6}") != NULL)
+	if(strlen(url) > 0 && strlen(key) > 0 && strstr(url, "{KEY}") != NULL && strstr(url, "{ID6}") != NULL)
 	{
 		providers = (struct provider*)MEM2_realloc(providers, (amount_of_providers + 1) * sizeof(struct provider));
 		memset(&providers[amount_of_providers], 0, sizeof(struct provider));
-		strncpy((char *) providers[amount_of_providers].url, url, 128);
-		strncpy((char *) providers[amount_of_providers].key, key, 48);
+		strncpy(providers[amount_of_providers].url, url, 128);
+		strncpy(providers[amount_of_providers].key, key, 48);
 		amount_of_providers++;
 		gprintf("Gamercard provider is valid!\n");
 		return 0;
@@ -49,8 +49,8 @@ void add_game_to_card(const char *gameid)
 
 	for(i = 0; i < amount_of_providers && providers != NULL; i++)
 	{
-		strcpy(url, (char *) providers[i].url);
-		str_replace(url, "{KEY}", providers[i].key, MAX_URL_SIZE);		
+		strcpy(url, providers[i].url);
+		str_replace(url, "{KEY}", providers[i].key, MAX_URL_SIZE);
 		str_replace(url, "{ID6}", gameid, MAX_URL_SIZE);
 		gprintf("Gamertag URL:\n%s\n", url);
 		downloadfile(NULL, 0, url, NULL, NULL);

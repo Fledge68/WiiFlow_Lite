@@ -149,6 +149,7 @@ CMenu::CMenu()
 	m_use_sd_logging = false;
 	m_use_wifi_gecko = false;
 	init_network = false;
+	m_curGameId = NULL;
 }
 
 void CMenu::init()
@@ -1946,8 +1947,11 @@ void CMenu::_initCF(void)
 	CoverFlow.setHQcover(m_cfg.getBool("GENERAL", "cover_use_hq", false));
 
 	CoverFlow.start();
-	if (m_curGameId.empty() || !CoverFlow.findId(m_curGameId.c_str(), true))
-		CoverFlow.findId(m_cfg.getString(domain, "current_item").c_str(), true);
+	bool path = (m_current_view == COVERFLOW_PLUGIN || m_current_view == COVERFLOW_HOMEBREW);
+	if((m_curGameId != NULL && !CoverFlow.findId(m_curGameId, true, path)) ||
+	!CoverFlow.findId(m_cfg.getString(domain, "current_item").c_str(), true, path))
+		CoverFlow.defaultLoad();
+	CoverFlow.startCoverLoader();
 }
 
 void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
@@ -2565,35 +2569,14 @@ void CMenu::_cleanupDefaultFont()
 	m_wbf2_font = NULL;
 }
 
-string CMenu::_getId()
+const char *CMenu::_getId()
 {
-	string id;
-	if(!NoGameID(CoverFlow.getHdr()->type))
-		id = CoverFlow.getId();
+	const char *id = NULL;
+	dir_discHdr *hdr = CoverFlow.getHdr();
+	if(hdr->type == TYPE_HOMEBREW || hdr->type == TYPE_PLUGIN)
+		id = strrchr(hdr->path, '/') + 1;
 	else
-	{
-		dir_discHdr *hdr = CoverFlow.getHdr();
-		string tempname(hdr->path);
-		if(hdr->type == TYPE_HOMEBREW)
-		{
-			tempname.assign(&tempname[tempname.find_last_of('/') + 1]);
-			id = tempname;
-		}
-		else if(hdr->type == TYPE_PLUGIN)
-		{
-			if(tempname.find(':') != string::npos)
-			{
-				tempname.erase(0, tempname.find_first_of('/')+1);
-				string dirName = tempname.substr(0, tempname.find_first_of('/')+1);
-				tempname.assign(&tempname[tempname.find_last_of('/') + 1]);
-				if(tempname.find_last_of('.') != string::npos)
-				tempname.erase(tempname.find_last_of('.'), tempname.size() - tempname.find_last_of('.'));
-				id = dirName+tempname;
-			}
-			else
-				id = tempname;
-		}
-	}
+		id = CoverFlow.getId();
 	return id;
 }
 
@@ -2690,7 +2673,7 @@ void CMenu::RemoveCover(const char *id)
 	fsop_deleteFile(CoverPath);
 	CoverPath = fmt("%s/%s.png", m_picDir.c_str(), id);
 	fsop_deleteFile(CoverPath);
-	CoverPath = fmt("%s/%s.wfc", m_cacheDir.c_str(), id);		
+	CoverPath = fmt("%s/%s.wfc", m_cacheDir.c_str(), id);
 	fsop_deleteFile(CoverPath);
 }
 
@@ -2708,6 +2691,7 @@ void CMenu::TempLoadIOS(int IOS)
 	if(CurrentIOS.Version != IOS)
 	{
 		loadIOS(IOS, true);
+		Sys_Init();
 		Open_Inputs();
 		for(int chan = WPAD_MAX_WIIMOTES-2; chan >= 0; chan--)
 			WPAD_SetVRes(chan, m_vid.width() + m_cursor[chan].width(), m_vid.height() + m_cursor[chan].height());

@@ -519,7 +519,7 @@ s32 Nand::__FlashNandFile(const char *source, const char *dest)
 	{
 		NandSize += fsize;
 		if(showprogress)
-			dumper(NandSize, 0x1f400000, 0x1f400000, NandSize, FilesDone, FoldersDone, (char *)"", data);
+			dumper(NandSize, 0x1f400000, 0x1f400000, NandSize, FilesDone, FoldersDone, "", data);
 		fclose(file);
 		return 0;
 	}
@@ -573,7 +573,7 @@ s32 Nand::__FlashNandFile(const char *source, const char *dest)
 		if(showprogress)
 		{
 			const char *file = strrchr(dest, '/')+1;
-			dumper(NandDone, NandSize, fsize, FileDone, FilesDone, FoldersDone, (char *)file, data);
+			dumper(NandDone, NandSize, fsize, FileDone, FilesDone, FoldersDone, file, data);
 		}
 	}
 	gprintf(" done!\n");
@@ -581,7 +581,7 @@ s32 Nand::__FlashNandFile(const char *source, const char *dest)
 	if(showprogress)
 	{
 		const char *file = strrchr(dest, '/')+1;
-		dumper(NandDone, NandSize, fsize, FileDone, FilesDone, FoldersDone, (char *)file, data);
+		dumper(NandDone, NandSize, fsize, FileDone, FilesDone, FoldersDone, file, data);
 	}
 	ISFS_Close(fd);
 	free(buffer);
@@ -616,7 +616,7 @@ s32 Nand::__DumpNandFile(const char *source, const char *dest)
 	{
 		NandSize += status->file_length;
 		if(showprogress)
-			dumper(NandSize, 0x1f400000, 0x1f400000, NandSize, FilesDone, FoldersDone, (char *)"", data);
+			dumper(NandSize, 0x1f400000, 0x1f400000, NandSize, FilesDone, FoldersDone, "", data);
 		ISFS_Close(fd);
 		free(status);
 		return 0;
@@ -678,14 +678,14 @@ s32 Nand::__DumpNandFile(const char *source, const char *dest)
 		if(showprogress)
 		{
 			const char *file = strrchr(source, '/')+1;
-			dumper(NandDone, NandSize, status->file_length, FileDone, FilesDone, FoldersDone, (char *)file, data);
+			dumper(NandDone, NandSize, status->file_length, FileDone, FilesDone, FoldersDone, file, data);
 		}
 	}
 	FilesDone++;
 	if(showprogress)
 	{
 		const char *file = strrchr(source, '/')+1;
-		dumper(NandDone, NandSize, status->file_length, FileDone, FilesDone, FoldersDone, (char *)file, data);
+		dumper(NandDone, NandSize, status->file_length, FileDone, FilesDone, FoldersDone, file, data);
 	}
 	gprintf(" done!\n");
 	fclose(file);
@@ -814,7 +814,7 @@ void Nand::CreateTitleTMD(dir_discHdr *hdr)
 		return;
 
 	u8 *titleTMD = NULL;
-	u32 tmd_size = wbfs_extract_file(disc, (char *) "TMD", (void **)&titleTMD);
+	u32 tmd_size = wbfs_extract_file(disc, (char*)"TMD", (void**)&titleTMD);
 	WBFS_CloseDisc(disc);
 
 	if(titleTMD == NULL) 
