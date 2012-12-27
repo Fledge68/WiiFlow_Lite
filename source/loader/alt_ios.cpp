@@ -80,7 +80,6 @@ bool loadIOS(int ios, bool MountDevices)
 	if(ios != CurIOS && IOS_GetType(ios) != IOS_TYPE_STUB)
 	{
 		WDVD_Close();
-		Close_Inputs();
 		NandHandle.Patch_AHB(); //No AHBPROT for the next IOS
 		gprintf("Reloading into IOS %i from %i...\n", ios, CurIOS);
 		ShutdownBeforeExit();

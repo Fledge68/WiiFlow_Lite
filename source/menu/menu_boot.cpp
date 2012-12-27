@@ -28,8 +28,6 @@ s16 m_bootLblCurCIOSrev;
 s16 m_bootLblCIOSrevM;
 s16 m_bootLblCIOSrevP;
 
-ios_settings_t settings;
-
 static void showBoot(void)
 {
 	m_btnMgr.show(m_bootLblTitle);
@@ -98,12 +96,7 @@ void CMenu::_Boot(void)
 	bool cur_load = m_cfg.getBool("GENERAL", "force_cios_load", false);
 	u8 cur_ios = min(m_cfg.getInt("GENERAL", "force_cios_rev", 0), 254);
 	if(prev_load != cur_load || prev_ios != cur_ios)
-	{
-		memset(&settings, 0, sizeof(ios_settings_t));
-		settings.cios = min(m_cfg.getInt("GENERAL", "force_cios_rev", 0), 254);
-		settings.use_cios = m_cfg.getBool("GENERAL", "force_cios_load", false);
-		InternalSave.SaveIOS(settings);
-	}
+		InternalSave.SaveIOS(cur_ios, cur_load);
 	hideBoot(false);
 }
 

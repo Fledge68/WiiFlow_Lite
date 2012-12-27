@@ -12,6 +12,7 @@
 #include "fonts.h"
 #include "banner/BannerWindow.hpp"
 #include "channel/nand.hpp"
+#include "channel/nand_save.hpp"
 #include "fileOps/fileOps.h"
 #include "gc/gc.hpp"
 #include "gui/Gekko.h"
@@ -216,6 +217,8 @@ void CMenu::init()
 	init_network = (m_cfg.getBool("GENERAL", "async_network") || has_enabled_providers() || m_use_wifi_gecko);
 	_netInit();
 	/* Check if we want a cIOS loaded */
+	u8 prevCios = mainIOS;
+	bool prevForceCIOS = useMainIOS;
 	int ForceIOS = min(m_cfg.getInt("GENERAL", "force_cios_rev", 0), 254);
 	if(ForceIOS > 0)
 	{
@@ -223,6 +226,8 @@ void CMenu::init()
 		mainIOS = ForceIOS;
 	}
 	useMainIOS = m_cfg.getBool("GENERAL", "force_cios_load", false);
+	if(prevCios != mainIOS || prevForceCIOS != useMainIOS)
+		InternalSave.SaveIOS(mainIOS, useMainIOS);
 	/* Do our USB HDD Checks */
 	bool onUSB = m_cfg.getBool("GENERAL", "data_on_usb", strncmp(drive, "usb", 3) == 0);
 	drive = check; //reset the drive variable for the check
@@ -527,8 +532,6 @@ void CMenu::cleanup()
 	CoverFlow.shutdown();
 
 	wiiLightOff();
-	Close_Inputs();
-
 	LWP_MutexDestroy(m_mutex);
 	m_mutex = 0;
 

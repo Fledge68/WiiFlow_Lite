@@ -169,10 +169,13 @@ void NandSave::LoadIOS()
 	free(file);
 }
 
-void NandSave::SaveIOS(const ios_settings_t settings)
+void NandSave::SaveIOS(u8 ios, bool use_ios)
 {
 	if(loaded == false)
 		return;
+	memset(&ios_settings, 0, sizeof(ios_settings_t));
+	ios_settings.cios = ios;
+	ios_settings.use_cios = use_ios;
 	gprintf("Saving IOS Settings to NAND\n");
 	memset(&ISFS_Path, 0, ISFS_MAXPATH);
 	strcpy(ISFS_Path, IOS_SAVE_PATH);
@@ -180,7 +183,7 @@ void NandSave::SaveIOS(const ios_settings_t settings)
 	fd = ISFS_Open(ISFS_Path, ISFS_OPEN_WRITE);
 	if(fd < 0)
 		return;
-	ret = ISFS_Write(fd, &settings, sizeof(ios_settings_t));
+	ret = ISFS_Write(fd, &ios_settings, sizeof(ios_settings_t));
 	ISFS_Close(fd);
 	if(ret < 0)
 		ISFS_Delete(ISFS_Path);
