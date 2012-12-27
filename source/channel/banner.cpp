@@ -148,7 +148,7 @@ bool Banner::GetName(wchar_t *name, int language)
 	return false;
 }
 
-u8 *Banner::GetFile(char *name, u32 *size)
+u8 *Banner::GetFile(const char *name, u32 *size)
 {
 	const u8 *bnrArc = (const u8 *)(((u8 *) imet) + sizeof(IMET));
 	const u8* curfile = u8_get_file(bnrArc, name, size);

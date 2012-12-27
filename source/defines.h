@@ -41,8 +41,8 @@ BlindDude, Bubba, DJTaz, OggZee, entropy, \
 Usptactical, WiiPower, Hermes, Spidy1000, megazig, \
 Dimok, Kovani, Drexyl, DvZ, Etheboss, stfour, \
 GaiaKnight, nibb, NJ7, Plasma, Pakatus, giantpune, \
-wolf, ravmn, spidercaleb, Ziggy34, xFede, \
-And to anyone who has donated or \
+wolf, ravmn, spidercaleb, Ziggy34, xFede, Abz, \
+and to anyone who has donated or \
 contributed to Wiiflow that we missed!"
 
 #define THANKS_SITES \

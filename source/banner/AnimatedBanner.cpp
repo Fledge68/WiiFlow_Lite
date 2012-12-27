@@ -25,6 +25,7 @@ distribution.
 #include "LanguageCode.h"
 #include "AnimatedBanner.h"
 #include "gui/text.hpp"
+#include "memory/mem2.hpp"
 #include "unzip/U8Archive.h"
 #include "unzip/lz77.h"
 #include "unzip/ash.h"
@@ -59,7 +60,7 @@ void AnimatedBanner::Clear()
 bool AnimatedBanner::LoadBanner()
 {
 	u32 banner_bin_size;
-	u8 *banner_bin = CurrentBanner.GetFile((char*)"banner.bin", &banner_bin_size);
+	u8 *banner_bin = CurrentBanner.GetFile("banner.bin", &banner_bin_size);
 	if(banner_bin == NULL)
 		return false;
 	bool ret = LoadBannerBin(banner_bin, banner_bin_size);
@@ -67,7 +68,7 @@ bool AnimatedBanner::LoadBanner()
 	return ret;
 }
 
-bool AnimatedBanner::LoadBannerBin(u8 *banner_bin, u32 banner_bin_size)
+bool AnimatedBanner::LoadBannerBin(const u8 *banner_bin, u32 banner_bin_size)
 {
 	Clear();
 	layout_banner = LoadLayout(banner_bin, banner_bin_size, "banner", CONF_GetLanguageString());
@@ -104,14 +105,14 @@ void AnimatedBanner::SetBannerTexture(const char *tex_name, const u8 *data, floa
 	}
 }
 
-Layout* AnimatedBanner::LoadLayout(u8 *bnr, u32 bnr_size, const std::string& lyt_name, const std::string &language)
+Layout* AnimatedBanner::LoadLayout(const u8 *bnr, u32 bnr_size, const std::string& lyt_name, const std::string &language)
 {
 	u32 brlyt_size = 0;
 	newBanner = DecompressCopy(bnr, bnr_size, &bnr_size);
 	if(newBanner == NULL)
 		return NULL;
 
-	const u8 *brlyt = u8_get_file(newBanner, (char*)fmt("%s.brlyt", lyt_name.c_str()), &brlyt_size);
+	const u8 *brlyt = u8_get_file(newBanner, fmt("%s.brlyt", lyt_name.c_str()), &brlyt_size);
 	if(!brlyt)
 		return NULL;
 
@@ -121,22 +122,22 @@ Layout* AnimatedBanner::LoadLayout(u8 *bnr, u32 bnr_size, const std::string& lyt
 	u32 length_start = 0, length_loop = 0;
 
 	u32 brlan_start_size = 0;
-	const u8 *brlan_start = u8_get_file(newBanner, (char*)fmt("%s_Start.brlan", lyt_name.c_str()), &brlan_start_size);
+	const u8 *brlan_start = u8_get_file(newBanner, fmt("%s_Start.brlan", lyt_name.c_str()), &brlan_start_size);
 	const u8 *brlan_loop = 0;
 
 	// try the alternative file
 	if(!brlan_start)
-		brlan_start = u8_get_file(newBanner, (char*)fmt("%s_In.brlan", lyt_name.c_str()), &brlan_start_size);
+		brlan_start = u8_get_file(newBanner, fmt("%s_In.brlan", lyt_name.c_str()), &brlan_start_size);
 
 	if(brlan_start)
 		length_start = Animator::LoadAnimators((const RLAN_Header *)brlan_start, *layout, 0);
 
 	u32 brlan_loop_size = 0;
-	brlan_loop = u8_get_file(newBanner, (char*)fmt("%s.brlan", lyt_name.c_str()), &brlan_loop_size);
+	brlan_loop = u8_get_file(newBanner, fmt("%s.brlan", lyt_name.c_str()), &brlan_loop_size);
 	if(!brlan_loop)
-		brlan_loop = u8_get_file(newBanner, (char*)fmt("%s_Loop.brlan", lyt_name.c_str()), &brlan_loop_size);
+		brlan_loop = u8_get_file(newBanner, fmt("%s_Loop.brlan", lyt_name.c_str()), &brlan_loop_size);
 	if(!brlan_loop)
-		brlan_loop = u8_get_file(newBanner, (char*)fmt("%s_Rso0.brlan", lyt_name.c_str()), &brlan_loop_size); // added for "artstyle" wiiware
+		brlan_loop = u8_get_file(newBanner, fmt("%s_Rso0.brlan", lyt_name.c_str()), &brlan_loop_size); // added for "artstyle" wiiware
 
 	if(brlan_loop)
 		length_loop = Animator::LoadAnimators((const RLAN_Header *)brlan_loop, *layout, 1);
@@ -152,7 +153,7 @@ Layout* AnimatedBanner::LoadLayout(u8 *bnr, u32 bnr_size, const std::string& lyt
 	return layout;
 }
 
-u8 *DecompressCopy(u8 *stuff, u32 len, u32 *size)
+u8 *DecompressCopy(const u8 *stuff, u32 len, u32 *size)
 {
 	// check for IMD5 header and skip it
 	if(len > 0x40 && *(u32*)stuff == 0x494d4435) // IMD5
@@ -160,7 +161,6 @@ u8 *DecompressCopy(u8 *stuff, u32 len, u32 *size)
 		stuff += 0x20;
 		len -= 0x20;
 	}
-
 	u8 *ret = NULL;
 	// determine if it needs to be decompressed
 	if(IsAshCompressed(stuff, len))
@@ -183,13 +183,13 @@ u8 *DecompressCopy(u8 *stuff, u32 len, u32 *size)
 	else if(*(u32*)(stuff) == 0x4C5A3737) // LZ77
 	{
 		// LZ77 with a magic word
-		if(decompressLZ77content(stuff + 4, len - 4, &ret, &len ))
+		if(decompressLZ77content(stuff + 4, len - 4, &ret, &len))
 			return NULL;
 	}
 	else
 	{
 		// just copy the data out of the archive
-		ret = (u8*)memalign( 32, len );
+		ret = (u8*)MEM2_memalign(32, len);
 		if( !ret )
 		{
 			gprintf( "out of memory\n" );

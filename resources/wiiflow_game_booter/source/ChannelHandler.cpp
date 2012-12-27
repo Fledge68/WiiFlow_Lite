@@ -58,7 +58,7 @@ static u8 *GetDol(u32 bootcontent, u64 title)
 
 	u32 contentSize = 0;
 
-	u8 *data = ISFS_GetFile((u8 *) &filepath, &contentSize, -1);
+	u8 *data = ISFS_GetFile(filepath, &contentSize, -1);
 	if(data != NULL && contentSize != 0)
 	{
 		if(isLZ77compressed(data))
@@ -86,7 +86,7 @@ static bool GetAppNameFromTmd(bool dol, u32 *bootcontent, u64 title, u32 *IOS)
 	sprintf(filepath, "/title/%08x/%08x/content/title.tmd", TITLE_UPPER(title), TITLE_LOWER(title));
 
 	u32 size;
-	u8 *data = ISFS_GetFile((u8 *) &filepath, &size, -1);
+	u8 *data = ISFS_GetFile(filepath, &size, -1);
 	if(data == NULL || size < 0x208)
 		return ret;
 	*IOS = data[0x18B];

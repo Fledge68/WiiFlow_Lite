@@ -68,7 +68,7 @@ class Banner
 
 		bool GetName(u8 *name, int language);
 		bool GetName(wchar_t *name, int language);
-		u8 *GetFile(char *name, u32 *size);
+		u8 *GetFile(const char *name, u32 *size);
 
 		void GetBanner(u64 title, char *appname, bool imetOnly = false);
 		u8 *GetBannerFile() { return opening; }
