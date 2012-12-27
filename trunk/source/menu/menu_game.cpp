@@ -1206,7 +1206,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		{
 			/* Read header */
 			Disc_ReadHeader(&wii_hdr);
-			id = string((char*)wii_hdr.id, 6);
+			id = string((const char*)wii_hdr.id, 6);
 		}
 		gprintf("Game ID: %s\n", id.c_str());
 	}

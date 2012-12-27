@@ -20,8 +20,9 @@ typedef void  (*app_init)(void (*report)(const char *fmt, ...));
 typedef void *(*app_final)();
 typedef void  (*app_entry)(void (**init)(void (*report)(const char *fmt, ...)), int (**main)(), void *(**final)());
 
-/* Apploader pointers */
-static u8 *appldr = (u8 *)0x81200000;
+/* pointers */
+static u8 *appldr = (u8*)0x81200000;
+static const char *GameID = (const char*)0x80000000;
 
 /* Constants */
 #define APPLDR_OFFSET	0x910
@@ -161,7 +162,7 @@ static void Anti_002_fix(void *Address, int Size)
 
 static void PrinceOfPersiaPatch()
 {
-	if(memcmp("SPX", (char*)Disc_ID, 3) != 0 && memcmp("RPW", (char*)Disc_ID, 3) != 0)
+	if(memcmp("SPX", GameID, 3) != 0 && memcmp("RPW", GameID, 3) != 0)
 		return;
 
 	WIP_Code CodeList[5];
@@ -186,7 +187,7 @@ static void PrinceOfPersiaPatch()
 static void NewSuperMarioBrosPatch()
 {
 	WIP_Code CodeList[3];
-	if(memcmp("SMNE01", (char*)Disc_ID, 6) == 0)
+	if(memcmp("SMNE01", GameID, 6) == 0)
 	{
 		CodeList[0].offset = 0x001AB610;
 		CodeList[0].srcaddress = 0x9421FFD0;
@@ -199,7 +200,7 @@ static void NewSuperMarioBrosPatch()
 		CodeList[2].dstaddress = 0x71000000;
 		set_wip_list(CodeList, 3);
 	}
-	else if(memcmp("SMNP01", (char*)Disc_ID, 6) == 0)
+	else if(memcmp("SMNP01", GameID, 6) == 0)
 	{
 		CodeList[0].offset = 0x001AB750;
 		CodeList[0].srcaddress = 0x9421FFD0;
@@ -212,7 +213,7 @@ static void NewSuperMarioBrosPatch()
 		CodeList[2].dstaddress = 0x38800071;
 		set_wip_list(CodeList, 3);
 	}
-	else if(memcmp("SMNJ01", (char*)Disc_ID, 6) == 0)
+	else if(memcmp("SMNJ01", GameID, 6) == 0)
 	{
 		CodeList[0].offset = 0x001AB420;
 		CodeList[0].srcaddress = 0x9421FFD0;

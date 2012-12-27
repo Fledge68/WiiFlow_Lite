@@ -43,7 +43,6 @@ u8 *ISFS_GetFile(const char *path, u32 *size, s32 length)
 	{
 		//gprintf(" succeed!\n");
 		DCFlushRange(buf, *size);
-		ICInvalidateRange(buf, *size);
 	}
 	//else
 	//	gprintf(" failed!\n");

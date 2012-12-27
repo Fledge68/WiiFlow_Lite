@@ -37,19 +37,19 @@ public:
 	void Clear();
 
 	bool LoadBanner();
-	bool LoadBannerBin(u8 *banner_bin, u32 banner_bin_size);
+	bool LoadBannerBin(const u8 *banner_bin, u32 banner_bin_size);
 	Layout *getBanner() const { return layout_banner; }
 	void SetBannerTexture(const char *tex_name, const u8 *data, float width, float height, u8 fmt);
 	void SetBannerText(const char *text_name, const wchar_t *wText);
 protected:
-	Layout* LoadLayout(u8 *bnr, u32 bnr_size, const std::string& lyt_name, const std::string &language);
+	Layout* LoadLayout(const u8 *bnr, u32 bnr_size, const std::string& lyt_name, const std::string &language);
 	Layout *layout_banner;
 	u8 *newBanner;
 	u8 *sysFont1;
 	u8 *sysFont2;
 };
 
-u8 *DecompressCopy(u8 *stuff, u32 len, u32 *size);
+u8 *DecompressCopy(const u8 *stuff, const u32 len, u32 *size);
 
 extern AnimatedBanner gameBanner;
 #endif

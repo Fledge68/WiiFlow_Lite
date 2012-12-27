@@ -32,8 +32,9 @@ extern const u8 dvdskin_greentwo_jpg[];
 extern const u32 dvdskin_greentwo_jpg_size;
 
 extern const u8 nopic_png[];
-extern const u8 loading_png[];
 extern const u8 flatnopic_png[];
+extern const u8 loading_jpg[];
+extern const u32 loading_jpg_size;
 extern const u8 flatloading_jpg[];
 extern const u32 flatloading_jpg_size;
 
@@ -1879,7 +1880,7 @@ bool CCoverFlow::start(const char *id)
 	{
 		if(m_pngLoadCover.empty() || m_loadingTexture.fromImageFile(m_pngLoadCover.c_str(), GX_TF_CMPR, 32, 512) != TE_OK)
 		{
-			if(m_loadingTexture.fromPNG(loading_png, GX_TF_CMPR, 32, 512) != TE_OK)
+			if(m_loadingTexture.fromJPG(loading_jpg, loading_jpg_size, GX_TF_CMPR, 32, 512) != TE_OK)
 				return false;
 		}
 		if(m_pngNoCover.empty() || m_noCoverTexture.fromImageFile(m_pngNoCover.c_str(), GX_TF_CMPR, 32, 512) != TE_OK)

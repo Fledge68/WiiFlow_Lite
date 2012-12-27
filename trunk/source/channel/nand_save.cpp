@@ -65,7 +65,7 @@ bool NandSave::CheckSave()
 		goto done;
 	}
 	/* extract our archive */
-	decompressLZ77content(save_bin+4, save_bin_size-4, &u8_bin, &u8_bin_size);
+	decompressLZ77content(save_bin, save_bin_size, &u8_bin, &u8_bin_size);
 	if(u8_bin == NULL || u8_bin_size == 0)
 		goto error;
 	/* grab cert.sys */
