@@ -1066,8 +1066,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	m_gcfg1.setInt("PLAYCOUNT", id, m_gcfg1.getInt("PLAYCOUNT", id, 0) + 1); 
 	m_gcfg1.setUInt("LASTPLAYED", id, time(NULL));
 
-	string emuPath;
-	int emuPartition = _FindEmuPart(emuPath, false);
+	string emuPath = m_cfg.getString(CHANNEL_DOMAIN, "path");
 	int emulate_mode = min(max(0, m_cfg.getInt(CHANNEL_DOMAIN, "emulation", 1)), (int)ARRAY_SIZE(CMenu::_NandEmu) - 1);
 	
 	int userIOS = m_gcfg2.getInt(id, "ios", 0);
@@ -1095,8 +1094,8 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 			while(1) usleep(500);
 		}
 		NANDemuView = true;
-		NandHandle.SetNANDEmu(emuPartition); /* Init NAND Emu */
-		NandHandle.SetPaths(emuPath.c_str(), DeviceName[emuPartition]);
+		NandHandle.SetNANDEmu(currentPartition); /* Init NAND Emu */
+		NandHandle.SetPaths(emuPath.c_str(), DeviceName[currentPartition]);
 	}
 	gameIOS = ChannelHandle.GetRequestedIOS(gameTitle);
 	if(_loadIOS(gameIOS, userIOS, id, !NAND_Emu) == LOAD_IOS_FAILED)
