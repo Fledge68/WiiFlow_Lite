@@ -16,7 +16,7 @@ s16 m_categoryBtnCats[11];
 s16 m_categoryBtnCatHid[11];
 s16 m_categoryBtnCatReq[11];
 s16 m_categoryLblUser[4];
-STexture m_categoryBg;
+TexData m_categoryBg;
 
 vector<char> m_categories;
 u8 curPage;

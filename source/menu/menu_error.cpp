@@ -60,9 +60,8 @@ void CMenu::_showError(void)
 
 void CMenu::_initErrorMenu()
 {
-	STexture texIcon;
-
-	texIcon.fromPNG(error_png);
+	TexData texIcon;
+	TexHandle.fromPNG(texIcon, error_png);
 	_addUserLabels(m_errorLblUser, ARRAY_SIZE(m_errorLblUser), "ERROR");
 	m_errorBg = _texture("ERROR/BG", "texture", theme.bg, false);
 	m_errorLblMessage = _addLabel("ERROR/MESSAGE", theme.lblFont, L"", 112, 20, 500, 440, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);

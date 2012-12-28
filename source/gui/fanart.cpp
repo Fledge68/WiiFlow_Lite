@@ -26,8 +26,8 @@ void CFanart::unload()
 	for(vector<CFanartElement>::iterator Elm = m_elms.begin(); Elm != m_elms.end(); Elm++)
 		Elm->Cleanup();
 	m_elms.clear();
-	m_bg.Cleanup();
-	m_bglq.Cleanup();
+	TexHandle.Cleanup(m_bg);
+	TexHandle.Cleanup(m_bglq);
 }
 
 bool CFanart::load(Config &m_globalConfig, const char *path, const char *id)
@@ -43,11 +43,11 @@ bool CFanart::load(Config &m_globalConfig, const char *path, const char *id)
 	dir[63] = '\0';
 	strncpy(dir, fmt("%s/%s", path, id), 63);
 
-	TexErr texErr = m_bg.fromImageFile(fmt("%s/background.png", dir));
+	TexErr texErr = TexHandle.fromImageFile(m_bg, fmt("%s/background.png", dir));
 	if(texErr == TE_ERROR)
 	{
 		strncpy(dir, fmt("%s/%.3s", path, id), 63);
-		texErr = m_bg.fromImageFile(fmt("%s/background.png", dir));
+		texErr = TexHandle.fromImageFile(m_bg, fmt("%s/background.png", dir));
 	}
 	if(texErr == TE_OK)
 	{
@@ -60,7 +60,7 @@ bool CFanart::load(Config &m_globalConfig, const char *path, const char *id)
 			strncpy(cfg_char, fmt("%s/%.3s.ini", dir, id), 63);
 			m_cfg.load(cfg_char);
 		}
-		m_bglq.fromImageFile(fmt("%s/background_lq.png", dir));
+		TexHandle.fromImageFile(m_bglq, fmt("%s/background_lq.png", dir));
 		for(int i = 1; i <= 6; i++)
 		{
 			CFanartElement elm(m_cfg, dir, i);
@@ -77,7 +77,7 @@ bool CFanart::load(Config &m_globalConfig, const char *path, const char *id)
 	return retval;
 }
 
-void CFanart::getBackground(const STexture * &hq, const STexture * &lq)
+void CFanart::getBackground(const TexData * &hq, const TexData * &lq)
 {
 	if(m_loaded)
 	{
@@ -183,7 +183,7 @@ void CFanart::draw(bool front)
 CFanartElement::CFanartElement(Config &cfg, const char *dir, int artwork)
 	: m_artwork(artwork), m_isValid(false)
 {
-	m_isValid = (m_art.fromImageFile(fmt("%s/artwork%d.png", dir, artwork)) == TE_OK);
+	m_isValid = (TexHandle.fromImageFile(m_art, fmt("%s/artwork%d.png", dir, artwork)) == TE_OK);
 	if (!m_isValid)	return;
 
 	const char *section = fmt("artwork%d", artwork);
@@ -216,7 +216,7 @@ CFanartElement::CFanartElement(Config &cfg, const char *dir, int artwork)
 
 void CFanartElement::Cleanup(void)
 {
-	m_art.Cleanup();
+	TexHandle.Cleanup(m_art);
 }
 
 bool CFanartElement::IsValid()

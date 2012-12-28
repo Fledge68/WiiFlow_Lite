@@ -334,8 +334,8 @@ void CMenu::_showGame(void)
 
 	if(m_fa.load(m_cfg, m_fanartDir.c_str(), CoverFlow.getId()))
 	{
-		const STexture *bg = NULL;
-		const STexture *bglq = NULL;
+		const TexData *bg = NULL;
+		const TexData *bglq = NULL;
 		m_fa.getBackground(bg, bglq);
 		if(bg != NULL && bglq != NULL)
 			_setBg(*bg, *bglq);
@@ -449,7 +449,7 @@ void CMenu::_game(bool launch)
 				m_banner.SetShowBanner(false);
 				_hideGame();
 				/* Set Background empty */
-				STexture EmptyBG;
+				TexData EmptyBG;
 				_setBg(EmptyBG, EmptyBG);
 				/* Lets play the movie */
 				WiiMovie movie(videoPath);
@@ -471,7 +471,7 @@ void CMenu::_game(bool launch)
 					ButtonsPressed();
 				}
 				movie.Stop();
-				m_curBg.Cleanup();
+				TexHandle.Cleanup(m_curBg);
 				/* Finished, so lets re-setup the background */
 				_setBg(m_mainBg, m_mainBgLQ);
 				_updateBg();
@@ -1376,38 +1376,38 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 void CMenu::_initGameMenu()
 {
 	CColor fontColor(0xD0BFDFFF);
-	STexture texFavOn;
-	STexture texFavOnSel;
-	STexture texFavOff;
-	STexture texFavOffSel;
-	STexture texAdultOn;
-	STexture texAdultOnSel;
-	STexture texAdultOff;
-	STexture texAdultOffSel;
-	STexture texDelete;
-	STexture texDeleteSel;
-	STexture texSettings;
-	STexture texSettingsSel;
-	STexture texToogleBanner;
-	STexture bgLQ;
+	TexData texFavOn;
+	TexData texFavOnSel;
+	TexData texFavOff;
+	TexData texFavOffSel;
+	TexData texAdultOn;
+	TexData texAdultOnSel;
+	TexData texAdultOff;
+	TexData texAdultOffSel;
+	TexData texDelete;
+	TexData texDeleteSel;
+	TexData texSettings;
+	TexData texSettingsSel;
+	TexData texToogleBanner;
+	TexData bgLQ;
 
-	texFavOn.fromPNG(favoriteson_png);
-	texFavOnSel.fromPNG(favoritesons_png);
-	texFavOff.fromPNG(favoritesoff_png);
-	texFavOffSel.fromPNG(favoritesoffs_png);
-	texAdultOn.fromPNG(stopkidon_png);
-	texAdultOnSel.fromPNG(stopkidons_png);
-	texAdultOff.fromPNG(stopkidoff_png);
-	texAdultOffSel.fromPNG(stopkidoffs_png);
-	texDelete.fromPNG(delete_png);
-	texDeleteSel.fromPNG(deletes_png);
-	texSettings.fromPNG(btngamecfg_png);
-	texSettingsSel.fromPNG(btngamecfgs_png);
-	texToogleBanner.fromPNG(blank_png);
+	TexHandle.fromPNG(texFavOn, favoriteson_png);
+	TexHandle.fromPNG(texFavOnSel, favoritesons_png);
+	TexHandle.fromPNG(texFavOff, favoritesoff_png);
+	TexHandle.fromPNG(texFavOffSel, favoritesoffs_png);
+	TexHandle.fromPNG(texAdultOn, stopkidon_png);
+	TexHandle.fromPNG(texAdultOnSel, stopkidons_png);
+	TexHandle.fromPNG(texAdultOff, stopkidoff_png);
+	TexHandle.fromPNG(texAdultOffSel, stopkidoffs_png);
+	TexHandle.fromPNG(texDelete, delete_png);
+	TexHandle.fromPNG(texDeleteSel, deletes_png);
+	TexHandle.fromPNG(texSettings, btngamecfg_png);
+	TexHandle.fromPNG(texSettingsSel, btngamecfgs_png);
+	TexHandle.fromPNG(texToogleBanner, blank_png);
 
 	_addUserLabels(m_gameLblUser, ARRAY_SIZE(m_gameLblUser), "GAME");
 	m_gameBg = _texture("GAME/BG", "texture", theme.bg, false);
-	if(m_theme.loaded() && bgLQ.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString("GAME/BG", "texture").c_str()), GX_TF_CMPR, 64, 64) == TE_OK)
+	if(m_theme.loaded() && TexHandle.fromImageFile(bgLQ, fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString("GAME/BG", "texture").c_str()), GX_TF_CMPR, 64, 64) == TE_OK)
 		m_gameBgLQ = bgLQ;
 
 	m_gameBtnPlay = _addButton("GAME/PLAY_BTN", theme.btnFont, L"", 420, 344, 200, 56, theme.btnFontColor);

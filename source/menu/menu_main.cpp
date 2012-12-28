@@ -176,7 +176,6 @@ void CMenu::_showMain(void)
 
 void CMenu::LoadView(void)
 {
-	m_curGameId = NULL;
 	_hideMain(true);
 	CoverFlow.clear();
 	if(!m_vid.showingWaitMessage())
@@ -413,7 +412,6 @@ int CMenu::main(void)
 			{
 				m_favorites = !m_favorites;
 				m_cfg.setBool(_domainFromView(), "favorites", m_favorites);
-				m_curGameId = CoverFlow.getId();
 				_initCF();
 			}
 			else if(!CoverFlow.empty() && CoverFlow.select())
@@ -799,65 +797,65 @@ int CMenu::main(void)
 
 void CMenu::_initMainMenu()
 {
-	STexture texQuit;
-	STexture texQuitS;
-	STexture texInfo;
-	STexture texInfoS;
-	STexture texConfig;
-	STexture texConfigS;
-	STexture texDML;
-	STexture texDMLs;
-	STexture texEmu;
-	STexture texEmus;
-	STexture texDVD;
-	STexture texDVDs;
-	STexture texUsb;
-	STexture texUsbs;
-	STexture texChannel;
-	STexture texChannels;
-	STexture texHomebrew;
-	STexture texHomebrews;
-	STexture texPrev;
-	STexture texPrevS;
-	STexture texNext;
-	STexture texNextS;
-	STexture texFavOn;
-	STexture texFavOnS;
-	STexture texFavOff;
-	STexture texFavOffS;
-	STexture bgLQ;
-	STexture emptyTex;
+	TexData texQuit;
+	TexData texQuitS;
+	TexData texInfo;
+	TexData texInfoS;
+	TexData texConfig;
+	TexData texConfigS;
+	TexData texDML;
+	TexData texDMLs;
+	TexData texEmu;
+	TexData texEmus;
+	TexData texDVD;
+	TexData texDVDs;
+	TexData texUsb;
+	TexData texUsbs;
+	TexData texChannel;
+	TexData texChannels;
+	TexData texHomebrew;
+	TexData texHomebrews;
+	TexData texPrev;
+	TexData texPrevS;
+	TexData texNext;
+	TexData texNextS;
+	TexData texFavOn;
+	TexData texFavOnS;
+	TexData texFavOff;
+	TexData texFavOffS;
+	TexData bgLQ;
+	TexData emptyTex;
 
 	m_mainBg = _texture("MAIN/BG", "texture", theme.bg, false);
-	if(m_theme.loaded() && bgLQ.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString("MAIN/BG", "texture").c_str()), GX_TF_CMPR, 64, 64) == TE_OK)
+	if(m_theme.loaded() && TexHandle.fromImageFile(bgLQ, fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString("MAIN/BG", "texture").c_str()), GX_TF_CMPR, 64, 64) == TE_OK)
 		m_mainBgLQ = bgLQ;
 
-	texQuit.fromPNG(btnquit_png);
-	texQuitS.fromPNG(btnquits_png);
-	texInfo.fromPNG(btninfo_png);
-	texInfoS.fromPNG(btninfos_png);
-	texConfig.fromPNG(btnconfig_png);
-	texConfigS.fromPNG(btnconfigs_png);
-	texDVD.fromPNG(btndvd_png);
-	texDVDs.fromPNG(btndvds_png);
-	texUsb.fromPNG(btnusb_png);
-	texUsbs.fromPNG(btnusbs_png);
-	texDML.fromPNG(btndml_png);
-	texDMLs.fromPNG(btndmls_png);
-	texEmu.fromPNG(btnemu_png);
-	texEmus.fromPNG(btnemus_png);
-	texChannel.fromPNG(btnchannel_png);
-	texChannels.fromPNG(btnchannels_png);
-	texHomebrew.fromPNG(btnhomebrew_png);
-	texHomebrews.fromPNG(btnhomebrews_png);
-	texPrev.fromPNG(btnprev_png);
-	texPrevS.fromPNG(btnprevs_png);
-	texNext.fromPNG(btnnext_png);
-	texNextS.fromPNG(btnnexts_png);
-	texFavOn.fromPNG(favoriteson_png);
-	texFavOnS.fromPNG(favoritesons_png);
-	texFavOff.fromPNG(favoritesoff_png);
-	texFavOffS.fromPNG(favoritesoffs_png);
+	TexHandle.fromPNG(texQuit, btnquit_png);
+	TexHandle.fromPNG(texQuitS, btnquits_png);
+	TexHandle.fromPNG(texInfo, btninfo_png);
+	TexHandle.fromPNG(texInfoS, btninfos_png);
+	TexHandle.fromPNG(texConfig, btnconfig_png);
+	TexHandle.fromPNG(texConfigS, btnconfigs_png);
+	TexHandle.fromPNG(texDVD, btndvd_png);
+	TexHandle.fromPNG(texDVDs, btndvds_png);
+	TexHandle.fromPNG(texUsb, btnusb_png);
+	TexHandle.fromPNG(texUsbs, btnusbs_png);
+	TexHandle.fromPNG(texDML, btndml_png);
+	TexHandle.fromPNG(texDMLs, btndmls_png);
+	TexHandle.fromPNG(texEmu, btnemu_png);
+	TexHandle.fromPNG(texEmus, btnemus_png);
+	TexHandle.fromPNG(texChannel, btnchannel_png);
+	TexHandle.fromPNG(texChannels, btnchannels_png);
+	TexHandle.fromPNG(texHomebrew, btnhomebrew_png);
+	TexHandle.fromPNG(texHomebrews, btnhomebrews_png);
+	TexHandle.fromPNG(texPrev, btnprev_png);
+	TexHandle.fromPNG(texPrevS, btnprevs_png);
+	TexHandle.fromPNG(texNext, btnnext_png);
+	TexHandle.fromPNG(texNextS, btnnexts_png);
+	TexHandle.fromPNG(texFavOn, favoriteson_png);
+	TexHandle.fromPNG(texFavOnS, favoritesons_png);
+	TexHandle.fromPNG(texFavOff, favoritesoff_png);
+	TexHandle.fromPNG(texFavOffS, favoritesoffs_png);
 
 	_addUserLabels(m_mainLblUser, ARRAY_SIZE(m_mainLblUser), "MAIN");
 

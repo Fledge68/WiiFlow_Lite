@@ -8,7 +8,7 @@ template <class T> static inline T loopNum(T i, T s)
 	return (i + s) % s;
 }
 
-STexture CButtonsMgr::_noTexture;
+TexData CButtonsMgr::_noTexture;
 
 CButtonsMgr m_btnMgr;
 
@@ -399,7 +399,7 @@ void CButtonsMgr::tick(void)
 
 }
 
-s16 CButtonsMgr::addLabel(SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, s16 style, const STexture &bg)
+s16 CButtonsMgr::addLabel(SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, s16 style, const TexData &bg)
 {
 	SLabel *b = new SLabel;
 
@@ -456,7 +456,7 @@ s16 CButtonsMgr::addProgressBar(int x, int y, u32 width, u32 height, SButtonText
 	return m_elts.size() > sz ? m_elts.size() - 1 : -2;
 }
 
-s16 CButtonsMgr::addPicButton(STexture &texNormal, STexture &texSelected, int x, int y, u32 width, u32 height, GuiSound *clickSound, GuiSound *hoverSound)
+s16 CButtonsMgr::addPicButton(TexData &texNormal, TexData &texSelected, int x, int y, u32 width, u32 height, GuiSound *clickSound, GuiSound *hoverSound)
 {
 	SButtonTextureSet texSet;
 
@@ -469,8 +469,8 @@ s16 CButtonsMgr::addPicButton(const u8 *pngNormal, const u8 *pngSelected, int x,
 {
 	SButtonTextureSet texSet;
 
-	texSet.center.fromPNG(pngNormal);
-	texSet.centerSel.fromPNG(pngSelected);
+	TexHandle.fromPNG(texSet.center, pngNormal);
+	TexHandle.fromPNG(texSet.centerSel, pngSelected);
 	return addButton(SFont(), wstringEx(), x, y, width, height, CColor(), texSet, clickSound, hoverSound);
 }
 
@@ -525,15 +525,15 @@ void CButtonsMgr::setText(s16 id, const wstringEx &text, u32 startline,bool unwr
 	}
 }
 
-void CButtonsMgr::setBtnTexture(s16 id, STexture &texNormal, STexture &texSelected)
+void CButtonsMgr::setBtnTexture(s16 id, TexData &texNormal, TexData &texSelected)
 {
 	if (id == -1) return;
 	if (id < (s32)m_elts.size())
 	{
 		SButton *b = (SButton*)m_elts[id];
 		/* free old textures */
-		b->tex.center.Cleanup();
-		b->tex.centerSel.Cleanup();
+		TexHandle.Cleanup(b->tex.center);
+		TexHandle.Cleanup(b->tex.centerSel);
 		/*change textures */
 		b->tex.center = texNormal;
 		b->tex.centerSel = texSelected;
@@ -546,12 +546,12 @@ void CButtonsMgr::freeBtnTexture(s16 id)
 	if(id < (s32)m_elts.size())
 	{
 		SButton *b = (SButton*)m_elts[id];
-		b->tex.center.Cleanup();
-		b->tex.centerSel.Cleanup();
+		TexHandle.Cleanup(b->tex.center);
+		TexHandle.Cleanup(b->tex.centerSel);
 	}
 }
 
-void CButtonsMgr::setTexture(s16 id, STexture &bg)
+void CButtonsMgr::setTexture(s16 id, TexData &bg)
 {
 	if (id == -1) return;
 	if (id < (s32)m_elts.size())
@@ -571,7 +571,7 @@ void CButtonsMgr::setTexture(s16 id, STexture &bg)
 	}
 }
 
-void CButtonsMgr::setTexture(s16 id, STexture &bg, int width, int height)
+void CButtonsMgr::setTexture(s16 id, TexData &bg, int width, int height)
 {
 	if (id == -1) return;
 	if (id < (s32)m_elts.size())

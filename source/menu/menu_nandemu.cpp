@@ -33,7 +33,7 @@ s16 m_nandemuBtnDisable;
 s16 m_nandemuBtnPartition;
 s16 m_nandemuLblInit;
 s16 m_nandemuLblUser[4];
-STexture m_nandemuBg;
+TexData m_nandemuBg;
 
 bool m_nandext;
 bool m_fulldump;

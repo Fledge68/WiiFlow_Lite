@@ -32,7 +32,7 @@ s16 m_sourceBtnPageP;
 s16 m_sourceLblTitle;
 s16 m_sourceBtnSource[12];
 s16 m_sourceLblUser[4];
-STexture m_sourceBg;
+TexData m_sourceBg;
 s16 m_sourceBtnDML;
 s16 m_sourceBtnEmu;
 s16 m_sourceBtnUsb;
@@ -101,27 +101,27 @@ void CMenu::_updateSourceBtns(void)
 		m_btnMgr.show(m_sourceBtnPageP);
 	}
 	for (u8 i = 0; i < 12; ++i)
-		m_btnMgr.hide(m_sourceBtnSource[i], true);		
+		m_btnMgr.hide(m_sourceBtnSource[i], true);
 
 	const char *ImgName = NULL;
 	u8 j = (Source_curPage - 1) * 12;
 	
 	for(u8 i = 0; i < 12; ++i)
 	{
-		STexture texConsoleImg;
-		STexture texConsoleImgs;
+		TexData texConsoleImg;
+		TexData texConsoleImgs;
 
 		ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image", "").c_str();
-		if(texConsoleImg.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), ImgName)) != TE_OK)
+		if(TexHandle.fromImageFile(texConsoleImg, fmt("%s/%s", m_themeDataDir.c_str(), ImgName)) != TE_OK)
 		{
-			if(texConsoleImg.fromImageFile(fmt("%s/%s", m_sourceDir.c_str(), ImgName)) != TE_OK)
-				texConsoleImg.fromPNG(favoriteson_png);
+			if(TexHandle.fromImageFile(texConsoleImg, fmt("%s/%s", m_sourceDir.c_str(), ImgName)) != TE_OK)
+				TexHandle.fromPNG(texConsoleImg, favoriteson_png);
 		}
 		ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image_s", "").c_str();
-		if(texConsoleImgs.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), ImgName)) != TE_OK)
+		if(TexHandle.fromImageFile(texConsoleImgs, fmt("%s/%s", m_themeDataDir.c_str(), ImgName)) != TE_OK)
 		{
-			if(texConsoleImgs.fromImageFile(fmt("%s/%s", m_sourceDir.c_str(), ImgName)) != TE_OK)
-				texConsoleImgs.fromPNG(favoritesons_png);
+			if(TexHandle.fromImageFile(texConsoleImgs, fmt("%s/%s", m_sourceDir.c_str(), ImgName)) != TE_OK)
+				TexHandle.fromPNG(texConsoleImgs, favoritesons_png);
 		}
 		m_btnMgr.setBtnTexture(m_sourceBtnSource[i], texConsoleImg, texConsoleImgs);
 
@@ -385,34 +385,34 @@ bool CMenu::_Source()
 
 void CMenu::_initSourceMenu()
 {
-	STexture texDML;
-	STexture texDMLs;
-	STexture texEmu;
-	STexture texEmus;
-	STexture texUsb;
-	STexture texUsbs;
-	STexture texChannel;
-	STexture texChannels;
-	STexture texHomebrew;
-	STexture texHomebrews;
+	TexData texDML;
+	TexData texDMLs;
+	TexData texEmu;
+	TexData texEmus;
+	TexData texUsb;
+	TexData texUsbs;
+	TexData texChannel;
+	TexData texChannels;
+	TexData texHomebrew;
+	TexData texHomebrews;
 
-	texUsb.fromPNG(btnusb_png);
-	texUsbs.fromPNG(btnusbs_png);
-	texDML.fromPNG(btndml_png);
-	texDMLs.fromPNG(btndmls_png);
-	texEmu.fromPNG(btnemu_png);
-	texEmus.fromPNG(btnemus_png);
-	texChannel.fromPNG(btnchannel_png);
-	texChannels.fromPNG(btnchannels_png);
-	texHomebrew.fromPNG(btnhomebrew_png);
-	texHomebrews.fromPNG(btnhomebrews_png);
+	TexHandle.fromPNG(texUsb, btnusb_png);
+	TexHandle.fromPNG(texUsbs, btnusbs_png);
+	TexHandle.fromPNG(texDML, btndml_png);
+	TexHandle.fromPNG(texDMLs, btndmls_png);
+	TexHandle.fromPNG(texEmu, btnemu_png);
+	TexHandle.fromPNG(texEmus, btnemus_png);
+	TexHandle.fromPNG(texChannel, btnchannel_png);
+	TexHandle.fromPNG(texChannels, btnchannels_png);
+	TexHandle.fromPNG(texHomebrew, btnhomebrew_png);
+	TexHandle.fromPNG(texHomebrews, btnhomebrews_png);
 
 	m_sourceBtnChannel = _addPicButton("SOURCE/CHANNEL_BTN", texChannel, texChannels, 265, 260, 48, 48);
 	m_sourceBtnHomebrew = _addPicButton("SOURCE/HOMEBREW_BTN", texHomebrew, texHomebrews, 325, 260, 48, 48);
 	m_sourceBtnUsb = _addPicButton("SOURCE/USB_BTN", texUsb, texUsbs, 235, 200, 48, 48);
 	m_sourceBtnDML = _addPicButton("SOURCE/DML_BTN", texDML, texDMLs, 295, 200, 48, 48);
 	m_sourceBtnEmu = _addPicButton("SOURCE/EMU_BTN", texEmu, texEmus, 355, 200, 48, 48);
-	
+
 	_addUserLabels(m_sourceLblUser, ARRAY_SIZE(m_sourceLblUser), "SOURCE");
 	m_sourceBg = _texture("SOURCE/BG", "texture", theme.bg, false);
 	m_sourceLblTitle = _addTitle("SOURCE/TITLE", theme.titleFont, L"", 20, 20, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
@@ -420,7 +420,7 @@ void CMenu::_initSourceMenu()
 	m_sourceLblPage = _addLabel("SOURCE/PAGE_BTN", theme.btnFont, L"", 62, 400, 98, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_sourceBtnPageM = _addPicButton("SOURCE/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 10, 400, 52, 56);
 	m_sourceBtnPageP = _addPicButton("SOURCE/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 160, 400, 52, 56);
-	
+
 	m_sourceDir = m_cfg.getString("GENERAL", "dir_Source", fmt("%s/source_menu", m_dataDir.c_str()));
 
 	if(!m_source.loaded())
@@ -432,20 +432,20 @@ void CMenu::_initSourceMenu()
 	
 	for(u8 i = 0; i < 12; ++i)
 	{
-		STexture texConsoleImg;
-		STexture texConsoleImgs;
+		TexData texConsoleImg;
+		TexData texConsoleImgs;
 	
 		ImgName = m_source.getString(fmt("BUTTON_%i", i),"image", "");
-		if(texConsoleImg.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), ImgName.c_str())) != TE_OK)
+		if(TexHandle.fromImageFile(texConsoleImg, fmt("%s/%s", m_themeDataDir.c_str(), ImgName.c_str())) != TE_OK)
 		{
-			if(texConsoleImg.fromImageFile(fmt("%s/%s", m_sourceDir.c_str(), ImgName.c_str())) != TE_OK)
-				texConsoleImg.fromPNG(favoriteson_png);
+			if(TexHandle.fromImageFile(texConsoleImg, fmt("%s/%s", m_sourceDir.c_str(), ImgName.c_str())) != TE_OK)
+				TexHandle.fromPNG(texConsoleImg, favoriteson_png);
 		}
 		ImgName = m_source.getString(fmt("BUTTON_%i", i),"image_s", "");
-		if(texConsoleImgs.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), ImgName.c_str())) != TE_OK)
+		if(TexHandle.fromImageFile(texConsoleImgs, fmt("%s/%s", m_themeDataDir.c_str(), ImgName.c_str())) != TE_OK)
 		{
-			if(texConsoleImgs.fromImageFile(fmt("%s/%s", m_sourceDir.c_str(), ImgName.c_str())) != TE_OK)
-				texConsoleImgs.fromPNG(favoritesons_png);
+			if(TexHandle.fromImageFile(texConsoleImgs, fmt("%s/%s", m_sourceDir.c_str(), ImgName.c_str())) != TE_OK)
+				TexHandle.fromPNG(texConsoleImgs, favoritesons_png);
 		}
 	
 		row = i / 4;

@@ -24,7 +24,7 @@ public:
 	bool IsAnimationComplete();
 	bool ShowOnTop();
 private:
-	STexture m_art;
+	TexData m_art;
 	int m_artwork;
 	int m_delay;
 	int m_event_duration;
@@ -60,13 +60,13 @@ class CFanart
 public:
 	CFanart(void);
 	~CFanart(void);
-	
+
 	void unload();
 	bool load(Config &m_globalConfig, const char *path, const char *id);
 	bool isAnimationComplete();
 	bool isLoaded();
-	
-	void getBackground(const STexture * &hq, const STexture * &lq);
+
+	void getBackground(const TexData * &hq, const TexData * &lq);
 	CColor getTextColor(CColor themeTxtColor = CColor(0xFFFFFFFF));
 	bool hideCover();
 	void draw(bool front = true);
@@ -80,12 +80,12 @@ private:
 	u8 m_globalHideCover;
 	u8 m_globalShowCoverAfterAnimation;
 	u16 m_defaultDelay;
-    bool m_allowArtworkOnTop;
+	bool m_allowArtworkOnTop;
 	bool m_loaded;
 	Config m_cfg;
 
-	STexture m_bg;
-	STexture m_bglq;
+	TexData m_bg;
+	TexData m_bglq;
 };
 
 #endif // __FANART_HPP

@@ -51,7 +51,7 @@ public:
 	void render(void);
 	void renderAAPass(int aaStep);
 	void drawAAScene(bool fs = true);
-	void renderToTexture(STexture &tex, bool clear);
+	void renderToTexture(TexData &tex, bool clear);
 	void cleanup(void);
 	void setup2DProjection(bool setViewPort = true, bool noScale = false);
 	u32 width(void) const { return m_rmode->fbWidth; }
@@ -69,8 +69,8 @@ public:
 	int stencilVal(int x, int y);
 	void hideWaitMessage();
 	void waitMessage(float delay);
-	void waitMessage(const vector<STexture> &tex, float delay);
-	void waitMessage(const STexture &tex);
+	void waitMessage(const vector<TexData> &tex, float delay);
+	void waitMessage(const TexData &tex);
 	s32 TakeScreenshot(const char *);
 	void shiftViewPort(float x, float y);
 private:
@@ -100,7 +100,7 @@ private:
 	float m_waitMessageDelay;
 	volatile bool m_showWaitMessage;
 	volatile bool m_showingWaitMessages;
-	vector<STexture> m_waitMessages;
+	vector<TexData> m_waitMessages;
 	// 
 	static const int _stencilWidth;
 	static const int _stencilHeight;
@@ -119,7 +119,7 @@ private:
 	CVideo(const CVideo &);
 };
 
-void DrawTexture(STexture * &tex);
+void DrawTexture(TexData * &tex);
 void DrawRectangle(f32 x, f32 y, f32 width, f32 height, GXColor color);
 
 extern CVideo m_vid;

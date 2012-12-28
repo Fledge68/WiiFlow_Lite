@@ -22,7 +22,7 @@ s16 m_homeBtnExitToNeek;
 
 s16 m_homeLblBattery;
 
-STexture m_homeBg;
+TexData m_homeBg;
 
 bool CMenu::_Home(void)
 {
@@ -222,7 +222,6 @@ void CMenu::_hideExitTo(bool instant)
 void CMenu::_initHomeAndExitToMenu()
 {
 	//Home Menu
-	STexture emptyTex;
 	m_homeBg = _texture("HOME/BG", "texture", theme.bg, false);
 
 	m_homeLblTitle = _addTitle("HOME/TITLE", theme.titleFont, L"", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);

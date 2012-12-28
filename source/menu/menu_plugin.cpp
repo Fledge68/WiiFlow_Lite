@@ -19,7 +19,7 @@ s16 m_pluginBtn[11];
 s16 m_pluginBtnCat[11];
 s16 m_pluginBtnCats[11];
 s16 m_pluginLblUser[4];
-STexture m_pluginBg;
+TexData m_pluginBg;
 
 void CMenu::_hidePluginSettings(bool instant)
 {
