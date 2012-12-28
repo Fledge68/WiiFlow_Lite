@@ -220,7 +220,7 @@ void CMenu::init()
 	u8 prevCios = mainIOS;
 	bool prevForceCIOS = useMainIOS;
 	u8 ForceIOS = min(m_cfg.getInt("GENERAL", "force_cios_rev", 0), 254);
-	if(mainIOS != ForceIOS)
+	if(ForceIOS > 0 && mainIOS != ForceIOS)
 	{
 		gprintf("Using IOS%i instead of IOS%i as main cIOS.\n", ForceIOS, mainIOS);
 		mainIOS = ForceIOS;
