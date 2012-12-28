@@ -10,52 +10,52 @@ using namespace std;
 
 class WiiMovie
 {
-    public:
-        WiiMovie(const char * filepath);
-        ~WiiMovie();
-        bool Play(bool loop = false);
-        void Stop();
-        void SetVolume(int vol);
-		void SetScreenSize(int width, int height, int top, int left);
-        void SetFullscreen();
-        void SetFrameSize(int w, int h);
-        void SetAspectRatio(float Aspect);
-		bool GetNextFrame(STexture *tex);
-    protected:
-		static void * UpdateThread(void *arg);
-		static void * PlayingThread(void *arg);
-        void FrameLoadLoop();
-        void ReadNextFrame();
-        void LoadNextFrame();
+public:
+	WiiMovie(const char * filepath);
+	~WiiMovie();
+	bool Play(bool loop = false);
+	void Stop();
+	void SetVolume(int vol);
+	void SetScreenSize(int width, int height, int top, int left);
+	void SetFullscreen();
+	void SetFrameSize(int w, int h);
+	void SetAspectRatio(float Aspect);
+	bool GetNextFrame(TexData *tex);
+protected:
+	static void * UpdateThread(void *arg);
+	static void * PlayingThread(void *arg);
+	void FrameLoadLoop();
+	void ReadNextFrame();
+	void LoadNextFrame();
 
-		u8 * ThreadStack;
-		u8 * PlayThreadStack;
-		lwp_t ReadThread;
-		lwp_t PlayThread;
-		mutex_t mutex;
+	u8 * ThreadStack;
+	u8 * PlayThreadStack;
+	lwp_t ReadThread;
+	lwp_t PlayThread;
+	mutex_t mutex;
 
-        VideoFile * Video;
-		BufferCircle SoundBuffer;
-		float fps;
-        Timer PlayTime;
-        u32 VideoFrameCount;
-        vector<STexture> Frames;
-		bool Playing;
-		bool ExitRequested;
-		bool fullScreen;
-		int maxSoundSize;
-		int SndChannels;
-		int SndFrequence;
-		int volume;
-		
-		int screentop;
-		int screenleft;
-		int screenwidth;
-		int screenheight;
-		float scaleX;
-		float scaleY;
-		int width;
-		int height;
+	VideoFile *Video;
+	BufferCircle SoundBuffer;
+	float fps;
+	Timer PlayTime;
+	u32 VideoFrameCount;
+	vector<TexData> Frames;
+	bool Playing;
+	bool ExitRequested;
+	bool fullScreen;
+	int maxSoundSize;
+	int SndChannels;
+	int SndFrequence;
+	int volume;
+
+	int screentop;
+	int screenleft;
+	int screenwidth;
+	int screenheight;
+	float scaleX;
+	float scaleY;
+	int width;
+	int height;
 };
 
 #endif

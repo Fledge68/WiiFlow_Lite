@@ -15,12 +15,12 @@
 
 struct SButtonTextureSet
 {
-	STexture left;
-	STexture right;
-	STexture center;
-	STexture leftSel;
-	STexture rightSel;
-	STexture centerSel;
+	TexData left;
+	TexData right;
+	TexData center;
+	TexData leftSel;
+	TexData rightSel;
+	TexData centerSel;
 };
 
 class CButtonsMgr
@@ -31,18 +31,18 @@ public:
 	void reserve(u32 capacity) { m_elts.reserve(capacity); }
 	s16 addButton(SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color,
 		const SButtonTextureSet &texSet, GuiSound *clickSound = NULL, GuiSound *hoverSound = NULL);
-	s16 addLabel(SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, s16 style, const STexture &bg = _noTexture);
+	s16 addLabel(SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, s16 style, const TexData &bg = _noTexture);
 	s16 addPicButton(const u8 *pngNormal, const u8 *pngSelected, int x, int y, u32 width, u32 height,
 		GuiSound *clickSound = NULL, GuiSound *hoverSound = NULL);
-	s16 addPicButton(STexture &texNormal, STexture &texSelected, int x, int y, u32 width, u32 height,
+	s16 addPicButton(TexData &texNormal, TexData &texSelected, int x, int y, u32 width, u32 height,
 		GuiSound *clickSound = NULL, GuiSound *hoverSound = NULL);
 	s16 addProgressBar(int x, int y, u32 width, u32 height, SButtonTextureSet &texSet);
 	void setText(s16 id, const wstringEx &text, bool unwrap = false);
 	void setText(s16 id, const wstringEx &text, u32 startline, bool unwrap = false);
-	void setBtnTexture(s16 id, STexture &texNormal, STexture &texSelected);
+	void setBtnTexture(s16 id, TexData &texNormal, TexData &texSelected);
 	void freeBtnTexture(s16 id);
-	void setTexture(s16 id ,STexture &bg);
-	void setTexture(s16 id, STexture &bg, int width, int height);
+	void setTexture(s16 id ,TexData &bg);
+	void setTexture(s16 id, TexData &bg, int width, int height);
 	void setProgress(s16 id, float f, bool instant = false);
 	void reset(s16 id, bool instant = false);
 	void moveBy(s16 id, int x, int y, bool instant = false);
@@ -123,7 +123,7 @@ private:
 		CText text;
 		CColor textColor;
 		u16 textStyle;
-		STexture texBg;
+		TexData texBg;
 	public:
 		SLabel(void) { t = GUIELT_LABEL; }
 		virtual void tick(void);
@@ -154,7 +154,7 @@ private:
 	void _drawBtn(SButton &b, bool selected, bool click);
 	void _drawLbl(SLabel &b);
 	void _drawPBar(const SProgressBar &b);
-	static STexture _noTexture;
+	static TexData _noTexture;
 };
 
 extern CButtonsMgr m_btnMgr;

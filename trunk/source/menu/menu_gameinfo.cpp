@@ -254,7 +254,7 @@ void CMenu::_showGameInfo(void)
 
 void CMenu::_initGameInfoMenu()
 {
-	STexture emptyTex;
+	TexData emptyTex;
 	_addUserLabels(m_gameinfoLblUser, 0, 1, "GAMEINFO");
 	_addUserLabels(m_gameinfoLblUser, 2, 1, "GAMEINFO");
 	
@@ -356,7 +356,7 @@ void CMenu::_textGameInfo(void)
 				break;
 		}
 		//Ratings
-		m_rating.fromJPG(norating_jpg, norating_jpg_size);
+		TexHandle.fromJPG(m_rating, norating_jpg, norating_jpg_size);
 		const char *RatingValue = NULL;
 		if(gametdb.GetRatingValue(GameID, RatingValue))
 		{
@@ -364,51 +364,51 @@ void CMenu::_textGameInfo(void)
 			{
 				case GAMETDB_RATING_TYPE_CERO:
 					if(RatingValue[0] == 'A')
-						m_rating.fromPNG(cero_a_png);
+						TexHandle.fromPNG(m_rating, cero_a_png);
 					else if(RatingValue[0] == 'B')
-						m_rating.fromPNG(cero_b_png);
+						TexHandle.fromPNG(m_rating, cero_b_png);
 					else if(RatingValue[0] == 'D')
-						m_rating.fromPNG(cero_d_png);
+						TexHandle.fromPNG(m_rating, cero_d_png);
 					else if(RatingValue[0] == 'C')
-						m_rating.fromPNG(cero_c_png);
+						TexHandle.fromPNG(m_rating, cero_c_png);
 					else if(RatingValue[0] == 'Z')
-						m_rating.fromPNG(cero_z_png);
+						TexHandle.fromPNG(m_rating, cero_z_png);
 					break;
 				case GAMETDB_RATING_TYPE_ESRB:
 					if(RatingValue[0] == 'E')
-						m_rating.fromJPG(esrb_e_jpg, esrb_e_jpg_size);
+						TexHandle.fromJPG(m_rating, esrb_e_jpg, esrb_e_jpg_size);
 					else if(memcmp(RatingValue, "EC", 2) == 0)
-						m_rating.fromJPG(esrb_ec_jpg, esrb_ec_jpg_size);
+						TexHandle.fromJPG(m_rating, esrb_ec_jpg, esrb_ec_jpg_size);
 					else if(memcmp(RatingValue, "E10+", 4) == 0)
-						m_rating.fromJPG(esrb_eten_jpg, esrb_eten_jpg_size);
+						TexHandle.fromJPG(m_rating, esrb_eten_jpg, esrb_eten_jpg_size);
 					else if(RatingValue[0] == 'T')
-						m_rating.fromJPG(esrb_t_jpg, esrb_t_jpg_size);
+						TexHandle.fromJPG(m_rating, esrb_t_jpg, esrb_t_jpg_size);
 					else if(RatingValue[0] == 'M')
-						m_rating.fromJPG(esrb_m_jpg, esrb_m_jpg_size);
+						TexHandle.fromJPG(m_rating, esrb_m_jpg, esrb_m_jpg_size);
 					else if(memcmp(RatingValue, "AO", 2) == 0)
-						m_rating.fromJPG(esrb_ao_jpg, esrb_ao_jpg_size);
+						TexHandle.fromJPG(m_rating, esrb_ao_jpg, esrb_ao_jpg_size);
 					break;
 				case GAMETDB_RATING_TYPE_PEGI:
 					if(RatingValue[0] == '3')
-						m_rating.fromPNG(pegi_3_png);
+						TexHandle.fromPNG(m_rating, pegi_3_png);
 					else if(RatingValue[0] == '7')
-						m_rating.fromPNG(pegi_7_png);
+						TexHandle.fromPNG(m_rating, pegi_7_png);
 					else if(memcmp(RatingValue, "12", 2) == 0)
-						m_rating.fromPNG(pegi_12_png);
+						TexHandle.fromPNG(m_rating, pegi_12_png);
 					else if(memcmp(RatingValue, "16", 2) == 0)
-						m_rating.fromPNG(pegi_16_png);
+						TexHandle.fromPNG(m_rating, pegi_16_png);
 					else if(memcmp(RatingValue, "18", 2) == 0)
-						m_rating.fromPNG(pegi_18_png);
+						TexHandle.fromPNG(m_rating, pegi_18_png);
 					break;
 				case GAMETDB_RATING_TYPE_GRB:
 					if(RatingValue[0] == 'A')
-						m_rating.fromPNG(grb_a_png);
+						TexHandle.fromPNG(m_rating, grb_a_png);
 					else if(memcmp(RatingValue, "12", 2) == 0)
-						m_rating.fromPNG(grb_12_png);
+						TexHandle.fromPNG(m_rating, grb_12_png);
 					else if(memcmp(RatingValue, "15", 2) == 0)
-						m_rating.fromPNG(grb_15_png);
+						TexHandle.fromPNG(m_rating, grb_15_png);
 					else if(memcmp(RatingValue, "18", 2) == 0)
-						m_rating.fromPNG(grb_18_png);
+						TexHandle.fromPNG(m_rating, grb_18_png);
 					break;
 				default:
 					break;
@@ -417,25 +417,25 @@ void CMenu::_textGameInfo(void)
 		m_btnMgr.setTexture(m_gameinfoLblRating, m_rating);
 		//Wifi players
 		int WifiPlayers = gametdb.GetWifiPlayers(GameID);
-		STexture emptyTex;
+		TexData emptyTex;
 		if(WifiPlayers == 1)
-			m_wifi.fromPNG(wifi1_png);
+			TexHandle.fromPNG(m_wifi, wifi1_png);
 		else if(WifiPlayers == 2)
-			m_wifi.fromPNG(wifi2_png);
+			TexHandle.fromPNG(m_wifi, wifi2_png);
 		else if(WifiPlayers == 4)
-			m_wifi.fromPNG(wifi4_png);
+			TexHandle.fromPNG(m_wifi, wifi4_png);
 		else if(WifiPlayers == 8)
-			m_wifi.fromPNG(wifi8_png);
+			TexHandle.fromPNG(m_wifi, wifi8_png);
 		else if(WifiPlayers == 10)
-			m_wifi.fromPNG(wifi10_png);
+			TexHandle.fromPNG(m_wifi, wifi10_png);
 		else if(WifiPlayers == 12)
-			m_wifi.fromPNG(wifi12_png);
+			TexHandle.fromPNG(m_wifi, wifi12_png);
 		else if(WifiPlayers == 16)
-			m_wifi.fromPNG(wifi16_png);
+			TexHandle.fromPNG(m_wifi, wifi16_png);
 		else if(WifiPlayers == 18)
-			m_wifi.fromPNG(wifi18_png);
+			TexHandle.fromPNG(m_wifi, wifi18_png);
 		else if(WifiPlayers == 32)
-			m_wifi.fromPNG(wifi32_png);
+			TexHandle.fromPNG(m_wifi, wifi32_png);
 		if(WifiPlayers > 0)
 			m_btnMgr.setTexture(m_gameinfoLblWifiplayers, m_wifi);
 		else 
@@ -490,68 +490,66 @@ void CMenu::_textGameInfo(void)
 			u8 players = gametdb.GetPlayers(GameID);
 			if(players >= 10)
 				players /= 10;
-
 			if(players == 1)
-				m_controlsreq[x].fromPNG(wiimote1_png);
+				TexHandle.fromPNG(m_controlsreq[x], wiimote1_png);
 			else if(players == 2)
-				m_controlsreq[x].fromPNG(wiimote2_png);
+				TexHandle.fromPNG(m_controlsreq[x], wiimote2_png);
 			else if(players == 3)
-				m_controlsreq[x].fromPNG(wiimote3_png);
+				TexHandle.fromPNG(m_controlsreq[x], wiimote3_png);
 			else if(players == 4)
-				m_controlsreq[x].fromPNG(wiimote4_png);
+				TexHandle.fromPNG(m_controlsreq[x], wiimote4_png);
 			else if(players == 6)
-				m_controlsreq[x].fromPNG(wiimote6_png);
+				TexHandle.fromPNG(m_controlsreq[x], wiimote6_png);
 			else if(players == 8)
-				m_controlsreq[x].fromPNG(wiimote8_png);
-
+				TexHandle.fromPNG(m_controlsreq[x], wiimote8_png);
 			m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 20, 60);
 			x++;
 		}
 		if(nunchuk && x < max_controlsReq)
 		{
-			m_controlsreq[x].fromPNG(nunchukR_png);
+			TexHandle.fromPNG(m_controlsreq[x], nunchukR_png);
 			m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 52, 60);
 			x++;
 		}
 		if(guitar && x < max_controlsReq)
 		{
-			m_controlsreq[x].fromPNG(guitarR_png);
+			TexHandle.fromPNG(m_controlsreq[x], guitarR_png);
 			m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 52, 60);
 			x++;
 		}
 		if(drums && x < max_controlsReq)
 		{
-			m_controlsreq[x].fromPNG(drumsR_png);
+			TexHandle.fromPNG(m_controlsreq[x], drumsR_png);
 			m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 52, 60);
 			x++;
 		}
 		if(motionplus && x < max_controlsReq)
 		{
-			m_controlsreq[x].fromPNG(motionplusR_png);
+			TexHandle.fromPNG(m_controlsreq[x], motionplusR_png);
 			m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 20, 60);
 			x++;
 		}
 		if(dancepad && x < max_controlsReq)
 		{
-			m_controlsreq[x].fromPNG(dancepadR_png);
+			TexHandle.fromPNG(m_controlsreq[x], dancepadR_png);
 			m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 52, 60);
 			x++;
 		}
 		if(microphone && x < max_controlsReq)
 		{
-			m_controlsreq[x].fromPNG(microphoneR_png);
+			TexHandle.fromPNG(m_controlsreq[x], microphoneR_png);
 			m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 52, 60);
 			x++;
 		}
 		if(balanceboard && x < max_controlsReq)
 		{
-			m_controlsreq[x].fromPNG(balanceboardR_png);
+			TexHandle.fromPNG(m_controlsreq[x], balanceboardR_png);
 			m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 52, 60);
 			x++;
 		}
 		if(udraw && x < max_controlsReq)
 		{
-			m_controlsreq[x].fromPNG(udrawR_png);
+			TexHandle.fromPNG(m_controlsreq[x], udrawR_png);
 			m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 52, 60);
 			x++;
 		}
@@ -607,79 +605,79 @@ void CMenu::_textGameInfo(void)
 		u8 max_controls = ARRAY_SIZE(m_gameinfoLblControls);
 		if(classiccontroller && x < max_controls)
 		{
-			m_controls[x].fromPNG(classiccontroller_png);
+			TexHandle.fromPNG(m_controls[x], classiccontroller_png);
 			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 60);
 			x++;
 		}
 		if(nunchuk && x < max_controls)
 		{
-			m_controls[x].fromPNG(nunchuk_png);
+			TexHandle.fromPNG(m_controls[x], nunchuk_png);
 			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 60);
 			x++;
 		}
 		if(guitar && x < max_controls)
 		{
-			m_controls[x].fromPNG(guitar_png);
+			TexHandle.fromPNG(m_controls[x], guitar_png);
 			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 60);
 			x++;
 		}
 		if(drums && x < max_controls)
 		{
-			m_controls[x].fromPNG(drums_png);
+			TexHandle.fromPNG(m_controls[x], drums_png);
 			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 60);
 			x++;
 		}
 		if(dancepad && x < max_controls)
 		{
-			m_controls[x].fromPNG(dancepad_png);
+			TexHandle.fromPNG(m_controls[x], dancepad_png);
 			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 60);
 			x++;
 		}
 		if(motionplus && x < max_controls)
 		{
-			m_controls[x].fromPNG(motionplus_png);
+			TexHandle.fromPNG(m_controls[x], motionplus_png);
 			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 20, 60);
 			x++;
 		}
 		if(balanceboard && x < max_controls)
 		{
-			m_controls[x].fromPNG(balanceboard_png);
+			TexHandle.fromPNG(m_controls[x], balanceboard_png);
 			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 60);
 			x++;
 		}
 		if(microphone && x < max_controls)
 		{
-			m_controls[x].fromPNG(microphone_png);
+			TexHandle.fromPNG(m_controls[x], microphone_png);
 			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 48, 60);
 			x++;
 		}
 		if(gamecube && x < max_controls)
 		{
-			m_controls[x].fromPNG(gcncontroller_png);
+			TexHandle.fromPNG(m_controls[x], gcncontroller_png);
 			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 48, 60);
 			x++;
 		}
 		if(keyboard && x < max_controls)
 		{
-			m_controls[x].fromPNG(keyboard_png);
+			TexHandle.fromPNG(m_controls[x], keyboard_png);
 			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 60);
 			x++;
 		}
 		if(udraw && x < max_controls)
 		{
-			m_controls[x].fromPNG(udraw_png);
+			TexHandle.fromPNG(m_controls[x], udraw_png);
 			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 60);
 			x++;
 		}
 		if(zapper && x < max_controls)
 		{
-			m_controls[x].fromPNG(zapper_png);
+			TexHandle.fromPNG(m_controls[x], zapper_png);
 			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 70);
 			x++;
 		}
 		if(wheel && x < max_controls)
 		{
-			m_controls[x].fromPNG(wheel_png);
+			TexHandle.fromPNG(m_controls[x], wheel_png);
 			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 60);
 			x++;
 		}

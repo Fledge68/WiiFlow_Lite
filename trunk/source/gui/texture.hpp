@@ -11,12 +11,9 @@ enum TexErr
 	TE_NOMEM
 };
 
-class STexture
+struct TexData
 {
-public:
-	STexture(void) : data(NULL), dataSize(0), width(0), height(0), format(-1), maxLOD(0), thread(false) { }
-	void Cleanup();
-	bool CopyTexture(const STexture &tex);
+	TexData() : data(NULL), dataSize(0), width(0), height(0), format(-1), maxLOD(0), thread(false) { }
 	u8 *data;
 	u32 dataSize;
 	u32 width;
@@ -24,13 +21,20 @@ public:
 	u8 format;
 	u8 maxLOD;
 	bool thread;
+} __attribute__((packed));
+
+class STexture
+{
+public:
+	void Cleanup(TexData &tex);
+	bool CopyTexture(const TexData &src, TexData &dest);
 	// Get from PNG, if not found from JPG
-	TexErr fromImageFile(const char *filename, u8 f = -1, u32 minMipSize = 0, u32 maxMipSize = 0);
+	TexErr fromImageFile(TexData &dest, const char *filename, u8 f = -1, u32 minMipSize = 0, u32 maxMipSize = 0);
 	// This function doesn't use MEM2 if the PNG is loaded from memory and there's no mip mapping
-	TexErr fromPNG(const u8 *buffer, u8 f = -1, u32 minMipSize = 0, u32 maxMipSize = 0);
-	TexErr fromJPG(const u8 *buffer, const u32 buffer_size, u8 f = -1, u32 minMipSize = 0, u32 maxMipSize = 0);
+	TexErr fromPNG(TexData &dest, const u8 *buffer, u8 f = -1, u32 minMipSize = 0, u32 maxMipSize = 0);
+	TexErr fromJPG(TexData &dest, const u8 *buffer, const u32 buffer_size, u8 f = -1, u32 minMipSize = 0, u32 maxMipSize = 0);
 	/* Just for THP */
-	TexErr fromTHP(const u8 *buffer, u32 w, u32 h);
+	TexErr fromTHP(TexData &dest, const u8 *buffer, u32 w, u32 h);
 private:
 	void _resize(u8 *dst, u32 dstWidth, u32 dstHeight, const u8 *src, u32 srcWidth, u32 srcHeight);
 	void _resizeD2x2(u8 *dst, const u8 *src, u32 srcWidth, u32 srcHeight);
@@ -39,5 +43,7 @@ private:
 };
 
 u32 fixGX_GetTexBufferSize(u16 wd, u16 ht, u32 fmt, u8 mipmap, u8 maxlod);
+
+extern STexture TexHandle;
 
 #endif //!defined(__TEXTURE_HPP)

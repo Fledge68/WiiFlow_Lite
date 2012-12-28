@@ -28,7 +28,7 @@ extern const u32 wait_07_jpg_size;
 extern const u8 wait_08_jpg[];
 extern const u32 wait_08_jpg_size;
 
-vector<STexture> m_defaultWaitMessages;
+vector<TexData> m_defaultWaitMessages;
 
 const float CVideo::_jitter2[2][2] = {
 	{ 0.246490f, 0.249999f },
@@ -230,7 +230,7 @@ void CVideo::setup2DProjection(bool setViewPort, bool noScale)
 	GX_LoadProjectionMtx(projMtx, GX_ORTHOGRAPHIC);
 }
 
-void CVideo::renderToTexture(STexture &tex, bool clear)
+void CVideo::renderToTexture(TexData &tex, bool clear)
 {
 	if(tex.data == NULL)
 	{
@@ -511,7 +511,7 @@ void CVideo::_showWaitMessages(CVideo *m)
 	s8 PNGfadeDirection = 1;
 	s16 currentLightLevel = 0;
 
-	vector<STexture>::iterator waitItr = m->m_waitMessages.begin();
+	vector<TexData>::iterator waitItr = m->m_waitMessages.begin();
 	m->_clearScreen();
 
 	m->prepare();
@@ -571,22 +571,22 @@ void CVideo::waitMessage(float delay)
 {
 	if(m_defaultWaitMessages.size() == 0)
 	{
-		STexture m_wTextures[8];
-		m_wTextures[0].fromJPG(wait_01_jpg, wait_01_jpg_size);
-		m_wTextures[1].fromJPG(wait_02_jpg, wait_02_jpg_size);
-		m_wTextures[2].fromJPG(wait_03_jpg, wait_03_jpg_size);
-		m_wTextures[3].fromJPG(wait_04_jpg, wait_04_jpg_size);
-		m_wTextures[4].fromJPG(wait_05_jpg, wait_05_jpg_size);
-		m_wTextures[5].fromJPG(wait_06_jpg, wait_06_jpg_size);
-		m_wTextures[6].fromJPG(wait_07_jpg, wait_07_jpg_size);
-		m_wTextures[7].fromJPG(wait_08_jpg, wait_08_jpg_size);
+		TexData m_wTextures[8];
+		TexHandle.fromJPG(m_wTextures[0], wait_01_jpg, wait_01_jpg_size);
+		TexHandle.fromJPG(m_wTextures[1], wait_02_jpg, wait_02_jpg_size);
+		TexHandle.fromJPG(m_wTextures[2], wait_03_jpg, wait_03_jpg_size);
+		TexHandle.fromJPG(m_wTextures[3], wait_04_jpg, wait_04_jpg_size);
+		TexHandle.fromJPG(m_wTextures[4], wait_05_jpg, wait_05_jpg_size);
+		TexHandle.fromJPG(m_wTextures[5], wait_06_jpg, wait_06_jpg_size);
+		TexHandle.fromJPG(m_wTextures[6], wait_07_jpg, wait_07_jpg_size);
+		TexHandle.fromJPG(m_wTextures[7], wait_08_jpg, wait_08_jpg_size);
 		for(int i = 0; i < 8; i++)
 			m_defaultWaitMessages.push_back(m_wTextures[i]);
 	}
-	waitMessage(vector<STexture>(), delay);
+	waitMessage(vector<TexData>(), delay);
 }
 
-void CVideo::waitMessage(const vector<STexture> &tex, float delay)
+void CVideo::waitMessage(const vector<TexData> &tex, float delay)
 {
 	hideWaitMessage();
 	if(tex.size() == 0)
@@ -609,7 +609,7 @@ void CVideo::waitMessage(const vector<STexture> &tex, float delay)
 	}
 }
 
-void CVideo::waitMessage(const STexture &tex)
+void CVideo::waitMessage(const TexData &tex)
 {
 	Mtx modelViewMtx;
 	GXTexObj texObj;
@@ -654,7 +654,7 @@ s32 CVideo::TakeScreenshot(const char *path)
 	return ret;
 }
 
-void DrawTexture(STexture * &tex)
+void DrawTexture(TexData * &tex)
 {
 	if(tex == NULL)
 		return;

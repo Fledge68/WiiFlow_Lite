@@ -565,7 +565,7 @@ const char *CMenu::_cfDomain(bool selected)
 
 void CMenu::_initCFThemeMenu()
 {
-	STexture emptyTex;
+	TexData emptyTex;
 	string domain;
 	int x;
 	int y;
@@ -592,4 +592,3 @@ void CMenu::_initCFThemeMenu()
 		m_cfThemeLblValTxt[i] = _addLabel(fmt("CFTHEME/VAL%i_LBL", i + 1), theme.lblFont, L"", 20 + i * 150, 100, 150, 240, theme.lblFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_BOTTOM, emptyTex);
 	_hideCFTheme(true);
 }
-

@@ -149,7 +149,6 @@ CMenu::CMenu()
 	m_use_sd_logging = false;
 	m_use_wifi_gecko = false;
 	init_network = false;
-	m_curGameId = NULL;
 }
 
 void CMenu::init()
@@ -544,95 +543,95 @@ void CMenu::cleanup()
 void CMenu::_Theme_Cleanup(void)
 {
 	/* Backgrounds */
-	theme.bg.Cleanup();
+	TexHandle.Cleanup(theme.bg);
 	m_prevBg = NULL;
 	m_nextBg = NULL;
-	m_curBg.Cleanup();
+	TexHandle.Cleanup(m_curBg);
 	m_lqBg = NULL;
 	/* Buttons */
-	theme.btnTexL.Cleanup();
-	theme.btnTexR.Cleanup();
-	theme.btnTexC.Cleanup();
-	theme.btnTexLS.Cleanup();
-	theme.btnTexRS.Cleanup();
-	theme.btnTexCS.Cleanup();
-	theme.btnTexLH.Cleanup();
-	theme.btnTexRH.Cleanup();
-	theme.btnTexCH.Cleanup();
-	theme.btnTexLSH.Cleanup();
-	theme.btnTexRSH.Cleanup();
-	theme.btnTexCSH.Cleanup();
-	theme.btnAUOn.Cleanup();
-	theme.btnAUOns.Cleanup();
-	theme.btnAUOff.Cleanup();
-	theme.btnAUOffs.Cleanup();
-	theme.btnENOn.Cleanup();
-	theme.btnENOns.Cleanup();
-	theme.btnENOff.Cleanup();
-	theme.btnENOffs.Cleanup();
-	theme.btnJAOn.Cleanup();
-	theme.btnJAOns.Cleanup();
-	theme.btnJAOff.Cleanup();
-	theme.btnJAOffs.Cleanup();
-	theme.btnFROn.Cleanup();
-	theme.btnFROns.Cleanup();
-	theme.btnFROff.Cleanup();
-	theme.btnFROffs.Cleanup();
-	theme.btnDEOn.Cleanup();
-	theme.btnDEOns.Cleanup();
-	theme.btnDEOff.Cleanup();
-	theme.btnDEOffs.Cleanup();
-	theme.btnESOn.Cleanup();
-	theme.btnESOns.Cleanup();
-	theme.btnESOff.Cleanup();
-	theme.btnESOffs.Cleanup();
-	theme.btnITOn.Cleanup();
-	theme.btnITOns.Cleanup();
-	theme.btnITOff.Cleanup();
-	theme.btnITOffs.Cleanup();
-	theme.btnNLOn.Cleanup();
-	theme.btnNLOns.Cleanup();
-	theme.btnNLOff.Cleanup();
-	theme.btnNLOffs.Cleanup();
-	theme.btnPTOn.Cleanup();
-	theme.btnPTOns.Cleanup();
-	theme.btnPTOff.Cleanup();
-	theme.btnPTOffs.Cleanup();
-	theme.btnRUOn.Cleanup();
-	theme.btnRUOns.Cleanup();
-	theme.btnRUOff.Cleanup();
-	theme.btnRUOffs.Cleanup();
-	theme.btnKOOn.Cleanup();
-	theme.btnKOOns.Cleanup();
-	theme.btnKOOff.Cleanup();
-	theme.btnKOOffs.Cleanup();
-	theme.btnZHCNOn.Cleanup();
-	theme.btnZHCNOns.Cleanup();
-	theme.btnZHCNOff.Cleanup();
-	theme.btnZHCNOffs.Cleanup();
-	theme.btnTexPlus.Cleanup();
-	theme.btnTexPlusS.Cleanup();
-	theme.btnTexMinus.Cleanup();
-	theme.btnTexMinusS.Cleanup();
+	TexHandle.Cleanup(theme.btnTexL);
+	TexHandle.Cleanup(theme.btnTexR);
+	TexHandle.Cleanup(theme.btnTexC);
+	TexHandle.Cleanup(theme.btnTexLS);
+	TexHandle.Cleanup(theme.btnTexRS);
+	TexHandle.Cleanup(theme.btnTexCS);
+	TexHandle.Cleanup(theme.btnTexLH);
+	TexHandle.Cleanup(theme.btnTexRH);
+	TexHandle.Cleanup(theme.btnTexCH);
+	TexHandle.Cleanup(theme.btnTexLSH);
+	TexHandle.Cleanup(theme.btnTexRSH);
+	TexHandle.Cleanup(theme.btnTexCSH);
+	TexHandle.Cleanup(theme.btnAUOn);
+	TexHandle.Cleanup(theme.btnAUOns);
+	TexHandle.Cleanup(theme.btnAUOff);
+	TexHandle.Cleanup(theme.btnAUOffs);
+	TexHandle.Cleanup(theme.btnENOn);
+	TexHandle.Cleanup(theme.btnENOns);
+	TexHandle.Cleanup(theme.btnENOff);
+	TexHandle.Cleanup(theme.btnENOffs);
+	TexHandle.Cleanup(theme.btnJAOn);
+	TexHandle.Cleanup(theme.btnJAOns);
+	TexHandle.Cleanup(theme.btnJAOff);
+	TexHandle.Cleanup(theme.btnJAOffs);
+	TexHandle.Cleanup(theme.btnFROn);
+	TexHandle.Cleanup(theme.btnFROns);
+	TexHandle.Cleanup(theme.btnFROff);
+	TexHandle.Cleanup(theme.btnFROffs);
+	TexHandle.Cleanup(theme.btnDEOn);
+	TexHandle.Cleanup(theme.btnDEOns);
+	TexHandle.Cleanup(theme.btnDEOff);
+	TexHandle.Cleanup(theme.btnDEOffs);
+	TexHandle.Cleanup(theme.btnESOn);
+	TexHandle.Cleanup(theme.btnESOns);
+	TexHandle.Cleanup(theme.btnESOff);
+	TexHandle.Cleanup(theme.btnESOffs);
+	TexHandle.Cleanup(theme.btnITOn);
+	TexHandle.Cleanup(theme.btnITOns);
+	TexHandle.Cleanup(theme.btnITOff);
+	TexHandle.Cleanup(theme.btnITOffs);
+	TexHandle.Cleanup(theme.btnNLOn);
+	TexHandle.Cleanup(theme.btnNLOns);
+	TexHandle.Cleanup(theme.btnNLOff);
+	TexHandle.Cleanup(theme.btnNLOffs);
+	TexHandle.Cleanup(theme.btnPTOn);
+	TexHandle.Cleanup(theme.btnPTOns);
+	TexHandle.Cleanup(theme.btnPTOff);
+	TexHandle.Cleanup(theme.btnPTOffs);
+	TexHandle.Cleanup(theme.btnRUOn);
+	TexHandle.Cleanup(theme.btnRUOns);
+	TexHandle.Cleanup(theme.btnRUOff);
+	TexHandle.Cleanup(theme.btnRUOffs);
+	TexHandle.Cleanup(theme.btnKOOn);
+	TexHandle.Cleanup(theme.btnKOOns);
+	TexHandle.Cleanup(theme.btnKOOff);
+	TexHandle.Cleanup(theme.btnKOOffs);
+	TexHandle.Cleanup(theme.btnZHCNOn);
+	TexHandle.Cleanup(theme.btnZHCNOns);
+	TexHandle.Cleanup(theme.btnZHCNOff);
+	TexHandle.Cleanup(theme.btnZHCNOffs);
+	TexHandle.Cleanup(theme.btnTexPlus);
+	TexHandle.Cleanup(theme.btnTexPlusS);
+	TexHandle.Cleanup(theme.btnTexMinus);
+	TexHandle.Cleanup(theme.btnTexMinusS);
 	/* Checkboxes */
-	theme.checkboxoff.Cleanup();
-	theme.checkboxoffs.Cleanup();
-	theme.checkboxon.Cleanup();
-	theme.checkboxons.Cleanup();
-	theme.checkboxHid.Cleanup();
-	theme.checkboxHids.Cleanup();
-	theme.checkboxReq.Cleanup();
-	theme.checkboxReqs.Cleanup();
+	TexHandle.Cleanup(theme.checkboxoff);
+	TexHandle.Cleanup(theme.checkboxoffs);
+	TexHandle.Cleanup(theme.checkboxon);
+	TexHandle.Cleanup(theme.checkboxons);
+	TexHandle.Cleanup(theme.checkboxHid);
+	TexHandle.Cleanup(theme.checkboxHids);
+	TexHandle.Cleanup(theme.checkboxReq);
+	TexHandle.Cleanup(theme.checkboxReqs);
 	/* Progress Bars */
-	theme.pbarTexL.Cleanup();
-	theme.pbarTexR.Cleanup();
-	theme.pbarTexC.Cleanup();
-	theme.pbarTexLS.Cleanup();
-	theme.pbarTexRS.Cleanup();
-	theme.pbarTexCS.Cleanup();
+	TexHandle.Cleanup(theme.pbarTexL);
+	TexHandle.Cleanup(theme.pbarTexR);
+	TexHandle.Cleanup(theme.pbarTexC);
+	TexHandle.Cleanup(theme.pbarTexLS);
+	TexHandle.Cleanup(theme.pbarTexRS);
+	TexHandle.Cleanup(theme.pbarTexCS);
 	/* Other Theme Stuff */
 	for(TexSet::iterator texture = theme.texSet.begin(); texture != theme.texSet.end(); ++texture)
-		texture->second.Cleanup();
+		TexHandle.Cleanup(texture->second);
 	for(FontSet::iterator font = theme.fontSet.begin(); font != theme.fontSet.end(); ++font)
 		font->second.ClearData();
 	for(SoundSet::iterator sound = theme.soundSet.begin(); sound != theme.soundSet.end(); ++sound)
@@ -993,181 +992,181 @@ void CMenu::_buildMenus(void)
 	theme.cameraSound	= _sound(theme.soundSet, "GENERAL", "camera_sound", camera_wav, camera_wav_size, "default_camera", false);
 
 	// Default textures
-	theme.btnTexL.fromPNG(butleft_png);
+	TexHandle.fromPNG(theme.btnTexL, butleft_png);
 	theme.btnTexL = _texture("GENERAL", "button_texture_left", theme.btnTexL); 
-	theme.btnTexR.fromPNG(butright_png);
+	TexHandle.fromPNG(theme.btnTexR, butright_png);
 	theme.btnTexR = _texture("GENERAL", "button_texture_right", theme.btnTexR); 
-	theme.btnTexC.fromPNG(butcenter_png);
+	TexHandle.fromPNG(theme.btnTexC, butcenter_png);
 	theme.btnTexC = _texture("GENERAL", "button_texture_center", theme.btnTexC); 
-	theme.btnTexLS.fromPNG(butsleft_png);
+	TexHandle.fromPNG(theme.btnTexLS, butsleft_png);
 	theme.btnTexLS = _texture("GENERAL", "button_texture_left_selected", theme.btnTexLS); 
-	theme.btnTexRS.fromPNG(butsright_png);
+	TexHandle.fromPNG(theme.btnTexRS, butsright_png);
 	theme.btnTexRS = _texture("GENERAL", "button_texture_right_selected", theme.btnTexRS); 
-	theme.btnTexCS.fromPNG(butscenter_png);
+	TexHandle.fromPNG(theme.btnTexCS, butscenter_png);
 	theme.btnTexCS = _texture("GENERAL", "button_texture_center_selected", theme.btnTexCS); 
 
-	theme.btnTexLH.fromPNG(buthleft_png);
+	TexHandle.fromPNG(theme.btnTexLH, buthleft_png);
 	theme.btnTexLH = _texture("GENERAL", "button_texture_hlleft", theme.btnTexLH); 
-	theme.btnTexRH.fromPNG(buthright_png);
+	TexHandle.fromPNG(theme.btnTexRH, buthright_png);
 	theme.btnTexRH = _texture("GENERAL", "button_texture_hlright", theme.btnTexRH); 
-	theme.btnTexCH.fromPNG(buthcenter_png);
+	TexHandle.fromPNG(theme.btnTexCH, buthcenter_png);
 	theme.btnTexCH = _texture("GENERAL", "button_texture_hlcenter", theme.btnTexCH); 
-	theme.btnTexLSH.fromPNG(buthsleft_png);
+	TexHandle.fromPNG(theme.btnTexLSH, buthsleft_png);
 	theme.btnTexLSH = _texture("GENERAL", "button_texture_hlleft_selected", theme.btnTexLSH); 
-	theme.btnTexRSH.fromPNG(buthsright_png);
+	TexHandle.fromPNG(theme.btnTexRSH, buthsright_png);
 	theme.btnTexRSH = _texture("GENERAL", "button_texture_hlright_selected", theme.btnTexRSH); 
-	theme.btnTexCSH.fromPNG(buthscenter_png);
+	TexHandle.fromPNG(theme.btnTexCSH, buthscenter_png);
 	theme.btnTexCSH = _texture("GENERAL", "button_texture_hlcenter_selected", theme.btnTexCSH); 
 
-	theme.btnAUOn.fromPNG(butauon_png);
+	TexHandle.fromPNG(theme.btnAUOn, butauon_png);
 	theme.btnAUOn = _texture("GENERAL", "button_au_on", theme.btnAUOn);
-	theme.btnAUOns.fromPNG(butauons_png);
+	TexHandle.fromPNG(theme.btnAUOns, butauons_png);
 	theme.btnAUOns = _texture("GENERAL", "button_au_on_selected", theme.btnAUOns);
-	theme.btnAUOff.fromPNG(butauoff_png);
+	TexHandle.fromPNG(theme.btnAUOff, butauoff_png);
 	theme.btnAUOff = _texture("GENERAL", "button_au_off", theme.btnAUOff);
-	theme.btnAUOffs.fromPNG(butauoffs_png);
+	TexHandle.fromPNG(theme.btnAUOffs, butauoffs_png);
 	theme.btnAUOffs = _texture("GENERAL", "button_au_off_selected", theme.btnAUOffs);
 
-	theme.btnENOn.fromPNG(butenon_png);
+	TexHandle.fromPNG(theme.btnENOn, butenon_png);
 	theme.btnENOn = _texture("GENERAL", "button_en_on", theme.btnENOn);
-	theme.btnENOns.fromPNG(butenons_png);
+	TexHandle.fromPNG(theme.btnENOns, butenons_png);
 	theme.btnENOns = _texture("GENERAL", "button_en_on_selected", theme.btnENOns);
-	theme.btnENOff.fromPNG(butenoff_png);
+	TexHandle.fromPNG(theme.btnENOff, butenoff_png);
 	theme.btnENOff = _texture("GENERAL", "button_en_off", theme.btnENOff);
-	theme.btnENOffs.fromPNG(butenoffs_png);
+	TexHandle.fromPNG(theme.btnENOffs, butenoffs_png);
 	theme.btnENOffs = _texture("GENERAL", "button_en_off_selected", theme.btnENOffs);
 
-	theme.btnJAOn.fromPNG(butjaon_png);
+	TexHandle.fromPNG(theme.btnJAOn, butjaon_png);
 	theme.btnJAOn = _texture("GENERAL", "button_ja_on", theme.btnJAOn);
-	theme.btnJAOns.fromPNG(butjaons_png);
+	TexHandle.fromPNG(theme.btnJAOns, butjaons_png);
 	theme.btnJAOns = _texture("GENERAL", "button_ja_on_selected", theme.btnJAOns);
-	theme.btnJAOff.fromPNG(butjaoff_png);
+	TexHandle.fromPNG(theme.btnJAOff, butjaoff_png);
 	theme.btnJAOff = _texture("GENERAL", "button_ja_off", theme.btnJAOff);
-	theme.btnJAOffs.fromPNG(butjaoffs_png);
+	TexHandle.fromPNG(theme.btnJAOffs, butjaoffs_png);
 	theme.btnJAOffs = _texture("GENERAL", "button_ja_off_selected", theme.btnJAOffs);
 
-	theme.btnFROn.fromPNG(butfron_png);
+	TexHandle.fromPNG(theme.btnFROn, butfron_png);
 	theme.btnFROn = _texture("GENERAL", "button_fr_on", theme.btnFROn);
-	theme.btnFROns.fromPNG(butfrons_png);
+	TexHandle.fromPNG(theme.btnFROns, butfrons_png);
 	theme.btnFROns = _texture("GENERAL", "button_fr_on_selected", theme.btnFROns);
-	theme.btnFROff.fromPNG(butfroff_png);
+	TexHandle.fromPNG(theme.btnFROff, butfroff_png);
 	theme.btnFROff = _texture("GENERAL", "button_fr_off", theme.btnFROff);
-	theme.btnFROffs.fromPNG(butfroffs_png);
+	TexHandle.fromPNG(theme.btnFROffs, butfroffs_png);
 	theme.btnFROffs = _texture("GENERAL", "button_fr_off_selected", theme.btnFROffs);
 
-	theme.btnDEOn.fromPNG(butdeon_png);
+	TexHandle.fromPNG(theme.btnDEOn, butdeon_png);
 	theme.btnDEOn = _texture("GENERAL", "button_de_on", theme.btnDEOn);
-	theme.btnDEOns.fromPNG(butdeons_png);
+	TexHandle.fromPNG(theme.btnDEOns, butdeons_png);
 	theme.btnDEOns = _texture("GENERAL", "button_de_on_selected", theme.btnDEOns);
-	theme.btnDEOff.fromPNG(butdeoff_png);
+	TexHandle.fromPNG(theme.btnDEOff, butdeoff_png);
 	theme.btnDEOff = _texture("GENERAL", "button_de_off", theme.btnDEOff);
-	theme.btnDEOffs.fromPNG(butdeoffs_png);
+	TexHandle.fromPNG(theme.btnDEOffs, butdeoffs_png);
 	theme.btnDEOffs = _texture("GENERAL", "button_de_off_selected", theme.btnDEOffs);
 
-	theme.btnESOn.fromPNG(buteson_png);
+	TexHandle.fromPNG(theme.btnESOn, buteson_png);
 	theme.btnESOn = _texture("GENERAL", "button_es_on", theme.btnESOn);
-	theme.btnESOns.fromPNG(butesons_png);
+	TexHandle.fromPNG(theme.btnESOns, butesons_png);
 	theme.btnESOns = _texture("GENERAL", "button_es_on_selected", theme.btnESOns);
-	theme.btnESOff.fromPNG(butesoff_png);
+	TexHandle.fromPNG(theme.btnESOff, butesoff_png);
 	theme.btnESOff = _texture("GENERAL", "button_es_off", theme.btnESOff);
-	theme.btnESOffs.fromPNG(butesoffs_png);
+	TexHandle.fromPNG(theme.btnESOffs, butesoffs_png);
 	theme.btnESOffs = _texture("GENERAL", "button_es_off_selected", theme.btnESOffs);
 
-	theme.btnITOn.fromPNG(butiton_png);
+	TexHandle.fromPNG(theme.btnITOn, butiton_png);
 	theme.btnITOn = _texture("GENERAL", "button_it_on", theme.btnITOn);
-	theme.btnITOns.fromPNG(butitons_png);
+	TexHandle.fromPNG(theme.btnITOns, butitons_png);
 	theme.btnITOns = _texture("GENERAL", "button_it_on_selected", theme.btnITOns);
-	theme.btnITOff.fromPNG(butitoff_png);
+	TexHandle.fromPNG(theme.btnITOff, butitoff_png);
 	theme.btnITOff = _texture("GENERAL", "button_it_off", theme.btnITOff);
-	theme.btnITOffs.fromPNG(butitoffs_png);
+	TexHandle.fromPNG(theme.btnITOffs, butitoffs_png);
 	theme.btnITOffs = _texture("GENERAL", "button_it_off_selected", theme.btnITOffs);
 
-	theme.btnNLOn.fromPNG(butnlon_png);
+	TexHandle.fromPNG(theme.btnNLOn, butnlon_png);
 	theme.btnNLOn = _texture("GENERAL", "button_nl_on", theme.btnNLOn);
-	theme.btnNLOns.fromPNG(butnlons_png);
+	TexHandle.fromPNG(theme.btnNLOns, butnlons_png);
 	theme.btnNLOns = _texture("GENERAL", "button_nl_on_selected", theme.btnNLOns);
-	theme.btnNLOff.fromPNG(butnloff_png);
+	TexHandle.fromPNG(theme.btnNLOff, butnloff_png);
 	theme.btnNLOff = _texture("GENERAL", "button_nl_off", theme.btnNLOff);
-	theme.btnNLOffs.fromPNG(butnloffs_png);
+	TexHandle.fromPNG(theme.btnNLOffs, butnloffs_png);
 	theme.btnNLOffs = _texture("GENERAL", "button_nl_off_selected", theme.btnNLOffs);
 
-	theme.btnPTOn.fromPNG(butpton_png);
+	TexHandle.fromPNG(theme.btnPTOn, butpton_png);
 	theme.btnPTOn = _texture("GENERAL", "button_pt_on", theme.btnPTOn);
-	theme.btnPTOns.fromPNG(butptons_png);
+	TexHandle.fromPNG(theme.btnPTOns, butptons_png);
 	theme.btnPTOns = _texture("GENERAL", "button_pt_on_selected", theme.btnPTOns);
-	theme.btnPTOff.fromPNG(butptoff_png);
+	TexHandle.fromPNG(theme.btnPTOff, butptoff_png);
 	theme.btnPTOff = _texture("GENERAL", "button_pt_off", theme.btnPTOff);
-	theme.btnPTOffs.fromPNG(butptoffs_png);
+	TexHandle.fromPNG(theme.btnPTOffs, butptoffs_png);
 	theme.btnPTOffs = _texture("GENERAL", "button_pt_off_selected", theme.btnPTOffs);
 
-	theme.btnRUOn.fromPNG(butruon_png);
+	TexHandle.fromPNG(theme.btnRUOn, butruon_png);
 	theme.btnRUOn = _texture("GENERAL", "button_ru_on", theme.btnRUOn);
-	theme.btnRUOns.fromPNG(butruons_png);
+	TexHandle.fromPNG(theme.btnRUOns, butruons_png);
 	theme.btnRUOns = _texture("GENERAL", "button_ru_on_selected", theme.btnRUOns);
-	theme.btnRUOff.fromPNG(butruoff_png);
+	TexHandle.fromPNG(theme.btnRUOff, butruoff_png);
 	theme.btnRUOff = _texture("GENERAL", "button_ru_off", theme.btnRUOff);
-	theme.btnRUOffs.fromPNG(butruoffs_png);
+	TexHandle.fromPNG(theme.btnRUOffs, butruoffs_png);
 	theme.btnRUOffs = _texture("GENERAL", "button_ru_off_selected", theme.btnRUOffs);
 
-	theme.btnKOOn.fromPNG(butkoon_png);
+	TexHandle.fromPNG(theme.btnKOOn, butkoon_png);
 	theme.btnKOOn = _texture("GENERAL", "button_ko_on", theme.btnKOOn);
-	theme.btnKOOns.fromPNG(butkoons_png);
+	TexHandle.fromPNG(theme.btnKOOns, butkoons_png);
 	theme.btnKOOns = _texture("GENERAL", "button_ko_on_selected", theme.btnKOOns);
-	theme.btnKOOff.fromPNG(butkooff_png);
+	TexHandle.fromPNG(theme.btnKOOff, butkooff_png);
 	theme.btnKOOff = _texture("GENERAL", "button_ko_off", theme.btnKOOff);
-	theme.btnKOOffs.fromPNG(butkooffs_png);
+	TexHandle.fromPNG(theme.btnKOOffs, butkooffs_png);
 	theme.btnKOOffs = _texture("GENERAL", "button_ko_off_selected", theme.btnKOOffs);
 
-	theme.btnZHCNOn.fromPNG(butzhcnon_png);
+	TexHandle.fromPNG(theme.btnZHCNOn, butzhcnon_png);
 	theme.btnZHCNOn = _texture("GENERAL", "button_zhcn_on", theme.btnZHCNOn);
-	theme.btnZHCNOns.fromPNG(butzhcnons_png);
+	TexHandle.fromPNG(theme.btnZHCNOns, butzhcnons_png);
 	theme.btnZHCNOns = _texture("GENERAL", "button_zhcn_on_selected", theme.btnZHCNOns);
-	theme.btnZHCNOff.fromPNG(butzhcnoff_png);
+	TexHandle.fromPNG(theme.btnZHCNOff, butzhcnoff_png);
 	theme.btnZHCNOff = _texture("GENERAL", "button_zhcn_off", theme.btnZHCNOff);
-	theme.btnZHCNOffs.fromPNG(butzhcnoffs_png);
+	TexHandle.fromPNG(theme.btnZHCNOffs, butzhcnoffs_png);
 	theme.btnZHCNOffs = _texture("GENERAL", "button_zhcn_off_selected", theme.btnZHCNOffs);
 
-	theme.checkboxoff.fromPNG(checkbox_png);
+	TexHandle.fromPNG(theme.checkboxoff, checkbox_png);
 	theme.checkboxoff = _texture("GENERAL", "checkbox_off", theme.checkboxoff);
-	theme.checkboxoffs.fromPNG(checkbox_png);
+	TexHandle.fromPNG(theme.checkboxoffs, checkbox_png);
 	theme.checkboxoffs = _texture("GENERAL", "checkbox_off_selected", theme.checkboxoffs);
-	theme.checkboxon.fromPNG(checkboxs_png);
+	TexHandle.fromPNG(theme.checkboxon, checkboxs_png);
 	theme.checkboxon = _texture("GENERAL", "checkbox_on", theme.checkboxon);
-	theme.checkboxons.fromPNG(checkboxs_png);
+	TexHandle.fromPNG(theme.checkboxons, checkboxs_png);
 	theme.checkboxons = _texture("GENERAL", "checkbox_on_selected", theme.checkboxons);
-	theme.checkboxHid.fromPNG(checkboxhid_png);
+	TexHandle.fromPNG(theme.checkboxHid, checkboxhid_png);
 	theme.checkboxHid = _texture("GENERAL", "checkbox_Hid", theme.checkboxHid);
-	theme.checkboxHids.fromPNG(checkboxhid_png);
+	TexHandle.fromPNG(theme.checkboxHids, checkboxhid_png);
 	theme.checkboxHids = _texture("GENERAL", "checkbox_Hid_selected", theme.checkboxHids);
-	theme.checkboxReq.fromPNG(checkboxreq_png);
+	TexHandle.fromPNG(theme.checkboxReq, checkboxreq_png);
 	theme.checkboxReq = _texture("GENERAL", "checkbox_Req", theme.checkboxReq);
-	theme.checkboxReqs.fromPNG(checkboxreq_png);
+	TexHandle.fromPNG(theme.checkboxReqs, checkboxreq_png);
 	theme.checkboxReqs = _texture("GENERAL", "checkbox_Req_selected", theme.checkboxReqs);
 
-	theme.pbarTexL.fromPNG(pbarleft_png);
+	TexHandle.fromPNG(theme.pbarTexL, pbarleft_png);
 	theme.pbarTexL = _texture("GENERAL", "progressbar_texture_left", theme.pbarTexL);
-	theme.pbarTexR.fromPNG(pbarright_png);
+	TexHandle.fromPNG(theme.pbarTexR, pbarright_png);
 	theme.pbarTexR = _texture("GENERAL", "progressbar_texture_right", theme.pbarTexR);
-	theme.pbarTexC.fromPNG(pbarcenter_png);
+	TexHandle.fromPNG(theme.pbarTexC, pbarcenter_png);
 	theme.pbarTexC = _texture("GENERAL", "progressbar_texture_center", theme.pbarTexC);
-	theme.pbarTexLS.fromPNG(pbarlefts_png);
+	TexHandle.fromPNG(theme.pbarTexLS, pbarlefts_png);
 	theme.pbarTexLS = _texture("GENERAL", "progressbar_texture_left_selected", theme.pbarTexLS);
-	theme.pbarTexRS.fromPNG(pbarrights_png);
+	TexHandle.fromPNG(theme.pbarTexRS, pbarrights_png);
 	theme.pbarTexRS = _texture("GENERAL", "progressbar_texture_right_selected", theme.pbarTexRS);
-	theme.pbarTexCS.fromPNG(pbarcenters_png);
+	TexHandle.fromPNG(theme.pbarTexCS, pbarcenters_png);
 	theme.pbarTexCS = _texture("GENERAL", "progressbar_texture_center_selected", theme.pbarTexCS);
-	theme.btnTexPlus.fromPNG(btnplus_png);
+	TexHandle.fromPNG(theme.btnTexPlus, btnplus_png);
 	theme.btnTexPlus = _texture("GENERAL", "plus_button_texture", theme.btnTexPlus);
-	theme.btnTexPlusS.fromPNG(btnpluss_png);
+	TexHandle.fromPNG(theme.btnTexPlusS, btnpluss_png);
 	theme.btnTexPlusS = _texture("GENERAL", "plus_button_texture_selected", theme.btnTexPlusS);
-	theme.btnTexMinus.fromPNG(btnminus_png);
+	TexHandle.fromPNG(theme.btnTexMinus, btnminus_png);
 	theme.btnTexMinus = _texture("GENERAL", "minus_button_texture", theme.btnTexMinus);
-	theme.btnTexMinusS.fromPNG(btnminuss_png);
+	TexHandle.fromPNG(theme.btnTexMinusS, btnminuss_png);
 	theme.btnTexMinusS = _texture("GENERAL", "minus_button_texture_selected", theme.btnTexMinusS);
 
 	// Default background
-	theme.bg.fromJPG(background_jpg, background_jpg_size);
-	m_mainBgLQ.fromJPG(background_jpg, background_jpg_size, GX_TF_CMPR, 64, 64);
+	TexHandle.fromJPG(theme.bg, background_jpg, background_jpg_size);
+	TexHandle.fromJPG(m_mainBgLQ, background_jpg, background_jpg_size, GX_TF_CMPR, 64, 64);
 	m_gameBgLQ = m_mainBgLQ;
 
 	// Build menus
@@ -1257,9 +1256,9 @@ SFont CMenu::_font(CMenu::FontSet &fontSet, const char *domain, const char *key,
 	return retFont;
 }
 
-vector<STexture> CMenu::_textures(const char *domain, const char *key)
+vector<TexData> CMenu::_textures(const char *domain, const char *key)
 {
-	vector<STexture> textures;
+	vector<TexData> textures;
 
 	if (m_theme.loaded())
 	{
@@ -1272,8 +1271,8 @@ vector<STexture> CMenu::_textures(const char *domain, const char *key)
 				TexSet::iterator i = theme.texSet.find(filename);
 				if (i != theme.texSet.end())
 					textures.push_back(i->second);
-				STexture tex;
-				if(tex.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), filename.c_str())) == TE_OK)
+				TexData tex;
+				if(TexHandle.fromImageFile(tex, fmt("%s/%s", m_themeDataDir.c_str(), filename.c_str())) == TE_OK)
 				{
 					theme.texSet[filename] = tex;
 					textures.push_back(tex);
@@ -1284,7 +1283,7 @@ vector<STexture> CMenu::_textures(const char *domain, const char *key)
 	return textures;
 }
 
-STexture CMenu::_texture(const char *domain, const char *key, STexture &def, bool freeDef)
+TexData CMenu::_texture(const char *domain, const char *key, TexData &def, bool freeDef)
 {
 	string filename;
 
@@ -1298,8 +1297,8 @@ STexture CMenu::_texture(const char *domain, const char *key, STexture &def, boo
 			if(i != theme.texSet.end())
 				return i->second;
 			/* Load from image file */
-			STexture tex;
-			if(tex.fromImageFile(fmt("%s/%s", m_themeDataDir.c_str(), filename.c_str())) == TE_OK)
+			TexData tex;
+			if(TexHandle.fromImageFile(tex, fmt("%s/%s", m_themeDataDir.c_str(), filename.c_str())) == TE_OK)
 			{
 				if(freeDef && def.data != NULL)
 				{
@@ -1438,14 +1437,14 @@ s16 CMenu::_addSelButton(const char *domain, SFont font, const wstringEx &text, 
 	return m_btnMgr.addButton(font, text, x, y, width, height, c, btnTexSet, clickSound, hoverSound);
 }
 
-s16 CMenu::_addPicButton(const char *domain, STexture &texNormal, STexture &texSelected, int x, int y, u32 width, u32 height)
+s16 CMenu::_addPicButton(const char *domain, TexData &texNormal, TexData &texSelected, int x, int y, u32 width, u32 height)
 {
 	x = m_theme.getInt(domain, "x", x);
 	y = m_theme.getInt(domain, "y", y);
 	width = m_theme.getInt(domain, "width", width);
 	height = m_theme.getInt(domain, "height", height);
-	STexture tex1 = _texture(domain, "texture_normal", texNormal, false);
-	STexture tex2 = _texture(domain, "texture_selected", texSelected, false);
+	TexData tex1 = _texture(domain, "texture_normal", texNormal, false);
+	TexData tex2 = _texture(domain, "texture_selected", texSelected, false);
 	GuiSound *clickSound = _sound(theme.soundSet, domain, "click_sound", theme.clickSound->GetName());
 	GuiSound *hoverSound = _sound(theme.soundSet, domain, "hover_sound", theme.hoverSound->GetName());
 
@@ -1521,7 +1520,7 @@ s16 CMenu::_addLabel(const char *domain, SFont font, const wstringEx &text, int 
 	return m_btnMgr.addLabel(font, text, x, y, width, height, c, style);
 }
 
-s16 CMenu::_addLabel(const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, s16 style, STexture &bg)
+s16 CMenu::_addLabel(const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, s16 style, TexData &bg)
 {
 	CColor c(color);
 
@@ -1531,7 +1530,7 @@ s16 CMenu::_addLabel(const char *domain, SFont font, const wstringEx &text, int 
 	width = m_theme.getInt(domain, "width", width);
 	height = m_theme.getInt(domain, "height", height);
 	font = _font(theme.fontSet, domain, "font", BUTTONFONT);
-	STexture texBg = _texture(domain, "background_texture", bg, false);
+	TexData texBg = _texture(domain, "background_texture", bg, false);
 	style = _textStyle(domain, "style", style);
 
 	u16 btnPos = _textStyle(domain, "elmstyle", FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
@@ -1606,7 +1605,7 @@ void CMenu::_addUserLabels(s16 *ids, u32 start, u32 size, const char *domain)
 		string dom(fmt("%s/USER%i", domain, i + 1));
 		if (m_theme.hasDomain(dom))
 		{
-			STexture emptyTex;
+			TexData emptyTex;
 			ids[i] = _addLabel(dom.c_str(), theme.lblFont, L"", 40, 200, 64, 64, CColor(0xFFFFFFFF), 0, emptyTex);
 			_setHideAnim(ids[i], dom.c_str(), -50, 0, 0.f, 0.f);
 		}
@@ -1947,11 +1946,13 @@ void CMenu::_initCF(void)
 	CoverFlow.setHQcover(m_cfg.getBool("GENERAL", "cover_use_hq", false));
 
 	CoverFlow.start();
-	bool path = (m_current_view == COVERFLOW_PLUGIN || m_current_view == COVERFLOW_HOMEBREW);
-	if((m_curGameId != NULL && !CoverFlow.findId(m_curGameId, true, path)) ||
-	!CoverFlow.findId(m_cfg.getString(domain, "current_item").c_str(), true, path))
-		CoverFlow.defaultLoad();
-	CoverFlow.startCoverLoader();
+	if(!CoverFlow.empty())
+	{
+		bool path = (m_current_view == COVERFLOW_PLUGIN || m_current_view == COVERFLOW_HOMEBREW);
+		if(!CoverFlow.findId(m_cfg.getString(domain, "current_item").c_str(), true, path))
+			CoverFlow.defaultLoad();
+		CoverFlow.startCoverLoader();
+	}
 }
 
 void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
@@ -2077,7 +2078,7 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 #endif
 }
 
-void CMenu::_setBg(const STexture &tex, const STexture &lqTex)
+void CMenu::_setBg(const TexData &tex, const TexData &lqTex)
 {
 	/* Not setting same bg again */
 	if(m_nextBg == &tex)

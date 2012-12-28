@@ -242,9 +242,7 @@ void CMenu::_showSystem(void)
 
 void CMenu::_initSystemMenu()
 {
-	STexture emptyTex;
-
-	_addUserLabels(m_systemLblUser, ARRAY_SIZE(m_systemLblUser), "SYSTEM");		
+	_addUserLabels(m_systemLblUser, ARRAY_SIZE(m_systemLblUser), "SYSTEM");
 	m_systemBg = _texture("SYSTEM/BG", "texture", theme.bg, false);
 	m_systemLblTitle = _addTitle("SYSTEM/TITLE", theme.titleFont, L"", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 	m_systemLblVersionTxt = _addLabel("SYSTEM/VERSION_TXT", theme.lblFont, L"", 40, 90, 220, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);

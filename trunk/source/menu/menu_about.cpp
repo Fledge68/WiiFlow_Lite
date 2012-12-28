@@ -92,7 +92,6 @@ void CMenu::_showAbout(void)
 
 void CMenu::_initAboutMenu()
 {
-	STexture emptyTex;
 	_addUserLabels(m_aboutLblUser, ARRAY_SIZE(m_aboutLblUser), "ABOUT");
 	m_aboutBg = _texture("ABOUT/BG", "texture", theme.bg, false);
 	m_aboutLblTitle = _addTitle("ABOUT/TITLE", theme.titleFont, L"", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);

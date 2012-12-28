@@ -29,16 +29,16 @@ bool CCursor::init(const char *png, bool wideFix, CColor shadowColor, float shad
 	m_wideFix = wideFix;
 	m_x = -1;
 	m_y = -1;
-	if(m_texture.fromImageFile(png) != TE_OK)
+	if(TexHandle.fromImageFile(m_texture, png) != TE_OK)
 	{
  		if(chan == 0)
-			ok = (m_texture.fromPNG(player1_point_png) == TE_OK);
+			ok = (TexHandle.fromPNG(m_texture, player1_point_png) == TE_OK);
 		else if(chan == 1)
-			ok = (m_texture.fromPNG(player2_point_png) == TE_OK);
+			ok = (TexHandle.fromPNG(m_texture, player2_point_png) == TE_OK);
 		else if(chan == 2)
-			ok = (m_texture.fromPNG(player3_point_png) == TE_OK);
+			ok = (TexHandle.fromPNG(m_texture, player3_point_png) == TE_OK);
 		else if(chan == 3)
-			ok = (m_texture.fromPNG(player4_point_png) == TE_OK);
+			ok = (TexHandle.fromPNG(m_texture, player4_point_png) == TE_OK);
 	}
 	if (ok && shadow)
 	{

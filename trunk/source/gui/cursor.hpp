@@ -14,8 +14,8 @@ public:
 	int x(void) const { return m_x; }
 	int y(void) const { return m_y; }
 private:
-	STexture m_texture;
-	STexture m_shadow;
+	TexData m_texture;
+	TexData m_shadow;
 	Mtx m_projMtx;
 	Mtx m_viewMtx;
 	int m_x;
