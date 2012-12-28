@@ -1081,6 +1081,9 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 
 	if(NAND_Emu && !neek2o())
 	{
+		NANDemuView = true;
+		NandHandle.SetNANDEmu(currentPartition); /* Init NAND Emu */
+		NandHandle.SetPaths(emuPath.c_str(), DeviceName[currentPartition]);
 		if(useNK2o)
 		{
 			if(!Load_Neek2o_Kernel())
@@ -1093,9 +1096,6 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 				returnTo ? (((u64)(0x00010001) << 32) | (returnTo & 0xFFFFFFFF)) : 0);
 			while(1) usleep(500);
 		}
-		NANDemuView = true;
-		NandHandle.SetNANDEmu(currentPartition); /* Init NAND Emu */
-		NandHandle.SetPaths(emuPath.c_str(), DeviceName[currentPartition]);
 	}
 	gameIOS = ChannelHandle.GetRequestedIOS(gameTitle);
 	if(_loadIOS(gameIOS, userIOS, id, !NAND_Emu) == LOAD_IOS_FAILED)
