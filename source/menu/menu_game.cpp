@@ -1092,7 +1092,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 				Sys_Exit();
 			}
 			ShutdownBeforeExit();
-			Launch_nk(gameTitle, emuPath.size() > 1 ? emuPath.c_str() : NULL, 
+			Launch_nk(gameTitle, NandHandle.Get_NandPath(), 
 				returnTo ? (((u64)(0x00010001) << 32) | (returnTo & 0xFFFFFFFF)) : 0);
 			while(1) usleep(500);
 		}
