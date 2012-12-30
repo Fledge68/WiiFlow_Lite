@@ -10,30 +10,30 @@
 #include "elfloader.h"
 #include "sync.h"
 
-#define EXECUTABLE_MEM_ADDR 0x92000000
+#define EXECUTABLE_MEM_ADDR 0x91000000
 #define SYSTEM_ARGV	((struct __argv *) 0x93200000)
 
 void main(void)
 {
-	void *exeBuffer = (void *) EXECUTABLE_MEM_ADDR;
+	void *exeBuffer = (void *)EXECUTABLE_MEM_ADDR;
 	u32 exeEntryPointAddress = 0;
 	entrypoint exeEntryPoint;
 
-	if (valid_elf_image(exeBuffer) == 1)
+	if(valid_elf_image(exeBuffer) == 1)
 		exeEntryPointAddress = load_elf_image(exeBuffer);
 	else
 		exeEntryPointAddress = load_dol_image(exeBuffer);
 
-	exeEntryPoint = (entrypoint) exeEntryPointAddress;
-	if (!exeEntryPoint)
+	exeEntryPoint = (entrypoint)exeEntryPointAddress;
+	if(!exeEntryPoint)
 		return;
 
-	if (SYSTEM_ARGV->argvMagic == ARGV_MAGIC)
+	if(SYSTEM_ARGV->argvMagic == ARGV_MAGIC)
 	{
 		void *new_argv = (void *) (exeEntryPointAddress + 8);
 		memcpy(new_argv, SYSTEM_ARGV, sizeof(struct __argv));
 		sync_before_exec(new_argv, sizeof(struct __argv));
 	}
 
-	exeEntryPoint ();
+	exeEntryPoint();
 }
