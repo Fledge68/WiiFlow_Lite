@@ -9,7 +9,7 @@
 #include "homebrew.h"
 #include "gecko/gecko.hpp"
 
-#define EXECUTE_ADDR	((u8 *)0x92000000)
+#define EXECUTE_ADDR	((u8 *)0x91000000)
 #define BOOTER_ADDR		((u8 *)0x93000000)
 #define ARGS_ADDR		((u8 *)0x93200000)
 #define BOOTER_ENTRY	((entry)BOOTER_ADDR)
