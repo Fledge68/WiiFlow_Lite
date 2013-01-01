@@ -41,7 +41,7 @@ public:
 		GXColorS10 color_regs[3];
 		GXColor color_constants[4];
 		u32 flags;
-	} __attribute__((packed));
+	} ATTRIBUTE_PACKED;
 
 	Material();
 
@@ -87,14 +87,14 @@ private:
 		u32 texture_coord_gen : 4;
 		u32 texture_srt : 4;
 		u32 texture_map : 4;
-	} __attribute__((packed));
+	} ATTRIBUTE_PACKED;
 
 	struct TextureMap
 	{
 		u16 tex_index;
 		u8 wrap_s;
 		u8 wrap_t;
-	} __attribute__((packed));
+	} ATTRIBUTE_PACKED;
 
 	struct TextureSrt
 	{
@@ -103,7 +103,7 @@ private:
 		f32 rotate;
 		f32 scale_x;
 		f32 scale_y;
-	} __attribute__((packed));
+	} ATTRIBUTE_PACKED;
 
 	struct TextureCoordGen
 	{
@@ -111,14 +111,14 @@ private:
 		u8 tgen_src;
 		u8 mtxsrc;
 		u8 pad;
-	} __attribute__((packed));
+	} ATTRIBUTE_PACKED;
 
 	struct ChannelControl
 	{
 		u8 color_matsrc;
 		u8 alpha_matsrc;
 		u16 pad;
-	} __attribute__((packed));
+	} ATTRIBUTE_PACKED;
 
 	struct IndSrt
 	{
@@ -127,7 +127,7 @@ private:
 		f32 rotate;
 		f32 scale_x;
 		f32 scale_y;
-	} __attribute__((packed));
+	} ATTRIBUTE_PACKED;
 
 	struct IndStage
 	{
@@ -135,19 +135,19 @@ private:
 		u8 tex_map;
 		u8 scale_s;
 		u8 scale_t;
-	} __attribute__((packed));
+	} ATTRIBUTE_PACKED;
 
 	struct BlendModes
 	{
 		u8 type, src_factor, dst_factor, logical_op;
 
-	} __attribute__((packed));
+	} ATTRIBUTE_PACKED;
 
 	struct AlphaCompareModes
 	{
 		u8 compare, op, ref0, ref1;
 
-	} __attribute__((packed));
+	} ATTRIBUTE_PACKED;
 
 	struct TevSwap
 	{
@@ -155,7 +155,7 @@ private:
 		u32 b : 2;
 		u32 g : 2;
 		u32 r : 2;
-	} __attribute__((packed));
+	} ATTRIBUTE_PACKED;
 
 	struct TevStage
 	{
@@ -184,7 +184,7 @@ private:
 			u32 tevregid		: 2;
 			u32 clamp			: 1;
 
-		} __attribute__((packed)) color_in, __attribute__((packed)) alpha_in;
+		} ATTRIBUTE_PACKED color_in, ATTRIBUTE_PACKED alpha_in;
 
 		struct
 		{
@@ -205,8 +205,8 @@ private:
 			u32 addprev			: 1;
 			u32 format			: 2;
 
-		} __attribute__((packed)) ind;
-	} __attribute__((packed));
+		} ATTRIBUTE_PACKED ind;
+	} ATTRIBUTE_PACKED;
 
 	// Material flags
 	MatFlags *flags;

@@ -52,13 +52,13 @@ private:
 		u32 magic;
 		u32 num_textures;
 		u32 header_size;
-	} __attribute__((packed)) ;
+	} ATTRIBUTE_PACKED;
 
 	struct TPL_Texture
 	{
 		u32 texture_offset;
 		u32 palette_offset;
-	} __attribute__((packed)) ;
+	} ATTRIBUTE_PACKED;
 
 	struct TPL_Texture_Header
 	{
@@ -75,7 +75,7 @@ private:
 		u8		min_lod;
 		u8		max_lod;
 		u8		unpacked;
-	} __attribute__((packed));
+	} ATTRIBUTE_PACKED;
 
 	struct TPL_Palette_Header
 	{
@@ -84,7 +84,7 @@ private:
 		u8		pad;
 		u32		format;
 		u32		offset;
-	} __attribute__((packed));
+	} ATTRIBUTE_PACKED;
 
 	Texture::Header *header;
 	TPL_Palette_Header *palette;

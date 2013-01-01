@@ -50,13 +50,13 @@ private:
 		u8 pad[3];
 		u32 content_offset;
 		u32 frame_table_offset;
-	} __attribute__((packed));
+	} ATTRIBUTE_PACKED;
 
 	struct Frame
 	{
 		u16 material_index;
 		u8 texture_flip;
-	} __attribute__((packed));
+	} ATTRIBUTE_PACKED;
 
 	Header *header;
 	std::vector<Frame *> frames;

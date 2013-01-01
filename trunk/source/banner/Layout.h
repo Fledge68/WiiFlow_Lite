@@ -99,7 +99,7 @@ protected:
 	  u32 filesize;
 	  u16 header_len;
 	  u16 section_count;
-	} __attribute__((packed));
+	} ATTRIBUTE_PACKED;
 
 	struct Header
 	{
@@ -107,19 +107,19 @@ protected:
 	  u8 pad[3];
 	  float width;
 	  float height;
-	} __attribute__((packed));
+	} ATTRIBUTE_PACKED;
 
 	struct LytItemList
 	{
 	  u16 num_items;
 	  u16 offset_to_first;
-	} __attribute__((packed));
+	} ATTRIBUTE_PACKED;
 
 	struct LytStringTable
 	{
 	  u32 offset_filename;
 	  u32 pad;
-	} __attribute__((packed));
+	} ATTRIBUTE_PACKED;
 
 	struct Group
 	{

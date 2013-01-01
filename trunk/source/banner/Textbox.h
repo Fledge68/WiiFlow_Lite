@@ -71,7 +71,7 @@ private:
 		float		height; // seems to work better for offset calculation
 		float		space_char;
 		float		space_line;
-	} __attribute__((packed));
+	} ATTRIBUTE_PACKED;
 
 	Textbox::Header *header;
 	const u16 *text;

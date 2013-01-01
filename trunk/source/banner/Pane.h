@@ -57,7 +57,7 @@ public:
 	  Vec2f scale;
 	  float width;
 	  float height;
-	} __attribute__((packed));
+	} ATTRIBUTE_PACKED;
 
 	Pane() : header(NULL) {}
 	virtual ~Pane();

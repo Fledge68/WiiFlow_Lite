@@ -21,7 +21,7 @@ struct TexData
 	u8 format;
 	u8 maxLOD;
 	bool thread;
-} __attribute__((packed));
+} ATTRIBUTE_PACKED;
 
 class STexture
 {

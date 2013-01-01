@@ -26,6 +26,7 @@
 
 #include <vector>
 #include <string>
+#include <gccore.h>
 
 using namespace std;
 
@@ -39,16 +40,16 @@ enum
 
 typedef struct _Accessory
 {
-    string Name;
-    bool Required;
+	string Name;
+	bool Required;
 } Accessory;
 
 typedef struct _GameOffsets
 {
-    char gameID[7];
-    unsigned int gamenode;
-    unsigned int nodesize;
-} __attribute__((__packed__)) GameOffsets;
+	char gameID[7];
+	unsigned int gamenode;
+	unsigned int nodesize;
+} ATTRIBUTE_PACKED GameOffsets;
 
 class GameTDB
 {
