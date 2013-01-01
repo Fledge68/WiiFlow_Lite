@@ -53,7 +53,7 @@ typedef struct _uid
 {
 	u64 TitleID;
 	u32 unused;
-} __attribute__((packed)) uid;
+} ATTRIBUTE_PACKED uid;
 
 using namespace std;
 

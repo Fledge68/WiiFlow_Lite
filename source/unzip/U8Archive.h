@@ -38,7 +38,7 @@ struct U8Header
 	u32 headerSize;
 	u32 dataOffset;
 	u8 zeroes[16];
-} __attribute__((packed));
+} ATTRIBUTE_PACKED;
 
 struct U8Entry
 {
@@ -53,7 +53,7 @@ struct U8Entry
 		u32 fileLength;
 		u32 numEntries;
 	};
-} __attribute__((packed));
+} ATTRIBUTE_PACKED;
 
 #ifdef __cplusplus
 extern "C" {

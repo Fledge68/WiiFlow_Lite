@@ -116,6 +116,8 @@ int CMenu::_FindEmuPart(string &emuPath, bool skipchecks)
 		return -1;
 	else if((skipchecks || _TestEmuNand(emuPart, tmpPath, true)))
 	{
+		NandHandle.SetNANDEmu(emuPart);
+		NandHandle.SetPaths(tmpPath, DeviceName[emuPart]);
 		emuPath = tmpPath;
 		return emuPart;
 	}

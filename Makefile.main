@@ -44,8 +44,7 @@ SOURCES		:=	source \
 DATA		:=	data \
 				data/images \
 				data/help \
-				data/sounds \
-				data/save
+				data/sounds
 INCLUDES	:=	source
 
 #---------------------------------------------------------------------------------

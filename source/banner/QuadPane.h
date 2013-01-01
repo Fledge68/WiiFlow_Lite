@@ -38,7 +38,7 @@ public:
 		u16 material_index;
 		u8 tex_coord_count;
 		u8 pad;
-	} __attribute__((packed));
+	} ATTRIBUTE_PACKED;
 
 	QuadPane() : header(NULL) {}
 	void Load(QuadPane::Header *file);

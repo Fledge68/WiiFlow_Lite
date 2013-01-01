@@ -2240,10 +2240,7 @@ bool CMenu::_loadChannelList(void)
 			emuPartition = _FindEmuPart(emuPath, true);
 		if(emuPartition < 0)
 			return false;
-
 		currentPartition = emuPartition;
-		NandHandle.SetNANDEmu(currentPartition); /* Init NAND Emu */
-		NandHandle.SetPaths(emuPath.c_str(), DeviceName[currentPartition]);
 		NandHandle.PreNandCfg(m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_miis", false), 
 							m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_config", false));
 		cacheDir = fmt("%s/%s_channels.db", m_listCacheDir.c_str(), DeviceName[currentPartition]);
@@ -2488,7 +2485,7 @@ typedef struct map_entry
 {
 	char filename[8];
 	u8 sha1[20];
-} __attribute((packed)) map_entry_t;
+} ATTRIBUTE_PACKED map_entry_t;
 
 void CMenu::loadDefaultFont(void)
 {

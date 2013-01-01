@@ -35,7 +35,7 @@ typedef union
 		u32 _checksum;
 		u32 data[0x1f];
 	};
-} __attribute__((packed)) playtime_t;
+} ATTRIBUTE_PACKED playtime_t;
 
 playtime_t playrec_buf;
 

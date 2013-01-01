@@ -11,7 +11,7 @@ typedef struct _dolheader
 	u32 bss_size;
 	u32 entry_point;
 	u32 padding[7];
-} __attribute__((packed)) dolheader;
+} ATTRIBUTE_PACKED dolheader;
 
 void PatchChannel(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, 
 					u8 patchVidModes, int aspectRatio);

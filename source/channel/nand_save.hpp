@@ -23,7 +23,7 @@ typedef struct _ios_settings_t
 {
 	u8 cios;
 	bool use_cios;
-} __attribute__((packed)) ios_settings_t;
+} ATTRIBUTE_PACKED ios_settings_t;
 
 class NandSave
 {

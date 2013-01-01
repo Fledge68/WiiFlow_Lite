@@ -24,7 +24,7 @@
  * for WiiXplorer 2010
  ***************************************************************************/
 #include <unistd.h>
-
+#include <gccore.h>
 #include "SoundHandler.hpp"
 #include "Mp3Decoder.hpp"
 #include "OggDecoder.hpp"

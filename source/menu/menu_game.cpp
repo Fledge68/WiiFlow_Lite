@@ -1223,8 +1223,8 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	int aspectRatio = min((u32)m_gcfg2.getInt(id, "aspect_ratio", 0), ARRAY_SIZE(CMenu::_AspectRatio) - 1u)-1;
 
 	string emuPath;
-	int emuPartition = _FindEmuPart(emuPath, false);
-	
+	int emuPartition = 0;
+
 	u8 emulate_mode = min((u32)m_gcfg2.getInt(id, "emulate_save", 0), ARRAY_SIZE(CMenu::_SaveEmu) - 1u);
 
 	if(emulate_mode == 0)
@@ -1235,8 +1235,9 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	}
 	else if(emulate_mode == 1)
 		emulate_mode = 0;
-	if(!dvd && emulate_mode)
+	if(emulate_mode && !dvd && !neek2o() && CurrentIOS.Type == IOS_TYPE_D2X)
 	{
+		emuPartition = _FindEmuPart(emuPath, false);
 		if(emuPartition < 0)
 		{
 			if(emulate_mode == 4)
@@ -1261,11 +1262,8 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 				NandHandle.CreatePath("%s:/wiiflow/nandemu", DeviceName[emuPartition]);
 			}
 		}
-		/* Init NAND Emu Settings */
-		NANDemuView = true;
-		NandHandle.SetNANDEmu(emuPartition);
-		NandHandle.SetPaths(emuPath.c_str(), DeviceName[emuPartition]);
 		/* Set them */
+		NANDemuView = true;
 		m_cfg.setInt(WII_DOMAIN, "savepartition", emuPartition);
 		m_cfg.setString(WII_DOMAIN, "savepath", emuPath);
 		if(emulate_mode == 2 || emulate_mode > 3)
@@ -1285,6 +1283,9 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			NandHandle.Do_Region_Change(id);
 		}
 	}
+	else
+		emulate_mode = 0;
+
 	bool cheat = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool(WII_DOMAIN, "cheat", false));
 	debuggerselect = m_gcfg2.getBool(id, "debugger", false) ? 1 : 0; // debuggerselect is defined in fst.h
 	if(id == "RPWE41" || id == "RPWZ41" || id == "SPXP41") // Prince of Persia, Rival Swords
@@ -1332,7 +1333,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		if(D2X_PatchReturnTo(returnTo) >= 0)
 			memset(&returnTo, 0, sizeof(u32));
 	}
-	if(emulate_mode && !neek2o() && CurrentIOS.Type == IOS_TYPE_D2X)
+	if(emulate_mode)
 	{
 		/* Enable our Emu NAND */
 		DeviceHandle.UnMountAll();
@@ -1459,7 +1460,7 @@ struct IMD5Header
 	u32 filesize;
 	u8 zeroes[8];
 	u8 crypto[16];
-} __attribute__((packed));
+} ATTRIBUTE_PACKED;
 
 void CMenu::_gameSoundThread(CMenu *m)
 {

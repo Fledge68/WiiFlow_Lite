@@ -51,7 +51,7 @@ struct RLAN_Header
 	u32 file_size;
 	u16 offset;
 	u16 section_count;
-} __attribute__((packed));
+} ATTRIBUTE_PACKED;
 
 struct PAI1_Header
 {
@@ -63,7 +63,7 @@ struct PAI1_Header
 	u16 file_count;
 	u16 animator_count;
 	u32 entry_offset;
-} __attribute__((packed));
+} ATTRIBUTE_PACKED;
 
 struct AnimatorHeader
 {
@@ -71,14 +71,14 @@ struct AnimatorHeader
 	u8 tag_count;
 	u8 is_material;
 	u16 apad;
-} __attribute__((packed));
+} ATTRIBUTE_PACKED;
 
 struct Anim_Header
 {
 	u32 animation_type;
 	u8 frame_count;
 	u8 pad[3];
-} __attribute__((packed));
+} ATTRIBUTE_PACKED;
 
 struct KeyFrame_Header
 {
@@ -89,7 +89,7 @@ struct KeyFrame_Header
 	u16 key_count;
 	u16 pad1;
 	u32 offset;
-} __attribute__((packed));
+} ATTRIBUTE_PACKED;
 
 struct KeyType
 {

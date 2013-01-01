@@ -85,7 +85,7 @@ private:
 	  u32 filesize;
 	  u16 header_len;
 	  u16 section_count;
-	} __attribute__((packed));
+	} ATTRIBUTE_PACKED;
 
 	struct GlgrHeader
 	{
@@ -97,7 +97,7 @@ private:
 		u16 sheet_count;
 		u16 cwdh_count;
 		u16 cmap_count;
-	}__attribute__(( packed ));
+	} ATTRIBUTE_PACKED;
 
 	struct FinfHeader
 	{
@@ -117,7 +117,7 @@ private:
 		u8 width;
 		u8 ascent;
 		u8 unk8_10;
-	} __attribute__(( packed ));
+	} ATTRIBUTE_PACKED;
 
 	struct TglpHeader
 	{
@@ -138,7 +138,7 @@ private:
 		u16 width;				// width of image
 		u16 height;				// height of image
 		u32 dataOffset;			// data offset
-	} __attribute__(( packed ));
+	} ATTRIBUTE_PACKED;
 
 	struct CwdhHeader
 	{
@@ -148,7 +148,7 @@ private:
 		u16 endIdx;		//
 		u32 next;		//
 
-	} __attribute__(( packed ));
+	} ATTRIBUTE_PACKED;
 
 	struct CmapEntry
 	{
@@ -158,14 +158,14 @@ private:
 		u16 pad;
 		u32 pos;
 		u16 charCode;
-	} __attribute__(( packed ));
+	} ATTRIBUTE_PACKED;
 
 	struct Cwdh
 	{
 		s8 advanceKerning;
 		u8 unk;
 		s8 advanceGlyphX;
-	} __attribute__(( packed ));
+	} ATTRIBUTE_PACKED;
 
 	// font texture decompress functions
 	static bool Decompress_0x28( unsigned char *outBuf, u32 outLen, const unsigned char *inBuf, u32 inLen );

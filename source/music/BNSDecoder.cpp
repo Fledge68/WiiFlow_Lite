@@ -27,6 +27,7 @@
 #include <string.h>
 #include <math.h>
 #include <unistd.h>
+#include <gccore.h>
 #include "BNSDecoder.hpp"
 #include "memory/mem2.hpp"
 
@@ -150,7 +151,7 @@ struct BNSHeader
 	u32 infoSize;
 	u32 dataOffset;
 	u32 dataSize;
-} __attribute__((packed));
+} ATTRIBUTE_PACKED;
 
 struct BNSInfo
 {
@@ -188,20 +189,20 @@ struct BNSInfo
 	u16 chan2LoopPredictiveScale;
 	s16 chan2LoopPrevSamples[2];
 	u16 chan2LoopPadding;
-} __attribute__((packed));
+} ATTRIBUTE_PACKED;
 
 struct BNSData
 {
 	u32 fccDATA;
 	u32 size;
 	u8 data;
-} __attribute__((packed));
+} ATTRIBUTE_PACKED;
 
 struct ADPCMByte
 {
 	s8 sample1 : 4;
 	s8 sample2 : 4;
-} __attribute__((packed));
+} ATTRIBUTE_PACKED;
 
 struct BNSADPCMBlock
 {
@@ -209,7 +210,7 @@ struct BNSADPCMBlock
 	u8 coeffIndex : 3;
 	u8 lshift : 4;
 	ADPCMByte samples[7];
-} __attribute__((packed));
+} ATTRIBUTE_PACKED;
 
 struct BNSDecObj
 {

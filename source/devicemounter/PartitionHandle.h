@@ -57,14 +57,14 @@ typedef struct _PARTITION_RECORD {
 	u8 chs_end[3];						/* Cylinder-head-sector address to last block of partition */
 	u32 lba_start;						/* Local block address to first sector of partition */
 	u32 block_count;					/* Number of blocks in partition */
-} __attribute__((__packed__)) PARTITION_RECORD;
+} ATTRIBUTE_PACKED PARTITION_RECORD;
 
 
 typedef struct _MASTER_BOOT_RECORD {
 	u8 code_area[446];					/* Code area; normally empty */
 	PARTITION_RECORD partitions[4];		/* 4 primary partitions */
 	u16 signature;						/* MBR signature; 0xAA55 */
-} __attribute__((__packed__)) MASTER_BOOT_RECORD;
+} ATTRIBUTE_PACKED MASTER_BOOT_RECORD;
 
 typedef struct _EXTENDED_BOOT_RECORD {
 	u8 code_area[446];					/* Code area; normally empty */
@@ -72,7 +72,7 @@ typedef struct _EXTENDED_BOOT_RECORD {
 	PARTITION_RECORD next_ebr;			/* Next extended boot record in the chain */
 	u8 reserved[32];					/* Normally empty */
 	u16 signature;						/* EBR signature; 0xAA55 */
-} __attribute__((__packed__)) EXTENDED_BOOT_RECORD;
+} ATTRIBUTE_PACKED EXTENDED_BOOT_RECORD;
 
 typedef struct _GUID_PART_ENTRY
 {
@@ -82,7 +82,7 @@ typedef struct _GUID_PART_ENTRY
 	u64 part_last_lba;			/* Last LBA (inclusive, usually odd) */
 	u64 attribute_flags;		/* GUID Attribute flags (e.g. bit 60 denotes read-only) */
 	char partition_name[72];	/* Partition name (36 UTF-16LE code units) */
-} __attribute__((__packed__)) GUID_PART_ENTRY;
+} ATTRIBUTE_PACKED GUID_PART_ENTRY;
 
 typedef struct _GPT_HEADER
 {
@@ -101,7 +101,7 @@ typedef struct _GPT_HEADER
 	u32 part_entry_size;		/* Size of a partition entry (usually 128) */
 	u32 part_entry_checksum;	/* CRC32 of partition array */
 	u8 zeros[420];
-} __attribute__((__packed__)) GPT_HEADER;
+} ATTRIBUTE_PACKED GPT_HEADER;
 
 typedef struct _PartitionFS {
 	const char *FSName;
@@ -111,7 +111,7 @@ typedef struct _PartitionFS {
 	u8 PartitionType;
 	u8 PartitionNum;
 	wbfs_t *wbfshandle;
-} __attribute__((__packed__)) PartitionFS;
+} ATTRIBUTE_PACKED PartitionFS;
 
 
 class PartitionHandle
