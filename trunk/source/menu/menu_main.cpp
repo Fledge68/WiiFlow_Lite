@@ -784,10 +784,15 @@ int CMenu::main(void)
 	}
 	else if(Sys_GetExitTo() == EXIT_TO_SMNK2O || Sys_GetExitTo() == EXIT_TO_WFNK2O)
 	{
-		string emuPath;
-		m_current_view = COVERFLOW_CHANNEL; /* So we get the NAND path */
-		_FindEmuPart(emuPath, false);
-		Sys_SetNeekPath(NandHandle.Get_NandPath());
+		const char *ReturnPath = NULL;
+		if(!m_cfg.getBool(CHANNEL_DOMAIN, "neek_return_default", false))
+		{
+			string emuPath;
+			m_current_view = COVERFLOW_CHANNEL; /* So we get the path */
+			_FindEmuPart(emuPath, false);
+			ReturnPath = NandHandle.Get_NandPath();
+		}
+		Sys_SetNeekPath(ReturnPath);
 	}
 	//gprintf("Saving configuration files\n");
 	m_cfg.save();
