@@ -72,6 +72,22 @@ void Disc_SetLowMem(u32 IOS)
 	DCFlushRange((void*)0x80000000, 0x3f00);
 }
 
+/* Thanks to triiforce for that code */
+void Disc_SetLowMemChan()
+{
+	/* Setup low mem */
+	*Arena_H =			0x00000000; // Arena High, the appldr does this too
+	*BI2 =				0x817FE000; // BI2, the appldr does this too
+	*GameID_Address =	0x81000000; // Game id address, 0s at 0x81000000 with appldr
+
+	/* Flush low mem */
+	DCFlushRange((void*)0x80000000, 0x3f00);
+
+	/* Clear BI2 */
+	memset((void *)0x817FE000, 0, 0x2000);
+	DCFlushRange((void*)0x817FE000, 0x2000);
+}
+
 /* Thanks Tinyload */
 static struct {
 	u32 offset;
