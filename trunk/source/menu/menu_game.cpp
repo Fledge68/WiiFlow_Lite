@@ -1030,6 +1030,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 
 	bool NAND_Emu = !m_cfg.getBool(CHANNEL_DOMAIN, "disable", true);
 	bool WII_Launch = (m_gcfg2.getBool(id, "custom", false) && (!NAND_Emu || neek2o()));
+	bool use_dol = !m_gcfg2.getBool(id, "apploader", false);
 
 	bool vipatch = m_gcfg2.testOptBool(id, "vipatch", m_cfg.getBool("GENERAL", "vipatch", false));
 	bool cheat = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool(CHANNEL_DOMAIN, "cheat", false));
@@ -1134,7 +1135,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		Patch_Channel_Boot(); /* Patch for everything */
 		NandHandle.Patch_AHB(); /* Identify may takes it */
 		Identify(gameTitle);
-		ExternalBooter_ChannelSetup(gameTitle);
+		ExternalBooter_ChannelSetup(gameTitle, use_dol);
 		WiiFlow_ExternalBooter(videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, 0, TYPE_CHANNEL);
 	}
 	Sys_Exit();

@@ -21,7 +21,7 @@
 #include "loader/frag.h"
 #include "loader/wip.h"
 
-typedef struct _the_CFG {
+struct the_CFG {
 	/* needed for wii games */
 	char gameID[7];
 	FragList *fragments;
@@ -32,6 +32,7 @@ typedef struct _the_CFG {
 	u32 wip_count;
 	/* needed for channels */
 	u64 title;
+	bool use_dol;
 	/* General Stuff */
 	IOS_Info IOS;
 	u8 BootType;
@@ -50,6 +51,6 @@ typedef struct _the_CFG {
 	u32 *gameconf;
 	u32 gameconfsize;
 	u32 returnTo;
-} the_CFG;
+} ATTRIBUTE_PACKED;
 
 #endif /* _CFG_HPP_ */

@@ -15,6 +15,6 @@ typedef struct _dolheader
 
 void PatchChannel(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, 
 					u8 patchVidModes, int aspectRatio);
-u32 LoadChannel(u64 title, u32 *IOS);
+u32 LoadChannel(u64 title, bool dol, u32 *IOS);
 
 #endif /* __CHANHANDLE_HPP_ */

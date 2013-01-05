@@ -111,7 +111,7 @@ int main()
 		ISFS_Initialize();
 		*Disc_ID = TITLE_LOWER(normalCFG.title);
 		vmode = Disc_SelectVMode(normalCFG.vidMode, &vmode_reg);
-		AppEntrypoint = LoadChannel(normalCFG.title, &GameIOS);
+		AppEntrypoint = LoadChannel(normalCFG.title, normalCFG.use_dol, &GameIOS);
 		PatchChannel(normalCFG.vidMode, vmode, normalCFG.vipatch, normalCFG.countryString, 
 					normalCFG.patchVidMode, normalCFG.aspectRatio);
 		ISFS_Deinitialize();
