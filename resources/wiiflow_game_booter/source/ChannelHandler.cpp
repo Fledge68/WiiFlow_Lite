@@ -94,7 +94,7 @@ static bool GetAppNameFromTmd(bool dol, u32 *bootcontent, u64 title, u32 *IOS)
 	_tmd *tmd_file = (_tmd *)SIGNATURE_PAYLOAD((u32 *)data);
 	for(u16 i = 0; i < tmd_file->num_contents; ++i)
 	{
-		if(tmd_file->contents[i].index == (dol ? tmd_file->boot_index : 0))
+		if(tmd_file->contents[i].index == (dol ? 0x01 : tmd_file->boot_index))
 		{
 			*bootcontent = tmd_file->contents[i].cid;
 			ret = true;
@@ -131,7 +131,7 @@ static u32 MoveDol(u8 *buffer)
 			dolfile->section_start[i] |= 0x80000000;
 
 		dolchunkoffset[dolchunkcount] = (void *)dolfile->section_start[i];
-		dolchunksize[dolchunkcount] = dolfile->section_size[i];			
+		dolchunksize[dolchunkcount] = dolfile->section_size[i];
 
 		memmove(dolchunkoffset[dolchunkcount], buffer + dolfile->section_pos[i], dolchunksize[dolchunkcount]);
 		dolchunkcount++;
@@ -140,11 +140,11 @@ static u32 MoveDol(u8 *buffer)
 	return dolfile->entry_point;
 }
 
-u32 LoadChannel(u64 title, u32 *IOS)
+u32 LoadChannel(u64 title, bool dol, u32 *IOS)
 {
 	u32 entry = 0;
 
-	GetAppNameFromTmd(true, &bootcontent, title, IOS);
+	GetAppNameFromTmd(dol, &bootcontent, title, IOS);
 	u8 *data = GetDol(bootcontent, title);
 	entry = MoveDol(data);
 	free(data);

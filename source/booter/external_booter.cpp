@@ -102,10 +102,11 @@ void ExternalBooter_WiiGameSetup(bool wbfs, bool dvd, const char *ID)
 	normalCFG.wbfsPart = wbfs_part_idx;
 }
 
-void ExternalBooter_ChannelSetup(u64 title)
+void ExternalBooter_ChannelSetup(u64 title, bool dol)
 {
 	memset(&normalCFG, 0, sizeof(the_CFG));
 	memcpy(&normalCFG.title, &title, sizeof(u64));
+	normalCFG.use_dol = dol;
 }
 
 void ShutdownBeforeExit(bool KeepPatches)
