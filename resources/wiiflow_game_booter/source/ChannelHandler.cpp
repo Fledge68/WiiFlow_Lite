@@ -72,7 +72,7 @@ static u8 *GetDol(u32 bootcontent, u64 title)
 			}
 			free(data);
 			data = decompressed;
-		}	
+		}
 		return data;
 	}
 	return NULL;
