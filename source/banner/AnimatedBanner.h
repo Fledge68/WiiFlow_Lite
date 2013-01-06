@@ -49,7 +49,7 @@ protected:
 	u8 *sysFont2;
 };
 
-u8 *DecompressCopy(const u8 *stuff, const u32 len, u32 *size);
+u8 *DecompressCopy(const u8 *stuff, u32 len, u32 *size);
 
 extern AnimatedBanner gameBanner;
 #endif

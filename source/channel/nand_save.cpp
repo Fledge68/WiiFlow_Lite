@@ -21,7 +21,7 @@
 #include "gecko/gecko.hpp"
 #include "loader/fs.h"
 #include "loader/sys.h"
-#include "unzip/lz77.h"
+#include "banner/AnimatedBanner.h"
 #include "unzip/U8Archive.h"
 
 extern const u8 save_bin[];
@@ -65,7 +65,7 @@ bool NandSave::CheckSave()
 		goto done;
 	}
 	/* extract our archive */
-	decompressLZ77content(save_bin, save_bin_size, &u8_bin, &u8_bin_size);
+	u8_bin = DecompressCopy(save_bin, save_bin_size, &u8_bin_size);
 	if(u8_bin == NULL || u8_bin_size == 0)
 		goto error;
 	/* grab cert.sys */

@@ -23,8 +23,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
-int isLZ77compressed(u8 *buffer);
-int decompressLZ77content(u8 *buffer, u32 length, u8 **output, u32 *outputLen);
+int isLZ77compressed(const u8 *buffer);
+int decompressLZ77content(const u8 *buffer, u32 length, u8 **output, u32 *outputLen);
 
 #ifdef __cplusplus
 }

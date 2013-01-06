@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 #include "homebrew.h"
+#include "banner/AnimatedBanner.h"
 #include "gecko/gecko.hpp"
 
 #define EXECUTE_ADDR	((u8 *)0x91000000)
@@ -110,9 +111,16 @@ void writeStub()
 	/* Clear potential homebrew channel stub */
 	memset((void*)0x80001800, 0, 0x1800);
 
+	/* Extract our stub */
+	u32 StubSize = 0;
+	u8 *Stub = DecompressCopy(stub_bin, stub_bin_size, &StubSize);
+
 	/* Copy our own stub into memory */
-	memcpy((void*)0x80001800, stub_bin, stub_bin_size);
-	DCFlushRange((void*)0x80001800, stub_bin_size);
+	memcpy((void*)0x80001800, Stub, StubSize);
+	DCFlushRange((void*)0x80001800, StubSize);
+
+	/* And free the memory again */
+	free(Stub);
 }
 
 void BootHomebrew()
