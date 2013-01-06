@@ -192,10 +192,8 @@ void CMenu::LoadView(void)
 	const char *mode = (m_current_view == COVERFLOW_CHANNEL && m_cfg.getBool(CHANNEL_DOMAIN, "disable", true)) 
 		? CHANNEL_DOMAIN : DeviceName[currentPartition];
 
-	m_showtimer=60;
-	char gui_name[20];
-	snprintf(gui_name, sizeof(gui_name), "%s [%s]", _domainFromView(), upperCase(mode).c_str());
-	m_btnMgr.setText(m_mainLblNotice, (string)gui_name);
+	m_showtimer = 120;
+	m_btnMgr.setText(m_mainLblNotice, sfmt("%s (%u) [%s]", _domainFromView(), m_gameList.size(), upperCase(mode).c_str()));
 	m_btnMgr.show(m_mainLblNotice);
 }
 
@@ -474,7 +472,7 @@ int CMenu::main(void)
 				}
 				wchar_t c[2] = {0, 0};
 				m_btnMgr.selected(m_mainBtnPrev) ? CoverFlow.prevLetter(c) : CoverFlow.nextLetter(c);
-				m_showtimer = 60;
+				m_showtimer = 120;
 				curLetter.clear();
 				curLetter = wstringEx(c);
 
@@ -558,7 +556,7 @@ int CMenu::main(void)
 				curLetter.clear();
 				curLetter = wstringEx(c);
 
-				m_showtimer = 60;
+				m_showtimer = 120;
 				if(sorting == SORT_ALPHA)
 				{
 					m_btnMgr.setText(m_mainLblLetter, curLetter);
@@ -611,7 +609,7 @@ int CMenu::main(void)
 					curSort = m_loc.getWString(m_curLanguage, "byplayers", L"By Players");
 				else if(sort == SORT_CONTROLLERS)
 					curSort = m_loc.getWString(m_curLanguage, "bycontrollers", L"By Controllers");
-				m_showtimer=60; 
+				m_showtimer = 120;
 				m_btnMgr.setText(m_mainLblNotice, curSort);
 				m_btnMgr.show(m_mainLblNotice);
 			}
@@ -630,10 +628,8 @@ int CMenu::main(void)
 				else
 					partition = "NAND";
 				//gprintf("Next item: %s\n", partition);
-				m_showtimer=60; 
-				char gui_name[20];
-				snprintf(gui_name, sizeof(gui_name), "%s [%s]", _domainFromView(), upperCase(partition).c_str());
-				m_btnMgr.setText(m_mainLblNotice, (string)gui_name);
+				m_showtimer = 120;
+				m_btnMgr.setText(m_mainLblNotice, sfmt("%s (%u) [%s]", _domainFromView(), m_gameList.size(), upperCase(partition).c_str()));
 				m_btnMgr.show(m_mainLblNotice);
 				if(!block)
 				{
