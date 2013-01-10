@@ -604,6 +604,7 @@ private:
 	bool  enable_wmote_roll;
 
 	bool m_cfNeedsUpdate;
+	bool LastViewRequested(void);
 
 	void SetupInput(bool reset_pos = false);
 	void ScanInput(void);

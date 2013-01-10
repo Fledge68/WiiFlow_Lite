@@ -212,6 +212,14 @@ void CMenu::exitHandler(int ExitTo)
 		Sys_ExitTo(ExitTo);
 }
 
+bool CMenu::LastViewRequested(void)
+{
+	int view = m_cfg.getInt("GENERAL", "last_view", COVERFLOW_MAX);
+	if(view < COVERFLOW_USB || view >= COVERFLOW_MAX)
+		return false;
+	return true;
+}
+
 int CMenu::main(void)
 {
 	wstringEx curLetter;
@@ -239,8 +247,11 @@ int CMenu::main(void)
 		m_GameTDBLoaded = true;
 		m_gametdb.CloseFile();
 	}
-	if(m_Emulator_boot)
+	if(LastViewRequested())
+		m_current_view = m_cfg.getInt("GENERAL", "last_view");
+	else if(m_Emulator_boot)
 		m_current_view = COVERFLOW_PLUGIN;
+	m_cfg.remove("GENERAL", "last_view");
 
 	if(m_cfg.getBool("GENERAL", "update_cache", false))
 	{
