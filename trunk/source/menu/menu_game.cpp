@@ -769,6 +769,8 @@ void CMenu::directlaunch(const char *GameID)
 
 void CMenu::_launch(dir_discHdr *hdr)
 {
+	/* So WiiFlow knows where we are */
+	m_cfg.setInt("GENERAL", "last_view", m_current_view);
 	/* Lets boot that shit */
 	if(hdr->type == TYPE_WII_GAME)
 		_launchGame(hdr, false);
