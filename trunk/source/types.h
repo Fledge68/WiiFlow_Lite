@@ -45,6 +45,9 @@ enum
 };
 #define CustomIOS(x)		(x != IOS_TYPE_NORMAL_IOS && x != IOS_TYPE_STUB)
 
+#define ValidColor(x)		(x == 0xFFFFFF || x == 0xFF0000 || x == 0x000000 || \
+							x == 0xFCFF00 || x == 0x01A300 || x == 0x00E360)
+
 #ifdef __cplusplus
 }
 #endif

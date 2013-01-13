@@ -190,6 +190,7 @@ CCoverFlow::CCoverFlow(void)
 	m_jump = 0;
 	m_mutex = 0;
 	m_dvdskin_loaded = false;
+	m_defcovers_loaded = false;
 	m_loadingCovers = false;
 	m_coverThrdBusy = false;
 	m_renderTex = false;
@@ -236,6 +237,9 @@ CCoverFlow::CCoverFlow(void)
 	m_hoverSound = NULL;
 	m_selectSound = NULL;
 	m_cancelSound = NULL;
+	//
+	m_loadingTexture = NULL;
+	m_noCoverTexture = NULL;
 	LWP_MutexInit(&m_mutex, 0);
 }
 
@@ -1294,17 +1298,17 @@ void CCoverFlow::_drawCover(int i, bool mirror, CCoverFlow::DrawMode dm)
 		_drawCoverFlat(i, mirror, dm);
 }
 
-TexData &CCoverFlow::_coverTexture(int i)
+const TexData *CCoverFlow::_coverTexture(int i)
 {
 	if(m_items[i].texture.data == NULL)
 		return (m_items[i].state == STATE_Loading) ? m_loadingTexture : m_noCoverTexture;
-	return m_items[i].texture;
+	return &m_items[i].texture;
 }
 
 void CCoverFlow::_drawCoverFlat(int i, bool mirror, CCoverFlow::DrawMode dm)
 {
 	GXTexObj texObj;
-	TexData &tex = _coverTexture(m_covers[i].index);
+	const TexData *tex = _coverTexture(m_covers[i].index);
 	bool boxTex = m_items[m_covers[i].index].boxTexture && !!m_items[m_covers[i].index].texture.data;
 
 	switch (dm)
@@ -1329,14 +1333,13 @@ void CCoverFlow::_drawCoverFlat(int i, bool mirror, CCoverFlow::DrawMode dm)
 			break;
 		}
 	}
-	if (dm == CCoverFlow::CFDR_NORMAL)
+	if(dm == CCoverFlow::CFDR_NORMAL)
 	{
-		GX_InitTexObj(&texObj, tex.data, tex.width, tex.height, tex.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
-		if (tex.maxLOD > 0)
-			GX_InitTexObjLOD(&texObj, GX_LIN_MIP_LIN, GX_LINEAR, 0.f, (float)tex.maxLOD, mirror ? 1.f : m_lodBias, GX_FALSE, m_edgeLOD ? GX_TRUE : GX_FALSE, m_aniso);
+		GX_InitTexObj(&texObj, tex->data, tex->width, tex->height, tex->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+		if(tex->maxLOD > 0)
+			GX_InitTexObjLOD(&texObj, GX_LIN_MIP_LIN, GX_LINEAR, 0.f, (float)tex->maxLOD, mirror ? 1.f : m_lodBias, GX_FALSE, m_edgeLOD ? GX_TRUE : GX_FALSE, m_aniso);
 		GX_LoadTexObj(&texObj, GX_TEXMAP0);
 	}
-
 	GX_Begin(GX_QUADS, GX_VTXFMT0, g_flatCoverMeshSize);
 	for (u32 j = 0; j < g_flatCoverMeshSize; ++j)
 	{
@@ -1352,10 +1355,9 @@ void CCoverFlow::_drawCoverFlat(int i, bool mirror, CCoverFlow::DrawMode dm)
 	GX_End();
 }
 
-bool CCoverFlow::_checkCoverColor(char* gameID, const char* checkID[], int len)
+bool CCoverFlow::checkCoverColor(const char *gameID, const char *checkID[], u32 len)
 {
-	int num;
-	for (num = 0; num < len; num++)
+	for(u32 num = 0; num < len; ++num)
 	{
 		if (strncmp(gameID, checkID[num], strlen(checkID[num])) == 0)
 			return true;
@@ -1363,11 +1365,26 @@ bool CCoverFlow::_checkCoverColor(char* gameID, const char* checkID[], int len)
 	return false;
 }
 
+u32 CCoverFlow::InternalCoverColor(const char *ID, u32 DefCaseColor)
+{
+	if(checkCoverColor(ID, red, red_len))
+		return 0xFF0000;
+	else if(checkCoverColor(ID, black, black_len))
+		return 0x000000;
+	else if(checkCoverColor(ID, yellow, yellow_len))
+		return 0xFCFF00;
+	else if(checkCoverColor(ID, greenOne, greenOne_len))
+		return 0x01A300;
+	else if(checkCoverColor(ID, greenTwo, greenTwo_len))
+		return 0x00E360;
+	return DefCaseColor;
+}
+
 void CCoverFlow::_drawCoverBox(int i, bool mirror, CCoverFlow::DrawMode dm)
 {
-	GXTexObj texObj;
-	TexData &tex = _coverTexture(m_covers[i].index);
 	CColor color;
+	GXTexObj texObj;
+	const TexData *tex = _coverTexture(m_covers[i].index);
 	bool flatTex = !m_items[m_covers[i].index].boxTexture && !!m_items[m_covers[i].index].texture.data;
 
 	switch (dm)
@@ -1388,55 +1405,33 @@ void CCoverFlow::_drawCoverBox(int i, bool mirror, CCoverFlow::DrawMode dm)
 			GX_SetTevKColor(GX_KCOLOR0, color);
 			break;
 	}
-	if (dm == CCoverFlow::CFDR_NORMAL)
+	if(dm == CCoverFlow::CFDR_NORMAL)
 	{
-		u32 casecolor = m_items[m_covers[i].index].hdr->casecolor;
 		// set dvd box texture, depending on game
-		if(casecolor == 0xFFFFFF)
-			GX_InitTexObj(&texObj, m_dvdSkin.data, m_dvdSkin.width, m_dvdSkin.height, m_dvdSkin.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
-		else if (casecolor == 0xFF0000)
-			GX_InitTexObj(&texObj, m_dvdSkin_Red.data, m_dvdSkin_Red.width, m_dvdSkin_Red.height, m_dvdSkin_Red.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
-		else if (casecolor == 0x000000 || casecolor == 0x181919)
-			GX_InitTexObj(&texObj, m_dvdSkin_Black.data, m_dvdSkin_Black.width, m_dvdSkin_Black.height, m_dvdSkin_Black.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
-		else if (casecolor == 0xFCFF00)
-			GX_InitTexObj(&texObj, m_dvdSkin_Yellow.data, m_dvdSkin_Yellow.width, m_dvdSkin_Yellow.height, m_dvdSkin_Yellow.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
-		else if (casecolor == 0x01A300)
-			GX_InitTexObj(&texObj, m_dvdSkin_GreenOne.data, m_dvdSkin_GreenOne.width, m_dvdSkin_GreenOne.height, m_dvdSkin_GreenOne.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
-		else if (casecolor == 0x00E360)
-			GX_InitTexObj(&texObj, m_dvdSkin_GreenTwo.data, m_dvdSkin_GreenTwo.width, m_dvdSkin_GreenTwo.height, m_dvdSkin_GreenTwo.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
-		else if(_checkCoverColor(m_items[m_covers[i].index].hdr->id,red,red_len))
+		switch(m_items[m_covers[i].index].hdr->casecolor)
 		{
-			m_items[m_covers[i].index].hdr->casecolor = 0xFF0000;
-			GX_InitTexObj(&texObj, m_dvdSkin_Red.data, m_dvdSkin_Red.width, m_dvdSkin_Red.height, m_dvdSkin_Red.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
-		}
-		else if(_checkCoverColor(m_items[m_covers[i].index].hdr->id,black,black_len))
-		{
-			m_items[m_covers[i].index].hdr->casecolor = 0x000000;
-			GX_InitTexObj(&texObj, m_dvdSkin_Black.data, m_dvdSkin_Black.width, m_dvdSkin_Black.height, m_dvdSkin_Black.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
-		}
-		else if(_checkCoverColor(m_items[m_covers[i].index].hdr->id,yellow,yellow_len))
-		{
-			m_items[m_covers[i].index].hdr->casecolor = 0xFCFF00;
-			GX_InitTexObj(&texObj, m_dvdSkin_Yellow.data, m_dvdSkin_Yellow.width, m_dvdSkin_Yellow.height, m_dvdSkin_Yellow.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
-		}
-		else if(_checkCoverColor(m_items[m_covers[i].index].hdr->id,greenOne,greenOne_len))
-		{
-			m_items[m_covers[i].index].hdr->casecolor = 0x01A300;
-			GX_InitTexObj(&texObj, m_dvdSkin_GreenOne.data, m_dvdSkin_GreenOne.width, m_dvdSkin_GreenOne.height, m_dvdSkin_GreenOne.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
-		}
-		else if(_checkCoverColor(m_items[m_covers[i].index].hdr->id,greenTwo,greenTwo_len))
-		{
-			m_items[m_covers[i].index].hdr->casecolor = 0x00E360;
-			GX_InitTexObj(&texObj, m_dvdSkin_GreenTwo.data, m_dvdSkin_GreenTwo.width, m_dvdSkin_GreenTwo.height, m_dvdSkin_GreenTwo.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
-		}
-		else
-		{
-			m_items[m_covers[i].index].hdr->casecolor = 0xFFFFFF;
-			GX_InitTexObj(&texObj, m_dvdSkin.data, m_dvdSkin.width, m_dvdSkin.height, m_dvdSkin.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+			case 0x000000:
+			case 0x181919:
+				GX_InitTexObj(&texObj, m_dvdSkin_Black.data, m_dvdSkin_Black.width, m_dvdSkin_Black.height, m_dvdSkin_Black.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+				break;
+			case 0xFF0000:
+				GX_InitTexObj(&texObj, m_dvdSkin_Red.data, m_dvdSkin_Red.width, m_dvdSkin_Red.height, m_dvdSkin_Red.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+				break;
+			case 0xFCFF00:
+				GX_InitTexObj(&texObj, m_dvdSkin_Yellow.data, m_dvdSkin_Yellow.width, m_dvdSkin_Yellow.height, m_dvdSkin_Yellow.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+				break;
+			case 0x01A300:
+				GX_InitTexObj(&texObj, m_dvdSkin_GreenOne.data, m_dvdSkin_GreenOne.width, m_dvdSkin_GreenOne.height, m_dvdSkin_GreenOne.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+				break;
+			case 0x00E360:
+				GX_InitTexObj(&texObj, m_dvdSkin_GreenTwo.data, m_dvdSkin_GreenTwo.width, m_dvdSkin_GreenTwo.height, m_dvdSkin_GreenTwo.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+				break;
+			default:
+				GX_InitTexObj(&texObj, m_dvdSkin.data, m_dvdSkin.width, m_dvdSkin.height, m_dvdSkin.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+				break;
 		}
 		GX_LoadTexObj(&texObj, GX_TEXMAP0);
 	}
-
 	GX_Begin(GX_QUADS, GX_VTXFMT0, g_boxMeshQSize);
 	for (u32 j = 0; j < g_boxMeshQSize; ++j)
 	{
@@ -1455,9 +1450,9 @@ void CCoverFlow::_drawCoverBox(int i, bool mirror, CCoverFlow::DrawMode dm)
 	GX_End();
 	if (dm == CCoverFlow::CFDR_NORMAL)
 	{
-		TexData *myTex = &tex;
-		if (flatTex)
-			myTex = &m_noCoverTexture;
+		const TexData *myTex = tex;
+		if(flatTex)
+			myTex = m_noCoverTexture;
 		GX_InitTexObj(&texObj, myTex->data, myTex->width, myTex->height, myTex->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		if (myTex->maxLOD > 0)
 			GX_InitTexObjLOD(&texObj, GX_LIN_MIP_LIN, GX_LINEAR, 0.f, (float)myTex->maxLOD, mirror ? 1.f : m_lodBias, GX_FALSE, m_edgeLOD ? GX_TRUE : GX_FALSE, m_aniso);
@@ -1473,9 +1468,9 @@ void CCoverFlow::_drawCoverBox(int i, bool mirror, CCoverFlow::DrawMode dm)
 	GX_End();
 	if (dm == CCoverFlow::CFDR_NORMAL && flatTex)
 	{
-		GX_InitTexObj(&texObj, tex.data, tex.width, tex.height, tex.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
-		if (tex.maxLOD > 0)
-			GX_InitTexObjLOD(&texObj, GX_LIN_MIP_LIN, GX_LINEAR, 0.f, (float)tex.maxLOD, mirror ? 1.f : m_lodBias, GX_FALSE, m_edgeLOD ? GX_TRUE : GX_FALSE, m_aniso);
+		GX_InitTexObj(&texObj, tex->data, tex->width, tex->height, tex->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+		if (tex->maxLOD > 0)
+			GX_InitTexObjLOD(&texObj, GX_LIN_MIP_LIN, GX_LINEAR, 0.f, (float)tex->maxLOD, mirror ? 1.f : m_lodBias, GX_FALSE, m_edgeLOD ? GX_TRUE : GX_FALSE, m_aniso);
 		GX_LoadTexObj(&texObj, GX_TEXMAP0);
 	}
 	GX_Begin(GX_QUADS, GX_VTXFMT0, g_boxCoverMeshSize);
@@ -1881,33 +1876,33 @@ bool CCoverFlow::start()
 			return false;
 		m_dvdskin_loaded = true;
 	}
+	if(!m_defcovers_loaded)
+	{
+		if(m_pngLoadCover.empty() || TexHandle.fromImageFile(m_boxLoadingTexture, m_pngLoadCover.c_str(), GX_TF_CMPR, 32, 512) != TE_OK)
+		{
+			if(TexHandle.fromJPG(m_boxLoadingTexture, loading_jpg, loading_jpg_size, GX_TF_CMPR, 32, 512) != TE_OK)
+				return false;
+		}
+		if(m_pngNoCover.empty() || TexHandle.fromImageFile(m_boxNoCoverTexture, m_pngNoCover.c_str(), GX_TF_CMPR, 32, 512) != TE_OK)
+		{
+			if(TexHandle.fromPNG(m_boxNoCoverTexture, nopic_png, GX_TF_CMPR, 32, 512) != TE_OK)
+				return false;
+		}
+		if(m_pngLoadCoverFlat.empty() || TexHandle.fromImageFile(m_flatLoadingTexture, m_pngLoadCoverFlat.c_str(), GX_TF_CMPR, 32, 512) != TE_OK)
+		{
+			if(TexHandle.fromJPG(m_flatLoadingTexture, flatloading_jpg, flatloading_jpg_size, GX_TF_CMPR, 32, 512) != TE_OK)
+				return false;
+		}
+		if(m_pngNoCoverFlat.empty() || TexHandle.fromImageFile(m_flatNoCoverTexture, m_pngNoCoverFlat.c_str(), GX_TF_CMPR, 32, 512) != TE_OK)
+		{
+			if(TexHandle.fromPNG(m_flatNoCoverTexture, flatnopic_png, GX_TF_CMPR, 32, 512) != TE_OK)
+				return false;
+		}
+		m_defcovers_loaded = true;
+	}
+	m_loadingTexture = (m_box ? &m_boxLoadingTexture : &m_flatLoadingTexture);
+	m_noCoverTexture = (m_box ? &m_boxNoCoverTexture : &m_flatNoCoverTexture);
 
-	if(m_box)
-	{
-		if(m_pngLoadCover.empty() || TexHandle.fromImageFile(m_loadingTexture, m_pngLoadCover.c_str(), GX_TF_CMPR, 32, 512) != TE_OK)
-		{
-			if(TexHandle.fromJPG(m_loadingTexture, loading_jpg, loading_jpg_size, GX_TF_CMPR, 32, 512) != TE_OK)
-				return false;
-		}
-		if(m_pngNoCover.empty() || TexHandle.fromImageFile(m_noCoverTexture, m_pngNoCover.c_str(), GX_TF_CMPR, 32, 512) != TE_OK)
-		{
-			if(TexHandle.fromPNG(m_noCoverTexture, nopic_png, GX_TF_CMPR, 32, 512) != TE_OK)
-				return false;
-		}
-	}
-	else
-	{
-		if(m_pngLoadCoverFlat.empty() || TexHandle.fromImageFile(m_loadingTexture, m_pngLoadCoverFlat.c_str(), GX_TF_CMPR, 32, 512) != TE_OK)
-		{
-			if(TexHandle.fromJPG(m_loadingTexture, flatloading_jpg, flatloading_jpg_size, GX_TF_CMPR, 32, 512) != TE_OK)
-				return false;
-		}
-		if(m_pngNoCoverFlat.empty() || TexHandle.fromImageFile(m_noCoverTexture, m_pngNoCoverFlat.c_str(), GX_TF_CMPR, 32, 512) != TE_OK)
-		{
-			if(TexHandle.fromPNG(m_noCoverTexture, flatnopic_png, GX_TF_CMPR, 32, 512) != TE_OK)
-				return false;
-		}
-	}
 	m_covers.clear();
 	m_covers.resize(m_range);
 	m_jump = 0;
@@ -2805,6 +2800,11 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 								free(ptrTex);
 						}
 					}
+					if(!success && tex.data != NULL)
+					{
+						free(tex.data);
+						tex.data = NULL;
+					}
 				}
 			}
 			fclose(fp);
@@ -2823,7 +2823,8 @@ int CCoverFlow::_coverLoader(CCoverFlow *cf)
 {
 	cf->m_coverThrdBusy = true;
 	CLRet ret;
-	u32 firstItem;
+	int firstItem = 0;
+	int nextItem = 0;
 	bool update;
 	u32 i;
 
@@ -2833,29 +2834,29 @@ int CCoverFlow::_coverLoader(CCoverFlow *cf)
 	{
 		update = cf->m_moved;
 		cf->m_moved = false;
-		for(u32 j = cf->m_items.size(); j >= bufferSize && cf->m_loadingCovers && !cf->m_moved && update; --j)
+		LWP_MutexLock(cf->m_mutex);
+		nextItem = cf->m_covers[cf->m_range / 2].index;
+		int diff = nextItem - firstItem;
+		if(diff < 0) diff *= (-1);
+		for(u32 j = bufferSize - diff; j < bufferSize && cf->m_loadingCovers && update; ++j)
 		{
-			firstItem = cf->m_covers[cf->m_range / 2].index;
 			i = loopNum((j & 1) ? firstItem - (j + 1) / 2 : firstItem + j / 2, cf->m_items.size());
-			LWP_MutexLock(cf->m_mutex);
 			TexHandle.Cleanup(cf->m_items[i].texture);
 			cf->m_items[i].state = STATE_Loading;
-			LWP_MutexUnlock(cf->m_mutex);
 		}
+		firstItem = nextItem;
+		LWP_MutexUnlock(cf->m_mutex);
 		ret = CL_OK;
 		for(u32 j = 0; j <= bufferSize && cf->m_loadingCovers && !cf->m_moved && update && ret != CL_NOMEM; ++j)
 		{
-			firstItem = cf->m_covers[cf->m_range / 2].index;
 			i = loopNum((j & 1) ? firstItem - (j + 1) / 2 : firstItem + j / 2, cf->m_items.size());
-			if(!cf->m_useHQcover && cf->m_items[i].state != STATE_Loading)
+			if(cf->m_items[i].texture.data != NULL)
 				continue;
-			else if(cf->m_useHQcover && firstItem == (u32)cf->m_hqCover && cf->m_items[i].state != STATE_Loading)
-				continue;
-			if((ret = cf->_loadCoverTex(i, cf->m_box, i == (u32)firstItem, false)) == CL_ERROR)
+			if((ret = cf->_loadCoverTex(i, cf->m_box, cf->m_useHQcover, false)) == CL_ERROR)
 			{
-				if ((ret = cf->_loadCoverTex(i, !cf->m_box, i == (u32)firstItem, false)) == CL_ERROR)
+				if ((ret = cf->_loadCoverTex(i, !cf->m_box, cf->m_useHQcover, false)) == CL_ERROR)
 				{
-					if((ret = cf->_loadCoverTex(i, cf->m_box, i == (u32)firstItem, true)) == CL_ERROR)
+					if((ret = cf->_loadCoverTex(i, cf->m_box, cf->m_useHQcover, true)) == CL_ERROR)
 						cf->m_items[i].state = STATE_NoCover;
 				}
 			}

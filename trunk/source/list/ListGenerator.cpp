@@ -21,6 +21,7 @@
 #include "channel/channels.h"
 #include "devicemounter/DeviceHandler.hpp"
 #include "fileOps/fileOps.h"
+#include "gui/coverflow.hpp"
 #include "gui/text.hpp"
 
 ListGenerator m_gameList;
@@ -77,6 +78,9 @@ static void AddISO(const char *GameID, const char *GameTitle, const char *GamePa
 		if(CustomTitle == NULL || CustomTitle[0] == '\0')
 			gameTDB.GetTitle(ListElement.id, CustomTitle);
 	}
+	if(!ValidColor(ListElement.casecolor))
+		ListElement.casecolor = CoverFlow.InternalCoverColor(ListElement.id, GameColor);
+
 	if(CustomTitle != NULL && CustomTitle[0] != '\0')
 		mbstowcs(ListElement.title, CustomTitle, 63);
 	else if(GameTitle != NULL)
@@ -95,7 +99,7 @@ static void Create_Wii_WBFS_List(wbfs_t *handle)
 		s32 ret = wbfs_get_disc_info(handle, i, (u8*)&wii_hdr, sizeof(discHdr), NULL);
 		if(ret == 0 && wii_hdr.magic == WII_MAGIC)
 			AddISO((const char*)wii_hdr.id, (const char*)wii_hdr.title, 
-					NULL, 1, TYPE_WII_GAME);
+					NULL, 0xFFFFFF, TYPE_WII_GAME);
 	}
 }
 
@@ -108,7 +112,7 @@ static void Create_Wii_EXT_List(char *FullPath)
 		fread((void*)&wii_hdr, 1, sizeof(discHdr), fp);
 		if(wii_hdr.magic == WII_MAGIC)
 			AddISO((const char*)wii_hdr.id, (const char*)wii_hdr.title, 
-					FullPath, 1, TYPE_WII_GAME);
+					FullPath, 0xFFFFFF, TYPE_WII_GAME);
 		fclose(fp);
 	}
 }
@@ -131,7 +135,7 @@ static void Create_GC_List(char *FullPath)
 		if(gc_hdr.magic == GC_MAGIC)
 		{
 			AddISO((const char*)gc_hdr.id, (const char*)gc_hdr.title,
-					FullPath, 0, TYPE_GC_GAME);
+					FullPath, 0x000000, TYPE_GC_GAME);
 			/* Check for disc 2 */
 			fseek(fp, 6, SEEK_SET);
 			fread(gc_disc, 1, 1, fp);
@@ -172,7 +176,7 @@ static void Create_Homebrew_List(char *FullPath)
 	strncpy(ListElement.id, "HB_APP", 6);
 
 	FolderTitle = strrchr(FullPath, '/') + 1;
-	ListElement.casecolor = CustomTitles.getColor("COVERS", FolderTitle, 1).intVal();
+	ListElement.casecolor = CustomTitles.getColor("COVERS", FolderTitle, 0xFFFFFF).intVal();
 	const string &CustomTitle = CustomTitles.getString("TITLES", FolderTitle);
 	if(CustomTitle.size() > 0)
 		mbstowcs(ListElement.title, CustomTitle.c_str(), 63);
@@ -197,11 +201,11 @@ static void Create_Channel_List()
 		ListElement.settings[0] = TITLE_UPPER(chan->title);
 		ListElement.settings[1] = TITLE_LOWER(chan->title);
 		strncpy(ListElement.id, chan->id, 4);
-		ListElement.casecolor = CustomTitles.getColor("COVERS", ListElement.id, 1).intVal();
+		ListElement.casecolor = CustomTitles.getColor("COVERS", ListElement.id, 0xFFFFFF).intVal();
 		const char *CustomTitle = CustomTitles.getString("TITLES", ListElement.id).c_str();
 		if(gameTDB.IsLoaded())
 		{
-			if(ListElement.casecolor == 1)
+			if(ListElement.casecolor == 0xFFFFFF)
 				ListElement.casecolor = gameTDB.GetCaseColor(ListElement.id);
 			ListElement.wifi = gameTDB.GetWifiPlayers(ListElement.id);
 			ListElement.players = gameTDB.GetPlayers(ListElement.id);
