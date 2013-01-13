@@ -136,6 +136,9 @@ public:
 	bool getRenderTex(void);
 	void setRenderTex(bool);
 	void RenderTex(void);
+	//
+	static u32 InternalCoverColor(const char *ID, u32 DefCaseColor);
+	static bool checkCoverColor(const char *ID, const char *checkID[], u32 len);
 private:
 	enum DrawMode { CFDR_NORMAL, CFDR_STENCIL, CFDR_SHADOW };
 	struct SLayout
@@ -250,8 +253,12 @@ private:
 	volatile int m_hqCover;
 	bool m_selected;
 	int m_tickCount;
-	TexData m_loadingTexture;
-	TexData m_noCoverTexture;
+	TexData *m_loadingTexture;
+	TexData *m_noCoverTexture;
+	TexData m_flatLoadingTexture;
+	TexData m_flatNoCoverTexture;
+	TexData m_boxLoadingTexture;
+	TexData m_boxNoCoverTexture;
 	TexData m_dvdSkin;
 	TexData m_dvdSkin_Red;
 	TexData m_dvdSkin_Black;
@@ -271,6 +278,7 @@ private:
 	bool m_box;
 	bool m_useHQcover;
 	bool m_dvdskin_loaded;
+	bool m_defcovers_loaded;
 	u32 m_range;
 	u32 m_rows;
 	u32 m_columns;
@@ -315,7 +323,6 @@ private:
 	void _drawCover(int i, bool mirror, CCoverFlow::DrawMode dm);
 	void _drawCoverFlat(int i, bool mirror, CCoverFlow::DrawMode dm);
 	void _drawCoverBox(int i, bool mirror, CCoverFlow::DrawMode dm);
-	bool _checkCoverColor(char* gameID, const char* checkID[], int len);
 	void _updateTarget(int i, bool instant = false);
 	void _updateAllTargets(bool instant = false);
 	void _loadCover(int i, int item);
@@ -325,7 +332,7 @@ private:
 	Vector3D _cameraMoves(void);
 	Vector3D _coverMovesA(void);
 	Vector3D _coverMovesP(void);
-	TexData &_coverTexture(int i);
+	const TexData *_coverTexture(int i);
 	void _left(int repeatDelay, u32 step);
 	void _right(int repeatDelay, u32 step);
 	void _jump(void);
