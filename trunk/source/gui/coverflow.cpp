@@ -2838,7 +2838,7 @@ int CCoverFlow::_coverLoader(CCoverFlow *cf)
 		nextItem = cf->m_covers[cf->m_range / 2].index;
 		int diff = nextItem - firstItem;
 		if(diff < 0) diff *= (-1);
-		for(u32 j = bufferSize - diff; j < bufferSize && cf->m_loadingCovers && update; ++j)
+		for(u32 j = bufferSize - diff; j <= bufferSize && cf->m_loadingCovers && update; ++j)
 		{
 			i = loopNum((j & 1) ? firstItem - (j + 1) / 2 : firstItem + j / 2, cf->m_items.size());
 			TexHandle.Cleanup(cf->m_items[i].texture);
