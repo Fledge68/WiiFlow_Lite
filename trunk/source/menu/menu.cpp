@@ -1619,7 +1619,7 @@ void CMenu::_checkForSinglePlugin(void)
 	enabledPluginPos = 0;
 	enabledPluginsCount = 0;
 	const vector<bool> &EnabledPlugins = m_plugin.GetEnabledPlugins(m_cfg);
-	if(m_current_view == COVERFLOW_PLUGIN && EnabledPlugins.size() != 0)
+	if(m_cfg.getBool(PLUGIN_DOMAIN, "source", true) && EnabledPlugins.size() != 0)
 	{
 		for(u8 i = 0; i < EnabledPlugins.size(); i++)
 		{
@@ -1653,7 +1653,7 @@ void CMenu::_initCF(void)
 	if (ageLock < 19)
 	{
 		gameAgeList.load(fmt("%s/" AGE_LOCK_FILENAME, m_settingsDir.c_str()));
-		if (m_current_view == COVERFLOW_USB || m_current_view == COVERFLOW_CHANNEL)
+		if(!gametdb.IsLoaded())
 		{
 			gametdb.OpenFile(fmt("%s/wiitdb.xml", m_settingsDir.c_str()));
 			gametdb.SetLanguageCode(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
@@ -1780,29 +1780,23 @@ void CMenu::_initCF(void)
 			switch(element->type)
 			{
 				case TYPE_CHANNEL:
-					catDomain = CHANNEL_DOMAIN;
+					catDomain = "NAND";
 					break;
 				case TYPE_HOMEBREW:
-					catDomain = HOMEBREW_DOMAIN;
+					catDomain = "HOMEBREW";
 					break;
 				case TYPE_GC_GAME:
-					catDomain = GC_DOMAIN;
+					catDomain = "DML";
 					break;
-				case TYPE_PLUGIN:
-					catDomain = PLUGIN_DOMAIN;
+				case TYPE_WII_GAME:
+					catDomain = "GAMES";
 					break;
 				default:
-					catDomain = WII_DOMAIN;
-			}
-			if(enabledPluginsCount == 1)
-			{
-				catDomain = (m_plugin.GetPluginName(enabledPluginPos)).toUTF8();
-				if(element->settings[0] != m_plugin.getPluginMagic(enabledPluginPos))
-					continue;
-			}
-			const char *requiredCats = m_cat.getString(fmt("%s/GENERAL", catDomain.c_str()), "required_categories").c_str();
-			const char *selectedCats = m_cat.getString(fmt("%s/GENERAL", catDomain.c_str()), "selected_categories").c_str();
-			const char *hiddenCats = m_cat.getString(fmt("%s/GENERAL", catDomain.c_str()), "hidden_categories").c_str();
+					catDomain = (m_plugin.GetPluginName(m_plugin.GetPluginPosition(element->settings[0]))).toUTF8();
+			}		
+			const char *requiredCats = m_cat.getString("GENERAL", "required_categories").c_str();
+			const char *selectedCats = m_cat.getString("GENERAL", "selected_categories").c_str();
+			const char *hiddenCats = m_cat.getString("GENERAL", "hidden_categories").c_str();
 			u8 numReqCats = strlen(requiredCats);
 			u8 numSelCats = strlen(selectedCats);
 			u8 numHidCats = strlen(hiddenCats);
@@ -1933,6 +1927,8 @@ void CMenu::_initCF(void)
 				CoverFlow.addItem(&(*element), fmt("%s/%s.png", m_picDir.c_str(), id.c_str()), fmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
 		}
 	}
+	 if(gametdb.IsLoaded())
+		gametdb.CloseFile();
 	m_gcfg1.unload();
  	if (dumpGameLst)
 	{
@@ -1948,9 +1944,13 @@ void CMenu::_initCF(void)
 	CoverFlow.start();
 	if(!CoverFlow.empty())
 	{
+		u8 view = m_current_view;
+		if(m_current_view == COVERFLOW_MAX) // target the last launched game type view
+			m_current_view = m_last_view;
 		bool path = (m_current_view == COVERFLOW_PLUGIN || m_current_view == COVERFLOW_HOMEBREW);
-		if(!CoverFlow.findId(m_cfg.getString(domain, "current_item").c_str(), true, path))
+		if(!CoverFlow.findId(m_cfg.getString(_domainFromView(), "current_item").c_str(), true, path))
 			CoverFlow.defaultLoad();
+		m_current_view = view;
 		CoverFlow.startCoverLoader();
 	}
 }
@@ -2245,42 +2245,61 @@ bool CMenu::_loadChannelList(void)
 							m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_config", false));
 		cacheDir = fmt("%s/%s_channels.db", m_listCacheDir.c_str(), DeviceName[currentPartition]);
 	}
-	bool updateCache = m_cfg.getBool(_domainFromView(), "update_cache");
+	bool updateCache = m_cfg.getBool(CHANNEL_DOMAIN, "update_cache");
 	vector<string> NullVector;
-	m_gameList.CreateList(m_current_view, currentPartition, std::string(), 
+	m_gameList.CreateList(COVERFLOW_CHANNEL, currentPartition, std::string(), 
 				NullVector, cacheDir, updateCache);
-	return m_gameList.size() > 0 ? true : false;
+	m_cfg.remove(CHANNEL_DOMAIN, "update_cache");
+	return true;
 }
 
 bool CMenu::_loadList(void)
 {
 	CoverFlow.clear();
+	m_gameList.clear();
 	NANDemuView = false;
-	gprintf("Switching View to %s\n", _domainFromView());
+	u8 sources = 0;
+	gprintf("Creating Gamelist\n");
 
-	bool retval;
-	switch(m_current_view)
+	if(m_cfg.getBool(PLUGIN_DOMAIN, "source",false))
 	{
-		case COVERFLOW_CHANNEL:
-			retval = _loadChannelList();
-			break;
-		case COVERFLOW_HOMEBREW:
-			retval = _loadHomebrewList();
-			break;
-		case COVERFLOW_DML:
-			retval = _loadDmlList();
-			break;
-		case COVERFLOW_PLUGIN:
-			retval = _loadEmuList();
-			break;
-		default:
-			retval = _loadGameList();
-			break;
+		_loadEmuList();
+		m_current_view = COVERFLOW_PLUGIN;
+		sources++;
 	}
-	gprintf("Games found: %i\n", m_gameList.size());
-	m_cfg.remove(_domainFromView(), "update_cache");
+	
+	if(m_cfg.getBool(WII_DOMAIN, "source",false))
+	{
+		_loadGameList();
+		m_current_view = COVERFLOW_USB;
+		sources++;
+	}
+	
+	if(m_cfg.getBool(CHANNEL_DOMAIN, "source",false))
+	{
+		m_current_view = COVERFLOW_CHANNEL;
+		_loadChannelList();
+		sources++;
+	}
 
-	return retval;
+	if(m_cfg.getBool(GC_DOMAIN, "source",false))
+	{
+		_loadDmlList();
+		m_current_view = COVERFLOW_DML;
+		sources++;
+	}
+
+	if(m_cfg.getBool(HOMEBREW_DOMAIN, "source",false))
+	{
+		_loadHomebrewList();
+		m_current_view = COVERFLOW_HOMEBREW;
+		sources++;
+	}
+	if(sources > 1)
+		m_current_view = COVERFLOW_MAX;
+
+	gprintf("Games found: %i\n", m_gameList.size());	
+	return m_gameList.size() > 0 ? true : false;
 }
 
 bool CMenu::_loadGameList(void)
@@ -2289,15 +2308,14 @@ bool CMenu::_loadGameList(void)
 	if(!DeviceHandle.IsInserted(currentPartition))
 		return false;
 
-	m_gameList.clear();
 	DeviceHandle.OpenWBFS(currentPartition);
 	string gameDir(fmt(GAMES_DIR, DeviceName[currentPartition]));
 	string cacheDir(fmt("%s/%s_wii.db", m_listCacheDir.c_str(), DeviceName[currentPartition]));
 	bool updateCache = m_cfg.getBool(WII_DOMAIN, "update_cache");
-	m_gameList.CreateList(m_current_view, currentPartition, gameDir, stringToVector(".wbfs|.iso", '|'), cacheDir, updateCache);
+	m_gameList.CreateList(COVERFLOW_USB, currentPartition, gameDir, stringToVector(".wbfs|.iso", '|'), cacheDir, updateCache);
 	WBFS_Close();
-
-	return m_gameList.size() > 0 ? true : false;
+	m_cfg.remove(WII_DOMAIN, "update_cache");
+	return true;
 }
 
 bool CMenu::_loadHomebrewList()
@@ -2306,13 +2324,12 @@ bool CMenu::_loadHomebrewList()
 	if(!DeviceHandle.IsInserted(currentPartition))
 		return false;
 
-	m_gameList.clear();
 	string gameDir(fmt(HOMEBREW_DIR, DeviceName[currentPartition]));
 	string cacheDir(fmt("%s/%s_homebrew.db", m_listCacheDir.c_str(), DeviceName[currentPartition]));
 	bool updateCache = m_cfg.getBool(HOMEBREW_DOMAIN, "update_cache");
-	m_gameList.CreateList(m_current_view, currentPartition, gameDir, stringToVector(".dol|.elf", '|'), cacheDir, updateCache);
-
-	return m_gameList.size() > 0 ? true : false;
+	m_gameList.CreateList(COVERFLOW_HOMEBREW, currentPartition, gameDir, stringToVector(".dol|.elf", '|'), cacheDir, updateCache);
+	m_cfg.remove(HOMEBREW_DOMAIN, "update_cache");
+	return true;
 }
 
 bool CMenu::_loadDmlList()
@@ -2321,14 +2338,13 @@ bool CMenu::_loadDmlList()
 	if(!DeviceHandle.IsInserted(currentPartition))
 		return false;
 
-	m_gameList.clear();
 	string gameDir(fmt(currentPartition == SD ? DML_DIR : m_DMLgameDir.c_str(), DeviceName[currentPartition]));
 	string cacheDir(fmt("%s/%s_gamecube.db", m_listCacheDir.c_str(), DeviceName[currentPartition]));
 	bool updateCache = m_cfg.getBool(GC_DOMAIN, "update_cache");
-	m_gameList.CreateList(m_current_view, currentPartition, gameDir,
+	m_gameList.CreateList(COVERFLOW_DML, currentPartition, gameDir,
 			stringToVector(".iso|root", '|'),cacheDir, updateCache);
-
-	return m_gameList.size() > 0 ? true : false;
+	m_cfg.remove(GC_DOMAIN, "update_cache");
+	return true;
 }
 
 static vector<string> INI_List;
@@ -2343,16 +2359,16 @@ bool CMenu::_loadEmuList()
 	currentPartition = m_cfg.getInt(PLUGIN_DOMAIN, "partition", SD);
 	if(!DeviceHandle.IsInserted(currentPartition))
 		return false;
+		
 	bool updateCache = m_cfg.getBool(PLUGIN_DOMAIN, "update_cache");
-
 	vector<dir_discHdr> emuList;
 	Config m_plugin_cfg;
 
 	INI_List.clear();
-	m_gameList.clear();
 	GetFiles(m_pluginsDir.c_str(), stringToVector(".ini", '|'), GrabINIFiles, false, 1);
 	for(vector<string>::const_iterator Name = INI_List.begin(); Name != INI_List.end(); ++Name)
 	{
+		m_gameList.clear();
 		if(Name->find("scummvm.ini") != string::npos)
 			continue;
 		m_plugin_cfg.load(Name->c_str());
@@ -2370,7 +2386,7 @@ bool CMenu::_loadEmuList()
 				vector<string> FileTypes = stringToVector(m_plugin_cfg.getString(PLUGIN_INI_DEF,"fileTypes"), '|');
 				m_gameList.Color = strtoul(m_plugin_cfg.getString(PLUGIN_INI_DEF,"coverColor").c_str(), NULL, 16);
 				m_gameList.Magic = MagicWord;
-				m_gameList.CreateList(m_current_view, currentPartition, gameDir, FileTypes, cacheDir, updateCache);
+				m_gameList.CreateList(COVERFLOW_PLUGIN, currentPartition, gameDir, FileTypes, cacheDir, updateCache);
 				for(vector<dir_discHdr>::iterator tmp_itr = m_gameList.begin(); tmp_itr != m_gameList.end(); tmp_itr++)
 					emuList.push_back(*tmp_itr);
 			}
@@ -2395,8 +2411,8 @@ bool CMenu::_loadEmuList()
 	emuList.clear();
 	//If we return to the coverflow before wiiflow quit we dont need to reload plugins
 	m_plugin.EndAdd();
-
-	return m_gameList.size() > 0 ? true : false;
+	m_cfg.remove(PLUGIN_DOMAIN, "update_cache");
+	return true;
 }
 
 void CMenu::_stopSounds(void)
@@ -2619,27 +2635,7 @@ void CMenu::UpdateCache(u32 view)
 		UpdateCache(COVERFLOW_CHANNEL);
 		return;
 	}
-
-	const char *domain;
-	switch(view)
-	{
-		case COVERFLOW_CHANNEL:
-			domain = CHANNEL_DOMAIN;
-			break;
-		case COVERFLOW_HOMEBREW:
-			domain = HOMEBREW_DOMAIN;
-			break;
-		case COVERFLOW_DML:
-			domain = GC_DOMAIN;
-			break;
-		case COVERFLOW_PLUGIN:
-			domain = PLUGIN_DOMAIN;
-			break;
-		default:
-			domain = WII_DOMAIN;
-	}
-
-	m_cfg.setBool(domain, "update_cache", true);
+	m_cfg.setBool(_domainFromView(), "update_cache", true);
 }
 
 int CMenu::MIOSisDML()

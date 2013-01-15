@@ -557,6 +557,35 @@ void CMenu::_game(bool launch)
 				m_banner.DeleteBanner();
 				dir_discHdr *hdr = CoverFlow.getHdr();
 				m_gcfg2.load(fmt("%s/" GAME_SETTINGS2_FILENAME, m_settingsDir.c_str()));
+				// change to current games partition and set last_view for recall later
+				switch(hdr->type)
+				{
+					case TYPE_CHANNEL:
+						m_cfg.setInt("GENERAL", "last_view", COVERFLOW_CHANNEL);
+						currentPartition = m_cfg.getInt(CHANNEL_DOMAIN, "partition", 1);
+						break;
+					case TYPE_HOMEBREW:
+						m_cfg.setInt("GENERAL", "last_view", COVERFLOW_HOMEBREW);
+						currentPartition = m_cfg.getInt(HOMEBREW_DOMAIN, "partition", 1);
+						break;
+					case TYPE_GC_GAME:
+						m_cfg.setInt("GENERAL", "last_view", COVERFLOW_DML);
+						currentPartition = m_cfg.getInt(GC_DOMAIN, "partition", 1);
+						break;
+					case TYPE_WII_GAME:
+						m_cfg.setInt("GENERAL", "last_view", COVERFLOW_USB);
+						currentPartition = m_cfg.getInt(WII_DOMAIN, "partition", 1);
+						break;
+					default:
+						m_cfg.setInt("GENERAL", "last_view", COVERFLOW_PLUGIN);
+						_checkForSinglePlugin();
+						if(enabledPluginsCount == 1)
+						{
+							currentPartition = m_cfg.getInt("PLUGINS/PARTITION", PluginMagicWord, 1);
+							m_cfg.setInt(PLUGIN_DOMAIN, "partition", currentPartition);
+						}
+						currentPartition = m_cfg.getInt(PLUGIN_DOMAIN, "partition", 1);
+				}
 				if(currentPartition != SD && hdr->type == TYPE_GC_GAME && m_show_dml == 2 && (strstr(hdr->path, ".iso") == NULL ||
 				!m_devo_installed || min((u32)m_gcfg2.getInt(hdr->id, "gc_loader", 0), ARRAY_SIZE(CMenu::_GCLoader) - 1u) == 1))
 				{
@@ -769,8 +798,6 @@ void CMenu::directlaunch(const char *GameID)
 
 void CMenu::_launch(dir_discHdr *hdr)
 {
-	/* So WiiFlow knows where we are */
-	m_cfg.setInt("GENERAL", "last_view", m_current_view);
 	/* Lets boot that shit */
 	if(hdr->type == TYPE_WII_GAME)
 		_launchGame(hdr, false);

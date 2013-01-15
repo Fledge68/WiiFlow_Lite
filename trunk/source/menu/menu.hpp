@@ -43,6 +43,7 @@ public:
 	void loadDefaultFont(void);
 	void TempLoadIOS(int IOS = 0);
 	u8 m_current_view;
+	int m_last_view;
 	u8 enabledPluginPos;
 	u8 enabledPluginsCount;
 	char PluginMagicWord[9];

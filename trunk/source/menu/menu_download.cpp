@@ -552,7 +552,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 
 			string newID = m_newID.getString(domain, coverList[i], coverList[i]);
 
-			if(!newID.empty() && strncasecmp(newID.c_str(), coverList[i].c_str(), m_current_view != COVERFLOW_USB ? 4 : 6) == 0)
+			if(!newID.empty() && strncasecmp(newID.c_str(), coverList[i].c_str(), coverList[i].length()) == 0)
 				m_newID.remove(domain, coverList[i]);
 			else if(!newID.empty())
 			{

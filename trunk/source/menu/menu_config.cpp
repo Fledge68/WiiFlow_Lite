@@ -186,13 +186,13 @@ int CMenu::_config1(void)
 			}
 			else if ((m_btnMgr.selected(m_configBtnUnlock)) || (m_btnMgr.selected(m_configBtnSetCode)))
 				_code();
-			else if ((m_btnMgr.selected(m_configBtnPartitionP) || m_btnMgr.selected(m_configBtnPartitionM)))
+			else if ((m_btnMgr.selected(m_configBtnPartitionP) || m_btnMgr.selected(m_configBtnPartitionM)) && m_current_view != COVERFLOW_MAX)
 			{
 				s8 direction = m_btnMgr.selected(m_configBtnPartitionP) ? 1 : -1;
 				_setPartition(direction);
 				_showConfig();
 			}
-			else if (m_btnMgr.selected(m_configBtnCfg4))
+			else if (m_btnMgr.selected(m_configBtnCfg4) && m_current_view != COVERFLOW_MAX)
 			{
 				_cfNeedsUpdate();
 				CoverFlow.stopCoverLoader(true);

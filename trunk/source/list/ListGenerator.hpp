@@ -33,7 +33,6 @@ class ListGenerator : public vector<dir_discHdr>
 {
 public:
 	void Init(const char *settingsDir, const char *Language);
-	void Cleanup();
 	void CreateList(u32 Flow, u32 Device, const string& Path, const vector<string>& FileTypes, 
 				const string& DBName, bool UpdateCache);
 	u32 Color;

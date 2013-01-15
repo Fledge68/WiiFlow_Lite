@@ -111,6 +111,9 @@ void CMenu::_showMain(void)
 			else
 				m_btnMgr.show(m_mainBtnUsb);
 			break;
+		case COVERFLOW_MAX:
+			m_btnMgr.show(m_mainBtnUsb);
+			break;
 		case COVERFLOW_HOMEBREW:
 			m_btnMgr.show(m_mainBtnUsb);
 			break;
@@ -247,12 +250,12 @@ int CMenu::main(void)
 		m_GameTDBLoaded = true;
 		m_gametdb.CloseFile();
 	}
-	if(LastViewRequested())
-		m_current_view = m_cfg.getInt("GENERAL", "last_view");
+	m_last_view = m_cfg.getInt("GENERAL", "last_view");
+	if(!(m_last_view < COVERFLOW_USB || m_last_view >= COVERFLOW_MAX))
+		m_current_view = m_last_view;
 	else if(m_Emulator_boot)
 		m_current_view = COVERFLOW_PLUGIN;
 	m_cfg.remove("GENERAL", "last_view");
-
 	if(m_cfg.getBool("GENERAL", "update_cache", false))
 	{
 		UpdateCache();
@@ -308,6 +311,28 @@ int CMenu::main(void)
 				m_current_view = COVERFLOW_CHANNEL;
 			if(lastView == m_current_view) 
 				m_current_view = COVERFLOW_HOMEBREW;
+			m_cfg.setBool(WII_DOMAIN, "source", false);
+			m_cfg.setBool(GC_DOMAIN, "source", false);
+			m_cfg.setBool(CHANNEL_DOMAIN, "source", false);
+			m_cfg.setBool(HOMEBREW_DOMAIN, "source", false);
+			m_cfg.setBool(PLUGIN_DOMAIN, "source", false);
+			switch(m_current_view)
+			{
+				case COVERFLOW_USB:
+					m_cfg.setBool(WII_DOMAIN, "source", true);
+					break;
+				case COVERFLOW_DML:
+					m_cfg.setBool(GC_DOMAIN, "source", true);
+					break;
+				case COVERFLOW_CHANNEL:
+					m_cfg.setBool(CHANNEL_DOMAIN, "source", true);
+					break;
+				case COVERFLOW_HOMEBREW:
+					m_cfg.setBool(HOMEBREW_DOMAIN, "source", true);
+					break;
+				default:
+					m_cfg.setBool(PLUGIN_DOMAIN, "source", true);
+			}
 			LoadView();
 			continue;
 		}
@@ -345,8 +370,30 @@ int CMenu::main(void)
 					m_current_view = (show_emu ? COVERFLOW_PLUGIN : (show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB);
 				else if(m_current_view == COVERFLOW_PLUGIN)
 					m_current_view = (show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB;
-				else if(m_current_view == COVERFLOW_HOMEBREW)
+				else if(m_current_view == COVERFLOW_HOMEBREW || m_current_view == COVERFLOW_MAX)
 					m_current_view = COVERFLOW_USB;
+				m_cfg.setBool(WII_DOMAIN, "source", false);
+				m_cfg.setBool(GC_DOMAIN, "source", false);
+				m_cfg.setBool(CHANNEL_DOMAIN, "source", false);
+				m_cfg.setBool(HOMEBREW_DOMAIN, "source", false);
+				m_cfg.setBool(PLUGIN_DOMAIN, "source", false);
+				switch(m_current_view)
+				{
+					case COVERFLOW_USB:
+						m_cfg.setBool(WII_DOMAIN, "source", true);
+						break;
+					case COVERFLOW_DML:
+						m_cfg.setBool(GC_DOMAIN, "source", true);
+						break;
+					case COVERFLOW_CHANNEL:
+						m_cfg.setBool(CHANNEL_DOMAIN, "source", true);
+						break;
+					case COVERFLOW_HOMEBREW:
+						m_cfg.setBool(HOMEBREW_DOMAIN, "source", true);
+						break;
+					default:
+						m_cfg.setBool(PLUGIN_DOMAIN, "source", true);
+				}
 				LoadView();
 			}
 			else if(m_btnMgr.selected(m_mainBtnInit))
