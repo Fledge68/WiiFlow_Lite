@@ -112,8 +112,6 @@ void CMenu::_showMain(void)
 				m_btnMgr.show(m_mainBtnUsb);
 			break;
 		case COVERFLOW_MAX:
-			m_btnMgr.show(m_mainBtnUsb);
-			break;
 		case COVERFLOW_HOMEBREW:
 			m_btnMgr.show(m_mainBtnUsb);
 			break;
@@ -780,6 +778,7 @@ int CMenu::main(void)
 						m_btnMgr.show(m_mainBtnUsb);
 					break;
 				case COVERFLOW_HOMEBREW:
+				case COVERFLOW_MAX:
 					m_btnMgr.show(m_mainBtnUsb);
 					break;
 				default:
