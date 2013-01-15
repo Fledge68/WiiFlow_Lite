@@ -141,7 +141,7 @@ void CMenu::_showGameSettings(void)
 	}
 	else
 	{
-		if(m_current_view == COVERFLOW_USB && _checkSave(string((const char *)CoverFlow.getHdr()->id), false))
+		if(CoverFlow.getHdr()->type == TYPE_WII_GAME && _checkSave(string((const char *)CoverFlow.getHdr()->id), false))
 			g_numGCfPages = 5;
 		else 
 			g_numGCfPages = 4;

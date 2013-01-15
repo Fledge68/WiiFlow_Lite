@@ -29,6 +29,7 @@ s16 m_sourceLblNotice;
 s16 m_sourceLblPage;
 s16 m_sourceBtnPageM;
 s16 m_sourceBtnPageP;
+s16 m_sourceBtnBack;
 s16 m_sourceLblTitle;
 s16 m_sourceBtnSource[12];
 s16 m_sourceLblUser[4];
@@ -46,6 +47,7 @@ void CMenu::_hideSource(bool instant)
 	m_btnMgr.hide(m_sourceLblPage, instant);
 	m_btnMgr.hide(m_sourceBtnPageM, instant);
 	m_btnMgr.hide(m_sourceBtnPageP, instant);
+	m_btnMgr.hide(m_sourceBtnBack, instant);	
 	m_btnMgr.hide(m_sourceBtnHomebrew, instant);
 	m_btnMgr.hide(m_sourceBtnChannel, instant);
 	m_btnMgr.hide(m_sourceBtnUsb, instant);
@@ -78,6 +80,7 @@ void CMenu::_showSource(void)
 	}
 
 	m_btnMgr.show(m_sourceLblTitle);
+	m_btnMgr.show(m_sourceBtnBack);
 	
 	for(i = maxBtns; i > 11; --i)
 	{
@@ -108,23 +111,54 @@ void CMenu::_updateSourceBtns(void)
 	
 	for(u8 i = 0; i < 12; ++i)
 	{
+		string domain;
+		string btnSource = m_source.getString(fmt("BUTTON_%i", i + j), "source", "").c_str();
+		if(btnSource == "wii")
+			domain = WII_DOMAIN;
+		else if(btnSource == "dml")
+			domain = GC_DOMAIN;
+		else if(btnSource == "homebrew")
+			domain = HOMEBREW_DOMAIN;
+		else if(btnSource == "emunand")
+			domain = CHANNEL_DOMAIN;
+		else if(btnSource == "realnand")
+			domain = CHANNEL_DOMAIN;
+		else
+		{
+			domain = PLUGIN_DOMAIN;
+			if(m_cfg.getBool(domain, "source", false))
+			{
+				if(m_cfg.getBool("PLUGIN", m_source.getString(fmt("BUTTON_%i", i + j), "magic"), false))
+					ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image_s", "").c_str();
+				else
+					ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image", "").c_str();
+			}
+			else
+				ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image", "").c_str();
+		}
+		if(domain != PLUGIN_DOMAIN)
+		{
+			if(m_cfg.getBool(domain, "source", false))
+				ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image_s", "").c_str();
+			else
+				ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image", "").c_str();
+		}
+		
 		TexData texConsoleImg;
 		TexData texConsoleImgs;
-
-		ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image", "").c_str();
+		
 		if(TexHandle.fromImageFile(texConsoleImg, fmt("%s/%s", m_themeDataDir.c_str(), ImgName)) != TE_OK)
 		{
 			if(TexHandle.fromImageFile(texConsoleImg, fmt("%s/%s", m_sourceDir.c_str(), ImgName)) != TE_OK)
 				TexHandle.fromPNG(texConsoleImg, favoriteson_png);
 		}
-		ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image_s", "").c_str();
 		if(TexHandle.fromImageFile(texConsoleImgs, fmt("%s/%s", m_themeDataDir.c_str(), ImgName)) != TE_OK)
 		{
 			if(TexHandle.fromImageFile(texConsoleImgs, fmt("%s/%s", m_sourceDir.c_str(), ImgName)) != TE_OK)
 				TexHandle.fromPNG(texConsoleImgs, favoritesons_png);
 		}
 		m_btnMgr.setBtnTexture(m_sourceBtnSource[i], texConsoleImg, texConsoleImgs);
-
+		
 		const char *source = m_source.getString(fmt("BUTTON_%i", i + j), "source", "").c_str();
 		if(source != NULL && source[0] != '\0')
 			m_btnMgr.show(m_sourceBtnSource[i]);
@@ -147,7 +181,7 @@ bool CMenu::_Source()
 	pdir = opendir(m_pluginsDir.c_str());
 	Config m_plugin_cfg;
 	u8 numPlugins = 0;
-	bool back = false;
+	bool back = true;
 
 	while((pent = readdir(pdir)) != NULL)
 	{
@@ -173,7 +207,7 @@ bool CMenu::_Source()
 	bool show_channel = !m_cfg.getBool("GENERAL", "hidechannel", false);
 	bool show_emu = !m_cfg.getBool(PLUGIN_DOMAIN, "disable", false);
 	bool parental_homebrew = m_cfg.getBool(HOMEBREW_DOMAIN, "parental", false);	
-	bool imgSelected = false;
+
 	m_showtimer = 0;
 	Source_curPage = 1;
 	pages = 1;
@@ -193,16 +227,29 @@ bool CMenu::_Source()
 	while(!m_exit)
 	{
 		_mainLoopCommon();
-		if(BTN_HOME_PRESSED || BTN_B_PRESSED)
+		bool imgSelected = false;
+		if(BTN_HOME_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_sourceBtnBack)))
 		{
-			back = true;
+			u8 sourceCount = 0;
+			if(m_cfg.getBool(WII_DOMAIN, "source", false))
+				sourceCount++;
+			if(m_cfg.getBool(GC_DOMAIN, "source", false))
+				sourceCount++;
+			if(m_cfg.getBool(CHANNEL_DOMAIN, "source", false))
+				sourceCount++;
+			if(m_cfg.getBool(HOMEBREW_DOMAIN, "source", false))
+				sourceCount++;
+			if(m_cfg.getBool(PLUGIN_DOMAIN, "source", false))
+				sourceCount++;
+			if(sourceCount == 0)
+				m_cfg.setBool(WII_DOMAIN, "source", true);
 			break;
 		}
 		else if(BTN_UP_PRESSED)
 			m_btnMgr.up();
 		else if(BTN_DOWN_PRESSED)
 			m_btnMgr.down();
-		if(((BTN_MINUS_PRESSED || BTN_LEFT_PRESSED) && pages > 1) || (BTN_A_PRESSED && m_btnMgr.selected(m_sourceBtnPageM)))
+		else if(((BTN_MINUS_PRESSED || BTN_LEFT_PRESSED) && pages > 1) || (BTN_A_PRESSED && m_btnMgr.selected(m_sourceBtnPageM)))
 		{
 			Source_curPage--;
 			if(Source_curPage < 1)
@@ -220,12 +267,13 @@ bool CMenu::_Source()
 				m_btnMgr.click(m_sourceBtnPageP);
 			_updateSourceBtns();
 		}
-		if(BTN_A_PRESSED)
+		else if(BTN_A_PRESSED)
 		{
+			// check default source buttons when no source_menu.ini
 			if(m_btnMgr.selected(m_sourceBtnUsb))
 			{
 				m_current_view = COVERFLOW_USB;
-				break;
+				imgSelected = true;
 			}
 			if(m_btnMgr.selected(m_sourceBtnDML))
 			{
@@ -233,7 +281,7 @@ bool CMenu::_Source()
 				else
 				{
 					m_current_view = COVERFLOW_DML;
-					break;
+					imgSelected = true;
 				}
 			}
 			if(m_btnMgr.selected(m_sourceBtnChannel))
@@ -242,7 +290,7 @@ bool CMenu::_Source()
 				else
 				{
 					m_current_view = COVERFLOW_CHANNEL;
-					break;
+					imgSelected = true;
 				}
 			}
 			if(m_btnMgr.selected(m_sourceBtnHomebrew))
@@ -251,7 +299,7 @@ bool CMenu::_Source()
 				else
 				{
 					m_current_view = COVERFLOW_HOMEBREW;
-					break;
+					imgSelected = true;
 				}
 			}
 			if(m_btnMgr.selected(m_sourceBtnEmu))
@@ -260,9 +308,10 @@ bool CMenu::_Source()
 				else
 				{
 					m_current_view = COVERFLOW_PLUGIN;
-					break;
+					imgSelected = true;
 				}
 			}
+			// check actual source menu buttons
 			u8 j = (Source_curPage - 1) * 12;
 			for(int i = 0; i < 12; ++i)
 			{
@@ -359,8 +408,8 @@ bool CMenu::_Source()
 							_checkForSinglePlugin();
 							if(enabledPluginsCount == 1)
 							{
-								currentPartition = m_cfg.getInt("PLUGINS/PARTITION", PluginMagicWord, 1) + 1;
-								_setPartition(-1);
+								currentPartition = m_cfg.getInt("PLUGINS/PARTITION", PluginMagicWord, 1);
+								m_cfg.setInt(PLUGIN_DOMAIN, "partition", currentPartition);
 							}
 							int layout = m_source.getInt(fmt("BUTTON_%i", i + j), "emuflow", 0);
 							if(layout != 0)
@@ -371,7 +420,133 @@ bool CMenu::_Source()
 				}
 			}
 			if(imgSelected)
+			{
+				back = false;
+				m_cfg.setBool(WII_DOMAIN, "source", false);
+				m_cfg.setBool(GC_DOMAIN, "source", false);
+				m_cfg.setBool(CHANNEL_DOMAIN, "source", false);
+				m_cfg.setBool(HOMEBREW_DOMAIN, "source", false);
+				m_cfg.setBool(PLUGIN_DOMAIN, "source", false);
+				switch(m_current_view)
+				{
+					case COVERFLOW_USB:
+						m_cfg.setBool(WII_DOMAIN, "source", true);
+						break;
+					case COVERFLOW_DML:
+						m_cfg.setBool(GC_DOMAIN, "source", true);
+						break;
+					case COVERFLOW_CHANNEL:
+						m_cfg.setBool(CHANNEL_DOMAIN, "source", true);
+						break;
+					case COVERFLOW_HOMEBREW:
+						m_cfg.setBool(HOMEBREW_DOMAIN, "source", true);
+						break;
+					default:
+						m_cfg.setBool(PLUGIN_DOMAIN, "source", true);
+				}
 				break;
+			}
+		}
+		else if(BTN_B_PRESSED)
+		{
+			u8 j = (Source_curPage - 1) * 12;
+			for(int i = 0; i < 12; ++i)
+			{
+				if(m_btnMgr.selected(m_sourceBtnSource[i]))
+				{
+					string source = m_source.getString(fmt("BUTTON_%i", i + j), "source", "");
+					if (source == "wii")
+					{
+						m_cfg.setBool(WII_DOMAIN, "source", !m_cfg.getBool(WII_DOMAIN, "source", false));
+						imgSelected = true;
+						break;
+					}
+					if (source == "dml")
+					{
+						if (!m_show_dml && !m_devo_installed) _showSourceNotice();
+						else
+						{
+							m_cfg.setBool(GC_DOMAIN, "source", !m_cfg.getBool(GC_DOMAIN, "source", false));
+							imgSelected = true;
+							break;
+						}
+					}
+					if (source == "emunand")
+					{
+						if (!show_channel) _showSourceNotice();
+						else
+						{
+							m_cfg.setBool(CHANNEL_DOMAIN, "source", !m_cfg.getBool(CHANNEL_DOMAIN, "source", false));
+							//m_cfg.setBool(CHANNEL_DOMAIN, "disable", false);
+							imgSelected = true;
+							break;
+						}
+					}
+					if (source == "realnand")
+					{
+						if (!show_channel) _showSourceNotice();
+						else
+						{
+							m_cfg.setBool(CHANNEL_DOMAIN, "source", !m_cfg.getBool(CHANNEL_DOMAIN, "source", false));
+							//m_cfg.setBool(CHANNEL_DOMAIN, "disable", true);
+							imgSelected = true;
+							break;
+						}
+					}
+					if (source == "homebrew")
+					{
+						if (!show_homebrew || (!parental_homebrew && m_locked)) _showSourceNotice(); 
+						else
+						{
+							m_cfg.setBool(HOMEBREW_DOMAIN, "source", !m_cfg.getBool(HOMEBREW_DOMAIN, "source", false));
+							imgSelected = true;
+							break;
+						}
+					}
+					if (source == "plugin")
+					{
+						if(!show_emu)
+							_showSourceNotice();
+						else
+						{
+							imgSelected = true;
+							// if all plugin btns off clear plugins before turning one on
+							if(!m_cfg.getBool(PLUGIN_DOMAIN, "source", false))
+							{
+								for (u8 k = 0; k < numPlugins; ++k)
+									m_plugin.SetEnablePlugin(m_cfg, k, 1);
+							}
+							vector<string> magicNums = m_source.getStrings(fmt("BUTTON_%i", i + j), "magic", ',');
+							if (magicNums.size() > 0)
+							{
+								for (vector<string>::iterator itr = magicNums.begin(); itr != magicNums.end(); itr++)
+								{
+									string magic = *itr;
+									if(m_cfg.getBool("PLUGIN", magic, false))// if plugin btn on turn it off
+									{
+										_checkForSinglePlugin();
+										if(enabledPluginsCount == 1) // if last plugin leave it set but turn domain off
+											m_cfg.setBool(PLUGIN_DOMAIN, "source", false);
+										else
+											m_cfg.setBool("PLUGIN", magic, false);
+									}
+									else // turn on plugin btn
+									{
+										m_cfg.setBool(PLUGIN_DOMAIN, "source", true);
+										m_cfg.setBool("PLUGIN", magic, true);
+									}
+								}
+							}
+							break;
+						}
+					}
+				}
+			}
+		}
+		if(imgSelected)
+		{
+			back = false;
+			_updateSourceBtns();
 		}
 		if(m_showtimer > 0)
 		{
@@ -420,7 +595,8 @@ void CMenu::_initSourceMenu()
 	m_sourceLblPage = _addLabel("SOURCE/PAGE_BTN", theme.btnFont, L"", 62, 400, 98, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_sourceBtnPageM = _addPicButton("SOURCE/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 10, 400, 52, 56);
 	m_sourceBtnPageP = _addPicButton("SOURCE/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 160, 400, 52, 56);
-
+	m_sourceBtnBack = _addButton("SOURCE/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 56, theme.btnFontColor);
+	
 	m_sourceDir = m_cfg.getString("GENERAL", "dir_Source", fmt("%s/source_menu", m_dataDir.c_str()));
 
 	if(!m_source.loaded())
@@ -462,10 +638,11 @@ void CMenu::_initSourceMenu()
 	_setHideAnim(m_sourceLblPage, "SOURCE/PAGE_BTN", 0, 0, -1.f, 1.f);
 	_setHideAnim(m_sourceBtnPageM, "SOURCE/PAGE_MINUS", 0, 0, -1.f, 1.f);
 	_setHideAnim(m_sourceBtnPageP, "SOURCE/PAGE_PLUS", 0, 0, -1.f, 1.f);
+	_setHideAnim(m_sourceBtnBack, "SOURCE/BACK_BTN", 0, 0, -2.f, 0.f);	
 
 	for(int i = 0; i < 12; ++i)
 	{
-		_setHideAnim(m_sourceBtnSource[i], fmt("SOURCE/SOURCE_BTN_%i", i), 0, 0, 1.f, 0.f);
+		_setHideAnim(m_sourceBtnSource[i], fmt("SOURCE/SOURCE_BTN_%i", i), 0, 0, 1.f, 1.f);
 	}
 	_textSource();
 	_hideSource(true);
@@ -475,4 +652,5 @@ void CMenu::_textSource(void)
 {
 	m_btnMgr.setText(m_sourceLblTitle, _t("stup1", L"Select Source"));
 	m_btnMgr.setText(m_sourceLblNotice, _t("NMMOff", L"** DISABLED **"));
+	m_btnMgr.setText(m_sourceBtnBack, _t("cfg10", L"Back"));
 }

@@ -39,11 +39,6 @@ void ListGenerator::Init(const char *settingsDir, const char *Language)
 	if(Language != NULL) gameTDB_Language = Language;
 }
 
-void ListGenerator::Cleanup()
-{
-	this->clear(); //clear gamelist
-}
-
 void ListGenerator::OpenConfigs()
 {
 	gameTDB.OpenFile(gameTDB_Path.c_str());
@@ -224,7 +219,6 @@ static void Create_Channel_List()
 void ListGenerator::CreateList(u32 Flow, u32 Device, const string& Path, const vector<string>& FileTypes, 
 								const string& DBName, bool UpdateCache)
 {
-	Cleanup();
 	if(!DBName.empty())
 	{
 		if(UpdateCache)

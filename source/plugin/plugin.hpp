@@ -70,8 +70,8 @@ public:
 	void Cleanup();
 	void EndAdd();
 	vector<dir_discHdr> ParseScummvmINI(Config &ini, const char *Device, u32 MagicWord);
-private:
 	s8 GetPluginPosition(u32 magic);
+private:
 	vector<PluginOptions> Plugins;
 	vector<bool> enabledPlugins;
 	char PluginMagicWord[9];

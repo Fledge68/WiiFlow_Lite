@@ -101,10 +101,9 @@ void CMenu::_updateCheckboxes(void)
 				break;
 			default:
 				m_btnMgr.show(m_categoryBtnCatReq[i]);
-				break;
 		}
 
-		m_btnMgr.setText(m_categoryLblCat[i], m_cat.getWString(fmt("%s/GENERAL", catDomain.c_str()), fmt("cat%d",j), wfmt(L"Category %i",j).c_str()));	
+		m_btnMgr.setText(m_categoryLblCat[i], m_cat.getWString("GENERAL", fmt("cat%d",j), wfmt(L"Category %i",j).c_str()));	
 		m_btnMgr.show(m_categoryLblCat[i]);
 	}
 
@@ -112,6 +111,24 @@ void CMenu::_updateCheckboxes(void)
 
 void CMenu::_getIDCats(void)
 {
+	dir_discHdr *hdr = CoverFlow.getHdr();
+	switch(hdr->type)
+	{
+		case TYPE_CHANNEL:
+			catDomain = "NAND";
+			break;
+		case TYPE_HOMEBREW:
+			catDomain = "HOMEBREW";
+			break;
+		case TYPE_GC_GAME:
+			catDomain = "DML";
+			break;
+		case TYPE_WII_GAME:
+			catDomain = "GAMES";
+			break;
+		default:
+			catDomain = (m_plugin.GetPluginName(m_plugin.GetPluginPosition(hdr->settings[0]))).toUTF8();
+	}
 	id = _getId();
 	const char *idCats = m_cat.getString(catDomain, id, "").c_str();
 	u8 numIdCats = strlen(idCats);
@@ -146,38 +163,19 @@ void CMenu::_CategorySettings(bool fromGameSet)
 	curPage = 1;
 	gameSet = fromGameSet;
 	
-	catDomain = _domainFromView();
-	u8 pos = 0;
-	if(m_current_view == COVERFLOW_PLUGIN)
-	{
-		const vector<bool> &EnabledPlugins = m_plugin.GetEnabledPlugins(m_cfg);
-		if(EnabledPlugins.size() != 0)
-		{
-			char PluginMagicWord[9];
-			u8 enabledPluginsCount = 0;
-			for(u8 i = 0; i < EnabledPlugins.size(); i++)
-			{
-				snprintf(PluginMagicWord, sizeof(PluginMagicWord), "%08x", m_plugin.getPluginMagic(i));
-				if(m_cfg.getBool("PLUGIN", PluginMagicWord, true))
-				{
-					pos = i;
-					enabledPluginsCount++;
-				}
-			}
-			if(enabledPluginsCount == 1)
-				catDomain = (m_plugin.GetPluginName(pos)).toUTF8();
-		}
-	}
-	m_max_categories = m_cat.getInt(fmt("%s/GENERAL", catDomain.c_str()), "numcategories", 6);
+	m_max_categories = m_cat.getInt("GENERAL", "numcategories", 6);
 	m_categories.resize(m_max_categories, '0');
 	m_categories.assign(m_max_categories, '0');
+
 	if(fromGameSet)
+	{
 		_getIDCats();
+	}
 	else
 	{
-		const char *requiredCats = m_cat.getString(fmt("%s/GENERAL", catDomain.c_str()), "required_categories").c_str();
-		const char *selectedCats = m_cat.getString(fmt("%s/GENERAL", catDomain.c_str()), "selected_categories").c_str();
-		const char *hiddenCats = m_cat.getString(fmt("%s/GENERAL", catDomain.c_str()), "hidden_categories").c_str();
+		const char *requiredCats = m_cat.getString("GENERAL", "required_categories").c_str();
+		const char *selectedCats = m_cat.getString("GENERAL", "selected_categories").c_str();
+		const char *hiddenCats = m_cat.getString("GENERAL", "hidden_categories").c_str();
 		u8 numReqCats = strlen(requiredCats);
 		u8 numSelCats = strlen(selectedCats);
 		u8 numHidCats = strlen(hiddenCats);
@@ -242,9 +240,9 @@ void CMenu::_CategorySettings(bool fromGameSet)
 						newReqCats = newReqCats + cCh;
 					}
 				}
-				m_cat.setString(fmt("%s/GENERAL", catDomain.c_str()), "selected_categories", newSelCats);
-				m_cat.setString(fmt("%s/GENERAL", catDomain.c_str()), "hidden_categories", newHidCats);
-				m_cat.setString(fmt("%s/GENERAL", catDomain.c_str()), "required_categories", newReqCats);
+				m_cat.setString("GENERAL", "selected_categories", newSelCats);
+				m_cat.setString("GENERAL", "hidden_categories", newHidCats);
+				m_cat.setString("GENERAL", "required_categories", newReqCats);
 			}
 			else
 				_setIDCats();
