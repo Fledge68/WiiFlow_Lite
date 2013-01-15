@@ -128,7 +128,8 @@ void CMenu::_updateSourceBtns(void)
 			domain = PLUGIN_DOMAIN;
 			if(m_cfg.getBool(domain, "source", false))
 			{
-				if(m_cfg.getBool("PLUGIN", m_source.getString(fmt("BUTTON_%i", i + j), "magic"), false))
+				vector<string> magicNums = m_source.getStrings(fmt("BUTTON_%i", i + j), "magic", ',');
+				if(m_cfg.getBool("PLUGIN", magicNums.at(0), false))
 					ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image_s", "").c_str();
 				else
 					ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image", "").c_str();
@@ -366,7 +367,7 @@ bool CMenu::_Source()
 							break;
 						}
 					}
-					if (source == "allplugins")
+					/*if (source == "allplugins")
 					{
 						if (!show_emu) _showSourceNotice();
 						else
@@ -380,7 +381,7 @@ bool CMenu::_Source()
 							}
 							break;
 						}
-					}
+					}*/
 					if (source == "plugin")
 					{
 						if(!show_emu)
