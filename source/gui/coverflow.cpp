@@ -2823,10 +2823,9 @@ int CCoverFlow::_coverLoader(CCoverFlow *cf)
 {
 	cf->m_coverThrdBusy = true;
 	CLRet ret;
-	int firstItem = 0;
-	int nextItem = 0;
+	u32 firstItem;
 	bool update;
-	u32 i;
+	u32 i, j;
 
 	u32 bufferSize = min(cf->m_numBufCovers * max(2u, cf->m_rows), 80u);
 
@@ -2834,23 +2833,21 @@ int CCoverFlow::_coverLoader(CCoverFlow *cf)
 	{
 		update = cf->m_moved;
 		cf->m_moved = false;
-		LWP_MutexLock(cf->m_mutex);
-		nextItem = cf->m_covers[cf->m_range / 2].index;
-		int diff = nextItem - firstItem;
-		if(diff < 0) diff *= (-1);
-		for(u32 j = bufferSize - diff; j <= bufferSize && cf->m_loadingCovers && update; ++j)
+		for(j = cf->m_items.size(); j >= bufferSize && cf->m_loadingCovers && !cf->m_moved && update; --j)
 		{
+			firstItem = cf->m_covers[cf->m_range / 2].index;
 			i = loopNum((j & 1) ? firstItem - (j + 1) / 2 : firstItem + j / 2, cf->m_items.size());
+			LWP_MutexLock(cf->m_mutex);
 			TexHandle.Cleanup(cf->m_items[i].texture);
 			cf->m_items[i].state = STATE_Loading;
+			LWP_MutexUnlock(cf->m_mutex);
 		}
-		firstItem = nextItem;
-		LWP_MutexUnlock(cf->m_mutex);
 		ret = CL_OK;
-		for(u32 j = 0; j <= bufferSize && cf->m_loadingCovers && !cf->m_moved && update && ret != CL_NOMEM; ++j)
+		for(j = 0; j <= bufferSize && cf->m_loadingCovers && !cf->m_moved && update && ret != CL_NOMEM; ++j)
 		{
+			firstItem = cf->m_covers[cf->m_range / 2].index;
 			i = loopNum((j & 1) ? firstItem - (j + 1) / 2 : firstItem + j / 2, cf->m_items.size());
-			if(cf->m_items[i].texture.data != NULL)
+			if(cf->m_items[i].state != STATE_Loading)
 				continue;
 			if((ret = cf->_loadCoverTex(i, cf->m_box, cf->m_useHQcover, false)) == CL_ERROR)
 			{
