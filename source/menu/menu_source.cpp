@@ -126,7 +126,16 @@ void CMenu::_updateSourceBtns(void)
 			domain = CHANNEL_DOMAIN;
 		else if(btnSource == "")
 			continue;
-		else
+		else if(btnSource == "allplugins")
+		{
+			domain = PLUGIN_DOMAIN;
+				bool EnableAll = m_plugin.GetEnabledPlugins(m_cfg).size();
+				if(EnableAll)
+					ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image_s", "").c_str();
+				else
+					ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image", "").c_str();
+		}
+		else if(btnSource == "plugin")
 		{
 			domain = PLUGIN_DOMAIN;
 			if(m_cfg.getBool(domain, "source", false))
@@ -141,6 +150,8 @@ void CMenu::_updateSourceBtns(void)
 			else
 				ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image", "").c_str();
 		}
+		else
+			domain = WII_DOMAIN;
 		if(domain != PLUGIN_DOMAIN)
 		{
 			if(m_cfg.getBool(domain, "source", false))
@@ -371,7 +382,7 @@ bool CMenu::_Source()
 							break;
 						}
 					}
-					/*if (source == "allplugins")
+					if (source == "allplugins")
 					{
 						if (!show_emu) _showSourceNotice();
 						else
@@ -385,7 +396,7 @@ bool CMenu::_Source()
 							}
 							break;
 						}
-					}*/
+					}
 					if (source == "plugin")
 					{
 						if(!show_emu)
@@ -506,6 +517,22 @@ bool CMenu::_Source()
 						{
 							m_cfg.setBool(HOMEBREW_DOMAIN, "source", !m_cfg.getBool(HOMEBREW_DOMAIN, "source", false));
 							imgSelected = true;
+							break;
+						}
+					}
+					if (source == "allplugins")
+					{
+						if (!show_emu) _showSourceNotice();
+						else
+						{
+							imgSelected = true;
+							bool EnableAll = m_plugin.GetEnabledPlugins(m_cfg).size();
+							for(u8 j = 0; m_plugin.PluginExist(j); j++)
+								m_plugin.SetEnablePlugin(m_cfg, j, EnableAll ? 2 : 1);
+							if(EnableAll)
+								m_cfg.setBool(PLUGIN_DOMAIN, "source", true);
+							else
+								m_cfg.setBool(PLUGIN_DOMAIN, "source", false);
 							break;
 						}
 					}
