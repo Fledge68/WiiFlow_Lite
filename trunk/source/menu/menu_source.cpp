@@ -23,6 +23,7 @@ u8 numPlugins;
 u8 maxBtns = 71;
 string m_sourceDir;
 Config m_source;
+vector<string> magicNums;
 
 // Source menu
 s16 m_sourceLblNotice;
@@ -123,12 +124,15 @@ void CMenu::_updateSourceBtns(void)
 			domain = CHANNEL_DOMAIN;
 		else if(btnSource == "realnand")
 			domain = CHANNEL_DOMAIN;
+		else if(btnSource == "")
+			continue;
 		else
 		{
 			domain = PLUGIN_DOMAIN;
 			if(m_cfg.getBool(domain, "source", false))
 			{
-				vector<string> magicNums = m_source.getStrings(fmt("BUTTON_%i", i + j), "magic", ',');
+				magicNums.clear();
+				magicNums = m_source.getStrings(fmt("BUTTON_%i", i + j), "magic", ',');
 				if(m_cfg.getBool("PLUGIN", magicNums.at(0), false))
 					ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image_s", "").c_str();
 				else
@@ -390,7 +394,8 @@ bool CMenu::_Source()
 						{
 							m_current_view = COVERFLOW_PLUGIN;
 							imgSelected = true;
-							vector<string> magicNums = m_source.getStrings(fmt("BUTTON_%i", i + j), "magic", ',');
+							magicNums.clear();
+							magicNums = m_source.getStrings(fmt("BUTTON_%i", i + j), "magic", ',');
 							if (magicNums.size() > 0)
 							{
 								for (u8 k = 0; k < numPlugins; ++k)
@@ -517,7 +522,8 @@ bool CMenu::_Source()
 								for (u8 k = 0; k < numPlugins; ++k)
 									m_plugin.SetEnablePlugin(m_cfg, k, 1);
 							}
-							vector<string> magicNums = m_source.getStrings(fmt("BUTTON_%i", i + j), "magic", ',');
+							magicNums.clear();
+							magicNums = m_source.getStrings(fmt("BUTTON_%i", i + j), "magic", ',');
 							if (magicNums.size() > 0)
 							{
 								for (vector<string>::iterator itr = magicNums.begin(); itr != magicNums.end(); itr++)
