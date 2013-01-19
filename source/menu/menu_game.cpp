@@ -892,7 +892,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		bool cheats = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool(GC_DOMAIN, "cheat", false));
 		bool DML_debug = m_gcfg2.getBool(id, "debugger", false);
 		bool DM_Widescreen = m_gcfg2.getBool(id, "dm_widescreen", false);
-		bool activity_led = m_cfg.getBool(GC_DOMAIN, "dml_activity_led", true);
+		bool activity_led = m_gcfg2.getBool(id, "led", false);
 		/* Generate gct path */
 		char GC_Path[1024];
 		GC_Path[1023] = '\0';
@@ -1102,6 +1102,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	int userIOS = m_gcfg2.getInt(id, "ios", 0);
 	u64 gameTitle = TITLE_ID(hdr->settings[0],hdr->settings[1]);
 	bool useNK2o = (m_gcfg2.getBool(id, "useneek", false) && !neek2o());
+	bool use_led = m_gcfg2.getBool(id, "led", false);
 
 	m_gcfg1.save(true);
 	m_gcfg2.save(true);
@@ -1165,7 +1166,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		NandHandle.Patch_AHB(); /* Identify may takes it */
 		Identify(gameTitle);
 		ExternalBooter_ChannelSetup(gameTitle, use_dol);
-		WiiFlow_ExternalBooter(videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, 0, TYPE_CHANNEL);
+		WiiFlow_ExternalBooter(videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, 0, TYPE_CHANNEL, use_led);
 	}
 	Sys_Exit();
 }
@@ -1316,6 +1317,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	else
 		emulate_mode = 0;
 
+	bool use_led = m_gcfg2.getBool(id, "led", false);
 	bool cheat = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool(WII_DOMAIN, "cheat", false));
 	debuggerselect = m_gcfg2.getBool(id, "debugger", false) ? 1 : 0; // debuggerselect is defined in fst.h
 	if(id == "RPWE41" || id == "RPWZ41" || id == "SPXP41") // Prince of Persia, Rival Swords
@@ -1344,7 +1346,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 
 	if(strlen(rtrn) == 4)
 		returnTo = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
-	int userIOS = m_gcfg2.getInt(id, "ios", 0);	
+	int userIOS = m_gcfg2.getInt(id, "ios", 0);
 	int gameIOS = dvd && !neek2o() ? userIOS : GetRequestedGameIOS(hdr);
 
 	m_gcfg1.save(true);
@@ -1401,7 +1403,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		free(gameconfig);
 	}
 	ExternalBooter_WiiGameSetup(wbfs_partition, dvd, id.c_str());
-	WiiFlow_ExternalBooter(videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, returnTo, TYPE_WII_GAME);
+	WiiFlow_ExternalBooter(videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, returnTo, TYPE_WII_GAME, use_led);
 }
 
 void CMenu::_initGameMenu()

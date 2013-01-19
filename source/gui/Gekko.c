@@ -26,14 +26,13 @@
 #include <gccore.h>
 
 #include "Gekko.h"
+#include "memory/memory.h"
 
-#define HW_GPIOB_OUT		0xCD0000C0;
 #define DISC_SLOT_LED		0x20
 
 lwp_t light_thread = LWP_THREAD_NULL;
 
 void *light_loop();
-vu32 *light_reg = (u32*)HW_GPIOB_OUT;
 bool light_on = false;
 u8 light_level = 0;
 
@@ -54,7 +53,7 @@ void wiiLightOff()
 	light_level = 0;
 	LWP_JoinThread(light_thread, NULL);
 	light_thread = LWP_THREAD_NULL;
-	*light_reg &= ~DISC_SLOT_LED;
+	*HW_GPIOB_OUT &= ~DISC_SLOT_LED;
 }
 
 void wiiLightSetLevel(int level)
@@ -90,11 +89,11 @@ void *light_loop()
 		timeon = light_timeon;
 		timeoff = light_timeoff;
 		// Turn on the light and sleep for a bit
-		*light_reg |= DISC_SLOT_LED;
+		*HW_GPIOB_OUT |= DISC_SLOT_LED;
 		nanosleep(&timeon);
 		// Turn off the light (if required) and sleep for a bit
 		if(timeoff.tv_nsec > 0)
-			*light_reg &= ~DISC_SLOT_LED;
+			*HW_GPIOB_OUT &= ~DISC_SLOT_LED;
 		nanosleep(&timeoff);
 	}
 	return NULL;
