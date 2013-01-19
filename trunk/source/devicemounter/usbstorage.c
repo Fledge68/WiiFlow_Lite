@@ -128,6 +128,9 @@ void USBStorage2_Deinit()
 	}
 	else if(fd >= 0)
 		IOS_Close(fd);  // not sure to close the fd is needed
+	if(mem2_ptr != NULL)
+		MEM2_lo_free(mem2_ptr);
+	mem2_ptr = NULL;
 
 	/* Reset Variables */
 	if(usb2_port == 0 || usb2_port == 1)
