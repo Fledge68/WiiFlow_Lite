@@ -53,7 +53,8 @@ extern u32 gameconfsize;
 extern u32 *gameconf;
 
 the_CFG normalCFG;
-void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, int aspectRatio, u32 returnTo, u8 BootType)
+void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, 
+	int aspectRatio, u32 returnTo, u8 BootType, bool use_led)
 {
 	normalCFG.vidMode = vidMode;
 	normalCFG.vipatch = vipatch;
@@ -73,6 +74,7 @@ void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 pat
 	normalCFG.gameconf = gameconf;
 	normalCFG.gameconfsize = gameconfsize;
 	normalCFG.BootType = BootType;
+	normalCFG.use_led = use_led;
 	normalCFG.wip_list = get_wip_list();
 	normalCFG.wip_count = get_wip_count();
 

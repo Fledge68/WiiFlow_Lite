@@ -135,6 +135,9 @@ int main()
 	__IOS_ShutdownSubsystems();
 	__exception_closeall();
 
+	/* Enable front LED if requested */
+	if(normalCFG.use_led) *HW_GPIOB_OUT |= 0x20;
+
 	/* Originally from tueidj - taken from NeoGamma (thx) */
 	*(vu32*)0xCC003024 = 1;
 

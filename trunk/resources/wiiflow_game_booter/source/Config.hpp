@@ -30,6 +30,7 @@ struct the_CFG {
 	u8 GameBootType;
 	WIP_Code *wip_list;
 	u32 wip_count;
+	bool use_led;
 	/* needed for channels */
 	u64 title;
 	bool use_dol;
