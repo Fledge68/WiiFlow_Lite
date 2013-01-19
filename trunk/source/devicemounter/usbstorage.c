@@ -31,7 +31,7 @@
 #include <malloc.h>
 #include <stdio.h>
 #include <string.h>
-
+#include "memory/mem2.hpp"
 #include "usbstorage.h"
 #include "usbstorage_libogc.h"
 #include "usbthread.h"
@@ -69,8 +69,6 @@ u32 hdd_sector_size[2] = { 512, 512 };
 bool first = false;
 int usb_libogc_mode = 0;
 
-extern void* SYS_AllocArena2MemLo(u32 size,u32 align);
-
 inline s32 __USBStorage_isMEM2Buffer(const void *buffer)
 {
 	u32 high_addr = ((u32)buffer) >> 24;
@@ -81,7 +79,7 @@ s32 USBStorage2_Init(u32 port)
 {
 	/* allocate buf2 */
 	if(mem2_ptr == NULL)
-		mem2_ptr = SYS_AllocArena2MemLo(USB_MEM2_SIZE, 32);
+		mem2_ptr = MEM2_lo_alloc(USB_MEM2_SIZE);
 
 	if(usb_libogc_mode)
 	{

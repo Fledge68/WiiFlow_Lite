@@ -3,7 +3,7 @@
 #include <string.h>
 #include <ogcsys.h>
 #include <sdcard/wiisd_io.h>
-
+#include "memory/mem2.hpp"
 #include "sdhc.h"
 
 /* IOCTL comamnds */
@@ -24,8 +24,6 @@ static char fs[] ATTRIBUTE_ALIGN(32) = "/dev/sdio/sdhc";
 static s32 hid = -1, fd = -1;
 static u32 sector_size = SDHC_SECTOR_SIZE;
 static void *sdhc_buf2;
-
-extern void* SYS_AllocArena2MemLo(u32 size,u32 align);
 
 bool SDHC_Init(void)
 {
@@ -49,7 +47,7 @@ bool SDHC_Init(void)
 	// allocate buf2
 	if (sdhc_buf2 == NULL)
 	{
-		sdhc_buf2 = SYS_AllocArena2MemLo(SDHC_MEM2_SIZE, 32);
+		sdhc_buf2 = MEM2_lo_alloc(SDHC_MEM2_SIZE);
 		if (sdhc_buf2 == NULL) goto err;
 	}
 

@@ -961,7 +961,6 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 
 	Playlog_Delete();
 	cleanup(); // wifi and sd gecko doesnt work anymore after cleanup
-	loadIOS(58, true);
 
 	LoadHomebrew(filepath);
 	AddBootArgument(filepath);
@@ -970,6 +969,7 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 		gprintf("Argument: %s\n", arguments[i].c_str());
 		AddBootArgument(arguments[i].c_str());
 	}
+	loadIOS(58, false);
 	ShutdownBeforeExit();
 	BootHomebrew();
 }
