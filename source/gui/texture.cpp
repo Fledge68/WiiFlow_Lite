@@ -435,7 +435,7 @@ TexErr STexture::fromJPG(TexData &dest, const u8 *buffer, const u32 buffer_size,
 	return TE_OK;
 }
 
-TexErr STexture::fromPNG(TexData &dest, const u8 *buffer, u8 f, u32 minMipSize, u32 maxMipSize)
+TexErr STexture::fromPNG(TexData &dest, const u8 *buffer, u8 f, u32 minMipSize, u32 maxMipSize, bool reduce_alpha)
 {
 	Cleanup(dest);
 	u8 maxLODTmp = 0;
@@ -583,7 +583,22 @@ TexErr STexture::fromPNG(TexData &dest, const u8 *buffer, u8 f, u32 minMipSize, 
 		PNGU_ReleaseImageContext(ctx);
 	}
 	DCFlushRange(dest.data, dest.dataSize);
+	_reduceAlpha(dest, reduce_alpha);
 	return TE_OK;
+}
+
+void STexture::_reduceAlpha(TexData &dest, bool reduce_alpha)
+{
+	if(dest.format != GX_TF_RGBA8 || reduce_alpha == false)
+		return;
+	for(u32 y = 0; y < dest.height; ++y)
+	{
+		for(u32 x = 0; x < dest.width; ++x)
+		{
+			dest.data[coordsRGBA8(x, y, dest.width)] /= 2;
+		}
+	}
+	DCFlushRange(dest.data, dest.dataSize);
 }
 
 void STexture::_resize(u8 *dst, u32 dstWidth, u32 dstHeight, const u8 *src, u32 srcWidth, u32 srcHeight)
