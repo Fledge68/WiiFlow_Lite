@@ -31,11 +31,12 @@ public:
 	// Get from PNG, if not found from JPG
 	TexErr fromImageFile(TexData &dest, const char *filename, u8 f = -1, u32 minMipSize = 0, u32 maxMipSize = 0);
 	// This function doesn't use MEM2 if the PNG is loaded from memory and there's no mip mapping
-	TexErr fromPNG(TexData &dest, const u8 *buffer, u8 f = -1, u32 minMipSize = 0, u32 maxMipSize = 0);
+	TexErr fromPNG(TexData &dest, const u8 *buffer, u8 f = -1, u32 minMipSize = 0, u32 maxMipSize = 0, bool reduce_alpha = false);
 	TexErr fromJPG(TexData &dest, const u8 *buffer, const u32 buffer_size, u8 f = -1, u32 minMipSize = 0, u32 maxMipSize = 0);
 	/* Just for THP */
 	TexErr fromTHP(TexData &dest, const u8 *buffer, u32 w, u32 h);
 private:
+	void _reduceAlpha(TexData &dest, bool reduce_alpha);
 	void _resize(u8 *dst, u32 dstWidth, u32 dstHeight, const u8 *src, u32 srcWidth, u32 srcHeight);
 	void _resizeD2x2(u8 *dst, const u8 *src, u32 srcWidth, u32 srcHeight);
 	u8 *_genMipMaps(u8 *src, u32 width, u32 height, u8 maxLOD, u32 lod0Width, u32 lod0Height);
