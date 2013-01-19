@@ -11,22 +11,16 @@
 
 #define DEFAULT_FIFO_SIZE	(256 * 1024)
 
-extern const u8 wait_01_jpg[];
-extern const u32 wait_01_jpg_size;
-extern const u8 wait_02_jpg[];
-extern const u32 wait_02_jpg_size;
-extern const u8 wait_03_jpg[];
-extern const u32 wait_03_jpg_size;
-extern const u8 wait_04_jpg[];
-extern const u32 wait_04_jpg_size;
-extern const u8 wait_05_jpg[];
-extern const u32 wait_05_jpg_size;
-extern const u8 wait_06_jpg[];
-extern const u32 wait_06_jpg_size;
-extern const u8 wait_07_jpg[];
-extern const u32 wait_07_jpg_size;
-extern const u8 wait_08_jpg[];
-extern const u32 wait_08_jpg_size;
+extern const u8 wait_01_png[];
+extern const u8 wait_02_png[];
+extern const u8 wait_03_png[];
+extern const u8 wait_04_png[];
+extern const u8 wait_05_png[];
+extern const u8 wait_06_png[];
+extern const u8 wait_07_png[];
+extern const u8 wait_08_png[];
+extern const u8 wait_09_png[];
+extern const u8 wait_10_png[];
 
 vector<TexData> m_defaultWaitMessages;
 
@@ -571,16 +565,18 @@ void CVideo::waitMessage(float delay)
 {
 	if(m_defaultWaitMessages.size() == 0)
 	{
-		TexData m_wTextures[8];
-		TexHandle.fromJPG(m_wTextures[0], wait_01_jpg, wait_01_jpg_size);
-		TexHandle.fromJPG(m_wTextures[1], wait_02_jpg, wait_02_jpg_size);
-		TexHandle.fromJPG(m_wTextures[2], wait_03_jpg, wait_03_jpg_size);
-		TexHandle.fromJPG(m_wTextures[3], wait_04_jpg, wait_04_jpg_size);
-		TexHandle.fromJPG(m_wTextures[4], wait_05_jpg, wait_05_jpg_size);
-		TexHandle.fromJPG(m_wTextures[5], wait_06_jpg, wait_06_jpg_size);
-		TexHandle.fromJPG(m_wTextures[6], wait_07_jpg, wait_07_jpg_size);
-		TexHandle.fromJPG(m_wTextures[7], wait_08_jpg, wait_08_jpg_size);
-		for(int i = 0; i < 8; i++)
+		TexData m_wTextures[10];
+		TexHandle.fromPNG(m_wTextures[0], wait_01_png);
+		TexHandle.fromPNG(m_wTextures[1], wait_02_png);
+		TexHandle.fromPNG(m_wTextures[2], wait_03_png);
+		TexHandle.fromPNG(m_wTextures[3], wait_04_png);
+		TexHandle.fromPNG(m_wTextures[4], wait_05_png);
+		TexHandle.fromPNG(m_wTextures[5], wait_06_png);
+		TexHandle.fromPNG(m_wTextures[6], wait_07_png);
+		TexHandle.fromPNG(m_wTextures[7], wait_08_png);
+		TexHandle.fromPNG(m_wTextures[8], wait_09_png);
+		TexHandle.fromPNG(m_wTextures[9], wait_10_png);
+		for(int i = 0; i < 10; i++)
 			m_defaultWaitMessages.push_back(m_wTextures[i]);
 	}
 	waitMessage(vector<TexData>(), delay);
@@ -592,7 +588,7 @@ void CVideo::waitMessage(const vector<TexData> &tex, float delay)
 	if(tex.size() == 0)
 	{
 		m_waitMessages = m_defaultWaitMessages;
-		m_waitMessageDelay = 0.15f;
+		m_waitMessageDelay = 0.12f;
 	}
 	else
 	{
