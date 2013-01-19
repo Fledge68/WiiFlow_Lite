@@ -16,10 +16,14 @@ u32 MALLOC_MEM2 = 0;
 void *MEM1_lo_start = (void*)0x80004000;
 void *MEM1_lo_end = (void*)0x80620000;
 
-void *MEM2_start = (void*)0x90200000;
-void *MEM2_end = (void*)0x93100000;
+void *MEM2_lo_start = (void*)0x90000000;
+void *MEM2_lo_end = (void*)0x90600000;
+
+void *MEM2_start = (void*)0x90600000;
+void *MEM2_end = (void*)0x93200000;
 
 static CMEM2Alloc g_mem1lo;
+static CMEM2Alloc g_mem2lo_gp;
 static CMEM2Alloc g_mem2gp;
 
 extern "C"
@@ -37,7 +41,10 @@ void MEM_init()
 	g_mem1lo.init(MEM1_lo_start, MEM1_lo_end); //about 6mb
 	g_mem1lo.clear();
 
-	g_mem2gp.init(MEM2_start, MEM2_end); //about 47mb
+	g_mem2lo_gp.init(MEM2_lo_start, MEM2_lo_end); //about 6mb
+	g_mem2lo_gp.clear();
+
+	g_mem2gp.init(MEM2_start, MEM2_end); //about 44mb
 	g_mem2gp.clear();
 }
 
@@ -80,15 +87,24 @@ unsigned int MEM1_freesize()
 	return (g_mem1lo.FreeSize() + SYS_GetArena1Size());
 }
 
-void MEM2_cleanup(void)
+
+void *MEM2_lo_alloc(unsigned int s)
 {
-	g_mem2gp.cleanup();
+	return g_mem2lo_gp.allocate(s);
 }
 
-void MEM2_clear(void)
+void *MEM2_lo_realloc(void *p, unsigned int s)
 {
-	g_mem2gp.clear();
+	return g_mem2lo_gp.reallocate(p, s);
 }
+
+void MEM2_lo_free(void *p)
+{
+	if(!p)
+		return;
+	g_mem2lo_gp.release(p);
+}
+
 
 void MEM2_free(void *p)
 {
@@ -188,7 +204,12 @@ void __wrap_free(void *p)
 		return;
 
 	if(((u32)p & 0x10000000) != 0)
-		g_mem2gp.release(p);
+	{
+		if(p > MEM2_start)
+			g_mem2gp.release(p);
+		else
+			g_mem2lo_gp.release(p);
+	}
 	else
 		MEM1_free(p);
 }

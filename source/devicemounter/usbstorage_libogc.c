@@ -38,7 +38,7 @@ distribution.
 #include <errno.h>
 #include <ogc/lwp_heap.h>
 #include <malloc.h>
-
+#include "memory/mem2.hpp"
 #include <ogc/machine/asm.h>
 #include <ogc/machine/processor.h>
 #include <ogc/disc_io.h>
@@ -208,12 +208,7 @@ s32 USBStorage_OGC_Initialize()
 	_CPU_ISR_Disable(level);
 	LWP_InitQueue(&__usbstorage_ogc_waitq);
 	if(!arena_ptr) {
-		arena_ptr = (u8*)ROUNDDOWN32(((u32)SYS_GetArena2Hi() - HEAP_SIZE));
-		if((u32)arena_ptr < (u32)SYS_GetArena2Lo()) {
-			_CPU_ISR_Restore(level);
-			return IPC_ENOMEM;
-		}
-		SYS_SetArena2Hi(arena_ptr);
+		arena_ptr = (u8*)MEM2_lo_alloc(HEAP_SIZE);
 	}
 	__lwp_heap_init(&__heap, arena_ptr, HEAP_SIZE, 32);
 	cbw_buffer=(u8*)__lwp_heap_allocate(&__heap, 32);
