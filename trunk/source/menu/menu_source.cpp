@@ -124,35 +124,45 @@ void CMenu::_updateSourceBtns(void)
 			domain = CHANNEL_DOMAIN;
 		else if(btnSource == "realnand")
 			domain = CHANNEL_DOMAIN;
-		else if(btnSource == "")
-			continue;
 		else if(btnSource == "allplugins")
 		{
 			domain = PLUGIN_DOMAIN;
-				bool EnableAll = m_plugin.GetEnabledPlugins(m_cfg).size();
-				if(EnableAll)
-					ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image_s", "").c_str();
-				else
-					ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image", "").c_str();
+			const vector<bool> &EnabledPlugins = m_plugin.GetEnabledPlugins(m_cfg);
+			if(EnabledPlugins.size() == 0)
+				ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image_s", "").c_str();
+			else
+				ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image", "").c_str();
 		}
 		else if(btnSource == "plugin")
 		{
 			domain = PLUGIN_DOMAIN;
-			if(m_cfg.getBool(domain, "source", false))
-			{
-				magicNums.clear();
-				magicNums = m_source.getStrings(fmt("BUTTON_%i", i + j), "magic", ',');
-				if(m_cfg.getBool("PLUGIN", magicNums.at(0), false))
-					ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image_s", "").c_str();
-				else
-					ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image", "").c_str();
-			}
+			magicNums.clear();
+			magicNums = m_source.getStrings(fmt("BUTTON_%i", i + j), "magic", ',');
+			if(m_cfg.getBool(domain, "source", false) && m_cfg.getBool("PLUGIN", magicNums.at(0), false))
+				ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image_s", "").c_str();
 			else
 				ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image", "").c_str();
 		}
 		else
-			domain = WII_DOMAIN;
-		if(domain != PLUGIN_DOMAIN)
+			continue;
+		if(domain == CHANNEL_DOMAIN)
+		{
+			ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image", "").c_str();
+			if(m_cfg.getBool(domain, "source", false))
+			{
+				if(m_cfg.getBool(CHANNEL_DOMAIN, "disable") == true)
+				{
+					if(btnSource == "realnand")
+						ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image_s", "").c_str();
+				}
+				if(m_cfg.getBool(CHANNEL_DOMAIN, "disable") == false)
+				{
+					if(btnSource == "emunand")
+						ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image_s", "").c_str();
+				}
+			}
+		}
+		if(domain != PLUGIN_DOMAIN && domain != CHANNEL_DOMAIN)
 		{
 			if(m_cfg.getBool(domain, "source", false))
 				ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image_s", "").c_str();
@@ -174,10 +184,7 @@ void CMenu::_updateSourceBtns(void)
 				TexHandle.fromPNG(texConsoleImgs, favoritesons_png);
 		}
 		m_btnMgr.setBtnTexture(m_sourceBtnSource[i], texConsoleImg, texConsoleImgs);
-		
-		const char *source = m_source.getString(fmt("BUTTON_%i", i + j), "source", "").c_str();
-		if(source != NULL && source[0] != '\0')
-			m_btnMgr.show(m_sourceBtnSource[i]);
+		m_btnMgr.show(m_sourceBtnSource[i]);
 	}
 }
 
@@ -244,7 +251,7 @@ bool CMenu::_Source()
 	{
 		_mainLoopCommon();
 		bool imgSelected = false;
-		if(BTN_HOME_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_sourceBtnBack)))
+		if(BTN_HOME_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_sourceBtnBack)) || (BTN_B_PRESSED && !WPadIR_ANY()))
 		{
 			u8 sourceCount = 0;
 			if(m_cfg.getBool(WII_DOMAIN, "source", false))
@@ -493,8 +500,18 @@ bool CMenu::_Source()
 						if (!show_channel) _showSourceNotice();
 						else
 						{
-							m_cfg.setBool(CHANNEL_DOMAIN, "source", !m_cfg.getBool(CHANNEL_DOMAIN, "source", false));
-							//m_cfg.setBool(CHANNEL_DOMAIN, "disable", false);
+							if(m_cfg.getBool(CHANNEL_DOMAIN, "source"))
+							{
+								if(m_cfg.getBool(CHANNEL_DOMAIN, "disable"))//real nand on
+									m_cfg.setBool(CHANNEL_DOMAIN, "disable", false);
+								else
+									m_cfg.setBool(CHANNEL_DOMAIN, "source", false);
+							}
+							else
+							{
+								m_cfg.setBool(CHANNEL_DOMAIN, "source", true);
+								m_cfg.setBool(CHANNEL_DOMAIN, "disable", false);
+							}
 							imgSelected = true;
 							break;
 						}
@@ -504,8 +521,18 @@ bool CMenu::_Source()
 						if (!show_channel) _showSourceNotice();
 						else
 						{
-							m_cfg.setBool(CHANNEL_DOMAIN, "source", !m_cfg.getBool(CHANNEL_DOMAIN, "source", false));
-							//m_cfg.setBool(CHANNEL_DOMAIN, "disable", true);
+							if(m_cfg.getBool(CHANNEL_DOMAIN, "source"))
+							{
+								if(m_cfg.getBool(CHANNEL_DOMAIN, "disable") == false)//emu nand on
+									m_cfg.setBool(CHANNEL_DOMAIN, "disable", true);
+								else
+									m_cfg.setBool(CHANNEL_DOMAIN, "source", false);
+							}
+							else
+							{
+								m_cfg.setBool(CHANNEL_DOMAIN, "source", true);
+								m_cfg.setBool(CHANNEL_DOMAIN, "disable", true);
+							}
 							imgSelected = true;
 							break;
 						}
