@@ -266,9 +266,11 @@ int CMenu::main(void)
 		if(!_Source())
 			LoadView();
 		else
+		{
 			_showMain();
-		if(BTN_B_HELD)
-			bUsed = true;
+			if(BTN_B_HELD)
+				bUsed = true;
+		}
 	}
 
 	while(!m_exit)
@@ -290,9 +292,11 @@ int CMenu::main(void)
 				if(!_Source()) //Different source selected
 					LoadView();
 				else
+				{
 					_showMain();
-				if(BTN_B_HELD)
-					bUsed = true;
+					if(BTN_B_HELD)
+						bUsed = true;
+				}
 				continue;
 			}
 		}
