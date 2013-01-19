@@ -2,9 +2,9 @@
 #include <unistd.h>
 #include <string.h>
 #include <ogcsys.h>
-#include <sdcard/wiisd_io.h>
-#include "memory/mem2.hpp"
 #include "sdhc.h"
+#include "wiisd_libogc.h"
+#include "memory/mem2.hpp"
 
 /* IOCTL comamnds */
 #define IOCTL_SDHC_INIT		0x01
@@ -23,7 +23,7 @@ static char fs[] ATTRIBUTE_ALIGN(32) = "/dev/sdio/sdhc";
 
 static s32 hid = -1, fd = -1;
 static u32 sector_size = SDHC_SECTOR_SIZE;
-static void *sdhc_buf2;
+static void *sdhc_buf2 = NULL;
 
 bool SDHC_Init(void)
 {
@@ -33,7 +33,7 @@ bool SDHC_Init(void)
 
 	if (sdhc_mode_sd)
 	{
-		sdhc_inited = __io_wiisd.startup();
+		sdhc_inited = __io_wiisd_ogc.startup();
 		return sdhc_inited;
 	}
 
@@ -45,11 +45,9 @@ bool SDHC_Init(void)
 	if (hid < 0) goto err;
 
 	// allocate buf2
-	if (sdhc_buf2 == NULL)
-	{
+	if(sdhc_buf2 == NULL)
 		sdhc_buf2 = MEM2_lo_alloc(SDHC_MEM2_SIZE);
-		if (sdhc_buf2 == NULL) goto err;
-	}
+	if(sdhc_buf2 == NULL) goto err;
 
 	/* Open SDHC device */
 	fd = IOS_Open(fs, 0);
@@ -76,15 +74,17 @@ err:
 bool SDHC_Close(void)
 {
 	sdhc_inited = 0;
-	if (sdhc_mode_sd) {
-		return __io_wiisd.shutdown();
-	}
+	if(sdhc_mode_sd)
+		return __io_wiisd_ogc.shutdown();
 
 	/* Close SDHC device */
-	if (fd >= 0) {
+	if(fd >= 0) {
 		IOS_Close(fd);
 		fd = -1;
 	}
+	if(sdhc_buf2 != NULL)
+		MEM2_lo_free(sdhc_buf2);
+	sdhc_buf2 = NULL;
 
 	return true;
 }
@@ -92,9 +92,8 @@ bool SDHC_Close(void)
 bool SDHC_IsInserted(void)
 {
 	s32 ret;
-	if (sdhc_mode_sd) {
-		return __io_wiisd.isInserted();
-	}
+	if(sdhc_mode_sd)
+		return __io_wiisd_ogc.isInserted();
 
 	/* Check if SD card is inserted */
 	ret = IOS_IoctlvFormat(hid, fd, IOCTL_SDHC_ISINSERTED, ":");
@@ -104,8 +103,8 @@ bool SDHC_IsInserted(void)
 
 bool SDHC_ReadSectors(u32 sector, u32 count, void *buffer)
 {
-	if (sdhc_mode_sd) 
-		return __io_wiisd.readSectors(sector, count, buffer);
+	if(sdhc_mode_sd)
+		return __io_wiisd_ogc.readSectors(sector, count, buffer);
 
 	u32 size;
 	s32 ret = -1;
@@ -155,8 +154,8 @@ bool SDHC_ReadSectors(u32 sector, u32 count, void *buffer)
 
 bool SDHC_WriteSectors(u32 sector, u32 count, void *buffer)
 {
-	if (sdhc_mode_sd) 
-		return __io_wiisd.writeSectors(sector, count, buffer);
+	if(sdhc_mode_sd)
+		return __io_wiisd_ogc.writeSectors(sector, count, buffer);
 
 	u32 size;
 	s32 ret = -1;

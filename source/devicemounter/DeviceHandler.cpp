@@ -27,11 +27,11 @@
 #include <ogc/mutex.h>
 #include <ogc/system.h>
 #include <sdcard/gcsd.h>
-#include <sdcard/wiisd_io.h>
 #include "DeviceHandler.hpp"
 #include "fat.h"
-#include "sdhc.h"
 #include "usbthread.h"
+#include "sdhc.h"
+#include "wiisd_libogc.h"
 #include "usbstorage.h"
 #include "usbstorage_libogc.h"
 #include "loader/cios.h"
@@ -332,7 +332,7 @@ void DeviceHandler::WaitForDevice(const DISC_INTERFACE *Handle)
 bool DeviceHandler::MountDevolution()
 {
 	int NewPartition = (currentPartition == SD ? currentPartition : currentPartition - 1);
-	const DISC_INTERFACE *handle = (currentPartition == SD) ? &__io_wiisd : &__io_usbstorage_ogc;
+	const DISC_INTERFACE *handle = (currentPartition == SD) ? &__io_wiisd_ogc : &__io_usbstorage_ogc;
 	/* We need to wait for the device to get ready for a remount */
 	WaitForDevice(handle);
 	/* Only mount the partition we need */
