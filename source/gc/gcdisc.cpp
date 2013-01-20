@@ -27,7 +27,7 @@
 
 using namespace std;
 
-void GC_Disc::init(char *path)
+void GC_Disc::init(const char *path)
 {
 	opening_bnr = NULL;
 	FSTable = NULL;

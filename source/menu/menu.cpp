@@ -1616,15 +1616,15 @@ void CMenu::_initCF(void)
 	Config dump, gameAgeList;
 	GameTDB gametdb;
 	const char *domain = _domainFromView();
-	
+
 	CoverFlow.clear();
 	CoverFlow.reserve(m_gameList.size());
 
- 	bool dumpGameLst = m_cfg.getBool(domain, "dump_list", true);
+	bool dumpGameLst = m_cfg.getBool(domain, "dump_list", true);
 	if(dumpGameLst) dump.load(fmt("%s/" TITLES_DUMP_FILENAME, m_settingsDir.c_str()));
 
 	m_gcfg1.load(fmt("%s/" GAME_SETTINGS1_FILENAME, m_settingsDir.c_str()));
-	
+
 	int ageLock = m_cfg.getInt("GENERAL", "age_lock");
 	if (ageLock < 2 || ageLock > 19)
 		ageLock = 19;
@@ -1639,7 +1639,7 @@ void CMenu::_initCF(void)
 	}
 	_checkForSinglePlugin();
 	const vector<bool> &EnabledPlugins = m_plugin.GetEnabledPlugins(m_cfg);
-	
+
 	for(vector<dir_discHdr>::iterator element = m_gameList.begin(); element != m_gameList.end(); ++element)
 	{
 		string id;
@@ -1905,7 +1905,7 @@ void CMenu::_initCF(void)
 				CoverFlow.addItem(&(*element), fmt("%s/%s.png", m_picDir.c_str(), id.c_str()), fmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
 		}
 	}
-	 if(gametdb.IsLoaded())
+	if(gametdb.IsLoaded())
 		gametdb.CloseFile();
 	m_gcfg1.unload();
  	if (dumpGameLst)
@@ -2037,7 +2037,10 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 	}
 
 #ifdef SHOWMEM
-	m_btnMgr.setText(m_mem2FreeSize, wfmt(L"Mem2 Free:%u, Mem1 Free:%u", MEM2_freesize(), MEM1_freesize()), true);
+	m_btnMgr.setText(m_mem1FreeSize, wfmt(L"Mem1 lo Free:%u, Mem1 Free:%u", 
+				MEM1_lo_freesize(), MEM1_freesize()), true);
+	m_btnMgr.setText(m_mem2FreeSize, wfmt(L"Mem2 lo Free:%u, Mem2 Free:%u", 
+				MEM2_lo_freesize(), MEM2_freesize()), true);
 #endif
 
 #ifdef SHOWMEMGECKO
@@ -2565,7 +2568,7 @@ char tmp[256];
 const char *CMenu::_getId()
 {
 	const char *id = NULL;
-	dir_discHdr *hdr = CoverFlow.getHdr();
+	const dir_discHdr *hdr = CoverFlow.getHdr();
 	if(hdr->type == TYPE_HOMEBREW)
 		id = strrchr(hdr->path, '/') + 1;
 	else if(hdr->type == TYPE_PLUGIN)

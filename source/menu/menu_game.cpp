@@ -255,7 +255,7 @@ static void _extractChannelBnr(const u64 chantitle)
 	ChannelHandle.GetBanner(chantitle);
 }
 
-static void _extractBnr(dir_discHdr *hdr)
+static void _extractBnr(const dir_discHdr *hdr)
 {
 	u32 size = 0;
 	DeviceHandle.OpenWBFS(currentPartition);
@@ -555,7 +555,8 @@ void CMenu::_game(bool launch)
 				m_gameSound.FreeMemory();
 				CheckGameSoundThread();
 				m_banner.DeleteBanner();
-				dir_discHdr *hdr = CoverFlow.getHdr();
+				dir_discHdr *hdr = (dir_discHdr*)MEM2_alloc(sizeof(dir_discHdr));
+				memcpy(hdr, CoverFlow.getHdr(), sizeof(dir_discHdr));
 				m_gcfg2.load(fmt("%s/" GAME_SETTINGS2_FILENAME, m_settingsDir.c_str()));
 				// change to current games partition and set last_view for recall later
 				switch(hdr->type)
@@ -1501,7 +1502,7 @@ void CMenu::_gameSoundThread(CMenu *m)
 	m->m_gamesound_changed = false;
 	CurrentBanner.ClearBanner();
 
-	dir_discHdr *GameHdr = CoverFlow.getHdr();
+	const dir_discHdr *GameHdr = CoverFlow.getHdr();
 	if(GameHdr->type == TYPE_PLUGIN)
 	{
 		m_banner.DeleteBanner();

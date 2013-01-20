@@ -237,13 +237,11 @@ bool SFont::fromFile(const char *filename, u32 size, u32 lspacing, u32 w, u32 id
 static const wchar_t *g_whitespaces = L" \f\n\r\t\v";
 void CText::setText(const SFont &font, const wstringEx &t)
 {
-	CText::SWord w;
+	SWord w;
 	m_lines.clear();
-	if(font.font != NULL)
-		m_font = font;
-	if(m_font.font == NULL)
+	if(font.font == NULL)
 		return;
-
+	m_font = font;
 	firstLine = 0;
 	// Don't care about performance
 	vector<wstringEx> lines = stringToVector(t, L'\n');
@@ -252,7 +250,7 @@ void CText::setText(const SFont &font, const wstringEx &t)
 	for (u32 k = 0; k < lines.size(); ++k)
 	{
 		wstringEx &l = lines[k];
-		m_lines.push_back(CText::CLine());
+		m_lines.push_back(CLine());
 		m_lines.back().reserve(32);
 		wstringEx::size_type i = l.find_first_not_of(g_whitespaces);
 		wstringEx::size_type j;
@@ -277,7 +275,7 @@ void CText::setText(const SFont &font, const wstringEx &t)
 
 void CText::setText(const SFont &font, const wstringEx &t, u32 startline)
 {
-	CText::SWord w;
+	SWord w;
 	totalHeight = 0;
 
 	m_lines.clear();
@@ -294,7 +292,7 @@ void CText::setText(const SFont &font, const wstringEx &t, u32 startline)
 	for (u32 k = 0; k < lines.size(); ++k)
 	{
 		wstringEx &l = lines[k];
-		m_lines.push_back(CText::CLine());
+		m_lines.push_back(CLine());
 		m_lines.back().reserve(32);
 		wstringEx::size_type i = l.find_first_not_of(g_whitespaces);
 		wstringEx::size_type j;
@@ -333,7 +331,7 @@ void CText::setFrame(float width, u16 style, bool ignoreNewlines, bool instant)
 
 	for (u32 k = firstLine; k < m_lines.size(); ++k)
 	{
-		CText::CLine &words = m_lines[k];
+		CLine &words = m_lines[k];
 		if (words.empty())
 		{
 			posY += (float)m_font.lineSpacing;

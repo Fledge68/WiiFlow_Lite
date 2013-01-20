@@ -128,8 +128,8 @@ public:
 	// 
 	const char *getId(void) const;
 	const char *getNextId(void) const;
-	dir_discHdr * getHdr(void) const;
-	dir_discHdr * getNextHdr(void) const;
+	const dir_discHdr * getHdr(void) const;
+	const dir_discHdr * getNextHdr(void) const;
 	wstringEx getTitle(void) const;
 	u64 getChanTitle(void) const;
 	//
@@ -194,18 +194,18 @@ private:
 	enum TexState { STATE_Loading, STATE_Ready, STATE_NoCover };
 	struct CItem
 	{
+		CItem(dir_discHdr *itemHdr, const char *itemPic, const char *itemBoxPic, 
+				const char *itemBlankBoxPic, int playcount, unsigned int lastPlayed);
 		dir_discHdr *hdr;
-		string picPath;
-		string boxPicPath;
-		string blankBoxPicPath;
+		char picPath[128];
+		char boxPicPath[128];
+		char blankBoxPicPath[64];
 		int playcount;
 		unsigned int lastPlayed;
 		TexData texture;
 		volatile bool boxTexture;
 		volatile enum TexState state;
-		// 
-		CItem(dir_discHdr *itemHdr, const char *itemPic, const char *itemBoxPic, const char *itemBlankBoxPic, int playcount, unsigned int lastPlayed);
-	};
+	} ATTRIBUTE_PACKED;
 	struct CCover
 	{
 		u32 index;
@@ -238,7 +238,7 @@ private:
 	Vector3D m_targetCameraPos;
 	Vector3D m_targetCameraAim;
 	vector<CItem> m_items;
-	vector<CCover> m_covers;
+	CCover *m_covers;
 	int m_delay;
 	int m_minDelay;
 	int m_jump;
@@ -345,7 +345,7 @@ private:
 	CLRet _loadCoverTex(u32 i, bool box, bool hq, bool blankBoxCover);
 	bool _invisibleCover(u32 x, u32 y);
 	void _instantTarget(int i);
-	void _transposeCover(vector<CCover> &dst, u32 rows, u32 columns, int pos);
+	void _transposeCover(CCover* &dst, u32 rows, u32 columns, int pos);
 
 	void _stopSound(GuiSound * &snd);
 	void _playSound(GuiSound * &snd);

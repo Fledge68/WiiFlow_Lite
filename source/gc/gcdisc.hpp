@@ -30,7 +30,7 @@ enum
 class GC_Disc
 {
 public:
-	void init(char *path);
+	void init(const char *path);
 	void clear();
 	u8 *GetGameCubeBanner();
 private:

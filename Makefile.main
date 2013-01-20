@@ -66,7 +66,7 @@ endif
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:=	-lcustomfat -lcustomntfs -lcustomext2fs -lpng -lm -lz -lwiiuse -lbte -lasnd -logc -lfreetype -lvorbisidec -lmad -ljpeg -lmodplay
+LIBS	:=	-lcustomfat -lcustomntfs -lcustomext2fs -lpng -ljpeg -lm -lz -lwiiuse -lbte -lasnd -logc -lfreetype -lvorbisidec -lmad
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing

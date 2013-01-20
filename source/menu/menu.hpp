@@ -149,6 +149,7 @@ private:
 	s16 m_mainLblLetter;
 	s16 m_mainLblCurMusic;
 #ifdef SHOWMEM
+	s16 m_mem1FreeSize;
 	s16 m_mem2FreeSize;
 #endif
 #ifdef SHOWMEMGECKO

@@ -111,7 +111,7 @@ void CMenu::_updateCheckboxes(void)
 
 void CMenu::_getIDCats(void)
 {
-	dir_discHdr *hdr = CoverFlow.getHdr();
+	const dir_discHdr *hdr = CoverFlow.getHdr();
 	switch(hdr->type)
 	{
 		case TYPE_CHANNEL:
