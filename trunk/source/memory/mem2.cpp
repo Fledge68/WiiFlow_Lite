@@ -60,6 +60,12 @@ void MEM1_lo_free(void *p)
 	g_mem1lo.release(p);
 }
 
+unsigned int MEM1_lo_freesize()
+{
+	return g_mem1lo.FreeSize();
+}
+
+
 void *MEM1_alloc(unsigned int s)
 {
 	return __real_malloc(s);
@@ -84,7 +90,7 @@ void MEM1_free(void *p)
 
 unsigned int MEM1_freesize()
 {
-	return (g_mem1lo.FreeSize() + SYS_GetArena1Size());
+	return SYS_GetArena1Size();
 }
 
 
@@ -103,6 +109,11 @@ void MEM2_lo_free(void *p)
 	if(!p)
 		return;
 	g_mem2lo_gp.release(p);
+}
+
+unsigned int MEM2_lo_freesize()
+{
+	return g_mem2lo_gp.FreeSize();
 }
 
 

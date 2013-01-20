@@ -280,7 +280,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 	bool upd_dml = false;
 	bool upd_emu = false;
 	bool out = false;
-	dir_discHdr *CF_Hdr = CoverFlow.getHdr();
+	const dir_discHdr *CF_Hdr = CoverFlow.getHdr();
 	char cfPos[7];
 	cfPos[6] = '\0';
 	strncpy(cfPos, CoverFlow.getNextId(), 6);
@@ -418,7 +418,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						else if(CF_Hdr->type == TYPE_WII_GAME)
 						{
 							DeviceHandle.OpenWBFS(currentPartition);
-							WBFS_RemoveGame((u8*)&CF_Hdr->id, CF_Hdr->path);
+							WBFS_RemoveGame((u8*)&CF_Hdr->id, (char*)&CF_Hdr->path);
 							WBFS_Close();
 							upd_usb = true;
 						}

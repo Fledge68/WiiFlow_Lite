@@ -28,6 +28,14 @@ private:
 	size_t dataSize;
 };
 
+struct SWord
+{
+	wstringEx text;
+	Vector3D pos;
+	Vector3D targetPos;
+};
+typedef vector<SWord> CLine;
+
 class CText
 {
 public:
@@ -39,14 +47,6 @@ public:
 	void draw(void);
 	int getTotalHeight();
 private:
-	struct SWord
-	{
-		wstringEx text;
-		Vector3D pos;
-		Vector3D targetPos;
-	};
-private:
-	typedef vector<SWord> CLine;
 	vector<CLine> m_lines;
 	SFont m_font;
 	CColor m_color;

@@ -81,7 +81,8 @@ static bool show_emu = true;
 void CMenu::_showMain(void)
 {
 	_hideWaitMessage();
-#ifdef SHOWMEM	
+#ifdef SHOWMEM
+	m_btnMgr.show(m_mem1FreeSize);
 	m_btnMgr.show(m_mem2FreeSize);
 #endif
 	m_vid.set2DViewport(m_cfg.getInt("GENERAL", "tv_width", 640), m_cfg.getInt("GENERAL", "tv_height", 480),
@@ -941,8 +942,9 @@ void CMenu::_initMainMenu()
 	m_mainLblLetter = _addLabel("MAIN/LETTER", theme.titleFont, L"", 540, 40, 80, 80, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, emptyTex);
 	m_mainLblNotice = _addLabel("MAIN/NOTICE", theme.titleFont, L"", 340, 40, 280, 80, theme.titleFontColor, FTGX_JUSTIFY_RIGHT | FTGX_ALIGN_MIDDLE, emptyTex);
 	m_mainLblCurMusic = _addLabel("MAIN/MUSIC", theme.btnFont, L"", 0, 20, 640, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-#ifdef SHOWMEM	
-	m_mem2FreeSize = _addLabel("MEM2", theme.titleFont, L"", 40, 300, 480, 80, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, emptyTex);
+#ifdef SHOWMEM
+	m_mem1FreeSize = _addLabel("MEM1", theme.btnFont, L"", 0, 300, 480, 56, theme.btnFontColor, FTGX_JUSTIFY_LEFT, emptyTex);
+	m_mem2FreeSize = _addLabel("MEM2", theme.btnFont, L"", 0, 356, 480, 56, theme.btnFontColor, FTGX_JUSTIFY_LEFT, emptyTex);
 #endif
 	// 
 	m_mainPrevZone.x = m_theme.getInt("MAIN/ZONES", "prev_x", -32);
@@ -995,6 +997,7 @@ void CMenu::_initMainMenu()
 	_setHideAnim(m_mainLblNotice, "MAIN/NOTICE", 0, 0, 0.f, 0.f);
 	_setHideAnim(m_mainLblCurMusic, "MAIN/MUSIC", 0, -100, 0.f, 0.f);
 #ifdef SHOWMEM
+	_setHideAnim(m_mem1FreeSize, "MEM1", 0, 0, 0.f, 0.f);
 	_setHideAnim(m_mem2FreeSize, "MEM2", 0, 0, 0.f, 0.f);
 #endif
 	_hideMain(true);
