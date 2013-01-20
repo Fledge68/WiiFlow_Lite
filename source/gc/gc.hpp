@@ -47,6 +47,7 @@ enum dmlconfig
 	DML_CFG_BOOT_DOL	= (1<<11), //v1
 	DML_CFG_BOOT_DISC2	= (1<<11), //v2
 	DML_CFG_NODISC_CFG2	= (1<<12),
+	DML_CFG_SCREENSHOT	= (1<<13),
 };
 
 enum dmlvideomode
@@ -64,7 +65,7 @@ enum dmlvideomode
 
 void DML_New_SetOptions(const char *GamePath, char *CheatPath, const char *NewCheatPath, 
 	const char *partition, bool cheats, bool debugger, u8 NMM, u8 nodisc, u8 DMLvideoMode, 
-	u8 videoSetting, bool widescreen, bool new_dm_cfg, bool activity_led);
+	u8 videoSetting, bool widescreen, bool new_dm_cfg, bool activity_led, bool screenshot);
 void DML_Old_SetOptions(const char *GamePath);
 void DML_New_SetBootDiscOption(bool new_dm_cfg);
 void DML_New_WriteOptions();

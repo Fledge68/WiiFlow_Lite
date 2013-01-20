@@ -20,6 +20,9 @@ s16 m_gameSettingsBtnApploader;
 s16 m_gameSettingsLblLED;
 s16 m_gameSettingsBtnLED;
 
+s16 m_gameSettingsLblScreenshot;
+s16 m_gameSettingsBtnScreenshot;
+
 void CMenu::_hideGameSettings(bool instant)
 {
 	m_btnMgr.hide(m_gameSettingsLblPage, instant);
@@ -107,6 +110,8 @@ void CMenu::_hideGameSettings(bool instant)
 	m_btnMgr.hide(m_gameSettingsBtnApploader, instant);
 	m_btnMgr.hide(m_gameSettingsLblLED, instant);
 	m_btnMgr.hide(m_gameSettingsBtnLED, instant);
+	m_btnMgr.hide(m_gameSettingsLblScreenshot, instant);
+	m_btnMgr.hide(m_gameSettingsBtnScreenshot, instant);
 
 	for(u8 i = 0; i < ARRAY_SIZE(m_gameSettingsLblUser); ++i)
 		if(m_gameSettingsLblUser[i] != -1)
@@ -223,7 +228,6 @@ void CMenu::_showGameSettings(void)
 		m_btnMgr.show(m_gameSettingsLblDebuggerV);
 		m_btnMgr.show(m_gameSettingsBtnDebuggerP);
 		m_btnMgr.show(m_gameSettingsBtnDebuggerM);
-
 		if(CoverFlow.getHdr()->type != TYPE_GC_GAME)
 		{
 			m_btnMgr.show(m_gameSettingsLblHooktype);
@@ -243,7 +247,6 @@ void CMenu::_showGameSettings(void)
 		m_btnMgr.hide(m_gameSettingsLblDebuggerV);
 		m_btnMgr.hide(m_gameSettingsBtnDebuggerP);
 		m_btnMgr.hide(m_gameSettingsBtnDebuggerM);
-
 		if(CoverFlow.getHdr()->type != TYPE_GC_GAME)
 		{
 			m_btnMgr.hide(m_gameSettingsLblHooktype);
@@ -374,38 +377,57 @@ void CMenu::_showGameSettings(void)
 				m_btnMgr.show(m_gameSettingsBtnExtractSave);
 			}
 		}
-		m_btnMgr.show(m_gameSettingsLblGameIOS);
-		m_btnMgr.show(m_gameSettingsLblIOS);
-		m_btnMgr.show(m_gameSettingsBtnIOSP);
-		m_btnMgr.show(m_gameSettingsBtnIOSM);
-
+		if(CoverFlow.getHdr()->type == TYPE_GC_GAME)
+		{
+			m_btnMgr.show(m_gameSettingsLblScreenshot);
+			m_btnMgr.show(m_gameSettingsBtnScreenshot);
+		}
+		else
+		{
+			m_btnMgr.show(m_gameSettingsLblGameIOS);
+			m_btnMgr.show(m_gameSettingsLblIOS);
+			m_btnMgr.show(m_gameSettingsBtnIOSP);
+			m_btnMgr.show(m_gameSettingsBtnIOSM);
+		}
 		m_btnMgr.show(m_gameSettingsLblLED);
 		m_btnMgr.show(m_gameSettingsBtnLED);
 	}
 	else
 	{
-		m_btnMgr.hide(m_gameSettingsLblCustom);
-		m_btnMgr.hide(m_gameSettingsBtnCustom);
-		m_btnMgr.hide(m_gameSettingsLblLaunchNK);
-		m_btnMgr.hide(m_gameSettingsBtnLaunchNK);
-	
-		m_btnMgr.hide(m_gameSettingsLblEmulationVal);
-		m_btnMgr.hide(m_gameSettingsLblEmulation);
-		m_btnMgr.hide(m_gameSettingsBtnEmulationP);
-		m_btnMgr.hide(m_gameSettingsBtnEmulationM);
-		
-		m_btnMgr.hide(m_gameSettingsLblGameIOS);
-		m_btnMgr.hide(m_gameSettingsLblIOS);
-		m_btnMgr.hide(m_gameSettingsBtnIOSP);
-		m_btnMgr.hide(m_gameSettingsBtnIOSM);
+		if(CoverFlow.getHdr()->type == TYPE_CHANNEL)
+		{
+			m_btnMgr.hide(m_gameSettingsLblCustom);
+			m_btnMgr.hide(m_gameSettingsBtnCustom);
 
-		m_btnMgr.hide(m_gameSettingsLblExtractSave);
-		m_btnMgr.hide(m_gameSettingsBtnExtractSave);
+			m_btnMgr.hide(m_gameSettingsLblLaunchNK);
+			m_btnMgr.hide(m_gameSettingsBtnLaunchNK);
+		}
+		else if(CoverFlow.getHdr()->type == TYPE_WII_GAME)
+		{
+			m_btnMgr.hide(m_gameSettingsLblEmulationVal);
+			m_btnMgr.hide(m_gameSettingsLblEmulation);
+			m_btnMgr.hide(m_gameSettingsBtnEmulationP);
+			m_btnMgr.hide(m_gameSettingsBtnEmulationM);
 
+			m_btnMgr.hide(m_gameSettingsLblExtractSave);
+			m_btnMgr.hide(m_gameSettingsBtnExtractSave);
+		}
+		if(CoverFlow.getHdr()->type == TYPE_GC_GAME)
+		{
+			m_btnMgr.hide(m_gameSettingsLblScreenshot);
+			m_btnMgr.hide(m_gameSettingsBtnScreenshot);
+		}
+		else
+		{
+			m_btnMgr.hide(m_gameSettingsLblGameIOS);
+			m_btnMgr.hide(m_gameSettingsLblIOS);
+			m_btnMgr.hide(m_gameSettingsBtnIOSP);
+			m_btnMgr.hide(m_gameSettingsBtnIOSM);
+		}
 		m_btnMgr.hide(m_gameSettingsLblLED);
 		m_btnMgr.hide(m_gameSettingsBtnLED);
 	}
-	if (m_gameSettingsPage == 5)
+	if(m_gameSettingsPage == 5)
 	{
 		m_btnMgr.show(m_gameSettingsLblFlashSave);
 		m_btnMgr.show(m_gameSettingsBtnFlashSave);
@@ -415,7 +437,6 @@ void CMenu::_showGameSettings(void)
 		m_btnMgr.hide(m_gameSettingsLblFlashSave);
 		m_btnMgr.hide(m_gameSettingsBtnFlashSave);
 	}
-
 	u32 i = 0;
 	for(i = 0; i < ARRAY_SIZE(m_gameSettingsLblUser); ++i)
 		if(m_gameSettingsLblUser[i] != -1)
@@ -426,11 +447,13 @@ void CMenu::_showGameSettings(void)
 	u32 maxpage = g_numGCfPages;
 
 	m_btnMgr.setText(m_gameSettingsLblPage, wfmt(L"%i / %i", page, maxpage));
-	m_btnMgr.setText(m_gameSettingsBtnOcarina, _optBoolToString(m_gcfg2.getOptBool(id, "cheat")));
+	m_btnMgr.setText(m_gameSettingsBtnOcarina, _optBoolToString(m_gcfg2.getOptBool(id, "cheat", 0)));
+	m_btnMgr.setText(m_gameSettingsBtnLED, _optBoolToString(m_gcfg2.getOptBool(id, "led", 0)));
 	if(CoverFlow.getHdr()->type == TYPE_GC_GAME)
 	{
 		m_btnMgr.setText(m_gameSettingsBtnDM_Widescreen, _optBoolToString(m_gcfg2.getOptBool(id, "dm_widescreen", 0)));
 		m_btnMgr.setText(m_gameSettingsBtnDevoMemcardEmu, _optBoolToString(m_gcfg2.getOptBool(id, "devo_memcard_emu", 0)));
+		m_btnMgr.setText(m_gameSettingsBtnScreenshot, _optBoolToString(m_gcfg2.getOptBool(id, "screenshot", 0)));
 		i = min((u32)m_gcfg2.getInt(id, "dml_video_mode", 0), ARRAY_SIZE(CMenu::_DMLvideoModes) - 1u);
 		m_btnMgr.setText(m_gameSettingsLblDMLVideo, _t(CMenu::_DMLvideoModes[i].id, CMenu::_DMLvideoModes[i].text));
 		i = min((u32)m_gcfg2.getInt(id, "gc_language", 0), ARRAY_SIZE(CMenu::_GClanguages) - 1u);
@@ -456,7 +479,6 @@ void CMenu::_showGameSettings(void)
 		m_btnMgr.setText(m_gameSettingsBtnCustom, _optBoolToString(m_gcfg2.getOptBool(id, "custom", 0)));
 		m_btnMgr.setText(m_gameSettingsBtnLaunchNK, _optBoolToString(m_gcfg2.getOptBool(id, "useneek", 0)));
 		m_btnMgr.setText(m_gameSettingsBtnApploader, _optBoolToString(m_gcfg2.getOptBool(id, "apploader", 0)));
-		m_btnMgr.setText(m_gameSettingsBtnLED, _optBoolToString(m_gcfg2.getOptBool(id, "led", 0)));
 	}
 
 	int j = 0;
@@ -686,6 +708,11 @@ void CMenu::_gameSettings(void)
 				m_gcfg2.setBool(id, "led", !m_gcfg2.getBool(id, "led", 0));
 				_showGameSettings();
 			}
+			else if(m_btnMgr.selected(m_gameSettingsBtnScreenshot))
+			{
+				m_gcfg2.setBool(id, "screenshot", !m_gcfg2.getBool(id, "screenshot", 0));
+				_showGameSettings();
+			}
 			else if(m_btnMgr.selected(m_gameSettingsBtnCategoryMain) && !m_locked)
 			{
 				_hideGameSettings();
@@ -830,11 +857,14 @@ void CMenu::_initGameSettingsMenu()
 	m_gameSettingsBtnIOSM = _addPicButton("GAME_SETTINGS/IOS_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 330, 190, 56, 56);
 	m_gameSettingsBtnIOSP = _addPicButton("GAME_SETTINGS/IOS_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 190, 56, 56);
 
-	m_gameSettingsLblLaunchNK = _addLabel("GAME_SETTINGS/LAUNCHNEEK", theme.lblFont, L"", 40, 250, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsBtnLaunchNK =  _addButton("GAME_SETTINGS/LAUNCHNEEK_BTN", theme.btnFont, L"", 330, 250, 270, 56, theme.btnFontColor);
+	m_gameSettingsLblLaunchNK = _addLabel("GAME_SETTINGS/LAUNCHNEEK", theme.lblFont, L"", 40, 310, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsBtnLaunchNK =  _addButton("GAME_SETTINGS/LAUNCHNEEK_BTN", theme.btnFont, L"", 330, 310, 270, 56, theme.btnFontColor);
 
 	m_gameSettingsLblExtractSave = _addLabel("GAME_SETTINGS/EXTRACT_SAVE", theme.lblFont, L"", 40, 310, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsBtnExtractSave = _addButton("GAME_SETTINGS/EXTRACT_SAVE_BTN", theme.btnFont, L"", 330, 310, 270, 56, theme.btnFontColor);
+
+	m_gameSettingsLblScreenshot = _addLabel("GAME_SETTINGS/SCREENSHOT", theme.lblFont, L"", 40, 190, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsBtnScreenshot = _addButton("GAME_SETTINGS/SCREENSHOT_BTN", theme.btnFont, L"", 330, 190, 270, 56, theme.btnFontColor);
 
 	m_gameSettingsLblLED = _addLabel("GAME_SETTINGS/LED", theme.lblFont, L"", 40, 250, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsBtnLED = _addButton("GAME_SETTINGS/LED_BTN", theme.btnFont, L"", 330, 250, 270, 56, theme.btnFontColor);
@@ -913,6 +943,9 @@ void CMenu::_initGameSettingsMenu()
 
 	_setHideAnim(m_gameSettingsLblLED, "GAME_SETTINGS/LED", -200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnLED, "GAME_SETTINGS/LED_BTN", 200, 0, 1.f, 0.f);
+
+	_setHideAnim(m_gameSettingsLblScreenshot, "GAME_SETTINGS/SCREENSHOT", -200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsBtnScreenshot, "GAME_SETTINGS/SCREENSHOT_BTN", 200, 0, 1.f, 0.f);
 
 	_setHideAnim(m_gameSettingsLblNMM, "GAME_SETTINGS/DML_NMM", -200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsLblNMM_Val, "GAME_SETTINGS/DML_NMM_BTN", 200, 0, 1.f, 0.f);
@@ -1005,4 +1038,5 @@ void CMenu::_textGameSettings(void)
 	m_btnMgr.setText(m_gameSettingsLblDM_Widescreen, _t("cfgg36", L"DM Widescreen Patch"));
 	m_btnMgr.setText(m_gameSettingsLblApploader, _t("cfgg37", L"Boot Apploader"));
 	m_btnMgr.setText(m_gameSettingsLblLED, _t("cfgg38", L"Activity LED"));
+	m_btnMgr.setText(m_gameSettingsLblScreenshot, _t("cfgg39", L"DM Screenshot Feature"));
 }

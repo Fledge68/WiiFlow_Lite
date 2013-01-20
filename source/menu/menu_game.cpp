@@ -893,6 +893,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		bool DML_debug = m_gcfg2.getBool(id, "debugger", false);
 		bool DM_Widescreen = m_gcfg2.getBool(id, "dm_widescreen", false);
 		bool activity_led = m_gcfg2.getBool(id, "led", false);
+		bool screenshot = m_gcfg2.getBool(id, "screenshot", false);
 		/* Generate gct path */
 		char GC_Path[1024];
 		GC_Path[1023] = '\0';
@@ -910,7 +911,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		const char *newPath = strcasestr(path, "boot.bin") == NULL ? strchr(path, '/') : strchr(GC_Path, '/');
 		if(m_new_dml)
 			DML_New_SetOptions(newPath, CheatPath, NewCheatPath, DeviceName[currentPartition],
-				cheats, DML_debug, NMM, nodisc, videoMode, videoSetting, DM_Widescreen, m_new_dm_cfg, activity_led);
+				cheats, DML_debug, NMM, nodisc, videoMode, videoSetting, DM_Widescreen, m_new_dm_cfg, activity_led, screenshot);
 		else
 			DML_Old_SetOptions(newPath);
 		if(!nodisc || !m_new_dml)

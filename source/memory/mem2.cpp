@@ -20,7 +20,7 @@ void *MEM2_lo_start = (void*)0x90000000;
 void *MEM2_lo_end = (void*)0x90600000;
 
 void *MEM2_start = (void*)0x90600000;
-void *MEM2_end = (void*)0x93200000;
+void *MEM2_end = (void*)0x93100000;
 
 static CMEM2Alloc g_mem1lo;
 static CMEM2Alloc g_mem2lo_gp;
@@ -44,7 +44,7 @@ void MEM_init()
 	g_mem2lo_gp.init(MEM2_lo_start, MEM2_lo_end); //about 6mb
 	g_mem2lo_gp.clear();
 
-	g_mem2gp.init(MEM2_start, MEM2_end); //about 44mb
+	g_mem2gp.init(MEM2_start, MEM2_end); //about 43mb
 	g_mem2gp.clear();
 }
 

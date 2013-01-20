@@ -43,7 +43,7 @@ DML_CFG DMLCfg;
 
 void DML_New_SetOptions(const char *GamePath, char *CheatPath, const char *NewCheatPath, 
 		const char *partition, bool cheats, bool debugger, u8 NMM, u8 nodisc, u8 DMLvideoMode, 
-		u8 videoSetting, bool widescreen, bool new_dm_cfg, bool activity_led)
+		u8 videoSetting, bool widescreen, bool new_dm_cfg, bool activity_led, bool screenshot)
 {
 	gprintf("DIOS-MIOS: Launch game '%s' through memory (new method)\n", GamePath);
 	memset(&DMLCfg, 0, sizeof(DML_CFG));
@@ -83,6 +83,8 @@ void DML_New_SetOptions(const char *GamePath, char *CheatPath, const char *NewCh
 		gprintf("DIOS-MIOS: Cheat Path %s\n", ptr);
 		DMLCfg.Config |= DML_CFG_CHEAT_PATH;
 	}
+	if(screenshot)
+		DMLCfg.Config |= DML_CFG_SCREENSHOT;
 	if(activity_led)
 		DMLCfg.Config |= DML_CFG_ACTIVITY_LED;
 	if(cheats)
