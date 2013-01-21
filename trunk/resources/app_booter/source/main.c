@@ -10,8 +10,8 @@
 #include "elfloader.h"
 #include "sync.h"
 
-#define EXECUTABLE_MEM_ADDR 0x91000000
-#define SYSTEM_ARGV	((struct __argv *) 0x93200000)
+#define EXECUTABLE_MEM_ADDR		0x92000000
+#define SYSTEM_ARGV				((struct __argv *)0x93200000)
 
 void main(void)
 {

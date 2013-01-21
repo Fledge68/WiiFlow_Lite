@@ -10,8 +10,8 @@
 #include "banner/AnimatedBanner.h"
 #include "gecko/gecko.hpp"
 
-#define EXECUTE_ADDR	((u8 *)0x91000000)
-#define BOOTER_ADDR		((u8 *)0x93000000)
+#define EXECUTE_ADDR	((u8 *)0x92000000)
+#define BOOTER_ADDR		((u8 *)0x93100000)
 #define ARGS_ADDR		((u8 *)0x93200000)
 #define BOOTER_ENTRY	((entry)BOOTER_ADDR)
 
@@ -23,7 +23,7 @@ extern const u32 app_booter_bin_size;
 extern const u8 stub_bin[];
 extern const u32 stub_bin_size;
 
-u32 buffer_size = 0;
+u8 valid = 0;
 
 static vector<string> Arguments;
 
@@ -48,23 +48,24 @@ void AddBootArgument(const char * argv)
 
 int LoadHomebrew(const char *filepath)
 {
-	if(!filepath) 
+	if(filepath == NULL)
 		return -1;
 
-	FILE *file = fopen(filepath ,"rb");
-	if(!file) 
+	FILE *file = fopen(filepath, "rb");
+	if(file == NULL)
 		return -2;
 
 	fseek(file, 0, SEEK_END);
 	u32 filesize = ftell(file);
-	rewind(file);
-
-	buffer_size = filesize;
-	fread(EXECUTE_ADDR, 1, buffer_size, file);
-	DCFlushRange(EXECUTE_ADDR, buffer_size);
+	if(filesize <= ((u32)BOOTER_ADDR - (u32)EXECUTE_ADDR))
+	{
+		rewind(file);
+		valid = (fread(EXECUTE_ADDR, 1, filesize, file) == filesize);
+		DCFlushRange(EXECUTE_ADDR, filesize);
+	}
 	fclose(file);
 
-	return 1;
+	return valid;
 }
 
 int SetupARGV(struct __argv * args)
