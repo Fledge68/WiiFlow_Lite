@@ -964,16 +964,20 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 	Playlog_Delete();
 	cleanup(); // wifi and sd gecko doesnt work anymore after cleanup
 
-	LoadHomebrew(filepath);
-	AddBootArgument(filepath);
-	for(u32 i = 0; i < arguments.size(); ++i)
+	if(LoadHomebrew(filepath) == 1)
 	{
-		gprintf("Argument: %s\n", arguments[i].c_str());
-		AddBootArgument(arguments[i].c_str());
+		AddBootArgument(filepath);
+		for(u32 i = 0; i < arguments.size(); ++i)
+		{
+			gprintf("Argument: %s\n", arguments[i].c_str());
+			AddBootArgument(arguments[i].c_str());
+		}
+		loadIOS(58, false);
+		ShutdownBeforeExit();
+		BootHomebrew();
 	}
-	loadIOS(58, false);
-	ShutdownBeforeExit();
-	BootHomebrew();
+	else
+		Sys_Exit();
 }
 
 int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id, bool RealNAND_Channels)

@@ -16,14 +16,14 @@ u32 MALLOC_MEM2 = 0;
 void *MEM1_lo_start = (void*)0x80004000;
 void *MEM1_lo_end = (void*)0x80620000;
 
-void *MEM2_lo_start = (void*)0x90000000;
-void *MEM2_lo_end = (void*)0x90600000;
+/*void *MEM2_lo_start = (void*)0x90000000;
+void *MEM2_lo_end = (void*)0x90600000;*/
 
-void *MEM2_start = (void*)0x90600000;
+void *MEM2_start = (void*)0x90200000;
 void *MEM2_end = (void*)0x93100000;
 
 static CMEM2Alloc g_mem1lo;
-static CMEM2Alloc g_mem2lo_gp;
+/*static CMEM2Alloc g_mem2lo_gp;*/
 static CMEM2Alloc g_mem2gp;
 
 extern "C"
@@ -41,10 +41,10 @@ void MEM_init()
 	g_mem1lo.init(MEM1_lo_start, MEM1_lo_end); //about 6mb
 	g_mem1lo.clear();
 
-	g_mem2lo_gp.init(MEM2_lo_start, MEM2_lo_end); //about 6mb
-	g_mem2lo_gp.clear();
+	/*g_mem2lo_gp.init(MEM2_lo_start, MEM2_lo_end); //about 6mb
+	g_mem2lo_gp.clear();*/
 
-	g_mem2gp.init(MEM2_start, MEM2_end); //about 43mb
+	g_mem2gp.init(MEM2_start, MEM2_end); //about 47mb
 	g_mem2gp.clear();
 }
 
@@ -96,24 +96,27 @@ unsigned int MEM1_freesize()
 
 void *MEM2_lo_alloc(unsigned int s)
 {
-	return g_mem2lo_gp.allocate(s);
+	return MEM2_alloc(s);
+	/*return g_mem2lo_gp.allocate(s);*/
 }
 
 void *MEM2_lo_realloc(void *p, unsigned int s)
 {
-	return g_mem2lo_gp.reallocate(p, s);
+	return MEM2_realloc(p, s);
+	/*return g_mem2lo_gp.reallocate(p, s);*/
 }
 
 void MEM2_lo_free(void *p)
 {
-	if(!p)
+	MEM2_free(p);
+	/*if(!p)
 		return;
-	g_mem2lo_gp.release(p);
+	g_mem2lo_gp.release(p);*/
 }
 
 unsigned int MEM2_lo_freesize()
 {
-	return g_mem2lo_gp.FreeSize();
+	return 0;//g_mem2lo_gp.FreeSize();
 }
 
 
@@ -216,10 +219,10 @@ void __wrap_free(void *p)
 
 	if(((u32)p & 0x10000000) != 0)
 	{
-		if(p > MEM2_start)
-			g_mem2gp.release(p);
-		else
-			g_mem2lo_gp.release(p);
+		//if(p > MEM2_start)
+		g_mem2gp.release(p);
+		//else
+		//g_mem2lo_gp.release(p);
 	}
 	else
 		MEM1_free(p);

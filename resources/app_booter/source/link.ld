@@ -8,7 +8,7 @@ OUTPUT_ARCH(powerpc:common)
 ENTRY(_start)
 
 SECTIONS {
-	. = 0x93000000;
+	. = 0x93100000;
 
 	.start : { crt0.o(*) }
 	.text : { *(.text) }
