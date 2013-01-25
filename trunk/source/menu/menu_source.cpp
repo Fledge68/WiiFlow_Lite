@@ -584,19 +584,16 @@ bool CMenu::_Source()
 								{
 									string magic = *itr;
 									if(m_cfg.getBool("PLUGIN", magic, false))// if plugin btn on turn it off
-									{
-										_checkForSinglePlugin();
-										if(enabledPluginsCount == 1) // if last plugin leave it set but turn domain off
-											m_cfg.setBool(PLUGIN_DOMAIN, "source", false);
-										else
-											m_cfg.setBool("PLUGIN", magic, false);
-									}
-									else // turn on plugin btn
+										m_cfg.setBool("PLUGIN", magic, false);
+									else // turn on plugin btn and domain just in case it's the firtst plugin on
 									{
 										m_cfg.setBool(PLUGIN_DOMAIN, "source", true);
 										m_cfg.setBool("PLUGIN", magic, true);
 									}
 								}
+								_checkForSinglePlugin();
+								if(enabledPluginsCount == 0) // if last plugin turn domain off
+									m_cfg.setBool(PLUGIN_DOMAIN, "source", false);
 							}
 							break;
 						}
