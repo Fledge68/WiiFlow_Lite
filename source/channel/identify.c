@@ -27,7 +27,6 @@ static inline bool apply_patch(char *name, const u8 *old, const u8 *patch, u32 s
 		ptr++;
 	}
 	IRQ_Restore(level);
-	usleep(1000);
 
 	gprintf("patched %s %u times.\n", name, found);
 	return (found > 0);
@@ -46,9 +45,7 @@ static const u8 new_hash_patch[] = { 0x20, 0x00, 0x4B, 0x0B };
 
 void PatchIOS(void)
 {
-	/* Stop IOS from blocking shit */
-	__IOS_ShutdownSubsystems();
-	/* Disable memory protection */
+	__ES_Close();
 	write16(MEM_PROT, 0);
 	/* Do Patching */
 	apply_patch("isfs_permissions", isfs_perm_old, isfs_perm_patch, sizeof(isfs_perm_patch));
@@ -56,8 +53,7 @@ void PatchIOS(void)
 	apply_patch("es_identify", es_identify_old, es_identify_patch, sizeof(es_identify_patch));
 	apply_patch("hash_check", hash_old, hash_patch, sizeof(hash_patch));
 	apply_patch("new_hash_check", new_hash_old, new_hash_patch, sizeof(new_hash_patch));
-	/* Enable memory protection */
+	/* Reinit */
 	write16(MEM_PROT, 1);
-	/* Restart our IOS stuff */
-	__IOS_InitializeSubsystems();
+	__ES_Init();
 }

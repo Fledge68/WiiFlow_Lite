@@ -195,3 +195,6 @@ bool Sys_DolphinMode(void)
 	ModeChecked = true;
 	return DolphinMode;
 }
+
+/* KILL IT */
+s32 __IOS_LoadStartupIOS() { return 0; }

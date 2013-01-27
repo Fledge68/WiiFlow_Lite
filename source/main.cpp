@@ -72,8 +72,8 @@ int main(int argc, char **argv)
 		iosOK = loadIOS(IOS_GetVersion(), false);
 	else if(useMainIOS && CustomIOS(IOS_GetType(mainIOS))) /* Requested */
 		iosOK = loadIOS(mainIOS, false) && CustomIOS(CurrentIOS.Type);
-	else /* Keep our current IOS */
-		iosOK = loadIOS(IOS_GetVersion(), false);
+	else /* safe reload to preferred IOS */
+		iosOK = NandHandle.LoadDefaultIOS();
 
 	// Init
 	Sys_Init();
