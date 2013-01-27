@@ -81,7 +81,8 @@ void Nand::Init()
 bool Nand::LoadDefaultIOS(void)
 {
 	Patch_AHB();
-	s32 ret = __IOS_LoadStartupIOS();
+	DeInit_ISFS();
+	s32 ret = IOS_ReloadIOS(IOS_GetPreferredVersion());
 	loadIOS(IOS_GetVersion(), false);
 	Init_ISFS();
 	return (ret == 0);
