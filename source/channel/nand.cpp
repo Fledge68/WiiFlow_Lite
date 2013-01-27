@@ -72,10 +72,10 @@ void Nand::Init()
 {
 	MountedDevice = 0;
 	EmuDevice = REAL_NAND;
-	AccessPatched = false;
 	Partition = 0;
 	FullMode = 0x100;
 	memset(NandPath, 0, sizeof(NandPath));
+	isfs_inited = false;
 }
 
 bool Nand::LoadDefaultIOS(void)
@@ -1040,26 +1040,22 @@ s32 Nand::Do_Region_Change(string id)
 
 void Nand::Init_ISFS()
 {
+	if(isfs_inited)
+		return;
 	if(IOS_GetVersion() < 222)
-	{
-		Patch_ISFS_Permission(true);
-		AccessPatched = true;
-	}
+		PatchIOS();
 	usleep(1000);
 	gprintf("Init ISFS\n");
 	ISFS_Initialize();
+	isfs_inited = true;
 }
 
-void Nand::DeInit_ISFS(bool KeepPatches)
+void Nand::DeInit_ISFS()
 {
 	gprintf("Deinit ISFS\n");
 	ISFS_Deinitialize();
+	isfs_inited = false;
 	usleep(1000);
-	if(AccessPatched && !KeepPatches)
-	{
-		Patch_ISFS_Permission(false);
-		AccessPatched = false;
-	}
 }
 
 /* Thanks to postloader for that patch */

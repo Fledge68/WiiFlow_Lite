@@ -78,7 +78,7 @@ void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 pat
 	normalCFG.wip_list = get_wip_list();
 	normalCFG.wip_count = get_wip_count();
 
-	ShutdownBeforeExit(BootType == TYPE_CHANNEL);
+	ShutdownBeforeExit();
 	/* Copy CFG into new memory region */
 	memcpy(BooterConfig, &normalCFG, sizeof(the_CFG));
 	DCFlushRange(BooterConfig, sizeof(the_CFG));
@@ -111,10 +111,10 @@ void ExternalBooter_ChannelSetup(u64 title, bool dol)
 	normalCFG.use_dol = dol;
 }
 
-void ShutdownBeforeExit(bool KeepPatches)
+void ShutdownBeforeExit(void)
 {
 	DeviceHandle.UnMountAll();
-	NandHandle.DeInit_ISFS(KeepPatches);
+	NandHandle.DeInit_ISFS();
 	WDVD_Close();
 	Close_Inputs();
 	/* Deinit network */
