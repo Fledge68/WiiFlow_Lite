@@ -75,7 +75,6 @@ bool NandSave::CheckSave()
 	if(certBuffer == NULL || certSize == 0)
 		goto error;
 	/* Install tik and tmd */
-	Patch_Channel_Boot();
 	tik_bin = (const signed_blob*)u8_get_file(u8_bin, "tik.bin", &tik_bin_size);
 	if(tik_bin == NULL || tik_bin_size == 0)
 		goto error;

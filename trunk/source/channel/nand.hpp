@@ -76,7 +76,7 @@ public:
 
 	void Patch_AHB();
 	void Init_ISFS();
-	void DeInit_ISFS(bool KeepPatches = false);
+	void DeInit_ISFS();
 
 	const char *Get_NandPath(void) { return NandPath; };
 	u32 Get_Partition(void) { return Partition; };
@@ -134,7 +134,7 @@ private:
 	u32 FoldersDone;
 	bool fake;
 	bool showprogress;
-	bool AccessPatched;
+	bool isfs_inited;
 
 	void *data;
 	dump_callback_t dumper;

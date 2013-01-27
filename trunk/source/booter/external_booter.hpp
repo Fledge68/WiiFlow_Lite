@@ -32,6 +32,6 @@ void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 pat
 							int aspectRatio, u32 returnTo, u8 BootType, bool use_led);
 void ExternalBooter_ChannelSetup(u64 title, bool dol);
 void ExternalBooter_WiiGameSetup(bool wbfs, bool dvd, const char *ID);
-void ShutdownBeforeExit(bool KeepPatches = false);
+void ShutdownBeforeExit(void);
 
 #endif

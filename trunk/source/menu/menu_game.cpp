@@ -1168,8 +1168,8 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	{
 		setLanguage(language);
 		ocarina_load_code(cheatFile, cheatSize);
-		Patch_Channel_Boot(); /* Patch for everything */
 		NandHandle.Patch_AHB(); /* Identify may takes it */
+		PatchIOS(); /* Patch for everything */
 		Identify(gameTitle);
 		ExternalBooter_ChannelSetup(gameTitle, use_dol);
 		WiiFlow_ExternalBooter(videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, 0, TYPE_CHANNEL, use_led);

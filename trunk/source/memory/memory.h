@@ -28,6 +28,9 @@
 #define Priiloader_CFG1	((vu32*)0x8132FFFB)
 #define Priiloader_CFG2	((vu32*)0x817FEFF0)
 
+#define IOS_Patch_Start	((vu32*)0x93400000)
+#define IOS_Patch_End	((vu32*)0x94000000)
+
 #define HW_GPIO_OUT		((vu32*)0xCD8000E0)
 #define HW_GPIOB_OUT	((vu32*)0xCD8000C0)
 #define HW_AHBPROT		((vu32*)0xCD800064)
