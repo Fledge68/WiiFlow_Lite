@@ -722,7 +722,7 @@ void CMenu::_game(bool launch)
 			m_btnMgr.hide(m_gameBtnPlayFull);
 			m_btnMgr.hide(m_gameBtnBackFull);
 			m_btnMgr.hide(m_gameBtnToogleFull);
-			if(m_gameLblUser[4] != -1 && !NoGameID(CoverFlow.getHdr()->type))
+			if(m_gameLblUser[4] != -1 && !NoGameID(CoverFlow.getHdr()->type) && !m_fa.isLoaded())
 				m_btnMgr.show(m_gameLblUser[4]);
 			for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser) - 1; ++i)
 			{
