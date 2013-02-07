@@ -23,12 +23,13 @@
 #include "fileOps/fileOps.h"
 #include "gecko/gecko.hpp"
 #include "libwbfs/libwbfs.h"
+#include "loader/utils.h"
+#include "loader/sys.h"
+#include "gui/fmt.h"
 
-#define MAX_FAT_PATH 1024
 #define TITLE_LEN 64
 
 char wbfs_fs_drive[16];
-char wbfs_ext_dir[16] = "/wbfs";
 char invalid_path[] = "/\\:|<>?*\"'";
 
 split_info_t split;
@@ -176,22 +177,22 @@ s32 WBFS_Ext_AddGame(progress_callback_t spinner, void *spinner_data)
 	char *cleantitle;
 
 	char folder[MAX_FAT_PATH];
-	bzero(folder, MAX_FAT_PATH);
+	memset(folder, 0, MAX_FAT_PATH);
 
 	char gamepath[MAX_FAT_PATH];
-	bzero(gamepath, MAX_FAT_PATH);
-	
+	memset(gamepath, 0, MAX_FAT_PATH);
+
 	Disc_ReadHeader(&header);
 	asprintf(&cleantitle, header.title);
 	for(cp = strpbrk(cleantitle, illegal); cp; cp = strpbrk(cp, illegal))
 		*cp = '_';
-	snprintf(folder, sizeof(folder), "%s%s", wbfs_fs_drive, wbfs_ext_dir);
+	strncpy(folder, fmt(wii_games_dir, wbfs_fs_drive), sizeof(folder));
 	fsop_MakeFolder(folder);
-	snprintf(folder, sizeof(folder), "%s%s/%s [%s]", wbfs_fs_drive, wbfs_ext_dir, cleantitle, header.id);
+	strncpy(folder, fmt("%s/%s [%s]", folder, cleantitle, header.id), sizeof(folder));
 	fsop_MakeFolder(folder);
 	free(cleantitle);
 
-	snprintf(gamepath, sizeof(gamepath), "%s/%s.wbfs", folder, header.id);
+	strncpy(gamepath, fmt("%s/%s.wbfs", folder, header.id), sizeof(gamepath));
 	u64 size = (u64)143432*2*0x8000ULL;
 	u32 n_sector = size / 512;
 

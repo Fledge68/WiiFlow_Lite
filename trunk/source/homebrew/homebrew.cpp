@@ -73,7 +73,7 @@ int SetupARGV(struct __argv * args)
 	if(!args) 
 		return -1;
 
-	bzero(args, sizeof(struct __argv));
+	memset(args, 0, sizeof(struct __argv));
 	args->argvMagic = ARGV_MAGIC;
 
 	u32 argc = 0;

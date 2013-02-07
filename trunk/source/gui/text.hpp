@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 
+#include "fmt.h"
 #include "FreeTypeGX.h"
 #include "video.hpp"
 #include "wstringEx/wstringEx.hpp"
@@ -56,12 +57,6 @@ private:
 
 // Nothing to do with CText. Q&D helpers for string formating.
 
-enum {
-	MAX_MSG_SIZE	= 1024,
-	MAX_USES		= 8,
-};
-
-char *fmt(const char *format, ...);
 std::string sfmt(const char *format, ...);
 wstringEx wfmt(const wstringEx &format, ...);
 bool checkFmt(const wstringEx &ref, const wstringEx &format);
@@ -73,7 +68,5 @@ std::string upperCase(std::string text);
 std::string lowerCase(std::string text);
 std::string ltrim(std::string s);
 std::string rtrim(std::string s);
-void Asciify( wchar_t *str );
-void Asciify2( char *str );
 
 #endif // !defined(__TEXT_HPP)

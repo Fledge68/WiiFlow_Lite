@@ -204,6 +204,12 @@ void CMenu::init()
 	useMainIOS = m_cfg.getBool("GENERAL", "force_cios_load", false);
 	if(prevCios != mainIOS || prevForceCIOS != useMainIOS)
 		InternalSave.SaveIOS(mainIOS, useMainIOS);
+	/* Our Wii game dir */
+	memset(wii_games_dir, 0, 64);
+	strncpy(wii_games_dir, m_cfg.getString("GENERAL", "wii_games_dir", GAMES_DIR).c_str(), 64);
+	if(strncmp(wii_games_dir, "%s:/", 4) != 0)
+		strcpy(wii_games_dir, GAMES_DIR);
+	gprintf("Wii Games Directory: %s\n", wii_games_dir);
 	/* Do our USB HDD Checks */
 	bool onUSB = m_cfg.getBool("GENERAL", "data_on_usb", strncmp(drive, "usb", 3) == 0);
 	drive = check; //reset the drive variable for the check
