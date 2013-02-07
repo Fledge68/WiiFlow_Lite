@@ -157,7 +157,7 @@ int frag_remap(FragList *ff, FragList *log, FragList *phy)
 int get_frag_list(u8 *id, char *path, const u32 hdd_sector_size)
 {
 	char fname[1024];
-	bzero(fname, 1024);
+	memset(fname, 0, sizeof(fname));
 	u32 length = strlen(path);
 	strcpy(fname, path);
 
@@ -166,7 +166,7 @@ int get_frag_list(u8 *id, char *path, const u32 hdd_sector_size)
 
 	if(fname[length-1] > '0' && fname[length-1] < '9')
 		return 0;
-	bool isWBFS = wbfs_part_fs != PART_FS_WBFS && strcasestr(strrchr(fname,'.'), ".wbfs") != 0;
+	bool isWBFS = strrchr(fname,'.') != NULL && strcasecmp(strrchr(fname,'.'), ".wbfs") == 0;
 
 	struct stat st;
 	FragList *fs = MEM1_lo_alloc(sizeof(FragList));
@@ -237,7 +237,6 @@ int get_frag_list(u8 *id, char *path, const u32 hdd_sector_size)
 			for (j = 0; j < fs->num; j++) 
 				fs->frag[j].sector += wbfs_part_lba;
 		}
-		
 		frag_concat(fa, fs);
 	}
 
@@ -246,17 +245,17 @@ int get_frag_list(u8 *id, char *path, const u32 hdd_sector_size)
 		goto out;
 
 	frag_init(frag_list, MAX_FRAG);
-	if (isWBFS) // If this is a .wbfs file format, remap.
+	if(isWBFS) // If this is a .wbfs file format, remap.
 	{
 		wbfs_disc_t *disc = WBFS_OpenDisc(id, path);
-		if (!disc)
+		if(!disc)
 		{
 			ret_val = -4;
 			goto out;
 		}
 		frag_init(fw, MAX_FRAG);
 		ret = wbfs_get_fragments(disc, &_frag_append, fw, hdd_sector_size);
-		if (ret) 
+		if(ret)
 		{
 			ret_val = -5;
 			goto out;

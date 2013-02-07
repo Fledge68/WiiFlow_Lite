@@ -294,9 +294,9 @@ s32 GCDump::DumpGame()
 	char *FSTNameOff = NULL;
 
 	char folder[MAX_FAT_PATH];
-	bzero(folder, MAX_FAT_PATH);
+	memset(folder, 0, MAX_FAT_PATH);
 	char gamepath[MAX_FAT_PATH];
-	bzero(gamepath, MAX_FAT_PATH);	
+	memset(gamepath, 0, MAX_FAT_PATH);
 
 	while(!gamedone)
 	{
