@@ -40,7 +40,7 @@ int main(int argc, char **argv)
 
 	char *gameid = NULL;
 	bool Emulator_boot = false;
-	bool iosOK = false;
+	bool iosOK = true;
 
 	for(u8 i = 0; i < argc; i++)
 	{
@@ -64,17 +64,18 @@ int main(int argc, char **argv)
 			Emulator_boot = true;
 	}
 	/* Init ISFS */
-	NandHandle.Init_ISFS();
-	if(InternalSave.CheckSave()) /* Maybe new IOS settings */
+	if(neek2o() || Sys_DolphinMode())
+		NandHandle.Init_ISFS();
+	else
+		NandHandle.LoadDefaultIOS(); /* safe reload to preferred IOS */
+	/* Maybe new IOS settings */
+	if(InternalSave.CheckSave())
 		InternalSave.LoadIOS();
 	/* Handle (c)IOS Loading */
 	if(neek2o() || Sys_DolphinMode()) /* wont reload anythin */
 		iosOK = loadIOS(IOS_GetVersion(), false);
 	else if(useMainIOS && CustomIOS(IOS_GetType(mainIOS))) /* Requested */
 		iosOK = loadIOS(mainIOS, false) && CustomIOS(CurrentIOS.Type);
-	else /* safe reload to preferred IOS */
-		iosOK = NandHandle.LoadDefaultIOS();
-
 	// Init
 	Sys_Init();
 	Sys_ExitTo(EXIT_TO_HBC);
