@@ -1265,7 +1265,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	int emuPartition = 0;
 
 	u8 emulate_mode = min((u32)m_gcfg2.getInt(id, "emulate_save", 0), ARRAY_SIZE(CMenu::_SaveEmu) - 1u);
-
 	if(emulate_mode == 0)
 	{
 		emulate_mode = min(max(0, m_cfg.getInt(WII_DOMAIN, "save_emulation", 0)), (int)ARRAY_SIZE(CMenu::_GlobalSaveEmu) - 1);
@@ -1274,7 +1273,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	}
 	else if(emulate_mode == 1)
 		emulate_mode = 0;
-	if(emulate_mode && !dvd && !neek2o() && CurrentIOS.Type == IOS_TYPE_D2X)
+	if(emulate_mode && !dvd && !neek2o())
 	{
 		emuPartition = _FindEmuPart(emuPath, false);
 		if(emuPartition < 0)
@@ -1305,18 +1304,15 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		NANDemuView = true;
 		m_cfg.setInt(WII_DOMAIN, "savepartition", emuPartition);
 		m_cfg.setString(WII_DOMAIN, "savepath", emuPath);
-		if(emulate_mode == 2 || emulate_mode > 3)
+		if(emulate_mode == 2)
 		{
-			if(emulate_mode == 2)
-			{
-				m_forceext = false;
-				_hideWaitMessage();
-				if(!_AutoExtractSave(id))
-					NandHandle.CreateTitleTMD(hdr);
-				_showWaitMessage();
-			}
+			m_forceext = false;
+			_hideWaitMessage();
+			if(!_AutoExtractSave(id))
+				NandHandle.CreateTitleTMD(hdr);
+			_showWaitMessage();
 		}
-		if(emulate_mode > 2)
+		else if(emulate_mode > 2)
 		{
 			NandHandle.CreateConfig();
 			NandHandle.Do_Region_Change(id);
@@ -1368,28 +1364,28 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		if(_loadIOS(gameIOS, userIOS, id) == LOAD_IOS_FAILED)
 			Sys_Exit();
 	}
-	if(CurrentIOS.Type == IOS_TYPE_D2X && returnTo != 0 && !m_directLaunch)
+	if(CurrentIOS.Type == IOS_TYPE_D2X)
 	{
-		if(D2X_PatchReturnTo(returnTo) >= 0)
+		if(returnTo != 0 && !m_directLaunch && D2X_PatchReturnTo(returnTo) >= 0)
 			memset(&returnTo, 0, sizeof(u32));
-	}
-	if(emulate_mode)
-	{
-		/* Enable our Emu NAND */
-		DeviceHandle.UnMountAll();
-		if(emulate_mode == 3)
-			NandHandle.Set_RCMode(true);
-		else if(emulate_mode == 4)
-			NandHandle.Set_FullMode(true);
-		else
-			NandHandle.Set_FullMode(false);
-		if(NandHandle.Enable_Emu() < 0)
+		if(emulate_mode)
 		{
-			NandHandle.Disable_Emu();
-			error(_t("errgame6", L"Enabling emu after reload failed!"));
-			Sys_Exit();
+			/* Enable our Emu NAND */
+			DeviceHandle.UnMountAll();
+			if(emulate_mode == 3)
+				NandHandle.Set_RCMode(true);
+			else if(emulate_mode == 4)
+				NandHandle.Set_FullMode(true);
+			else
+				NandHandle.Set_FullMode(false);
+			if(NandHandle.Enable_Emu() < 0)
+			{
+				NandHandle.Disable_Emu();
+				error(_t("errgame6", L"Enabling emu after reload failed!"));
+				Sys_Exit();
+			}
+			DeviceHandle.MountAll();
 		}
-		DeviceHandle.MountAll();
 	}
 	bool wbfs_partition = false;
 	if(!dvd)
