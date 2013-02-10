@@ -74,18 +74,28 @@ void DML_New_WriteOptions();
 // Devolution
 typedef struct global_config
 {
-	u32 signature;			//0x3EF9DB23
-	u16 version;			//0x00000100
+	u32 signature;
+	u16 version;
 	u16 device_signature;
 	u32 memcard_cluster;
 	u32 disc1_cluster;
 	u32 disc2_cluster;
+	u32 options;
 } gconfig;
+
+// constant value for identification purposes
+#define DEVO_CONFIG_SIG			0x3EF9DB23
+// version may change when future options are added
+#define DEVO_CONFIG_VERSION		0x0110
+// option flags
+#define DEVO_CONFIG_WIFILOG		(1<<0)
+#define DEVO_CONFIG_WIDE		(1<<1)
+#define DEVO_CONFIG_NOLED		(1<<2)
 
 bool DEVO_Installed(const char *path);
 void DEVO_GetLoader(const char *path);
 void DEVO_SetOptions(const char *isopath, const char *gameID, 
-		bool memcard_emum);
+		bool memcard_emum, bool widescreen, bool activity_led, bool wifi);
 void DEVO_Boot();
 
 // General

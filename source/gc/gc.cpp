@@ -199,7 +199,8 @@ void DEVO_GetLoader(const char *path)
 	}
 }
 
-void DEVO_SetOptions(const char *isopath, const char *gameID, bool memcard_emu)
+void DEVO_SetOptions(const char *isopath, const char *gameID, bool memcard_emu,
+					bool widescreen, bool activity_led, bool wifi)
 {
 	// re-mount device we need
 	DeviceHandle.MountDevolution();
@@ -218,11 +219,19 @@ void DEVO_SetOptions(const char *isopath, const char *gameID, bool memcard_emu)
 
 	// fill out the Devolution config struct
 	memset(DEVO_CONFIG, 0, sizeof(gconfig));
-	DEVO_CONFIG->signature = 0x3EF9DB23;
-	DEVO_CONFIG->version = 0x00000100;
+	DEVO_CONFIG->signature = DEVO_CONFIG_SIG;
+	DEVO_CONFIG->version = DEVO_CONFIG_VERSION;
 	DEVO_CONFIG->device_signature = st.st_dev;
 	DEVO_CONFIG->disc1_cluster = st.st_ino;
-	
+
+	// Pergame options
+	if(wifi)
+		DEVO_CONFIG->options |= DEVO_CONFIG_WIFILOG;
+	if(widescreen)
+		DEVO_CONFIG->options |= DEVO_CONFIG_WIDE;
+	if(!activity_led)
+		DEVO_CONFIG->options |= DEVO_CONFIG_NOLED;
+
 	// If 2nd iso file tell Devo about it
 	strncpy(iso2path, isopath, 255);
 	char *ptz = strstr(iso2path, "game.iso");

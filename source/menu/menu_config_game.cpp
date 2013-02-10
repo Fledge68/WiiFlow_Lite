@@ -1035,7 +1035,7 @@ void CMenu::_textGameSettings(void)
 	m_btnMgr.setText(m_gameSettingsBtnFlashSave, _t("cfgg33", L"Flash"));
 	m_btnMgr.setText(m_gameSettingsLblDevoMemcardEmu, _t("cfgg34", L"Devolution Memcard Emulator"));
 	m_btnMgr.setText(m_gameSettingsLblGCLoader, _t("cfgg35", L"GameCube Loader"));
-	m_btnMgr.setText(m_gameSettingsLblDM_Widescreen, _t("cfgg36", L"DM Widescreen Patch"));
+	m_btnMgr.setText(m_gameSettingsLblDM_Widescreen, _t("cfgg36", L"Widescreen Patch"));
 	m_btnMgr.setText(m_gameSettingsLblApploader, _t("cfgg37", L"Boot Apploader"));
 	m_btnMgr.setText(m_gameSettingsLblLED, _t("cfgg38", L"Activity LED"));
 	m_btnMgr.setText(m_gameSettingsLblScreenshot, _t("cfgg39", L"DM Screenshot Feature"));
