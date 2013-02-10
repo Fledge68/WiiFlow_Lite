@@ -876,6 +876,8 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 
 	u8 loader = min((u32)m_gcfg2.getInt(id, "gc_loader", 0), ARRAY_SIZE(CMenu::_GCLoader) - 1u);
 	bool memcard_emu = m_gcfg2.getBool(id, "devo_memcard_emu", false);
+	bool widescreen = m_gcfg2.getBool(id, "dm_widescreen", false);
+	bool activity_led = m_gcfg2.getBool(id, "led", false);
 
 	if(disc)
 	{
@@ -894,8 +896,6 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		nodisc = (nodisc == 0) ? m_cfg.getInt(GC_DOMAIN, "no_disc_patch", 0) : nodisc-1;
 		bool cheats = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool(GC_DOMAIN, "cheat", false));
 		bool DML_debug = m_gcfg2.getBool(id, "debugger", false);
-		bool DM_Widescreen = m_gcfg2.getBool(id, "dm_widescreen", false);
-		bool activity_led = m_gcfg2.getBool(id, "led", false);
 		bool screenshot = m_gcfg2.getBool(id, "screenshot", false);
 		/* Generate gct path */
 		char GC_Path[1024];
@@ -914,7 +914,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		const char *newPath = strcasestr(path, "boot.bin") == NULL ? strchr(path, '/') : strchr(GC_Path, '/');
 		if(m_new_dml)
 			DML_New_SetOptions(newPath, CheatPath, NewCheatPath, DeviceName[currentPartition],
-				cheats, DML_debug, NMM, nodisc, videoMode, videoSetting, DM_Widescreen, m_new_dm_cfg, activity_led, screenshot);
+				cheats, DML_debug, NMM, nodisc, videoMode, videoSetting, widescreen, m_new_dm_cfg, activity_led, screenshot);
 		else
 			DML_Old_SetOptions(newPath);
 		if(!nodisc || !m_new_dml)
@@ -950,7 +950,8 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		else //use cIOS instead to make sure Devolution works anyways
 			loadIOS(mainIOS, false);
 		ShutdownBeforeExit();
-		DEVO_SetOptions(path, id, memcard_emu);
+		DEVO_SetOptions(path, id, memcard_emu, 
+			widescreen, activity_led, m_use_wifi_gecko);
 		DEVO_Boot();
 	}
 	Sys_Exit();
