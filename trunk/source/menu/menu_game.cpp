@@ -1274,6 +1274,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	}
 	else if(emulate_mode == 1)
 		emulate_mode = 0;
+	m_current_view = COVERFLOW_USB; // used for _FindEmuPart()
 	if(emulate_mode && !dvd && !neek2o())
 	{
 		emuPartition = _FindEmuPart(emuPath, false);
