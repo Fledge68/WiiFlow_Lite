@@ -50,6 +50,7 @@ extern bool useMainIOS;
 extern volatile bool NANDemuView;
 extern volatile bool networkInit;
 extern u8 currentPartition;
+extern u8 currentPort;
 extern char wii_games_dir[];
 
 #ifdef __cplusplus

@@ -866,7 +866,7 @@ private:
 	void _textExitTo(void);
 	void _textBoot(void);
 	//
-	void _refreshBoot(void);
+	void _refreshBoot(u8 port = 0);
 	//
 	void _hideCheatSettings(bool instant = false);
 	void _hideError(bool instant = false);
