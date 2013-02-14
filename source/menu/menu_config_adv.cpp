@@ -117,7 +117,8 @@ int CMenu::_configAdv(void)
 			if(m_btnMgr.selected(m_configAdvBtnBootChange))
 			{
 				_hideConfigAdv();
-				_Boot();
+				if(_Boot())
+					break; /* Settings changed */
 				_showConfigAdv();
 			}
 			else if (m_btnMgr.selected(m_configAdvBtnCurThemeP) || m_btnMgr.selected(m_configAdvBtnCurThemeM))
