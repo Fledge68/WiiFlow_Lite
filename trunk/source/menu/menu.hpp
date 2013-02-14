@@ -972,7 +972,7 @@ private:
 	void _CategorySettings(bool fromGameSet = false);
 	bool _Home();
 	bool _ExitTo();
-	void _Boot();
+	bool _Boot();
 	void _mainLoopCommon(bool withCF = false, bool adjusting = false);
 public:
 	void directlaunch(const char *GameID);

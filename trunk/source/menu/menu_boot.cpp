@@ -61,7 +61,7 @@ static void hideBoot(bool instant)
 	m_btnMgr.hide(m_bootBtnUSBPort, instant);
 }
 
-void CMenu::_Boot(void)
+bool CMenu::_Boot(void)
 {
 	SetupInput();
 	u8 port = currentPort;
@@ -112,13 +112,17 @@ void CMenu::_Boot(void)
 	u8 cur_ios = min(m_cfg.getInt("GENERAL", "force_cios_rev", 0), 254);
 	if(prev_load != cur_load || prev_ios != cur_ios)
 		InternalSave.SaveIOS(cur_ios, cur_load);
-
 	if(port != currentPort)
-	{
 		InternalSave.SavePort(port);
-		m_reload = true;
-	}
 	hideBoot(false);
+
+	if(prev_load != cur_load || prev_ios != cur_ios || port != currentPort)
+	{
+		m_exit = true;
+		m_reload = true;
+		return 1;
+	}
+	return 0;
 }
 
 void CMenu::_refreshBoot(u8 port)
