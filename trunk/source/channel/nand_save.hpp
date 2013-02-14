@@ -30,9 +30,11 @@ class NandSave
 public:
 	NandSave();
 	bool CheckSave();
-	void LoadIOS();
+	void LoadSettings();
 	void SaveIOS(u8 ios, bool use_ios);
+	void SavePort(u8 port);
 private:
+	void WriteFile(const char *file_name, u8 *content, u32 size);
 	s32 fd;
 	s32 ret;
 	bool loaded;

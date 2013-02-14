@@ -31,6 +31,7 @@ NandSave InternalSave;
 
 #define BANNER_PATH		"/title/00010000/57465346/data/banner.bin"
 #define IOS_SAVE_PATH	"/title/00010000/57465346/data/ios"
+#define PORT_SAVE_PATH	"/title/00010000/57465346/data/port"
 
 NandSave::NandSave()
 {
@@ -148,24 +149,34 @@ error:
 	return loaded;
 }
 
-void NandSave::LoadIOS()
+void NandSave::LoadSettings()
 {
 	if(loaded == false)
 		return;
+
 	u32 size = 0;
 	memset(&ISFS_Path, 0, ISFS_MAXPATH);
 	strcpy(ISFS_Path, IOS_SAVE_PATH);
 	ios_settings_t *file = (ios_settings_t*)ISFS_GetFile(ISFS_Path, &size, -1);
-	if(file == NULL)
-		return;
-	gprintf("Loading IOS Settings from NAND\n");
-	if(size == sizeof(ios_settings_t))
+	if(file != NULL && size == sizeof(ios_settings_t))
 	{
+		gprintf("Loading IOS Settings from NAND\n");
 		if(file->cios > 0)
 			mainIOS = file->cios;
 		useMainIOS = file->use_cios;
 	}
-	free(file);
+	if(file != NULL)
+		free(file);
+
+	strcpy(ISFS_Path, PORT_SAVE_PATH);
+	u8 *port = ISFS_GetFile(ISFS_Path, &size, -1);
+	if(port != NULL && size == sizeof(u8))
+	{
+		gprintf("Using Port Settings from NAND\n");
+		currentPort = port[0] & 1;
+	}
+	if(port != NULL)
+		free(port);
 }
 
 void NandSave::SaveIOS(u8 ios, bool use_ios)
@@ -176,13 +187,28 @@ void NandSave::SaveIOS(u8 ios, bool use_ios)
 	ios_settings.cios = ios;
 	ios_settings.use_cios = use_ios;
 	gprintf("Saving IOS Settings to NAND\n");
+	WriteFile(IOS_SAVE_PATH, (u8*)&ios_settings, sizeof(ios_settings_t));
+}
+
+void NandSave::SavePort(u8 port)
+{
+	if(loaded == false)
+		return;
+	gprintf("Saving Port Settings to NAND\n");
+	WriteFile(PORT_SAVE_PATH, &port, sizeof(port));
+}
+
+void NandSave::WriteFile(const char *file_name, u8 *content, u32 size)
+{
 	memset(&ISFS_Path, 0, ISFS_MAXPATH);
-	strcpy(ISFS_Path, IOS_SAVE_PATH);
+	if(file_name == NULL || content == NULL || size == 0)
+		return;
+	strcpy(ISFS_Path, file_name);
 	ISFS_CreateFile(ISFS_Path, 0, 3, 3, 3);
 	fd = ISFS_Open(ISFS_Path, ISFS_OPEN_WRITE);
 	if(fd < 0)
 		return;
-	ret = ISFS_Write(fd, &ios_settings, sizeof(ios_settings_t));
+	ret = ISFS_Write(fd, content, size);
 	ISFS_Close(fd);
 	if(ret < 0)
 		ISFS_Delete(ISFS_Path);

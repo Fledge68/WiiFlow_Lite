@@ -68,9 +68,9 @@ int main(int argc, char **argv)
 		NandHandle.Init_ISFS();
 	else
 		NandHandle.LoadDefaultIOS(); /* safe reload to preferred IOS */
-	/* Maybe new IOS settings */
+	/* Maybe new IOS and Port settings */
 	if(InternalSave.CheckSave())
-		InternalSave.LoadIOS();
+		InternalSave.LoadSettings();
 	/* Handle (c)IOS Loading */
 	if(neek2o() || Sys_DolphinMode()) /* wont reload anythin */
 		iosOK = loadIOS(IOS_GetVersion(), false);

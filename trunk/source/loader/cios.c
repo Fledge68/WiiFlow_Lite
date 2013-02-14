@@ -39,6 +39,8 @@
 #include "memory/mem2.hpp"
 
 int mainIOS = 0;
+u8 currentPort = 0;
+
 IOS_Info CurrentIOS;
 signed_blob *GetTMD(u8 ios, u32 *TMD_Length)
 {
