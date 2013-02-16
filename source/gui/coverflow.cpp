@@ -2651,19 +2651,18 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover)
 		u8 *zBuffer = m_compressCache ? (u8*)MEM2_alloc(zBufferSize) : tex.data;
 		if(!!zBuffer && (!m_compressCache || compress(zBuffer, &zBufferSize, tex.data, bufSize) == Z_OK))
 		{
-			char gamePath[128];
-			gamePath[127] = '\0';
+			const char *gamePath = NULL;
 			if(blankBoxCover)
-				strncpy(gamePath, strrchr(m_items[i].blankBoxPicPath, '/') + 1, 127);
+				gamePath = strrchr(m_items[i].blankBoxPicPath, '/') + 1;
 			else if(NoGameID(m_items[i].hdr->type))
 			{
 				if(strrchr(m_items[i].hdr->path, '/') != NULL)
-					strncpy(gamePath, strrchr(m_items[i].hdr->path, '/') + 1, 127);
+					gamePath = strrchr(m_items[i].hdr->path, '/') + 1;
 				else
-					strncpy(gamePath, m_items[i].hdr->path, 127);
+					gamePath = m_items[i].hdr->path;
 			}
 			else
-				strncpy(gamePath, m_items[i].hdr->id, 6);
+				gamePath = m_items[i].hdr->id;
 			FILE *file = fopen(fmt("%s/%s.wfc", m_cachePath.c_str(), gamePath), "wb");
 			if(file != NULL)
 			{
@@ -2734,19 +2733,18 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 	// Try to find the texture in the cache
 	if(!m_cachePath.empty())
 	{
-		char gamePath[128];
-		memset(gamePath, 0, 128);
+		const char *gamePath = NULL;
 		if(blankBoxCover)
-			strncpy(gamePath, strrchr(m_items[i].blankBoxPicPath, '/') + 1, 127);
+			gamePath = strrchr(m_items[i].blankBoxPicPath, '/') + 1;
 		else if(NoGameID(m_items[i].hdr->type))
 		{
 			if(strrchr(m_items[i].hdr->path, '/') != NULL)
-				strncpy(gamePath, strrchr(m_items[i].hdr->path, '/') + 1, 127);
+				gamePath = strrchr(m_items[i].hdr->path, '/') + 1;
 			else
-				strncpy(gamePath, m_items[i].hdr->path, 127);
+				gamePath = m_items[i].hdr->path;
 		}
 		else
-			strncpy(gamePath, m_items[i].hdr->id, 6);
+			gamePath = m_items[i].hdr->id;
 		FILE *fp = fopen(fmt("%s/%s.wfc", m_cachePath.c_str(), gamePath), "rb");
 		if(fp != NULL)
 		{
