@@ -29,6 +29,7 @@
 
 #define TITLE_LEN 64
 
+char wbfs_drive_tmp[16];
 char wbfs_fs_drive[16];
 char invalid_path[] = "/\\:|<>?*\"'";
 
@@ -186,7 +187,8 @@ s32 WBFS_Ext_AddGame(progress_callback_t spinner, void *spinner_data)
 	asprintf(&cleantitle, header.title);
 	for(cp = strpbrk(cleantitle, illegal); cp; cp = strpbrk(cp, illegal))
 		*cp = '_';
-	strncpy(folder, fmt(wii_games_dir, wbfs_fs_drive), sizeof(folder));
+	strncpy(wbfs_drive_tmp, wbfs_fs_drive, strlen(wbfs_fs_drive) - 1);
+	strncpy(folder, fmt(wii_games_dir, wbfs_drive_tmp), sizeof(folder));
 	fsop_MakeFolder(folder);
 	strncpy(folder, fmt("%s/%s [%s]", folder, cleantitle, header.id), sizeof(folder));
 	fsop_MakeFolder(folder);
