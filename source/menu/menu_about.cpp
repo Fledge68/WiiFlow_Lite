@@ -111,7 +111,7 @@ void CMenu::_textAbout(void)
 	{
 		m_btnMgr.setText(m_aboutLblTitle, _t("about10", L"Help Guide"));
 		wstringEx help_text;
-		FILE *f = fopen(fmt("%s/%s.txt", m_helpDir.c_str(), m_curLanguage.c_str()), "r");
+		FILE *f = fopen(fmt("%s/%s.txt", m_helpDir.c_str(), lowerCase(m_curLanguage).c_str()), "r");
 		if(f)
 		{
 			fseek(f, 0, SEEK_END);

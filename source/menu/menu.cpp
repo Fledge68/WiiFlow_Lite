@@ -419,11 +419,11 @@ void CMenu::init()
 		defaultMenuLanguage = 2; //Brazilian
 
 	m_curLanguage = CMenu::_translations[m_cfg.getInt("GENERAL", "language", defaultMenuLanguage)];
-	if (!m_loc.load(fmt("%s/%s.ini", m_languagesDir.c_str(), m_curLanguage.c_str())))
+	if (!m_loc.load(fmt("%s/%s.ini", m_languagesDir.c_str(), lowerCase(m_curLanguage).c_str())))
 	{
 		m_cfg.setInt("GENERAL", "language", 0);
 		m_curLanguage = CMenu::_translations[0];
-		m_loc.load(fmt("%s/%s.ini", m_languagesDir.c_str(), m_curLanguage.c_str()));
+		m_loc.load(fmt("%s/%s.ini", m_languagesDir.c_str(), lowerCase(m_curLanguage).c_str()));
 	}
 	m_tempView = false;
 
