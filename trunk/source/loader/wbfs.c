@@ -215,7 +215,6 @@ s32 WBFS_Init(wbfs_t * handle, u32 part_fs, u32 part_idx, u32 part_lba, const ch
 	hdd = handle;
 	wbfsDev = strncasecmp(partition, "sd", 2) == 0 ? WBFS_DEVICE_SDHC : WBFS_DEVICE_USB;
 	strcpy(wbfs_fs_drive, partition);
-	strcat(wbfs_fs_drive, ":");
 
 	wbfs_part_fs  = part_fs;
 	wbfs_part_lba = part_lba;
