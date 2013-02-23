@@ -61,6 +61,7 @@ void Musicplayer::Init(Config &cfg, const string& musicDir, const string& themeM
 		srand(unsigned(time(NULL)));
 		random_shuffle(FileNames.begin(), FileNames.end());
 	}
+	OneSong = (FileNames.size() == 1);
 	CurrentFileName = FileNames.begin();
 }
 

@@ -46,6 +46,7 @@ public:
 	wstringEx GetFileName();
 	bool SongChanged();
 	time_t DisplayTime;
+	bool OneSong;
 protected:
 	bool PosFromPrevFile();
 	void LoadCurrentFile();
