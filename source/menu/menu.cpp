@@ -2024,6 +2024,7 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 	{
 		MusicPlayer.DisplayTime = 0;
 		m_btnMgr.hide(m_mainLblCurMusic);
+		if(MusicPlayer.OneSong) m_music_info = false;
 	}
 
 	//Take Screenshot
