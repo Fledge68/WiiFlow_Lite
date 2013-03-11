@@ -236,9 +236,21 @@ void DEVO_SetOptions(const char *isopath, const char *gameID, bool memcard_emu,
 	strncpy(iso2path, isopath, 255);
 	char *ptz = strstr(iso2path, "game.iso");
 	if(ptz != NULL)
+	{
 		strncpy(ptz, "gam1.iso", 8);
+		f = fopen(iso2path, "rb");
+		if(f == NULL)
+		{
+			strncpy(ptz, "gam2.iso", 8);
+			f = fopen(iso2path, "rb");
+			if(f == NULL)
+			{
+				strncpy(ptz, "disc2.iso", 9);
+				f = fopen(iso2path, "rb");
+			}
+		}
+	}
 
-	f = fopen(iso2path, "rb");
 	if(f != NULL)
 	{
 		gprintf("Devolution: 2nd ISO File for Multi DVD Game %s\n", iso2path);
