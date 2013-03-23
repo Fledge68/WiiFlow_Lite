@@ -629,11 +629,6 @@ void CMenu::_game(bool launch)
 					currentPartition = SD;
 				}
 
-				CoverFlow.clear();
-				_showWaitMessage();
-				exitHandler(PRIILOADER_DEF); //Making wiiflow ready to boot something
-
-				CurrentBanner.ClearBanner();
 				// Get banner_title
 				if(hdr->type == TYPE_CHANNEL)
 					_extractChannelBnr(chantitle);
@@ -662,8 +657,8 @@ void CMenu::_game(bool launch)
 					WPAD_SetVRes(chan, m_vid.width() + m_cursor[chan].width(), m_vid.height() + m_cursor[chan].height());
 				m_gcfg2.unload();
 				_showGame();
-				_initCF();
-				CoverFlow.select();
+				//_initCF();
+				//CoverFlow.select();
 			}
 			else 
 			{
@@ -799,6 +794,14 @@ void CMenu::directlaunch(const char *GameID)
 	error(sfmt("errgame1", L"Cannot find the game with ID: %s", GameID));
 }
 
+void CMenu::_launchShutdown()
+{
+	CoverFlow.clear();
+	_showWaitMessage();
+	exitHandler(PRIILOADER_DEF); //Making wiiflow ready to boot something
+	CurrentBanner.ClearBanner();
+}
+
 void CMenu::_launch(dir_discHdr *hdr)
 {
 	/* Lets boot that shit */
@@ -810,11 +813,19 @@ void CMenu::_launch(dir_discHdr *hdr)
 		_launchChannel(hdr);
 	else if(hdr->type == TYPE_PLUGIN)
 	{
+		const char *plugin_dol_name = m_plugin.GetDolName(hdr->settings[0]);
+		u8 plugin_dol_len = strlen(plugin_dol_name);
 		char title[101];
 		memset(&title, 0, sizeof(title));
-		const char *path;
+		const char *path = NULL;
 		if(strchr(hdr->path, ':') != NULL)
 		{
+			if(plugin_dol_len == strlen(MUSIC_DOMAIN) && strcmp(plugin_dol_name, MUSIC_DOMAIN) == 0)
+			{
+				MusicPlayer.LoadFile(hdr->path, false);
+				m_exit = false;
+				return;
+			}
 			strncpy(title, strrchr(hdr->path, '/') + 1, 100);
 			*strrchr(hdr->path, '/') = '\0';
 			path = strchr(hdr->path, '/') + 1;
@@ -828,7 +839,7 @@ void CMenu::_launch(dir_discHdr *hdr)
 		const char *device = (currentPartition == 0 ? "sd" : (DeviceHandle.GetFSType(currentPartition) == PART_FS_NTFS ? "ntfs" : "usb"));
 		const char *loader = fmt("%s:/%s/WiiFlowLoader.dol", device, strchr(m_pluginsDir.c_str(), '/') + 1);
 		vector<string> arguments = m_plugin.CreateArgs(device, path, title, loader, hdr->settings[0]);
-		_launchHomebrew(fmt("%s/%s", m_pluginsDir.c_str(), m_plugin.GetDolName(hdr->settings[0])), arguments);
+		_launchHomebrew(fmt("%s/%s", m_pluginsDir.c_str(), plugin_dol_name), arguments);
 	}
 	else if(hdr->type == TYPE_HOMEBREW)
 	{
@@ -847,6 +858,7 @@ void CMenu::_launch(dir_discHdr *hdr)
 
 void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 {
+	_launchShutdown();
 	const char *id = hdr->id;
 	memcpy((u8*)Disc_ID, id, 6);
 	DCFlushRange((u8*)Disc_ID, 32);
@@ -959,6 +971,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 
 void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 {
+	_launchShutdown();
 	m_gcfg1.save(true);
 	m_gcfg2.save(true);
 	m_cat.save(true);
@@ -1063,6 +1076,7 @@ int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id, bool RealNAND_Channels)
 
 void CMenu::_launchChannel(dir_discHdr *hdr)
 {
+	_launchShutdown();
 	u32 gameIOS = 0;
 	string id = string(hdr->id);
 
@@ -1182,6 +1196,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 
 void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 {
+	_launchShutdown();
 	string id(hdr->id);
 	string path(hdr->path);
 	if(neek2o())

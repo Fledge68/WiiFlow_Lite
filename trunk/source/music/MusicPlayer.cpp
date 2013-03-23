@@ -138,12 +138,17 @@ void Musicplayer::Tick(bool attenuate)
 
 void Musicplayer::LoadCurrentFile()
 {
-	MusicFile.Load((*CurrentFileName).c_str());
+	LoadFile(CurrentFileName->c_str());
+}
+
+void Musicplayer::LoadFile(const char *name, bool display_change)
+{
+	MusicFile.Load(name);
 	SetVolume(CurrentVolume);
 	MusicFile.Play();
 	CurrentPosition = 0;
 	MusicStopped = false;
-	MusicChanged = true;
+	MusicChanged = display_change;
 }
 
 /* For our GUI */
