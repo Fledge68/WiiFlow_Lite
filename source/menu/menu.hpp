@@ -988,6 +988,7 @@ private:
 	void _launchChannel(dir_discHdr *hdr);
 	void _launchHomebrew(const char *filepath, vector<string> arguments);
 	void _launchGC(dir_discHdr *hdr, bool disc);
+	void _launchShutdown();
 	void _setAA(int aa);
 	void _loadCFCfg();
 	void _loadCFLayout(int version, bool forceAA = false, bool otherScrnFmt = false);

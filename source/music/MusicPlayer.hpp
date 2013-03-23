@@ -47,6 +47,8 @@ public:
 	bool SongChanged();
 	time_t DisplayTime;
 	bool OneSong;
+	/* Plugin */
+	void LoadFile(const char *name, bool display_change = true);
 protected:
 	bool PosFromPrevFile();
 	void LoadCurrentFile();
