@@ -628,23 +628,22 @@ void CMenu::_game(bool launch)
 					}
 					currentPartition = SD;
 				}
-
-				// Get banner_title
+				/* Get Banner Title for Playlog */
+				CurrentBanner.ClearBanner();
 				if(hdr->type == TYPE_CHANNEL)
 					_extractChannelBnr(chantitle);
 				else if(hdr->type == TYPE_WII_GAME)
 					_extractBnr(hdr);
 				if(CurrentBanner.IsValid())
-				{
 					_extractBannerTitle(GetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str()));
-					CurrentBanner.ClearBanner();
-				}
 				if(hdr->type != TYPE_HOMEBREW && hdr->type != TYPE_PLUGIN)
 				{
 					if(Playlog_Update(hdr->id, banner_title) < 0)
 						Playlog_Delete();
 				}
 				gprintf("Launching game %s\n", hdr->id);
+				CurrentBanner.ClearBanner();
+				/* Finally boot it */
 				_launch(hdr);
 
 				if(m_exit)
@@ -799,7 +798,6 @@ void CMenu::_launchShutdown()
 	CoverFlow.clear();
 	_showWaitMessage();
 	exitHandler(PRIILOADER_DEF); //Making wiiflow ready to boot something
-	CurrentBanner.ClearBanner();
 }
 
 void CMenu::_launch(dir_discHdr *hdr)
