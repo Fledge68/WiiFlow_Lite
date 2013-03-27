@@ -1688,15 +1688,15 @@ void CMenu::_initCF(void)
 				id.append("_2");
 		}
 		bool ageLocked = false;
-		if (ageLock < 19)
+		if(ageLock < 19)
 		{
 			int ageRated = min(max(gameAgeList.getInt(domain, id), 0), 19);
-			if(ageRated == 0 && gametdb.IsLoaded() && (element->type == TYPE_WII_GAME || element->type == TYPE_CHANNEL))
+			if(ageRated == 0 && gametdb.IsLoaded() && (element->type == TYPE_WII_GAME || element->type == TYPE_GC_GAME || element->type == TYPE_CHANNEL))
 			{
 				const char *RatingValue = NULL;
-				if(gametdb.GetRatingValue(id.c_str(), RatingValue))
+				if(gametdb.GetRatingValue(element->id, RatingValue))
 				{
-					switch(gametdb.GetRating(id.c_str()))
+					switch(gametdb.GetRating(element->id))
 					{
 						case GAMETDB_RATING_TYPE_CERO:
 							if(RatingValue[0] == 'A')
@@ -1910,7 +1910,7 @@ void CMenu::_initCF(void)
 			else if(element->type == TYPE_HOMEBREW)
 				CoverFlow.addItem(&(*element), fmt("%s/icon.png", element->path), fmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
 			else
-				CoverFlow.addItem(&(*element), fmt("%s/%s.png", m_picDir.c_str(), id.c_str()), fmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
+				CoverFlow.addItem(&(*element), fmt("%s/%s.png", m_picDir.c_str(), element->id), fmt("%s/%s.png", m_boxPicDir.c_str(), element->id), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
 		}
 	}
 	if(gametdb.IsLoaded())
