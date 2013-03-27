@@ -135,7 +135,10 @@ static void Create_GC_List(char *FullPath)
 			fseek(fp, 6, SEEK_SET);
 			fread(gc_disc, 1, 1, fp);
 			if(gc_disc[0])
+			{
 				wcslcat(m_gameList.back().title, L" disc 2", 63);
+				m_gameList.back().settings[0] = 1;
+			}
 		}
 		fclose(fp);
 	}
