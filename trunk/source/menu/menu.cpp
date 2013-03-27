@@ -1684,6 +1684,8 @@ void CMenu::_initCF(void)
 			if(element->type == TYPE_CHANNEL && chantitle == HBC_108)
 				strncpy(element->id, "JODI", 6);
 			id = element->id;
+			if(element->type == TYPE_GC_GAME && element->settings[0] == 1) /* disc 2 */
+				id.append("_2");
 		}
 		bool ageLocked = false;
 		if (ageLock < 19)
@@ -1846,7 +1848,7 @@ void CMenu::_initCF(void)
 					if(numHidCats == 0)
 						continue;
 					else if(numSelCats > 0)
-							continue;
+						continue;
 				}
 			}
 			int playcount = m_gcfg1.getInt("PLAYCOUNT", id, 0);
