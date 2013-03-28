@@ -42,6 +42,11 @@ public:
 	void cleanup(void);
 	void loadDefaultFont(void);
 	void TempLoadIOS(int IOS = 0);
+
+	const char *getBoxPath(const dir_discHdr *element);
+	const char *getFrontPath(const dir_discHdr *element);
+	const char *getBlankCoverPath(const dir_discHdr *element);
+
 	u8 m_current_view;
 	int m_last_view;
 	u8 enabledPluginPos;
@@ -1106,6 +1111,8 @@ private:
 	static const int _nbCfgPages;
 	static const u32 SVN_REV_NUM;
 };
+
+extern CMenu mainMenu;
 
 #define ARRAY_SIZE(a)		(sizeof a / sizeof a[0])
 

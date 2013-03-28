@@ -1649,35 +1649,32 @@ void CMenu::_initCF(void)
 	for(vector<dir_discHdr>::iterator element = m_gameList.begin(); element != m_gameList.end(); ++element)
 	{
 		string id;
-		string tempname = element->path;
+		char tmp_id[256];
 		u64 chantitle = TITLE_ID(element->settings[0],element->settings[1]);
 		if(element->type == TYPE_HOMEBREW)
-		{
-			tempname.assign(&tempname[tempname.find_last_of('/') + 1]);
-			id = tempname;
-		}
+			id = strrchr(element->path, '/') + 1;
 		else if(element->type == TYPE_PLUGIN)
 		{
-			if(tempname.find(':') != string::npos)
+			if(strchr(element->path, ':') != NULL)
 			{
-				if(tempname.empty() || tempname.find_first_of('/') == string::npos)
+				if(strchr(element->path, '/') == NULL)
 					continue;
-				tempname.erase(0, tempname.find_first_of('/')+1);
-				string dirName = tempname.substr(0, tempname.find_first_of('/')+1);
-				if (tempname.find_first_of('/') == string::npos)
-				{
+				memset(tmp_id, 0, 256);
+				strncpy(tmp_id, strchr(element->path, '/') + 1, 255);
+				if(strchr(tmp_id, '/') == NULL)
 					continue;
-				}
-				tempname.assign(&tempname[tempname.find_last_of('/') + 1]);
-				if(tempname.find_last_of('.') == string::npos)
-				{
+				/* first subpath */
+				*(strchr(tmp_id, '/') + 1) = '\0';
+				id.append(tmp_id);
+				/* filename */
+				strncpy(tmp_id, strrchr(element->path, '/') + 1, 255);
+				if(strchr(tmp_id, '.') == NULL)
 					continue;
-				}
-				tempname.erase(tempname.find_last_of('.'), tempname.size() - tempname.find_last_of('.'));
-				id = dirName+tempname;
+				*strchr(tmp_id, '.') = '\0';
+				id.append(tmp_id);
 			}
 			else
-				id = tempname;
+				id = element->path;
 		}
 		else
 		{
@@ -1857,66 +1854,25 @@ void CMenu::_initCF(void)
 			if(dumpGameLst)
 				dump.setWString(domain, id, element->title);
 
-			const char *blankCoverKey = NULL;
-			switch(element->type)
+			if(element->type == TYPE_PLUGIN && EnabledPlugins.size() > 0)
 			{
-				case TYPE_CHANNEL:
-					blankCoverKey = "channels";
-					break;
-				case TYPE_HOMEBREW:
-					blankCoverKey = "homebrew";
-					break;
-				case TYPE_GC_GAME:
-					blankCoverKey = "gamecube";
-					break;
-				case TYPE_PLUGIN:
-					char PluginMagicWord[9];
-					memset(PluginMagicWord, 0, sizeof(PluginMagicWord));
-					strncpy(PluginMagicWord, fmt("%08x", element->settings[0]), 8);
-					blankCoverKey = PluginMagicWord;
-					break;
-				default:
-					blankCoverKey = "wii";
-			}
-			const string &blankCoverName = m_theme.getString("BLANK_COVERS", blankCoverKey, fmt("%s.jpg", blankCoverKey));
-			if(element->type == TYPE_PLUGIN)
-			{
-				string tempname(element->path);
-				if(tempname.find_last_of("/") != string::npos)
-					tempname.assign(&tempname[tempname.find_last_of("/") + 1]);
-				string coverFolder(m_plugin.GetCoverFolderName(element->settings[0]));
-				if(EnabledPlugins.size() == 0) //all plugins
+				for(u8 j = 0; j < EnabledPlugins.size(); j++)
 				{
-					if(coverFolder.size() > 0)
-						CoverFlow.addItem(&(*element), fmt("%s/%s/%s.png", m_picDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s/%s.png", m_boxPicDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
-					else
-						CoverFlow.addItem(&(*element), fmt("%s/%s.png", m_picDir.c_str(), tempname.c_str()), fmt("%s/%s.png", m_boxPicDir.c_str(), tempname.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
-				}
-				else
-				{
-					for(u8 j = 0; j < EnabledPlugins.size(); j++)
+					if(EnabledPlugins.at(j) == true && element->settings[0] == m_plugin.getPluginMagic(j))
 					{
-						if(EnabledPlugins.at(j) == true && element->settings[0] == m_plugin.getPluginMagic(j))
-						{
-							if(coverFolder.size() > 0)
-								CoverFlow.addItem(&(*element), fmt("%s/%s/%s.png", m_picDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s/%s.png", m_boxPicDir.c_str(), coverFolder.c_str(), tempname.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
-							else
-								CoverFlow.addItem(&(*element), fmt("%s/%s.png", m_picDir.c_str(), tempname.c_str()), fmt("%s/%s.png", m_boxPicDir.c_str(), tempname.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
-							break;
-						}
+						CoverFlow.addItem(&(*element), playcount, lastPlayed);
+						break;
 					}
 				}
 			}
-			else if(element->type == TYPE_HOMEBREW)
-				CoverFlow.addItem(&(*element), fmt("%s/icon.png", element->path), fmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str()), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
 			else
-				CoverFlow.addItem(&(*element), fmt("%s/%s.png", m_picDir.c_str(), element->id), fmt("%s/%s.png", m_boxPicDir.c_str(), element->id), fmt("%s/%s", m_boxPicDir.c_str(), blankCoverName.c_str()), playcount, lastPlayed);
+				CoverFlow.addItem(&(*element), playcount, lastPlayed);
 		}
 	}
 	if(gametdb.IsLoaded())
 		gametdb.CloseFile();
 	m_gcfg1.unload();
- 	if (dumpGameLst)
+	if (dumpGameLst)
 	{
 		dump.save(true);
 		m_cfg.setBool(domain, "dump_list", false);
@@ -2288,7 +2244,7 @@ bool CMenu::_loadList(void)
 	if(sources > 1)
 		m_current_view = COVERFLOW_MAX;
 
-	gprintf("Games found: %i\n", m_gameList.size());	
+	gprintf("Games found: %i\n", m_gameList.size());
 	return m_gameList.size() > 0 ? true : false;
 }
 
@@ -2592,7 +2548,15 @@ const char *CMenu::_getId()
 		id = tmp;
 	}
 	else
-		id = CoverFlow.getId();
+	{
+		id = hdr->id;
+		if(hdr->type == TYPE_GC_GAME && hdr->settings[0] == 1) /* disc 2 */
+		{
+			tmp[0] = '\0';
+			strcat(tmp, fmt("%.6s_2", hdr->id));
+			id = tmp;
+		}
+	}
 	return id;
 }
 
@@ -2693,4 +2657,66 @@ void CMenu::TempLoadIOS(int IOS)
 			WPAD_SetVRes(chan, m_vid.width() + m_cursor[chan].width(), m_vid.height() + m_cursor[chan].height());
 		_netInit();
 	}
+}
+
+const char *CMenu::getBlankCoverPath(const dir_discHdr *element)
+{
+	const char *blankCoverKey = NULL;
+	switch(element->type)
+	{
+		case TYPE_CHANNEL:
+			blankCoverKey = "channels";
+			break;
+		case TYPE_HOMEBREW:
+			blankCoverKey = "homebrew";
+			break;
+		case TYPE_GC_GAME:
+			blankCoverKey = "gamecube";
+			break;
+		case TYPE_PLUGIN:
+			char PluginMagicWord[9];
+			memset(PluginMagicWord, 0, sizeof(PluginMagicWord));
+			strncpy(PluginMagicWord, fmt("%08x", element->settings[0]), 8);
+			blankCoverKey = PluginMagicWord;
+			break;
+		default:
+			blankCoverKey = "wii";
+	}
+	return m_theme.getString("BLANK_COVERS", blankCoverKey, fmt("%s.jpg", blankCoverKey)).c_str();
+}
+
+const char *CMenu::getBoxPath(const dir_discHdr *element)
+{
+	if(element->type == TYPE_PLUGIN)
+	{
+		const char *tempname = element->path;
+		if(strchr(element->path, '/') != NULL)
+			tempname = strrchr(element->path, '/') + 1;
+		const char *coverFolder = m_plugin.GetCoverFolderName(element->settings[0]);
+		if(strlen(coverFolder) > 0)
+			return fmt("%s/%s/%s.png", m_boxPicDir.c_str(), coverFolder, tempname);
+		else
+			return fmt("%s/%s.png", m_boxPicDir.c_str(), tempname);
+	}
+	else if(element->type == TYPE_HOMEBREW)
+		return fmt("%s/%s.png", m_boxPicDir.c_str(), strrchr(element->path, '/') + 1);
+	return fmt("%s/%s.png", m_boxPicDir.c_str(), element->id);
+}
+
+const char *CMenu::getFrontPath(const dir_discHdr *element)
+{
+	if(element->type == TYPE_PLUGIN)
+	{
+		const char *tempname = element->path;
+		if(strchr(element->path, '/') != NULL)
+			tempname = strrchr(element->path, '/') + 1;
+		const char *coverFolder = m_plugin.GetCoverFolderName(element->settings[0]);
+		if(strlen(coverFolder) > 0)
+			return fmt("%s/%s/%s.png", m_picDir.c_str(), coverFolder, tempname);
+		else
+			return fmt("%s/%s.png", m_picDir.c_str(), tempname);
+	}
+	else if(element->type == TYPE_HOMEBREW)
+		return fmt("%s/icon.png", element->path);
+	return fmt("%s/%s.png", m_picDir.c_str(), element->id);
 }

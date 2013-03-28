@@ -44,7 +44,7 @@ public:
 	void clear(void);
 	void shutdown(void);
 	void reserve(u32 capacity);
-	void addItem(dir_discHdr *hdr, const char *picPath, const char *boxPicPath, const char *blankBoxPicPath, int playcount = 0, unsigned int lastPlayed = 0);
+	void addItem(dir_discHdr *hdr, int playcount = 0, unsigned int lastPlayed = 0);
 	bool empty(void) const { return m_items.empty(); }
 	// 
 	bool start();
@@ -194,12 +194,8 @@ private:
 	enum TexState { STATE_Loading, STATE_Ready, STATE_NoCover };
 	struct CItem
 	{
-		CItem(dir_discHdr *itemHdr, const char *itemPic, const char *itemBoxPic, 
-				const char *itemBlankBoxPic, int playcount, unsigned int lastPlayed);
+		CItem(dir_discHdr *itemHdr, int playcount, unsigned int lastPlayed);
 		dir_discHdr *hdr;
-		char picPath[128];
-		char boxPicPath[128];
-		char blankBoxPicPath[64];
 		int playcount;
 		unsigned int lastPlayed;
 		TexData texture;

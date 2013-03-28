@@ -15,6 +15,7 @@
 #include "fonts.h"
 #include "types.h"
 #include "gecko/gecko.hpp"
+#include "menu/menu.hpp"
 #include "memory/mem2.hpp"
 #include "wstringEx/wstringEx.hpp"
 
@@ -77,19 +78,14 @@ CCoverFlow::CCover::CCover(void)
 	targetScale = Vector3D(1.f, 1.f, 1.f);
 }
 
-CCoverFlow::CItem::CItem(dir_discHdr *itemHdr, const char *itemPic, const char *itemBoxPic, const char *itemBlankBoxPic, int playcount, unsigned int lastPlayed) :
+CCoverFlow::CItem::CItem(dir_discHdr *itemHdr, int playcount, unsigned int lastPlayed) :
 	hdr(itemHdr),
 	playcount(playcount),
 	lastPlayed(lastPlayed),
 	boxTexture(false),
 	state(STATE_Loading)
 {
-	strncpy(picPath, itemPic, 127);
-	picPath[127] = '\0';
-	strncpy(boxPicPath, itemBoxPic, 127);
-	boxPicPath[127] = '\0';
-	strncpy(blankBoxPicPath, itemBlankBoxPic, 63);
-	blankBoxPicPath[63] = '\0';
+
 }
 
 static inline wchar_t upperCaseWChar(wchar_t c)
@@ -708,10 +704,10 @@ void CCoverFlow::reserve(u32 capacity)
 	m_items.reserve(capacity);
 }
 
-void CCoverFlow::addItem(dir_discHdr *hdr, const char *picPath, const char *boxPicPath, const char *blankBoxPicPath, int playcount, unsigned int lastPlayed)
+void CCoverFlow::addItem(dir_discHdr *hdr, int playcount, unsigned int lastPlayed)
 {
 	if (m_covers != NULL) return;
-	m_items.push_back(CCoverFlow::CItem(hdr, picPath, boxPicPath, blankBoxPicPath, playcount, lastPlayed));
+	m_items.push_back(CCoverFlow::CItem(hdr, playcount, lastPlayed));
 }
 
 // Draws a plane in the Z-Buffer only.
@@ -2622,8 +2618,8 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover)
 	if (!m_loadingCovers) return false;
 
 	u8 textureFmt = m_compressTextures ? GX_TF_CMPR : GX_TF_RGB565;
-	const char *path = box ? (blankBoxCover ? m_items[i].blankBoxPicPath : 
-							m_items[i].boxPicPath) : m_items[i].picPath;
+	const char *path = box ? (blankBoxCover ? mainMenu.getBlankCoverPath(m_items[i].hdr) : 
+			mainMenu.getBoxPath(m_items[i].hdr)) : mainMenu.getFrontPath(m_items[i].hdr);
 	TexData tex;
 	tex.thread = true;
 	m_renderingTex = &tex;
@@ -2653,7 +2649,11 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover)
 		{
 			const char *gamePath = NULL;
 			if(blankBoxCover)
-				gamePath = strrchr(m_items[i].blankBoxPicPath, '/') + 1;
+			{
+				const char *menuPath = mainMenu.getBlankCoverPath(m_items[i].hdr);
+				if(menuPath != NULL && strrchr(menuPath, '/') != NULL)
+					gamePath = strrchr(menuPath, '/') + 1;
+			}
 			else if(NoGameID(m_items[i].hdr->type))
 			{
 				if(strrchr(m_items[i].hdr->path, '/') != NULL)
@@ -2663,7 +2663,10 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover)
 			}
 			else
 				gamePath = m_items[i].hdr->id;
-			FILE *file = fopen(fmt("%s/%s.wfc", m_cachePath.c_str(), gamePath), "wb");
+
+			FILE *file = NULL;
+			if(gamePath != NULL)
+				file = fopen(fmt("%s/%s.wfc", m_cachePath.c_str(), gamePath), "wb");
 			if(file != NULL)
 			{
 				SWFCHeader header(tex, box, m_compressCache);
@@ -2735,7 +2738,11 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 	{
 		const char *gamePath = NULL;
 		if(blankBoxCover)
-			gamePath = strrchr(m_items[i].blankBoxPicPath, '/') + 1;
+		{
+			const char *menuPath = mainMenu.getBlankCoverPath(m_items[i].hdr);
+			if(menuPath != NULL && strrchr(menuPath, '/') != NULL)
+				gamePath = strrchr(menuPath, '/') + 1;
+		}
 		else if(NoGameID(m_items[i].hdr->type))
 		{
 			if(strrchr(m_items[i].hdr->path, '/') != NULL)
@@ -2745,7 +2752,13 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 		}
 		else
 			gamePath = m_items[i].hdr->id;
-		FILE *fp = fopen(fmt("%s/%s.wfc", m_cachePath.c_str(), gamePath), "rb");
+
+		FILE *fp = NULL;
+		if(gamePath != NULL)
+		{
+			const char *path = fmt("%s/%s.wfc", m_cachePath.c_str(), gamePath);
+			fp = fopen(path, "rb");
+		}
 		if(fp != NULL)
 		{
 			bool success = false;
