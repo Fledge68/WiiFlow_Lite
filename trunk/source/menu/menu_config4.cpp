@@ -61,7 +61,7 @@ void CMenu::_showConfig4(void)
 	for(u32 i = 0; i < ARRAY_SIZE(m_config4LblUser); ++i)
 		if(m_config4LblUser[i] != -1)
 			m_btnMgr.show(m_config4LblUser[i]);
- 
+
 	int i;
 	i = min(max(0, m_cfg.getInt("GENERAL", "exit_to", 0)), (int)ARRAY_SIZE(CMenu::_exitTo) - 1);
 	m_btnMgr.setText(m_config4BtnHome, _t(CMenu::_exitTo[i].id, CMenu::_exitTo[i].text));

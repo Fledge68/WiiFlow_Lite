@@ -270,7 +270,7 @@ void CMenu::_CategorySettings(bool fromGameSet)
 			_hideCategorySettings();
 			CoverFlow.left();
 			curPage = 1;
-			m_categories.assign(m_max_categories, '0');			
+			m_categories.assign(m_max_categories, '0');
 			_getIDCats();
 			_showCategorySettings();
 		}
