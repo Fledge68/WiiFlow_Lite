@@ -580,7 +580,7 @@ private:
 	u8 pointerhidedelay[WPAD_MAX_WIIMOTES];
 	u16 stickPointer_x[WPAD_MAX_WIIMOTES];
 	u16 stickPointer_y[WPAD_MAX_WIIMOTES];
-	
+
 	u8 m_wpadLeftDelay;
 	u8 m_wpadDownDelay;
 	u8 m_wpadRightDelay;
@@ -594,9 +594,13 @@ private:
 	u8 m_padUpDelay;
 	u8 m_padADelay;
 	//u8 m_padBDelay;
-	
-	u32 wii_btnsPressed;
-	u32 wii_btnsHeld;
+
+	u32 wii_btnsPressed[WPAD_MAX_WIIMOTES];
+	u32 wii_btnsHeld[WPAD_MAX_WIIMOTES];
+	bool wBtn_Pressed(int btn, u8 ext);
+	bool wBtn_PressedChan(int btn, u8 ext, int &chan);
+	bool wBtn_Held(int btn, u8 ext);
+	bool wBtn_HeldChan(int btn, u8 ext, int &chan);
 	u32 gc_btnsPressed;
 	u32 gc_btnsHeld;
 
@@ -632,7 +636,7 @@ private:
 	bool wRoll_Left(void);
 	bool wRoll_Right(void);
 
-	bool wii_btnRepeat(s64 btn);
+	bool wii_btnRepeat(u8 btn);
 	bool gc_btnRepeat(s64 btn);
 
 	bool WPadIR_Valid(int chan);

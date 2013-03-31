@@ -125,26 +125,52 @@ void CMenu::ScanInput()
 
 void CMenu::ButtonsPressed()
 {
-	wii_btnsPressed = 0;
 	gc_btnsPressed = 0;
-
 	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 	{
-		wii_btnsPressed |= WPAD_ButtonsDown(chan);
+		wii_btnsPressed[chan] = WPAD_ButtonsDown(chan);
 		gc_btnsPressed |= PAD_ButtonsDown(chan);
 	}
 }
 
 void CMenu::ButtonsHeld()
 {
-	wii_btnsHeld = 0;
 	gc_btnsHeld = 0;
-
 	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 	{
-		wii_btnsHeld |= WPAD_ButtonsHeld(chan);
+		wii_btnsHeld[chan] = WPAD_ButtonsHeld(chan);
 		gc_btnsHeld |= PAD_ButtonsHeld(chan);
 	}
+}
+
+bool CMenu::wBtn_PressedChan(int btn, u8 ext, int &chan)
+{
+	return ((wii_btnsPressed[chan] & btn) && (ext == WPAD_EXP_NONE || ext == wd[chan]->exp.type));
+}
+
+bool CMenu::wBtn_Pressed(int btn, u8 ext)
+{
+	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
+	{
+		if(wBtn_PressedChan(btn, ext, chan))
+			return true;
+	}
+	return false;
+}
+
+bool CMenu::wBtn_HeldChan(int btn, u8 ext, int &chan)
+{
+	return ((wii_btnsHeld[chan] & btn) && (ext == WPAD_EXP_NONE || ext == wd[chan]->exp.type));
+}
+
+bool CMenu::wBtn_Held(int btn, u8 ext)
+{
+	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
+	{
+		if(wBtn_HeldChan(btn, ext, chan))
+			return true;
+	}
+	return false;
 }
 
 void CMenu::LeftStick()
@@ -190,7 +216,8 @@ void CMenu::LeftStick()
 		}
 		else
 		{
-			if(pointerhidedelay[chan] > 0 && !wii_btnsHeld && !wii_btnsPressed && !gc_btnsHeld && !gc_btnsPressed) 
+			if(pointerhidedelay[chan] > 0 && !wii_btnsHeld[chan] && !wii_btnsPressed[chan] 
+				&& !gc_btnsHeld && !gc_btnsPressed) 
 				pointerhidedelay[chan]--;
 		}
 		if (pointerhidedelay[chan] == 0)
@@ -221,13 +248,13 @@ bool CMenu::WPadIR_ANY(void)
 	return (wd[0]->ir.valid || wd[1]->ir.valid || wd[2]->ir.valid || wd[3]->ir.valid);
 }
 
-bool CMenu::wii_btnRepeat(s64 btn)
+bool CMenu::wii_btnRepeat(u8 btn)
 {
 	bool b = false;
 
 	if(btn == WBTN_UP)
 	{
-		if(wii_btnsHeld & WBTN_UP)
+		if(WBTN_UP_HELD)
 		{
 			if(m_wpadUpDelay == 0 || m_wpadUpDelay >= g_repeatDelay)
 				b = true;
@@ -239,7 +266,7 @@ bool CMenu::wii_btnRepeat(s64 btn)
 	}
 	else if(btn == WBTN_RIGHT)
 	{
-		if(wii_btnsHeld & WBTN_RIGHT)
+		if(WBTN_RIGHT_HELD)
 		{
 			if(m_wpadRightDelay == 0 || m_wpadRightDelay >= g_repeatDelay)
 				b = true;
@@ -251,7 +278,7 @@ bool CMenu::wii_btnRepeat(s64 btn)
 	}
 	else if(btn == WBTN_DOWN)
 	{
-		if(wii_btnsHeld & WBTN_DOWN)
+		if(WBTN_DOWN_HELD)
 		{
 			if(m_wpadDownDelay == 0 || m_wpadDownDelay >= g_repeatDelay)
 				b = true;
@@ -263,7 +290,7 @@ bool CMenu::wii_btnRepeat(s64 btn)
 	}
 	else if(btn == WBTN_LEFT)
 	{
-		if(wii_btnsHeld & WBTN_LEFT)
+		if(WBTN_LEFT_HELD)
 		{
 			if(m_wpadLeftDelay == 0 || m_wpadLeftDelay >= g_repeatDelay)
 				b = true;
@@ -275,7 +302,7 @@ bool CMenu::wii_btnRepeat(s64 btn)
 	}
 	else if(btn == WBTN_A)
 	{
-		if(wii_btnsHeld & WBTN_A)
+		if(WBTN_A_HELD)
 		{
 			m_btnMgr.noClick(true);
 			if(m_wpadADelay == 0 || m_wpadADelay >= g_repeatDelay)
@@ -474,7 +501,8 @@ void CMenu::_getGrabStatus(void)
 
 	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 	{
-		wGrabStatus[chan] = WBTN_B & WPAD_ButtonsHeld(chan);
+		wGrabStatus[chan] = (wBtn_HeldChan(WPAD_BUTTON_B, WPAD_EXP_NONE, chan)
+				|| wBtn_HeldChan(WPAD_CLASSIC_BUTTON_B, WPAD_EXP_CLASSIC, chan));
 		gGrabStatus[chan] = GBTN_B & PAD_ButtonsHeld(chan);
 		if((wGrabStatus[chan] && wX[chan] > 0 && wd[chan]->ir.x < wX[chan] - 30)
 		|| (gGrabStatus[chan] && gX[chan] > 0 && stickPointer_x[chan] < gX[chan]))
