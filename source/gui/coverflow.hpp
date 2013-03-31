@@ -46,6 +46,7 @@ public:
 	void reserve(u32 capacity);
 	void addItem(dir_discHdr *hdr, int playcount = 0, unsigned int lastPlayed = 0);
 	bool empty(void) const { return m_items.empty(); }
+	u32 size(void) const { return m_items.size(); }
 	// 
 	bool start();
 	void stopCoverLoader(bool empty = false);
@@ -130,6 +131,7 @@ public:
 	const char *getNextId(void) const;
 	const dir_discHdr * getHdr(void) const;
 	const dir_discHdr * getNextHdr(void) const;
+	const dir_discHdr * getSpecificHdr(u32) const;
 	wstringEx getTitle(void) const;
 	u64 getChanTitle(void) const;
 	//

@@ -1986,7 +1986,7 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 	}
 
 	//Take Screenshot
-	if(gc_btnsPressed & PAD_TRIGGER_Z)
+	if(WBTN_Z_PRESSED || GBTN_Z_PRESSED)
 	{
 		time_t rawtime;
 		struct tm *timeinfo;

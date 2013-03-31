@@ -800,53 +800,55 @@ void CMenu::_launchShutdown()
 	exitHandler(PRIILOADER_DEF); //Making wiiflow ready to boot something
 }
 
-void CMenu::_launch(dir_discHdr *hdr)
+void CMenu::_launch(const dir_discHdr *hdr)
 {
+	dir_discHdr launchHdr;
+	memcpy(&launchHdr, hdr, sizeof(dir_discHdr));
 	/* Lets boot that shit */
-	if(hdr->type == TYPE_WII_GAME)
-		_launchGame(hdr, false);
-	else if(hdr->type == TYPE_GC_GAME)
-		_launchGC(hdr, false);
-	else if(hdr->type == TYPE_CHANNEL)
-		_launchChannel(hdr);
-	else if(hdr->type == TYPE_PLUGIN)
+	if(launchHdr.type == TYPE_WII_GAME)
+		_launchGame(&launchHdr, false);
+	else if(launchHdr.type == TYPE_GC_GAME)
+		_launchGC(&launchHdr, false);
+	else if(launchHdr.type == TYPE_CHANNEL)
+		_launchChannel(&launchHdr);
+	else if(launchHdr.type == TYPE_PLUGIN)
 	{
-		const char *plugin_dol_name = m_plugin.GetDolName(hdr->settings[0]);
+		const char *plugin_dol_name = m_plugin.GetDolName(launchHdr.settings[0]);
 		u8 plugin_dol_len = strlen(plugin_dol_name);
 		char title[101];
 		memset(&title, 0, sizeof(title));
 		const char *path = NULL;
-		if(strchr(hdr->path, ':') != NULL)
+		if(strchr(launchHdr.path, ':') != NULL)
 		{
 			if(plugin_dol_len == strlen(MUSIC_DOMAIN) && strcmp(plugin_dol_name, MUSIC_DOMAIN) == 0)
 			{
-				MusicPlayer.LoadFile(hdr->path, false);
+				MusicPlayer.LoadFile(launchHdr.path, false);
 				m_exit = false;
 				return;
 			}
-			strncpy(title, strrchr(hdr->path, '/') + 1, 100);
-			*strrchr(hdr->path, '/') = '\0';
-			path = strchr(hdr->path, '/') + 1;
+			strncpy(title, strrchr(launchHdr.path, '/') + 1, 100);
+			*strrchr(launchHdr.path, '/') = '\0';
+			path = strchr(launchHdr.path, '/') + 1;
 		}
 		else
 		{
-			path = hdr->path;
-			wcstombs(title, hdr->title, 63);
+			path = launchHdr.path;
+			wcstombs(title, launchHdr.title, 63);
 		}
 		m_cfg.setString(PLUGIN_DOMAIN, "current_item", title);
 		const char *device = (currentPartition == 0 ? "sd" : (DeviceHandle.GetFSType(currentPartition) == PART_FS_NTFS ? "ntfs" : "usb"));
 		const char *loader = fmt("%s:/%s/WiiFlowLoader.dol", device, strchr(m_pluginsDir.c_str(), '/') + 1);
-		vector<string> arguments = m_plugin.CreateArgs(device, path, title, loader, hdr->settings[0]);
+		vector<string> arguments = m_plugin.CreateArgs(device, path, title, loader, launchHdr.settings[0]);
 		_launchHomebrew(fmt("%s/%s", m_pluginsDir.c_str(), plugin_dol_name), arguments);
 	}
-	else if(hdr->type == TYPE_HOMEBREW)
+	else if(launchHdr.type == TYPE_HOMEBREW)
 	{
-		const char *gamepath = fmt("%s/boot.dol", hdr->path);
+		const char *gamepath = fmt("%s/boot.dol", launchHdr.path);
 		if(!fsop_FileExist(gamepath))
-			gamepath = fmt("%s/boot.elf", hdr->path);
+			gamepath = fmt("%s/boot.elf", launchHdr.path);
 		if(fsop_FileExist(gamepath))
 		{
-			m_cfg.setString(HOMEBREW_DOMAIN, "current_item", strrchr(hdr->path, '/') + 1);
+			m_cfg.setString(HOMEBREW_DOMAIN, "current_item", strrchr(launchHdr.path, '/') + 1);
 			_launchHomebrew(gamepath, m_homebrewArgs);
 		}
 	}
