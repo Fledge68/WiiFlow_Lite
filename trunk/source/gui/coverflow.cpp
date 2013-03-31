@@ -1523,6 +1523,12 @@ const dir_discHdr * CCoverFlow::getNextHdr(void) const
 	return m_items[loopNum(m_covers[m_range / 2].index + m_jump + 1, m_items.size())].hdr;
 }
 
+const dir_discHdr * CCoverFlow::getSpecificHdr(u32 place) const
+{
+	if (m_covers == NULL || m_items.empty() || place >= m_items.size()) return NULL;
+	return m_items[place].hdr;
+}
+
 wstringEx CCoverFlow::getTitle(void) const
 {
 	if (m_covers == NULL) return L"";

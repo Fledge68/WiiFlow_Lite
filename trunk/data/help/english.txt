@@ -14,6 +14,7 @@ Controls:
 -- B+Onscreen Arrows  =  Alphabetic search
 -- B+Minus  =  Switch Partition
 -- B+Plus  =  Sort Games
+-- Z / ZR  =  Take Screenshot
 
 -- A on Star Icon  =  Favorites
 -- B on Star Icon  =  Categories
@@ -24,6 +25,7 @@ Controls:
 -- Hold B for 3 seconds / B on Home Icon (wiimote_gestures enabled)  =  Display Source menu
 -- A on Disc Icon (Game Disc in Drive)  =  Launch game disc
 -- A on Question Mark Icon  =  Display credits and this help file
+-- B on Question Mark Icon  =  Boot a random game of the current coverflow
 
 - Game:
 -- A on box  =  Show the backside

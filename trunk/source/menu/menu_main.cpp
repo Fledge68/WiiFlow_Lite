@@ -549,6 +549,19 @@ int CMenu::main(void)
 					m_btnMgr.show(m_mainLblNotice);
 				}
 			}
+			else if(m_btnMgr.selected(m_mainBtnInfo) && !CoverFlow.empty())
+			{
+				/* WiiFlow should boot a random game */
+				_hideMain();
+				srand(time(NULL));
+				u16 place = (rand() + rand() + rand()) % CoverFlow.size();
+				gprintf("Lets boot the random game number %u\n", place);
+				const dir_discHdr *gameHdr = CoverFlow.getSpecificHdr(place);
+				if(gameHdr != NULL)
+					_launch(gameHdr);
+				/* Shouldnt happen */
+				_showMain();
+			}
 		}
 		else if(WROLL_LEFT)
 		{
