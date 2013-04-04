@@ -2682,7 +2682,7 @@ const char *CMenu::getBlankCoverPath(const dir_discHdr *element)
 		default:
 			blankCoverKey = "wii";
 	}
-	return m_theme.getString("BLANK_COVERS", blankCoverKey, fmt("%s.jpg", blankCoverKey)).c_str();
+	return fmt("%s/%s", m_boxPicDir.c_str(), m_theme.getString("BLANK_COVERS", blankCoverKey, fmt("%s.jpg", blankCoverKey)).c_str());
 }
 
 const char *CMenu::getBoxPath(const dir_discHdr *element)
