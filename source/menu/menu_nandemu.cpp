@@ -533,56 +533,59 @@ int CMenu::_AutoCreateNand(void)
 	while(!m_exit)
 	{
 		_mainLoopCommon();
-		if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnExtract)))
+		if(BTN_A_PRESSED)
 		{
-			m_fulldump =  true;
-			m_btnMgr.hide(m_nandemuBtnExtract);
-			m_btnMgr.hide(m_nandemuBtnDisable);
-			m_btnMgr.hide(m_nandemuBtnPartition);
-			m_btnMgr.hide(m_nandemuLblInit);
-			m_btnMgr.show(m_nandemuLblTitle);
-			m_btnMgr.show(m_nandfilePBar);
-			m_btnMgr.show(m_nandemuPBar);
-			m_btnMgr.show(m_nandfileLblMessage);
-			m_btnMgr.show(m_nandemuLblMessage);
-			m_btnMgr.show(m_nandfileLblDialog);
-			m_btnMgr.show(m_nandemuLblDialog);
-			m_btnMgr.setText(m_nandemuLblMessage, L"");
-			m_btnMgr.setText(m_nandfileLblMessage, L"");
-			m_btnMgr.setText(m_nandemuLblDialog, _t("cfgne11", L"Overall Progress:"));
-			m_btnMgr.setText(m_nandemuLblTitle, _t("cfgne12", L"NAND Extractor"));
-			m_thrdStop = false;
-			m_thrdProgress = 0.f;
-			m_thrdWorking = true;
-			LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_NandDumper, (void *)this, 0, 32768, 40);
-		}
-		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnDisable)))
-		{
-			_hideNandEmu();
-			return 0;
-		}
-		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnPartition)))
-		{
-			if(m_current_view == COVERFLOW_USB)
+			if(m_btnMgr.selected(m_nandemuBtnExtract))
 			{
-				m_tempView = true;
-				m_current_view = COVERFLOW_CHANNEL;
+				m_fulldump = true;
+				m_btnMgr.hide(m_nandemuBtnExtract);
+				m_btnMgr.hide(m_nandemuBtnDisable);
+				m_btnMgr.hide(m_nandemuBtnPartition);
+				m_btnMgr.hide(m_nandemuLblInit);
+				m_btnMgr.show(m_nandemuLblTitle);
+				m_btnMgr.show(m_nandfilePBar);
+				m_btnMgr.show(m_nandemuPBar);
+				m_btnMgr.show(m_nandfileLblMessage);
+				m_btnMgr.show(m_nandemuLblMessage);
+				m_btnMgr.show(m_nandfileLblDialog);
+				m_btnMgr.show(m_nandemuLblDialog);
+				m_btnMgr.setText(m_nandemuLblMessage, L"");
+				m_btnMgr.setText(m_nandfileLblMessage, L"");
+				m_btnMgr.setText(m_nandemuLblDialog, _t("cfgne11", L"Overall Progress:"));
+				m_btnMgr.setText(m_nandemuLblTitle, _t("cfgne12", L"NAND Extractor"));
+				m_thrdStop = false;
+				m_thrdProgress = 0.f;
+				m_thrdWorking = true;
+				LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_NandDumper, (void *)this, 0, 32768, 40);
 			}
-			_hideNandEmu();
-			_config(1);
-			if(m_tempView)
+			else if(m_btnMgr.selected(m_nandemuBtnDisable))
 			{
-				m_current_view = COVERFLOW_USB;
-				m_tempView = false;
+				_hideNandEmu();
 				return 0;
 			}
-			return 1;
-		}
-		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnBack)))
-		{
-			m_cfg.save();
-			_hideNandEmu();
+			else if(m_btnMgr.selected(m_nandemuBtnPartition))
+			{
+				if(m_current_view == COVERFLOW_USB)
+				{
+					m_tempView = true;
+					m_current_view = COVERFLOW_CHANNEL;
+				}
+				_hideNandEmu();
+				_config(1);
+				if(m_tempView)
+				{
+					m_current_view = COVERFLOW_USB;
+					m_tempView = false;
+					return 0;
+				}
 				return 1;
+			}
+			else if(m_btnMgr.selected(m_nandemuBtnBack))
+			{
+				m_cfg.save();
+				_hideNandEmu();
+					return 1;
+			}
 		}
 
 		if(m_thrdMessageAdded)
