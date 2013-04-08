@@ -31,6 +31,10 @@ s16 m_bootLblCIOSrevP;
 s16 m_bootLblUSBPort;
 s16 m_bootBtnUSBPort;
 
+s16 m_bootBtnBack;
+
+u8 set_port = 0;
+
 static void showBoot(void)
 {
 	m_btnMgr.show(m_bootLblTitle);
@@ -44,6 +48,8 @@ static void showBoot(void)
 
 	m_btnMgr.show(m_bootLblUSBPort);
 	m_btnMgr.show(m_bootBtnUSBPort);
+
+	m_btnMgr.show(m_bootBtnBack);
 }
 
 static void hideBoot(bool instant)
@@ -59,15 +65,17 @@ static void hideBoot(bool instant)
 
 	m_btnMgr.hide(m_bootLblUSBPort, instant);
 	m_btnMgr.hide(m_bootBtnUSBPort, instant);
+
+	m_btnMgr.hide(m_bootBtnBack, instant);
 }
 
 bool CMenu::_Boot(void)
 {
 	SetupInput();
-	u8 port = currentPort;
-	bool prev_load = m_cfg.getBool("GENERAL", "force_cios_load", false);
-	u8 prev_ios = min(m_cfg.getInt("GENERAL", "force_cios_rev", 0), 254);
-	_refreshBoot(port);
+	set_port = currentPort;
+	bool prev_load = cur_load;
+	u8 prev_ios = cur_ios;
+	_refreshBoot();
 
 	while(!m_exit)
 	{
@@ -76,16 +84,17 @@ bool CMenu::_Boot(void)
 			break;
 		else if(BTN_A_PRESSED)
 		{
-			if(m_btnMgr.selected(m_bootBtnLoadCIOS))
+			if(m_btnMgr.selected(m_bootBtnBack))
+				break;
+			else if(m_btnMgr.selected(m_bootBtnLoadCIOS))
 			{
-				bool old = m_cfg.getBool("GENERAL", "force_cios_load", false);
-				m_cfg.setBool("GENERAL", "force_cios_load", !old);
-				_refreshBoot(port);
+				cur_load = !cur_load;
+				_refreshBoot();
 			}
 			else if(m_btnMgr.selected(m_bootLblCIOSrevM) || m_btnMgr.selected(m_bootLblCIOSrevP))
 			{
 				bool increase = m_btnMgr.selected(m_bootLblCIOSrevP);
-				CIOSItr itr = _installed_cios.find(min(m_cfg.getInt("GENERAL", "force_cios_rev", 0), 254));
+				CIOSItr itr = _installed_cios.find(cur_ios);
 				if(increase)
 				{
 					itr++;
@@ -98,25 +107,23 @@ bool CMenu::_Boot(void)
 						itr = _installed_cios.end();
 					itr--;
 				}
-				m_cfg.setInt("GENERAL", "force_cios_rev", itr->first);
-				_refreshBoot(port);
+				cur_ios = itr->first;
+				_refreshBoot();
 			}
 			else if(m_btnMgr.selected(m_bootBtnUSBPort))
 			{
-				port = (port == 0 ? 1 : 0);
-				_refreshBoot(port);
+				set_port = !set_port;
+				_refreshBoot();
 			}
 		}
 	}
-	bool cur_load = m_cfg.getBool("GENERAL", "force_cios_load", false);
-	u8 cur_ios = min(m_cfg.getInt("GENERAL", "force_cios_rev", 0), 254);
 	if(prev_load != cur_load || prev_ios != cur_ios)
-		InternalSave.SaveIOS(cur_ios, cur_load);
-	if(port != currentPort)
-		InternalSave.SavePort(port);
+		InternalSave.SaveIOS();
+	if(set_port != currentPort)
+		InternalSave.SavePort(set_port);
 	hideBoot(false);
 
-	if(prev_load != cur_load || prev_ios != cur_ios || port != currentPort)
+	if(prev_load != cur_load || prev_ios != cur_ios || set_port != currentPort)
 	{
 		m_exit = true;
 		m_reload = true;
@@ -125,13 +132,12 @@ bool CMenu::_Boot(void)
 	return 0;
 }
 
-void CMenu::_refreshBoot(u8 port)
+void CMenu::_refreshBoot()
 {
-	m_btnMgr.setText(m_bootBtnLoadCIOS, _optBoolToString(m_cfg.getBool("GENERAL", "force_cios_load", false)));
-	m_btnMgr.setText(m_bootBtnUSBPort, wfmt(L"%i", port));
-	u8 IOS_Revision = min(m_cfg.getInt("GENERAL", "force_cios_rev", 0), 254);
-	if(IOS_Revision > 0)
-		m_btnMgr.setText(m_bootLblCurCIOSrev, wfmt(L"%i", IOS_Revision));
+	m_btnMgr.setText(m_bootBtnLoadCIOS, _optBoolToString(cur_load));
+	m_btnMgr.setText(m_bootBtnUSBPort, wfmt(L"%i", set_port));
+	if(cur_ios > 0)
+		m_btnMgr.setText(m_bootLblCurCIOSrev, wfmt(L"%i", cur_ios));
 	else
 		m_btnMgr.setText(m_bootLblCurCIOSrev, L"AUTO");
 	showBoot();
@@ -143,6 +149,7 @@ void CMenu::_textBoot(void)
 	m_btnMgr.setText(m_bootLblLoadCIOS, _t("cfgbt2", L"Force Load cIOS"));
 	m_btnMgr.setText(m_bootLblCIOSrev, _t("cfgbt3", L"Force cIOS Revision"));
 	m_btnMgr.setText(m_bootLblUSBPort, _t("cfgbt4", L"USB Port"));
+	m_btnMgr.setText(m_bootBtnBack, _t("cfg10", L"Back"));
 }
 
 
@@ -161,6 +168,8 @@ void CMenu::_initBoot(void)
 	m_bootLblUSBPort = _addLabel("BOOT/USB_PORT", theme.lblFont, L"", 40, 250, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_bootBtnUSBPort = _addButton("BOOT/USB_PORT_BTN", theme.btnFont, L"", 330, 250, 270, 56, theme.btnFontColor);
 
+	m_bootBtnBack = _addButton("BOOT/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 56, theme.btnFontColor);
+
 	_setHideAnim(m_bootLblTitle, "BOOT/TITLE", 0, -200, 0.f, 1.f);
 	_setHideAnim(m_bootLblLoadCIOS, "BOOT/LOAD_CIOS", -200, 0, 1.f, 0.f);
 	_setHideAnim(m_bootBtnLoadCIOS, "BOOT/LOAD_CIOS_BTN", 200, 0, 1.f, 0.f);
@@ -172,6 +181,8 @@ void CMenu::_initBoot(void)
 
 	_setHideAnim(m_bootLblUSBPort, "BOOT/USB_PORT", -200, 0, 1.f, 0.f);
 	_setHideAnim(m_bootBtnUSBPort, "BOOT/USB_PORT_BTN", 200, 0, 1.f, 0.f);
+
+	_setHideAnim(m_bootBtnBack, "BOOT/BACK_BTN", 0, 0, -2.f, 0.f);
 
 	hideBoot(true);
 	_textBoot();

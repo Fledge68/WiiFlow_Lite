@@ -156,7 +156,10 @@ void CMenu::_showMain(void)
 				{
 					_hideMain();
 					if(!_AutoCreateNand())
-						m_cfg.setBool(CHANNEL_DOMAIN, "disable", true);
+					{
+						while(NANDemuView)
+							_setPartition(1);
+					}
 					_loadList();
 					_showMain();
 					_initCF();
@@ -226,13 +229,14 @@ int CMenu::main(void)
 {
 	wstringEx curLetter;
 	string prevTheme = m_cfg.getString("GENERAL", "theme", "default");
-	parental_homebrew = m_cfg.getBool(HOMEBREW_DOMAIN, "parental", false);	
+	parental_homebrew = m_cfg.getBool(HOMEBREW_DOMAIN, "parental", false);
 	show_homebrew = !m_cfg.getBool(HOMEBREW_DOMAIN, "disable", false);
 	show_channel = !m_cfg.getBool("GENERAL", "hidechannel", false);
 	show_emu = !m_cfg.getBool(PLUGIN_DOMAIN, "disable", false);
 	bool dpad_mode = m_cfg.getBool("GENERAL", "dpad_mode", false);
 	bool b_lr_mode = m_cfg.getBool("GENERAL", "b_lr_mode", false);
 	bool use_grab = m_cfg.getBool("GENERAL", "use_grab", false);
+	m_use_source = m_cfg.getBool("GENERAL", "use_source", true);
 	bool bheld = false;
 	bool bUsed = false;
 
@@ -280,7 +284,7 @@ int CMenu::main(void)
 		WDVD_GetCoverStatus(&disc_check);
 		/* Main Loop */
 		_mainLoopCommon(true);
-		if(bheld && !BTN_B_HELD)
+		if(m_use_source && bheld && !BTN_B_HELD)
 		{
 			bheld = false;
 			if(bUsed)
@@ -512,14 +516,6 @@ int CMenu::main(void)
 						bUsed = true;
 					continue;
 				}
-				else if(!neek2o())
-				{
-					bUsed = true;
-					m_cfg.setBool(CHANNEL_DOMAIN, "disable", !m_cfg.getBool(CHANNEL_DOMAIN, "disable", true));
-					gprintf("EmuNand is %s\n", m_cfg.getBool(CHANNEL_DOMAIN, "disable", true) ? "Disabled" : "Enabled");
-					m_current_view = COVERFLOW_CHANNEL;
-					LoadView();
-				}
 			}
 			else if(m_btnMgr.selected(m_mainBtnNext) || m_btnMgr.selected(m_mainBtnPrev))
 			{
@@ -690,27 +686,21 @@ int CMenu::main(void)
 			else if(BTN_MINUS_PRESSED && !m_locked)
 			{
 				bUsed = true;
-				bool block = m_current_view == COVERFLOW_CHANNEL && (m_cfg.getBool(CHANNEL_DOMAIN, "disable", true) || neek2o());
 				const char *partition = NULL;
-				if(!block)
-				{
-					_showWaitMessage();
-					_hideMain();
-					_setPartition(1);
-					partition = DeviceName[currentPartition];
-				}
-				else
+				_showWaitMessage();
+				_hideMain();
+				_setPartition(1);
+				if(m_current_view == COVERFLOW_CHANNEL && (m_cfg.getBool(CHANNEL_DOMAIN, "disable", true) || neek2o()))
 					partition = "NAND";
+				else
+					partition = DeviceName[currentPartition];
 				//gprintf("Next item: %s\n", partition);
 				m_showtimer = 120;
 				m_btnMgr.setText(m_mainLblNotice, sfmt("%s (%u) [%s]", _domainFromView(), m_gameList.size(), upperCase(partition).c_str()));
 				m_btnMgr.show(m_mainLblNotice);
-				if(!block)
-				{
-					_loadList();
-					_showMain();
-					_initCF();
-				}
+				_loadList();
+				_showMain();
+				_initCF();
 			}
 		}
 
@@ -1115,24 +1105,38 @@ wstringEx CMenu::_getNoticeTranslation(int sorting, wstringEx curLetter)
 
 void CMenu::_setPartition(s8 direction)
 {
-	if(m_current_view == COVERFLOW_CHANNEL && NANDemuView == false)
+	if(m_current_view == COVERFLOW_CHANNEL && neek2o())
 		return;
 	_cfNeedsUpdate();
 	if(direction != 0)
 	{
-		u8 limiter = 0;
-		bool NeedFAT = m_current_view == COVERFLOW_CHANNEL || m_current_view == COVERFLOW_DML;
-		currentPartition = loopNum(currentPartition + direction, 8);
-		int FS_Type = DeviceHandle.GetFSType(currentPartition);
-		while(!DeviceHandle.IsInserted(currentPartition) || 
-			(m_current_view != COVERFLOW_USB && FS_Type == PART_FS_WBFS) ||
-			(NeedFAT && FS_Type != PART_FS_FAT))
+		bool switch_to_real = true;
+		if(m_current_view == COVERFLOW_CHANNEL && !NANDemuView)
 		{
-			currentPartition = loopNum(currentPartition + direction, 8);
+			NANDemuView = true;
+			m_cfg.setBool(CHANNEL_DOMAIN, "disable", false);
+			switch_to_real = false;
+		}
+		bool NeedFAT = m_current_view == COVERFLOW_CHANNEL || m_current_view == COVERFLOW_DML;
+
+		u8 limiter = 0;
+		int FS_Type = 0;
+		do
+		{
+			currentPartition = loopNum(currentPartition + direction, 10);
 			FS_Type = DeviceHandle.GetFSType(currentPartition);
-			if(limiter > 10)
+			if(m_current_view == COVERFLOW_CHANNEL && switch_to_real && FS_Type == -1)
 				break;
 			limiter++;
+		}
+		while(limiter < 12 && (!DeviceHandle.IsInserted(currentPartition) ||
+			(m_current_view != COVERFLOW_USB && FS_Type == PART_FS_WBFS) ||
+			(NeedFAT && FS_Type != PART_FS_FAT)));
+
+		if(m_current_view == COVERFLOW_CHANNEL && FS_Type == -1)
+		{
+			NANDemuView = false;
+			m_cfg.setBool(CHANNEL_DOMAIN, "disable", true);
 		}
 	}
 	if(m_tempView)

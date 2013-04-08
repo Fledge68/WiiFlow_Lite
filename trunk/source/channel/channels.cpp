@@ -37,6 +37,7 @@
 #include "gecko/gecko.hpp"
 #include "gui/text.hpp"
 #include "loader/fs.h"
+#include "loader/nk.h"
 #include "loader/sys.h"
 #include "memory/mem2.hpp"
 #include "wstringEx/wstringEx.hpp"
@@ -187,7 +188,7 @@ void Channels::Search()
 {
 	u32 count;
 	u64 *list = NULL;
-	if(NANDemuView)
+	if(!neek2o() && NANDemuView)
 		list = NandHandle.GetChannels(&count);
 	else
 		list = GetChannelList(&count);

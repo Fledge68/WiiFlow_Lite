@@ -82,6 +82,7 @@ private:
 	bool m_locked;
 	bool m_favorites;
 	bool m_music_info;
+	bool m_use_source;
 	s16 m_showtimer;
 	string m_curLanguage;
 
@@ -875,7 +876,7 @@ private:
 	void _textExitTo(void);
 	void _textBoot(void);
 	//
-	void _refreshBoot(u8 port = 0);
+	void _refreshBoot();
 	//
 	void _hideCheatSettings(bool instant = false);
 	void _hideError(bool instant = false);

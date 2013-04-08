@@ -125,6 +125,7 @@ CMenu::CMenu()
 	m_use_sd_logging = false;
 	m_use_wifi_gecko = false;
 	init_network = false;
+	m_use_source = true;
 }
 
 void CMenu::init()
@@ -192,18 +193,6 @@ void CMenu::init()
 	/* Init Network if wanted */
 	init_network = (m_cfg.getBool("GENERAL", "async_network") || has_enabled_providers() || m_use_wifi_gecko);
 	_netInit();
-	/* Check if we want a cIOS loaded */
-	u8 prevCios = mainIOS;
-	bool prevForceCIOS = useMainIOS;
-	u8 ForceIOS = min(m_cfg.getInt("GENERAL", "force_cios_rev", 0), 254);
-	if(ForceIOS > 0 && mainIOS != ForceIOS)
-	{
-		gprintf("Using IOS%i instead of IOS%i as main cIOS.\n", ForceIOS, mainIOS);
-		mainIOS = ForceIOS;
-	}
-	useMainIOS = m_cfg.getBool("GENERAL", "force_cios_load", false);
-	if(prevCios != mainIOS || prevForceCIOS != useMainIOS)
-		InternalSave.SaveIOS(mainIOS, useMainIOS);
 	/* Our Wii game dir */
 	memset(wii_games_dir, 0, 64);
 	strncpy(wii_games_dir, m_cfg.getString("GENERAL", "wii_games_dir", GAMES_DIR).c_str(), 64);

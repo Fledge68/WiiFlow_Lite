@@ -31,7 +31,7 @@ public:
 	NandSave();
 	bool CheckSave();
 	void LoadSettings();
-	void SaveIOS(u8 ios, bool use_ios);
+	void SaveIOS();
 	void SavePort(u8 port);
 private:
 	void WriteFile(const char *file_name, u8 *content, u32 size);
@@ -43,5 +43,7 @@ private:
 };
 
 extern NandSave InternalSave;
+extern bool cur_load;
+extern u8 cur_ios;
 
 #endif

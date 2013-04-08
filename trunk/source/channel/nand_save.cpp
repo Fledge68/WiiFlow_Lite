@@ -28,6 +28,8 @@ extern const u8 save_bin[];
 extern const u32 save_bin_size;
 
 NandSave InternalSave;
+bool cur_load = false;
+u8 cur_ios = 0;
 
 #define BANNER_PATH		"/title/00010000/57465346/data/banner.bin"
 #define IOS_SAVE_PATH	"/title/00010000/57465346/data/ios"
@@ -161,9 +163,11 @@ void NandSave::LoadSettings()
 	if(file != NULL && size == sizeof(ios_settings_t))
 	{
 		gprintf("Loading IOS Settings from NAND\n");
-		if(file->cios > 0)
-			mainIOS = file->cios;
-		useMainIOS = file->use_cios;
+		cur_ios = file->cios;
+		if(cur_ios > 0)
+			mainIOS = cur_ios;
+		cur_load = file->use_cios;
+		useMainIOS = cur_load;
 	}
 	if(file != NULL)
 		free(file);
@@ -179,13 +183,13 @@ void NandSave::LoadSettings()
 		free(port);
 }
 
-void NandSave::SaveIOS(u8 ios, bool use_ios)
+void NandSave::SaveIOS()
 {
 	if(loaded == false)
 		return;
 	memset(&ios_settings, 0, sizeof(ios_settings_t));
-	ios_settings.cios = ios;
-	ios_settings.use_cios = use_ios;
+	ios_settings.cios = cur_ios;
+	ios_settings.use_cios = cur_load;
 	gprintf("Saving IOS Settings to NAND\n");
 	WriteFile(IOS_SAVE_PATH, (u8*)&ios_settings, sizeof(ios_settings_t));
 }
