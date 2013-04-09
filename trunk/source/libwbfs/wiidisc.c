@@ -22,11 +22,26 @@ static void _decrypt_title_key(u8 *tik, u8 *title_key)
 		0x48, 0xd9, 0xc5, 0x45, 0x73, 0x81, 0xaa, 0xf7
 	};
 
+	//korean common key
+	u8 korean_key[16]={
+		0x63, 0xb8, 0x2b, 0xb4, 0xf4, 0x61, 0x4e, 0x2e,
+		0x13, 0xf2, 0xfe, 0xfb, 0xba, 0x4c, 0x9b, 0x7e
+	};
+
 	u8 iv[16];
 
 	wbfs_memset(iv, 0, sizeof iv);
 	wbfs_memcpy(iv, tik + 0x01dc, 8);
-	aes_set_key(common_key);
+
+	//check byte 0x1f1 in ticket to determine whether or not to use Korean Common Key
+	//if value = 0x01, use Korean Common Key, else just use regular one
+	u8 korean_flag = tik[0x01f1];
+
+	if(korean_flag == 1)
+		aes_set_key(korean_key);
+	else
+		aes_set_key(common_key);
+
 	//_aes_cbc_dec(common_key, iv, tik + 0x01bf, 16, title_key);
 	aes_decrypt(iv, tik + 0x01bf, title_key, 16);
 }
