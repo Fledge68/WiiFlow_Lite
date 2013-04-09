@@ -1823,21 +1823,9 @@ bool CCoverFlow::_sortByGameID(CItem item1, CItem item2)
 
 bool CCoverFlow::_sortByAlpha(CItem item1, CItem item2)
 {
-	u32 s = min(wcslen(item1.hdr->title), wcslen(item2.hdr->title));
-	wstringEx title1 = item1.hdr->title;
-	wstringEx title2 = item2.hdr->title;
-
-	for (u32 j = 0, k = 0; j < s && k < s; ++j && ++k)
-	{
-		while (!iswalnum(title1[j]) && j < s) j++;
-		while (!iswalnum(title2[k]) && k < s) k++;
-
-		if (upperCaseWChar(title1[j]) < upperCaseWChar(title2[k]))
-			return true;
-		else if(upperCaseWChar(title1[j]) > upperCaseWChar(title2[k]))
-			return false;
-	}
-	return title1.length() < title2.length();
+	const wchar_t *first = item1.hdr->title;
+	const wchar_t *second = item2.hdr->title;
+	return wchar_cmp(first, second, wcslen(first), wcslen(second));
 }
 
 bool CCoverFlow::_sortByPlayers(CItem item1, CItem item2)

@@ -68,5 +68,6 @@ std::string upperCase(std::string text);
 std::string lowerCase(std::string text);
 std::string ltrim(std::string s);
 std::string rtrim(std::string s);
+bool wchar_cmp(const wchar_t *first, const wchar_t *second, u32 first_len, u32 second_len);
 
 #endif // !defined(__TEXT_HPP)

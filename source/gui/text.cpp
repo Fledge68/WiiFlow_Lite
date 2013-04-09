@@ -443,3 +443,17 @@ string rtrim(string s)
 	s.erase(find_if(s.rbegin(), s.rend(), not1(ptr_fun<int, int>(isspace))).base(), s.end());
 	return s;
 }
+
+bool wchar_cmp(const wchar_t *first, const wchar_t *second, u32 first_len, u32 second_len)
+{
+	u32 i = 0;
+	while((i < first_len) && (i < second_len))
+	{
+		if(tolower(first[i]) < tolower(second[i]))
+			return true;
+		else if(tolower(first[i]) > tolower(second[i]))
+			return false;
+		++i;
+	}
+	return first_len < second_len;
+}
