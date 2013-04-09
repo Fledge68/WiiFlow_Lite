@@ -19,7 +19,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <malloc.h>
-
+#include <algorithm>
 #include "plugin.hpp"
 #include "gui/text.hpp"
 #include "gecko/gecko.hpp"
@@ -37,8 +37,16 @@ void Plugin::init(const string& m_pluginsDir)
 	adding = true;
 }
 
+static bool PluginOptions_cmp(PluginOptions lhs, PluginOptions rhs)
+{
+	const wchar_t *first = lhs.DisplayName.c_str();
+	const wchar_t *second = rhs.DisplayName.c_str();
+	return wchar_cmp(first, second, wcslen(first), wcslen(second));
+}
+
 void Plugin::EndAdd()
 {
+	std::sort(Plugins.begin(), Plugins.end(), PluginOptions_cmp);
 	adding = false;
 }
 
