@@ -16,7 +16,9 @@
 #include "types.h"
 #include "gecko/gecko.hpp"
 #include "menu/menu.hpp"
+#include "plugin/plugin.hpp"
 #include "memory/mem2.hpp"
+#include "fileOps/fileOps.h"
 #include "wstringEx/wstringEx.hpp"
 
 extern const u8 dvdskin_jpg[];
@@ -219,6 +221,7 @@ CCoverFlow::CCoverFlow(void)
 	m_compressTextures = true;
 	m_compressCache = false;
 	m_deletePicsAfterCaching = false;
+	m_pluginCacheFolders = false;
 	m_box = true;
 	m_useHQcover = false;
 	m_rows = 1;
@@ -280,11 +283,12 @@ CCoverFlow::~CCoverFlow(void)
 	LWP_MutexDestroy(m_mutex);
 }
 
-void CCoverFlow::setCachePath(const char *path, bool deleteSource, bool compress)
+void CCoverFlow::setCachePath(const char *path, bool deleteSource, bool compress, bool pluginCacheFolders)
 {
 	m_cachePath = path;
 	m_deletePicsAfterCaching = deleteSource;
 	m_compressCache = compress;
+	m_pluginCacheFolders = pluginCacheFolders;
 }
 
 void CCoverFlow::setTextureQuality(float lodBias, int aniso, bool edgeLOD)
@@ -2642,6 +2646,7 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover)
 		if(!!zBuffer && (!m_compressCache || compress(zBuffer, &zBufferSize, tex.data, bufSize) == Z_OK))
 		{
 			const char *gamePath = NULL;
+			const char *coverDir = NULL;
 			if(blankBoxCover)
 			{
 				const char *menuPath = mainMenu.getBlankCoverPath(m_items[i].hdr);
@@ -2650,6 +2655,8 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover)
 			}
 			else if(NoGameID(m_items[i].hdr->type))
 			{
+				if(m_pluginCacheFolders && m_items[i].hdr->type == TYPE_PLUGIN)
+					coverDir = m_plugin.GetCoverFolderName(m_items[i].hdr->settings[0]);
 				if(strrchr(m_items[i].hdr->path, '/') != NULL)
 					gamePath = strrchr(m_items[i].hdr->path, '/') + 1;
 				else
@@ -2660,7 +2667,15 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover)
 
 			FILE *file = NULL;
 			if(gamePath != NULL)
-				file = fopen(fmt("%s/%s.wfc", m_cachePath.c_str(), gamePath), "wb");
+			{
+				if(coverDir == NULL || strlen(coverDir) == 0)
+					file = fopen(fmt("%s/%s.wfc", m_cachePath.c_str(), gamePath), "wb");
+				else
+				{
+					fsop_MakeFolder(fmt("%s/%s", m_cachePath.c_str(), coverDir));
+					file = fopen(fmt("%s/%s/%s.wfc", m_cachePath.c_str(), coverDir, gamePath), "wb");
+				}
+			}
 			if(file != NULL)
 			{
 				SWFCHeader header(tex, box, m_compressCache);
@@ -2731,6 +2746,7 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 	if(!m_cachePath.empty())
 	{
 		const char *gamePath = NULL;
+		const char *coverDir = NULL;
 		if(blankBoxCover)
 		{
 			const char *menuPath = mainMenu.getBlankCoverPath(m_items[i].hdr);
@@ -2739,6 +2755,8 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 		}
 		else if(NoGameID(m_items[i].hdr->type))
 		{
+			if(m_pluginCacheFolders && m_items[i].hdr->type == TYPE_PLUGIN)
+				coverDir = m_plugin.GetCoverFolderName(m_items[i].hdr->settings[0]);
 			if(strrchr(m_items[i].hdr->path, '/') != NULL)
 				gamePath = strrchr(m_items[i].hdr->path, '/') + 1;
 			else
@@ -2750,8 +2768,10 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 		FILE *fp = NULL;
 		if(gamePath != NULL)
 		{
-			const char *path = fmt("%s/%s.wfc", m_cachePath.c_str(), gamePath);
-			fp = fopen(path, "rb");
+			if(coverDir == NULL || strlen(coverDir) == 0)
+				fp = fopen(fmt("%s/%s.wfc", m_cachePath.c_str(), gamePath), "rb");
+			else
+				fp = fopen(fmt("%s/%s/%s.wfc", m_cachePath.c_str(), coverDir, gamePath), "rb");
 		}
 		if(fp != NULL)
 		{
