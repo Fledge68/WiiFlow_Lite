@@ -123,7 +123,7 @@ public:
 	void stopSound(void);
 	// 
 	void applySettings(void);
-	void setCachePath(const char *path, bool deleteSource, bool compress);
+	void setCachePath(const char *path, bool deleteSource, bool compress, bool pluginCacheFolders);
 	bool fullCoverCached(const char *id);
 	bool preCacheCover(const char *id, const u8 *png, bool full);
 	// 
@@ -288,6 +288,7 @@ private:
 	bool m_compressCache;
 	string m_cachePath;
 	bool m_deletePicsAfterCaching;
+	bool m_pluginCacheFolders;
 	bool m_mirrorBlur;
 	float m_mirrorAlpha;
 	float m_txtMirrorAlpha;

@@ -150,7 +150,8 @@ void Musicplayer::LoadFile(const char *name, bool display_change)
 	}
 	else if(FileNames.size() == 1 && strcmp(name, PLUGIN_DOMAIN) == 0)
 	{
-		Cleanup();
+		MusicFile.FreeMemory();
+		MusicStopped = true;
 		return;
 	}
 	MusicFile.Load(name);
