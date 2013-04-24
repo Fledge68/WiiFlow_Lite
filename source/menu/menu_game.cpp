@@ -947,6 +947,9 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 
 	GC_SetVideoMode(videoMode, videoSetting, DIOSMIOS);
 	GC_SetLanguage(GClanguage);
+	/* NTSC-J Patch by FIX94 */
+	if(id[3] == 'J')
+		*HW_PPCSPEED = 0x0002A9E0;
 
 	if(DIOSMIOS)
 	{
