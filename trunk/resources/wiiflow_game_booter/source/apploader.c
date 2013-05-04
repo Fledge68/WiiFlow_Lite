@@ -119,6 +119,8 @@ void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipa
 	if(hooktype != 0 && hookpatched == false)
 		hookpatched = dogamehooks(dst, len, false);
 	patchVideoModes(dst, len, vidMode, vmode, patchVidModes);
+	if(patchVidModes > 0)
+		PatchVideoSneek(dst, len);
 	if(vipatch)
 		vidolpatcher(dst, len);
 	if(configbytes[0] != 0xCD)

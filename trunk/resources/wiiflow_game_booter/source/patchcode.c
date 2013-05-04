@@ -245,6 +245,22 @@ void vidolpatcher(void *addr, u32 len)
 	}
 }
 
+void PatchVideoSneek(void *addr, u32 len)
+{
+	u8 *addr_start = addr;
+	u8 *addr_end = addr+len;
+
+	while(addr_start < addr_end)
+	{
+		if(*(vu32*)(addr_start) == 0x3C608000)
+		{
+			if(((*(vu32*)(addr_start+4) & 0xFC1FFFFF ) == 0x800300CC) && ((*(vu32*)(addr_start+8) >> 24) == 0x54))
+				*(vu32*)(addr_start+4) = 0x5400F0BE | ((*(vu32*)(addr_start+4) & 0x3E00000) >> 5);
+		}
+		addr_start += 4;
+	}
+}
+
 //giantpune's magic super patch to return to channels
 
 static u32 ad[ 4 ] = { 0, 0, 0, 0 };//these variables are global on the off chance the different parts needed
