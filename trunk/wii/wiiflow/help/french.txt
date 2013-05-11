@@ -6,35 +6,40 @@ Commandes :
 -- Moins/Plus  =  Défilement rapide des jeux
 -- A  =  Sélectionner le jeu
 -- B+A  =  Lancement rapide du jeu
+-- B+Home  =  Recharger WiiFlow
+-- Home  =  Ouvrir le menu Home / Quitter WiiFlow
 -- 1/2  =  Mode d'affichage précédent/suivant
 -- B+Gauche/B+Droite  =  Changer la musique
 -- B+Haut/B+Bas  =  Recherche alphabétique
 -- B+Flèches  =  Recherche alphabétique
 -- B+Moins  =  Changer de partition
 -- B+Plus  =  Changer le mode de tri
+-- Z/ZR  =  Capture d'écran
 
--- A sur les icônes USB/DML/Chaînes/Émulateurs/HBC  =  Coverflow correspondant
--- A sur l'icône Disque (Disque de jeu dans le lecteur)  =  Lancement du disque de jeu
--- A sur l'icône Engrenage  =  Paramètres de WiiFlow
 -- A sur l'icône Étoile  =  Favoris
 -- B sur l'icône Étoile  =  Catégories
+-- A sur l'icône Engrenage  =  Paramètres de WiiFlow
+-- A sur les icônes USB/DML/Chaînes/Émulateurs/HBC  =  Coverflow correspondant
 -- A sur l'icône Maison  =  Afficher le menu général/Quitter WiiFlow
--- B sur l'icône Maison  =  Basculer sur le menu source
--- B  =  Afficher le menu source
+-- Maintenir B pendant 3 secondes / B sur l'icône Maison (wiimote_gestures activée)  =  Afficher le menu source
+-- A sur l'icône Disque (Disque de jeu dans le lecteur)  =  Lancement du disque de jeu
+-- A sur l'icône Point d'interrogation  =  Afficher les crédits et ce fichier d'aide
+-- B sur l'icône Point d'interrogation  =  Démarrez un jeu aléatoirement depuis le coverflow courant
 
 - Jeux :
 -- A sur la boîte  =  Voir la face arrière/face avant
 -- A hors de l'écran  =  Lancer le jeu
+-- B  =  Retour au coverflow
 -- Haut/Bas  =  Jeu précédent/suivant (vertical)
 -- Gauche/Droite  =  Jeu précédent/suivant (horizontal)
--- A sur l'icône Croix  =  Effacer le jeu
--- A sur l'icône Engrenage  =  Paramètres du jeu
--- A sur l'icône Étoile  =  Mettre en favori (Jaune=en favori)
--- A sur l'icône Main  =  Verrouillage parental (Rouge=Verrouiller)
--- B  =  Retour au coverflow
 -- Plus  =  Informations sur le jeu
 --- Droite (dans les infos du jeu)  =  Description du jeu
 ---- Gauche  (dans la description du jeu)  =  Synopsis
+-- A sur l'icône Étoile  =  Mettre en favori (Jaune=en favori)
+-- B on Star Icon  =  Set Categories for game
+-- A sur l'icône Main  =  Verrouillage parental (Rouge=Verrouiller)
+-- A sur l'icône Engrenage  =  Paramètres du jeu
+-- A sur l'icône Croix  =  Effacer le jeu
 
 - Menus paramètres :
 -- Moins/Plus  =  Page précédente/suivante
