@@ -14,6 +14,7 @@ Bediening:
 -- B+Onscreen Arrows  =  Alphabetisch zoeken
 -- B+Minus  =  Verander van Partitie
 -- B+Plus  =  Sorteer spellen
+-- Z / ZR  =  Maak Schermafdruk
 
 -- A op Ster Icoon  =  Favorieten
 -- B op Ster Icoon  =  Categoriën
@@ -23,7 +24,8 @@ Bediening:
 -- A op Home Icoon  =  Openen Home Menu / Wiiflow Sluiten
 -- Druk op B voor 3 seconden / B op Home Icoon (wiimote_gestures ingeschakeld)  =  Ga naar Bron menu
 -- A op Disc Icoon (spel Disc in Drive)  =  Start spel disc
--- A op Vraagteken Icoon  =  Toon eerbetuiging en controle van een nieuwe versie
+-- A op Vraagteken Icoon  =  Toon eerbetuiging en deze help pagina
+-- B op Vraagteken Icoon  =  Start een willekeurig spel in deze coverflow
 
 - Spel :
 -- A op voorkant  =  Laat achterkant zien

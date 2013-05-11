@@ -14,6 +14,7 @@ Styring:
 -- B+Onscreen Pile  =  Alfabetisk søgen
 -- B+Minus  =  Skift Partition
 -- B+Plus  =  Sortere spil
+-- Z / ZR  =  Tage skærmprint
 
 -- A på stjerne ikon  =  Favoriter
 -- B på stjerne ikon  =  Kategorier
@@ -24,6 +25,7 @@ Styring:
 -- Hold B i 3 sekunder / B på hjem ikon (wiimote_gestures aktiveret i wiiflow.ini)  =  viser kilde menu (source menu)
 -- A på disc ikon (Spil disc i drev)  =  Indlæser spil disc
 -- A på spørgsmåls tegn ikon  =  Viser tak til, denne hjælpe fil og mulighed for at opdatere WiiFlow.
+-- B på spørgsmåls tegn ikon  =  indlæser et tilfældig spil fra den nuværende coverflow
 
 - Spil:
 -- A på box  =  Viser bagsiden
@@ -55,4 +57,4 @@ Hvis et spil låser sig fast (sort skræm) se efter om det er et PAL spil.
   (pres på plus knappen efter at have valgt spil.) Hvis det er et PAL spil sæt spillets video måde til "PAL 50Hz" i spil indstillinger.
 Du kan også vælge at bruge et component kabel og sætte din Wii til 480p for at løse dette problem.
 
-Hvis et spil fryser, prøv at indlæse spillet igen. Hvis det bliver ved med at fryser, prøv at sætte USB emulering til "Fra" i spil indstillinger.
+Hvis et spil fryser, prøv at indlæse spillet igen. Hvis det bliver ved med at fryser, prøv at sætte USB emulering til "Fra" i spil indstillinger.  
