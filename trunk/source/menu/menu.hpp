@@ -1107,6 +1107,7 @@ private:
 	static const SOption _NoDVD[3];
 	static const SOption _GCLoader[3];
 	static const SOption _vidModePatch[4];
+	static const SOption _debugger[3];
 	static const SOption _hooktype[8];
 	static const SOption _exitTo[5];
 	static map<u8, u8> _installed_cios;
