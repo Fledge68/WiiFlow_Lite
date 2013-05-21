@@ -47,6 +47,12 @@ bool neek2o(void)
 		IOS_Close(ESHandle);
 		if(!neek)
 		{
+			s32 FSHandle = IOS_Open("/dev/fs", 0);
+			neek = IOS_Ioctlv(FSHandle, 0x21, 0, 0, NULL) == 0;
+			IOS_Close(FSHandle);
+		}
+		if(!neek)
+		{
 			u32 num = 0;
 			neek = (ISFS_ReadDir("/sneek", NULL, &num) == 0);
 		}

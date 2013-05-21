@@ -144,8 +144,6 @@ void load_handler()
 	{
 		gprintf("Ocarina: Debugger selected.\n");
 		memcpy((void*)0x80001800, codehandler, codehandler_size);
-		//if (pausedstartoption == 0x01)
-		//	*(u32*)0x80002798 = 1;
 		if(code_size > 0 && code_buf)
 		{
 			gprintf("Ocarina: Codes found.\n");
@@ -155,7 +153,10 @@ void load_handler()
 			memcpy((void*)0x80001F5E, ((u8*) &codelist) + 2, 2);
 		}
 		else
+		{
 			gprintf("Ocarina: No Codes found.\n");
+			*(u32*)0x80002774 = 1; //pause for debugger
+		}
 		DCFlushRange((void*)0x80001800, codehandler_size);
 		ICInvalidateRange((void*)0x80001800, codehandler_size);
 	}

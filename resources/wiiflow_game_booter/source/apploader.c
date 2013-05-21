@@ -115,10 +115,12 @@ void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipa
 		Anti_002_fix(dst, len);
 	if((CurrentIOS.Type == IOS_TYPE_WANIN && CurrentIOS.Revision < 13) || CurrentIOS.Type == IOS_TYPE_HERMES)
 		patch_NoDiscinDrive(dst, len);
+	patchVideoModes(dst, len, vidMode, vmode, patchVidModes);
 
+	if(debuggerselect == 2)
+		Patch_fwrite(dst, len);
 	if(hooktype != 0 && hookpatched == false)
 		hookpatched = dogamehooks(dst, len, false);
-	patchVideoModes(dst, len, vidMode, vmode, patchVidModes);
 	if(patchVidModes > 0)
 		PatchVideoSneek(dst, len);
 	if(vipatch)

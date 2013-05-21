@@ -214,7 +214,7 @@ const CMenu::SOption CMenu::_vidModePatch[4] = {
 };
 
 const CMenu::SOption CMenu::_hooktype[8] = {
-	{ "disabled", L"Disabled" },
+	{ "hook_auto", L"AUTO" },
 	{ "hooktype1", L"VBI" },
 	{ "hooktype2", L"KPAD read" },
 	{ "hooktype3", L"Joypad" },
@@ -222,6 +222,12 @@ const CMenu::SOption CMenu::_hooktype[8] = {
 	{ "hooktype5", L"GXFlush" },
 	{ "hooktype6", L"OSSleepThread" },
 	{ "hooktype7", L"AXNextFrame" },
+};
+
+const CMenu::SOption CMenu::_debugger[3] = {
+	{ "disabled", L"Disabled" },
+	{ "dbg_gecko", L"Gecko" },
+	{ "dbgfwrite", L"OSReport" },
 };
 
 /*
@@ -907,7 +913,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		u8 nodisc = min((u32)m_gcfg2.getInt(id, "no_disc_patch", 0), ARRAY_SIZE(CMenu::_NoDVD) - 1u);
 		nodisc = (nodisc == 0) ? m_cfg.getInt(GC_DOMAIN, "no_disc_patch", 0) : nodisc-1;
 		bool cheats = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool(GC_DOMAIN, "cheat", false));
-		bool DML_debug = m_gcfg2.getBool(id, "debugger", false);
+		bool DML_debug = (m_gcfg2.getInt(id, "debugger", 0) == 1);
 		bool screenshot = m_gcfg2.getBool(id, "screenshot", false);
 		/* Generate gct path */
 		char GC_Path[1024];
@@ -1107,13 +1113,13 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	if(!WII_Launch)
 	{
 		hooktype = (u32) m_gcfg2.getInt(id, "hooktype", 0);
-		debuggerselect = m_gcfg2.getBool(id, "debugger", false) ? 1 : 0;
-
-		if((debuggerselect || cheat) && hooktype == 0) 
+		debuggerselect = m_gcfg2.getInt(id, "debugger", 0);
+		if((cheat || debuggerselect == 1) && hooktype == 0)
 			hooktype = 1;
-		if(!debuggerselect && !cheat) 
+		else if(!cheat && debuggerselect != 1)
 			hooktype = 0;
-		if(cheat && hooktype)
+
+		if(cheat)
 			_loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", id.c_str()));
 		if(has_enabled_providers() && _initNetwork() == 0)
 			add_game_to_card(id.c_str());
@@ -1307,7 +1313,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 					if(_TestEmuNand(m_cfg.getInt(WII_DOMAIN, "savepartition", 0), emuPath.c_str(), true))
 					{
 						emuPartition = m_cfg.getInt(WII_DOMAIN, "savepartition", -1);
-						emuPath = m_cfg.getString(WII_DOMAIN, "savepath", m_cfg.getString(CHANNEL_DOMAIN, "path", ""));						
+						emuPath = m_cfg.getString(WII_DOMAIN, "savepath", m_cfg.getString(CHANNEL_DOMAIN, "path", ""));
 						break;
 					}
 				}
@@ -1343,10 +1349,14 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 
 	bool use_led = m_gcfg2.getBool(id, "led", false);
 	bool cheat = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool(WII_DOMAIN, "cheat", false));
-	debuggerselect = m_gcfg2.getBool(id, "debugger", false) ? 1 : 0; // debuggerselect is defined in fst.h
-	if(id == "RPWE41" || id == "RPWZ41" || id == "SPXP41") // Prince of Persia, Rival Swords
-		debuggerselect = false;
+	debuggerselect = m_gcfg2.getInt(id, "debugger", 0); // debuggerselect is defined in fst.h
+	if((id == "RPWE41" || id == "RPWZ41" || id == "SPXP41") && debuggerselect == 1) // Prince of Persia, Rival Swords
+		debuggerselect = 0;
 	hooktype = (u32)m_gcfg2.getInt(id, "hooktype", 0); // hooktype is defined in patchcode.h
+	if((cheat || debuggerselect == 1) && hooktype == 0)
+		hooktype = 1;
+	else if(!cheat && debuggerselect != 1)
+		hooktype = 0;
 
 	u8 *cheatFile = NULL;
 	u8 *gameconfig = NULL;
@@ -1365,8 +1375,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	if(cheat)
 		_loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", id.c_str()));
 	_loadFile(gameconfig, gameconfigSize, m_txtCheatDir.c_str(), "gameconfig.txt");
-	if(!debuggerselect && cheatFile == NULL)
-		hooktype = 0;
 
 	if(strlen(rtrn) == 4)
 		returnTo = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];

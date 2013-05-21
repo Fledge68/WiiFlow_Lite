@@ -501,11 +501,12 @@ void CMenu::_showGameSettings(void)
 	m_btnMgr.setText(m_gameSettingsLblHooktypeVal, _t(CMenu::_hooktype[i].id, CMenu::_hooktype[i].text));
 
 	m_btnMgr.setText(m_gameSettingsBtnCategoryMain, _fmt("cfgg16",  wfmt(L"Select",i).c_str() )); 
-	
+
 	i = min((u32)m_gcfg2.getInt(id, "emulate_save", 0), ARRAY_SIZE(CMenu::_SaveEmu) - 1u);
-	m_btnMgr.setText(m_gameSettingsLblEmulationVal, _t(CMenu::_SaveEmu[i].id, CMenu::_SaveEmu[i].text));	
-	
-	m_btnMgr.setText(m_gameSettingsLblDebuggerV, m_gcfg2.getBool(id, "debugger", false) ? _t("gecko", L"Gecko") : _t("def", L"Default"));		
+	m_btnMgr.setText(m_gameSettingsLblEmulationVal, _t(CMenu::_SaveEmu[i].id, CMenu::_SaveEmu[i].text));
+
+	i = min((u32)m_gcfg2.getInt(id, "debugger", 0), ARRAY_SIZE(CMenu::_debugger) - 1u);
+	m_btnMgr.setText(m_gameSettingsLblDebuggerV, _t(CMenu::_debugger[i].id, CMenu::_debugger[i].text));
 }
 
 void CMenu::_gameSettings(void)
@@ -695,7 +696,8 @@ void CMenu::_gameSettings(void)
 			}
 			else if(m_btnMgr.selected(m_gameSettingsBtnDebuggerP) || m_btnMgr.selected(m_gameSettingsBtnDebuggerM))
 			{
-				m_gcfg2.setBool(id, "debugger", !m_gcfg2.getBool(id, "debugger", 0));
+				s8 direction = m_btnMgr.selected(m_gameSettingsBtnDebuggerP) ? 1 : -1;
+				m_gcfg2.setInt(id, "debugger", (int)loopNum((u32)m_gcfg2.getInt(id, "debugger", 0) + direction, ARRAY_SIZE(CMenu::_debugger)));
 				_showGameSettings();
 			}
 			else if(m_btnMgr.selected(m_gameSettingsBtnApploader))
