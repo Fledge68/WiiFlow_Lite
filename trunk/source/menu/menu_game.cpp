@@ -846,9 +846,20 @@ void CMenu::_launch(const dir_discHdr *hdr)
 		const char *loader = fmt("%s:/%s/WiiFlowLoader.dol", device, strchr(m_pluginsDir.c_str(), '/') + 1);
 
 		vector<string> arguments = m_plugin.CreateArgs(device, path, title, loader, launchHdr.settings[0]);
-		const char *plugin_file = plugin_dol_name;
-		if(strchr(plugin_file, ':') == NULL || !fsop_FileExist(plugin_file))
+		const char *plugin_file = plugin_dol_name; /* try full path */
+		if(strchr(plugin_file, ':') == NULL || !fsop_FileExist(plugin_file)) /* try universal plugin folder */
+		{
 			plugin_file = fmt("%s/%s", m_pluginsDir.c_str(), plugin_dol_name);
+			if(!fsop_FileExist(plugin_file)) /* try device search */
+			{
+				for(u8 i = SD; i < MAXDEVICES; ++i)
+				{
+					plugin_file = fmt("%s:/%s", DeviceName[i], plugin_dol_name);
+					if(fsop_FileExist(plugin_file))
+						break;
+				}
+			}
+		}
 		_launchHomebrew(plugin_file, arguments);
 	}
 	else if(launchHdr.type == TYPE_HOMEBREW)
