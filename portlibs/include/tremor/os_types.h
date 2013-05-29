@@ -86,7 +86,6 @@
 #else
 
 #  include <sys/types.h>
-#  include <sys/param.h>
 #  include "config_types.h"
 
 #endif
