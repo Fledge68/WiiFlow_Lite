@@ -8,11 +8,12 @@ More info : http://frontier-dev.net
 
 ********************************************************************************************/
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <png.h>
 
 #include "pngu.h"
-#include "png.h"
 #include "gecko/gecko.hpp"
 #include "loader/utils.h"
 #include "memory/mem2.hpp"

@@ -701,7 +701,7 @@ void decodeJpeg(const u8* data, int size, VideoFrame& dest)
 
 extern "C"
 {
-#include "jpeglib.h"
+#include <jpeglib.h>
 #include <setjmp.h>
 }
 
