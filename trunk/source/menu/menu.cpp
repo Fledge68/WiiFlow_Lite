@@ -2592,19 +2592,19 @@ int CMenu::MIOSisDML()
 	if(appfile)
 	{
 		for(u32 i = 0; i < size; ++i) 
-		{
-			if(*(vu32*)(appfile+i) == 0x44494F53)
+		{	/* GCLoader check */
+			if(*(vu32*)(appfile+i) == 0x47434C6F && *(vu32*)(appfile+i+4) == 0x61646572)
 			{
 				for(u32 j = 0; j < size; ++j)
-				{
-					if(*(vu32*)(appfile+j) == 0x4C697465)
+				{	/* Lite or Quad (QuadForce name string only exist in QuadForce SD) */
+					if(*(vu32*)(appfile+j) == 0x4C697465 || *(vu32*)(appfile+j) == 0x51756164)
 					{
-						gprintf("DIOS-MIOS Lite is installed as MIOS\n");
+						gprintf("DIOS-MIOS Lite/QuadForce SD is installed as MIOS\n");
 						free(appfile);
 						return 2;
 					}
 				}
-				gprintf("DIOS-MIOS is installed as MIOS\n");
+				gprintf("DIOS-MIOS/QuadForce USB is installed as MIOS\n");
 				free(appfile);
 				return 1;
 			}
