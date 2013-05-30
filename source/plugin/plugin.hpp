@@ -35,6 +35,7 @@ using namespace std;
 #define PLUGIN_DEV		"{device}"
 #define PLUGIN_PATH		"{path}"
 #define PLUGIN_NAME		"{name}"
+#define PLUGIN_NOEXT	"{name_no_ext}"
 #define PLUGIN_LDR		"{loader}"
 
 struct PluginOptions
@@ -65,7 +66,7 @@ public:
 	void SetEnablePlugin(Config &cfg, u8 pos, u8 ForceMode = 0);
 	const vector<bool> &GetEnabledPlugins(Config &cfg);
 	vector<string> CreateArgs(const char *device, const char *path, 
-				const char *title, const char *loader, u32 magic);
+		const char *title, const char *loader, u32 title_len_no_ext, u32 magic);
 	void init(const string& m_pluginsDir);
 	void Cleanup();
 	void EndAdd();

@@ -225,8 +225,8 @@ vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, const char *Device, u32
 	return gameHeader;
 }
 
-vector<string> Plugin::CreateArgs(const char *device, const char *path, 
-						const char *title, const char *loader, u32 magic)
+vector<string> Plugin::CreateArgs(const char *device, const char *path,
+			const char *title, const char *loader, u32 title_len_no_ext, u32 magic)
 {
 	vector<string> args;
 	Plugin_Pos = GetPluginPosition(magic);
@@ -244,6 +244,8 @@ vector<string> Plugin::CreateArgs(const char *device, const char *path,
 			Argument.replace(Argument.find(PLUGIN_NAME), strlen(PLUGIN_NAME), title);
 		if(Argument.find(PLUGIN_LDR) != string::npos)
 			Argument.replace(Argument.find(PLUGIN_LDR), strlen(PLUGIN_LDR), loader);
+		if(Argument.find(PLUGIN_NOEXT) != string::npos)
+			Argument.replace(Argument.find(PLUGIN_NOEXT), strlen(PLUGIN_NOEXT), title, title_len_no_ext);
 		args.push_back(Argument);
 	}
 	return args;
