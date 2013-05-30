@@ -823,6 +823,7 @@ void CMenu::_launch(const dir_discHdr *hdr)
 		u8 plugin_dol_len = strlen(plugin_dol_name);
 		char title[101];
 		memset(&title, 0, sizeof(title));
+		u32 title_len_no_ext = 0;
 		const char *path = NULL;
 		if(strchr(launchHdr.path, ':') != NULL)
 		{
@@ -833,6 +834,8 @@ void CMenu::_launch(const dir_discHdr *hdr)
 				return;
 			}
 			strncpy(title, strrchr(launchHdr.path, '/') + 1, 100);
+			if(strchr(launchHdr.path, '.') != NULL)
+				title_len_no_ext = strlen(title) - strlen(strrchr(title, '.'));
 			*strrchr(launchHdr.path, '/') = '\0';
 			path = strchr(launchHdr.path, '/') + 1;
 		}
@@ -845,7 +848,7 @@ void CMenu::_launch(const dir_discHdr *hdr)
 		const char *device = (currentPartition == 0 ? "sd" : (DeviceHandle.GetFSType(currentPartition) == PART_FS_NTFS ? "ntfs" : "usb"));
 		const char *loader = fmt("%s:/%s/WiiFlowLoader.dol", device, strchr(m_pluginsDir.c_str(), '/') + 1);
 
-		vector<string> arguments = m_plugin.CreateArgs(device, path, title, loader, launchHdr.settings[0]);
+		vector<string> arguments = m_plugin.CreateArgs(device, path, title, loader, title_len_no_ext, launchHdr.settings[0]);
 		const char *plugin_file = plugin_dol_name; /* try full path */
 		if(strchr(plugin_file, ':') == NULL || !fsop_FileExist(plugin_file)) /* try universal plugin folder */
 		{
