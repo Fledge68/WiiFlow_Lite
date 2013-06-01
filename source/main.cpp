@@ -63,6 +63,7 @@ int main(int argc, char **argv)
 		else if(argv[i] != NULL && strcasestr(argv[i], "EMULATOR_MAGIC") != NULL)
 			Emulator_boot = true;
 	}
+	check_neek2o();
 	/* Init ISFS */
 	if(neek2o() || Sys_DolphinMode())
 		NandHandle.Init_ISFS();
