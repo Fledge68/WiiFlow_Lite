@@ -38,27 +38,33 @@ bool neek = false;
 u32 kernelSize = 0;
 void *Kernel = NULL;
 
+void check_neek2o(void)
+{
+	if(checked == true)
+		return;
+	checked = true;
+
+	s32 ESHandle = IOS_Open("/dev/es", 0);
+	neek = (IOS_Ioctlv(ESHandle, 0xA2, 0, 0, NULL) == 0x666c6f77);
+	IOS_Close(ESHandle);
+	if(!neek)
+	{
+		s32 FSHandle = IOS_Open("/dev/fs", 0);
+		neek = (IOS_Ioctlv(FSHandle, 0x21, 0, 0, NULL) == 0);
+		IOS_Close(FSHandle);
+	}
+	if(!neek)
+	{
+		u32 num = 0;
+		ISFS_Initialize();
+		neek = (ISFS_ReadDir("/sneek", NULL, &num) == 0);
+		ISFS_Deinitialize();
+	}
+	gprintf("WiiFlow is in %s mode\n", neek ? "neek2o" : "real nand");
+}
+
 bool neek2o(void)
 {
-	if(!checked)
-	{
-		s32 ESHandle = IOS_Open("/dev/es", 0);
-		neek = IOS_Ioctlv(ESHandle, 0xA2, 0, 0, NULL) == 0x666c6f77;
-		IOS_Close(ESHandle);
-		if(!neek)
-		{
-			s32 FSHandle = IOS_Open("/dev/fs", 0);
-			neek = IOS_Ioctlv(FSHandle, 0x21, 0, 0, NULL) == 0;
-			IOS_Close(FSHandle);
-		}
-		if(!neek)
-		{
-			u32 num = 0;
-			neek = (ISFS_ReadDir("/sneek", NULL, &num) == 0);
-		}
-		gprintf("WiiFlow is in %s mode\n", neek ? "neek2o" : "real nand");
-		checked = true;
-	}
 	return neek;
 }
 

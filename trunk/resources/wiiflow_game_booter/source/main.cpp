@@ -86,7 +86,8 @@ int main()
 		}
 		if(normalCFG.GameBootType == TYPE_WII_DISC)
 		{
-			Disc_SetUSB(NULL, false);
+			if(CurrentIOS.Type != IOS_TYPE_NEEK2O)
+				Disc_SetUSB(NULL, false);
 			if(CurrentIOS.Type == IOS_TYPE_HERMES)
 				Hermes_Disable_EHC();
 		}
