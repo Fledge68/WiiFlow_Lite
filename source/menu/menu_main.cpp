@@ -185,6 +185,8 @@ void CMenu::LoadView(void)
 	CoverFlow.clear();
 	if(!m_vid.showingWaitMessage())
 		_showWaitMessage();
+	m_cat.remove("GENERAL", "selected_categories");
+	m_cat.remove("GENERAL", "required_categories");
 	m_favorites = false;
 	if (m_cfg.getBool("GENERAL", "save_favorites_mode", false))
 		m_favorites = m_cfg.getBool(_domainFromView(), "favorites", false);
