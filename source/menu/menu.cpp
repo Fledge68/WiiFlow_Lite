@@ -2197,18 +2197,18 @@ bool CMenu::_loadList(void)
 	u8 sources = 0;
 	gprintf("Creating Gamelist\n");
 
-	if((m_current_view == COVERFLOW_USB && !m_cfg.has(WII_DOMAIN, "source")) || 
-			m_cfg.getBool(WII_DOMAIN, "source"))
-	{
-		m_current_view = COVERFLOW_USB;
-		_loadGameList();
-		sources++;
-	}
 	if((m_current_view == COVERFLOW_PLUGIN && !m_cfg.has(PLUGIN_DOMAIN, "source")) || 
 		m_cfg.getBool(PLUGIN_DOMAIN, "source"))
 	{
 		m_current_view = COVERFLOW_PLUGIN;
 		_loadEmuList();
+		sources++;
+	}
+	if((m_current_view == COVERFLOW_USB && !m_cfg.has(WII_DOMAIN, "source")) || 
+			m_cfg.getBool(WII_DOMAIN, "source"))
+	{
+		m_current_view = COVERFLOW_USB;
+		_loadGameList();
 		sources++;
 	}
 	if((m_current_view == COVERFLOW_CHANNEL && !m_cfg.has(CHANNEL_DOMAIN, "source")) || 
