@@ -18,6 +18,7 @@ s16 m_categoryBtnCatReq[11];
 s16 m_categoryLblUser[4];
 TexData m_categoryBg;
 
+vector<string> sourceMagics;
 vector<char> m_categories;
 u8 curPage;
 u8 lastBtn;
@@ -163,7 +164,76 @@ void CMenu::_CategorySettings(bool fromGameSet)
 	curPage = 1;
 	gameSet = fromGameSet;
 	
+	if(m_source.loaded())
+	{
+		u8 sourceCount = 0;
+		string sourceName = "";
+		if(m_cfg.getBool(WII_DOMAIN, "source", false))
+		{
+			sourceCount++;
+			sourceName = "wii";
+		}
+		if(m_cfg.getBool(GC_DOMAIN, "source", false))
+		{
+			sourceCount++;
+			sourceName = "dml";
+		}
+		if(m_cfg.getBool(CHANNEL_DOMAIN, "source", false))
+		{
+			sourceCount++;
+			sourceName = "emunand";
+			if(m_cfg.getBool(CHANNEL_DOMAIN, "disable"))
+				sourceName = "realnand";
+		}
+		if(m_cfg.getBool(HOMEBREW_DOMAIN, "source", false))
+		{
+			sourceCount++;
+			sourceName = "homebrew";
+		}
+		if(m_cfg.getBool(PLUGIN_DOMAIN, "source", false))
+		{
+			sourceCount++;
+			sourceName = "plugin";
+			_checkForSinglePlugin();
+			if(sourceCount == 1 && enabledPluginsCount != 1)
+				sourceCount = 0;
+		}
+		if(sourceCount == 1)
+		{
+			for(int i = 0; i < m_cfg.getInt("GENERAL", "max_source_buttons", 71); ++i)
+			{
+				if(sourceName == m_source.getString(fmt("BUTTON_%i", i), "source", ""))
+				{
+					if(sourceName != "plugin")
+					{
+						curPage = m_source.getInt(fmt("BUTTON_%i", i), "catpage", 1);
+						break;
+					}
+					else
+					{
+						sourceMagics.clear();
+						sourceMagics = m_source.getStrings(fmt("BUTTON_%i", i), "magic", ',');
+						if (sourceMagics.size() > 0)
+						{
+							for (vector<string>::iterator itr = sourceMagics.begin(); itr != sourceMagics.end(); itr++)
+							{
+								string sourceMagic = *itr;
+								if(PluginMagicWord == sourceMagic)
+								{
+									curPage = m_source.getInt(fmt("BUTTON_%i", i), "catpage", 1);
+									break;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	
 	m_max_categories = m_cat.getInt("GENERAL", "numcategories", 6);
+	if(curPage < 1 || curPage > (((m_max_categories - 2)/ 10) + 1))
+		curPage = 1;
 	m_categories.resize(m_max_categories, '0');
 	m_categories.assign(m_max_categories, '0');
 

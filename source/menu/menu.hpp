@@ -66,6 +66,7 @@ private:
 	Config m_cfg;
 	Config m_loc;
 	Config m_cat;
+	Config m_source;
 	Config m_gcfg1;
 	Config m_gcfg2;
 	Config m_theme;
