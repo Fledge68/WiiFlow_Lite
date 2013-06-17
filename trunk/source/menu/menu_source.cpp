@@ -20,9 +20,7 @@ extern const u8 favoritesons_png[];
 int Source_curPage;
 int pages;
 u8 numPlugins;
-u8 maxBtns = 71;
 string m_sourceDir;
-Config m_source;
 vector<string> magicNums;
 
 // Source menu
@@ -83,7 +81,7 @@ void CMenu::_showSource(void)
 	m_btnMgr.show(m_sourceLblTitle);
 	m_btnMgr.show(m_sourceBtnBack);
 	
-	for(i = maxBtns; i > 11; --i)
+	for(i = m_cfg.getInt("GENERAL", "max_source_buttons", 71); i > 11; --i)
 	{
 		string source = m_source.getString(fmt("BUTTON_%i", i), "source", "");
 		if (!source.empty())
