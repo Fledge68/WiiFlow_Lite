@@ -197,7 +197,8 @@ bool CMenu::_Source()
 	DIR *pdir;
 	struct dirent *pent;
 	if(!m_source.loaded())
-		m_source.load(fmt("%s/%s", m_sourceDir.c_str(), SOURCE_FILENAME));
+		if(!m_source.load(fmt("%s/%s", m_themeDataDir.c_str(), SOURCE_FILENAME)))
+			m_source.load(fmt("%s/%s", m_sourceDir.c_str(), SOURCE_FILENAME));
 
 	pdir = opendir(m_pluginsDir.c_str());
 	Config m_plugin_cfg;
@@ -656,7 +657,8 @@ void CMenu::_initSourceMenu()
 	m_sourceDir = m_cfg.getString("GENERAL", "dir_Source", fmt("%s/source_menu", m_dataDir.c_str()));
 
 	if(!m_source.loaded())
-		m_source.load(fmt("%s/%s", m_sourceDir.c_str(), SOURCE_FILENAME));
+		if(!m_source.load(fmt("%s/%s", m_themeDataDir.c_str(), SOURCE_FILENAME)))
+			m_source.load(fmt("%s/%s", m_sourceDir.c_str(), SOURCE_FILENAME));
 
 	int row;
 	int col;
