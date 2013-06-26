@@ -1023,6 +1023,8 @@ private:
 public:
 	void _hideWaitMessage();
 	bool m_Emulator_boot;
+	void GC_Refresh(int status, int total);
+	void GC_Messenger(int message, int info, char *cinfo);
 private:
 	GuiSound *_sound(CMenu::SoundSet &soundSet, const char *domain, const char *key, const u8 * snd, u32 len, const char *name, bool isAllocated);
 	GuiSound *_sound(CMenu::SoundSet &soundSet, const char *domain, const char *key, const char *name);
@@ -1059,11 +1061,10 @@ private:
 	void LoadView(void);
 	void _getGrabStatus(void);
 	static void _addDiscProgress(int status, int total, void *user_data);
-	static void _Messenger(int message, int info, char *cinfo, void *user_data);
 	static void _ShowProgress(int dumpstat, int dumpprog, int filestat, int fileprog, int files, int folders, const char *tmess, void *user_data);
-	static int _gameInstaller(void *obj);	
-	static int _GCgameInstaller(void *obj);
+	static int _gameInstaller(void *obj);
 	static int _GCcopyGame(void *obj);
+	int _GCgameInstaller();
 	float m_progress;
 	float m_fprogress;
 	int m_fileprog;
