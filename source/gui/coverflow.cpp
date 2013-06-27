@@ -2700,7 +2700,7 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover)
 				fwrite(zBuffer, 1, zBufferSize, file);
 				fclose(file);
 				if (m_deletePicsAfterCaching)
-					remove(path);
+					fsop_deleteFile(path);
 			}
 		}
 	}

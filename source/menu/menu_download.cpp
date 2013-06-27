@@ -9,6 +9,7 @@
 #include "lockMutex.hpp"
 #include "channel/nand.hpp"
 #include "devicemounter/usbstorage.h"
+#include "fileOps/fileOps.h"
 #include "gui/GameTDB.hpp"
 #include "gui/pngu.h"
 #include "loader/fs.h"
@@ -1857,10 +1858,10 @@ s8 CMenu::_versionDownloader() // code to download new version
 	_setThrdMsg(_t("dlmsg13", L"Saving..."), 0.8f);
 	LWP_MutexUnlock(m_mutex);			
 
-	remove(dol_backup);
+	fsop_deleteFile(dol_backup);
 	rename(m_dol.c_str(), dol_backup);
 
-	remove(m_app_update_zip.c_str());
+	fsop_deleteFile(m_app_update_zip.c_str());
 
 	FILE *file = fopen(m_app_update_zip.c_str(), "wb");
 	if (file != NULL)
@@ -1874,7 +1875,7 @@ s8 CMenu::_versionDownloader() // code to download new version
 
 		ZipFile zFile(m_app_update_zip.c_str());
 		bool result = zFile.ExtractAll(m_app_update_drive);
-		remove(m_app_update_zip.c_str());
+		fsop_deleteFile(m_app_update_zip.c_str());
 
 		if (!result)
 			goto fail;
@@ -1903,7 +1904,7 @@ s8 CMenu::_versionDownloader() // code to download new version
 		_setThrdMsg(_t("dlmsg13", L"Saving..."), 0.9f);
 		LWP_MutexUnlock(m_mutex);
 
-		remove(m_data_update_zip.c_str());
+		fsop_deleteFile(m_data_update_zip.c_str());
 
 		file = fopen(m_data_update_zip.c_str(), "wb");
 		if (file != NULL)
@@ -1917,7 +1918,7 @@ s8 CMenu::_versionDownloader() // code to download new version
 
 			ZipFile zDataFile(m_data_update_zip.c_str());
 			result = zDataFile.ExtractAll(m_dataDir.c_str());
-			remove(m_data_update_zip.c_str());
+			fsop_deleteFile(m_data_update_zip.c_str());
 
 			if (!result)
 			{
@@ -1944,7 +1945,7 @@ success:
 		rename(dol_backup, m_dol.c_str());
 	}
 	else
-		remove(dol_backup);
+		fsop_deleteFile(dol_backup);
 	filestr.close();
 
 	m_exit = true;
@@ -2011,7 +2012,7 @@ int CMenu::_gametdbDownloaderAsync()
 
 			gprintf("Downloading file to '%s'\n", zippath.c_str());
 
-			remove(zippath.c_str());
+			fsop_deleteFile(zippath.c_str());
 			
 			_setThrdMsg(wfmt(_fmt("dlmsg4", L"Saving %s"), "wiitdb.zip"), 1.f);
 			FILE *file = fopen(zippath.c_str(), "wb");
@@ -2036,11 +2037,11 @@ int CMenu::_gametdbDownloaderAsync()
 				gprintf(zres ? "success\n" : "failed\n");
 
 				// We don't need the zipfile anymore
-				remove(zippath.c_str());
+				fsop_deleteFile(zippath.c_str());
 
 				// We should always remove the offsets file to make sure it's reloaded
 				string offsetspath = fmt("%s/gametdb_offsets.bin", m_settingsDir.c_str());
-				remove(offsetspath.c_str());
+				fsop_deleteFile(offsetspath.c_str());
 
 				// Update cache
 				//m_gameList.SetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
@@ -2060,4 +2061,133 @@ int CMenu::_gametdbDownloaderAsync()
 	free(buffer);
 	m_thrdWorking = false;
 	return 0;
+}
+
+const char *banner_url = NULL;
+const char *banner_url_id3 = NULL;
+const char *banner_location = NULL;
+u32 CMenu::_downloadBannerAsync(void *obj)
+{
+	CMenu *m = (CMenu *)obj;
+	if (!m->m_thrdWorking)
+		return 0;
+
+	m->m_thrdStop = false;
+
+	LWP_MutexLock(m->m_mutex);
+	m->_setThrdMsg(m->_t("cfgbnr7", L"Downloading banner..."), 0);
+	LWP_MutexUnlock(m->m_mutex);
+
+	if (m->_initNetwork() < 0)
+	{
+		m->m_thrdWorking = false;
+		return -1;
+	}
+
+	u32 bufferSize = 0x400000; /* 4mb max */
+	u8 *buffer = (u8*)MEM2_alloc(bufferSize);
+	if(buffer == NULL)
+	{
+		m->m_thrdWorking = false;
+		return -2;
+	}
+	block banner = downloadfile(buffer, bufferSize, banner_url, CMenu::_downloadProgress, m);
+	if(banner.data == NULL || banner.size < 0x5000)
+		banner = downloadfile(buffer, bufferSize, banner_url_id3, CMenu::_downloadProgress, m);
+
+	/* minimum 50kb */
+	if (banner.data != NULL && banner.size > 51200 && banner.data[0] != '<')
+	{
+		FILE *file = fopen(banner_location, "wb");
+		if(file != NULL)
+		{
+			fwrite(banner.data, 1, banner.size, file);
+			fclose(file);
+			free(buffer);
+			m->m_thrdWorking = false;
+			return 0;
+		}
+	}
+
+	free(buffer);
+	m->m_thrdWorking = false;
+	return -3;
+}
+
+static const char *GAME_BNR_ID = "{gameid}";
+void CMenu::_downloadBnr(const char *gameID)
+{
+	if(gameID == NULL || strlen(gameID) > 6)
+		return;
+	string base_url = m_cfg.getString("GENERAL", "custom_banner_url", " ");
+	if(base_url.size() < 3 || base_url.find(GAME_BNR_ID) == string::npos)
+		return;
+	base_url.replace(base_url.find(GAME_BNR_ID), strlen(GAME_BNR_ID), gameID);
+	banner_url = base_url.c_str();
+
+	string base_url_id3 = m_cfg.getString("GENERAL", "custom_banner_url", " ");
+	base_url_id3.replace(base_url_id3.find(GAME_BNR_ID), strlen(GAME_BNR_ID), gameID, 3);
+	banner_url_id3 = base_url_id3.c_str();
+
+	banner_location = fmt("%s/%s.bnr", m_customBnrDir.c_str(), gameID);
+
+	m_btnMgr.show(m_downloadPBar);
+	m_btnMgr.setProgress(m_downloadPBar, 0.f);
+	m_btnMgr.show(m_downloadBtnCancel);
+	m_btnMgr.setText(m_downloadBtnCancel, _t("dl1", L"Cancel"));
+	m_thrdStop = false;
+	m_thrdMessageAdded = false;
+
+	m_thrdWorking = true;
+	lwp_t thread = LWP_THREAD_NULL;
+	LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_downloadBannerAsync, (void *)this, 0, 8192, 40);
+
+	wstringEx prevMsg;
+	while(m_thrdWorking)
+	{
+		_mainLoopCommon();
+		if ((BTN_HOME_PRESSED || BTN_B_PRESSED) && !m_thrdWorking)
+			break;
+		if (BTN_A_PRESSED && !(m_thrdWorking && m_thrdStop))
+		{
+			if (m_btnMgr.selected(m_downloadBtnCancel))
+			{
+				LockMutex lock(m_mutex);
+				m_thrdStop = true;
+				m_thrdMessageAdded = true;
+				m_thrdMessage = _t("dlmsg6", L"Canceling...");
+			}
+		}
+		if (Sys_Exiting())
+		{
+			LockMutex lock(m_mutex);
+			m_thrdStop = true;
+			m_thrdMessageAdded = true;
+			m_thrdMessage = _t("dlmsg6", L"Canceling...");
+			m_thrdWorking = false;
+		}
+		if (m_thrdMessageAdded)
+		{
+			LockMutex lock(m_mutex);
+			m_thrdMessageAdded = false;
+			m_btnMgr.setProgress(m_downloadPBar, m_thrdProgress);
+			if (prevMsg != m_thrdMessage)
+			{
+				prevMsg = m_thrdMessage;
+				m_btnMgr.setText(m_downloadLblMessage[0], m_thrdMessage, false);
+				m_btnMgr.hide(m_downloadLblMessage[0], 0, 0, -1.f, -1.f, true);
+				m_btnMgr.show(m_downloadLblMessage[0]);
+			}
+		}
+		if (m_thrdStop && !m_thrdWorking)
+			break;
+	}
+	if (thread != LWP_THREAD_NULL)
+	{
+		LWP_JoinThread(thread, NULL);
+		thread = LWP_THREAD_NULL;
+	}
+	m_btnMgr.hide(m_downloadLblMessage[0]);
+	m_btnMgr.hide(m_downloadPBar);
+	m_btnMgr.hide(m_downloadBtnCancel);
 }

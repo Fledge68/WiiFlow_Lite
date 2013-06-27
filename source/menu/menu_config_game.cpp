@@ -78,8 +78,8 @@ void CMenu::_hideGameSettings(bool instant)
 	m_btnMgr.hide(m_gameSettingsBtnVipatch, instant);
 	m_btnMgr.hide(m_gameSettingsLblCountryPatch, instant);
 	m_btnMgr.hide(m_gameSettingsBtnCountryPatch, instant);
-	m_btnMgr.hide(m_gameSettingsLblCover, instant);
-	m_btnMgr.hide(m_gameSettingsBtnCover, instant);
+	m_btnMgr.hide(m_gameSettingsLblManage, instant);
+	m_btnMgr.hide(m_gameSettingsBtnManage, instant);
 	m_btnMgr.hide(m_gameSettingsLblPatchVidModes, instant);
 	m_btnMgr.hide(m_gameSettingsLblPatchVidModesVal, instant);
 	m_btnMgr.hide(m_gameSettingsBtnPatchVidModesM, instant);
@@ -150,8 +150,8 @@ void CMenu::_showGameSettings(void)
 
 	if (m_gameSettingsPage == 1)
 	{
-		m_btnMgr.show(m_gameSettingsLblCover);
-		m_btnMgr.show(m_gameSettingsBtnCover);
+		m_btnMgr.show(m_gameSettingsLblManage);
+		m_btnMgr.show(m_gameSettingsBtnManage);
 		if(CoverFlow.getHdr()->type == TYPE_GC_GAME)
 		{
 			m_btnMgr.show(m_gameSettingsLblDMLGameVideo);
@@ -187,8 +187,8 @@ void CMenu::_showGameSettings(void)
 	}
 	else
 	{
-		m_btnMgr.hide(m_gameSettingsLblCover);
-		m_btnMgr.hide(m_gameSettingsBtnCover);
+		m_btnMgr.hide(m_gameSettingsLblManage);
+		m_btnMgr.hide(m_gameSettingsBtnManage);
 		if(CoverFlow.getHdr()->type == TYPE_GC_GAME)
 		{
 			m_btnMgr.hide(m_gameSettingsLblGClanguage);
@@ -668,11 +668,11 @@ void CMenu::_gameSettings(void)
 				m_gcfg2.setInt(id, "patch_video_modes", (int)loopNum((u32)m_gcfg2.getInt(id, "patch_video_modes", 0) + direction, ARRAY_SIZE(CMenu::_vidModePatch)));
 				_showGameSettings();
 			}
-			else if(m_btnMgr.selected(m_gameSettingsBtnCover))
+			else if(m_btnMgr.selected(m_gameSettingsBtnManage))
 			{
 				CoverFlow.stopCoverLoader(true);
 				_hideGameSettings();
-				_download(id);
+				_CoverBanner();
 				_showGameSettings();
 				CoverFlow.startCoverLoader();
 			}
@@ -736,17 +736,6 @@ void CMenu::_gameSettings(void)
 				_showGameSettings();
 			}
 		}
-		else if((WBTN_2_HELD && WBTN_1_PRESSED) || (WBTN_1_HELD && WBTN_2_PRESSED))
-		{	
-			if(m_btnMgr.selected(m_gameSettingsBtnCover))
-			{
-					CoverFlow.stopCoverLoader(true);	// Empty cover cache
-					remove(fmt("%s/%s.png", m_picDir.c_str(), id));
-					remove(fmt("%s/%s.png", m_boxPicDir.c_str(), id));
-					remove(fmt("%s/%s.wfc", m_cacheDir.c_str(), id));
-					CoverFlow.startCoverLoader();
-			}
-		}
 	}
 	m_gcfg2.save(true);
 	_hideGameSettings();
@@ -759,8 +748,8 @@ void CMenu::_initGameSettingsMenu()
 	m_gameSettingsLblTitle = _addTitle("GAME_SETTINGS/TITLE", theme.titleFont, L"", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 
 // Page 1
-	m_gameSettingsLblCover = _addLabel("GAME_SETTINGS/COVER", theme.lblFont, L"", 40, 130, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsBtnCover = _addButton("GAME_SETTINGS/COVER_BTN", theme.btnFont, L"", 330, 130, 270, 56, theme.btnFontColor);
+	m_gameSettingsLblManage = _addLabel("GAME_SETTINGS/MANAGE", theme.lblFont, L"", 40, 130, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsBtnManage = _addButton("GAME_SETTINGS/MANAGE_BTN", theme.btnFont, L"", 330, 130, 270, 56, theme.btnFontColor);
 
 	m_gameSettingsLblCategoryMain = _addLabel("GAME_SETTINGS/CAT_MAIN", theme.lblFont, L"", 40, 190, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsBtnCategoryMain = _addButton("GAME_SETTINGS/CAT_MAIN_BTN", theme.btnFont, L"", 330, 190, 270, 56, theme.btnFontColor);
@@ -927,8 +916,8 @@ void CMenu::_initGameSettingsMenu()
 	_setHideAnim(m_gameSettingsBtnIOSM, "GAME_SETTINGS/IOS_MINUS", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnIOSP, "GAME_SETTINGS/IOS_PLUS", 200, 0, 1.f, 0.f);
 
-	_setHideAnim(m_gameSettingsLblCover, "GAME_SETTINGS/COVER", -200, 0, 1.f, 0.f);
-	_setHideAnim(m_gameSettingsBtnCover, "GAME_SETTINGS/COVER_BTN", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsLblManage, "GAME_SETTINGS/MANAGE", -200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsBtnManage, "GAME_SETTINGS/MANAGE_BTN", 200, 0, 1.f, 0.f);
 
 	_setHideAnim(m_gameSettingsLblPatchVidModes, "GAME_SETTINGS/PATCH_VIDEO_MODE", -200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsLblPatchVidModesVal, "GAME_SETTINGS/PATCH_VIDEO_MODE_BTN", 200, 0, 1.f, 0.f);
@@ -1016,8 +1005,6 @@ void CMenu::_textGameSettings(void)
 	m_btnMgr.setText(m_gameSettingsLblVipatch, _t("cfgg7", L"Vipatch"));
 	m_btnMgr.setText(m_gameSettingsBtnBack, _t("cfgg8", L"Back"));
 	m_btnMgr.setText(m_gameSettingsLblGameIOS, _t("cfgg10", L"IOS"));
-	m_btnMgr.setText(m_gameSettingsLblCover, _t("cfgg12", L"Download cover"));
-	m_btnMgr.setText(m_gameSettingsBtnCover, _t("cfgg13", L"Download"));
 	m_btnMgr.setText(m_gameSettingsLblPatchVidModes, _t("cfgg14", L"Patch video modes"));
 	m_btnMgr.setText(m_gameSettingsLblCheat, _t("cfgg15", L"Cheat Codes"));
 	m_btnMgr.setText(m_gameSettingsBtnCheat, _t("cfgg16", L"Select"));
@@ -1041,4 +1028,6 @@ void CMenu::_textGameSettings(void)
 	m_btnMgr.setText(m_gameSettingsLblApploader, _t("cfgg37", L"Boot Apploader"));
 	m_btnMgr.setText(m_gameSettingsLblLED, _t("cfgg38", L"Activity LED"));
 	m_btnMgr.setText(m_gameSettingsLblScreenshot, _t("cfgg39", L"DM Screenshot Feature"));
+	m_btnMgr.setText(m_gameSettingsLblManage, _t("cfgg40", L"Manage covers and banners"));
+	m_btnMgr.setText(m_gameSettingsBtnManage, _t("cfgg41", L"Manage"));
 }
