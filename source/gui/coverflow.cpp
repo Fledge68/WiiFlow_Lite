@@ -2591,6 +2591,8 @@ bool CCoverFlow::preCacheCover(const char *id, const u8 *png, bool full)
 		}
 	}
 	TexHandle.Cleanup(tex);
+	if(zBuffer != NULL && m_compressCache)
+		MEM2_free(zBuffer);
 	return true;
 }
 
@@ -2672,6 +2674,21 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover)
 					file = fopen(fmt("%s/%s.wfc", m_cachePath.c_str(), gamePath), "wb");
 				else
 				{
+					if(strchr(coverDir, '/') != NULL)
+					{
+						char *tmp = (char*)MEM2_alloc(strlen(coverDir)+1);
+						strncpy(tmp, coverDir, strlen(coverDir));
+						char *help = tmp;
+						while(help != NULL && strchr(help, '/') != NULL)
+						{
+							char *pos = strchr(help, '/');
+							*pos = '\0';
+							fsop_MakeFolder(fmt("%s/%s", m_cachePath.c_str(), tmp));
+							*pos = '/';
+							help = pos+1;
+						}
+						MEM2_free(tmp);
+					}
 					fsop_MakeFolder(fmt("%s/%s", m_cachePath.c_str(), coverDir));
 					file = fopen(fmt("%s/%s/%s.wfc", m_cachePath.c_str(), coverDir, gamePath), "wb");
 				}
