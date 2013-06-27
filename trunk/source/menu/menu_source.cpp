@@ -106,6 +106,7 @@ void CMenu::_updateSourceBtns(void)
 		m_btnMgr.hide(m_sourceBtnSource[i], true);
 
 	const char *ImgName = NULL;
+	const char *ImgSelName = NULL;
 	u8 j = (Source_curPage - 1) * 12;
 	
 	for(u8 i = 0; i < 12; ++i)
@@ -168,6 +169,7 @@ void CMenu::_updateSourceBtns(void)
 				ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image", "").c_str();
 		}
 		
+		ImgSelName = m_source.getString(fmt("BUTTON_%i", i + j),"image_s", "").c_str();
 		TexData texConsoleImg;
 		TexData texConsoleImgs;
 		
@@ -176,9 +178,9 @@ void CMenu::_updateSourceBtns(void)
 			if(TexHandle.fromImageFile(texConsoleImg, fmt("%s/%s", m_sourceDir.c_str(), ImgName)) != TE_OK)
 				TexHandle.fromPNG(texConsoleImg, favoriteson_png);
 		}
-		if(TexHandle.fromImageFile(texConsoleImgs, fmt("%s/%s", m_themeDataDir.c_str(), ImgName)) != TE_OK)
+		if(TexHandle.fromImageFile(texConsoleImgs, fmt("%s/%s", m_themeDataDir.c_str(), ImgSelName)) != TE_OK)
 		{
-			if(TexHandle.fromImageFile(texConsoleImgs, fmt("%s/%s", m_sourceDir.c_str(), ImgName)) != TE_OK)
+			if(TexHandle.fromImageFile(texConsoleImgs, fmt("%s/%s", m_sourceDir.c_str(), ImgSelName)) != TE_OK)
 				TexHandle.fromPNG(texConsoleImgs, favoritesons_png);
 		}
 		m_btnMgr.setBtnTexture(m_sourceBtnSource[i], texConsoleImg, texConsoleImgs);
