@@ -150,6 +150,7 @@ private:
 	TexData m_mainBgLQ;
 //Main Coverflow
 	s16 m_mainBtnConfig;
+	s16 m_mainBtnExplorer;
 	s16 m_mainBtnInfo;
 	s16 m_mainBtnFavoritesOn;
 	s16 m_mainBtnFavoritesOff;
@@ -851,6 +852,7 @@ private:
 	void _initNandEmuMenu();
 	void _initHomeAndExitToMenu();
 	void _initCoverBanner();
+	void _initExplorer();
 	//
 	void _textSource(void);
 	void _textPluginSettings(void);
@@ -878,8 +880,10 @@ private:
 	void _textExitTo(void);
 	void _textBoot(void);
 	void _textCoverBanner(void);
+	void _textExplorer(void);
 	//
 	void _refreshBoot();
+	void _refreshExplorer(s8 direction = 0);
 	//
 	void _hideCheatSettings(bool instant = false);
 	void _hideError(bool instant = false);
@@ -909,6 +913,7 @@ private:
 	void _hideHome(bool instant = false);
 	void _hideExitTo(bool instant = false);
 	void _hideCoverBanner(bool instant = false);
+	void _hideExplorer(bool instant = false);
 	//
 	void _showError(void);
 	void _showMain(void);
@@ -939,6 +944,7 @@ private:
 	void _showHome(void);
 	void _showExitTo(void);
 	void _showCoverBanner(void);
+	void _showExplorer(void);
 	void _updateSourceBtns(void);
 	void _updatePluginText(void);
 	void _updatePluginCheckboxes(void);
@@ -983,6 +989,7 @@ private:
 	void _gameinfo(void);
 	void _gameSettings(void);
 	void _CoverBanner(void);
+	void _Explorer(void);
 	void _CheatSettings();
 	bool _Source();
 	void _PluginSettings();

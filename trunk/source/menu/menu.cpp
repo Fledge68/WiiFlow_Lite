@@ -1168,6 +1168,7 @@ void CMenu::_buildMenus(void)
 	_initNandEmuMenu();
 	_initHomeAndExitToMenu();
 	_initCoverBanner();
+	_initExplorer();
 	_initBoot();
 
 	_loadCFCfg();
