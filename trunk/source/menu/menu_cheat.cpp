@@ -5,6 +5,7 @@
 #include "lockMutex.hpp"
 #include "gui/text.hpp"
 #include "network/http.h"
+#include "fileOps/fileOps.h"
 
 #define GECKOURL "http://geckocodes.org/codes/%c/%s.txt"
 #define CHEATSPERPAGE 4
@@ -124,8 +125,8 @@ void CMenu::_CheatSettings()
 		}
 		else if ((WBTN_2_HELD && WBTN_1_PRESSED) || (WBTN_1_HELD && WBTN_2_PRESSED))
 		{
-			remove(fmt("%s/%s.gct", m_cheatDir.c_str(), id));
-			remove(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id));
+			fsop_deleteFile(fmt("%s/%s.gct", m_cheatDir.c_str(), id));
+			fsop_deleteFile(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id));
 			m_gcfg2.remove(id, "cheat");
 			m_gcfg2.remove(id, "hooktype");
 			break;
@@ -163,7 +164,7 @@ void CMenu::_CheatSettings()
 				}
 				else
 				{
-					remove(fmt("%s/%s.gct", m_cheatDir.c_str(), id));
+					fsop_deleteFile(fmt("%s/%s.gct", m_cheatDir.c_str(), id));
 					m_gcfg2.remove(id, "cheat");
 					m_gcfg2.remove(id, "hooktype");
 				}
