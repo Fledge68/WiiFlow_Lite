@@ -25,6 +25,7 @@
 #define TITLES_URL		"http://www.gametdb.com/titles.txt?LANG=%s"
 #define GAMETDB_URL		"http://www.gametdb.com/wiitdb.zip?LANG=%s&FALLBACK=TRUE&WIIWARE=TRUE&GAMECUBE=TRUE"
 #define UPDATE_URL_VERSION	"http://dl.dropbox.com/u/25620767/WiiflowMod/versions.txt"
+#define CUSTOM_BANNER_URL	"http://dl.dropboxusercontent.com/u/101209384/{gameid}.bnr"
 
 static const char FMT_BPIC_URL[] = "http://art.gametdb.com/{console}/coverfullHQ/{loc}/{gameid}.png"\
 "|http://art.gametdb.com/{console}/coverfull/{loc}/{gameid}.png";
@@ -2119,13 +2120,13 @@ void CMenu::_downloadBnr(const char *gameID)
 {
 	if(gameID == NULL || strlen(gameID) > 6)
 		return;
-	string base_url = m_cfg.getString("GENERAL", "custom_banner_url", " ");
+	string base_url = m_cfg.getString("GENERAL", "custom_banner_url", CUSTOM_BANNER_URL);
 	if(base_url.size() < 3 || base_url.find(GAME_BNR_ID) == string::npos)
 		return;
 	base_url.replace(base_url.find(GAME_BNR_ID), strlen(GAME_BNR_ID), gameID);
 	banner_url = base_url.c_str();
 
-	string base_url_id3 = m_cfg.getString("GENERAL", "custom_banner_url", " ");
+	string base_url_id3 = m_cfg.getString("GENERAL", "custom_banner_url", CUSTOM_BANNER_URL);
 	base_url_id3.replace(base_url_id3.find(GAME_BNR_ID), strlen(GAME_BNR_ID), gameID, 3);
 	banner_url_id3 = base_url_id3.c_str();
 
