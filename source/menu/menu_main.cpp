@@ -53,6 +53,7 @@ void CMenu::_hideMain(bool instant)
 	m_btnMgr.hide(m_mainBtnNext, instant);
 	m_btnMgr.hide(m_mainBtnPrev, instant);
 	m_btnMgr.hide(m_mainBtnConfig, instant);
+	m_btnMgr.hide(m_mainBtnExplorer, instant);
 	m_btnMgr.hide(m_mainBtnInfo, instant);
 	m_btnMgr.hide(m_mainBtnQuit, instant);
 	m_btnMgr.hide(m_mainBtnHomebrew, instant);
@@ -90,6 +91,7 @@ void CMenu::_showMain(void)
 	_setBg(m_gameBg, m_gameBgLQ);
 	m_btnMgr.show(m_mainBtnInfo);
 	m_btnMgr.show(m_mainBtnConfig);
+	m_btnMgr.show(m_mainBtnExplorer);
 	m_btnMgr.show(m_mainBtnQuit);
 
 	switch(m_current_view)
@@ -447,6 +449,14 @@ int CMenu::main(void)
 				if(BTN_B_HELD)
 					bUsed = true;
 			}
+			else if(m_btnMgr.selected(m_mainBtnExplorer))
+			{
+				_hideMain();
+				_Explorer();
+				_showMain();
+				if(BTN_B_HELD)
+					bUsed = true;
+			}
 			else if(m_btnMgr.selected(m_mainBtnInfo))
 			{
 				_hideMain();
@@ -742,6 +752,7 @@ int CMenu::main(void)
 			m_btnMgr.show(m_mainLblUser[1]);
 			m_btnMgr.show(m_mainBtnInfo);
 			m_btnMgr.show(m_mainBtnConfig);
+			m_btnMgr.show(m_mainBtnExplorer);
 			m_btnMgr.show(m_mainBtnQuit);
 			static bool change = m_favorites;
 			m_btnMgr.show(m_favorites ? m_mainBtnFavoritesOn : m_mainBtnFavoritesOff, change != m_favorites);
@@ -754,6 +765,7 @@ int CMenu::main(void)
 			m_btnMgr.hide(m_mainLblUser[1]);
 			if(!m_gameList.empty())
 				m_btnMgr.hide(m_mainBtnConfig);
+			m_btnMgr.hide(m_mainBtnExplorer);
 			m_btnMgr.hide(m_mainBtnInfo);
 			m_btnMgr.hide(m_mainBtnQuit);
 			m_btnMgr.hide(m_mainBtnFavoritesOn);
@@ -930,6 +942,7 @@ void CMenu::_initMainMenu()
 
 	m_mainBtnInfo = _addPicButton("MAIN/INFO_BTN", texInfo, texInfoS, 20, 400, 48, 48);
 	m_mainBtnConfig = _addPicButton("MAIN/CONFIG_BTN", texConfig, texConfigS, 70, 400, 48, 48);
+	m_mainBtnExplorer = _addPicButton("MAIN/EXPLORER_BTN", texEmu, texEmus, 120, 400, 48, 48);
 	m_mainBtnQuit = _addPicButton("MAIN/QUIT_BTN", texQuit, texQuitS, 570, 400, 48, 48);
 	m_mainBtnChannel = _addPicButton("MAIN/CHANNEL_BTN", texChannel, texChannels, 520, 400, 48, 48);
 	m_mainBtnHomebrew = _addPicButton("MAIN/HOMEBREW_BTN", texHomebrew, texHomebrews, 520, 400, 48, 48);
@@ -985,6 +998,7 @@ void CMenu::_initMainMenu()
 	_setHideAnim(m_mainBtnNext, "MAIN/NEXT_BTN", 0, 0, 0.f, 0.f);
 	_setHideAnim(m_mainBtnPrev, "MAIN/PREV_BTN", 0, 0, 0.f, 0.f);
 	_setHideAnim(m_mainBtnConfig, "MAIN/CONFIG_BTN", 0, 40, 0.f, 0.f);
+	_setHideAnim(m_mainBtnExplorer, "MAIN/EXPLORER_BTN", 0, 40, 0.f, 0.f);
 	_setHideAnim(m_mainBtnInfo, "MAIN/INFO_BTN", 0, 40, 0.f, 0.f);
 	_setHideAnim(m_mainBtnQuit, "MAIN/QUIT_BTN", 0, 40, 0.f, 0.f);
 	_setHideAnim(m_mainBtnChannel, "MAIN/CHANNEL_BTN", 0, 40, 0.f, 0.f);
