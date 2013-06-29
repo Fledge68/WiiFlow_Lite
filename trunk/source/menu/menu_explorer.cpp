@@ -27,6 +27,8 @@ s16 entries[8];
 s16 entries_sel[8];
 char dir[MAX_FAT_PATH];
 char entries_char[7][NAME_MAX+1];
+u8 explorer_partition = 0;
+
 void CMenu::_hideExplorer(bool instant)
 {
 	for(u8 i = 0; i < 8; ++i)
@@ -61,6 +63,14 @@ void CMenu::_Explorer(void)
 		_mainLoopCommon();
 		if(BTN_HOME_PRESSED || BTN_B_PRESSED)
 			break;
+		else if(BTN_PLUS_PRESSED)
+		{
+			_refreshExplorer(1);
+		}
+		else if(BTN_MINUS_PRESSED)
+		{
+			_refreshExplorer(-1);
+		}
 		else if(BTN_A_PRESSED)
 		{
 			if(m_btnMgr.selected(m_mainBtnNext))
@@ -93,6 +103,7 @@ void CMenu::_Explorer(void)
 				{
 					if(dir[0] == '\0')
 					{
+						explorer_partition = i-1;
 						if(DeviceHandle.IsInserted(i-1))
 							strcpy(dir, fmt("%s:/", DeviceName[i-1]));
 						_refreshExplorer();
@@ -107,8 +118,31 @@ void CMenu::_Explorer(void)
 					else
 					{
 						const char *file = fmt("%s%s", dir, entries_char[i-1]);
-						if(strstr(file, ".mp3") != NULL || strstr(file, ".ogg") != NULL)
+						if(strcasestr(file, ".mp3") != NULL || strcasestr(file, ".ogg") != NULL)
 							MusicPlayer.LoadFile(file, false);
+						else if(strcasestr(file, ".iso") != NULL || strcasestr(file, ".wbfs") != NULL)
+						{
+							/* create header for id and path */
+							dir_discHdr tmpHdr;
+							memset(&tmpHdr, 0, sizeof(dir_discHdr));
+							memcpy(tmpHdr.path, file, 255);
+							/* check wii or gc */
+							FILE *fp = fopen(file, "rb");
+							fseek(fp, strcasestr(file, ".wbfs") != NULL ? 512 : 0, SEEK_SET);
+							fread((void*)&wii_hdr, 1, sizeof(discHdr), fp);
+							fclose(fp);
+							memcpy(tmpHdr.id, wii_hdr.id, 6);
+							if(wii_hdr.magic == WII_MAGIC)
+							{
+								currentPartition = explorer_partition;
+								_launchGame(&tmpHdr, false);
+							}
+							else if(wii_hdr.gc_magic == GC_MAGIC)
+							{
+								currentPartition = explorer_partition;
+								_launchGC(&tmpHdr, false);
+							}
+						}
 					}
 				}
 			}
