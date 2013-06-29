@@ -19,6 +19,8 @@ bool fsop_CopyFile(const char *source, const char *target, progress_callback_t s
 bool fsop_CopyFolder(const char *source, const char *target, progress_callback_t spinner, void *spinner_data);
 void fsop_deleteFile(const char *source);
 void fsop_deleteFolder(const char *source);
+u8 *fsop_ReadFile(const char *path, u32 *size);
+bool fsop_WriteFile(const char *path, u8 *mem, u32 size);
 
 #endif
 

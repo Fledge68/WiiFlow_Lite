@@ -1560,64 +1560,28 @@ void CMenu::_gameSoundThread(CMenu *m)
 		m->m_soundThrdBusy = false;
 		return;
 	}
-	bool custom = false;
 	u8 *custom_bnr_file = NULL;
 	u32 custom_bnr_size = 0;
 
-	bool cached = false;
 	u8 *cached_bnr_file = NULL;
 	u32 cached_bnr_size = 0;
 
 	char cached_banner[256];
 	cached_banner[255] = '\0';
 	strncpy(cached_banner, fmt("%s/%.6s.bnr", m->m_bnrCacheDir.c_str(), GameHdr->id), 255);
-	FILE *fp = fopen(cached_banner, "rb");
-	if(fp)
-	{
-		cached = true;
-		fseek(fp, 0, SEEK_END);
-		cached_bnr_size = ftell(fp);
-		fseek(fp, 0, SEEK_SET);
-		cached_bnr_file = (u8*)MEM2_alloc(cached_bnr_size);
-		if(cached_bnr_file == NULL)
-		{
-			m->m_gameSound.FreeMemory();
-			m_banner.DeleteBanner();
-			m->m_soundThrdBusy = false;
-			return;
-		}
-		fread(cached_bnr_file, 1, cached_bnr_size, fp);
-		fclose(fp);
-	}
-	else
+	cached_bnr_file = fsop_ReadFile(cached_banner, &cached_bnr_size);
+	if(cached_bnr_file == NULL)
 	{
 		char custom_banner[256];
 		custom_banner[255] = '\0';
 		strncpy(custom_banner, fmt("%s/%.6s.bnr", m->m_customBnrDir.c_str(), GameHdr->id), 255);
-		FILE *fp = fopen(custom_banner, "rb");
-		if(!fp)
+		custom_bnr_file = fsop_ReadFile(custom_banner, &custom_bnr_size);
+		if(custom_bnr_file == NULL)
 		{
 			strncpy(custom_banner, fmt("%s/%.3s.bnr", m->m_customBnrDir.c_str(), GameHdr->id), 255);
-			fp = fopen(custom_banner, "rb");
+			custom_bnr_file = fsop_ReadFile(custom_banner, &custom_bnr_size);
 		}
-		if(fp)
-		{
-			custom = true;
-			fseek(fp, 0, SEEK_END);
-			custom_bnr_size = ftell(fp);
-			fseek(fp, 0, SEEK_SET);
-			custom_bnr_file = (u8*)MEM2_alloc(custom_bnr_size);
-			if(custom_bnr_file == NULL)
-			{
-				m->m_gameSound.FreeMemory();
-				m_banner.DeleteBanner();
-				m->m_soundThrdBusy = false;
-				return;
-			}
-			fread(custom_bnr_file, 1, custom_bnr_size, fp);
-			fclose(fp);
-		}
-		if(!fp && GameHdr->type == TYPE_GC_GAME)
+		if(custom_bnr_file == NULL && GameHdr->type == TYPE_GC_GAME)
 		{
 			GC_Disc disc;
 			disc.init(GameHdr->path);
@@ -1636,9 +1600,9 @@ void CMenu::_gameSoundThread(CMenu *m)
 
 	u32 sndSize = 0;
 	u8 *soundBin = NULL;
-	if(cached)
+	if(cached_bnr_file != NULL)
 		CurrentBanner.SetBanner(cached_bnr_file, cached_bnr_size);
-	else if(custom)
+	else if(custom_bnr_file != NULL)
 		CurrentBanner.SetBanner(custom_bnr_file, custom_bnr_size, 0, true);
 	else if(GameHdr->type == TYPE_WII_GAME)
 		_extractBnr(GameHdr);
@@ -1653,12 +1617,9 @@ void CMenu::_gameSoundThread(CMenu *m)
 		m->m_soundThrdBusy = false;
 		return;
 	}
-	if(!custom && !cached && CurrentBanner.GetBannerFileSize() > 0)
-	{
-		FILE *fp = fopen(cached_banner, "wb");
-		fwrite(CurrentBanner.GetBannerFile(), 1, CurrentBanner.GetBannerFileSize(), fp);
-		fclose(fp);
-	}
+	if(cached_bnr_file == NULL && custom_bnr_file == NULL)
+		fsop_WriteFile(cached_banner, CurrentBanner.GetBannerFile(), CurrentBanner.GetBannerFileSize());
+
 	m_banner.LoadBanner(m->m_wbf1_font, m->m_wbf2_font);
 	soundBin = CurrentBanner.GetFile("sound.bin", &sndSize);
 	CurrentBanner.ClearBanner();

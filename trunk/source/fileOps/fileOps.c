@@ -20,6 +20,7 @@ en exposed s_fsop fsop structure can be used by callback to update operation sta
 #include "fileOps/fileOps.h"
 #include "gecko/gecko.hpp"
 #include "loader/utils.h"
+#include "memory/mem2.hpp"
 
 #define SET(a, b) a = b; DCFlushRange(&a, sizeof(a));
 #define STACKSIZE 8192
@@ -365,4 +366,39 @@ void fsop_deleteFile(const char *source)
 		return;
 	gprintf("Deleting file: %s\n", source);
 	fsop_silentDelete(source);
+}
+
+u8 *fsop_ReadFile(const char *path, u32 *size)
+{
+	*(size) = 0;
+	if(!fsop_FileExist(path))
+		return NULL;
+	gprintf("Reading file: %s\n", path);
+
+	FILE *f = fopen(path, "rb");
+	fseek(f, 0, SEEK_END);
+	u32 filesize = ftell(f);
+	u8 *mem = (u8*)MEM2_alloc(filesize);
+	rewind(f);
+	fread(mem, filesize, 1, f);
+	fclose(f);
+
+	*(size) = filesize;
+	return mem;
+}
+
+bool fsop_WriteFile(const char *path, u8 *mem, u32 size)
+{
+	if(mem == NULL || size == 0)
+		return false;
+
+	FILE *f = fopen(path, "wb");
+	if(f == NULL)
+		return false;
+	gprintf("Writing file: %s\n", path);
+
+	fwrite(mem, size, 1, f);
+	fclose(f);
+
+	return true;
 }
