@@ -526,12 +526,6 @@ void CMenu::_Theme_Cleanup(void)
 	TexHandle.Cleanup(theme.btnTexLS);
 	TexHandle.Cleanup(theme.btnTexRS);
 	TexHandle.Cleanup(theme.btnTexCS);
-	TexHandle.Cleanup(theme.btnTexLH);
-	TexHandle.Cleanup(theme.btnTexRH);
-	TexHandle.Cleanup(theme.btnTexCH);
-	TexHandle.Cleanup(theme.btnTexLSH);
-	TexHandle.Cleanup(theme.btnTexRSH);
-	TexHandle.Cleanup(theme.btnTexCSH);
 	TexHandle.Cleanup(theme.btnAUOn);
 	TexHandle.Cleanup(theme.btnAUOns);
 	TexHandle.Cleanup(theme.btnAUOff);
@@ -977,19 +971,6 @@ void CMenu::_buildMenus(void)
 	TexHandle.fromPNG(theme.btnTexCS, butscenter_png);
 	theme.btnTexCS = _texture("GENERAL", "button_texture_center_selected", theme.btnTexCS); 
 
-	TexHandle.fromPNG(theme.btnTexLH, buthleft_png);
-	theme.btnTexLH = _texture("GENERAL", "button_texture_hlleft", theme.btnTexLH); 
-	TexHandle.fromPNG(theme.btnTexRH, buthright_png);
-	theme.btnTexRH = _texture("GENERAL", "button_texture_hlright", theme.btnTexRH); 
-	TexHandle.fromPNG(theme.btnTexCH, buthcenter_png);
-	theme.btnTexCH = _texture("GENERAL", "button_texture_hlcenter", theme.btnTexCH); 
-	TexHandle.fromPNG(theme.btnTexLSH, buthsleft_png);
-	theme.btnTexLSH = _texture("GENERAL", "button_texture_hlleft_selected", theme.btnTexLSH); 
-	TexHandle.fromPNG(theme.btnTexRSH, buthsright_png);
-	theme.btnTexRSH = _texture("GENERAL", "button_texture_hlright_selected", theme.btnTexRSH); 
-	TexHandle.fromPNG(theme.btnTexCSH, buthscenter_png);
-	theme.btnTexCSH = _texture("GENERAL", "button_texture_hlcenter_selected", theme.btnTexCSH); 
-
 	/* Language Buttons */
 	TexHandle.fromPNG(theme.btnAUOn, butauon_png);
 	theme.btnAUOn = _texture("GENERAL", "button_au_on", theme.btnAUOn);
@@ -1207,12 +1188,13 @@ SFont CMenu::_font(CMenu::FontSet &fontSet, const char *domain, const char *key,
 		if(fonts[i].res <= 0)
 			fonts[i].res = (u32)m_theme.getInt("GENERAL", defValue);
 
-		fonts[i].res = min(max(fonts[i].min, fonts[i].res <= 0 ? fonts[i].def : fonts[i].res), fonts[i].max);		
+		fonts[i].res = min(max(fonts[i].min, fonts[i].res <= 0 ? fonts[i].def : fonts[i].res), fonts[i].max);
 	}
 
 	// Try to find the same font with the same size
 	CMenu::FontSet::iterator i = fontSet.find(CMenu::FontDesc(upperCase(filename.c_str()), fonts[0].res));
-	if (i != fontSet.end()) return i->second;
+	/* ONLY return the font if spacing and weight are the same */
+	if (i != fontSet.end() && i->second.lineSpacing == fonts[1].res && i->second.weight == fonts[2].res) return i->second;
 
 	// TTF not found in memory, load it to create a new font
 	SFont retFont;
@@ -1367,37 +1349,6 @@ s16 CMenu::_addButton(const char *domain, SFont font, const wstringEx &text, int
 	btnTexSet.leftSel = _texture(domain, "texture_left_selected", theme.btnTexLS, false);
 	btnTexSet.rightSel = _texture(domain, "texture_right_selected", theme.btnTexRS, false);
 	btnTexSet.centerSel = _texture(domain, "texture_center_selected", theme.btnTexCS, false);
-
-	font = _font(theme.fontSet, domain, "font", BUTTONFONT);
-
-	GuiSound *clickSound = _sound(theme.soundSet, domain, "click_sound", theme.clickSound->GetName());
-	GuiSound *hoverSound = _sound(theme.soundSet, domain, "hover_sound", theme.hoverSound->GetName());
-
-	u16 btnPos = _textStyle(domain, "elmstyle", FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
-	if (btnPos & FTGX_JUSTIFY_RIGHT)
-		x = m_vid.width() - x - width;
-	if (btnPos & FTGX_ALIGN_BOTTOM)
-		y = m_vid.height() - y - height;
-
-	return m_btnMgr.addButton(font, text, x, y, width, height, c, btnTexSet, clickSound, hoverSound);
-}
-
-s16 CMenu::_addSelButton(const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color)
-{
-	SButtonTextureSet btnTexSet;
-	CColor c(color);
-
-	c = m_theme.getColor(domain, "color", c);
-	x = m_theme.getInt(domain, "x", x);
-	y = m_theme.getInt(domain, "y", y);
-	width = m_theme.getInt(domain, "width", width);
-	height = m_theme.getInt(domain, "height", height);
-	btnTexSet.left = _texture(domain, "texture_left", theme.btnTexLH, false);
-	btnTexSet.right = _texture(domain, "texture_right", theme.btnTexRH, false);
-	btnTexSet.center = _texture(domain, "texture_center", theme.btnTexCH, false);
-	btnTexSet.leftSel = _texture(domain, "texture_left_selected", theme.btnTexLSH, false);
-	btnTexSet.rightSel = _texture(domain, "texture_right_selected", theme.btnTexRSH, false);
-	btnTexSet.centerSel = _texture(domain, "texture_center_selected", theme.btnTexCSH, false);
 
 	font = _font(theme.fontSet, domain, "font", BUTTONFONT);
 
