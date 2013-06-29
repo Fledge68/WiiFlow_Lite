@@ -190,7 +190,7 @@ bool GuiSound::Load(const char *path)
 	}
 
 	strncpy(this->filepath, path, 255);
-	this->filepath[255] = '\0';	SetLoop(loop);
+	this->filepath[255] = '\0';
 	SetLoop(loop);
 
 	return true;

@@ -179,20 +179,8 @@ bool DEVO_Installed(const char *path)
 
 void DEVO_GetLoader(const char *path)
 {
-	//Read in loader.bin
-	const char *loader_path = fmt("%s/loader.bin", path);
-	FILE *f = fopen(loader_path, "rb");
-	if(f != NULL)
-	{
-		gprintf("Devolution: Reading %s\n", loader_path);
-		fseek(f, 0, SEEK_END);
-		loader_size = ftell(f);
-		rewind(f);
-		tmp_buffer = (u8*)MEM2_alloc(loader_size);
-		fread(tmp_buffer, 1, loader_size, f);
-		fclose(f);
-	}
-	else
+	tmp_buffer = fsop_ReadFile(fmt("%s/loader.bin", path), &loader_size);
+	if(tmp_buffer == NULL)
 	{
 		gprintf("Devolution: Loader not found!\n");
 		return;

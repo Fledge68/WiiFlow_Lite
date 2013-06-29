@@ -1283,8 +1283,12 @@ GuiSound *CMenu::_sound(CMenu::SoundSet &soundSet, const char *domain, const cha
 	CMenu::SoundSet::iterator i = soundSet.find(upperCase(name));
 	if(i == soundSet.end())
 	{
-		if(filename != name)
-			soundSet[upperCase(filename)] = new GuiSound(fmt("%s/%s", m_themeDataDir.c_str(), filename));
+		if(filename != name && fsop_FileExist(fmt("%s/%s", m_themeDataDir.c_str(), filename)))
+		{
+			u32 size = 0;
+			u8 *mem = fsop_ReadFile(fmt("%s/%s", m_themeDataDir.c_str(), filename), &size);
+			soundSet[upperCase(filename)] = new GuiSound(mem, size, filename, true);
+		}
 		else
 			soundSet[upperCase(filename)] = new GuiSound(snd, len, filename, isAllocated);
 		return soundSet[upperCase(filename)];
@@ -1306,7 +1310,14 @@ GuiSound *CMenu::_sound(CMenu::SoundSet &soundSet, const char *domain, const cha
 	SoundSet::iterator i = soundSet.find(upperCase(filename));
 	if(i == soundSet.end())
 	{
-		soundSet[upperCase(filename)] = new GuiSound(fmt("%s/%s", m_themeDataDir.c_str(), filename));
+		if(fsop_FileExist(fmt("%s/%s", m_themeDataDir.c_str(), filename)))
+		{
+			u32 size = 0;
+			u8 *mem = fsop_ReadFile(fmt("%s/%s", m_themeDataDir.c_str(), filename), &size);
+			soundSet[upperCase(filename)] = new GuiSound(mem, size, filename, true);
+		}
+		else
+			soundSet[upperCase(filename)] = new GuiSound();
 		return soundSet[upperCase(filename)];
 	}
 	return i->second;
