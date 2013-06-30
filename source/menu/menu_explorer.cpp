@@ -18,7 +18,6 @@
 #include <unistd.h>
 #include "menu.hpp"
 #include "defines.h"
-#include "fileOps/fileOps.h"
 
 extern const u8 blank_png[];
 

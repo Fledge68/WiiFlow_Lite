@@ -13,7 +13,6 @@
 #include "banner/BannerWindow.hpp"
 #include "channel/nand.hpp"
 #include "channel/nand_save.hpp"
-#include "fileOps/fileOps.h"
 #include "gc/gc.hpp"
 #include "gui/Gekko.h"
 #include "gui/GameTDB.hpp"
@@ -2338,31 +2337,14 @@ void CMenu::_stopSounds(void)
 
 bool CMenu::_loadFile(u8 * &buffer, u32 &size, const char *path, const char *file)
 {
-	size = 0;
-	FILE *fp = fopen(file == NULL ? path : fmt("%s/%s", path, file), "rb");
-	if (fp == NULL)
+	u32 fileSize = 0;
+	u8 *fileBuf = fsop_ReadFile(file == NULL ? path : fmt("%s/%s", path, file), &fileSize);
+	if(fileBuf == NULL)
 		return false;
-
-	fseek(fp, 0, SEEK_END);
-	u32 fileSize = ftell(fp);
-	fseek(fp, 0, SEEK_SET);
-	u8 *fileBuf = (u8*)MEM2_alloc(fileSize);
-	if (fileBuf == NULL)
-	{
-		fclose(fp);
-		return false;
-	}
-	if (fread(fileBuf, 1, fileSize, fp) != fileSize)
-	{
-		fclose(fp);
-		return false;
-	}
-	fclose(fp);
 
 	if(buffer != NULL)
 		free(buffer);
 	buffer = fileBuf;
-
 	size = fileSize;
 	return true;
 }

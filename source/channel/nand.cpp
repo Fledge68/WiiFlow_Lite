@@ -334,27 +334,16 @@ s32 Nand::__configwrite(void)
 {
 	if(configloaded)
 	{
-		__Dec_Enc_TB();	
+		__Dec_Enc_TB();
 
 		if(!tbdec)
 		{
-			FILE *f = fopen(cfgpath, "wb");
-			if(f)
-			{
-				fwrite(confbuffer, 1, 0x4000, f);
-				gprintf("SYSCONF written to:\"%s\"\n", cfgpath);
-				fclose(f);
-			}
+			/* SYSCONF */
+			fsop_WriteFile(cfgpath, confbuffer, 0x4000);
+			/* setting.txt */
+			fsop_WriteFile(settxtpath, txtbuffer, 0x100);
 
-			f = fopen(settxtpath, "wb");
-			if(f)
-			{
-				fwrite(txtbuffer, 1, 0x100, f);
-				gprintf("setting.txt written to: \"%s\"\n", settxtpath);
-				fclose(f);
-			}
-			configloaded = configloaded ? false : true;
-
+			configloaded = !configloaded;
 			if(!tbdec && !configloaded)
 				return 1;
 		}
@@ -829,25 +818,17 @@ void Nand::CreateTitleTMD(dir_discHdr *hdr)
 	char nandpath[MAX_FAT_PATH];
 	snprintf(nandpath, sizeof(nandpath), "%s/title/%08x/%08x/content/title.tmd", FullNANDPath, highTID, lowTID);
 
-	struct stat filestat;
-	if(stat(nandpath, &filestat) == 0)
+	if(fsop_FileExist(nandpath))
 	{
 		free(titleTMD);
-		gprintf("%s Exists!\n", nandpath);
+		gprintf("%s exists!\n", nandpath);
 		return;
 	}
+
 	gprintf("Creating title TMD: %s\n", nandpath);
-
-	FILE *file = fopen(nandpath, "wb");
-	if(file)
-	{
-		fwrite(titleTMD, 1, tmd_size, file);
-		gprintf("Title TMD written to: %s\n", nandpath);
-		fclose(file);
-	}
-	else 
-		gprintf("Creating title TMD: %s failed (%i)\n", nandpath, file);
-
+	bool res = fsop_WriteFile(nandpath, titleTMD, tmd_size);
+	if(!res)
+		gprintf("Creating title TMD: %s failed\n", nandpath);
 	free(titleTMD);
 }
 

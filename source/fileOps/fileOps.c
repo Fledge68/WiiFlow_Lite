@@ -387,7 +387,7 @@ u8 *fsop_ReadFile(const char *path, u32 *size)
 	return mem;
 }
 
-bool fsop_WriteFile(const char *path, u8 *mem, u32 size)
+bool fsop_WriteFile(const char *path, const void *mem, const u32 size)
 {
 	if(mem == NULL || size == 0)
 		return false;

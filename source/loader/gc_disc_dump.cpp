@@ -128,7 +128,7 @@ s32 GCDump::__DiscReadRaw(void *outbuf, u64 offset, u32 length)
 		}
 	}
 	wiiLightOff();
-	return -1;		
+	return -1;
 }
 
 s32 GCDump::__DiscWrite(char * path, u64 offset, u32 length, u8 *ReadBuffer)
@@ -431,8 +431,7 @@ s32 GCDump::DumpGame()
 			u32 correction;
 			u32 toread;
 
-			FILE *f;
-			f = fopen(gamepath, "wb");
+			FILE *f = fopen(gamepath, "wb");
 
 			ret = __DiscWriteFile(f, NextOffset, (FSTOffset + FSTSize), ReadBuffer);
 			wrote += (FSTOffset + FSTSize);

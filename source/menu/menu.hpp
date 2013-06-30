@@ -12,6 +12,7 @@
 #include "channel/channels.h"
 #include "cheats/gct.h"
 #include "devicemounter/DeviceHandler.hpp"
+#include "fileOps/fileOps.h"
 #include "gecko/gecko.hpp"
 #include "gecko/wifi_gecko.hpp"
 #include "gui/coverflow.hpp"
@@ -150,7 +151,6 @@ private:
 	TexData m_mainBgLQ;
 //Main Coverflow
 	s16 m_mainBtnConfig;
-	s16 m_mainBtnExplorer;
 	s16 m_mainBtnInfo;
 	s16 m_mainBtnFavoritesOn;
 	s16 m_mainBtnFavoritesOff;

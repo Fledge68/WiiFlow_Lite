@@ -20,6 +20,8 @@
 #include <gccore.h>
 
 // DIOS-MIOS
+#define DML_BOOT_PATH		"sd:/games/boot.bin"
+
 typedef struct DML_CFG
 {
 	u32 Magicbytes;			//0xD1050CF6
@@ -72,6 +74,8 @@ void DML_New_WriteOptions();
 
 
 // Devolution
+#define DEVO_LOADER_PATH	"%s/loader.bin"
+
 typedef struct global_config
 {
 	u32 signature;
