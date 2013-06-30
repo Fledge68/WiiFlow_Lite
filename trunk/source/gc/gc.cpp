@@ -112,9 +112,7 @@ void DML_New_SetOptions(const char *GamePath, char *CheatPath, const char *NewCh
 void DML_Old_SetOptions(const char *GamePath)
 {
 	gprintf("DIOS-MIOS: Launch game '%s' through boot.bin (old method)\n", GamePath);
-	FILE *f = fopen("sd:/games/boot.bin", "wb");
-	fwrite(GamePath, 1, strlen(GamePath) + 1, f);
-	fclose(f);
+	fsop_WriteFile(DML_BOOT_PATH, GamePath, strlen(GamePath)+1);
 
 	//Tell DML to boot the game from sd card
 	*(vu32*)0x80001800 = 0xB002D105;
@@ -160,31 +158,23 @@ static gconfig *DEVO_CONFIG = (gconfig*)0x80000020;
 
 bool DEVO_Installed(const char *path)
 {
+	loader_size = 0;
 	bool devo = false;
-	const char *loader_path = fmt("%s/loader.bin", path);
-	FILE *f = fopen(loader_path, "rb");
-	if(f != NULL)
+	fsop_GetFileSizeBytes(fmt(DEVO_LOADER_PATH, path), &loader_size);
+	if(loader_size > 0x80) //Size should be more than 128b
 	{
-		fseek(f, 0, SEEK_END);
-		if(ftell(f) > 0x80) //Size should be more than 128b
-		{
-			gprintf("Devolution: Found %s\n", loader_path);
-			devo = true;
-		}
-		rewind(f);
-		fclose(f);
+		gprintf("Devolution found\n");
+		devo = true;
 	}
 	return devo;
 }
 
 void DEVO_GetLoader(const char *path)
 {
-	tmp_buffer = fsop_ReadFile(fmt("%s/loader.bin", path), &loader_size);
+	loader_size = 0;
+	tmp_buffer = fsop_ReadFile(fmt(DEVO_LOADER_PATH, path), &loader_size);
 	if(tmp_buffer == NULL)
-	{
 		gprintf("Devolution: Loader not found!\n");
-		return;
-	}
 }
 
 void DEVO_SetOptions(const char *isopath, const char *gameID, bool memcard_emu,

@@ -30,6 +30,7 @@
 
 #include "nk.h"
 #include "armboot.h"
+#include "fileOps/fileOps.h"
 #include "memory/mem2.hpp"
 #include "gecko/gecko.hpp"
 
@@ -70,29 +71,17 @@ bool neek2o(void)
 
 bool Load_Neek2o_Kernel()
 {
+	bool ret = true;
 	if(neek2o())
-		return true;
+		return ret;
 
-	FILE *file = NULL;
-	file = fopen("usb1:/sneek/kernel.bin", "rb");
-	if(!file)
-		file = fopen("sd:/sneek/kernel.bin", "rb");
-	if(file) 
-	{
-		fseek(file , 0 , SEEK_END);
-		kernelSize = ftell(file);
-		rewind(file);
-		Kernel = malloc(kernelSize);
-		if(!Kernel)
-		{
-			fclose(file);
-			return false;
-		}
-		fread(Kernel, 1, kernelSize, file);
-		fclose(file);
-		return true;
-	}
-	return false;
+	Kernel = fsop_ReadFile("usb1:/sneek/kernel.bin", &kernelSize);
+	if(Kernel == NULL)
+		Kernel = fsop_ReadFile("sd:/sneek/kernel.bin", &kernelSize);
+	if(Kernel == NULL)
+		ret = false;
+
+	return ret;
 }
 
 s32 Launch_nk(u64 TitleID, const char *nandpath, u64 ReturnTo)

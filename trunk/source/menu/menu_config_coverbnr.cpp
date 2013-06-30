@@ -16,7 +16,6 @@
  ****************************************************************************/
 #include "menu.hpp"
 #include "defines.h"
-#include "fileOps/fileOps.h"
 
 s16 m_coverbnrLblDlCover;
 s16 m_coverbnrLblDeleteCover;

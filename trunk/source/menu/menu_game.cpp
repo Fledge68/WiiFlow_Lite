@@ -17,7 +17,6 @@
 #include "devicemounter/DeviceHandler.hpp"
 #include "devicemounter/sdhc.h"
 #include "devicemounter/usbstorage.h"
-#include "fileOps/fileOps.h"
 #include "gc/gc.hpp"
 #include "gc/gcdisc.hpp"
 #include "gui/WiiMovie.hpp"

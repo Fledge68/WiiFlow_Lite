@@ -5,7 +5,6 @@
 #include "defines.h"
 #include "lockMutex.hpp"
 #include "channel/nand.hpp"
-#include "fileOps/fileOps.h"
 #include "loader/cios.h"
 #include "loader/nk.h"
 

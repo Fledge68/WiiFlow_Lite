@@ -5,7 +5,6 @@
 #include "lockMutex.hpp"
 #include "gui/text.hpp"
 #include "network/http.h"
-#include "fileOps/fileOps.h"
 
 #define GECKOURL "http://geckocodes.org/codes/%c/%s.txt"
 #define CHEATSPERPAGE 4
@@ -60,18 +59,11 @@ u32 CMenu::_downloadCheatFileAsync(void *obj)
 
 	if (cheatfile.data != NULL && cheatfile.size > 65 && cheatfile.data[0] != '<')
 	{
-		FILE *file = fopen(fmt("%s/%s.txt", m->m_txtCheatDir.c_str(), id), "wb");
-
-		if (file != NULL)
-		{
-			fwrite(cheatfile.data, 1, cheatfile.size, file);
-			fclose(file);
-			free(buffer);
-			m->m_thrdWorking = false;
-			return 0;
-		}
+		fsop_WriteFile(fmt("%s/%s.txt", m->m_txtCheatDir.c_str(), id), cheatfile.data, cheatfile.size);
+		free(buffer);
+		m->m_thrdWorking = false;
+		return 0;
 	}
-
 	free(buffer);
 	m->m_thrdWorking = false;
 	return -3;

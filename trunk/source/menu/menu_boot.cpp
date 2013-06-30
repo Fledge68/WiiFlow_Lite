@@ -16,7 +16,6 @@
  ****************************************************************************/
 #include "menu.hpp"
 #include "const_str.hpp"
-#include "fileOps/fileOps.h"
 #include "channel/nand_save.hpp"
 
 s16 m_bootLblTitle;

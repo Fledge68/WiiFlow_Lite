@@ -7,6 +7,7 @@
 
 #include "texture.hpp"
 #include "coverflow.hpp"
+#include "fileOps/fileOps.h"
 #include "memory/mem2.hpp"
 #include "pngu.h"
 #include "gcvid.h"
@@ -238,37 +239,25 @@ bool STexture::CopyTexture(const TexData &src, TexData &dest)
 TexErr STexture::fromImageFile(TexData &dest, const char *filename, u8 f, u32 minMipSize, u32 maxMipSize)
 {
 	Cleanup(dest);
-	FILE *file = fopen(filename, "rb");
-	if(file == NULL)
+
+	u32 fileSize = 0;
+	u8 *Image = fsop_ReadFile(filename, &fileSize);
+	if(Image == NULL)
 	{
 		strncpy((char*)filename+(strlen(filename)-3), "jp", 2);
-		file = fopen(filename, "rb");
+		Image = fsop_ReadFile(filename, &fileSize);
 	}
-	if(file == NULL)
+	if(Image == NULL)
 		return TE_ERROR;
 
-	fseek(file, 0, SEEK_END);
-	u32 fileSize = ftell(file);
-	fseek(file, 0, SEEK_SET);
-
-	u8 *Image = NULL;
-	if(fileSize)
-	{
-		Image = (u8*)MEM2_alloc(fileSize);
-		if(Image != NULL)
-			fread(Image, 1, fileSize, file);
-	}
-	fclose(file);
-
 	TexErr result = TE_NOMEM;
-	if(Image != NULL)
-	{
-		if(*(vu32*)Image == 0x89504E47) /* PNG Magic */
-			result = fromPNG(dest, Image, f, minMipSize, maxMipSize);
-		else
-			result = fromJPG(dest, Image, fileSize, f, minMipSize, maxMipSize);
-		free(Image);
-	}
+
+	if(*(vu32*)Image == 0x89504E47) /* PNG Magic */
+		result = fromPNG(dest, Image, f, minMipSize, maxMipSize);
+	else
+		result = fromJPG(dest, Image, fileSize, f, minMipSize, maxMipSize);
+	free(Image);
+
 	return result;
 }
 

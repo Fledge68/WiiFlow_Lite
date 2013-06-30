@@ -10,9 +10,12 @@ s16 m_exittoLblTitle;
 s16 m_homeBtnSettings;
 s16 m_homeBtnReloadCache;
 s16 m_homeBtnUpdate;
+s16 m_homeBtnExplorer;
+
 s16 m_homeBtnInstall;
 s16 m_homeBtnAbout;
 s16 m_homeBtnExitTo;
+s16 m_homeBtnSource;
 
 s16 m_homeBtnExitToHBC;
 s16 m_homeBtnExitToMenu;
@@ -91,6 +94,22 @@ bool CMenu::_Home(void)
 					exitHandler(WIIFLOW_DEF);
 				else 
 					_ExitTo();
+				_showHome();
+			}
+			else if(m_btnMgr.selected(m_homeBtnExplorer))
+			{
+				_hideHome();
+				_Explorer();
+				_showHome();
+			}
+			else if(m_btnMgr.selected(m_homeBtnSource))
+			{
+				_hideHome();
+				if(!_Source()) //Different source selected
+				{
+					LoadView();
+					break;
+				}
 				_showHome();
 			}
 		}
@@ -175,9 +194,12 @@ void CMenu::_showHome(void)
 	m_btnMgr.show(m_homeBtnSettings);
 	m_btnMgr.show(m_homeBtnReloadCache);
 	m_btnMgr.show(m_homeBtnUpdate);
+	m_btnMgr.show(m_homeBtnExplorer);
+
 	m_btnMgr.show(m_homeBtnInstall);
 	m_btnMgr.show(m_homeBtnAbout);
 	m_btnMgr.show(m_homeBtnExitTo);
+	m_btnMgr.show(m_homeBtnSource);
 
 	m_btnMgr.show(m_homeLblBattery);
 }
@@ -201,9 +223,12 @@ void CMenu::_hideHome(bool instant)
 	m_btnMgr.hide(m_homeBtnSettings, instant);
 	m_btnMgr.hide(m_homeBtnReloadCache, instant);
 	m_btnMgr.hide(m_homeBtnUpdate, instant);
+	m_btnMgr.hide(m_homeBtnExplorer, instant);
+
 	m_btnMgr.hide(m_homeBtnInstall, instant);
-	m_btnMgr.hide(m_homeBtnAbout, instant);	
+	m_btnMgr.hide(m_homeBtnAbout, instant);
 	m_btnMgr.hide(m_homeBtnExitTo, instant);
+	m_btnMgr.hide(m_homeBtnSource, instant);
 
 	m_btnMgr.hide(m_homeLblBattery, instant);
 }
@@ -228,20 +253,28 @@ void CMenu::_initHomeAndExitToMenu()
 
 	_setHideAnim(m_homeLblTitle, "HOME/TITLE", 0, 0, -2.f, 0.f);
 
-	m_homeBtnSettings = _addButton("HOME/SETTINGS", theme.btnFont, L"", 60, 120, 250, 56, theme.btnFontColor);
-	m_homeBtnReloadCache = _addButton("HOME/RELOAD_CACHE", theme.btnFont, L"", 60, 230, 250, 56, theme.btnFontColor);
-	m_homeBtnUpdate = _addButton("HOME/UPDATE", theme.btnFont, L"", 60, 340, 250, 56, theme.btnFontColor);
-	m_homeBtnInstall = _addButton("HOME/INSTALL", theme.btnFont, L"", 330, 120, 250, 56, theme.btnFontColor);
-	m_homeBtnAbout = _addButton("HOME/ABOUT", theme.btnFont, L"", 330, 230, 250, 56, theme.btnFontColor);
-	m_homeBtnExitTo = _addButton("HOME/EXIT_TO", theme.btnFont, L"", 330, 340, 250, 56, theme.btnFontColor);
+	m_homeBtnSettings = _addButton("HOME/SETTINGS", theme.btnFont, L"", 60, 100, 250, 56, theme.btnFontColor);
+	m_homeBtnReloadCache = _addButton("HOME/RELOAD_CACHE", theme.btnFont, L"", 60, 180, 250, 56, theme.btnFontColor);
+	m_homeBtnUpdate = _addButton("HOME/UPDATE", theme.btnFont, L"", 60, 260, 250, 56, theme.btnFontColor);
+	m_homeBtnExplorer = _addButton("HOME/EXPLORER", theme.btnFont, L"", 60, 340, 250, 56, theme.btnFontColor);
+
+	m_homeBtnInstall = _addButton("HOME/INSTALL", theme.btnFont, L"", 330, 100, 250, 56, theme.btnFontColor);
+	m_homeBtnAbout = _addButton("HOME/ABOUT", theme.btnFont, L"", 330, 180, 250, 56, theme.btnFontColor);
+	m_homeBtnExitTo = _addButton("HOME/EXIT_TO", theme.btnFont, L"", 330, 260, 250, 56, theme.btnFontColor);
+	m_homeBtnSource = _addButton("HOME/SOURCE", theme.btnFont, L"", 330, 340, 250, 56, theme.btnFontColor);
+
 	m_homeLblBattery = _addLabel("HOME/BATTERY", theme.btnFont, L"", 0, 420, 640, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 
 	_setHideAnim(m_homeBtnSettings, "HOME/SETTINGS", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_homeBtnReloadCache, "HOME/RELOAD_CACHE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_homeBtnUpdate, "HOME/UPDATE", 0, 0, -2.f, 0.f);
+	_setHideAnim(m_homeBtnExplorer, "HOME/EXPLORER", 0, 0, -2.f, 0.f);
+
 	_setHideAnim(m_homeBtnInstall, "HOME/INSTALL", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_homeBtnAbout, "HOME/ABOUT", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_homeBtnExitTo, "HOME/EXIT_TO", 0, 0, -2.f, 0.f);
+	_setHideAnim(m_homeBtnSource, "HOME/SOURCE", 0, 0, -2.f, 0.f);
+
 	_setHideAnim(m_homeLblBattery, "HOME/BATTERY", 0, 0, -2.f, 0.f);
 
 	_textHome();
@@ -273,9 +306,12 @@ void CMenu::_textHome(void)
 	m_btnMgr.setText(m_homeBtnSettings, _t("home1", L"Settings"));
 	m_btnMgr.setText(m_homeBtnReloadCache, _t("home2", L"Reload Cache"));
 	m_btnMgr.setText(m_homeBtnUpdate, _t("home3", L"Update"));
+	m_btnMgr.setText(m_homeBtnExplorer, _t("home8", L"File Explorer"));
+
 	m_btnMgr.setText(m_homeBtnInstall, _t("home7", L"Install Game"));
 	m_btnMgr.setText(m_homeBtnAbout, _t("home4", L"Credits"));
 	m_btnMgr.setText(m_homeBtnExitTo, _t("home5", L"Exit To"));
+	m_btnMgr.setText(m_homeBtnSource, _t("home9", L"Source Menu"));
 }
 
 void CMenu::_textExitTo(void)

@@ -4,7 +4,6 @@
 #include "lockMutex.hpp"
 #include "channel/nand.hpp"
 #include "gc/gc.hpp"
-#include "fileOps/fileOps.h"
 #include "loader/wbfs.h"
 #include "loader/wdvd.h"
 #include "loader/gc_disc_dump.hpp"
