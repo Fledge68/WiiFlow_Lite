@@ -11,7 +11,8 @@
 
 #include <stdio.h>
 #include <string.h>
-
+#include "gecko/gecko.hpp"
+#include "loader/utils.h"
 #define u8 unsigned char	   /* 8 bits  */
 #define u32 unsigned long	   /* 32 bits */
 #define u64 unsigned long long
@@ -364,16 +365,16 @@ void aes_set_key(u8 *key)
 }
 
 // CBC mode decryption
-void aes_decrypt(u8 *iv, u8 *inbuf, u8 *outbuf, unsigned long long len)
+void aes_decrypt(u8 *iv, u8 *inbuf, u8 *outbuf, u64 len)
 {
 	u8 block[16];
-	unsigned int blockno = 0, i;
+	u32 blockno = 0, i;
 
 	//printf("aes_decrypt(%p, %p, %p, %lld)\n", iv, inbuf, outbuf, len);
 
 	for (blockno = 0; blockno <= (len / sizeof(block)); blockno++)
 	{
-		unsigned int fraction;
+		u32 fraction;
 		if (blockno == (len / sizeof(block))) // last block
 		{
 			fraction = len % sizeof(block);
@@ -398,16 +399,16 @@ void aes_decrypt(u8 *iv, u8 *inbuf, u8 *outbuf, unsigned long long len)
 }
 
 // CBC mode encryption
-void aes_encrypt(u8 *iv, u8 *inbuf, u8 *outbuf, unsigned long long len)
+void aes_encrypt(u8 *iv, u8 *inbuf, u8 *outbuf, u64 len)
 {
 	u8 block[16];
-	unsigned int blockno = 0, i;
+	u32 blockno = 0, i;
 
 	//  debug_printf("aes_decrypt(%p, %p, %p, %lld)\n", iv, inbuf, outbuf, len);
 
 	for (blockno = 0; blockno <= (len / sizeof(block)); blockno++)
 	{
-		unsigned int fraction;
+		u32 fraction;
 		if (blockno == (len / sizeof(block))) // last block
 		{
 			fraction = len % sizeof(block);
@@ -430,3 +431,15 @@ void aes_encrypt(u8 *iv, u8 *inbuf, u8 *outbuf, unsigned long long len)
 	}
 }
 
+
+// CBC mode decryption
+#define WAD_BUF 0x10000
+
+void aes_decrypt_partial(u8 *inbuf, u8 *outbuf, u8 block[16], u8 *ctext_ptr, u32 tmp_blockno)
+{
+	memcpy(block, inbuf + tmp_blockno * 16, 16);
+	decrypt((char*)block);
+	u32 i;
+	for(i = 0; i < 16; i++)
+		outbuf[tmp_blockno * 16 + i] = ctext_ptr[i] ^ block[i];
+}

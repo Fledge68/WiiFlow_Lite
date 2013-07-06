@@ -6,7 +6,7 @@
 #include "wiidisc.h"
 
 void aes_set_key(u8 *key);
-void aes_decrypt(u8 *iv, u8 *inbuf, u8 *outbuf, unsigned long long len);
+void aes_decrypt(u8 *iv, u8 *inbuf, u8 *outbuf, u64 len);
 
 int wd_last_error = 0;
 
@@ -15,7 +15,7 @@ int wd_get_last_error(void)
 	return wd_last_error;
 }
 
-static void _decrypt_title_key(u8 *tik, u8 *title_key)
+void decrypt_title_key(u8 *tik, u8 *title_key)
 {
 	u8 common_key[16] = {
 		0xeb, 0xe4, 0x2a, 0x22, 0x5e, 0x85, 0x93, 0xe4,
@@ -251,7 +251,7 @@ static void do_partition(wiidisc_t*d)
 		wbfs_fatal("malloc cert\n");
 	partition_raw_read(d, cert_offset, cert, cert_size);
 
-	_decrypt_title_key(tik, d->disc_key);
+	decrypt_title_key(tik, d->disc_key);
 
 	partition_raw_read(d, h3_offset, 0, 0x18000);
 
