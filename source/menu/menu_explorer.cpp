@@ -17,6 +17,7 @@
 #include <dirent.h>
 #include <unistd.h>
 #include "menu.hpp"
+#include "channel/nand.hpp"
 #include "defines.h"
 
 extern const u8 blank_png[];
@@ -24,6 +25,7 @@ extern const u8 blank_png[];
 TexData m_explorerBg;
 s16 entries[8];
 s16 entries_sel[8];
+char file[MAX_FAT_PATH];
 char dir[MAX_FAT_PATH];
 char entries_char[7][NAME_MAX+1];
 u8 explorer_partition = 0;
@@ -116,11 +118,13 @@ void CMenu::_Explorer(void)
 					}
 					else
 					{
-						const char *file = fmt("%s%s", dir, entries_char[i-1]);
+						memset(file, 0, MAX_FAT_PATH);
+						strncpy(file, fmt("%s%s", dir, entries_char[i-1]), MAX_FAT_PATH);
 						if(strcasestr(file, ".mp3") != NULL || strcasestr(file, ".ogg") != NULL)
 							MusicPlayer.LoadFile(file, false);
 						else if(strcasestr(file, ".iso") != NULL || strcasestr(file, ".wbfs") != NULL)
 						{
+							_hideExplorer();
 							/* create header for id and path */
 							dir_discHdr tmpHdr;
 							memset(&tmpHdr, 0, sizeof(dir_discHdr));
@@ -141,6 +145,13 @@ void CMenu::_Explorer(void)
 								currentPartition = explorer_partition;
 								_launchGC(&tmpHdr, false);
 							}
+							_showExplorer();
+						}
+						else if(strcasestr(file, ".wad") != NULL)
+						{
+							_hideExplorer();
+							_Wad(file);
+							_showExplorer();
 						}
 					}
 				}

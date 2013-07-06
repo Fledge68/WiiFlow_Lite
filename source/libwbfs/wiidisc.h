@@ -61,6 +61,8 @@ extern "C"
 	// effectively remove not copied partition from the partition table.
 	void wd_fix_partition_table(partition_selector_t selector, u8 *partition_table);
 
+	// needed for wad decryption
+	void decrypt_title_key(u8 *tik, u8 *title_key);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

@@ -52,7 +52,8 @@ typedef struct _namelist
 typedef struct _uid
 {
 	u64 TitleID;
-	u32 unused;
+	u16 padding;
+	u16 uid;
 } ATTRIBUTE_PACKED uid;
 
 using namespace std;
@@ -85,6 +86,7 @@ public:
 	u8 *GetTMD(u64 title, u32 *size);
 	u8 *GetEmuFile(const char *path, u32 *size, s32 len = -1);
 	void SetPaths(const char *emuPath, const char *currentPart);
+	const char *GetPath(void) { return FullNANDPath; };
 
 	void CreatePath(const char *path, ...);
 	void CreateTitleTMD(dir_discHdr *hdr);
