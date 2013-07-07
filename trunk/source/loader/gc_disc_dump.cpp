@@ -318,18 +318,12 @@ s32 GCDump::DumpGame()
 		Asciify2(gc_hdr.title);
 
 		snprintf(folder, sizeof(folder), basedir);
-		if(!fsop_DirExist(folder))
-		{
-			gprintf("Creating directory: %s\n", folder);
-			fsop_MakeFolder(folder);
-		}
+		fsop_MakeFolder(folder);
+
 		memset(folder, 0, sizeof(folder));
 		snprintf(folder, sizeof(folder), "%s/%s [%.06s]", basedir, gc_hdr.title, gc_hdr.id);
-		if(!fsop_DirExist(folder))
-		{
-			gprintf("Creating directory: %s\n", folder);
+		if(!fsop_FolderExist(folder))
 			fsop_MakeFolder(folder);
-		}
 		else if(!Disc)
 		{
 			gprintf("Skipping game: %s (Already installed)(%d)\n", gc_hdr.title, Gamesize[MultiGameDump]);
@@ -398,11 +392,7 @@ s32 GCDump::DumpGame()
 		{
 			memset(folder, 0, sizeof(folder));
 			snprintf(folder, sizeof(folder), "%s/%s [%.06s]/sys", basedir, gc_hdr.title, gc_hdr.id);
-			if(!fsop_DirExist(folder))
-			{
-				gprintf("Creating directory: %s\n", folder);
-				fsop_MakeFolder(folder);
-			}
+			fsop_MakeFolder(folder);
 
 			gprintf("Writing %s/boot.bin\n", folder);
 			snprintf(gamepath, sizeof(gamepath), "%s/boot.bin", folder);

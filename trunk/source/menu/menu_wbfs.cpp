@@ -249,8 +249,7 @@ int CMenu::_GCcopyGame(void *obj)
 	m._setThrdMsg(L"", 0);
 	gprintf("Copying from:\n%s\nto:\n%s\n", source, target);
 	LWP_MutexUnlock(m.m_mutex);
-	if (!fsop_DirExist(folder))
-		fsop_MakeFolder(folder);
+	fsop_MakeFolder(folder);
 	fsop_CopyFolder(source, target, _addDiscProgress, obj);
 	LWP_MutexLock(m.m_mutex);
 	m._setThrdMsg(m._t("wbfsop14", L"Game copied, press Back to boot the game."), 1.f);
