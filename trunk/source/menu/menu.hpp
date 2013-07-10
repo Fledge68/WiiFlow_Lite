@@ -847,6 +847,7 @@ private:
 	void _initHomeAndExitToMenu();
 	void _initCoverBanner();
 	void _initExplorer();
+	void _initFolderExplorer();
 	void _initWad();
 	//
 	void _textSource(void);
@@ -876,10 +877,12 @@ private:
 	void _textBoot(void);
 	void _textCoverBanner(void);
 	void _textExplorer(void);
+	void _textFolderExplorer(void);
 	void _textWad(void);
 	//
 	void _refreshBoot();
 	void _refreshExplorer(s8 direction = 0);
+	void _refreshFolderExplorer(s8 direction = 0);
 	//
 	void _hideCheatSettings(bool instant = false);
 	void _hideError(bool instant = false);
@@ -910,6 +913,7 @@ private:
 	void _hideExitTo(bool instant = false);
 	void _hideCoverBanner(bool instant = false);
 	void _hideExplorer(bool instant = false);
+	void _hideFolderExplorer(bool instant = false);
 	void _hideWad(bool instant = false);
 	//
 	void _showError(void);
@@ -942,6 +946,7 @@ private:
 	void _showExitTo(void);
 	void _showCoverBanner(void);
 	void _showExplorer(void);
+	void _showFolderExplorer(void);
 	void _showWad(void);
 	void _updateSourceBtns(void);
 	void _updatePluginText(void);
@@ -988,6 +993,7 @@ private:
 	void _gameSettings(void);
 	void _CoverBanner(void);
 	void _Explorer(void);
+	string _FolderExplorer(void);
 	void _Wad(const char *wad_path = NULL);
 	void _CheatSettings();
 	bool _Source();

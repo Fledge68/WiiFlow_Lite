@@ -1149,6 +1149,7 @@ void CMenu::_buildMenus(void)
 	_initHomeAndExitToMenu();
 	_initCoverBanner();
 	_initExplorer();
+	_initFolderExplorer();
 	_initBoot();
 	_initWad();
 
