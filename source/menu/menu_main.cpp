@@ -436,6 +436,7 @@ int CMenu::main(void)
 			}
 			else if(m_btnMgr.selected(m_mainBtnConfig))
 			{
+				string prevNand = m_cfg.getString(CHANNEL_DOMAIN, "path");
 				_hideMain();
 				_config(1);
 				if(prevTheme != m_cfg.getString("GENERAL", "theme"))
@@ -446,6 +447,8 @@ int CMenu::main(void)
 				_showMain();
 				if(BTN_B_HELD)
 					bUsed = true;
+				if(prevNand != m_cfg.getString(CHANNEL_DOMAIN, "path") && m_cfg.getBool(CHANNEL_DOMAIN, "source"))
+					LoadView();
 			}
 			else if(m_btnMgr.selected(m_mainBtnInfo))
 			{
