@@ -254,8 +254,8 @@ string folderName="";
 void CMenu::_initFolderExplorer()
 {
 	m_folderExplorerLblSelFolder = _addLabel("EXPLORER/SELECTED_FOLDER", theme.lblFont, L"", 30, 50, 560, 40, theme.lblFontColor, FTGX_JUSTIFY_LEFT);
-	m_folderExplorerBtnSave = _addButton("EXPLORER/SAVE_BTN", theme.btnFont, L"Save", 530, 40, 80, 40, theme.btnFontColor);
-	m_folderExplorerBtnCancel = _addButton("EXPLORER/CANCEL_BTN", theme.btnFont, L"Cancel", 530, 90, 80, 40, theme.btnFontColor);
+	m_folderExplorerBtnSave = _addButton("EXPLORER/SAVE_BTN", theme.btnFont, L"Save", 520, 40, 100, 40, theme.btnFontColor);
+	m_folderExplorerBtnCancel = _addButton("EXPLORER/CANCEL_BTN", theme.btnFont, L"Cancel", 520, 90, 100, 40, theme.btnFontColor);
 	
 	_hideFolderExplorer(true);
 	_textFolderExplorer();
@@ -294,10 +294,12 @@ void CMenu::_showFolderExplorer(void)
 
 void CMenu::_textFolderExplorer(void)
 {
+	m_btnMgr.setText(m_folderExplorerBtnSave, _t("cfgne34", L"Save"));
+	m_btnMgr.setText(m_folderExplorerBtnCancel, _t("cfgne35", L"Cancel"));
 	for(u8 i = 0; i < 8; ++i)
 		m_btnMgr.setText(entries[i], L" ");
 	m_btnMgr.setText(entries[1], L". . .");
-	m_btnMgr.setText(m_folderExplorerLblSelFolder, wfmt(L"Dir = %.32s", folderName.c_str()));
+	m_btnMgr.setText(m_folderExplorerLblSelFolder, wfmt(_fmt("cfgne36",L"Dir = %.32s"), folderName.c_str()));
 }
 
 void CMenu::_refreshFolderExplorer(s8 direction)
@@ -379,12 +381,7 @@ string CMenu::_FolderExplorer(void)
 			{
 				//only when save is clicked do we set path to dir
 				if(dir[0] != '\0')
-				{
 					path = dir;
-					//check to make sure it's not just device+partition
-					//if(path.find_first_of("/") == path.find_last_of("/"))
-					//	path = "";
-				}
 				break;
 			}
 			else if(m_btnMgr.selected(m_folderExplorerBtnCancel))
