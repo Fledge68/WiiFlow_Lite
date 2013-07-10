@@ -114,7 +114,6 @@ void CMenu::_Explorer(void)
 						strcat(dir, entries_char[i-1]);
 						/* otherwise it fails */
 						strcat(dir, "/");
-						//gprintf("Directory path =%s\n", dir);
 						_refreshExplorer();
 					}
 					else
@@ -383,8 +382,8 @@ string CMenu::_FolderExplorer(void)
 				{
 					path = dir;
 					//check to make sure it's not just device+partition
-					if(path.find_first_of("/") == path.find_last_of("/"))
-						path = "";
+					//if(path.find_first_of("/") == path.find_last_of("/"))
+					//	path = "";
 				}
 				break;
 			}
@@ -410,10 +409,8 @@ string CMenu::_FolderExplorer(void)
 				else
 				{
 					folderName = folderName.erase(folderName.find_last_of("/"));
-					//if it was just device and :/ then foldername empty
-					if(folderName.find_last_of("/") == string::npos)
-						folderName = "";
-					else
+					//if its more than just device and :/ then erase up to last foldername
+					if(folderName.find_last_of("/") != string::npos)
 						folderName = folderName.erase(0, folderName.find_last_of("/")+1);
 				}
 				//if we removed device then clear path completely
@@ -434,7 +431,10 @@ string CMenu::_FolderExplorer(void)
 					{
 						explorer_partition = i-2;
 						if(DeviceHandle.IsInserted(i-2))
+						{
 							strcpy(dir, fmt("%s:/", DeviceName[i-2]));
+							folderName = dir;
+						}
 						_refreshFolderExplorer();
 					}
 					//if it's a folder add folder+/ to path
