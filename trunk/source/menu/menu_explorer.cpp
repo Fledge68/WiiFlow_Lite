@@ -405,10 +405,19 @@ string CMenu::_FolderExplorer(void)
 					folderName = "";
 				else
 				{
-					folderName = folderName.erase(folderName.find_last_of("/"));
-					//if its more than just device and :/ then erase up to last foldername
-					if(folderName.find_last_of("/") != string::npos)
-						folderName = folderName.erase(0, folderName.find_last_of("/")+1);
+					if(folderName.find_first_of("/") != folderName.find_last_of("/"))
+					{
+						folderName = folderName.erase(folderName.find_last_of("/"));
+						while(folderName.length() > 32)
+						{
+							if(folderName.find_first_of("/") == string::npos)
+								break;
+							folderName = folderName.erase(0, folderName.find_first_of("/")+1);
+						}
+						if(folderName.find_first_of(":") == string::npos)
+							folderName = "/"+folderName;
+						folderName = folderName+"/";
+					}
 				}
 				//if we removed device then clear path completely
 				if(strchr(dir, '/') == NULL)
@@ -438,10 +447,18 @@ string CMenu::_FolderExplorer(void)
 					else if(!fsop_FileExist(fmt("%s%s", dir, entries_char[i-2])))
 					{
 						strcat(dir, entries_char[i-2]);
-						folderName = entries_char[i-2];
-						/* otherwise it fails */
+						folderName = dir;
+						while(folderName.length() > 32)
+						{
+							//this if won't happen the first time
+							if(folderName.find_first_of("/") == string::npos)
+								break;
+							folderName = folderName.erase(0, folderName.find_first_of("/")+1);
+						}
+						if(folderName.find_first_of(":") == string::npos)
+							folderName = "/"+folderName;
+						folderName = folderName+"/";
 						strcat(dir, "/");
-						//gprintf("Directory path =%s\n", dir);
 						_refreshFolderExplorer();
 					}
 				}
