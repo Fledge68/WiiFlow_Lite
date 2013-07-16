@@ -248,14 +248,22 @@ void CMenu::_refreshExplorer(s8 direction)
 s16 m_folderExplorerLblSelFolder;
 s16 m_folderExplorerBtnSave;
 s16 m_folderExplorerBtnCancel;
+s16 m_folderExplorerLblUser[4];
 
+TexData m_folderExplorerBg;
 string folderName="";
 
 void CMenu::_initFolderExplorer()
 {
-	m_folderExplorerLblSelFolder = _addLabel("EXPLORER/SELECTED_FOLDER", theme.lblFont, L"", 30, 50, 560, 40, theme.lblFontColor, FTGX_JUSTIFY_LEFT);
-	m_folderExplorerBtnSave = _addButton("EXPLORER/SAVE_BTN", theme.btnFont, L"Save", 520, 40, 100, 40, theme.btnFontColor);
-	m_folderExplorerBtnCancel = _addButton("EXPLORER/CANCEL_BTN", theme.btnFont, L"Cancel", 520, 90, 100, 40, theme.btnFontColor);
+	m_folderExplorerBg = _texture("FEXPLORER/BG", "texture", theme.bg, false);
+	_addUserLabels(m_folderExplorerLblUser, ARRAY_SIZE(m_folderExplorerLblUser), "FEXPLORER");
+	m_folderExplorerLblSelFolder = _addLabel("FEXPLORER/SELECTED_FOLDER", theme.lblFont, L"", 30, 50, 560, 40, theme.lblFontColor, FTGX_JUSTIFY_LEFT);
+	m_folderExplorerBtnSave = _addButton("FEXPLORER/SAVE_BTN", theme.btnFont, L"Save", 520, 40, 100, 40, theme.btnFontColor);
+	m_folderExplorerBtnCancel = _addButton("FEXPLORER/CANCEL_BTN", theme.btnFont, L"Cancel", 520, 90, 100, 40, theme.btnFontColor);
+	
+	_setHideAnim(m_folderExplorerLblSelFolder, "FEXPLORER/SELECTED_FOLDER", 0, 0, -2.f, 0.f);
+	_setHideAnim(m_folderExplorerBtnSave, "FEXPLORER/SAVE_BTN", 0, 0, -2.f, 0.f);
+	_setHideAnim(m_folderExplorerBtnCancel, "FEXPLORER/CANCEL_BTN", 0, 0, -2.f, 0.f);
 	
 	_hideFolderExplorer(true);
 	_textFolderExplorer();
@@ -274,11 +282,21 @@ void CMenu::_hideFolderExplorer(bool instant)
 	m_btnMgr.hide(m_folderExplorerLblSelFolder, instant);
 	m_btnMgr.hide(m_folderExplorerBtnSave, instant);
 	m_btnMgr.hide(m_folderExplorerBtnCancel, instant);
+	for(u8 i = 0; i < ARRAY_SIZE(m_folderExplorerLblUser); ++i)
+	{
+		if(m_folderExplorerLblUser[i] != -1)
+			m_btnMgr.hide(m_folderExplorerLblUser[i], instant);
+	}
 }
 
 void CMenu::_showFolderExplorer(void)
 {
-	_setBg(m_explorerBg, m_explorerBg);
+	_setBg(m_folderExplorerBg, m_folderExplorerBg);
+	for(u8 i = 0; i < ARRAY_SIZE(m_folderExplorerLblUser); ++i)
+	{
+		if(m_folderExplorerLblUser[i] != -1)
+			m_btnMgr.show(m_folderExplorerLblUser[i]);
+	}
 	for(u8 i = 1; i < 8; ++i)
 	{
 		m_btnMgr.show(entries[i]);
