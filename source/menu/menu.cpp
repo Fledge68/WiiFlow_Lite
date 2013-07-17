@@ -1124,6 +1124,7 @@ void CMenu::_buildMenus(void)
 	m_gameBgLQ = m_mainBgLQ;
 
 	// Build menus
+	_initFolderExplorer();
 	_initMainMenu();
 	_initErrorMenu();
 	_initConfigAdvMenu();
@@ -1149,7 +1150,6 @@ void CMenu::_buildMenus(void)
 	_initHomeAndExitToMenu();
 	_initCoverBanner();
 	_initExplorer();
-	_initFolderExplorer();
 	_initBoot();
 	_initWad();
 
