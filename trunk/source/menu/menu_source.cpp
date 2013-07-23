@@ -17,12 +17,6 @@ extern const u8 btnhomebrews_png[];
 extern const u8 favoriteson_png[];
 extern const u8 favoritesons_png[];
 
-int Source_curPage;
-int pages;
-u8 numPlugins;
-string m_sourceDir;
-vector<string> magicNums;
-
 // Source menu
 s16 m_sourceLblNotice;
 s16 m_sourceLblPage;
@@ -32,12 +26,19 @@ s16 m_sourceBtnBack;
 s16 m_sourceLblTitle;
 s16 m_sourceBtnSource[12];
 s16 m_sourceLblUser[4];
-TexData m_sourceBg;
 s16 m_sourceBtnDML;
 s16 m_sourceBtnEmu;
 s16 m_sourceBtnUsb;
 s16 m_sourceBtnChannel;
 s16 m_sourceBtnHomebrew;
+
+TexData m_sourceBg;
+
+int Source_curPage;
+int pages;
+u8 numPlugins;
+string m_sourceDir;
+vector<string> magicNums;
 
 void CMenu::_hideSource(bool instant)
 {
@@ -53,14 +54,13 @@ void CMenu::_hideSource(bool instant)
 	m_btnMgr.hide(m_sourceBtnDML, instant);
 	m_btnMgr.hide(m_sourceBtnEmu, instant);
 
-	u8 i = 0;
-	for(i = 0; i < ARRAY_SIZE(m_sourceLblUser); ++i)
+	for(u8 i = 0; i < ARRAY_SIZE(m_sourceLblUser); ++i)
 	{
 		if(m_sourceLblUser[i] != -1)
 			m_btnMgr.hide(m_sourceLblUser[i], instant);
 	}
 
-	for(i = 0; i < 12; ++i)
+	for(u8 i = 0; i < 12; ++i)
 	{
 		m_btnMgr.hide(m_sourceBtnSource[i], instant);
 		m_btnMgr.freeBtnTexture(m_sourceBtnSource[i]);
@@ -71,8 +71,7 @@ void CMenu::_showSource(void)
 {
 	_setBg(m_sourceBg, m_sourceBg);
 
-	u8 i = 0;
-	for(i = 0; i < ARRAY_SIZE(m_sourceLblUser); ++i)
+	for(u8 i = 0; i < ARRAY_SIZE(m_sourceLblUser); ++i)
 	{
 		if(m_sourceLblUser[i] != -1)
 			m_btnMgr.show(m_sourceLblUser[i]);
@@ -81,7 +80,7 @@ void CMenu::_showSource(void)
 	m_btnMgr.show(m_sourceLblTitle);
 	m_btnMgr.show(m_sourceBtnBack);
 	
-	for(i = m_cfg.getInt("GENERAL", "max_source_buttons", 71); i > 11; --i)
+	for(u8 i = m_cfg.getInt("GENERAL", "max_source_buttons", 71); i > 11; --i)
 	{
 		string source = m_source.getString(fmt("BUTTON_%i", i), "source", "");
 		if (!source.empty())
@@ -111,21 +110,12 @@ void CMenu::_updateSourceBtns(void)
 	
 	for(u8 i = 0; i < 12; ++i)
 	{
-		string domain;
-		string btnSource = m_source.getString(fmt("BUTTON_%i", i + j), "source", "").c_str();
-		if(btnSource == "wii")
-			domain = WII_DOMAIN;
-		else if(btnSource == "dml")
-			domain = GC_DOMAIN;
-		else if(btnSource == "homebrew")
-			domain = HOMEBREW_DOMAIN;
-		else if(btnSource == "emunand")
-			domain = CHANNEL_DOMAIN;
-		else if(btnSource == "realnand")
-			domain = CHANNEL_DOMAIN;
+		string btnSource = m_source.getString(fmt("BUTTON_%i", (i + j)), "source", "");
+		
+		if(btnSource == "")
+			continue;
 		else if(btnSource == "allplugins")
 		{
-			domain = PLUGIN_DOMAIN;
 			const vector<bool> &EnabledPlugins = m_plugin.GetEnabledPlugins(m_cfg);
 			if(EnabledPlugins.size() == 0)
 				ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image_s", "").c_str();
@@ -134,35 +124,24 @@ void CMenu::_updateSourceBtns(void)
 		}
 		else if(btnSource == "plugin")
 		{
-			domain = PLUGIN_DOMAIN;
 			magicNums.clear();
 			magicNums = m_source.getStrings(fmt("BUTTON_%i", i + j), "magic", ',');
-			if(m_cfg.getBool(domain, "source", false) && m_cfg.getBool("PLUGIN", magicNums.at(0), false))
+			if(m_cfg.getBool(PLUGIN_DOMAIN, "source", false) && m_cfg.getBool("PLUGIN", magicNums.at(0), false))
 				ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image_s", "").c_str();
 			else
 				ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image", "").c_str();
 		}
-		else
-			continue;
-		if(domain == CHANNEL_DOMAIN)
+		else if(btnSource == "realnand" || btnSource == "emunand")
 		{
 			ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image", "").c_str();
-			if(m_cfg.getBool(domain, "source", false))
-			{
-				if(m_cfg.getBool(CHANNEL_DOMAIN, "disable") == true)
-				{
-					if(btnSource == "realnand")
-						ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image_s", "").c_str();
-				}
-				if(m_cfg.getBool(CHANNEL_DOMAIN, "disable") == false)
-				{
-					if(btnSource == "emunand")
-						ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image_s", "").c_str();
-				}
-			}
+			if(m_cfg.getBool(CHANNEL_DOMAIN, "source", false) && m_cfg.getBool(CHANNEL_DOMAIN, "disable") && btnSource == "realnand")
+				ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image_s", "").c_str();
+			else if(m_cfg.getBool(CHANNEL_DOMAIN, "source", false) && !m_cfg.getBool(CHANNEL_DOMAIN, "disable") && btnSource == "emunand")
+				ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image_s", "").c_str();
 		}
-		if(domain != PLUGIN_DOMAIN && domain != CHANNEL_DOMAIN)
+		else if(btnSource != "realnand" && btnSource != "emunand" && btnSource != "plugin" && btnSource != "allplugins")
 		{
+			string domain = (btnSource == "dml" ? GC_DOMAIN : (btnSource == "homebrew" ? HOMEBREW_DOMAIN : WII_DOMAIN));
 			if(m_cfg.getBool(domain, "source", false))
 				ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image_s", "").c_str();
 			else
@@ -170,9 +149,9 @@ void CMenu::_updateSourceBtns(void)
 		}
 		
 		ImgSelName = m_source.getString(fmt("BUTTON_%i", i + j),"image_s", "").c_str();
+
 		TexData texConsoleImg;
 		TexData texConsoleImgs;
-		
 		if(TexHandle.fromImageFile(texConsoleImg, fmt("%s/%s", m_themeDataDir.c_str(), ImgName)) != TE_OK)
 		{
 			if(TexHandle.fromImageFile(texConsoleImg, fmt("%s/%s", m_sourceDir.c_str(), ImgName)) != TE_OK)
@@ -198,6 +177,7 @@ bool CMenu::_Source()
 {
 	DIR *pdir;
 	struct dirent *pent;
+
 	if(!m_source.loaded())
 		if(!m_source.load(fmt("%s/%s", m_themeDataDir.c_str(), SOURCE_FILENAME)))
 			m_source.load(fmt("%s/%s", m_sourceDir.c_str(), SOURCE_FILENAME));
@@ -670,7 +650,6 @@ void CMenu::_initSourceMenu()
 	{
 		TexData texConsoleImg;
 		TexData texConsoleImgs;
-	
 		ImgName = m_source.getString(fmt("BUTTON_%i", i),"image", "");
 		if(TexHandle.fromImageFile(texConsoleImg, fmt("%s/%s", m_themeDataDir.c_str(), ImgName.c_str())) != TE_OK)
 		{
@@ -711,6 +690,6 @@ void CMenu::_initSourceMenu()
 void CMenu::_textSource(void)
 {
 	m_btnMgr.setText(m_sourceLblTitle, _t("stup1", L"Select Source"));
-	m_btnMgr.setText(m_sourceLblNotice, _t("NMMOff", L"** DISABLED **"));
+	m_btnMgr.setText(m_sourceLblNotice, _t("stup2", L"** DISABLED **"));
 	m_btnMgr.setText(m_sourceBtnBack, _t("cfg10", L"Back"));
 }

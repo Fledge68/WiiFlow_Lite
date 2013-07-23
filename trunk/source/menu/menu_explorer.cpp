@@ -21,42 +21,83 @@
 #include "defines.h"
 
 extern const u8 blank_png[];
+extern const u8 btnnext_png[];
+extern const u8 btnnexts_png[];
+extern const u8 btnprev_png[];
+extern const u8 btnprevs_png[];
 
 TexData m_explorerBg;
-s16 entries[8];
-s16 entries_sel[8];
+s16 entries[9];
+s16 entries_sel[9];
+s16 explorerLblSelFolder;
+s16 explorerBtnSave;
+s16 explorerBtnCancel;
+s16 explorerBtnPrev;
+s16 explorerBtnNext;
+s16 explorerLblUser[4];
+
 char file[MAX_FAT_PATH];
 char dir[MAX_FAT_PATH];
 char entries_char[7][NAME_MAX+1];
 u8 explorer_partition = 0;
+bool folderExplorer = false;
+u8 offset = 0;
+string folderName = "";
+string path = "";
 
 void CMenu::_hideExplorer(bool instant)
 {
-	for(u8 i = 0; i < 8; ++i)
+	for(u8 i = 0; i < 9; ++i)
 	{
 		m_btnMgr.hide(entries[i], instant);
 		m_btnMgr.hide(entries_sel[i], instant);
 	}
-	/* general movement */
-	m_btnMgr.hide(m_mainBtnNext, instant);
-	m_btnMgr.hide(m_mainBtnPrev, instant);
+	
+	m_btnMgr.hide(explorerBtnNext, instant);
+	m_btnMgr.hide(explorerBtnPrev, instant);
+	if(folderExplorer)
+	{
+		m_btnMgr.hide(explorerLblSelFolder, instant);
+		m_btnMgr.hide(explorerBtnSave, instant);
+		m_btnMgr.hide(explorerBtnCancel, instant);
+	}
+	for(u8 i = 0; i < ARRAY_SIZE(explorerLblUser); ++i)
+	{
+		if(explorerLblUser[i] != -1)
+			m_btnMgr.hide(explorerLblUser[i], instant);
+	}
 }
 
 void CMenu::_showExplorer(void)
 {
 	_setBg(m_explorerBg, m_explorerBg);
-	for(u8 i = 0; i < 8; ++i)
+
+	m_btnMgr.show(explorerBtnNext);
+	m_btnMgr.show(explorerBtnPrev);
+	if(folderExplorer)
 	{
-		m_btnMgr.show(entries[i]);
-		m_btnMgr.show(entries_sel[i]);
+		m_btnMgr.show(explorerLblSelFolder);
+		m_btnMgr.show(explorerBtnSave);
+		m_btnMgr.show(explorerBtnCancel);
+		if(explorerLblUser[2] != -1)
+			m_btnMgr.show(explorerLblUser[2]);
+		if(explorerLblUser[3] != -1)
+			m_btnMgr.show(explorerLblUser[3]);
 	}
-	/* general movement */
-	m_btnMgr.show(m_mainBtnNext);
-	m_btnMgr.show(m_mainBtnPrev);
+	else
+	{
+		if(explorerLblUser[0] != -1)
+			m_btnMgr.show(explorerLblUser[0]);
+		if(explorerLblUser[1] != -1)
+			m_btnMgr.show(explorerLblUser[1]);
+	}
 }
 
 void CMenu::_Explorer(void)
 {
+	offset = 0;
+	if(folderExplorer)
+		offset = 1;
 	_showExplorer();
 	_refreshExplorer();
 	while(!m_exit)
@@ -74,22 +115,58 @@ void CMenu::_Explorer(void)
 		}
 		else if(BTN_A_PRESSED)
 		{
-			if(m_btnMgr.selected(m_mainBtnNext))
+			if(m_btnMgr.selected(explorerBtnNext))
 			{
 				_refreshExplorer(1);
 			}
-			else if(m_btnMgr.selected(m_mainBtnPrev))
+			else if(m_btnMgr.selected(explorerBtnPrev))
 			{
 				_refreshExplorer(-1);
 			}
-			else if(m_btnMgr.selected(entries_sel[0]) && dir[0] != '\0')
+			else if(m_btnMgr.selected(explorerBtnSave))
 			{
+				//only when save is clicked do we set path to dir
+				if(dir[0] != '\0')
+					path = dir;
+				break;
+			}
+			else if(m_btnMgr.selected(explorerBtnCancel))
+				break;
+			//if "..." is selected and path is not empty then go up(back) one folder
+			else if((m_btnMgr.selected(entries_sel[0]) || m_btnMgr.selected(entries_sel[8])) && dir[0] != '\0')
+			{
+				//remove last folder or device+partition
 				if(strchr(dir, '/') != NULL)
 				{
 					*strrchr(dir, '/') = '\0';
 					if(strchr(dir, '/') != NULL)
 						*(strrchr(dir, '/')+1) = '\0';
 				}
+				if(folderExplorer)
+				{
+					//set folderName to display current selected folder
+					folderName = dir;
+					//if dir is just device and : then foldername empty
+					if(folderName.find_last_of("/") == string::npos)
+						folderName = "";
+					else
+					{
+						if(folderName.find_first_of("/") != folderName.find_last_of("/"))
+						{
+							folderName = folderName.erase(folderName.find_last_of("/"));
+							while(folderName.length() > 32)
+							{
+								if(folderName.find_first_of("/") == string::npos)
+									break;
+								folderName = folderName.erase(0, folderName.find_first_of("/")+1);
+							}
+							if(folderName.find_first_of(":") == string::npos)
+								folderName = "/"+folderName;
+							folderName = folderName+"/";
+						}
+					}
+				}
+				//if we removed device then clear path completely
 				if(strchr(dir, '/') == NULL)
 				{
 					memset(dir, 0, MAX_FAT_PATH);
@@ -98,20 +175,38 @@ void CMenu::_Explorer(void)
 				}
 				_refreshExplorer();
 			}
-			for(u8 i = 1; i < 8; ++i)
+			for(u8 i = 1; i < (8 - offset); ++i)
 			{
-				if(m_btnMgr.selected(entries_sel[i]))
+				if(m_btnMgr.selected(entries_sel[i + offset]))
 				{
+					//if path is empty add device+partition#:/ to start path
 					if(dir[0] == '\0')
 					{
 						explorer_partition = i-1;
-						if(DeviceHandle.IsInserted(i-1))
+						{
 							strcpy(dir, fmt("%s:/", DeviceName[i-1]));
+							folderName = dir;
+						}
 						_refreshExplorer();
 					}
+					//if it's a folder add folder+/ to path
 					else if(!fsop_FileExist(fmt("%s%s", dir, entries_char[i-1])))
 					{
 						strcat(dir, entries_char[i-1]);
+						if(folderExplorer)
+						{
+							folderName = dir;
+							while(folderName.length() > 32)
+							{
+								//this if won't happen the first time
+								if(folderName.find_first_of("/") == string::npos)
+									break;
+								folderName = folderName.erase(0, folderName.find_first_of("/")+1);
+							}
+							if(folderName.find_first_of(":") == string::npos)
+								folderName = "/"+folderName;
+							folderName = folderName+"/";
+						}
 						/* otherwise it fails */
 						strcat(dir, "/");
 						_refreshExplorer();
@@ -165,191 +260,100 @@ void CMenu::_initExplorer()
 {
 	memset(dir, 0, MAX_FAT_PATH);
 	TexData blank_btn;
+	TexData texPrev;
+	TexData texPrevS;
+	TexData texNext;
+	TexData texNextS;
 	TexHandle.fromPNG(blank_btn, blank_png);
-
+	TexHandle.fromPNG(texPrev, btnprev_png);
+	TexHandle.fromPNG(texPrevS, btnprevs_png);
+	TexHandle.fromPNG(texNext, btnnext_png);
+	TexHandle.fromPNG(texNextS, btnnexts_png);
+	
 	m_explorerBg = _texture("EXPLORER/BG", "texture", theme.bg, false);
+	_addUserLabels(explorerLblUser, ARRAY_SIZE(explorerLblUser), "EXPLORER");
+	explorerLblSelFolder = _addLabel("EXPLORER/SELECTED_FOLDER", theme.lblFont, L"", 30, 50, 560, 40, theme.lblFontColor, FTGX_JUSTIFY_LEFT);
+	explorerBtnSave = _addButton("EXPLORER/SAVE_BTN", theme.btnFont, L"", 520, 344, 100, 40, theme.btnFontColor);
+	explorerBtnCancel = _addButton("EXPLORER/CANCEL_BTN", theme.btnFont, L"", 520, 400, 100, 40, theme.btnFontColor);
+	explorerBtnNext = _addPicButton("EXPLORER/NEXT_BTN", texNext, texNextS, 540, 146, 60, 60);
+	explorerBtnPrev = _addPicButton("EXPLORER/PREV_BTN", texPrev, texPrevS, 20, 146, 60, 60);
+	
+	_setHideAnim(explorerLblSelFolder, "EXPLORER/SELECTED_FOLDER", 0, 0, -2.f, 0.f);
+	_setHideAnim(explorerBtnSave, "EXPLORER/SAVE_BTN", 0, 0, -2.f, 0.f);
+	_setHideAnim(explorerBtnCancel, "EXPLORER/CANCEL_BTN", 0, 0, -2.f, 0.f);
+	_setHideAnim(explorerBtnNext, "EXPLORER/NEXT_BTN", 0, 0, 0.f, 0.f);
+	_setHideAnim(explorerBtnPrev, "EXPLORER/PREV_BTN", 0, 0, 0.f, 0.f);
+	
 	for(u8 i = 0; i < 8; ++i)
 	{
-		entries[i] = _addLabel(fmt("EXPLORER/ENTRY_%i", i), theme.lblFont, L"", 120, 50+(i*50), 480, 40, theme.lblFontColor, FTGX_JUSTIFY_LEFT);
-		entries_sel[i] = _addPicButton(fmt("EXPLORER/ENTRY_%i_BTN", i), blank_btn, blank_btn, 120, 50+(i*50), 380, 45);
+		entries_sel[i] = _addPicButton(fmt("EXPLORER/ENTRY_%i_BTN", i), blank_btn, blank_btn, 100, 50+(i*50), 380, 45);
+		entries[i] = _addLabel(fmt("EXPLORER/ENTRY_%i", i), theme.lblFont, L"", 100, 50+(i*50), 480, 40, theme.lblFontColor, FTGX_JUSTIFY_LEFT);
 		_setHideAnim(entries[i], fmt("EXPLORER/ENTRY_%i", i), 0, 0, 1.f, 0.f);
 		_setHideAnim(entries_sel[i], fmt("EXPLORER/ENTRY_%i_BTN", i), 0, 0, 1.f, 0.f);
 	}
+	entries_sel[8] = _addPicButton("EXPLORER/ENTRY_8_BTN", blank_btn, blank_btn, 100, 100, 380, 45);
+	entries[8] = _addLabel("EXPLORER/ENTRY_8", theme.lblFont, L"", 100, 100, 480, 40, theme.lblFontColor, FTGX_JUSTIFY_LEFT);
+	_setHideAnim(entries[8], "EXPLORER/ENTRY_8", 0, 0, 1.f, 0.f);
+	_setHideAnim(entries_sel[8], "EXPLORER/ENTRY_8_BTN", 0, 0, 1.f, 0.f);
+	
 	_hideExplorer(true);
 	_textExplorer();
 }
 
 void CMenu::_textExplorer(void)
 {
-	m_btnMgr.setText(entries[0], L". . .");
-	for(u8 i = 1; i < 8; ++i)
-		m_btnMgr.setText(entries[i], L" ");
+	m_btnMgr.setText(explorerBtnSave, _t("cfgne34", L"Save"));
+	m_btnMgr.setText(explorerBtnCancel, _t("cfgne35", L"Cancel"));
 }
 
 u32 cur_pos = 0;
 void CMenu::_refreshExplorer(s8 direction)
 {
-	_textExplorer();
-	if(direction == 0)
-		cur_pos = 0;
-
-	if(dir[0] == '\0')
+	for(u8 i = 0; i < 9; ++i)
 	{
-		for(u8 i = 1; i < 8; ++i)
-		{
-			if(DeviceHandle.IsInserted(i-1))
-				m_btnMgr.setText(entries[i], wfmt(L"%s:/", DeviceName[i-1]));
-		}
-	}
-	else
-	{
-		dirent *pent = NULL;
-		DIR *pdir = NULL;
-		u8 limit = 1;
-		u32 itr = 0;
-		if(direction == -1)
-			cur_pos = cur_pos > 14 ? cur_pos - 14 : 0;
-		pdir = opendir(dir);
-		while((pent = readdir(pdir)) != NULL && limit < 8)
-		{
-			if(pent->d_name[0] == '.')
-				continue;
-			if(pent->d_type == DT_DIR)
-			{
-				if(itr < cur_pos)
-				{
-					itr++;
-					continue;
-				}
-				strcpy(entries_char[limit-1], pent->d_name);
-				m_btnMgr.setText(entries[limit], wfmt(L"/%.32s", pent->d_name));
-				cur_pos++;
-				itr++;
-				limit++;
-			}
-			else if(pent->d_type == DT_REG)
-			{
-				if(itr < cur_pos)
-				{
-					itr++;
-					continue;
-				}
-				strcpy(entries_char[limit-1], pent->d_name);
-				m_btnMgr.setText(entries[limit], wfmt(L"%.32s", pent->d_name));
-				cur_pos++;
-				itr++;
-				limit++;
-			}
-		}
-		closedir(pdir);
-	}
-}
-
-s16 m_folderExplorerLblSelFolder;
-s16 m_folderExplorerBtnSave;
-s16 m_folderExplorerBtnCancel;
-s16 m_folderExplorerLblUser[4];
-
-TexData m_folderExplorerBg;
-string folderName="";
-
-void CMenu::_initFolderExplorer()
-{
-	m_folderExplorerBg = _texture("FEXPLORER/BG", "texture", theme.bg, false);
-	_addUserLabels(m_folderExplorerLblUser, ARRAY_SIZE(m_folderExplorerLblUser), "FEXPLORER");
-	m_folderExplorerLblSelFolder = _addLabel("FEXPLORER/SELECTED_FOLDER", theme.lblFont, L"", 30, 50, 560, 40, theme.lblFontColor, FTGX_JUSTIFY_LEFT);
-	m_folderExplorerBtnSave = _addButton("FEXPLORER/SAVE_BTN", theme.btnFont, L"Save", 520, 40, 100, 40, theme.btnFontColor);
-	m_folderExplorerBtnCancel = _addButton("FEXPLORER/CANCEL_BTN", theme.btnFont, L"Cancel", 520, 90, 100, 40, theme.btnFontColor);
-	
-	_setHideAnim(m_folderExplorerLblSelFolder, "FEXPLORER/SELECTED_FOLDER", 0, 0, -2.f, 0.f);
-	_setHideAnim(m_folderExplorerBtnSave, "FEXPLORER/SAVE_BTN", 0, 0, -2.f, 0.f);
-	_setHideAnim(m_folderExplorerBtnCancel, "FEXPLORER/CANCEL_BTN", 0, 0, -2.f, 0.f);
-	
-	_hideFolderExplorer(true);
-	_textFolderExplorer();
-}
-
-void CMenu::_hideFolderExplorer(bool instant)
-{
-	for(u8 i = 0; i < 8; ++i)
-	{
-		m_btnMgr.hide(entries[i], instant);
-		m_btnMgr.hide(entries_sel[i], instant);
-	}
-
-	m_btnMgr.hide(m_mainBtnNext, instant);
-	m_btnMgr.hide(m_mainBtnPrev, instant);
-	m_btnMgr.hide(m_folderExplorerLblSelFolder, instant);
-	m_btnMgr.hide(m_folderExplorerBtnSave, instant);
-	m_btnMgr.hide(m_folderExplorerBtnCancel, instant);
-	for(u8 i = 0; i < ARRAY_SIZE(m_folderExplorerLblUser); ++i)
-	{
-		if(m_folderExplorerLblUser[i] != -1)
-			m_btnMgr.hide(m_folderExplorerLblUser[i], instant);
-	}
-}
-
-void CMenu::_showFolderExplorer(void)
-{
-	_setBg(m_folderExplorerBg, m_folderExplorerBg);
-	for(u8 i = 0; i < ARRAY_SIZE(m_folderExplorerLblUser); ++i)
-	{
-		if(m_folderExplorerLblUser[i] != -1)
-			m_btnMgr.show(m_folderExplorerLblUser[i]);
-	}
-	for(u8 i = 1; i < 8; ++i)
-	{
-		m_btnMgr.show(entries[i]);
-		m_btnMgr.show(entries_sel[i]);
-	}
-
-	m_btnMgr.show(m_mainBtnNext);
-	m_btnMgr.show(m_mainBtnPrev);
-	m_btnMgr.show(m_folderExplorerLblSelFolder);
-	m_btnMgr.show(m_folderExplorerBtnSave);
-	m_btnMgr.show(m_folderExplorerBtnCancel);
-}
-
-void CMenu::_textFolderExplorer(void)
-{
-	m_btnMgr.setText(m_folderExplorerBtnSave, _t("cfgne34", L"Save"));
-	m_btnMgr.setText(m_folderExplorerBtnCancel, _t("cfgne35", L"Cancel"));
-	for(u8 i = 0; i < 8; ++i)
+		m_btnMgr.hide(entries[i], true);
+		m_btnMgr.hide(entries_sel[i], true);
 		m_btnMgr.setText(entries[i], L" ");
-	m_btnMgr.setText(entries[1], L". . .");
-	m_btnMgr.setText(m_folderExplorerLblSelFolder, wfmt(_fmt("cfgne36",L"Dir = %.32s"), folderName.c_str()));
-}
-
-void CMenu::_refreshFolderExplorer(s8 direction)
-{
-	_textFolderExplorer();
+	}
+	m_btnMgr.setText(entries[0 + offset * 8], L". . .");
+	if(folderExplorer)
+		m_btnMgr.setText(explorerLblSelFolder, wfmt(_fmt("cfgne36",L"Path = %.32s"), folderName.c_str()), true);
+	
 	if(direction == 0)
 		cur_pos = 0;
 
-	//if path is empty show device+partitions and not folders
+	//if path is empty show device+partitions only
 	if(dir[0] == '\0')
 	{
-		for(u8 i = 1; i < 8; ++i)
+		for(u8 i = 1; i < (8 - offset); ++i)
 		{
+			u8 j = i + offset;
 			if(DeviceHandle.IsInserted(i-1))
-				m_btnMgr.setText(entries[i+1], wfmt(L"%s:/", DeviceName[i-1]));
+			{
+				m_btnMgr.setText(entries[j], wfmt(L"%s:/", DeviceName[i-1]));
+				m_btnMgr.show(entries[j]);
+				m_btnMgr.show(entries_sel[j]);
+			}
 		}
 	}
-	//else show folders
+	//else show folders and files
 	else
 	{
+		m_btnMgr.show(entries[0 + offset * 8]);
+		m_btnMgr.show(entries_sel[0 +offset * 8]);
 		dirent *pent = NULL;
 		DIR *pdir = NULL;
 		u8 limit = 1;
 		u32 itr = 0;
 		if(direction == -1)
-			cur_pos = cur_pos > 12 ? cur_pos - 12 : 0;
+			cur_pos = cur_pos > (14 - offset * 2) ? cur_pos - (14 - offset * 2) : 0;
 		pdir = opendir(dir);
-		while((pent = readdir(pdir)) != NULL && limit < 7)
+		while((pent = readdir(pdir)) != NULL && limit < (8 - offset))
 		{
+			u8 j  = limit + offset;
 			if(pent->d_name[0] == '.')
 				continue;
-			if(pent->d_type == DT_DIR)
+			if(pent->d_type == DT_DIR)//folder
 			{
 				if(itr < cur_pos)
 				{
@@ -357,7 +361,24 @@ void CMenu::_refreshFolderExplorer(s8 direction)
 					continue;
 				}
 				strcpy(entries_char[limit-1], pent->d_name);
-				m_btnMgr.setText(entries[limit+1], wfmt(L"/%.32s", pent->d_name));
+				m_btnMgr.setText(entries[j], wfmt(L"/%.32s", pent->d_name));
+				m_btnMgr.show(entries[j]);
+				m_btnMgr.show(entries_sel[j]);
+				cur_pos++;
+				itr++;
+				limit++;
+			}
+			else if(pent->d_type == DT_REG && !folderExplorer)//file
+			{
+				if(itr < cur_pos)
+				{
+					itr++;
+					continue;
+				}
+				strcpy(entries_char[limit-1], pent->d_name);
+				m_btnMgr.setText(entries[j], wfmt(L"%.32s", pent->d_name));
+				m_btnMgr.show(entries[j]);
+				m_btnMgr.show(entries_sel[j]);
 				cur_pos++;
 				itr++;
 				limit++;
@@ -369,120 +390,9 @@ void CMenu::_refreshFolderExplorer(s8 direction)
 
 string CMenu::_FolderExplorer(void)
 {
-	string path = "";
-	_showFolderExplorer();
-	_refreshFolderExplorer();
-	while(!m_exit)
-	{
-		_mainLoopCommon();
-		if(BTN_HOME_PRESSED || BTN_B_PRESSED)
-			break;
-		else if(BTN_PLUS_PRESSED)
-		{
-			_refreshFolderExplorer(1);
-		}
-		else if(BTN_MINUS_PRESSED)
-		{
-			_refreshFolderExplorer(-1);
-		}
-		else if(BTN_A_PRESSED)
-		{
-			if(m_btnMgr.selected(m_mainBtnNext))
-			{
-				_refreshFolderExplorer(1);
-			}
-			else if(m_btnMgr.selected(m_mainBtnPrev))
-			{
-				_refreshFolderExplorer(-1);
-			}
-			else if(m_btnMgr.selected(m_folderExplorerBtnSave))
-			{
-				//only when save is clicked do we set path to dir
-				if(dir[0] != '\0')
-					path = dir;
-				break;
-			}
-			else if(m_btnMgr.selected(m_folderExplorerBtnCancel))
-			{
-				break;
-			}
-			//if "..." is selected and path is not empty then go up(back) one folder
-			else if(m_btnMgr.selected(entries_sel[1]) && dir[0] != '\0')
-			{
-				//remove last folder or device+partition
-				if(strchr(dir, '/') != NULL)
-				{
-					*strrchr(dir, '/') = '\0';
-					if(strchr(dir, '/') != NULL)
-						*(strrchr(dir, '/')+1) = '\0';
-				}
-				//set folderName to display current selected folder
-				folderName = dir;
-				//if it's just device and : then foldername empty
-				if(folderName.find_last_of("/") == string::npos)
-					folderName = "";
-				else
-				{
-					if(folderName.find_first_of("/") != folderName.find_last_of("/"))
-					{
-						folderName = folderName.erase(folderName.find_last_of("/"));
-						while(folderName.length() > 32)
-						{
-							if(folderName.find_first_of("/") == string::npos)
-								break;
-							folderName = folderName.erase(0, folderName.find_first_of("/")+1);
-						}
-						if(folderName.find_first_of(":") == string::npos)
-							folderName = "/"+folderName;
-						folderName = folderName+"/";
-					}
-				}
-				//if we removed device then clear path completely
-				if(strchr(dir, '/') == NULL)
-				{
-					memset(dir, 0, MAX_FAT_PATH);
-					for(u8 i = 1; i < 7; ++i)
-						memset(entries_char, 0, NAME_MAX+1);
-				}
-				_refreshFolderExplorer();
-			}
-			for(u8 i = 2; i < 8; ++i)
-			{
-				if(m_btnMgr.selected(entries_sel[i]))
-				{
-					//if path is empty add device+partition#:/ to start path
-					if(dir[0] == '\0')
-					{
-						explorer_partition = i-2;
-						if(DeviceHandle.IsInserted(i-2))
-						{
-							strcpy(dir, fmt("%s:/", DeviceName[i-2]));
-							folderName = dir;
-						}
-						_refreshFolderExplorer();
-					}
-					//if it's a folder add folder+/ to path
-					else if(!fsop_FileExist(fmt("%s%s", dir, entries_char[i-2])))
-					{
-						strcat(dir, entries_char[i-2]);
-						folderName = dir;
-						while(folderName.length() > 32)
-						{
-							//this if won't happen the first time
-							if(folderName.find_first_of("/") == string::npos)
-								break;
-							folderName = folderName.erase(0, folderName.find_first_of("/")+1);
-						}
-						if(folderName.find_first_of(":") == string::npos)
-							folderName = "/"+folderName;
-						folderName = folderName+"/";
-						strcat(dir, "/");
-						_refreshFolderExplorer();
-					}
-				}
-			}
-		}
-	}
-	_hideFolderExplorer();
+	folderExplorer = true;
+	path = "";
+	_Explorer();
+	folderExplorer = false;
 	return path;
 }

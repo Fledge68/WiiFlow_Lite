@@ -490,8 +490,10 @@ void CButtonsMgr::setText(s16 id, const wstringEx &text, bool unwrap)
 			case GUIELT_LABEL:
 				lbl = (SLabel*)m_elts[id];
 				lbl->text.setText(lbl->font, text);
-				if (unwrap) lbl->text.setFrame(100000, lbl->textStyle, true, true);
-				lbl->text.setFrame(lbl->w, lbl->textStyle, false, !unwrap);
+				if (unwrap) 
+					lbl->text.setFrame(100000, lbl->textStyle, true, true);
+				else
+					lbl->text.setFrame(lbl->w, lbl->textStyle, false, !unwrap);
 				break;
 			case GUIELT_PROGRESS:
 				break;
@@ -516,8 +518,10 @@ void CButtonsMgr::setText(s16 id, const wstringEx &text, u32 startline,bool unwr
 			case GUIELT_LABEL:
 				lbl = (SLabel*)m_elts[id];
 				lbl->text.setText(lbl->font, text, startline);
-				if (unwrap) lbl->text.setFrame(100000, lbl->textStyle, true, true);
-				lbl->text.setFrame(lbl->w, lbl->textStyle, false, !unwrap);
+				if (unwrap) 
+					lbl->text.setFrame(100000, lbl->textStyle, true, true);
+				else
+					lbl->text.setFrame(lbl->w, lbl->textStyle, false, !unwrap);
 				break;
 			case GUIELT_PROGRESS:
 				break;
