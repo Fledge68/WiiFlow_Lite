@@ -39,6 +39,8 @@ struct _hdr {
 	u32 footer_len;
 } ATTRIBUTE_PACKED hdr;
 
+TexData m_wadBg;
+
 void skip_align(FILE *f, u32 size)
 {
 	size_t align_missing = (ALIGN(64, size) - size);
@@ -237,6 +239,7 @@ s16 m_wadLblDialog;
 
 void CMenu::_showWad()
 {
+	_setBg(m_wadBg, m_wadBg);
 	m_btnMgr.show(m_wadBtnInstall);
 	m_btnMgr.show(m_wadLblTitle);
 	m_btnMgr.show(m_wadLblDialog);
@@ -307,9 +310,9 @@ void CMenu::_Wad(const char *wad_path)
 	m_btnMgr.hide(m_wbfsLblMessage);
 }
 
-
 void CMenu::_initWad()
 {
+	m_wadBg = _texture("WAD/BG", "texture", theme.bg, false);
 	m_wadLblTitle = _addTitle("WAD/TITLE", theme.titleFont, L"", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 	m_wadLblDialog = _addLabel("WAD/DIALOG", theme.lblFont, L"", 40, 90, 560, 200, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_wadBtnInstall = _addButton("WAD/INSTALL_BTN", theme.btnFont, L"", 420, 400, 200, 56, theme.btnFontColor);
