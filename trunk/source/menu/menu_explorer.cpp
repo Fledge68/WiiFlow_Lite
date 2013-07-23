@@ -91,6 +91,7 @@ void CMenu::_showExplorer(void)
 		if(explorerLblUser[1] != -1)
 			m_btnMgr.show(explorerLblUser[1]);
 	}
+	_refreshExplorer();
 }
 
 void CMenu::_Explorer(void)
@@ -99,7 +100,6 @@ void CMenu::_Explorer(void)
 	if(folderExplorer)
 		offset = 1;
 	_showExplorer();
-	_refreshExplorer();
 	while(!m_exit)
 	{
 		_mainLoopCommon();
