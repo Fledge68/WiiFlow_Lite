@@ -232,7 +232,7 @@ bool CMenu::_Source()
 	{
 		_mainLoopCommon();
 		bool imgSelected = false;
-		if(BTN_HOME_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_sourceBtnBack)) || (BTN_B_PRESSED && !WPadIR_ANY()))
+		if(BTN_HOME_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_sourceBtnBack)) || (BTN_B_PRESSED)) //&& !WPadIR_ANY()))
 		{
 			u8 sourceCount = 0;
 			if(m_cfg.getBool(WII_DOMAIN, "source", false))
@@ -253,21 +253,21 @@ bool CMenu::_Source()
 			m_btnMgr.up();
 		else if(BTN_DOWN_PRESSED)
 			m_btnMgr.down();
-		else if(((BTN_MINUS_PRESSED || BTN_LEFT_PRESSED) && pages > 1) || (BTN_A_PRESSED && m_btnMgr.selected(m_sourceBtnPageM)))
+		else if((BTN_LEFT_PRESSED && pages > 1) || (BTN_A_PRESSED && m_btnMgr.selected(m_sourceBtnPageM)))
 		{
 			Source_curPage--;
 			if(Source_curPage < 1)
 				Source_curPage = pages;
-			if(BTN_LEFT_PRESSED || BTN_MINUS_PRESSED)
+			if(BTN_LEFT_PRESSED)
 				m_btnMgr.click(m_sourceBtnPageM);
 			_updateSourceBtns();
 		}
-		else if(((BTN_PLUS_PRESSED || BTN_RIGHT_PRESSED) && pages > 1) || (BTN_A_PRESSED && m_btnMgr.selected(m_sourceBtnPageP)))
+		else if((BTN_RIGHT_PRESSED && pages > 1) || (BTN_A_PRESSED && m_btnMgr.selected(m_sourceBtnPageP)))
 		{
 			Source_curPage++;
 			if(Source_curPage > pages)
 				Source_curPage = 1;
-			if (BTN_RIGHT_PRESSED || BTN_PLUS_PRESSED)
+			if (BTN_RIGHT_PRESSED)
 				m_btnMgr.click(m_sourceBtnPageP);
 			_updateSourceBtns();
 		}
@@ -452,7 +452,7 @@ bool CMenu::_Source()
 				break;
 			}
 		}
-		else if(BTN_B_PRESSED)
+		else if(BTN_PLUS_PRESSED)
 		{
 			u8 j = (Source_curPage - 1) * 12;
 			for(int i = 0; i < 12; ++i)
