@@ -40,6 +40,8 @@ struct _hdr {
 } ATTRIBUTE_PACKED hdr;
 
 TexData m_wadBg;
+bool mios = false;
+char ISFS_Path[ISFS_MAXPATH];
 
 void skip_align(FILE *f, u32 size)
 {
@@ -49,18 +51,26 @@ void skip_align(FILE *f, u32 size)
 	fseek(f, align_missing, SEEK_CUR);
 }
 
+int isfs_WriteFile(const char *app_name, const void *content, u32 size)
+{
+	memset(&ISFS_Path, 0, ISFS_MAXPATH);
+	strcpy(ISFS_Path, app_name);
+	ISFS_Delete(ISFS_Path);
+	ISFS_CreateFile(ISFS_Path, 0, 3, 3, 3);
+	s32 fd = ISFS_Open(ISFS_Path, ISFS_OPEN_WRITE);
+	if(fd < 0)
+		return fd;
+	s32 ret = ISFS_Write(fd, content, size);
+	ISFS_Close(fd);
+	gprintf("Writing %s returned %i\n", ISFS_Path, ret);
+	return ret;
+}
+
 int installWad(const char *path)
 {
 	gprintf("Installing %s\n", path);
-	const char *EmuNAND = NandHandle.GetPath();
-
-	if(!fsop_FileExist(path))
-		return -1;
-
 	u32 size = 0;
 	fsop_GetFileSizeBytes(path, &size);
-	if(size < sizeof(hdr))
-		return -2;
 
 	FILE *wad_file = fopen(path, "rb");
 	fread(&hdr, sizeof(hdr), 1, wad_file);
@@ -92,69 +102,64 @@ int installWad(const char *path)
 
 	const tmd *tmd_ptr = (const tmd*)SIGNATURE_PAYLOAD(tmd_buf);
 	u64 tid = tmd_ptr->title_id;
-
-	/* ONLY allow wii channels for now */
-	if((u32)(tid>>32) != 0x00010001)
+	const char *EmuNAND = NULL;
+	if(mios == false)
 	{
-		gprintf("No Wii Channel!\n");
-		free(tmd_buf);
-		free(tik_buf);
-		return -4;
-	}
-	u32 uid_size = 0;
-	u8 *uid_buf = fsop_ReadFile(fmt("%s/sys/uid.sys", EmuNAND), &uid_size);
-	if(uid_buf == NULL)
-	{
-		gprintf("No uid.sys found!\n");
-		free(tmd_buf);
-		free(tik_buf);
-		return -5;
-	}
-	else if(uid_size % 0xC != 0)
-	{
-		gprintf("uid.sys size is invalid!\n");
-		free(tmd_buf);
-		free(tik_buf);
-		free(uid_buf);
-		return -6;
-	}
+		EmuNAND = NandHandle.GetPath();
+		u32 uid_size = 0;
+		u8 *uid_buf = fsop_ReadFile(fmt("%s/sys/uid.sys", EmuNAND), &uid_size);
+		if(uid_buf == NULL)
+		{
+			gprintf("No uid.sys found!\n");
+			free(tmd_buf);
+			free(tik_buf);
+			return -5;
+		}
+		else if(uid_size % 0xC != 0)
+		{
+			gprintf("uid.sys size is invalid!\n");
+			free(tmd_buf);
+			free(tik_buf);
+			free(uid_buf);
+			return -6;
+		}
 
-	bool chan_exist = false;
-	uid *uid_file = (uid*)uid_buf;
-	u32 chans = uid_size/sizeof(uid);
-	for(u32 i = 0; i < chans; ++i)
-	{
-		if(uid_file[i].TitleID == tid)
-			chan_exist = true;
+		bool chan_exist = false;
+		uid *uid_file = (uid*)uid_buf;
+		u32 chans = uid_size/sizeof(uid);
+		for(u32 i = 0; i < chans; ++i)
+		{
+			if(uid_file[i].TitleID == tid)
+				chan_exist = true;
+		}
+		if(chan_exist == false)
+		{
+			gprintf("Updating uid.sys\n");
+			u32 new_uid_size = (chans+1)*sizeof(uid);
+			u8 *new_uid_buf = (u8*)MEM2_alloc(new_uid_size);
+			memset(new_uid_buf, 0, new_uid_size);
+			/* copy over old uid */
+			memcpy(new_uid_buf, uid_buf, chans*sizeof(uid));
+			uid *new_uid_file = (uid*)new_uid_buf;
+			new_uid_file[chans].TitleID = tid;
+			new_uid_file[chans].uid = 0x1000+chans;
+			fsop_WriteFile(fmt("%s/sys/uid.sys", EmuNAND), new_uid_file, new_uid_size);
+		}
+		/* clear old tik */
+		fsop_deleteFile(fmt("%s/ticket/%08x/%08x.tik", EmuNAND, (u32)(tid>>32), (u32)tid&0xFFFFFFFF));
+		/* clear old content */
+		fsop_deleteFolder(fmt("%s/title/%08x/%08x/content", EmuNAND, (u32)(tid>>32), (u32)tid&0xFFFFFFFF));
+
+		/* (re)create folder structure */
+		fsop_MakeFolder(fmt("%s/ticket", EmuNAND));
+		fsop_MakeFolder(fmt("%s/ticket/%08x", EmuNAND, (u32)(tid>>32)));
+
+		fsop_MakeFolder(fmt("%s/title", EmuNAND));
+		fsop_MakeFolder(fmt("%s/title/%08x", EmuNAND, (u32)(tid>>32)));
+		fsop_MakeFolder(fmt("%s/title/%08x/%08x", EmuNAND, (u32)(tid>>32), (u32)tid&0xFFFFFFFF));
+		fsop_MakeFolder(fmt("%s/title/%08x/%08x/content", EmuNAND, (u32)(tid>>32), (u32)tid&0xFFFFFFFF));
+		fsop_MakeFolder(fmt("%s/title/%08x/%08x/data", EmuNAND, (u32)(tid>>32), (u32)tid&0xFFFFFFFF));
 	}
-	if(chan_exist == false)
-	{
-		gprintf("Updating uid.sys\n");
-		u32 new_uid_size = (chans+1)*sizeof(uid);
-		u8 *new_uid_buf = (u8*)MEM2_alloc(new_uid_size);
-		memset(new_uid_buf, 0, new_uid_size);
-		/* copy over old uid */
-		memcpy(new_uid_buf, uid_buf, chans*sizeof(uid));
-		uid *new_uid_file = (uid*)new_uid_buf;
-		new_uid_file[chans].TitleID = tid;
-		new_uid_file[chans].uid = 0x1000+chans;
-		fsop_WriteFile(fmt("%s/sys/uid.sys", EmuNAND), new_uid_file, new_uid_size);
-	}
-	/* clear old tik */
-	fsop_deleteFile(fmt("%s/ticket/%08x/%08x.tik", EmuNAND, (u32)(tid>>32), (u32)tid&0xFFFFFFFF));
-	/* clear old content */
-	fsop_deleteFolder(fmt("%s/title/%08x/%08x/content", EmuNAND, (u32)(tid>>32), (u32)tid&0xFFFFFFFF));
-
-	/* (re)create folder structure */
-	fsop_MakeFolder(fmt("%s/ticket", EmuNAND));
-	fsop_MakeFolder(fmt("%s/ticket/%08x", EmuNAND, (u32)(tid>>32)));
-
-	fsop_MakeFolder(fmt("%s/title", EmuNAND));
-	fsop_MakeFolder(fmt("%s/title/%08x", EmuNAND, (u32)(tid>>32)));
-	fsop_MakeFolder(fmt("%s/title/%08x/%08x", EmuNAND, (u32)(tid>>32), (u32)tid&0xFFFFFFFF));
-	fsop_MakeFolder(fmt("%s/title/%08x/%08x/content", EmuNAND, (u32)(tid>>32), (u32)tid&0xFFFFFFFF));
-	fsop_MakeFolder(fmt("%s/title/%08x/%08x/data", EmuNAND, (u32)(tid>>32), (u32)tid&0xFFFFFFFF));
-
 	int hash_errors = 0;
 
 	/* decrypt and write app files */
@@ -166,10 +171,28 @@ int installWad(const char *path)
 		memset(iv, 0, 16);
 		memcpy(iv, &content_index, 2);
 		/* longass filename */
-		const char *app_name = fmt("%s/title/%08x/%08x/content/%08x.app", EmuNAND,
-			(u32)(tid>>32), (u32)tid&0xFFFFFFFF, content->cid);
-		FILE *app_file = fopen(app_name, "wb");
-
+		FILE *app_file = NULL;
+		s32 fd = -1;
+		if(mios == false)
+		{
+			const char *app_name = fmt("%s/title/%08x/%08x/content/%08x.app", EmuNAND,
+				(u32)(tid>>32), (u32)tid&0xFFFFFFFF, content->cid);
+			app_file = fopen(app_name, "wb");
+			gprintf("Writing Emu NAND File %s\n", app_name);
+		}
+		else
+		{
+			/* delete then create file */
+			memset(&ISFS_Path, 0, ISFS_MAXPATH);
+			const char *app_name = fmt("/title/%08x/%08x/content/%08x.app",
+				(u32)(tid>>32), (u32)tid&0xFFFFFFFF, content->cid);
+			strcpy(ISFS_Path, app_name);
+			ISFS_Delete(ISFS_Path);
+			ISFS_CreateFile(ISFS_Path, 0, 3, 3, 3);
+			fd = ISFS_Open(ISFS_Path, ISFS_OPEN_WRITE);
+			if(fd >= 0)
+				gprintf("Writing Real NAND File %s\n", ISFS_Path);
+		}
 		u64 read = 0;
 		u8 *encBuf = (u8*)MEM2_alloc(WAD_BUF);
 		u8 *decBuf = (u8*)MEM2_alloc(WAD_BUF);
@@ -205,15 +228,21 @@ int installWad(const char *path)
 			if(size_dec > WAD_BUF)
 				size_dec = WAD_BUF;
 			SHA1Update(&ctx, decBuf, size_dec);
-			fwrite(decBuf, size_dec, 1, app_file);
+			if(mios == false)
+				fwrite(decBuf, size_dec, 1, app_file);
+			else if(fd >= 0)
+				ISFS_Write(fd, decBuf, size_dec);
 			/* dont forget to increase the read size */
 			read += size_enc;
 		}
 		sha1 app_sha1;
 		SHA1Final(app_sha1, &ctx);
 		skip_align(wad_file, size_enc_full);
-		gprintf("Wrote %s\n", app_name);
-		fclose(app_file);
+
+		if(mios == false)
+			fclose(app_file);
+		else if(fd >= 0)
+			ISFS_Close(fd);
 
 		if(memcmp(app_sha1, content->hash, sizeof(sha1)) == 0)
 			gprintf("sha1 matches on %08x.app, success!\n", content->cid);
@@ -223,10 +252,16 @@ int installWad(const char *path)
 			hash_errors++;
 		}
 	}
-
-	fsop_WriteFile(fmt("%s/ticket/%08x/%08x.tik", EmuNAND, (u32)(tid>>32), (u32)tid&0xFFFFFFFF), tik_buf, hdr.tik_len);
-	fsop_WriteFile(fmt("%s/title/%08x/%08x/content/title.tmd", EmuNAND, (u32)(tid>>32), (u32)tid&0xFFFFFFFF), tmd_buf, hdr.tmd_len);
-
+	if(mios == false)
+	{
+		fsop_WriteFile(fmt("%s/ticket/%08x/%08x.tik", EmuNAND, (u32)(tid>>32), (u32)tid&0xFFFFFFFF), tik_buf, hdr.tik_len);
+		fsop_WriteFile(fmt("%s/title/%08x/%08x/content/title.tmd", EmuNAND, (u32)(tid>>32), (u32)tid&0xFFFFFFFF), tmd_buf, hdr.tmd_len);
+	}
+	else
+	{
+		isfs_WriteFile(fmt("/ticket/%08x/%08x.tik", (u32)(tid>>32), (u32)tid&0xFFFFFFFF), tik_buf, hdr.tik_len);
+		isfs_WriteFile(fmt("/title/%08x/%08x/content/title.tmd", (u32)(tid>>32), (u32)tid&0xFFFFFFFF), tmd_buf, hdr.tmd_len);
+	}
 	free(tik_buf);
 	free(tmd_buf);
 
@@ -244,10 +279,13 @@ void CMenu::_showWad()
 	m_btnMgr.show(m_wadLblTitle);
 	m_btnMgr.show(m_wadLblDialog);
 	/* partition selection */
-	m_btnMgr.show(m_configLblPartitionName);
-	m_btnMgr.show(m_configLblPartition);
-	m_btnMgr.show(m_configBtnPartitionP);
-	m_btnMgr.show(m_configBtnPartitionM);
+	if(mios == false)
+	{
+		m_btnMgr.show(m_configLblPartitionName);
+		m_btnMgr.show(m_configLblPartition);
+		m_btnMgr.show(m_configBtnPartitionP);
+		m_btnMgr.show(m_configBtnPartitionM);
+	}
 }
 
 void CMenu::_hideWad(bool instant)
@@ -256,16 +294,71 @@ void CMenu::_hideWad(bool instant)
 	m_btnMgr.hide(m_wadLblTitle, instant);
 	m_btnMgr.hide(m_wadLblDialog, instant);
 	/* partition selection */
-	m_btnMgr.hide(m_configLblPartitionName);
-	m_btnMgr.hide(m_configLblPartition);
-	m_btnMgr.hide(m_configBtnPartitionP);
-	m_btnMgr.hide(m_configBtnPartitionM);
+	if(mios == false)
+	{
+		m_btnMgr.hide(m_configLblPartitionName);
+		m_btnMgr.hide(m_configLblPartition);
+		m_btnMgr.hide(m_configBtnPartitionP);
+		m_btnMgr.hide(m_configBtnPartitionM);
+	}
+}
+
+int getTID(const char *path, u64 *tid)
+{
+	if(!fsop_FileExist(path))
+		return -1;
+
+	u32 size = 0;
+	fsop_GetFileSizeBytes(path, &size);
+	if(size < sizeof(hdr))
+		return -2;
+
+	FILE *wad_file = fopen(path, "rb");
+	fread(&hdr, sizeof(hdr), 1, wad_file);
+
+	/* skip to tmd */
+	skip_align(wad_file, sizeof(hdr));
+	fseek(wad_file, ALIGN(64, hdr.certs_len), SEEK_CUR);
+	fseek(wad_file, ALIGN(64, hdr.crl_len), SEEK_CUR);
+	fseek(wad_file, ALIGN(64, hdr.tik_len), SEEK_CUR);
+
+	/* read tmd and close wad */
+	signed_blob *tmd_buf = (signed_blob*)MEM2_alloc(hdr.tmd_len);
+	fread(tmd_buf, hdr.tmd_len, 1, wad_file);
+	fclose(wad_file);
+
+	/* get its tid, return and free mem */
+	const tmd *tmd_ptr = (const tmd*)SIGNATURE_PAYLOAD(tmd_buf);
+	(*tid) = tmd_ptr->title_id;
+	free(tmd_buf);
+
+	return 0;
 }
 
 void CMenu::_Wad(const char *wad_path)
 {
 	if(wad_path == NULL)
 		return;
+
+	/* precheck */
+	mios = false;
+	u64 tid;
+	if(getTID(wad_path, &tid) < 0)
+		return;
+	if((u32)(tid>>32) != 0x00010001)
+	{
+		if(tid == 0x0000000100000101ull)
+		{
+			gprintf("MIOS Detected\n");
+			mios = true;
+		}
+		else
+		{
+			gprintf("No Wii Channel!\n");
+			return;
+		}
+	}
+
 	u8 part = currentPartition;
 	m_btnMgr.setText(m_wadLblDialog, wfmt(_fmt("wad3", L"Selected %s, after the installation you return to the explorer."), (strrchr(wad_path, '/')+1)));
 	m_btnMgr.setText(m_configLblPartition, upperCase(DeviceName[currentPartition]));
@@ -286,9 +379,12 @@ void CMenu::_Wad(const char *wad_path)
 				/* who cares about making a thread, just refresh a second */
 				for(u8 i = 0; i < 60; ++i)
 					_mainLoopCommon();
-				/* setup emu nand paths */
-				const char *emu_char = m_cfg.getString(CHANNEL_DOMAIN, "path", "/").c_str();
-				NandHandle.SetPaths(emu_char, DeviceName[currentPartition]);
+				/* mios is real nand, chans are emu */
+				if(mios == false)
+				{
+					const char *emu_char = m_cfg.getString(CHANNEL_DOMAIN, "path", "/").c_str();
+					NandHandle.SetPaths(emu_char, DeviceName[currentPartition]);
+				}
 				int result = installWad(wad_path);
 				if(result < 0)
 					m_btnMgr.setText(m_wbfsLblMessage, wfmt(_fmt("wad5", L"Installation error %i!"), result));
