@@ -53,6 +53,8 @@ public:
 	u8 enabledPluginPos;
 	u8 enabledPluginsCount;
 	char PluginMagicWord[9];
+	u8 m_catStartPage;
+	bool m_clearCats;
 private:
 	struct SZone
 	{
@@ -943,6 +945,7 @@ private:
 	void _showCoverBanner(void);
 	void _showExplorer(void);
 	void _showWad(void);
+	void _clearSources(void);
 	void _updateSourceBtns(void);
 	void _updatePluginText(void);
 	void _updatePluginCheckboxes(void);

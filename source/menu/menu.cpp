@@ -125,6 +125,8 @@ CMenu::CMenu()
 	m_use_wifi_gecko = false;
 	init_network = false;
 	m_use_source = true;
+	m_clearCats = true;
+	m_catStartPage = 1;
 }
 
 void CMenu::init()
