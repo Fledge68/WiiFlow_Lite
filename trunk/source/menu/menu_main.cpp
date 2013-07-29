@@ -185,8 +185,12 @@ void CMenu::LoadView(void)
 	CoverFlow.clear();
 	if(!m_vid.showingWaitMessage())
 		_showWaitMessage();
-	m_cat.remove("GENERAL", "selected_categories");
-	m_cat.remove("GENERAL", "required_categories");
+	if(m_clearCats)
+	{
+		m_cat.remove("GENERAL", "selected_categories");
+		m_cat.remove("GENERAL", "required_categories");
+	}
+	m_clearCats = true;
 	m_favorites = false;
 	if (m_cfg.getBool("GENERAL", "save_favorites_mode", false))
 		m_favorites = m_cfg.getBool(_domainFromView(), "favorites", false);
@@ -309,7 +313,7 @@ int CMenu::main(void)
 		}
 		if(dpad_mode && (BTN_UP_PRESSED || BTN_DOWN_PRESSED || BTN_LEFT_PRESSED || BTN_RIGHT_PRESSED) && (m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML) || m_btnMgr.selected(m_mainBtnHomebrew) || m_btnMgr.selected(m_mainBtnEmu)))
 		{
-			u32 lastView = m_current_view;
+			u8 lastView = m_current_view;
 			if(BTN_UP_PRESSED) 
 				m_current_view = COVERFLOW_USB;
 			else if(BTN_DOWN_PRESSED && (m_show_dml ||m_devo_installed))
@@ -342,6 +346,7 @@ int CMenu::main(void)
 				default:
 					m_cfg.setBool(PLUGIN_DOMAIN, "source", true);
 			}
+			m_catStartPage = 1;
 			LoadView();
 			continue;
 		}
@@ -403,6 +408,7 @@ int CMenu::main(void)
 					default:
 						m_cfg.setBool(PLUGIN_DOMAIN, "source", true);
 				}
+				m_catStartPage = 1;
 				LoadView();
 			}
 			else if(m_btnMgr.selected(m_mainBtnInit))
