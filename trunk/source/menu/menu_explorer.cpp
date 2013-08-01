@@ -16,6 +16,7 @@
  ****************************************************************************/
 #include <dirent.h>
 #include <unistd.h>
+#include <algorithm>
 #include "menu.hpp"
 #include "channel/nand.hpp"
 #include "defines.h"
@@ -27,8 +28,8 @@ extern const u8 btnprev_png[];
 extern const u8 btnprevs_png[];
 
 TexData m_explorerBg;
-s16 entries[8];
-s16 entries_sel[8];
+s16 entries[7];
+s16 entries_sel[7];
 s16 explorerLblSelFolder;
 s16 explorerBtnSave;
 s16 explorerBtnCancel;
@@ -43,6 +44,8 @@ u8 explorer_partition = 0;
 bool folderExplorer = false;
 string folderPath = "";
 string path = "";
+vector<string> folderList;
+vector<string> fileList;
 
 void CMenu::_hideExplorer(bool instant)
 {
@@ -283,6 +286,7 @@ void CMenu::_textExplorer(void)
 }
 
 u32 cur_pos = 0;
+u32 last_pos = 0;
 void CMenu::_refreshExplorer(s8 direction)
 {
 	for(u8 i = 0; i < 7; ++i)
@@ -295,7 +299,10 @@ void CMenu::_refreshExplorer(s8 direction)
 	m_btnMgr.setText(explorerLblSelFolder, wfmt(_fmt("cfgne36",L"Path = %.32s"), folderPath.c_str()), true);
 	
 	if(direction == 0)
+	{
 		cur_pos = 0;
+		last_pos = 0;
+	}
 
 	//if path is empty show device+partitions only
 	if(dir[0] == '\0')
@@ -315,50 +322,67 @@ void CMenu::_refreshExplorer(s8 direction)
 	{
 		m_btnMgr.show(entries[0]);
 		m_btnMgr.show(entries_sel[0]);
+		
+		if(direction == -1)
+			cur_pos = last_pos > 5 ? (last_pos - 6) : 0;
+		
+		folderList.clear();
+		fileList.clear();
+			
 		dirent *pent = NULL;
 		DIR *pdir = NULL;
-		u8 limit = 1;
-		u32 itr = 0;
-		if(direction == -1)
-			cur_pos = cur_pos > 12 ? cur_pos - 12 : 0;
 		pdir = opendir(dir);
-		while((pent = readdir(pdir)) != NULL && limit < 7)
+		while((pent = readdir(pdir)) != NULL)
 		{
 			if(pent->d_name[0] == '.')
 				continue;
-			if(pent->d_type == DT_DIR)//folder
-			{
-				if(itr < cur_pos)
-				{
-					itr++;
-					continue;
-				}
-				strcpy(entries_char[limit-1], pent->d_name);
-				m_btnMgr.setText(entries[limit], wfmt(L"/%.32s", pent->d_name));
-				m_btnMgr.show(entries[limit]);
-				m_btnMgr.show(entries_sel[limit]);
-				cur_pos++;
-				itr++;
-				limit++;
-			}
-			else if(pent->d_type == DT_REG && !folderExplorer)//file
-			{
-				if(itr < cur_pos)
-				{
-					itr++;
-					continue;
-				}
-				strcpy(entries_char[limit-1], pent->d_name);
-				m_btnMgr.setText(entries[limit], wfmt(L"%.32s", pent->d_name));
-				m_btnMgr.show(entries[limit]);
-				m_btnMgr.show(entries_sel[limit]);
-				cur_pos++;
-				itr++;
-				limit++;
-			}
+			if(pent->d_type == DT_DIR)
+				folderList.push_back(string(pent->d_name));
+			else
+				fileList.push_back(string(pent->d_name));
 		}
 		closedir(pdir);
+		sort(folderList.begin(), folderList.end(), _sortEntries);
+		sort(fileList.begin(), fileList.end(), _sortEntries);
+		u32 folderListSize = folderList.size();
+		if(!folderExplorer)
+		{
+			for(u32 i = 0; i < fileList.size(); ++i)
+				folderList.push_back(fileList[i]);
+		}
+		u8 ent_pos = 0;
+		if(cur_pos >= folderList.size())
+			cur_pos = last_pos;
+		last_pos = cur_pos;
+		for (u32 i = cur_pos; i < folderList.size(); ++i)
+		{
+			strcpy(entries_char[ent_pos], folderList[i].c_str());
+			if(cur_pos < folderListSize)
+				m_btnMgr.setText(entries[ent_pos+1], wfmt(L"/%.32s", folderList[i].c_str()));
+			else
+				m_btnMgr.setText(entries[ent_pos+1], wfmt(L"%.32s", folderList[i].c_str()));
+			m_btnMgr.show(entries[ent_pos+1]);
+			m_btnMgr.show(entries_sel[ent_pos+1]);
+			cur_pos++;
+			ent_pos++;
+			if(ent_pos == 6)
+				break;
+		}
 	}
+}
+
+bool CMenu::_sortEntries (string first, string second)
+{
+  u32 i=0;
+  while ((i < first.length()) && (i < second.length()))
+  {
+    if (tolower (first[i]) < tolower (second[i])) return true;
+    else if (tolower (first[i]) > tolower (second[i])) return false;
+    i++;
+  }
+
+  if (first.length() < second.length()) return true;
+  else return false;
 }
 
 string CMenu::_FolderExplorer(void)
