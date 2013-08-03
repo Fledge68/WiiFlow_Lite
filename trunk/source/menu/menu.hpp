@@ -882,7 +882,6 @@ private:
 	//
 	void _refreshBoot();
 	void _refreshExplorer(s8 direction = 0);
-	static bool _sortEntries(string first, string second);
 	//
 	void _hideCheatSettings(bool instant = false);
 	void _hideError(bool instant = false);
