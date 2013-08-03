@@ -457,3 +457,17 @@ bool wchar_cmp(const wchar_t *first, const wchar_t *second, u32 first_len, u32 s
 	}
 	return first_len < second_len;
 }
+
+bool char_cmp(const char *first, const char *second, u32 first_len, u32 second_len)
+{
+	u32 i = 0;
+	while((i < first_len) && (i < second_len))
+	{
+		if(tolower(first[i]) < tolower(second[i]))
+			return true;
+		else if(tolower(first[i]) > tolower(second[i]))
+			return false;
+		++i;
+	}
+	return first_len < second_len;
+}
