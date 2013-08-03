@@ -22,20 +22,17 @@
 #include "defines.h"
 
 extern const u8 blank_png[];
-extern const u8 btnnext_png[];
-extern const u8 btnnexts_png[];
-extern const u8 btnprev_png[];
-extern const u8 btnprevs_png[];
 
 TexData m_explorerBg;
 s16 entries[7];
 s16 entries_sel[7];
-s16 explorerLblSelFolder;
-s16 explorerBtnSave;
-s16 explorerBtnCancel;
-s16 explorerBtnPrev;
-s16 explorerBtnNext;
-s16 explorerLblUser[4];
+s16 m_explorerLblSelFolder;
+s16 m_explorerBtnSet;
+s16 m_explorerBtnBack;
+s16 m_explorerLblPage;
+s16 m_explorerBtnPageM;
+s16 m_explorerBtnPageP;
+s16 m_explorerLblUser[4];
 
 u32 dirs = 0;
 u32 files = 0;
@@ -60,18 +57,16 @@ void CMenu::_hideExplorer(bool instant)
 		m_btnMgr.hide(entries_sel[i], instant);
 	}
 	
-	m_btnMgr.hide(explorerBtnNext, instant);
-	m_btnMgr.hide(explorerBtnPrev, instant);
-	m_btnMgr.hide(explorerLblSelFolder, instant);
-	if(folderExplorer)
+	m_btnMgr.hide(m_explorerLblSelFolder, instant);
+	m_btnMgr.hide(m_explorerLblPage, instant);
+	m_btnMgr.hide(m_explorerBtnPageM, instant);
+	m_btnMgr.hide(m_explorerBtnPageP, instant);
+	m_btnMgr.hide(m_explorerBtnSet, instant);
+	m_btnMgr.hide(m_explorerBtnBack, instant);
+	for(u8 i = 0; i < ARRAY_SIZE(m_explorerLblUser); ++i)
 	{
-		m_btnMgr.hide(explorerBtnSave, instant);
-		m_btnMgr.hide(explorerBtnCancel, instant);
-	}
-	for(u8 i = 0; i < ARRAY_SIZE(explorerLblUser); ++i)
-	{
-		if(explorerLblUser[i] != -1)
-			m_btnMgr.hide(explorerLblUser[i], instant);
+		if(m_explorerLblUser[i] != -1)
+			m_btnMgr.hide(m_explorerLblUser[i], instant);
 	}
 	if(elements != NULL)
 		free(elements);
@@ -83,18 +78,15 @@ void CMenu::_showExplorer(void)
 {
 	_setBg(m_explorerBg, m_explorerBg);
 
-	m_btnMgr.show(explorerBtnNext);
-	m_btnMgr.show(explorerBtnPrev);
-	m_btnMgr.show(explorerLblSelFolder);
+	m_btnMgr.show(m_explorerLblSelFolder);
+	m_btnMgr.show(m_explorerBtnBack);
 	if(folderExplorer)
+		m_btnMgr.show(m_explorerBtnSet);
+		
+	for(u8 i = 0; i < ARRAY_SIZE(m_explorerLblUser); ++i)
 	{
-		m_btnMgr.show(explorerBtnSave);
-		m_btnMgr.show(explorerBtnCancel);
-	}
-	for(u8 i = 0; i < ARRAY_SIZE(explorerLblUser); ++i)
-	{
-		if(explorerLblUser[i] != -1)
-			m_btnMgr.show(explorerLblUser[i]);
+		if(m_explorerLblUser[i] != -1)
+			m_btnMgr.show(m_explorerLblUser[i]);
 	}
 	_refreshExplorer();
 }
@@ -118,22 +110,22 @@ void CMenu::_Explorer(void)
 		}
 		else if(BTN_A_PRESSED)
 		{
-			if(m_btnMgr.selected(explorerBtnNext))
+			if(m_btnMgr.selected(m_explorerBtnPageP))
 			{
 				_refreshExplorer(1);
 			}
-			else if(m_btnMgr.selected(explorerBtnPrev))
+			else if(m_btnMgr.selected(m_explorerBtnPageM))
 			{
 				_refreshExplorer(-1);
 			}
-			else if(m_btnMgr.selected(explorerBtnSave))
+			else if(m_btnMgr.selected(m_explorerBtnSet))
 			{
-				//only when save is clicked do we set path to dir
+				//only when set is clicked do we set path to dir
 				if(dir[0] != '\0')
 					path = dir;
 				break;
 			}
-			else if(m_btnMgr.selected(explorerBtnCancel))
+			else if(m_btnMgr.selected(m_explorerBtnBack))
 				break;
 			//if "..." is selected and path is not empty then go up(back) one folder
 			else if(m_btnMgr.selected(entries_sel[0]) && dir[0] != '\0')
@@ -187,7 +179,7 @@ void CMenu::_Explorer(void)
 					{
 						strcat(dir, elements[start_pos+(i-1)].name);
 						folderPath = dir;
-						while(folderPath.length() > 32)
+						while(folderPath.length() > 48)
 						{
 							//this if won't happen the first time
 							if(folderPath.find_first_of("/") == string::npos)
@@ -251,34 +243,28 @@ void CMenu::_initExplorer()
 {
 	memset(dir, 0, MAX_FAT_PATH);
 	TexData blank_btn;
-	TexData texPrev;
-	TexData texPrevS;
-	TexData texNext;
-	TexData texNextS;
 	TexHandle.fromPNG(blank_btn, blank_png);
-	TexHandle.fromPNG(texPrev, btnprev_png);
-	TexHandle.fromPNG(texPrevS, btnprevs_png);
-	TexHandle.fromPNG(texNext, btnnext_png);
-	TexHandle.fromPNG(texNextS, btnnexts_png);
 	
 	m_explorerBg = _texture("EXPLORER/BG", "texture", theme.bg, false);
-	_addUserLabels(explorerLblUser, ARRAY_SIZE(explorerLblUser), "EXPLORER");
-	explorerLblSelFolder = _addLabel("EXPLORER/SELECTED_FOLDER", theme.lblFont, L"", 30, 50, 560, 40, theme.lblFontColor, FTGX_JUSTIFY_LEFT);
-	explorerBtnSave = _addButton("EXPLORER/SAVE_BTN", theme.btnFont, L"", 520, 344, 100, 40, theme.btnFontColor);
-	explorerBtnCancel = _addButton("EXPLORER/CANCEL_BTN", theme.btnFont, L"", 520, 400, 100, 40, theme.btnFontColor);
-	explorerBtnNext = _addPicButton("EXPLORER/NEXT_BTN", texNext, texNextS, 540, 146, 60, 60);
-	explorerBtnPrev = _addPicButton("EXPLORER/PREV_BTN", texPrev, texPrevS, 20, 146, 60, 60);
-	
-	_setHideAnim(explorerLblSelFolder, "EXPLORER/SELECTED_FOLDER", 0, 0, -2.f, 0.f);
-	_setHideAnim(explorerBtnSave, "EXPLORER/SAVE_BTN", 0, 0, -2.f, 0.f);
-	_setHideAnim(explorerBtnCancel, "EXPLORER/CANCEL_BTN", 0, 0, -2.f, 0.f);
-	_setHideAnim(explorerBtnNext, "EXPLORER/NEXT_BTN", 0, 0, 0.f, 0.f);
-	_setHideAnim(explorerBtnPrev, "EXPLORER/PREV_BTN", 0, 0, 0.f, 0.f);
+	_addUserLabels(m_explorerLblUser, ARRAY_SIZE(m_explorerLblUser), "EXPLORER");
+	m_explorerLblSelFolder = _addText("EXPLORER/SELECTED_FOLDER", theme.txtFont, L"", 30, 30, 560, 40, theme.txtFontColor, FTGX_JUSTIFY_LEFT);
+	m_explorerBtnSet = _addButton("EXPLORER/SET_BTN", theme.btnFont, L"", 255, 400, 150, 56, theme.btnFontColor);
+	m_explorerBtnBack = _addButton("EXPLORER/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 56, theme.btnFontColor);
+	m_explorerBtnPageM = _addPicButton("EXPLORER/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 20, 400, 56, 56);
+	m_explorerLblPage = _addLabel("EXPLORER/PAGE_BTN", theme.btnFont, L"", 76, 400, 100, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_explorerBtnPageP = _addPicButton("EXPLORER/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 176, 400, 56, 56);
+		
+	_setHideAnim(m_explorerLblSelFolder, "EXPLORER/SELECTED_FOLDER", 0, 0, -2.f, 0.f);
+	_setHideAnim(m_explorerBtnSet, "EXPLORER/SET_BTN", 0, 0, -2.f, 0.f);
+	_setHideAnim(m_explorerBtnBack, "EXPLORER/BACK_BTN", 0, 0, -2.f, 0.f);
+	_setHideAnim(m_explorerLblPage, "EXPLORER/PAGE_BTN", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_explorerBtnPageM, "EXPLORER/PAGE_MINUS", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_explorerBtnPageP, "EXPLORER/PAGE_PLUS", 0, 0, 1.f, -1.f);
 	
 	for(u8 i = 0; i < 7; ++i)
 	{
-		entries_sel[i] = _addPicButton(fmt("EXPLORER/ENTRY_%i_BTN", i), blank_btn, blank_btn, 100, 100+(i*50), 380, 45);
-		entries[i] = _addLabel(fmt("EXPLORER/ENTRY_%i", i), theme.lblFont, L"", 100, 100+(i*50), 480, 40, theme.lblFontColor, FTGX_JUSTIFY_LEFT);
+		entries_sel[i] = _addPicButton(fmt("EXPLORER/ENTRY_%i_BTN", i), blank_btn, blank_btn, 40, 75+(i*45), 380, 45);
+		entries[i] = _addText(fmt("EXPLORER/ENTRY_%i", i), theme.txtFont, L"", 40, 75+(i*45), 480, 40, theme.txtFontColor, FTGX_JUSTIFY_LEFT);
 		_setHideAnim(entries[i], fmt("EXPLORER/ENTRY_%i", i), 0, 0, 1.f, 0.f);
 		_setHideAnim(entries_sel[i], fmt("EXPLORER/ENTRY_%i_BTN", i), 0, 0, 1.f, 0.f);
 	}
@@ -288,8 +274,8 @@ void CMenu::_initExplorer()
 
 void CMenu::_textExplorer(void)
 {
-	m_btnMgr.setText(explorerBtnSave, _t("cfgne34", L"Save"));
-	m_btnMgr.setText(explorerBtnCancel, _t("cfgne35", L"Cancel"));
+	m_btnMgr.setText(m_explorerBtnSet, _t("cfgne34", L"Set"));
+	m_btnMgr.setText(m_explorerBtnBack, _t("cfgne35", L"Back"));
 }
 
 static bool list_element_cmp(list_element a, list_element b)
@@ -308,7 +294,9 @@ void CMenu::_refreshExplorer(s8 direction)
 		m_btnMgr.setText(entries[i], L" ");
 	}
 	m_btnMgr.setText(entries[0], L". . .");
-	m_btnMgr.setText(explorerLblSelFolder, wfmt(_fmt("cfgne36",L"Path = %.32s"), folderPath.c_str()), true);
+	wstringEx path(_t("cfgne36", L"Path ="));
+	path.append(wfmt(L" %.48s", folderPath.c_str()));
+	m_btnMgr.setText(m_explorerLblSelFolder, path, true);
 
 	if(direction == 0)
 		start_pos = 0;
@@ -316,6 +304,9 @@ void CMenu::_refreshExplorer(s8 direction)
 	//if path is empty show device+partitions only
 	if(dir[0] == '\0')
 	{
+		m_btnMgr.hide(m_explorerLblPage, true);
+		m_btnMgr.hide(m_explorerBtnPageM, true);
+		m_btnMgr.hide(m_explorerBtnPageP, true);
 		for(u8 i = 1; i < 7; ++i)
 		{
 			if(DeviceHandle.IsInserted(i-1))
@@ -389,14 +380,27 @@ void CMenu::_refreshExplorer(s8 direction)
 			start_pos = start_pos >= 6 ? start_pos - 6 : (elements_num % 6 ? (elements_num - elements_num % 6) : elements_num - 6);
 		else if(direction == 1)
 			start_pos = start_pos + 6 >= elements_num ? 0 : start_pos + 6;
+		if(elements_num > 0)
+		{
+			m_btnMgr.setText(m_explorerLblPage, wfmt(L"%i / %i", (start_pos/6 + 1), ((elements_num - 1)/6 +1)));
+			m_btnMgr.show(m_explorerLblPage);
+			m_btnMgr.show(m_explorerBtnPageM);
+			m_btnMgr.show(m_explorerBtnPageP);
+		}
+		else
+		{
+			m_btnMgr.hide(m_explorerLblPage, true);
+			m_btnMgr.hide(m_explorerBtnPageM, true);
+			m_btnMgr.hide(m_explorerBtnPageP, true);
+		}
 		for(u8 i = 1; i < 7; i++)
 		{
 			if(start_pos+i > elements_num)
 				break;
 			if(start_pos+i <= dirs)
-				m_btnMgr.setText(entries[i], wfmt(L"/%.32s", elements[start_pos+i-1].name));
+				m_btnMgr.setText(entries[i], wfmt(L"/%.48s", elements[start_pos+i-1].name));
 			else
-				m_btnMgr.setText(entries[i], wfmt(L"%.32s", elements[start_pos+i-1].name));
+				m_btnMgr.setText(entries[i], wfmt(L"%.48s", elements[start_pos+i-1].name));
 			m_btnMgr.show(entries[i]);
 			m_btnMgr.show(entries_sel[i]);
 		}
