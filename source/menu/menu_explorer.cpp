@@ -304,9 +304,7 @@ void CMenu::_refreshExplorer(s8 direction)
 	//if path is empty show device+partitions only
 	if(dir[0] == '\0')
 	{
-		m_btnMgr.hide(m_explorerLblPage, true);
-		m_btnMgr.hide(m_explorerBtnPageM, true);
-		m_btnMgr.hide(m_explorerBtnPageP, true);
+		elements_num = 0;
 		for(u8 i = 1; i < 7; ++i)
 		{
 			if(DeviceHandle.IsInserted(i-1))
@@ -380,19 +378,7 @@ void CMenu::_refreshExplorer(s8 direction)
 			start_pos = start_pos >= 6 ? start_pos - 6 : (elements_num % 6 ? (elements_num - elements_num % 6) : elements_num - 6);
 		else if(direction == 1)
 			start_pos = start_pos + 6 >= elements_num ? 0 : start_pos + 6;
-		if(elements_num > 0)
-		{
-			m_btnMgr.setText(m_explorerLblPage, wfmt(L"%i / %i", (start_pos/6 + 1), ((elements_num - 1)/6 +1)));
-			m_btnMgr.show(m_explorerLblPage);
-			m_btnMgr.show(m_explorerBtnPageM);
-			m_btnMgr.show(m_explorerBtnPageP);
-		}
-		else
-		{
-			m_btnMgr.hide(m_explorerLblPage, true);
-			m_btnMgr.hide(m_explorerBtnPageM, true);
-			m_btnMgr.hide(m_explorerBtnPageP, true);
-		}
+
 		for(u8 i = 1; i < 7; i++)
 		{
 			if(start_pos+i > elements_num)
@@ -405,6 +391,13 @@ void CMenu::_refreshExplorer(s8 direction)
 			m_btnMgr.show(entries_sel[i]);
 		}
 	}
+	if(elements_num > 0)
+		m_btnMgr.setText(m_explorerLblPage, wfmt(L"%i / %i", (start_pos/6 + 1), ((elements_num - 1)/6 +1)));
+	else
+		m_btnMgr.setText(m_explorerLblPage, L"1 / 1");
+	m_btnMgr.show(m_explorerLblPage);
+	m_btnMgr.show(m_explorerBtnPageM);	
+	m_btnMgr.show(m_explorerBtnPageP);
 }
 
 string CMenu::_FolderExplorer(void)
