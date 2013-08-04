@@ -156,6 +156,7 @@ int CMenu::_configAdv(void)
 					m_curLanguage = CMenu::_translations[lang];
 					m_loc.load(fmt("%s/%s.ini", m_languagesDir.c_str(), lowerCase(m_curLanguage).c_str()));
 				}
+				_hideConfigAdv();
 				_updateText();
 				_showConfigAdv();
 			}

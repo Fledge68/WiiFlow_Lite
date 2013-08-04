@@ -2105,21 +2105,30 @@ void CMenu::_drawBg(void)
 
 void CMenu::_updateText(void)
 {
+	_textSource();
+	_textPluginSettings();
+	_textCategorySettings();
+	_textCheatSettings();
+	_textSystem();
 	_textMain();
-	_textError();
 	_textConfig();
 	_textConfig3();
 	_textConfigScreen();
 	_textConfig4();
-	_textConfigSnd();
 	_textConfigAdv();
-	_textDownload();
+	_textConfigSnd();
 	_textGame();
+	_textDownload();
 	_textCode();
 	_textWBFS();
 	_textGameSettings();
-	_textCategorySettings();
-	_textSystem();
+	_textNandEmu();
+	_textHome();
+	_textExitTo();
+	_textBoot();
+	_textCoverBanner();
+	_textExplorer();
+	_textWad();
 }
 
 const wstringEx CMenu::_fmt(const char *key, const wchar_t *def)

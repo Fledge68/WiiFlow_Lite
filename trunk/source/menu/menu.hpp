@@ -858,7 +858,6 @@ private:
 	void _textSystem(void);
 	void _textMain(void);
 	void _textError(void);
-	void _textYesNo(void);
 	void _textConfig(void);
 	void _textConfig3(void);
 	void _textConfigScreen(void);
