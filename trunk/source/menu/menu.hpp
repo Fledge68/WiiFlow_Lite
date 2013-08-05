@@ -990,7 +990,7 @@ private:
 	void _gameSettings(void);
 	void _CoverBanner(void);
 	void _Explorer(void);
-	string _FolderExplorer(void);
+	const char *_FolderExplorer(void);
 	void _Wad(const char *wad_path = NULL);
 	void _CheatSettings();
 	bool _Source();

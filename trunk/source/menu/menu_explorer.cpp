@@ -44,10 +44,10 @@ list_element *elements = NULL;
 u32 elements_num = 0;
 char file[MAX_FAT_PATH];
 char dir[MAX_FAT_PATH];
+char folderPath[MAX_FAT_PATH];
+char tmpPath[MAX_FAT_PATH];
 u8 explorer_partition = 0;
 bool folderExplorer = false;
-string folderPath = "";
-string path = "";
 
 void CMenu::_hideExplorer(bool instant)
 {
@@ -120,9 +120,8 @@ void CMenu::_Explorer(void)
 			}
 			else if(m_btnMgr.selected(m_explorerBtnSet))
 			{
-				//only when set is clicked do we set path to dir
-				if(dir[0] != '\0')
-					path = dir;
+				//only when set is clicked do we set folderPath to dir
+					strcpy(folderPath, dir);
 				break;
 			}
 			else if(m_btnMgr.selected(m_explorerBtnBack))
@@ -137,29 +136,31 @@ void CMenu::_Explorer(void)
 					if(strchr(dir, '/') != NULL)
 						*(strrchr(dir, '/')+1) = '\0';
 				}
-				folderPath = dir;
-				//if dir is just device and : then folderpath empty
-				if(folderPath.find_last_of("/") == string::npos)
-					folderPath = "";
-				else
-				{
-					if(folderPath.find_first_of("/") != folderPath.find_last_of("/"))
-					{
-						folderPath = folderPath.erase(folderPath.find_last_of("/"));
-						while(folderPath.length() > 32)
-						{
-							if(folderPath.find_first_of("/") == string::npos)
-								break;
-							folderPath = folderPath.erase(0, folderPath.find_first_of("/")+1);
-						}
-						if(folderPath.find_first_of(":") == string::npos)
-							folderPath = "/"+folderPath;
-						folderPath = folderPath+"/";
-					}
-				}
-				//if we removed device then clear path completely
+				strcpy(folderPath, dir);
+				//if dir is just device and : then clear path completely
 				if(strchr(dir, '/') == NULL)
+				{
 					memset(dir, 0, MAX_FAT_PATH);
+					memset(folderPath, 0, MAX_FAT_PATH);
+				}
+				else if(strchr(folderPath, '/') != strrchr(folderPath, '/'))
+				{
+					*strrchr(folderPath, '/') = '\0';
+					while(strlen(folderPath) > 48)
+					{
+						if(strchr(folderPath, '/') == strrchr(folderPath, '/'))
+							break;
+						memset(tmpPath, 0, MAX_FAT_PATH);
+						strncpy(tmpPath, strchr(folderPath, '/') + 1, MAX_FAT_PATH - 1);
+						strcpy(folderPath, tmpPath);
+					}
+					memset(tmpPath, 0, MAX_FAT_PATH);
+					if(strchr(folderPath, ':') == NULL)
+						strcpy(tmpPath, "/");
+					strcat(tmpPath, folderPath);
+					strcat(tmpPath, "/");
+					strcpy(folderPath, tmpPath);
+				}
 				_refreshExplorer();
 			}
 			for(u8 i = 1; i < 7; ++i)
@@ -171,26 +172,29 @@ void CMenu::_Explorer(void)
 					{
 						explorer_partition = i-1;
 						strcpy(dir, fmt("%s:/", DeviceName[i-1]));
-						folderPath = dir;
+						strcpy(folderPath, dir);
 						_refreshExplorer();
 					}
 					//if it's a folder add folder+/ to path
 					else if(!fsop_FileExist(fmt("%s%s", dir, elements[start_pos+(i-1)].name)))
 					{
 						strcat(dir, elements[start_pos+(i-1)].name);
-						folderPath = dir;
-						while(folderPath.length() > 48)
-						{
-							//this if won't happen the first time
-							if(folderPath.find_first_of("/") == string::npos)
-								break;
-							folderPath = folderPath.erase(0, folderPath.find_first_of("/")+1);
-						}
-						if(folderPath.find_first_of(":") == string::npos)
-							folderPath = "/"+folderPath;
-						folderPath = folderPath+"/";
-						/* otherwise it fails */
+						strcpy(folderPath, dir);
 						strcat(dir, "/");
+						while(strlen(folderPath) > 48)
+						{
+							if(strchr(folderPath, '/') == strrchr(folderPath, '/'))
+								break;
+							memset(tmpPath, 0, MAX_FAT_PATH);
+							strncpy(tmpPath, strchr(folderPath, '/') + 1, MAX_FAT_PATH - 1);
+							strcpy(folderPath, tmpPath);
+						}
+						memset(tmpPath, 0, MAX_FAT_PATH);
+						if(strchr(folderPath, ':') == NULL)
+							strcpy(tmpPath, "/");
+						strcat(tmpPath, folderPath);
+						strcat(tmpPath, "/");
+						strcpy(folderPath, tmpPath);
 						_refreshExplorer();
 					}
 					else
@@ -295,7 +299,7 @@ void CMenu::_refreshExplorer(s8 direction)
 	}
 	m_btnMgr.setText(entries[0], L". . .");
 	wstringEx path(_t("cfgne36", L"Path ="));
-	path.append(wfmt(L" %.48s", folderPath.c_str()));
+	path.append(wfmt(L" %.48s", folderPath));
 	m_btnMgr.setText(m_explorerLblSelFolder, path, true);
 
 	if(direction == 0)
@@ -400,11 +404,11 @@ void CMenu::_refreshExplorer(s8 direction)
 	m_btnMgr.show(m_explorerBtnPageP);
 }
 
-string CMenu::_FolderExplorer(void)
+const char *CMenu::_FolderExplorer(void)
 {
 	folderExplorer = true;
-	path = "";
+	//path = "";
 	_Explorer();
 	folderExplorer = false;
-	return path;
+	return folderPath;
 }
