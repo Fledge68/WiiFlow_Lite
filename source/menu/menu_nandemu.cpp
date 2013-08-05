@@ -374,18 +374,19 @@ int CMenu::_NandEmuCfg(void)
 		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnNandFolder)))
 		{
 			_hideNandEmu(true);
-			path = _FolderExplorer();
-			if(!path.empty())
+			const char *path = _FolderExplorer();
+			if(strlen(path) > 0)
 			{
-				if(path.find("sd:/") != string::npos)
+				if(strncmp(path, "sd:/", 4) == 0)
 					m_cfg.setInt(CHANNEL_DOMAIN, "partition", 0);
 				else
 				{
 					const char *partval = &path[3];
 					m_cfg.setInt(CHANNEL_DOMAIN, "partition", atoi(partval));
 				}
-				path = path.erase(0,path.find_first_of("/"));
-				m_cfg.setString(CHANNEL_DOMAIN, "path", path);
+				char tmpPath[MAX_FAT_PATH];
+				strncpy(tmpPath, strchr(path, '/'), MAX_FAT_PATH-1);
+				m_cfg.setString(CHANNEL_DOMAIN, "path", tmpPath);
 				m_cfg.setBool(CHANNEL_DOMAIN, "update_cache", true);
 			}
 			_showNandEmu();
@@ -393,18 +394,19 @@ int CMenu::_NandEmuCfg(void)
 		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnNandSavesFolder)))
 		{
 			_hideNandEmu(true);
-			path = _FolderExplorer();
-			if(!path.empty())
+			const char *path = _FolderExplorer();
+			if(strlen(path) > 0)
 			{
-				if(path.find("sd:/") != string::npos)
+				if(strncmp(path, "sd:/", 4) == 0)
 					m_cfg.setInt(WII_DOMAIN, "savepartition", 0);
 				else
 				{
 					const char *partval = &path[3];
 					m_cfg.setInt(WII_DOMAIN, "savepartition", atoi(partval));
 				}
-				path = path.erase(0,path.find_first_of("/"));
-				m_cfg.setString(WII_DOMAIN, "savepath", path);
+				char tmpPath[MAX_FAT_PATH];
+				strncpy(tmpPath, strchr(path, '/'), MAX_FAT_PATH-1);
+				m_cfg.setString(WII_DOMAIN, "savepath", tmpPath);
 			}
 			_showNandEmu();
 		}
