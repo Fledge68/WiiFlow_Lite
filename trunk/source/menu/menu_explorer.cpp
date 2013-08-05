@@ -228,6 +228,24 @@ void CMenu::_Explorer(void)
 							}
 							_showExplorer();
 						}
+						else if(strcasestr(file, ".dol") != NULL || strcasestr(file, ".elf") != NULL)
+						{
+							_hideExplorer();
+							_launchHomebrew(file, m_homebrewArgs);
+							_showExplorer();
+						}
+						else if(strcasestr(file, ".txt") != NULL || strcasestr(file, ".nfo") != NULL
+							|| strcasestr(file, ".ini") != NULL || strcasestr(file, ".conf") != NULL
+							|| strcasestr(file, ".cfg") != NULL || strcasestr(file, ".xml") != NULL)
+						{
+							_hideExplorer();
+							m_txt_view = true;
+							m_txt_path = file;
+							_about(false);
+							m_txt_view = false;
+							m_txt_path = NULL;
+							_showExplorer();
+						}
 						else if(strcasestr(file, ".wad") != NULL)
 						{
 							_hideExplorer();

@@ -81,7 +81,8 @@ void CMenu::_showAbout(void)
 {
 	_setBg(m_aboutBg, m_aboutBg);
 	m_btnMgr.show(m_aboutLblTitle);
-	m_btnMgr.show(m_aboutLblIOS);
+	if(m_txt_view == false)
+		m_btnMgr.show(m_aboutLblIOS);
 	m_btnMgr.show(m_aboutLblInfo,false);
 	for(u8 i = 0; i < ARRAY_SIZE(m_aboutLblUser); ++i)
 	{
@@ -107,7 +108,24 @@ void CMenu::_initAboutMenu()
 
 void CMenu::_textAbout(void)
 {
-	if(showHelp)
+	if(m_txt_view)
+	{
+		wstringEx txt_file_name;
+		txt_file_name.fromUTF8(strrchr(m_txt_path, '/') + 1);
+		m_btnMgr.setText(m_aboutLblTitle, txt_file_name);
+		wstringEx txt_file_content;
+		u32 txt_size = 0;
+		char *txt_mem = (char*)fsop_ReadFile(m_txt_path, &txt_size);
+		if(txt_mem != NULL)
+		{
+			txt_file_content.fromUTF8(txt_mem);
+			m_btnMgr.setText(m_aboutLblInfo, txt_file_content);
+			free(txt_mem);
+		}
+		txt_mem = NULL;
+		return; /* no need for ios checks */
+	}
+	else if(showHelp)
 	{
 		m_btnMgr.setText(m_aboutLblTitle, _t("about10", L"Help Guide"));
 		wstringEx help_text;
