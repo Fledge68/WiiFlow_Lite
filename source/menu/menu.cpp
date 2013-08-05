@@ -127,6 +127,9 @@ CMenu::CMenu()
 	m_use_source = true;
 	m_clearCats = true;
 	m_catStartPage = 1;
+	/* Explorer stuff */
+	m_txt_view = false;
+	m_txt_path = NULL;
 }
 
 void CMenu::init()

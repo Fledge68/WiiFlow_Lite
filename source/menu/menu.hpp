@@ -115,7 +115,11 @@ private:
 	string m_languagesDir;
 	string m_DMLgameDir;
 	string m_helpDir;
-	
+
+	/* Explorer stuff */
+	bool m_txt_view;
+	const char *m_txt_path;
+
 	/* Updates */
 	char m_app_update_drive[6];
 	const char* m_app_update_url;
