@@ -199,7 +199,7 @@ void CMenu::init()
 	_netInit();
 	/* Our Wii game dir */
 	memset(wii_games_dir, 0, 64);
-	strncpy(wii_games_dir, m_cfg.getString("GENERAL", "wii_games_dir", GAMES_DIR).c_str(), 64);
+	strncpy(wii_games_dir, m_cfg.getString(WII_DOMAIN, "wii_games_dir", GAMES_DIR).c_str(), 64);
 	if(strncmp(wii_games_dir, "%s:/", 4) != 0)
 		strcpy(wii_games_dir, GAMES_DIR);
 	gprintf("Wii Games Directory: %s\n", wii_games_dir);
@@ -2221,7 +2221,7 @@ bool CMenu::_loadGameList(void)
 		return false;
 
 	DeviceHandle.OpenWBFS(currentPartition);
-	string gameDir(fmt(GAMES_DIR, DeviceName[currentPartition]));
+	string gameDir(fmt(wii_games_dir, DeviceName[currentPartition]));
 	string cacheDir(fmt("%s/%s_wii.db", m_listCacheDir.c_str(), DeviceName[currentPartition]));
 	bool updateCache = m_cfg.getBool(WII_DOMAIN, "update_cache");
 	m_gameList.CreateList(COVERFLOW_USB, currentPartition, gameDir, stringToVector(".wbfs|.iso", '|'), cacheDir, updateCache);
@@ -2538,7 +2538,23 @@ void CMenu::UpdateCache(u32 view)
 		UpdateCache(COVERFLOW_CHANNEL);
 		return;
 	}
-	m_cfg.setBool(_domainFromView(), "update_cache", true);
+	switch(view)
+	{
+		case COVERFLOW_CHANNEL:
+			m_cfg.setBool(CHANNEL_DOMAIN, "update_cache", true);
+			break;
+		case COVERFLOW_HOMEBREW:
+			m_cfg.setBool(HOMEBREW_DOMAIN, "update_cache", true);
+			break;
+		case COVERFLOW_DML:
+			m_cfg.setBool(GC_DOMAIN, "update_cache", true);
+			break;
+		case COVERFLOW_PLUGIN:
+			m_cfg.setBool(PLUGIN_DOMAIN, "update_cache", true);
+			break;
+		default:
+			m_cfg.setBool(WII_DOMAIN, "update_cache", true);
+	}
 }
 
 int CMenu::MIOSisDML()

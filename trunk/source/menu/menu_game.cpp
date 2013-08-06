@@ -781,7 +781,7 @@ void CMenu::directlaunch(const char *GameID)
 		if(!DeviceHandle.IsInserted(currentPartition))
 			continue;
 		DeviceHandle.OpenWBFS(currentPartition);
-		string gameDir(fmt(GAMES_DIR, DeviceName[currentPartition]));
+		string gameDir(fmt(wii_games_dir, DeviceName[currentPartition]));
 		string cacheDir(fmt("%s/%s_wii.db", m_listCacheDir.c_str(), DeviceName[currentPartition]));
 		m_gameList.CreateList(COVERFLOW_USB, currentPartition, gameDir,
 				stringToVector(".wbfs|.iso", '|'), cacheDir, false);
