@@ -130,6 +130,9 @@ CMenu::CMenu()
 	/* Explorer stuff */
 	m_txt_view = false;
 	m_txt_path = NULL;
+	/* download stuff */
+	m_file = NULL;
+	m_filesize = 0;
 }
 
 void CMenu::init()
@@ -377,46 +380,46 @@ void CMenu::init()
 	m_plugin.init(m_pluginsDir);
 
 	m_devo_installed = DEVO_Installed(m_dataDir.c_str());
-	u8 defaultMenuLanguage = 7; //English
+	const char *defLang = "Default";
 	switch (CONF_GetLanguage())
 	{
 		case CONF_LANG_JAPANESE:
-			defaultMenuLanguage = 14; //Japanese
+			defLang = "japanese";
 			break;
 		case CONF_LANG_GERMAN:
-			defaultMenuLanguage = 11; //German
+			defLang = "german";
 			break;
 		case CONF_LANG_FRENCH:
-			defaultMenuLanguage = 9; //French
+			defLang = "french";
 			break;
 		case CONF_LANG_SPANISH:
-			defaultMenuLanguage = 19; //Spanish
+			defLang = "spanish";
 			break;
 		case CONF_LANG_ITALIAN:
-			defaultMenuLanguage = 13; //Italian
+			defLang = "italian";
 			break;
 		case CONF_LANG_DUTCH:
-			defaultMenuLanguage = 6; //Dutch
+			defLang = "dutch";
 			break;
 		case CONF_LANG_SIMP_CHINESE:
-			defaultMenuLanguage = 3; //Chinese_S
+			defLang = "chinese_s";
 			break;
 		case CONF_LANG_TRAD_CHINESE:
-			defaultMenuLanguage = 4; //Chinese_T
+			defLang = "chinese_t";
 			break;
 		case CONF_LANG_KOREAN:
-			defaultMenuLanguage = 7; // No Korean translation has been done for wiiflow, so the menu will use english in this case.
+			defLang = "korean";
 			break;
 	}
 	if (CONF_GetArea() == CONF_AREA_BRA)
-		defaultMenuLanguage = 2; //Brazilian
+		defLang = "brazilian";
 
-	m_curLanguage = CMenu::_translations[m_cfg.getInt("GENERAL", "language", defaultMenuLanguage)];
-	if (!m_loc.load(fmt("%s/%s.ini", m_languagesDir.c_str(), lowerCase(m_curLanguage).c_str())))
+	m_curLanguage = m_cfg.getString("GENERAL", "language", defLang);
+	if(!m_loc.load(fmt("%s/%s.ini", m_languagesDir.c_str(), m_curLanguage.c_str())))
 	{
-		m_cfg.setInt("GENERAL", "language", 0);
-		m_curLanguage = CMenu::_translations[0];
-		m_loc.load(fmt("%s/%s.ini", m_languagesDir.c_str(), lowerCase(m_curLanguage).c_str()));
+		m_curLanguage = "Default";
+		m_cfg.setString("GENERAL", "language", m_curLanguage.c_str());
+		m_loc.unload();
 	}
 	m_tempView = false;
 
@@ -1142,6 +1145,7 @@ void CMenu::_buildMenus(void)
 	_initCFThemeMenu();
 	_initGameSettingsMenu();
 	_initCheatSettingsMenu(); 
+	_initLangSettingsMenu();
 	_initSourceMenu();
 	_initPluginSettingsMenu();
 	_initCategorySettingsMenu();
@@ -2122,6 +2126,7 @@ void CMenu::_updateText(void)
 	_textCode();
 	_textWBFS();
 	_textGameSettings();
+	_textLangSettings();
 	_textNandEmu();
 	_textHome();
 	_textExitTo();

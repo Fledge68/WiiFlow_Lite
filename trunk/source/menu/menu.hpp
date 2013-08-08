@@ -80,6 +80,7 @@ private:
 	u32 m_base_font_size;
 	u8 *m_wbf1_font;
 	u8 *m_wbf2_font;
+	u8 *m_file;
 	u8 m_aa;
 	bool m_bnr_settings;
 	bool m_directLaunch;
@@ -214,9 +215,7 @@ private:
 	s16 m_configAdvBtnCurThemeM;
 	s16 m_configAdvBtnCurThemeP;
 	s16 m_configAdvLblLanguage;
-	s16 m_configAdvLblCurLanguage;
-	s16 m_configAdvBtnCurLanguageM;
-	s16 m_configAdvBtnCurLanguageP;
+	s16 m_configAdvBtnManageLanguage;
 	s16 m_configAdvLblCFTheme;
 	s16 m_configAdvBtnCFTheme;
 	s16 m_configAdvLblBootChange;
@@ -835,6 +834,7 @@ private:
 	void _initConfig4Menu();
 	void _initConfigSndMenu();
 	void _initConfigScreenMenu();
+	void _initLangSettingsMenu();
 	void _initGameMenu();
 	void _initDownloadMenu();
 	void _initCodeMenu();
@@ -868,6 +868,7 @@ private:
 	void _textConfig4(void);
 	void _textConfigAdv(void);
 	void _textConfigSnd(void);
+	void _textLangSettings(void);
 	void _textGame(void);
 	void _textDownload(void);
 	void _textCode(void);
@@ -885,6 +886,7 @@ private:
 	//
 	void _refreshBoot();
 	void _refreshExplorer(s8 direction = 0);
+	void _refreshLangSettings();
 	//
 	void _hideCheatSettings(bool instant = false);
 	void _hideError(bool instant = false);
@@ -896,6 +898,7 @@ private:
 	void _hideConfig4(bool instant = false);
 	void _hideConfigAdv(bool instant = false);
 	void _hideConfigSnd(bool instant = false);
+	void _hideLangSettings(bool instant = false);
 	void _hideGame(bool instant = false);
 	void _hideDownload(bool instant = false);
 	void _hideSettings(bool instant = false);
@@ -927,6 +930,7 @@ private:
 	void _showConfigAdv(void);
 	void _showConfigSnd(void);
 	void _setPartition(s8 direction = 0);
+	void _showLangSettings(void);
 	void _showGame(void);
 	void _showDownload(void);
 	void _showSettings();
@@ -983,8 +987,10 @@ private:
 	};
 	void _cfNeedsUpdate(void);
 	void _game(bool launch = false);
+	u8 *_downloadUrl(const char *url, u8 **dl_file, u32 *dl_size);
 	void _download(string gameId = string());
 	void _downloadBnr(const char *gameID);
+	bool _LangSettings(void);
 	void _code(void);
 	void _about(bool help = false);
 	bool _wbfsOp(WBFS_OP op);
@@ -1097,10 +1103,11 @@ private:
 	static int _NandFlasher(void *obj);
 	int _FindEmuPart(string &emuPath, bool searchvalid);
 	bool _checkSave(string id, bool nand);
-	bool _TestEmuNand(int epart, const char *path, bool indept);	
+	bool _TestEmuNand(int epart, const char *path, bool indept);
 
 	static u32 _downloadCheatFileAsync(void *obj);
 	static u32 _downloadBannerAsync(void *obj);
+	static u32 _downloadUrlAsync(void *obj);
 
 	void _playGameSound(void);
 	void CheckGameSoundThread(void);
@@ -1109,7 +1116,6 @@ private:
 	static void _load_installed_cioses();
 
 	struct SOption { const char id[10]; const wchar_t text[16]; };
-	static const string _translations[23];
 	static const SOption _languages[11];
 
 	static const SOption _GlobalVideoModes[6];
