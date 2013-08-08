@@ -16,6 +16,8 @@ template <class T> static inline T loopNum(T i, T s)
 	return (i + s) % s;
 }
 
+s16 m_configAdvBtnLanguage;
+
 void CMenu::_hideConfigAdv(bool instant)
 {
 	_hideConfigCommon(instant);
@@ -27,9 +29,7 @@ void CMenu::_hideConfigAdv(bool instant)
 	m_btnMgr.hide(m_configAdvBtnCurThemeM, instant);
 	m_btnMgr.hide(m_configAdvBtnCurThemeP, instant);
 	m_btnMgr.hide(m_configAdvLblLanguage, instant);
-	m_btnMgr.hide(m_configAdvLblCurLanguage, instant);
-	m_btnMgr.hide(m_configAdvBtnCurLanguageM, instant);
-	m_btnMgr.hide(m_configAdvBtnCurLanguageP, instant);
+	m_btnMgr.hide(m_configAdvBtnLanguage, instant);
 	m_btnMgr.hide(m_configAdvLblCFTheme, instant);
 	m_btnMgr.hide(m_configAdvBtnCFTheme, instant);
 	for(u8 i = 0; i < ARRAY_SIZE(m_configAdvLblUser); ++i)
@@ -50,9 +50,7 @@ void CMenu::_showConfigAdv(void)
 		m_btnMgr.show(m_configAdvLblBootChange);
 		m_btnMgr.show(m_configAdvBtnBootChange);
 		m_btnMgr.show(m_configAdvLblLanguage);
-		m_btnMgr.show(m_configAdvLblCurLanguage);
-		m_btnMgr.show(m_configAdvBtnCurLanguageM);
-		m_btnMgr.show(m_configAdvBtnCurLanguageP);
+		m_btnMgr.show(m_configAdvBtnLanguage);
 		m_btnMgr.show(m_configAdvLblCFTheme);
 		m_btnMgr.show(m_configAdvBtnCFTheme);
 	}
@@ -60,7 +58,6 @@ void CMenu::_showConfigAdv(void)
 		if(m_configAdvLblUser[i] != -1)
 			m_btnMgr.show(m_configAdvLblUser[i]);
 
-	m_btnMgr.setText(m_configAdvLblCurLanguage, m_curLanguage);
 	m_btnMgr.setText(m_configAdvLblCurTheme, m_cfg.getString("GENERAL", "theme"));
 }
 
@@ -130,34 +127,10 @@ int CMenu::_configAdv(void)
 				m_cfg.setInt(_domainFromView(), "last_cf_mode", 1);
 				_showConfigAdv();
 			}
-			else if (m_btnMgr.selected(m_configAdvBtnCurLanguageP) || m_btnMgr.selected(m_configAdvBtnCurLanguageM))
+			else if (m_configAdvBtnLanguage)
 			{
-				_cfNeedsUpdate();
-				s8 direction = m_btnMgr.selected(m_configAdvBtnCurLanguageP) ? 1 : -1;
-				int lang = (int)loopNum((u32)m_cfg.getInt("GENERAL", "language", 0) + direction, ARRAY_SIZE(CMenu::_translations));
-				m_curLanguage = CMenu::_translations[lang];
-				if (m_loc.load(fmt("%s/%s.ini", m_languagesDir.c_str(), lowerCase(m_curLanguage).c_str())))
-				{
-					m_cfg.setInt("GENERAL", "language", lang);
-					lang_changed = true;
-				}
-				else
-				{
-					while (lang !=0)
-					{
-						lang = (int)loopNum((u32)lang + direction, ARRAY_SIZE(CMenu::_translations));
-						m_curLanguage = CMenu::_translations[lang];
-						struct stat langs;
-						if (stat(fmt("%s/%s.ini", m_languagesDir.c_str(), lowerCase(m_curLanguage).c_str()), &langs) == 0)
-							break;
-					}
-					m_cfg.setInt("GENERAL", "language", lang);
-					lang_changed = true;
-					m_curLanguage = CMenu::_translations[lang];
-					m_loc.load(fmt("%s/%s.ini", m_languagesDir.c_str(), lowerCase(m_curLanguage).c_str()));
-				}
 				_hideConfigAdv();
-				_updateText();
+				lang_changed = _LangSettings();
 				_showConfigAdv();
 			}
 			else if (m_btnMgr.selected(m_configAdvBtnCFTheme))
@@ -191,9 +164,7 @@ void CMenu::_initConfigAdvMenu()
 	m_configAdvBtnCurThemeM = _addPicButton("CONFIG_ADV/THEME_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 330, 130, 56, 56);
 	m_configAdvBtnCurThemeP = _addPicButton("CONFIG_ADV/THEME_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 130, 56, 56);
 	m_configAdvLblLanguage = _addLabel("CONFIG_ADV/LANGUAGE", theme.lblFont, L"", 40, 190, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_configAdvLblCurLanguage = _addLabel("CONFIG_ADV/LANGUAGE_BTN", theme.btnFont, L"", 386, 190, 158, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_configAdvBtnCurLanguageM = _addPicButton("CONFIG_ADV/LANGUAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 330, 190, 56, 56);
-	m_configAdvBtnCurLanguageP = _addPicButton("CONFIG_ADV/LANGUAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 190, 56, 56);
+	m_configAdvBtnLanguage = _addButton("CONFIG_ADV/LANGUAGE_BTN", theme.btnFont, L"", 330, 190, 270, 56, theme.btnFontColor);
 	m_configAdvLblCFTheme = _addLabel("CONFIG_ADV/CUSTOMIZE_CF", theme.lblFont, L"", 40, 250, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_configAdvBtnCFTheme = _addButton("CONFIG_ADV/CUSTOMIZE_CF_BTN", theme.btnFont, L"", 330, 250, 270, 56, theme.btnFontColor);
 	m_configAdvLblBootChange = _addLabel("CONFIG_ADV/BOOT_CHANGE", theme.lblFont, L"", 40, 310, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
@@ -204,9 +175,7 @@ void CMenu::_initConfigAdvMenu()
 	_setHideAnim(m_configAdvBtnCurThemeM, "CONFIG_ADV/THEME_MINUS", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_configAdvBtnCurThemeP, "CONFIG_ADV/THEME_PLUS", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_configAdvLblLanguage, "CONFIG_ADV/LANGUAGE", 100, 0, -2.f, 0.f);
-	_setHideAnim(m_configAdvLblCurLanguage, "CONFIG_ADV/LANGUAGE_BTN", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_configAdvBtnCurLanguageM, "CONFIG_ADV/LANGUAGE_MINUS", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_configAdvBtnCurLanguageP, "CONFIG_ADV/LANGUAGE_PLUS", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_configAdvBtnLanguage, "CONFIG_ADV/LANGUAGE_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_configAdvLblCFTheme, "CONFIG_ADV/CUSTOMIZE_CF", 100, 0, -2.f, 0.f);
 	_setHideAnim(m_configAdvBtnCFTheme, "CONFIG_ADV/CUSTOMIZE_CF_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_configAdvLblBootChange, "CONFIG_ADV/BOOT_CHANGE", 100, 0, -2.f, 0.f);
@@ -218,7 +187,8 @@ void CMenu::_initConfigAdvMenu()
 void CMenu::_textConfigAdv(void)
 {
 	m_btnMgr.setText(m_configAdvLblTheme, _t("cfga7", L"Theme"));
-	m_btnMgr.setText(m_configAdvLblLanguage, _t("cfga6", L"Language"));
+	m_btnMgr.setText(m_configAdvLblLanguage, _t("cfgc9", L"Manage Languages"));
+	m_btnMgr.setText(m_configAdvBtnLanguage, _t("cfgc5", L"Go"));
 	m_btnMgr.setText(m_configAdvLblCFTheme, _t("cfgc4", L"Adjust Coverflow"));
 	m_btnMgr.setText(m_configAdvBtnCFTheme, _t("cfgc5", L"Go"));
 	m_btnMgr.setText(m_configAdvLblBootChange, _t("cfgc8", L"Startup Settings"));

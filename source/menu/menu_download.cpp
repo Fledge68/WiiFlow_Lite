@@ -2133,3 +2133,114 @@ void CMenu::_downloadBnr(const char *gameID)
 	m_btnMgr.hide(m_downloadPBar);
 	m_btnMgr.hide(m_downloadBtnCancel);
 }
+
+const char *url_dl = NULL;
+u8 *m_buffer = NULL;
+u8 *CMenu::_downloadUrl(const char *url, u8 **dl_file, u32 *dl_size)
+{
+	m_file = NULL;
+	m_filesize = 0;
+	url_dl = url;
+
+	m_btnMgr.show(m_downloadPBar);
+	m_btnMgr.setProgress(m_downloadPBar, 0.f);
+	m_btnMgr.show(m_downloadBtnCancel);
+	m_btnMgr.setText(m_downloadBtnCancel, _t("dl1", L"Cancel"));
+	m_thrdStop = false;
+	m_thrdMessageAdded = false;
+
+	m_thrdWorking = true;
+	lwp_t thread = LWP_THREAD_NULL;
+	LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_downloadUrlAsync, (void *)this, 0, 8192, 40);
+
+	wstringEx prevMsg;
+	while(m_thrdWorking)
+	{
+		_mainLoopCommon();
+		if ((BTN_HOME_PRESSED || BTN_B_PRESSED) && !m_thrdWorking)
+			break;
+		if (BTN_A_PRESSED && !(m_thrdWorking && m_thrdStop))
+		{
+			if (m_btnMgr.selected(m_downloadBtnCancel))
+			{
+				LockMutex lock(m_mutex);
+				m_thrdStop = true;
+				m_thrdMessageAdded = true;
+				m_thrdMessage = _t("dlmsg6", L"Canceling...");
+			}
+		}
+		if (Sys_Exiting())
+		{
+			LockMutex lock(m_mutex);
+			m_thrdStop = true;
+			m_thrdMessageAdded = true;
+			m_thrdMessage = _t("dlmsg6", L"Canceling...");
+			m_thrdWorking = false;
+		}
+		if (m_thrdMessageAdded)
+		{
+			LockMutex lock(m_mutex);
+			m_thrdMessageAdded = false;
+			m_btnMgr.setProgress(m_downloadPBar, m_thrdProgress);
+			if (prevMsg != m_thrdMessage)
+			{
+				prevMsg = m_thrdMessage;
+				m_btnMgr.setText(m_downloadLblMessage[0], m_thrdMessage, false);
+				m_btnMgr.hide(m_downloadLblMessage[0], 0, 0, -1.f, -1.f, true);
+				m_btnMgr.show(m_downloadLblMessage[0]);
+			}
+		}
+		if (m_thrdStop && !m_thrdWorking)
+			break;
+	}
+	if (thread != LWP_THREAD_NULL)
+	{
+		LWP_JoinThread(thread, NULL);
+		thread = LWP_THREAD_NULL;
+	}
+	m_btnMgr.hide(m_downloadLblMessage[0]);
+	m_btnMgr.hide(m_downloadPBar);
+	m_btnMgr.hide(m_downloadBtnCancel);
+
+	*dl_file = m_file;
+	*dl_size = m_filesize;
+
+	m_file = NULL;
+	m_filesize = 0;
+	url_dl = url;
+
+	return m_buffer;
+}
+
+u32 CMenu::_downloadUrlAsync(void *obj)
+{
+	CMenu *m = (CMenu *)obj;
+	if (!m->m_thrdWorking)
+		return 0;
+
+	m->m_thrdStop = false;
+
+	LWP_MutexLock(m->m_mutex);
+	m->_setThrdMsg(m->_t("dlmsg11", L"Downloading..."), 0);
+	LWP_MutexUnlock(m->m_mutex);
+
+	if(m->_initNetwork() < 0 || url_dl == NULL)
+	{
+		m->m_thrdWorking = false;
+		return -1;
+	}
+
+	u32 bufferSize = 0x400000; /* 4mb max */
+	u8 *buffer = (u8*)MEM2_alloc(bufferSize);
+	if(buffer == NULL)
+	{
+		m->m_thrdWorking = false;
+		return -2;
+	}
+	m_buffer = buffer;
+	block file = downloadfile(buffer, bufferSize, url_dl, CMenu::_downloadProgress, m);
+	m->m_file = file.data;
+	m->m_filesize = file.size;
+	m->m_thrdWorking = false;
+	return 0;
+}

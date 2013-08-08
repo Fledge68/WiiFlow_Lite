@@ -61,32 +61,6 @@ s16 m_gameBtnBackFull;
 s16 m_gameBtnToogle;
 s16 m_gameBtnToogleFull;
 
-const string CMenu::_translations[23] = {
-	"Default",
-	"Arab",
-	"Brazilian",
-	"Chinese_S",
-	"Chinese_T",
-	"Danish",
-	"Dutch",
-	"English",
-	"Finnish",
-	"French",
-	"Gallego",
-	"German",
-	"Hungarian",
-	"Italian",
-	"Japanese",
-	"Norwegian",
-	"Polish",
-	"Portuguese",
-	"Russian",
-	"Spanish",
-	"Swedish",
-	"Tagalog",
-	"Turkish"
-};
-
 const CMenu::SOption CMenu::_languages[11] = {
 	{ "lngdef", L"Default" },
 	{ "lngjap", L"Japanese" },
