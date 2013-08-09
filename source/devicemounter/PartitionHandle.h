@@ -38,6 +38,10 @@ using namespace std;
 #define MBR_SIGNATURE			0x55AA
 #define EBR_SIGNATURE			MBR_SIGNATURE
 
+/* for WiiU modified drives to ignore formatting it (thx jayjay123) */
+#define MBR_SIGNATURE_MOD		0x55AB
+#define EBR_SIGNATURE_MOD		MBR_SIGNATURE_MOD
+
 #define PARTITION_BOOTABLE		0x80 /* Bootable (active) */
 #define PARTITION_NONBOOTABLE	0x00 /* Non-bootable */
 #define PARTITION_TYPE_GPT		0xEE /* Indicates that a GPT header is available */
