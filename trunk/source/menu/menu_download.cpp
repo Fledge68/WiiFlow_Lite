@@ -2135,8 +2135,7 @@ void CMenu::_downloadBnr(const char *gameID)
 }
 
 const char *url_dl = NULL;
-u8 *m_buffer = NULL;
-u8 *CMenu::_downloadUrl(const char *url, u8 **dl_file, u32 *dl_size)
+void CMenu::_downloadUrl(const char *url, u8 **dl_file, u32 *dl_size)
 {
 	m_file = NULL;
 	m_filesize = 0;
@@ -2208,8 +2207,6 @@ u8 *CMenu::_downloadUrl(const char *url, u8 **dl_file, u32 *dl_size)
 	m_file = NULL;
 	m_filesize = 0;
 	url_dl = url;
-
-	return m_buffer;
 }
 
 u32 CMenu::_downloadUrlAsync(void *obj)
@@ -2231,14 +2228,14 @@ u32 CMenu::_downloadUrlAsync(void *obj)
 	}
 
 	u32 bufferSize = 0x400000; /* 4mb max */
-	u8 *buffer = (u8*)MEM2_alloc(bufferSize);
-	if(buffer == NULL)
+	m->m_buffer = (u8*)MEM2_alloc(bufferSize);
+	if(m->m_buffer == NULL)
 	{
 		m->m_thrdWorking = false;
 		return -2;
 	}
-	m_buffer = buffer;
-	block file = downloadfile(buffer, bufferSize, url_dl, CMenu::_downloadProgress, m);
+	block file = downloadfile(m->m_buffer, bufferSize, url_dl, CMenu::_downloadProgress, m);
+	DCFlushRange(m->m_buffer, bufferSize);
 	m->m_file = file.data;
 	m->m_filesize = file.size;
 	m->m_thrdWorking = false;
