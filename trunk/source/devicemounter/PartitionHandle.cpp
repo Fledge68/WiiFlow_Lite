@@ -254,7 +254,7 @@ s8 PartitionHandle::FindPartitions()
 	}
 
 	// If this is the devices master boot record
-	if(mbr->signature != MBR_SIGNATURE)
+	if(mbr->signature != MBR_SIGNATURE && mbr->signature != MBR_SIGNATURE_MOD)
 	{
 		MEM2_free(mbr);
 		return -1;
@@ -300,7 +300,7 @@ void PartitionHandle::CheckEBR(u8 PartNum, sec_t ebr_lba)
 			MEM2_free(ebr);
 			return;
 		}
-		if(ebr->signature != EBR_SIGNATURE)
+		if(ebr->signature != EBR_SIGNATURE && ebr->signature != EBR_SIGNATURE_MOD)
 		{
 			MEM2_free(ebr);
 			return;

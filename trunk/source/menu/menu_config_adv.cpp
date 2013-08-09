@@ -118,7 +118,7 @@ int CMenu::_configAdv(void)
 					break; /* Settings changed */
 				_showConfigAdv();
 			}
-			else if (m_btnMgr.selected(m_configAdvBtnCurThemeP) || m_btnMgr.selected(m_configAdvBtnCurThemeM))
+			else if(m_btnMgr.selected(m_configAdvBtnCurThemeP) || m_btnMgr.selected(m_configAdvBtnCurThemeM))
 			{
 				_cfNeedsUpdate();
 				s8 direction = m_btnMgr.selected(m_configAdvBtnCurThemeP) ? 1 : -1;
@@ -127,13 +127,13 @@ int CMenu::_configAdv(void)
 				m_cfg.setInt(_domainFromView(), "last_cf_mode", 1);
 				_showConfigAdv();
 			}
-			else if (m_configAdvBtnLanguage)
+			else if(m_btnMgr.selected(m_configAdvBtnLanguage))
 			{
 				_hideConfigAdv();
 				lang_changed = _LangSettings();
 				_showConfigAdv();
 			}
-			else if (m_btnMgr.selected(m_configAdvBtnCFTheme))
+			else if(m_btnMgr.selected(m_configAdvBtnCFTheme))
 			{
 				_cfNeedsUpdate();
 				_hideConfigAdv();
