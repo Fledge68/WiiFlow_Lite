@@ -120,6 +120,7 @@ void CMenu::_showLangSettings(void)
 		m_btnMgr.show(m_LangSettingsLblDownload);
 		m_btnMgr.show(m_LangSettingsBtnDownload);
 
+		//gprintf("Currently %s selected (pos %u)\n", lang_list_mem[mem_pos].lang, mem_pos);
 		dl_lang_ex.fromUTF8(lang_list_mem[mem_pos].lang);
 		m_btnMgr.setText(m_LangSettingsLblCurDLLang, dl_lang_ex);
 	}
@@ -205,6 +206,7 @@ bool CMenu::_LangSettings(void)
 						language_cnt++;
 						tmp = strstr(tmp, "\n") + 1; /* next line */
 					}
+					gprintf("Found %u languages\n", language_cnt);
 					/* creating list */
 					tmp = start;
 					lang_list_mem = (language_list*)MEM2_alloc(language_cnt*sizeof(language_list));
@@ -214,8 +216,10 @@ bool CMenu::_LangSettings(void)
 						tmp = strstr(tmp, search_char);
 						char *lang_chr = strchr(tmp, 0x22) + 1; /* the " is the beginning for the name */
 						memcpy(lang_list_mem[i].lang, lang_chr, std::min(31u, (u32)(strchr(lang_chr, '.') - lang_chr)));
+						//gprintf("%s added\n", lang_list_mem[i].lang);
 						tmp = strstr(tmp, "\n") + 1; /* next line */
 					}
+					//gprintf("Finished creating the list\n");
 					free(m_buffer);
 					m_buffer = NULL;
 				}
@@ -235,11 +239,13 @@ bool CMenu::_LangSettings(void)
 				const char *language_sel =  lang_list_mem[mem_pos].lang;
 				const char *language_url_sel = fmt("%s%s.ini", LANGUAGE_URL, language_sel);
 				_downloadUrl(language_url_sel, &file, &filesize);
+				m_loc.unload();
 				if(m_buffer != NULL)
 				{
 					const char *language_ini = fmt("%s/%s.ini", m_languagesDir.c_str(), language_sel);
 					fsop_deleteFile(language_ini);
 					fsop_WriteFile(language_ini, file, filesize);
+					gprintf("Wrote %s with the size %u\n", language_ini, filesize);
 					free(m_buffer);
 					m_buffer = NULL;
 				}

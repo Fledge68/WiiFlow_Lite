@@ -185,6 +185,7 @@ bool Config::load(const char *filename)
 				}
 		}
 	}
+	file.close(); /* not sure if needed */
 	m_loaded = true;
 	return m_loaded;
 }
@@ -209,6 +210,7 @@ void Config::save(bool unload)
 			for (Config::KeyMap::iterator l = m->begin(); l != m->end(); ++l)
 				file << l->first << '=' << escNewlines(l->second) << '\n';
 		}
+		file.close(); /* not sure if needed */
 		m_changed = false;
 	}
 	if(unload) this->unload();
