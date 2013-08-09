@@ -1,0 +1,10 @@
+If you want to compress the PNG files for wiiflow, then you can use the batch file included and the following tools you can download by yourself.
+
+optipng:
+http://optipng.sourceforge.net/
+pngout:
+http://advsys.net/ken/utils.htm
+advpng:
+http://advancemame.sourceforge.net/comp-download.html
+DeflOpt:
+http://www.walbeehm.com/download/
