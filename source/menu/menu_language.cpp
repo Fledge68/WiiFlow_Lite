@@ -38,6 +38,8 @@ s16 m_LangSettingsBtnCurDlLangP;
 s16 m_LangSettingsLblDownload;
 s16 m_LangSettingsBtnDownload;
 
+s16 m_LangSettingsBtnBack;
+
 typedef struct {
 	char lang[32];
 } language_list;
@@ -84,6 +86,8 @@ void CMenu::_hideLangSettings(bool instant)
 	m_btnMgr.hide(m_LangSettingsLblDownload, instant);
 	m_btnMgr.hide(m_LangSettingsBtnDownload, instant);
 
+	m_btnMgr.hide(m_LangSettingsBtnBack, instant);
+
 	for(u8 i = 0; i < ARRAY_SIZE(m_LangSettingsLblUser); ++i)
 		if(m_LangSettingsLblUser[i] != -1)
 			m_btnMgr.hide(m_LangSettingsLblUser[i], instant);
@@ -98,11 +102,16 @@ void CMenu::_showLangSettings(void)
 	m_btnMgr.show(m_LangSettingsBtnCurLanguageM);
 	m_btnMgr.show(m_LangSettingsBtnCurLanguageP);
 
-	m_btnMgr.show(m_LangSettingsLblGetLanguages);
-	m_btnMgr.show(m_LangSettingsBtnGetLanguages);
-
-	if(lang_list_mem != NULL)
+	if(lang_list_mem == NULL)
 	{
+		m_btnMgr.show(m_LangSettingsLblGetLanguages);
+		m_btnMgr.show(m_LangSettingsBtnGetLanguages);
+	}
+	else /* with the list we dont need the get languages button */
+	{
+		m_btnMgr.hide(m_LangSettingsLblGetLanguages);
+		m_btnMgr.hide(m_LangSettingsBtnGetLanguages);
+
 		m_btnMgr.show(m_LangSettingsLblDlLang);
 		m_btnMgr.show(m_LangSettingsLblCurDLLang);
 		m_btnMgr.show(m_LangSettingsBtnCurDlLangM);
@@ -114,6 +123,8 @@ void CMenu::_showLangSettings(void)
 		dl_lang_ex.fromUTF8(lang_list_mem[mem_pos].lang);
 		m_btnMgr.setText(m_LangSettingsLblCurDLLang, dl_lang_ex);
 	}
+
+	m_btnMgr.show(m_LangSettingsBtnBack);
 
 	for(u32 i = 0; i < ARRAY_SIZE(m_LangSettingsLblUser); ++i)
 		if(m_LangSettingsLblUser[i] != -1)
@@ -153,7 +164,9 @@ bool CMenu::_LangSettings(void)
 			break;
 		else if(BTN_A_PRESSED)
 		{
-			if(m_btnMgr.selected(m_LangSettingsBtnCurLanguageP) || m_btnMgr.selected(m_LangSettingsBtnCurLanguageM))
+			if(m_btnMgr.selected(m_LangSettingsBtnBack))
+				break;
+			else if(m_btnMgr.selected(m_LangSettingsBtnCurLanguageP) || m_btnMgr.selected(m_LangSettingsBtnCurLanguageM))
 			{
 				s8 direction = m_btnMgr.selected(m_LangSettingsBtnCurLanguageP) ? 1 : -1;
 				available_pos = loopNum(available_pos + direction, languages_available.size());
@@ -172,34 +185,39 @@ bool CMenu::_LangSettings(void)
 			}
 			else if(m_btnMgr.selected(m_LangSettingsBtnGetLanguages))
 			{
+				/* reset our variables doh */
 				_hideLangSettings();
+				language_cnt = 0;
+				mem_pos = 0;
 				u8 *file = NULL;
 				u32 filesize = 0;
-				u8 *buffer = _downloadUrl(LANGUAGE_URL, &file, &filesize);
-				if(buffer != NULL)
+				_downloadUrl(LANGUAGE_URL, &file, &filesize);
+				if(m_buffer != NULL)
 				{
-					const char *search_char = "<li><a href=";
+					const char *search_char = "<li><a";
 					/* getting count */
 					char *start = (strstr((char*)file, search_char)); /* skipping the .. */
-					char *tmp = strstr(start, "\n")+1;
+					start = strstr(start, "\n") + 1; /* skipping the line */
+					char *tmp = start;
 
 					while((tmp = strstr(tmp, search_char)) != NULL)
 					{
 						language_cnt++;
-						tmp = strstr(tmp, "\n")+1;
+						tmp = strstr(tmp, "\n") + 1; /* next line */
 					}
 					/* creating list */
-					tmp = strstr(start, "\n")+1;
+					tmp = start;
 					lang_list_mem = (language_list*)MEM2_alloc(language_cnt*sizeof(language_list));
 					memset(lang_list_mem, 0, language_cnt*sizeof(language_list));
 					for(u32 i = 0; i < language_cnt; ++i)
 					{
 						tmp = strstr(tmp, search_char);
-						char *lang_chr = strchr(tmp, 0x22)+1;
-						memcpy(lang_list_mem[i].lang, lang_chr, std::min(31u, (u32)(strchr(lang_chr, '.')-lang_chr)));
-						tmp = strchr(tmp, '\n')+1;
+						char *lang_chr = strchr(tmp, 0x22) + 1; /* the " is the beginning for the name */
+						memcpy(lang_list_mem[i].lang, lang_chr, std::min(31u, (u32)(strchr(lang_chr, '.') - lang_chr)));
+						tmp = strstr(tmp, "\n") + 1; /* next line */
 					}
-					free(buffer);
+					free(m_buffer);
+					m_buffer = NULL;
 				}
 				_showLangSettings();
 			}
@@ -216,13 +234,14 @@ bool CMenu::_LangSettings(void)
 				u32 filesize = 0;
 				const char *language_sel =  lang_list_mem[mem_pos].lang;
 				const char *language_url_sel = fmt("%s%s.ini", LANGUAGE_URL, language_sel);
-				u8 *buffer = _downloadUrl(language_url_sel, &file, &filesize);
-				if(buffer != NULL)
+				_downloadUrl(language_url_sel, &file, &filesize);
+				if(m_buffer != NULL)
 				{
 					const char *language_ini = fmt("%s/%s.ini", m_languagesDir.c_str(), language_sel);
 					fsop_deleteFile(language_ini);
 					fsop_WriteFile(language_ini, file, filesize);
-					free(buffer);
+					free(m_buffer);
+					m_buffer = NULL;
 				}
 				m_loc.load(fmt("%s/%s.ini", m_languagesDir.c_str(), m_curLanguage.c_str()));
 				_updateText();
@@ -263,6 +282,9 @@ void CMenu::_initLangSettingsMenu()
 	m_LangSettingsLblDownload = _addLabel("LANGUAGE/DOWNLOAD", theme.lblFont, L"", 40, 310, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_LangSettingsBtnDownload = _addButton("LANGUAGE/DOWNLOAD_BTN", theme.btnFont, L"", 330, 310, 270, 56, theme.btnFontColor);
 
+	m_LangSettingsBtnBack = _addButton("LANGUAGE/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 56, theme.btnFontColor);
+
+
 	_setHideAnim(m_LangSettingsLblTitle, "LANGUAGE/TITLE", 0, -200, 0.f, 1.f);
 
 	_setHideAnim(m_LangSettingsLblLanguage, "LANGUAGE/LANGUAGE", 100, 0, -2.f, 0.f);
@@ -281,6 +303,8 @@ void CMenu::_initLangSettingsMenu()
 	_setHideAnim(m_LangSettingsLblDownload, "LANGUAGE/DOWNLOAD", 100, 0, -2.f, 0.f);
 	_setHideAnim(m_LangSettingsBtnDownload, "LANGUAGE/DOWNLOAD_BTN", 0, 0, 1.f, -1.f);
 
+	_setHideAnim(m_LangSettingsBtnBack, "LANGUAGE/BACK_BTN", 0, 0, -2.f, 0.f);
+
 	_hideLangSettings(true);
 	_textLangSettings();
 }
@@ -297,5 +321,7 @@ void CMenu::_textLangSettings(void)
 	m_btnMgr.setText(m_LangSettingsLblDlLang, _t("cfglng3", L"Select File"));
 
 	m_btnMgr.setText(m_LangSettingsLblDownload, _t("cfglng4", L"Download selected File"));
-	m_btnMgr.setText(m_LangSettingsBtnDownload, _t("cfgc5", L"Go"));
+	m_btnMgr.setText(m_LangSettingsBtnDownload, _t("cfg4", L"Download"));
+
+	m_btnMgr.setText(m_LangSettingsBtnBack, _t("cfg10", L"Back"));
 }

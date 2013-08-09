@@ -81,6 +81,7 @@ private:
 	u8 *m_wbf1_font;
 	u8 *m_wbf2_font;
 	u8 *m_file;
+	u8 *m_buffer;
 	u8 m_aa;
 	bool m_bnr_settings;
 	bool m_directLaunch;
@@ -987,7 +988,7 @@ private:
 	};
 	void _cfNeedsUpdate(void);
 	void _game(bool launch = false);
-	u8 *_downloadUrl(const char *url, u8 **dl_file, u32 *dl_size);
+	void _downloadUrl(const char *url, u8 **dl_file, u32 *dl_size);
 	void _download(string gameId = string());
 	void _downloadBnr(const char *gameID);
 	bool _LangSettings(void);

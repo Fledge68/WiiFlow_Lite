@@ -132,6 +132,7 @@ CMenu::CMenu()
 	m_txt_path = NULL;
 	/* download stuff */
 	m_file = NULL;
+	m_buffer = NULL;
 	m_filesize = 0;
 }
 
