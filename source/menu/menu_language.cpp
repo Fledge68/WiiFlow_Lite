@@ -49,7 +49,7 @@ u32 mem_pos = 0;
 u32 language_cnt = 0;
 wstringEx dl_lang_ex;
 
-#define LANGUAGE_URL "http://open-wiiflow-mod.googlecode.com/svn/trunk/wii/wiiflow/Languages/"
+#define SVN_URL			"http://open-wiiflow-mod.googlecode.com/svn/trunk/wii/wiiflow"
 template <class T> static inline T loopNum(T i, T s)
 {
 	return (i + s) % s;
@@ -192,7 +192,7 @@ bool CMenu::_LangSettings(void)
 				mem_pos = 0;
 				u8 *file = NULL;
 				u32 filesize = 0;
-				_downloadUrl(LANGUAGE_URL, &file, &filesize);
+				_downloadUrl(fmt("%s/Languages/", SVN_URL), &file, &filesize);
 				if(m_buffer != NULL)
 				{
 					const char *search_char = "<li><a";
@@ -234,21 +234,40 @@ bool CMenu::_LangSettings(void)
 			else if(m_btnMgr.selected(m_LangSettingsBtnDownload))
 			{
 				_hideLangSettings();
+				m_loc.unload();
+				/* Get main ini */
 				u8 *file = NULL;
 				u32 filesize = 0;
-				const char *language_sel =  lang_list_mem[mem_pos].lang;
-				const char *language_url_sel = fmt("%s%s.ini", LANGUAGE_URL, language_sel);
-				_downloadUrl(language_url_sel, &file, &filesize);
-				m_loc.unload();
+				_downloadUrl(fmt("%s/Languages/%s.ini", SVN_URL, lang_list_mem[mem_pos].lang), &file, &filesize);
 				if(m_buffer != NULL)
 				{
-					const char *language_ini = fmt("%s/%s.ini", m_languagesDir.c_str(), language_sel);
-					fsop_deleteFile(language_ini);
-					fsop_WriteFile(language_ini, file, filesize);
-					gprintf("Wrote %s with the size %u\n", language_ini, filesize);
+					if(filesize > 0)
+					{
+						const char *language_ini = fmt("%s/%s.ini", m_languagesDir.c_str(), lang_list_mem[mem_pos].lang);
+						fsop_deleteFile(language_ini);
+						fsop_WriteFile(language_ini, file, filesize);
+						gprintf("Wrote %s with the size %u\n", language_ini, filesize);
+					}
 					free(m_buffer);
 					m_buffer = NULL;
 				}
+				/* Get help file */
+				file = NULL;
+				filesize = 0;
+				_downloadUrl(fmt("%s/help/%s.txt", SVN_URL, lang_list_mem[mem_pos].lang), &file, &filesize);
+				if(m_buffer != NULL)
+				{
+					if(filesize > 0)
+					{
+						const char *language_help = fmt("%s/%s.txt", m_helpDir.c_str(), lang_list_mem[mem_pos].lang);
+						fsop_deleteFile(language_help);
+						fsop_WriteFile(language_help, file, filesize);
+						gprintf("Wrote %s with the size %u\n", language_help, filesize);
+					}
+					free(m_buffer);
+					m_buffer = NULL;
+				}
+				/* reload */
 				m_loc.load(fmt("%s/%s.ini", m_languagesDir.c_str(), m_curLanguage.c_str()));
 				_updateText();
 				_refreshLangSettings();
