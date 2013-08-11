@@ -1198,24 +1198,28 @@ SFont CMenu::_font(CMenu::FontSet &fontSet, const char *domain, const char *key,
 		fonts[i].res = min(max(fonts[i].min, fonts[i].res <= 0 ? fonts[i].def : fonts[i].res), fonts[i].max);
 	}
 
-	// Try to find the same font with the same size
-	CMenu::FontSet::iterator i = fontSet.find(CMenu::FontDesc(upperCase(filename.c_str()), fonts[0].res));
 	/* ONLY return the font if spacing and weight are the same */
-	if (i != fontSet.end() && i->second.lineSpacing == fonts[1].res && i->second.weight == fonts[2].res) return i->second;
+	fnt_type font_req;
+	font_req.name = upperCase(filename.c_str());
+	font_req.t1 = fonts[0].res;
+	font_req.t2 = fonts[1].res;
+	font_req.t3 = fonts[2].res;
+	FontSet::iterator i = fontSet.find(font_req);
+	if (i != fontSet.end()) return i->second;
 
 	// TTF not found in memory, load it to create a new font
 	SFont retFont;
- 	if (!useDefault && retFont.fromFile(fmt("%s/%s", m_themeDataDir.c_str(), filename.c_str()), fonts[0].res, fonts[1].res, fonts[2].res, index))
+	if (!useDefault && retFont.fromFile(fmt("%s/%s", m_themeDataDir.c_str(), filename.c_str()), fonts[0].res, fonts[1].res, fonts[2].res, index))
 	{
 		// Theme Font
-		fontSet[CMenu::FontDesc(upperCase(filename.c_str()), fonts[0].res)] = retFont;
+		fontSet[font_req] = retFont;
 		return retFont;
 	}
 	/* Fallback to default font */
 	if(retFont.fromBuffer(m_base_font, m_base_font_size, fonts[0].res, fonts[1].res, fonts[2].res, index))
 	{
 		// Default font
-		fontSet[CMenu::FontDesc(upperCase(filename.c_str()), fonts[0].res)] = retFont;
+		fontSet[font_req] = retFont;
 		return retFont;
 	}
 	return retFont;

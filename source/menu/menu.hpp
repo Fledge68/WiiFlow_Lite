@@ -695,8 +695,27 @@ private:
 		WO_FORMAT,
 		WO_COPY_GAME,
 	};
-	typedef pair<string, u32> FontDesc;
-	typedef map<FontDesc, SFont> FontSet;
+	struct fnt_type {
+		string name;
+		u32 t1;
+		u32 t2;
+		u32 t3;
+	};
+	struct cmp_fnt_type {
+		bool operator()(const fnt_type& l, const fnt_type& r)
+		{
+			if (l.name < r.name)  return true;
+			if (l.name > r.name)  return false;
+			if (l.t1 < r.t1)  return true;
+			if (l.t1 > r.t1)  return false;
+			if (l.t2 < r.t2)  return true;
+			if (l.t2 > r.t2)  return false;
+			if (l.t3 < r.t3)  return true;
+			if (l.t3 > r.t3)  return false;
+			return false;
+		}
+	};
+	typedef map<fnt_type, SFont, cmp_fnt_type> FontSet;
 	typedef map<string, TexData> TexSet;
 	typedef map<string, GuiSound*> SoundSet;
 	struct SThemeData
