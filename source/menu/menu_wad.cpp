@@ -271,6 +271,7 @@ int installWad(const char *path)
 s16 m_wadBtnInstall;
 s16 m_wadLblTitle;
 s16 m_wadLblDialog;
+s16 m_wadLblUser[4];
 
 void CMenu::_showWad()
 {
@@ -286,6 +287,10 @@ void CMenu::_showWad()
 		m_btnMgr.show(m_configBtnPartitionP);
 		m_btnMgr.show(m_configBtnPartitionM);
 	}
+
+	for(u8 i = 0; i < ARRAY_SIZE(m_wadLblUser); ++i)
+		if(m_wadLblUser[i] != -1)
+			m_btnMgr.show(m_wadLblUser[i]);
 }
 
 void CMenu::_hideWad(bool instant)
@@ -301,6 +306,10 @@ void CMenu::_hideWad(bool instant)
 		m_btnMgr.hide(m_configBtnPartitionP);
 		m_btnMgr.hide(m_configBtnPartitionM);
 	}
+
+	for(u8 i = 0; i < ARRAY_SIZE(m_wadLblUser); ++i)
+		if(m_wadLblUser[i] != -1)
+			m_btnMgr.hide(m_wadLblUser[i], instant);
 }
 
 int getTID(const char *path, u64 *tid)
@@ -408,6 +417,8 @@ void CMenu::_Wad(const char *wad_path)
 
 void CMenu::_initWad()
 {
+	_addUserLabels(m_wadLblUser, ARRAY_SIZE(m_wadLblUser), "WAD");
+
 	m_wadBg = _texture("WAD/BG", "texture", theme.bg, false);
 	m_wadLblTitle = _addTitle("WAD/TITLE", theme.titleFont, L"", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 	m_wadLblDialog = _addLabel("WAD/DIALOG", theme.lblFont, L"", 40, 90, 560, 200, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
