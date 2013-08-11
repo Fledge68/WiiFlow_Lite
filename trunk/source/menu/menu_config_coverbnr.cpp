@@ -26,6 +26,8 @@ s16 m_coverbnrBtnDlCover;
 s16 m_coverbnrBtnDeleteCover;
 s16 m_coverbnrBtnDlBanner;
 s16 m_coverbnrBtnDeleteBanner;
+
+s16 m_coverbnrLblUser[4];
 TexData m_coverbnrBg;
 
 void CMenu::_hideCoverBanner(bool instant)
@@ -39,6 +41,10 @@ void CMenu::_hideCoverBanner(bool instant)
 	m_btnMgr.hide(m_coverbnrBtnDeleteCover, instant);
 	m_btnMgr.hide(m_coverbnrBtnDlBanner, instant);
 	m_btnMgr.hide(m_coverbnrBtnDeleteBanner, instant);
+
+	for(u8 i = 0; i < ARRAY_SIZE(m_coverbnrLblUser); ++i)
+		if(m_coverbnrLblUser[i] != -1)
+			m_btnMgr.hide(m_coverbnrLblUser[i], instant);
 }
 
 void CMenu::_showCoverBanner(void)
@@ -54,6 +60,10 @@ void CMenu::_showCoverBanner(void)
 	m_btnMgr.show(m_coverbnrBtnDeleteCover);
 	m_btnMgr.show(m_coverbnrBtnDlBanner);
 	m_btnMgr.show(m_coverbnrBtnDeleteBanner);
+
+	for(u8 i = 0; i < ARRAY_SIZE(m_coverbnrLblUser); ++i)
+		if(m_coverbnrLblUser[i] != -1)
+			m_btnMgr.show(m_coverbnrLblUser[i]);
 }
 
 void CMenu::_CoverBanner(void)
@@ -101,6 +111,8 @@ void CMenu::_CoverBanner(void)
 
 void CMenu::_initCoverBanner()
 {
+	_addUserLabels(m_coverbnrLblUser, ARRAY_SIZE(m_coverbnrLblUser), "COVERBNR");
+
 	m_coverbnrBg = _texture("COVERBNR/BG", "texture", theme.bg, false);
 	m_coverbnrLblDlCover = _addLabel("COVERBNR/DLCOVER", theme.lblFont, L"", 40, 130, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_coverbnrBtnDlCover = _addButton("COVERBNR/DLCOVER_BTN", theme.btnFont, L"", 370, 130, 230, 56, theme.btnFontColor);

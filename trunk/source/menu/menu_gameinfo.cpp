@@ -320,7 +320,7 @@ void CMenu::_textGameInfo(void)
 		if(gametdb.GetTitle(GameID, TMP_Char))
 		{
 			gameinfo_Title_w.fromUTF8(TMP_Char);
-			m_btnMgr.setText(m_gameinfoLblTitle, gameinfo_Title_w, true);
+			m_btnMgr.setText(m_gameinfoLblTitle, gameinfo_Title_w);
 		}
 		if(gametdb.GetSynopsis(GameID, TMP_Char))
 		{

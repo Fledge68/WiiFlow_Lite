@@ -24,6 +24,7 @@ s16 m_homeBtnExitToBootmii;
 s16 m_homeBtnExitToNeek;
 
 s16 m_homeLblBattery;
+s16 m_homeLblUser[4];
 
 TexData m_homeBg;
 
@@ -202,6 +203,10 @@ void CMenu::_showHome(void)
 	m_btnMgr.show(m_homeBtnSource);
 
 	m_btnMgr.show(m_homeLblBattery);
+
+	for(u8 i = 0; i < ARRAY_SIZE(m_homeLblUser); ++i)
+		if(m_homeLblUser[i] != -1)
+			m_btnMgr.show(m_homeLblUser[i]);
 }
 
 void CMenu::_showExitTo(void)
@@ -214,6 +219,10 @@ void CMenu::_showExitTo(void)
 	m_btnMgr.show(m_homeBtnExitToPriiloader);
 	m_btnMgr.show(m_homeBtnExitToBootmii);
 	m_btnMgr.show(m_homeBtnExitToNeek);
+
+	for(u8 i = 0; i < ARRAY_SIZE(m_homeLblUser); ++i)
+		if(m_homeLblUser[i] != -1)
+			m_btnMgr.show(m_homeLblUser[i]);
 }
 
 void CMenu::_hideHome(bool instant)
@@ -231,6 +240,10 @@ void CMenu::_hideHome(bool instant)
 	m_btnMgr.hide(m_homeBtnSource, instant);
 
 	m_btnMgr.hide(m_homeLblBattery, instant);
+
+	for(u8 i = 0; i < ARRAY_SIZE(m_homeLblUser); ++i)
+		if(m_homeLblUser[i] != -1)
+			m_btnMgr.hide(m_homeLblUser[i], instant);
 }
 
 void CMenu::_hideExitTo(bool instant)
@@ -242,10 +255,16 @@ void CMenu::_hideExitTo(bool instant)
 	m_btnMgr.hide(m_homeBtnExitToPriiloader, instant);
 	m_btnMgr.hide(m_homeBtnExitToBootmii, instant);
 	m_btnMgr.hide(m_homeBtnExitToNeek, instant);
+
+	for(u8 i = 0; i < ARRAY_SIZE(m_homeLblUser); ++i)
+		if(m_homeLblUser[i] != -1)
+			m_btnMgr.hide(m_homeLblUser[i], instant);
 }
 
 void CMenu::_initHomeAndExitToMenu()
 {
+	_addUserLabels(m_homeLblUser, ARRAY_SIZE(m_homeLblUser), "HOME");
+
 	//Home Menu
 	m_homeBg = _texture("HOME/BG", "texture", theme.bg, false);
 

@@ -879,7 +879,7 @@ void CMenu::_initNandEmuMenu()
 	m_nandemuLblDialog = _addLabel("NANDEMU/DIALOG", theme.lblFont, L"", 40, 180, 560, 200, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_nandfilePBar = _addProgressBar("NANDEMU/FILEPROGRESS_BAR", 40, 200, 560, 20);
 	m_nandemuPBar = _addProgressBar("NANDEMU/PROGRESS_BAR", 40, 320, 560, 20);
-	
+
 	m_nandemuLblEmulation = _addLabel("NANDEMU/EMU_SAVE", theme.lblFont, L"", 40, 130, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_nandemuLblEmulationVal = _addLabel("NANDEMU/EMU_SAVE_BTN_GLOBAL", theme.btnFont, L"", 400, 130, 144, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_nandemuBtnEmulationM = _addPicButton("NANDEMU/EMU_SAVE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 344, 130, 56, 56);
@@ -889,18 +889,17 @@ void CMenu::_initNandEmuMenu()
 	m_nandemuBtnMissing = _addButton("NANDEMU/MISSING_BTN", theme.btnFont, L"", 350, 250, 250, 56, theme.btnFontColor);
 	m_nandemuLblNandDump = _addLabel("NANDEMU/NAND_DUMP", theme.lblFont, L"", 40, 310, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_nandemuBtnNandDump = _addButton("NANDEMU/NAND_DUMP_BTN", theme.btnFont, L"", 350, 310, 250, 56, theme.btnFontColor);
-	
+
 	m_nandemuLblNandFolder = _addLabel("NANDEMU/NAND_FOLDER", theme.lblFont, L"", 40, 130, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_nandemuBtnNandFolder = _addButton("NANDEMU/NAND_FOLDER_BTN", theme.btnFont, L"", 350, 130, 250, 56, theme.btnFontColor);
 	m_nandemuLblNandSavesFolder = _addLabel("NANDEMU/NAND_SAVES_FOLDER", theme.lblFont, L"", 40, 190, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_nandemuBtnNandSavesFolder = _addButton("NANDEMU/NAND_SAVES_FOLDER_BTN", theme.btnFont, L"", 350, 190, 250, 56, theme.btnFontColor);
-	
+
 	m_nandemuBtnBack = _addButton("NANDEMU/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 56, theme.btnFontColor);
 	m_nandemuLblPage = _addLabel("NANDEMU/PAGE_BTN", theme.btnFont, L"", 62, 400, 98, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_nandemuBtnPageM = _addPicButton("NANDEMU/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 10, 400, 52, 56);
 	m_nandemuBtnPageP = _addPicButton("NANDEMU/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 160, 400, 52, 56);
-	m_nandemuBtnBack = _addButton("NANDEMU/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 56, theme.btnFontColor);
-	
+
 	m_nandemuBtnExtract = _addButton("NANDEMU/EXTRACT", theme.titleFont, L"", 72, 180, 496, 56, theme.titleFontColor);
 	m_nandemuBtnDisable = _addButton("NANDEMU/DISABLE", theme.titleFont, L"", 72, 270, 496, 56, theme.titleFontColor);
 	m_nandemuBtnPartition = _addButton("NANDEMU/PARTITION", theme.titleFont, L"", 72, 360, 496, 56, theme.titleFontColor);
