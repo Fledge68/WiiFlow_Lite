@@ -99,7 +99,10 @@ void CMenu::_Explorer(void)
 	{
 		_mainLoopCommon();
 		if(BTN_HOME_PRESSED || BTN_B_PRESSED)
+		{
+			memset(folderPath, 0, MAX_FAT_PATH);
 			break;
+		}
 		else if(BTN_PLUS_PRESSED)
 		{
 			_refreshExplorer(1);
@@ -120,12 +123,14 @@ void CMenu::_Explorer(void)
 			}
 			else if(m_btnMgr.selected(m_explorerBtnSet))
 			{
-				//only when set is clicked do we set folderPath to dir
-					strcpy(folderPath, dir);
+				strcpy(folderPath, dir);
 				break;
 			}
 			else if(m_btnMgr.selected(m_explorerBtnBack))
+			{
+				memset(folderPath, 0, MAX_FAT_PATH);
 				break;
+			}
 			//if "..." is selected and path is not empty then go up(back) one folder
 			else if(m_btnMgr.selected(entries_sel[0]) && dir[0] != '\0')
 			{
