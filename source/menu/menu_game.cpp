@@ -538,26 +538,22 @@ void CMenu::_game(bool launch)
 				memcpy(hdr, CoverFlow.getHdr(), sizeof(dir_discHdr));
 				m_gcfg2.load(fmt("%s/" GAME_SETTINGS2_FILENAME, m_settingsDir.c_str()));
 				// change to current games partition and set last_view for recall later
+				m_cfg.setInt("GENERAL", "last_view", m_current_view);
 				switch(hdr->type)
 				{
 					case TYPE_CHANNEL:
-						m_cfg.setInt("GENERAL", "last_view", COVERFLOW_CHANNEL);
 						currentPartition = m_cfg.getInt(CHANNEL_DOMAIN, "partition", 1);
 						break;
 					case TYPE_HOMEBREW:
-						m_cfg.setInt("GENERAL", "last_view", COVERFLOW_HOMEBREW);
 						currentPartition = m_cfg.getInt(HOMEBREW_DOMAIN, "partition", 1);
 						break;
 					case TYPE_GC_GAME:
-						m_cfg.setInt("GENERAL", "last_view", COVERFLOW_DML);
 						currentPartition = m_cfg.getInt(GC_DOMAIN, "partition", 1);
 						break;
 					case TYPE_WII_GAME:
-						m_cfg.setInt("GENERAL", "last_view", COVERFLOW_USB);
 						currentPartition = m_cfg.getInt(WII_DOMAIN, "partition", 1);
 						break;
 					default:
-						m_cfg.setInt("GENERAL", "last_view", COVERFLOW_PLUGIN);
 						_checkForSinglePlugin();
 						if(enabledPluginsCount == 1)
 						{

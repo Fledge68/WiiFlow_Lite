@@ -388,6 +388,9 @@ int CMenu::_NandEmuCfg(void)
 				strncpy(tmpPath, strchr(path, '/'), MAX_FAT_PATH-1);
 				m_cfg.setString(CHANNEL_DOMAIN, "path", tmpPath);
 				m_cfg.setBool(CHANNEL_DOMAIN, "update_cache", true);
+				if(m_cfg.getBool(CHANNEL_DOMAIN, "source"))
+					m_load_view = true;
+
 			}
 			_showNandEmu();
 		}

@@ -141,7 +141,11 @@ void CMenu::_updateSourceBtns(void)
 				ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image_s", "").c_str();
 			}
 			else if(m_cfg.getBool(CHANNEL_DOMAIN, "source", false) && !m_cfg.getBool(CHANNEL_DOMAIN, "disable") && btnSource == "emunand")
+			{
+				sourceBtn = i + j;
+				selectedBtns++;
 				ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image_s", "").c_str();
+			}
 		}
 		else if(btnSource != "realnand" && btnSource != "emunand" && btnSource != "plugin" && btnSource != "allplugins")
 		{
@@ -183,6 +187,7 @@ void CMenu::_showSourceNotice(void)
 
 bool CMenu::_Source()
 {
+	CoverFlow.clear();
 	u8 i, j, k;
 	bool show_homebrew = !m_cfg.getBool(HOMEBREW_DOMAIN, "disable", false);
 	bool show_channel = !m_cfg.getBool("GENERAL", "hidechannel", false);
@@ -273,6 +278,8 @@ bool CMenu::_Source()
 			}
 			if(selectedBtns == 0)
 				m_cfg.setBool(WII_DOMAIN, "source", true);
+			if(selectedBtns > 1)
+				m_combined_view = true;
 			break;
 		}
 		else if(BTN_UP_PRESSED)
@@ -546,6 +553,7 @@ bool CMenu::_Source()
 		}
 		if(exitSource)
 		{
+			m_combined_view = false;
 			noChanges = false;
 			break;
 		}

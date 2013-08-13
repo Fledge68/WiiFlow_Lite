@@ -49,7 +49,8 @@ public:
 	const char *getBlankCoverPath(const dir_discHdr *element);
 
 	u8 m_current_view;
-	int m_last_view;
+	u8 m_last_view;
+	bool m_combined_view;
 	u8 enabledPluginPos;
 	u8 enabledPluginsCount;
 	char PluginMagicWord[9];
@@ -89,6 +90,7 @@ private:
 	bool m_favorites;
 	bool m_music_info;
 	bool m_use_source;
+	bool m_load_view;
 	s16 m_showtimer;
 	string m_curLanguage;
 
@@ -624,7 +626,6 @@ private:
 	bool  enable_wmote_roll;
 
 	bool m_cfNeedsUpdate;
-	bool LastViewRequested(void);
 
 	void SetupInput(bool reset_pos = false);
 	void ScanInput(void);

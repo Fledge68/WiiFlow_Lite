@@ -181,6 +181,7 @@ void CMenu::_showMain(void)
 
 void CMenu::LoadView(void)
 {
+	m_load_view = false;
 	_hideMain(true);
 	CoverFlow.clear();
 	if(!m_vid.showingWaitMessage())
@@ -223,14 +224,6 @@ void CMenu::exitHandler(int ExitTo)
 		Sys_ExitTo(ExitTo);
 }
 
-bool CMenu::LastViewRequested(void)
-{
-	int view = m_cfg.getInt("GENERAL", "last_view", COVERFLOW_MAX);
-	if(view < COVERFLOW_USB || view >= COVERFLOW_MAX)
-		return false;
-	return true;
-}
-
 int CMenu::main(void)
 {
 	wstringEx curLetter;
@@ -259,17 +252,21 @@ int CMenu::main(void)
 		m_GameTDBLoaded = true;
 		m_gametdb.CloseFile();
 	}
-	m_last_view = m_cfg.getInt("GENERAL", "last_view");
-	if(!(m_last_view < COVERFLOW_USB || m_last_view >= COVERFLOW_MAX))
-		m_current_view = m_last_view;
-	else if(m_Emulator_boot)
-		m_current_view = COVERFLOW_PLUGIN;
-	m_cfg.remove("GENERAL", "last_view");
-	if(m_cfg.getBool("GENERAL", "update_cache", false))
+	m_last_view = max(0, min(m_cfg.getInt("GENERAL", "last_view", 6), 6));
+	if(m_last_view == 6 || m_last_view == 0)
 	{
-		UpdateCache();
-		//m_gameList.Update();
+		m_last_view = 0;
+		_clearSources();
+		m_cfg.setBool(WII_DOMAIN, "source", true);
 	}
+	m_current_view = m_last_view;
+	m_cfg.remove("GENERAL", "last_view");
+	m_cfg.save();
+	if(m_current_view == COVERFLOW_MAX)
+		m_combined_view = true;
+		
+	if(m_cfg.getBool("GENERAL", "update_cache", false))
+		UpdateCache();
 	LoadView();
 	if(m_cfg.getBool("GENERAL", "startup_menu", false)) 
 	{
@@ -278,9 +275,10 @@ int CMenu::main(void)
 			LoadView();
 		else
 		{
-			_showMain();
 			if(BTN_B_HELD)
 				bUsed = true;
+			_initCF();
+			_showMain();
 		}
 	}
 
@@ -304,9 +302,10 @@ int CMenu::main(void)
 					LoadView();
 				else
 				{
-					_showMain();
 					if(BTN_B_HELD)
 						bUsed = true;
+					_initCF();
+					_showMain();
 				}
 				continue;
 			}
@@ -324,11 +323,7 @@ int CMenu::main(void)
 				m_current_view = COVERFLOW_CHANNEL;
 			if(lastView == m_current_view) 
 				m_current_view = COVERFLOW_HOMEBREW;
-			m_cfg.setBool(WII_DOMAIN, "source", false);
-			m_cfg.setBool(GC_DOMAIN, "source", false);
-			m_cfg.setBool(CHANNEL_DOMAIN, "source", false);
-			m_cfg.setBool(HOMEBREW_DOMAIN, "source", false);
-			m_cfg.setBool(PLUGIN_DOMAIN, "source", false);
+			_clearSources();
 			switch(m_current_view)
 			{
 				case COVERFLOW_USB:
@@ -347,6 +342,7 @@ int CMenu::main(void)
 					m_cfg.setBool(PLUGIN_DOMAIN, "source", true);
 			}
 			m_catStartPage = 1;
+			m_combined_view = false;
 			LoadView();
 			continue;
 		}
@@ -386,11 +382,7 @@ int CMenu::main(void)
 					m_current_view = (show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB;
 				else if(m_current_view == COVERFLOW_HOMEBREW || m_current_view == COVERFLOW_MAX)
 					m_current_view = COVERFLOW_USB;
-				m_cfg.setBool(WII_DOMAIN, "source", false);
-				m_cfg.setBool(GC_DOMAIN, "source", false);
-				m_cfg.setBool(CHANNEL_DOMAIN, "source", false);
-				m_cfg.setBool(HOMEBREW_DOMAIN, "source", false);
-				m_cfg.setBool(PLUGIN_DOMAIN, "source", false);
+				_clearSources();
 				switch(m_current_view)
 				{
 					case COVERFLOW_USB:
@@ -409,6 +401,7 @@ int CMenu::main(void)
 						m_cfg.setBool(PLUGIN_DOMAIN, "source", true);
 				}
 				m_catStartPage = 1;
+				m_combined_view = false;
 				LoadView();
 			}
 			else if(m_btnMgr.selected(m_mainBtnInit))
@@ -442,7 +435,6 @@ int CMenu::main(void)
 			}
 			else if(m_btnMgr.selected(m_mainBtnConfig))
 			{
-				string prevNand = m_cfg.getString(CHANNEL_DOMAIN, "path");
 				_hideMain();
 				_config(1);
 				if(prevTheme != m_cfg.getString("GENERAL", "theme"))
@@ -450,11 +442,12 @@ int CMenu::main(void)
 					m_reload = true;
 					break;
 				}
-				_showMain();
 				if(BTN_B_HELD)
 					bUsed = true;
-				if(prevNand != m_cfg.getString(CHANNEL_DOMAIN, "path") && m_cfg.getBool(CHANNEL_DOMAIN, "source"))
+				if(m_load_view)
 					LoadView();
+				else
+					_showMain();
 			}
 			else if(m_btnMgr.selected(m_mainBtnInfo))
 			{
