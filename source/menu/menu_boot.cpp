@@ -31,6 +31,7 @@ s16 m_bootLblUSBPort;
 s16 m_bootBtnUSBPort;
 
 s16 m_bootBtnBack;
+s16 m_bootLblUser[4];
 
 u8 set_port = 0;
 
@@ -49,6 +50,9 @@ static void showBoot(void)
 	m_btnMgr.show(m_bootBtnUSBPort);
 
 	m_btnMgr.show(m_bootBtnBack);
+	for(u8 i = 0; i < ARRAY_SIZE(m_bootLblUser); ++i)
+		if(m_bootLblUser[i] != -1)
+			m_btnMgr.show(m_bootLblUser[i]);	
 }
 
 static void hideBoot(bool instant)
@@ -66,6 +70,9 @@ static void hideBoot(bool instant)
 	m_btnMgr.hide(m_bootBtnUSBPort, instant);
 
 	m_btnMgr.hide(m_bootBtnBack, instant);
+	for(u8 i = 0; i < ARRAY_SIZE(m_bootLblUser); ++i)
+		if(m_bootLblUser[i] != -1)
+			m_btnMgr.hide(m_bootLblUser[i], instant);
 }
 
 bool CMenu::_Boot(void)
@@ -154,6 +161,7 @@ void CMenu::_textBoot(void)
 
 void CMenu::_initBoot(void)
 {
+	_addUserLabels(m_bootLblUser, ARRAY_SIZE(m_bootLblUser), "BOOT");
 	m_bootLblTitle = _addTitle("BOOT/TITLE", theme.titleFont, L"", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 
 	m_bootLblLoadCIOS = _addLabel("BOOT/LOAD_CIOS", theme.lblFont, L"", 40, 130, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
