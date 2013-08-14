@@ -135,6 +135,13 @@ CMenu::CMenu()
 	m_file = NULL;
 	m_buffer = NULL;
 	m_filesize = 0;
+	/* thread stuff */
+	m_thrdPtr = LWP_THREAD_NULL;
+	m_thrdInstalling = false;
+	m_thrdUpdated = false;
+	m_thrdDone = false;
+	m_thrdWritten = 0;
+	m_thrdTotal = 0;
 }
 
 void CMenu::init()

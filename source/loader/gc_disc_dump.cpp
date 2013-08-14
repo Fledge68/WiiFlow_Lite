@@ -161,7 +161,7 @@ s32 GCDump::__DiscWriteFile(FILE *f, u64 offset, u32 length, u8 *ReadBuffer)
 		offset += toread;
 		length -= toread;
 		gc_done += toread;
-		mainMenu.GC_Refresh(gc_done/1024, DiscSizeCalculated);
+		mainMenu.update_pThread(toread);
 	}
 	return wrote;
 }
@@ -666,6 +666,7 @@ s32 GCDump::CheckSpace(u32 *needed, bool comp)
 			gamedone = true;
 	}
 	MEM2_free(ReadBuffer);
+	mainMenu.m_thrdTotal = size;
 	DiscSizeCalculated = size/0x400;
 	*needed = (size/0x8000) >> 2;
 	gprintf("Free space needed: %d Mb (%d blocks)\n", size/0x100000, (size/0x8000) >> 2);

@@ -1069,9 +1069,21 @@ private:
 public:
 	void _hideWaitMessage();
 	bool m_Emulator_boot;
-	void GC_Refresh(int status, int total);
 	void GC_Messenger(int message, int info, char *cinfo);
+
+	/* general thread updating stuff */
+	u64 m_thrdTotal;
+	void update_pThread(u64 added);
 private:
+	static int _pThread(void *obj);
+	void _start_pThread(void);
+	void _stop_pThread(void);
+	lwp_t m_thrdPtr;
+	volatile bool m_thrdInstalling;
+	volatile bool m_thrdUpdated;
+	volatile bool m_thrdDone;
+	vu64 m_thrdWritten;
+
 	GuiSound *_sound(CMenu::SoundSet &soundSet, const char *domain, const char *key, const u8 * snd, u32 len, const char *name, bool isAllocated);
 	GuiSound *_sound(CMenu::SoundSet &soundSet, const char *domain, const char *key, const char *name);
 	u16 _textStyle(const char *domain, const char *key, u16 def);

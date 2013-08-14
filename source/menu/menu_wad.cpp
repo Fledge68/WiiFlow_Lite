@@ -76,8 +76,8 @@ int installWad(const char *path)
 	fread(&hdr, sizeof(hdr), 1, wad_file);
 	skip_align(wad_file, sizeof(hdr));
 
-	if(size < (hdr.certs_len + hdr.crl_len + hdr.tik_len + hdr.tmd_len + hdr.data_len + hdr.footer_len) 
-		|| hdr.tik_len == 0 || hdr.tmd_len == 0 || hdr.data_len == 0)
+	mainMenu.m_thrdTotal = (hdr.certs_len + hdr.crl_len + hdr.tik_len + hdr.tmd_len + hdr.data_len + hdr.footer_len);
+	if(size < mainMenu.m_thrdTotal || hdr.tik_len == 0 || hdr.tmd_len == 0 || hdr.data_len == 0)
 	{
 		fclose(wad_file);
 		return -3;
@@ -234,6 +234,7 @@ int installWad(const char *path)
 				ISFS_Write(fd, decBuf, size_dec);
 			/* dont forget to increase the read size */
 			read += size_enc;
+			mainMenu.update_pThread(size_enc);
 		}
 		sha1 app_sha1;
 		SHA1Final(app_sha1, &ctx);
@@ -344,6 +345,75 @@ int getTID(const char *path, u64 *tid)
 	return 0;
 }
 
+int CMenu::_pThread(void *obj)
+{
+	CMenu *m = (CMenu*)obj;
+	while(m->m_thrdInstalling)
+	{
+		m->_mainLoopCommon();
+		if(m->m_thrdUpdated)
+		{
+			m->m_thrdUpdated = false;
+			m->_addDiscProgress(m->m_thrdWritten, m->m_thrdTotal, obj);
+			m->m_thrdDone = true;
+		}
+		if(m->m_thrdMessageAdded)
+		{
+			m->m_thrdMessageAdded = false;
+			if(!m->m_thrdMessage.empty())
+				m_btnMgr.setText(m->m_wbfsLblDialog, m->m_thrdMessage);
+			if(m->m_thrdProgress > 0.f)
+			{
+				m_btnMgr.setText(m->m_wbfsLblMessage, wfmt(L"%i%%", (int)(m->m_thrdProgress * 100.f)));
+				m_btnMgr.setProgress(m->m_wbfsPBar, m->m_thrdProgress);
+			}
+		}
+	}
+	m->m_thrdWorking = false;
+	return 0;
+}
+
+void CMenu::_start_pThread(void)
+{
+	m_thrdPtr = LWP_THREAD_NULL;
+	m_thrdWorking = true;
+	m_thrdMessageAdded = false;
+	m_thrdInstalling = true;
+	m_thrdUpdated = false;
+	m_thrdDone = true;
+	m_thrdProgress = 0.f;
+	m_thrdWritten = 0;
+	m_thrdTotal = 0;
+	LWP_CreateThread(&m_thrdPtr, (void *(*)(void *))_pThread, (void*)this, 0, 8 * 1024, 64);
+}
+
+void CMenu::_stop_pThread(void)
+{
+	if(m_thrdPtr == LWP_THREAD_NULL)
+		return;
+
+	if(LWP_ThreadIsSuspended(m_thrdPtr))
+		LWP_ResumeThread(m_thrdPtr);
+	m_thrdInstalling = false;
+	while(m_thrdWorking)
+		usleep(50);
+	LWP_JoinThread(m_thrdPtr, NULL);
+	m_thrdPtr = LWP_THREAD_NULL;
+
+	m_btnMgr.setProgress(m_wbfsPBar, 1.f);
+	m_btnMgr.setText(m_wbfsLblMessage, L"100%");
+}
+
+void CMenu::update_pThread(u64 added)
+{
+	if(m_thrdDone)
+	{
+		m_thrdDone = false;
+		m_thrdWritten += added;
+		m_thrdUpdated = true;
+	}
+}
+
 void CMenu::_Wad(const char *wad_path)
 {
 	if(wad_path == NULL)
@@ -383,22 +453,27 @@ void CMenu::_Wad(const char *wad_path)
 			if(m_btnMgr.selected(m_wadBtnInstall))
 			{
 				_hideWad(true);
-				m_btnMgr.setText(m_wbfsLblMessage, _t("wad4", L"Installing WAD, please wait..."));
-				m_btnMgr.show(m_wbfsLblMessage, true);
-				/* who cares about making a thread, just refresh a second */
-				for(u8 i = 0; i < 60; ++i)
-					_mainLoopCommon();
+				m_btnMgr.setProgress(m_wbfsPBar, 0.f);
+				m_btnMgr.setText(m_wbfsLblMessage, L"");
+				m_btnMgr.setText(m_wbfsLblDialog, L"");
+				m_btnMgr.show(m_wbfsPBar);
+				m_btnMgr.show(m_wbfsLblMessage);
+				m_btnMgr.show(m_wbfsLblDialog);
 				/* mios is real nand, chans are emu */
 				if(mios == false)
 				{
 					const char *emu_char = m_cfg.getString(CHANNEL_DOMAIN, "path", "/").c_str();
 					NandHandle.SetPaths(emu_char, DeviceName[currentPartition]);
 				}
+				_start_pThread();
+				m_thrdMessage = _t("wad4", L"Installing WAD, please wait...");
+				m_thrdMessageAdded = true;
 				int result = installWad(wad_path);
+				_stop_pThread();
 				if(result < 0)
-					m_btnMgr.setText(m_wbfsLblMessage, wfmt(_fmt("wad5", L"Installation error %i!"), result));
+					m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wad5", L"Installation error %i!"), result));
 				else
-					m_btnMgr.setText(m_wbfsLblMessage, wfmt(_fmt("wad6", L"Installation finished with %i hash fails."), result));
+					m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wad6", L"Installation finished with %i hash fails."), result));
 			}
 			else if((m_btnMgr.selected(m_configBtnPartitionP) || m_btnMgr.selected(m_configBtnPartitionM)))
 			{
@@ -413,6 +488,8 @@ void CMenu::_Wad(const char *wad_path)
 	_hideWad();
 	/* onscreen message might be onscreen still */
 	m_btnMgr.hide(m_wbfsLblMessage);
+	m_btnMgr.hide(m_wbfsLblDialog);
+	m_btnMgr.hide(m_wbfsPBar);
 }
 
 void CMenu::_initWad()
