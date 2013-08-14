@@ -111,10 +111,7 @@ void CMenu::GC_Messenger(int message, int info, char *cinfo)
 		m_thrdMessage = _t("wbfsop25", L"Disc read error!! Please clean the disc");
 	else if(message == 11)
 		m_thrdMessage = _t("wbfsop26", L"Disc ejected!! Please insert disc again");
-
-	if(!m_thrdMessage.empty())
-		m_btnMgr.setText(m_wbfsLblDialog, m_thrdMessage);
-	_mainLoopCommon();
+	m_thrdMessageAdded = true;
 }
 
 int CMenu::_gameInstaller(void *obj)
@@ -364,14 +361,16 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 								break;
 							}
 							strncpy(cfPos, GameID, 6);
-							m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsop6", L"Installing [%s] %s..."), GameID, gc_hdr.title));
 							done = true;
 							upd_dml = true;
 							m_thrdWorking = true;
 							m_thrdProgress = 0.f;
-							m_thrdMessageAdded = false;
 							//LWP_CreateThread(&thread, (void *(*)(void *))_GCgameInstaller, (void *)this, 0, 8 * 1024, 64);
+							_start_pThread();
+							m_thrdMessage = wfmt(_fmt("wbfsop6", L"Installing [%s] %s..."), GameID, gc_hdr.title);
+							m_thrdMessageAdded = true;
 							_GCgameInstaller();
+							_stop_pThread();
 						}
 						else
 						{
@@ -534,17 +533,4 @@ void CMenu::_initWBFSMenu()
 void CMenu::_textWBFS(void)
 {
 	m_btnMgr.setText(m_wbfsBtnGo, _t("wbfsop5", L"Go"));
-}
-
-void CMenu::GC_Refresh(int status, int total)
-{
-	m_progress = (float)status / (float)total;
-	// Don't synchronize too often
-	if(m_progress - m_thrdProgress >= 0.01f)
-	{
-		m_thrdProgress = m_progress;
-		m_btnMgr.setProgress(m_wbfsPBar, m_thrdProgress);
-		m_btnMgr.setText(m_wbfsLblMessage, wfmt(L"%i%%", (int)(m_thrdProgress * 100.f)));
-		_mainLoopCommon();
-	}
 }
