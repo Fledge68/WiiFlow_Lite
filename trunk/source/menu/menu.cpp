@@ -1133,6 +1133,8 @@ void CMenu::_buildMenus(void)
 	// Build menus
 	_initMainMenu();
 	_initErrorMenu();
+	_initWad();
+	_initWBFSMenu();
 	_initConfigAdvMenu();
 	_initConfigSndMenu();
 	_initConfig4Menu();
@@ -1143,7 +1145,6 @@ void CMenu::_buildMenus(void)
 	_initDownloadMenu();
 	_initCodeMenu();
 	_initAboutMenu();
-	_initWBFSMenu();
 	_initCFThemeMenu();
 	_initGameSettingsMenu();
 	_initCheatSettingsMenu(); 
@@ -1158,7 +1159,6 @@ void CMenu::_buildMenus(void)
 	_initCoverBanner();
 	_initExplorer();
 	_initBoot();
-	_initWad();
 
 	_loadCFCfg();
 }

@@ -212,7 +212,10 @@ void CMenu::_hideNandEmu(bool instant)
 	m_btnMgr.hide(m_nandemuBtnExtract, instant);
 	m_btnMgr.hide(m_nandemuBtnPartition, instant);
 	m_btnMgr.hide(m_nandemuBtnDisable, instant);
-	m_btnMgr.hide(m_nandemuLblInit, instant); 
+	m_btnMgr.hide(m_nandemuLblInit, instant);
+	for(u8 i = 0; i < ARRAY_SIZE(m_nandemuLblUser); ++i)
+		if(m_nandemuLblUser[i] != -1)
+			m_btnMgr.hide(m_nandemuLblUser[i], instant); 
 }
 
 void CMenu::_showNandEmu(void)
@@ -230,7 +233,7 @@ void CMenu::_showNandEmu(void)
 	if(nandemuPage == 1)
 	{
 		int i;
-		if(((m_current_view == COVERFLOW_CHANNEL && !m_cfg.getBool(CHANNEL_DOMAIN, "disable", true)) || m_current_view == COVERFLOW_USB) && !m_locked)
+		if(((m_current_view == COVERFLOW_CHANNEL && !m_cfg.getBool(CHANNEL_DOMAIN, "disable", true)) || m_current_view == COVERFLOW_USB))
 		{
 			m_btnMgr.show(m_nandemuLblEmulation);
 			m_btnMgr.show(m_nandemuLblEmulationVal);
@@ -238,7 +241,7 @@ void CMenu::_showNandEmu(void)
 			m_btnMgr.show(m_nandemuBtnEmulationM);
 		}
 	
-		if((m_current_view == COVERFLOW_CHANNEL || m_current_view == COVERFLOW_USB) && !m_locked)
+		if((m_current_view == COVERFLOW_CHANNEL || m_current_view == COVERFLOW_USB))
 		{
 			m_btnMgr.show(m_nandemuLblSaveDump);
 			m_btnMgr.show(m_nandemuBtnAll);
@@ -264,6 +267,9 @@ void CMenu::_showNandEmu(void)
 		m_btnMgr.show(m_nandemuLblNandSavesFolder);
 		m_btnMgr.show(m_nandemuBtnNandSavesFolder);
 	}
+	for(u8 i = 0; i < ARRAY_SIZE(m_nandemuLblUser); ++i)
+		if(m_nandemuLblUser[i] != -1)
+			m_btnMgr.show(m_nandemuLblUser[i]);
 }
 
 int CMenu::_NandEmuCfg(void)
