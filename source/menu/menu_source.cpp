@@ -99,10 +99,11 @@ void CMenu::_updateSourceBtns(void)
 	u8 j = (source_curPage - 1) * 12;
 	sourceBtn = 0;
 	selectedBtns = 0;
-	for(u8 i = 0; i < 12; ++i)
+	for(u8 i = 0; i < ((source_Pages - 1) * 12 + 12); ++i)
 	{
-		m_btnMgr.hide(m_sourceBtnSource[i], true);
-		string btnSource = m_source.getString(fmt("BUTTON_%i", (i + j)), "source", "");
+		if(i < 12)
+			m_btnMgr.hide(m_sourceBtnSource[i], true);
+		string btnSource = m_source.getString(fmt("BUTTON_%i", i), "source", "");
 		
 		if(btnSource == "")
 			continue;
@@ -111,40 +112,40 @@ void CMenu::_updateSourceBtns(void)
 			const vector<bool> &EnabledPlugins = m_plugin.GetEnabledPlugins(m_cfg);
 			if(EnabledPlugins.size() == 0)
 			{
-				sourceBtn = i + j;
+				sourceBtn = i;
 				selectedBtns++;
-				ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image_s", "").c_str();
+				ImgName = m_source.getString(fmt("BUTTON_%i", i),"image_s", "").c_str();
 			}
 			else
-				ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image", "").c_str();
+				ImgName = m_source.getString(fmt("BUTTON_%i", i),"image", "").c_str();
 		}
 		else if(btnSource == "plugin")
 		{
 			magicNums.clear();
-			magicNums = m_source.getStrings(fmt("BUTTON_%i", i + j), "magic", ',');
+			magicNums = m_source.getStrings(fmt("BUTTON_%i", i), "magic", ',');
 			if(m_cfg.getBool(PLUGIN_DOMAIN, "source", false) && m_cfg.getBool("PLUGIN", magicNums.at(0), false))
 			{
-				sourceBtn = i + j;
+				sourceBtn = i;
 				selectedBtns++;
-				ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image_s", "").c_str();
+				ImgName = m_source.getString(fmt("BUTTON_%i", i),"image_s", "").c_str();
 			}
 			else
-				ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image", "").c_str();
+				ImgName = m_source.getString(fmt("BUTTON_%i", i),"image", "").c_str();
 		}
 		else if(btnSource == "realnand" || btnSource == "emunand")
 		{
-			ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image", "").c_str();
+			ImgName = m_source.getString(fmt("BUTTON_%i", i),"image", "").c_str();
 			if(m_cfg.getBool(CHANNEL_DOMAIN, "source", false) && m_cfg.getBool(CHANNEL_DOMAIN, "disable") && btnSource == "realnand")
 			{
-				sourceBtn = i + j;
+				sourceBtn = i;
 				selectedBtns++;
-				ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image_s", "").c_str();
+				ImgName = m_source.getString(fmt("BUTTON_%i", i),"image_s", "").c_str();
 			}
 			else if(m_cfg.getBool(CHANNEL_DOMAIN, "source", false) && !m_cfg.getBool(CHANNEL_DOMAIN, "disable") && btnSource == "emunand")
 			{
-				sourceBtn = i + j;
+				sourceBtn = i;
 				selectedBtns++;
-				ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image_s", "").c_str();
+				ImgName = m_source.getString(fmt("BUTTON_%i", i),"image_s", "").c_str();
 			}
 		}
 		else if(btnSource != "realnand" && btnSource != "emunand" && btnSource != "plugin" && btnSource != "allplugins")
@@ -152,30 +153,32 @@ void CMenu::_updateSourceBtns(void)
 			string domain = (btnSource == "dml" ? GC_DOMAIN : (btnSource == "homebrew" ? HOMEBREW_DOMAIN : WII_DOMAIN));
 			if(m_cfg.getBool(domain, "source", false))
 			{
-				sourceBtn = i + j;
+				sourceBtn = i;
 				selectedBtns++;
-				ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image_s", "").c_str();
+				ImgName = m_source.getString(fmt("BUTTON_%i", i),"image_s", "").c_str();
 			}
 			else
-				ImgName = m_source.getString(fmt("BUTTON_%i", i + j),"image", "").c_str();
+				ImgName = m_source.getString(fmt("BUTTON_%i", i),"image", "").c_str();
 		}
 		
-		ImgSelName = m_source.getString(fmt("BUTTON_%i", i + j),"image_s", "").c_str();
-
-		TexData texConsoleImg;
-		TexData texConsoleImgs;
-		if(TexHandle.fromImageFile(texConsoleImg, fmt("%s/%s/%s", m_sourceDir.c_str(), themeName.c_str(), ImgName)) != TE_OK)
+		ImgSelName = m_source.getString(fmt("BUTTON_%i", i),"image_s", "").c_str();
+		if(i >= j && i < (j + 12))
 		{
-			if(TexHandle.fromImageFile(texConsoleImg, fmt("%s/%s", m_sourceDir.c_str(), ImgName)) != TE_OK)
-				TexHandle.fromPNG(texConsoleImg, favoriteson_png);
+			TexData texConsoleImg;
+			TexData texConsoleImgs;
+			if(TexHandle.fromImageFile(texConsoleImg, fmt("%s/%s/%s", m_sourceDir.c_str(), themeName.c_str(), ImgName)) != TE_OK)
+			{
+				if(TexHandle.fromImageFile(texConsoleImg, fmt("%s/%s", m_sourceDir.c_str(), ImgName)) != TE_OK)
+					TexHandle.fromPNG(texConsoleImg, favoriteson_png);
+			}
+			if(TexHandle.fromImageFile(texConsoleImgs, fmt("%s/%s/%s", m_sourceDir.c_str(), themeName.c_str(), ImgSelName)) != TE_OK)
+			{
+				if(TexHandle.fromImageFile(texConsoleImgs, fmt("%s/%s", m_sourceDir.c_str(), ImgSelName)) != TE_OK)
+					TexHandle.fromPNG(texConsoleImgs, favoritesons_png);
+			}
+			m_btnMgr.setBtnTexture(m_sourceBtnSource[i - j], texConsoleImg, texConsoleImgs);
+			m_btnMgr.show(m_sourceBtnSource[i - j]);
 		}
-		if(TexHandle.fromImageFile(texConsoleImgs, fmt("%s/%s/%s", m_sourceDir.c_str(), themeName.c_str(), ImgSelName)) != TE_OK)
-		{
-			if(TexHandle.fromImageFile(texConsoleImgs, fmt("%s/%s", m_sourceDir.c_str(), ImgSelName)) != TE_OK)
-				TexHandle.fromPNG(texConsoleImgs, favoritesons_png);
-		}
-		m_btnMgr.setBtnTexture(m_sourceBtnSource[i], texConsoleImg, texConsoleImgs);
-		m_btnMgr.show(m_sourceBtnSource[i]);
 	}
 }
 
@@ -278,7 +281,19 @@ bool CMenu::_Source()
 			}
 			if(selectedBtns == 0)
 				m_cfg.setBool(WII_DOMAIN, "source", true);
-			if(selectedBtns > 1)
+				
+			u8 sourceCount = 0;
+			if(m_cfg.getBool(WII_DOMAIN, "source", false))
+				sourceCount++;
+			if(m_cfg.getBool(GC_DOMAIN, "source", false))
+				sourceCount++;
+			if(m_cfg.getBool(CHANNEL_DOMAIN, "source", false))
+				sourceCount++;
+			if(m_cfg.getBool(HOMEBREW_DOMAIN, "source", false))
+				sourceCount++;
+			if(m_cfg.getBool(PLUGIN_DOMAIN, "source", false))
+				sourceCount++;
+			if(sourceCount > 1)
 				m_combined_view = true;
 			break;
 		}
