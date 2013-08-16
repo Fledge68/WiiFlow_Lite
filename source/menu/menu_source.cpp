@@ -202,6 +202,7 @@ bool CMenu::_Source()
 	u8 numPlugins = 0;
 	m_showtimer = 0;
 	source_curPage = 1;
+	source_Pages = 1;
 	
 	SetupInput();
 	_showSource();
