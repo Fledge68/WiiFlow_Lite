@@ -34,8 +34,10 @@ void CMenu::_hideConfig3(bool instant)
 		m_btnMgr.hide(m_config3BtnDMLVideoP, instant);
 		m_btnMgr.hide(m_config3BtnDMLVideoM, instant);
 	}
-	m_btnMgr.hide(m_config3LblAsyncNet, instant);
-	m_btnMgr.hide(m_config3BtnAsyncNet, instant);
+	m_btnMgr.hide(m_config3LblDMLGameLoader, instant);
+	m_btnMgr.hide(m_config3LblDMLLoader, instant);
+	m_btnMgr.hide(m_config3BtnDMLLoaderP, instant);
+	m_btnMgr.hide(m_config3BtnDMLLoaderM, instant);
 	m_btnMgr.hide(m_config3LblOcarina, instant);
 	m_btnMgr.hide(m_config3BtnOcarina, instant);
 	for(u8 i = 0; i < ARRAY_SIZE(m_config3LblUser); ++i)
@@ -69,8 +71,10 @@ void CMenu::_showConfig3(void)
 		m_btnMgr.show(m_config3BtnDMLVideoP);
 		m_btnMgr.show(m_config3BtnDMLVideoM);
 	}
-	m_btnMgr.show(m_config3LblAsyncNet);
-	m_btnMgr.show(m_config3BtnAsyncNet);
+	m_btnMgr.show(m_config3LblDMLGameLoader);
+	m_btnMgr.show(m_config3LblDMLLoader);
+	m_btnMgr.show(m_config3BtnDMLLoaderP);
+	m_btnMgr.show(m_config3BtnDMLLoaderM);
 	m_btnMgr.show(m_config3LblOcarina);
 	m_btnMgr.show(m_config3BtnOcarina);
 
@@ -96,8 +100,8 @@ void CMenu::_showConfig3(void)
 		i = min(max(0, m_cfg.getInt(GC_DOMAIN, "game_language", 0)), (int)ARRAY_SIZE(CMenu::_GlobalGClanguages) - 1);
 		m_btnMgr.setText(m_config3LblDMLLanguage, _t(CMenu::_GlobalGClanguages[i].id, CMenu::_GlobalGClanguages[i].text));
 	}
-
-	m_btnMgr.setText(m_config3BtnAsyncNet, m_cfg.getBool("GENERAL", "async_network", false) ? _t("on", L"On") : _t("off", L"Off"));
+	i = min(max(0, m_cfg.getInt(GC_DOMAIN, "default_loader", 0)), (int)ARRAY_SIZE(CMenu::_GlobalGCLoaders) - 1);
+	m_btnMgr.setText(m_config3LblDMLLoader, _t(CMenu::_GlobalGCLoaders[i].id, CMenu::_GlobalGCLoaders[i].text));
 
 	m_btnMgr.setText(m_config3BtnOcarina, m_cfg.getBool(_domainFromView(), "cheat", false) ? _t("on", L"On") : _t("off", L"Off"));
 }
@@ -138,9 +142,10 @@ int CMenu::_config3(void)
 				m_cfg.setInt(GC_DOMAIN, "video_mode", (int)loopNum((u32)m_cfg.getInt(GC_DOMAIN, "video_mode", 0) + direction, ARRAY_SIZE(CMenu::_GlobalDMLvideoModes)));
 				_showConfig3();
 			}
-			else if (m_btnMgr.selected(m_config3BtnAsyncNet))
+			else if (m_btnMgr.selected(m_config3BtnDMLLoaderP) || m_btnMgr.selected(m_config3BtnDMLLoaderM))
 			{
-				m_cfg.setBool("GENERAL", "async_network", !m_cfg.getBool("GENERAL", "async_network", false));
+				s8 direction = m_btnMgr.selected(m_config3BtnDMLLoaderP) ? 1 : -1;
+				m_cfg.setInt(GC_DOMAIN, "default_loader", (int)loopNum((u32)m_cfg.getInt(GC_DOMAIN, "default_loader", 0) + direction, ARRAY_SIZE(CMenu::_GlobalGCLoaders)));
 				_showConfig3();
 			}
 			else if (m_btnMgr.selected(m_config3BtnOcarina))
@@ -175,9 +180,11 @@ void CMenu::_initConfig3Menu()
 	m_config3LblDMLLanguage = _addLabel("CONFIG3/DML_LANG_BTN", theme.btnFont, L"", 386, 190, 158, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_config3BtnDMLLanguageM = _addPicButton("CONFIG3/DML_LANG_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 330, 190, 56, 56);
 	m_config3BtnDMLLanguageP = _addPicButton("CONFIG3/DML_LANG_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 190, 56, 56);
-
-	m_config3LblAsyncNet = _addLabel("CONFIG3/ASYNCNET", theme.lblFont, L"", 40, 250, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_config3BtnAsyncNet = _addButton("CONFIG3/ASYNCNET_BTN", theme.btnFont, L"", 330, 250, 270, 56, theme.btnFontColor);
+	m_config3LblDMLGameLoader = _addLabel("CONFIG3/GC_LOADER", theme.lblFont, L"", 40, 250, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_config3LblDMLLoader = _addLabel("CONFIG3/GC_LOADER_BTN", theme.btnFont, L"", 386, 250, 158, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_config3BtnDMLLoaderM = _addPicButton("CONFIG3/GC_LOADER_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 330, 250, 56, 56);
+	m_config3BtnDMLLoaderP = _addPicButton("CONFIG3/GC_LOADER_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 250, 56, 56);
+	
 	m_config3LblOcarina = _addLabel("CONFIG3/OCARINA", theme.lblFont, L"", 40, 310, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_config3BtnOcarina = _addButton("CONFIG3/OCARINA_BTN", theme.btnFont, L"", 330, 310, 270, 56, theme.btnFontColor);
 
@@ -198,9 +205,11 @@ void CMenu::_initConfig3Menu()
 	_setHideAnim(m_config3LblDMLLanguage, "CONFIG3/DML_LANG_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_config3BtnDMLLanguageM, "CONFIG3/DML_LANG_MINUS", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_config3BtnDMLLanguageP, "CONFIG3/DML_LANG_PLUS", 0, 0, 1.f, -1.f);
-
-	_setHideAnim(m_config3LblAsyncNet, "CONFIG3/ASYNCNET", 100, 0, -2.f, 0.f);
-	_setHideAnim(m_config3BtnAsyncNet, "CONFIG3/ASYNCNET_BTN", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_config3LblDMLGameLoader, "CONFIG3/GC_LOADER", 100, 0, -2.f, 0.f);
+	_setHideAnim(m_config3LblDMLLoader, "CONFIG3/GC_LOADER_BTN", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_config3BtnDMLLoaderM, "CONFIG3/GC_LOADER_MINUS", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_config3BtnDMLLoaderP, "CONFIG3/GC_LOADER_PLUS", 0, 0, 1.f, -1.f);
+	
 	_setHideAnim(m_config3LblOcarina, "CONFIG3/OCARINA", 100, 0, -2.f, 0.f);
 	_setHideAnim(m_config3BtnOcarina, "CONFIG3/OCARINA_BTN", 0, 0, 1.f, -1.f);
 	_hideConfig3(true);
@@ -213,8 +222,7 @@ void CMenu::_textConfig3(void)
 	m_btnMgr.setText(m_config3LblGameLanguage, _t("cfgb4", L"Default game language"));
 	m_btnMgr.setText(m_config3LblDMLGameVideo, _t("cfgb5", L"Default DML video mode"));
 	m_btnMgr.setText(m_config3LblDMLGameLanguage, _t("cfgb6", L"Default DML game language"));
-
-	m_btnMgr.setText(m_config3LblAsyncNet, _t("cfgp3", L"Init network on boot"));
+	m_btnMgr.setText(m_config3LblDMLGameLoader, _t("cfgb2", L"Default GC game loader"));
 	m_btnMgr.setText(m_config3LblOcarina, _t("cfgb1", L"Ocarina"));
 }
 

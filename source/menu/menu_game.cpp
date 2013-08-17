@@ -173,6 +173,11 @@ const CMenu::SOption CMenu::_NoDVD[3] = {
 	{ "NoDVDon", L"Enabled" },
 };
 
+const CMenu::SOption CMenu::_GlobalGCLoaders[2] = {
+	{ "GC_DM", L"DIOS-MIOS" },
+	{ "GC_Devo", L"Devolution" },
+};
+
 const CMenu::SOption CMenu::_GCLoader[3] = {
 	{ "GC_Def", L"Default" },
 	{ "GC_DM", L"DIOS-MIOS" },
@@ -857,7 +862,6 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	DCFlushRange((u8*)Disc_ID, 32);
 
 	const char *path = hdr->path;
-	m_cfg.setString(GC_DOMAIN, "current_item", id);
 	m_gcfg1.setInt("PLAYCOUNT", id, m_gcfg1.getInt("PLAYCOUNT", id, 0) + 1);
 	m_gcfg1.setUInt("LASTPLAYED", id, time(NULL));
 
@@ -880,20 +884,24 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	}
 
 	u8 loader = min((u32)m_gcfg2.getInt(id, "gc_loader", 0), ARRAY_SIZE(CMenu::_GCLoader) - 1u);
+	loader = (loader == 0) ? min((u32)m_cfg.getInt(GC_DOMAIN, "default_loader", 0), ARRAY_SIZE(CMenu::_GlobalGCLoaders) - 1u) : loader-1;
 	bool memcard_emu = m_gcfg2.getBool(id, "devo_memcard_emu", false);
 	bool widescreen = m_gcfg2.getBool(id, "dm_widescreen", false);
 	bool activity_led = m_gcfg2.getBool(id, "led", false);
 
 	if(disc)
 	{
-		loader = 1;
+		loader = 0;
 		gprintf("Booting GC Disc: %s\n", id);
 		DML_New_SetBootDiscOption(m_new_dm_cfg);
 	}
-	else if(loader == 1 || strcasestr(path, "boot.bin") != NULL || !m_devo_installed)
-	{
-		loader = 1;
+	else
 		m_cfg.setString(GC_DOMAIN, "current_item", id);
+	bool DIOSMIOS = false;
+	if(loader == 0 || strcasestr(path, "boot.bin") != NULL)
+	{
+		
+		DIOSMIOS = true;
 		char CheatPath[256];
 		u8 NMM = min((u32)m_gcfg2.getInt(id, "dml_nmm", 0), ARRAY_SIZE(CMenu::_NMM) - 1u);
 		NMM = (NMM == 0) ? m_cfg.getInt(GC_DOMAIN, "dml_nmm", 0) : NMM-1;
@@ -926,11 +934,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 			WDVD_StopMotor();
 	}
 	else
-	{
-		loader = 2;
 		DEVO_GetLoader(m_dataDir.c_str());
-	}
-	bool DIOSMIOS = (loader == 1);
 
 	m_gcfg1.save(true);
 	m_gcfg2.save(true);
