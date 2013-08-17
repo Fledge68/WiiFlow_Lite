@@ -1166,6 +1166,7 @@ void CMenu::_buildMenus(void)
 	_initCoverBanner();
 	_initExplorer();
 	_initBoot();
+	_initPathsMenu();
 
 	_loadCFCfg();
 }

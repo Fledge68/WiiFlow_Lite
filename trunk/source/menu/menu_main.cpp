@@ -268,7 +268,7 @@ int CMenu::main(void)
 	if(m_cfg.getBool("GENERAL", "update_cache", false))
 		UpdateCache();
 	LoadView();
-	if(m_cfg.getBool("GENERAL", "startup_menu", false)) 
+	if(m_cfg.getBool("GENERAL", "source_on_start", false)) 
 	{
 		_hideMain();
 		if(!_Source())

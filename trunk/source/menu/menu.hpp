@@ -241,11 +241,13 @@ private:
 	s16 m_config3LblDMLVideo;
 	s16 m_config3BtnDMLVideoP;
 	s16 m_config3BtnDMLVideoM;
-
+	s16 m_config3LblDMLGameLoader;
+	s16 m_config3LblDMLLoader;
+	s16 m_config3BtnDMLLoaderP;
+	s16 m_config3BtnDMLLoaderM;
+	
 	s16 m_config3LblOcarina;
 	s16 m_config3BtnOcarina;
-	s16 m_config3LblAsyncNet;
-	s16 m_config3BtnAsyncNet;
 	s16 m_config3LblUser[4];
 	s16 m_config4LblReturnTo;
 	s16 m_config4LblReturnToVal;
@@ -255,8 +257,8 @@ private:
 	s16 m_config4BtnHome;
 	s16 m_config4LblSaveFavMode;
 	s16 m_config4BtnSaveFavMode;
-	s16 m_config4LblCategoryOnBoot;
-	s16 m_config4BtnCategoryOnBoot;
+	s16 m_config4LblPathManager;
+	s16 m_config4BtnPathManager;
 	s16 m_config4LblUser[4];
 	s16 m_configSndLblBnrVol;
 	s16 m_configSndLblBnrVolVal;
@@ -875,6 +877,7 @@ private:
 	void _initCoverBanner();
 	void _initExplorer();
 	void _initWad();
+	void _initPathsMenu();
 	//
 	void _textSource(void);
 	void _textPluginSettings(void);
@@ -904,6 +907,7 @@ private:
 	void _textCoverBanner(void);
 	void _textExplorer(void);
 	void _textWad(void);
+	void _textPaths(void);
 	//
 	void _refreshBoot();
 	void _refreshExplorer(s8 direction = 0);
@@ -940,6 +944,7 @@ private:
 	void _hideCoverBanner(bool instant = false);
 	void _hideExplorer(bool instant = false);
 	void _hideWad(bool instant = false);
+	void _hidePaths(bool instant = false);
 	//
 	void _showError(void);
 	void _showMain(void);
@@ -973,6 +978,7 @@ private:
 	void _showCoverBanner(void);
 	void _showExplorer(void);
 	void _showWad(void);
+	void _showPaths(void);
 	void _clearSources(void);
 	void _updateSourceBtns(void);
 	void _updatePluginText(void);
@@ -1030,6 +1036,7 @@ private:
 	bool _Home();
 	bool _ExitTo();
 	bool _Boot();
+	void _Paths();
 	void _mainLoopCommon(bool withCF = false, bool adjusting = false);
 public:
 	void directlaunch(const char *GameID);
@@ -1165,6 +1172,7 @@ private:
 	static const SOption _AspectRatio[3];
 	static const SOption _NMM[4];
 	static const SOption _NoDVD[3];
+	static const SOption _GlobalGCLoaders[2];
 	static const SOption _GCLoader[3];
 	static const SOption _vidModePatch[4];
 	static const SOption _debugger[3];
