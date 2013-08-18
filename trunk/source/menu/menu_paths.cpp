@@ -77,9 +77,9 @@ void CMenu::_showPaths(void)
 	{
 		m_btnMgr.show(m_pathsLbl4);
 		m_btnMgr.show(m_pathsBtn4);
-		m_btnMgr.setText(m_pathsLbl1, _t("cfgp1", L"Box Covers"));
+		m_btnMgr.setText(m_pathsLbl1, _t("cfgp8", L"Box Covers"));
 		m_btnMgr.setText(m_pathsLbl2, _t("cfgp2", L"Flat Covers"));
-		m_btnMgr.setText(m_pathsLbl3, _t("cfgp3", L"Custom Banners"));
+		m_btnMgr.setText(m_pathsLbl3, _t("cfgp9", L"Custom Banners"));
 		m_btnMgr.setText(m_pathsLbl4, _t("cfgp4", L"Banners Cache"));
 	}
 	else
