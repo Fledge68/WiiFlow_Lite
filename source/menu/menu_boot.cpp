@@ -247,7 +247,7 @@ void CMenu::_textBoot(void)
 	m_btnMgr.setText(m_bootLblUSBPort, _t("cfgbt4", L"USB Port"));
 	m_btnMgr.setText(m_bootLblAsyncNet, _t("cfgp3", L"Init network on boot"));
 	m_btnMgr.setText(m_bootLblCategoryOnBoot, _t("cfgd7", L"Show categories on boot"));
-	m_btnMgr.setText(m_bootLblSourceOnBoot, _t("", L"Show source menu on boot"));
+	m_btnMgr.setText(m_bootLblSourceOnBoot, _t("cfgbt5", L"Show source menu on boot"));
 	m_btnMgr.setText(m_bootBtnBack, _t("cfg10", L"Back"));
 }
 

@@ -1028,6 +1028,6 @@ void CMenu::_textGameSettings(void)
 	m_btnMgr.setText(m_gameSettingsLblApploader, _t("cfgg37", L"Boot Apploader"));
 	m_btnMgr.setText(m_gameSettingsLblLED, _t("cfgg38", L"Activity LED"));
 	m_btnMgr.setText(m_gameSettingsLblScreenshot, _t("cfgg39", L"DM Screenshot Feature"));
-	m_btnMgr.setText(m_gameSettingsLblManage, _t("cfgg40", L"Manage covers and banners"));
+	m_btnMgr.setText(m_gameSettingsLblManage, _t("cfgg40", L"Manage Cover and Banner"));
 	m_btnMgr.setText(m_gameSettingsBtnManage, _t("cfgg41", L"Manage"));
 }

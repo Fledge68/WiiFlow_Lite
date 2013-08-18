@@ -94,6 +94,7 @@ void CMenu::_showExplorer(void)
 void CMenu::_Explorer(void)
 {
 	CoverFlow.clear();
+	strcpy(folderPath, dir);
 	_showExplorer();
 	while(!m_exit)
 	{
