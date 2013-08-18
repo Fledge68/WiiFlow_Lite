@@ -17,6 +17,9 @@
 #include "menu.hpp"
 #include "defines.h"
 
+s16 m_coverbnrLblTitle;
+s16 m_coverbnrBtnBack;
+
 s16 m_coverbnrLblDlCover;
 s16 m_coverbnrLblDeleteCover;
 s16 m_coverbnrLblDlBanner;
@@ -32,6 +35,8 @@ TexData m_coverbnrBg;
 
 void CMenu::_hideCoverBanner(bool instant)
 {
+	m_btnMgr.hide(m_coverbnrLblTitle, instant);
+	m_btnMgr.hide(m_coverbnrBtnBack, instant);
 	m_btnMgr.hide(m_coverbnrLblDlCover, instant);
 	m_btnMgr.hide(m_coverbnrLblDeleteCover, instant);
 	m_btnMgr.hide(m_coverbnrLblDlBanner, instant);
@@ -50,7 +55,9 @@ void CMenu::_hideCoverBanner(bool instant)
 void CMenu::_showCoverBanner(void)
 {
 	_setBg(m_coverbnrBg, m_coverbnrBg);
-
+	m_btnMgr.show(m_coverbnrLblTitle);
+	m_btnMgr.show(m_coverbnrBtnBack);
+	
 	m_btnMgr.show(m_coverbnrLblDlCover);
 	m_btnMgr.show(m_coverbnrLblDeleteCover);
 	m_btnMgr.show(m_coverbnrLblDlBanner);
@@ -69,12 +76,17 @@ void CMenu::_showCoverBanner(void)
 void CMenu::_CoverBanner(void)
 {
 	const char *id = CoverFlow.getId();
+	SetupInput();
 	_showCoverBanner();
 	while(!m_exit)
 	{
 		_mainLoopCommon();
-		if(BTN_HOME_PRESSED || BTN_B_PRESSED)
+		if (BTN_HOME_PRESSED || BTN_B_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_coverbnrBtnBack)))
 			break;
+		else if (BTN_UP_PRESSED)
+			m_btnMgr.up();
+		else if (BTN_DOWN_PRESSED)
+			m_btnMgr.down();
 		else if(BTN_A_PRESSED)
 		{
 			if(m_btnMgr.selected(m_coverbnrBtnDlCover))
@@ -111,9 +123,11 @@ void CMenu::_CoverBanner(void)
 
 void CMenu::_initCoverBanner()
 {
-	_addUserLabels(m_coverbnrLblUser, ARRAY_SIZE(m_coverbnrLblUser), "COVERBNR");
-
 	m_coverbnrBg = _texture("COVERBNR/BG", "texture", theme.bg, false);
+	_addUserLabels(m_coverbnrLblUser, ARRAY_SIZE(m_coverbnrLblUser), "COVERBNR");
+	m_coverbnrLblTitle = _addTitle("COVERBNR/TITLE", theme.titleFont, L"", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_coverbnrBtnBack = _addButton("COVERBNR/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 56, theme.btnFontColor);
+
 	m_coverbnrLblDlCover = _addLabel("COVERBNR/DLCOVER", theme.lblFont, L"", 40, 130, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_coverbnrBtnDlCover = _addButton("COVERBNR/DLCOVER_BTN", theme.btnFont, L"", 370, 130, 230, 56, theme.btnFontColor);
 	m_coverbnrLblDeleteCover = _addLabel("COVERBNR/DELCOVER", theme.lblFont, L"", 40, 190, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
@@ -123,6 +137,8 @@ void CMenu::_initCoverBanner()
 	m_coverbnrLblDeleteBanner = _addLabel("COVERBNR/DELBNR", theme.lblFont, L"", 40, 310, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_coverbnrBtnDeleteBanner = _addButton("COVERBNR/DELBNR_BTN", theme.btnFont, L"", 370, 310, 230, 56, theme.btnFontColor);
 
+	_setHideAnim(m_coverbnrLblTitle, "COVERBNR/TITLE", 0, -200, 0.f, 1.f);
+	_setHideAnim(m_coverbnrBtnBack, "COVERBNR/BACK_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_coverbnrLblDlCover, "COVERBNR/DLCOVER", 100, 0, -2.f, 0.f);
 	_setHideAnim(m_coverbnrBtnDlCover, "COVERBNR/DLCOVER_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_coverbnrLblDeleteCover, "COVERBNR/DELCOVER", 100, 0, -2.f, 0.f);
@@ -137,6 +153,7 @@ void CMenu::_initCoverBanner()
 
 void CMenu::_textCoverBanner(void)
 {
+	m_btnMgr.setText(m_coverbnrLblTitle, _t("cfgg40", L"Manage Cover and Banner"));
 	m_btnMgr.setText(m_coverbnrLblDlCover, _t("cfgbnr1", L"Download Cover"));
 	m_btnMgr.setText(m_coverbnrLblDeleteCover, _t("cfgbnr2", L"Delete Cover"));
 	m_btnMgr.setText(m_coverbnrLblDlBanner, _t("cfgbnr3", L"Download Custom Banner"));
@@ -146,4 +163,5 @@ void CMenu::_textCoverBanner(void)
 	m_btnMgr.setText(m_coverbnrBtnDeleteCover, _t("cfgbnr6", L"Delete"));
 	m_btnMgr.setText(m_coverbnrBtnDlBanner, _t("cfgbnr5", L"Download"));
 	m_btnMgr.setText(m_coverbnrBtnDeleteBanner, _t("cfgbnr6", L"Delete"));
+	m_btnMgr.setText(m_coverbnrBtnBack, _t("cfg10", L"Back"));
 }
