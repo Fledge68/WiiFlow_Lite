@@ -125,7 +125,7 @@ void CMenu::_Paths(void)
 			if (m_btnMgr.selected(m_pathsBtn1))
 			{
 				_hidePaths();
-				path = _FolderExplorer();
+				path = _FolderExplorer(m_cfg.getString("GENERAL", "dir_box_covers").c_str());
 				if(strlen(path) > 0)
 				{
 					m_cfg.setString("GENERAL", "dir_box_covers", path);
@@ -137,7 +137,7 @@ void CMenu::_Paths(void)
 			else if (m_btnMgr.selected(m_pathsBtn2))
 			{
 				_hidePaths();
-				path = _FolderExplorer();
+				path = _FolderExplorer(m_cfg.getString("GENERAL", "dir_flat_covers").c_str());
 				if(strlen(path) > 0)
 				{
 					m_cfg.setString("GENERAL", "dir_flat_covers", path);
@@ -149,7 +149,7 @@ void CMenu::_Paths(void)
 			else if (m_btnMgr.selected(m_pathsBtn3))
 			{
 				_hidePaths();
-				path = _FolderExplorer();
+				path = _FolderExplorer(m_cfg.getString("GENERAL", "dir_custom_banners").c_str());
 				if(strlen(path) > 0)
 				{
 					m_cfg.setString("GENERAL", "dir_custom_banners", path);
@@ -160,7 +160,7 @@ void CMenu::_Paths(void)
 			else if (m_btnMgr.selected(m_pathsBtn4))
 			{
 				_hidePaths();
-				path = _FolderExplorer();
+				path = _FolderExplorer(m_cfg.getString("GENERAL", "dir_banner_cache").c_str());
 				if(strlen(path) > 0)
 				{
 					m_cfg.setString("GENERAL", "dir_banner_cache", path);
@@ -174,7 +174,9 @@ void CMenu::_Paths(void)
 			if (m_btnMgr.selected(m_pathsBtn1))
 			{
 				_hidePaths();
-				path = _FolderExplorer();
+				currentPartition = m_cfg.getInt(WII_DOMAIN, "partition", USB1);
+				string gameDir(fmt(wii_games_dir, DeviceName[currentPartition]));
+				path = _FolderExplorer(gameDir.c_str());
 				if(strlen(path) > 0)
 				{
 					if(strncmp(path, "sd:/", 4) == 0)
@@ -199,7 +201,9 @@ void CMenu::_Paths(void)
 			else if (m_btnMgr.selected(m_pathsBtn2))
 			{
 				_hidePaths();
-				path = _FolderExplorer();
+				currentPartition = m_cfg.getInt(GC_DOMAIN, "partition", USB1);
+				string gameDir(fmt(currentPartition == SD ? DML_DIR : m_DMLgameDir.c_str(), DeviceName[currentPartition]));
+				path = _FolderExplorer(gameDir.c_str());
 				if(strlen(path) > 0)
 				{
 					if(strncmp(path, "sd:/", 4) == 0)
@@ -222,7 +226,7 @@ void CMenu::_Paths(void)
 			else if (m_btnMgr.selected(m_pathsBtn3))
 			{
 				_hidePaths();
-				path = _FolderExplorer();
+				path = _FolderExplorer(m_cfg.getString("GENERAL", "dir_music").c_str());
 				if(strlen(path) > 0)
 				{
 					m_cfg.setString("GENERAL", "dir_music", path);

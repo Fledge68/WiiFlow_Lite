@@ -428,10 +428,13 @@ void CMenu::_refreshExplorer(s8 direction)
 	m_btnMgr.show(m_explorerBtnPageP);
 }
 
-const char *CMenu::_FolderExplorer(void)
+const char *CMenu::_FolderExplorer(const char *startPath)
 {
 	folderExplorer = true;
-	//path = "";
+	memset(dir, 0, MAX_FAT_PATH);
+	strcpy(dir, startPath);
+	if(dir[strlen(dir) - 1] != '/')
+		strcat(dir, "/");
 	_Explorer();
 	folderExplorer = false;
 	return folderPath;

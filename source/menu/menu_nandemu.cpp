@@ -380,7 +380,12 @@ int CMenu::_NandEmuCfg(void)
 		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnNandFolder)))
 		{
 			_hideNandEmu(true);
-			const char *path = _FolderExplorer();
+			u8 tmpView = m_current_view;
+			m_current_view = COVERFLOW_CHANNEL;
+			string emuPath;
+			_FindEmuPart(emuPath, true);
+			const char *path = _FolderExplorer(NandHandle.GetPath());
+			m_current_view = tmpView;
 			if(strlen(path) > 0)
 			{
 				if(strncmp(path, "sd:/", 4) == 0)
@@ -403,7 +408,12 @@ int CMenu::_NandEmuCfg(void)
 		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnNandSavesFolder)))
 		{
 			_hideNandEmu(true);
-			const char *path = _FolderExplorer();
+			u8 tmpView = m_current_view;
+			m_current_view = COVERFLOW_USB;
+			string emuPath;
+			_FindEmuPart(emuPath, true);
+			const char *path = _FolderExplorer(NandHandle.GetPath());
+			m_current_view = tmpView;
 			if(strlen(path) > 0)
 			{
 				if(strncmp(path, "sd:/", 4) == 0)
