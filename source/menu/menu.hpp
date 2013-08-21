@@ -96,6 +96,7 @@ private:
 
 	u8 m_numCFVersions;
 
+	string m_miosDir;
 	string m_themeDataDir;
 	string m_appDir;
 	string m_dataDir;
@@ -1028,7 +1029,7 @@ private:
 	void _CoverBanner(void);
 	void _Explorer(void);
 	const char *_FolderExplorer(const char *startPath);
-	void _Wad(const char *wad_path = NULL);
+	void _Wad(const char *wad_path = NULL, bool autoInstall = false);
 	void _CheatSettings();
 	bool _Source();
 	void _PluginSettings();
@@ -1172,8 +1173,8 @@ private:
 	static const SOption _AspectRatio[3];
 	static const SOption _NMM[4];
 	static const SOption _NoDVD[3];
-	static const SOption _GlobalGCLoaders[2];
-	static const SOption _GCLoader[3];
+	static const SOption _GlobalGCLoaders[3];
+	static const SOption _GCLoader[4];
 	static const SOption _vidModePatch[4];
 	static const SOption _debugger[3];
 	static const SOption _hooktype[8];
