@@ -173,15 +173,17 @@ const CMenu::SOption CMenu::_NoDVD[3] = {
 	{ "NoDVDon", L"Enabled" },
 };
 
-const CMenu::SOption CMenu::_GlobalGCLoaders[2] = {
+const CMenu::SOption CMenu::_GlobalGCLoaders[3] = {
 	{ "GC_DM", L"DIOS-MIOS" },
 	{ "GC_Devo", L"Devolution" },
+	{ "GC_Auto", L"Auto" },
 };
 
-const CMenu::SOption CMenu::_GCLoader[3] = {
+const CMenu::SOption CMenu::_GCLoader[4] = {
 	{ "GC_Def", L"Default" },
 	{ "GC_DM", L"DIOS-MIOS" },
 	{ "GC_Devo", L"Devolution" },
+	{ "GC_Auto", L"Auto" },
 };
 
 const CMenu::SOption CMenu::_vidModePatch[4] = {
@@ -567,47 +569,6 @@ void CMenu::_game(bool launch)
 						}
 						currentPartition = m_cfg.getInt(PLUGIN_DOMAIN, "partition", 1);
 				}
-				if(currentPartition != SD && hdr->type == TYPE_GC_GAME && m_show_dml == 2 && (strstr(hdr->path, ".iso") == NULL ||
-				!m_devo_installed || min((u32)m_gcfg2.getInt(hdr->id, "gc_loader", 0), ARRAY_SIZE(CMenu::_GCLoader) - 1u) == 1))
-				{
-					bool foundOnSD = false;
-					ListGenerator SD_List;
-					string gameDir(fmt(DML_DIR, DeviceName[SD]));
-					string cacheDir(fmt("%s/%s_gamecube.db", m_listCacheDir.c_str(), DeviceName[SD]));
-					SD_List.CreateList(COVERFLOW_DML, SD, gameDir,
-							stringToVector(".iso|root", '|'), cacheDir, false);
-					for(vector<dir_discHdr>::iterator List = SD_List.begin(); List != SD_List.end(); List++)
-					{
-						if(strncasecmp(hdr->id, List->id, 6) == 0)
-						{
-							foundOnSD = true;
-							memset(hdr->path, 0, sizeof(hdr->path));
-							strncpy(hdr->path, List->path, sizeof(hdr->path));
-							break;
-						}
-					}
-					SD_List.clear();
-					if(!foundOnSD)
-					{
-						if(_wbfsOp(CMenu::WO_COPY_GAME))
-						{
-							char folder[50];
-							string GC_Path(hdr->path);
-							if(strcasestr(GC_Path.c_str(), "boot.bin") != NULL)
-								GC_Path.erase(GC_Path.end() - 13, GC_Path.end());
-							else
-								GC_Path.erase(GC_Path.end() - 9, GC_Path.end());
-							u32 Place = GC_Path.find_last_of("/");
-							GC_Path = hdr->path;
-							memset(hdr->path, 0, sizeof(hdr->path));
-							snprintf(folder, sizeof(folder), DML_DIR, DeviceName[SD]);
-							snprintf(hdr->path, sizeof(hdr->path), "%s/%s", folder, &GC_Path[Place]+1);
-						}
-						else
-							break;
-					}
-					currentPartition = SD;
-				}
 				/* Get Banner Title for Playlog */
 				CurrentBanner.ClearBanner();
 				if(hdr->type == TYPE_CHANNEL)
@@ -853,10 +814,19 @@ void CMenu::_launch(const dir_discHdr *hdr)
 	ShutdownBeforeExit();
 	Sys_Exit();
 }
+// taken from Postloader by Stfour
+#define QFIDN 6
+static const char *qfid[QFIDN] = {
+"GGPE01", //Mario Kart Arcade GP
+"GGPE02", //Mario Kart Arcade GP
+"GFZJ8P", //F-Zero AX
+"GVSJ8P", // VirtuaStriker4
+"GVS46E", // Virtua Striker 4 Ver.2006
+"GVS46J", // Virtua Striker 4 Ver.2006
+};
 
 void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 {
-	_launchShutdown();
 	const char *id = hdr->id;
 	memcpy((u8*)Disc_ID, id, 6);
 	DCFlushRange((u8*)Disc_ID, 32);
@@ -888,7 +858,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	bool memcard_emu = m_gcfg2.getBool(id, "devo_memcard_emu", false);
 	bool widescreen = m_gcfg2.getBool(id, "dm_widescreen", false);
 	bool activity_led = m_gcfg2.getBool(id, "led", false);
-
+	//if GC disc use DIOS MIOS to launch it
 	if(disc)
 	{
 		loader = 0;
@@ -897,6 +867,94 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	}
 	else
 		m_cfg.setString(GC_DOMAIN, "current_item", id);
+
+	u8 m_current_mios = m_cfg.getInt(GC_DOMAIN, "current_auto_mios", 0);
+	u8 req_mios = 0;
+	bool isqf = false;
+	const char *mios_wad = NULL;
+	
+	if(loader == 2 || (loader == 0 && m_current_mios > 0))//auto or (DM and auto prev used)
+	{
+        for(int i = 0; i < QFIDN; i++)
+			if(strncmp(id, qfid[i], strlen(qfid[i])) == 0)
+	            isqf = true;
+                       
+        if(isqf)
+		{
+			if(currentPartition == SD)
+			{
+				req_mios = 4;
+				mios_wad = fmt("%s/qfsd.wad", m_miosDir.c_str());
+			}
+			else if(currentPartition != SD)
+			{
+				req_mios = 3;
+				mios_wad = fmt("%s/qfusb.wad", m_miosDir.c_str());
+			}
+		}
+		else
+		{
+			if(currentPartition == SD)
+			{
+				req_mios = 2;
+				mios_wad = fmt("%s/dml.wad", m_miosDir.c_str());
+			}
+			else if(currentPartition != SD)
+			{
+				req_mios = 1;
+				mios_wad = fmt("%s/dm.wad", m_miosDir.c_str());
+			}
+		}
+		if(m_current_mios != req_mios && fsop_FileExist(mios_wad))
+		{
+			m_cfg.setInt(GC_DOMAIN, "current_auto_mios", req_mios);
+			_Wad(mios_wad, true);//install mios
+		}
+		loader = 0;
+	}
+	//copy DML game from USB to SD if needed for DML
+	m_show_dml = MIOSisDML();
+	if(currentPartition != SD && m_show_dml == 2 && (strstr(hdr->path, ".iso") == NULL || !m_devo_installed || loader == 0))
+	{
+		bool foundOnSD = false;
+		ListGenerator SD_List;
+		string gameDir(fmt(DML_DIR, DeviceName[SD]));
+		string cacheDir(fmt("%s/%s_gamecube.db", m_listCacheDir.c_str(), DeviceName[SD]));
+		SD_List.CreateList(COVERFLOW_DML, SD, gameDir,
+				stringToVector(".iso|root", '|'), cacheDir, false);
+		for(vector<dir_discHdr>::iterator List = SD_List.begin(); List != SD_List.end(); List++)
+		{
+			if(strncasecmp(hdr->id, List->id, 6) == 0)
+			{
+				foundOnSD = true;
+				memset(hdr->path, 0, sizeof(hdr->path));
+				strncpy(hdr->path, List->path, sizeof(hdr->path));
+				break;
+			}
+		}
+		SD_List.clear();
+		if(!foundOnSD)
+		{
+			if(_wbfsOp(CMenu::WO_COPY_GAME))
+			{
+				char folder[50];
+				string GC_Path(hdr->path);
+				if(strcasestr(GC_Path.c_str(), "boot.bin") != NULL)
+					GC_Path.erase(GC_Path.end() - 13, GC_Path.end());
+				else
+					GC_Path.erase(GC_Path.end() - 9, GC_Path.end());
+				u32 Place = GC_Path.find_last_of("/");
+				GC_Path = hdr->path;
+				memset(hdr->path, 0, sizeof(hdr->path));
+				snprintf(folder, sizeof(folder), DML_DIR, DeviceName[SD]);
+				snprintf(hdr->path, sizeof(hdr->path), "%s/%s", folder, &GC_Path[Place]+1);
+			}
+			else
+				return;
+		}
+		currentPartition = SD;
+	}
+	_launchShutdown();
 	bool DIOSMIOS = false;
 	if(loader == 0 || strcasestr(path, "boot.bin") != NULL)
 	{

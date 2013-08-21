@@ -300,6 +300,7 @@ void CMenu::init()
 	m_app_update_zip = fmt("%s/update.zip", m_appDir.c_str());
 	m_data_update_zip = fmt("%s/update.zip", m_dataDir.c_str());
 
+	m_miosDir = m_cfg.getString("GENERAL", "dir_mios", fmt("%s/mios", m_dataDir.c_str()));
 	m_customBnrDir = m_cfg.getString("GENERAL", "dir_custom_banners", fmt("%s/custom_banners", m_dataDir.c_str()));
 	m_pluginsDir = m_cfg.getString("GENERAL", "dir_plugins", fmt("%s/plugins", m_dataDir.c_str()));
 
@@ -359,6 +360,7 @@ void CMenu::init()
 	/* Create our Folder Structure */
 	fsop_MakeFolder(m_dataDir.c_str()); //D'OH!
 
+	fsop_MakeFolder(m_miosDir.c_str());
 	fsop_MakeFolder(m_customBnrDir.c_str());
 	fsop_MakeFolder(m_pluginsDir.c_str());
 

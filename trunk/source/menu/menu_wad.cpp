@@ -414,7 +414,7 @@ void CMenu::update_pThread(u64 added)
 	}
 }
 
-void CMenu::_Wad(const char *wad_path)
+void CMenu::_Wad(const char *wad_path, bool autoInstall)
 {
 	if(wad_path == NULL)
 		return;
@@ -448,9 +448,9 @@ void CMenu::_Wad(const char *wad_path)
 		_mainLoopCommon();
 		if(BTN_HOME_PRESSED || BTN_B_PRESSED)
 			break;
-		else if(BTN_A_PRESSED)
+		else if(BTN_A_PRESSED || autoInstall)
 		{
-			if(m_btnMgr.selected(m_wadBtnInstall))
+			if(m_btnMgr.selected(m_wadBtnInstall) || autoInstall)
 			{
 				_hideWad(true);
 				m_btnMgr.setProgress(m_wbfsPBar, 0.f);
@@ -473,7 +473,11 @@ void CMenu::_Wad(const char *wad_path)
 				if(result < 0)
 					m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wad5", L"Installation error %i!"), result));
 				else
+				{
 					m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wad6", L"Installation finished with %i hash fails."), result));
+					if(autoInstall)
+						break;
+				}
 			}
 			else if((m_btnMgr.selected(m_configBtnPartitionP) || m_btnMgr.selected(m_configBtnPartitionM)))
 			{
