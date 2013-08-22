@@ -142,6 +142,11 @@ CMenu::CMenu()
 	m_thrdDone = false;
 	m_thrdWritten = 0;
 	m_thrdTotal = 0;
+	/* mios stuff */
+	m_mios_ver = 0;
+	m_sd_dm = false;
+	m_new_dml = false;
+	m_new_dm_cfg = false;
 }
 
 void CMenu::init()
@@ -275,10 +280,9 @@ void CMenu::init()
 		gprintf("Force enabling DML view\n");
 		m_show_dml = true;
 	}
-	else
-		m_show_dml = MIOSisDML();
-	m_new_dml = m_cfg.getBool(GC_DOMAIN, "dml_r52+", true);
-	m_new_dm_cfg = m_cfg.getBool(GC_DOMAIN, "dm_r2.1+", true);
+	MIOSisDML();
+	if(m_show_dml == false)
+		m_show_dml = (m_mios_ver > 0);
 	m_DMLgameDir = fmt("%%s:/%s", m_cfg.getString(GC_DOMAIN, "dir_usb_games", "games").c_str());
 	/* Emu NAND */
 	m_cfg.getString(CHANNEL_DOMAIN, "path", "");
@@ -2530,8 +2534,18 @@ void CMenu::UpdateCache(u32 view)
 	}
 }
 
-int CMenu::MIOSisDML()
+void CMenu::MIOSisDML()
 {
+	/*
+	0=mios
+	1=dm
+	2=qf
+	*/
+	m_mios_ver = 0;
+	m_sd_dm = false;
+	m_new_dml = false;
+	m_new_dm_cfg = false;
+
 	u32 size = 0;
 	char ISFS_Filename[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
 	strcpy(ISFS_Filename, "/title/00000001/00000101/content/0000000c.app");
@@ -2539,27 +2553,48 @@ int CMenu::MIOSisDML()
 	if(appfile)
 	{
 		for(u32 i = 0; i < size; ++i) 
-		{	/* GCLoader check */
-			if(*(vu32*)(appfile+i) == 0x47434C6F && *(vu32*)(appfile+i+4) == 0x61646572)
+		{
+			/* check for some odd looking elf signs */
+			if(m_mios_ver == 0 && *(vu32*)(appfile+i) == 0x7F454C46 && *(vu32*)(appfile+i+4) != 0x01020161)
 			{
-				for(u32 j = 0; j < size; ++j)
-				{	/* Lite or Quad (QuadForce name string only exist in QuadForce SD) */
-					if(*(vu32*)(appfile+j) == 0x4C697465 || *(vu32*)(appfile+j) == 0x51756164)
-					{
-						gprintf("DIOS-MIOS Lite/QuadForce SD is installed as MIOS\n");
-						free(appfile);
-						return 2;
-					}
-				}
-				gprintf("DIOS-MIOS/QuadForce USB is installed as MIOS\n");
-				free(appfile);
-				return 1;
+				m_mios_ver = 1;
+				m_new_dml = true; /* assume cfg dm */
 			}
+			/* seaching for an old debug print in boot.bin only dml revs */
+			if(*(vu32*)(appfile+i) == 0x5573696E && *(vu32*)(appfile+i+4) == 0x6720656E)
+			{
+				m_mios_ver = 1;
+				m_new_dml = false; /* boot.bin dm */
+			}
+			/* pic checks */
+			if(*(vu32*)(appfile+i) == 0xF282F280 && *(vu32*)(appfile+i+4) == 0xF281F27F) /* pic at 0x35000 */
+			{
+				m_mios_ver = 1;
+				m_new_dm_cfg = true; /* newer dm cfg */
+			}
+			if(*(vu32*)(appfile+i) == 0x5A9B5A77 && *(vu32*)(appfile+i+4) == 0x5C9A5B78) /* pic at 0x35000 */
+			{
+				m_mios_ver = 1;
+				m_new_dm_cfg = true; /* current dm cfg */
+			}
+			if(*(vu32*)(appfile+i) == 0x68846791 && *(vu32*)(appfile+i+4) == 0x63836390) /* pic at 0x6b000 */
+			{
+				m_mios_ver = 1;
+				m_new_dm_cfg = false; /* older dm cfg */
+			}
+			if(*(vu32*)(appfile+i) == 0x1D981F78 && *(vu32*)(appfile+i+4) == 0x1E991E79) /* pic at 0x95000 */
+			{
+				m_mios_ver = 2;
+				m_new_dm_cfg = true; /* qf */
+			}
+			/* Lite or Quad string for SD versions */
+			if(*(vu32*)(appfile+i) == 0x4C697465 || *(vu32*)(appfile+i) == 0x51756164)
+				m_sd_dm = true;
 		}
 		free(appfile);
 	}
-	gprintf("DIOS-MIOS (Lite) not found\n");
-	return 0;
+	gprintf("m_mios_ver = %u; m_sd_dm = %d; m_new_dml = %d; m_new_dm_cfg = %d\n", 
+									m_mios_ver, m_sd_dm, m_new_dml, m_new_dm_cfg);
 }
 
 void CMenu::RemoveCover(const char *id)
