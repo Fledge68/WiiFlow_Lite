@@ -445,7 +445,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 	if(buffer == NULL)
 	{
 		LWP_MutexLock(m_mutex);
-		_setThrdMsg(L"Not enough memory!", 1.f);
+		_setThrdMsg(_t("dlmsg27", L"Not enough memory!"), 1.f);
 		LWP_MutexUnlock(m_mutex);
 		m_thrdWorking = false;
 		return 0;
@@ -1647,7 +1647,7 @@ s8 CMenu::_versionTxtDownloader() // code to download new version txt file
 	if(buffer == NULL)
 	{
 		LWP_MutexLock(m_mutex);
-		_setThrdMsg(L"Not enough memory", 1.f);
+		_setThrdMsg(_t("dlmsg27", L"Not enough memory"), 1.f);
 		LWP_MutexUnlock(m_mutex);
 		m_thrdWorking = false;
 		return 0;
@@ -1770,7 +1770,7 @@ s8 CMenu::_versionDownloader() // code to download new version
 	if(buffer == NULL)
 	{
 		LWP_MutexLock(m_mutex);
-		_setThrdMsg(L"Not enough memory!", 1.f);
+		_setThrdMsg(_t("dlmsg27", L"Not enough memory!"), 1.f);
 		LWP_MutexUnlock(m_mutex);
 		sleep(3);
 		m_thrdWorking = false;
@@ -1931,7 +1931,7 @@ int CMenu::_gametdbDownloaderAsync()
 	if (buffer == NULL)
 	{
 		LWP_MutexLock(m_mutex);
-		_setThrdMsg(L"Not enough memory", 1.f);
+		_setThrdMsg(_t("dlmsg27", L"Not enough memory"), 1.f);
 		LWP_MutexUnlock(m_mutex);
 		return 0;
 	}
@@ -2028,6 +2028,9 @@ u32 CMenu::_downloadBannerAsync(void *obj)
 
 	if (m->_initNetwork() < 0)
 	{
+		LWP_MutexLock(m->m_mutex);
+		m->_setThrdMsg(m->_t("dlmsg2", L"Network initialization failed!"), 1.f);
+		LWP_MutexUnlock(m->m_mutex);
 		m->m_thrdWorking = false;
 		return -1;
 	}
@@ -2036,6 +2039,9 @@ u32 CMenu::_downloadBannerAsync(void *obj)
 	u8 *buffer = (u8*)MEM2_alloc(bufferSize);
 	if(buffer == NULL)
 	{
+		LWP_MutexLock(m->m_mutex);
+		m->_setThrdMsg(m->_t("dlmsg27", L"Not enough memory!"), 1.f);
+		LWP_MutexUnlock(m->m_mutex);
 		m->m_thrdWorking = false;
 		return -2;
 	}
@@ -2047,13 +2053,22 @@ u32 CMenu::_downloadBannerAsync(void *obj)
 	if (banner.data != NULL && banner.size > 51200 && banner.data[0] != '<')
 	{
 		fsop_WriteFile(banner_location, banner.data, banner.size);
+		LWP_MutexLock(m->m_mutex);
+		m->_setThrdMsg(m->_t("dlmsg14", L"Done."), 1.f);
+		LWP_MutexUnlock(m->m_mutex);
 		free(buffer);
 		m->m_thrdWorking = false;
 		return 0;
 	}
-	free(buffer);
-	m->m_thrdWorking = false;
-	return -3;
+	else
+	{
+		LWP_MutexLock(m->m_mutex);
+		m->_setThrdMsg(m->_t("dlmsg12", L"Download failed!"), 1.f);
+		LWP_MutexUnlock(m->m_mutex);
+		m->m_thrdWorking = false;
+		free(buffer);
+		return -3;
+	}
 }
 
 static const char *GAME_BNR_ID = "{gameid}";
@@ -2124,10 +2139,18 @@ void CMenu::_downloadBnr(const char *gameID)
 		if (m_thrdStop && !m_thrdWorking)
 			break;
 	}
+	m_btnMgr.setText(m_downloadBtnCancel, _t("gm2", L"Back"));	
 	if (thread != LWP_THREAD_NULL)
 	{
 		LWP_JoinThread(thread, NULL);
 		thread = LWP_THREAD_NULL;
+	}
+
+	while(!m_exit && !m_thrdStop)
+	{
+		_mainLoopCommon();
+		if(BTN_HOME_PRESSED || BTN_B_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_downloadBtnCancel)))
+			break;
 	}
 	m_btnMgr.hide(m_downloadLblMessage[0]);
 	m_btnMgr.hide(m_downloadPBar);
