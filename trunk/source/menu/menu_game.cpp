@@ -868,53 +868,36 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	else
 		m_cfg.setString(GC_DOMAIN, "current_item", id);
 
-	u8 m_current_mios = m_cfg.getInt(GC_DOMAIN, "current_auto_mios", 0);
-	u8 req_mios = 0;
 	bool isqf = false;
 	const char *mios_wad = NULL;
-	
-	if(loader == 2 || (loader == 0 && m_current_mios > 0))//auto or (DM and auto prev used)
+
+	if(loader == 2) //auto selected
 	{
-        for(int i = 0; i < QFIDN; i++)
-			if(strncmp(id, qfid[i], strlen(qfid[i])) == 0)
-	            isqf = true;
-                       
-        if(isqf)
+		loader = 0; /* force dm boot */
+		for(u8 i = 0; i < QFIDN; i++)
 		{
-			if(currentPartition == SD)
-			{
-				req_mios = 4;
+			if(strncmp(id, qfid[i], strlen(qfid[i])) == 0)
+				isqf = true;
+		}
+		if(isqf)
+		{
+			if(currentPartition == SD && (m_mios_ver != 2 || m_sd_dm == false))
 				mios_wad = fmt("%s/qfsd.wad", m_miosDir.c_str());
-			}
-			else if(currentPartition != SD)
-			{
-				req_mios = 3;
+			else if(currentPartition != SD && (m_mios_ver != 2 || m_sd_dm == true))
 				mios_wad = fmt("%s/qfusb.wad", m_miosDir.c_str());
-			}
 		}
 		else
 		{
-			if(currentPartition == SD)
-			{
-				req_mios = 2;
+			if(currentPartition == SD && (m_mios_ver != 1 || m_sd_dm == false))
 				mios_wad = fmt("%s/dml.wad", m_miosDir.c_str());
-			}
-			else if(currentPartition != SD)
-			{
-				req_mios = 1;
+			else if(currentPartition != SD && (m_mios_ver != 1 || m_sd_dm == true))
 				mios_wad = fmt("%s/dm.wad", m_miosDir.c_str());
-			}
 		}
-		if(m_current_mios != req_mios && fsop_FileExist(mios_wad))
-		{
-			m_cfg.setInt(GC_DOMAIN, "current_auto_mios", req_mios);
+		if(mios_wad != NULL && fsop_FileExist(mios_wad))
 			_Wad(mios_wad, true);//install mios
-		}
-		loader = 0;
 	}
 	//copy DML game from USB to SD if needed for DML
-	m_show_dml = MIOSisDML();
-	if(currentPartition != SD && m_show_dml == 2 && (strstr(hdr->path, ".iso") == NULL || !m_devo_installed || loader == 0))
+	if(loader == 0 && currentPartition != SD && m_sd_dm == true && strcasestr(hdr->path, ".iso") == NULL)
 	{
 		bool foundOnSD = false;
 		ListGenerator SD_List;
@@ -958,7 +941,6 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	bool DIOSMIOS = false;
 	if(loader == 0 || strcasestr(path, "boot.bin") != NULL)
 	{
-		
 		DIOSMIOS = true;
 		char CheatPath[256];
 		u8 NMM = min((u32)m_gcfg2.getInt(id, "dml_nmm", 0), ARRAY_SIZE(CMenu::_NMM) - 1u);

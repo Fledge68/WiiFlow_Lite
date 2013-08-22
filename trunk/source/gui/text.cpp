@@ -1,6 +1,7 @@
 #include <algorithm>
 #include "text.hpp"
 #include "memory/mem2.hpp"
+#include "fileOps/fileOps.h"
 
 static char general_buffer[MAX_MSG_SIZE * 2];
 string sfmt(const char *format, ...)
@@ -194,24 +195,12 @@ bool SFont::fromFile(const char *filename, u32 size, u32 lspacing, u32 w, u32 id
 
 	lineSpacing = min(max(6u, lspacing), 1000u);
 
-	FILE *file = fopen(filename, "rb");
-	if (file == NULL) return false;
-	fseek(file, 0, SEEK_END);
-	u32 fileSize = ftell(file);
-	fseek(file, 0, SEEK_SET);
-	if (fileSize == 0) return false;
-
 	if(data != NULL)
 		free(data);
-	data = (u8*)MEM2_alloc(fileSize);
-	if (!data)
-	{
-		fclose(file);
+	data = fsop_ReadFile(filename, &dataSize);
+	if(data == NULL)
 		return false;
-	}
-		
-	fread(data, 1, fileSize, file);
-	dataSize = fileSize;
+
 	DCFlushRange(data, dataSize);
 
 	font = new FreeTypeGX();

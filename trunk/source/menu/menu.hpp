@@ -191,7 +191,9 @@ private:
 	s16 m_mainBtnInit2;
 	s16 m_mainLblInit;
 	s16 m_mainLblUser[6];
-	u8 m_show_dml;
+	u8 m_mios_ver;
+	bool m_show_dml;
+	bool m_sd_dm;
 	bool m_devo_installed;
 	bool m_new_dml;
 	bool m_new_dm_cfg;
@@ -1068,7 +1070,7 @@ private:
 	const char *_domainFromView(void);
 	const char *_cfDomain(bool selected = false);
 	void UpdateCache(u32 view = COVERFLOW_MAX);
-	int MIOSisDML();
+	void MIOSisDML();
 	void RemoveCover(const char *id);
 	SFont _font(CMenu::FontSet &fontSet, const char *domain, const char *key, u32 fontSize, u32 lineSpacing, u32 weight, u32 index, const char *genKey);
 	TexData _texture(const char *domain, const char *key, TexData &def, bool freeDef = true);
