@@ -104,11 +104,11 @@ void CMenu::_Explorer(void)
 			memset(folderPath, 0, MAX_FAT_PATH);
 			break;
 		}
-		else if(BTN_PLUS_PRESSED)
+		else if(BTN_PLUS_PRESSED || BTN_RIGHT_PRESSED)
 		{
 			_refreshExplorer(1);
 		}
-		else if(BTN_MINUS_PRESSED)
+		else if(BTN_MINUS_PRESSED || BTN_LEFT_PRESSED)
 		{
 			_refreshExplorer(-1);
 		}

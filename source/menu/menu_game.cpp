@@ -778,6 +778,16 @@ void CMenu::_launch(const dir_discHdr *hdr)
 			wcstombs(title, launchHdr.title, 63);
 		}
 		m_cfg.setString(PLUGIN_DOMAIN, "current_item", title);
+		const char *mios_wad = NULL;
+		if(m_cfg.getBool("PLUGIN", "444d4c62", false))
+		{
+			if(currentPartition == SD && (m_mios_ver != 2 || m_sd_dm == false))
+				mios_wad = fmt("%s/qfsd.wad", m_miosDir.c_str());
+			else if(currentPartition != SD && (m_mios_ver != 2 || m_sd_dm == true))
+				mios_wad = fmt("%s/qfusb.wad", m_miosDir.c_str());
+			if(mios_wad != NULL && fsop_FileExist(mios_wad))
+				_Wad(mios_wad, true);//install mios
+		}
 		const char *device = (currentPartition == 0 ? "sd" : (DeviceHandle.GetFSType(currentPartition) == PART_FS_NTFS ? "ntfs" : "usb"));
 		const char *loader = fmt("%s:/%s/WiiFlowLoader.dol", device, strchr(m_pluginsDir.c_str(), '/') + 1);
 
