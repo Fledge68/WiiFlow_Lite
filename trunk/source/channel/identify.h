@@ -6,7 +6,7 @@ extern "C"
 #ifndef _PATCHER_H_
 #define _PATCHER_H_
 
-void PatchIOS(void);
+void PatchIOS(bool patch_all);
 
 #endif
 

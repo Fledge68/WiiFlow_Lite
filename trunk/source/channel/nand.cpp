@@ -1023,8 +1023,7 @@ void Nand::Init_ISFS()
 {
 	if(isfs_inited)
 		return;
-	if(IOS_GetVersion() < 222)
-		PatchIOS();
+	PatchIOS(IOS_GetVersion() < 222);
 	usleep(1000);
 	gprintf("Init ISFS\n");
 	ISFS_Initialize();
