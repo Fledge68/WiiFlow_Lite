@@ -106,6 +106,8 @@ void CMenu::_CoverBanner(void)
 				_hideCoverBanner();
 				fsop_deleteFile(fmt("%s/%s.bnr", m_bnrCacheDir.c_str(), id));
 				fsop_deleteFile(fmt("%s/%s.bnr", m_customBnrDir.c_str(), id));
+				fsop_deleteFile(fmt("%s/%.3s.bnr", m_bnrCacheDir.c_str(), id));
+				fsop_deleteFile(fmt("%s/%.3s.bnr", m_customBnrDir.c_str(), id));
 				_downloadBnr(id);
 				_showCoverBanner();
 			}
@@ -114,6 +116,8 @@ void CMenu::_CoverBanner(void)
 				_hideCoverBanner();
 				fsop_deleteFile(fmt("%s/%s.bnr", m_bnrCacheDir.c_str(), id));
 				fsop_deleteFile(fmt("%s/%s.bnr", m_customBnrDir.c_str(), id));
+				fsop_deleteFile(fmt("%s/%.3s.bnr", m_bnrCacheDir.c_str(), id));
+				fsop_deleteFile(fmt("%s/%.3s.bnr", m_customBnrDir.c_str(), id));
 				_showCoverBanner();
 			}
 		}
