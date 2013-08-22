@@ -173,17 +173,15 @@ const CMenu::SOption CMenu::_NoDVD[3] = {
 	{ "NoDVDon", L"Enabled" },
 };
 
-const CMenu::SOption CMenu::_GlobalGCLoaders[3] = {
-	{ "GC_DM", L"DIOS-MIOS" },
-	{ "GC_Devo", L"Devolution" },
-	{ "GC_Auto", L"Auto" },
+const CMenu::SOption CMenu::_GlobalGCLoaders[2] = {
+	{ "GC_Auto", L"Auto MIOS" },
+	{ "GC_Devo", L"Devolution" }
 };
 
-const CMenu::SOption CMenu::_GCLoader[4] = {
+const CMenu::SOption CMenu::_GCLoader[3] = {
 	{ "GC_Def", L"Default" },
-	{ "GC_DM", L"DIOS-MIOS" },
-	{ "GC_Devo", L"Devolution" },
-	{ "GC_Auto", L"Auto" },
+	{ "GC_Auto", L"Auto MIOS" },
+	{ "GC_Devo", L"Devolution" }
 };
 
 const CMenu::SOption CMenu::_vidModePatch[4] = {
@@ -871,9 +869,8 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	bool isqf = false;
 	const char *mios_wad = NULL;
 
-	if(loader == 2) //auto selected
+	if(loader == 0) //auto selected
 	{
-		loader = 0; /* force dm boot */
 		for(u8 i = 0; i < QFIDN; i++)
 		{
 			if(strncmp(id, qfid[i], strlen(qfid[i])) == 0)
