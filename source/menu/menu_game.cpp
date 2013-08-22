@@ -816,9 +816,9 @@ void CMenu::_launch(const dir_discHdr *hdr)
 #define QFIDN 6
 static const char *qfid[QFIDN] = {
 "GGPE01", //Mario Kart Arcade GP
-"GGPE02", //Mario Kart Arcade GP
+"GGPE02", //Mario Kart Arcade GP 2
 "GFZJ8P", //F-Zero AX
-"GVSJ8P", // VirtuaStriker4
+"GVSJ8P", // Virtua Striker 4
 "GVS46E", // Virtua Striker 4 Ver.2006
 "GVS46J", // Virtua Striker 4 Ver.2006
 };
@@ -871,6 +871,8 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 
 	if(loader == 0) //auto selected
 	{
+		gprintf("Auto installing MIOS\n");
+		_showWaitMessage();
 		for(u8 i = 0; i < QFIDN; i++)
 		{
 			if(strncmp(id, qfid[i], strlen(qfid[i])) == 0)
@@ -1223,7 +1225,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		setLanguage(language);
 		ocarina_load_code(cheatFile, cheatSize);
 		NandHandle.Patch_AHB(); /* Identify may takes it */
-		PatchIOS(); /* Patch for everything */
+		PatchIOS(true); /* Patch for everything */
 		Identify(gameTitle);
 		ExternalBooter_ChannelSetup(gameTitle, use_dol);
 		WiiFlow_ExternalBooter(videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, 0, TYPE_CHANNEL, use_led);

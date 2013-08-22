@@ -43,16 +43,19 @@ static const u8 hash_patch[] = { 0x20, 0x00, 0x23, 0xA2 };
 static const u8 new_hash_old[] = { 0x20, 0x07, 0x4B, 0x0B };
 static const u8 new_hash_patch[] = { 0x20, 0x00, 0x4B, 0x0B };
 
-void PatchIOS(void)
+void PatchIOS(bool patch_all)
 {
 	__ES_Close();
 	write16(MEM_PROT, 0);
 	/* Do Patching */
 	apply_patch("isfs_permissions", isfs_perm_old, isfs_perm_patch, sizeof(isfs_perm_patch));
-	apply_patch("es_setuid", setuid_old, setuid_patch, sizeof(setuid_patch));
-	apply_patch("es_identify", es_identify_old, es_identify_patch, sizeof(es_identify_patch));
-	apply_patch("hash_check", hash_old, hash_patch, sizeof(hash_patch));
-	apply_patch("new_hash_check", new_hash_old, new_hash_patch, sizeof(new_hash_patch));
+	if(patch_all)
+	{
+		apply_patch("es_setuid", setuid_old, setuid_patch, sizeof(setuid_patch));
+		apply_patch("es_identify", es_identify_old, es_identify_patch, sizeof(es_identify_patch));
+		apply_patch("hash_check", hash_old, hash_patch, sizeof(hash_patch));
+		apply_patch("new_hash_check", new_hash_old, new_hash_patch, sizeof(new_hash_patch));
+	}
 	/* Reinit */
 	write16(MEM_PROT, 1);
 	__ES_Init();

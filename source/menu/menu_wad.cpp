@@ -53,11 +53,12 @@ void skip_align(FILE *f, u32 size)
 
 int isfs_WriteFile(const char *app_name, const void *content, u32 size)
 {
+	s32 fd = -1;
 	memset(&ISFS_Path, 0, ISFS_MAXPATH);
 	strcpy(ISFS_Path, app_name);
 	ISFS_Delete(ISFS_Path);
-	ISFS_CreateFile(ISFS_Path, 0, 3, 3, 3);
-	s32 fd = ISFS_Open(ISFS_Path, ISFS_OPEN_WRITE);
+	if(ISFS_CreateFile(ISFS_Path, 0, ISFS_OPEN_RW, ISFS_OPEN_RW, ISFS_OPEN_RW) == 0)
+		fd = ISFS_Open(ISFS_Path, ISFS_OPEN_RW);
 	if(fd < 0)
 		return fd;
 	s32 ret = ISFS_Write(fd, content, size);
@@ -188,8 +189,8 @@ int installWad(const char *path)
 				(u32)(tid>>32), (u32)tid&0xFFFFFFFF, content->cid);
 			strcpy(ISFS_Path, app_name);
 			ISFS_Delete(ISFS_Path);
-			ISFS_CreateFile(ISFS_Path, 0, 3, 3, 3);
-			fd = ISFS_Open(ISFS_Path, ISFS_OPEN_WRITE);
+			if(ISFS_CreateFile(ISFS_Path, 0, ISFS_OPEN_RW, ISFS_OPEN_RW, ISFS_OPEN_RW) == 0)
+				fd = ISFS_Open(ISFS_Path, ISFS_OPEN_RW);
 			if(fd >= 0)
 				gprintf("Writing Real NAND File %s\n", ISFS_Path);
 		}
@@ -437,6 +438,13 @@ void CMenu::_Wad(const char *wad_path, bool autoInstall)
 			return;
 		}
 	}
+	if(autoInstall)
+	{
+		if(mios == true)
+			installWad(wad_path);
+		MIOSisDML();
+		return;
+	}
 
 	u8 part = currentPartition;
 	m_btnMgr.setText(m_wadLblDialog, wfmt(_fmt("wad3", L"Selected %s, after the installation you return to the explorer."), (strrchr(wad_path, '/')+1)));
@@ -448,9 +456,9 @@ void CMenu::_Wad(const char *wad_path, bool autoInstall)
 		_mainLoopCommon();
 		if(BTN_HOME_PRESSED || BTN_B_PRESSED)
 			break;
-		else if(BTN_A_PRESSED || autoInstall)
+		else if(BTN_A_PRESSED)
 		{
-			if(m_btnMgr.selected(m_wadBtnInstall) || autoInstall)
+			if(m_btnMgr.selected(m_wadBtnInstall))
 			{
 				_hideWad(true);
 				m_btnMgr.setProgress(m_wbfsPBar, 0.f);
@@ -473,11 +481,7 @@ void CMenu::_Wad(const char *wad_path, bool autoInstall)
 				if(result < 0)
 					m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wad5", L"Installation error %i!"), result));
 				else
-				{
 					m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wad6", L"Installation finished with %i hash fails."), result));
-					if(autoInstall)
-						break;
-				}
 			}
 			else if((m_btnMgr.selected(m_configBtnPartitionP) || m_btnMgr.selected(m_configBtnPartitionM)))
 			{
