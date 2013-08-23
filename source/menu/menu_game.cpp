@@ -1126,7 +1126,6 @@ int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id, bool RealNAND_Channels)
 void CMenu::_launchChannel(dir_discHdr *hdr)
 {
 	_launchShutdown();
-	u32 gameIOS = 0;
 	string id = string(hdr->id);
 
 	bool NAND_Emu = !m_cfg.getBool(CHANNEL_DOMAIN, "disable", true);
@@ -1175,6 +1174,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	u64 gameTitle = TITLE_ID(hdr->settings[0],hdr->settings[1]);
 	bool useNK2o = (m_gcfg2.getBool(id, "useneek", false) && !neek2o());
 	bool use_led = m_gcfg2.getBool(id, "led", false);
+	u32 gameIOS = ChannelHandle.GetRequestedIOS(gameTitle);
 
 	m_gcfg1.save(true);
 	m_gcfg2.save(true);
@@ -1185,8 +1185,6 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	if(NAND_Emu && !neek2o())
 	{
 		NANDemuView = true;
-		NandHandle.SetNANDEmu(currentPartition); /* Init NAND Emu */
-		NandHandle.SetPaths(emuPath.c_str(), DeviceName[currentPartition]);
 		if(useNK2o)
 		{
 			if(!Load_Neek2o_Kernel())
@@ -1200,7 +1198,6 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 			while(1) usleep(500);
 		}
 	}
-	gameIOS = ChannelHandle.GetRequestedIOS(gameTitle);
 	if(_loadIOS(gameIOS, userIOS, id, !NAND_Emu) == LOAD_IOS_FAILED)
 		Sys_Exit();
 	if((CurrentIOS.Type == IOS_TYPE_D2X || neek2o()) && returnTo != 0)
