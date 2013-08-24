@@ -853,7 +853,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 
 	u8 videoMode = min((u32)m_gcfg2.getInt(id, "dml_video_mode", 0), ARRAY_SIZE(CMenu::_DMLvideoModes) - 1u);
 	videoMode = (videoMode == 0) ? min((u32)m_cfg.getInt(GC_DOMAIN, "video_mode", 0), ARRAY_SIZE(CMenu::_GlobalDMLvideoModes) - 1u) : videoMode-1;
-	if(videoMode == 0)
+	if(disc || videoMode == 0)
 	{
 		if(id[3] == 'E' || id[3] == 'J')
 			videoMode = 2; //NTSC 480i
@@ -888,25 +888,27 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 			if(strncmp(id, qfid[i], strlen(qfid[i])) == 0)
 				isqf = true;
 		}
-		if(isqf)
+		if(isqf == true)
 		{
 			if(currentPartition == SD && (m_mios_ver != 2 || m_sd_dm == false))
 				mios_wad = fmt("%s/qfsd.wad", m_miosDir.c_str());
 			else if(currentPartition != SD && (m_mios_ver != 2 || m_sd_dm == true))
 				mios_wad = fmt("%s/qfusb.wad", m_miosDir.c_str());
 		}
-		else
+		else if(disc == false)
 		{
 			if(currentPartition == SD && (m_mios_ver != 1 || m_sd_dm == false))
 				mios_wad = fmt("%s/dml.wad", m_miosDir.c_str());
 			else if(currentPartition != SD && (m_mios_ver != 1 || m_sd_dm == true))
 				mios_wad = fmt("%s/dm.wad", m_miosDir.c_str());
 		}
+		else if(m_mios_ver != 0)
+			mios_wad = fmt("%s/mios.wad", m_miosDir.c_str());
 		if(mios_wad != NULL && fsop_FileExist(mios_wad))
 			_Wad(mios_wad, true);//install mios
 	}
 	//copy DML game from USB to SD if needed for DML
-	if(loader == 0 && currentPartition != SD && m_sd_dm == true && strcasestr(hdr->path, ".iso") == NULL)
+	if(disc == false && loader == 0 && currentPartition != SD && m_sd_dm == true && strcasestr(hdr->path, ".iso") == NULL)
 	{
 		bool foundOnSD = false;
 		ListGenerator SD_List;
@@ -948,7 +950,9 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	}
 	_launchShutdown();
 	bool DIOSMIOS = false;
-	if(loader == 0 || strcasestr(path, "boot.bin") != NULL)
+	if(disc == true)
+		DIOSMIOS = true;
+	else if(loader == 0 || strcasestr(path, "boot.bin") != NULL)
 	{
 		DIOSMIOS = true;
 		char CheatPath[256];
@@ -991,7 +995,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	m_cfg.save(true);
 	cleanup();
 
-	GC_SetVideoMode(videoMode, videoSetting, DIOSMIOS);
+	GC_SetVideoMode(videoMode, (disc ? 1 : videoSetting), DIOSMIOS);
 	GC_SetLanguage(GClanguage);
 	/* NTSC-J Patch by FIX94 */
 	if(id[3] == 'J')
