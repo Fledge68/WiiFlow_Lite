@@ -21,11 +21,6 @@ void *MEM1_realloc(void *p, unsigned int s);
 void MEM1_free(void *p);
 unsigned int MEM1_freesize();
 
-void *MEM2_lo_alloc(unsigned int s);
-void *MEM2_lo_realloc(void *p, unsigned int s);
-void MEM2_lo_free(void *p);
-unsigned int MEM2_lo_freesize();
-
 void MEM2_free(void *p);
 void *MEM2_alloc(unsigned int s);
 void *MEM2_memalign(unsigned int /* alignment */, unsigned int s);

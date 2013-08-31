@@ -46,7 +46,7 @@ bool SDHC_Init(void)
 
 	// allocate buf2
 	if(sdhc_buf2 == NULL)
-		sdhc_buf2 = MEM2_lo_alloc(SDHC_MEM2_SIZE);
+		sdhc_buf2 = MEM2_alloc(SDHC_MEM2_SIZE);
 	if(sdhc_buf2 == NULL) goto err;
 
 	/* Open SDHC device */
@@ -83,7 +83,7 @@ bool SDHC_Close(void)
 		fd = -1;
 	}
 	if(sdhc_buf2 != NULL)
-		MEM2_lo_free(sdhc_buf2);
+		MEM2_free(sdhc_buf2);
 	sdhc_buf2 = NULL;
 
 	return true;

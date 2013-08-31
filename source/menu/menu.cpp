@@ -1914,10 +1914,8 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 	}
 
 #ifdef SHOWMEM
-	m_btnMgr.setText(m_mem1FreeSize, wfmt(L"Mem1 lo Free:%u, Mem1 Free:%u", 
-				MEM1_lo_freesize(), MEM1_freesize()), true);
-	m_btnMgr.setText(m_mem2FreeSize, wfmt(L"Mem2 lo Free:%u, Mem2 Free:%u", 
-				MEM2_lo_freesize(), MEM2_freesize()), true);
+	m_btnMgr.setText(m_mem1FreeSize, wfmt(L"Mem1 lo Free:%u, Mem1 Free:%u, Mem2 Free:%u",
+				MEM1_lo_freesize(), MEM1_freesize(), MEM2_freesize()), true);
 #endif
 
 #ifdef SHOWMEMGECKO

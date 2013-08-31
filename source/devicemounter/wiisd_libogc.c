@@ -474,7 +474,7 @@ bool sdio_OGC_Deinitialize()
 	if(__sd0_fd>=0)
 		IOS_Close(__sd0_fd);
 	if(rw_buffer != NULL)
-		MEM2_lo_free(rw_buffer);
+		MEM2_free(rw_buffer);
 	rw_buffer = NULL;
 
 	__sd0_fd = -1;
@@ -486,7 +486,7 @@ bool sdio_OGC_Startup()
 {
 	if(__sdio_initialized==1) return true;
 
-	if(rw_buffer == NULL) rw_buffer = MEM2_lo_alloc(4*1024);
+	if(rw_buffer == NULL) rw_buffer = MEM2_alloc(4*1024);
 	if(rw_buffer == NULL) return false;
 
 	__sd0_fd = IOS_Open(_sd0_fs,1);
