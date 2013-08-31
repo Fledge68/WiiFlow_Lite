@@ -208,7 +208,7 @@ s32 USBStorage_OGC_Initialize()
 	_CPU_ISR_Disable(level);
 	LWP_InitQueue(&__usbstorage_ogc_waitq);
 	if(arena_ptr == NULL)
-		arena_ptr = (u8*)MEM2_lo_alloc(HEAP_SIZE);
+		arena_ptr = (u8*)MEM2_alloc(HEAP_SIZE);
 	if(arena_ptr == NULL)
 		return IPC_ENOMEM;
 
@@ -952,7 +952,7 @@ static bool __usbstorage_ogc_Shutdown(void)
 	if (__vid != 0 || __pid != 0)
 		USBStorage_OGC_Close(&__usbfd);
 	if(arena_ptr != NULL)
-		MEM2_lo_free(arena_ptr);
+		MEM2_free(arena_ptr);
 	arena_ptr = NULL;
 
 	return true;

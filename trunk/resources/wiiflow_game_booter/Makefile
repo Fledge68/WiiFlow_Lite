@@ -23,7 +23,7 @@ INCLUDES	:=	source
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-CFLAGS		=	-g -ggdb -O1 -Wall -Wextra $(MACHDEP) $(INCLUDE) -DHAVE_CONFIG_H
+CFLAGS		=	-g -ggdb -Ofast -Wall -Wextra $(MACHDEP) $(INCLUDE) -DHAVE_CONFIG_H
 CXXFLAGS	=	$(CFLAGS)
 LDFLAGS		=	-g -ggdb $(MACHDEP) -Wl,-Map,$(notdir $@).map,--section-start,.init=0x80B00000
 
