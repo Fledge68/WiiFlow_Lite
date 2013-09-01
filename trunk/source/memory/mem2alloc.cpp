@@ -92,7 +92,7 @@ void *CMEM2Alloc::allocate(unsigned int s)
 		j->next = i->next;
 		j->prev = i;
 		i->next = j;
-		if (j->next != 0)
+		if((((u32)j->next) & 0xf0000000) != 0)
 			j->next->prev = j;
 	}
 	return (void *)(i + 1);
@@ -109,24 +109,24 @@ void CMEM2Alloc::release(void *p)
 
 	// If there are no other blocks following yet,
 	// set the remaining size to free size. - Dimok
-	if(i->next == 0)
+	if((((u32)i->next) & 0xf0000000) == 0)
 		i->s = m_endAddress - i - 1;
 
 	// Merge with previous block
-	if (i->prev != 0 && i->prev->f)
+	if ((((u32)i->prev) & 0xf0000000) != 0 && i->prev->f)
 	{
 		i = i->prev;
 		i->s += i->next->s + 1;
 		i->next = i->next->next;
-		if (i->next != 0)
+		if((((u32)i->next) & 0xf0000000) != 0)
 			i->next->prev = i;
 	}
 	// Merge with next block
-	if (i->next != 0 && i->next->f)
+	if ((((u32)i->next) & 0xf0000000) != 0 && i->next->f)
 	{
 		i->s += i->next->s + 1;
 		i->next = i->next->next;
-		if (i->next != 0)
+		if((((u32)i->next) & 0xf0000000) != 0)
 			i->next->prev = i;
 	}
 }
@@ -144,49 +144,49 @@ void *CMEM2Alloc::reallocate(void *p, unsigned int s)
 
 	i = (SBlock *)p - 1;
 	s = (s - 1) / sizeof (SBlock) + 1;
+
+	LockMutex lock(m_mutex);
+
+	//out of memory /* Dimok */
+	if (i + s + 1 >= m_endAddress)
 	{
-		LockMutex lock(m_mutex);
-
-		//out of memory /* Dimok */
-		if (i + s + 1 >= m_endAddress)
-		{
-			return 0;
-		}
-
-		// Last block
-		if (i->next == 0 && i + s + 1 < m_endAddress)
-		{
-			i->s = s;
-			return p;
-		}
-		// Size <= current size + next block
-		if (i->next != 0 && i->s < s && i->next->f && i->s + i->next->s + 1 >= s)
-		{
-			// Merge
-			i->s += i->next->s + 1;
-			i->next = i->next->next;
-			if (i->next != 0)
-				i->next->prev = i;
-		}
-		// Size <= current size
-		if (i->s >= s)
-		{
-			// Split
-			if (i->s > s + 1)
-			{
-				j = i + s + 1;
-				j->f = true;
-				j->s = i->s - s - 1;
-				i->s = s;
-				j->next = i->next;
-				j->prev = i;
-				i->next = j;
-				if (j->next != 0)
-					j->next->prev = j;
-			}
-			return p;
-		}
+		return 0;
 	}
+
+	// Last block
+	if (((((u32)i->next) & 0xf0000000) == 0) && i + s + 1 < m_endAddress)
+	{
+		i->s = s;
+		return p;
+	}
+	// Size <= current size + next block
+	if ((((u32)i->next) & 0xf0000000) != 0 && i->s < s && i->next->f && i->s + i->next->s + 1 >= s)
+	{
+		// Merge
+		i->s += i->next->s + 1;
+		i->next = i->next->next;
+		if((((u32)i->next) & 0xf0000000) != 0)
+			i->next->prev = i;
+	}
+	// Size <= current size
+	if (i->s >= s)
+	{
+		// Split
+		if (i->s > s + 1)
+		{
+			j = i + s + 1;
+			j->f = true;
+			j->s = i->s - s - 1;
+			i->s = s;
+			j->next = i->next;
+			j->prev = i;
+			i->next = j;
+			if((((u32)j->next) & 0xf0000000) != 0)
+				j->next->prev = j;
+		}
+		return p;
+	}
+
 	// Size > current size
 	n = allocate(s * sizeof (SBlock));
 	if (n == 0)
@@ -208,13 +208,13 @@ unsigned int CMEM2Alloc::FreeSize()
 
 	for(i = m_first; i != 0; i = i->next)
 	{
-		if(i->f && i->next != 0)
+		if(i->f && (((u32)i->next) & 0xf0000000) != 0)
 			size += i->s;
 
-		else if(i->f && i->next == 0)
+		else if(i->f && (((u32)i->next) & 0xf0000000) == 0)
 			size += m_endAddress - i - 1;
 
-		else if(!i->f && i->next == 0)
+		else if(!i->f && (((u32)i->next) & 0xf0000000) == 0)
 			size += m_endAddress - i - i->s - 1;
 	}
 

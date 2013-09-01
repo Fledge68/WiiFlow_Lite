@@ -279,10 +279,14 @@ static u8 GetRequestedGameIOS(dir_discHdr *hdr)
 	wbfs_disc_t *disc = WBFS_OpenDisc((u8*)&hdr->id, hdr->path);
 	if(disc != NULL)
 	{
-		u8 *titleTMD = NULL;
-		u32 tmd_size = wbfs_extract_file(disc, (char*)"TMD", (void**)&titleTMD);
-		if(titleTMD != NULL && tmd_size > 0x18B)
-			IOS = titleTMD[0x18B];
+		void *titleTMD = NULL;
+		u32 tmd_size = wbfs_extract_file(disc, (char*)"TMD", &titleTMD);
+		if(titleTMD != NULL)
+		{
+			if(tmd_size > 0x18B)
+				IOS = *((u8*)titleTMD + 0x18B);
+			MEM2_free(titleTMD);
+		}
 		WBFS_CloseDisc(disc);
 	}
 	WBFS_Close();

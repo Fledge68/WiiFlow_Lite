@@ -17,18 +17,20 @@
 #define wbfs_fatal(x)		do { gprintf(x); wd_last_error = 1; } while(0)
 #define wbfs_error(x)		do { gprintf(x); wd_last_error = 2; } while(0)
 
-/* Thanks to cfg-loader */
-#define wbfs_malloc(x)		calloc(x, 1)
-#define wbfs_free(x)		free(x)
-
-static inline void *wbfs_ioalloc(size_t x)
+static inline void *wbfs_malloc(size_t size)
 {
-	void *p = memalign(32, x);
-	if(p)
-		memset(p, 0, x);
+	void *p = MEM2_memalign(32, size);
+	if(p) memset(p, 0, size);
 	return p;
 }
-#define wbfs_iofree(x)		free(x)
+
+static inline void wbfs_free(void *ptr)
+{
+	MEM2_free(ptr);
+}
+
+#define wbfs_ioalloc(x)		wbfs_malloc(x)
+#define wbfs_iofree(x)		wbfs_free(x)
 
 #define wbfs_be16(x)		(*((u16*)(x)))
 #define wbfs_be32(x)		(*((u32*)(x)))
