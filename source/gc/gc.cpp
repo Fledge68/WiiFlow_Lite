@@ -192,8 +192,9 @@ void DEVO_SetOptions(const char *isopath, const char *gameID, bool memcard_emu,
 	stat(isopath, &st);
 	FILE *f = fopen(isopath, "rb");
 	gprintf("Devolution: ISO Header %s\n", isopath);
-	fread((u8*)0x80000000, 1, 32, f);
+	fread((u8*)Disc_ID, 1, 32, f);
 	fclose(f);
+	f = NULL;
 
 	// fill out the Devolution config struct
 	memset(DEVO_CONFIG, 0, sizeof(gconfig));
@@ -227,14 +228,13 @@ void DEVO_SetOptions(const char *isopath, const char *gameID, bool memcard_emu,
 				f = fopen(iso2path, "rb");
 			}
 		}
-	}
-
-	if(f != NULL)
-	{
-		gprintf("Devolution: 2nd ISO File for Multi DVD Game %s\n", iso2path);
-		stat(iso2path, &st);
-		DEVO_CONFIG->disc2_cluster = st.st_ino;
-		fclose(f);
+		if(f != NULL)
+		{
+			gprintf("Devolution: 2nd ISO File for Multi DVD Game %s\n", iso2path);
+			stat(iso2path, &st);
+			DEVO_CONFIG->disc2_cluster = st.st_ino;
+			fclose(f);
+		}
 	}
 
 	// make sure these directories exist, they are required for Devolution to function correctly
@@ -285,7 +285,7 @@ void DEVO_SetOptions(const char *isopath, const char *gameID, bool memcard_emu,
 	DEVO_CONFIG->memcard_cluster = st.st_ino;
 
 	// flush disc ID and Devolution config out to memory
-	DCFlushRange((void*)0x80000000, 64);
+	DCFlushRange((void*)Disc_ID, 64);
 
 	DeviceHandle.UnMountDevolution();
 }

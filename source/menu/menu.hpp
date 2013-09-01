@@ -701,33 +701,12 @@ private:
 		WO_FORMAT,
 		WO_COPY_GAME,
 	};
-	struct fnt_type {
-		string name;
-		u32 t1;
-		u32 t2;
-		u32 t3;
-	};
-	struct cmp_fnt_type {
-		bool operator()(const fnt_type& l, const fnt_type& r)
-		{
-			if (l.name < r.name)  return true;
-			if (l.name > r.name)  return false;
-			if (l.t1 < r.t1)  return true;
-			if (l.t1 > r.t1)  return false;
-			if (l.t2 < r.t2)  return true;
-			if (l.t2 > r.t2)  return false;
-			if (l.t3 < r.t3)  return true;
-			if (l.t3 > r.t3)  return false;
-			return false;
-		}
-	};
-	typedef map<fnt_type, SFont, cmp_fnt_type> FontSet;
 	typedef map<string, TexData> TexSet;
 	typedef map<string, GuiSound*> SoundSet;
 	struct SThemeData
 	{
 		TexSet texSet;
-		FontSet fontSet;
+		vector<SFont> fontSet;
 		SoundSet soundSet;
 		SFont btnFont;
 		SFont lblFont;
@@ -1072,7 +1051,7 @@ private:
 	void UpdateCache(u32 view = COVERFLOW_MAX);
 	void MIOSisDML();
 	void RemoveCover(const char *id);
-	SFont _font(CMenu::FontSet &fontSet, const char *domain, const char *key, u32 fontSize, u32 lineSpacing, u32 weight, u32 index, const char *genKey);
+	SFont _font(const char *domain, const char *key, u32 fontSize, u32 lineSpacing, u32 weight, u32 index, const char *genKey);
 	TexData _texture(const char *domain, const char *key, TexData &def, bool freeDef = true);
 	vector<TexData> _textures(const char *domain, const char *key);
 	void _showWaitMessage();

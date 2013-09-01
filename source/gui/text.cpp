@@ -164,11 +164,11 @@ void SFont::ClearData(void)
 	dataSize = 0;
 }
 
-bool SFont::fromBuffer(const u8 *buffer, const u32 bufferSize, u32 size, u32 lspacing, u32 w, u32 idx, const char *)
+bool SFont::fromBuffer(const u8 *buffer, const u32 bufferSize, u32 size, u32 lspacing, u32 w, u32 idx, const char *fontname)
 {
 	if(buffer == NULL)
 		return false;
-	size = min(max(6u, size), 1000u);
+	fSize = min(max(6u, size), 1000u);
 	lineSpacing = min(max(6u, lspacing), 1000u);
 	weight = min(w, 32u);
 	index = idx;
@@ -182,14 +182,15 @@ bool SFont::fromBuffer(const u8 *buffer, const u32 bufferSize, u32 size, u32 lsp
 	memcpy(data, buffer, bufferSize);
 	DCFlushRange(data, dataSize);
 
+	memcpy(name, fontname, 127);
 	font = new FreeTypeGX();
-	font->loadFont(data, dataSize, size, weight, index, false);
+	font->loadFont(data, dataSize, fSize, weight, index, false);
 	return true;
 }
 
-bool SFont::fromFile(const char *filename, u32 size, u32 lspacing, u32 w, u32 idx)
+bool SFont::fromFile(const char *path, u32 size, u32 lspacing, u32 w, u32 idx, const char *fontname)
 {
-	size = min(max(6u, size), 1000u);
+	fSize = min(max(6u, size), 1000u);
 	weight = min(w, 32u);
 	index = idx = 0;
 
@@ -197,14 +198,15 @@ bool SFont::fromFile(const char *filename, u32 size, u32 lspacing, u32 w, u32 id
 
 	if(data != NULL)
 		free(data);
-	data = fsop_ReadFile(filename, &dataSize);
+	data = fsop_ReadFile(path, &dataSize);
 	if(data == NULL)
 		return false;
 
 	DCFlushRange(data, dataSize);
 
+	memcpy(name, fontname, 127);
 	font = new FreeTypeGX();
-	font->loadFont(data, dataSize, size, weight, index, false);
+	font->loadFont(data, dataSize, fSize, weight, index, false);
 	return true;
 }
 
