@@ -30,6 +30,7 @@
 #include "SoundHandler.hpp"
 #include "MusicPlayer.hpp"
 #include "WavDecoder.hpp"
+#include "fileOps/fileOps.h"
 #include "loader/sys.h"
 #include "banner/AnimatedBanner.h"
 #include "memory/mem2.hpp"
@@ -166,8 +167,7 @@ bool GuiSound::Load(const char *path)
 	if(path == NULL || path[strlen(path)-1] == '/')
 		return false;
 
-	FILE *f = fopen(path, "rb");
-	if(!f)
+	if(!fsop_FileExist(path))
 	{
 		gprintf("gui_sound.cpp: Failed to load file %s!!\n", path);
 		return false;

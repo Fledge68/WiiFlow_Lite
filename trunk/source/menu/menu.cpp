@@ -619,8 +619,8 @@ void CMenu::_Theme_Cleanup(void)
 	/* Other Theme Stuff */
 	for(TexSet::iterator texture = theme.texSet.begin(); texture != theme.texSet.end(); ++texture)
 		TexHandle.Cleanup(texture->second);
-	for(FontSet::iterator font = theme.fontSet.begin(); font != theme.fontSet.end(); ++font)
-		font->second.ClearData();
+	for(vector<SFont>::iterator font = theme.fontSet.begin(); font != theme.fontSet.end(); ++font)
+		font->ClearData();
 	for(SoundSet::iterator sound = theme.soundSet.begin(); sound != theme.soundSet.end(); ++sound)
 		sound->second->FreeMemory();
 	theme.texSet.clear();
@@ -679,7 +679,7 @@ void CMenu::_loadCFCfg()
 	string texNoCoverFlat = fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString(domain, "missing_cover_flat").c_str());
 	CoverFlow.setTextures(texLoading, texLoadingFlat, texNoCover, texNoCoverFlat);
 	// Font
-	CoverFlow.setFont(_font(theme.fontSet, domain, "font", TITLEFONT), m_theme.getColor(domain, "font_color", CColor(0xFFFFFFFF)));
+	CoverFlow.setFont(_font(domain, "font", TITLEFONT), m_theme.getColor(domain, "font_color", CColor(0xFFFFFFFF)));
 	// Coverflow Count
 	m_numCFVersions = min(max(2, m_theme.getInt("_COVERFLOW", "number_of_modes", 2)), 15);
 }
@@ -959,16 +959,16 @@ void CMenu::_loadCFLayout(int version, bool forceAA, bool otherScrnFmt)
 void CMenu::_buildMenus(void)
 {
 	// Default fonts
-	theme.btnFont = _font(theme.fontSet, "GENERAL", "button_font", BUTTONFONT);
+	theme.btnFont = _font("GENERAL", "button_font", BUTTONFONT);
 	theme.btnFontColor = m_theme.getColor("GENERAL", "button_font_color", 0xD0BFDFFF);
 
-	theme.lblFont = _font(theme.fontSet, "GENERAL", "label_font", LABELFONT);
+	theme.lblFont = _font("GENERAL", "label_font", LABELFONT);
 	theme.lblFontColor = m_theme.getColor("GENERAL", "label_font_color", 0xD0BFDFFF);
 
-	theme.titleFont = _font(theme.fontSet, "GENERAL", "title_font", TITLEFONT);
+	theme.titleFont = _font("GENERAL", "title_font", TITLEFONT);
 	theme.titleFontColor = m_theme.getColor("GENERAL", "title_font_color", 0xFFFFFFFF);
 
-	theme.txtFont = _font(theme.fontSet, "GENERAL", "text_font", TEXTFONT);
+	theme.txtFont = _font("GENERAL", "text_font", TEXTFONT);
 	theme.txtFontColor = m_theme.getColor("GENERAL", "text_font_color", 0xFFFFFFFF);
 
 	// Default Sounds
@@ -1186,9 +1186,9 @@ typedef struct
 	u32 res;
 } FontHolder;
 
-SFont CMenu::_font(CMenu::FontSet &fontSet, const char *domain, const char *key, u32 fontSize, u32 lineSpacing, u32 weight, u32 index, const char *genKey)
+SFont CMenu::_font(const char *domain, const char *key, u32 fontSize, u32 lineSpacing, u32 weight, u32 index, const char *genKey)
 {
-	string filename = "";
+	string filename;
 	bool general = strncmp(domain, "GENERAL", 7) == 0;
 	FontHolder fonts[3] = {{ "_size", 6u, 300u, fontSize, 0 }, { "_line_height", 6u, 300u, lineSpacing, 0 }, { "_weight", 1u, 32u, weight, 0 }};
 
@@ -1214,27 +1214,28 @@ SFont CMenu::_font(CMenu::FontSet &fontSet, const char *domain, const char *key,
 	}
 
 	/* ONLY return the font if spacing and weight are the same */
-	fnt_type font_req;
-	font_req.name = upperCase(filename.c_str());
-	font_req.t1 = fonts[0].res;
-	font_req.t2 = fonts[1].res;
-	font_req.t3 = fonts[2].res;
-	FontSet::iterator i = fontSet.find(font_req);
-	if (i != fontSet.end()) return i->second;
+	std::vector<SFont>::iterator font_itr;
+	for(font_itr = theme.fontSet.begin(); font_itr != theme.fontSet.end(); ++font_itr)
+	{
+		if(strncmp(filename.c_str(), font_itr->name, 127) == 0 && font_itr->fSize == fonts[0].res &&
+				font_itr->lineSpacing == fonts[1].res && font_itr->weight && fonts[2].res)
+			break;
+	}
+	if (font_itr != theme.fontSet.end()) return *font_itr;
 
 	// TTF not found in memory, load it to create a new font
 	SFont retFont;
-	if (!useDefault && retFont.fromFile(fmt("%s/%s", m_themeDataDir.c_str(), filename.c_str()), fonts[0].res, fonts[1].res, fonts[2].res, index))
+	if(!useDefault && retFont.fromFile(fmt("%s/%s", m_themeDataDir.c_str(), filename.c_str()), fonts[0].res, fonts[1].res, fonts[2].res, index, filename.c_str()))
 	{
 		// Theme Font
-		fontSet[font_req] = retFont;
+		theme.fontSet.push_back(retFont);
 		return retFont;
 	}
 	/* Fallback to default font */
-	if(retFont.fromBuffer(m_base_font, m_base_font_size, fonts[0].res, fonts[1].res, fonts[2].res, index))
+	if(retFont.fromBuffer(m_base_font, m_base_font_size, fonts[0].res, fonts[1].res, fonts[2].res, index, filename.c_str()))
 	{
 		// Default font
-		fontSet[font_req] = retFont;
+		theme.fontSet.push_back(retFont);
 		return retFont;
 	}
 	return retFont;
@@ -1386,7 +1387,7 @@ s16 CMenu::_addButton(const char *domain, SFont font, const wstringEx &text, int
 	btnTexSet.leftSel = _texture(domain, "texture_left_selected", theme.btnTexLS, false);
 	btnTexSet.rightSel = _texture(domain, "texture_right_selected", theme.btnTexRS, false);
 	btnTexSet.centerSel = _texture(domain, "texture_center_selected", theme.btnTexCS, false);
-	font = _font(theme.fontSet, domain, "font", BUTTONFONT);
+	font = _font(domain, "font", BUTTONFONT);
 	GuiSound *clickSound = _sound(theme.soundSet, domain, "click_sound", theme.clickSound->GetName());
 	GuiSound *hoverSound = _sound(theme.soundSet, domain, "hover_sound", theme.hoverSound->GetName());
 	return m_btnMgr.addButton(font, text, x, y, width, height, c, btnTexSet, clickSound, hoverSound);
@@ -1414,7 +1415,7 @@ s16 CMenu::_addTitle(const char *domain, SFont font, const wstringEx &text, int 
 	y = m_theme.getInt(domain, "y", y);
 	width = m_theme.getInt(domain, "width", width);
 	height = m_theme.getInt(domain, "height", height);
-	font = _font(theme.fontSet, domain, "font", TITLEFONT);
+	font = _font(domain, "font", TITLEFONT);
 	style = _textStyle(domain, "style", style);
 	return m_btnMgr.addLabel(font, text, x, y, width, height, c, style);
 }
@@ -1428,7 +1429,7 @@ s16 CMenu::_addText(const char *domain, SFont font, const wstringEx &text, int x
 	y = m_theme.getInt(domain, "y", y);
 	width = m_theme.getInt(domain, "width", width);
 	height = m_theme.getInt(domain, "height", height);
-	font = _font(theme.fontSet, domain, "font", TEXTFONT);
+	font = _font(domain, "font", TEXTFONT);
 	style = _textStyle(domain, "style", style);
 	return m_btnMgr.addLabel(font, text, x, y, width, height, c, style);
 }
@@ -1442,7 +1443,7 @@ s16 CMenu::_addLabel(const char *domain, SFont font, const wstringEx &text, int 
 	y = m_theme.getInt(domain, "y", y);
 	width = m_theme.getInt(domain, "width", width);
 	height = m_theme.getInt(domain, "height", height);
-	font = _font(theme.fontSet, domain, "font", LABELFONT);
+	font = _font(domain, "font", LABELFONT);
 	style = _textStyle(domain, "style", style);
 	return m_btnMgr.addLabel(font, text, x, y, width, height, c, style);
 }
@@ -1456,7 +1457,7 @@ s16 CMenu::_addLabel(const char *domain, SFont font, const wstringEx &text, int 
 	y = m_theme.getInt(domain, "y", y);
 	width = m_theme.getInt(domain, "width", width);
 	height = m_theme.getInt(domain, "height", height);
-	font = _font(theme.fontSet, domain, "font", BUTTONFONT);
+	font = _font(domain, "font", BUTTONFONT);
 	TexData texBg = _texture(domain, "background_texture", bg, false);
 	style = _textStyle(domain, "style", style);
 	return m_btnMgr.addLabel(font, text, x, y, width, height, c, style, texBg);
