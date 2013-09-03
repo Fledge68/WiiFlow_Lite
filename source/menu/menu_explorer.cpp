@@ -242,7 +242,8 @@ void CMenu::_Explorer(void)
 						}
 						else if(strcasestr(file, ".txt") != NULL || strcasestr(file, ".nfo") != NULL
 							|| strcasestr(file, ".ini") != NULL || strcasestr(file, ".conf") != NULL
-							|| strcasestr(file, ".cfg") != NULL || strcasestr(file, ".xml") != NULL)
+							|| strcasestr(file, ".cfg") != NULL || strcasestr(file, ".xml") != NULL
+							|| strcasestr(file, ".log") != NULL)
 						{
 							_hideExplorer();
 							m_txt_view = true;
