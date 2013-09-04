@@ -419,7 +419,7 @@ s32 CMenu::_networkComplete(s32 ok, void *usrData)
 
 int CMenu::_initNetwork()
 {
-	while (net_get_status() == -EBUSY || m_thrdNetwork) {}; // Async initialization may be busy, wait to see if it succeeds.
+	while (net_get_status() == -EBUSY && m_thrdNetwork == true) { usleep(100); }; // Async initialization may be busy, wait to see if it succeeds.
 	if (networkInit) return 0;
 	if (!_isNetworkAvailable()) return -2;
 
