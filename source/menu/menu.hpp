@@ -1016,6 +1016,7 @@ private:
 	void _PluginSettings();
 	void _CategorySettings(bool fromGameSet = false);
 	bool _Home();
+	bool _HomeFTP_Loop();
 	bool _ExitTo();
 	bool _Boot();
 	void _Paths();
