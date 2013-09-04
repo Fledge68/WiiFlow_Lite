@@ -509,7 +509,7 @@ int CMenu::main(void)
 			//Events to Switch off/on nand emu
 			else if(m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML)|| m_btnMgr.selected(m_mainBtnEmu) || m_btnMgr.selected(m_mainBtnHomebrew))
 			{
-				if(m_cfg.getBool("GENERAL", "b_on_mode_to_source", false))
+				if(m_cfg.getBool("GENERAL", "b_on_mode_to_source", true))
 				{
 					_hideMain();
 					if(!_Source()) //Different source selected
@@ -1148,8 +1148,19 @@ void CMenu::_setPartition(s8 direction)
 	else
 	{
 		m_cfg.setInt(_domainFromView(), "partition", currentPartition);
-		_checkForSinglePlugin();
+		vector<bool> plugin_list = m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
 		if(enabledPluginsCount == 1)
+		{
+			u8 i = 0;
+			for(i = 0; i < enabledPluginsCount; ++i)
+			{
+				if(plugin_list[i] == true)
+					break;
+			}
+			char PluginMagicWord[9];
+			memset(PluginMagicWord, 0, sizeof(PluginMagicWord));
+			strncpy(PluginMagicWord, fmt("%08x", m_plugin.getPluginMagic(i)), 8);
 			m_cfg.setInt("PLUGINS/PARTITION", PluginMagicWord, currentPartition);
+		}
 	}
 }

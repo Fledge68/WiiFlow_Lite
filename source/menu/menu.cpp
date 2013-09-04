@@ -125,6 +125,7 @@ CMenu::CMenu()
 	m_use_wifi_gecko = false;
 	init_network = false;
 	m_use_source = true;
+	m_multisource = false;
 	m_clearCats = true;
 	m_catStartPage = 1;
 	m_combined_view = false;
@@ -274,6 +275,7 @@ void CMenu::init()
 			return;
 		}
 	}
+	m_multisource = m_cfg.getBool("GENERAL", "multisource", false);
 	/* DIOS_MIOS stuff */
 	if(m_cfg.getBool(GC_DOMAIN, "always_show_button", false))
 	{
@@ -1511,25 +1513,6 @@ void CMenu::_addUserLabels(s16 *ids, u32 start, u32 size, const char *domain)
 	}
 }
 
-void CMenu::_checkForSinglePlugin(void)
-{
-	enabledPluginPos = 0;
-	enabledPluginsCount = 0;
-	const vector<bool> &EnabledPlugins = m_plugin.GetEnabledPlugins(m_cfg);
-	if(m_cfg.getBool(PLUGIN_DOMAIN, "source", true) && EnabledPlugins.size() != 0)
-	{
-		for(u8 i = 0; i < EnabledPlugins.size(); i++)
-		{
-			if(EnabledPlugins.at(i))
-			{
-				enabledPluginPos = i;
-				enabledPluginsCount++;
-			}
-		}
-		snprintf(PluginMagicWord, sizeof(PluginMagicWord), "%08x", m_plugin.getPluginMagic(enabledPluginPos));
-	}
-}
-
 void CMenu::_initCF(void)
 {
 	Config dump, gameAgeList;
@@ -1556,8 +1539,7 @@ void CMenu::_initCF(void)
 			gametdb.SetLanguageCode(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
 		}
 	}
-	_checkForSinglePlugin();
-	const vector<bool> &EnabledPlugins = m_plugin.GetEnabledPlugins(m_cfg);
+	const vector<bool> &EnabledPlugins = m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
 
 	for(vector<dir_discHdr>::iterator element = m_gameList.begin(); element != m_gameList.end(); ++element)
 	{

@@ -74,7 +74,7 @@ void CMenu::_updatePluginCheckboxes(void)
 		m_btnMgr.hide(m_pluginBtn[i]);
 		m_btnMgr.hide(m_pluginLblCat[i]);
 	}
-	const vector<bool> &EnabledPlugins = m_plugin.GetEnabledPlugins(m_cfg);
+	const vector<bool> &EnabledPlugins = m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
 	/* ALL Button */
 	if(EnabledPlugins.size() == 0)
 		m_pluginBtn[0] = m_pluginBtnCats[0];
@@ -153,9 +153,9 @@ void CMenu::_PluginSettings()
 				{
 					if(i == 0)
 					{
-						bool EnableAll = m_plugin.GetEnabledPlugins(m_cfg).size();
+						m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
 						for(u8 j = 0; m_plugin.PluginExist(j); j++)
-							m_plugin.SetEnablePlugin(m_cfg, j, EnableAll ? 2 : 1);
+							m_plugin.SetEnablePlugin(m_cfg, j, (enabledPluginsCount == 0) ? 2 : 1);
 					}
 					else
 						m_plugin.SetEnablePlugin(m_cfg, i+IteratorHelp-1);

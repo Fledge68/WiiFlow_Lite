@@ -153,7 +153,17 @@ void Plugin::SetEnablePlugin(Config &cfg, u8 pos, u8 ForceMode)
 	}
 }
 
-const vector<bool> &Plugin::GetEnabledPlugins(Config &cfg)
+bool Plugin::GetEnableStatus(Config &cfg, u32 magic)
+{
+	if((Plugin_Pos = GetPluginPosition(magic)) >= 0)
+	{
+		strncpy(PluginMagicWord, fmt("%08x", magic), 8);
+		return cfg.getBool(PLUGIN_INI_DEF, PluginMagicWord, true);
+	}
+	return false;
+}
+
+const vector<bool> &Plugin::GetEnabledPlugins(Config &cfg, u8 *num)
 {
 	enabledPlugins.clear();
 	u8 enabledPluginsNumber = 0;
@@ -170,6 +180,8 @@ const vector<bool> &Plugin::GetEnabledPlugins(Config &cfg)
 	}
 	if(enabledPluginsNumber == Plugins.size())
 		enabledPlugins.clear();
+	if(num != NULL)
+		*num = enabledPluginsNumber;
 	return enabledPlugins;
 }
 
