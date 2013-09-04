@@ -563,13 +563,17 @@ void CMenu::_game(bool launch)
 						currentPartition = m_cfg.getInt(WII_DOMAIN, "partition", 1);
 						break;
 					default:
-						_checkForSinglePlugin();
+						m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
 						if(enabledPluginsCount == 1)
 						{
+							char PluginMagicWord[9];
+							memset(PluginMagicWord, 0, sizeof(PluginMagicWord));
+							strncpy(PluginMagicWord, fmt("%08x", hdr->settings[0]), 8);
 							currentPartition = m_cfg.getInt("PLUGINS/PARTITION", PluginMagicWord, 1);
 							m_cfg.setInt(PLUGIN_DOMAIN, "partition", currentPartition);
 						}
 						currentPartition = m_cfg.getInt(PLUGIN_DOMAIN, "partition", 1);
+						break;
 				}
 				/* Get Banner Title for Playlog */
 				CurrentBanner.ClearBanner();

@@ -59,12 +59,13 @@ public:
 	u32 GetBannerSoundSize();
 	const char *GetDolName(u32 magic);
 	const char *GetCoverFolderName(u32 magic);
+	bool GetEnableStatus(Config &cfg, u32 magic);
 	string GenerateCoverLink(dir_discHdr gameHeader, const string& constURL, Config &Checksums);
 	wstringEx GetPluginName(u8 pos);
 	u32 getPluginMagic(u8 pos);
 	bool PluginExist(u8 pos);
 	void SetEnablePlugin(Config &cfg, u8 pos, u8 ForceMode = 0);
-	const vector<bool> &GetEnabledPlugins(Config &cfg);
+	const vector<bool> &GetEnabledPlugins(Config &cfg, u8 *num);
 	vector<string> CreateArgs(const char *device, const char *path, 
 		const char *title, const char *loader, u32 title_len_no_ext, u32 magic);
 	void init(const string& m_pluginsDir);

@@ -51,9 +51,7 @@ public:
 	u8 m_current_view;
 	u8 m_last_view;
 	bool m_combined_view;
-	u8 enabledPluginPos;
 	u8 enabledPluginsCount;
-	char PluginMagicWord[9];
 	u8 m_catStartPage;
 	bool m_clearCats;
 private:
@@ -90,6 +88,7 @@ private:
 	bool m_favorites;
 	bool m_music_info;
 	bool m_use_source;
+	bool m_multisource;
 	bool m_load_view;
 	s16 m_showtimer;
 	string m_curLanguage;
@@ -966,7 +965,6 @@ private:
 	void _updatePluginText(void);
 	void _updatePluginCheckboxes(void);
 	void _updateCheckboxes(void);
-	void _checkForSinglePlugin(void);
 	void _getIDCats(void);
 	void _setIDCats(void);
 	void _setBg(const TexData &tex, const TexData &lqTex);
