@@ -26,6 +26,7 @@
 #define PLUGIN_DOMAIN			"EMULATOR"
 #define HOMEBREW_DOMAIN			"HOMEBREW"
 #define MUSIC_DOMAIN			"MUSIC"
+#define FTP_DOMAIN				"FTP"
 
 #define AGE_LOCK_DEFAULT		13
 

@@ -17,6 +17,8 @@
 #include <string.h>
 #include <sys/errno.h>
 #include "FTP_Dir.hpp"
+#include "ftp.h"
+#include "net.h"
 #include "gecko/gecko.hpp"
 #include "devicemounter/DeviceHandler.hpp"
 #include "fileOps/fileOps.h"
@@ -258,6 +260,54 @@ int ftp_delete(char *path)
 	if(ret < 0)
 		errno = ENOENT;
 	return ret;
+}
+
+lwp_t ftpThrdPtr = LWP_THREAD_NULL;
+volatile bool ftpThrd_running = false;
+bool end_ftp = false;
+s32 cur_server_num = -1;
+
+void *ftp_loopThrd(void *nothing)
+{
+	while(end_ftp == false)
+	{
+		process_ftp_events(cur_server_num);
+		usleep(100);
+	}
+	ftpThrd_running = false;
+	return nothing;
+}
+
+bool ftp_startThread(void)
+{
+	ftp_endTread();
+	if(create_server() == false)
+		return false;
+	cur_server_num = get_server_num();
+	if(cur_server_num < 0)
+		return false;
+
+	end_ftp = false;
+	ftpThrd_running = true;
+	LWP_CreateThread(&ftpThrdPtr, ftp_loopThrd, NULL, NULL, 0, 64);
+	return true;
+}
+
+void ftp_endTread(void)
+{
+	if(ftpThrdPtr == LWP_THREAD_NULL)
+		return;
+
+	if(LWP_ThreadIsSuspended(ftpThrdPtr))
+		LWP_ResumeThread(ftpThrdPtr);
+	end_ftp = true;
+	while(ftpThrd_running)
+		usleep(50);
+	LWP_JoinThread(ftpThrdPtr, NULL);
+	ftpThrdPtr = LWP_THREAD_NULL;
+
+	end_server();
+	cur_server_num = -1;
 }
 
 #ifdef __cplusplus

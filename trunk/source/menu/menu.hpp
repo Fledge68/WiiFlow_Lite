@@ -859,6 +859,7 @@ private:
 	void _initExplorer();
 	void _initWad();
 	void _initPathsMenu();
+	void _initFTP();
 	//
 	void _textSource(void);
 	void _textPluginSettings(void);
@@ -889,6 +890,7 @@ private:
 	void _textExplorer(void);
 	void _textWad(void);
 	void _textPaths(void);
+	void _textFTP(void);
 	//
 	void _refreshBoot();
 	void _refreshExplorer(s8 direction = 0);
@@ -926,6 +928,7 @@ private:
 	void _hideExplorer(bool instant = false);
 	void _hideWad(bool instant = false);
 	void _hidePaths(bool instant = false);
+	void _hideFTP(bool instant = false);
 	//
 	void _showError(void);
 	void _showMain(void);
@@ -960,11 +963,14 @@ private:
 	void _showExplorer(void);
 	void _showWad(void);
 	void _showPaths(void);
+	void _showFTP(void);
+
 	void _clearSources(void);
 	void _updateSourceBtns(void);
 	void _updatePluginText(void);
 	void _updatePluginCheckboxes(void);
 	void _updateCheckboxes(void);
+	void _updateFTP(void);
 	void _getIDCats(void);
 	void _setIDCats(void);
 	void _setBg(const TexData &tex, const TexData &lqTex);
@@ -1014,7 +1020,8 @@ private:
 	void _PluginSettings();
 	void _CategorySettings(bool fromGameSet = false);
 	bool _Home();
-	bool _HomeFTP_Loop();
+	void _FTP();
+	bool _FTP_Loop();
 	bool _ExitTo();
 	bool _Boot();
 	void _Paths();
@@ -1025,6 +1032,8 @@ private:
 	bool m_use_wifi_gecko;
 	bool m_use_sd_logging;
 	bool init_network;
+	bool m_init_ftp;
+	bool m_ftp_inited;
 	void _netInit();
 	bool _loadFile(u8 * &buffer, u32 &size, const char *path, const char *file);
 	int _loadIOS(u8 ios, int userIOS, string id, bool RealNAND_Channels = false);
