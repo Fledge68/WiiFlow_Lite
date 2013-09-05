@@ -66,9 +66,14 @@ static bool change_real_dir(void)
 	if(check_device() == true)
 	{
 		strncpy(real_path, fmt("%s:/%s", DeviceName[cur_part], strchr((main_path+1), '/')+1), MAXPATHLEN);
+		if(!fsop_FolderExist(real_path))
+		{
+			errno = ENOTDIR;
+			return false;
+		}
 		return true;
 	}
-	errno = ENOTDIR;
+	errno = ENODEV;
 	return false;
 }
 
