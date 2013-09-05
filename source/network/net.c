@@ -9,6 +9,7 @@
 #include <sys/fcntl.h>
 
 #include "net.h"
+#include "ftp.h"
 #include "FTP_Dir.hpp"
 #include "loader/sys.h"
 #include "gecko/gecko.hpp"
@@ -18,6 +19,7 @@
 #define FREAD_BUFFER_SIZE 32768
 
 static u32 NET_BUFFER_SIZE = MAX_NET_BUFFER_SIZE;
+s32 ftp_server = -1;
 
 s32 set_blocking(s32 s, bool blocking) {
     s32 flags;
@@ -31,30 +33,48 @@ s32 net_close_blocking(s32 s) {
     return net_close(s);
 }
 
-s32 create_server(u16 port) {
-    s32 server = net_socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
-    if (server < 0) return -1;//die("Error creating socket", -server);
-    set_blocking(server, false);
+bool create_server(void) {
+	ftp_init();
+    ftp_server = net_socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
+    if (ftp_server < 0) return false;
+    set_blocking(ftp_server, false);
 
     struct sockaddr_in bindAddress;
     memset(&bindAddress, 0, sizeof(bindAddress));
     bindAddress.sin_family = AF_INET;
-    bindAddress.sin_port = htons(port);
+    bindAddress.sin_port = htons(ftp_server_port);
     bindAddress.sin_addr.s_addr = htonl(INADDR_ANY);
 
     s32 ret;
-    if ((ret = net_bind(server, (struct sockaddr *)&bindAddress, sizeof(bindAddress))) < 0) {
-        net_close(server);
+    if ((ret = net_bind(ftp_server, (struct sockaddr *)&bindAddress, sizeof(bindAddress))) < 0) {
+        net_close(ftp_server);
+		ftp_server = -1;
         gprintf("Error binding socket: [%i] %s\n", -ret, strerror(-ret));
-        return ret;
+        return false;
     }
-    if ((ret = net_listen(server, 3)) < 0) {
-        net_close(server);
+    if ((ret = net_listen(ftp_server, 3)) < 0) {
+        net_close(ftp_server);
+		ftp_server = -1;
         gprintf("Error listening on socket: [%i] %s\n", -ret, strerror(-ret));
-        return ret;
+        return false;
     }
+	gprintf("FTP Server started\n");
+    return true;
+}
 
-    return server;
+void end_server(void)
+{
+	if(ftp_server < 0)
+		return;
+	cleanup_ftp();
+	net_close(ftp_server);
+	ftp_server = -1;
+	gprintf("FTP Server ended\n");
+}
+
+s32 get_server_num(void)
+{
+	return ftp_server;
 }
 
 typedef s32 (*transferrer_type)(s32 s, void *mem, s32 len);

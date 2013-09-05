@@ -43,6 +43,9 @@ int ftp_stat(char *file, struct stat *st);
 int ftp_rename(char *path, char *new_name);
 int ftp_delete(char *path);
 
+bool ftp_startThread(void);
+void ftp_endTread(void);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

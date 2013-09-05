@@ -20,6 +20,9 @@
 #define FTP_BUFFER_SIZE 1024
 #define MAX_CLIENTS 2
 
+bool ftp_allow_active = false;
+u16 ftp_server_port = 21;
+
 static const u16 SRC_PORT = 20;
 static const s32 EQUIT = 696969;
 static const char *CRLF = "\r\n";
@@ -54,11 +57,11 @@ typedef struct client_struct client_t;
 
 static client_t *clients[MAX_CLIENTS] = { NULL };
 
-void set_ftp_password(char *new_password) {
-    if (password) free(password);
-    if (new_password) {
+void set_ftp_password(const char *new_password) {
+    if (password != NULL) free(password);
+    if (new_password != NULL && new_password[0] != '\0') {
         password = malloc(strlen(new_password) + 1);
-        if (!password) return;//die("Unable to allocate memory for password", errno);
+        if (password == NULL) return;//die("Unable to allocate memory for password", errno);
         strcpy((char *)password, new_password);
     } else {
         password = NULL;
@@ -298,6 +301,9 @@ static s32 ftp_PASV(client_t *client, char *rest __attribute__((unused))) {
 }
 
 static s32 ftp_PORT(client_t *client, char *portspec) {
+	if(ftp_allow_active == false) /* port is only used for active clients */
+		return write_reply(client, 502, "Command not implemented.");
+
     u32 h1, h2, h3, h4, p1, p2;
     if (sscanf(portspec, "%3u,%3u,%3u,%3u,%3u,%3u", &h1, &h2, &h3, &h4, &p1, &p2) < 6) {
         return write_reply(client, 501, "Syntax error in parameters.");
@@ -347,9 +353,11 @@ static s32 prepare_data_connection_passive(client_t *client) {
 static s32 prepare_data_connection(client_t *client, void *callback, void *arg, void *cleanup) {
     s32 result = write_reply(client, 150, "Transferring data.");
     if (result >= 0) {
-        data_connection_handler handler = prepare_data_connection_active;
-        if (client->passive_socket >= 0) handler = prepare_data_connection_passive;
-        result = handler(client);
+		result = -1;
+		if(client->passive_socket >= 0)
+			result = prepare_data_connection_passive(client);
+		else if(ftp_allow_active == true)
+			result = prepare_data_connection_active(client);
         if (result < 0) {
             result = write_reply(client, 520, "Closing data connection, error occurred during transfer.");
         } else {
@@ -662,7 +670,7 @@ static bool process_accept_events(s32 server) {
 }
 
 static void process_data_events(client_t *client) {
-    s32 result;
+    s32 result = -1;
     if (!client->data_connection_connected) {
         if (client->passive_socket >= 0) {
             struct sockaddr_in data_peer_address;
@@ -672,7 +680,7 @@ static void process_data_events(client_t *client) {
                 client->data_socket = result;
                 client->data_connection_connected = true;
             }
-        } else {
+        } else if(ftp_allow_active == true) {
             if ((result = net_connect(client->data_socket, (struct sockaddr *)&client->address, sizeof(client->address))) < 0) {
                 if (result == -EINPROGRESS || result == -EALREADY) result = -EAGAIN;
                 if (result != -EAGAIN && result != -EISCONN) gprintf("Unable to connect to client: [%i] %s\n", -result, strerror(-result));

@@ -13,7 +13,9 @@ extern "C" {
 void initialise_network();
 s32 set_blocking(s32 s, bool blocking);
 s32 net_close_blocking(s32 s);
-s32 create_server(u16 port);
+bool create_server(void);
+s32 get_server_num(void);
+void end_server(void);
 s32 send_exact(s32 s, char *buf, s32 length);
 s32 send_from_file(s32 s, FILE *f);
 s32 recv_to_file(s32 s, FILE *f);

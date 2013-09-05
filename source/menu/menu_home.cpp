@@ -18,14 +18,9 @@
 #include "loader/cios.h"
 #include "loader/nk.h"
 #include "const_str.hpp"
-#include "network/net.h"
-#include "network/ftp.h"
-#include "network/http.h"
-#include "network/FTP_Dir.hpp"
 
 s16 m_homeLblTitle;
 s16 m_exittoLblTitle;
-s16 m_homeBtnBack;
 
 s16 m_homeBtnSettings;
 s16 m_homeBtnReloadCache;
@@ -47,19 +42,6 @@ s16 m_homeLblBattery;
 s16 m_homeLblUser[4];
 
 TexData m_homeBg;
-
-bool CMenu::_HomeFTP_Loop(void)
-{
-	_mainLoopCommon();
-	if(BTN_HOME_PRESSED || BTN_B_PRESSED)
-		return true;
-	else if(BTN_A_PRESSED)
-	{
-		if(m_btnMgr.selected(m_homeBtnBack))
-			return true;
-	}
-	return false;
-}
 
 bool CMenu::_Home(void)
 {
@@ -139,45 +121,7 @@ bool CMenu::_Home(void)
 			else if(m_btnMgr.selected(m_homeBtnFTP))
 			{
 				_hideHome();
-				/* net init as usual */
-				_initAsyncNetwork();
-				m_btnMgr.show(m_wbfsLblDialog);
-				m_btnMgr.show(m_homeBtnBack);
-				m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg1", L"Initializing network..."));
-				bool cancel = false;
-				while(!m_exit && m_thrdNetwork == true && net_get_status() == -EBUSY)
-				{
-					if(_HomeFTP_Loop())
-					{
-						cancel = true;
-						break;
-					}
-				}
-				if(networkInit == false || cancel == true)
-				{
-					m_btnMgr.hide(m_wbfsLblDialog);
-					m_btnMgr.hide(m_homeBtnBack);
-					break;
-				}
-				/* start server finally */
-				ftp_init();
-				in_addr addr;
-				u32 ip = net_gethostip();
-				addr.s_addr = ip;
-				u16 m_ftp_port = 21;
-				int server = create_server(m_ftp_port);
-				m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("dlmsg28", L"Running FTP Server on %s:%u"), inet_ntoa(addr), m_ftp_port));
-				while(!m_exit)
-				{
-					if(_HomeFTP_Loop())
-						break;
-					process_ftp_events(server);
-				}
-				/* cleanup and closing */
-				cleanup_ftp();
-				net_close(server);
-				m_btnMgr.hide(m_wbfsLblDialog);
-				m_btnMgr.hide(m_homeBtnBack);
+				_FTP();
 				_showHome();
 			}
 		}
@@ -336,8 +280,6 @@ void CMenu::_initHomeAndExitToMenu()
 	m_homeBg = _texture("HOME/BG", "texture", theme.bg, false);
 
 	m_homeLblTitle = _addTitle("HOME/TITLE", theme.titleFont, L"", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
-	m_homeBtnBack = _addButton("HOME/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 56, theme.btnFontColor);
-
 	_setHideAnim(m_homeLblTitle, "HOME/TITLE", 0, 0, -2.f, 0.f);
 
 	m_homeBtnSettings = _addButton("HOME/SETTINGS", theme.btnFont, L"", 60, 100, 250, 56, theme.btnFontColor);
@@ -351,8 +293,6 @@ void CMenu::_initHomeAndExitToMenu()
 	m_homeBtnFTP = _addButton("HOME/FTP", theme.btnFont, L"", 330, 340, 250, 56, theme.btnFontColor);
 
 	m_homeLblBattery = _addLabel("HOME/BATTERY", theme.btnFont, L"", 0, 420, 640, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-
-	_setHideAnim(m_homeBtnBack, "HOME/BACK_BTN", 0, 0, 1.f, -1.f);
 
 	_setHideAnim(m_homeBtnSettings, "HOME/SETTINGS", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_homeBtnReloadCache, "HOME/RELOAD_CACHE", 0, 0, -2.f, 0.f);
@@ -392,7 +332,6 @@ void CMenu::_initHomeAndExitToMenu()
 void CMenu::_textHome(void)
 {
 	m_btnMgr.setText(m_homeLblTitle, VERSION_STRING);
-	m_btnMgr.setText(m_homeBtnBack, _t("cfg10", L"Back"));
 	m_btnMgr.setText(m_homeBtnSettings, _t("home1", L"Settings"));
 	m_btnMgr.setText(m_homeBtnReloadCache, _t("home2", L"Reload Cache"));
 	m_btnMgr.setText(m_homeBtnUpdate, _t("home3", L"Update"));

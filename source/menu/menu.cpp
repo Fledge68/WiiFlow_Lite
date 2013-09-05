@@ -23,6 +23,8 @@
 #include "loader/playlog.h"
 #include "loader/wbfs.h"
 #include "music/SoundHandler.hpp"
+#include "network/FTP_Dir.hpp"
+#include "network/ftp.h"
 #include "network/gcard.h"
 #include "unzip/U8Archive.h"
 
@@ -148,6 +150,9 @@ CMenu::CMenu()
 	m_sd_dm = false;
 	m_new_dml = false;
 	m_new_dm_cfg = false;
+	/* ftp stuff */
+	m_ftp_inited = false;
+	m_init_ftp = false;
 }
 
 void CMenu::init()
@@ -212,8 +217,13 @@ void CMenu::init()
 	/* Check if we want SD Gecko */
 	m_use_sd_logging = m_cfg.getBool("DEBUG", "sd_write_log", false);
 	LogToSD_SetBuffer(m_use_sd_logging);
+	/* Check if we want FTP */
+	m_init_ftp = m_cfg.getBool(FTP_DOMAIN, "auto_start", false);
+	ftp_allow_active = m_cfg.getBool(FTP_DOMAIN, "allow_active_mode", false);
+	ftp_server_port = min(65535u, m_cfg.getUInt(FTP_DOMAIN, "server_port", 21));
+	set_ftp_password(m_cfg.getString(FTP_DOMAIN, "password", "").c_str());
 	/* Init Network if wanted */
-	init_network = (m_cfg.getBool("GENERAL", "async_network") || has_enabled_providers() || m_use_wifi_gecko);
+	init_network = (m_cfg.getBool("GENERAL", "async_network") || has_enabled_providers() || m_use_wifi_gecko || m_init_ftp);
 	_netInit();
 	/* Our Wii game dir */
 	memset(wii_games_dir, 0, 64);
@@ -637,6 +647,8 @@ void CMenu::_netInit(void)
 	_initAsyncNetwork();
 	while(net_get_status() == -EBUSY)
 		usleep(100);
+	if(m_init_ftp)
+		m_ftp_inited = ftp_startThread();
 }
 
 void CMenu::_setAA(int aa)
@@ -1175,6 +1187,7 @@ void CMenu::_buildMenus(void)
 	_initExplorer();
 	_initBoot();
 	_initPathsMenu();
+	_initFTP();
 
 	_loadCFCfg();
 }
@@ -2067,6 +2080,7 @@ void CMenu::_updateText(void)
 	_textCoverBanner();
 	_textExplorer();
 	_textWad();
+	_textFTP();
 }
 
 const wstringEx CMenu::_fmt(const char *key, const wchar_t *def)

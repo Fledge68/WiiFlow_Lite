@@ -9,9 +9,12 @@ extern "C" {
 #endif /* __cplusplus */
 
 void accept_ftp_client(s32 server);
-void set_ftp_password(char *new_password);
+void set_ftp_password(const char *new_password);
 bool process_ftp_events(s32 server);
 void cleanup_ftp();
+
+extern bool ftp_allow_active;
+extern u16 ftp_server_port;
 
 #ifdef __cplusplus
 }

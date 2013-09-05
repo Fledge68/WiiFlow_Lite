@@ -48,6 +48,9 @@ s16 m_bootBtnSourceOnBoot;
 s16 m_bootLblMultisource;
 s16 m_bootBtnMultisource;
 
+s16 m_bootLblFtpOnBoot;
+s16 m_bootBtnFtpOnBoot;
+
 u8 set_port = 0;
 u8 boot_curPage = 1;
 u8 boot_Pages = 2;
@@ -99,6 +102,9 @@ static void hideBoot(bool instant, bool common)
 	
 	m_btnMgr.hide(m_bootLblMultisource, instant);
 	m_btnMgr.hide(m_bootBtnMultisource, instant);
+	
+	m_btnMgr.hide(m_bootLblFtpOnBoot, instant);
+	m_btnMgr.hide(m_bootBtnFtpOnBoot, instant);
 }
 
 bool CMenu::_Boot(void)
@@ -193,6 +199,11 @@ bool CMenu::_Boot(void)
 				m_btnMgr.setText(m_bootBtnMultisource, m_cfg.getBool("GENERAL", "multisource") ? _t("on", L"On") : _t("off", L"Off"));
 				m_multisource = m_cfg.getBool("GENERAL", "multisource", false);
 			}
+			else if (m_btnMgr.selected(m_bootBtnFtpOnBoot))
+			{
+				m_cfg.setBool(FTP_DOMAIN, "auto_start", !m_cfg.getBool(FTP_DOMAIN, "auto_start", false));
+				m_btnMgr.setText(m_bootBtnFtpOnBoot, m_cfg.getBool(FTP_DOMAIN, "auto_start") ? _t("on", L"On") : _t("off", L"Off"));
+			}
 		}
 	}
 	if(prev_load != cur_load || prev_ios != cur_ios)
@@ -243,6 +254,7 @@ void CMenu::_refreshBoot()
 		m_btnMgr.setText(m_bootBtnCategoryOnBoot, m_cfg.getBool("GENERAL", "category_on_start") ? _t("on", L"On") : _t("off", L"Off"));
 		m_btnMgr.setText(m_bootBtnSourceOnBoot, m_cfg.getBool("GENERAL", "source_on_start") ? _t("on", L"On") : _t("off", L"Off"));
 		m_btnMgr.setText(m_bootBtnMultisource, m_cfg.getBool("GENERAL", "multisource") ? _t("on", L"On") : _t("off", L"Off"));
+		m_btnMgr.setText(m_bootBtnFtpOnBoot, m_cfg.getBool(FTP_DOMAIN, "auto_start") ? _t("on", L"On") : _t("off", L"Off"));
 		
 		m_btnMgr.show(m_bootLblCategoryOnBoot);
 		m_btnMgr.show(m_bootBtnCategoryOnBoot);
@@ -252,6 +264,9 @@ void CMenu::_refreshBoot()
 		
 		m_btnMgr.show(m_bootLblMultisource);
 		m_btnMgr.show(m_bootBtnMultisource);
+		
+		m_btnMgr.show(m_bootLblFtpOnBoot);
+		m_btnMgr.show(m_bootBtnFtpOnBoot);
 	}
 }
 
@@ -265,6 +280,7 @@ void CMenu::_textBoot(void)
 	m_btnMgr.setText(m_bootLblCategoryOnBoot, _t("cfgd7", L"Show categories on boot"));
 	m_btnMgr.setText(m_bootLblSourceOnBoot, _t("cfgbt5", L"Show source menu on boot"));
 	m_btnMgr.setText(m_bootLblMultisource, _t("cfgbt6", L"Enable Multisource Features"));
+	m_btnMgr.setText(m_bootLblFtpOnBoot, _t("cfgbt6", L"Start FTP Server on boot"));
 	m_btnMgr.setText(m_bootBtnBack, _t("cfg10", L"Back"));
 }
 
@@ -301,6 +317,9 @@ void CMenu::_initBoot(void)
 	m_bootLblMultisource = _addLabel("BOOT/MULTISOURCE", theme.lblFont, L"", 40, 250, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_bootBtnMultisource = _addButton("BOOT/MULTISOURCE_BTN", theme.btnFont, L"", 370, 250, 230, 56, theme.btnFontColor);
 	
+	m_bootLblFtpOnBoot = _addLabel("BOOT/FTP", theme.lblFont, L"", 40, 310, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_bootBtnFtpOnBoot = _addButton("BOOT/FTP_BTN", theme.btnFont, L"", 370, 310, 230, 56, theme.btnFontColor);
+	
 	_setHideAnim(m_bootLblTitle, "BOOT/TITLE", 0, -200, 0.f, 1.f);
 	_setHideAnim(m_bootBtnBack, "BOOT/BACK_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_bootLblPage, "BOOT/PAGE_BTN", 0, 0, 1.f, -1.f);
@@ -328,6 +347,9 @@ void CMenu::_initBoot(void)
 
 	_setHideAnim(m_bootLblMultisource, "BOOT/MULTISOURCE", -200, 0, 1.f, 0.f);
 	_setHideAnim(m_bootBtnMultisource, "BOOT/MULTISOURCE_BTN", 200, 0, 1.f, 0.f);
+
+	_setHideAnim(m_bootLblFtpOnBoot, "BOOT/FTP", -200, 0, 1.f, 0.f);
+	_setHideAnim(m_bootBtnFtpOnBoot, "BOOT/FTP_BTN", 200, 0, 1.f, 0.f);
 
 	hideBoot(true, true);
 	_textBoot();
