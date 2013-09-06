@@ -64,7 +64,7 @@ static void showBoot(void)
 	m_btnMgr.show(m_bootBtnPageP);
 	for(u8 i = 0; i < ARRAY_SIZE(m_bootLblUser); ++i)
 		if(m_bootLblUser[i] != -1)
-			m_btnMgr.show(m_bootLblUser[i]);	
+			m_btnMgr.show(m_bootLblUser[i]);
 }
 
 static void hideBoot(bool instant, bool common)
@@ -280,7 +280,7 @@ void CMenu::_textBoot(void)
 	m_btnMgr.setText(m_bootLblCategoryOnBoot, _t("cfgd7", L"Show categories on boot"));
 	m_btnMgr.setText(m_bootLblSourceOnBoot, _t("cfgbt5", L"Show source menu on boot"));
 	m_btnMgr.setText(m_bootLblMultisource, _t("cfgbt6", L"Enable Multisource Features"));
-	m_btnMgr.setText(m_bootLblFtpOnBoot, _t("cfgbt6", L"Start FTP Server on boot"));
+	m_btnMgr.setText(m_bootLblFtpOnBoot, _t("cfgbt7", L"Start FTP Server on boot"));
 	m_btnMgr.setText(m_bootBtnBack, _t("cfg10", L"Back"));
 }
 

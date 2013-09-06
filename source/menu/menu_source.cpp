@@ -382,10 +382,10 @@ bool CMenu::_Source()
 			{
 				if(m_btnMgr.selected(m_sourceBtnSource[i]))
 				{
-					const char *btn_selected = fmt("BUTTON_%i", i + j);
-					gprintf("%s\n", btn_selected);
+					char btn_selected[256];
+					memset(btn_selected, 0, 256);
+					strncpy(btn_selected, fmt("BUTTON_%i", i + j), 255);
 					string source = m_source.getString(btn_selected, "source", "");
-					gprintf("%s\n", source.c_str());
 					if(BTN_A_PRESSED)
 					{
 						_clearSources();
