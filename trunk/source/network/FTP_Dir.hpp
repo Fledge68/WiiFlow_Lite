@@ -46,6 +46,10 @@ int ftp_delete(char *path);
 bool ftp_startThread(void);
 void ftp_endTread(void);
 
+void ftp_dbg_print(char *dbg_info);
+bool ftp_dbg_print_update(void);
+const char *ftp_get_prints(u8 i);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

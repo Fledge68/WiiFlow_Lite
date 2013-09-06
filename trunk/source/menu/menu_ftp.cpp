@@ -21,30 +21,38 @@
 #include "network/gcard.h"
 #include "network/FTP_Dir.hpp"
 
+s16 m_ftpLblTitle;
 s16 m_ftpBtnBack;
 s16 m_ftpBtnToggle;
+s16 m_ftpLblInfo;
+s16 m_ftpLblUser[4];
 
 void CMenu::_updateFTP(void)
 {
+	_hideFTP(true);
 	if(m_ftp_inited == true)
 	{
 		in_addr addr;
 		addr.s_addr = net_gethostip();
-		m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("dlmsg28", L"Running FTP Server on %s:%d"), inet_ntoa(addr), ftp_server_port));
+		m_btnMgr.hide(m_wbfsLblDialog, true);
+		m_btnMgr.setText(m_ftpLblTitle, wfmt(_t("dlmsg28", L"Running FTP Server on %s:%d"), inet_ntoa(addr), ftp_server_port));
+		m_btnMgr.show(m_ftpLblTitle);
 		m_btnMgr.setText(m_ftpBtnToggle, _t("ftp2", L"Stop"));
+		m_btnMgr.show(m_ftpLblInfo);
 	}
 	else
 	{
+		m_btnMgr.hide(m_ftpLblTitle, true);
 		m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg29", L"FTP Server is currently stopped."));
 		m_btnMgr.setText(m_ftpBtnToggle, _t("ftp1", L"Start"));
+		m_btnMgr.show(m_wbfsLblDialog);
 	}
+	_showFTP();
 }
 
 void CMenu::_FTP(void)
 {
-	_showFTP();
 	_updateFTP();
-	m_btnMgr.show(m_wbfsLblDialog);
 	while(!m_exit)
 	{
 		_mainLoopCommon();
@@ -56,13 +64,13 @@ void CMenu::_FTP(void)
 				break;
 			else if(m_btnMgr.selected(m_ftpBtnToggle))
 			{
-				gprintf("%d\n", m_ftp_inited);
 				if(m_ftp_inited == true)
 				{
 					ftp_endTread();
 					m_init_ftp = false;
 					m_ftp_inited = false;
 					init_network = (m_cfg.getBool("GENERAL", "async_network") || has_enabled_providers() || m_use_wifi_gecko);
+					ftp_dbg_print_update();
 				}
 				else
 				{
@@ -82,6 +90,11 @@ void CMenu::_FTP(void)
 				_updateFTP();
 			}
 		}
+		if(ftp_dbg_print_update())
+		{
+			m_btnMgr.setText(m_ftpLblInfo, wfmt(L"%s%s%s%s%s%s", ftp_get_prints(5), ftp_get_prints(4), 
+				ftp_get_prints(3), ftp_get_prints(2), ftp_get_prints(1), ftp_get_prints(0)));
+		}
 	}
 	m_btnMgr.hide(m_wbfsLblDialog);
 	_hideFTP();
@@ -91,21 +104,35 @@ void CMenu::_showFTP(void)
 {
 	m_btnMgr.show(m_ftpBtnToggle);
 	m_btnMgr.show(m_ftpBtnBack);
+	for(u8 i = 0; i < ARRAY_SIZE(m_ftpLblUser); ++i)
+		if(m_ftpLblUser[i] != -1)
+			m_btnMgr.show(m_ftpLblUser[i]);
 }
 
 void CMenu::_hideFTP(bool instant)
 {
+	m_btnMgr.hide(m_ftpLblTitle, instant);
 	m_btnMgr.hide(m_ftpBtnToggle, instant);
 	m_btnMgr.hide(m_ftpBtnBack, instant);
+	m_btnMgr.hide(m_ftpLblInfo, instant);
+		for(u8 i = 0; i < ARRAY_SIZE(m_ftpLblUser); ++i)
+			if(m_ftpLblUser[i] != -1)
+				m_btnMgr.hide(m_ftpLblUser[i], instant);
 }
 
 void CMenu::_initFTP(void)
 {
+	_addUserLabels(m_ftpLblUser, ARRAY_SIZE(m_ftpLblUser), "FTP");
+
+	m_ftpLblTitle = _addTitle("FTP/TITLE", theme.titleFont, L"", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 	m_ftpBtnToggle = _addButton("FTP/TOGGLE_BTN", theme.btnFont, L"", 20, 400, 200, 56, theme.btnFontColor);
 	m_ftpBtnBack = _addButton("FTP/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 56, theme.btnFontColor);
+	m_ftpLblInfo = _addText("FTP/INFO", theme.txtFont, L"", 40, 115, 560, 270, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
 
+	_setHideAnim(m_ftpLblTitle, "FTP/TITLE", 0, -200, 0.f, 1.f);
 	_setHideAnim(m_ftpBtnToggle, "FTP/TOGGLE_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_ftpBtnBack, "FTP/BACK_BTN", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_ftpLblInfo, "FTP/INFO", 0, 100, 0.f, 0.f);
 
 	_textFTP();
 	_hideFTP(true);
@@ -113,7 +140,9 @@ void CMenu::_initFTP(void)
 
 void CMenu::_textFTP(void)
 {
+	m_btnMgr.setText(m_ftpLblTitle, L"");
 	m_btnMgr.setText(m_ftpBtnToggle, L"");
 	m_btnMgr.setText(m_ftpBtnBack, _t("cfg10", L"Back"));
+	m_btnMgr.setText(m_ftpLblInfo, L"");
 }
 
