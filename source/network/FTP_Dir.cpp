@@ -33,12 +33,16 @@ char main_path[MAXPATHLEN];
 char real_path[MAXPATHLEN];
 u8 cur_part = 0;
 
+char dbg_messages[6][128];
+
 void ftp_init(void)
 {
 	memset(main_path, 0, MAXPATHLEN);
 	main_path[0] = '/';
 	memset(real_path, 0, MAXPATHLEN);
 	cur_part = 0;
+	for(u8 i = 0; i < 6; ++i)
+		memset(dbg_messages[i], 0, 128);
 }
 
 const char *ftp_getpath(void)
@@ -308,6 +312,34 @@ void ftp_endTread(void)
 
 	end_server();
 	cur_server_num = -1;
+}
+
+bool dbg_msg_change = false;
+void ftp_dbg_print(char *dbg_info)
+{
+	dbg_msg_change = true;
+	/* for gecko and stuff */
+	gprintf(dbg_info);
+	/* for our gui */
+	for(u8 i = 5; i > 0; --i)
+		memcpy(dbg_messages[i], dbg_messages[i-1], 128);
+	memcpy(dbg_messages[0], dbg_info, 127);
+	*(dbg_messages[0]+127) = '\0';
+}
+
+const char *ftp_get_prints(u8 i)
+{
+	return dbg_messages[i];
+}
+
+bool ftp_dbg_print_update(void)
+{
+	if(dbg_msg_change)
+	{
+		dbg_msg_change = false;
+		return true;
+	}
+	return false;
 }
 
 #ifdef __cplusplus

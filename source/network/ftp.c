@@ -80,7 +80,7 @@ static s32 write_reply(client_t *client, u16 code, char *msg) {
     char msgbuf[msglen + 1];
     if (msgbuf == NULL) return -ENOMEM;
     strncpy(msgbuf, fmt("%u %s\r\n", code, msg), msglen + 1);
-    gprintf("Wrote reply: %s", msgbuf);
+    ftp_dbg_print(fmt("Wrote reply: %s", msgbuf));
     return send_exact(client->socket, msgbuf, msglen);
 }
 
@@ -295,7 +295,7 @@ static s32 ftp_PASV(client_t *client, char *rest __attribute__((unused))) {
     u32 ip = net_gethostip();
     struct in_addr addr;
     addr.s_addr = ip;
-    gprintf("Listening for data connections at %s:%u...\n", inet_ntoa(addr), port);
+    ftp_dbg_print(fmt("Listening for data connections at %s:%u...\n", inet_ntoa(addr), port));
     strncpy(reply, fmt("Entering Passive Mode (%u,%u,%u,%u,%u,%u).", (ip >> 24) & 0xff, (ip >> 16) & 0xff, (ip >> 8) & 0xff, ip & 0xff, (port >> 8) & 0xff, port & 0xff), 49);
     return write_reply(client, 227, reply);
 }
@@ -318,7 +318,7 @@ static s32 ftp_PORT(client_t *client, char *portspec) {
     u16 port = ((p1 &0xff) << 8) | (p2 & 0xff);
     client->address.sin_addr = sin_addr;
     client->address.sin_port = htons(port);
-    gprintf("Set client address to %s:%u\n", addr_str, port);
+    ftp_dbg_print(fmt("Set client address to %s:%u\n", addr_str, port));
     return write_reply(client, 200, "PORT command successful.");
 }
 
@@ -340,13 +340,14 @@ static s32 prepare_data_connection_active(client_t *client) {
     }
     
     client->data_socket = data_socket;
-    gprintf("Attempting to connect to client at %s:%u\n", inet_ntoa(client->address.sin_addr), ntohs(client->address.sin_port));
+    ftp_dbg_print(fmt("Attempting to connect to client at %s:%u\n", 
+		inet_ntoa(client->address.sin_addr), ntohs(client->address.sin_port)));
     return 0;
 }
 
 static s32 prepare_data_connection_passive(client_t *client) {
     client->data_socket = client->passive_socket;
-    gprintf("Waiting for data connections...\n");
+    ftp_dbg_print("Waiting for data connections...\n");
     return 0;
 }
 
@@ -554,7 +555,7 @@ static s32 process_command(client_t *client, char *cmd_line) {
         return 0;
     }
 
-    gprintf("Got command: %s\n", cmd_line);
+    ftp_dbg_print(fmt("Got command: %s\n", cmd_line));
 
     const char **commands = unauthenticated_commands;
     const ftp_command_handler *handlers = unauthenticated_handlers;
@@ -597,7 +598,7 @@ static void cleanup_client(client_t *client) {
     num_clients--;
 	if(num_clients == 0)
 		ftp_init(); /* reinit for new clients */
-    gprintf("Client disconnected.\n");
+    ftp_dbg_print("Client disconnected.\n");
 }
 
 void cleanup_ftp() {
@@ -617,21 +618,21 @@ static bool process_accept_events(s32 server) {
     socklen_t addrlen = sizeof(client_address);
     while ((peer = net_accept(server, (struct sockaddr *)&client_address, &addrlen)) != -EAGAIN) {
         if (peer < 0) {
-            gprintf("Error accepting connection: [%i] %s\n", -peer, strerror(-peer));
+            ftp_dbg_print(fmt("Error accepting connection: [%i] %s\n", -peer, strerror(-peer)));
             return false;
         }
 
-        gprintf("Accepted connection from %s!\n", inet_ntoa(client_address.sin_addr));
+        ftp_dbg_print(fmt("Accepted connection from %s!\n", inet_ntoa(client_address.sin_addr)));
 
         if (num_clients == MAX_CLIENTS) {
-            gprintf("Maximum of %u clients reached, not accepting client.\n", MAX_CLIENTS);
+            ftp_dbg_print(fmt("Maximum of %u clients reached, not accepting client.\n", MAX_CLIENTS));
             net_close(peer);
             return true;
         }
 
         client_t *client = malloc(sizeof(client_t));
         if (!client) {
-            gprintf("Could not allocate memory for client state, not accepting client.\n");
+            ftp_dbg_print("Could not allocate memory for client state, not accepting client.\n");
             net_close(peer);
             return true;
         }
@@ -653,7 +654,7 @@ static bool process_accept_events(s32 server) {
         int client_index;
 		char *welcome = fmt("Welcome to %s (%s-r%s)! This is the ftpii server core.", APP_NAME, APP_VERSION, SVN_REV);
         if (write_reply(client, 220, welcome) < 0) {
-            gprintf("Error writing greeting.\n");
+            ftp_dbg_print("Error writing greeting.\n");
             net_close_blocking(peer);
             free(client);
         } else {
@@ -682,8 +683,10 @@ static void process_data_events(client_t *client) {
             }
         } else if(ftp_allow_active == true) {
             if ((result = net_connect(client->data_socket, (struct sockaddr *)&client->address, sizeof(client->address))) < 0) {
-                if (result == -EINPROGRESS || result == -EALREADY) result = -EAGAIN;
-                if (result != -EAGAIN && result != -EISCONN) gprintf("Unable to connect to client: [%i] %s\n", -result, strerror(-result));
+                if(result == -EINPROGRESS || result == -EALREADY)
+					result = -EAGAIN;
+                if(result != -EAGAIN && result != -EISCONN)
+					ftp_dbg_print(fmt("Unable to connect to client: [%i] %s\n", -result, strerror(-result)));
             }
              if (result >= 0 || result == -EISCONN) {
                 client->data_connection_connected = true;
@@ -691,10 +694,10 @@ static void process_data_events(client_t *client) {
         }
         if (client->data_connection_connected) {
             result = 1;
-            gprintf("Connected to client!  Transferring data...\n");
+            ftp_dbg_print("Connected to client!  Transferring data...\n");
         } else if (gettime() > client->data_connection_timer) {
             result = -1;
-            gprintf("Timed out waiting for data connection.\n");
+            ftp_dbg_print("Timed out waiting for data connection.\n");
         }
     } else {
         result = client->data_callback(client->data_socket, client->data_connection_callback_arg);
@@ -722,7 +725,7 @@ static void process_control_events(client_t *client) {
         char *offset_buf = client->buf + client->offset;
         if ((bytes_read = net_read(client->socket, offset_buf, FTP_BUFFER_SIZE - 1 - client->offset)) < 0) {
             if (bytes_read != -EAGAIN) {
-                gprintf("Read error %i occurred, closing client.\n", bytes_read);
+                ftp_dbg_print(fmt("Read error %i occurred, closing client.\n", bytes_read));
                 goto recv_loop_end;
             }
             return;
@@ -733,7 +736,7 @@ static void process_control_events(client_t *client) {
         client->buf[client->offset] = '\0';
     
         if (strchr(offset_buf, '\0') != (client->buf + client->offset)) {
-            gprintf("Received a null byte from client, closing connection ;-)\n"); // i have decided this isn't allowed =P
+            ftp_dbg_print("Received a null byte from client, closing connection ;-)\n"); // i have decided this isn't allowed =P
             goto recv_loop_end;
         }
 
@@ -742,7 +745,7 @@ static void process_control_events(client_t *client) {
         for (next = client->buf; (end = strstr(next, CRLF)) && !client->data_callback; next = end + CRLF_LENGTH) {
             *end = '\0';
             if (strchr(next, '\n')) {
-                gprintf("Received a line-feed from client without preceding carriage return, closing connection ;-)\n"); // i have decided this isn't allowed =P
+                ftp_dbg_print("Received a line-feed from client without preceding carriage return, closing connection ;-)\n"); // i have decided this isn't allowed =P
                 goto recv_loop_end;
             }
         
@@ -750,7 +753,7 @@ static void process_control_events(client_t *client) {
                 s32 result;
                 if ((result = process_command(client, next)) < 0) {
                     if (result != -EQUIT) {
-                        gprintf("Closing connection due to error while processing command: %s\n", next);
+                        ftp_dbg_print(fmt("Closing connection due to error while processing command: %s\n", next));
                     }
                     goto recv_loop_end;
                 }
@@ -765,7 +768,7 @@ static void process_control_events(client_t *client) {
             memcpy(client->buf, tmp_buf, client->offset);
         }
     }
-    gprintf("Received line longer than %u bytes, closing client.\n", FTP_BUFFER_SIZE - 1);
+    ftp_dbg_print(fmt("Received line longer than %u bytes, closing client.\n", FTP_BUFFER_SIZE - 1));
 
     recv_loop_end:
     cleanup_client(client);
