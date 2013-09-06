@@ -31,6 +31,7 @@ private:
 		SBlock *prev;
 		bool f;
 	} __attribute__((aligned(32)));
+	bool is_valid(const SBlock *block);
 	SBlock *m_baseAddress;
 	SBlock *m_endAddress;
 	SBlock *m_first;

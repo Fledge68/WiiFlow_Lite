@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <string.h>
 #include "lockMutex.hpp"
-
+#include "gecko/gecko.hpp"
 void CMEM2Alloc::init(void *addr, void *end)
 {
 	m_baseAddress = (SBlock *)(((u32)addr + 31) & ~31);
@@ -36,6 +36,14 @@ void CMEM2Alloc::clear(void)
 unsigned int CMEM2Alloc::usableSize(void *p)
 {
 	return p == 0 ? 0 : ((SBlock *)p - 1)->s * sizeof (SBlock);
+}
+
+bool CMEM2Alloc::is_valid(const SBlock *block)
+{
+	if((u32)block >= (u32)m_baseAddress && (u32)block < (u32)m_endAddress)
+		return true;
+	gprintf("WARNING: Found invalid memory location!\n");
+	return false;
 }
 
 void *CMEM2Alloc::allocate(unsigned int s)
@@ -92,7 +100,7 @@ void *CMEM2Alloc::allocate(unsigned int s)
 		j->next = i->next;
 		j->prev = i;
 		i->next = j;
-		if((((u32)j->next) & 0xf0000000) != 0)
+		if(j->next != 0 && is_valid(j->next))
 			j->next->prev = j;
 	}
 	return (void *)(i + 1);
@@ -109,24 +117,26 @@ void CMEM2Alloc::release(void *p)
 
 	// If there are no other blocks following yet,
 	// set the remaining size to free size. - Dimok
-	if((((u32)i->next) & 0xf0000000) == 0)
+	if(i->next == 0)
 		i->s = m_endAddress - i - 1;
 
 	// Merge with previous block
-	if ((((u32)i->prev) & 0xf0000000) != 0 && i->prev->f)
+	if (i->prev != 0 && is_valid(i->prev) && is_valid(i->prev->next) && i->prev->f)
 	{
 		i = i->prev;
 		i->s += i->next->s + 1;
-		i->next = i->next->next;
-		if((((u32)i->next) & 0xf0000000) != 0)
+		if(i->next->next != 0 && is_valid(i->next->next))
+		{
+			i->next = i->next->next;
 			i->next->prev = i;
+		}
 	}
 	// Merge with next block
-	if ((((u32)i->next) & 0xf0000000) != 0 && i->next->f)
+	if (i->next != 0 && is_valid(i->next) && i->next->f)
 	{
 		i->s += i->next->s + 1;
 		i->next = i->next->next;
-		if((((u32)i->next) & 0xf0000000) != 0)
+		if(i->next != 0 && is_valid(i->next))
 			i->next->prev = i;
 	}
 }
@@ -154,18 +164,18 @@ void *CMEM2Alloc::reallocate(void *p, unsigned int s)
 	}
 
 	// Last block
-	if (((((u32)i->next) & 0xf0000000) == 0) && i + s + 1 < m_endAddress)
+	if (i->next == 0 && i + s + 1 < m_endAddress)
 	{
 		i->s = s;
 		return p;
 	}
 	// Size <= current size + next block
-	if ((((u32)i->next) & 0xf0000000) != 0 && i->s < s && i->next->f && i->s + i->next->s + 1 >= s)
+	if (i->next != 0 && is_valid(i->next) && i->s < s && i->next->f && i->s + i->next->s + 1 >= s)
 	{
 		// Merge
 		i->s += i->next->s + 1;
 		i->next = i->next->next;
-		if((((u32)i->next) & 0xf0000000) != 0)
+		if(i->next != 0 && is_valid(i->next))
 			i->next->prev = i;
 	}
 	// Size <= current size
@@ -181,7 +191,7 @@ void *CMEM2Alloc::reallocate(void *p, unsigned int s)
 			j->next = i->next;
 			j->prev = i;
 			i->next = j;
-			if((((u32)j->next) & 0xf0000000) != 0)
+			if(j->next != 0 && is_valid(j->next))
 				j->next->prev = j;
 		}
 		return p;
@@ -208,13 +218,11 @@ unsigned int CMEM2Alloc::FreeSize()
 
 	for(i = m_first; i != 0; i = i->next)
 	{
-		if(i->f && (((u32)i->next) & 0xf0000000) != 0)
+		if(i->f && i->next != 0 && is_valid(i->next))
 			size += i->s;
-
-		else if(i->f && (((u32)i->next) & 0xf0000000) == 0)
+		else if(i->f && i->next == 0)
 			size += m_endAddress - i - 1;
-
-		else if(!i->f && (((u32)i->next) & 0xf0000000) == 0)
+		else if(!i->f && i->next == 0)
 			size += m_endAddress - i - i->s - 1;
 	}
 
