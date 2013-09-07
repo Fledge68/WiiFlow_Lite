@@ -21,6 +21,7 @@
 
 s16 m_homeLblTitle;
 s16 m_exittoLblTitle;
+s16 m_exittoLblUser[4];
 
 s16 m_homeBtnSettings;
 s16 m_homeBtnReloadCache;
@@ -231,9 +232,9 @@ void CMenu::_showExitTo(void)
 	m_btnMgr.show(m_homeBtnExitToBootmii);
 	m_btnMgr.show(m_homeBtnExitToNeek);
 
-	for(u8 i = 0; i < ARRAY_SIZE(m_homeLblUser); ++i)
-		if(m_homeLblUser[i] != -1)
-			m_btnMgr.show(m_homeLblUser[i]);
+	for(u8 i = 0; i < ARRAY_SIZE(m_exittoLblUser); ++i)
+		if(m_exittoLblUser[i] != -1)
+			m_btnMgr.show(m_exittoLblUser[i]);
 }
 
 void CMenu::_hideHome(bool instant)
@@ -267,9 +268,9 @@ void CMenu::_hideExitTo(bool instant)
 	m_btnMgr.hide(m_homeBtnExitToBootmii, instant);
 	m_btnMgr.hide(m_homeBtnExitToNeek, instant);
 
-	for(u8 i = 0; i < ARRAY_SIZE(m_homeLblUser); ++i)
-		if(m_homeLblUser[i] != -1)
-			m_btnMgr.hide(m_homeLblUser[i], instant);
+	for(u8 i = 0; i < ARRAY_SIZE(m_exittoLblUser); ++i)
+		if(m_exittoLblUser[i] != -1)
+			m_btnMgr.hide(m_exittoLblUser[i], instant);
 }
 
 void CMenu::_initHomeAndExitToMenu()
@@ -310,6 +311,7 @@ void CMenu::_initHomeAndExitToMenu()
 	_hideHome(true);
 	
 	//ExitTo Menu
+	_addUserLabels(m_exittoLblUser, ARRAY_SIZE(m_exittoLblUser), "EXIT_TO");
 	m_exittoLblTitle = _addTitle("EXIT_TO/TITLE", theme.titleFont, L"", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 
 	_setHideAnim(m_exittoLblTitle, "EXIT_TO/TITLE", 0, 0, -2.f, 0.f);
