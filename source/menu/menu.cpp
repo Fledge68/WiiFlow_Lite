@@ -1161,6 +1161,7 @@ void CMenu::_buildMenus(void)
 	_initMainMenu();
 	_initErrorMenu();
 	_initWad();
+	_initFTP();
 	_initWBFSMenu();
 	_initConfigAdvMenu();
 	_initConfigSndMenu();
@@ -1187,7 +1188,6 @@ void CMenu::_buildMenus(void)
 	_initExplorer();
 	_initBoot();
 	_initPathsMenu();
-	_initFTP();
 
 	_loadCFCfg();
 }
