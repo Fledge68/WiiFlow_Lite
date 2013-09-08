@@ -174,6 +174,16 @@ int ftp_changedir(char *path)
 int ftp_makedir(char *path)
 {
 	int ret = -1;
+	if(strchr(path, '/') != NULL)
+	{
+		char *real_path = strrchr(path, '/') + 1;
+		if(real_path != '\0')
+		{
+			*strrchr(path, '/') = '\0';
+			ftp_changedir(path);
+			path = real_path;
+		}
+	}
 	if(main_path[1] != '\0')
 	{
 		char *new_dir = fmt("%s%s", real_path, path);

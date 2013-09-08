@@ -679,7 +679,8 @@ void CMenu::_game(bool launch)
 				m_btnMgr.hide(b ? m_gameBtnAdultOff : m_gameBtnAdultOn);
 				m_btnMgr.show(m_gameBtnSettings);
 			}
-			if ((CoverFlow.getHdr()->type != TYPE_HOMEBREW && CoverFlow.getHdr()->type != TYPE_CHANNEL) && !m_locked)
+			if((CoverFlow.getHdr()->type != TYPE_HOMEBREW && (CoverFlow.getHdr()->type != TYPE_CHANNEL || 
+				(!m_cfg.getBool(CHANNEL_DOMAIN, "disable", true) && CoverFlow.getHdr()->type == TYPE_CHANNEL))) && !m_locked)
 				m_btnMgr.show(m_gameBtnDelete);
 		}
 		else
