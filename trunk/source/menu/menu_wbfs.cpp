@@ -268,6 +268,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 	bool upd_usb = false;
 	bool upd_dml = false;
 	bool upd_emu = false;
+	bool upd_chan = false;
 	bool out = false;
 	const dir_discHdr *CF_Hdr = CoverFlow.getHdr();
 	char cfPos[7];
@@ -414,6 +415,26 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 							WBFS_Close();
 							upd_usb = true;
 						}
+						else if(CF_Hdr->type == TYPE_CHANNEL && !m_cfg.getBool(CHANNEL_DOMAIN, "disable", true))
+						{
+							if(CF_Hdr->settings[0] != 0x00010001)
+							{
+								error(_t("wbfsoperr5", L"Deleting this Channel is not allowed!"));
+								done = true;
+								out = true;
+								break;
+							}
+							const char *nand_base = NandHandle.GetPath();
+							fsop_deleteFolder(fmt("%s/title/%08x/%08x", nand_base, CF_Hdr->settings[0], CF_Hdr->settings[1]));
+							fsop_deleteFile(fmt("%s/ticket/%08x/%08x.tik", nand_base, CF_Hdr->settings[0], CF_Hdr->settings[1]));
+							upd_chan = true;
+						}
+						else /*who knows how but just block it*/
+						{
+							done = true;
+							out = true;
+							break;
+						}
 						if(m_cfg.getBool("GENERAL", "delete_cover_and_game", false))
 							RemoveCover(CF_Hdr->id);
 						m_btnMgr.show(m_wbfsPBar);
@@ -493,6 +514,8 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 			UpdateCache(COVERFLOW_USB);
 		if(upd_emu)
 			UpdateCache(COVERFLOW_PLUGIN);
+		if(upd_chan)
+			UpdateCache(COVERFLOW_CHANNEL);
 		_loadList();
 		_initCF();
 		CoverFlow.findId(cfPos, true);

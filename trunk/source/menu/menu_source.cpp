@@ -335,7 +335,8 @@ bool CMenu::_Source()
 			}
 			if(m_btnMgr.selected(m_sourceBtnDML))
 			{
-				if(!m_show_dml && !m_devo_installed) _showSourceNotice();
+				if(!m_show_dml && !m_devo_installed)
+					_showSourceNotice();
 				else
 				{
 					_clearSources();
@@ -345,7 +346,8 @@ bool CMenu::_Source()
 			}
 			if(m_btnMgr.selected(m_sourceBtnChannel))
 			{
-				if(!show_channel) _showSourceNotice();
+				if(!show_channel)
+					_showSourceNotice();
 				else
 				{
 					_clearSources();
@@ -355,7 +357,8 @@ bool CMenu::_Source()
 			}
 			if(m_btnMgr.selected(m_sourceBtnHomebrew))
 			{
-				if(!show_homebrew || (!parental_homebrew && m_locked)) _showSourceNotice(); 
+				if(!show_homebrew || (!parental_homebrew && m_locked))
+					_showSourceNotice();
 				else
 				{
 					_clearSources();
@@ -365,7 +368,8 @@ bool CMenu::_Source()
 			}
 			if(m_btnMgr.selected(m_sourceBtnEmu))
 			{
-				if(!show_emu) _showSourceNotice();
+				if(!show_emu)
+					_showSourceNotice();
 				else
 				{
 					_clearSources();
@@ -458,7 +462,8 @@ bool CMenu::_Source()
 							{
 								magicNums.clear();
 								magicNums = m_source.getStrings(btn_selected, "magic", ',');
-								if(!magicNums.empty())
+								u32 plugin_magic_nums = magicNums.size();
+								if(plugin_magic_nums != 0)
 								{
 									m_cfg.setBool(PLUGIN_DOMAIN, "source", true);
 									for(k = 0; k < numPlugins; ++k)
@@ -467,7 +472,14 @@ bool CMenu::_Source()
 									{
 										s8 exist = m_plugin.GetPluginPosition(strtoul(itr->c_str(), NULL, 16));
 										if(exist >= 0)
+										{
 											m_plugin.SetEnablePlugin(m_cfg, exist, 2);
+											if(plugin_magic_nums == 1)
+											{
+												currentPartition = m_cfg.getInt("PLUGINS/PARTITION", itr->c_str(), 1);
+												m_cfg.setInt(PLUGIN_DOMAIN, "partition", currentPartition);
+											}
+										}
 									}
 								}
 								m_catStartPage = m_source.getInt(btn_selected, "cat_page", 1);
