@@ -80,6 +80,7 @@ static bool show_emu = true;
 
 void CMenu::_showMain(void)
 {
+start_main:
 	_hideWaitMessage();
 #ifdef SHOWMEM
 	m_btnMgr.show(m_mem1FreeSize);
@@ -161,8 +162,7 @@ void CMenu::_showMain(void)
 							_setPartition(1);
 					}
 					_loadList();
-					_showMain();
-					_initCF();
+					goto start_main;
 				}
 				break;
 			case COVERFLOW_HOMEBREW:
@@ -549,7 +549,7 @@ int CMenu::main(void)
 					m_btnMgr.show(m_mainLblNotice);
 				}
 			}
-			else if(m_btnMgr.selected(m_mainBtnInfo) && !CoverFlow.empty())
+			else if(m_btnMgr.selected(m_mainBtnInfo) && m_allow_random && !CoverFlow.empty())
 			{
 				/* WiiFlow should boot a random game */
 				_hideMain();
@@ -699,12 +699,13 @@ int CMenu::main(void)
 				else
 					partition = DeviceName[currentPartition];
 				//gprintf("Next item: %s\n", partition);
-				m_showtimer = 120;
-				m_btnMgr.setText(m_mainLblNotice, sfmt("%s (%u) [%s]", _domainFromView(), m_gameList.size(), upperCase(partition).c_str()));
-				m_btnMgr.show(m_mainLblNotice);
 				_loadList();
 				_showMain();
 				_initCF();
+				/* refresh AFTER reloading */
+				m_showtimer = 120;
+				m_btnMgr.setText(m_mainLblNotice, sfmt("%s (%u) [%s]", _domainFromView(), m_gameList.size(), upperCase(partition).c_str()));
+				m_btnMgr.show(m_mainLblNotice);
 			}
 		}
 

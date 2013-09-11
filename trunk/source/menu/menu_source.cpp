@@ -304,23 +304,23 @@ bool CMenu::_Source()
 			m_btnMgr.up();
 		else if(BTN_DOWN_PRESSED)
 			m_btnMgr.down();
-		else if(((m_multisource?BTN_LEFT_PRESSED:BTN_MINUS_PRESSED) && source_Pages > 1) 
+		else if(((BTN_LEFT_PRESSED || (!m_multisource && BTN_MINUS_PRESSED)) && source_Pages > 1)
 				|| (BTN_A_PRESSED && m_btnMgr.selected(m_sourceBtnPageM)))
 		{
 			source_curPage--;
 			if(source_curPage < 1)
 				source_curPage = source_Pages;
-			if(BTN_LEFT_PRESSED)
+			if(!BTN_A_PRESSED)
 				m_btnMgr.click(m_sourceBtnPageM);
 			_updateSourceBtns();
 		}
-		else if(((m_multisource?BTN_RIGHT_PRESSED:BTN_PLUS_PRESSED) && source_Pages > 1) 
+		else if(((BTN_RIGHT_PRESSED || (!m_multisource && BTN_PLUS_PRESSED)) && source_Pages > 1)
 				|| (BTN_A_PRESSED && m_btnMgr.selected(m_sourceBtnPageP)))
 		{
 			source_curPage++;
 			if(source_curPage > source_Pages)
 				source_curPage = 1;
-			if (BTN_RIGHT_PRESSED)
+			if (!BTN_A_PRESSED)
 				m_btnMgr.click(m_sourceBtnPageP);
 			_updateSourceBtns();
 		}

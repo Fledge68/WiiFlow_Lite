@@ -248,7 +248,6 @@ private:
 	volatile bool m_renderTex;
 	TexData *m_renderingTex;
 	//
-	volatile int m_hqCover;
 	bool m_selected;
 	int m_tickCount;
 	TexData *m_loadingTexture;

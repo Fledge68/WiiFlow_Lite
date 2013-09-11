@@ -2878,7 +2878,8 @@ int CCoverFlow::_coverLoader(CCoverFlow *cf)
 	u32 firstItem;
 	bool update;
 	u32 i, j;
-
+	bool hq_req = cf->m_useHQcover;
+	bool cur_pos_hq = false;
 	u32 bufferSize = min(cf->m_numBufCovers * max(2u, cf->m_rows), 80u);
 
 	while(cf->m_loadingCovers)
@@ -2889,23 +2890,27 @@ int CCoverFlow::_coverLoader(CCoverFlow *cf)
 		{
 			firstItem = cf->m_covers[cf->m_range / 2].index;
 			i = loopNum((j & 1) ? firstItem - (j + 1) / 2 : firstItem + j / 2, cf->m_items.size());
-			LWP_MutexLock(cf->m_mutex);
-			TexHandle.Cleanup(cf->m_items[i].texture);
-			cf->m_items[i].state = STATE_Loading;
-			LWP_MutexUnlock(cf->m_mutex);
+			if(cf->m_items[i].state != STATE_Loading)
+			{
+				LWP_MutexLock(cf->m_mutex);
+				TexHandle.Cleanup(cf->m_items[i].texture);
+				cf->m_items[i].state = STATE_Loading;
+				LWP_MutexUnlock(cf->m_mutex);
+			}
 		}
 		ret = CL_OK;
 		for(j = 0; j <= bufferSize && cf->m_loadingCovers && !cf->m_moved && update && ret != CL_NOMEM; ++j)
 		{
 			firstItem = cf->m_covers[cf->m_range / 2].index;
 			i = loopNum((j & 1) ? firstItem - (j + 1) / 2 : firstItem + j / 2, cf->m_items.size());
-			if(cf->m_items[i].state != STATE_Loading)
+			cur_pos_hq = (hq_req && i == firstItem);
+			if((!hq_req || !cur_pos_hq) && cf->m_items[i].state != STATE_Loading)
 				continue;
-			if((ret = cf->_loadCoverTex(i, cf->m_box, cf->m_useHQcover, false)) == CL_ERROR)
+			if((ret = cf->_loadCoverTex(i, cf->m_box, cur_pos_hq, false)) == CL_ERROR)
 			{
-				if ((ret = cf->_loadCoverTex(i, !cf->m_box, cf->m_useHQcover, false)) == CL_ERROR)
+				if ((ret = cf->_loadCoverTex(i, !cf->m_box, cur_pos_hq, false)) == CL_ERROR)
 				{
-					if((ret = cf->_loadCoverTex(i, cf->m_box, cf->m_useHQcover, true)) == CL_ERROR)
+					if((ret = cf->_loadCoverTex(i, cf->m_box, cur_pos_hq, true)) == CL_ERROR)
 						cf->m_items[i].state = STATE_NoCover;
 				}
 			}

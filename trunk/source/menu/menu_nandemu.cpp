@@ -509,7 +509,7 @@ int CMenu::_FlashSave(string gameId)
 		{
 			m_cfg.save();
 			_hideNandEmu();
-				return 1;
+			return 1;
 		}
 
 		if(m_thrdMessageAdded)
@@ -615,7 +615,7 @@ int CMenu::_AutoExtractSave(string gameId)
 		{
 			m_cfg.save();
 			_hideNandEmu();
-				return 1;
+			return 1;
 		}
 
 		if(m_thrdMessageAdded)
@@ -654,6 +654,7 @@ int CMenu::_AutoCreateNand(void)
 	m_thrdMessageAdded = false;
 	m_nandext = false;
 	m_tempView = false;
+	bool lock_part_change = false;
 
 	m_btnMgr.setText(m_nandemuBtnExtract, _t("cfgne5", L"Extract NAND"));
 	m_btnMgr.setText(m_nandemuBtnDisable, _t("cfgne22", L"Disable NAND Emulation"));
@@ -671,6 +672,7 @@ int CMenu::_AutoCreateNand(void)
 		{
 			if(m_btnMgr.selected(m_nandemuBtnExtract))
 			{
+				lock_part_change = true;
 				m_fulldump = true;
 				m_btnMgr.hide(m_nandemuBtnExtract);
 				m_btnMgr.hide(m_nandemuBtnDisable);
@@ -718,10 +720,15 @@ int CMenu::_AutoCreateNand(void)
 			{
 				m_cfg.save();
 				_hideNandEmu();
-					return 1;
+				return 1;
 			}
 		}
-
+		else if(BTN_B_HELD && BTN_MINUS_PRESSED && !lock_part_change)
+		{
+			_setPartition(1);
+			_hideNandEmu();
+			return 1;
+		}
 		if(m_thrdMessageAdded)
 		{
 			LockMutex lock(m_mutex);
