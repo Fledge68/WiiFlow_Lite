@@ -285,6 +285,7 @@ void CMenu::init()
 			return;
 		}
 	}
+	m_allow_random = m_cfg.getBool("GENERAL", "allow_b_on_questionmark", true);
 	m_multisource = m_cfg.getBool("GENERAL", "multisource", false);
 	/* DIOS_MIOS stuff */
 	if(m_cfg.getBool(GC_DOMAIN, "always_show_button", false))

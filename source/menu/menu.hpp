@@ -88,6 +88,7 @@ private:
 	bool m_favorites;
 	bool m_music_info;
 	bool m_use_source;
+	bool m_allow_random;
 	bool m_multisource;
 	bool m_load_view;
 	s16 m_showtimer;
