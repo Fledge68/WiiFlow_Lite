@@ -91,11 +91,13 @@ private:
 	bool m_allow_random;
 	bool m_multisource;
 	bool m_load_view;
+	bool m_sourceflow;
 	s16 m_showtimer;
 	string m_curLanguage;
 
 	u8 m_numCFVersions;
 
+	string m_sourceDir;
 	string m_miosDir;
 	string m_themeDataDir;
 	string m_appDir;
@@ -850,6 +852,7 @@ private:
 	void _initCheatSettingsMenu();
 	void _initCheatButtons();
 	void _initSourceMenu();
+	void _initCfgSrc();
 	void _initPluginSettingsMenu();
 	void _initCategorySettingsMenu();
 	void _initSystemMenu();
@@ -863,6 +866,7 @@ private:
 	void _initFTP();
 	//
 	void _textSource(void);
+	void _textCfgSrc(void);
 	void _textPluginSettings(void);
 	void _textCategorySettings(void);
 	void _textCheatSettings(void);
@@ -894,6 +898,7 @@ private:
 	void _textFTP(void);
 	//
 	void _refreshBoot();
+	void _refreshCfgSrc();
 	void _refreshExplorer(s8 direction = 0);
 	void _refreshLangSettings();
 	//
@@ -1018,6 +1023,7 @@ private:
 	void _Wad(const char *wad_path = NULL, bool autoInstall = false);
 	void _CheatSettings();
 	bool _Source();
+	void _CfgSrc();
 	void _PluginSettings();
 	void _CategorySettings(bool fromGameSet = false);
 	bool _Home();
@@ -1026,6 +1032,8 @@ private:
 	bool _ExitTo();
 	bool _Boot();
 	void _Paths();
+	void _sourceFlow();
+	void _createSFList();
 	void _mainLoopCommon(bool withCF = false, bool adjusting = false);
 public:
 	void directlaunch(const char *GameID);

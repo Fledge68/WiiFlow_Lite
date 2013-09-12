@@ -38,9 +38,9 @@ u8 sourceBtn;
 u8 selectedBtns;
 int source_curPage;
 int source_Pages;
-string m_sourceDir;
 string themeName;
 vector<string> magicNums;
+char btn_selected[256];
 
 void CMenu::_hideSource(bool instant)
 {
@@ -190,6 +190,158 @@ void CMenu::_showSourceNotice(void)
 	m_btnMgr.show(m_sourceLblNotice);
 }
 
+dir_discHdr sourceList;
+void CMenu::_createSFList()
+{
+	bool show_homebrew = !m_cfg.getBool(HOMEBREW_DOMAIN, "disable", false);
+	bool show_channel = !m_cfg.getBool("GENERAL", "hidechannel", false);
+	bool show_emu = !m_cfg.getBool(PLUGIN_DOMAIN, "disable", false);
+	bool parental_homebrew = m_cfg.getBool(HOMEBREW_DOMAIN, "parental", false);
+	m_gameList.clear();
+	for(u8 i = 0; i < m_cfg.getInt("GENERAL", "max_source_buttons", 71); i++)
+	{
+		memset(btn_selected, 0, 256);
+		strncpy(btn_selected, fmt("BUTTON_%i", i), 255);
+		string source = m_source.getString(btn_selected, "source","");
+		if(source == "")
+			continue;
+		if(source == "dml" && !m_show_dml && !m_devo_installed)
+			continue;
+		else if(source == "emunand" && !show_channel)
+			continue;
+		else if(source == "homebrew" && (!show_homebrew || (!parental_homebrew && m_locked)))
+			continue;
+		else if((source == "plugin" || source == "allplugins") && !show_emu)
+			continue;
+		const char *path = fmt("%s/%s", m_sourceDir.c_str(), m_source.getString(btn_selected, "image", "").c_str());
+		memset((void*)&sourceList, 0, sizeof(dir_discHdr));
+		sourceList.index = m_gameList.size();
+		strncpy(sourceList.id, "SOURCE", 6);
+		strncpy(sourceList.path, path, sizeof(sourceList.path) - 1);
+		sourceList.casecolor = 0xFFFFFF;
+		sourceList.type = TYPE_SOURCE;		
+		sourceList.settings[0] = i;
+		const char *title = m_source.getString(btn_selected, "title", fmt("title_%i", i)).c_str();
+		mbstowcs(sourceList.title, title, 63);
+		Asciify(sourceList.title);
+		m_gameList.push_back(sourceList);
+	}
+}
+
+void CMenu::_sourceFlow()
+{
+	u8 numPlugins = 0, k;
+	if(!m_cfg.getBool(PLUGIN_DOMAIN, "disable", false))
+	{
+		Config m_plugin_cfg;
+		DIR *pdir;
+		struct dirent *pent;
+		pdir = opendir(m_pluginsDir.c_str());
+		while((pent = readdir(pdir)) != NULL)
+		{
+			if(pent->d_name[0] == '.'|| strcasecmp(pent->d_name, "scummvm.ini") == 0)
+				continue;
+			if(strcasestr(pent->d_name, ".ini") != NULL)
+			{
+				m_plugin_cfg.load(fmt("%s/%s", m_pluginsDir.c_str(), pent->d_name));
+				if (m_plugin_cfg.loaded())
+				{
+					numPlugins++;
+					m_plugin.AddPlugin(m_plugin_cfg);
+				}
+				m_plugin_cfg.unload();
+			}
+		}
+		closedir(pdir);
+		m_plugin.EndAdd();
+	}
+	const dir_discHdr *hdr = CoverFlow.getHdr();
+	m_cfg.setString("SOURCEFLOW", "current_item", strrchr(hdr->path, '/') + 1);
+	memset(btn_selected, 0, 256);
+	strncpy(btn_selected, fmt("BUTTON_%i", hdr->settings[0]), 255);
+	string source = m_source.getString(btn_selected, "source", "");
+	_clearSources();
+	if(source == "wii")
+	{
+		m_current_view = COVERFLOW_USB;
+		m_cfg.setBool(WII_DOMAIN, "source", true);
+		m_catStartPage = m_source.getInt(btn_selected, "cat_page", 1);
+	}
+	else if(source == "dml")
+	{
+		m_current_view = COVERFLOW_DML;
+		m_cfg.setBool(GC_DOMAIN, "source", true);
+		m_catStartPage = m_source.getInt(btn_selected, "cat_page", 1);
+	}
+	else if(source == "emunand")
+	{
+		m_current_view = COVERFLOW_CHANNEL;
+		m_cfg.setBool(CHANNEL_DOMAIN, "disable", false);
+		m_cfg.setBool(CHANNEL_DOMAIN, "source", true);
+		m_catStartPage = m_source.getInt(btn_selected, "cat_page", 1);
+	}
+	else if(source == "realnand")
+	{
+		m_current_view = COVERFLOW_CHANNEL;
+		m_cfg.setBool(CHANNEL_DOMAIN, "disable", true);
+		m_cfg.setBool(CHANNEL_DOMAIN, "source", true);
+		m_catStartPage = m_source.getInt(btn_selected, "cat_page", 1);
+	}
+	else if(source == "homebrew")
+	{
+		m_current_view = COVERFLOW_HOMEBREW;
+		m_cfg.setBool(HOMEBREW_DOMAIN, "source", true);
+		m_catStartPage = m_source.getInt(btn_selected, "cat_page", 1);
+	}
+	else if(source == "allplugins")
+	{
+		m_current_view = COVERFLOW_PLUGIN;
+		m_cfg.setBool(PLUGIN_DOMAIN, "source", true);
+		m_catStartPage = m_source.getInt(btn_selected, "cat_page", 1);
+		for(k = 0; k < numPlugins; ++k)
+			m_plugin.SetEnablePlugin(m_cfg, k, 2); /* force enable */
+	}
+	else if(source == "plugin")
+	{
+		magicNums.clear();
+		magicNums = m_source.getStrings(btn_selected, "magic", ',');
+		u32 plugin_magic_nums = magicNums.size();
+		if(plugin_magic_nums != 0)
+		{
+			m_current_view = COVERFLOW_PLUGIN;
+			m_cfg.setBool(PLUGIN_DOMAIN, "source", true);
+			for(k = 0; k < numPlugins; ++k)
+				m_plugin.SetEnablePlugin(m_cfg, k, 1); /* force disable */
+			for(vector<string>::iterator itr = magicNums.begin(); itr != magicNums.end(); itr++)
+			{
+				s8 exist = m_plugin.GetPluginPosition(strtoul(itr->c_str(), NULL, 16));
+				if(exist >= 0)
+					m_plugin.SetEnablePlugin(m_cfg, exist, 2);
+					if(plugin_magic_nums == 1)
+					{
+						currentPartition = m_cfg.getInt("PLUGINS/PARTITION", itr->c_str(), 1);
+						m_cfg.setInt(PLUGIN_DOMAIN, "partition", currentPartition);
+					}
+			}
+		}
+		m_catStartPage = m_source.getInt(btn_selected, "cat_page", 1);
+		int layout = m_source.getInt(btn_selected, "emuflow", 0);
+		if(layout > 0)
+			m_cfg.setInt(PLUGIN_DOMAIN, "last_cf_mode", layout);
+		int category = m_source.getInt(btn_selected, "category", 0);
+		if(category > 0)
+		{
+			m_cat.remove("GENERAL", "selected_categories");
+			m_cat.remove("GENERAL", "required_categories");
+			char cCh = static_cast<char>(category + 32);
+			string newSelCats(1, cCh);
+			m_cat.setString("GENERAL", "selected_categories", newSelCats);
+			m_clearCats = false;
+		}
+	}
+	m_sourceflow = false;
+}
+	
 bool CMenu::_Source()
 {
 	CoverFlow.clear();
@@ -285,6 +437,21 @@ bool CMenu::_Source()
 			if(selectedBtns == 0)
 				m_cfg.setBool(WII_DOMAIN, "source", true);
 
+			vector<bool> plugin_list = m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
+			if(enabledPluginsCount == 1)
+			{ 		
+				u8 i = 0;
+				for(i = 0; i < enabledPluginsCount; ++i)
+				{
+					if(plugin_list[i] == true)
+					break;
+				}
+				char PluginMagicWord[9];
+				memset(PluginMagicWord, 0, sizeof(PluginMagicWord));
+				strncpy(PluginMagicWord, fmt("%08x", m_plugin.getPluginMagic(i)), 8);
+				currentPartition = m_cfg.getInt("PLUGINS/PARTITION", PluginMagicWord, 1); 		
+				m_cfg.setInt(PLUGIN_DOMAIN, "partition", currentPartition);
+			}
 			u8 sourceCount = 0;
 			if(m_cfg.getBool(WII_DOMAIN, "source", false))
 				sourceCount++;
@@ -386,7 +553,6 @@ bool CMenu::_Source()
 			{
 				if(m_btnMgr.selected(m_sourceBtnSource[i]))
 				{
-					char btn_selected[256];
 					memset(btn_selected, 0, 256);
 					strncpy(btn_selected, fmt("BUTTON_%i", i + j), 255);
 					string source = m_source.getString(btn_selected, "source", "");
@@ -641,11 +807,11 @@ void CMenu::_initSourceMenu()
 	m_sourceBtnDML = _addPicButton("SOURCE/DML_BTN", texDML, texDMLs, 295, 200, 48, 48);
 	m_sourceBtnEmu = _addPicButton("SOURCE/EMU_BTN", texEmu, texEmus, 355, 200, 48, 48);
 	
-	m_sourceDir = m_cfg.getString("GENERAL", "dir_Source", fmt("%s/source_menu", m_dataDir.c_str()));
-
 	themeName = m_cfg.getString("GENERAL", "theme", "default");
 	if(!m_source.load(fmt("%s/%s/%s", m_sourceDir.c_str(), themeName.c_str(), SOURCE_FILENAME)))
-			m_source.load(fmt("%s/%s", m_sourceDir.c_str(), SOURCE_FILENAME));
+		m_source.load(fmt("%s/%s", m_sourceDir.c_str(), SOURCE_FILENAME));
+	else
+		m_sourceDir = fmt("%s/%s", m_sourceDir.c_str(), themeName.c_str());
 
 	int row;
 	int col;

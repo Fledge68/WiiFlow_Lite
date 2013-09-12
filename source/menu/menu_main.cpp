@@ -193,14 +193,19 @@ void CMenu::LoadView(void)
 	}
 	m_clearCats = true;
 	m_favorites = false;
-	if (m_cfg.getBool("GENERAL", "save_favorites_mode", false))
+	if(m_cfg.getBool("GENERAL", "save_favorites_mode", false))
 		m_favorites = m_cfg.getBool(_domainFromView(), "favorites", false);
-	_loadList();
+	if(m_sourceflow)
+		_createSFList();
+	else
+		_loadList();
 	_showMain();
 	_initCF();
 	_loadCFLayout(m_cfg.getInt(_domainFromView(), "last_cf_mode", 1));
 	CoverFlow.applySettings();
 
+	if(m_sourceflow)
+		return;
 	const char *mode = (m_current_view == COVERFLOW_CHANNEL && m_cfg.getBool(CHANNEL_DOMAIN, "disable", true)) 
 		? CHANNEL_DOMAIN : DeviceName[currentPartition];
 
@@ -271,14 +276,22 @@ int CMenu::main(void)
 	if(m_cfg.getBool("GENERAL", "source_on_start", false)) 
 	{
 		_hideMain();
-		if(!_Source())
+		if(m_cfg.getBool("SOURCEFLOW", "enabled", false))
+		{
+			m_sourceflow = true;
 			LoadView();
+		}
 		else
 		{
-			if(BTN_B_HELD)
-				bUsed = true;
-			_initCF();
-			_showMain();
+			if(!_Source())
+				LoadView();
+			else
+			{
+				if(BTN_B_HELD)
+					bUsed = true;
+				_initCF();
+				_showMain();
+			}
 		}
 	}
 
@@ -292,20 +305,32 @@ int CMenu::main(void)
 		{
 			bheld = false;
 			if(bUsed)
-			{
 				bUsed = false;
-			}
 			else
 			{
-				_hideMain();
-				if(!_Source()) //Different source selected
+				if(m_sourceflow)
+				{
+					m_sourceflow = false;
 					LoadView();
+					continue;
+				}
+				_hideMain();
+				if(m_cfg.getBool("SOURCEFLOW", "enabled", false))
+				{
+					m_sourceflow = true;
+					LoadView();
+				}
 				else
 				{
-					if(BTN_B_HELD)
-						bUsed = true;
-					_initCF();
-					_showMain();
+					if(!_Source()) //Different source selected
+						LoadView();
+					else
+					{
+						if(BTN_B_HELD)
+							bUsed = true;
+						_initCF();
+						_showMain();
+					}
 				}
 				continue;
 			}
@@ -346,7 +371,7 @@ int CMenu::main(void)
 			LoadView();
 			continue;
 		}
-		if(BTN_HOME_PRESSED)
+		if(BTN_HOME_PRESSED && !m_sourceflow)
 		{
 			_hideMain();
 			if(_Home()) //exit wiiflow
@@ -484,13 +509,22 @@ int CMenu::main(void)
 			else if(!CoverFlow.empty() && CoverFlow.select())
 			{
 				_hideMain();
-				_game(BTN_B_HELD);
-				if(m_exit)
-					break;
-				if(BTN_B_HELD)
-					bUsed = true;
-				CoverFlow.cancel();
-				_showMain();
+				if(m_sourceflow)
+				{
+					_sourceFlow();
+					LoadView();
+					continue;
+				}
+				else
+				{
+					_game(BTN_B_HELD);
+					if(m_exit)
+						break;
+					if(BTN_B_HELD)
+						bUsed = true;
+					CoverFlow.cancel();
+					_showMain();
+				}
 			}
 		}
 		else if(BTN_B_PRESSED)
@@ -659,7 +693,7 @@ int CMenu::main(void)
 				else
 					MusicPlayer.Next();
 			}
-			else if(BTN_PLUS_PRESSED && !m_locked)
+			else if(BTN_PLUS_PRESSED && !m_locked  && !m_sourceflow)
 			{
 				bUsed = true;
 				u32 sort = 0;
@@ -687,7 +721,7 @@ int CMenu::main(void)
 				m_btnMgr.setText(m_mainLblNotice, curSort);
 				m_btnMgr.show(m_mainLblNotice);
 			}
-			else if(BTN_MINUS_PRESSED && !m_locked)
+			else if(BTN_MINUS_PRESSED && !m_locked  && !m_sourceflow)
 			{
 				bUsed = true;
 				const char *partition = NULL;
@@ -739,7 +773,7 @@ int CMenu::main(void)
 			m_btnMgr.show(m_mainBtnNext);
 		else
 			m_btnMgr.hide(m_mainBtnNext);
-		if(!m_gameList.empty() && m_show_zone_main)
+		if(!m_gameList.empty() && m_show_zone_main  && !m_sourceflow)
 		{
 			m_btnMgr.show(m_mainLblUser[0]);
 			m_btnMgr.show(m_mainLblUser[1]);
@@ -762,7 +796,7 @@ int CMenu::main(void)
 			m_btnMgr.hide(m_mainBtnFavoritesOn);
 			m_btnMgr.hide(m_mainBtnFavoritesOff);
 		}
-		if(!m_cfg.getBool("GENERAL", "hideviews", false) && (m_gameList.empty() || m_show_zone_main2))
+		if((!m_cfg.getBool("GENERAL", "hideviews", false) && (m_gameList.empty() || m_show_zone_main2)) && !m_sourceflow)
 		{
 			switch(m_current_view)
 			{
@@ -819,7 +853,7 @@ int CMenu::main(void)
 			m_btnMgr.hide(m_mainLblUser[2]);
 			m_btnMgr.hide(m_mainLblUser[3]);
 		}
-		if((disc_check & 0x2) && (m_gameList.empty() || m_show_zone_main3))
+		if(((disc_check & 0x2) && (m_gameList.empty() || m_show_zone_main3))  && !m_sourceflow)
 		{
 			m_btnMgr.show(m_mainBtnDVD);
 			m_btnMgr.show(m_mainLblUser[4]);

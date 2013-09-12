@@ -162,11 +162,17 @@ void CMenu::_hideSettings(bool instant)
 	m_btnMgr.hide(m_downloadBtnKOs, instant);
 	m_btnMgr.hide(m_downloadBtnZHCNs, instant);
 	m_btnMgr.hide(m_downloadBtnAUs, instant);
-	m_btnMgr.hide(m_downloadBtnBack, instant);	
+	m_btnMgr.hide(m_downloadBtnBack, instant);
+	for(u8 i = 0; i < ARRAY_SIZE(m_downloadLblUser); ++i)
+		if(m_downloadLblUser[i] != -1)
+			m_btnMgr.hide(m_downloadLblUser[i], instant);
 }
 void CMenu::_showSettings()
 {
 	_hideDownload();
+	for(u8 i = 0; i < ARRAY_SIZE(m_downloadLblUser); ++i)
+		if(m_downloadLblUser[i] != -1)
+			m_btnMgr.show(m_downloadLblUser[i]);
 	m_btnMgr.show(m_downloadLblSetTitle);
 	m_btnMgr.show(m_downloadLblCoverPrio);
 	m_btnMgr.show(m_downloadLblPrio);

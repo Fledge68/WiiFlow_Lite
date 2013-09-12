@@ -128,6 +128,7 @@ CMenu::CMenu()
 	init_network = false;
 	m_use_source = true;
 	m_multisource = false;
+	m_sourceflow = false;
 	m_clearCats = true;
 	m_catStartPage = 1;
 	m_combined_view = false;
@@ -317,6 +318,7 @@ void CMenu::init()
 	m_app_update_zip = fmt("%s/update.zip", m_appDir.c_str());
 	m_data_update_zip = fmt("%s/update.zip", m_dataDir.c_str());
 
+	m_sourceDir = m_cfg.getString("GENERAL", "dir_Source", fmt("%s/source_menu", m_dataDir.c_str()));
 	m_miosDir = m_cfg.getString("GENERAL", "dir_mios", fmt("%s/mios", m_dataDir.c_str()));
 	m_customBnrDir = m_cfg.getString("GENERAL", "dir_custom_banners", fmt("%s/custom_banners", m_dataDir.c_str()));
 	m_pluginsDir = m_cfg.getString("GENERAL", "dir_plugins", fmt("%s/plugins", m_dataDir.c_str()));
@@ -377,6 +379,7 @@ void CMenu::init()
 	/* Create our Folder Structure */
 	fsop_MakeFolder(m_dataDir.c_str()); //D'OH!
 
+	fsop_MakeFolder(m_sourceDir.c_str());
 	fsop_MakeFolder(m_miosDir.c_str());
 	fsop_MakeFolder(m_customBnrDir.c_str());
 	fsop_MakeFolder(m_pluginsDir.c_str());
@@ -526,6 +529,7 @@ void CMenu::cleanup()
 	_cleanupDefaultFont();
 	m_banner.DeleteBanner();
 	m_plugin.Cleanup();
+	m_source.unload();
 
 	_stopSounds();
 	_Theme_Cleanup();
@@ -752,10 +756,12 @@ float CMenu::_getCFFloat(const string &domain, const string &key, float def, boo
 
 void CMenu::_loadCFLayout(int version, bool forceAA, bool otherScrnFmt)
 {
-	bool homebrew = m_current_view == COVERFLOW_HOMEBREW;
+	bool homebrew = (m_sourceflow && m_cfg.getBool(_domainFromView(), "smallbox", true)) || m_current_view == COVERFLOW_HOMEBREW;
 	bool smallbox = (homebrew || m_current_view == COVERFLOW_PLUGIN) && m_cfg.getBool(_domainFromView(), "smallbox", true);
-	string domain(homebrew ? fmt("_BREWFLOW_%i", version) : m_current_view == COVERFLOW_PLUGIN ? fmt("_EMUFLOW_%i", version) : fmt("_COVERFLOW_%i", version));
-	string domainSel(homebrew ? fmt("_BREWFLOW_%i_S", version) : m_current_view == COVERFLOW_PLUGIN ? fmt("_EMUFLOW_%i_S", version) : fmt("_COVERFLOW_%i_S", version));
+	string domain = (homebrew ? fmt("_BREWFLOW_%i", version) : (m_current_view == COVERFLOW_PLUGIN && !m_sourceflow) ? 
+		fmt("_EMUFLOW_%i", version) : fmt("_COVERFLOW_%i", version));
+	string domainSel = (homebrew ? fmt("_BREWFLOW_%i_S", version) : (m_current_view == COVERFLOW_PLUGIN && !m_sourceflow) ? 
+		fmt("_EMUFLOW_%i_S", version) : fmt("_COVERFLOW_%i_S", version));
 	bool sf = otherScrnFmt;
 
 	int max_fsaa = m_theme.getInt(domain, "max_fsaa", 3);
@@ -1179,6 +1185,7 @@ void CMenu::_buildMenus(void)
 	_initCheatSettingsMenu(); 
 	_initLangSettingsMenu();
 	_initSourceMenu();
+	_initCfgSrc();
 	_initPluginSettingsMenu();
 	_initCategorySettingsMenu();
 	_initSystemMenu();
@@ -1560,7 +1567,14 @@ void CMenu::_initCF(void)
 		string id;
 		char tmp_id[256];
 		u64 chantitle = TITLE_ID(element->settings[0],element->settings[1]);
-		if(element->type == TYPE_HOMEBREW)
+		if(m_sourceflow)
+		{
+			memset(tmp_id, 0, 256);
+			wcstombs(tmp_id, element->title, 63);
+			id = "source/";
+			id.append(tmp_id);
+		}
+		else if(element->type == TYPE_HOMEBREW)
 			id = strrchr(element->path, '/') + 1;
 		else if(element->type == TYPE_PLUGIN)
 		{
@@ -1675,6 +1689,7 @@ void CMenu::_initCF(void)
 					catDomain = "NAND";
 					break;
 				case TYPE_HOMEBREW:
+				case TYPE_SOURCE:
 					catDomain = "HOMEBREW";
 					break;
 				case TYPE_GC_GAME:
@@ -1798,8 +1813,8 @@ void CMenu::_initCF(void)
 		u8 view = m_current_view;
 		if(m_current_view == COVERFLOW_MAX) // target the last launched game type view
 			m_current_view = m_last_view;
-		bool path = (m_current_view == COVERFLOW_PLUGIN || m_current_view == COVERFLOW_HOMEBREW);
-		if(!CoverFlow.findId(m_cfg.getString(_domainFromView(), "current_item").c_str(), true, path))
+		bool path = m_sourceflow || (m_current_view == COVERFLOW_PLUGIN || m_current_view == COVERFLOW_HOMEBREW);
+		if(!CoverFlow.findId(m_cfg.getString(domain, "current_item").c_str(), true, path))
 			CoverFlow.defaultLoad();
 		m_current_view = view;
 		CoverFlow.startCoverLoader();
@@ -2484,6 +2499,8 @@ const char *CMenu::_getId()
 
 const char *CMenu::_domainFromView()
 {
+	if(m_sourceflow)
+		return "SOURCEFLOW";
 	switch(m_current_view)
 	{
 		case COVERFLOW_CHANNEL:
@@ -2669,6 +2686,15 @@ const char *CMenu::getBoxPath(const dir_discHdr *element)
 	}
 	else if(element->type == TYPE_HOMEBREW)
 		return fmt("%s/%s.png", m_boxPicDir.c_str(), strrchr(element->path, '/') + 1);
+	else if(element->type == TYPE_SOURCE)
+	{
+		if(m_cfg.getBool("SOURCEFLOW", "smallbox"))
+			return NULL;
+		const char *tempname = element->path;
+		if(strchr(element->path, '/') != NULL)
+			tempname = strrchr(element->path, '/') + 1;
+		return fmt("%s/full_covers/%s", m_sourceDir.c_str(), tempname);
+	}
 	return fmt("%s/%s.png", m_boxPicDir.c_str(), element->id);
 }
 
@@ -2687,5 +2713,22 @@ const char *CMenu::getFrontPath(const dir_discHdr *element)
 	}
 	else if(element->type == TYPE_HOMEBREW)
 		return fmt("%s/icon.png", element->path);
+	else if(element->type == TYPE_SOURCE)
+	{
+		const char *temppath = NULL;
+		const char *tempname = element->path;
+		if(strchr(element->path, '/') != NULL)
+			tempname = strrchr(element->path, '/') + 1;
+		if(!m_cfg.getBool("SOURCEFLOW", "smallbox"))
+		{
+			temppath = fmt("%s/front_covers/%s", m_sourceDir.c_str(), tempname);
+			if(fsop_FileExist(temppath))
+				return temppath;
+		}
+		temppath = fmt("%s/small_covers/%s", m_sourceDir.c_str(), tempname);
+		if(fsop_FileExist(temppath))
+			return temppath;
+		return fmt("%s", element->path);
+	}
 	return fmt("%s/%s.png", m_picDir.c_str(), element->id);
 }
