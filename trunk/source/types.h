@@ -29,9 +29,10 @@ enum
 	TYPE_CHANNEL,
 	TYPE_PLUGIN,
 	TYPE_HOMEBREW,
+	TYPE_SOURCE,
 	TYPE_END
 };
-#define NoGameID(x)			(x == TYPE_PLUGIN || x == TYPE_HOMEBREW)
+#define NoGameID(x)			(x == TYPE_PLUGIN || x == TYPE_HOMEBREW || x == TYPE_SOURCE)
 
 enum
 {

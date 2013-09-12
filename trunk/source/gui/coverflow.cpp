@@ -2620,6 +2620,8 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover)
 	u8 textureFmt = m_compressTextures ? GX_TF_CMPR : GX_TF_RGB565;
 	const char *path = box ? (blankBoxCover ? mainMenu.getBlankCoverPath(m_items[i].hdr) : 
 			mainMenu.getBoxPath(m_items[i].hdr)) : mainMenu.getFrontPath(m_items[i].hdr);
+	if(path == NULL)
+		return false;
 	TexData tex;
 	tex.thread = true;
 	m_renderingTex = &tex;
@@ -2659,6 +2661,8 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover)
 			{
 				if(m_pluginCacheFolders && m_items[i].hdr->type == TYPE_PLUGIN)
 					coverDir = m_plugin.GetCoverFolderName(m_items[i].hdr->settings[0]);
+				if(m_items[i].hdr->type == TYPE_SOURCE)
+					coverDir = "sourceflow";
 				if(strrchr(m_items[i].hdr->path, '/') != NULL)
 					gamePath = strrchr(m_items[i].hdr->path, '/') + 1;
 				else
@@ -2774,6 +2778,8 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 		{
 			if(m_pluginCacheFolders && m_items[i].hdr->type == TYPE_PLUGIN)
 				coverDir = m_plugin.GetCoverFolderName(m_items[i].hdr->settings[0]);
+			if(m_items[i].hdr->type == TYPE_SOURCE)
+					coverDir = "sourceflow";
 			if(strrchr(m_items[i].hdr->path, '/') != NULL)
 				gamePath = strrchr(m_items[i].hdr->path, '/') + 1;
 			else
