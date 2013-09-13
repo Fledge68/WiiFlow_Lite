@@ -2688,12 +2688,11 @@ const char *CMenu::getBoxPath(const dir_discHdr *element)
 		return fmt("%s/%s.png", m_boxPicDir.c_str(), strrchr(element->path, '/') + 1);
 	else if(element->type == TYPE_SOURCE)
 	{
-		if(m_cfg.getBool("SOURCEFLOW", "smallbox"))
+		const char *m_sflowDir = m_cfg.getString("GENERAL", "dir_Source", fmt("%s/source_menu", m_dataDir.c_str())).c_str();
+		const char *coverImg = strrchr(element->path, '/') + 1;
+		if(coverImg == NULL || m_cfg.getBool("SOURCEFLOW", "smallbox"))
 			return NULL;
-		const char *tempname = element->path;
-		if(strchr(element->path, '/') != NULL)
-			tempname = strrchr(element->path, '/') + 1;
-		return fmt("%s/full_covers/%s", m_sourceDir.c_str(), tempname);
+		return fmt("%s/full_covers/%s", m_sflowDir, coverImg);
 	}
 	return fmt("%s/%s.png", m_boxPicDir.c_str(), element->id);
 }
@@ -2715,20 +2714,18 @@ const char *CMenu::getFrontPath(const dir_discHdr *element)
 		return fmt("%s/icon.png", element->path);
 	else if(element->type == TYPE_SOURCE)
 	{
-		const char *temppath = NULL;
-		const char *tempname = element->path;
-		if(strchr(element->path, '/') != NULL)
-			tempname = strrchr(element->path, '/') + 1;
-		if(!m_cfg.getBool("SOURCEFLOW", "smallbox"))
+		const char *m_sflowDir = m_cfg.getString("GENERAL", "dir_Source", fmt("%s/source_menu", m_dataDir.c_str())).c_str();
+		const char *coverImg = strrchr(element->path, '/') + 1;
+		if(coverImg == NULL)
+			return NULL;
+		const char *coverPath = fmt("%s/front_covers/%s", m_sflowDir, coverImg);
+		if(m_cfg.getBool("SOURCEFLOW", "smallbox") || !fsop_FileExist(coverPath))
 		{
-			temppath = fmt("%s/front_covers/%s", m_sourceDir.c_str(), tempname);
-			if(fsop_FileExist(temppath))
-				return temppath;
+			coverPath = fmt("%s/front_covers/%s", m_sflowDir, coverImg);
+			if(!fsop_FileExist(coverPath))
+				return element->path;
 		}
-		temppath = fmt("%s/small_covers/%s", m_sourceDir.c_str(), tempname);
-		if(fsop_FileExist(temppath))
-			return temppath;
-		return fmt("%s", element->path);
+		return coverPath;
 	}
 	return fmt("%s/%s.png", m_picDir.c_str(), element->id);
 }

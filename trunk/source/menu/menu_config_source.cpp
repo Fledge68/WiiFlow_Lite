@@ -41,9 +41,6 @@ s16 m_cfgsrcBtnClearSF;
 s16 m_cfgsrcLblMultisource;
 s16 m_cfgsrcBtnMultisource;
 
-s16 m_cfgsrcLblBonMode;
-s16 m_cfgsrcBtnBonMode;
-
 u8 cfgsrc_curPage = 1;
 u8 cfgsrc_Pages = 2;
 
@@ -89,9 +86,6 @@ static void hideCfgSrc(bool instant, bool common)
 	
 	m_btnMgr.hide(m_cfgsrcLblMultisource, instant);
 	m_btnMgr.hide(m_cfgsrcBtnMultisource, instant);
-	
-	m_btnMgr.hide(m_cfgsrcLblBonMode, instant);
-	m_btnMgr.hide(m_cfgsrcBtnBonMode, instant);
 }
 
 void CMenu::_CfgSrc(void)
@@ -134,6 +128,7 @@ void CMenu::_CfgSrc(void)
 			{
 				m_cfg.setBool("GENERAL", "use_source", !m_cfg.getBool("GENERAL", "use_source", false));
 				m_btnMgr.setText(m_cfgsrcBtnEnableSM, m_cfg.getBool("GENERAL", "use_source", false) ? _t("on", L"On") : _t("off", L"Off"));
+				m_use_source = m_cfg.getBool("GENERAL", "use_source", false);
 			}
 			else if (m_btnMgr.selected(m_cfgsrcBtnSourceOnBoot))
 			{
@@ -160,11 +155,6 @@ void CMenu::_CfgSrc(void)
 				m_cfg.setBool("GENERAL", "multisource", !m_cfg.getBool("GENERAL", "multisource", false));
 				m_btnMgr.setText(m_cfgsrcBtnMultisource, m_cfg.getBool("GENERAL", "multisource") ? _t("on", L"On") : _t("off", L"Off"));
 				m_multisource = m_cfg.getBool("GENERAL", "multisource", false);
-			}
-			else if (m_btnMgr.selected(m_cfgsrcBtnBonMode))
-			{
-				m_cfg.setBool("GENERAL", "b_on_mode_to_source", !m_cfg.getBool("GENERAL", "b_on_mode_to_source", false));
-				m_btnMgr.setText(m_cfgsrcBtnBonMode, m_cfg.getBool("GENERAL", "b_on_mode_to_source") ? _t("on", L"On") : _t("off", L"Off"));
 			}
 		}
 	}
@@ -197,30 +187,25 @@ void CMenu::_refreshCfgSrc()
 	else
 	{
 		m_btnMgr.setText(m_cfgsrcBtnMultisource, m_cfg.getBool("GENERAL", "multisource") ? _t("on", L"On") : _t("off", L"Off"));
-		m_btnMgr.setText(m_cfgsrcBtnBonMode, m_cfg.getBool("GENERAL", "b_on_mode_to_source") ? _t("on", L"On") : _t("off", L"Off"));
-		
+
 		m_btnMgr.show(m_cfgsrcLblClearSF);
 		m_btnMgr.show(m_cfgsrcBtnClearSF);
 		
 		m_btnMgr.show(m_cfgsrcLblMultisource);
 		m_btnMgr.show(m_cfgsrcBtnMultisource);
-		
-		m_btnMgr.show(m_cfgsrcLblBonMode);
-		m_btnMgr.show(m_cfgsrcBtnBonMode);
 	}
 }
 
 void CMenu::_textCfgSrc(void)
 {
 	m_btnMgr.setText(m_cfgsrcLblTitle, _t("cfgsm1", L"Source Menu Settings"));
-	m_btnMgr.setText(m_cfgsrcLblEnableSM, _t("cfgsm2", L"Enable Source Menu"));
+	m_btnMgr.setText(m_cfgsrcLblEnableSM, _t("cfgsm2", L"Enable B To Source Menu"));
 	m_btnMgr.setText(m_cfgsrcLblSourceOnBoot, _t("cfgbt5", L"Show source menu on boot"));
 	m_btnMgr.setText(m_cfgsrcLblEnableSF, _t("cfgsm3", L"Enable Sourceflow"));
 	m_btnMgr.setText(m_cfgsrcLblSmallbox, _t("cfgsm4", L"Sourceflow Smallbox"));
 	m_btnMgr.setText(m_cfgsrcLblClearSF, _t("cfgsm5", L"Clear Sourceflow Cache"));
 	m_btnMgr.setText(m_cfgsrcBtnClearSF, _t("cfgc5", L"Go"));
 	m_btnMgr.setText(m_cfgsrcLblMultisource, _t("cfgbt6", L"Enable Multisource Features"));
-	m_btnMgr.setText(m_cfgsrcLblBonMode, _t("cfgsm6", L"B On Mode To Source"));
 	m_btnMgr.setText(m_cfgsrcBtnBack, _t("cfg10", L"Back"));
 }
 
@@ -252,9 +237,6 @@ void CMenu::_initCfgSrc(void)
 	m_cfgsrcLblMultisource = _addLabel("CFG_SRC/MULTISOURCE", theme.lblFont, L"", 40, 190, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_cfgsrcBtnMultisource = _addButton("CFG_SRC/MULTISOURCE_BTN", theme.btnFont, L"", 370, 190, 230, 56, theme.btnFontColor);
 	
-	m_cfgsrcLblBonMode = _addLabel("CFG_SRC/B_ON_MODE", theme.lblFont, L"", 40, 250, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_cfgsrcBtnBonMode = _addButton("CFG_SRC/B_ON_MODE_BTN", theme.btnFont, L"", 370, 250, 230, 56, theme.btnFontColor);
-	
 	_setHideAnim(m_cfgsrcLblTitle, "CFG_SRC/TITLE", 0, -200, 0.f, 1.f);
 	_setHideAnim(m_cfgsrcBtnBack, "CFG_SRC/BACK_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_cfgsrcLblPage, "CFG_SRC/PAGE_BTN", 0, 0, 1.f, -1.f);
@@ -278,9 +260,6 @@ void CMenu::_initCfgSrc(void)
 
 	_setHideAnim(m_cfgsrcLblMultisource, "CFG_SRC/MULTISOURCE", -200, 0, 1.f, 0.f);
 	_setHideAnim(m_cfgsrcBtnMultisource, "CFG_SRC/MULTISOURCE_BTN", 200, 0, 1.f, 0.f);
-
-	_setHideAnim(m_cfgsrcLblBonMode, "CFG_SRC/B_ON_MODE", -200, 0, 1.f, 0.f);
-	_setHideAnim(m_cfgsrcBtnBonMode, "CFG_SRC/B_ON_MODE_BTN", 200, 0, 1.f, 0.f);
 
 	hideCfgSrc(true, true);
 	_textCfgSrc();
