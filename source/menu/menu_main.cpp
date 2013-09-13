@@ -301,7 +301,7 @@ int CMenu::main(void)
 		WDVD_GetCoverStatus(&disc_check);
 		/* Main Loop */
 		_mainLoopCommon(true);
-		if(m_use_source && bheld && !BTN_B_HELD)
+		if(bheld && !BTN_B_HELD)
 		{
 			bheld = false;
 			if(bUsed)
@@ -314,25 +314,28 @@ int CMenu::main(void)
 					LoadView();
 					continue;
 				}
-				_hideMain();
-				if(m_cfg.getBool("SOURCEFLOW", "enabled", false))
+				if(m_use_source)
 				{
-					m_sourceflow = true;
-					LoadView();
-				}
-				else
-				{
-					if(!_Source()) //Different source selected
+					_hideMain();
+					if(m_cfg.getBool("SOURCEFLOW", "enabled", false))
+					{
+						m_sourceflow = true;
 						LoadView();
+					}
 					else
 					{
-						if(BTN_B_HELD)
-							bUsed = true;
-						_initCF();
-						_showMain();
+						if(!_Source()) //Different source selected
+							LoadView();
+						else
+						{
+							if(BTN_B_HELD)
+								bUsed = true;
+							_initCF();
+							_showMain();
+						}
 					}
+					continue;
 				}
-				continue;
 			}
 		}
 		if(dpad_mode && (BTN_UP_PRESSED || BTN_DOWN_PRESSED || BTN_LEFT_PRESSED || BTN_RIGHT_PRESSED) && (m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML) || m_btnMgr.selected(m_mainBtnHomebrew) || m_btnMgr.selected(m_mainBtnEmu)))
@@ -543,17 +546,29 @@ int CMenu::main(void)
 			//Events to Switch off/on nand emu
 			else if(m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML)|| m_btnMgr.selected(m_mainBtnEmu) || m_btnMgr.selected(m_mainBtnHomebrew))
 			{
-				if(m_cfg.getBool("GENERAL", "b_on_mode_to_source", true))
+				if(!m_use_source)//B on mode to source
 				{
 					_hideMain();
-					if(!_Source()) //Different source selected
+					if(m_cfg.getBool("SOURCEFLOW", "enabled", false))
+					{
+						m_sourceflow = true;
 						LoadView();
+					}
 					else
-						_showMain();
-					if(BTN_B_HELD)
-						bUsed = true;
+					{
+						if(!_Source()) //Different source selected
+							LoadView();
+						else
+						{
+							if(BTN_B_HELD)
+								bUsed = true;
+							_initCF();
+							_showMain();
+						}
+					}
 					continue;
 				}
+				
 			}
 			else if(m_btnMgr.selected(m_mainBtnNext) || m_btnMgr.selected(m_mainBtnPrev))
 			{
