@@ -154,6 +154,8 @@ CMenu::CMenu()
 	/* ftp stuff */
 	m_ftp_inited = false;
 	m_init_ftp = false;
+	/* screensaver */
+	no_input_time = 0;
 }
 
 void CMenu::init()
@@ -1879,8 +1881,10 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 	m_btnMgr.draw();
 	ScanInput();
 	if(!m_vid.showingWaitMessage())
+	{
+		m_vid.screensaver(NoInputTime());
 		m_vid.render();
-
+	}
 	if(Sys_Exiting())
 		exitHandler(BUTTON_CALLBACK);
 

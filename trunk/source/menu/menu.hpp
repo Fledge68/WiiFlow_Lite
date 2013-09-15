@@ -631,11 +631,13 @@ private:
 	s32   right_stick_skip[WPAD_MAX_WIIMOTES];
 	s32	  wmote_roll_skip[WPAD_MAX_WIIMOTES];
 	bool  enable_wmote_roll;
+	time_t no_input_time;
 
 	bool m_cfNeedsUpdate;
 
 	void SetupInput(bool reset_pos = false);
 	void ScanInput(void);
+	u32 NoInputTime(void);
 
 	void ButtonsPressed(void);
 	void ButtonsHeld(void);
