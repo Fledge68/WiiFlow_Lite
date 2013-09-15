@@ -86,7 +86,8 @@ CVideo::CVideo(void) :
 	m_rmode(NULL), m_frameBuf(), m_curFB(0), m_fifo(NULL),
 	m_yScale(0.0f), m_xfbHeight(0), m_wide(false),
 	m_width2D(640), m_height2D(480), m_x2D(0), m_y2D(0), m_aa(0), m_aaAlpha(false),
-	m_aaWidth(0), m_aaHeight(0), m_showWaitMessage(false), m_showingWaitMessages(false)
+	m_aaWidth(0), m_aaHeight(0), m_screensaver_alpha(0), m_showWaitMessage(false), 
+	m_showingWaitMessages(false)
 {
 	memset(m_frameBuf, 0, sizeof m_frameBuf);
 }
@@ -723,4 +724,19 @@ void DrawRectangle(f32 x, f32 y, f32 width, f32 height, GXColor color)
 	}
 	GX_End();
 	GX_SetTevOp(GX_TEVSTAGE0, GX_MODULATE);
+}
+
+void CVideo::screensaver(u32 no_input)
+{
+	if(no_input == 0)
+	{
+		m_screensaver_alpha = 0;
+		return;
+	}
+	if(no_input > 60)
+	{
+		DrawRectangle(0, 0, 640, 480, (GXColor){0,0,0,m_screensaver_alpha});
+		if(m_screensaver_alpha < 150)
+			m_screensaver_alpha+=2;
+	}
 }
