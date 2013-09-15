@@ -1202,7 +1202,7 @@ void CMenu::_setPartition(s8 direction)
 		if(enabledPluginsCount == 1)
 		{
 			u8 i = 0;
-			for(i = 0; i < enabledPluginsCount; ++i)
+			for(i = 0; i < plugin_list.size(); ++i)
 			{
 				if(plugin_list[i] == true)
 					break;
