@@ -6,25 +6,24 @@ Controls:
 -- Minus / Plus  =  Fast skip through games
 -- A  =  Select game
 -- B+A  =  Launch game immediately
--- B+Home  =  Reload WiiFlow
 -- Home  =  Open Home Menu / Exit WiiFlow
 -- 1 / 2  =  Previous / next coverflow mode
 -- B+Left / B+Right  =  Change Song
--- B+UP / B+DOWN  =  Alphabetic search
--- B+Onscreen Arrows  =  Alphabetic search
+-- B+UP / B+DOWN  =  previous / next game in sorted list (alpha default)
+-- B+Onscreen Arrows  =  previous / next game in sorted list (alpha default)
 -- B+Minus  =  Switch Partition
--- B+Plus  =  Sort Games
+-- B+Plus  =  Select Sort Type (alpha, wifi, players, playcount, etc...)
 -- Z / ZR  =  Take Screenshot
 
 -- A on Star Icon  =  Favorites
 -- B on Star Icon  =  Categories
 -- A on Gear Icon  =  WiiFlow settings
--- A on USB, DML, Channels, Emu, or Homebrew Icon  =  Switch to that view
--- B on USB, DML, Channels, Emu, or Homebrew Icon  =  Enable/Disable Emu-NAND and switch to Channels view
+-- A on USB(Wii), GC, Channels, Plugin, or Homebrew Icon  =  Switch to that view
+-- B on USB(Wii), GC, Channels, Plugin, or Homebrew Icon  =  Open Source Menu
+-- B only =  Open Source Menu (if enabled)
 -- A on Home Icon  =  Open Home Menu / Exit WiiFlow
--- Hold B for 3 seconds / B on Home Icon (wiimote_gestures enabled)  =  Display Source menu
 -- A on Disc Icon (Game Disc in Drive)  =  Launch game disc
--- A on Question Mark Icon  =  Display credits and this help file
+-- A on Question Mark Icon  =  View help file
 -- B on Question Mark Icon  =  Boot a random game of the current coverflow
 
 - Game:
