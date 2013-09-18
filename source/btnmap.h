@@ -133,7 +133,8 @@ enum
 #define RIGHT_STICK_DOWN rStick_Down()
 #define RIGHT_STICK_LEFT rStick_Left()
 #define RIGHT_STICK_RIGHT rStick_Right()
-
+#define RIGHT_STICK_MOVE (RIGHT_STICK_UP || RIGHT_STICK_DOWN \
+					|| RIGHT_STICK_LEFT || RIGHT_STICK_RIGHT)
 #define WROLL_LEFT  wRoll_Left()
 #define WROLL_RIGHT wRoll_Right()
 

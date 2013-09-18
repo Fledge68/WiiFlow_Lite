@@ -588,14 +588,17 @@ void CMenu::ShowGameZone()
 u32 CMenu::NoInputTime()
 {
 	bool input_found = false;
-	if(gc_btnsPressed != 0)
+	if(ShowPointer() == true || RIGHT_STICK_MOVE == true || gc_btnsPressed != 0)
 		input_found = true;
 	else
 	{
 		for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 		{
-			if(wii_btnsPressed[chan] != 0 || wii_btnsHeld[chan] != 0 || m_show_pointer[chan] == true)
+			if(wii_btnsPressed[chan] != 0 || wii_btnsHeld[chan] != 0)
+			{
 				input_found = true;
+				break;
+			}
 		}
 	}
 	if(input_found == false)

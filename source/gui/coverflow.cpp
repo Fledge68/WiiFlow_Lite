@@ -2622,14 +2622,23 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover)
 			mainMenu.getBoxPath(m_items[i].hdr)) : mainMenu.getFrontPath(m_items[i].hdr);
 	if(path == NULL)
 		return false;
+	size_t path_len = strlen(path);
+	char *path_place = (char*)MEM2_alloc(path_len+1);
+	if(path_place == NULL)
+		return false;
+	memset(path_place, 0, path_len+1);
+	memcpy(path_place, path, path_len);
+	DCFlushRange(path_place, path_len+1);
 	TexData tex;
 	tex.thread = true;
 	m_renderingTex = &tex;
-	if(TexHandle.fromImageFile(tex, path, textureFmt, 32) != TE_OK)
+	if(TexHandle.fromImageFile(tex, path_place, textureFmt, 32) != TE_OK)
 	{
+		MEM2_free(path_place);
 		m_renderingTex = NULL;
 		return false;
 	}
+	MEM2_free(path_place);
 	m_renderingTex = NULL;
 	if(!m_loadingCovers)
 		return false;
@@ -2647,7 +2656,7 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover)
 		u32 bufSize = fixGX_GetTexBufferSize(tex.width, tex.height, tex.format, tex.maxLOD > 0 ? GX_TRUE : GX_FALSE, tex.maxLOD);
 		uLongf zBufferSize = m_compressCache ? bufSize + bufSize / 100 + 12 : bufSize;
 		u8 *zBuffer = m_compressCache ? (u8*)MEM2_alloc(zBufferSize) : tex.data;
-		if(!!zBuffer && (!m_compressCache || compress(zBuffer, &zBufferSize, tex.data, bufSize) == Z_OK))
+		if(zBuffer != NULL && (!m_compressCache || compress(zBuffer, &zBufferSize, tex.data, bufSize) == Z_OK))
 		{
 			const char *gamePath = NULL;
 			const char *coverDir = NULL;
@@ -2674,8 +2683,16 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover)
 			FILE *file = NULL;
 			if(gamePath != NULL)
 			{
+				char *full_path = (char*)MEM2_alloc(MAX_FAT_PATH+1);
+				if(full_path == NULL)
+				{
+					if(zBuffer != NULL && m_compressCache)
+						MEM2_free(zBuffer);
+					return false;
+				}
+				memset(full_path, 0, MAX_FAT_PATH+1);
 				if(coverDir == NULL || strlen(coverDir) == 0)
-					file = fopen(fmt("%s/%s.wfc", m_cachePath.c_str(), gamePath), "wb");
+					strncpy(full_path, fmt("%s/%s.wfc", m_cachePath.c_str(), gamePath), MAX_FAT_PATH);
 				else
 				{
 					if(strchr(coverDir, '/') != NULL)
@@ -2694,8 +2711,11 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover)
 						MEM2_free(tmp);
 					}
 					fsop_MakeFolder(fmt("%s/%s", m_cachePath.c_str(), coverDir));
-					file = fopen(fmt("%s/%s/%s.wfc", m_cachePath.c_str(), coverDir, gamePath), "wb");
+					strncpy(full_path, fmt("%s/%s/%s.wfc", m_cachePath.c_str(), coverDir, gamePath), MAX_FAT_PATH);
 				}
+				DCFlushRange(full_path, MAX_FAT_PATH+1);
+				file = fopen(full_path, "wb");
+				MEM2_free(full_path);
 			}
 			if(file != NULL)
 			{
@@ -2706,6 +2726,8 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover)
 				if (m_deletePicsAfterCaching)
 					fsop_deleteFile(path);
 			}
+			if(zBuffer != NULL && m_compressCache)
+				MEM2_free(zBuffer);
 		}
 	}
 	if (!hq) _dropHQLOD(i);
@@ -2791,10 +2813,17 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 		FILE *fp = NULL;
 		if(gamePath != NULL)
 		{
+			char *full_path = (char*)MEM2_alloc(MAX_FAT_PATH+1);
+			if(full_path == NULL)
+				return CL_NOMEM;
+			memset(full_path, 0, MAX_FAT_PATH+1);
 			if(coverDir == NULL || strlen(coverDir) == 0)
-				fp = fopen(fmt("%s/%s.wfc", m_cachePath.c_str(), gamePath), "rb");
+				strncpy(full_path, fmt("%s/%s.wfc", m_cachePath.c_str(), gamePath), MAX_FAT_PATH);
 			else
-				fp = fopen(fmt("%s/%s/%s.wfc", m_cachePath.c_str(), coverDir, gamePath), "rb");
+				strncpy(full_path, fmt("%s/%s/%s.wfc", m_cachePath.c_str(), coverDir, gamePath), MAX_FAT_PATH);
+			DCFlushRange(full_path, MAX_FAT_PATH+1);
+			fp = fopen(full_path, "rb");
+			MEM2_free(full_path);
 		}
 		if(fp != NULL)
 		{

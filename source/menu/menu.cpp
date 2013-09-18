@@ -2470,20 +2470,24 @@ void CMenu::_cleanupDefaultFont()
 	m_wbf2_font = NULL;
 }
 
-char tmp[256];
 const char *CMenu::_getId()
 {
+	char tmp[MAX_FAT_PATH];
+	memset(tmp, 0, MAX_FAT_PATH);
 	const char *id = NULL;
 	const dir_discHdr *hdr = CoverFlow.getHdr();
 	if(hdr->type == TYPE_HOMEBREW)
 		id = strrchr(hdr->path, '/') + 1;
 	else if(hdr->type == TYPE_PLUGIN)
 	{
-		tmp[0] = '\0';
-		if(strrchr(hdr->path, ':') != NULL)
+		if(strstr(hdr->path, ":/") != NULL)
 		{
-			strcat(tmp, strchr(hdr->path, '/') + 1);
-			*(strchr(tmp, '/') + 1) = '\0';
+			if(*(strchr(hdr->path, '/') + 1) != '\0')
+				strcat(tmp, strchr(hdr->path, '/') + 1);
+			else
+				strcat(tmp, hdr->path);
+			if(strchr(tmp, '/') != NULL)
+				*(strchr(tmp, '/') + 1) = '\0';
 		}
 		strcat(tmp, fmt("%ls",hdr->title));
 		id = tmp;
@@ -2493,7 +2497,6 @@ const char *CMenu::_getId()
 		id = hdr->id;
 		if(hdr->type == TYPE_GC_GAME && hdr->settings[0] == 1) /* disc 2 */
 		{
-			tmp[0] = '\0';
 			strcat(tmp, fmt("%.6s_2", hdr->id));
 			id = tmp;
 		}
