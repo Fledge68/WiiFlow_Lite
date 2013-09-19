@@ -579,6 +579,7 @@ int CMenu::main(void)
 				{
 					CoverFlow.setSorting((Sorting)SORT_ALPHA);
 					m_cfg.setInt(domain, "sort", SORT_ALPHA);
+					sorting = SORT_ALPHA;
 				}
 				wchar_t c[2] = {0, 0};
 				m_btnMgr.selected(m_mainBtnPrev) ? CoverFlow.prevLetter(c) : CoverFlow.nextLetter(c);
@@ -672,6 +673,7 @@ int CMenu::main(void)
 				{
 					CoverFlow.setSorting((Sorting)SORT_ALPHA);
 					m_cfg.setInt(domain, "sort", SORT_ALPHA);
+					sorting = SORT_ALPHA;
 				}
 				wchar_t c[2] = {0, 0};
 				BTN_UP_PRESSED ? CoverFlow.prevLetter(c) : CoverFlow.nextLetter(c);
@@ -712,9 +714,11 @@ int CMenu::main(void)
 			{
 				bUsed = true;
 				u32 sort = 0;
-				sort = loopNum((m_cfg.getInt(domain, "sort", 0)) + 1, SORT_MAX - 1);
-				CoverFlow.setSorting((Sorting)sort);
+				sort = loopNum((m_cfg.getInt(domain, "sort", 0)) + 1, SORT_MAX);
+				if((m_current_view == COVERFLOW_HOMEBREW || m_current_view == COVERFLOW_PLUGIN) && sort > SORT_LASTPLAYED)
+					sort = SORT_ALPHA;
 				m_cfg.setInt(domain, "sort", sort);
+				_initCF();
 				wstringEx curSort ;
 				if(sort == SORT_ALPHA)
 					curSort = m_loc.getWString(m_curLanguage, "alphabetically", L"Alphabetically");
@@ -724,14 +728,10 @@ int CMenu::main(void)
 					curSort = m_loc.getWString(m_curLanguage, "bylastplayed", L"By Last Played");
 				else if(sort == SORT_GAMEID)
 					curSort = m_loc.getWString(m_curLanguage, "bygameid", L"By Game I.D.");
-				else if(sort == SORT_ESRB)
-					curSort = m_loc.getWString(m_curLanguage, "byesrb", L"By ESRB");
 				else if(sort == SORT_WIFIPLAYERS)
 					curSort = m_loc.getWString(m_curLanguage, "bywifiplayers", L"By Wifi Players");
 				else if(sort == SORT_PLAYERS)
 					curSort = m_loc.getWString(m_curLanguage, "byplayers", L"By Players");
-				else if(sort == SORT_CONTROLLERS)
-					curSort = m_loc.getWString(m_curLanguage, "bycontrollers", L"By Controllers");
 				m_showtimer = 120;
 				m_btnMgr.setText(m_mainLblNotice, curSort);
 				m_btnMgr.show(m_mainLblNotice);
