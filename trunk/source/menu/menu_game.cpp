@@ -832,15 +832,30 @@ void CMenu::_launch(const dir_discHdr *hdr)
 	Sys_Exit();
 }
 // taken from Postloader by Stfour
-#define QFIDN 6
-static const char *qfid[QFIDN] = {
+#define QFIDN 9
+static const char qfid[QFIDN][7] = {
+"RELSAB", //Sample Header?
 "GGPE01", //Mario Kart Arcade GP
+"MKAGP1", //Mario Kart Arcade GP (Alt ID)
 "GGPE02", //Mario Kart Arcade GP 2
+"MKAGP2", //Mario Kart Arcade GP 2 (Alt ID)
 "GFZJ8P", //F-Zero AX
-"GVSJ8P", // Virtua Striker 4
-"GVS46E", // Virtua Striker 4 Ver.2006
-"GVS46J", // Virtua Striker 4 Ver.2006
+"GVSJ8P", // Virtua Striker 4 Ver.2006 (PAL)
+"GVS46E", // Virtua Striker 4 Ver.2006 (NTSC)
+"GVS46J", // Virtua Striker 4 Ver.2006 (JAP)
 };
+
+bool CMenu::_QF_Game(const char *game_id)
+{
+	if(game_id == NULL)
+		return false;
+	for(u8 i = 0; i < QFIDN; i++)
+	{
+		if(memcmp(game_id, qfid[i], 7) == 0)
+			return true;
+	}
+	return false;
+}
 
 void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 {
@@ -885,19 +900,13 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	else
 		m_cfg.setString(GC_DOMAIN, "current_item", id);
 
-	bool isqf = false;
 	const char *mios_wad = NULL;
 
 	if(loader == 0) //auto selected
 	{
 		gprintf("Auto installing MIOS\n");
 		_showWaitMessage();
-		for(u8 i = 0; i < QFIDN; i++)
-		{
-			if(strncmp(id, qfid[i], strlen(qfid[i])) == 0)
-				isqf = true;
-		}
-		if(isqf == true)
+		if(_QF_Game(id) == true)
 		{
 			if(currentPartition == SD && (m_mios_ver != 2 || m_sd_dm == false))
 				mios_wad = fmt("%s/qfsd.wad", m_miosDir.c_str());
@@ -1615,13 +1624,14 @@ void CMenu::_gameSoundThread(CMenu *m)
 		}
 		if(custom_bnr_file == NULL && GameHdr->type == TYPE_GC_GAME)
 		{
-			GC_Disc disc;
-			disc.init(GameHdr->path);
-			u8 *opening_bnr = disc.GetGameCubeBanner();
-			if(opening_bnr != NULL)
-				m_banner.CreateGCBanner(opening_bnr, m->m_wbf1_font, m->m_wbf2_font, GameHdr->title);
-			disc.clear();
-
+			if(m->_QF_Game(GameHdr->id) == false)
+			{
+				GC_Disc_Reader.init(GameHdr->path);
+				u8 *opening_bnr = GC_Disc_Reader.GetGameCubeBanner();
+				if(opening_bnr != NULL)
+					m_banner.CreateGCBanner(opening_bnr, m->m_wbf1_font, m->m_wbf2_font, GameHdr->title);
+				GC_Disc_Reader.clear();
+			}
 			m->m_gameSound.Load(gc_ogg, gc_ogg_size, false);
 			if(m->m_gameSound.IsLoaded())
 				m->m_gamesound_changed = true;

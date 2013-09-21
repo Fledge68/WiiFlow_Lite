@@ -15,39 +15,36 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ****************************************************************************/
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <string>
 
 #include "gc.hpp"
 #include "gcdisc.hpp"
+#include "fileOps/fileOps.h"
 #include "loader/gc_disc_dump.hpp"
 #include "gecko/gecko.hpp"
 #include "memory/mem2.hpp"
+#include "gui/fmt.h"
 
-using namespace std;
+GC_Disc GC_Disc_Reader;
 
 void GC_Disc::init(const char *path)
 {
+	strncpy(GamePath, path, MAX_FAT_PATH);
 	opening_bnr = NULL;
 	FSTable = NULL;
 
-	strncpy(GamePath, path, sizeof(GamePath));
 	FILE *f = NULL;
-	if(strcasestr(GamePath, "boot.bin") != NULL)
+	u32 FSTSize = 0;
+	if(strstr(GamePath, "boot.bin") != NULL)
 	{
 		GameType = TYPE_FST;
-		string fst(GamePath);
-		fst.erase(fst.end() - 8, fst.end());
-		fst.append("fst.bin");
-		f = fopen(fst.c_str(), "rb");
-		if(f == NULL)
-			return;
-		fseek(f, 0, SEEK_END);
-		u32 size = ftell(f);
-		fseek(f, 0, SEEK_SET);
-		Read_FST(f, size);
-		fclose(f);
+		if(strchr(GamePath, '/') != NULL) //boot.bin
+			*strrchr(GamePath, '/') = '\0';
+		if(strchr(GamePath, '/') != NULL) //sys
+			*strrchr(GamePath, '/') = '\0';
+		const char *FstPath = fmt("%s/sys/fst.bin", GamePath);
+		fsop_GetFileSizeBytes(FstPath, &FSTSize);
+		f = fopen(FstPath, "rb");
 	}
 	else
 	{
@@ -55,14 +52,17 @@ void GC_Disc::init(const char *path)
 		f = fopen(GamePath, "rb");
 		if(f == NULL)
 			return;
-		u8 *ReadBuffer = (u8*)malloc(0x440);
+		u8 *ReadBuffer = (u8*)MEM2_alloc(0x440);
 		if(ReadBuffer == NULL)
 			return;
 		fread(ReadBuffer, 1, 0x440, f);
-		u32 FSTOffset = *(vu32*)(ReadBuffer+0x424);
-		u32 FSTSize = *(vu32*)(ReadBuffer+0x428);
-		free(ReadBuffer);
+		u32 FSTOffset = *(u32*)(ReadBuffer + 0x424);
+		FSTSize = *(u32*)(ReadBuffer + 0x428);
+		MEM2_free(ReadBuffer);
 		fseek(f, FSTOffset, SEEK_SET);
+	}
+	if(f != NULL)
+	{
 		Read_FST(f, FSTSize);
 		fclose(f);
 	}
@@ -70,60 +70,65 @@ void GC_Disc::init(const char *path)
 
 void GC_Disc::clear()
 {
-	if(opening_bnr)
+	if(opening_bnr != NULL)
 	{
-		free(opening_bnr);
+		MEM2_free(opening_bnr);
 		opening_bnr = NULL;
 	}
-	if(FSTable)
+	if(FSTable != NULL)
 	{
-		free(FSTable);
+		MEM2_free(FSTable);
 		FSTable = NULL;
 	}
 }
 
 void GC_Disc::Read_FST(FILE *f, u32 FST_size)
 {
-	FSTable = (u8*)malloc(FST_size);
+	if(f == NULL)
+		return;
+	FSTable = (u8*)MEM2_alloc(FST_size);
 	if(FSTable == NULL)
 		return;
 	fread(FSTable, 1, FST_size, f);
 
-	FSTEnt = *(vu32*)(FSTable+0x08);
+	FSTEnt = *(u32*)(FSTable + 0x08);
 	FSTNameOff = (char*)(FSTable + FSTEnt * 0x0C);
 }
 
 u8 *GC_Disc::GetGameCubeBanner()
 {
-	if(FSTable == NULL)
+	if(FSTable == NULL || GamePath == NULL)
 		return NULL;
-	FILE *f = NULL;
-	FST *fst = (FST *)(FSTable);
+
+	FILE *bnr_fp = NULL;
+	u32 BnrSize = 0;
+
+	FST *fst = (FST*)FSTable;
 	for(u32 i = 1; i < FSTEnt; ++i)
 	{
 		if(fst[i].Type) //Folder
 			continue;
-		else if(strcasecmp(FSTNameOff + fst[i].NameOffset, "opening.bnr") == 0)
+		else if(strcmp(FSTNameOff + fst[i].NameOffset, "opening.bnr") == 0)
 		{
 			if(GameType == TYPE_FST)
-			{
-				string path(GamePath);
-				path.erase(path.end() - 12, path.end());
-				path.append("root/opening.bnr");
-				f = fopen(path.c_str(), "rb");
-			}
+				bnr_fp = fopen(fmt("%s/root/opening.bnr", GamePath), "rb");
 			else
 			{
-				f = fopen(GamePath, "rb");
-				fseek(f, fst[i].FileOffset, SEEK_SET);
+				bnr_fp = fopen(GamePath, "rb");
+				if(bnr_fp != NULL)
+					fseek(bnr_fp, fst[i].FileOffset, SEEK_SET);
 			}
-			if(f)
-			{
-				opening_bnr = (u8*)malloc(fst[i].FileLength);
-				fread(opening_bnr, 1, fst[i].FileLength, f);
-				fclose(f);
-			}
+			BnrSize = fst[i].FileLength;
+			break;
 		}
+	}
+
+	if(bnr_fp != NULL)
+	{
+		opening_bnr = (u8*)MEM2_alloc(BnrSize);
+		if(opening_bnr != NULL && fread(opening_bnr, 1, BnrSize, bnr_fp) != BnrSize)
+			MEM2_free(opening_bnr);
+		fclose(bnr_fp);
 	}
 	return opening_bnr;
 }

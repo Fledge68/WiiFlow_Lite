@@ -529,6 +529,7 @@ void CMenu::cleanup()
 	//gprintf("MEM1_freesize(): %i\nMEM2_freesize(): %i\n", MEM1_freesize(), MEM2_freesize());
 	m_btnMgr.hide(m_mainLblCurMusic);
 	_cleanupDefaultFont();
+	CoverFlow.shutdown(); /* possibly plugin flow crash so cleanup early */
 	m_banner.DeleteBanner();
 	m_plugin.Cleanup();
 	m_source.unload();
@@ -541,7 +542,6 @@ void CMenu::cleanup()
 	soundDeinit();
 
 	m_vid.cleanup();
-	CoverFlow.shutdown();
 
 	wiiLightOff();
 	LWP_MutexDestroy(m_mutex);
