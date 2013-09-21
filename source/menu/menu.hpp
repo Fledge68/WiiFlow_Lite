@@ -1048,6 +1048,7 @@ private:
 	void _netInit();
 	bool _loadFile(u8 * &buffer, u32 &size, const char *path, const char *file);
 	int _loadIOS(u8 ios, int userIOS, string id, bool RealNAND_Channels = false);
+	bool _QF_Game(const char *game_id);
 	void _launch(const dir_discHdr *hdr);
 	void _launchGame(dir_discHdr *hdr, bool dvd);
 	void _launchChannel(dir_discHdr *hdr);

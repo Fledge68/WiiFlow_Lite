@@ -18,6 +18,7 @@
 #define _GCDISC_HPP_
 
 #include <gccore.h>
+#include "loader/utils.h"
 #include "banner/AnimatedBanner.h"
 #include "banner/BannerWindow.hpp"
 
@@ -35,7 +36,7 @@ public:
 	u8 *GetGameCubeBanner();
 private:
 	void Read_FST(FILE *f, u32 FST_size);
-	char GamePath[1024];
+	char GamePath[MAX_FAT_PATH];
 	u8 GameType;
 	u8 *FSTable;
 	u32 FSTEnt;
@@ -43,4 +44,5 @@ private:
 	u8 *opening_bnr;
 };
 
+extern GC_Disc GC_Disc_Reader;
 #endif
