@@ -100,7 +100,7 @@ start_main:
 				m_btnMgr.show(m_mainBtnChannel);
 			else if(show_emu)
 				m_btnMgr.show(m_mainBtnEmu);
-			else if(show_homebrew)
+			else if(show_homebrew && (parental_homebrew || !m_locked))
 				m_btnMgr.show(m_mainBtnHomebrew);
 			else
 				m_btnMgr.show(m_mainBtnUsb);
@@ -349,7 +349,7 @@ int CMenu::main(void)
 				m_current_view =  COVERFLOW_PLUGIN;
 			else if(BTN_RIGHT_PRESSED && show_channel)
 				m_current_view = COVERFLOW_CHANNEL;
-			if(lastView == m_current_view) 
+			if(lastView == m_current_view && show_homebrew && (parental_homebrew || !m_locked)) 
 				m_current_view = COVERFLOW_HOMEBREW;
 			_clearSources();
 			switch(m_current_view)
@@ -820,7 +820,7 @@ int CMenu::main(void)
 						m_btnMgr.show(m_mainBtnChannel);
 					else if(show_emu)
 						m_btnMgr.show(m_mainBtnEmu);
-					else if(show_homebrew)
+					else if(show_homebrew && (parental_homebrew || !m_locked))
 						m_btnMgr.show(m_mainBtnHomebrew);
 					else 
 						m_btnMgr.show(m_mainBtnUsb);
