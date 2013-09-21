@@ -34,6 +34,7 @@ s16 m_sourceBtnHomebrew;
 
 TexData m_sourceBg;
 
+bool exitSource = false;
 u8 sourceBtn;
 u8 selectedBtns;
 int source_curPage;
@@ -188,6 +189,7 @@ void CMenu::_showSourceNotice(void)
 {
 	m_showtimer = 90;
 	m_btnMgr.show(m_sourceLblNotice);
+	exitSource = false;
 }
 
 dir_discHdr sourceList;
@@ -352,7 +354,7 @@ bool CMenu::_Source()
 	bool parental_homebrew = m_cfg.getBool(HOMEBREW_DOMAIN, "parental", false);	
 	bool noChanges = true;
 	bool updateSource = false;
-	bool exitSource = false;
+	exitSource = false;
 	u8 numPlugins = 0;
 	m_showtimer = 0;
 	source_curPage = 1;
