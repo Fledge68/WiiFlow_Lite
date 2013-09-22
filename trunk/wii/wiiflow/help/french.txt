@@ -1,51 +1,51 @@
 ﻿
 Commandes :
-- Page principale (coverflow) :
+- Page principale (Coverflow) :
 -- Haut/Bas  =  Jeu précédent/suivant (vertical)
 -- Gauche/Droite  =  Jeu précédent/suivant (horizontal)
 -- Moins/Plus  =  Défilement rapide des jeux
 -- A  =  Sélectionner le jeu
 -- B+A  =  Lancement rapide du jeu
--- B+Home  =  Recharger WiiFlow
--- Home  =  Ouvrir le menu Home / Quitter WiiFlow
+-- Home  =  Ouvrir le menu Home/Quitter WiiFlow
 -- 1/2  =  Mode d'affichage précédent/suivant
 -- B+Gauche/B+Droite  =  Changer la musique
--- B+Haut/B+Bas  =  Recherche alphabétique
--- B+Flèches  =  Recherche alphabétique
+-- B+Haut/B+Bas  =  Jeu précédent/suivant dans la liste triée (alphabétique par défaut)
+-- B+Flèches  =  Jeu précédent/suivant dans la liste triée (alphabétique par défaut)
 -- B+Moins  =  Changer de partition
--- B+Plus  =  Changer le mode de tri
+-- B+Plus  =  Changer le mode de tri (alphabétique, nombre de joueurs, nombre de lancements, etc ..)
 -- Z/ZR  =  Capture d'écran
 
 -- A sur l'icône Étoile  =  Favoris
 -- B sur l'icône Étoile  =  Catégories
 -- A sur l'icône Engrenage  =  Paramètres de WiiFlow
--- A sur les icônes USB/DML/Chaînes/Émulateurs/HBC  =  Coverflow correspondant
--- A sur l'icône Maison  =  Afficher le menu général/Quitter WiiFlow
--- Maintenir B pendant 3 secondes / B sur l'icône Maison (wiimote_gestures activée)  =  Afficher le menu source
+-- A sur les icônes USB(Wii)/GameCube/Chaînes/Plugins/HBC  =  Coverflow correspondant
+-- B sur les icônes USB(Wii)/GameCube/Chaînes/Plugins/HBC  =  Ouvre le menu source
+-- B = Ouvre le menu source (s'il est activé)
+-- A sur l'icône Maison  =  Ouvrir le menu Home/Quitter WiiFlow
 -- A sur l'icône Disque (Disque de jeu dans le lecteur)  =  Lancement du disque de jeu
--- A sur l'icône Point d'interrogation  =  Afficher les crédits et ce fichier d'aide
--- B sur l'icône Point d'interrogation  =  Démarrez un jeu aléatoirement depuis le coverflow courant
+-- A sur l'icône Point d'interrogation  =  Afficher le fichier d'aide
+-- B sur l'icône Point d'interrogation  =  Démarrer un jeu aléatoirement depuis le Coverflow courant
 
 - Jeux :
 -- A sur la boîte  =  Voir la face arrière/face avant
 -- A hors de l'écran  =  Lancer le jeu
--- B  =  Retour au coverflow
+-- B  =  Retour au Coverflow
 -- Haut/Bas  =  Jeu précédent/suivant (vertical)
 -- Gauche/Droite  =  Jeu précédent/suivant (horizontal)
 -- Plus  =  Informations sur le jeu
 --- Droite (dans les infos du jeu)  =  Description du jeu
----- Gauche  (dans la description du jeu)  =  Synopsis
--- A sur l'icône Étoile  =  Mettre en favori (Jaune=en favori)
--- B on Star Icon  =  Set Categories for game
+--- Gauche  (dans la description du jeu)  =  Synopsis
+-- A sur l'icône Étoile  =  Mettre en favoris (Jaune=en favoris)
+-- B sur l'icône Étoile  =  Définir les catégories du jeu
 -- A sur l'icône Main  =  Verrouillage parental (Rouge=Verrouiller)
 -- A sur l'icône Engrenage  =  Paramètres du jeu
 -- A sur l'icône Croix  =  Effacer le jeu
 
-- Menus paramètres :
+- Menus :
 -- Moins/Plus  =  Page précédente/suivante
 -- Gauche/Droite  =  Page précédente/suivante
 
-- Réglage des paramètres du Coverflow :
+- Réglages des paramètres du Coverflow :
 -- B+Moins/B+Plus  =  Page précédente/suivante
 -- B  =  Ajustement rapide (B+A au lieu de cliquer A sur un bouton)
 -- B+1  =  Copier l'ensemble du Coverflow
