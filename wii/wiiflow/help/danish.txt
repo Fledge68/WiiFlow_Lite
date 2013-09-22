@@ -6,25 +6,24 @@ Styring:
 -- Minus / Plus  =  Spring hurtig igennem spil
 -- A  =  Vælg spil
 -- B+A  =  Indlæs spil omgående
--- B+Home  =  Genindlæs WiiFlow
 -- Home  =  Åben hjem menu / Forlad WiiFlow til Wii menu
 -- 1 / 2  =  Forrige / næste coverflow måde
 -- B+Venstre / B+Højre  =  Skift sang
--- B+Op / B+Ned  =  Alfabetisk søgen
--- B+Onscreen Pile  =  Alfabetisk søgen
+-- B+Op / B+Ned  = Alfabetisk søgen
+-- B+Onscreen Pile  = Alfabetisk søgen
 -- B+Minus  =  Skift Partition
--- B+Plus  =  Sortere spil
+-- B+Plus  =  Vælg sorterings måde (alpha, wifi, spillere, antal spillet spil, osv...)
 -- Z / ZR  =  Tage skærmprint
 
 -- A på stjerne ikon  =  Favoriter
 -- B på stjerne ikon  =  Kategorier
 -- A på gear ikon  =  WiiFlow indstillinger
--- A på USB, DML, Kanal, Emu eller Homebrew ikon  = Skift til en af disse muligheder (coverflow view)
--- B på USB, DML, Kanal, Emu eller Homebrew ikon  =  Aktivere/Deaktivere Emu Nand og skift til rigtig Wii Nand
+-- A på USB(Wii), GC, Kanal, Plugin eller Homebrew ikon  = Skift til en af disse muligheder (coverflow view)
+-- B på USB(Wii), GC, Kanal, Plugin eller Homebrew ikon  =  Åbner Kilde menu
+-- B alene = Åbner Kilde menu (Hvis det er aktiveret i wiiflow.ini)
 -- A på hjem ikon  =   Åben hjem menu / Forlad WiiFlow til Wii menu
--- Hold B i 3 sekunder / B på hjem ikon (wiimote_gestures aktiveret i wiiflow.ini)  =  viser kilde menu (source menu)
 -- A på disc ikon (Spil disc i drev)  =  Indlæser spil disc
--- A på spørgsmåls tegn ikon  =  Viser tak til, denne hjælpe fil og mulighed for at opdatere WiiFlow.
+-- A på spørgsmåls tegn ikon  =  Viser tak denne hjælpe fil
 -- B på spørgsmåls tegn ikon  =  indlæser et tilfældig spil fra den nuværende coverflow
 
 - Spil:
