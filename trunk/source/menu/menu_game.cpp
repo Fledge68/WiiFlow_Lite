@@ -173,15 +173,17 @@ const CMenu::SOption CMenu::_NoDVD[3] = {
 	{ "NoDVDon", L"Enabled" },
 };
 
-const CMenu::SOption CMenu::_GlobalGCLoaders[2] = {
+const CMenu::SOption CMenu::_GlobalGCLoaders[3] = {
 	{ "GC_Auto", L"Auto MIOS" },
-	{ "GC_Devo", L"Devolution" }
+	{ "GC_Devo", L"Devolution" },
+	{ "GC_Nindnt", L"Nintendont" },
 };
 
-const CMenu::SOption CMenu::_GCLoader[3] = {
+const CMenu::SOption CMenu::_GCLoader[4] = {
 	{ "GC_Def", L"Default" },
 	{ "GC_Auto", L"Auto MIOS" },
-	{ "GC_Devo", L"Devolution" }
+	{ "GC_Devo", L"Devolution" },
+	{ "GC_Nindnt", L"Nintendont" },
 };
 
 const CMenu::SOption CMenu::_vidModePatch[4] = {
@@ -888,12 +890,15 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	bool memcard_emu = m_gcfg2.getBool(id, "devo_memcard_emu", false);
 	bool widescreen = m_gcfg2.getBool(id, "dm_widescreen", false);
 	bool activity_led = m_gcfg2.getBool(id, "led", false);
+
+	u8 NMM = min((u32)m_gcfg2.getInt(id, "dml_nmm", 0), ARRAY_SIZE(CMenu::_NMM) - 1u);
+	NMM = (NMM == 0) ? m_cfg.getInt(GC_DOMAIN, "dml_nmm", 0) : NMM-1;
+
 	//if GC disc use DIOS MIOS to launch it
 	if(disc)
 	{
 		loader = 0;
 		gprintf("Booting GC Disc: %s\n", id);
-		DML_New_SetBootDiscOption(m_new_dm_cfg);
 	}
 	else
 		m_cfg.setString(GC_DOMAIN, "current_item", id);
@@ -965,15 +970,11 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		currentPartition = SD;
 	}
 	_launchShutdown();
-	bool DIOSMIOS = false;
 	if(disc == true)
-		DIOSMIOS = true;
-	else if(loader == 0 || strcasestr(path, "boot.bin") != NULL)
+		DML_New_SetBootDiscOption(m_new_dm_cfg);
+	else if(loader == 0)
 	{
-		DIOSMIOS = true;
 		char CheatPath[256];
-		u8 NMM = min((u32)m_gcfg2.getInt(id, "dml_nmm", 0), ARRAY_SIZE(CMenu::_NMM) - 1u);
-		NMM = (NMM == 0) ? m_cfg.getInt(GC_DOMAIN, "dml_nmm", 0) : NMM-1;
 		u8 nodisc = min((u32)m_gcfg2.getInt(id, "no_disc_patch", 0), ARRAY_SIZE(CMenu::_NoDVD) - 1u);
 		nodisc = (nodisc == 0) ? m_cfg.getInt(GC_DOMAIN, "no_disc_patch", 0) : nodisc-1;
 		bool cheats = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool(GC_DOMAIN, "cheat", false));
@@ -1002,8 +1003,10 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		if(!nodisc || !m_new_dml)
 			WDVD_StopMotor();
 	}
-	else
+	else if(loader == 1)
 		DEVO_GetLoader(m_dataDir.c_str());
+	else if(loader == 2)
+		Nintendont_SetOptions(path, NMM, videoSetting, widescreen);
 
 	m_gcfg1.save(true);
 	m_gcfg2.save(true);
@@ -1011,20 +1014,20 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	m_cfg.save(true);
 	cleanup();
 
-	GC_SetVideoMode(videoMode, (disc ? 1 : videoSetting), DIOSMIOS);
+	GC_SetVideoMode(videoMode, (disc ? 1 : videoSetting), loader);
 	GC_SetLanguage(GClanguage);
 	/* NTSC-J Patch by FIX94 */
 	if(id[3] == 'J')
 		*HW_PPCSPEED = 0x0002A9E0;
 
-	if(DIOSMIOS)
+	if(loader == 0)
 	{
 		DML_New_WriteOptions();
 		ShutdownBeforeExit();
 		WII_Initialize();
 		WII_LaunchTitle(0x100000100LL);
 	}
-	else
+	else if(loader == 1)
 	{
 		if(AHBRPOT_Patched())
 			loadIOS(58, false);
@@ -1034,6 +1037,17 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		DEVO_SetOptions(path, id, memcard_emu, 
 			widescreen, activity_led, m_use_wifi_gecko);
 		DEVO_Boot();
+	}
+	else
+	{
+		Nintendont_WriteOptions();
+		bool ret = Nintendont_GetLoader();
+		ShutdownBeforeExit();
+		if(ret == true)
+		{
+			loadIOS(58, false); //nintendont NEEDS ios58
+			BootHomebrew(); //regular dol
+		}
 	}
 	Sys_Exit();
 }
@@ -1607,13 +1621,13 @@ void CMenu::_gameSoundThread(CMenu *m)
 
 	char cached_banner[256];
 	cached_banner[255] = '\0';
-	strncpy(cached_banner, fmt("%s/%.6s.bnr", m->m_bnrCacheDir.c_str(), GameHdr->id), 255);
+	strncpy(cached_banner, fmt("%s/%s.bnr", m->m_bnrCacheDir.c_str(), GameHdr->id), 255);
 	cached_bnr_file = fsop_ReadFile(cached_banner, &cached_bnr_size);
 	if(cached_bnr_file == NULL)
 	{
 		char custom_banner[256];
 		custom_banner[255] = '\0';
-		strncpy(custom_banner, fmt("%s/%.6s.bnr", m->m_customBnrDir.c_str(), GameHdr->id), 255);
+		strncpy(custom_banner, fmt("%s/%s.bnr", m->m_customBnrDir.c_str(), GameHdr->id), 255);
 		custom_bnr_file = fsop_ReadFile(custom_banner, &custom_bnr_size);
 		if(custom_bnr_file == NULL)
 		{
@@ -1638,8 +1652,6 @@ void CMenu::_gameSoundThread(CMenu *m)
 		}
 	}
 
-	u32 sndSize = 0;
-	u8 *soundBin = NULL;
 	if(cached_bnr_file != NULL)
 		CurrentBanner.SetBanner(cached_bnr_file, cached_bnr_size);
 	else if(custom_bnr_file != NULL)
@@ -1660,8 +1672,9 @@ void CMenu::_gameSoundThread(CMenu *m)
 	if(cached_bnr_file == NULL && custom_bnr_file == NULL)
 		fsop_WriteFile(cached_banner, CurrentBanner.GetBannerFile(), CurrentBanner.GetBannerFileSize());
 
+	u32 sndSize = 0;
 	m_banner.LoadBanner(m->m_wbf1_font, m->m_wbf2_font);
-	soundBin = CurrentBanner.GetFile("sound.bin", &sndSize);
+	u8 *soundBin = CurrentBanner.GetFile("sound.bin", &sndSize);
 	CurrentBanner.ClearBanner();
 
 	if(soundBin != NULL)
@@ -1672,6 +1685,7 @@ void CMenu::_gameSoundThread(CMenu *m)
 			u8 *newSound = DecompressCopy(soundBin, sndSize, &newSize);
 			if(newSound == NULL || newSize == 0 || !m->m_gameSound.Load(newSound, newSize))
 			{
+				free(soundBin);
 				m->m_gameSound.FreeMemory();
 				m_banner.DeleteBanner();
 				m->m_soundThrdBusy = false;

@@ -20,7 +20,7 @@
 #include <gccore.h>
 
 // DIOS-MIOS
-#define DML_BOOT_PATH		"sd:/games/boot.bin"
+#define DML_BOOT_PATH "sd:/games/boot.bin"
 
 typedef struct DML_CFG
 {
@@ -73,8 +73,17 @@ void DML_New_SetBootDiscOption(bool new_dm_cfg);
 void DML_New_WriteOptions();
 
 
+// Nintendont
+#include "nin_cfg.h"
+#define NIN_CFG_PATH "sd:/nincfg.bin"
+#define NIN_LOADER_PATH "%s:/apps/Nintendont/boot.dol"
+
+bool Nintendont_GetLoader();
+void Nintendont_SetOptions(const char *game,  u8 NMM, u8 videoSetting, bool widescreen);
+void Nintendont_WriteOptions();
+
 // Devolution
-#define DEVO_LOADER_PATH	"%s/loader.bin"
+#define DEVO_LOADER_PATH "%s/loader.bin"
 
 typedef struct global_config
 {
@@ -102,8 +111,9 @@ void DEVO_SetOptions(const char *isopath, const char *gameID,
 		bool memcard_emum, bool widescreen, bool activity_led, bool wifi);
 void DEVO_Boot();
 
+
 // General
-void GC_SetVideoMode(u8 videomode, u8 videoSetting, bool DIOSMIOS);
+void GC_SetVideoMode(u8 videomode, u8 videoSetting, u8 loader);
 void GC_SetLanguage(u8 lang);
 
 #endif //_GC_HPP_

@@ -148,6 +148,61 @@ void DML_New_WriteOptions()
 }
 
 
+// Nintendont
+NIN_CFG NinCfg;
+
+void Nintendont_SetOptions(const char *game, u8 NMM, u8 videoSetting, bool widescreen)
+{
+	memset(&NinCfg, 0, sizeof(NIN_CFG));
+	NinCfg.Magicbytes = 0x01070CF6;
+	NinCfg.Version = 0x00000001;
+	NinCfg.Config |= NIN_CFG_AUTO_BOOT;
+	NinCfg.Config |= NIN_CFG_GAME_PATH; /* temporary */
+
+	if(videoSetting == 0)
+		NinCfg.VideoMode |= NIN_VID_NONE;
+	else if(videoSetting == 1)
+		NinCfg.VideoMode |= NIN_VID_AUTO;
+	else
+		NinCfg.VideoMode |= NIN_VID_FORCE;
+
+	if(widescreen)
+		NinCfg.Config |= NIN_CFG_FORCE_WIDE;
+	if(NMM > 0)
+		NinCfg.Config |= NIN_CFG_MEMCARDEMU;
+
+	strncpy(NinCfg.GamePath, strchr(game, '/') + 1, 254);
+	if(strstr(NinCfg.GamePath, "boot.bin") != NULL)
+	{
+		*strrchr(NinCfg.GamePath, '/') = '\0'; //boot.bin
+		*(strrchr(NinCfg.GamePath, '/')+1) = '\0'; //sys
+	}
+	gprintf("Nintendont Game Path: %s\n", NinCfg.GamePath);
+}
+
+void Nintendont_WriteOptions()
+{
+	gprintf("Writing Nintendont CFG: %s\n", NIN_CFG_PATH);
+	fsop_WriteFile(NIN_CFG_PATH, &NinCfg, sizeof(NIN_CFG));
+}
+
+bool Nintendont_GetLoader()
+{
+	bool ret = false;
+	for(u8 i = SD; i < MAXDEVICES; ++i)
+	{
+		const char *dol_path = fmt(NIN_LOADER_PATH, DeviceName[i]);
+		ret = (LoadHomebrew(dol_path) == 1);
+		if(ret == true)
+		{
+			gprintf("Nintendont loaded: %s\n", dol_path);
+			AddBootArgument(dol_path);
+			break;
+		}
+	}
+	return ret;
+}
+
 // Devolution
 u8 *tmp_buffer = NULL;
 u8 *loader_bin = NULL;
@@ -317,7 +372,7 @@ u32 __SYS_UnlockSram(u32 write);
 u32 __SYS_SyncSram(void);
 }
 
-void GC_SetVideoMode(u8 videomode, u8 videoSetting, bool DIOSMIOS)
+void GC_SetVideoMode(u8 videomode, u8 videoSetting, u8 loader)
 {
 	syssram *sram;
 	sram = __SYS_LockSram();
@@ -343,33 +398,58 @@ void GC_SetVideoMode(u8 videomode, u8 videoSetting, bool DIOSMIOS)
 
 	if(videomode == 1)
 	{
-		if(DIOSMIOS && videoSetting == 2)
-			DMLCfg.VideoMode |= DML_VID_FORCE_PAL50;
+		if(videoSetting == 2)
+		{
+			if(loader == 0)
+				DMLCfg.VideoMode |= DML_VID_FORCE_PAL50;
+			else if(loader == 2)
+				NinCfg.VideoMode |= NIN_VID_FORCE_PAL50;
+		}
 		vmode = &TVPal528IntDf;
 	}
 	else if(videomode == 2)
 	{
-		if(DIOSMIOS && videoSetting == 2)
-			DMLCfg.VideoMode |= DML_VID_FORCE_NTSC;
+		if(videoSetting == 2)
+		{
+			if(loader == 0)
+				DMLCfg.VideoMode |= DML_VID_FORCE_NTSC;
+			else if(loader == 2)
+				NinCfg.VideoMode |= NIN_VID_FORCE_NTSC;
+		}
 		vmode = &TVNtsc480IntDf;
 	}
 	else if(videomode == 3)
 	{
-		if(DIOSMIOS && videoSetting == 2)
-			DMLCfg.VideoMode |= DML_VID_FORCE_PAL60;
+		if(videoSetting == 2)
+		{
+			if(loader == 0)
+				DMLCfg.VideoMode |= DML_VID_FORCE_PAL60;
+			else if(loader == 2)
+				NinCfg.VideoMode |= NIN_VID_FORCE_PAL60;
+		}
 		vmode = &TVEurgb60Hz480IntDf;
 		vmode_reg = 5;
 	}
 	else if(videomode == 4 ||videomode == 6)
 	{
-		if(DIOSMIOS && videoSetting == 2)
-			DMLCfg.VideoMode |= DML_VID_FORCE_PROG;
+		if(videoSetting == 2)
+		{
+			if(loader == 0)
+				DMLCfg.VideoMode |= DML_VID_FORCE_PROG;
+			else if(loader == 2)
+				NinCfg.Config |= NIN_CFG_FORCE_PROG;
+		}
 		vmode = &TVNtsc480Prog;
 	}
 	else if(videomode == 5 || videomode == 7)
 	{
-		if(DIOSMIOS && videoSetting == 2)
-			DMLCfg.VideoMode |= DML_VID_FORCE_PROG;
+		if(videoSetting == 2)
+		{
+			if(loader == 0)
+				DMLCfg.VideoMode |= DML_VID_FORCE_PROG;
+			else if(loader == 2)
+				NinCfg.Config |= NIN_CFG_FORCE_PROG;
+		}
 		vmode = &TVNtsc480Prog;
 		vmode_reg = 5;
 	}

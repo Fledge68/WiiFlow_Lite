@@ -1174,8 +1174,8 @@ private:
 	static const SOption _AspectRatio[3];
 	static const SOption _NMM[4];
 	static const SOption _NoDVD[3];
-	static const SOption _GlobalGCLoaders[2];
-	static const SOption _GCLoader[3];
+	static const SOption _GlobalGCLoaders[3];
+	static const SOption _GCLoader[4];
 	static const SOption _vidModePatch[4];
 	static const SOption _debugger[3];
 	static const SOption _hooktype[8];

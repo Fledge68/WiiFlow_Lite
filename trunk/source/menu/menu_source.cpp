@@ -258,7 +258,11 @@ void CMenu::_sourceFlow()
 		m_plugin.EndAdd();
 	}
 	const dir_discHdr *hdr = CoverFlow.getHdr();
-	m_cfg.setString("SOURCEFLOW", "current_item", strrchr(hdr->path, '/') + 1);
+	if(m_cfg.getBool("SOURCEFLOW", "remember_last_item", true))
+		m_cfg.setString("SOURCEFLOW", "current_item", strrchr(hdr->path, '/') + 1);
+	else
+		m_cfg.remove("SOURCEFLOW", "current_item");
+
 	memset(btn_selected, 0, 256);
 	strncpy(btn_selected, fmt("BUTTON_%i", hdr->settings[0]), 255);
 	string source = m_source.getString(btn_selected, "source", "");
