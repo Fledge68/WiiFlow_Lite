@@ -1095,13 +1095,15 @@ u8 *Nand::GetEmuFile(const char *path, u32 *size, s32 len)
 	if(len > 0)
 		filesize = min(filesize, (u32)len);
 	u8 *tmp_buf = (u8*)MEM2_alloc(filesize);
-	FILE *f = fopen(tmp_path, "rb");
-	fread(tmp_buf, filesize, 1, f);
-	fclose(f);
-
+	if(tmp_buf != NULL)
+	{
+		FILE *f = fopen(tmp_path, "rb");
+		fread(tmp_buf, filesize, 1, f);
+		DCFlushRange(tmp_buf, filesize);
+		*size = filesize;
+		fclose(f);
+	}
 	MEM2_free(tmp_path);
-	DCFlushRange(tmp_buf, filesize);
-	*size = filesize;
 	return tmp_buf;
 }
 
