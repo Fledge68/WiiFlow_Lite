@@ -132,7 +132,11 @@ bool PartitionHandle::Mount(int pos, const char *name, bool forceFAT)
 		MountNameList.resize(pos + 1);
 
 	MountNameList[pos] = name;
-	const char *DeviceSyn = fmt("%s:", name);
+	char DeviceSyn[10];
+	memcpy(DeviceSyn, name, 8);
+	strcat(DeviceSyn, ":");
+	DeviceSyn[9] = '\0';
+
 	//! Some stupid partition manager think they don't need to edit the freaken MBR.
 	//! So we need to check the first 64 sectors and see if some partition is there.
 	//! libfat does that by default so let's use it.
@@ -202,7 +206,11 @@ void PartitionHandle::UnMount(int pos)
 		return;
 
 	WBFS_Close();
-	const char *DeviceSyn = fmt("%s:", MountName(pos));
+	char DeviceSyn[10];
+	memcpy(DeviceSyn, MountName(pos), 8);
+	strcat(DeviceSyn, ":");
+	DeviceSyn[9] = '\0';
+
 	if(strncmp(GetFSName(pos), "WBFS", 4) == 0)
 	{
 		wbfs_t *wbfshandle = GetWbfsHandle(pos);

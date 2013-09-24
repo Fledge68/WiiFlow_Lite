@@ -566,7 +566,6 @@ const char *CMenu::_cfDomain(bool selected)
 void CMenu::_initCFThemeMenu()
 {
 	TexData emptyTex;
-	string domain;
 	int x;
 	int y;
 
@@ -581,12 +580,14 @@ void CMenu::_initCFThemeMenu()
 	// 
 	for (int i = 0; i < 16; ++i)
 	{
-		domain = fmt("CFTHEME/VAL%i%c_%%s", i / 3 + 1, (char)(i % 3) + 'A');
+		char *domain = fmt_malloc("CFTHEME/VAL%i%c_%%s", i / 3 + 1, (char)(i % 3) + 'A');
+		if(domain == NULL) continue;
 		x = 20 + (i / 4) * 150;
 		y = 340 + (i % 4) * 32;
-		m_cfThemeLblVal[i] = _addLabel(fmt(domain.c_str(), "BTN"), theme.btnFont, L"", x + 32, y, 86, 32, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-		m_cfThemeBtnValM[i] = _addPicButton(fmt(domain.c_str(), "MINUS"), theme.btnTexMinus, theme.btnTexMinusS, x, y, 32, 32);
-		m_cfThemeBtnValP[i] = _addPicButton(fmt(domain.c_str(), "PLUS"), theme.btnTexPlus, theme.btnTexPlusS, x + 118, y, 32, 32);
+		m_cfThemeLblVal[i] = _addLabel(fmt(domain, "BTN"), theme.btnFont, L"", x + 32, y, 86, 32, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+		m_cfThemeBtnValM[i] = _addPicButton(fmt(domain, "MINUS"), theme.btnTexMinus, theme.btnTexMinusS, x, y, 32, 32);
+		m_cfThemeBtnValP[i] = _addPicButton(fmt(domain, "PLUS"), theme.btnTexPlus, theme.btnTexPlusS, x + 118, y, 32, 32);
+		MEM2_free(domain);
 	}
 	for (int i = 0; i < 4; ++i)
 		m_cfThemeLblValTxt[i] = _addLabel(fmt("CFTHEME/VAL%i_LBL", i + 1), theme.lblFont, L"", 20 + i * 150, 100, 150, 240, theme.lblFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_BOTTOM, emptyTex);

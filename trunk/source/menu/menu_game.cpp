@@ -428,10 +428,8 @@ void CMenu::_game(bool launch)
 		else if(BTN_MINUS_PRESSED)
 		{
 			const char *videoPath = fmt("%s/%.3s.thp", m_videoDir.c_str(), CoverFlow.getId());
-			FILE *file = fopen(videoPath, "r");
-			if(file)
+			if(fsop_FileExist(videoPath))
 			{
-				fclose(file);
 				MusicPlayer.Stop();
 				m_gameSound.Stop();
 				m_banner.SetShowBanner(false);

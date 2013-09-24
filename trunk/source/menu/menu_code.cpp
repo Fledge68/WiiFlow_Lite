@@ -207,7 +207,8 @@ void CMenu::_initCodeMenu()
 
 	for (int i = 0; i < 10; ++i)
 	{
-		const char *codeText = fmt("CODE/%i_BTN", i);
+		char *codeText = fmt_malloc("CODE/%i_BTN", i);
+		if(codeText == NULL) continue;
 		if (i > 0)
 		{
 			int x = i - 1;
@@ -218,6 +219,7 @@ void CMenu::_initCodeMenu()
 			m_codeBtnKey[i] = _addButton(codeText, theme.btnFont, wfmt(L"%i", i), x, y, 100, 50, theme.btnFontColor);
 		}
 		_setHideAnim(m_codeBtnKey[i], codeText, 0, 0, 0.f, 0.f);
+		MEM2_free(codeText);
 	}
 	_setHideAnim(m_codeBtnErase, "CODE/ERASE_BTN", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_codeBtnBack, "CODE/BACK_BTN", 0, 0, -2.f, 0.f);

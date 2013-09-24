@@ -14,6 +14,7 @@ enum {
 };
 
 char *fmt(const char *format, ...);
+char *fmt_malloc(const char *format, ...);
 void Asciify(wchar_t *str);
 void Asciify2(char *str);
 

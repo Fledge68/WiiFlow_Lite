@@ -35,6 +35,7 @@
 #include "nand.hpp"
 #include "config/config.hpp"
 #include "gecko/gecko.hpp"
+#include "gui/fmt.h"
 #include "gui/text.hpp"
 #include "loader/fs.h"
 #include "loader/nk.h"
@@ -73,7 +74,7 @@ u8 Channels::GetRequestedIOS(u64 title)
 	else
 	{
 		char tmd[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
-		sprintf(tmd, "/title/%08x/%08x/content/title.tmd", TITLE_UPPER(title), TITLE_LOWER(title));
+		strncpy(tmd, fmt("/title/%08x/%08x/content/title.tmd", TITLE_UPPER(title), TITLE_LOWER(title)), ISFS_MAXPATH);
 		titleTMD = ISFS_GetFile(tmd, &size, -1);
 	}
 	if(titleTMD == NULL)
@@ -117,12 +118,15 @@ bool Channels::GetAppNameFromTmd(u64 title, char *app, u32 *bootcontent)
 	else
 	{
 		char tmd[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
-		sprintf(tmd, "/title/%08x/%08x/content/title.tmd", TITLE_UPPER(title), TITLE_LOWER(title));
+		strncpy(tmd, fmt("/title/%08x/%08x/content/title.tmd", TITLE_UPPER(title), TITLE_LOWER(title)), ISFS_MAXPATH);
 		data = ISFS_GetFile(tmd, &size, -1);
 	}
-	if (data == NULL || size < 0x208)
+	if(data == NULL || size < 0x208)
+	{
+		if(data != NULL)
+			free(data);
 		return ret;
-
+	}
 	_tmd *tmd_file = (_tmd *)SIGNATURE_PAYLOAD((u32 *)data);
 	u16 i;
 	for(i = 0; i < tmd_file->num_contents; ++i)
@@ -130,7 +134,8 @@ bool Channels::GetAppNameFromTmd(u64 title, char *app, u32 *bootcontent)
 		if(tmd_file->contents[i].index == 0)
 		{
 			*bootcontent = tmd_file->contents[i].cid;
-			sprintf(app, "/title/%08x/%08x/content/%08x.app", TITLE_UPPER(title), TITLE_LOWER(title), *bootcontent);
+			strncpy(app, fmt("/title/%08x/%08x/content/%08x.app", 
+					TITLE_UPPER(title), TITLE_LOWER(title), *bootcontent), ISFS_MAXPATH);
 			ret = true;
 			break;
 		}
