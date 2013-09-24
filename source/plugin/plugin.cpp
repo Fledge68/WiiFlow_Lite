@@ -77,10 +77,10 @@ bool Plugin::AddPlugin(Config &plugin)
 	NewPlugin.DisplayName.fromUTF8(PluginName.c_str());
 	NewPlugin.consoleCoverID = plugin.getString(PLUGIN_INI_DEF,"consoleCoverID");
 
-	const char *bannerfilepath = fmt("%s/%s", pluginsDir.c_str(), plugin.getString(PLUGIN_INI_DEF,"bannerSound").c_str());
-	fsop_GetFileSizeBytes(bannerfilepath, &NewPlugin.BannerSoundSize);
+	const string &bannerfilepath = sfmt("%s/%s", pluginsDir.c_str(), plugin.getString(PLUGIN_INI_DEF,"bannerSound").c_str());
+	fsop_GetFileSizeBytes(bannerfilepath.c_str(), &NewPlugin.BannerSoundSize);
 	if(NewPlugin.BannerSoundSize > 0)
-		NewPlugin.BannerSound = string(bannerfilepath);
+		NewPlugin.BannerSound = bannerfilepath;
 	Plugins.push_back(NewPlugin);
 	return false;
 }

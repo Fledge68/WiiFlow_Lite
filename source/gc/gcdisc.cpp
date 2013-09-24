@@ -42,9 +42,13 @@ void GC_Disc::init(const char *path)
 			*strrchr(GamePath, '/') = '\0';
 		if(strchr(GamePath, '/') != NULL) //sys
 			*strrchr(GamePath, '/') = '\0';
-		const char *FstPath = fmt("%s/sys/fst.bin", GamePath);
-		fsop_GetFileSizeBytes(FstPath, &FSTSize);
-		f = fopen(FstPath, "rb");
+		char *FstPath = fmt_malloc("%s/sys/fst.bin", GamePath);
+		if(FstPath != NULL)
+		{
+			fsop_GetFileSizeBytes(FstPath, &FSTSize);
+			f = fopen(FstPath, "rb");
+			MEM2_free(FstPath);
+		}
 	}
 	else
 	{

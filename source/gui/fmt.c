@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include "memory/mem2.hpp"
 
 int currentStr = 0;
 static char fmt_buffer[MAX_USES][MAX_MSG_SIZE];
@@ -17,6 +18,22 @@ char *fmt(const char *format, ...)
 	fmt_buffer[currentStr][MAX_MSG_SIZE - 1] = '\0';
 	va_end(va);
 	return fmt_buffer[currentStr];
+}
+
+char *fmt_malloc(const char *format, ...)
+{
+	va_list va;
+	va_start(va, format);
+
+	char *new_buffer = (char*)MEM2_alloc(MAX_MSG_SIZE);
+	if(new_buffer != NULL)
+	{
+		vsnprintf(new_buffer, MAX_MSG_SIZE - 1, format, va);
+		new_buffer[MAX_MSG_SIZE - 1] = '\0';
+	}
+
+	va_end(va);
+	return new_buffer;
 }
 
 void Asciify(wchar_t *str)

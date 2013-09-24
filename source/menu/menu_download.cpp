@@ -137,7 +137,7 @@ void CMenu::_hideSettings(bool instant)
 	m_btnMgr.hide(m_downloadLblPrio, instant);
 	m_btnMgr.hide(m_downloadBtnPrioM, instant);
 	m_btnMgr.hide(m_downloadBtnPrioP, instant);
-	m_btnMgr.hide(m_downloadLblRegion, instant);	
+	m_btnMgr.hide(m_downloadLblRegion, instant);
 	m_btnMgr.hide(m_downloadBtnEN, instant);
 	m_btnMgr.hide(m_downloadBtnJA, instant);
 	m_btnMgr.hide(m_downloadBtnFR, instant);
@@ -437,7 +437,6 @@ int CMenu::_initNetwork()
 
 int CMenu::_coverDownloader(bool missingOnly)
 {
-	string path;
 	vector<string> coverList;
 	vector<dir_discHdr> pluginCoverList;
 
@@ -484,28 +483,33 @@ int CMenu::_coverDownloader(bool missingOnly)
 			_setThrdMsg(_t("dlmsg7", L"Listing covers to download..."), listWeight * (float)step / (float)nbSteps);
 			LWP_MutexUnlock(m_mutex);
 			++step;
-			string id;
+			char *path = NULL;
+			const char *id = NULL;
 			if(m_gameList[i].type == TYPE_PLUGIN)
 			{
 				char gamePath[256];
-				if(string(m_gameList[i].path).find_last_of("/") != string::npos)
-					strncpy(gamePath, &m_gameList[i].path[string(m_gameList[i].path).find_last_of("/")+1], sizeof(gamePath));
+				if(strchr(m_gameList[i].path, '/') != NULL)
+					strncpy(gamePath, strrchr(m_gameList[i].path, '/') + 1, sizeof(gamePath));
 				else
 					strncpy(gamePath, m_gameList[i].path, sizeof(gamePath));
-				path = fmt("%s/%s.png", m_boxPicDir.c_str(), gamePath);
+				path = fmt_malloc("%s/%s.png", m_boxPicDir.c_str(), gamePath);
 				id = path;
 			}
 			else
 			{
-				id = (const char *)m_gameList[i].id;
-				path = fmt("%s/%s.png", m_boxPicDir.c_str(), id.c_str());
+				path = fmt_malloc("%s/%s.png", m_boxPicDir.c_str(), m_gameList[i].id);
+				id = m_gameList[i].id;
 			}
-			if(!missingOnly || (!CoverFlow.fullCoverCached(id.c_str()) && !checkPNGFile(path.c_str())))
+			if(!missingOnly || (id != NULL && !CoverFlow.fullCoverCached(id) && path != NULL && !checkPNGFile(path)))
 			{
 				if(m_gameList[i].type == TYPE_PLUGIN)
 					pluginCoverList.push_back(m_gameList[i]);
-				coverList.push_back(id);
+				if(id != NULL)
+					coverList.push_back(id);
 			}
+			if(path != NULL)
+				MEM2_free(path);
+			path = NULL;
 		}
 	}
 	else
@@ -544,7 +548,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 			bool custom = false;
 			int c_altCase = 0;
 
-			string newID = m_newID.getString(domain, coverList[i], coverList[i]);
+			const string &newID = m_newID.getString(domain, coverList[i], coverList[i]);
 
 			if(!newID.empty() && strncasecmp(newID.c_str(), coverList[i].c_str(), coverList[i].length()) == 0)
 				m_newID.remove(domain, coverList[i]);
@@ -578,8 +582,8 @@ int CMenu::_coverDownloader(bool missingOnly)
 							original = false;
 						if (!success && !m_thrdStop && original)
 						{
-							path = fmt("%s/%s.png", m_boxPicDir.c_str(), coverList[i].c_str());
-							if (!checkPNGFile(path.c_str()))
+							char *path = fmt_malloc("%s/%s.png", m_boxPicDir.c_str(), coverList[i].c_str());
+							if(path != NULL && !checkPNGFile(path))
 							{
 								for (u32 j = 0; !success && j < fmtURLBox.size() && !m_thrdStop; ++j)
 								{
@@ -696,9 +700,9 @@ int CMenu::_coverDownloader(bool missingOnly)
 									if (savePNG)
 									{
 										LWP_MutexLock(m_mutex);
-										_setThrdMsg(wfmt(_fmt("dlmsg4", L"Saving %s"), path.c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
+										_setThrdMsg(wfmt(_fmt("dlmsg4", L"Saving %s"), path), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
 										LWP_MutexUnlock(m_mutex);
-										fsop_WriteFile(path.c_str(), download.data, download.size);
+										fsop_WriteFile(path, download.data, download.size);
 									}
 									LWP_MutexLock(m_mutex);
 									_setThrdMsg(wfmt(_fmt("dlmsg10", L"Making %s"), sfmt("%s.wfc", coverList[i].c_str()).c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
@@ -710,16 +714,19 @@ int CMenu::_coverDownloader(bool missingOnly)
 									}
 								}
 							}
+							if(path != NULL)
+								MEM2_free(path);
+							path = NULL;
 						}
 						break;
 					case CBOX:
 						if( m_downloadPrioVal&C_TYPE_ONCU )
 							custom = true;
 						c_altCase = c_gameTDB.GetCaseVersions( coverList[i].c_str() );
-						if (!success && !m_thrdStop && c_gameTDB.IsLoaded() && c_altCase > 1 && custom)
+						if(!success && !m_thrdStop && c_gameTDB.IsLoaded() && c_altCase > 1 && custom)
 						{
-							path = fmt("%s/%s.png", m_boxPicDir.c_str(), coverList[i].c_str());
-							if (!checkPNGFile(path.c_str()))
+							char *path = fmt_malloc("%s/%s.png", m_boxPicDir.c_str(), coverList[i].c_str());
+							if(path != NULL && !checkPNGFile(path))
 							{
 								for (u32 j = 0; !success && j < fmtURLCBox.size() && !m_thrdStop; ++j)
 								{
@@ -838,9 +845,9 @@ int CMenu::_coverDownloader(bool missingOnly)
 									if (savePNG)
 									{	
 										LWP_MutexLock(m_mutex);
-										_setThrdMsg(wfmt(_fmt("dlmsg4", L"Saving %s"), path.c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
+										_setThrdMsg(wfmt(_fmt("dlmsg4", L"Saving %s"), path), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
 										LWP_MutexUnlock(m_mutex);
-										fsop_WriteFile(path.c_str(), download.data, download.size);
+										fsop_WriteFile(path, download.data, download.size);
 									}
 									LWP_MutexLock(m_mutex);
 									_setThrdMsg(wfmt(_fmt("dlmsg10", L"Making %s"), sfmt("%s.wfc", coverList[i].c_str()).c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
@@ -852,15 +859,18 @@ int CMenu::_coverDownloader(bool missingOnly)
 									}
 								}
 							}
+							if(path != NULL)
+								MEM2_free(path);
+							path = NULL;
 						}
 						break;
 					case FLAT:
 						if( m_downloadPrioVal&C_TYPE_ONOR )
 							original = false;
-						if (!success && !m_thrdStop && original)
+						if(!success && !m_thrdStop && original)
 						{
-							path = fmt("%s/%s.png", m_picDir.c_str(), coverList[i].c_str());
-							if (!checkPNGFile(path.c_str()))
+							char *path = fmt_malloc("%s/%s.png", m_picDir.c_str(), coverList[i].c_str());
+							if(path != NULL && !checkPNGFile(path))
 							{
 								// Try to get the front cover
 								if (m_thrdStop) break;
@@ -979,9 +989,9 @@ int CMenu::_coverDownloader(bool missingOnly)
 									if (savePNG)
 									{
 										LWP_MutexLock(m_mutex);
-										_setThrdMsg(wfmt(_fmt("dlmsg4", L"Saving %s"), path.c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
+										_setThrdMsg(wfmt(_fmt("dlmsg4", L"Saving %s"), path), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
 										LWP_MutexUnlock(m_mutex);
-										fsop_WriteFile(path.c_str(), download.data, download.size);
+										fsop_WriteFile(path, download.data, download.size);
 									}
 									LWP_MutexLock(m_mutex);
 									_setThrdMsg(wfmt(_fmt("dlmsg10", L"Making %s"), sfmt("%s.wfc", coverList[i].c_str()).c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
@@ -993,15 +1003,18 @@ int CMenu::_coverDownloader(bool missingOnly)
 									}
 								}
 							}
+							if(path != NULL)
+								MEM2_free(path);
+							path = NULL;
 						}
 						break;
 					case CFLAT:
 						if( m_downloadPrioVal&C_TYPE_ONCU )
 							custom = true;
-						if (!success && !m_thrdStop && c_gameTDB.IsLoaded() && c_altCase > 1 && custom)
-						{	
-							path = fmt("%s/%s.png", m_picDir.c_str(), coverList[i].c_str());
-							if (!checkPNGFile(path.c_str()))
+						if(!success && !m_thrdStop && c_gameTDB.IsLoaded() && c_altCase > 1 && custom)
+						{
+							char *path = fmt_malloc("%s/%s.png", m_picDir.c_str(), coverList[i].c_str());
+							if(path != NULL && !checkPNGFile(path))
 							{
 								// Try to get the front cover
 								if (m_thrdStop) break;
@@ -1116,9 +1129,9 @@ int CMenu::_coverDownloader(bool missingOnly)
 									if(savePNG)
 									{
 										LWP_MutexLock(m_mutex);
-										_setThrdMsg(wfmt(_fmt("dlmsg4", L"Saving %s"), path.c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
+										_setThrdMsg(wfmt(_fmt("dlmsg4", L"Saving %s"), path), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
 										LWP_MutexUnlock(m_mutex);
-										fsop_WriteFile(path.c_str(), download.data, download.size);
+										fsop_WriteFile(path, download.data, download.size);
 									}
 									LWP_MutexLock(m_mutex);
 									_setThrdMsg(wfmt(_fmt("dlmsg10", L"Making %s"), sfmt("%s.wfc", coverList[i].c_str()).c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
@@ -1130,11 +1143,13 @@ int CMenu::_coverDownloader(bool missingOnly)
 									}
 								}
 							}
+							if(path != NULL)
+								MEM2_free(path);
+							path = NULL;
 						}
 						break;
 				}
 			}
-			newID.clear();
 			++step;
 		}
 		if(c_gameTDB.IsLoaded())
@@ -1172,8 +1187,8 @@ void CMenu::_download(string gameId)
 	if(gameId.size() && CoverFlow.getHdr()->type == TYPE_PLUGIN)
 	{
 		char gamePath[256];
-		if(string(CoverFlow.getHdr()->path).find_last_of("/") != string::npos)
-			strncpy(gamePath, &CoverFlow.getHdr()->path[string(CoverFlow.getHdr()->path).find_last_of("/")+1], sizeof(gamePath));
+		if(strchr(CoverFlow.getHdr()->path, '/') != NULL)
+			strncpy(gamePath, strrchr(CoverFlow.getHdr()->path, '/') + 1, sizeof(gamePath));
 		else
 			strncpy(gamePath, CoverFlow.getHdr()->path, sizeof(gamePath));
 		m_coverDLGameId = gamePath;
@@ -1929,8 +1944,6 @@ int CMenu::_gametdbDownloader(CMenu *m)
 
 int CMenu::_gametdbDownloaderAsync()
 {
-	string langCode;
-
 	u32 bufferSize = 0x800000; // 8 MB
 	u8 *buffer = (u8*)MEM2_alloc(bufferSize);
 	if (buffer == NULL)
@@ -1940,7 +1953,7 @@ int CMenu::_gametdbDownloaderAsync()
 		LWP_MutexUnlock(m_mutex);
 		return 0;
 	}
-	langCode = m_loc.getString(m_curLanguage, "gametdb_code", "EN");
+	const string &langCode = m_loc.getString(m_curLanguage, "gametdb_code", "EN");
 	LWP_MutexLock(m_mutex);
 	_setThrdMsg(_t("dlmsg1", L"Initializing network..."), 0.f);
 	LWP_MutexUnlock(m_mutex);
@@ -1966,18 +1979,20 @@ int CMenu::_gametdbDownloaderAsync()
 		}
 		else
 		{
-			string zippath = fmt("%s/wiitdb.zip", m_settingsDir.c_str());
-
-			gprintf("Downloading file to '%s'\n", zippath.c_str());
-
-			fsop_deleteFile(zippath.c_str());
-			
-			_setThrdMsg(wfmt(_fmt("dlmsg4", L"Saving %s"), "wiitdb.zip"), 1.f);
-			bool res = fsop_WriteFile(zippath.c_str(), download.data, download.size);
-			if (res == false)
+			bool res = false;
+			char *zippath = fmt_malloc("%s/wiitdb.zip", m_settingsDir.c_str());
+			if(zippath != NULL)
+			{
+				gprintf("Writing file to '%s'\n", zippath);
+				fsop_deleteFile(zippath);
+				_setThrdMsg(wfmt(_fmt("dlmsg4", L"Saving %s"), "wiitdb.zip"), 1.f);
+				res = fsop_WriteFile(zippath, download.data, download.size);
+			}
+			if(res == false)
 			{
 				gprintf("Can't save zip file\n");
-
+				if(zippath != NULL)
+					MEM2_free(zippath);
 				LWP_MutexLock(m_mutex);
 				_setThrdMsg(_t("dlmsg15", L"Couldn't save ZIP file"), 1.f);
 				LWP_MutexUnlock(m_mutex);
@@ -1986,12 +2001,13 @@ int CMenu::_gametdbDownloaderAsync()
 			{
 				gprintf("Extracting zip file: ");
 
-				ZipFile zFile(zippath.c_str());
+				ZipFile zFile(zippath);
 				bool zres = zFile.ExtractAll(m_settingsDir.c_str());
 				gprintf(zres ? "success\n" : "failed\n");
 
 				// We don't need the zipfile anymore
-				fsop_deleteFile(zippath.c_str());
+				fsop_deleteFile(zippath);
+				MEM2_free(zippath);
 
 				// We should always remove the offsets file to make sure it's reloaded
 				fsop_deleteFile(fmt("%s/gametdb_offsets.bin", m_settingsDir.c_str()));
@@ -2018,7 +2034,7 @@ int CMenu::_gametdbDownloaderAsync()
 
 const char *banner_url = NULL;
 const char *banner_url_id3 = NULL;
-const char *banner_location = NULL;
+char *banner_location = NULL;
 u32 CMenu::_downloadBannerAsync(void *obj)
 {
 	CMenu *m = (CMenu *)obj;
@@ -2057,7 +2073,8 @@ u32 CMenu::_downloadBannerAsync(void *obj)
 	/* minimum 50kb */
 	if (banner.data != NULL && banner.size > 51200 && banner.data[0] != '<')
 	{
-		fsop_WriteFile(banner_location, banner.data, banner.size);
+		if(banner_location != NULL)
+			fsop_WriteFile(banner_location, banner.data, banner.size);
 		LWP_MutexLock(m->m_mutex);
 		m->_setThrdMsg(m->_t("dlmsg14", L"Done."), 1.f);
 		LWP_MutexUnlock(m->m_mutex);
@@ -2091,7 +2108,9 @@ void CMenu::_downloadBnr(const char *gameID)
 	base_url_id3.replace(base_url_id3.find(GAME_BNR_ID), strlen(GAME_BNR_ID), gameID, 3);
 	banner_url_id3 = base_url_id3.c_str();
 
-	banner_location = fmt("%s/%s.bnr", m_customBnrDir.c_str(), gameID);
+	banner_location = fmt_malloc("%s/%s.bnr", m_customBnrDir.c_str(), gameID);
+	if(banner_location == NULL)
+		return;
 
 	m_btnMgr.show(m_downloadPBar);
 	m_btnMgr.setProgress(m_downloadPBar, 0.f);
@@ -2144,7 +2163,13 @@ void CMenu::_downloadBnr(const char *gameID)
 		if (m_thrdStop && !m_thrdWorking)
 			break;
 	}
-	m_btnMgr.setText(m_downloadBtnCancel, _t("gm2", L"Back"));	
+	if(banner_location != NULL)
+	{
+		MEM2_free(banner_location);
+		banner_location = NULL;
+	}
+
+	m_btnMgr.setText(m_downloadBtnCancel, _t("gm2", L"Back"));
 	if (thread != LWP_THREAD_NULL)
 	{
 		LWP_JoinThread(thread, NULL);

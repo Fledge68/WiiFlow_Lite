@@ -1079,12 +1079,19 @@ void Nand::Patch_AHB()
 
 u8 *Nand::GetEmuFile(const char *path, u32 *size, s32 len)
 {
-	u32 filesize = 0;
-	const char *tmp_path = fmt("%s%s", FullNANDPath, path);
-	bool ret = fsop_GetFileSizeBytes(tmp_path, &filesize);
-	if(ret == false || filesize == 0)
+	if(path == NULL)
 		return NULL;
 
+	char *tmp_path = fmt_malloc("%s%s", FullNANDPath, path);
+	if(tmp_path == NULL)
+		return NULL;
+	u32 filesize = 0;
+	bool ret = fsop_GetFileSizeBytes(tmp_path, &filesize);
+	if(ret == false || filesize == 0)
+	{
+		MEM2_free(tmp_path);
+		return NULL;
+	}
 	if(len > 0)
 		filesize = min(filesize, (u32)len);
 	u8 *tmp_buf = (u8*)MEM2_alloc(filesize);
@@ -1092,6 +1099,7 @@ u8 *Nand::GetEmuFile(const char *path, u32 *size, s32 len)
 	fread(tmp_buf, filesize, 1, f);
 	fclose(f);
 
+	MEM2_free(tmp_path);
 	DCFlushRange(tmp_buf, filesize);
 	*size = filesize;
 	return tmp_buf;
@@ -1118,11 +1126,15 @@ u64 *Nand::GetChannels(u32 *count)
 
 u8 *Nand::GetTMD(u64 title, u32 *size)
 {
+	u8 *tmd_buf = NULL;
 	u32 tmd_size = 0;
-	const char *tmd_path = fmt("/title/%08x/%08x/content/title.tmd", 
-		 TITLE_UPPER(title), TITLE_LOWER(title));
-	u8 *tmd_buf = GetEmuFile(tmd_path, &tmd_size);
-
+	char *tmd_path = fmt_malloc("/title/%08x/%08x/content/title.tmd", 
+									TITLE_UPPER(title), TITLE_LOWER(title));
+	if(tmd_path != NULL)
+	{
+		tmd_buf = GetEmuFile(tmd_path, &tmd_size);
+		MEM2_free(tmd_path);
+	}
 	*size = tmd_size;
 	return tmd_buf;
 }

@@ -3,7 +3,7 @@
 #include "boxmesh.hpp"
 #include "text.hpp"
 #include "gecko/gecko.hpp"
-
+#include "memory/mem2.hpp"
 using namespace std;
 
 static  guVector  _GRRaxisx = (guVector){1, 0, 0}; // DO NOT MODIFY!!!
@@ -184,9 +184,12 @@ CFanartElement::CFanartElement(Config &cfg, const char *dir, int artwork)
 	: m_artwork(artwork), m_isValid(false)
 {
 	m_isValid = (TexHandle.fromImageFile(m_art, fmt("%s/artwork%d.png", dir, artwork)) == TE_OK);
-	if (!m_isValid)	return;
+	if(!m_isValid)
+		return;
 
-	const char *section = fmt("artwork%d", artwork);
+	char *section = fmt_malloc("artwork%d", artwork);
+	if(section == NULL)
+		return;
 
 	m_show_on_top = cfg.getBool(section, "show_on_top", true);
 
@@ -212,6 +215,8 @@ CFanartElement::CFanartElement(Config &cfg, const char *dir, int artwork)
 	m_step_scaleY = m_event_duration == 0 ? 0 : (m_scaleY - m_event_scaleY) / m_event_duration;
 	m_step_alpha = m_event_duration == 0 ? 0 : (m_alpha - m_event_alpha) / m_event_duration;
 	m_step_angle = m_event_duration == 0 ? 0 : (m_angle - m_event_angle) / m_event_duration;
+
+	MEM2_free(section);
 }
 
 void CFanartElement::Cleanup(void)
