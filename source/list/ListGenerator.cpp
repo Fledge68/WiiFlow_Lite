@@ -154,7 +154,15 @@ static void Create_Plugin_List(char *FullPath)
 
 	FolderTitle = strrchr(FullPath, '/') + 1;
 	*strrchr(FolderTitle, '.') = '\0';
-	mbstowcs(ListElement.title, FolderTitle, 63);
+	
+	char PluginMagicWord[9];
+	memset(PluginMagicWord, 0, sizeof(PluginMagicWord));
+	strncpy(PluginMagicWord, fmt("%08x", m_gameList.Magic), 8);
+	const char *CustomTitle = CustomTitles.getString(PluginMagicWord, FolderTitle).c_str();
+	if(CustomTitle != NULL && CustomTitle[0] != '\0')
+		mbstowcs(ListElement.title, CustomTitle, 63);
+	else	
+		mbstowcs(ListElement.title, FolderTitle, 63);
 	Asciify(ListElement.title);
 
 	ListElement.settings[0] = m_gameList.Magic; //Plugin magic
@@ -234,7 +242,7 @@ void ListGenerator::CreateList(u32 Flow, u32 Device, const string& Path, const v
 			fsop_deleteFile(DBName.c_str());
 		}
 	}
-	if(Flow != COVERFLOW_PLUGIN)
+	//if(Flow != COVERFLOW_PLUGIN)
 		OpenConfigs();
 	if(Flow == COVERFLOW_USB)
 	{
