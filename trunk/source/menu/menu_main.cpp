@@ -1162,6 +1162,7 @@ void CMenu::_setPartition(s8 direction)
 	if(m_current_view == COVERFLOW_CHANNEL && neek2o())
 		return;
 	_cfNeedsUpdate();
+	int FS_Type = 0;
 	if(direction != 0)
 	{
 		bool switch_to_real = true;
@@ -1174,7 +1175,6 @@ void CMenu::_setPartition(s8 direction)
 		bool NeedFAT = m_current_view == COVERFLOW_CHANNEL || m_current_view == COVERFLOW_DML;
 
 		u8 limiter = 0;
-		int FS_Type = 0;
 		do
 		{
 			currentPartition = loopNum(currentPartition + direction, 10);
@@ -1197,7 +1197,9 @@ void CMenu::_setPartition(s8 direction)
 		m_cfg.setInt(WII_DOMAIN, "savepartition", currentPartition);
 	else
 	{
-		m_cfg.setInt(_domainFromView(), "partition", currentPartition);
+		if(direction == 0 || (direction != 0 && (m_current_view != COVERFLOW_CHANNEL || 
+							(FS_Type != -1 && DeviceHandle.IsInserted(currentPartition)))))
+			m_cfg.setInt(_domainFromView(), "partition", currentPartition);
 		vector<bool> plugin_list = m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
 		if(enabledPluginsCount == 1)
 		{
