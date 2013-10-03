@@ -1882,7 +1882,8 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 	ScanInput();
 	if(!m_vid.showingWaitMessage())
 	{
-		m_vid.screensaver(NoInputTime());
+		if(!m_cfg.getBool("GENERAL", "screensaver_disabled", false))
+			m_vid.screensaver(NoInputTime(), m_cfg.getInt("GENERAL", "screensaver_idle_seconds", 60));
 		m_vid.render();
 	}
 	if(Sys_Exiting())

@@ -54,7 +54,7 @@ public:
 	void renderToTexture(TexData &tex, bool clear);
 	void cleanup(void);
 	void setup2DProjection(bool setViewPort = true, bool noScale = false);
-	void screensaver(u32 no_input);
+	void screensaver(u32 no_input, u32 max_no_input);
 	u32 width(void) const { return m_rmode->fbWidth; }
 	u32 height(void) const { return m_rmode->efbHeight; }
 	GXRModeObj *vid_mode(void) const { return m_rmode; }
