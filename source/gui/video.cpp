@@ -726,14 +726,14 @@ void DrawRectangle(f32 x, f32 y, f32 width, f32 height, GXColor color)
 	GX_SetTevOp(GX_TEVSTAGE0, GX_MODULATE);
 }
 
-void CVideo::screensaver(u32 no_input)
+void CVideo::screensaver(u32 no_input, u32 max_no_input)
 {
 	if(no_input == 0)
 	{
 		m_screensaver_alpha = 0;
 		return;
 	}
-	if(no_input > 60)
+	if(no_input > max_no_input)
 	{
 		DrawRectangle(0, 0, 640, 480, (GXColor){0,0,0,m_screensaver_alpha});
 		if(m_screensaver_alpha < 150)
