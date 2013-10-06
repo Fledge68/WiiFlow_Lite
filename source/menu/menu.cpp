@@ -2729,7 +2729,7 @@ const char *CMenu::getFrontPath(const dir_discHdr *element)
 		const char *coverPath = fmt("%s/front_covers/%s", m_sflowDir, coverImg);
 		if(m_cfg.getBool("SOURCEFLOW", "smallbox") || !fsop_FileExist(coverPath))
 		{
-			coverPath = fmt("%s/front_covers/%s", m_sflowDir, coverImg);
+			coverPath = fmt("%s/small_covers/%s", m_sflowDir, coverImg);
 			if(!fsop_FileExist(coverPath))
 				return element->path;
 		}
