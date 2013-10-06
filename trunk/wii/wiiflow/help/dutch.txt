@@ -6,25 +6,24 @@ Bediening:
 -- Min / Plus  =  Snel navigeren door spellen
 -- A  =  Selecteer spel
 -- B+A  =  Start spel meteen
--- B+Home  =  Herladen Wiiflow
 -- Home  =  Openen Home Menu / Wiiflow Sluiten
 -- 1 / 2  =  Vorige / volgende coverflow modus
 -- B+Links / B+Rechts  =  Verander Lied
--- B+OP / B+NEER  =  Alphabetisch zoeken
--- B+Onscreen Arrows  =  Alphabetisch zoeken
+-- B+OP / B+NEER  =  vorige / volgende spel in gesorteerde lijst (alpha standaard)
+-- B+Onscreen Arrows  =  vorige / volgende spel in gesorteerde lijst (alpha standaard)
 -- B+Minus  =  Verander van Partitie
--- B+Plus  =  Sorteer spellen
--- Z / ZR  =  Maak Schermafdruk
+-- B+Plus  =  Kies Sorteer Type (alpha, wifi, players, playcount, enz....)
+-- Z / ZR (GC controller) =  Maak Schermafdruk
 
 -- A op Ster Icoon  =  Favorieten
 -- B op Ster Icoon  =  Categoriën
 -- A op Rad Icoon  =  Wiiflow instellingen
--- A op USB, DML, Kanalen, Emu, of Homebrew Icoon  =  Ga naar volgende weergave
--- B op USB, DML, Kanalen, Emu, of Homebrew Icoon  =  Schakel Emu-NAND In/Uit en ga naar Kanalen weergave
+-- A op USB, GC, Kanalen, Plugin of Homebrew Icoon  =  Ga naar die weergave
+-- B op USB, GC, Kanalen, Plugin of Homebrew Icoon  =  Openen Source Menu
+-- B alleen =  Openen Source Menu (als deze aan staat)
 -- A op Home Icoon  =  Openen Home Menu / Wiiflow Sluiten
--- Druk op B voor 3 seconden / B op Home Icoon (wiimote_gestures ingeschakeld)  =  Ga naar Bron menu
 -- A op Disc Icoon (spel Disc in Drive)  =  Start spel disc
--- A op Vraagteken Icoon  =  Toon eerbetuiging en deze help pagina
+-- A op Vraagteken Icoon  =  Hulp scherm laten zien
 -- B op Vraagteken Icoon  =  Start een willekeurig spel in deze coverflow
 
 - Spel :
