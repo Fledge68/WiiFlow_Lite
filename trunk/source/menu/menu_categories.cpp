@@ -308,7 +308,7 @@ void CMenu::_CategorySettings(bool fromGameSet)
 				bool hiddenCat = false;
 				for(int j = 1; j < m_max_categories; ++j)
 				{
-					if(m_categories.at(j) == '2' && m_locked)
+					if(m_categories.at(j) == '2')
 					{	
 						hiddenCat = true;
 						continue;
