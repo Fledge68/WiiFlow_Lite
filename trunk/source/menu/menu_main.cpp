@@ -265,7 +265,8 @@ int CMenu::main(void)
 		m_cfg.setBool(WII_DOMAIN, "source", true);
 	}
 	m_current_view = m_last_view;
-	m_cfg.remove("GENERAL", "last_view");
+	if(m_current_view != COVERFLOW_MAX)
+		m_cfg.remove("GENERAL", "last_view");
 	m_cfg.save();
 	if(m_current_view == COVERFLOW_MAX)
 		m_combined_view = true;

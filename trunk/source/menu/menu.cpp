@@ -1566,40 +1566,33 @@ void CMenu::_initCF(void)
 
 	for(vector<dir_discHdr>::iterator element = m_gameList.begin(); element != m_gameList.end(); ++element)
 	{
-		string id;
-		char tmp_id[256];
+		char tmp[MAX_FAT_PATH];
+		memset(tmp, 0, MAX_FAT_PATH);
+		const char *id = NULL;
 		u64 chantitle = TITLE_ID(element->settings[0],element->settings[1]);
 		if(m_sourceflow)
 		{
-			memset(tmp_id, 0, 256);
-			wcstombs(tmp_id, element->title, 63);
-			id = "source/";
-			id.append(tmp_id);
+			char srctmp[63] = "source/";
+			memcpy(tmp, srctmp, 63);
+			wcstombs(srctmp, element->title, 63);
+			strcat(tmp, srctmp);
+			id = tmp;
 		}
 		else if(element->type == TYPE_HOMEBREW)
 			id = strrchr(element->path, '/') + 1;
 		else if(element->type == TYPE_PLUGIN)
 		{
-			if(strchr(element->path, ':') != NULL)
+			if(strstr(element->path, ":/") != NULL)
 			{
-				if(strchr(element->path, '/') == NULL)
-					continue;
-				memset(tmp_id, 0, 256);
-				strncpy(tmp_id, strchr(element->path, '/') + 1, 255);
-				if(strchr(tmp_id, '/') == NULL)
-					continue;
-				/* first subpath */
-				*(strchr(tmp_id, '/') + 1) = '\0';
-				id.append(tmp_id);
-				/* filename */
-				strncpy(tmp_id, strrchr(element->path, '/') + 1, 255);
-				if(strchr(tmp_id, '.') == NULL)
-					continue;
-				*strchr(tmp_id, '.') = '\0';
-				id.append(tmp_id);
+				if(*(strchr(element->path, '/') + 1) != '\0')
+					strcat(tmp, strchr(element->path, '/') + 1);
+				else
+					strcat(tmp, element->path);
+				if(strchr(tmp, '/') != NULL)
+					*(strchr(tmp, '/') + 1) = '\0';
 			}
-			else
-				id = element->path;
+			strcat(tmp, fmt("%ls",element->title));
+			id = tmp;
 		}
 		else
 		{
@@ -1607,7 +1600,10 @@ void CMenu::_initCF(void)
 				strncpy(element->id, "JODI", 6);
 			id = element->id;
 			if(element->type == TYPE_GC_GAME && element->settings[0] == 1) /* disc 2 */
-				id.append("_2");
+			{
+				strcat(tmp, fmt("%.6s_2", element->id));
+				id = tmp;
+			}
 		}
 		bool ageLocked = false;
 		if(ageLock < 19)
