@@ -145,11 +145,11 @@ int CMenu::_gameInstaller(void *obj)
 		ret = WBFS_AddGame(_addDiscProgress, obj);
 		LWP_MutexLock(m.m_mutex);
 		if (ret == 0)
-			m._setThrdMsg(m._t("wbfsop8", L"Game installed"), 1.f);
+			m._setThrdMsg(m._t("wbfsop8", L"Game installed, press B to exit."), 1.f);
 		else
 			m._setThrdMsg(m._t("wbfsop9", L"An error has occurred"), 1.f);
 		LWP_MutexUnlock(m.m_mutex);
-		slotLight(true);
+		slotLight(false);
 	}
 	WBFS_Close();
 	m.m_thrdWorking = false;
@@ -342,6 +342,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 								out = true;
 								break;
 							}
+							CoverFlow.clear();
 							strncpy(cfPos, GameID, 6);
 							m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsop6", L"Installing [%s] %s..."), GameID, wii_hdr.title));
 							done = true;
@@ -508,6 +509,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 	if(done && (op == WO_REMOVE_GAME || op == WO_ADD_GAME))
 	{
 		//m_gameList.SetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());	
+		_showWaitMessage();
 		if(upd_dml)
 			UpdateCache(COVERFLOW_DML);
 		if(upd_usb)
@@ -517,8 +519,13 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 		if(upd_chan)
 			UpdateCache(COVERFLOW_CHANNEL);
 		_loadList();
+		_hideWaitMessage();
 		_initCF();
 		CoverFlow.findId(cfPos, true);
+		Close_Inputs();
+		Open_Inputs();
+		for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
+					WPAD_SetVRes(chan, m_vid.width() + m_cursor[chan].width(), m_vid.height() + m_cursor[chan].height());
 	}
 	else 
 	{
