@@ -27,6 +27,10 @@ s16 m_nandemuLblNandFolder;
 s16 m_nandemuBtnNandFolder;
 s16 m_nandemuLblNandSavesFolder;
 s16 m_nandemuBtnNandSavesFolder;
+s16 m_nandemuLblPresetNand;
+s16 m_nandemuLblPresetVal;
+s16 m_nandemuBtnPresetM;
+s16 m_nandemuBtnPresetP;
 s16 m_nandfileLblMessage;
 s16 m_nandemuLblMessage;
 s16 m_nandfileLblDialog;
@@ -209,6 +213,10 @@ void CMenu::_hideNandEmu(bool instant)
 	m_btnMgr.hide(m_nandemuBtnNandFolder, instant);
 	m_btnMgr.hide(m_nandemuLblNandSavesFolder, instant);
 	m_btnMgr.hide(m_nandemuBtnNandSavesFolder, instant);
+	m_btnMgr.hide(m_nandemuLblPresetNand, instant);
+	m_btnMgr.hide(m_nandemuLblPresetVal, instant);
+	m_btnMgr.hide(m_nandemuBtnPresetP, instant);
+	m_btnMgr.hide(m_nandemuBtnPresetM, instant);
 	m_btnMgr.hide(m_nandemuBtnExtract, instant);
 	m_btnMgr.hide(m_nandemuBtnPartition, instant);
 	m_btnMgr.hide(m_nandemuBtnDisable, instant);
@@ -266,6 +274,11 @@ void CMenu::_showNandEmu(void)
 		m_btnMgr.show(m_nandemuBtnNandFolder);
 		m_btnMgr.show(m_nandemuLblNandSavesFolder);
 		m_btnMgr.show(m_nandemuBtnNandSavesFolder);
+		m_btnMgr.show(m_nandemuLblPresetNand);
+		m_btnMgr.show(m_nandemuLblPresetVal);
+		m_btnMgr.show(m_nandemuBtnPresetP);
+		m_btnMgr.show(m_nandemuBtnPresetM);
+		m_btnMgr.setText(m_nandemuLblPresetVal, wfmt(L"%i", m_cfg.getInt(CHANNEL_DOMAIN, "current_preset", 0)+1));
 	}
 	for(u8 i = 0; i < ARRAY_SIZE(m_nandemuLblUser); ++i)
 		if(m_nandemuLblUser[i] != -1)
@@ -276,6 +289,7 @@ int CMenu::_NandEmuCfg(void)
 {	
 	string path = "";
 	nandemuPage = 1;
+	bool pathChange = false;
 
 	lwp_t thread = 0;
 	SetupInput();
@@ -303,7 +317,11 @@ int CMenu::_NandEmuCfg(void)
 			m_btnMgr.hide(m_nandemuBtnNandFolder, true);
 			m_btnMgr.hide(m_nandemuLblNandSavesFolder, true);
 			m_btnMgr.hide(m_nandemuBtnNandSavesFolder, true);
-			
+			m_btnMgr.hide(m_nandemuLblPresetNand, true);
+			m_btnMgr.hide(m_nandemuLblPresetVal, true);
+			m_btnMgr.hide(m_nandemuBtnPresetP, true);
+			m_btnMgr.hide(m_nandemuBtnPresetM, true);
+	
 			nandemuPage = nandemuPage == 1 ? 2 : 1;
 			_showNandEmu();
 		}
@@ -322,6 +340,10 @@ int CMenu::_NandEmuCfg(void)
 			m_btnMgr.hide(m_nandemuBtnNandFolder, true);
 			m_btnMgr.hide(m_nandemuLblNandSavesFolder, true);
 			m_btnMgr.hide(m_nandemuBtnNandSavesFolder, true);
+			m_btnMgr.hide(m_nandemuLblPresetNand, true);
+			m_btnMgr.hide(m_nandemuLblPresetVal, true);
+			m_btnMgr.hide(m_nandemuBtnPresetP, true);
+			m_btnMgr.hide(m_nandemuBtnPresetM, true);
 			
 			nandemuPage = nandemuPage == 1 ? 2 : 1;
 			_showNandEmu();
@@ -385,24 +407,9 @@ int CMenu::_NandEmuCfg(void)
 			string emuPath;
 			_FindEmuPart(emuPath, true);
 			const char *path = _FolderExplorer(NandHandle.GetPath());
+			m_cfg.setString(CHANNEL_DOMAIN, fmt("path_%i", m_cfg.getInt(CHANNEL_DOMAIN, "current_preset", 0)+1), path);
 			m_current_view = tmpView;
-			if(strlen(path) > 0)
-			{
-				if(strncmp(path, "sd:/", 4) == 0)
-					m_cfg.setInt(CHANNEL_DOMAIN, "partition", 0);
-				else
-				{
-					const char *partval = &path[3];
-					m_cfg.setInt(CHANNEL_DOMAIN, "partition", atoi(partval));
-				}
-				char tmpPath[MAX_FAT_PATH];
-				strncpy(tmpPath, strchr(path, '/'), MAX_FAT_PATH-1);
-				m_cfg.setString(CHANNEL_DOMAIN, "path", tmpPath);
-				m_cfg.setBool(CHANNEL_DOMAIN, "update_cache", true);
-				if(m_cfg.getBool(CHANNEL_DOMAIN, "source"))
-					m_load_view = true;
-
-			}
+			pathChange = true;
 			_showNandEmu();
 		}
 		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnNandSavesFolder)))
@@ -429,6 +436,13 @@ int CMenu::_NandEmuCfg(void)
 			}
 			_showNandEmu();
 		}
+		else if (BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnPresetP) || m_btnMgr.selected(m_nandemuBtnPresetM)))
+		{
+			s8 direction = m_btnMgr.selected(m_nandemuBtnPresetP) ? 1 : -1;
+			m_cfg.setInt(CHANNEL_DOMAIN, "current_preset", (int)loopNum((u32)m_cfg.getInt(CHANNEL_DOMAIN, "current_preset", 0) + direction, 4));
+			pathChange = true;
+			_showNandEmu();
+		}	
 		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnBack)))
 		{
 			m_cfg.save();
@@ -462,6 +476,31 @@ int CMenu::_NandEmuCfg(void)
 		}
 	}
 	_hideNandEmu();
+	if(pathChange)
+	{
+		u8 tmpView = m_current_view;
+		m_current_view = COVERFLOW_CHANNEL;
+		string emuPath;
+		_FindEmuPart(emuPath, true);
+		const char *path = m_cfg.getString(CHANNEL_DOMAIN, fmt("path_%i", m_cfg.getInt(CHANNEL_DOMAIN, "current_preset", 0)+1), NandHandle.GetPath()).c_str();
+		m_current_view = tmpView;
+		if(strlen(path) > 0)
+		{
+			if(strncmp(path, "sd:/", 4) == 0)
+				m_cfg.setInt(CHANNEL_DOMAIN, "partition", 0);
+			else
+			{
+				const char *partval = &path[3];
+				m_cfg.setInt(CHANNEL_DOMAIN, "partition", atoi(partval));
+			}
+			char tmpPath[MAX_FAT_PATH];
+			strncpy(tmpPath, strchr(path, '/'), MAX_FAT_PATH-1);
+			m_cfg.setString(CHANNEL_DOMAIN, "path", tmpPath);
+			m_cfg.setBool(CHANNEL_DOMAIN, "update_cache", true);
+			if(m_cfg.getBool(CHANNEL_DOMAIN, "source"))
+				m_load_view = true;
+		}
+	}
 	return 0;
 }
 
@@ -920,6 +959,10 @@ void CMenu::_initNandEmuMenu()
 	m_nandemuBtnNandFolder = _addButton("NANDEMU/NAND_FOLDER_BTN", theme.btnFont, L"", 350, 130, 250, 56, theme.btnFontColor);
 	m_nandemuLblNandSavesFolder = _addLabel("NANDEMU/NAND_SAVES_FOLDER", theme.lblFont, L"", 40, 190, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_nandemuBtnNandSavesFolder = _addButton("NANDEMU/NAND_SAVES_FOLDER_BTN", theme.btnFont, L"", 350, 190, 250, 56, theme.btnFontColor);
+	m_nandemuLblPresetNand = _addLabel("NANDEMU/PRESET_NAND", theme.lblFont, L"", 40, 250, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_nandemuLblPresetVal = _addLabel("NANDEMU/PRESET_NAND_BTN", theme.btnFont, L"", 400, 250, 144, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_nandemuBtnPresetM = _addPicButton("NANDEMU/PRESET_NAND_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 344, 250, 56, 56);
+	m_nandemuBtnPresetP = _addPicButton("NANDEMU/PRESET_NAND_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 250, 56, 56);
 
 	m_nandemuBtnBack = _addButton("NANDEMU/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 56, theme.btnFontColor);
 	m_nandemuLblPage = _addLabel("NANDEMU/PAGE_BTN", theme.btnFont, L"", 62, 400, 98, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
@@ -954,6 +997,10 @@ void CMenu::_initNandEmuMenu()
 	_setHideAnim(m_nandemuBtnNandFolder, "NANDEMU/NAND_FOLDER_BTN", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_nandemuLblNandSavesFolder, "NANDEMU/NAND_SAVES_FOLDER", 100, 0, -2.f, 0.f);
 	_setHideAnim(m_nandemuBtnNandSavesFolder, "NANDEMU/NAND_SAVES_FOLDER_BTN", 0, 0, -2.f, 0.f);
+	_setHideAnim(m_nandemuLblPresetNand, "NANDEMU/PRESET_NAND", 100, 0, -2.f, 0.f);
+	_setHideAnim(m_nandemuLblPresetVal, "NANDEMU/PRESET_NAND_BTN", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_nandemuBtnPresetM, "NANDEMU/PRESET_NAND_MINUS", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_nandemuBtnPresetP, "NANDEMU/PRESET_NAND_PLUS", 0, 0, 1.f, -1.f);
 	
 	_setHideAnim(m_nandemuBtnBack, "NANDEMU/BACK_BTN", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_nandemuLblPage, "NANDEMU/PAGE_BTN", 0, 0, -1.f, 1.f);
@@ -973,6 +1020,7 @@ void CMenu::_textNandEmu(void)
 {
 	m_btnMgr.setText(m_nandemuLblNandFolder, _t("cfgne32", L"Change Nand"));
 	m_btnMgr.setText(m_nandemuLblNandSavesFolder, _t("cfgne33", L"Change Saves Nand"));
+	m_btnMgr.setText(m_nandemuLblPresetNand, _t("cfgne37", L"Select Preset Nand"));
 	m_btnMgr.setText(m_nandemuBtnNandFolder, _t("dl16", L"Set"));
 	m_btnMgr.setText(m_nandemuBtnNandSavesFolder, _t("dl16", L"Set"));
 	m_btnMgr.setText(m_nandemuLblEmulation, _t("cfgne1", L"NAND Emulation"));
