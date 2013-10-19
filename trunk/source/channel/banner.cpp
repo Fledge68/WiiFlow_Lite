@@ -49,19 +49,19 @@ Banner::Banner()
 {
 	opening = NULL;
 	opening_size = 0;
-	title = 0;
+	allocated = false;
 	imet = NULL;
 }
 
-void Banner::SetBanner(u8 *bnr, u32 bnr_size, u64 title, bool custom)
+void Banner::SetBanner(u8 *bnr, u32 bnr_size, bool custom, bool alloc)
 {
 	ClearBanner();
 	if(bnr == NULL || bnr_size == 0)
 		return;
 
-	this->title = title;
 	opening = bnr;
 	opening_size = bnr_size;
+	allocated = alloc;
 	imet = (IMET *)opening;
 	if(imet->sig != IMET_SIGNATURE)
 		imet = (IMET *) (opening + IMET_OFFSET);
@@ -80,19 +80,19 @@ void Banner::SetBanner(u8 *bnr, u32 bnr_size, u64 title, bool custom)
 		if(memcmp(imetmd5, md5, 16) == 0 || custom)
 			this->imet = imet;
 		else
-			gprintf("Invalid md5, banner not valid for title %08x\n", title);
+			gprintf("Invalid md5, banner not valid\n");
 	}
 	else
-		gprintf("Invalid signature found, banner not valid for title %08x\n", title);
+		gprintf("Invalid signature found, banner not valid\n");
 }
 
 void Banner::ClearBanner()
 {
-	if(opening != NULL)
+	if(allocated == true && opening != NULL)
 		free(opening);
 	opening = NULL;
 	opening_size = 0;
-	title = 0;
+	allocated = false;
 	imet = NULL;
 }
 
@@ -164,7 +164,7 @@ u8 *Banner::GetFile(const char *name, u32 *size)
 	return file;
 }
 
-void Banner::GetBanner(u64 title, char *appname, bool imetOnly)
+void Banner::GetBanner(char *appname, bool imetOnly)
 {
 	u8 *buf = NULL;
 	u32 size = 0;
@@ -179,5 +179,5 @@ void Banner::GetBanner(u64 title, char *appname, bool imetOnly)
 			free(buf);
 		return;
 	}
-	SetBanner(buf, size, title);
+	SetBanner(buf, size, false, true);
 }

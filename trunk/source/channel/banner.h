@@ -61,26 +61,23 @@ class Banner
 {
 	public:
 		Banner();
-		void SetBanner(u8 *bnr, u32 bnr_size, u64 title = 0, bool custom = false);
+		void SetBanner(u8 *bnr, u32 bnr_size, bool custom = false, bool alloc = false);
 		void ClearBanner();
-		
 		bool IsValid();
 
 		bool GetName(u8 *name, int language);
 		bool GetName(wchar_t *name, int language);
 		u8 *GetFile(const char *name, u32 *size);
 
-		void GetBanner(u64 title, char *appname, bool imetOnly = false);
+		void GetBanner(char *appname, bool imetOnly = false);
 		u8 *GetBannerFile() { return opening; }
 		u32 GetBannerFileSize() { return opening_size; }
 	protected:
 		u8 *opening;
 		u32 opening_size;
-		u64 title;
+		bool allocated;
 		IMET *imet;
-
 		u16 *GetName(int language);
-		static bool GetChannelNameFromApp(u64 title, wchar_t* name, int language);
 };
 extern Banner CurrentBanner;
 

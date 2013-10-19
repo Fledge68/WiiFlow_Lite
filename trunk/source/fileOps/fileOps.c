@@ -316,3 +316,82 @@ void fsop_deleteFolder(const char *source)
 	gprintf("Deleting directory: %s\n", source);
 	unlink(source);
 }
+
+bool fsop_FileExist(const char *fn)
+{
+	FILE * f;
+	f = fopen(fn, "rb");
+	if(f)
+	{
+		fclose(f);
+		return true;
+	}
+	return false;
+}
+
+void fsop_ReadFileLoc(const char *path, const u32 size, void *loc)
+{
+	FILE *f = fopen(path, "rb");
+	fread(loc, size, 1, f);
+	fclose(f);
+}
+
+u8 *fsop_ReadFile(const char *path, u32 *size)
+{
+	*(size) = 0;
+	u32 filesize = 0;
+	u8 *mem = NULL;
+	fsop_GetFileSizeBytes(path, &filesize);
+	if(filesize > 0)
+	{
+		mem = (u8*)MEM2_alloc(filesize);
+		if(mem != NULL)
+		{
+			//gprintf("Reading file: %s\n", path);
+			fsop_ReadFileLoc(path, filesize, mem);
+			*(size) = filesize;
+		}
+	}
+	return mem;
+}
+
+bool fsop_WriteFile(const char *path, const void *mem, const u32 size)
+{
+	if(mem == NULL || size == 0)
+		return false;
+
+	FILE *f = fopen(path, "wb");
+	if(f == NULL)
+		return false;
+	//gprintf("Writing file: %s\n", path);
+	fwrite(mem, size, 1, f);
+	fclose(f);
+	return true;
+}
+
+void fsop_deleteFile(const char *source)
+{
+	if(!fsop_FileExist(source))
+		return;
+	remove(source);
+}
+
+bool fsop_FolderExist(const char *path)
+{
+	DIR *dir;
+	dir = opendir(path);
+	if(dir)
+	{
+		closedir(dir);
+		return true;
+	}
+	return false;
+}
+
+void fsop_MakeFolder(const char *path)
+{
+	if(fsop_FolderExist(path))
+		return;
+	//gprintf("Folder path to create: %s\n", path);
+	mkdir(path, S_IREAD | S_IWRITE);
+}
