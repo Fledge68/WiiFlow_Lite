@@ -199,6 +199,42 @@ void CMenu::LoadView(void)
 		_createSFList();
 	else
 		_loadList();
+
+	if(m_source_autoboot == true)
+	{	/* search for the requested file */
+		bool game_found = false;
+		for(vector<dir_discHdr>::iterator element = m_gameList.begin(); element != m_gameList.end(); ++element)
+		{
+			switch(m_autoboot_hdr.type)
+			{
+				case TYPE_CHANNEL:
+				case TYPE_WII_GAME:
+				case TYPE_GC_GAME:
+					if(strcmp(m_autoboot_hdr.id, element->id) == 0)
+						game_found = true;
+					break;
+				case TYPE_HOMEBREW:
+				case TYPE_PLUGIN:
+					if(wcsncmp(m_autoboot_hdr.title, element->title, 63) == 0)
+						game_found = true;
+					break;
+				default:
+					break;
+			}
+			if(game_found == true)
+			{
+				memcpy(&m_autoboot_hdr, &(*(element)), sizeof(dir_discHdr));
+				break;
+			}
+		}
+		if(game_found == true)
+		{
+			gprintf("Game found, autobooting...\n");
+			_launch(&m_autoboot_hdr);
+		}
+		/* fail */
+		m_source_autoboot = false;
+	}
 	_showMain();
 	_initCF();
 	_loadCFLayout(m_cfg.getInt(_domainFromView(), "last_cf_mode", 1));

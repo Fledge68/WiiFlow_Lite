@@ -156,6 +156,8 @@ CMenu::CMenu()
 	m_init_ftp = false;
 	/* screensaver */
 	no_input_time = 0;
+	/* Autoboot stuff */
+	m_source_autoboot = false;
 }
 
 void CMenu::init()
