@@ -670,6 +670,40 @@ bool CMenu::_Source()
 								}
 							}
 						}
+						/* autoboot */
+						const char *autoboot = m_source.getString(btn_selected, "autoboot", "").c_str();
+						if(autoboot != NULL && autoboot[0] != '\0')
+						{
+							m_source_autoboot = true;
+							memset(&m_autoboot_hdr, 0, sizeof(dir_discHdr));
+							if(source == "emunand" || source == "realnand")
+							{
+								m_autoboot_hdr.type = TYPE_CHANNEL;
+								memcpy(m_autoboot_hdr.id, autoboot, 4);
+							}
+							else if(source == "wii")
+							{
+								m_autoboot_hdr.type = TYPE_WII_GAME;
+								memcpy(m_autoboot_hdr.id, autoboot, 6);
+							}
+							else if(source == "dml")
+							{
+								m_autoboot_hdr.type = TYPE_GC_GAME;
+								memcpy(m_autoboot_hdr.id, autoboot, 6);
+							}
+							else if(source == "homebrew")
+							{
+								m_autoboot_hdr.type = TYPE_HOMEBREW;
+								mbstowcs(m_autoboot_hdr.title, autoboot, 63);
+							}
+							else if(source == "plugin")
+							{
+								m_autoboot_hdr.type = TYPE_PLUGIN;
+								mbstowcs(m_autoboot_hdr.title, autoboot, 63);
+							}
+							else
+								m_source_autoboot = false;
+						}
 						break;
 					}
 					else

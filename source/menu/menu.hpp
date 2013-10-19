@@ -1040,6 +1040,8 @@ private:
 public:
 	void directlaunch(const char *GameID);
 private:
+	dir_discHdr m_autoboot_hdr;
+	bool m_source_autoboot;
 	bool m_use_wifi_gecko;
 	bool m_use_sd_logging;
 	bool init_network;
