@@ -153,7 +153,7 @@ void Channels::GetBanner(u64 title, bool imetOnly)
 	char app[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
 	if(!GetAppNameFromTmd(title, app, &cid))
 		return;
-	CurrentBanner.GetBanner(title, app, imetOnly);
+	CurrentBanner.GetBanner(app, imetOnly);
 }
 
 bool Channels::GetChannelNameFromApp(u64 title, wchar_t* name, int language)

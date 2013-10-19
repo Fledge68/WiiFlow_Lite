@@ -251,7 +251,7 @@ static void _extractBnr(const dir_discHdr *hdr)
 		void *bnr = NULL;
 		size = wbfs_extract_file(disc, (char*)"opening.bnr", &bnr);
 		if(size > 0)
-			CurrentBanner.SetBanner((u8*)bnr, size);
+			CurrentBanner.SetBanner((u8*)bnr, size, false, true);
 		WBFS_CloseDisc(disc);
 	}
 	WBFS_Close();
@@ -1597,6 +1597,9 @@ struct IMD5Header
 	u8 crypto[16];
 } ATTRIBUTE_PACKED;
 
+static const u32 BNR_MAX_SIZE = 0x00200000; /* 2MB */
+static u8 *BNR_LOC = (u8*)0x90000000;
+
 void CMenu::_gameSoundThread(CMenu *m)
 {
 	m->m_soundThrdBusy = true;
@@ -1622,17 +1625,32 @@ void CMenu::_gameSoundThread(CMenu *m)
 	char cached_banner[256];
 	cached_banner[255] = '\0';
 	strncpy(cached_banner, fmt("%s/%s.bnr", m->m_bnrCacheDir.c_str(), GameHdr->id), 255);
-	cached_bnr_file = fsop_ReadFile(cached_banner, &cached_bnr_size);
-	if(cached_bnr_file == NULL)
+	fsop_GetFileSizeBytes(cached_banner, &cached_bnr_size);
+	if(cached_bnr_size > 0 && cached_bnr_size < BNR_MAX_SIZE)
+	{
+		cached_bnr_file = BNR_LOC;
+		fsop_ReadFileLoc(cached_banner, cached_bnr_size, BNR_LOC);
+	}
+	else /* no cached or too big */
 	{
 		char custom_banner[256];
 		custom_banner[255] = '\0';
 		strncpy(custom_banner, fmt("%s/%s.bnr", m->m_customBnrDir.c_str(), GameHdr->id), 255);
-		custom_bnr_file = fsop_ReadFile(custom_banner, &custom_bnr_size);
-		if(custom_bnr_file == NULL)
+		fsop_GetFileSizeBytes(custom_banner, &custom_bnr_size);
+		if(custom_bnr_size > 0 && custom_bnr_size < BNR_MAX_SIZE)
+		{
+			custom_bnr_file = BNR_LOC;
+			fsop_ReadFileLoc(custom_banner, custom_bnr_size, BNR_LOC);
+		}
+		else /* no custom ID6 or too big, try ID3 */
 		{
 			strncpy(custom_banner, fmt("%s/%.3s.bnr", m->m_customBnrDir.c_str(), GameHdr->id), 255);
-			custom_bnr_file = fsop_ReadFile(custom_banner, &custom_bnr_size);
+			fsop_GetFileSizeBytes(custom_banner, &custom_bnr_size);
+			if(custom_bnr_size > 0 && custom_bnr_size < BNR_MAX_SIZE)
+			{
+				custom_bnr_file = BNR_LOC;
+				fsop_ReadFileLoc(custom_banner, custom_bnr_size, BNR_LOC);
+			}
 		}
 		if(custom_bnr_file == NULL && GameHdr->type == TYPE_GC_GAME)
 		{
@@ -1655,7 +1673,7 @@ void CMenu::_gameSoundThread(CMenu *m)
 	if(cached_bnr_file != NULL)
 		CurrentBanner.SetBanner(cached_bnr_file, cached_bnr_size);
 	else if(custom_bnr_file != NULL)
-		CurrentBanner.SetBanner(custom_bnr_file, custom_bnr_size, 0, true);
+		CurrentBanner.SetBanner(custom_bnr_file, custom_bnr_size, true);
 	else if(GameHdr->type == TYPE_WII_GAME)
 		_extractBnr(GameHdr);
 	else if(GameHdr->type == TYPE_CHANNEL)
