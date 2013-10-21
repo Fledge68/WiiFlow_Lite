@@ -315,6 +315,7 @@ void CMenu::_cfTheme(void)
 	int copyVersion = 0;
 	bool copySelected = false;
 	bool copyWide = wide;
+	int showBtnsDelay = 0;
 
 	SetupInput();
 	_initCF();
@@ -332,9 +333,15 @@ void CMenu::_cfTheme(void)
 			break;
 		}
 		else if(BTN_UP_PRESSED)
+		{
 			m_btnMgr.up();
+			showBtnsDelay = 150;
+		}
 		else if(BTN_DOWN_PRESSED)
+		{
 			m_btnMgr.down();
+			showBtnsDelay = 150;
+		}
 		if(BTN_B_HELD && BTN_1_PRESSED)
 		{
 			copyVersion = cfVersion;
@@ -418,6 +425,7 @@ void CMenu::_cfTheme(void)
 				_showCFTheme(curParam, cfVersion, wide);
 				_loadCFLayout(cfVersion, true, wide != m_vid.wide());
 				CoverFlow.applySettings();
+				showBtnsDelay = 150;
 			}
 			else if (m_btnMgr.selected(m_cfThemeBtnSelect))
 			{
@@ -428,6 +436,7 @@ void CMenu::_cfTheme(void)
 				_showCFTheme(curParam, cfVersion, wide);
 				_loadCFLayout(cfVersion, true, wide != m_vid.wide());
 				CoverFlow.applySettings();
+				showBtnsDelay = 150;
 			}
 			else if (m_btnMgr.selected(m_cfThemeBtnWide))
 			{
@@ -435,6 +444,7 @@ void CMenu::_cfTheme(void)
 				_showCFTheme(curParam, cfVersion, wide);
 				_loadCFLayout(cfVersion, true, wide != m_vid.wide());
 				CoverFlow.applySettings();
+				showBtnsDelay = 150;
 			}
 			else if (m_btnMgr.selected(m_cfThemeBtnParamP) || m_btnMgr.selected(m_cfThemeBtnParamM))
 			{
@@ -443,6 +453,7 @@ void CMenu::_cfTheme(void)
 				if (CMenu::_cfParams[curParam].domain == CMenu::SCFParamDesc::PDD_SELECTED)
 					CoverFlow.select();
 				_showCFTheme(curParam, cfVersion, wide);
+				showBtnsDelay = 150;
 			}
 		}
 		if (BTN_A_REPEAT || BTN_A_PRESSED)
@@ -454,13 +465,24 @@ void CMenu::_cfTheme(void)
 					_showCFTheme(curParam, cfVersion, wide);
 					_loadCFLayout(cfVersion, true, wide != m_vid.wide());
 					CoverFlow.applySettings();
+					showBtnsDelay = 150;
 					break;
 				}
 		}
-		if (WPadIR_Valid(0) || WPadIR_Valid(1) || WPadIR_Valid(2) || WPadIR_Valid(3))
-			_showCFTheme(curParam, cfVersion, wide);
-		else
+		for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
+		{
+			if(WPadIR_Valid(chan) || m_show_pointer[chan])
+			{
+				showBtnsDelay = 150;
+				break;
+			}
+		}
+		if(showBtnsDelay)
+			showBtnsDelay--;
+		if(showBtnsDelay == 0)
 			_hideCFTheme();
+		else
+			_showCFTheme(curParam, cfVersion, wide);
 		CoverFlow.flip(true, curParam == 16);
 	}
 	_hideCFTheme();
