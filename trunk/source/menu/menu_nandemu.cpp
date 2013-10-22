@@ -278,7 +278,23 @@ void CMenu::_showNandEmu(void)
 		m_btnMgr.show(m_nandemuLblPresetVal);
 		m_btnMgr.show(m_nandemuBtnPresetP);
 		m_btnMgr.show(m_nandemuBtnPresetM);
-		m_btnMgr.setText(m_nandemuLblPresetVal, wfmt(L"%i", m_cfg.getInt(CHANNEL_DOMAIN, "current_preset", 0)+1));
+		const char *path = m_cfg.getString(CHANNEL_DOMAIN, fmt("path_%i", m_cfg.getInt(CHANNEL_DOMAIN, "current_preset", 0)+1), "").c_str();
+		if(strlen(path) > 0)
+		{
+			char tmpPath[64];
+			memset(tmpPath, 0, 64);
+			if(strchr(path, '/') != strrchr(path, '/'))
+			{
+				if(path[strlen(path) - 1] == '/')
+					*strrchr(path, '/') = '\0';
+				strncpy(tmpPath, strrchr(path, '/') + 1, 63);
+			}
+			else
+				strcpy(tmpPath, path);
+			m_btnMgr.setText(m_nandemuLblPresetVal, wstringEx(tmpPath));
+		}
+		else
+			m_btnMgr.setText(m_nandemuLblPresetVal, _t("cfgne38", L"Empty"));
 	}
 	for(u8 i = 0; i < ARRAY_SIZE(m_nandemuLblUser); ++i)
 		if(m_nandemuLblUser[i] != -1)
@@ -478,12 +494,7 @@ int CMenu::_NandEmuCfg(void)
 	_hideNandEmu();
 	if(pathChange)
 	{
-		u8 tmpView = m_current_view;
-		m_current_view = COVERFLOW_CHANNEL;
-		string emuPath;
-		_FindEmuPart(emuPath, true);
-		const char *path = m_cfg.getString(CHANNEL_DOMAIN, fmt("path_%i", m_cfg.getInt(CHANNEL_DOMAIN, "current_preset", 0)+1), NandHandle.GetPath()).c_str();
-		m_current_view = tmpView;
+		const char *path = m_cfg.getString(CHANNEL_DOMAIN, fmt("path_%i", m_cfg.getInt(CHANNEL_DOMAIN, "current_preset", 0)+1), "").c_str();
 		if(strlen(path) > 0)
 		{
 			if(strncmp(path, "sd:/", 4) == 0)
