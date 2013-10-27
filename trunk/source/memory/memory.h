@@ -37,4 +37,18 @@
 #define HW_AHBPROT		((vu32*)0xCD800064)
 #define MEM_PROT		((vu32)0xCD8B420A)
 
+#define HW_AES_CMD		((vu32)0x0D020000)
+#define HW_AES_SRC		((vu32)0x0D020004)
+#define HW_AES_DEST		((vu32)0x0D020008)
+#define HW_AES_KEY		((vu32)0x0D02000C)
+#define HW_AES_IV		((vu32)0x0D020010)
+
+#define HW_SHA1_CMD		((vu32)0x0D030000)
+#define HW_SHA1_SRC		((vu32)0x0D030004)
+#define HW_SHA1_H0		((vu32)0x0D030008)
+#define HW_SHA1_H1		((vu32)0x0D03000C)
+#define HW_SHA1_H2		((vu32)0x0D030010)
+#define HW_SHA1_H3		((vu32)0x0D030014)
+#define HW_SHA1_H4		((vu32)0x0D030018)
+
 #endif

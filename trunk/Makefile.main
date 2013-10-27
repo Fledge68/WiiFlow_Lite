@@ -28,6 +28,7 @@ SOURCES		:=	source \
 				source/gc \
 				source/gecko \
 				source/gui \
+				source/hw \
 				source/homebrew \
 				source/libwbfs \
 				source/list \
