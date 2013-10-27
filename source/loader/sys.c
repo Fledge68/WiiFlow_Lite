@@ -7,7 +7,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "sha1.h"
 #include "fs.h"
 #include "mload.h"
 #include "sys.h"
