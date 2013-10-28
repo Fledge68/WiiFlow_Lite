@@ -306,7 +306,13 @@ int CMenu::main(void)
 	m_cfg.save();
 	if(m_current_view == COVERFLOW_MAX)
 		m_combined_view = true;
-		
+	else
+	{
+		s8 lastSrc = m_cfg.getInt("GENERAL", "last_source_btn", -1);
+		if(lastSrc >= 0 )
+			m_catStartPage = m_source.getInt(fmt("BUTTON_%i", lastSrc), "cat_page", 1);
+	}
+	m_cfg.setInt("GENERAL", "last_source_btn", -1);	
 	if(m_cfg.getBool("GENERAL", "update_cache", false))
 		UpdateCache();
 	LoadView();
