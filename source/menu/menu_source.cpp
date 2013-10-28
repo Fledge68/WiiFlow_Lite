@@ -598,6 +598,7 @@ bool CMenu::_Source()
 					string source = m_source.getString(btn_selected, "source", "");
 					if(BTN_A_PRESSED)
 					{
+						m_cfg.setInt("GENERAL", "last_source_btn", i + j);
 						_clearSources();
 						exitSource = true;
 						m_catStartPage = 1;
