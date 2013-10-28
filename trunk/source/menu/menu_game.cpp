@@ -1624,56 +1624,57 @@ void CMenu::_gameSoundThread(CMenu *m)
 
 	char cached_banner[256];
 	cached_banner[255] = '\0';
-	strncpy(cached_banner, fmt("%s/%s.bnr", m->m_bnrCacheDir.c_str(), GameHdr->id), 255);
-	fsop_GetFileSizeBytes(cached_banner, &cached_bnr_size);
-	if(cached_bnr_size > 0 && cached_bnr_size < BNR_MAX_SIZE)
+	char custom_banner[256];
+	custom_banner[255] = '\0';
+	/* check custom ID6 first */
+	strncpy(custom_banner, fmt("%s/%s.bnr", m->m_customBnrDir.c_str(), GameHdr->id), 255);
+	fsop_GetFileSizeBytes(custom_banner, &custom_bnr_size);
+	if(custom_bnr_size > 0 && custom_bnr_size < BNR_MAX_SIZE)
 	{
-		cached_bnr_file = BNR_LOC;
-		fsop_ReadFileLoc(cached_banner, cached_bnr_size, BNR_LOC);
+		custom_bnr_file = BNR_LOC;
+		fsop_ReadFileLoc(custom_banner, custom_bnr_size, BNR_LOC);
 	}
-	else /* no cached or too big */
+	else /* no custom ID6 or too big, try ID3 */
 	{
-		char custom_banner[256];
-		custom_banner[255] = '\0';
-		strncpy(custom_banner, fmt("%s/%s.bnr", m->m_customBnrDir.c_str(), GameHdr->id), 255);
+		strncpy(custom_banner, fmt("%s/%.3s.bnr", m->m_customBnrDir.c_str(), GameHdr->id), 255);
 		fsop_GetFileSizeBytes(custom_banner, &custom_bnr_size);
 		if(custom_bnr_size > 0 && custom_bnr_size < BNR_MAX_SIZE)
 		{
 			custom_bnr_file = BNR_LOC;
 			fsop_ReadFileLoc(custom_banner, custom_bnr_size, BNR_LOC);
 		}
-		else /* no custom ID6 or too big, try ID3 */
+	}
+	if(custom_bnr_file == NULL && GameHdr->type == TYPE_GC_GAME)
+	{
+		if(m->_QF_Game(GameHdr->id) == false)
 		{
-			strncpy(custom_banner, fmt("%s/%.3s.bnr", m->m_customBnrDir.c_str(), GameHdr->id), 255);
-			fsop_GetFileSizeBytes(custom_banner, &custom_bnr_size);
-			if(custom_bnr_size > 0 && custom_bnr_size < BNR_MAX_SIZE)
-			{
-				custom_bnr_file = BNR_LOC;
-				fsop_ReadFileLoc(custom_banner, custom_bnr_size, BNR_LOC);
-			}
+			GC_Disc_Reader.init(GameHdr->path);
+			u8 *opening_bnr = GC_Disc_Reader.GetGameCubeBanner();
+			if(opening_bnr != NULL)
+				m_banner.CreateGCBanner(opening_bnr, m->m_wbf1_font, m->m_wbf2_font, GameHdr->title);
+			GC_Disc_Reader.clear();
 		}
-		if(custom_bnr_file == NULL && GameHdr->type == TYPE_GC_GAME)
+		m->m_gameSound.Load(gc_ogg, gc_ogg_size, false);
+		if(m->m_gameSound.IsLoaded())
+			m->m_gamesound_changed = true;
+		m->m_soundThrdBusy = false;
+		return;
+	}
+	if(custom_bnr_file == NULL)/* no custom and not GC game try cached banner*/
+	{
+		strncpy(cached_banner, fmt("%s/%s.bnr", m->m_bnrCacheDir.c_str(), GameHdr->id), 255);
+		fsop_GetFileSizeBytes(cached_banner, &cached_bnr_size);
+		if(cached_bnr_size > 0 && cached_bnr_size < BNR_MAX_SIZE)
 		{
-			if(m->_QF_Game(GameHdr->id) == false)
-			{
-				GC_Disc_Reader.init(GameHdr->path);
-				u8 *opening_bnr = GC_Disc_Reader.GetGameCubeBanner();
-				if(opening_bnr != NULL)
-					m_banner.CreateGCBanner(opening_bnr, m->m_wbf1_font, m->m_wbf2_font, GameHdr->title);
-				GC_Disc_Reader.clear();
-			}
-			m->m_gameSound.Load(gc_ogg, gc_ogg_size, false);
-			if(m->m_gameSound.IsLoaded())
-				m->m_gamesound_changed = true;
-			m->m_soundThrdBusy = false;
-			return;
+			cached_bnr_file = BNR_LOC;
+			fsop_ReadFileLoc(cached_banner, cached_bnr_size, BNR_LOC);
 		}
 	}
 
-	if(cached_bnr_file != NULL)
-		CurrentBanner.SetBanner(cached_bnr_file, cached_bnr_size);
-	else if(custom_bnr_file != NULL)
+	if(custom_bnr_file != NULL)
 		CurrentBanner.SetBanner(custom_bnr_file, custom_bnr_size, true);
+	else if(cached_bnr_file != NULL)
+		CurrentBanner.SetBanner(cached_bnr_file, cached_bnr_size);
 	else if(GameHdr->type == TYPE_WII_GAME)
 		_extractBnr(GameHdr);
 	else if(GameHdr->type == TYPE_CHANNEL)
