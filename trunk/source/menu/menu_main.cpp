@@ -301,18 +301,15 @@ int CMenu::main(void)
 		m_cfg.setBool(WII_DOMAIN, "source", true);
 	}
 	m_current_view = m_last_view;
+	m_catStartPage = m_cfg.getInt("GENERAL", "cat_startpage", 1);
 	if(m_current_view != COVERFLOW_MAX)
-		m_cfg.remove("GENERAL", "last_view");
-	m_cfg.save();
-	if(m_current_view == COVERFLOW_MAX)
-		m_combined_view = true;
-	else
 	{
-		s8 lastSrc = m_cfg.getInt("GENERAL", "last_source_btn", -1);
-		if(lastSrc >= 0 )
-			m_catStartPage = m_source.getInt(fmt("BUTTON_%i", lastSrc), "cat_page", 1);
+		m_cfg.remove("GENERAL", "last_view");
+		m_cfg.remove("GENERAL", "cat_startpage");
 	}
-	m_cfg.setInt("GENERAL", "last_source_btn", -1);	
+	else
+		m_combined_view = true;
+	m_cfg.save();
 	if(m_cfg.getBool("GENERAL", "update_cache", false))
 		UpdateCache();
 	LoadView();
