@@ -266,7 +266,6 @@ void CMenu::_sourceFlow()
 	memset(btn_selected, 0, 256);
 	strncpy(btn_selected, fmt("BUTTON_%i", hdr->settings[0]), 255);
 	string source = m_source.getString(btn_selected, "source", "");
-	m_cfg.setInt("GENERAL", "last_source_btn", hdr->settings[0]);
 	_clearSources();
 	if(source == "wii")
 	{
@@ -599,7 +598,6 @@ bool CMenu::_Source()
 					string source = m_source.getString(btn_selected, "source", "");
 					if(BTN_A_PRESSED)
 					{
-						m_cfg.setInt("GENERAL", "last_source_btn", i + j);
 						_clearSources();
 						exitSource = true;
 						m_catStartPage = 1;

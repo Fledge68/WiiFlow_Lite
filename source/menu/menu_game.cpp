@@ -548,6 +548,7 @@ void CMenu::_game(bool launch)
 				m_gcfg2.load(fmt("%s/" GAME_SETTINGS2_FILENAME, m_settingsDir.c_str()));
 				// change to current games partition and set last_view for recall later
 				m_cfg.setInt("GENERAL", "last_view", m_current_view);
+				m_cfg.setInt("GENERAL", "cat_startpage", m_catStartPage);
 				switch(hdr->type)
 				{
 					case TYPE_CHANNEL:
