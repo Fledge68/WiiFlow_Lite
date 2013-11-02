@@ -196,7 +196,7 @@ int installWad(const char *path)
 
 		SHA1_CTX ctx;
 		SHA1Init(&ctx);
-		AES_EnableDecrypt(tik_key, aes_iv);
+		AES_ResetEngine();
 		u32 size_enc_full = ALIGN(16, content->size);
 		while(read < size_enc_full)
 		{
@@ -206,6 +206,8 @@ int installWad(const char *path)
 
 			u16 num_blocks = (size_enc / 16);
 			fread(AES_WAD_Buf, size_enc, 1, wad_file);
+			AES_EnableDecrypt(tik_key, aes_iv); //ISFS seems to reset it?
+			memcpy(aes_iv, AES_WAD_Buf+(size_enc-16), 16); //last block for cbc
 			AES_Decrypt(AES_WAD_Buf, AES_WAD_Buf, num_blocks);
 
 			u64 size_dec = (content->size - read);
