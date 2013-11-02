@@ -31,15 +31,10 @@ void decrypt_title_key(u8 *tik, u8 *title_key)
 	wbfs_memset(iv, 0, sizeof iv);
 	wbfs_memcpy(iv, tik + 0x01dc, 8);
 
+	AES_ResetEngine();
 	//check byte 0x1f1 in ticket to determine whether or not to use Korean Common Key
 	//if value = 0x01, use Korean Common Key, else just use regular one
-	u8 korean_flag = tik[0x01f1];
-
-	if(korean_flag == 1)
-		AES_EnableDecrypt(korean_key, iv);
-	else
-		AES_EnableDecrypt(common_key, iv);
-
+	AES_EnableDecrypt((tik[0x01f1] == 1) ? korean_key : common_key, iv);
 	AES_Decrypt(tik + 0x01bf, title_key, 1);
 }
 
@@ -87,6 +82,7 @@ static void partition_read_block(wiidisc_t *d, u32 blockno, u8 *block)
 	partition_raw_read(d,offset, raw, 0x8000);
 
 	// decrypt data
+	AES_ResetEngine();
 	memcpy(iv, raw + 0x3d0, 16);
 	AES_EnableDecrypt(d->disc_key, iv);
 	AES_Decrypt(raw + 0x400, block, 0x7c0);

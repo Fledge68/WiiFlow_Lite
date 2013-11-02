@@ -31,13 +31,17 @@
 
 u8 aes_mode = 0;
 
+void AES_ResetEngine(void)
+{
+	/* Reset Engine */
+	write32(HW_AES_CMD, 0x00000000);
+	while ((read32(HW_AES_CMD) & AES_CMD_FLAG_EXEC) != 0);
+}
+
 void AES_EnableDecrypt(const u8 *key, const u8 *iv)
 {
 	const u32 *aes_iv = (const u32*)iv;
 	const u32 *aes_key = (const u32*)key;
-	/* Reset Engine */
-	write32(HW_AES_CMD, 0x00000000);
-	while ((read32(HW_AES_CMD) & AES_CMD_FLAG_EXEC) != 0);
 	/* write in IV and Key */
 	u8 i;
 	for(i = 0; i < 4; ++i)
@@ -45,14 +49,14 @@ void AES_EnableDecrypt(const u8 *key, const u8 *iv)
 		write32(HW_AES_IV, *(aes_iv+i));
 		write32(HW_AES_KEY, *(aes_key+i));
 	}
-	/* set mode back to 0 */
-	aes_mode = 0;
 }
 
 #define AES_LIMIT 0x1000
 static u8 AES_BUF[AES_LIMIT*16] ATTRIBUTE_ALIGN(16); /* 64KB */
 void AES_Decrypt(u8 *inbuf, u8 *outbuf, u16 num_blocks)
 {
+	/* set mode back to 0 */
+	aes_mode = 0;
 	/* split cause of limit */
 	u32 buf_pos = 0;
 	u16 blocks_done = 0;

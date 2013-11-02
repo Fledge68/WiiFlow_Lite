@@ -17,6 +17,7 @@
 #ifndef __AES_H__
 #define __AES_H__
 
+void AES_ResetEngine(void);
 void AES_EnableDecrypt(const u8 *key, const u8 *iv);
 void AES_Decrypt(u8 *inbuf, u8 *outbuf, u16 num_blocks);
 
