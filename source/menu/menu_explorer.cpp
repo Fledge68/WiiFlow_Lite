@@ -26,6 +26,7 @@ extern const u8 blank_png[];
 TexData m_explorerBg;
 s16 entries[7];
 s16 entries_sel[7];
+s16 m_explorerLblSelFolderBg;
 s16 m_explorerLblSelFolder;
 s16 m_explorerBtnSet;
 s16 m_explorerBtnBack;
@@ -56,7 +57,7 @@ void CMenu::_hideExplorer(bool instant)
 		m_btnMgr.hide(entries[i], instant);
 		m_btnMgr.hide(entries_sel[i], instant);
 	}
-	
+	m_btnMgr.hide(m_explorerLblSelFolderBg, instant);
 	m_btnMgr.hide(m_explorerLblSelFolder, instant);
 	m_btnMgr.hide(m_explorerLblPage, instant);
 	m_btnMgr.hide(m_explorerBtnPageM, instant);
@@ -78,6 +79,7 @@ void CMenu::_showExplorer(void)
 {
 	_setBg(m_explorerBg, m_explorerBg);
 
+	m_btnMgr.show(m_explorerLblSelFolderBg);
 	m_btnMgr.show(m_explorerLblSelFolder);
 	m_btnMgr.show(m_explorerBtnBack);
 	if(folderExplorer)
@@ -276,16 +278,18 @@ void CMenu::_initExplorer()
 	
 	m_explorerBg = _texture("EXPLORER/BG", "texture", theme.bg, false);
 	_addUserLabels(m_explorerLblUser, ARRAY_SIZE(m_explorerLblUser), "EXPLORER");
+	m_explorerLblSelFolderBg = _addLabel("EXPLORER/SELECTED_FOLDER_BG", theme.txtFont, L"", 0, 18, 640, 48, theme.txtFontColor, FTGX_JUSTIFY_LEFT, theme.btnTexC);
 	m_explorerLblSelFolder = _addText("EXPLORER/SELECTED_FOLDER", theme.txtFont, L"", 30, 30, 560, 40, theme.txtFontColor, FTGX_JUSTIFY_LEFT);
-	m_explorerBtnSet = _addButton("EXPLORER/SET_BTN", theme.btnFont, L"", 255, 400, 150, 56, theme.btnFontColor);
-	m_explorerBtnBack = _addButton("EXPLORER/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 56, theme.btnFontColor);
-	m_explorerBtnPageM = _addPicButton("EXPLORER/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 20, 400, 56, 56);
-	m_explorerLblPage = _addLabel("EXPLORER/PAGE_BTN", theme.btnFont, L"", 76, 400, 100, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_explorerBtnPageP = _addPicButton("EXPLORER/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 176, 400, 56, 56);
-		
+	m_explorerBtnSet = _addButton("EXPLORER/SET_BTN", theme.btnFont, L"", 220, 400, 200, 48, theme.btnFontColor);
+	m_explorerBtnBack = _addButton("EXPLORER/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
+	m_explorerBtnPageM = _addPicButton("EXPLORER/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 20, 400, 48, 48);
+	m_explorerLblPage = _addLabel("EXPLORER/PAGE_BTN", theme.btnFont, L"", 68, 400, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_explorerBtnPageP = _addPicButton("EXPLORER/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 172, 400, 48, 48);
+
+	_setHideAnim(m_explorerLblSelFolderBg, "EXPLORER/SELECTED_FOLDER_BG", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_explorerLblSelFolder, "EXPLORER/SELECTED_FOLDER", 0, 0, -2.f, 0.f);
-	_setHideAnim(m_explorerBtnSet, "EXPLORER/SET_BTN", 0, 0, -2.f, 0.f);
-	_setHideAnim(m_explorerBtnBack, "EXPLORER/BACK_BTN", 0, 0, -2.f, 0.f);
+	_setHideAnim(m_explorerBtnSet, "EXPLORER/SET_BTN", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_explorerBtnBack, "EXPLORER/BACK_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_explorerLblPage, "EXPLORER/PAGE_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_explorerBtnPageM, "EXPLORER/PAGE_MINUS", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_explorerBtnPageP, "EXPLORER/PAGE_PLUS", 0, 0, 1.f, -1.f);

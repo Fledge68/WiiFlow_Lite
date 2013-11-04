@@ -10,12 +10,12 @@ const u8 WFB_HASH[] =			{ 0x4f, 0xad, 0x97, 0xfd, 0x4a, 0x28, 0x8c, 0x47, 0xe0, 
 #define FONT_BOLD	36u
 #define FONT_NOBOLD	8u
 
-#define TITLEFONT_PT_SZ	36u
-#define BTNFONT_PT_SZ	21u
-#define LBLFONT_PT_SZ	24u
-#define TEXTFONT_PT_SZ	18u
+#define TITLEFONT_PT_SZ	30u
+#define BTNFONT_PT_SZ	20u
+#define LBLFONT_PT_SZ	20u
+#define TEXTFONT_PT_SZ	16u
 
-#define TITLEFONT	TITLEFONT_PT_SZ, TITLEFONT_PT_SZ + 4, FONT_BOLD, 1, "title_font"
-#define BUTTONFONT	BTNFONT_PT_SZ, BTNFONT_PT_SZ + 4, FONT_BOLD, 1, "button_font"
-#define LABELFONT	LBLFONT_PT_SZ, LBLFONT_PT_SZ + 4, FONT_BOLD, 1, "label_font"
-#define TEXTFONT	TEXTFONT_PT_SZ, TEXTFONT_PT_SZ + 4, FONT_BOLD, 1, "text_font"
+#define TITLEFONT	TITLEFONT_PT_SZ, TITLEFONT_PT_SZ - 4, FONT_BOLD, 1, "title_font"
+#define BUTTONFONT	BTNFONT_PT_SZ, BTNFONT_PT_SZ - 4, FONT_BOLD, 1, "button_font"
+#define LABELFONT	LBLFONT_PT_SZ, LBLFONT_PT_SZ, FONT_BOLD, 1, "label_font"
+#define TEXTFONT	TEXTFONT_PT_SZ, TEXTFONT_PT_SZ, FONT_BOLD, 1, "text_font"

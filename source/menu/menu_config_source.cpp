@@ -213,53 +213,53 @@ void CMenu::_textCfgSrc(void)
 void CMenu::_initCfgSrc(void)
 {
 	_addUserLabels(m_cfgsrcLblUser, ARRAY_SIZE(m_cfgsrcLblUser), "CFG_SRC");
-	m_cfgsrcLblTitle = _addTitle("CFG_SRC/TITLE", theme.titleFont, L"", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
-	m_cfgsrcBtnBack = _addButton("CFG_SRC/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 56, theme.btnFontColor);
-	m_cfgsrcLblPage = _addLabel("CFG_SRC/PAGE_BTN", theme.btnFont, L"", 76, 400, 80, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_cfgsrcBtnPageM = _addPicButton("CFG_SRC/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 20, 400, 56, 56);
-	m_cfgsrcBtnPageP = _addPicButton("CFG_SRC/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 156, 400, 56, 56);
+	m_cfgsrcLblTitle = _addTitle("CFG_SRC/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_cfgsrcBtnBack = _addButton("CFG_SRC/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
+	m_cfgsrcLblPage = _addLabel("CFG_SRC/PAGE_BTN", theme.btnFont, L"", 68, 400, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_cfgsrcBtnPageM = _addPicButton("CFG_SRC/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 20, 400, 48, 48);
+	m_cfgsrcBtnPageP = _addPicButton("CFG_SRC/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 172, 400, 48, 48);
 	
-	m_cfgsrcLblEnableSM = _addLabel("CFG_SRC/ENABLE_SM", theme.lblFont, L"", 40, 130, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_cfgsrcBtnEnableSM = _addButton("CFG_SRC/ENABLE_SM_BTN", theme.btnFont, L"", 370, 130, 230, 56, theme.btnFontColor);
+	m_cfgsrcLblEnableSM = _addLabel("CFG_SRC/ENABLE_SM", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_cfgsrcBtnEnableSM = _addButton("CFG_SRC/ENABLE_SM_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
 
-	m_cfgsrcLblSourceOnBoot = _addLabel("CFG_SRC/SOURCE_ON_START", theme.lblFont, L"", 40, 190, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_cfgsrcBtnSourceOnBoot = _addButton("CFG_SRC/SOURCE_ON_START_BTN", theme.btnFont, L"", 370, 190, 230, 56, theme.btnFontColor);
+	m_cfgsrcLblSourceOnBoot = _addLabel("CFG_SRC/SOURCE_ON_START", theme.lblFont, L"", 20, 185, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_cfgsrcBtnSourceOnBoot = _addButton("CFG_SRC/SOURCE_ON_START_BTN", theme.btnFont, L"", 420, 190, 200, 48, theme.btnFontColor);
 	
-	m_cfgsrcLblEnableSF = _addLabel("CFG_SRC/ENABLE_SF", theme.lblFont, L"", 40, 250, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_cfgsrcBtnEnableSF = _addButton("CFG_SRC/ENABLE_SF_BTN", theme.btnFont, L"", 370, 250, 230, 56, theme.btnFontColor);
+	m_cfgsrcLblEnableSF = _addLabel("CFG_SRC/ENABLE_SF", theme.lblFont, L"", 20, 245, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_cfgsrcBtnEnableSF = _addButton("CFG_SRC/ENABLE_SF_BTN", theme.btnFont, L"", 420, 250, 200, 48, theme.btnFontColor);
 
-	m_cfgsrcLblSmallbox = _addLabel("CFG_SRC/SF_SMALLBOX", theme.lblFont, L"", 40, 310, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_cfgsrcBtnSmallbox = _addButton("CFG_SRC/SF_SMALLBOX_BTN", theme.btnFont, L"", 370, 310, 230, 56, theme.btnFontColor);
+	m_cfgsrcLblSmallbox = _addLabel("CFG_SRC/SF_SMALLBOX", theme.lblFont, L"", 20, 305, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_cfgsrcBtnSmallbox = _addButton("CFG_SRC/SF_SMALLBOX_BTN", theme.btnFont, L"", 420, 310, 200, 48, theme.btnFontColor);
 	/* page 2 */
-	m_cfgsrcLblClearSF = _addLabel("CFG_SRC/CLEAR_SF", theme.lblFont, L"", 40, 130, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_cfgsrcBtnClearSF = _addButton("CFG_SRC/CLEAR_SF_BTN", theme.btnFont, L"", 370, 130, 230, 56, theme.btnFontColor);
+	m_cfgsrcLblClearSF = _addLabel("CFG_SRC/CLEAR_SF", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_cfgsrcBtnClearSF = _addButton("CFG_SRC/CLEAR_SF_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
 	
-	m_cfgsrcLblMultisource = _addLabel("CFG_SRC/MULTISOURCE", theme.lblFont, L"", 40, 190, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_cfgsrcBtnMultisource = _addButton("CFG_SRC/MULTISOURCE_BTN", theme.btnFont, L"", 370, 190, 230, 56, theme.btnFontColor);
+	m_cfgsrcLblMultisource = _addLabel("CFG_SRC/MULTISOURCE", theme.lblFont, L"", 20, 185, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_cfgsrcBtnMultisource = _addButton("CFG_SRC/MULTISOURCE_BTN", theme.btnFont, L"", 420, 190, 200, 48, theme.btnFontColor);
 	
-	_setHideAnim(m_cfgsrcLblTitle, "CFG_SRC/TITLE", 0, -200, 0.f, 1.f);
+	_setHideAnim(m_cfgsrcLblTitle, "CFG_SRC/TITLE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_cfgsrcBtnBack, "CFG_SRC/BACK_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_cfgsrcLblPage, "CFG_SRC/PAGE_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_cfgsrcBtnPageM, "CFG_SRC/PAGE_MINUS", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_cfgsrcBtnPageP, "CFG_SRC/PAGE_PLUS", 0, 0, 1.f, -1.f);
 	
-	_setHideAnim(m_cfgsrcLblEnableSM, "CFG_SRC/ENABLE_SM", -200, 0, 1.f, 0.f);
-	_setHideAnim(m_cfgsrcBtnEnableSM, "CFG_SRC/ENABLE_SM_BTN", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_cfgsrcLblEnableSM, "CFG_SRC/ENABLE_SM", -50, 0, -2.f, 0.f);
+	_setHideAnim(m_cfgsrcBtnEnableSM, "CFG_SRC/ENABLE_SM_BTN", -50, 0, 1.f, 0.f);
 
-	_setHideAnim(m_cfgsrcLblSourceOnBoot, "CFG_SRC/SOURCE_ON_START", -200, 0, 1.f, 0.f);
-	_setHideAnim(m_cfgsrcBtnSourceOnBoot, "CFG_SRC/SOURCE_ON_START_BTN", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_cfgsrcLblSourceOnBoot, "CFG_SRC/SOURCE_ON_START", -50, 0, -2.f, 0.f);
+	_setHideAnim(m_cfgsrcBtnSourceOnBoot, "CFG_SRC/SOURCE_ON_START_BTN", -50, 0, 1.f, 0.f);
 
-	_setHideAnim(m_cfgsrcLblEnableSF, "CFG_SRC/ENABLE_SF", -200, 0, 1.f, 0.f);
-	_setHideAnim(m_cfgsrcBtnEnableSF, "CFG_SRC/ENABLE_SF_BTN", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_cfgsrcLblEnableSF, "CFG_SRC/ENABLE_SF", -50, 0, -2.f, 0.f);
+	_setHideAnim(m_cfgsrcBtnEnableSF, "CFG_SRC/ENABLE_SF_BTN", -50, 0, 1.f, 0.f);
 	
-	_setHideAnim(m_cfgsrcLblSmallbox, "CFG_SRC/SF_SMALLBOX", -200, 0, 1.f, 0.f);
-	_setHideAnim(m_cfgsrcBtnSmallbox, "CFG_SRC/SF_SMALLBOX_BTN", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_cfgsrcLblSmallbox, "CFG_SRC/SF_SMALLBOX", -50, 0, -2.f, 0.f);
+	_setHideAnim(m_cfgsrcBtnSmallbox, "CFG_SRC/SF_SMALLBOX_BTN", -50, 0, 1.f, 0.f);
 	
-	_setHideAnim(m_cfgsrcLblClearSF, "CFG_SRC/CLEAR_SF", -200, 0, 1.f, 0.f);
-	_setHideAnim(m_cfgsrcBtnClearSF, "CFG_SRC/CLEAR_SF_BTN", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_cfgsrcLblClearSF, "CFG_SRC/CLEAR_SF", -50, 0, -2.f, 0.f);
+	_setHideAnim(m_cfgsrcBtnClearSF, "CFG_SRC/CLEAR_SF_BTN", -50, 0, 1.f, 0.f);
 
-	_setHideAnim(m_cfgsrcLblMultisource, "CFG_SRC/MULTISOURCE", -200, 0, 1.f, 0.f);
-	_setHideAnim(m_cfgsrcBtnMultisource, "CFG_SRC/MULTISOURCE_BTN", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_cfgsrcLblMultisource, "CFG_SRC/MULTISOURCE", -50, 0, -2.f, 0.f);
+	_setHideAnim(m_cfgsrcBtnMultisource, "CFG_SRC/MULTISOURCE_BTN", -50, 0, 1.f, 0.f);
 
 	hideCfgSrc(true, true);
 	_textCfgSrc();

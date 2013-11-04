@@ -152,27 +152,27 @@ void CMenu::_initConfig4Menu()
 	_addUserLabels(m_config4LblUser, ARRAY_SIZE(m_config4LblUser), "CONFIG4");
 	m_config4Bg = _texture("CONFIG4/BG", "texture", theme.bg, false);
 	
-	m_config4LblHome = _addLabel("CONFIG4/WIIMENU", theme.lblFont, L"", 40, 130, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_config4BtnHome = _addButton("CONFIG4/WIIMENU_BTN", theme.btnFont, L"", 370, 130, 230, 56, theme.btnFontColor);
-	m_config4LblSaveFavMode = _addLabel("CONFIG4/SAVE_FAVMODE", theme.lblFont, L"", 40, 190, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_config4BtnSaveFavMode = _addButton("CONFIG4/SAVE_FAVMODE_BTN", theme.btnFont, L"", 370, 190, 230, 56, theme.btnFontColor);
-	m_config4LblPathManager = _addLabel("CONFIG4/PATH_MANAGER", theme.lblFont, L"", 40, 250, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_config4BtnPathManager = _addButton("CONFIG4/PATH_MANAGER_BTN", theme.btnFont, L"", 370, 250, 230, 56, theme.btnFontColor);
-	m_config4LblReturnTo = _addLabel("CONFIG4/RETURN_TO", theme.lblFont, L"", 40, 310, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_config4LblReturnToVal = _addLabel("CONFIG4/RETURN_TO_BTN", theme.btnFont, L"", 426, 310, 118, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_config4BtnReturnToM = _addPicButton("CONFIG4/RETURN_TO_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 370, 310, 56, 56);
-	m_config4BtnReturnToP = _addPicButton("CONFIG4/RETURN_TO_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 310, 56, 56);
+	m_config4LblHome = _addLabel("CONFIG4/WIIMENU", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_config4BtnHome = _addButton("CONFIG4/WIIMENU_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
+	m_config4LblSaveFavMode = _addLabel("CONFIG4/SAVE_FAVMODE", theme.lblFont, L"", 20, 185, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_config4BtnSaveFavMode = _addButton("CONFIG4/SAVE_FAVMODE_BTN", theme.btnFont, L"", 420, 190, 200, 48, theme.btnFontColor);
+	m_config4LblPathManager = _addLabel("CONFIG4/PATH_MANAGER", theme.lblFont, L"", 20, 245, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_config4BtnPathManager = _addButton("CONFIG4/PATH_MANAGER_BTN", theme.btnFont, L"", 420, 250, 200, 48, theme.btnFontColor);
+	m_config4LblReturnTo = _addLabel("CONFIG4/RETURN_TO", theme.lblFont, L"", 20, 305, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_config4LblReturnToVal = _addLabel("CONFIG4/RETURN_TO_BTN", theme.btnFont, L"", 468, 310, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_config4BtnReturnToM = _addPicButton("CONFIG4/RETURN_TO_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 420, 310, 48, 48);
+	m_config4BtnReturnToP = _addPicButton("CONFIG4/RETURN_TO_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 572, 310, 48, 48);
 //
-	_setHideAnim(m_config4LblPathManager, "CONFIG4/PATH_MANAGER", 100, 0, -2.f, 0.f);
-	_setHideAnim(m_config4BtnPathManager, "CONFIG4/PATH_MANAGER_BTN", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_config4LblSaveFavMode, "CONFIG4/SAVE_FAVMODE", 100, 0, -2.f, 0.f);
-	_setHideAnim(m_config4BtnSaveFavMode, "CONFIG4/SAVE_FAVMODE_BTN", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_config4LblHome, "CONFIG4/WIIMENU", 100, 0, -2.f, 0.f);
-	_setHideAnim(m_config4BtnHome, "CONFIG4/WIIMENU_BTN", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_config4LblReturnTo, "CONFIG4/RETURN_TO", 100, 0, -2.f, 0.f);
-	_setHideAnim(m_config4LblReturnToVal, "CONFIG4/RETURN_TO_BTN", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_config4BtnReturnToM, "CONFIG4/RETURN_TO_MINUS", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_config4BtnReturnToP, "CONFIG4/RETURN_TO_PLUS", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_config4LblPathManager, "CONFIG4/PATH_MANAGER", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_config4BtnPathManager, "CONFIG4/PATH_MANAGER_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_config4LblSaveFavMode, "CONFIG4/SAVE_FAVMODE", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_config4BtnSaveFavMode, "CONFIG4/SAVE_FAVMODE_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_config4LblHome, "CONFIG4/WIIMENU", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_config4BtnHome, "CONFIG4/WIIMENU_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_config4LblReturnTo, "CONFIG4/RETURN_TO", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_config4LblReturnToVal, "CONFIG4/RETURN_TO_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_config4BtnReturnToM, "CONFIG4/RETURN_TO_MINUS", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_config4BtnReturnToP, "CONFIG4/RETURN_TO_PLUS", -50, 0, 1.f, 0.f);
 	_hideConfig4(true);
 	_textConfig4();
 }

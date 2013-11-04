@@ -129,28 +129,28 @@ void CMenu::_initCoverBanner()
 {
 	m_coverbnrBg = _texture("COVERBNR/BG", "texture", theme.bg, false);
 	_addUserLabels(m_coverbnrLblUser, ARRAY_SIZE(m_coverbnrLblUser), "COVERBNR");
-	m_coverbnrLblTitle = _addTitle("COVERBNR/TITLE", theme.titleFont, L"", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
-	m_coverbnrBtnBack = _addButton("COVERBNR/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 56, theme.btnFontColor);
+	m_coverbnrLblTitle = _addTitle("COVERBNR/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_coverbnrBtnBack = _addButton("COVERBNR/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
 
-	m_coverbnrLblDlCover = _addLabel("COVERBNR/DLCOVER", theme.lblFont, L"", 40, 130, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_coverbnrBtnDlCover = _addButton("COVERBNR/DLCOVER_BTN", theme.btnFont, L"", 370, 130, 230, 56, theme.btnFontColor);
-	m_coverbnrLblDeleteCover = _addLabel("COVERBNR/DELCOVER", theme.lblFont, L"", 40, 190, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_coverbnrBtnDeleteCover = _addButton("COVERBNR/DELCOVER_BTN", theme.btnFont, L"", 370, 190, 230, 56, theme.btnFontColor);
-	m_coverbnrLblDlBanner = _addLabel("COVERBNR/DLBNR", theme.lblFont, L"", 40, 250, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_coverbnrBtnDlBanner = _addButton("COVERBNR/DLBNR_BTN", theme.btnFont, L"", 370, 250, 230, 56, theme.btnFontColor);
-	m_coverbnrLblDeleteBanner = _addLabel("COVERBNR/DELBNR", theme.lblFont, L"", 40, 310, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_coverbnrBtnDeleteBanner = _addButton("COVERBNR/DELBNR_BTN", theme.btnFont, L"", 370, 310, 230, 56, theme.btnFontColor);
+	m_coverbnrLblDlCover = _addLabel("COVERBNR/DLCOVER", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_coverbnrBtnDlCover = _addButton("COVERBNR/DLCOVER_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
+	m_coverbnrLblDeleteCover = _addLabel("COVERBNR/DELCOVER", theme.lblFont, L"", 20, 185, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_coverbnrBtnDeleteCover = _addButton("COVERBNR/DELCOVER_BTN", theme.btnFont, L"", 420, 190, 200, 48, theme.btnFontColor);
+	m_coverbnrLblDlBanner = _addLabel("COVERBNR/DLBNR", theme.lblFont, L"", 20, 245, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_coverbnrBtnDlBanner = _addButton("COVERBNR/DLBNR_BTN", theme.btnFont, L"", 420, 250, 200, 48, theme.btnFontColor);
+	m_coverbnrLblDeleteBanner = _addLabel("COVERBNR/DELBNR", theme.lblFont, L"", 20, 305, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_coverbnrBtnDeleteBanner = _addButton("COVERBNR/DELBNR_BTN", theme.btnFont, L"", 420, 310, 200, 48, theme.btnFontColor);
 
-	_setHideAnim(m_coverbnrLblTitle, "COVERBNR/TITLE", 0, -200, 0.f, 1.f);
+	_setHideAnim(m_coverbnrLblTitle, "COVERBNR/TITLE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_coverbnrBtnBack, "COVERBNR/BACK_BTN", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_coverbnrLblDlCover, "COVERBNR/DLCOVER", 100, 0, -2.f, 0.f);
-	_setHideAnim(m_coverbnrBtnDlCover, "COVERBNR/DLCOVER_BTN", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_coverbnrLblDeleteCover, "COVERBNR/DELCOVER", 100, 0, -2.f, 0.f);
-	_setHideAnim(m_coverbnrBtnDeleteCover, "COVERBNR/DELCOVER_BTN", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_coverbnrLblDlBanner, "COVERBNR/DLBNR", 100, 0, -2.f, 0.f);
-	_setHideAnim(m_coverbnrBtnDlBanner, "COVERBNR/DLBNR_BTN", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_coverbnrLblDeleteBanner, "COVERBNR/DELBNR", 100, 0, -2.f, 0.f);
-	_setHideAnim(m_coverbnrBtnDeleteBanner, "COVERBNR/DELBNR_BTN", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_coverbnrLblDlCover, "COVERBNR/DLCOVER", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_coverbnrBtnDlCover, "COVERBNR/DLCOVER_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_coverbnrLblDeleteCover, "COVERBNR/DELCOVER", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_coverbnrBtnDeleteCover, "COVERBNR/DELCOVER_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_coverbnrLblDlBanner, "COVERBNR/DLBNR", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_coverbnrBtnDlBanner, "COVERBNR/DLBNR_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_coverbnrLblDeleteBanner, "COVERBNR/DELBNR", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_coverbnrBtnDeleteBanner, "COVERBNR/DELBNR_BTN", -50, 0, 1.f, 0.f);
 	_hideCoverBanner(true);
 	_textCoverBanner();
 }

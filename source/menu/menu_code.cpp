@@ -198,12 +198,12 @@ void CMenu::_initCodeMenu()
 {
 	_addUserLabels(m_codeLblUser, ARRAY_SIZE(m_codeLblUser), "CODE");
 	m_codeBg = _texture("CODE/BG", "texture", theme.bg, false);
-	m_codeLblTitle = _addLabel("CODE/CODE", theme.titleFont, L"_ _ _ _", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
-	m_codeBtnKey[0] = _addButton("CODE/0_BTN", theme.btnFont, L"0", 270, 340, 210, 50, theme.btnFontColor);
-	m_codeBtnErase = _addButton("CODE/ERASE_BTN", theme.btnFont, L"", 20, 400, 200, 56, theme.btnFontColor);
-	m_codeBtnBack = _addButton("CODE/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 56, theme.btnFontColor);
-	m_codeBtnAge = _addButton("CODE/AGE_BTN", theme.btnFont, L"", 20, 340, 200, 56, theme.btnFontColor);
-	m_codeLblAge = _addTitle("CODE/AGE", theme.titleFont, L"", 20, 340, 200, 20, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_codeLblTitle = _addLabel("CODE/CODE", theme.titleFont, L"_ _ _ _", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_codeBtnKey[0] = _addButton("CODE/0_BTN", theme.btnFont, L"0", 270, 320, 100, 50, theme.btnFontColor);
+	m_codeBtnErase = _addButton("CODE/ERASE_BTN", theme.btnFont, L"", 20, 400, 200, 48, theme.btnFontColor);
+	m_codeBtnBack = _addButton("CODE/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
+	m_codeBtnAge = _addButton("CODE/AGE_BTN", theme.btnFont, L"", 220, 400, 200, 48, theme.btnFontColor);
+	m_codeLblAge = _addLabel("CODE/AGE", theme.lblFont, L"", 220, 412, 200, 20, theme.lblFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 
 	for (int i = 0; i < 10; ++i)
 	{
@@ -215,14 +215,14 @@ void CMenu::_initCodeMenu()
 			int y = x / 3;
 			x %= 3;
 			x = 160 + x * 110;
-			y = 260 - y * 80;
+			y = 240 - y * 80;
 			m_codeBtnKey[i] = _addButton(codeText, theme.btnFont, wfmt(L"%i", i), x, y, 100, 50, theme.btnFontColor);
 		}
 		_setHideAnim(m_codeBtnKey[i], codeText, 0, 0, 0.f, 0.f);
 		MEM2_free(codeText);
 	}
 	_setHideAnim(m_codeBtnErase, "CODE/ERASE_BTN", 0, 0, -2.f, 0.f);
-	_setHideAnim(m_codeBtnBack, "CODE/BACK_BTN", 0, 0, -2.f, 0.f);
+	_setHideAnim(m_codeBtnBack, "CODE/BACK_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_codeBtnAge, "CODE/AGE_BTN", 0, 0, -2.f, 0.f);
 
 	_hideCode(true);

@@ -329,35 +329,35 @@ void CMenu::_initCheatSettingsMenu()
 {
 	_addUserLabels(m_cheatLblUser, ARRAY_SIZE(m_cheatLblUser), "CHEAT");
 	m_cheatBg = _texture("CHEAT/BG", "texture", theme.bg, false);
-	m_cheatLblTitle = _addTitle("CHEAT/TITLE", theme.titleFont, L"Cheats", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
-	m_cheatBtnBack = _addButton("CHEAT/BACK_BTN", theme.btnFont, L"", 460, 400, 150, 56, theme.btnFontColor);
-	m_cheatBtnApply = _addButton("CHEAT/APPLY_BTN", theme.btnFont, L"", 240, 400, 150, 56, theme.btnFontColor);
-	m_cheatBtnDownload = _addButton("CHEAT/DOWNLOAD_BTN", theme.btnFont, L"", 240, 400, 200, 56, theme.btnFontColor);
+	m_cheatLblTitle = _addTitle("CHEAT/TITLE", theme.titleFont, L"Cheats", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_cheatBtnBack = _addButton("CHEAT/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
+	m_cheatBtnApply = _addButton("CHEAT/APPLY_BTN", theme.btnFont, L"", 220, 400, 200, 48, theme.btnFontColor);
+	m_cheatBtnDownload = _addButton("CHEAT/DOWNLOAD_BTN", theme.btnFont, L"", 470, 130, 150, 48, theme.btnFontColor);
 
-	m_cheatLblPage = _addLabel("CHEAT/PAGE_BTN", theme.btnFont, L"", 76, 400, 100, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_cheatBtnPageM = _addPicButton("CHEAT/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 20, 400, 56, 56);
-	m_cheatBtnPageP = _addPicButton("CHEAT/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 176, 400, 56, 56);
+	m_cheatLblPage = _addLabel("CHEAT/PAGE_BTN", theme.btnFont, L"", 68, 400, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_cheatBtnPageM = _addPicButton("CHEAT/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 20, 400, 48, 48);
+	m_cheatBtnPageP = _addPicButton("CHEAT/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 172, 400, 48, 48);
 
-	m_cheatLblItem[0] = _addLabel("CHEAT/ITEM_0", theme.lblFont, L"", 40, 100, 460, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_cheatBtnItem[0] = _addButton("CHEAT/ITEM_0_BTN", theme.btnFont, L"", 500, 100, 120, 56, theme.btnFontColor);
-	m_cheatLblItem[1] = _addLabel("CHEAT/ITEM_1", theme.lblFont, L"", 40, 160, 460, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_cheatBtnItem[1] = _addButton("CHEAT/ITEM_1_BTN", theme.btnFont, L"", 500, 160, 120, 56, theme.btnFontColor);
-	m_cheatLblItem[2] = _addLabel("CHEAT/ITEM_2", theme.lblFont, L"", 40, 220, 460, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_cheatBtnItem[2] = _addButton("CHEAT/ITEM_2_BTN", theme.btnFont, L"", 500, 220, 120, 56, theme.btnFontColor);
-	m_cheatLblItem[3] = _addLabel("CHEAT/ITEM_3", theme.lblFont, L"", 40, 280, 460, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_cheatBtnItem[3] = _addButton("CHEAT/ITEM_3_BTN", theme.btnFont, L"", 500, 280, 120, 56, theme.btnFontColor);
+	m_cheatLblItem[0] = _addLabel("CHEAT/ITEM_0", theme.lblFont, L"", 20, 125, 460, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_cheatBtnItem[0] = _addButton("CHEAT/ITEM_0_BTN", theme.btnFont, L"", 500, 130, 120, 48, theme.btnFontColor);
+	m_cheatLblItem[1] = _addLabel("CHEAT/ITEM_1", theme.lblFont, L"", 20, 185, 460, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_cheatBtnItem[1] = _addButton("CHEAT/ITEM_1_BTN", theme.btnFont, L"", 500, 190, 120, 48, theme.btnFontColor);
+	m_cheatLblItem[2] = _addLabel("CHEAT/ITEM_2", theme.lblFont, L"", 20, 245, 460, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_cheatBtnItem[2] = _addButton("CHEAT/ITEM_2_BTN", theme.btnFont, L"", 500, 250, 120, 48, theme.btnFontColor);
+	m_cheatLblItem[3] = _addLabel("CHEAT/ITEM_3", theme.lblFont, L"", 20, 305, 460, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_cheatBtnItem[3] = _addButton("CHEAT/ITEM_3_BTN", theme.btnFont, L"", 500, 305, 120, 48, theme.btnFontColor);
 
-	_setHideAnim(m_cheatLblTitle, "CHEAT/TITLE", 0, 100, 0.f, 0.f);
+	_setHideAnim(m_cheatLblTitle, "CHEAT/TITLE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_cheatBtnApply, "CHEAT/APPLY_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_cheatBtnBack, "CHEAT/BACK_BTN", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_cheatBtnDownload, "CHEAT/DOWNLOAD_BTN", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_cheatBtnDownload, "CHEAT/DOWNLOAD_BTN", -50, 0, 1.f, 0.f);
 	_setHideAnim(m_cheatLblPage, "CHEAT/PAGE_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_cheatBtnPageM, "CHEAT/PAGE_MINUS", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_cheatBtnPageP, "CHEAT/PAGE_PLUS", 0, 0, 1.f, -1.f);
 	
 	for (int i=0;i<CHEATSPERPAGE;++i) {
-		_setHideAnim(m_cheatLblItem[i], fmt("CHEAT/ITEM_%i", i), -200, 0, 1.f, 0.f);
-		_setHideAnim(m_cheatBtnItem[i], fmt("CHEAT/ITEM_%i_BTN", i), 200, 0, 1.f, 0.f);
+		_setHideAnim(m_cheatLblItem[i], fmt("CHEAT/ITEM_%i", i), 50, 0, -2.f, 0.f);
+		_setHideAnim(m_cheatBtnItem[i], fmt("CHEAT/ITEM_%i_BTN", i), -50, 0, 1.f, 0.f);
 	}
 	
 	_hideCheatSettings();
