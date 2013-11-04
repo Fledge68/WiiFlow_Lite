@@ -273,62 +273,63 @@ void CMenu::_textBoot(void)
 void CMenu::_initBoot(void)
 {
 	_addUserLabels(m_bootLblUser, ARRAY_SIZE(m_bootLblUser), "BOOT");
-	m_bootLblTitle = _addTitle("BOOT/TITLE", theme.titleFont, L"", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
-	m_bootBtnBack = _addButton("BOOT/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 56, theme.btnFontColor);
-	m_bootLblPage = _addLabel("BOOT/PAGE_BTN", theme.btnFont, L"", 76, 400, 80, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_bootBtnPageM = _addPicButton("BOOT/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 20, 400, 56, 56);
-	m_bootBtnPageP = _addPicButton("BOOT/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 156, 400, 56, 56);
+	m_bootLblTitle = _addTitle("BOOT/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_bootBtnBack = _addButton("BOOT/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
+	m_bootLblPage = _addLabel("BOOT/PAGE_BTN", theme.btnFont, L"", 68, 400, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_bootBtnPageM = _addPicButton("BOOT/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 20, 400, 48, 48);
+	m_bootBtnPageP = _addPicButton("BOOT/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 172, 400, 48, 48);
 	
-	m_bootLblLoadCIOS = _addLabel("BOOT/LOAD_CIOS", theme.lblFont, L"", 40, 130, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_bootBtnLoadCIOS = _addButton("BOOT/LOAD_CIOS_BTN", theme.btnFont, L"", 370, 130, 230, 56, theme.btnFontColor);
+	m_bootLblLoadCIOS = _addLabel("BOOT/LOAD_CIOS", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_bootBtnLoadCIOS = _addButton("BOOT/LOAD_CIOS_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
 
-	m_bootLblCIOSrev = _addLabel("BOOT/CIOS_REV", theme.lblFont, L"", 40, 190, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_bootLblCurCIOSrev = _addLabel("BOOT/CIOS_REV_BTN", theme.btnFont, L"", 426, 190, 118, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_bootLblCIOSrevM = _addPicButton("BOOT/CIOS_REV_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 370, 190, 56, 56);
-	m_bootLblCIOSrevP = _addPicButton("BOOT/CIOS_REV_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 190, 56, 56);
+	m_bootLblCIOSrev = _addLabel("BOOT/CIOS_REV", theme.lblFont, L"", 20, 185, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_bootLblCurCIOSrev = _addLabel("BOOT/CIOS_REV_BTN", theme.btnFont, L"", 468, 190, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_bootLblCIOSrevM = _addPicButton("BOOT/CIOS_REV_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 420, 190, 48, 48);
+	m_bootLblCIOSrevP = _addPicButton("BOOT/CIOS_REV_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 572, 190, 48, 48);
 
-	m_bootLblUSBPort = _addLabel("BOOT/USB_PORT", theme.lblFont, L"", 40, 250, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_bootBtnUSBPort = _addButton("BOOT/USB_PORT_BTN", theme.btnFont, L"", 370, 250, 230, 56, theme.btnFontColor);
+	m_bootLblUSBPort = _addLabel("BOOT/USB_PORT", theme.lblFont, L"", 20, 245, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_bootBtnUSBPort = _addButton("BOOT/USB_PORT_BTN", theme.btnFont, L"", 420, 250, 200, 48, theme.btnFontColor);
 	
-	m_bootLblManageSM = _addLabel("BOOT/MANAGE_SOURCE", theme.lblFont, L"", 40, 310, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_bootBtnManageSM = _addButton("BOOT/MANAGE_SOURCE_BTN", theme.btnFont, L"", 370, 310, 230, 56, theme.btnFontColor);
+	m_bootLblManageSM = _addLabel("BOOT/MANAGE_SOURCE", theme.lblFont, L"", 20, 305, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_bootBtnManageSM = _addButton("BOOT/MANAGE_SOURCE_BTN", theme.btnFont, L"", 420, 310, 200, 48, theme.btnFontColor);
 	/* page 2 */
-	m_bootLblAsyncNet = _addLabel("BOOT/ASYNCNET", theme.lblFont, L"", 40, 130, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_bootBtnAsyncNet = _addButton("BOOT/ASYNCNET_BTN", theme.btnFont, L"", 370, 130, 230, 56, theme.btnFontColor);
+	m_bootLblAsyncNet = _addLabel("BOOT/ASYNCNET", theme.lblFont, L"", 20, 305, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_bootBtnAsyncNet = _addButton("BOOT/ASYNCNET_BTN", theme.btnFont, L"", 420, 310, 200, 48, theme.btnFontColor);
 
-	m_bootLblCategoryOnBoot = _addLabel("BOOT/CAT_ON_START", theme.lblFont, L"", 40, 190, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_bootBtnCategoryOnBoot = _addButton("BOOT/CAT_ON_START_BTN", theme.btnFont, L"", 370, 190, 230, 56, theme.btnFontColor);
+	m_bootLblCategoryOnBoot = _addLabel("BOOT/CAT_ON_START", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_bootBtnCategoryOnBoot = _addButton("BOOT/CAT_ON_START_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
 	
-	m_bootLblFtpOnBoot = _addLabel("BOOT/FTP", theme.lblFont, L"", 40, 250, 340, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_bootBtnFtpOnBoot = _addButton("BOOT/FTP_BTN", theme.btnFont, L"", 370, 250, 230, 56, theme.btnFontColor);
-	
-	_setHideAnim(m_bootLblTitle, "BOOT/TITLE", 0, -200, 0.f, 1.f);
+	m_bootLblFtpOnBoot = _addLabel("BOOT/FTP", theme.lblFont, L"", 20, 245, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_bootBtnFtpOnBoot = _addButton("BOOT/FTP_BTN", theme.btnFont, L"", 420, 250, 200, 48, theme.btnFontColor);
+
+	_setHideAnim(m_bootLblTitle, "BOOT/TITLE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_bootBtnBack, "BOOT/BACK_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_bootLblPage, "BOOT/PAGE_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_bootBtnPageM, "BOOT/PAGE_MINUS", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_bootBtnPageP, "BOOT/PAGE_PLUS", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_bootLblLoadCIOS, "BOOT/LOAD_CIOS", -200, 0, 1.f, 0.f);
-	_setHideAnim(m_bootBtnLoadCIOS, "BOOT/LOAD_CIOS_BTN", 200, 0, 1.f, 0.f);
 
-	_setHideAnim(m_bootLblCIOSrev, "BOOT/CIOS_REV", -200, 0, 1.f, 0.f);
-	_setHideAnim(m_bootLblCurCIOSrev, "BOOT/CIOS_REV_BTN", 200, 0, 1.f, 0.f);
-	_setHideAnim(m_bootLblCIOSrevM, "BOOT/CIOS_REV_MINUS", 200, 0, 1.f, 0.f);
-	_setHideAnim(m_bootLblCIOSrevP, "BOOT/CIOS_REV_PLUS", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_bootLblLoadCIOS, "BOOT/LOAD_CIOS", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_bootBtnLoadCIOS, "BOOT/LOAD_CIOS_BTN", -50, 0, 1.f, 0.f);
 
-	_setHideAnim(m_bootLblUSBPort, "BOOT/USB_PORT", -200, 0, 1.f, 0.f);
-	_setHideAnim(m_bootBtnUSBPort, "BOOT/USB_PORT_BTN", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_bootLblCIOSrev, "BOOT/CIOS_REV", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_bootLblCurCIOSrev, "BOOT/CIOS_REV_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_bootLblCIOSrevM, "BOOT/CIOS_REV_MINUS", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_bootLblCIOSrevP, "BOOT/CIOS_REV_PLUS", -50, 0, 1.f, 0.f);
 
-	_setHideAnim(m_bootLblManageSM, "BOOT/MANAGE_SOURCE", -200, 0, 1.f, 0.f);
-	_setHideAnim(m_bootBtnManageSM, "BOOT/MANAGE_SOURCE_BTN", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_bootLblUSBPort, "BOOT/USB_PORT", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_bootBtnUSBPort, "BOOT/USB_PORT_BTN", -50, 0, 1.f, 0.f);
 
-	_setHideAnim(m_bootLblAsyncNet, "BOOT/ASYNCNET", -200, 0, 1.f, 0.f);
-	_setHideAnim(m_bootBtnAsyncNet, "BOOT/ASYNCNET_BTN", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_bootLblManageSM, "BOOT/MANAGE_SOURCE", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_bootBtnManageSM, "BOOT/MANAGE_SOURCE_BTN", -50, 0, 1.f, 0.f);
+
+	_setHideAnim(m_bootLblAsyncNet, "BOOT/ASYNCNET", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_bootBtnAsyncNet, "BOOT/ASYNCNET_BTN", -50, 0, 1.f, 0.f);
 	
-	_setHideAnim(m_bootLblCategoryOnBoot, "BOOT/CAT_ON_START", -200, 0, 1.f, 0.f);
-	_setHideAnim(m_bootBtnCategoryOnBoot, "BOOT/CAT_ON_START_BTN", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_bootLblCategoryOnBoot, "BOOT/CAT_ON_START", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_bootBtnCategoryOnBoot, "BOOT/CAT_ON_START_BTN", -50, 0, 1.f, 0.f);
 	
-	_setHideAnim(m_bootLblFtpOnBoot, "BOOT/FTP", -200, 0, 1.f, 0.f);
-	_setHideAnim(m_bootBtnFtpOnBoot, "BOOT/FTP_BTN", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_bootLblFtpOnBoot, "BOOT/FTP", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_bootBtnFtpOnBoot, "BOOT/FTP_BTN", -50, 0, 1.f, 0.f);
 
 	hideBoot(true, true);
 	_textBoot();

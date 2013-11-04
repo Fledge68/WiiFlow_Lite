@@ -159,27 +159,27 @@ void CMenu::_initConfigAdvMenu()
 {
 	_addUserLabels(m_configAdvLblUser, ARRAY_SIZE(m_configAdvLblUser), "CONFIG_ADV");
 	m_configAdvBg = _texture("CONFIG_ADV/BG", "texture", theme.bg, false);
-	m_configAdvLblTheme = _addLabel("CONFIG_ADV/THEME", theme.lblFont, L"", 40, 130, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_configAdvLblCurTheme = _addLabel("CONFIG_ADV/THEME_BTN", theme.btnFont, L"", 386, 130, 158, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_configAdvBtnCurThemeM = _addPicButton("CONFIG_ADV/THEME_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 330, 130, 56, 56);
-	m_configAdvBtnCurThemeP = _addPicButton("CONFIG_ADV/THEME_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 130, 56, 56);
-	m_configAdvLblLanguage = _addLabel("CONFIG_ADV/LANGUAGE", theme.lblFont, L"", 40, 190, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_configAdvBtnLanguage = _addButton("CONFIG_ADV/LANGUAGE_BTN", theme.btnFont, L"", 330, 190, 270, 56, theme.btnFontColor);
-	m_configAdvLblCFTheme = _addLabel("CONFIG_ADV/CUSTOMIZE_CF", theme.lblFont, L"", 40, 250, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_configAdvBtnCFTheme = _addButton("CONFIG_ADV/CUSTOMIZE_CF_BTN", theme.btnFont, L"", 330, 250, 270, 56, theme.btnFontColor);
-	m_configAdvLblBootChange = _addLabel("CONFIG_ADV/BOOT_CHANGE", theme.lblFont, L"", 40, 310, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_configAdvBtnBootChange = _addButton("CONFIG_ADV/BOOT_CHANGE_BTN", theme.btnFont, L"", 330, 310, 270, 56, theme.btnFontColor);
+	m_configAdvLblTheme = _addLabel("CONFIG_ADV/THEME", theme.lblFont, L"", 20, 125, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_configAdvLblCurTheme = _addLabel("CONFIG_ADV/THEME_BTN", theme.btnFont, L"", 468, 130, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_configAdvBtnCurThemeM = _addPicButton("CONFIG_ADV/THEME_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 420, 130, 48, 48);
+	m_configAdvBtnCurThemeP = _addPicButton("CONFIG_ADV/THEME_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 572, 130, 48, 48);
+	m_configAdvLblLanguage = _addLabel("CONFIG_ADV/LANGUAGE", theme.lblFont, L"", 20, 185, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_configAdvBtnLanguage = _addButton("CONFIG_ADV/LANGUAGE_BTN", theme.btnFont, L"", 420, 190, 200, 48, theme.btnFontColor);
+	m_configAdvLblCFTheme = _addLabel("CONFIG_ADV/CUSTOMIZE_CF", theme.lblFont, L"", 20, 245, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_configAdvBtnCFTheme = _addButton("CONFIG_ADV/CUSTOMIZE_CF_BTN", theme.btnFont, L"", 420, 250, 200, 48, theme.btnFontColor);
+	m_configAdvLblBootChange = _addLabel("CONFIG_ADV/BOOT_CHANGE", theme.lblFont, L"", 20, 305, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_configAdvBtnBootChange = _addButton("CONFIG_ADV/BOOT_CHANGE_BTN", theme.btnFont, L"", 420, 310, 200, 48, theme.btnFontColor);
 
-	_setHideAnim(m_configAdvLblTheme, "CONFIG_ADV/THEME", 100, 0, -2.f, 0.f);
-	_setHideAnim(m_configAdvLblCurTheme, "CONFIG_ADV/THEME_BTN", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_configAdvBtnCurThemeM, "CONFIG_ADV/THEME_MINUS", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_configAdvBtnCurThemeP, "CONFIG_ADV/THEME_PLUS", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_configAdvLblLanguage, "CONFIG_ADV/LANGUAGE", 100, 0, -2.f, 0.f);
-	_setHideAnim(m_configAdvBtnLanguage, "CONFIG_ADV/LANGUAGE_BTN", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_configAdvLblCFTheme, "CONFIG_ADV/CUSTOMIZE_CF", 100, 0, -2.f, 0.f);
-	_setHideAnim(m_configAdvBtnCFTheme, "CONFIG_ADV/CUSTOMIZE_CF_BTN", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_configAdvLblBootChange, "CONFIG_ADV/BOOT_CHANGE", 100, 0, -2.f, 0.f);
-	_setHideAnim(m_configAdvBtnBootChange, "CONFIG_ADV/BOOT_CHANGE_BTN", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_configAdvLblTheme, "CONFIG_ADV/THEME", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_configAdvLblCurTheme, "CONFIG_ADV/THEME_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_configAdvBtnCurThemeM, "CONFIG_ADV/THEME_MINUS", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_configAdvBtnCurThemeP, "CONFIG_ADV/THEME_PLUS", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_configAdvLblLanguage, "CONFIG_ADV/LANGUAGE", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_configAdvBtnLanguage, "CONFIG_ADV/LANGUAGE_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_configAdvLblCFTheme, "CONFIG_ADV/CUSTOMIZE_CF", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_configAdvBtnCFTheme, "CONFIG_ADV/CUSTOMIZE_CF_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_configAdvLblBootChange, "CONFIG_ADV/BOOT_CHANGE", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_configAdvBtnBootChange, "CONFIG_ADV/BOOT_CHANGE_BTN", -50, 0, 1.f, 0.f);
 	_hideConfigAdv(true);
 	_textConfigAdv();
 }

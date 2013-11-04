@@ -124,12 +124,12 @@ void CMenu::_initFTP(void)
 {
 	_addUserLabels(m_ftpLblUser, ARRAY_SIZE(m_ftpLblUser), "FTP");
 
-	m_ftpLblTitle = _addTitle("FTP/TITLE", theme.titleFont, L"", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
-	m_ftpBtnToggle = _addButton("FTP/TOGGLE_BTN", theme.btnFont, L"", 20, 400, 200, 56, theme.btnFontColor);
-	m_ftpBtnBack = _addButton("FTP/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 56, theme.btnFontColor);
+	m_ftpLblTitle = _addTitle("FTP/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_ftpBtnToggle = _addButton("FTP/TOGGLE_BTN", theme.btnFont, L"", 20, 400, 200, 48, theme.btnFontColor);
+	m_ftpBtnBack = _addButton("FTP/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
 	m_ftpLblInfo = _addText("FTP/INFO", theme.txtFont, L"", 40, 115, 560, 270, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
 
-	_setHideAnim(m_ftpLblTitle, "FTP/TITLE", 0, -200, 0.f, 1.f);
+	_setHideAnim(m_ftpLblTitle, "FTP/TITLE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_ftpBtnToggle, "FTP/TOGGLE_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_ftpBtnBack, "FTP/BACK_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_ftpLblInfo, "FTP/INFO", 0, 100, 0.f, 0.f);

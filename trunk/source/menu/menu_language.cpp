@@ -288,47 +288,47 @@ void CMenu::_initLangSettingsMenu()
 {
 	_addUserLabels(m_LangSettingsLblUser, ARRAY_SIZE(m_LangSettingsLblUser), "LANGUAGE");
 
-	m_LangSettingsLblTitle = _addTitle("LANGUAGE/TITLE", theme.titleFont, L"", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_LangSettingsLblTitle = _addTitle("LANGUAGE/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 
 	m_LangSettingsBg = _texture("LANGUAGE/BG", "texture", theme.bg, false);
-	m_LangSettingsLblLanguage = _addLabel("LANGUAGE/LANGUAGE", theme.lblFont, L"", 40, 130, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_LangSettingsLblCurLanguage = _addLabel("LANGUAGE/LANGUAGE_BTN", theme.btnFont, L"", 386, 130, 158, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_LangSettingsBtnCurLanguageM = _addPicButton("LANGUAGE/LANGUAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 330, 130, 56, 56);
-	m_LangSettingsBtnCurLanguageP = _addPicButton("LANGUAGE/LANGUAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 130, 56, 56);
+	m_LangSettingsLblLanguage = _addLabel("LANGUAGE/LANGUAGE", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_LangSettingsLblCurLanguage = _addLabel("LANGUAGE/LANGUAGE_BTN", theme.btnFont, L"", 468, 130, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_LangSettingsBtnCurLanguageM = _addPicButton("LANGUAGE/LANGUAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 420, 130, 48, 48);
+	m_LangSettingsBtnCurLanguageP = _addPicButton("LANGUAGE/LANGUAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 572, 130, 48, 48);
 
-	m_LangSettingsLblGetLanguages = _addLabel("LANGUAGE/GET_LANG", theme.lblFont, L"", 40, 190, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_LangSettingsBtnGetLanguages = _addButton("LANGUAGE/GET_LANG_BTN", theme.btnFont, L"", 330, 190, 270, 56, theme.btnFontColor);
+	m_LangSettingsLblGetLanguages = _addLabel("LANGUAGE/GET_LANG", theme.lblFont, L"", 20, 185, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_LangSettingsBtnGetLanguages = _addButton("LANGUAGE/GET_LANG_BTN", theme.btnFont, L"", 420, 190, 200, 48, theme.btnFontColor);
 
-	m_LangSettingsLblDlLang = _addLabel("LANGUAGE/DL_LANG", theme.lblFont, L"", 40, 250, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_LangSettingsLblCurDLLang = _addLabel("LANGUAGE/DL_LANG_BTN", theme.btnFont, L"", 386, 250, 158, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_LangSettingsBtnCurDlLangM = _addPicButton("LANGUAGE/DL_LANG_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 330, 250, 56, 56);
-	m_LangSettingsBtnCurDlLangP = _addPicButton("LANGUAGE/DL_LANG_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 544, 250, 56, 56);
+	m_LangSettingsLblDlLang = _addLabel("LANGUAGE/DL_LANG", theme.lblFont, L"", 20, 245, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_LangSettingsLblCurDLLang = _addLabel("LANGUAGE/DL_LANG_BTN", theme.btnFont, L"", 386, 250, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_LangSettingsBtnCurDlLangM = _addPicButton("LANGUAGE/DL_LANG_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 420, 250, 48, 48);
+	m_LangSettingsBtnCurDlLangP = _addPicButton("LANGUAGE/DL_LANG_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 572, 250, 48, 48);
 
-	m_LangSettingsLblDownload = _addLabel("LANGUAGE/DOWNLOAD", theme.lblFont, L"", 40, 310, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_LangSettingsBtnDownload = _addButton("LANGUAGE/DOWNLOAD_BTN", theme.btnFont, L"", 330, 310, 270, 56, theme.btnFontColor);
+	m_LangSettingsLblDownload = _addLabel("LANGUAGE/DOWNLOAD", theme.lblFont, L"", 20, 305, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_LangSettingsBtnDownload = _addButton("LANGUAGE/DOWNLOAD_BTN", theme.btnFont, L"", 420, 310, 200, 48, theme.btnFontColor);
 
-	m_LangSettingsBtnBack = _addButton("LANGUAGE/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 56, theme.btnFontColor);
+	m_LangSettingsBtnBack = _addButton("LANGUAGE/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
 
 
-	_setHideAnim(m_LangSettingsLblTitle, "LANGUAGE/TITLE", 0, -200, 0.f, 1.f);
+	_setHideAnim(m_LangSettingsLblTitle, "LANGUAGE/TITLE", 0, 0, -2.f, 0.f);
 
-	_setHideAnim(m_LangSettingsLblLanguage, "LANGUAGE/LANGUAGE", 100, 0, -2.f, 0.f);
-	_setHideAnim(m_LangSettingsLblCurLanguage, "LANGUAGE/LANGUAGE_BTN", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_LangSettingsBtnCurLanguageM, "LANGUAGE/LANGUAGE_MINUS", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_LangSettingsBtnCurLanguageP, "LANGUAGE/LANGUAGE_PLUS", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_LangSettingsLblLanguage, "LANGUAGE/LANGUAGE", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_LangSettingsLblCurLanguage, "LANGUAGE/LANGUAGE_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_LangSettingsBtnCurLanguageM, "LANGUAGE/LANGUAGE_MINUS", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_LangSettingsBtnCurLanguageP, "LANGUAGE/LANGUAGE_PLUS", -50, 0, 1.f, 0.f);
 
-	_setHideAnim(m_LangSettingsLblGetLanguages, "LANGUAGE/GET_LANG", 100, 0, -2.f, 0.f);
-	_setHideAnim(m_LangSettingsBtnGetLanguages, "LANGUAGE/GET_LANG_BTN", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_LangSettingsLblGetLanguages, "LANGUAGE/GET_LANG", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_LangSettingsBtnGetLanguages, "LANGUAGE/GET_LANG_BTN", -50, 0, 1.f, 0.f);
 
-	_setHideAnim(m_LangSettingsLblDlLang, "LANGUAGE/DL_LANG", 100, 0, -2.f, 0.f);
-	_setHideAnim(m_LangSettingsLblCurDLLang, "LANGUAGE/DL_LANG_BTN", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_LangSettingsBtnCurDlLangM, "LANGUAGE/DL_LANG_MINUS", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_LangSettingsBtnCurDlLangP, "LANGUAGE/DL_LANG_PLUS", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_LangSettingsLblDlLang, "LANGUAGE/DL_LANG", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_LangSettingsLblCurDLLang, "LANGUAGE/DL_LANG_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_LangSettingsBtnCurDlLangM, "LANGUAGE/DL_LANG_MINUS", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_LangSettingsBtnCurDlLangP, "LANGUAGE/DL_LANG_PLUS", -50, 0, 1.f, 0.f);
 
-	_setHideAnim(m_LangSettingsLblDownload, "LANGUAGE/DOWNLOAD", 100, 0, -2.f, 0.f);
-	_setHideAnim(m_LangSettingsBtnDownload, "LANGUAGE/DOWNLOAD_BTN", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_LangSettingsLblDownload, "LANGUAGE/DOWNLOAD", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_LangSettingsBtnDownload, "LANGUAGE/DOWNLOAD_BTN", -50, 0, 1.f, 0.f);
 
-	_setHideAnim(m_LangSettingsBtnBack, "LANGUAGE/BACK_BTN", 0, 0, -2.f, 0.f);
+	_setHideAnim(m_LangSettingsBtnBack, "LANGUAGE/BACK_BTN", 0, 0, 1.f, -1.f);
 
 	_hideLangSettings(true);
 	_textLangSettings();

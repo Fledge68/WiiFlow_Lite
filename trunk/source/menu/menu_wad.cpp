@@ -500,13 +500,13 @@ void CMenu::_initWad()
 	_addUserLabels(m_wadLblUser, ARRAY_SIZE(m_wadLblUser), "WAD");
 
 	m_wadBg = _texture("WAD/BG", "texture", theme.bg, false);
-	m_wadLblTitle = _addTitle("WAD/TITLE", theme.titleFont, L"", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
-	m_wadLblDialog = _addLabel("WAD/DIALOG", theme.lblFont, L"", 40, 90, 560, 200, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_wadBtnInstall = _addButton("WAD/INSTALL_BTN", theme.btnFont, L"", 420, 400, 200, 56, theme.btnFontColor);
+	m_wadLblTitle = _addTitle("WAD/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_wadLblDialog = _addLabel("WAD/DIALOG", theme.lblFont, L"", 20, 75, 600, 200, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_wadBtnInstall = _addButton("WAD/INSTALL_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
 
 	_setHideAnim(m_wadLblTitle, "WAD/TITLE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_wadLblDialog, "WAD/DIALOG", 0, 0, -2.f, 0.f);
-	_setHideAnim(m_wadBtnInstall, "WAD/INSTALL_BTN", 0, 0, -2.f, 0.f);
+	_setHideAnim(m_wadBtnInstall, "WAD/INSTALL_BTN", 0, 0, 1.f, -1.f);
 
 	_hideWad(true);
 	_textWad();

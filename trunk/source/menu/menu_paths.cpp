@@ -244,37 +244,37 @@ void CMenu::_Paths(void)
 void CMenu::_initPathsMenu()
 {
 	_addUserLabels(m_pathsLblUser, ARRAY_SIZE(m_pathsLblUser), "PATHS");
-	m_pathsBg = _texture("PATHS/BG", "texture", theme.bg, false);	
-	m_pathsLblTitle = _addTitle("PATHS/TITLE", theme.titleFont, L"", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
-	m_pathsLblPage = _addLabel("PATHS/PAGE_BTN", theme.btnFont, L"", 76, 400, 80, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_pathsBtnPageM = _addPicButton("PATHS/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 20, 400, 56, 56);
-	m_pathsBtnPageP = _addPicButton("PATHS/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 156, 400, 56, 56);
-	m_pathsBtnBack = _addButton("PATHS/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 56, theme.btnFontColor);
+	m_pathsBg = _texture("PATHS/BG", "texture", theme.bg, false);
+	m_pathsLblTitle = _addTitle("PATHS/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_pathsLblPage = _addLabel("PATHS/PAGE_BTN", theme.btnFont, L"", 68, 400, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_pathsBtnPageM = _addPicButton("PATHS/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 20, 400, 48, 48);
+	m_pathsBtnPageP = _addPicButton("PATHS/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 172, 400, 48, 48);
+	m_pathsBtnBack = _addButton("PATHS/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
 	
-	m_pathsLbl1 = _addLabel("PATHS/DIR1", theme.lblFont, L"", 40, 130, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_pathsBtn1 = _addButton("PATHS/DIR1_BTN", theme.btnFont, L"", 370, 130, 230, 56, theme.btnFontColor);
-	m_pathsLbl2 = _addLabel("PATHS/DIR2", theme.lblFont, L"", 40, 190, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_pathsBtn2 = _addButton("PATHS/DIR2_BTN", theme.btnFont, L"", 370, 190, 230, 56, theme.btnFontColor);
-	m_pathsLbl3 = _addLabel("PATHS/DIR3", theme.lblFont, L"", 40, 250, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_pathsBtn3 = _addButton("PATHS/DIR3_BTN", theme.btnFont, L"", 370, 250, 230, 56, theme.btnFontColor);
-	m_pathsLbl4 = _addLabel("PATHS/DIR4", theme.lblFont, L"", 40, 310, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_pathsBtn4 = _addButton("PATHS/DIR4_BTN", theme.btnFont, L"", 370, 310, 230, 56, theme.btnFontColor);
+	m_pathsLbl1 = _addLabel("PATHS/DIR1", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_pathsBtn1 = _addButton("PATHS/DIR1_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
+	m_pathsLbl2 = _addLabel("PATHS/DIR2", theme.lblFont, L"", 20, 185, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_pathsBtn2 = _addButton("PATHS/DIR2_BTN", theme.btnFont, L"", 420, 190, 200, 48, theme.btnFontColor);
+	m_pathsLbl3 = _addLabel("PATHS/DIR3", theme.lblFont, L"", 20, 245, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_pathsBtn3 = _addButton("PATHS/DIR3_BTN", theme.btnFont, L"", 420, 250, 200, 48, theme.btnFontColor);
+	m_pathsLbl4 = _addLabel("PATHS/DIR4", theme.lblFont, L"", 20, 305, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_pathsBtn4 = _addButton("PATHS/DIR4_BTN", theme.btnFont, L"", 420, 310, 200, 48, theme.btnFontColor);
 
 	_setHideAnim(m_pathsLblTitle, "PATHS/TITLE", 0, 0, -2.f, 0.f);
-	_setHideAnim(m_pathsBtnBack, "PATHS/BACK_BTN", 0, 0, -2.f, 0.f);
+	_setHideAnim(m_pathsBtnBack, "PATHS/BACK_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_pathsLblPage, "PATHS/PAGE_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_pathsBtnPageM, "PATHS/PAGE_MINUS", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_pathsBtnPageP, "PATHS/PAGE_PLUS", 0, 0, 1.f, -1.f);
-	
-	_setHideAnim(m_pathsLbl1, "PATHS/DIR1", 100, 0, -2.f, 0.f);
-	_setHideAnim(m_pathsBtn1, "PATHS/DIR1_BTN", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_pathsLbl2, "PATHS/DIR2", 100, 0, -2.f, 0.f);
-	_setHideAnim(m_pathsBtn2, "PATHS/DIR2_BTN", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_pathsLbl3, "PATHS/DIR3", 100, 0, -2.f, 0.f);
-	_setHideAnim(m_pathsBtn3, "PATHS/DIR3_BTN", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_pathsLbl4, "PATHS/DIR4", 100, 0, -2.f, 0.f);
-	_setHideAnim(m_pathsBtn4, "PATHS/DIR4_BTN", 0, 0, 1.f, -1.f);
-	
+
+	_setHideAnim(m_pathsLbl1, "PATHS/DIR1", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_pathsBtn1, "PATHS/DIR1_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_pathsLbl2, "PATHS/DIR2", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_pathsBtn2, "PATHS/DIR2_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_pathsLbl3, "PATHS/DIR3", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_pathsBtn3, "PATHS/DIR3_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_pathsLbl4, "PATHS/DIR4", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_pathsBtn4, "PATHS/DIR4_BTN", -50, 0, 1.f, 0.f);
+
 	_hidePaths(true);
 	_textPaths();
 }

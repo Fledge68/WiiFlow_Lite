@@ -545,17 +545,17 @@ void CMenu::_initWBFSMenu()
 {
 	_addUserLabels(m_wbfsLblUser, ARRAY_SIZE(m_wbfsLblUser), "WBFS");
 	m_wbfsBg = _texture("WBFS/BG", "texture", theme.bg, false);
-	m_wbfsLblTitle = _addTitle("WBFS/TITLE", theme.titleFont, L"", 20, 30, 600, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
-	m_wbfsLblDialog = _addLabel("WBFS/DIALOG", theme.lblFont, L"", 40, 90, 560, 200, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_wbfsLblMessage = _addLabel("WBFS/MESSAGE", theme.lblFont, L"", 40, 300, 560, 100, theme.lblFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_TOP);
-	m_wbfsPBar = _addProgressBar("WBFS/PROGRESS_BAR", 40, 270, 560, 20);
-	m_wbfsBtnGo = _addButton("WBFS/GO_BTN", theme.btnFont, L"", 420, 400, 200, 56, theme.btnFontColor);
+	m_wbfsLblTitle = _addTitle("WBFS/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_wbfsLblDialog = _addLabel("WBFS/DIALOG", theme.lblFont, L"", 20, 75, 600, 200, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_wbfsLblMessage = _addLabel("WBFS/MESSAGE", theme.lblFont, L"", 20, 300, 600, 100, theme.lblFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_TOP);
+	m_wbfsPBar = _addProgressBar("WBFS/PROGRESS_BAR", 40, 200, 560, 20);
+	m_wbfsBtnGo = _addButton("WBFS/GO_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
 
 	_setHideAnim(m_wbfsLblTitle, "WBFS/TITLE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_wbfsLblDialog, "WBFS/DIALOG", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_wbfsLblMessage, "WBFS/MESSAGE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_wbfsPBar, "WBFS/PROGRESS_BAR", 0, 0, -2.f, 0.f);
-	_setHideAnim(m_wbfsBtnGo, "WBFS/GO_BTN", 0, 0, -2.f, 0.f);
+	_setHideAnim(m_wbfsBtnGo, "WBFS/GO_BTN", 0, 0, 1.f, -1.f);
 	_hideWBFS(true);
 	_textWBFS();
 }

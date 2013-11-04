@@ -43,10 +43,10 @@ extern const u8 stopkidon_png[];
 extern const u8 stopkidons_png[];
 extern const u8 stopkidoff_png[];
 extern const u8 stopkidoffs_png[];
-extern const u8 favoriteson_png[];
-extern const u8 favoritesons_png[];
-extern const u8 favoritesoff_png[];
-extern const u8 favoritesoffs_png[];
+extern const u8 gamefavon_png[];
+extern const u8 gamefavons_png[];
+extern const u8 gamefavoff_png[];
+extern const u8 gamefavoffs_png[];
 extern const u8 delete_png[];
 extern const u8 deletes_png[];
 extern const u8 blank_png[];
@@ -1513,10 +1513,10 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 void CMenu::_initGameMenu()
 {
 	CColor fontColor(0xD0BFDFFF);
-	TexData texFavOn;
-	TexData texFavOnSel;
-	TexData texFavOff;
-	TexData texFavOffSel;
+	TexData texGameFavOn;
+	TexData texGameFavOnSel;
+	TexData texGameFavOff;
+	TexData texGameFavOffSel;
 	TexData texAdultOn;
 	TexData texAdultOnSel;
 	TexData texAdultOff;
@@ -1528,10 +1528,10 @@ void CMenu::_initGameMenu()
 	TexData texToogleBanner;
 	TexData bgLQ;
 
-	TexHandle.fromPNG(texFavOn, favoriteson_png);
-	TexHandle.fromPNG(texFavOnSel, favoritesons_png);
-	TexHandle.fromPNG(texFavOff, favoritesoff_png);
-	TexHandle.fromPNG(texFavOffSel, favoritesoffs_png);
+	TexHandle.fromPNG(texGameFavOn, gamefavon_png);
+	TexHandle.fromPNG(texGameFavOnSel, gamefavons_png);
+	TexHandle.fromPNG(texGameFavOff, gamefavoff_png);
+	TexHandle.fromPNG(texGameFavOffSel, gamefavoffs_png);
 	TexHandle.fromPNG(texAdultOn, stopkidon_png);
 	TexHandle.fromPNG(texAdultOnSel, stopkidons_png);
 	TexHandle.fromPNG(texAdultOff, stopkidoff_png);
@@ -1547,10 +1547,10 @@ void CMenu::_initGameMenu()
 	if(m_theme.loaded() && TexHandle.fromImageFile(bgLQ, fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString("GAME/BG", "texture").c_str()), GX_TF_CMPR, 64, 64) == TE_OK)
 		m_gameBgLQ = bgLQ;
 
-	m_gameBtnPlay = _addButton("GAME/PLAY_BTN", theme.btnFont, L"", 420, 344, 200, 56, theme.btnFontColor);
-	m_gameBtnBack = _addButton("GAME/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 56, theme.btnFontColor);
-	m_gameBtnFavoriteOn = _addPicButton("GAME/FAVORITE_ON", texFavOn, texFavOnSel, 460, 200, 48, 48);
-	m_gameBtnFavoriteOff = _addPicButton("GAME/FAVORITE_OFF", texFavOff, texFavOffSel, 460, 200, 48, 48);
+	m_gameBtnPlay = _addButton("GAME/PLAY_BTN", theme.btnFont, L"", 420, 344, 200, 48, theme.btnFontColor);
+	m_gameBtnBack = _addButton("GAME/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
+	m_gameBtnFavoriteOn = _addPicButton("GAME/FAVORITE_ON", texGameFavOn, texGameFavOnSel, 460, 200, 48, 48);
+	m_gameBtnFavoriteOff = _addPicButton("GAME/FAVORITE_OFF", texGameFavOff, texGameFavOffSel, 460, 200, 48, 48);
 	m_gameBtnAdultOn = _addPicButton("GAME/ADULTONLY_ON", texAdultOn, texAdultOnSel, 532, 200, 48, 48);
 	m_gameBtnAdultOff = _addPicButton("GAME/ADULTONLY_OFF", texAdultOff, texAdultOffSel, 532, 200, 48, 48);
 	m_gameBtnSettings = _addPicButton("GAME/SETTINGS_BTN", texSettings, texSettingsSel, 460, 272, 48, 48);
@@ -1566,14 +1566,14 @@ void CMenu::_initGameMenu()
 	m_gameButtonsZone.h = m_theme.getInt("GAME/ZONES", "buttons_h", 480);
 	m_gameButtonsZone.hide = m_theme.getBool("GAME/ZONES", "buttons_hide", true);
 
-	_setHideAnim(m_gameBtnPlay, "GAME/PLAY_BTN", 200, 0, 1.f, 0.f);
-	_setHideAnim(m_gameBtnBack, "GAME/BACK_BTN", 200, 0, 1.f, 0.f);
-	_setHideAnim(m_gameBtnFavoriteOn, "GAME/FAVORITE_ON", 0, 0, -1.5f, -1.5f);
-	_setHideAnim(m_gameBtnFavoriteOff, "GAME/FAVORITE_OFF", 0, 0, -1.5f, -1.5f);
-	_setHideAnim(m_gameBtnAdultOn, "GAME/ADULTONLY_ON", 0, 0, -1.5f, -1.5f);
-	_setHideAnim(m_gameBtnAdultOff, "GAME/ADULTONLY_OFF", 0, 0, -1.5f, -1.5f);
-	_setHideAnim(m_gameBtnSettings, "GAME/SETTINGS_BTN", 0, 0, -1.5f, -1.5f);
-	_setHideAnim(m_gameBtnDelete, "GAME/DELETE_BTN", 0, 0, -1.5f, -1.5f);
+	_setHideAnim(m_gameBtnPlay, "GAME/PLAY_BTN", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_gameBtnBack, "GAME/BACK_BTN", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_gameBtnFavoriteOn, "GAME/FAVORITE_ON", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_gameBtnFavoriteOff, "GAME/FAVORITE_OFF", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_gameBtnAdultOn, "GAME/ADULTONLY_ON", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_gameBtnAdultOff, "GAME/ADULTONLY_OFF", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_gameBtnSettings, "GAME/SETTINGS_BTN", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_gameBtnDelete, "GAME/DELETE_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_gameBtnPlayFull, "GAME/PLAY_FULL_BTN", 0, 0, 1.f, 0.f);
 	_setHideAnim(m_gameBtnBackFull, "GAME/BACK_FULL_BTN", 0, 0, 1.f, 0.f);
 	_setHideAnim(m_gameBtnToogle, "GAME/TOOGLE_BTN", 200, 0, 1.f, 0.f);
