@@ -5,6 +5,7 @@
 
 #include "wiidisc.h"
 #include "hw/aes.h"
+#include "loader/nk.h"
 
 int wd_last_error = 0;
 
@@ -81,11 +82,19 @@ static void partition_read_block(wiidisc_t *d, u32 blockno, u8 *block)
 	offset = d->partition_data_offset + ((0x8000 >> 2) * blockno);
 	partition_raw_read(d,offset, raw, 0x8000);
 
-	// decrypt data
-	AES_ResetEngine();
 	memcpy(iv, raw + 0x3d0, 16);
-	AES_EnableDecrypt(d->disc_key, iv);
-	AES_Decrypt(raw + 0x400, block, 0x7c0);
+	
+	// decrypt data
+	if(neek2o())
+	{
+		NKAESDecryptBlock(raw, block);
+	}
+	else
+	{
+		AES_ResetEngine();	
+		AES_EnableDecrypt(d->disc_key, iv);
+		AES_Decrypt(raw + 0x400, block, 0x7c0);
+	}
 }
 
 static void partition_read(wiidisc_t *d, u32 offset, u8 *data, u32 len, int fake)
@@ -245,7 +254,11 @@ static void do_partition(wiidisc_t*d)
 		wbfs_fatal("malloc cert\n");
 	partition_raw_read(d, cert_offset, cert, cert_size);
 
-	decrypt_title_key(tik, d->disc_key);
+	
+	if(neek2o())
+		NKKeyCreate(tik);
+	else
+		decrypt_title_key(tik, d->disc_key);
 
 	partition_raw_read(d, h3_offset, 0, 0x18000);
 
