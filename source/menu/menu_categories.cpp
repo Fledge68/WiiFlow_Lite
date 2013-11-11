@@ -392,7 +392,7 @@ void CMenu::_initCategorySettingsMenu()
 		m_categoryBtnCatReq[i] = _addPicButton(fmt("CATEGORY/CAT_%i_BTNREQ", i), theme.checkboxReq, theme.checkboxReqs, 30, (39+i*58), 44, 48);
 		m_categoryLblCat[i] = _addLabel(fmt("CATEGORY/CAT_%i", i), theme.lblFont, L"", 85, (42+i*58), 230, 48, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 		// right half
-		m_categoryBtnCat[i+5] = _addPicButton(fmt("CATEGORY/CAT_%i_BTN", i+5), theme.checkboxoff, theme.checkboxoffs, 325, (97+i*58), 44, 48);
+		m_categoryBtnCat[i+5] = _addPicButton(fmt("CATEGORY/CAT_%i_BTN", i+5), theme.checkboxoff, theme.checkboxoffs, 325, (39+i*58), 44, 48);
 		m_categoryBtnCats[i+5] = _addPicButton(fmt("CATEGORY/CAT_%i_BTNS", i+5), theme.checkboxon, theme.checkboxons, 325, (39+i*58), 44, 48);
 		m_categoryBtnCatHid[i+5] = _addPicButton(fmt("CATEGORY/CAT_%i_BTNHID", i+5), theme.checkboxHid, theme.checkboxHids, 325, (39+i*58), 44, 48);
 		m_categoryBtnCatReq[i+5] = _addPicButton(fmt("CATEGORY/CAT_%i_BTNREQ", i+5), theme.checkboxReq, theme.checkboxReqs, 325, (39+i*58), 44, 48);
