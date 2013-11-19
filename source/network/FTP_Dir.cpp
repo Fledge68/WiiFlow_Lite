@@ -24,6 +24,7 @@
 #include "fileOps/fileOps.h"
 #include "gui/fmt.h"
 #include "loader/wbfs.h"
+#include "memory/mem2.hpp"
 
 #ifdef __cplusplus
 extern "C" {
@@ -277,6 +278,8 @@ int ftp_delete(char *path)
 }
 
 lwp_t ftpThrdPtr = LWP_THREAD_NULL;
+u8 *ftpThrdStack = NULL;
+static const u32 ftpThrdStackSize = 65536; //we need a big stack for all the transfers
 volatile bool ftpThrd_running = false;
 bool end_ftp = false;
 s32 cur_server_num = -1;
@@ -303,8 +306,15 @@ bool ftp_startThread(void)
 
 	end_ftp = false;
 	ftpThrd_running = true;
-	LWP_CreateThread(&ftpThrdPtr, ftp_loopThrd, NULL, NULL, 0, 64);
-	return true;
+	ftpThrdStack = (u8*)MEM2_memalign(32, ftpThrdStackSize);
+	if(ftpThrdStack != NULL)
+	{
+		memset(ftpThrdStack, 0, ftpThrdStackSize);
+		DCFlushRange(ftpThrdStack, ftpThrdStackSize);
+		LWP_CreateThread(&ftpThrdPtr, ftp_loopThrd, NULL, ftpThrdStack, ftpThrdStackSize, 64);
+		return true;
+	}
+	return false;
 }
 
 void ftp_endTread(void)
@@ -319,6 +329,10 @@ void ftp_endTread(void)
 		usleep(50);
 	LWP_JoinThread(ftpThrdPtr, NULL);
 	ftpThrdPtr = LWP_THREAD_NULL;
+
+	if(ftpThrdStack != NULL)
+		MEM2_free(ftpThrdStack);
+	ftpThrdStack = NULL;
 
 	end_server();
 	cur_server_num = -1;

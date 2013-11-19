@@ -114,8 +114,11 @@ s32 send_from_file(s32 s, FILE *f) {
     s32 bytes_read;
     s32 result = 0;
 
+    DCFlushRange(buf, FREAD_BUFFER_SIZE);
+    ICInvalidateRange(buf, FREAD_BUFFER_SIZE);
     bytes_read = fread(buf, 1, FREAD_BUFFER_SIZE, f);
     if (bytes_read > 0) {
+        DCFlushRange(buf, bytes_read);
         result = send_exact(s, buf, bytes_read);
         if (result < 0) goto end;
     }
@@ -133,6 +136,8 @@ s32 recv_to_file(s32 s, FILE *f) {
     s32 bytes_read;
     while (1) {
         try_again_with_smaller_buffer:
+        DCFlushRange(buf, NET_BUFFER_SIZE);
+        ICInvalidateRange(buf, NET_BUFFER_SIZE);
         bytes_read = net_read(s, buf, NET_BUFFER_SIZE);
         if (bytes_read < 0) {
             if (bytes_read == -EINVAL && NET_BUFFER_SIZE == MAX_NET_BUFFER_SIZE) {
@@ -143,7 +148,7 @@ s32 recv_to_file(s32 s, FILE *f) {
         } else if (bytes_read == 0) {
             return 0;
         }
-
+        DCFlushRange(buf, bytes_read);
         s32 bytes_written = fwrite(buf, 1, bytes_read, f);
         if (bytes_written < bytes_read) return -1;
     }

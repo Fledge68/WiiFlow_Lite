@@ -300,7 +300,7 @@ void CMenu::_initLangSettingsMenu()
 	m_LangSettingsBtnGetLanguages = _addButton("LANGUAGE/GET_LANG_BTN", theme.btnFont, L"", 420, 190, 200, 48, theme.btnFontColor);
 
 	m_LangSettingsLblDlLang = _addLabel("LANGUAGE/DL_LANG", theme.lblFont, L"", 20, 245, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_LangSettingsLblCurDLLang = _addLabel("LANGUAGE/DL_LANG_BTN", theme.btnFont, L"", 386, 250, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_LangSettingsLblCurDLLang = _addLabel("LANGUAGE/DL_LANG_BTN", theme.btnFont, L"", 468, 250, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_LangSettingsBtnCurDlLangM = _addPicButton("LANGUAGE/DL_LANG_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 420, 250, 48, 48);
 	m_LangSettingsBtnCurDlLangP = _addPicButton("LANGUAGE/DL_LANG_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 572, 250, 48, 48);
 
