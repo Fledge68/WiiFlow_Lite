@@ -14,32 +14,13 @@
 #include "lockMutex.hpp"
 #include "fonts.h"
 #include "types.h"
+#include "gui/fmt.h"
 #include "gecko/gecko.hpp"
 #include "menu/menu.hpp"
 #include "plugin/plugin.hpp"
 #include "memory/mem2.hpp"
 #include "fileOps/fileOps.h"
 #include "wstringEx/wstringEx.hpp"
-
-extern const u8 dvdskin_jpg[];
-extern const u32 dvdskin_jpg_size;
-extern const u8 dvdskin_red_jpg[];
-extern const u32 dvdskin_red_jpg_size;
-extern const u8 dvdskin_black_jpg[];
-extern const u32 dvdskin_black_jpg_size;
-extern const u8 dvdskin_yellow_jpg[];
-extern const u32 dvdskin_yellow_jpg_size;
-extern const u8 dvdskin_greenone_jpg[];
-extern const u32 dvdskin_greenone_jpg_size;
-extern const u8 dvdskin_greentwo_jpg[];
-extern const u32 dvdskin_greentwo_jpg_size;
-
-extern const u8 nopic_png[];
-extern const u8 flatnopic_png[];
-extern const u8 loading_jpg[];
-extern const u32 loading_jpg_size;
-extern const u8 flatloading_jpg[];
-extern const u32 flatloading_jpg_size;
 
 static const int black_len = 16;
 static const char* black[black_len] = {"RZZJEL","RZNJ01","SEKJ99","SX3J01","SX3P01","R5WJA4","RUYJ99","S3HJ08","SJBJ01","CKBE88","CCPE01","SMMP01","MDUE01","SL2J01","APR","AFR"};
@@ -1844,7 +1825,7 @@ bool CCoverFlow::_sortByWifiPlayers(CItem item1, CItem item2)
 	return item1.hdr->wifi < item2.hdr->wifi;
 }
 
-bool CCoverFlow::start()
+bool CCoverFlow::start(const string &m_imgsDir)
 {
 	if (m_items.empty()) return true;
 
@@ -1865,17 +1846,17 @@ bool CCoverFlow::start()
 	// Load resident textures
 	if(!m_dvdskin_loaded)
 	{
-		if(TexHandle.fromJPG(m_dvdSkin, dvdskin_jpg, dvdskin_jpg_size) != TE_OK)
+		if(TexHandle.fromImageFile(m_dvdSkin, fmt("%s/dvdskin.jpg", m_imgsDir.c_str())) != TE_OK)
 			return false;
-		if(TexHandle.fromJPG(m_dvdSkin_Red, dvdskin_red_jpg, dvdskin_red_jpg_size) != TE_OK)
+		if(TexHandle.fromImageFile(m_dvdSkin_Red, fmt("%s/dvdskin_red.jpg", m_imgsDir.c_str())) != TE_OK)
 			return false;
-		if(TexHandle.fromJPG(m_dvdSkin_Black, dvdskin_black_jpg, dvdskin_black_jpg_size) != TE_OK)
+		if(TexHandle.fromImageFile(m_dvdSkin_Black, fmt("%s/dvdskin_black.jpg", m_imgsDir.c_str())) != TE_OK)
 			return false;
-		if(TexHandle.fromJPG(m_dvdSkin_Yellow, dvdskin_yellow_jpg, dvdskin_yellow_jpg_size) != TE_OK)
+		if(TexHandle.fromImageFile(m_dvdSkin_Yellow, fmt("%s/dvdskin_yellow.jpg", m_imgsDir.c_str())) != TE_OK)
 			return false;
-		if(TexHandle.fromJPG(m_dvdSkin_GreenOne, dvdskin_greenone_jpg, dvdskin_greenone_jpg_size) != TE_OK)
+		if(TexHandle.fromImageFile(m_dvdSkin_GreenOne, fmt("%s/dvdskin_greenone.jpg", m_imgsDir.c_str())) != TE_OK)
 			return false;
-		if(TexHandle.fromJPG(m_dvdSkin_GreenTwo, dvdskin_greentwo_jpg, dvdskin_greentwo_jpg_size) != TE_OK)
+		if(TexHandle.fromImageFile(m_dvdSkin_GreenTwo, fmt("%s/dvdskin_greentwo.jpg", m_imgsDir.c_str())) != TE_OK)
 			return false;
 		m_dvdskin_loaded = true;
 	}
@@ -1883,22 +1864,22 @@ bool CCoverFlow::start()
 	{
 		if(m_pngLoadCover.empty() || TexHandle.fromImageFile(m_boxLoadingTexture, m_pngLoadCover.c_str(), GX_TF_CMPR, 32, 512) != TE_OK)
 		{
-			if(TexHandle.fromJPG(m_boxLoadingTexture, loading_jpg, loading_jpg_size, GX_TF_CMPR, 32, 512) != TE_OK)
+			if(TexHandle.fromImageFile(m_boxLoadingTexture, fmt("%s/loading.jpg", m_imgsDir.c_str()), GX_TF_CMPR, 32, 512) != TE_OK)
 				return false;
 		}
 		if(m_pngNoCover.empty() || TexHandle.fromImageFile(m_boxNoCoverTexture, m_pngNoCover.c_str(), GX_TF_CMPR, 32, 512) != TE_OK)
 		{
-			if(TexHandle.fromPNG(m_boxNoCoverTexture, nopic_png, GX_TF_CMPR, 32, 512) != TE_OK)
+			if(TexHandle.fromImageFile(m_boxNoCoverTexture, fmt("%s/nopic.png", m_imgsDir.c_str()), GX_TF_CMPR, 32, 512) != TE_OK)
 				return false;
 		}
 		if(m_pngLoadCoverFlat.empty() || TexHandle.fromImageFile(m_flatLoadingTexture, m_pngLoadCoverFlat.c_str(), GX_TF_CMPR, 32, 512) != TE_OK)
 		{
-			if(TexHandle.fromJPG(m_flatLoadingTexture, flatloading_jpg, flatloading_jpg_size, GX_TF_CMPR, 32, 512) != TE_OK)
+			if(TexHandle.fromImageFile(m_flatLoadingTexture, fmt("%s/flatloading.jpg", m_imgsDir.c_str()), GX_TF_CMPR, 32, 512) != TE_OK)
 				return false;
 		}
 		if(m_pngNoCoverFlat.empty() || TexHandle.fromImageFile(m_flatNoCoverTexture, m_pngNoCoverFlat.c_str(), GX_TF_CMPR, 32, 512) != TE_OK)
 		{
-			if(TexHandle.fromPNG(m_flatNoCoverTexture, flatnopic_png, GX_TF_CMPR, 32, 512) != TE_OK)
+			if(TexHandle.fromImageFile(m_flatNoCoverTexture, fmt("%s/flatnopic.png", m_imgsDir.c_str()), GX_TF_CMPR, 32, 512) != TE_OK)
 				return false;
 		}
 		m_defcovers_loaded = true;

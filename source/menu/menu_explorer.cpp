@@ -21,8 +21,6 @@
 #include "channel/nand.hpp"
 #include "defines.h"
 
-extern const u8 blank_png[];
-
 TexData m_explorerBg;
 s16 entries[7];
 s16 entries_sel[7];
@@ -274,8 +272,8 @@ void CMenu::_initExplorer()
 {
 	memset(dir, 0, MAX_FAT_PATH);
 	TexData blank_btn;
-	TexHandle.fromPNG(blank_btn, blank_png);
-	
+	TexHandle.fromImageFile(blank_btn, fmt("%s/blank.png", m_imgsDir.c_str()));
+
 	m_explorerBg = _texture("EXPLORER/BG", "texture", theme.bg, false);
 	_addUserLabels(m_explorerLblUser, ARRAY_SIZE(m_explorerLblUser), "EXPLORER");
 	m_explorerLblSelFolderBg = _addLabel("EXPLORER/SELECTED_FOLDER_BG", theme.txtFont, L"", 0, 18, 640, 48, theme.txtFontColor, FTGX_JUSTIFY_LEFT, theme.btnTexC);

@@ -1,7 +1,6 @@
 
 #include "menu.hpp"
 
-extern const u8 error_png[];
 s16 m_errorLblMessage;
 s16 m_errorLblIcon;
 s16 m_errorLblUser[4];
@@ -61,7 +60,7 @@ void CMenu::_showError(void)
 void CMenu::_initErrorMenu()
 {
 	TexData texIcon;
-	TexHandle.fromPNG(texIcon, error_png);
+	TexHandle.fromImageFile(texIcon, fmt("%s/error.png", m_imgsDir.c_str()));
 	_addUserLabels(m_errorLblUser, ARRAY_SIZE(m_errorLblUser), "ERROR");
 	m_errorBg = _texture("ERROR/BG", "texture", theme.bg, false);
 	m_errorLblMessage = _addLabel("ERROR/MESSAGE", theme.lblFont, L"", 112, 20, 500, 440, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);

@@ -1,10 +1,6 @@
 
 #include "menu.hpp"
 
-
-extern const u8 delete_png[];
-extern const u8 deletes_png[];
-
 void CMenu::_hideCode(bool instant)
 {
 	for(u8 i = 0; i < 10; ++i)

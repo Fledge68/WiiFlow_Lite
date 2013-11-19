@@ -1,79 +1,6 @@
+
 #include "menu.hpp"
 #include "gui/GameTDB.hpp"
-
-extern const u8		wifi1_png[];
-extern const u8		wifi2_png[];
-extern const u8		wifi4_png[];
-extern const u8		wifi8_png[];
-extern const u8		wifi10_png[];
-extern const u8		wifi12_png[];
-extern const u8		wifi16_png[];
-extern const u8		wifi18_png[];
-extern const u8		wifi32_png[];
-
-extern const u8		wiimote1_png[];
-extern const u8		wiimote2_png[];
-extern const u8		wiimote3_png[];
-extern const u8		wiimote4_png[];
-extern const u8		wiimote6_png[];
-extern const u8		wiimote8_png[];
-
-extern const u8		guitar_png[];
-extern const u8		guitarR_png[];
-extern const u8		microphone_png[];
-extern const u8		microphoneR_png[];
-extern const u8		gcncontroller_png[];
-extern const u8		classiccontroller_png[];
-extern const u8		nunchuk_png[];
-extern const u8		nunchukR_png[];
-extern const u8		dancepad_png[];
-extern const u8		dancepadR_png[];
-extern const u8		balanceboard_png[];
-extern const u8		balanceboardR_png[];
-extern const u8		drums_png[];
-extern const u8		drumsR_png[];
-extern const u8		motionplus_png[];
-extern const u8		motionplusR_png[];
-extern const u8		udraw_png[];
-extern const u8		udrawR_png[];
-extern const u8		wheel_png[];
-extern const u8		zapper_png[];
-extern const u8		keyboard_png[];
-extern const u8		wiispeak_png[];
-
-//Ratings
-extern const u8		norating_jpg[];
-extern const u32	norating_jpg_size;
-
-extern const u8		esrb_ec_jpg[];
-extern const u32	esrb_ec_jpg_size;
-extern const u8		esrb_e_jpg[];
-extern const u32	esrb_e_jpg_size;
-extern const u8		esrb_eten_jpg[];
-extern const u32	esrb_eten_jpg_size;
-extern const u8		esrb_t_jpg[];
-extern const u32	esrb_t_jpg_size;
-extern const u8		esrb_m_jpg[];
-extern const u32	esrb_m_jpg_size;
-extern const u8		esrb_ao_jpg[];
-extern const u32	esrb_ao_jpg_size;
-
-extern const u8		cero_a_png[];
-extern const u8		cero_b_png[];
-extern const u8		cero_c_png[];
-extern const u8		cero_d_png[];
-extern const u8		cero_z_png[];
-
-extern const u8		grb_a_png[];
-extern const u8		grb_12_png[];
-extern const u8		grb_15_png[];
-extern const u8		grb_18_png[];
-
-extern const u8		pegi_3_png[];
-extern const u8		pegi_7_png[];
-extern const u8		pegi_12_png[];
-extern const u8		pegi_16_png[];
-extern const u8		pegi_18_png[];
 
 wstringEx gameinfo_Synopsis_w;
 wstringEx gameinfo_Title_w;
@@ -356,7 +283,7 @@ void CMenu::_textGameInfo(void)
 				break;
 		}
 		//Ratings
-		TexHandle.fromJPG(m_rating, norating_jpg, norating_jpg_size);
+		TexHandle.fromImageFile(m_rating, fmt("%s/norating.png", m_imgsDir.c_str()));
 		const char *RatingValue = NULL;
 		if(gametdb.GetRatingValue(GameID, RatingValue))
 		{
@@ -364,51 +291,51 @@ void CMenu::_textGameInfo(void)
 			{
 				case GAMETDB_RATING_TYPE_CERO:
 					if(RatingValue[0] == 'A')
-						TexHandle.fromPNG(m_rating, cero_a_png);
+						TexHandle.fromImageFile(m_rating, fmt("%s/cero_a.png", m_imgsDir.c_str()));
 					else if(RatingValue[0] == 'B')
-						TexHandle.fromPNG(m_rating, cero_b_png);
+						TexHandle.fromImageFile(m_rating, fmt("%s/cero_b.png", m_imgsDir.c_str()));
 					else if(RatingValue[0] == 'D')
-						TexHandle.fromPNG(m_rating, cero_d_png);
+						TexHandle.fromImageFile(m_rating, fmt("%s/cero_d.png", m_imgsDir.c_str()));
 					else if(RatingValue[0] == 'C')
-						TexHandle.fromPNG(m_rating, cero_c_png);
+						TexHandle.fromImageFile(m_rating, fmt("%s/cero_c.png", m_imgsDir.c_str()));
 					else if(RatingValue[0] == 'Z')
-						TexHandle.fromPNG(m_rating, cero_z_png);
+						TexHandle.fromImageFile(m_rating, fmt("%s/cero_z.png", m_imgsDir.c_str()));
 					break;
 				case GAMETDB_RATING_TYPE_ESRB:
 					if(RatingValue[0] == 'E')
-						TexHandle.fromJPG(m_rating, esrb_e_jpg, esrb_e_jpg_size);
+						TexHandle.fromImageFile(m_rating, fmt("%s/esrb_e.jpg", m_imgsDir.c_str()));
 					else if(memcmp(RatingValue, "EC", 2) == 0)
-						TexHandle.fromJPG(m_rating, esrb_ec_jpg, esrb_ec_jpg_size);
+						TexHandle.fromImageFile(m_rating, fmt("%s/esrb_ec.jpg", m_imgsDir.c_str()));
 					else if(memcmp(RatingValue, "E10+", 4) == 0)
-						TexHandle.fromJPG(m_rating, esrb_eten_jpg, esrb_eten_jpg_size);
+						TexHandle.fromImageFile(m_rating, fmt("%s/esrb_eten.jpg", m_imgsDir.c_str()));
 					else if(RatingValue[0] == 'T')
-						TexHandle.fromJPG(m_rating, esrb_t_jpg, esrb_t_jpg_size);
+						TexHandle.fromImageFile(m_rating, fmt("%s/esrb_t.jpg", m_imgsDir.c_str()));
 					else if(RatingValue[0] == 'M')
-						TexHandle.fromJPG(m_rating, esrb_m_jpg, esrb_m_jpg_size);
+						TexHandle.fromImageFile(m_rating, fmt("%s/esrb_m.jpg", m_imgsDir.c_str()));
 					else if(memcmp(RatingValue, "AO", 2) == 0)
-						TexHandle.fromJPG(m_rating, esrb_ao_jpg, esrb_ao_jpg_size);
+						TexHandle.fromImageFile(m_rating, fmt("%s/esrb_ao.jpg", m_imgsDir.c_str()));
 					break;
 				case GAMETDB_RATING_TYPE_PEGI:
 					if(RatingValue[0] == '3')
-						TexHandle.fromPNG(m_rating, pegi_3_png);
+						TexHandle.fromImageFile(m_rating, fmt("%s/pegi_3.png", m_imgsDir.c_str()));
 					else if(RatingValue[0] == '7')
-						TexHandle.fromPNG(m_rating, pegi_7_png);
+						TexHandle.fromImageFile(m_rating, fmt("%s/pegi_7.png", m_imgsDir.c_str()));
 					else if(memcmp(RatingValue, "12", 2) == 0)
-						TexHandle.fromPNG(m_rating, pegi_12_png);
+						TexHandle.fromImageFile(m_rating, fmt("%s/pegi_12.png", m_imgsDir.c_str()));
 					else if(memcmp(RatingValue, "16", 2) == 0)
-						TexHandle.fromPNG(m_rating, pegi_16_png);
+						TexHandle.fromImageFile(m_rating, fmt("%s/pegi_16.png", m_imgsDir.c_str()));
 					else if(memcmp(RatingValue, "18", 2) == 0)
-						TexHandle.fromPNG(m_rating, pegi_18_png);
+						TexHandle.fromImageFile(m_rating, fmt("%s/pegi_18.png", m_imgsDir.c_str()));
 					break;
 				case GAMETDB_RATING_TYPE_GRB:
 					if(RatingValue[0] == 'A')
-						TexHandle.fromPNG(m_rating, grb_a_png);
+						TexHandle.fromImageFile(m_rating, fmt("%s/grb_a.png", m_imgsDir.c_str()));
 					else if(memcmp(RatingValue, "12", 2) == 0)
-						TexHandle.fromPNG(m_rating, grb_12_png);
+						TexHandle.fromImageFile(m_rating, fmt("%s/grb_12.png", m_imgsDir.c_str()));
 					else if(memcmp(RatingValue, "15", 2) == 0)
-						TexHandle.fromPNG(m_rating, grb_15_png);
+						TexHandle.fromImageFile(m_rating, fmt("%s/grb_15.png", m_imgsDir.c_str()));
 					else if(memcmp(RatingValue, "18", 2) == 0)
-						TexHandle.fromPNG(m_rating, grb_18_png);
+						TexHandle.fromImageFile(m_rating, fmt("%s/grb_18.png", m_imgsDir.c_str()));
 					break;
 				default:
 					break;
@@ -419,23 +346,23 @@ void CMenu::_textGameInfo(void)
 		int WifiPlayers = gametdb.GetWifiPlayers(GameID);
 		TexData emptyTex;
 		if(WifiPlayers == 1)
-			TexHandle.fromPNG(m_wifi, wifi1_png);
+			TexHandle.fromImageFile(m_wifi, fmt("%s/wifi1.png", m_imgsDir.c_str()));
 		else if(WifiPlayers == 2)
-			TexHandle.fromPNG(m_wifi, wifi2_png);
+			TexHandle.fromImageFile(m_wifi, fmt("%s/wifi2.png", m_imgsDir.c_str()));
 		else if(WifiPlayers == 4)
-			TexHandle.fromPNG(m_wifi, wifi4_png);
+			TexHandle.fromImageFile(m_wifi, fmt("%s/wifi4.png", m_imgsDir.c_str()));
 		else if(WifiPlayers == 8)
-			TexHandle.fromPNG(m_wifi, wifi8_png);
+			TexHandle.fromImageFile(m_wifi, fmt("%s/wifi8.png", m_imgsDir.c_str()));
 		else if(WifiPlayers == 10)
-			TexHandle.fromPNG(m_wifi, wifi10_png);
+			TexHandle.fromImageFile(m_wifi, fmt("%s/wifi10.png", m_imgsDir.c_str()));
 		else if(WifiPlayers == 12)
-			TexHandle.fromPNG(m_wifi, wifi12_png);
+			TexHandle.fromImageFile(m_wifi, fmt("%s/wifi12.png", m_imgsDir.c_str()));
 		else if(WifiPlayers == 16)
-			TexHandle.fromPNG(m_wifi, wifi16_png);
+			TexHandle.fromImageFile(m_wifi, fmt("%s/wifi16.png", m_imgsDir.c_str()));
 		else if(WifiPlayers == 18)
-			TexHandle.fromPNG(m_wifi, wifi18_png);
+			TexHandle.fromImageFile(m_wifi, fmt("%s/wifi18.png", m_imgsDir.c_str()));
 		else if(WifiPlayers == 32)
-			TexHandle.fromPNG(m_wifi, wifi32_png);
+			TexHandle.fromImageFile(m_wifi, fmt("%s/wifi32.png", m_imgsDir.c_str()));
 		if(WifiPlayers > 0)
 			m_btnMgr.setTexture(m_gameinfoLblWifiplayers, m_wifi);
 		else 
@@ -491,65 +418,65 @@ void CMenu::_textGameInfo(void)
 			if(players >= 10)
 				players /= 10;
 			if(players == 1)
-				TexHandle.fromPNG(m_controlsreq[x], wiimote1_png);
+				TexHandle.fromImageFile(m_controlsreq[x], fmt("%s/wiimote1.png", m_imgsDir.c_str()));
 			else if(players == 2)
-				TexHandle.fromPNG(m_controlsreq[x], wiimote2_png);
+				TexHandle.fromImageFile(m_controlsreq[x], fmt("%s/wiimote2.png", m_imgsDir.c_str()));
 			else if(players == 3)
-				TexHandle.fromPNG(m_controlsreq[x], wiimote3_png);
+				TexHandle.fromImageFile(m_controlsreq[x], fmt("%s/wiimote3.png", m_imgsDir.c_str()));
 			else if(players == 4)
-				TexHandle.fromPNG(m_controlsreq[x], wiimote4_png);
+				TexHandle.fromImageFile(m_controlsreq[x], fmt("%s/wiimote4.png", m_imgsDir.c_str()));
 			else if(players == 6)
-				TexHandle.fromPNG(m_controlsreq[x], wiimote6_png);
+				TexHandle.fromImageFile(m_controlsreq[x], fmt("%s/wiimote6.png", m_imgsDir.c_str()));
 			else if(players == 8)
-				TexHandle.fromPNG(m_controlsreq[x], wiimote8_png);
+				TexHandle.fromImageFile(m_controlsreq[x], fmt("%s/wiimote8.png", m_imgsDir.c_str()));
 			m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 20, 60);
 			x++;
 		}
 		if(nunchuk && x < max_controlsReq)
 		{
-			TexHandle.fromPNG(m_controlsreq[x], nunchukR_png);
+			TexHandle.fromImageFile(m_controlsreq[x], fmt("%s/nunchukR.png", m_imgsDir.c_str()));
 			m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 52, 60);
 			x++;
 		}
 		if(guitar && x < max_controlsReq)
 		{
-			TexHandle.fromPNG(m_controlsreq[x], guitarR_png);
+			TexHandle.fromImageFile(m_controlsreq[x], fmt("%s/guitarR.png", m_imgsDir.c_str()));
 			m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 52, 60);
 			x++;
 		}
 		if(drums && x < max_controlsReq)
 		{
-			TexHandle.fromPNG(m_controlsreq[x], drumsR_png);
+			TexHandle.fromImageFile(m_controlsreq[x], fmt("%s/drumsR.png", m_imgsDir.c_str()));
 			m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 52, 60);
 			x++;
 		}
 		if(motionplus && x < max_controlsReq)
 		{
-			TexHandle.fromPNG(m_controlsreq[x], motionplusR_png);
+			TexHandle.fromImageFile(m_controlsreq[x], fmt("%s/motionplusR.png", m_imgsDir.c_str()));
 			m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 20, 60);
 			x++;
 		}
 		if(dancepad && x < max_controlsReq)
 		{
-			TexHandle.fromPNG(m_controlsreq[x], dancepadR_png);
+			TexHandle.fromImageFile(m_controlsreq[x], fmt("%s/dancepadR.png", m_imgsDir.c_str()));
 			m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 52, 60);
 			x++;
 		}
 		if(microphone && x < max_controlsReq)
 		{
-			TexHandle.fromPNG(m_controlsreq[x], microphoneR_png);
+			TexHandle.fromImageFile(m_controlsreq[x], fmt("%s/microphoneR.png", m_imgsDir.c_str()));
 			m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 52, 60);
 			x++;
 		}
 		if(balanceboard && x < max_controlsReq)
 		{
-			TexHandle.fromPNG(m_controlsreq[x], balanceboardR_png);
+			TexHandle.fromImageFile(m_controlsreq[x], fmt("%s/balanceboardR.png", m_imgsDir.c_str()));
 			m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 52, 60);
 			x++;
 		}
 		if(udraw && x < max_controlsReq)
 		{
-			TexHandle.fromPNG(m_controlsreq[x], udrawR_png);
+			TexHandle.fromImageFile(m_controlsreq[x], fmt("%s/udrawR.png", m_imgsDir.c_str()));
 			m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 52, 60);
 			x++;
 		}
@@ -605,79 +532,79 @@ void CMenu::_textGameInfo(void)
 		u8 max_controls = ARRAY_SIZE(m_gameinfoLblControls);
 		if(classiccontroller && x < max_controls)
 		{
-			TexHandle.fromPNG(m_controls[x], classiccontroller_png);
+			TexHandle.fromImageFile(m_controls[x], fmt("%s/classiccontroller.png", m_imgsDir.c_str()));
 			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 60);
 			x++;
 		}
 		if(nunchuk && x < max_controls)
 		{
-			TexHandle.fromPNG(m_controls[x], nunchuk_png);
+			TexHandle.fromImageFile(m_controls[x], fmt("%s/nunchuk.png", m_imgsDir.c_str()));
 			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 60);
 			x++;
 		}
 		if(guitar && x < max_controls)
 		{
-			TexHandle.fromPNG(m_controls[x], guitar_png);
+			TexHandle.fromImageFile(m_controls[x], fmt("%s/guitar.png", m_imgsDir.c_str()));
 			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 60);
 			x++;
 		}
 		if(drums && x < max_controls)
 		{
-			TexHandle.fromPNG(m_controls[x], drums_png);
+			TexHandle.fromImageFile(m_controls[x], fmt("%s/drums.png", m_imgsDir.c_str()));
 			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 60);
 			x++;
 		}
 		if(dancepad && x < max_controls)
 		{
-			TexHandle.fromPNG(m_controls[x], dancepad_png);
+			TexHandle.fromImageFile(m_controls[x], fmt("%s/dancepad.png", m_imgsDir.c_str()));
 			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 60);
 			x++;
 		}
 		if(motionplus && x < max_controls)
 		{
-			TexHandle.fromPNG(m_controls[x], motionplus_png);
+			TexHandle.fromImageFile(m_controls[x], fmt("%s/motionplus.png", m_imgsDir.c_str()));
 			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 20, 60);
 			x++;
 		}
 		if(balanceboard && x < max_controls)
 		{
-			TexHandle.fromPNG(m_controls[x], balanceboard_png);
+			TexHandle.fromImageFile(m_controls[x], fmt("%s/balanceboard.png", m_imgsDir.c_str()));
 			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 60);
 			x++;
 		}
 		if(microphone && x < max_controls)
 		{
-			TexHandle.fromPNG(m_controls[x], microphone_png);
+			TexHandle.fromImageFile(m_controls[x], fmt("%s/microphone.png", m_imgsDir.c_str()));
 			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 48, 60);
 			x++;
 		}
 		if(gamecube && x < max_controls)
 		{
-			TexHandle.fromPNG(m_controls[x], gcncontroller_png);
+			TexHandle.fromImageFile(m_controls[x], fmt("%s/gcncontroller.png", m_imgsDir.c_str()));
 			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 48, 60);
 			x++;
 		}
 		if(keyboard && x < max_controls)
 		{
-			TexHandle.fromPNG(m_controls[x], keyboard_png);
+			TexHandle.fromImageFile(m_controls[x], fmt("%s/keyboard.png", m_imgsDir.c_str()));
 			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 60);
 			x++;
 		}
 		if(udraw && x < max_controls)
 		{
-			TexHandle.fromPNG(m_controls[x], udraw_png);
+			TexHandle.fromImageFile(m_controls[x], fmt("%s/udraw.png", m_imgsDir.c_str()));
 			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 60);
 			x++;
 		}
 		if(zapper && x < max_controls)
 		{
-			TexHandle.fromPNG(m_controls[x], zapper_png);
+			TexHandle.fromImageFile(m_controls[x], fmt("%s/zapper.png", m_imgsDir.c_str()));
 			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 70);
 			x++;
 		}
 		if(wheel && x < max_controls)
 		{
-			TexHandle.fromPNG(m_controls[x], wheel_png);
+			TexHandle.fromImageFile(m_controls[x], fmt("%s/wheel.png", m_imgsDir.c_str()));
 			m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 60);
 			x++;
 		}

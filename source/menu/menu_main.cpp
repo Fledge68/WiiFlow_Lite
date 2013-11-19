@@ -15,34 +15,6 @@
 #include "loader/wdvd.h"
 #include "network/gcard.h"
 
-extern const u8 btnconfig_png[];
-extern const u8 btnconfigs_png[];
-extern const u8 btninfo_png[];
-extern const u8 btninfos_png[];
-extern const u8 btnquit_png[];
-extern const u8 btnquits_png[];
-extern const u8 btnnext_png[];
-extern const u8 btnnexts_png[];
-extern const u8 btnprev_png[];
-extern const u8 btnprevs_png[];
-extern const u8 btnchannel_png[];
-extern const u8 btnchannels_png[];
-extern const u8 btnusb_png[];
-extern const u8 btnusbs_png[];
-extern const u8 btndml_png[];
-extern const u8 btndmls_png[];
-extern const u8 btnemu_png[];
-extern const u8 btnemus_png[];
-extern const u8 btndvd_png[];
-extern const u8 btndvds_png[];
-extern const u8 favoriteson_png[];
-extern const u8 favoritesons_png[];
-extern const u8 favoritesoff_png[];
-extern const u8 favoritesoffs_png[];
-
-extern const u8 btnhomebrew_png[];
-extern const u8 btnhomebrews_png[];
-
 static inline int loopNum(int i, int s)
 {
 	return i < 0 ? (s - (-i % s)) % s : i % s;
@@ -991,32 +963,32 @@ void CMenu::_initMainMenu()
 	if(m_theme.loaded() && TexHandle.fromImageFile(bgLQ, fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString("MAIN/BG", "texture").c_str()), GX_TF_CMPR, 64, 64) == TE_OK)
 		m_mainBgLQ = bgLQ;
 
-	TexHandle.fromPNG(texQuit, btnquit_png);
-	TexHandle.fromPNG(texQuitS, btnquits_png);
-	TexHandle.fromPNG(texInfo, btninfo_png);
-	TexHandle.fromPNG(texInfoS, btninfos_png);
-	TexHandle.fromPNG(texConfig, btnconfig_png);
-	TexHandle.fromPNG(texConfigS, btnconfigs_png);
-	TexHandle.fromPNG(texDVD, btndvd_png);
-	TexHandle.fromPNG(texDVDs, btndvds_png);
-	TexHandle.fromPNG(texUsb, btnusb_png);
-	TexHandle.fromPNG(texUsbs, btnusbs_png);
-	TexHandle.fromPNG(texDML, btndml_png);
-	TexHandle.fromPNG(texDMLs, btndmls_png);
-	TexHandle.fromPNG(texEmu, btnemu_png);
-	TexHandle.fromPNG(texEmus, btnemus_png);
-	TexHandle.fromPNG(texChannel, btnchannel_png);
-	TexHandle.fromPNG(texChannels, btnchannels_png);
-	TexHandle.fromPNG(texHomebrew, btnhomebrew_png);
-	TexHandle.fromPNG(texHomebrews, btnhomebrews_png);
-	TexHandle.fromPNG(texPrev, btnprev_png);
-	TexHandle.fromPNG(texPrevS, btnprevs_png);
-	TexHandle.fromPNG(texNext, btnnext_png);
-	TexHandle.fromPNG(texNextS, btnnexts_png);
-	TexHandle.fromPNG(texFavOn, favoriteson_png);
-	TexHandle.fromPNG(texFavOnS, favoritesons_png);
-	TexHandle.fromPNG(texFavOff, favoritesoff_png);
-	TexHandle.fromPNG(texFavOffS, favoritesoffs_png);
+	TexHandle.fromImageFile(texQuit, fmt("%s/btnquit.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texQuitS, fmt("%s/btnquits.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texInfo, fmt("%s/btninfo.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texInfoS, fmt("%s/btninfos.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texConfig, fmt("%s/btnconfig.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texConfigS, fmt("%s/btnconfigs.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texDVD, fmt("%s/btndvd.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texDVDs, fmt("%s/btndvds.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texUsb, fmt("%s/btnusb.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texUsbs, fmt("%s/btnusbs.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texDML, fmt("%s/btndml.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texDMLs, fmt("%s/btndmls.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texEmu, fmt("%s/btnemu.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texEmus, fmt("%s/btnemus.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texChannel, fmt("%s/btnchannel.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texChannels, fmt("%s/btnchannels.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texHomebrew, fmt("%s/btnhomebrew.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texHomebrews, fmt("%s/btnhomebrews.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texPrev, fmt("%s/btnprev.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texPrevS, fmt("%s/btnprevs.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texNext, fmt("%s/btnnext.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texNextS, fmt("%s/btnnexts.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texFavOn, fmt("%s/favoriteson.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texFavOnS, fmt("%s/favoritesons.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texFavOff, fmt("%s/favoritesoff.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texFavOffS, fmt("%s/favoritesoffs.png", m_imgsDir.c_str()));
 
 	_addUserLabels(m_mainLblUser, ARRAY_SIZE(m_mainLblUser), "MAIN");
 

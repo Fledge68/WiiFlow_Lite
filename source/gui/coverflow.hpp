@@ -48,7 +48,7 @@ public:
 	bool empty(void) const { return m_items.empty(); }
 	u32 size(void) const { return m_items.size(); }
 	// 
-	bool start();
+	bool start(const string &m_imgsDir);
 	void stopCoverLoader(bool empty = false);
 	void startCoverLoader(void);
 	void defaultLoad(void);
