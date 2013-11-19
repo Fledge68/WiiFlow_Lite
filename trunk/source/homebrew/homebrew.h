@@ -6,7 +6,8 @@ typedef void (*entry)(void);
 
 void BootHomebrew();
 void AddBootArgument(const char * arg);
-int LoadHomebrew(const char * filepath);
+bool LoadHomebrew(const char * filepath);
+bool LoadAppBooter(const char *filepath);
 void JumpToEntry(entry EntryPoint);
 void writeStub();
 

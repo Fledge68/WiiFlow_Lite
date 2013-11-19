@@ -8,6 +8,7 @@
 #include <string>
 #include "homebrew.h"
 #include "banner/AnimatedBanner.h"
+#include "fileOps/fileOps.h"
 #include "gecko/gecko.hpp"
 
 #define EXECUTE_ADDR	((u8 *)0x92000000)
@@ -16,9 +17,6 @@
 #define BOOTER_ENTRY	((entry)BOOTER_ADDR)
 
 using namespace std;
-
-extern const u8 app_booter_bin[];
-extern const u32 app_booter_bin_size;
 
 extern const u8 stub_bin[];
 extern const u32 stub_bin_size;
@@ -46,26 +44,35 @@ void AddBootArgument(const char * argv)
 	Arguments.push_back(arg);
 }
 
-int LoadHomebrew(const char *filepath)
+bool LoadAppBooter(const char *filepath)
+{
+	u32 filesize = 0;
+	fsop_GetFileSizeBytes(filepath, &filesize);
+	if(filesize > 0)
+	{
+		fsop_ReadFileLoc(filepath, filesize, BOOTER_ADDR);
+		DCFlushRange(BOOTER_ADDR, filesize);
+		return true;
+	}
+	return false;
+}
+
+bool LoadHomebrew(const char *filepath)
 {
 	if(filepath == NULL)
-		return -1;
+		return false;
 
-	FILE *file = fopen(filepath, "rb");
-	if(file == NULL)
-		return -2;
+	u32 filesize = 0;
+	fsop_GetFileSizeBytes(filepath, &filesize);
+	if(filesize == 0)
+		return false;
 
-	fseek(file, 0, SEEK_END);
-	u32 filesize = ftell(file);
 	if(filesize <= ((u32)BOOTER_ADDR - (u32)EXECUTE_ADDR))
 	{
-		rewind(file);
-		valid = (fread(EXECUTE_ADDR, 1, filesize, file) == filesize);
+		fsop_ReadFileLoc(filepath, filesize, EXECUTE_ADDR);
 		DCFlushRange(EXECUTE_ADDR, filesize);
 	}
-	fclose(file);
-
-	return valid;
+	return true;
 }
 
 int SetupARGV(struct __argv * args)
@@ -131,9 +138,6 @@ void BootHomebrew()
 		SetupARGV(&args);
 	else
 		gprintf("Homebrew Boot Arguments disabled\n");
-
-	memcpy(BOOTER_ADDR, app_booter_bin, app_booter_bin_size);
-	DCFlushRange(BOOTER_ADDR, app_booter_bin_size);
 
 	memmove(ARGS_ADDR, &args, sizeof(args));
 	DCFlushRange(ARGS_ADDR, sizeof(args) + args.length);

@@ -37,20 +37,6 @@
 #include "network/http.h"
 #include "network/gcard.h"
 
-extern const u8 btngamecfg_png[];
-extern const u8 btngamecfgs_png[];
-extern const u8 stopkidon_png[];
-extern const u8 stopkidons_png[];
-extern const u8 stopkidoff_png[];
-extern const u8 stopkidoffs_png[];
-extern const u8 gamefavon_png[];
-extern const u8 gamefavons_png[];
-extern const u8 gamefavoff_png[];
-extern const u8 gamefavoffs_png[];
-extern const u8 delete_png[];
-extern const u8 deletes_png[];
-extern const u8 blank_png[];
-
 //sounds
 extern const u8 gc_ogg[];
 extern const u32 gc_ogg_size;
@@ -1042,7 +1028,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	else
 	{
 		Nintendont_WriteOptions();
-		bool ret = Nintendont_GetLoader();
+		bool ret = (Nintendont_GetLoader() && LoadAppBooter(fmt("%s/app_booter.bin", m_binsDir.c_str())));
 		ShutdownBeforeExit();
 		if(ret == true)
 		{
@@ -1064,20 +1050,22 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 	Playlog_Delete();
 	cleanup(); // wifi and sd gecko doesnt work anymore after cleanup
 
-	if(LoadHomebrew(filepath) == 1)
+	bool ret = (LoadHomebrew(filepath) && LoadAppBooter(fmt("%s/app_booter.bin", m_binsDir.c_str())));
+
+	AddBootArgument(filepath);
+	for(u32 i = 0; i < arguments.size(); ++i)
 	{
-		AddBootArgument(filepath);
-		for(u32 i = 0; i < arguments.size(); ++i)
-		{
-			gprintf("Argument: %s\n", arguments[i].c_str());
-			AddBootArgument(arguments[i].c_str());
-		}
+		gprintf("Argument: %s\n", arguments[i].c_str());
+		AddBootArgument(arguments[i].c_str());
+	}
+
+	ShutdownBeforeExit();
+	if(ret == true)
+	{
 		loadIOS(58, false);
-		ShutdownBeforeExit();
 		BootHomebrew();
 	}
-	else
-		Sys_Exit();
+	Sys_Exit();
 }
 
 int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id, bool RealNAND_Channels)
@@ -1269,8 +1257,11 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		NandHandle.Patch_AHB(); /* Identify may takes it */
 		PatchIOS(true); /* Patch for everything */
 		Identify(gameTitle);
-		ExternalBooter_ChannelSetup(gameTitle, use_dol);
-		WiiFlow_ExternalBooter(videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, 0, TYPE_CHANNEL, use_led);
+		if(ExternalBooter_LoadBooter(fmt("%s/ext_booter.bin", m_binsDir.c_str())) == true)
+		{
+			ExternalBooter_ChannelSetup(gameTitle, use_dol);
+			WiiFlow_ExternalBooter(videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, 0, TYPE_CHANNEL, use_led);
+		}
 	}
 	Sys_Exit();
 }
@@ -1506,8 +1497,13 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		app_gameconfig_load(id.c_str(), gameconfig, gameconfigSize);
 		free(gameconfig);
 	}
-	ExternalBooter_WiiGameSetup(wbfs_partition, dvd, id.c_str());
-	WiiFlow_ExternalBooter(videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, returnTo, TYPE_WII_GAME, use_led);
+
+	if(ExternalBooter_LoadBooter(fmt("%s/ext_booter.bin", m_binsDir.c_str())) == true)
+	{
+		ExternalBooter_WiiGameSetup(wbfs_partition, dvd, id.c_str());
+		WiiFlow_ExternalBooter(videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, returnTo, TYPE_WII_GAME, use_led);
+	}
+	Sys_Exit();
 }
 
 void CMenu::_initGameMenu()
@@ -1525,22 +1521,22 @@ void CMenu::_initGameMenu()
 	TexData texDeleteSel;
 	TexData texSettings;
 	TexData texSettingsSel;
-	TexData texToogleBanner;
+	TexData texToggleBanner;
 	TexData bgLQ;
 
-	TexHandle.fromPNG(texGameFavOn, gamefavon_png);
-	TexHandle.fromPNG(texGameFavOnSel, gamefavons_png);
-	TexHandle.fromPNG(texGameFavOff, gamefavoff_png);
-	TexHandle.fromPNG(texGameFavOffSel, gamefavoffs_png);
-	TexHandle.fromPNG(texAdultOn, stopkidon_png);
-	TexHandle.fromPNG(texAdultOnSel, stopkidons_png);
-	TexHandle.fromPNG(texAdultOff, stopkidoff_png);
-	TexHandle.fromPNG(texAdultOffSel, stopkidoffs_png);
-	TexHandle.fromPNG(texDelete, delete_png);
-	TexHandle.fromPNG(texDeleteSel, deletes_png);
-	TexHandle.fromPNG(texSettings, btngamecfg_png);
-	TexHandle.fromPNG(texSettingsSel, btngamecfgs_png);
-	TexHandle.fromPNG(texToogleBanner, blank_png);
+	TexHandle.fromImageFile(texGameFavOn, fmt("%s/gamefavon.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texGameFavOnSel, fmt("%s/gamefavons.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texGameFavOff, fmt("%s/gamefavoff.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texGameFavOffSel, fmt("%s/gamefavoffs.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texAdultOn, fmt("%s/stopkidon.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texAdultOnSel, fmt("%s/stopkidons.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texAdultOff, fmt("%s/stopkidoff.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texAdultOffSel, fmt("%s/stopkidoffs.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texDelete, fmt("%s/delete.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texDeleteSel, fmt("%s/deletes.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texSettings, fmt("%s/btngamecfg.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texSettingsSel, fmt("%s/btngamecfgs.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texToggleBanner, fmt("%s/blank.png", m_imgsDir.c_str()));
 
 	_addUserLabels(m_gameLblUser, ARRAY_SIZE(m_gameLblUser), "GAME");
 	m_gameBg = _texture("GAME/BG", "texture", theme.bg, false);
@@ -1557,8 +1553,8 @@ void CMenu::_initGameMenu()
 	m_gameBtnDelete = _addPicButton("GAME/DELETE_BTN", texDelete, texDeleteSel, 532, 272, 48, 48);
 	m_gameBtnBackFull = _addButton("GAME/BACK_FULL_BTN", theme.btnFont, L"", 100, 390, 200, 56, theme.btnFontColor);
 	m_gameBtnPlayFull = _addButton("GAME/PLAY_FULL_BTN", theme.btnFont, L"", 340, 390, 200, 56, theme.btnFontColor);
-	m_gameBtnToogle = _addPicButton("GAME/TOOGLE_BTN", texToogleBanner, texToogleBanner, 385, 31, 236, 127);
-	m_gameBtnToogleFull = _addPicButton("GAME/TOOGLE_FULL_BTN", texToogleBanner, texToogleBanner, 20, 12, 608, 344);
+	m_gameBtnToogle = _addPicButton("GAME/TOOGLE_BTN", texToggleBanner, texToggleBanner, 385, 31, 236, 127);
+	m_gameBtnToogleFull = _addPicButton("GAME/TOOGLE_FULL_BTN", texToggleBanner, texToggleBanner, 20, 12, 608, 344);
 
 	m_gameButtonsZone.x = m_theme.getInt("GAME/ZONES", "buttons_x", 0);
 	m_gameButtonsZone.y = m_theme.getInt("GAME/ZONES", "buttons_y", 0);

@@ -4,19 +4,6 @@
 #include "menu.hpp"
 #include "defines.h"
 
-extern const u8 btnchannel_png[];
-extern const u8 btnchannels_png[];
-extern const u8 btnusb_png[];
-extern const u8 btnusbs_png[];
-extern const u8 btndml_png[];
-extern const u8 btndmls_png[];
-extern const u8 btnemu_png[];
-extern const u8 btnemus_png[];
-extern const u8 btnhomebrew_png[];
-extern const u8 btnhomebrews_png[];
-extern const u8 favoriteson_png[];
-extern const u8 favoritesons_png[];
-
 // Source menu
 s16 m_sourceLblNotice;
 s16 m_sourceLblPage;
@@ -172,12 +159,12 @@ void CMenu::_updateSourceBtns(void)
 			if(TexHandle.fromImageFile(texConsoleImg, fmt("%s/%s/%s", m_sourceDir.c_str(), themeName.c_str(), ImgName)) != TE_OK)
 			{
 				if(TexHandle.fromImageFile(texConsoleImg, fmt("%s/%s", m_sourceDir.c_str(), ImgName)) != TE_OK)
-					TexHandle.fromPNG(texConsoleImg, favoriteson_png);
+					TexHandle.fromImageFile(texConsoleImg, fmt("%s/favoriteson.png", m_imgsDir.c_str()));
 			}
 			if(TexHandle.fromImageFile(texConsoleImgs, fmt("%s/%s/%s", m_sourceDir.c_str(), themeName.c_str(), ImgSelName)) != TE_OK)
 			{
 				if(TexHandle.fromImageFile(texConsoleImgs, fmt("%s/%s", m_sourceDir.c_str(), ImgSelName)) != TE_OK)
-					TexHandle.fromPNG(texConsoleImgs, favoritesons_png);
+					TexHandle.fromImageFile(texConsoleImgs, fmt("%s/favoritesons.png", m_imgsDir.c_str()));
 			}
 			m_btnMgr.setBtnTexture(m_sourceBtnSource[i - j], texConsoleImg, texConsoleImgs);
 			m_btnMgr.show(m_sourceBtnSource[i - j]);
@@ -855,16 +842,16 @@ void CMenu::_initSourceMenu()
 	TexData texHomebrew;
 	TexData texHomebrews;
 
-	TexHandle.fromPNG(texUsb, btnusb_png);
-	TexHandle.fromPNG(texUsbs, btnusbs_png);
-	TexHandle.fromPNG(texDML, btndml_png);
-	TexHandle.fromPNG(texDMLs, btndmls_png);
-	TexHandle.fromPNG(texEmu, btnemu_png);
-	TexHandle.fromPNG(texEmus, btnemus_png);
-	TexHandle.fromPNG(texChannel, btnchannel_png);
-	TexHandle.fromPNG(texChannels, btnchannels_png);
-	TexHandle.fromPNG(texHomebrew, btnhomebrew_png);
-	TexHandle.fromPNG(texHomebrews, btnhomebrews_png);
+	TexHandle.fromImageFile(texUsb, fmt("%s/btnusb.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texUsbs, fmt("%s/btnusbs.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texDML, fmt("%s/btndml.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texDMLs, fmt("%s/btndmls.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texEmu, fmt("%s/btnemu.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texEmus, fmt("%s/btnemus.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texChannel, fmt("%s/btnchannel.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texChannels, fmt("%s/btnchannels.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texHomebrew, fmt("%s/btnhomebrew.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texHomebrews, fmt("%s/btnhomebrews.png", m_imgsDir.c_str()));
 
 	_addUserLabels(m_sourceLblUser, ARRAY_SIZE(m_sourceLblUser), "SOURCE");
 	m_sourceBg = _texture("SOURCE/BG", "texture", theme.bg, false);
@@ -899,13 +886,13 @@ void CMenu::_initSourceMenu()
 		if(TexHandle.fromImageFile(texConsoleImg, fmt("%s/%s", m_themeDataDir.c_str(), ImgName.c_str())) != TE_OK)
 		{
 			if(TexHandle.fromImageFile(texConsoleImg, fmt("%s/%s", m_sourceDir.c_str(), ImgName.c_str())) != TE_OK)
-				TexHandle.fromPNG(texConsoleImg, favoriteson_png);
+				TexHandle.fromImageFile(texConsoleImg, fmt("%s/favoriteson.png", m_imgsDir.c_str()));
 		}
 		ImgName = m_source.getString(fmt("BUTTON_%i", i),"image_s", "");
 		if(TexHandle.fromImageFile(texConsoleImgs, fmt("%s/%s", m_themeDataDir.c_str(), ImgName.c_str())) != TE_OK)
 		{
 			if(TexHandle.fromImageFile(texConsoleImgs, fmt("%s/%s", m_sourceDir.c_str(), ImgName.c_str())) != TE_OK)
-				TexHandle.fromPNG(texConsoleImgs, favoritesons_png);
+				TexHandle.fromImageFile(texConsoleImgs, fmt("%s/favoritesons.png", m_imgsDir.c_str()));
 		}
 	
 		row = i / 4;

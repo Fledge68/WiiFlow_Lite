@@ -101,6 +101,8 @@ private:
 	string m_miosDir;
 	string m_themeDataDir;
 	string m_appDir;
+	string m_imgsDir;
+	string m_binsDir;
 	string m_dataDir;
 	string m_pluginsDir;
 	string m_customBnrDir;
