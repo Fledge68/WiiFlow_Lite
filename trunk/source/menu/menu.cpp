@@ -2204,11 +2204,14 @@ bool CMenu::_loadChannelList(void)
 		emuPartition = _FindEmuPart(emuPath, false);
 		if(emuPartition < 0)
 			emuPartition = _FindEmuPart(emuPath, true);
+		else
+		{	/* only create folder struct if the partition really has a emu nand on it already */
+			NandHandle.PreNandCfg(m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_miis", false), 
+					m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_config", false));
+		}
 		if(emuPartition < 0)
 			return false;
 		currentPartition = emuPartition;
-		NandHandle.PreNandCfg(m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_miis", false), 
-							m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_config", false));
 		cacheDir = fmt("%s/%s_channels.db", m_listCacheDir.c_str(), DeviceName[currentPartition]);
 	}
 	bool updateCache = m_cfg.getBool(CHANNEL_DOMAIN, "update_cache");
