@@ -278,19 +278,19 @@ void CMenu::_showNandEmu(void)
 		m_btnMgr.show(m_nandemuLblPresetVal);
 		m_btnMgr.show(m_nandemuBtnPresetP);
 		m_btnMgr.show(m_nandemuBtnPresetM);
-		const char *path = m_cfg.getString(CHANNEL_DOMAIN, fmt("path_%i", m_cfg.getInt(CHANNEL_DOMAIN, "current_preset", 0)+1), "").c_str();
-		if(strlen(path) > 0)
+		const char *presetPath = m_cfg.getString(CHANNEL_DOMAIN, fmt("path_%i", m_cfg.getInt(CHANNEL_DOMAIN, "current_preset", 1)), "").c_str();
+		if(strlen(presetPath) > 0)
 		{
 			char tmpPath[64];
 			memset(tmpPath, 0, 64);
-			if(strchr(path, '/') != strrchr(path, '/'))
+			if(strchr(presetPath, '/') != strrchr(presetPath, '/'))
 			{
-				if(path[strlen(path) - 1] == '/')
-					*strrchr(path, '/') = '\0';
-				strncpy(tmpPath, strrchr(path, '/') + 1, 63);
+				if(presetPath[strlen(presetPath) - 1] == '/')
+					*strrchr(presetPath, '/') = '\0';
+				strncpy(tmpPath, strrchr(presetPath, '/') + 1, 63);
 			}
 			else
-				strcpy(tmpPath, path);
+				strcpy(tmpPath, presetPath);
 			m_btnMgr.setText(m_nandemuLblPresetVal, wstringEx(tmpPath));
 		}
 		else
@@ -303,9 +303,9 @@ void CMenu::_showNandEmu(void)
 
 int CMenu::_NandEmuCfg(void)
 {	
-	string path = "";
 	nandemuPage = 1;
-	bool pathChange = false;
+	bool bothNands = m_cfg.getBool(CHANNEL_DOMAIN, "switch_both_nands", false);
+	const char *path;
 
 	lwp_t thread = 0;
 	SetupInput();
@@ -422,10 +422,37 @@ int CMenu::_NandEmuCfg(void)
 			m_current_view = COVERFLOW_CHANNEL;
 			string emuPath;
 			_FindEmuPart(emuPath, true);
-			const char *path = _FolderExplorer(NandHandle.GetPath());
-			m_cfg.setString(CHANNEL_DOMAIN, fmt("path_%i", m_cfg.getInt(CHANNEL_DOMAIN, "current_preset", 0)+1), path);
+			path = _FolderExplorer(NandHandle.GetPath());
 			m_current_view = tmpView;
-			pathChange = true;
+			if(strlen(path) > 0)
+			{
+				char preset[256];
+				memset(preset, 0, 256);
+				strncpy(preset, path, strlen(path)-1);
+				m_cfg.setString(CHANNEL_DOMAIN, fmt("path_%i", m_cfg.getInt(CHANNEL_DOMAIN, "current_preset", 1)), preset);
+				if(strncmp(path, "sd:/", 4) == 0)
+				{
+					m_cfg.setInt(CHANNEL_DOMAIN, "partition", 0);
+					if(bothNands)
+						m_cfg.setInt(WII_DOMAIN, "savepartition", 0);
+				}
+				else
+				{
+					const char *partval = &path[3];
+					m_cfg.setInt(CHANNEL_DOMAIN, "partition", atoi(partval));
+					if(bothNands)
+						m_cfg.setInt(WII_DOMAIN, "savepartition", atoi(partval));
+				}
+				char tmpPath[MAX_FAT_PATH];
+				memset(tmpPath, 0, MAX_FAT_PATH);
+				strncpy(tmpPath, strchr(path, '/'), MAX_FAT_PATH-1);
+				m_cfg.setString(CHANNEL_DOMAIN, "path", tmpPath);
+				if(bothNands)
+					m_cfg.setString(WII_DOMAIN, "savepath", tmpPath);
+				m_cfg.setBool(CHANNEL_DOMAIN, "update_cache", true);
+				if(m_cfg.getBool(CHANNEL_DOMAIN, "source"))
+					m_load_view = true;
+			}
 			_showNandEmu();
 		}
 		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnNandSavesFolder)))
@@ -435,28 +462,74 @@ int CMenu::_NandEmuCfg(void)
 			m_current_view = COVERFLOW_USB;
 			string emuPath;
 			_FindEmuPart(emuPath, true);
-			const char *path = _FolderExplorer(NandHandle.GetPath());
+			path = _FolderExplorer(NandHandle.GetPath());
 			m_current_view = tmpView;
 			if(strlen(path) > 0)
 			{
+				if(bothNands)
+				{
+					char preset[256];
+					memset(preset, 0, 256);
+					strncpy(preset, path, strlen(path)-1);
+					m_cfg.setString(CHANNEL_DOMAIN, fmt("path_%i", m_cfg.getInt(CHANNEL_DOMAIN, "current_preset", 1)), preset);
+				}
 				if(strncmp(path, "sd:/", 4) == 0)
+				{
 					m_cfg.setInt(WII_DOMAIN, "savepartition", 0);
+					if(bothNands)
+						m_cfg.setInt(CHANNEL_DOMAIN, "partition", 0);
+				}
 				else
 				{
 					const char *partval = &path[3];
 					m_cfg.setInt(WII_DOMAIN, "savepartition", atoi(partval));
+					if(bothNands)
+						m_cfg.setInt(CHANNEL_DOMAIN, "partition", atoi(partval));
 				}
 				char tmpPath[MAX_FAT_PATH];
+				memset(tmpPath, 0, MAX_FAT_PATH);
 				strncpy(tmpPath, strchr(path, '/'), MAX_FAT_PATH-1);
 				m_cfg.setString(WII_DOMAIN, "savepath", tmpPath);
+				if(bothNands)
+				{
+					m_cfg.setString(CHANNEL_DOMAIN, "path", tmpPath);
+					m_cfg.setBool(CHANNEL_DOMAIN, "update_cache", true);
+					if(m_cfg.getBool(CHANNEL_DOMAIN, "source"))
+						m_load_view = true;
+				}
 			}
 			_showNandEmu();
 		}
 		else if (BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnPresetP) || m_btnMgr.selected(m_nandemuBtnPresetM)))
 		{
 			s8 direction = m_btnMgr.selected(m_nandemuBtnPresetP) ? 1 : -1;
-			m_cfg.setInt(CHANNEL_DOMAIN, "current_preset", (int)loopNum((u32)m_cfg.getInt(CHANNEL_DOMAIN, "current_preset", 0) + direction, 4));
-			pathChange = true;
+			m_cfg.setInt(CHANNEL_DOMAIN, "current_preset", ((int)loopNum((u32)(m_cfg.getInt(CHANNEL_DOMAIN, "current_preset", 1) - 1) + direction, 4)) + 1);
+			path = m_cfg.getString(CHANNEL_DOMAIN, fmt("path_%i", m_cfg.getInt(CHANNEL_DOMAIN, "current_preset", 1)), "").c_str();
+			if(strlen(path) > 0)
+			{
+				if(strncmp(path, "sd:/", 4) == 0)
+				{
+					m_cfg.setInt(CHANNEL_DOMAIN, "partition", 0);
+					if(bothNands)
+						m_cfg.setInt(WII_DOMAIN, "savepartition", 0);
+				}
+				else
+				{
+					const char *partval = &path[3];
+					m_cfg.setInt(CHANNEL_DOMAIN, "partition", atoi(partval));
+					if(bothNands)
+						m_cfg.setInt(WII_DOMAIN, "savepartition", atoi(partval));
+				}
+				char tmpPath[MAX_FAT_PATH];
+				memset(tmpPath, 0, MAX_FAT_PATH);
+				strncpy(tmpPath, strchr(path, '/'), MAX_FAT_PATH-1);
+				m_cfg.setString(CHANNEL_DOMAIN, "path", tmpPath);
+				if(bothNands)
+					m_cfg.setString(WII_DOMAIN, "savepath", tmpPath);
+				m_cfg.setBool(CHANNEL_DOMAIN, "update_cache", true);
+				if(m_cfg.getBool(CHANNEL_DOMAIN, "source"))
+					m_load_view = true;
+			}
 			_showNandEmu();
 		}	
 		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnBack)))
@@ -492,26 +565,6 @@ int CMenu::_NandEmuCfg(void)
 		}
 	}
 	_hideNandEmu();
-	if(pathChange)
-	{
-		const char *path = m_cfg.getString(CHANNEL_DOMAIN, fmt("path_%i", m_cfg.getInt(CHANNEL_DOMAIN, "current_preset", 0)+1), "").c_str();
-		if(strlen(path) > 0)
-		{
-			if(strncmp(path, "sd:/", 4) == 0)
-				m_cfg.setInt(CHANNEL_DOMAIN, "partition", 0);
-			else
-			{
-				const char *partval = &path[3];
-				m_cfg.setInt(CHANNEL_DOMAIN, "partition", atoi(partval));
-			}
-			char tmpPath[MAX_FAT_PATH];
-			strncpy(tmpPath, strchr(path, '/'), MAX_FAT_PATH-1);
-			m_cfg.setString(CHANNEL_DOMAIN, "path", tmpPath);
-			m_cfg.setBool(CHANNEL_DOMAIN, "update_cache", true);
-			if(m_cfg.getBool(CHANNEL_DOMAIN, "source"))
-				m_load_view = true;
-		}
-	}
 	return 0;
 }
 
