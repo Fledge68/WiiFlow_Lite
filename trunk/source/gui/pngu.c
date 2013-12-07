@@ -776,7 +776,7 @@ int PNGU_DecodeToCMPR(IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, void *buffer)
 
 void user_error(png_structp png_ptr, png_const_charp c)
 {
-	longjmp(png_jmpbuf(png_ptr), 1);
+	longjmp(png_ptr->jmpbuf, 1);
 	gprintf("%s\n", c);
 }
 
