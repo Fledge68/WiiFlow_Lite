@@ -279,7 +279,7 @@ int ftp_delete(char *path)
 
 lwp_t ftpThrdPtr = LWP_THREAD_NULL;
 u8 *ftpThrdStack = NULL;
-static const u32 ftpThrdStackSize = 65536; //we need a big stack for all the transfers
+static const u32 ftpThrdStackSize = 81920; //we need a big stack for all the transfers
 volatile bool ftpThrd_running = false;
 bool end_ftp = false;
 s32 cur_server_num = -1;

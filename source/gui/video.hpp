@@ -63,7 +63,7 @@ public:
 	bool wide(void) const { return m_wide; }
 	bool vid_50hz(void) const { return m_50hz; }
 	u8 getAA(void) const { return m_aa; }
-	bool showingWaitMessage() { return m_showingWaitMessages || m_showWaitMessage; }
+	bool showingWaitMessage() { return m_WaitThreadRunning; }
 	void set2DViewport(u32 w, u32 h, int x, int y);
 	void prepareStencil(void);
 	void renderStencil(void);
@@ -101,6 +101,7 @@ private:
 	float m_vpH;
 	float m_waitMessageDelay;
 	volatile bool m_showWaitMessage;
+	volatile bool m_WaitThreadRunning;
 	volatile bool m_showingWaitMessages;
 	vector<TexData> m_waitMessages;
 	// 

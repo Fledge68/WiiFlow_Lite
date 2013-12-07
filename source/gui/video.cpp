@@ -87,7 +87,7 @@ CVideo::CVideo(void) :
 	m_yScale(0.0f), m_xfbHeight(0), m_wide(false),
 	m_width2D(640), m_height2D(480), m_x2D(0), m_y2D(0), m_aa(0), m_aaAlpha(false),
 	m_aaWidth(0), m_aaHeight(0), m_screensaver_alpha(0), m_showWaitMessage(false), 
-	m_showingWaitMessages(false)
+	m_WaitThreadRunning(false), m_showingWaitMessages(false)
 {
 	memset(m_frameBuf, 0, sizeof m_frameBuf);
 }
@@ -554,6 +554,9 @@ void CVideo::_showWaitMessages(CVideo *m)
 	m->m_showingWaitMessages = false;
 }
 
+u32 waitMessageStackSize = 1024;
+u8 *waitMessageStack = NULL;
+
 void CVideo::hideWaitMessage()
 {
 	m_showWaitMessage = false;
@@ -564,6 +567,10 @@ void CVideo::hideWaitMessage()
 		while(m_showingWaitMessages)
 			usleep(50);
 		LWP_JoinThread(waitThread, NULL);
+		if(waitMessageStack != NULL)
+			MEM2_free(waitMessageStack);
+		waitMessageStack = NULL;
+		m_WaitThreadRunning = false;
 	}
 	waitThread = LWP_THREAD_NULL;
 }
@@ -590,6 +597,8 @@ void CVideo::waitMessage(float delay)
 void CVideo::waitMessage(const vector<TexData> &tex, float delay)
 {
 	hideWaitMessage();
+	m_WaitThreadRunning = true;
+
 	if(tex.size() == 0)
 	{
 		m_waitMessages = m_defaultWaitMessages;
@@ -606,7 +615,10 @@ void CVideo::waitMessage(const vector<TexData> &tex, float delay)
 	else if(m_waitMessages.size() > 1)
 	{
 		m_showWaitMessage = true;
-		LWP_CreateThread(&waitThread, (void *(*)(void *))_showWaitMessages, (void *)this, NULL, 0, LWP_PRIO_HIGHEST);
+		if(waitMessageStack == NULL)
+			waitMessageStack = (u8*)MEM2_memalign(32, waitMessageStackSize);
+		LWP_CreateThread(&waitThread, (void *(*)(void *))_showWaitMessages, 
+					(void*)this, waitMessageStack, waitMessageStackSize, LWP_PRIO_HIGHEST);
 	}
 }
 
