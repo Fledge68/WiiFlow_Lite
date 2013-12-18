@@ -2,11 +2,13 @@
 #include <string.h>
 #include <unistd.h>
 #include <malloc.h>
+#include <ogc/machine/processor.h>
 #include "memory/mem2.hpp"
 #include "video.hpp"
 #include "pngu.h"
 #include "Gekko.h"
 #include "gecko/gecko.hpp"
+#include "loader/sys.h"
 #include "loader/utils.h"
 
 #define DEFAULT_FIFO_SIZE	(256 * 1024)
@@ -153,6 +155,13 @@ void CVideo::init(void)
 	s8 hoffset = 0;  //Use horizontal offset set in wii menu.
 	if(CONF_GetDisplayOffsetH(&hoffset) == 0)
 		m_rmode->viXOrigin += hoffset;
+
+	/* Widescreen Fix by tueidj, WiiU Check by crediar, thanks alot */
+	if(m_wide && AHBRPOT_Patched() && IsOnWiiU())
+	{
+		write32(0xd8006a0, 0x30000004);
+		mask32(0xd8006a8, 0, 2);
+	}
 
 	/* GX Init */
 	m_frameBuf[0] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(m_rmode));

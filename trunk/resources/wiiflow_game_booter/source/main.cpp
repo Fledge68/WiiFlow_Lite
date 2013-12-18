@@ -90,6 +90,8 @@ int main()
 				Disc_SetUSB(NULL, false);
 			if(CurrentIOS.Type == IOS_TYPE_HERMES)
 				Hermes_Disable_EHC();
+			if(normalCFG.vidMode > 1) //forcing a video mode
+				normalCFG.patchVidMode = 1; //always normal patching
 		}
 		else
 		{
@@ -98,7 +100,7 @@ int main()
 				Hermes_shadow_mload();
 		}
 		prog(20);
-		Disc_Open();
+		Disc_Open(normalCFG.GameBootType);
 		u32 offset = 0;
 		Disc_FindPartition(&offset);
 		WDVD_OpenPartition(offset, &GameIOS);
@@ -124,9 +126,6 @@ int main()
 	Disc_SetLowMem(GameIOS);
 	if(normalCFG.BootType == TYPE_CHANNEL && AppEntrypoint != 0x3400)
 		Disc_SetLowMemChan(); /* Real DOL without appldr */
-
-	/* Set time */
-	Disc_SetTime();
 
 	/* Set an appropriate video mode */
 	Disc_SetVMode(vmode, vmode_reg);

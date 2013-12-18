@@ -91,6 +91,8 @@ void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 pat
 	DCFlushRange(BooterConfig, sizeof(the_CFG));
 	/* Wii Games will need it */
 	net_wc24cleanup();
+	/* Set proper time */
+	settime(secs_to_ticks(time(NULL) - 946684800));
 	/* Boot it */
 	JumpToEntry(EXT_ENTRY);
 }
