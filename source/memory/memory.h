@@ -35,6 +35,7 @@
 #define HW_GPIO_OUT		((vu32*)0xCD8000E0)
 #define HW_GPIOB_OUT	((vu32*)0xCD8000C0)
 #define HW_AHBPROT		((vu32*)0xCD800064)
+#define HW_PROCESSOR	((vu32*)0xCD8005A0)
 #define MEM_PROT		((vu32)0xCD8B420A)
 
 #define HW_AES_CMD		((vu32)0x0D020000)

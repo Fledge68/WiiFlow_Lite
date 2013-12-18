@@ -140,6 +140,17 @@ bool AHBRPOT_Patched(void)
 	return (*HW_AHBPROT == 0xFFFFFFFF);
 }
 
+/* WiiU Check by crediar, thanks */
+bool IsOnWiiU(void)
+{
+	if((*HW_PROCESSOR >> 16) == 0xCAFE)
+	{
+		gprintf("vWii Mode\n");
+		return true;
+	}
+	return false;
+}
+
 void Sys_SetNeekPath(const char *Path)
 {
 	NeekPath = Path;

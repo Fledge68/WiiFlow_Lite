@@ -16,16 +16,17 @@
 /* Constants */
 #define PART_INFO_OFFSET	0x10000
 
-s32 Disc_Open()
+s32 Disc_Open(u8 type)
 {
-	/* Reset drive */
-	s32 ret = WDVD_Reset();
-	if(ret < 0)
-		return ret;
+	if(type > 0)
+	{	/* Reset drive */
+		s32 ret = WDVD_Reset();
+		if(ret < 0)
+			return ret;
+	}
 
 	/* Read disc ID */
-	ret = WDVD_ReadDiskId((u8*)Disc_ID);
-	return ret;
+	return WDVD_ReadDiskId((u8*)Disc_ID);
 }
 
 void Disc_SetLowMemPre()
@@ -134,12 +135,6 @@ s32 Disc_FindPartition(u32 *outbuf)
 	/* Set output buffer */
 	*outbuf = offset;
 	return 0;
-}
-
-void Disc_SetTime()
-{
-	/* Set proper time */
-	settime(secs_to_ticks(time(NULL) - 946684800));
 }
 
 GXRModeObj *Disc_SelectVMode(u8 videoselected, u32 *rmode_reg)
