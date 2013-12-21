@@ -14,8 +14,22 @@
 #include "loader/utils.h"
 #include "memory/mem2.hpp"
 
-#define wbfs_fatal(x)		do { gprintf(x); wd_last_error = 1; } while(0)
-#define wbfs_error(x)		do { gprintf(x); wd_last_error = 2; } while(0)
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
+extern int wd_last_error;
+static inline void wbfs_fatal(const char *x)
+{
+	gprintf(x);
+	wd_last_error = 1;
+}
+
+static inline void wbfs_error(const char *x)
+{
+	gprintf(x);
+	wd_last_error = 2;
+}
 
 static inline void *wbfs_malloc(size_t size)
 {
@@ -29,8 +43,9 @@ static inline void wbfs_free(void *ptr)
 	MEM2_free(ptr);
 }
 
-#define wbfs_ioalloc(x)		wbfs_malloc(x)
-#define wbfs_iofree(x)		wbfs_free(x)
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #define wbfs_be16(x)		(*((u16*)(x)))
 #define wbfs_be32(x)		(*((u32*)(x)))

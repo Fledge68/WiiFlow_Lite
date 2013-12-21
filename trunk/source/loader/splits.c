@@ -18,7 +18,10 @@
 #define FMT_llu "%llu"
 #define FMT_lld "%lld"
 
-#define split_error(x)		do { gprintf("\nsplit error: %s\n\n",x); } while(0)
+static inline void split_error(const char *x)
+{
+	gprintf("\nsplit error: %s\n\n",x);
+}
 
 // 1 cluster less than 4gb
 u64 OPT_split_size = (u64)4LL * 1024 * 1024 * 1024 - 32 * 1024;

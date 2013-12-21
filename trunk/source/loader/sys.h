@@ -32,6 +32,7 @@ enum
 /* Prototypes */
 void Sys_Init(void);
 bool Sys_DolphinMode(void);
+bool Sys_HW_Access(void);
 bool Sys_Exiting(void);
 void Sys_Exit(void);
 void Sys_ExitTo(int);

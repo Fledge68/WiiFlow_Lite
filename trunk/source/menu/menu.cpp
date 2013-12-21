@@ -14,7 +14,7 @@
 #include "channel/nand.hpp"
 #include "channel/nand_save.hpp"
 #include "gc/gc.hpp"
-#include "gui/Gekko.h"
+#include "hw/Gekko.h"
 #include "gui/GameTDB.hpp"
 #include "loader/alt_ios.h"
 #include "loader/cios.h"
@@ -255,7 +255,7 @@ void CMenu::init()
 	m_cfg.getBool(CHANNEL_DOMAIN, "disable", true);
 	/* Load cIOS Map */
 	_installed_cios.clear();
-	if(!neek2o())
+	if(!neek2o() && !Sys_DolphinMode())
 		_load_installed_cioses();
 	else
 		_installed_cios[CurrentIOS.Version] = CurrentIOS.Version;

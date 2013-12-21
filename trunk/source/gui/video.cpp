@@ -6,7 +6,7 @@
 #include "memory/mem2.hpp"
 #include "video.hpp"
 #include "pngu.h"
-#include "Gekko.h"
+#include "hw/Gekko.h"
 #include "gecko/gecko.hpp"
 #include "loader/sys.h"
 #include "loader/utils.h"
@@ -526,8 +526,6 @@ void CVideo::_showWaitMessages(CVideo *m)
 
 	m->prepare();
 	m->setup2DProjection();
-	wiiLightSetLevel(0);
-	wiiLightOn();
 
 	//gprintf("Wait Message Thread: Start\nDelay: %d, Images: %d\n", waitFrames, m->m_waitMessages.size());
 	while(m->m_showWaitMessage)
@@ -558,7 +556,6 @@ void CVideo::_showWaitMessages(CVideo *m)
 			VIDEO_WaitVSync();
 		waitFrames--;
 	}
-	wiiLightOff();
 	//gprintf("Wait Message Thread: End\n");
 	m->m_showingWaitMessages = false;
 }
@@ -571,6 +568,7 @@ void CVideo::hideWaitMessage()
 	m_showWaitMessage = false;
 	if(waitThread != LWP_THREAD_NULL)
 	{
+		/* end animation */
 		if(LWP_ThreadIsSuspended(waitThread))
 			LWP_ResumeThread(waitThread);
 		while(m_showingWaitMessages)
@@ -579,6 +577,8 @@ void CVideo::hideWaitMessage()
 		if(waitMessageStack != NULL)
 			MEM2_free(waitMessageStack);
 		waitMessageStack = NULL;
+		/* end light thread */
+		wiiLightEndThread();
 		m_WaitThreadRunning = false;
 	}
 	waitThread = LWP_THREAD_NULL;
@@ -623,6 +623,10 @@ void CVideo::waitMessage(const vector<TexData> &tex, float delay)
 		waitMessage(m_waitMessages[0]);
 	else if(m_waitMessages.size() > 1)
 	{
+		/* changing light */
+		wiiLightSetLevel(0);
+		wiiLightStartThread();
+		/* onscreen animation */
 		m_showWaitMessage = true;
 		if(waitMessageStack == NULL)
 			waitMessageStack = (u8*)MEM2_memalign(32, waitMessageStackSize);

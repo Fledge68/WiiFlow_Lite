@@ -21,7 +21,6 @@
 #include "gc/gcdisc.hpp"
 #include "gui/WiiMovie.hpp"
 #include "gui/GameTDB.hpp"
-#include "gui/Gekko.h"
 #include "homebrew/homebrew.h"
 #include "loader/alt_ios.h"
 #include "loader/wdvd.h"
