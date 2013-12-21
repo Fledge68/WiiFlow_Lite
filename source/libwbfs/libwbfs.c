@@ -40,7 +40,7 @@ static u8 size_to_shift(u32 size)
 wbfs_t *wbfs_open_hd(rw_sector_callback_t read_hdsector, rw_sector_callback_t write_hdsector, void *callback_data, int hd_sector_size, int num_hd_sector __attribute((unused)), int reset)
 {
 	int i=num_hd_sector,ret;
-	u8 *ptr,*tmp_buffer = wbfs_ioalloc(hd_sector_size);
+	u8 *ptr,*tmp_buffer = wbfs_malloc(hd_sector_size);
 	u8 part_table[16*4];
 	ret = read_hdsector(callback_data,0,1,tmp_buffer);
 	if(ret)
@@ -57,11 +57,11 @@ wbfs_t *wbfs_open_hd(rw_sector_callback_t read_hdsector, rw_sector_callback_t wr
 		if (head->magic == wbfs_htonl(WBFS_MAGIC))
 		{
 			wbfs_t *p = wbfs_open_partition(read_hdsector, write_hdsector, callback_data, hd_sector_size, 0, part_lba,reset);
-			wbfs_iofree(tmp_buffer);
+			wbfs_free(tmp_buffer);
 			return p;
 		}
 	}
-	wbfs_iofree(tmp_buffer);
+	wbfs_free(tmp_buffer);
 	if(reset)// XXX make a empty hd partition..
 	{
 	}
@@ -73,7 +73,7 @@ wbfs_t *wbfs_open_partition(rw_sector_callback_t read_hdsector, rw_sector_callba
 {
 	wbfs_t *p = wbfs_malloc(sizeof(wbfs_t));
 
-	wbfs_head_t *head = wbfs_ioalloc( hd_sector_size ? hd_sector_size : 512 );
+	wbfs_head_t *head = wbfs_malloc( hd_sector_size ? hd_sector_size : 512 );
 
 	//constants, but put here for consistancy
 	p->wii_sec_sz = 0x8000;
@@ -131,20 +131,20 @@ wbfs_t *wbfs_open_partition(rw_sector_callback_t read_hdsector, rw_sector_callba
 	else
 	{
 		// init with all free blocks
-		p->freeblks = wbfs_ioalloc(ALIGN_LBA( p->n_wbfs_sec / 8));
+		p->freeblks = wbfs_malloc(ALIGN_LBA( p->n_wbfs_sec / 8));
 		wbfs_memset(p->freeblks, 0xff, p->n_wbfs_sec / 8);
 	}
 	p->max_disc = (p->freeblks_lba - 1) / (p->disc_info_sz >> p->hd_sec_sz_s);
 	if(p->max_disc > p->hd_sec_sz - sizeof(wbfs_head_t)) 
 		p->max_disc = p->hd_sec_sz - sizeof(wbfs_head_t);
 
-	p->tmp_buffer = wbfs_ioalloc(p->hd_sec_sz);
+	p->tmp_buffer = wbfs_malloc(p->hd_sec_sz);
 	p->n_disc_open = 0;
 	return p;
 
 error:
 	wbfs_free(p);
-	wbfs_iofree(head);
+	wbfs_free(head);
 
 	return 0;
 }
@@ -167,10 +167,10 @@ void wbfs_close(wbfs_t *p)
 	if(p->n_disc_open)
 		ERROR("trying to close wbfs while discs still open\n");
 
-	wbfs_iofree(p->head);
-	wbfs_iofree(p->tmp_buffer);
+	wbfs_free(p->head);
+	wbfs_free(p->tmp_buffer);
 	if(p->freeblks)
-		wbfs_iofree(p->freeblks);
+		wbfs_free(p->freeblks);
 	
 	wbfs_free(p);
 	
@@ -195,7 +195,7 @@ wbfs_disc_t *wbfs_open_disc(wbfs_t* p, const u8 *discid)
 					ERROR("allocating memory\n");
 				d->p = p;
 				d->i = i;
-				d->header = wbfs_ioalloc(p->disc_info_sz);
+				d->header = wbfs_malloc(p->disc_info_sz);
 				if(!d->header)
 					ERROR("allocating memory\n");
 				p->read_hdsector(p->callback_data, p->part_lba + 1 + i * disc_info_sz_lba, disc_info_sz_lba, d->header);
@@ -209,13 +209,13 @@ wbfs_disc_t *wbfs_open_disc(wbfs_t* p, const u8 *discid)
 	return 0;
 
 error:
-	if(d) wbfs_iofree(d);
+	if(d) wbfs_free(d);
 	return 0;
 }
 void wbfs_close_disc(wbfs_disc_t*d)
 {
 	d->p->n_disc_open --;
-	wbfs_iofree(d->header);
+	wbfs_free(d->header);
 	wbfs_free(d);
 }
 // offset is pointing 32bit words to address the whole dvd, although len is in bytes
@@ -349,10 +349,10 @@ u32 wbfs_get_disc_info(wbfs_t *p, u32 index,u8 *header,int header_size,u32 *size
 				memcpy(header, p->tmp_buffer, header_size);
 				if(size)
 				{
-					u8 *header = wbfs_ioalloc(p->disc_info_sz);
+					u8 *header = wbfs_malloc(p->disc_info_sz);
 					p->read_hdsector(p->callback_data, p->part_lba + 1 + i * disc_info_sz_lba, disc_info_sz_lba, header);
 					u32 sec_used = wbfs_sector_used(p,(wbfs_disc_info_t *)header);
-					wbfs_iofree(header);
+					wbfs_free(header);
 					*size = sec_used<<(p->wbfs_sec_sz_s-2);
 				}
 				return 0;
@@ -367,7 +367,7 @@ static void load_freeblocks(wbfs_t *p)
 	if(p->freeblks)
 		return;
 	// XXX should handle malloc error..
-	p->freeblks = wbfs_ioalloc(ALIGN_LBA(p->n_wbfs_sec/8));
+	p->freeblks = wbfs_malloc(ALIGN_LBA(p->n_wbfs_sec/8));
 	p->read_hdsector(p->callback_data, p->part_lba + p->freeblks_lba, ALIGN_LBA(p->n_wbfs_sec / 8) >> p->hd_sec_sz_s, p->freeblks);
 }
 
@@ -476,10 +476,10 @@ u32 wbfs_add_disc(wbfs_t *p, read_wiidisc_callback_t read_src_wii_disc, void *ca
 	load_freeblocks(p);
 
 	// build disc info
-	info = wbfs_ioalloc(p->disc_info_sz);
+	info = wbfs_malloc(p->disc_info_sz);
 	read_src_wii_disc(callback_data, 0, 0x100, info->disc_header_copy);
 
-	copy_buffer = wbfs_ioalloc(p->wii_sec_sz);
+	copy_buffer = wbfs_malloc(p->wii_sec_sz);
 	if(!copy_buffer)
 		ERROR("alloc memory\n");
 	tot = 0;
@@ -568,9 +568,9 @@ error:
 	if(used)
 		wbfs_free(used);
 	if(info)
-		wbfs_iofree(info);
+		wbfs_free(info);
 	if(copy_buffer)
-		wbfs_iofree(copy_buffer);
+		wbfs_free(copy_buffer);
 
 	// init with all free blocks
 	return retval;
@@ -622,7 +622,7 @@ u32 wbfs_size_disc(wbfs_t *p,read_wiidisc_callback_t read_src_wii_disc,
 	u32 wii_sec_per_wbfs_sect = 1 << (p->wbfs_sec_sz_s - p->wii_sec_sz_s);
        wiidisc_t *d = 0;
 
-	u8 *used = wbfs_ioalloc(p->n_wii_sec_per_disc);
+	u8 *used = wbfs_malloc(p->n_wii_sec_per_disc);
 	if(!used) 
 		ERROR("unable to alloc memory\n");
 

@@ -2,25 +2,28 @@
 #include <malloc.h>
 #include <string.h>
 #include <ogc/system.h>
+#include <ogc/machine/processor.h>
 
 #include "mem2.hpp"
-#include "mem2alloc.hpp"
+#include "mem_manager.hpp"
 #include "gecko/gecko.hpp"
 #include "loader/utils.h"
 
-#define MEM2_PRIORITY_SIZE	0x1000
+static const u32 MEM2_PRIORITY_SIZE = 0x1000;
 
 // Forbid the use of MEM2 through malloc
 u32 MALLOC_MEM2 = 0;
 
-void *MEM1_lo_start = (void*)0x80004000;
-void *MEM1_lo_end = (void*)0x80620000;
+u8 *MEM1_lo_start = (u8*)0x80004000;
+u8 *MEM1_lo_end = (u8*)0x80620000;
+u8 *MEM1_lo_list = (u8*)0x93280000;
 
-void *MEM2_start = (void*)0x90200000;
-void *MEM2_end = (void*)0x93100000;
+u8 *MEM2_start = (u8*)0x90200000;
+u8 *MEM2_end = (u8*)0x93200000;
+u8 *MEM2_list = (u8*)0x93200000;
 
-static CMEM2Alloc g_mem1lo;
-static CMEM2Alloc g_mem2gp;
+MemManager g_mem1lo;
+MemManager g_mem2gp;
 
 extern "C"
 {
@@ -34,23 +37,25 @@ extern __typeof(malloc_usable_size) __real_malloc_usable_size;
 
 void MEM_init()
 {
-	g_mem1lo.init(MEM1_lo_start, MEM1_lo_end); //about 6mb
-	g_mem1lo.clear();
+	MemMutexInit();
 
-	g_mem2gp.init(MEM2_start, MEM2_end); //about 47mb
-	g_mem2gp.clear();
+	g_mem1lo.Init(MEM1_lo_start, MEM1_lo_list, (u32)(MEM1_lo_end-MEM1_lo_start)); //about 6mb
+	g_mem1lo.ClearMem();
+
+	g_mem2gp.Init(MEM2_start, MEM2_list, (u32)(MEM2_end-MEM2_start)); //about 48mb
+	g_mem2gp.ClearMem();
 }
 
 void *MEM1_lo_alloc(unsigned int s)
 {
-	return g_mem1lo.allocate(s);
+	return g_mem1lo.Alloc(s);
 }
 
 void MEM1_lo_free(void *p)
 {
 	if(!p)
 		return;
-	g_mem1lo.release(p);
+	g_mem1lo.Free(p);
 }
 
 unsigned int MEM1_lo_freesize()
@@ -91,28 +96,28 @@ void MEM2_free(void *p)
 {
 	if(!p)
 		return;
-	g_mem2gp.release(p);
+	g_mem2gp.Free(p);
 }
 
 void *MEM2_alloc(unsigned int s)
 {
-	return g_mem2gp.allocate(s);
+	return g_mem2gp.Alloc(s);
 }
 
 /* Placeholder, will be needed with new memory manager */
 void *MEM2_memalign(unsigned int /* alignment */, unsigned int s)
 {
-	return MEM2_alloc(s);
+	return g_mem2gp.Alloc(s);
 }
 
 void *MEM2_realloc(void *p, unsigned int s)
 {
-	return g_mem2gp.reallocate(p, s);
+	return g_mem2gp.ReAlloc(p, s);
 }
 
 unsigned int MEM2_usableSize(void *p)
 {
-	return g_mem2gp.usableSize(p);
+	return g_mem2gp.MemBlockSize(p);
 }
 
 unsigned int MEM2_freesize()
@@ -125,7 +130,7 @@ void *__wrap_malloc(size_t size)
 	void *p;
 	if(size >= MEM2_PRIORITY_SIZE)
 	{
-		p = g_mem2gp.allocate(size);
+		p = g_mem2gp.Alloc(size);
 		if(p != 0) 
 			return p;
 		return __real_malloc(size);
@@ -133,7 +138,7 @@ void *__wrap_malloc(size_t size)
 	p = __real_malloc(size);
 	if(p != 0)
 		return p;
-	return g_mem2gp.allocate(size);
+	return g_mem2gp.Alloc(size);
 }
 
 void *__wrap_calloc(size_t n, size_t size)
@@ -141,7 +146,7 @@ void *__wrap_calloc(size_t n, size_t size)
 	void *p;
 	if((n * size) >= MEM2_PRIORITY_SIZE)
 	{
-		p = g_mem2gp.allocate(n * size);
+		p = g_mem2gp.Alloc(n * size);
 		if (p != 0)
 		{
 			memset(p, 0, n * size);
@@ -153,7 +158,7 @@ void *__wrap_calloc(size_t n, size_t size)
 	p = __real_calloc(n, size);
 	if (p != 0) return p;
 
-	p = g_mem2gp.allocate(n * size);
+	p = g_mem2gp.Alloc(n * size);
 	if (p != 0)
 		memset(p, 0, n * size);
 	return p;
@@ -166,7 +171,7 @@ void *__wrap_memalign(size_t a, size_t size)
 	{
 		if(a <= 32 && 32 % a == 0)
 		{
-			p = g_mem2gp.allocate(size);
+			p = g_mem2gp.Alloc(size);
 			if (p != 0)
 				return p;
 		}
@@ -176,7 +181,7 @@ void *__wrap_memalign(size_t a, size_t size)
 	if(p != 0 || a > 32 || 32 % a != 0)
 		return p;
 
-	return g_mem2gp.allocate(size);
+	return g_mem2gp.Alloc(size);
 }
 
 void __wrap_free(void *p)
@@ -187,9 +192,9 @@ void __wrap_free(void *p)
 	if(((u32)p & 0x10000000) != 0)
 	{
 		//if(p > MEM2_start)
-		g_mem2gp.release(p);
+		g_mem2gp.Free(p);
 		//else
-		//g_mem2lo_gp.release(p);
+		//g_mem2lo_gp.Free(p);
 	}
 	else
 		MEM1_free(p);
@@ -201,7 +206,7 @@ void *__wrap_realloc(void *p, size_t size)
 	// ptr from mem2
 	if(((u32)p & 0x10000000) != 0 || (p == 0 && size > MEM2_PRIORITY_SIZE))
 	{
-		n = g_mem2gp.reallocate(p, size);
+		n = g_mem2gp.ReAlloc(p, size);
 		if(n != 0)
 			return n;
 		n = __real_malloc(size);
@@ -210,7 +215,7 @@ void *__wrap_realloc(void *p, size_t size)
 		if(p != 0)
 		{
 			memcpy(n, p, MEM2_usableSize(p) < size ? MEM2_usableSize(p) : size);
-			g_mem2gp.release(p);
+			g_mem2gp.Free(p);
 		}
 		return n;
 	}
@@ -218,7 +223,7 @@ void *__wrap_realloc(void *p, size_t size)
 	n = __real_realloc(p, size);
 	if(n != 0)
 		return n;
-	n = g_mem2gp.allocate(size);
+	n = g_mem2gp.Alloc(size);
 	if(n == 0)
 		return 0;
 	if(p != 0)
@@ -232,7 +237,7 @@ void *__wrap_realloc(void *p, size_t size)
 size_t __wrap_malloc_usable_size(void *p)
 {
 	if(((u32)p & 0x10000000) != 0)
-		return CMEM2Alloc::usableSize(p);
+		return g_mem2gp.MemBlockSize(p);
 	return __real_malloc_usable_size(p);
 }
 

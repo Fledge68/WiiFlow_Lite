@@ -6,6 +6,10 @@
 #include "wiidisc.h"
 #include "hw/aes.h"
 #include "loader/nk.h"
+#include "loader/sys.h"
+
+void aes_set_key(const u8 *key);
+void aes_decrypt(u8 *iv, u8 *inbuf, u8 *outbuf, u64 len);
 
 int wd_last_error = 0;
 
@@ -32,11 +36,19 @@ void decrypt_title_key(u8 *tik, u8 *title_key)
 	wbfs_memset(iv, 0, sizeof iv);
 	wbfs_memcpy(iv, tik + 0x01dc, 8);
 
-	AES_ResetEngine();
 	//check byte 0x1f1 in ticket to determine whether or not to use Korean Common Key
 	//if value = 0x01, use Korean Common Key, else just use regular one
-	AES_EnableDecrypt((tik[0x01f1] == 1) ? korean_key : common_key, iv);
-	AES_Decrypt(tik + 0x01bf, title_key, 1);
+	if(Sys_HW_Access())
+	{
+		AES_ResetEngine();
+		AES_EnableDecrypt((tik[0x01f1] == 1) ? korean_key : common_key, iv);
+		AES_Decrypt(tik + 0x01bf, title_key, 1);
+	}
+	else
+	{
+		aes_set_key((tik[0x01f1] == 1) ? korean_key : common_key);
+		aes_decrypt(iv, tik + 0x01bf, title_key, 16);
+	}
 }
 
 static u32 _be32(const u8 *p)
@@ -44,19 +56,22 @@ static u32 _be32(const u8 *p)
 	return (p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
 }
 
-static void disc_read(wiidisc_t *d, u32 offset, u8 *data, u32 len)
+static int disc_read(wiidisc_t *d, u32 offset, u8 *data, u32 len)
 {
 	if (data)
 	{
 		int ret = 0;
 		if (len == 0)
-			return;
+			return -1;
 
 		ret = d->read(d->fp, offset, len, data);
 		if(ret)
+		{
 			wbfs_fatal("error reading disc\n");
+			return -1;
+		}
 	}
-	if (d->sector_usage_table)
+	if(d->sector_usage_table)
 	{
 		u32 blockno = offset >> 13;
 		do
@@ -66,35 +81,39 @@ static void disc_read(wiidisc_t *d, u32 offset, u8 *data, u32 len)
 			if (len > 0x8000) len -= 0x8000;
 		} while(len > 0x8000);
 	}
+	return 0;
 }
 
-static void partition_raw_read(wiidisc_t *d, u32 offset, u8 *data, u32 len)
+static int partition_raw_read(wiidisc_t *d, u32 offset, u8 *data, u32 len)
 {
-	disc_read(d, d->partition_raw_offset + offset, data, len);
+	return disc_read(d, d->partition_raw_offset + offset, data, len);
 }
 
-static void partition_read_block(wiidisc_t *d, u32 blockno, u8 *block)
+static int partition_read_block(wiidisc_t *d, u32 blockno, u8 *block)
 {
 	u8*raw = d->tmp_buffer;
 	u8 iv[16];
 	u32 offset;
 	if (d->sector_usage_table) d->sector_usage_table[d->partition_block+blockno] = 1;
 	offset = d->partition_data_offset + ((0x8000 >> 2) * blockno);
-	partition_raw_read(d,offset, raw, 0x8000);
+	if(partition_raw_read(d,offset, raw, 0x8000) < 0)
+		return -1;
 
 	memcpy(iv, raw + 0x3d0, 16);
-	
+
 	// decrypt data
-	if(neek2o())
+	if(Sys_HW_Access())
 	{
-		NKAESDecryptBlock(raw, block);
-	}
-	else
-	{
-		AES_ResetEngine();	
+		AES_ResetEngine();
 		AES_EnableDecrypt(d->disc_key, iv);
 		AES_Decrypt(raw + 0x400, block, 0x7c0);
 	}
+	else
+	{
+		aes_set_key(d->disc_key);
+		aes_decrypt(iv, raw + 0x400, block, 0x7c00);
+	}
+	return 0;
 }
 
 static void partition_read(wiidisc_t *d, u32 offset, u8 *data, u32 len, int fake)
@@ -111,7 +130,8 @@ static void partition_read(wiidisc_t *d, u32 offset, u8 *data, u32 len, int fake
 		if (len_in_block > len) len_in_block = len;
 		if (!fake)
 		{
-			partition_read_block(d,offset / (0x7c00 >> 2), block);
+			if(partition_read_block(d,offset / (0x7c00 >> 2), block) < 0)
+				break;
 			wbfs_memcpy(data, block + (offset_in_block << 2), len_in_block);
 		}
 		else d->sector_usage_table[d->partition_block + (offset / (0x7c00 >> 2))] = 1;
@@ -151,7 +171,7 @@ static u32 do_fst(wiidisc_t *d, u8 *fst, const char *names, u32 i)
 		offset = _be32(fst + 12 * i + 4);
 		if (d->extract_pathname && strcasecmp(name, d->extract_pathname) == 0)
 		{
-			d->extracted_buffer = wbfs_ioalloc(size);
+			d->extracted_buffer = wbfs_malloc(size);
 			if (d->extracted_buffer != 0)
 			{
 				d->extracted_size = size;
@@ -165,13 +185,13 @@ static u32 do_fst(wiidisc_t *d, u8 *fst, const char *names, u32 i)
 
 static void do_files(wiidisc_t*d)
 {
-	u8 *b = wbfs_ioalloc(0x480); // XXX: determine actual header size
+	u8 *b = wbfs_malloc(0x480); // XXX: determine actual header size
 	u32 dol_offset;
 	u32 fst_offset;
 	u32 fst_size;
 	u32 apl_offset;
 	u32 apl_size;
-	u8 *apl_header = wbfs_ioalloc(0x20);
+	u8 *apl_header = wbfs_malloc(0x20);
 	u8 *fst;
 	u32 n_files;
 	partition_read(d, 0, b, 0x480, 0);
@@ -189,7 +209,7 @@ static void do_files(wiidisc_t*d)
 
 	if (fst_size)
 	{
-		fst = wbfs_ioalloc(fst_size);
+		fst = wbfs_malloc(fst_size);
 		if (fst == 0)
 			wbfs_fatal("malloc fst\n");
 		partition_read(d, fst_offset, fst, fst_size,0);
@@ -209,16 +229,16 @@ static void do_files(wiidisc_t*d)
 		if (12 * n_files <= fst_size)
 			if (n_files > 1) do_fst(d, fst, (char *)fst + 12 * n_files, 0);
 		
-		if (fst != d->extracted_buffer) wbfs_iofree( fst );
+		if (fst != d->extracted_buffer) wbfs_free( fst );
 	}
-	wbfs_iofree(b);
-	wbfs_iofree(apl_header);
+	wbfs_free(b);
+	wbfs_free(apl_header);
 }
 
 static void do_partition(wiidisc_t*d)
 {
-	u8 *tik = wbfs_ioalloc(0x2a4);
-	u8 *b = wbfs_ioalloc(0x1c);
+	u8 *tik = wbfs_malloc(0x2a4);
+	u8 *b = wbfs_malloc(0x1c);
 	u64 tmd_offset;
 	u32 tmd_size;
 	u8 *tmd;
@@ -238,7 +258,7 @@ static void do_partition(wiidisc_t*d)
 	h3_offset = _be32(b + 0x10);
 	d->partition_data_offset = _be32(b + 0x14);
 	d->partition_block = (d->partition_raw_offset + d->partition_data_offset) >> 13;
-	tmd = wbfs_ioalloc(tmd_size);
+	tmd = wbfs_malloc(tmd_size);
 	if (tmd == 0)
 		wbfs_fatal("malloc tmd\n");
 	partition_raw_read(d, tmd_offset, tmd, tmd_size);
@@ -249,24 +269,20 @@ static void do_partition(wiidisc_t*d)
 		d->extracted_size = tmd_size;
 	}
 
-	cert = wbfs_ioalloc(cert_size);
+	cert = wbfs_malloc(cert_size);
 	if (cert == 0)
 		wbfs_fatal("malloc cert\n");
 	partition_raw_read(d, cert_offset, cert, cert_size);
 
-	
-	if(neek2o())
-		NKKeyCreate(tik);
-	else
-		decrypt_title_key(tik, d->disc_key);
+	decrypt_title_key(tik, d->disc_key);
 
 	partition_raw_read(d, h3_offset, 0, 0x18000);
 
-	wbfs_iofree(b);
-	wbfs_iofree(tik);
-	wbfs_iofree(cert);
+	wbfs_free(b);
+	wbfs_free(tik);
+	wbfs_free(cert);
 	if(tmd != d->extracted_buffer)
-		wbfs_iofree( tmd );
+		wbfs_free( tmd );
 
 	do_files(d);
 
@@ -284,22 +300,25 @@ static int test_parition_skip(u32 partition_type, partition_selector_t part_sel)
 		default:
 			return (partition_type != part_sel);
 	}
-} 
+}
+
 static void do_disc(wiidisc_t *d)
 {
-	u8 *b = wbfs_ioalloc(0x100);
+	u8 *b = wbfs_malloc(0x100);
+	if(b == NULL)
+		goto out;
 	u64 partition_offset[32]; // XXX: don't know the real maximum
 	u64 partition_type[32]; // XXX: don't know the real maximum
 	u32 n_partitions;
 	u32 magic;
 	u32 i;
-	disc_read(d, 0, b, 0x100);
+	if(disc_read(d, 0, b, 0x100) < 0)
+		goto out;
 	magic = _be32(b + 24);
 	if (magic != WII_MAGIC)
 	{
-		wbfs_iofree(b);
 		wbfs_error("not a wii disc");
-		return ;
+		goto out;
 	}
 	disc_read(d, 0x40000 >> 2, b, 0x100);
 	n_partitions = _be32(b);
@@ -314,7 +333,8 @@ static void do_disc(wiidisc_t *d)
 		d->partition_raw_offset = partition_offset[i];
 		if (!test_parition_skip(partition_type[i], d->part_sel)) do_partition(d);
 	}
-	wbfs_iofree(b);
+out:
+	wbfs_free(b);
 }
 
 wiidisc_t *wd_open_disc(read_wiidisc_callback_t read, void *fp)
@@ -325,19 +345,19 @@ wiidisc_t *wd_open_disc(read_wiidisc_callback_t read, void *fp)
 	d->read = read;
 	d->fp = fp;
 	d->part_sel = ALL_PARTITIONS;
-	d->tmp_buffer = wbfs_ioalloc(0x8000);
-	d->tmp_buffer2 = wbfs_ioalloc(0x8000);
+	d->tmp_buffer = wbfs_malloc(0x8000);
+	d->tmp_buffer2 = wbfs_malloc(0x8000);
 	return d;
 }
 
 void wd_close_disc(wiidisc_t *d)
 {
-	wbfs_iofree(d->tmp_buffer);
+	wbfs_free(d->tmp_buffer);
 	wbfs_free(d->tmp_buffer2);
 	wbfs_free(d);
 }
 
-// returns a buffer allocated with wbfs_ioalloc() or NULL if not found of alloc error
+// returns a buffer allocated with wbfs_malloc() or NULL if not found of alloc error
 // XXX pathname not implemented. files are extracted by their name. 
 // first file found with that name is returned.
 u8 *wd_extract_file(wiidisc_t *d, u32 *size, partition_selector_t partition_type, const char *pathname)

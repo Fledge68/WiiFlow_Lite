@@ -1,5 +1,3 @@
-// 1 MEM2 allocator, one for general purpose
-// Aligned and padded to 32 bytes, as required by many functions
 
 #ifndef __MEM2_HPP
 #define __MEM2_HPP

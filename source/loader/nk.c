@@ -29,12 +29,13 @@
 #include <malloc.h>
 
 #include "nk.h"
+#include "sys.h"
 #include "armboot.h"
 #include "fileOps/fileOps.h"
 #include "memory/mem2.hpp"
 #include "gecko/gecko.hpp"
 
-static u32 KeyID;
+//static u32 KeyID;
 bool checked = false;
 bool neek = false;
 u32 kernelSize = 0;
@@ -45,6 +46,8 @@ void check_neek2o(void)
 	if(checked == true)
 		return;
 	checked = true;
+	if(Sys_DolphinMode() == true)
+		return;
 
 	s32 ESHandle = IOS_Open("/dev/es", 0);
 	neek = (IOS_Ioctlv(ESHandle, 0xA2, 0, 0, NULL) == 0x666c6f77);
@@ -133,7 +136,7 @@ s32 Launch_nk(u64 TitleID, const char *nandpath, u64 ReturnTo)
 	MEM1_free(mini);
 	return 1;
 }
-
+/*
 void NKKeyCreate(u8 *tik)
 {	
 	u32 *TKeyID = (u32*)MEM1_memalign(32, sizeof(u32));	
@@ -185,3 +188,4 @@ void NKAESDecryptBlock(u8 *in, u8 *out)
 	IOS_Ioctlv(ESHandle, 0x2D, 3, 2, (ioctlv *)v);	
 	IOS_Close(ESHandle);
 }
+*/

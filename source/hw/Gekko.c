@@ -28,8 +28,6 @@
 #include "Gekko.h"
 #include "memory/memory.h"
 
-#define DISC_SLOT_LED		0x20
-
 lwp_t light_thread = LWP_THREAD_NULL;
 
 void *light_loop();
@@ -39,7 +37,18 @@ u8 light_level = 0;
 struct timespec light_timeon;
 struct timespec light_timeoff;
 
+// Wii disc slot light routines
 void wiiLightOn()
+{
+	*HW_GPIOB_OUT |= DISC_SLOT_LED;
+}
+
+void wiiLightOff()
+{
+	*HW_GPIOB_OUT &= ~DISC_SLOT_LED;
+}
+
+void wiiLightStartThread()
 {
 	light_on = true;
 	light_level = 0;
@@ -47,13 +56,14 @@ void wiiLightOn()
 		LWP_CreateThread(&light_thread, light_loop, NULL, NULL, 0, LWP_PRIO_HIGHEST);
 }
 
-void wiiLightOff()
+void wiiLightEndThread()
 {
 	light_on = false;
 	light_level = 0;
-	LWP_JoinThread(light_thread, NULL);
+	if(light_thread != LWP_THREAD_NULL)
+		LWP_JoinThread(light_thread, NULL);
 	light_thread = LWP_THREAD_NULL;
-	*HW_GPIOB_OUT &= ~DISC_SLOT_LED;
+	wiiLightOff();
 }
 
 void wiiLightSetLevel(int level)
@@ -89,11 +99,11 @@ void *light_loop()
 		timeon = light_timeon;
 		timeoff = light_timeoff;
 		// Turn on the light and sleep for a bit
-		*HW_GPIOB_OUT |= DISC_SLOT_LED;
+		wiiLightOn();
 		nanosleep(&timeon);
 		// Turn off the light (if required) and sleep for a bit
 		if(timeoff.tv_nsec > 0)
-			*HW_GPIOB_OUT &= ~DISC_SLOT_LED;
+			wiiLightOff();
 		nanosleep(&timeoff);
 	}
 	return NULL;

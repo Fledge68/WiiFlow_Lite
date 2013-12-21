@@ -36,7 +36,7 @@
 #include "devicemounter/DeviceHandler.hpp"
 #include "fileOps/fileOps.h"
 #include "gecko/gecko.hpp"
-#include "gui/Gekko.h"
+#include "hw/Gekko.h"
 #include "gui/text.hpp"
 #include "memory/mem2.hpp"
 #include "menu/menu.hpp"
@@ -69,7 +69,6 @@ void GCDump::__AnalizeMultiDisc()
 s32 GCDump::__DiscReadRaw(void *outbuf, u64 offset, u32 length)
 {
 	length = ALIGN32(length);
-	wiiLightSetLevel(255);
 	wiiLightOn();
 	while(1)
 	{
@@ -179,7 +178,6 @@ bool GCDump::__WaitForDisc(u8 dsc, u32 msg)
 		mainMenu.GC_Messenger(msg, dsc+1, minfo);
 		while(1)
 		{
-			wiiLightSetLevel(255);
 			wiiLightOn();
 			usleep(1000000);
 			wiiLightOff();
@@ -191,7 +189,6 @@ bool GCDump::__WaitForDisc(u8 dsc, u32 msg)
 
 		while(1)
 		{
-			wiiLightSetLevel(255);
 			wiiLightOn();
 			usleep(1000000);
 			wiiLightOff();

@@ -27,9 +27,13 @@
 extern "C" {
 #endif
 
+static const u32 DISC_SLOT_LED = 0x20;
+
 // Wii disc slot light routines
 void wiiLightOn();
 void wiiLightOff();
+void wiiLightStartThread();
+void wiiLightEndThread();
 void wiiLightSetLevel(int level);
 
 #ifdef __cplusplus

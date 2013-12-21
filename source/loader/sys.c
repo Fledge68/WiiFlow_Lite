@@ -205,5 +205,18 @@ bool Sys_DolphinMode(void)
 	return DolphinMode;
 }
 
+bool hw_check = false;
+bool on_hw = false;
+bool Sys_HW_Access(void)
+{
+	if(hw_check == true)
+		return on_hw;
+
+	check_neek2o();
+	on_hw = AHBRPOT_Patched() && (!Sys_DolphinMode() && !neek2o());
+	hw_check = true;
+	return on_hw;
+}
+
 /* KILL IT */
 s32 __IOS_LoadStartupIOS() { return 0; }
