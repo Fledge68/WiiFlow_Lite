@@ -55,6 +55,15 @@ void ListGenerator::CloseConfigs()
 		CustomTitles.unload();
 }
 
+/*
+static const u32 LIST_TMP_SIZE = 5000;
+dir_discHdr *tmpList = NULL;
+u32 tmpListPos = 0;
+static void AddToList(const dir_discHdr *element)
+{
+	
+}
+*/
 static void AddISO(const char *GameID, const char *GameTitle, const char *GamePath, 
 							u32 GameColor, u8 Type)
 {

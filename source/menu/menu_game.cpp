@@ -1220,8 +1220,11 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 			while(1) usleep(500);
 		}
 	}
+	if(WII_Launch == false && ExternalBooter_LoadBooter(fmt("%s/ext_booter.bin", m_binsDir.c_str())) == false)
+		Sys_Exit();
 	if(_loadIOS(gameIOS, userIOS, id, !NAND_Emu) == LOAD_IOS_FAILED)
 		Sys_Exit();
+
 	if((CurrentIOS.Type == IOS_TYPE_D2X || neek2o()) && returnTo != 0)
 	{
 		if(D2X_PatchReturnTo(returnTo) >= 0)
@@ -1256,11 +1259,9 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		NandHandle.Patch_AHB(); /* Identify may takes it */
 		PatchIOS(true); /* Patch for everything */
 		Identify(gameTitle);
-		if(ExternalBooter_LoadBooter(fmt("%s/ext_booter.bin", m_binsDir.c_str())) == true)
-		{
-			ExternalBooter_ChannelSetup(gameTitle, use_dol);
-			WiiFlow_ExternalBooter(videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, 0, TYPE_CHANNEL, use_led);
-		}
+
+		ExternalBooter_ChannelSetup(gameTitle, use_dol);
+		WiiFlow_ExternalBooter(videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, 0, TYPE_CHANNEL, use_led);
 	}
 	Sys_Exit();
 }
@@ -1449,11 +1450,14 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	m_cfg.save(true);
 	cleanup(); // wifi and sd gecko doesnt work anymore after cleanup
 
+	if(ExternalBooter_LoadBooter(fmt("%s/ext_booter.bin", m_binsDir.c_str())) == false)
+		Sys_Exit();
 	if((!dvd || neek2o()) && !Sys_DolphinMode())
 	{
 		if(_loadIOS(gameIOS, userIOS, id) == LOAD_IOS_FAILED)
 			Sys_Exit();
 	}
+
 	if(CurrentIOS.Type == IOS_TYPE_D2X)
 	{
 		if(returnTo != 0 && !m_directLaunch && D2X_PatchReturnTo(returnTo) >= 0)
@@ -1497,11 +1501,9 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		free(gameconfig);
 	}
 
-	if(ExternalBooter_LoadBooter(fmt("%s/ext_booter.bin", m_binsDir.c_str())) == true)
-	{
-		ExternalBooter_WiiGameSetup(wbfs_partition, dvd, id.c_str());
-		WiiFlow_ExternalBooter(videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, returnTo, TYPE_WII_GAME, use_led);
-	}
+	ExternalBooter_WiiGameSetup(wbfs_partition, dvd, id.c_str());
+	WiiFlow_ExternalBooter(videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, returnTo, TYPE_WII_GAME, use_led);
+
 	Sys_Exit();
 }
 

@@ -164,10 +164,10 @@ void CVideo::init(void)
 	}
 
 	/* GX Init */
-	m_frameBuf[0] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(m_rmode));
-	m_frameBuf[1] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(m_rmode));
+	m_frameBuf[0] = MEM_K0_TO_K1(MEM1_memalign(32, VIDEO_GetFrameBufferSize(m_rmode)));
+	m_frameBuf[1] = MEM_K0_TO_K1(MEM1_memalign(32, VIDEO_GetFrameBufferSize(m_rmode)));
 	m_curFB = 0;
-	m_fifo = memalign(32, DEFAULT_FIFO_SIZE);
+	m_fifo = MEM1_memalign(32, DEFAULT_FIFO_SIZE);
 	memset(m_fifo, 0, DEFAULT_FIFO_SIZE);
 	GX_Init(m_fifo, DEFAULT_FIFO_SIZE);
 	GX_SetCopyClear(CColor(0), 0x00FFFFFF);
@@ -197,7 +197,7 @@ void CVideo::init(void)
 	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
 	for(u32 i = 0; i < 8; i++)
 		GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0+i, GX_TEX_ST, GX_F32, 0);
-	m_stencil = memalign(32, CVideo::_stencilWidth * CVideo::_stencilHeight);
+	m_stencil = MEM1_memalign(32, CVideo::_stencilWidth * CVideo::_stencilHeight);
 	memset(m_stencil, 0, CVideo::_stencilWidth * CVideo::_stencilHeight);
 
 	/* Configure Video */
@@ -295,13 +295,13 @@ void CVideo::cleanup(void)
 			free(m_defaultWaitMessages[i].data);
 		m_defaultWaitMessages[i].data = NULL;
 	}
-	free(MEM_K1_TO_K0(m_frameBuf[0]));
+	MEM1_free(MEM_K1_TO_K0(m_frameBuf[0]));
 	m_frameBuf[0] = NULL;
-	free(MEM_K1_TO_K0(m_frameBuf[1]));
+	MEM1_free(MEM_K1_TO_K0(m_frameBuf[1]));
 	m_frameBuf[1] = NULL;
-	free(m_stencil);
+	MEM1_free(m_stencil);
 	m_stencil = NULL;
-	free(m_fifo);
+	MEM1_free(m_fifo);
 	m_fifo = NULL;
 }
 

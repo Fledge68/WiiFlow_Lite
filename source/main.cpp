@@ -28,13 +28,13 @@ volatile bool networkInit = false;
 
 int main(int argc, char **argv)
 {
+	MEM_init(); //Inits both mem1lo and mem2
 	mainIOS = DOL_MAIN_IOS;
 	__exception_setreload(10);
 	Gecko_Init(); //USB Gecko and SD/WiFi buffer
 	gprintf(" \nWelcome to %s!\nThis is the debug output.\n", VERSION_STRING.c_str());
 
 	m_vid.init(); // Init video
-	MEM_init(); //Inits both mem1lo and mem2
 	DeviceHandle.Init();
 	NandHandle.Init();
 

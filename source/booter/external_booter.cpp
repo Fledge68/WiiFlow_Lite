@@ -40,7 +40,6 @@
 static the_CFG *BooterConfig = (the_CFG*)0x93100000;
 #define EXT_ADDR		((u8*)0x80B00000)
 #define EXT_ENTRY		((entry)EXT_ADDR)
-#define BOOTER_ADDR		((u8*)0x93100000) /* temporary location */
 
 extern "C" {
 u8 configbytes[2];
@@ -54,6 +53,7 @@ extern u8 *codelistend;
 extern u32 gameconfsize;
 extern u32 *gameconf;
 
+u8 *booter_ptr = NULL;
 size_t booter_size = 0;
 the_CFG normalCFG;
 
@@ -84,7 +84,7 @@ void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 pat
 	/* Unmount devices etc */
 	ShutdownBeforeExit();
 	/* Copy in booter */
-	memcpy(EXT_ADDR, BOOTER_ADDR, booter_size);
+	memcpy(EXT_ADDR, booter_ptr, booter_size);
 	DCFlushRange(EXT_ADDR, booter_size);
 	/* Copy CFG into new memory region */
 	memcpy(BooterConfig, &normalCFG, sizeof(the_CFG));
@@ -102,8 +102,9 @@ bool ExternalBooter_LoadBooter(const char *booter_path)
 	fsop_GetFileSizeBytes(booter_path, &booter_size);
 	if(booter_size > 0)
 	{
-		fsop_ReadFileLoc(booter_path, booter_size, BOOTER_ADDR);
-		return true;
+		booter_ptr = fsop_ReadFile(booter_path, &booter_size);
+		if(booter_ptr != NULL)
+			return true;
 	}
 	return false;
 }
