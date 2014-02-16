@@ -106,7 +106,7 @@ int main()
 		WDVD_OpenPartition(offset, &GameIOS);
 		vmode = Disc_SelectVMode(normalCFG.vidMode, &vmode_reg);
 		AppEntrypoint = Apploader_Run(normalCFG.vidMode, vmode, normalCFG.vipatch, normalCFG.countryString,
-						normalCFG.patchVidMode, normalCFG.aspectRatio, normalCFG.returnTo);
+						normalCFG.patchVidMode, normalCFG.aspectRatio, normalCFG.returnTo, normalCFG.patchregion);
 		WDVD_Close();
 	}
 	else if(normalCFG.BootType == TYPE_CHANNEL)

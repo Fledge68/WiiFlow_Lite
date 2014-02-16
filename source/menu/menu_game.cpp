@@ -1404,11 +1404,16 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		else if(emulate_mode > 2)
 		{
 			NandHandle.CreateConfig();
-			NandHandle.Do_Region_Change(id);
+			NandHandle.Do_Region_Change(id, false);
 		}
 	}
 	else
 		emulate_mode = 0;
+		
+	bool patchregion = false;
+	
+	if(emulate_mode <= 2 && !neek2o() && m_cfg.getBool("GENERAL", "tempregionrn", true))
+		patchregion = NandHandle.Do_Region_Change(id, true);
 
 	bool use_led = m_gcfg2.getBool(id, "led", false);
 	bool cheat = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool(WII_DOMAIN, "cheat", false));
@@ -1501,7 +1506,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		free(gameconfig);
 	}
 
-	ExternalBooter_WiiGameSetup(wbfs_partition, dvd, id.c_str());
+	ExternalBooter_WiiGameSetup(wbfs_partition, dvd, patchregion, id.c_str());
 	WiiFlow_ExternalBooter(videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, returnTo, TYPE_WII_GAME, use_led);
 
 	Sys_Exit();

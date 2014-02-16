@@ -48,10 +48,9 @@
 #include "memory/memory.h"
 #include "wiiuse/wpad.h"
 
-u8 *confbuffer ATTRIBUTE_ALIGN(32);
+u8 *confbuffer = (u8*)NULL;
 u8 CCode[0x1008];
-char SCode[4];
-char *txtbuffer ATTRIBUTE_ALIGN(32);
+char *txtbuffer = (char *)NULL;
 
 config_header *cfg_hdr;
 
@@ -296,28 +295,73 @@ void Nand::__GetNameList(const char *source, namelist **entries, int *count)
 	free(names);
 }
 
+u32 Nand::__GetSystemMenuRegion(void)
+{
+	u32 Region = EUR;
+	char *source = (char *)memalign(32, 256);
+	strcpy(source, SMTMDPATH);
+	
+	s32 fd = ISFS_Open(source, ISFS_OPEN_READ);
+	if(fd >= 0)
+	{
+		fstats *status = (fstats *)memalign(32, ALIGN32(sizeof(fstats)));
+		ISFS_GetFileStats(fd, status);
+		char *TMD = (char*)memalign(32, status->file_length);
+		ISFS_Read(fd, TMD, status->file_length);
+		Region = *(u16*)(TMD+0x1DC) & 0xF;
+		ISFS_Close(fd);
+		free(TMD);
+		free(status);
+	}	
+	free(source);
+	return Region;
+}
+
+s32 Nand::__configclose(void)
+{
+	__Dec_Enc_TB();
+	free(confbuffer);
+	free(txtbuffer);
+	configloaded = !configloaded;
+	return configloaded;
+}
+
 s32 Nand::__configread(void)
 {	
-	confbuffer = (u8 *)malloc(0x4000);
-	txtbuffer = (char *)malloc(0x100);
+	confbuffer = (u8 *)memalign(32, 0x4000);
+	txtbuffer = (char *)memalign(32, 0x100);
 	if(confbuffer == NULL || txtbuffer == NULL)
 		return -1;
-
-	cfg_hdr = (config_header *)NULL;
-
-	FILE *f = fopen(cfgpath, "rb");
-	if(f)
+		
+	char *source = (char *)memalign(32, 256);
+	strcpy(source, SYSCONFPATH);
+	
+	s32 fd = ISFS_Open(source, ISFS_OPEN_READ);
+	if(fd < 0)
 	{
-		fread(confbuffer, 1, 0x4000, f);
-		fclose(f);
+		free(confbuffer);
+		free(txtbuffer);
+		free(source);
+		return 0;
 	}
 
-	f = fopen(settxtpath, "rb");
-	if(f)
+	ISFS_Read(fd, confbuffer, 0x4000);
+	ISFS_Close(fd);
+	
+	strcpy(source, TXTPATH);
+	fd = ISFS_Open(source, ISFS_OPEN_READ);
+	if(fd < 0)
 	{
-		fread(txtbuffer, 1, 0x100, f);
-		fclose(f);
+		free(confbuffer);
+		free(txtbuffer);
+		free(source);
+		return 0;
 	}
+
+	ISFS_Read(fd, txtbuffer, 0x100);
+	ISFS_Close(fd);
+	free(source);
+
 	cfg_hdr = (config_header *)confbuffer;
 
 	__Dec_Enc_TB();
@@ -330,7 +374,7 @@ s32 Nand::__configread(void)
 	return 0;
 }
 
-s32 Nand::__configwrite(void)
+s32 Nand::__configwrite(bool realnand)
 {
 	if(configloaded)
 	{
@@ -338,14 +382,56 @@ s32 Nand::__configwrite(void)
 
 		if(!tbdec)
 		{
-			/* SYSCONF */
-			fsop_WriteFile(cfgpath, confbuffer, 0x4000);
-			/* setting.txt */
-			fsop_WriteFile(settxtpath, txtbuffer, 0x100);
+			if(realnand)
+			{
+				char *dest = (char *)memalign(32, 256);
+				strcpy(dest, TSYSCONFPATH);
+				ISFS_Delete(dest);
+				ISFS_CreateFile(dest, 0, 3, 3, 3);
+				s32 fd = ISFS_Open(dest, ISFS_OPEN_RW);
+				if(fd < 0)
+				{
+					free(confbuffer);
+					free(txtbuffer);
+					free(dest);
+					configloaded = !configloaded;
+					return 0;
+				}
+				ISFS_Write(fd, confbuffer, 0x4000);
+				ISFS_Close(fd);
+				
+				strcpy(dest, TTXTPATH);
+				ISFS_Delete(dest);
+				ISFS_CreateFile(dest, 0, 3, 3, 3);
+				fd = ISFS_Open(dest, ISFS_OPEN_RW);
+				if(fd < 0)
+				{
+					free(confbuffer);
+					free(txtbuffer);
+					free(dest);
+					configloaded = !configloaded;
+					return 0;
+				}
+				ISFS_Write(fd, txtbuffer, 0x100);
+				ISFS_Close(fd);
+				configloaded = !configloaded;
+				free(dest);				
+			}
+			else
+			{		
+				/* SYSCONF */
+				fsop_WriteFile(cfgpath, confbuffer, 0x4000);
+				/* setting.txt */
+				fsop_WriteFile(settxtpath, txtbuffer, 0x100);
 
-			configloaded = !configloaded;
+				configloaded = !configloaded;
+			}
 			if(!tbdec && !configloaded)
+			{
+				free(confbuffer);
+				free(txtbuffer);
 				return 1;
+			}
 		}
 	}
 	free(confbuffer);
@@ -957,66 +1043,81 @@ s32 Nand::PreNandCfg(bool miis, bool realconfig)
 	return 0;
 }
 
-s32 Nand::Do_Region_Change(string id)
+bool Nand::Do_Region_Change(string id, bool realnand)
 {	
 	if(__configread())
 	{
 		switch(id[3])
 		{
 			case 'J':
+				if(realnand && __GetSystemMenuRegion() == JAP)
+					return __configclose();
+
 				gprintf("Switching region to NTSC-J \n");
 				CCode[0] = 1;
-				__configsetbyte( "IPL.LNG", 0 );
-				__configsetbigarray( "SADR.LNG", CCode, 0x1007 );
-				__configsetsetting( "AREA", "JPN" );
-				__configsetsetting( "MODEL", "RVL-001(JPN)" );
-				__configsetsetting( "CODE", "LJM" );
-				__configsetsetting( "VIDEO", "NTSC" );
-				__configsetsetting( "GAME", "JP" );
+				__configsetbyte("IPL.LNG", 0);
+				__configsetbigarray("SADR.LNG", CCode, 0x1007);
+				__configsetsetting("AREA", "JPN");
+				__configsetsetting("MODEL", "RVL-001(JPN)");
+				__configsetsetting("CODE", "LJM");
+				__configsetsetting("VIDEO", "NTSC");
+				__configsetsetting("GAME", "JP");
 				break;
 			case 'E':
+				if(realnand && __GetSystemMenuRegion() == USA)
+					return __configclose();
+					
 				gprintf("Switching region to NTSC-U \n");
 				CCode[0] = 31;
-				__configsetbyte( "IPL.LNG", 1 );
-				__configsetbigarray( "IPL.SADR", CCode, 0x1007 );
-				__configsetsetting( "AREA", "USA" );
-				__configsetsetting( "MODEL", "RVL-001(USA)" );
-				__configsetsetting( "CODE", "LU" );
-				__configsetsetting( "VIDEO", "NTSC" );
-				__configsetsetting( "GAME", "US" );
+				__configsetbyte("IPL.LNG", 1);
+				__configsetbigarray("IPL.SADR", CCode, 0x1007);
+				__configsetsetting("AREA", "USA");
+				__configsetsetting("MODEL", "RVL-001(USA)");
+				__configsetsetting("CODE", "LU");
+				__configsetsetting("VIDEO", "NTSC");
+				__configsetsetting("GAME", "US");
 				break;
-			case 'D':
-			case 'F':
-			case 'I':
-			case 'M':
-			case 'P':
-			case 'S':
-			case 'U':
+			case 'D': // Germany
+			case 'F': // France
+			case 'I': // Italy
+			case 'M': // American Import
+			case 'P': // Regular
+			case 'S': // Spain
+			case 'U': // United Kingdom
+			case 'L': // Japanese Import
+				if(realnand && __GetSystemMenuRegion() == EUR)
+					return __configclose();
+					
 				gprintf("Switching region to PAL \n");
-				CCode[0] = 110;
-				__configsetbyte( "IPL.LNG", 1 );
-				__configsetbigarray( "IPL.SADR", CCode, 0x1007 );
-				__configsetsetting( "AREA", "EUR" );
-				__configsetsetting( "MODEL", "RVL-001(EUR)" );
-				__configsetsetting( "CODE", "LEH" );
-				__configsetsetting( "VIDEO", "PAL" );
-				__configsetsetting( "GAME", "EU" );
+				CCode[0] = 110; // UK
+				__configsetbyte("IPL.LNG", 1);
+				__configsetbigarray("IPL.SADR", CCode, 0x1007);
+				__configsetsetting("AREA", "EUR");
+				__configsetsetting("MODEL", "RVL-001(EUR)");
+				__configsetsetting("CODE", "LEH");
+				__configsetsetting("VIDEO", "PAL");
+				__configsetsetting("GAME", "EU");
 				break;
 			case 'K':
+			case 'Q':
+			case 'T':
+				if(realnand && __GetSystemMenuRegion() == KOR)
+					return __configclose();
+					
 				gprintf("Switching region to NTSC-K \n");
 				CCode[0] = 137;
-				__configsetbyte( "IPL.LNG", 9 );
-				__configsetbigarray( "IPL.SADR", CCode, 0x1007 );
+				__configsetbyte("IPL.LNG", 9);
+				__configsetbigarray("IPL.SADR", CCode, 0x1007);
 				__configsetsetting( "AREA", "KOR" );
-				__configsetsetting( "MODEL", "RVL-001(KOR)" );
-				__configsetsetting( "CODE", "LKM" );
-				__configsetsetting( "VIDEO", "NTSC" );
-				__configsetsetting( "GAME", "KR" );
+				__configsetsetting("MODEL", "RVL-001(KOR)");
+				__configsetsetting("CODE", "LKM");
+				__configsetsetting("VIDEO", "NTSC");
+				__configsetsetting("GAME", "KR");
 				break;
 		}
 	}
-	__configwrite();
-	return 1;
+	__configwrite(realnand);
+	return true;
 }
 
 void Nand::Init_ISFS()
