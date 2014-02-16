@@ -31,6 +31,7 @@ struct the_CFG {
 	WIP_Code *wip_list;
 	u32 wip_count;
 	bool use_led;
+	bool patchregion;
 	/* needed for channels */
 	u64 title;
 	bool use_dol;

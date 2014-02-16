@@ -29,7 +29,7 @@ static const char *GameID = (const char*)0x80000000;
 #define APPLDR_CODE		0x918
 
 void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipatch, 
-				bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo);
+				bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo, bool patchregion);
 static void patch_NoDiscinDrive(void *buffer, u32 len);
 static void Anti_002_fix(void *Address, int Size);
 static bool Remove_001_Protection(void *Address, int Size);
@@ -47,7 +47,7 @@ static struct
 	s32 padding;
 } apploader_hdr ATTRIBUTE_ALIGN(32);
 
-u32 Apploader_Run(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo)
+u32 Apploader_Run(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo, bool patchregion)
 {
 	PrinceOfPersiaPatch();
 	NewSuperMarioBrosPatch();
@@ -94,7 +94,7 @@ u32 Apploader_Run(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryStrin
 		/* Read data from DVD */
 		WDVD_Read(dst, len, offset);
 		maindolpatches(dst, len, vidMode, vmode, vipatch, countryString, 
-						patchVidModes, aspectRatio, returnTo);
+						patchVidModes, aspectRatio, returnTo, patchregion);
 		DCFlushRange(dst, len);
 		ICInvalidateRange(dst, len);
 		prog(20);
@@ -107,7 +107,7 @@ u32 Apploader_Run(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryStrin
 	return (u32)appldr_final();
 }
 
-void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo)
+void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo, bool patchregion)
 {
 	do_wip_code((u8 *)dst, len);
 	Remove_001_Protection(dst, len);
@@ -133,6 +133,8 @@ void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipa
 		PatchAspectRatio(dst, len, aspectRatio);
 	if(returnTo)
 		PatchReturnTo(dst, len, returnTo);
+	if(patchregion)
+		PatchRegion(dst, len);
 }
 
 static void patch_NoDiscinDrive(void *buffer, u32 len)

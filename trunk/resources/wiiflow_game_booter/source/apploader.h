@@ -7,7 +7,7 @@ extern "C" {
 
 /* Prototypes */
 u32 Apploader_Run(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, 
-				u8 patchVidModes, int aspectRatio, u32 returnTo);
+				u8 patchVidModes, int aspectRatio, u32 returnTo, bool patchregion);
 
 #ifdef __cplusplus
 }

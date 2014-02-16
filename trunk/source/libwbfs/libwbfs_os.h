@@ -33,7 +33,7 @@ static inline void wbfs_error(const char *x)
 
 static inline void *wbfs_malloc(size_t size)
 {
-	void *p = MEM2_memalign(32, size);
+	void *p = MEM1_memalign(32, size);
 	if(p) memset(p, 0, size);
 	return p;
 }

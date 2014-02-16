@@ -19,9 +19,12 @@
 #define RF_NEWS_CHANNEL		0x48414741
 #define RF_FORECAST_CHANNEL	0x48414641
 
-#define SYSCONFPATH "/shared2/sys/SYSCONF"
-#define MIIPATH "/shared2/menu/FaceLib/RFL_DB.dat"
-#define TXTPATH "/title/00000001/00000002/data/setting.txt"
+#define SYSCONFPATH 	"/shared2/sys/SYSCONF"
+#define MIIPATH 		"/shared2/menu/FaceLib/RFL_DB.dat"
+#define TXTPATH 		"/title/00000001/00000002/data/setting.txt"
+#define SMTMDPATH 		"/title/00000001/00000002/content/title.tmd"
+#define TSYSCONFPATH 	"/sys/wiiflow.reg"
+#define TTXTPATH		"/tmp/setting.txt"
 
 #define BLOCK 2048
 
@@ -93,7 +96,7 @@ public:
 	s32 CreateConfig();
 
 	s32 PreNandCfg(bool miis, bool realconfig);
-	s32 Do_Region_Change(string id);
+	bool Do_Region_Change(string id, bool realnand);
 	s32 FlashToNAND(const char *source, const char *dest, dump_callback_t i_dumper, void *i_data);
 	s32 DoNandDump(const char *source, const char *dest, dump_callback_t i_dumper, void *i_data);
 	s32 CalcFlashSize(const char *source, dump_callback_t i_dumper, void *i_data);
@@ -101,6 +104,17 @@ public:
 	void ResetCounters(void);
 
 private:
+	enum GameRegion 
+	{
+		JAP = 0,
+		USA,
+		EUR,
+		KOR,
+		ASN,
+		LTN,
+		UNK,
+		ALL,
+	};
 	/* Prototypes */
 	s32 Nand_Mount(NandDevice *Device);
 	s32 Nand_Unmount(NandDevice *Device);
@@ -113,8 +127,10 @@ private:
 	void __Dec_Enc_TB(void);
 	void __configshifttxt(char *str);
 	void __GetNameList(const char *source, namelist **entries, int *count);
+	u32 __GetSystemMenuRegion(void);
+	s32 __configclose(void);
 	s32 __configread(void);
-	s32 __configwrite(void);
+	s32 __configwrite(bool realnand);
 	u32 __configsetbyte(const char *item, u8 val);
 	u32 __configsetbigarray(const char *item, void *val, u32 size);
 	u32 __configsetsetting(const char *item, const char *val);
