@@ -185,13 +185,13 @@ static u32 do_fst(wiidisc_t *d, u8 *fst, const char *names, u32 i)
 
 static void do_files(wiidisc_t*d)
 {
-	u8 *b = wbfs_malloc(0x480); // XXX: determine actual header size
+	u8 b[0x480]; // XXX: determine actual header size
 	u32 dol_offset;
 	u32 fst_offset;
 	u32 fst_size;
 	u32 apl_offset;
 	u32 apl_size;
-	u8 *apl_header = wbfs_malloc(0x20);
+	u8 apl_header[0x20];
 	u8 *fst;
 	u32 n_files;
 	partition_read(d, 0, b, 0x480, 0);
@@ -215,7 +215,6 @@ static void do_files(wiidisc_t*d)
 		partition_read(d, fst_offset, fst, fst_size,0);
 		n_files = _be32(fst + 8);
 
-
 		if (d->extract_pathname && strcmp(d->extract_pathname, "FST") == 0)
 		{
 			// if empty pathname requested return fst
@@ -227,18 +226,18 @@ static void do_files(wiidisc_t*d)
 		}
 
 		if (12 * n_files <= fst_size)
-			if (n_files > 1) do_fst(d, fst, (char *)fst + 12 * n_files, 0);
-		
-		if (fst != d->extracted_buffer) wbfs_free( fst );
+			if (n_files > 1)
+				do_fst(d, fst, (char *)fst + 12 * n_files, 0);
+
+		if (fst != d->extracted_buffer)
+			wbfs_free( fst );
 	}
-	wbfs_free(b);
-	wbfs_free(apl_header);
 }
 
 static void do_partition(wiidisc_t*d)
 {
-	u8 *tik = wbfs_malloc(0x2a4);
-	u8 *b = wbfs_malloc(0x1c);
+	u8 tik[0x2a4];
+	u8 b[0x1c];
 	u64 tmd_offset;
 	u32 tmd_size;
 	u8 *tmd;
@@ -278,8 +277,6 @@ static void do_partition(wiidisc_t*d)
 
 	partition_raw_read(d, h3_offset, 0, 0x18000);
 
-	wbfs_free(b);
-	wbfs_free(tik);
 	wbfs_free(cert);
 	if(tmd != d->extracted_buffer)
 		wbfs_free( tmd );
@@ -304,21 +301,19 @@ static int test_parition_skip(u32 partition_type, partition_selector_t part_sel)
 
 static void do_disc(wiidisc_t *d)
 {
-	u8 *b = wbfs_malloc(0x100);
-	if(b == NULL)
-		goto out;
+	u8 b[0x100];
 	u64 partition_offset[32]; // XXX: don't know the real maximum
 	u64 partition_type[32]; // XXX: don't know the real maximum
 	u32 n_partitions;
 	u32 magic;
 	u32 i;
 	if(disc_read(d, 0, b, 0x100) < 0)
-		goto out;
+		return;
 	magic = _be32(b + 24);
 	if (magic != WII_MAGIC)
 	{
 		wbfs_error("not a wii disc");
-		goto out;
+		return;
 	}
 	disc_read(d, 0x40000 >> 2, b, 0x100);
 	n_partitions = _be32(b);
@@ -333,8 +328,6 @@ static void do_disc(wiidisc_t *d)
 		d->partition_raw_offset = partition_offset[i];
 		if (!test_parition_skip(partition_type[i], d->part_sel)) do_partition(d);
 	}
-out:
-	wbfs_free(b);
 }
 
 wiidisc_t *wd_open_disc(read_wiidisc_callback_t read, void *fp)

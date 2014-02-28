@@ -300,7 +300,7 @@ u32 Nand::__GetSystemMenuRegion(void)
 	u32 Region = EUR;
 	char *source = (char *)memalign(32, 256);
 	strcpy(source, SMTMDPATH);
-	
+
 	s32 fd = ISFS_Open(source, ISFS_OPEN_READ);
 	if(fd >= 0)
 	{
@@ -312,7 +312,7 @@ u32 Nand::__GetSystemMenuRegion(void)
 		ISFS_Close(fd);
 		free(TMD);
 		free(status);
-	}	
+	}
 	free(source);
 	return Region;
 }
@@ -1045,7 +1045,7 @@ s32 Nand::PreNandCfg(bool miis, bool realconfig)
 
 bool Nand::Do_Region_Change(string id, bool realnand)
 {	
-	if(__configread())
+	if(__configread() == 1)
 	{
 		switch(id[3])
 		{
@@ -1087,7 +1087,7 @@ bool Nand::Do_Region_Change(string id, bool realnand)
 			case 'L': // Japanese Import
 				if(realnand && __GetSystemMenuRegion() == EUR)
 					return __configclose();
-					
+
 				gprintf("Switching region to PAL \n");
 				CCode[0] = 110; // UK
 				__configsetbyte("IPL.LNG", 1);
@@ -1103,7 +1103,7 @@ bool Nand::Do_Region_Change(string id, bool realnand)
 			case 'T':
 				if(realnand && __GetSystemMenuRegion() == KOR)
 					return __configclose();
-					
+
 				gprintf("Switching region to NTSC-K \n");
 				CCode[0] = 137;
 				__configsetbyte("IPL.LNG", 9);

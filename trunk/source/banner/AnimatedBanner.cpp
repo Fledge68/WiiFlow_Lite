@@ -21,7 +21,6 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source
 distribution.
 */
-#include <malloc.h>
 #include "LanguageCode.h"
 #include "AnimatedBanner.h"
 #include "gui/text.hpp"
@@ -35,6 +34,7 @@ AnimatedBanner::AnimatedBanner()
 {
 	layout_banner = NULL;
 	newBanner = NULL;
+	oriBanner = NULL;
 }
 
 void AnimatedBanner::LoadFont(u8 *font1, u8 *font2)
@@ -52,8 +52,10 @@ void AnimatedBanner::Clear()
 	}
 	if(newBanner != NULL)
 	{
-		free(newBanner);
+		if(newBanner != oriBanner)
+			free(newBanner);
 		newBanner = NULL;
+		oriBanner = NULL;
 	}
 }
 
@@ -108,6 +110,7 @@ void AnimatedBanner::SetBannerTexture(const char *tex_name, const u8 *data, floa
 Layout* AnimatedBanner::LoadLayout(const u8 *bnr, u32 bnr_size, const std::string& lyt_name, const std::string &language)
 {
 	u32 brlyt_size = 0;
+	oriBanner = bnr;
 	newBanner = DecompressCopy(bnr, bnr_size, &bnr_size);
 	if(newBanner == NULL)
 		return NULL;
@@ -186,17 +189,9 @@ u8 *DecompressCopy(const u8 *stuff, u32 len, u32 *size)
 		if(decompressLZ77content(stuff + 4, len - 4, &ret, &len))
 			return NULL;
 	}
-	else
-	{
-		// just copy the data out of the archive
-		ret = (u8*)MEM2_memalign(32, len);
-		if( !ret )
-		{
-			gprintf( "out of memory\n" );
-			return NULL;
-		}
-		memcpy( ret, stuff, len );
-	}
+	else //I hate to do that
+		ret = (u8*)stuff;
+
 	if(size)
 		*size = len;
 

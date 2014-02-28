@@ -261,21 +261,24 @@ TexErr STexture::fromImageFile(TexData &dest, const char *filename, u8 f, u32 mi
 	return result;
 }
 
-TexErr STexture::fromTHP(TexData &dest, const u8 *src, u32 w, u32 h)
+TexErr STexture::fromTHP(TexData *dest, const u8 *src, u32 w, u32 h)
 {
-	dest.width = w;
-	dest.height = h;
-	dest.format = GX_TF_RGBA8;
-	dest.dataSize = GX_GetTexBufferSize(dest.width, dest.height, dest.format, GX_FALSE, 0);
-	dest.data = (u8*)MEM2_alloc(dest.dataSize);
-	if(dest.data == NULL)
+	if(dest->width != w || dest->height != h || dest->data == NULL)
 	{
-		Cleanup(dest);
-		return TE_NOMEM;
+		dest->width = w;
+		dest->height = h;
+		dest->format = GX_TF_RGBA8;
+		dest->dataSize = GX_GetTexBufferSize(dest->width, dest->height, dest->format, GX_FALSE, 0);
+		dest->data = (u8*)MEM2_alloc(dest->dataSize);
+		if(dest->data == NULL)
+		{
+			Cleanup(*dest);
+			return TE_NOMEM;
+		}
 	}
-	for(u32 block = 0; block < dest.height; block += 4)
+	for(u32 block = 0; block < dest->height; block += 4)
 	{
-		for(u32 i = 0; i < dest.width; i += 4)
+		for(u32 i = 0; i < dest->width; i += 4)
 		{
 			for(u32 c = 0; c < 4; ++c)
 			{
@@ -283,19 +286,19 @@ TexErr STexture::fromTHP(TexData &dest, const u8 *src, u32 w, u32 h)
 				{
 					u32 y = h - 1 - (c + block);
 					u32 x = argb + i;
-					u32 src_offset = ((i + argb) + ((block + c) * dest.width)) * 3;
-					u32 dst_offset = coordsRGBA8(x, y, dest.width);
+					u32 src_offset = ((i + argb) + ((block + c) * dest->width)) * 3;
+					u32 dst_offset = coordsRGBA8(x, y, dest->width);
 					/* Alpha */
-					dest.data[dst_offset] = 0xFF;
+					dest->data[dst_offset] = 0xFF;
 					/* RGB */
-					dest.data[dst_offset + 1] = src[src_offset];
-					dest.data[dst_offset + 32] = src[src_offset + 1];
-					dest.data[dst_offset + 33] = src[src_offset + 2];
+					dest->data[dst_offset + 1] = src[src_offset];
+					dest->data[dst_offset + 32] = src[src_offset + 1];
+					dest->data[dst_offset + 33] = src[src_offset + 2];
 				}
 			}
 		}
 	}
-	DCFlushRange(dest.data, dest.dataSize);
+	DCFlushRange(dest->data, dest->dataSize);
 	return TE_OK;
 }
 

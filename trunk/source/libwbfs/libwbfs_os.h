@@ -33,14 +33,14 @@ static inline void wbfs_error(const char *x)
 
 static inline void *wbfs_malloc(size_t size)
 {
-	void *p = MEM2_alloc(size);
+	void *p = MEM2_lo_alloc(size);
 	if(p) memset(p, 0, size);
 	return p;
 }
 
 static inline void wbfs_free(void *ptr)
 {
-	MEM2_free(ptr);
+	MEM2_lo_free(ptr);
 }
 
 #ifdef __cplusplus

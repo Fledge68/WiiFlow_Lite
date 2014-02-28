@@ -1,5 +1,5 @@
 #define APP_NAME				"WiiFlow"
-#define APP_VERSION				"Beta 4.2.1"
+#define APP_VERSION				"Beta 4.2.2"
 
 #define APPDATA_DIR				"wiiflow"
 #define APPDATA_DIR2			"apps/wiiflow"
@@ -38,7 +38,7 @@
 #define THANKS \
 "Lustar, CedWii, Benjay, Domi78, Oops, \
 Celtiore, Jiiwah, FluffyKiwi, Roku93, Yardape8000, \
-Spayrosam, Bluescreen81, Chappy23, mamule, \
+Spayrosam, Bluescreen81, Chappy23, mamule, seam, \
 BlindDude, Bubba, DJTaz, OggZee, entropy, Ayatus, \
 Usptactical, WiiPower, Hermes, Spidy1000, megazig, \
 Dimok, Kovani, Drexyl, DvZ, Etheboss, stfour, \

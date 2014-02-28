@@ -32,6 +32,7 @@
 #include <ogc/conf.h>
 #include <ogc/isfs.h>
 #include <malloc.h>
+#include "memory/mem2.hpp"
 #include "banner.h"
 #include "MD5.h"
 #include "nand.hpp"
@@ -156,7 +157,7 @@ u8 *Banner::GetFile(const char *name, u32 *size)
 		return NULL;
 
 	//I like to have stuff in a separate memory region
-	u8 *file = (u8*)malloc(*size);
+	u8 *file = (u8*)MEM2_lo_alloc(*size);
 	if(file == NULL)
 		return NULL;
 

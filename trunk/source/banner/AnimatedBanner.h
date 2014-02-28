@@ -45,6 +45,7 @@ protected:
 	Layout* LoadLayout(const u8 *bnr, u32 bnr_size, const std::string& lyt_name, const std::string &language);
 	Layout *layout_banner;
 	u8 *newBanner;
+	const u8 *oriBanner;
 	u8 *sysFont1;
 	u8 *sysFont2;
 };

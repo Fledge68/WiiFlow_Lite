@@ -129,7 +129,8 @@ bool NandSave::CheckSave()
 		goto error;
 	}
 	free(certBuffer);
-	free(u8_bin);
+	if(u8_bin != save_bin)
+		free(u8_bin);
 	gprintf("Created WiiFlow Save\n");
 done:
 	loaded = true;

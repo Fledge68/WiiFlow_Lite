@@ -318,7 +318,7 @@ void CMenu::_showGame(void)
 			CoverFlow.hideCover();
 	}
 	else
-		_setBg(m_mainBg, m_mainBgLQ);
+		_setBg(m_gameBg, m_gameBgLQ);
 
 	if(!m_zoom_banner)
 	{
@@ -417,36 +417,42 @@ void CMenu::_game(bool launch)
 			const char *videoPath = fmt("%s/%.3s.thp", m_videoDir.c_str(), CoverFlow.getId());
 			if(fsop_FileExist(videoPath))
 			{
-				MusicPlayer.Stop();
+				GuiSound OggFile;
 				m_gameSound.Stop();
+				MusicPlayer.Stop();
 				m_banner.SetShowBanner(false);
 				_hideGame();
 				/* Set Background empty */
 				TexData EmptyBG;
 				_setBg(EmptyBG, EmptyBG);
 				/* Lets play the movie */
-				WiiMovie movie(videoPath);
-				movie.SetScreenSize(m_cfg.getInt("GENERAL", "tv_width", 640), m_cfg.getInt("GENERAL", "tv_height", 480), m_cfg.getInt("GENERAL", "tv_x", 0), m_cfg.getInt("GENERAL", "tv_y", 0));
-				movie.SetVolume(m_cfg.getInt("GENERAL", "sound_volume_bnr", 255));
+				movie.Init(videoPath);
+				OggFile.Load(fmt("%s/%.3s.ogg", m_videoDir.c_str(), CoverFlow.getId()));
+				OggFile.SetVolume(m_cfg.getInt("GENERAL", "sound_volume_bnr", 255));
 				m_video_playing = true;
-				movie.Play();
 				m_banner.ReSetup_GX();
 				m_vid.setup2DProjection();
-				while(!BTN_B_PRESSED && !BTN_A_PRESSED && !BTN_HOME_PRESSED && movie.GetNextFrame(&m_curBg))
+				OggFile.Play();
+				movie.Play(&m_curBg);
+				while(!BTN_B_PRESSED && !BTN_A_PRESSED && !BTN_HOME_PRESSED && movie.Continue() == true)
 				{
 					/* Draw movie BG and render */
-					_drawBg();
-					m_vid.render();
-					free(m_curBg.data);
+					if(movie.rendered == false)
+					{
+						_drawBg();
+						m_vid.render();
+						movie.rendered = true;
+					}
 					/* Check if we want to stop */
 					WPAD_ScanPads();
 					PAD_ScanPads();
 					ButtonsPressed();
 				}
-				movie.Stop();
+				movie.DeInit();
+				OggFile.FreeMemory();
 				TexHandle.Cleanup(m_curBg);
 				/* Finished, so lets re-setup the background */
-				_setBg(m_mainBg, m_mainBgLQ);
+				_setBg(m_gameBg, m_gameBgLQ);
 				_updateBg();
 				/* Get back into our coverflow */
 				_showGame();
@@ -576,6 +582,7 @@ void CMenu::_game(bool launch)
 				}
 				gprintf("Launching game %s\n", hdr->id);
 				CurrentBanner.ClearBanner();
+
 				/* Finally boot it */
 				_launch(hdr);
 
@@ -633,7 +640,7 @@ void CMenu::_game(bool launch)
 			m_gameSelected = false;
 			m_fa.unload();
 			m_banner.DeleteBanner(true);
-			_setBg(m_mainBg, m_mainBgLQ);
+			_setBg(m_gameBg, m_gameBgLQ);
 		}
 		if(m_show_zone_game && !m_zoom_banner)
 		{
@@ -1409,11 +1416,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	}
 	else
 		emulate_mode = 0;
-		
-	bool patchregion = false;
-	
-	if(emulate_mode <= 2 && !neek2o() && m_cfg.getBool("GENERAL", "tempregionrn", true))
-		patchregion = NandHandle.Do_Region_Change(id, true);
 
 	bool use_led = m_gcfg2.getBool(id, "led", false);
 	bool cheat = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool(WII_DOMAIN, "cheat", false));
@@ -1455,6 +1457,13 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	m_cfg.save(true);
 	cleanup(); // wifi and sd gecko doesnt work anymore after cleanup
 
+
+	bool patchregion = false;
+	if(emulate_mode <= 2 && !neek2o() && m_cfg.getBool("GENERAL", "tempregionrn", false))
+	{
+		gprintf("Check\n");
+		patchregion = NandHandle.Do_Region_Change(id, true);
+	}
 	if(ExternalBooter_LoadBooter(fmt("%s/ext_booter.bin", m_binsDir.c_str())) == false)
 		Sys_Exit();
 	if((!dvd || neek2o()) && !Sys_DolphinMode())
@@ -1600,9 +1609,6 @@ struct IMD5Header
 	u8 crypto[16];
 } ATTRIBUTE_PACKED;
 
-static const u32 BNR_MAX_SIZE = 0x00200000; /* 2MB */
-static u8 *BNR_LOC = (u8*)0x90000000;
-
 void CMenu::_gameSoundThread(CMenu *m)
 {
 	m->m_soundThrdBusy = true;
@@ -1632,19 +1638,21 @@ void CMenu::_gameSoundThread(CMenu *m)
 	/* check custom ID6 first */
 	strncpy(custom_banner, fmt("%s/%s.bnr", m->m_customBnrDir.c_str(), GameHdr->id), 255);
 	fsop_GetFileSizeBytes(custom_banner, &custom_bnr_size);
-	if(custom_bnr_size > 0 && custom_bnr_size < BNR_MAX_SIZE)
+	if(custom_bnr_size > 0)
 	{
-		custom_bnr_file = BNR_LOC;
-		fsop_ReadFileLoc(custom_banner, custom_bnr_size, BNR_LOC);
+		custom_bnr_file = (u8*)MEM2_lo_alloc(custom_bnr_size);
+		if(custom_bnr_file != NULL)
+			fsop_ReadFileLoc(custom_banner, custom_bnr_size, (void*)custom_bnr_file);
 	}
 	else /* no custom ID6 or too big, try ID3 */
 	{
 		strncpy(custom_banner, fmt("%s/%.3s.bnr", m->m_customBnrDir.c_str(), GameHdr->id), 255);
 		fsop_GetFileSizeBytes(custom_banner, &custom_bnr_size);
-		if(custom_bnr_size > 0 && custom_bnr_size < BNR_MAX_SIZE)
+		if(custom_bnr_size > 0)
 		{
-			custom_bnr_file = BNR_LOC;
-			fsop_ReadFileLoc(custom_banner, custom_bnr_size, BNR_LOC);
+			custom_bnr_file = (u8*)MEM2_lo_alloc(custom_bnr_size);
+			if(custom_bnr_file != NULL)
+				fsop_ReadFileLoc(custom_banner, custom_bnr_size, (void*)custom_bnr_file);
 		}
 	}
 	if(custom_bnr_file == NULL && GameHdr->type == TYPE_GC_GAME)
@@ -1667,17 +1675,18 @@ void CMenu::_gameSoundThread(CMenu *m)
 	{
 		strncpy(cached_banner, fmt("%s/%s.bnr", m->m_bnrCacheDir.c_str(), GameHdr->id), 255);
 		fsop_GetFileSizeBytes(cached_banner, &cached_bnr_size);
-		if(cached_bnr_size > 0 && cached_bnr_size < BNR_MAX_SIZE)
+		if(cached_bnr_size > 0)
 		{
-			cached_bnr_file = BNR_LOC;
-			fsop_ReadFileLoc(cached_banner, cached_bnr_size, BNR_LOC);
+			cached_bnr_file = (u8*)MEM2_lo_alloc(cached_bnr_size);
+			if(cached_bnr_file != NULL)
+				fsop_ReadFileLoc(cached_banner, cached_bnr_size, (void*)cached_bnr_file);
 		}
 	}
 
 	if(custom_bnr_file != NULL)
-		CurrentBanner.SetBanner(custom_bnr_file, custom_bnr_size, true);
+		CurrentBanner.SetBanner(custom_bnr_file, custom_bnr_size, true, true);
 	else if(cached_bnr_file != NULL)
-		CurrentBanner.SetBanner(cached_bnr_file, cached_bnr_size);
+		CurrentBanner.SetBanner(cached_bnr_file, cached_bnr_size, false, true);
 	else if(GameHdr->type == TYPE_WII_GAME)
 		_extractBnr(GameHdr);
 	else if(GameHdr->type == TYPE_CHANNEL)
@@ -1713,7 +1722,6 @@ void CMenu::_gameSoundThread(CMenu *m)
 				m->m_soundThrdBusy = false;
 				return;
 			}
-			free(soundBin);
 		}
 		else
 			m->m_gameSound.Load(soundBin, sndSize);

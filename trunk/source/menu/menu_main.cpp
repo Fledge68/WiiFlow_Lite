@@ -60,7 +60,7 @@ start_main:
 #endif
 	m_vid.set2DViewport(m_cfg.getInt("GENERAL", "tv_width", 640), m_cfg.getInt("GENERAL", "tv_height", 480),
 	m_cfg.getInt("GENERAL", "tv_x", 0), m_cfg.getInt("GENERAL", "tv_y", 0));
-	_setBg(m_gameBg, m_gameBgLQ);
+	_setBg(m_mainBg, m_mainBgLQ);
 	m_btnMgr.show(m_mainBtnInfo);
 	m_btnMgr.show(m_mainBtnConfig);
 	m_btnMgr.show(m_mainBtnQuit);
@@ -306,7 +306,7 @@ int CMenu::main(void)
 			}
 		}
 	}
-
+	gprintf("start\n");
 	while(!m_exit)
 	{
 		/* IMPORTANT check if a disc is inserted */
