@@ -21,8 +21,7 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source
 distribution.
 */
-
-#include <malloc.h>
+#include "memory/mem2.hpp"
 #include "WiiFont.h"
 
 WiiFont::WiiFont()
@@ -41,7 +40,7 @@ WiiFont::~WiiFont()
 	for (itr = textureMap.begin(); itr != textureMap.end(); itr++)
 	{
 		if(itr->second.allocated && itr->second.texture_data)
-			free(itr->second.texture_data);
+			MEM2_lo_free(itr->second.texture_data);
 	}
 }
 
@@ -370,13 +369,13 @@ u8 *WiiFont::GetUnpackedTexture(u16 sheetNo)
 	}
 
 	// decompress
-	u8* sheetData = (u8*)memalign( 32, uncompressedSize );// buffer needs to be 32bit aligned
+	u8* sheetData = (u8*)MEM2_lo_alloc( uncompressedSize );// buffer needs to be 32bit aligned
 	if( !sheetData )
 		return NULL;
 
 	if( !Decompress_0x28( sheetData, uncompressedSize, ( data + tglp->dataOffset + off + 4 ), compressedSize ) )
 	{
-		free( sheetData );
+		MEM2_lo_free( sheetData );
 		return NULL;
 	}
 

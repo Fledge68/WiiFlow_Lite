@@ -272,7 +272,7 @@ void VideoFrame::resize(int width, int height)
 	_p = 3*width;
 	_p += (4 - _p%4)%4;
 
-	_data = (u8 *)malloc(_p * _h);
+	_data = (u8 *)MEM2_alloc(_p * _h);
 }
 
 int VideoFrame::getWidth() const
@@ -400,17 +400,17 @@ void VideoFile::loadFrame(VideoFrame& frame, const u8* data, int size) const
 	decodeJpeg(data, size, frame);
 }
 
-
-ThpVideoFile::ThpVideoFile(FILE* f)
-: VideoFile(f)
+bool ThpVideoFile::Init(FILE *f)
 {
-	readThpHeader(f, _head);
+	_f = f;
+	loop = false;
+	readThpHeader(_f, _head);
 
 	//this is just to find files that have this field != 0, i
 	//have no such a file
 	assert(_head.offsetsDataOffset == 0);
 
-	readThpComponents(f, _components);
+	readThpComponents(_f, _components);
 	for(u32 i = 0; i < _components.numComponents; ++i)
 	{
 		if(_components.componentTypes[i] == 0) //video
@@ -429,8 +429,18 @@ ThpVideoFile::ThpVideoFile(FILE* f)
 	_currFrameNr = -1;
 	_nextFrameOffset = _head.firstFrameOffset;
 	_nextFrameSize = _head.firstFrameSize;
-	_currFrameData.resize(_head.maxBufferSize); //include some padding
+	_currFrameData = (u8*)MEM2_alloc(_head.maxBufferSize); //include some padding
+	if(_currFrameData == NULL)
+		return false;
 	loadNextFrame();
+	return true;
+}
+
+void ThpVideoFile::DeInit()
+{
+	if(_currFrameData != NULL)
+		free(_currFrameData);
+	_currFrameData = NULL;
 }
 
 int ThpVideoFile::getWidth() const
@@ -448,31 +458,31 @@ int ThpVideoFile::getFrameCount() const
 int ThpVideoFile::getCurrentFrameNr() const
 { return _currFrameNr; }
 
-bool ThpVideoFile::loadNextFrame()
+bool ThpVideoFile::loadNextFrame(bool skip)
 {
 	++_currFrameNr;
 	if(_currFrameNr >= (int) _head.numFrames)
 	{
-	if (!loop)
-		return false;
-		
+		if (!loop)
+			return false;
+
 		_currFrameNr = 0;
 		_nextFrameOffset = _head.firstFrameOffset;
 		_nextFrameSize = _head.firstFrameSize;
 	}
 
 	fseek(_f, _nextFrameOffset, SEEK_SET);
-	fread(&_currFrameData[0], 1, _nextFrameSize, _f);
+	fread(_currFrameData, 1, (skip ? 4 : _nextFrameSize), _f);
 
 	_nextFrameOffset += _nextFrameSize;
-	_nextFrameSize = *(u32*)&_currFrameData[0];
+	_nextFrameSize = *(u32*)_currFrameData;
 	return true;
 }
 
 void ThpVideoFile::getCurrentFrame(VideoFrame& f) const
 {
-	int size = *(u32*)(&_currFrameData[0] + 8);
-	loadFrame(f, &_currFrameData[0] + 4*_numInts, size);
+	int size = *(u32*)(_currFrameData + 8);
+	loadFrame(f, _currFrameData + 4 * _numInts, size);
 }
 
 bool ThpVideoFile::hasSound() const
@@ -502,8 +512,8 @@ int ThpVideoFile::getCurrentBuffer(s16* data) const
 	if(!hasSound())
 		return 0;
 
-	int jpegSize = *(u32*)(&_currFrameData[0] + 8);
-	const u8* src = &_currFrameData[0] + _numInts*4 + jpegSize;
+	int jpegSize = *(u32*)(_currFrameData + 8);
+	const u8* src = _currFrameData + _numInts*4 + jpegSize;
 
 	return thpAudioDecode(data, src, false, _audioInfo.numChannels == 2);
 }
@@ -542,13 +552,13 @@ int MthVideoFile::getFrameCount() const
 int MthVideoFile::getCurrentFrameNr() const
 { return _currFrameNr; }
 
-bool MthVideoFile::loadNextFrame()
+bool MthVideoFile::loadNextFrame(bool skip)
 {
 	++_currFrameNr;
 	if(_currFrameNr >= (int) _head.numFrames)
 	{
-	if (!loop)
-		return false;
+		if (!loop)
+			return false;
 		_currFrameNr = 0;
 		_nextFrameOffset = _head.offset;
 		_nextFrameSize = _head.firstFrameSize;
@@ -556,7 +566,7 @@ bool MthVideoFile::loadNextFrame()
 
 	fseek(_f, _nextFrameOffset, SEEK_SET);
 	_currFrameData.resize(_nextFrameSize);
-	fread(&_currFrameData[0], 1, _nextFrameSize, _f);
+	fread(&_currFrameData[0], 1, (skip ? 4 : _nextFrameSize), _f);
 	_thisFrameSize = _nextFrameSize;
 
 	u32 nextSize;

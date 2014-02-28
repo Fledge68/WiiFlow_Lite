@@ -25,13 +25,13 @@ distribution.
 
 #include <set>
 #include <string.h>
-#include <malloc.h>
+#include "memory/mem2.hpp"
 #include "BannerTexture.hpp"
 
 Texture::~Texture()
 {
 	if(texture_data)
-		free(texture_data);
+		MEM2_lo_free(texture_data);
 }
 
 void Texture::Load(const u8 *file )
@@ -103,10 +103,10 @@ void Texture::Load(const u8 *file )
 void Texture::LoadTextureData(const u8 *data, u16 width, u16 height, u8 fmt)
 {
 	if(texture_data)
-		free(texture_data);
+		MEM2_lo_free(texture_data);
 
 	int tex_size = GX_GetTexBufferSize(width, height, fmt, GX_FALSE, 0);
-	texture_data = (u8*) memalign(32, tex_size);
+	texture_data = (u8*)MEM2_lo_alloc(tex_size);
 	if(!texture_data)
 		return;
 

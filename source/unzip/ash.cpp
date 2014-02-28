@@ -16,8 +16,8 @@
  ****************************************************************************/
 #include <stdlib.h>
 #include <stdio.h>
-//#include <memory.h>
-#include <malloc.h>
+#include <memory/mem2.hpp>
+//#include <malloc.h>
 #include <string.h>
 
 #include "ash.h"
@@ -50,7 +50,7 @@ u8*	DecompressAsh( const u8 *stuff, u32 &len )
 
 	u32 size = r[5];
 	//gprintf("Decompressed size: %d\n", size);
-	u8* buf1 = (u8*)memalign( 32, size );
+	u8* buf1 = (u8*)MEM2_lo_alloc(size);
 	if( !buf1 )
 	{
 		gprintf( "ASH: no memory\n" );
@@ -71,11 +71,11 @@ u8*	DecompressAsh( const u8 *stuff, u32 &len )
 	r[28] = r[28] + 4;
 	//r[8]  = 0x8108<<16;
 	//HACK, pointer to RAM
-	u8* workingBuffer = (u8*)memalign( 32, 0x100000 );
+	u8* workingBuffer = (u8*)MEM2_lo_alloc(0x100000);
 	if( !workingBuffer )
 	{
 		gprintf( "ASH: no memory 2\n" );
-		free( buf1 );
+		MEM2_lo_free(buf1);
 		return NULL;
 	}
 	r[8]  = (u32)workingBuffer;
@@ -448,6 +448,6 @@ loc_81332434:
 	len = r[3];
 
 	//gprintf("Decompressed %d bytes\n", r[3]);
-	free( workingBuffer );
+	MEM2_lo_free(workingBuffer);
 	return buf1;
 }

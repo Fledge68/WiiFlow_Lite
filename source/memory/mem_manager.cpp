@@ -21,7 +21,7 @@
 #include "loader/utils.h"
 
 static mutex_t memMutex = 0;
-static const u32 MEM_BLOCK_SIZE = 256;
+static const u32 MEM_BLOCK_SIZE = 128;
 
 void MemMutexInit()
 {

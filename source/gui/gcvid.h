@@ -227,7 +227,7 @@ class VideoFile
   virtual int getFrameCount() const;
   virtual int getCurrentFrameNr() const;
 
-  virtual bool loadNextFrame() = 0;
+  virtual bool loadNextFrame(bool skip = false) = 0;
 
   virtual void getCurrentFrame(VideoFrame& frame) const = 0;
 
@@ -255,7 +255,10 @@ void closeVideo(VideoFile*& vf);
 class ThpVideoFile : public VideoFile
 {
  public:
-  ThpVideoFile(FILE* f);
+  ThpVideoFile() : VideoFile(NULL) { };
+  ThpVideoFile(FILE* f) : VideoFile(f) { Init(f); };
+  bool Init(FILE *f);
+  void DeInit();
 
   virtual int getWidth() const;
   virtual int getHeight() const;
@@ -264,7 +267,7 @@ class ThpVideoFile : public VideoFile
 
   virtual int getCurrentFrameNr() const;
 
-  virtual bool loadNextFrame();
+  virtual bool loadNextFrame(bool skip = false);
 
   virtual void getCurrentFrame(VideoFrame& frame) const;
 
@@ -285,7 +288,7 @@ class ThpVideoFile : public VideoFile
   int _currFrameNr;
   int _nextFrameOffset;
   int _nextFrameSize;
-  vector<u8> _currFrameData;
+  u8 *_currFrameData;
 };
 
 class MthVideoFile : public VideoFile
@@ -300,7 +303,7 @@ class MthVideoFile : public VideoFile
 
   virtual int getCurrentFrameNr() const;
 
-  virtual bool loadNextFrame();
+  virtual bool loadNextFrame(bool skip = false);
 
   virtual void getCurrentFrame(VideoFrame& frame) const;
 
@@ -323,7 +326,7 @@ class JpgVideoFile : public VideoFile
   virtual int getHeight() const;
   virtual int getFrameCount() const;
 
-  virtual bool loadNextFrame() { return false; }
+  virtual bool loadNextFrame(bool skip = false) { return skip; }
   virtual void getCurrentFrame(VideoFrame& frame) const;
 
  private:

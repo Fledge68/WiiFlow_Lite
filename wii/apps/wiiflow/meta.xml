@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<app version="4.2">
+<app version="4.2.1">
   <name> WiiFlow</name>
   <coder>OverjoY, FIX94</coder>
-  <version>4.2</version>
-  <release_date>20130908000000</release_date>
+  <version>4.2.1</version>
+  <release_date>20131231000000</release_date>
   <short_description>USB Loader / Nand Emulator</short_description>
   <long_description>
     WiiFlow is a Wii Game, Channel, Wiiware, Virtual Console, and Savegame Emulator intended for use with legal backups.

@@ -628,10 +628,15 @@ void PatchRegion(void *Address, int Size)
 	while(addr_start < addr_end)
 	{
 		if(!memcmp(addr_start, sig_setting, sizeof(sig_setting)))
+		{
+			gprintf("Patching setting region\n");
 			memcpy(addr_start, patch_setting, sizeof(patch_setting));
+		}
 		if(!memcmp(addr_start, sig_SYSCONF, sizeof(sig_SYSCONF)))
+		{
+			gprintf("Patching SYSCONF region\n");
 			memcpy(addr_start, patch_SYSCONF, sizeof(patch_SYSCONF));
-			
+		}
 		addr_start += 4;
 	}
 }

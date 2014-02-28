@@ -4,58 +4,38 @@
 #include "gcvid.h"
 #include "Timer.h"
 #include "texture.hpp"
-#include "music/BufferCircle.hpp"
 
 using namespace std;
 
 class WiiMovie
 {
 public:
-	WiiMovie(const char * filepath);
-	~WiiMovie();
-	bool Play(bool loop = false);
+	void Init(const char * filepath);
+	void DeInit();
+	bool Play(TexData *Background, bool loop = false);
 	void Stop();
-	void SetVolume(int vol);
-	void SetScreenSize(int width, int height, int top, int left);
-	void SetFullscreen();
-	void SetFrameSize(int w, int h);
-	void SetAspectRatio(float Aspect);
-	bool GetNextFrame(TexData *tex);
+	bool Continue();
+	volatile bool loaded;
+	volatile bool rendered;
 protected:
 	static void * UpdateThread(void *arg);
-	static void * PlayingThread(void *arg);
 	void FrameLoadLoop();
 	void ReadNextFrame();
 	void LoadNextFrame();
 
 	u8 * ThreadStack;
-	u8 * PlayThreadStack;
 	lwp_t ReadThread;
-	lwp_t PlayThread;
-	mutex_t mutex;
 
-	VideoFile *Video;
-	BufferCircle SoundBuffer;
+	ThpVideoFile Video;
+	FILE *vFile;
 	float fps;
 	Timer PlayTime;
 	u32 VideoFrameCount;
-	vector<TexData> Frames;
+	TexData *Frame;
 	bool Playing;
 	bool ExitRequested;
-	bool fullScreen;
-	int maxSoundSize;
-	int SndChannels;
-	int SndFrequence;
-	int volume;
-
-	int screentop;
-	int screenleft;
-	int screenwidth;
-	int screenheight;
-	float scaleX;
-	float scaleY;
-	int width;
-	int height;
 };
+
+extern WiiMovie movie;
 
 #endif

@@ -15,14 +15,19 @@ static const u32 MEM2_PRIORITY_SIZE = 0x1000;
 u32 MALLOC_MEM2 = 0;
 
 u8 *MEM1_lo_start = (u8*)0x80004000;
-u8 *MEM1_lo_end = (u8*)0x80620000;
-u8 *MEM1_lo_list = (u8*)0x93280000;
+u8 *MEM1_lo_end = (u8*)0x8061ff00;
+u8 *MEM1_lo_list = (u8*)0x932B0000;
 
-u8 *MEM2_start = (u8*)0x90200000;
-u8 *MEM2_end = (u8*)0x93200000;
+u8 *MEM2_lo_start = (u8*)0x90200000;
+u8 *MEM2_lo_end = (u8*)0x905fff00;
+u8 *MEM2_lo_list = (u8*)0x932D0000;
+
+u8 *MEM2_start = (u8*)0x90600000;
+u8 *MEM2_end = (u8*)0x931fff00;
 u8 *MEM2_list = (u8*)0x93200000;
 
 MemManager g_mem1lo;
+MemManager g_mem2lo;
 MemManager g_mem2gp;
 
 extern "C"
@@ -42,7 +47,10 @@ void MEM_init()
 	g_mem1lo.Init(MEM1_lo_start, MEM1_lo_list, (u32)(MEM1_lo_end-MEM1_lo_start)); //about 6mb
 	g_mem1lo.ClearMem();
 
-	g_mem2gp.Init(MEM2_start, MEM2_list, (u32)(MEM2_end-MEM2_start)); //about 48mb
+	g_mem2lo.Init(MEM2_lo_start, MEM2_lo_list, (u32)(MEM2_lo_end-MEM2_lo_start)); //about 4mb
+	g_mem2lo.ClearMem();
+
+	g_mem2gp.Init(MEM2_start, MEM2_list, (u32)(MEM2_end-MEM2_start)); //about 44mb
 	g_mem2gp.ClearMem();
 }
 
@@ -89,6 +97,19 @@ void MEM1_free(void *p)
 unsigned int MEM1_freesize()
 {
 	return SYS_GetArena1Size();
+}
+
+
+void MEM2_lo_free(void *p)
+{
+	if(!p)
+		return;
+	g_mem2lo.Free(p);
+}
+
+void *MEM2_lo_alloc(unsigned int s)
+{
+	return g_mem2lo.Alloc(s);
 }
 
 
@@ -191,10 +212,10 @@ void __wrap_free(void *p)
 
 	if(((u32)p & 0x10000000) != 0)
 	{
-		//if(p > MEM2_start)
-		g_mem2gp.Free(p);
-		//else
-		//g_mem2lo_gp.Free(p);
+		if(p > MEM2_start)
+			g_mem2gp.Free(p);
+		else
+			g_mem2lo.Free(p);
 	}
 	else
 		MEM1_free(p);
@@ -237,7 +258,12 @@ void *__wrap_realloc(void *p, size_t size)
 size_t __wrap_malloc_usable_size(void *p)
 {
 	if(((u32)p & 0x10000000) != 0)
-		return g_mem2gp.MemBlockSize(p);
+	{
+		if(p > MEM2_start)
+			return g_mem2gp.MemBlockSize(p);
+		else
+			return g_mem2lo.MemBlockSize(p);
+	}
 	return __real_malloc_usable_size(p);
 }
 

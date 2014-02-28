@@ -128,7 +128,8 @@ void writeStub()
 	DCFlushRange((void*)0x80001800, StubSize);
 
 	/* And free the memory again */
-	free(Stub);
+	if(Stub != stub_bin)
+		free(Stub);
 }
 
 void BootHomebrew()
