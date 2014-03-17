@@ -21,7 +21,6 @@
 #include "menu/menu.hpp"
 #include "memory/memory.h"
 
-CMenu mainMenu;
 bool useMainIOS = false;
 volatile bool NANDemuView = false;
 volatile bool networkInit = false;

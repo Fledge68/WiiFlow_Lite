@@ -46,6 +46,9 @@ public:
 	SoundDecoder *Decoder(int i) { return ((i < 0 || i >= MAX_DECODERS) ? NULL : DecoderList[i]); };
 	void ThreadSignal() { LWP_ThreadSignal(ThreadQueue); };
 	bool IsDecoding() { return Decoding; };
+private: //thread stack
+	static u8 SoundStack[32768];
+	static const u32 SoundStackSize;
 protected:
 	static void *UpdateThread(void *arg);
 	void InternalSoundUpdates();
@@ -53,7 +56,6 @@ protected:
 	SoundDecoder *GetSoundDecoder(const char *filepath);
 	SoundDecoder *GetSoundDecoder(const u8 *sound, int length);
 
-	u8 *ThreadStack;
 	lwp_t SoundThread;
 	lwpq_t ThreadQueue;
 	bool Decoding;

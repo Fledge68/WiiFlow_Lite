@@ -46,6 +46,9 @@ static inline int loopNum(int i, int s)
 
 CCoverFlow CoverFlow;
 
+u8 CCoverFlow::coverThreadStack[32768] ATTRIBUTE_ALIGN(32);
+const u32 CCoverFlow::coverThreadStackSize = 32768;
+
 CCoverFlow::CCover::CCover(void)
 {
 	index = 0;
@@ -651,7 +654,8 @@ void CCoverFlow::startCoverLoader(void)
 	m_loadingCovers = true;
 	m_moved = true;
 
-	LWP_CreateThread(&coverLoaderThread, (void*(*)(void*))CCoverFlow::_coverLoader, (void*)this, NULL, 0, 30);
+	LWP_CreateThread(&coverLoaderThread, (void*(*)(void*))CCoverFlow::_coverLoader, 
+						(void*)this, coverThreadStack, coverThreadStackSize, 30);
 	//gprintf("Coverflow started!\n");
 }
 

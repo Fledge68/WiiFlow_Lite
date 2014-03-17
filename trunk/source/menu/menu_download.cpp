@@ -1234,9 +1234,11 @@ void CMenu::_download(string gameId)
 				m_thrdWorking = true;
 				gameId.clear();
 				if (dlAll)
-					LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_coverDownloaderAll, (void *)this, 0, 8192, 40);
+					LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_coverDownloaderAll, 
+									(void *)this, downloadStack, downloadStackSize, 40);
 				else
-					LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_coverDownloaderMissing, (void *)this, 0, 8192, 40);
+					LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_coverDownloaderMissing, 
+									(void *)this, downloadStack, downloadStackSize, 40);
 			}
 			else if (m_btnMgr.selected(m_downloadBtnPrioM) && !m_thrdWorking)
 			{
@@ -1456,7 +1458,8 @@ void CMenu::_download(string gameId)
 
 				_updateGametdb = true;
 
-				LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_gametdbDownloader, (void *)this, 0, 8192, 40);		
+				LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_gametdbDownloader, 
+								(void *)this, downloadStack, downloadStackSize, 40);
 			}
 			else if (m_btnMgr.selected(m_downloadBtnCancel))
 			{
@@ -2121,7 +2124,8 @@ void CMenu::_downloadBnr(const char *gameID)
 
 	m_thrdWorking = true;
 	lwp_t thread = LWP_THREAD_NULL;
-	LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_downloadBannerAsync, (void *)this, 0, 8192, 40);
+	LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_downloadBannerAsync, 
+						(void *)this, downloadStack, downloadStackSize, 40);
 
 	wstringEx prevMsg;
 	while(m_thrdWorking)
@@ -2203,7 +2207,8 @@ void CMenu::_downloadUrl(const char *url, u8 **dl_file, u32 *dl_size)
 
 	m_thrdWorking = true;
 	lwp_t thread = LWP_THREAD_NULL;
-	LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_downloadUrlAsync, (void *)this, 0, 8192, 40);
+	LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_downloadUrlAsync, 
+						(void *)this, downloadStack, downloadStackSize, 40);
 
 	wstringEx prevMsg;
 	while(m_thrdWorking)

@@ -36,6 +36,9 @@
 
 SoundHandler SoundHandle;
 
+u8 SoundHandler::SoundStack[32768] ATTRIBUTE_ALIGN(32);
+const u32 SoundHandler::SoundStackSize = 32768;
+
 void SoundHandler::Init()
 {
 	Decoding = false;
@@ -43,11 +46,7 @@ void SoundHandler::Init()
 	for(u32 i = 0; i < MAX_DECODERS; ++i)
 		DecoderList[i] = NULL;
 
-	ThreadStack = (u8 *)MEM2_memalign(32, 32768);
-	if(!ThreadStack)
-		return;
-
-	LWP_CreateThread(&SoundThread, UpdateThread, this, ThreadStack, 32768, LWP_PRIO_HIGHEST);
+	LWP_CreateThread(&SoundThread, UpdateThread, this, SoundStack, SoundStackSize, LWP_PRIO_HIGHEST);
 	gprintf("SHND: Running sound thread\n");
 }
 
@@ -59,11 +58,6 @@ void SoundHandler::Cleanup()
 	ThreadSignal();
 	LWP_JoinThread(SoundThread, NULL);
 	SoundThread = LWP_THREAD_NULL;
-	if(ThreadStack != NULL)
-	{
-		MEM2_free(ThreadStack);
-		ThreadStack = NULL;
-	}
 
 	ClearDecoderList();
 	gprintf("SHND: Stopped sound thread\n");

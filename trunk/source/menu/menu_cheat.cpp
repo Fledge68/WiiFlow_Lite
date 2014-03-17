@@ -178,7 +178,8 @@ void CMenu::_CheatSettings()
 
 				m_thrdWorking = true;
 				lwp_t thread = LWP_THREAD_NULL;
-				LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_downloadCheatFileAsync, (void *)this, 0, 8192, 40);
+				LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_downloadCheatFileAsync, 
+									(void *)this, downloadStack, downloadStackSize, 40);
 				while(m_thrdWorking)
 				{
 					_mainLoopCommon();

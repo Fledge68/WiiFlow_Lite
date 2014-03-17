@@ -16,19 +16,19 @@ u32 MALLOC_MEM2 = 0;
 
 u8 *MEM1_lo_start = (u8*)0x80004000;
 u8 *MEM1_lo_end = (u8*)0x8061ff00;
-u8 *MEM1_lo_list = (u8*)0x932B0000;
+u8 *MEM1_lo_list = (u8*)0x90080800;
 
 u8 *MEM2_lo_start = (u8*)0x90200000;
 u8 *MEM2_lo_end = (u8*)0x905fff00;
-u8 *MEM2_lo_list = (u8*)0x932D0000;
+u8 *MEM2_lo_list = (u8*)0x900a0800;
 
 u8 *MEM2_start = (u8*)0x90600000;
-u8 *MEM2_end = (u8*)0x931fff00;
-u8 *MEM2_list = (u8*)0x93200000;
+u8 *MEM2_end = (u8*)0x932fff00;
+u8 *MEM2_list = (u8*)0x90000800;
 
-MemManager g_mem1lo;
-MemManager g_mem2lo;
-MemManager g_mem2gp;
+static MemManager g_mem1lo;
+static MemManager g_mem2lo;
+static MemManager g_mem2gp;
 
 extern "C"
 {
@@ -42,15 +42,13 @@ extern __typeof(malloc_usable_size) __real_malloc_usable_size;
 
 void MEM_init()
 {
-	MemMutexInit();
-
 	g_mem1lo.Init(MEM1_lo_start, MEM1_lo_list, (u32)(MEM1_lo_end-MEM1_lo_start)); //about 6mb
 	g_mem1lo.ClearMem();
 
 	g_mem2lo.Init(MEM2_lo_start, MEM2_lo_list, (u32)(MEM2_lo_end-MEM2_lo_start)); //about 4mb
 	g_mem2lo.ClearMem();
 
-	g_mem2gp.Init(MEM2_start, MEM2_list, (u32)(MEM2_end-MEM2_start)); //about 44mb
+	g_mem2gp.Init(MEM2_start, MEM2_list, (u32)(MEM2_end-MEM2_start)); //about 45mb
 	g_mem2gp.ClearMem();
 }
 

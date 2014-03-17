@@ -36,6 +36,11 @@ extern const u32 hover_wav_size;
 extern const u8 camera_wav[];
 extern const u32 camera_wav_size;
 
+CMenu mainMenu;
+
+u8 CMenu::downloadStack[8192] ATTRIBUTE_ALIGN(32);
+const u32 CMenu::downloadStackSize = 8192;
+
 CMenu::CMenu()
 {
 	m_aa = 0;
