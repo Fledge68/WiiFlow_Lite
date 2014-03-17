@@ -20,19 +20,7 @@
 #include "gecko/gecko.hpp"
 #include "loader/utils.h"
 
-static mutex_t memMutex = 0;
-static const u32 MEM_BLOCK_SIZE = 128;
-
-void MemMutexInit()
-{
-	LWP_MutexInit(&memMutex, 0);
-}
-
-void MemMutexDestroy()
-{
-	LWP_MutexDestroy(memMutex);
-	memset(&memMutex, 0, sizeof(mutex_t));
-}
+static const u32 MEM_BLOCK_SIZE = 0x80;
 
 MemManager::MemManager()
 {
@@ -40,6 +28,12 @@ MemManager::MemManager()
 	memList = NULL;
 	memListEnd = NULL;
 	memSize = 0;
+	LWP_MutexInit(&memMutex, 0);
+}
+
+MemManager::~MemManager()
+{
+	LWP_MutexDestroy(memMutex);
 }
 
 void MemManager::Init(u8 *start, u8 *list, u32 size)
@@ -51,10 +45,8 @@ void MemManager::Init(u8 *start, u8 *list, u32 size)
 	memList = list;
 	memSize = ALIGN(MEM_BLOCK_SIZE, size) / MEM_BLOCK_SIZE;
 	memListEnd = list + memSize;
-	ICInvalidateRange(memList, memSize+1);
 	memset(memList, MEM_FREE , memSize);
 	memset(memListEnd, MEM_END, 1); //thats the +1
-	DCFlushRange(memList, memSize+1);
 
 	LWP_MutexUnlock(memMutex);
 }
@@ -65,9 +57,7 @@ void MemManager::ClearMem()
 	//gprintf("ClearMem %x %i\n", startAddr, memSize * MEM_BLOCK_SIZE);
 
 	u32 MemFull = memSize * MEM_BLOCK_SIZE;
-	ICInvalidateRange(startAddr, MemFull);
 	memset(startAddr, 0, MemFull);
-	DCFlushRange(startAddr, MemFull);
 
 	LWP_MutexUnlock(memMutex);
 }
@@ -92,10 +82,8 @@ void *MemManager::Alloc(u32 size)
 			if(blocksFree == size)
 			{
 				u8 *addr = (u8*)block;
-				ICInvalidateRange(addr, blocksFree);
 				memset(addr, ALLOC_USED, blocksFree - 1); //start blocks
 				memset(addr + blocksFree - 1, ALLOC_END, 1); //end block
-				DCFlushRange(addr, blocksFree);
 				void *ptr = (void*)(startAddr + ((addr - memList)*MEM_BLOCK_SIZE));
 				//gprintf("Alloc %x mem, %i blocks\n", ptr, blocksFree);
 				LWP_MutexUnlock(memMutex);
@@ -126,9 +114,7 @@ void MemManager::Free(void *mem)
 		size++;
 
 	u8 *addr = (u8*)blockUsed;
-	ICInvalidateRange(addr, size);
 	memset(addr, MEM_FREE, size);
-	DCFlushRange(addr, size);
 
 	LWP_MutexUnlock(memMutex);
 }

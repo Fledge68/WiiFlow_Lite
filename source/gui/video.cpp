@@ -84,6 +84,10 @@ const int CVideo::_stencilHeight = 128;
 static lwp_t waitThread = LWP_THREAD_NULL;
 
 CVideo m_vid;
+
+u8 CVideo::waitMessageStack[2048] ATTRIBUTE_ALIGN(32);
+const u32 CVideo::waitMessageStackSize = 2048;
+
 CVideo::CVideo(void) :
 	m_rmode(NULL), m_frameBuf(), m_curFB(0), m_fifo(NULL),
 	m_yScale(0.0f), m_xfbHeight(0), m_wide(false),
@@ -560,9 +564,6 @@ void CVideo::_showWaitMessages(CVideo *m)
 	m->m_showingWaitMessages = false;
 }
 
-u32 waitMessageStackSize = 1024;
-u8 *waitMessageStack = NULL;
-
 void CVideo::hideWaitMessage()
 {
 	m_showWaitMessage = false;
@@ -574,9 +575,6 @@ void CVideo::hideWaitMessage()
 		while(m_showingWaitMessages)
 			usleep(50);
 		LWP_JoinThread(waitThread, NULL);
-		if(waitMessageStack != NULL)
-			MEM2_free(waitMessageStack);
-		waitMessageStack = NULL;
 		/* end light thread */
 		wiiLightEndThread();
 		m_WaitThreadRunning = false;
@@ -628,8 +626,6 @@ void CVideo::waitMessage(const vector<TexData> &tex, float delay)
 		wiiLightStartThread();
 		/* onscreen animation */
 		m_showWaitMessage = true;
-		if(waitMessageStack == NULL)
-			waitMessageStack = (u8*)MEM2_memalign(32, waitMessageStackSize);
 		LWP_CreateThread(&waitThread, (void *(*)(void *))_showWaitMessages, 
 					(void*)this, waitMessageStack, waitMessageStackSize, LWP_PRIO_HIGHEST);
 	}

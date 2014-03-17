@@ -359,7 +359,6 @@ void CMenu::_game(bool launch)
 		m_gameSelected = true;
 	}
 
-
 	if(m_banner.GetZoomSetting() != m_zoom_banner)
 		m_banner.ToogleZoom();
 
@@ -1753,7 +1752,7 @@ void CMenu::_playGameSound(void)
 
 	if(m_gameSoundThread != LWP_THREAD_NULL)
 		CheckGameSoundThread();
-	GameSoundStack = (u8*)MEM2_alloc(GameSoundSize);
+	GameSoundStack = (u8*)MEM2_lo_alloc(GameSoundSize);
 	LWP_CreateThread(&m_gameSoundThread, (void *(*)(void *))CMenu::_gameSoundThread, (void*)this, GameSoundStack, GameSoundSize, 60);
 }
 
@@ -1766,12 +1765,12 @@ void CMenu::CheckGameSoundThread()
 		LWP_ResumeThread(m_gameSoundThread);
 
 	while(m_soundThrdBusy)
-		usleep(50);
+		usleep(500);
 
 	LWP_JoinThread(m_gameSoundThread, NULL);
 	m_gameSoundThread = LWP_THREAD_NULL;
 
 	if(GameSoundStack)
-		free(GameSoundStack);
+		MEM2_lo_free(GameSoundStack);
 	GameSoundStack = NULL;
 }

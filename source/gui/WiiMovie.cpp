@@ -26,7 +26,7 @@
  * for WiiXplorer 2010
  ***************************************************************************/
 #include <unistd.h>
-#include <malloc.h>
+#include "memory/mem2.hpp"
 #include "WiiMovie.hpp"
 #include "gecko/gecko.hpp"
 
@@ -73,7 +73,7 @@ void WiiMovie::DeInit()
 	}
 	if(ThreadStack != NULL)
 	{
-		free(ThreadStack);
+		MEM2_lo_free(ThreadStack);
 		ThreadStack = NULL;
 	}
 
@@ -88,7 +88,7 @@ bool WiiMovie::Play(TexData *Background, bool loop)
 	if(!vFile)
 		return false;
 
-	ThreadStack = (u8 *)malloc(32768);
+	ThreadStack = (u8*)MEM2_lo_alloc(32768);
 	if(!ThreadStack)
 		return false;
 
@@ -99,7 +99,7 @@ bool WiiMovie::Play(TexData *Background, bool loop)
 	PlayTime.reset();
 	Playing = true;
 
-	LWP_CreateThread (&ReadThread, UpdateThread, this, ThreadStack, 32768, LWP_PRIO_HIGHEST);
+	LWP_CreateThread(&ReadThread, UpdateThread, this, ThreadStack, 32768, LWP_PRIO_HIGHEST);
 	gprintf("Reading frames thread started\n");
 	return true;
 }

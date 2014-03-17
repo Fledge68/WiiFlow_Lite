@@ -113,6 +113,9 @@ private:
 	static const float _jitter5[5][2];
 	static const float _jitter6[6][2];
 	static const float _jitter8[8][2];
+	//thread stack
+	static u8 waitMessageStack[2048];
+	static const u32 waitMessageStackSize;
 private:
 	void _drawAASceneWithAlpha(float w, float h);
 	void _setViewPort(float x, float y, float w, float h);

@@ -47,7 +47,8 @@ void CMenu::_system()
 			m_btnMgr.setProgress(m_downloadPBar, 0.f);
 			m_thrdStop = false;
 			m_thrdWorking = true;
-			LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_versionTxtDownloaderInit, (void *)this, 0, 8192, 40);
+			LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_versionTxtDownloaderInit, 
+								(void *)this, downloadStack, downloadStackSize, 40);
 		}
 		if (m_showtimer > 0 && !m_thrdWorking)
 		{
@@ -112,7 +113,8 @@ void CMenu::_system()
 				m_data_update_url = fmt("%s/r%i/data.zip", m_version.getString("GENERAL", "update_url", "http://open-wiiflow-mod.googlecode.com/files").c_str(), newVer);
 
 				m_showtimer = 120;
-				LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_versionDownloaderInit, (void *)this, 0, 8192, 40);
+				LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_versionDownloaderInit, 
+									(void *)this, downloadStack, downloadStackSize, 40);
 				if (m_exit && !m_thrdWorking) 
 				{
 					m_thrdStop = true;

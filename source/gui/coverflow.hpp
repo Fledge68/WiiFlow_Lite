@@ -310,6 +310,9 @@ private:
 	u8 m_aniso;
 	bool m_edgeLOD;
 	Sorting m_sorting;
+	//thread stack
+	static u8 coverThreadStack[32768];
+	static const u32 coverThreadStackSize;
 private:
 	void _draw(DrawMode dm = CFDR_NORMAL, bool mirror = false, bool blend = true);
 	u32 _currentPos(void) const;

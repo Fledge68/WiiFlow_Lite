@@ -31,6 +31,7 @@ enum mem_states
 class MemManager {
 public:
 	MemManager();
+	~MemManager();
 	void Init(u8 *start, u8 *list, u32 size);
 	void ClearMem();
 	void *Alloc(u32 size);
@@ -39,13 +40,11 @@ public:
 	u32 FreeSize();
 	void *ReAlloc(void *mem, u32 size);
 private:
+	mutex_t memMutex;
 	u8 *startAddr;
 	u8 *memList;
 	u8 *memListEnd;
 	u32 memSize;
 };
-
-void MemMutexInit();
-void MemMutexDestroy();
 
 #endif
