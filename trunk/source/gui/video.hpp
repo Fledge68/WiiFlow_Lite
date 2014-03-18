@@ -126,6 +126,7 @@ private:
 };
 
 void DrawTexture(TexData * &tex);
+void DrawTexturePos(const TexData *tex);
 void DrawRectangle(f32 x, f32 y, f32 width, f32 height, GXColor color);
 
 extern CVideo m_vid;

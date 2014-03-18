@@ -134,6 +134,7 @@ public:
 	const dir_discHdr * getSpecificHdr(u32) const;
 	wstringEx getTitle(void) const;
 	u64 getChanTitle(void) const;
+	const char *getPathId(const dir_discHdr *curHdr);
 	//
 	bool getRenderTex(void);
 	void setRenderTex(bool);

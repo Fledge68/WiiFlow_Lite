@@ -7,6 +7,7 @@
 #include "video.hpp"
 #include "pngu.h"
 #include "hw/Gekko.h"
+#include "WiiMovie.hpp"
 #include "gecko/gecko.hpp"
 #include "loader/sys.h"
 #include "loader/utils.h"
@@ -77,6 +78,10 @@ const float CVideo::_jitter8[8][2] = {
 	{ 0.102254f, 0.299133f },
 	{ 0.164216f, -0.054399f }
 };
+
+struct movieP normalMoviePos = { 410, 31, 610, 181 };
+struct movieP zoomedMoviePos = { 0, 0, 640, 480 };
+struct movieP currentMoviePos = normalMoviePos;
 
 const int CVideo::_stencilWidth = 128;
 const int CVideo::_stencilHeight = 128;
@@ -745,6 +750,41 @@ void DrawRectangle(f32 x, f32 y, f32 width, f32 height, GXColor color)
 	}
 	GX_End();
 	GX_SetTevOp(GX_TEVSTAGE0, GX_MODULATE);
+}
+
+void DrawTexturePos(const TexData *tex)
+{
+	Mtx modelViewMtx;
+	GXTexObj texObj;
+
+	GX_ClearVtxDesc();
+	GX_SetVtxDesc(GX_VA_POS, GX_DIRECT);
+	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XY, GX_F32, 0);
+	GX_SetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+	GX_SetNumTexGens(1);
+	GX_SetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_TEXC);
+	GX_SetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+	GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLORNULL);
+	GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
+	GX_SetBlendMode(GX_BM_NONE, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+	GX_SetAlphaUpdate(GX_FALSE);
+	GX_SetCullMode(GX_CULL_NONE);
+	GX_SetZMode(GX_DISABLE, GX_ALWAYS, GX_FALSE);
+	guMtxIdentity(modelViewMtx);
+	GX_LoadPosMtxImm(modelViewMtx, GX_PNMTX0);
+	GX_InitTexObj(&texObj, tex->data, tex->width, tex->height, tex->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+	GX_LoadTexObj(&texObj, GX_TEXMAP0);
+	GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
+	GX_Position2f32(currentMoviePos.x1, currentMoviePos.y1);
+	GX_TexCoord2f32(0.f, 0.f);
+	GX_Position2f32(currentMoviePos.x2, currentMoviePos.y1);
+	GX_TexCoord2f32(1.f, 0.f);
+	GX_Position2f32(currentMoviePos.x2, currentMoviePos.y2);
+	GX_TexCoord2f32(1.f, 1.f);
+	GX_Position2f32(currentMoviePos.x1, currentMoviePos.y2);
+	GX_TexCoord2f32(0.f, 1.f);
+	GX_End();
 }
 
 void CVideo::screensaver(u32 no_input, u32 max_no_input)
