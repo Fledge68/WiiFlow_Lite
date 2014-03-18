@@ -1088,6 +1088,9 @@ public:
 	u64 m_thrdTotal;
 	void update_pThread(u64 added);
 private:
+	void _cleanupBanner(bool gamechange = false);
+	void _cleanupVideo();
+	bool _startVideo();
 	static int _pThread(void *obj);
 	void _start_pThread(void);
 	void _stop_pThread(void);

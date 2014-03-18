@@ -2651,19 +2651,17 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover)
 				if(menuPath != NULL && strrchr(menuPath, '/') != NULL)
 					gamePath = strrchr(menuPath, '/') + 1;
 			}
-			else if(NoGameID(m_items[i].hdr->type))
-			{
-				if(m_pluginCacheFolders && m_items[i].hdr->type == TYPE_PLUGIN)
-					coverDir = m_plugin.GetCoverFolderName(m_items[i].hdr->settings[0]);
-				if(m_items[i].hdr->type == TYPE_SOURCE)
-					coverDir = "sourceflow";
-				if(strrchr(m_items[i].hdr->path, '/') != NULL)
-					gamePath = strrchr(m_items[i].hdr->path, '/') + 1;
-				else
-					gamePath = m_items[i].hdr->path;
-			}
 			else
-				gamePath = m_items[i].hdr->id;
+			{
+				gamePath = getPathId(m_items[i].hdr);
+				if(NoGameID(m_items[i].hdr->type))
+				{
+					if(m_pluginCacheFolders && m_items[i].hdr->type == TYPE_PLUGIN)
+						coverDir = m_plugin.GetCoverFolderName(m_items[i].hdr->settings[0]);
+					if(m_items[i].hdr->type == TYPE_SOURCE)
+						coverDir = "sourceflow";
+				}
+			}
 
 			FILE *file = NULL;
 			if(gamePath != NULL)
@@ -2763,6 +2761,21 @@ void CCoverFlow::_dropHQLOD(int i)
 	m_items[i].texture = newTex;
 }
 
+const char *CCoverFlow::getPathId(const dir_discHdr *curHdr)
+{
+	const char *gamePath = NULL;
+	if(NoGameID(curHdr->type))
+	{
+		if(strrchr(curHdr->path, '/') != NULL)
+			gamePath = strrchr(curHdr->path, '/') + 1;
+		else
+			gamePath = curHdr->path;
+	}
+	else
+		gamePath = curHdr->id;
+	return gamePath;
+}
+
 CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blankBoxCover)
 {
 	if (!m_loadingCovers) 
@@ -2781,20 +2794,18 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 			if(menuPath != NULL && strrchr(menuPath, '/') != NULL)
 				gamePath = strrchr(menuPath, '/') + 1;
 		}
-		else if(NoGameID(m_items[i].hdr->type))
-		{
-			if(m_pluginCacheFolders && m_items[i].hdr->type == TYPE_PLUGIN)
-				coverDir = m_plugin.GetCoverFolderName(m_items[i].hdr->settings[0]);
-			if(m_items[i].hdr->type == TYPE_SOURCE)
-					coverDir = "sourceflow";
-			if(strrchr(m_items[i].hdr->path, '/') != NULL)
-				gamePath = strrchr(m_items[i].hdr->path, '/') + 1;
-			else
-				gamePath = m_items[i].hdr->path;
-		}
 		else
-			gamePath = m_items[i].hdr->id;
-
+		{
+			gamePath = getPathId(m_items[i].hdr);
+			if(NoGameID(m_items[i].hdr->type))
+			{
+				if(m_pluginCacheFolders && m_items[i].hdr->type == TYPE_PLUGIN)
+					coverDir = m_plugin.GetCoverFolderName(m_items[i].hdr->settings[0]);
+				if(m_items[i].hdr->type == TYPE_SOURCE)
+					coverDir = "sourceflow";
+			}
+		}
+	
 		FILE *fp = NULL;
 		if(gamePath != NULL)
 		{

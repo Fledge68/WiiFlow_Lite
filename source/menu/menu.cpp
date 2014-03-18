@@ -16,6 +16,7 @@
 #include "gc/gc.hpp"
 #include "hw/Gekko.h"
 #include "gui/GameTDB.hpp"
+#include "gui/WiiMovie.hpp"
 #include "loader/alt_ios.h"
 #include "loader/cios.h"
 #include "loader/fs.h"
@@ -1959,11 +1960,21 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 				CoverFlow.drawText(adjusting);
 		}
 	}
-	if(m_fa.isLoaded())
-		m_fa.draw();
-	else if(m_banner.GetSelectedGame() && (!m_banner.GetInGameSettings() || (m_banner.GetInGameSettings() && m_bnr_settings)))
-		m_banner.Draw();
-
+	if(m_gameSelected)
+	{
+		if(m_fa.isLoaded())
+			m_fa.draw();
+		else if(m_video_playing)
+		{
+			if(movie.Frame != NULL)
+			{
+				DrawTexturePos(movie.Frame);
+				movie.Frame->thread = false;
+			}
+		}
+		else if(m_banner.GetSelectedGame() && (!m_banner.GetInGameSettings() || (m_banner.GetInGameSettings() && m_bnr_settings)))
+			m_banner.Draw();
+	}
 	m_btnMgr.draw();
 	ScanInput();
 	if(!m_vid.showingWaitMessage())
@@ -2033,7 +2044,7 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 	{
 		mem2old = mem2;
 		gprintf("Mem2 Free: %u\n", mem2);
-	}	
+	}
 #endif
 }
 
