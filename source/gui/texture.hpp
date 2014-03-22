@@ -39,7 +39,7 @@ private:
 	void _reduceAlpha(TexData &dest, bool reduce_alpha);
 	void _resize(u8 *dst, u32 dstWidth, u32 dstHeight, const u8 *src, u32 srcWidth, u32 srcHeight);
 	void _resizeD2x2(u8 *dst, const u8 *src, u32 srcWidth, u32 srcHeight);
-	u8 *_genMipMaps(u8 *src, u32 width, u32 height, u8 maxLOD, u32 lod0Width, u32 lod0Height);
+	u8 *_genMipMaps(u8 *&src, u32 width, u32 height, u8 maxLOD, u32 lod0Width, u32 lod0Height);
 	void _calcMipMaps(u8 &maxLOD, u8 &minLOD, u32 &lod0Width, u32 &lod0Height, u32 width, u32 height, u32 minSize, u32 maxSize);
 };
 
