@@ -30,6 +30,7 @@ protected:
 	lwp_t ReadThread;
 
 	ThpVideoFile Video;
+	VideoFrame VideoF;
 	FILE *vFile;
 	float fps;
 	Timer PlayTime;

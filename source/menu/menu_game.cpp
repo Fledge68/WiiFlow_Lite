@@ -366,6 +366,26 @@ void CMenu::_cleanupVideo()
 	movie.DeInit();
 }
 
+static const char *getVideoPath(const string &videoDir, const char *videoId)
+{
+	const char *coverDir = m_plugin.GetCoverFolderName(CoverFlow.getHdr()->settings[0]);
+	const char *videoPath = NULL;
+	if(coverDir == NULL || strlen(coverDir) == 0)
+		videoPath = fmt("%s/%s", videoDir.c_str(), videoId);
+	else
+		videoPath = fmt("%s/%s/%s", videoDir.c_str(), coverDir, videoId);
+	return videoPath;
+}
+
+static const char *getVideoDefaultPath(const string &videoDir)
+{
+	char PluginMagicWord[9];
+	memset(PluginMagicWord, 0, sizeof(PluginMagicWord));
+	strncpy(PluginMagicWord, fmt("%08x", CoverFlow.getHdr()->settings[0]), 8);
+	const char *videoPath = fmt("%s/%s", videoDir.c_str(), PluginMagicWord);
+	return videoPath;
+}
+
 bool CMenu::_startVideo()
 {
 	char curId3[4];
@@ -376,15 +396,21 @@ bool CMenu::_startVideo()
 		memcpy(curId3, CoverFlow.getId(), 3);
 		videoId = curId3;
 	}
-	const char *videoPath = fmt("%s/%s.thp", m_videoDir.c_str(), videoId);
-	if(fsop_FileExist(videoPath))
+	const char *videoPath = getVideoPath(m_videoDir, videoId);
+	const char *THP_Path = fmt("%s.thp", videoPath);
+	if(!fsop_FileExist(THP_Path) && m_current_view == COVERFLOW_PLUGIN)
 	{
-		m_gameSound.Stop();
+		videoPath = getVideoDefaultPath(m_videoDir);
+		THP_Path = fmt("%s.thp", videoPath);
+	}
+	if(fsop_FileExist(THP_Path))
+	{
+		m_gameSound.FreeMemory();
 		MusicPlayer.Stop();
 		m_banner.SetShowBanner(false);
 		/* Lets play the movie */
-		movie.Init(videoPath);
-		m_gameSound.Load(fmt("%s/%s.ogg", m_videoDir.c_str(), videoId));
+		movie.Init(THP_Path);
+		m_gameSound.Load(fmt("%s.ogg", videoPath));
 		m_gameSound.SetVolume(m_cfg.getInt("GENERAL", "sound_volume_bnr", 255));
 		m_video_playing = true;
 		m_gameSound.Play();
@@ -400,7 +426,9 @@ void CMenu::_game(bool launch)
 	m_zoom_banner = m_cfg.getBool(_domainFromView(), "show_full_banner", false);
 	if(NoGameID(CoverFlow.getHdr()->type))
 	{
-		m_zoom_banner = m_zoom_banner && fsop_FileExist(fmt("%s/%s.thp", m_videoDir.c_str(), CoverFlow.getPathId(CoverFlow.getHdr())));
+		bool video_available = (m_current_view == COVERFLOW_PLUGIN && fsop_FileExist(fmt("%s.thp", getVideoDefaultPath(m_videoDir)))) ||
+								fsop_FileExist(fmt("%s.thp", getVideoPath(m_videoDir, CoverFlow.getPathId(CoverFlow.getHdr()))));
+		m_zoom_banner = m_zoom_banner && video_available;
 		m_cfg.setBool(_domainFromView(), "show_full_banner", m_zoom_banner);
 	}
 	currentMoviePos = (m_zoom_banner ? zoomedMoviePos : normalMoviePos);
