@@ -86,6 +86,7 @@ void WiiMovie::DeInit()
 	Video.DeInit();
 	if(vFile != NULL)
 		fclose(vFile);
+	VideoF.dealloc();
 	vFile = NULL;
 	Frame = NULL;
 	TexHandle.Cleanup(Buffer[0]);
@@ -110,7 +111,7 @@ bool WiiMovie::Play(bool loop)
 	Playing = true;
 	Buffer[0].thread = false;
 	Buffer[1].thread = false;
-	LWP_CreateThread(&ReadThread, UpdateThread, this, ThreadStack, 32768, 60);
+	LWP_CreateThread(&ReadThread, UpdateThread, this, ThreadStack, 32768, 63);
 	//gprintf("Reading frames thread started\n");
 	return true;
 }
@@ -153,20 +154,16 @@ void WiiMovie::LoadNextFrame()
 {
 	if(!vFile || !Playing)
 		return;
-
-	VideoFrame VideoF;
 	Video.getCurrentFrame(VideoF);
-
-	if(!VideoF.getData())
+	if(!VideoF.data)
 		return;
 	TexData *CurFrame = &Buffer[BufferPos];
-	if(TexHandle.fromTHP(CurFrame, VideoF.getData(), VideoF.getWidth(), VideoF.getHeight()) == TE_OK)
+	if(TexHandle.fromTHP(CurFrame, VideoF.data, VideoF.getWidth(), VideoF.getHeight()) == TE_OK)
 	{
 		CurFrame->thread = true;
 		Frame = CurFrame;
 		BufferPos ^= 1;
 	}
-	VideoF.dealloc();
 }
 
 bool WiiMovie::Continue()

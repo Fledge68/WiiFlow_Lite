@@ -41,30 +41,6 @@ static inline u32 coordsRGB565(u32 x, u32 y, u32 w)
 	return (((y >> 2) * (w >> 2) + (x >> 2)) << 4) + ((y & 3) << 2) + (x & 3);
 }
 
-static inline void _convertToFlippedRGBA(u8 *dst, const u8 *src, u32 width, u32 height)
-{
-	for(u32 block = 0; block < height; block += 4)
-	{
-		for(u32 i = 0; i < width; i += 4)
-		{
-			for(u32 c = 0; c < 4; ++c)
-			{
-				for(u32 rgb = 0; rgb < 4; ++rgb)
-				{
-					u32 y = height - 1 - (c + block);
-					u32 x = rgb + i;
-					u32 dst_offset = (x + y * width) * 4;
-					u32 src_offset = (x + ((block + c) * width)) * 3;
-					/* RGB */
-					memcpy(&dst[dst_offset], &src[src_offset], 3);
-					/* Alpha */
-					dst[dst_offset + 3] = 0xFF;
-				}
-			}
-		}
-	}
-}
-
 static inline void _convertToRGBA(u8 *dst, const u8 *src, u32 width, u32 height)
 {
 	for (u32 y = 0; y < height; ++y)
@@ -276,28 +252,7 @@ TexErr STexture::fromTHP(TexData *dest, const u8 *src, u32 w, u32 h)
 			return TE_NOMEM;
 		}
 	}
-	for(u32 block = 0; block < dest->height; block += 4)
-	{
-		for(u32 i = 0; i < dest->width; i += 4)
-		{
-			for(u32 c = 0; c < 4; ++c)
-			{
-				for(u32 argb = 0; argb < 4; ++argb)
-				{
-					u32 y = h - 1 - (c + block);
-					u32 x = argb + i;
-					u32 src_offset = ((i + argb) + ((block + c) * dest->width)) * 3;
-					u32 dst_offset = coordsRGBA8(x, y, dest->width);
-					/* Alpha */
-					dest->data[dst_offset] = 0xFF;
-					/* RGB */
-					dest->data[dst_offset + 1] = src[src_offset];
-					dest->data[dst_offset + 32] = src[src_offset + 1];
-					dest->data[dst_offset + 33] = src[src_offset + 2];
-				}
-			}
-		}
-	}
+	_convertToRGBA8(dest->data, src, w, h);
 	DCFlushRange(dest->data, dest->dataSize);
 	return TE_OK;
 }
@@ -309,26 +264,15 @@ TexErr STexture::fromJPG(TexData &dest, const u8 *buffer, const u32 buffer_size,
 	// Decode our JPG to raw
 	VideoFrame VideoF;
 	decodeRealJpeg(buffer, buffer_size, VideoF, true);
-	if(!VideoF.getData())
+	if(!VideoF.data)
+	{
+		VideoF.dealloc();
 		return TE_ERROR;
-	dest.data = VideoF.getData();
+	}
+	dest.data = NULL;
 	dest.width = VideoF.getWidth();
 	dest.height = VideoF.getHeight();
 
-	// Convert our raw stuff to a usable format
-	u8 *rawData = (u8*)MEM2_alloc(dest.width * dest.height * 4);
-	if(rawData == NULL)
-	{
-		Cleanup(dest);
-		return TE_NOMEM;
-	}
-	_convertToFlippedRGBA(rawData, dest.data, dest.width, dest.height);
-
-	//Free our raw stuff
-	VideoF.dealloc();
-	dest.data = NULL;
-
-	//Let the real work begin
 	u8 maxLODTmp = 0;
 	u8 minLODTmp = 0;
 	u32 baseWidth;
@@ -349,10 +293,11 @@ TexErr STexture::fromJPG(TexData &dest, const u8 *buffer, const u32 buffer_size,
 		_calcMipMaps(maxLODTmp, minLODTmp, baseWidth, baseHeight, dest.width, dest.height, minMipSize, maxMipSize);
 	if (maxLODTmp > 0)
 	{
-		rawData = _genMipMaps(rawData, dest.width, dest.height, maxLODTmp, baseWidth, baseHeight);
+		u8 *rawData = _genMipMaps(VideoF.data, dest.width, dest.height, maxLODTmp, baseWidth, baseHeight);
 		if(rawData == NULL)
 		{
 			Cleanup(dest);
+			VideoF.dealloc();
 			return TE_NOMEM;
 		}
 		u32 newWidth = baseWidth;
@@ -368,6 +313,7 @@ TexErr STexture::fromJPG(TexData &dest, const u8 *buffer, const u32 buffer_size,
 		{
 			Cleanup(dest);
 			free(rawData);
+			VideoF.dealloc();
 			return TE_NOMEM;
 		}
 		u32 nWidth = newWidth;
@@ -395,6 +341,7 @@ TexErr STexture::fromJPG(TexData &dest, const u8 *buffer, const u32 buffer_size,
 			nWidth >>= 1;
 			nHeight >>= 1;
 		}
+		free(rawData);
 		dest.maxLOD = maxLODTmp - minLODTmp;
 		dest.width = newWidth;
 		dest.height = newHeight;
@@ -406,24 +353,24 @@ TexErr STexture::fromJPG(TexData &dest, const u8 *buffer, const u32 buffer_size,
 		if(dest.data == NULL)
 		{
 			Cleanup(dest);
-			free(rawData);
+			VideoF.dealloc();
 			return TE_NOMEM;
 		}
 		switch(f)
 		{
 			case GX_TF_RGBA8:
-				_convertToRGBA8(dest.data, rawData, dest.width, dest.height);
+				_convertToRGBA8(dest.data, VideoF.data, dest.width, dest.height);
 				break;
 			case GX_TF_RGB565:
-				_convertToRGB565(dest.data, rawData, dest.width, dest.height);
+				_convertToRGB565(dest.data, VideoF.data, dest.width, dest.height);
 				break;
 			case GX_TF_CMPR:
-				_convertToCMPR(dest.data, rawData, dest.width, dest.height);
+				_convertToCMPR(dest.data, VideoF.data, dest.width, dest.height);
 				break;
 		}
 	}
+	VideoF.dealloc();
 	DCFlushRange(dest.data, dest.dataSize);
-	free(rawData);
 	return TE_OK;
 }
 
@@ -706,7 +653,7 @@ void STexture::_calcMipMaps(u8 &maxLOD, u8 &minLOD, u32 &lod0Width, u32 &lod0Hei
 		maxLOD = minLOD;
 }
 
-u8 *STexture::_genMipMaps(u8 *src, u32 width, u32 height, u8 maxLOD, u32 lod0Width, u32 lod0Height)
+u8 *STexture::_genMipMaps(u8 *&src, u32 width, u32 height, u8 maxLOD, u32 lod0Width, u32 lod0Height)
 {
 	u32 bufSize = fixGX_GetTexBufferSize(lod0Width, lod0Height, GX_TF_RGBA8, GX_TRUE, maxLOD);
 	u8 *dstData = (u8*)MEM2_alloc(bufSize);

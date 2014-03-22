@@ -186,21 +186,19 @@ struct MthHeader
 class VideoFrame
 {
  public:
-  VideoFrame() : _data(NULL), _w(0), _h(0), _p(0) { };
+  VideoFrame() : data(NULL), _w(0), _h(0), _p(0) { };
   ~VideoFrame() { };
 
+  u8 *data; //texdata style
   void resize(int width, int height);
 
   int getWidth() const;
   int getHeight() const;
   int getPitch() const;
-  u8* getData();
-  const u8* getData() const;
 
   void dealloc();
   
  private:
-  u8* _data;
   int _w;
   int _h;
   int _p; //pitch in bytes
@@ -209,9 +207,6 @@ class VideoFrame
   //VideoFrame(const VideoFrame& f);
   VideoFrame& operator=(const VideoFrame& f);
 };
-
-//swaps red and blue channel of a video frame
-void swapRB(VideoFrame& f);
 
 
 class VideoFile
@@ -229,7 +224,7 @@ class VideoFile
 
   virtual bool loadNextFrame(bool skip = false) = 0;
 
-  virtual void getCurrentFrame(VideoFrame& frame) const = 0;
+  virtual void getCurrentFrame(VideoFrame& frame) = 0;
 
   //sound support:
   virtual bool hasSound() const;
@@ -244,8 +239,10 @@ class VideoFile
   FILE* _f;
 
   //void loadFrame(long offset, int size);
-  void loadFrame(VideoFrame& frame, const u8* data, int size) const;
+  virtual void loadFrame(VideoFrame& frame, const u8* src, int src_size);
 
+  int countRequiredSize(const u8* src, int src_size, int& start, int& end);
+  void convertToRealJpeg(u8* dest, const u8* src, int srcSize, int start, int end);
 };
 
 VideoFile* openVideo(const std::string& fileName);
@@ -269,14 +266,14 @@ class ThpVideoFile : public VideoFile
 
   virtual bool loadNextFrame(bool skip = false);
 
-  virtual void getCurrentFrame(VideoFrame& frame) const;
+  virtual void getCurrentFrame(VideoFrame& frame);
 
   virtual bool hasSound() const;
   virtual int getNumChannels() const;
   virtual int getFrequency() const;
   virtual int getMaxAudioSamples() const;
   virtual int getCurrentBuffer(s16* data) const;
-
+  virtual void loadFrame(VideoFrame& frame, const u8* src, int src_size);
 
  protected:
   ThpHeader _head;
@@ -289,6 +286,7 @@ class ThpVideoFile : public VideoFile
   int _nextFrameOffset;
   int _nextFrameSize;
   u8 *_currFrameData;
+  u8 *_currFrameRealData;
 };
 
 class MthVideoFile : public VideoFile
@@ -305,7 +303,7 @@ class MthVideoFile : public VideoFile
 
   virtual bool loadNextFrame(bool skip = false);
 
-  virtual void getCurrentFrame(VideoFrame& frame) const;
+  virtual void getCurrentFrame(VideoFrame& frame);
 
  protected:
   MthHeader _head;
@@ -327,7 +325,7 @@ class JpgVideoFile : public VideoFile
   virtual int getFrameCount() const;
 
   virtual bool loadNextFrame(bool skip = false) { return skip; }
-  virtual void getCurrentFrame(VideoFrame& frame) const;
+  virtual void getCurrentFrame(VideoFrame& frame);
 
  private:
    VideoFrame _currFrame;

@@ -30,7 +30,8 @@
 #include <cstring> //memcmp
 #include <string>
 #include <cassert>
-
+#include <turbojpeg.h>
+#include "gecko/gecko.hpp"
 #include "gcvid.h"
 #include "loader/utils.h"
 #include "memory/mem2.hpp"
@@ -268,11 +269,11 @@ void VideoFrame::resize(int width, int height)
 	_w = width;
 	_h = height;
 
-	//24 bpp, 4 byte padding
-	_p = 3*width;
+	//32 bpp, 4 byte padding
+	_p = 4*width;
 	_p += (4 - _p%4)%4;
 
-	_data = (u8 *)MEM2_alloc(_p * _h);
+	data = (u8 *)MEM2_alloc(_p * _h);
 }
 
 int VideoFrame::getWidth() const
@@ -284,38 +285,12 @@ int VideoFrame::getHeight() const
 int VideoFrame::getPitch() const
 { return _p; }
 
-u8* VideoFrame::getData()
-{ return _data; }
-
-const u8* VideoFrame::getData() const
-{ return _data; }
-
 void VideoFrame::dealloc()
 {
-	if(_data != NULL)
-		free(_data);
-	_data = NULL;
+	if(data != NULL)
+		free(data);
+	data = NULL;
 	_w = _h = _p = 0;
-}
-
-//swaps red and blue channel of a video frame
-void swapRB(VideoFrame& f)
-{
-	u8* currLine = f.getData();
-
-	int hyt = f.getHeight();
-	int pitch = f.getPitch();
-
-	for(int y = 0; y < hyt; ++y)
-	{
-		for(int x = 0, x2 = 2; x < pitch; x += 3, x2 += 3)
-		{
-			u8 t = currLine[x];
-			currLine[x] = currLine[x2];
-			currLine[x2] = t;
-		}
-		currLine += pitch;
-	}
 }
 
 enum FILETYPE
@@ -352,9 +327,6 @@ long getFilesize(FILE* f)
 	fseek(f, t, SEEK_SET);
 	return ret;
 }
-
-void decodeJpeg(const u8* data, int size, VideoFrame& dest);
-
 
 VideoFile::VideoFile(FILE* f)
 : loop(true), _f(f)
@@ -395,9 +367,19 @@ int VideoFile::getMaxAudioSamples() const
 int VideoFile::getCurrentBuffer(s16*) const
 { return 0; }
 
-void VideoFile::loadFrame(VideoFrame& frame, const u8* data, int size) const
+void VideoFile::loadFrame(VideoFrame& frame, const u8* src, int src_size)
 {
-	decodeJpeg(data, size, frame);
+	//convert format so jpeglib understands it...
+	int start, end;
+	int newSize = countRequiredSize(src, src_size, start, end);
+	u8 *buff = (u8*)MEM2_alloc(newSize);
+	if(buff != NULL)
+	{
+		convertToRealJpeg(buff, src, src_size, start, end);
+		//...and feed it to jpeglib
+		decodeRealJpeg(buff, newSize, frame);
+		MEM2_free(buff);
+	}
 }
 
 bool ThpVideoFile::Init(FILE *f)
@@ -432,6 +414,13 @@ bool ThpVideoFile::Init(FILE *f)
 	_currFrameData = (u8*)MEM2_alloc(_head.maxBufferSize); //include some padding
 	if(_currFrameData == NULL)
 		return false;
+	_currFrameRealData = (u8*)MEM2_alloc(_head.maxBufferSize * 2); //worst case if a frame has 0xFF
+	if(_currFrameRealData == NULL)
+	{
+		gprintf("couldnt allocate %u bytes!\n", _head.maxBufferSize * 2);
+		MEM2_free(_currFrameData);
+		return false;
+	}
 	loadNextFrame();
 	return true;
 }
@@ -439,8 +428,11 @@ bool ThpVideoFile::Init(FILE *f)
 void ThpVideoFile::DeInit()
 {
 	if(_currFrameData != NULL)
-		free(_currFrameData);
+		MEM2_free(_currFrameData);
 	_currFrameData = NULL;
+	if(_currFrameRealData != NULL)
+		MEM2_free(_currFrameRealData);
+	_currFrameRealData = NULL;
 }
 
 int ThpVideoFile::getWidth() const
@@ -479,7 +471,15 @@ bool ThpVideoFile::loadNextFrame(bool skip)
 	return true;
 }
 
-void ThpVideoFile::getCurrentFrame(VideoFrame& f) const
+void ThpVideoFile::loadFrame(VideoFrame& frame, const u8* src, int src_size)
+{
+	int start, end;
+	int newSize = countRequiredSize(src, src_size, start, end);
+	convertToRealJpeg(_currFrameRealData, src, src_size, start, end);
+	decodeRealJpeg(_currFrameRealData, newSize, frame);
+}
+
+void ThpVideoFile::getCurrentFrame(VideoFrame& f)
 {
 	int size = *(u32*)(_currFrameData + 8);
 	loadFrame(f, _currFrameData + 4 * _numInts, size);
@@ -576,7 +576,7 @@ bool MthVideoFile::loadNextFrame(bool skip)
 	return true;
 }
 
-void MthVideoFile::getCurrentFrame(VideoFrame& f) const
+void MthVideoFile::getCurrentFrame(VideoFrame& f)
 {
 	int size = _thisFrameSize;
 	loadFrame(f, &_currFrameData[0] + 4, size - 4);
@@ -601,10 +601,10 @@ int JpgVideoFile::getHeight() const
 int JpgVideoFile::getFrameCount() const
 { return 1; }
 
-void JpgVideoFile::getCurrentFrame(VideoFrame& f) const
+void JpgVideoFile::getCurrentFrame(VideoFrame& f)
 {
 	f.resize(_currFrame.getWidth(), _currFrame.getHeight());
-	memcpy(f.getData(), _currFrame.getData(),f.getPitch()*f.getHeight());
+	memcpy(f.data, _currFrame.data,f.getPitch()*f.getHeight());
 }
 
 VideoFile* openVideo(const string& fileName)
@@ -650,37 +650,37 @@ void closeVideo(VideoFile*& vf)
 u8 endBytesThp[] = { 0xff, 0xd9, 0, 0 }; //used in thp files
 u8 endBytesMth[] = { 0xff, 0xd9, 0xff, 0 }; //used in mth files
 
-int countRequiredSize(const u8* data, int size, int& start, int& end)
+int VideoFile::countRequiredSize(const u8* src, int src_size, int& start, int& end)
 {
-	start = 2*size;
-	end = size;
+	start = 2*src_size;
+	end = src_size;
 	int count = 0;
 
 	int j;
-	for(j = size - 1; data[j] == 0; --j)
+	for(j = src_size - 1; src[j] == 0; --j)
 		; //search end of data
 
-	if(data[j] == 0xd9) //thp file
+	if(src[j] == 0xd9) //thp file
 		end = j - 1;
-	else if(data[j] == 0xff) //mth file
+	else if(src[j] == 0xff) //mth file
 		end = j - 2;
 
 	for(int i = 0; i < end; ++i)
 	{
-		if(data[i] == 0xff)
+		if(src[i] == 0xff)
 		{
 			//if i == srcSize - 1, then this would normally overrun src - that's why 4 padding
 			//bytes are included at the end of src
-			if(data[i + 1] == 0xda && start == 2*size)
+			if(src[i + 1] == 0xda && start == 2*src_size)
 				start = i;
 			if(i > start)
 				++count;
 		}
 	}
-	return size + count;
+	return src_size + count;
 }
 
-void convertToRealJpeg(u8* dest, const u8* src, int srcSize, int start, int end)
+void VideoFile::convertToRealJpeg(u8* dest, const u8* src, int srcSize, int start, int end)
 {
 	int di = 0;
 	for(int i = 0; i < srcSize; ++i, ++di)
@@ -696,135 +696,22 @@ void convertToRealJpeg(u8* dest, const u8* src, int srcSize, int start, int end)
 	}
 }
 
-void decodeJpeg(const u8* data, int size, VideoFrame& dest)
-{
-	//convert format so jpeglib understands it...
-	int start, end;
-	int newSize = countRequiredSize(data, size, start, end);
-	u8 *buff = (u8*)MEM2_alloc(newSize);
-	convertToRealJpeg(buff, data, size, start, end);
-
-	//...and feed it to jpeglib
-	decodeRealJpeg(buff, newSize, dest);
-	MEM2_free(buff);
-}
-
-extern "C"
-{
-#include <jpeglib.h>
-#include <setjmp.h>
-}
-
-//the following functions are needed to let
-//libjpeg read from memory instead of from a file...
-//it's a little clumsy to do :-|
-const u8* g_jpegBuffer;
-int g_jpegSize;
 bool g_isLoading = false;
-
-void jpegInitSource(j_decompress_ptr)
-{}
-
-boolean jpegFillInputBuffer(j_decompress_ptr cinfo)
-{
-	cinfo->src->next_input_byte = g_jpegBuffer;
-	cinfo->src->bytes_in_buffer = g_jpegSize;
-	return TRUE;
-}
-
-void jpegSkipInputData(j_decompress_ptr cinfo, long num_bytes)
-{
-	cinfo->src->next_input_byte += num_bytes;
-	cinfo->src->bytes_in_buffer -= num_bytes;
-}
-
-boolean jpegResyncToRestart(j_decompress_ptr cinfo, int desired)
-{
-	jpeg_resync_to_restart(cinfo, desired);
-	return TRUE;
-}
-
-void jpegTermSource(j_decompress_ptr)
-{}
-
-void jpegErrorHandler(j_common_ptr cinfo)
-{
-	char buff[1024];
-	(*cinfo->err->format_message)(cinfo, buff);
-	//MessageBox(g_hWnd, buff, "JpegLib error:", MB_OK);
-}
-
 void decodeRealJpeg(const u8* data, int size, VideoFrame& dest, bool fancy)
 {
 	if(g_isLoading)
 		return;
 	g_isLoading = true;
 
-	//decompressor state
-	jpeg_decompress_struct cinfo;
-	jpeg_error_mgr errorMgr;
-
-	//read from memory manager
-	jpeg_source_mgr sourceMgr;
-
-	cinfo.err = jpeg_std_error(&errorMgr);
-	errorMgr.error_exit = jpegErrorHandler;
-
-	jpeg_create_decompress(&cinfo);
-
-	//setup read-from-memory
-	g_jpegBuffer = data;
-	g_jpegSize = size;
-	sourceMgr.bytes_in_buffer = size;
-	sourceMgr.next_input_byte = data;
-	sourceMgr.init_source = jpegInitSource;
-	sourceMgr.fill_input_buffer = jpegFillInputBuffer;
-	sourceMgr.skip_input_data = jpegSkipInputData;
-	sourceMgr.resync_to_restart = jpegResyncToRestart;
-	sourceMgr.term_source = jpegTermSource;
-	cinfo.src = &sourceMgr;
-
-	jpeg_read_header(&cinfo, TRUE);
-	if(fancy)
-	{
-		cinfo.do_fancy_upsampling = TRUE;
-		cinfo.do_block_smoothing = TRUE;
-		cinfo.dct_method = JDCT_ISLOW;
-		jpeg_start_decompress(&cinfo);
-		dest.resize(ALIGN(4, cinfo.output_width), ALIGN(4, cinfo.output_height));
-	}
-	else
-	{
-		cinfo.do_fancy_upsampling = FALSE;
-		cinfo.do_block_smoothing = FALSE;
-		jpeg_start_decompress(&cinfo);
-		dest.resize(cinfo.output_width, cinfo.output_height);
-	}
-	if(cinfo.num_components == 3)
-	{
-		int y = 0;
-		while(cinfo.output_scanline < cinfo.output_height)
-		{
-			//invert image because windows wants it downside up
-			u8* destBuffer =	&dest.getData()[(dest.getHeight() - y - 1)*dest.getPitch()];
-
-			//NO idea why jpeglib wants a pointer to a pointer
-			jpeg_read_scanlines(&cinfo, &destBuffer, 1);
-			++y;
-		}
-
-		//jpeglib gives an error in jpeg_finish_decompress() if no all
-		//scanlines are read by the application... :-|
-		//(but because we read all scanlines, it's not really needed)
-		cinfo.output_scanline = cinfo.output_height;
-
-	}
-	else
-	{
-		//MessageBox(g_hWnd, "Only RGB videos are currently supported.", "oops?", MB_OK);
-	}
-
-	jpeg_finish_decompress(&cinfo);
-	jpeg_destroy_decompress(&cinfo);
+	/* init turbojpeg */
+	u8 *src = (u8*)data;
+	int jpegSubsamp, width, height;
+	tjhandle _jpegDecompressor = tjInitDecompress();
+	tjDecompressHeader2(_jpegDecompressor, src, size, &width, &height, &jpegSubsamp);
+	/* decode to buffer */
+	dest.resize(width, height);
+	tjDecompress2(_jpegDecompressor, src, size, dest.data, width, 0, height, 
+				TJPF_RGBA, fancy ? TJFLAG_ACCURATEDCT : (TJFLAG_FASTDCT | TJFLAG_FASTUPSAMPLE));
+	tjDestroy(_jpegDecompressor);
 	g_isLoading = false;
 }
