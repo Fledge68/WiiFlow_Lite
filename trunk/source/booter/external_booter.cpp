@@ -37,9 +37,14 @@
 #include "plugin/crc32.h"
 
 /* External WiiFlow Game Booter */
-static the_CFG *BooterConfig = (the_CFG*)0x93100000;
-#define EXT_ADDR		((u8*)0x80B00000)
-#define EXT_ENTRY		((entry)EXT_ADDR)
+the_CFG normalCFG;
+#define EXT_ADDR_CFG	((vu32*)0x90100000) //later for 0x80A7FFF0
+#define EXT_ADDR		((u8*)0x90100010) //later for 0x80A80000
+#define LDR_ADDR		((u8*)0x93300000)
+#define LDR_ENTRY		((entry)LDR_ADDR)
+
+extern const u8 extldr_bin[];
+extern const u32 extldr_bin_size;
 
 extern "C" {
 u8 configbytes[2];
@@ -55,7 +60,6 @@ extern u32 *gameconf;
 
 u8 *booter_ptr = NULL;
 size_t booter_size = 0;
-the_CFG normalCFG;
 
 void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, 
 	int aspectRatio, u32 returnTo, u8 BootType, bool use_led)
@@ -81,20 +85,26 @@ void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 pat
 	normalCFG.use_led = use_led;
 	normalCFG.wip_list = get_wip_list();
 	normalCFG.wip_count = get_wip_count();
+	/* Copy CFG Into lower MEM1 so it doesnt get destroyed */
+	DCFlushRange(&normalCFG, sizeof(the_CFG));
+	the_CFG *lowCFG = (the_CFG*)MEM1_lo_alloc(sizeof(the_CFG));
+	memcpy(lowCFG, &normalCFG, sizeof(the_CFG));
+	DCFlushRange(&lowCFG, sizeof(the_CFG));
+	*EXT_ADDR_CFG = ((u32)lowCFG);
 	/* Unmount devices etc */
 	ShutdownBeforeExit();
-	/* Copy in booter */
-	memcpy(EXT_ADDR, booter_ptr, booter_size);
-	DCFlushRange(EXT_ADDR, booter_size);
-	/* Copy CFG into new memory region */
-	memcpy(BooterConfig, &normalCFG, sizeof(the_CFG));
-	DCFlushRange(BooterConfig, sizeof(the_CFG));
 	/* Wii Games will need it */
 	net_wc24cleanup();
 	/* Set proper time */
 	settime(secs_to_ticks(time(NULL) - 946684800));
+	/* Copy in booter */
+	memcpy(EXT_ADDR, booter_ptr, booter_size);
+	DCFlushRange(EXT_ADDR, booter_size);
+	/* Loader just for the booter */
+	memcpy(LDR_ADDR, extldr_bin, extldr_bin_size);
+	DCFlushRange(LDR_ADDR, extldr_bin_size);
 	/* Boot it */
-	JumpToEntry(EXT_ENTRY);
+	JumpToEntry(LDR_ENTRY);
 }
 
 bool ExternalBooter_LoadBooter(const char *booter_path)

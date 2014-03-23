@@ -59,8 +59,11 @@ extern const u32 wpadbuttonsdown2hooks[4];
 
 void app_gameconfig_set(u32 *gameconfig, u32 tempgameconfsize)
 {
+	if(gameconfig == NULL)
+		return;
 	gameconfsize = tempgameconfsize;
-	gameconf = gameconfig;
+	gameconf = malloc(gameconfsize); //internal copy
+	memcpy(gameconf, gameconfig, gameconfsize);
 }
 
 u8 *code_buf = NULL;
@@ -70,23 +73,24 @@ void ocarina_set_codes(void *list, u8 *listend, u8 *cheats, u32 cheatSize)
 {
 	codelist = list;
 	codelistend = listend;
-	code_buf = cheats;
-	code_size = cheatSize;
-	if(code_size <= 0)
+	if(cheatSize <= 0 || cheats == NULL)
 	{
-		//gprintf("Ocarina: No codes found\n");
+		gprintf("Ocarina: No codes found\n");
 		code_buf = NULL;
 		code_size = 0;
 		return;
 	}
-	if (code_size > (u32)codelistend - (u32)codelist)
+	if (cheatSize > (u32)codelistend - (u32)codelist)
 	{
 		gprintf("Ocarina: Too many codes found.\n");
 		code_buf = NULL;
 		code_size = 0;
 		return;
 	}
-	//gprintf("Ocarina: Codes found.\n");
+	code_size = cheatSize;
+	code_buf = malloc(code_size); //internal copy
+	memcpy(code_buf, cheats, code_size);
+	gprintf("Ocarina: Codes found.\n");
 }
 
 void app_pokevalues()
@@ -242,6 +246,8 @@ int ocarina_do_code()
 	{
 		memcpy(codelist, code_buf, code_size);
 		DCFlushRange(codelist, (u32)codelistend - (u32)codelist);
+		free(code_buf);
+		code_buf = NULL;
 	}
 
 	// TODO What's this???

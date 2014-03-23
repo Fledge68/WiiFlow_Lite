@@ -258,6 +258,15 @@ void Disc_SetVMode(GXRModeObj *rmode, u32 rmode_reg)
 s32 wbfsDev = 0;
 u32 wbfs_part_idx = 0;
 FragList *frag_list = NULL;
+
+void copy_frag_list(FragList *src)
+{
+	if(src == NULL)
+		return;
+	frag_list = malloc(sizeof(FragList)); //internal copy
+	memcpy(frag_list, src, sizeof(FragList));
+}
+
 static int set_frag_list()
 {
 	// (+1 for header which is same size as fragment)

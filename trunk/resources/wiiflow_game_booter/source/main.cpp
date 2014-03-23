@@ -33,6 +33,7 @@
 #include "wdvd.h"
 #include "gecko.h"
 
+#define EXT_ADDR_CFG	((vu32*)0x80A7FFF0)
 using namespace std;
 IOS_Info CurrentIOS;
 
@@ -55,7 +56,7 @@ int main()
 {
 	InitGecko();
 	gprintf("WiiFlow External Booter by FIX94\n");
-	memcpy(&normalCFG, (void*)0x93100000, sizeof(the_CFG));
+	memcpy(&normalCFG, ((void*)*EXT_ADDR_CFG), sizeof(the_CFG));
 	VIDEO_Init();
 	video_init();
 	prog10();
@@ -68,7 +69,7 @@ int main()
 	set_wip_list(normalCFG.wip_list, normalCFG.wip_count);
 	app_gameconfig_set(normalCFG.gameconf, normalCFG.gameconfsize);
 	ocarina_set_codes(normalCFG.codelist, normalCFG.codelistend, normalCFG.cheats, normalCFG.cheatSize);
-	frag_list = normalCFG.fragments;
+	copy_frag_list(normalCFG.fragments);
 	wbfsDev = normalCFG.wbfsDevice;
 	wbfs_part_idx = normalCFG.wbfsPart;
 	prog10();
