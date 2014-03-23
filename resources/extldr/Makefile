@@ -1,4 +1,4 @@
-
+export PATH	:=	$(DEVKITPPC)/bin:$(PATH)
 PREFIX = powerpc-eabi-
 
 AR = $(PREFIX)ar
