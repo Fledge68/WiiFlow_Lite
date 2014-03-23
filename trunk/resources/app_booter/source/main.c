@@ -11,9 +11,9 @@
 #include "sync.h"
 
 #define EXECUTABLE_MEM_ADDR		0x92000000
-#define SYSTEM_ARGV				((struct __argv *)0x93200000)
+#define SYSTEM_ARGV				((struct __argv *)0x90100000)
 
-void main(void)
+void _main(void)
 {
 	void *exeBuffer = (void *)EXECUTABLE_MEM_ADDR;
 	u32 exeEntryPointAddress = 0;

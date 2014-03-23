@@ -2,6 +2,7 @@
 # This code is licensed to you under the terms of the GNU GPL, version 2;
 # see file COPYING or http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
 
+.extern _main
 	.globl _start
 _start:
 
@@ -18,4 +19,4 @@ _start:
 	bl memset
 
 	# Go!
-	b main
+	bl _main

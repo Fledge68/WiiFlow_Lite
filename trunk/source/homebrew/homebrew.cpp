@@ -12,8 +12,8 @@
 #include "gecko/gecko.hpp"
 
 #define EXECUTE_ADDR	((u8 *)0x92000000)
-#define BOOTER_ADDR		((u8 *)0x93100000)
-#define ARGS_ADDR		((u8 *)0x93200000)
+#define BOOTER_ADDR		((u8 *)0x93300000)
+#define ARGS_ADDR		((u8 *)0x90100000)
 #define BOOTER_ENTRY	((entry)BOOTER_ADDR)
 
 using namespace std;

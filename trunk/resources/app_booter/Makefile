@@ -11,7 +11,7 @@ export PATH	:=	$(DEVKITPPC)/bin:$(PORTLIBS)/bin:$(PATH)
 export LIBOGC_INC	:=	$(DEVKITPRO)/libogc/include
 export LIBOGC_LIB	:=	$(DEVKITPRO)/libogc/lib/wii
 
-PREFIX	:=	powerpc-gekko-
+PREFIX	:=	powerpc-eabi-
 
 export AS	:=	$(PREFIX)as
 export CC	:=	$(PREFIX)gcc
@@ -36,8 +36,8 @@ INCLUDES	:=
 # options for code generation
 #---------------------------------------------------------------------------------
 MACHDEP := -mno-eabi -mno-sdata -mcpu=750
-CFLAGS	:= -Wall -W -Os -ffreestanding -std=gnu99 -Wstrict-aliasing=2 $(MACHDEP) $(INCLUDE)
-CXXFLAGS :=	$(CFLAGS)
+CFLAGS	:= -Wall -W -O1 -ffreestanding -std=gnu99 -Wstrict-aliasing=2 $(MACHDEP) $(INCLUDE)
+LDFLAGS	:= -nostartfiles -nostdlib $(MACHDEP)
 
 #---------------------------------------------------------------------------------
 # move loader to another location - THANKS CREDIAR - 0x81330000 for HBC
@@ -136,21 +136,21 @@ $(OUTPUT).elf: $(OFILES)
 # This rule links in binary data with the .jpg extension
 #---------------------------------------------------------------------------------
 %.bin: %.elf
-	@echo "  OBJCOPY   $@"
+	@echo "output ... $@"
 	$(Q)$(OBJCOPY) -O binary $< $@
 
 %.elf: link.ld $(OFILES)
-	@echo "  LINK      $@"
-	$(Q)$(LD) -n -T $^ $(LDFLAGS) -o $@
+	@echo "linking ... $@"
+	$(Q)$(CC) -n -T $^ $(LDFLAGS) -o $@
 
 %.o: %.c 
-	@echo "  COMPILE   $@"
+	@echo "$@"
 	$(Q)$(CC) $(CFLAGS) -c $< -o $@
 
 %.o: %.s
-	@echo "  ASSEMBLE  $@"
+	@echo "$@"
 	$(Q)$(CC) $(CFLAGS) -c $< -o $@
-	
+
 -include $(DEPENDS)
 
 #---------------------------------------------------------------------------------
