@@ -16,6 +16,9 @@ void Disc_SetLowMemChan();
 GXRModeObj *Disc_SelectVMode(u8 videoselected, u32 *rmode_reg);
 void Disc_SetVMode(GXRModeObj *rmode, u32 rmode_reg);
 
+//just for frag copy
+void copy_frag_list(FragList *src);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

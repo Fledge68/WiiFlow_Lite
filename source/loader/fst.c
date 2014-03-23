@@ -59,7 +59,7 @@ int app_gameconfig_load(const char *discid, u8 *tempgameconf, u32 tempgameconfsi
 {
 	if (gameconf == NULL)
 	{
-		gameconf = (u32*) MEM2_alloc(65536);
+		gameconf = (u32*) MEM1_lo_alloc(65536);
 		if (gameconf == NULL)
 			return -1;
 	}
@@ -254,17 +254,25 @@ int ocarina_load_code(const u8 *cheat, u32 cheatSize)
 		codelist = (u8 *) 0x800028B8;
 	codelistend = (u8 *) 0x80003000;
 
-	code_buf = (u8 *)cheat;
-	code_size = cheatSize;
-
-	if(code_size <= 0)
+	if(cheatSize <= 0)
 	{
 		//gprintf("Ocarina: No codes found\n");
 		code_buf = NULL;
 		code_size = 0;
 		return 0;
 	}
-	//gprintf("Ocarina: Codes found.\n");
+	code_size = cheatSize;
+	code_buf = (u8*)MEM1_lo_alloc(code_size);
+	if(code_buf == NULL)
+	{
+		gprintf("Ocarina: Couldnt allocate buffer!\n");
+		code_buf = NULL;
+		code_size = 0;
+		return 0;
+	}
+	memcpy(code_buf, cheat, code_size);
+
+	gprintf("Ocarina: Codes found.\n");
 	DCFlushRange(code_buf, code_size);
 	return code_size;
 }

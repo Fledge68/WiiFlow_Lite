@@ -23,9 +23,9 @@ INCLUDES	:=	source
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-CFLAGS		=	-g -ggdb -Ofast -Wall -Wextra $(MACHDEP) $(INCLUDE) -DHAVE_CONFIG_H
+CFLAGS		=	-g -ggdb -O1 -Wall -Wextra $(MACHDEP) $(INCLUDE) -DHAVE_CONFIG_H
 CXXFLAGS	=	$(CFLAGS)
-LDFLAGS		=	-g -ggdb $(MACHDEP) -Wl,-Map,$(notdir $@).map,--section-start,.init=0x80B00000
+LDFLAGS		=	-g -ggdb $(MACHDEP) -Wl,-Map,$(notdir $@).map,--section-start,.init=0x80A80000
 
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project

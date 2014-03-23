@@ -60,7 +60,7 @@ bool set_wip_list(WIP_Code *list, int size)
 {
 	if(CodeList == NULL && size > 0)
 	{
-		WIP_Code *newlist = malloc(size * sizeof(WIP_Code));
+		WIP_Code *newlist = malloc(size * sizeof(WIP_Code)); //internal copy
 		memcpy(newlist, list, size * sizeof(WIP_Code));
 		DCFlushRange(newlist, size * sizeof(WIP_Code));
 		CodeList = newlist;

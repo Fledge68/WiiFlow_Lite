@@ -240,7 +240,7 @@ int get_frag_list(u8 *id, char *path, const u32 hdd_sector_size)
 		frag_concat(fa, fs);
 	}
 
-	frag_list = MEM2_lo_alloc(sizeof(FragList));
+	frag_list = MEM1_lo_alloc(sizeof(FragList)); //completely safe for the booter
 	if(frag_list == NULL)
 		goto out;
 
@@ -275,7 +275,7 @@ int get_frag_list(u8 *id, char *path, const u32 hdd_sector_size)
 out:
 	if(ret_val && frag_list != NULL)
 	{
-		MEM2_lo_free(frag_list);
+		MEM1_lo_free(frag_list);
 		frag_list = NULL;
 	}
 	if(fs != NULL)
