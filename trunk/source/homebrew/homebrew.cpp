@@ -11,11 +11,16 @@
 #include "fileOps/fileOps.h"
 #include "gecko/gecko.hpp"
 
-#define EXECUTE_ADDR	((u8 *)0x92000000)
-#define BOOTER_ADDR		((u8 *)0x93300000)
-#define ARGS_ADDR		((u8 *)0x90100000)
-#define BOOTER_ENTRY	((entry)BOOTER_ADDR)
+static u8 *EXECUTE_ADDR = (u8*)0x92000000;
 
+static u8 *BOOTER_ADDR = (u8*)0x93300000;
+static entry BOOTER_ENTRY = (entry)BOOTER_ADDR;
+
+static __argv *ARGS_ADDR = (__argv*)0x90100000;
+static char *CMD_ADDR = (char*)ARGS_ADDR + sizeof(struct __argv);
+
+u8 *appbooter_ptr = NULL;
+u32 appbooter_size = 0;
 using namespace std;
 
 extern const u8 stub_bin[];
@@ -46,15 +51,10 @@ void AddBootArgument(const char * argv)
 
 bool LoadAppBooter(const char *filepath)
 {
-	u32 filesize = 0;
-	fsop_GetFileSizeBytes(filepath, &filesize);
-	if(filesize > 0)
-	{
-		fsop_ReadFileLoc(filepath, filesize, BOOTER_ADDR);
-		DCFlushRange(BOOTER_ADDR, filesize);
-		return true;
-	}
-	return false;
+	appbooter_ptr = fsop_ReadFile(filepath, &appbooter_size);
+	if(appbooter_size == 0 || appbooter_ptr == NULL)
+		return false;
+	return true;
 }
 
 bool LoadHomebrew(const char *filepath)
@@ -75,40 +75,29 @@ bool LoadHomebrew(const char *filepath)
 	return true;
 }
 
-int SetupARGV(struct __argv * args)
+static int SetupARGV()
 {
-	if(!args) 
-		return -1;
-
+	__argv *args = ARGS_ADDR;
 	memset(args, 0, sizeof(struct __argv));
 	args->argvMagic = ARGV_MAGIC;
 
-	u32 argc = 0;
 	u32 position = 0;
-	u32 stringlength = 1;
 
-	/** Append Arguments **/
+	/** Count Arguments Size **/
+	u32 stringlength = 1;
 	for(u32 i = 0; i < Arguments.size(); i++)
 		stringlength += Arguments[i].size()+1;
-
 	args->length = stringlength;
-	//! Put the argument into mem2 too, to avoid overwriting it
-	args->commandLine = (char *) ARGS_ADDR + sizeof(struct __argv);
 
 	/** Append Arguments **/
-	for(u32 i = 0; i < Arguments.size(); i++)
+	args->argc = Arguments.size();
+	args->commandLine = CMD_ADDR;
+	for(int i = 0; i < args->argc; i++)
 	{
 		strcpy(&args->commandLine[position], Arguments[i].c_str());
 		position += Arguments[i].size() + 1;
-		argc++;
 	}
-
-	args->argc = argc;
-
 	args->commandLine[args->length - 1] = '\0';
-	args->argv = &args->commandLine;
-	args->endARGV = args->argv + 1;
-
 	Arguments.clear();
 
 	return 0;
@@ -134,14 +123,13 @@ void writeStub()
 
 void BootHomebrew()
 {
-	__argv args;
 	if(!IsDollZ(EXECUTE_ADDR) && !IsSpecialELF(EXECUTE_ADDR))
-		SetupARGV(&args);
+		SetupARGV();
 	else
 		gprintf("Homebrew Boot Arguments disabled\n");
 
-	memmove(ARGS_ADDR, &args, sizeof(args));
-	DCFlushRange(ARGS_ADDR, sizeof(args) + args.length);
+	memcpy(BOOTER_ADDR, appbooter_ptr, appbooter_size);
+	DCFlushRange(BOOTER_ADDR, appbooter_size);
 
 	JumpToEntry(BOOTER_ENTRY);
 }

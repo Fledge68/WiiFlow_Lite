@@ -10,16 +10,16 @@ OBJCOPY = $(PREFIX)objcopy
 RANLIB = $(PREFIX)ranlib
 STRIP = $(PREFIX)strip
 
-MACHDEP = -mcpu=750 -mno-eabi -mhard-float
-CFLAGS = $(MACHDEP) -O1 -Werror -Wall -pipe -ffunction-sections -finline-functions-called-once -mno-sdata
+MACHDEP = -mcpu=750 -mno-eabi
+CFLAGS = $(MACHDEP) -O1 -Werror -Wall -pipe -mno-sdata
 LDFLAGS = $(MACHDEP) -n -nostartfiles -nostdlib -Wl,-T,link.ld -L.
 ASFLAGS = -D_LANGUAGE_ASSEMBLY -DHW_RVL
 
 TARGET_LINKED = boot.elf
-TARGET = ../../data/extldr.bin
+TARGET = extldr.bin
 
-CFILES = string.c sync.c main.c
-OBJS = crt0.o string.o sync.o main.o
+CFILES = string.c sync.c usbgecko.c main.c
+OBJS = crt0.o string.o sync.o usbgecko.o main.o
 
 DEPDIR = .deps
 

@@ -709,9 +709,20 @@ void decodeRealJpeg(const u8* data, int size, VideoFrame& dest, bool fancy)
 	tjhandle _jpegDecompressor = tjInitDecompress();
 	tjDecompressHeader2(_jpegDecompressor, src, size, &width, &height, &jpegSubsamp);
 	/* decode to buffer */
-	dest.resize(width, height);
-	tjDecompress2(_jpegDecompressor, src, size, dest.data, width, 0, height, 
-				TJPF_RGBA, fancy ? TJFLAG_ACCURATEDCT : (TJFLAG_FASTDCT | TJFLAG_FASTUPSAMPLE));
+	if(fancy)
+	{
+		width = ALIGN(4, width);
+		height = ALIGN(4, height);
+		dest.resize(width, height);
+		tjDecompress2(_jpegDecompressor, src, size, dest.data, width, 0, height, 
+					TJPF_RGBA, TJFLAG_ACCURATEDCT);
+	}
+	else
+	{
+		dest.resize(width, height);
+		tjDecompress2(_jpegDecompressor, src, size, dest.data, width, 0, height, 
+					TJPF_RGBA, TJFLAG_FASTDCT | TJFLAG_FASTUPSAMPLE);
+	}
 	tjDestroy(_jpegDecompressor);
 	g_isLoading = false;
 }

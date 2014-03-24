@@ -406,7 +406,7 @@ bool CMenu::_startVideo()
 	if(fsop_FileExist(THP_Path))
 	{
 		m_gameSound.FreeMemory();
-		MusicPlayer.Stop();
+		CheckGameSoundThread();
 		m_banner.SetShowBanner(false);
 		/* Lets play the movie */
 		movie.Init(THP_Path);
@@ -1257,7 +1257,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 			while(1) usleep(500);
 		}
 	}
-	if(WII_Launch == false && ExternalBooter_LoadBooter(fmt("%s/ext_booter.bin", m_binsDir.c_str())) == false)
+	if(WII_Launch == false && ExternalBooter_LoadBins(m_binsDir.c_str()) == false)
 		Sys_Exit();
 	if(_loadIOS(gameIOS, userIOS, id, !NAND_Emu) == LOAD_IOS_FAILED)
 		Sys_Exit();
@@ -1494,7 +1494,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		gprintf("Check\n");
 		patchregion = NandHandle.Do_Region_Change(id, true);
 	}
-	if(ExternalBooter_LoadBooter(fmt("%s/ext_booter.bin", m_binsDir.c_str())) == false)
+	if(ExternalBooter_LoadBins(m_binsDir.c_str()) == false)
 		Sys_Exit();
 	if((!dvd || neek2o()) && !Sys_DolphinMode())
 	{

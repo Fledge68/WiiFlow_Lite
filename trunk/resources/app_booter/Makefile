@@ -136,11 +136,11 @@ $(OUTPUT).elf: $(OFILES)
 # This rule links in binary data with the .jpg extension
 #---------------------------------------------------------------------------------
 %.bin: %.elf
-	@echo "output ... $@"
+	@echo "output ... $(TARGET).bin"
 	$(Q)$(OBJCOPY) -O binary $< $@
 
 %.elf: link.ld $(OFILES)
-	@echo "linking ... $@"
+	@echo "linking ... $(TARGET).elf"
 	$(Q)$(CC) -n -T $^ $(LDFLAGS) -o $@
 
 %.o: %.c 

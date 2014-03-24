@@ -30,7 +30,7 @@ extern u32 hooktype;
 
 void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, 
 			int aspectRatio, u32 returnTo, u8 BootType, bool use_led);
-bool ExternalBooter_LoadBooter(const char *booter_path);
+bool ExternalBooter_LoadBins(const char *binDir);
 void ExternalBooter_ChannelSetup(u64 title, bool dol);
 void ExternalBooter_WiiGameSetup(bool wbfs, bool dvd, bool patchregion, const char *ID);
 void ShutdownBeforeExit(void);

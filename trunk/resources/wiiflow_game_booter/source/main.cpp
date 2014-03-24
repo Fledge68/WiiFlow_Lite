@@ -33,7 +33,7 @@
 #include "wdvd.h"
 #include "gecko.h"
 
-#define EXT_ADDR_CFG	((vu32*)0x80A7FFF0)
+#define EXT_ADDR_CFG	((vu32*)0x90100000)
 using namespace std;
 IOS_Info CurrentIOS;
 
