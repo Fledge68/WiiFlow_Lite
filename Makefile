@@ -11,6 +11,8 @@ all:
 	@echo Make WiiFlow Loader
 	@$(MAKE) --no-print-directory -C $(CURDIR_TMP)/resources/extldr \
 			-f $(CURDIR_TMP)/resources/extldr/Makefile
+	@mv -u $(CURDIR_TMP)/resources/extldr/extldr.bin \
+		$(CURDIR_TMP)/out/bins/ext_loader.bin
 
 	@echo Make WiiFlow Booter
 	@$(MAKE) --no-print-directory -C $(CURDIR_TMP)/resources/wiiflow_game_booter \

@@ -38,13 +38,13 @@
 
 /* External WiiFlow Game Booter */
 the_CFG normalCFG;
-#define EXT_ADDR_CFG	((vu32*)0x90100000) //later for 0x80A7FFF0
-#define EXT_ADDR		((u8*)0x90100010) //later for 0x80A80000
+#define EXT_ADDR_CFG	((vu32*)0x90100000)
+#define EXT_ADDR		((u8*)0x90110000) //later for 0x80A80000
 #define LDR_ADDR		((u8*)0x93300000)
 #define LDR_ENTRY		((entry)LDR_ADDR)
 
-extern const u8 extldr_bin[];
-extern const u32 extldr_bin_size;
+u8 *extldr_ptr = NULL;
+size_t extldr_size = 0;
 
 extern "C" {
 u8 configbytes[2];
@@ -101,21 +101,25 @@ void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 pat
 	memcpy(EXT_ADDR, booter_ptr, booter_size);
 	DCFlushRange(EXT_ADDR, booter_size);
 	/* Loader just for the booter */
-	memcpy(LDR_ADDR, extldr_bin, extldr_bin_size);
-	DCFlushRange(LDR_ADDR, extldr_bin_size);
+	memcpy(LDR_ADDR, extldr_ptr, extldr_size);
+	DCFlushRange(LDR_ADDR, extldr_size);
 	/* Boot it */
 	JumpToEntry(LDR_ENTRY);
 }
 
-bool ExternalBooter_LoadBooter(const char *booter_path)
+bool ExternalBooter_LoadBins(const char *binDir)
 {
-	fsop_GetFileSizeBytes(booter_path, &booter_size);
-	if(booter_size > 0)
-	{
-		booter_ptr = fsop_ReadFile(booter_path, &booter_size);
-		if(booter_ptr != NULL)
-			return true;
-	}
+	extldr_ptr = fsop_ReadFile(fmt("%s/ext_loader.bin", binDir), &extldr_size);
+	if(extldr_size == 0 || extldr_ptr == NULL)
+		return false;
+
+	booter_ptr = fsop_ReadFile(fmt("%s/ext_booter.bin", binDir), &booter_size);
+	if(booter_size > 0 && booter_ptr != NULL)
+		return true;
+
+	free(extldr_ptr);
+	extldr_ptr = NULL;
+	extldr_size = 0;
 	return false;
 }
 

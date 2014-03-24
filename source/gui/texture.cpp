@@ -43,29 +43,31 @@ static inline u32 coordsRGB565(u32 x, u32 y, u32 w)
 
 static inline void _convertToRGBA(u8 *dst, const u8 *src, u32 width, u32 height)
 {
-	for (u32 y = 0; y < height; ++y)
-	{
-		for (u32 x = 0; x < width; ++x)
+	u32 x,y,i,j;
+	for (y = 0; y < height; ++y)
+		for (x = 0; x < width; ++x)
 		{
-			u32 i = (x + y * width) * 4;
-			dst[i] = src[coordsRGBA8(x, y, width) + 1];
-			dst[i + 1] = src[coordsRGBA8(x, y, width) + 32];
-			dst[i + 2] = src[coordsRGBA8(x, y, width) + 33];
-			dst[i + 3] = src[coordsRGBA8(x, y, width)];
+			i = (x + y * width) * 4;
+			j = coordsRGBA8(x, y, width);
+			dst[i] = src[j + 1];
+			dst[i + 1] = src[j + 32];
+			dst[i + 2] = src[j + 33];
+			dst[i + 3] = src[j];
 		}
-	}
 }
 
 static inline void _convertToRGBA8(u8 *dst, const u8 *src, u32 width, u32 height)
 {
-	for (u32 y = 0; y < height; ++y)
-		for (u32 x = 0; x < width; ++x)
+	u32 x,y,i,j;
+	for (y = 0; y < height; ++y)
+		for (x = 0; x < width; ++x)
 		{
-			u32 i = (x + y * width) * 4;
-			dst[coordsRGBA8(x, y, width) + 1] = src[i];
-			dst[coordsRGBA8(x, y, width) + 32] = src[i + 1];
-			dst[coordsRGBA8(x, y, width) + 33] = src[i + 2];
-			dst[coordsRGBA8(x, y, width)] = src[i + 3];
+			i = (x + y * width) * 4;
+			j = coordsRGBA8(x, y, width);
+			dst[j + 1] = src[i];
+			dst[j + 32] = src[i + 1];
+			dst[j + 33] = src[i + 2];
+			dst[j] = src[i + 3];
 		}
 }
 
