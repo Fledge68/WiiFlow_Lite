@@ -22,6 +22,6 @@ SECTIONS {
 	. = ALIGN(0x40);
 	.stack : {
 		. += 0x8000;
-		_stack_top = .;
+		__stack_top = .;
 	}
 }
