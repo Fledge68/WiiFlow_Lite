@@ -51,9 +51,18 @@ void AddBootArgument(const char * argv)
 
 bool LoadAppBooter(const char *filepath)
 {
-	appbooter_ptr = fsop_ReadFile(filepath, &appbooter_size);
-	if(appbooter_size == 0 || appbooter_ptr == NULL)
+	u8 *tmp_ptr = fsop_ReadFile(filepath, &appbooter_size);
+	if(appbooter_size == 0 || tmp_ptr == NULL)
 		return false;
+	appbooter_ptr = (u8*)MEM2_lo_alloc(appbooter_size); /* safety because upper mem2 is dol */
+	if(appbooter_ptr == NULL)
+	{
+		free(tmp_ptr);
+		return false;
+	}
+	memcpy(appbooter_ptr, tmp_ptr, appbooter_size);
+	DCFlushRange(appbooter_ptr, appbooter_size);
+	free(tmp_ptr);
 	return true;
 }
 
@@ -134,9 +143,21 @@ void BootHomebrew()
 	JumpToEntry(BOOTER_ENTRY);
 }
 
+extern "C" { extern void __exception_closeall(); }
+u32 AppEntrypoint = 0;
 void JumpToEntry(entry EntryPoint)
 {
-	gprintf("Jumping to %08x\n", EntryPoint);
-	SYS_ResetSystem(SYS_SHUTDOWN, 0, 0);
-	__lwp_thread_stopmultitasking(EntryPoint);
+	AppEntrypoint = (u32)EntryPoint;
+	gprintf("Jumping to %08x\n", AppEntrypoint);
+	u32 level = IRQ_Disable();
+	__IOS_ShutdownSubsystems();
+	__exception_closeall();
+	asm volatile (
+		"lis %r3, AppEntrypoint@h\n"
+		"ori %r3, %r3, AppEntrypoint@l\n"
+		"lwz %r3, 0(%r3)\n"
+		"mtlr %r3\n"
+		"blr\n"
+	);
+	IRQ_Restore(level);
 }
