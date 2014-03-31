@@ -84,15 +84,6 @@ static void ipc_wait_reply(void)
 	ios_delay();
 }
 
-static u32 ipc_wait(void)
-{
-	u32 ret;
-	while(!((ret = ipc_read(1)) & 0x6))
-		;
-	ios_delay();
-	return ret;
-}
-
 // Mid-level IPC access.
 
 struct ipc {
@@ -118,27 +109,6 @@ static void ipc_send_request(void)
 	ipc_bell(2);
 }
 
-static int ipc_send_twoack(void)
-{
-	sync_after_write(&ipc, 0x40);
-	ios_delay();
-	
-	ipc_write(0, (u32)virt_to_phys(&ipc));
-	ipc_bell(1);
-
-	if(ipc_wait() & 4)
-		return 0;
-
-	ipc_bell(2);
-
-	if(ipc_wait() & 4)
-		return 0;
-
-	ipc_bell(2);
-	ipc_bell(8);
-	return 1;
-}
-
 static void ipc_recv_reply(void)
 {
 	for (;;)
@@ -162,49 +132,6 @@ static void ipc_recv_reply(void)
 
 // High-level IPC access.
 
-void ios_cleanup()
-{
-	int loops = 0xA;
-	do
-	{
-		if ((ipc_read(1) & 0x22) == 0x22)
-		{
-			ipc_write(1, (ipc_read(1)&~0x30) | 2);
-		}
-		if ((ipc_read(1) & 0x14) == 0x14)
-		{
-			ipc_read(2);
-			ipc_write(1, (ipc_read(1)&~0x30) | 4);
-			ipc_write(12, 0x4000);
-			ipc_write(1, (ipc_read(1)&~0x30) | 8);
-		}
-		ipc_write(12, 0x4000);
-		usleep(1000);
-		loops--;
-	} while(loops != 0);
-
-	int fd;
-	for (fd = 0; fd != 31; fd++)
-	{
-		ios_close(fd);
-	}
-}
-
-int ios_open(const char *filename, u32 mode)
-{
-	sync_after_write((void*)filename, 0x20);
-
-	ipc.cmd = 1;
-	ipc.fd = 0;
-	ipc.arg[0] = (u32)virt_to_phys(filename);
-	ipc.arg[1] = mode;
-
-	ipc_send_request();
-	ipc_recv_reply();
-
-	return ipc.result;
-}
-
 int ios_close(int fd)
 {
 	ipc.cmd = 2;
@@ -216,77 +143,11 @@ int ios_close(int fd)
 	return ipc.result;
 }
 
-static void ios_std(int fd, int cmd)
+void ios_cleanup()
 {
-	ipc.cmd = cmd;
-	ipc.fd = fd;
-
-	ipc_send_request();
-	ipc_recv_reply();
-}
-
-int ios_read(int fd, void *buf, u32 size)
-{
-	ipc.arg[0] = (u32)virt_to_phys(buf);
-	ipc.arg[1] = size;
-
-	ios_std(fd, 3);
-
-	sync_before_read(buf, size);
-
-	return ipc.result;
-}
-
-int _ios_ioctlv(int fd, u32 n, u32 in_count, u32 out_count, struct ioctlv *vec, int reboot)
-{
-	u32 i;
-
-	for (i = 0; i < in_count + out_count; i++)
+	int fd;
+	for (fd = 0; fd != 31; fd++)
 	{
-		if (vec[i].data)
-		{
-			sync_after_write(vec[i].data, vec[i].len);
-			vec[i].data = (void *)virt_to_phys(vec[i].data);
-		}
+		ios_close(fd);
 	}
-
-	sync_after_write(vec, (in_count + out_count) * sizeof *vec);
-
-	ipc.cmd = 7;
-	ipc.fd = fd;
-	ipc.arg[0] = n;
-	ipc.arg[1] = in_count;
-	ipc.arg[2] = out_count;
-	ipc.arg[3] = (u32)virt_to_phys(vec);
-
-	if(reboot)
-	{
-		if(ipc_send_twoack())
-			return 0;
-	}
-	else
-		ipc_send_request();
-	ipc_recv_reply();
-
-	for(i = in_count; i < in_count + out_count; i++)
-	{
-		if (vec[i].data)
-		{
-			vec[i].data = phys_to_virt((u32)vec[i].data);
-			sync_before_read(vec[i].data, vec[i].len);
-		}
-	}
-	if(reboot && (ipc.result >= 0))
-		return -100;
-	return ipc.result;
-}
-
-int ios_ioctlv(int fd, u32 n, u32 in_count, u32 out_count, struct ioctlv *vec)
-{
-	return _ios_ioctlv(fd, n, in_count, out_count, vec, 0);
-}
-
-int ios_ioctlvreboot(int fd, u32 n, u32 in_count, u32 out_count, struct ioctlv *vec)
-{
-	return _ios_ioctlv(fd, n, in_count, out_count, vec, 1);
 }
