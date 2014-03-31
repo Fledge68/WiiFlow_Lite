@@ -19,7 +19,7 @@ TARGET_LINKED = boot.elf
 TARGET = extldr.bin
 
 CFILES = string.c ios.c utils.c cache.c usbgecko.c main.c
-OBJS = crt0.o string.o ios.o utils.o cache.o usbgecko.o main.o
+OBJS = crt0.o memory.o string.o ios.o utils.o cache.o usbgecko.o main.o
 
 DEPDIR = .deps
 
