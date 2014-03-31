@@ -1,6 +1,6 @@
 #include "exi.h"
 #include "usbgecko.h"
-
+#include "types.h"
 #define USBGECKO_CMD_IDENTIFY		0x90000000
 #define USBGECKO_IDENTIFY_RESPONSE	0x04700000
 #define USBGECKO_CMD_TX_STATUS		0xc0000000
@@ -10,38 +10,33 @@
 #define USBGECKO_CMD_RECEIVE		0xa0000000 
 #define USBGECKO_CMD_TRANSMIT(ch)	(0xb0000000 | ((ch) << 20))
 
-/* We're poking registers; so ensure any access is volatile! */
-typedef volatile unsigned int vuint32_t;
-typedef unsigned int uint32_t;
-
 static int usb_gecko_channel = -1;
 
-static uint32_t
-usbgecko_transaction(int ch, uint32_t data)
+static u32 usbgecko_transaction(int ch, u32 data)
 {
 	volatile void* exi_base = (volatile void*)EXI_ADDR(ch);
 
 	/* 5.9.1.2: Selecting a specific EXI device: select the USB Gecko device */
-	*(vuint32_t*)(exi_base + EXI_CSR) = EXI_CSR_CLK_32MHZ | EXI_CSR_CS(1);
+	*(vu32*)(exi_base + EXI_CSR) = EXI_CSR_CLK_32MHZ | EXI_CSR_CS(1);
 
 	/* 5.9.1.4: Perform IMM operation: setup data */
-	*(vuint32_t*)(exi_base + EXI_DATA) = data;
+	*(vu32*)(exi_base + EXI_DATA) = data;
 
 	/* 5.9.1.4: Perform IMM operation: schedule read/write; 2 bytes; start now */
-	*(vuint32_t*)(exi_base + EXI_CR) = EXI_CR_TLEN_2 | EXI_CR_RW_RW | EXI_CR_TSTART;
+	*(vu32*)(exi_base + EXI_CR) = EXI_CR_TLEN_2 | EXI_CR_RW_RW | EXI_CR_TSTART;
 
 	/* 5.9.1.4: Perform IMM operation: Wait until transfer is completed */
 	while (1) {
-		if ((*(vuint32_t*)(exi_base + EXI_CR) & EXI_CR_TSTART) == 0)
+		if ((*(vu32*)(exi_base + EXI_CR) & EXI_CR_TSTART) == 0)
 			break;
 		/* XXX barrier */
 	}
 
 	/* 5.9.1.4: Fetch the data */
-	data = *(vuint32_t*)(exi_base + EXI_DATA);
+	data = *(vu32*)(exi_base + EXI_DATA);
 
 	/* 5.9.1.3: Deselecting EXI devices */
-	*(vuint32_t*)(exi_base + EXI_CSR) = 0;
+	*(vu32*)(exi_base + EXI_CSR) = 0;
 
 	return data;
 }
@@ -80,7 +75,7 @@ void usbgecko_init()
 {
 	int i;
 	for (i = 0; i < 2; i++) {
-		uint32_t d = usbgecko_transaction(i, USBGECKO_CMD_IDENTIFY);
+		u32 d = usbgecko_transaction(i, USBGECKO_CMD_IDENTIFY);
 		if (d != USBGECKO_IDENTIFY_RESPONSE)
 			continue;
 		usb_gecko_channel = i;
