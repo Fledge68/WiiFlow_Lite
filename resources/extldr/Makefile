@@ -18,8 +18,8 @@ ASFLAGS = -D_LANGUAGE_ASSEMBLY -DHW_RVL
 TARGET_LINKED = boot.elf
 TARGET = extldr.bin
 
-CFILES = string.c sync.c usbgecko.c main.c
-OBJS = crt0.o string.o sync.o usbgecko.o main.o
+CFILES = string.c ios.c utils.c cache.c usbgecko.c main.c
+OBJS = crt0.o string.o ios.o utils.o cache.o usbgecko.o main.o
 
 DEPDIR = .deps
 

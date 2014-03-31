@@ -152,6 +152,7 @@ void JumpToEntry(entry EntryPoint)
 	u32 level = IRQ_Disable();
 	__IOS_ShutdownSubsystems();
 	__exception_closeall();
+	__lwp_thread_closeall(); //dont like it but whatever
 	asm volatile (
 		"lis %r3, AppEntrypoint@h\n"
 		"ori %r3, %r3, AppEntrypoint@l\n"

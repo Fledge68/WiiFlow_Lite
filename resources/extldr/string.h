@@ -1,7 +1,7 @@
 #ifndef STRING_H_
 #define STRING_H_
 
-void * _memcpy(void *dst, const void *src, unsigned int len);
-void * _memset(void *b, int c, unsigned int len);
+void * _memcpy(void *dst, const void *src, u32 len);
+void * _memset(void *b, u8 c, u32 len);
 
 #endif
