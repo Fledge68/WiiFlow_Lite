@@ -13,9 +13,8 @@ void _main(void)
 	sync_after_write(start, 0xF0000);
 	gprintf("Done! Jumping to Entrypoint...\n");
 	asm volatile (
-		"lis %r3, start@h\n"
-		"ori %r3, %r3, start@l\n"
-		"lwz %r3, 0(%r3)\n"
+		"lis %r3, 0x80A8\n"
+		"ori %r3, %r3, 0x0000\n"
 		"mtlr %r3\n"
 		"blr\n"
 	);
