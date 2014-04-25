@@ -897,7 +897,8 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 
 	u8 GClanguage = min((u32)m_gcfg2.getInt(id, "gc_language", 0), ARRAY_SIZE(CMenu::_GClanguages) - 1u);
 	GClanguage = (GClanguage == 0) ? min((u32)m_cfg.getInt(GC_DOMAIN, "game_language", 0), ARRAY_SIZE(CMenu::_GlobalGClanguages) - 1u) : GClanguage-1;
-
+	if(id[3] == 'E' || id[3] == 'J')
+		GClanguage = 1; //=english
 	u8 videoMode = min((u32)m_gcfg2.getInt(id, "dml_video_mode", 0), ARRAY_SIZE(CMenu::_DMLvideoModes) - 1u);
 	videoMode = (videoMode == 0) ? min((u32)m_cfg.getInt(GC_DOMAIN, "video_mode", 0), ARRAY_SIZE(CMenu::_GlobalDMLvideoModes) - 1u) : videoMode-1;
 	if(disc || videoMode == 0)
@@ -1029,7 +1030,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	else if(loader == 1)
 		DEVO_GetLoader(m_dataDir.c_str());
 	else if(loader == 2)
-		Nintendont_SetOptions(path, NMM, videoSetting, widescreen);
+		Nintendont_SetOptions(path, id, NMM, videoSetting, widescreen);
 
 	m_gcfg1.save(true);
 	m_gcfg2.save(true);
@@ -1038,7 +1039,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	cleanup();
 
 	GC_SetVideoMode(videoMode, (disc ? 1 : videoSetting), loader);
-	GC_SetLanguage(GClanguage);
+	GC_SetLanguage(GClanguage, loader);
 	/* NTSC-J Patch by FIX94 */
 	if(id[3] == 'J')
 		*HW_PPCSPEED = 0x0002A9E0;

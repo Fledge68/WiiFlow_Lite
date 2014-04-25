@@ -150,15 +150,24 @@ void DML_New_WriteOptions()
 
 // Nintendont
 NIN_CFG NinCfg;
-
-void Nintendont_SetOptions(const char *game, u8 NMM, u8 videoSetting, bool widescreen)
+u8 NinDevice;
+void Nintendont_SetOptions(const char *game, const char *gameID, u8 NMM, u8 videoSetting, bool widescreen)
 {
+	NinDevice = DeviceHandle.PathToDriveType(game);
 	memset(&NinCfg, 0, sizeof(NIN_CFG));
 	NinCfg.Magicbytes = 0x01070CF6;
-	NinCfg.Version = 0x00000001;
-	NinCfg.Config |= NIN_CFG_AUTO_BOOT;
-	NinCfg.Config |= NIN_CFG_GAME_PATH; /* temporary */
+	NinCfg.Version = NIN_CFG_VERSION;
+	NinCfg.MaxPads = NIN_CFG_MAXPAD;
 
+	NinCfg.Config |= NIN_CFG_AUTO_BOOT;
+	if(NinDevice != SD)
+		NinCfg.Config |= NIN_CFG_USB;
+
+	if(IsOnWiiU() == true)
+	{
+		NinCfg.Config |= NIN_CFG_MEMCARDEMU;
+		NinCfg.Config |= NIN_CFG_HID;
+	}
 	if(videoSetting == 0)
 		NinCfg.VideoMode |= NIN_VID_NONE;
 	else if(videoSetting == 1)
@@ -171,19 +180,30 @@ void Nintendont_SetOptions(const char *game, u8 NMM, u8 videoSetting, bool wides
 	if(NMM > 0)
 		NinCfg.Config |= NIN_CFG_MEMCARDEMU;
 
-	strncpy(NinCfg.GamePath, strchr(game, '/') + 1, 254);
+	strncpy(NinCfg.GamePath, strchr(game, '/'), 254);
 	if(strstr(NinCfg.GamePath, "boot.bin") != NULL)
 	{
 		*strrchr(NinCfg.GamePath, '/') = '\0'; //boot.bin
 		*(strrchr(NinCfg.GamePath, '/')+1) = '\0'; //sys
 	}
-	gprintf("Nintendont Game Path: %s\n", NinCfg.GamePath);
+	memcpy(&NinCfg.GameID, gameID, 4);
+	gprintf("Nintendont Game Path: %s, ID: %08x\n", NinCfg.GamePath, NinCfg.GameID);
 }
 
 void Nintendont_WriteOptions()
 {
-	gprintf("Writing Nintendont CFG: %s\n", NIN_CFG_PATH);
-	fsop_WriteFile(NIN_CFG_PATH, &NinCfg, sizeof(NIN_CFG));
+	/* general loader */
+	if(DeviceHandle.SD_Inserted())
+	{
+		gprintf("Writing Nintendont CFG: sd:/%s\n", NIN_CFG_PATH);
+		fsop_WriteFile(fmt("sd:/%s", NIN_CFG_PATH), &NinCfg, sizeof(NIN_CFG));
+	}
+	/* for kernel */
+	if(NinDevice != SD)
+	{
+		gprintf("Writing Nintendont USB Kernel CFG: %s:/%s\n", DeviceName[NinDevice], NIN_CFG_PATH);
+		fsop_WriteFile(fmt("%s:/%s", DeviceName[NinDevice], NIN_CFG_PATH), &NinCfg, sizeof(NIN_CFG));
+	}
 }
 
 bool Nintendont_GetLoader()
@@ -503,7 +523,7 @@ u8 get_wii_language()
 	}
 }
 
-void GC_SetLanguage(u8 lang)
+void GC_SetLanguage(u8 lang, u8 loader)
 {
 	if (lang == 0)
 		lang = get_wii_language();
@@ -513,7 +533,32 @@ void GC_SetLanguage(u8 lang)
 	syssram *sram;
 	sram = __SYS_LockSram();
 	sram->lang = lang;
-
 	__SYS_UnlockSram(1); // 1 -> write changes
 	while(!__SYS_SyncSram());
+
+	/* write language for nintendont */
+	if(loader == 2)
+	{
+		switch(lang)
+		{
+			case SRAM_GERMAN:
+				NinCfg.Language = NIN_LAN_GERMAN;
+				break;
+			case SRAM_FRENCH:
+				NinCfg.Language = NIN_LAN_FRENCH;
+				break;
+			case SRAM_SPANISH:
+				NinCfg.Language = NIN_LAN_SPANISH;
+				break;
+			case SRAM_ITALIAN:
+				NinCfg.Language = NIN_LAN_ITALIAN;
+				break;
+			case SRAM_DUTCH:
+				NinCfg.Language = NIN_LAN_DUTCH;
+				break;
+			default:
+				NinCfg.Language = NIN_LAN_ENGLISH;
+				break;
+		}
+	}
 }
