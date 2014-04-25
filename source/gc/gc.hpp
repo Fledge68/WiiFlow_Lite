@@ -75,11 +75,11 @@ void DML_New_WriteOptions();
 
 // Nintendont
 #include "nin_cfg.h"
-#define NIN_CFG_PATH "sd:/nincfg.bin"
+#define NIN_CFG_PATH "nincfg.bin"
 #define NIN_LOADER_PATH "%s:/apps/Nintendont/boot.dol"
 
 bool Nintendont_GetLoader();
-void Nintendont_SetOptions(const char *game,  u8 NMM, u8 videoSetting, bool widescreen);
+void Nintendont_SetOptions(const char *game, const char *gameID, u8 NMM, u8 videoSetting, bool widescreen);
 void Nintendont_WriteOptions();
 
 // Devolution
@@ -114,6 +114,6 @@ void DEVO_Boot();
 
 // General
 void GC_SetVideoMode(u8 videomode, u8 videoSetting, u8 loader);
-void GC_SetLanguage(u8 lang);
+void GC_SetLanguage(u8 lang, u8 loader);
 
 #endif //_GC_HPP_
