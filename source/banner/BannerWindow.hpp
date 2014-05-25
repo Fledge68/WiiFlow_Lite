@@ -51,7 +51,7 @@ public:
 	void LoadBannerBin(u8 *bnr, u32 bnr_size, u8 *font1, u8 *font2);
 	int GetSelectedGame() { return gameSelected; }
 	bool GetZoomSetting() { return AnimZoom; }
-	bool GetInGameSettings() { return (Brightness > 1.f ? true : false); }
+	bool GetInGameSettings() { return (Brightness == 200 ? true : false); }
 	void CreateGCBanner(u8 *bnr, u8 *font1, u8 *font2, const wchar_t *title);
 	void Draw(void);
 	bool ToogleZoom(void);
@@ -73,7 +73,7 @@ protected:
 	bool reducedVol;
 	int returnVal;
 	int gameSelected;
-	float Brightness;
+	u8 Brightness;
 	int MaxAnimSteps;
 
 	int AnimStep;

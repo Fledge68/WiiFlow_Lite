@@ -45,7 +45,7 @@ void add_game_to_card(const char *gameid)
 	int i;
 
 	char *url = (char *)MEM2_alloc(MAX_URL_SIZE); // Too much memory, but only like 10 bytes
-	memset(url, 0, sizeof(url));
+	memset(url, 0, MAX_URL_SIZE);
 
 	for(i = 0; i < amount_of_providers && providers != NULL; i++)
 	{

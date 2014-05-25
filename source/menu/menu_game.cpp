@@ -398,10 +398,18 @@ bool CMenu::_startVideo()
 	}
 	const char *videoPath = getVideoPath(m_videoDir, videoId);
 	const char *THP_Path = fmt("%s.thp", videoPath);
-	if(!fsop_FileExist(THP_Path) && m_current_view == COVERFLOW_PLUGIN)
+	if(!fsop_FileExist(THP_Path))
 	{
-		videoPath = getVideoDefaultPath(m_videoDir);
-		THP_Path = fmt("%s.thp", videoPath);
+		if(m_current_view == COVERFLOW_PLUGIN)
+		{
+			videoPath = getVideoDefaultPath(m_videoDir);
+			THP_Path = fmt("%s.thp", videoPath);
+		}
+		else if(!NoGameID(CoverFlow.getHdr()->type))
+		{
+			videoPath = getVideoPath(m_videoDir, CoverFlow.getId());
+			THP_Path = fmt("%s.thp", videoPath);
+		}
 	}
 	if(fsop_FileExist(THP_Path))
 	{

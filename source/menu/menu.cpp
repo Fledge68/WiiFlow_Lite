@@ -303,7 +303,7 @@ void CMenu::init()
 	m_helpDir = m_cfg.getString("GENERAL", "dir_help", fmt("%s/help", m_dataDir.c_str()));
 
 	/* Cache Reload Checks */
-	u32 ini_rev = m_cfg.getInt("GENERAL", "ini_rev", 0);
+	int ini_rev = m_cfg.getInt("GENERAL", "ini_rev", 0);
 	if(ini_rev != SVN_REV_NUM)
 		fsop_deleteFolder(m_listCacheDir.c_str());
 	m_cfg.setInt("GENERAL", "ini_rev", SVN_REV_NUM);

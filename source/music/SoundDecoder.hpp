@@ -50,7 +50,7 @@ public:
 	SoundDecoder();
 	SoundDecoder(const char * filepath);
 	SoundDecoder(const u8 * buffer, int size);
-	~SoundDecoder();
+	virtual ~SoundDecoder();
 	virtual int Read(u8 * buffer, int buffer_size, int pos);
 	virtual int Tell() { return CurPos; };
 	virtual int Seek(int pos) { CurPos = pos; return file_fd->seek(CurPos, SEEK_SET); };
