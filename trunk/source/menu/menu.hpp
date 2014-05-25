@@ -1192,7 +1192,7 @@ private:
 	static int _version[9];
 	static const SCFParamDesc _cfParams[];
 	static const int _nbCfgPages;
-	static const u32 SVN_REV_NUM;
+	static const int SVN_REV_NUM;
 	//thread stack
 	static u8 downloadStack[8192];
 	static const u32 downloadStackSize;

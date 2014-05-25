@@ -105,13 +105,13 @@ ftgxCharData *FreeTypeGX::cacheGlyphData(wchar_t charCode)
 
 			this->fontData[charCode] = (ftgxCharData)
 			{
-				this->ftSlot->advance.x >> 6,
-				gIndex,
+				(u16)(this->ftSlot->advance.x >> 6),
+				(u16)(gIndex),
 				textureWidth,
 				textureHeight,
-				this->ftSlot->bitmap_top,
-				this->ftSlot->bitmap_top,
-				textureHeight - this->ftSlot->bitmap_top,
+				(u16)(this->ftSlot->bitmap_top),
+				(u16)(this->ftSlot->bitmap_top),
+				(u16)(textureHeight - this->ftSlot->bitmap_top),
 				NULL
 			};
 			this->loadGlyphData(glyphBitmap, &this->fontData[charCode]);
@@ -144,7 +144,7 @@ void FreeTypeGX::loadGlyphData(FT_Bitmap *bmp, ftgxCharData *charData)
     int glyphSize = (charData->textureWidth * charData->textureHeight) >> 1;
 
     uint8_t *glyphData = (uint8_t *) MEM2_alloc(glyphSize);
-	if(glyphData < 0)
+	if(glyphData == NULL)
 		return;
     memset(glyphData, 0x00, glyphSize);
 

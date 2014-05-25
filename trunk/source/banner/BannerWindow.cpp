@@ -43,7 +43,7 @@ void BannerWindow::Init(u8 *font1, u8 *font2)
 	AnimPosX = 0.5f * (ScreenProps.x - fIconWidth);
 	AnimPosY = 0.5f * (ScreenProps.y - fIconHeight);
 	AnimationRunning = false;
-	Brightness = 0.f;
+	Brightness = 0;
 
 	// this just looks better for banner/icon ratio
 	xDiff = 0.5f * (m_vid.wide() ? (m_vid.vid_50hz() ? 616 : 620.0f) : 608.0f);
@@ -161,7 +161,7 @@ void BannerWindow::Draw(void)
 
 	// draw a black background image first
 	if(AnimStep >= MaxAnimSteps)
-		DrawRectangle(0.0f, 0.0f, m_vid.width(), m_vid.height(), (GXColor) {0, 0, 0, 255.f});
+		DrawRectangle(0.0f, 0.0f, m_vid.width(), m_vid.height(), (GXColor) {0, 0, 0, 0xFF});
 
 	if(changing)
 		return;
@@ -216,14 +216,14 @@ void BannerWindow::Draw(void)
 	m_vid.setup2DProjection();
 
 	// If wanted
-	if(Brightness > 1.f)
+	if(Brightness == 200)
 		DrawRectangle(0.0f, 0.0f, m_vid.width(), m_vid.height(), (GXColor) {0, 0, 0, Brightness});
 }
 
 void BannerWindow::ToogleGameSettings()
 {
 	ToogleZoom();
-	Brightness = (Brightness > 1.f ? 0.f : 200.f);
+	Brightness = (Brightness == 200 ? 0 : 200);
 }
 
 void BannerWindow::ReSetup_GX(void)
