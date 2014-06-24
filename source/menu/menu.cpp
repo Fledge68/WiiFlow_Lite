@@ -371,6 +371,7 @@ void CMenu::init()
 	m_plugin.init(m_pluginsDir);
 
 	m_devo_installed = DEVO_Installed(m_dataDir.c_str());
+	m_nintendont_installed = Nintendont_Installed();
 	const char *defLang = "Default";
 	switch (CONF_GetLanguage())
 	{

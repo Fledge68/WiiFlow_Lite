@@ -199,6 +199,7 @@ private:
 	bool m_show_dml;
 	bool m_sd_dm;
 	bool m_devo_installed;
+	bool m_nintendont_installed;
 	bool m_new_dml;
 	bool m_new_dm_cfg;
 	bool m_GameTDBLoaded;

@@ -11,7 +11,7 @@
 #include "sync.h"
 
 #define EXECUTABLE_MEM_ADDR		0x92000000
-#define SYSTEM_ARGV				((struct __argv *)0x90100000)
+#define SYSTEM_ARGV				((struct __argv *)0x93300800)
 
 void _main(void)
 {

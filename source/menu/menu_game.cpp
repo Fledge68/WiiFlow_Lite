@@ -923,7 +923,11 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	bool widescreen = m_gcfg2.getBool(id, "dm_widescreen", false);
 	bool activity_led = m_gcfg2.getBool(id, "led", false);
 
-	u8 NMM = min((u32)m_gcfg2.getInt(id, "dml_nmm", 0), ARRAY_SIZE(CMenu::_NMM) - 1u);
+	if(loader == 2 && m_nintendont_installed == false)
+		loader = 0;
+
+	//always enable for nintendont
+	u8 NMM = (loader == 2) ? 2 : min((u32)m_gcfg2.getInt(id, "dml_nmm", 0), ARRAY_SIZE(CMenu::_NMM) - 1u);
 	NMM = (NMM == 0) ? m_cfg.getInt(GC_DOMAIN, "dml_nmm", 0) : NMM-1;
 
 	//if GC disc use DIOS MIOS to launch it
@@ -935,30 +939,40 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	else
 		m_cfg.setString(GC_DOMAIN, "current_item", id);
 
-	const char *mios_wad = NULL;
 
 	if(loader == 0) //auto selected
 	{
-		gprintf("Auto installing MIOS\n");
-		_showWaitMessage();
-		if(_QF_Game(id) == true)
+		if(IsOnWiiU())
 		{
-			if(currentPartition == SD && (m_mios_ver != 2 || m_sd_dm == false))
-				mios_wad = fmt("%s/qfsd.wad", m_miosDir.c_str());
-			else if(currentPartition != SD && (m_mios_ver != 2 || m_sd_dm == true))
-				mios_wad = fmt("%s/qfusb.wad", m_miosDir.c_str());
+			if(m_nintendont_installed)
+				loader = 2;
+			else if(m_devo_installed)
+				loader = 1;
 		}
-		else if(disc == false)
+		else
 		{
-			if(currentPartition == SD && (m_mios_ver != 1 || m_sd_dm == false))
-				mios_wad = fmt("%s/dml.wad", m_miosDir.c_str());
-			else if(currentPartition != SD && (m_mios_ver != 1 || m_sd_dm == true))
-				mios_wad = fmt("%s/dm.wad", m_miosDir.c_str());
+			gprintf("Auto installing MIOS\n");
+			const char *mios_wad = NULL;
+			_showWaitMessage();
+			if(_QF_Game(id) == true)
+			{
+				if(currentPartition == SD && (m_mios_ver != 2 || m_sd_dm == false))
+					mios_wad = fmt("%s/qfsd.wad", m_miosDir.c_str());
+				else if(currentPartition != SD && (m_mios_ver != 2 || m_sd_dm == true))
+					mios_wad = fmt("%s/qfusb.wad", m_miosDir.c_str());
+			}
+			else if(disc == false)
+			{
+				if(currentPartition == SD && (m_mios_ver != 1 || m_sd_dm == false))
+					mios_wad = fmt("%s/dml.wad", m_miosDir.c_str());
+				else if(currentPartition != SD && (m_mios_ver != 1 || m_sd_dm == true))
+					mios_wad = fmt("%s/dm.wad", m_miosDir.c_str());
+			}
+			else if(m_mios_ver != 0)
+				mios_wad = fmt("%s/mios.wad", m_miosDir.c_str());
+			if(mios_wad != NULL && fsop_FileExist(mios_wad))
+				_Wad(mios_wad, true);//install mios
 		}
-		else if(m_mios_ver != 0)
-			mios_wad = fmt("%s/mios.wad", m_miosDir.c_str());
-		if(mios_wad != NULL && fsop_FileExist(mios_wad))
-			_Wad(mios_wad, true);//install mios
 	}
 	//copy DML game from USB to SD if needed for DML
 	if(disc == false && loader == 0 && currentPartition != SD && m_sd_dm == true && strcasestr(hdr->path, ".iso") == NULL)
@@ -1072,8 +1086,8 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	}
 	else
 	{
-		Nintendont_WriteOptions();
 		bool ret = (Nintendont_GetLoader() && LoadAppBooter(fmt("%s/app_booter.bin", m_binsDir.c_str())));
+		Nintendont_WriteOptions();
 		ShutdownBeforeExit();
 		if(ret == true)
 		{
