@@ -150,7 +150,8 @@ void DML_New_WriteOptions()
 
 // Nintendont
 NIN_CFG NinCfg;
-u8 NinDevice;
+u8 NinDevice = 0;
+bool NinArgsboot = false;
 void Nintendont_SetOptions(const char *game, const char *gameID, u8 NMM, u8 videoSetting, bool widescreen)
 {
 	NinDevice = DeviceHandle.PathToDriveType(game);
@@ -192,6 +193,12 @@ void Nintendont_SetOptions(const char *game, const char *gameID, u8 NMM, u8 vide
 
 void Nintendont_WriteOptions()
 {
+	/* Newer Nintendont versions */
+	if(NinArgsboot == true)
+	{
+		AddBootArgument((char*)&NinCfg, sizeof(NIN_CFG));
+		return;
+	}
 	/* general loader */
 	if(DeviceHandle.SD_Inserted())
 	{
@@ -206,6 +213,19 @@ void Nintendont_WriteOptions()
 	}
 }
 
+bool Nintendont_Installed()
+{
+	for(u8 i = SD; i < MAXDEVICES; ++i)
+	{
+		const char *dol_path = fmt(NIN_LOADER_PATH, DeviceName[i]);
+		if(fsop_FileExist(dol_path) == true)
+		{
+			gprintf("Nintendont found\n");
+			return true;
+		}
+	}
+	return false;
+}
 bool Nintendont_GetLoader()
 {
 	bool ret = false;
@@ -217,6 +237,18 @@ bool Nintendont_GetLoader()
 		{
 			gprintf("Nintendont loaded: %s\n", dol_path);
 			AddBootArgument(dol_path);
+			//search for argsboot
+			u32 size;
+			const char *dol_ptr = GetHomebrew(&size);
+			for(u32 i = 0; i < size; i += 0x10)
+			{
+				if(strncmp(dol_ptr + i, "argsboot", 8) == 0)
+				{
+					gprintf("Nintendont argsboot found at %08x\n", i);
+					NinArgsboot = true;
+					break;
+				}
+			}
 			break;
 		}
 	}

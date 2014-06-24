@@ -78,6 +78,7 @@ void DML_New_WriteOptions();
 #define NIN_CFG_PATH "nincfg.bin"
 #define NIN_LOADER_PATH "%s:/apps/Nintendont/boot.dol"
 
+bool Nintendont_Installed();
 bool Nintendont_GetLoader();
 void Nintendont_SetOptions(const char *game, const char *gameID, u8 NMM, u8 videoSetting, bool widescreen);
 void Nintendont_WriteOptions();

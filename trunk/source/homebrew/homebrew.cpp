@@ -16,8 +16,11 @@ static u8 *EXECUTE_ADDR = (u8*)0x92000000;
 static u8 *BOOTER_ADDR = (u8*)0x93300000;
 static entry BOOTER_ENTRY = (entry)BOOTER_ADDR;
 
-static __argv *ARGS_ADDR = (__argv*)0x90100000;
+static __argv *ARGS_ADDR = (__argv*)0x93300800; //more than twice as much as the appbooter, just for safety
 static char *CMD_ADDR = (char*)ARGS_ADDR + sizeof(struct __argv);
+
+char *homebrew_ptr = NULL;
+u32 homebrew_size = 0;
 
 u8 *appbooter_ptr = NULL;
 u32 appbooter_size = 0;
@@ -43,9 +46,15 @@ static bool IsSpecialELF(u8 *buf)
 	return memcmp(buf, cmp1, sizeof(cmp1)) == 0 && memcmp(&buf[0x24], cmp2, sizeof(cmp2)) == 0;
 }
 
-void AddBootArgument(const char * argv)
+void AddBootArgument(const char *argv)
 {
 	string arg(argv);
+	Arguments.push_back(arg);
+}
+
+void AddBootArgument(const char *argv, unsigned int size)
+{
+	string arg(argv, size);
 	Arguments.push_back(arg);
 }
 
@@ -80,8 +89,16 @@ bool LoadHomebrew(const char *filepath)
 	{
 		fsop_ReadFileLoc(filepath, filesize, EXECUTE_ADDR);
 		DCFlushRange(EXECUTE_ADDR, filesize);
+		homebrew_ptr = (char*)EXECUTE_ADDR;
+		homebrew_size = filesize;
 	}
 	return true;
+}
+
+char *GetHomebrew(unsigned int *size)
+{
+	*size = homebrew_size;
+	return homebrew_ptr;
 }
 
 static int SetupARGV()
@@ -103,7 +120,7 @@ static int SetupARGV()
 	args->commandLine = CMD_ADDR;
 	for(int i = 0; i < args->argc; i++)
 	{
-		strcpy(&args->commandLine[position], Arguments[i].c_str());
+		memcpy(&args->commandLine[position], Arguments[i].c_str(), Arguments[i].size() + 1);
 		position += Arguments[i].size() + 1;
 	}
 	args->commandLine[args->length - 1] = '\0';

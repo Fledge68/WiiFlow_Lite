@@ -194,7 +194,7 @@ void CMenu::_createSFList()
 		string source = m_source.getString(btn_selected, "source","");
 		if(source == "")
 			continue;
-		if(source == "dml" && !m_show_dml && !m_devo_installed)
+		if(source == "dml" && !m_show_dml && !m_devo_installed && !m_nintendont_installed)
 			continue;
 		else if(source == "emunand" && !show_channel)
 			continue;
@@ -529,7 +529,7 @@ bool CMenu::_Source()
 			}
 			if(m_btnMgr.selected(m_sourceBtnDML))
 			{
-				if(!m_show_dml && !m_devo_installed)
+				if(!m_show_dml && !m_devo_installed && !m_nintendont_installed)
 					_showSourceNotice();
 				else
 				{
@@ -595,7 +595,7 @@ bool CMenu::_Source()
 						}
 						else if(source == "dml")
 						{
-							if(!m_show_dml && !m_devo_installed)
+							if(!m_show_dml && !m_devo_installed && !m_nintendont_installed)
 								_showSourceNotice();
 							else
 							{
@@ -736,7 +736,7 @@ bool CMenu::_Source()
 						}
 						else if(source == "dml")
 						{
-							if(m_show_dml || m_devo_installed)
+							if(m_show_dml || m_devo_installed || m_nintendont_installed)
 								m_cfg.setBool(GC_DOMAIN, "source", !m_cfg.getBool(GC_DOMAIN, "source"));
 						}
 						else if(source == "emunand")
