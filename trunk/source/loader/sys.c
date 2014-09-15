@@ -16,6 +16,7 @@
 #include "memory/mem2.hpp"
 #include "memory/memory.h"
 #include "wiiuse/wpad.h"
+#include "wupc/wupc.h"
 
 /* Variables */
 bool reset = false;
@@ -33,6 +34,7 @@ void Open_Inputs(void)
 {
 	/* Initialize Wiimote subsystem */
 	PAD_Init();
+	WUPC_Init();
 	WPAD_Init();
 
 	/* Set POWER button callback */
@@ -43,6 +45,8 @@ void Open_Inputs(void)
 
 void Close_Inputs(void)
 {
+	WUPC_Shutdown();
+
 	u32 cnt;
 
 	/* Disconnect Wiimotes */

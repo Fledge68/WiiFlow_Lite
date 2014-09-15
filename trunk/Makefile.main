@@ -57,7 +57,7 @@ ios			:=	249
 #---------------------------------------------------------------------------------
 CFLAGS		=	-g -ggdb -Os -Wall -Wextra $(MACHDEP) $(INCLUDE) -DHAVE_CONFIG_H
 CXXFLAGS	=	$(CFLAGS)
-LDFLAGS		=	-g -ggdb $(MACHDEP) -Wl,-Map,$(notdir $@).map,--section-start,.init=0x80620000,-wrap,malloc,-wrap,free,-wrap,memalign,-wrap,calloc,-wrap,realloc,-wrap,malloc_usable_size
+LDFLAGS		=	-g -ggdb $(MACHDEP) -Wl,-Map,$(notdir $@).map,--section-start,.init=0x80620000,-wrap,malloc,-wrap,free,-wrap,memalign,-wrap,calloc,-wrap,realloc,-wrap,malloc_usable_size,-wrap,wiiuse_register
 
 ifeq ($(BUILDMODE),channel)
 CFLAGS += -DFULLCHANNEL
@@ -67,7 +67,7 @@ endif
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:=	-lcustomfat -lcustomntfs -lcustomext2fs -lpng -lturbojpeg -lm -lz -lwiiuse -lbte -lasnd -logc -lfreetype -lvorbisidec -lmad
+LIBS	:=	-lcustomfat -lcustomntfs -lcustomext2fs -lpng -lturbojpeg -lm -lz -lwiiuse -lwupc -lbte -lasnd -logc -lfreetype -lvorbisidec -lmad
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
