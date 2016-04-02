@@ -762,7 +762,7 @@ void CMenu::directlaunch(const char *GameID)
 		DeviceHandle.OpenWBFS(currentPartition);
 		string gameDir(fmt(wii_games_dir, DeviceName[currentPartition]));
 		string cacheDir(fmt("%s/%s_wii.db", m_listCacheDir.c_str(), DeviceName[currentPartition]));
-		m_gameList.CreateList(COVERFLOW_USB, currentPartition, gameDir,
+		m_gameList.CreateList(COVERFLOW_WII, currentPartition, gameDir,
 				stringToVector(".wbfs|.iso", '|'), cacheDir, false);
 		WBFS_Close();
 		for(u32 i = 0; i < m_gameList.size(); i++)
@@ -824,7 +824,9 @@ void CMenu::_launch(const dir_discHdr *hdr)
 		}
 		m_cfg.setString(PLUGIN_DOMAIN, "current_item", title);
 		const char *mios_wad = NULL;
-		if(m_cfg.getBool("PLUGIN", "444d4c62", false))
+		//if(m_cfg.getBool("PLUGIN_STATE", "444d4c62", false))
+		u32 magic = strtoul("444d4c62", NULL, 16);
+		if(m_plugin.GetEnableStatus(m_cfg, magic))
 		{
 			if(currentPartition == SD && (m_mios_ver != 2 || m_sd_dm == false))
 				mios_wad = fmt("%s/qfsd.wad", m_miosDir.c_str());
@@ -981,7 +983,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		ListGenerator SD_List;
 		string gameDir(fmt(DML_DIR, DeviceName[SD]));
 		string cacheDir(fmt("%s/%s_gamecube.db", m_listCacheDir.c_str(), DeviceName[SD]));
-		SD_List.CreateList(COVERFLOW_DML, SD, gameDir,
+		SD_List.CreateList(COVERFLOW_GAMECUBE, SD, gameDir,
 				stringToVector(".iso|root", '|'), cacheDir, false);
 		for(vector<dir_discHdr>::iterator List = SD_List.begin(); List != SD_List.end(); List++)
 		{
@@ -1452,7 +1454,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	}
 	else if(emulate_mode == 1)
 		emulate_mode = 0;
-	m_current_view = COVERFLOW_USB; // used for _FindEmuPart()
+	m_current_view = COVERFLOW_WII; // used for _FindEmuPart()
 	if(emulate_mode && !dvd && !neek2o())
 	{
 		emuPartition = _FindEmuPart(emuPath, false);
@@ -1476,8 +1478,8 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			else
 			{
 				emuPartition = _FindEmuPart(emuPath, true);
-				NandHandle.CreatePath("%s:/wiiflow", DeviceName[emuPartition]);
-				NandHandle.CreatePath("%s:/wiiflow/nandemu", DeviceName[emuPartition]);
+				NandHandle.CreatePath(fmt("%s:/%s", DeviceName[emuPartition], APPDATA_DIR));
+				NandHandle.CreatePath(fmt("%s:/%s/nandemu", DeviceName[emuPartition], APPDATA_DIR));
 			}
 		}
 		/* Set them */
