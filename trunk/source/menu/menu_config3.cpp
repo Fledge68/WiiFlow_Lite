@@ -94,8 +94,8 @@ void CMenu::_showConfig3(void)
 	}
 	else
 	{
-		i = min(max(0, m_cfg.getInt(GC_DOMAIN, "video_mode", 0)), (int)ARRAY_SIZE(CMenu::_GlobalDMLvideoModes) - 1);
-		m_btnMgr.setText(m_config3LblDMLVideo, _t(CMenu::_GlobalDMLvideoModes[i].id, CMenu::_GlobalDMLvideoModes[i].text));
+		i = min(max(0, m_cfg.getInt(GC_DOMAIN, "video_mode", 0)), (int)ARRAY_SIZE(CMenu::_GlobalGCvideoModes) - 1);
+		m_btnMgr.setText(m_config3LblDMLVideo, _t(CMenu::_GlobalGCvideoModes[i].id, CMenu::_GlobalGCvideoModes[i].text));
 		
 		i = min(max(0, m_cfg.getInt(GC_DOMAIN, "game_language", 0)), (int)ARRAY_SIZE(CMenu::_GlobalGClanguages) - 1);
 		m_btnMgr.setText(m_config3LblDMLLanguage, _t(CMenu::_GlobalGClanguages[i].id, CMenu::_GlobalGClanguages[i].text));
@@ -139,7 +139,7 @@ int CMenu::_config3(void)
 			else if (m_btnMgr.selected(m_config3BtnDMLVideoP) || m_btnMgr.selected(m_config3BtnDMLVideoM))
 			{
 				s8 direction = m_btnMgr.selected(m_config3BtnDMLVideoP) ? 1 : -1;
-				m_cfg.setInt(GC_DOMAIN, "video_mode", (int)loopNum((u32)m_cfg.getInt(GC_DOMAIN, "video_mode", 0) + direction, ARRAY_SIZE(CMenu::_GlobalDMLvideoModes)));
+				m_cfg.setInt(GC_DOMAIN, "video_mode", (int)loopNum((u32)m_cfg.getInt(GC_DOMAIN, "video_mode", 0) + direction, ARRAY_SIZE(CMenu::_GlobalGCvideoModes)));
 				_showConfig3();
 			}
 			else if (m_btnMgr.selected(m_config3BtnDMLLoaderP) || m_btnMgr.selected(m_config3BtnDMLLoaderM))

@@ -7,6 +7,12 @@ extern "C" {
 #endif
 
 enum {
+	AUTOMIOS = 0,
+	DEVOLUTION,
+	NINTENDONT
+};
+
+enum {
 	COVERFLOW_WII = 0,
 	COVERFLOW_GAMECUBE,
 	COVERFLOW_CHANNEL,
@@ -19,7 +25,7 @@ enum
 {
 	TYPE_WII_DISC = 0,
 	TYPE_WII_WBFS,
-	TYPE_WII_WBFS_EXT,
+	TYPE_WII_WBFS_EXT
 };
 
 enum

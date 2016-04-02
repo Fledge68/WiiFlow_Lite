@@ -79,7 +79,7 @@ const CMenu::SOption CMenu::_VideoModes[7] = {
 	{ "vidprog", L"Progressive" },
 };
 
-const CMenu::SOption CMenu::_GlobalDMLvideoModes[8] = {
+const CMenu::SOption CMenu::_GlobalGCvideoModes[8] = {
 	{ "DMLdefG", L"Game" },
 	{ "DMLpal", L"PAL 576i" },
 	{ "DMLntsc", L"NTSC 480i" },
@@ -90,7 +90,7 @@ const CMenu::SOption CMenu::_GlobalDMLvideoModes[8] = {
 	{ "DMLmpalP", L"MPAL-P" }
 };
 
-const CMenu::SOption CMenu::_DMLvideoModes[9] = {
+const CMenu::SOption CMenu::_GCvideoModes[9] = {
 	{ "DMLdef", L"Default" },
 	{ "DMLdefG", L"Game" },
 	{ "DMLpal", L"PAL 576i" },
@@ -149,7 +149,14 @@ const CMenu::SOption CMenu::_AspectRatio[3] = {
 	{ "aspect169", L"Force 16:9" },
 };
 
-const CMenu::SOption CMenu::_NMM[5] = {
+const CMenu::SOption CMenu::_NMM[4] = {
+	{ "NMMDef", L"Default" },
+	{ "NMMOff", L"Disabled" },
+	{ "NMMon", L"Enabled" },
+	{ "NMMdebug", L"Debug" },
+};
+
+const CMenu::SOption CMenu::_NinEmuCard[5] = {
 	{ "NMMDef", L"Default" },
 	{ "NMMOff", L"Disabled" },
 	{ "NMMon", L"Enabled" },
@@ -608,7 +615,7 @@ void CMenu::_game(bool launch)
 							char PluginMagicWord[9];
 							memset(PluginMagicWord, 0, sizeof(PluginMagicWord));
 							strncpy(PluginMagicWord, fmt("%08x", hdr->settings[0]), 8);
-							currentPartition = m_cfg.getInt("PLUGINS/PARTITION", PluginMagicWord, 1);
+							currentPartition = m_cfg.getInt("PLUGINS_PARTITION", PluginMagicWord, 1);
 							m_cfg.setInt(PLUGIN_DOMAIN, "partition", currentPartition);
 						}
 						currentPartition = m_cfg.getInt(PLUGIN_DOMAIN, "partition", 1);
@@ -797,34 +804,41 @@ void CMenu::_launch(const dir_discHdr *hdr)
 		_launchChannel(&launchHdr);
 	else if(launchHdr.type == TYPE_PLUGIN)
 	{
+		//get dol name and length
 		const char *plugin_dol_name = m_plugin.GetDolName(launchHdr.settings[0]);
 		u8 plugin_dol_len = strlen(plugin_dol_name);
+		//get title and path from hdr
 		char title[101];
 		memset(&title, 0, sizeof(title));
 		u32 title_len_no_ext = 0;
 		const char *path = NULL;
-		if(strchr(launchHdr.path, ':') != NULL)
+		//example rom path - sd:/roms/super mario bros.zip
+		//example scummvm path - games/monkey island.exe
+		if(strchr(launchHdr.path, ':') != NULL)//it's a rom path
 		{
+			//check if music player plugin, if so launch wiiflow's music player
 			if(plugin_dol_len == strlen(MUSIC_DOMAIN) && strcmp(plugin_dol_name, MUSIC_DOMAIN) == 0)
 			{
 				MusicPlayer.LoadFile(launchHdr.path, false);
 				m_exit = false;
 				return;
 			}
+			//get rom title after last '/'
 			strncpy(title, strrchr(launchHdr.path, '/') + 1, 100);
-			if(strchr(launchHdr.path, '.') != NULL)
+			if(strchr(launchHdr.path, '.') != NULL) // if there's extension get length of title without extension
 				title_len_no_ext = strlen(title) - strlen(strrchr(title, '.'));
-			*strrchr(launchHdr.path, '/') = '\0';
-			path = strchr(launchHdr.path, '/') + 1;
+			//get path
+			*strrchr(launchHdr.path, '/') = '\0'; //cut title off end of path
+			path = strchr(launchHdr.path, '/') + 1; //cut sd:/ off of path
 		}
-		else
+		else //it's a scummvm game
 		{
 			path = launchHdr.path;
 			wcstombs(title, launchHdr.title, 63);
 		}
 		m_cfg.setString(PLUGIN_DOMAIN, "current_item", title);
+		// check if quadforce plugin if so then set proper quadforce mios
 		const char *mios_wad = NULL;
-		//if(m_cfg.getBool("PLUGIN_STATE", "444d4c62", false))
 		u32 magic = strtoul("444d4c62", NULL, 16);
 		if(m_plugin.GetEnableStatus(m_cfg, magic))
 		{
@@ -836,6 +850,10 @@ void CMenu::_launch(const dir_discHdr *hdr)
 				_Wad(mios_wad, true);//install mios
 		}
 		const char *device = (currentPartition == 0 ? "sd" : (DeviceHandle.GetFSType(currentPartition) == PART_FS_NTFS ? "ntfs" : "usb"));
+		/* this is weird - he sets the return to loader to be dev:/wiiflow/plugins/WiiFlowLoader.dol
+		but there is no such dol in the plugins directory and WiiFlowLoader.dol is really a hidden channel
+		on the system menu. This is set because some plugins require a arg for loader dol and even though
+		this isn't real it fills the argument needed. */
 		const char *loader = fmt("%s:/%s/WiiFlowLoader.dol", device, strchr(m_pluginsDir.c_str(), '/') + 1);
 
 		vector<string> arguments = m_plugin.CreateArgs(device, path, title, loader, title_len_no_ext, launchHdr.settings[0]);
@@ -864,11 +882,14 @@ void CMenu::_launch(const dir_discHdr *hdr)
 		{
 			m_cfg.setString(HOMEBREW_DOMAIN, "current_item", strrchr(launchHdr.path, '/') + 1);
 			_launchHomebrew(gamepath, m_homebrewArgs);
+			/*m_homebrewArgs is basically an empty vector string not needed for homebrew
+			but used by plugins when _launchHomebrew is called */
 		}
 	}
 	ShutdownBeforeExit();
 	Sys_Exit();
 }
+
 // taken from Postloader by Stfour
 #define QFIDN 9
 static const char qfid[QFIDN][7] = {
@@ -914,8 +935,8 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	GClanguage = (GClanguage == 0) ? min((u32)m_cfg.getInt(GC_DOMAIN, "game_language", 0), ARRAY_SIZE(CMenu::_GlobalGClanguages) - 1u) : GClanguage-1;
 	if(id[3] == 'E' || id[3] == 'J')
 		GClanguage = 1; //=english
-	u8 videoMode = min((u32)m_gcfg2.getInt(id, "dml_video_mode", 0), ARRAY_SIZE(CMenu::_DMLvideoModes) - 1u);
-	videoMode = (videoMode == 0) ? min((u32)m_cfg.getInt(GC_DOMAIN, "video_mode", 0), ARRAY_SIZE(CMenu::_GlobalDMLvideoModes) - 1u) : videoMode-1;
+	u8 videoMode = min((u32)m_gcfg2.getInt(id, "dml_video_mode", 0), ARRAY_SIZE(CMenu::_GCvideoModes) - 1u);
+	videoMode = (videoMode == 0) ? min((u32)m_cfg.getInt(GC_DOMAIN, "video_mode", 0), ARRAY_SIZE(CMenu::_GlobalGCvideoModes) - 1u) : videoMode-1;
 	if(disc || videoMode == 0)
 	{
 		if(id[3] == 'E' || id[3] == 'J')
