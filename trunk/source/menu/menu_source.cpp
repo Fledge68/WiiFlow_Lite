@@ -113,7 +113,8 @@ void CMenu::_updateSourceBtns(void)
 		{
 			magicNums.clear();
 			magicNums = m_source.getStrings(fmt("BUTTON_%i", i), "magic", ',');
-			if(m_cfg.getBool(PLUGIN_DOMAIN, "source", false) && m_cfg.getBool("PLUGIN", magicNums.at(0), false))
+			u32 magic = strtoul(magicNums.at(0).c_str(), NULL, 16);
+			if(m_cfg.getBool(PLUGIN_DOMAIN, "source", false) && m_plugin.GetEnableStatus(m_cfg, magic))
 			{
 				sourceBtn = i;
 				selectedBtns++;
@@ -256,13 +257,13 @@ void CMenu::_sourceFlow()
 	_clearSources();
 	if(source == "wii")
 	{
-		m_current_view = COVERFLOW_USB;
+		m_current_view = COVERFLOW_WII;
 		m_cfg.setBool(WII_DOMAIN, "source", true);
 		m_catStartPage = m_source.getInt(btn_selected, "cat_page", 1);
 	}
 	else if(source == "dml")
 	{
-		m_current_view = COVERFLOW_DML;
+		m_current_view = COVERFLOW_GAMECUBE;
 		m_cfg.setBool(GC_DOMAIN, "source", true);
 		m_catStartPage = m_source.getInt(btn_selected, "cat_page", 1);
 	}
@@ -312,7 +313,7 @@ void CMenu::_sourceFlow()
 					m_plugin.SetEnablePlugin(m_cfg, exist, 2);
 					if(plugin_magic_nums == 1)
 					{
-						currentPartition = m_cfg.getInt("PLUGINS/PARTITION", itr->c_str(), 1);
+						currentPartition = m_cfg.getInt("PLUGINS_PARTITION", itr->c_str(), 1);
 						m_cfg.setInt(PLUGIN_DOMAIN, "partition", currentPartition);
 					}
 			}
@@ -476,7 +477,7 @@ bool CMenu::_Source()
 				char PluginMagicWord[9];
 				memset(PluginMagicWord, 0, sizeof(PluginMagicWord));
 				strncpy(PluginMagicWord, fmt("%08x", m_plugin.getPluginMagic(i)), 8);
-				currentPartition = m_cfg.getInt("PLUGINS/PARTITION", PluginMagicWord, 1); 		
+				currentPartition = m_cfg.getInt("PLUGINS_PARTITION", PluginMagicWord, 1); 		
 				m_cfg.setInt(PLUGIN_DOMAIN, "partition", currentPartition);
 			}
 			u8 sourceCount = 0;
@@ -669,7 +670,7 @@ bool CMenu::_Source()
 											m_plugin.SetEnablePlugin(m_cfg, exist, 2);
 											if(plugin_magic_nums == 1)
 											{
-												currentPartition = m_cfg.getInt("PLUGINS/PARTITION", itr->c_str(), 1);
+												currentPartition = m_cfg.getInt("PLUGINS_PARTITION", itr->c_str(), 1);
 												m_cfg.setInt(PLUGIN_DOMAIN, "partition", currentPartition);
 											}
 										}

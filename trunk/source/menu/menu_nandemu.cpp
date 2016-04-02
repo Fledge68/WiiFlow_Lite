@@ -112,7 +112,7 @@ int CMenu::_FindEmuPart(string &emuPath, bool skipchecks)
 			m_cfg.setString(CHANNEL_DOMAIN, "path", STDEMU_DIR);
 		}
 	}
-	else if(m_current_view == COVERFLOW_USB)
+	else if(m_current_view == COVERFLOW_WII)
 	{
 		emuPart = m_cfg.getInt(WII_DOMAIN, "savepartition", -1);
 		if(emuPart == -1)
@@ -241,7 +241,7 @@ void CMenu::_showNandEmu(void)
 	if(nandemuPage == 1)
 	{
 		int i;
-		if(((m_current_view == COVERFLOW_CHANNEL && !m_cfg.getBool(CHANNEL_DOMAIN, "disable", true)) || m_current_view == COVERFLOW_USB))
+		if(((m_current_view == COVERFLOW_CHANNEL && !m_cfg.getBool(CHANNEL_DOMAIN, "disable", true)) || m_current_view == COVERFLOW_WII))
 		{
 			m_btnMgr.show(m_nandemuLblEmulation);
 			m_btnMgr.show(m_nandemuLblEmulationVal);
@@ -249,7 +249,7 @@ void CMenu::_showNandEmu(void)
 			m_btnMgr.show(m_nandemuBtnEmulationM);
 		}
 	
-		if((m_current_view == COVERFLOW_CHANNEL || m_current_view == COVERFLOW_USB))
+		if((m_current_view == COVERFLOW_CHANNEL || m_current_view == COVERFLOW_WII))
 		{
 			m_btnMgr.show(m_nandemuLblSaveDump);
 			m_btnMgr.show(m_nandemuBtnAll);
@@ -261,7 +261,7 @@ void CMenu::_showNandEmu(void)
 				i = min(max(0, m_cfg.getInt(CHANNEL_DOMAIN, "emulation", 0)), (int)ARRAY_SIZE(CMenu::_NandEmu) - 1);
 				m_btnMgr.setText(m_nandemuLblEmulationVal, _t(CMenu::_NandEmu[i].id, CMenu::_NandEmu[i].text));
 			}
-			else if (m_current_view == COVERFLOW_USB)
+			else if (m_current_view == COVERFLOW_WII)
 			{
 				i = min(max(0, m_cfg.getInt(WII_DOMAIN, "save_emulation", 0)), (int)ARRAY_SIZE(CMenu::_GlobalSaveEmu) - 1);
 				m_btnMgr.setText(m_nandemuLblEmulationVal, _t(CMenu::_GlobalSaveEmu[i].id, CMenu::_GlobalSaveEmu[i].text));
@@ -375,7 +375,7 @@ int CMenu::_NandEmuCfg(void)
 			s8 direction = m_btnMgr.selected(m_nandemuBtnEmulationP) ? 1 : -1;
 			if(m_current_view == COVERFLOW_CHANNEL)
 				m_cfg.setInt(CHANNEL_DOMAIN, "emulation", (int)loopNum((u32)m_cfg.getInt(CHANNEL_DOMAIN, "emulation", 0) + direction, ARRAY_SIZE(CMenu::_NandEmu)));
-			else if(m_current_view == COVERFLOW_USB)
+			else if(m_current_view == COVERFLOW_WII)
 				m_cfg.setInt(WII_DOMAIN, "save_emulation", (int)loopNum((u32)m_cfg.getInt(WII_DOMAIN, "save_emulation", 0) + direction, ARRAY_SIZE(CMenu::_GlobalSaveEmu)));
 			_showNandEmu();
 		}	
@@ -459,7 +459,7 @@ int CMenu::_NandEmuCfg(void)
 		{
 			_hideNandEmu(true);
 			u8 tmpView = m_current_view;
-			m_current_view = COVERFLOW_USB;
+			m_current_view = COVERFLOW_WII;
 			string emuPath;
 			_FindEmuPart(emuPath, true);
 			path = _FolderExplorer(NandHandle.GetPath());
@@ -804,7 +804,7 @@ int CMenu::_AutoCreateNand(void)
 			}
 			else if(m_btnMgr.selected(m_nandemuBtnPartition))
 			{
-				if(m_current_view == COVERFLOW_USB)
+				if(m_current_view == COVERFLOW_WII)
 				{
 					m_tempView = true;
 					m_current_view = COVERFLOW_CHANNEL;
@@ -813,7 +813,7 @@ int CMenu::_AutoCreateNand(void)
 				_config(1);
 				if(m_tempView)
 				{
-					m_current_view = COVERFLOW_USB;
+					m_current_view = COVERFLOW_WII;
 					m_tempView = false;
 					return 0;
 				}

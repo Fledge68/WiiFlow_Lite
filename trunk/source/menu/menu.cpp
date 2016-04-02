@@ -70,7 +70,7 @@ CMenu::CMenu()
 	m_base_font_size = 0;
 	m_wbf1_font = NULL;
 	m_wbf2_font = NULL;
-	m_current_view = COVERFLOW_USB;
+	m_current_view = COVERFLOW_WII;
 	m_Emulator_boot = false;
 	m_music_info = true;
 	m_prevBg = NULL;
@@ -325,7 +325,7 @@ void CMenu::init()
 				break;
 			}
 			if (DeviceHandle.IsInserted(i)
-				&& ((m_current_view == COVERFLOW_USB && DeviceHandle.GetFSType(i) == PART_FS_WBFS)
+				&& ((m_current_view == COVERFLOW_WII && DeviceHandle.GetFSType(i) == PART_FS_WBFS)
 				|| stat(fmt(checkDir, DeviceName[i]), &dummy) == 0))
 			{
 				gprintf("Setting Emu NAND to Partition: %i\n",currentPartition);
@@ -2256,10 +2256,10 @@ bool CMenu::_loadList(void)
 			for(vector<dir_discHdr>::iterator tmp_itr = m_gameList.begin(); tmp_itr != m_gameList.end(); tmp_itr++)
 				combinedList.push_back(*tmp_itr);
 	}
-	if((m_current_view == COVERFLOW_USB && !m_cfg.has(WII_DOMAIN, "source")) || 
+	if((m_current_view == COVERFLOW_WII && !m_cfg.has(WII_DOMAIN, "source")) || 
 			m_cfg.getBool(WII_DOMAIN, "source"))
 	{
-		m_current_view = COVERFLOW_USB;
+		m_current_view = COVERFLOW_WII;
 		_loadGameList();
 		if(m_combined_view)
 			for(vector<dir_discHdr>::iterator tmp_itr = m_gameList.begin(); tmp_itr != m_gameList.end(); tmp_itr++)
@@ -2274,10 +2274,10 @@ bool CMenu::_loadList(void)
 			for(vector<dir_discHdr>::iterator tmp_itr = m_gameList.begin(); tmp_itr != m_gameList.end(); tmp_itr++)
 				combinedList.push_back(*tmp_itr);
 	}
-	if((m_current_view == COVERFLOW_DML && !m_cfg.has(GC_DOMAIN, "source")) || 
+	if((m_current_view == COVERFLOW_GAMECUBE && !m_cfg.has(GC_DOMAIN, "source")) || 
 			m_cfg.getBool(GC_DOMAIN, "source"))
 	{
-		m_current_view = COVERFLOW_DML;
+		m_current_view = COVERFLOW_GAMECUBE;
 		_loadDmlList();
 		if(m_combined_view)
 			for(vector<dir_discHdr>::iterator tmp_itr = m_gameList.begin(); tmp_itr != m_gameList.end(); tmp_itr++)
@@ -2316,7 +2316,7 @@ bool CMenu::_loadGameList(void)
 	string gameDir(fmt(wii_games_dir, DeviceName[currentPartition]));
 	string cacheDir(fmt("%s/%s_wii.db", m_listCacheDir.c_str(), DeviceName[currentPartition]));
 	bool updateCache = m_cfg.getBool(WII_DOMAIN, "update_cache");
-	m_gameList.CreateList(COVERFLOW_USB, currentPartition, gameDir, stringToVector(".wbfs|.iso", '|'), cacheDir, updateCache);
+	m_gameList.CreateList(COVERFLOW_WII, currentPartition, gameDir, stringToVector(".wbfs|.iso", '|'), cacheDir, updateCache);
 	WBFS_Close();
 	m_cfg.remove(WII_DOMAIN, "update_cache");
 	return true;
@@ -2347,7 +2347,7 @@ bool CMenu::_loadDmlList()
 	string gameDir(fmt(currentPartition == SD ? DML_DIR : m_DMLgameDir.c_str(), DeviceName[currentPartition]));
 	string cacheDir(fmt("%s/%s_gamecube.db", m_listCacheDir.c_str(), DeviceName[currentPartition]));
 	bool updateCache = m_cfg.getBool(GC_DOMAIN, "update_cache");
-	m_gameList.CreateList(COVERFLOW_DML, currentPartition, gameDir,
+	m_gameList.CreateList(COVERFLOW_GAMECUBE, currentPartition, gameDir,
 			stringToVector(".iso|root", '|'),cacheDir, updateCache);
 	m_cfg.remove(GC_DOMAIN, "update_cache");
 	return true;
@@ -2381,10 +2381,9 @@ bool CMenu::_loadEmuList()
 		if(m_plugin_cfg.loaded())
 		{
 			m_plugin.AddPlugin(m_plugin_cfg);
-			const char *MagicNumber = m_plugin_cfg.getString(PLUGIN_INI_DEF,"magic").c_str();
-			if(!m_cfg.getBool("PLUGIN", MagicNumber, false))
+			u32 MagicWord = strtoul(m_plugin_cfg.getString(PLUGIN_INI_DEF,"magic").c_str(), NULL, 16);
+			if(!m_plugin.GetEnableStatus(m_cfg, MagicWord))
 				continue;
-			u32 MagicWord = strtoul(MagicNumber, NULL, 16);	
 			if(m_plugin_cfg.getString(PLUGIN_INI_DEF,"romDir").find("scummvm.ini") == string::npos)
 			{
 				string gameDir(fmt("%s:/%s", DeviceName[currentPartition], m_plugin_cfg.getString(PLUGIN_INI_DEF,"romDir").c_str()));
@@ -2616,7 +2615,7 @@ const char *CMenu::_domainFromView()
 			return CHANNEL_DOMAIN;
 		case COVERFLOW_HOMEBREW:
 			return HOMEBREW_DOMAIN;
-		case COVERFLOW_DML:
+		case COVERFLOW_GAMECUBE:
 			return GC_DOMAIN;
 		case COVERFLOW_PLUGIN:
 			return PLUGIN_DOMAIN;
@@ -2630,9 +2629,9 @@ void CMenu::UpdateCache(u32 view)
 {
 	if(view == COVERFLOW_MAX)
 	{
-		UpdateCache(COVERFLOW_USB);
+		UpdateCache(COVERFLOW_WII);
 		UpdateCache(COVERFLOW_HOMEBREW);
-		UpdateCache(COVERFLOW_DML);
+		UpdateCache(COVERFLOW_GAMECUBE);
 		UpdateCache(COVERFLOW_PLUGIN);
 		UpdateCache(COVERFLOW_CHANNEL);
 		return;
@@ -2645,7 +2644,7 @@ void CMenu::UpdateCache(u32 view)
 		case COVERFLOW_HOMEBREW:
 			m_cfg.setBool(HOMEBREW_DOMAIN, "update_cache", true);
 			break;
-		case COVERFLOW_DML:
+		case COVERFLOW_GAMECUBE:
 			m_cfg.setBool(GC_DOMAIN, "update_cache", true);
 			break;
 		case COVERFLOW_PLUGIN:

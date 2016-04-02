@@ -12,7 +12,7 @@ void CMenu::_hideConfig3(bool instant)
 {
 	_hideConfigCommon(instant);
 
-	if(m_current_view != COVERFLOW_DML)
+	if(m_current_view != COVERFLOW_GAMECUBE)
 	{
 		m_btnMgr.hide(m_config3LblGameLanguage, instant);
 		m_btnMgr.hide(m_config3LblLanguage, instant);
@@ -49,7 +49,7 @@ void CMenu::_showConfig3(void)
 {
 	_showConfigCommon(m_config3Bg, g_curPage);
 
-	if(m_current_view != COVERFLOW_DML)
+	if(m_current_view != COVERFLOW_GAMECUBE)
 	{
 		m_btnMgr.show(m_config3LblGameLanguage);
 		m_btnMgr.show(m_config3LblLanguage);
@@ -84,7 +84,7 @@ void CMenu::_showConfig3(void)
 
 	int i;
 
-	if(m_current_view != COVERFLOW_DML)
+	if(m_current_view != COVERFLOW_GAMECUBE)
 	{
 		i = min(max(0, m_cfg.getInt("GENERAL", "video_mode", 0)), (int)ARRAY_SIZE(CMenu::_GlobalVideoModes) - 1);
 		m_btnMgr.setText(m_config3LblVideo, _t(CMenu::_GlobalVideoModes[i].id, CMenu::_GlobalVideoModes[i].text));

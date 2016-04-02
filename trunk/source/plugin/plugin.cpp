@@ -145,11 +145,11 @@ void Plugin::SetEnablePlugin(Config &cfg, u8 pos, u8 ForceMode)
 	{
 		strncpy(PluginMagicWord, fmt("%08x", Plugins[pos].magicWord), 8);
 		if(ForceMode == 1)
-			cfg.setBool(PLUGIN_INI_DEF, PluginMagicWord, false);
+			cfg.setBool(PLUGIN_ENABLED, PluginMagicWord, false);
 		else if(ForceMode == 2)
-			cfg.setBool(PLUGIN_INI_DEF, PluginMagicWord, true);
+			cfg.setBool(PLUGIN_ENABLED, PluginMagicWord, true);
 		else
-			cfg.setBool(PLUGIN_INI_DEF, PluginMagicWord, cfg.getBool(PLUGIN_INI_DEF, PluginMagicWord) ? false : true);
+			cfg.setBool(PLUGIN_ENABLED, PluginMagicWord, cfg.getBool(PLUGIN_ENABLED, PluginMagicWord) ? false : true);
 	}
 }
 
@@ -158,7 +158,7 @@ bool Plugin::GetEnableStatus(Config &cfg, u32 magic)
 	if((Plugin_Pos = GetPluginPosition(magic)) >= 0)
 	{
 		strncpy(PluginMagicWord, fmt("%08x", magic), 8);
-		return cfg.getBool(PLUGIN_INI_DEF, PluginMagicWord, true);
+		return cfg.getBool(PLUGIN_ENABLED, PluginMagicWord, true);
 	}
 	return false;
 }
@@ -170,7 +170,7 @@ const vector<bool> &Plugin::GetEnabledPlugins(Config &cfg, u8 *num)
 	for(u8 i = 0; i < Plugins.size(); i++)
 	{
 		strncpy(PluginMagicWord, fmt("%08x", Plugins[i].magicWord), 8);
-		if(cfg.getBool(PLUGIN_INI_DEF, PluginMagicWord, true))
+		if(cfg.getBool(PLUGIN_ENABLED, PluginMagicWord, true))
 		{
 			enabledPluginsNumber++;
 			enabledPlugins.push_back(true);

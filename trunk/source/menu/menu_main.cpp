@@ -67,7 +67,7 @@ start_main:
 
 	switch(m_current_view)
 	{
-		case COVERFLOW_DML:
+		case COVERFLOW_GAMECUBE:
 			if(show_channel)
 				m_btnMgr.show(m_mainBtnChannel);
 			else if(show_emu)
@@ -117,8 +117,8 @@ start_main:
 	{
 		switch(m_current_view)
 		{
-			case COVERFLOW_USB:
-			case COVERFLOW_DML:
+			case COVERFLOW_WII:
+			case COVERFLOW_GAMECUBE:
 				m_btnMgr.setText(m_mainLblInit, _t("main2", L"Welcome to WiiFlow. I have not found any games. Click Install to install games, or Select partition to select your partition type."));
 				m_btnMgr.show(m_mainBtnInit);
 				m_btnMgr.show(m_mainBtnInit2);
@@ -354,9 +354,9 @@ int CMenu::main(void)
 		{
 			u8 lastView = m_current_view;
 			if(BTN_UP_PRESSED) 
-				m_current_view = COVERFLOW_USB;
+				m_current_view = COVERFLOW_WII;
 			else if(BTN_DOWN_PRESSED && (m_show_dml || m_devo_installed || m_nintendont_installed))
-				m_current_view = COVERFLOW_DML;
+				m_current_view = COVERFLOW_GAMECUBE;
 			else if(BTN_LEFT_PRESSED && show_emu)
 				m_current_view =  COVERFLOW_PLUGIN;
 			else if(BTN_RIGHT_PRESSED && show_channel)
@@ -366,10 +366,10 @@ int CMenu::main(void)
 			_clearSources();
 			switch(m_current_view)
 			{
-				case COVERFLOW_USB:
+				case COVERFLOW_WII:
 					m_cfg.setBool(WII_DOMAIN, "source", true);
 					break;
-				case COVERFLOW_DML:
+				case COVERFLOW_GAMECUBE:
 					m_cfg.setBool(GC_DOMAIN, "source", true);
 					break;
 				case COVERFLOW_CHANNEL:
@@ -412,25 +412,25 @@ int CMenu::main(void)
 			}
 			else if(m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML) || m_btnMgr.selected(m_mainBtnHomebrew) || m_btnMgr.selected(m_mainBtnEmu))
 			{
-				if(m_current_view == COVERFLOW_USB) 
-					m_current_view = (m_show_dml || m_devo_installed || m_nintendont_installed) ? COVERFLOW_DML :
+				if(m_current_view == COVERFLOW_WII) 
+					m_current_view = (m_show_dml || m_devo_installed || m_nintendont_installed) ? COVERFLOW_GAMECUBE :
 										(show_channel ? COVERFLOW_CHANNEL : (show_emu ? COVERFLOW_PLUGIN : 
-									((show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB)));
-				else if(m_current_view == COVERFLOW_DML)
-					m_current_view = show_channel ? COVERFLOW_CHANNEL : ((show_emu ? COVERFLOW_PLUGIN : (show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB));
+									((show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_WII)));
+				else if(m_current_view == COVERFLOW_GAMECUBE)
+					m_current_view = show_channel ? COVERFLOW_CHANNEL : ((show_emu ? COVERFLOW_PLUGIN : (show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_WII));
 				else if(m_current_view == COVERFLOW_CHANNEL)
-					m_current_view = (show_emu ? COVERFLOW_PLUGIN : (show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB);
+					m_current_view = (show_emu ? COVERFLOW_PLUGIN : (show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_WII);
 				else if(m_current_view == COVERFLOW_PLUGIN)
-					m_current_view = (show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_USB;
+					m_current_view = (show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_WII;
 				else if(m_current_view == COVERFLOW_HOMEBREW || m_current_view == COVERFLOW_MAX)
-					m_current_view = COVERFLOW_USB;
+					m_current_view = COVERFLOW_WII;
 				_clearSources();
 				switch(m_current_view)
 				{
-					case COVERFLOW_USB:
+					case COVERFLOW_WII:
 						m_cfg.setBool(WII_DOMAIN, "source", true);
 						break;
-					case COVERFLOW_DML:
+					case COVERFLOW_GAMECUBE:
 						m_cfg.setBool(GC_DOMAIN, "source", true);
 						break;
 					case COVERFLOW_CHANNEL:
@@ -829,7 +829,7 @@ int CMenu::main(void)
 		{
 			switch(m_current_view)
 			{
-				case COVERFLOW_DML:
+				case COVERFLOW_GAMECUBE:
 					if(show_channel)
 						m_btnMgr.show(m_mainBtnChannel);
 					else if(show_emu)
@@ -1186,7 +1186,7 @@ void CMenu::_setPartition(s8 direction)
 			m_cfg.setBool(CHANNEL_DOMAIN, "disable", false);
 			switch_to_real = false;
 		}
-		bool NeedFAT = m_current_view == COVERFLOW_CHANNEL || m_current_view == COVERFLOW_DML;
+		bool NeedFAT = m_current_view == COVERFLOW_CHANNEL || m_current_view == COVERFLOW_GAMECUBE;
 
 		u8 limiter = 0;
 		do
@@ -1198,7 +1198,7 @@ void CMenu::_setPartition(s8 direction)
 			limiter++;
 		}
 		while(limiter < 12 && (!DeviceHandle.IsInserted(currentPartition) ||
-			(m_current_view != COVERFLOW_USB && FS_Type == PART_FS_WBFS) ||
+			(m_current_view != COVERFLOW_WII && FS_Type == PART_FS_WBFS) ||
 			(NeedFAT && FS_Type != PART_FS_FAT)));
 
 		if(m_current_view == COVERFLOW_CHANNEL && FS_Type == -1)
@@ -1226,7 +1226,7 @@ void CMenu::_setPartition(s8 direction)
 			char PluginMagicWord[9];
 			memset(PluginMagicWord, 0, sizeof(PluginMagicWord));
 			strncpy(PluginMagicWord, fmt("%08x", m_plugin.getPluginMagic(i)), 8);
-			m_cfg.setInt("PLUGINS/PARTITION", PluginMagicWord, currentPartition);
+			m_cfg.setInt("PLUGINS_PARTITION", PluginMagicWord, currentPartition);
 		}
 	}
 }
