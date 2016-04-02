@@ -1630,8 +1630,7 @@ void CMenu::_addUserLabels(s16 *ids, u32 start, u32 size, const char *domain)
 
 void CMenu::_initCF(void)
 {
-	Config dump, gameAgeList;
-	GameTDB gametdb;
+	Config dump;
 	const char *domain = _domainFromView();
 
 	CoverFlow.clear();
@@ -1642,18 +1641,6 @@ void CMenu::_initCF(void)
 
 	m_gcfg1.load(fmt("%s/" GAME_SETTINGS1_FILENAME, m_settingsDir.c_str()));
 
-	int ageLock = m_cfg.getInt("GENERAL", "age_lock");
-	if (ageLock < 2 || ageLock > 19)
-		ageLock = 19;
-	if (ageLock < 19)
-	{
-		gameAgeList.load(fmt("%s/" AGE_LOCK_FILENAME, m_settingsDir.c_str()));
-		if(!gametdb.IsLoaded())
-		{
-			gametdb.OpenFile(fmt("%s/wiitdb.xml", m_settingsDir.c_str()));
-			gametdb.SetLanguageCode(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
-		}
-	}
 	const vector<bool> &EnabledPlugins = m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
 
 	for(vector<dir_discHdr>::iterator element = m_gameList.begin(); element != m_gameList.end(); ++element)
@@ -1697,96 +1684,24 @@ void CMenu::_initCF(void)
 				id = tmp;
 			}
 		}
-		bool ageLocked = false;
-		if(ageLock < 19)
-		{
-			int ageRated = min(max(gameAgeList.getInt(domain, id), 0), 19);
-			if(ageRated == 0 && gametdb.IsLoaded() && (element->type == TYPE_WII_GAME || element->type == TYPE_GC_GAME || element->type == TYPE_CHANNEL))
-			{
-				const char *RatingValue = NULL;
-				if(gametdb.GetRatingValue(element->id, RatingValue))
-				{
-					switch(gametdb.GetRating(element->id))
-					{
-						case GAMETDB_RATING_TYPE_CERO:
-							if(RatingValue[0] == 'A')
-								ageRated = 3;
-							else if(RatingValue[0] == 'B')
-								ageRated = 12;
-							else if(RatingValue[0] == 'D')
-								ageRated = 15;
-							else if(RatingValue[0] == 'C')
-								ageRated = 17;
-							else if(RatingValue[0] == 'Z')
-								ageRated = 18;
-							break;
-						case GAMETDB_RATING_TYPE_ESRB:
-							if(RatingValue[0] == 'E')
-								ageRated = 6;
-							else if(memcmp(RatingValue, "EC", 2) == 0)
-								ageRated = 3;
-							else if(memcmp(RatingValue, "E10+", 4) == 0)
-								ageRated = 10;
-							else if(RatingValue[0] == 'T')
-								ageRated = 13;
-							else if(RatingValue[0] == 'M')
-								ageRated = 17;
-							else if(memcmp(RatingValue, "AO", 2) == 0)
-								ageRated = 18;
-							break;
-						case GAMETDB_RATING_TYPE_PEGI:
-							if(RatingValue[0] == '3')
-								ageRated = 3;
-							else if(RatingValue[0] == '7')
-								ageRated = 7;
-							else if(memcmp(RatingValue, "12", 2) == 0)
-								ageRated = 12;
-							else if(memcmp(RatingValue, "16", 2) == 0)
-								ageRated = 16;
-							else if(memcmp(RatingValue, "18", 2) == 0)
-								ageRated = 18;
-							break;
-						case GAMETDB_RATING_TYPE_GRB:
-							if(RatingValue[0] == 'A')
-								ageRated = 3;
-							else if(memcmp(RatingValue, "12", 2) == 0)
-								ageRated = 12;
-							else if(memcmp(RatingValue, "15", 2) == 0)
-								ageRated = 15;
-							else if(memcmp(RatingValue, "18", 2) == 0)
-								ageRated = 18;
-							break;
-						default:
-							break;
-					}
-				}
-			}
-			if(ageRated == 0)
-				ageRated = min(max(m_cfg.getInt("GENERAL", "age_lock_default", AGE_LOCK_DEFAULT), 2), 19);
-			if(ageRated == 0)
-				ageRated = AGE_LOCK_DEFAULT;
-			if(ageRated > ageLock)
-				ageLocked = true;
-		}
 		if((!m_favorites || m_gcfg1.getBool("FAVORITES", id, false))
-			&& (!m_locked || !m_gcfg1.getBool("ADULTONLY", id, false))
-			&& !ageLocked)
+			&& (!m_locked || !m_gcfg1.getBool("ADULTONLY", id, false)))
 		{
 			string catDomain;
 			switch(element->type)
 			{
 				case TYPE_CHANNEL:
-					catDomain = "NAND";
+					catDomain = "CHANNELS";
 					break;
 				case TYPE_HOMEBREW:
 				case TYPE_SOURCE:
 					catDomain = "HOMEBREW";
 					break;
 				case TYPE_GC_GAME:
-					catDomain = "DML";
+					catDomain = "GAMECUBE";
 					break;
 				case TYPE_WII_GAME:
-					catDomain = "GAMES";
+					catDomain = "WII";
 					break;
 				default:
 					catDomain = (m_plugin.GetPluginName(m_plugin.GetPluginPosition(element->settings[0]))).toUTF8();
@@ -1883,10 +1798,8 @@ void CMenu::_initCF(void)
 				CoverFlow.addItem(&(*element), playcount, lastPlayed);
 		}
 	}
-	if(gametdb.IsLoaded())
-		gametdb.CloseFile();
 	m_gcfg1.unload();
-	if (dumpGameLst)
+	if(dumpGameLst)
 	{
 		dump.save(true);
 		m_cfg.setBool(domain, "dump_list", false);
