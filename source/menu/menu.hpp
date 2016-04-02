@@ -419,8 +419,6 @@ private:
 	s16 m_codeBtnKey[10];
 	s16 m_codeBtnBack;
 	s16 m_codeBtnErase;
-	s16 m_codeBtnAge;
-	s16 m_codeLblAge;
 	s16 m_codeLblUser[4];
 //menu_wbfs
 	s16 m_wbfsLblTitle;
@@ -492,15 +490,15 @@ private:
 
 	s16 m_gameSettingsLblDM_Widescreen;
 	s16 m_gameSettingsBtnDM_Widescreen;
-		
-  s16 m_gameSettingsLblUSB_HID;
-  s16 m_gameSettingsBtnUSB_HID;
+	
+	s16 m_gameSettingsLblUSB_HID;
+	s16 m_gameSettingsBtnUSB_HID;
   
-  s16 m_gameSettingsLblNATIVE_CTL;
-  s16 m_gameSettingsBtnNATIVE_CTL;
+	s16 m_gameSettingsLblNATIVE_CTL;
+	s16 m_gameSettingsBtnNATIVE_CTL;
   
-  s16 m_gameSettingsLblDeflicker;
-  s16 m_gameSettingsBtnDeflicker;
+	s16 m_gameSettingsLblDeflicker;
+	s16 m_gameSettingsBtnDeflicker;
 
 	s16 m_gameSettingsLblGCLoader;
 	s16 m_gameSettingsLblGCLoader_Val;
@@ -1038,7 +1036,7 @@ private:
 	void _download(string gameId = string());
 	void _downloadBnr(const char *gameID);
 	bool _LangSettings(void);
-	void _code(void);
+	bool _code(char code[4], bool erase = false);
 	void _about(bool help = false);
 	bool _wbfsOp(WBFS_OP op);
 	void _cfTheme(void);

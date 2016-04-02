@@ -184,8 +184,31 @@ int CMenu::_config1(void)
 				_showConfig();
 				CoverFlow.startCoverLoader();
 			}
-			else if ((m_btnMgr.selected(m_configBtnUnlock)) || (m_btnMgr.selected(m_configBtnSetCode)))
-				_code();
+			else if (m_btnMgr.selected(m_configBtnUnlock))
+			{
+				char code[4];
+				_hideConfig();
+				if (_code(code) && memcmp(code, m_cfg.getString("GENERAL", "parent_code", "").c_str(), 4) == 0)
+				{
+					_cfNeedsUpdate();
+					m_locked = false;
+				}
+				else
+					error(_t("cfgg25",L"Password incorrect."));
+				_showConfig();
+			}
+			else if (m_btnMgr.selected(m_configBtnSetCode))
+			{
+				char code[4];
+				_hideConfig();
+				if (_code(code, true))
+				{
+					_cfNeedsUpdate();
+					m_cfg.setString("GENERAL", "parent_code", string(code, 4).c_str());
+					m_locked = true;
+				}
+				_showConfig();
+			}
 			else if ((m_btnMgr.selected(m_configBtnPartitionP) || m_btnMgr.selected(m_configBtnPartitionM)) && m_current_view != COVERFLOW_MAX)
 			{
 				s8 direction = m_btnMgr.selected(m_configBtnPartitionP) ? 1 : -1;

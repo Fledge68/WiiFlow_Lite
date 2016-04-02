@@ -14,7 +14,6 @@
 #define SOURCE_FILENAME			"source_menu.ini"
 #define TITLES_FILENAME			"titles.ini"
 #define CTITLES_FILENAME		"custom_titles.ini"
-#define AGE_LOCK_FILENAME		"age_lock.ini"
 #define TITLES_DUMP_FILENAME	"titlesdump.ini"
 #define GAME_SETTINGS1_FILENAME	"gameconfig1.ini"
 #define GAME_SETTINGS2_FILENAME	"gameconfig2.ini"
@@ -27,8 +26,6 @@
 #define HOMEBREW_DOMAIN			"HOMEBREW"
 #define MUSIC_DOMAIN			"MUSIC"
 #define FTP_DOMAIN				"FTP"
-
-#define AGE_LOCK_DEFAULT		13
 
 #define DEVELOPERS				"FIX94, Fledge68, OverjoY"
 #define PAST_DEVELOPERS			"Hibernatus, Narolez, Hulk, Miigotu, r-win"
