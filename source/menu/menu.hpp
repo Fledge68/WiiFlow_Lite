@@ -448,37 +448,35 @@ private:
 	s16 m_gameSettingsBtnPageP;
 	s16 m_gameSettingsBtnBack;
 	s16 m_gameSettingsLblTitle;
+	
 	s16 m_gameSettingsLblGameLanguage;
 	s16 m_gameSettingsLblLanguage;
 	s16 m_gameSettingsBtnLanguageP;
 	s16 m_gameSettingsBtnLanguageM;
+	
 	s16 m_gameSettingsLblGameVideo;
 	s16 m_gameSettingsLblVideo;
 	s16 m_gameSettingsBtnVideoP;
 	s16 m_gameSettingsBtnVideoM;
 	
-	s16 m_gameSettingsLblDMLGameVideo;
-	s16 m_gameSettingsLblDMLVideo;
-	s16 m_gameSettingsBtnDMLVideoP;
-	s16 m_gameSettingsBtnDMLVideoM;
+	s16 m_gameSettingsLblApploader;
+	s16 m_gameSettingsBtnApploader;
 
-	s16 m_gameSettingsLblGClanguageVal;
-	s16 m_gameSettingsLblGClanguage;
-	s16 m_gameSettingsBtnGClanguageP;
-	s16 m_gameSettingsBtnGClanguageM;
-	
-	s16 m_gameSettingsLblIOSreloadBlock;
-	s16 m_gameSettingsBtnIOSreloadBlock;
+	s16 m_gameSettingsLblLED;
+	s16 m_gameSettingsBtnLED;
+
+	s16 m_gameSettingsLblScreenshot;
+	s16 m_gameSettingsBtnScreenshot;
 	
 	s16 m_gameSettingsLblAspectRatio;
 	s16 m_gameSettingsLblAspectRatioVal;
 	s16 m_gameSettingsBtnAspectRatioP;
 	s16 m_gameSettingsBtnAspectRatioM;
 
-	s16 m_gameSettingsLblNMM;
-	s16 m_gameSettingsLblNMM_Val;
-	s16 m_gameSettingsBtnNMM_P;
-	s16 m_gameSettingsBtnNMM_M;
+	s16 m_gameSettingsLblEmuMemCard;
+	s16 m_gameSettingsLblEmuMemCard_Val;
+	s16 m_gameSettingsBtnEmuMemCard_P;
+	s16 m_gameSettingsBtnEmuMemCard_M;
 
 	s16 m_gameSettingsLblNoDVD;
 	s16 m_gameSettingsLblNoDVD_Val;
@@ -488,8 +486,8 @@ private:
 	s16 m_gameSettingsLblDevoMemcardEmu;
 	s16 m_gameSettingsBtnDevoMemcardEmu;
 
-	s16 m_gameSettingsLblDM_Widescreen;
-	s16 m_gameSettingsBtnDM_Widescreen;
+	s16 m_gameSettingsLblWidescreen;
+	s16 m_gameSettingsBtnWidescreen;
 	
 	s16 m_gameSettingsLblUSB_HID;
 	s16 m_gameSettingsBtnUSB_HID;
@@ -507,46 +505,61 @@ private:
 
 	s16 m_gameSettingsLblCustom;
 	s16 m_gameSettingsBtnCustom;
+	
 	s16 m_gameSettingsLblLaunchNK;
 	s16 m_gameSettingsBtnLaunchNK;
 
 	s16 m_gameSettingsLblOcarina;
 	s16 m_gameSettingsBtnOcarina;
+	
 	s16 m_gameSettingsLblVipatch;
 	s16 m_gameSettingsBtnVipatch;
+	
 	s16 m_gameSettingsLblCountryPatch;
 	s16 m_gameSettingsBtnCountryPatch;
+	
 	s16 m_gameSettingsLblPrivateServer;
 	s16 m_gameSettingsBtnPrivateServer;
+	
 	s16 m_gameSettingsLblManage;
 	s16 m_gameSettingsBtnManage;
+	
 	s16 m_gameSettingsLblPatchVidModes;
 	s16 m_gameSettingsLblPatchVidModesVal;
 	s16 m_gameSettingsBtnPatchVidModesM;
 	s16 m_gameSettingsBtnPatchVidModesP;
+	
 	s16 m_gameSettingsLblUser[3 * 2];
+	
 	s16 m_gameSettingsLblHooktype;
 	s16 m_gameSettingsLblHooktypeVal;
 	s16 m_gameSettingsBtnHooktypeM;
 	s16 m_gameSettingsBtnHooktypeP;
+	
 	s16 m_gameSettingsLblEmulationVal;
 	s16 m_gameSettingsBtnEmulationP;
 	s16 m_gameSettingsBtnEmulationM;
 	s16 m_gameSettingsLblEmulation;
+	
 	s16 m_gameSettingsLblDebugger;
 	s16 m_gameSettingsLblDebuggerV;
 	s16 m_gameSettingsBtnDebuggerP;
 	s16 m_gameSettingsBtnDebuggerM;
+	
 	s16 m_gameSettingsLblCheat;
 	s16 m_gameSettingsBtnCheat;
+	
 	s16 m_gameSettingsLblCategoryMain;
 	s16 m_gameSettingsBtnCategoryMain;
+	
  	s16 m_gameSettingsLblGameIOS;
  	s16 m_gameSettingsLblIOS;
  	s16 m_gameSettingsBtnIOSP;
  	s16 m_gameSettingsBtnIOSM;
+	
 	s16 m_gameSettingsLblExtractSave;
 	s16 m_gameSettingsBtnExtractSave;
+	
 	s16 m_gameSettingsLblFlashSave;
 	s16 m_gameSettingsBtnFlashSave;
 // System Menu
@@ -947,6 +960,7 @@ private:
 	void _hideWBFS(bool instant = false);
 	void _hideCFTheme(bool instant = false);
 	void _hideGameSettings(bool instant = false);
+	void _hideGameSettingsPg();
 	void _hideSource(bool instant = false);
 	void _hidePluginSettings(bool instant = false);
 	void _hideCategorySettings(bool instant = false);
@@ -1191,16 +1205,17 @@ private:
 	static const SOption _GlobalVideoModes[6];
 	static const SOption _VideoModes[7];
 	
-	static const SOption _GlobalDMLvideoModes[8];
+	static const SOption _GlobalGCvideoModes[8];
 	static const SOption _GlobalGClanguages[7];
-	static const SOption _DMLvideoModes[9];
+	static const SOption _GCvideoModes[9];
 	static const SOption _GClanguages[8];
 
 	static const SOption _NandEmu[2];
 	static const SOption _SaveEmu[5];
 	static const SOption _GlobalSaveEmu[4];
 	static const SOption _AspectRatio[3];
-	static const SOption _NMM[5];
+	static const SOption _NMM[4];
+	static const SOption _NinEmuCard[5];
 	static const SOption _NoDVD[3];
 	static const SOption _GlobalGCLoaders[3];
 	static const SOption _GCLoader[4];
