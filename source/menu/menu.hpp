@@ -1156,7 +1156,6 @@ private:
 	bool _isNetworkAvailable();
 	int _initNetwork();
 	void LoadView(void);
-	void _getGrabStatus(void);
 	static void _addDiscProgress(int status, int total, void *user_data);
 	static void _ShowProgress(int dumpstat, int dumpprog, int filestat, int fileprog, int files, int folders, const char *tmess, void *user_data);
 	static int _gameInstaller(void *obj);

@@ -609,56 +609,6 @@ bool CMenu::wRoll_Right(void)
 	return false;
 }
 
-void CMenu::_getGrabStatus(void)
-{
-	static bool wGrabStatus[WPAD_MAX_WIIMOTES] = {0};
-	static float wX[WPAD_MAX_WIIMOTES] = {0};
-	static float wY[WPAD_MAX_WIIMOTES] = {0};
-
-	static bool gGrabStatus[WPAD_MAX_WIIMOTES] = {0};
-	static float gX[WPAD_MAX_WIIMOTES] = {0};
-	static float gY[WPAD_MAX_WIIMOTES] = {0};
-
-	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
-	{
-		wGrabStatus[chan] = (wBtn_HeldChan(WPAD_BUTTON_B, WPAD_EXP_NONE, chan)
-				|| wBtn_HeldChan(WPAD_CLASSIC_BUTTON_B, WPAD_EXP_CLASSIC, chan));
-		gGrabStatus[chan] = GBTN_B & PAD_ButtonsHeld(chan);
-		if((wGrabStatus[chan] && wX[chan] > 0 && wd[chan]->ir.x < wX[chan] - 30)
-		|| (gGrabStatus[chan] && gX[chan] > 0 && stickPointer_x[chan] < gX[chan]))
-			CoverFlow.left();
-		if((wGrabStatus[chan] && wX[chan] > 0 && wd[chan]->ir.x > wX[chan] + 30)
-		|| (gGrabStatus[chan] && gX[chan] > 0 && stickPointer_x[chan] > gX[chan]))
-			CoverFlow.right();
-		if((wGrabStatus[chan] && wY[chan] > 0 && wd[chan]->ir.y < wY[chan] - 30)
-		|| (gGrabStatus[chan] && gY[chan] > 0 && stickPointer_y[chan] < gY[chan]))
-			CoverFlow.up();
-		if((wGrabStatus[chan] && wY[chan] > 0 && wd[chan]->ir.y > wY[chan] + 30)
-		|| (gGrabStatus[chan] && gY[chan] > 0 && stickPointer_y[chan] > gY[chan]))
-			CoverFlow.down();
-		if(wGrabStatus[chan])
-		{
-			wX[chan] = wd[chan]->ir.x;
-			wY[chan] = wd[chan]->ir.y;
-		}
-		else
-		{
-			wX[chan] = 0;
-			wY[chan] = 0;
-		}
-		if(gGrabStatus[chan])
-		{
-			gX[chan] = stickPointer_x[chan];
-			gY[chan] = stickPointer_y[chan];
-		}
-		else
-		{
-			gX[chan] = 0;
-			gY[chan] = 0;
-		}
-	}
-}
-
 void CMenu::ShowZone(SZone zone, bool &showZone)
 {
 	if(zone.hide)
