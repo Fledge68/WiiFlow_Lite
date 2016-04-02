@@ -511,9 +511,9 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 		//m_gameList.SetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());	
 		_showWaitMessage();
 		if(upd_dml)
-			UpdateCache(COVERFLOW_DML);
+			UpdateCache(COVERFLOW_GAMECUBE);
 		if(upd_usb)
-			UpdateCache(COVERFLOW_USB);
+			UpdateCache(COVERFLOW_WII);
 		if(upd_emu)
 			UpdateCache(COVERFLOW_PLUGIN);
 		if(upd_chan)
@@ -531,9 +531,9 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 	{
 		if(done && op == WO_COPY_GAME)
 		{
-			UpdateCache(COVERFLOW_DML);
+			UpdateCache(COVERFLOW_GAMECUBE);
 			currentPartition = SD;
-			UpdateCache(COVERFLOW_DML);
+			UpdateCache(COVERFLOW_GAMECUBE);
 		}
 		_loadList();
 		_initCF();

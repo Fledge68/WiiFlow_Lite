@@ -32,6 +32,7 @@ using namespace std;
 #define TAG_CONSOLE		"{console}"
 
 #define PLUGIN_INI_DEF	"PLUGIN"
+#define PLUGIN_ENABLED	"PLUGINS_ENABLED"
 #define PLUGIN_DEV		"{device}"
 #define PLUGIN_PATH		"{path}"
 #define PLUGIN_NAME		"{name}"

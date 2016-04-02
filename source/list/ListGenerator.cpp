@@ -253,7 +253,7 @@ void ListGenerator::CreateList(u32 Flow, u32 Device, const string& Path, const v
 	}
 	//if(Flow != COVERFLOW_PLUGIN)
 		OpenConfigs();
-	if(Flow == COVERFLOW_USB)
+	if(Flow == COVERFLOW_WII)
 	{
 		if(DeviceHandle.GetFSType(Device) == PART_FS_WBFS)
 			Create_Wii_WBFS_List(DeviceHandle.GetWbfsHandle(Device));
@@ -267,7 +267,7 @@ void ListGenerator::CreateList(u32 Flow, u32 Device, const string& Path, const v
 	}
 	else if(DeviceHandle.GetFSType(Device) != PART_FS_WBFS)
 	{
-		if(Flow == COVERFLOW_DML)
+		if(Flow == COVERFLOW_GAMECUBE)
 			GetFiles(Path.c_str(), FileTypes, Create_GC_List, true);
 		else if(Flow == COVERFLOW_PLUGIN)
 			GetFiles(Path.c_str(), FileTypes, Create_Plugin_List, false, 30);

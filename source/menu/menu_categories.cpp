@@ -115,16 +115,16 @@ void CMenu::_getIDCats(void)
 	switch(hdr->type)
 	{
 		case TYPE_CHANNEL:
-			catDomain = "NAND";
+			catDomain = "CHANNELS";
 			break;
 		case TYPE_HOMEBREW:
 			catDomain = "HOMEBREW";
 			break;
 		case TYPE_GC_GAME:
-			catDomain = "DML";
+			catDomain = "GAMECUBE";
 			break;
 		case TYPE_WII_GAME:
-			catDomain = "GAMES";
+			catDomain = "WII";
 			break;
 		default:
 			catDomain = (m_plugin.GetPluginName(m_plugin.GetPluginPosition(hdr->settings[0]))).toUTF8();
