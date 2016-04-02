@@ -531,7 +531,7 @@ void CMenu::_game(bool launch)
 		}
 		else if(launch || BTN_A_PRESSED)
 		{
-			if (m_btnMgr.selected(m_mainBtnQuit))
+			if(m_btnMgr.selected(m_mainBtnQuit))
 				break;
 			else if(m_btnMgr.selected(m_gameBtnDelete))
 			{
@@ -570,7 +570,7 @@ void CMenu::_game(bool launch)
 				m_btnMgr.hide(m_gameBtnBackFull);
 				m_btnMgr.hide(m_gameBtnToogleFull);
 			}
-			else if(m_btnMgr.selected(m_gameBtnSettings))
+			else if(m_btnMgr.selected(m_gameBtnSettings) && (CoverFlow.getHdr()->type == TYPE_WII_GAME || CoverFlow.getHdr()->type == TYPE_GC_GAME || CoverFlow.getHdr()->type == TYPE_CHANNEL))
 			{
 				_hideGame();
 				m_gameSelected = true;
