@@ -245,9 +245,6 @@ int CMenu::main(void)
 	show_homebrew = !m_cfg.getBool(HOMEBREW_DOMAIN, "disable", false);
 	show_channel = !m_cfg.getBool("GENERAL", "hidechannel", false);
 	show_emu = !m_cfg.getBool(PLUGIN_DOMAIN, "disable", false);
-	bool dpad_mode = m_cfg.getBool("GENERAL", "dpad_mode", false);
-	bool b_lr_mode = m_cfg.getBool("GENERAL", "b_lr_mode", false);
-	bool use_grab = m_cfg.getBool("GENERAL", "use_grab", false);
 	m_use_source = m_cfg.getBool("GENERAL", "use_source", true);
 	bool bheld = false;
 	bool bUsed = false;
@@ -349,42 +346,6 @@ int CMenu::main(void)
 					continue;
 				}
 			}
-		}
-		if(dpad_mode && (BTN_UP_PRESSED || BTN_DOWN_PRESSED || BTN_LEFT_PRESSED || BTN_RIGHT_PRESSED) && (m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML) || m_btnMgr.selected(m_mainBtnHomebrew) || m_btnMgr.selected(m_mainBtnEmu)))
-		{
-			u8 lastView = m_current_view;
-			if(BTN_UP_PRESSED) 
-				m_current_view = COVERFLOW_WII;
-			else if(BTN_DOWN_PRESSED && (m_show_dml || m_devo_installed || m_nintendont_installed))
-				m_current_view = COVERFLOW_GAMECUBE;
-			else if(BTN_LEFT_PRESSED && show_emu)
-				m_current_view =  COVERFLOW_PLUGIN;
-			else if(BTN_RIGHT_PRESSED && show_channel)
-				m_current_view = COVERFLOW_CHANNEL;
-			if(lastView == m_current_view && show_homebrew && (parental_homebrew || !m_locked)) 
-				m_current_view = COVERFLOW_HOMEBREW;
-			_clearSources();
-			switch(m_current_view)
-			{
-				case COVERFLOW_WII:
-					m_cfg.setBool(WII_DOMAIN, "source", true);
-					break;
-				case COVERFLOW_GAMECUBE:
-					m_cfg.setBool(GC_DOMAIN, "source", true);
-					break;
-				case COVERFLOW_CHANNEL:
-					m_cfg.setBool(CHANNEL_DOMAIN, "source", true);
-					break;
-				case COVERFLOW_HOMEBREW:
-					m_cfg.setBool(HOMEBREW_DOMAIN, "source", true);
-					break;
-				default:
-					m_cfg.setBool(PLUGIN_DOMAIN, "source", true);
-			}
-			m_catStartPage = 1;
-			m_combined_view = false;
-			LoadView();
-			continue;
 		}
 		if(BTN_HOME_PRESSED && !m_sourceflow)
 		{
@@ -660,19 +621,9 @@ int CMenu::main(void)
 				}
 			}
 			else if(BTN_MINUS_PRESSED)
-			{
-				if(b_lr_mode)
-					MusicPlayer.Previous();
-				else
-					CoverFlow.pageUp();
-			}
+				CoverFlow.pageUp();
 			else if(BTN_PLUS_PRESSED)
-			{
-				if(b_lr_mode)
-					MusicPlayer.Next();
-				else
-					CoverFlow.pageDown();
-			}
+				CoverFlow.pageDown();
 		}
 		else
 		{
@@ -711,18 +662,12 @@ int CMenu::main(void)
 			else if(BTN_LEFT_PRESSED)
 			{
 				bUsed = true;
-				if(b_lr_mode)
-					CoverFlow.pageUp();
-				else
-					MusicPlayer.Previous();
+				MusicPlayer.Previous();
 			}
 			else if(BTN_RIGHT_PRESSED)
 			{
 				bUsed = true;
-				if(b_lr_mode)
-					CoverFlow.pageDown();
-				else
-					MusicPlayer.Next();
+				MusicPlayer.Next();
 			}
 			else if(BTN_PLUS_PRESSED && !m_locked  && !m_sourceflow)
 			{
@@ -783,8 +728,6 @@ int CMenu::main(void)
 			_showMain();
 			_initCF();
 		}
-		if(use_grab)
-			_getGrabStatus();
 		if(m_showtimer > 0)
 		{
 			if(--m_showtimer == 0)
