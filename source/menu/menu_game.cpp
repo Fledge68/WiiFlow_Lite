@@ -43,8 +43,8 @@ extern const u32 gc_ogg_size;
 bool m_zoom_banner = false;
 s16 m_gameBtnPlayFull;
 s16 m_gameBtnBackFull;
-s16 m_gameBtnToogle;
-s16 m_gameBtnToogleFull;
+s16 m_gameBtnToggle;
+s16 m_gameBtnToggleFull;
 
 const CMenu::SOption CMenu::_languages[11] = {
 	{ "lngdef", L"Default" },
@@ -304,8 +304,8 @@ void CMenu::_hideGame(bool instant)
 	m_btnMgr.hide(m_gameBtnBackFull, instant);
 	m_btnMgr.hide(m_gameBtnDelete, instant);
 	m_btnMgr.hide(m_gameBtnSettings, instant);
-	m_btnMgr.hide(m_gameBtnToogle, instant);
-	m_btnMgr.hide(m_gameBtnToogleFull, instant);
+	m_btnMgr.hide(m_gameBtnToggle, instant);
+	m_btnMgr.hide(m_gameBtnToggleFull, instant);
 
 	m_btnMgr.hide(m_gameBtnFavoriteOn, instant);
 	m_btnMgr.hide(m_gameBtnFavoriteOff, instant);
@@ -342,13 +342,13 @@ void CMenu::_showGame(void)
 		}
 		m_btnMgr.show(m_gameBtnPlay);
 		m_btnMgr.show(m_gameBtnBack);
-		m_btnMgr.show(m_gameBtnToogle);
+		m_btnMgr.show(m_gameBtnToggle);
 	}
 	else
 	{
 		m_btnMgr.show(m_gameBtnPlayFull);
 		m_btnMgr.show(m_gameBtnBackFull);
-		m_btnMgr.show(m_gameBtnToogleFull);
+		m_btnMgr.show(m_gameBtnToggleFull);
 	}
 }
 
@@ -453,7 +453,7 @@ void CMenu::_game(bool launch)
 	}
 	currentMoviePos = (m_zoom_banner ? zoomedMoviePos : normalMoviePos);
 	if(m_banner.GetZoomSetting() != m_zoom_banner)
-		m_banner.ToogleZoom();
+		m_banner.ToggleZoom();
 
 	if(!launch)
 	{
@@ -559,25 +559,25 @@ void CMenu::_game(bool launch)
 				_cleanupBanner();
 				break;
 			}
-			else if((m_btnMgr.selected(m_gameBtnToogle) || m_btnMgr.selected(m_gameBtnToogleFull)) 
+			else if((m_btnMgr.selected(m_gameBtnToggle) || m_btnMgr.selected(m_gameBtnToggleFull)) 
 					&& (!NoGameID(CoverFlow.getHdr()->type) || m_video_playing))
 			{
-				m_zoom_banner = m_banner.ToogleZoom();
+				m_zoom_banner = m_banner.ToggleZoom();
 				m_cfg.setBool(_domainFromView(), "show_full_banner", m_zoom_banner);
 				currentMoviePos = (m_zoom_banner ? zoomedMoviePos : normalMoviePos);
 				m_show_zone_game = false;
 				m_btnMgr.hide(m_gameBtnPlayFull);
 				m_btnMgr.hide(m_gameBtnBackFull);
-				m_btnMgr.hide(m_gameBtnToogleFull);
+				m_btnMgr.hide(m_gameBtnToggleFull);
 			}
 			else if(m_btnMgr.selected(m_gameBtnSettings) && (CoverFlow.getHdr()->type == TYPE_WII_GAME || CoverFlow.getHdr()->type == TYPE_GC_GAME || CoverFlow.getHdr()->type == TYPE_CHANNEL))
 			{
 				_hideGame();
 				m_gameSelected = true;
 
-				m_banner.ToogleGameSettings();
+				m_banner.ToggleGameSettings();
 				_gameSettings();
-				m_banner.ToogleGameSettings();
+				m_banner.ToggleGameSettings();
 
 				_showGame();
 				if(!m_gameSound.IsPlaying()) 
@@ -700,12 +700,12 @@ void CMenu::_game(bool launch)
 			m_btnMgr.show(m_gameBtnPlay);
 			m_btnMgr.show(m_gameBtnBack);
 			if(!m_fa.isLoaded())
-				m_btnMgr.show(m_gameBtnToogle);
+				m_btnMgr.show(m_gameBtnToggle);
 			else
-				m_btnMgr.hide(m_gameBtnToogle);
+				m_btnMgr.hide(m_gameBtnToggle);
 			m_btnMgr.hide(m_gameBtnPlayFull);
 			m_btnMgr.hide(m_gameBtnBackFull);
-			m_btnMgr.hide(m_gameBtnToogleFull);
+			m_btnMgr.hide(m_gameBtnToggleFull);
 			if(m_gameLblUser[4] != -1 && !NoGameID(CoverFlow.getHdr()->type) && !m_fa.isLoaded())
 				m_btnMgr.show(m_gameLblUser[4]);
 			else
@@ -732,7 +732,7 @@ void CMenu::_game(bool launch)
 			{
 				m_btnMgr.show(m_gameBtnPlayFull);
 				m_btnMgr.show(m_gameBtnBackFull);
-				m_btnMgr.show(m_gameBtnToogleFull);
+				m_btnMgr.show(m_gameBtnToggleFull);
 			}
 			m_btnMgr.hide(m_gameBtnFavoriteOn);
 			m_btnMgr.hide(m_gameBtnFavoriteOff);
@@ -742,7 +742,7 @@ void CMenu::_game(bool launch)
 			m_btnMgr.hide(m_gameBtnDelete);
 			m_btnMgr.hide(m_gameBtnPlay);
 			m_btnMgr.hide(m_gameBtnBack);
-			m_btnMgr.hide(m_gameBtnToogle);
+			m_btnMgr.hide(m_gameBtnToggle);
 			if(m_gameLblUser[4] != -1)
 			{
 				if(!NoGameID(CoverFlow.getHdr()->type) && !m_zoom_banner && !m_fa.isLoaded())
@@ -1002,7 +1002,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	{
 		bool foundOnSD = false;
 		ListGenerator SD_List;
-		string gameDir(fmt(DML_DIR, DeviceName[SD]));
+		string gameDir(fmt(GC_GAMES_DIR, DeviceName[SD]));
 		string cacheDir(fmt("%s/%s_gamecube.db", m_listCacheDir.c_str(), DeviceName[SD]));
 		SD_List.CreateList(COVERFLOW_GAMECUBE, SD, gameDir,
 				stringToVector(".iso|root", '|'), cacheDir, false);
@@ -1030,7 +1030,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 				u32 Place = GC_Path.find_last_of("/");
 				GC_Path = hdr->path;
 				memset(hdr->path, 0, sizeof(hdr->path));
-				snprintf(folder, sizeof(folder), DML_DIR, DeviceName[SD]);
+				snprintf(folder, sizeof(folder), GC_GAMES_DIR, DeviceName[SD]);
 				snprintf(hdr->path, sizeof(hdr->path), "%s/%s", folder, &GC_Path[Place]+1);
 			}
 			else
@@ -1675,8 +1675,8 @@ void CMenu::_initGameMenu()
 	m_gameBtnDelete = _addPicButton("GAME/DELETE_BTN", texDelete, texDeleteSel, 532, 272, 48, 48);
 	m_gameBtnBackFull = _addButton("GAME/BACK_FULL_BTN", theme.btnFont, L"", 100, 390, 200, 56, theme.btnFontColor);
 	m_gameBtnPlayFull = _addButton("GAME/PLAY_FULL_BTN", theme.btnFont, L"", 340, 390, 200, 56, theme.btnFontColor);
-	m_gameBtnToogle = _addPicButton("GAME/TOOGLE_BTN", texToggleBanner, texToggleBanner, 385, 31, 236, 127);
-	m_gameBtnToogleFull = _addPicButton("GAME/TOOGLE_FULL_BTN", texToggleBanner, texToggleBanner, 20, 12, 608, 344);
+	m_gameBtnToggle = _addPicButton("GAME/TOOGLE_BTN", texToggleBanner, texToggleBanner, 385, 31, 236, 127);
+	m_gameBtnToggleFull = _addPicButton("GAME/TOOGLE_FULL_BTN", texToggleBanner, texToggleBanner, 20, 12, 608, 344);
 
 	m_gameButtonsZone.x = m_theme.getInt("GAME/ZONES", "buttons_x", 0);
 	m_gameButtonsZone.y = m_theme.getInt("GAME/ZONES", "buttons_y", 0);
@@ -1694,8 +1694,8 @@ void CMenu::_initGameMenu()
 	_setHideAnim(m_gameBtnDelete, "GAME/DELETE_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_gameBtnPlayFull, "GAME/PLAY_FULL_BTN", 0, 0, 1.f, 0.f);
 	_setHideAnim(m_gameBtnBackFull, "GAME/BACK_FULL_BTN", 0, 0, 1.f, 0.f);
-	_setHideAnim(m_gameBtnToogle, "GAME/TOOGLE_BTN", 200, 0, 1.f, 0.f);
-	_setHideAnim(m_gameBtnToogleFull, "GAME/TOOGLE_FULL_BTN", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameBtnToggle, "GAME/TOOGLE_BTN", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameBtnToggleFull, "GAME/TOOGLE_FULL_BTN", 200, 0, 1.f, 0.f);
 	_hideGame(true);
 	_textGame();
 }
@@ -1860,7 +1860,7 @@ void CMenu::_playGameSound(void)
 			return;
 		if(m_zoom_banner == true)
 		{
-			m_zoom_banner = m_banner.ToogleZoom();
+			m_zoom_banner = m_banner.ToggleZoom();
 			m_cfg.setBool(_domainFromView(), "show_full_banner", m_zoom_banner);
 			currentMoviePos = normalMoviePos;
 		}

@@ -113,7 +113,7 @@ void BannerWindow::CreateGCBanner(u8 *bnr, u8 *font1, u8 *font2, const wchar_t *
 	gameBanner.SetBannerText("T_GameTitle", title);
 }
 
-bool BannerWindow::ToogleZoom(void)
+bool BannerWindow::ToggleZoom(void)
 {
 	if(AnimZoom)
 	{
@@ -220,9 +220,9 @@ void BannerWindow::Draw(void)
 		DrawRectangle(0.0f, 0.0f, m_vid.width(), m_vid.height(), (GXColor) {0, 0, 0, Brightness});
 }
 
-void BannerWindow::ToogleGameSettings()
+void BannerWindow::ToggleGameSettings()
 {
-	ToogleZoom();
+	ToggleZoom();
 	Brightness = (Brightness == 200 ? 0 : 200);
 }
 

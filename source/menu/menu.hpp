@@ -124,7 +124,6 @@ private:
 	string m_screenshotDir;
 	string m_settingsDir;
 	string m_languagesDir;
-	string m_DMLgameDir;
 	string m_helpDir;
 
 	/* Explorer stuff */
