@@ -41,7 +41,7 @@ SOURCES		:=	source \
 				source/unzip \
 				source/xml \
 				source/wstringEx
-
+SOURCES += source/sicksaxis-wrapper
 DATA		:=	data \
 				data/images \
 				data/help \
@@ -67,7 +67,7 @@ endif
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:=	-lcustomfat -lcustomntfs -lcustomext2fs -lpng -lturbojpeg -lm -lz -lwiiuse -lwupc -lbte -lasnd -logc -lfreetype -lvorbisidec -lmad
+LIBS	:=	-lcustomfat -lcustomntfs -lcustomext2fs -lpng -lturbojpeg -lm -lz -lwiiuse -lwupc -lbte -lasnd -logc -lfreetype -lvorbisidec -lmad -lsicksaxis
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing

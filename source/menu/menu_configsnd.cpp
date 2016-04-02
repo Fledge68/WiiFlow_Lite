@@ -70,7 +70,7 @@ int CMenu::_configSnd(void)
 		change = _configCommon();
 		if (change != CONFIG_PAGE_NO_CHANGE)
 			break;
-		if (BTN_A_REPEAT)
+		if (BTN_A_REPEAT || BTN_A_PRESSED)
 		{
 			if (m_btnMgr.selected(m_configSndBtnBnrVolP))
 			{

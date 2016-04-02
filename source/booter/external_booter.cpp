@@ -126,7 +126,7 @@ bool ExternalBooter_LoadBins(const char *binDir)
 extern FragList *frag_list;
 extern s32 wbfsDev;
 extern u32 wbfs_part_idx;
-void ExternalBooter_WiiGameSetup(bool wbfs, bool dvd, bool patchregion, const char *ID)
+void ExternalBooter_WiiGameSetup(bool wbfs, bool dvd, bool patchregion, bool private_server, const char *ID)
 {
 	memset(&normalCFG, 0, sizeof(the_CFG));
 	normalCFG.GameBootType = dvd ? TYPE_WII_DISC : (wbfs ? TYPE_WII_WBFS : TYPE_WII_WBFS_EXT);
@@ -135,6 +135,7 @@ void ExternalBooter_WiiGameSetup(bool wbfs, bool dvd, bool patchregion, const ch
 	normalCFG.wbfsDevice = wbfsDev;
 	normalCFG.wbfsPart = wbfs_part_idx;
 	normalCFG.patchregion = patchregion;
+	normalCFG.private_server = private_server;
 }
 
 void ExternalBooter_ChannelSetup(u64 title, bool dol)

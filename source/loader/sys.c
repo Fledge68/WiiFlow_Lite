@@ -17,6 +17,7 @@
 #include "memory/memory.h"
 #include "wiiuse/wpad.h"
 #include "wupc/wupc.h"
+#include "sicksaxis-wrapper/sicksaxis-wrapper.h"
 
 /* Variables */
 bool reset = false;
@@ -36,7 +37,8 @@ void Open_Inputs(void)
 	PAD_Init();
 	WUPC_Init();
 	WPAD_Init();
-
+	DS3_Init();
+	
 	/* Set POWER button callback */
 	WPAD_SetPowerButtonCallback(__Wpad_PowerCallback);
 	WPAD_SetDataFormat(WPAD_CHAN_ALL, WPAD_FMT_BTNS_ACC_IR);
@@ -55,6 +57,7 @@ void Close_Inputs(void)
 
 	/* Shutdown Wiimote subsystem */
 	WPAD_Shutdown();
+	DS3_Cleanup();
 }
 
 bool Sys_Exiting(void)

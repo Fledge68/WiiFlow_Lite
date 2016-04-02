@@ -79,23 +79,27 @@ const CMenu::SOption CMenu::_VideoModes[7] = {
 	{ "vidprog", L"Progressive" },
 };
 
-const CMenu::SOption CMenu::_GlobalDMLvideoModes[6] = {
+const CMenu::SOption CMenu::_GlobalDMLvideoModes[8] = {
 	{ "DMLdefG", L"Game" },
 	{ "DMLpal", L"PAL 576i" },
 	{ "DMLntsc", L"NTSC 480i" },
 	{ "DMLpal60", L"PAL 480i" },
 	{ "DMLprog", L"NTSC 480p" },
-	{ "DMLprogP", L"PAL 480p" }
+	{ "DMLprogP", L"PAL 480p" },
+	{ "DMLmpal", L"MPAL" },
+	{ "DMLmpalP", L"MPAL-P" }
 };
 
-const CMenu::SOption CMenu::_DMLvideoModes[7] = {
+const CMenu::SOption CMenu::_DMLvideoModes[9] = {
 	{ "DMLdef", L"Default" },
 	{ "DMLdefG", L"Game" },
 	{ "DMLpal", L"PAL 576i" },
 	{ "DMLntsc", L"NTSC 480i" },
 	{ "DMLpal60", L"PAL 480i" },
 	{ "DMLprog", L"NTSC 480p" },
-	{ "DMLprogP", L"PAL 480p" }
+	{ "DMLprogP", L"PAL 480p" },
+	{ "DMLmpal", L"MPAL" },
+	{ "DMLmpalP", L"MPAL-P" }
 };
 
 const CMenu::SOption CMenu::_GlobalGClanguages[7] = {
@@ -145,10 +149,11 @@ const CMenu::SOption CMenu::_AspectRatio[3] = {
 	{ "aspect169", L"Force 16:9" },
 };
 
-const CMenu::SOption CMenu::_NMM[4] = {
+const CMenu::SOption CMenu::_NMM[5] = {
 	{ "NMMDef", L"Default" },
 	{ "NMMOff", L"Disabled" },
 	{ "NMMon", L"Enabled" },
+	{ "NMMMulti", L"Multi Saves" },
 	{ "NMMdebug", L"Debug" },
 };
 
@@ -918,27 +923,22 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	}
 
 	u8 loader = min((u32)m_gcfg2.getInt(id, "gc_loader", 0), ARRAY_SIZE(CMenu::_GCLoader) - 1u);
-	loader = (loader == 0) ? min((u32)m_cfg.getInt(GC_DOMAIN, "default_loader", 0), ARRAY_SIZE(CMenu::_GlobalGCLoaders) - 1u) : loader-1;
+	loader = (loader == 0) ? min((u32)m_cfg.getInt(GC_DOMAIN, "default_loader", 2), ARRAY_SIZE(CMenu::_GlobalGCLoaders) - 1u) : loader-1;
 	bool memcard_emu = m_gcfg2.getBool(id, "devo_memcard_emu", false);
 	bool widescreen = m_gcfg2.getBool(id, "dm_widescreen", false);
 	bool activity_led = m_gcfg2.getBool(id, "led", false);
+	bool usb_hid = m_gcfg2.getBool(id, "USB_HID", m_cfg.getBool(GC_DOMAIN, "USB_HID", false));
+	bool native_ctl = m_gcfg2.getBool(id, "NATIVE_CTL", m_cfg.getBool(GC_DOMAIN, "NATIVE_CTL", false));
+	bool deflicker = m_gcfg2.getBool(id, "Deflicker", m_cfg.getBool(GC_DOMAIN, "Deflicker", false));
 
 	if(loader == 2 && m_nintendont_installed == false)
 		loader = 0;
 
 	//always enable for nintendont
-	u8 NMM = (loader == 2) ? 2 : min((u32)m_gcfg2.getInt(id, "dml_nmm", 0), ARRAY_SIZE(CMenu::_NMM) - 1u);
-	NMM = (NMM == 0) ? m_cfg.getInt(GC_DOMAIN, "dml_nmm", 0) : NMM-1;
+	u8 NMM = min((u32)m_gcfg2.getInt(id, "dml_nmm", m_cfg.getInt(GC_DOMAIN, "dml_nmm", 1)), ARRAY_SIZE(CMenu::_NMM) - 1u);
+	NMM = (NMM == 0) ? m_cfg.getInt(GC_DOMAIN, "dml_nmm", 1) : NMM-1;
 
-	//if GC disc use DIOS MIOS to launch it
-	if(disc)
-	{
-		loader = 0;
-		gprintf("Booting GC Disc: %s\n", id);
-	}
-	else
-		m_cfg.setString(GC_DOMAIN, "current_item", id);
-
+	m_cfg.setString(GC_DOMAIN, "current_item", id);
 
 	if(loader == 0) //auto selected
 	{
@@ -1017,7 +1017,15 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	}
 	_launchShutdown();
 	if(disc == true)
-		DML_New_SetBootDiscOption(m_new_dm_cfg);
+	{
+		if(loader == 0)
+			DML_New_SetBootDiscOption(m_new_dm_cfg);
+		else if(loader == 2)
+		{
+			NMM = m_cfg.getInt(GC_DOMAIN, "dml_nmm", 1);
+			Nintendont_BootDisc(NMM, widescreen, usb_hid, native_ctl, deflicker);
+		}
+	}
 	else if(loader == 0)
 	{
 		char CheatPath[256];
@@ -1052,15 +1060,37 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	else if(loader == 1)
 		DEVO_GetLoader(m_dataDir.c_str());
 	else if(loader == 2)
-		Nintendont_SetOptions(path, id, NMM, videoSetting, widescreen);
-
+	{
+		bool NIN_Debugger = (m_gcfg2.getInt(id, "debugger", 0) == 2);
+		bool screenshot = m_gcfg2.getBool(id, "screenshot", false);
+		bool cheats = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool(GC_DOMAIN, "cheat", false));	
+		/* Generate gct path */
+		char GC_Path[256];
+		GC_Path[255] = '\0';
+		strncpy(GC_Path, path, 255);
+		if(strcasestr(path, "boot.bin") != NULL)
+		{
+			*strrchr(GC_Path, '/') = '\0'; //boot.bin
+			*(strrchr(GC_Path, '/')+1) = '\0'; //sys
+		}
+		else
+			*(strrchr(GC_Path, '/')+1) = '\0'; //iso path
+		//const char *NewPath = fmt("%s%s.gct", GC_Path, id);
+		char CheatPath[256];
+		char NewCheatPath[256];
+		snprintf(CheatPath, sizeof(CheatPath), "%s/%s", m_cheatDir.c_str(), fmt("%s.gct", id));	
+		snprintf(NewCheatPath, sizeof(NewCheatPath), "%s%s.gct",GC_Path,id);
+				
+		Nintendont_SetOptions(path, id, CheatPath,NewCheatPath,DeviceName[currentPartition],
+			cheats, NMM, videoMode,videoSetting, widescreen,usb_hid,native_ctl,deflicker,screenshot,NIN_Debugger);
+	}			
 	m_gcfg1.save(true);
 	m_gcfg2.save(true);
 	m_cat.save(true);
 	m_cfg.save(true);
 	cleanup();
-
-	GC_SetVideoMode(videoMode, (disc ? 1 : videoSetting), loader);
+	
+ 	GC_SetVideoMode(videoMode, (disc ? 1 : videoSetting), loader);
 	GC_SetLanguage(GClanguage, loader);
 	/* NTSC-J Patch by FIX94 */
 	if(id[3] == 'J')
@@ -1398,6 +1428,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 
 	bool vipatch = m_gcfg2.testOptBool(id, "vipatch", m_cfg.getBool("GENERAL", "vipatch", false));
 	bool countryPatch = m_gcfg2.testOptBool(id, "country_patch", m_cfg.getBool("GENERAL", "country_patch", false));
+	bool private_server = m_gcfg2.testOptBool(id, "private_server", m_cfg.getBool("GENERAL", "private_server", false));
 
 	u8 patchVidMode = min((u32)m_gcfg2.getInt(id, "patch_video_modes", 0), ARRAY_SIZE(CMenu::_vidModePatch) - 1u);
 	u8 videoMode = (u8)min((u32)m_gcfg2.getInt(id, "video_mode", 0), ARRAY_SIZE(CMenu::_VideoModes) - 1u);
@@ -1568,7 +1599,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		free(gameconfig);
 	}
 
-	ExternalBooter_WiiGameSetup(wbfs_partition, dvd, patchregion, id.c_str());
+	ExternalBooter_WiiGameSetup(wbfs_partition, dvd, patchregion, private_server, id.c_str());
 	WiiFlow_ExternalBooter(videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, returnTo, TYPE_WII_GAME, use_led);
 
 	Sys_Exit();

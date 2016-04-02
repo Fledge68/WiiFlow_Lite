@@ -100,7 +100,7 @@ void CMenu::_showConfig3(void)
 		i = min(max(0, m_cfg.getInt(GC_DOMAIN, "game_language", 0)), (int)ARRAY_SIZE(CMenu::_GlobalGClanguages) - 1);
 		m_btnMgr.setText(m_config3LblDMLLanguage, _t(CMenu::_GlobalGClanguages[i].id, CMenu::_GlobalGClanguages[i].text));
 	}
-	i = min(max(0, m_cfg.getInt(GC_DOMAIN, "default_loader", 0)), (int)ARRAY_SIZE(CMenu::_GlobalGCLoaders) - 1);
+	i = min(max(0, m_cfg.getInt(GC_DOMAIN, "default_loader", 2)), (int)ARRAY_SIZE(CMenu::_GlobalGCLoaders) - 1);
 	m_btnMgr.setText(m_config3LblDMLLoader, _t(CMenu::_GlobalGCLoaders[i].id, CMenu::_GlobalGCLoaders[i].text));
 
 	m_btnMgr.setText(m_config3BtnOcarina, m_cfg.getBool(_domainFromView(), "cheat", false) ? _t("on", L"On") : _t("off", L"Off"));
@@ -145,7 +145,7 @@ int CMenu::_config3(void)
 			else if (m_btnMgr.selected(m_config3BtnDMLLoaderP) || m_btnMgr.selected(m_config3BtnDMLLoaderM))
 			{
 				s8 direction = m_btnMgr.selected(m_config3BtnDMLLoaderP) ? 1 : -1;
-				m_cfg.setInt(GC_DOMAIN, "default_loader", (int)loopNum((u32)m_cfg.getInt(GC_DOMAIN, "default_loader", 0) + direction, ARRAY_SIZE(CMenu::_GlobalGCLoaders)));
+				m_cfg.setInt(GC_DOMAIN, "default_loader", (int)loopNum((u32)m_cfg.getInt(GC_DOMAIN, "default_loader", 2) + direction, ARRAY_SIZE(CMenu::_GlobalGCLoaders)));
 				_showConfig3();
 			}
 			else if (m_btnMgr.selected(m_config3BtnOcarina))
@@ -220,8 +220,8 @@ void CMenu::_textConfig3(void)
 {
 	m_btnMgr.setText(m_config3LblGameVideo, _t("cfgb3", L"Default video mode"));
 	m_btnMgr.setText(m_config3LblGameLanguage, _t("cfgb4", L"Default game language"));
-	m_btnMgr.setText(m_config3LblDMLGameVideo, _t("cfgb5", L"Default DML video mode"));
-	m_btnMgr.setText(m_config3LblDMLGameLanguage, _t("cfgb6", L"Default DML game language"));
+	m_btnMgr.setText(m_config3LblDMLGameVideo, _t("cfgb5", L"Default GC video mode"));
+	m_btnMgr.setText(m_config3LblDMLGameLanguage, _t("cfgb6", L"Default GC game language"));
 	m_btnMgr.setText(m_config3LblDMLGameLoader, _t("cfgb2", L"Default GC game loader"));
 	m_btnMgr.setText(m_config3LblOcarina, _t("cfgb1", L"Ocarina"));
 }
