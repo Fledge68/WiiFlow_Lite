@@ -49,6 +49,7 @@ static bool show_homebrew = true;
 static bool parental_homebrew = false;
 static bool show_channel = true;
 static bool show_emu = true;
+static bool show_gamecube = true;
 
 void CMenu::_showMain(void)
 {
@@ -72,7 +73,7 @@ start_main:
 				m_btnMgr.show(m_mainBtnChannel);
 			else if(show_emu)
 				m_btnMgr.show(m_mainBtnEmu);
-			else if(show_homebrew && (parental_homebrew || !m_locked))
+			else if(show_homebrew)
 				m_btnMgr.show(m_mainBtnHomebrew);
 			else
 				m_btnMgr.show(m_mainBtnUsb);
@@ -80,7 +81,7 @@ start_main:
 		case COVERFLOW_CHANNEL:
 			if(show_emu)
 				m_btnMgr.show(m_mainBtnEmu);
-			else if (show_homebrew && (parental_homebrew || !m_locked))
+			else if(show_homebrew)
 				m_btnMgr.show(m_mainBtnHomebrew);
 			else
 				m_btnMgr.show(m_mainBtnUsb);
@@ -90,19 +91,19 @@ start_main:
 			m_btnMgr.show(m_mainBtnUsb);
 			break;
 		case COVERFLOW_PLUGIN:
-			if (show_homebrew && (parental_homebrew || !m_locked))
+			if(show_homebrew)
 				m_btnMgr.show(m_mainBtnHomebrew);
 			else
 				m_btnMgr.show(m_mainBtnUsb);
 			break;
 		default:
-			if(m_show_dml || m_devo_installed || m_nintendont_installed)
+			if(show_gamecube)
 				m_btnMgr.show(m_mainBtnDML);
-			else if (show_channel)
+			else if(show_channel)
 				m_btnMgr.show(m_mainBtnChannel);
 			else if(show_emu)
 				m_btnMgr.show(m_mainBtnEmu);
-			else if(show_homebrew && (parental_homebrew || !m_locked))
+			else if(show_homebrew)
 				m_btnMgr.show(m_mainBtnHomebrew);
 			else
 				m_btnMgr.show(m_mainBtnUsb);
@@ -119,6 +120,7 @@ start_main:
 		{
 			case COVERFLOW_WII:
 			case COVERFLOW_GAMECUBE:
+			//  m_btnMgr.setText(m_mainLblInit, _t("main2", L"Sorry, could not find any games. Please click Install to install games or Select partition to change the device/partition where your games are."));
 				m_btnMgr.setText(m_mainLblInit, _t("main2", L"Welcome to WiiFlow. I have not found any games. Click Install to install games, or Select partition to select your partition type."));
 				m_btnMgr.show(m_mainBtnInit);
 				m_btnMgr.show(m_mainBtnInit2);
@@ -127,6 +129,7 @@ start_main:
 			case COVERFLOW_CHANNEL:
 				if(NANDemuView)
 				{
+					//"sorry, could not find your emu NAND. Would you like me to create one for you?
 					_hideMain();
 					if(!_AutoCreateNand())
 					{
@@ -138,11 +141,13 @@ start_main:
 				}
 				break;
 			case COVERFLOW_HOMEBREW:
+			//  m_btnMgr.setText(m_mainLblInit, _t("main4", L"Sorry, could not find any homebrew apps. Try changing the partition to select your device/partition where they are."));
 				m_btnMgr.setText(m_mainLblInit, _t("main4", L"Welcome to WiiFlow. I have not found any homebrew apps. Select partition to select your partition type."));
 				m_btnMgr.show(m_mainBtnInit2);
 				m_btnMgr.show(m_mainLblInit);
 				break;
 			case COVERFLOW_PLUGIN:
+			//	m_btnMgr.setText(m_mainLblInit, _t("main5", L"Sorry, could not find any roms or items for your plugin. Try changing the partition to select your device/partition where they are."));
 				m_btnMgr.setText(m_mainLblInit, _t("main5", L"Welcome to WiiFlow. I have not found any plugins. Select partition to select your partition type."));
 				m_btnMgr.show(m_mainBtnInit2);
 				m_btnMgr.show(m_mainLblInit);
@@ -158,7 +163,7 @@ void CMenu::LoadView(void)
 	CoverFlow.clear();
 	if(!m_vid.showingWaitMessage())
 		_showWaitMessage();
-	if(m_clearCats)
+	if(m_clearCats)// clear categories unless a source menu btn has selected one
 	{
 		m_cat.remove("GENERAL", "selected_categories");
 		m_cat.remove("GENERAL", "required_categories");
@@ -242,16 +247,16 @@ int CMenu::main(void)
 	wstringEx curLetter;
 	string prevTheme = m_cfg.getString("GENERAL", "theme", "default");
 	parental_homebrew = m_cfg.getBool(HOMEBREW_DOMAIN, "parental", false);
-	show_homebrew = !m_cfg.getBool(HOMEBREW_DOMAIN, "disable", false);
+	show_homebrew = (!m_cfg.getBool(HOMEBREW_DOMAIN, "disable", false) && (parental_homebrew || !m_locked));
 	show_channel = !m_cfg.getBool("GENERAL", "hidechannel", false);
 	show_emu = !m_cfg.getBool(PLUGIN_DOMAIN, "disable", false);
+	show_gamecube = (m_show_dml || m_devo_installed || m_nintendont_installed);
 	m_use_source = m_cfg.getBool("GENERAL", "use_source", true);
 	bool bheld = false;
 	bool bUsed = false;
 
 	m_reload = false;
 	u32 disc_check = 0;
-	int done = 0;
 
 	SetupInput(true);
 	GameTDB m_gametdb; 
@@ -282,27 +287,7 @@ int CMenu::main(void)
 	if(m_cfg.getBool("GENERAL", "update_cache", false))
 		UpdateCache();
 	LoadView();
-	if(m_cfg.getBool("GENERAL", "source_on_start", false)) 
-	{
-		_hideMain();
-		if(m_cfg.getBool("SOURCEFLOW", "enabled", false))
-		{
-			m_sourceflow = true;
-			LoadView();
-		}
-		else
-		{
-			if(!_Source())
-				LoadView();
-			else
-			{
-				if(BTN_B_HELD)
-					bUsed = true;
-				_initCF();
-				_showMain();
-			}
-		}
-	}
+
 	gprintf("start\n");
 	while(!m_exit)
 	{
@@ -310,30 +295,30 @@ int CMenu::main(void)
 		WDVD_GetCoverStatus(&disc_check);
 		/* Main Loop */
 		_mainLoopCommon(true);
-		if(bheld && !BTN_B_HELD)
+		if(bheld && !BTN_B_HELD)//if button b was held and now released
 		{
 			bheld = false;
-			if(bUsed)
+			if(bUsed)//if b button used for something don't show souce menu or sourceflow
 				bUsed = false;
 			else
 			{
-				if(m_sourceflow)
+				if(m_sourceflow)//if exiting sourceflow via b button
 				{
 					m_sourceflow = false;
 					LoadView();
 					continue;
 				}
-				if(m_use_source)
+				if(m_use_source)//if source_menu enabled via b button
 				{
 					_hideMain();
-					if(m_cfg.getBool("SOURCEFLOW", "enabled", false))
+					if(m_cfg.getBool("SOURCEFLOW", "enabled", false))//if sourceflow show it
 					{
 						m_sourceflow = true;
 						LoadView();
 					}
-					else
+					else //show source menu
 					{
-						if(!_Source()) //Different source selected
+						if(!_Source()) //if different source selected
 							LoadView();
 						else
 						{
@@ -347,14 +332,28 @@ int CMenu::main(void)
 				}
 			}
 		}
-		if(BTN_HOME_PRESSED && !m_sourceflow)
+		if(BTN_HOME_PRESSED)
 		{
 			_hideMain();
-			if(_Home()) //exit wiiflow
-				break;
-			_showMain();
-			if(BTN_B_HELD)
-				bUsed = true;
+			if(m_sourceflow)
+			{
+				_CfgSrc();
+				_showMain();
+				if(BTN_B_HELD)
+					bUsed = true;
+				if(m_load_view)
+					LoadView();
+				else
+					_showMain();
+			}
+			else
+			{
+				if(_Home()) //exit wiiflow
+					break;
+				_showMain();
+				if(BTN_B_HELD)
+					bUsed = true;
+			}
 		}
 		else if(BTN_A_PRESSED)
 		{
@@ -374,35 +373,17 @@ int CMenu::main(void)
 			else if(m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML) || m_btnMgr.selected(m_mainBtnHomebrew) || m_btnMgr.selected(m_mainBtnEmu))
 			{
 				if(m_current_view == COVERFLOW_WII) 
-					m_current_view = (m_show_dml || m_devo_installed || m_nintendont_installed) ? COVERFLOW_GAMECUBE :
-										(show_channel ? COVERFLOW_CHANNEL : (show_emu ? COVERFLOW_PLUGIN : 
-									((show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_WII)));
+					m_current_view = show_gamecube ? COVERFLOW_GAMECUBE : (show_channel ? COVERFLOW_CHANNEL : (show_emu ? COVERFLOW_PLUGIN : (show_homebrew ? COVERFLOW_HOMEBREW : COVERFLOW_WII)));
 				else if(m_current_view == COVERFLOW_GAMECUBE)
-					m_current_view = show_channel ? COVERFLOW_CHANNEL : ((show_emu ? COVERFLOW_PLUGIN : (show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_WII));
+					m_current_view = show_channel ? COVERFLOW_CHANNEL : (show_emu ? COVERFLOW_PLUGIN : (show_homebrew ? COVERFLOW_HOMEBREW : COVERFLOW_WII));
 				else if(m_current_view == COVERFLOW_CHANNEL)
-					m_current_view = (show_emu ? COVERFLOW_PLUGIN : (show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_WII);
+					m_current_view = show_emu ? COVERFLOW_PLUGIN : (show_homebrew ? COVERFLOW_HOMEBREW : COVERFLOW_WII);
 				else if(m_current_view == COVERFLOW_PLUGIN)
-					m_current_view = (show_homebrew && (parental_homebrew || !m_locked)) ? COVERFLOW_HOMEBREW : COVERFLOW_WII;
+					m_current_view = show_homebrew ? COVERFLOW_HOMEBREW : COVERFLOW_WII;
 				else if(m_current_view == COVERFLOW_HOMEBREW || m_current_view == COVERFLOW_MAX)
 					m_current_view = COVERFLOW_WII;
 				_clearSources();
-				switch(m_current_view)
-				{
-					case COVERFLOW_WII:
-						m_cfg.setBool(WII_DOMAIN, "source", true);
-						break;
-					case COVERFLOW_GAMECUBE:
-						m_cfg.setBool(GC_DOMAIN, "source", true);
-						break;
-					case COVERFLOW_CHANNEL:
-						m_cfg.setBool(CHANNEL_DOMAIN, "source", true);
-						break;
-					case COVERFLOW_HOMEBREW:
-						m_cfg.setBool(HOMEBREW_DOMAIN, "source", true);
-						break;
-					default:
-						m_cfg.setBool(PLUGIN_DOMAIN, "source", true);
-				}
+				m_cfg.setBool(_domainFromView(), "source", true);
 				m_catStartPage = 1;
 				m_combined_view = false;
 				LoadView();
@@ -447,6 +428,7 @@ int CMenu::main(void)
 				}
 				if(BTN_B_HELD)
 					bUsed = true;
+				show_homebrew = (!m_cfg.getBool(HOMEBREW_DOMAIN, "disable", false) && (parental_homebrew || !m_locked));
 				if(m_load_view)
 					LoadView();
 				else
@@ -489,7 +471,7 @@ int CMenu::main(void)
 				_hideMain();
 				if(m_sourceflow)
 				{
-					_sourceFlow();
+					_sourceFlow();// set the source selected
 					LoadView();
 					continue;
 				}
@@ -518,20 +500,20 @@ int CMenu::main(void)
 				_showMain();
 				_initCF();
 			}
-			//Events to Switch off/on nand emu
+			//Events to show source menu or sourceflow if B on mode icon
 			else if(m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML)|| m_btnMgr.selected(m_mainBtnEmu) || m_btnMgr.selected(m_mainBtnHomebrew))
 			{
-				if(!m_use_source)//B on mode to source
+				if(!m_use_source)//only use if B to source menu not enabled
 				{
 					_hideMain();
-					if(m_cfg.getBool("SOURCEFLOW", "enabled", false))
+					if(m_cfg.getBool("SOURCEFLOW", "enabled", false))//if sourceflow show it
 					{
 						m_sourceflow = true;
 						LoadView();
 					}
-					else
+					else //show source menu
 					{
-						if(!_Source()) //Different source selected
+						if(!_Source()) //if different source selected load it
 							LoadView();
 						else
 						{
@@ -717,17 +699,6 @@ int CMenu::main(void)
 			}
 		}
 
-		if(done==0 && m_cfg.getBool("GENERAL", "category_on_start", false))
-		{
-			done = 1; //set done so it doesnt keep doing it
-			// show categories menu
-			_hideMain();
-			_CategorySettings();
-			if(BTN_B_HELD)
-				bUsed = true;
-			_showMain();
-			_initCF();
-		}
 		if(m_showtimer > 0)
 		{
 			if(--m_showtimer == 0)
@@ -737,15 +708,15 @@ int CMenu::main(void)
 			}
 		}
 		//zones, showing and hiding buttons
-		if(!m_gameList.empty() && m_show_zone_prev)
+		if(!m_gameList.empty() && m_show_zone_prev && !m_sourceflow)
 			m_btnMgr.show(m_mainBtnPrev);
 		else
 			m_btnMgr.hide(m_mainBtnPrev);
-		if(!m_gameList.empty() && m_show_zone_next)
+		if(!m_gameList.empty() && m_show_zone_next && !m_sourceflow)
 			m_btnMgr.show(m_mainBtnNext);
 		else
 			m_btnMgr.hide(m_mainBtnNext);
-		if(!m_gameList.empty() && m_show_zone_main  && !m_sourceflow)
+		if(!m_gameList.empty() && m_show_zone_main && !m_sourceflow)
 		{
 			m_btnMgr.show(m_mainLblUser[0]);
 			m_btnMgr.show(m_mainLblUser[1]);
@@ -777,7 +748,7 @@ int CMenu::main(void)
 						m_btnMgr.show(m_mainBtnChannel);
 					else if(show_emu)
 						m_btnMgr.show(m_mainBtnEmu);
-					else if(show_homebrew && (parental_homebrew || !m_locked))
+					else if(show_homebrew)
 						m_btnMgr.show(m_mainBtnHomebrew);
 					else 
 						m_btnMgr.show(m_mainBtnUsb);
@@ -785,13 +756,13 @@ int CMenu::main(void)
 				case COVERFLOW_CHANNEL:
 					if(show_emu)
 						m_btnMgr.show(m_mainBtnEmu);
-					else if(show_homebrew && (parental_homebrew || !m_locked))
+					else if(show_homebrew)
 						m_btnMgr.show(m_mainBtnHomebrew);
 					else
 						m_btnMgr.show(m_mainBtnUsb);
 					break;
 				case COVERFLOW_PLUGIN:
-					if(show_homebrew && (parental_homebrew || !m_locked))
+					if(show_homebrew)
 						m_btnMgr.show(m_mainBtnHomebrew);
 					else
 						m_btnMgr.show(m_mainBtnUsb);
@@ -801,13 +772,13 @@ int CMenu::main(void)
 					m_btnMgr.show(m_mainBtnUsb);
 					break;
 				default:
-					if(m_show_dml || m_devo_installed || m_nintendont_installed)
+					if(show_gamecube)
 						m_btnMgr.show(m_mainBtnDML);
 					else if(show_channel)
 						m_btnMgr.show(m_mainBtnChannel);
 					else if(show_emu)
 						m_btnMgr.show(m_mainBtnEmu);
-					else if(show_homebrew && (parental_homebrew || !m_locked))
+					else if(show_homebrew)
 						m_btnMgr.show(m_mainBtnHomebrew);
 					else
 						m_btnMgr.show(m_mainBtnUsb);

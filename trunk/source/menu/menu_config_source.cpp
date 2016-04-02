@@ -124,24 +124,25 @@ void CMenu::_CfgSrc(void)
 		{
 			if(m_btnMgr.selected(m_cfgsrcBtnBack))
 				break;
-			else if (m_btnMgr.selected(m_cfgsrcBtnEnableSM))
+			else if (m_btnMgr.selected(m_cfgsrcBtnEnableSM) && !m_sourceflow)
 			{
 				m_cfg.setBool("GENERAL", "use_source", !m_cfg.getBool("GENERAL", "use_source", true));
 				m_btnMgr.setText(m_cfgsrcBtnEnableSM, m_cfg.getBool("GENERAL", "use_source", true) ? _t("on", L"On") : _t("off", L"Off"));
 				m_use_source = m_cfg.getBool("GENERAL", "use_source", true);
 			}
-			else if (m_btnMgr.selected(m_cfgsrcBtnSourceOnBoot))
+			else if (m_btnMgr.selected(m_cfgsrcBtnSourceOnBoot) && !m_sourceflow)
 			{
 				m_cfg.setBool("GENERAL", "source_on_start", !m_cfg.getBool("GENERAL", "source_on_start", false));
 				m_btnMgr.setText(m_cfgsrcBtnSourceOnBoot, m_cfg.getBool("GENERAL", "source_on_start") ? _t("on", L"On") : _t("off", L"Off"));
 			}
-			else if (m_btnMgr.selected(m_cfgsrcBtnEnableSF))
+			else if (m_btnMgr.selected(m_cfgsrcBtnEnableSF) && !m_sourceflow)
 			{
 				m_cfg.setBool("SOURCEFLOW", "enabled", !m_cfg.getBool("SOURCEFLOW", "enabled", false));
 				m_btnMgr.setText(m_cfgsrcBtnEnableSF, m_cfg.getBool("SOURCEFLOW", "enabled") ? _t("on", L"On") : _t("off", L"Off"));
 			}
 			else if (m_btnMgr.selected(m_cfgsrcBtnSmallbox))
 			{
+				m_load_view = true;
 				fsop_deleteFolder(fmt("%s/sourceflow", m_cacheDir.c_str()));
 				m_cfg.setBool("SOURCEFLOW", "smallbox", !m_cfg.getBool("SOURCEFLOW", "smallbox", false));
 				m_btnMgr.setText(m_cfgsrcBtnSmallbox, m_cfg.getBool("SOURCEFLOW", "smallbox") ? _t("on", L"On") : _t("off", L"Off"));
@@ -149,8 +150,9 @@ void CMenu::_CfgSrc(void)
 			else if (m_btnMgr.selected(m_cfgsrcBtnClearSF))
 			{
 				fsop_deleteFolder(fmt("%s/sourceflow", m_cacheDir.c_str()));
+				m_load_view = true;
 			}
-			else if (m_btnMgr.selected(m_cfgsrcBtnMultisource))
+			else if (m_btnMgr.selected(m_cfgsrcBtnMultisource) && !m_sourceflow)
 			{
 				m_cfg.setBool("GENERAL", "multisource", !m_cfg.getBool("GENERAL", "multisource", false));
 				m_btnMgr.setText(m_cfgsrcBtnMultisource, m_cfg.getBool("GENERAL", "multisource") ? _t("on", L"On") : _t("off", L"Off"));
