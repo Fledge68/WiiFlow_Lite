@@ -126,9 +126,9 @@ void CMenu::_CfgSrc(void)
 				break;
 			else if (m_btnMgr.selected(m_cfgsrcBtnEnableSM))
 			{
-				m_cfg.setBool("GENERAL", "use_source", !m_cfg.getBool("GENERAL", "use_source", false));
-				m_btnMgr.setText(m_cfgsrcBtnEnableSM, m_cfg.getBool("GENERAL", "use_source", false) ? _t("on", L"On") : _t("off", L"Off"));
-				m_use_source = m_cfg.getBool("GENERAL", "use_source", false);
+				m_cfg.setBool("GENERAL", "use_source", !m_cfg.getBool("GENERAL", "use_source", true));
+				m_btnMgr.setText(m_cfgsrcBtnEnableSM, m_cfg.getBool("GENERAL", "use_source", true) ? _t("on", L"On") : _t("off", L"Off"));
+				m_use_source = m_cfg.getBool("GENERAL", "use_source", true);
 			}
 			else if (m_btnMgr.selected(m_cfgsrcBtnSourceOnBoot))
 			{

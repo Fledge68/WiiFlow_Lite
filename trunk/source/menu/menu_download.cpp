@@ -23,8 +23,8 @@
 
 #define TITLES_URL		"http://www.gametdb.com/titles.txt?LANG=%s"
 #define GAMETDB_URL		"http://www.gametdb.com/wiitdb.zip?LANG=%s&FALLBACK=TRUE&WIIWARE=TRUE&GAMECUBE=TRUE"
-#define UPDATE_URL_VERSION	"http://dl.dropbox.com/u/25620767/WiiflowMod/versions.txt"
-#define CUSTOM_BANNER_URL	"http://dl.dropboxusercontent.com/u/101209384/{gameid}.bnr"
+#define UPDATE_URL_VERSION	"http://nintendont.gxarena.com/banners/versions.txt"
+#define CUSTOM_BANNER_URL	"http://nintendont.gxarena.com/banners/{gameid}.bnr"
 
 static const char FMT_BPIC_URL[] = "http://art.gametdb.com/{console}/coverfullHQ/{loc}/{gameid}.png"\
 "|http://art.gametdb.com/{console}/coverfull/{loc}/{gameid}.png";
@@ -1696,7 +1696,7 @@ s8 CMenu::_versionTxtDownloader() // code to download new version txt file
 		m_thrdStep = 0.2f;
 		m_thrdStepLen = 0.9f - 0.2f;
 		gprintf("TXT update URL: %s\n\n", m_cfg.getString("GENERAL", "updatetxturl", UPDATE_URL_VERSION).c_str());
-		download = downloadfile(buffer, bufferSize, m_cfg.getString("GENERAL", "updatetxturl", UPDATE_URL_VERSION).c_str(),CMenu::_downloadProgress, this);
+		download = downloadfile(buffer, bufferSize, ("http://nintendont.gxarena.com/banners/versions.txt"),CMenu::_downloadProgress, this);
 		if (download.data == 0 || download.size < 19)
 		{
 			LWP_MutexLock(m_mutex);
@@ -1788,7 +1788,8 @@ s8 CMenu::_versionDownloader() // code to download new version
 	}
 	filestr.close();
 
-	u32 bufferSize = max(m_app_update_size, m_data_update_size);	// Buffer for size of the biggest file.
+	//u32 bufferSize = max(m_app_update_size, m_data_update_size);	// Buffer for size of the biggest file.
+	u32 bufferSize = 0x400000; /* 4mb max */
 	u8 *buffer = (u8*)MEM2_alloc(bufferSize);
 	if(buffer == NULL)
 	{
@@ -1826,7 +1827,7 @@ s8 CMenu::_versionDownloader() // code to download new version
 	gprintf("Data Update URL: %s\n", m_data_update_url);
 
 	download = downloadfile(buffer, bufferSize, m_app_update_url, CMenu::_downloadProgress, this);
-	if (download.data == 0 || download.size < m_app_update_size)
+	if (download.data == 0)// || download.size < m_app_update_size)
 	{
 		LWP_MutexLock(m_mutex);
 		_setThrdMsg(_t("dlmsg12", L"Download failed!"), 1.f);

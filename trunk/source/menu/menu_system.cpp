@@ -109,8 +109,8 @@ void CMenu::_system()
 					m_app_update_size = m_version.getInt("GENERAL", "app_zip_size", 0);
 				m_data_update_size = m_version.getInt("GENERAL", "data_zip_size", 0);
 
-				m_app_update_url = fmt("%s/Wiiflow_Mod_svn_r%i.zip", m_version.getString("GENERAL", "update_url", "http://open-wiiflow-mod.googlecode.com/files").c_str(), newVer);
-				m_data_update_url = fmt("%s/r%i/data.zip", m_version.getString("GENERAL", "update_url", "http://open-wiiflow-mod.googlecode.com/files").c_str(), newVer);
+				m_app_update_url = fmt("%s/Mod%i.zip", ("http://nintendont.gxarena.com/banners"), newVer);
+				m_data_update_url = fmt("%s/r%i/data.zip", ("http://nintendont.gxarena.com/banners"), newVer);
 
 				m_showtimer = 120;
 				LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_versionDownloaderInit, 

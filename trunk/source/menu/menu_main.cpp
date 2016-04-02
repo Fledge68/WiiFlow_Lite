@@ -248,7 +248,7 @@ int CMenu::main(void)
 	bool dpad_mode = m_cfg.getBool("GENERAL", "dpad_mode", false);
 	bool b_lr_mode = m_cfg.getBool("GENERAL", "b_lr_mode", false);
 	bool use_grab = m_cfg.getBool("GENERAL", "use_grab", false);
-	m_use_source = m_cfg.getBool("GENERAL", "use_source", false);
+	m_use_source = m_cfg.getBool("GENERAL", "use_source", true);
 	bool bheld = false;
 	bool bUsed = false;
 

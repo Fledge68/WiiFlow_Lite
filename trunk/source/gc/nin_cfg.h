@@ -2,9 +2,13 @@
 #ifndef __COMMON_CONFIG_H__
 #define __COMMON_CONFIG_H__
 
-#define NIN_CFG_VERSION		0x00000002
-
+#define NIN_CFG_VERSION		0x00000003
+#define OLD_NIN_CFG_VERSION	0x00000002
 #define NIN_CFG_MAXPAD 4
+#define MEM_CARD_MAX (5)
+#define MEM_CARD_CODE(x) (1<<(x+2))
+#define MEM_CARD_SIZE(x) (1<<(x+19))
+#define MEM_CARD_BLOCKS(x) ((1<<(x+6))-5)
 
 typedef struct NIN_CFG
 {
@@ -17,6 +21,7 @@ typedef struct NIN_CFG
 	char	CheatPath[255];
 	unsigned int		MaxPads;
 	unsigned int		GameID;
+	unsigned int		MemCardBlocks;
 } NIN_CFG;
 
 enum ninconfig
@@ -32,6 +37,11 @@ enum ninconfig
 	NIN_CFG_HID			= (1<<8),
 	NIN_CFG_OSREPORT	= (1<<9),
 	NIN_CFG_USB			= (1<<10),
+	NIN_CFG_LED			= (1<<11),
+	NIN_CFG_LOG			= (1<<12),
+	NIN_CFG_MC_MULTI 	= (1<<13),
+	NIN_CFG_NATIVE_SI	= (1<<14),
+	NIN_CFG_WIIU_WIDE	= (1<<15),
 };
 
 enum ninvideomode
@@ -39,8 +49,9 @@ enum ninvideomode
 	NIN_VID_AUTO		= (0<<16),
 	NIN_VID_FORCE		= (1<<16),
 	NIN_VID_NONE		= (2<<16),
+	NIN_VID_FORCE_DF	= (4<<16),
 
-	NIN_VID_MASK		= NIN_VID_AUTO|NIN_VID_FORCE|NIN_VID_NONE,
+	NIN_VID_MASK		= NIN_VID_AUTO|NIN_VID_FORCE|NIN_VID_NONE|NIN_VID_FORCE_DF,
 
 	NIN_VID_FORCE_PAL50	= (1<<0),
 	NIN_VID_FORCE_PAL60	= (1<<1),
@@ -74,8 +85,5 @@ enum VideoModes
 	GCVideoModeNTSC		= 2,
 	GCVideoModePROG		= 3,
 };
-
-#define NIN_RAW_MEMCARD_SIZE	2*1024*1024 //2MB
-#define NIN_MEMCARD_BLOCKS		0x00000010 //251 Blocks
 
 #endif

@@ -76,11 +76,14 @@ void DML_New_WriteOptions();
 // Nintendont
 #include "nin_cfg.h"
 #define NIN_CFG_PATH "nincfg.bin"
-#define NIN_LOADER_PATH "%s:/apps/Nintendont/boot.dol"
+#define NIN_LOADER_PATH "%s:/apps/nintendont/boot.dol"
+//const char *NINversionDate(NIN_LOADER_PATH);
 
 bool Nintendont_Installed();
 bool Nintendont_GetLoader();
-void Nintendont_SetOptions(const char *game, const char *gameID, u8 NMM, u8 videoSetting, bool widescreen);
+void Nintendont_BootDisc(u8 NMM, bool widescreen, bool usb_hid, bool native_ctl, bool deflicker);
+void Nintendont_SetOptions(const char *game, const char *gameID, char *CheatPath, char *NewCheatPath, const char *partition,
+	bool cheats, u8 NMM, u8 videomode, u8 videoSetting, bool widescreen, bool usb_hid, bool native_ctl, bool deflicker, bool screenshot, bool NIN_Debugger);
 void Nintendont_WriteOptions();
 
 // Devolution

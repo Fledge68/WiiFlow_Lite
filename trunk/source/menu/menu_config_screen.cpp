@@ -69,7 +69,7 @@ int CMenu::_configScreen(void)
 		change = _configCommon();
 		if (change != CONFIG_PAGE_NO_CHANGE)
 			break;
-		if (BTN_A_REPEAT)
+		if (BTN_A_REPEAT || BTN_A_PRESSED)
 		{
 			if (m_btnMgr.selected(m_configScreenBtnTVWidthP) || m_btnMgr.selected(m_configScreenBtnTVWidthM)
 				|| m_btnMgr.selected(m_configScreenBtnTVHeightP) || m_btnMgr.selected(m_configScreenBtnTVHeightM)

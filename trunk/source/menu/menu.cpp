@@ -28,7 +28,7 @@
 #include "network/ftp.h"
 #include "network/gcard.h"
 #include "unzip/U8Archive.h"
-
+#include "sicksaxis-wrapper/sicksaxis-wrapper.h"
 // Sounds
 extern const u8 click_wav[];
 extern const u32 click_wav_size;
@@ -246,7 +246,7 @@ void CMenu::init()
 	m_allow_random = m_cfg.getBool("GENERAL", "allow_b_on_questionmark", true);
 	m_multisource = m_cfg.getBool("GENERAL", "multisource", false);
 	/* DIOS_MIOS stuff */
-	if(m_cfg.getBool(GC_DOMAIN, "always_show_button", false))
+	if(m_cfg.getBool(GC_DOMAIN, "always_show_button", true))
 	{
 		gprintf("Force enabling DML view\n");
 		m_show_dml = true;

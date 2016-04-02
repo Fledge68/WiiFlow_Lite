@@ -29,6 +29,7 @@
 #include "plugin/plugin.hpp"
 #include "wiiuse/wpad.h"
 #include "wupc/wupc.h"
+#include "sicksaxis-wrapper/sicksaxis-wrapper.h"
 
 using namespace std;
 
@@ -491,6 +492,15 @@ private:
 
 	s16 m_gameSettingsLblDM_Widescreen;
 	s16 m_gameSettingsBtnDM_Widescreen;
+		
+  s16 m_gameSettingsLblUSB_HID;
+  s16 m_gameSettingsBtnUSB_HID;
+  
+  s16 m_gameSettingsLblNATIVE_CTL;
+  s16 m_gameSettingsBtnNATIVE_CTL;
+  
+  s16 m_gameSettingsLblDeflicker;
+  s16 m_gameSettingsBtnDeflicker;
 
 	s16 m_gameSettingsLblGCLoader;
 	s16 m_gameSettingsLblGCLoader_Val;
@@ -508,6 +518,8 @@ private:
 	s16 m_gameSettingsBtnVipatch;
 	s16 m_gameSettingsLblCountryPatch;
 	s16 m_gameSettingsBtnCountryPatch;
+	s16 m_gameSettingsLblPrivateServer;
+	s16 m_gameSettingsBtnPrivateServer;
 	s16 m_gameSettingsLblManage;
 	s16 m_gameSettingsBtnManage;
 	s16 m_gameSettingsLblPatchVidModes;
@@ -543,7 +555,9 @@ private:
 	s16 m_systemBtnBack;
 	s16 m_systemLblTitle;
 	s16 m_systemLblVersionTxt;
+	s16 m_systemLblNINverTxt;
 	s16 m_systemLblVersion;
+	s16 m_systemLblNINver;
 	s16 m_systemLblVersionRev;
 	s16 m_systemLblUser[4];
 	s16 m_systemBtnDownload;
@@ -609,6 +623,12 @@ private:
 	u8 m_wpadUpDelay;
 	u8 m_wpadADelay;
 	//u8 m_wpadBDelay;
+	u8 m_dpadLeftDelay;
+	u8 m_dpadDownDelay;
+	u8 m_dpadRightDelay;
+	u8 m_dpadUpDelay;
+	u8 m_dpadADelay;
+	u8 m_dpadHDelay;
 
 	u8 m_padLeftDelay;
 	u8 m_padDownDelay;
@@ -616,7 +636,7 @@ private:
 	u8 m_padUpDelay;
 	u8 m_padADelay;
 	//u8 m_padBDelay;
-
+	u32 ds3_btnsPressed;
 	u32 wii_btnsPressed[WPAD_MAX_WIIMOTES];
 	u32 wii_btnsHeld[WPAD_MAX_WIIMOTES];
 	bool wBtn_Pressed(int btn, u8 ext);
@@ -627,7 +647,7 @@ private:
 	u32 gc_btnsHeld;
 	u32 wupc_btnsPressed[WPAD_MAX_WIIMOTES];
 	u32 wupc_btnsHeld[WPAD_MAX_WIIMOTES];
-
+	bool ds3_btnRepeat(s64 btn);
 	bool m_show_pointer[WPAD_MAX_WIIMOTES];
 	float left_stick_angle[WPAD_MAX_WIIMOTES];
 	float left_stick_mag[WPAD_MAX_WIIMOTES];
@@ -1174,16 +1194,16 @@ private:
 	static const SOption _GlobalVideoModes[6];
 	static const SOption _VideoModes[7];
 	
-	static const SOption _GlobalDMLvideoModes[6];
+	static const SOption _GlobalDMLvideoModes[8];
 	static const SOption _GlobalGClanguages[7];
-	static const SOption _DMLvideoModes[7];
+	static const SOption _DMLvideoModes[9];
 	static const SOption _GClanguages[8];
 
 	static const SOption _NandEmu[2];
 	static const SOption _SaveEmu[5];
 	static const SOption _GlobalSaveEmu[4];
 	static const SOption _AspectRatio[3];
-	static const SOption _NMM[4];
+	static const SOption _NMM[5];
 	static const SOption _NoDVD[3];
 	static const SOption _GlobalGCLoaders[3];
 	static const SOption _GCLoader[4];

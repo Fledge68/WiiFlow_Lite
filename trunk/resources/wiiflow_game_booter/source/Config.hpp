@@ -32,6 +32,7 @@ struct the_CFG {
 	u32 wip_count;
 	bool use_led;
 	bool patchregion;
+	bool private_server;
 	/* needed for channels */
 	u64 title;
 	bool use_dol;
