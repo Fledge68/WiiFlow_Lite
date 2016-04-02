@@ -170,7 +170,7 @@ int CMenu::_GCgameInstaller()
 	if(skip)
 		rsize = 8192; // Use small chunks when skip on error is enabled
 
-	m_gcdump.Init(skip, comp, wexf, alig, nretry, rsize, DeviceName[currentPartition], m_DMLgameDir.c_str());
+	m_gcdump.Init(skip, comp, wexf, alig, nretry, rsize, DeviceName[currentPartition]);
 	
 	int ret;
 	m_progress = 0.f;
@@ -235,7 +235,7 @@ int CMenu::_GCcopyGame(void *obj)
 	source[299] = '\0';
 
 	char folder[50];
-	strncpy(folder, fmt(DML_DIR, DeviceName[SD]), sizeof(folder));
+	strncpy(folder, fmt(GC_GAMES_DIR, DeviceName[SD]), sizeof(folder));
 	folder[49] = '\0';
 
 	char target[300];
@@ -396,7 +396,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 							{
 								strncpy(GC_Path, CF_Hdr->path, 1023);
 								*strrchr(GC_Path, '/') = '\0'; //iso path
-								const char *cmp = fmt(currentPartition == SD ? DML_DIR : m_DMLgameDir.c_str(), DeviceName[currentPartition]);
+								const char *cmp = fmt(GC_GAMES_DIR, DeviceName[currentPartition]);
 								if(strcasecmp(GC_Path, cmp) == 0)
 									fsop_deleteFile(CF_Hdr->path);
 								else

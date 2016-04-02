@@ -254,7 +254,6 @@ void CMenu::init()
 	MIOSisDML();
 	if(m_show_dml == false)
 		m_show_dml = (m_mios_ver > 0);
-	m_DMLgameDir = fmt("%%s:/%s", m_cfg.getString(GC_DOMAIN, "dir_usb_games", "games").c_str());
 	/* Emu NAND */
 	m_cfg.getString(CHANNEL_DOMAIN, "path", "");
 	m_cfg.getInt(CHANNEL_DOMAIN, "partition", 1);
@@ -2257,7 +2256,7 @@ bool CMenu::_loadDmlList()
 		return false;
 
 	m_gameList.clear();
-	string gameDir(fmt(currentPartition == SD ? DML_DIR : m_DMLgameDir.c_str(), DeviceName[currentPartition]));
+	string gameDir(fmt(GC_GAMES_DIR, DeviceName[currentPartition]));
 	string cacheDir(fmt("%s/%s_gamecube.db", m_listCacheDir.c_str(), DeviceName[currentPartition]));
 	bool updateCache = m_cfg.getBool(GC_DOMAIN, "update_cache");
 	m_gameList.CreateList(COVERFLOW_GAMECUBE, currentPartition, gameDir,

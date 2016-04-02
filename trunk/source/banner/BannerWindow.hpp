@@ -54,8 +54,8 @@ public:
 	bool GetInGameSettings() { return (Brightness == 200 ? true : false); }
 	void CreateGCBanner(u8 *bnr, u8 *font1, u8 *font2, const wchar_t *title);
 	void Draw(void);
-	bool ToogleZoom(void);
-	void ToogleGameSettings();
+	bool ToggleZoom(void);
+	void ToggleGameSettings();
 	bool GetShowBanner() { return ShowBanner; }
 	void SetShowBanner(bool show) { ShowBanner = show; }
 	void ReSetup_GX(void);
