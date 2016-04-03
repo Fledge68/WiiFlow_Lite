@@ -19,8 +19,8 @@ Controles:
 -- B en Icono Inicio  =  Categorías
 -- A en Icono de engranaje  =  WiiFlow Ajustes
 -- B en Icono de engranaje  =  Refrescar cache
--- A en USB, DML, Canales, Emu, o Icono Homebrew  =  Cambia a esa Vista
--- B en USB, DML, Canales, Emu, o Icono Homebrew  =  Activa/Desactiva Emu-NAND y cambia a vista de canales
+-- A en Wii, GC, Canales, Enchufar, o Icono Homebrew  =  Cambia a esa Vista
+-- B en Wii, GC, Canales, Enchufar, o Icono Homebrew  =  Activa/Desactiva Emu-NAND y cambia a vista de canales
 -- A en Icono Home  =  Salir a Menú Wii
 -- Presionar B durante 3 segundos / B en Icono Home (wiimote_gestos Activado)  =  Muestra el menú Source
 -- A en Icono Disco (Disco Juego en Unidad)  =  Lanzar disco de juego 

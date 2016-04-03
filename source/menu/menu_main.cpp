@@ -29,9 +29,9 @@ void CMenu::_hideMain(bool instant)
 	m_btnMgr.hide(m_mainBtnQuit, instant);
 	m_btnMgr.hide(m_mainBtnHomebrew, instant);
 	m_btnMgr.hide(m_mainBtnChannel, instant);
-	m_btnMgr.hide(m_mainBtnUsb, instant);
-	m_btnMgr.hide(m_mainBtnDML, instant);
-	m_btnMgr.hide(m_mainBtnEmu, instant);
+	m_btnMgr.hide(m_mainBtnWii, instant);
+	m_btnMgr.hide(m_mainBtnGamecube, instant);
+	m_btnMgr.hide(m_mainBtnPlugin, instant);
 	m_btnMgr.hide(m_mainBtnDVD, instant);
 	m_btnMgr.hide(m_mainBtnInit, instant);
 	m_btnMgr.hide(m_mainBtnInit2, instant);
@@ -72,41 +72,41 @@ start_main:
 			if(show_channel)
 				m_btnMgr.show(m_mainBtnChannel);
 			else if(show_emu)
-				m_btnMgr.show(m_mainBtnEmu);
+				m_btnMgr.show(m_mainBtnPlugin);
 			else if(show_homebrew)
 				m_btnMgr.show(m_mainBtnHomebrew);
 			else
-				m_btnMgr.show(m_mainBtnUsb);
+				m_btnMgr.show(m_mainBtnWii);
 			break;
 		case COVERFLOW_CHANNEL:
 			if(show_emu)
-				m_btnMgr.show(m_mainBtnEmu);
+				m_btnMgr.show(m_mainBtnPlugin);
 			else if(show_homebrew)
 				m_btnMgr.show(m_mainBtnHomebrew);
 			else
-				m_btnMgr.show(m_mainBtnUsb);
+				m_btnMgr.show(m_mainBtnWii);
 			break;
 		case COVERFLOW_MAX:
 		case COVERFLOW_HOMEBREW:
-			m_btnMgr.show(m_mainBtnUsb);
+			m_btnMgr.show(m_mainBtnWii);
 			break;
 		case COVERFLOW_PLUGIN:
 			if(show_homebrew)
 				m_btnMgr.show(m_mainBtnHomebrew);
 			else
-				m_btnMgr.show(m_mainBtnUsb);
+				m_btnMgr.show(m_mainBtnWii);
 			break;
 		default:
 			if(show_gamecube)
-				m_btnMgr.show(m_mainBtnDML);
+				m_btnMgr.show(m_mainBtnGamecube);
 			else if(show_channel)
 				m_btnMgr.show(m_mainBtnChannel);
 			else if(show_emu)
-				m_btnMgr.show(m_mainBtnEmu);
+				m_btnMgr.show(m_mainBtnPlugin);
 			else if(show_homebrew)
 				m_btnMgr.show(m_mainBtnHomebrew);
 			else
-				m_btnMgr.show(m_mainBtnUsb);
+				m_btnMgr.show(m_mainBtnWii);
 			break;
 	}
 
@@ -120,7 +120,7 @@ start_main:
 		{
 			case COVERFLOW_WII:
 			case COVERFLOW_GAMECUBE:
-			//  m_btnMgr.setText(m_mainLblInit, _t("main2", L"Sorry, could not find any games. Please click Install to install games or Select partition to change the device/partition where your games are."));
+			//  m_btnMgr.setText(m_mainLblInit, _t("main2", L"No games found! Please select partition to change the device/partition or click Install to install a game."));
 				m_btnMgr.setText(m_mainLblInit, _t("main2", L"Welcome to WiiFlow. I have not found any games. Click Install to install games, or Select partition to select your partition type."));
 				m_btnMgr.show(m_mainBtnInit);
 				m_btnMgr.show(m_mainBtnInit2);
@@ -129,7 +129,6 @@ start_main:
 			case COVERFLOW_CHANNEL:
 				if(NANDemuView)
 				{
-					//"sorry, could not find your emu NAND. Would you like me to create one for you?
 					_hideMain();
 					if(!_AutoCreateNand())
 					{
@@ -141,13 +140,13 @@ start_main:
 				}
 				break;
 			case COVERFLOW_HOMEBREW:
-			//  m_btnMgr.setText(m_mainLblInit, _t("main4", L"Sorry, could not find any homebrew apps. Try changing the partition to select your device/partition where they are."));
+			//  m_btnMgr.setText(m_mainLblInit, _t("main4", L"No homebrew apps found! Try changing the partition to select the correct device/partition."));
 				m_btnMgr.setText(m_mainLblInit, _t("main4", L"Welcome to WiiFlow. I have not found any homebrew apps. Select partition to select your partition type."));
 				m_btnMgr.show(m_mainBtnInit2);
 				m_btnMgr.show(m_mainLblInit);
 				break;
 			case COVERFLOW_PLUGIN:
-			//	m_btnMgr.setText(m_mainLblInit, _t("main5", L"Sorry, could not find any roms or items for your plugin. Try changing the partition to select your device/partition where they are."));
+			//	m_btnMgr.setText(m_mainLblInit, _t("main5", L"No roms/items for your plugin found! Try changing the partition to select the correct device/partition."));
 				m_btnMgr.setText(m_mainLblInit, _t("main5", L"Welcome to WiiFlow. I have not found any plugins. Select partition to select your partition type."));
 				m_btnMgr.show(m_mainBtnInit2);
 				m_btnMgr.show(m_mainLblInit);
@@ -250,7 +249,7 @@ int CMenu::main(void)
 	show_homebrew = (!m_cfg.getBool(HOMEBREW_DOMAIN, "disable", false) && (parental_homebrew || !m_locked));
 	show_channel = !m_cfg.getBool("GENERAL", "hidechannel", false);
 	show_emu = !m_cfg.getBool(PLUGIN_DOMAIN, "disable", false);
-	show_gamecube = (m_show_dml || m_devo_installed || m_nintendont_installed);
+	show_gamecube = m_show_gc;
 	m_use_source = m_cfg.getBool("GENERAL", "use_source", true);
 	bool bheld = false;
 	bool bUsed = false;
@@ -295,6 +294,7 @@ int CMenu::main(void)
 		WDVD_GetCoverStatus(&disc_check);
 		/* Main Loop */
 		_mainLoopCommon(true);
+		//this will make the source menu/flow display. what happens when a sourceflow cover is selected is taken care of later.
 		if(bheld && !BTN_B_HELD)//if button b was held and now released
 		{
 			bheld = false;
@@ -370,7 +370,7 @@ int CMenu::main(void)
 				if(BTN_B_HELD)
 					bUsed = true;
 			}
-			else if(m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML) || m_btnMgr.selected(m_mainBtnHomebrew) || m_btnMgr.selected(m_mainBtnEmu))
+			else if(m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnWii) || m_btnMgr.selected(m_mainBtnGamecube) || m_btnMgr.selected(m_mainBtnHomebrew) || m_btnMgr.selected(m_mainBtnPlugin))
 			{
 				if(m_current_view == COVERFLOW_WII) 
 					m_current_view = show_gamecube ? COVERFLOW_GAMECUBE : (show_channel ? COVERFLOW_CHANNEL : (show_emu ? COVERFLOW_PLUGIN : (show_homebrew ? COVERFLOW_HOMEBREW : COVERFLOW_WII)));
@@ -453,7 +453,7 @@ int CMenu::main(void)
 				/* Create Fake Header */
 				dir_discHdr hdr;
 				memset(&hdr, 0, sizeof(dir_discHdr));
-				memcpy(&hdr.id, "dvddvd", 6);
+				memcpy(&hdr.id, "dvddvd", 6);//only the id is used for a disc and this is changed in _launchGame.
 				/* Boot the Disc */
 				_launchGame(&hdr, true);
 				_showMain();
@@ -501,7 +501,7 @@ int CMenu::main(void)
 				_initCF();
 			}
 			//Events to show source menu or sourceflow if B on mode icon
-			else if(m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnUsb) || m_btnMgr.selected(m_mainBtnDML)|| m_btnMgr.selected(m_mainBtnEmu) || m_btnMgr.selected(m_mainBtnHomebrew))
+			else if(m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnWii) || m_btnMgr.selected(m_mainBtnGamecube)|| m_btnMgr.selected(m_mainBtnPlugin) || m_btnMgr.selected(m_mainBtnHomebrew))
 			{
 				if(!m_use_source)//only use if B to source menu not enabled
 				{
@@ -747,41 +747,41 @@ int CMenu::main(void)
 					if(show_channel)
 						m_btnMgr.show(m_mainBtnChannel);
 					else if(show_emu)
-						m_btnMgr.show(m_mainBtnEmu);
+						m_btnMgr.show(m_mainBtnPlugin);
 					else if(show_homebrew)
 						m_btnMgr.show(m_mainBtnHomebrew);
 					else 
-						m_btnMgr.show(m_mainBtnUsb);
+						m_btnMgr.show(m_mainBtnWii);
 					break;
 				case COVERFLOW_CHANNEL:
 					if(show_emu)
-						m_btnMgr.show(m_mainBtnEmu);
+						m_btnMgr.show(m_mainBtnPlugin);
 					else if(show_homebrew)
 						m_btnMgr.show(m_mainBtnHomebrew);
 					else
-						m_btnMgr.show(m_mainBtnUsb);
+						m_btnMgr.show(m_mainBtnWii);
 					break;
 				case COVERFLOW_PLUGIN:
 					if(show_homebrew)
 						m_btnMgr.show(m_mainBtnHomebrew);
 					else
-						m_btnMgr.show(m_mainBtnUsb);
+						m_btnMgr.show(m_mainBtnWii);
 					break;
 				case COVERFLOW_HOMEBREW:
 				case COVERFLOW_MAX:
-					m_btnMgr.show(m_mainBtnUsb);
+					m_btnMgr.show(m_mainBtnWii);
 					break;
 				default:
 					if(show_gamecube)
-						m_btnMgr.show(m_mainBtnDML);
+						m_btnMgr.show(m_mainBtnGamecube);
 					else if(show_channel)
 						m_btnMgr.show(m_mainBtnChannel);
 					else if(show_emu)
-						m_btnMgr.show(m_mainBtnEmu);
+						m_btnMgr.show(m_mainBtnPlugin);
 					else if(show_homebrew)
 						m_btnMgr.show(m_mainBtnHomebrew);
 					else
-						m_btnMgr.show(m_mainBtnUsb);
+						m_btnMgr.show(m_mainBtnWii);
 			}
 			m_btnMgr.show(m_mainLblUser[2]);
 			m_btnMgr.show(m_mainLblUser[3]);
@@ -790,9 +790,9 @@ int CMenu::main(void)
 		{
 			m_btnMgr.hide(m_mainBtnHomebrew);
 			m_btnMgr.hide(m_mainBtnChannel);
-			m_btnMgr.hide(m_mainBtnUsb);
-			m_btnMgr.hide(m_mainBtnDML);
-			m_btnMgr.hide(m_mainBtnEmu);
+			m_btnMgr.hide(m_mainBtnWii);
+			m_btnMgr.hide(m_mainBtnGamecube);
+			m_btnMgr.hide(m_mainBtnPlugin);
 			m_btnMgr.hide(m_mainLblUser[2]);
 			m_btnMgr.hide(m_mainLblUser[3]);
 		}
@@ -852,14 +852,14 @@ void CMenu::_initMainMenu()
 	TexData texInfoS;
 	TexData texConfig;
 	TexData texConfigS;
-	TexData texDML;
-	TexData texDMLs;
-	TexData texEmu;
-	TexData texEmus;
+	TexData texGamecube;
+	TexData texGamecubes;
+	TexData texPlugin;
+	TexData texPlugins;
 	TexData texDVD;
 	TexData texDVDs;
-	TexData texUsb;
-	TexData texUsbs;
+	TexData texWii;
+	TexData texWiis;
 	TexData texChannel;
 	TexData texChannels;
 	TexData texHomebrew;
@@ -887,12 +887,12 @@ void CMenu::_initMainMenu()
 	TexHandle.fromImageFile(texConfigS, fmt("%s/btnconfigs.png", m_imgsDir.c_str()));
 	TexHandle.fromImageFile(texDVD, fmt("%s/btndvd.png", m_imgsDir.c_str()));
 	TexHandle.fromImageFile(texDVDs, fmt("%s/btndvds.png", m_imgsDir.c_str()));
-	TexHandle.fromImageFile(texUsb, fmt("%s/btnusb.png", m_imgsDir.c_str()));
-	TexHandle.fromImageFile(texUsbs, fmt("%s/btnusbs.png", m_imgsDir.c_str()));
-	TexHandle.fromImageFile(texDML, fmt("%s/btndml.png", m_imgsDir.c_str()));
-	TexHandle.fromImageFile(texDMLs, fmt("%s/btndmls.png", m_imgsDir.c_str()));
-	TexHandle.fromImageFile(texEmu, fmt("%s/btnemu.png", m_imgsDir.c_str()));
-	TexHandle.fromImageFile(texEmus, fmt("%s/btnemus.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texWii, fmt("%s/btnusb.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texWiis, fmt("%s/btnusbs.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texGamecube, fmt("%s/btndml.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texGamecubes, fmt("%s/btndmls.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texPlugin, fmt("%s/btnemu.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texPlugins, fmt("%s/btnemus.png", m_imgsDir.c_str()));
 	TexHandle.fromImageFile(texChannel, fmt("%s/btnchannel.png", m_imgsDir.c_str()));
 	TexHandle.fromImageFile(texChannels, fmt("%s/btnchannels.png", m_imgsDir.c_str()));
 	TexHandle.fromImageFile(texHomebrew, fmt("%s/btnhomebrew.png", m_imgsDir.c_str()));
@@ -913,9 +913,9 @@ void CMenu::_initMainMenu()
 	m_mainBtnQuit = _addPicButton("MAIN/QUIT_BTN", texQuit, texQuitS, 570, 400, 48, 48);
 	m_mainBtnChannel = _addPicButton("MAIN/CHANNEL_BTN", texChannel, texChannels, 520, 400, 48, 48);
 	m_mainBtnHomebrew = _addPicButton("MAIN/HOMEBREW_BTN", texHomebrew, texHomebrews, 520, 400, 48, 48);
-	m_mainBtnUsb = _addPicButton("MAIN/USB_BTN", texUsb, texUsbs, 520, 400, 48, 48);
-	m_mainBtnDML = _addPicButton("MAIN/DML_BTN", texDML, texDMLs, 520, 400, 48, 48);
-	m_mainBtnEmu = _addPicButton("MAIN/EMU_BTN", texEmu, texEmus, 520, 400, 48, 48);
+	m_mainBtnWii = _addPicButton("MAIN/USB_BTN", texWii, texWiis, 520, 400, 48, 48);
+	m_mainBtnGamecube = _addPicButton("MAIN/DML_BTN", texGamecube, texGamecubes, 520, 400, 48, 48);
+	m_mainBtnPlugin = _addPicButton("MAIN/EMU_BTN", texPlugin, texPlugins, 520, 400, 48, 48);
 	m_mainBtnDVD = _addPicButton("MAIN/DVD_BTN", texDVD, texDVDs, 470, 400, 48, 48);
 	m_mainBtnNext = _addPicButton("MAIN/NEXT_BTN", texNext, texNextS, 540, 146, 80, 80);
 	m_mainBtnPrev = _addPicButton("MAIN/PREV_BTN", texPrev, texPrevS, 20, 146, 80, 80);
@@ -969,9 +969,9 @@ void CMenu::_initMainMenu()
 	_setHideAnim(m_mainBtnQuit, "MAIN/QUIT_BTN", 0, 40, 0.f, 0.f);
 	_setHideAnim(m_mainBtnChannel, "MAIN/CHANNEL_BTN", 0, 40, 0.f, 0.f);
 	_setHideAnim(m_mainBtnHomebrew, "MAIN/HOMEBREW_BTN", 0, 40, 0.f, 0.f);
-	_setHideAnim(m_mainBtnUsb, "MAIN/USB_BTN", 0, 40, 0.f, 0.f);
-	_setHideAnim(m_mainBtnDML, "MAIN/DML_BTN", 0, 40, 0.f, 0.f);
-	_setHideAnim(m_mainBtnEmu, "MAIN/EMU_BTN", 0, 40, 0.f, 0.f);
+	_setHideAnim(m_mainBtnWii, "MAIN/USB_BTN", 0, 40, 0.f, 0.f);
+	_setHideAnim(m_mainBtnGamecube, "MAIN/DML_BTN", 0, 40, 0.f, 0.f);
+	_setHideAnim(m_mainBtnPlugin, "MAIN/EMU_BTN", 0, 40, 0.f, 0.f);
 	_setHideAnim(m_mainBtnDVD, "MAIN/DVD_BTN", 0, 40, 0.f, 0.f);
 	_setHideAnim(m_mainBtnFavoritesOn, "MAIN/FAVORITES_ON", 0, 40, 0.f, 0.f);
 	_setHideAnim(m_mainBtnFavoritesOff, "MAIN/FAVORITES_OFF", 0, 40, 0.f, 0.f);

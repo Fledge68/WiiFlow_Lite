@@ -402,7 +402,7 @@ void CMenu::update_pThread(u64 added)
 	}
 }
 
-void CMenu::_Wad(const char *wad_path, bool autoInstall)
+void CMenu::_Wad(const char *wad_path)
 {
 	if(wad_path == NULL)
 		return;
@@ -424,13 +424,6 @@ void CMenu::_Wad(const char *wad_path, bool autoInstall)
 			gprintf("No Wii Channel!\n");
 			return;
 		}
-	}
-	if(autoInstall)
-	{
-		if(mios == true)
-			installWad(wad_path);
-		MIOSisDML();
-		return;
 	}
 
 	u8 part = currentPartition;
@@ -485,14 +478,6 @@ void CMenu::_Wad(const char *wad_path, bool autoInstall)
 	m_btnMgr.hide(m_wbfsLblMessage);
 	m_btnMgr.hide(m_wbfsLblDialog);
 	m_btnMgr.hide(m_wbfsPBar);
-
-	if(mios == true)
-	{
-		/* recheck after new mios install */
-		MIOSisDML();
-		if(m_show_dml == false)
-			m_show_dml = (m_mios_ver > 0);
-	}
 }
 
 void CMenu::_initWad()

@@ -268,9 +268,9 @@ void ListGenerator::CreateList(u32 Flow, u32 Device, const string& Path, const v
 	else if(DeviceHandle.GetFSType(Device) != PART_FS_WBFS)
 	{
 		if(Flow == COVERFLOW_GAMECUBE)
-			GetFiles(Path.c_str(), FileTypes, Create_GC_List, true);
+			GetFiles(Path.c_str(), FileTypes, Create_GC_List, true);//the only one that looks for a folder (/root)
 		else if(Flow == COVERFLOW_PLUGIN)
-			GetFiles(Path.c_str(), FileTypes, Create_Plugin_List, false, 30);
+			GetFiles(Path.c_str(), FileTypes, Create_Plugin_List, false, 30);//wow 30 subfolders! really?
 		else if(Flow == COVERFLOW_HOMEBREW)
 			GetFiles(Path.c_str(), FileTypes, Create_Homebrew_List, false);
 	}
@@ -308,7 +308,7 @@ void GetFiles(const char *Path, const vector<string>& FileTypes,
 		FullPathChar = fmt("%s/%s", Path, pent->d_name);
 		if(pent->d_type == DT_DIR)
 		{
-			if(CompareFolders && IsFileSupported(pent->d_name, FileTypes))
+			if(CompareFolders && IsFileSupported(pent->d_name, FileTypes))//if root folder for extracted gc games
 			{
 				AddFile(FullPathChar);
 				continue;
@@ -318,7 +318,7 @@ void GetFiles(const char *Path, const vector<string>& FileTypes,
 		}
 		else if(pent->d_type == DT_REG)
 		{
-			NewFileName = strrchr(pent->d_name, '.');
+			NewFileName = strrchr(pent->d_name, '.');//the extension
 			if(NewFileName == NULL) NewFileName = pent->d_name;
 			if(IsFileSupported(NewFileName, FileTypes))
 			{

@@ -13,9 +13,9 @@ s16 m_sourceBtnBack;
 s16 m_sourceLblTitle;
 s16 m_sourceBtnSource[12];
 s16 m_sourceLblUser[4];
-s16 m_sourceBtnDML;
-s16 m_sourceBtnEmu;
-s16 m_sourceBtnUsb;
+s16 m_sourceBtnGamecube;
+s16 m_sourceBtnPlugin;
+s16 m_sourceBtnWii;
 s16 m_sourceBtnChannel;
 s16 m_sourceBtnHomebrew;
 
@@ -40,9 +40,9 @@ void CMenu::_hideSource(bool instant)
 	m_btnMgr.hide(m_sourceBtnBack, instant);	
 	m_btnMgr.hide(m_sourceBtnHomebrew, instant);
 	m_btnMgr.hide(m_sourceBtnChannel, instant);
-	m_btnMgr.hide(m_sourceBtnUsb, instant);
-	m_btnMgr.hide(m_sourceBtnDML, instant);
-	m_btnMgr.hide(m_sourceBtnEmu, instant);
+	m_btnMgr.hide(m_sourceBtnWii, instant);
+	m_btnMgr.hide(m_sourceBtnGamecube, instant);
+	m_btnMgr.hide(m_sourceBtnPlugin, instant);
 
 	u8 i;
 	for(i = 0; i < ARRAY_SIZE(m_sourceLblUser); ++i)
@@ -195,7 +195,7 @@ void CMenu::_createSFList()
 		string source = m_source.getString(btn_selected, "source","");
 		if(source == "")
 			continue;
-		if(source == "dml" && !m_show_dml && !m_devo_installed && !m_nintendont_installed)
+		if(source == "dml" && !m_show_gc)
 			continue;
 		else if(source == "emunand" && !show_channel)
 			continue;
@@ -254,7 +254,16 @@ void CMenu::_sourceFlow()
 	memset(btn_selected, 0, 256);
 	strncpy(btn_selected, fmt("BUTTON_%i", hdr->settings[0]), 255);
 	string source = m_source.getString(btn_selected, "source", "");
-	_clearSources();
+	_clearSources();// may have to move this
+	/*if(source == "wii")
+	{
+		m_cfg.setBool(WII_DOMAIN, "source", true);
+		if(sf_mode == 0)
+		{
+			m_current_view = COVERFLOW_WII;
+			m_catStartPage = m_source.getInt(btn_selected, "cat_page", 1);
+		}
+	}*/
 	if(source == "wii")
 	{
 		m_current_view = COVERFLOW_WII;
@@ -333,7 +342,8 @@ void CMenu::_sourceFlow()
 			m_clearCats = false;
 		}
 	}
-	m_sourceflow = false;
+	m_sourceflow = false;// do something with this when in muilti
+	//no autoboot if multi mode. may have to make sure autoboot plugins are hidden from flow when multi is on.
 	/* autoboot */
 	const char *autoboot = m_source.getString(btn_selected, "autoboot", "").c_str();
 	if(autoboot != NULL && autoboot[0] != '\0')
@@ -393,9 +403,9 @@ bool CMenu::_Source()
 	{
 		m_btnMgr.show(m_sourceBtnHomebrew);
 		m_btnMgr.show(m_sourceBtnChannel);
-		m_btnMgr.show(m_sourceBtnUsb);
-		m_btnMgr.show(m_sourceBtnDML);
-		m_btnMgr.show(m_sourceBtnEmu);
+		m_btnMgr.show(m_sourceBtnWii);
+		m_btnMgr.show(m_sourceBtnGamecube);
+		m_btnMgr.show(m_sourceBtnPlugin);
 	}
 	else
 	{
@@ -522,15 +532,15 @@ bool CMenu::_Source()
 		else if(BTN_A_PRESSED && !sourceIniLoaded)
 		{
 			// check default source buttons when no source_menu.ini
-			if(m_btnMgr.selected(m_sourceBtnUsb))
+			if(m_btnMgr.selected(m_sourceBtnWii))
 			{
 				_clearSources();
 				m_cfg.setBool(WII_DOMAIN, "source", true);
 				exitSource = true;
 			}
-			if(m_btnMgr.selected(m_sourceBtnDML))
+			if(m_btnMgr.selected(m_sourceBtnGamecube))
 			{
-				if(!m_show_dml && !m_devo_installed && !m_nintendont_installed)
+				if(!m_show_gc)
 					_showSourceNotice();
 				else
 				{
@@ -561,7 +571,7 @@ bool CMenu::_Source()
 					exitSource = true;
 				}
 			}
-			if(m_btnMgr.selected(m_sourceBtnEmu))
+			if(m_btnMgr.selected(m_sourceBtnPlugin))
 			{
 				if(!show_emu)
 					_showSourceNotice();
@@ -596,7 +606,7 @@ bool CMenu::_Source()
 						}
 						else if(source == "dml")
 						{
-							if(!m_show_dml && !m_devo_installed && !m_nintendont_installed)
+							if(!m_show_gc)
 								_showSourceNotice();
 							else
 							{
@@ -737,7 +747,7 @@ bool CMenu::_Source()
 						}
 						else if(source == "dml")
 						{
-							if(m_show_dml || m_devo_installed || m_nintendont_installed)
+							if(m_show_gc)
 								m_cfg.setBool(GC_DOMAIN, "source", !m_cfg.getBool(GC_DOMAIN, "source"));
 						}
 						else if(source == "emunand")
@@ -832,23 +842,23 @@ void CMenu::_clearSources(void)
 
 void CMenu::_initSourceMenu()
 {
-	TexData texDML;
-	TexData texDMLs;
-	TexData texEmu;
-	TexData texEmus;
-	TexData texUsb;
-	TexData texUsbs;
+	TexData texGamecube;
+	TexData texGamecubes;
+	TexData texPlugin;
+	TexData texPlugins;
+	TexData texWii;
+	TexData texWiis;
 	TexData texChannel;
 	TexData texChannels;
 	TexData texHomebrew;
 	TexData texHomebrews;
 
-	TexHandle.fromImageFile(texUsb, fmt("%s/btnusb.png", m_imgsDir.c_str()));
-	TexHandle.fromImageFile(texUsbs, fmt("%s/btnusbs.png", m_imgsDir.c_str()));
-	TexHandle.fromImageFile(texDML, fmt("%s/btndml.png", m_imgsDir.c_str()));
-	TexHandle.fromImageFile(texDMLs, fmt("%s/btndmls.png", m_imgsDir.c_str()));
-	TexHandle.fromImageFile(texEmu, fmt("%s/btnemu.png", m_imgsDir.c_str()));
-	TexHandle.fromImageFile(texEmus, fmt("%s/btnemus.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texWii, fmt("%s/btnusb.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texWiis, fmt("%s/btnusbs.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texGamecube, fmt("%s/btndml.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texGamecubes, fmt("%s/btndmls.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texPlugin, fmt("%s/btnemu.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texPlugins, fmt("%s/btnemus.png", m_imgsDir.c_str()));
 	TexHandle.fromImageFile(texChannel, fmt("%s/btnchannel.png", m_imgsDir.c_str()));
 	TexHandle.fromImageFile(texChannels, fmt("%s/btnchannels.png", m_imgsDir.c_str()));
 	TexHandle.fromImageFile(texHomebrew, fmt("%s/btnhomebrew.png", m_imgsDir.c_str()));
@@ -865,9 +875,9 @@ void CMenu::_initSourceMenu()
 
 	m_sourceBtnChannel = _addPicButton("SOURCE/CHANNEL_BTN", texChannel, texChannels, 265, 260, 48, 48);
 	m_sourceBtnHomebrew = _addPicButton("SOURCE/HOMEBREW_BTN", texHomebrew, texHomebrews, 325, 260, 48, 48);
-	m_sourceBtnUsb = _addPicButton("SOURCE/USB_BTN", texUsb, texUsbs, 235, 200, 48, 48);
-	m_sourceBtnDML = _addPicButton("SOURCE/DML_BTN", texDML, texDMLs, 295, 200, 48, 48);
-	m_sourceBtnEmu = _addPicButton("SOURCE/EMU_BTN", texEmu, texEmus, 355, 200, 48, 48);
+	m_sourceBtnWii = _addPicButton("SOURCE/USB_BTN", texWii, texWiis, 235, 200, 48, 48);
+	m_sourceBtnGamecube = _addPicButton("SOURCE/DML_BTN", texGamecube, texGamecubes, 295, 200, 48, 48);
+	m_sourceBtnPlugin = _addPicButton("SOURCE/EMU_BTN", texPlugin, texPlugins, 355, 200, 48, 48);
 	
 	themeName = m_cfg.getString("GENERAL", "theme", "default");
 	if(!m_source.load(fmt("%s/%s/%s", m_sourceDir.c_str(), themeName.c_str(), SOURCE_FILENAME)))
@@ -903,9 +913,9 @@ void CMenu::_initSourceMenu()
 	}
 	_setHideAnim(m_sourceBtnChannel, "SOURCE/CHANNEL_BTN", 0, 40, 0.f, 0.f);
 	_setHideAnim(m_sourceBtnHomebrew, "SOURCE/HOMEBREW_BTN", 0, 40, 0.f, 0.f);
-	_setHideAnim(m_sourceBtnUsb, "SOURCE/USB_BTN", 0, 40, 0.f, 0.f);
-	_setHideAnim(m_sourceBtnDML, "SOURCE/DML_BTN", 0, 40, 0.f, 0.f);
-	_setHideAnim(m_sourceBtnEmu, "SOURCE/EMU_BTN", 0, 40, 0.f, 0.f);
+	_setHideAnim(m_sourceBtnWii, "SOURCE/USB_BTN", 0, 40, 0.f, 0.f);
+	_setHideAnim(m_sourceBtnGamecube, "SOURCE/DML_BTN", 0, 40, 0.f, 0.f);
+	_setHideAnim(m_sourceBtnPlugin, "SOURCE/EMU_BTN", 0, 40, 0.f, 0.f);
 	_setHideAnim(m_sourceLblTitle, "SOURCE/TITLE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_sourceLblNotice, "SOURCE/NOTICE", 0, 0, 1.f, 0.f);
 	_setHideAnim(m_sourceLblPage, "SOURCE/PAGE_BTN", 0, 0, 1.f, -1.f);

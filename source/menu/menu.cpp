@@ -99,11 +99,6 @@ CMenu::CMenu()
 	m_thrdDone = false;
 	m_thrdWritten = 0;
 	m_thrdTotal = 0;
-	/* mios stuff */
-	m_mios_ver = 0;
-	m_sd_dm = false;
-	m_new_dml = false;
-	m_new_dm_cfg = false;
 	/* ftp stuff */
 	m_ftp_inited = false;
 	m_init_ftp = false;
@@ -245,15 +240,15 @@ void CMenu::init()
 	}
 	m_allow_random = m_cfg.getBool("GENERAL", "allow_b_on_questionmark", true);
 	m_multisource = m_cfg.getBool("GENERAL", "multisource", false);
-	/* DIOS_MIOS stuff */
-	if(m_cfg.getBool(GC_DOMAIN, "always_show_button", true))
-	{
-		gprintf("Force enabling DML view\n");
-		m_show_dml = true;
-	}
-	MIOSisDML();
-	if(m_show_dml == false)
-		m_show_dml = (m_mios_ver > 0);
+	/* GameCube stuff */
+	m_devo_installed = DEVO_Installed(m_dataDir.c_str());
+	m_nintendont_installed = Nintendont_Installed();
+	m_show_gc = m_cfg.getBool(GC_DOMAIN, "always_show_button", false);
+	memset(gc_games_dir, 0, 64);
+	strncpy(gc_games_dir, m_cfg.getString(GC_DOMAIN, "gc_games_dir", DF_GC_GAMES_DIR).c_str(), 64);
+	if(strncmp(gc_games_dir, "%s:/", 4) != 0)
+		strcpy(gc_games_dir, DF_GC_GAMES_DIR);
+	gprintf("GameCube Games Directory: %s\n", gc_games_dir);
 	/* Emu NAND */
 	m_cfg.getString(CHANNEL_DOMAIN, "path", "");
 	m_cfg.getInt(CHANNEL_DOMAIN, "partition", 1);
@@ -369,8 +364,6 @@ void CMenu::init()
 	m_theme.load(fmt("%s.ini", m_themeDataDir.c_str()));
 	m_plugin.init(m_pluginsDir);
 
-	m_devo_installed = DEVO_Installed(m_dataDir.c_str());
-	m_nintendont_installed = Nintendont_Installed();
 	const char *defLang = "Default";
 	switch (CONF_GetLanguage())
 	{
@@ -2190,7 +2183,7 @@ bool CMenu::_loadList(void)
 			m_cfg.getBool(GC_DOMAIN, "source"))
 	{
 		m_current_view = COVERFLOW_GAMECUBE;
-		_loadDmlList();
+		_loadGCList();
 		if(m_combined_view)
 			for(vector<dir_discHdr>::iterator tmp_itr = m_gameList.begin(); tmp_itr != m_gameList.end(); tmp_itr++)
 				combinedList.push_back(*tmp_itr);
@@ -2249,14 +2242,14 @@ bool CMenu::_loadHomebrewList()
 	return true;
 }
 
-bool CMenu::_loadDmlList()
+bool CMenu::_loadGCList()
 {
 	currentPartition = m_cfg.getInt(GC_DOMAIN, "partition", USB1);
 	if(!DeviceHandle.IsInserted(currentPartition))
 		return false;
 
 	m_gameList.clear();
-	string gameDir(fmt(GC_GAMES_DIR, DeviceName[currentPartition]));
+	string gameDir(fmt(gc_games_dir, DeviceName[currentPartition]));
 	string cacheDir(fmt("%s/%s_gamecube.db", m_listCacheDir.c_str(), DeviceName[currentPartition]));
 	bool updateCache = m_cfg.getBool(GC_DOMAIN, "update_cache");
 	m_gameList.CreateList(COVERFLOW_GAMECUBE, currentPartition, gameDir,
@@ -2565,69 +2558,6 @@ void CMenu::UpdateCache(u32 view)
 		default:
 			m_cfg.setBool(WII_DOMAIN, "update_cache", true);
 	}
-}
-
-void CMenu::MIOSisDML()
-{
-	/*
-	0=mios
-	1=dm
-	2=qf
-	*/
-	m_mios_ver = 0;
-	m_sd_dm = false;
-	m_new_dml = false;
-	m_new_dm_cfg = false;
-
-	u32 size = 0;
-	char ISFS_Filename[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
-	strcpy(ISFS_Filename, "/title/00000001/00000101/content/0000000c.app");
-	u8 *appfile = ISFS_GetFile(ISFS_Filename, &size, -1);
-	if(appfile)
-	{
-		for(u32 i = 0; i < size; ++i) 
-		{
-			/* check for some odd looking elf signs */
-			if(m_mios_ver == 0 && *(vu32*)(appfile+i) == 0x7F454C46 && *(vu32*)(appfile+i+4) != 0x01020161)
-			{
-				m_mios_ver = 1;
-				m_new_dml = true; /* assume cfg dm */
-			}
-			/* seaching for an old debug print in boot.bin only dml revs */
-			if(*(vu32*)(appfile+i) == 0x5573696E && *(vu32*)(appfile+i+4) == 0x6720656E)
-			{
-				m_mios_ver = 1;
-				m_new_dml = false; /* boot.bin dm */
-			}
-			/* pic checks */
-			if(*(vu32*)(appfile+i) == 0xF282F280 && *(vu32*)(appfile+i+4) == 0xF281F27F) /* pic at 0x35000 */
-			{
-				m_mios_ver = 1;
-				m_new_dm_cfg = true; /* newer dm cfg */
-			}
-			if(*(vu32*)(appfile+i) == 0x5A9B5A77 && *(vu32*)(appfile+i+4) == 0x5C9A5B78) /* pic at 0x35000 */
-			{
-				m_mios_ver = 1;
-				m_new_dm_cfg = true; /* current dm cfg */
-			}
-			if(*(vu32*)(appfile+i) == 0x68846791 && *(vu32*)(appfile+i+4) == 0x63836390) /* pic at 0x6b000 */
-			{
-				m_mios_ver = 1;
-				m_new_dm_cfg = false; /* older dm cfg */
-			}
-			if(*(vu32*)(appfile+i) == 0x1D981F78 && *(vu32*)(appfile+i+4) == 0x1E991E79) /* pic at 0x95000 */
-			{
-				m_mios_ver = 2;
-				m_new_dm_cfg = true; /* qf */
-			}
-			/* Lite or Quad string for SD versions */
-			if(*(vu32*)(appfile+i) == 0x4C697465 || *(vu32*)(appfile+i) == 0x51756164)
-				m_sd_dm = true;
-		}
-		free(appfile);
-	}
-	gprintf("m_mios_ver = %u; m_sd_dm = %d; m_new_dml = %d; m_new_dm_cfg = %d\n", 
-									m_mios_ver, m_sd_dm, m_new_dml, m_new_dm_cfg);
 }
 
 void CMenu::RemoveCover(const char *id)
