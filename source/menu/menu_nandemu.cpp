@@ -54,7 +54,7 @@ bool m_saveall;
 
 static inline int loopNum(int i, int s)
 {
-	return i < 0 ? (s - (-i % s)) % s : i % s;
+	return (i + s) % s;
 }
 
 static bool _saveExists(const char *path)

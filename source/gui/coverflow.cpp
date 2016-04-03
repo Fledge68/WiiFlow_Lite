@@ -305,7 +305,7 @@ void CCoverFlow::setHQcover(bool HQ)
 void CCoverFlow::setBufferSize(u32 numCovers)
 {
 	if(m_covers != NULL) return;
-	m_numBufCovers = min(max(4u, numCovers / 2u), 40u);
+	m_numBufCovers = min(max(4u, numCovers / 2u), 40u);//8 to 80 
 }
 
 void CCoverFlow::setTextures(const string &loadingPic, const string &loadingPicFlat, const string &noCoverPic, const string &noCoverPicFlat)
@@ -2821,7 +2821,7 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 			fp = fopen(full_path, "rb");
 			MEM2_free(full_path);
 		}
-		if(fp != NULL)
+		if(fp != NULL)//if wfc chache file is found
 		{
 			bool success = false;
 			fseek(fp, 0, SEEK_END);
@@ -2831,6 +2831,8 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 			if(fileSize > sizeof(header))
 			{
 				fread(&header, 1, sizeof(header), fp);
+				//ok the cache file might be compressed when you don't want compress or it might be front when you want box
+				//or it might be old format
 				// Try to find a matching cache file, otherwise try the PNG file, otherwise try again with the cache file with less constraints
 				if(header.newFmt != 0 && (((!box || header.full != 0) && (header.cmpr != 0) == m_compressTextures) || (!_loadCoverTexPNG(i, box, hq, blankBoxCover))))
 				{
@@ -2898,7 +2900,7 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 	if(allocFailed)
 		return CL_NOMEM;
 
-	// If not found, load the PNG
+	// If wfc cache file not found, load the PNG and create a wfc cache file
 	return _loadCoverTexPNG(i, box, hq, blankBoxCover) ? CL_OK : CL_ERROR;
 }
 
