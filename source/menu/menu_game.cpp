@@ -766,7 +766,7 @@ void CMenu::directlaunch(const char *GameID)
 			}
 		}
 	}
-	error(sfmt("errgame1", L"Cannot find the game with ID: %s", GameID));
+	error(wfmt(_fmt("errgame1", L"Cannot find the game with ID: %s"), GameID));
 }
 
 void CMenu::_launchShutdown()
@@ -1031,7 +1031,7 @@ int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id, bool RealNAND_Channels)
 		_netInit();
 		if(ret == false)
 		{
-			error(sfmt("errgame4", L"Couldn't load IOS %i", gameIOS));
+			error(wfmt(_fmt("errgame4", L"Couldn't load IOS %i"), gameIOS));
 			return LOAD_IOS_FAILED;
 		}
 		return LOAD_IOS_SUCCEEDED;
@@ -1057,7 +1057,7 @@ int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id, bool RealNAND_Channels)
 	{
 		if(_installed_cios.size() <= 0)
 		{
-			error(sfmt("errgame2", L"No cIOS found!"));
+			error(_t("errgame2", L"No cIOS found!"));
 			Sys_Exit();
 		}
 		u8 IOS[3];
@@ -1092,7 +1092,7 @@ int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id, bool RealNAND_Channels)
 		_netInit();
 		if(ret == false)
 		{
-			error(sfmt("errgame4", L"Couldn't load IOS %i", gameIOS));
+			error(wfmt(_fmt("errgame4", L"Couldn't load IOS %i"), gameIOS));
 			return LOAD_IOS_FAILED;
 		}
 		return LOAD_IOS_SUCCEEDED;
