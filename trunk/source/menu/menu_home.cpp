@@ -173,7 +173,7 @@ bool CMenu::_ExitTo(void)
 			{
 				if(!Load_Neek2o_Kernel())
 				{
-					error(sfmt("errneek1", L"Cannot launch neek2o. Verify your neek2o setup"));
+					error(_fmt("errneek1", L"Cannot launch neek2o. Verify your neek2o setup"));
 					exitHandler(PRIILOADER_DEF);
 				}
 				else
