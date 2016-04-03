@@ -220,8 +220,9 @@ void CMenu::_createSFList()
 
 void CMenu::_sourceFlow()
 {
-	u8 numPlugins = 0, k;
-	if(!m_cfg.getBool(PLUGIN_DOMAIN, "disable", false))
+	//u8 numPlugins = 0, k;
+	u8 k;
+	/*if(!m_cfg.getBool(PLUGIN_DOMAIN, "disable", false))
 	{
 		Config m_plugin_cfg;
 		DIR *pdir;
@@ -244,7 +245,7 @@ void CMenu::_sourceFlow()
 		}
 		closedir(pdir);
 		m_plugin.EndAdd();
-	}
+	}*/
 	const dir_discHdr *hdr = CoverFlow.getHdr();
 	if(m_cfg.getBool("SOURCEFLOW", "remember_last_item", true))
 		m_cfg.setString("SOURCEFLOW", "current_item", strrchr(hdr->path, '/') + 1);
@@ -301,7 +302,7 @@ void CMenu::_sourceFlow()
 		m_current_view = COVERFLOW_PLUGIN;
 		m_cfg.setBool(PLUGIN_DOMAIN, "source", true);
 		m_catStartPage = m_source.getInt(btn_selected, "cat_page", 1);
-		for(k = 0; k < numPlugins; ++k)
+		for(k = 0; k < m_numPlugins; ++k)
 			m_plugin.SetEnablePlugin(m_cfg, k, 2); /* force enable */
 	}
 	else if(source == "plugin")
@@ -313,7 +314,7 @@ void CMenu::_sourceFlow()
 		{
 			m_current_view = COVERFLOW_PLUGIN;
 			m_cfg.setBool(PLUGIN_DOMAIN, "source", true);
-			for(k = 0; k < numPlugins; ++k)
+			for(k = 0; k < m_numPlugins; ++k)
 				m_plugin.SetEnablePlugin(m_cfg, k, 1); /* force disable */
 			for(vector<string>::iterator itr = magicNums.begin(); itr != magicNums.end(); itr++)
 			{
@@ -391,7 +392,7 @@ bool CMenu::_Source()
 	bool noChanges = true;
 	bool updateSource = false;
 	exitSource = false;
-	u8 numPlugins = 0;
+	//u8 numPlugins = 0;
 	m_showtimer = 0;
 	source_curPage = 1;
 	source_Pages = 1;
@@ -419,7 +420,7 @@ bool CMenu::_Source()
 				break;
 			}
 		}
-		if(show_emu)
+		/*if(show_emu)
 		{
 			Config m_plugin_cfg;
 			DIR *pdir;
@@ -442,7 +443,7 @@ bool CMenu::_Source()
 			}
 			closedir(pdir);
 			m_plugin.EndAdd();
-		}
+		}*/
 		_updateSourceBtns();
 	}
 
@@ -484,10 +485,10 @@ bool CMenu::_Source()
 					if(plugin_list[i] == true)
 					break;
 				}
-				char PluginMagicWord[9];
-				memset(PluginMagicWord, 0, sizeof(PluginMagicWord));
-				strncpy(PluginMagicWord, fmt("%08x", m_plugin.getPluginMagic(i)), 8);
-				currentPartition = m_cfg.getInt("PLUGINS_PARTITION", PluginMagicWord, 1); 		
+				//char PluginMagicWord[9];
+				//memset(PluginMagicWord, 0, sizeof(PluginMagicWord));
+				strncpy(m_plugin.PluginMagicWord, fmt("%08x", m_plugin.getPluginMagic(i)), 8);
+				currentPartition = m_cfg.getInt("PLUGINS_PARTITION", m_plugin.PluginMagicWord, 1); 		
 				m_cfg.setInt(PLUGIN_DOMAIN, "partition", currentPartition);
 			}
 			u8 sourceCount = 0;
@@ -654,7 +655,7 @@ bool CMenu::_Source()
 							{
 								m_cfg.setBool(PLUGIN_DOMAIN, "source", true);
 								m_catStartPage = m_source.getInt(btn_selected, "cat_page", 1);
-								for(k = 0; k < numPlugins; ++k)
+								for(k = 0; k < m_numPlugins; ++k)
 									m_plugin.SetEnablePlugin(m_cfg, k, 2); /* force enable */
 							}
 						}
@@ -670,7 +671,7 @@ bool CMenu::_Source()
 								if(plugin_magic_nums != 0)
 								{
 									m_cfg.setBool(PLUGIN_DOMAIN, "source", true);
-									for(k = 0; k < numPlugins; ++k)
+									for(k = 0; k < m_numPlugins; ++k)
 										m_plugin.SetEnablePlugin(m_cfg, k, 1); /* force disable */
 									for(vector<string>::iterator itr = magicNums.begin(); itr != magicNums.end(); itr++)
 									{

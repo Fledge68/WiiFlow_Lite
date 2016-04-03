@@ -6,9 +6,9 @@
 
 #define ARRAY_SIZE(a)	(sizeof a / sizeof a[0])
 
-static inline int loopNum(int i, int s)
+template <class T> static inline T loopNum(T i, T s)
 {
-	return i < 0 ? (s - (-i % s)) % s : i % s;
+	return (i + s) % s;
 }
 
 u8 m_gameSettingsMaxPgs = 5;

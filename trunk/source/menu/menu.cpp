@@ -82,6 +82,7 @@ CMenu::CMenu()
 	m_use_source = true;
 	m_multisource = false;
 	m_sourceflow = false;
+	m_numPlugins = 0;
 	m_clearCats = true;
 	m_catStartPage = 1;
 	m_combined_view = false;
@@ -106,6 +107,13 @@ CMenu::CMenu()
 	no_input_time = 0;
 	/* Autoboot stuff */
 	m_source_autoboot = false;
+}
+
+static vector<string> INI_List;
+static void GrabINIFiles(char *FullPath)
+{
+	//Just push back
+	INI_List.push_back(FullPath);
 }
 
 void CMenu::init()
@@ -252,7 +260,7 @@ void CMenu::init()
 	/* Emu NAND */
 	m_cfg.getString(CHANNEL_DOMAIN, "path", "");
 	m_cfg.getInt(CHANNEL_DOMAIN, "partition", 1);
-	m_cfg.getBool(CHANNEL_DOMAIN, "disable", true);
+	m_cfg.getBool(CHANNEL_DOMAIN, "disable", true);//emu_nand
 	/* Load cIOS Map */
 	_installed_cios.clear();
 	if(!neek2o() && !Sys_DolphinMode())
@@ -363,6 +371,28 @@ void CMenu::init()
 	m_themeDataDir = fmt("%s/%s", m_themeDir.c_str(), themeName.c_str());
 	m_theme.load(fmt("%s.ini", m_themeDataDir.c_str()));
 	m_plugin.init(m_pluginsDir);
+	
+	// get plugin ini files if plugin view enabled
+	if(!m_cfg.getBool(PLUGIN_DOMAIN, "disable", false))
+	{
+		Config m_plugin_cfg;
+		INI_List.clear();
+		GetFiles(m_pluginsDir.c_str(), stringToVector(".ini", '|'), GrabINIFiles, false, 1);
+	
+		for(vector<string>::const_iterator iniFile = INI_List.begin(); iniFile != INI_List.end(); ++iniFile)
+		{
+			if(iniFile->find("scummvm.ini") != string::npos)
+				continue;
+			m_plugin_cfg.load(iniFile->c_str());
+			if(m_plugin_cfg.loaded())
+			{
+				m_plugin.AddPlugin(m_plugin_cfg);
+				m_numPlugins++;
+			}
+			m_plugin_cfg.unload();
+		}
+		m_plugin.EndAdd();
+	}
 
 	const char *defLang = "Default";
 	switch (CONF_GetLanguage())
@@ -1365,11 +1395,11 @@ vector<TexData> CMenu::_textures(const char *domain, const char *key)
 				TexSet::iterator i = theme.texSet.find(filename);
 				if (i != theme.texSet.end())
 					textures.push_back(i->second);
-				TexData tex;
-				if(TexHandle.fromImageFile(tex, fmt("%s/%s", m_themeDataDir.c_str(), filename.c_str())) == TE_OK)
+				TexData themetex;
+				if(TexHandle.fromImageFile(themetex, fmt("%s/%s", m_themeDataDir.c_str(), filename.c_str())) == TE_OK)
 				{
-					theme.texSet[filename] = tex;
-					textures.push_back(tex);
+					theme.texSet[filename] = themetex;
+					textures.push_back(themetex);
 				}
 			}
 		}
@@ -1391,16 +1421,16 @@ TexData CMenu::_texture(const char *domain, const char *key, TexData &def, bool 
 			if(i != theme.texSet.end())
 				return i->second;
 			/* Load from image file */
-			TexData tex;
-			if(TexHandle.fromImageFile(tex, fmt("%s/%s", m_themeDataDir.c_str(), filename.c_str())) == TE_OK)
+			TexData themetex;
+			if(TexHandle.fromImageFile(themetex, fmt("%s/%s", m_themeDataDir.c_str(), filename.c_str())) == TE_OK)
 			{
 				if(freeDef && def.data != NULL)
 				{
 					free(def.data);
 					def.data = NULL;
 				}
-				theme.texSet[filename] = tex;
-				return tex;
+				theme.texSet[filename] = themetex;
+				return themetex;
 			}
 		}
 	}
@@ -1801,8 +1831,8 @@ void CMenu::_initCF(void)
 	CoverFlow.setBufferSize(m_cfg.getInt("GENERAL", "cover_buffer", 20));
 	CoverFlow.setSorting((Sorting)m_cfg.getInt(domain, "sort", 0));
 	CoverFlow.setHQcover(m_cfg.getBool("GENERAL", "cover_use_hq", false));
-
 	CoverFlow.start(m_imgsDir);
+	
 	if(!CoverFlow.empty())
 	{
 		u8 view = m_current_view;
@@ -2156,7 +2186,7 @@ bool CMenu::_loadList(void)
 		m_cfg.getBool(PLUGIN_DOMAIN, "source"))
 	{
 		m_current_view = COVERFLOW_PLUGIN;
-		_loadEmuList();
+		_loadPluginList();
 		if(m_combined_view)
 			for(vector<dir_discHdr>::iterator tmp_itr = m_gameList.begin(); tmp_itr != m_gameList.end(); tmp_itr++)
 				combinedList.push_back(*tmp_itr);
@@ -2165,7 +2195,7 @@ bool CMenu::_loadList(void)
 			m_cfg.getBool(WII_DOMAIN, "source"))
 	{
 		m_current_view = COVERFLOW_WII;
-		_loadGameList();
+		_loadWiiList();
 		if(m_combined_view)
 			for(vector<dir_discHdr>::iterator tmp_itr = m_gameList.begin(); tmp_itr != m_gameList.end(); tmp_itr++)
 				combinedList.push_back(*tmp_itr);
@@ -2183,7 +2213,7 @@ bool CMenu::_loadList(void)
 			m_cfg.getBool(GC_DOMAIN, "source"))
 	{
 		m_current_view = COVERFLOW_GAMECUBE;
-		_loadGCList();
+		_loadGamecubeList();
 		if(m_combined_view)
 			for(vector<dir_discHdr>::iterator tmp_itr = m_gameList.begin(); tmp_itr != m_gameList.end(); tmp_itr++)
 				combinedList.push_back(*tmp_itr);
@@ -2210,7 +2240,7 @@ bool CMenu::_loadList(void)
 	return m_gameList.size() > 0 ? true : false;
 }
 
-bool CMenu::_loadGameList(void)
+bool CMenu::_loadWiiList(void)
 {
 	currentPartition = m_cfg.getInt(WII_DOMAIN, "partition", USB1);
 	if(!DeviceHandle.IsInserted(currentPartition))
@@ -2242,7 +2272,7 @@ bool CMenu::_loadHomebrewList()
 	return true;
 }
 
-bool CMenu::_loadGCList()
+bool CMenu::_loadGamecubeList()
 {
 	currentPartition = m_cfg.getInt(GC_DOMAIN, "partition", USB1);
 	if(!DeviceHandle.IsInserted(currentPartition))
@@ -2252,75 +2282,58 @@ bool CMenu::_loadGCList()
 	string gameDir(fmt(gc_games_dir, DeviceName[currentPartition]));
 	string cacheDir(fmt("%s/%s_gamecube.db", m_listCacheDir.c_str(), DeviceName[currentPartition]));
 	bool updateCache = m_cfg.getBool(GC_DOMAIN, "update_cache");
-	m_gameList.CreateList(COVERFLOW_GAMECUBE, currentPartition, gameDir,
-			stringToVector(".iso|root", '|'),cacheDir, updateCache);
+	m_gameList.CreateList(COVERFLOW_GAMECUBE, currentPartition, gameDir, stringToVector(".iso|root", '|'),cacheDir, updateCache);
 	m_cfg.remove(GC_DOMAIN, "update_cache");
 	return true;
 }
 
-static vector<string> INI_List;
-static void GrabINIFiles(char *FullPath)
-{
-	//Just push back
-	INI_List.push_back(FullPath);
-}
-
-bool CMenu::_loadEmuList()
+bool CMenu::_loadPluginList()
 {
 	currentPartition = m_cfg.getInt(PLUGIN_DOMAIN, "partition", SD);
 	if(!DeviceHandle.IsInserted(currentPartition))
 		return false;
 		
 	bool updateCache = m_cfg.getBool(PLUGIN_DOMAIN, "update_cache");
-	vector<dir_discHdr> emuList;
-	Config m_plugin_cfg;
+	vector<dir_discHdr> pluginList;
 
-	INI_List.clear();
-	GetFiles(m_pluginsDir.c_str(), stringToVector(".ini", '|'), GrabINIFiles, false, 1);
-	for(vector<string>::const_iterator Name = INI_List.begin(); Name != INI_List.end(); ++Name)
+	for(u8 i = 0; i < m_numPlugins; ++i)
 	{
 		m_gameList.clear();
-		if(Name->find("scummvm.ini") != string::npos)
+		u32 Magic = m_plugin.getPluginMagic(i);
+		//memset(m_plugin.PluginMagicWord, 0, sizeof(m_plugin.PluginMagicWord));
+		strncpy(m_plugin.PluginMagicWord, fmt("%08x", Magic), 8);
+		if(!m_cfg.getBool(PLUGIN_ENABLED, m_plugin.PluginMagicWord, true))
 			continue;
-		m_plugin_cfg.load(Name->c_str());
-		if(m_plugin_cfg.loaded())
+		string romDir = m_plugin.GetRomDir(i);
+		if(romDir.find("scummvm.ini") == string::npos)
 		{
-			m_plugin.AddPlugin(m_plugin_cfg);
-			u32 MagicWord = strtoul(m_plugin_cfg.getString(PLUGIN_INI_DEF,"magic").c_str(), NULL, 16);
-			if(!m_plugin.GetEnableStatus(m_cfg, MagicWord))
-				continue;
-			if(m_plugin_cfg.getString(PLUGIN_INI_DEF,"romDir").find("scummvm.ini") == string::npos)
-			{
-				string gameDir(fmt("%s:/%s", DeviceName[currentPartition], m_plugin_cfg.getString(PLUGIN_INI_DEF,"romDir").c_str()));
-				string cacheDir(fmt("%s/%s_%s.db", m_listCacheDir.c_str(), DeviceName[currentPartition], m_plugin_cfg.getString(PLUGIN_INI_DEF,"magic").c_str()));
-				vector<string> FileTypes = stringToVector(m_plugin_cfg.getString(PLUGIN_INI_DEF,"fileTypes"), '|');
-				m_gameList.Color = strtoul(m_plugin_cfg.getString(PLUGIN_INI_DEF,"coverColor").c_str(), NULL, 16);
-				m_gameList.Magic = MagicWord;
-				m_gameList.CreateList(COVERFLOW_PLUGIN, currentPartition, gameDir, FileTypes, cacheDir, updateCache);
-				for(vector<dir_discHdr>::iterator tmp_itr = m_gameList.begin(); tmp_itr != m_gameList.end(); tmp_itr++)
-					emuList.push_back(*tmp_itr);
-			}
-			else
-			{
-				Config scummvm;
-				vector<dir_discHdr> scummvmList;
-				scummvm.load(fmt("%s/%s", m_pluginsDir.c_str(), "scummvm.ini"));
-				scummvmList = m_plugin.ParseScummvmINI(scummvm, DeviceName[currentPartition], MagicWord);
-				for(vector<dir_discHdr>::iterator tmp_itr = scummvmList.begin(); tmp_itr != scummvmList.end(); tmp_itr++)
-					emuList.push_back(*tmp_itr);
-			}
+			string gameDir(fmt("%s:/%s", DeviceName[currentPartition], m_plugin.GetRomDir(i)));
+			string cacheDir(fmt("%s/%s_%s.db", m_listCacheDir.c_str(), DeviceName[currentPartition], m_plugin.PluginMagicWord));
+			//string fileTypes = m_plugin.GetFileTypes(i);
+			vector<string> FileTypes = stringToVector(m_plugin.GetFileTypes(i), '|');
+			m_gameList.Color = m_plugin.GetCaseColor(i);
+			m_gameList.Magic = Magic;
+			m_gameList.CreateList(COVERFLOW_PLUGIN, currentPartition, gameDir, FileTypes, cacheDir, updateCache);
+			for(vector<dir_discHdr>::iterator tmp_itr = m_gameList.begin(); tmp_itr != m_gameList.end(); tmp_itr++)
+				pluginList.push_back(*tmp_itr);
 		}
-		m_plugin_cfg.unload();
+		else
+		{
+			Config scummvm;
+			vector<dir_discHdr> scummvmList;
+			scummvm.load(fmt("%s/%s", m_pluginsDir.c_str(), "scummvm.ini"));
+			scummvmList = m_plugin.ParseScummvmINI(scummvm, DeviceName[currentPartition], Magic);
+			for(vector<dir_discHdr>::iterator tmp_itr = scummvmList.begin(); tmp_itr != scummvmList.end(); tmp_itr++)
+				pluginList.push_back(*tmp_itr);
+		}
 	}
 	m_gameList.clear();
-	for(vector<dir_discHdr>::iterator tmp_itr = emuList.begin(); tmp_itr != emuList.end(); tmp_itr++)
+	for(vector<dir_discHdr>::iterator tmp_itr = pluginList.begin(); tmp_itr != pluginList.end(); tmp_itr++)
 	{
 		tmp_itr->index = m_gameList.size();
 		m_gameList.push_back(*tmp_itr);
 	}
-	emuList.clear();
-	//If we return to the coverflow before wiiflow quit we dont need to reload plugins
-	m_plugin.EndAdd();
+	pluginList.clear();
 	m_cfg.remove(PLUGIN_DOMAIN, "update_cache");
 	return true;
 }
@@ -2610,10 +2623,10 @@ const char *CMenu::getBlankCoverPath(const dir_discHdr *element)
 			blankCoverKey = "gamecube";
 			break;
 		case TYPE_PLUGIN:
-			char PluginMagicWord[9];
-			memset(PluginMagicWord, 0, sizeof(PluginMagicWord));
-			strncpy(PluginMagicWord, fmt("%08x", element->settings[0]), 8);
-			blankCoverKey = PluginMagicWord;
+			//char PluginMagicWord[9];
+			//memset(PluginMagicWord, 0, sizeof(PluginMagicWord));
+			strncpy(m_plugin.PluginMagicWord, fmt("%08x", element->settings[0]), 8);
+			blankCoverKey = m_plugin.PluginMagicWord;
 			break;
 		default:
 			blankCoverKey = "wii";

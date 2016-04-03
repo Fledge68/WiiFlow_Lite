@@ -31,7 +31,7 @@ using namespace std;
 #define TAG_LOC			"{loc}"
 #define TAG_CONSOLE		"{console}"
 
-#define PLUGIN_INI_DEF	"PLUGIN"
+#define PLUGIN			"PLUGIN"
 #define PLUGIN_ENABLED	"PLUGINS_ENABLED"
 #define PLUGIN_DEV		"{device}"
 #define PLUGIN_PATH		"{path}"
@@ -41,8 +41,10 @@ using namespace std;
 
 struct PluginOptions
 {
-	u32 magicWord;
+	u32 magic;
 	u32 caseColor;
+	string romDir;
+	string fileTypes;	
 	string DolName;
 	string coverFolder;
 	string consoleCoverID;
@@ -55,29 +57,35 @@ struct PluginOptions
 class Plugin
 {
 public:
-	bool AddPlugin(Config &plugin);
 	u8 *GetBannerSound(u32 magic);
 	u32 GetBannerSoundSize();
+	u32 GetCaseColor(u8 pos);
 	const char *GetDolName(u32 magic);
 	const char *GetCoverFolderName(u32 magic);
-	bool GetEnableStatus(Config &cfg, u32 magic);
-	string GenerateCoverLink(dir_discHdr gameHeader, const string& constURL, Config &Checksums);
+	const char *GetRomDir(u8 pos);
+	const string& GetFileTypes(u8 pos);
 	wstringEx GetPluginName(u8 pos);
 	u32 getPluginMagic(u8 pos);
-	bool PluginExist(u8 pos);
-	void SetEnablePlugin(Config &cfg, u8 pos, u8 ForceMode = 0);
-	const vector<bool> &GetEnabledPlugins(Config &cfg, u8 *num);
-	vector<string> CreateArgs(const char *device, const char *path, 
-		const char *title, const char *loader, u32 title_len_no_ext, u32 magic);
+	s8 GetPluginPosition(u32 magic);
+	
 	void init(const string& m_pluginsDir);
+	bool AddPlugin(Config &plugin);
 	void Cleanup();
 	void EndAdd();
-	vector<dir_discHdr> ParseScummvmINI(Config &ini, const char *Device, u32 MagicWord);
-	s8 GetPluginPosition(u32 magic);
+	bool GetEnableStatus(Config &cfg, u32 magic);
+	void SetEnablePlugin(Config &cfg, u8 pos, u8 ForceMode = 0);
+	const vector<bool> &GetEnabledPlugins(Config &cfg, u8 *num);
+	bool PluginExist(u8 pos);
+	
+	vector<string> CreateArgs(const char *device, const char *path, 
+		const char *title, const char *loader, u32 title_len_no_ext, u32 magic);
+	vector<dir_discHdr> ParseScummvmINI(Config &ini, const char *Device, u32 Magic);
+	string GenerateCoverLink(dir_discHdr gameHeader, const string& constURL, Config &Checksums);
+	char PluginMagicWord[9];
+	
 private:
 	vector<PluginOptions> Plugins;
 	vector<bool> enabledPlugins;
-	char PluginMagicWord[9];
 	s8 Plugin_Pos;
 	string pluginsDir;
 	bool adding;

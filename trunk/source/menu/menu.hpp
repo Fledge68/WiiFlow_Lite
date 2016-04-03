@@ -84,6 +84,7 @@ private:
 	u8 *m_file;
 	u8 *m_buffer;
 	u8 m_aa;
+	u8 m_numPlugins;
 	bool m_bnr_settings;
 	bool m_directLaunch;
 	bool m_locked;
@@ -192,9 +193,9 @@ private:
 	s16 m_mainBtnWii;
 	s16 m_mainBtnChannel;
 	s16 m_mainBtnHomebrew;
-	s16 m_mainBtnInit;
-	s16 m_mainBtnInit2;
-	s16 m_mainLblInit;
+	s16 m_mainBtnInstall;
+	s16 m_mainBtnSelPart;
+	s16 m_mainLblMessage;
 	s16 m_mainLblUser[6];
 	bool m_show_gc;
 	bool m_devo_installed;
@@ -851,10 +852,10 @@ private:
 	};
 	// 
 	bool _loadList(void);
-	bool _loadGameList(void);
-	bool _loadGCList(void);
+	bool _loadWiiList(void);
+	bool _loadGamecubeList(void);
 	bool _loadChannelList(void);
-	bool _loadEmuList(void);
+	bool _loadPluginList(void);
 	bool _loadHomebrewList(void);
 	void _initCF(void);
 	void _initBoot(void);

@@ -8,9 +8,9 @@
 
 static const int g_curPage = 4;
 
-static inline int loopNum(int i, int s)
+template <class T> static inline T loopNum(T i, T s)
 {
-	return i < 0 ? (s - (-i % s)) % s : i % s;
+	return (i + s) % s;
 }
 
 int currentChannelIndex = -1;

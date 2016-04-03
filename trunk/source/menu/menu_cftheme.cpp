@@ -102,9 +102,9 @@ const CMenu::SCFParamDesc CMenu::_cfParams[] = {
 		{ { -3.f, 0.5f }, { 0.f, 2.f }, { 0.f, 1.f }, { 0.f, 0.f } } }
 };
 
-static inline int loopNum(int i, int s)
+template <class T> static inline T loopNum(T i, T s)
 {
-	return i < 0 ? (s - (-i % s)) % s : i % s;
+	return (i + s) % s;
 }
 
 static const u16 g_txtStyles[9] = {
@@ -143,11 +143,6 @@ static string styleToTxt(u16 s)
 	else
 		ts += 'T';
 	return ts;
-}
-
-template <class T> static inline T loopNum(T i, T s)
-{
-	return (i + s) % s;
 }
 
 void CMenu::_hideCFTheme(bool instant)
@@ -421,7 +416,7 @@ void CMenu::_cfTheme(void)
 			}
 			else if (m_btnMgr.selected(m_cfThemeBtnAlt))
 			{
-				cfVersion = 1 + loopNum(cfVersion, m_numCFVersions);
+				cfVersion = 1 + loopNum((u8)cfVersion, m_numCFVersions);
 				_showCFTheme(curParam, cfVersion, wide);
 				_loadCFLayout(cfVersion, true, wide != m_vid.wide());
 				CoverFlow.applySettings();
