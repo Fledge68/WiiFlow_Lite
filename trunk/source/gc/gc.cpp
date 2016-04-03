@@ -38,122 +38,13 @@
 #include "memory/memory.h"
 #include "memory/mem2.hpp"
 
-// DIOS-MIOS
-DML_CFG DMLCfg;
-
-void DML_New_SetOptions(const char *GamePath, char *CheatPath, const char *NewCheatPath, 
-		const char *partition, bool cheats, bool debugger, u8 NMM, u8 nodisc, u8 DMLvideoMode, 
-		u8 videoSetting, bool widescreen, bool new_dm_cfg, bool activity_led, bool screenshot)
-{
-	gprintf("DIOS-MIOS: Launch game '%s' through memory (new method)\n", GamePath);
-	memset(&DMLCfg, 0, sizeof(DML_CFG));
-
-	DMLCfg.Magicbytes = 0xD1050CF6;
-	if(new_dm_cfg)
-		DMLCfg.CfgVersion = 0x00000002;
-	else
-		DMLCfg.CfgVersion = 0x00000001;
-
-	if(videoSetting == 0)
-		DMLCfg.VideoMode |= DML_VID_NONE;
-	else if(videoSetting == 1)
-		DMLCfg.VideoMode |= DML_VID_DML_AUTO;
-	else
-		DMLCfg.VideoMode |= DML_VID_FORCE;
-
-	DMLCfg.Config |= DML_CFG_PADHOOK; //Makes life easier, l+z+b+digital down...
-
-	if(GamePath != NULL)
-	{
-		strncpy(DMLCfg.GamePath, GamePath, sizeof(DMLCfg.GamePath));
-		DMLCfg.Config |= DML_CFG_GAME_PATH;
-	}
-
-	if(CheatPath != NULL && NewCheatPath != NULL && cheats)
-	{
-		const char *ptr = NULL;
-		if(strncasecmp(CheatPath, partition, strlen(partition)) != 0)
-		{
-			fsop_CopyFile(CheatPath, NewCheatPath, NULL, NULL);
-			ptr = strchr(NewCheatPath, '/');
-		}
-		else
-			ptr = strchr(CheatPath, '/');
-		strncpy(DMLCfg.CheatPath, ptr, sizeof(DMLCfg.CheatPath));
-		gprintf("DIOS-MIOS: Cheat Path %s\n", ptr);
-		DMLCfg.Config |= DML_CFG_CHEAT_PATH;
-	}
-	if(screenshot)
-		DMLCfg.Config |= DML_CFG_SCREENSHOT;
-	if(activity_led)
-		DMLCfg.Config |= DML_CFG_ACTIVITY_LED;
-	if(cheats)
-		DMLCfg.Config |= DML_CFG_CHEATS;
-	if(debugger)
-		DMLCfg.Config |= DML_CFG_DEBUGGER;
-	if(NMM)
-		DMLCfg.Config |= DML_CFG_NMM;
-	if(NMM > 1)
-		DMLCfg.Config |= DML_CFG_NMM_DEBUG;
-	if(nodisc)
-	{
-		if(new_dm_cfg)
-			DMLCfg.Config |= DML_CFG_NODISC_CFG2;
-		else
-			DMLCfg.Config |= DML_CFG_NODISC_CFG1;
-	}
-	if(widescreen && new_dm_cfg)
-		DMLCfg.Config |= DML_CFG_FORCE_WIDE;
-
-	if(DMLvideoMode > 3)
-		DMLCfg.VideoMode |= DML_VID_PROG_PATCH;
-}
-
-void DML_Old_SetOptions(const char *GamePath)
-{
-	gprintf("DIOS-MIOS: Launch game '%s' through boot.bin (old method)\n", GamePath);
-	fsop_WriteFile(DML_BOOT_PATH, GamePath, strlen(GamePath)+1);
-
-	//Tell DML to boot the game from sd card
-	*(vu32*)0x80001800 = 0xB002D105;
-	DCFlushRange((void *)(0x80001800), 4);
-	ICInvalidateRange((void *)(0x80001800), 4);
-
-	*(vu32*)0xCC003024 |= 7;
-}
-
-void DML_New_SetBootDiscOption(bool new_dm_cfg)
-{
-	memset(&DMLCfg, 0, sizeof(DML_CFG));
-
-	DMLCfg.Magicbytes = 0xD1050CF6;
-	if(new_dm_cfg)
-		DMLCfg.CfgVersion = 0x00000002;
-	else
-		DMLCfg.CfgVersion = 0x00000001;
-	DMLCfg.VideoMode |= DML_VID_DML_AUTO;
-
-	DMLCfg.Config |= DML_CFG_BOOT_DISC;
-}
-
-void DML_New_WriteOptions()
-{
-	//Write options into memory
-	memcpy((void *)0x80001700, &DMLCfg, sizeof(DML_CFG));
-	DCFlushRange((void *)(0x80001700), sizeof(DML_CFG));
-
-	//DML v1.2+
-	memcpy((void *)0x81200000, &DMLCfg, sizeof(DML_CFG));
-	DCFlushRange((void *)(0x81200000), sizeof(DML_CFG));
-}
-
 // Nintendont
 NIN_CFG NinCfg;
 u8 NinDevice = 0;
 bool NinArgsboot = false;
 
 void Nintendont_SetOptions(const char *game, const char *gameID, char *CheatPath,char *NewCheatPath, const char *partition,
-	bool cheats, u8 NMM, u8 videomode, u8 videoSetting, bool widescreen, bool usb_hid, bool native_ctl, bool deflicker, bool screenshot, bool NIN_Debugger)
+	bool cheats, u8 emuMC, u8 videomode, bool widescreen, bool usb_hid, bool native_ctl, bool deflicker, bool wiiu_widescreen, bool NIN_Debugger)
 {
 	NinDevice = DeviceHandle.PathToDriveType(game);
 	memset(&NinCfg, 0, sizeof(NIN_CFG));
@@ -224,9 +115,7 @@ void Nintendont_SetOptions(const char *game, const char *gameID, char *CheatPath
 	if(IsOnWiiU() == true)
 		NinCfg.Config |= NIN_CFG_MEMCARDEMU;
 
-	videoSetting = 2;
-	if(videoSetting == 2)
-		NinCfg.VideoMode |= NIN_VID_FORCE;
+	NinCfg.VideoMode |= NIN_VID_FORCE;
 
 	if((videomode > 3) && (videomode != 6))
 		NinCfg.Config |= NIN_CFG_FORCE_PROG;
@@ -243,16 +132,16 @@ void Nintendont_SetOptions(const char *game, const char *gameID, char *CheatPath
 	if(deflicker)
 		NinCfg.VideoMode |= NIN_VID_FORCE_DF;
 
-	if(screenshot)
+	if(wiiu_widescreen)
 		NinCfg.Config |= NIN_CFG_WIIU_WIDE;
 
 	if(widescreen)
 		NinCfg.Config |= NIN_CFG_FORCE_WIDE;
 
-	if(NMM > 0)
+	if(emuMC > 0)
 		NinCfg.Config |= NIN_CFG_MEMCARDEMU;
 
-	if(NMM > 1)
+	if(emuMC > 1)
 	{
 		NinCfg.Config |= NIN_CFG_MC_MULTI;		
 		NinCfg.MemCardBlocks = 0x4;//1019 blocks (8MB)
@@ -283,7 +172,7 @@ void Nintendont_SetOptions(const char *game, const char *gameID, char *CheatPath
 	gprintf("Nintendont Game Path: %s, ID: %08x\n", NinCfg.GamePath, NinCfg.GameID);
 }
 
-void Nintendont_BootDisc(u8 NMM, bool widescreen, bool usb_hid, bool native_ctl, bool deflicker)
+void Nintendont_BootDisc(u8 emuMC, bool widescreen, bool usb_hid, bool native_ctl, bool deflicker)
 {
 	memset(&NinCfg, 0, sizeof(NIN_CFG));
 	NinCfg.Magicbytes = 0x01070CF6;
@@ -300,12 +189,12 @@ void Nintendont_BootDisc(u8 NMM, bool widescreen, bool usb_hid, bool native_ctl,
 
 	if(usb_hid)
 		NinCfg.Config |= NIN_CFG_HID;	
-	if(NMM == 1)
+	if(emuMC == 1)
 	{
 		NinCfg.Config |= NIN_CFG_MEMCARDEMU;
 		NinCfg.MemCardBlocks = 0x2;//251 blocks (2MB)
 	}
-	else if(NMM == 2)
+	else if(emuMC == 2)
 	{
 	  NinCfg.Config |= NIN_CFG_MEMCARDEMU;
 	  NinCfg.Config |= NIN_CFG_MC_MULTI;		
@@ -556,16 +445,13 @@ u32 __SYS_UnlockSram(u32 write);
 u32 __SYS_SyncSram(void);
 }
 
-void GC_SetVideoMode(u8 videomode, u8 videoSetting, u8 loader)
+void GC_SetVideoMode(u8 videomode, u8 loader)
 {
 	syssram *sram;
 	sram = __SYS_LockSram();
 	GXRModeObj *vmode = VIDEO_GetPreferredMode(0);
 	int vmode_reg = 0;
 
-	if(loader == 2)
-		videoSetting = 2;
-	
 	if((VIDEO_HaveComponentCable() && (CONF_GetProgressiveScan() > 0)) || ((videomode > 3) && (videomode != 6)))
 		sram->flags |= 0x80; //set progressive flag
 	else
@@ -585,82 +471,47 @@ void GC_SetVideoMode(u8 videomode, u8 videoSetting, u8 loader)
 	
 	if(videomode == 1)
 	{
-		if(videoSetting == 2)
-		{
-			if(loader == 0)
-				DMLCfg.VideoMode |= DML_VID_FORCE_PAL50;
-			else if(loader == 2)
-				NinCfg.VideoMode |= NIN_VID_FORCE_PAL50;
-		}
+		if(loader == 1)
+			NinCfg.VideoMode |= NIN_VID_FORCE_PAL50;
 		vmode = &TVPal528IntDf;
 	}
 	else if(videomode == 2)
 	{
-		if(videoSetting == 2)
-		{
-			if(loader == 0)
-				DMLCfg.VideoMode |= DML_VID_FORCE_NTSC;
-			else if(loader == 2)
-				NinCfg.VideoMode |= NIN_VID_FORCE_NTSC;
-		}
+		if(loader == 1)
+			NinCfg.VideoMode |= NIN_VID_FORCE_NTSC;
 		vmode = &TVNtsc480IntDf;
 	}
 	else if(videomode == 3)
 	{
-		if(videoSetting == 2)
-		{
-			if(loader == 0)
-				DMLCfg.VideoMode |= DML_VID_FORCE_PAL60;
-			else if(loader == 2)
-				NinCfg.VideoMode |= NIN_VID_FORCE_PAL60;
-		}
+		if(loader == 1)
+			NinCfg.VideoMode |= NIN_VID_FORCE_PAL60;
 		vmode = &TVEurgb60Hz480IntDf;
 		vmode_reg = 5;
 	}
 	else if(videomode == 4)
 	{
-		if(videoSetting == 2)
-		{
-			if(loader == 0)
-				DMLCfg.VideoMode |= DML_VID_FORCE_PROG;
-			else if(loader == 2)
-				NinCfg.VideoMode |= NIN_VID_FORCE_NTSC;
-		}
+		if(loader == 1)
+			NinCfg.VideoMode |= NIN_VID_FORCE_NTSC;
 		vmode = &TVNtsc480IntDf;// shouldn't this be vmode = &TVNtsc480Prog
 	}
 	else if(videomode == 5)
 	{
-		if(videoSetting == 2)
-		{
-			if(loader == 0)
-				DMLCfg.VideoMode |= DML_VID_FORCE_PROG;
-			else if(loader == 2)
-				NinCfg.VideoMode |= NIN_VID_FORCE_PAL60;
-		}
+		if(loader == 1)
+			NinCfg.VideoMode |= NIN_VID_FORCE_PAL60;
 		vmode = &TVEurgb60Hz480IntDf;
 		vmode_reg = 5;
 	}
 	else if(videomode == 6)
 	{
-		if(videoSetting == 2)
-		{
-			if(loader == 0)
-				DMLCfg.VideoMode |= DML_VID_FORCE_PAL60;
-			else if(loader == 2)
-				NinCfg.VideoMode |= NIN_VID_FORCE_MPAL;
-		}
+		if(loader == 1)
+			NinCfg.VideoMode |= NIN_VID_FORCE_MPAL;
 		vmode = &TVEurgb60Hz480IntDf;
-		vmode_reg = 5;
+		vmode_reg = 5;// not sure about this
 	}
 	else if(videomode == 7)
 	{
-		if(videoSetting == 2)
-		{
-			if(loader == 0)
-				DMLCfg.VideoMode |= DML_VID_FORCE_PROG;
-			else if(loader == 2)
-				NinCfg.VideoMode |= NIN_VID_FORCE_MPAL;
-		}
+		if(loader == 1)
+			NinCfg.VideoMode |= NIN_VID_FORCE_MPAL;
 		vmode = &TVEurgb60Hz480IntDf;
 		vmode_reg = 5;
 	}
@@ -728,7 +579,7 @@ void GC_SetLanguage(u8 lang, u8 loader)
 	while(!__SYS_SyncSram());
 
 	/* write language for nintendont */
-	if(loader == 2)
+	if(loader == 1)
 	{
 		switch(lang)
 		{

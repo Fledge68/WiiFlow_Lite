@@ -7,8 +7,7 @@ extern "C" {
 #endif
 
 enum {
-	AUTOMIOS = 0,
-	DEVOLUTION,
+	DEVOLUTION = 0,
 	NINTENDONT
 };
 

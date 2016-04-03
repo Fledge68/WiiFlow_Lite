@@ -19,60 +19,6 @@
 
 #include <gccore.h>
 
-// DIOS-MIOS
-#define DML_BOOT_PATH "sd:/games/boot.bin"
-
-typedef struct DML_CFG
-{
-	u32 Magicbytes;			//0xD1050CF6
-	u32 CfgVersion;			//0x00000001
-	u32 VideoMode;
-	u32 Config;
-	char GamePath[255];
-	char CheatPath[255];
-} DML_CFG;
-
-enum dmlconfig
-{
-	DML_CFG_CHEATS		= (1<<0),
-	DML_CFG_DEBUGGER	= (1<<1),
-	DML_CFG_DEBUGWAIT	= (1<<2),
-	DML_CFG_NMM			= (1<<3),
-	DML_CFG_NMM_DEBUG	= (1<<4),
-	DML_CFG_GAME_PATH	= (1<<5),
-	DML_CFG_CHEAT_PATH	= (1<<6),
-	DML_CFG_ACTIVITY_LED= (1<<7),
-	DML_CFG_PADHOOK		= (1<<8),
-	DML_CFG_NODISC_CFG1	= (1<<9),
-	DML_CFG_FORCE_WIDE	= (1<<9), //v2
-	DML_CFG_BOOT_DISC	= (1<<10),
-	DML_CFG_BOOT_DOL	= (1<<11), //v1
-	DML_CFG_BOOT_DISC2	= (1<<11), //v2
-	DML_CFG_NODISC_CFG2	= (1<<12),
-	DML_CFG_SCREENSHOT	= (1<<13),
-};
-
-enum dmlvideomode
-{
-	DML_VID_DML_AUTO	= (0<<16),
-	DML_VID_FORCE		= (1<<16),
-	DML_VID_NONE		= (2<<16),
-
-	DML_VID_FORCE_PAL50	= (1<<0),
-	DML_VID_FORCE_PAL60	= (1<<1),
-	DML_VID_FORCE_NTSC	= (1<<2),
-	DML_VID_FORCE_PROG	= (1<<3),
-	DML_VID_PROG_PATCH	= (1<<4),
-};
-
-void DML_New_SetOptions(const char *GamePath, char *CheatPath, const char *NewCheatPath, 
-	const char *partition, bool cheats, bool debugger, u8 NMM, u8 nodisc, u8 DMLvideoMode, 
-	u8 videoSetting, bool widescreen, bool new_dm_cfg, bool activity_led, bool screenshot);
-void DML_Old_SetOptions(const char *GamePath);
-void DML_New_SetBootDiscOption(bool new_dm_cfg);
-void DML_New_WriteOptions();
-
-
 // Nintendont
 #include "nin_cfg.h"
 #define NIN_CFG_PATH "nincfg.bin"
@@ -81,9 +27,9 @@ void DML_New_WriteOptions();
 
 bool Nintendont_Installed();
 bool Nintendont_GetLoader();
-void Nintendont_BootDisc(u8 NMM, bool widescreen, bool usb_hid, bool native_ctl, bool deflicker);
+void Nintendont_BootDisc(u8 emuMC, bool widescreen, bool usb_hid, bool native_ctl, bool deflicker);
 void Nintendont_SetOptions(const char *game, const char *gameID, char *CheatPath, char *NewCheatPath, const char *partition,
-	bool cheats, u8 NMM, u8 videomode, u8 videoSetting, bool widescreen, bool usb_hid, bool native_ctl, bool deflicker, bool screenshot, bool NIN_Debugger);
+	bool cheats, u8 emuMC, u8 videomode, bool widescreen, bool usb_hid, bool native_ctl, bool deflicker, bool wiiu_widescreen, bool NIN_Debugger);
 void Nintendont_WriteOptions();
 
 // Devolution
@@ -117,7 +63,7 @@ void DEVO_Boot();
 
 
 // General
-void GC_SetVideoMode(u8 videomode, u8 videoSetting, u8 loader);
+void GC_SetVideoMode(u8 videomode, u8 loader);
 void GC_SetLanguage(u8 lang, u8 loader);
 
 #endif //_GC_HPP_

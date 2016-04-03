@@ -25,19 +25,19 @@ void CMenu::_hideConfig3(bool instant)
 	}
 	else
 	{
-		m_btnMgr.hide(m_config3LblDMLGameLanguage, instant);
-		m_btnMgr.hide(m_config3LblDMLLanguage, instant);
-		m_btnMgr.hide(m_config3BtnDMLLanguageP, instant);
-		m_btnMgr.hide(m_config3BtnDMLLanguageM, instant);
-		m_btnMgr.hide(m_config3LblDMLGameVideo, instant);
-		m_btnMgr.hide(m_config3LblDMLVideo, instant);
-		m_btnMgr.hide(m_config3BtnDMLVideoP, instant);
-		m_btnMgr.hide(m_config3BtnDMLVideoM, instant);
+		m_btnMgr.hide(m_config3LblGCGameLanguage, instant);
+		m_btnMgr.hide(m_config3LblGCLanguage, instant);
+		m_btnMgr.hide(m_config3BtnGCLanguageP, instant);
+		m_btnMgr.hide(m_config3BtnGCLanguageM, instant);
+		m_btnMgr.hide(m_config3LblGCGameVideo, instant);
+		m_btnMgr.hide(m_config3LblGCVideo, instant);
+		m_btnMgr.hide(m_config3BtnGCVideoP, instant);
+		m_btnMgr.hide(m_config3BtnGCVideoM, instant);
 	}
-	m_btnMgr.hide(m_config3LblDMLGameLoader, instant);
-	m_btnMgr.hide(m_config3LblDMLLoader, instant);
-	m_btnMgr.hide(m_config3BtnDMLLoaderP, instant);
-	m_btnMgr.hide(m_config3BtnDMLLoaderM, instant);
+	m_btnMgr.hide(m_config3LblGCGameLoader, instant);
+	m_btnMgr.hide(m_config3LblGCLoader, instant);
+	m_btnMgr.hide(m_config3BtnGCLoaderP, instant);
+	m_btnMgr.hide(m_config3BtnGCLoaderM, instant);
 	m_btnMgr.hide(m_config3LblOcarina, instant);
 	m_btnMgr.hide(m_config3BtnOcarina, instant);
 	for(u8 i = 0; i < ARRAY_SIZE(m_config3LblUser); ++i)
@@ -62,19 +62,19 @@ void CMenu::_showConfig3(void)
 	}
 	else
 	{
-		m_btnMgr.show(m_config3LblDMLGameLanguage);
-		m_btnMgr.show(m_config3LblDMLLanguage);
-		m_btnMgr.show(m_config3BtnDMLLanguageP);
-		m_btnMgr.show(m_config3BtnDMLLanguageM);
-		m_btnMgr.show(m_config3LblDMLGameVideo);
-		m_btnMgr.show(m_config3LblDMLVideo);
-		m_btnMgr.show(m_config3BtnDMLVideoP);
-		m_btnMgr.show(m_config3BtnDMLVideoM);
+		m_btnMgr.show(m_config3LblGCGameLanguage);
+		m_btnMgr.show(m_config3LblGCLanguage);
+		m_btnMgr.show(m_config3BtnGCLanguageP);
+		m_btnMgr.show(m_config3BtnGCLanguageM);
+		m_btnMgr.show(m_config3LblGCGameVideo);
+		m_btnMgr.show(m_config3LblGCVideo);
+		m_btnMgr.show(m_config3BtnGCVideoP);
+		m_btnMgr.show(m_config3BtnGCVideoM);
 	}
-	m_btnMgr.show(m_config3LblDMLGameLoader);
-	m_btnMgr.show(m_config3LblDMLLoader);
-	m_btnMgr.show(m_config3BtnDMLLoaderP);
-	m_btnMgr.show(m_config3BtnDMLLoaderM);
+	m_btnMgr.show(m_config3LblGCGameLoader);
+	m_btnMgr.show(m_config3LblGCLoader);
+	m_btnMgr.show(m_config3BtnGCLoaderP);
+	m_btnMgr.show(m_config3BtnGCLoaderM);
 	m_btnMgr.show(m_config3LblOcarina);
 	m_btnMgr.show(m_config3BtnOcarina);
 
@@ -95,13 +95,13 @@ void CMenu::_showConfig3(void)
 	else
 	{
 		i = min(max(0, m_cfg.getInt(GC_DOMAIN, "video_mode", 0)), (int)ARRAY_SIZE(CMenu::_GlobalGCvideoModes) - 1);
-		m_btnMgr.setText(m_config3LblDMLVideo, _t(CMenu::_GlobalGCvideoModes[i].id, CMenu::_GlobalGCvideoModes[i].text));
+		m_btnMgr.setText(m_config3LblGCVideo, _t(CMenu::_GlobalGCvideoModes[i].id, CMenu::_GlobalGCvideoModes[i].text));
 		
 		i = min(max(0, m_cfg.getInt(GC_DOMAIN, "game_language", 0)), (int)ARRAY_SIZE(CMenu::_GlobalGClanguages) - 1);
-		m_btnMgr.setText(m_config3LblDMLLanguage, _t(CMenu::_GlobalGClanguages[i].id, CMenu::_GlobalGClanguages[i].text));
+		m_btnMgr.setText(m_config3LblGCLanguage, _t(CMenu::_GlobalGClanguages[i].id, CMenu::_GlobalGClanguages[i].text));
 	}
 	i = min(max(0, m_cfg.getInt(GC_DOMAIN, "default_loader", 2)), (int)ARRAY_SIZE(CMenu::_GlobalGCLoaders) - 1);
-	m_btnMgr.setText(m_config3LblDMLLoader, _t(CMenu::_GlobalGCLoaders[i].id, CMenu::_GlobalGCLoaders[i].text));
+	m_btnMgr.setText(m_config3LblGCLoader, _t(CMenu::_GlobalGCLoaders[i].id, CMenu::_GlobalGCLoaders[i].text));
 
 	m_btnMgr.setText(m_config3BtnOcarina, m_cfg.getBool(_domainFromView(), "cheat", false) ? _t("on", L"On") : _t("off", L"Off"));
 }
@@ -130,22 +130,22 @@ int CMenu::_config3(void)
 				m_cfg.setInt("GENERAL", "video_mode", (int)loopNum((u32)m_cfg.getInt("GENERAL", "video_mode", 0) + direction, ARRAY_SIZE(CMenu::_GlobalVideoModes)));
 				_showConfig3();
 			}
-			else if (m_btnMgr.selected(m_config3BtnDMLLanguageP) || m_btnMgr.selected(m_config3BtnDMLLanguageM))
+			else if (m_btnMgr.selected(m_config3BtnGCLanguageP) || m_btnMgr.selected(m_config3BtnGCLanguageM))
 			{
-				s8 direction = m_btnMgr.selected(m_config3BtnDMLLanguageP) ? 1 : -1;
+				s8 direction = m_btnMgr.selected(m_config3BtnGCLanguageP) ? 1 : -1;
 				m_cfg.setInt(GC_DOMAIN, "game_language", (int)loopNum((u32)m_cfg.getInt(GC_DOMAIN, "game_language", 0) + direction, ARRAY_SIZE(CMenu::_GlobalGClanguages)));
 				_showConfig3();
 			}
-			else if (m_btnMgr.selected(m_config3BtnDMLVideoP) || m_btnMgr.selected(m_config3BtnDMLVideoM))
+			else if (m_btnMgr.selected(m_config3BtnGCVideoP) || m_btnMgr.selected(m_config3BtnGCVideoM))
 			{
-				s8 direction = m_btnMgr.selected(m_config3BtnDMLVideoP) ? 1 : -1;
+				s8 direction = m_btnMgr.selected(m_config3BtnGCVideoP) ? 1 : -1;
 				m_cfg.setInt(GC_DOMAIN, "video_mode", (int)loopNum((u32)m_cfg.getInt(GC_DOMAIN, "video_mode", 0) + direction, ARRAY_SIZE(CMenu::_GlobalGCvideoModes)));
 				_showConfig3();
 			}
-			else if (m_btnMgr.selected(m_config3BtnDMLLoaderP) || m_btnMgr.selected(m_config3BtnDMLLoaderM))
+			else if (m_btnMgr.selected(m_config3BtnGCLoaderP) || m_btnMgr.selected(m_config3BtnGCLoaderM))
 			{
-				s8 direction = m_btnMgr.selected(m_config3BtnDMLLoaderP) ? 1 : -1;
-				m_cfg.setInt(GC_DOMAIN, "default_loader", (int)loopNum((u32)m_cfg.getInt(GC_DOMAIN, "default_loader", 2) + direction, ARRAY_SIZE(CMenu::_GlobalGCLoaders)));
+				s8 direction = m_btnMgr.selected(m_config3BtnGCLoaderP) ? 1 : -1;
+				m_cfg.setInt(GC_DOMAIN, "default_loader", (int)loopNum((u32)m_cfg.getInt(GC_DOMAIN, "default_loader", 1) + direction, ARRAY_SIZE(CMenu::_GlobalGCLoaders)));
 				_showConfig3();
 			}
 			else if (m_btnMgr.selected(m_config3BtnOcarina))
@@ -172,18 +172,18 @@ void CMenu::_initConfig3Menu()
 	m_config3BtnLanguageM = _addPicButton("CONFIG3/GAME_LANG_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 420, 190, 48, 48);
 	m_config3BtnLanguageP = _addPicButton("CONFIG3/GAME_LANG_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 572, 190, 48, 48);
 
-	m_config3LblDMLGameVideo = _addLabel("CONFIG3/DML_VIDEO", theme.lblFont, L"", 20, 125, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_config3LblDMLVideo = _addLabel("CONFIG3/DML_VIDEO_BTN", theme.btnFont, L"", 468, 130, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_config3BtnDMLVideoM = _addPicButton("CONFIG3/DML_VIDEO_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 420, 130, 48, 48);
-	m_config3BtnDMLVideoP = _addPicButton("CONFIG3/DML_VIDEO_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 572, 130, 48, 48);
-	m_config3LblDMLGameLanguage = _addLabel("CONFIG3/DML_LANG", theme.lblFont, L"", 20, 185, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_config3LblDMLLanguage = _addLabel("CONFIG3/DML_LANG_BTN", theme.btnFont, L"", 468, 190, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_config3BtnDMLLanguageM = _addPicButton("CONFIG3/DML_LANG_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 420, 190, 48, 48);
-	m_config3BtnDMLLanguageP = _addPicButton("CONFIG3/DML_LANG_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 572, 190, 48, 48);
-	m_config3LblDMLGameLoader = _addLabel("CONFIG3/GC_LOADER", theme.lblFont, L"", 20, 245, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_config3LblDMLLoader = _addLabel("CONFIG3/GC_LOADER_BTN", theme.btnFont, L"", 468, 250, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_config3BtnDMLLoaderM = _addPicButton("CONFIG3/GC_LOADER_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 420, 250, 48, 48);
-	m_config3BtnDMLLoaderP = _addPicButton("CONFIG3/GC_LOADER_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 572, 250, 48, 48);
+	m_config3LblGCGameVideo = _addLabel("CONFIG3/DML_VIDEO", theme.lblFont, L"", 20, 125, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_config3LblGCVideo = _addLabel("CONFIG3/DML_VIDEO_BTN", theme.btnFont, L"", 468, 130, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_config3BtnGCVideoM = _addPicButton("CONFIG3/DML_VIDEO_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 420, 130, 48, 48);
+	m_config3BtnGCVideoP = _addPicButton("CONFIG3/DML_VIDEO_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 572, 130, 48, 48);
+	m_config3LblGCGameLanguage = _addLabel("CONFIG3/DML_LANG", theme.lblFont, L"", 20, 185, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_config3LblGCLanguage = _addLabel("CONFIG3/DML_LANG_BTN", theme.btnFont, L"", 468, 190, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_config3BtnGCLanguageM = _addPicButton("CONFIG3/DML_LANG_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 420, 190, 48, 48);
+	m_config3BtnGCLanguageP = _addPicButton("CONFIG3/DML_LANG_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 572, 190, 48, 48);
+	m_config3LblGCGameLoader = _addLabel("CONFIG3/GC_LOADER", theme.lblFont, L"", 20, 245, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_config3LblGCLoader = _addLabel("CONFIG3/GC_LOADER_BTN", theme.btnFont, L"", 468, 250, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_config3BtnGCLoaderM = _addPicButton("CONFIG3/GC_LOADER_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 420, 250, 48, 48);
+	m_config3BtnGCLoaderP = _addPicButton("CONFIG3/GC_LOADER_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 572, 250, 48, 48);
 	
 	m_config3LblOcarina = _addLabel("CONFIG3/OCARINA", theme.lblFont, L"", 20, 305, 290, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_config3BtnOcarina = _addButton("CONFIG3/OCARINA_BTN", theme.btnFont, L"", 420, 310, 200, 48, theme.btnFontColor);
@@ -197,18 +197,18 @@ void CMenu::_initConfig3Menu()
 	_setHideAnim(m_config3BtnLanguageM, "CONFIG3/GAME_LANG_MINUS", -50, 0, 1.f, 0.f);
 	_setHideAnim(m_config3BtnLanguageP, "CONFIG3/GAME_LANG_PLUS", -50, 0, 1.f, 0.f);
 
-	_setHideAnim(m_config3LblDMLGameVideo, "CONFIG3/DML_VIDEO", 50, 0, -2.f, 0.f);
-	_setHideAnim(m_config3LblDMLVideo, "CONFIG3/DML_VIDEO_BTN", -50, 0, 1.f, 0.f);
-	_setHideAnim(m_config3BtnDMLVideoM, "CONFIG3/DML_VIDEO_MINUS", -50, 0, 1.f, 0.f);
-	_setHideAnim(m_config3BtnDMLVideoP, "CONFIG3/DML_VIDEO_PLUS", -50, 0, 1.f, 0.f);
-	_setHideAnim(m_config3LblDMLGameLanguage, "CONFIG3/DML_LANG", 50, 0, -2.f, 0.f);
-	_setHideAnim(m_config3LblDMLLanguage, "CONFIG3/DML_LANG_BTN", -50, 0, 1.f, 0.f);
-	_setHideAnim(m_config3BtnDMLLanguageM, "CONFIG3/DML_LANG_MINUS", -50, 0, 1.f, 0.f);
-	_setHideAnim(m_config3BtnDMLLanguageP, "CONFIG3/DML_LANG_PLUS", -50, 0, 1.f, 0.f);
-	_setHideAnim(m_config3LblDMLGameLoader, "CONFIG3/GC_LOADER", 50, 0, -2.f, 0.f);
-	_setHideAnim(m_config3LblDMLLoader, "CONFIG3/GC_LOADER_BTN", -50, 0, 1.f, 0.f);
-	_setHideAnim(m_config3BtnDMLLoaderM, "CONFIG3/GC_LOADER_MINUS", -50, 0, 1.f, 0.f);
-	_setHideAnim(m_config3BtnDMLLoaderP, "CONFIG3/GC_LOADER_PLUS", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_config3LblGCGameVideo, "CONFIG3/DML_VIDEO", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_config3LblGCVideo, "CONFIG3/DML_VIDEO_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_config3BtnGCVideoM, "CONFIG3/DML_VIDEO_MINUS", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_config3BtnGCVideoP, "CONFIG3/DML_VIDEO_PLUS", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_config3LblGCGameLanguage, "CONFIG3/DML_LANG", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_config3LblGCLanguage, "CONFIG3/DML_LANG_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_config3BtnGCLanguageM, "CONFIG3/DML_LANG_MINUS", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_config3BtnGCLanguageP, "CONFIG3/DML_LANG_PLUS", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_config3LblGCGameLoader, "CONFIG3/GC_LOADER", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_config3LblGCLoader, "CONFIG3/GC_LOADER_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_config3BtnGCLoaderM, "CONFIG3/GC_LOADER_MINUS", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_config3BtnGCLoaderP, "CONFIG3/GC_LOADER_PLUS", -50, 0, 1.f, 0.f);
 	
 	_setHideAnim(m_config3LblOcarina, "CONFIG3/OCARINA", 50, 0, -2.f, 0.f);
 	_setHideAnim(m_config3BtnOcarina, "CONFIG3/OCARINA_BTN", -50, 0, 1.f, 0.f);
@@ -220,9 +220,9 @@ void CMenu::_textConfig3(void)
 {
 	m_btnMgr.setText(m_config3LblGameVideo, _t("cfgb3", L"Default video mode"));
 	m_btnMgr.setText(m_config3LblGameLanguage, _t("cfgb4", L"Default game language"));
-	m_btnMgr.setText(m_config3LblDMLGameVideo, _t("cfgb5", L"Default GC video mode"));
-	m_btnMgr.setText(m_config3LblDMLGameLanguage, _t("cfgb6", L"Default GC game language"));
-	m_btnMgr.setText(m_config3LblDMLGameLoader, _t("cfgb2", L"Default GC game loader"));
+	m_btnMgr.setText(m_config3LblGCGameVideo, _t("cfgb5", L"Default GC video mode"));
+	m_btnMgr.setText(m_config3LblGCGameLanguage, _t("cfgb6", L"Default GC game language"));
+	m_btnMgr.setText(m_config3LblGCGameLoader, _t("cfgb2", L"Default GC game loader"));
 	m_btnMgr.setText(m_config3LblOcarina, _t("cfgb1", L"Ocarina"));
 }
 

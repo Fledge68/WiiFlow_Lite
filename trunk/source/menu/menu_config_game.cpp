@@ -84,10 +84,6 @@ void CMenu::_hideGameSettings(bool instant)
 	m_btnMgr.hide(m_gameSettingsBtnEmuMemCard_M, instant);
 	m_btnMgr.hide(m_gameSettingsLblDevoMemcardEmu, instant);
 	m_btnMgr.hide(m_gameSettingsBtnDevoMemcardEmu, instant);
-	m_btnMgr.hide(m_gameSettingsLblNoDVD, instant);
-	m_btnMgr.hide(m_gameSettingsLblNoDVD_Val, instant);
-	m_btnMgr.hide(m_gameSettingsBtnNoDVD_P, instant);
-	m_btnMgr.hide(m_gameSettingsBtnNoDVD_M, instant);
 	m_btnMgr.hide(m_gameSettingsLblWidescreen, instant);
 	m_btnMgr.hide(m_gameSettingsBtnWidescreen, instant);
 	m_btnMgr.hide(m_gameSettingsLblGCLoader, instant);
@@ -100,8 +96,6 @@ void CMenu::_hideGameSettings(bool instant)
 	m_btnMgr.hide(m_gameSettingsBtnNATIVE_CTL, instant);
 	m_btnMgr.hide(m_gameSettingsLblDeflicker, instant);
 	m_btnMgr.hide(m_gameSettingsBtnDeflicker, instant);
-	m_btnMgr.hide(m_gameSettingsLblScreenshot, instant);
-	m_btnMgr.hide(m_gameSettingsBtnScreenshot, instant);
 	m_btnMgr.hide(m_gameSettingsLblCustom, instant);
 	m_btnMgr.hide(m_gameSettingsBtnCustom, instant);
 	m_btnMgr.hide(m_gameSettingsLblLaunchNK, instant);
@@ -166,9 +160,6 @@ void CMenu::_hideGameSettingsPg(void)
 		m_btnMgr.hide(m_gameSettingsLblDeflicker);
 		m_btnMgr.hide(m_gameSettingsBtnDeflicker);
 		
-		m_btnMgr.hide(m_gameSettingsLblScreenshot);
-		m_btnMgr.hide(m_gameSettingsBtnScreenshot);
-
 		m_btnMgr.hide(m_gameSettingsLblOcarina);
 		m_btnMgr.hide(m_gameSettingsBtnOcarina);
 		
@@ -212,14 +203,6 @@ void CMenu::_hideGameSettingsPg(void)
 
 		m_btnMgr.hide(m_gameSettingsLblWidescreen);
 		m_btnMgr.hide(m_gameSettingsBtnWidescreen);
-
-		m_btnMgr.hide(m_gameSettingsLblLED);
-		m_btnMgr.hide(m_gameSettingsBtnLED);
-		
-		m_btnMgr.hide(m_gameSettingsLblNoDVD);
-		m_btnMgr.hide(m_gameSettingsLblNoDVD_Val);
-		m_btnMgr.hide(m_gameSettingsBtnNoDVD_P);
-		m_btnMgr.hide(m_gameSettingsBtnNoDVD_M);
 
 		m_btnMgr.hide(m_gameSettingsLblUSB_HID);
 		m_btnMgr.hide(m_gameSettingsBtnUSB_HID);
@@ -280,7 +263,7 @@ void CMenu::_showGameSettings(void)
 	if(GameHdr->type == TYPE_GC_GAME)
 	{
 		GCLoader = min((u32)m_gcfg2.getInt(id, "gc_loader", 0), ARRAY_SIZE(CMenu::_GCLoader) - 1u);
-		GCLoader = (GCLoader == 0) ? min((u32)m_cfg.getInt(GC_DOMAIN, "default_loader", 2), ARRAY_SIZE(CMenu::_GlobalGCLoaders) - 1u) : GCLoader-1;
+		GCLoader = (GCLoader == 0) ? min((u32)m_cfg.getInt(GC_DOMAIN, "default_loader", 1), ARRAY_SIZE(CMenu::_GlobalGCLoaders) - 1u) : GCLoader-1;
 	}
 	
 	m_gameSettingsMaxPgs = 4;
@@ -338,16 +321,8 @@ void CMenu::_showGameSettings(void)
 			}
 			else
 			{
-				if(GCLoader == NINTENDONT)
-				{
-					m_btnMgr.show(m_gameSettingsLblDeflicker);
-					m_btnMgr.show(m_gameSettingsBtnDeflicker);
-				}
-				else //dml
-				{
-					m_btnMgr.show(m_gameSettingsLblScreenshot);
-					m_btnMgr.show(m_gameSettingsBtnScreenshot);
-				}
+				m_btnMgr.show(m_gameSettingsLblDeflicker);
+				m_btnMgr.show(m_gameSettingsBtnDeflicker);
 			}
 			
 			m_btnMgr.show(m_gameSettingsLblOcarina);
@@ -395,24 +370,6 @@ void CMenu::_showGameSettings(void)
 				m_btnMgr.show(m_gameSettingsLblApploader);
 				m_btnMgr.show(m_gameSettingsBtnApploader);
 			}
-		}
-		else if(GCLoader == AUTOMIOS)// DIOS MIOS
-		{
-			m_btnMgr.show(m_gameSettingsLblEmuMemCard);
-			m_btnMgr.show(m_gameSettingsLblEmuMemCard_Val);
-			m_btnMgr.show(m_gameSettingsBtnEmuMemCard_P);
-			m_btnMgr.show(m_gameSettingsBtnEmuMemCard_M);
-
-			m_btnMgr.show(m_gameSettingsLblWidescreen);
-			m_btnMgr.show(m_gameSettingsBtnWidescreen);
-			
-			m_btnMgr.show(m_gameSettingsLblLED);
-			m_btnMgr.show(m_gameSettingsBtnLED);
-		
-			m_btnMgr.show(m_gameSettingsLblNoDVD);
-			m_btnMgr.show(m_gameSettingsLblNoDVD_Val);
-			m_btnMgr.show(m_gameSettingsBtnNoDVD_P);
-			m_btnMgr.show(m_gameSettingsBtnNoDVD_M);
 		}
 		else if(GCLoader == NINTENDONT)
 		{
@@ -495,7 +452,6 @@ void CMenu::_showGameSettings(void)
 		//widescreen is shared by all, in the future might seperate them
 		m_btnMgr.setText(m_gameSettingsBtnWidescreen, _optBoolToString(m_gcfg2.getOptBool(id, "widescreen", m_cfg.getBool(GC_DOMAIN, "dm_widescreen", 0))));
 		m_btnMgr.setText(m_gameSettingsBtnDevoMemcardEmu, _optBoolToString(m_gcfg2.getOptBool(id, "devo_memcard_emu", 0)));
-		m_btnMgr.setText(m_gameSettingsBtnScreenshot, _optBoolToString(m_gcfg2.getOptBool(id, "screenshot", m_cfg.getBool(GC_DOMAIN, "screenshot", 0))));
 		m_btnMgr.setText(m_gameSettingsBtnUSB_HID, _optBoolToString(m_gcfg2.getOptBool(id, "USB_HID", m_cfg.getBool(GC_DOMAIN, "USB_HID", 0))));
 		m_btnMgr.setText(m_gameSettingsBtnNATIVE_CTL, _optBoolToString(m_gcfg2.getOptBool(id, "NATIVE_CTL", m_cfg.getBool(GC_DOMAIN, "NATIVE_CTL", 0))));
 		m_btnMgr.setText(m_gameSettingsBtnDeflicker, _optBoolToString(m_gcfg2.getOptBool(id, "Deflicker", m_cfg.getBool(GC_DOMAIN, "Deflicker", 0))));
@@ -517,15 +473,6 @@ void CMenu::_showGameSettings(void)
 			i = min((u32)m_gcfg2.getInt(id, "nin_memcard", 0), ARRAY_SIZE(CMenu::_NinEmuCard) - 1u);
 			m_btnMgr.setText(m_gameSettingsLblEmuMemCard_Val, _t(CMenu::_NinEmuCard[i].id, CMenu::_NinEmuCard[i].text));
 		}
-		else if(GCLoader == AUTOMIOS)
-		{
-			m_btnMgr.setText(m_gameSettingsLblEmuMemCard, _t("cfgg28", L"NMM"));
-			i = min((u32)m_gcfg2.getInt(id, "dml_nmm", 0), ARRAY_SIZE(CMenu::_NMM) - 1u);
-			m_btnMgr.setText(m_gameSettingsLblEmuMemCard_Val, _t(CMenu::_NMM[i].id, CMenu::_NMM[i].text));
-		}
-		
-		i = min((u32)m_gcfg2.getInt(id, "no_disc_patch", 0), ARRAY_SIZE(CMenu::_NoDVD) - 1u);
-		m_btnMgr.setText(m_gameSettingsLblNoDVD_Val, _t(CMenu::_NoDVD[i].id, CMenu::_NoDVD[i].text));
 		
 		i = min((u32)m_gcfg2.getInt(id, "gc_loader", 0), ARRAY_SIZE(CMenu::_GCLoader) - 1u);
 		m_btnMgr.setText(m_gameSettingsLblGCLoader_Val, _t(CMenu::_GCLoader[i].id, CMenu::_GCLoader[i].text));
@@ -535,7 +482,6 @@ void CMenu::_showGameSettings(void)
 		m_btnMgr.setText(m_gameSettingsBtnVipatch, _optBoolToString(m_gcfg2.getOptBool(id, "vipatch", 0)));
 		m_btnMgr.setText(m_gameSettingsBtnCountryPatch, _optBoolToString(m_gcfg2.getOptBool(id, "country_patch", 0)));
 		m_btnMgr.setText(m_gameSettingsBtnPrivateServer, _optBoolToString(m_gcfg2.getOptBool(id, "private_server", m_cfg.getBool(WII_DOMAIN, "private_server", 0))));
-		//m_btnMgr.setText(m_gameSettingsBtnIOSreloadBlock, _optBoolToString(m_gcfg2.getOptBool(id, "reload_block", 0)));
 		m_btnMgr.setText(m_gameSettingsBtnCustom, _optBoolToString(m_gcfg2.getOptBool(id, "custom", 0)));
 		m_btnMgr.setText(m_gameSettingsBtnLaunchNK, _optBoolToString(m_gcfg2.getOptBool(id, "useneek", m_cfg.getBool(CHANNEL_DOMAIN, "useneek", 0))));
 		m_btnMgr.setText(m_gameSettingsBtnApploader, _optBoolToString(m_gcfg2.getOptBool(id, "apploader", 0)));
@@ -633,11 +579,6 @@ void CMenu::_gameSettings(void)
 				m_gcfg2.setBool(id, "country_patch", !m_gcfg2.getBool(id, "country_patch", 0));
 				_showGameSettings();
 			}
-			/*else if(m_btnMgr.selected(m_gameSettingsBtnIOSreloadBlock))
-			{
-				m_gcfg2.setBool(id, "reload_block", !m_gcfg2.getBool(id, "reload_block", 1));
-				_showGameSettings();
-			}*/
 			else if(m_btnMgr.selected(m_gameSettingsBtnCustom))
 			{
 				m_gcfg2.setBool(id, "custom", !m_gcfg2.getBool(id, "custom", 0));
@@ -656,7 +597,7 @@ void CMenu::_gameSettings(void)
 			else if(m_btnMgr.selected(m_gameSettingsBtnWidescreen))
 			{
 				if(IsOnWiiU() and GCLoader == NINTENDONT)
-					m_gcfg2.setBool(id, "screenshot", !m_gcfg2.getBool(id, "screenshot", 0));
+					m_gcfg2.setBool(id, "wiiu_widescreen", !m_gcfg2.getBool(id, "wiiu_widescreen", 0));
 				else
 					m_gcfg2.setBool(id, "widescreen", !m_gcfg2.getBool(id, "widescreen", 0));
 				_showGameSettings();
@@ -688,16 +629,7 @@ void CMenu::_gameSettings(void)
 			else if(m_btnMgr.selected(m_gameSettingsBtnEmuMemCard_P) || m_btnMgr.selected(m_gameSettingsBtnEmuMemCard_M))
 			{
 				s8 direction = m_btnMgr.selected(m_gameSettingsBtnEmuMemCard_P) ? 1 : -1;
-				if(GCLoader == NINTENDONT)
-					m_gcfg2.setInt(id, "nin_memcard", (int)loopNum((u32)m_gcfg2.getInt(id, "nin_memcard", 2) + direction, ARRAY_SIZE(CMenu::_NinEmuCard)));
-				else
-					m_gcfg2.setInt(id, "dml_nmm", (int)loopNum((u32)m_gcfg2.getInt(id, "dml_nmm", 2) + direction, ARRAY_SIZE(CMenu::_NMM)));					
-				_showGameSettings();
-			}
-			else if(m_btnMgr.selected(m_gameSettingsBtnNoDVD_P) || m_btnMgr.selected(m_gameSettingsBtnNoDVD_M))
-			{
-				s8 direction = m_btnMgr.selected(m_gameSettingsBtnNoDVD_P) ? 1 : -1;
-				m_gcfg2.setInt(id, "no_disc_patch", (int)loopNum((u32)m_gcfg2.getInt(id, "no_disc_patch", 0) + direction, ARRAY_SIZE(CMenu::_NoDVD)));
+				m_gcfg2.setInt(id, "nin_memcard", (int)loopNum((u32)m_gcfg2.getInt(id, "nin_memcard", 2) + direction, ARRAY_SIZE(CMenu::_NinEmuCard)));
 				_showGameSettings();
 			}
 			else if(m_btnMgr.selected(m_gameSettingsBtnGCLoader_P) || m_btnMgr.selected(m_gameSettingsBtnGCLoader_M))
@@ -787,11 +719,6 @@ void CMenu::_gameSettings(void)
 				m_gcfg2.setBool(id, "Deflicker", !m_gcfg2.getBool(id, "Deflicker", 0));
 				_showGameSettings();
 			}	
-			else if(m_btnMgr.selected(m_gameSettingsBtnScreenshot))
-			{
-				m_gcfg2.setBool(id, "screenshot", !m_gcfg2.getBool(id, "screenshot", 0));
-				_showGameSettings();
-			}
 			else if(m_btnMgr.selected(m_gameSettingsBtnUSB_HID))
 			{
 				m_gcfg2.setBool(id, "USB_HID", !m_gcfg2.getBool(id, "USB_HID", 0));
@@ -875,8 +802,7 @@ void CMenu::_initGameSettingsMenu()
 	m_gameSettingsBtnCheat = _addButton("GAME_SETTINGS/CHEAT_BTN", theme.btnFont, L"", 420, 310, 200, 48, theme.btnFontColor);
 
 //GC Page 2
-	//nintendot = debugger, deflicker, ocarina, cheats
-	//dml = debugger, screenshot, ocarina, cheats
+	//nintendont = debugger, deflicker, ocarina, cheats
 	//devolution = emucard, widescreen, led_activity(pg4), (blank)
 	
 	m_gameSettingsLblDevoMemcardEmu = _addLabel("GAME_SETTINGS/DEVO_MEMCARD_EMU", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
@@ -910,8 +836,7 @@ void CMenu::_initGameSettingsMenu()
 	m_gameSettingsBtnApploader = _addButton("GAME_SETTINGS/APPLDR_BTN", theme.btnFont, L"", 420, 310, 200, 48, theme.btnFontColor);
 
 //GC Page 3
-	//dml=nmm, widescreen, led_activity (pg4), no dvd
-	//nintendont=emucard, widescreen(pg2)/wiiu widescreen(screenshot), usb_hid, native_ctl
+	//nintendont=emucard, widescreen(pg2)/wiiu widescreen, usb_hid, native_ctl
 	//devo=nothing
 	
 	m_gameSettingsLblEmuMemCard = _addLabel("GAME_SETTINGS/DML_NMM", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
@@ -919,19 +844,11 @@ void CMenu::_initGameSettingsMenu()
 	m_gameSettingsBtnEmuMemCard_M = _addPicButton("GAME_SETTINGS/DML_NMM_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 420, 130, 48, 48);
 	m_gameSettingsBtnEmuMemCard_P = _addPicButton("GAME_SETTINGS/DML_NMM_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 572, 130, 48, 48);
 
-	m_gameSettingsLblScreenshot = _addLabel("GAME_SETTINGS/SCREENSHOT", theme.lblFont, L"", 20, 185, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsBtnScreenshot = _addButton("GAME_SETTINGS/SCREENSHOT_BTN", theme.btnFont, L"", 420, 190, 200, 48, theme.btnFontColor);
-
 	m_gameSettingsLblUSB_HID = _addLabel("GAME_SETTINGS/USB_HID", theme.lblFont, L"", 20, 245, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsBtnUSB_HID = _addButton("GAME_SETTINGS/USB_HID_BTN", theme.btnFont, L"", 420, 250, 200, 48, theme.btnFontColor);
 
 	m_gameSettingsLblNATIVE_CTL = _addLabel("GAME_SETTINGS/NATIVE_CTL", theme.lblFont, L"", 20, 305, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsBtnNATIVE_CTL = _addButton("GAME_SETTINGS/NATIVE_CTL_BTN", theme.btnFont, L"", 420, 310, 200, 48, theme.btnFontColor);
-
-	m_gameSettingsLblNoDVD = _addLabel("GAME_SETTINGS/NO_DVD_PATCH", theme.lblFont, L"", 20, 305, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsLblNoDVD_Val = _addLabel("GAME_SETTINGS/NO_DVD_PATCH_BTN", theme.btnFont, L"", 468, 310, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_gameSettingsBtnNoDVD_M = _addPicButton("GAME_SETTINGS/NO_DVD_PATCH_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 420, 310, 48, 48);
-	m_gameSettingsBtnNoDVD_P = _addPicButton("GAME_SETTINGS/NO_DVD_PATCH_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 572, 310, 48, 48);
 
 //Page 4
 	m_gameSettingsLblEmulation = _addLabel("GAME_SETTINGS/EMU_SAVE", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
@@ -1038,18 +955,10 @@ void CMenu::_initGameSettingsMenu()
 	_setHideAnim(m_gameSettingsLblDeflicker, "GAME_SETTINGS/DEFLICKER", 50, 0, -2.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnDeflicker, "GAME_SETTINGS/DEFLICKER_BTN", -50, 0, 1.f, 0.f);
 
-	_setHideAnim(m_gameSettingsLblScreenshot, "GAME_SETTINGS/SCREENSHOT", 50, 0, -2.f, 0.f);
-	_setHideAnim(m_gameSettingsBtnScreenshot, "GAME_SETTINGS/SCREENSHOT_BTN", -50, 0, 1.f, 0.f);
-
 	_setHideAnim(m_gameSettingsLblEmuMemCard, "GAME_SETTINGS/DML_NMM", 50, 0, -2.f, 0.f);
 	_setHideAnim(m_gameSettingsLblEmuMemCard_Val, "GAME_SETTINGS/DML_NMM_BTN", -50, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnEmuMemCard_P, "GAME_SETTINGS/DML_NMM_PLUS", -50, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnEmuMemCard_M, "GAME_SETTINGS/DML_NMM_MINUS", -50, 0, 1.f, 0.f);
-
-	_setHideAnim(m_gameSettingsLblNoDVD, "GAME_SETTINGS/NO_DVD_PATCH", 50, 0, -2.f, 0.f);
-	_setHideAnim(m_gameSettingsLblNoDVD_Val, "GAME_SETTINGS/NO_DVD_PATCH_BTN", -50, 0, 1.f, 0.f);
-	_setHideAnim(m_gameSettingsBtnNoDVD_P, "GAME_SETTINGS/NO_DVD_PATCH_PLUS", -50, 0, 1.f, 0.f);
-	_setHideAnim(m_gameSettingsBtnNoDVD_M, "GAME_SETTINGS/NO_DVD_PATCH_MINUS", -50, 0, 1.f, 0.f);
 
 	_setHideAnim(m_gameSettingsLblDevoMemcardEmu, "GAME_SETTINGS/DEVO_MEMCARD_EMU", 50, 0, -2.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnDevoMemcardEmu, "GAME_SETTINGS/DEVO_MEMCARD_EMU_BTN", -50, 0, 1.f, 0.f);
@@ -1098,41 +1007,43 @@ void CMenu::_initGameSettingsMenu()
 void CMenu::_textGameSettings(void)
 {
 	m_btnMgr.setText(m_gameSettingsLblTitle, _t("cfgg1", L"Settings"));
-	m_btnMgr.setText(m_gameSettingsLblGameVideo, _t("cfgg2", L"Video mode"));
-	m_btnMgr.setText(m_gameSettingsLblGameLanguage, _t("cfgg3", L"Language"));
-	m_btnMgr.setText(m_gameSettingsLblCountryPatch, _t("cfgg4", L"Patch country strings"));
-	m_btnMgr.setText(m_gameSettingsLblOcarina, _t("cfgg5", L"Ocarina"));
-	m_btnMgr.setText(m_gameSettingsLblVipatch, _t("cfgg7", L"Vipatch"));
 	m_btnMgr.setText(m_gameSettingsBtnBack, _t("cfgg8", L"Back"));
-	m_btnMgr.setText(m_gameSettingsLblGameIOS, _t("cfgg10", L"IOS"));
-	m_btnMgr.setText(m_gameSettingsLblPatchVidModes, _t("cfgg14", L"Patch video modes"));
-	m_btnMgr.setText(m_gameSettingsLblCheat, _t("cfgg15", L"Cheat Codes"));
-	m_btnMgr.setText(m_gameSettingsBtnCheat, _t("cfgg16", L"Select"));
-	m_btnMgr.setText(m_gameSettingsLblCategoryMain, _t("cfgg17", L"Categories"));
-	m_btnMgr.setText(m_gameSettingsBtnCategoryMain, _t("cfgg16", L"Select"));
-	m_btnMgr.setText(m_gameSettingsLblHooktype, _t("cfgg18", L"Hook Type"));
-	m_btnMgr.setText(m_gameSettingsLblDebugger, _t("cfgg22", L"Debugger"));
-	m_btnMgr.setText(m_gameSettingsLblEmulation, _t("cfgg24", L"NAND Emulation"));
-	m_btnMgr.setText(m_gameSettingsLblAspectRatio, _t("cfgg27", L"Aspect Ratio"));
-	m_btnMgr.setText(m_gameSettingsLblEmuMemCard, _t("cfgg28", L"NMM"));
-	m_btnMgr.setText(m_gameSettingsLblNoDVD, _t("cfgg29", L"No DVD Patch"));
-	m_btnMgr.setText(m_gameSettingsLblCustom, _t("custom", L"Custom"));
-	m_btnMgr.setText(m_gameSettingsLblLaunchNK, _t("neek1", L"Launch Title with neek2o"));
-	m_btnMgr.setText(m_gameSettingsLblExtractSave, _t("cfgg30", L"Extract Save from NAND"));
-	m_btnMgr.setText(m_gameSettingsBtnExtractSave, _t("cfgg31", L"Extract"));
-	m_btnMgr.setText(m_gameSettingsLblFlashSave, _t("cfgg32", L"Flash Save to NAND"));
-	m_btnMgr.setText(m_gameSettingsBtnFlashSave, _t("cfgg33", L"Flash"));
-	m_btnMgr.setText(m_gameSettingsLblDevoMemcardEmu, _t("cfgg47", L"Emulated MemCard"));
-	//m_btnMgr.setText(m_gameSettingsLblDevoMemcardEmu, _t("cfgg34", L"Devolution Memcard Emulator"));
-	m_btnMgr.setText(m_gameSettingsLblGCLoader, _t("cfgg35", L"GameCube Loader"));
-	m_btnMgr.setText(m_gameSettingsLblWidescreen, _t("cfgg36", L"Widescreen Patch"));
-	m_btnMgr.setText(m_gameSettingsLblApploader, _t("cfgg37", L"Boot Apploader"));
-	m_btnMgr.setText(m_gameSettingsLblLED, _t("cfgg38", L"Activity LED"));
-	m_btnMgr.setText(m_gameSettingsLblScreenshot, _t("cfgg39", L"DiosMios ScreenShot"));	
+	
 	m_btnMgr.setText(m_gameSettingsLblManage, _t("cfgg40", L"Manage Cover and Banner"));
 	m_btnMgr.setText(m_gameSettingsBtnManage, _t("cfgg41", L"Manage"));
+	m_btnMgr.setText(m_gameSettingsLblCategoryMain, _t("cfgg17", L"Categories"));
+	m_btnMgr.setText(m_gameSettingsBtnCategoryMain, _t("cfgg16", L"Select"));
+	m_btnMgr.setText(m_gameSettingsLblGCLoader, _t("cfgg35", L"GameCube Loader"));
+	m_btnMgr.setText(m_gameSettingsLblGameVideo, _t("cfgg2", L"Video mode"));
+	m_btnMgr.setText(m_gameSettingsLblGameLanguage, _t("cfgg3", L"Language"));
+	
+	m_btnMgr.setText(m_gameSettingsLblHooktype, _t("cfgg18", L"Hook Type"));
+	m_btnMgr.setText(m_gameSettingsLblDebugger, _t("cfgg22", L"Debugger"));
+	m_btnMgr.setText(m_gameSettingsLblOcarina, _t("cfgg5", L"Ocarina"));
+	m_btnMgr.setText(m_gameSettingsLblCheat, _t("cfgg15", L"Cheat Codes"));
+	m_btnMgr.setText(m_gameSettingsBtnCheat, _t("cfgg16", L"Select"));
+	m_btnMgr.setText(m_gameSettingsLblDeflicker, _t("cfgg44", L"Video Deflicker"));
+	m_btnMgr.setText(m_gameSettingsLblDevoMemcardEmu, _t("cfgg47", L"Emulated MemCard"));
+	m_btnMgr.setText(m_gameSettingsLblWidescreen, _t("cfgg36", L"Widescreen Patch"));
+	
+	m_btnMgr.setText(m_gameSettingsLblCountryPatch, _t("cfgg4", L"Patch country strings"));
+	m_btnMgr.setText(m_gameSettingsLblVipatch, _t("cfgg7", L"Vipatch"));
+	m_btnMgr.setText(m_gameSettingsLblPatchVidModes, _t("cfgg14", L"Patch video modes"));
+	m_btnMgr.setText(m_gameSettingsLblAspectRatio, _t("cfgg27", L"Aspect Ratio"));
+	m_btnMgr.setText(m_gameSettingsLblApploader, _t("cfgg37", L"Boot Apploader"));	
+	m_btnMgr.setText(m_gameSettingsLblEmuMemCard, _t("cfgg47", L"Emulated MemCard"));
 	m_btnMgr.setText(m_gameSettingsLblUSB_HID, _t("cfgg42", L"USB-HID Controller"));
 	m_btnMgr.setText(m_gameSettingsLblNATIVE_CTL, _t("cfgg43", L"Native Control"));
-	m_btnMgr.setText(m_gameSettingsLblDeflicker, _t("cfgg44", L"Video Deflicker"));
+	
+	m_btnMgr.setText(m_gameSettingsLblEmulation, _t("cfgg24", L"NAND Emulation"));
+	m_btnMgr.setText(m_gameSettingsLblGameIOS, _t("cfgg10", L"IOS"));
+	m_btnMgr.setText(m_gameSettingsLblLED, _t("cfgg38", L"Activity LED"));
+	m_btnMgr.setText(m_gameSettingsLblExtractSave, _t("cfgg30", L"Extract Save from NAND"));
+	m_btnMgr.setText(m_gameSettingsBtnExtractSave, _t("cfgg31", L"Extract"));
+	m_btnMgr.setText(m_gameSettingsLblCustom, _t("custom", L"Custom"));
+	m_btnMgr.setText(m_gameSettingsLblLaunchNK, _t("neek1", L"Launch Title with neek2o"));
+
+	m_btnMgr.setText(m_gameSettingsLblFlashSave, _t("cfgg32", L"Flash Save to NAND"));
+	m_btnMgr.setText(m_gameSettingsBtnFlashSave, _t("cfgg33", L"Flash"));
 	m_btnMgr.setText(m_gameSettingsLblPrivateServer, _t("cfgg45", L"Private Server"));
 }

@@ -69,7 +69,7 @@ struct FST
 class GCDump
 {
 public:
-	void Init(bool skip, bool comp, bool wexf, bool align, u32 nretry, u32 rsize, const char* partition)
+	void Init(bool skip, bool comp, bool wexf, bool align, u32 nretry, u32 rsize, const char* partition, const char* m_GCgamesDir)
 	{
 		skiponerror = skip;
 		compressed = comp;
@@ -78,7 +78,7 @@ public:
 		gc_nbrretry = nretry;
 		gc_readsize = rsize;
 		gamepartition = partition;
-		//gc_games_dir = m_gc_gamesDir;
+		gc_gamesDir = m_GCgamesDir;
 		gc_skipped = 0;
 		waitonerror = true;
 	}
@@ -95,7 +95,7 @@ private:
 	bool gamedone;
 	bool multigamedisc;
 	const char *gamepartition;
-	//const char *gc_games_dir;
+	const char *gc_gamesDir;
 	char minfo[74];
 	u8 Disc;
 	u8 Disc2;

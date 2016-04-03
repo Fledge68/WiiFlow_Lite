@@ -54,6 +54,7 @@ extern volatile bool networkInit;
 extern u8 currentPartition;
 extern u8 currentPort;
 extern char wii_games_dir[];
+extern char gc_games_dir[];
 
 #ifdef __cplusplus
 }

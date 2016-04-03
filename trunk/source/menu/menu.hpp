@@ -187,22 +187,18 @@ private:
 	s16 m_mainBtnPrev;
 	s16 m_mainBtnQuit;
 	s16 m_mainBtnDVD;
-	s16 m_mainBtnDML;
-	s16 m_mainBtnEmu;
-	s16 m_mainBtnUsb;
+	s16 m_mainBtnGamecube;
+	s16 m_mainBtnPlugin;
+	s16 m_mainBtnWii;
 	s16 m_mainBtnChannel;
 	s16 m_mainBtnHomebrew;
 	s16 m_mainBtnInit;
 	s16 m_mainBtnInit2;
 	s16 m_mainLblInit;
 	s16 m_mainLblUser[6];
-	u8 m_mios_ver;
-	bool m_show_dml;
-	bool m_sd_dm;
+	bool m_show_gc;
 	bool m_devo_installed;
 	bool m_nintendont_installed;
-	bool m_new_dml;
-	bool m_new_dm_cfg;
 	bool m_GameTDBLoaded;
 //Main Config menus
 	s16 m_configLblPage;
@@ -242,18 +238,18 @@ private:
 	s16 m_config3BtnVideoP;
 	s16 m_config3BtnVideoM;
 
-	s16 m_config3LblDMLGameLanguage;
-	s16 m_config3LblDMLLanguage;
-	s16 m_config3BtnDMLLanguageP;
-	s16 m_config3BtnDMLLanguageM;
-	s16 m_config3LblDMLGameVideo;
-	s16 m_config3LblDMLVideo;
-	s16 m_config3BtnDMLVideoP;
-	s16 m_config3BtnDMLVideoM;
-	s16 m_config3LblDMLGameLoader;
-	s16 m_config3LblDMLLoader;
-	s16 m_config3BtnDMLLoaderP;
-	s16 m_config3BtnDMLLoaderM;
+	s16 m_config3LblGCGameLanguage;
+	s16 m_config3LblGCLanguage;
+	s16 m_config3BtnGCLanguageP;
+	s16 m_config3BtnGCLanguageM;
+	s16 m_config3LblGCGameVideo;
+	s16 m_config3LblGCVideo;
+	s16 m_config3BtnGCVideoP;
+	s16 m_config3BtnGCVideoM;
+	s16 m_config3LblGCGameLoader;
+	s16 m_config3LblGCLoader;
+	s16 m_config3BtnGCLoaderP;
+	s16 m_config3BtnGCLoaderM;
 	
 	s16 m_config3LblOcarina;
 	s16 m_config3BtnOcarina;
@@ -464,9 +460,6 @@ private:
 	s16 m_gameSettingsLblLED;
 	s16 m_gameSettingsBtnLED;
 
-	s16 m_gameSettingsLblScreenshot;
-	s16 m_gameSettingsBtnScreenshot;
-	
 	s16 m_gameSettingsLblAspectRatio;
 	s16 m_gameSettingsLblAspectRatioVal;
 	s16 m_gameSettingsBtnAspectRatioP;
@@ -476,11 +469,6 @@ private:
 	s16 m_gameSettingsLblEmuMemCard_Val;
 	s16 m_gameSettingsBtnEmuMemCard_P;
 	s16 m_gameSettingsBtnEmuMemCard_M;
-
-	s16 m_gameSettingsLblNoDVD;
-	s16 m_gameSettingsLblNoDVD_Val;
-	s16 m_gameSettingsBtnNoDVD_P;
-	s16 m_gameSettingsBtnNoDVD_M;
 
 	s16 m_gameSettingsLblDevoMemcardEmu;
 	s16 m_gameSettingsBtnDevoMemcardEmu;
@@ -864,7 +852,7 @@ private:
 	// 
 	bool _loadList(void);
 	bool _loadGameList(void);
-	bool _loadDmlList(void);
+	bool _loadGCList(void);
 	bool _loadChannelList(void);
 	bool _loadEmuList(void);
 	bool _loadHomebrewList(void);
@@ -1059,7 +1047,7 @@ private:
 	void _CoverBanner(void);
 	void _Explorer(void);
 	const char *_FolderExplorer(const char *startPath);
-	void _Wad(const char *wad_path = NULL, bool autoInstall = false);
+	void _Wad(const char *wad_path = NULL);
 	void _CheatSettings();
 	bool _Source();
 	void _CfgSrc();
@@ -1108,7 +1096,6 @@ private:
 	const char *_domainFromView(void);
 	const char *_cfDomain(bool selected = false);
 	void UpdateCache(u32 view = COVERFLOW_MAX);
-	void MIOSisDML();
 	void RemoveCover(const char *id);
 	SFont _font(const char *domain, const char *key, u32 fontSize, u32 lineSpacing, u32 weight, u32 index, const char *genKey);
 	TexData _texture(const char *domain, const char *key, TexData &def, bool freeDef = true);
@@ -1213,11 +1200,9 @@ private:
 	static const SOption _SaveEmu[5];
 	static const SOption _GlobalSaveEmu[4];
 	static const SOption _AspectRatio[3];
-	static const SOption _NMM[4];
 	static const SOption _NinEmuCard[5];
-	static const SOption _NoDVD[3];
-	static const SOption _GlobalGCLoaders[3];
-	static const SOption _GCLoader[4];
+	static const SOption _GlobalGCLoaders[2];
+	static const SOption _GCLoader[3];
 	static const SOption _vidModePatch[4];
 	static const SOption _debugger[3];
 	static const SOption _hooktype[8];

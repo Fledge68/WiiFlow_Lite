@@ -170,7 +170,7 @@ int CMenu::_GCgameInstaller()
 	if(skip)
 		rsize = 8192; // Use small chunks when skip on error is enabled
 
-	m_gcdump.Init(skip, comp, wexf, alig, nretry, rsize, DeviceName[currentPartition]);
+	m_gcdump.Init(skip, comp, wexf, alig, nretry, rsize, DeviceName[currentPartition], gc_games_dir);
 	
 	int ret;
 	m_progress = 0.f;
@@ -235,7 +235,7 @@ int CMenu::_GCcopyGame(void *obj)
 	source[299] = '\0';
 
 	char folder[50];
-	strncpy(folder, fmt(GC_GAMES_DIR, DeviceName[SD]), sizeof(folder));
+	strncpy(folder, fmt(gc_games_dir, DeviceName[SD]), sizeof(folder));
 	folder[49] = '\0';
 
 	char target[300];
@@ -265,9 +265,9 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 	GameID[6] = '\0';
 
 	bool done = false;
-	bool upd_usb = false;
-	bool upd_dml = false;
-	bool upd_emu = false;
+	bool upd_wii = false;
+	bool upd_gc = false;
+	bool upd_plgin = false;
 	bool upd_chan = false;
 	bool out = false;
 	const dir_discHdr *CF_Hdr = CoverFlow.getHdr();
@@ -346,7 +346,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 							strncpy(cfPos, GameID, 6);
 							m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsop6", L"Installing [%s] %s..."), GameID, wii_hdr.title));
 							done = true;
-							upd_usb = true;
+							upd_wii = true;
 							m_thrdWorking = true;
 							m_thrdProgress = 0.f;
 							m_thrdMessageAdded = false;
@@ -364,7 +364,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 							}
 							strncpy(cfPos, GameID, 6);
 							done = true;
-							upd_dml = true;
+							upd_gc = true;
 							m_thrdWorking = true;
 							m_thrdProgress = 0.f;
 							//LWP_CreateThread(&thread, (void *(*)(void *))_GCgameInstaller, (void *)this, 0, 8 * 1024, 64);
@@ -396,25 +396,25 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 							{
 								strncpy(GC_Path, CF_Hdr->path, 1023);
 								*strrchr(GC_Path, '/') = '\0'; //iso path
-								const char *cmp = fmt(GC_GAMES_DIR, DeviceName[currentPartition]);
+								const char *cmp = fmt(gc_games_dir, DeviceName[currentPartition]);
 								if(strcasecmp(GC_Path, cmp) == 0)
 									fsop_deleteFile(CF_Hdr->path);
 								else
 									fsop_deleteFolder(GC_Path);
 							}
-							upd_dml = true;
+							upd_gc = true;
 						}
 						else if(CF_Hdr->type == TYPE_PLUGIN)
 						{
 							fsop_deleteFile(CF_Hdr->path);
-							upd_emu = true;
+							upd_plgin = true;
 						}
 						else if(CF_Hdr->type == TYPE_WII_GAME)
 						{
 							DeviceHandle.OpenWBFS(currentPartition);
 							WBFS_RemoveGame((u8*)&CF_Hdr->id, (char*)&CF_Hdr->path);
 							WBFS_Close();
-							upd_usb = true;
+							upd_wii = true;
 						}
 						else if(CF_Hdr->type == TYPE_CHANNEL && !m_cfg.getBool(CHANNEL_DOMAIN, "disable", true))
 						{
@@ -469,7 +469,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						strncpy(cfPos, CF_Hdr->id, 6);
 						m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsop10", L"Copying [%s] %s..."), CF_Hdr->id, CoverFlow.getTitle().toUTF8().c_str()));
 						done = true;
-						upd_dml = true;
+						upd_gc = true;
 						m_thrdWorking = true;
 						m_thrdProgress = 0.f;
 						m_thrdMessageAdded = false;
@@ -510,11 +510,11 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 	{
 		//m_gameList.SetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());	
 		_showWaitMessage();
-		if(upd_dml)
+		if(upd_gc)
 			UpdateCache(COVERFLOW_GAMECUBE);
-		if(upd_usb)
+		if(upd_wii)
 			UpdateCache(COVERFLOW_WII);
-		if(upd_emu)
+		if(upd_plgin)
 			UpdateCache(COVERFLOW_PLUGIN);
 		if(upd_chan)
 			UpdateCache(COVERFLOW_CHANNEL);

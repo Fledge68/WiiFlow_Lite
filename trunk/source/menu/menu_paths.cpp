@@ -171,7 +171,7 @@ void CMenu::_Paths(void)
 		}
 		else if (BTN_A_PRESSED && paths_curPage == 2)
 		{
-			/*if (m_btnMgr.selected(m_pathsBtn1))
+			if (m_btnMgr.selected(m_pathsBtn1))
 			{
 				_hidePaths();
 				currentPartition = m_cfg.getInt(WII_DOMAIN, "partition", USB1);
@@ -202,29 +202,30 @@ void CMenu::_Paths(void)
 			{
 				_hidePaths();
 				currentPartition = m_cfg.getInt(GC_DOMAIN, "partition", USB1);
-				string gameDir(fmt(m_usb_gc_gamesDir.c_str(), DeviceName[currentPartition]));
+				string gameDir(fmt(gc_games_dir, DeviceName[currentPartition]));
 				path = _FolderExplorer(gameDir.c_str());
-				//can only change usb1 folder name.
-				if(strlen(path) > 0 && (strncmp(path, "usb1:/", 6) == 0))
+				if(strlen(path) > 0)
 				{
 					if(strncmp(path, "sd:/", 4) == 0)
 						m_cfg.setInt(GC_DOMAIN, "partition", 0);
 					else
 					{
+						//might add error check to make sure its first partition and FAT only
 						const char *partval = &path[3];
 						m_cfg.setInt(GC_DOMAIN, "partition", atoi(partval));
 					}
 					char tmpPath[MAX_FAT_PATH];
-					strncpy(tmpPath, strchr(path, '/')+1, MAX_FAT_PATH-1);
-					m_cfg.setString(GC_DOMAIN, "dir_usb_games", tmpPath);
-					m_usb_gc_gamesDir = fmt("%%s:/%s", tmpPath);
-					//m_usb_gc_gamesDir = fmt("%%s:/%s", m_cfg.getString(GC_DOMAIN, "dir_usb_games", "games").c_str());
+					strcpy(tmpPath, "%s");
+					strcat(tmpPath, strchr(path, ':'));
+					m_cfg.setString(GC_DOMAIN, "gc_games_dir", tmpPath);
+					memset(gc_games_dir, 0, 64);
+					strncpy(gc_games_dir, tmpPath, 64);
 					m_cfg.setBool(GC_DOMAIN, "update_cache", true);
 					if(m_cfg.getBool(GC_DOMAIN, "source"))
 						m_load_view = true;
 				}
 				_showPaths();
-			}*/
+			}
 			if (m_btnMgr.selected(m_pathsBtn3))
 			{
 				_hidePaths();

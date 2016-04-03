@@ -7,7 +7,7 @@
 #define STDEMU_DIR				"/wiiflow/nandemu"
 #define GAMES_DIR				"%s:/wbfs"
 #define HOMEBREW_DIR			"%s:/apps"
-#define GC_GAMES_DIR			"%s:/games"
+#define DF_GC_GAMES_DIR			"%s:/games"
 #define CFG_FILENAME			"wiiflow_lite.ini"
 #define LANG_FILENAME			"languages.ini"
 #define CAT_FILENAME			"categories_lite.ini"
