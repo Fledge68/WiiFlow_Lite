@@ -756,7 +756,7 @@ int CMenu::_AutoCreateNand(void)
 	m_thrdStop = false;
 	m_thrdMessageAdded = false;
 	m_nandext = false;
-	m_tempView = false;
+	m_emuSaveNand = false;
 	bool lock_part_change = false;
 
 	m_btnMgr.setText(m_nandemuBtnExtract, _t("cfgne5", L"Extract NAND"));
@@ -806,15 +806,15 @@ int CMenu::_AutoCreateNand(void)
 			{
 				if(m_current_view == COVERFLOW_WII)
 				{
-					m_tempView = true;
+					m_emuSaveNand = true;
 					m_current_view = COVERFLOW_CHANNEL;
 				}
 				_hideNandEmu();
 				_config(1);
-				if(m_tempView)
+				if(m_emuSaveNand)
 				{
 					m_current_view = COVERFLOW_WII;
-					m_tempView = false;
+					m_emuSaveNand = false;
 					return 0;
 				}
 				return 1;
