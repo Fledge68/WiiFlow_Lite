@@ -250,10 +250,12 @@ int CMenu::main(void)
 	show_channel = !m_cfg.getBool("GENERAL", "hidechannel", false);
 	show_plugin = !m_cfg.getBool(PLUGIN_DOMAIN, "disable", false);
 	show_gamecube = m_show_gc;
+	m_allow_random = m_cfg.getBool("GENERAL", "allow_b_on_questionmark", true);
+	m_multisource = m_cfg.getBool("GENERAL", "multisource", false);
 	m_use_source = m_cfg.getBool("GENERAL", "use_source", true);
 	bool bheld = false;
 	bool bUsed = false;
-
+	m_emuSaveNand = false;
 	m_reload = false;
 	u32 disc_check = 0;
 
@@ -324,7 +326,6 @@ int CMenu::main(void)
 						{
 							if(BTN_B_HELD)
 								bUsed = true;
-							//_initCF();may not need this
 							_showMain();
 						}
 					}
@@ -515,7 +516,6 @@ int CMenu::main(void)
 						{
 							if(BTN_B_HELD)
 								bUsed = true;
-							//_initCF();may not need this one either
 							_showMain();
 						}
 					}
@@ -1114,7 +1114,7 @@ void CMenu::_setPartition(s8 direction)
 			m_cfg.setBool(CHANNEL_DOMAIN, "disable", true);
 		}
 	}
-	if(m_tempView)
+	if(m_emuSaveNand)
 		m_cfg.setInt(WII_DOMAIN, "savepartition", currentPartition);
 	else
 	{
@@ -1130,8 +1130,6 @@ void CMenu::_setPartition(s8 direction)
 				if(plugin_list[i] == true)
 					break;
 			}
-			//char PluginMagicWord[9];
-			//memset(PluginMagicWord, 0, sizeof(PluginMagicWord));
 			strncpy(m_plugin.PluginMagicWord, fmt("%08x", m_plugin.getPluginMagic(i)), 8);
 			m_cfg.setInt("PLUGINS_PARTITION", m_plugin.PluginMagicWord, currentPartition);
 		}

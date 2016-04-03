@@ -599,7 +599,7 @@ private:
 // NandEmulation
 	string m_saveExtGameId;
 	bool m_forceext;
-	bool m_tempView;
+	bool m_emuSaveNand;
 	s32 m_partRequest;
 // Zones
 	SZone m_mainPrevZone;

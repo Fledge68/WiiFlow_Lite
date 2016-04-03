@@ -209,7 +209,7 @@ u8 banner_title[84];
 
 static inline int loopNum(int i, int s)
 {
-	return i < 0 ? (s - (-i % s)) % s : i % s;
+	return (i + s) % s;
 }
 
 
@@ -376,10 +376,8 @@ static const char *getVideoPath(const string &videoDir, const char *videoId)
 
 static const char *getVideoDefaultPath(const string &videoDir)
 {
-	char PluginMagicWord[9];
-	memset(PluginMagicWord, 0, sizeof(PluginMagicWord));
-	strncpy(PluginMagicWord, fmt("%08x", CoverFlow.getHdr()->settings[0]), 8);
-	const char *videoPath = fmt("%s/%s", videoDir.c_str(), PluginMagicWord);
+	strncpy(m_plugin.PluginMagicWord, fmt("%08x", CoverFlow.getHdr()->settings[0]), 8);
+	const char *videoPath = fmt("%s/%s", videoDir.c_str(), m_plugin.PluginMagicWord);
 	return videoPath;
 }
 
@@ -597,10 +595,8 @@ void CMenu::_game(bool launch)
 						m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
 						if(enabledPluginsCount == 1)
 						{
-							char PluginMagicWord[9];
-							memset(PluginMagicWord, 0, sizeof(PluginMagicWord));
-							strncpy(PluginMagicWord, fmt("%08x", hdr->settings[0]), 8);
-							currentPartition = m_cfg.getInt("PLUGINS_PARTITION", PluginMagicWord, 1);
+							strncpy(m_plugin.PluginMagicWord, fmt("%08x", hdr->settings[0]), 8);
+							currentPartition = m_cfg.getInt("PLUGINS_PARTITION", m_plugin.PluginMagicWord, 1);
 							m_cfg.setInt(PLUGIN_DOMAIN, "partition", currentPartition);
 						}
 						currentPartition = m_cfg.getInt(PLUGIN_DOMAIN, "partition", 1);
@@ -925,8 +921,8 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	{
 		u8 emuMC = min((u32)m_gcfg2.getInt(id, "emu_memcard", m_cfg.getInt(GC_DOMAIN, "emu_memcard", 1)), ARRAY_SIZE(CMenu::_NinEmuCard) - 1u);
 		emuMC = (emuMC == 0) ? m_cfg.getInt(GC_DOMAIN, "emu_memcard", 1) : emuMC-1;
-		bool usb_hid = m_gcfg2.getBool(id, "USB_HID", m_cfg.getBool(GC_DOMAIN, "USB_HID", false));
-		bool native_ctl = m_gcfg2.getBool(id, "NATIVE_CTL", m_cfg.getBool(GC_DOMAIN, "NATIVE_CTL", false));
+		bool usb_hid = m_gcfg2.getBool(id, "usb_hid", m_cfg.getBool(GC_DOMAIN, "usb_hid", false));
+		bool native_ctl = m_gcfg2.getBool(id, "native_ctl", m_cfg.getBool(GC_DOMAIN, "native_ctl", false));
 		bool deflicker = m_gcfg2.getBool(id, "Deflicker", m_cfg.getBool(GC_DOMAIN, "Deflicker", false));
 		if(disc == true)
 		{

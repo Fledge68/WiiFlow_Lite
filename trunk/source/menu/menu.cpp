@@ -72,7 +72,6 @@ CMenu::CMenu()
 	m_wbf2_font = NULL;
 	m_current_view = COVERFLOW_WII;
 	m_Emulator_boot = false;
-	m_music_info = true;
 	m_prevBg = NULL;
 	m_nextBg = NULL;
 	m_lqBg = NULL;
@@ -80,7 +79,6 @@ CMenu::CMenu()
 	m_use_wifi_gecko = false;
 	init_network = false;
 	m_use_source = true;
-	m_multisource = false;
 	m_sourceflow = false;
 	m_numPlugins = 0;
 	m_clearCats = true;
@@ -120,57 +118,36 @@ void CMenu::init()
 {
 	SoundHandle.Init();
 	m_gameSound.SetVoice(1);
-	const char *drive = "empty";
-	const char *check = "empty";
-	struct stat dummy;
-
 	/* Clear Playlog */
 	Playlog_Delete();
 
-	for(int i = SD; i <= USB8; i++) //Find the first partition with a wiiflow.ini
-		if (DeviceHandle.IsInserted(i) && DeviceHandle.GetFSType(i) != PART_FS_WBFS && stat(fmt("%s:/%s/" CFG_FILENAME, DeviceName[i], APPDATA_DIR2), &dummy) == 0)
+	const char *drive = "empty";
+	const char *check = "empty";
+	struct stat dummy;
+	for(int i = SD; i <= USB8; i++) //Find the first partition with apps/wiiflow folder
+	{
+		if(DeviceHandle.IsInserted(i) && DeviceHandle.GetFSType(i) != PART_FS_WBFS && stat(fmt("%s:/%s", DeviceName[i], APPDATA_DIR2), &dummy) == 0)
 		{
 			drive = DeviceName[i];
 			break;
 		}
-
-	if(drive == check) //No wiiflow.ini found
-		for(int i = SD; i <= USB8; i++) //Find the first partition with a boot.dol
-			if (DeviceHandle.IsInserted(i) && DeviceHandle.GetFSType(i) != PART_FS_WBFS && stat(fmt("%s:/%s/boot.dol", DeviceName[i], APPDATA_DIR2), &dummy) == 0)
-			{
-				drive = DeviceName[i];
-				break;
-			}
-			
-	if(drive == check) //No boot.dol found
-		for(int i = SD; i <= USB8; i++) //Find the first partition with apps/wiiflow folder
-			if (DeviceHandle.IsInserted(i) && DeviceHandle.GetFSType(i) != PART_FS_WBFS && stat(fmt("%s:/%s", DeviceName[i], APPDATA_DIR2), &dummy) == 0)
-			{
-				drive = DeviceName[i];
-				break;
-			}
-
-	if(drive == check) //No apps/wiiflow folder found
-		for(int i = SD; i <= USB8; i++) // Find the first writable partition
-			if (DeviceHandle.IsInserted(i) && DeviceHandle.GetFSType(i) != PART_FS_WBFS)
-			{
-				drive = DeviceName[i];
-				break;
-			}
+	}
+	
 	loadDefaultFont();
-
 	if(drive == check) // Should not happen
 	{
 		_buildMenus();
-		error(_fmt("errboot4", L"No available partitions found!"));
+		error(_fmt("errboot4", L"No apps/wiiflow directory found!"));
 		m_exit = true;
 		return;
 	}
+
 	/* Handle apps dir first, so handling wiiflow.ini does not fail */
 	m_appDir = fmt("%s:/%s", drive, APPDATA_DIR2);
 	gprintf("Wiiflow boot.dol Location: %s\n", m_appDir.c_str());
 	fsop_MakeFolder(m_appDir.c_str());
-	/* Load/Create our wiiflow.ini */
+	
+	/* Load/Create wiiflow.ini so we can get settings to start Gecko, FTP, and Network*/
 	m_cfg.load(fmt("%s/" CFG_FILENAME, m_appDir.c_str()));
 	/* Check if we want WiFi Gecko */
 	m_use_wifi_gecko = m_cfg.getBool("DEBUG", "wifi_gecko", false);
@@ -186,15 +163,11 @@ void CMenu::init()
 	/* Init Network if wanted */
 	init_network = (m_cfg.getBool("GENERAL", "async_network") || has_enabled_providers() || m_use_wifi_gecko || m_init_ftp);
 	_netInit();
-	/* Our Wii game dir */
-	memset(wii_games_dir, 0, 64);
-	strncpy(wii_games_dir, m_cfg.getString(WII_DOMAIN, "wii_games_dir", GAMES_DIR).c_str(), 64);
-	if(strncmp(wii_games_dir, "%s:/", 4) != 0)
-		strcpy(wii_games_dir, GAMES_DIR);
-	gprintf("Wii Games Directory: %s\n", wii_games_dir);
-	/* Do our USB HDD Checks */
+	
+	/* Try to find/make the wiiflow data directory */
 	bool onUSB = m_cfg.getBool("GENERAL", "data_on_usb", strncmp(drive, "usb", 3) == 0);
 	drive = check; //reset the drive variable for the check
+	//check for wiiflow data directory on USB or SD based on data_on_usb
 	if(onUSB)
 	{
 		for(u8 i = USB1; i <= USB8; i++) //Look for first partition with a wiiflow folder in root
@@ -206,48 +179,43 @@ void CMenu::init()
 			}
 		}
 	}
-	else if(DeviceHandle.IsInserted(SD))
+	if(!onUSB && DeviceHandle.IsInserted(SD) && stat(fmt("%s:/%s", DeviceName[SD], APPDATA_DIR), &dummy) == 0)
 		drive = DeviceName[SD];
-
-	if(drive == check && onUSB) //No wiiflow folder found in root of any usb partition, and data_on_usb=yes
+	if(drive == check)//if wiiflow data directory not found then check just for a USB partition or SD card
 	{
-		for(u8 i = USB1; i <= USB8; i++) // Try first USB partition with wbfs folder.
+		if(onUSB)
 		{
-			if(DeviceHandle.IsInserted(i) && DeviceHandle.GetFSType(i) != PART_FS_WBFS && stat(fmt(GAMES_DIR, DeviceName[i]), &dummy) == 0)
+			for(u8 i = USB1; i <= USB8; i++)
 			{
+				if(DeviceHandle.IsInserted(i) && DeviceHandle.GetFSType(i) != PART_FS_WBFS)
 				drive = DeviceName[i];
 				break;
 			}
-		}
-	}
-	if(drive == check && onUSB) // No wbfs folder found and data_on_usb=yes
-	{
-		for(u8 i = USB1; i <= USB8; i++) // Try first available USB partition.
-		{
-			if(DeviceHandle.IsInserted(i) && DeviceHandle.GetFSType(i) != PART_FS_WBFS)
+			if(drive == check)//if no available USB partition then force SD
 			{
-				drive = DeviceName[i];
-				break;
+				_buildMenus();
+				error(_fmt("errboot5", L"data_on_usb=yes and No available usb partitions for data!\nUsing SD."));
+				drive = DeviceName[SD];
 			}
-		}
-	}
-	if(drive == check)
-	{	
-		_buildMenus();
-		if(DeviceHandle.IsInserted(SD))
-		{
-			error(_fmt("errboot5", L"data_on_usb=yes and No available usb partitions for data!\nUsing SD."));
-			drive = DeviceName[SD];
 		}
 		else
-		{
-			error(_fmt("errboot6", L"No available usb partitions for data and no SD inserted!\nExiting."));
-			m_exit = true;
-			return;
+		{ 
+			if(DeviceHandle.IsInserted(SD))
+				drive = DeviceName[SD];
+			else
+				drive = DeviceName[USB1];//if no SD insterted then force USB. may set this to the wf boot.dol partition
 		}
 	}
-	m_allow_random = m_cfg.getBool("GENERAL", "allow_b_on_questionmark", true);
-	m_multisource = m_cfg.getBool("GENERAL", "multisource", false);
+	m_dataDir = fmt("%s:/%s", drive, APPDATA_DIR);
+	gprintf("Data Directory: %s\n", m_dataDir.c_str());
+	snprintf(m_app_update_drive, sizeof(m_app_update_drive), "%s:/", drive);
+	
+	/* Our Wii game dir */
+	memset(wii_games_dir, 0, 64);
+	strncpy(wii_games_dir, m_cfg.getString(WII_DOMAIN, "wii_games_dir", GAMES_DIR).c_str(), 64);
+	if(strncmp(wii_games_dir, "%s:/", 4) != 0)
+		strcpy(wii_games_dir, GAMES_DIR);
+	gprintf("Wii Games Directory: %s\n", wii_games_dir);
 	/* GameCube stuff */
 	m_devo_installed = DEVO_Installed(m_dataDir.c_str());
 	m_nintendont_installed = Nintendont_Installed();
@@ -268,10 +236,6 @@ void CMenu::init()
 	else
 		_installed_cios[CurrentIOS.Version] = CurrentIOS.Version;
 	/* Path Settings */
-	snprintf(m_app_update_drive, sizeof(m_app_update_drive), "%s:/", drive);
-	m_dataDir = fmt("%s:/%s", drive, APPDATA_DIR);
-	gprintf("Data Directory: %s\n", m_dataDir.c_str());
-
 	m_dol = fmt("%s/boot.dol", m_appDir.c_str());
 	m_ver = fmt("%s/versions", m_appDir.c_str());
 	m_app_update_zip = fmt("%s/update.zip", m_appDir.c_str());
@@ -305,37 +269,29 @@ void CMenu::init()
 	m_helpDir = m_cfg.getString("GENERAL", "dir_help", fmt("%s/help", m_dataDir.c_str()));
 
 	/* Cache Reload Checks */
+	/*Disabled for now
 	int ini_rev = m_cfg.getInt("GENERAL", "ini_rev", 0);
 	if(ini_rev != SVN_REV_NUM)
 		fsop_deleteFolder(m_listCacheDir.c_str());
-	m_cfg.setInt("GENERAL", "ini_rev", SVN_REV_NUM);
+	m_cfg.setInt("GENERAL", "ini_rev", SVN_REV_NUM);*/
 
-	//DeviceHandler::SetWatchdog(m_cfg.getUInt("GENERAL", "watchdog_timeout", 10));
-
+	/* Check to make sure wii games partition is ok */
 	const char *domain = _domainFromView();
-	const char *checkDir = m_current_view == COVERFLOW_HOMEBREW ? HOMEBREW_DIR : GAMES_DIR;
-
-	u8 partition = m_cfg.getInt(domain, "partition", 0);  //Auto find a valid partition and fix old ini partition settings.
-	if(m_current_view != COVERFLOW_CHANNEL && (partition > USB8 || !DeviceHandle.IsInserted(partition)))
+	u8 partition = m_cfg.getInt(domain, "partition", 0);
+	if(partition > USB8 || !DeviceHandle.IsInserted(partition))//if not ok then find wbfs folder or wbfs partition
 	{
 		m_cfg.remove(domain, "partition");
-		for(int i = SD; i <= USB8+1; i++) // Find a usb partition with the wbfs folder or wbfs file system, else leave it blank (defaults to 1 later)
+		for(int i = SD; i <= USB8; i++) // Find a usb partition with a wbfs folder or wbfs file system, else leave it blank (defaults to usb1 later)
 		{
-			if(i > USB8)
+			if(DeviceHandle.IsInserted(i) && (DeviceHandle.GetFSType(i) == PART_FS_WBFS || stat(fmt(GAMES_DIR, DeviceName[i]), &dummy) == 0))
 			{
-				m_current_view = COVERFLOW_CHANNEL;
-				break;
-			}
-			if (DeviceHandle.IsInserted(i)
-				&& ((m_current_view == COVERFLOW_WII && DeviceHandle.GetFSType(i) == PART_FS_WBFS)
-				|| stat(fmt(checkDir, DeviceName[i]), &dummy) == 0))
-			{
-				gprintf("Setting Emu NAND to Partition: %i\n",currentPartition);
+				gprintf("Setting Wii games partition to: %i\n", i);
 				m_cfg.setInt(domain, "partition", i);
 				break;
 			}
 		}
 	}
+
 	CoverFlow.init(m_base_font, m_base_font_size, m_vid.vid_50hz());
 
 	/* Create our Folder Structure */
@@ -365,16 +321,16 @@ void CMenu::init()
 	fsop_MakeFolder(m_screenshotDir.c_str());
 	fsop_MakeFolder(m_helpDir.c_str());
 
-	// INI files
+	//load categories and theme INI files
 	m_cat.load(fmt("%s/" CAT_FILENAME, m_settingsDir.c_str()));
 	string themeName = m_cfg.getString("GENERAL", "theme", "default");
 	m_themeDataDir = fmt("%s/%s", m_themeDir.c_str(), themeName.c_str());
 	m_theme.load(fmt("%s.ini", m_themeDataDir.c_str()));
-	m_plugin.init(m_pluginsDir);
 	
-	// get plugin ini files if plugin view enabled
+	/*Get plugin ini files if plugin view enabled*/
 	if(!m_cfg.getBool(PLUGIN_DOMAIN, "disable", false))
 	{
+		m_plugin.init(m_pluginsDir);
 		Config m_plugin_cfg;
 		INI_List.clear();
 		GetFiles(m_pluginsDir.c_str(), stringToVector(".ini", '|'), GrabINIFiles, false, 1);
@@ -393,7 +349,7 @@ void CMenu::init()
 		}
 		m_plugin.EndAdd();
 	}
-
+	/*Set wiiflow language*/
 	const char *defLang = "Default";
 	switch (CONF_GetLanguage())
 	{
@@ -435,12 +391,10 @@ void CMenu::init()
 		m_cfg.setString("GENERAL", "language", m_curLanguage.c_str());
 		m_loc.unload();
 	}
-	m_tempView = false;
 
 	m_gameList.Init(m_settingsDir.c_str(), m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
 
 	m_aa = 3;
-
 	CColor pShadowColor = m_theme.getColor("GENERAL", "pointer_shadow_color", CColor(0x3F000000));
 	float pShadowX = m_theme.getFloat("GENERAL", "pointer_shadow_x", 3.f);
 	float pShadowY = m_theme.getFloat("GENERAL", "pointer_shadow_y", 3.f);
@@ -2623,8 +2577,6 @@ const char *CMenu::getBlankCoverPath(const dir_discHdr *element)
 			blankCoverKey = "gamecube";
 			break;
 		case TYPE_PLUGIN:
-			//char PluginMagicWord[9];
-			//memset(PluginMagicWord, 0, sizeof(PluginMagicWord));
 			strncpy(m_plugin.PluginMagicWord, fmt("%08x", element->settings[0]), 8);
 			blankCoverKey = m_plugin.PluginMagicWord;
 			break;

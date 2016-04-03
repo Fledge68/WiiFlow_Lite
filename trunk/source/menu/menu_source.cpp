@@ -220,32 +220,7 @@ void CMenu::_createSFList()
 
 void CMenu::_sourceFlow()
 {
-	//u8 numPlugins = 0, k;
 	u8 k;
-	/*if(!m_cfg.getBool(PLUGIN_DOMAIN, "disable", false))
-	{
-		Config m_plugin_cfg;
-		DIR *pdir;
-		struct dirent *pent;
-		pdir = opendir(m_pluginsDir.c_str());
-		while((pent = readdir(pdir)) != NULL)
-		{
-			if(pent->d_name[0] == '.'|| strcasecmp(pent->d_name, "scummvm.ini") == 0)
-				continue;
-			if(strcasestr(pent->d_name, ".ini") != NULL)
-			{
-				m_plugin_cfg.load(fmt("%s/%s", m_pluginsDir.c_str(), pent->d_name));
-				if (m_plugin_cfg.loaded())
-				{
-					numPlugins++;
-					m_plugin.AddPlugin(m_plugin_cfg);
-				}
-				m_plugin_cfg.unload();
-			}
-		}
-		closedir(pdir);
-		m_plugin.EndAdd();
-	}*/
 	const dir_discHdr *hdr = CoverFlow.getHdr();
 	if(m_cfg.getBool("SOURCEFLOW", "remember_last_item", true))
 		m_cfg.setString("SOURCEFLOW", "current_item", strrchr(hdr->path, '/') + 1);
@@ -392,7 +367,6 @@ bool CMenu::_Source()
 	bool noChanges = true;
 	bool updateSource = false;
 	exitSource = false;
-	//u8 numPlugins = 0;
 	m_showtimer = 0;
 	source_curPage = 1;
 	source_Pages = 1;
@@ -420,30 +394,6 @@ bool CMenu::_Source()
 				break;
 			}
 		}
-		/*if(show_emu)
-		{
-			Config m_plugin_cfg;
-			DIR *pdir;
-			struct dirent *pent;
-			pdir = opendir(m_pluginsDir.c_str());
-			while((pent = readdir(pdir)) != NULL)
-			{
-				if(pent->d_name[0] == '.'|| strcasecmp(pent->d_name, "scummvm.ini") == 0)
-					continue;
-				if(strcasestr(pent->d_name, ".ini") != NULL)
-				{
-					m_plugin_cfg.load(fmt("%s/%s", m_pluginsDir.c_str(), pent->d_name));
-					if (m_plugin_cfg.loaded())
-					{
-						numPlugins++;
-						m_plugin.AddPlugin(m_plugin_cfg);
-					}
-					m_plugin_cfg.unload();
-				}
-			}
-			closedir(pdir);
-			m_plugin.EndAdd();
-		}*/
 		_updateSourceBtns();
 	}
 
@@ -485,8 +435,6 @@ bool CMenu::_Source()
 					if(plugin_list[i] == true)
 					break;
 				}
-				//char PluginMagicWord[9];
-				//memset(PluginMagicWord, 0, sizeof(PluginMagicWord));
 				strncpy(m_plugin.PluginMagicWord, fmt("%08x", m_plugin.getPluginMagic(i)), 8);
 				currentPartition = m_cfg.getInt("PLUGINS_PARTITION", m_plugin.PluginMagicWord, 1); 		
 				m_cfg.setInt(PLUGIN_DOMAIN, "partition", currentPartition);
