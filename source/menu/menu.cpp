@@ -2236,7 +2236,7 @@ bool CMenu::_loadGamecubeList()
 	string gameDir(fmt(gc_games_dir, DeviceName[currentPartition]));
 	string cacheDir(fmt("%s/%s_gamecube.db", m_listCacheDir.c_str(), DeviceName[currentPartition]));
 	bool updateCache = m_cfg.getBool(GC_DOMAIN, "update_cache");
-	m_gameList.CreateList(COVERFLOW_GAMECUBE, currentPartition, gameDir, stringToVector(".iso|root", '|'),cacheDir, updateCache);
+	m_gameList.CreateList(COVERFLOW_GAMECUBE, currentPartition, gameDir, stringToVector(".iso|root", '|'), cacheDir, updateCache);
 	m_cfg.remove(GC_DOMAIN, "update_cache");
 	return true;
 }

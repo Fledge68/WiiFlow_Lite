@@ -172,7 +172,14 @@ void CMenu::LoadView(void)
 	if(m_cfg.getBool("GENERAL", "save_favorites_mode", false))
 		m_favorites = m_cfg.getBool(_domainFromView(), "favorites", false);
 	if(m_sourceflow)
-		_createSFList();
+	{
+		m_gameList.clear();
+		string cacheDir(fmt("%s/sourceflow.db", m_listCacheDir.c_str()));
+		bool updateCache = m_cfg.getBool("SOURCEFLOW", "update_cache");
+		u8 maxBtns = m_cfg.getInt("GENERAL", "max_source_buttons", 71);
+		m_gameList.createSFList(maxBtns, m_source, show_homebrew, show_channel, show_plugin, show_gamecube, m_sourceDir, cacheDir, updateCache);
+		m_cfg.remove("SOURCEFLOW", "update_cache");
+	}
 	else
 		_loadList();
 
