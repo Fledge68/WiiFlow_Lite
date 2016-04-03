@@ -332,3 +332,51 @@ void GetFiles(const char *Path, const vector<string>& FileTypes,
 		GetFiles(p->c_str(), FileTypes, AddFile, CompareFolders, max_depth, depth + 1);
 	SubPaths.clear();
 }
+
+void ListGenerator::createSFList(u8 maxBtns, Config &m_sourceMenuCfg, bool show_homebrew, bool show_channel, bool show_plugin, bool show_gc, 
+			const string& sourceDir, const string& DBName, bool UpdateCache)
+{
+	if(!DBName.empty())
+	{
+		if(UpdateCache)
+			fsop_deleteFile(DBName.c_str());
+		else
+		{
+			CCache(*this, DBName, LOAD);
+			if(!this->empty())
+				return;
+			fsop_deleteFile(DBName.c_str());
+		}
+	}
+	char btn_selected[256];	
+	for(u8 i = 0; i < maxBtns; i++)
+	{
+		memset(btn_selected, 0, 256);
+		strncpy(btn_selected, fmt("BUTTON_%i", i), 255);
+		string source = m_sourceMenuCfg.getString(btn_selected, "source","");
+		if(source == "")
+			continue;
+		if(source == "dml" && !show_gc)
+			continue;
+		else if(source == "emunand" && !show_channel)
+			continue;
+		else if(source == "homebrew" && (!show_homebrew))
+			continue;
+		else if((source == "plugin" || source == "allplugins") && !show_plugin)
+			continue;
+		const char *path = fmt("%s/%s", sourceDir.c_str(), m_sourceMenuCfg.getString(btn_selected, "image", "").c_str());
+		memset((void*)&ListElement, 0, sizeof(dir_discHdr));
+		ListElement.index = m_gameList.size();
+		strncpy(ListElement.id, "SOURCE", 6);
+		strncpy(ListElement.path, path, sizeof(ListElement.path) - 1);
+		ListElement.casecolor = 0xFFFFFF;
+		ListElement.type = TYPE_SOURCE;		
+		ListElement.settings[0] = i;
+		const char *title = m_sourceMenuCfg.getString(btn_selected, "title", fmt("title_%i", i)).c_str();
+		mbstowcs(ListElement.title, title, 63);
+		Asciify(ListElement.title);
+		m_gameList.push_back(ListElement);
+	}
+	if(!this->empty() && !DBName.empty()) /* Write a new Cache */
+		CCache(*this, DBName, SAVE);
+}

@@ -1061,7 +1061,6 @@ private:
 	bool _Boot();
 	void _Paths();
 	void _sourceFlow();
-	void _createSFList();
 	void _mainLoopCommon(bool withCF = false, bool adjusting = false);
 public:
 	void directlaunch(const char *GameID);

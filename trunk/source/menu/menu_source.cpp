@@ -180,44 +180,6 @@ void CMenu::_showSourceNotice(void)
 	exitSource = false;
 }
 
-dir_discHdr sourceList;
-void CMenu::_createSFList()
-{
-	bool show_homebrew = !m_cfg.getBool(HOMEBREW_DOMAIN, "disable", false);
-	bool show_channel = !m_cfg.getBool("GENERAL", "hidechannel", false);
-	bool show_emu = !m_cfg.getBool(PLUGIN_DOMAIN, "disable", false);
-	bool parental_homebrew = m_cfg.getBool(HOMEBREW_DOMAIN, "parental", false);
-	m_gameList.clear();
-	for(u8 i = 0; i < m_cfg.getInt("GENERAL", "max_source_buttons", 71); i++)
-	{
-		memset(btn_selected, 0, 256);
-		strncpy(btn_selected, fmt("BUTTON_%i", i), 255);
-		string source = m_source.getString(btn_selected, "source","");
-		if(source == "")
-			continue;
-		if(source == "dml" && !m_show_gc)
-			continue;
-		else if(source == "emunand" && !show_channel)
-			continue;
-		else if(source == "homebrew" && (!show_homebrew || (!parental_homebrew && m_locked)))
-			continue;
-		else if((source == "plugin" || source == "allplugins") && !show_emu)
-			continue;
-		const char *path = fmt("%s/%s", m_sourceDir.c_str(), m_source.getString(btn_selected, "image", "").c_str());
-		memset((void*)&sourceList, 0, sizeof(dir_discHdr));
-		sourceList.index = m_gameList.size();
-		strncpy(sourceList.id, "SOURCE", 6);
-		strncpy(sourceList.path, path, sizeof(sourceList.path) - 1);
-		sourceList.casecolor = 0xFFFFFF;
-		sourceList.type = TYPE_SOURCE;		
-		sourceList.settings[0] = i;
-		const char *title = m_source.getString(btn_selected, "title", fmt("title_%i", i)).c_str();
-		mbstowcs(sourceList.title, title, 63);
-		Asciify(sourceList.title);
-		m_gameList.push_back(sourceList);
-	}
-}
-
 void CMenu::_sourceFlow()
 {
 	u8 k;
