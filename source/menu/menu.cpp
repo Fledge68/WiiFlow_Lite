@@ -2601,7 +2601,7 @@ const char *CMenu::getBoxPath(const dir_discHdr *element)
 	}
 	else if(element->type == TYPE_HOMEBREW)
 		return fmt("%s/%s.png", m_boxPicDir.c_str(), strrchr(element->path, '/') + 1);
-	else if(element->type == TYPE_SOURCE)
+	else if(element->type == TYPE_SOURCE)//sourceflow
 	{
 		const char *m_sflowDir = m_cfg.getString("GENERAL", "dir_Source", fmt("%s/source_menu", m_dataDir.c_str())).c_str();
 		const char *coverImg = strrchr(element->path, '/') + 1;
@@ -2627,7 +2627,7 @@ const char *CMenu::getFrontPath(const dir_discHdr *element)
 	}
 	else if(element->type == TYPE_HOMEBREW)
 		return fmt("%s/icon.png", element->path);
-	else if(element->type == TYPE_SOURCE)
+	else if(element->type == TYPE_SOURCE)//sourceflow
 	{
 		const char *m_sflowDir = m_cfg.getString("GENERAL", "dir_Source", fmt("%s/source_menu", m_dataDir.c_str())).c_str();
 		const char *coverImg = strrchr(element->path, '/') + 1;

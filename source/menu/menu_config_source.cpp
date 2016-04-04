@@ -149,7 +149,7 @@ void CMenu::_CfgSrc(void)
 			}
 			else if (m_btnMgr.selected(m_cfgsrcBtnClearSF))
 			{
-				fsop_deleteFolder(fmt("%s/sourceflow", m_cacheDir.c_str()));
+				m_cfg.setBool("SOURCEFLOW", "update_cache", true);
 				m_load_view = true;
 			}
 			else if (m_btnMgr.selected(m_cfgsrcBtnMultisource) && !m_sourceflow)
