@@ -704,7 +704,7 @@ void CMenu::_game(bool launch)
 				m_btnMgr.show(m_gameBtnSettings);
 			}
 			if((CoverFlow.getHdr()->type != TYPE_HOMEBREW && (CoverFlow.getHdr()->type != TYPE_CHANNEL || 
-				(!m_cfg.getBool(CHANNEL_DOMAIN, "disable", true) && CoverFlow.getHdr()->type == TYPE_CHANNEL))) && !m_locked)
+				(m_cfg.getBool(CHANNEL_DOMAIN, "emu_nand", false) && CoverFlow.getHdr()->type == TYPE_CHANNEL))) && !m_locked)
 				m_btnMgr.show(m_gameBtnDelete);
 		}
 		else
@@ -1101,7 +1101,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	_launchShutdown();
 	string id = string(hdr->id);
 
-	bool NAND_Emu = !m_cfg.getBool(CHANNEL_DOMAIN, "disable", true);
+	bool NAND_Emu = m_cfg.getBool(CHANNEL_DOMAIN, "emu_nand", false);
 	bool WII_Launch = (m_gcfg2.getBool(id, "custom", false) && (!NAND_Emu || neek2o()));
 	bool use_dol = !m_gcfg2.getBool(id, "apploader", false);
 

@@ -126,13 +126,13 @@ void CMenu::_updateSourceBtns(void)
 		else if(btnSource == "realnand" || btnSource == "emunand")
 		{
 			ImgName = m_source.getString(fmt("BUTTON_%i", i),"image", "").c_str();
-			if(m_cfg.getBool(CHANNEL_DOMAIN, "source", false) && m_cfg.getBool(CHANNEL_DOMAIN, "disable") && btnSource == "realnand")
+			if(m_cfg.getBool(CHANNEL_DOMAIN, "source", false) && !m_cfg.getBool(CHANNEL_DOMAIN, "emu_nand") && btnSource == "realnand")
 			{
 				sourceBtn = i;
 				selectedBtns++;
 				ImgName = m_source.getString(fmt("BUTTON_%i", i),"image_s", "").c_str();
 			}
-			else if(m_cfg.getBool(CHANNEL_DOMAIN, "source", false) && !m_cfg.getBool(CHANNEL_DOMAIN, "disable") && btnSource == "emunand")
+			else if(m_cfg.getBool(CHANNEL_DOMAIN, "source", false) && m_cfg.getBool(CHANNEL_DOMAIN, "emu_nand") && btnSource == "emunand")
 			{
 				sourceBtn = i;
 				selectedBtns++;
@@ -217,14 +217,14 @@ void CMenu::_sourceFlow()
 	else if(source == "emunand")
 	{
 		m_current_view = COVERFLOW_CHANNEL;
-		m_cfg.setBool(CHANNEL_DOMAIN, "disable", false);
+		m_cfg.setBool(CHANNEL_DOMAIN, "emu_nand", true);
 		m_cfg.setBool(CHANNEL_DOMAIN, "source", true);
 		m_catStartPage = m_source.getInt(btn_selected, "cat_page", 1);
 	}
 	else if(source == "realnand")
 	{
 		m_current_view = COVERFLOW_CHANNEL;
-		m_cfg.setBool(CHANNEL_DOMAIN, "disable", true);
+		m_cfg.setBool(CHANNEL_DOMAIN, "emu_nand", false);
 		m_cfg.setBool(CHANNEL_DOMAIN, "source", true);
 		m_catStartPage = m_source.getInt(btn_selected, "cat_page", 1);
 	}
@@ -323,7 +323,7 @@ bool CMenu::_Source()
 	CoverFlow.clear();
 	u8 i, j, k;
 	bool show_homebrew = !m_cfg.getBool(HOMEBREW_DOMAIN, "disable", false);
-	bool show_channel = !m_cfg.getBool("GENERAL", "hidechannel", false);
+	bool show_channel = !m_cfg.getBool(CHANNEL_DOMAIN, "disable", false);
 	bool show_emu = !m_cfg.getBool(PLUGIN_DOMAIN, "disable", false);
 	bool parental_homebrew = m_cfg.getBool(HOMEBREW_DOMAIN, "parental", false);	
 	bool noChanges = true;
@@ -531,7 +531,7 @@ bool CMenu::_Source()
 								_showSourceNotice();
 							else
 							{
-								m_cfg.setBool(CHANNEL_DOMAIN, "disable", false);
+								m_cfg.setBool(CHANNEL_DOMAIN, "emu_nand", true);
 								m_cfg.setBool(CHANNEL_DOMAIN, "source", true);
 								m_catStartPage = m_source.getInt(btn_selected, "cat_page", 1);
 							}
@@ -542,7 +542,7 @@ bool CMenu::_Source()
 								_showSourceNotice();
 							else
 							{
-								m_cfg.setBool(CHANNEL_DOMAIN, "disable", true);
+								m_cfg.setBool(CHANNEL_DOMAIN, "emu_nand", false);
 								m_cfg.setBool(CHANNEL_DOMAIN, "source", true);
 								m_catStartPage = m_source.getInt(btn_selected, "cat_page", 1);
 							}
@@ -665,7 +665,7 @@ bool CMenu::_Source()
 						{
 							if(show_channel)
 							{
-								m_cfg.setBool(CHANNEL_DOMAIN, "disable", false);
+								m_cfg.setBool(CHANNEL_DOMAIN, "emu_nand", true);
 								m_cfg.setBool(CHANNEL_DOMAIN, "source", !m_cfg.getBool(CHANNEL_DOMAIN, "source"));
 							}
 						}
@@ -673,7 +673,7 @@ bool CMenu::_Source()
 						{
 							if(show_channel)
 							{
-								m_cfg.setBool(CHANNEL_DOMAIN, "disable", true);
+								m_cfg.setBool(CHANNEL_DOMAIN, "emu_nand", false);
 								m_cfg.setBool(CHANNEL_DOMAIN, "source", !m_cfg.getBool(CHANNEL_DOMAIN, "source"));
 							}
 						}

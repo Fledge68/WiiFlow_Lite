@@ -50,7 +50,7 @@ void CMenu::_showConfig(void)
 {
 	_showConfigCommon(m_configBg, g_curPage);
 
-	if (!m_locked)
+	if(!m_locked)
 	{
 		m_btnMgr.show(m_configLblPartitionName);
 		m_btnMgr.show(m_configLblPartition);
@@ -59,13 +59,12 @@ void CMenu::_showConfig(void)
 		m_btnMgr.show(m_configLblDownload);
 		m_btnMgr.show(m_configBtnDownload);
 	
-		bool disable = (m_current_view == COVERFLOW_CHANNEL) && (m_cfg.getBool(CHANNEL_DOMAIN, "disable", true) || neek2o()) && !m_emuSaveNand;
-		const char *partitionname = disable ? CHANNEL_DOMAIN : DeviceName[m_emuSaveNand ? m_cfg.getInt(WII_DOMAIN, "savepartition", 0) : m_cfg.getInt(_domainFromView(), "partition", 0)];
-
 		for(u8 i = 0; i < ARRAY_SIZE(m_configLblUser); ++i)
 			if(m_configLblUser[i] != -1)
 				m_btnMgr.show(m_configLblUser[i]);
 		
+		bool disable = (m_current_view == COVERFLOW_CHANNEL) && (!m_cfg.getBool(CHANNEL_DOMAIN, "emu_nand", false) || neek2o()) && !m_emuSaveNand;
+		const char *partitionname = disable ? CHANNEL_DOMAIN : DeviceName[m_emuSaveNand ? m_cfg.getInt(WII_DOMAIN, "savepartition", 0) : m_cfg.getInt(_domainFromView(), "partition", 0)];
 		m_btnMgr.setText(m_configLblPartition, upperCase(partitionname));
 
 		m_btnMgr.show(m_configLblCfg4);

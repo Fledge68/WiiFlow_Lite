@@ -241,7 +241,7 @@ void CMenu::_showNandEmu(void)
 	if(nandemuPage == 1)
 	{
 		int i;
-		if(((m_current_view == COVERFLOW_CHANNEL && !m_cfg.getBool(CHANNEL_DOMAIN, "disable", true)) || m_current_view == COVERFLOW_WII))
+		if(((m_current_view == COVERFLOW_CHANNEL && m_cfg.getBool(CHANNEL_DOMAIN, "emu_nand", false)) || m_current_view == COVERFLOW_WII))
 		{
 			m_btnMgr.show(m_nandemuLblEmulation);
 			m_btnMgr.show(m_nandemuLblEmulationVal);
