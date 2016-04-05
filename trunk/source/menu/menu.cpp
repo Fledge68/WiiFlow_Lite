@@ -219,16 +219,16 @@ void CMenu::init()
 	/* GameCube stuff */
 	m_devo_installed = DEVO_Installed(m_dataDir.c_str());
 	m_nintendont_installed = Nintendont_Installed();
-	m_show_gc = m_cfg.getBool(GC_DOMAIN, "always_show_button", false);
+	m_show_gc = !m_cfg.getBool(GC_DOMAIN, "disable", true);
 	memset(gc_games_dir, 0, 64);
 	strncpy(gc_games_dir, m_cfg.getString(GC_DOMAIN, "gc_games_dir", DF_GC_GAMES_DIR).c_str(), 64);
 	if(strncmp(gc_games_dir, "%s:/", 4) != 0)
 		strcpy(gc_games_dir, DF_GC_GAMES_DIR);
 	gprintf("GameCube Games Directory: %s\n", gc_games_dir);
-	/* Emu NAND */
+	/* Create CHANNEL keys and set default values if key didn't exist */
 	m_cfg.getString(CHANNEL_DOMAIN, "path", "");
 	m_cfg.getInt(CHANNEL_DOMAIN, "partition", 1);
-	m_cfg.getBool(CHANNEL_DOMAIN, "disable", true);//emu_nand
+	m_cfg.getBool(CHANNEL_DOMAIN, "emu_nand", false);//emu_nand
 	/* Load cIOS Map */
 	_installed_cios.clear();
 	if(!neek2o() && !Sys_DolphinMode())
@@ -2101,10 +2101,10 @@ const wstringEx CMenu::_fmt(const char *key, const wchar_t *def)
 bool CMenu::_loadChannelList(void)
 {
 	m_gameList.clear();
-	string emuPath;
-	string cacheDir;
-	int emuPartition = -1;
-	NANDemuView = (!neek2o() && m_cfg.getBool(CHANNEL_DOMAIN, "disable", true) == false);
+	string emuPath;// set via _FindEmuPart and used throughout wiiflow code
+	string cacheDir;//real nand empty
+	int emuPartition = -1; //real nand value
+	NANDemuView = (neek2o() || m_cfg.getBool(CHANNEL_DOMAIN, "emu_nand", false));
 	if(NANDemuView)
 	{
 		emuPartition = _FindEmuPart(emuPath, false);
@@ -2120,7 +2120,8 @@ bool CMenu::_loadChannelList(void)
 		currentPartition = emuPartition;
 		cacheDir = fmt("%s/%s_channels.db", m_listCacheDir.c_str(), DeviceName[currentPartition]);
 	}
-	bool updateCache = m_cfg.getBool(CHANNEL_DOMAIN, "update_cache");
+	bool updateCache = m_cfg.getBool(CHANNEL_DOMAIN, "update_cache");//real nand doesn't update
+	/* CreateList checks if cacheDir is empty if so then doesn't update/create cache .db file */
 	vector<string> NullVector;
 	m_gameList.CreateList(COVERFLOW_CHANNEL, currentPartition, std::string(), 
 				NullVector, cacheDir, updateCache);

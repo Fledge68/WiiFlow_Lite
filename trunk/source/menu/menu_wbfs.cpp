@@ -416,7 +416,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 							WBFS_Close();
 							upd_wii = true;
 						}
-						else if(CF_Hdr->type == TYPE_CHANNEL && !m_cfg.getBool(CHANNEL_DOMAIN, "disable", true))
+						else if(CF_Hdr->type == TYPE_CHANNEL && m_cfg.getBool(CHANNEL_DOMAIN, "emu_nand", false))
 						{
 							if(CF_Hdr->settings[0] != 0x00010001)
 							{

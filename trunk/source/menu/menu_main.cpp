@@ -225,7 +225,7 @@ void CMenu::LoadView(void)
 
 	if(m_sourceflow)
 		return;
-	const char *mode = (m_current_view == COVERFLOW_CHANNEL && m_cfg.getBool(CHANNEL_DOMAIN, "disable", true)) 
+	const char *mode = (m_current_view == COVERFLOW_CHANNEL && !m_cfg.getBool(CHANNEL_DOMAIN, "emu_nand", false)) 
 		? CHANNEL_DOMAIN : DeviceName[currentPartition];
 
 	m_showtimer = 120;
@@ -254,7 +254,7 @@ int CMenu::main(void)
 	string prevTheme = m_cfg.getString("GENERAL", "theme", "default");
 	parental_homebrew = m_cfg.getBool(HOMEBREW_DOMAIN, "parental", false);
 	show_homebrew = (!m_cfg.getBool(HOMEBREW_DOMAIN, "disable", false) && (parental_homebrew || !m_locked));
-	show_channel = !m_cfg.getBool("GENERAL", "hidechannel", false);
+	show_channel = !m_cfg.getBool(CHANNEL_DOMAIN, "disable", false);
 	show_plugin = !m_cfg.getBool(PLUGIN_DOMAIN, "disable", false);
 	show_gamecube = m_show_gc;
 	m_allow_random = m_cfg.getBool("GENERAL", "allow_b_on_questionmark", true);
@@ -684,7 +684,7 @@ int CMenu::main(void)
 				_showWaitMessage();
 				_hideMain();
 				_setPartition(1);
-				if(m_current_view == COVERFLOW_CHANNEL && (m_cfg.getBool(CHANNEL_DOMAIN, "disable", true) || neek2o()))
+				if(m_current_view == COVERFLOW_CHANNEL && (!m_cfg.getBool(CHANNEL_DOMAIN, "emu_nand", false) || neek2o()))
 					partition = "NAND";
 				else
 					partition = DeviceName[currentPartition];
@@ -1097,7 +1097,7 @@ void CMenu::_setPartition(s8 direction)
 		if(m_current_view == COVERFLOW_CHANNEL && !NANDemuView)
 		{
 			NANDemuView = true;
-			m_cfg.setBool(CHANNEL_DOMAIN, "disable", false);
+			m_cfg.setBool(CHANNEL_DOMAIN, "emu_nand", true);
 			switch_to_real = false;
 		}
 		bool NeedFAT = m_current_view == COVERFLOW_CHANNEL || m_current_view == COVERFLOW_GAMECUBE;
@@ -1118,7 +1118,7 @@ void CMenu::_setPartition(s8 direction)
 		if(m_current_view == COVERFLOW_CHANNEL && FS_Type == -1)
 		{
 			NANDemuView = false;
-			m_cfg.setBool(CHANNEL_DOMAIN, "disable", true);
+			m_cfg.setBool(CHANNEL_DOMAIN, "emu_nand", false);
 		}
 	}
 	if(m_emuSaveNand)
