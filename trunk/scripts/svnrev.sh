@@ -25,6 +25,7 @@ done
 
 rev_old=$(cat ./source/svnrev.h 2>/dev/null | tr -d '\n' | sed 's/[^0-9]*\([0-9]*\).*/\1/')
 
+rev_new=`expr $rev_new + 1`
 if [ "$rev_new" != "$rev_old" ] || [ ! -f ./source/svnrev.h ]; then
 	
 	cat <<EOF > ./source/svnrev.h
