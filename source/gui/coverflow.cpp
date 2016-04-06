@@ -2636,7 +2636,7 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover)
 	LWP_MutexUnlock(m_mutex);
 
 	// Save the texture to the cache folder for the next time
-	if (!m_cachePath.empty())
+	if(!m_cachePath.empty())
 	{
 		u32 bufSize = fixGX_GetTexBufferSize(tex.width, tex.height, tex.format, tex.maxLOD > 0 ? GX_TRUE : GX_FALSE, tex.maxLOD);
 		uLongf zBufferSize = m_compressCache ? bufSize + bufSize / 100 + 12 : bufSize;
@@ -2706,14 +2706,14 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover)
 				fwrite(&header, 1, sizeof header, file);
 				fwrite(zBuffer, 1, zBufferSize, file);
 				fclose(file);
-				if (m_deletePicsAfterCaching)
+				if(m_deletePicsAfterCaching)
 					fsop_deleteFile(path);
 			}
 			if(zBuffer != NULL && m_compressCache)
 				MEM2_free(zBuffer);
 		}
 	}
-	if (!hq) _dropHQLOD(i);
+	if(!hq) _dropHQLOD(i);
 
 	return true;
 }
@@ -2778,7 +2778,7 @@ const char *CCoverFlow::getPathId(const dir_discHdr *curHdr)
 
 CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blankBoxCover)
 {
-	if (!m_loadingCovers) 
+	if(!m_loadingCovers) 
 		return CL_ERROR;
 
 	bool allocFailed = false;
@@ -2831,10 +2831,8 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 			if(fileSize > sizeof(header))
 			{
 				fread(&header, 1, sizeof(header), fp);
-				//ok the cache file might be compressed when you don't want compress or it might be front when you want box
-				//or it might be old format
-				// Try to find a matching cache file, otherwise try the PNG file, otherwise try again with the cache file with less constraints
-				if(header.newFmt != 0 && (((!box || header.full != 0) && (header.cmpr != 0) == m_compressTextures) || (!_loadCoverTexPNG(i, box, hq, blankBoxCover))))
+				//make sure wfc cache file matches what we want
+				if(header.newFmt == 1 && (((header.full != 0) == box) && ((header.cmpr != 0) == m_compressTextures)))
 				{
 					TexData tex;
 					tex.format = header.cmpr != 0 ? GX_TF_CMPR : GX_TF_RGB565;
