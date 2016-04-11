@@ -268,6 +268,9 @@ void CMenu::init()
 	m_screenshotDir = m_cfg.getString("GENERAL", "dir_screenshot", fmt("%s/screenshots", m_dataDir.c_str()));
 	m_helpDir = m_cfg.getString("GENERAL", "dir_help", fmt("%s/help", m_dataDir.c_str()));
 
+	if(m_cfg.getString("GENERAL", "returnto", "WFLA") == "DWFA")
+		m_cfg.setString("GENERAL", "returnto", "WFLA");
+		
 	/* Cache Reload Checks */
 	/*Disabled for now
 	int ini_rev = m_cfg.getInt("GENERAL", "ini_rev", 0);
@@ -291,7 +294,8 @@ void CMenu::init()
 			}
 		}
 	}
-
+	// if i>usb8 then we need to do an error and exit cuz no wbfs partition or folder.
+	
 	CoverFlow.init(m_base_font, m_base_font_size, m_vid.vid_50hz());
 
 	/* Create our Folder Structure */
@@ -883,9 +887,7 @@ void CMenu::_loadCFLayout(int version, bool forceAA, bool otherScrnFmt)
 		m_theme.getVector3D(domainSel, "top_angle"),
 		m_theme.getVector3D(domainSel, "bottom_angle"));
 
-	Vector3D def_cvr_scale = 
-	smallbox 
-		? (homebrew 
+	Vector3D def_cvr_scale = smallbox ? (homebrew 
 			? Vector3D(0.667f, 0.25f, 1.f)
 		: Vector3D(1.f, 0.5f, 1.f))
 	: Vector3D(1.f, 1.f, 1.f);
@@ -1938,16 +1940,16 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 #endif
 }
 
-void CMenu::_setBg(const TexData &tex, const TexData &lqTex)
+void CMenu::_setBg(const TexData &bgTex, const TexData &bglqTex)
 {
 	/* Not setting same bg again */
-	if(m_nextBg == &tex)
+	if(m_nextBg == &bgTex)
 		return;
-	m_lqBg = &lqTex;
+	m_lqBg = &bglqTex;
 	/* before setting new next bg set previous */
 	if(m_nextBg != NULL)
 		m_prevBg = m_nextBg;
-	m_nextBg = &tex;
+	m_nextBg = &bgTex;
 	m_bgCrossFade = 0xFF;
 }
 

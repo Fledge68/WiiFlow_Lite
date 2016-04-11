@@ -1,1 +1,1 @@
-copy the boot.dol and folders into apps/wiiflow
+copy the boot.dol and folders into apps/wiiflow_lite

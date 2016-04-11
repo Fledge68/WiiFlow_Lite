@@ -1007,7 +1007,7 @@ private:
 	void _updateFTP(void);
 	void _getIDCats(void);
 	void _setIDCats(void);
-	void _setBg(const TexData &tex, const TexData &lqTex);
+	void _setBg(const TexData &bgTex, const TexData &bglqTex);
 	void _updateBg(void);
 	void _drawBg(void);
 	void _updateText(void);
