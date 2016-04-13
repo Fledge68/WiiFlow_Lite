@@ -71,12 +71,11 @@ void CMenu::_showConfig4(void)
 	titles.load(fmt("%s/" TITLES_FILENAME, m_settingsDir.c_str()));
 	custom_titles.load(fmt("%s/" CTITLES_FILENAME, m_settingsDir.c_str()));
 
-	wstringEx channelName = m_loc.getWString(m_curLanguage, "disabled", L"Disabled");
-
 	ChannelHandle.Init(m_loc.getString(m_curLanguage, "gametdb_code", "EN"));
 	amountOfChannels = ChannelHandle.Count();
-
+	wstringEx channelName = m_loc.getWString(m_curLanguage, "disabled", L"Disabled");
 	const string &currentChanId = m_cfg.getString("GENERAL", "returnto");
+	currentChannelIndex = -1;
 	if(!currentChanId.empty())
 	{
 		for(int i = 0; i < amountOfChannels; i++)
@@ -84,6 +83,7 @@ void CMenu::_showConfig4(void)
 			if(strncmp(currentChanId.c_str(), ChannelHandle.GetId(i), 4) == 0)
 			{
 				channelName = custom_titles.getWString("TITLES", currentChanId, titles.getWString("TITLES", currentChanId, ChannelHandle.GetName(i)));
+				currentChannelIndex = i;
 				break;
 			}
 		}
@@ -94,7 +94,8 @@ void CMenu::_showConfig4(void)
 int CMenu::_config4(void)
 {
 	int change = CONFIG_PAGE_NO_CHANGE;
-
+	bool curNANDemuView = NANDemuView;
+	NANDemuView = false;
 	_showConfig4();
 	while(!m_exit)
 	{
@@ -124,25 +125,25 @@ int CMenu::_config4(void)
 			}
 			else if (m_btnMgr.selected(m_config4BtnReturnToP))
 			{
-				currentChannelIndex = (currentChannelIndex >= amountOfChannels - 1) ? -1 : currentChannelIndex + 1;
-				if (currentChannelIndex == -1)
+				if(currentChannelIndex >= (amountOfChannels - 1))
 					m_cfg.remove("GENERAL", "returnto");
 				else
-					m_cfg.setString("GENERAL", "returnto", ChannelHandle.GetId(currentChannelIndex));
+					m_cfg.setString("GENERAL", "returnto", ChannelHandle.GetId(currentChannelIndex + 1));
 				_showConfig4();
 			}
 			else if (m_btnMgr.selected(m_config4BtnReturnToM))
 			{
-				if (currentChannelIndex == -1) currentChannelIndex = amountOfChannels;
-				currentChannelIndex--;
-				if (currentChannelIndex == -1)
+				if(currentChannelIndex == -1)
+					currentChannelIndex = amountOfChannels;
+				if((currentChannelIndex - 1) == -1)
 					m_cfg.remove("GENERAL", "returnto");
 				else
-					m_cfg.setString("GENERAL", "returnto", ChannelHandle.GetId(currentChannelIndex));
+					m_cfg.setString("GENERAL", "returnto", ChannelHandle.GetId(currentChannelIndex - 1));
 				_showConfig4();
 			}
 		}
 	}
+	NANDemuView = curNANDemuView;
 	_hideConfig4();
 	return change;
 }
