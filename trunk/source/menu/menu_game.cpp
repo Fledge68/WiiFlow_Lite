@@ -438,15 +438,10 @@ void CMenu::_game(bool launch)
 	if(m_banner.GetZoomSetting() != m_zoom_banner)
 		m_banner.ToggleZoom();
 
+	s8 startGameSound = -6;
 	if(!launch)
-	{
 		SetupInput();
-		_showGame();
-		m_gameSelected = true;
-		_playGameSound();
-	}
 
-	s8 startGameSound = 1;
 	while(!m_exit)
 	{
 		if(startGameSound < 1)
@@ -454,6 +449,7 @@ void CMenu::_game(bool launch)
 
 		if(startGameSound == -5)
 			_showGame();
+			
 		_mainLoopCommon(true);
 
 		if(startGameSound == 0)
