@@ -425,7 +425,6 @@ bool CMenu::_startVideo()
 
 void CMenu::_game(bool launch)
 {
-	m_gcfg1.load(fmt("%s/" GAME_SETTINGS1_FILENAME, m_settingsDir.c_str()));
 	m_zoom_banner = m_cfg.getBool(_domainFromView(), "show_full_banner", false);
 	if(NoGameID(CoverFlow.getHdr()->type))
 	{
@@ -438,9 +437,9 @@ void CMenu::_game(bool launch)
 	if(m_banner.GetZoomSetting() != m_zoom_banner)
 		m_banner.ToggleZoom();
 
-	s8 startGameSound = -6;
-	if(!launch)
-		SetupInput();
+	m_gcfg1.load(fmt("%s/" GAME_SETTINGS1_FILENAME, m_settingsDir.c_str()));
+	s8 startGameSound = -7;
+	SetupInput();
 
 	while(!m_exit)
 	{
@@ -450,7 +449,8 @@ void CMenu::_game(bool launch)
 		if(startGameSound == -5)
 			_showGame();
 			
-		_mainLoopCommon(true);
+		if(!launch)	
+			_mainLoopCommon(true);
 
 		if(startGameSound == 0)
 		{
@@ -609,7 +609,7 @@ void CMenu::_game(bool launch)
 					_extractBnr(hdr);
 				if(CurrentBanner.IsValid())
 					_extractBannerTitle(GetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str()));
-				if(hdr->type != TYPE_HOMEBREW && hdr->type != TYPE_PLUGIN)
+				if(hdr->type == TYPE_WII_GAME || hdr->type == TYPE_CHANNEL)
 				{
 					if(Playlog_Update(hdr->id, banner_title) < 0)
 						Playlog_Delete();
