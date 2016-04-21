@@ -64,21 +64,17 @@ void CMenu::_showConfig(void)
 				m_btnMgr.show(m_configLblUser[i]);
 		
 		bool disable = (m_current_view == COVERFLOW_CHANNEL) && (!m_cfg.getBool(CHANNEL_DOMAIN, "emu_nand", false) || neek2o()) && !m_emuSaveNand;
-		const char *partitionname = disable ? CHANNEL_DOMAIN : DeviceName[m_emuSaveNand ? m_cfg.getInt(WII_DOMAIN, "savepartition", 0) : m_cfg.getInt(_domainFromView(), "partition", 0)];
+		const char *partitionname = disable ? CHANNEL_DOMAIN : DeviceName[m_emuSaveNand ? m_cfg.getInt(WII_DOMAIN, "savepartition", m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0)) : m_cfg.getInt(_domainFromView(), "partition", 0)];
 		m_btnMgr.setText(m_configLblPartition, upperCase(partitionname));
-
-		m_btnMgr.show(m_configLblCfg4);
-		m_btnMgr.show(m_configBtnCfg4);
+		
+		if(m_current_view == COVERFLOW_CHANNEL || m_current_view == COVERFLOW_WII)
+		{
+			m_btnMgr.show(m_configLblCfg4);
+			m_btnMgr.show(m_configBtnCfg4);
+		}
 	}
 	m_btnMgr.show(m_configLblParental);
 	m_btnMgr.show(m_locked ? m_configBtnUnlock : m_configBtnSetCode);
-}
-
-void CMenu::_cfNeedsUpdate(void)
-{
-	if (!m_cfNeedsUpdate)
-		CoverFlow.clear();
-	m_cfNeedsUpdate = true;
 }
 
 void CMenu::_config(int page)
@@ -176,7 +172,7 @@ int CMenu::_config1(void)
 		{
 			if (m_btnMgr.selected(m_configBtnDownload))
 			{
-				_cfNeedsUpdate();
+				m_cfNeedsUpdate = true;
 				CoverFlow.stopCoverLoader(true);
 				_hideConfig();
 				_download();
@@ -189,7 +185,7 @@ int CMenu::_config1(void)
 				_hideConfig();
 				if (_code(code) && memcmp(code, m_cfg.getString("GENERAL", "parent_code", "").c_str(), 4) == 0)
 				{
-					_cfNeedsUpdate();
+					m_cfNeedsUpdate = true;
 					m_locked = false;
 				}
 				else
@@ -202,7 +198,7 @@ int CMenu::_config1(void)
 				_hideConfig();
 				if (_code(code, true))
 				{
-					_cfNeedsUpdate();
+					m_cfNeedsUpdate = true;
 					m_cfg.setString("GENERAL", "parent_code", string(code, 4).c_str());
 					m_locked = true;
 				}
@@ -216,7 +212,7 @@ int CMenu::_config1(void)
 			}
 			else if (m_btnMgr.selected(m_configBtnCfg4) && m_current_view != COVERFLOW_MAX)
 			{
-				_cfNeedsUpdate();
+				m_cfNeedsUpdate = true;
 				CoverFlow.stopCoverLoader(true);
 				_hideConfig();
 				if(m_current_view != COVERFLOW_PLUGIN)

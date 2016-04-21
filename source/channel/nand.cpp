@@ -1012,6 +1012,7 @@ s32 Nand::CreateConfig()
 
 s32 Nand::PreNandCfg(bool miis, bool realconfig)
 {
+	/* create paths only if they don't exist */
 	CreatePath(FullNANDPath);
 	CreatePath("%s/shared2", FullNANDPath);
 	CreatePath("%s/shared2/sys", FullNANDPath);
@@ -1245,16 +1246,9 @@ u8 *Nand::GetTMD(u64 title, u32 *size)
 void Nand::SetPaths(const char *emuPath, const char *currentPart)
 {
 	memset(&NandPath, 0, sizeof(NandPath));
-	if(emuPath[0] == '\0' || emuPath[0] == ' ')
-		return;
-	else if(emuPath[0] != '/' && emuPath[1] != '\0') //missing / before path
-		strcat(NandPath, "/");
 	for(u32 i = 0; emuPath[i] != '\0'; i++)
-	{
-		if(emuPath[i] == '/' && emuPath[i+1] == '\0')
-			break;
 		strncat(NandPath, &emuPath[i], 1);
-	}
+
 	/* Our WiiFlow handle Path */
 	memset(&FullNANDPath, 0, sizeof(FullNANDPath));
 	strcat(FullNANDPath, fmt("%s:%s", currentPart, NandPath));

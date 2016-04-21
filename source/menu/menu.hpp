@@ -1032,7 +1032,6 @@ private:
 		CONFIG_PAGE_INC = 1,
 		CONFIG_PAGE_BACK,
 	};
-	void _cfNeedsUpdate(void);
 	void _game(bool launch = false);
 	void _downloadUrl(const char *url, u8 **dl_file, u32 *dl_size);
 	void _download(string gameId = string());

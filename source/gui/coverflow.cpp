@@ -2600,7 +2600,7 @@ bool CCoverFlow::fullCoverCached(const char *id)
 
 bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover)
 {
-	if (!m_loadingCovers) return false;
+	if(!m_loadingCovers) return false;
 
 	u8 textureFmt = m_compressTextures ? GX_TF_CMPR : GX_TF_RGB565;
 	const char *path = box ? (blankBoxCover ? mainMenu.getBlankCoverPath(m_items[i].hdr) : 
@@ -2643,17 +2643,17 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover)
 		u8 *zBuffer = m_compressCache ? (u8*)MEM2_alloc(zBufferSize) : tex.data;
 		if(zBuffer != NULL && (!m_compressCache || compress(zBuffer, &zBufferSize, tex.data, bufSize) == Z_OK))
 		{
-			const char *gamePath = NULL;
+			const char *gameNameOrID = NULL;
 			const char *coverDir = NULL;
 			if(blankBoxCover)
 			{
 				const char *menuPath = mainMenu.getBlankCoverPath(m_items[i].hdr);
 				if(menuPath != NULL && strrchr(menuPath, '/') != NULL)
-					gamePath = strrchr(menuPath, '/') + 1;
+					gameNameOrID = strrchr(menuPath, '/') + 1;
 			}
 			else
 			{
-				gamePath = getPathId(m_items[i].hdr);
+				gameNameOrID = getPathId(m_items[i].hdr);
 				if(NoGameID(m_items[i].hdr->type))
 				{
 					if(m_pluginCacheFolders && m_items[i].hdr->type == TYPE_PLUGIN)
@@ -2664,7 +2664,7 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover)
 			}
 
 			FILE *file = NULL;
-			if(gamePath != NULL)
+			if(gameNameOrID != NULL)
 			{
 				char *full_path = (char*)MEM2_alloc(MAX_FAT_PATH+1);
 				if(full_path == NULL)
@@ -2675,7 +2675,7 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover)
 				}
 				memset(full_path, 0, MAX_FAT_PATH+1);
 				if(coverDir == NULL || strlen(coverDir) == 0)
-					strncpy(full_path, fmt("%s/%s.wfc", m_cachePath.c_str(), gamePath), MAX_FAT_PATH);
+					strncpy(full_path, fmt("%s/%s.wfc", m_cachePath.c_str(), gameNameOrID), MAX_FAT_PATH);
 				else
 				{
 					if(strchr(coverDir, '/') != NULL)
@@ -2694,7 +2694,7 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover)
 						MEM2_free(tmp);
 					}
 					fsop_MakeFolder(fmt("%s/%s", m_cachePath.c_str(), coverDir));
-					strncpy(full_path, fmt("%s/%s/%s.wfc", m_cachePath.c_str(), coverDir, gamePath), MAX_FAT_PATH);
+					strncpy(full_path, fmt("%s/%s/%s.wfc", m_cachePath.c_str(), coverDir, gameNameOrID), MAX_FAT_PATH);
 				}
 				DCFlushRange(full_path, MAX_FAT_PATH+1);
 				file = fopen(full_path, "wb");
@@ -2786,17 +2786,17 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 	// Try to find the texture in the cache
 	if(!m_cachePath.empty())
 	{
-		const char *gamePath = NULL;
+		const char *gameNameOrID = NULL;
 		const char *coverDir = NULL;
 		if(blankBoxCover)
 		{
-			const char *menuPath = mainMenu.getBlankCoverPath(m_items[i].hdr);
-			if(menuPath != NULL && strrchr(menuPath, '/') != NULL)
-				gamePath = strrchr(menuPath, '/') + 1;
+			const char *blankCoverPath = mainMenu.getBlankCoverPath(m_items[i].hdr);
+			if(blankCoverPath != NULL && strrchr(blankCoverPath, '/') != NULL)
+				gameNameOrID = strrchr(blankCoverPath, '/') + 1;
 		}
 		else
 		{
-			gamePath = getPathId(m_items[i].hdr);
+			gameNameOrID = getPathId(m_items[i].hdr);
 			if(NoGameID(m_items[i].hdr->type))
 			{
 				if(m_pluginCacheFolders && m_items[i].hdr->type == TYPE_PLUGIN)
@@ -2807,16 +2807,16 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 		}
 	
 		FILE *fp = NULL;
-		if(gamePath != NULL)
+		if(gameNameOrID != NULL)
 		{
 			char *full_path = (char*)MEM2_alloc(MAX_FAT_PATH+1);
 			if(full_path == NULL)
 				return CL_NOMEM;
 			memset(full_path, 0, MAX_FAT_PATH+1);
 			if(coverDir == NULL || strlen(coverDir) == 0)
-				strncpy(full_path, fmt("%s/%s.wfc", m_cachePath.c_str(), gamePath), MAX_FAT_PATH);
+				strncpy(full_path, fmt("%s/%s.wfc", m_cachePath.c_str(), gameNameOrID), MAX_FAT_PATH);
 			else
-				strncpy(full_path, fmt("%s/%s/%s.wfc", m_cachePath.c_str(), coverDir, gamePath), MAX_FAT_PATH);
+				strncpy(full_path, fmt("%s/%s/%s.wfc", m_cachePath.c_str(), coverDir, gameNameOrID), MAX_FAT_PATH);
 			DCFlushRange(full_path, MAX_FAT_PATH+1);
 			fp = fopen(full_path, "rb");
 			MEM2_free(full_path);
@@ -2832,7 +2832,7 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 			{
 				fread(&header, 1, sizeof(header), fp);
 				//make sure wfc cache file matches what we want
-				if(header.newFmt == 1 && (((header.full != 0) == box) && ((header.cmpr != 0) == m_compressTextures)))
+				if(header.newFmt == 1 && (header.full != 0) == box && (header.cmpr != 0) == m_compressTextures)
 				{
 					TexData tex;
 					tex.format = header.cmpr != 0 ? GX_TF_CMPR : GX_TF_RGB565;
@@ -2846,42 +2846,45 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 					u32 texLen = fixGX_GetTexBufferSize(tex.width, tex.height, tex.format, tex.maxLOD > 0 ? GX_TRUE : GX_FALSE, tex.maxLOD);
 
 					tex.data = (u8*)MEM2_alloc(texLen);
-					u8 *ptrTex = (header.zipped != 0) ? (u8*)MEM2_alloc(bufSize) : tex.data;
-					if(ptrTex == NULL || tex.data == NULL)
-						allocFailed = true;
+
+					if(header.zipped != 0)//if it's compressed ie. zipped
+					{
+						u8 *ptrTex = (u8*)MEM2_alloc(bufSize);
+						if(ptrTex == NULL)
+							allocFailed = true;
+						else
+						{
+							u8 *zBuffer = (u8*)MEM2_alloc(fileSize - sizeof(header));
+							if(zBuffer != NULL)
+							{
+								fread(zBuffer, 1, fileSize - sizeof(header), fp);
+								uLongf size = bufSize;
+								if(uncompress(ptrTex, &size, zBuffer, fileSize - sizeof(header)) == Z_OK && size == bufSize)
+									memcpy(tex.data, ptrTex + bufSize - texLen, texLen);
+								free(zBuffer);
+								free(ptrTex);
+							}
+						}
+					}
 					else
 					{
-						u8 *zBuffer = (header.zipped != 0) ? (u8*)MEM2_alloc(fileSize - sizeof(header)) : tex.data;
-						if(zBuffer != NULL && ((header.zipped != 0) || fileSize - sizeof(header) == bufSize))
+						if(tex.data == NULL)
+							allocFailed = true;
+						else
 						{
-							if(!header.zipped)
-							{
-								fseek(fp, fileSize - sizeof(header) - texLen, SEEK_CUR);
-								fread(tex.data, 1, texLen, fp);
-							}
-							else
-								fread(zBuffer, 1, fileSize - sizeof(header), fp);
-							uLongf size = bufSize;
-							if(header.zipped == 0 || (uncompress(ptrTex, &size, zBuffer, fileSize - sizeof(header)) == Z_OK && size == bufSize))
-							{
-								if(header.zipped != 0)
-									memcpy(tex.data, ptrTex + bufSize - texLen, texLen);
-								LockMutex lock(m_mutex);
-								TexHandle.Cleanup(m_items[i].texture);
-								m_items[i].texture = tex;
-								DCFlushRange(tex.data, texLen);
-								m_items[i].state = STATE_Ready;
-								m_items[i].boxTexture = header.full != 0;
-								success = true;
-							}
+							fseek(fp, fileSize - sizeof(header) - texLen, SEEK_CUR);
+							fread(tex.data, 1, texLen, fp);
 						}
-						if(header.zipped != 0)
-						{
-							if(zBuffer != NULL)
-								free(zBuffer);
-							if(ptrTex != NULL)
-								free(ptrTex);
-						}
+					}
+					if(!allocFailed)
+					{
+						LockMutex lock(m_mutex);
+						TexHandle.Cleanup(m_items[i].texture);
+						m_items[i].texture = tex;
+						DCFlushRange(tex.data, texLen);
+						m_items[i].state = STATE_Ready;
+						m_items[i].boxTexture = header.full != 0;
+						success = true;
 					}
 					if(!success && tex.data != NULL)
 					{

@@ -132,7 +132,7 @@ start_main:
 					_hideMain();
 					if(!_AutoCreateNand())
 					{
-						while(NANDemuView)
+						while(NANDemuView)//keep calling _setPartition till NANDemuView is false and CHANNEL_DOMAIN, "emu_nand", false
 							_setPartition(1);
 					}
 					_loadList();
@@ -1089,7 +1089,6 @@ void CMenu::_setPartition(s8 direction)
 {
 	if(m_current_view == COVERFLOW_CHANNEL && neek2o())
 		return;
-	_cfNeedsUpdate();
 	int FS_Type = 0;
 	if(direction != 0)
 	{

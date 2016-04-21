@@ -450,7 +450,7 @@ void CMenu::_Wad(const char *wad_path)
 				/* mios is real nand, chans are emu */
 				if(mios == false)
 				{
-					const char *emu_char = m_cfg.getString(CHANNEL_DOMAIN, "path", "/").c_str();
+					const char *emu_char = fmt("/%s/%s", EMU_NANDS_DIR, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default").c_str());
 					NandHandle.SetPaths(emu_char, DeviceName[currentPartition]);
 				}
 				_start_pThread();
