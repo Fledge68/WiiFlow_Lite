@@ -124,6 +124,7 @@ const CMenu::SOption CMenu::_GClanguages[8] = {
 };
 
 const CMenu::SOption CMenu::_NandEmu[2] = {
+	//{ "SaveOff", L"Off" },
 	{ "NANDpart", L"Partial" },
 	{ "NANDfull", L"Full" },
 };
@@ -1136,7 +1137,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	m_gcfg1.setInt("PLAYCOUNT", id, m_gcfg1.getInt("PLAYCOUNT", id, 0) + 1); 
 	m_gcfg1.setUInt("LASTPLAYED", id, time(NULL));
 
-	string emuPath = m_cfg.getString(CHANNEL_DOMAIN, "path");
+	string emuPath = fmt("/%s/%s", EMU_NANDS_DIR, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default").c_str());
 	int emulate_mode = min(max(0, m_cfg.getInt(CHANNEL_DOMAIN, "emulation", 1)), (int)ARRAY_SIZE(CMenu::_NandEmu) - 1);
 	
 	int userIOS = m_gcfg2.getInt(id, "ios", 0);
@@ -1305,55 +1306,55 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	int emuPartition = 0;
 
 	u8 emulate_mode = min((u32)m_gcfg2.getInt(id, "emulate_save", 0), ARRAY_SIZE(CMenu::_SaveEmu) - 1u);
-	if(emulate_mode == 0)
+	if(emulate_mode == 0)// default then use global
 	{
 		emulate_mode = min(max(0, m_cfg.getInt(WII_DOMAIN, "save_emulation", 0)), (int)ARRAY_SIZE(CMenu::_GlobalSaveEmu) - 1);
-		if(emulate_mode != 0)
-			emulate_mode++;
+		if(emulate_mode != 0)//not off
+			emulate_mode++;//then increase 1,2,3 to 2,3,4
 	}
-	else if(emulate_mode == 1)
-		emulate_mode = 0;
+	else if(emulate_mode == 1)//equals off 
+		emulate_mode = 0;// then off
 	m_current_view = COVERFLOW_WII; // used for _FindEmuPart()
 	if(emulate_mode && !dvd && !neek2o())
 	{
 		emuPartition = _FindEmuPart(emuPath, false);
 		if(emuPartition < 0)
 		{
-			if(emulate_mode == 4)
+			if(emulate_mode == 4)//full
 			{
 				_hideWaitMessage();
 				while(true)
 				{
 					_AutoCreateNand();
-					if(_TestEmuNand(m_cfg.getInt(WII_DOMAIN, "savepartition", 0), emuPath.c_str(), true))
+					if(_TestEmuNand(m_cfg.getInt(WII_DOMAIN, "savepartition", m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0)), emuPath.c_str(), true))
 					{
-						emuPartition = m_cfg.getInt(WII_DOMAIN, "savepartition", -1);
-						emuPath = m_cfg.getString(WII_DOMAIN, "savepath", m_cfg.getString(CHANNEL_DOMAIN, "path", ""));
+						emuPartition = m_cfg.getInt(WII_DOMAIN, "savepartition", m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0));
+						emuPath = fmt("/%s/%s", EMU_NANDS_DIR, m_cfg.getString(WII_DOMAIN, "current_save_emunand", m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default")).c_str());
 						break;
 					}
 				}
 				_showWaitMessage();
 			}
-			else
+			else//gamesave or regionswitch
 			{
 				emuPartition = _FindEmuPart(emuPath, true);
-				NandHandle.CreatePath(fmt("%s:/%s", DeviceName[emuPartition], APPDATA_DIR));
-				NandHandle.CreatePath(fmt("%s:/%s/nandemu", DeviceName[emuPartition], APPDATA_DIR));
+				NandHandle.CreatePath(fmt("%s:/%s", DeviceName[emuPartition], EMU_NANDS_DIR));
+				NandHandle.CreatePath(fmt("%s:/%s/default", DeviceName[emuPartition], EMU_NANDS_DIR));
 			}
 		}
 		/* Set them */
 		NANDemuView = true;
 		m_cfg.setInt(WII_DOMAIN, "savepartition", emuPartition);
-		m_cfg.setString(WII_DOMAIN, "savepath", emuPath);
-		if(emulate_mode == 2)
+		m_cfg.setString(WII_DOMAIN, "current_save_emunand", "default");
+		if(emulate_mode == 2)//gamesave
 		{
 			m_forceext = false;
 			_hideWaitMessage();
-			if(!_AutoExtractSave(id))
-				NandHandle.CreateTitleTMD(hdr);
+			if(!_AutoExtractSave(id))//extract gamesave
+				NandHandle.CreateTitleTMD(hdr);//if no save then create one
 			_showWaitMessage();
 		}
-		else if(emulate_mode > 2)
+		else if(emulate_mode > 2)//region switch or full
 		{
 			NandHandle.CreateConfig();
 			NandHandle.Do_Region_Change(id, false);

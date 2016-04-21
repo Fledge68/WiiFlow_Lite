@@ -276,7 +276,7 @@ bool CMenu::_LangSettings(void)
 	}
 	_hideLangSettings();
 	if(lang_changed)
-		_cfNeedsUpdate();
+		m_cfNeedsUpdate = true;
 
 	if(lang_list_mem != NULL)
 		free(lang_list_mem);

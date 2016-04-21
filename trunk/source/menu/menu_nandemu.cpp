@@ -1,6 +1,6 @@
 #include <dirent.h>
 #include <unistd.h>
-
+#include <algorithm>
 #include "menu.hpp"
 #include "defines.h"
 #include "lockMutex.hpp"
@@ -23,14 +23,10 @@ s16 m_nandemuBtnAll;
 s16 m_nandemuBtnMissing;
 s16 m_nandemuLblNandDump;
 s16 m_nandemuBtnNandDump;
-s16 m_nandemuLblNandFolder;
-s16 m_nandemuBtnNandFolder;
-s16 m_nandemuLblNandSavesFolder;
-s16 m_nandemuBtnNandSavesFolder;
-s16 m_nandemuLblPresetNand;
-s16 m_nandemuLblPresetVal;
-s16 m_nandemuBtnPresetM;
-s16 m_nandemuBtnPresetP;
+s16 m_nandemuLblNandSelect;
+s16 m_nandemuLblNandSelectVal;
+s16 m_nandemuBtnNandSelectM;
+s16 m_nandemuBtnNandSelectP;
 s16 m_nandfileLblMessage;
 s16 m_nandemuLblMessage;
 s16 m_nandfileLblDialog;
@@ -55,6 +51,33 @@ bool m_saveall;
 static inline int loopNum(int i, int s)
 {
 	return (i + s) % s;
+}
+
+static void listEmuNands(const char * path, vector<string> &emuNands)
+{
+	DIR *d;
+	struct dirent *dir;
+	emuNands.clear();
+	bool def = true;
+
+	d = opendir(path);
+	if(d != 0)
+	{
+		while((dir = readdir(d)) != 0)
+		{
+			if(dir->d_name[0] == '.')
+				continue;
+			if(dir->d_type == DT_DIR)
+			{
+				emuNands.push_back(dir->d_name);
+				def = false;
+			}
+		}
+		closedir(d);
+	}
+	if(def)
+		emuNands.push_back("default");
+	sort(emuNands.begin(), emuNands.end());
 }
 
 static bool _saveExists(const char *path)
@@ -84,14 +107,14 @@ bool CMenu::_TestEmuNand(int epart, const char *path, bool indept)
 	if(indept)
 	{
 		// Check Wiimotes && Region
-		snprintf(testpath, sizeof(testpath), "%s:%s/shared2/sys/SYSCONF", DeviceName[epart], path);
+		snprintf(testpath, sizeof(testpath), "%s/shared2/sys/SYSCONF", basepath);
 		if(!fsop_FileExist(testpath))
 			return false;
-		snprintf(testpath, sizeof(testpath), "%s:%s/title/00000001/00000002/data/setting.txt", DeviceName[epart], path);
+		snprintf(testpath, sizeof(testpath), "%s/title/00000001/00000002/data/setting.txt", basepath);
 		if(!fsop_FileExist(testpath))
 			return false;
 		// Check Mii's
-		snprintf(testpath, sizeof(testpath), "%s:%s/shared2/menu/FaceLib/RFL_DB.dat", DeviceName[epart], path);
+		snprintf(testpath, sizeof(testpath), "%s/shared2/menu/FaceLib/RFL_DB.dat", basepath);
 		if(!fsop_FileExist(testpath))
 			return false;
 	}
@@ -105,24 +128,12 @@ int CMenu::_FindEmuPart(string &emuPath, bool skipchecks)
 	if(m_current_view == COVERFLOW_CHANNEL)
 	{
 		emuPart = m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0);
-		tmpPath = m_cfg.getString(CHANNEL_DOMAIN, "path", "").c_str();
-		if(strlen(tmpPath) == 0)
-		{
-			tmpPath = STDEMU_DIR;
-			m_cfg.setString(CHANNEL_DOMAIN, "path", STDEMU_DIR);
-		}
+		tmpPath = fmt("/%s/%s", EMU_NANDS_DIR, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default").c_str());
 	}
 	else if(m_current_view == COVERFLOW_WII)
 	{
-		emuPart = m_cfg.getInt(WII_DOMAIN, "savepartition", -1);
-		if(emuPart == -1)
-			emuPart = m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0);
-		tmpPath = m_cfg.getString(WII_DOMAIN, "savepath", m_cfg.getString(CHANNEL_DOMAIN, "path", "")).c_str();
-		if(strlen(tmpPath) == 0)
-		{
-			tmpPath = STDEMU_DIR;
-			m_cfg.setString(WII_DOMAIN, "savepath", STDEMU_DIR);
-		}
+		emuPart = m_cfg.getInt(WII_DOMAIN, "savepartition", m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0));
+		tmpPath = fmt("/%s/%s", EMU_NANDS_DIR, m_cfg.getString(WII_DOMAIN, "current_save_emunand", m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default")).c_str());
 	}
 	if(!DeviceHandle.PartitionUsableForNandEmu(emuPart))
 		return -1;
@@ -148,7 +159,7 @@ bool CMenu::_checkSave(string id, bool nand)
 	}
 	else
 	{
-		int emuPartition = m_cfg.getInt(WII_DOMAIN, "savepartition", -1);
+		int emuPartition = m_cfg.getInt(WII_DOMAIN, "savepartition", m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0));
 		string emuPath = m_cfg.getString(WII_DOMAIN, "savepath", "");
 		if(emuPartition < 0 || emuPath.size() == 0)
 			return false;
@@ -209,14 +220,10 @@ void CMenu::_hideNandEmu(bool instant)
 	m_btnMgr.hide(m_nandemuBtnMissing, instant);
 	m_btnMgr.hide(m_nandemuLblNandDump, instant);
 	m_btnMgr.hide(m_nandemuBtnNandDump, instant);
-	m_btnMgr.hide(m_nandemuLblNandFolder, instant);
-	m_btnMgr.hide(m_nandemuBtnNandFolder, instant);
-	m_btnMgr.hide(m_nandemuLblNandSavesFolder, instant);
-	m_btnMgr.hide(m_nandemuBtnNandSavesFolder, instant);
-	m_btnMgr.hide(m_nandemuLblPresetNand, instant);
-	m_btnMgr.hide(m_nandemuLblPresetVal, instant);
-	m_btnMgr.hide(m_nandemuBtnPresetP, instant);
-	m_btnMgr.hide(m_nandemuBtnPresetM, instant);
+	m_btnMgr.hide(m_nandemuLblNandSelect, instant);
+	m_btnMgr.hide(m_nandemuLblNandSelectVal, instant);
+	m_btnMgr.hide(m_nandemuBtnNandSelectP, instant);
+	m_btnMgr.hide(m_nandemuBtnNandSelectM, instant);
 	m_btnMgr.hide(m_nandemuBtnExtract, instant);
 	m_btnMgr.hide(m_nandemuBtnPartition, instant);
 	m_btnMgr.hide(m_nandemuBtnDisable, instant);
@@ -249,53 +256,34 @@ void CMenu::_showNandEmu(void)
 			m_btnMgr.show(m_nandemuBtnEmulationM);
 		}
 	
-		if((m_current_view == COVERFLOW_CHANNEL || m_current_view == COVERFLOW_WII))
+		m_btnMgr.show(m_nandemuLblSaveDump);
+		m_btnMgr.show(m_nandemuBtnAll);
+		m_btnMgr.show(m_nandemuBtnMissing);
+		m_btnMgr.show(m_nandemuLblNandDump);
+		m_btnMgr.show(m_nandemuBtnNandDump);
+		if(m_current_view == COVERFLOW_CHANNEL)
 		{
-			m_btnMgr.show(m_nandemuLblSaveDump);
-			m_btnMgr.show(m_nandemuBtnAll);
-			m_btnMgr.show(m_nandemuBtnMissing);
-			m_btnMgr.show(m_nandemuLblNandDump);
-			m_btnMgr.show(m_nandemuBtnNandDump);
-			if (m_current_view == COVERFLOW_CHANNEL)
-			{
-				i = min(max(0, m_cfg.getInt(CHANNEL_DOMAIN, "emulation", 0)), (int)ARRAY_SIZE(CMenu::_NandEmu) - 1);
-				m_btnMgr.setText(m_nandemuLblEmulationVal, _t(CMenu::_NandEmu[i].id, CMenu::_NandEmu[i].text));
-			}
-			else if (m_current_view == COVERFLOW_WII)
-			{
-				i = min(max(0, m_cfg.getInt(WII_DOMAIN, "save_emulation", 0)), (int)ARRAY_SIZE(CMenu::_GlobalSaveEmu) - 1);
-				m_btnMgr.setText(m_nandemuLblEmulationVal, _t(CMenu::_GlobalSaveEmu[i].id, CMenu::_GlobalSaveEmu[i].text));
-			}
+			i = min(max(0, m_cfg.getInt(CHANNEL_DOMAIN, "emulation", 0)), (int)ARRAY_SIZE(CMenu::_NandEmu) - 1);
+			m_btnMgr.setText(m_nandemuLblEmulationVal, _t(CMenu::_NandEmu[i].id, CMenu::_NandEmu[i].text));
+		}
+		else if(m_current_view == COVERFLOW_WII)
+		{
+			i = min(max(0, m_cfg.getInt(WII_DOMAIN, "save_emulation", 0)), (int)ARRAY_SIZE(CMenu::_GlobalSaveEmu) - 1);
+			m_btnMgr.setText(m_nandemuLblEmulationVal, _t(CMenu::_GlobalSaveEmu[i].id, CMenu::_GlobalSaveEmu[i].text));
 		}
 	}
-	else
+	else //page 2
 	{
-		m_btnMgr.show(m_nandemuLblNandFolder);
-		m_btnMgr.show(m_nandemuBtnNandFolder);
-		m_btnMgr.show(m_nandemuLblNandSavesFolder);
-		m_btnMgr.show(m_nandemuBtnNandSavesFolder);
-		m_btnMgr.show(m_nandemuLblPresetNand);
-		m_btnMgr.show(m_nandemuLblPresetVal);
-		m_btnMgr.show(m_nandemuBtnPresetP);
-		m_btnMgr.show(m_nandemuBtnPresetM);
-		const char *presetPath = m_cfg.getString(CHANNEL_DOMAIN, fmt("path_%i", m_cfg.getInt(CHANNEL_DOMAIN, "current_preset", 1)), "").c_str();
-		if(strlen(presetPath) > 0)
-		{
-			char tmpPath[64];
-			memset(tmpPath, 0, 64);
-			if(strchr(presetPath, '/') != strrchr(presetPath, '/'))
-			{
-				if(presetPath[strlen(presetPath) - 1] == '/')
-					*strrchr(presetPath, '/') = '\0';
-				strncpy(tmpPath, strrchr(presetPath, '/') + 1, 63);
-			}
-			else
-				strcpy(tmpPath, presetPath);
-			m_btnMgr.setText(m_nandemuLblPresetVal, wstringEx(tmpPath));
-		}
-		else
-			m_btnMgr.setText(m_nandemuLblPresetVal, _t("cfgne38", L"Empty"));
+		m_btnMgr.show(m_nandemuLblNandSelect);
+		m_btnMgr.show(m_nandemuLblNandSelectVal);
+		m_btnMgr.show(m_nandemuBtnNandSelectP);
+		m_btnMgr.show(m_nandemuBtnNandSelectM);
+		if(m_current_view == COVERFLOW_CHANNEL)
+			m_btnMgr.setText(m_nandemuLblNandSelectVal, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default"));
+		else if(m_current_view == COVERFLOW_WII)
+			m_btnMgr.setText(m_nandemuLblNandSelectVal, m_cfg.getString(WII_DOMAIN, "current_save_emunand", m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default")));
 	}
+	
 	for(u8 i = 0; i < ARRAY_SIZE(m_nandemuLblUser); ++i)
 		if(m_nandemuLblUser[i] != -1)
 			m_btnMgr.show(m_nandemuLblUser[i]);
@@ -304,8 +292,28 @@ void CMenu::_showNandEmu(void)
 int CMenu::_NandEmuCfg(void)
 {	
 	nandemuPage = 1;
-	bool bothNands = m_cfg.getBool(CHANNEL_DOMAIN, "switch_both_nands", false);
-	const char *path;
+	
+	vector<string> emuNands;
+	string prevEmuNand;
+	int emuPart;
+	if(m_current_view == COVERFLOW_CHANNEL)
+	{
+		prevEmuNand = m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default");
+		emuPart = m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0);
+	}
+	else
+	{
+		prevEmuNand = m_cfg.getString(WII_DOMAIN, "current_save_emunand", m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default"));
+		emuPart = m_cfg.getInt(WII_DOMAIN, "savepartition", m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0));
+	}
+	listEmuNands(fmt("%s:/%s", DeviceName[emuPart], EMU_NANDS_DIR), emuNands);
+	int curEmuNand = 0;
+	for(u8 i = 0; i < emuNands.size(); ++i)
+		if(emuNands[i] == prevEmuNand)
+		{
+			curEmuNand = i;
+			break;
+		}
 
 	lwp_t thread = 0;
 	SetupInput();
@@ -329,14 +337,10 @@ int CMenu::_NandEmuCfg(void)
 			m_btnMgr.hide(m_nandemuBtnMissing, true);
 			m_btnMgr.hide(m_nandemuLblNandDump, true);
 			m_btnMgr.hide(m_nandemuBtnNandDump, true);
-			m_btnMgr.hide(m_nandemuLblNandFolder, true);
-			m_btnMgr.hide(m_nandemuBtnNandFolder, true);
-			m_btnMgr.hide(m_nandemuLblNandSavesFolder, true);
-			m_btnMgr.hide(m_nandemuBtnNandSavesFolder, true);
-			m_btnMgr.hide(m_nandemuLblPresetNand, true);
-			m_btnMgr.hide(m_nandemuLblPresetVal, true);
-			m_btnMgr.hide(m_nandemuBtnPresetP, true);
-			m_btnMgr.hide(m_nandemuBtnPresetM, true);
+			m_btnMgr.hide(m_nandemuLblNandSelect, true);
+			m_btnMgr.hide(m_nandemuLblNandSelectVal, true);
+			m_btnMgr.hide(m_nandemuBtnNandSelectP, true);
+			m_btnMgr.hide(m_nandemuBtnNandSelectM, true);
 	
 			nandemuPage = nandemuPage == 1 ? 2 : 1;
 			_showNandEmu();
@@ -352,14 +356,10 @@ int CMenu::_NandEmuCfg(void)
 			m_btnMgr.hide(m_nandemuBtnMissing, true);
 			m_btnMgr.hide(m_nandemuLblNandDump, true);
 			m_btnMgr.hide(m_nandemuBtnNandDump, true);
-			m_btnMgr.hide(m_nandemuLblNandFolder, true);
-			m_btnMgr.hide(m_nandemuBtnNandFolder, true);
-			m_btnMgr.hide(m_nandemuLblNandSavesFolder, true);
-			m_btnMgr.hide(m_nandemuBtnNandSavesFolder, true);
-			m_btnMgr.hide(m_nandemuLblPresetNand, true);
-			m_btnMgr.hide(m_nandemuLblPresetVal, true);
-			m_btnMgr.hide(m_nandemuBtnPresetP, true);
-			m_btnMgr.hide(m_nandemuBtnPresetM, true);
+			m_btnMgr.hide(m_nandemuLblNandSelect, true);
+			m_btnMgr.hide(m_nandemuLblNandSelectVal, true);
+			m_btnMgr.hide(m_nandemuBtnNandSelectP, true);
+			m_btnMgr.hide(m_nandemuBtnNandSelectM, true);
 			
 			nandemuPage = nandemuPage == 1 ? 2 : 1;
 			_showNandEmu();
@@ -415,121 +415,14 @@ int CMenu::_NandEmuCfg(void)
 			m_thrdWorking = true;
 			LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_NandDumper, (void *)this, 0, 32768, 40);
 		}
-		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnNandFolder)))
+		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnNandSelectP) || m_btnMgr.selected(m_nandemuBtnNandSelectM)))
 		{
-			_hideNandEmu(true);
-			u8 tmpView = m_current_view;
-			m_current_view = COVERFLOW_CHANNEL;
-			string emuPath;
-			_FindEmuPart(emuPath, true);
-			path = _FolderExplorer(NandHandle.GetPath());
-			m_current_view = tmpView;
-			if(strlen(path) > 0)
-			{
-				char preset[256];
-				memset(preset, 0, 256);
-				strncpy(preset, path, strlen(path)-1);
-				m_cfg.setString(CHANNEL_DOMAIN, fmt("path_%i", m_cfg.getInt(CHANNEL_DOMAIN, "current_preset", 1)), preset);
-				if(strncmp(path, "sd:/", 4) == 0)
-				{
-					m_cfg.setInt(CHANNEL_DOMAIN, "partition", 0);
-					if(bothNands)
-						m_cfg.setInt(WII_DOMAIN, "savepartition", 0);
-				}
-				else
-				{
-					const char *partval = &path[3];
-					m_cfg.setInt(CHANNEL_DOMAIN, "partition", atoi(partval));
-					if(bothNands)
-						m_cfg.setInt(WII_DOMAIN, "savepartition", atoi(partval));
-				}
-				char tmpPath[MAX_FAT_PATH];
-				memset(tmpPath, 0, MAX_FAT_PATH);
-				strncpy(tmpPath, strchr(path, '/'), MAX_FAT_PATH-1);
-				m_cfg.setString(CHANNEL_DOMAIN, "path", tmpPath);
-				if(bothNands)
-					m_cfg.setString(WII_DOMAIN, "savepath", tmpPath);
-				m_cfg.setBool(CHANNEL_DOMAIN, "update_cache", true);
-				if(m_cfg.getBool(CHANNEL_DOMAIN, "source"))
-					m_load_view = true;
-			}
-			_showNandEmu();
-		}
-		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnNandSavesFolder)))
-		{
-			_hideNandEmu(true);
-			u8 tmpView = m_current_view;
-			m_current_view = COVERFLOW_WII;
-			string emuPath;
-			_FindEmuPart(emuPath, true);
-			path = _FolderExplorer(NandHandle.GetPath());
-			m_current_view = tmpView;
-			if(strlen(path) > 0)
-			{
-				if(bothNands)
-				{
-					char preset[256];
-					memset(preset, 0, 256);
-					strncpy(preset, path, strlen(path)-1);
-					m_cfg.setString(CHANNEL_DOMAIN, fmt("path_%i", m_cfg.getInt(CHANNEL_DOMAIN, "current_preset", 1)), preset);
-				}
-				if(strncmp(path, "sd:/", 4) == 0)
-				{
-					m_cfg.setInt(WII_DOMAIN, "savepartition", 0);
-					if(bothNands)
-						m_cfg.setInt(CHANNEL_DOMAIN, "partition", 0);
-				}
-				else
-				{
-					const char *partval = &path[3];
-					m_cfg.setInt(WII_DOMAIN, "savepartition", atoi(partval));
-					if(bothNands)
-						m_cfg.setInt(CHANNEL_DOMAIN, "partition", atoi(partval));
-				}
-				char tmpPath[MAX_FAT_PATH];
-				memset(tmpPath, 0, MAX_FAT_PATH);
-				strncpy(tmpPath, strchr(path, '/'), MAX_FAT_PATH-1);
-				m_cfg.setString(WII_DOMAIN, "savepath", tmpPath);
-				if(bothNands)
-				{
-					m_cfg.setString(CHANNEL_DOMAIN, "path", tmpPath);
-					m_cfg.setBool(CHANNEL_DOMAIN, "update_cache", true);
-					if(m_cfg.getBool(CHANNEL_DOMAIN, "source"))
-						m_load_view = true;
-				}
-			}
-			_showNandEmu();
-		}
-		else if (BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnPresetP) || m_btnMgr.selected(m_nandemuBtnPresetM)))
-		{
-			s8 direction = m_btnMgr.selected(m_nandemuBtnPresetP) ? 1 : -1;
-			m_cfg.setInt(CHANNEL_DOMAIN, "current_preset", ((int)loopNum((u32)(m_cfg.getInt(CHANNEL_DOMAIN, "current_preset", 1) - 1) + direction, 4)) + 1);
-			path = m_cfg.getString(CHANNEL_DOMAIN, fmt("path_%i", m_cfg.getInt(CHANNEL_DOMAIN, "current_preset", 1)), "").c_str();
-			if(strlen(path) > 0)
-			{
-				if(strncmp(path, "sd:/", 4) == 0)
-				{
-					m_cfg.setInt(CHANNEL_DOMAIN, "partition", 0);
-					if(bothNands)
-						m_cfg.setInt(WII_DOMAIN, "savepartition", 0);
-				}
-				else
-				{
-					const char *partval = &path[3];
-					m_cfg.setInt(CHANNEL_DOMAIN, "partition", atoi(partval));
-					if(bothNands)
-						m_cfg.setInt(WII_DOMAIN, "savepartition", atoi(partval));
-				}
-				char tmpPath[MAX_FAT_PATH];
-				memset(tmpPath, 0, MAX_FAT_PATH);
-				strncpy(tmpPath, strchr(path, '/'), MAX_FAT_PATH-1);
-				m_cfg.setString(CHANNEL_DOMAIN, "path", tmpPath);
-				if(bothNands)
-					m_cfg.setString(WII_DOMAIN, "savepath", tmpPath);
-				m_cfg.setBool(CHANNEL_DOMAIN, "update_cache", true);
-				if(m_cfg.getBool(CHANNEL_DOMAIN, "source"))
-					m_load_view = true;
-			}
+			s8 direction = m_btnMgr.selected(m_nandemuBtnNandSelectP) ? 1 : -1;
+			curEmuNand = loopNum(curEmuNand + direction, emuNands.size());
+			if(m_current_view == COVERFLOW_CHANNEL)
+				m_cfg.setString(CHANNEL_DOMAIN, "current_emunand", emuNands[curEmuNand]);
+			else
+				m_cfg.setString(WII_DOMAIN, "current_save_emunand", emuNands[curEmuNand]);
 			_showNandEmu();
 		}	
 		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnBack)))
@@ -565,6 +458,11 @@ int CMenu::_NandEmuCfg(void)
 		}
 	}
 	_hideNandEmu();
+	if(prevEmuNand != m_cfg.getString(CHANNEL_DOMAIN, "current_emunand") && m_current_view == COVERFLOW_CHANNEL)
+	{
+		m_cfg.setBool(CHANNEL_DOMAIN, "update_cache", true);
+		m_load_view = true;
+	}
 	return 0;
 }
 
@@ -572,7 +470,7 @@ int CMenu::_FlashSave(string gameId)
 {
 	int emuPartition = m_cfg.getInt(WII_DOMAIN, "savepartition", m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0));
 	char basepath[MAX_FAT_PATH];
-	snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[emuPartition], m_cfg.getString(WII_DOMAIN, "savepath", m_cfg.getString(CHANNEL_DOMAIN, "path", "")).c_str());
+	snprintf(basepath, sizeof(basepath), "%s:/%s/%s", DeviceName[emuPartition], EMU_NANDS_DIR, m_cfg.getString(WII_DOMAIN, "current_save_emunand", m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default")).c_str());
 
 	if(!_checkSave(gameId, false))
 		return 0;
@@ -762,7 +660,7 @@ int CMenu::_AutoCreateNand(void)
 	m_btnMgr.setText(m_nandemuBtnExtract, _t("cfgne5", L"Extract NAND"));
 	m_btnMgr.setText(m_nandemuBtnDisable, _t("cfgne22", L"Disable NAND Emulation"));
 	m_btnMgr.setText(m_nandemuBtnPartition, _t("cfgne31", L"Select Partition"));
-	m_btnMgr.setText(m_nandemuLblInit, _t("cfgne23", L"Welcome to WiiFlow. I have not found a valid NAND for NAND Emulation. Click Extract to extract your NAND, or click disable to disable NAND Emulation."));
+	m_btnMgr.setText(m_nandemuLblInit, _t("cfgne23", L"Emu NAND not found. Try changing the partition to select the correct device/partition, click Extract to extract your NAND, or click disable to disable NAND Emulation."));
 	m_btnMgr.show(m_nandemuBtnExtract);
 	m_btnMgr.show(m_nandemuBtnDisable);
 	m_btnMgr.show(m_nandemuBtnPartition);
@@ -802,6 +700,7 @@ int CMenu::_AutoCreateNand(void)
 				_hideNandEmu();
 				return 0;
 			}
+			//use partition btn from config so we don't have to show the whole main settings.
 			else if(m_btnMgr.selected(m_nandemuBtnPartition))
 			{
 				if(m_current_view == COVERFLOW_WII)
@@ -1019,14 +918,10 @@ void CMenu::_initNandEmuMenu()
 	m_nandemuLblNandDump = _addLabel("NANDEMU/NAND_DUMP", theme.lblFont, L"", 20, 305, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_nandemuBtnNandDump = _addButton("NANDEMU/NAND_DUMP_BTN", theme.btnFont, L"", 420, 310, 200, 48, theme.btnFontColor);
 
-	m_nandemuLblNandFolder = _addLabel("NANDEMU/NAND_FOLDER", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_nandemuBtnNandFolder = _addButton("NANDEMU/NAND_FOLDER_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
-	m_nandemuLblNandSavesFolder = _addLabel("NANDEMU/NAND_SAVES_FOLDER", theme.lblFont, L"", 20, 185, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_nandemuBtnNandSavesFolder = _addButton("NANDEMU/NAND_SAVES_FOLDER_BTN", theme.btnFont, L"", 420, 190, 200, 48, theme.btnFontColor);
-	m_nandemuLblPresetNand = _addLabel("NANDEMU/PRESET_NAND", theme.lblFont, L"", 20, 245, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_nandemuLblPresetVal = _addLabel("NANDEMU/PRESET_NAND_BTN", theme.btnFont, L"", 468, 250, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_nandemuBtnPresetM = _addPicButton("NANDEMU/PRESET_NAND_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 420, 250, 48, 48);
-	m_nandemuBtnPresetP = _addPicButton("NANDEMU/PRESET_NAND_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 572, 250, 48, 48);
+	m_nandemuLblNandSelect = _addLabel("NANDEMU/NAND_SELECT", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_nandemuLblNandSelectVal = _addLabel("NANDEMU/NAND_SELECT_BTN", theme.btnFont, L"", 468, 130, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_nandemuBtnNandSelectM = _addPicButton("NANDEMU/NAND_SELECT_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 420, 130, 48, 48);
+	m_nandemuBtnNandSelectP = _addPicButton("NANDEMU/NAND_SELECT_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 572, 130, 48, 48);
 
 	m_nandemuBtnBack = _addButton("NANDEMU/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
 	m_nandemuLblPage = _addLabel("NANDEMU/PAGE_BTN", theme.btnFont, L"", 68, 400, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
@@ -1057,14 +952,10 @@ void CMenu::_initNandEmuMenu()
 	_setHideAnim(m_nandemuLblNandDump, "NANDEMU/NAND_DUMP", 50, 0, -2.f, 0.f);
 	_setHideAnim(m_nandemuBtnNandDump, "NANDEMU/NAND_DUMP_BTN", -50, 0, 1.f, 0.f);
 	
-	_setHideAnim(m_nandemuLblNandFolder, "NANDEMU/NAND_FOLDER", 50, 0, -2.f, 0.f);
-	_setHideAnim(m_nandemuBtnNandFolder, "NANDEMU/NAND_FOLDER_BTN", -50, 0, 1.f, 0.f);
-	_setHideAnim(m_nandemuLblNandSavesFolder, "NANDEMU/NAND_SAVES_FOLDER", 50, 0, -2.f, 0.f);
-	_setHideAnim(m_nandemuBtnNandSavesFolder, "NANDEMU/NAND_SAVES_FOLDER_BTN", -50, 0, 1.f, 0.f);
-	_setHideAnim(m_nandemuLblPresetNand, "NANDEMU/PRESET_NAND", 50, 0, -2.f, 0.f);
-	_setHideAnim(m_nandemuLblPresetVal, "NANDEMU/PRESET_NAND_BTN", -50, 0, 1.f, 0.f);
-	_setHideAnim(m_nandemuBtnPresetM, "NANDEMU/PRESET_NAND_MINUS", -50, 0, 1.f, 0.f);
-	_setHideAnim(m_nandemuBtnPresetP, "NANDEMU/PRESET_NAND_PLUS", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_nandemuLblNandSelect, "NANDEMU/NAND_SELECT", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_nandemuLblNandSelectVal, "NANDEMU/NAND_SELECT_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_nandemuBtnNandSelectM, "NANDEMU/NAND_SELECT_MINUS", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_nandemuBtnNandSelectP, "NANDEMU/NAND_SELECT_PLUS", -50, 0, 1.f, 0.f);
 	
 	_setHideAnim(m_nandemuBtnBack, "NANDEMU/BACK_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_nandemuLblPage, "NANDEMU/PAGE_BTN", 0, 0, 1.f, -1.f);
@@ -1082,11 +973,7 @@ void CMenu::_initNandEmuMenu()
 
 void CMenu::_textNandEmu(void)
 {
-	m_btnMgr.setText(m_nandemuLblNandFolder, _t("cfgne32", L"Change Nand"));
-	m_btnMgr.setText(m_nandemuLblNandSavesFolder, _t("cfgne33", L"Change Saves Nand"));
-	m_btnMgr.setText(m_nandemuLblPresetNand, _t("cfgne37", L"Select Preset Nand"));
-	m_btnMgr.setText(m_nandemuBtnNandFolder, _t("dl16", L"Set"));
-	m_btnMgr.setText(m_nandemuBtnNandSavesFolder, _t("dl16", L"Set"));
+	m_btnMgr.setText(m_nandemuLblNandSelect, _t("cfgne37", L"Select Nand"));
 	m_btnMgr.setText(m_nandemuLblEmulation, _t("cfgne1", L"NAND Emulation"));
 	m_btnMgr.setText(m_nandemuLblSaveDump, _t("cfgne2", L"Extract Game Saves"));
 	m_btnMgr.setText(m_nandemuBtnAll, _t("cfgne3", L"All"));

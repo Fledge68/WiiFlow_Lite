@@ -219,15 +219,21 @@ void CMenu::init()
 	/* GameCube stuff */
 	m_devo_installed = DEVO_Installed(m_dataDir.c_str());
 	m_nintendont_installed = Nintendont_Installed();
-	m_show_gc = !m_cfg.getBool(GC_DOMAIN, "disable", true);
+	m_show_gc = !m_cfg.getBool(GC_DOMAIN, "disable", ((m_devo_installed || m_nintendont_installed) == false));
 	memset(gc_games_dir, 0, 64);
 	strncpy(gc_games_dir, m_cfg.getString(GC_DOMAIN, "gc_games_dir", DF_GC_GAMES_DIR).c_str(), 64);
 	if(strncmp(gc_games_dir, "%s:/", 4) != 0)
 		strcpy(gc_games_dir, DF_GC_GAMES_DIR);
 	gprintf("GameCube Games Directory: %s\n", gc_games_dir);
 	/* Create CHANNEL keys and set default values if key didn't exist */
-	m_cfg.getString(CHANNEL_DOMAIN, "path", "");
-	m_cfg.getInt(CHANNEL_DOMAIN, "partition", 1);
+	int i;
+	i = m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0);
+	if(i < 0 || i > 1)
+		m_cfg.setInt(CHANNEL_DOMAIN, "partition", 0);
+	i = m_cfg.getInt(WII_DOMAIN, "savepartition", m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0));
+	if(i < 0 || i > 1)
+		m_cfg.setInt(WII_DOMAIN, "savepartition", m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0));
+	m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default");
 	m_cfg.getBool(CHANNEL_DOMAIN, "emu_nand", false);//emu_nand
 	/* Load cIOS Map */
 	_installed_cios.clear();
@@ -2103,26 +2109,25 @@ const wstringEx CMenu::_fmt(const char *key, const wchar_t *def)
 bool CMenu::_loadChannelList(void)
 {
 	m_gameList.clear();
-	string emuPath;// set via _FindEmuPart and used throughout wiiflow code
-	string cacheDir;//real nand empty
-	int emuPartition = -1; //real nand value
+	string emuPath;//set via _FindEmuPart and used throughout wiiflow code
+	string cacheDir;//left empty for real nand and not used
+	int emuPartition = -1; //left at -1 for real nand
 	NANDemuView = (neek2o() || m_cfg.getBool(CHANNEL_DOMAIN, "emu_nand", false));
 	if(NANDemuView)
 	{
-		emuPartition = _FindEmuPart(emuPath, false);
+		emuPartition = _FindEmuPart(emuPath, false);//check if exist & has sysconf, settings.txt, & RFL_DB.dat
 		if(emuPartition < 0)
-			emuPartition = _FindEmuPart(emuPath, true);
-		else
-		{	/* only create folder struct if the partition really has a emu nand on it already */
-			NandHandle.PreNandCfg(m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_miis", false), 
-					m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_config", false));
-		}
+			emuPartition = _FindEmuPart(emuPath, true);//check if exist without those files
 		if(emuPartition < 0)
-			return false;
+			return false;// emu nand not found - menu_main will ask user to extract nand, disable emunand, or change partition
+		/* copy real NAND sysconf, settings.txt, & RFL_DB.dat if you want to, they are replaced if they already exist */
+		NandHandle.PreNandCfg(m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_miis", false), 
+				m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_config", false));
+
 		currentPartition = emuPartition;
 		cacheDir = fmt("%s/%s_channels.db", m_listCacheDir.c_str(), DeviceName[currentPartition]);
 	}
-	bool updateCache = m_cfg.getBool(CHANNEL_DOMAIN, "update_cache");//real nand doesn't update
+	bool updateCache = m_cfg.getBool(CHANNEL_DOMAIN, "update_cache");//real nand doesn't update because cacheDir is left empty
 	/* CreateList checks if cacheDir is empty if so then doesn't update/create cache .db file */
 	vector<string> NullVector;
 	m_gameList.CreateList(COVERFLOW_CHANNEL, currentPartition, std::string(), 

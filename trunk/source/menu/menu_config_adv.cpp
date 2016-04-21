@@ -120,7 +120,6 @@ int CMenu::_configAdv(void)
 			}
 			else if(m_btnMgr.selected(m_configAdvBtnCurThemeP) || m_btnMgr.selected(m_configAdvBtnCurThemeM))
 			{
-				_cfNeedsUpdate();
 				s8 direction = m_btnMgr.selected(m_configAdvBtnCurThemeP) ? 1 : -1;
 				curTheme = loopNum(curTheme + direction, (int)themes.size());
 				m_cfg.setString("GENERAL", "theme", themes[curTheme]);
@@ -135,7 +134,7 @@ int CMenu::_configAdv(void)
 			}
 			else if(m_btnMgr.selected(m_configAdvBtnCFTheme))
 			{
-				_cfNeedsUpdate();
+				m_cfNeedsUpdate = true;
 				_hideConfigAdv();
 				_cfTheme();
 				_showConfigAdv();
