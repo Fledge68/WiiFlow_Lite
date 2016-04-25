@@ -208,6 +208,7 @@ int CMenu::_config1(void)
 			{
 				s8 direction = m_btnMgr.selected(m_configBtnPartitionP) ? 1 : -1;
 				_setPartition(direction);
+				m_load_view = true;
 				_showConfig();
 			}
 			else if (m_btnMgr.selected(m_configBtnCfg4) && m_current_view != COVERFLOW_MAX)
