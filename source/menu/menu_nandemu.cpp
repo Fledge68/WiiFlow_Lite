@@ -719,17 +719,14 @@ int CMenu::_AutoCreateNand(void)
 			else if(m_btnMgr.selected(m_configBtnPartitionP) || m_btnMgr.selected(m_configBtnPartitionM))
 			{
 				s8 direction = m_btnMgr.selected(m_configBtnPartitionP) ? 1 : -1;
-				//_setPartition(direction);
 				u8 limiter = 0;
-				int FS_Type = 0;
 				do
 				{
-					currentPartition = loopNum(currentPartition + direction, 10);
-					FS_Type = DeviceHandle.GetFSType(currentPartition);
+					currentPartition = loopNum(currentPartition + direction, 9);
 					limiter++;
 				}
-				while(limiter < 12 && FS_Type != PART_FS_FAT);
-				//if limiter = 12 error
+				while(limiter < 9 && !DeviceHandle.PartitionUsableForNandEmu(currentPartition));
+				//if limiter = 9 error
 				m_btnMgr.setText(m_configLblPartition, upperCase(DeviceName[currentPartition]));
 			}
 			else if(m_btnMgr.selected(m_nandemuBtnBack))
