@@ -1307,61 +1307,65 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 
 	u8 emulate_mode = min((u32)m_gcfg2.getInt(id, "emulate_save", 0), ARRAY_SIZE(CMenu::_SaveEmu) - 1u);
 	if(emulate_mode == 0)// default then use global
-	{
 		emulate_mode = min(max(0, m_cfg.getInt(WII_DOMAIN, "save_emulation", 0)), (int)ARRAY_SIZE(CMenu::_GlobalSaveEmu) - 1);
-		if(emulate_mode != 0)//not off
-			emulate_mode++;//then increase 1,2,3 to 2,3,4
-	}
-	else if(emulate_mode == 1)//equals off 
-		emulate_mode = 0;// then off
-	m_current_view = COVERFLOW_WII; // used for _FindEmuPart()
+	else
+		emulate_mode--;
+	
+	m_current_view = COVERFLOW_WII; //set this in case of multisource mode
 	if(emulate_mode && !dvd && !neek2o())
 	{
 		emuPartition = _FindEmuPart(emuPath, false);
-		if(emuPartition < 0)
+		if(emuPartition < 0)//if savepartition and/or nand folder no good
 		{
-			if(emulate_mode == 4)//full
+			_hideWaitMessage();
+			while(true)
 			{
-				_hideWaitMessage();
-				while(true)
+				if(!_AutoCreateNand())//change partition, extract nand, or disable emunand save
+				{//if disable
+					emulate_mode = 0;
+					m_gcfg2.setInt(id, "emulate_save", 1);
+					break;
+				}
+				if(emulate_mode == 3)//full
 				{
-					_AutoCreateNand();
-					if(_TestEmuNand(m_cfg.getInt(WII_DOMAIN, "savepartition", m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0)), emuPath.c_str(), true))
+					if(_TestEmuNand(m_cfg.getInt(WII_DOMAIN, "savepartition"), emuPath.c_str(), true))
 					{
-						emuPartition = m_cfg.getInt(WII_DOMAIN, "savepartition", m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0));
-						emuPath = fmt("/%s/%s", EMU_NANDS_DIR, m_cfg.getString(WII_DOMAIN, "current_save_emunand", m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default")).c_str());
+						emuPartition = m_cfg.getInt(WII_DOMAIN, "savepartition");
 						break;
 					}
 				}
-				_showWaitMessage();
+				else//gamesave or regionswitch
+				{
+					if(!_TestEmuNand(emuPartition, emuPath.c_str(), false))
+					{
+						NandHandle.CreatePath(fmt("%s:/%s", DeviceName[emuPartition], EMU_NANDS_DIR));
+						NandHandle.CreatePath(fmt("%s:/%s/%s", DeviceName[emuPartition], EMU_NANDS_DIR, m_cfg.getString(WII_DOMAIN, "current_save_emunand").c_str()));
+					}
+					break;
+				}
 			}
-			else//gamesave or regionswitch
-			{
-				emuPartition = _FindEmuPart(emuPath, true);
-				NandHandle.CreatePath(fmt("%s:/%s", DeviceName[emuPartition], EMU_NANDS_DIR));
-				NandHandle.CreatePath(fmt("%s:/%s/default", DeviceName[emuPartition], EMU_NANDS_DIR));
-			}
+			m_cfg.setInt(WII_DOMAIN, "savepartition", emuPartition);
+			_showWaitMessage();
 		}
-		/* Set them */
-		NANDemuView = true;
-		m_cfg.setInt(WII_DOMAIN, "savepartition", emuPartition);
-		m_cfg.setString(WII_DOMAIN, "current_save_emunand", "default");
-		if(emulate_mode == 2)//gamesave
+		if(emulate_mode == 1)//gamesave
 		{
 			m_forceext = false;
 			_hideWaitMessage();
-			if(!_AutoExtractSave(id))//extract gamesave
-				NandHandle.CreateTitleTMD(hdr);//if no save then create one
+			/*_AutoExtractSave(id) returns true if
+			if save is not on real nand (nothing to extract)
+			if the save is already on emu nand (then no extraction)
+			if the save was successfully extracted
+			false if user chooses to have game create new save*/
+			if(!_AutoExtractSave(id))
+				NandHandle.CreateTitleTMD(hdr);//setup emu nand for gamesave
 			_showWaitMessage();
 		}
-		else if(emulate_mode > 2)//region switch or full
+		else if(emulate_mode > 1)//region switch or full
 		{
 			NandHandle.CreateConfig();
 			NandHandle.Do_Region_Change(id, false);
 		}
 	}
-	else
-		emulate_mode = 0;
 
 	bool use_led = m_gcfg2.getBool(id, "led", false);
 	bool cheat = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool(WII_DOMAIN, "cheat", false));
@@ -1405,7 +1409,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 
 
 	bool patchregion = false;
-	if(emulate_mode <= 2 && !neek2o() && m_cfg.getBool("GENERAL", "tempregionrn", false))
+	if(emulate_mode <= 1 && !neek2o() && m_cfg.getBool("GENERAL", "tempregionrn", false))
 	{
 		gprintf("Check\n");
 		patchregion = NandHandle.Do_Region_Change(id, true);
@@ -1426,9 +1430,9 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		{
 			/* Enable our Emu NAND */
 			DeviceHandle.UnMountAll();
-			if(emulate_mode == 3)
+			if(emulate_mode == 2)
 				NandHandle.Set_RCMode(true);
-			else if(emulate_mode == 4)
+			else if(emulate_mode == 3)
 				NandHandle.Set_FullMode(true);
 			else
 				NandHandle.Set_FullMode(false);

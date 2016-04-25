@@ -225,16 +225,7 @@ void CMenu::init()
 	if(strncmp(gc_games_dir, "%s:/", 4) != 0)
 		strcpy(gc_games_dir, DF_GC_GAMES_DIR);
 	gprintf("GameCube Games Directory: %s\n", gc_games_dir);
-	/* Create CHANNEL keys and set default values if key didn't exist */
-	int i;
-	i = m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0);
-	if(i < 0 || i > 1)
-		m_cfg.setInt(CHANNEL_DOMAIN, "partition", 0);
-	i = m_cfg.getInt(WII_DOMAIN, "savepartition", m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0));
-	if(i < 0 || i > 1)
-		m_cfg.setInt(WII_DOMAIN, "savepartition", m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0));
-	m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default");
-	m_cfg.getBool(CHANNEL_DOMAIN, "emu_nand", false);//emu_nand
+	
 	/* Load cIOS Map */
 	_installed_cios.clear();
 	if(!neek2o() && !Sys_DolphinMode())
@@ -2116,8 +2107,8 @@ bool CMenu::_loadChannelList(void)
 	if(NANDemuView)
 	{
 		emuPartition = _FindEmuPart(emuPath, false);//check if exist & has sysconf, settings.txt, & RFL_DB.dat
-		if(emuPartition < 0)
-			emuPartition = _FindEmuPart(emuPath, true);//check if exist without those files
+		//if(emuPartition < 0)
+			//emuPartition = _FindEmuPart(emuPath, true);//check if exist without those files
 		if(emuPartition < 0)
 			return false;// emu nand not found - menu_main will ask user to extract nand, disable emunand, or change partition
 		/* copy real NAND sysconf, settings.txt, & RFL_DB.dat if you want to, they are replaced if they already exist */

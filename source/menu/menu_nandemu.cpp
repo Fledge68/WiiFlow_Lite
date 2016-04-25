@@ -547,10 +547,10 @@ int CMenu::_AutoExtractSave(string gameId)
 	int emuPartition = _FindEmuPart(emuPath, false);
 	if(emuPartition < 0)
 		emuPartition = _FindEmuPart(emuPath, true);
-	if(!_checkSave(gameId, true))
+	if(!_checkSave(gameId, true))//if save not on real nand
 		return 1;
 
-	if(!m_forceext && _checkSave(gameId, false))
+	if(!m_forceext && _checkSave(gameId, false))//if not force extract and save is already on emunand
 		return 1;
 
 	lwp_t thread = 0;
@@ -597,7 +597,7 @@ int CMenu::_AutoExtractSave(string gameId)
 			m_thrdWorking = true;
 			LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_NandDumper, (void *)this, 0, 32768, 40);
 		}
-		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnDisable)))
+		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnDisable)))//create new save
 		{
 			char basepath[MAX_FAT_PATH];
 			snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[emuPartition], emuPath.c_str());
@@ -655,12 +655,15 @@ int CMenu::_AutoCreateNand(void)
 	m_thrdMessageAdded = false;
 	m_nandext = false;
 	m_emuSaveNand = false;
+	bool changePart = false;
 	bool lock_part_change = false;
 
 	m_btnMgr.setText(m_nandemuBtnExtract, _t("cfgne5", L"Extract NAND"));
 	m_btnMgr.setText(m_nandemuBtnDisable, _t("cfgne22", L"Disable NAND Emulation"));
 	m_btnMgr.setText(m_nandemuBtnPartition, _t("cfgne31", L"Select Partition"));
-	m_btnMgr.setText(m_nandemuLblInit, _t("cfgne23", L"Emu NAND not found. Try changing the partition to select the correct device/partition, click Extract to extract your NAND, or click disable to disable NAND Emulation."));
+	//might add change nand button
+	//m_btnMgr.setText(m_nandemuLblInit, _t("cfgne23", L"Emu NAND not found. Try changing the partition to select the correct device/partition, click Extract to extract your NAND, or click disable to disable NAND Emulation."));
+	m_btnMgr.setText(m_nandemuLblInit, _t("cfgne23", L"Emu NAND not found. Try one of these options to fix the problem."));
 	m_btnMgr.show(m_nandemuBtnExtract);
 	m_btnMgr.show(m_nandemuBtnDisable);
 	m_btnMgr.show(m_nandemuBtnPartition);
@@ -700,29 +703,56 @@ int CMenu::_AutoCreateNand(void)
 				_hideNandEmu();
 				return 0;
 			}
-			//use partition btn from config so we don't have to show the whole main settings.
 			else if(m_btnMgr.selected(m_nandemuBtnPartition))
 			{
-				if(m_current_view == COVERFLOW_WII)
+				m_btnMgr.hide(m_nandemuBtnExtract);
+				m_btnMgr.hide(m_nandemuBtnDisable);
+				m_btnMgr.hide(m_nandemuBtnPartition);
+				m_btnMgr.hide(m_nandemuLblInit);
+				m_btnMgr.show(m_configLblPartitionName);
+				m_btnMgr.show(m_configLblPartition);
+				m_btnMgr.show(m_configBtnPartitionP);
+				m_btnMgr.show(m_configBtnPartitionM);
+				m_btnMgr.show(m_nandemuBtnBack);
+				changePart = true;
+			}
+			else if(m_btnMgr.selected(m_configBtnPartitionP) || m_btnMgr.selected(m_configBtnPartitionM))
+			{
+				s8 direction = m_btnMgr.selected(m_configBtnPartitionP) ? 1 : -1;
+				//_setPartition(direction);
+				u8 limiter = 0;
+				int FS_Type = 0;
+				do
 				{
-					m_emuSaveNand = true;
-					m_current_view = COVERFLOW_CHANNEL;
+					currentPartition = loopNum(currentPartition + direction, 10);
+					FS_Type = DeviceHandle.GetFSType(currentPartition);
+					limiter++;
 				}
-				_hideNandEmu();
-				_config(1);
-				if(m_emuSaveNand)
-				{
-					m_current_view = COVERFLOW_WII;
-					m_emuSaveNand = false;
-					return 0;
-				}
-				return 1;
+				while(limiter < 12 && FS_Type != PART_FS_FAT);
+				//if limiter = 12 error
+				m_btnMgr.setText(m_configLblPartition, upperCase(DeviceName[currentPartition]));
 			}
 			else if(m_btnMgr.selected(m_nandemuBtnBack))
 			{
-				m_cfg.save();
-				_hideNandEmu();
-				return 1;
+				if(changePart)
+				{
+					m_btnMgr.hide(m_configLblPartitionName);
+					m_btnMgr.hide(m_configLblPartition);
+					m_btnMgr.hide(m_configBtnPartitionP);
+					m_btnMgr.hide(m_configBtnPartitionM);
+					m_btnMgr.hide(m_nandemuBtnBack);
+					if(m_current_view == COVERFLOW_WII)
+						m_cfg.setInt(WII_DOMAIN, "savepartition", currentPartition);
+					else
+						m_cfg.setInt(CHANNEL_DOMAIN, "partition", currentPartition);
+					return 1;
+				}
+				else
+				{
+					m_cfg.save();//why save?
+					_hideNandEmu();
+					return 1;
+				}
 			}
 		}
 		else if(BTN_B_HELD && BTN_MINUS_PRESSED && !lock_part_change)
@@ -812,6 +842,8 @@ int CMenu::_NandDumper(void *obj)
 	if(emuPartition < 0)
 	{
 		m.error(m._t("cfgne8", L"No valid FAT partition found for NAND Emulation!"));
+		//probably should set m.m_thrdWorking = false;
+		//and set bool error to true and then main thread will handle it
 		return 0;
 	}
 
