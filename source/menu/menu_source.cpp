@@ -13,13 +13,14 @@ s16 m_sourceBtnBack;
 s16 m_sourceLblTitle;
 s16 m_sourceBtnSource[12];
 s16 m_sourceLblUser[4];
-s16 m_sourceBtnGamecube;
-s16 m_sourceBtnPlugin;
-s16 m_sourceBtnWii;
-s16 m_sourceBtnChannel;
-s16 m_sourceBtnHomebrew;
 
 TexData m_sourceBg;
+
+static bool show_homebrew = true;
+static bool parental_homebrew = false;
+static bool show_channel = true;
+static bool show_plugin = true;
+static bool show_gamecube = true;
 
 bool exitSource = false;
 u8 sourceBtn;
@@ -38,11 +39,6 @@ void CMenu::_hideSource(bool instant)
 	m_btnMgr.hide(m_sourceBtnPageM, instant);
 	m_btnMgr.hide(m_sourceBtnPageP, instant);
 	m_btnMgr.hide(m_sourceBtnBack, instant);	
-	m_btnMgr.hide(m_sourceBtnHomebrew, instant);
-	m_btnMgr.hide(m_sourceBtnChannel, instant);
-	m_btnMgr.hide(m_sourceBtnWii, instant);
-	m_btnMgr.hide(m_sourceBtnGamecube, instant);
-	m_btnMgr.hide(m_sourceBtnPlugin, instant);
 
 	u8 i;
 	for(i = 0; i < ARRAY_SIZE(m_sourceLblUser); ++i)
@@ -320,12 +316,12 @@ void CMenu::_sourceFlow()
 	
 bool CMenu::_Source()
 {
-	CoverFlow.clear();
 	u8 i, j, k;
-	bool show_homebrew = !m_cfg.getBool(HOMEBREW_DOMAIN, "disable", false);
-	bool show_channel = !m_cfg.getBool(CHANNEL_DOMAIN, "disable", false);
-	bool show_emu = !m_cfg.getBool(PLUGIN_DOMAIN, "disable", false);
-	bool parental_homebrew = m_cfg.getBool(HOMEBREW_DOMAIN, "parental", false);	
+	parental_homebrew = m_cfg.getBool(HOMEBREW_DOMAIN, "parental", false);
+	show_homebrew = (!m_cfg.getBool(HOMEBREW_DOMAIN, "disable", false) && (parental_homebrew || !m_locked));
+	show_channel = !m_cfg.getBool(CHANNEL_DOMAIN, "disable", false);
+	show_plugin = !m_cfg.getBool(PLUGIN_DOMAIN, "disable", false);
+	show_gamecube = m_show_gc;
 	bool noChanges = true;
 	bool updateSource = false;
 	exitSource = false;
@@ -335,35 +331,33 @@ bool CMenu::_Source()
 	
 	SetupInput();
 	_showSource();
-	bool sourceIniLoaded = m_source.loaded();
-	if(!sourceIniLoaded)
+
+	//set number of pages based on highest source btn number used
+	for(i = m_cfg.getInt("GENERAL", "max_source_buttons", 71); i > 11; --i)
 	{
-		m_btnMgr.show(m_sourceBtnHomebrew);
-		m_btnMgr.show(m_sourceBtnChannel);
-		m_btnMgr.show(m_sourceBtnWii);
-		m_btnMgr.show(m_sourceBtnGamecube);
-		m_btnMgr.show(m_sourceBtnPlugin);
-	}
-	else
-	{
-		//set number of pages based on highest source btn number used
-		for(i = m_cfg.getInt("GENERAL", "max_source_buttons", 71); i > 11; --i)
+		string source = m_source.getString(fmt("BUTTON_%i", i), "source", "");
+		if (!source.empty())
 		{
-			string source = m_source.getString(fmt("BUTTON_%i", i), "source", "");
-			if (!source.empty())
-			{
-				source_Pages = (i / 12) + 1;
-				break;
-			}
+			source_Pages = (i / 12) + 1;
+			break;
 		}
-		_updateSourceBtns();
 	}
+	_updateSourceBtns();
 
 	while(!m_exit)
 	{
 		updateSource = false;
 		_mainLoopCommon();
-		if(BTN_HOME_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_sourceBtnBack)) || (BTN_B_PRESSED))
+		if(BTN_HOME_PRESSED)
+		{
+			_hideSource();
+			_CfgSrc();
+			if(m_cfg.getBool("SOURCEFLOW", "enabled"))
+				return true;
+			_showSource();
+			_updateSourceBtns();
+		}
+		if((BTN_A_PRESSED && m_btnMgr.selected(m_sourceBtnBack)) || BTN_B_PRESSED)
 		{
 			if(selectedBtns == 1)
 			{
@@ -440,63 +434,8 @@ bool CMenu::_Source()
 				m_btnMgr.click(m_sourceBtnPageP);
 			_updateSourceBtns();
 		}
-		else if(BTN_A_PRESSED && !sourceIniLoaded)
+		else if(BTN_A_PRESSED || (BTN_PLUS_PRESSED && m_multisource))
 		{
-			// check default source buttons when no source_menu.ini
-			if(m_btnMgr.selected(m_sourceBtnWii))
-			{
-				_clearSources();
-				m_cfg.setBool(WII_DOMAIN, "source", true);
-				exitSource = true;
-			}
-			if(m_btnMgr.selected(m_sourceBtnGamecube))
-			{
-				if(!m_show_gc)
-					_showSourceNotice();
-				else
-				{
-					_clearSources();
-					m_cfg.setBool(GC_DOMAIN, "source", true);
-					exitSource = true;
-				}
-			}
-			if(m_btnMgr.selected(m_sourceBtnChannel))
-			{
-				if(!show_channel)
-					_showSourceNotice();
-				else
-				{
-					_clearSources();
-					m_cfg.setBool(CHANNEL_DOMAIN, "source", true);
-					exitSource = true;
-				}
-			}
-			if(m_btnMgr.selected(m_sourceBtnHomebrew))
-			{
-				if(!show_homebrew || (!parental_homebrew && m_locked))
-					_showSourceNotice();
-				else
-				{
-					_clearSources();
-					m_cfg.setBool(HOMEBREW_DOMAIN, "source", true);
-					exitSource = true;
-				}
-			}
-			if(m_btnMgr.selected(m_sourceBtnPlugin))
-			{
-				if(!show_emu)
-					_showSourceNotice();
-				else
-				{
-					_clearSources();
-					m_cfg.setBool(PLUGIN_DOMAIN, "source", true);
-					exitSource = true;
-				}
-			}
-		}
-		else if((BTN_A_PRESSED || (BTN_PLUS_PRESSED && m_multisource)) && sourceIniLoaded)
-		{
-			// check actual source menu buttons
 			j = (source_curPage - 1) * 12;
 			for(i = 0; i < 12; ++i)
 			{
@@ -517,7 +456,7 @@ bool CMenu::_Source()
 						}
 						else if(source == "dml")
 						{
-							if(!m_show_gc)
+							if(!show_gamecube)
 								_showSourceNotice();
 							else
 							{
@@ -549,7 +488,7 @@ bool CMenu::_Source()
 						}
 						else if(source == "homebrew")
 						{
-							if(!show_homebrew || (!parental_homebrew && m_locked))
+							if(!show_homebrew)
 								_showSourceNotice();
 							else
 							{
@@ -559,7 +498,7 @@ bool CMenu::_Source()
 						}
 						else if(source == "allplugins")
 						{
-							if(!show_emu)
+							if(!show_plugin)
 								_showSourceNotice();
 							else
 							{
@@ -571,7 +510,7 @@ bool CMenu::_Source()
 						}
 						else if(source == "plugin")
 						{
-							if(!show_emu)
+							if(!show_plugin)
 								_showSourceNotice();
 							else
 							{
@@ -658,7 +597,7 @@ bool CMenu::_Source()
 						}
 						else if(source == "dml")
 						{
-							if(m_show_gc)
+							if(show_gamecube)
 								m_cfg.setBool(GC_DOMAIN, "source", !m_cfg.getBool(GC_DOMAIN, "source"));
 						}
 						else if(source == "emunand")
@@ -679,12 +618,12 @@ bool CMenu::_Source()
 						}
 						else if(source == "homebrew")
 						{
-							if(show_homebrew && (parental_homebrew || !m_locked))
+							if(show_homebrew)
 								m_cfg.setBool(HOMEBREW_DOMAIN, "source", !m_cfg.getBool(HOMEBREW_DOMAIN, "source"));
 						}
 						else if(source == "allplugins")
 						{
-							if(show_emu)
+							if(show_plugin)
 							{
 								m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
 								for(j = 0; m_plugin.PluginExist(j); ++j)		/* opposite */
@@ -694,7 +633,7 @@ bool CMenu::_Source()
 						}
 						else if(source == "plugin")
 						{
-							if(show_emu)
+							if(show_plugin)
 							{
 								magicNums.clear();
 								magicNums = m_source.getStrings(btn_selected, "magic", ',');
@@ -753,28 +692,18 @@ void CMenu::_clearSources(void)
 
 void CMenu::_initSourceMenu()
 {
-	TexData texGamecube;
-	TexData texGamecubes;
-	TexData texPlugin;
-	TexData texPlugins;
-	TexData texWii;
-	TexData texWiis;
-	TexData texChannel;
-	TexData texChannels;
-	TexData texHomebrew;
-	TexData texHomebrews;
-
-	TexHandle.fromImageFile(texWii, fmt("%s/btnusb.png", m_imgsDir.c_str()));
-	TexHandle.fromImageFile(texWiis, fmt("%s/btnusbs.png", m_imgsDir.c_str()));
-	TexHandle.fromImageFile(texGamecube, fmt("%s/btndml.png", m_imgsDir.c_str()));
-	TexHandle.fromImageFile(texGamecubes, fmt("%s/btndmls.png", m_imgsDir.c_str()));
-	TexHandle.fromImageFile(texPlugin, fmt("%s/btnemu.png", m_imgsDir.c_str()));
-	TexHandle.fromImageFile(texPlugins, fmt("%s/btnemus.png", m_imgsDir.c_str()));
-	TexHandle.fromImageFile(texChannel, fmt("%s/btnchannel.png", m_imgsDir.c_str()));
-	TexHandle.fromImageFile(texChannels, fmt("%s/btnchannels.png", m_imgsDir.c_str()));
-	TexHandle.fromImageFile(texHomebrew, fmt("%s/btnhomebrew.png", m_imgsDir.c_str()));
-	TexHandle.fromImageFile(texHomebrews, fmt("%s/btnhomebrews.png", m_imgsDir.c_str()));
-
+	m_use_source = false;
+	themeName = m_cfg.getString("GENERAL", "theme", "default");
+	if(!m_source.load(fmt("%s/%s/%s", m_sourceDir.c_str(), themeName.c_str(), SOURCE_FILENAME)))
+	{
+		if(!m_source.load(fmt("%s/%s", m_sourceDir.c_str(), SOURCE_FILENAME)))
+			return;
+	}
+	else
+		m_sourceDir = fmt("%s/%s", m_sourceDir.c_str(), themeName.c_str());
+	
+	m_use_source = true;
+	
 	_addUserLabels(m_sourceLblUser, ARRAY_SIZE(m_sourceLblUser), "SOURCE");
 	m_sourceBg = _texture("SOURCE/BG", "texture", theme.bg, false);
 	m_sourceLblTitle = _addTitle("SOURCE/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
@@ -783,18 +712,6 @@ void CMenu::_initSourceMenu()
 	m_sourceBtnPageM = _addPicButton("SOURCE/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 20, 400, 48, 48);
 	m_sourceBtnPageP = _addPicButton("SOURCE/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 172, 400, 48, 48);
 	m_sourceBtnBack = _addButton("SOURCE/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
-
-	m_sourceBtnChannel = _addPicButton("SOURCE/CHANNEL_BTN", texChannel, texChannels, 265, 260, 48, 48);
-	m_sourceBtnHomebrew = _addPicButton("SOURCE/HOMEBREW_BTN", texHomebrew, texHomebrews, 325, 260, 48, 48);
-	m_sourceBtnWii = _addPicButton("SOURCE/USB_BTN", texWii, texWiis, 235, 200, 48, 48);
-	m_sourceBtnGamecube = _addPicButton("SOURCE/DML_BTN", texGamecube, texGamecubes, 295, 200, 48, 48);
-	m_sourceBtnPlugin = _addPicButton("SOURCE/EMU_BTN", texPlugin, texPlugins, 355, 200, 48, 48);
-	
-	themeName = m_cfg.getString("GENERAL", "theme", "default");
-	if(!m_source.load(fmt("%s/%s/%s", m_sourceDir.c_str(), themeName.c_str(), SOURCE_FILENAME)))
-		m_source.load(fmt("%s/%s", m_sourceDir.c_str(), SOURCE_FILENAME));
-	else
-		m_sourceDir = fmt("%s/%s", m_sourceDir.c_str(), themeName.c_str());
 
 	int row;
 	int col;
@@ -822,11 +739,6 @@ void CMenu::_initSourceMenu()
 		m_sourceBtnSource[i] = _addPicButton(fmt("SOURCE/SOURCE_BTN_%i", i), texConsoleImg, texConsoleImgs, (100 + 120 * col), (90 + 100 * row), 80, 80);
 		_setHideAnim(m_sourceBtnSource[i], fmt("SOURCE/SOURCE_BTN_%i", i), 0, 0, -2.f, 0.f);
 	}
-	_setHideAnim(m_sourceBtnChannel, "SOURCE/CHANNEL_BTN", 0, 40, 0.f, 0.f);
-	_setHideAnim(m_sourceBtnHomebrew, "SOURCE/HOMEBREW_BTN", 0, 40, 0.f, 0.f);
-	_setHideAnim(m_sourceBtnWii, "SOURCE/USB_BTN", 0, 40, 0.f, 0.f);
-	_setHideAnim(m_sourceBtnGamecube, "SOURCE/DML_BTN", 0, 40, 0.f, 0.f);
-	_setHideAnim(m_sourceBtnPlugin, "SOURCE/EMU_BTN", 0, 40, 0.f, 0.f);
 	_setHideAnim(m_sourceLblTitle, "SOURCE/TITLE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_sourceLblNotice, "SOURCE/NOTICE", 0, 0, 1.f, 0.f);
 	_setHideAnim(m_sourceLblPage, "SOURCE/PAGE_BTN", 0, 0, 1.f, -1.f);

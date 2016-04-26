@@ -36,14 +36,8 @@ s16 m_bootLblCIOSrevP;
 s16 m_bootLblUSBPort;
 s16 m_bootBtnUSBPort;
 
-s16 m_bootLblManageSM;
-s16 m_bootBtnManageSM;
-
 s16 m_bootLblAsyncNet;
 s16 m_bootBtnAsyncNet;
-
-s16 m_bootLblCategoryOnBoot;
-s16 m_bootBtnCategoryOnBoot;
 
 s16 m_bootLblFtpOnBoot;
 s16 m_bootBtnFtpOnBoot;
@@ -88,15 +82,10 @@ static void hideBoot(bool instant, bool common)
 	m_btnMgr.hide(m_bootLblUSBPort, instant);
 	m_btnMgr.hide(m_bootBtnUSBPort, instant);
 	
-	m_btnMgr.hide(m_bootLblManageSM, instant);
-	m_btnMgr.hide(m_bootBtnManageSM, instant);
 	/* page 2 */
 	m_btnMgr.hide(m_bootLblAsyncNet, instant);
 	m_btnMgr.hide(m_bootBtnAsyncNet, instant);
 
-	m_btnMgr.hide(m_bootLblCategoryOnBoot, instant);
-	m_btnMgr.hide(m_bootBtnCategoryOnBoot, instant);
-	
 	m_btnMgr.hide(m_bootLblFtpOnBoot, instant);
 	m_btnMgr.hide(m_bootBtnFtpOnBoot, instant);
 }
@@ -172,22 +161,10 @@ bool CMenu::_Boot(void)
 				set_port = !set_port;
 				m_btnMgr.setText(m_bootBtnUSBPort, wfmt(L"%i", set_port));
 			}
-			else if (m_btnMgr.selected(m_bootBtnManageSM))
-			{
-				hideBoot(true, true);
-				_CfgSrc();
-				showBoot();
-				_refreshBoot();
-			}
 			else if (m_btnMgr.selected(m_bootBtnAsyncNet))
 			{
 				m_cfg.setBool("GENERAL", "async_network", !m_cfg.getBool("GENERAL", "async_network", false));
 				m_btnMgr.setText(m_bootBtnAsyncNet, m_cfg.getBool("GENERAL", "async_network", false) ? _t("on", L"On") : _t("off", L"Off"));
-			}
-			else if (m_btnMgr.selected(m_bootBtnCategoryOnBoot))
-			{
-				m_cfg.setBool("GENERAL", "category_on_start", !m_cfg.getBool("GENERAL", "category_on_start", false));
-				m_btnMgr.setText(m_bootBtnCategoryOnBoot, m_cfg.getBool("GENERAL", "category_on_start") ? _t("on", L"On") : _t("off", L"Off"));
 			}
 			else if (m_btnMgr.selected(m_bootBtnFtpOnBoot))
 			{
@@ -234,22 +211,15 @@ void CMenu::_refreshBoot()
 
 		m_btnMgr.show(m_bootLblUSBPort);
 		m_btnMgr.show(m_bootBtnUSBPort);
-		
-		m_btnMgr.show(m_bootLblManageSM);
-		m_btnMgr.show(m_bootBtnManageSM);
 	}
 	else
 	{
 		m_btnMgr.setText(m_bootBtnAsyncNet, m_cfg.getBool("GENERAL", "async_network", false) ? _t("on", L"On") : _t("off", L"Off"));
-		m_btnMgr.setText(m_bootBtnCategoryOnBoot, m_cfg.getBool("GENERAL", "category_on_start") ? _t("on", L"On") : _t("off", L"Off"));
 		m_btnMgr.setText(m_bootBtnFtpOnBoot, m_cfg.getBool(FTP_DOMAIN, "auto_start") ? _t("on", L"On") : _t("off", L"Off"));
 		
 		m_btnMgr.show(m_bootLblAsyncNet);
 		m_btnMgr.show(m_bootBtnAsyncNet);
 
-		m_btnMgr.show(m_bootLblCategoryOnBoot);
-		m_btnMgr.show(m_bootBtnCategoryOnBoot);
-		
 		m_btnMgr.show(m_bootLblFtpOnBoot);
 		m_btnMgr.show(m_bootBtnFtpOnBoot);
 	}
@@ -261,10 +231,7 @@ void CMenu::_textBoot(void)
 	m_btnMgr.setText(m_bootLblLoadCIOS, _t("cfgbt2", L"Force Load cIOS"));
 	m_btnMgr.setText(m_bootLblCIOSrev, _t("cfgbt3", L"Force cIOS Revision"));
 	m_btnMgr.setText(m_bootLblUSBPort, _t("cfgbt4", L"USB Port"));
-	m_btnMgr.setText(m_bootLblManageSM, _t("cfgsm7", L"Manage Source Menu"));
-	m_btnMgr.setText(m_bootBtnManageSM, _t("cfgc5", L"Go"));
 	m_btnMgr.setText(m_bootLblAsyncNet, _t("cfgp3", L"Init network on boot"));
-	m_btnMgr.setText(m_bootLblCategoryOnBoot, _t("cfgd7", L"Show categories on boot"));
 	m_btnMgr.setText(m_bootLblFtpOnBoot, _t("cfgbt7", L"Start FTP Server on boot"));
 	m_btnMgr.setText(m_bootBtnBack, _t("cfg10", L"Back"));
 }
@@ -290,15 +257,10 @@ void CMenu::_initBoot(void)
 	m_bootLblUSBPort = _addLabel("BOOT/USB_PORT", theme.lblFont, L"", 20, 245, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_bootBtnUSBPort = _addButton("BOOT/USB_PORT_BTN", theme.btnFont, L"", 420, 250, 200, 48, theme.btnFontColor);
 	
-	m_bootLblManageSM = _addLabel("BOOT/MANAGE_SOURCE", theme.lblFont, L"", 20, 305, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_bootBtnManageSM = _addButton("BOOT/MANAGE_SOURCE_BTN", theme.btnFont, L"", 420, 310, 200, 48, theme.btnFontColor);
 	/* page 2 */
 	m_bootLblAsyncNet = _addLabel("BOOT/ASYNCNET", theme.lblFont, L"", 20, 305, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_bootBtnAsyncNet = _addButton("BOOT/ASYNCNET_BTN", theme.btnFont, L"", 420, 310, 200, 48, theme.btnFontColor);
 
-	m_bootLblCategoryOnBoot = _addLabel("BOOT/CAT_ON_START", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_bootBtnCategoryOnBoot = _addButton("BOOT/CAT_ON_START_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
-	
 	m_bootLblFtpOnBoot = _addLabel("BOOT/FTP", theme.lblFont, L"", 20, 245, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_bootBtnFtpOnBoot = _addButton("BOOT/FTP_BTN", theme.btnFont, L"", 420, 250, 200, 48, theme.btnFontColor);
 
@@ -319,14 +281,8 @@ void CMenu::_initBoot(void)
 	_setHideAnim(m_bootLblUSBPort, "BOOT/USB_PORT", 50, 0, -2.f, 0.f);
 	_setHideAnim(m_bootBtnUSBPort, "BOOT/USB_PORT_BTN", -50, 0, 1.f, 0.f);
 
-	_setHideAnim(m_bootLblManageSM, "BOOT/MANAGE_SOURCE", 50, 0, -2.f, 0.f);
-	_setHideAnim(m_bootBtnManageSM, "BOOT/MANAGE_SOURCE_BTN", -50, 0, 1.f, 0.f);
-
 	_setHideAnim(m_bootLblAsyncNet, "BOOT/ASYNCNET", 50, 0, -2.f, 0.f);
 	_setHideAnim(m_bootBtnAsyncNet, "BOOT/ASYNCNET_BTN", -50, 0, 1.f, 0.f);
-	
-	_setHideAnim(m_bootLblCategoryOnBoot, "BOOT/CAT_ON_START", 50, 0, -2.f, 0.f);
-	_setHideAnim(m_bootBtnCategoryOnBoot, "BOOT/CAT_ON_START_BTN", -50, 0, 1.f, 0.f);
 	
 	_setHideAnim(m_bootLblFtpOnBoot, "BOOT/FTP", 50, 0, -2.f, 0.f);
 	_setHideAnim(m_bootBtnFtpOnBoot, "BOOT/FTP_BTN", -50, 0, 1.f, 0.f);

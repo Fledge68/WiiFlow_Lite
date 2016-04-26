@@ -20,6 +20,12 @@ static inline int loopNum(int i, int s)
 	return (i + s) % s;
 }
 
+static bool show_homebrew = true;
+static bool parental_homebrew = false;
+static bool show_channel = true;
+static bool show_plugin = true;
+static bool show_gamecube = true;
+
 void CMenu::_hideMain(bool instant)
 {
 	m_btnMgr.hide(m_mainBtnNext, instant);
@@ -45,12 +51,6 @@ void CMenu::_hideMain(bool instant)
 			m_btnMgr.hide(m_mainLblUser[i], instant);
 }
 
-static bool show_homebrew = true;
-static bool parental_homebrew = false;
-static bool show_channel = true;
-static bool show_plugin = true;
-static bool show_gamecube = true;
-
 void CMenu::_showMain(void)
 {
 start_main:
@@ -60,7 +60,7 @@ start_main:
 	m_btnMgr.show(m_mem2FreeSize);
 #endif
 	m_vid.set2DViewport(m_cfg.getInt("GENERAL", "tv_width", 640), m_cfg.getInt("GENERAL", "tv_height", 480),
-	m_cfg.getInt("GENERAL", "tv_x", 0), m_cfg.getInt("GENERAL", "tv_y", 0));
+			m_cfg.getInt("GENERAL", "tv_x", 0), m_cfg.getInt("GENERAL", "tv_y", 0));
 	_setBg(m_mainBg, m_mainBgLQ);
 	m_btnMgr.show(m_mainBtnInfo);
 	m_btnMgr.show(m_mainBtnConfig);
@@ -121,7 +121,6 @@ start_main:
 			case COVERFLOW_WII:
 			case COVERFLOW_GAMECUBE:
 				m_btnMgr.setText(m_mainLblMessage, _t("main2", L"No games found! Please select partition to change the device/partition or click Install to install a game."));
-			//	m_btnMgr.setText(m_mainLblMessage, _t("main2", L"Welcome to WiiFlow. I have not found any games. Click Install to install games, or Select partition to select your partition type."));
 				m_btnMgr.show(m_mainBtnInstall);
 				m_btnMgr.show(m_mainBtnSelPart);
 				m_btnMgr.show(m_mainLblMessage);
@@ -141,13 +140,11 @@ start_main:
 				break;
 			case COVERFLOW_HOMEBREW:
 				m_btnMgr.setText(m_mainLblMessage, _t("main4", L"No homebrew apps found! Try changing the partition to select the correct device/partition."));
-			//	m_btnMgr.setText(m_mainLblMessage, _t("main4", L"Welcome to WiiFlow. I have not found any homebrew apps. Select partition to select your partition type."));
 				m_btnMgr.show(m_mainBtnSelPart);
 				m_btnMgr.show(m_mainLblMessage);
 				break;
 			case COVERFLOW_PLUGIN:
 				m_btnMgr.setText(m_mainLblMessage, _t("main5", L"No roms/items for your plugin found! Try changing the partition to select the correct device/partition."));
-			//	m_btnMgr.setText(m_mainLblMessage, _t("main5", L"Welcome to WiiFlow. I have not found any plugins. Select partition to select your partition type."));
 				m_btnMgr.show(m_mainBtnSelPart);
 				m_btnMgr.show(m_mainLblMessage);
 				break;
@@ -162,15 +159,18 @@ void CMenu::LoadView(void)
 	CoverFlow.clear();
 	if(!m_vid.showingWaitMessage())
 		_showWaitMessage();
+		
 	if(m_clearCats)// clear categories unless a source menu btn has selected one
 	{
 		m_cat.remove("GENERAL", "selected_categories");
 		m_cat.remove("GENERAL", "required_categories");
 	}
 	m_clearCats = true;
+	
 	m_favorites = false;
 	if(m_cfg.getBool("GENERAL", "save_favorites_mode", false))
 		m_favorites = m_cfg.getBool(_domainFromView(), "favorites", false);
+		
 	if(m_sourceflow)
 	{
 		m_gameList.clear();
@@ -259,7 +259,6 @@ int CMenu::main(void)
 	show_gamecube = m_show_gc;
 	m_allow_random = m_cfg.getBool("GENERAL", "allow_b_on_questionmark", true);
 	m_multisource = m_cfg.getBool("GENERAL", "multisource", false);
-	m_use_source = m_cfg.getBool("GENERAL", "use_source", true);
 	bool bheld = false;
 	bool bUsed = false;
 	m_emuSaveNand = false;
@@ -317,7 +316,7 @@ int CMenu::main(void)
 					LoadView();
 					continue;
 				}
-				if(m_use_source)//if source_menu enabled via b button
+				if(m_use_source)//if source_menu enabled
 				{
 					_hideMain();
 					if(m_cfg.getBool("SOURCEFLOW", "enabled", false))//if sourceflow show it
@@ -346,7 +345,13 @@ int CMenu::main(void)
 			if(m_sourceflow)
 			{
 				_CfgSrc();
-				_showMain();
+				if(!m_cfg.getBool("SOURCEFLOW", "enabled"))
+				{
+					m_sourceflow = false;
+					LoadView();
+					continue;
+				}
+				//_showMain();
 				if(BTN_B_HELD)
 					bUsed = true;
 				if(m_load_view)
@@ -503,32 +508,6 @@ int CMenu::main(void)
 					bUsed = true;
 				_showMain();
 				_initCF();
-			}
-			//Events to show source menu or sourceflow if B on mode icon
-			else if(m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnWii) || m_btnMgr.selected(m_mainBtnGamecube)|| m_btnMgr.selected(m_mainBtnPlugin) || m_btnMgr.selected(m_mainBtnHomebrew))
-			{
-				if(!m_use_source)//only use if B to source menu not enabled
-				{
-					_hideMain();
-					if(m_cfg.getBool("SOURCEFLOW", "enabled", false))//if sourceflow show it
-					{
-						m_sourceflow = true;
-						LoadView();
-					}
-					else //show source menu
-					{
-						if(!_Source()) //if different source selected load it
-							LoadView();
-						else
-						{
-							if(BTN_B_HELD)
-								bUsed = true;
-							_showMain();
-						}
-					}
-					continue;
-				}
-				
 			}
 			else if(m_btnMgr.selected(m_mainBtnNext) || m_btnMgr.selected(m_mainBtnPrev))
 			{

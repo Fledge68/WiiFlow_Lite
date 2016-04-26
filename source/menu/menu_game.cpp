@@ -1326,11 +1326,12 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 					m_gcfg2.setInt(id, "emulate_save", 1);
 					break;
 				}
+				emuPartition = m_cfg.getInt(WII_DOMAIN, "savepartition");
 				if(emulate_mode == 3)//full
 				{
 					if(_TestEmuNand(m_cfg.getInt(WII_DOMAIN, "savepartition"), emuPath.c_str(), true))
 					{
-						emuPartition = m_cfg.getInt(WII_DOMAIN, "savepartition");
+						//emuPartition = m_cfg.getInt(WII_DOMAIN, "savepartition");
 						break;
 					}
 				}
