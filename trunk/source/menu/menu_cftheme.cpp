@@ -172,6 +172,8 @@ void CMenu::_showCFTheme(u32 curParam, int version, bool wide)
 	bool selected = CoverFlow.selected();
 	string domUnsel(fmt(_cfDomain(), version));
 	string domSel(fmt(_cfDomain(true), version));
+	//string domUnsel(fmt("%s_%i", cf_domain, version));
+	//string domSel(fmt("%s_%i_S", cf_domain, version));
 
 	CoverFlow.simulateOtherScreenFormat(p.scrnFmt && wide != m_vid.wide());
 	_setBg(m_mainBg, m_mainBgLQ);
@@ -219,7 +221,7 @@ void CMenu::_showCFTheme(u32 curParam, int version, bool wide)
 				}
 				break;
 			case CMenu::SCFParamDesc::PDT_FLOAT:
-				m_btnMgr.setText(m_cfThemeLblVal[k], sfmt("%.2f", m_theme.getFloat(domain, key)));
+				m_btnMgr.setText(m_cfThemeLblVal[k], sfmt("%.2f", m_coverflow.getFloat(domain, key)));
 				for (int j = 1; j < 4; ++j)
 				{
 					m_btnMgr.hide(m_cfThemeLblVal[k + j]);
@@ -232,7 +234,7 @@ void CMenu::_showCFTheme(u32 curParam, int version, bool wide)
 				break;
 			case CMenu::SCFParamDesc::PDT_V3D:
 			{
-				Vector3D v(m_theme.getVector3D(domain, key));
+				Vector3D v(m_coverflow.getVector3D(domain, key));
 				m_btnMgr.setText(m_cfThemeLblVal[k + 0], sfmt("%.2f", v.x));
 				m_btnMgr.setText(m_cfThemeLblVal[k + 1], sfmt("%.2f", v.y));
 				m_btnMgr.setText(m_cfThemeLblVal[k + 2], sfmt("%.2f", v.z));
@@ -249,7 +251,7 @@ void CMenu::_showCFTheme(u32 curParam, int version, bool wide)
 			}
 			case CMenu::SCFParamDesc::PDT_COLOR:
 			{
-				CColor color(m_theme.getColor(domain, key));
+				CColor color(m_coverflow.getColor(domain, key));
 				m_btnMgr.setText(m_cfThemeLblVal[k + 0], sfmt("%02X", color.r));
 				m_btnMgr.setText(m_cfThemeLblVal[k + 1], sfmt("%02X", color.g));
 				m_btnMgr.setText(m_cfThemeLblVal[k + 2], sfmt("%02X", color.b));
@@ -263,7 +265,7 @@ void CMenu::_showCFTheme(u32 curParam, int version, bool wide)
 				break;
 			}
 			case CMenu::SCFParamDesc::PDT_BOOL:
-				m_btnMgr.setText(m_cfThemeLblVal[k], m_theme.getBool(domain, key) ? L"On" : L"Off");
+				m_btnMgr.setText(m_cfThemeLblVal[k], m_coverflow.getBool(domain, key) ? L"On" : L"Off");
 				for (int j = 1; j < 4; ++j)
 				{
 					m_btnMgr.hide(m_cfThemeLblVal[k + j]);
@@ -275,7 +277,7 @@ void CMenu::_showCFTheme(u32 curParam, int version, bool wide)
 				m_btnMgr.show(m_cfThemeBtnValP[k]);
 				break;
 			case CMenu::SCFParamDesc::PDT_INT:
-				m_btnMgr.setText(m_cfThemeLblVal[k], sfmt("%i", m_theme.getInt(domain, key)));
+				m_btnMgr.setText(m_cfThemeLblVal[k], sfmt("%i", m_coverflow.getInt(domain, key)));
 				for (int j = 1; j < 4; ++j)
 				{
 					m_btnMgr.hide(m_cfThemeLblVal[k + j]);
@@ -322,9 +324,12 @@ void CMenu::_cfTheme(void)
 		_mainLoopCommon(true);
 		if(BTN_HOME_PRESSED)
 		{
-			m_theme.clear();
-			m_theme.unload();
-			m_theme.load(fmt("%s/%s.ini", m_themeDir.c_str(), m_cfg.getString("GENERAL", "theme", "default").c_str()));
+			m_coverflow.clear();
+			m_coverflow.unload();
+			m_coverflow.load(fmt("%s/coverflows/%s.ini", m_themeDir.c_str(), m_cfg.getString("GENERAL", "theme", "default").c_str()));
+			if(!m_coverflow.loaded())
+				m_coverflow.load(fmt("%s/coverflows/default.ini", m_themeDir.c_str()));
+			//m_coverflow.load(fmt("%s/%s/coverflow.ini", m_themeDir.c_str(), m_cfg.getString("GENERAL", "theme", "default").c_str()));
 			break;
 		}
 		else if(BTN_UP_PRESSED)
@@ -348,7 +353,7 @@ void CMenu::_cfTheme(void)
 			string domSrc(fmt(_cfDomain(copySelected), copyVersion));
 			string domDst(fmt(_cfDomain(CoverFlow.selected()), cfVersion));
 			if (copyVersion != cfVersion || copySelected != CoverFlow.selected())
-				m_theme.copyDomain(domDst, domSrc);
+				m_coverflow.copyDomain(domDst, domSrc);
 			else if (copyWide != wide)
 				for (u32 i = 0; i < ARRAY_SIZE(CMenu::_cfParams); ++i)
 				{
@@ -363,11 +368,11 @@ void CMenu::_cfTheme(void)
 							else
 								keyDst += "_4_3";
 							if (p.paramType[k] == CMenu::SCFParamDesc::PDT_FLOAT)
-								m_theme.setFloat(domDst, keyDst, m_theme.getFloat(domSrc, keySrc));
+								m_coverflow.setFloat(domDst, keyDst, m_coverflow.getFloat(domSrc, keySrc));
 							else if (p.paramType[k] == CMenu::SCFParamDesc::PDT_V3D)
-								m_theme.setVector3D(domDst, keyDst, m_theme.getVector3D(domSrc, keySrc));
+								m_coverflow.setVector3D(domDst, keyDst, m_coverflow.getVector3D(domSrc, keySrc));
 							else if (p.paramType[k] == CMenu::SCFParamDesc::PDT_INT)
-								m_theme.setInt(domDst, keyDst, m_theme.getInt(domSrc, keySrc));
+								m_coverflow.setInt(domDst, keyDst, m_coverflow.getInt(domSrc, keySrc));
 						}
 				}
 				_showCFTheme(curParam, cfVersion, wide);
@@ -404,14 +409,17 @@ void CMenu::_cfTheme(void)
 			if (m_btnMgr.selected(m_cfThemeBtnSave))
 			{
 				CoverFlow.stopCoverLoader();
-				m_theme.save();
+				m_coverflow.save();
 				break;
 			}
 			else if (m_btnMgr.selected(m_cfThemeBtnCancel))
 			{
-				m_theme.clear();
-				m_theme.unload();
-				m_theme.load(fmt("%s/%s.ini", m_themeDir.c_str(), m_cfg.getString("GENERAL", "theme", "default").c_str()));
+				m_coverflow.clear();
+				m_coverflow.unload();
+				m_coverflow.load(fmt("%s/coverflows/%s.ini", m_themeDir.c_str(), m_cfg.getString("GENERAL", "theme", "default").c_str()));
+				if(!m_coverflow.loaded())
+					m_coverflow.load(fmt("%s/coverflows/default.ini", m_themeDir.c_str()));
+				//m_coverflow.load(fmt("%s/%s.ini", m_themeDir.c_str(), m_cfg.getString("GENERAL", "theme", "default").c_str()));
 				break;
 			}
 			else if (m_btnMgr.selected(m_cfThemeBtnAlt))
@@ -503,13 +511,13 @@ void CMenu::_cfParam(bool inc, int i, const CMenu::SCFParamDesc &p, int cfVersio
 			break;
 		case CMenu::SCFParamDesc::PDT_FLOAT:
 		{
-			float val = m_theme.getFloat(domain, key);
-			m_theme.setFloat(domain, key, min(max(p.minMaxVal[k][0], val + step), p.minMaxVal[k][1]));
+			float val = m_coverflow.getFloat(domain, key);
+			m_coverflow.setFloat(domain, key, min(max(p.minMaxVal[k][0], val + step), p.minMaxVal[k][1]));
 			break;
 		}
 		case CMenu::SCFParamDesc::PDT_V3D:
 		{
-			Vector3D v(m_theme.getVector3D(domain, key));
+			Vector3D v(m_coverflow.getVector3D(domain, key));
 			switch (i % 4)
 			{
 				case 0:
@@ -522,12 +530,12 @@ void CMenu::_cfParam(bool inc, int i, const CMenu::SCFParamDesc &p, int cfVersio
 					v.z = min(max(p.minMaxVal[k][0], v.z + step), p.minMaxVal[k][1]);
 					break;
 			}
-			m_theme.setVector3D(domain, key, v);
+			m_coverflow.setVector3D(domain, key, v);
 			break;
 		}
 		case CMenu::SCFParamDesc::PDT_COLOR:
 		{
-			CColor color(m_theme.getColor(domain, key));
+			CColor color(m_coverflow.getColor(domain, key));
 			switch (i % 4)
 			{
 				case 0:
@@ -543,25 +551,25 @@ void CMenu::_cfParam(bool inc, int i, const CMenu::SCFParamDesc &p, int cfVersio
 					color.a = min(max(0, color.a + (int)step), 0xFF);
 					break;
 			}
-			m_theme.setColor(domain, key, color);
+			m_coverflow.setColor(domain, key, color);
 			break;
 		}
 		case CMenu::SCFParamDesc::PDT_BOOL:
 		{
-			m_theme.setBool(domain, key, !m_theme.getBool(domain, key));
+			m_coverflow.setBool(domain, key, !m_coverflow.getBool(domain, key));
 			break;
 		}
 		case CMenu::SCFParamDesc::PDT_INT:
 		{
-			int val = m_theme.getInt(domain, key);
-			m_theme.setInt(domain, key, min(max((int)p.minMaxVal[k][0], val + (int)step), (int)p.minMaxVal[k][1]));
+			int val = m_coverflow.getInt(domain, key);
+			m_coverflow.setInt(domain, key, min(max((int)p.minMaxVal[k][0], val + (int)step), (int)p.minMaxVal[k][1]));
 			break;
 		}
 		case CMenu::SCFParamDesc::PDT_TXTSTYLE:
 		{
 			int i = styleToIdx(_textStyle(domain.c_str(), key.c_str(), CoverFlow.selected() ? FTGX_JUSTIFY_RIGHT | FTGX_ALIGN_TOP : FTGX_JUSTIFY_CENTER | FTGX_ALIGN_BOTTOM));
 			i = loopNum(i + (int)step, 9);
-			m_theme.setString(domain, key, styleToTxt(g_txtStyles[i]));
+			m_coverflow.setString(domain, key, styleToTxt(g_txtStyles[i]));
 			break;
 		}
 	}
@@ -569,6 +577,7 @@ void CMenu::_cfParam(bool inc, int i, const CMenu::SCFParamDesc &p, int cfVersio
 
 const char *CMenu::_cfDomain(bool selected)
 {
+	//return selected ? fmt("%s_%%i_S", cf_domain) : fmt("%s_%%i", cf_domain);
 	switch(m_current_view)
 	{
 		case COVERFLOW_PLUGIN:

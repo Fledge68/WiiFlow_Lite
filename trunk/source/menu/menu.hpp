@@ -74,6 +74,7 @@ private:
 	Config m_gcfg1;
 	Config m_gcfg2;
 	Config m_theme;
+	Config m_coverflow;
 	Config m_titles;
 	Config m_version;
 	vector<string> m_homebrewArgs;
@@ -85,6 +86,7 @@ private:
 	u8 *m_buffer;
 	u8 m_aa;
 	u8 m_numPlugins;
+	//const char *cf_domain;
 	bool m_bnr_settings;
 	bool m_directLaunch;
 	bool m_locked;
@@ -101,7 +103,6 @@ private:
 	u8 m_numCFVersions;
 
 	string m_sourceDir;
-	string m_miosDir;
 	string m_themeDataDir;
 	string m_appDir;
 	string m_imgsDir;
@@ -1121,7 +1122,7 @@ private:
 	volatile bool m_thrdDone;
 	vu64 m_thrdWritten;
 
-	GuiSound *_sound(CMenu::SoundSet &soundSet, const char *domain, const char *key, const u8 * snd, u32 len, const char *name, bool isAllocated);
+	GuiSound *_sound(CMenu::SoundSet &soundSet, const char *filename, const u8 * snd, u32 len, const char *name, bool isAllocated);
 	GuiSound *_sound(CMenu::SoundSet &soundSet, const char *domain, const char *key, const char *name);
 	u16 _textStyle(const char *domain, const char *key, u16 def);
 	s16 _addButton(const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color);

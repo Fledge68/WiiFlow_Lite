@@ -229,6 +229,10 @@ void CMenu::_sourceFlow()
 		m_current_view = COVERFLOW_HOMEBREW;
 		m_cfg.setBool(HOMEBREW_DOMAIN, "source", true);
 		m_catStartPage = m_source.getInt(btn_selected, "cat_page", 1);
+		/*if(m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox", true))
+			cf_domain = "_SMALLFLOW";
+		else
+			cf_domain = "_COVERFLOW";*/
 	}
 	else if(source == "allplugins")
 	{
@@ -257,11 +261,14 @@ void CMenu::_sourceFlow()
 					if(plugin_magic_nums == 1)
 					{
 						currentPartition = m_cfg.getInt("PLUGINS_PARTITION", itr->c_str(), 1);
+						//currentPartition = m_pluginscfg.getInt(itr->c_str(), "partition", 1);
 						m_cfg.setInt(PLUGIN_DOMAIN, "partition", currentPartition);
+						//cf_domain = m_pluginscfg.getString(itr->c_str(), "flow", "_COVERFLOW").c_str();
 					}
 			}
 		}
 		m_catStartPage = m_source.getInt(btn_selected, "cat_page", 1);
+		//cf_domain = m_pluginscfg.getString(btn_selected, "flow", "_COVERFLOW").c_str();
 		int layout = m_source.getInt(btn_selected, "emuflow", 0);
 		if(layout > 0)
 			m_cfg.setInt(PLUGIN_DOMAIN, "last_cf_mode", layout);
@@ -364,6 +371,7 @@ bool CMenu::_Source()
 				m_catStartPage = m_source.getInt(fmt("BUTTON_%i", sourceBtn), "cat_page", 1);
 				if(m_source.getString(fmt("BUTTON_%i", sourceBtn), "source") == "plugin")
 				{
+					//cf_domain = m_source.getString(fmt("BUTTON_%i", sourceBtn), "flow", "_COVERFLOW").c_str();
 					int layout = m_source.getInt(fmt("BUTTON_%i", sourceBtn), "emuflow", 0);
 					if(layout > 0)
 						m_cfg.setInt(PLUGIN_DOMAIN, "last_cf_mode", layout);
@@ -378,6 +386,10 @@ bool CMenu::_Source()
 						m_clearCats = false;
 					}
 				}
+				/*if(m_source.getString(fmt("BUTTON_%i", sourceBtn), "source") == "homebrew" && m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox", true))
+					cf_domain = "_SMALLFLOW";
+				else
+					cf_domain = "_COVERFLOW";*/
 			}
 			if(selectedBtns == 0)
 				m_cfg.setBool(WII_DOMAIN, "source", true);
@@ -494,6 +506,10 @@ bool CMenu::_Source()
 							{
 								m_cfg.setBool(HOMEBREW_DOMAIN, "source", true);
 								m_catStartPage = m_source.getInt(btn_selected, "cat_page", 1);
+								/*if(m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox", true))
+									cf_domain = "_SMALLFLOW";
+								else
+									cf_domain = "_COVERFLOW";*/
 							}
 						}
 						else if(source == "allplugins")
@@ -537,6 +553,7 @@ bool CMenu::_Source()
 									}
 								}
 								m_catStartPage = m_source.getInt(btn_selected, "cat_page", 1);
+								//cf_domain = m_source.getString(fmt("BUTTON_%i", sourceBtn), "flow", "_COVERFLOW").c_str();
 								int layout = m_source.getInt(btn_selected, "emuflow", 0);
 								if(layout > 0)
 									m_cfg.setInt(PLUGIN_DOMAIN, "last_cf_mode", layout);

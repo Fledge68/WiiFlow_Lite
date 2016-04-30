@@ -218,6 +218,9 @@ void CMenu::LoadView(void)
 		/* fail */
 		m_source_autoboot = false;
 	}
+	// Coverflow Count
+	//m_numCFVersions = min(max(2, m_coverflow.getInt(cf_domain, "number_of_modes", 2)), 15);
+	m_numCFVersions = min(max(2, m_coverflow.getInt("_COVERFLOW", "number_of_modes", 2)), 15);
 	_showMain();
 	_initCF();
 	_loadCFLayout(m_cfg.getInt(_domainFromView(), "last_cf_mode", 1));
@@ -250,6 +253,7 @@ void CMenu::exitHandler(int ExitTo)
 
 int CMenu::main(void)
 {
+	//cf_domain = "_COVERFLOW";
 	wstringEx curLetter;
 	string prevTheme = m_cfg.getString("GENERAL", "theme", "default");
 	parental_homebrew = m_cfg.getBool(HOMEBREW_DOMAIN, "parental", false);
@@ -322,6 +326,10 @@ int CMenu::main(void)
 					if(m_cfg.getBool("SOURCEFLOW", "enabled", false))//if sourceflow show it
 					{
 						m_sourceflow = true;
+						/*if(m_cfg.getBool(_domainFromView(), "smallbox", true))
+							cf_domain = "_SMALLFLOW";
+						else
+							cf_domain = "_COVERFLOW";*/
 						LoadView();
 					}
 					else //show source menu
@@ -397,6 +405,10 @@ int CMenu::main(void)
 					m_current_view = COVERFLOW_WII;
 				_clearSources();
 				m_cfg.setBool(_domainFromView(), "source", true);
+				/*if(m_current_view == COVERFLOW_HOMEBREW && m_cfg.getBool(_domainFromView(), "smallbox", true))
+					cf_domain = "_SMALLFLOW";
+				else
+					cf_domain = "_COVERFLOW";*/
 				m_catStartPage = 1;
 				m_combined_view = false;
 				LoadView();
