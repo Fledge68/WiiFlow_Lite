@@ -1,8 +1,8 @@
 #define APP_NAME				"WiiFlow Lite"
 #define APP_VERSION				"Beta 4.2.2"
 
-#define APPDATA_DIR				"wiiflow"
-#define APPDATA_DIR2			"apps/wiiflow_lite"
+#define APP_DATA_DIR			"wiiflow"
+#define APPS_DIR				"apps/wiiflow_lite"
 
 #define EMU_NANDS_DIR			"nands"
 #define GAMES_DIR				"%s:/wbfs"
@@ -27,8 +27,8 @@
 #define MUSIC_DOMAIN			"MUSIC"
 #define FTP_DOMAIN				"FTP"
 
-#define DEVELOPERS				"FIX94, Fledge68, OverjoY"
-#define PAST_DEVELOPERS			"Hibernatus, Narolez, Hulk, Miigotu, r-win"
+#define DEVELOPERS				"Fledge68"
+#define PAST_DEVELOPERS			"FIX94, OverjoY, Hibernatus, Narolez, Hulk, Miigotu, r-win"
 #define LOADER_AUTHOR			"Kwiirk, Waninkoko, Hermes"
 #define GUI_AUTHOR				"Hibernatus"
 
