@@ -518,10 +518,11 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 			UpdateCache(COVERFLOW_PLUGIN);
 		if(upd_chan)
 			UpdateCache(COVERFLOW_CHANNEL);
-		_loadList();
+		//_loadList();
 		_hideWaitMessage();
-		_initCF();
-		CoverFlow.findId(cfPos, true);
+		//_initCF();
+		//CoverFlow.findId(cfPos, true);
+		m_load_view = true;
 		Close_Inputs();
 		Open_Inputs();
 		for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
@@ -535,8 +536,9 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 			currentPartition = SD;
 			UpdateCache(COVERFLOW_GAMECUBE);
 		}
-		_loadList();
-		_initCF();
+		//_loadList();
+		//_initCF();
+		m_load_view = true;
 	}
 	return done;
 }

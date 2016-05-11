@@ -2026,8 +2026,9 @@ int CMenu::_gametdbDownloaderAsync()
 
 				m_GameTDBLoaded = true;
 
-				_loadList();
-				_initCF();
+				m_load_view = true;
+				//_loadList();
+				//_initCF();
 			}
 		}
 	}

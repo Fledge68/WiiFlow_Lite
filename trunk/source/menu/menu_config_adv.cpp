@@ -123,7 +123,7 @@ int CMenu::_configAdv(void)
 				s8 direction = m_btnMgr.selected(m_configAdvBtnCurThemeP) ? 1 : -1;
 				curTheme = loopNum(curTheme + direction, (int)themes.size());
 				m_cfg.setString("GENERAL", "theme", themes[curTheme]);
-				m_cfg.setInt(_domainFromView(), "last_cf_mode", 1);
+				//m_cfg.setInt(_domainFromView(), "last_cf_mode", 1);
 				_showConfigAdv();
 			}
 			else if(m_btnMgr.selected(m_configAdvBtnLanguage))
@@ -134,7 +134,7 @@ int CMenu::_configAdv(void)
 			}
 			else if(m_btnMgr.selected(m_configAdvBtnCFTheme))
 			{
-				m_cfNeedsUpdate = true;
+				m_load_view = true;
 				_hideConfigAdv();
 				_cfTheme();
 				_showConfigAdv();
@@ -142,14 +142,8 @@ int CMenu::_configAdv(void)
 		}
 	}
 	_hideConfigAdv();
-	if (m_gameList.empty() || lang_changed)
-	{
-		//if(lang_changed)
-			//m_gameList.SetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
-		
-		_loadList();
-	}
-	lang_changed = false;
+	if(lang_changed)
+		m_load_view = true;
 
 	return change;
 }

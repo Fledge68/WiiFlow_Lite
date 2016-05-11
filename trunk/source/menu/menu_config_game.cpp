@@ -450,7 +450,7 @@ void CMenu::_showGameSettings(void)
 	if(GameHdr->type == TYPE_GC_GAME)
 	{
 		//widescreen is shared by all, in the future might seperate them
-		m_btnMgr.setText(m_gameSettingsBtnWidescreen, _optBoolToString(m_gcfg2.getOptBool(id, "widescreen", m_cfg.getBool(GC_DOMAIN, "dm_widescreen", 0))));
+		m_btnMgr.setText(m_gameSettingsBtnWidescreen, _optBoolToString(m_gcfg2.getOptBool(id, "widescreen", m_cfg.getBool(GC_DOMAIN, "widescreen", 0))));
 		m_btnMgr.setText(m_gameSettingsBtnDevoMemcardEmu, _optBoolToString(m_gcfg2.getOptBool(id, "devo_memcard_emu", 0)));
 		m_btnMgr.setText(m_gameSettingsBtnUSB_HID, _optBoolToString(m_gcfg2.getOptBool(id, "USB_HID", m_cfg.getBool(GC_DOMAIN, "USB_HID", 0))));
 		m_btnMgr.setText(m_gameSettingsBtnNATIVE_CTL, _optBoolToString(m_gcfg2.getOptBool(id, "NATIVE_CTL", m_cfg.getBool(GC_DOMAIN, "NATIVE_CTL", 0))));

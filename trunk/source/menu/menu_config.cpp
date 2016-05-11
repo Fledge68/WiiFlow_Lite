@@ -67,7 +67,7 @@ void CMenu::_showConfig(void)
 		const char *partitionname = disable ? CHANNEL_DOMAIN : DeviceName[m_emuSaveNand ? m_cfg.getInt(WII_DOMAIN, "savepartition", m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0)) : m_cfg.getInt(_domainFromView(), "partition", 0)];
 		m_btnMgr.setText(m_configLblPartition, upperCase(partitionname));
 		
-		if(m_current_view == COVERFLOW_CHANNEL || m_current_view == COVERFLOW_WII)
+		if(m_current_view != COVERFLOW_HOMEBREW && m_current_view != COVERFLOW_GAMECUBE && m_current_view != COVERFLOW_MAX)
 		{
 			m_btnMgr.show(m_configLblCfg4);
 			m_btnMgr.show(m_configBtnCfg4);
@@ -79,7 +79,6 @@ void CMenu::_showConfig(void)
 
 void CMenu::_config(int page)
 {
-	m_cfNeedsUpdate = false;
 	int change = CONFIG_PAGE_NO_CHANGE;
 	while(!m_exit)
 	{
@@ -115,11 +114,6 @@ void CMenu::_config(int page)
 			else if (page < 0)
 				page = _nbCfgPages;
 		}
-	}
-	if(m_cfNeedsUpdate)
-	{
-		m_cfg.save();
-		_initCF();
 	}
 }
 
@@ -164,15 +158,12 @@ int CMenu::_config1(void)
 			break;
 
 		if (BTN_HOME_PRESSED || BTN_B_PRESSED)
-		{
-			_setPartition();
 			break;
-		}
 		if (BTN_A_PRESSED)
 		{
 			if (m_btnMgr.selected(m_configBtnDownload))
 			{
-				m_cfNeedsUpdate = true;
+				m_load_view = true;
 				CoverFlow.stopCoverLoader(true);
 				_hideConfig();
 				_download();
@@ -185,7 +176,7 @@ int CMenu::_config1(void)
 				_hideConfig();
 				if (_code(code) && memcmp(code, m_cfg.getString("GENERAL", "parent_code", "").c_str(), 4) == 0)
 				{
-					m_cfNeedsUpdate = true;
+					m_load_view = true;
 					m_locked = false;
 				}
 				else
@@ -198,7 +189,7 @@ int CMenu::_config1(void)
 				_hideConfig();
 				if (_code(code, true))
 				{
-					m_cfNeedsUpdate = true;
+					m_load_view = true;
 					m_cfg.setString("GENERAL", "parent_code", string(code, 4).c_str());
 					m_locked = true;
 				}
@@ -208,12 +199,11 @@ int CMenu::_config1(void)
 			{
 				s8 direction = m_btnMgr.selected(m_configBtnPartitionP) ? 1 : -1;
 				_setPartition(direction);
-				m_load_view = true;
 				_showConfig();
 			}
-			else if (m_btnMgr.selected(m_configBtnCfg4) && m_current_view != COVERFLOW_MAX)
+			else if (m_btnMgr.selected(m_configBtnCfg4))
 			{
-				m_cfNeedsUpdate = true;
+				m_load_view = true;
 				CoverFlow.stopCoverLoader(true);
 				_hideConfig();
 				if(m_current_view != COVERFLOW_PLUGIN)
@@ -226,13 +216,8 @@ int CMenu::_config1(void)
 		}
 	}
 	if(currentPartition != bCurrentPartition)
-	{	
-		_showWaitMessage();
-		_loadList();
-		_hideWaitMessage();
-	}
-	_hideConfig();
-	
+		m_load_view = true;
+	_hideConfig();	
 	return change;
 }
 

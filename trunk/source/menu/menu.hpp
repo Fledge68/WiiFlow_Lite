@@ -77,6 +77,7 @@ private:
 	Config m_coverflow;
 	Config m_titles;
 	Config m_version;
+	
 	vector<string> m_homebrewArgs;
 	u8 *m_base_font;
 	u32 m_base_font_size;
@@ -85,22 +86,21 @@ private:
 	u8 *m_file;
 	u8 *m_buffer;
 	u8 m_aa;
+	u8 m_numCFVersions;
 	u8 m_numPlugins;
-	//const char *cf_domain;
+	const char *cf_domain;
+	bool m_use_source;
+	bool m_multisource;
+	bool m_sourceflow;
+	bool m_load_view;
 	bool m_bnr_settings;
 	bool m_directLaunch;
 	bool m_locked;
 	bool m_favorites;
 	bool m_music_info;
-	bool m_use_source;
 	bool m_allow_random;
-	bool m_multisource;
-	bool m_load_view;
-	bool m_sourceflow;
 	s16 m_showtimer;
 	string m_curLanguage;
-
-	u8 m_numCFVersions;
 
 	string m_sourceDir;
 	string m_themeDataDir;
@@ -659,8 +659,6 @@ private:
 	bool  enable_wmote_roll;
 	time_t no_input_time;
 
-	bool m_cfNeedsUpdate;
-
 	void SetupInput(bool reset_pos = false);
 	void ScanInput(void);
 	u32 NoInputTime(void);
@@ -1000,6 +998,9 @@ private:
 	void _showPaths(void);
 	void _showFTP(void);
 
+	void _setSrcOptions(void);
+	bool _sideCover(const char *magic);
+	bool _shortCover(const char *magic);
 	void _clearSources(void);
 	void _updateSourceBtns(void);
 	void _updatePluginText(void);
@@ -1075,7 +1076,6 @@ private:
 	void _netInit();
 	bool _loadFile(u8 * &buffer, u32 &size, const char *path, const char *file);
 	int _loadIOS(u8 ios, int userIOS, string id, bool RealNAND_Channels = false);
-	bool _QF_Game(const char *game_id);
 	void _launch(const dir_discHdr *hdr);
 	void _launchGame(dir_discHdr *hdr, bool dvd);
 	void _launchChannel(dir_discHdr *hdr);
@@ -1124,7 +1124,7 @@ private:
 
 	GuiSound *_sound(CMenu::SoundSet &soundSet, const char *filename, const u8 * snd, u32 len, const char *name, bool isAllocated);
 	GuiSound *_sound(CMenu::SoundSet &soundSet, const char *domain, const char *key, const char *name);
-	u16 _textStyle(const char *domain, const char *key, u16 def);
+	u16 _textStyle(const char *domain, const char *key, u16 def, bool coverflow = false);
 	s16 _addButton(const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color);
 	s16 _addPicButton(const char *domain, TexData &texNormal, TexData &texSelected, int x, int y, u32 width, u32 height);
 	s16 _addTitle(const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, s16 style);

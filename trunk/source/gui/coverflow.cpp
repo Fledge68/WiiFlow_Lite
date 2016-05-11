@@ -1140,7 +1140,7 @@ Vector3D CCoverFlow::_cameraMoves(void)
 		cos(tick * lo.cameraOscSpeed.z) * lo.cameraOscAmp.z);
 }
 
-Vector3D CCoverFlow::_coverMovesA(void)
+Vector3D CCoverFlow::_coverMovesA(void)//angle
 {
 	SLayout &lo = m_selected ? m_loSelected : m_loNormal;
 	float tick = (float)m_tickCount * 0.005f;
@@ -1149,7 +1149,7 @@ Vector3D CCoverFlow::_coverMovesA(void)
 		cos(tick * lo.coverOscASpeed.z) * lo.coverOscAAmp.z);
 }
 
-Vector3D CCoverFlow::_coverMovesP(void)
+Vector3D CCoverFlow::_coverMovesP(void)//position
 {
 	SLayout &lo = m_selected ? m_loSelected : m_loNormal;
 	float tick = (float)m_tickCount * 0.005f;
