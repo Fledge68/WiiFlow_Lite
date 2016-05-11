@@ -4,7 +4,8 @@
 #include "lockMutex.hpp"
 #include "loader/wbfs.h"
 
-int version_num = 0, num_versions = 0, i;
+int version_num = 0, num_versions = 0;
+static int i;
 const int CMenu::SVN_REV_NUM = atoi(SVN_REV);
 int CMenu::_version[9] = {0, SVN_REV_NUM, SVN_REV_NUM, SVN_REV_NUM, SVN_REV_NUM, SVN_REV_NUM, SVN_REV_NUM, SVN_REV_NUM, SVN_REV_NUM};
 

@@ -121,6 +121,7 @@ int CMenu::_config4(void)
 				_hideConfig4();
 				_Paths();
 				_showConfig4();
+				m_load_view = true;
 				break;
 			}
 			else if (m_btnMgr.selected(m_config4BtnReturnToP))

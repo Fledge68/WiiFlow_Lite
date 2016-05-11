@@ -112,9 +112,9 @@ void CMenu::_PluginSettings()
 	while(!m_exit)
 	{
 		_mainLoopCommon();
-		if(BTN_HOME_PRESSED || BTN_B_PRESSED)
+		if(BTN_HOME_PRESSED || BTN_B_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_pluginBtnBack)))
 		{
-			m_cfg.save();
+			//m_cfg.save();
 			break;
 		}
 		else if(BTN_UP_PRESSED)
@@ -141,11 +141,6 @@ void CMenu::_PluginSettings()
 		}
 		if(BTN_A_PRESSED)
 		{
-			if(m_btnMgr.selected(m_pluginBtnBack))
-			{
-				m_cfg.save();
-				break;
-			}
 			u32 IteratorHelp = (Plugin_curPage - 1) * 10;
 			for(u8 i = 0; i < min(IteratorHelp+10, (u32)m_max_plugins)-IteratorHelp+1; ++i)
 			{
@@ -166,7 +161,8 @@ void CMenu::_PluginSettings()
 		}
 	}
 	_hidePluginSettings();
-	_loadList();
+	//_loadList();
+	m_load_view = true;
 }
 
 void CMenu::_initPluginSettingsMenu()

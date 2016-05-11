@@ -19,7 +19,7 @@ s16 m_categoryLblUser[4];
 TexData m_categoryBg;
 
 vector<char> m_categories;
-u8 curPage;
+static u8 curPage;
 u8 lastBtn;
 const char *catSettings;
 string id;

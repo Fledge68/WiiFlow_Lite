@@ -75,7 +75,7 @@ bool CMenu::_Home(void)
 			{
 				//m_gameList.SetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
 				UpdateCache(m_current_view);
-				LoadView();
+				m_load_view = true;
 				break;
 			}
 			else if(m_btnMgr.selected(m_homeBtnUpdate) && !m_locked)

@@ -43,7 +43,7 @@ const CMenu::SCFParamDesc CMenu::_cfParams[] = {
 	{ { CMenu::SCFParamDesc::PDT_FLOAT, CMenu::SCFParamDesc::PDT_FLOAT, CMenu::SCFParamDesc::PDT_TXTSTYLE, CMenu::SCFParamDesc::PDT_TXTSTYLE },
 		CMenu::SCFParamDesc::PDD_BOTH, true, "Title Width", { "Center", "Side", "Center Style", "Side Style" },
 		{ "text_center_wrap_width", "text_side_wrap_width", "text_center_style", "text_side_style" },
-		{ 1.f, 1.f, 1.f, 1.f },
+		{ 10.f, 10.f, 1.f, 1.f },
 		{ { 50.f, 3000.f }, { 50.f, 3000.f }, { 0.f, 8.f }, { 0.f, 8.f } } },
 	{ { CMenu::SCFParamDesc::PDT_INT, CMenu::SCFParamDesc::PDT_INT, CMenu::SCFParamDesc::PDT_EMPTY, CMenu::SCFParamDesc::PDT_EMPTY },
 		CMenu::SCFParamDesc::PDD_NORMAL, true, "Dimensions", { "Rows", "Columns", "", "" },
@@ -170,10 +170,8 @@ void CMenu::_showCFTheme(u32 curParam, int version, bool wide)
 {
 	const CMenu::SCFParamDesc &p = CMenu::_cfParams[curParam];
 	bool selected = CoverFlow.selected();
-	string domUnsel(fmt(_cfDomain(), version));
-	string domSel(fmt(_cfDomain(true), version));
-	//string domUnsel(fmt("%s_%i", cf_domain, version));
-	//string domSel(fmt("%s_%i_S", cf_domain, version));
+	string domUnsel(fmt("%s_%i", cf_domain, version));
+	string domSel(fmt("%s_%i_S", cf_domain, version));
 
 	CoverFlow.simulateOtherScreenFormat(p.scrnFmt && wide != m_vid.wide());
 	_setBg(m_mainBg, m_mainBgLQ);
@@ -289,7 +287,7 @@ void CMenu::_showCFTheme(u32 curParam, int version, bool wide)
 				m_btnMgr.show(m_cfThemeBtnValP[k]);
 				break;
 			case CMenu::SCFParamDesc::PDT_TXTSTYLE:
-				m_btnMgr.setText(m_cfThemeLblVal[k], styleToTxt(_textStyle(domain.c_str(), key.c_str(), CoverFlow.selected() ? FTGX_JUSTIFY_RIGHT | FTGX_ALIGN_TOP : FTGX_JUSTIFY_CENTER | FTGX_ALIGN_BOTTOM)));
+				m_btnMgr.setText(m_cfThemeLblVal[k], styleToTxt(_textStyle(domain.c_str(), key.c_str(), CoverFlow.selected() ? FTGX_JUSTIFY_RIGHT | FTGX_ALIGN_TOP : FTGX_JUSTIFY_CENTER | FTGX_ALIGN_BOTTOM, true)));
 				for (int j = 1; j < 4; ++j)
 				{
 					m_btnMgr.hide(m_cfThemeLblVal[k + j]);
@@ -329,7 +327,6 @@ void CMenu::_cfTheme(void)
 			m_coverflow.load(fmt("%s/coverflows/%s.ini", m_themeDir.c_str(), m_cfg.getString("GENERAL", "theme", "default").c_str()));
 			if(!m_coverflow.loaded())
 				m_coverflow.load(fmt("%s/coverflows/default.ini", m_themeDir.c_str()));
-			//m_coverflow.load(fmt("%s/%s/coverflow.ini", m_themeDir.c_str(), m_cfg.getString("GENERAL", "theme", "default").c_str()));
 			break;
 		}
 		else if(BTN_UP_PRESSED)
@@ -419,7 +416,6 @@ void CMenu::_cfTheme(void)
 				m_coverflow.load(fmt("%s/coverflows/%s.ini", m_themeDir.c_str(), m_cfg.getString("GENERAL", "theme", "default").c_str()));
 				if(!m_coverflow.loaded())
 					m_coverflow.load(fmt("%s/coverflows/default.ini", m_themeDir.c_str()));
-				//m_coverflow.load(fmt("%s/%s.ini", m_themeDir.c_str(), m_cfg.getString("GENERAL", "theme", "default").c_str()));
 				break;
 			}
 			else if (m_btnMgr.selected(m_cfThemeBtnAlt))
@@ -567,7 +563,7 @@ void CMenu::_cfParam(bool inc, int i, const CMenu::SCFParamDesc &p, int cfVersio
 		}
 		case CMenu::SCFParamDesc::PDT_TXTSTYLE:
 		{
-			int i = styleToIdx(_textStyle(domain.c_str(), key.c_str(), CoverFlow.selected() ? FTGX_JUSTIFY_RIGHT | FTGX_ALIGN_TOP : FTGX_JUSTIFY_CENTER | FTGX_ALIGN_BOTTOM));
+			int i = styleToIdx(_textStyle(domain.c_str(), key.c_str(), CoverFlow.selected() ? FTGX_JUSTIFY_RIGHT | FTGX_ALIGN_TOP : FTGX_JUSTIFY_CENTER | FTGX_ALIGN_BOTTOM, true));
 			i = loopNum(i + (int)step, 9);
 			m_coverflow.setString(domain, key, styleToTxt(g_txtStyles[i]));
 			break;
@@ -577,8 +573,8 @@ void CMenu::_cfParam(bool inc, int i, const CMenu::SCFParamDesc &p, int cfVersio
 
 const char *CMenu::_cfDomain(bool selected)
 {
-	//return selected ? fmt("%s_%%i_S", cf_domain) : fmt("%s_%%i", cf_domain);
-	switch(m_current_view)
+	return selected ? fmt("%s_%%i_S", cf_domain) : fmt("%s_%%i", cf_domain);
+	/*switch(m_current_view)
 	{
 		case COVERFLOW_PLUGIN:
 			return selected ? "_EMUFLOW_%i_S" : "_EMUFLOW_%i";
@@ -586,7 +582,7 @@ const char *CMenu::_cfDomain(bool selected)
 			return selected ? "_BREWFLOW_%i_S" : "_BREWFLOW_%i";
 		default:
 			return selected ? "_COVERFLOW_%i_S" : "_COVERFLOW_%i";
-	}
+	}*/
 }
 
 void CMenu::_initCFThemeMenu()

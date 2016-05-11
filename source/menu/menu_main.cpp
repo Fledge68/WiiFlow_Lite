@@ -170,9 +170,46 @@ void CMenu::LoadView(void)
 	m_favorites = false;
 	if(m_cfg.getBool("GENERAL", "save_favorites_mode", false))
 		m_favorites = m_cfg.getBool(_domainFromView(), "favorites", false);
+	
+	cf_domain = "_COVERFLOW";
+	if(m_current_view == COVERFLOW_HOMEBREW && m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox", false))
+		cf_domain = "_SMALLFLOW";
+	if(m_current_view == COVERFLOW_PLUGIN)
+	{
+		vector<bool> pluginsEnabled = m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
+		if(pluginsEnabled.size() > 0)
+		{
+			int sdc = 0;
+			int shc = 0;
+			for(u8 i = 0; i < pluginsEnabled.size(); ++i)
+			{
+				if(pluginsEnabled[i] == true)
+				{
+					strncpy(m_plugin.PluginMagicWord, fmt("%08x", m_plugin.getPluginMagic(i)), 8);
+					if(enabledPluginsCount == 1)
+					{
+						currentPartition = m_cfg.getInt("PLUGINS_PARTITION", m_plugin.PluginMagicWord, 1); 		
+						m_cfg.setInt(PLUGIN_DOMAIN, "partition", currentPartition);
+					}
+					if(_sideCover(m_plugin.PluginMagicWord))
+						sdc++;
+					else if(_shortCover(m_plugin.PluginMagicWord))
+						shc++;
+				}
+			}
+			if(sdc == enabledPluginsCount)
+				cf_domain = "_SIDEFLOW";
+			else if(shc == enabledPluginsCount)
+				cf_domain = "_SHORTFLOW";
+		}
+	}
 		
 	if(m_sourceflow)
 	{
+		if(m_cfg.getBool(_domainFromView(), "smallbox", true))
+			cf_domain = "_SMALLFLOW";
+		else
+			cf_domain = "_COVERFLOW";
 		m_gameList.clear();
 		string cacheDir(fmt("%s/sourceflow.db", m_listCacheDir.c_str()));
 		bool updateCache = m_cfg.getBool("SOURCEFLOW", "update_cache");
@@ -219,11 +256,10 @@ void CMenu::LoadView(void)
 		m_source_autoboot = false;
 	}
 	// Coverflow Count
-	//m_numCFVersions = min(max(2, m_coverflow.getInt(cf_domain, "number_of_modes", 2)), 15);
-	m_numCFVersions = min(max(2, m_coverflow.getInt("_COVERFLOW", "number_of_modes", 2)), 15);
+	m_numCFVersions = min(max(1, m_coverflow.getInt(cf_domain, "number_of_modes", 1)), 15);
 	_showMain();
 	_initCF();
-	_loadCFLayout(m_cfg.getInt(_domainFromView(), "last_cf_mode", 1));
+	_loadCFLayout(min(max(1, m_cfg.getInt(_domainFromView(), "last_cf_mode", 1)), (int)m_numCFVersions));
 	CoverFlow.applySettings();
 
 	if(m_sourceflow)
@@ -253,7 +289,7 @@ void CMenu::exitHandler(int ExitTo)
 
 int CMenu::main(void)
 {
-	//cf_domain = "_COVERFLOW";
+	cf_domain = "_COVERFLOW";
 	wstringEx curLetter;
 	string prevTheme = m_cfg.getString("GENERAL", "theme", "default");
 	parental_homebrew = m_cfg.getBool(HOMEBREW_DOMAIN, "parental", false);
@@ -326,10 +362,6 @@ int CMenu::main(void)
 					if(m_cfg.getBool("SOURCEFLOW", "enabled", false))//if sourceflow show it
 					{
 						m_sourceflow = true;
-						/*if(m_cfg.getBool(_domainFromView(), "smallbox", true))
-							cf_domain = "_SMALLFLOW";
-						else
-							cf_domain = "_COVERFLOW";*/
 						LoadView();
 					}
 					else //show source menu
@@ -359,7 +391,6 @@ int CMenu::main(void)
 					LoadView();
 					continue;
 				}
-				//_showMain();
 				if(BTN_B_HELD)
 					bUsed = true;
 				if(m_load_view)
@@ -371,9 +402,12 @@ int CMenu::main(void)
 			{
 				if(_Home()) //exit wiiflow
 					break;
-				_showMain();
 				if(BTN_B_HELD)
 					bUsed = true;
+				if(m_load_view)
+					LoadView();
+				else
+					_showMain();
 			}
 		}
 		else if(BTN_A_PRESSED)
@@ -387,9 +421,12 @@ int CMenu::main(void)
 				_hideMain();
 				if(_Home()) //exit wiiflow
 					break;
-				_showMain();
 				if(BTN_B_HELD)
 					bUsed = true;
+				if(m_load_view)
+					LoadView();
+				else
+					_showMain();
 			}
 			else if(m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnWii) || m_btnMgr.selected(m_mainBtnGamecube) || m_btnMgr.selected(m_mainBtnHomebrew) || m_btnMgr.selected(m_mainBtnPlugin))
 			{
@@ -405,15 +442,11 @@ int CMenu::main(void)
 					m_current_view = COVERFLOW_WII;
 				_clearSources();
 				m_cfg.setBool(_domainFromView(), "source", true);
-				/*if(m_current_view == COVERFLOW_HOMEBREW && m_cfg.getBool(_domainFromView(), "smallbox", true))
-					cf_domain = "_SMALLFLOW";
-				else
-					cf_domain = "_COVERFLOW";*/
 				m_catStartPage = 1;
 				m_combined_view = false;
 				LoadView();
 			}
-			else if(m_btnMgr.selected(m_mainBtnInstall))
+			else if(m_btnMgr.selected(m_mainBtnInstall))//used when no games found
 			{
 				if(!m_locked)
 				{
@@ -424,7 +457,7 @@ int CMenu::main(void)
 						bUsed = true;
 				}
 			}
-			else if(m_btnMgr.selected(m_mainBtnSelPart))
+			else if(m_btnMgr.selected(m_mainBtnSelPart))//used when no games found
 			{
 				_hideMain();
 				_config(1);
@@ -504,7 +537,10 @@ int CMenu::main(void)
 					if(BTN_B_HELD)
 						bUsed = true;
 					CoverFlow.cancel();
-					_showMain();
+					if(m_load_view)
+						LoadView();
+					else
+						_showMain();
 				}
 			}
 		}
@@ -671,22 +707,23 @@ int CMenu::main(void)
 			else if(BTN_MINUS_PRESSED && !m_locked  && !m_sourceflow)
 			{
 				bUsed = true;
-				const char *partition = NULL;
-				_showWaitMessage();
-				_hideMain();
+				//const char *partition = NULL;
+				//_showWaitMessage();
+				//_hideMain();
 				_setPartition(1);
-				if(m_current_view == COVERFLOW_CHANNEL && (!m_cfg.getBool(CHANNEL_DOMAIN, "emu_nand", false) || neek2o()))
+				/*if(m_current_view == COVERFLOW_CHANNEL && (!m_cfg.getBool(CHANNEL_DOMAIN, "emu_nand", false) || neek2o()))
 					partition = "NAND";
 				else
-					partition = DeviceName[currentPartition];
-				//gprintf("Next item: %s\n", partition);
+					partition = DeviceName[currentPartition];*/
+				LoadView();
+				/*//gprintf("Next item: %s\n", partition);
 				_loadList();
 				_showMain();
 				_initCF();
-				/* refresh AFTER reloading */
+				refresh AFTER reloading
 				m_showtimer = 120;
 				m_btnMgr.setText(m_mainLblNotice, sfmt("%s (%u) [%s]", _domainFromView(), m_gameList.size(), upperCase(partition).c_str()));
-				m_btnMgr.show(m_mainLblNotice);
+				m_btnMgr.show(m_mainLblNotice);*/
 			}
 		}
 
