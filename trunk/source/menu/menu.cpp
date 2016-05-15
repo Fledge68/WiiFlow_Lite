@@ -308,7 +308,13 @@ void CMenu::init()
 			}
 		}
 	}
-
+	
+	/* Check emuNAND paths even if not being used */
+	m_current_view = COVERFLOW_CHANNEL;
+	_validateEmuNand();
+	m_current_view = COVERFLOW_WII;
+	_validateEmuNand();
+	
 	/* Cache Reload Checks - Disabled for now
 	int ini_rev = m_cfg.getInt("GENERAL", "ini_rev", 0);
 	if(ini_rev != SVN_REV_NUM)

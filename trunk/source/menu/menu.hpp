@@ -1174,6 +1174,7 @@ private:
 	int _FindEmuPart(string &emuPath, bool searchvalid);
 	bool _checkSave(string id, bool nand);
 	bool _TestEmuNand(int epart, const char *path, bool indept);
+	void _validateEmuNand(void);
 
 	static u32 _downloadCheatFileAsync(void *obj);
 	static u32 _downloadBannerAsync(void *obj);

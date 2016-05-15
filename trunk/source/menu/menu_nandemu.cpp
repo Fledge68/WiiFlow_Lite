@@ -70,7 +70,9 @@ static void listEmuNands(const char * path, vector<string> &emuNands)
 			if(dir->d_type == DT_DIR)
 			{
 				emuNands.push_back(dir->d_name);
-				def = false;
+				string filename = dir->d_name;
+				if(filename == "default")
+					def = false;
 			}
 		}
 		closedir(d);
@@ -78,6 +80,44 @@ static void listEmuNands(const char * path, vector<string> &emuNands)
 	if(def)
 		emuNands.push_back("default");
 	sort(emuNands.begin(), emuNands.end());
+}
+
+void CMenu::_validateEmuNand(void)
+{
+	string emuNand;
+	int emuPart;
+	if(m_current_view == COVERFLOW_CHANNEL)
+	{
+		emuNand = m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default");
+		emuPart = m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0);
+	}
+	else
+	{
+		emuNand = m_cfg.getString(WII_DOMAIN, "current_save_emunand", m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default"));
+		emuPart = m_cfg.getInt(WII_DOMAIN, "savepartition", m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0));
+	}
+	if(!DeviceHandle.PartitionUsableForNandEmu(emuPart))
+	{
+		for(emuPart = SD; emuPart <= USB8; emuPart++)
+		{
+			if(DeviceHandle.PartitionUsableForNandEmu(emuPart))
+			{
+				if(m_current_view == COVERFLOW_CHANNEL)
+					m_cfg.setInt(CHANNEL_DOMAIN, "partition", emuPart);
+				else
+					m_cfg.setInt(WII_DOMAIN, "savepartition", emuPart);
+				break;
+			}
+		}
+	}
+	const char *tmpPath = fmt("/%s/%s", EMU_NANDS_DIR, emuNand.c_str());
+	if(!_TestEmuNand(emuPart, tmpPath, false))
+	{
+		if(m_current_view == COVERFLOW_CHANNEL)
+			m_cfg.setString(CHANNEL_DOMAIN, "current_emunand", "default");
+		else
+			m_cfg.setString(WII_DOMAIN, "current_save_emunand", "default");
+	}
 }
 
 static bool _saveExists(const char *path)
@@ -279,9 +319,9 @@ void CMenu::_showNandEmu(void)
 		m_btnMgr.show(m_nandemuBtnNandSelectP);
 		m_btnMgr.show(m_nandemuBtnNandSelectM);
 		if(m_current_view == COVERFLOW_CHANNEL)
-			m_btnMgr.setText(m_nandemuLblNandSelectVal, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default"));
+			m_btnMgr.setText(m_nandemuLblNandSelectVal, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand"));
 		else if(m_current_view == COVERFLOW_WII)
-			m_btnMgr.setText(m_nandemuLblNandSelectVal, m_cfg.getString(WII_DOMAIN, "current_save_emunand", m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default")));
+			m_btnMgr.setText(m_nandemuLblNandSelectVal, m_cfg.getString(WII_DOMAIN, "current_save_emunand"));
 	}
 	
 	for(u8 i = 0; i < ARRAY_SIZE(m_nandemuLblUser); ++i)
@@ -298,22 +338,24 @@ int CMenu::_NandEmuCfg(void)
 	int emuPart;
 	if(m_current_view == COVERFLOW_CHANNEL)
 	{
-		prevEmuNand = m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default");
-		emuPart = m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0);
+		prevEmuNand = m_cfg.getString(CHANNEL_DOMAIN, "current_emunand");
+		emuPart = m_cfg.getInt(CHANNEL_DOMAIN, "partition");
 	}
 	else
 	{
-		prevEmuNand = m_cfg.getString(WII_DOMAIN, "current_save_emunand", m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default"));
-		emuPart = m_cfg.getInt(WII_DOMAIN, "savepartition", m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0));
+		prevEmuNand = m_cfg.getString(WII_DOMAIN, "current_save_emunand");
+		emuPart = m_cfg.getInt(WII_DOMAIN, "savepartition");
 	}
 	listEmuNands(fmt("%s:/%s", DeviceName[emuPart], EMU_NANDS_DIR), emuNands);
 	int curEmuNand = 0;
 	for(u8 i = 0; i < emuNands.size(); ++i)
+	{
 		if(emuNands[i] == prevEmuNand)
 		{
 			curEmuNand = i;
 			break;
 		}
+	}
 
 	lwp_t thread = 0;
 	SetupInput();
