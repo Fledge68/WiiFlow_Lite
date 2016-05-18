@@ -1806,13 +1806,9 @@ void CMenu::_initCF(void)
 	
 	if(!CoverFlow.empty())
 	{
-		u8 view = m_current_view;
-		if(m_current_view == COVERFLOW_MAX) // target the last launched game type view
-			m_current_view = m_last_view;
-		bool path = m_sourceflow || (m_current_view == COVERFLOW_PLUGIN || m_current_view == COVERFLOW_HOMEBREW);
-		if(!CoverFlow.findId(m_cfg.getString(domain, "current_item").c_str(), true, path))
+		bool path = m_sourceflow || m_current_view == COVERFLOW_PLUGIN || m_current_view == COVERFLOW_HOMEBREW;
+		if(m_current_view == COVERFLOW_MAX || !CoverFlow.findId(m_cfg.getString(domain, "current_item").c_str(), true, path))
 			CoverFlow.defaultLoad();
-		m_current_view = view;
 		CoverFlow.startCoverLoader();
 	}
 }
@@ -2259,6 +2255,9 @@ bool CMenu::_loadPluginList()
 	if(!DeviceHandle.IsInserted(currentPartition))
 		return false;
 		
+	bool addGamecube = false;
+	bool addWii = false;
+	bool addChannel = false;
 	bool updateCache = m_cfg.getBool(PLUGIN_DOMAIN, "update_cache");
 	vector<dir_discHdr> pluginList;
 
@@ -2266,16 +2265,29 @@ bool CMenu::_loadPluginList()
 	{
 		m_gameList.clear();
 		u32 Magic = m_plugin.getPluginMagic(i);
-		//memset(m_plugin.PluginMagicWord, 0, sizeof(m_plugin.PluginMagicWord));
 		strncpy(m_plugin.PluginMagicWord, fmt("%08x", Magic), 8);
 		if(!m_cfg.getBool(PLUGIN_ENABLED, m_plugin.PluginMagicWord, true))
 			continue;
 		string romDir = m_plugin.GetRomDir(i);
 		if(romDir.find("scummvm.ini") == string::npos)
 		{
+			if(string(m_plugin.PluginMagicWord) == "4e47434d")
+			{
+				addGamecube = true;
+				continue;
+			}
+			if(string(m_plugin.PluginMagicWord) == "4e574949")
+			{
+				addWii = true;
+				continue;
+			}
+			if(string(m_plugin.PluginMagicWord) == "4e414e44")
+			{
+				addChannel = true;
+				continue;
+			}
 			string gameDir(fmt("%s:/%s", DeviceName[currentPartition], m_plugin.GetRomDir(i)));
 			string cacheDir(fmt("%s/%s_%s.db", m_listCacheDir.c_str(), DeviceName[currentPartition], m_plugin.PluginMagicWord));
-			//string fileTypes = m_plugin.GetFileTypes(i);
 			vector<string> FileTypes = stringToVector(m_plugin.GetFileTypes(i), '|');
 			m_gameList.Color = m_plugin.GetCaseColor(i);
 			m_gameList.Magic = Magic;
@@ -2293,6 +2305,29 @@ bool CMenu::_loadPluginList()
 				pluginList.push_back(*tmp_itr);
 		}
 	}
+	m_gameList.clear();
+	if(addGamecube)
+	{
+		m_current_view = COVERFLOW_GAMECUBE;
+		_loadGamecubeList();
+		for(vector<dir_discHdr>::iterator tmp_itr = m_gameList.begin(); tmp_itr != m_gameList.end(); tmp_itr++)
+				pluginList.push_back(*tmp_itr);
+	}
+	if(addWii)
+	{
+		m_current_view = COVERFLOW_WII;
+		_loadWiiList();
+		for(vector<dir_discHdr>::iterator tmp_itr = m_gameList.begin(); tmp_itr != m_gameList.end(); tmp_itr++)
+				pluginList.push_back(*tmp_itr);
+	}
+	if(addChannel)
+	{
+		m_current_view = COVERFLOW_CHANNEL;
+		_loadChannelList();
+		for(vector<dir_discHdr>::iterator tmp_itr = m_gameList.begin(); tmp_itr != m_gameList.end(); tmp_itr++)
+				pluginList.push_back(*tmp_itr);
+	}
+	m_current_view = COVERFLOW_PLUGIN;
 	m_gameList.clear();
 	for(vector<dir_discHdr>::iterator tmp_itr = pluginList.begin(); tmp_itr != pluginList.end(); tmp_itr++)
 	{

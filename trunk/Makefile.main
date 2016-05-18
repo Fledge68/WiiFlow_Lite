@@ -38,10 +38,10 @@ SOURCES		:=	source \
 				source/music \
 				source/network \
 				source/plugin \
+				source/sicksaxis-wrapper \
 				source/unzip \
 				source/xml \
 				source/wstringEx
-SOURCES += source/sicksaxis-wrapper
 DATA		:=	data \
 				data/images \
 				data/help \

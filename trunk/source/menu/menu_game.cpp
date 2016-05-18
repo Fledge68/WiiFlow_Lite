@@ -475,7 +475,7 @@ void CMenu::_game(bool launch)
 			_cleanupBanner();
 			break;
 		}
-		else if(BTN_PLUS_PRESSED && m_GameTDBLoaded && (CoverFlow.getHdr()->type == TYPE_WII_GAME || CoverFlow.getHdr()->type == TYPE_GC_GAME || CoverFlow.getHdr()->type == TYPE_CHANNEL))
+		else if(BTN_PLUS_PRESSED && m_GameTDBAvailable && (CoverFlow.getHdr()->type == TYPE_WII_GAME || CoverFlow.getHdr()->type == TYPE_GC_GAME || CoverFlow.getHdr()->type == TYPE_CHANNEL))
 		{
 			_hideGame();
 			m_banner.SetShowBanner(false);

@@ -289,7 +289,7 @@ void CMenu::exitHandler(int ExitTo)
 
 int CMenu::main(void)
 {
-	cf_domain = "_COVERFLOW";
+	//cf_domain = "_COVERFLOW";
 	wstringEx curLetter;
 	string prevTheme = m_cfg.getString("GENERAL", "theme", "default");
 	parental_homebrew = m_cfg.getBool(HOMEBREW_DOMAIN, "parental", false);
@@ -308,20 +308,19 @@ int CMenu::main(void)
 	SetupInput(true);
 	GameTDB m_gametdb; 
  	m_gametdb.OpenFile(fmt("%s/wiitdb.xml", m_settingsDir.c_str()));
-	m_GameTDBLoaded = false;
+	m_GameTDBAvailable = false;
  	if(m_gametdb.IsLoaded())
 	{
-		m_GameTDBLoaded = true;
+		m_GameTDBAvailable = true;
 		m_gametdb.CloseFile();
 	}
-	m_last_view = max(0, min(m_cfg.getInt("GENERAL", "last_view", 6), 6));
-	if(m_last_view == 6 || m_last_view == 0)
+	m_current_view = max(m_cfg.getInt("GENERAL", "last_view", 0), 0);
+	if(m_current_view > COVERFLOW_MAX)
 	{
-		m_last_view = 0;
+		m_current_view = COVERFLOW_WII;
 		_clearSources();
 		m_cfg.setBool(WII_DOMAIN, "source", true);
 	}
-	m_current_view = m_last_view;
 	m_catStartPage = m_cfg.getInt("GENERAL", "cat_startpage", 1);
 	if(m_current_view != COVERFLOW_MAX)
 	{
@@ -330,7 +329,7 @@ int CMenu::main(void)
 	}
 	else
 		m_combined_view = true;
-	m_cfg.save();
+	//m_cfg.save();
 	if(m_cfg.getBool("GENERAL", "update_cache", false))
 		UpdateCache();
 	LoadView();
