@@ -7,7 +7,7 @@
 #include <new>
 #include <zlib.h>
 #include <cwctype>
-
+#include <sys/stat.h>
 #include "coverflow.hpp"
 #include "pngu.h"
 #include "boxmesh.hpp"
@@ -1545,10 +1545,12 @@ void CCoverFlow::setRenderTex(bool val)
 
 void CCoverFlow::RenderTex(void)
 {
-	if(m_renderingTex == NULL || m_renderingTex->data == NULL)
-		return;
-	DrawTexture(m_renderingTex);
-	m_vid.renderToTexture(*m_renderingTex, true);
+	if(m_renderingTex != NULL && m_renderingTex->data != NULL)
+	{
+		LockMutex lock(m_mutex);
+		DrawTexture(m_renderingTex);
+		m_vid.renderToTexture(*m_renderingTex, true);
+	}
 	setRenderTex(false);
 }
 
@@ -2824,13 +2826,17 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 		if(fp != NULL)//if wfc chache file is found
 		{
 			bool success = false;
-			fseek(fp, 0, SEEK_END);
-			u32 fileSize = ftell(fp);
-			rewind(fp);
-			SWFCHeader header;
-			if(fileSize > sizeof(header))
+			struct stat stat_buf;
+			if(fstat(fileno(fp), &stat_buf) != 0)
 			{
-				fread(&header, 1, sizeof(header), fp);
+				fclose(fp);
+				return _loadCoverTexPNG(i, box, hq, blankBoxCover) ? CL_OK : CL_ERROR;
+			}
+			u32 fileSize = stat_buf.st_size;
+			SWFCHeader header;
+			if(fileSize > sizeof header)
+			{
+				fread(&header, 1, sizeof header, fp);
 				//make sure wfc cache file matches what we want
 				if(header.newFmt == 1 && (header.full != 0) == box && (header.cmpr != 0) == m_compressTextures)
 				{
@@ -2854,12 +2860,12 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 							allocFailed = true;
 						else
 						{
-							u8 *zBuffer = (u8*)MEM2_alloc(fileSize - sizeof(header));
+							u8 *zBuffer = (u8*)MEM2_alloc(fileSize - sizeof header);
 							if(zBuffer != NULL)
 							{
-								fread(zBuffer, 1, fileSize - sizeof(header), fp);
+								fread(zBuffer, 1, fileSize - sizeof header, fp);
 								uLongf size = bufSize;
-								if(uncompress(ptrTex, &size, zBuffer, fileSize - sizeof(header)) == Z_OK && size == bufSize)
+								if(uncompress(ptrTex, &size, zBuffer, fileSize - sizeof header) == Z_OK && size == bufSize)
 									memcpy(tex.data, ptrTex + bufSize - texLen, texLen);
 								free(zBuffer);
 								free(ptrTex);
@@ -2872,7 +2878,7 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 							allocFailed = true;
 						else
 						{
-							fseek(fp, fileSize - sizeof(header) - texLen, SEEK_CUR);
+							fseek(fp, fileSize - sizeof header - texLen, SEEK_CUR);
 							fread(tex.data, 1, texLen, fp);
 						}
 					}
@@ -2903,6 +2909,7 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 
 	// If wfc cache file not found, load the PNG and create a wfc cache file
 	return _loadCoverTexPNG(i, box, hq, blankBoxCover) ? CL_OK : CL_ERROR;
+	//return CL_ERROR;
 }
 
 int CCoverFlow::_coverLoader(CCoverFlow *cf)

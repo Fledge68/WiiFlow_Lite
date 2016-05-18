@@ -51,7 +51,6 @@ public:
 	const char *getBlankCoverPath(const dir_discHdr *element);
 
 	u8 m_current_view;
-	u8 m_last_view;
 	bool m_combined_view;
 	u8 enabledPluginsCount;
 	u8 m_catStartPage;
@@ -201,7 +200,7 @@ private:
 	bool m_show_gc;
 	bool m_devo_installed;
 	bool m_nintendont_installed;
-	bool m_GameTDBLoaded;
+	bool m_GameTDBAvailable;
 //Main Config menus
 	s16 m_configLblPage;
 	s16 m_configBtnPageM;
