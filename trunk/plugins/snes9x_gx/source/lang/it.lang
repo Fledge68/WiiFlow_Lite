@@ -1,0 +1,917 @@
+msgid "&"
+msgstr "&"
+
+msgid "16:9 Correction"
+msgstr "Correzione 16:9"
+
+msgid "7z decompression failed: Archive contains too many files"
+msgstr "7z decompressione fallita: L'archivio contiene troppi file"
+
+msgid "7z decompression failed: Failed to read file data"
+msgstr "7z decompressione fallita: Fallimento nella lettura del file"
+
+msgid "7z decompression failed: File is corrupt"
+msgstr "7z decompressione fallita: File corrotto"
+
+msgid "7z decompression failed: File is corrupt (CRC mismatch)"
+msgstr "7z decompressione fallita: File corrotto (il CRC non coincide)"
+
+msgid "7z decompression failed: File uses too high of compression settings (dictionary size is too large)"
+msgstr "7z decompressione fallita: Il file utilizza una compressione troppo alta (dimensione del dizionario troppo grosso)"
+
+msgid "7z decompression failed: File uses unsupported compression settings"
+msgstr "7z decompressione fallita: Il file utilizza un impostazione di compressione sconosciuta"
+
+msgid "A (Rapid)"
+msgstr "A (Rapido)"
+
+msgid "Additional coding"
+msgstr "Codice supplementare"
+
+msgid "Aim Offscreen"
+msgstr "Obiettivo Fuoricampo"
+
+msgid "An update is available!"
+msgstr "Aggiornamento disponibile!"
+
+msgid "Are you sure that you want to reset this game? Any unsaved progress will be lost."
+msgstr "Sei sicuro di voler resettare il gioco? Tutti i progressi non salvati verranno perduti."
+
+msgid "Are you sure that you want to reset your mappings?"
+msgstr "Sei sicuro di voler resettare le tue mappature?"
+
+msgid "Are you sure that you want to reset your settings?"
+msgstr "Sei sicuro di voler resettare le tue impostazioni?"
+
+msgid "Maintain Aspect Ratio"
+msgstr "Mantieni Ascpect Ratio (Rapporto)"
+
+msgid "Attempting to determine load device..."
+msgstr "Cercando di determinare la periferica di caricamento..."
+
+msgid "Attempting to determine save device..."
+msgstr "Cercando di determinare la periferica di salvataggio..."
+
+msgid "Auto"
+msgstr "Automatico"
+
+msgid "Auto Detect"
+msgstr "Individuazione Automatica"
+
+msgid "Auto Load"
+msgstr "Caricamento Automatico"
+
+msgid "Auto Save"
+msgstr "Salvataggio Automatico"
+
+msgid "Automatic (Recommended)"
+msgstr "Automatico (Raccomandato)"
+
+msgid "B (Rapid)"
+msgstr "B (Rapido)"
+
+msgid "Back"
+msgstr ""
+
+msgid "Both"
+msgstr "Entrambi"
+
+msgid "Controles"
+msgstr "Controlli"
+
+msgid "Button Mapping"
+msgstr "Mappatura Pulsanti"
+
+msgid "Button Mappings"
+msgstr "Mappature Pulsanti"
+
+msgid "Cancel"
+msgstr "Annulla"
+
+msgid "Caps"
+msgstr ""
+
+msgid "Cheats"
+msgstr "Cheat"
+
+msgid "Cheats file not found!"
+msgstr "File Cheat non trovato!"
+
+msgid "Cheats Folder"
+msgstr "Cartella Cheat"
+
+msgid "Choose Game"
+msgstr "Scelta Gioco"
+
+msgid "Classic Controller"
+msgstr "Controller Tradizionale"
+
+msgid "Close"
+msgstr "Chiudi"
+
+msgid "Coding"
+msgstr "Programmazione"
+
+msgid "Coding & menu design"
+msgstr "Programmazione e design del menù"
+
+msgid "Compressed GBA files are not supported!"
+msgstr "I file GBA compressi non sono supportati!"
+
+msgid "Connecting to network share..."
+msgstr "Collegandosi alla rete.."
+
+msgid "Controller"
+msgstr ""
+
+msgid "Cover View"
+msgstr "Vista Cover"
+
+msgid "Covers Folder"
+msgstr "Cartella Cover"
+
+msgid "Credits"
+msgstr "Crediti"
+
+msgid "Cropping"
+msgstr "Ritaglio"
+
+msgid "Crosshair"
+msgstr "Mirino"
+
+msgid "Cursor"
+msgstr "Cursore"
+
+msgid "Data DVD"
+msgstr "DVD Dati"
+
+msgid "Default"
+msgstr "Default"
+
+msgid "Directory name is too long!"
+msgstr "Nome della Cartella troppo lungo!"
+
+msgid "Disabled"
+msgstr "Disabilitato"
+
+msgid "DISABLED"
+msgstr "DISABILITATO"
+
+msgid "distributed, or modified under the terms of the"
+msgstr "distribuito o modificato nei termini de"
+
+msgid "Don't Save"
+msgstr "Non Salvare"
+
+msgid "Down"
+msgstr "Giù"
+
+msgid "DOWN"
+msgstr "GIU'"
+
+msgid "Downloading..."
+msgstr "Scaricando..."
+
+msgid "Dutch"
+msgstr "Olandese"
+
+msgid "Empty or invalid ZIP file!"
+msgstr "File ZIP vuoto o non valido!"
+
+msgid "Enabled"
+msgstr "Abilitato"
+
+msgid "ENABLED"
+msgstr "ABILITATO"
+
+msgid "English"
+msgstr "Inglese"
+
+msgid "Error"
+msgstr "Errore"
+
+msgid "Error - Invalid ZIP file!"
+msgstr "Errore - File ZIP non valido!"
+
+msgid "Error creating file!"
+msgstr "Errore nella creazione del file!"
+
+msgid "Error loading game!"
+msgstr "Errore nel caricamento del gioco!"
+
+msgid "Error opening archive!"
+msgstr "Errore nell'apertura dell'archivio!"
+
+msgid "Error opening directory!"
+msgstr "Errore nell'apertura della cartella!"
+
+msgid "Error opening file!"
+msgstr "Errore nell'apertura del file!"
+
+msgid "Error reading file!"
+msgstr "Errore nella lettura del file!"
+
+msgid "Error saving file!"
+msgstr "Errore nel salvataggio del file!"
+
+msgid "Exit"
+msgstr "Esci"
+
+msgid "Exit Action"
+msgstr "Uscita"
+
+msgid "Failed to connect to network share."
+msgstr "Connessione alla rete fallita."
+
+msgid "FDS BIOS file is invalid!"
+msgstr "File BIOS FDS non valido!"
+
+msgid "FDS BIOS file not found!"
+msgstr "File BIOS FDS non trovato!"
+
+msgid "Filtered"
+msgstr "Filtrato"
+
+msgid "Filtering"
+msgstr "Filtrando"
+
+msgid "Fire"
+msgstr "Fuoco"
+
+msgid "French"
+msgstr "Francese"
+
+msgid "GBA Screen Zoom"
+msgstr "GBA Zoom Schermo"
+
+msgid "Game Genie ROM not found!"
+msgstr "ROM Game Genie non trovata!"
+
+msgid "Game Settings"
+msgstr "Impostazioni di Gioco"
+
+msgid "Game Settings - Button Mappings"
+msgstr "Impostazioni di Gioco - Mappature pulsanti"
+
+msgid "Game Settings - Cheats"
+msgstr "Impostazioni di Gioco - Cheat"
+
+msgid "Game Settings - Video"
+msgstr "Impostazioni di Gioco - Video"
+
+msgid "Game Timing"
+msgstr "Sincranizzazione di Gioco"
+
+msgid "Game Genie DISABLED"
+msgstr "Game Genie DISABILITATO"
+
+msgid "Game Genie ENABLED"
+msgstr "Game Genie ABILITATO"
+
+msgid "GameCube Controller"
+msgstr ""
+
+msgid "German"
+msgstr "Tedesco"
+
+msgid "GNU General Public License (GPL) Version 2."
+msgstr "GNU General Public License (GPL) Version 2."
+
+msgid "Go Back"
+msgstr "Torna Indietro"
+
+msgid "Horizontal"
+msgstr "Orizzontale"
+
+msgid "Information"
+msgstr "Informazione"
+
+msgid "Initializing network..."
+msgstr "Inizializzando la rete..."
+
+msgid "Insert Coin"
+msgstr ""
+
+msgid "Insert Coin / Switch Disk"
+msgstr "Insert Coin / Cambia Disco"
+
+msgid "Invalid file size!"
+msgstr "Dimensione del file non valida!"
+
+msgid "Invalid game file!"
+msgstr "File di gioco non valido!"
+
+msgid "Invalid network settings - Check settings.xml."
+msgstr "Impostazioni di rete non valide - Verificare settings.xml."
+
+msgid "Invalid network settings - Share IP is blank."
+msgstr "Impostazioni di rete non valide - Campo IP Condivisione vuoto."
+
+msgid "Invalid network settings - Share name is blank."
+msgstr "Impostazioni di rete non valide - Campo Nome Condivisione vuoto."
+
+msgid "Invalid save file"
+msgstr "File di salvataggio non valido"
+
+msgid "Invalid state file"
+msgstr "FIle di stato non valido"
+
+msgid "Italian"
+msgstr "Italiano"
+
+msgid "Japanese"
+msgstr "Giapponese"
+
+msgid "Justifier"
+msgstr "Giustificato"
+
+msgid "Justifier - GameCube Controller"
+msgstr "Giustificato - GameCube Controller"
+
+msgid "Justifier - Wiimote"
+msgstr "Giustificato - Wiimote"
+
+msgid "Korean"
+msgstr "Coreano"
+
+msgid "L TRIG"
+msgstr "TASTO L"
+
+msgid "Language"
+msgstr "Lingua"
+
+msgid "Languages Folder"
+msgstr "Cartella Lingue"
+
+msgid "Left"
+msgstr "Sinistra"
+
+msgid "LEFT"
+msgstr "SINISTRA"
+
+msgid "Left Button"
+msgstr "Pulsante Sinistro"
+
+msgid "Load"
+msgstr "Carica"
+
+msgid "Load Device"
+msgstr "Periferica di Caricamento"
+
+msgid "Load Folder"
+msgstr "Cartella di Caricamento"
+
+msgid "Load Game"
+msgstr "Carica Gioco"
+
+msgid "Loading"
+msgstr "Caricando"
+
+msgid "Loading DVD..."
+msgstr "Caricando DVD..."
+
+msgid "Loading patch..."
+msgstr "Caricando patch..."
+
+msgid "Loading..."
+msgstr "Caricando..."
+
+msgid "Main Menu"
+msgstr "Menù Principale"
+
+msgid "Match GC Controls"
+msgstr "Identico Controlli GC"
+
+msgid "Match Wii Controls"
+msgstr "Identico Controlli Wii"
+
+msgid "Menu"
+msgstr "Menù"
+
+msgid "Menu artwork"
+msgstr "Menù Artwork"
+
+msgid "Menu sound"
+msgstr "Menù Audio"
+
+msgid "MINUS"
+msgstr "MENO"
+
+msgid "Music Volume"
+msgstr "Volume Musica"
+
+msgid "Mute"
+msgstr "Muto"
+
+msgid "NES Controller"
+msgstr ""
+
+msgid "NES Controllers (2)"
+msgstr "NES Controller (2)"
+
+msgid "NES Controllers (4)"
+msgstr "NES Controller (4)"
+
+msgid "NES Zapper"
+msgstr ""
+
+msgid "Network"
+msgstr "Rete"
+
+msgid "Network Share"
+msgstr "Condivisione Rete"
+
+msgid "New"
+msgstr "Nuovo"
+
+msgid "New Snapshot"
+msgstr "Nuovo Snapshot"
+
+msgid "New SRAM"
+msgstr "Nuova SRAM"
+
+msgid "No"
+msgstr "No"
+
+msgid "No data to save!"
+msgstr "Nessun dato da salvare!"
+
+msgid "No disc inserted!"
+msgstr "Disco non inserito!"
+
+msgid "No SRAM data to save!"
+msgstr "Nessuna SRAM dove salvare!"
+
+msgid "No game saves found."
+msgstr "Nessun salvataggio trovato."
+
+msgid "None"
+msgstr "Nessuno"
+
+msgid "NTSC (480i)"
+msgstr ""
+
+msgid "Nunchuk"
+msgstr "Nunchuk"
+
+msgid "Off"
+msgstr "Off"
+
+msgid "Official Site: http://code.google.com/p/fceugc/"
+msgstr "Sito Ufficiale: http://code.google.com/p/fceugc/"
+
+msgid "Official Site: http://code.google.com/p/snes9x-gx/"
+msgstr "Sito Ufficiale: http://code.google.com/p/snes9x-gx/"
+
+msgid "Official Site: http://code.google.com/p/vba-wii/"
+msgstr "Sito Ufficiale: http://code.google.com/p/vba-wii/"
+
+msgid "OK"
+msgstr ""
+
+msgid "On"
+msgstr ""
+
+msgid "Original"
+msgstr "Originale"
+
+msgid "Out of memory!"
+msgstr "Memoria esaurita!"
+
+msgid "Out of memory: too many files!"
+msgstr "Memoria esaurita: troppo file!"
+
+msgid "P1"
+msgstr ""
+
+msgid "P2"
+msgstr ""
+
+msgid "P3"
+msgstr ""
+
+msgid "P4"
+msgstr ""
+
+msgid "PAL (50Hz)"
+msgstr ""
+
+msgid "PAL (60Hz)"
+msgstr ""
+
+msgid "Palette saved"
+msgstr "Palette salvata"
+
+msgid "Partial Stretch"
+msgstr "Stretch Parziale"
+
+msgid "Pause"
+msgstr "Pausa"
+
+msgid "Please Wait"
+msgstr "Attendere Prego"
+
+msgid "PLUS"
+msgstr "PIU'"
+
+msgid "Portuguese"
+msgstr "Portoghese"
+
+msgid "Power off Wii"
+msgstr "Spegnimento Wii"
+
+msgid "Preferences saved"
+msgstr "Preferenze salvate"
+
+msgid "Press any button on the Classic Controller now. Press Home to clear the existing mapping."
+msgstr "Premi un pulsante del Controller Tradizionale ora. Premi Home per pulire la mappatura esistente."
+
+msgid "Press any button on the GameCube Controller now. Press Home or the C-Stick in any direction to clear the existing mapping."
+msgstr "Premi un pulsante del GameCube Controller ora. Premi Home o sposta il C-Stick per pulire la mappatura esistente."
+
+msgid "Press any button on the GameCube Controller now. Press the C-Stick in any direction to clear the existing mapping."
+msgstr "Premi un pulsante del GameCube Controller ora. Sposta il C-Stick per pulire la mappatura esistente."
+
+msgid "Press any button on the Wiimote now. Press Home to clear the existing mapping."
+msgstr "Premi un pulsante del Wiimote ora. Premi Home per pulire la mappatura esistente."
+
+msgid "Press any button on the Wiimote or Nunchuk now. Press Home to clear the existing mapping."
+msgstr "Premi un pulsante del Wiimote o del Nunchuk ora. Premi Home per pulire la mappatura esistente."
+
+msgid "Progressive (480p)"
+msgstr "Progressiva (480p)"
+
+msgid "Quit Game"
+msgstr "Termina"
+
+msgid "Quit this game? Any unsaved progress will be lost."
+msgstr "Terminare il gioco? Tutti i progressi saranno perduti."
+
+msgid "R TRIG"
+msgstr "TASTO R"
+
+msgid "RAM saving is not available for FDS games!"
+msgstr "Il salvataggio della RAM non è disponibile per i giochi FDS!"
+
+msgid "Reboot"
+msgstr ""
+
+msgid "Rendering"
+msgstr "Rendering"
+
+msgid "Reset"
+msgstr "Reset"
+
+msgid "Reset Game"
+msgstr "Resetta"
+
+msgid "Reset this game? Any unsaved progress will be lost."
+msgstr "Resettare il gioco? Tutti i progressi saranno perduti."
+
+msgid "Reset Mappings"
+msgstr "Resetta Mappatura"
+
+msgid "Reset Settings"
+msgstr "Resetta Impostazioni"
+
+msgid "Retry"
+msgstr "Ritenta"
+
+msgid "Return to Loader"
+msgstr "Ritorna al Loader"
+
+msgid "Return to Wii Menu"
+msgstr "Ritorna al Menù Wii"
+
+msgid "Right"
+msgstr "Destra"
+
+msgid "RIGHT"
+msgstr "DESTRA"
+
+msgid "Right Button"
+msgstr "Pulsante Destro"
+
+msgid "Rumble"
+msgstr "Vibrazione"
+
+msgid "Save"
+msgstr "Salva"
+
+msgid "Save Device"
+msgstr "Periferica Salvataggio"
+
+msgid "Save failed!"
+msgstr "Salvataggio fallito!"
+
+msgid "Save file not found"
+msgstr "File di salvataggio non trovato"
+
+msgid "Save Folder"
+msgstr "Cartella Salvataggio"
+
+msgid "Save Game"
+msgstr "Salvataggio"
+
+msgid "Save RAM and State?"
+msgstr "Salvare RAM e STATO?"
+
+msgid "Save Snapshot?"
+msgstr "Salvare Snapshot?"
+
+msgid "Save SRAM and Snapshot?"
+msgstr "Salvare SRAM e Snapshot?"
+
+msgid "Save State?"
+msgstr ""
+
+msgid "Save successful"
+msgstr "Salvato con successo"
+
+msgid "Saving"
+msgstr "Salvando"
+
+msgid "Saving preferences..."
+msgstr "Salvando le preferenze..."
+
+msgid "Saving..."
+msgstr "Salvando..."
+
+msgid "Scaling"
+msgstr "Scalettatura"
+
+msgid "Screen Position"
+msgstr "Posizione Schermo"
+
+msgid "Screen Zoom"
+msgstr "Zoom Schermo"
+
+msgid "Select"
+msgstr ""
+
+msgid "Seek error!"
+msgstr "Errore di ricerca!"
+
+msgid "Settings"
+msgstr "Impostazioni"
+
+msgid "Settings - Menu"
+msgstr "Impostazioni - Menu"
+
+msgid "Settings - Network"
+msgstr "Impostazioni - Rete"
+
+msgid "Settings - Saving & Loading"
+msgstr "Impostazioni - Salvataggio e Caricamento"
+
+msgid "SD Card"
+msgstr "Scheda SD"
+
+msgid "SD card not found!"
+msgstr "Scheda SD non trovata!"
+
+msgid "Shift"
+msgstr ""
+
+msgid "Simp_chinese"
+msgstr "Cinese Semplificato"
+
+msgid "SMB Share IP"
+msgstr "SMB IP Condivisione"
+
+msgid "SMB Share Name"
+msgstr "SMB Nome Condivisione"
+
+msgid "SMB Share Password"
+msgstr "SMB Password Condivisione"
+
+msgid "SMB Share Username"
+msgstr "SMB Username Condivisione"
+
+msgid "Snapshot"
+msgstr ""
+
+msgid "Snapshot (Auto)"
+msgstr ""
+
+msgid "SNES Controller"
+msgstr ""
+
+msgid "SNES Controllers (2)"
+msgstr "SNES Controller (4)"
+
+msgid "SNES Controllers (4)"
+msgstr "SNES Controller (4)"
+
+msgid "SNES Controller - Classic Controller"
+msgstr "SNES Controller - Controller Tradizionale"
+
+msgid "SNES Controller - GameCube Controller"
+msgstr ""
+
+msgid "SNES Controller - Nunchuk + Wiimote"
+msgstr ""
+
+msgid "SNES Controller - Wiimote"
+msgstr ""
+
+msgid "SNES Mouse"
+msgstr ""
+
+msgid "SNES Mouse - GameCube Controller"
+msgstr ""
+
+msgid "SNES Mouse - Wiimote"
+msgstr ""
+
+msgid "Snes9x - Copyright (c) Snes9x Team 1996 - 2006"
+msgstr ""
+
+msgid "Sound Effects Volume"
+msgstr "Volume Effetti Sonori"
+
+msgid "Spanish"
+msgstr "Spagnolo"
+
+msgid "Sprite Limit"
+msgstr "Limite Sprite"
+
+msgid "SRAM file not found"
+msgstr "File SRAM non trovato"
+
+msgid "Start"
+msgstr ""
+
+msgid "State"
+msgstr "Stato"
+
+msgid "State (Auto)"
+msgstr "Stato (Auto)"
+
+msgid "State file not found"
+msgstr "File di stato non trovato"
+
+msgid "Stretch to Fit"
+msgstr "Allunga per Adattare"
+
+msgid "Super Scope"
+msgstr ""
+
+msgid "Superscope"
+msgstr ""
+
+msgid "Superscope - GameCube Controller"
+msgstr ""
+
+msgid "Superscope - Wiimote"
+msgstr ""
+
+msgid "This software is open source and may be copied,"
+msgstr "Questo software è open source e può essere copiato,"
+
+msgid "Trad_chinese"
+msgstr "Cinese Tradotto"
+
+msgid "Unable to initialize network!"
+msgstr "Impossibile inizializzare la rete!"
+
+msgid "Unable to locate a load device!"
+msgstr "Impossibile localizzare una periferica di caricamento!"
+
+msgid "Unable to locate a save device!"
+msgstr "Impossibile localizzare una periferica di salvataggio!"
+
+msgid "Unable to open snapshot!"
+msgstr "Impossibile aprire lo snapshot!"
+
+msgid "Unfiltered"
+msgstr "Non filtrato!"
+
+msgid "Unknown file type!"
+msgstr "Tipo di file sconosciuto!"
+
+msgid "Unrecognized DVD format."
+msgstr "Formato DVD non riconosciuto!"
+
+msgid "Unrecognized file extension!"
+msgstr "Estensione file non riconosciuta!"
+
+msgid "Up"
+msgstr "Su"
+
+msgid "UP"
+msgstr "SU"
+
+msgid "Up One Level"
+msgstr "Livello superiore"
+
+msgid "Update Available"
+msgstr "Aggiornamento Disponibile"
+
+msgid "Update failed!"
+msgstr "Aggiornamento fallito!"
+
+msgid "Update later"
+msgstr "Aggiorna più tardi"
+
+msgid "Update now"
+msgstr "Aggiorna ora"
+
+msgid "Update successful!"
+msgstr "Aggiornamento effettuato!"
+
+msgid "USB drive not found!"
+msgstr "Disco USB non trovato!"
+
+msgid "USB Mass Storage"
+msgstr "Memoria di Massa USB"
+
+msgid "Vertical"
+msgstr "Verticale"
+
+msgid "Video"
+msgstr ""
+
+msgid "Video Mode"
+msgstr "Modalità Video"
+
+msgid "VM8: Unknown page type!"
+msgstr "VM8: Tipo di pagina sconosciuta!"
+
+msgid "VM16: Unknown page type!"
+msgstr "VM16: Tipo di pagina sconosciuta!"
+
+msgid "VM32: Unknown page type!"
+msgstr "VM32: Tipo di pagina sconosciuta!"
+
+msgid "Wiimote"
+msgstr ""
+
+msgid "Wiimote Orientation"
+msgstr "Orientamento Wiimote"
+
+msgid "Yes"
+msgstr "Si"
+
+msgid "Zapper"
+msgstr ""
+
+msgid "Zapper Crosshair"
+msgstr "Mirino Zapper"
+
+msgid "Logo"
+msgstr ""
+
+msgid "Turbo On"
+msgstr ""
+
+msgid "Turbo Off"
+msgstr ""
+
+msgid "Automatic"
+msgstr "Automatico"
+
+msgid "Palette"
+msgstr "Paletta"
+
+msgid "AspiringSquire's Real palette"
+msgstr ""
+
+msgid "Loopy's palette"
+msgstr ""
+
+msgid "Quor's palette"
+msgstr ""
+
+msgid "Chris Covell's palette"
+msgstr ""
+
+msgid "Matthew Conte's palette"
+msgstr ""
+
+msgid "PasoFami/99 palette"
+msgstr ""
+
+msgid "CrashMan's palette"
+msgstr ""
+
+msgid "MESS palette"
+msgstr ""
+
+msgid "Zaphod's VS Castlevania palette"
+msgstr ""
+
+msgid "Zaphod's VS SMB palette"
+msgstr ""
+
+msgid "VS Dr. Mario palette"
+msgstr ""
+
+msgid "VS Castlevania palette"
+msgstr ""
+
+msgid "VS SMB/VS Ice Climber palette"
+msgstr ""
+
+msgid "And many others who have contributed over the years!"
+msgstr "E tutti quelli che hanno contribuito negli anni!"

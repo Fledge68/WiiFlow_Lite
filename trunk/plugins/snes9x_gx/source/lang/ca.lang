@@ -1,0 +1,854 @@
+msgid "&"
+msgstr "&"
+
+msgid "16:9 Correction"
+msgstr "Correcció 16:9"
+
+msgid "7z decompression failed: Archive contains too many files"
+msgstr "Error descomprimint 7z: L'arxiu conté massa fitxers"
+
+msgid "7z decompression failed: Failed to read file data"
+msgstr "Error descomprimint 7z: error llegint fitxer"
+
+msgid "7z decompression failed: File is corrupt"
+msgstr "Error descomprimint 7z: Arxiu corrupte"
+
+msgid "7z decompression failed: File is corrupt (CRC mismatch)"
+msgstr "Error descomprimint 7z: Arxiu corrupte (error de CRC)"
+
+msgid "7z decompression failed: File uses too high of compression settings (dictionary size is too large)"
+msgstr "Error descomprimint 7z: Paràmetre de compressió massa alt (format de diccionari massa gran)"
+
+msgid "7z decompression failed: File uses unsupported compression settings"
+msgstr "Error descomprimint 7z: El fitxer fa servir paràmetres incompatibles"
+
+msgid "A (Rapid)"
+msgstr "A (Ràpid)"
+
+msgid "Additional coding"
+msgstr "Programació addic."
+
+msgid "Aim Offscreen"
+msgstr "Apunteu fora"
+
+msgid "An update is available!"
+msgstr "Actualització disponible!"
+
+msgid "Are you sure that you want to reset this game? Any unsaved progress will be lost."
+msgstr "Segur que voleu reiniciar aquest joc? Es perdrà qualsevol progrés no desat."
+
+msgid "Are you sure that you want to reset your mappings?"
+msgstr "Segur que voleu reiniciar els controls?"
+
+msgid "Are you sure that you want to reset your settings?"
+msgstr "Segur que voleu reiniciar la configuració?"
+
+msgid "Maintain Aspect Ratio"
+msgstr "Conservar proporcions"
+
+msgid "Attempting to determine load device..."
+msgstr "Detectant dispositiu de càrrega..."
+
+msgid "Attempting to determine save device..."
+msgstr "Detectant el dispositiu d'enmagatzament"
+
+msgid "Auto"
+msgstr "Auto"
+
+msgid "Auto Detect"
+msgstr "Auto detectar"
+
+msgid "Auto Load"
+msgstr "Auto carregar"
+
+msgid "Auto Save"
+msgstr "Auto desar"
+
+msgid "Automatic (Recommended)"
+msgstr "Automàtic (Recomenat)"
+
+msgid "B (Rapid)"
+msgstr "B (Ràpid)"
+
+msgid "Back"
+msgstr "Enrera"
+
+msgid "Both"
+msgstr "Tots dos"
+
+msgid "Controles"
+msgstr "Controls"
+
+msgid "Button Mappings"
+msgstr "Redefinir botons"
+
+msgid "Cancel"
+msgstr "Cancel.la"
+
+msgid "Caps"
+msgstr "Maj."
+
+msgid "Cheats"
+msgstr "Cheats"
+
+msgid "Cheats file not found!"
+msgstr "No trobo fitxer cheats!"
+
+msgid "Cheats Folder"
+msgstr "Carpeta Cheats"
+
+msgid "Choose Game"
+msgstr "Escollir joc"
+
+msgid "Classic Controller"
+msgstr "Comandament clàssic"
+
+msgid "Close"
+msgstr "Tancar"
+
+msgid "Coding"
+msgstr "Programació"
+
+msgid "Coding & menu design"
+msgstr "Programació & disseny menú"
+
+msgid "Compressed GBA files are not supported!"
+msgstr "Els fitxers GBA comprimits incompatibles!"
+
+msgid "Connecting to network share..."
+msgstr "Connectant a xarxa compartida..."
+
+msgid "Controller"
+msgstr "Comandament"
+
+msgid "Cover View"
+msgstr "Veure cover"
+
+msgid "Covers Folder"
+msgstr "Carpeta covers"
+
+msgid "Credits"
+msgstr "Crèdits"
+
+msgid "Cropping"
+msgstr "Retallar"
+
+msgid "Crosshair"
+msgstr "Punter"
+
+msgid "Cursor"
+msgstr "Cursor"
+
+msgid "Data DVD"
+msgstr "Dades DVD"
+
+msgid "Default"
+msgstr "Per defecte"
+
+msgid "Directory name is too long!"
+msgstr "Nom de directori massa larg!"
+
+msgid "Disabled"
+msgstr "Desactivat"
+
+msgid "DISABLED"
+msgstr "DESACTIVAT"
+
+msgid "distributed, or modified under the terms of the"
+msgstr "distribuït, o modificat sota els termes de"
+
+msgid "Don't Save"
+msgstr "No desis"
+
+msgid "Down"
+msgstr "Avall"
+
+msgid "DOWN"
+msgstr "AVALL"
+
+msgid "Downloading..."
+msgstr "Descarregant"
+
+msgid "Dutch"
+msgstr "Holandès"
+
+msgid "Empty or invalid ZIP file!"
+msgstr "Fitxer zip buit o invàlid!"
+
+msgid "Enabled"
+msgstr "Activat"
+
+msgid "ENABLED"
+msgstr "ACTIVAT"
+
+msgid "English"
+msgstr "Anglès"
+
+msgid "Error"
+msgstr "Error"
+
+msgid "Error - Invalid ZIP file!"
+msgstr "Error - Fitxer ZIP invàlid!"
+
+msgid "Error creating file!"
+msgstr "Error creant fitxer!"
+
+msgid "Error loading game!"
+msgstr "Error carregant joc!"
+
+msgid "Error opening archive!"
+msgstr "Error obrint l'arxiu!"
+
+msgid "Error opening directory!"
+msgstr "Error obrint directori!"
+
+msgid "Error opening file!"
+msgstr "Error obrint fitxer!"
+
+msgid "Error reading file!"
+msgstr "Error llegint fitxer!"
+
+msgid "Error saving file!"
+msgstr "Error desant fitxer!"
+
+msgid "Exit"
+msgstr "Surt"
+
+msgid "Exit Action"
+msgstr "Mode sortida"
+
+msgid "Failed to connect to network share."
+msgstr "Error de connexió a xarxa compartida."
+
+msgid "FDS BIOS file is invalid!"
+msgstr "Fitxer BIOS FDS invàlid!"
+
+msgid "FDS BIOS file not found!"
+msgstr "Fitxer BIOS FDS no trobat!"
+
+msgid "Filtered"
+msgstr "Filtrat"
+
+msgid "Filtering"
+msgstr "Filtrar"
+
+msgid "Fire"
+msgstr "Foc"
+
+msgid "French"
+msgstr "Francès"
+
+msgid "GBA Screen Zoom"
+msgstr "Zoom pantalla GBA"
+
+msgid "Game Genie ROM not found!"
+msgstr "No es troba ROM GameGenie!"
+
+msgid "Game Settings"
+msgstr "Configuració"
+
+msgid "Game Settings - Button Mappings"
+msgstr "Configuració - Redefinir botons"
+msgid "Game Settings - Cheats"
+msgstr "Configuració - Cheats"
+
+msgid "Game Settings - Video"
+msgstr "Configuració - Vídeo"
+
+msgid "Game Timing"
+msgstr "Timing de joc"
+
+msgid "Game Genie DISABLED"
+msgstr "GameGenie DESACTIVAT"
+
+msgid "Game Genie ENABLED"
+msgstr "GameGenie ACTIVAT"
+
+msgid "GameCube Controller"
+msgstr "Comandament Gamecube"
+
+msgid "German"
+msgstr "Alemany"
+
+msgid "GNU General Public License (GPL) Version 2."
+msgstr "GNU General Public License (GPL) Versió 2."
+
+msgid "Go Back"
+msgstr "Tornar"
+
+msgid "Horizontal"
+msgstr "Horitzontal"
+
+msgid "Information"
+msgstr "Informació"
+
+msgid "Initializing network..."
+msgstr "Iniciant la xarxa..."
+
+
+msgid "Insert Coin"
+msgstr "Ficar Moneda"
+
+msgid "Insert Coin / Switch Disk"
+msgstr "Ficar Moneda / Canviar Disc"
+
+msgid "Invalid file size!"
+msgstr "Format fitxer invàlid!"
+
+msgid "Invalid game file!"
+msgstr "Fitxer de joc invàlid!"
+
+msgid "Invalid network settings - Check settings.xml."
+msgstr "Error de xarxa - Comproveu fitxer settings.xml."
+
+msgid "Invalid network settings - Share IP is blank."
+msgstr "Configuració de xarxa invàlida - IP en blanc."
+
+msgid "Invalid network settings - Share name is blank."
+msgstr "Configuració de xarxa invàlida - Nom en blanc."
+
+msgid "Invalid save file"
+msgstr "Fitxer de save invàlid"
+
+msgid "Invalid state file"
+msgstr "Fitxer d'estat invàlid"
+
+msgid "Italian"
+msgstr "Italià"
+
+msgid "Japanese"
+msgstr "Japonès"
+
+msgid "Justifier"
+msgstr "Justifier"
+
+msgid "Justifier - GameCube Controller"
+msgstr "Justifier - Comandament GameCube"
+
+msgid "Justifier - Wiimote"
+msgstr "Justifier - Wiimote"
+
+msgid "Korean"
+msgstr "Coreà"
+
+msgid "L TRIG"
+msgstr "L"
+
+msgid "Language"
+msgstr "Llengua"
+
+msgid "Languages Folder"
+msgstr "Carpeta d'idioma"
+
+msgid "Left"
+msgstr "Esquerra"
+
+msgid "LEFT"
+msgstr "ESQUERRA"
+
+msgid "Left Button"
+msgstr "Botó esquerre"
+
+msgid "Load"
+msgstr "Carregar"
+
+msgid "Load Device"
+msgstr "Càrrega"
+
+msgid "Load Folder"
+msgstr "Carpeta partides"
+
+msgid "Load Game"
+msgstr "Carregar partida"
+
+msgid "Loading"
+msgstr "Carregant"
+
+msgid "Loading DVD..."
+msgstr "Carregant DVD..."
+
+msgid "Loading patch..."
+msgstr "Carregant patch..."
+
+msgid "Loading..."
+msgstr "Carregant..."
+
+msgid "Main Menu"
+msgstr "Inici"
+
+msgid "Match GC Controls"
+msgstr "Coincidir controls GC"
+
+msgid "Match Wii Controls"
+msgstr "Coincidir controls Wii"
+
+msgid "Maximum filepath length reached!"
+msgid "Llargada màxima de ruta!"
+
+msgid "Menu"
+msgstr "Menú"
+
+msgid "Menu artwork"
+msgstr "Artwork menú"
+
+msgid "Menu sound"
+msgstr "So del menú"
+
+msgid "MINUS"
+msgstr "MENYS"
+
+msgid "Music Volume"
+msgstr "Volum música"
+
+msgid "Mute"
+msgstr "Silenci"
+
+msgid "NES Controller"
+msgstr "Comandament NES"
+
+msgid "NES Controllers (2)"
+msgstr "Comandaments NES (2)"
+
+msgid "NES Controllers (4)"
+msgstr "Comandaments NES (4)"
+
+msgid "NES Zapper"
+msgstr "NES Zapper"
+
+msgid "Network"
+msgstr "Xarxa"
+
+msgid "Network Share"
+msgstr "Xarxa compartida"
+
+msgid "New"
+msgstr "Nou"
+
+msgid "New Snapshot"
+msgstr "Nova captura"
+
+msgid "New SRAM"
+msgstr "Nova SRAM"
+
+msgid "No"
+msgstr "No"
+
+msgid "No data to save!"
+msgstr "cap dada per desar!"
+
+msgid "No disc inserted!"
+msgstr "No hi ha cap disc!"
+
+msgid "No SRAM data to save!"
+msgstr "Cap dada SRAM per desar!"
+
+msgid "No game saves found."
+msgstr "No hi ha partides"
+
+msgid "None"
+msgstr "Cap"
+
+msgid "NTSC (480i)"
+msgstr "NTSC (480i)"
+
+msgid "Nunchuk"
+msgstr "Nunchuk"
+
+msgid "Off"
+msgstr "Off"
+
+msgid "Official Site: http://code.google.com/p/fceugc/"
+msgstr "Lloc Oficial: http://code.google.com/p/fceugc/"
+
+msgid "Official Site: http://code.google.com/p/snes9x-gx/"
+msgstr "Lloc Oficial: http://code.google.com/p/snes9x-gx/"
+
+msgid "Official Site: http://code.google.com/p/vba-wii/"
+msgstr "Lloc Oficial: http://code.google.com/p/vba-wii/"
+
+msgid "OK"
+msgstr "D'acord"
+
+msgid "On"
+msgstr "Encès"
+
+msgid "Original"
+msgstr "Original"
+
+msgid "Out of memory!"
+msgstr "Fora de memòria!"
+
+msgid "Out of memory: too many files!"
+msgstr "Memòria insuficient: massa fitxers!"
+
+msgid "P1"
+msgstr "J1"
+
+msgid "P2"
+msgstr "J2"
+
+msgid "P3"
+msgstr "J3"
+
+msgid "P4"
+msgstr "J4"
+
+msgid "PAL (50Hz)"
+msgstr "PAL (50Hz)"
+
+msgid "PAL (60Hz)"
+msgstr "PAL (60Hz)"
+
+msgid "Palette saved"
+msgstr "Paleta desada"
+
+msgid "Partial Stretch"
+msgstr "Ajustament parcial"
+
+msgid "Pause"
+msgstr "Pausa"
+
+msgid "Please Wait"
+msgstr "Espereu sisplau"
+
+msgid "PLUS"
+msgstr "MÉS"
+
+msgid "Portuguese"
+msgstr "Portugès"
+
+msgid "Power off Wii"
+msgstr "Apagar la Wii"
+
+msgid "Preferences saved"
+msgstr "Preferències desades"
+
+msgid "Press any button on the Classic Controller now. Press Home to clear the existing mapping."
+msgstr "Premeu qualsevol botó al Comandament Clàssic. Premeu HOME per eliminar la configuració."
+
+msgid "Press any button on the GameCube Controller now. Press Home or the C-Stick in any direction to clear the existing mapping."
+msgstr "Premeu qualsevol botó al comandament de GameCube. Premeu HOME o moveu el Stick-C per eliminar la configuració actual."
+
+msgid "Press any button on the GameCube Controller now. Press the C-Stick in any direction to clear the existing mapping."
+msgstr "Premeu qualsevol botó al comandament de GameCube. Moveu el Stick-C per eliminar la configuració actual."
+
+msgid "Press any button on the Wiimote now. Press Home to clear the existing mapping."
+msgstr "Premeu qualsevol botó al Wiimote. Premeu HOME per eliminar la configuració."
+
+msgid "Press any button on the Wiimote or Nunchuk now. Press Home to clear the existing mapping."
+msgstr "Premeu qualsevol botó al Wiimote o al Nunchuk. Premeu HOME per eliminar la configuració"
+
+msgid "Progressive (480p)"
+msgstr "Progressu (480p)"
+
+msgid "Quit Game"
+msgstr "Treure joc"
+
+msgid "Quit this game? Any unsaved progress will be lost."
+msgstr "Treure joc? Qualsevol progrés no desat serà perdut."
+
+msgid "R TRIG"
+msgstr "R"
+
+msgid "RAM saving is not available for FDS games!"
+msgstr "Desar RAM és incompatible per als jocs FDS!"
+
+msgid "Reboot"
+msgstr "Reiniciar"
+
+msgid "Rendering"
+msgstr "Renderitzat"
+
+msgid "Reset"
+msgstr "Reset"
+
+msgid "Reset Game"
+msgstr "Reiniciar"
+
+msgid "Reset this game? Any unsaved progress will be lost."
+msgstr "Reiniciar joc? Es perdrà qualsevol progrés no desat."
+
+msgid "Reset Mappings"
+msgstr "Reiniciar Config."
+
+msgid "Reset Settings"
+msgstr "Reiniciar Config."
+
+msgid "Retry"
+msgstr "Prova"
+
+msgid "Return to Loader"
+msgstr "Tornar al Loader"
+
+msgid "Return to Wii Menu"
+msgstr "Tornar al Menú Wii"
+
+msgid "Right"
+msgstr "Dreta"
+
+msgid "RIGHT"
+msgstr "DRETA"
+
+msgid "Right Button"
+msgstr "Botó dret"
+
+msgid "Rumble"
+msgstr "Vibració"
+
+msgid "Save"
+msgstr "Desar"
+
+msgid "Save Device"
+msgstr "Disp. desar"
+
+msgid "Save failed!"
+msgstr "Error desant!"
+
+msgid "Save file not found"
+msgstr "Fitxer save no trobat"
+
+msgid "Save Folder"
+msgstr "Carpeta de save"
+
+msgid "Save Game"
+msgstr "Desar Joc"
+
+msgid "Save RAM and State?"
+msgstr "Desar RAM i estat?"
+
+msgid "Save Snapshot?"
+msgstr "Desar imatge?"
+
+msgid "Save SRAM and Snapshot?"
+msgstr "Desar SRAM i imatge?"
+
+msgid "Save State?"
+msgstr "Desar estat?"
+
+msgid "Save successful"
+msgstr "Partida desada"
+
+msgid "Saving"
+msgstr "Desant"
+
+msgid "Saving preferences..."
+msgstr "Desant preferències..."
+
+msgid "Saving..."
+msgstr "Desant..."
+
+msgid "Scaling"
+msgstr "Ajust"
+
+msgid "Screen Position"
+msgstr "Posició pantalla"
+
+msgid "Screen Zoom"
+msgstr "Zoom"
+
+msgid "Select"
+msgstr "Select"
+
+msgid "Seek error!"
+msgstr "Error seek!"
+
+msgid "Settings"
+msgstr "Config."
+
+msgid "Settings - Menu"
+msgstr "Config. - Menú"
+
+msgid "Settings - Network"
+msgstr "Config. - Xarxa"
+
+msgid "Settings - Saving & Loading"
+msgstr "Config. - Desar & Carregar"
+
+msgid "SD Card"
+msgstr "Targeta SD"
+
+msgid "SD card not found!"
+msgstr "No trobo targeta SD!"
+
+msgid "Shift"
+msgstr "Maj."
+
+msgid "Simp_chinese"
+msgstr "Xinès simpl."
+
+msgid "SMB Share IP"
+msgstr "IP del SMB"
+
+msgid "SMB Share Name"
+msgstr "Nom del SMB"
+
+msgid "SMB Share Password"
+msgstr "Contrasenya del SMB"
+
+msgid "SMB Share Username"
+msgstr "Usuari del SMB"
+
+msgid "Snapshot"
+msgstr "Imatge"
+
+msgid "Snapshot (Auto)"
+msgstr "Imatge (Auto)"
+
+msgid "SNES Controller"
+msgstr "Comandament SNES"
+
+msgid "SNES Controllers (2)"
+msgstr "Comandaments SNES (2)"
+
+msgid "SNES Controllers (4)"
+msgstr "Comandaments SNES (4)"
+
+msgid "SNES Controller - Classic Controller"
+msgstr "Comandament SNES - Comandament Clàssic"
+
+msgid "SNES Controller - GameCube Controller"
+msgstr "Comandament SNES - Comandament GameCube"
+
+msgid "SNES Controller - Nunchuk + Wiimote"
+msgstr "Comandament SNES - Nunchuk + Wiimote"
+
+msgid "SNES Controller - Wiimote"
+msgstr "Comandament SNES - Wiimote"
+
+msgid "SNES Mouse"
+msgstr "Ratolí SNES"
+
+msgid "SNES Mouse - GameCube Controller"
+msgstr "Ratolí SNES - Comandament GameCube"
+
+msgid "SNES Mouse - Wiimote"
+msgstr "Ratolí SNES - Wiimote"
+
+msgid "Snes9x - Copyright (c) Snes9x Team 1996 - 2006"
+msgstr "Snes9x - Copyright (c) Snes9x Team 1996 - 2006"
+
+msgid "Sound Effects Volume"
+msgstr "Volum d'efectes sonors"
+
+msgid "Spanish"
+msgstr "Castellà"
+
+msgid "Sprite Limit"
+msgstr "Límit sprites"
+
+msgid "SRAM file not found"
+msgstr "No trobo fitxer SRAM"
+
+msgid "State"
+msgstr "Estat"
+
+msgid "State (Auto)"
+msgstr "Estat (Auto)"
+
+msgid "State file not found"
+msgstr "No trobo fitxer d'estat"
+
+msgid "Stretch to Fit"
+msgstr "Estirar a mida"
+
+msgid "Superscope"
+msgstr "SuperScope"
+
+msgid "Superscope - GameCube Controller"
+msgstr "SuperScope - Comandament GameCube"
+
+msgid "Superscope - Wiimote"
+msgstr "SuperScope - Wiimote"
+
+msgid "This software is open source and may be copied,"
+msgstr "Aquest software és de codi obert i pot ser copiat,"
+
+msgid "Trad_chinese"
+msgstr "Xinès trad."
+
+msgid "Unable to initialize network!"
+msgstr "Impossible iniciar la xarxa!"
+
+msgid "Unable to locate a load device!"
+msgstr "No trobo dispositiu de càrrega!"
+
+msgid "Unable to locate a save device!"
+msgstr "No trobo dispositiu per desar!"
+
+msgid "Unable to open snapshot!"
+msgstr "Impossible obrir imatge!"
+
+msgid "Unfiltered"
+msgstr "No filtrat"
+
+msgid "Unknown file type!"
+msgstr "Fitxer desconegut!"
+
+msgid "Unrecognized DVD format."
+msgstr "Format de DVD desconegut."
+
+msgid "Unrecognized file extension!"
+msgstr "No reconec extensió fitxer!"
+
+msgid "Up"
+msgstr "Amunt"
+
+msgid "UP"
+msgstr "AMUNT"
+
+msgid "Up One Level"
+msgstr "Pujar nivell"
+
+msgid "Update Available"
+msgstr "Nova actualització"
+
+msgid "Update failed!"
+msgstr "No actualitzat"
+
+msgid "Update later"
+msgstr "Fer després"
+
+msgid "Update now"
+msgstr "Actualitzar"
+
+msgid "Update successful!"
+msgstr "Actualització feta!"
+
+msgid "USB drive not found!"
+msgstr "No trobo dispositiu USB!"
+
+msgid "USB Mass Storage"
+msgstr "Dispositiu USB"
+
+msgid "Vertical"
+msgstr "Vertical"
+
+msgid "Video"
+msgstr "Vídeo"
+
+msgid "Video Mode"
+msgstr "Mode vídeo"
+
+msgid "VM8: Unknown page type!"
+msgstr "VM8: Pàgina desconeguda!"
+
+msgid "VM16: Unknown page type!"
+msgstr "VM16: Pàgina desconeguda!"
+
+msgid "VM32: Unknown page type!"
+msgstr "VM32: Pàgina desconeguda!"
+
+msgid "Wiimote"
+msgstr "Wiimote"
+
+msgid "Wiimote Orientation"
+msgstr "Orientació Wiimote"
+
+msgid "Yes"
+msgstr "Sí"
+
+msgid "Zapper"
+msgstr "Nintendo Zapper"
+
+msgid "Zapper Crosshair"
+msgstr "Punter Zapper"

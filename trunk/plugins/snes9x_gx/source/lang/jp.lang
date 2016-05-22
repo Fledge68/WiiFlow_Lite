@@ -1,0 +1,935 @@
+msgid "&"
+msgstr "&"
+
+msgid "16:9 Correction"
+msgstr "16:9補正"
+
+msgid "7z decompression failed: Archive contains too many files"
+msgstr "書庫内のファイルが多すぎです"
+
+msgid "7z decompression failed: Failed to read file data"
+msgstr "読み込みに失敗しました"
+
+msgid "7z decompression failed: File is corrupt"
+msgstr "ファイルが破損しています"
+
+msgid "7z decompression failed: File is corrupt (CRC mismatch)"
+msgstr "ファイルが破損しています(CRC不一致)"
+
+msgid "7z decompression failed: File uses too high of compression settings (dictionary size is too large)"
+msgstr "書庫のサイズが多きすぎです"
+
+msgid "7z decompression failed: File uses unsupported compression settings"
+msgstr "未対応の圧縮設定が使用されています"
+
+msgid "A (Rapid)"
+msgstr "A (連打)"
+
+msgid "Additional coding"
+msgstr "追加コーディング"
+
+msgid "Aim Offscreen"
+msgstr "照準を非表示"
+
+msgid "An update is available!"
+msgstr "更新があります"
+
+msgid "Are you sure that you want to reset this game? Any unsaved progress will be lost."
+msgstr "未保存のデータは失われます"
+
+msgid "Are you sure that you want to reset your mappings?"
+msgstr "設定を初期化しますか?"
+
+msgid "Are you sure that you want to reset your settings?"
+msgstr "設定を初期化しますか?"
+
+msgid "Maintain Aspect Ratio"
+msgstr "アスペクト比を維持"
+
+msgid "Attempting to determine load device..."
+msgstr "デバイスを試しています…"
+
+msgid "Attempting to determine save device..."
+msgstr "デバイスを試しています…"
+
+msgid "Auto"
+msgstr "自動"
+
+msgid "Auto Detect"
+msgstr "自動検出"
+
+msgid "Auto Load"
+msgstr "自動ロード"
+
+msgid "Auto Save"
+msgstr "自動セーブ"
+
+msgid "Automatic"
+msgstr "自動"
+
+msgid "Automatic (Recommended)"
+msgstr "自動(おすすめ)"
+
+msgid "B (Rapid)"
+msgstr "B (連打)"
+
+msgid "Back"
+msgstr ""
+
+msgid "Both"
+msgstr "両方"
+
+msgid "Controles"
+msgstr "操作"
+
+msgid "Button Mapping"
+msgstr "ボタン設定"
+
+msgid "Button Mappings"
+msgstr "ボタン設定"
+
+msgid "Cancel"
+msgstr "キャンセル"
+
+msgid "Caps"
+msgstr ""
+
+msgid "Cheats"
+msgstr "改造コード"
+
+msgid "Cheats file not found!"
+msgstr "改造コードが見つかりません"
+
+msgid "Cheats Folder"
+msgstr "改造コードフォルダ"
+
+msgid "Choose Game"
+msgstr "ゲームを選択してください"
+
+msgid "Classic Controller"
+msgstr "クラコン"
+
+msgid "Close"
+msgstr "とじる"
+
+msgid "Coding"
+msgstr "設計"
+
+msgid "Coding & menu design"
+msgstr "設計とメニューのデザイン"
+
+msgid "Compressed GBA files are not supported!"
+msgstr "圧縮されたGBAファイルは未対応です"
+
+msgid "Connecting to network share..."
+msgstr "接続しています"
+
+msgid "Controller"
+msgstr "コントローラ"
+
+msgid "Cover View"
+msgstr "カバーを表示"
+
+msgid "Covers Folder"
+msgstr "カバーフォルダ"
+
+msgid "Credits"
+msgstr "提供･協力"
+
+msgid "Cropping"
+msgstr "トリミング"
+
+msgid "Crosshair"
+msgstr "十字ボタン"
+
+msgid "Cursor"
+msgstr "カーソル"
+
+msgid "Data DVD"
+msgstr "データDVD"
+
+msgid "Default"
+msgstr "初期値"
+
+msgid "Directory name is too long!"
+msgstr "フォルダ名が長すぎです"
+
+msgid "Disabled"
+msgstr "無効"
+
+msgid "DISABLED"
+msgstr "無効"
+
+msgid "distributed, or modified under the terms of the"
+msgstr "以下の条件の下で配布、変更されています"
+
+msgid "Don't Save"
+msgstr "セーブしない"
+
+msgid "Down"
+msgstr "下"
+
+msgid "DOWN"
+msgstr "下"
+
+msgid "Downloading..."
+msgstr "ダウンロード中…"
+
+msgid "Dutch"
+msgstr "ドイツ語"
+
+msgid "Empty or invalid ZIP file!"
+msgstr "不正なZIPファイルです"
+
+msgid "Enabled"
+msgstr "有効"
+
+msgid "ENABLED"
+msgstr "有効"
+
+msgid "English"
+msgstr "英語"
+
+msgid "Error"
+msgstr "エラー"
+
+msgid "Error - Invalid ZIP file!"
+msgstr "不正なZIPです"
+
+msgid "Error creating file!"
+msgstr "作成中にエラーが発生しました"
+
+msgid "Error loading game!"
+msgstr "読み込み中にエラーが発生しました"
+
+msgid "Error opening archive!"
+msgstr "解凍中にエラーが発生しました"
+
+msgid "Error opening directory!"
+msgstr "開く途中にエラーが発生しました"
+
+msgid "Error opening file!"
+msgstr "開いている途中にエラーが発生しました"
+
+msgid "Error reading file!"
+msgstr "読み込み中にエラーが発生しました"
+
+msgid "Error saving file!"
+msgstr "セーブ中にエラーが発生しました"
+
+msgid "Exit"
+msgstr "終了"
+
+msgid "Exit Action"
+msgstr "終了動作"
+
+msgid "Failed to connect to network share."
+msgstr "接続に失敗しました"
+
+msgid "FDS BIOS file is invalid!"
+msgstr "disksys.romが不正です"
+
+msgid "FDS BIOS file not found!"
+msgstr "disksys.romが見つかりません"
+
+msgid "Filtered"
+msgstr "フィルターする"
+
+msgid "Filtering"
+msgstr "フィルタ"
+
+msgid "Fire"
+msgstr "ファイア"
+
+msgid "French"
+msgstr "フランス語"
+
+msgid "GBA Screen Zoom"
+msgstr "GBA画面を拡大"
+
+msgid "Game Genie ROM not found!"
+msgstr "Game GenieのROMが見つかりません"
+
+msgid "Game Settings"
+msgstr "ゲーム設定"
+
+msgid "Game Settings - Button Mappings"
+msgstr "ゲーム設定 - ボタン設定"
+
+msgid "Game Settings - Cheats"
+msgstr "ゲーム設定 - 改造コード"
+
+msgid "Game Settings - Video"
+msgstr "ゲーム設定 - 映像"
+
+msgid "Game Timing"
+msgstr "ゲームの速度"
+
+msgid "Game Genie DISABLED"
+msgstr "Game Genie無効"
+
+msgid "Game Genie ENABLED"
+msgstr "Game Genie有効"
+
+msgid "GameCube Controller"
+msgstr "GCコントローラ"
+
+msgid "German"
+msgstr "ドイツ語"
+
+msgid "GNU General Public License (GPL) Version 2."
+msgstr "GNU 一般公衆利用許諾契約書バージョン2"
+
+msgid "Go Back"
+msgstr "戻る"
+
+msgid "Horizontal"
+msgstr "横方向"
+
+msgid "Information"
+msgstr "情報"
+
+msgid "Initializing network..."
+msgstr "接続中…"
+
+msgid "Insert Coin"
+msgstr "コインを入れる"
+
+msgid "Insert Coin / Switch Disk"
+msgstr "コイン/ディスクをいれる"
+
+msgid "Invalid file size!"
+msgstr "不正なサイズです"
+
+msgid "Invalid game file!"
+msgstr "不正なサイズです"
+
+msgid "Invalid network settings - Check settings.xml."
+msgstr "エラー:settings.xmlを確認してください"
+
+msgid "Invalid network settings - Share IP is blank."
+msgstr "共有IPが空白です"
+
+msgid "Invalid network settings - Share name is blank."
+msgstr "共有名が空白です"
+
+msgid "Invalid save file"
+msgstr "不正なセーブデータです"
+
+msgid "Invalid state file"
+msgstr "不正な中断ファイルです"
+
+msgid "Italian"
+msgstr "イタリア語"
+
+msgid "Japanese"
+msgstr "日本語"
+
+msgid "Justifier"
+msgstr "MODEL510"
+
+msgid "Justifier - GameCube Controller"
+msgstr "MODEL510 - GCコントローラ"
+
+msgid "Justifier - Wiimote"
+msgstr "MODEL510 - Wiiリモコン"
+
+msgid "Korean"
+msgstr "韓国語"
+
+msgid "L TRIG"
+msgstr "Lトリガー"
+
+msgid "Language"
+msgstr "言語"
+
+msgid "Languages Folder"
+msgstr "言語フォルダ"
+
+msgid "Left"
+msgstr "左"
+
+msgid "LEFT"
+msgstr "左"
+
+msgid "Left Button"
+msgstr "左ボタン"
+
+msgid "Load"
+msgstr "ロード"
+
+msgid "Load Device"
+msgstr "読み込むデバイス"
+
+msgid "Load Folder"
+msgstr "ロムフォルダ"
+
+msgid "Load Game"
+msgstr "ゲームを読み込む"
+
+msgid "Loading"
+msgstr "ロード"
+
+msgid "Loading DVD..."
+msgstr "DVDを読み込み中…"
+
+msgid "Loading patch..."
+msgstr "パッチを読み込み中…"
+
+msgid "Loading..."
+msgstr "読み込み中…"
+
+msgid "Main Menu"
+msgstr "メインメニュー"
+
+msgid "Match GC Controls"
+msgstr "操作を最適化"
+
+msgid "Match Wii Controls"
+msgstr "操作を最適化"
+
+msgid "Maximum filepath length reached!"
+msgid "ファイルのパスの限界まで行きました"
+
+msgid "Menu"
+msgstr "メニュー"
+
+msgid "Menu artwork"
+msgstr "メニュー画像"
+
+msgid "Menu sound"
+msgstr "メニュー音楽"
+
+msgid "MINUS"
+msgstr "マイナス"
+
+msgid "Music Volume"
+msgstr "音楽の音量"
+
+msgid "Mute"
+msgstr "消音"
+
+msgid "NES Controller"
+msgstr "コントローラ"
+
+msgid "NES Controllers (2)"
+msgstr "コントローラ(2)"
+
+msgid "NES Controllers (4)"
+msgstr "コントローラ(4)"
+
+msgid "NES Zapper"
+msgstr "ファミコンザッパー"
+
+msgid "Network"
+msgstr "ネットワーク"
+
+msgid "Network Share"
+msgstr "ネットワーク共有"
+
+msgid "New"
+msgstr "新しい"
+
+msgid "New Snapshot"
+msgstr "新しい中断データ"
+
+msgid "New SRAM"
+msgstr "新しいSRAM"
+
+msgid "No"
+msgstr "いいえ"
+
+msgid "No data to save!"
+msgstr "セーブするデータがありません"
+
+msgid "No disc inserted!"
+msgstr "ディスクが挿入されていません"
+
+msgid "No SRAM data to save!"
+msgstr "セーブするSRAMデータがありません"
+
+msgid "No game saves found."
+msgstr "セーブデータが見つかりません"
+
+msgid "None"
+msgstr "無し"
+
+msgid "NTSC (480i)"
+msgstr "NTSC(480i)"
+
+msgid "Nunchuk"
+msgstr "ヌンチャク"
+
+msgid "Off"
+msgstr "オフ"
+
+msgid "Official Site: http://code.google.com/p/fceugc/"
+msgstr "公式サイト:http://code.google.com/p/fceugc/"
+
+msgid "Official Site: http://code.google.com/p/snes9x-gx/"
+msgstr "公式サイト: http://code.google.com/p/snes9x-gx/"
+
+msgid "Official Site: http://code.google.com/p/vba-wii/"
+msgstr "公式サイト: http://code.google.com/p/vba-wii/"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "On"
+msgstr "オン"
+
+msgid "Original"
+msgstr "オリジナル"
+
+msgid "Out of memory!"
+msgstr "メモリが足りません"
+
+msgid "Out of memory: too many files!"
+msgstr "ファイルが多すぎてメモリが足りません"
+
+msgid "P1"
+msgstr ""
+
+msgid "P2"
+msgstr ""
+
+msgid "P3"
+msgstr ""
+
+msgid "P4"
+msgstr ""
+
+msgid "PAL (50Hz)"
+msgstr "PAL(50Hz)"
+
+msgid "PAL (60Hz)"
+msgstr "PAL(60Hz)"
+
+msgid "Palette saved"
+msgstr "パレットをセーブしました"
+
+msgid "Partial Stretch"
+msgstr "部分的に伸縮"
+
+msgid "Pause"
+msgstr "一時中断"
+
+msgid "Please Wait"
+msgstr "お待ちください"
+
+msgid "PLUS"
+msgstr "プラス"
+
+msgid "Portuguese"
+msgstr "ポルトガル語"
+
+msgid "Brazilian Portuguese"
+msgstr "ブラジルポルトガル語"
+
+msgid "Power off Wii"
+msgstr "Wiiの電源を切る"
+
+msgid "Preferences saved"
+msgstr "設定をセーブしました"
+
+msgid "Press any button on the Classic Controller now. Press Home to clear the existing mapping."
+msgstr "ボタンを押してください(HOME=無し)"
+
+msgid "Press any button on the GameCube Controller now. Press Home or the C-Stick in any direction to clear the existing mapping."
+msgstr "ボタンを押してください(HOME･C=無し)"
+
+msgid "Press any button on the GameCube Controller now. Press the C-Stick in any direction to clear the existing mapping."
+msgstr "ボタンを押してください(HOME･C=無し)"
+
+msgid "Press any button on the Wiimote now. Press Home to clear the existing mapping."
+msgstr "ボタンを押してください(HOME=無し)"
+
+msgid "Press any button on the Wiimote or Nunchuk now. Press Home to clear the existing mapping."
+msgstr "ボタンを押してください(HOME=無し)"
+
+msgid "Progressive (480p)"
+msgstr "プログレッシブ(480p)"
+
+msgid "Quit Game"
+msgstr "ゲームを終了"
+
+msgid "Quit this game? Any unsaved progress will be lost."
+msgstr "未保存のデータは失われます"
+
+msgid "R TRIG"
+msgstr "Rトリガー"
+
+msgid "RAM saving is not available for FDS games!"
+msgstr "ディスクシステムにはRAMセーブはありません"
+
+msgid "Reboot"
+msgstr "再起動"
+
+msgid "Rendering"
+msgstr "描画"
+
+msgid "Reset"
+msgstr "リセット"
+
+msgid "Reset Game"
+msgstr "ゲームをリセット"
+
+msgid "Reset this game? Any unsaved progress will be lost."
+msgstr "未保存のデータは失われます"
+
+msgid "Reset Mappings"
+msgstr "ボタン設定を初期化"
+
+msgid "Reset Settings"
+msgstr "設定を初期化"
+
+msgid "Retry"
+msgstr "再試行"
+
+msgid "Return to Loader"
+msgstr "ローダーに戻る"
+
+msgid "Return to Wii Menu"
+msgstr "Wiiメニューに戻る"
+
+msgid "Right"
+msgstr "右"
+
+msgid "RIGHT"
+msgstr "右"
+
+msgid "Right Button"
+msgstr "右ボタン"
+
+msgid "Rumble"
+msgstr "振動"
+
+msgid "Save"
+msgstr "セーブ"
+
+msgid "Save Device"
+msgstr "セーブするデバイス"
+
+msgid "Save failed!"
+msgstr "セーブに失敗しました"
+
+msgid "Save file not found"
+msgstr "セーブデータが見つかりません"
+
+msgid "Save Folder"
+msgstr "セーブフォルダ"
+
+msgid "Save Game"
+msgstr "セーブデータをセーブ"
+
+msgid "Save RAM and State?"
+msgstr "RAMと状態をセーブしますか?"
+
+msgid "Save Snapshot?"
+msgstr "中断データをセーブしますか?"
+
+msgid "Save SRAM and Snapshot?"
+msgstr "SRAMと中断データをセーブしますか?"
+
+msgid "Save State?"
+msgstr "状態をセーブしますか?"
+
+msgid "Save successful"
+msgstr "セーブに成功しました"
+
+msgid "Saving"
+msgstr "セーブ"
+
+msgid "Saving preferences..."
+msgstr "優先的にセーブ中…"
+
+msgid "Saving..."
+msgstr "セーブ中…"
+
+msgid "Scaling"
+msgstr "縮尺"
+
+msgid "Screen Position"
+msgstr "画面の位置"
+
+msgid "Screen Zoom"
+msgstr "画面の拡大"
+
+msgid "Select"
+msgstr "セレクト"
+
+msgid "Seek error!"
+msgstr "シークエラーです"
+
+msgid "Settings"
+msgstr "設定"
+
+msgid "Settings - Menu"
+msgstr "設定 - メニュー"
+
+msgid "Settings - Network"
+msgstr "設定 - ネットワーク"
+
+msgid "Settings - Saving & Loading"
+msgstr "設定 - セーブと読み込み"
+
+msgid "SD Card"
+msgstr "SD"
+
+msgid "SD card not found!"
+msgstr "SDが見つかりません"
+
+msgid "Shift"
+msgstr ""
+
+msgid "Simp_chinese"
+msgstr "簡体字中国語"
+
+msgid "SMB Share IP"
+msgstr "SMB共有IP"
+
+msgid "SMB Share Name"
+msgstr "SMB共有名"
+
+msgid "SMB Share Password"
+msgstr "SMB共有パスワード"
+
+msgid "SMB Share Username"
+msgstr "SMB共有ユーザー名"
+
+msgid "Snapshot"
+msgstr "中断データ"
+
+msgid "Snapshot (Auto)"
+msgstr "中断データ(自動)"
+
+msgid "SNES Controller"
+msgstr "コントローラ"
+
+msgid "SNES Controllers (2)"
+msgstr "コントローラ(2)"
+
+msgid "SNES Controllers (4)"
+msgstr "コントローラ(4)"
+
+msgid "SNES Controller - Classic Controller"
+msgstr "コントローラ - クラコン"
+
+msgid "SNES Controller - GameCube Controller"
+msgstr "コントローラ - GCコン"
+
+msgid "SNES Controller - Nunchuk + Wiimote"
+msgstr "コントローラ - Wiiリモコン+ヌンチャク"
+
+msgid "SNES Controller - Wiimote"
+msgstr "コントローラ - Wiiリモコン"
+
+msgid "SNES Mouse"
+msgstr "マウス"
+
+msgid "SNES Mouse - GameCube Controller"
+msgstr "マウス - GCコン"
+
+msgid "SNES Mouse - Wiimote"
+msgstr "マウス - Wiiリモコン"
+
+msgid "Snes9x - Copyright (c) Snes9x Team 1996 - 2006"
+msgstr "Snes9x - 著作権(c) Snes9xチーム1996-2006"
+
+msgid "Sound Effects Volume"
+msgstr "効果音の音量"
+
+msgid "Spanish"
+msgstr "スペイン語"
+
+msgid "Sprite Limit"
+msgstr "スプライト制限"
+
+msgid "SRAM file not found"
+msgstr "SRAMファイルが見つかりません"
+
+msgid "Start"
+msgstr "スタート"
+
+msgid "State"
+msgstr "状態"
+
+msgid "State (Auto)"
+msgstr "状態(自動)"
+
+msgid "State file not found"
+msgstr "状態ファイルが見つかりません"
+
+msgid "Stretch to Fit"
+msgstr "適するよう伸縮"
+
+msgid "Super Scope"
+msgstr "ｽｰﾊﾟｰｽｺｰﾌﾟ"
+
+msgid "Superscope"
+msgstr "スーパースコープ"
+
+msgid "Superscope - GameCube Controller"
+msgstr "スーパースコープ - GCコン"
+
+msgid "Superscope - Wiimote"
+msgstr "スーパースコープ - Wiiリモコン"
+
+msgid "This software is open source and may be copied,"
+msgstr "これはオープンソースでコピーされました"
+
+msgid "Trad_chinese"
+msgstr "繁体字中国語"
+
+msgid "Unable to initialize network!"
+msgstr "接続できませんでした"
+
+msgid "Unable to locate a load device!"
+msgstr "デバイスを見つけられませんでした"
+
+msgid "Unable to locate a save device!"
+msgstr "デバイスを見つけられませんでした"
+
+msgid "Unable to open snapshot!"
+msgstr "中断データを開けませんでした"
+
+msgid "Unfiltered"
+msgstr "フィルタ無し"
+
+msgid "Unknown file type!"
+msgstr "不明なファイル形式です"
+
+msgid "Unrecognized DVD format."
+msgstr "認識できないDVD形式です"
+
+msgid "Unrecognized file extension!"
+msgstr "認識できない拡張子です"
+
+msgid "Up"
+msgstr "上"
+
+msgid "UP"
+msgstr "上"
+
+msgid "Up One Level"
+msgstr "一階層上へ"
+
+msgid "Update Available"
+msgstr "更新があります"
+
+msgid "Update failed!"
+msgstr "更新に失敗しました"
+
+msgid "Update later"
+msgstr "更新しない"
+
+msgid "Update now"
+msgstr "更新する"
+
+msgid "Update successful!"
+msgstr "更新に成功しました"
+
+msgid "USB drive not found!"
+msgstr "USBドライブが見つかりません"
+
+msgid "USB Mass Storage"
+msgstr "USBデバイス"
+
+msgid "Vertical"
+msgstr "縦方向"
+
+msgid "Video"
+msgstr "映像"
+
+msgid "Video Mode"
+msgstr "映像モード"
+
+msgid "VM8: Unknown page type!"
+msgstr "VM8:不明なページ形式です"
+
+msgid "VM16: Unknown page type!"
+msgstr "VM16:不明なページ形式です"
+
+msgid "VM32: Unknown page type!"
+msgstr "VM32:不明なページ形式です"
+
+msgid "Wiimote"
+msgstr "Wiiリモコン"
+
+msgid "Wiimote Orientation"
+msgstr "Wiiリモコンの向き"
+
+msgid "Yes"
+msgstr "はい"
+
+msgid "Zapper"
+msgstr "ザッパー"
+
+msgid "Zapper Crosshair"
+msgstr "ｻﾞｯﾊﾟｰの十字ｶｰｿﾙ"
+
+msgid "Logo"
+msgstr "ロゴ"
+
+msgid "Turbo On"
+msgstr "連打オン"
+
+msgid "Turbo Off"
+msgstr "連打オフ"
+
+msgid "Automatic"
+msgstr "自動"
+
+msgid "Palette"
+msgstr "使用パレット"
+
+msgid "AspiringSquire's Real palette"
+msgstr "AspiringSquire"
+
+msgid "Loopy's palette"
+msgstr "Loopy"
+
+msgid "Quor's palette"
+msgstr "Quor"
+
+msgid "Chris Covell's palette"
+msgstr "Chris Covell"
+
+msgid "Matthew Conte's palette"
+msgstr "Matthew Conte"
+
+msgid "PasoFami/99 palette"
+msgstr "パソファミ/99"
+
+msgid "CrashMan's palette"
+msgstr "CrashMan"
+
+msgid "MESS palette"
+msgstr "MESS"
+
+msgid "Zaphod's VS Castlevania palette"
+msgstr "VSキャッスルバニア"
+
+msgid "Zaphod's VS SMB palette"
+msgstr "VSｽｰﾊﾟｰﾏﾘｵﾌﾞﾗｻﾞｰｽﾞ"
+
+msgid "VS Dr. Mario palette"
+msgstr "VSDr.マリオ"
+
+msgid "VS Castlevania palette"
+msgstr "VSキャッスルバニア"
+
+msgid "VS SMB/VS Ice Climber palette"
+msgstr "VSｽｰﾏﾘ/ｱｲｽｸﾗｲﾏｰ"
+
+msgid "Catalan"
+msgstr "カタロニア語"
+
+msgid "The current IOS has been altered (fake-signed). Functionality and/or stability may be adversely affected."
+msgstr "このIOSでは不安定になる可能性があります"
+
+msgid "The current IOS is unsupported. Functionality and/or stability may be adversely affected."
+msgstr "このIOSには対応していないので不安定になる可能性があります"
+
+msgid "Turkish"
+msgstr "トルコ語"
