@@ -1,0 +1,7 @@
+This is a very early port to the xbox 360 using the libxenon library,
+available from http://www.free60.org/wiki/Libxenon
+
+It doesn't yet have sound, a graphical menu, but will load the file
+"SNES9XGX.SMC" from the first available USB storage device, and run that.
+
+Controls are using the first wired controller.

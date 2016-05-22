@@ -1,0 +1,935 @@
+msgid "&"
+msgstr "&"
+
+msgid "16:9 Correction"
+msgstr "16:9 Düzeltmesi"
+
+msgid "7z decompression failed: Archive contains too many files"
+msgstr "7z dosya çıkarma başarısız: Arşiv çok fazla dosya içeriyor"
+
+msgid "7z decompression failed: Failed to read file data"
+msgstr "7z dosya çıkarma başarısız: Dosya verisi okunamadı"
+
+msgid "7z decompression failed: File is corrupt"
+msgstr "7z dosya çıkarma başarısız: Dosya bozuk"
+
+msgid "7z decompression failed: File is corrupt (CRC mismatch)"
+msgstr "7z dosya çıkarma başarısız: Dosya bozuk (CRC uyumsuz)"
+
+msgid "7z decompression failed: File uses too high of compression settings (dictionary size is too large)"
+msgstr "7z dosya çıkarma başarısız: Dosya çok yüksek sıkıştırma ayarları kullanıyor (sözlük boyutu çok büyük)"
+
+msgid "7z decompression failed: File uses unsupported compression settings"
+msgstr "7z dosya çıkarma başarısız: Dosya desteklenmeyen sıkıştırma ayarları kullanıyor"
+
+msgid "A (Rapid)"
+msgstr "A (Seri)"
+
+msgid "Additional coding"
+msgstr "İlave kod"
+
+msgid "Aim Offscreen"
+msgstr "Ekran Dışına Hedefleme"
+
+msgid "An update is available!"
+msgstr "Güncelleme mevcut!"
+
+msgid "Are you sure that you want to reset this game? Any unsaved progress will be lost."
+msgstr "Oyunu tekrar başlatmak istediğinizden emin misiniz? Kaydedilmemiş tüm veriler kaybolacak."
+
+msgid "Are you sure that you want to reset your mappings?"
+msgstr "Buton ayarlarını sıfırlamak istediğinizden emin misiniz?"
+
+msgid "Are you sure that you want to reset your settings?"
+msgstr "Ayarları sıfırlamak istediğinizden emin misiniz?"
+
+msgid "Maintain Aspect Ratio"
+msgstr "En-Boy Oranını Koru"
+
+msgid "Attempting to determine load device..."
+msgstr "Yükleme aygıtı belirlenmeye çalışılıyor..."
+
+msgid "Attempting to determine save device..."
+msgstr "Kayıt aygıtı belirlenmeye çalışılıyor..."
+
+msgid "Auto"
+msgstr "Otomatik"
+
+msgid "Auto Detect"
+msgstr "Otomatik Algıla"
+
+msgid "Auto Load"
+msgstr "Otomatik Yükleme"
+
+msgid "Auto Save"
+msgstr "Otomatik Kayıt"
+
+msgid "Automatic"
+msgstr "Otomatik"
+
+msgid "Automatic (Recommended)"
+msgstr "Otomatik (Önerilen)"
+
+msgid "B (Rapid)"
+msgstr "B (Seri)"
+
+msgid "Back"
+msgstr "Sil"
+
+msgid "Both"
+msgstr "Her İkisi"
+
+msgid "Controles"
+msgstr "Oyun Kumandaları"
+
+msgid "Button Mapping"
+msgstr "Buton Ayarı"
+
+msgid "Button Mappings"
+msgstr "Buton Ayarları"
+
+msgid "Cancel"
+msgstr "İptal"
+
+msgid "Caps"
+msgstr "Caps"
+
+msgid "Cheats"
+msgstr "Hile"
+
+msgid "Cheats file not found!"
+msgstr "Hile dosyası bulunamadı!"
+
+msgid "Cheats Folder"
+msgstr "Hile Dizini"
+
+msgid "Choose Game"
+msgstr "Oyun Seç"
+
+msgid "Classic Controller"
+msgstr "Klasik Oyun Kumandası"
+
+msgid "Close"
+msgstr "Kapat"
+
+msgid "Coding"
+msgstr "Kod"
+
+msgid "Coding & menu design"
+msgstr "Kod & Menü Tasarımı"
+
+msgid "Compressed GBA files are not supported!"
+msgstr "Sıkıştırılmış GBA dosyaları desteklenmiyor!"
+
+msgid "Connecting to network share..."
+msgstr "Ağ paylaşımına bağlanıyor..."
+
+msgid "Controller"
+msgstr "Oyun Kumandası"
+
+msgid "Cover View"
+msgstr "Kapak"
+
+msgid "Covers Folder"
+msgstr "Kapak Dizini"
+
+msgid "Credits"
+msgstr "Hakkında"
+
+msgid "Cropping"
+msgstr "Kırpma"
+
+msgid "Crosshair"
+msgstr "Artı İmleci"
+
+msgid "Cursor"
+msgstr "İmleç"
+
+msgid "Data DVD"
+msgstr "Veri DVD'si"
+
+msgid "Default"
+msgstr "Varsayılan"
+
+msgid "Directory name is too long!"
+msgstr "Dizin adı çok uzun!"
+
+msgid "Disabled"
+msgstr "Kapalı"
+
+msgid "DISABLED"
+msgstr "KAPALI"
+
+msgid "distributed, or modified under the terms of the"
+msgstr "GNU Genel Kamu Lisansı (GPL) Sürüm 2'nin koşulları altında"
+
+msgid "Don't Save"
+msgstr "Kaydetme"
+
+msgid "Down"
+msgstr "Aşağı"
+
+msgid "DOWN"
+msgstr "AŞAĞI"
+
+msgid "Downloading..."
+msgstr "İndiriliyor..."
+
+msgid "Dutch"
+msgstr "Flemenkçe"
+
+msgid "Empty or invalid ZIP file!"
+msgstr "Boş veya geçersiz ZIP dosyası!"
+
+msgid "Enabled"
+msgstr "Açık"
+
+msgid "ENABLED"
+msgstr "AÇIK"
+
+msgid "English"
+msgstr "İngilizce"
+
+msgid "Error"
+msgstr "Hata"
+
+msgid "Error - Invalid ZIP file!"
+msgstr "Hata - Geçersiz ZIP dosyası!"
+
+msgid "Error creating file!"
+msgstr "Dosya oluşturulamadı!"
+
+msgid "Error loading game!"
+msgstr "Oyun yüklenemedi!"
+
+msgid "Error opening archive!"
+msgstr "Arşiv açılamadı!"
+
+msgid "Error opening directory!"
+msgstr "Dizin açılamadı!"
+
+msgid "Error opening file!"
+msgstr "Dosya açılamadı!"
+
+msgid "Error reading file!"
+msgstr "Dosya okunamadı!"
+
+msgid "Error saving file!"
+msgstr "Dosya kaydedilemedi!"
+
+msgid "Exit"
+msgstr "Çıkış"
+
+msgid "Exit Action"
+msgstr "Çıkış Eylemi"
+
+msgid "Failed to connect to network share."
+msgstr "Ağ paylaşımına bağlanılamadı."
+
+msgid "FDS BIOS file is invalid!"
+msgstr "Geçersiz FDS BIOS dosyası!"
+
+msgid "FDS BIOS file not found!"
+msgstr "FDS BIOS dosyası bulunamadı!"
+
+msgid "Filtered"
+msgstr "Filtre Var"
+
+msgid "Filtering"
+msgstr "Filtreleme"
+
+msgid "Fire"
+msgstr "Ateş"
+
+msgid "French"
+msgstr "Fransızca"
+
+msgid "GBA Screen Zoom"
+msgstr "GBA Ekran Yakınlaştırması"
+
+msgid "Game Genie ROM not found!"
+msgstr "Game Genie ROM'u bulunamadı!"
+
+msgid "Game Settings"
+msgstr "Oyun Ayarları"
+
+msgid "Game Settings - Button Mappings"
+msgstr "Oyun Ayarları - Buton Ayarları"
+
+msgid "Game Settings - Cheats"
+msgstr "Oyun Ayarları - Hileler"
+
+msgid "Game Settings - Video"
+msgstr "Oyun Ayarları - Ekran"
+
+msgid "Game Timing"
+msgstr "Oyun Zamanlaması"
+
+msgid "Game Genie DISABLED"
+msgstr "Game Genie KAPALI"
+
+msgid "Game Genie ENABLED"
+msgstr "Game Genie AÇIK"
+
+msgid "GameCube Controller"
+msgstr "GameCube Oyun Kumandası"
+
+msgid "German"
+msgstr "Almanca"
+
+msgid "GNU General Public License (GPL) Version 2."
+msgstr "kopyalanabilir, dağıtılabilir ve değiştirilebilir."
+
+msgid "Go Back"
+msgstr "Geri Dön"
+
+msgid "Horizontal"
+msgstr "Yatay"
+
+msgid "Information"
+msgstr "Bilgi"
+
+msgid "Initializing network..."
+msgstr "Ağ bağlantısı başlatılıyor..."
+
+msgid "Insert Coin"
+msgstr "Jeton Atın"
+
+msgid "Insert Coin / Switch Disk"
+msgstr "Jeton Atın / Diski Değiştirin"
+
+msgid "Invalid file size!"
+msgstr "Geçersiz dosya boyutu!"
+
+msgid "Invalid game file!"
+msgstr "Geçersiz oyun dosyası!"
+
+msgid "Invalid network settings - Check settings.xml."
+msgstr "Geçersiz ağ bağlantısı ayarları - settings.xml dosyasını kontrol ediniz."
+
+msgid "Invalid network settings - Share IP is blank."
+msgstr "Geçersiz ağ bağlantısı ayarları - IP paylaşımı boş."
+
+msgid "Invalid network settings - Share name is blank."
+msgstr "Geçersiz ağ bağlantısı ayarları - Paylaşım adı boş."
+
+msgid "Invalid save file"
+msgstr "Geçersiz kayıt dosyası"
+
+msgid "Invalid state file"
+msgstr "Geçersiz durum dosyası"
+
+msgid "Italian"
+msgstr "İtalyanca"
+
+msgid "Japanese"
+msgstr "Japonca"
+
+msgid "Justifier"
+msgstr "Justifier Tabanca"
+
+msgid "Justifier - GameCube Controller"
+msgstr "Justifier Tabanca - GameCube Oyun Kumandası"
+
+msgid "Justifier - Wiimote"
+msgstr "Justifier Tabanca - Wii Kumanda"
+
+msgid "Korean"
+msgstr "Korece"
+
+msgid "L TRIG"
+msgstr "L Mandalı"
+
+msgid "Language"
+msgstr "Dil"
+
+msgid "Languages Folder"
+msgstr "Dil Dizini"
+
+msgid "Left"
+msgstr "Sol"
+
+msgid "LEFT"
+msgstr "SOL"
+
+msgid "Left Button"
+msgstr "Sol Buton"
+
+msgid "Load"
+msgstr "Yükle"
+
+msgid "Load Device"
+msgstr "Yükleme Aygıtı"
+
+msgid "Load Folder"
+msgstr "Yükleme Dizini"
+
+msgid "Load Game"
+msgstr "Oyun Yükle"
+
+msgid "Loading"
+msgstr "Yükleme"
+
+msgid "Loading DVD..."
+msgstr "DVD yükleniyor..."
+
+msgid "Loading patch..."
+msgstr "Yama dosyası yükleniyor..."
+
+msgid "Loading..."
+msgstr "Yükleniyor..."
+
+msgid "Main Menu"
+msgstr "Ana Menü"
+
+msgid "Match GC Controls"
+msgstr "GC Kumandalarına Eşleştir"
+
+msgid "Match Wii Controls"
+msgstr "Wii Kumandalarına Eşleştir"
+
+msgid "Maximum filepath length reached!"
+msgid "Maksimum dizin yolu uzunluğuna ulaşıldı!"
+
+msgid "Menu"
+msgstr "Menü"
+
+msgid "Menu artwork"
+msgstr "Menü Görselleri"
+
+msgid "Menu sound"
+msgstr "Menü Sesleri"
+
+msgid "MINUS"
+msgstr "EKSİ"
+
+msgid "Music Volume"
+msgstr "Müzik Sesleri"
+
+msgid "Mute"
+msgstr "Sessiz"
+
+msgid "NES Controller"
+msgstr "NES Oyun Kumandası"
+
+msgid "NES Controllers (2)"
+msgstr "NES Oyun Kumandası (2)"
+
+msgid "NES Controllers (4)"
+msgstr "NES Oyun Kumandası (4)"
+
+msgid "NES Zapper"
+msgstr "NES Zapper Tabanca"
+
+msgid "Network"
+msgstr "Ağ"
+
+msgid "Network Share"
+msgstr "Ağ Paylaşımı"
+
+msgid "New"
+msgstr "Yeni"
+
+msgid "New Snapshot"
+msgstr "Yeni Enstantane"
+
+msgid "New SRAM"
+msgstr "Yeni SRAM"
+
+msgid "No"
+msgstr "Hayır"
+
+msgid "No data to save!"
+msgstr "Kaydedilecek veri yok!"
+
+msgid "No disc inserted!"
+msgstr "Disk takılmamış!"
+
+msgid "No SRAM data to save!"
+msgstr "Kaydedilecek SRAM verisi yok!"
+
+msgid "No game saves found."
+msgstr "Hiç bir oyun kaydı bulunamadı."
+
+msgid "None"
+msgstr "Yok"
+
+msgid "NTSC (480i)"
+msgstr "NTSC (480i)"
+
+msgid "Nunchuk"
+msgstr "Nunchuk"
+
+msgid "Off"
+msgstr "Kapalı"
+
+msgid "Official Site: http://code.google.com/p/fceugc/"
+msgstr "Resmi Site: http://code.google.com/p/fceugc/"
+
+msgid "Official Site: http://code.google.com/p/snes9x-gx/"
+msgstr "Resmi Site: http://code.google.com/p/snes9x-gx/"
+
+msgid "Official Site: http://code.google.com/p/vba-wii/"
+msgstr "Resmi Site: http://code.google.com/p/vba-wii/"
+
+msgid "OK"
+msgstr "Tamam"
+
+msgid "On"
+msgstr "Açık"
+
+msgid "Original"
+msgstr "Orijinal"
+
+msgid "Out of memory!"
+msgstr "Bellek yetersiz!"
+
+msgid "Out of memory: too many files!"
+msgstr "Bellek yetersiz: çok fazla dosya!"
+
+msgid "P1"
+msgstr "P1"
+
+msgid "P2"
+msgstr "P2"
+
+msgid "P3"
+msgstr "P3"
+
+msgid "P4"
+msgstr "P4"
+
+msgid "PAL (50Hz)"
+msgstr "PAL (50Hz)"
+
+msgid "PAL (60Hz)"
+msgstr "PAL (60Hz)"
+
+msgid "Palette saved"
+msgstr "Renk paleti kaydedildi"
+
+msgid "Partial Stretch"
+msgstr "Kısmı Uzatma"
+
+msgid "Pause"
+msgstr "Duraklatma"
+
+msgid "Please Wait"
+msgstr "Lütfen Bekleyiniz"
+
+msgid "PLUS"
+msgstr "ARTI"
+
+msgid "Portuguese"
+msgstr "Portekizce"
+
+msgid "Brazilian Portuguese"
+msgstr "Brezilya Portekizcesi"
+
+msgid "Power off Wii"
+msgstr "Wii'yi kapat"
+
+msgid "Preferences saved"
+msgstr "Ayarlar kaydedildi"
+
+msgid "Press any button on the Classic Controller now. Press Home to clear the existing mapping."
+msgstr "Şimdi Klasik Oyun Kumandasında herhangi bir butona basın. Mevcut buton ayarını sıfırlamak için Home butonuna basın."
+
+msgid "Press any button on the GameCube Controller now. Press Home or the C-Stick in any direction to clear the existing mapping."
+msgstr "Şimdi GameCube Oyun Kumandasında herhangi bir butona basın. Mevcut buton ayarını sıfırlamak için Home butonuna basın veya C-Stickini herhangi bir yöne itin."
+
+msgid "Press any button on the GameCube Controller now. Press the C-Stick in any direction to clear the existing mapping."
+msgstr "Şimdi GameCube Oyun Kumandasında herhangi bir butona basın. Mevcut buton ayarını sıfırlamak için C-Stickini herhangi bir yöne itin."
+
+msgid "Press any button on the Wiimote now. Press Home to clear the existing mapping."
+msgstr "Şimdi Wii Uzaktan Kumandasında herhangi bir butona basın. Mevcut buton ayarını sıfırlamak için Home butonuna basın."
+
+msgid "Press any button on the Wiimote or Nunchuk now. Press Home to clear the existing mapping."
+msgstr "Şimdi Wii Uzaktan Kumandasında veya Nunchuk'ta herhangi bir butona basın. Mevcut buton ayarını sıfırlamak için Home butonuna basın."
+
+msgid "Progressive (480p)"
+msgstr "Progresif (480p)"
+
+msgid "Quit Game"
+msgstr "Oyundan Çık"
+
+msgid "Quit this game? Any unsaved progress will be lost."
+msgstr "Oyundan çıkılsın mı? Kaydedilmemiş tüm veriler kaybolacak."
+
+msgid "R TRIG"
+msgstr "R Mandalı"
+
+msgid "RAM saving is not available for FDS games!"
+msgstr "RAM kaydetme FDS oyunları için mevcut değil!"
+
+msgid "Reboot"
+msgstr "Yeniden Başlat"
+
+msgid "Rendering"
+msgstr "Rendering"
+
+msgid "Reset"
+msgstr "Tekrar Başlat"
+
+msgid "Reset Game"
+msgstr "Oyunu Tekrar Başlat"
+
+msgid "Reset this game? Any unsaved progress will be lost."
+msgstr "Oyun sıfırlansın mı? Kaydedilmemiş tüm veriler kaybolacak."
+
+msgid "Reset Mappings"
+msgstr "Buton Ayarlarını Sıfırla"
+
+msgid "Reset Settings"
+msgstr "Ayarları Sıfırla"
+
+msgid "Retry"
+msgstr "Yeniden dene"
+
+msgid "Return to Loader"
+msgstr "Loader Ekranına Dön"
+
+msgid "Return to Wii Menu"
+msgstr "Wii Menüsüne Dön"
+
+msgid "Right"
+msgstr "Sağ"
+
+msgid "RIGHT"
+msgstr "SAĞ"
+
+msgid "Right Button"
+msgstr "Sağ Buton"
+
+msgid "Rumble"
+msgstr "Titreşim"
+
+msgid "Save"
+msgstr "Kaydet"
+
+msgid "Save Device"
+msgstr "Kayıt Aygıtı"
+
+msgid "Save failed!"
+msgstr "Kaydetme başarısız!"
+
+msgid "Save file not found"
+msgstr "Kayıt dosyası bulunamadı"
+
+msgid "Save Folder"
+msgstr "Kayıt Dizini"
+
+msgid "Save Game"
+msgstr "Oyunu Kaydet"
+
+msgid "Save RAM and State?"
+msgstr "RAM ve Durum Kaydedilsin mi?"
+
+msgid "Save Snapshot?"
+msgstr "Enstantane Kaydedilsin mi?"
+
+msgid "Save SRAM and Snapshot?"
+msgstr "SRAM ve Enstantane Kaydedilsin mi?"
+
+msgid "Save State?"
+msgstr "Durum kaydedilsin mi?"
+
+msgid "Save successful"
+msgstr "Kayıt başarılı"
+
+msgid "Saving"
+msgstr "Kayıt"
+
+msgid "Saving preferences..."
+msgstr "Ayarlar kaydediliyor..."
+
+msgid "Saving..."
+msgstr "Kaydediliyor..."
+
+msgid "Scaling"
+msgstr "Ölçekleme"
+
+msgid "Screen Position"
+msgstr "Ekran Konumu"
+
+msgid "Screen Zoom"
+msgstr "Ekran Yakınlaştırması"
+
+msgid "Select"
+msgstr "Select"
+
+msgid "Seek error!"
+msgstr "Tarama hatası!"
+
+msgid "Settings"
+msgstr "Ayarlar"
+
+msgid "Settings - Menu"
+msgstr "Ayarlar - Menü"
+
+msgid "Settings - Network"
+msgstr "Ayarlar - Ağ"
+
+msgid "Settings - Saving & Loading"
+msgstr "Ayarlar - Kayıt & Yükleme"
+
+msgid "SD Card"
+msgstr "SD Kartı"
+
+msgid "SD card not found!"
+msgstr "SD kartı bulunamadı!"
+
+msgid "Shift"
+msgstr "Shift"
+
+msgid "Simp_chinese"
+msgstr "Basitleştirilmiş Çince"
+
+msgid "SMB Share IP"
+msgstr "SMB Paylaşım IP'si"
+
+msgid "SMB Share Name"
+msgstr "SMB Paylaşım Adı"
+
+msgid "SMB Share Password"
+msgstr "SMB Paylaşım Şifresi"
+
+msgid "SMB Share Username"
+msgstr "SMB Paylaşım Kullanıcı Adı"
+
+msgid "Snapshot"
+msgstr "Enstantane"
+
+msgid "Snapshot (Auto)"
+msgstr "Enstantane (Otomatik)"
+
+msgid "SNES Controller"
+msgstr "SNES Oyun Kumandası"
+
+msgid "SNES Controllers (2)"
+msgstr "SNES Oyun Kumandası (2)"
+
+msgid "SNES Controllers (4)"
+msgstr "SNES Oyun Kumandası (4)"
+
+msgid "SNES Controller - Classic Controller"
+msgstr "SNES Oyun Kumandası - Klasik Oyun Kumandası"
+
+msgid "SNES Controller - GameCube Controller"
+msgstr "SNES Oyun Kumandası - GameCube Oyun Kumandası"
+
+msgid "SNES Controller - Nunchuk + Wiimote"
+msgstr "SNES Oyun Kumandası - Nunchuck + Wii Kumanda"
+
+msgid "SNES Controller - Wiimote"
+msgstr "SNES Oyun Kumandası - Wii Kumanda"
+
+msgid "SNES Mouse"
+msgstr "SNES Faresi"
+
+msgid "SNES Mouse - GameCube Controller"
+msgstr "SNES Faresi - GameCube Oyun Kumandası"
+
+msgid "SNES Mouse - Wiimote"
+msgstr "SNES Faresi - Wii Kumanda"
+
+msgid "Snes9x - Copyright (c) Snes9x Team 1996 - 2006"
+msgstr "Snes9x - Telif Hakkı (c) Snes9x Team 1996-2006"
+
+msgid "Sound Effects Volume"
+msgstr "Efekt Sesleri"
+
+msgid "Spanish"
+msgstr "İspanyolca"
+
+msgid "Sprite Limit"
+msgstr "Sprite Sınırı"
+
+msgid "SRAM file not found"
+msgstr "SRAM dosyası bulunamadı"
+
+msgid "Start"
+msgstr "Start"
+
+msgid "State"
+msgstr "Durum"
+
+msgid "State (Auto)"
+msgstr "Durum (Otomatik)"
+
+msgid "State file not found"
+msgstr "Durum dosyası bulunamadı"
+
+msgid "Stretch to Fit"
+msgstr "Uzat"
+
+msgid "Super Scope"
+msgstr "Super Scope"
+
+msgid "Superscope"
+msgstr "Superscope"
+
+msgid "Superscope - GameCube Controller"
+msgstr "Superscope - GameCube Oyun Kumandası"
+
+msgid "Superscope - Wiimote"
+msgstr "Superscope - Wii Kumanda"
+
+msgid "This software is open source and may be copied,"
+msgstr "Bu yazılım açık kaynak kodlu olup,"
+
+msgid "Trad_chinese"
+msgstr "Geleneksel Çince"
+
+msgid "Unable to initialize network!"
+msgstr "Ağ başlatılamıyor!"
+
+msgid "Unable to locate a load device!"
+msgstr "Yükleme aygıtı bulunamıyor!"
+
+msgid "Unable to locate a save device!"
+msgstr "Kayıt aygıtı bulunamıyor!"
+
+msgid "Unable to open snapshot!"
+msgstr "Enstantane açılamıyor!"
+
+msgid "Unfiltered"
+msgstr "Filtre Yok"
+
+msgid "Unknown file type!"
+msgstr "Tanınmayan dosya türü!"
+
+msgid "Unrecognized DVD format."
+msgstr "Desteklenmeyen DVD formatı."
+
+msgid "Unrecognized file extension!"
+msgstr "Desteklenmeyen dosya uzantısı!"
+
+msgid "Up"
+msgstr "Yukarı"
+
+msgid "UP"
+msgstr "YUKARI"
+
+msgid "Up One Level"
+msgstr "Üst Dizin"
+
+msgid "Update Available"
+msgstr "Güncelleme Mevcut"
+
+msgid "Update failed!"
+msgstr "Güncelleme başarısız!"
+
+msgid "Update later"
+msgstr "Sonra güncelle"
+
+msgid "Update now"
+msgstr "Şimdi güncelle"
+
+msgid "Update successful!"
+msgstr "Güncelleme başarılı!"
+
+msgid "USB drive not found!"
+msgstr "USB aygıtı bulunamadı!"
+
+msgid "USB Mass Storage"
+msgstr "USB Yığın Depolama Aygıtı"
+
+msgid "Vertical"
+msgstr "Dikey"
+
+msgid "Video"
+msgstr "Ekran"
+
+msgid "Video Mode"
+msgstr "Ekran Modu"
+
+msgid "VM8: Unknown page type!"
+msgstr "VM8: Tanınmayan sayfa türü!"
+
+msgid "VM16: Unknown page type!"
+msgstr "VM16: Tanınmayan sayfa türü!"
+
+msgid "VM32: Unknown page type!"
+msgstr "VM32: Tanınmayan sayfa türü!"
+
+msgid "Wiimote"
+msgstr "Wii Kumanda"
+
+msgid "Wiimote Orientation"
+msgstr "Wii Kumanda Yönelimi"
+
+msgid "Yes"
+msgstr "Evet"
+
+msgid "Zapper"
+msgstr "Zapper Tabanca"
+
+msgid "Zapper Crosshair"
+msgstr "Zapper Tabanca Artı İmleci"
+
+msgid "Logo"
+msgstr "Logo"
+
+msgid "Turbo On"
+msgstr "Turbo Açık"
+
+msgid "Turbo Off"
+msgstr "Turbo Kapalı"
+
+msgid "Automatic"
+msgstr "Otomatik"
+
+msgid "Palette"
+msgstr "Renk Paleti"
+
+msgid "AspiringSquire's Real palette"
+msgstr "AspiringSquire Gerçek renk paleti"
+
+msgid "Loopy's palette"
+msgstr "Loopy renk paleti"
+
+msgid "Quor's palette"
+msgstr "Quor renk paleti"
+
+msgid "Chris Covell's palette"
+msgstr "Chris Covell renk paleti"
+
+msgid "Matthew Conte's palette"
+msgstr "Matthew Conte renk paleti"
+
+msgid "PasoFami/99 palette"
+msgstr "PasoFami/99 renk paleti"
+
+msgid "CrashMan's palette"
+msgstr "CrashMan renk paleti"
+
+msgid "MESS palette"
+msgstr "MESS renk paleti"
+
+msgid "Zaphod's VS Castlevania palette"
+msgstr "Zaphod'un VS Castlevania renk paleti"
+
+msgid "Zaphod's VS SMB palette"
+msgstr "Zaphod'un VS SMB renk paleti"
+
+msgid "VS Dr. Mario palette"
+msgstr "VS Dr. Mario renk paleti"
+
+msgid "VS Castlevania palette"
+msgstr "VS Castlevania renk paleti"
+
+msgid "VS SMB/VS Ice Climber palette"
+msgstr "VS SMB/VS Ice Climber renk paleti"
+
+msgid "Catalan"
+msgstr "Katalonca"
+
+msgid "The current IOS has been altered (fake-signed). Functionality and/or stability may be adversely affected."
+msgstr "Geçerli IOS değiştirilmiş (sahte-imzalı). Işlevsellik ve/veya stabilite olumsuz etkilenebilir."
+
+msgid "The current IOS is unsupported. Functionality and/or stability may be adversely affected."
+msgstr "Geçerli IOS desteklenmiyor. Işlevsellik ve/veya stabilite olumsuz etkilenebilir."
+
+msgid "Turkish"
+msgstr "Türkçe"

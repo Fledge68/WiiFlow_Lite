@@ -1,0 +1,840 @@
+msgid "&"
+msgstr "&"
+
+msgid "16:9 Correction"
+msgstr 16:9 Correctie"
+
+msgid "7z decompression failed: Archive contains too many files"
+msgstr "7z decompressie mislukt: te veel bestanden in archief"
+
+msgid "7z decompression failed: Failed to read file data"
+msgstr "7z decompressie mislukt: fout bij lezen van bestand"
+
+msgid "7z decompression failed: File is corrupt"
+msgstr "7z decompressie mislukt: fout bij lezen van bestand"
+
+msgid "7z decompression failed: File is corrupt (CRC mismatch)"
+msgstr "7z decompressie mislukt: fout bij lezen van bestand (CRC komt niet overeen)"
+
+msgid "7z decompression failed: File uses too high of compression settings (dictionary size is too large)"
+msgstr "7z decompressie mislukt: bestand gebruikt een te hoge compressie (woordenboek is te groot)"
+
+msgid "7z decompression failed: File uses unsupported compression settings"
+msgstr "7z decompressie mislukt: bestand gebruikt een niet ondersteunde compressie"
+
+msgid "A (Rapid)"
+msgstr "A (Snel)"
+
+msgid "Additional coding"
+msgstr "Overige programmering"
+
+msgid "Aim Offscreen"
+msgstr "Richt buiten het scherm"
+
+msgid "An update is available!"
+msgstr "Een update is beschikbaar!"
+
+msgid "Are you sure that you want to reset this game? Any unsaved progress will be lost."
+msgstr "Weet je zeker dat je het spel wilt herstarten? Niet opgeslagen gegevens zullen verloren gaan."
+
+msgid "Are you sure that you want to reset your mappings?"
+msgstr "Weet je zeker dat je de controller instellingen wilt wissen?"
+
+msgid "Are you sure that you want to reset your settings?"
+msgstr "Weet je zeker dat je de instellingen wilt wissen?"
+
+msgid "Maintain Aspect Ratio"
+msgstr "Behoud Beeldverhouding"
+
+msgid "Attempting to determine load device..."
+msgstr "Poging om het laadapparaat te bepalen..."
+
+msgid "Attempting to determine save device..."
+msgstr "Poging om het opslaanapparaat te bepalen..."
+
+msgid "Auto"
+msgstr "Auto"
+
+msgid "Auto Detect"
+msgstr "Detecteer Automatisch"
+
+msgid "Auto Load"
+msgstr "Auto Openen"
+
+msgid "Auto Save"
+msgstr "Auto Opslaan"
+
+msgid "Automatic (Recommended)"
+msgstr "Automatisch (Aanbevolen)"
+
+msgid "B (Rapid)"
+msgstr "B (Snel)"
+
+msgid "Back"
+msgstr "Terug"
+
+msgid "Both"
+msgstr "Beide"
+
+msgid "Button Mapping"
+msgstr "Controller"
+
+msgid "Button Mappings"
+msgstr "Controller Instellingen"
+
+msgid "Cancel"
+msgstr "Annuleren"
+
+msgid "Caps"
+msgstr "Caps"
+
+msgid "Cheats"
+msgstr "Cheats"
+
+msgid "Cheats file not found!"
+msgstr "Cheats bestand niet gevonden!"
+
+msgid "Cheats Folder"
+msgstr "Cheats Map"
+
+msgid "Choose Game"
+msgstr "Kies Spel"
+
+msgid "Classic Controller"
+msgstr "Traditionele Controller"
+
+msgid "Close"
+msgstr "Sluiten"
+
+msgid "Coding"
+msgstr "Programmering"
+
+msgid "Coding & menu design"
+msgstr "Programmering & menu ontwerp"
+
+msgid "Compressed GBA files are not supported!"
+msgstr "Gecomprimeerde GBA bestanden zijn niet ondersteund!"
+
+msgid "Connecting to network share..."
+msgstr "Verbinden met gedeelde map..."
+
+msgid "Controller"
+msgstr "Controller"
+
+msgid "Cover View"
+msgstr "Hoes Weergave"
+
+msgid "Covers Folder"
+msgstr "Hoezen map"
+
+msgid "Credits"
+msgstr "Credits"
+
+msgid "Cropping"
+msgstr "Bijsnijden"
+
+msgid "Crosshair"
+msgstr "Crosshair"
+
+msgid "Cursor"
+msgstr "Cursor"
+
+msgid "Data DVD"
+msgstr "DVD-ROM"
+
+msgid "Default"
+msgstr "Standaard"
+
+msgid "Directory name is too long!"
+msgstr "Mapnaam is te lang!"
+
+msgid "Disabled"
+msgstr "Uitgeschakeld"
+
+msgid "DISABLED"
+msgstr "UITGESCHAKELD"
+
+msgid "distributed, or modified under the terms of the"
+msgstr "uitgegeven, of bewerkt onder regels van de"
+
+msgid "Don't Save"
+msgstr "Niet Opslaan"
+
+msgid "Down"
+msgstr "Omlaag"
+
+msgid "DOWN"
+msgstr "OMLAAG"
+
+msgid "Downloading..."
+msgstr "Bezig met downloaden..."
+
+msgid "Dutch"
+msgstr "Nederlands"
+
+msgid "Empty or invalid ZIP file!"
+msgstr "Leeg of beschadigd ZIP bestand!"
+
+msgid "Enabled"
+msgstr "Ingeschakeld"
+
+msgid "ENABLED"
+msgstr "INGESCHAKELD"
+
+msgid "English"
+msgstr "Engels"
+
+msgid "Error"
+msgstr "Fout"
+
+msgid "Error - Invalid ZIP file!"
+msgstr "Fout - Verkeerd ZIP bestand!"
+
+msgid "Error creating file!"
+msgstr "Fout bij het maken van het bestand!"
+
+msgid "Error loading game!"
+msgstr "Fout bij het laden van het spel!"
+
+msgid "Error opening archive!"
+msgstr "Fout bij het openen van het archief!"
+
+msgid "Error opening directory!"
+msgstr "Fout bij het openen van de map!"
+
+msgid "Error opening file!"
+msgstr "Fout bij het openen van het bestand!"
+
+msgid "Error reading file!"
+msgstr "Fout bij het lezen van het bestand!"
+
+msgid "Error saving file!"
+msgstr "Fout bij het opslaan van het bestand!"
+
+msgid "Exit"
+msgstr "Afsluiten"
+
+msgid "Exit Action"
+msgstr "Afsluitactie"
+
+msgid "Failed to connect to network share."
+msgstr "Verbinden met gedeelde map is mislukt."
+
+msgid "FDS BIOS file is invalid!"
+msgstr "FDS BIOS bestand is verkeerd!"
+
+msgid "FDS BIOS file not found!"
+msgstr "FDS BIOS bestand kan niet gevonden worden!"
+
+msgid "Filtered"
+msgstr "Gesorteerd"
+
+msgid "Filtering"
+msgstr "Sortering"
+
+msgid "Fire"
+msgstr "Vuren"
+
+msgid "French"
+msgstr "Frans"
+
+msgid "GBA Screen Zoom"
+msgstr "GBA Scherm Zomen"
+
+msgid "Game Genie ROM not found!"
+msgstr "Game Genie ROM niet gevonden!"
+
+msgid "Game Settings"
+msgstr "Spelinstellingen"
+
+msgid "Game Settings - Button Mappings"
+msgstr "Spelinstellingen - Controller Configuratie"
+
+msgid "Game Settings - Cheats"
+msgstr "Spelinstellingen - Cheats"
+
+msgid "Game Settings - Video"
+msgstr "Spelinstellingen - Video"
+
+msgid "Game Timing"
+msgstr "Spel Timen"
+
+msgid "Game Genie DISABLED"
+msgstr "Game Genie UITGESCHAKELD"
+
+msgid "Game Genie ENABLED"
+msgstr "Game Genie INGESCHAKELD"
+
+msgid "GameCube Controller"
+msgstr "GameCube Controller"
+
+msgid "German"
+msgstr "Duits"
+
+msgid "GNU General Public License (GPL) Version 2."
+msgstr "GNU General Public License (GPL) Versie 2."
+
+msgid "Go Back"
+msgstr "Ga Terug"
+
+msgid "Horizontal"
+msgstr "Horizontaal"
+
+msgid "Information"
+msgstr "Informatie"
+
+msgid "Initializing network..."
+msgstr "Netwerk Initialiseren..."
+
+msgid "Insert Coin"
+msgstr "Munt inwerpen"
+
+msgid "Insert Coin / Switch Disk"
+msgstr "Munt inwerpen / Disk wisselen"
+
+msgid "Invalid file size!"
+msgstr "Verkeerde bestandsgrootte!"
+
+msgid "Invalid game file!"
+msgstr "Verkeerd spelbestand!"
+
+msgid "Invalid network settings - Check settings.xml."
+msgstr "Verkeerde netwerk instellingen - Controleer settings.xml."
+
+msgid "Invalid network settings - Share IP is blank."
+msgstr "Verkeerde netwerk instellingen - Gedeeld ip adres is niet opgegeven."
+
+msgid "Invalid network settings - Share name is blank."
+msgstr "Verkeerde netwerk instellingen - Gedeelde map is niet opgegeven."
+
+msgid "Invalid save file"
+msgstr "Invalide opgeslagen bestand"
+
+msgid "Invalid state file"
+msgstr "Invalide status bestand"
+
+msgid "Italian"
+msgstr "Italiaans"
+
+msgid "Japanese"
+msgstr "Japans"
+
+msgid "Justifier"
+msgstr "Konami Justifier"
+
+msgid "Justifier - GameCube Controller"
+msgstr "Konami Justifier - GameCube Controller"
+
+msgid "Justifier - Wiimote"
+msgstr "Konami Justifier - Wiimote"
+
+msgid "Korean"
+msgstr "Koreaans"
+
+msgid "L TRIG"
+msgstr "L"
+
+msgid "Language"
+msgstr "Taal"
+
+msgid "Languages Folder"
+msgstr "Talenmap"
+
+msgid "Left"
+msgstr "Links"
+
+msgid "LEFT"
+msgstr "LINKS"
+
+msgid "Left Button"
+msgstr "Knop Links"
+
+msgid "Load"
+msgstr "Openen"
+
+msgid "Load Device"
+msgstr "Open Apparaat"
+
+msgid "Load Folder"
+msgstr "Open Map"
+
+msgid "Load Game"
+msgstr "Spel starten"
+
+msgid "Loading"
+msgstr "Laden"
+
+msgid "Loading DVD..."
+msgstr "Bezig met DVD laden..."
+
+msgid "Loading patch..."
+msgstr "Bezig met patch laden..."
+
+msgid "Loading..."
+msgstr "Bezig met laden..."
+
+msgid "Main Menu"
+msgstr "Hoofdmenu"
+
+msgid "Match GC Controls"
+msgstr "Gelijk aan GC besturing"
+
+msgid "Match Wii Controls"
+msgstr "Gelijk aan Wii besturing"
+
+msgid "Maximum filepath length reached!"
+msgid "Maximale bestandspad lengte berijkt!"
+
+msgid "Menu"
+msgstr "Menu"
+
+msgid "Menu artwork"
+msgstr "Menu artwork"
+
+msgid "Menu sound"
+msgstr "Menu geluid"
+
+msgid "Music Volume"
+msgstr "Muziek volume"
+
+msgid "MINUS"
+msgstr "MIN"
+
+msgid "Mute"
+msgstr "Stil"
+
+msgid "NES Controller"
+msgstr "NES Controller"
+
+msgid "NES Controllers (2)"
+msgstr "NES COntrollers (2)"
+
+msgid "NES Controllers (4)"
+msgstr "NES Controllers (4)"
+
+msgid "NES Zapper"
+msgstr "Nintendo Zapper"
+
+msgid "Network"
+msgstr "Netwerk"
+
+msgid "Network Share"
+msgstr "Gedeelde map"
+
+msgid "New"
+msgstr "Nieuw"
+
+msgid "New Snapshot"
+msgstr "Nieuw Snapshot"
+
+msgid "New SRAM"
+msgstr "Nieuw SRAM"
+
+msgid "No"
+msgstr "Nee"
+
+msgid "No data to save!"
+msgstr "Geen data om op te slaan!"
+
+msgid "No disc inserted!"
+msgstr "Geen schijf ingevoerd!"
+
+msgid "No SRAM data to save!"
+msgstr "Geen SRAM om op te slaan!"
+
+msgid "No game saves found."
+msgstr "Geen opgeslagen spellen gevonden."
+
+msgid "None"
+
+msgstr "Geen"
+
+msgid "NTSC (480i)"
+msgstr "NTSC (480i)"
+
+msgid "Nunchuk"
+msgstr "Nunchuk"
+
+msgid "Off"
+msgstr "Uit"
+
+msgid "Official Site: http://code.google.com/p/fceugc/"
+msgstr "Officiële Website: http://code.google.com/p/fceugc/"
+
+msgid "Official Site: http://code.google.com/p/snes9x-gx/"
+msgstr "Officiële Website: http://code.google.com/p/snes9x-gx/"
+
+msgid "Official Site: http://code.google.com/p/vba-wii/"
+msgstr "Officiële Website: http://code.google.com/p/vba-wii/"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "On"
+msgstr "Aan"
+
+msgid "Original"
+msgstr "Origineel"
+
+msgid "Out of memory!"
+msgstr "Te weinig geheugen!"
+
+msgid "Out of memory: too many files!"
+msgstr "Te weinig geheugen: te veel bestanden!"
+
+msgid "P1"
+msgstr "P1"
+
+msgid "P2"
+msgstr "P2"
+
+msgid "P3"
+msgstr "P3"
+
+msgid "P4"
+msgstr "P4"
+
+msgid "PAL (50Hz)"
+msgstr "PAL (50Hz)"
+
+msgid "PAL (60Hz)"
+msgstr "PAL (60Hz)"
+
+msgid "Palette saved"
+msgstr "Kleurenpalet opgeslagen"
+
+msgid "Partial Stretch"
+msgstr "Gedeeltelijk Uitgerekt"
+
+msgid "Pause"
+msgstr "Pauze"
+
+msgid "Please Wait"
+msgstr "Even geduld"
+
+msgid "PLUS"
+msgstr "PLUS"
+
+msgid "Portuguese"
+msgstr "Portugees"
+
+msgid "Power off Wii"
+msgstr "Wii uitschakelen"
+
+msgid "Preferences saved"
+msgstr "Instellingen opgeslagen"
+
+msgid "Press any button on the Classic Controller now. Press Home to clear the existing mapping."
+msgstr "Druk op een knop op de Tradionele Controller. Druk op Home om de instelling te wissen."
+
+msgid "Press any button on the GameCube Controller now. Press Home or the C-Stick in any direction to clear the existing mapping."
+msgstr "Druk op een knop op de GameCube Controller. Druk op Home of beweeg de C-stick om de instelling te wissen."
+
+msgid "Press any button on the GameCube Controller now. Press the C-Stick in any direction to clear the existing mapping."
+msgstr "Druk op een knop op de GameCube Controller. Beweeg de C-stick om de instelling te wissen."
+
+msgid "Press any button on the Wiimote now. Press Home to clear the existing mapping."
+msgstr "Druk op een knop op de Wiimote. Druk op Home om de instelling te wissen."
+
+msgid "Press any button on the Wiimote or Nunchuk now. Press Home to clear the existing mapping."
+msgstr "Druk op een knop op de Wiimote of Nunchuck. Druk op Home om de instelling te wissen."
+
+msgid "Progressive (480p)"
+msgstr "Progressief (480p)"
+
+msgid "Quit Game"
+msgstr "Spel Afsluiten"
+
+msgid "Quit this game? Any unsaved progress will be lost."
+msgstr "Sluit dit spel af? Niet opgeslagen gegevens zullen verloren gaan."
+
+msgid "R TRIG"
+msgstr "R"
+
+msgid "RAM saving is not available for FDS games!"
+msgstr "RAM opslaan is niet beschikbaar voor FDS spellen!"
+
+msgid "Reboot"
+msgstr "Herstart"
+
+msgid "Rendering"
+msgstr "Rendering"
+
+msgid "Reset"
+msgstr "Reset"
+
+msgid "Reset Game"
+msgstr "Herstart Spel"
+
+msgid "Reset this game? Any unsaved progress will be lost."
+msgstr "Herstart dit spel? Niet opgeslagen gegevens zullen verloren gaan."
+
+msgid "Reset Mappings"
+msgstr "Reset Controllers"
+
+msgid "Reset Settings"
+msgstr "Reset Instellingen"
+
+msgid "Retry"
+msgstr "Opnieuw"
+
+msgid "Return to Loader"
+msgstr "Terug naar de Lader"
+
+msgid "Return to Wii Menu"
+msgstr "Terug naar het Wii Menu"
+
+msgid "Right"
+msgstr "Rechts"
+
+msgid "RIGHT"
+msgstr "RECHTS"
+
+msgid "Right Button"
+msgstr "Knop Rechts"
+
+msgid "Rumble"
+msgstr "Tril"
+
+msgid "Save"
+msgstr "Opslaan"
+
+msgid "Save Device"
+msgstr "Opslaan Apparaat"
+
+msgid "Save failed!"
+msgstr "Opslaan is mislukt!"
+
+msgid "Save file not found"
+msgstr "Opgeslagen bestand is niet gevonden"
+
+msgid "Save Folder"
+msgstr "Opslaan Map"
+
+msgid "Save Game"
+msgstr "Spel Opslaan"
+
+msgid "Save RAM and State?"
+msgstr "Geheugen en status opslaan?"
+
+msgid "Save Snapshot?"
+msgstr "Snapshot Opslaan?"
+
+msgid "Save SRAM and Snapshot?"
+msgstr "SRAM en Snapshot opslaan?"
+
+msgid "Save State?"
+msgstr "Status Opslaan?"
+
+msgid "Save successful"
+msgstr "Succesvol opgeslagen"
+
+msgid "Saving"
+msgstr "Opslaan"
+
+msgid "Saving preferences..."
+msgstr "Instellingen opslaan..."
+
+msgid "Saving..."
+msgstr "Bezig met opslaan..."
+
+msgid "Scaling"
+msgstr "Schaal"
+
+msgid "Screen Position"
+msgstr "Schermpositie"
+
+msgid "Screen Zoom"
+msgstr "Zomen"
+
+msgid "Select"
+msgstr "Selecteer"
+
+msgid "Seek error!"
+msgstr "Zoekfout!"
+
+msgid "Settings"
+msgstr "Instellingen"
+
+msgid "Settings - Menu"
+msgstr "Instellingen - Menu"
+
+msgid "Settings - Network"
+msgstr "Instellingen - Netwerk"
+
+msgid "Settings - Saving & Loading"
+msgstr "Instellingen - Laden & Opslaan"
+
+msgid "SD Card"
+msgstr "SD Kaart"
+
+msgid "SD card not found!"
+msgstr "Geen SD kaart gevonden!"
+
+msgid "Shift"
+msgstr "Shift"
+
+msgid "Simp_chinese"
+msgstr "Vereenvoudigd Chinees"
+
+msgid "SMB Share IP"
+msgstr "IP SMB Share"
+
+msgid "SMB Share Name"
+msgstr "SMB Share Naam"
+
+msgid "SMB Share Password"
+msgstr "SMB Share Wachtwoord"
+
+msgid "SMB Share Username"
+msgstr "SMB Share Gebruiker"
+
+msgid "Snapshot"
+msgstr "Snapshot"
+
+msgid "Snapshot (Auto)"
+msgstr "Snapshot (Auto)"
+
+msgid "SNES Controller"
+msgstr "SNES Controller"
+
+msgid "SNES Controllers (2)"
+msgstr "SNES Controllers (2)"
+
+msgid "SNES Controllers (4)"
+msgstr "SNES Controllers (4)"
+
+msgid "SNES Controller - Classic Controller"
+msgstr "SNES Controller - Classic Controller"
+
+msgid "SNES Controller - GameCube Controller"
+msgstr "SNES Controller - GameCube Controller"
+
+msgid "SNES Controller - Nunchuk + Wiimote"
+msgstr "SNES Controller - Nunchuk + Wiimote"
+
+msgid "SNES Controller - Wiimote"
+msgstr "SNES Controller - Wiimote"
+
+msgid "SNES Mouse"
+msgstr "SNES Muis"
+
+msgid "SNES Mouse - GameCube Controller"
+msgstr "SNES Muis - GameCube Controller"
+
+msgid "SNES Mouse - Wiimote"
+msgstr "SNES Muis - Wiimote"
+
+msgid "Snes9x - Copyright (c) Snes9x Team 1996 - 2006"
+msgstr "Snes9x - Copyright (c) Snes9x Team 1996 - 2006"
+
+msgid "Sound Effects Volume"
+msgstr "Volume Geluidseffecten"
+
+msgid "Spanish"
+msgstr "Spaans"
+
+msgid "Sprite Limit"
+msgstr "Sprite Limiet"
+
+msgid "SRAM file not found"
+msgstr "SRAM bestand niet gevonden"
+
+msgid "State"
+msgstr "Status"
+
+msgid "State (Auto)"
+msgstr "Status (Auto)"
+
+msgid "State file not found"
+msgstr "Status bestand niet gevonden"
+
+msgid "Stretch to Fit"
+msgstr "Uitrekken tot passend"
+
+msgid "Superscope"
+msgstr "Superscope"
+
+msgid "Superscope - GameCube Controller"
+msgstr "Superscope - GameCube Controller"
+
+msgid "Superscope - Wiimote"
+msgstr "Superscope - Wiimote"
+
+msgid "This software is open source and may be copied,"
+msgstr "Deze software is Open Source en mag gekopieerd worden,"
+
+msgid "Trad_chinese"
+msgstr "Traditioneel Chinees"
+
+msgid "Unable to initialize network!"
+msgstr "Kan netwerk niet initialiseren!"
+
+msgid "Unable to locate a load device!"
+msgstr "Kan laad apparaat niet vinden!"
+
+msgid "Unable to locate a save device!"
+msgstr "Kan opslaan apparaat niet vinden!"
+
+msgid "Unable to open snapshot!"
+msgstr "Kan snapshot niet openen!"
+
+msgid "Unfiltered"
+msgstr "Ongefiltered"
+
+msgid "Unknown file type!"
+msgstr "Onbekend bestandstype!"
+
+msgid "Unrecognized DVD format."
+msgstr "Onbekend DVD formaat."
+
+msgid "Unrecognized file extension!"
+msgstr "Onbekende bestandsextentie!"
+
+msgid "Up"
+msgstr "Omhoog"
+
+msgid "UP"
+msgstr "OMHOOG"
+
+msgid "Up One Level"
+msgstr "Eén Omhoog"
+
+msgid "Update Available"
+msgstr "Update beschikbaar"
+
+msgid "Update failed!"
+msgstr "Update mislukt!"
+
+msgid "Update later"
+msgstr "Later updaten"
+
+msgid "Update now"
+msgstr "Nu updaten"
+
+msgid "Update successful!"
+msgstr "Update succesvol!"
+
+msgid "USB drive not found!"
+msgstr "USB disk niet gevonden!"
+
+msgid "USB Mass Storage"
+msgstr "USB Mass Storage"
+
+msgid "Vertical"
+msgstr "Vertikaal"
+
+msgid "Video"
+msgstr "Video"
+
+msgid "Video Mode"
+msgstr "Video Modus"
+
+msgid "VM8: Unknown page type!"
+msgstr "VM8: Onbekend pagina type!"
+
+msgid "VM16: Unknown page type!"
+msgstr "VM16: Onbekend pagina type!"
+
+msgid "VM32: Unknown page type!"
+msgstr "VM32: Onbekend pagina type!"
