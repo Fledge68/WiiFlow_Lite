@@ -59,16 +59,10 @@ bool CMenu::_Home(void)
 			min((float)wd[1]->battery_level, 100.f), min((float)wd[2]->battery_level, 100.f), min((float)wd[3]->battery_level, 100.f)));
 		if(BTN_A_PRESSED)
 		{
-			if(m_btnMgr.selected(m_homeBtnSettings))
+			if(m_btnMgr.selected(m_homeBtnSettings))//actually help guide btn
 			{
 				_hideHome();
-				_config(1);
-				if(prevTheme != m_cfg.getString("GENERAL", "theme") || m_reload == true)
-				{
-					m_exit = true;
-					m_reload = true;
-					break;
-				}
+				_about(true);
 				_showHome();
 			}
 			else if(m_btnMgr.selected(m_homeBtnReloadCache))
@@ -334,7 +328,7 @@ void CMenu::_initHomeAndExitToMenu()
 void CMenu::_textHome(void)
 {
 	m_btnMgr.setText(m_homeLblTitle, VERSION_STRING);
-	m_btnMgr.setText(m_homeBtnSettings, _t("home1", L"Settings"));
+	m_btnMgr.setText(m_homeBtnSettings, _t("about10", L"Help Guide"));
 	m_btnMgr.setText(m_homeBtnReloadCache, _t("home2", L"Reload Cache"));
 	m_btnMgr.setText(m_homeBtnUpdate, _t("home3", L"Update"));
 	m_btnMgr.setText(m_homeBtnExplorer, _t("home8", L"File Explorer"));

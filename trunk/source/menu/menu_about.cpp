@@ -81,7 +81,7 @@ void CMenu::_showAbout(void)
 {
 	_setBg(m_aboutBg, m_aboutBg);
 	m_btnMgr.show(m_aboutLblTitle);
-	if(m_txt_view == false)
+	if(m_txt_view == false && !showHelp)
 		m_btnMgr.show(m_aboutLblIOS);
 	m_btnMgr.show(m_aboutLblInfo,false);
 	for(u8 i = 0; i < ARRAY_SIZE(m_aboutLblUser); ++i)
@@ -109,7 +109,7 @@ void CMenu::_initAboutMenu()
 
 void CMenu::_textAbout(void)
 {
-	if(m_txt_view)
+	if(m_txt_view)// used to show a txt file
 	{
 		wstringEx txt_file_name;
 		txt_file_name.fromUTF8(strrchr(m_txt_path, '/') + 1);
@@ -126,9 +126,9 @@ void CMenu::_textAbout(void)
 			free(txt_mem);
 		}
 		txt_mem = NULL;
-		return; /* no need for ios checks */
+		return;
 	}
-	else if(showHelp)
+	if(showHelp) // show help guide
 	{
 		m_btnMgr.setText(m_aboutLblTitle, _t("about10", L"Help Guide"));
 		wstringEx help_text;
@@ -145,36 +145,35 @@ void CMenu::_textAbout(void)
 		else
 			m_btnMgr.setText(m_aboutLblInfo, ENGLISH_TXT_W);
 		txt_mem = NULL;
+		return; 
 	}
-	else
-	{
-		m_btnMgr.setText(m_aboutLblTitle, VERSION_STRING);
+	// show credits and current cIOS
+	m_btnMgr.setText(m_aboutLblTitle, VERSION_STRING);
 
-		wstringEx developers(wfmt(_fmt("about6", L"\nCurrent Developers:\n%s"), DEVELOPERS));
-		wstringEx pDevelopers(wfmt(_fmt("about7", L"Past Developers:\n%s"), PAST_DEVELOPERS));
+	wstringEx developers(wfmt(_fmt("about6", L"\nCurrent Developers:\n%s"), DEVELOPERS));
+	wstringEx pDevelopers(wfmt(_fmt("about7", L"Past Developers:\n%s"), PAST_DEVELOPERS));
 
-		wstringEx origLoader(wfmt(_fmt("about1", L"Original Loader By:\n%s"), LOADER_AUTHOR));
-		wstringEx origGUI(wfmt(_fmt("about2", L"Original GUI By:\n%s"), GUI_AUTHOR));
+	wstringEx origLoader(wfmt(_fmt("about1", L"Original Loader By:\n%s"), LOADER_AUTHOR));
+	wstringEx origGUI(wfmt(_fmt("about2", L"Original GUI By:\n%s"), GUI_AUTHOR));
 
-		wstringEx codethx(wfmt(_fmt("about8", L"Bits of Code Obtained From:\n%s"), THANKS_CODE));
-		wstringEx sites(wfmt(_fmt("about9", L"Supporting Websites:\n%s"), THANKS_SITES));
+	wstringEx codethx(wfmt(_fmt("about8", L"Bits of Code Obtained From:\n%s"), THANKS_CODE));
+	wstringEx sites(wfmt(_fmt("about9", L"Supporting Websites:\n%s"), THANKS_SITES));
 
-		wstringEx translator(wfmt(L", %s", m_loc.getWString(m_curLanguage, "translation_author").toUTF8().c_str()));
-		wstringEx thanks(wfmt(_fmt("about4", L"Thanks To:\n%s"), THANKS));
-		if(translator.size() > 3)
-			thanks.append(translator);
+	wstringEx translator(wfmt(L", %s", m_loc.getWString(m_curLanguage, "translation_author").toUTF8().c_str()));
+	wstringEx thanks(wfmt(_fmt("about4", L"Thanks To:\n%s"), THANKS));
+	if(translator.size() > 3)
+		thanks.append(translator);
 
-		m_btnMgr.setText(m_aboutLblInfo,
-			wfmt(L"%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s",
-			developers.toUTF8().c_str(),
-			pDevelopers.toUTF8().c_str(),
-			origLoader.toUTF8().c_str(),
-			origGUI.toUTF8().c_str(),
-			codethx.toUTF8().c_str(),
-			sites.toUTF8().c_str(),
-			thanks.toUTF8().c_str())
-		);
-	}
+	m_btnMgr.setText(m_aboutLblInfo,
+		wfmt(L"%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s",
+		developers.toUTF8().c_str(),
+		pDevelopers.toUTF8().c_str(),
+		origLoader.toUTF8().c_str(),
+		origGUI.toUTF8().c_str(),
+		codethx.toUTF8().c_str(),
+		sites.toUTF8().c_str(),
+		thanks.toUTF8().c_str())
+	);
 	const char *IOS_Name = NULL;
 	switch(IOS_GetType(CurrentIOS.Version))
 	{

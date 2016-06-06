@@ -574,15 +574,6 @@ void CMenu::_cfParam(bool inc, int i, const CMenu::SCFParamDesc &p, int cfVersio
 const char *CMenu::_cfDomain(bool selected)
 {
 	return selected ? fmt("%s_%%i_S", cf_domain) : fmt("%s_%%i", cf_domain);
-	/*switch(m_current_view)
-	{
-		case COVERFLOW_PLUGIN:
-			return selected ? "_EMUFLOW_%i_S" : "_EMUFLOW_%i";
-		case COVERFLOW_HOMEBREW:
-			return selected ? "_BREWFLOW_%i_S" : "_BREWFLOW_%i";
-		default:
-			return selected ? "_COVERFLOW_%i_S" : "_COVERFLOW_%i";
-	}*/
 }
 
 void CMenu::_initCFThemeMenu()

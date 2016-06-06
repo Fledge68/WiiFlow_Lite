@@ -262,7 +262,17 @@ void CMenu::_textGameInfo(void)
 		if(gametdb.GetRegion(GameID, TMP_Char))
 			m_btnMgr.setText(m_gameinfoLblRegion, wfmt(_fmt("gameinfo3",L"Region: %s"), TMP_Char), true);
 		if(gametdb.GetGenres(GameID, TMP_Char))
-			m_btnMgr.setText(m_gameinfoLblGenre, wfmt(_fmt("gameinfo5",L"Genre: %s"), TMP_Char), true);
+		{
+			vector<string> genres = stringToVector(TMP_Char, ',');
+			string s;
+			for(u32 i = 0; i < genres.size(); ++i)
+			{
+				if(i > 0)
+					s.append(", ");// add comma & space between genres
+				s.append(genres[i]);
+			}
+			m_btnMgr.setText(m_gameinfoLblGenre, wfmt(_fmt("gameinfo5",L"Genre: %s"), s.c_str()), true);
+		}
 
 		int PublishDate = gametdb.GetPublishDate(GameID);
 		int year = PublishDate >> 16;
