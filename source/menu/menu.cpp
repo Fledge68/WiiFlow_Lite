@@ -2148,10 +2148,15 @@ bool CMenu::_loadList(void)
 	vector<dir_discHdr> combinedList;
 	NANDemuView = false;
 	gprintf("Creating Gamelist\n");
-
+	
+	if(m_current_view == COVERFLOW_HOMEBREW)
+	{
+		_loadHomebrewList();
+		gprintf("Games found: %i\n", m_gameList.size());
+		return m_gameList.size() > 0 ? true : false;
+	}
 	if(m_current_view == COVERFLOW_PLUGIN || (m_combined_view && m_cfg.getBool(PLUGIN_DOMAIN, "source")))
 	{
-		m_current_view = COVERFLOW_PLUGIN;
 		_loadPluginList();
 		if(m_combined_view)
 			for(vector<dir_discHdr>::iterator tmp_itr = m_gameList.begin(); tmp_itr != m_gameList.end(); tmp_itr++)
@@ -2159,7 +2164,6 @@ bool CMenu::_loadList(void)
 	}
 	if(m_current_view == COVERFLOW_WII || (m_combined_view && m_cfg.getBool(WII_DOMAIN, "source")))
 	{
-		m_current_view = COVERFLOW_WII;
 		_loadWiiList();
 		if(m_combined_view)
 			for(vector<dir_discHdr>::iterator tmp_itr = m_gameList.begin(); tmp_itr != m_gameList.end(); tmp_itr++)
@@ -2167,7 +2171,6 @@ bool CMenu::_loadList(void)
 	}
 	if(m_current_view == COVERFLOW_CHANNEL || (m_combined_view && m_cfg.getBool(CHANNEL_DOMAIN, "source")))
 	{
-		m_current_view = COVERFLOW_CHANNEL;
 		_loadChannelList();
 		if(m_combined_view)
 			for(vector<dir_discHdr>::iterator tmp_itr = m_gameList.begin(); tmp_itr != m_gameList.end(); tmp_itr++)
@@ -2175,16 +2178,7 @@ bool CMenu::_loadList(void)
 	}
 	if(m_current_view == COVERFLOW_GAMECUBE || (m_combined_view && m_cfg.getBool(GC_DOMAIN, "source")))
 	{
-		m_current_view = COVERFLOW_GAMECUBE;
 		_loadGamecubeList();
-		if(m_combined_view)
-			for(vector<dir_discHdr>::iterator tmp_itr = m_gameList.begin(); tmp_itr != m_gameList.end(); tmp_itr++)
-				combinedList.push_back(*tmp_itr);
-	}
-	if(m_current_view == COVERFLOW_HOMEBREW || (m_combined_view && m_cfg.getBool(HOMEBREW_DOMAIN, "source")))
-	{
-		m_current_view = COVERFLOW_HOMEBREW;
-		_loadHomebrewList();
 		if(m_combined_view)
 			for(vector<dir_discHdr>::iterator tmp_itr = m_gameList.begin(); tmp_itr != m_gameList.end(); tmp_itr++)
 				combinedList.push_back(*tmp_itr);
@@ -2308,26 +2302,22 @@ bool CMenu::_loadPluginList()
 	m_gameList.clear();
 	if(addGamecube)
 	{
-		m_current_view = COVERFLOW_GAMECUBE;
 		_loadGamecubeList();
 		for(vector<dir_discHdr>::iterator tmp_itr = m_gameList.begin(); tmp_itr != m_gameList.end(); tmp_itr++)
 				pluginList.push_back(*tmp_itr);
 	}
 	if(addWii)
 	{
-		m_current_view = COVERFLOW_WII;
 		_loadWiiList();
 		for(vector<dir_discHdr>::iterator tmp_itr = m_gameList.begin(); tmp_itr != m_gameList.end(); tmp_itr++)
 				pluginList.push_back(*tmp_itr);
 	}
 	if(addChannel)
 	{
-		m_current_view = COVERFLOW_CHANNEL;
 		_loadChannelList();
 		for(vector<dir_discHdr>::iterator tmp_itr = m_gameList.begin(); tmp_itr != m_gameList.end(); tmp_itr++)
 				pluginList.push_back(*tmp_itr);
 	}
-	m_current_view = COVERFLOW_PLUGIN;
 	m_gameList.clear();
 	for(vector<dir_discHdr>::iterator tmp_itr = pluginList.begin(); tmp_itr != pluginList.end(); tmp_itr++)
 	{

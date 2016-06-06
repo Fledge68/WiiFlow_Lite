@@ -50,6 +50,7 @@ public:
 	const char *getFrontPath(const dir_discHdr *element);
 	const char *getBlankCoverPath(const dir_discHdr *element);
 
+	u8 m_prev_view;
 	u8 m_current_view;
 	bool m_combined_view;
 	u8 enabledPluginsCount;
