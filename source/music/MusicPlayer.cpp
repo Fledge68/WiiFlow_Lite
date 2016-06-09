@@ -124,7 +124,7 @@ void Musicplayer::Stop()
 	MusicStopped = true;
 }
 
-void Musicplayer::Tick(bool attenuate)
+void Musicplayer::Tick(bool attenuate)// attenuate means fade to zero volume
 {
 	if(FileNames.empty())
 		return;
