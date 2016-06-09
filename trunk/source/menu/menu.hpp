@@ -1092,7 +1092,6 @@ private:
 	void _buildMenus(void);
 	void _cleanupDefaultFont();
 	void _Theme_Cleanup();
-	const char *_getId(void);
 	const char *_domainFromView(void);
 	const char *_cfDomain(bool selected = false);
 	void UpdateCache(u32 view = COVERFLOW_MAX);

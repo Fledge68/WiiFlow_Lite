@@ -426,11 +426,21 @@ bool CMenu::_startVideo()
 
 void CMenu::_game(bool launch)
 {
+	bool coverFlipped = false;
+	int cf_version = 1;
+	string domain;
+	string key;
+	Vector3D v;
+	Vector3D savedv;
+	
+	dir_discHdr *hdr = (dir_discHdr*)MEM2_alloc(sizeof(dir_discHdr));
+	memcpy(hdr, CoverFlow.getHdr(), sizeof(dir_discHdr));
+	
 	m_zoom_banner = m_cfg.getBool(_domainFromView(), "show_full_banner", false);
-	if(NoGameID(CoverFlow.getHdr()->type))
+	if(NoGameID(hdr->type))
 	{
 		bool video_available = (m_current_view == COVERFLOW_PLUGIN && fsop_FileExist(fmt("%s.thp", getVideoDefaultPath(m_videoDir)))) ||
-								fsop_FileExist(fmt("%s.thp", getVideoPath(m_videoDir, CoverFlow.getPathId(CoverFlow.getHdr()))));
+								fsop_FileExist(fmt("%s.thp", getVideoPath(m_videoDir, CoverFlow.getPathId(hdr))));
 		m_zoom_banner = m_zoom_banner && video_available;
 		m_cfg.setBool(_domainFromView(), "show_full_banner", m_zoom_banner);
 	}
@@ -455,9 +465,38 @@ void CMenu::_game(bool launch)
 
 		if(startGameSound == 0)
 		{
-			m_gameSelected = true;
+			m_gameSelected = true;// mark game selected and load sound/banner for main loop to start playing
 			startGameSound = 1;
 			_playGameSound();
+		}
+		if(coverFlipped && 
+			(BTN_PLUS_PRESSED || BTN_MINUS_PRESSED ||
+			BTN_LEFT_PRESSED || BTN_RIGHT_PRESSED ||
+			BTN_UP_PRESSED || BTN_DOWN_PRESSED))
+		{
+			float step = 0.05f;
+			if(BTN_PLUS_PRESSED || BTN_MINUS_PRESSED)
+			{
+				if(BTN_MINUS_PRESSED)
+					step = -step;
+				v.z = min(max(-15.f, v.z + step), 15.f);
+			}
+			else if(BTN_LEFT_PRESSED || BTN_RIGHT_PRESSED)
+			{
+				if(BTN_LEFT_PRESSED)
+					step = -step;
+				v.x = min(max(-15.f, v.x + step), 15.f);
+			}
+			else if(BTN_UP_PRESSED || BTN_DOWN_PRESSED)
+			{
+				if(BTN_UP_PRESSED)
+					step = -step;
+				v.y = min(max(-15.f, v.y + step), 15.f);
+			}
+			m_coverflow.setVector3D(domain, key, v);
+			_loadCFLayout(cf_version, true);
+			CoverFlow.applySettings();
+			CoverFlow.flip(true, true);
 		}
 		if(BTN_B_PRESSED && !m_locked && (m_btnMgr.selected(m_gameBtnFavoriteOn) || m_btnMgr.selected(m_gameBtnFavoriteOff)))
 		{
@@ -475,18 +514,18 @@ void CMenu::_game(bool launch)
 			_cleanupBanner();
 			break;
 		}
-		else if(BTN_PLUS_PRESSED && m_GameTDBAvailable && (CoverFlow.getHdr()->type == TYPE_WII_GAME || CoverFlow.getHdr()->type == TYPE_GC_GAME || CoverFlow.getHdr()->type == TYPE_CHANNEL))
+		else if(BTN_PLUS_PRESSED && !coverFlipped && m_GameTDBAvailable && !NoGameID(hdr->type))
 		{
 			_hideGame();
 			m_banner.SetShowBanner(false);
-			m_gameSelected = true;
+			m_gameSelected = true;// guess its reset to true to keep game/banner sound playing (if it is) during gameinfo menu
 			_gameinfo();
 			_showGame();
 			m_banner.SetShowBanner(true);
 			if(!m_gameSound.IsPlaying())
 				startGameSound = -6;
 		}
-		else if(BTN_MINUS_PRESSED)
+		else if(BTN_MINUS_PRESSED && !coverFlipped)
 		{
 			if(m_video_playing)
 			{
@@ -500,7 +539,7 @@ void CMenu::_game(bool launch)
 			else
 				_startVideo();
 		}
-		else if((BTN_1_PRESSED) || (BTN_2_PRESSED))
+		else if((BTN_1_PRESSED || BTN_2_PRESSED) && !coverFlipped)
 		{
 			s8 direction = BTN_1_PRESSED ? 1 : -1;
 			const char *domain = _domainFromView();
@@ -519,10 +558,26 @@ void CMenu::_game(bool launch)
 				{
 					_hideGame();
 					m_banner.SetShowBanner(false);
-					if(_wbfsOp(WO_REMOVE_GAME))
+					if(hdr->type == TYPE_PLUGIN)
 					{
-						_cleanupBanner();
-						break;
+						const char *wfcPath = NULL;
+						const char *coverDir = NULL;
+						if(m_cfg.getBool(PLUGIN_DOMAIN, "subfolder_cache"))
+							coverDir = m_plugin.GetCoverFolderName(hdr->settings[0]);
+						if(coverDir == NULL || strlen(coverDir) == 0)
+							wfcPath = fmt("%s/%s.wfc", m_cacheDir.c_str(), CoverFlow.getPathId(hdr, false));
+						else
+							wfcPath = fmt("%s/%s/%s.wfc", m_cacheDir.c_str(), coverDir, CoverFlow.getPathId(hdr, false));
+						fsop_deleteFile(wfcPath);
+						m_load_view = true;
+					}
+					else
+					{
+						if(_wbfsOp(WO_REMOVE_GAME))
+						{
+							_cleanupBanner();
+							break;
+						}
 					}
 					m_banner.SetShowBanner(true);
 					if(!m_gameSound.IsPlaying())
@@ -531,16 +586,16 @@ void CMenu::_game(bool launch)
 				}
 			}
 			else if(m_btnMgr.selected(m_gameBtnFavoriteOn) || m_btnMgr.selected(m_gameBtnFavoriteOff))
-				m_gcfg1.setBool("FAVORITES", _getId(), !m_gcfg1.getBool("FAVORITES", _getId(), false));
+				m_gcfg1.setBool("FAVORITES", CoverFlow.getPathId(hdr, false), !m_gcfg1.getBool("FAVORITES", CoverFlow.getPathId(hdr, false), false));
 			else if(m_btnMgr.selected(m_gameBtnAdultOn) || m_btnMgr.selected(m_gameBtnAdultOff))
-				m_gcfg1.setBool("ADULTONLY", _getId(), !m_gcfg1.getBool("ADULTONLY", _getId(), false));
+				m_gcfg1.setBool("ADULTONLY", CoverFlow.getPathId(hdr, false), !m_gcfg1.getBool("ADULTONLY", CoverFlow.getPathId(hdr, false), false));
 			else if(m_btnMgr.selected(m_gameBtnBack) || m_btnMgr.selected(m_gameBtnBackFull))
 			{
 				_cleanupBanner();
 				break;
 			}
 			else if((m_btnMgr.selected(m_gameBtnToggle) || m_btnMgr.selected(m_gameBtnToggleFull)) 
-					&& (!NoGameID(CoverFlow.getHdr()->type) || m_video_playing))
+					&& (!NoGameID(hdr->type) || m_video_playing))
 			{
 				m_zoom_banner = m_banner.ToggleZoom();
 				m_cfg.setBool(_domainFromView(), "show_full_banner", m_zoom_banner);
@@ -550,10 +605,10 @@ void CMenu::_game(bool launch)
 				m_btnMgr.hide(m_gameBtnBackFull);
 				m_btnMgr.hide(m_gameBtnToggleFull);
 			}
-			else if(m_btnMgr.selected(m_gameBtnSettings) && (CoverFlow.getHdr()->type == TYPE_WII_GAME || CoverFlow.getHdr()->type == TYPE_GC_GAME || CoverFlow.getHdr()->type == TYPE_CHANNEL))
+			else if(m_btnMgr.selected(m_gameBtnSettings) && !NoGameID(hdr->type))
 			{
 				_hideGame();
-				m_gameSelected = true;
+				m_gameSelected = true;// reset to true to make sure sound plays during settings
 
 				m_banner.ToggleGameSettings();
 				_gameSettings();
@@ -568,8 +623,6 @@ void CMenu::_game(bool launch)
 				_hideGame();
 				MusicPlayer.Stop();
 				_cleanupBanner();
-				dir_discHdr *hdr = (dir_discHdr*)MEM2_alloc(sizeof(dir_discHdr));
-				memcpy(hdr, CoverFlow.getHdr(), sizeof(dir_discHdr));
 				m_gcfg2.load(fmt("%s/" GAME_SETTINGS2_FILENAME, m_settingsDir.c_str()));
 				// change to current games partition and set last_view for recall later
 				m_cfg.setInt("GENERAL", "last_view", m_current_view);
@@ -631,48 +684,72 @@ void CMenu::_game(bool launch)
 					WPAD_SetVRes(chan, m_vid.width() + m_cursor[chan].width(), m_vid.height() + m_cursor[chan].height());
 				m_gcfg2.unload();
 				_showGame();
-				//_initCF();
-				//CoverFlow.select();
 			}
 			else 
 			{
 				for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
-					if (CoverFlow.mouseOver(m_cursor[chan].x(), m_cursor[chan].y()))
-						CoverFlow.flip();
+				{
+					if(CoverFlow.mouseOver(m_cursor[chan].x(), m_cursor[chan].y()))
+					{
+						cf_version = m_cfg.getInt(_domainFromView(), "last_cf_mode", 1);
+						domain = fmt("%s_%i_S", cf_domain, cf_version);
+						key = "flip_pos";
+						if(!m_vid.wide())
+							key += "_4_3";
+						coverFlipped = !coverFlipped;
+						if(coverFlipped)
+						{
+							v = m_coverflow.getVector3D(domain, key);
+							savedv = v;
+							CoverFlow.flip(true, true);
+						}
+						else
+						{
+							m_coverflow.setVector3D(domain, key, savedv);
+							_loadCFLayout(cf_version, true);
+							CoverFlow.applySettings();
+							CoverFlow.flip(true, false);
+						}
+					}
+				}
 			}
 		}
-		if((startGameSound == 1 || startGameSound < -8) && (BTN_UP_REPEAT || RIGHT_STICK_UP))
+		if(!coverFlipped)
 		{
-			_cleanupBanner(true);
-			CoverFlow.up();
-			startGameSound = -10;
-		}
-		if((startGameSound == 1 || startGameSound < -8) && (BTN_RIGHT_REPEAT || RIGHT_STICK_RIGHT))
-		{
-			_cleanupBanner(true);
-			CoverFlow.right();
-			startGameSound = -10;
-		}
-		if((startGameSound == 1 || startGameSound < -8) && (BTN_DOWN_REPEAT || RIGHT_STICK_DOWN))
-		{
-			_cleanupBanner(true);
-			CoverFlow.down();
-			startGameSound = -10;
-		}
-		if((startGameSound == 1 || startGameSound < -8) && (BTN_LEFT_REPEAT || RIGHT_STICK_LEFT))
-		{
-			_cleanupBanner(true);
-			CoverFlow.left();
-			startGameSound = -10;
-		}
-		if(startGameSound == -10)
-		{
-			m_gameSelected = false;
-			_setBg(m_gameBg, m_gameBgLQ);
+			if((startGameSound == 1 || startGameSound < -8) && (BTN_UP_REPEAT || RIGHT_STICK_UP))
+			{
+				_cleanupBanner(true);
+				CoverFlow.up();
+				startGameSound = -10;
+			}
+			if((startGameSound == 1 || startGameSound < -8) && (BTN_RIGHT_REPEAT || RIGHT_STICK_RIGHT))
+			{
+				_cleanupBanner(true);
+				CoverFlow.right();
+				startGameSound = -10;
+			}
+			if((startGameSound == 1 || startGameSound < -8) && (BTN_DOWN_REPEAT || RIGHT_STICK_DOWN))
+			{
+				_cleanupBanner(true);
+				CoverFlow.down();
+				startGameSound = -10;
+			}
+			if((startGameSound == 1 || startGameSound < -8) && (BTN_LEFT_REPEAT || RIGHT_STICK_LEFT))
+			{
+				_cleanupBanner(true);
+				CoverFlow.left();
+				startGameSound = -10;
+			}
+			if(startGameSound == -10)
+			{
+				m_gameSelected = false; // deselect game if moved to new cover
+				_setBg(m_gameBg, m_gameBgLQ);
+				memcpy(hdr, CoverFlow.getHdr(), sizeof(dir_discHdr));
+			}
 		}
 		if(m_show_zone_game && !m_zoom_banner)
 		{
-			bool b = m_gcfg1.getBool("FAVORITES", _getId(), false);
+			bool b = m_gcfg1.getBool("FAVORITES", CoverFlow.getPathId(hdr, false), false);
 			m_btnMgr.show(b ? m_gameBtnFavoriteOn : m_gameBtnFavoriteOff);
 			m_btnMgr.hide(b ? m_gameBtnFavoriteOff : m_gameBtnFavoriteOn);
 			m_btnMgr.show(m_gameBtnPlay);
@@ -684,7 +761,7 @@ void CMenu::_game(bool launch)
 			m_btnMgr.hide(m_gameBtnPlayFull);
 			m_btnMgr.hide(m_gameBtnBackFull);
 			m_btnMgr.hide(m_gameBtnToggleFull);
-			if(m_gameLblUser[4] != -1 && !NoGameID(CoverFlow.getHdr()->type) && !m_fa.isLoaded())
+			if(m_gameLblUser[4] != -1 && !NoGameID(hdr->type) && !m_fa.isLoaded())
 				m_btnMgr.show(m_gameLblUser[4]);
 			else
 				m_btnMgr.hide(m_gameLblUser[4]);
@@ -695,13 +772,13 @@ void CMenu::_game(bool launch)
 			}
 			if(!m_locked)
 			{
-				b = m_gcfg1.getBool("ADULTONLY", _getId(), false);
+				b = m_gcfg1.getBool("ADULTONLY", CoverFlow.getPathId(hdr, false), false);
 				m_btnMgr.show(b ? m_gameBtnAdultOn : m_gameBtnAdultOff);
 				m_btnMgr.hide(b ? m_gameBtnAdultOff : m_gameBtnAdultOn);
 				m_btnMgr.show(m_gameBtnSettings);
 			}
-			if((CoverFlow.getHdr()->type != TYPE_HOMEBREW && (CoverFlow.getHdr()->type != TYPE_CHANNEL || 
-				(m_cfg.getBool(CHANNEL_DOMAIN, "emu_nand", false) && CoverFlow.getHdr()->type == TYPE_CHANNEL))) && !m_locked)
+			if((hdr->type != TYPE_HOMEBREW && (hdr->type != TYPE_CHANNEL || 
+				(m_cfg.getBool(CHANNEL_DOMAIN, "emu_nand", false) && hdr->type == TYPE_CHANNEL))) && !m_locked)
 				m_btnMgr.show(m_gameBtnDelete);
 		}
 		else
@@ -723,7 +800,7 @@ void CMenu::_game(bool launch)
 			m_btnMgr.hide(m_gameBtnToggle);
 			if(m_gameLblUser[4] != -1)
 			{
-				if(!NoGameID(CoverFlow.getHdr()->type) && !m_zoom_banner && !m_fa.isLoaded())
+				if(!NoGameID(hdr->type) && !m_zoom_banner && !m_fa.isLoaded())
 					m_btnMgr.show(m_gameLblUser[4]);
 				else
 					m_btnMgr.hide(m_gameLblUser[4], true);
@@ -732,6 +809,12 @@ void CMenu::_game(bool launch)
 				if (m_gameLblUser[i] != -1)
 					m_btnMgr.hide(m_gameLblUser[i]);
 		}
+	}
+	if(coverFlipped)
+	{
+		m_coverflow.setVector3D(domain, key, savedv);
+		_loadCFLayout(cf_version, true);
+		CoverFlow.applySettings();
 	}
 	m_gcfg1.save(true);
 	_hideGame();

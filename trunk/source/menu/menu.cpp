@@ -1880,33 +1880,40 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 	}
 	m_btnMgr.draw();
 	ScanInput();
+	// check if we need to start screensaver 
 	if(!m_vid.showingWaitMessage())
 	{
 		if(!m_cfg.getBool("GENERAL", "screensaver_disabled", false))
 			m_vid.screensaver(NoInputTime(), m_cfg.getInt("GENERAL", "screensaver_idle_seconds", 60));
 		m_vid.render();
 	}
+	// check if power button is pressed and exit wiiflow
 	if(Sys_Exiting())
 		exitHandler(BUTTON_CALLBACK);
-
-	if(withCF && m_gameSelected && m_gamesound_changed && !m_soundThrdBusy && !m_gameSound.IsPlaying() && MusicPlayer.GetVolume() == 0)
+	// check if we need to start playing the game/banner sound
+	if(withCF && m_gameSelected && m_gamesound_changed && !m_soundThrdBusy && 
+		!m_gameSound.IsPlaying() && MusicPlayer.GetVolume() == 0)
 	{
-		CheckGameSoundThread();
-		m_gameSound.Play(m_bnrSndVol);
+		CheckGameSoundThread();// stop sound loading thread
+		m_gameSound.Play(m_bnrSndVol);// play sound
 		m_gamesound_changed = false;
 	}
+	// stop game/banner sound if game no longer selected or new game selected
 	else if(!m_gameSelected)
 		m_gameSound.Stop();
-
-	MusicPlayer.Tick(m_video_playing || (m_gameSelected && 
-		m_gameSound.IsLoaded()) ||  m_gameSound.IsPlaying());
-
+	// decrease volume to zero if plugin video playing or game/banner sound is loaded and ready to play
+	// also switch to next song if current song is done
+	MusicPlayer.Tick(m_video_playing || 
+		(m_gameSelected && m_gamesound_changed && m_gameSound.IsLoaded()) || 
+		(m_gameSound.IsPlaying() && !m_gamesound_changed));
+	// set song title and display it if music info is allowed
 	if(MusicPlayer.SongChanged() && m_music_info)
 	{
 		m_btnMgr.setText(m_mainLblCurMusic, MusicPlayer.GetFileName(), true);
 		m_btnMgr.show(m_mainLblCurMusic);
 		MusicPlayer.DisplayTime = time(NULL);
 	}
+	// hide song title if it's displaying and been >3 seconds
 	else if(MusicPlayer.DisplayTime > 0 && time(NULL) - MusicPlayer.DisplayTime > 3)
 	{
 		MusicPlayer.DisplayTime = 0;
@@ -2478,40 +2485,6 @@ void CMenu::_cleanupDefaultFont()
 	m_wbf1_font = NULL;
 	MEM1_lo_free(m_wbf2_font);
 	m_wbf2_font = NULL;
-}
-
-const char *CMenu::_getId()
-{
-	char tmp[MAX_FAT_PATH];
-	memset(tmp, 0, MAX_FAT_PATH);
-	const char *id = NULL;
-	const dir_discHdr *hdr = CoverFlow.getHdr();
-	if(hdr->type == TYPE_HOMEBREW)
-		id = strrchr(hdr->path, '/') + 1;
-	else if(hdr->type == TYPE_PLUGIN)
-	{
-		if(strstr(hdr->path, ":/") != NULL)
-		{
-			if(*(strchr(hdr->path, '/') + 1) != '\0')
-				strcat(tmp, strchr(hdr->path, '/') + 1);
-			else
-				strcat(tmp, hdr->path);
-			if(strchr(tmp, '/') != NULL)
-				*(strchr(tmp, '/') + 1) = '\0';
-		}
-		strcat(tmp, fmt("%ls",hdr->title));
-		id = tmp;
-	}
-	else
-	{
-		id = hdr->id;
-		if(hdr->type == TYPE_GC_GAME && hdr->settings[0] == 1) /* disc 2 */
-		{
-			strcat(tmp, fmt("%.6s_2", hdr->id));
-			id = tmp;
-		}
-	}
-	return id;
 }
 
 const char *CMenu::_domainFromView()

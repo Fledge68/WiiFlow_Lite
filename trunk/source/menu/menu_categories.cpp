@@ -129,7 +129,7 @@ void CMenu::_getIDCats(void)
 		default:
 			catDomain = (m_plugin.GetPluginName(m_plugin.GetPluginPosition(hdr->settings[0]))).toUTF8();
 	}
-	id = _getId();
+	id = CoverFlow.getPathId(hdr, false);
 	const char *idCats = m_cat.getString(catDomain, id, "").c_str();
 	u8 numIdCats = strlen(idCats);
 	if(numIdCats != 0)
