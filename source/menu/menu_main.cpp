@@ -289,7 +289,6 @@ void CMenu::exitHandler(int ExitTo)
 
 int CMenu::main(void)
 {
-	//cf_domain = "_COVERFLOW";
 	wstringEx curLetter;
 	string prevTheme = m_cfg.getString("GENERAL", "theme", "default");
 	parental_homebrew = m_cfg.getBool(HOMEBREW_DOMAIN, "parental", false);
@@ -299,6 +298,7 @@ int CMenu::main(void)
 	show_gamecube = m_show_gc;
 	m_allow_random = m_cfg.getBool("GENERAL", "allow_b_on_questionmark", true);
 	m_multisource = m_cfg.getBool("GENERAL", "multisource", false);
+	bool m_source_on_start = m_cfg.getBool("GENERAL", "source_on_start", false);
 	bool bheld = false;
 	bool bUsed = false;
 	m_emuSaveNand = false;
@@ -342,8 +342,9 @@ int CMenu::main(void)
 		/* Main Loop */
 		_mainLoopCommon(true);
 		//this will make the source menu/flow display. what happens when a sourceflow cover is selected is taken care of later.
-		if(bheld && !BTN_B_HELD)//if button b was held and now released
+		if((bheld && !BTN_B_HELD) || m_source_on_start)//if button b was held and now released
 		{
+			m_source_on_start = false;
 			bheld = false;
 			if(bUsed)//if b button used for something don't show souce menu or sourceflow
 				bUsed = false;
