@@ -115,6 +115,9 @@ void CMenu::_getIDCats(void)
 	switch(hdr->type)
 	{
 		case TYPE_CHANNEL:
+			catDomain = "NAND";
+			break;
+		case TYPE_EMUCHANNEL:
 			catDomain = "CHANNELS";
 			break;
 		case TYPE_HOMEBREW:

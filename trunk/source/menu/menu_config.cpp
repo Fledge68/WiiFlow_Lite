@@ -63,15 +63,11 @@ void CMenu::_showConfig(void)
 			if(m_configLblUser[i] != -1)
 				m_btnMgr.show(m_configLblUser[i]);
 		
-		bool disable = (m_current_view == COVERFLOW_CHANNEL) && (!m_cfg.getBool(CHANNEL_DOMAIN, "emu_nand", false) || neek2o()) && !m_emuSaveNand;
-		const char *partitionname = disable ? CHANNEL_DOMAIN : DeviceName[m_emuSaveNand ? m_cfg.getInt(WII_DOMAIN, "savepartition", m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0)) : m_cfg.getInt(_domainFromView(), "partition", 0)];
+		const char *partitionname = DeviceName[m_cfg.getInt(_domainFromView(), "partition", 0)];
 		m_btnMgr.setText(m_configLblPartition, upperCase(partitionname));
 		
-		if(m_current_view != COVERFLOW_HOMEBREW && m_current_view != COVERFLOW_GAMECUBE && m_current_view != COVERFLOW_MAX)
-		{
-			m_btnMgr.show(m_configLblCfg4);
-			m_btnMgr.show(m_configBtnCfg4);
-		}
+		m_btnMgr.show(m_configLblCfg4);
+		m_btnMgr.show(m_configBtnCfg4);
 	}
 	m_btnMgr.show(m_configLblParental);
 	m_btnMgr.show(m_locked ? m_configBtnUnlock : m_configBtnSetCode);
@@ -206,7 +202,7 @@ int CMenu::_config1(void)
 				m_load_view = true;
 				CoverFlow.stopCoverLoader(true);
 				_hideConfig();
-				if(m_current_view != COVERFLOW_PLUGIN)
+				if(m_current_view != COVERFLOW_PLUGIN || m_use_source)
 					_NandEmuCfg();
 				else
 					_PluginSettings();
@@ -273,7 +269,7 @@ void CMenu::_textConfig(void)
 	m_btnMgr.setText(m_configBtnSetCode, _t("cfg7", L"Set code"));
 	m_btnMgr.setText(m_configLblPartitionName, _t("cfgp1", L"Game Partition"));
 	m_btnMgr.setText(m_configBtnBack, _t("cfg10", L"Back"));
-	if(m_current_view != COVERFLOW_PLUGIN)
+	if(m_current_view != COVERFLOW_PLUGIN || m_use_source)
 	{
 		m_btnMgr.setText(m_configLblCfg4, _t("cfg13", L"NAND Emulation Settings"));
 		m_btnMgr.setText(m_configBtnCfg4, _t("cfg14", L"Set"));

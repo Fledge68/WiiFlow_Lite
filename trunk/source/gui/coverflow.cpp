@@ -556,6 +556,16 @@ void CCoverFlow::setCoverFlipping(const Vector3D &pos, const Vector3D &angle, co
 	m_flipCoverScale = scale;
 }
 
+void CCoverFlow::setCoverFlipPos(const Vector3D &pos)
+{
+	if (m_covers == NULL || !m_selected) return;
+	LockMutex lock(m_mutex);
+
+	CCoverFlow::CCover &cvr = m_covers[m_range / 2];
+	m_flipCoverPos = pos;
+	cvr.targetPos = m_loSelected.centerPos + m_flipCoverPos;
+}
+
 void CCoverFlow::setBlur(u32 blurResolution, u32 blurRadius, float blurFactor)
 {
 	static const struct { u32 x; u32 y; } blurRes[] = {

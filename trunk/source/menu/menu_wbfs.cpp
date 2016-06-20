@@ -77,12 +77,13 @@ void CMenu::_addDiscProgress(int status, int total, void *user_data)
 	}
 }
 
-static inline bool _searchGamesByID(const char *gameId)
+bool CMenu::_searchGamesByID(const char *gameId)
 {
-	for(vector<dir_discHdr>::const_iterator itr = m_gameList.begin(); itr != m_gameList.end(); ++itr)
+	for(vector<dir_discHdr>::iterator itr = m_gameList.begin(); itr != m_gameList.end(); ++itr)
 	{
-		if(strncmp(itr->id, gameId, 6) == 0)
-			return true;
+		if(itr->type == TYPE_WII_GAME || itr->type == TYPE_GC_GAME)
+			if(strncmp(itr->id, gameId, 6) == 0)
+				return true;
 	}
 	return false;
 }
@@ -416,7 +417,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 							WBFS_Close();
 							upd_wii = true;
 						}
-						else if(CF_Hdr->type == TYPE_CHANNEL && m_cfg.getBool(CHANNEL_DOMAIN, "emu_nand", false))
+						else if(CF_Hdr->type == TYPE_EMUCHANNEL)
 						{
 							if(CF_Hdr->settings[0] != 0x00010001)
 							{
@@ -450,30 +451,6 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 					case WO_FORMAT:
 						break;
 					case WO_COPY_GAME:
-						string GC_Path(CF_Hdr->path);
-						if(strcasestr(GC_Path.c_str(), "boot.bin") != NULL)
-							GC_Path.erase(GC_Path.end() - 13, GC_Path.end());
-						else
-							GC_Path.erase(GC_Path.end() - 9, GC_Path.end());
-						if(fsop_GetFreeSpaceKb("sd:/") < fsop_GetFolderKb(GC_Path.c_str()))
-						{
-							m_btnMgr.hide(m_wbfsBtnGo);
-							_setThrdMsg(wfmt(_fmt("wbfsop24", L"Not enough space: %d blocks needed, %d available"), fsop_GetFolderKb(GC_Path.c_str()), fsop_GetFreeSpaceKb("sd:/")), 0.f);
-							break;
-						}
-						m_btnMgr.show(m_wbfsPBar, true);
-						m_btnMgr.setProgress(m_wbfsPBar, 0.f, true);
-						m_btnMgr.hide(m_wbfsBtnGo, true);
-						m_btnMgr.show(m_wbfsLblMessage, true);
-						m_btnMgr.setText(m_wbfsLblMessage, L"");
-						strncpy(cfPos, CF_Hdr->id, 6);
-						m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsop10", L"Copying [%s] %s..."), CF_Hdr->id, CoverFlow.getTitle().toUTF8().c_str()));
-						done = true;
-						upd_gc = true;
-						m_thrdWorking = true;
-						m_thrdProgress = 0.f;
-						m_thrdMessageAdded = false;
-						LWP_CreateThread(&thread, (void *(*)(void *))_GCcopyGame, (void *)this, 0, 8 * 1024, 64);
 						break;
 				}
 				if(out)
@@ -506,10 +483,15 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 		}
 	}
 	_hideWBFS();
-	if(done && (op == WO_REMOVE_GAME || op == WO_ADD_GAME))
+	if(done)
 	{
-		//m_gameList.SetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());	
-		_showWaitMessage();
+		if(op == WO_ADD_GAME)
+		{
+			if(CF_Hdr->type == TYPE_WII_GAME)
+				m_cfg.setString(WII_DOMAIN, "current_item", cfPos);
+			else
+				m_cfg.setString(GC_DOMAIN, "current_item", cfPos);
+		}
 		if(upd_gc)
 			UpdateCache(COVERFLOW_GAMECUBE);
 		if(upd_wii)
@@ -518,27 +500,12 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 			UpdateCache(COVERFLOW_PLUGIN);
 		if(upd_chan)
 			UpdateCache(COVERFLOW_CHANNEL);
-		//_loadList();
-		_hideWaitMessage();
-		//_initCF();
-		//CoverFlow.findId(cfPos, true);
 		m_load_view = true;
+		/* restart inputs to resolve an issue */
 		Close_Inputs();
 		Open_Inputs();
 		for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 					WPAD_SetVRes(chan, m_vid.width() + m_cursor[chan].width(), m_vid.height() + m_cursor[chan].height());
-	}
-	else 
-	{
-		if(done && op == WO_COPY_GAME)
-		{
-			UpdateCache(COVERFLOW_GAMECUBE);
-			currentPartition = SD;
-			UpdateCache(COVERFLOW_GAMECUBE);
-		}
-		//_loadList();
-		//_initCF();
-		m_load_view = true;
 	}
 	return done;
 }

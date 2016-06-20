@@ -365,7 +365,7 @@ void CMenu::_showGameSettings(void)
 				m_btnMgr.show(m_gameSettingsBtnAspectRatioP);
 				m_btnMgr.show(m_gameSettingsBtnAspectRatioM);
 			}
-			else if(GameHdr->type == TYPE_CHANNEL)
+			else if(GameHdr->type == TYPE_CHANNEL || GameHdr->type == TYPE_EMUCHANNEL)
 			{
 				m_btnMgr.show(m_gameSettingsLblApploader);
 				m_btnMgr.show(m_gameSettingsBtnApploader);
@@ -390,7 +390,7 @@ void CMenu::_showGameSettings(void)
 	}
 	if(m_gameSettingsPage == 4)
 	{
-		if(GameHdr->type == TYPE_CHANNEL)
+		if(GameHdr->type == TYPE_CHANNEL || GameHdr->type == TYPE_EMUCHANNEL)
 		{
 			m_btnMgr.show(m_gameSettingsLblCustom);
 			m_btnMgr.show(m_gameSettingsBtnCustom);

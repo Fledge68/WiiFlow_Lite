@@ -115,6 +115,7 @@ public:
 	void setRowDeltaAngles(bool selected, const Vector3D &top, const Vector3D &bottom);
 	void setRowAngles(bool selected, const Vector3D &top, const Vector3D &bottom);
 	void setCoverFlipping(const Vector3D &pos, const Vector3D &angle, const Vector3D &scale);
+	void setCoverFlipPos(const Vector3D &pos);
 	void setBlur(u32 blurResolution, u32 blurRadius, float blurFactor);
 	void setSorting(Sorting sorting);
 	// 

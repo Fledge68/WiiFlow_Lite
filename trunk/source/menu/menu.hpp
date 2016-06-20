@@ -56,6 +56,12 @@ public:
 	u8 enabledPluginsCount;
 	u8 m_catStartPage;
 	bool m_clearCats;
+	bool show_homebrew;
+	bool parental_homebrew;
+	bool show_channel;
+	bool show_plugin;
+	bool show_gamecube;
+	vector<dir_discHdr> m_gameList;
 private:
 	struct SZone
 	{
@@ -1157,6 +1163,7 @@ private:
 	static void _ShowProgress(int dumpstat, int dumpprog, int filestat, int fileprog, int files, int folders, const char *tmess, void *user_data);
 	static int _gameInstaller(void *obj);
 	static int _GCcopyGame(void *obj);
+	bool _searchGamesByID(const char *gameId);
 	int _GCgameInstaller();
 	float m_progress;
 	float m_fprogress;
@@ -1170,10 +1177,10 @@ private:
 	void _stopSounds(void);
 	static int _NandDumper(void *obj);
 	static int _NandFlasher(void *obj);
-	int _FindEmuPart(string &emuPath, bool searchvalid);
+	int _FindEmuPart(string &emuPath, bool searchvalid, bool savesnand);
 	bool _checkSave(string id, bool nand);
 	bool _TestEmuNand(int epart, const char *path, bool indept);
-	void _validateEmuNand(void);
+	void _checkEmuNandSettings(bool savesnand);
 
 	static u32 _downloadCheatFileAsync(void *obj);
 	static u32 _downloadBannerAsync(void *obj);
