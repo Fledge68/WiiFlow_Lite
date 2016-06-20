@@ -2,8 +2,8 @@
 <app version="1">
   <name> WiiFlow Lite</name>
   <coder>Fledge68</coder>
-  <version>4.2.2 r1094</version>
-  <release_date>20161104000000</release_date>
+  <version>4.2.2 r1123</version>
+  <release_date>20162006000000</release_date>
   <short_description>USB Loader / Nand Emulator</short_description>
   <long_description>
     WiiFlow Lite is a Wii Game, Channel, Wiiware, Virtual Console, and Savegame Emulator intended for use with legal backups.

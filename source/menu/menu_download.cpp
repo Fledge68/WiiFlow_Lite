@@ -2017,7 +2017,6 @@ int CMenu::_gametdbDownloaderAsync()
 				fsop_deleteFile(fmt("%s/gametdb_offsets.bin", m_settingsDir.c_str()));
 
 				// Update cache
-				//m_gameList.SetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
 				UpdateCache();
 
 				LWP_MutexLock(m_mutex);

@@ -50,6 +50,6 @@ private:
 typedef void (*FileAdder)(char *Path);
 void GetFiles(const char *Path, const vector<string>& FileTypes, 
 			FileAdder AddFile, bool CompareFolders, u32 max_depth = 2, u32 depth = 1);
-extern ListGenerator m_gameList;
+extern ListGenerator m_cacheList;
 
 #endif /*_LISTGENERATOR_HPP_*/

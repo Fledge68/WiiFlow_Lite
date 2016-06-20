@@ -24,7 +24,7 @@
 #include "gui/coverflow.hpp"
 #include "gui/text.hpp"
 
-ListGenerator m_gameList;
+ListGenerator m_cacheList;
 Config CustomTitles;
 GameTDB gameTDB;
 
@@ -68,7 +68,7 @@ static void AddISO(const char *GameID, const char *GameTitle, const char *GamePa
 							u32 GameColor, u8 Type)
 {
 	memset((void*)&ListElement, 0, sizeof(dir_discHdr));
-	ListElement.index = m_gameList.size();
+	ListElement.index = m_cacheList.size();
 	if(GameID != NULL) strncpy(ListElement.id, GameID, 6);
 	if(GamePath != NULL) strncpy(ListElement.path, GamePath, sizeof(ListElement.path) - 1);
 	ListElement.casecolor = CustomTitles.getColor("COVERS", ListElement.id, GameColor).intVal();
@@ -92,7 +92,7 @@ static void AddISO(const char *GameID, const char *GameTitle, const char *GamePa
 	Asciify(ListElement.title);
 
 	ListElement.type = Type;
-	m_gameList.push_back(ListElement);
+	m_cacheList.push_back(ListElement);
 }
 
 static void Create_Wii_WBFS_List(wbfs_t *handle)
@@ -145,8 +145,8 @@ static void Create_GC_List(char *FullPath)
 			fread(gc_disc, 1, 1, fp);
 			if(gc_disc[0])
 			{
-				wcslcat(m_gameList.back().title, L" disc 2", 63);
-				m_gameList.back().settings[0] = 1;
+				wcslcat(m_cacheList.back().title, L" disc 2", 63);
+				m_cacheList.back().settings[0] = 1;
 			}
 		}
 		fclose(fp);
@@ -166,7 +166,7 @@ static void Create_Plugin_List(char *FullPath)
 	
 	char PluginMagicWord[9];
 	memset(PluginMagicWord, 0, sizeof(PluginMagicWord));
-	strncpy(PluginMagicWord, fmt("%08x", m_gameList.Magic), 8);
+	strncpy(PluginMagicWord, fmt("%08x", m_cacheList.Magic), 8);
 	const char *CustomTitle = CustomTitles.getString(PluginMagicWord, FolderTitle).c_str();
 	if(CustomTitle != NULL && CustomTitle[0] != '\0')
 		mbstowcs(ListElement.title, CustomTitle, 63);
@@ -174,10 +174,10 @@ static void Create_Plugin_List(char *FullPath)
 		mbstowcs(ListElement.title, FolderTitle, 63);
 	Asciify(ListElement.title);
 
-	ListElement.settings[0] = m_gameList.Magic; //Plugin magic
-	ListElement.casecolor = m_gameList.Color;
+	ListElement.settings[0] = m_cacheList.Magic; //Plugin magic
+	ListElement.casecolor = m_cacheList.Color;
 	ListElement.type = TYPE_PLUGIN;
-	m_gameList.push_back(ListElement);
+	m_cacheList.push_back(ListElement);
 }
 
 static void Create_Homebrew_List(char *FullPath)
@@ -185,7 +185,7 @@ static void Create_Homebrew_List(char *FullPath)
 	if(strcasestr(FullPath, "boot.") == NULL)
 		return;
 	memset((void*)&ListElement, 0, sizeof(dir_discHdr));
-	ListElement.index = m_gameList.size();
+	ListElement.index = m_cacheList.size();
 	*strrchr(FullPath, '/') = '\0';
 	strncpy(ListElement.path, FullPath, sizeof(ListElement.path) - 1);
 	strncpy(ListElement.id, "HB_APP", 6);
@@ -200,11 +200,11 @@ static void Create_Homebrew_List(char *FullPath)
 	Asciify(ListElement.title);
 
 	ListElement.type = TYPE_HOMEBREW;
-	m_gameList.push_back(ListElement);
+	m_cacheList.push_back(ListElement);
 }
 
 Channel *chan = NULL;
-static void Create_Channel_List()
+static void Create_Channel_List(bool realNAND)
 {
 	for(u32 i = 0; i < ChannelHandle.Count(); i++)
 	{
@@ -212,7 +212,7 @@ static void Create_Channel_List()
 		if(chan->id == NULL) 
 			continue; // Skip invalid channels
 		memset((void*)&ListElement, 0, sizeof(dir_discHdr));
-		ListElement.index = m_gameList.size();
+		ListElement.index = m_cacheList.size();
 		ListElement.settings[0] = TITLE_UPPER(chan->title);
 		ListElement.settings[1] = TITLE_LOWER(chan->title);
 		strncpy(ListElement.id, chan->id, 4);
@@ -231,8 +231,11 @@ static void Create_Channel_List()
 			mbstowcs(ListElement.title, CustomTitle, 63);
 		else
 			wcsncpy(ListElement.title, chan->name, 64);
-		ListElement.type = TYPE_CHANNEL;
-		m_gameList.push_back(ListElement);
+		if(realNAND)
+			ListElement.type = TYPE_CHANNEL;
+		else
+			ListElement.type = TYPE_EMUCHANNEL;
+		m_cacheList.push_back(ListElement);
 	}
 }
 
@@ -263,7 +266,10 @@ void ListGenerator::CreateList(u32 Flow, u32 Device, const string& Path, const v
 	else if(Flow == COVERFLOW_CHANNEL)
 	{
 		ChannelHandle.Init(gameTDB_Language);
-		Create_Channel_List();
+		if(Device == 9)
+			Create_Channel_List(true);
+		else
+			Create_Channel_List(false);
 	}
 	else if(DeviceHandle.GetFSType(Device) != PART_FS_WBFS)
 	{
@@ -366,7 +372,7 @@ void ListGenerator::createSFList(u8 maxBtns, Config &m_sourceMenuCfg, bool show_
 			continue;
 		const char *path = fmt("%s/%s", sourceDir.c_str(), m_sourceMenuCfg.getString(btn_selected, "image", "").c_str());
 		memset((void*)&ListElement, 0, sizeof(dir_discHdr));
-		ListElement.index = m_gameList.size();
+		ListElement.index = m_cacheList.size();
 		strncpy(ListElement.id, "SOURCE", 6);
 		strncpy(ListElement.path, path, sizeof(ListElement.path) - 1);
 		ListElement.casecolor = 0xFFFFFF;
@@ -375,7 +381,7 @@ void ListGenerator::createSFList(u8 maxBtns, Config &m_sourceMenuCfg, bool show_
 		const char *title = m_sourceMenuCfg.getString(btn_selected, "title", fmt("title_%i", i)).c_str();
 		mbstowcs(ListElement.title, title, 63);
 		Asciify(ListElement.title);
-		m_gameList.push_back(ListElement);
+		m_cacheList.push_back(ListElement);
 	}
 	if(!this->empty() && !DBName.empty()) /* Write a new Cache */
 		CCache(*this, DBName, SAVE);

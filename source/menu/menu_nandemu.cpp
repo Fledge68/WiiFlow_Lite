@@ -82,11 +82,11 @@ static void listEmuNands(const char * path, vector<string> &emuNands)
 	sort(emuNands.begin(), emuNands.end());
 }
 
-void CMenu::_validateEmuNand(void)
+void CMenu::_checkEmuNandSettings(bool savesnand)
 {
 	string emuNand;
 	int emuPart;
-	if(m_current_view == COVERFLOW_CHANNEL)
+	if(!savesnand)
 	{
 		emuNand = m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default");
 		emuPart = m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0);
@@ -96,13 +96,14 @@ void CMenu::_validateEmuNand(void)
 		emuNand = m_cfg.getString(WII_DOMAIN, "current_save_emunand", m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default"));
 		emuPart = m_cfg.getInt(WII_DOMAIN, "savepartition", m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0));
 	}
-	if(!DeviceHandle.PartitionUsableForNandEmu(emuPart))
+	/* check if partition is FAT */
+	if(!DeviceHandle.PartitionUsableForNandEmu(emuPart))// if not then find a FAT partition
 	{
 		for(emuPart = SD; emuPart <= USB8; emuPart++)
 		{
 			if(DeviceHandle.PartitionUsableForNandEmu(emuPart))
 			{
-				if(m_current_view == COVERFLOW_CHANNEL)
+				if(!savesnand)
 					m_cfg.setInt(CHANNEL_DOMAIN, "partition", emuPart);
 				else
 					m_cfg.setInt(WII_DOMAIN, "savepartition", emuPart);
@@ -110,26 +111,41 @@ void CMenu::_validateEmuNand(void)
 			}
 		}
 	}
+	/* check directory */
 	const char *tmpPath = fmt("/%s/%s", EMU_NANDS_DIR, emuNand.c_str());
-	if(!_TestEmuNand(emuPart, tmpPath, false))
+	if(!_TestEmuNand(emuPart, tmpPath, false))// if doesn't exist set to default
 	{
-		if(m_current_view == COVERFLOW_CHANNEL)
+		if(!savesnand)
 			m_cfg.setString(CHANNEL_DOMAIN, "current_emunand", "default");
 		else
 			m_cfg.setString(WII_DOMAIN, "current_save_emunand", "default");
 	}
 }
 
-static bool _saveExists(const char *path)
-{	
-	DIR *d = opendir(path);
-	if(!d)
-		return false;
+int CMenu::_FindEmuPart(string &emuPath, bool skipchecks, bool savesnand)
+{
+	int emuPart = -1;
+	const char *tmpPath = NULL;
+	if(!savesnand)
+	{
+		emuPart = m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0);
+		tmpPath = fmt("/%s/%s", EMU_NANDS_DIR, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default").c_str());
+	}
 	else
 	{
-		closedir(d);
-		return true;
+		emuPart = m_cfg.getInt(WII_DOMAIN, "savepartition", m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0));
+		tmpPath = fmt("/%s/%s", EMU_NANDS_DIR, m_cfg.getString(WII_DOMAIN, "current_save_emunand", m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default")).c_str());
 	}
+	if(!DeviceHandle.PartitionUsableForNandEmu(emuPart))
+		return -1;
+	else if((skipchecks || _TestEmuNand(emuPart, tmpPath, true)))
+	{
+		NandHandle.SetNANDEmu(emuPart);
+		NandHandle.SetPaths(tmpPath, DeviceName[emuPart]);
+		emuPath = tmpPath;
+		return emuPart;
+	}
+	return -2;
 }
 
 bool CMenu::_TestEmuNand(int epart, const char *path, bool indept)
@@ -161,30 +177,16 @@ bool CMenu::_TestEmuNand(int epart, const char *path, bool indept)
 	return true;
 }
 
-int CMenu::_FindEmuPart(string &emuPath, bool skipchecks)
-{
-	int emuPart = -1;
-	const char *tmpPath = NULL;
-	if(m_current_view == COVERFLOW_CHANNEL)
+static bool _saveExists(const char *path)
+{	
+	DIR *d = opendir(path);
+	if(!d)
+		return false;
+	else
 	{
-		emuPart = m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0);
-		tmpPath = fmt("/%s/%s", EMU_NANDS_DIR, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default").c_str());
+		closedir(d);
+		return true;
 	}
-	else if(m_current_view == COVERFLOW_WII)
-	{
-		emuPart = m_cfg.getInt(WII_DOMAIN, "savepartition", m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0));
-		tmpPath = fmt("/%s/%s", EMU_NANDS_DIR, m_cfg.getString(WII_DOMAIN, "current_save_emunand", m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default")).c_str());
-	}
-	if(!DeviceHandle.PartitionUsableForNandEmu(emuPart))
-		return -1;
-	else if((skipchecks || _TestEmuNand(emuPart, tmpPath, true)))
-	{
-		NandHandle.SetNANDEmu(emuPart);
-		NandHandle.SetPaths(tmpPath, DeviceName[emuPart]);
-		emuPath = tmpPath;
-		return emuPart;
-	}
-	return -2;
 }
 
 bool CMenu::_checkSave(string id, bool nand)
@@ -586,9 +588,9 @@ int CMenu::_FlashSave(string gameId)
 int CMenu::_AutoExtractSave(string gameId)
 {
 	string emuPath;
-	int emuPartition = _FindEmuPart(emuPath, false);
+	int emuPartition = _FindEmuPart(emuPath, false, true);
 	if(emuPartition < 0)
-		emuPartition = _FindEmuPart(emuPath, true);
+		emuPartition = _FindEmuPart(emuPath, true, true);
 	if(!_checkSave(gameId, true))//if save not on real nand
 		return 1;
 
@@ -704,7 +706,6 @@ int CMenu::_AutoCreateNand(void)
 	m_btnMgr.setText(m_nandemuBtnDisable, _t("cfgne22", L"Disable NAND Emulation"));
 	m_btnMgr.setText(m_nandemuBtnPartition, _t("cfgne31", L"Select Partition"));
 	//might add change nand button
-	//m_btnMgr.setText(m_nandemuLblInit, _t("cfgne23", L"Emu NAND not found. Try changing the partition to select the correct device/partition, click Extract to extract your NAND, or click disable to disable NAND Emulation."));
 	m_btnMgr.setText(m_nandemuLblInit, _t("cfgne23", L"Emu NAND not found. Try one of these options to fix the problem."));
 	m_btnMgr.show(m_nandemuBtnExtract);
 	m_btnMgr.show(m_nandemuBtnDisable);
@@ -836,7 +837,7 @@ int CMenu::_NandFlasher(void *obj)
 	char dest[ISFS_MAXPATH];
 
 	const char *SaveGameID = m.m_saveExtGameId.c_str();
-	int emuPartition = m._FindEmuPart(emuPath, false);	
+	int emuPartition = m._FindEmuPart(emuPath, false, true);	
 	int flashID = SaveGameID[0] << 24 | SaveGameID[1] << 16 | SaveGameID[2] << 8 | SaveGameID[3];
 
 	if(_saveExists(fmt("%s:%s/title/00010000/%08x", DeviceName[emuPartition], emuPath.c_str(), flashID)))
@@ -876,7 +877,7 @@ int CMenu::_NandDumper(void *obj)
 	m.m_foldersdone = 0;
 
 	NandHandle.ResetCounters();
-	emuPartition = m._FindEmuPart(emuPath, true);
+	emuPartition = m._FindEmuPart(emuPath, true, (m.m_current_view == COVERFLOW_WII));
 
 	if(emuPartition < 0)
 	{
@@ -908,21 +909,24 @@ int CMenu::_NandDumper(void *obj)
 		if(m.m_saveExtGameId.empty())
 		{
 			m.m_nandexentry = 0;
-			saveList.reserve(m_gameList.size());
-			for(u32 i = 0; i < m_gameList.size() && !m.m_thrdStop; ++i)
+			saveList.reserve(m.m_gameList.size());
+			for(u32 i = 0; i < m.m_gameList.size() && !m.m_thrdStop; ++i)
 			{
 				LWP_MutexLock(m.m_mutex);
 				m._setDumpMsg(m._t("cfgne18", L"Listing game saves to extract..."), 0.f, 0.f);
 				LWP_MutexUnlock(m.m_mutex);
 
-				string id((const char *)m_gameList[i].id, 4);
-
-				if(!missingOnly || !m._checkSave(id, false))
+				if(m.m_gameList[i].type == TYPE_CHANNEL)
 				{
-					if(m._checkSave(id, true))
+					string id((const char *)m.m_gameList[i].id, 4);
+
+					if(!missingOnly || !m._checkSave(id, false))
 					{
-						m.m_nandexentry++;
-						saveList.push_back(id);
+						if(m._checkSave(id, true))
+						{
+							m.m_nandexentry++;
+							saveList.push_back(id);
+						}
 					}
 				}
 			}

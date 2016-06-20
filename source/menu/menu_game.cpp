@@ -493,10 +493,8 @@ void CMenu::_game(bool launch)
 					step = -step;
 				v.y = min(max(-15.f, v.y + step), 15.f);
 			}
-			m_coverflow.setVector3D(domain, key, v);
-			_loadCFLayout(cf_version, true);
-			CoverFlow.applySettings();
-			CoverFlow.flip(true, true);
+			CoverFlow.setCoverFlipPos(v);
+			//CoverFlow.flip(true, true);
 		}
 		if(BTN_B_PRESSED && !m_locked && (m_btnMgr.selected(m_gameBtnFavoriteOn) || m_btnMgr.selected(m_gameBtnFavoriteOff)))
 		{
@@ -624,12 +622,13 @@ void CMenu::_game(bool launch)
 				MusicPlayer.Stop();
 				_cleanupBanner();
 				m_gcfg2.load(fmt("%s/" GAME_SETTINGS2_FILENAME, m_settingsDir.c_str()));
-				// change to current games partition and set last_view for recall later
+				// change to current game's partition and set last_view for recall later
 				m_cfg.setInt("GENERAL", "last_view", m_current_view);
 				m_cfg.setInt("GENERAL", "cat_startpage", m_catStartPage);
 				switch(hdr->type)
 				{
 					case TYPE_CHANNEL:
+					case TYPE_EMUCHANNEL:
 						currentPartition = m_cfg.getInt(CHANNEL_DOMAIN, "partition", 1);
 						break;
 					case TYPE_HOMEBREW:
@@ -654,7 +653,9 @@ void CMenu::_game(bool launch)
 				}
 				/* Get Banner Title for Playlog */
 				CurrentBanner.ClearBanner();
-				if(hdr->type == TYPE_CHANNEL)
+				NANDemuView = false;
+				if(hdr->type == TYPE_EMUCHANNEL) NANDemuView = true;
+				if(hdr->type == TYPE_CHANNEL || hdr->type == TYPE_EMUCHANNEL)
 				{
 					u64 chantitle = CoverFlow.getChanTitle();
 					_extractChannelBnr(chantitle);
@@ -663,7 +664,7 @@ void CMenu::_game(bool launch)
 					_extractBnr(hdr);
 				if(CurrentBanner.IsValid())
 					_extractBannerTitle(GetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str()));
-				if(hdr->type == TYPE_WII_GAME || hdr->type == TYPE_CHANNEL)
+				if(hdr->type == TYPE_WII_GAME || hdr->type == TYPE_CHANNEL || hdr->type == TYPE_EMUCHANNEL)
 				{
 					if(Playlog_Update(hdr->id, banner_title) < 0)
 						Playlog_Delete();
@@ -705,9 +706,7 @@ void CMenu::_game(bool launch)
 						}
 						else
 						{
-							m_coverflow.setVector3D(domain, key, savedv);
-							_loadCFLayout(cf_version, true);
-							CoverFlow.applySettings();
+							CoverFlow.setCoverFlipPos(savedv);
 							CoverFlow.flip(true, false);
 						}
 					}
@@ -777,8 +776,7 @@ void CMenu::_game(bool launch)
 				m_btnMgr.hide(b ? m_gameBtnAdultOff : m_gameBtnAdultOn);
 				m_btnMgr.show(m_gameBtnSettings);
 			}
-			if((hdr->type != TYPE_HOMEBREW && (hdr->type != TYPE_CHANNEL || 
-				(m_cfg.getBool(CHANNEL_DOMAIN, "emu_nand", false) && hdr->type == TYPE_CHANNEL))) && !m_locked)
+			if(hdr->type != TYPE_HOMEBREW && hdr->type != TYPE_CHANNEL && !m_locked)
 				m_btnMgr.show(m_gameBtnDelete);
 		}
 		else
@@ -830,14 +828,14 @@ void CMenu::directlaunch(const char *GameID)
 		DeviceHandle.OpenWBFS(currentPartition);
 		string gameDir(fmt(wii_games_dir, DeviceName[currentPartition]));
 		string cacheDir(fmt("%s/%s_wii.db", m_listCacheDir.c_str(), DeviceName[currentPartition]));
-		m_gameList.CreateList(COVERFLOW_WII, currentPartition, gameDir,
+		m_cacheList.CreateList(COVERFLOW_WII, currentPartition, gameDir,
 				stringToVector(".wbfs|.iso", '|'), cacheDir, false);
 		WBFS_Close();
-		for(u32 i = 0; i < m_gameList.size(); i++)
+		for(u32 i = 0; i < m_cacheList.size(); i++)
 		{
-			if(strncasecmp(GameID, m_gameList[i].id, 6) == 0)
+			if(strncasecmp(GameID, m_cacheList[i].id, 6) == 0)
 			{
-				_launchGame(&m_gameList[i], false); // Launch will exit wiiflow
+				_launchGame(&m_cacheList[i], false); // Launch will exit wiiflow
 				break;
 			}
 		}
@@ -866,7 +864,7 @@ void CMenu::_launch(const dir_discHdr *hdr)
 		_launchGC(&launchHdr, false);
 		if(gcLaunchFail) return;
 	}
-	else if(launchHdr.type == TYPE_CHANNEL)
+	else if(launchHdr.type == TYPE_CHANNEL || launchHdr.type == TYPE_EMUCHANNEL)
 		_launchChannel(&launchHdr);
 	else if(launchHdr.type == TYPE_PLUGIN)
 	{
@@ -1181,8 +1179,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	_launchShutdown();
 	string id = string(hdr->id);
 
-	bool NAND_Emu = m_cfg.getBool(CHANNEL_DOMAIN, "emu_nand", false);
-	bool WII_Launch = (m_gcfg2.getBool(id, "custom", false) && (!NAND_Emu || neek2o()));
+	bool WII_Launch = (m_gcfg2.getBool(id, "custom", false) && (!NANDemuView || neek2o()));
 	bool use_dol = !m_gcfg2.getBool(id, "apploader", false);
 
 	bool vipatch = m_gcfg2.testOptBool(id, "vipatch", m_cfg.getBool("GENERAL", "vipatch", false));
@@ -1235,9 +1232,8 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	m_cfg.save(true);
 	cleanup();
 
-	if(NAND_Emu && !neek2o())
+	if(NANDemuView && !neek2o())
 	{
-		NANDemuView = true;
 		if(useNK2o)
 		{
 			if(!Load_Neek2o_Kernel())
@@ -1246,14 +1242,13 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 				Sys_Exit();
 			}
 			ShutdownBeforeExit();
-			Launch_nk(gameTitle, NandHandle.Get_NandPath(), 
-				returnTo ? (((u64)(0x00010001) << 32) | (returnTo & 0xFFFFFFFF)) : 0);
+			Launch_nk(gameTitle, NandHandle.Get_NandPath(), returnTo ? (((u64)(0x00010001) << 32) | (returnTo & 0xFFFFFFFF)) : 0);
 			while(1) usleep(500);
 		}
 	}
 	if(WII_Launch == false && ExternalBooter_LoadBins(m_binsDir.c_str()) == false)
 		Sys_Exit();
-	if(_loadIOS(gameIOS, userIOS, id, !NAND_Emu) == LOAD_IOS_FAILED)
+	if(_loadIOS(gameIOS, userIOS, id, !NANDemuView) == LOAD_IOS_FAILED)
 		Sys_Exit();
 
 	if((CurrentIOS.Type == IOS_TYPE_D2X || neek2o()) && returnTo != 0)
@@ -1261,7 +1256,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		if(D2X_PatchReturnTo(returnTo) >= 0)
 			memset(&returnTo, 0, sizeof(u32));
 	}
-	if(NAND_Emu && !neek2o())
+	if(NANDemuView && !neek2o())
 	{
 		/* Enable our Emu NAND */
 		DeviceHandle.UnMountAll();
@@ -1394,10 +1389,9 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	else
 		emulate_mode--;
 	
-	m_current_view = COVERFLOW_WII; //set this in case of multisource mode
 	if(emulate_mode && !dvd && !neek2o())
 	{
-		emuPartition = _FindEmuPart(emuPath, false);
+		emuPartition = _FindEmuPart(emuPath, false, true);
 		if(emuPartition < 0)//if savepartition and/or nand folder no good
 		{
 			_hideWaitMessage();
@@ -1721,7 +1715,7 @@ void CMenu::_gameSoundThread(CMenu *m)
 		CurrentBanner.SetBanner(cached_bnr_file, cached_bnr_size, false, true);
 	else if(GameHdr->type == TYPE_WII_GAME)
 		_extractBnr(GameHdr);
-	else if(GameHdr->type == TYPE_CHANNEL)
+	else if(GameHdr->type == TYPE_CHANNEL || GameHdr->type == TYPE_EMUCHANNEL)
 		_extractChannelBnr(TITLE_ID(GameHdr->settings[0],
 									GameHdr->settings[1]));
 	if(!CurrentBanner.IsValid())
