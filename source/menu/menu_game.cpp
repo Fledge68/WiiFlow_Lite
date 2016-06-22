@@ -509,8 +509,16 @@ void CMenu::_game(bool launch)
 		}
 		if(BTN_HOME_PRESSED || BTN_B_PRESSED)
 		{
-			_cleanupBanner();
-			break;
+			if(BTN_B_PRESSED && coverFlipped)
+			{
+				CoverFlow.flip();
+				coverFlipped = false;
+			}
+			else
+			{
+				_cleanupBanner();
+				break;
+			}
 		}
 		else if(BTN_PLUS_PRESSED && !coverFlipped && m_GameTDBAvailable && !NoGameID(hdr->type))
 		{
@@ -686,7 +694,7 @@ void CMenu::_game(bool launch)
 				m_gcfg2.unload();
 				_showGame();
 			}
-			else 
+			else if(!coverFlipped)
 			{
 				for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 				{
@@ -697,18 +705,9 @@ void CMenu::_game(bool launch)
 						key = "flip_pos";
 						if(!m_vid.wide())
 							key += "_4_3";
-						coverFlipped = !coverFlipped;
-						if(coverFlipped)
-						{
-							v = m_coverflow.getVector3D(domain, key);
-							savedv = v;
-							CoverFlow.flip(true, true);
-						}
-						else
-						{
-							CoverFlow.setCoverFlipPos(savedv);
-							CoverFlow.flip(true, false);
-						}
+						v = m_coverflow.getVector3D(domain, key);
+						coverFlipped = true;
+						CoverFlow.flip();
 					}
 				}
 			}

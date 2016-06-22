@@ -558,12 +558,9 @@ void CCoverFlow::setCoverFlipping(const Vector3D &pos, const Vector3D &angle, co
 
 void CCoverFlow::setCoverFlipPos(const Vector3D &pos)
 {
-	if (m_covers == NULL || !m_selected) return;
+	if(m_covers == NULL || !m_selected) return;
 	LockMutex lock(m_mutex);
-
-	CCoverFlow::CCover &cvr = m_covers[m_range / 2];
-	m_flipCoverPos = pos;
-	cvr.targetPos = m_loSelected.centerPos + m_flipCoverPos;
+	m_covers[m_range / 2].targetPos = m_loSelected.centerPos + pos;
 }
 
 void CCoverFlow::setBlur(u32 blurResolution, u32 blurRadius, float blurFactor)
@@ -628,7 +625,7 @@ void CCoverFlow::applySettings(void)
 	if (m_covers == NULL) return;
 
 	LockMutex lock(m_mutex);
-	_updateAllTargets();
+	_updateAllTargets(true);
 }
 
 void CCoverFlow::stopCoverLoader(bool empty)
@@ -1607,7 +1604,7 @@ void CCoverFlow::cancel(void)
 void CCoverFlow::defaultLoad(void)
 {
 	_loadAllCovers(0);
-	_updateAllTargets();
+	_updateAllTargets(true);
 }
 
 void CCoverFlow::_updateAllTargets(bool instant)
@@ -2103,7 +2100,7 @@ bool CCoverFlow::findId(const char *id, bool instant, bool path)
 	if (instant)
 	{
 		_loadAllCovers(i);
-		_updateAllTargets();
+		_updateAllTargets(true);
 	}
 	else
 	{
