@@ -159,7 +159,7 @@ void CMenu::LoadView(void)
 		cf_domain = "_SMALLFLOW";
 	if(m_sourceflow && m_cfg.getBool(_domainFromView(), "smallbox", true))
 		cf_domain = "_SMALLFLOW";
-	if(m_current_view == COVERFLOW_PLUGIN)
+	if(m_current_view == COVERFLOW_PLUGIN && !m_sourceflow)
 	{
 		vector<bool> pluginsEnabled = m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
 		if(pluginsEnabled.size() > 0)
