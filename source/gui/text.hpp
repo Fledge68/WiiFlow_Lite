@@ -12,7 +12,7 @@
 
 using namespace std;
 
-class SFont
+class SFont// should be either struct SFont or class CFont
 {
 public:
 	SFont(void) : font(NULL), fSize(0), lineSpacing(0), weight(0), index(0), data(NULL), dataSize(0) { memset(name, 0, 128); };

@@ -185,7 +185,7 @@ static inline void _convertToCMPR(u8 *dst, const u8 *src, u32 width, u32 height)
 void STexture::Cleanup(TexData &tex)
 {
 	if(tex.data != NULL)
-		free(tex.data);
+		free(tex.data);//mem2_free maybe
 	tex.data = NULL;
 	tex.dataSize = 0;
 	tex.width = 0;

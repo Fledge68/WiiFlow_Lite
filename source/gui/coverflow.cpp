@@ -2612,27 +2612,29 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover)
 	if(!m_loadingCovers) return false;
 
 	u8 textureFmt = m_compressTextures ? GX_TF_CMPR : GX_TF_RGB565;
+
 	const char *path = box ? (blankBoxCover ? mainMenu.getBlankCoverPath(m_items[i].hdr) : 
 			mainMenu.getBoxPath(m_items[i].hdr)) : mainMenu.getFrontPath(m_items[i].hdr);
 	if(path == NULL)
 		return false;
 	size_t path_len = strlen(path);
-	char *path_place = (char*)MEM2_alloc(path_len+1);
-	if(path_place == NULL)
+	char *coverPath = (char*)MEM2_alloc(path_len+1);
+	if(coverPath == NULL)
 		return false;
-	memset(path_place, 0, path_len+1);
-	memcpy(path_place, path, path_len);
-	DCFlushRange(path_place, path_len+1);
+	memset(coverPath, 0, path_len+1);
+	memcpy(coverPath, path, path_len);
+	DCFlushRange(coverPath, path_len+1);
+	
 	TexData tex;
 	tex.thread = true;
 	m_renderingTex = &tex;
-	if(TexHandle.fromImageFile(tex, path_place, textureFmt, 32) != TE_OK)
+	if(TexHandle.fromImageFile(tex, coverPath, textureFmt, 32) != TE_OK)
 	{
-		MEM2_free(path_place);
+		MEM2_free(coverPath);
 		m_renderingTex = NULL;
 		return false;
 	}
-	MEM2_free(path_place);
+	MEM2_free(coverPath);
 	m_renderingTex = NULL;
 	if(!m_loadingCovers)
 		return false;
@@ -2653,62 +2655,58 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover)
 		if(zBuffer != NULL && (!m_compressCache || compress(zBuffer, &zBufferSize, tex.data, bufSize) == Z_OK))
 		{
 			const char *gameNameOrID = NULL;
-			const char *coverDir = NULL;
+			const char *coverWfcDir = NULL;
+			char *full_path = (char*)MEM2_alloc(MAX_FAT_PATH+1);
+			if(full_path == NULL)
+			{
+				if(zBuffer != NULL && m_compressCache)
+					MEM2_free(zBuffer);
+				return false;
+			}
+			memset(full_path, 0, MAX_FAT_PATH+1);
+			
 			if(blankBoxCover)
 			{
-				const char *menuPath = mainMenu.getBlankCoverPath(m_items[i].hdr);
-				if(menuPath != NULL && strrchr(menuPath, '/') != NULL)
-					gameNameOrID = strrchr(menuPath, '/') + 1;
+				const char *blankCoverPath = mainMenu.getBlankCoverPath(m_items[i].hdr);
+				if(blankCoverPath != NULL && strrchr(blankCoverPath, '/') != NULL)
+					gameNameOrID = strrchr(blankCoverPath, '/') + 1;
 			}
 			else
-			{
 				gameNameOrID = getPathId(m_items[i].hdr);
-				if(NoGameID(m_items[i].hdr->type))
-				{
-					if(m_pluginCacheFolders && m_items[i].hdr->type == TYPE_PLUGIN)
-						coverDir = m_plugin.GetCoverFolderName(m_items[i].hdr->settings[0]);
-					if(m_items[i].hdr->type == TYPE_SOURCE)
-						coverDir = "sourceflow";
-				}
-			}
-
-			FILE *file = NULL;
-			if(gameNameOrID != NULL)
+				
+			if(m_items[i].hdr->type == TYPE_PLUGIN && m_pluginCacheFolders && !blankBoxCover)
+				coverWfcDir = m_plugin.GetCoverFolderName(m_items[i].hdr->settings[0]);
+			if(m_items[i].hdr->type == TYPE_SOURCE && !blankBoxCover)
+				coverWfcDir = "sourceflow";
+			if(coverWfcDir != NULL)
 			{
-				char *full_path = (char*)MEM2_alloc(MAX_FAT_PATH+1);
-				if(full_path == NULL)
+				//check if coverWfcDir includes subfolders & make them
+				if(strchr(coverWfcDir, '/') != NULL)
 				{
-					if(zBuffer != NULL && m_compressCache)
-						MEM2_free(zBuffer);
-					return false;
-				}
-				memset(full_path, 0, MAX_FAT_PATH+1);
-				if(coverDir == NULL || strlen(coverDir) == 0)
-					strncpy(full_path, fmt("%s/%s.wfc", m_cachePath.c_str(), gameNameOrID), MAX_FAT_PATH);
-				else
-				{
-					if(strchr(coverDir, '/') != NULL)
+					char *tmp = (char*)MEM2_alloc(strlen(coverWfcDir)+1);
+					strncpy(tmp, coverWfcDir, strlen(coverWfcDir));
+					char *help = tmp;
+					while(help != NULL && strchr(help, '/') != NULL)
 					{
-						char *tmp = (char*)MEM2_alloc(strlen(coverDir)+1);
-						strncpy(tmp, coverDir, strlen(coverDir));
-						char *help = tmp;
-						while(help != NULL && strchr(help, '/') != NULL)
-						{
-							char *pos = strchr(help, '/');
-							*pos = '\0';
-							fsop_MakeFolder(fmt("%s/%s", m_cachePath.c_str(), tmp));
-							*pos = '/';
-							help = pos+1;
-						}
-						MEM2_free(tmp);
+						char *pos = strchr(help, '/');
+						*pos = '\0';
+						fsop_MakeFolder(fmt("%s/%s", m_cachePath.c_str(), tmp));
+						*pos = '/';
+						help = pos+1;
 					}
-					fsop_MakeFolder(fmt("%s/%s", m_cachePath.c_str(), coverDir));
-					strncpy(full_path, fmt("%s/%s/%s.wfc", m_cachePath.c_str(), coverDir, gameNameOrID), MAX_FAT_PATH);
+					MEM2_free(tmp);
 				}
-				DCFlushRange(full_path, MAX_FAT_PATH+1);
-				file = fopen(full_path, "wb");
-				MEM2_free(full_path);
+				fsop_MakeFolder(fmt("%s/%s", m_cachePath.c_str(), coverWfcDir));
+				strncpy(full_path, fmt("%s/%s/%s.wfc", m_cachePath.c_str(), coverWfcDir, gameNameOrID), MAX_FAT_PATH);
 			}
+			else
+				strncpy(full_path, fmt("%s/%s.wfc", m_cachePath.c_str(), gameNameOrID), MAX_FAT_PATH);
+		
+			DCFlushRange(full_path, MAX_FAT_PATH+1);
+			//finally write the wfc file to the cache
+			FILE *file;
+			file = fopen(full_path, "wb");
+			MEM2_free(full_path);
 			if(file != NULL)
 			{
 				SWFCHeader header(tex, box, m_compressCache);
@@ -2772,22 +2770,22 @@ void CCoverFlow::_dropHQLOD(int i)
 
 const char *CCoverFlow::getPathId(const dir_discHdr *curHdr, bool extension)
 {
-	const char *TitleOrID = NULL;
+	const char *NameOrID = NULL;
 	if(NoGameID(curHdr->type))
 	{
 		if(strrchr(curHdr->path, '/') != NULL)
 		{
 			if(curHdr->type == TYPE_HOMEBREW || extension)
-				TitleOrID = strrchr(curHdr->path, '/') + 1;//returns title.ext or folder name for boot.dol
+				NameOrID = strrchr(curHdr->path, '/') + 1;//returns title.ext or folder name for boot.dol
 			else
-				TitleOrID = fmt("%ls", curHdr->title);// title without extension in lowercase
+				NameOrID = fmt("%ls", curHdr->title);// title without extension in lowercase
 		}
 		else
-			TitleOrID = curHdr->path;//title for scummvm
+			NameOrID = curHdr->path;//title for scummvm
 	}
 	else
-		TitleOrID = curHdr->id;// ID for Wii, GC, & Channels
-	return TitleOrID;
+		NameOrID = curHdr->id;// ID for Wii, GC, & Channels
+	return NameOrID;
 }
 
 CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blankBoxCover)
@@ -2801,7 +2799,12 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 	if(!m_cachePath.empty())
 	{
 		const char *gameNameOrID = NULL;
-		const char *coverDir = NULL;
+		const char *coverWfcDir = NULL;
+		char *full_path = (char*)MEM2_alloc(MAX_FAT_PATH+1);
+		if(full_path == NULL)
+			return CL_NOMEM;
+		memset(full_path, 0, MAX_FAT_PATH+1);
+		
 		if(blankBoxCover)
 		{
 			const char *blankCoverPath = mainMenu.getBlankCoverPath(m_items[i].hdr);
@@ -2809,32 +2812,22 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 				gameNameOrID = strrchr(blankCoverPath, '/') + 1;
 		}
 		else
-		{
 			gameNameOrID = getPathId(m_items[i].hdr);
-			if(NoGameID(m_items[i].hdr->type))
-			{
-				if(m_pluginCacheFolders && m_items[i].hdr->type == TYPE_PLUGIN)
-					coverDir = m_plugin.GetCoverFolderName(m_items[i].hdr->settings[0]);
-				if(m_items[i].hdr->type == TYPE_SOURCE)
-					coverDir = "sourceflow";
-			}
-		}
+			
+		if(m_items[i].hdr->type == TYPE_PLUGIN && m_pluginCacheFolders && !blankBoxCover)
+			coverWfcDir = m_plugin.GetCoverFolderName(m_items[i].hdr->settings[0]);
+		if(m_items[i].hdr->type == TYPE_SOURCE && !blankBoxCover)
+			coverWfcDir = "sourceflow";
+		if(coverWfcDir != NULL)
+			strncpy(full_path, fmt("%s/%s/%s.wfc", m_cachePath.c_str(), coverWfcDir, gameNameOrID), MAX_FAT_PATH);
+		else
+			strncpy(full_path, fmt("%s/%s.wfc", m_cachePath.c_str(), gameNameOrID), MAX_FAT_PATH);
 	
-		FILE *fp = NULL;
-		if(gameNameOrID != NULL)
-		{
-			char *full_path = (char*)MEM2_alloc(MAX_FAT_PATH+1);
-			if(full_path == NULL)
-				return CL_NOMEM;
-			memset(full_path, 0, MAX_FAT_PATH+1);
-			if(coverDir == NULL || strlen(coverDir) == 0)
-				strncpy(full_path, fmt("%s/%s.wfc", m_cachePath.c_str(), gameNameOrID), MAX_FAT_PATH);
-			else
-				strncpy(full_path, fmt("%s/%s/%s.wfc", m_cachePath.c_str(), coverDir, gameNameOrID), MAX_FAT_PATH);
-			DCFlushRange(full_path, MAX_FAT_PATH+1);
-			fp = fopen(full_path, "rb");
-			MEM2_free(full_path);
-		}
+		DCFlushRange(full_path, MAX_FAT_PATH+1);
+		FILE *fp;
+		fp = fopen(full_path, "rb");
+		free(full_path);
+
 		if(fp != NULL)//if wfc chache file is found
 		{
 			bool success = false;
@@ -2845,10 +2838,16 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 				return _loadCoverTexPNG(i, box, hq, blankBoxCover) ? CL_OK : CL_ERROR;
 			}
 			u32 fileSize = stat_buf.st_size;
+			
 			SWFCHeader header;
 			if(fileSize > sizeof header)
 			{
-				fread(&header, 1, sizeof header, fp);
+				size_t readLen;
+				do {
+					fseek(fp, 0, SEEK_SET);
+					readLen = fread(&header, 1, sizeof header, fp);
+				} while (readLen != sizeof header);
+				//fread(&header, 1, sizeof header, fp);
 				//make sure wfc cache file matches what we want
 				if(header.newFmt == 1 && (header.full != 0) == box && (header.cmpr != 0) == m_compressTextures)
 				{
@@ -2868,21 +2867,22 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 					if(header.zipped != 0)//if it's compressed ie. zipped
 					{
 						u8 *ptrTex = (u8*)MEM2_alloc(bufSize);
-						if(ptrTex == NULL)
+						u8 *zBuffer = (u8*)MEM2_alloc(fileSize - sizeof header);
+						if(ptrTex == NULL || zBuffer == NULL)
 							allocFailed = true;
 						else
 						{
-							u8 *zBuffer = (u8*)MEM2_alloc(fileSize - sizeof header);
-							if(zBuffer != NULL)
-							{
-								fread(zBuffer, 1, fileSize - sizeof header, fp);
-								uLongf size = bufSize;
-								if(uncompress(ptrTex, &size, zBuffer, fileSize - sizeof header) == Z_OK && size == bufSize)
-									memcpy(tex.data, ptrTex + bufSize - texLen, texLen);
-								free(zBuffer);
-								free(ptrTex);
-							}
+							size_t readLen;
+							do {
+								fseek(fp, sizeof header, SEEK_SET);
+								readLen = fread(zBuffer, 1, fileSize - sizeof header, fp);
+							} while (readLen != (fileSize - sizeof header));
+							uLongf size = bufSize;
+							if(uncompress(ptrTex, &size, zBuffer, fileSize - sizeof header) == Z_OK && size == bufSize)
+								memcpy(tex.data, ptrTex + bufSize - texLen, texLen);
 						}
+						free(zBuffer);
+						free(ptrTex);
 					}
 					else
 					{
@@ -2890,8 +2890,11 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 							allocFailed = true;
 						else
 						{
-							fseek(fp, fileSize - sizeof header - texLen, SEEK_CUR);
-							fread(tex.data, 1, texLen, fp);
+							size_t readLen;
+							do {
+								fseek(fp, sizeof header + bufSize - texLen, SEEK_SET);
+								readLen = fread(tex.data, 1, texLen, fp);
+							} while (readLen != texLen);
 						}
 					}
 					if(!allocFailed)
@@ -2921,7 +2924,6 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 
 	// If wfc cache file not found, load the PNG and create a wfc cache file
 	return _loadCoverTexPNG(i, box, hq, blankBoxCover) ? CL_OK : CL_ERROR;
-	//return CL_ERROR;
 }
 
 int CCoverFlow::_coverLoader(CCoverFlow *cf)
@@ -2939,9 +2941,9 @@ int CCoverFlow::_coverLoader(CCoverFlow *cf)
 	{
 		update = cf->m_moved;
 		cf->m_moved = false;
-		for(j = cf->m_items.size(); j >= bufferSize && cf->m_loadingCovers && !cf->m_moved && update; --j)
+		firstItem = cf->m_covers[cf->m_range / 2].index;
+		for(j = cf->m_items.size(); j >= bufferSize && !cf->m_moved && update; --j)
 		{
-			firstItem = cf->m_covers[cf->m_range / 2].index;
 			i = loopNum((j & 1) ? firstItem - (j + 1) / 2 : firstItem + j / 2, cf->m_items.size());
 			if(cf->m_items[i].state != STATE_Loading)
 			{
@@ -2952,9 +2954,8 @@ int CCoverFlow::_coverLoader(CCoverFlow *cf)
 			}
 		}
 		ret = CL_OK;
-		for(j = 0; j <= bufferSize && cf->m_loadingCovers && !cf->m_moved && update && ret != CL_NOMEM; ++j)
+		for(j = 0; j <= bufferSize && !cf->m_moved && update && ret != CL_NOMEM; ++j)
 		{
-			firstItem = cf->m_covers[cf->m_range / 2].index;
 			i = loopNum((j & 1) ? firstItem - (j + 1) / 2 : firstItem + j / 2, cf->m_items.size());
 			cur_pos_hq = (hq_req && i == firstItem);
 			if((!hq_req || !cur_pos_hq) && cf->m_items[i].state != STATE_Loading)

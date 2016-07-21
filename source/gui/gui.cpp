@@ -37,7 +37,6 @@ s16 CButtonsMgr::addButton(SFont font, const wstringEx &text, int x, int y, u32 
 
 	b->font = font;
 	b->visible = false;
-	//b->text = text;
 	b->text.setText(b->font, text);
 	b->textColor = color;
 	b->x = x + width / 2;
@@ -61,6 +60,213 @@ s16 CButtonsMgr::addButton(SFont font, const wstringEx &text, int x, int y, u32 
 	m_elts.push_back(b);
 
 	return m_elts.size() > sz ? m_elts.size() - 1 : -2;
+}
+
+s16 CButtonsMgr::addLabel(SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, s16 style, const TexData &bg)
+{
+	SLabel *b = new SLabel;
+
+	b->font = font;
+	b->visible = false;
+	b->textStyle = style;
+	b->text.setText(b->font, text);
+	b->text.setFrame(width, b->textStyle, false, true);
+	b->textColor = color;
+	b->x = x + width / 2;
+	b->y = y + height / 2;
+	b->w = width;
+	b->h = height;
+	b->alpha = 0;
+	b->targetAlpha = 0;
+	b->scaleX = 0.f;
+	b->scaleY = 0.f;
+	b->targetScaleX = 0.f;
+	b->targetScaleY = 0.f;
+	b->texBg = bg;
+	b->moveByX = 0;
+	b->moveByY = 0;
+
+	u32 sz = m_elts.size();
+	m_elts.push_back(b);
+
+	return m_elts.size() > sz ? m_elts.size() - 1 : -2;
+}
+
+s16 CButtonsMgr::addProgressBar(int x, int y, u32 width, u32 height, SButtonTextureSet &texSet)
+{
+	SProgressBar *b = new SProgressBar;
+
+	b->visible = false;
+	b->x = x + width / 2;
+	b->y = y + height / 2;
+	b->w = width;
+	b->h = height;
+	b->alpha = 0;
+	b->targetAlpha = 0;
+	b->scaleX = 0.f;
+	b->scaleY = 0.f;
+	b->targetScaleX = 0.f;
+	b->targetScaleY = 0.f;
+	b->tex = texSet;
+	b->val = 0.f;
+	b->targetVal = 0.f;
+	b->moveByX = 0;
+	b->moveByY = 0;
+
+	u32 sz = m_elts.size();
+	m_elts.push_back(b);
+
+	return m_elts.size() > sz ? m_elts.size() - 1 : -2;
+}
+
+s16 CButtonsMgr::addPicButton(TexData &texNormal, TexData &texSelected, int x, int y, u32 width, u32 height, GuiSound *clickSound, GuiSound *hoverSound)
+{
+	SButtonTextureSet texSet;
+
+	texSet.center = texNormal;
+	texSet.centerSel = texSelected;
+	return addButton(SFont(), wstringEx(), x, y, width, height, CColor(), texSet, clickSound, hoverSound);
+}
+
+s16 CButtonsMgr::addPicButton(const u8 *pngNormal, const u8 *pngSelected, int x, int y, u32 width, u32 height, GuiSound *clickSound, GuiSound *hoverSound)
+{
+	SButtonTextureSet texSet;
+
+	TexHandle.fromPNG(texSet.center, pngNormal);
+	TexHandle.fromPNG(texSet.centerSel, pngSelected);
+	return addButton(SFont(), wstringEx(), x, y, width, height, CColor(), texSet, clickSound, hoverSound);
+}
+
+void CButtonsMgr::setText(s16 id, const wstringEx &text, bool unwrap)// unwrap means no wrap
+{
+	if (id == -1) return;
+	if (id < (s32)m_elts.size())
+	{
+		SLabel *lbl = NULL;
+		SButton *btn = NULL;
+		switch (m_elts[id]->t)
+		{
+			case GUIELT_BUTTON:
+				btn = (SButton*)m_elts[id];
+				btn->text.setText(btn->font, text);
+				break;
+			case GUIELT_LABEL:
+				lbl = (SLabel*)m_elts[id];
+				lbl->text.setText(lbl->font, text);
+				if (unwrap) 
+					lbl->text.setFrame(100000, lbl->textStyle, true, true);
+				else
+					lbl->text.setFrame(lbl->w, lbl->textStyle, false, !unwrap);
+				break;
+			case GUIELT_PROGRESS:
+				break;
+		}
+	}
+}
+
+void CButtonsMgr::setText(s16 id, const wstringEx &text, u32 startline, bool unwrap)
+{
+	if (id == -1) return;
+	if (id < (s32)m_elts.size())
+	{
+		SButton *btn = NULL;
+		SLabel *lbl = NULL;
+		switch(m_elts[id]->t)
+		{
+			case GUIELT_BUTTON:
+				btn = (SButton*)m_elts[id];
+				btn->text.setText(btn->font, text);
+				break;
+			case GUIELT_LABEL:
+				lbl = (SLabel*)m_elts[id];
+				lbl->text.setText(lbl->font, text, startline);
+				if (unwrap) 
+					lbl->text.setFrame(100000, lbl->textStyle, true, true);
+				else
+					lbl->text.setFrame(lbl->w, lbl->textStyle, false, !unwrap);
+				break;
+			case GUIELT_PROGRESS:
+				break;
+		}
+	}
+}
+
+void CButtonsMgr::setBtnTexture(s16 id, TexData &texNormal, TexData &texSelected)
+{
+	if (id == -1) return;
+	if (id < (s32)m_elts.size())
+	{
+		SButton *b = (SButton*)m_elts[id];
+		/* free old textures */
+		TexHandle.Cleanup(b->tex.center);
+		TexHandle.Cleanup(b->tex.centerSel);
+		/*change textures */
+		b->tex.center = texNormal;
+		b->tex.centerSel = texSelected;
+	}
+}
+
+void CButtonsMgr::freeBtnTexture(s16 id)
+{
+	if(id == -1) return;
+	if(id < (s32)m_elts.size())
+	{
+		SButton *b = (SButton*)m_elts[id];
+		TexHandle.Cleanup(b->tex.center);
+		TexHandle.Cleanup(b->tex.centerSel);
+	}
+}
+
+void CButtonsMgr::setTexture(s16 id, TexData &bg)
+{
+	if (id == -1) return;
+	if (id < (s32)m_elts.size())
+	{
+		SLabel *lbl = NULL;
+		switch(m_elts[id]->t)
+		{
+			case GUIELT_BUTTON:
+				break;
+			case GUIELT_LABEL:
+				lbl = (SLabel*)m_elts[id];
+				lbl->texBg = bg;//change texture
+				break;
+			case GUIELT_PROGRESS:
+				break;
+		}
+	}
+}
+
+void CButtonsMgr::setTexture(s16 id, TexData &bg, int width, int height)
+{
+	if (id == -1) return;
+	if (id < (s32)m_elts.size())
+	{
+		SLabel *lbl = NULL;
+		switch(m_elts[id]->t)
+		{
+			case GUIELT_BUTTON:
+				break;
+			case GUIELT_LABEL:
+				lbl = (SLabel*)m_elts[id];
+				lbl->texBg = bg;//change texture
+				lbl->w = width;
+				lbl->h = height;
+				break;
+			case GUIELT_PROGRESS:
+				break;
+		}
+	}
+}
+
+void CButtonsMgr::setProgress(s16 id, float f, bool instant)
+{
+	if(m_elts[id]->t == GUIELT_PROGRESS)
+	{
+		SProgressBar *b = (SProgressBar*)m_elts[id];
+		b->targetVal = std::min(std::max(0.f, f), 1.f);
+		if (instant) b->val = b->targetVal;
+	}
 }
 
 void CButtonsMgr::reset(s16 id, bool instant)
@@ -160,22 +366,6 @@ void CButtonsMgr::hide(s16 id, bool instant)
 	}
 }
 
-void CButtonsMgr::stopSounds(void)
-{
-	for (u32 i = 0; i < m_elts.size(); ++i)
-		if (m_elts[i]->t == GUIELT_BUTTON)
-		{
-			SButton *b = (SButton*)m_elts[i];
-			b->hoverSound->Stop();
-			b->clickSound->Stop();
-		}
-}
-
-void CButtonsMgr::setSoundVolume(int vol)
-{
-	m_soundVolume = min(max(0, vol), 0xFF);
-}
-
 void CButtonsMgr::show(s16 id, bool instant)
 {
 	if (id == -1) return;
@@ -197,6 +387,22 @@ void CButtonsMgr::show(s16 id, bool instant)
 	}
 }
 
+void CButtonsMgr::stopSounds(void)
+{
+	for (u32 i = 0; i < m_elts.size(); ++i)
+		if (m_elts[i]->t == GUIELT_BUTTON)
+		{
+			SButton *b = (SButton*)m_elts[i];
+			b->hoverSound->Stop();
+			b->clickSound->Stop();
+		}
+}
+
+void CButtonsMgr::setSoundVolume(int vol)
+{
+	m_soundVolume = min(max(0, vol), 0xFF);
+}
+
 void CButtonsMgr::setRumble(int chan, bool wii, bool gc, bool wupc)
 {
 	wii_rumble[chan] = wii;
@@ -204,12 +410,74 @@ void CButtonsMgr::setRumble(int chan, bool wii, bool gc, bool wupc)
 	wupc_rumble[chan] = wupc;
 }
 
+void CButtonsMgr::setMouse(bool enable)
+{
+	m_mouse = enable;
+}
+
+void CButtonsMgr::noHover(bool nohover)
+{
+	m_nohover = nohover;
+}
+
+void CButtonsMgr::noClick(bool noclick)
+{
+	m_noclick = noclick;
+}
+
+// **********************************************************************************************
+// * This makes the click sound when a button is selected unless m_noclick is true.             *
+// * You check to see if a controller button pressed and then call m_btnMgr.selected(btn name)  *
+// **********************************************************************************************
+bool CButtonsMgr::selected(s16 button)
+{
+	for(int chan = WPAD_MAX_WIIMOTES - 1; chan >= 0; chan--)
+	{
+		if(m_selected[chan] == button)
+		{
+			if(m_selected[chan] != -1 && !m_noclick) 
+				click(m_selected[chan]);
+			return true;
+		}
+	}
+	return false;
+}
+
+// **********************************************************************************************
+// * Plays the click sound for the function above.  Also sets rumble off and enlarges button    *
+// **********************************************************************************************
+void CButtonsMgr::click(s16 id)
+{
+	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
+	{
+		WUPC_Rumble(chan, 0);
+		WPAD_Rumble(chan, 0);
+		PAD_ControlMotor(chan, 0);
+
+		if (id == -1) id = m_selected[chan];
+		if (id == -1) continue;
+		if (id < (s32)m_elts.size() && m_elts[id]->t == GUIELT_BUTTON)
+		{
+			SButton *b = (SButton*)m_elts[id];
+			b->click = 1.f;
+			b->scaleX = 1.1f;
+			b->scaleY = 1.1f;
+			if (m_soundVolume > 0) b->clickSound->Play(m_soundVolume);
+		}
+	}
+}
+
+// ********************************************************************************************
+// * This is for using the mouse/pointer to select a button. It slightly enlarges the button, *
+// * makes the hover sound if it's newly selected and if m_noHover is not set, and uses		  *
+// * rumble if set on.																		  *
+// ********************************************************************************************
 void CButtonsMgr::mouse(int chan, int x, int y)
 {
 	if (m_elts.empty()) return;
 
 	float w, h;
-	u16 start = 0;
+	u16 start = -1;
 	if(m_selected[chan] != -1 && m_selected[chan] < (s32)m_elts.size())
 	{
 		m_elts[m_selected[chan]]->targetScaleX = 1.f;
@@ -252,25 +520,10 @@ void CButtonsMgr::mouse(int chan, int x, int y)
 	}
 }
 
-void CButtonsMgr::setMouse(bool enable)
-{
-	m_mouse = enable;
-}
-
-bool CButtonsMgr::selected(s16 button)
-{
-	for(int chan = WPAD_MAX_WIIMOTES - 1; chan >= 0; chan--)
-	{
-		if(m_selected[chan] == button)
-		{
-			if(m_selected[chan] != -1 && !m_noclick) 
-				click(m_selected[chan]);
-			return true;
-		}
-	}
-	return false;
-}
-
+// **************************************************************************************************
+// * This is for moving backwards to the next available button when using the d-pad instead of the  *
+// * pointer/mouse. The Button is slightly enlarged to show it's been selected. 		 			*
+// **************************************************************************************************
 void CButtonsMgr::up(void)
 {
 	if(m_elts.empty() || m_mouse)
@@ -293,13 +546,17 @@ void CButtonsMgr::up(void)
 		if (b.t == GUIELT_BUTTON && b.visible)
 		{
 			m_selected[0] = j;
-			b.targetScaleX = 1.1f;
+			b.targetScaleX = 1.1f;// mouse only enlarges 1.05
 			b.targetScaleY = 1.1f;
 			break;
 		}
 	}
 }
 
+// **************************************************************************************************
+// * This is for moving forwards to the next available button when using the d-pad instead of the 	*
+// * pointer/mouse. The Button is slightly enlarged to show it's been selected. 		 			*
+// **************************************************************************************************
 void CButtonsMgr::down(void)
 {
 	if(m_elts.empty() || m_mouse)
@@ -322,51 +579,25 @@ void CButtonsMgr::down(void)
 		if (b.t == GUIELT_BUTTON && b.visible)
 		{
 			m_selected[0] = j;
-			b.targetScaleX = 1.1f;
+			b.targetScaleX = 1.1f;// mouse only enlarges 1.05
 			b.targetScaleY = 1.1f;
 			break;
 		}
 	}
 }
 
-void CButtonsMgr::noHover(bool nohover)
+void CButtonsMgr::tick(void)
 {
-	m_nohover = nohover;
-}
-
-void CButtonsMgr::noClick(bool noclick)
-{
-	m_noclick = noclick;
-}
-
-void CButtonsMgr::click(s16 id)
-{
+	for (u32 i = 0; i < m_elts.size(); ++i)
+		m_elts[i]->tick();
 	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
-	{
-		WUPC_Rumble(chan, 0);
-		WPAD_Rumble(chan, 0);
-		PAD_ControlMotor(chan, 0);
-
-		if (id == -1) id = m_selected[chan];
-		if (id == -1) continue;
-		if (id < (s32)m_elts.size() && m_elts[id]->t == GUIELT_BUTTON)
+		if (m_rumble[chan] > 0 && --m_rumble[chan] == 0)
 		{
-			SButton *b = (SButton*)m_elts[id];
-			b->click = 1.f;
-			b->scaleX = 1.1f;
-			b->scaleY = 1.1f;
-			if (m_soundVolume > 0) b->clickSound->Play(m_soundVolume);
+			WUPC_Rumble(chan, 0);
+			WPAD_Rumble(chan, 0);
+			PAD_ControlMotor(chan, 0);
 		}
-	}
-}
 
-void CButtonsMgr::SElement::tick(void)
-{
-	scaleX += (targetScaleX - scaleX) * (targetScaleX > scaleX ? 0.3f : 0.1f);
-	scaleY += (targetScaleY - scaleY) * (targetScaleY > scaleY ? 0.3f : 0.1f);
-	int alphaDist = (int)targetAlpha - (int)alpha;
-	alpha += abs(alphaDist) >= 8 ? (u8)(alphaDist / 8) : (u8)alphaDist;
-	pos += (targetPos - pos) * 0.1f;
 }
 
 void CButtonsMgr::SLabel::tick(void)
@@ -389,226 +620,13 @@ void CButtonsMgr::SProgressBar::tick(void)
 	val += (targetVal - val) * 0.1f;
 }
 
-void CButtonsMgr::tick(void)
+void CButtonsMgr::SElement::tick(void)
 {
-	for (u32 i = 0; i < m_elts.size(); ++i)
-		m_elts[i]->tick();
-	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
-		if (m_rumble[chan] > 0 && --m_rumble[chan] == 0)
-		{
-			WUPC_Rumble(chan, 0);
-			WPAD_Rumble(chan, 0);
-			PAD_ControlMotor(chan, 0);
-		}
-
-}
-
-s16 CButtonsMgr::addLabel(SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, s16 style, const TexData &bg)
-{
-	SLabel *b = new SLabel;
-
-	b->font = font;
-	b->visible = false;
-	b->textStyle = style;
-	b->text.setText(b->font, text);
-	b->text.setFrame(width, b->textStyle, false, true);
-	b->textColor = color;
-	b->x = x + width / 2;
-	b->y = y + height / 2;
-	b->w = width;
-	b->h = height;
-	b->alpha = 0;
-	b->targetAlpha = 0;
-	b->scaleX = 0.f;
-	b->scaleY = 0.f;
-	b->targetScaleX = 0.f;
-	b->targetScaleY = 0.f;
-	b->texBg = bg;
-	b->moveByX = 0;
-	b->moveByY = 0;
-
-	u32 sz = m_elts.size();
-	m_elts.push_back(b);
-
-	return m_elts.size() > sz ? m_elts.size() - 1 : -2;
-}
-
-s16 CButtonsMgr::addProgressBar(int x, int y, u32 width, u32 height, SButtonTextureSet &texSet)
-{
-	SProgressBar *b = new SProgressBar;
-
-	b->visible = false;
-	b->x = x + width / 2;
-	b->y = y + height / 2;
-	b->w = width;
-	b->h = height;
-	b->alpha = 0;
-	b->targetAlpha = 0;
-	b->scaleX = 0.f;
-	b->scaleY = 0.f;
-	b->targetScaleX = 0.f;
-	b->targetScaleY = 0.f;
-	b->tex = texSet;
-	b->val = 0.f;
-	b->targetVal = 0.f;
-	b->moveByX = 0;
-	b->moveByY = 0;
-
-	u32 sz = m_elts.size();
-	m_elts.push_back(b);
-
-	return m_elts.size() > sz ? m_elts.size() - 1 : -2;
-}
-
-s16 CButtonsMgr::addPicButton(TexData &texNormal, TexData &texSelected, int x, int y, u32 width, u32 height, GuiSound *clickSound, GuiSound *hoverSound)
-{
-	SButtonTextureSet texSet;
-
-	texSet.center = texNormal;
-	texSet.centerSel = texSelected;
-	return addButton(SFont(), wstringEx(), x, y, width, height, CColor(), texSet, clickSound, hoverSound);
-}
-
-s16 CButtonsMgr::addPicButton(const u8 *pngNormal, const u8 *pngSelected, int x, int y, u32 width, u32 height, GuiSound *clickSound, GuiSound *hoverSound)
-{
-	SButtonTextureSet texSet;
-
-	TexHandle.fromPNG(texSet.center, pngNormal);
-	TexHandle.fromPNG(texSet.centerSel, pngSelected);
-	return addButton(SFont(), wstringEx(), x, y, width, height, CColor(), texSet, clickSound, hoverSound);
-}
-
-void CButtonsMgr::setText(s16 id, const wstringEx &text, bool unwrap)
-{
-	if (id == -1) return;
-	if (id < (s32)m_elts.size())
-	{
-		SLabel *lbl = NULL;
-		SButton *btn = NULL;
-		switch (m_elts[id]->t)
-		{
-			case GUIELT_BUTTON:
-				btn = (SButton*)m_elts[id];
-				btn->text.setText(btn->font, text);
-				break;
-			case GUIELT_LABEL:
-				lbl = (SLabel*)m_elts[id];
-				lbl->text.setText(lbl->font, text);
-				if (unwrap) 
-					lbl->text.setFrame(100000, lbl->textStyle, true, true);
-				else
-					lbl->text.setFrame(lbl->w, lbl->textStyle, false, !unwrap);
-				break;
-			case GUIELT_PROGRESS:
-				break;
-		}
-	}
-}
-
-void CButtonsMgr::setText(s16 id, const wstringEx &text, u32 startline,bool unwrap)
-{
-	if (id == -1) return;
-	if (id < (s32)m_elts.size())
-	{
-		SButton *btn = NULL;
-		SLabel *lbl = NULL;
-		switch(m_elts[id]->t)
-		{
-			case GUIELT_BUTTON:
-				//((CButtonsMgr::SButton *)m_elts[id].get())->text = text;
-				btn = (SButton*)m_elts[id];
-				btn->text.setText(btn->font, text);
-				break;
-			case GUIELT_LABEL:
-				lbl = (SLabel*)m_elts[id];
-				lbl->text.setText(lbl->font, text, startline);
-				if (unwrap) 
-					lbl->text.setFrame(100000, lbl->textStyle, true, true);
-				else
-					lbl->text.setFrame(lbl->w, lbl->textStyle, false, !unwrap);
-				break;
-			case GUIELT_PROGRESS:
-				break;
-		}
-	}
-}
-
-void CButtonsMgr::setBtnTexture(s16 id, TexData &texNormal, TexData &texSelected)
-{
-	if (id == -1) return;
-	if (id < (s32)m_elts.size())
-	{
-		SButton *b = (SButton*)m_elts[id];
-		/* free old textures */
-		TexHandle.Cleanup(b->tex.center);
-		TexHandle.Cleanup(b->tex.centerSel);
-		/*change textures */
-		b->tex.center = texNormal;
-		b->tex.centerSel = texSelected;
-	}
-}
-
-void CButtonsMgr::freeBtnTexture(s16 id)
-{
-	if(id == -1) return;
-	if(id < (s32)m_elts.size())
-	{
-		SButton *b = (SButton*)m_elts[id];
-		TexHandle.Cleanup(b->tex.center);
-		TexHandle.Cleanup(b->tex.centerSel);
-	}
-}
-
-void CButtonsMgr::setTexture(s16 id, TexData &bg)
-{
-	if (id == -1) return;
-	if (id < (s32)m_elts.size())
-	{
-		SLabel *lbl = NULL;
-		switch(m_elts[id]->t)
-		{
-			case GUIELT_BUTTON:
-				break;
-			case GUIELT_LABEL:
-				lbl = (SLabel*)m_elts[id];
-				lbl->texBg = bg;//change texture
-				break;
-			case GUIELT_PROGRESS:
-				break;
-		}
-	}
-}
-
-void CButtonsMgr::setTexture(s16 id, TexData &bg, int width, int height)
-{
-	if (id == -1) return;
-	if (id < (s32)m_elts.size())
-	{
-		SLabel *lbl = NULL;
-		switch(m_elts[id]->t)
-		{
-			case GUIELT_BUTTON:
-				break;
-			case GUIELT_LABEL:
-				lbl = (SLabel*)m_elts[id];
-				lbl->texBg = bg;//change texture
-				lbl->w = width;
-				lbl->h = height;
-				break;
-			case GUIELT_PROGRESS:
-				break;
-		}
-	}
-}
-
-void CButtonsMgr::setProgress(s16 id, float f, bool instant)
-{
-	if(m_elts[id]->t == GUIELT_PROGRESS)
-	{
-		SProgressBar *b = (SProgressBar*)m_elts[id];
-		b->targetVal = std::min(std::max(0.f, f), 1.f);
-		if (instant) b->val = b->targetVal;
-	}
+	scaleX += (targetScaleX - scaleX) * (targetScaleX > scaleX ? 0.3f : 0.1f);
+	scaleY += (targetScaleY - scaleY) * (targetScaleY > scaleY ? 0.3f : 0.1f);
+	int alphaDist = (int)targetAlpha - (int)alpha;
+	alpha += abs(alphaDist) >= 8 ? (u8)(alphaDist / 8) : (u8)alphaDist;
+	pos += (targetPos - pos) * 0.1f;
 }
 
 void CButtonsMgr::_drawBtn(CButtonsMgr::SButton &b, bool selected, bool click)
