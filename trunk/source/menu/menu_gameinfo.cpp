@@ -19,19 +19,26 @@ void CMenu::_gameinfo(void)
 	
 	int amount_of_skips = 0;
 	
-	int synopsis_x = 0, synopsis_y = 0;
-	u32 synopsis_w = 0, synopsis_h = 0;
-
+	//int synopsis_x = m_theme.getInt("GAMEINFO/SYNOPSIS", "x", 40);
+	int synopsis_y = m_theme.getInt("GAMEINFO/SYNOPSIS", "y", 120);
+	//u16 synopsis_w = m_theme.getInt("GAMEINFO/SYNOPSIS", "width", 560);
+	int synopsis_h = m_theme.getInt("GAMEINFO/SYNOPSIS", "height", 280);
+	//CText text;
+	u32 synopsis_th = 0;
+	int dummy1 = 0;
+	u32 dummy2 = 0;
+	
 	do
 	{
 		_mainLoopCommon();
 
-		if (amount_of_skips == 0)
+		if (amount_of_skips == 0 && page == 1)
 		{
 			// Check dimensions in the loop, because the animation can have an effect
-			m_btnMgr.getDimensions(m_gameinfoLblSynopsis, synopsis_x, synopsis_y, synopsis_w, synopsis_h); // Get original dimensions
-		}	
-		if(first && page == 1)
+			m_btnMgr.getDimensions(m_gameinfoLblSynopsis, dummy1, dummy1, dummy2, synopsis_th); // Get original dimensions
+			//gprintf("synopsis\nx = %i\ny = %i\nw = %i\nh = %i\n", synopsis_x, synopsis_y, synopsis_w, synopsis_h);
+		}
+		if (first && page == 1)
 		{
 			m_btnMgr.moveBy(m_gameinfoLblSynopsis, 0, -1);
 			amount_of_skips++;
@@ -40,8 +47,9 @@ void CMenu::_gameinfo(void)
 
 		if ((BTN_DOWN_PRESSED || BTN_DOWN_HELD) && !(m_thrdWorking && m_thrdStop) && page == 1)
 		{
-			if (synopsis_h - (amount_of_skips * pixels_to_skip) > (m_vid.height2D() - (35 + synopsis_y)))
-			  {
+			//if (synopsis_h - (amount_of_skips * pixels_to_skip) > (m_vid.height2D() - (synopsis_y)))//+35
+			if(((int)synopsis_th - 48) - (amount_of_skips * pixels_to_skip) > (synopsis_h - synopsis_y))
+			{
 				m_btnMgr.moveBy(m_gameinfoLblSynopsis, 0, -pixels_to_skip);
 				amount_of_skips++;
 			}

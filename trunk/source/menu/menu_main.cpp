@@ -724,7 +724,7 @@ int CMenu::main(void)
 				LoadView();
 			}
 		}
-
+		/* Hide Notice or Letter if times up */	
 		if(m_showtimer > 0)
 		{
 			if(--m_showtimer == 0)
@@ -733,7 +733,7 @@ int CMenu::main(void)
 				m_btnMgr.hide(m_mainLblNotice);
 			}
 		}
-		//zones, showing and hiding buttons
+		/*zones, showing and hiding buttons */
 		if(!m_gameList.empty() && m_show_zone_prev && !m_sourceflow && m_current_view != COVERFLOW_HOMEBREW)
 			m_btnMgr.show(m_mainBtnPrev);
 		else

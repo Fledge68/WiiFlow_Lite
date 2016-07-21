@@ -33,7 +33,8 @@ public:
 	void reserve(u32 capacity) { m_elts.reserve(capacity); }
 	s16 addButton(SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color,
 		const SButtonTextureSet &texSet, GuiSound *clickSound = NULL, GuiSound *hoverSound = NULL);
-	s16 addLabel(SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, s16 style, const TexData &bg = _noTexture);
+	s16 addLabel(SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, 
+		s16 style, const TexData &bg = _noTexture);
 	s16 addPicButton(const u8 *pngNormal, const u8 *pngSelected, int x, int y, u32 width, u32 height,
 		GuiSound *clickSound = NULL, GuiSound *hoverSound = NULL);
 	s16 addPicButton(TexData &texNormal, TexData &texSelected, int x, int y, u32 width, u32 height,

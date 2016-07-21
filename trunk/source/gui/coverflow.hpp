@@ -196,7 +196,7 @@ private:
 		Vector3D bottomDeltaAngle;
 	};
 	enum TexState { STATE_Loading, STATE_Ready, STATE_NoCover };
-	struct CItem
+	struct CItem//should be SItem because it's a struct
 	{
 		CItem(dir_discHdr *itemHdr, int playcount, unsigned int lastPlayed);
 		dir_discHdr *hdr;
@@ -206,7 +206,7 @@ private:
 		volatile bool boxTexture;
 		volatile enum TexState state;
 	} ATTRIBUTE_PACKED;
-	struct CCover
+	struct CCover// should be SCover because it's a struct
 	{
 		u32 index;
 		Vector3D scale;
