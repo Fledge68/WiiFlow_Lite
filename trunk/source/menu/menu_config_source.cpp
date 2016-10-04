@@ -115,26 +115,31 @@ void CMenu::_CfgSrc(void)
 				break;
 			else if (m_btnMgr.selected(m_cfgsrcBtnEnableSF))
 			{
-				m_cfg.setBool("SOURCEFLOW", "enabled", !m_cfg.getBool("SOURCEFLOW", "enabled", false));
+				m_sourceflow = !m_sourceflow;
+				m_cfg.setBool("SOURCEFLOW", "enabled", m_sourceflow);
+				m_cfg.setBool("GENERAL", "multisource", false);
 				m_btnMgr.setText(m_cfgsrcBtnEnableSF, m_cfg.getBool("SOURCEFLOW", "enabled") ? _t("on", L"On") : _t("off", L"Off"));
 			}
-			else if (m_btnMgr.selected(m_cfgsrcBtnSmallbox) && m_sourceflow)
+			else if (m_btnMgr.selected(m_cfgsrcBtnSmallbox))
 			{
-				m_load_view = true;
+				if(m_sourceflow)
+					m_load_view = true;
 				fsop_deleteFolder(fmt("%s/sourceflow", m_cacheDir.c_str()));
 				m_cfg.setBool("SOURCEFLOW", "smallbox", !m_cfg.getBool("SOURCEFLOW", "smallbox", false));
 				m_btnMgr.setText(m_cfgsrcBtnSmallbox, m_cfg.getBool("SOURCEFLOW", "smallbox") ? _t("on", L"On") : _t("off", L"Off"));
 			}
-			else if (m_btnMgr.selected(m_cfgsrcBtnClearSF) && m_sourceflow)
+			else if (m_btnMgr.selected(m_cfgsrcBtnClearSF))
 			{
 				m_cfg.setBool("SOURCEFLOW", "update_cache", true);
-				m_load_view = true;
+				if(m_sourceflow)
+					m_load_view = true;
 			}
-			else if (m_btnMgr.selected(m_cfgsrcBtnMultisource) && !m_sourceflow)
+			else if (m_btnMgr.selected(m_cfgsrcBtnMultisource))
 			{
-				m_cfg.setBool("GENERAL", "multisource", !m_cfg.getBool("GENERAL", "multisource", false));
+				m_multisource = !m_multisource;
+				m_cfg.setBool("GENERAL", "multisource", m_multisource);
+				m_cfg.setBool("SOURCEFLOW", "enabled", false);
 				m_btnMgr.setText(m_cfgsrcBtnMultisource, m_cfg.getBool("GENERAL", "multisource") ? _t("on", L"On") : _t("off", L"Off"));
-				m_multisource = m_cfg.getBool("GENERAL", "multisource", false);
 			}
 		}
 	}

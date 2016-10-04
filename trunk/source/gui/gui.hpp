@@ -49,6 +49,7 @@ public:
 	void setProgress(s16 id, float f, bool instant = false);
 	void reset(s16 id, bool instant = false);
 	void moveBy(s16 id, int x, int y, bool instant = false);
+	void getTotalHeight(s16 id, int &height);
 	void getDimensions(s16 id, int &x, int &y, u32 &width, u32 &height);
 	void hide(s16 id, int dx, int dy, float scaleX, float scaleY, bool instant = false);
 	void hide(s16 id, bool instant = false);

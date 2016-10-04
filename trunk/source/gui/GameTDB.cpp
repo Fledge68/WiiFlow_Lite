@@ -106,6 +106,7 @@ bool GameTDB::OpenFile(const char *filepath)
 void GameTDB::CloseFile()
 {
 	OffsetMap.clear();
+	vector<GameOffsets>().swap(OffsetMap);
 
 	if(GameNodeCache)
 		MEM2_free(GameNodeCache);

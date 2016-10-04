@@ -113,8 +113,8 @@ int main(int argc, char **argv)
 			mainMenu.main();
 	}
 	//Exit WiiFlow, no game booted...
-	mainMenu.cleanup();
-	ShutdownBeforeExit();
+	mainMenu.cleanup();// cleanup and clear memory
+	ShutdownBeforeExit();// unmount devices and close inputs
 	Sys_Exit();
 	return 0;
 }

@@ -21,9 +21,11 @@ TexData m_categoryBg;
 vector<char> m_categories;
 static u8 curPage;
 u8 lastBtn;
-const char *catSettings;
-string id;
-string catDomain;
+const char *catSettings = NULL;
+const char *id = NULL;
+const char *pluginID = NULL;
+const char *catDomain = NULL;
+char tmp[64];
 bool gameSet;
 
 void CMenu::_hideCategorySettings(bool instant)
@@ -102,7 +104,6 @@ void CMenu::_updateCheckboxes(void)
 			default:
 				m_btnMgr.show(m_categoryBtnCatReq[i]);
 		}
-
 		m_btnMgr.setText(m_categoryLblCat[i], m_cat.getWString("GENERAL", fmt("cat%d",j), wfmt(L"Category %i",j).c_str()));	
 		m_btnMgr.show(m_categoryLblCat[i]);
 	}
@@ -130,10 +131,24 @@ void CMenu::_getIDCats(void)
 			catDomain = "WII";
 			break;
 		default:
-			catDomain = (m_plugin.GetPluginName(m_plugin.GetPluginPosition(hdr->settings[0]))).toUTF8();
+			catDomain = m_plugin.PluginMagicWord;
 	}
-	id = CoverFlow.getPathId(hdr, false);
-	const char *idCats = m_cat.getString(catDomain, id, "").c_str();
+	memset(tmp, 0, 64);
+	if(hdr->type == TYPE_PLUGIN)
+	{
+		wcstombs(tmp, hdr->title, 64);
+		pluginID = tmp;
+	}
+	else
+	{
+		id = hdr->id;
+		if(hdr->type == TYPE_GC_GAME && hdr->settings[0] == 1) /* disc 2 */
+		{
+			strcat(tmp, fmt("%.6s_2", hdr->id));
+			id = tmp;
+		}
+	}
+	const char *idCats = m_cat.getString(catDomain, hdr->type == TYPE_PLUGIN? pluginID : id).c_str();
 	u8 numIdCats = strlen(idCats);
 	if(numIdCats != 0)
 	{
@@ -148,6 +163,7 @@ void CMenu::_getIDCats(void)
 
 void CMenu::_setIDCats(void)
 {
+	const dir_discHdr *hdr = CoverFlow.getHdr();
 	string newIdCats = "";
 	for(int i = 1; i < m_max_categories; i++)
 	{
@@ -157,7 +173,7 @@ void CMenu::_setIDCats(void)
 			newIdCats = newIdCats + cCh;
 		}
 	}
-	m_cat.setString(catDomain, id, newIdCats);
+	m_cat.setString(catDomain, hdr->type == TYPE_PLUGIN? pluginID : id, newIdCats);
 }
 	
 void CMenu::_CategorySettings(bool fromGameSet)
@@ -253,9 +269,12 @@ void CMenu::_CategorySettings(bool fromGameSet)
 				m_cat.setString("GENERAL", "required_categories", newReqCats);
 			}
 			else
+			{
 				_setIDCats();
+				m_load_view = true;
+			}
 
-			m_cat.save();
+			//m_cat.save();
 			break;
 		}
 		else if(BTN_UP_PRESSED)
@@ -386,7 +405,7 @@ void CMenu::_initCategorySettingsMenu()
 	m_categoryLblPage = _addLabel("CATEGORY/PAGE_BTN", theme.btnFont, L"", 68, 400, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_categoryBtnPageP = _addPicButton("CATEGORY/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 172, 400, 48, 48);
 	m_categoryBtnBack = _addButton("CATEGORY/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
-	m_categoryBtnClear = _addButton("CATEGORY/CLEAR_BTN", theme.btnFont, L"", 220, 400, 200, 48, theme.btnFontColor);
+	m_categoryBtnClear = _addButton("CATEGORY/CLEAR_BTN", theme.btnFont, L"", 230, 400, 180, 48, theme.btnFontColor);
 	for(u8 i = 1; i < 6; ++i)
 	{ 	// left half
 		m_categoryBtnCat[i] = _addPicButton(fmt("CATEGORY/CAT_%i_BTN", i), theme.checkboxoff, theme.checkboxoffs, 30, (39+i*58), 44, 48);

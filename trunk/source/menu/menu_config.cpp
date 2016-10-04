@@ -52,22 +52,23 @@ void CMenu::_showConfig(void)
 
 	if(!m_locked)
 	{
+		m_btnMgr.show(m_configLblDownload);
+		m_btnMgr.show(m_configBtnDownload);
+		
+		currentPartition = m_cfg.getInt(_domainFromView(), "partition", 0);
+		const char *partitionname = DeviceName[currentPartition];
+		m_btnMgr.setText(m_configLblPartition, upperCase(partitionname));
 		m_btnMgr.show(m_configLblPartitionName);
 		m_btnMgr.show(m_configLblPartition);
 		m_btnMgr.show(m_configBtnPartitionP);
 		m_btnMgr.show(m_configBtnPartitionM);
-		m_btnMgr.show(m_configLblDownload);
-		m_btnMgr.show(m_configBtnDownload);
 	
+		m_btnMgr.show(m_configLblCfg4);
+		m_btnMgr.show(m_configBtnCfg4);
+
 		for(u8 i = 0; i < ARRAY_SIZE(m_configLblUser); ++i)
 			if(m_configLblUser[i] != -1)
 				m_btnMgr.show(m_configLblUser[i]);
-		
-		const char *partitionname = DeviceName[m_cfg.getInt(_domainFromView(), "partition", 0)];
-		m_btnMgr.setText(m_configLblPartition, upperCase(partitionname));
-		
-		m_btnMgr.show(m_configLblCfg4);
-		m_btnMgr.show(m_configBtnCfg4);
 	}
 	m_btnMgr.show(m_configLblParental);
 	m_btnMgr.show(m_locked ? m_configBtnUnlock : m_configBtnSetCode);
@@ -138,14 +139,10 @@ int CMenu::_configCommon(void)
 int CMenu::_config1(void)
 {
 	int change = CONFIG_PAGE_NO_CHANGE;
+
 	SetupInput();
-
-	s32 bCurrentPartition = currentPartition;
-
-	//gprintf("Current Partition: %d\n", currentPartition);
-	
 	_showConfig();
-	_textConfig();
+	s32 bCurrentPartition = currentPartition;
 
 	while(!m_exit)
 	{
@@ -160,11 +157,9 @@ int CMenu::_config1(void)
 			if (m_btnMgr.selected(m_configBtnDownload))
 			{
 				m_load_view = true;
-				CoverFlow.stopCoverLoader(true);
 				_hideConfig();
 				_download();
 				_showConfig();
-				CoverFlow.startCoverLoader();
 			}
 			else if (m_btnMgr.selected(m_configBtnUnlock))
 			{
@@ -200,14 +195,9 @@ int CMenu::_config1(void)
 			else if (m_btnMgr.selected(m_configBtnCfg4))
 			{
 				m_load_view = true;
-				CoverFlow.stopCoverLoader(true);
 				_hideConfig();
-				if(m_current_view != COVERFLOW_PLUGIN || m_use_source)
-					_NandEmuCfg();
-				else
-					_PluginSettings();
+				_NandEmuCfg();
 				_showConfig();
-				CoverFlow.startCoverLoader();
 			}
 		}
 	}
@@ -269,14 +259,6 @@ void CMenu::_textConfig(void)
 	m_btnMgr.setText(m_configBtnSetCode, _t("cfg7", L"Set code"));
 	m_btnMgr.setText(m_configLblPartitionName, _t("cfgp1", L"Game Partition"));
 	m_btnMgr.setText(m_configBtnBack, _t("cfg10", L"Back"));
-	if(m_current_view != COVERFLOW_PLUGIN || m_use_source)
-	{
-		m_btnMgr.setText(m_configLblCfg4, _t("cfg13", L"NAND Emulation Settings"));
-		m_btnMgr.setText(m_configBtnCfg4, _t("cfg14", L"Set"));
-	}
-	else
-	{
-		m_btnMgr.setText(m_configLblCfg4, _t("cfg15", L"Plugins"));
-		m_btnMgr.setText(m_configBtnCfg4, _t("cfg16", L"Select"));
-	}
+	m_btnMgr.setText(m_configLblCfg4, _t("cfg13", L"NAND Emulation Settings"));
+	m_btnMgr.setText(m_configBtnCfg4, _t("cfg14", L"Set"));
 }

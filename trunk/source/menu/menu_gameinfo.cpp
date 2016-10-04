@@ -7,64 +7,54 @@ wstringEx gameinfo_Title_w;
 
 bool titlecheck = false;
 u8 cnt_controlsreq = 0, cnt_controls = 0;
-const int pixels_to_skip = 10;
 
 void CMenu::_gameinfo(void)
 { 
-	bool first = true;
+	u8 page = 1;
+	int pixels_to_skip = 10;	
+	int amount_of_skips = 0;
+	int xtra_skips = 0;
+
 	SetupInput();
 	_showGameInfo();
 
-	u8 page = 0;
-	
-	int amount_of_skips = 0;
-	
-	//int synopsis_x = m_theme.getInt("GAMEINFO/SYNOPSIS", "x", 40);
-	int synopsis_y = m_theme.getInt("GAMEINFO/SYNOPSIS", "y", 120);
-	//u16 synopsis_w = m_theme.getInt("GAMEINFO/SYNOPSIS", "width", 560);
 	int synopsis_h = m_theme.getInt("GAMEINFO/SYNOPSIS", "height", 280);
-	//CText text;
-	u32 synopsis_th = 0;
-	int dummy1 = 0;
-	u32 dummy2 = 0;
+	int synopsis_th = 0;
 	
-	do
+	while(!m_exit)
 	{
 		_mainLoopCommon();
-
-		if (amount_of_skips == 0 && page == 1)
+		if(BTN_HOME_PRESSED || BTN_B_PRESSED)
+			break;
+		if ((BTN_DOWN_PRESSED || BTN_DOWN_HELD) && !(m_thrdWorking && m_thrdStop) && page == 2 && synopsis_th > synopsis_h)
 		{
-			// Check dimensions in the loop, because the animation can have an effect
-			m_btnMgr.getDimensions(m_gameinfoLblSynopsis, dummy1, dummy1, dummy2, synopsis_th); // Get original dimensions
-			//gprintf("synopsis\nx = %i\ny = %i\nw = %i\nh = %i\n", synopsis_x, synopsis_y, synopsis_w, synopsis_h);
-		}
-		if (first && page == 1)
-		{
-			m_btnMgr.moveBy(m_gameinfoLblSynopsis, 0, -1);
-			amount_of_skips++;
-			first = false;
-		}
-
-		if ((BTN_DOWN_PRESSED || BTN_DOWN_HELD) && !(m_thrdWorking && m_thrdStop) && page == 1)
-		{
-			//if (synopsis_h - (amount_of_skips * pixels_to_skip) > (m_vid.height2D() - (synopsis_y)))//+35
-			if(((int)synopsis_th - 48) - (amount_of_skips * pixels_to_skip) > (synopsis_h - synopsis_y))
+			if((synopsis_th - amount_of_skips * pixels_to_skip) >= synopsis_h)
 			{
 				m_btnMgr.moveBy(m_gameinfoLblSynopsis, 0, -pixels_to_skip);
 				amount_of_skips++;
 			}
+			else if((synopsis_th - amount_of_skips * pixels_to_skip) < synopsis_h && xtra_skips == 0)
+			{
+				xtra_skips = pixels_to_skip - ((synopsis_th - amount_of_skips * pixels_to_skip) - synopsis_h);
+				m_btnMgr.moveBy(m_gameinfoLblSynopsis, 0, -xtra_skips);
+			}
 		}
-		else if ((BTN_UP_PRESSED || BTN_UP_HELD) && !(m_thrdWorking && m_thrdStop) && page == 1)
+		else if ((BTN_UP_PRESSED || BTN_UP_HELD) && !(m_thrdWorking && m_thrdStop) && page == 2)
 		{
-			if (amount_of_skips > 1)
+			if(xtra_skips > 0)
+			{
+				m_btnMgr.moveBy(m_gameinfoLblSynopsis, 0, xtra_skips);
+				xtra_skips = 0;
+			}
+			else if (amount_of_skips > 0)
 			{
 				m_btnMgr.moveBy(m_gameinfoLblSynopsis, 0, pixels_to_skip);
 				amount_of_skips--;
 			}
 		}
-		else if (BTN_RIGHT_PRESSED && !(m_thrdWorking && m_thrdStop) && page == 0 && !gameinfo_Synopsis_w.empty())
+		else if (BTN_RIGHT_PRESSED && !(m_thrdWorking && m_thrdStop) && page == 1 && !gameinfo_Synopsis_w.empty())
 		{
-			page = 1;
+			page = 2;
 			amount_of_skips = 0;
 
 			m_btnMgr.hide(m_gameinfoLblID, true);
@@ -93,11 +83,12 @@ void CMenu::_gameinfo(void)
 
 			m_btnMgr.reset(m_gameinfoLblSynopsis);
 			m_btnMgr.show(m_gameinfoLblSynopsis, false);
+			m_btnMgr.getTotalHeight(m_gameinfoLblSynopsis, synopsis_th);
+			m_btnMgr.moveBy(m_gameinfoLblSynopsis, 0, -1);
 		}
 		else if (BTN_LEFT_PRESSED && !(m_thrdWorking && m_thrdStop))
 		{
-			page = 0;
-			first = true;
+			page = 1;
 			m_btnMgr.show(m_gameinfoLblID);
 			m_btnMgr.show(m_gameinfoLblDev);
 			m_btnMgr.show(m_gameinfoLblRegion);	
@@ -124,9 +115,7 @@ void CMenu::_gameinfo(void)
 
 			m_btnMgr.hide(m_gameinfoLblSynopsis,true);
 		}
-
-	} while (!BTN_HOME_PRESSED && !BTN_B_PRESSED);
-
+	}
 	_hideGameInfo(false);
 }
 

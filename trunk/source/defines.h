@@ -1,5 +1,5 @@
 #define APP_NAME				"WiiFlow Lite"
-#define APP_VERSION				"Beta 4.2.2"
+#define APP_VERSION				"Beta 4.3.0"
 
 #define APP_DATA_DIR			"wiiflow"
 #define APPS_DIR				"apps/wiiflow_lite"
@@ -25,7 +25,6 @@
 #define PLUGIN_DOMAIN			"PLUGINS"
 #define HOMEBREW_DOMAIN			"HOMEBREW"
 #define MUSIC_DOMAIN			"MUSIC"
-#define FTP_DOMAIN				"FTP"
 
 #define DEVELOPERS				"Fledge68"
 #define PAST_DEVELOPERS			"FIX94, OverjoY, Hibernatus, Narolez, Hulk, Miigotu, r-win"

@@ -377,7 +377,7 @@ static const char *getVideoPath(const string &videoDir, const char *videoId)
 
 static const char *getVideoDefaultPath(const string &videoDir)
 {
-	strncpy(m_plugin.PluginMagicWord, fmt("%08x", CoverFlow.getHdr()->settings[0]), 8);
+	//strncpy(m_plugin.PluginMagicWord, fmt("%08x", CoverFlow.getHdr()->settings[0]), 8);
 	const char *videoPath = fmt("%s/%s", videoDir.c_str(), m_plugin.PluginMagicWord);
 	return videoPath;
 }
@@ -436,6 +436,29 @@ void CMenu::_game(bool launch)
 	dir_discHdr *hdr = (dir_discHdr*)MEM2_alloc(sizeof(dir_discHdr));
 	memcpy(hdr, CoverFlow.getHdr(), sizeof(dir_discHdr));
 	
+	const char *id = NULL;
+	char tmp1[74];// title plus / plus magic#
+	memset(tmp1, 0, 74);
+	char tmp2[64];
+	memset(tmp2, 0, 64);
+	if(hdr->type == TYPE_PLUGIN)
+	{
+		strncpy(m_plugin.PluginMagicWord, fmt("%08x", hdr->settings[0]), 8);
+		wcstombs(tmp2, hdr->title, 64);
+		strcat(tmp1, m_plugin.PluginMagicWord);
+		strcat(tmp1, fmt("/%s", tmp2));
+		id = tmp1;
+	}
+	else
+	{
+		id = hdr->id;
+		if(hdr->type == TYPE_GC_GAME && hdr->settings[0] == 1) /* disc 2 */
+		{
+			strcat(tmp1, fmt("%.6s_2", hdr->id));
+			id = tmp1;
+		}
+	}
+
 	m_zoom_banner = m_cfg.getBool(_domainFromView(), "show_full_banner", false);
 	if(NoGameID(hdr->type))
 	{
@@ -448,7 +471,6 @@ void CMenu::_game(bool launch)
 	if(m_banner.GetZoomSetting() != m_zoom_banner)
 		m_banner.ToggleZoom();
 
-	m_gcfg1.load(fmt("%s/" GAME_SETTINGS1_FILENAME, m_settingsDir.c_str()));
 	s8 startGameSound = -7;
 	SetupInput();
 
@@ -494,7 +516,6 @@ void CMenu::_game(bool launch)
 				v.y = min(max(-15.f, v.y + step), 15.f);
 			}
 			CoverFlow.setCoverFlipPos(v);
-			//CoverFlow.flip(true, true);
 		}
 		if(BTN_B_PRESSED && !m_locked && (m_btnMgr.selected(m_gameBtnFavoriteOn) || m_btnMgr.selected(m_gameBtnFavoriteOff)))
 		{
@@ -520,16 +541,22 @@ void CMenu::_game(bool launch)
 				break;
 			}
 		}
-		else if(BTN_PLUS_PRESSED && !coverFlipped && m_GameTDBAvailable && !NoGameID(hdr->type))
+		else if(BTN_PLUS_PRESSED && !NoGameID(hdr->type) && !coverFlipped)
 		{
-			_hideGame();
-			m_banner.SetShowBanner(false);
-			m_gameSelected = true;// guess its reset to true to keep game/banner sound playing (if it is) during gameinfo menu
-			_gameinfo();
-			_showGame();
-			m_banner.SetShowBanner(true);
-			if(!m_gameSound.IsPlaying())
-				startGameSound = -6;
+			GameTDB m_gametdb; 
+			m_gametdb.OpenFile(fmt("%s/wiitdb.xml", m_settingsDir.c_str()));
+			if(m_gametdb.IsLoaded())
+			{
+				_hideGame();
+				m_banner.SetShowBanner(false);
+				m_gameSelected = true;// guess its reset to true to keep game/banner sound playing (if it is) during gameinfo menu
+				_gameinfo();
+				m_gametdb.CloseFile();
+				_showGame();
+				m_banner.SetShowBanner(true);
+				if(!m_gameSound.IsPlaying())
+					startGameSound = -6;
+			}
 		}
 		else if(BTN_MINUS_PRESSED && !coverFlipped)
 		{
@@ -558,43 +585,50 @@ void CMenu::_game(bool launch)
 		{
 			if(m_btnMgr.selected(m_mainBtnQuit))
 				break;
-			else if(m_btnMgr.selected(m_gameBtnDelete))
+			else if(m_btnMgr.selected(m_gameBtnDelete) && !m_locked)
 			{
-				if(!m_locked)
+				_hideGame();
+				m_banner.SetShowBanner(false);
+				if(hdr->type == TYPE_PLUGIN)
 				{
-					_hideGame();
-					m_banner.SetShowBanner(false);
-					if(hdr->type == TYPE_PLUGIN)
-					{
-						const char *wfcPath = NULL;
-						const char *coverDir = NULL;
-						if(m_cfg.getBool(PLUGIN_DOMAIN, "subfolder_cache"))
-							coverDir = m_plugin.GetCoverFolderName(hdr->settings[0]);
-						if(coverDir == NULL || strlen(coverDir) == 0)
-							wfcPath = fmt("%s/%s.wfc", m_cacheDir.c_str(), CoverFlow.getPathId(hdr, false));
-						else
-							wfcPath = fmt("%s/%s/%s.wfc", m_cacheDir.c_str(), coverDir, CoverFlow.getPathId(hdr, false));
-						fsop_deleteFile(wfcPath);
-						m_load_view = true;
-					}
+					const char *wfcPath = NULL;
+					const char *coverDir = NULL;
+					if(m_cfg.getBool(PLUGIN_DOMAIN, "subfolder_cache"))
+						coverDir = m_plugin.GetCoverFolderName(hdr->settings[0]);
+					if(coverDir == NULL || strlen(coverDir) == 0)
+						wfcPath = fmt("%s/%s.wfc", m_cacheDir.c_str(), CoverFlow.getPathId(hdr, true));
 					else
-					{
-						if(_wbfsOp(WO_REMOVE_GAME))
-						{
-							_cleanupBanner();
-							break;
-						}
-					}
-					m_banner.SetShowBanner(true);
-					if(!m_gameSound.IsPlaying())
-						startGameSound = -6;
-					_showGame();
+						wfcPath = fmt("%s/%s/%s.wfc", m_cacheDir.c_str(), coverDir, CoverFlow.getPathId(hdr, true));
+					fsop_deleteFile(wfcPath);
+					m_load_view = true;
 				}
+				else
+				{
+					if(_wbfsOp(WO_REMOVE_GAME))
+					{
+						_cleanupBanner();
+						break;
+					}
+				}
+				m_banner.SetShowBanner(true);
+				if(!m_gameSound.IsPlaying())
+					startGameSound = -6;
+				_showGame();
 			}
 			else if(m_btnMgr.selected(m_gameBtnFavoriteOn) || m_btnMgr.selected(m_gameBtnFavoriteOff))
-				m_gcfg1.setBool("FAVORITES", CoverFlow.getPathId(hdr, false), !m_gcfg1.getBool("FAVORITES", CoverFlow.getPathId(hdr, false), false));
+			{
+				if(hdr->type == TYPE_PLUGIN)
+					m_gcfg1.setBool("FAVORITES_PLUGINS", id, !m_gcfg1.getBool("FAVORITES_PLUGINS", id, false));
+				else
+					m_gcfg1.setBool("FAVORITES", id, !m_gcfg1.getBool("FAVORITES", id, false));
+			}
 			else if(m_btnMgr.selected(m_gameBtnAdultOn) || m_btnMgr.selected(m_gameBtnAdultOff))
-				m_gcfg1.setBool("ADULTONLY", CoverFlow.getPathId(hdr, false), !m_gcfg1.getBool("ADULTONLY", CoverFlow.getPathId(hdr, false), false));
+			{
+				if(hdr->type == TYPE_PLUGIN)
+					m_gcfg1.setBool("ADULTONLY_PLUGINS", id, !m_gcfg1.getBool("ADULTONLY_PLUGINS", id, false));
+				else
+					m_gcfg1.setBool("ADULTONLY", id, !m_gcfg1.getBool("ADULTONLY", id, false));
+			}
 			else if(m_btnMgr.selected(m_gameBtnBack) || m_btnMgr.selected(m_gameBtnBackFull))
 			{
 				_cleanupBanner();
@@ -630,8 +664,7 @@ void CMenu::_game(bool launch)
 				MusicPlayer.Stop();
 				_cleanupBanner();
 				m_gcfg2.load(fmt("%s/" GAME_SETTINGS2_FILENAME, m_settingsDir.c_str()));
-				// change to current game's partition and set last_view for recall later
-				m_cfg.setInt("GENERAL", "last_view", m_current_view);
+				// change to current game's partition and set categories start page for recall later
 				m_cfg.setInt("GENERAL", "cat_startpage", m_catStartPage);
 				switch(hdr->type)
 				{
@@ -649,20 +682,15 @@ void CMenu::_game(bool launch)
 						currentPartition = m_cfg.getInt(WII_DOMAIN, "partition", 1);
 						break;
 					default:
-						m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
-						if(enabledPluginsCount == 1)
-						{
-							strncpy(m_plugin.PluginMagicWord, fmt("%08x", hdr->settings[0]), 8);
-							currentPartition = m_cfg.getInt("PLUGINS_PARTITION", m_plugin.PluginMagicWord, 1);
-							m_cfg.setInt(PLUGIN_DOMAIN, "partition", currentPartition);
-						}
-						currentPartition = m_cfg.getInt(PLUGIN_DOMAIN, "partition", 1);
+						int romsPartition = m_plugin.GetRomPartition(m_plugin.GetPluginPosition(hdr->settings[0]));
+						if(romsPartition < 0)
+							romsPartition = m_cfg.getInt(PLUGIN_DOMAIN, "partition", 0);
+						currentPartition = romsPartition;
 						break;
 				}
 				/* Get Banner Title for Playlog */
 				CurrentBanner.ClearBanner();
-				NANDemuView = false;
-				if(hdr->type == TYPE_EMUCHANNEL) NANDemuView = true;
+				NANDemuView = hdr->type == TYPE_EMUCHANNEL;
 				if(hdr->type == TYPE_CHANNEL || hdr->type == TYPE_EMUCHANNEL)
 				{
 					u64 chantitle = CoverFlow.getChanTitle();
@@ -738,16 +766,39 @@ void CMenu::_game(bool launch)
 				CoverFlow.left();
 				startGameSound = -10;
 			}
-			if(startGameSound == -10)
+			if(startGameSound == -10)// if -10 then we moved to new cover
 			{
 				m_gameSelected = false; // deselect game if moved to new cover
 				_setBg(m_gameBg, m_gameBgLQ);
-				memcpy(hdr, CoverFlow.getHdr(), sizeof(dir_discHdr));
+				memcpy(hdr, CoverFlow.getHdr(), sizeof(dir_discHdr));// get new game header
+				memset(tmp1, 0, 74);
+				memset(tmp2, 0, 64);
+				if(hdr->type == TYPE_PLUGIN)
+				{
+					strncpy(m_plugin.PluginMagicWord, fmt("%08x", hdr->settings[0]), 8);
+					wcstombs(tmp2, hdr->title, 64);
+					strcat(tmp1, m_plugin.PluginMagicWord);
+					strcat(tmp1, fmt("/%s", tmp2));
+					id = tmp1;
+				}
+				else
+				{
+					id = hdr->id;
+					if(hdr->type == TYPE_GC_GAME && hdr->settings[0] == 1) /* disc 2 */
+					{
+						strcat(tmp1, fmt("%.6s_2", hdr->id));
+						id = tmp1;
+					}
+				}
 			}
 		}
 		if(m_show_zone_game && !m_zoom_banner)
 		{
-			bool b = m_gcfg1.getBool("FAVORITES", CoverFlow.getPathId(hdr, false), false);
+			bool b;
+			if(hdr->type == TYPE_PLUGIN)
+				b = m_gcfg1.getBool("FAVORITES_PLUGINS", id, false);
+			else
+				b = m_gcfg1.getBool("FAVORITES", id, false);
 			m_btnMgr.show(b ? m_gameBtnFavoriteOn : m_gameBtnFavoriteOff);
 			m_btnMgr.hide(b ? m_gameBtnFavoriteOff : m_gameBtnFavoriteOn);
 			m_btnMgr.show(m_gameBtnPlay);
@@ -770,7 +821,10 @@ void CMenu::_game(bool launch)
 			}
 			if(!m_locked)
 			{
-				b = m_gcfg1.getBool("ADULTONLY", CoverFlow.getPathId(hdr, false), false);
+				if(hdr->type == TYPE_PLUGIN)
+					b = m_gcfg1.getBool("ADULTONLY_PLUGINS", id, false);
+				else
+					b = m_gcfg1.getBool("ADULTONLY", id, false);
 				m_btnMgr.show(b ? m_gameBtnAdultOn : m_gameBtnAdultOff);
 				m_btnMgr.hide(b ? m_gameBtnAdultOff : m_gameBtnAdultOn);
 				m_btnMgr.show(m_gameBtnSettings);
@@ -813,7 +867,6 @@ void CMenu::_game(bool launch)
 		_loadCFLayout(cf_version, true);
 		CoverFlow.applySettings();
 	}
-	m_gcfg1.save(true);
 	_hideGame();
 }
 
@@ -876,7 +929,7 @@ void CMenu::_launch(const dir_discHdr *hdr)
 		u32 title_len_no_ext = 0;
 		const char *path = NULL;
 		//example rom path - sd:/roms/super mario bros.zip
-		//example scummvm path - games/monkey island.exe
+		//example scummvm path - kq1-coco3
 		if(strchr(launchHdr.path, ':') != NULL)//it's a rom path
 		{
 			//check if music player plugin, if so launch wiiflow's music player
@@ -896,16 +949,13 @@ void CMenu::_launch(const dir_discHdr *hdr)
 		}
 		else //it's a scummvm game
 		{
-			path = launchHdr.path;
-			wcstombs(title, launchHdr.title, 63);
+			path = launchHdr.path;// kq1-coco3
+			wcstombs(title, launchHdr.title, 63);// King's Quest I: Quest for the Crown (CoCo3/English)
 		}
 		m_cfg.setString(PLUGIN_DOMAIN, "current_item", title);
 
 		const char *device = (currentPartition == 0 ? "sd" : (DeviceHandle.GetFSType(currentPartition) == PART_FS_NTFS ? "ntfs" : "usb"));
-		/* this is weird - he sets the return to loader to be dev:/wiiflow/plugins/WiiFlowLoader.dol
-		but there is no such dol in the plugins directory and WiiFlowLoader.dol is really a hidden channel
-		on the system menu. This is set because some plugins require a arg for loader dol and even though
-		this isn't real it fills the argument needed. */
+		// I believe the loader is set just in case the user is using a old plugin where the arguments line still requires loader
 		const char *loader = fmt("%s:/%s/WiiFlowLoader.dol", device, strchr(m_pluginsDir.c_str(), '/') + 1);
 
 		vector<string> arguments = m_plugin.CreateArgs(device, path, title, loader, title_len_no_ext, launchHdr.settings[0]);
@@ -996,8 +1046,8 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	}
 	else if(loader == 1)
 	{
-		u8 emuMC = min((u32)m_gcfg2.getInt(id, "emu_memcard", m_cfg.getInt(GC_DOMAIN, "emu_memcard", 1)), ARRAY_SIZE(CMenu::_NinEmuCard) - 1u);
-		emuMC = (emuMC == 0) ? m_cfg.getInt(GC_DOMAIN, "emu_memcard", 1) : emuMC-1;
+		u8 emuMC = min((u32)m_gcfg2.getInt(id, "emu_memcard", m_cfg.getInt(GC_DOMAIN, "emu_memcard", 2)), ARRAY_SIZE(CMenu::_NinEmuCard) - 1u);
+		emuMC = (emuMC == 0) ? m_cfg.getInt(GC_DOMAIN, "emu_memcard", 2) : emuMC-1;
 		bool usb_hid = m_gcfg2.getBool(id, "usb_hid", m_cfg.getBool(GC_DOMAIN, "usb_hid", false));
 		bool native_ctl = m_gcfg2.getBool(id, "native_ctl", m_cfg.getBool(GC_DOMAIN, "native_ctl", false));
 		bool deflicker = m_gcfg2.getBool(id, "Deflicker", m_cfg.getBool(GC_DOMAIN, "Deflicker", false));
@@ -1394,34 +1444,8 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		if(emuPartition < 0)//if savepartition and/or nand folder no good
 		{
 			_hideWaitMessage();
-			while(true)
-			{
-				if(!_AutoCreateNand())//change partition, extract nand, or disable emunand save
-				{//if disable
-					emulate_mode = 0;
-					m_gcfg2.setInt(id, "emulate_save", 1);
-					break;
-				}
-				emuPartition = m_cfg.getInt(WII_DOMAIN, "savepartition");
-				if(emulate_mode == 3)//full
-				{
-					if(_TestEmuNand(m_cfg.getInt(WII_DOMAIN, "savepartition"), emuPath.c_str(), true))
-					{
-						//emuPartition = m_cfg.getInt(WII_DOMAIN, "savepartition");
-						break;
-					}
-				}
-				else//gamesave or regionswitch
-				{
-					if(!_TestEmuNand(emuPartition, emuPath.c_str(), false))
-					{
-						NandHandle.CreatePath(fmt("%s:/%s", DeviceName[emuPartition], EMU_NANDS_DIR));
-						NandHandle.CreatePath(fmt("%s:/%s/%s", DeviceName[emuPartition], EMU_NANDS_DIR, m_cfg.getString(WII_DOMAIN, "current_save_emunand").c_str()));
-					}
-					break;
-				}
-			}
-			m_cfg.setInt(WII_DOMAIN, "savepartition", emuPartition);
+			error(_t("errgame13", L"EmuNAND for gamesave not found! Using real NAND."));
+			emulate_mode = 0;
 			_showWaitMessage();
 		}
 		if(emulate_mode == 1)//gamesave
@@ -1439,10 +1463,16 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		}
 		else if(emulate_mode > 1)//region switch or full
 		{
+			// copy real nand config files to emuNAND
 			NandHandle.CreateConfig();
+			// do region change on emuNAND even if region switch is not selected
 			NandHandle.Do_Region_Change(id, false);
+			// region change is always done because if it was changed last time then this time it may need to be set back
+			// region switch is done later when D2X cIOS is detected
 		}
 	}
+	else
+		emulate_mode = 0;//sets to off we are using neek2o or launching a DVD game
 
 	bool use_led = m_gcfg2.getBool(id, "led", false);
 	bool cheat = m_gcfg2.testOptBool(id, "cheat", m_cfg.getBool(WII_DOMAIN, "cheat", false));
@@ -1484,13 +1514,14 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	m_cfg.save(true);
 	cleanup(); // wifi and sd gecko doesnt work anymore after cleanup
 
-
+	//this is a temp region change of real nand(rn) for gamesave or off or DVD if tempregionrn is set true
 	bool patchregion = false;
 	if(emulate_mode <= 1 && !neek2o() && m_cfg.getBool("GENERAL", "tempregionrn", false))
 	{
 		gprintf("Check\n");
 		patchregion = NandHandle.Do_Region_Change(id, true);
 	}
+	//load external booter bin file. if fails then wiiflow exits. would be better to show error message first.
 	if(ExternalBooter_LoadBins(m_binsDir.c_str()) == false)
 		Sys_Exit();
 	if((!dvd || neek2o()) && !Sys_DolphinMode())

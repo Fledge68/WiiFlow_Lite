@@ -2018,16 +2018,10 @@ int CMenu::_gametdbDownloaderAsync()
 
 				// Update cache
 				UpdateCache();
-
 				LWP_MutexLock(m_mutex);
 				_setThrdMsg(_t("dlmsg26", L"Updating cache..."), 0.f);
 				LWP_MutexUnlock(m_mutex);
-
-				m_GameTDBAvailable = true;
-
 				m_load_view = true;
-				//_loadList();
-				//_initCF();
 			}
 		}
 	}

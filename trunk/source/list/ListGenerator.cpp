@@ -23,6 +23,7 @@
 #include "fileOps/fileOps.h"
 #include "gui/coverflow.hpp"
 #include "gui/text.hpp"
+#include "loader/sys.h"
 
 ListGenerator m_cacheList;
 Config CustomTitles;
@@ -37,6 +38,12 @@ void ListGenerator::Init(const char *settingsDir, const char *Language)
 		CustomTitlesPath = fmt("%s/" CTITLES_FILENAME, settingsDir);
 	}
 	if(Language != NULL) gameTDB_Language = Language;
+}
+
+void ListGenerator::Clear(void)
+{
+	m_cacheList.clear();
+	vector<dir_discHdr>().swap(m_cacheList);
 }
 
 void ListGenerator::OpenConfigs()
@@ -215,7 +222,10 @@ static void Create_Channel_List(bool realNAND)
 		ListElement.index = m_cacheList.size();
 		ListElement.settings[0] = TITLE_UPPER(chan->title);
 		ListElement.settings[1] = TITLE_LOWER(chan->title);
-		strncpy(ListElement.id, chan->id, 4);
+		if(chan->title == HBC_108)
+			strncpy(ListElement.id, "JODI", 4);
+		else
+			strncpy(ListElement.id, chan->id, 4);
 		ListElement.casecolor = CustomTitles.getColor("COVERS", ListElement.id, 0xFFFFFF).intVal();
 		const char *CustomTitle = CustomTitles.getString("TITLES", ListElement.id).c_str();
 		if(gameTDB.IsLoaded())
@@ -242,6 +252,7 @@ static void Create_Channel_List(bool realNAND)
 void ListGenerator::CreateList(u32 Flow, u32 Device, const string& Path, const vector<string>& FileTypes, 
 								const string& DBName, bool UpdateCache)
 {
+	Clear();
 	if(!DBName.empty())
 	{
 		if(UpdateCache)
@@ -254,8 +265,7 @@ void ListGenerator::CreateList(u32 Flow, u32 Device, const string& Path, const v
 			fsop_deleteFile(DBName.c_str());
 		}
 	}
-	//if(Flow != COVERFLOW_PLUGIN)
-		OpenConfigs();
+	OpenConfigs();
 	if(Flow == COVERFLOW_WII)
 	{
 		if(DeviceHandle.GetFSType(Device) == PART_FS_WBFS)
@@ -342,6 +352,7 @@ void GetFiles(const char *Path, const vector<string>& FileTypes,
 void ListGenerator::createSFList(u8 maxBtns, Config &m_sourceMenuCfg, bool show_homebrew, bool show_channel, bool show_plugin, bool show_gc, 
 			const string& sourceDir, const string& DBName, bool UpdateCache)
 {
+	Clear();
 	if(!DBName.empty())
 	{
 		if(UpdateCache)
