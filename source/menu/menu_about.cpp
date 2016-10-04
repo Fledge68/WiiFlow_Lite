@@ -5,24 +5,22 @@
 #include "loader/cios.h"
 #include "const_str.hpp"
 
-const int pixels_to_skip = 10;
-
 extern const u8 english_txt[];
 static const wstringEx ENGLISH_TXT_W((const char*)english_txt);
 
-//About menu
 s16 m_aboutLblTitle;
 s16 m_aboutLblInfo;
 s16 m_aboutLblUser[4];
 s16 m_aboutLblIOS;
+
 bool showHelp;
 
 void CMenu::_about(bool help)
 {
 	showHelp = help;
+	int pixels_to_skip = 10;
 	int amount_of_skips = 0;
-	int thanks_x = 0, thanks_y = 0;
-	u32 thanks_w = 0, thanks_h = 0;
+	int xtra_skips = 0;
 	bool first = true;
 
 	_textAbout();
@@ -30,30 +28,42 @@ void CMenu::_about(bool help)
 
 	SetupInput();
 	_showAbout();
+	
+	int thanks_h = m_theme.getInt("ABOUT/INFO", "height", 300);
+	int thanks_th = 0;
 
 	while(!m_exit)
 	{
 		_mainLoopCommon();
-		if(amount_of_skips == 0) // Check dimensions in the loop, because the animation can have an effect
-			m_btnMgr.getDimensions(m_aboutLblInfo, thanks_x, thanks_y, thanks_w, thanks_h); // Get original dimensions
 		if(first)
 		{
+			m_btnMgr.getTotalHeight(m_aboutLblInfo, thanks_th);
 			m_btnMgr.moveBy(m_aboutLblInfo, 0, -1);
-			amount_of_skips++;
+			m_btnMgr.moveBy(m_aboutLblInfo, 0, -pixels_to_skip);
 			first = false;
 		}
 
-		if ((BTN_DOWN_PRESSED || BTN_DOWN_HELD) && !(m_thrdWorking && m_thrdStop))
+		if ((BTN_DOWN_PRESSED || BTN_DOWN_HELD) && !(m_thrdWorking && m_thrdStop) && thanks_th >thanks_h)
 		{
-			if (thanks_h - (amount_of_skips * pixels_to_skip) > (m_vid.height2D() - (35 + thanks_y)))
+			if((thanks_th - amount_of_skips * pixels_to_skip) >= thanks_h)
 			{
 				m_btnMgr.moveBy(m_aboutLblInfo, 0, -pixels_to_skip);
 				amount_of_skips++;
 			}
+			else if((thanks_th - amount_of_skips * pixels_to_skip) < thanks_h && xtra_skips == 0)
+			{
+				xtra_skips = pixels_to_skip - ((thanks_th - amount_of_skips * pixels_to_skip) - thanks_h);
+				m_btnMgr.moveBy(m_aboutLblInfo, 0, -xtra_skips);
+			}
 		}
 		else if ((BTN_UP_PRESSED || BTN_UP_HELD) && !(m_thrdWorking && m_thrdStop))
 		{
-			if (amount_of_skips > 1)
+			if(xtra_skips > 0)
+			{
+				m_btnMgr.moveBy(m_aboutLblInfo, 0, xtra_skips);
+				xtra_skips = 0;
+			}
+			else if (amount_of_skips > 0)
 			{
 				m_btnMgr.moveBy(m_aboutLblInfo, 0, pixels_to_skip);
 				amount_of_skips--;

@@ -440,5 +440,7 @@ const char *CMenu::_FolderExplorer(const char *startPath)
 		strcat(dir, "/");
 	_Explorer();
 	folderExplorer = false;
+	if(strrchr(folderPath, '/') != NULL)
+		*strrchr(folderPath, '/') = '\0';
 	return folderPath;
 }

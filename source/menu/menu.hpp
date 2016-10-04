@@ -56,8 +56,6 @@ public:
 	u8 enabledPluginsCount;
 	u8 m_catStartPage;
 	bool m_clearCats;
-	bool show_homebrew;
-	bool parental_homebrew;
 	bool show_channel;
 	bool show_plugin;
 	bool show_gamecube;
@@ -204,10 +202,8 @@ private:
 	s16 m_mainBtnSelPart;
 	s16 m_mainLblMessage;
 	s16 m_mainLblUser[6];
-	bool m_show_gc;
 	bool m_devo_installed;
 	bool m_nintendont_installed;
-	bool m_GameTDBAvailable;
 //Main Config menus
 	s16 m_configLblPage;
 	s16 m_configBtnPageM;
@@ -895,7 +891,6 @@ private:
 	void _initExplorer();
 	void _initWad();
 	void _initPathsMenu();
-	void _initFTP();
 	//
 	void _textSource(void);
 	void _textCfgSrc(void);
@@ -927,7 +922,6 @@ private:
 	void _textExplorer(void);
 	void _textWad(void);
 	void _textPaths(void);
-	void _textFTP(void);
 	//
 	void _refreshBoot();
 	void _refreshCfgSrc();
@@ -967,7 +961,6 @@ private:
 	void _hideExplorer(bool instant = false);
 	void _hideWad(bool instant = false);
 	void _hidePaths(bool instant = false);
-	void _hideFTP(bool instant = false);
 	//
 	void _showError(void);
 	void _showMain(void);
@@ -1002,7 +995,6 @@ private:
 	void _showExplorer(void);
 	void _showWad(void);
 	void _showPaths(void);
-	void _showFTP(void);
 
 	void _setSrcOptions(void);
 	bool _sideCover(const char *magic);
@@ -1012,7 +1004,6 @@ private:
 	void _updatePluginText(void);
 	void _updatePluginCheckboxes(void);
 	void _updateCheckboxes(void);
-	void _updateFTP(void);
 	void _getIDCats(void);
 	void _setIDCats(void);
 	void _setBg(const TexData &bgTex, const TexData &bglqTex);
@@ -1030,7 +1021,6 @@ private:
 	int _configAdv(void);
 	int _configSnd(void);
 	int _NandEmuCfg(void);
-	int _AutoCreateNand(void);
 	int _AutoExtractSave(string gameId);
 	int _FlashSave(string gameId);
 	enum configPageChanges
@@ -1062,8 +1052,6 @@ private:
 	void _PluginSettings();
 	void _CategorySettings(bool fromGameSet = false);
 	bool _Home();
-	void _FTP();
-	bool _FTP_Loop();
 	bool _ExitTo();
 	bool _Boot();
 	void _Paths();
@@ -1077,8 +1065,6 @@ private:
 	bool m_use_wifi_gecko;
 	bool m_use_sd_logging;
 	bool init_network;
-	bool m_init_ftp;
-	bool m_ftp_inited;
 	void _netInit();
 	bool _loadFile(u8 * &buffer, u32 &size, const char *path, const char *file);
 	int _loadIOS(u8 ios, int userIOS, string id, bool RealNAND_Channels = false);

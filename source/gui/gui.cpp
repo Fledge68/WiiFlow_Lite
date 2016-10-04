@@ -309,6 +309,16 @@ void CButtonsMgr::moveBy(s16 id, int x, int y, bool instant)
 	}
 }
 
+void CButtonsMgr::getTotalHeight(s16 id, int &height)
+{
+	if (id == -1) return;
+	if (id < (s32)m_elts.size())
+	{
+		SLabel *s = (SLabel*)m_elts[id];
+		height = s->text.getTotalHeight();
+	}
+}
+
 void CButtonsMgr::getDimensions(s16 id, int &x, int &y, u32 &width, u32 &height)
 {
 	if (id == -1) return;

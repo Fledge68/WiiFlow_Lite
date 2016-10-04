@@ -673,6 +673,7 @@ void CCoverFlow::clear(void)
 		MEM2_free(m_covers);
 	m_covers = NULL;
 	m_items.clear();
+	//vector<CItem>().swap(m_items);
 }
 
 void CCoverFlow::shutdown(void)
@@ -1176,7 +1177,7 @@ void CCoverFlow::_drawTitle(int i, bool mirror, bool rectangle)
 	if (m_covers[i].txtColor == 0) return;
 
 	color.a = mirror ? (u8)((float)m_covers[i].txtColor * m_txtMirrorAlpha) : m_covers[i].txtColor;
-	if (rectangle && !mirror)
+	if (rectangle && !mirror)// rectangle (mainloop adjusting) is never set true
 	{
 		// GX setup
 		GX_SetNumTevStages(1);
@@ -2464,7 +2465,7 @@ void CCoverFlow::_coverTick(int i)
 	m_covers[i].txtAngle += (m_covers[i].txtTargetAngle - m_covers[i].txtAngle) * speed;
 	m_covers[i].txtPos += (m_covers[i].txtTargetPos - m_covers[i].txtPos) * speed;
 	int colorDist = (int)m_covers[i].txtTargetColor - (int)m_covers[i].txtColor;
-	m_covers[i].txtColor += abs(colorDist) >= 8 ? (u8)(colorDist / 8) : (u8)colorDist;
+	m_covers[i].txtColor += abs(colorDist) >= 2 ? (u8)(colorDist / 2) : (u8)colorDist;
 	m_covers[i].title.tick();
 }
 
@@ -2776,7 +2777,7 @@ const char *CCoverFlow::getPathId(const dir_discHdr *curHdr, bool extension)
 		if(strrchr(curHdr->path, '/') != NULL)
 		{
 			if(curHdr->type == TYPE_HOMEBREW || extension)
-				NameOrID = strrchr(curHdr->path, '/') + 1;//returns title.ext or folder name for boot.dol
+				NameOrID = strrchr(curHdr->path, '/') + 1;//returns title.ext or folder name for app
 			else
 				NameOrID = fmt("%ls", curHdr->title);// title without extension in lowercase
 		}
@@ -2840,14 +2841,9 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 			u32 fileSize = stat_buf.st_size;
 			
 			SWFCHeader header;
-			if(fileSize > sizeof header)
+			if(fileSize > sizeof(header))
 			{
-				size_t readLen;
-				do {
-					fseek(fp, 0, SEEK_SET);
-					readLen = fread(&header, 1, sizeof header, fp);
-				} while (readLen != sizeof header);
-				//fread(&header, 1, sizeof header, fp);
+				fread(&header, 1, sizeof(header), fp);
 				//make sure wfc cache file matches what we want
 				if(header.newFmt == 1 && (header.full != 0) == box && (header.cmpr != 0) == m_compressTextures)
 				{
@@ -2867,18 +2863,14 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 					if(header.zipped != 0)//if it's compressed ie. zipped
 					{
 						u8 *ptrTex = (u8*)MEM2_alloc(bufSize);
-						u8 *zBuffer = (u8*)MEM2_alloc(fileSize - sizeof header);
+						u8 *zBuffer = (u8*)MEM2_alloc(fileSize - sizeof(header));
 						if(ptrTex == NULL || zBuffer == NULL)
 							allocFailed = true;
 						else
 						{
-							size_t readLen;
-							do {
-								fseek(fp, sizeof header, SEEK_SET);
-								readLen = fread(zBuffer, 1, fileSize - sizeof header, fp);
-							} while (readLen != (fileSize - sizeof header));
+							fread(zBuffer, 1, fileSize - sizeof(header), fp);
 							uLongf size = bufSize;
-							if(uncompress(ptrTex, &size, zBuffer, fileSize - sizeof header) == Z_OK && size == bufSize)
+							if(uncompress(ptrTex, &size, zBuffer, fileSize - sizeof(header)) == Z_OK && size == bufSize)
 								memcpy(tex.data, ptrTex + bufSize - texLen, texLen);
 						}
 						free(zBuffer);
@@ -2890,11 +2882,8 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 							allocFailed = true;
 						else
 						{
-							size_t readLen;
-							do {
-								fseek(fp, sizeof header + bufSize - texLen, SEEK_SET);
-								readLen = fread(tex.data, 1, texLen, fp);
-							} while (readLen != texLen);
+							fseek(fp, sizeof(header) + bufSize - texLen, SEEK_SET);
+							fread(tex.data, 1, texLen, fp);
 						}
 					}
 					if(!allocFailed)

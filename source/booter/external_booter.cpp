@@ -32,7 +32,7 @@
 #include "loader/sys.h"
 #include "homebrew/homebrew.h"
 #include "memory/mem2.hpp"
-#include "network/FTP_Dir.hpp"
+//#include "network/FTP_Dir.hpp"
 #include "network/http.h"
 #include "plugin/crc32.h"
 
@@ -157,7 +157,7 @@ void ShutdownBeforeExit(void)
 		while(net_get_status() == -EBUSY)
 			usleep(50);
 		WiFiDebugger.Close();
-		ftp_endTread();
+		//ftp_endTread();
 		net_deinit();
 		networkInit = false;
 	}

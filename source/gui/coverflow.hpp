@@ -221,8 +221,8 @@ private:
 		float txtTargetAngle;
 		Vector3D txtPos;
 		Vector3D txtTargetPos;
-		u8 txtColor;
-		u8 txtTargetColor;
+		u8 txtColor;// actually is title alpha (color.a)
+		u8 txtTargetColor;// title alpha (255 = full show, 0 = no show)
 		CText title;
 		CColor shadowColor;
 		CColor targetShadowColor;

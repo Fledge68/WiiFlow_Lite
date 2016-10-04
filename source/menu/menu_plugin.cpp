@@ -146,6 +146,7 @@ void CMenu::_PluginSettings()
 			{
 				if(m_btnMgr.selected(m_pluginBtn[i]))
 				{
+					m_load_view = true;
 					if(i == 0)
 					{
 						m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
@@ -161,8 +162,13 @@ void CMenu::_PluginSettings()
 		}
 	}
 	_hidePluginSettings();
-	//_loadList();
-	m_load_view = true;
+	m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
+	if(m_load_view || (m_current_view != COVERFLOW_PLUGIN && enabledPluginsCount > 0))
+	{
+		m_current_view = COVERFLOW_PLUGIN;
+		_clearSources();
+		m_cfg.setBool(_domainFromView(), "source", true);
+	}
 }
 
 void CMenu::_initPluginSettingsMenu()

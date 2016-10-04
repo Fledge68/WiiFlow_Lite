@@ -156,8 +156,8 @@ bool DeviceHandler::MountAllUSB()
 	}
 	if(!result)
 		result = usb.Mount(0, DeviceName[USB1], true); /* Force FAT */
-	if(result && usb_libogc_mode)
-		CreateUSBKeepAliveThread();
+	//if(result && usb_libogc_mode)
+	//	CreateUSBKeepAliveThread();
 	return result;
 }
 

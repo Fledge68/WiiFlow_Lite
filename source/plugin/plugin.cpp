@@ -67,6 +67,7 @@ bool Plugin::AddPlugin(Config &plugin)
 	NewPlugin.coverFolder = plugin.getString(PLUGIN, "coverFolder");
 	NewPlugin.magic = strtoul(plugin.getString(PLUGIN, "magic").c_str(), NULL, 16);
 	NewPlugin.caseColor = strtoul(plugin.getString(PLUGIN, "coverColor").c_str(), NULL, 16);
+	NewPlugin.romPartition = plugin.getInt(PLUGIN, "rompartition", -1);
 	NewPlugin.romDir = plugin.getString(PLUGIN, "romDir");
 	NewPlugin.fileTypes = plugin.getString(PLUGIN, "fileTypes");
 	NewPlugin.Args = plugin.getStrings(PLUGIN, "arguments", '|');
@@ -132,6 +133,11 @@ const char *Plugin::GetCoverFolderName(u32 magic)
 	if((Plugin_Pos = GetPluginPosition(magic)) >= 0)
 		return Plugins[Plugin_Pos].coverFolder.c_str();
 	return NULL;
+}
+
+int Plugin::GetRomPartition(u8 pos)
+{
+	return Plugins[pos].romPartition;
 }
 
 const char *Plugin::GetRomDir(u8 pos)
