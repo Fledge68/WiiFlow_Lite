@@ -156,7 +156,6 @@ int CMenu::_config1(void)
 		{
 			if (m_btnMgr.selected(m_configBtnDownload))
 			{
-				m_load_view = true;
 				_hideConfig();
 				_download();
 				_showConfig();
@@ -167,7 +166,7 @@ int CMenu::_config1(void)
 				_hideConfig();
 				if (_code(code) && memcmp(code, m_cfg.getString("GENERAL", "parent_code", "").c_str(), 4) == 0)
 				{
-					m_load_view = true;
+					m_refreshGameList = true;
 					m_locked = false;
 				}
 				else
@@ -180,7 +179,7 @@ int CMenu::_config1(void)
 				_hideConfig();
 				if (_code(code, true))
 				{
-					m_load_view = true;
+					m_refreshGameList = true;
 					m_cfg.setString("GENERAL", "parent_code", string(code, 4).c_str());
 					m_locked = true;
 				}
@@ -194,7 +193,6 @@ int CMenu::_config1(void)
 			}
 			else if (m_btnMgr.selected(m_configBtnCfg4))
 			{
-				m_load_view = true;
 				_hideConfig();
 				_NandEmuCfg();
 				_showConfig();
@@ -202,7 +200,7 @@ int CMenu::_config1(void)
 		}
 	}
 	if(currentPartition != bCurrentPartition)
-		m_load_view = true;
+		m_refreshGameList = true;
 	_hideConfig();	
 	return change;
 }

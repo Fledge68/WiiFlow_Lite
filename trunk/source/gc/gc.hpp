@@ -29,7 +29,8 @@ bool Nintendont_Installed();
 bool Nintendont_GetLoader();
 void Nintendont_BootDisc(u8 emuMC, bool widescreen, bool usb_hid, bool native_ctl, bool deflicker);
 void Nintendont_SetOptions(const char *game, const char *gameID, char *CheatPath, char *NewCheatPath, const char *partition,
-	bool cheats, u8 emuMC, u8 videomode, bool widescreen, bool usb_hid, bool native_ctl, bool deflicker, bool wiiu_widescreen, bool NIN_Debugger);
+	bool cheats, u8 emuMC, u8 videomode, bool widescreen, bool usb_hid, bool native_ctl, bool deflicker, 
+	bool wiiu_widescreen, bool NIN_Debugger, bool tri_arcade);
 void Nintendont_WriteOptions();
 
 // Devolution

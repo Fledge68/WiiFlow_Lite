@@ -1,28 +1,9 @@
-/****************************************************************************
- * Copyright (C) 2012 FIX94
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- ****************************************************************************/
+
 #include "menu.hpp"
-#include "const_str.hpp"
 #include "channel/nand_save.hpp"
 
 s16 m_bootLblTitle;
 s16 m_bootBtnBack;
-/*s16 m_bootLblPage;
-s16 m_bootBtnPageM;
-s16 m_bootBtnPageP;*/
 s16 m_bootLblUser[4];
 
 s16 m_bootLblLoadCIOS;
@@ -40,34 +21,15 @@ s16 m_bootLblAsyncNet;
 s16 m_bootBtnAsyncNet;
 
 u8 set_port = 0;
-u8 boot_curPage = 1;
-//u8 boot_Pages = 2;
 
-static void showBoot(void)
+void CMenu::_hideBoot(bool instant)
 {
-	m_btnMgr.show(m_bootLblTitle);
-	m_btnMgr.show(m_bootBtnBack);
-	/*m_btnMgr.show(m_bootLblPage);
-	m_btnMgr.show(m_bootBtnPageM);
-	m_btnMgr.show(m_bootBtnPageP);*/
+	m_btnMgr.hide(m_bootLblTitle, instant);
+	m_btnMgr.hide(m_bootBtnBack, instant);
 	for(u8 i = 0; i < ARRAY_SIZE(m_bootLblUser); ++i)
 		if(m_bootLblUser[i] != -1)
-			m_btnMgr.show(m_bootLblUser[i]);
-}
-
-static void hideBoot(bool instant, bool common)
-{
-	if(common)
-	{
-		m_btnMgr.hide(m_bootLblTitle, instant);
-		m_btnMgr.hide(m_bootBtnBack, instant);
-		/*m_btnMgr.hide(m_bootLblPage, instant);
-		m_btnMgr.hide(m_bootBtnPageM, instant);
-		m_btnMgr.hide(m_bootBtnPageP, instant);*/
-		for(u8 i = 0; i < ARRAY_SIZE(m_bootLblUser); ++i)
-			if(m_bootLblUser[i] != -1)
-				m_btnMgr.hide(m_bootLblUser[i], instant);
-	}
+			m_btnMgr.hide(m_bootLblUser[i], instant);
+				
 	m_btnMgr.hide(m_bootLblLoadCIOS, instant);
 	m_btnMgr.hide(m_bootBtnLoadCIOS, instant);
 
@@ -83,15 +45,44 @@ static void hideBoot(bool instant, bool common)
 	m_btnMgr.hide(m_bootBtnAsyncNet, instant);
 }
 
+void CMenu::_showBoot()
+{
+	m_btnMgr.show(m_bootLblTitle);
+	m_btnMgr.show(m_bootBtnBack);
+	for(u8 i = 0; i < ARRAY_SIZE(m_bootLblUser); ++i)
+		if(m_bootLblUser[i] != -1)
+			m_btnMgr.show(m_bootLblUser[i]);
+
+	m_btnMgr.setText(m_bootBtnLoadCIOS, _optBoolToString(cur_load));
+	m_btnMgr.setText(m_bootBtnUSBPort, wfmt(L"%i", set_port));
+	if(cur_ios > 0)
+		m_btnMgr.setText(m_bootLblCurCIOSrev, wfmt(L"%i", cur_ios));
+	else
+		m_btnMgr.setText(m_bootLblCurCIOSrev, L"AUTO");
+	
+	m_btnMgr.show(m_bootLblLoadCIOS);
+	m_btnMgr.show(m_bootBtnLoadCIOS);
+
+	m_btnMgr.show(m_bootLblCIOSrev);
+	m_btnMgr.show(m_bootLblCurCIOSrev);
+	m_btnMgr.show(m_bootLblCIOSrevM);
+	m_btnMgr.show(m_bootLblCIOSrevP);
+
+	m_btnMgr.show(m_bootLblUSBPort);
+	m_btnMgr.show(m_bootBtnUSBPort);
+
+	m_btnMgr.setText(m_bootBtnAsyncNet, m_cfg.getBool("GENERAL", "async_network", false) ? _t("on", L"On") : _t("off", L"Off"));
+	m_btnMgr.show(m_bootLblAsyncNet);
+	m_btnMgr.show(m_bootBtnAsyncNet);
+}
+
 bool CMenu::_Boot(void)
 {
-	boot_curPage = 1;
-	SetupInput();
 	set_port = currentPort;
 	bool prev_load = cur_load;
 	u8 prev_ios = cur_ios;
-	showBoot();
-	_refreshBoot();
+	SetupInput();
+	_showBoot();
 
 	while(!m_exit)
 	{
@@ -102,22 +93,6 @@ bool CMenu::_Boot(void)
 			m_btnMgr.up();
 		else if(BTN_DOWN_PRESSED)
 			m_btnMgr.down();
-		/*else if((BTN_MINUS_PRESSED || BTN_LEFT_PRESSED) || (BTN_A_PRESSED && m_btnMgr.selected(m_bootBtnPageM)))
-		{
-			boot_curPage--;
-			if(boot_curPage == 0) boot_curPage = boot_Pages;
-			if(BTN_LEFT_PRESSED || BTN_MINUS_PRESSED)
-				m_btnMgr.click(m_bootBtnPageM);
-			_refreshBoot();
-		}
-		else if(((BTN_PLUS_PRESSED || BTN_RIGHT_PRESSED)) || (BTN_A_PRESSED && m_btnMgr.selected(m_bootBtnPageP)))
-		{
-			boot_curPage++;
-			if(boot_curPage > boot_Pages) boot_curPage = 1;
-			if(BTN_RIGHT_PRESSED || BTN_PLUS_PRESSED)
-				m_btnMgr.click(m_bootBtnPageP);
-			_refreshBoot();
-		}*/
 		else if(BTN_A_PRESSED)
 		{
 			if(m_btnMgr.selected(m_bootBtnBack))
@@ -165,7 +140,7 @@ bool CMenu::_Boot(void)
 		InternalSave.SaveIOS();
 	if(set_port != currentPort)
 		InternalSave.SavePort(set_port);
-	hideBoot(false, true);
+	_hideBoot();
 
 	if(prev_load != cur_load || prev_ios != cur_ios || set_port != currentPort)
 	{
@@ -176,55 +151,11 @@ bool CMenu::_Boot(void)
 	return 0;
 }
 
-void CMenu::_refreshBoot()
-{
-	hideBoot(true, false);
-	//m_btnMgr.setText(m_bootLblPage, wfmt(L"%i / %i", boot_curPage, boot_Pages));
-	if(boot_curPage == 1)
-	{
-		m_btnMgr.setText(m_bootBtnLoadCIOS, _optBoolToString(cur_load));
-		m_btnMgr.setText(m_bootBtnUSBPort, wfmt(L"%i", set_port));
-		if(cur_ios > 0)
-			m_btnMgr.setText(m_bootLblCurCIOSrev, wfmt(L"%i", cur_ios));
-		else
-			m_btnMgr.setText(m_bootLblCurCIOSrev, L"AUTO");
-		
-		m_btnMgr.show(m_bootLblLoadCIOS);
-		m_btnMgr.show(m_bootBtnLoadCIOS);
-
-		m_btnMgr.show(m_bootLblCIOSrev);
-		m_btnMgr.show(m_bootLblCurCIOSrev);
-		m_btnMgr.show(m_bootLblCIOSrevM);
-		m_btnMgr.show(m_bootLblCIOSrevP);
-
-		m_btnMgr.show(m_bootLblUSBPort);
-		m_btnMgr.show(m_bootBtnUSBPort);
-
-		m_btnMgr.setText(m_bootBtnAsyncNet, m_cfg.getBool("GENERAL", "async_network", false) ? _t("on", L"On") : _t("off", L"Off"));
-		m_btnMgr.show(m_bootLblAsyncNet);
-		m_btnMgr.show(m_bootBtnAsyncNet);
-	}
-}
-
-void CMenu::_textBoot(void)
-{
-	m_btnMgr.setText(m_bootLblTitle, _t("cfgbt1", L"Startup Settings"));
-	m_btnMgr.setText(m_bootLblLoadCIOS, _t("cfgbt2", L"Force Load cIOS"));
-	m_btnMgr.setText(m_bootLblCIOSrev, _t("cfgbt3", L"Force cIOS Revision"));
-	m_btnMgr.setText(m_bootLblUSBPort, _t("cfgbt4", L"USB Port"));
-	m_btnMgr.setText(m_bootLblAsyncNet, _t("cfgp3", L"Init network on boot"));
-	m_btnMgr.setText(m_bootBtnBack, _t("cfg10", L"Back"));
-}
-
-
 void CMenu::_initBoot(void)
 {
 	_addUserLabels(m_bootLblUser, ARRAY_SIZE(m_bootLblUser), "BOOT");
 	m_bootLblTitle = _addTitle("BOOT/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 	m_bootBtnBack = _addButton("BOOT/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
-	/*m_bootLblPage = _addLabel("BOOT/PAGE_BTN", theme.btnFont, L"", 68, 400, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_bootBtnPageM = _addPicButton("BOOT/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 20, 400, 48, 48);
-	m_bootBtnPageP = _addPicButton("BOOT/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 172, 400, 48, 48);*/
 	
 	m_bootLblLoadCIOS = _addLabel("BOOT/LOAD_CIOS", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_bootBtnLoadCIOS = _addButton("BOOT/LOAD_CIOS_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
@@ -242,9 +173,6 @@ void CMenu::_initBoot(void)
 
 	_setHideAnim(m_bootLblTitle, "BOOT/TITLE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_bootBtnBack, "BOOT/BACK_BTN", 0, 0, 1.f, -1.f);
-	/*_setHideAnim(m_bootLblPage, "BOOT/PAGE_BTN", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_bootBtnPageM, "BOOT/PAGE_MINUS", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_bootBtnPageP, "BOOT/PAGE_PLUS", 0, 0, 1.f, -1.f);*/
 
 	_setHideAnim(m_bootLblLoadCIOS, "BOOT/LOAD_CIOS", 50, 0, -2.f, 0.f);
 	_setHideAnim(m_bootBtnLoadCIOS, "BOOT/LOAD_CIOS_BTN", -50, 0, 1.f, 0.f);
@@ -260,6 +188,16 @@ void CMenu::_initBoot(void)
 	_setHideAnim(m_bootLblAsyncNet, "BOOT/ASYNCNET", 50, 0, -2.f, 0.f);
 	_setHideAnim(m_bootBtnAsyncNet, "BOOT/ASYNCNET_BTN", -50, 0, 1.f, 0.f);
 	
-	hideBoot(true, true);
+	_hideBoot(true);
 	_textBoot();
+}
+
+void CMenu::_textBoot(void)
+{
+	m_btnMgr.setText(m_bootLblTitle, _t("cfgbt1", L"Startup Settings"));
+	m_btnMgr.setText(m_bootLblLoadCIOS, _t("cfgbt2", L"Force Load cIOS"));
+	m_btnMgr.setText(m_bootLblCIOSrev, _t("cfgbt3", L"Force cIOS Revision"));
+	m_btnMgr.setText(m_bootLblUSBPort, _t("cfgbt4", L"USB Port"));
+	m_btnMgr.setText(m_bootLblAsyncNet, _t("cfgp3", L"Init network on boot"));
+	m_btnMgr.setText(m_bootBtnBack, _t("cfg10", L"Back"));
 }

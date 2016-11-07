@@ -493,14 +493,18 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 				m_cfg.setString(GC_DOMAIN, "current_item", cfPos);
 		}
 		if(upd_gc)
-			UpdateCache(COVERFLOW_GAMECUBE);
+			//UpdateCache(COVERFLOW_GAMECUBE);
+			m_cfg.setBool(GC_DOMAIN, "update_cache", true);
 		if(upd_wii)
-			UpdateCache(COVERFLOW_WII);
+			//UpdateCache(COVERFLOW_WII);
+			m_cfg.setBool(WII_DOMAIN, "update_cache", true);
 		if(upd_plgin)
-			UpdateCache(COVERFLOW_PLUGIN);
+			//UpdateCache(COVERFLOW_PLUGIN);
+			m_cfg.setBool(PLUGIN_DOMAIN, "update_cache", true);
 		if(upd_chan)
-			UpdateCache(COVERFLOW_CHANNEL);
-		m_load_view = true;
+			//UpdateCache(COVERFLOW_CHANNEL);
+			m_cfg.setBool(CHANNEL_DOMAIN, "update_cache", true);
+		m_refreshGameList = true;
 		/* restart inputs to resolve an issue */
 		Close_Inputs();
 		Open_Inputs();

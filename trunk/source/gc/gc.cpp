@@ -44,7 +44,8 @@ u8 NinDevice = 0;
 bool NinArgsboot = false;
 
 void Nintendont_SetOptions(const char *game, const char *gameID, char *CheatPath,char *NewCheatPath, const char *partition,
-	bool cheats, u8 emuMC, u8 videomode, bool widescreen, bool usb_hid, bool native_ctl, bool deflicker, bool wiiu_widescreen, bool NIN_Debugger)
+	bool cheats, u8 emuMC, u8 videomode, bool widescreen, bool usb_hid, bool native_ctl, bool deflicker, 
+	bool wiiu_widescreen, bool NIN_Debugger, bool tri_arcade)
 {
 	NinDevice = DeviceHandle.PathToDriveType(game);
 	memset(&NinCfg, 0, sizeof(NIN_CFG));
@@ -52,13 +53,31 @@ void Nintendont_SetOptions(const char *game, const char *gameID, char *CheatPath
 	NinCfg.MemCardBlocks = 0x2;//251 blocks
 	
 	//check version
-	u32 NIN_cfg_version = NIN_CFG_VERSION;	
+	u32 NIN_cfg_version = NIN_CFG_VERSION;
+	char NINVersion[7]= "";
+	u32 NINRev = 0;
 	for(u8 i = SD; i < MAXDEVICES; ++i)
 	{
 		const char *dol_path = fmt(NIN_LOADER_PATH, DeviceName[i]);
 		if(!fsop_FileExist(dol_path))
 			continue;
-		u32 filesize = 0;				
+		//u8 *buffer = NULL;
+		u32 filesize = 0;
+		const char *str = "$$Version:";
+		u8 *buffer = fsop_ReadFile(dol_path, &filesize);
+		for(u32 i = 0; i < filesize; i += 32)
+		{
+			if(memcmp(buffer+i, str, strlen(str)) == 0)
+			{
+				// Write buffer in NINVersion
+				snprintf(NINVersion, sizeof(NINVersion), "%s", buffer+i+strlen(str));
+				NINRev = atoi(strchr(NINVersion, '.')+1);
+				break;
+			}
+		}
+		free(buffer);
+		break;
+		/*u32 filesize = 0;				
 		u8 *buffer = fsop_ReadFile(dol_path, &filesize);
 		char NINversion[21];		
 		for(u32 i = 0; i < filesize-60; ++i)
@@ -98,13 +117,24 @@ void Nintendont_SetOptions(const char *game, const char *gameID, char *CheatPath
 			}
 		}
 		free(buffer);	
-		break;
-	}	    
+		break;*/
+	}
+	if(NINRev == 0)
+		return;
+	if(NINRev >= 135 && NINRev < 354)
+		NIN_cfg_version = 3;
+	else if(NINRev >= 354 && NINRev < 358)
+		NIN_cfg_version = 4;
+	else if(NINRev >= 358 && NINRev < 368)
+		NIN_cfg_version = 5;
+	else if(NINRev >= 368 && NINRev < 424)
+		NIN_cfg_version = 6;
+	
 	NinCfg.Version = NIN_cfg_version;
 	
-	if(memcmp("0x474851",gameID,3)==0)
+	/*if(memcmp("0x474851",gameID,3)==0)
 		NinCfg.MaxPads = 1;
-	else
+	else*/
 		NinCfg.MaxPads = 4;
 	
 	NinCfg.Config |= NIN_CFG_AUTO_BOOT;
@@ -138,6 +168,9 @@ void Nintendont_SetOptions(const char *game, const char *gameID, char *CheatPath
 	if(widescreen)
 		NinCfg.Config |= NIN_CFG_FORCE_WIDE;
 
+	if(tri_arcade)
+		NinCfg.Config |= NIN_CFG_ARCADE_MODE;
+
 	if(emuMC > 0)
 		NinCfg.Config |= NIN_CFG_MEMCARDEMU;
 
@@ -156,7 +189,7 @@ void Nintendont_SetOptions(const char *game, const char *gameID, char *CheatPath
 		}
 		else
 			ptr = strchr(CheatPath, '/');
-		snprintf(NinCfg.CheatPath,sizeof(NinCfg.CheatPath),ptr);
+		snprintf(NinCfg.CheatPath, sizeof(NinCfg.CheatPath), ptr);
 		NinCfg.Config |= NIN_CFG_CHEAT_PATH;
 	}
 	if(cheats)

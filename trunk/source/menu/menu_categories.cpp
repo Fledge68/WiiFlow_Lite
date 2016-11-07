@@ -1,7 +1,5 @@
-#include "menu.hpp"
 
-#include <string.h>
-#include <gccore.h>
+#include "menu.hpp"
 
 // Category menu
 s16 m_categoryLblPage;
@@ -38,10 +36,8 @@ void CMenu::_hideCategorySettings(bool instant)
 	m_btnMgr.hide(m_categoryBtnBack, instant);
 
 	for(u8 i = 0; i < ARRAY_SIZE(m_categoryLblUser); ++i)
-	{
 		if(m_categoryLblUser[i] != -1)
 			m_btnMgr.hide(m_categoryLblUser[i], instant);
-	}
 
 	for(u8 i = 1; i < 11; ++i)
 	{
@@ -57,10 +53,9 @@ void CMenu::_showCategorySettings(void)
 {
 	_setBg(m_categoryBg, m_categoryBg);
 	for(u8 i = 0; i < ARRAY_SIZE(m_categoryLblUser); ++i)
-	{
 		if(m_categoryLblUser[i] != -1)
 			m_btnMgr.show(m_categoryLblUser[i]);
-	}
+			
 	m_btnMgr.show(m_categoryLblTitle);
 	m_btnMgr.show(m_categoryBtnClear);
 	m_btnMgr.show(m_categoryBtnBack);
@@ -271,10 +266,8 @@ void CMenu::_CategorySettings(bool fromGameSet)
 			else
 			{
 				_setIDCats();
-				m_load_view = true;
+				m_refreshGameList = true;
 			}
-
-			//m_cat.save();
 			break;
 		}
 		else if(BTN_UP_PRESSED)
@@ -327,6 +320,7 @@ void CMenu::_CategorySettings(bool fromGameSet)
 		{
 			if(m_btnMgr.selected(m_categoryBtnClear))
 			{
+				m_refreshGameList = true;
 				bool hiddenCat = false;
 				for(int j = 1; j < m_max_categories; ++j)
 				{
@@ -343,6 +337,7 @@ void CMenu::_CategorySettings(bool fromGameSet)
 			}
 			for(u8 i = 1; i < 11; ++i)
 			{
+				m_refreshGameList = true;
 				if(m_btnMgr.selected(m_categoryBtnCat[i]) || m_btnMgr.selected(m_categoryBtnCats[i]) || m_btnMgr.selected(m_categoryBtnCatHid[i]) || m_btnMgr.selected(m_categoryBtnCatReq[i]))
 				{
 					lastBtn = m_categoryBtnCat[i];

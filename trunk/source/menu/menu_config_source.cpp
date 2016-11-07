@@ -1,26 +1,8 @@
-/****************************************************************************
- * Copyright (C) 2012 Fledge68
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- ****************************************************************************/
+
 #include "menu.hpp"
 
 s16 m_cfgsrcLblTitle;
 s16 m_cfgsrcBtnBack;
-s16 m_cfgsrcLblPage;
-s16 m_cfgsrcBtnPageM;
-s16 m_cfgsrcBtnPageP;
 s16 m_cfgsrcLblUser[4];
 
 s16 m_cfgsrcLblEnableSF;
@@ -29,40 +11,24 @@ s16 m_cfgsrcBtnEnableSF;
 s16 m_cfgsrcLblSmallbox;
 s16 m_cfgsrcBtnSmallbox;
 
-s16 m_cfgsrcLblClearSF;
-s16 m_cfgsrcBtnClearSF;
+s16 m_cfgsrcLblBoxMode;
+s16 m_cfgsrcBtnBoxMode;
+
+s16 m_cfgsrcLblAdjustCF;
+s16 m_cfgsrcBtnAdjustCF;
 
 s16 m_cfgsrcLblMultisource;
 s16 m_cfgsrcBtnMultisource;
 
-u8 cfgsrc_curPage = 1;
-u8 cfgsrc_Pages = 1;
+TexData m_cfgsrcBg;
 
-static void showCfgSrc(void)
+static void _hideCfgSrc(bool instant)
 {
-	m_btnMgr.show(m_cfgsrcLblTitle);
-	m_btnMgr.show(m_cfgsrcBtnBack);
-	m_btnMgr.show(m_cfgsrcLblPage);
-	m_btnMgr.show(m_cfgsrcBtnPageM);
-	m_btnMgr.show(m_cfgsrcBtnPageP);
+	m_btnMgr.hide(m_cfgsrcLblTitle, instant);
+	m_btnMgr.hide(m_cfgsrcBtnBack, instant);
 	for(u8 i = 0; i < ARRAY_SIZE(m_cfgsrcLblUser); ++i)
 		if(m_cfgsrcLblUser[i] != -1)
-			m_btnMgr.show(m_cfgsrcLblUser[i]);
-}
-
-static void hideCfgSrc(bool instant, bool common)
-{
-	if(common)
-	{
-		m_btnMgr.hide(m_cfgsrcLblTitle, instant);
-		m_btnMgr.hide(m_cfgsrcBtnBack, instant);
-		m_btnMgr.hide(m_cfgsrcLblPage, instant);
-		m_btnMgr.hide(m_cfgsrcBtnPageM, instant);
-		m_btnMgr.hide(m_cfgsrcBtnPageP, instant);
-		for(u8 i = 0; i < ARRAY_SIZE(m_cfgsrcLblUser); ++i)
-			if(m_cfgsrcLblUser[i] != -1)
-				m_btnMgr.hide(m_cfgsrcLblUser[i], instant);
-	}
+			m_btnMgr.hide(m_cfgsrcLblUser[i], instant);
 
 	m_btnMgr.hide(m_cfgsrcLblEnableSF, instant);
 	m_btnMgr.hide(m_cfgsrcBtnEnableSF, instant);
@@ -70,19 +36,66 @@ static void hideCfgSrc(bool instant, bool common)
 	m_btnMgr.hide(m_cfgsrcLblSmallbox, instant);
 	m_btnMgr.hide(m_cfgsrcBtnSmallbox, instant);
 
-	m_btnMgr.hide(m_cfgsrcLblClearSF, instant);
-	m_btnMgr.hide(m_cfgsrcBtnClearSF, instant);
-	
+	m_btnMgr.hide(m_cfgsrcLblBoxMode, instant);
+	m_btnMgr.hide(m_cfgsrcBtnBoxMode, instant);
+
+	m_btnMgr.hide(m_cfgsrcLblAdjustCF, instant);
+	m_btnMgr.hide(m_cfgsrcBtnAdjustCF, instant);
+
 	m_btnMgr.hide(m_cfgsrcLblMultisource, instant);
 	m_btnMgr.hide(m_cfgsrcBtnMultisource, instant);
 }
 
+static void _showCfgSrc(bool m_sourceflow)
+{
+	m_btnMgr.show(m_cfgsrcLblTitle);
+	m_btnMgr.show(m_cfgsrcBtnBack);
+	for(u8 i = 0; i < ARRAY_SIZE(m_cfgsrcLblUser); ++i)
+		if(m_cfgsrcLblUser[i] != -1)
+			m_btnMgr.show(m_cfgsrcLblUser[i]);
+
+	m_btnMgr.show(m_cfgsrcLblEnableSF);
+	m_btnMgr.show(m_cfgsrcBtnEnableSF);
+	
+	if(m_sourceflow)
+	{
+		m_btnMgr.show(m_cfgsrcLblSmallbox);
+		m_btnMgr.show(m_cfgsrcBtnSmallbox);
+
+		m_btnMgr.show(m_cfgsrcLblBoxMode);
+		m_btnMgr.show(m_cfgsrcBtnBoxMode);
+		
+		m_btnMgr.show(m_cfgsrcLblAdjustCF);
+		m_btnMgr.show(m_cfgsrcBtnAdjustCF);
+		
+		m_btnMgr.hide(m_cfgsrcLblMultisource, true);
+		m_btnMgr.hide(m_cfgsrcBtnMultisource, true);
+	}
+	else
+	{
+		m_btnMgr.show(m_cfgsrcLblMultisource);
+		m_btnMgr.show(m_cfgsrcBtnMultisource);
+		
+		m_btnMgr.hide(m_cfgsrcLblSmallbox, true);
+		m_btnMgr.hide(m_cfgsrcBtnSmallbox, true);
+
+		m_btnMgr.hide(m_cfgsrcLblBoxMode, true);
+		m_btnMgr.hide(m_cfgsrcBtnBoxMode, true);
+
+		m_btnMgr.hide(m_cfgsrcLblAdjustCF, true);
+		m_btnMgr.hide(m_cfgsrcBtnAdjustCF, true);
+	}
+}
+
 void CMenu::_CfgSrc(void)
 {
-	cfgsrc_curPage = 1;
 	SetupInput();
-	showCfgSrc();
-	_refreshCfgSrc();
+	_setBg(m_cfgsrcBg, m_cfgsrcBg);
+	m_btnMgr.setText(m_cfgsrcBtnEnableSF, m_cfg.getBool(SOURCEFLOW_DOMAIN, "enabled") ? _t("on", L"On") : _t("off", L"Off"));
+	m_btnMgr.setText(m_cfgsrcBtnSmallbox, m_cfg.getBool(SOURCEFLOW_DOMAIN, "smallbox") ? _t("on", L"On") : _t("off", L"Off"));
+	m_btnMgr.setText(m_cfgsrcBtnBoxMode, m_cfg.getBool(SOURCEFLOW_DOMAIN, "box_mode") ? _t("on", L"On") : _t("off", L"Off"));
+	m_btnMgr.setText(m_cfgsrcBtnMultisource, m_cfg.getBool("GENERAL", "multisource") ? _t("on", L"On") : _t("off", L"Off"));
+	_showCfgSrc(m_sourceflow);
 
 	while(!m_exit)
 	{
@@ -93,103 +106,56 @@ void CMenu::_CfgSrc(void)
 			m_btnMgr.up();
 		else if(BTN_DOWN_PRESSED)
 			m_btnMgr.down();
-		else if((BTN_MINUS_PRESSED || BTN_LEFT_PRESSED) || (BTN_A_PRESSED && m_btnMgr.selected(m_cfgsrcBtnPageM)))
-		{
-			cfgsrc_curPage--;
-			if(cfgsrc_curPage == 0) cfgsrc_curPage = cfgsrc_Pages;
-			if(BTN_LEFT_PRESSED || BTN_MINUS_PRESSED)
-				m_btnMgr.click(m_cfgsrcBtnPageM);
-			_refreshCfgSrc();
-		}
-		else if(((BTN_PLUS_PRESSED || BTN_RIGHT_PRESSED)) || (BTN_A_PRESSED && m_btnMgr.selected(m_cfgsrcBtnPageP)))
-		{
-			cfgsrc_curPage++;
-			if(cfgsrc_curPage > cfgsrc_Pages) cfgsrc_curPage = 1;
-			if(BTN_RIGHT_PRESSED || BTN_PLUS_PRESSED)
-				m_btnMgr.click(m_cfgsrcBtnPageP);
-			_refreshCfgSrc();
-		}
 		else if(BTN_A_PRESSED)
 		{
 			if(m_btnMgr.selected(m_cfgsrcBtnBack))
 				break;
-			else if (m_btnMgr.selected(m_cfgsrcBtnEnableSF))
+			else if(m_btnMgr.selected(m_cfgsrcBtnEnableSF))
 			{
 				m_sourceflow = !m_sourceflow;
-				m_cfg.setBool("SOURCEFLOW", "enabled", m_sourceflow);
-				m_cfg.setBool("GENERAL", "multisource", false);
-				m_btnMgr.setText(m_cfgsrcBtnEnableSF, m_cfg.getBool("SOURCEFLOW", "enabled") ? _t("on", L"On") : _t("off", L"Off"));
+				m_cfg.setBool(SOURCEFLOW_DOMAIN, "enabled", m_sourceflow);
+				m_btnMgr.setText(m_cfgsrcBtnEnableSF, m_sourceflow ? _t("on", L"On") : _t("off", L"Off"));
+				_showCfgSrc(m_sourceflow);
 			}
-			else if (m_btnMgr.selected(m_cfgsrcBtnSmallbox))
+			else if(m_btnMgr.selected(m_cfgsrcBtnSmallbox))
 			{
-				if(m_sourceflow)
-					m_load_view = true;
+				m_refreshGameList = true;
 				fsop_deleteFolder(fmt("%s/sourceflow", m_cacheDir.c_str()));
-				m_cfg.setBool("SOURCEFLOW", "smallbox", !m_cfg.getBool("SOURCEFLOW", "smallbox", false));
-				m_btnMgr.setText(m_cfgsrcBtnSmallbox, m_cfg.getBool("SOURCEFLOW", "smallbox") ? _t("on", L"On") : _t("off", L"Off"));
+				m_cfg.setBool(SOURCEFLOW_DOMAIN, "smallbox", !m_cfg.getBool(SOURCEFLOW_DOMAIN, "smallbox", false));
+				m_btnMgr.setText(m_cfgsrcBtnSmallbox, m_cfg.getBool(SOURCEFLOW_DOMAIN, "smallbox") ? _t("on", L"On") : _t("off", L"Off"));
 			}
-			else if (m_btnMgr.selected(m_cfgsrcBtnClearSF))
+			else if(m_btnMgr.selected(m_cfgsrcBtnBoxMode))
 			{
-				m_cfg.setBool("SOURCEFLOW", "update_cache", true);
-				if(m_sourceflow)
-					m_load_view = true;
+				m_refreshGameList = true;
+				fsop_deleteFolder(fmt("%s/sourceflow", m_cacheDir.c_str()));
+				m_cfg.setBool(SOURCEFLOW_DOMAIN, "box_mode", !m_cfg.getBool(SOURCEFLOW_DOMAIN, "box_mode", false));
+				m_btnMgr.setText(m_cfgsrcBtnBoxMode, m_cfg.getBool(SOURCEFLOW_DOMAIN, "box_mode") ? _t("on", L"On") : _t("off", L"Off"));
 			}
-			else if (m_btnMgr.selected(m_cfgsrcBtnMultisource))
+			else if(m_btnMgr.selected(m_cfgsrcBtnAdjustCF))
+			{
+				m_refreshGameList = true;
+				_hideCfgSrc(true);
+				_cfTheme();
+				_showCfgSrc(m_sourceflow);
+			}
+			else if(m_btnMgr.selected(m_cfgsrcBtnMultisource))
 			{
 				m_multisource = !m_multisource;
 				m_cfg.setBool("GENERAL", "multisource", m_multisource);
-				m_cfg.setBool("SOURCEFLOW", "enabled", false);
-				m_btnMgr.setText(m_cfgsrcBtnMultisource, m_cfg.getBool("GENERAL", "multisource") ? _t("on", L"On") : _t("off", L"Off"));
+				m_btnMgr.setText(m_cfgsrcBtnMultisource, m_multisource ? _t("on", L"On") : _t("off", L"Off"));
 			}
 		}
 	}
-	hideCfgSrc(false, true);
+	_hideCfgSrc(false);
 }
-
-void CMenu::_refreshCfgSrc()
-{
-	hideCfgSrc(true, false);
-	m_btnMgr.setText(m_cfgsrcLblPage, wfmt(L"%i / %i", cfgsrc_curPage, cfgsrc_Pages));
-	if(cfgsrc_curPage == 1)
-	{
-		m_btnMgr.setText(m_cfgsrcBtnEnableSF, m_cfg.getBool("SOURCEFLOW", "enabled") ? _t("on", L"On") : _t("off", L"Off"));
-		m_btnMgr.setText(m_cfgsrcBtnSmallbox, m_cfg.getBool("SOURCEFLOW", "smallbox") ? _t("on", L"On") : _t("off", L"Off"));
-		m_btnMgr.setText(m_cfgsrcBtnMultisource, m_cfg.getBool("GENERAL", "multisource") ? _t("on", L"On") : _t("off", L"Off"));
-		
-		m_btnMgr.show(m_cfgsrcLblEnableSF);
-		m_btnMgr.show(m_cfgsrcBtnEnableSF);
-		
-		m_btnMgr.show(m_cfgsrcLblSmallbox);
-		m_btnMgr.show(m_cfgsrcBtnSmallbox);
-
-		m_btnMgr.show(m_cfgsrcLblClearSF);
-		m_btnMgr.show(m_cfgsrcBtnClearSF);
-		
-		m_btnMgr.show(m_cfgsrcLblMultisource);
-		m_btnMgr.show(m_cfgsrcBtnMultisource);
-	}
-}
-
-void CMenu::_textCfgSrc(void)
-{
-	m_btnMgr.setText(m_cfgsrcLblTitle, _t("cfgsm1", L"Source Menu Settings"));
-	m_btnMgr.setText(m_cfgsrcLblEnableSF, _t("cfgsm3", L"Enable Sourceflow"));
-	m_btnMgr.setText(m_cfgsrcLblSmallbox, _t("cfgsm4", L"Sourceflow Smallbox"));
-	m_btnMgr.setText(m_cfgsrcLblClearSF, _t("cfgsm5", L"Clear Sourceflow Cache"));
-	m_btnMgr.setText(m_cfgsrcBtnClearSF, _t("cfgc5", L"Go"));
-	m_btnMgr.setText(m_cfgsrcLblMultisource, _t("cfgbt6", L"Enable Multisource Features"));
-	m_btnMgr.setText(m_cfgsrcBtnBack, _t("cfg10", L"Back"));
-}
-
 
 void CMenu::_initCfgSrc(void)
 {
+	m_cfgsrcBg = _texture("CFG_SRC/BG", "texture", theme.bg, false);
+	
 	_addUserLabels(m_cfgsrcLblUser, ARRAY_SIZE(m_cfgsrcLblUser), "CFG_SRC");
 	m_cfgsrcLblTitle = _addTitle("CFG_SRC/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 	m_cfgsrcBtnBack = _addButton("CFG_SRC/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
-	m_cfgsrcLblPage = _addLabel("CFG_SRC/PAGE_BTN", theme.btnFont, L"", 68, 400, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_cfgsrcBtnPageM = _addPicButton("CFG_SRC/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 20, 400, 48, 48);
-	m_cfgsrcBtnPageP = _addPicButton("CFG_SRC/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 172, 400, 48, 48);
 	
 	m_cfgsrcLblEnableSF = _addLabel("CFG_SRC/ENABLE_SF", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_cfgsrcBtnEnableSF = _addButton("CFG_SRC/ENABLE_SF_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
@@ -197,17 +163,17 @@ void CMenu::_initCfgSrc(void)
 	m_cfgsrcLblSmallbox = _addLabel("CFG_SRC/SF_SMALLBOX", theme.lblFont, L"", 20, 185, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_cfgsrcBtnSmallbox = _addButton("CFG_SRC/SF_SMALLBOX_BTN", theme.btnFont, L"", 420, 190, 200, 48, theme.btnFontColor);
 
-	m_cfgsrcLblClearSF = _addLabel("CFG_SRC/CLEAR_SF", theme.lblFont, L"", 20, 245, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_cfgsrcBtnClearSF = _addButton("CFG_SRC/CLEAR_SF_BTN", theme.btnFont, L"", 420, 250, 200, 48, theme.btnFontColor);
+	m_cfgsrcLblBoxMode = _addLabel("CFG_SRC/SF_BOXMODE", theme.lblFont, L"", 20, 245, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_cfgsrcBtnBoxMode = _addButton("CFG_SRC/SF_BOXMODE_BTN", theme.btnFont, L"", 420, 250, 200, 48, theme.btnFontColor);
+
+	m_cfgsrcLblAdjustCF = _addLabel("CFG_SRC/SF_ADJUSTCF", theme.lblFont, L"", 20, 305, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_cfgsrcBtnAdjustCF = _addButton("CFG_SRC/SF_ADJUSTCF_BTN", theme.btnFont, L"", 420, 310, 200, 48, theme.btnFontColor);
 	
-	m_cfgsrcLblMultisource = _addLabel("CFG_SRC/MULTISOURCE", theme.lblFont, L"", 20, 305, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_cfgsrcBtnMultisource = _addButton("CFG_SRC/MULTISOURCE_BTN", theme.btnFont, L"", 420, 310, 200, 48, theme.btnFontColor);
+	m_cfgsrcLblMultisource = _addLabel("CFG_SRC/MULTISOURCE", theme.lblFont, L"", 20, 185, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_cfgsrcBtnMultisource = _addButton("CFG_SRC/MULTISOURCE_BTN", theme.btnFont, L"", 420, 190, 200, 48, theme.btnFontColor);
 	
 	_setHideAnim(m_cfgsrcLblTitle, "CFG_SRC/TITLE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_cfgsrcBtnBack, "CFG_SRC/BACK_BTN", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_cfgsrcLblPage, "CFG_SRC/PAGE_BTN", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_cfgsrcBtnPageM, "CFG_SRC/PAGE_MINUS", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_cfgsrcBtnPageP, "CFG_SRC/PAGE_PLUS", 0, 0, 1.f, -1.f);
 	
 	_setHideAnim(m_cfgsrcLblEnableSF, "CFG_SRC/ENABLE_SF", -50, 0, -2.f, 0.f);
 	_setHideAnim(m_cfgsrcBtnEnableSF, "CFG_SRC/ENABLE_SF_BTN", -50, 0, 1.f, 0.f);
@@ -215,12 +181,27 @@ void CMenu::_initCfgSrc(void)
 	_setHideAnim(m_cfgsrcLblSmallbox, "CFG_SRC/SF_SMALLBOX", -50, 0, -2.f, 0.f);
 	_setHideAnim(m_cfgsrcBtnSmallbox, "CFG_SRC/SF_SMALLBOX_BTN", -50, 0, 1.f, 0.f);
 	
-	_setHideAnim(m_cfgsrcLblClearSF, "CFG_SRC/CLEAR_SF", -50, 0, -2.f, 0.f);
-	_setHideAnim(m_cfgsrcBtnClearSF, "CFG_SRC/CLEAR_SF_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_cfgsrcLblBoxMode, "CFG_SRC/SF_BOX_MODE", -50, 0, -2.f, 0.f);
+	_setHideAnim(m_cfgsrcBtnBoxMode, "CFG_SRC/SF_BOX_MODE_BTN", -50, 0, 1.f, 0.f);
+
+	_setHideAnim(m_cfgsrcLblAdjustCF, "CFG_SRC/SF_ADJUSTCF", -50, 0, -2.f, 0.f);
+	_setHideAnim(m_cfgsrcBtnAdjustCF, "CFG_SRC/SF_ADJUSTCF_BTN", -50, 0, 1.f, 0.f);
 
 	_setHideAnim(m_cfgsrcLblMultisource, "CFG_SRC/MULTISOURCE", -50, 0, -2.f, 0.f);
 	_setHideAnim(m_cfgsrcBtnMultisource, "CFG_SRC/MULTISOURCE_BTN", -50, 0, 1.f, 0.f);
 
-	hideCfgSrc(true, true);
+	_hideCfgSrc(true);
 	_textCfgSrc();
+}
+
+void CMenu::_textCfgSrc(void)
+{
+	m_btnMgr.setText(m_cfgsrcLblTitle, _t("cfgsm1", L"Source Menu Settings"));
+	m_btnMgr.setText(m_cfgsrcLblEnableSF, _t("cfgsm3", L"Enable Sourceflow"));
+	m_btnMgr.setText(m_cfgsrcLblSmallbox, _t("cfgsm4", L"Sourceflow Smallbox"));
+	m_btnMgr.setText(m_cfgsrcLblBoxMode, _t("cfghb6", L"Box Mode"));
+	m_btnMgr.setText(m_cfgsrcLblAdjustCF, _t("cfgc4", L"Adjust Coverflow"));
+	m_btnMgr.setText(m_cfgsrcBtnAdjustCF, _t("cfgc5", L"Go"));
+	m_btnMgr.setText(m_cfgsrcLblMultisource, _t("cfgbt6", L"Enable Multisource Features"));
+	m_btnMgr.setText(m_cfgsrcBtnBack, _t("cfg10", L"Back"));
 }

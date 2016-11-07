@@ -38,7 +38,6 @@ int main(int argc, char **argv)
 	NandHandle.Init();
 
 	char *gameid = NULL;
-	bool Emulator_boot = false;
 	bool iosOK = true;
 
 	for(u8 i = 0; i < argc; i++)
@@ -47,7 +46,7 @@ int main(int argc, char **argv)
 		{
 			while(argv[i][0] && !isdigit(argv[i][0]))
 				argv[i]++;
-			if (atoi(argv[i]) < 254 && atoi(argv[i]) > 0)
+			if(atoi(argv[i]) < 254 && atoi(argv[i]) > 0)
 				mainIOS = atoi(argv[i]);
 		}
 		else if(strlen(argv[i]) == 6)
@@ -59,8 +58,6 @@ int main(int argc, char **argv)
 					gameid = NULL;
 			}
 		}
-		else if(argv[i] != NULL && strcasestr(argv[i], "EMULATOR_MAGIC") != NULL)
-			Emulator_boot = true;
 	}
 	check_neek2o();
 	/* Init ISFS */
@@ -105,12 +102,11 @@ int main(int argc, char **argv)
 	else 
 	{
 		writeStub();
-		if(Emulator_boot)
-			mainMenu.m_Emulator_boot = true;
 		if(gameid != NULL && strlen(gameid) == 6)
 			mainMenu.directlaunch(gameid);
 		else
 			mainMenu.main();
+			//if mainMenu.init set exit=true then mainMenu.main while loop does nothing and returns to here to exit wiiflow
 	}
 	//Exit WiiFlow, no game booted...
 	mainMenu.cleanup();// cleanup and clear memory

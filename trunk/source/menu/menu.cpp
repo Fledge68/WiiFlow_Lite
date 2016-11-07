@@ -69,19 +69,17 @@ CMenu::CMenu()
 	m_wbf1_font = NULL;
 	m_wbf2_font = NULL;
 	m_current_view = COVERFLOW_WII;
-	m_Emulator_boot = false;
 	m_prevBg = NULL;
 	m_nextBg = NULL;
 	m_lqBg = NULL;
 	m_use_sd_logging = false;
 	m_use_wifi_gecko = false;
-	init_network = false;
+	m_init_network = false;
 	m_use_source = true;
 	m_sourceflow = false;
 	m_numPlugins = 0;
 	m_clearCats = true;
 	m_catStartPage = 1;
-	m_combined_view = false;
 	/* Explorer stuff */
 	m_txt_view = false;
 	m_txt_path = NULL;
@@ -129,7 +127,7 @@ void CMenu::init()
 		}
 	}
 	
-	loadDefaultFont();// load default font
+	_loadDefaultFont();// load default font
 	if(drive == check) // Should not happen
 	{
 		_buildMenus();
@@ -152,7 +150,7 @@ void CMenu::init()
 	m_use_sd_logging = m_cfg.getBool("DEBUG", "sd_write_log", false);
 	LogToSD_SetBuffer(m_use_sd_logging);
 	/* Init Network if wanted */
-	init_network = (m_cfg.getBool("GENERAL", "async_network") || has_enabled_providers() || m_use_wifi_gecko);
+	m_init_network = (m_cfg.getBool("GENERAL", "async_network") || has_enabled_providers() || m_use_wifi_gecko);
 	_netInit();
 	
 	/* Try to find/make the wiiflow data directory */
@@ -182,11 +180,17 @@ void CMenu::init()
 				drive = DeviceName[i];
 				break;
 			}
-			if(drive == check)//if no available USB partition then force SD
+			if(drive == check && DeviceHandle.IsInserted(SD))//if no available USB partition then force SD
+			{
+				drive = DeviceName[SD];
+				//show error msg later to keep form calling _buildMenus() twice
+			}
+			else if(drive == check)
 			{
 				_buildMenus();
-				error(_fmt("errboot5", L"data_on_usb=yes and No available usb partitions for data!\nUsing SD."));
-				drive = DeviceName[SD];
+				error(_fmt("errboot6", L"No available usb partitions for data and no SD inserted!\nExiting."));
+				m_exit = true;
+				return;
 			}
 		}
 		else
@@ -416,7 +420,11 @@ void CMenu::init()
 	/* Init Button Manager and build the menus */
 	m_btnMgr.init();
 	m_btnMgr.setRumble(m_cfg.getBool("GENERAL", "rumble", true));
+	show_mem = m_cfg.getBool("DEBUG", "show_mem", false);
+		
 	_buildMenus();
+	if(drive == DeviceName[SD] && onUSB)
+		error(_fmt("errboot5", L"data_on_usb=yes and No available usb partitions for data!\nUsing SD."));
 
 	/* Check if locked, set return to, set exit to, and init multi threading */
 	m_locked = m_cfg.getString("GENERAL", "parent_code", "").size() >= 4;
@@ -596,7 +604,7 @@ void CMenu::_Theme_Cleanup(void)
 
 void CMenu::_netInit(void)
 {
-	if(networkInit || !init_network || m_exit)
+	if(networkInit || !m_init_network || m_exit)
 		return;
 	_initAsyncNetwork();
 	while(net_get_status() == -EBUSY)
@@ -1266,9 +1274,9 @@ void CMenu::_buildMenus(void)
 	_initCFThemeMenu();
 	_initGameSettingsMenu();
 	_initCheatSettingsMenu(); 
-	_initLangSettingsMenu();
 	_initSourceMenu();
 	_initCfgSrc();
+	_initCfgHB();
 	_initPluginSettingsMenu();
 	_initCategorySettingsMenu();
 	_initSystemMenu();
@@ -1635,7 +1643,7 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 	m_fa.tick();
 	m_fa.hideCover() ? 	CoverFlow.hideCover() : CoverFlow.showCover();
 	CoverFlow.setFanartPlaying(m_fa.isLoaded());
-	CoverFlow.setFanartTextColor(m_fa.getTextColor(m_coverflow.getColor("_COVERFLOW", "font_color", CColor(0xFFFFFFFF))));
+	CoverFlow.setFanartTextColor(m_fa.getTextColor(m_theme.getColor("_COVERFLOW", "font_color", CColor(0xFFFFFFFF))));
 
 	m_vid.prepare();
 	m_vid.setup2DProjection(false, true);
@@ -1751,10 +1759,11 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 			theme.cameraSound->Play(255);
 	}
 
-#ifdef SHOWMEM
-	m_btnMgr.setText(m_mem1FreeSize, wfmt(L"Mem1 lo Free:%u, Mem1 Free:%u, Mem2 Free:%u",
-				MEM1_lo_freesize(), MEM1_freesize(), MEM2_freesize()), true);
-#endif
+	if(show_mem)
+	{
+		m_btnMgr.setText(m_mem1FreeSize, wfmt(L"Mem1 lo Free:%u, Mem1 Free:%u", MEM1_lo_freesize(), MEM1_freesize()), true);
+		m_btnMgr.setText(m_mem2FreeSize, wfmt(L"Mem2 Free:%u", MEM2_freesize()), true);
+	}
 
 #ifdef SHOWMEMGECKO
 	mem1 = MEM1_freesize();
@@ -1902,19 +1911,18 @@ void CMenu::_updateText(void)
 	_textCategorySettings();
 	_textCheatSettings();
 	_textSystem();
-	_textMain();
 	_textConfig();
 	_textConfig3();
 	_textConfigScreen();
 	_textConfig4();
 	_textConfigAdv();
 	_textConfigSnd();
+	_textCfgHB();
 	_textGame();
 	_textDownload();
 	_textCode();
 	_textWBFS();
 	_textGameSettings();
-	_textLangSettings();
 	_textNandEmu();
 	_textHome();
 	_textExitTo();
@@ -2119,11 +2127,16 @@ void CMenu::_initCF(void)
 		m_cfg.setBool("GENERAL", "dump_list", false);
 	}
 
-	CoverFlow.setSorting(m_combined_view ? (Sorting)0 : (Sorting)m_cfg.getInt(_domainFromView(), "sort", 0));
-	CoverFlow.setBoxMode(m_cfg.getBool("GENERAL", "box_mode", true));
+	CoverFlow.setSorting(m_current_view == COVERFLOW_MAX ? (Sorting)0 : (Sorting)m_cfg.getInt(_domainFromView(), "sort", 0));
+	if(m_current_view == COVERFLOW_HOMEBREW)
+		CoverFlow.setBoxMode(m_cfg.getBool(HOMEBREW_DOMAIN, "box_mode", true));
+	else if(m_sourceflow)
+		CoverFlow.setBoxMode(m_cfg.getBool(SOURCEFLOW_DOMAIN, "box_mode", true));
+	else
+		CoverFlow.setBoxMode(m_cfg.getBool("GENERAL", "box_mode", true));
 	CoverFlow.setCompression(m_cfg.getBool("GENERAL", "allow_texture_compression", true));
 	CoverFlow.setBufferSize(m_cfg.getInt("GENERAL", "cover_buffer", 20));
-	CoverFlow.setHQcover(m_cfg.getBool("GENERAL", "cover_use_hq", false));
+	CoverFlow.setHQcover(m_cfg.getBool("GENERAL", "cover_use_hq", true));
 	CoverFlow.start(m_imgsDir);
 	
 	if(!CoverFlow.empty())
@@ -2144,12 +2157,7 @@ bool CMenu::_loadList(void)
 	
 	if(m_sourceflow)
 	{
-		string cacheDir(fmt("%s/sourceflow.db", m_listCacheDir.c_str()));
-		bool updateCache = m_cfg.getBool("SOURCEFLOW", "update_cache");
-		u8 maxBtns = m_cfg.getInt("GENERAL", "max_source_buttons", 71);
-		bool show_homebrew = (!m_locked || !m_cfg.getBool(HOMEBREW_DOMAIN, "parental", false));
-		m_cacheList.createSFList(maxBtns, m_source, show_homebrew, show_channel, show_plugin, show_gamecube, m_sourceDir, cacheDir, updateCache);
-		m_cfg.remove("SOURCEFLOW", "update_cache");
+		m_cacheList.createSFList(m_max_source_btn, m_source, m_sourceDir);
 		for(vector<dir_discHdr>::iterator tmp_itr = m_cacheList.begin(); tmp_itr != m_cacheList.end(); tmp_itr++)
 			m_gameList.push_back(*tmp_itr);
 		m_cacheList.Clear();
@@ -2162,16 +2170,16 @@ bool CMenu::_loadList(void)
 		return m_gameList.size() > 0 ? true : false;
 	}
 	gprintf("Creating Gamelist\n");
-	if(m_current_view == COVERFLOW_PLUGIN || (m_combined_view && m_cfg.getBool(PLUGIN_DOMAIN, "source")))
+	if(m_cfg.getBool(PLUGIN_DOMAIN, "source"))
 		_loadPluginList();
 		
-	if(m_current_view == COVERFLOW_WII || (m_combined_view && m_cfg.getBool(WII_DOMAIN, "source")))
+	if(m_cfg.getBool(WII_DOMAIN, "source"))
 		_loadWiiList();
 
-	if(m_current_view == COVERFLOW_CHANNEL || (m_combined_view && m_cfg.getBool(CHANNEL_DOMAIN, "source")))
+	if(m_cfg.getBool(CHANNEL_DOMAIN, "source"))
 		_loadChannelList();
 
-	if(m_current_view == COVERFLOW_GAMECUBE || (m_combined_view && m_cfg.getBool(GC_DOMAIN, "source")))
+	if(m_cfg.getBool(GC_DOMAIN, "source"))
 		_loadGamecubeList();
 
 	m_cacheList.Clear();
@@ -2411,7 +2419,7 @@ typedef struct map_entry
 	u8 sha1[20];
 } ATTRIBUTE_PACKED map_entry_t;
 
-void CMenu::loadDefaultFont(void)
+void CMenu::_loadDefaultFont(void)
 {
 	if(m_base_font != NULL)
 		return;
@@ -2494,7 +2502,7 @@ void CMenu::_cleanupDefaultFont()
 const char *CMenu::_domainFromView()
 {
 	if(m_sourceflow)
-		return "SOURCEFLOW";
+		return SOURCEFLOW_DOMAIN;
 	switch(m_current_view)
 	{
 		case COVERFLOW_CHANNEL:
@@ -2511,12 +2519,12 @@ const char *CMenu::_domainFromView()
 	return "NULL";
 }
 
-void CMenu::UpdateCache(u32 view)
+/*void CMenu::UpdateCache(u32 view)
 {
 	if(view == COVERFLOW_MAX)
 	{
 		UpdateCache(COVERFLOW_WII);
-		UpdateCache(COVERFLOW_HOMEBREW);
+		//UpdateCache(COVERFLOW_HOMEBREW);
 		UpdateCache(COVERFLOW_GAMECUBE);
 		UpdateCache(COVERFLOW_PLUGIN);
 		UpdateCache(COVERFLOW_CHANNEL);
@@ -2529,8 +2537,8 @@ void CMenu::UpdateCache(u32 view)
 			break;
 		case COVERFLOW_HOMEBREW:
 			m_cfg.setBool(HOMEBREW_DOMAIN, "update_cache", true);
-			break;
-		case COVERFLOW_GAMECUBE:
+			break;*/
+		/*case COVERFLOW_GAMECUBE:
 			m_cfg.setBool(GC_DOMAIN, "update_cache", true);
 			break;
 		case COVERFLOW_PLUGIN:
@@ -2538,8 +2546,16 @@ void CMenu::UpdateCache(u32 view)
 			break;
 		default:
 			m_cfg.setBool(WII_DOMAIN, "update_cache", true);
-	}
-}
+	}*/
+	/*if(m_cfg.getBool(WII_DOMAIN, "source"))
+		m_cfg.setBool(WII_DOMAIN, "update_cache", true);
+	if(m_cfg.getBool(GC_DOMAIN, "source"))
+		m_cfg.setBool(GC_DOMAIN, "update_cache", true);
+	if(m_cfg.getBool(CHANNEL_DOMAIN, "source"))
+		m_cfg.setBool(CHANNEL_DOMAIN, "update_cache", true);
+	if(m_cfg.getBool(PLUGIN_DOMAIN, "source"))
+		m_cfg.setBool(PLUGIN_DOMAIN, "update_cache", true);
+}*/
 
 void CMenu::RemoveCover(const char *id)
 {
@@ -2620,7 +2636,7 @@ const char *CMenu::getBoxPath(const dir_discHdr *element)
 	{
 		const char *m_sflowDir = m_cfg.getString("GENERAL", "dir_Source", fmt("%s/source_menu", m_dataDir.c_str())).c_str();
 		const char *coverImg = strrchr(element->path, '/') + 1;
-		if(coverImg == NULL || m_cfg.getBool("SOURCEFLOW", "smallbox"))
+		if(coverImg == NULL || m_cfg.getBool(SOURCEFLOW_DOMAIN, "smallbox"))
 			return NULL;
 		return fmt("%s/full_covers/%s", m_sflowDir, coverImg);
 	}
@@ -2649,7 +2665,7 @@ const char *CMenu::getFrontPath(const dir_discHdr *element)
 		if(coverImg == NULL)
 			return NULL;
 		const char *coverPath = fmt("%s/front_covers/%s", m_sflowDir, coverImg);
-		if(m_cfg.getBool("SOURCEFLOW", "smallbox") || !fsop_FileExist(coverPath))
+		if(m_cfg.getBool(SOURCEFLOW_DOMAIN, "smallbox") || !fsop_FileExist(coverPath))
 		{
 			coverPath = fmt("%s/small_covers/%s", m_sflowDir, coverImg);
 			if(!fsop_FileExist(coverPath))

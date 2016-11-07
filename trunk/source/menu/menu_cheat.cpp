@@ -1,9 +1,7 @@
-#include <string.h>
-#include <gccore.h>
 
 #include "menu.hpp"
-#include "lockMutex.hpp"
 #include "gui/text.hpp"
+#include "lockMutex.hpp"
 #include "network/http.h"
 
 #define GECKOURL "http://geckocodes.org/codes/%c/%s.txt"

@@ -1,7 +1,6 @@
 
 #include "menu.hpp"
 
-
 using namespace std;
 
 const CMenu::SCFParamDesc CMenu::_cfParams[] = {
@@ -315,7 +314,7 @@ void CMenu::_cfTheme(void)
 	SetupInput();
 	_initCF();
 	_showCFTheme(curParam, cfVersion, wide);
-	_loadCFLayout(cfVersion, true, wide != m_vid.wide());
+	_loadCFLayout(cfVersion, false, wide != m_vid.wide());
 	CoverFlow.applySettings();
 	while(!m_exit)
 	{
@@ -422,7 +421,7 @@ void CMenu::_cfTheme(void)
 			{
 				cfVersion = 1 + loopNum((u8)cfVersion, m_numCFVersions);
 				_showCFTheme(curParam, cfVersion, wide);
-				_loadCFLayout(cfVersion, true, wide != m_vid.wide());
+				_loadCFLayout(cfVersion, false, wide != m_vid.wide());
 				CoverFlow.applySettings();
 				showBtnsDelay = 150;
 			}
