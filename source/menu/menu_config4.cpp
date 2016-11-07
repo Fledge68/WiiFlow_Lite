@@ -1,20 +1,16 @@
 
 #include "menu.hpp"
-#include "defines.h"
 #include "channel/channels.h"
-#include "channel/nand.hpp"
-#include "loader/cios.h"
-#include "loader/nk.h"
 
 static const int g_curPage = 4;
+Config custom_titles;
+int currentChannelIndex = -1;
+int amountOfChannels = -1;
 
 template <class T> static inline T loopNum(T i, T s)
 {
 	return (i + s) % s;
 }
-
-int currentChannelIndex = -1;
-int amountOfChannels = -1;
 
 const CMenu::SOption CMenu::_exitTo[5] = {
 	{ "def", L"Default" },
@@ -67,8 +63,6 @@ void CMenu::_showConfig4(void)
 	m_btnMgr.setText(m_config4BtnHome, _t(CMenu::_exitTo[i].id, CMenu::_exitTo[i].text));
 	m_btnMgr.setText(m_config4BtnSaveFavMode, m_cfg.getBool("GENERAL", "save_favorites_mode") ? _t("on", L"On") : _t("off", L"Off"));
 
-	Config titles, custom_titles;
-	titles.load(fmt("%s/" TITLES_FILENAME, m_settingsDir.c_str()));
 	custom_titles.load(fmt("%s/" CTITLES_FILENAME, m_settingsDir.c_str()));
 
 	ChannelHandle.Init(m_loc.getString(m_curLanguage, "gametdb_code", "EN"));
@@ -82,7 +76,7 @@ void CMenu::_showConfig4(void)
 		{
 			if(strncmp(currentChanId.c_str(), ChannelHandle.GetId(i), 4) == 0)
 			{
-				channelName = custom_titles.getWString("TITLES", currentChanId, titles.getWString("TITLES", currentChanId, ChannelHandle.GetName(i)));
+				channelName = custom_titles.getWString("TITLES", currentChanId, ChannelHandle.GetName(i));
 				currentChannelIndex = i;
 				break;
 			}
@@ -121,8 +115,6 @@ int CMenu::_config4(void)
 				_hideConfig4();
 				_Paths();
 				_showConfig4();
-				m_load_view = true;
-				break;
 			}
 			else if (m_btnMgr.selected(m_config4BtnReturnToP))
 			{
@@ -146,6 +138,8 @@ int CMenu::_config4(void)
 	}
 	NANDemuView = curNANDemuView;
 	_hideConfig4();
+	if(custom_titles.loaded())
+		custom_titles.unload();
 	return change;
 }
 

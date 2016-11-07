@@ -21,7 +21,7 @@
 #define TAG_LOC			"{loc}"
 #define TAG_CONSOLE		"{console}"
 
-#define TITLES_URL		"http://www.gametdb.com/titles.txt?LANG=%s"
+//#define TITLES_URL		"http://www.gametdb.com/titles.txt?LANG=%s"
 #define GAMETDB_URL		"http://www.gametdb.com/wiitdb.zip?LANG=%s&FALLBACK=TRUE&WIIWARE=TRUE&GAMECUBE=TRUE"
 #define UPDATE_URL_VERSION	"http://nintendont.gxarena.com/banners/versions.txt"
 #define CUSTOM_BANNER_URL	"http://nintendont.gxarena.com/banners/{gameid}.bnr"
@@ -306,16 +306,13 @@ void CMenu::_showDownload(void)
 	m_btnMgr.show(m_downloadLblGameTDB);
 	m_btnMgr.show(m_downloadLblTitle);
 	m_btnMgr.show(m_downloadBtnCancel);
+	m_btnMgr.show(m_downloadLblCovers);
 	m_btnMgr.show(m_downloadBtnAll);
 	m_btnMgr.show(m_downloadBtnMissing);
 	m_btnMgr.show(m_downloadLblCoverSet);
 	m_btnMgr.show(m_downloadBtnCoverSet);
-	m_btnMgr.show(m_downloadLblCovers);
-	if (!m_locked)
-	{
-		m_btnMgr.show(m_downloadLblGameTDBDownload);
-		m_btnMgr.show(m_downloadBtnGameTDBDownload);
-	}
+	m_btnMgr.show(m_downloadLblGameTDBDownload);
+	m_btnMgr.show(m_downloadBtnGameTDBDownload);
 	for(u8 i = 0; i < ARRAY_SIZE(m_downloadLblUser); ++i)
 		if(m_downloadLblUser[i] != -1)
 			m_btnMgr.show(m_downloadLblUser[i]);	
@@ -1218,6 +1215,7 @@ void CMenu::_download(string gameId)
 		{
 			if ((m_btnMgr.selected(m_downloadBtnAll) || m_btnMgr.selected(m_downloadBtnMissing) || !gameId.empty()) && !m_thrdWorking)
 			{
+				m_refreshGameList = true;
 				bool dlAll = m_btnMgr.selected(m_downloadBtnAll);
 				m_btnMgr.show(m_downloadPBar);
 				m_btnMgr.setProgress(m_downloadPBar, 0.f);
@@ -1443,6 +1441,7 @@ void CMenu::_download(string gameId)
 
 			else if (m_btnMgr.selected(m_downloadBtnGameTDBDownload) && !m_thrdWorking)
 			{
+				m_refreshGameList = true;
 				m_btnMgr.show(m_downloadPBar);
 				m_btnMgr.setProgress(m_downloadPBar, 0.f);
 				_hideSettings();
@@ -2017,11 +2016,14 @@ int CMenu::_gametdbDownloaderAsync()
 				fsop_deleteFile(fmt("%s/gametdb_offsets.bin", m_settingsDir.c_str()));
 
 				// Update cache
-				UpdateCache();
+				//UpdateCache();
+				m_cfg.setBool(WII_DOMAIN, "update_cache", true);
+				m_cfg.setBool(GC_DOMAIN, "update_cache", true);
+				m_cfg.setBool(CHANNEL_DOMAIN, "update_cache", true);
 				LWP_MutexLock(m_mutex);
 				_setThrdMsg(_t("dlmsg26", L"Updating cache..."), 0.f);
 				LWP_MutexUnlock(m_mutex);
-				m_load_view = true;
+				m_refreshGameList = true;
 			}
 		}
 	}

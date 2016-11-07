@@ -24,7 +24,6 @@
 #include "homebrew/homebrew.h"
 #include "loader/alt_ios.h"
 #include "loader/wdvd.h"
-//#include "loader/alt_ios.h"
 #include "loader/playlog.h"
 #include "loader/wbfs.h"
 #include "loader/wip.h"
@@ -194,17 +193,6 @@ const CMenu::SOption CMenu::_debugger[3] = {
 	{ "dbgfwrite", L"OSReport" },
 };
 
-/*
-0 No Hook
-1 VBI
-2 KPAD read
-3 Joypad Hook
-4 GXDraw Hook
-5 GXFlush Hook
-6 OSSleepThread Hook
-7 AXNextFrame Hook
-*/
-
 map<u8, u8> CMenu::_installed_cios;
 u8 banner_title[84];
 
@@ -212,7 +200,6 @@ static inline int loopNum(int i, int s)
 {
 	return (i + s) % s;
 }
-
 
 static void _extractBannerTitle(int language)
 {
@@ -255,6 +242,14 @@ static int GetLanguage(const char *lang)
 	else if (strncmp(lang, "KO", 2) == 0) return CONF_LANG_KOREAN;
 	
 	return CONF_LANG_ENGLISH; // Default to EN
+}
+
+static void setLanguage(int l)
+{
+	if (l > 0 && l <= 10)
+		configbytes[0] = l - 1;
+	else
+		configbytes[0] = 0xCD;
 }
 
 static u8 GetRequestedGameIOS(dir_discHdr *hdr)
@@ -336,14 +331,6 @@ void CMenu::_showGame(void)
 		m_btnMgr.show(m_gameBtnBackFull);
 		m_btnMgr.show(m_gameBtnToggleFull);
 	}
-}
-
-static void setLanguage(int l)
-{
-	if (l > 0 && l <= 10)
-		configbytes[0] = l - 1;
-	else
-		configbytes[0] = 0xCD;
 }
 
 void CMenu::_cleanupBanner(bool gamechange)
@@ -575,17 +562,14 @@ void CMenu::_game(bool launch)
 		else if((BTN_1_PRESSED || BTN_2_PRESSED) && !coverFlipped)
 		{
 			s8 direction = BTN_1_PRESSED ? 1 : -1;
-			const char *domain = _domainFromView();
-			int cfVersion = 1+loopNum((m_cfg.getInt(domain, "last_cf_mode", 1)-1) + direction, m_numCFVersions);
+			int cfVersion = loopNum((_getCFVersion() - 1) + direction, m_numCFVersions) + 1;
 			_loadCFLayout(cfVersion);
 			CoverFlow.applySettings();
-			m_cfg.setInt(domain, "last_cf_mode" , cfVersion);
+			_setCFVersion(cfVersion);
 		}
 		else if(launch || BTN_A_PRESSED)
 		{
-			if(m_btnMgr.selected(m_mainBtnQuit))
-				break;
-			else if(m_btnMgr.selected(m_gameBtnDelete) && !m_locked)
+			if(m_btnMgr.selected(m_gameBtnDelete) && !m_locked)
 			{
 				_hideGame();
 				m_banner.SetShowBanner(false);
@@ -600,7 +584,7 @@ void CMenu::_game(bool launch)
 					else
 						wfcPath = fmt("%s/%s/%s.wfc", m_cacheDir.c_str(), coverDir, CoverFlow.getPathId(hdr, true));
 					fsop_deleteFile(wfcPath);
-					m_load_view = true;
+					m_refreshGameList = true;
 				}
 				else
 				{
@@ -615,6 +599,19 @@ void CMenu::_game(bool launch)
 					startGameSound = -6;
 				_showGame();
 			}
+			else if(m_btnMgr.selected(m_gameBtnSettings) && !NoGameID(hdr->type) && !m_locked)
+			{
+				_hideGame();
+				m_gameSelected = true;// reset to true to make sure sound plays during settings
+
+				m_banner.ToggleGameSettings();
+				_gameSettings();
+				m_banner.ToggleGameSettings();
+
+				_showGame();
+				if(!m_gameSound.IsPlaying()) 
+					startGameSound = -6;
+			}
 			else if(m_btnMgr.selected(m_gameBtnFavoriteOn) || m_btnMgr.selected(m_gameBtnFavoriteOff))
 			{
 				if(hdr->type == TYPE_PLUGIN)
@@ -622,7 +619,7 @@ void CMenu::_game(bool launch)
 				else
 					m_gcfg1.setBool("FAVORITES", id, !m_gcfg1.getBool("FAVORITES", id, false));
 			}
-			else if(m_btnMgr.selected(m_gameBtnAdultOn) || m_btnMgr.selected(m_gameBtnAdultOff))
+			else if((m_btnMgr.selected(m_gameBtnAdultOn) || m_btnMgr.selected(m_gameBtnAdultOff)) && !m_locked)
 			{
 				if(hdr->type == TYPE_PLUGIN)
 					m_gcfg1.setBool("ADULTONLY_PLUGINS", id, !m_gcfg1.getBool("ADULTONLY_PLUGINS", id, false));
@@ -644,19 +641,6 @@ void CMenu::_game(bool launch)
 				m_btnMgr.hide(m_gameBtnPlayFull);
 				m_btnMgr.hide(m_gameBtnBackFull);
 				m_btnMgr.hide(m_gameBtnToggleFull);
-			}
-			else if(m_btnMgr.selected(m_gameBtnSettings) && !NoGameID(hdr->type))
-			{
-				_hideGame();
-				m_gameSelected = true;// reset to true to make sure sound plays during settings
-
-				m_banner.ToggleGameSettings();
-				_gameSettings();
-				m_banner.ToggleGameSettings();
-
-				_showGame();
-				if(!m_gameSound.IsPlaying()) 
-					startGameSound = -6;
 			}
 			else if(launch || m_btnMgr.selected(m_gameBtnPlay) || m_btnMgr.selected(m_gameBtnPlayFull) || !ShowPointer())
 			{
@@ -728,7 +712,7 @@ void CMenu::_game(bool launch)
 				{
 					if(CoverFlow.mouseOver(m_cursor[chan].x(), m_cursor[chan].y()))
 					{
-						cf_version = m_cfg.getInt(_domainFromView(), "last_cf_mode", 1);
+						cf_version = _getCFVersion();
 						domain = fmt("%s_%i_S", cf_domain, cf_version);
 						key = "flip_pos";
 						if(!m_vid.wide())
@@ -870,7 +854,7 @@ void CMenu::_game(bool launch)
 	_hideGame();
 }
 
-void CMenu::directlaunch(const char *GameID)
+void CMenu::directlaunch(const char *GameID)// from boot arg for wii only
 {
 	m_directLaunch = true;
 	for(currentPartition = SD; currentPartition < USB8; currentPartition++)
@@ -933,7 +917,7 @@ void CMenu::_launch(const dir_discHdr *hdr)
 		if(strchr(launchHdr.path, ':') != NULL)//it's a rom path
 		{
 			//check if music player plugin, if so launch wiiflow's music player
-			if(plugin_dol_len == strlen(MUSIC_DOMAIN) && strcmp(plugin_dol_name, MUSIC_DOMAIN) == 0)
+			if(plugin_dol_len == 5 && strcasecmp(plugin_dol_name, "music") == 0)
 			{
 				MusicPlayer.LoadFile(launchHdr.path, false);
 				m_exit = false;
@@ -959,11 +943,12 @@ void CMenu::_launch(const dir_discHdr *hdr)
 		const char *loader = fmt("%s:/%s/WiiFlowLoader.dol", device, strchr(m_pluginsDir.c_str(), '/') + 1);
 
 		vector<string> arguments = m_plugin.CreateArgs(device, path, title, loader, title_len_no_ext, launchHdr.settings[0]);
+		// find plugin dol - it does not have to be in dev:/wiiflow/plugins
 		const char *plugin_file = plugin_dol_name; /* try full path */
-		if(strchr(plugin_file, ':') == NULL || !fsop_FileExist(plugin_file)) /* try universal plugin folder */
+		if(strchr(plugin_file, ':') == NULL || !fsop_FileExist(plugin_file)) /* if not found try wiiflow plugin folder */
 		{
 			plugin_file = fmt("%s/%s", m_pluginsDir.c_str(), plugin_dol_name);
-			if(!fsop_FileExist(plugin_file)) /* try device search */
+			if(!fsop_FileExist(plugin_file)) /* not found - try device search */
 			{
 				for(u8 i = SD; i < MAXDEVICES; ++i)
 				{
@@ -1011,7 +996,8 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		gcLaunchFail = true;
 		return;
 	}
-		
+	/* GC Loader Found we can go ahead with launchShutdown() */
+	/* clear coverflow, start wiiflow wait animation, set exit handler */	
 	_launchShutdown();
 	m_gcfg1.setInt("PLAYCOUNT", id, m_gcfg1.getInt("PLAYCOUNT", id, 0) + 1);
 	m_gcfg1.setUInt("LASTPLAYED", id, time(NULL));
@@ -1051,9 +1037,10 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		bool usb_hid = m_gcfg2.getBool(id, "usb_hid", m_cfg.getBool(GC_DOMAIN, "usb_hid", false));
 		bool native_ctl = m_gcfg2.getBool(id, "native_ctl", m_cfg.getBool(GC_DOMAIN, "native_ctl", false));
 		bool deflicker = m_gcfg2.getBool(id, "Deflicker", m_cfg.getBool(GC_DOMAIN, "Deflicker", false));
+		bool tri_arcade = m_gcfg2.getBool(id, "triforce_arcade", m_cfg.getBool(GC_DOMAIN, "triforce_arcade", false));
 		if(disc == true)
 		{
-			emuMC = m_cfg.getInt(GC_DOMAIN, "emu_memcard", 1);
+			//emuMC = m_cfg.getInt(GC_DOMAIN, "emu_memcard", 1);
 			Nintendont_BootDisc(emuMC, widescreen, usb_hid, native_ctl, deflicker);
 		}
 		else
@@ -1078,13 +1065,24 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 			snprintf(NewCheatPath, sizeof(NewCheatPath), "%s%s.gct",GC_Path,id);
 					
 			Nintendont_SetOptions(path, id, CheatPath, NewCheatPath, DeviceName[currentPartition],
-				cheats, emuMC, videoMode, widescreen, usb_hid, native_ctl, deflicker, wiiu_widescreen, NIN_Debugger);
+				cheats, emuMC, videoMode, widescreen, usb_hid, native_ctl, deflicker, wiiu_widescreen, NIN_Debugger, tri_arcade);
 		}
-	}			
+	}
+	/* configs no longer needed */
 	m_gcfg1.save(true);
 	m_gcfg2.save(true);
 	m_cat.save(true);
 	m_cfg.save(true);
+	if(loader == 1)
+	{
+		bool ret = (Nintendont_GetLoader() && LoadAppBooter(fmt("%s/app_booter.bin", m_binsDir.c_str())));
+		if(ret == false)
+		{
+			error(_t("errgame14", L"app_booter.bin not found!"));
+			_exitWiiflow();
+		}
+	}
+	/* no more error msgs - remove btns and sounds */
 	cleanup();
 	
  	GC_SetVideoMode(videoMode, loader);
@@ -1104,20 +1102,17 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	}
 	else
 	{
-		bool ret = (Nintendont_GetLoader() && LoadAppBooter(fmt("%s/app_booter.bin", m_binsDir.c_str())));
 		Nintendont_WriteOptions();
 		ShutdownBeforeExit();
-		if(ret == true)
-		{
-			loadIOS(58, false); //nintendont NEEDS ios58
-			BootHomebrew(); //regular dol
-		}
+		loadIOS(58, false); //nintendont NEEDS ios58
+		BootHomebrew(); //regular dol
 	}
 	Sys_Exit();
 }
 
 void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 {
+	/* clear coverflow, start wiiflow wait animation, set exit handler */	
 	_launchShutdown();
 	m_gcfg1.save(true);
 	m_gcfg2.save(true);
@@ -1125,9 +1120,15 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 	m_cfg.save(true);
 
 	Playlog_Delete();
-	cleanup(); // wifi and sd gecko doesnt work anymore after cleanup
 
 	bool ret = (LoadHomebrew(filepath) && LoadAppBooter(fmt("%s/app_booter.bin", m_binsDir.c_str())));
+	if(ret == false)
+	{
+		error(_t("errgame14", L"app_booter.bin not found!"));
+		_exitWiiflow();
+	}
+	/* no more error msgs - remove btns and sounds */
+	cleanup(); // wifi and sd gecko doesnt work anymore after cleanup
 
 	AddBootArgument(filepath);
 	for(u32 i = 0; i < arguments.size(); ++i)
@@ -1137,14 +1138,12 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 	}
 
 	ShutdownBeforeExit();
-	if(ret == true)
-	{
-		loadIOS(58, false);
-		BootHomebrew();
-	}
+	loadIOS(58, false);
+	BootHomebrew();
 	Sys_Exit();
 }
 
+/* dont confuse loadIOS with _loadIOS */
 int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id, bool RealNAND_Channels)
 {
 	gprintf("Game ID# %s requested IOS %d.  User selected %d\n", id.c_str(), gameIOS, userIOS);
@@ -1225,6 +1224,7 @@ int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id, bool RealNAND_Channels)
 
 void CMenu::_launchChannel(dir_discHdr *hdr)
 {
+	/* clear coverflow, start wiiflow wait animation, set exit handler */	
 	_launchShutdown();
 	string id = string(hdr->id);
 
@@ -1275,11 +1275,11 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	bool use_led = m_gcfg2.getBool(id, "led", false);
 	u32 gameIOS = ChannelHandle.GetRequestedIOS(gameTitle);
 
+	/* configs no longer needed */
 	m_gcfg1.save(true);
 	m_gcfg2.save(true);
 	m_cat.save(true);
 	m_cfg.save(true);
-	cleanup();
 
 	if(NANDemuView && !neek2o())
 	{
@@ -1288,17 +1288,27 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 			if(!Load_Neek2o_Kernel())
 			{
 				error(_t("errneek1", L"Cannot launch neek2o. Verify your neek2o setup"));
-				Sys_Exit();
+				_exitWiiflow();
 			}
-			ShutdownBeforeExit();
-			Launch_nk(gameTitle, NandHandle.Get_NandPath(), returnTo ? (((u64)(0x00010001) << 32) | (returnTo & 0xFFFFFFFF)) : 0);
-			while(1) usleep(500);
+			else 
+			{
+				cleanup();
+				ShutdownBeforeExit();
+				Launch_nk(gameTitle, NandHandle.Get_NandPath(), returnTo ? (((u64)(0x00010001) << 32) | (returnTo & 0xFFFFFFFF)) : 0);
+				while(1) usleep(500);
+			}
 		}
 	}
 	if(WII_Launch == false && ExternalBooter_LoadBins(m_binsDir.c_str()) == false)
-		Sys_Exit();
+	{
+		error(_t("errgame15", L"Missing ext_loader.bin or ext_booter.bin!"));
+		_exitWiiflow();
+	}
 	if(_loadIOS(gameIOS, userIOS, id, !NANDemuView) == LOAD_IOS_FAILED)
-		Sys_Exit();
+	{
+		/* error message already shown */
+		_exitWiiflow();
+	}
 
 	if((CurrentIOS.Type == IOS_TYPE_D2X || neek2o()) && returnTo != 0)
 	{
@@ -1317,10 +1327,13 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		{
 			NandHandle.Disable_Emu();
 			error(_t("errgame5", L"Enabling emu failed!"));
-			Sys_Exit();
+			_exitWiiflow();
 		}
 		DeviceHandle.MountAll();
 	}
+	
+	cleanup();//done with error menu can now cleanup
+	
 	if(WII_Launch)
 	{
 		ShutdownBeforeExit();
@@ -1343,6 +1356,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 
 void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 {
+	/* clear coverflow, start wiiflow wait animation, set exit handler */	
 	_launchShutdown();
 	string id(hdr->id);
 	string path(hdr->path);
@@ -1429,14 +1443,14 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	const char *rtrn = m_cfg.getString("GENERAL", "returnto", "").c_str();
 	int aspectRatio = min((u32)m_gcfg2.getInt(id, "aspect_ratio", 0), ARRAY_SIZE(CMenu::_AspectRatio) - 1u)-1;
 
-	string emuPath;
-	int emuPartition = 0;
-
 	u8 emulate_mode = min((u32)m_gcfg2.getInt(id, "emulate_save", 0), ARRAY_SIZE(CMenu::_SaveEmu) - 1u);
 	if(emulate_mode == 0)// default then use global
 		emulate_mode = min(max(0, m_cfg.getInt(WII_DOMAIN, "save_emulation", 0)), (int)ARRAY_SIZE(CMenu::_GlobalSaveEmu) - 1);
 	else
 		emulate_mode--;
+		
+	string emuPath;
+	int emuPartition = 0;
 	
 	if(emulate_mode && !dvd && !neek2o())
 	{
@@ -1452,10 +1466,10 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		{
 			m_forceext = false;
 			_hideWaitMessage();
-			/*_AutoExtractSave(id) returns true if
-			if save is not on real nand (nothing to extract)
-			if the save is already on emu nand (then no extraction)
-			if the save was successfully extracted
+			/*_AutoExtractSave(id) returns
+			true if the save is already on emu nand (then no extraction)
+			true if the save was successfully extracted
+			false if save is not on real nand (nothing to extract)
 			false if user chooses to have game create new save*/
 			if(!_AutoExtractSave(id))
 				NandHandle.CreateTitleTMD(hdr);//setup emu nand for gamesave
@@ -1512,7 +1526,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	m_gcfg2.save(true);
 	m_cat.save(true);
 	m_cfg.save(true);
-	cleanup(); // wifi and sd gecko doesnt work anymore after cleanup
+	//cleanup(); wifi and sd gecko doesnt work anymore after cleanup
 
 	//this is a temp region change of real nand(rn) for gamesave or off or DVD if tempregionrn is set true
 	bool patchregion = false;
@@ -1521,13 +1535,19 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		gprintf("Check\n");
 		patchregion = NandHandle.Do_Region_Change(id, true);
 	}
-	//load external booter bin file. if fails then wiiflow exits. would be better to show error message first.
+	//load external booter bin file
 	if(ExternalBooter_LoadBins(m_binsDir.c_str()) == false)
-		Sys_Exit();
+	{
+		error(_t("errgame15", L"Missing ext_loader.bin or ext_booter.bin!"));
+		_exitWiiflow();
+	}
 	if((!dvd || neek2o()) && !Sys_DolphinMode())
 	{
 		if(_loadIOS(gameIOS, userIOS, id) == LOAD_IOS_FAILED)
-			Sys_Exit();
+		{
+			/* error message already shown */
+			_exitWiiflow();
+		}
 	}
 
 	if(CurrentIOS.Type == IOS_TYPE_D2X)
@@ -1553,6 +1573,10 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 			DeviceHandle.MountAll();
 		}
 	}
+	
+	/* no more error msgs - clear btns and snds */
+	cleanup(); //wifi and sd gecko doesnt work anymore after cleanup
+
 	bool wbfs_partition = false;
 	if(!dvd)
 	{
@@ -1579,9 +1603,18 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 	Sys_Exit();
 }
 
+void CMenu::_exitWiiflow()
+{
+	//Exit WiiFlow, no game booted...
+	cleanup();// cleanup and clear memory
+	ShutdownBeforeExit();// unmount devices and close inputs
+	Sys_Exit();
+}
+
+
 void CMenu::_initGameMenu()
 {
-	CColor fontColor(0xD0BFDFFF);
+	//CColor fontColor(0xD0BFDFFF);
 	TexData texGameFavOn;
 	TexData texGameFavOnSel;
 	TexData texGameFavOff;

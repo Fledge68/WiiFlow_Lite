@@ -6,14 +6,27 @@
 
 #define ARRAY_SIZE(a)	(sizeof a / sizeof a[0])
 
+u8 m_gameSettingsMaxPgs = 5;
+u8 m_gameSettingsPage = 0;
+u8 GCLoader = 0;
+
 template <class T> static inline T loopNum(T i, T s)
 {
 	return (i + s) % s;
 }
 
-u8 m_gameSettingsMaxPgs = 5;
-u8 m_gameSettingsPage = 0;
-u8 GCLoader = 0;
+wstringEx CMenu::_optBoolToString(int i)
+{
+	switch (i)
+	{
+		case 0:
+			return _t("off", L"Off");
+		case 1:
+			return _t("on", L"On");
+		default:
+			return _t("def", L"Default");
+	}
+}
 
 void CMenu::_hideGameSettings(bool instant)
 {
@@ -96,6 +109,9 @@ void CMenu::_hideGameSettings(bool instant)
 	m_btnMgr.hide(m_gameSettingsBtnNATIVE_CTL, instant);
 	m_btnMgr.hide(m_gameSettingsLblDeflicker, instant);
 	m_btnMgr.hide(m_gameSettingsBtnDeflicker, instant);
+	m_btnMgr.hide(m_gameSettingsLblArcade, instant);
+	m_btnMgr.hide(m_gameSettingsBtnArcade, instant);
+	//
 	m_btnMgr.hide(m_gameSettingsLblCustom, instant);
 	m_btnMgr.hide(m_gameSettingsBtnCustom, instant);
 	m_btnMgr.hide(m_gameSettingsLblLaunchNK, instant);
@@ -104,19 +120,6 @@ void CMenu::_hideGameSettings(bool instant)
 	for(u8 i = 0; i < ARRAY_SIZE(m_gameSettingsLblUser); ++i)
 		if(m_gameSettingsLblUser[i] != -1)
 			m_btnMgr.hide(m_gameSettingsLblUser[i], instant);
-}
-
-wstringEx CMenu::_optBoolToString(int i)
-{
-	switch (i)
-	{
-		case 0:
-			return _t("off", L"Off");
-		case 1:
-			return _t("on", L"On");
-		default:
-			return _t("def", L"Default");
-	}
 }
 
 void CMenu::_hideGameSettingsPg(void)
@@ -212,6 +215,9 @@ void CMenu::_hideGameSettingsPg(void)
 	}
 	if(m_gameSettingsPage == 4)
 	{
+		m_btnMgr.hide(m_gameSettingsLblArcade);
+		m_btnMgr.hide(m_gameSettingsBtnArcade);
+
 		m_btnMgr.hide(m_gameSettingsLblCustom);
 		m_btnMgr.hide(m_gameSettingsBtnCustom);
 
@@ -271,8 +277,6 @@ void CMenu::_showGameSettings(void)
 		m_gameSettingsMaxPgs = 5;
 	else if(GameHdr->type == TYPE_GC_GAME && GCLoader == DEVOLUTION)
 		m_gameSettingsMaxPgs = 2;
-	else if(GameHdr->type == TYPE_GC_GAME && GCLoader != DEVOLUTION)
-		m_gameSettingsMaxPgs = 3;
 
 	if(m_gameSettingsPage == 1)
 	{
@@ -304,8 +308,18 @@ void CMenu::_showGameSettings(void)
 	}
 	if(m_gameSettingsPage == 2)
 	{
-		//if it's not GC or it is but loader is not devolution
-		if(GameHdr->type != TYPE_GC_GAME || (GameHdr->type == TYPE_GC_GAME && GCLoader != DEVOLUTION))
+		if(GameHdr->type == TYPE_GC_GAME && GCLoader == DEVOLUTION)
+		{
+			m_btnMgr.show(m_gameSettingsLblDevoMemcardEmu);
+			m_btnMgr.show(m_gameSettingsBtnDevoMemcardEmu);
+
+			m_btnMgr.show(m_gameSettingsLblWidescreen);
+			m_btnMgr.show(m_gameSettingsBtnWidescreen);
+			
+			m_btnMgr.show(m_gameSettingsLblLED);
+			m_btnMgr.show(m_gameSettingsBtnLED);
+		}
+		else
 		{
 			m_btnMgr.show(m_gameSettingsLblDebugger);
 			m_btnMgr.show(m_gameSettingsLblDebuggerV);
@@ -330,17 +344,6 @@ void CMenu::_showGameSettings(void)
 		
 			m_btnMgr.show(m_gameSettingsLblCheat);
 			m_btnMgr.show(m_gameSettingsBtnCheat);
-		}
-		else //devolution
-		{
-			m_btnMgr.show(m_gameSettingsLblDevoMemcardEmu);
-			m_btnMgr.show(m_gameSettingsBtnDevoMemcardEmu);
-
-			m_btnMgr.show(m_gameSettingsLblWidescreen);
-			m_btnMgr.show(m_gameSettingsBtnWidescreen);
-			
-			m_btnMgr.show(m_gameSettingsLblLED);
-			m_btnMgr.show(m_gameSettingsBtnLED);
 		}
 	}
 	if(m_gameSettingsPage == 3)
@@ -390,44 +393,48 @@ void CMenu::_showGameSettings(void)
 	}
 	if(m_gameSettingsPage == 4)
 	{
-		if(GameHdr->type == TYPE_CHANNEL || GameHdr->type == TYPE_EMUCHANNEL)
+		if(GameHdr->type == TYPE_GC_GAME)
 		{
-			m_btnMgr.show(m_gameSettingsLblCustom);
-			m_btnMgr.show(m_gameSettingsBtnCustom);
+			m_btnMgr.show(m_gameSettingsBtnArcade);
+			m_btnMgr.show(m_gameSettingsLblArcade);
+		}
+		else
+		{
 			
-			if(m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0) == 1)
+			if(GameHdr->type == TYPE_CHANNEL || GameHdr->type == TYPE_EMUCHANNEL)
 			{
+				m_btnMgr.show(m_gameSettingsLblCustom);
+				m_btnMgr.show(m_gameSettingsBtnCustom);
+				
 				m_btnMgr.show(m_gameSettingsLblLaunchNK);
 				m_btnMgr.show(m_gameSettingsBtnLaunchNK);
 			}
-		}
-		else if(GameHdr->type == TYPE_WII_GAME)
-		{
-			m_btnMgr.show(m_gameSettingsLblEmulationVal);
-			m_btnMgr.show(m_gameSettingsLblEmulation);
-			m_btnMgr.show(m_gameSettingsBtnEmulationP);
-			m_btnMgr.show(m_gameSettingsBtnEmulationM);
-			
-			if(_checkSave(string((const char *)GameHdr->id), true))
+			else if(GameHdr->type == TYPE_WII_GAME)
 			{
+				m_btnMgr.show(m_gameSettingsLblEmulationVal);
+				m_btnMgr.show(m_gameSettingsLblEmulation);
+				m_btnMgr.show(m_gameSettingsBtnEmulationP);
+				m_btnMgr.show(m_gameSettingsBtnEmulationM);
+				
 				m_btnMgr.show(m_gameSettingsLblExtractSave);
 				m_btnMgr.show(m_gameSettingsBtnExtractSave);
 			}
+			
+			m_btnMgr.show(m_gameSettingsLblGameIOS);
+			m_btnMgr.show(m_gameSettingsLblIOS);
+			m_btnMgr.show(m_gameSettingsBtnIOSP);
+			m_btnMgr.show(m_gameSettingsBtnIOSM);
+			
+			m_btnMgr.show(m_gameSettingsLblLED);
+			m_btnMgr.show(m_gameSettingsBtnLED);
 		}
-		
-		m_btnMgr.show(m_gameSettingsLblGameIOS);
-		m_btnMgr.show(m_gameSettingsLblIOS);
-		m_btnMgr.show(m_gameSettingsBtnIOSP);
-		m_btnMgr.show(m_gameSettingsBtnIOSM);
-		
-		m_btnMgr.show(m_gameSettingsLblLED);
-		m_btnMgr.show(m_gameSettingsBtnLED);
 	}
 	if(m_gameSettingsPage == 5)
 	{
 		m_btnMgr.show(m_gameSettingsLblFlashSave);
 		m_btnMgr.show(m_gameSettingsBtnFlashSave);
 		
+		//maybe only show this if mariokart wii
 		m_btnMgr.show(m_gameSettingsLblPrivateServer);
 		m_btnMgr.show(m_gameSettingsBtnPrivateServer);
 	}
@@ -441,7 +448,7 @@ void CMenu::_showGameSettings(void)
 	u32 maxpage = m_gameSettingsMaxPgs;
 
 	m_btnMgr.setText(m_gameSettingsLblPage, wfmt(L"%i / %i", page, maxpage));
-	m_btnMgr.setText(m_gameSettingsBtnOcarina, _optBoolToString(m_gcfg2.getOptBool(id, "cheat", 0)));
+	m_btnMgr.setText(m_gameSettingsBtnOcarina, _optBoolToString(m_gcfg2.getOptBool(id, "cheat", 0)));// cheats default to 0 off
 	m_btnMgr.setText(m_gameSettingsBtnLED, _optBoolToString(m_gcfg2.getOptBool(id, "led", 0)));
 	
 	i = min((u32)m_gcfg2.getInt(id, "debugger", 0), ARRAY_SIZE(CMenu::_debugger) - 1u);
@@ -449,12 +456,14 @@ void CMenu::_showGameSettings(void)
 	
 	if(GameHdr->type == TYPE_GC_GAME)
 	{
-		//widescreen is shared by all, in the future might seperate them
+		//widescreen is shared by devo and nintendont, in the future might seperate them
+		m_btnMgr.setText(m_gameSettingsLblWidescreen, _t("cfgg36", L"Widescreen Patch"));
 		m_btnMgr.setText(m_gameSettingsBtnWidescreen, _optBoolToString(m_gcfg2.getOptBool(id, "widescreen", m_cfg.getBool(GC_DOMAIN, "widescreen", 0))));
 		m_btnMgr.setText(m_gameSettingsBtnDevoMemcardEmu, _optBoolToString(m_gcfg2.getOptBool(id, "devo_memcard_emu", 0)));
 		m_btnMgr.setText(m_gameSettingsBtnUSB_HID, _optBoolToString(m_gcfg2.getOptBool(id, "USB_HID", m_cfg.getBool(GC_DOMAIN, "USB_HID", 0))));
 		m_btnMgr.setText(m_gameSettingsBtnNATIVE_CTL, _optBoolToString(m_gcfg2.getOptBool(id, "NATIVE_CTL", m_cfg.getBool(GC_DOMAIN, "NATIVE_CTL", 0))));
 		m_btnMgr.setText(m_gameSettingsBtnDeflicker, _optBoolToString(m_gcfg2.getOptBool(id, "Deflicker", m_cfg.getBool(GC_DOMAIN, "Deflicker", 0))));
+		m_btnMgr.setText(m_gameSettingsBtnArcade, _optBoolToString(m_gcfg2.getOptBool(id, "triforce_arcade", m_cfg.getBool(GC_DOMAIN, "triforce_arcade", 0))));
 
 		i = min((u32)m_gcfg2.getInt(id, "video_mode", 0), ARRAY_SIZE(CMenu::_GCvideoModes) - 1u);
 		m_btnMgr.setText(m_gameSettingsLblVideo, _t(CMenu::_GCvideoModes[i].id, CMenu::_GCvideoModes[i].text));
@@ -462,16 +471,16 @@ void CMenu::_showGameSettings(void)
 		i = min((u32)m_gcfg2.getInt(id, "language", 0), ARRAY_SIZE(CMenu::_GClanguages) - 1u);
 		m_btnMgr.setText(m_gameSettingsLblLanguage, _t(CMenu::_GClanguages[i].id, CMenu::_GClanguages[i].text));
 		
-		if(GCLoader == NINTENDONT && IsOnWiiU())
-			m_btnMgr.setText(m_gameSettingsLblWidescreen, _t("cfgg46", L"WiiU Widescreen"));
-		else
-			m_btnMgr.setText(m_gameSettingsLblWidescreen, _t("cfgg36", L"Widescreen Patch"));
-		
 		if(GCLoader == NINTENDONT)
 		{
 			m_btnMgr.setText(m_gameSettingsLblEmuMemCard, _t("cfgg47", L"Emulated MemCard"));
 			i = min((u32)m_gcfg2.getInt(id, "nin_memcard", 0), ARRAY_SIZE(CMenu::_NinEmuCard) - 1u);
 			m_btnMgr.setText(m_gameSettingsLblEmuMemCard_Val, _t(CMenu::_NinEmuCard[i].id, CMenu::_NinEmuCard[i].text));
+			if(IsOnWiiU())
+			{
+				m_btnMgr.setText(m_gameSettingsLblWidescreen, _t("cfgg46", L"WiiU Widescreen"));
+				m_btnMgr.setText(m_gameSettingsBtnWidescreen, _optBoolToString(m_gcfg2.getOptBool(id, "wiiu_widescreen", m_cfg.getBool(GC_DOMAIN, "wiiu_widescreen", 0))));
+			}
 		}
 		
 		i = min((u32)m_gcfg2.getInt(id, "gc_loader", 0), ARRAY_SIZE(CMenu::_GCLoader) - 1u);
@@ -535,7 +544,7 @@ void CMenu::_gameSettings(void)
 			m_btnMgr.up();
 		else if(BTN_DOWN_PRESSED)
 			m_btnMgr.down();
-		if((BTN_MINUS_PRESSED || BTN_LEFT_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_gameSettingsBtnPageM))) && !m_locked)
+		if(BTN_MINUS_PRESSED || BTN_LEFT_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_gameSettingsBtnPageM)))
 		{
 			_hideGameSettingsPg();
 			if(m_gameSettingsPage == 1)
@@ -545,7 +554,7 @@ void CMenu::_gameSettings(void)
 				m_btnMgr.click(m_gameSettingsBtnPageM);
 			_showGameSettings();
 		}
-		else if((BTN_PLUS_PRESSED || BTN_RIGHT_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_gameSettingsBtnPageP))) && !m_locked)
+		else if(BTN_PLUS_PRESSED || BTN_RIGHT_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_gameSettingsBtnPageP)))
 		{
 			_hideGameSettingsPg();
 			if(m_gameSettingsPage == m_gameSettingsMaxPgs)
@@ -586,8 +595,14 @@ void CMenu::_gameSettings(void)
 			}
 			else if(m_btnMgr.selected(m_gameSettingsBtnLaunchNK))
 			{
-				m_gcfg2.setBool(id, "useneek", !m_gcfg2.getBool(id, "useneek", 0));
-				_showGameSettings();
+				//show error msg if emunand not on USB1 && neek2o doesn't exist
+				if(m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0) != 1)
+					error(_t("cfgg48", L"EmuNAND not on USB1!"));
+				else if(!fsop_FileExist("usb1:/sneek/kernel.bin"))
+					error(_t("cfgg49", L"Neek2o Not Found!"));
+				else
+					m_gcfg2.setBool(id, "useneek", !m_gcfg2.getBool(id, "useneek", 0));
+					_showGameSettings();
 			}
 			else if(m_btnMgr.selected(m_gameSettingsBtnDevoMemcardEmu))
 			{
@@ -724,6 +739,11 @@ void CMenu::_gameSettings(void)
 				m_gcfg2.setBool(id, "USB_HID", !m_gcfg2.getBool(id, "USB_HID", 0));
 				_showGameSettings();
 			}
+			else if(m_btnMgr.selected(m_gameSettingsBtnArcade))
+			{
+				m_gcfg2.setBool(id, "triforce_arcade", !m_gcfg2.getBool(id, "triforce_arcade", 0));
+				_showGameSettings();
+			}
 			else if(m_btnMgr.selected(m_gameSettingsBtnPrivateServer))
 			{
 				m_gcfg2.setBool(id, "private_server", !m_gcfg2.getBool(id, "private_server", 0));
@@ -739,14 +759,16 @@ void CMenu::_gameSettings(void)
 			{
 				_hideGameSettings();
 				m_forceext = true;
-				_AutoExtractSave(id);
+				if(!_AutoExtractSave(id))
+					error(_t("cfgg50", L"No save to extract!"));
 				_showGameSettings();
 			}
 			else if(m_btnMgr.selected(m_gameSettingsBtnFlashSave))
 			{
 				_hideGameSettings();
 				m_forceext = true;
-				_FlashSave(id);
+				if(!_FlashSave(id))
+					error(_t("cfgg51", L"No save to flash to real NAND!"));
 				_showGameSettings();
 			}
 		}
@@ -867,12 +889,16 @@ void CMenu::_initGameSettingsMenu()
 	m_gameSettingsLblExtractSave = _addLabel("GAME_SETTINGS/EXTRACT_SAVE", theme.lblFont, L"", 20, 305, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsBtnExtractSave = _addButton("GAME_SETTINGS/EXTRACT_SAVE_BTN", theme.btnFont, L"", 420, 310, 200, 48, theme.btnFontColor);
 
+//GC Nintendont Page 4 line 1
+	m_gameSettingsLblArcade = _addLabel("GAME_SETTINGS/ARCADE", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsBtnArcade = _addButton("GAME_SETTINGS/ARCADE_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
+
 //Channels Page 4 line 1 and line 4 but only if emu NAND on USB1
 	m_gameSettingsLblCustom = _addLabel("GAME_SETTINGS/CUSTOM", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsBtnCustom =  _addButton("GAME_SETTINGS/CUSTOM_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
+	m_gameSettingsBtnCustom = _addButton("GAME_SETTINGS/CUSTOM_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
 
 	m_gameSettingsLblLaunchNK = _addLabel("GAME_SETTINGS/LAUNCHNEEK", theme.lblFont, L"", 20, 305, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsBtnLaunchNK =  _addButton("GAME_SETTINGS/LAUNCHNEEK_BTN", theme.btnFont, L"", 420, 310, 200, 48, theme.btnFontColor);
+	m_gameSettingsBtnLaunchNK = _addButton("GAME_SETTINGS/LAUNCHNEEK_BTN", theme.btnFont, L"", 420, 310, 200, 48, theme.btnFontColor);
 
 //Page 5
 	m_gameSettingsLblFlashSave = _addLabel("GAME_SETTINGS/FLASH_SAVE", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
@@ -966,6 +992,9 @@ void CMenu::_initGameSettingsMenu()
 	_setHideAnim(m_gameSettingsLblWidescreen, "GAME_SETTINGS/DM_WIDESCREEN", 50, 0, -2.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnWidescreen, "GAME_SETTINGS/DM_WIDESCREEN_BTN", -50, 0, 1.f, 0.f);
 
+	_setHideAnim(m_gameSettingsLblArcade, "GAME_SETTINGS/ARCADE", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_gameSettingsBtnArcade, "GAME_SETTINGS/ARCADE_BTN", -50, 0, 1.f, 0.f);
+
 	_setHideAnim(m_gameSettingsLblGCLoader, "GAME_SETTINGS/GC_LOADER", 50, 0, -2.f, 0.f);
 	_setHideAnim(m_gameSettingsLblGCLoader_Val, "GAME_SETTINGS/GC_LOADER_BTN", -50, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnGCLoader_P, "GAME_SETTINGS/GC_LOADER_PLUS", -50, 0, 1.f, 0.f);
@@ -1035,6 +1064,7 @@ void CMenu::_textGameSettings(void)
 	m_btnMgr.setText(m_gameSettingsLblUSB_HID, _t("cfgg42", L"USB-HID Controller"));
 	m_btnMgr.setText(m_gameSettingsLblNATIVE_CTL, _t("cfgg43", L"Native Control"));
 	
+	m_btnMgr.setText(m_gameSettingsLblArcade, _t("cfgg48", L"Triforce Arcade Mode"));
 	m_btnMgr.setText(m_gameSettingsLblEmulation, _t("cfgg24", L"NAND Emulation"));
 	m_btnMgr.setText(m_gameSettingsLblGameIOS, _t("cfgg10", L"IOS"));
 	m_btnMgr.setText(m_gameSettingsLblLED, _t("cfgg38", L"Activity LED"));

@@ -1,4 +1,3 @@
-// Coverflow
 
 #include <string.h>
 #include <stdio.h>
@@ -1646,6 +1645,7 @@ void CCoverFlow::_updateTarget(int i, bool instant)
 		cvr.txtTargetAngle = lo.txtLeftAngle;
 		cvr.txtTargetPos = lo.txtLeftPos;
 		cvr.txtTargetColor = 0;
+		cvr.txtColor = 0;//instant fade out if was displayed
 		cvr.title.setFrame(lo.txtSideWidth, lo.txtSideStyle, false, instant);
 	}
 	// Right covers
@@ -1669,6 +1669,7 @@ void CCoverFlow::_updateTarget(int i, bool instant)
 		cvr.txtTargetAngle = lo.txtRightAngle;
 		cvr.txtTargetPos = lo.txtRightPos;
 		cvr.txtTargetColor = 0;
+		cvr.txtColor = 0;//instant fade out if was displayed
 		cvr.title.setFrame(lo.txtSideWidth, lo.txtSideStyle, false, instant);
 	}
 	// New center cover
@@ -1682,7 +1683,7 @@ void CCoverFlow::_updateTarget(int i, bool instant)
 		cvr.txtTargetColor = 0xFF;
 		cvr.txtTargetAngle = lo.txtCenterAngle;
 		cvr.txtTargetPos = lo.txtCenterPos;
-		cvr.title.setFrame(lo.txtCenterWidth, lo.txtCenterStyle, false, instant);
+		cvr.title.setFrame(lo.txtCenterWidth, lo.txtCenterStyle, false, true);
 	}
 	else // Center of a row
 	{
@@ -1692,6 +1693,7 @@ void CCoverFlow::_updateTarget(int i, bool instant)
 		cvr.targetPos = lo.rowCenterPos;
 		cvr.targetScale = lo.rowCenterScale;
 		cvr.txtTargetColor = 0;
+		cvr.txtColor = 0;//instant fade out if was displayed
 		if (y < vcenter)
 		{
 			cvr.txtTargetAngle = lo.txtLeftAngle;
@@ -1760,7 +1762,7 @@ void CCoverFlow::_updateTarget(int i, bool instant)
 				cvr.txtTargetAngle = lo.txtCenterAngle;
 				cvr.txtTargetPos = lo.txtCenterPos;
 				cvr.txtTargetColor = 0xFF;
-				cvr.title.setFrame(lo.txtCenterWidth, lo.txtCenterStyle, false, instant);
+				cvr.title.setFrame(lo.txtCenterWidth, lo.txtCenterStyle, false, true);
 			}
 			else
 			{
@@ -1769,6 +1771,7 @@ void CCoverFlow::_updateTarget(int i, bool instant)
 				cvr.txtTargetAngle = m_mouse[chan] > i ? lo.txtLeftAngle : lo.txtRightAngle;
 				cvr.txtTargetPos = m_mouse[chan] > i ? lo.txtLeftPos : lo.txtRightPos;
 				cvr.txtTargetColor = 0;
+				cvr.txtColor = 0;//instant fade out if was displayed
 				cvr.title.setFrame(lo.txtSideWidth, lo.txtSideStyle, false, instant);
 			}
 			if (_invisibleCover(x, y))
@@ -2057,7 +2060,7 @@ void CCoverFlow::mouse(int chan, int x, int y)
 	}
 	if (m != m_mouse[chan])
 	{
-		if ((u32)m_mouse[chan] < m_range)
+		if ((u32)m_mouse[chan] < m_range && m_mouse[chan] >= 0)
 			_playSound(m_hoverSound);
 		_updateAllTargets();
 	}
@@ -2465,7 +2468,7 @@ void CCoverFlow::_coverTick(int i)
 	m_covers[i].txtAngle += (m_covers[i].txtTargetAngle - m_covers[i].txtAngle) * speed;
 	m_covers[i].txtPos += (m_covers[i].txtTargetPos - m_covers[i].txtPos) * speed;
 	int colorDist = (int)m_covers[i].txtTargetColor - (int)m_covers[i].txtColor;
-	m_covers[i].txtColor += abs(colorDist) >= 2 ? (u8)(colorDist / 2) : (u8)colorDist;
+	m_covers[i].txtColor += abs(colorDist) >= 8 ? (u8)(colorDist / 8) : (u8)colorDist;
 	m_covers[i].title.tick();
 }
 
@@ -2610,6 +2613,7 @@ bool CCoverFlow::fullCoverCached(const char *id)
 
 bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover)
 {
+	gprintf("loading %s cover\n", box ? (blankBoxCover ? "blank" : "box") : "flat");
 	if(!m_loadingCovers) return false;
 
 	u8 textureFmt = m_compressTextures ? GX_TF_CMPR : GX_TF_RGB565;
@@ -2843,7 +2847,11 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 			SWFCHeader header;
 			if(fileSize > sizeof(header))
 			{
-				fread(&header, 1, sizeof(header), fp);
+				if(fread(&header, 1, sizeof(header), fp) != sizeof(header))
+				{
+					fclose(fp);
+					return _loadCoverTexPNG(i, box, hq, blankBoxCover) ? CL_OK : CL_ERROR;
+				}
 				//make sure wfc cache file matches what we want
 				if(header.newFmt == 1 && (header.full != 0) == box && (header.cmpr != 0) == m_compressTextures)
 				{
@@ -2883,7 +2891,11 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 						else
 						{
 							fseek(fp, sizeof(header) + bufSize - texLen, SEEK_SET);
-							fread(tex.data, 1, texLen, fp);
+							if(fread(tex.data, 1, texLen, fp) != texLen)
+							{
+								fclose(fp);
+								return _loadCoverTexPNG(i, box, hq, blankBoxCover) ? CL_OK : CL_ERROR;
+							}
 						}
 					}
 					if(!allocFailed)

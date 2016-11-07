@@ -34,7 +34,7 @@ void CMenu::error(const wstringEx &msg)
 	do
 	{
 		_mainLoopCommon();
-	} while (!BTN_B_PRESSED && !BTN_A_PRESSED && !BTN_HOME_PRESSED);
+	} while (!m_exit && !BTN_B_PRESSED && !BTN_A_PRESSED && !BTN_HOME_PRESSED);
 	_hideError(false);
 }
 

@@ -99,57 +99,49 @@ static void listEmuNands(const char * path, vector<string> &emuNands)
 
 void CMenu::_checkEmuNandSettings(bool savesnand)
 {
-	string emuNand;
+	/* make sure partition and directory are legal and legit */
+	const char *emuNand = NULL;
 	int emuPart;
-	if(!savesnand)
+	if(savesnand)
 	{
-		emuNand = m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default");
-		emuPart = m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0);
+		emuNand = m_cfg.getString(WII_DOMAIN, "current_save_emunand", "default").c_str();
+		emuPart = m_cfg.getInt(WII_DOMAIN, "savepartition", 0);
 	}
 	else
 	{
-		emuNand = m_cfg.getString(WII_DOMAIN, "current_save_emunand", m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default"));
-		emuPart = m_cfg.getInt(WII_DOMAIN, "savepartition", m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0));
+		emuNand = m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default").c_str();
+		emuPart = m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0);
 	}
-	/* check if partition is FAT */
-	if(!DeviceHandle.PartitionUsableForNandEmu(emuPart))// if not then find a FAT partition
+	const char *tmpPath = fmt("/%s/%s", EMU_NANDS_DIR, emuNand);
+	/* check if partition is FAT && emuNAND directory exist*/
+	if(!DeviceHandle.PartitionUsableForNandEmu(emuPart) || !_TestEmuNand(emuPart, tmpPath, false))
 	{
-		for(emuPart = SD; emuPart <= USB8; emuPart++)
+		if(savesnand)
 		{
-			if(DeviceHandle.PartitionUsableForNandEmu(emuPart))
-			{
-				if(!savesnand)
-					m_cfg.setInt(CHANNEL_DOMAIN, "partition", emuPart);
-				else
-					m_cfg.setInt(WII_DOMAIN, "savepartition", emuPart);
-				break;
-			}
-		}
-	}
-	/* check directory */
-	const char *tmpPath = fmt("/%s/%s", EMU_NANDS_DIR, emuNand.c_str());
-	if(!_TestEmuNand(emuPart, tmpPath, false))// if doesn't exist set to default
-	{
-		if(!savesnand)
-			m_cfg.setString(CHANNEL_DOMAIN, "current_emunand", "default");
-		else
 			m_cfg.setString(WII_DOMAIN, "current_save_emunand", "default");
+			m_cfg.getInt(WII_DOMAIN, "savepartition", 0);
+		}
+		else
+		{
+			m_cfg.setString(CHANNEL_DOMAIN, "current_emunand", "default");
+			m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0);
+		}
 	}
 }
 
 int CMenu::_FindEmuPart(string &emuPath, bool skipchecks, bool savesnand)
 {
-	int emuPart = -1;
+	int emuPart;
 	const char *tmpPath = NULL;
-	if(!savesnand)
+	if(savesnand)
 	{
-		emuPart = m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0);
-		tmpPath = fmt("/%s/%s", EMU_NANDS_DIR, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default").c_str());
+		emuPart = m_cfg.getInt(WII_DOMAIN, "savepartition");
+		tmpPath = fmt("/%s/%s", EMU_NANDS_DIR, m_cfg.getString(WII_DOMAIN, "current_save_emunand").c_str());
 	}
 	else
 	{
-		emuPart = m_cfg.getInt(WII_DOMAIN, "savepartition", m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0));
-		tmpPath = fmt("/%s/%s", EMU_NANDS_DIR, m_cfg.getString(WII_DOMAIN, "current_save_emunand", m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default")).c_str());
+		emuPart = m_cfg.getInt(CHANNEL_DOMAIN, "partition");
+		tmpPath = fmt("/%s/%s", EMU_NANDS_DIR, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand").c_str());
 	}
 	if(!DeviceHandle.PartitionUsableForNandEmu(emuPart))
 		return -1;
@@ -216,8 +208,8 @@ bool CMenu::_checkSave(string id, bool nand)
 	}
 	else
 	{
-		int emuPartition = m_cfg.getInt(WII_DOMAIN, "savepartition", m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0));
-		const char *emuPath = fmt("/%s/%s", EMU_NANDS_DIR, m_cfg.getString(WII_DOMAIN, "current_save_emunand", m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default")).c_str());
+		int emuPartition = m_cfg.getInt(WII_DOMAIN, "savepartition");
+		const char *emuPath = fmt("/%s/%s", EMU_NANDS_DIR, m_cfg.getString(WII_DOMAIN, "current_save_emunand").c_str());
 		if(emuPartition < 0 || emuPath == NULL)
 			return false;
 		struct stat fstat;
@@ -543,7 +535,10 @@ int CMenu::_NandEmuCfg(void)
 			m_btnMgr.setText(m_nandfileLblMessage, L"");
 			m_btnMgr.setText(m_nandemuLblDialog, _t("cfgne11", L"Overall Progress:"));
 			if(m_fulldump)
+			{
+				m_refreshGameList = true;
 				m_btnMgr.setText(m_nandemuLblTitle, _t("cfgne12", L"NAND Extractor"));
+			}
 			else
 				m_btnMgr.setText(m_nandemuLblTitle, _t("cfgne13", L"Game Save Extractor"));
 			m_thrdStop = false;
@@ -601,17 +596,17 @@ int CMenu::_NandEmuCfg(void)
 	if(emuNand != m_cfg.getString(CHANNEL_DOMAIN, "current_emunand"))
 	{
 		m_cfg.setBool(CHANNEL_DOMAIN, "update_cache", true);
-		if(m_current_view == COVERFLOW_CHANNEL)// or source is set
-			m_load_view = true;
+		if(m_cfg.getBool(CHANNEL_DOMAIN, "source"))// or source is set - need to fix
+			m_refreshGameList = true;
 	}
 	return 0;
 }
 
 int CMenu::_FlashSave(string gameId)
 {
-	int emuPartition = m_cfg.getInt(WII_DOMAIN, "savepartition", m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0));
+	int emuPartition = m_cfg.getInt(WII_DOMAIN, "savepartition");
 	char basepath[MAX_FAT_PATH];
-	snprintf(basepath, sizeof(basepath), "%s:/%s/%s", DeviceName[emuPartition], EMU_NANDS_DIR, m_cfg.getString(WII_DOMAIN, "current_save_emunand", m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default")).c_str());
+	snprintf(basepath, sizeof(basepath), "%s:/%s/%s", DeviceName[emuPartition], EMU_NANDS_DIR, m_cfg.getString(WII_DOMAIN, "current_save_emunand").c_str());
 
 	if(!_checkSave(gameId, false))
 		return 0;
@@ -649,7 +644,6 @@ int CMenu::_FlashSave(string gameId)
 		}
 		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnBack)))
 		{
-			m_cfg.save();
 			_hideNandEmu();
 			return 1;
 		}
@@ -684,12 +678,8 @@ int CMenu::_FlashSave(string gameId)
 
 int CMenu::_AutoExtractSave(string gameId)
 {
-	string emuPath;
-	int emuPartition = _FindEmuPart(emuPath, false, true);
-	if(emuPartition < 0)
-		emuPartition = _FindEmuPart(emuPath, true, true);
-	if(!_checkSave(gameId, true))//if save not on real nand
-		return 1;
+	if(!_checkSave(gameId, true))//if save not on real nand or emunand path no good
+		return 0;
 
 	if(!m_forceext && _checkSave(gameId, false))//if not force extract and save is already on emunand
 		return 1;
@@ -740,8 +730,10 @@ int CMenu::_AutoExtractSave(string gameId)
 		}
 		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnDisable)))//create new save
 		{
+			int emuPart = m_cfg.getInt(WII_DOMAIN, "savepartition");
+			const char *emuPath = fmt("/%s/%s", EMU_NANDS_DIR, m_cfg.getString(WII_DOMAIN, "current_save_emunand").c_str());
 			char basepath[MAX_FAT_PATH];
-			snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[emuPartition], emuPath.c_str());
+			snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[emuPart], emuPath);
 			NandHandle.CreatePath("%s/import", basepath);
 			NandHandle.CreatePath("%s/meta", basepath);
 			NandHandle.CreatePath("%s/shared1", basepath);
@@ -755,7 +747,6 @@ int CMenu::_AutoExtractSave(string gameId)
 		}
 		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnBack)))
 		{
-			m_cfg.save();
 			_hideNandEmu();
 			return 1;
 		}
@@ -841,9 +832,13 @@ int CMenu::_NandDumper(void *obj)
 
 	if(emuPartition < 0)
 	{
-		m.error(m._t("cfgne8", L"No valid FAT partition found for NAND Emulation!"));
-		//probably should set m.m_thrdWorking = false;
-		//and set bool error to true and then main thread will handle it
+		//m.error(m._t("cfgne8", L"No valid FAT partition found for NAND Emulation!"));
+		m.m_thrdWorking = false;
+		LWP_MutexLock(m.m_mutex);
+		m_btnMgr.hide(m_nandfilePBar);
+		m_btnMgr.hide(m_nandfileLblMessage);
+		m._setDumpMsg(m._t("cfgne8", L"No valid FAT partition found for NAND Emulation!"), 1.f, 1.f);
+		LWP_MutexUnlock(m.m_mutex);
 		return 0;
 	}
 
@@ -935,13 +930,13 @@ void CMenu::_initNandEmuMenu()
 	m_nandemuBg = _texture("NANDEMU/BG", "texture", theme.bg, false);
 	m_nandemuLblTitle = _addTitle("NANDEMU/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 
-	m_nandfileLblMessage = _addLabel("NANDEMU/FMESSAGE", theme.lblFont, L"", 40, 230, 560, 100, theme.lblFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_TOP);
-	m_nandemuLblMessage = _addLabel("NANDEMU/MESSAGE", theme.lblFont, L"", 40, 350, 560, 100, theme.lblFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_TOP);
 	m_nandfileLblDialog = _addLabel("NANDEMU/FDIALOG", theme.lblFont, L"", 40, 60, 560, 200, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_nandfinLblDialog = _addLabel("NANDEMU/FINDIALOG", theme.lblFont, L"", 40, 120, 560, 200, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_nandemuLblDialog = _addLabel("NANDEMU/DIALOG", theme.lblFont, L"", 40, 180, 560, 200, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_nandfilePBar = _addProgressBar("NANDEMU/FILEPROGRESS_BAR", 40, 200, 560, 20);
 	m_nandemuPBar = _addProgressBar("NANDEMU/PROGRESS_BAR", 40, 200, 560, 20);
+	m_nandfileLblMessage = _addLabel("NANDEMU/FMESSAGE", theme.lblFont, L"", 40, 230, 560, 100, theme.lblFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_TOP);
+	m_nandemuLblMessage = _addLabel("NANDEMU/MESSAGE", theme.lblFont, L"", 40, 350, 560, 100, theme.lblFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_TOP);
 
 	m_nandemuLblNandSelect = _addLabel("NANDEMU/NAND_SELECT", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_nandemuLblNandSelectVal = _addLabel("NANDEMU/NAND_SELECT_BTN", theme.btnFont, L"", 468, 130, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);

@@ -2,8 +2,7 @@
 #ifndef __COMMON_CONFIG_H__
 #define __COMMON_CONFIG_H__
 
-#define NIN_CFG_VERSION		0x00000003
-#define OLD_NIN_CFG_VERSION	0x00000002
+#define NIN_CFG_VERSION		0x00000007
 #define NIN_CFG_MAXPAD 4
 #define MEM_CARD_MAX (5)
 #define MEM_CARD_CODE(x) (1<<(x+2))
@@ -13,7 +12,7 @@
 typedef struct NIN_CFG
 {
 	unsigned int		Magicbytes;		// 0x01070CF6
-	unsigned int		Version;		// 0x00000001
+	unsigned int		Version;
 	unsigned int		Config;
 	unsigned int		VideoMode;
 	unsigned int		Language;
@@ -42,6 +41,7 @@ enum ninconfig
 	NIN_CFG_MC_MULTI 	= (1<<13),
 	NIN_CFG_NATIVE_SI	= (1<<14),
 	NIN_CFG_WIIU_WIDE	= (1<<15),
+	NIN_CFG_ARCADE_MODE = (1<<16),
 };
 
 enum ninvideomode

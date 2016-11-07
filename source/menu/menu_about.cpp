@@ -1,7 +1,5 @@
 
 #include "menu.hpp"
-#include "channel/nand.hpp"
-#include "loader/alt_ios.h"
 #include "loader/cios.h"
 #include "const_str.hpp"
 
@@ -95,10 +93,8 @@ void CMenu::_showAbout(void)
 		m_btnMgr.show(m_aboutLblIOS);
 	m_btnMgr.show(m_aboutLblInfo,false);
 	for(u8 i = 0; i < ARRAY_SIZE(m_aboutLblUser); ++i)
-	{
 		if(m_aboutLblUser[i] != -1)
 			m_btnMgr.show(m_aboutLblUser[i]);
-	}
 }
 
 void CMenu::_initAboutMenu()

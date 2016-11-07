@@ -1,11 +1,10 @@
+
 #include <dirent.h>
 #include <unistd.h>
-
 #include "menu.hpp"
 #include "defines.h"
 
 // Source menu
-s16 m_sourceLblNotice;
 s16 m_sourceLblPage;
 s16 m_sourceBtnPageM;
 s16 m_sourceBtnPageP;
@@ -32,16 +31,17 @@ char current_btn[16];
 void CMenu::_sourceFlow()
 {
 	const dir_discHdr *hdr = CoverFlow.getHdr();
-	if(m_cfg.getBool("SOURCEFLOW", "remember_last_item", true))
-		m_cfg.setString("SOURCEFLOW", "current_item", strrchr(hdr->path, '/') + 1);
+	if(m_cfg.getBool(SOURCEFLOW_DOMAIN, "remember_last_item", true))
+		m_cfg.setString(SOURCEFLOW_DOMAIN, "current_item", strrchr(hdr->path, '/') + 1);
 	else
-		m_cfg.remove("SOURCEFLOW", "current_item");
+		m_cfg.remove(SOURCEFLOW_DOMAIN, "current_item");
 
 	memset(btn_selected, 0, 16);
 	strncpy(btn_selected, fmt("BUTTON_%i", hdr->settings[0]), 15);
 	source = m_source.getString(btn_selected, "source", "");
 	cf_domain = "_COVERFLOW";
-	_clearSources();// may have to move this
+	_clearSources();
+	//this was my attempt or idea at making sourceflow multi-select
 	/*if(source == "wii")
 	{
 		m_cfg.setBool(WII_DOMAIN, "source", true);
@@ -77,10 +77,19 @@ void CMenu::_sourceFlow()
 	}
 	else if(source == "homebrew")
 	{
-		m_current_view = COVERFLOW_HOMEBREW;
-		m_cfg.setBool(HOMEBREW_DOMAIN, "source", true);
-		if(m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox", true))
-			cf_domain = "_SMALLFLOW";
+		if(m_locked && m_cfg.getBool(HOMEBREW_DOMAIN, "parental", false))
+		{
+			error(_t("errsource1", L"Homebrew locked!"));
+			m_current_view = COVERFLOW_WII;
+			m_cfg.setBool(WII_DOMAIN, "source", true);
+		}
+		else
+		{
+			m_current_view = COVERFLOW_HOMEBREW;
+			m_cfg.setBool(HOMEBREW_DOMAIN, "source", true);
+			if(m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox", true))
+				cf_domain = "_SMALLFLOW";
+		}
 	}
 	else if(source == "allplugins")
 	{
@@ -115,7 +124,6 @@ void CMenu::_sourceFlow()
 void CMenu::_hideSource(bool instant)
 {
 	m_btnMgr.hide(m_sourceLblTitle, instant);
-	m_btnMgr.hide(m_sourceLblNotice, instant);
 	m_btnMgr.hide(m_sourceLblPage, instant);
 	m_btnMgr.hide(m_sourceBtnPageM, instant);
 	m_btnMgr.hide(m_sourceBtnPageP, instant);
@@ -123,10 +131,8 @@ void CMenu::_hideSource(bool instant)
 	m_btnMgr.hide(m_sourceBtnClear, instant);	
 
 	for(i = 0; i < ARRAY_SIZE(m_sourceLblUser); ++i)
-	{
 		if(m_sourceLblUser[i] != -1)
 			m_btnMgr.hide(m_sourceLblUser[i], instant);
-	}
 
 	for(i = 0; i < 12; ++i)
 	{
@@ -140,10 +146,8 @@ void CMenu::_showSource(void)
 	_setBg(m_sourceBg, m_sourceBg);
 	
 	for(i = 0; i < ARRAY_SIZE(m_sourceLblUser); ++i)
-	{
 		if(m_sourceLblUser[i] != -1)
 			m_btnMgr.show(m_sourceLblUser[i]);
-	}
 
 	m_btnMgr.show(m_sourceLblTitle);
 	m_btnMgr.show(m_sourceBtnBack);
@@ -166,8 +170,6 @@ void CMenu::_updateSourceBtns(void)
 	selectedBtns = 0;
 	for(i = 0; i < ((numPages - 1) * 12 + 12); ++i)
 	{
-		//if(i < 12)
-		//	m_btnMgr.hide(m_sourceBtnSource[i], true);
 		memset(current_btn, 0, 16);
 		strncpy(current_btn, fmt("BUTTON_%i", i), 15);
 		string btnSource = m_source.getString(current_btn, "source", "");
@@ -243,35 +245,16 @@ void CMenu::_updateSourceBtns(void)
 	}
 }
 
-void CMenu::_showSourceNotice(void)
-{
-	m_showtimer = 90;
-	m_btnMgr.show(m_sourceLblNotice);
-	exitSource = false;
-}
-
 bool CMenu::_Source()
 {
 	bool newSource = false;
 	bool updateSource = false;
 	exitSource = false;
-	m_showtimer = 0;
 	curPage = 1;
-	numPages = 1;
+	numPages = (m_max_source_btn / 12) + 1;
 	
 	SetupInput();
 	_showSource();
-
-	//set number of pages based on highest source btn number used
-	for(i = m_cfg.getInt("GENERAL", "max_source_buttons", 71); i > 11; --i)
-	{
-		string source = m_source.getString(fmt("BUTTON_%i", i), "source", "");
-		if(!source.empty())
-		{
-			numPages = (i / 12) + 1;
-			break;
-		}
-	}
 	_updateSourceBtns();
 
 	while(!m_exit)
@@ -282,7 +265,7 @@ bool CMenu::_Source()
 		{
 			_hideSource();
 			_CfgSrc();
-			if(m_cfg.getBool("SOURCEFLOW", "enabled"))
+			if(m_cfg.getBool(SOURCEFLOW_DOMAIN, "enabled"))
 				return true;
 			if(m_multisource)
 				newSource = true;
@@ -293,7 +276,6 @@ bool CMenu::_Source()
 		{
 			if(!m_multisource) break;
 			cf_domain = "_COVERFLOW";
-			m_combined_view = false;
 			if(selectedBtns == 0)
 			{
 				m_cfg.setBool(WII_DOMAIN, "source", true);
@@ -307,6 +289,7 @@ bool CMenu::_Source()
 				_setSrcOptions();
 				//break;
 			}
+			
 			u8 sourceCount = 0;
 			if(m_cfg.getBool(WII_DOMAIN, "source", false))
 			{
@@ -335,7 +318,6 @@ bool CMenu::_Source()
 			}
 			if(sourceCount > 1)
 			{
-				m_combined_view = true;
 				m_current_view = COVERFLOW_MAX;
 			}
 			break;
@@ -393,43 +375,33 @@ bool CMenu::_Source()
 				m_catStartPage = 1;
 				if(source == "dml")
 				{
-					if(!show_gamecube)
-						_showSourceNotice();
-					else
-					{
-						m_cfg.setBool(GC_DOMAIN, "source", true);
-						m_current_view = COVERFLOW_GAMECUBE;
-						_setSrcOptions();
-					}
+					m_cfg.setBool(GC_DOMAIN, "source", true);
+					m_current_view = COVERFLOW_GAMECUBE;
+					_setSrcOptions();
 				}
 				else if(source == "emunand" || source == "realnand")
 				{
-					if(!show_channel)
-						_showSourceNotice();
+					if(source == "emunand")
+					{
+						m_current_view = COVERFLOW_CHANNEL;
+						m_cfg.setBool(CHANNEL_DOMAIN, "source", true);
+						m_cfg.setBool(CHANNEL_DOMAIN, "emu_nand", true);
+						m_cfg.setBool(CHANNEL_DOMAIN, "real_nand", false);
+					}
 					else
 					{
-						if(source == "emunand")
-						{
-							m_current_view = COVERFLOW_CHANNEL;
-							m_cfg.setBool(CHANNEL_DOMAIN, "source", true);
-							m_cfg.setBool(CHANNEL_DOMAIN, "emu_nand", true);
-							m_cfg.setBool(CHANNEL_DOMAIN, "real_nand", false);
-						}
-						else
-						{
-							m_current_view = COVERFLOW_CHANNEL;
-							m_cfg.setBool(CHANNEL_DOMAIN, "source", true);
-							m_cfg.setBool(CHANNEL_DOMAIN, "emu_nand", false);
-							m_cfg.setBool(CHANNEL_DOMAIN, "real_nand", true);
-						}
 						m_current_view = COVERFLOW_CHANNEL;
-						_setSrcOptions();
+						m_cfg.setBool(CHANNEL_DOMAIN, "source", true);
+						m_cfg.setBool(CHANNEL_DOMAIN, "emu_nand", false);
+						m_cfg.setBool(CHANNEL_DOMAIN, "real_nand", true);
 					}
+					m_current_view = COVERFLOW_CHANNEL;
+					_setSrcOptions();
 				}
 				else if(source == "homebrew")
 				{
-					if((m_locked || m_cfg.getBool(HOMEBREW_DOMAIN, "parental", false)))
-						_showSourceNotice();
+					if(m_locked && m_cfg.getBool(HOMEBREW_DOMAIN, "parental", false))
+						error(_t("errsource1", L"Homebrew locked!"));
 					else
 					{
 						m_cfg.setBool(HOMEBREW_DOMAIN, "source", true);
@@ -439,43 +411,33 @@ bool CMenu::_Source()
 				}
 				else if(source == "allplugins")
 				{
-					if(!show_plugin)
-						_showSourceNotice();
-					else
-					{
-						m_cfg.setBool(PLUGIN_DOMAIN, "source", true);
-						m_current_view = COVERFLOW_PLUGIN;
-						for(k = 0; k < m_numPlugins; ++k)
-							m_plugin.SetEnablePlugin(m_cfg, k, 2); /* force enable */
-						_setSrcOptions();
-					}
+					m_cfg.setBool(PLUGIN_DOMAIN, "source", true);
+					m_current_view = COVERFLOW_PLUGIN;
+					for(k = 0; k < m_numPlugins; ++k)
+						m_plugin.SetEnablePlugin(m_cfg, k, 2); /* force enable */
+					_setSrcOptions();
 				}
 				else if(source == "plugin")
 				{
-					if(!show_plugin)
-						_showSourceNotice();
-					else
+					m_cfg.setBool(PLUGIN_DOMAIN, "source", true);
+					m_current_view = COVERFLOW_PLUGIN;
+					_setSrcOptions();
+					for(k = 0; k < m_numPlugins; ++k)
+						m_plugin.SetEnablePlugin(m_cfg, k, 1); /* force disable */
+					magicNums.clear();
+					magicNums = m_source.getStrings(btn_selected, "magic", ',');
+					if(magicNums.size() > 0)
 					{
-						m_cfg.setBool(PLUGIN_DOMAIN, "source", true);
-						m_current_view = COVERFLOW_PLUGIN;
-						_setSrcOptions();
-						for(k = 0; k < m_numPlugins; ++k)
-							m_plugin.SetEnablePlugin(m_cfg, k, 1); /* force disable */
-						magicNums.clear();
-						magicNums = m_source.getStrings(btn_selected, "magic", ',');
-						if(magicNums.size() > 0)
+						for(vector<string>::iterator itr = magicNums.begin(); itr != magicNums.end(); itr++)
 						{
-							for(vector<string>::iterator itr = magicNums.begin(); itr != magicNums.end(); itr++)
-							{
-								s8 exist = m_plugin.GetPluginPosition(strtoul(itr->c_str(), NULL, 16));// make sure magic# is valid
-								if(exist >= 0)
-									m_plugin.SetEnablePlugin(m_cfg, exist, 2);
-							}
+							s8 exist = m_plugin.GetPluginPosition(strtoul(itr->c_str(), NULL, 16));// make sure magic# is valid
+							if(exist >= 0)
+								m_plugin.SetEnablePlugin(m_cfg, exist, 2);
 						}
-						m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
-						if(enabledPluginsCount == 0) // zero magic #'s or invalid ones so default to first plugin in list
-							m_plugin.SetEnablePlugin(m_cfg, 0, 2);
 					}
+					m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
+					if(enabledPluginsCount == 0) // no magic #'s or invalid ones so default to first plugin in list
+						m_plugin.SetEnablePlugin(m_cfg, 0, 2);
 				}
 				else //if(source == "wii") or source is invalid or empty default to wii
 				{
@@ -493,87 +455,75 @@ bool CMenu::_Source()
 				}
 				else if(source == "dml")
 				{
-					if(show_gamecube)
-						m_cfg.setBool(GC_DOMAIN, "source", !m_cfg.getBool(GC_DOMAIN, "source"));
+					m_cfg.setBool(GC_DOMAIN, "source", !m_cfg.getBool(GC_DOMAIN, "source"));
 				}
 				else if(source == "emunand" || source == "realnand")
 				{
-					if(show_channel)
+					if(source == "realnand")
 					{
-						if(source == "realnand")
-						{
-							if(m_cfg.getBool(CHANNEL_DOMAIN, "source"))
-								m_cfg.setBool(CHANNEL_DOMAIN, "real_nand", !m_cfg.getBool(CHANNEL_DOMAIN, "real_nand"));
-							else
-							{
-								m_cfg.setBool(CHANNEL_DOMAIN, "real_nand", true);
-								m_cfg.setBool(CHANNEL_DOMAIN, "emu_nand", false);
-							}
-						}
+						if(m_cfg.getBool(CHANNEL_DOMAIN, "source"))
+							m_cfg.setBool(CHANNEL_DOMAIN, "real_nand", !m_cfg.getBool(CHANNEL_DOMAIN, "real_nand"));
 						else
 						{
-							if(m_cfg.getBool(CHANNEL_DOMAIN, "source"))
-								m_cfg.setBool(CHANNEL_DOMAIN, "emu_nand", !m_cfg.getBool(CHANNEL_DOMAIN, "emu_nand"));
-							else
-							{
-								m_cfg.setBool(CHANNEL_DOMAIN, "emu_nand", true);
-								m_cfg.setBool(CHANNEL_DOMAIN, "real_nand", false);
-							}
+							m_cfg.setBool(CHANNEL_DOMAIN, "real_nand", true);
+							m_cfg.setBool(CHANNEL_DOMAIN, "emu_nand", false);
 						}
-						if(m_cfg.getBool(CHANNEL_DOMAIN, "emu_nand") || m_cfg.getBool(CHANNEL_DOMAIN, "real_nand"))
-							m_cfg.setBool(CHANNEL_DOMAIN, "source", true);
-						else
-							m_cfg.setBool(CHANNEL_DOMAIN, "source", false);
 					}
+					else
+					{
+						if(m_cfg.getBool(CHANNEL_DOMAIN, "source"))
+							m_cfg.setBool(CHANNEL_DOMAIN, "emu_nand", !m_cfg.getBool(CHANNEL_DOMAIN, "emu_nand"));
+						else
+						{
+							m_cfg.setBool(CHANNEL_DOMAIN, "emu_nand", true);
+							m_cfg.setBool(CHANNEL_DOMAIN, "real_nand", false);
+						}
+					}
+					if(m_cfg.getBool(CHANNEL_DOMAIN, "emu_nand") || m_cfg.getBool(CHANNEL_DOMAIN, "real_nand"))
+						m_cfg.setBool(CHANNEL_DOMAIN, "source", true);
+					else
+						m_cfg.setBool(CHANNEL_DOMAIN, "source", false);
 				}
 				else if(source == "homebrew")
 				{
-					if((!m_locked || !m_cfg.getBool(HOMEBREW_DOMAIN, "parental", false)))
-						m_cfg.setBool(HOMEBREW_DOMAIN, "source", !m_cfg.getBool(HOMEBREW_DOMAIN, "source"));
+					error(_t("errsource2", L"Homebrew and multisource not allowed!"));
 				}
 				else if(source == "allplugins")
 				{
-					if(show_plugin)
-					{
-						m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
-						for(j = 0; m_plugin.PluginExist(j); ++j)		/* opposite */
-							m_plugin.SetEnablePlugin(m_cfg, j, (enabledPluginsCount == 0) ? 2 : 1);
-						m_cfg.setBool(PLUGIN_DOMAIN, "source", (enabledPluginsCount == 0) ? true : false);
-					}
+					m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
+					for(j = 0; m_plugin.PluginExist(j); ++j)		/* opposite */
+						m_plugin.SetEnablePlugin(m_cfg, j, (enabledPluginsCount == 0) ? 2 : 1);
+					m_cfg.setBool(PLUGIN_DOMAIN, "source", (enabledPluginsCount == 0) ? true : false);
 				}
 				else if(source == "plugin")
 				{
-					if(show_plugin)
+					if(!m_cfg.getBool(PLUGIN_DOMAIN, "source"))
 					{
-						if(!m_cfg.getBool(PLUGIN_DOMAIN, "source"))
+						for(j = 0; m_plugin.PluginExist(j); ++j)		/* clear all */
+							m_plugin.SetEnablePlugin(m_cfg, j, 1);
+					}
+					magicNums.clear();
+					magicNums = m_source.getStrings(btn_selected, "magic", ',');
+					if(!magicNums.empty())
+					{
+						for(vector<string>::iterator itr = magicNums.begin(); itr != magicNums.end(); itr++)
 						{
-							for(j = 0; m_plugin.PluginExist(j); ++j)		/* clear all */
-								m_plugin.SetEnablePlugin(m_cfg, j, 1);
-						}
-						magicNums.clear();
-						magicNums = m_source.getStrings(btn_selected, "magic", ',');
-						if(!magicNums.empty())
-						{
-							for(vector<string>::iterator itr = magicNums.begin(); itr != magicNums.end(); itr++)
+							s8 exist = m_plugin.GetPluginPosition(strtoul(itr->c_str(), NULL, 16));
+							if(exist >= 0)
 							{
-								s8 exist = m_plugin.GetPluginPosition(strtoul(itr->c_str(), NULL, 16));
-								if(exist >= 0)
-								{
-									bool enabled = m_plugin.GetEnableStatus(m_cfg, strtoul(itr->c_str(), NULL, 16));
-									m_plugin.SetEnablePlugin(m_cfg, exist, enabled ? 1 : 2);
-									//break;
-								}
+								bool enabled = m_plugin.GetEnableStatus(m_cfg, strtoul(itr->c_str(), NULL, 16));
+								m_plugin.SetEnablePlugin(m_cfg, exist, enabled ? 1 : 2);
+								//break;
 							}
 						}
-						m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
-						m_cfg.setBool(PLUGIN_DOMAIN, "source", enabledPluginsCount > 0 ? true : false);
 					}
+					m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
+					m_cfg.setBool(PLUGIN_DOMAIN, "source", enabledPluginsCount > 0 ? true : false);
 				}
 			}
 		}
 		if(exitSource)
 		{
-			m_combined_view = false;
 			newSource = true;
 			break;
 		}
@@ -581,11 +531,6 @@ bool CMenu::_Source()
 		{
 			newSource = true;
 			_updateSourceBtns();
-		}
-		if(m_showtimer > 0)
-		{
-			if(--m_showtimer == 0)
-				m_btnMgr.hide(m_sourceLblNotice);
 		}
 	}
 	_hideSource(true);
@@ -641,7 +586,7 @@ bool CMenu::_shortCover(const char *magic)
 void CMenu::_setSrcOptions(void)
 {
 	m_catStartPage = m_source.getInt(btn_selected, "cat_page", 1);
-	int category = m_source.getInt(btn_selected, "category", 0);
+	u8 category = m_source.getInt(btn_selected, "category", 0);
 	if(category > 0)
 	{
 		m_cat.remove("GENERAL", "selected_categories");
@@ -713,11 +658,25 @@ void CMenu::_initSourceMenu()
 		m_sourceDir = fmt("%s/%s", m_sourceDir.c_str(), themeName);
 	
 	m_use_source = true;
+	/* get max source button # */
+	m_max_source_btn = 0;
+	const char *srcDomain = m_source.firstDomain().c_str();
+	while(1)
+	{
+		if(strlen(srcDomain) < 2)
+			break;
+		if(strrchr(srcDomain, '_') != NULL)
+		{
+			int srcBtnNumber = atoi(strrchr(srcDomain, '_') + 1);
+			if(srcBtnNumber > m_max_source_btn)
+				m_max_source_btn = srcBtnNumber;
+		}
+		srcDomain = m_source.nextDomain().c_str();
+	}
 	
 	_addUserLabels(m_sourceLblUser, ARRAY_SIZE(m_sourceLblUser), "SOURCE");
 	m_sourceBg = _texture("SOURCE/BG", "texture", theme.bg, false);
 	m_sourceLblTitle = _addTitle("SOURCE/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
-	m_sourceLblNotice = _addLabel("SOURCE/NOTICE", theme.btnFont, L"", 20, 400, 600, 56, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_TOP);
 	m_sourceLblPage = _addLabel("SOURCE/PAGE_BTN", theme.btnFont, L"", 68, 400, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_sourceBtnPageM = _addPicButton("SOURCE/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 20, 400, 48, 48);
 	m_sourceBtnPageP = _addPicButton("SOURCE/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 172, 400, 48, 48);
@@ -751,7 +710,6 @@ void CMenu::_initSourceMenu()
 		_setHideAnim(m_sourceBtnSource[i], fmt("SOURCE/SOURCE_BTN_%i", i), 0, 0, -2.f, 0.f);
 	}
 	_setHideAnim(m_sourceLblTitle, "SOURCE/TITLE", 0, 0, -2.f, 0.f);
-	_setHideAnim(m_sourceLblNotice, "SOURCE/NOTICE", 0, 0, 1.f, 0.f);
 	_setHideAnim(m_sourceLblPage, "SOURCE/PAGE_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_sourceBtnPageM, "SOURCE/PAGE_MINUS", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_sourceBtnPageP, "SOURCE/PAGE_PLUS", 0, 0, 1.f, -1.f);
@@ -765,7 +723,6 @@ void CMenu::_initSourceMenu()
 void CMenu::_textSource(void)
 {
 	m_btnMgr.setText(m_sourceLblTitle, _t("stup1", L"Select Source"));
-	m_btnMgr.setText(m_sourceLblNotice, _t("stup2", L"** DISABLED **"));
 	m_btnMgr.setText(m_sourceBtnBack, _t("cfg10", L"Back"));
 	m_btnMgr.setText(m_sourceBtnClear, _t("cat2", L"Clear"));
 }
