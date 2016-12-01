@@ -41,7 +41,7 @@ void CMenu::_about(bool help)
 			first = false;
 		}
 
-		if ((BTN_DOWN_PRESSED || BTN_DOWN_HELD) && !(m_thrdWorking && m_thrdStop) && thanks_th >thanks_h)
+		if((BTN_DOWN_PRESSED || BTN_DOWN_HELD) && thanks_th >thanks_h)
 		{
 			if((thanks_th - amount_of_skips * pixels_to_skip) >= thanks_h)
 			{
@@ -54,7 +54,7 @@ void CMenu::_about(bool help)
 				m_btnMgr.moveBy(m_aboutLblInfo, 0, -xtra_skips);
 			}
 		}
-		else if ((BTN_UP_PRESSED || BTN_UP_HELD) && !(m_thrdWorking && m_thrdStop))
+		else if((BTN_UP_PRESSED || BTN_UP_HELD))
 		{
 			if(xtra_skips > 0)
 			{

@@ -35,6 +35,7 @@ void CMenu::_hideGameSettings(bool instant)
 	m_btnMgr.hide(m_gameSettingsBtnPageP, instant);
 	m_btnMgr.hide(m_gameSettingsBtnBack, instant);
 	m_btnMgr.hide(m_gameSettingsLblTitle, instant);
+	//Wii & Channels
 	m_btnMgr.hide(m_gameSettingsLblManage, instant);
 	m_btnMgr.hide(m_gameSettingsBtnManage, instant);
 	m_btnMgr.hide(m_gameSettingsBtnCategoryMain, instant);
@@ -47,8 +48,6 @@ void CMenu::_hideGameSettings(bool instant)
 	m_btnMgr.hide(m_gameSettingsBtnVipatch, instant);
 	m_btnMgr.hide(m_gameSettingsLblCountryPatch, instant);
 	m_btnMgr.hide(m_gameSettingsBtnCountryPatch, instant);
-	m_btnMgr.hide(m_gameSettingsLblPrivateServer, instant);
-	m_btnMgr.hide(m_gameSettingsBtnPrivateServer, instant);
 	m_btnMgr.hide(m_gameSettingsLblPatchVidModes, instant);
 	m_btnMgr.hide(m_gameSettingsLblPatchVidModesVal, instant);
 	m_btnMgr.hide(m_gameSettingsBtnPatchVidModesM, instant);
@@ -57,21 +56,22 @@ void CMenu::_hideGameSettings(bool instant)
 	m_btnMgr.hide(m_gameSettingsLblAspectRatioVal, instant);
 	m_btnMgr.hide(m_gameSettingsBtnAspectRatioP, instant);
 	m_btnMgr.hide(m_gameSettingsBtnAspectRatioM, instant);
-	m_btnMgr.hide(m_gameSettingsLblEmulationVal, instant);
-	m_btnMgr.hide(m_gameSettingsLblEmulation, instant);
-	m_btnMgr.hide(m_gameSettingsBtnEmulationP, instant);
-	m_btnMgr.hide(m_gameSettingsBtnEmulationM, instant);
 	m_btnMgr.hide(m_gameSettingsLblGameIOS, instant);
 	m_btnMgr.hide(m_gameSettingsLblIOS, instant);
 	m_btnMgr.hide(m_gameSettingsBtnIOSP, instant);
 	m_btnMgr.hide(m_gameSettingsBtnIOSM, instant);
+	//
+	m_btnMgr.hide(m_gameSettingsLblEmulation, instant);
+	m_btnMgr.hide(m_gameSettingsLblEmulationVal, instant);
+	m_btnMgr.hide(m_gameSettingsBtnEmulationP, instant);
+	m_btnMgr.hide(m_gameSettingsBtnEmulationM, instant);
 	m_btnMgr.hide(m_gameSettingsLblExtractSave, instant);
 	m_btnMgr.hide(m_gameSettingsBtnExtractSave, instant);
 	m_btnMgr.hide(m_gameSettingsLblFlashSave, instant);
 	m_btnMgr.hide(m_gameSettingsBtnFlashSave, instant);
-	m_btnMgr.hide(m_gameSettingsLblApploader, instant);
-	m_btnMgr.hide(m_gameSettingsBtnApploader, instant);
-	//shared
+	m_btnMgr.hide(m_gameSettingsLblPrivateServer, instant);
+	m_btnMgr.hide(m_gameSettingsBtnPrivateServer, instant);
+	//GC, Wii, and Channels
 	m_btnMgr.hide(m_gameSettingsLblGameLanguage, instant);
 	m_btnMgr.hide(m_gameSettingsLblLanguage, instant);
 	m_btnMgr.hide(m_gameSettingsBtnLanguageP, instant);
@@ -111,7 +111,9 @@ void CMenu::_hideGameSettings(bool instant)
 	m_btnMgr.hide(m_gameSettingsBtnDeflicker, instant);
 	m_btnMgr.hide(m_gameSettingsLblArcade, instant);
 	m_btnMgr.hide(m_gameSettingsBtnArcade, instant);
-	//
+	// Channels only
+	m_btnMgr.hide(m_gameSettingsLblApploader, instant);
+	m_btnMgr.hide(m_gameSettingsBtnApploader, instant);
 	m_btnMgr.hide(m_gameSettingsLblCustom, instant);
 	m_btnMgr.hide(m_gameSettingsBtnCustom, instant);
 	m_btnMgr.hide(m_gameSettingsLblLaunchNK, instant);
@@ -448,7 +450,7 @@ void CMenu::_showGameSettings(void)
 	u32 maxpage = m_gameSettingsMaxPgs;
 
 	m_btnMgr.setText(m_gameSettingsLblPage, wfmt(L"%i / %i", page, maxpage));
-	m_btnMgr.setText(m_gameSettingsBtnOcarina, _optBoolToString(m_gcfg2.getOptBool(id, "cheat", 0)));// cheats default to 0 off
+	m_btnMgr.setText(m_gameSettingsBtnOcarina, _optBoolToString(m_gcfg2.getOptBool(id, "cheat", 0)));
 	m_btnMgr.setText(m_gameSettingsBtnLED, _optBoolToString(m_gcfg2.getOptBool(id, "led", 0)));
 	
 	i = min((u32)m_gcfg2.getInt(id, "debugger", 0), ARRAY_SIZE(CMenu::_debugger) - 1u);
@@ -458,12 +460,12 @@ void CMenu::_showGameSettings(void)
 	{
 		//widescreen is shared by devo and nintendont, in the future might seperate them
 		m_btnMgr.setText(m_gameSettingsLblWidescreen, _t("cfgg36", L"Widescreen Patch"));
-		m_btnMgr.setText(m_gameSettingsBtnWidescreen, _optBoolToString(m_gcfg2.getOptBool(id, "widescreen", m_cfg.getBool(GC_DOMAIN, "widescreen", 0))));
-		m_btnMgr.setText(m_gameSettingsBtnDevoMemcardEmu, _optBoolToString(m_gcfg2.getOptBool(id, "devo_memcard_emu", 0)));
-		m_btnMgr.setText(m_gameSettingsBtnUSB_HID, _optBoolToString(m_gcfg2.getOptBool(id, "USB_HID", m_cfg.getBool(GC_DOMAIN, "USB_HID", 0))));
-		m_btnMgr.setText(m_gameSettingsBtnNATIVE_CTL, _optBoolToString(m_gcfg2.getOptBool(id, "NATIVE_CTL", m_cfg.getBool(GC_DOMAIN, "NATIVE_CTL", 0))));
-		m_btnMgr.setText(m_gameSettingsBtnDeflicker, _optBoolToString(m_gcfg2.getOptBool(id, "Deflicker", m_cfg.getBool(GC_DOMAIN, "Deflicker", 0))));
-		m_btnMgr.setText(m_gameSettingsBtnArcade, _optBoolToString(m_gcfg2.getOptBool(id, "triforce_arcade", m_cfg.getBool(GC_DOMAIN, "triforce_arcade", 0))));
+		m_btnMgr.setText(m_gameSettingsBtnWidescreen, _optBoolToString(m_gcfg2.getOptBool(id, "widescreen", 0)));
+		m_btnMgr.setText(m_gameSettingsBtnDevoMemcardEmu, _optBoolToString(m_gcfg2.getOptBool(id, "devo_memcard_emu", 2)));
+		m_btnMgr.setText(m_gameSettingsBtnUSB_HID, _optBoolToString(m_gcfg2.getOptBool(id, "usb_hid", 2)));
+		m_btnMgr.setText(m_gameSettingsBtnNATIVE_CTL, _optBoolToString(m_gcfg2.getOptBool(id, "native_ctl", 2)));
+		m_btnMgr.setText(m_gameSettingsBtnDeflicker, _optBoolToString(m_gcfg2.getOptBool(id, "Deflicker", 0)));
+		m_btnMgr.setText(m_gameSettingsBtnArcade, _optBoolToString(m_gcfg2.getOptBool(id, "triforce_arcade", 0)));
 
 		i = min((u32)m_gcfg2.getInt(id, "video_mode", 0), ARRAY_SIZE(CMenu::_GCvideoModes) - 1u);
 		m_btnMgr.setText(m_gameSettingsLblVideo, _t(CMenu::_GCvideoModes[i].id, CMenu::_GCvideoModes[i].text));
@@ -474,12 +476,12 @@ void CMenu::_showGameSettings(void)
 		if(GCLoader == NINTENDONT)
 		{
 			m_btnMgr.setText(m_gameSettingsLblEmuMemCard, _t("cfgg47", L"Emulated MemCard"));
-			i = min((u32)m_gcfg2.getInt(id, "nin_memcard", 0), ARRAY_SIZE(CMenu::_NinEmuCard) - 1u);
+			i = min((u32)m_gcfg2.getInt(id, "emu_memcard", 0), ARRAY_SIZE(CMenu::_NinEmuCard) - 1u);
 			m_btnMgr.setText(m_gameSettingsLblEmuMemCard_Val, _t(CMenu::_NinEmuCard[i].id, CMenu::_NinEmuCard[i].text));
 			if(IsOnWiiU())
 			{
 				m_btnMgr.setText(m_gameSettingsLblWidescreen, _t("cfgg46", L"WiiU Widescreen"));
-				m_btnMgr.setText(m_gameSettingsBtnWidescreen, _optBoolToString(m_gcfg2.getOptBool(id, "wiiu_widescreen", m_cfg.getBool(GC_DOMAIN, "wiiu_widescreen", 0))));
+				m_btnMgr.setText(m_gameSettingsBtnWidescreen, _optBoolToString(m_gcfg2.getOptBool(id, "wiiu_widescreen", 0)));
 			}
 		}
 		
@@ -490,9 +492,9 @@ void CMenu::_showGameSettings(void)
 	{
 		m_btnMgr.setText(m_gameSettingsBtnVipatch, _optBoolToString(m_gcfg2.getOptBool(id, "vipatch", 0)));
 		m_btnMgr.setText(m_gameSettingsBtnCountryPatch, _optBoolToString(m_gcfg2.getOptBool(id, "country_patch", 0)));
-		m_btnMgr.setText(m_gameSettingsBtnPrivateServer, _optBoolToString(m_gcfg2.getOptBool(id, "private_server", m_cfg.getBool(WII_DOMAIN, "private_server", 0))));
+		m_btnMgr.setText(m_gameSettingsBtnPrivateServer, _optBoolToString(m_gcfg2.getOptBool(id, "private_server", 0)));
 		m_btnMgr.setText(m_gameSettingsBtnCustom, _optBoolToString(m_gcfg2.getOptBool(id, "custom", 0)));
-		m_btnMgr.setText(m_gameSettingsBtnLaunchNK, _optBoolToString(m_gcfg2.getOptBool(id, "useneek", m_cfg.getBool(CHANNEL_DOMAIN, "useneek", 0))));
+		m_btnMgr.setText(m_gameSettingsBtnLaunchNK, _optBoolToString(m_gcfg2.getOptBool(id, "useneek", 0)));
 		m_btnMgr.setText(m_gameSettingsBtnApploader, _optBoolToString(m_gcfg2.getOptBool(id, "apploader", 0)));
 		
 		i = min((u32)m_gcfg2.getInt(id, "video_mode", 0), ARRAY_SIZE(CMenu::_VideoModes) - 1u);
@@ -571,11 +573,7 @@ void CMenu::_gameSettings(void)
 				break;
 			else if(m_btnMgr.selected(m_gameSettingsBtnOcarina))
 			{
-				int intoption = loopNum(m_gcfg2.getBool(id, "cheat") + 1, 3);
-				if(intoption > 1)
-					m_gcfg2.remove(id, "cheat");
-				else
-					m_gcfg2.setOptBool(id, "cheat", intoption);
+				m_gcfg2.setBool(id, "cheat", !m_gcfg2.getBool(id, "cheat", 0));
 				_showGameSettings();
 			}
 			else if(m_btnMgr.selected(m_gameSettingsBtnVipatch))
@@ -602,11 +600,11 @@ void CMenu::_gameSettings(void)
 					error(_t("cfgg49", L"Neek2o Not Found!"));
 				else
 					m_gcfg2.setBool(id, "useneek", !m_gcfg2.getBool(id, "useneek", 0));
-					_showGameSettings();
+				_showGameSettings();
 			}
 			else if(m_btnMgr.selected(m_gameSettingsBtnDevoMemcardEmu))
 			{
-				m_gcfg2.setBool(id, "devo_memcard_emu", !m_gcfg2.getBool(id, "devo_memcard_emu", 0));
+				m_gcfg2.setOptBool(id, "devo_memcard_emu", loopNum(m_gcfg2.getOptBool(id, "devo_memcard_emu") + 1, 3));
 				_showGameSettings();
 			}
 			else if(m_btnMgr.selected(m_gameSettingsBtnWidescreen))
@@ -644,7 +642,7 @@ void CMenu::_gameSettings(void)
 			else if(m_btnMgr.selected(m_gameSettingsBtnEmuMemCard_P) || m_btnMgr.selected(m_gameSettingsBtnEmuMemCard_M))
 			{
 				s8 direction = m_btnMgr.selected(m_gameSettingsBtnEmuMemCard_P) ? 1 : -1;
-				m_gcfg2.setInt(id, "nin_memcard", (int)loopNum((u32)m_gcfg2.getInt(id, "nin_memcard", 2) + direction, ARRAY_SIZE(CMenu::_NinEmuCard)));
+				m_gcfg2.setInt(id, "emu_memcard", (int)loopNum((u32)m_gcfg2.getInt(id, "emu_memcard", 2) + direction, ARRAY_SIZE(CMenu::_NinEmuCard)));
 				_showGameSettings();
 			}
 			else if(m_btnMgr.selected(m_gameSettingsBtnGCLoader_P) || m_btnMgr.selected(m_gameSettingsBtnGCLoader_M))
@@ -726,7 +724,7 @@ void CMenu::_gameSettings(void)
 			}
 			else if(m_btnMgr.selected(m_gameSettingsBtnNATIVE_CTL))
 			{
-				m_gcfg2.setBool(id, "NATIVE_CTL", !m_gcfg2.getBool(id, "NATIVE_CTL", 0));
+				m_gcfg2.setOptBool(id, "native_ctl", loopNum(m_gcfg2.getOptBool(id, "native_ctl") + 1, 3));
 				_showGameSettings();
 			}	
 			else if(m_btnMgr.selected(m_gameSettingsBtnDeflicker))
@@ -736,7 +734,7 @@ void CMenu::_gameSettings(void)
 			}	
 			else if(m_btnMgr.selected(m_gameSettingsBtnUSB_HID))
 			{
-				m_gcfg2.setBool(id, "USB_HID", !m_gcfg2.getBool(id, "USB_HID", 0));
+				m_gcfg2.setOptBool(id, "usb_hid", loopNum(m_gcfg2.getOptBool(id, "usb_hid") + 1, 3));
 				_showGameSettings();
 			}
 			else if(m_btnMgr.selected(m_gameSettingsBtnArcade))
@@ -749,7 +747,7 @@ void CMenu::_gameSettings(void)
 				m_gcfg2.setBool(id, "private_server", !m_gcfg2.getBool(id, "private_server", 0));
 				_showGameSettings();
 			}
-			else if(m_btnMgr.selected(m_gameSettingsBtnCategoryMain) && !m_locked)
+			else if(m_btnMgr.selected(m_gameSettingsBtnCategoryMain))
 			{
 				_hideGameSettings();
 				_CategorySettings(true);

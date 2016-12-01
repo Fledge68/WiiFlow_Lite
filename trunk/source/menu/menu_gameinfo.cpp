@@ -26,7 +26,7 @@ void CMenu::_gameinfo(void)
 		_mainLoopCommon();
 		if(BTN_HOME_PRESSED || BTN_B_PRESSED)
 			break;
-		if ((BTN_DOWN_PRESSED || BTN_DOWN_HELD) && !(m_thrdWorking && m_thrdStop) && page == 2 && synopsis_th > synopsis_h)
+		if((BTN_DOWN_PRESSED || BTN_DOWN_HELD) && page == 2 && synopsis_th > synopsis_h)
 		{
 			if((synopsis_th - amount_of_skips * pixels_to_skip) >= synopsis_h)
 			{
@@ -39,7 +39,7 @@ void CMenu::_gameinfo(void)
 				m_btnMgr.moveBy(m_gameinfoLblSynopsis, 0, -xtra_skips);
 			}
 		}
-		else if ((BTN_UP_PRESSED || BTN_UP_HELD) && !(m_thrdWorking && m_thrdStop) && page == 2)
+		else if((BTN_UP_PRESSED || BTN_UP_HELD) && page == 2)
 		{
 			if(xtra_skips > 0)
 			{
@@ -52,7 +52,7 @@ void CMenu::_gameinfo(void)
 				amount_of_skips--;
 			}
 		}
-		else if (BTN_RIGHT_PRESSED && !(m_thrdWorking && m_thrdStop) && page == 1 && !gameinfo_Synopsis_w.empty())
+		else if(BTN_RIGHT_PRESSED && page == 1 && !gameinfo_Synopsis_w.empty())
 		{
 			page = 2;
 			amount_of_skips = 0;
@@ -86,7 +86,7 @@ void CMenu::_gameinfo(void)
 			m_btnMgr.getTotalHeight(m_gameinfoLblSynopsis, synopsis_th);
 			m_btnMgr.moveBy(m_gameinfoLblSynopsis, 0, -1);
 		}
-		else if (BTN_LEFT_PRESSED && !(m_thrdWorking && m_thrdStop))
+		else if(BTN_LEFT_PRESSED)
 		{
 			page = 1;
 			m_btnMgr.show(m_gameinfoLblID);

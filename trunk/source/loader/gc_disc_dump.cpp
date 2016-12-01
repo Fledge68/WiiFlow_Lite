@@ -150,6 +150,7 @@ s32 GCDump::__DiscWriteFile(FILE *f, u64 offset, u32 length, u8 *ReadBuffer)
 	while(length)
 	{
 		toread = min(length, gc_readsize);
+		mainMenu.update_pThread(toread);
 		s32 ret = __DiscReadRaw(ReadBuffer, offset, toread);
 		if (ret == 1)
 			memset(ReadBuffer, 0, gc_readsize);
@@ -160,7 +161,6 @@ s32 GCDump::__DiscWriteFile(FILE *f, u64 offset, u32 length, u8 *ReadBuffer)
 		offset += toread;
 		length -= toread;
 		gc_done += toread;
-		mainMenu.update_pThread(toread);
 	}
 	return wrote;
 }

@@ -11,10 +11,6 @@
 
 void CMenu::_hideWBFS(bool instant)
 {
-	m_btnMgr.hide(m_configLblPartitionName, instant);
-	m_btnMgr.hide(m_configLblPartition, instant);
-	m_btnMgr.hide(m_configBtnPartitionP, instant);
-	m_btnMgr.hide(m_configBtnPartitionM, instant);
 	m_btnMgr.hide(m_wbfsLblTitle, instant);
 	m_btnMgr.hide(m_wbfsPBar, instant);
 	m_btnMgr.hide(m_wbfsBtnGo, instant);
@@ -32,11 +28,6 @@ void CMenu::_showWBFS(CMenu::WBFS_OP op)
 	{
 		case WO_ADD_GAME:
 				m_btnMgr.setText(m_wbfsLblTitle, _t("wbfsop1", L"Install Game"));
-				m_btnMgr.setText(m_configLblPartition, upperCase(DeviceName[currentPartition]));
-				m_btnMgr.show(m_configLblPartitionName);
-				m_btnMgr.show(m_configLblPartition);
-				m_btnMgr.show(m_configBtnPartitionP);
-				m_btnMgr.show(m_configBtnPartitionM);
 				break;
 		case WO_REMOVE_GAME:
 				m_btnMgr.setText(m_wbfsLblTitle, _t("wbfsop2", L"Delete Game"));
@@ -135,6 +126,7 @@ int CMenu::_gameInstaller(void *obj)
 		LWP_MutexLock(m.m_mutex);
 		m._setThrdMsg(wfmt(m._fmt("wbfsop10", L"Not enough space: %lld blocks needed, %i available"), comp_size, free), 0.f);
 		LWP_MutexUnlock(m.m_mutex);
+		//m.m_thrdWorking = false;
 		ret = -1;
 	}
 	else
@@ -163,7 +155,7 @@ int CMenu::_GCgameInstaller()
 
 	bool skip = m_cfg.getBool(GC_DOMAIN, "skip_on_error", false);
 	bool comp = m_cfg.getBool(GC_DOMAIN, "compressed_dump", false);
-	bool wexf = m_cfg.getBool(GC_DOMAIN, "write_ex_files", true);
+	bool wexf = m_cfg.getBool(GC_DOMAIN, "write_ex_files", false);
 	bool alig = m_cfg.getBool(GC_DOMAIN, "force_32k_align_files", false);
 	u32 nretry = m_cfg.getUInt(GC_DOMAIN, "num_retries", 5);
 	u32 rsize = 1048576; //1MB
@@ -271,6 +263,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 	bool upd_plgin = false;
 	bool upd_chan = false;
 	bool out = false;
+	u8 game_type = TYPE_WII_GAME;
 	const dir_discHdr *CF_Hdr = CoverFlow.getHdr();
 	char cfPos[7];
 	cfPos[6] = '\0';
@@ -310,15 +303,10 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 				switch(op)
 				{
 					case WO_ADD_GAME:
-						MusicPlayer.Stop();
-						TempLoadIOS();
-						m_btnMgr.hide(m_configLblPartitionName, true);
-						m_btnMgr.hide(m_configLblPartition, true);
-						m_btnMgr.hide(m_configBtnPartitionP, true);
-						m_btnMgr.hide(m_configBtnPartitionM, true);
+						TempLoadIOS();// switch to cios if using ios 58
+						m_btnMgr.hide(m_wbfsBtnGo, true);
 						m_btnMgr.show(m_wbfsPBar, true);
 						m_btnMgr.setProgress(m_wbfsPBar, 0.f, true);
-						m_btnMgr.hide(m_wbfsBtnGo, true);
 						m_btnMgr.show(m_wbfsLblMessage, true);
 						m_btnMgr.setText(m_wbfsLblMessage, L"");
 						if (Disc_Wait() < 0)
@@ -335,6 +323,10 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						}
 						if (Disc_IsWii() == 0)
 						{
+							error(_t("wbfsoperr6", L"Install Wii game is broken, please use cleanrip."));
+							out = true;
+							break;
+							
 							Disc_ReadHeader(&wii_hdr);
 							memcpy(GameID, wii_hdr.id, 6);
 							if(_searchGamesByID(GameID))
@@ -343,9 +335,11 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 								out = true;
 								break;
 							}
+							game_type = TYPE_WII_GAME;
 							CoverFlow.clear();
 							strncpy(cfPos, GameID, 6);
 							m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wbfsop6", L"Installing [%s] %s..."), GameID, wii_hdr.title));
+							currentPartition = m_cfg.getInt(WII_DOMAIN, "partition", 0);
 							done = true;
 							upd_wii = true;
 							m_thrdWorking = true;
@@ -363,7 +357,10 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 								out = true;
 								break;
 							}
+							game_type = TYPE_GC_GAME;
+							CoverFlow.clear();
 							strncpy(cfPos, GameID, 6);
+							currentPartition = m_cfg.getInt(GC_DOMAIN, "partition", 0);
 							done = true;
 							upd_gc = true;
 							m_thrdWorking = true;
@@ -374,6 +371,11 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 							m_thrdMessageAdded = true;
 							_GCgameInstaller();
 							_stop_pThread();
+							/* restart inputs to resolve an issue */
+							Close_Inputs();
+							Open_Inputs();
+							for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
+								WPAD_SetVRes(chan, m_vid.width() + m_cursor[chan].width(), m_vid.height() + m_cursor[chan].height());
 						}
 						else
 						{
@@ -382,6 +384,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						}
 						break;
 					case WO_REMOVE_GAME:
+						done = true;
 						if(CF_Hdr->type == TYPE_GC_GAME)
 						{
 							char GC_Path[1024];
@@ -455,30 +458,28 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 				}
 				if(out)
 				{
-					TempLoadIOS(IOS_TYPE_NORMAL_IOS);
+					TempLoadIOS(IOS_TYPE_NORMAL_IOS);//restore to IOS 58 if not using cios
 					break;
 				}
-			}
-			else if((m_btnMgr.selected(m_configBtnPartitionP) || m_btnMgr.selected(m_configBtnPartitionM)))
-			{
-				s8 direction = m_btnMgr.selected(m_configBtnPartitionP) ? 1 : -1;
-				_setPartition(direction);
-				m_btnMgr.setText(m_configLblPartition, upperCase(DeviceName[currentPartition]));
 			}
 		}
 		if(m_thrdMessageAdded)
 		{
 			LockMutex lock(m_mutex);
 			m_thrdMessageAdded = false;
-			if (!m_thrdMessage.empty())
+			if(!m_thrdMessage.empty())
 				m_btnMgr.setText(m_wbfsLblDialog, m_thrdMessage);
 			m_btnMgr.setProgress(m_wbfsPBar, m_thrdProgress);
 			m_btnMgr.setText(m_wbfsLblMessage, wfmt(L"%i%%", (int)(m_thrdProgress * 100.f)));
 			if(!m_thrdWorking && op == WO_ADD_GAME)
 			{
 				WDVD_StopMotor();
-				MusicPlayer.Stop();
-				TempLoadIOS(IOS_TYPE_NORMAL_IOS);
+				TempLoadIOS(IOS_TYPE_NORMAL_IOS);//restore to IOS 58 if not using cios
+				/* restart inputs to resolve an issue */
+				Close_Inputs();
+				Open_Inputs();
+				for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
+					WPAD_SetVRes(chan, m_vid.width() + m_cursor[chan].width(), m_vid.height() + m_cursor[chan].height());
 			}
 		}
 	}
@@ -487,29 +488,20 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 	{
 		if(op == WO_ADD_GAME)
 		{
-			if(CF_Hdr->type == TYPE_WII_GAME)
+			if(game_type == TYPE_WII_GAME)
 				m_cfg.setString(WII_DOMAIN, "current_item", cfPos);
 			else
 				m_cfg.setString(GC_DOMAIN, "current_item", cfPos);
 		}
 		if(upd_gc)
-			//UpdateCache(COVERFLOW_GAMECUBE);
 			m_cfg.setBool(GC_DOMAIN, "update_cache", true);
 		if(upd_wii)
-			//UpdateCache(COVERFLOW_WII);
 			m_cfg.setBool(WII_DOMAIN, "update_cache", true);
 		if(upd_plgin)
-			//UpdateCache(COVERFLOW_PLUGIN);
 			m_cfg.setBool(PLUGIN_DOMAIN, "update_cache", true);
 		if(upd_chan)
-			//UpdateCache(COVERFLOW_CHANNEL);
 			m_cfg.setBool(CHANNEL_DOMAIN, "update_cache", true);
 		m_refreshGameList = true;
-		/* restart inputs to resolve an issue */
-		Close_Inputs();
-		Open_Inputs();
-		for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
-					WPAD_SetVRes(chan, m_vid.width() + m_cursor[chan].width(), m_vid.height() + m_cursor[chan].height());
 	}
 	return done;
 }
@@ -519,8 +511,8 @@ void CMenu::_initWBFSMenu()
 	_addUserLabels(m_wbfsLblUser, ARRAY_SIZE(m_wbfsLblUser), "WBFS");
 	m_wbfsBg = _texture("WBFS/BG", "texture", theme.bg, false);
 	m_wbfsLblTitle = _addTitle("WBFS/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
-	m_wbfsLblDialog = _addLabel("WBFS/DIALOG", theme.lblFont, L"", 20, 75, 600, 200, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_wbfsLblMessage = _addLabel("WBFS/MESSAGE", theme.lblFont, L"", 20, 300, 600, 100, theme.lblFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_TOP);
+	m_wbfsLblDialog = _addLabel("WBFS/DIALOG", theme.lblFont, L"", 40, 75, 600, 200, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_wbfsLblMessage = _addLabel("WBFS/MESSAGE", theme.lblFont, L"", 40, 300, 600, 100, theme.lblFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_TOP);
 	m_wbfsPBar = _addProgressBar("WBFS/PROGRESS_BAR", 40, 200, 560, 20);
 	m_wbfsBtnGo = _addButton("WBFS/GO_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
 

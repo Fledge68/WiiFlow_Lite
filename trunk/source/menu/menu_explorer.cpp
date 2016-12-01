@@ -47,6 +47,7 @@ char folderPath[MAX_FAT_PATH];
 char tmpPath[MAX_FAT_PATH];
 u8 explorer_partition = 0;
 bool folderExplorer = false;
+bool wadsOnly = false;
 
 void CMenu::_hideExplorer(bool instant)
 {
@@ -99,10 +100,16 @@ void CMenu::_Explorer(void)
 	while(!m_exit)
 	{
 		_mainLoopCommon();
-		if(BTN_HOME_PRESSED || BTN_B_PRESSED)
+		if(BTN_B_PRESSED)
 		{
 			memset(folderPath, 0, MAX_FAT_PATH);
 			break;
+		}
+		else if(BTN_HOME_PRESSED)
+		{
+			memset(dir, 0, MAX_FAT_PATH);
+			memset(folderPath, 0, MAX_FAT_PATH);
+			_refreshExplorer();
 		}
 		else if(BTN_PLUS_PRESSED || BTN_RIGHT_PRESSED)
 		{
@@ -366,7 +373,11 @@ void CMenu::_refreshExplorer(s8 direction)
 				if(pent->d_type == DT_DIR)
 					dirs++;
 				else if(pent->d_type == DT_REG)
-					files++;
+				{
+					const char *fileType = strrchr(pent->d_name, '.');
+					if(!wadsOnly || (fileType != NULL && strcasecmp(fileType, ".wad") == 0))
+						files++;
+				}
 			}
 			u32 pos = 0;
 			if(elements != NULL)
@@ -397,8 +408,13 @@ void CMenu::_refreshExplorer(s8 direction)
 						continue;
 					if(pent->d_type == DT_REG)
 					{
-						memcpy(elements[pos].name, pent->d_name, NAME_MAX);
-						pos++;
+						// here we will check pent->d_name to make sure it's a wad file and add it if it is
+						const char *fileType = strrchr(pent->d_name, '.');
+						if(!wadsOnly || (fileType != NULL && strcasecmp(fileType, ".wad") == 0))
+						{
+							memcpy(elements[pos].name, pent->d_name, NAME_MAX);
+							pos++;
+						}
 					}
 				}
 				std::sort(elements+dirs, elements+pos, list_element_cmp);
@@ -443,4 +459,11 @@ const char *CMenu::_FolderExplorer(const char *startPath)
 	if(strrchr(folderPath, '/') != NULL)
 		*strrchr(folderPath, '/') = '\0';
 	return folderPath;
+}
+
+void CMenu::_wadExplorer(void)
+{
+	wadsOnly = true;
+	_Explorer();
+	wadsOnly = false;
 }

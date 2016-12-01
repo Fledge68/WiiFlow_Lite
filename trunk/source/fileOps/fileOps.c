@@ -388,10 +388,66 @@ bool fsop_FolderExist(const char *path)
 	return false;
 }
 
-void fsop_MakeFolder(const char *path)
+/*void fsop_MakeFolder(const char *path)
 {
 	if(fsop_FolderExist(path))
 		return;
 	//gprintf("Folder path to create: %s\n", path);
 	mkdir(path, S_IREAD | S_IWRITE);
+}*/
+
+bool fsop_MakeFolder(const char *fullpath)
+{
+	if(!fullpath)
+		return false;
+
+	bool result  = false;
+
+	char dirnoslash[strlen(fullpath)+1];
+	strcpy(dirnoslash, fullpath);
+
+	int pos = strlen(dirnoslash)-1;
+	while(dirnoslash[pos] == '/')
+	{
+		dirnoslash[pos] = '\0';
+		pos--;
+	}
+
+	if(fsop_FolderExist(dirnoslash))
+	{
+		return true;
+	}
+	else
+	{
+		char parentpath[strlen(dirnoslash)+2];
+		strcpy(parentpath, dirnoslash);
+		char * ptr = strrchr(parentpath, '/');
+
+		if(!ptr)
+		{
+			//!Device root directory (must be with '/')
+			strcat(parentpath, "/");
+			struct stat filestat;
+			if (stat(parentpath, &filestat) == 0)
+				return true;
+
+			return false;
+		}
+
+		ptr++;
+		ptr[0] = '\0';
+
+		result = fsop_MakeFolder(parentpath);
+	}
+
+	if(!result)
+		return false;
+
+	if (mkdir(dirnoslash, 0777) == -1)
+	{
+		return false;
+	}
+
+	return true;
 }
+
