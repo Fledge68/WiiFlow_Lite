@@ -26,6 +26,7 @@ void CMenu::error(const wstringEx &msg)
 	_hideGameInfo();
 	_hideCheatDownload();
 	_hideGameSettings();
+	_hideSource();
 	_hideWaitMessage();
 	m_btnMgr.setText(m_errorLblMessage, msg, true);
 	_showError();

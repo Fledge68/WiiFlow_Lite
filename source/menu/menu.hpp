@@ -51,6 +51,7 @@ public:
 private:
 	u8 m_prev_view;
 	u8 m_current_view;
+	u8 m_source_cnt;
 	u8 enabledPluginsCount;
 	u8 m_catStartPage;
 	bool m_clearCats;
@@ -265,8 +266,10 @@ private:
 	s16 m_config3LblGCLoader;
 	s16 m_config3BtnGCLoaderP;
 	s16 m_config3BtnGCLoaderM;
-	s16 m_config3LblOcarina;
-	s16 m_config3BtnOcarina;
+	s16 m_config3LblChannelsType;
+	s16 m_config3LblChannelsTypeVal;
+	s16 m_config3BtnChannelsTypeP;
+	s16 m_config3BtnChannelsTypeM;
 	s16 m_config3LblUser[4];
 	
 	s16 m_config4LblReturnTo;
@@ -953,6 +956,7 @@ private:
 	void _hideGameInfo(bool instant = false);
 	void _hideCheatDownload(bool instant = false);
 	void _hideNandEmu(bool instant = false);
+	void _hideNandEmuPg();
 	void _hideHome(bool instant = false);
 	void _hideExitTo(bool instant = false);
 	void _hideCoverBanner(bool instant = false);
@@ -998,7 +1002,6 @@ private:
 	void _setSrcOptions(void);
 	bool _sideCover(const char *magic);
 	bool _shortCover(const char *magic);
-	void _clearSources(void);
 	void _updateSourceBtns(void);
 	void _updatePluginText(void);
 	void _updatePluginCheckboxes(void);
@@ -1045,6 +1048,7 @@ private:
 	void _CoverBanner(void);
 	void _Explorer(void);
 	const char *_FolderExplorer(const char *startPath);
+	void _wadExplorer(void);
 	void _Wad(const char *wad_path = NULL);
 	void _CheatSettings();
 	bool _Source();
@@ -1162,6 +1166,7 @@ private:
 	bool _checkSave(string id, bool nand);
 	bool _TestEmuNand(int epart, const char *path, bool indept);
 	void _checkEmuNandSettings(bool savesnand);
+	void _listEmuNands(const char *path, vector<string> &emuNands);
 
 	static u32 _downloadCheatFileAsync(void *obj);
 	static u32 _downloadBannerAsync(void *obj);
@@ -1174,27 +1179,29 @@ private:
 	static void _load_installed_cioses();
 
 	struct SOption { const char id[10]; const wchar_t text[16]; };
-	static const SOption _languages[11];
 
 	static const SOption _GlobalVideoModes[6];
 	static const SOption _VideoModes[7];
+	static const SOption _languages[11];
 	
 	static const SOption _GlobalGCvideoModes[8];
 	static const SOption _GlobalGClanguages[7];
 	static const SOption _GCvideoModes[9];
 	static const SOption _GClanguages[8];
+	static const SOption _GlobalGCLoaders[2];
+	static const SOption _GCLoader[3];
 
+	static const SOption _ChannelsType[3];
 	static const SOption _NandEmu[2];
 	static const SOption _SaveEmu[5];
 	static const SOption _GlobalSaveEmu[4];
 	static const SOption _AspectRatio[3];
 	static const SOption _NinEmuCard[5];
-	static const SOption _GlobalGCLoaders[2];
-	static const SOption _GCLoader[3];
 	static const SOption _vidModePatch[4];
 	static const SOption _debugger[3];
 	static const SOption _hooktype[8];
 	static const SOption _exitTo[5];
+	
 	static map<u8, u8> _installed_cios;
 	typedef map<u8, u8>::iterator CIOSItr;
 	static int _version[9];

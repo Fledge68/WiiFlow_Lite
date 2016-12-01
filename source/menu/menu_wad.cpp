@@ -257,10 +257,19 @@ int installWad(const char *path)
 	return hash_errors;
 }
 
-s16 m_wadBtnInstall;
 s16 m_wadLblTitle;
 s16 m_wadLblDialog;
+s16 m_wadLblNandSelect;
+s16 m_wadLblNandSelectVal;
+s16 m_wadBtnNandSelectM;
+s16 m_wadBtnNandSelectP;
+s16 m_wadBtnInstall;
 s16 m_wadLblUser[4];
+
+static inline int loopNum(int i, int s)
+{
+	return (i + s) % s;
+}
 
 void CMenu::_showWad()
 {
@@ -268,13 +277,13 @@ void CMenu::_showWad()
 	m_btnMgr.show(m_wadBtnInstall);
 	m_btnMgr.show(m_wadLblTitle);
 	m_btnMgr.show(m_wadLblDialog);
-	/* partition selection */
+	/* emuNAND selection */
 	if(mios == false)
 	{
-		m_btnMgr.show(m_configLblPartitionName);
-		m_btnMgr.show(m_configLblPartition);
-		m_btnMgr.show(m_configBtnPartitionP);
-		m_btnMgr.show(m_configBtnPartitionM);
+		m_btnMgr.show(m_wadLblNandSelect);
+		m_btnMgr.show(m_wadLblNandSelectVal);
+		m_btnMgr.show(m_wadBtnNandSelectP);
+		m_btnMgr.show(m_wadBtnNandSelectM);
 	}
 
 	for(u8 i = 0; i < ARRAY_SIZE(m_wadLblUser); ++i)
@@ -287,13 +296,13 @@ void CMenu::_hideWad(bool instant)
 	m_btnMgr.hide(m_wadBtnInstall, instant);
 	m_btnMgr.hide(m_wadLblTitle, instant);
 	m_btnMgr.hide(m_wadLblDialog, instant);
-	/* partition selection */
+	/* emuNAND selection */
 	if(mios == false)
 	{
-		m_btnMgr.hide(m_configLblPartitionName);
-		m_btnMgr.hide(m_configLblPartition);
-		m_btnMgr.hide(m_configBtnPartitionP);
-		m_btnMgr.hide(m_configBtnPartitionM);
+		m_btnMgr.hide(m_wadLblNandSelect, instant);
+		m_btnMgr.hide(m_wadLblNandSelectVal, instant);
+		m_btnMgr.hide(m_wadBtnNandSelectP, instant);
+		m_btnMgr.hide(m_wadBtnNandSelectM, instant);
 	}
 
 	for(u8 i = 0; i < ARRAY_SIZE(m_wadLblUser); ++i)
@@ -426,9 +435,22 @@ void CMenu::_Wad(const char *wad_path)
 		}
 	}
 
-	u8 part = currentPartition;
-	m_btnMgr.setText(m_wadLblDialog, wfmt(_fmt("wad3", L"Selected %s, after the installation you return to the explorer."), (strrchr(wad_path, '/')+1)));
-	m_btnMgr.setText(m_configLblPartition, upperCase(DeviceName[currentPartition]));
+	vector<string> emuNands;
+	string emuNand = m_cfg.getString(CHANNEL_DOMAIN, "current_emunand");
+	int emuPart = m_cfg.getInt(CHANNEL_DOMAIN, "partition");
+	_listEmuNands(fmt("%s:/%s", DeviceName[emuPart], EMU_NANDS_DIR), emuNands);
+	int curEmuNand = 0;
+	for(u8 i = 0; i < emuNands.size(); ++i)
+	{
+		if(emuNands[i] == emuNand)
+		{
+			curEmuNand = i;
+			break;
+		}
+	}
+	
+	m_btnMgr.setText(m_wadLblDialog, wfmt(_fmt("wad7", L"Ready to install %s\nChoose emuNAND and then click Go."), (strrchr(wad_path, '/')+1)));
+	m_btnMgr.setText(m_wadLblNandSelectVal, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand"));
 	_showWad();
 
 	while(!m_exit)
@@ -463,16 +485,21 @@ void CMenu::_Wad(const char *wad_path)
 				else
 					m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wad6", L"Installation finished with %i hash fails."), result));
 			}
-			else if((m_btnMgr.selected(m_configBtnPartitionP) || m_btnMgr.selected(m_configBtnPartitionM)))
+			else if(BTN_A_PRESSED && (m_btnMgr.selected(m_wadBtnNandSelectP) || m_btnMgr.selected(m_wadBtnNandSelectM)))
 			{
-				s8 direction = m_btnMgr.selected(m_configBtnPartitionP) ? 1 : -1;
-				_setPartition(direction);
-				m_btnMgr.setText(m_configLblPartition, upperCase(DeviceName[currentPartition]));
+				s8 direction = m_btnMgr.selected(m_wadBtnNandSelectP) ? 1 : -1;
+				curEmuNand = loopNum(curEmuNand + direction, emuNands.size());
+				m_cfg.setString(CHANNEL_DOMAIN, "current_emunand", emuNands[curEmuNand]);
+				m_btnMgr.setText(m_wadLblNandSelectVal, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand"));
 			}
 		}
-		
 	}
-	currentPartition = part;
+	if(m_cfg.getString(CHANNEL_DOMAIN, "current_emunand") == emuNand)
+	{
+		m_refreshGameList = true;
+		m_cfg.setBool(CHANNEL_DOMAIN, "update_cache", true);
+	}
+	m_cfg.setString(CHANNEL_DOMAIN, "current_emunand", emuNand);//restore it
 	_hideWad();
 	/* onscreen message might be onscreen still */
 	m_btnMgr.hide(m_wbfsLblMessage);
@@ -487,10 +514,18 @@ void CMenu::_initWad()
 	m_wadBg = _texture("WAD/BG", "texture", theme.bg, false);
 	m_wadLblTitle = _addTitle("WAD/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 	m_wadLblDialog = _addLabel("WAD/DIALOG", theme.lblFont, L"", 20, 75, 600, 200, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_wadLblNandSelect = _addLabel("WAD/NAND_SELECT", theme.lblFont, L"", 20, 245, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_wadLblNandSelectVal = _addLabel("WAD/NAND_SELECT_BTN", theme.btnFont, L"", 468, 250, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_wadBtnNandSelectM = _addPicButton("WAD/NAND_SELECT_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 420, 250, 48, 48);
+	m_wadBtnNandSelectP = _addPicButton("WAD/NAND_SELECT_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 572, 250, 48, 48);
 	m_wadBtnInstall = _addButton("WAD/INSTALL_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
 
 	_setHideAnim(m_wadLblTitle, "WAD/TITLE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_wadLblDialog, "WAD/DIALOG", 0, 0, -2.f, 0.f);
+	_setHideAnim(m_wadLblNandSelect, "WAD/NAND_SELECT", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_wadLblNandSelectVal, "WAD/NAND_SELECT_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_wadBtnNandSelectM, "WAD/NAND_SELECT_MINUS", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_wadBtnNandSelectP, "WAD/NAND_SELECT_PLUS", -50, 0, 1.f, 0.f);
 	_setHideAnim(m_wadBtnInstall, "WAD/INSTALL_BTN", 0, 0, 1.f, -1.f);
 
 	_hideWad(true);
@@ -500,5 +535,6 @@ void CMenu::_initWad()
 void CMenu::_textWad()
 {
 	m_btnMgr.setText(m_wadLblTitle, _t("wad1", L"Install WAD"));
+	m_btnMgr.setText(m_wadLblNandSelect, _t("cfgne37", L"Select NAND"));
 	m_btnMgr.setText(m_wadBtnInstall, _t("wad2", L"Go"));
 }

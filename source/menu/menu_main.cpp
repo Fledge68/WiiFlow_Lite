@@ -107,32 +107,40 @@ void CMenu::_showCF(bool refreshList)
 	wstringEx Pth;
 	if(m_gameList.empty())
 	{
-		switch(m_current_view)
+		if(m_source_cnt > 1)
 		{
-			case COVERFLOW_WII:
-				Msg = _t("main2", L"No games found in ");
-				Pth = wstringEx(fmt(wii_games_dir, DeviceName[currentPartition]));
-				break;
-			case COVERFLOW_GAMECUBE:
-				Msg = _t("main2", L"No games found in ");
-				Pth = wstringEx(fmt(gc_games_dir, DeviceName[currentPartition]));
-				break;
-			case COVERFLOW_CHANNEL:
-				Msg = _t("main3", L"No titles found in ");
-				Pth = wstringEx(fmt("%s:/%s/%s", DeviceName[currentPartition], EMU_NANDS_DIR, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand").c_str()));
-				break;
-			case COVERFLOW_HOMEBREW:
-				Msg = _t("main4", L"No apps found in ");
-				Pth = wstringEx(fmt(HOMEBREW_DIR, DeviceName[currentPartition]));
-				break;
-			case COVERFLOW_PLUGIN:
-				m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
-				if(enabledPluginsCount == 0)
-					Msg = _t("main6", L"No plugins selected.");
-				else
-					Msg = _t("main5", L"No roms/items found.");
-				Pth = "";
-				break;
+			Msg = _t("main8", L"game list empty!");
+			Pth = "";
+		}
+		else
+		{
+			switch(m_current_view)
+			{
+				case COVERFLOW_WII:
+					Msg = _t("main2", L"No games found in ");
+					Pth = wstringEx(fmt(wii_games_dir, DeviceName[currentPartition]));
+					break;
+				case COVERFLOW_GAMECUBE:
+					Msg = _t("main2", L"No games found in ");
+					Pth = wstringEx(fmt(gc_games_dir, DeviceName[currentPartition]));
+					break;
+				case COVERFLOW_CHANNEL:
+					Msg = _t("main3", L"No titles found in ");
+					Pth = wstringEx(fmt("%s:/%s/%s", DeviceName[currentPartition], EMU_NANDS_DIR, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand").c_str()));
+					break;
+				case COVERFLOW_HOMEBREW:
+					Msg = _t("main4", L"No apps found in ");
+					Pth = wstringEx(fmt(HOMEBREW_DIR, DeviceName[currentPartition]));
+					break;
+				case COVERFLOW_PLUGIN:
+					m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
+					if(enabledPluginsCount == 0)
+						Msg = _t("main6", L"No plugins selected.");
+					else
+						Msg = _t("main5", L"No roms/items found.");
+					Pth = "";
+					break;
+			}
 		}
 		Msg.append(Pth);
 		m_btnMgr.setText(m_mainLblMessage, Msg);
@@ -213,45 +221,21 @@ int CMenu::main(void)
 	m_reload = false;
 	u32 disc_check = 0;
 
-	u8 sourceCount = 0;
-	if(m_cfg.getBool(WII_DOMAIN, "source", false))
-	{
-		sourceCount++;
-		m_current_view = COVERFLOW_WII;
-	}
-	if(m_cfg.getBool(GC_DOMAIN, "source", false))
-	{
-		sourceCount++;
-		m_current_view = COVERFLOW_GAMECUBE;
-	}
-	if(m_cfg.getBool(CHANNEL_DOMAIN, "source", false))
-	{
-		sourceCount++;
-		m_current_view = COVERFLOW_CHANNEL;
-	}
-	if(m_cfg.getBool(HOMEBREW_DOMAIN, "source", false))
-	{
-		sourceCount++;
-		m_current_view = COVERFLOW_HOMEBREW;
-	}
-	if(m_cfg.getBool(PLUGIN_DOMAIN, "source", false))
-	{
-		sourceCount++;
-		m_current_view = COVERFLOW_PLUGIN;
-	}
-	if(sourceCount > 1)
-	{
-		m_current_view = COVERFLOW_MAX;
-	}
-	if(sourceCount == 0 || m_current_view == COVERFLOW_HOMEBREW)
+	m_current_view = m_cfg.getUInt("GENERAL", "sources", COVERFLOW_WII);
+	m_source_cnt = 0;
+	for(u8 i = 1; i < 16; i <<= 1)//not including coverflow_homebrew
+		if(m_current_view & i)
+			m_source_cnt++;
+			
+	if(m_source_cnt == 0 || m_current_view == COVERFLOW_HOMEBREW)
 	{
 		m_current_view = COVERFLOW_WII;
-		m_cfg.setBool(HOMEBREW_DOMAIN, "source", false);
-		m_cfg.setBool(WII_DOMAIN, "source", true);
+		m_cfg.setUInt("GENERAL", "sources", m_current_view);
+		m_source_cnt++;
 	}
 	
 	m_catStartPage = m_cfg.getInt("GENERAL", "cat_startpage", 1);
-	if(m_current_view != COVERFLOW_MAX)
+	if(m_source_cnt == 1)
 		m_cfg.remove("GENERAL", "cat_startpage");
 	
 	if(m_cfg.getBool("GENERAL", "update_cache", false))
@@ -376,14 +360,11 @@ int CMenu::main(void)
 					m_current_view = show_channel ? COVERFLOW_CHANNEL : (show_plugin ? COVERFLOW_PLUGIN : COVERFLOW_WII);
 				else if(m_current_view == COVERFLOW_CHANNEL)
 					m_current_view = show_plugin ? COVERFLOW_PLUGIN : COVERFLOW_WII;
-				else if(m_current_view == COVERFLOW_PLUGIN || m_current_view == COVERFLOW_MAX)
+				else if(m_current_view == COVERFLOW_PLUGIN || m_source_cnt > 1)
 					m_current_view = COVERFLOW_WII;
-				_clearSources();
-				m_cfg.setBool(_domainFromView(), "source", true);
+				m_source_cnt = 1;
+				m_cfg.setUInt("GENERAL", "sources", m_current_view);
 				m_catStartPage = 1;
-				if(m_current_view == COVERFLOW_CHANNEL 
-					&& !m_cfg.getBool(CHANNEL_DOMAIN, "emu_nand") && !m_cfg.getBool(CHANNEL_DOMAIN, "real_nand"))
-						m_cfg.setBool(CHANNEL_DOMAIN, "real_nand", true);
 				_showCF(true);
 			}
 			else if(m_btnMgr.selected(m_mainBtnConfig))
@@ -399,11 +380,21 @@ int CMenu::main(void)
 					bUsed = true;
 				_showMain();
 			}
-			else if(m_btnMgr.selected(m_mainBtnHomebrew) && (!m_locked || !m_cfg.getBool(HOMEBREW_DOMAIN, "parental", false)))
+			else if(m_btnMgr.selected(m_mainBtnHomebrew))
 			{
-				m_prev_view = m_current_view;
-				m_current_view = COVERFLOW_HOMEBREW;
-				_showCF(true);
+				if(m_locked && m_cfg.getBool(HOMEBREW_DOMAIN, "parental", false))
+				{
+					error(_t("errgame15", L"WiiFlow locked! Unlock WiiFlow to use this feature."));
+					_showMain();
+				}
+				else
+				{
+					m_prev_view = m_current_view;
+					m_current_view = COVERFLOW_HOMEBREW;
+					_showCF(true);
+				}
+				if(BTN_B_HELD)
+					bUsed = true;
 			}
 			else if(m_btnMgr.selected(m_mainBtnDVD))
 			{
@@ -448,8 +439,8 @@ int CMenu::main(void)
 						bUsed = true;
 					CoverFlow.cancel();
 					if(m_refreshGameList)
-						_initCF();
-					//_showMain(m_refreshGameList);
+						//_initCF();
+						_showCF(m_refreshGameList);
 				}
 			}
 		}
@@ -465,25 +456,6 @@ int CMenu::main(void)
 				_setBg(m_mainBg, m_mainBgLQ);
 				if(m_refreshGameList)
 					_initCF();
-			}
-			/* switch channels type to show */
-			else if(m_btnMgr.selected(m_mainBtnConfig) && m_current_view == COVERFLOW_CHANNEL)
-			{
-				bUsed = true;
-				if(m_cfg.getBool(CHANNEL_DOMAIN, "real_nand"))
-				{
-					if(m_cfg.getBool(CHANNEL_DOMAIN, "emu_nand"))
-						m_cfg.setBool(CHANNEL_DOMAIN, "real_nand", false);// shows emunand
-					else
-						m_cfg.setBool(CHANNEL_DOMAIN, "emu_nand", true);// shows both
-				}
-				else //if(m_cfg.getBool(CHANNEL_DOMAIN, "emu_nand")) doesn't matter
-				{
-					m_cfg.setBool(CHANNEL_DOMAIN, "real_nand", true);
-					m_cfg.setBool(CHANNEL_DOMAIN, "emu_nand", false);// show real
-				}
-				_showCF(true);
-				
 			}
 			else if(m_btnMgr.selected(m_mainBtnNext) || m_btnMgr.selected(m_mainBtnPrev))
 			{
@@ -592,13 +564,14 @@ int CMenu::main(void)
 				bUsed = true;
 				MusicPlayer.Next();
 			}
-			else if(BTN_PLUS_PRESSED && !m_locked  && !m_sourceflow && m_current_view < 3)
+			/* change sorting with btn B and + */
+			else if(BTN_PLUS_PRESSED && !m_locked  && !m_sourceflow && m_current_view < 8)
 			{
 				bUsed = true;
 				u32 sort = 0;
 				sort = loopNum((m_cfg.getInt(domain, "sort", 0)) + 1, SORT_MAX);
-				if((m_current_view == COVERFLOW_HOMEBREW || m_current_view == COVERFLOW_PLUGIN) && sort > SORT_LASTPLAYED)
-					sort = SORT_ALPHA;
+				//if((m_current_view == COVERFLOW_HOMEBREW || m_current_view == COVERFLOW_PLUGIN) && sort > SORT_LASTPLAYED)
+				//	sort = SORT_ALPHA;
 				m_cfg.setInt(domain, "sort", sort);
 				_initCF();
 				wstringEx curSort ;
@@ -678,6 +651,16 @@ int CMenu::main(void)
 		{
 			switch(m_current_view)
 			{
+				case COVERFLOW_WII:
+					if(show_gamecube)
+						m_btnMgr.show(m_mainBtnGamecube);
+					else if(show_channel)
+						m_btnMgr.show(m_mainBtnChannel);
+					else if(show_plugin)
+						m_btnMgr.show(m_mainBtnPlugin);
+					else
+						m_btnMgr.show(m_mainBtnWii);
+					break;
 				case COVERFLOW_GAMECUBE:
 					if(show_channel)
 						m_btnMgr.show(m_mainBtnChannel);
@@ -692,20 +675,9 @@ int CMenu::main(void)
 					else
 						m_btnMgr.show(m_mainBtnWii);
 					break;
-				case COVERFLOW_PLUGIN:
-				case COVERFLOW_HOMEBREW:
-				case COVERFLOW_MAX:
+				default:
 					m_btnMgr.show(m_mainBtnWii);
 					break;
-				default:
-					if(show_gamecube)
-						m_btnMgr.show(m_mainBtnGamecube);
-					else if(show_channel)
-						m_btnMgr.show(m_mainBtnChannel);
-					else if(show_plugin)
-						m_btnMgr.show(m_mainBtnPlugin);
-					else
-						m_btnMgr.show(m_mainBtnWii);
 			}
 			m_btnMgr.show(m_mainLblUser[2]);
 			m_btnMgr.show(m_mainLblUser[3]);
@@ -993,7 +965,7 @@ wstringEx CMenu::_getNoticeTranslation(int sorting, wstringEx curLetter)
 
 void CMenu::_setPartition(s8 direction)
 {
-	if((m_current_view == COVERFLOW_CHANNEL && neek2o()) || m_current_view == COVERFLOW_MAX)
+	if((m_current_view == COVERFLOW_CHANNEL && neek2o()) || (m_source_cnt > 1 && !m_emuSaveNand))
 		return;
 	int FS_Type = 0;
 	/* change partition if direction is not zero */

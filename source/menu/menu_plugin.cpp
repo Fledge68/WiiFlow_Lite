@@ -84,7 +84,7 @@ void CMenu::_updatePluginCheckboxes(void)
 	u32 IteratorHelp = (Plugin_curPage - 1) * 10;
 	for(u8 i = 1; i < min(IteratorHelp+10, (u32)m_max_plugins)-IteratorHelp+1; ++i)
 	{
-		if(EnabledPlugins.size() == 0 || EnabledPlugins.at(i+IteratorHelp-1) == true)
+		if(m_current_view == COVERFLOW_PLUGIN && (EnabledPlugins.size() == 0 || EnabledPlugins.at(i+IteratorHelp-1) == true))
 			m_pluginBtn[i] = m_pluginBtnCats[i];
 		else
 			m_pluginBtn[i] = m_pluginBtnCat[i];
@@ -145,6 +145,12 @@ void CMenu::_PluginSettings()
 				if(m_btnMgr.selected(m_pluginBtn[i]))
 				{
 					m_refreshGameList = true;
+					if(m_current_view != COVERFLOW_PLUGIN)
+					{
+						for(u8 j = 0; m_plugin.PluginExist(j); j++)
+							m_plugin.SetEnablePlugin(m_cfg, j, 1);
+						m_current_view = COVERFLOW_PLUGIN;
+					}
 					if(i == 0)
 					{
 						m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
@@ -161,12 +167,13 @@ void CMenu::_PluginSettings()
 	}
 	_hidePluginSettings();
 	m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
-	if(m_refreshGameList || (m_current_view != COVERFLOW_PLUGIN && enabledPluginsCount > 0))
+	if(m_refreshGameList && enabledPluginsCount > 0)
 	{
-		m_current_view = COVERFLOW_PLUGIN;
-		_clearSources();
-		m_cfg.setBool(_domainFromView(), "source", true);
+		m_cfg.setUInt("GENERAL", "sources", m_current_view);
+		m_source_cnt = 1;
 	}
+	else
+		m_current_view = m_cfg.getUInt("GENERAL", "sources");
 }
 
 void CMenu::_initPluginSettingsMenu()

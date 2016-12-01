@@ -28,7 +28,7 @@ volatile bool networkInit = false;
 int main(int argc, char **argv)
 {
 	MEM_init(); //Inits both mem1lo and mem2
-	mainIOS = DOL_MAIN_IOS;
+	mainIOS = DOL_MAIN_IOS;// 249
 	__exception_setreload(10);
 	Gecko_Init(); //USB Gecko and SD/WiFi buffer
 	gprintf(" \nWelcome to %s!\nThis is the debug output.\n", VERSION_STRING.c_str());

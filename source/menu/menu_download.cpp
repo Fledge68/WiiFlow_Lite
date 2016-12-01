@@ -305,7 +305,7 @@ void CMenu::_showDownload(void)
 	_setBg(m_downloadBg, m_downloadBg);
 	m_btnMgr.show(m_downloadLblGameTDB);
 	m_btnMgr.show(m_downloadLblTitle);
-	m_btnMgr.show(m_downloadBtnCancel);
+	m_btnMgr.show(m_downloadBtnBack);
 	m_btnMgr.show(m_downloadLblCovers);
 	m_btnMgr.show(m_downloadBtnAll);
 	m_btnMgr.show(m_downloadBtnMissing);
@@ -435,7 +435,7 @@ int CMenu::_initNetwork()
 int CMenu::_coverDownloader(bool missingOnly)
 {
 	vector<string> coverList;
-	vector<dir_discHdr> pluginCoverList;
+	//vector<dir_discHdr> pluginCoverList;
 
 	int count = 0, countFlat = 0;
 	float listWeight = missingOnly ? 0.125f : 0.f;	// 1/8 of the progress bar for testing the PNGs we already have
@@ -468,8 +468,8 @@ int CMenu::_coverDownloader(bool missingOnly)
 		c_gameTDB.SetLanguageCode(m_curLanguage.c_str());
 	}
 
-	Config m_checksums;
-	m_checksums.load(fmt("%s/%s", m_settingsDir.c_str(), PLUGIN_CRCS_FILENAME));
+	//Config m_checksums;
+	//m_checksums.load(fmt("%s/%s", m_settingsDir.c_str(), PLUGIN_CRCS_FILENAME));
 
 	if (m_coverDLGameId.empty())
 	{
@@ -484,13 +484,14 @@ int CMenu::_coverDownloader(bool missingOnly)
 			const char *id = NULL;
 			if(m_gameList[i].type == TYPE_PLUGIN)
 			{
-				char gamePath[256];
+				continue;
+			/*	char gamePath[256];
 				if(strchr(m_gameList[i].path, '/') != NULL)
 					strncpy(gamePath, strrchr(m_gameList[i].path, '/') + 1, sizeof(gamePath));
 				else
 					strncpy(gamePath, m_gameList[i].path, sizeof(gamePath));
 				path = fmt_malloc("%s/%s.png", m_boxPicDir.c_str(), gamePath);
-				id = path;
+				id = path;*/
 			}
 			else
 			{
@@ -499,8 +500,8 @@ int CMenu::_coverDownloader(bool missingOnly)
 			}
 			if(!missingOnly || (id != NULL && !CoverFlow.fullCoverCached(id) && path != NULL && !checkPNGFile(path)))
 			{
-				if(m_gameList[i].type == TYPE_PLUGIN)
-					pluginCoverList.push_back(m_gameList[i]);
+				//if(m_gameList[i].type == TYPE_PLUGIN)
+				//	pluginCoverList.push_back(m_gameList[i]);
 				if(id != NULL)
 					coverList.push_back(id);
 			}
@@ -539,7 +540,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 		for(u32 i = 0; i < coverList.size() && !m_thrdStop; ++i)
 		{
 			string url;
-			const char *domain = _domainFromView();
+			const char *domain = "NEWID";
 			bool success = false;
 			bool original = true;
 			bool custom = false;
@@ -584,9 +585,9 @@ int CMenu::_coverDownloader(bool missingOnly)
 							{
 								for (u32 j = 0; !success && j < fmtURLBox.size() && !m_thrdStop; ++j)
 								{
-									if(pluginCoverList.size() && pluginCoverList[i].type == TYPE_PLUGIN)
+									/*if(pluginCoverList.size() && pluginCoverList[i].type == TYPE_PLUGIN)
 										url = m_plugin.GenerateCoverLink(pluginCoverList[i], fmtURLBox[j], m_checksums);
-									else
+									else*/
 										url = makeURL(fmtURLBox[j], newID, countryCode(newID));
 									if (j == 0) ++step;
 									m_thrdStep = listWeight + dlWeight * (float)step / (float)nbSteps;
@@ -600,8 +601,8 @@ int CMenu::_coverDownloader(bool missingOnly)
 										bool tdl = false;
 										if(download.data != NULL && download.size > 0 && checkPNGBuf(download.data))
 											break;
-										if(pluginCoverList.size() && pluginCoverList[i].type == TYPE_PLUGIN)
-											break;
+										//if(pluginCoverList.size() && pluginCoverList[i].type == TYPE_PLUGIN)
+										//	break;
 										switch( o )
 										{
 											case EN:
@@ -727,9 +728,9 @@ int CMenu::_coverDownloader(bool missingOnly)
 							{
 								for (u32 j = 0; !success && j < fmtURLCBox.size() && !m_thrdStop; ++j)
 								{
-									if(pluginCoverList.size() && pluginCoverList[i].type == TYPE_PLUGIN)
+									/*if(pluginCoverList.size() && pluginCoverList[i].type == TYPE_PLUGIN)
 										url = m_plugin.GenerateCoverLink(pluginCoverList[i], fmtURLCBox[j], m_checksums);
-									else
+									else*/
 										url = makeURL(fmtURLCBox[j], newID, countryCode(newID));
 									if (j == 0) ++step;
 									m_thrdStep = listWeight + dlWeight * (float)step / (float)nbSteps;
@@ -742,8 +743,8 @@ int CMenu::_coverDownloader(bool missingOnly)
 										bool tdl = false;
 										if(download.data != NULL && download.size > 0 && checkPNGBuf(download.data))
 											break;
-										if(pluginCoverList.size() && pluginCoverList[i].type == TYPE_PLUGIN)
-											break;
+										//if(pluginCoverList.size() && pluginCoverList[i].type == TYPE_PLUGIN)
+										//	break;
 										switch( o )
 										{
 											case EN:
@@ -873,9 +874,9 @@ int CMenu::_coverDownloader(bool missingOnly)
 								if (m_thrdStop) break;
 								for (u32 j = 0; !success && j < fmtURLFlat.size() && !m_thrdStop; ++j)
 								{
-									if(pluginCoverList.size() && pluginCoverList[i].type == TYPE_PLUGIN)
+									/*if(pluginCoverList.size() && pluginCoverList[i].type == TYPE_PLUGIN)
 										url = m_plugin.GenerateCoverLink(pluginCoverList[i], fmtURLFlat[j], m_checksums);
-									else
+									else*/
 										url = makeURL(fmtURLFlat[j], newID, countryCode(newID));
 									LWP_MutexLock(m_mutex);
 									_setThrdMsg(wfmt(_fmt("dlmsg8", L"Full cover not found. Downloading from %s"), url.c_str()), listWeight + dlWeight * (float)step / (float)nbSteps);
@@ -887,8 +888,8 @@ int CMenu::_coverDownloader(bool missingOnly)
 										bool tdl = false;
 										if(download.data != NULL && download.size > 0 && checkPNGBuf(download.data))
 											break;
-										if(pluginCoverList.size() && pluginCoverList[i].type == TYPE_PLUGIN)
-											break;
+										//if(pluginCoverList.size() && pluginCoverList[i].type == TYPE_PLUGIN)
+										//	break;
 										switch( o )
 										{
 											case EN:
@@ -1152,7 +1153,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 		if(c_gameTDB.IsLoaded())
 			c_gameTDB.CloseFile();
 		coverList.clear();
-		m_checksums.unload();
+		//m_checksums.unload();
 		m_newID.unload();
 	}
 	LWP_MutexLock(m_mutex);
@@ -1162,7 +1163,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 		_setThrdMsg(wfmt(_fmt("dlmsg9", L"%i/%i files downloaded. %i are front covers only."), count + countFlat, n, countFlat), 1.f);
 	LWP_MutexUnlock(m_mutex);
 	m_thrdWorking = false;
-	pluginCoverList.clear();
+	//pluginCoverList.clear();
 	free(buffer);
 	return 0;
 }
@@ -1181,7 +1182,7 @@ void CMenu::_download(string gameId)
 	m_thrdStop = false;
 	m_thrdMessageAdded = false;
 
-	if(gameId.size() && CoverFlow.getHdr()->type == TYPE_PLUGIN)
+	/*if(gameId.size() && CoverFlow.getHdr()->type == TYPE_PLUGIN)
 	{
 		char gamePath[256];
 		if(strchr(CoverFlow.getHdr()->path, '/') != NULL)
@@ -1190,7 +1191,7 @@ void CMenu::_download(string gameId)
 			strncpy(gamePath, CoverFlow.getHdr()->path, sizeof(gamePath));
 		m_coverDLGameId = gamePath;
 	}
-	else
+	else*/
 		m_coverDLGameId = gameId;
 
 	while(!m_exit)
@@ -1339,8 +1340,14 @@ void CMenu::_download(string gameId)
 			}
 			else if (m_btnMgr.selected(m_downloadBtnBack) && !m_thrdWorking)
 			{
-				_hideSettings();
-				_showDownload();
+				if(settingsmenu)
+				{
+					settingsmenu = false;
+					_hideSettings();
+					_showDownload();
+				}
+				else
+					break;
 			}
 			else if ((m_btnMgr.selected(m_downloadBtnEN) || m_btnMgr.selected(m_downloadBtnENs)) && !m_thrdWorking)
 			{
@@ -1616,43 +1623,20 @@ void CMenu::_initDownloadMenu()
 
 void CMenu::_textDownload(void)
 {
-	m_btnMgr.setText(m_downloadBtnCancel, _t("dl1", L"Cancel"));
+	m_btnMgr.setText(m_downloadLblTitle, _t("dl5", L"Download"));
+	m_btnMgr.setText(m_downloadLblCovers, _t("dl8", L"Covers"));
 	m_btnMgr.setText(m_downloadBtnAll, _t("dl3", L"All"));
 	m_btnMgr.setText(m_downloadBtnMissing, _t("dl4", L"Missing"));
-	m_btnMgr.setText(m_downloadLblTitle, _t("dl5", L"Download"));
-	m_btnMgr.setText(m_downloadBtnGameTDBDownload, _t("dl6", L"Download"));
-	m_btnMgr.setText(m_downloadLblCovers, _t("dl8", L"Covers"));
+	m_btnMgr.setText(m_downloadLblCoverSet, _t("dl15", L"Cover download settings"));
+	m_btnMgr.setText(m_downloadBtnCoverSet, _t("dl16", L"Set"));	
 	m_btnMgr.setText(m_downloadLblGameTDBDownload, _t("dl12", L"GameTDB"));
+	m_btnMgr.setText(m_downloadBtnGameTDBDownload, _t("dl6", L"Download"));
 	m_btnMgr.setText(m_downloadLblGameTDB, _t("dl10", L"Please donate\nto GameTDB.com"));
+	m_btnMgr.setText(m_downloadBtnCancel, _t("dl1", L"Cancel"));
+	
+	m_btnMgr.setText(m_downloadLblSetTitle, _t("dl17", L"Cover Download Settings"));
 	m_btnMgr.setText(m_downloadLblCoverPrio, _t("dl13", L"Download order"));
 	m_btnMgr.setText(m_downloadLblRegion, _t("dl14", L"Select regions to check for covers:"));
-	m_btnMgr.setText(m_downloadLblCoverSet, _t("dl15", L"Cover download settings"));
-	m_btnMgr.setText(m_downloadBtnCoverSet, _t("dl16", L"Set"));
-	m_btnMgr.setText(m_downloadLblSetTitle, _t("dl17", L"Cover download settings"));
-	m_btnMgr.setText(m_downloadBtnEN, L"EN");
-	m_btnMgr.setText(m_downloadBtnJA, L"JA");
-	m_btnMgr.setText(m_downloadBtnFR, L"FR");
-	m_btnMgr.setText(m_downloadBtnDE, L"DE");
-	m_btnMgr.setText(m_downloadBtnES, L"ES");
-	m_btnMgr.setText(m_downloadBtnIT, L"IT");
-	m_btnMgr.setText(m_downloadBtnNL, L"NL");
-	m_btnMgr.setText(m_downloadBtnPT, L"PT");
-	m_btnMgr.setText(m_downloadBtnRU, L"RU");
-	m_btnMgr.setText(m_downloadBtnKO, L"KO");
-	m_btnMgr.setText(m_downloadBtnZHCN, L"ZHCN");
-	m_btnMgr.setText(m_downloadBtnAU, L"AU");
-	m_btnMgr.setText(m_downloadBtnENs, L"EN");
-	m_btnMgr.setText(m_downloadBtnJAs, L"JA");
-	m_btnMgr.setText(m_downloadBtnFRs, L"FR");
-	m_btnMgr.setText(m_downloadBtnDEs, L"DE");
-	m_btnMgr.setText(m_downloadBtnESs, L"ES");
-	m_btnMgr.setText(m_downloadBtnITs, L"IT");
-	m_btnMgr.setText(m_downloadBtnNLs, L"NL");
-	m_btnMgr.setText(m_downloadBtnPTs, L"PT");
-	m_btnMgr.setText(m_downloadBtnRUs, L"RU");
-	m_btnMgr.setText(m_downloadBtnKOs, L"KO");
-	m_btnMgr.setText(m_downloadBtnZHCNs, L"ZHCN");
-	m_btnMgr.setText(m_downloadBtnAUs, L"AU");
 	m_btnMgr.setText(m_downloadBtnBack, _t("dl18", L"Back"));
 }
 

@@ -25,7 +25,7 @@ void fsop_ReadFileLoc(const char *path, const u32 size, void *loc);
 bool fsop_WriteFile(const char *path, const void *mem, const u32 size);
 void fsop_deleteFile(const char *source);
 bool fsop_FolderExist(const char *path);
-void fsop_MakeFolder(const char *path);
+bool fsop_MakeFolder(const char *fullpath);
 
 #endif
 

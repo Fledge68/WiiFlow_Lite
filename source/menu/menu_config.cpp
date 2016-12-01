@@ -55,7 +55,10 @@ void CMenu::_showConfig(void)
 		m_btnMgr.show(m_configLblDownload);
 		m_btnMgr.show(m_configBtnDownload);
 		
-		currentPartition = m_cfg.getInt(_domainFromView(), "partition", 0);
+		if(m_source_cnt > 1)
+			currentPartition = 0;
+		else
+			currentPartition = m_cfg.getInt(_domainFromView(), "partition", 0);
 		const char *partitionname = DeviceName[currentPartition];
 		m_btnMgr.setText(m_configLblPartition, upperCase(partitionname));
 		m_btnMgr.show(m_configLblPartitionName);
@@ -185,7 +188,7 @@ int CMenu::_config1(void)
 				}
 				_showConfig();
 			}
-			else if ((m_btnMgr.selected(m_configBtnPartitionP) || m_btnMgr.selected(m_configBtnPartitionM)) && m_current_view != COVERFLOW_MAX)
+			else if ((m_btnMgr.selected(m_configBtnPartitionP) || m_btnMgr.selected(m_configBtnPartitionM)) && m_source_cnt == 1)
 			{
 				s8 direction = m_btnMgr.selected(m_configBtnPartitionP) ? 1 : -1;
 				_setPartition(direction);

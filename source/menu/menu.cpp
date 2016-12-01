@@ -288,17 +288,16 @@ void CMenu::init()
 	fsop_MakeFolder(m_helpDir.c_str());
 
 	/* Check to make sure wii games partition is ok */
-	const char *domain = _domainFromView();
-	u8 partition = m_cfg.getInt(domain, "partition", 0);
+	u8 partition = m_cfg.getInt(WII_DOMAIN, "partition", 0);
 	if(partition > USB8 || !DeviceHandle.IsInserted(partition))//if not ok then find wbfs folder or wbfs partition
 	{
-		m_cfg.remove(domain, "partition");
+		m_cfg.remove(WII_DOMAIN, "partition");
 		for(int i = SD; i <= USB8; i++) // Find a usb partition with a wbfs folder or wbfs file system, else leave it blank (defaults to usb1 later)
 		{
 			if(DeviceHandle.IsInserted(i) && (DeviceHandle.GetFSType(i) == PART_FS_WBFS || stat(fmt(GAMES_DIR, DeviceName[i]), &dummy) == 0))
 			{
 				gprintf("Setting Wii games partition to: %i\n", i);
-				m_cfg.setInt(domain, "partition", i);
+				m_cfg.setInt(WII_DOMAIN, "partition", i);
 				break;
 			}
 		}
@@ -307,8 +306,6 @@ void CMenu::init()
 	/* Emu nands init even if not being used */
 	_checkEmuNandSettings(false);// emu nand
 	_checkEmuNandSettings(true);// saves nand
-	m_cfg.getBool(CHANNEL_DOMAIN, "real_nand", true);
-	m_cfg.getBool(CHANNEL_DOMAIN, "emu_nand", false);
 	
 	/* Cache Reload Checks */
 	int ini_rev = m_cfg.getInt("GENERAL", "ini_rev", 0);
@@ -1637,6 +1634,20 @@ void CMenu::_addUserLabels(s16 *ids, u32 start, u32 size, const char *domain)
 
 void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 {
+	if(m_thrdWorking)
+	{
+		if(!MusicPlayer.IsStopped())
+			MusicPlayer.Stop();
+		m_btnMgr.tick();
+		m_vid.prepare();
+		m_vid.setup2DProjection(false, true);
+		_updateBg();
+		m_vid.setup2DProjection();
+		_drawBg();
+		m_btnMgr.draw();
+		m_vid.render();
+		return;
+	}
 	if(withCF)
 		CoverFlow.tick();
 	m_btnMgr.tick();
@@ -2127,7 +2138,7 @@ void CMenu::_initCF(void)
 		m_cfg.setBool("GENERAL", "dump_list", false);
 	}
 
-	CoverFlow.setSorting(m_current_view == COVERFLOW_MAX ? (Sorting)0 : (Sorting)m_cfg.getInt(_domainFromView(), "sort", 0));
+	CoverFlow.setSorting(m_source_cnt > 1 ? (Sorting)0 : (Sorting)m_cfg.getInt(_domainFromView(), "sort", 0));
 	if(m_current_view == COVERFLOW_HOMEBREW)
 		CoverFlow.setBoxMode(m_cfg.getBool(HOMEBREW_DOMAIN, "box_mode", true));
 	else if(m_sourceflow)
@@ -2142,7 +2153,7 @@ void CMenu::_initCF(void)
 	if(!CoverFlow.empty())
 	{
 		bool path = m_sourceflow || m_current_view == COVERFLOW_PLUGIN || m_current_view == COVERFLOW_HOMEBREW;
-		if(m_current_view == COVERFLOW_MAX || !CoverFlow.findId(m_cfg.getString(_domainFromView(), "current_item").c_str(), true, path))
+		if(!CoverFlow.findId(m_cfg.getString(_domainFromView(), "current_item").c_str(), true, path))
 			CoverFlow.defaultLoad();
 		CoverFlow.startCoverLoader();
 	}
@@ -2170,16 +2181,16 @@ bool CMenu::_loadList(void)
 		return m_gameList.size() > 0 ? true : false;
 	}
 	gprintf("Creating Gamelist\n");
-	if(m_cfg.getBool(PLUGIN_DOMAIN, "source"))
+	if(m_current_view & COVERFLOW_PLUGIN)
 		_loadPluginList();
 		
-	if(m_cfg.getBool(WII_DOMAIN, "source"))
+	if(m_current_view & COVERFLOW_WII)
 		_loadWiiList();
 
-	if(m_cfg.getBool(CHANNEL_DOMAIN, "source"))
+	if(m_current_view & COVERFLOW_CHANNEL)
 		_loadChannelList();
 
-	if(m_cfg.getBool(GC_DOMAIN, "source"))
+	if(m_current_view & COVERFLOW_GAMECUBE)
 		_loadGamecubeList();
 
 	m_cacheList.Clear();
@@ -2229,7 +2240,7 @@ bool CMenu::_loadGamecubeList()
 	string gameDir(fmt(gc_games_dir, DeviceName[currentPartition]));
 	string cacheDir(fmt("%s/%s_gamecube.db", m_listCacheDir.c_str(), DeviceName[currentPartition]));
 	bool updateCache = m_cfg.getBool(GC_DOMAIN, "update_cache");
-	m_cacheList.CreateList(COVERFLOW_GAMECUBE, currentPartition, gameDir, stringToVector(".iso|root", '|'), cacheDir, updateCache);
+	m_cacheList.CreateList(COVERFLOW_GAMECUBE, currentPartition, gameDir, stringToVector(".iso|.ciso|root", '|'), cacheDir, updateCache);
 	m_cfg.remove(GC_DOMAIN, "update_cache");
 	for(vector<dir_discHdr>::iterator tmp_itr = m_cacheList.begin(); tmp_itr != m_cacheList.end(); tmp_itr++)
 		m_gameList.push_back(*tmp_itr);
@@ -2238,15 +2249,21 @@ bool CMenu::_loadGamecubeList()
 
 bool CMenu::_loadChannelList(void)
 {
+	u8 chantypes = m_cfg.getUInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_REAL);
+	if(chantypes < CHANNELS_REAL || chantypes > CHANNELS_BOTH)
+	{
+		m_cfg.setUInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_REAL);
+		chantypes = CHANNELS_REAL;
+	}
 	vector<string> NullVector;
-	if(m_cfg.getBool(CHANNEL_DOMAIN, "real_nand"))
+	if(chantypes & CHANNELS_REAL)
 	{
 		NANDemuView = false;
 		m_cacheList.CreateList(COVERFLOW_CHANNEL, 9, std::string(), NullVector, std::string(), false);
 		for(vector<dir_discHdr>::iterator tmp_itr = m_cacheList.begin(); tmp_itr != m_cacheList.end(); tmp_itr++)
 			m_gameList.push_back(*tmp_itr);
 	}
-	if(m_cfg.getBool(CHANNEL_DOMAIN, "emu_nand"))
+	if(chantypes & CHANNELS_EMU)
 	{
 		NANDemuView = true;
 		string emuPath;
@@ -2273,8 +2290,8 @@ bool CMenu::_loadPluginList()
 {
 	bool addGamecube = false;
 	bool addWii = false;
-	bool addChannel = false;
-	bool addEmuChannel = false;
+	u8 addChannel = 0;
+	u8 addEmuChannel = 0;
 	bool updateCache = m_cfg.getBool(PLUGIN_DOMAIN, "update_cache");
 
 	for(u8 i = 0; m_plugin.PluginExist(i); ++i)
@@ -2303,12 +2320,12 @@ bool CMenu::_loadPluginList()
 			}
 			if(strncasecmp(m_plugin.PluginMagicWord, "4E414E44", 8) == 0)
 			{
-				addChannel = true;
+				addChannel = CHANNELS_REAL;
 				continue;
 			}
 			if(strncasecmp(m_plugin.PluginMagicWord, "454E414E", 8) == 0)
 			{
-				addEmuChannel = true;
+				addEmuChannel = CHANNELS_EMU;
 				continue;
 			}
 			string gameDir(fmt("%s:/%s", DeviceName[currentPartition], romDir));
@@ -2340,8 +2357,7 @@ bool CMenu::_loadPluginList()
 
 	if(addChannel || addEmuChannel)
 	{
-		m_cfg.setBool(CHANNEL_DOMAIN, "real_nand", addChannel ? true : false);
-		m_cfg.setBool(CHANNEL_DOMAIN, "emu_nand", addEmuChannel ? true : false);		
+		m_cfg.setUInt(CHANNEL_DOMAIN, "channels_type", addChannel | addEmuChannel);
 		_loadChannelList();
 	}
 	m_cfg.remove(PLUGIN_DOMAIN, "update_cache");
@@ -2503,6 +2519,8 @@ const char *CMenu::_domainFromView()
 {
 	if(m_sourceflow)
 		return SOURCEFLOW_DOMAIN;
+	if(m_source_cnt > 1)
+		return "MULTI";
 	switch(m_current_view)
 	{
 		case COVERFLOW_CHANNEL:
@@ -2518,44 +2536,6 @@ const char *CMenu::_domainFromView()
 	}
 	return "NULL";
 }
-
-/*void CMenu::UpdateCache(u32 view)
-{
-	if(view == COVERFLOW_MAX)
-	{
-		UpdateCache(COVERFLOW_WII);
-		//UpdateCache(COVERFLOW_HOMEBREW);
-		UpdateCache(COVERFLOW_GAMECUBE);
-		UpdateCache(COVERFLOW_PLUGIN);
-		UpdateCache(COVERFLOW_CHANNEL);
-		return;
-	}
-	switch(view)
-	{
-		case COVERFLOW_CHANNEL:
-			m_cfg.setBool(CHANNEL_DOMAIN, "update_cache", true);
-			break;
-		case COVERFLOW_HOMEBREW:
-			m_cfg.setBool(HOMEBREW_DOMAIN, "update_cache", true);
-			break;*/
-		/*case COVERFLOW_GAMECUBE:
-			m_cfg.setBool(GC_DOMAIN, "update_cache", true);
-			break;
-		case COVERFLOW_PLUGIN:
-			m_cfg.setBool(PLUGIN_DOMAIN, "update_cache", true);
-			break;
-		default:
-			m_cfg.setBool(WII_DOMAIN, "update_cache", true);
-	}*/
-	/*if(m_cfg.getBool(WII_DOMAIN, "source"))
-		m_cfg.setBool(WII_DOMAIN, "update_cache", true);
-	if(m_cfg.getBool(GC_DOMAIN, "source"))
-		m_cfg.setBool(GC_DOMAIN, "update_cache", true);
-	if(m_cfg.getBool(CHANNEL_DOMAIN, "source"))
-		m_cfg.setBool(CHANNEL_DOMAIN, "update_cache", true);
-	if(m_cfg.getBool(PLUGIN_DOMAIN, "source"))
-		m_cfg.setBool(PLUGIN_DOMAIN, "update_cache", true);
-}*/
 
 void CMenu::RemoveCover(const char *id)
 {

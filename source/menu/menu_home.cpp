@@ -67,14 +67,13 @@ bool CMenu::_Home(void)
 			}
 			else if(m_btnMgr.selected(m_homeBtnReloadCache))
 			{
-				//UpdateCache(m_current_view);
-				if(m_cfg.getBool(WII_DOMAIN, "source"))
+				if(m_current_view & COVERFLOW_WII)
 					m_cfg.setBool(WII_DOMAIN, "update_cache", true);
-				if(m_cfg.getBool(GC_DOMAIN, "source"))
+				if(m_current_view & COVERFLOW_GAMECUBE)
 					m_cfg.setBool(GC_DOMAIN, "update_cache", true);
-				if(m_cfg.getBool(CHANNEL_DOMAIN, "source"))
+				if(m_current_view & COVERFLOW_CHANNEL)
 					m_cfg.setBool(CHANNEL_DOMAIN, "update_cache", true);
-				if(m_cfg.getBool(PLUGIN_DOMAIN, "source"))
+				if(m_current_view & COVERFLOW_PLUGIN)
 					m_cfg.setBool(PLUGIN_DOMAIN, "update_cache", true);
 				m_refreshGameList = true;
 				break;

@@ -40,53 +40,29 @@ void CMenu::_sourceFlow()
 	strncpy(btn_selected, fmt("BUTTON_%i", hdr->settings[0]), 15);
 	source = m_source.getString(btn_selected, "source", "");
 	cf_domain = "_COVERFLOW";
-	_clearSources();
-	//this was my attempt or idea at making sourceflow multi-select
-	/*if(source == "wii")
-	{
-		m_cfg.setBool(WII_DOMAIN, "source", true);
-		if(sf_mode == 0)
-		{
-			m_current_view = COVERFLOW_WII;
-			m_catStartPage = m_source.getInt(btn_selected, "cat_page", 1);
-		}
-	}*/
-	if(source == "wii")
-	{
-		m_current_view = COVERFLOW_WII;
-		m_cfg.setBool(WII_DOMAIN, "source", true);
-	}
-	else if(source == "dml")
-	{
+	
+	if(source == "dml")
 		m_current_view = COVERFLOW_GAMECUBE;
-		m_cfg.setBool(GC_DOMAIN, "source", true);
-	}
 	else if(source == "emunand")
 	{
 		m_current_view = COVERFLOW_CHANNEL;
-		m_cfg.setBool(CHANNEL_DOMAIN, "source", true);
-		m_cfg.setBool(CHANNEL_DOMAIN, "emu_nand", true);
-		m_cfg.setBool(CHANNEL_DOMAIN, "real_nand", false);
+		m_cfg.setUInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_EMU);
 	}
 	else if(source == "realnand")
 	{
 		m_current_view = COVERFLOW_CHANNEL;
-		m_cfg.setBool(CHANNEL_DOMAIN, "source", true);
-		m_cfg.setBool(CHANNEL_DOMAIN, "real_nand", true);
-		m_cfg.setBool(CHANNEL_DOMAIN, "emu_nand", false);
+		m_cfg.setUInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_REAL);
 	}
 	else if(source == "homebrew")
 	{
 		if(m_locked && m_cfg.getBool(HOMEBREW_DOMAIN, "parental", false))
 		{
 			error(_t("errsource1", L"Homebrew locked!"));
-			m_current_view = COVERFLOW_WII;
-			m_cfg.setBool(WII_DOMAIN, "source", true);
+			m_current_view = COVERFLOW_WII;// or return
 		}
 		else
 		{
 			m_current_view = COVERFLOW_HOMEBREW;
-			m_cfg.setBool(HOMEBREW_DOMAIN, "source", true);
 			if(m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox", true))
 				cf_domain = "_SMALLFLOW";
 		}
@@ -94,7 +70,6 @@ void CMenu::_sourceFlow()
 	else if(source == "allplugins")
 	{
 		m_current_view = COVERFLOW_PLUGIN;
-		m_cfg.setBool(PLUGIN_DOMAIN, "source", true);
 		for(k = 0; k < m_numPlugins; ++k)
 			m_plugin.SetEnablePlugin(m_cfg, k, 2); /* force enable */
 	}
@@ -105,7 +80,6 @@ void CMenu::_sourceFlow()
 		if(magicNums.size() > 0 )
 		{
 			m_current_view = COVERFLOW_PLUGIN;
-			m_cfg.setBool(PLUGIN_DOMAIN, "source", true);
 			for(k = 0; k < m_numPlugins; ++k)
 				m_plugin.SetEnablePlugin(m_cfg, k, 1); /* force disable */
 			for(vector<string>::iterator itr = magicNums.begin(); itr != magicNums.end(); itr++)
@@ -116,8 +90,11 @@ void CMenu::_sourceFlow()
 			}
 		}
 	}
-	m_sourceflow = false;// do something with this when in muilti
-	//no autoboot if multi mode. may have to make sure autoboot plugins are hidden from flow when multi is on.
+	else //(source == "wii")
+		m_current_view = COVERFLOW_WII;
+	m_sourceflow = false;
+	m_cfg.setUInt("GENERAL", "sources", m_current_view);
+	m_source_cnt = 1;
 	_setSrcOptions();
 }
 
@@ -184,9 +161,12 @@ void CMenu::_updateSourceBtns(void)
 				const vector<bool> &EnabledPlugins = m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
 				if(EnabledPlugins.size() == 0)//all plugins enabled
 				{
-					sourceBtn = i;
-					selectedBtns++;
-					btn_image = btn_imageSel;
+					if(m_current_view & COVERFLOW_PLUGIN)
+					{
+						sourceBtn = i;
+						selectedBtns++;
+						btn_image = btn_imageSel;
+					}
 				}
 			}
 			else if(btnSource == "plugin")
@@ -196,7 +176,7 @@ void CMenu::_updateSourceBtns(void)
 				u32 magic = strtoul(magicNums.at(0).c_str(), NULL, 16);
 				if(m_plugin.GetEnableStatus(m_cfg, magic))
 				{
-					if(m_cfg.getBool(PLUGIN_DOMAIN, "source", false))
+					if(m_current_view & COVERFLOW_PLUGIN)
 					{
 						sourceBtn = i;
 						selectedBtns++;
@@ -204,10 +184,10 @@ void CMenu::_updateSourceBtns(void)
 					}
 				}
 			}
-			else if((btnSource == "realnand" && m_cfg.getBool(CHANNEL_DOMAIN, "real_nand", false)) || 
-					(btnSource == "emunand" && m_cfg.getBool(CHANNEL_DOMAIN, "emu_nand", false)))
+			else if((btnSource == "realnand" && (m_cfg.getUInt(CHANNEL_DOMAIN, "channels_type") & CHANNELS_REAL)) || 
+					(btnSource == "emunand" && (m_cfg.getUInt(CHANNEL_DOMAIN, "channels_type") & CHANNELS_EMU)))
 			{
-				if(m_cfg.getBool(CHANNEL_DOMAIN, "source", false))
+				if(m_current_view & COVERFLOW_CHANNEL)
 				{
 					sourceBtn = i;
 					selectedBtns++;
@@ -216,8 +196,8 @@ void CMenu::_updateSourceBtns(void)
 			}
 			else if(btnSource == "dml" || btnSource == "homebrew" || btnSource == "wii")
 			{
-				const char *domain = (btnSource == "dml" ? GC_DOMAIN : (btnSource == "homebrew" ? HOMEBREW_DOMAIN : WII_DOMAIN));
-				if(m_cfg.getBool(domain, "source", false))
+				u8 flow = (btnSource == "dml" ? COVERFLOW_GAMECUBE : (btnSource == "homebrew" ? COVERFLOW_HOMEBREW : COVERFLOW_WII));
+				if(m_current_view & flow)
 				{
 					sourceBtn = i;
 					selectedBtns++;
@@ -278,8 +258,9 @@ bool CMenu::_Source()
 			cf_domain = "_COVERFLOW";
 			if(selectedBtns == 0)
 			{
-				m_cfg.setBool(WII_DOMAIN, "source", true);
 				m_current_view = COVERFLOW_WII;
+				m_source_cnt = 1;
+				m_cfg.setUInt("GENERAL", "sources", m_current_view);
 				break;
 			}
 			if(selectedBtns == 1)
@@ -287,39 +268,13 @@ bool CMenu::_Source()
 				memset(btn_selected, 0, 16);
 				strncpy(btn_selected, fmt("BUTTON_%i", sourceBtn), 15);
 				_setSrcOptions();
-				//break;
 			}
 			
-			u8 sourceCount = 0;
-			if(m_cfg.getBool(WII_DOMAIN, "source", false))
-			{
-				sourceCount++;
-				m_current_view = COVERFLOW_WII;
-			}
-			if(m_cfg.getBool(GC_DOMAIN, "source", false))
-			{
-				sourceCount++;
-				m_current_view = COVERFLOW_GAMECUBE;
-			}
-			if(m_cfg.getBool(CHANNEL_DOMAIN, "source", false))
-			{
-				sourceCount++;
-				m_current_view = COVERFLOW_CHANNEL;
-			}
-			if(m_cfg.getBool(HOMEBREW_DOMAIN, "source", false))
-			{
-				sourceCount++;
-				m_current_view = COVERFLOW_HOMEBREW;
-			}
-			if(m_cfg.getBool(PLUGIN_DOMAIN, "source", false))
-			{
-				sourceCount++;
-				m_current_view = COVERFLOW_PLUGIN;
-			}
-			if(sourceCount > 1)
-			{
-				m_current_view = COVERFLOW_MAX;
-			}
+			m_cfg.setUInt("GENERAL", "sources", m_current_view);
+			m_source_cnt = 0;
+			for(i = 1; i < 16; i <<= 1)//not including coverflow_homebrew
+				if(m_current_view & i)
+					m_source_cnt++;
 			break;
 		}
 		else if(BTN_UP_PRESSED)
@@ -348,11 +303,9 @@ bool CMenu::_Source()
 		}
 		else if(BTN_A_PRESSED && m_btnMgr.selected(m_sourceBtnClear))
 		{
-			_clearSources();
-			for(u8 j = 0; m_plugin.PluginExist(j); j++)
+			m_current_view = COVERFLOW_NONE;
+			for(j = 0; m_plugin.PluginExist(j); j++)
 				m_plugin.SetEnablePlugin(m_cfg, j, 1);
-			m_cfg.setBool(CHANNEL_DOMAIN, "emu_nand", false);
-			m_cfg.setBool(CHANNEL_DOMAIN, "real_nand", false);
 			updateSource = true;
 		}
 		else if(BTN_A_PRESSED)
@@ -370,48 +323,40 @@ bool CMenu::_Source()
 			}
 			if(!m_multisource && i <12)
 			{
-				_clearSources();
+				m_current_view = COVERFLOW_NONE;
 				exitSource = true;
 				m_catStartPage = 1;
 				if(source == "dml")
 				{
-					m_cfg.setBool(GC_DOMAIN, "source", true);
 					m_current_view = COVERFLOW_GAMECUBE;
 					_setSrcOptions();
 				}
 				else if(source == "emunand" || source == "realnand")
 				{
 					if(source == "emunand")
-					{
-						m_current_view = COVERFLOW_CHANNEL;
-						m_cfg.setBool(CHANNEL_DOMAIN, "source", true);
-						m_cfg.setBool(CHANNEL_DOMAIN, "emu_nand", true);
-						m_cfg.setBool(CHANNEL_DOMAIN, "real_nand", false);
-					}
+						m_cfg.setUInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_EMU);
 					else
-					{
-						m_current_view = COVERFLOW_CHANNEL;
-						m_cfg.setBool(CHANNEL_DOMAIN, "source", true);
-						m_cfg.setBool(CHANNEL_DOMAIN, "emu_nand", false);
-						m_cfg.setBool(CHANNEL_DOMAIN, "real_nand", true);
-					}
+						m_cfg.setUInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_REAL);
 					m_current_view = COVERFLOW_CHANNEL;
 					_setSrcOptions();
 				}
 				else if(source == "homebrew")
 				{
 					if(m_locked && m_cfg.getBool(HOMEBREW_DOMAIN, "parental", false))
+					{
 						error(_t("errsource1", L"Homebrew locked!"));
+						exitSource = false;
+						_showSource();
+						_updateSourceBtns();
+					}
 					else
 					{
-						m_cfg.setBool(HOMEBREW_DOMAIN, "source", true);
 						m_current_view = COVERFLOW_HOMEBREW;
 						_setSrcOptions();
 					}
 				}
 				else if(source == "allplugins")
 				{
-					m_cfg.setBool(PLUGIN_DOMAIN, "source", true);
 					m_current_view = COVERFLOW_PLUGIN;
 					for(k = 0; k < m_numPlugins; ++k)
 						m_plugin.SetEnablePlugin(m_cfg, k, 2); /* force enable */
@@ -419,7 +364,6 @@ bool CMenu::_Source()
 				}
 				else if(source == "plugin")
 				{
-					m_cfg.setBool(PLUGIN_DOMAIN, "source", true);
 					m_current_view = COVERFLOW_PLUGIN;
 					_setSrcOptions();
 					for(k = 0; k < m_numPlugins; ++k)
@@ -441,7 +385,6 @@ bool CMenu::_Source()
 				}
 				else //if(source == "wii") or source is invalid or empty default to wii
 				{
-					m_cfg.setBool(WII_DOMAIN, "source", true);
 					m_current_view = COVERFLOW_WII;
 					_setSrcOptions();
 				}
@@ -450,54 +393,48 @@ bool CMenu::_Source()
 			{
 				updateSource = true;
 				if(source == "wii")
-				{
-					m_cfg.setBool(WII_DOMAIN, "source", !m_cfg.getBool(WII_DOMAIN, "source"));
-				}
+					m_current_view ^= COVERFLOW_WII;// toggle on/off
 				else if(source == "dml")
-				{
-					m_cfg.setBool(GC_DOMAIN, "source", !m_cfg.getBool(GC_DOMAIN, "source"));
-				}
+					m_current_view ^= COVERFLOW_GAMECUBE;
 				else if(source == "emunand" || source == "realnand")
 				{
+					u8 chantype = m_cfg.getUInt(CHANNEL_DOMAIN, "channels_type");
 					if(source == "realnand")
 					{
-						if(m_cfg.getBool(CHANNEL_DOMAIN, "source"))
-							m_cfg.setBool(CHANNEL_DOMAIN, "real_nand", !m_cfg.getBool(CHANNEL_DOMAIN, "real_nand"));
+						if(m_current_view & COVERFLOW_CHANNEL)
+							m_cfg.setUInt(CHANNEL_DOMAIN, "channels_type", (chantype ^= CHANNELS_REAL));
 						else
-						{
-							m_cfg.setBool(CHANNEL_DOMAIN, "real_nand", true);
-							m_cfg.setBool(CHANNEL_DOMAIN, "emu_nand", false);
-						}
+							m_cfg.setUInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_REAL);
 					}
 					else
 					{
-						if(m_cfg.getBool(CHANNEL_DOMAIN, "source"))
-							m_cfg.setBool(CHANNEL_DOMAIN, "emu_nand", !m_cfg.getBool(CHANNEL_DOMAIN, "emu_nand"));
+						if(m_current_view & COVERFLOW_CHANNEL)
+							m_cfg.setUInt(CHANNEL_DOMAIN, "channels_type", (chantype ^= CHANNELS_EMU));
 						else
-						{
-							m_cfg.setBool(CHANNEL_DOMAIN, "emu_nand", true);
-							m_cfg.setBool(CHANNEL_DOMAIN, "real_nand", false);
-						}
+							m_cfg.setUInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_EMU);
 					}
-					if(m_cfg.getBool(CHANNEL_DOMAIN, "emu_nand") || m_cfg.getBool(CHANNEL_DOMAIN, "real_nand"))
-						m_cfg.setBool(CHANNEL_DOMAIN, "source", true);
+					if(m_cfg.getUInt(CHANNEL_DOMAIN, "channels_type") & CHANNELS_BOTH)
+						m_current_view |= COVERFLOW_CHANNEL; //set on
 					else
-						m_cfg.setBool(CHANNEL_DOMAIN, "source", false);
+						m_current_view &= ~COVERFLOW_CHANNEL;// clear off
 				}
 				else if(source == "homebrew")
 				{
-					error(_t("errsource2", L"Homebrew and multisource not allowed!"));
+					error(_t("errsource2", L"Homebrew in multisource not allowed!"));
+					updateSource = false;
+					_showSource();
+					_updateSourceBtns();
 				}
 				else if(source == "allplugins")
 				{
 					m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
 					for(j = 0; m_plugin.PluginExist(j); ++j)		/* opposite */
 						m_plugin.SetEnablePlugin(m_cfg, j, (enabledPluginsCount == 0) ? 2 : 1);
-					m_cfg.setBool(PLUGIN_DOMAIN, "source", (enabledPluginsCount == 0) ? true : false);
+					m_current_view = enabledPluginsCount == 0 ? (m_current_view | COVERFLOW_PLUGIN) : (m_current_view & ~COVERFLOW_PLUGIN);
 				}
 				else if(source == "plugin")
 				{
-					if(!m_cfg.getBool(PLUGIN_DOMAIN, "source"))
+					if(!(m_current_view & COVERFLOW_PLUGIN))
 					{
 						for(j = 0; m_plugin.PluginExist(j); ++j)		/* clear all */
 							m_plugin.SetEnablePlugin(m_cfg, j, 1);
@@ -513,17 +450,18 @@ bool CMenu::_Source()
 							{
 								bool enabled = m_plugin.GetEnableStatus(m_cfg, strtoul(itr->c_str(), NULL, 16));
 								m_plugin.SetEnablePlugin(m_cfg, exist, enabled ? 1 : 2);
-								//break;
 							}
 						}
 					}
 					m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
-					m_cfg.setBool(PLUGIN_DOMAIN, "source", enabledPluginsCount > 0 ? true : false);
+					m_current_view = enabledPluginsCount > 0 ? (m_current_view | COVERFLOW_PLUGIN) : (m_current_view & ~COVERFLOW_PLUGIN);
 				}
 			}
 		}
 		if(exitSource)
 		{
+			m_cfg.setUInt("GENERAL", "sources", m_current_view);
+			m_source_cnt = 1;
 			newSource = true;
 			break;
 		}
@@ -634,15 +572,6 @@ void CMenu::_setSrcOptions(void)
 		else
 			m_source_autoboot = false;
 	}
-}
-
-void CMenu::_clearSources(void)
-{
-	m_cfg.setBool(WII_DOMAIN, "source", false);
-	m_cfg.setBool(GC_DOMAIN, "source", false);
-	m_cfg.setBool(CHANNEL_DOMAIN, "source", false);
-	m_cfg.setBool(HOMEBREW_DOMAIN, "source", false);
-	m_cfg.setBool(PLUGIN_DOMAIN, "source", false);
 }
 
 void CMenu::_initSourceMenu()

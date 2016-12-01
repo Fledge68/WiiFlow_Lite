@@ -130,8 +130,8 @@ void CMenu::_Paths(void)
 				{
 					m_cfg.setString("GENERAL", "dir_box_covers", path);
 					m_boxPicDir = path;
-					//user needs to do a reload cache or we should just delete cache folder
 					//m_refreshGameList = true;
+					_initCF();
 				}
 				_showPaths();
 			}
@@ -144,6 +144,7 @@ void CMenu::_Paths(void)
 					m_cfg.setString("GENERAL", "dir_flat_covers", path);
 					m_picDir = path;
 					//m_refreshGameList = true;
+					_initCF();
 				}
 				_showPaths();
 			}
@@ -194,7 +195,7 @@ void CMenu::_Paths(void)
 					memset(wii_games_dir, 0, 64);
 					strncpy(wii_games_dir, tmpPath, 64);
 					m_cfg.setBool(WII_DOMAIN, "update_cache", true);
-					if(m_cfg.getBool(WII_DOMAIN, "source"))
+					if(m_current_view & COVERFLOW_WII)
 						m_refreshGameList = true;
 				}
 				_showPaths();
@@ -222,7 +223,7 @@ void CMenu::_Paths(void)
 					memset(gc_games_dir, 0, 64);
 					strncpy(gc_games_dir, tmpPath, 64);
 					m_cfg.setBool(GC_DOMAIN, "update_cache", true);
-					if(m_cfg.getBool(GC_DOMAIN, "source"))
+					if(m_current_view & COVERFLOW_GAMECUBE)
 						m_refreshGameList = true;
 				}
 				_showPaths();
