@@ -282,8 +282,6 @@ static u8 GetRequestedGameIOS(dir_discHdr *hdr)
 void CMenu::_hideGame(bool instant)
 {
 	_cleanupVideo();
-	m_fa.unload();
-	CoverFlow.showCover();
 	m_btnMgr.hide(m_gameBtnPlay, instant);
 	m_btnMgr.hide(m_gameBtnBack, instant);
 	m_btnMgr.hide(m_gameBtnPlayFull, instant);
@@ -303,28 +301,14 @@ void CMenu::_hideGame(bool instant)
 
 void CMenu::_showGame(void)
 {
-	CoverFlow.showCover();
-
-	if(m_fa.load(m_cfg, m_fanartDir.c_str(), CoverFlow.getId()))
-	{
-		const TexData *bg = NULL;
-		const TexData *bglq = NULL;
-		m_fa.getBackground(bg, bglq);
-		if(bg != NULL && bglq != NULL)
-			_setBg(*bg, *bglq);
-		if (m_fa.hideCover())
-			CoverFlow.hideCover();
-	}
-	else
-		_setBg(m_gameBg, m_gameBgLQ);
+	_setBg(m_gameBg, m_gameBgLQ);
 
 	if(!m_zoom_banner)
 	{
 		for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser) - 1; ++i)
-		{
 			if(m_gameLblUser[i] != -1)
 				m_btnMgr.show(m_gameLblUser[i]);
-		}
+	
 		m_btnMgr.show(m_gameBtnPlay);
 		m_btnMgr.show(m_gameBtnBack);
 		m_btnMgr.show(m_gameBtnToggle);
@@ -345,8 +329,6 @@ void CMenu::_cleanupBanner(bool gamechange)
 	m_banner.DeleteBanner(gamechange);
 	//movie
 	_cleanupVideo();
-	//fanart
-	m_fa.unload();
 }
 
 void CMenu::_cleanupVideo()
@@ -452,12 +434,12 @@ void CMenu::_game(bool launch)
 	}
 
 	m_zoom_banner = m_cfg.getBool(_domainFromView(), "show_full_banner", false);
-	if(NoGameID(hdr->type))//need to fix this
+	if(NoGameID(hdr->type))
 	{
-		bool video_available = (hdr->type == TYPE_PLUGIN && fsop_FileExist(fmt("%s.thp", getVideoDefaultPath(m_videoDir)))) ||
-								fsop_FileExist(fmt("%s.thp", getVideoPath(m_videoDir, CoverFlow.getPathId(hdr))));
+		bool video_available = (hdr->type == TYPE_PLUGIN && 
+								(fsop_FileExist(fmt("%s.thp", getVideoPath(m_videoDir, CoverFlow.getPathId(hdr)))) || 
+								fsop_FileExist(fmt("%s.thp", getVideoDefaultPath(m_videoDir)))));
 		m_zoom_banner = m_zoom_banner && video_available;
-		m_cfg.setBool(_domainFromView(), "show_full_banner", m_zoom_banner);
 	}
 	currentMoviePos = (m_zoom_banner ? zoomedMoviePos : normalMoviePos);
 	if(m_banner.GetZoomSetting() != m_zoom_banner)
@@ -557,7 +539,7 @@ void CMenu::_game(bool launch)
 			}
 		}
 		/* play or stop a video (this is the old video play for non plugin games) */
-		else if(BTN_MINUS_PRESSED && !coverFlipped)
+		else if(BTN_MINUS_PRESSED && !coverFlipped && !NoGameID(hdr->type))
 		{
 			if(m_video_playing)
 			{
@@ -815,8 +797,24 @@ void CMenu::_game(bool launch)
 						id = tmp1;
 					}
 				}
+				m_zoom_banner = m_cfg.getBool(_domainFromView(), "show_full_banner", false);
+				if(NoGameID(hdr->type))
+				{
+					bool video_available = (hdr->type == TYPE_PLUGIN && 
+											(fsop_FileExist(fmt("%s.thp", getVideoPath(m_videoDir, CoverFlow.getPathId(hdr)))) || 
+											fsop_FileExist(fmt("%s.thp", getVideoDefaultPath(m_videoDir)))));
+					m_zoom_banner = m_zoom_banner && video_available;
+				}
+				currentMoviePos = (m_zoom_banner ? zoomedMoviePos : normalMoviePos);
+				if(m_banner.GetZoomSetting() != m_zoom_banner)
+					m_banner.ToggleZoom();
 			}
 		}
+		/* show small banner frame if available */
+		if(m_gameLblUser[4] != -1 && !NoGameID(hdr->type)  && !m_zoom_banner)
+			m_btnMgr.show(m_gameLblUser[4]);
+		else
+			m_btnMgr.hide(m_gameLblUser[4]);
 		if(m_show_zone_game && !m_zoom_banner)
 		{
 			m_btnMgr.hide(m_gameBtnPlayFull);
@@ -824,17 +822,8 @@ void CMenu::_game(bool launch)
 			m_btnMgr.hide(m_gameBtnToggleFull);
 			m_btnMgr.show(m_gameBtnPlay);
 			m_btnMgr.show(m_gameBtnBack);
-			if(!m_fa.isLoaded())
-				m_btnMgr.show(m_gameBtnToggle);
-			else
-				m_btnMgr.hide(m_gameBtnToggle);
+			m_btnMgr.show(m_gameBtnToggle);
 			
-			/* show small banner frame if available */
-			if(m_gameLblUser[4] != -1 && !NoGameID(hdr->type) && !m_fa.isLoaded())
-				m_btnMgr.show(m_gameLblUser[4]);
-			else
-				m_btnMgr.hide(m_gameLblUser[4]);
-				
 			for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser) - 1; ++i)
 				if(m_gameLblUser[i] != -1)
 					m_btnMgr.show(m_gameLblUser[i]);
@@ -857,7 +846,7 @@ void CMenu::_game(bool launch)
 		}
 		else
 		{
-			if(m_zoom_banner && !m_fa.isLoaded())
+			if(m_zoom_banner)
 			{
 				m_btnMgr.show(m_gameBtnPlayFull);
 				m_btnMgr.show(m_gameBtnBackFull);
@@ -872,13 +861,6 @@ void CMenu::_game(bool launch)
 			m_btnMgr.hide(m_gameBtnPlay);
 			m_btnMgr.hide(m_gameBtnBack);
 			m_btnMgr.hide(m_gameBtnToggle);
-			if(m_gameLblUser[4] != -1)
-			{
-				if(!NoGameID(hdr->type) && !m_zoom_banner && !m_fa.isLoaded())
-					m_btnMgr.show(m_gameLblUser[4]);
-				else
-					m_btnMgr.hide(m_gameLblUser[4], true);
-			}
 			for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser) - 1; ++i)
 				if (m_gameLblUser[i] != -1)
 					m_btnMgr.hide(m_gameLblUser[i]);
@@ -891,6 +873,7 @@ void CMenu::_game(bool launch)
 		CoverFlow.applySettings();
 	}
 	m_gameSelected = false;
+	MEM2_free(hdr);
 	_hideGame();
 }
 
@@ -1888,7 +1871,7 @@ void CMenu::_playGameSound(void)
 		if(m_zoom_banner == true)
 		{
 			m_zoom_banner = m_banner.ToggleZoom();
-			m_cfg.setBool(_domainFromView(), "show_full_banner", m_zoom_banner);
+			//m_cfg.setBool(_domainFromView(), "show_full_banner", m_zoom_banner);
 			currentMoviePos = normalMoviePos;
 		}
 	}
