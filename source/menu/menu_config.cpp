@@ -19,10 +19,8 @@ void CMenu::_hideConfig(bool instant)
 {
 	_hideConfigCommon(instant);
 
-	m_btnMgr.hide(m_configLblPartitionName, instant);
 	m_btnMgr.hide(m_configLblPartition, instant);
-	m_btnMgr.hide(m_configBtnPartitionP, instant);
-	m_btnMgr.hide(m_configBtnPartitionM, instant);
+	m_btnMgr.hide(m_configBtnPartition, instant);
 	m_btnMgr.hide(m_configLblDownload, instant);
 	m_btnMgr.hide(m_configBtnDownload, instant);
 	m_btnMgr.hide(m_configLblParental, instant);
@@ -55,16 +53,8 @@ void CMenu::_showConfig(void)
 		m_btnMgr.show(m_configLblDownload);
 		m_btnMgr.show(m_configBtnDownload);
 		
-		if(m_source_cnt > 1)
-			currentPartition = 0;
-		else
-			currentPartition = m_cfg.getInt(_domainFromView(), "partition", 0);
-		const char *partitionname = DeviceName[currentPartition];
-		m_btnMgr.setText(m_configLblPartition, upperCase(partitionname));
-		m_btnMgr.show(m_configLblPartitionName);
 		m_btnMgr.show(m_configLblPartition);
-		m_btnMgr.show(m_configBtnPartitionP);
-		m_btnMgr.show(m_configBtnPartitionM);
+		m_btnMgr.show(m_configBtnPartition);
 	
 		m_btnMgr.show(m_configLblCfg4);
 		m_btnMgr.show(m_configBtnCfg4);
@@ -145,7 +135,6 @@ int CMenu::_config1(void)
 
 	SetupInput();
 	_showConfig();
-	s32 bCurrentPartition = currentPartition;
 
 	while(!m_exit)
 	{
@@ -188,10 +177,10 @@ int CMenu::_config1(void)
 				}
 				_showConfig();
 			}
-			else if ((m_btnMgr.selected(m_configBtnPartitionP) || m_btnMgr.selected(m_configBtnPartitionM)) && m_source_cnt == 1)
+			else if (m_btnMgr.selected(m_configBtnPartition))
 			{
-				s8 direction = m_btnMgr.selected(m_configBtnPartitionP) ? 1 : -1;
-				_setPartition(direction);
+				_hideConfig();
+				_partitionsCfg();
 				_showConfig();
 			}
 			else if (m_btnMgr.selected(m_configBtnCfg4))
@@ -202,8 +191,6 @@ int CMenu::_config1(void)
 			}
 		}
 	}
-	if(currentPartition != bCurrentPartition)
-		m_refreshGameList = true;
 	_hideConfig();	
 	return change;
 }
@@ -218,10 +205,8 @@ void CMenu::_initConfigMenu()
 	m_configLblParental = _addLabel("CONFIG/PARENTAL", theme.lblFont, L"", 20, 185, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_configBtnUnlock = _addButton("CONFIG/UNLOCK_BTN", theme.btnFont, L"", 420, 190, 200, 48, theme.btnFontColor);
 	m_configBtnSetCode = _addButton("CONFIG/SETCODE_BTN", theme.btnFont, L"", 420, 190, 200, 48, theme.btnFontColor);
-	m_configLblPartitionName = _addLabel("CONFIG/PARTITION", theme.lblFont, L"", 20, 245, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_configLblPartition = _addLabel("CONFIG/PARTITION_BTN", theme.btnFont, L"", 468, 250, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_configBtnPartitionM = _addPicButton("CONFIG/PARTITION_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 420, 250, 48, 48);
-	m_configBtnPartitionP = _addPicButton("CONFIG/PARTITION_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 572, 250, 48, 48);
+	m_configLblPartition = _addLabel("CONFIG/PARTITION", theme.lblFont, L"", 20, 245, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_configBtnPartition = _addButton("CONFIG/PARTITION_BTN", theme.btnFont, L"", 420, 250, 200, 48, theme.btnFontColor);
 	m_configLblCfg4 = _addLabel("CONFIG/CFG4", theme.lblFont, L"", 20, 305, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_configBtnCfg4 = _addButton("CONFIG/CFG4_BTN", theme.btnFont, L"", 420, 310, 200, 48, theme.btnFontColor);
 	m_configLblPage = _addLabel("CONFIG/PAGE_BTN", theme.btnFont, L"", 68, 400, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
@@ -236,10 +221,8 @@ void CMenu::_initConfigMenu()
 	_setHideAnim(m_configLblParental, "CONFIG/PARENTAL", 50, 0, -2.f, 0.f);
 	_setHideAnim(m_configBtnUnlock, "CONFIG/UNLOCK_BTN", -50, 0, 1.f, 0.f);
 	_setHideAnim(m_configBtnSetCode, "CONFIG/SETCODE_BTN", -50, 0, 1.f, 0.f);
-	_setHideAnim(m_configLblPartitionName, "CONFIG/PARTITION", 50, 0, -2.f, 0.f);
-	_setHideAnim(m_configLblPartition, "CONFIG/PARTITION_BTN", -50, 0, 1.f, 0.f);
-	_setHideAnim(m_configBtnPartitionM, "CONFIG/PARTITION_MINUS", -50, 0, 1.f, 0.f);
-	_setHideAnim(m_configBtnPartitionP, "CONFIG/PARTITION_PLUS", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_configLblPartition, "CONFIG/PARTITION", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_configBtnPartition, "CONFIG/PARTITION_BTN", -50, 0, 1.f, 0.f);
 	_setHideAnim(m_configLblCfg4, "CONFIG/CFG4", 50, 0, -2.f, 0.f);
 	_setHideAnim(m_configBtnCfg4, "CONFIG/CFG4_BTN", -50, 0, 1.f, 0.f);
 	_setHideAnim(m_configBtnBack, "CONFIG/BACK_BTN", 0, 0, 1.f, -1.f);
@@ -258,8 +241,9 @@ void CMenu::_textConfig(void)
 	m_btnMgr.setText(m_configLblParental, _t("cfg5", L"Parental control"));
 	m_btnMgr.setText(m_configBtnUnlock, _t("cfg6", L"Unlock"));
 	m_btnMgr.setText(m_configBtnSetCode, _t("cfg7", L"Set code"));
-	m_btnMgr.setText(m_configLblPartitionName, _t("cfgp1", L"Game Partition"));
-	m_btnMgr.setText(m_configBtnBack, _t("cfg10", L"Back"));
+	m_btnMgr.setText(m_configLblPartition, _t("cfg17", L"Game Partitions"));
+	m_btnMgr.setText(m_configBtnPartition, _t("cfg14", L"Set"));
 	m_btnMgr.setText(m_configLblCfg4, _t("cfg13", L"NAND Emulation Settings"));
 	m_btnMgr.setText(m_configBtnCfg4, _t("cfg14", L"Set"));
+	m_btnMgr.setText(m_configBtnBack, _t("cfg10", L"Back"));
 }

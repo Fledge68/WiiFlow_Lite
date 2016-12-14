@@ -296,7 +296,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 			m_btnMgr.up();
 		else if(BTN_DOWN_PRESSED)
 			m_btnMgr.down();
-		if(BTN_A_PRESSED && !m_thrdWorking)
+		else if(BTN_A_PRESSED && !m_thrdWorking)
 		{
 			if(m_btnMgr.selected(m_wbfsBtnGo))
 			{

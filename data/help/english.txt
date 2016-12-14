@@ -1,59 +1,59 @@
-
 Controls:
 - Main menu (coverflow) :
 -- Up / Down  =  Previous / next game (vertical)
 -- Left / Right  =  Previous / next game (horizontal)
 -- Minus / Plus  =  Fast skip through games
--- A  =  Select game
--- B+A  =  Launch game immediately
 -- Home  =  Open Home Menu / Exit WiiFlow
--- 1 / 2  =  Previous / next coverflow mode
+-- Home (sourceflow/menu)  =  Open source menu config
+-- Home (homebrew flow)  =  Open homebrew flow config
+-- 1 / 2  =  Previous / next coverflow layout
+-- A  =  Select game
+-- B  =  Open Source Menu (if installed)
+-- B+A  =  Launch game immediately
 -- B+Left / B+Right  =  Change Song
--- B+UP / B+DOWN  =  previous / next game in sorted list (alpha default)
--- B+Onscreen Arrows  =  previous / next game in sorted list (alpha default)
--- B+Minus  =  Switch Partition
--- B+Plus  =  Select Sort Type (alpha, wifi, players, playcount, etc...)
+-- B+UP / B+DOWN  =  Previous / next game in sorted list (alpha default)
+-- B+Minus  =  Boot a random game of the current coverflow
+-- B+Plus  =  Select sort type (alpha, wifi, players, playcount, etc...)
 -- Z / ZR  =  Take Screenshot
 
+-- A on Onscreen Arrows  =  Fast skip through games
+-- B on Onscreen Arrows  =  previous / next game in sorted list (alpha default)
 -- A on Star Icon  =  Favorites
 -- B on Star Icon  =  Categories
 -- A on Gear Icon  =  WiiFlow settings
--- A on USB(Wii), GC, Channels, Plugin, or Homebrew Icon  =  Switch to that view
--- B on USB(Wii), GC, Channels, Plugin, or Homebrew Icon  =  Open Source Menu
--- B only =  Open Source Menu (if enabled)
+-- A on USB(Wii), GC, Channels, Plugin, or Homebrew Icon  =  Switch to that source
 -- A on Home Icon  =  Open Home Menu / Exit WiiFlow
 -- A on Disc Icon (Game Disc in Drive)  =  Launch game disc
--- A on Question Mark Icon  =  View help file
--- B on Question Mark Icon  =  Boot a random game of the current coverflow
 
 - Game:
--- A on box  =  Show the backside
+-- A on box  =  Flip Cover
 -- A out of screen  =  Launch game
--- B  =  Back to coverflow
--- Up / Down  =  Previous / next game (vertical)
--- Left / Right  =  Previous / next game (horizontal)
--- Plus  =  Game Info
----Right (in Game Info)  =  Game Description
----Left  (in Game Desc)  =  Game Info
 -- A on Star Icon  =  Toggle Favorite (Yellow = Favorite)
 -- B on Star Icon  =  Set Categories for game
 -- A on Hand Icon  =  Parental Lock (Red = locked)
 -- A on Gear Icon  =  Game Settings
 -- A on X Icon  =   Delete Game
+-- B  =  Back to coverflow
+-- Up / Down  =  Previous / next game (vertical)
+-- Left / Right  =  Previous / next game (horizontal)
+-- Minus  =  Play game video if available
+-- Plus  =  Game Info
+---Right (in Game Info)  =  Game Description
+---Left  (in Game Desc)  =  Game Info
 
+- Flipped Cover:
+-- B  =  Reset cover
+-- Up / Down / Left / Right  =  Move cover
+-- Plus  =  Zoom in
+-- Minus  =  Zoom out
+ 
 - Settings menus:
 -- Minus / Plus  =  Previous / next page
 -- Left / Right  =  Previous / next page
+-- Up / Down  =  Previous / next button
 
 - Coverflow Adjust settings:
 -- B+Minus / B+Plus  =  Previous / next page
 -- B  =  Faster adjustment (B+A instead of just A to click a button)
 -- B+1  =  Copy whole coverflow
 -- B+2  =  Paste coverflow
-
-TIPS for running games that crash:
-If the game just locks up with a black screen at launch then check to see if it is a PAL game.
-  (Press the Plus button on the game screen.)  If it is PAL, then set the game's video mode to "PAL 50Hz" in the game's setting screen.
-  You can also use a Component Cable and set your Wii to 480p to fix that problem.
-
-If a game crashes, then try running the game again.  If it continually crashes, then turn the USB Emulation to \"Off\" in the game's setting screen.

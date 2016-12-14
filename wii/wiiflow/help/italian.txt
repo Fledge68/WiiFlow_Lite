@@ -1,5 +1,4 @@
-﻿
-Comandi:
+﻿Comandi:
 - Menu principale (coverflow):
 -- Su / giù = Precedente / prossimo gioco (verticale)
 -- Sinistra / destra = Precedente / prossimo gioco (orizzontale)

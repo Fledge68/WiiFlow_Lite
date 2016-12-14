@@ -5,7 +5,7 @@
 wstringEx gameinfo_Synopsis_w;
 wstringEx gameinfo_Title_w;
 
-bool titlecheck = false;
+bool tdb_found = false;
 u8 cnt_controlsreq = 0, cnt_controls = 0;
 
 void CMenu::_gameinfo(void)
@@ -150,7 +150,7 @@ void CMenu::_showGameInfo(void)
 
 	_textGameInfo();
 	
-	if(titlecheck)
+	if(tdb_found)
 	{
 		m_btnMgr.show(m_gameinfoLblID);
 		m_btnMgr.show(m_gameinfoLblTitle);
@@ -235,8 +235,8 @@ void CMenu::_textGameInfo(void)
 	gametdb.OpenFile(fmt("%s/wiitdb.xml", m_settingsDir.c_str()));
 	gametdb.SetLanguageCode(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
 	const char *TMP_Char = NULL;
-	titlecheck = gametdb.IsLoaded();
-	if(titlecheck)
+	tdb_found = gametdb.IsLoaded();
+	if(tdb_found)
 	{
 		char GameID[7];
 		GameID[6] = '\0';

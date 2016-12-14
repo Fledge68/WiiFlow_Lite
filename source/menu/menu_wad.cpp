@@ -458,6 +458,10 @@ void CMenu::_Wad(const char *wad_path)
 		_mainLoopCommon();
 		if(BTN_HOME_PRESSED || BTN_B_PRESSED)
 			break;
+		else if(BTN_UP_PRESSED)
+			m_btnMgr.up();
+		else if(BTN_DOWN_PRESSED)
+			m_btnMgr.down();
 		else if(BTN_A_PRESSED)
 		{
 			if(m_btnMgr.selected(m_wadBtnInstall))

@@ -35,11 +35,16 @@ void CMenu::_hideGameSettings(bool instant)
 	m_btnMgr.hide(m_gameSettingsBtnPageP, instant);
 	m_btnMgr.hide(m_gameSettingsBtnBack, instant);
 	m_btnMgr.hide(m_gameSettingsLblTitle, instant);
+	for(u8 i = 0; i < ARRAY_SIZE(m_gameSettingsLblUser); ++i)
+		if(m_gameSettingsLblUser[i] != -1)
+			m_btnMgr.hide(m_gameSettingsLblUser[i], instant);
+	_hideGameSettingsPg(instant);
+}
+
+void CMenu::_hideGameSettingsPg(bool instant)
+{
+	//Does not hide title, page, back, or user labels	
 	//Wii & Channels
-	m_btnMgr.hide(m_gameSettingsLblManage, instant);
-	m_btnMgr.hide(m_gameSettingsBtnManage, instant);
-	m_btnMgr.hide(m_gameSettingsBtnCategoryMain, instant);
-	m_btnMgr.hide(m_gameSettingsLblCategoryMain, instant);
 	m_btnMgr.hide(m_gameSettingsLblHooktype, instant);
 	m_btnMgr.hide(m_gameSettingsLblHooktypeVal, instant);
 	m_btnMgr.hide(m_gameSettingsBtnHooktypeM, instant);
@@ -60,7 +65,7 @@ void CMenu::_hideGameSettings(bool instant)
 	m_btnMgr.hide(m_gameSettingsLblIOS, instant);
 	m_btnMgr.hide(m_gameSettingsBtnIOSP, instant);
 	m_btnMgr.hide(m_gameSettingsBtnIOSM, instant);
-	//
+	//wii only
 	m_btnMgr.hide(m_gameSettingsLblEmulation, instant);
 	m_btnMgr.hide(m_gameSettingsLblEmulationVal, instant);
 	m_btnMgr.hide(m_gameSettingsBtnEmulationP, instant);
@@ -71,7 +76,11 @@ void CMenu::_hideGameSettings(bool instant)
 	m_btnMgr.hide(m_gameSettingsBtnFlashSave, instant);
 	m_btnMgr.hide(m_gameSettingsLblPrivateServer, instant);
 	m_btnMgr.hide(m_gameSettingsBtnPrivateServer, instant);
-	//GC, Wii, and Channels
+	//All
+	m_btnMgr.hide(m_gameSettingsLblManage, instant);
+	m_btnMgr.hide(m_gameSettingsBtnManage, instant);
+	m_btnMgr.hide(m_gameSettingsBtnCategoryMain, instant);
+	m_btnMgr.hide(m_gameSettingsLblCategoryMain, instant);
 	m_btnMgr.hide(m_gameSettingsLblGameLanguage, instant);
 	m_btnMgr.hide(m_gameSettingsLblLanguage, instant);
 	m_btnMgr.hide(m_gameSettingsBtnLanguageP, instant);
@@ -118,172 +127,54 @@ void CMenu::_hideGameSettings(bool instant)
 	m_btnMgr.hide(m_gameSettingsBtnCustom, instant);
 	m_btnMgr.hide(m_gameSettingsLblLaunchNK, instant);
 	m_btnMgr.hide(m_gameSettingsBtnLaunchNK, instant);
-
-	for(u8 i = 0; i < ARRAY_SIZE(m_gameSettingsLblUser); ++i)
-		if(m_gameSettingsLblUser[i] != -1)
-			m_btnMgr.hide(m_gameSettingsLblUser[i], instant);
 }
 
-void CMenu::_hideGameSettingsPg(void)
-{
-	//Does not hide title, page, back, or user labels
-	if(m_gameSettingsPage == 1)
-	{
-		m_btnMgr.hide(m_gameSettingsLblManage);
-		m_btnMgr.hide(m_gameSettingsBtnManage);
-
-		m_btnMgr.hide(m_gameSettingsLblGCLoader);
-		m_btnMgr.hide(m_gameSettingsLblGCLoader_Val);
-		m_btnMgr.hide(m_gameSettingsBtnGCLoader_P);
-		m_btnMgr.hide(m_gameSettingsBtnGCLoader_M);
-		
-		m_btnMgr.hide(m_gameSettingsBtnCategoryMain);
-		m_btnMgr.hide(m_gameSettingsLblCategoryMain);
-		
-		m_btnMgr.hide(m_gameSettingsLblGameLanguage);
-		m_btnMgr.hide(m_gameSettingsLblLanguage);
-		m_btnMgr.hide(m_gameSettingsBtnLanguageP);
-		m_btnMgr.hide(m_gameSettingsBtnLanguageM);
-
-		m_btnMgr.hide(m_gameSettingsLblGameVideo);
-		m_btnMgr.hide(m_gameSettingsLblVideo);
-		m_btnMgr.hide(m_gameSettingsBtnVideoP);
-		m_btnMgr.hide(m_gameSettingsBtnVideoM);
-	}
-	if(m_gameSettingsPage == 2)
-	{
-		m_btnMgr.hide(m_gameSettingsLblDebugger);
-		m_btnMgr.hide(m_gameSettingsLblDebuggerV);
-		m_btnMgr.hide(m_gameSettingsBtnDebuggerP);
-		m_btnMgr.hide(m_gameSettingsBtnDebuggerM);
-		
-		m_btnMgr.hide(m_gameSettingsLblHooktype);
-		m_btnMgr.hide(m_gameSettingsLblHooktypeVal);
-		m_btnMgr.hide(m_gameSettingsBtnHooktypeM);
-		m_btnMgr.hide(m_gameSettingsBtnHooktypeP);
-		
-		m_btnMgr.hide(m_gameSettingsLblDeflicker);
-		m_btnMgr.hide(m_gameSettingsBtnDeflicker);
-		
-		m_btnMgr.hide(m_gameSettingsLblOcarina);
-		m_btnMgr.hide(m_gameSettingsBtnOcarina);
-		
-		m_btnMgr.hide(m_gameSettingsLblCheat);
-		m_btnMgr.hide(m_gameSettingsBtnCheat);
-		
-		m_btnMgr.hide(m_gameSettingsLblDevoMemcardEmu);
-		m_btnMgr.hide(m_gameSettingsBtnDevoMemcardEmu);
-
-		m_btnMgr.hide(m_gameSettingsLblWidescreen);
-		m_btnMgr.hide(m_gameSettingsBtnWidescreen);
-
-		m_btnMgr.hide(m_gameSettingsLblLED);
-		m_btnMgr.hide(m_gameSettingsBtnLED);
-	}
-	if(m_gameSettingsPage == 3)
-	{
-		m_btnMgr.hide(m_gameSettingsLblPatchVidModes);
-		m_btnMgr.hide(m_gameSettingsLblPatchVidModesVal);
-		m_btnMgr.hide(m_gameSettingsBtnPatchVidModesM);
-		m_btnMgr.hide(m_gameSettingsBtnPatchVidModesP);
-
-		m_btnMgr.hide(m_gameSettingsLblVipatch);
-		m_btnMgr.hide(m_gameSettingsBtnVipatch);
-
-		m_btnMgr.hide(m_gameSettingsLblCountryPatch);
-		m_btnMgr.hide(m_gameSettingsBtnCountryPatch);
-
-		m_btnMgr.hide(m_gameSettingsLblAspectRatio);
-		m_btnMgr.hide(m_gameSettingsLblAspectRatioVal);
-		m_btnMgr.hide(m_gameSettingsBtnAspectRatioP);
-		m_btnMgr.hide(m_gameSettingsBtnAspectRatioM);
-
-		m_btnMgr.hide(m_gameSettingsLblApploader);
-		m_btnMgr.hide(m_gameSettingsBtnApploader);
-
-		m_btnMgr.hide(m_gameSettingsLblEmuMemCard);
-		m_btnMgr.hide(m_gameSettingsLblEmuMemCard_Val);
-		m_btnMgr.hide(m_gameSettingsBtnEmuMemCard_P);
-		m_btnMgr.hide(m_gameSettingsBtnEmuMemCard_M);
-
-		m_btnMgr.hide(m_gameSettingsLblWidescreen);
-		m_btnMgr.hide(m_gameSettingsBtnWidescreen);
-
-		m_btnMgr.hide(m_gameSettingsLblUSB_HID);
-		m_btnMgr.hide(m_gameSettingsBtnUSB_HID);
-		
-		m_btnMgr.hide(m_gameSettingsLblNATIVE_CTL);
-		m_btnMgr.hide(m_gameSettingsBtnNATIVE_CTL);
-	}
-	if(m_gameSettingsPage == 4)
-	{
-		m_btnMgr.hide(m_gameSettingsLblArcade);
-		m_btnMgr.hide(m_gameSettingsBtnArcade);
-
-		m_btnMgr.hide(m_gameSettingsLblCustom);
-		m_btnMgr.hide(m_gameSettingsBtnCustom);
-
-		m_btnMgr.hide(m_gameSettingsLblLaunchNK);
-		m_btnMgr.hide(m_gameSettingsBtnLaunchNK);
-		
-		m_btnMgr.hide(m_gameSettingsLblEmulationVal);
-		m_btnMgr.hide(m_gameSettingsLblEmulation);
-		m_btnMgr.hide(m_gameSettingsBtnEmulationP);
-		m_btnMgr.hide(m_gameSettingsBtnEmulationM);
-
-		m_btnMgr.hide(m_gameSettingsLblExtractSave);
-		m_btnMgr.hide(m_gameSettingsBtnExtractSave);
-
-		m_btnMgr.hide(m_gameSettingsLblGameIOS);
-		m_btnMgr.hide(m_gameSettingsLblIOS);
-		m_btnMgr.hide(m_gameSettingsBtnIOSP);
-		m_btnMgr.hide(m_gameSettingsBtnIOSM);
-		
-		m_btnMgr.hide(m_gameSettingsLblLED);
-		m_btnMgr.hide(m_gameSettingsBtnLED);
-	}
-	if(m_gameSettingsPage == 5)
-	{
-		m_btnMgr.hide(m_gameSettingsLblFlashSave);
-		m_btnMgr.hide(m_gameSettingsBtnFlashSave);
-		
-		m_btnMgr.hide(m_gameSettingsLblPrivateServer);
-		m_btnMgr.hide(m_gameSettingsBtnPrivateServer);		
-	}
-}
-	
 void CMenu::_showGameSettings(void)
 {
 	const char *id = CoverFlow.getId();
 	const dir_discHdr *GameHdr = CoverFlow.getHdr();
 	
-	_setBg(m_gameSettingsBg, m_gameSettingsBg);
-	m_btnMgr.show(m_gameSettingsLblPage);
-	m_btnMgr.show(m_gameSettingsBtnPageM);
-	m_btnMgr.show(m_gameSettingsBtnPageP);
-	m_btnMgr.show(m_gameSettingsBtnBack);
-	
-	wstringEx title(_t("cfgg1", L"Settings"));
-	title.append(wfmt(L" [%.6s]", id));
-	m_btnMgr.setText(m_gameSettingsLblTitle, title);
-	m_btnMgr.show(m_gameSettingsLblTitle);
-
 	if(GameHdr->type == TYPE_GC_GAME)
 	{
 		GCLoader = min((u32)m_gcfg2.getInt(id, "gc_loader", 0), ARRAY_SIZE(CMenu::_GCLoader) - 1u);
 		GCLoader = (GCLoader == 0) ? min((u32)m_cfg.getInt(GC_DOMAIN, "default_loader", 1), ARRAY_SIZE(CMenu::_GlobalGCLoaders) - 1u) : GCLoader-1;
 	}
 	
-	m_gameSettingsMaxPgs = 4;
-	if(GameHdr->type == TYPE_WII_GAME)
-		m_gameSettingsMaxPgs = 5;
+	m_gameSettingsMaxPgs = 5;
+	if(GameHdr->type == TYPE_GC_GAME && GCLoader == NINTENDONT)
+		m_gameSettingsMaxPgs = 4;
 	else if(GameHdr->type == TYPE_GC_GAME && GCLoader == DEVOLUTION)
 		m_gameSettingsMaxPgs = 2;
 
+	_setBg(m_gameSettingsBg, m_gameSettingsBg);
+	u32 i = 0;
+	for(i = 0; i < ARRAY_SIZE(m_gameSettingsLblUser); ++i)
+		if(m_gameSettingsLblUser[i] != -1)
+			m_btnMgr.show(m_gameSettingsLblUser[i]);
+
+	wstringEx title(_t("cfgg1", L"Settings"));
+	title.append(wfmt(L" [%.6s]", id));
+	m_btnMgr.setText(m_gameSettingsLblTitle, title);
+	m_btnMgr.show(m_gameSettingsLblTitle);
+	
+	m_btnMgr.show(m_gameSettingsBtnBack);
+	
+	if(GameHdr->type == TYPE_PLUGIN)
+	{
+		m_btnMgr.show(m_gameSettingsBtnCategoryMain);
+		m_btnMgr.show(m_gameSettingsLblCategoryMain);
+		return;
+	}
+	
+	m_btnMgr.setText(m_gameSettingsLblPage, wfmt(L"%i / %i", m_gameSettingsPage, m_gameSettingsMaxPgs));
+	m_btnMgr.show(m_gameSettingsLblPage);
+	m_btnMgr.show(m_gameSettingsBtnPageM);
+	m_btnMgr.show(m_gameSettingsBtnPageP);
+	
 	if(m_gameSettingsPage == 1)
 	{
-		m_btnMgr.show(m_gameSettingsLblManage);
-		m_btnMgr.show(m_gameSettingsBtnManage);
+		m_btnMgr.show(m_gameSettingsBtnCategoryMain);
+		m_btnMgr.show(m_gameSettingsLblCategoryMain);
 		
 		if(GameHdr->type == TYPE_GC_GAME)
 		{
@@ -294,8 +185,10 @@ void CMenu::_showGameSettings(void)
 		}
 		else
 		{
-			m_btnMgr.show(m_gameSettingsBtnCategoryMain);
-			m_btnMgr.show(m_gameSettingsLblCategoryMain);
+			m_btnMgr.show(m_gameSettingsLblGameIOS);
+			m_btnMgr.show(m_gameSettingsLblIOS);
+			m_btnMgr.show(m_gameSettingsBtnIOSP);
+			m_btnMgr.show(m_gameSettingsBtnIOSM);
 		}
 		
 		m_btnMgr.show(m_gameSettingsLblGameLanguage);
@@ -312,14 +205,17 @@ void CMenu::_showGameSettings(void)
 	{
 		if(GameHdr->type == TYPE_GC_GAME && GCLoader == DEVOLUTION)
 		{
+			m_btnMgr.show(m_gameSettingsLblLED);
+			m_btnMgr.show(m_gameSettingsBtnLED);
+
 			m_btnMgr.show(m_gameSettingsLblDevoMemcardEmu);
 			m_btnMgr.show(m_gameSettingsBtnDevoMemcardEmu);
 
 			m_btnMgr.show(m_gameSettingsLblWidescreen);
 			m_btnMgr.show(m_gameSettingsBtnWidescreen);
-			
-			m_btnMgr.show(m_gameSettingsLblLED);
-			m_btnMgr.show(m_gameSettingsBtnLED);
+
+			m_btnMgr.show(m_gameSettingsLblManage);
+			m_btnMgr.show(m_gameSettingsBtnManage);
 		}
 		else
 		{
@@ -363,21 +259,16 @@ void CMenu::_showGameSettings(void)
 			m_btnMgr.show(m_gameSettingsLblCountryPatch);
 			m_btnMgr.show(m_gameSettingsBtnCountryPatch);
 
-			if(GameHdr->type == TYPE_WII_GAME)
-			{
-				m_btnMgr.show(m_gameSettingsLblAspectRatio);
-				m_btnMgr.show(m_gameSettingsLblAspectRatioVal);
-				m_btnMgr.show(m_gameSettingsBtnAspectRatioP);
-				m_btnMgr.show(m_gameSettingsBtnAspectRatioM);
-			}
-			else if(GameHdr->type == TYPE_CHANNEL || GameHdr->type == TYPE_EMUCHANNEL)
-			{
-				m_btnMgr.show(m_gameSettingsLblApploader);
-				m_btnMgr.show(m_gameSettingsBtnApploader);
-			}
+			m_btnMgr.show(m_gameSettingsLblAspectRatio);
+			m_btnMgr.show(m_gameSettingsLblAspectRatioVal);
+			m_btnMgr.show(m_gameSettingsBtnAspectRatioP);
+			m_btnMgr.show(m_gameSettingsBtnAspectRatioM);
 		}
-		else if(GCLoader == NINTENDONT)
+		else
 		{
+			m_btnMgr.show(m_gameSettingsLblLED);
+			m_btnMgr.show(m_gameSettingsBtnLED);
+
 			m_btnMgr.show(m_gameSettingsLblEmuMemCard);
 			m_btnMgr.show(m_gameSettingsLblEmuMemCard_Val);
 			m_btnMgr.show(m_gameSettingsBtnEmuMemCard_P);
@@ -385,29 +276,37 @@ void CMenu::_showGameSettings(void)
 
 			m_btnMgr.show(m_gameSettingsLblWidescreen);
 			m_btnMgr.show(m_gameSettingsBtnWidescreen);
-			
-			m_btnMgr.show(m_gameSettingsLblUSB_HID);
-			m_btnMgr.show(m_gameSettingsBtnUSB_HID);
-			
-		 	m_btnMgr.show(m_gameSettingsLblNATIVE_CTL);
-			m_btnMgr.show(m_gameSettingsBtnNATIVE_CTL);
+
+			m_btnMgr.show(m_gameSettingsLblManage);
+			m_btnMgr.show(m_gameSettingsBtnManage);
 		}
 	}
 	if(m_gameSettingsPage == 4)
 	{
 		if(GameHdr->type == TYPE_GC_GAME)
 		{
+			m_btnMgr.show(m_gameSettingsLblUSB_HID);
+			m_btnMgr.show(m_gameSettingsBtnUSB_HID);
+			
+		 	m_btnMgr.show(m_gameSettingsLblNATIVE_CTL);
+			m_btnMgr.show(m_gameSettingsBtnNATIVE_CTL);
+
 			m_btnMgr.show(m_gameSettingsBtnArcade);
 			m_btnMgr.show(m_gameSettingsLblArcade);
 		}
 		else
 		{
-			
+			m_btnMgr.show(m_gameSettingsLblManage);
+			m_btnMgr.show(m_gameSettingsBtnManage);
+
 			if(GameHdr->type == TYPE_CHANNEL || GameHdr->type == TYPE_EMUCHANNEL)
 			{
 				m_btnMgr.show(m_gameSettingsLblCustom);
 				m_btnMgr.show(m_gameSettingsBtnCustom);
 				
+				m_btnMgr.show(m_gameSettingsLblApploader);
+				m_btnMgr.show(m_gameSettingsBtnApploader);
+
 				m_btnMgr.show(m_gameSettingsLblLaunchNK);
 				m_btnMgr.show(m_gameSettingsBtnLaunchNK);
 			}
@@ -420,36 +319,24 @@ void CMenu::_showGameSettings(void)
 				
 				m_btnMgr.show(m_gameSettingsLblExtractSave);
 				m_btnMgr.show(m_gameSettingsBtnExtractSave);
+				
+				m_btnMgr.show(m_gameSettingsLblFlashSave);
+				m_btnMgr.show(m_gameSettingsBtnFlashSave);
 			}
-			
-			m_btnMgr.show(m_gameSettingsLblGameIOS);
-			m_btnMgr.show(m_gameSettingsLblIOS);
-			m_btnMgr.show(m_gameSettingsBtnIOSP);
-			m_btnMgr.show(m_gameSettingsBtnIOSM);
-			
-			m_btnMgr.show(m_gameSettingsLblLED);
-			m_btnMgr.show(m_gameSettingsBtnLED);
 		}
 	}
 	if(m_gameSettingsPage == 5)
 	{
-		m_btnMgr.show(m_gameSettingsLblFlashSave);
-		m_btnMgr.show(m_gameSettingsBtnFlashSave);
-		
-		//maybe only show this if mariokart wii
-		m_btnMgr.show(m_gameSettingsLblPrivateServer);
-		m_btnMgr.show(m_gameSettingsBtnPrivateServer);
+		m_btnMgr.show(m_gameSettingsLblLED);
+		m_btnMgr.show(m_gameSettingsBtnLED);
+
+		if(GameHdr->type == TYPE_WII_GAME)
+		{
+			m_btnMgr.show(m_gameSettingsLblPrivateServer);
+			m_btnMgr.show(m_gameSettingsBtnPrivateServer);
+		}
 	}
 
-	u32 i = 0;
-	for(i = 0; i < ARRAY_SIZE(m_gameSettingsLblUser); ++i)
-		if(m_gameSettingsLblUser[i] != -1)
-			m_btnMgr.show(m_gameSettingsLblUser[i]);
-
-	int page = m_gameSettingsPage;
-	u32 maxpage = m_gameSettingsMaxPgs;
-
-	m_btnMgr.setText(m_gameSettingsLblPage, wfmt(L"%i / %i", page, maxpage));
 	m_btnMgr.setText(m_gameSettingsBtnOcarina, _optBoolToString(m_gcfg2.getOptBool(id, "cheat", 0)));
 	m_btnMgr.setText(m_gameSettingsBtnLED, _optBoolToString(m_gcfg2.getOptBool(id, "led", 0)));
 	
@@ -782,11 +669,13 @@ void CMenu::_initGameSettingsMenu()
 	m_gameSettingsLblTitle = _addTitle("GAME_SETTINGS/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 
 // Page 1
-	m_gameSettingsLblManage = _addLabel("GAME_SETTINGS/MANAGE", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsBtnManage = _addButton("GAME_SETTINGS/MANAGE_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
+	m_gameSettingsLblCategoryMain = _addLabel("GAME_SETTINGS/CAT_MAIN", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsBtnCategoryMain = _addButton("GAME_SETTINGS/CAT_MAIN_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
 
-	m_gameSettingsLblCategoryMain = _addLabel("GAME_SETTINGS/CAT_MAIN", theme.lblFont, L"", 20, 185, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsBtnCategoryMain = _addButton("GAME_SETTINGS/CAT_MAIN_BTN", theme.btnFont, L"", 420, 190, 200, 48, theme.btnFontColor);
+	m_gameSettingsLblGameIOS = _addLabel("GAME_SETTINGS/IOS", theme.lblFont, L"", 20, 185, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsLblIOS = _addLabel("GAME_SETTINGS/IOS_BTN", theme.btnFont, L"", 468, 190, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_gameSettingsBtnIOSM = _addPicButton("GAME_SETTINGS/IOS_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 420, 190, 48, 48);
+	m_gameSettingsBtnIOSP = _addPicButton("GAME_SETTINGS/IOS_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 572, 190, 48, 48);
 
 	m_gameSettingsLblGameLanguage = _addLabel("GAME_SETTINGS/GAME_LANG", theme.lblFont, L"", 20, 245, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsLblLanguage = _addLabel("GAME_SETTINGS/GAME_LANG_BTN", theme.btnFont, L"", 468, 250, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
@@ -823,16 +712,13 @@ void CMenu::_initGameSettingsMenu()
 
 //GC Page 2
 	//nintendont = debugger, deflicker, ocarina, cheats
-	//devolution = emucard, widescreen, led_activity(pg4), (blank)
+	//devolution = led_activity(pg5), emu_memcard, widescreen(pg3), mng_cvr_bnr (pg4)
 	
-	m_gameSettingsLblDevoMemcardEmu = _addLabel("GAME_SETTINGS/DEVO_MEMCARD_EMU", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsBtnDevoMemcardEmu = _addButton("GAME_SETTINGS/DEVO_MEMCARD_EMU_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
-
 	m_gameSettingsLblDeflicker = _addLabel("GAME_SETTINGS/DEFLICKER", theme.lblFont, L"", 20, 185, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsBtnDeflicker = _addButton("GAME_SETTINGS/DEFLICKER_BTN", theme.btnFont, L"", 420, 190, 200, 48, theme.btnFontColor);
 
-	m_gameSettingsLblWidescreen = _addLabel("GAME_SETTINGS/WIDESCREEN", theme.lblFont, L"", 20, 185, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsBtnWidescreen = _addButton("GAME_SETTINGS/WIDESCREEN_BTN", theme.btnFont, L"", 420, 190, 200, 48, theme.btnFontColor);
+	m_gameSettingsLblDevoMemcardEmu = _addLabel("GAME_SETTINGS/DEVO_MEMCARD_EMU", theme.lblFont, L"", 20, 185, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsBtnDevoMemcardEmu = _addButton("GAME_SETTINGS/DEVO_MEMCARD_EMU_BTN", theme.btnFont, L"", 420, 190, 200, 48, theme.btnFontColor);
 
 //Page 3
 	m_gameSettingsLblCountryPatch = _addLabel("GAME_SETTINGS/COUNTRY_PATCH", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
@@ -851,24 +737,15 @@ void CMenu::_initGameSettingsMenu()
 	m_gameSettingsBtnAspectRatioM = _addPicButton("GAME_SETTINGS/ASPECT_RATIO_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 420, 310, 48, 48);
 	m_gameSettingsBtnAspectRatioP = _addPicButton("GAME_SETTINGS/ASPECT_RATIO_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 572, 310, 48, 48);
 
-//Channels Page 3 line 4
-	m_gameSettingsLblApploader = _addLabel("GAME_SETTINGS/APPLDR", theme.lblFont, L"", 20, 305, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsBtnApploader = _addButton("GAME_SETTINGS/APPLDR_BTN", theme.btnFont, L"", 420, 310, 200, 48, theme.btnFontColor);
+//GC Nintendont Page 3
+	//nintendont = led_activity(pg5), emu_memcard, widescreen/wiiu widescreen, mng_cvr_bnr (pg4)
+	m_gameSettingsLblEmuMemCard = _addLabel("GAME_SETTINGS/DML_NMM", theme.lblFont, L"", 20, 185, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsLblEmuMemCard_Val = _addLabel("GAME_SETTINGS/DML_NMM_BTN", theme.btnFont, L"", 468, 190, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_gameSettingsBtnEmuMemCard_M = _addPicButton("GAME_SETTINGS/DML_NMM_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 420, 190, 48, 48);
+	m_gameSettingsBtnEmuMemCard_P = _addPicButton("GAME_SETTINGS/DML_NMM_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 572, 190, 48, 48);
 
-//GC Page 3
-	//nintendont=emucard, widescreen(pg2)/wiiu widescreen, usb_hid, native_ctl
-	//devo=nothing
-	
-	m_gameSettingsLblEmuMemCard = _addLabel("GAME_SETTINGS/DML_NMM", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsLblEmuMemCard_Val = _addLabel("GAME_SETTINGS/DML_NMM_BTN", theme.btnFont, L"", 468, 130, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_gameSettingsBtnEmuMemCard_M = _addPicButton("GAME_SETTINGS/DML_NMM_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 420, 130, 48, 48);
-	m_gameSettingsBtnEmuMemCard_P = _addPicButton("GAME_SETTINGS/DML_NMM_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 572, 130, 48, 48);
-
-	m_gameSettingsLblUSB_HID = _addLabel("GAME_SETTINGS/USB_HID", theme.lblFont, L"", 20, 245, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsBtnUSB_HID = _addButton("GAME_SETTINGS/USB_HID_BTN", theme.btnFont, L"", 420, 250, 200, 48, theme.btnFontColor);
-
-	m_gameSettingsLblNATIVE_CTL = _addLabel("GAME_SETTINGS/NATIVE_CTL", theme.lblFont, L"", 20, 305, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsBtnNATIVE_CTL = _addButton("GAME_SETTINGS/NATIVE_CTL_BTN", theme.btnFont, L"", 420, 310, 200, 48, theme.btnFontColor);
+	m_gameSettingsLblWidescreen = _addLabel("GAME_SETTINGS/WIDESCREEN", theme.lblFont, L"", 20, 245, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsBtnWidescreen = _addButton("GAME_SETTINGS/WIDESCREEN_BTN", theme.btnFont, L"", 420, 250, 200, 48, theme.btnFontColor);
 
 //Page 4
 	m_gameSettingsLblEmulation = _addLabel("GAME_SETTINGS/EMU_SAVE", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
@@ -876,31 +753,38 @@ void CMenu::_initGameSettingsMenu()
 	m_gameSettingsBtnEmulationM = _addPicButton("GAME_SETTINGS/EMU_SAVE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 420, 130, 48, 48);
 	m_gameSettingsBtnEmulationP = _addPicButton("GAME_SETTINGS/EMU_SAVE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 572, 130, 48, 48);
 
-	m_gameSettingsLblGameIOS = _addLabel("GAME_SETTINGS/IOS", theme.lblFont, L"", 20, 185, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsLblIOS = _addLabel("GAME_SETTINGS/IOS_BTN", theme.btnFont, L"", 468, 190, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_gameSettingsBtnIOSM = _addPicButton("GAME_SETTINGS/IOS_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 420, 190, 48, 48);
-	m_gameSettingsBtnIOSP = _addPicButton("GAME_SETTINGS/IOS_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 572, 190, 48, 48);
+	m_gameSettingsLblExtractSave = _addLabel("GAME_SETTINGS/EXTRACT_SAVE", theme.lblFont, L"", 20, 185, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsBtnExtractSave = _addButton("GAME_SETTINGS/EXTRACT_SAVE_BTN", theme.btnFont, L"", 420, 190, 200, 48, theme.btnFontColor);
 
-	m_gameSettingsLblLED = _addLabel("GAME_SETTINGS/LED", theme.lblFont, L"", 20, 245, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsBtnLED = _addButton("GAME_SETTINGS/LED_BTN", theme.btnFont, L"", 420, 250, 200, 48, theme.btnFontColor);
+	m_gameSettingsLblFlashSave = _addLabel("GAME_SETTINGS/FLASH_SAVE", theme.lblFont, L"", 20, 245, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsBtnFlashSave = _addButton("GAME_SETTINGS/FLASH_SAVE_BTN", theme.btnFont, L"", 420, 250, 200, 48, theme.btnFontColor);
 
-	m_gameSettingsLblExtractSave = _addLabel("GAME_SETTINGS/EXTRACT_SAVE", theme.lblFont, L"", 20, 305, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsBtnExtractSave = _addButton("GAME_SETTINGS/EXTRACT_SAVE_BTN", theme.btnFont, L"", 420, 310, 200, 48, theme.btnFontColor);
+	m_gameSettingsLblManage = _addLabel("GAME_SETTINGS/MANAGE", theme.lblFont, L"", 20, 305, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsBtnManage = _addButton("GAME_SETTINGS/MANAGE_BTN", theme.btnFont, L"", 420, 310, 200, 48, theme.btnFontColor);
 
-//GC Nintendont Page 4 line 1
-	m_gameSettingsLblArcade = _addLabel("GAME_SETTINGS/ARCADE", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsBtnArcade = _addButton("GAME_SETTINGS/ARCADE_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
-
-//Channels Page 4 line 1 and line 4 but only if emu NAND on USB1
+//Channels Page 4
 	m_gameSettingsLblCustom = _addLabel("GAME_SETTINGS/CUSTOM", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsBtnCustom = _addButton("GAME_SETTINGS/CUSTOM_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
 
-	m_gameSettingsLblLaunchNK = _addLabel("GAME_SETTINGS/LAUNCHNEEK", theme.lblFont, L"", 20, 305, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsBtnLaunchNK = _addButton("GAME_SETTINGS/LAUNCHNEEK_BTN", theme.btnFont, L"", 420, 310, 200, 48, theme.btnFontColor);
+	m_gameSettingsLblApploader = _addLabel("GAME_SETTINGS/APPLDR", theme.lblFont, L"", 20, 185, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsBtnApploader = _addButton("GAME_SETTINGS/APPLDR_BTN", theme.btnFont, L"", 420, 190, 200, 48, theme.btnFontColor);
+
+	m_gameSettingsLblLaunchNK = _addLabel("GAME_SETTINGS/LAUNCHNEEK", theme.lblFont, L"", 20, 245, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsBtnLaunchNK = _addButton("GAME_SETTINGS/LAUNCHNEEK_BTN", theme.btnFont, L"", 420, 250, 200, 48, theme.btnFontColor);
+
+//GC Nintendont Page 4
+	m_gameSettingsLblUSB_HID = _addLabel("GAME_SETTINGS/USB_HID", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsBtnUSB_HID = _addButton("GAME_SETTINGS/USB_HID_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
+
+	m_gameSettingsLblNATIVE_CTL = _addLabel("GAME_SETTINGS/NATIVE_CTL", theme.lblFont, L"", 20, 185, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsBtnNATIVE_CTL = _addButton("GAME_SETTINGS/NATIVE_CTL_BTN", theme.btnFont, L"", 420, 190, 200, 48, theme.btnFontColor);
+
+	m_gameSettingsLblArcade = _addLabel("GAME_SETTINGS/ARCADE", theme.lblFont, L"", 20, 245, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsBtnArcade = _addButton("GAME_SETTINGS/ARCADE_BTN", theme.btnFont, L"", 420, 250, 200, 48, theme.btnFontColor);
 
 //Page 5
-	m_gameSettingsLblFlashSave = _addLabel("GAME_SETTINGS/FLASH_SAVE", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsBtnFlashSave = _addButton("GAME_SETTINGS/FLASH_SAVE_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
+	m_gameSettingsLblLED = _addLabel("GAME_SETTINGS/LED", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsBtnLED = _addButton("GAME_SETTINGS/LED_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
 
 	m_gameSettingsLblPrivateServer = _addLabel("GAME_SETTINGS/PRIVATE_SERVER", theme.lblFont, L"", 20, 185, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsBtnPrivateServer = _addButton("GAME_SETTINGS/PRIVATE_SERVER_BTN", theme.btnFont, L"", 420, 190, 200, 48, theme.btnFontColor);

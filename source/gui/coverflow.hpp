@@ -89,6 +89,7 @@ public:
 	void setFont(const SFont &font, const CColor &color);
 	void setRange(u32 rows, u32 columns);
 	void setBoxMode(bool box);
+	void setSmallBoxMode(bool smallBox);
 	void setHQcover(bool HQ);
 	void setTextureQuality(float lodBias, int aniso, bool edgeLOD);
 	void setCameraPos(bool selected, const Vector3D &pos, const Vector3D &aim);
@@ -271,6 +272,7 @@ private:
 	SFont m_font;
 	CColor m_fontColor;
 	bool m_box;
+	bool m_smallBox;
 	bool m_useHQcover;
 	bool m_dvdskin_loaded;
 	bool m_defcovers_loaded;

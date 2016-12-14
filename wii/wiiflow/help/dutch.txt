@@ -1,5 +1,4 @@
-﻿
-Bediening:
+﻿Bediening:
 - Hoofd menu (coverflow) :
 -- Op / Neer  =  Vorig / volgend spel (verticaal)
 -- Links / Rechts  =  Vorig / volgend spel (horizontaal)

@@ -206,6 +206,7 @@ CCoverFlow::CCoverFlow(void)
 	m_deletePicsAfterCaching = false;
 	m_pluginCacheFolders = false;
 	m_box = true;
+	m_smallBox = false;
 	m_useHQcover = false;
 	m_rows = 1;
 	m_columns = 11;
@@ -293,6 +294,11 @@ void CCoverFlow::setTextureQuality(float lodBias, int aniso, bool edgeLOD)
 void CCoverFlow::setBoxMode(bool box)
 {
 	m_box = box;
+}
+
+void CCoverFlow::setSmallBoxMode(bool smallBox)
+{
+	m_smallBox = smallBox;
 }
 
 void CCoverFlow::setHQcover(bool HQ)
@@ -2771,7 +2777,7 @@ const char *CCoverFlow::getPathId(const dir_discHdr *curHdr, bool extension)
 		{
 			if(curHdr->type == TYPE_HOMEBREW || extension)
 				NameOrID = strrchr(curHdr->path, '/') + 1;//returns title.ext or folder name for app
-			else
+			else // plugin and sourceflow
 				NameOrID = fmt("%ls", curHdr->title);// title without extension in lowercase
 		}
 		else
@@ -2787,6 +2793,9 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 	if(!m_loadingCovers) 
 		return CL_ERROR;
 
+	if(box && m_smallBox)//prevent smallbox from loading full box cover
+		return CL_ERROR;
+		
 	bool allocFailed = false;
 
 	// Try to find the texture in the cache
