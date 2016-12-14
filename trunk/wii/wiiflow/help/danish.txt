@@ -1,5 +1,4 @@
-﻿
-Styring:
+﻿Styring:
 - Hoved menu (coverflow):
 -- Op / Ned  =  Forrige / næste spil (Lodret)
 -- Venstre / Højre  =  Forrige / næste spil (Vandret)

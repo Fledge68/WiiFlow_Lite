@@ -311,7 +311,10 @@ int CMenu::main(void)
 			{
 				_CfgSrc();
 				if(BTN_B_HELD)
+				{
+					bheld = true;
 					bUsed = true;
+				}
 				if(!m_cfg.getBool(SOURCEFLOW_DOMAIN, "enabled"))
 				{
 					m_sourceflow = false;
@@ -325,7 +328,10 @@ int CMenu::main(void)
 			{
 				_CfgHB();
 				if(BTN_B_HELD)
+				{
+					bheld = true;
 					bUsed = true;
+				}
 				_showMain();
 			}
 			else

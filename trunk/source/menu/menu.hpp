@@ -53,6 +53,7 @@ private:
 	u8 m_source_cnt;
 	u8 enabledPluginsCount;
 	u8 m_catStartPage;
+	u8 m_max_categories;
 	bool m_clearCats;
 	bool show_mem;
 	vector<dir_discHdr> m_gameList;
@@ -222,10 +223,8 @@ private:
 	s16 m_configLblParental;
 	s16 m_configBtnUnlock;
 	s16 m_configBtnSetCode;
-	s16 m_configLblPartitionName;
 	s16 m_configLblPartition;
-	s16 m_configBtnPartitionP;
-	s16 m_configBtnPartitionM;
+	s16 m_configBtnPartition;
 	s16 m_configLblCfg4;
 	s16 m_configBtnCfg4;
 	s16 m_configLblUser[4];
@@ -252,18 +251,8 @@ private:
 	s16 m_config3LblVideo;
 	s16 m_config3BtnVideoP;
 	s16 m_config3BtnVideoM;
-	s16 m_config3LblGCGameLanguage;
-	s16 m_config3LblGCLanguage;
-	s16 m_config3BtnGCLanguageP;
-	s16 m_config3BtnGCLanguageM;
-	s16 m_config3LblGCGameVideo;
-	s16 m_config3LblGCVideo;
-	s16 m_config3BtnGCVideoP;
-	s16 m_config3BtnGCVideoM;
-	s16 m_config3LblGCGameLoader;
-	s16 m_config3LblGCLoader;
-	s16 m_config3BtnGCLoaderP;
-	s16 m_config3BtnGCLoaderM;
+	s16 m_config3LblGCDefaults;
+	s16 m_config3BtnGCDefaults;
 	s16 m_config3LblChannelsType;
 	s16 m_config3LblChannelsTypeVal;
 	s16 m_config3BtnChannelsTypeP;
@@ -728,7 +717,6 @@ private:
 	lwp_t m_gameSoundThread;
 	bool m_gamesound_changed;
 	u8 m_bnrSndVol;
-	u8 m_max_categories;
 	bool m_video_playing;
 
 private:
@@ -875,6 +863,8 @@ private:
 	void _initConfig4Menu();
 	void _initConfigSndMenu();
 	void _initConfigScreenMenu();
+	void _initConfigGCMenu();
+	void _initPartitionsCfgMenu();
 	void _initGameMenu();
 	void _initDownloadMenu();
 	void _initCodeMenu();
@@ -911,6 +901,8 @@ private:
 	void _textConfig4(void);
 	void _textConfigAdv(void);
 	void _textConfigSnd(void);
+	void _textConfigGC(void);
+	void _textPartitionsCfg(void);
 	void _textGame(void);
 	void _textDownload(void);
 	void _textCode(void);
@@ -937,6 +929,8 @@ private:
 	void _hideConfig4(bool instant = false);
 	void _hideConfigAdv(bool instant = false);
 	void _hideConfigSnd(bool instant = false);
+	void _hideConfigGC(bool instant = false);
+	void _hidePartitionsCfg(bool instant = false);
 	void _hideGame(bool instant = false);
 	void _hideDownload(bool instant = false);
 	void _hideSettings(bool instant = false);
@@ -946,7 +940,7 @@ private:
 	void _hideWBFS(bool instant = false);
 	void _hideCFTheme(bool instant = false);
 	void _hideGameSettings(bool instant = false);
-	void _hideGameSettingsPg();
+	void _hideGameSettingsPg(bool instant = false);
 	void _hideSource(bool instant = false);
 	void _hidePluginSettings(bool instant = false);
 	void _hideCategorySettings(bool instant = false);
@@ -971,6 +965,8 @@ private:
 	void _showConfig4(void);
 	void _showConfigAdv(void);
 	void _showConfigSnd(void);
+	void _showConfigGC(void);
+	void _showPartitionsCfg(void);
 	void _showNandEmu(void);
 	void _showGame(void);
 	void _showDownload(void);
@@ -1022,6 +1018,8 @@ private:
 	int _config4(void);
 	int _configAdv(void);
 	int _configSnd(void);
+	void _configGC(void);
+	void _partitionsCfg(void);
 	int _NandEmuCfg(void);
 	int _AutoExtractSave(string gameId);
 	int _FlashSave(string gameId);

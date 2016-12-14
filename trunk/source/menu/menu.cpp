@@ -1264,6 +1264,8 @@ void CMenu::_buildMenus(void)
 	_initConfigScreenMenu();
 	_initConfig3Menu();
 	_initConfigMenu();
+	_initConfigGCMenu();
+	_initPartitionsCfgMenu();
 	_initGameMenu();
 	_initDownloadMenu();
 	_initCodeMenu();
@@ -1920,6 +1922,8 @@ void CMenu::_updateText(void)
 	_textConfig4();
 	_textConfigAdv();
 	_textConfigSnd();
+	_textConfigGC();
+	_textPartitionsCfg();
 	_textCfgHB();
 	_textGame();
 	_textDownload();
@@ -2132,11 +2136,20 @@ void CMenu::_initCF(void)
 
 	CoverFlow.setSorting(m_source_cnt > 1 ? (Sorting)0 : (Sorting)m_cfg.getInt(_domainFromView(), "sort", 0));
 	if(m_current_view == COVERFLOW_HOMEBREW)
+	{
 		CoverFlow.setBoxMode(m_cfg.getBool(HOMEBREW_DOMAIN, "box_mode", true));
+		CoverFlow.setSmallBoxMode(m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox", false));
+	}
 	else if(m_sourceflow)
+	{
 		CoverFlow.setBoxMode(m_cfg.getBool(SOURCEFLOW_DOMAIN, "box_mode", true));
+		CoverFlow.setSmallBoxMode(m_cfg.getBool(SOURCEFLOW_DOMAIN, "smallbox", false));
+	}
 	else
+	{
 		CoverFlow.setBoxMode(m_cfg.getBool("GENERAL", "box_mode", true));
+		CoverFlow.setSmallBoxMode(false);
+	}
 	CoverFlow.setCompression(m_cfg.getBool("GENERAL", "allow_texture_compression", true));
 	CoverFlow.setBufferSize(m_cfg.getInt("GENERAL", "cover_buffer", 20));
 	CoverFlow.setHQcover(m_cfg.getBool("GENERAL", "cover_use_hq", true));
@@ -2606,11 +2619,10 @@ const char *CMenu::getBoxPath(const dir_discHdr *element)
 		return fmt("%s/%s.png", m_boxPicDir.c_str(), strrchr(element->path, '/') + 1);
 	else if(element->type == TYPE_SOURCE)//sourceflow
 	{
-		const char *m_sflowDir = m_cfg.getString("GENERAL", "dir_Source", fmt("%s/source_menu", m_dataDir.c_str())).c_str();
 		const char *coverImg = strrchr(element->path, '/') + 1;
-		if(coverImg == NULL || m_cfg.getBool(SOURCEFLOW_DOMAIN, "smallbox"))
+		if(coverImg == NULL)
 			return NULL;
-		return fmt("%s/full_covers/%s", m_sflowDir, coverImg);
+		return fmt("%s/full_covers/%s", m_sourceDir.c_str(), coverImg);
 	}
 	return fmt("%s/%s.png", m_boxPicDir.c_str(), element->id);
 }
@@ -2632,14 +2644,13 @@ const char *CMenu::getFrontPath(const dir_discHdr *element)
 		return fmt("%s/icon.png", element->path);
 	else if(element->type == TYPE_SOURCE)//sourceflow
 	{
-		const char *m_sflowDir = m_cfg.getString("GENERAL", "dir_Source", fmt("%s/source_menu", m_dataDir.c_str())).c_str();
 		const char *coverImg = strrchr(element->path, '/') + 1;
 		if(coverImg == NULL)
 			return NULL;
-		const char *coverPath = fmt("%s/front_covers/%s", m_sflowDir, coverImg);
+		const char *coverPath = fmt("%s/front_covers/%s", m_sourceDir.c_str(), coverImg);
 		if(m_cfg.getBool(SOURCEFLOW_DOMAIN, "smallbox") || !fsop_FileExist(coverPath))
 		{
-			coverPath = fmt("%s/small_covers/%s", m_sflowDir, coverImg);
+			coverPath = fmt("%s/small_covers/%s", m_sourceDir.c_str(), coverImg);
 			if(!fsop_FileExist(coverPath))
 				return element->path;
 		}

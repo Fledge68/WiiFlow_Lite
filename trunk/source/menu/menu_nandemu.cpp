@@ -721,7 +721,11 @@ int CMenu::_AutoExtractSave(string gameId)// called from wii game config menu or
 	while(!m_exit)
 	{
 		_mainLoopCommon();
-		if((BTN_A_PRESSED && m_btnMgr.selected(m_nandemuBtnExtract)) || m_forceext)
+		if(BTN_UP_PRESSED)
+			m_btnMgr.up();
+		else if(BTN_DOWN_PRESSED)
+			m_btnMgr.down();
+		else if((BTN_A_PRESSED && m_btnMgr.selected(m_nandemuBtnExtract)) || m_forceext)
 		{
 			m_forceext = false;
 			m_fulldump = false;

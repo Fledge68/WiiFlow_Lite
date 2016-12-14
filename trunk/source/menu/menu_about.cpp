@@ -19,29 +19,21 @@ void CMenu::_about(bool help)
 	int pixels_to_skip = 10;
 	int amount_of_skips = 0;
 	int xtra_skips = 0;
-	bool first = true;
 
-	_textAbout();
-	m_btnMgr.reset(m_aboutLblInfo, true);
-
-	SetupInput();
-	_showAbout();
-	
 	int thanks_h = m_theme.getInt("ABOUT/INFO", "height", 300);
 	int thanks_th = 0;
+
+	SetupInput();
+	_textAbout();
+	m_btnMgr.reset(m_aboutLblInfo, true);
+	_showAbout();
+	m_btnMgr.getTotalHeight(m_aboutLblInfo, thanks_th);
+	m_btnMgr.moveBy(m_aboutLblInfo, 0, -1);
 
 	while(!m_exit)
 	{
 		_mainLoopCommon();
-		if(first)
-		{
-			m_btnMgr.getTotalHeight(m_aboutLblInfo, thanks_th);
-			m_btnMgr.moveBy(m_aboutLblInfo, 0, -1);
-			m_btnMgr.moveBy(m_aboutLblInfo, 0, -pixels_to_skip);
-			first = false;
-		}
-
-		if((BTN_DOWN_PRESSED || BTN_DOWN_HELD) && thanks_th >thanks_h)
+		if((BTN_DOWN_PRESSED || BTN_DOWN_HELD) && thanks_th > thanks_h)
 		{
 			if((thanks_th - amount_of_skips * pixels_to_skip) >= thanks_h)
 			{
@@ -156,7 +148,7 @@ void CMenu::_textAbout(void)
 	// show credits and current cIOS
 	m_btnMgr.setText(m_aboutLblTitle, VERSION_STRING);
 
-	wstringEx developers(wfmt(_fmt("about6", L"\nCurrent Developers:\n%s"), DEVELOPERS));
+	wstringEx developers(wfmt(_fmt("about6", L"Current Developers:\n%s"), DEVELOPERS));
 	wstringEx pDevelopers(wfmt(_fmt("about7", L"Past Developers:\n%s"), PAST_DEVELOPERS));
 
 	wstringEx origLoader(wfmt(_fmt("about1", L"Original Loader By:\n%s"), LOADER_AUTHOR));

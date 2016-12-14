@@ -57,7 +57,11 @@ bool CMenu::_Home(void)
 		/* and it always changes so... */
 		m_btnMgr.setText(m_homeLblBattery, wfmt(PLAYER_BATTERY_LABEL, min((float)wd[0]->battery_level, 100.f), 
 			min((float)wd[1]->battery_level, 100.f), min((float)wd[2]->battery_level, 100.f), min((float)wd[3]->battery_level, 100.f)));
-		if(BTN_A_PRESSED)
+		if(BTN_UP_PRESSED)
+			m_btnMgr.up();
+		else if(BTN_DOWN_PRESSED)
+			m_btnMgr.down();
+		else if(BTN_A_PRESSED)
 		{
 			if(m_btnMgr.selected(m_homeBtnSettings))//actually help guide btn
 			{
@@ -149,7 +153,11 @@ bool CMenu::_ExitTo(void)
 	while(!m_exit)
 	{
 		_mainLoopCommon();
-		if(BTN_A_PRESSED)
+		if(BTN_UP_PRESSED)
+			m_btnMgr.up();
+		else if(BTN_DOWN_PRESSED)
+			m_btnMgr.down();
+		else if(BTN_A_PRESSED)
 		{
 			if(m_btnMgr.selected(m_homeBtnExitToHBC))
 			{

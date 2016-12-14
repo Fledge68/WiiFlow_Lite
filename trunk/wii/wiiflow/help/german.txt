@@ -1,5 +1,4 @@
-﻿
-Bedienung:
+﻿Bedienung:
 - Hauptmenü (Coverflow):
 -- Hoch / Runter  =  vorheriges / nächstes Spiel (Vertikal)
 -- Links / Rechts  =  vorheriges / nächstes Spiel (Horizontal)

@@ -126,18 +126,6 @@ void CMenu::_CfgHB(void)
 	_hideCfgHB(true);
 }
 
-void CMenu::_textCfgHB(void)
-{
-	m_btnMgr.setText(m_cfghbLblTitle, _t("cfghb1", L"Homebrew Settings"));
-	m_btnMgr.setText(m_cfghbLblAdjustCF, _t("cfgc4", L"Adjust Coverflow"));
-	m_btnMgr.setText(m_cfghbBtnAdjustCF, _t("cfgc5", L"Go"));
-	m_btnMgr.setText(m_cfghbLblSmallbox, _t("cfghb2", L"Coverflow Smallbox"));
-	m_btnMgr.setText(m_cfghbLblBoxMode, _t("cfghb6", L"Box Mode"));
-	m_btnMgr.setText(m_cfghbLblPartition, _t("cfghb3", L"Homebrew Partition"));
-	m_btnMgr.setText(m_cfghbBtnBack, _t("cfg10", L"Back"));
-}
-
-
 void CMenu::_initCfgHB(void)
 {
 	m_cfghbBg = _texture("CFG_HB/BG", "texture", theme.bg, false);
@@ -179,4 +167,15 @@ void CMenu::_initCfgHB(void)
 
 	_hideCfgHB(true);
 	_textCfgHB();
+}
+
+void CMenu::_textCfgHB(void)
+{
+	m_btnMgr.setText(m_cfghbLblTitle, _t("cfghb1", L"Homebrew Settings"));
+	m_btnMgr.setText(m_cfghbLblAdjustCF, _t("cfgc4", L"Adjust Coverflow"));
+	m_btnMgr.setText(m_cfghbBtnAdjustCF, _t("cfgc5", L"Go"));
+	m_btnMgr.setText(m_cfghbLblSmallbox, _t("cfghb2", L"Coverflow Smallbox"));
+	m_btnMgr.setText(m_cfghbLblBoxMode, _t("cfghb4", L"Box Mode"));
+	m_btnMgr.setText(m_cfghbLblPartition, _t("cfghb3", L"Homebrew Partition"));
+	m_btnMgr.setText(m_cfghbBtnBack, _t("cfg10", L"Back"));
 }

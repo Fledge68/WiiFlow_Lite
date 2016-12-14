@@ -1,5 +1,4 @@
-﻿
-Commandes :
+﻿Commandes :
 - Page principale (Coverflow) :
 -- Haut/Bas  =  Jeu précédent/suivant (vertical)
 -- Gauche/Droite  =  Jeu précédent/suivant (horizontal)

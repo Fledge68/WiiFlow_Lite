@@ -1,5 +1,4 @@
-﻿
-Controles:
+﻿Controles:
 - Menú Principal (coverflow) :
 -- Arriba / Abajo  =  Previo / próximo juego (vertical)
 -- Izquierda / Derecha  =  Previo / próximo Juego (horizontal)
