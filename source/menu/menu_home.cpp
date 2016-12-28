@@ -61,6 +61,13 @@ bool CMenu::_Home(void)
 			m_btnMgr.up();
 		else if(BTN_DOWN_PRESSED)
 			m_btnMgr.down();
+		else if(BTN_1_PRESSED)
+		{
+			m_theme.save();
+			_hideHome();
+			error(_t("savedtheme", L"Theme config saved!"));
+			_showHome();
+		}
 		else if(BTN_A_PRESSED)
 		{
 			if(m_btnMgr.selected(m_homeBtnSettings))//actually help guide btn

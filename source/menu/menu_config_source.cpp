@@ -181,8 +181,8 @@ void CMenu::_initCfgSrc(void)
 	_setHideAnim(m_cfgsrcLblSmallbox, "CFG_SRC/SF_SMALLBOX", -50, 0, -2.f, 0.f);
 	_setHideAnim(m_cfgsrcBtnSmallbox, "CFG_SRC/SF_SMALLBOX_BTN", -50, 0, 1.f, 0.f);
 	
-	_setHideAnim(m_cfgsrcLblBoxMode, "CFG_SRC/SF_BOX_MODE", -50, 0, -2.f, 0.f);
-	_setHideAnim(m_cfgsrcBtnBoxMode, "CFG_SRC/SF_BOX_MODE_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_cfgsrcLblBoxMode, "CFG_SRC/SF_BOXMODE", -50, 0, -2.f, 0.f);
+	_setHideAnim(m_cfgsrcBtnBoxMode, "CFG_SRC/SF_BOXMODE_BTN", -50, 0, 1.f, 0.f);
 
 	_setHideAnim(m_cfgsrcLblAdjustCF, "CFG_SRC/SF_ADJUSTCF", -50, 0, -2.f, 0.f);
 	_setHideAnim(m_cfgsrcBtnAdjustCF, "CFG_SRC/SF_ADJUSTCF_BTN", -50, 0, 1.f, 0.f);
