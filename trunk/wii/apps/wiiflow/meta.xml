@@ -7,14 +7,14 @@
   <short_description>USB Loader app</short_description>
   <long_description>
     WiiFlow Lite is a app for loading games from a USB Device, SD card, or an actual Disc.
-	It dispays your games in a coverflow with 3D full box covers.
-	
-	Key features:
-	* Emulated NAND support
-	* Plugin system for emu apps
-	* Devolution support
-	* Nintendont support
-	* Neek2o support
+    It dispays your games in a coverflow with 3D full box covers.
+    
+    Key features:
+    * Emulated NAND support
+    * Plugin system for emu apps
+    * Devolution support
+    * Nintendont support
+    * Neek2o support
   </long_description>
   <no_ios_reload/>
 </app>

@@ -871,8 +871,8 @@ void CMenu::_initGameSettingsMenu()
 	_setHideAnim(m_gameSettingsLblDevoMemcardEmu, "GAME_SETTINGS/DEVO_MEMCARD_EMU", 50, 0, -2.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnDevoMemcardEmu, "GAME_SETTINGS/DEVO_MEMCARD_EMU_BTN", -50, 0, 1.f, 0.f);
 
-	_setHideAnim(m_gameSettingsLblWidescreen, "GAME_SETTINGS/DM_WIDESCREEN", 50, 0, -2.f, 0.f);
-	_setHideAnim(m_gameSettingsBtnWidescreen, "GAME_SETTINGS/DM_WIDESCREEN_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsLblWidescreen, "GAME_SETTINGS/WIDESCREEN", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_gameSettingsBtnWidescreen, "GAME_SETTINGS/WIDESCREEN_BTN", -50, 0, 1.f, 0.f);
 
 	_setHideAnim(m_gameSettingsLblArcade, "GAME_SETTINGS/ARCADE", 50, 0, -2.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnArcade, "GAME_SETTINGS/ARCADE_BTN", -50, 0, 1.f, 0.f);
