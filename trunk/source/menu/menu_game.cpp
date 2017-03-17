@@ -1030,12 +1030,12 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	if(has_enabled_providers() && _initNetwork() == 0)
 		add_game_to_card(id);
 
-	u8 GClanguage = min((u32)m_gcfg2.getInt(id, "gc_language", 0), ARRAY_SIZE(CMenu::_GClanguages) - 1u);
+	u8 GClanguage = min((u32)m_gcfg2.getInt(id, "language", 0), ARRAY_SIZE(CMenu::_GClanguages) - 1u);
 	GClanguage = (GClanguage == 0) ? min((u32)m_cfg.getInt(GC_DOMAIN, "game_language", 0), ARRAY_SIZE(CMenu::_GlobalGClanguages) - 1u) : GClanguage-1;
 	if(id[3] == 'E' || id[3] == 'J')
 		GClanguage = 1; //=english
 		
-	u8 videoMode = min((u32)m_gcfg2.getInt(id, "gc_video_mode", 0), ARRAY_SIZE(CMenu::_GCvideoModes) - 1u);
+	u8 videoMode = min((u32)m_gcfg2.getInt(id, "video_mode", 0), ARRAY_SIZE(CMenu::_GCvideoModes) - 1u);
 	videoMode = (videoMode == 0) ? min((u32)m_cfg.getInt(GC_DOMAIN, "video_mode", 0), ARRAY_SIZE(CMenu::_GlobalGCvideoModes) - 1u) : videoMode-1;
 	if(disc || videoMode == 0)
 	{
@@ -1056,16 +1056,27 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	}
 	else if(loader == NINTENDONT)
 	{
-		u8 emuMC = min((u32)m_gcfg2.getInt(id, "emu_memcard", m_cfg.getInt(GC_DOMAIN, "emu_memcard", 2)), ARRAY_SIZE(CMenu::_NinEmuCard) - 1u);
-		emuMC = (emuMC == 0) ? m_cfg.getInt(GC_DOMAIN, "emu_memcard", 2) : emuMC-1;
-		bool usb_hid = m_gcfg2.testOptBool(id, "usb_hid", m_cfg.getBool(GC_DOMAIN, "usb_hid", false));
+		u8 emuMC = min((u32)m_gcfg2.getInt(id, "emu_memcard", 0), ARRAY_SIZE(CMenu::_NinEmuCard) - 1u);
+		emuMC = (emuMC == 0) ? m_cfg.getInt(GC_DOMAIN, "emu_memcard", 1) : emuMC - 1;
+		
+		// these 2 settings have global defaults in wfl main config
+		bool cc_rumble = m_gcfg2.testOptBool(id, "cc_rumble", m_cfg.getBool(GC_DOMAIN, "cc_rumble", false));
 		bool native_ctl = m_gcfg2.testOptBool(id, "native_ctl", m_cfg.getBool(GC_DOMAIN, "native_ctl", false));
-		bool deflicker = m_gcfg2.getBool(id, "Deflicker", false);
+		
+		bool deflicker = m_gcfg2.getBool(id, "deflicker", false);
 		bool tri_arcade = m_gcfg2.getBool(id, "triforce_arcade", false);
+		bool activity_led = m_gcfg2.getBool(id, "led", false);
+		bool ipl = m_gcfg2.getBool(id, "skip_ipl", false);
+		if(IsOnWiiU())
+		{
+			native_ctl = false;
+			activity_led = false;
+		}
 		if(disc == true)
 		{
-			//emuMC = m_cfg.getInt(GC_DOMAIN, "emu_memcard", 1);
-			Nintendont_BootDisc(emuMC, widescreen, usb_hid, native_ctl, deflicker);
+			/*funny, in order for these settings to work they would have to be entered in gameconfig2 manually under the gameID
+			or the game will have to already be on USB or SD but then why launch via disc?*/
+			Nintendont_BootDisc(emuMC, widescreen, cc_rumble, native_ctl, deflicker);
 		}
 		else
 		{
@@ -1089,7 +1100,8 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 			snprintf(NewCheatPath, sizeof(NewCheatPath), "%s%s.gct",GC_Path,id);
 					
 			Nintendont_SetOptions(path, id, CheatPath, NewCheatPath, DeviceName[currentPartition],
-				cheats, emuMC, videoMode, widescreen, usb_hid, native_ctl, deflicker, wiiu_widescreen, NIN_Debugger, tri_arcade);
+				cheats, emuMC, videoMode, widescreen, activity_led, native_ctl, deflicker, wiiu_widescreen, 
+				NIN_Debugger, tri_arcade, cc_rumble, ipl);
 		}
 	}
 	/* configs no longer needed */
