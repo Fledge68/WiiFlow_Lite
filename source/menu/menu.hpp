@@ -482,8 +482,8 @@ private:
 	s16 m_gameSettingsLblWidescreen;
 	s16 m_gameSettingsBtnWidescreen;
 	
-	s16 m_gameSettingsLblUSB_HID;
-	s16 m_gameSettingsBtnUSB_HID;
+	s16 m_gameSettingsLblCC_Rumble;
+	s16 m_gameSettingsBtnCC_Rumble;
   
 	s16 m_gameSettingsLblNATIVE_CTL;
 	s16 m_gameSettingsBtnNATIVE_CTL;
@@ -493,6 +493,9 @@ private:
 
 	s16 m_gameSettingsLblArcade;
 	s16 m_gameSettingsBtnArcade;
+
+	s16 m_gameSettingsLblSkip_IPL;
+	s16 m_gameSettingsBtnSkip_IPL;
 
 	s16 m_gameSettingsLblGCLoader;
 	s16 m_gameSettingsLblGCLoader_Val;

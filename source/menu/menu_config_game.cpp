@@ -112,14 +112,16 @@ void CMenu::_hideGameSettingsPg(bool instant)
 	m_btnMgr.hide(m_gameSettingsLblGCLoader_Val, instant);
 	m_btnMgr.hide(m_gameSettingsBtnGCLoader_P, instant);
 	m_btnMgr.hide(m_gameSettingsBtnGCLoader_M, instant);
-	m_btnMgr.hide(m_gameSettingsLblUSB_HID, instant);
-	m_btnMgr.hide(m_gameSettingsBtnUSB_HID, instant);
+	m_btnMgr.hide(m_gameSettingsLblCC_Rumble, instant);
+	m_btnMgr.hide(m_gameSettingsBtnCC_Rumble, instant);
 	m_btnMgr.hide(m_gameSettingsLblNATIVE_CTL, instant);
 	m_btnMgr.hide(m_gameSettingsBtnNATIVE_CTL, instant);
 	m_btnMgr.hide(m_gameSettingsLblDeflicker, instant);
 	m_btnMgr.hide(m_gameSettingsBtnDeflicker, instant);
 	m_btnMgr.hide(m_gameSettingsLblArcade, instant);
 	m_btnMgr.hide(m_gameSettingsBtnArcade, instant);
+	m_btnMgr.hide(m_gameSettingsLblSkip_IPL, instant);
+	m_btnMgr.hide(m_gameSettingsBtnSkip_IPL, instant);
 	// Channels only
 	m_btnMgr.hide(m_gameSettingsLblApploader, instant);
 	m_btnMgr.hide(m_gameSettingsBtnApploader, instant);
@@ -285,14 +287,18 @@ void CMenu::_showGameSettings(void)
 	{
 		if(GameHdr->type == TYPE_GC_GAME)
 		{
-			m_btnMgr.show(m_gameSettingsLblUSB_HID);
-			m_btnMgr.show(m_gameSettingsBtnUSB_HID);
+			m_btnMgr.show(m_gameSettingsLblCC_Rumble);
+			m_btnMgr.show(m_gameSettingsBtnCC_Rumble);
 			
 		 	m_btnMgr.show(m_gameSettingsLblNATIVE_CTL);
 			m_btnMgr.show(m_gameSettingsBtnNATIVE_CTL);
 
 			m_btnMgr.show(m_gameSettingsBtnArcade);
 			m_btnMgr.show(m_gameSettingsLblArcade);
+
+			m_btnMgr.show(m_gameSettingsBtnSkip_IPL);
+			m_btnMgr.show(m_gameSettingsLblSkip_IPL);
+
 		}
 		else
 		{
@@ -349,10 +355,11 @@ void CMenu::_showGameSettings(void)
 		m_btnMgr.setText(m_gameSettingsLblWidescreen, _t("cfgg36", L"Widescreen Patch"));
 		m_btnMgr.setText(m_gameSettingsBtnWidescreen, _optBoolToString(m_gcfg2.getOptBool(id, "widescreen", 0)));
 		m_btnMgr.setText(m_gameSettingsBtnDevoMemcardEmu, _optBoolToString(m_gcfg2.getOptBool(id, "devo_memcard_emu", 2)));
-		m_btnMgr.setText(m_gameSettingsBtnUSB_HID, _optBoolToString(m_gcfg2.getOptBool(id, "usb_hid", 2)));
+		m_btnMgr.setText(m_gameSettingsBtnCC_Rumble, _optBoolToString(m_gcfg2.getOptBool(id, "cc_rumble", 2)));
 		m_btnMgr.setText(m_gameSettingsBtnNATIVE_CTL, _optBoolToString(m_gcfg2.getOptBool(id, "native_ctl", 2)));
-		m_btnMgr.setText(m_gameSettingsBtnDeflicker, _optBoolToString(m_gcfg2.getOptBool(id, "Deflicker", 0)));
+		m_btnMgr.setText(m_gameSettingsBtnDeflicker, _optBoolToString(m_gcfg2.getOptBool(id, "deflicker", 0)));
 		m_btnMgr.setText(m_gameSettingsBtnArcade, _optBoolToString(m_gcfg2.getOptBool(id, "triforce_arcade", 0)));
+		m_btnMgr.setText(m_gameSettingsBtnSkip_IPL, _optBoolToString(m_gcfg2.getOptBool(id, "skip_ipl", 0)));
 
 		i = min((u32)m_gcfg2.getInt(id, "video_mode", 0), ARRAY_SIZE(CMenu::_GCvideoModes) - 1u);
 		m_btnMgr.setText(m_gameSettingsLblVideo, _t(CMenu::_GCvideoModes[i].id, CMenu::_GCvideoModes[i].text));
@@ -362,7 +369,7 @@ void CMenu::_showGameSettings(void)
 		
 		if(GCLoader == NINTENDONT)
 		{
-			m_btnMgr.setText(m_gameSettingsLblEmuMemCard, _t("cfgg47", L"Emulated MemCard"));
+			//m_btnMgr.setText(m_gameSettingsLblEmuMemCard, _t("cfgg47", L"Emulated MemCard"));
 			i = min((u32)m_gcfg2.getInt(id, "emu_memcard", 0), ARRAY_SIZE(CMenu::_NinEmuCard) - 1u);
 			m_btnMgr.setText(m_gameSettingsLblEmuMemCard_Val, _t(CMenu::_NinEmuCard[i].id, CMenu::_NinEmuCard[i].text));
 			if(IsOnWiiU())
@@ -616,17 +623,22 @@ void CMenu::_gameSettings(void)
 			}	
 			else if(m_btnMgr.selected(m_gameSettingsBtnDeflicker))
 			{
-				m_gcfg2.setBool(id, "Deflicker", !m_gcfg2.getBool(id, "Deflicker", 0));
+				m_gcfg2.setBool(id, "deflicker", !m_gcfg2.getBool(id, "deflicker", 0));
 				_showGameSettings();
 			}	
-			else if(m_btnMgr.selected(m_gameSettingsBtnUSB_HID))
+			else if(m_btnMgr.selected(m_gameSettingsBtnCC_Rumble))
 			{
-				m_gcfg2.setOptBool(id, "usb_hid", loopNum(m_gcfg2.getOptBool(id, "usb_hid") + 1, 3));
+				m_gcfg2.setOptBool(id, "cc_rumble", loopNum(m_gcfg2.getOptBool(id, "cc_rumble") + 1, 3));
 				_showGameSettings();
 			}
 			else if(m_btnMgr.selected(m_gameSettingsBtnArcade))
 			{
 				m_gcfg2.setBool(id, "triforce_arcade", !m_gcfg2.getBool(id, "triforce_arcade", 0));
+				_showGameSettings();
+			}
+			else if(m_btnMgr.selected(m_gameSettingsBtnSkip_IPL))
+			{
+				m_gcfg2.setBool(id, "skip_ipl", !m_gcfg2.getBool(id, "skip_ipl", 0));
 				_showGameSettings();
 			}
 			else if(m_btnMgr.selected(m_gameSettingsBtnPrivateServer))
@@ -773,14 +785,20 @@ void CMenu::_initGameSettingsMenu()
 	m_gameSettingsBtnLaunchNK = _addButton("GAME_SETTINGS/LAUNCHNEEK_BTN", theme.btnFont, L"", 420, 250, 200, 48, theme.btnFontColor);
 
 //GC Nintendont Page 4
-	m_gameSettingsLblUSB_HID = _addLabel("GAME_SETTINGS/USB_HID", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsBtnUSB_HID = _addButton("GAME_SETTINGS/USB_HID_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
+	//m_gameSettingsLblUSB_HID = _addLabel("GAME_SETTINGS/USB_HID", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	//m_gameSettingsBtnUSB_HID = _addButton("GAME_SETTINGS/USB_HID_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
+
+	m_gameSettingsLblCC_Rumble = _addLabel("GAME_SETTINGS/CC_RUMBLE", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsBtnCC_Rumble = _addButton("GAME_SETTINGS/CC_RUMBLE_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
 
 	m_gameSettingsLblNATIVE_CTL = _addLabel("GAME_SETTINGS/NATIVE_CTL", theme.lblFont, L"", 20, 185, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsBtnNATIVE_CTL = _addButton("GAME_SETTINGS/NATIVE_CTL_BTN", theme.btnFont, L"", 420, 190, 200, 48, theme.btnFontColor);
 
 	m_gameSettingsLblArcade = _addLabel("GAME_SETTINGS/ARCADE", theme.lblFont, L"", 20, 245, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsBtnArcade = _addButton("GAME_SETTINGS/ARCADE_BTN", theme.btnFont, L"", 420, 250, 200, 48, theme.btnFontColor);
+
+	m_gameSettingsLblSkip_IPL = _addLabel("GAME_SETTINGS/SKIP_IPL", theme.lblFont, L"", 20, 305, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsBtnSkip_IPL = _addButton("GAME_SETTINGS/SKIP_IPL_BTN", theme.btnFont, L"", 420, 310, 200, 48, theme.btnFontColor);
 
 //Page 5
 	m_gameSettingsLblLED = _addLabel("GAME_SETTINGS/LED", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
@@ -854,8 +872,8 @@ void CMenu::_initGameSettingsMenu()
 	_setHideAnim(m_gameSettingsLblLED, "GAME_SETTINGS/LED", 50, 0, -2.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnLED, "GAME_SETTINGS/LED_BTN", -50, 0, 1.f, 0.f);
 	
-	_setHideAnim(m_gameSettingsLblUSB_HID, "GAME_SETTINGS/USB_HID", 50, 0, -2.f, 0.f);
-	_setHideAnim(m_gameSettingsBtnUSB_HID, "GAME_SETTINGS/USB_HID_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsLblCC_Rumble, "GAME_SETTINGS/CC_RUMBLE", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_gameSettingsBtnCC_Rumble, "GAME_SETTINGS/CC_RUMBLE_BTN", -50, 0, 1.f, 0.f);
 	
 	_setHideAnim(m_gameSettingsLblNATIVE_CTL, "GAME_SETTINGS/NATIVE_CTL", 50, 0, -2.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnNATIVE_CTL, "GAME_SETTINGS/NATIVE_CTL_BTN", -50, 0, 1.f, 0.f);	
@@ -876,6 +894,9 @@ void CMenu::_initGameSettingsMenu()
 
 	_setHideAnim(m_gameSettingsLblArcade, "GAME_SETTINGS/ARCADE", 50, 0, -2.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnArcade, "GAME_SETTINGS/ARCADE_BTN", -50, 0, 1.f, 0.f);
+
+	_setHideAnim(m_gameSettingsLblSkip_IPL, "GAME_SETTINGS/SKIP_IPL", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_gameSettingsBtnSkip_IPL, "GAME_SETTINGS/SKIP_IPL_BTN", -50, 0, 1.f, 0.f);
 
 	_setHideAnim(m_gameSettingsLblGCLoader, "GAME_SETTINGS/GC_LOADER", 50, 0, -2.f, 0.f);
 	_setHideAnim(m_gameSettingsLblGCLoader_Val, "GAME_SETTINGS/GC_LOADER_BTN", -50, 0, 1.f, 0.f);
@@ -943,8 +964,9 @@ void CMenu::_textGameSettings(void)
 	m_btnMgr.setText(m_gameSettingsLblAspectRatio, _t("cfgg27", L"Aspect Ratio"));
 	m_btnMgr.setText(m_gameSettingsLblApploader, _t("cfgg37", L"Boot Apploader"));	
 	m_btnMgr.setText(m_gameSettingsLblEmuMemCard, _t("cfgg47", L"Emulated MemCard"));
-	m_btnMgr.setText(m_gameSettingsLblUSB_HID, _t("cfgg42", L"USB-HID Controller"));
+	m_btnMgr.setText(m_gameSettingsLblCC_Rumble, _t("cfgg52", L"Wiimote CC Rumble"));
 	m_btnMgr.setText(m_gameSettingsLblNATIVE_CTL, _t("cfgg43", L"Native Control"));
+	m_btnMgr.setText(m_gameSettingsLblSkip_IPL, _t("cfgg53", L"Skip IPL BIOS"));
 	
 	m_btnMgr.setText(m_gameSettingsLblArcade, _t("cfgg48", L"Triforce Arcade Mode"));
 	m_btnMgr.setText(m_gameSettingsLblEmulation, _t("cfgg24", L"NAND Emulation"));
