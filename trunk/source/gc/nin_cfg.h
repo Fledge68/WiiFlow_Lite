@@ -13,7 +13,7 @@
 typedef struct NIN_CFG
 {
 	unsigned int		Magicbytes;		// 0x01070CF6
-	unsigned int		Version;		// v4 since v3.354, v5 since v3.358, v6 since v3.368, v7 since v4.424, v8 since v4.431
+	unsigned int		Version;		// v3 since rev135, v4 since v3.354, v5 since v3.358, v6 since v3.368, v7 since v4.424, v8 since v4.431
 	unsigned int		Config;
 	unsigned int		VideoMode;
 	unsigned int		Language;
@@ -21,7 +21,10 @@ typedef struct NIN_CFG
 	char	CheatPath[255];
 	unsigned int		MaxPads;
 	unsigned int		GameID;
-	unsigned int		MemCardBlocks;
+	unsigned char		MemCardBlocks;
+	signed char			VideoScale; // 40 to 120 or 0 for auto, is added to 600 for 640 to 720
+	signed char			VideoOffset;// -20 to 20 or 0 for center
+	unsigned char		Unused;
 } NIN_CFG;
 
 // NIN_CFG_REMLIMIT is disc read speed limt enabled by default. It keeps loading speed at GC speed.

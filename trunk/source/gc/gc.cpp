@@ -25,7 +25,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <dirent.h>
-#include "menu/menu.hpp"
 #include "gc/gc.hpp"
 #include "gui/text.hpp"
 #include "devicemounter/DeviceHandler.hpp"
@@ -38,23 +37,56 @@
 #include "memory/memory.h"
 #include "memory/mem2.hpp"
 
-/* since Nintendont v1.98 argsboot is supported. and since wiiflow lite doesn't support versions less than v3.358
-we will use argsboot every time. */
+// Languages
+#define SRAM_ENGLISH 0
+#define SRAM_GERMAN 1
+#define SRAM_FRENCH 2
+#define SRAM_SPANISH 3
+#define SRAM_ITALIAN 4
+#define SRAM_DUTCH 5
+
+extern "C" {
+syssram* __SYS_LockSram();
+u32 __SYS_UnlockSram(u32 write);
+u32 __SYS_SyncSram(void);
+}
+
+u8 get_wii_language()
+{
+	switch (CONF_GetLanguage())
+	{
+		case CONF_LANG_GERMAN:
+			return SRAM_GERMAN;
+		case CONF_LANG_FRENCH:
+			return SRAM_FRENCH;
+		case CONF_LANG_SPANISH:
+			return SRAM_SPANISH;
+		case CONF_LANG_ITALIAN:
+			return SRAM_ITALIAN;
+		case CONF_LANG_DUTCH:
+			return SRAM_DUTCH;
+		default:
+			return SRAM_ENGLISH;
+	}
+}
 
 // Nintendont
 NIN_CFG NinCfg;
-u8 NinDevice = 0;
-bool NinArgsboot = false;
 
-void Nintendont_SetOptions(const char *game, const char *gameID, char *CheatPath, char *NewCheatPath, const char *partition,
-	bool cheats, u8 emuMC, u8 videomode, bool widescreen, bool led, bool native_ctl, bool deflicker, bool wiiu_widescreen, 
-	bool NIN_Debugger, bool tri_arcade, bool cc_rumble, bool ipl)
+/* since Nintendont v1.98 argsboot is supported.
+since v3.324 '$$Version:' string was added for loaders to detect.
+since wiiflow lite doesn't support versions less than v3.358
+we will use argsboot and version detection every time. */
+
+void Nintendont_SetOptions(const char *gamePath, const char *gameID, const char *CheatPath, u8 lang, 
+							u32 n_cfg, u32 n_vm, s8 vidscale, s8 vidoffset)
 {
-	//clear nincfg and set magicbytes now in case of return when NINRev=0 below
 	memset(&NinCfg, 0, sizeof(NIN_CFG));
 	NinCfg.Magicbytes = 0x01070CF6;
 	
-	//check version
+	NinCfg.MaxPads = 4;
+
+	/* check nintendont version so we can set the proper config version */
 	u32 NIN_cfg_version = NIN_CFG_VERSION;
 	char NINVersion[7]= "";
 	u32 NINRev = 0;
@@ -83,168 +115,84 @@ void Nintendont_SetOptions(const char *game, const char *gameID, char *CheatPath
 		break;
 	}
 	if(NINRev == 0 || NINRev < 358)
-		return;// nintendont not found or revision is less than 358(was 135) thus too old for wiiflow lite
-	/*if(NINRev >= 135 && NINRev < 354)
-		NIN_cfg_version = 3;
-	else if(NINRev >= 354 && NINRev < 358)
-		NIN_cfg_version = 4;*/
+		NIN_cfg_version = 2;// nintendont not found or revision is less than 358 thus too old for wiiflow lite
+		
 	else if(NINRev >= 358 && NINRev < 368)
 		NIN_cfg_version = 5;
 	else if(NINRev >= 368 && NINRev < 424)
 		NIN_cfg_version = 6;
 	else if(NINRev >= 424 && NINRev < 431)
 		NIN_cfg_version = 7;
-		
+	
 	NinCfg.Version = NIN_cfg_version;
+
+	/* set config options */
+	NinCfg.Config = n_cfg;
+
+	/* VideoMode setup */
+	NinCfg.VideoMode = n_vm;
 	
-	/*if(memcmp("0x474851",gameID,3)==0) // old fix for simpsons hit & run - r155 fixed this
-		NinCfg.MaxPads = 1;
-	else*/
-	NinCfg.MaxPads = 4;
+	NinCfg.VideoScale = vidscale;
+	NinCfg.VideoOffset = vidoffset;
 
-	NinCfg.VideoMode |= NIN_VID_FORCE;// always force video?
+	/* language setup */
+	if(lang == 0)
+		lang = get_wii_language();
+	else
+		lang--;
 
-	if((videomode > 3) && (videomode != 6))
+	switch(lang)
 	{
-		NinCfg.Config |= NIN_CFG_FORCE_PROG;
-		NinCfg.VideoMode |= NIN_VID_PROG;
+		case SRAM_GERMAN:
+			NinCfg.Language = NIN_LAN_GERMAN;
+			break;
+		case SRAM_FRENCH:
+			NinCfg.Language = NIN_LAN_FRENCH;
+			break;
+		case SRAM_SPANISH:
+			NinCfg.Language = NIN_LAN_SPANISH;
+			break;
+		case SRAM_ITALIAN:
+			NinCfg.Language = NIN_LAN_ITALIAN;
+			break;
+		case SRAM_DUTCH:
+			NinCfg.Language = NIN_LAN_DUTCH;
+			break;
+		default:
+			NinCfg.Language = NIN_LAN_ENGLISH;
+			break;
 	}
-	
-	NinCfg.Config |= NIN_CFG_AUTO_BOOT;
-	
-	NinDevice = DeviceHandle.PathToDriveType(game);
-	if(NinDevice != SD)
-		NinCfg.Config |= NIN_CFG_USB;
 
-	if(NIN_Debugger && IsOnWiiU() == false) //wii only
-		NinCfg.Config |= NIN_CFG_OSREPORT;
-
-	if(native_ctl && IsOnWiiU() == false) //wii only
-		NinCfg.Config |= NIN_CFG_NATIVE_SI;
-
-	if(deflicker)
-		NinCfg.VideoMode |= NIN_VID_FORCE_DF;
-
-	if(wiiu_widescreen && IsOnWiiU() == true) //wii u vwii only
-		NinCfg.Config |= NIN_CFG_WIIU_WIDE;
-
-	if(widescreen)
-		NinCfg.Config |= NIN_CFG_FORCE_WIDE;
-
-	if(led)
-		NinCfg.Config |= NIN_CFG_LED;
-
-	if(tri_arcade)
-		NinCfg.Config |= NIN_CFG_ARCADE_MODE;
-
-	if(cc_rumble)
-		NinCfg.Config |= NIN_CFG_BIT_CC_RUMBLE;
-
-	if(ipl)
-		NinCfg.Config |= NIN_CFG_SKIP_IPL;
-		
-	NinCfg.MemCardBlocks = 0x2; //251 blocks	
-
-	if(emuMC > 0 || IsOnWiiU() == true) //force memcardemu for wii u vwii
-		NinCfg.Config |= NIN_CFG_MEMCARDEMU;
-
-	if(emuMC > 1)
-	{
-		NinCfg.Config |= NIN_CFG_MC_MULTI;		
+	/* MemCard Blocks Setup */
+	if(NinCfg.Config & NIN_CFG_MC_MULTI)
 		NinCfg.MemCardBlocks = 0x4; //1019 blocks (8MB)
-	}
-	if(CheatPath != NULL && NewCheatPath != NULL && cheats)
-	{
-		const char *ptr = NULL;
-		if(strncasecmp(CheatPath, partition, strlen(partition)) != 0)
-		{
-			fsop_CopyFile(CheatPath, NewCheatPath, NULL, NULL);
-			ptr = strchr(NewCheatPath, '/');
-		}
-		else
-			ptr = strchr(CheatPath, '/');
-		snprintf(NinCfg.CheatPath, sizeof(NinCfg.CheatPath), ptr);
-		NinCfg.Config |= NIN_CFG_CHEAT_PATH;
-	}
-	if(cheats)
-		NinCfg.Config |= NIN_CFG_CHEATS;
+	else
+		NinCfg.MemCardBlocks = 0x2; //251 blocks (2MB)
+
+	/* CheatPath Setup */
+	if(CheatPath != NULL && (NinCfg.Config & NIN_CFG_CHEATS))
+		snprintf(NinCfg.CheatPath, sizeof(NinCfg.CheatPath), strchr(CheatPath, '/'));
 	
-	strncpy(NinCfg.GamePath, strchr(game, '/'), 254);
-	if(strstr(NinCfg.GamePath, "boot.bin") != NULL)
+	/* GamePath Setup */
+	if(strstr(gamePath, "games") == NULL)// set path for disc
+		snprintf(NinCfg.GamePath, sizeof(NinCfg.GamePath), "di");
+	else
 	{
-		*strrchr(NinCfg.GamePath, '/') = '\0'; //boot.bin
-		*(strrchr(NinCfg.GamePath, '/')+1) = '\0'; //sys
+		strncpy(NinCfg.GamePath, strchr(gamePath, '/'), 254);
+		if(strstr(NinCfg.GamePath, "boot.bin") != NULL)
+		{
+			*strrchr(NinCfg.GamePath, '/') = '\0'; //boot.bin
+			*(strrchr(NinCfg.GamePath, '/')+1) = '\0'; //sys
+		}
 	}
+	
+	/* GameID Setup */
 	memcpy(&NinCfg.GameID, gameID, 4);
 	gprintf("Nintendont Game Path: %s, ID: %08x\n", NinCfg.GamePath, NinCfg.GameID);
-}
-
-void Nintendont_BootDisc(u8 emuMC, bool widescreen, bool cc_rumble, bool native_ctl, bool deflicker)
-{
-	memset(&NinCfg, 0, sizeof(NIN_CFG));
-	NinCfg.Magicbytes = 0x01070CF6;
-	FILE * location = fopen("sd:/nincfg.bin", "r");
-	if(location == NULL)
-		NinCfg.Config |= NIN_CFG_USB;
-		
-	fclose(location);
-	location = NULL;
-
-	NinCfg.Version = NIN_CFG_VERSION;
-	NinCfg.Config |= NIN_CFG_AUTO_BOOT;
-	NinCfg.VideoMode |= NIN_VID_AUTO;
-
-	if(cc_rumble)
-		NinCfg.Config |= NIN_CFG_BIT_CC_RUMBLE;	
-	if(emuMC == 1)
-	{
-		NinCfg.Config |= NIN_CFG_MEMCARDEMU;
-		NinCfg.MemCardBlocks = 0x2;//251 blocks (2MB)
-	}
-	else if(emuMC == 2)
-	{
-	  NinCfg.Config |= NIN_CFG_MEMCARDEMU;
-	  NinCfg.Config |= NIN_CFG_MC_MULTI;		
-	  NinCfg.MemCardBlocks = 0x4;//1019 blocks (8MB)
-
-	}
-	if(native_ctl)
-		NinCfg.Config |= NIN_CFG_NATIVE_SI;		
-	if(deflicker)
-		NinCfg.VideoMode |= NIN_VID_FORCE_DF;				
-	if(widescreen)
-		NinCfg.Config |= NIN_CFG_FORCE_WIDE;
-	snprintf(NinCfg.GamePath,sizeof(NinCfg.GamePath),"di");
-}
-
-void Nintendont_WriteOptions()
-{
+	
 	gprintf("Writing Arguments\n");
 	AddBootArgument((char*)&NinCfg, sizeof(NIN_CFG));
 }
-	
-/*void Nintendont_WriteOptions()
-{
-	// Newer Nintendont versions
-	if(NinArgsboot == true)
-	{
-		gprintf("Writing Arguments\n");
-		AddBootArgument((char*)&NinCfg, sizeof(NIN_CFG));
-		return;
-	}
-	// general loader
-	if(DeviceHandle.SD_Inserted())
-	{
-		gprintf("Writing Nintendont CFG: sd:/%s\n", NIN_CFG_PATH);
-		fsop_WriteFile(fmt("sd:/%s", NIN_CFG_PATH), &NinCfg, sizeof(NIN_CFG));
-	}
-	// for kernel
-	if(NinDevice != SD)
-	{
-		gprintf("Writing Nintendont USB Kernel CFG: %s:/%s\n", DeviceName[NinDevice], NIN_CFG_PATH);
-		fsop_WriteFile(fmt("%s:/%s", DeviceName[NinDevice], NIN_CFG_PATH), &NinCfg, sizeof(NIN_CFG));
-	}
-}*/
 
 bool Nintendont_Installed()
 {
@@ -271,19 +219,6 @@ bool Nintendont_GetLoader()
 		{
 			gprintf("Nintendont loaded: %s\n", dol_path);
 			AddBootArgument(dol_path);
-			break;
-			//search for argsboot not needed
-			u32 size;
-			const char *dol_ptr = GetHomebrew(&size);
-			for(u32 i = 0; i < size; i += 0x10)
-			{
-				if(strncmp(dol_ptr + i, "argsboot", 8) == 0)
-				{
-					gprintf("Nintendont argsboot found at %08x\n", i);
-					NinArgsboot = true;
-					break;
-				}
-			}
 			break;
 		}
 	}
@@ -319,11 +254,11 @@ void DEVO_GetLoader(const char *path)
 		gprintf("Devolution: Loader not found!\n");
 }
 
-void DEVO_SetOptions(const char *isopath, const char *gameID, bool memcard_emu,
-					bool widescreen, bool activity_led, bool wifi)
+void DEVO_SetOptions(const char *isopath, const char *gameID, u8 videomode, u8 lang, 
+						bool memcard_emu, bool widescreen, bool activity_led, bool wifi)
 {
 	// re-mount device we need
-	DeviceHandle.MountDevolution();
+	//DeviceHandle.MountDevolution();
 
 	//start writing cfg to mem
 	struct stat st;
@@ -429,7 +364,57 @@ void DEVO_SetOptions(const char *isopath, const char *gameID, bool memcard_emu,
 	// flush disc ID and Devolution config out to memory
 	DCFlushRange((void*)Disc_ID, 64);
 
-	DeviceHandle.UnMountDevolution();
+	//DeviceHandle.UnMountDevolution();
+	
+	// GX Render Mode (rmode) and register (rmode_reg)
+	GXRModeObj *rmode = VIDEO_GetPreferredMode(0);
+	int rmode_reg = 0;// VI_NTSC
+	
+	switch (videomode)
+	{
+		case 1:// PAL50
+			rmode = &TVPal528IntDf;
+			rmode_reg = 1;// VI_PAL
+			break;
+		case 2:// PAL60 480i
+			rmode = &TVEurgb60Hz480IntDf;
+			rmode_reg = 5;// VI_EURGB60
+		default:
+		case 3:// NTSC 480i
+			rmode = &TVNtsc480IntDf;
+			break;
+		
+	}
+	
+	/* Set video mode register */
+	*Video_Mode = rmode_reg;
+	DCFlushRange((void*)Video_Mode, 4);
+
+	/* Set video mode */
+	if(rmode != 0)
+		VIDEO_Configure(rmode);
+
+	/* Setup video */
+	VIDEO_SetBlack(TRUE);
+	VIDEO_Flush();
+	VIDEO_WaitVSync();
+	if(rmode->viTVMode & VI_NON_INTERLACE)
+		VIDEO_WaitVSync();
+	else while(VIDEO_GetNextField())
+		VIDEO_WaitVSync();
+
+	/* language setup */
+	if(lang == 0)
+		lang = get_wii_language();
+	else
+		lang--;
+
+	// sram settins for devo language only
+	syssram *sram;
+	sram = __SYS_LockSram();
+	sram->lang = lang;
+	__SYS_UnlockSram(1); // 1 -> write changes
+	while(!__SYS_SyncSram());
 }
 
 void DEVO_Boot()
@@ -442,179 +427,4 @@ void DEVO_Boot()
 	gprintf("%s\n", (loader_bin+4));
 	/* Boot that binary */
 	JumpToEntry(DEVO_ENTRY);
-}
-
-
-// General
-#define SRAM_ENGLISH 0
-#define SRAM_GERMAN 1
-#define SRAM_FRENCH 2
-#define SRAM_SPANISH 3
-#define SRAM_ITALIAN 4
-#define SRAM_DUTCH 5
-
-extern "C" {
-syssram* __SYS_LockSram();
-u32 __SYS_UnlockSram(u32 write);
-u32 __SYS_SyncSram(void);
-}
-
-void GC_SetVideoMode(u8 videomode, u8 loader)
-{
-	syssram *sram;
-	sram = __SYS_LockSram();
-	GXRModeObj *vmode = VIDEO_GetPreferredMode(0);
-	int vmode_reg = 0;// VI_NTSC
-
-	if((VIDEO_HaveComponentCable() && (CONF_GetProgressiveScan() > 0)) || ((videomode > 3) && (videomode != 6)))
-		sram->flags |= 0x80; //set progressive flag
-	else
-		sram->flags &= 0x7F; //clear progressive flag
-
-	if(videomode == 1 || videomode == 3 || videomode == 5 || videomode == 6 || videomode == 7)
-	{
-		vmode_reg = 1;// VI_PAL
-		sram->flags |= 0x01; // Set bit 0 to set the video mode to PAL
-		sram->ntd |= 0x40; //set pal60 flag
-	}
-	else
-	{
-		sram->flags &= 0xFE; // Clear bit 0 to set the video mode to NTSC
-		sram->ntd &= 0xBF; //clear pal60 flag
-	}
-	/* should the sram pal60 flag be cleared for PAL50? */
-	if(videomode == 1)// PAL50
-	{
-		if(loader == 1)
-			NinCfg.VideoMode |= NIN_VID_FORCE_PAL50;
-		vmode = &TVPal528IntDf;
-	}
-	else if(videomode == 2)// NTSC
-	{
-		if(loader == 1)
-			NinCfg.VideoMode |= NIN_VID_FORCE_NTSC;
-		vmode = &TVNtsc480IntDf;
-	}
-	else if(videomode == 3)// PAL60
-	{
-		if(loader == 1)
-			NinCfg.VideoMode |= NIN_VID_FORCE_PAL60;
-		vmode = &TVEurgb60Hz480IntDf;
-		vmode_reg = 5;// VI_EURGB60
-	}
-	else if(videomode == 4)// NTSC 480P
-	{
-		if(loader == 1)
-			NinCfg.VideoMode |= NIN_VID_FORCE_NTSC;
-		vmode = &TVNtsc480Prog;
-	}
-	else if(videomode == 5)// PAL 480P
-	{
-		if(loader == 1)
-			NinCfg.VideoMode |= NIN_VID_FORCE_PAL60;
-		vmode = &TVEurgb60Hz480Prog;
-		vmode_reg = 5;
-	}
-	else if(videomode == 6)// MPAL
-	{
-		if(loader == 1)
-			NinCfg.VideoMode |= NIN_VID_FORCE_MPAL;
-		vmode = &TVEurgb60Hz480IntDf;
-		vmode_reg = 2;// VI_MPAL
-	}
-	else if(videomode == 7)// MPAL Prog
-	{
-		if(loader == 1)
-			NinCfg.VideoMode |= NIN_VID_FORCE_MPAL;
-		vmode = &TVEurgb60Hz480Prog;
-		vmode_reg = 2;
-	}
-
-	__SYS_UnlockSram(1); // 1 -> write changes
-	while(!__SYS_SyncSram());
-
-	/* Set video mode register */
-	*Video_Mode = vmode_reg;
-	DCFlushRange((void*)Video_Mode, 4);
-
-	/* Set video mode */
-	if(vmode != 0)
-		VIDEO_Configure(vmode);
-
-	/* Setup video
-	VIDEO_SetBlack(FALSE);
-	VIDEO_Flush();
-	VIDEO_WaitVSync();
-	if(vmode->viTVMode & VI_NON_INTERLACE)
-		VIDEO_WaitVSync();
-	else while(VIDEO_GetNextField())
-		VIDEO_WaitVSync(); */
-
-	/* Set black and flush */
-	VIDEO_SetBlack(TRUE);
-	VIDEO_Flush();
-	VIDEO_WaitVSync();
-	if(vmode->viTVMode & VI_NON_INTERLACE)
-		VIDEO_WaitVSync();
-	else while(VIDEO_GetNextField())
-		VIDEO_WaitVSync();
-}
-
-u8 get_wii_language()
-{
-	switch (CONF_GetLanguage())
-	{
-		case CONF_LANG_GERMAN:
-			return SRAM_GERMAN;
-		case CONF_LANG_FRENCH:
-			return SRAM_FRENCH;
-		case CONF_LANG_SPANISH:
-			return SRAM_SPANISH;
-		case CONF_LANG_ITALIAN:
-			return SRAM_ITALIAN;
-		case CONF_LANG_DUTCH:
-			return SRAM_DUTCH;
-		default:
-			return SRAM_ENGLISH;
-	}
-}
-
-void GC_SetLanguage(u8 lang, u8 loader)
-{
-	if (lang == 0)
-		lang = get_wii_language();
-	else
-		lang--;
-
-	syssram *sram;
-	sram = __SYS_LockSram();
-	sram->lang = lang;
-	__SYS_UnlockSram(1); // 1 -> write changes
-	while(!__SYS_SyncSram());
-
-	/* write language for nintendont */
-	if(loader == 1)
-	{
-		switch(lang)
-		{
-			case SRAM_GERMAN:
-				NinCfg.Language = NIN_LAN_GERMAN;
-				break;
-			case SRAM_FRENCH:
-				NinCfg.Language = NIN_LAN_FRENCH;
-				break;
-			case SRAM_SPANISH:
-				NinCfg.Language = NIN_LAN_SPANISH;
-				break;
-			case SRAM_ITALIAN:
-				NinCfg.Language = NIN_LAN_ITALIAN;
-				break;
-			case SRAM_DUTCH:
-				NinCfg.Language = NIN_LAN_DUTCH;
-				break;
-			default:
-				NinCfg.Language = NIN_LAN_ENGLISH;
-				break;
-		}
-	}
 }

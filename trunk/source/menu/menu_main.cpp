@@ -406,16 +406,13 @@ int CMenu::main(void)
 			{
 				/* Cleanup for Disc Booter */
 				_hideMain(true);
-				CoverFlow.clear();
-				_showWaitMessage();
-				m_gameSound.Stop();
-				CheckGameSoundThread();
+				//CoverFlow.clear();
 				/* Create Fake Header */
 				dir_discHdr hdr;
 				memset(&hdr, 0, sizeof(dir_discHdr));
-				memcpy(&hdr.id, "dvddvd", 6);//only the id is used for a disc and dvddvd is changed in _launchGame.
+				memcpy(&hdr.id, "dvddvd", 6);//this must be set for neek2o
 				/* Boot the Disc */
-				_launchGame(&hdr, true);
+				_launchGame(&hdr, true, BTN_B_HELD);
 				if(BTN_B_HELD)
 					bUsed = true;
 				_showCF(false);

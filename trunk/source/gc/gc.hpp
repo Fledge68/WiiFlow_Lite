@@ -21,17 +21,12 @@
 
 // Nintendont
 #include "nin_cfg.h"
-#define NIN_CFG_PATH "nincfg.bin"
 #define NIN_LOADER_PATH "%s:/apps/nintendont/boot.dol"
-//const char *NINversionDate(NIN_LOADER_PATH);
 
 bool Nintendont_Installed();
 bool Nintendont_GetLoader();
-void Nintendont_BootDisc(u8 emuMC, bool widescreen, bool cc_rumble, bool native_ctl, bool deflicker);
-void Nintendont_SetOptions(const char *game, const char *gameID, char *CheatPath, char *NewCheatPath, const char *partition,
-	bool cheats, u8 emuMC, u8 videomode, bool widescreen, bool led, bool native_ctl, bool deflicker, bool wiiu_widescreen, 
-	bool NIN_Debugger, bool tri_arcade, bool cc_rumble, bool ipl);
-void Nintendont_WriteOptions();
+void Nintendont_SetOptions(const char *gamePath, const char *gameID, const char *CheatPath, u8 lang, u32 n_cfg, 
+							u32 n_vm, s8 vidscale, s8 vidoffset);
 
 // Devolution
 #define DEVO_LOADER_PATH "%s/loader.bin"
@@ -58,13 +53,8 @@ typedef struct global_config
 
 bool DEVO_Installed(const char *path);
 void DEVO_GetLoader(const char *path);
-void DEVO_SetOptions(const char *isopath, const char *gameID, 
-		bool memcard_emum, bool widescreen, bool activity_led, bool wifi);
+void DEVO_SetOptions(const char *isopath, const char *gameID, u8 videomode, u8 lang,
+					bool memcard_emum, bool widescreen, bool activity_led, bool wifi);
 void DEVO_Boot();
-
-
-// General
-void GC_SetVideoMode(u8 videomode, u8 loader);
-void GC_SetLanguage(u8 lang, u8 loader);
 
 #endif //_GC_HPP_

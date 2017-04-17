@@ -1721,18 +1721,21 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 	if(withCF && m_gameSelected && m_gamesound_changed && !m_soundThrdBusy && 
 		!m_gameSound.IsPlaying() && MusicPlayer.GetVolume() == 0)
 	{
-		CheckGameSoundThread();// stop sound loading thread
-		m_gameSound.Play(m_bnrSndVol);// play sound
+		_stopGameSoundThread();// stop game sound loading thread
+		m_gameSound.Play(m_bnrSndVol);// play game sound
 		m_gamesound_changed = false;
 	}
-	// stop game/banner sound if game no longer selected or new game selected
+	// stop game/banner sound from playing if we exited game selected menu or if we move to new game
 	else if(!m_gameSelected)
 		m_gameSound.Stop();
-	// decrease volume to zero if plugin video playing or game/banner sound is loaded and ready to play
-	// also switch to next song if current song is done
+	/* decrease music volume to zero if any of these are true:
+		plugin video playing or 
+		game/banner sound is loaded and ready to play or
+		gamesound hasn't finished - when finishes music volume back to normal
+		also this switches to next song if current song is done */
 	MusicPlayer.Tick(m_video_playing || 
-		(m_gameSelected && m_gamesound_changed && m_gameSound.IsLoaded()) || 
-		(m_gameSound.IsPlaying() && !m_gamesound_changed));
+		(m_gameSelected && m_gamesound_changed && m_gameSound.IsLoaded()) ||  
+		(m_gameSound.IsPlaying() && !m_gamesound_changed));//this checks if gamesound has finished and thus allows music to play
 	// set song title and display it if music info is allowed
 	if(MusicPlayer.SongChanged() && m_music_info)
 	{

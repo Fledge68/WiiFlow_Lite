@@ -482,6 +482,9 @@ private:
 	s16 m_gameSettingsLblWidescreen;
 	s16 m_gameSettingsBtnWidescreen;
 	
+	s16 m_gameSettingsLblWiiuWidescreen;
+	s16 m_gameSettingsBtnWiiuWidescreen;
+
 	s16 m_gameSettingsLblCC_Rumble;
 	s16 m_gameSettingsBtnCC_Rumble;
   
@@ -496,6 +499,19 @@ private:
 
 	s16 m_gameSettingsLblSkip_IPL;
 	s16 m_gameSettingsBtnSkip_IPL;
+
+	s16 m_gameSettingsLblPatch50;
+	s16 m_gameSettingsBtnPatch50;
+
+	s16 m_gameSettingsLblWidth;
+	s16 m_gameSettingsLblWidthVal;
+	s16 m_gameSettingsBtnWidthP;
+	s16 m_gameSettingsBtnWidthM;
+
+	s16 m_gameSettingsLblPos;
+	s16 m_gameSettingsLblPosVal;
+	s16 m_gameSettingsBtnPosP;
+	s16 m_gameSettingsBtnPosM;
 
 	s16 m_gameSettingsLblGCLoader;
 	s16 m_gameSettingsLblGCLoader_Val;
@@ -1043,7 +1059,7 @@ private:
 	void _cfTheme(void);
 	void _system(void);
 	void _gameinfo(void);
-	void _gameSettings(void);
+	void _gameSettings(const dir_discHdr *GameHdr, bool disc = false);
 	void _CoverBanner(void);
 	void _Explorer(void);
 	const char *_FolderExplorer(const char *startPath);
@@ -1066,7 +1082,7 @@ private:
 	bool _loadFile(u8 * &buffer, u32 &size, const char *path, const char *file);
 	int _loadIOS(u8 ios, int userIOS, string id, bool RealNAND_Channels = false);
 	void _launch(const dir_discHdr *hdr);
-	void _launchGame(dir_discHdr *hdr, bool dvd);
+	void _launchGame(dir_discHdr *hdr, bool dvd, bool disc_cfg = false);
 	void _launchChannel(dir_discHdr *hdr);
 	void _launchHomebrew(const char *filepath, vector<string> arguments);
 	void _launchGC(dir_discHdr *hdr, bool disc);
@@ -1172,7 +1188,7 @@ private:
 	static u32 _downloadUrlAsync(void *obj);
 
 	void _playGameSound(void);
-	void CheckGameSoundThread(void);
+	void _stopGameSoundThread(void);
 	static void _gameSoundThread(CMenu *m);
 
 	static void _load_installed_cioses();
@@ -1183,9 +1199,9 @@ private:
 	static const SOption _VideoModes[7];
 	static const SOption _languages[11];
 	
-	static const SOption _GlobalGCvideoModes[8];
+	static const SOption _GlobalGCvideoModes[6];
 	static const SOption _GlobalGClanguages[7];
-	static const SOption _GCvideoModes[9];
+	static const SOption _GCvideoModes[7];
 	static const SOption _GClanguages[8];
 	static const SOption _GlobalGCLoaders[2];
 	static const SOption _GCLoader[3];
