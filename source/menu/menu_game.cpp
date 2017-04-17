@@ -78,27 +78,23 @@ const CMenu::SOption CMenu::_VideoModes[7] = {
 	{ "vidprog", L"Progressive" },
 };
 
-const CMenu::SOption CMenu::_GlobalGCvideoModes[8] = {
-	{ "DMLdefG", L"Game" },
-	{ "DMLpal", L"PAL 576i" },
-	{ "DMLntsc", L"NTSC 480i" },
-	{ "DMLpal60", L"PAL 480i" },
-	{ "DMLprog", L"NTSC 480p" },
-	{ "DMLprogP", L"PAL 480p" },
+const CMenu::SOption CMenu::_GlobalGCvideoModes[6] = {
+	{ "vidgame", L"Game" },
+	{ "vidp50", L"PAL 50Hz" },
+	{ "vidp60", L"PAL 60Hz" },
+	{ "vidntsc", L"NTSC" },
 	{ "DMLmpal", L"MPAL" },
-	{ "DMLmpalP", L"MPAL-P" }
+	{ "vidprog", L"Progressive" },
 };
 
-const CMenu::SOption CMenu::_GCvideoModes[9] = {
-	{ "DMLdef", L"Default" },
-	{ "DMLdefG", L"Game" },
-	{ "DMLpal", L"PAL 576i" },
-	{ "DMLntsc", L"NTSC 480i" },
-	{ "DMLpal60", L"PAL 480i" },
-	{ "DMLprog", L"NTSC 480p" },
-	{ "DMLprogP", L"PAL 480p" },
+const CMenu::SOption CMenu::_GCvideoModes[7] = {
+	{ "viddef", L"Default" },
+	{ "vidgame", L"Game" },
+	{ "vidp50", L"PAL 50Hz" },
+	{ "vidp60", L"PAL 60Hz" },
+	{ "vidntsc", L"NTSC" },
 	{ "DMLmpal", L"MPAL" },
-	{ "DMLmpalP", L"MPAL-P" }
+	{ "vidprog", L"Progressive" },
 };
 
 const CMenu::SOption CMenu::_GlobalGClanguages[7] = {
@@ -325,7 +321,7 @@ void CMenu::_cleanupBanner(bool gamechange)
 {
 	//banner
 	m_gameSound.FreeMemory();
-	CheckGameSoundThread();
+	_stopGameSoundThread();// stop banner and gamesound loading
 	m_banner.DeleteBanner(gamechange);
 	//movie
 	_cleanupVideo();
@@ -384,7 +380,7 @@ bool CMenu::_startVideo()
 	if(fsop_FileExist(THP_Path))
 	{
 		m_gameSound.FreeMemory();
-		CheckGameSoundThread();
+		_stopGameSoundThread();
 		m_banner.SetShowBanner(false);
 		/* Lets play the movie */
 		movie.Init(THP_Path);
@@ -459,6 +455,12 @@ void CMenu::_game(bool launch)
 		if(!launch)	
 			_mainLoopCommon(true);
 
+		if(startGameSound == -1)
+		{
+			_cleanupBanner(true);
+			m_gameSelected = false;
+		}
+			
 		if(startGameSound == 0)
 		{
 			m_gameSelected = true;// mark game selected and load sound/banner for main loop to start playing
@@ -616,7 +618,7 @@ void CMenu::_game(bool launch)
 				else
 				{
 					m_banner.ToggleGameSettings();
-					_gameSettings();
+					_gameSettings(hdr);
 					m_banner.ToggleGameSettings();
 				}
 				_showGame();
@@ -752,31 +754,31 @@ void CMenu::_game(bool launch)
 		{
 			if((startGameSound == 1 || startGameSound < -8) && (BTN_UP_REPEAT || RIGHT_STICK_UP))
 			{
-				_cleanupBanner(true);
+				//_cleanupBanner(true);
 				CoverFlow.up();
 				startGameSound = -10;
 			}
 			if((startGameSound == 1 || startGameSound < -8) && (BTN_RIGHT_REPEAT || RIGHT_STICK_RIGHT))
 			{
-				_cleanupBanner(true);
+				//_cleanupBanner(true);
 				CoverFlow.right();
 				startGameSound = -10;
 			}
 			if((startGameSound == 1 || startGameSound < -8) && (BTN_DOWN_REPEAT || RIGHT_STICK_DOWN))
 			{
-				_cleanupBanner(true);
+				//_cleanupBanner(true);
 				CoverFlow.down();
 				startGameSound = -10;
 			}
 			if((startGameSound == 1 || startGameSound < -8) && (BTN_LEFT_REPEAT || RIGHT_STICK_LEFT))
 			{
-				_cleanupBanner(true);
+				//_cleanupBanner(true);
 				CoverFlow.left();
 				startGameSound = -10;
 			}
 			if(startGameSound == -10)// if -10 then we moved to new cover
 			{
-				m_gameSelected = false; // deselect game if moved to new cover
+				//m_gameSelected = false; // deselect game if moved to new cover
 				memcpy(hdr, CoverFlow.getHdr(), sizeof(dir_discHdr));// get new game header
 				memset(tmp1, 0, 74);
 				memset(tmp2, 0, 64);
@@ -1003,26 +1005,27 @@ void CMenu::_launch(const dir_discHdr *hdr)
 
 void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 {
+	/* note for a disc boot hdr->id is set to the disc id before _launchGC is called */
 	const char *id = hdr->id;
-	memcpy((u8*)Disc_ID, id, 6);
-	DCFlushRange((u8*)Disc_ID, 32);
-
-	const char *path = hdr->path;
-
+	
+	/* Get loader choice*/
 	u8 loader = min((u32)m_gcfg2.getInt(id, "gc_loader", 0), ARRAY_SIZE(CMenu::_GCLoader) - 1u);
 	loader = (loader == 0) ? min((u32)m_cfg.getInt(GC_DOMAIN, "default_loader", 1), ARRAY_SIZE(CMenu::_GlobalGCLoaders) - 1u) : loader-1;
 	
 	if(disc)
 		loader = NINTENDONT;
+
+	/* Check if loader installed */
 	if((loader == NINTENDONT && !m_nintendont_installed) || (loader == DEVOLUTION && !m_devo_installed))
 	{
 		error(_t("errgame11", L"GameCube Loader not found! Can't launch game."));
 		gcLaunchFail = true;
 		return;
 	}
-	/* GC Loader Found we can go ahead with launchShutdown() */
+	
 	/* clear coverflow, start wiiflow wait animation, set exit handler */	
 	_launchShutdown();
+	
 	m_gcfg1.setInt("PLAYCOUNT", id, m_gcfg1.getInt("PLAYCOUNT", id, 0) + 1);
 	m_gcfg1.setUInt("LASTPLAYED", id, time(NULL));
 	m_cfg.setString(_domainFromView(), "current_item", id);
@@ -1030,32 +1033,28 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	if(has_enabled_providers() && _initNetwork() == 0)
 		add_game_to_card(id);
 
+	/* Get game settings */
+	const char *path = NULL;
+	if(disc)
+		path = fmt("%s:/", DeviceName[currentPartition]);
+	else
+		path = hdr->path;
+		
 	u8 GClanguage = min((u32)m_gcfg2.getInt(id, "language", 0), ARRAY_SIZE(CMenu::_GClanguages) - 1u);
 	GClanguage = (GClanguage == 0) ? min((u32)m_cfg.getInt(GC_DOMAIN, "game_language", 0), ARRAY_SIZE(CMenu::_GlobalGClanguages) - 1u) : GClanguage-1;
+	// language selection only works for PAL games
 	if(id[3] == 'E' || id[3] == 'J')
 		GClanguage = 1; //=english
 		
 	u8 videoMode = min((u32)m_gcfg2.getInt(id, "video_mode", 0), ARRAY_SIZE(CMenu::_GCvideoModes) - 1u);
 	videoMode = (videoMode == 0) ? min((u32)m_cfg.getInt(GC_DOMAIN, "video_mode", 0), ARRAY_SIZE(CMenu::_GlobalGCvideoModes) - 1u) : videoMode-1;
-	if(disc || videoMode == 0)
-	{
-		if(id[3] == 'E' || id[3] == 'J')
-			videoMode = 2; //NTSC 480i
-		else
-			videoMode = 1; //PAL 576i
-	}
 
 	bool widescreen = m_gcfg2.getBool(id, "widescreen", false);
-
-	if(loader == DEVOLUTION)
+	bool activity_led = m_gcfg2.getBool(id, "led", false);
+	
+	if(loader == NINTENDONT)
 	{
-		bool memcard_emu = m_gcfg2.testOptBool(id, "devo_memcard_emu", m_cfg.getBool(GC_DOMAIN, "devo_memcard_emu", false));
-		bool activity_led = m_gcfg2.getBool(id, "led", false);
-		DEVO_GetLoader(m_dataDir.c_str());
-		DEVO_SetOptions(path, id, memcard_emu, widescreen, activity_led, m_use_wifi_gecko);
-	}
-	else if(loader == NINTENDONT)
-	{
+		/* might add here - if not a disc use path to check for disc2.iso - if so then we need to prompt disc 1 or disc 2? */
 		u8 emuMC = min((u32)m_gcfg2.getInt(id, "emu_memcard", 0), ARRAY_SIZE(CMenu::_NinEmuCard) - 1u);
 		emuMC = (emuMC == 0) ? m_cfg.getInt(GC_DOMAIN, "emu_memcard", 1) : emuMC - 1;
 		
@@ -1065,83 +1064,200 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		
 		bool deflicker = m_gcfg2.getBool(id, "deflicker", false);
 		bool tri_arcade = m_gcfg2.getBool(id, "triforce_arcade", false);
-		bool activity_led = m_gcfg2.getBool(id, "led", false);
 		bool ipl = m_gcfg2.getBool(id, "skip_ipl", false);
-		if(IsOnWiiU())
-		{
-			native_ctl = false;
-			activity_led = false;
-		}
-		if(disc == true)
-		{
-			/*funny, in order for these settings to work they would have to be entered in gameconfig2 manually under the gameID
-			or the game will have to already be on USB or SD but then why launch via disc?*/
-			Nintendont_BootDisc(emuMC, widescreen, cc_rumble, native_ctl, deflicker);
-		}
-		else
-		{
-			bool NIN_Debugger = (m_gcfg2.getInt(id, "debugger", 0) == 2);
-			bool wiiu_widescreen = m_gcfg2.getBool(id, "wiiu_widescreen", false);
-			bool cheats = m_gcfg2.getBool(id, "cheat", false);
-			/* Generate gct path */
-			char GC_Path[256];
-			GC_Path[255] = '\0';
-			strncpy(GC_Path, path, 255);
-			if(strcasestr(path, "boot.bin") != NULL)//games/title [id]/sys/boot.bin
-			{
-				*strrchr(GC_Path, '/') = '\0'; //erase /boot.bin
-				*(strrchr(GC_Path, '/')+1) = '\0'; //erase sys folder
-			}
-			else //games/title [id]/game.iso
-				*(strrchr(GC_Path, '/')+1) = '\0'; //erase game.iso
-			char CheatPath[256];// wiiflow cheats path - sd:/wiiflow/cheats/id.gct
-			char NewCheatPath[256];// nintendont cheat path - games/title [id]/id.gct
-			snprintf(CheatPath, sizeof(CheatPath), "%s/%s", m_cheatDir.c_str(), fmt("%s.gct", id));	
-			snprintf(NewCheatPath, sizeof(NewCheatPath), "%s%s.gct",GC_Path,id);
-					
-			Nintendont_SetOptions(path, id, CheatPath, NewCheatPath, DeviceName[currentPartition],
-				cheats, emuMC, videoMode, widescreen, activity_led, native_ctl, deflicker, wiiu_widescreen, 
-				NIN_Debugger, tri_arcade, cc_rumble, ipl);
-		}
-	}
-	/* configs no longer needed */
-	m_gcfg1.save(true);
-	m_gcfg2.save(true);
-	m_cat.save(true);
-	m_cfg.save(true);
-	if(loader == NINTENDONT)
-	{
+		bool patch_pal50 = m_gcfg2.getBool(id, "patch_pal50", false);
+		bool NIN_Debugger = (m_gcfg2.getInt(id, "debugger", 0) == 2);
+		bool wiiu_widescreen = m_gcfg2.getBool(id, "wiiu_widescreen", false);
+		bool cheats = m_gcfg2.getBool(id, "cheat", false);
+		
+		s8 vidscale = m_gcfg2.getInt(id, "nin_width", 127);
+		if(vidscale == 127)
+			vidscale = m_cfg.getInt(GC_DOMAIN, "nin_width", 0);
+		s8 vidoffset = m_gcfg2.getInt(id, "nin_pos", 127);
+		if(vidoffset == 127)
+			vidoffset = m_cfg.getInt(GC_DOMAIN, "nin_pos", 0);
+
+		/* configs no longer needed */
+		m_gcfg1.save(true);
+		m_gcfg2.save(true);
+		m_cat.save(true);
+		m_cfg.save(true);
+
 		bool ret = (Nintendont_GetLoader() && LoadAppBooter(fmt("%s/app_booter.bin", m_binsDir.c_str())));
 		if(ret == false)
 		{
 			error(_t("errgame14", L"app_booter.bin not found!"));
 			_exitWiiflow();
 		}
-	}
-	/* no more error msgs - remove btns and sounds */
-	cleanup();
-	
- 	GC_SetVideoMode(videoMode, loader);
-	GC_SetLanguage(GClanguage, loader);
-	/* NTSC-J Patch by FIX94 */
-	if(id[3] == 'J')
-		*HW_PPCSPEED = 0x0002A9E0;
+		
+		/* no more error msgs - remove btns and sounds */
+		cleanup();
+		
+		//GameID for Video mode when booting a Disc
+		memcpy((u8*)Disc_ID, id, 6);
+		DCFlushRange((u8*)Disc_ID, 32);
+		
+		/* set nintendont conifg options */
+		u32 n_config = 0;
+		n_config |= NIN_CFG_AUTO_BOOT;
 
-	if(loader == DEVOLUTION)
+		if(DeviceHandle.PathToDriveType(path) != SD)
+			n_config |= NIN_CFG_USB;
+
+		char CheatPath[256];
+		CheatPath[0] = '\0';// set NULL in case cheats are off
+		if(cheats)
+		{
+			n_config |= NIN_CFG_CHEAT_PATH;
+			n_config |= NIN_CFG_CHEATS;
+			
+			/* Generate Game Cheat path - usb1:/games/title [id]/ */
+			char GC_Path[256];
+			GC_Path[255] = '\0';
+			strncpy(GC_Path, path, 255);
+			if(strcasestr(path, "boot.bin") != NULL)//usb1:/games/title [id]/sys/boot.bin
+			{
+				*strrchr(GC_Path, '/') = '\0'; //erase /boot.bin
+				*(strrchr(GC_Path, '/')+1) = '\0'; //erase sys folder
+			}
+			else //usb1:/games/title [id]/game.iso
+				*(strrchr(GC_Path, '/')+1) = '\0'; //erase game.iso
+			
+			//use wiiflow cheat path if on same partition as game
+			if(strncasecmp(m_cheatDir.c_str(), DeviceName[currentPartition], strlen(DeviceName[currentPartition])) == 0)
+				snprintf(CheatPath, sizeof(CheatPath), "%s/%s", m_cheatDir.c_str(), fmt("%s.gct", id));
+			else
+			{
+				// else copy cheat file to Game Cheat path above
+				snprintf(CheatPath, sizeof(CheatPath), "%s%s.gct", GC_Path, id);
+				fsop_CopyFile(fmt("%s/%s.gct", m_cheatDir.c_str(), id), CheatPath, NULL, NULL);
+				//might add err msg here if copy error
+			}
+		}
+
+		if(NIN_Debugger && IsOnWiiU() == false) //wii only
+			n_config |= NIN_CFG_OSREPORT;
+
+		if(native_ctl && IsOnWiiU() == false) //wii only
+			n_config |= NIN_CFG_NATIVE_SI;
+
+		if(wiiu_widescreen && IsOnWiiU() == true) //wii u vwii only
+			n_config |= NIN_CFG_WIIU_WIDE;
+
+		if(widescreen)
+			n_config |= NIN_CFG_FORCE_WIDE;
+
+		if(activity_led && IsOnWiiU() == false) //wii only
+			n_config |= NIN_CFG_LED;
+
+		if(tri_arcade)
+			n_config |= NIN_CFG_ARCADE_MODE;
+
+		if(cc_rumble)
+			n_config |= NIN_CFG_BIT_CC_RUMBLE;
+
+		if(ipl)
+			n_config |= NIN_CFG_SKIP_IPL;
+			
+		/* set memcard options */
+		if(emuMC > 0 || IsOnWiiU() == true) //force memcardemu for wii u vwii
+			n_config |= NIN_CFG_MEMCARDEMU;
+
+		if(emuMC > 1)
+			n_config |= NIN_CFG_MC_MULTI;
+			
+		/* set nintendont video options */
+		u32 n_videomode = 0;
+		
+		/* if video is not already forced and patch pal50 or deflicker are on then force to game video mode */
+		if(videoMode == 0 && (patch_pal50 || deflicker))
+		{
+			if(id[3] == 'E' || id[3] == 'J')
+				videoMode = 2; //NTSC 480i
+			else if (CONF_GetEuRGB60() > 0)
+				videoMode = 3; //PAL 480i
+			else
+				videoMode = 1; //PAL 576i
+		}
+		
+		/* auto or forced */
+		if(videoMode == 0)
+			n_videomode |= NIN_VID_AUTO;
+		else
+			n_videomode |= NIN_VID_FORCE;
+
+		// patch_pal50 only works on pal50 games forced to mpal, NTSC, or progressive.
+		if(patch_pal50)
+			n_videomode |= NIN_VID_PATCH_PAL50;
+
+		// videomode must be forced to set deflicker
+		if(deflicker)
+			n_videomode |= NIN_VID_FORCE_DF;
+			
+		// progressive only works with NTSC - Nintendont auto forces to NTSC if progressive on
+		if(videoMode == 5)
+		{
+			n_config |= NIN_CFG_FORCE_PROG;
+			n_videomode |= NIN_VID_PROG;
+		}
+
+		// rmode and rmode_reg are set by Nintendont
+		switch (videoMode)//if 0 nothing is forced
+		{
+			case 1:// PAL50
+				n_videomode |= NIN_VID_FORCE_PAL50;
+				break;
+			case 2:// PAL60 480i
+				n_videomode |= NIN_VID_FORCE_PAL60;
+				break;
+			case 3:// NTSC 480i
+				n_videomode |= NIN_VID_FORCE_NTSC;
+				break;
+			case 4:// MPAL
+				n_videomode |= NIN_VID_FORCE_MPAL;
+				break;
+		}
+
+		Nintendont_SetOptions(path, id, CheatPath, GClanguage, n_config, n_videomode, vidscale, vidoffset);
+		ShutdownBeforeExit();
+		loadIOS(58, false); //nintendont NEEDS ios58
+		BootHomebrew(); //regular dol
+	}
+	else // loader == DEVOLUTION
 	{
+		// devolution does not allow force video and progressive mode
+		// igonore video setting choice and use game region always
+		if(id[3] =='E' || id[3] =='J')
+		{
+			// if game is NTSC then video is based on console video
+			if(CONF_GetVideo() == CONF_VIDEO_PAL)
+				videoMode = 2; //PAL 480i
+			else
+				videoMode = 3; //NTSC 480i
+		}
+		else
+			videoMode = 1; //PAL 576i 50hz
+			
+		bool memcard_emu = m_gcfg2.testOptBool(id, "devo_memcard_emu", m_cfg.getBool(GC_DOMAIN, "devo_memcard_emu", false));
+		
+		/* configs no longer needed */
+		m_gcfg1.save(true);
+		m_gcfg2.save(true);
+		m_cat.save(true);
+		m_cfg.save(true);
+
+		/* remove btns and sounds */
+		cleanup();
+
+		DEVO_GetLoader(m_dataDir.c_str());
+		DEVO_SetOptions(path, id, videoMode, GClanguage, memcard_emu, widescreen, activity_led, m_use_wifi_gecko);
+		
 		if(AHBRPOT_Patched())
 			loadIOS(58, false);
 		else //use cIOS instead to make sure Devolution works anyways
 			loadIOS(mainIOS, false);
 		ShutdownBeforeExit();
 		DEVO_Boot();
-	}
-	else
-	{
-		Nintendont_WriteOptions();
-		ShutdownBeforeExit();
-		loadIOS(58, false); //nintendont NEEDS ios58
-		BootHomebrew(); //regular dol
 	}
 	Sys_Exit();
 }
@@ -1164,7 +1280,7 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 		_exitWiiflow();
 	}
 	/* no more error msgs - remove btns and sounds */
-	cleanup(); // wifi and sd gecko doesnt work anymore after cleanup
+	cleanup(); 
 
 	AddBootArgument(filepath);
 	for(u32 i = 0; i < arguments.size(); ++i)
@@ -1173,7 +1289,7 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 		AddBootArgument(arguments[i].c_str());
 	}
 
-	ShutdownBeforeExit();
+	ShutdownBeforeExit();// wifi and sd gecko doesnt work anymore after
 	loadIOS(58, false);
 	BootHomebrew();
 	Sys_Exit();
@@ -1392,10 +1508,8 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	Sys_Exit();
 }
 
-void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
+void CMenu::_launchGame(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 {
-	/* clear coverflow, start wiiflow wait animation, set exit handler */	
-	_launchShutdown();
 	string id(hdr->id);
 	string path(hdr->path);
 	if(neek2o())
@@ -1410,6 +1524,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 
 	if(dvd)
 	{
+		/*
 		u32 cover = 0;
 		if(!neek2o() && !Sys_DolphinMode())
 		{
@@ -1428,7 +1543,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 						return;
 				} while(!(cover & 0x2));
 			}
-		}
+		}*/
 		TempLoadIOS();
 		/* Open Disc */
 		if(Disc_Open(true) < 0)
@@ -1449,10 +1564,20 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 				/* Read GC disc header */
 				Disc_ReadGCHeader(&gc_hdr);
 				memcpy(hdr->id, gc_hdr.id, 6);
+				hdr->type = TYPE_GC_GAME;
 				
 				/* Launching GC Game */
 				if(m_nintendont_installed)
-					_launchGC(hdr, true);
+				{
+					if(disc_cfg)
+						_gameSettings(hdr, dvd);
+					MusicPlayer.Stop();
+					m_cfg.setInt("GENERAL", "cat_startpage", m_catStartPage);
+					if(!disc_cfg)
+						m_gcfg2.load(fmt("%s/" GAME_SETTINGS2_FILENAME, m_settingsDir.c_str()));
+					currentPartition = m_cfg.getInt(GC_DOMAIN, "partition", 1);
+					_launchGC(hdr, dvd);
+				}
 				else
 					error(_t("errgame12", L"Nintendont not found! Can't launch GC Disc."));
 				return;
@@ -1462,11 +1587,22 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd)
 		{
 			/* Read header */
 			Disc_ReadHeader(&wii_hdr);
+			memcpy(hdr->id, wii_hdr.id, 6);
 			id = string((const char*)wii_hdr.id, 6);
+			hdr->type = TYPE_WII_GAME;
+			if(disc_cfg)
+				_gameSettings(hdr, dvd);
+			MusicPlayer.Stop();
+			m_cfg.setInt("GENERAL", "cat_startpage", m_catStartPage);
+			if(!disc_cfg)
+				m_gcfg2.load(fmt("%s/" GAME_SETTINGS2_FILENAME, m_settingsDir.c_str()));
+			currentPartition = m_cfg.getInt(WII_DOMAIN, "partition", 1);
 		}
 		gprintf("Game ID: %s\n", id.c_str());
 	}
-
+	
+	/* clear coverflow, start wiiflow wait animation, set exit handler */	
+	_launchShutdown();
 	bool vipatch = m_gcfg2.getBool(id, "vipatch", false);
 	bool countryPatch = m_gcfg2.getBool(id, "country_patch", false);
 	bool private_server = m_gcfg2.getBool(id, "private_server", false);
@@ -1740,6 +1876,7 @@ struct IMD5Header
 	u8 crypto[16];
 } ATTRIBUTE_PACKED;
 
+// loads game banner and sound to be played by mainloop
 void CMenu::_gameSoundThread(CMenu *m)
 {
 	m->m_soundThrdBusy = true;
@@ -1788,19 +1925,20 @@ void CMenu::_gameSoundThread(CMenu *m)
 	}
 	if(custom_bnr_file == NULL && GameHdr->type == TYPE_GC_GAME)
 	{
+		//get the gc games banner without sound
 		GC_Disc_Reader.init(GameHdr->path);
 		u8 *opening_bnr = GC_Disc_Reader.GetGameCubeBanner();
 		if(opening_bnr != NULL)
 			m_banner.CreateGCBanner(opening_bnr, m->m_wbf1_font, m->m_wbf2_font, GameHdr->title);
 		GC_Disc_Reader.clear();
-
+		//get wiiflow gc ogg sound to play with banner
 		m->m_gameSound.Load(gc_ogg, gc_ogg_size, false);
 		if(m->m_gameSound.IsLoaded())
 			m->m_gamesound_changed = true;
 		m->m_soundThrdBusy = false;
 		return;
 	}
-	if(custom_bnr_file == NULL)/* no custom and not GC game try cached banner*/
+	if(custom_bnr_file == NULL)/* no custom and not GC game try cached banner id6 only*/
 	{
 		strncpy(cached_banner, fmt("%s/%s.bnr", m->m_bnrCacheDir.c_str(), GameHdr->id), 255);
 		fsop_GetFileSizeBytes(cached_banner, &cached_bnr_size);
@@ -1829,9 +1967,11 @@ void CMenu::_gameSoundThread(CMenu *m)
 		m->m_soundThrdBusy = false;
 		return;
 	}
+	//save new wii or channel banner to cache folder, gc and custom banners are not cached
 	if(cached_bnr_file == NULL && custom_bnr_file == NULL)
 		fsop_WriteFile(cached_banner, CurrentBanner.GetBannerFile(), CurrentBanner.GetBannerFileSize());
 
+	//get sound from wii, channel, or custom banner and load it to play with the banner
 	u32 sndSize = 0;
 	m_banner.LoadBanner(m->m_wbf1_font, m->m_wbf2_font);
 	u8 *soundBin = CurrentBanner.GetFile("sound.bin", &sndSize);
@@ -1874,7 +2014,7 @@ void CMenu::_gameSoundThread(CMenu *m)
 
 u8 *GameSoundStack = NULL;
 u32 GameSoundSize = 0x10000; //64kb
-void CMenu::_playGameSound(void)
+void CMenu::_playGameSound(void)// starts banner and gamesound loading thread
 {
 	if(NoGameID(CoverFlow.getHdr()->type))
 	{
@@ -1892,12 +2032,12 @@ void CMenu::_playGameSound(void)
 		return;
 
 	if(m_gameSoundThread != LWP_THREAD_NULL)
-		CheckGameSoundThread();
+		_stopGameSoundThread();
 	GameSoundStack = (u8*)MEM2_lo_alloc(GameSoundSize);
 	LWP_CreateThread(&m_gameSoundThread, (void *(*)(void *))CMenu::_gameSoundThread, (void*)this, GameSoundStack, GameSoundSize, 60);
 }
 
-void CMenu::CheckGameSoundThread()
+void CMenu::_stopGameSoundThread()//stops banner and gamesound loading thread
 {
 	if(m_gameSoundThread == LWP_THREAD_NULL)
 		return;
