@@ -79,9 +79,14 @@ bool Load_Neek2o_Kernel()
 	if(neek2o())
 		return ret;
 
-	Kernel = fsop_ReadFile("usb1:/sneek/kernel.bin", &kernelSize);
-	if(Kernel == NULL)
-		Kernel = fsop_ReadFile("sd:/sneek/kernel.bin", &kernelSize);
+	if(IsOnWiiU())
+		Kernel = fsop_ReadFile("usb1:/sneek/vwiikernel.bin", &kernelSize);
+	else
+	{
+		Kernel = fsop_ReadFile("usb1:/sneek/kernel.bin", &kernelSize);
+		if(Kernel == NULL)
+			Kernel = fsop_ReadFile("sd:/sneek/kernel.bin", &kernelSize);
+	}
 	if(Kernel == NULL)
 		ret = false;
 
@@ -126,13 +131,14 @@ s32 Launch_nk(u64 TitleID, const char *nandpath, u64 ReturnTo)
 	if(!mini)
 		return 0;
  
+	// uses bootmii mini to run wiiflow internal armboot.bin for neek2o
 	memcpy(mini, armboot, armboot_size);
 	DCFlushRange(mini, armboot_size);
-	*(u32*)0xc150f000 = 0x424d454d;
+	*(u32*)0xc150f000 = 0x424d454d;//BMEM
 	asm volatile("eieio");
 	*(u32*)0xc150f004 = MEM_VIRTUAL_TO_PHYSICAL(mini);
 	asm volatile("eieio");
-	IOS_ReloadIOS(0xfe);
+	IOS_ReloadIOS(0xfe);// IOS254 bootmii
 	MEM1_free(mini);
 	return 1;
 }

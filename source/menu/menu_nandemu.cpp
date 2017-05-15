@@ -114,7 +114,7 @@ void CMenu::_checkEmuNandSettings(bool savesnand)
 		emuNand = m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default").c_str();
 		emuPart = m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0);
 	}
-	const char *tmpPath = fmt("/%s/%s", EMU_NANDS_DIR, emuNand);
+	const char *tmpPath = fmt("/%s/%s",  emu_nands_dir, emuNand);
 	/* check if partition is FAT && emuNAND directory exist*/
 	if(!DeviceHandle.PartitionUsableForNandEmu(emuPart) || !_TestEmuNand(emuPart, tmpPath, false))
 	{
@@ -138,12 +138,12 @@ int CMenu::_FindEmuPart(string &emuPath, bool skipchecks, bool savesnand)
 	if(savesnand)
 	{
 		emuPart = m_cfg.getInt(WII_DOMAIN, "savepartition");
-		tmpPath = fmt("/%s/%s", EMU_NANDS_DIR, m_cfg.getString(WII_DOMAIN, "current_save_emunand").c_str());
+		tmpPath = fmt("/%s/%s",  emu_nands_dir, m_cfg.getString(WII_DOMAIN, "current_save_emunand").c_str());
 	}
 	else
 	{
 		emuPart = m_cfg.getInt(CHANNEL_DOMAIN, "partition");
-		tmpPath = fmt("/%s/%s", EMU_NANDS_DIR, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand").c_str());
+		tmpPath = fmt("/%s/%s",  emu_nands_dir, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand").c_str());
 	}
 	if(!DeviceHandle.PartitionUsableForNandEmu(emuPart))
 		return -1;
@@ -211,7 +211,7 @@ bool CMenu::_checkSave(string id, bool nand)
 	else
 	{
 		int emuPartition = m_cfg.getInt(WII_DOMAIN, "savepartition");
-		const char *emuPath = fmt("/%s/%s", EMU_NANDS_DIR, m_cfg.getString(WII_DOMAIN, "current_save_emunand").c_str());
+		const char *emuPath = fmt("/%s/%s",  emu_nands_dir, m_cfg.getString(WII_DOMAIN, "current_save_emunand").c_str());
 		if(emuPartition < 0 || emuPath == NULL)
 			return false;
 		struct stat fstat;
@@ -435,7 +435,7 @@ int CMenu::_NandEmuCfg(void)
 	string savesNand = m_cfg.getString(WII_DOMAIN, "current_save_emunand");
 	int savesPart = m_cfg.getInt(WII_DOMAIN, "savepartition");
 
-	_listEmuNands(fmt("%s:/%s", DeviceName[emuPart], EMU_NANDS_DIR), emuNands);
+	_listEmuNands(fmt("%s:/%s", DeviceName[emuPart],  emu_nands_dir), emuNands);
 	int curEmuNand = 0;
 	for(u8 i = 0; i < emuNands.size(); ++i)
 	{
@@ -446,7 +446,7 @@ int CMenu::_NandEmuCfg(void)
 		}
 	}
 
-	_listEmuNands(fmt("%s:/%s", DeviceName[savesPart], EMU_NANDS_DIR), savesNands);
+	_listEmuNands(fmt("%s:/%s", DeviceName[savesPart],  emu_nands_dir), savesNands);
 	int curSavesNand = 0;
 	for(u8 i = 0; i < savesNands.size(); ++i)
 	{
@@ -623,7 +623,7 @@ int CMenu::_FlashSave(string gameId)
 {
 	int emuPartition = m_cfg.getInt(WII_DOMAIN, "savepartition");
 	char basepath[MAX_FAT_PATH];
-	snprintf(basepath, sizeof(basepath), "%s:/%s/%s", DeviceName[emuPartition], EMU_NANDS_DIR, m_cfg.getString(WII_DOMAIN, "current_save_emunand").c_str());
+	snprintf(basepath, sizeof(basepath), "%s:/%s/%s", DeviceName[emuPartition],  emu_nands_dir, m_cfg.getString(WII_DOMAIN, "current_save_emunand").c_str());
 
 	if(!_checkSave(gameId, false))// if save not on emu nand
 		return 0;
@@ -751,7 +751,7 @@ int CMenu::_AutoExtractSave(string gameId)// called from wii game config menu or
 		else if(BTN_A_PRESSED && m_btnMgr.selected(m_nandemuBtnDisable))//create new save
 		{
 			int emuPart = m_cfg.getInt(WII_DOMAIN, "savepartition");
-			const char *emuPath = fmt("/%s/%s", EMU_NANDS_DIR, m_cfg.getString(WII_DOMAIN, "current_save_emunand").c_str());
+			const char *emuPath = fmt("/%s/%s",  emu_nands_dir, m_cfg.getString(WII_DOMAIN, "current_save_emunand").c_str());
 			char basepath[MAX_FAT_PATH];
 			snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[emuPart], emuPath);
 			NandHandle.CreatePath("%s/import", basepath);

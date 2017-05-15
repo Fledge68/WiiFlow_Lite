@@ -126,7 +126,7 @@ void CMenu::_showCF(bool refreshList)
 					break;
 				case COVERFLOW_CHANNEL:
 					Msg = _t("main3", L"No titles found in ");
-					Pth = wstringEx(fmt("%s:/%s/%s", DeviceName[currentPartition], EMU_NANDS_DIR, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand").c_str()));
+					Pth = wstringEx(fmt("%s:/%s/%s", DeviceName[currentPartition],  emu_nands_dir, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand").c_str()));
 					break;
 				case COVERFLOW_HOMEBREW:
 					Msg = _t("main4", L"No apps found in ");
@@ -235,8 +235,8 @@ int CMenu::main(void)
 	}
 	
 	m_catStartPage = m_cfg.getInt("GENERAL", "cat_startpage", 1);
-	if(m_source_cnt == 1)
-		m_cfg.remove("GENERAL", "cat_startpage");
+	//if(m_source_cnt == 1)
+	//	m_cfg.remove("GENERAL", "cat_startpage");
 	
 	if(m_cfg.getBool("GENERAL", "update_cache", false))
 	{
@@ -307,6 +307,7 @@ int CMenu::main(void)
 		if(BTN_HOME_PRESSED)
 		{
 			_hideMain();
+			/* sourceflow config menu */
 			if(m_sourceflow)
 			{
 				_CfgSrc();
@@ -324,6 +325,7 @@ int CMenu::main(void)
 				}
 				_showMain();
 			}
+			/* homebrew flow config menu */
 			else if(m_current_view == COVERFLOW_HOMEBREW)
 			{
 				_CfgHB();
@@ -334,10 +336,11 @@ int CMenu::main(void)
 				}
 				_showMain();
 			}
+			/* Home menu */
 			else
 			{
-				if(_Home()) //home menu
-					break;
+				if(_Home())
+					break;// exit wiiflow
 				if(BTN_B_HELD)
 					bUsed = true;
 				_showMain();
@@ -351,15 +354,17 @@ int CMenu::main(void)
 				CoverFlow.pageDown();
 			else if(m_btnMgr.selected(m_mainBtnHome))
 			{
+				/* home menu via main menu button */
 				_hideMain();
-				if(_Home()) //home menu
-					break;
+				if(_Home())
+					break;// exit wiiflow
 				if(BTN_B_HELD)
 					bUsed = true;
 				_showMain();
 			}
 			else if(m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnWii) || m_btnMgr.selected(m_mainBtnGamecube) || m_btnMgr.selected(m_mainBtnPlugin))
 			{
+				/* change source via view button on main menu */
 				if(m_current_view == COVERFLOW_WII) 
 					m_current_view = show_gamecube ? COVERFLOW_GAMECUBE : (show_channel ? COVERFLOW_CHANNEL : (show_plugin ? COVERFLOW_PLUGIN : COVERFLOW_WII));
 				else if(m_current_view == COVERFLOW_GAMECUBE)
@@ -375,10 +380,12 @@ int CMenu::main(void)
 			}
 			else if(m_btnMgr.selected(m_mainBtnConfig))
 			{
+				/* main menu global settings */
 				_hideMain();
 				_config(1);
 				if(strcmp(prevTheme, m_cfg.getString("GENERAL", "theme").c_str()) != 0)
 				{
+					/* new theme - exit wiiflow and reload */
 					m_reload = true;
 					break;
 				}
@@ -388,6 +395,7 @@ int CMenu::main(void)
 			}
 			else if(m_btnMgr.selected(m_mainBtnHomebrew))
 			{
+				/* launch homebrew flow */
 				if(m_locked && m_cfg.getBool(HOMEBREW_DOMAIN, "parental", false))
 				{
 					error(_t("errgame15", L"WiiFlow locked! Unlock WiiFlow to use this feature."));
@@ -404,9 +412,8 @@ int CMenu::main(void)
 			}
 			else if(m_btnMgr.selected(m_mainBtnDVD))
 			{
-				/* Cleanup for Disc Booter */
+				/* Boot DVD in drive */
 				_hideMain(true);
-				//CoverFlow.clear();
 				/* Create Fake Header */
 				dir_discHdr hdr;
 				memset(&hdr, 0, sizeof(dir_discHdr));
@@ -419,13 +426,14 @@ int CMenu::main(void)
 			}
 			else if(m_btnMgr.selected(m_mainBtnFavoritesOn) || m_btnMgr.selected(m_mainBtnFavoritesOff))
 			{
+				/* switch favorite games only on/off */
 				m_favorites = !m_favorites;
 				m_cfg.setBool(_domainFromView(), "favorites", m_favorites);
 				_initCF();
 			}
-			/* select game cover or sourceflow cover */
 			else if(!CoverFlow.empty() && CoverFlow.select())
 			{
+				/* select game cover or sourceflow cover */
 				_hideMain();
 				if(m_sourceflow)
 				{
@@ -440,10 +448,14 @@ int CMenu::main(void)
 						break;
 					if(BTN_B_HELD)
 						bUsed = true;
-					CoverFlow.cancel();
 					if(m_refreshGameList)
-						//_initCF();
-						_showCF(m_refreshGameList);
+					{
+						/* if changes were made to favorites, parental lock, or categories */
+						_initCF();
+						m_refreshGameList = false;
+					}
+					else
+						CoverFlow.cancel();
 				}
 			}
 		}
@@ -734,6 +746,7 @@ int CMenu::main(void)
 		}
 		Sys_SetNeekPath(ReturnPath);
 	}
+	cleanup();
 	//gprintf("Saving configuration files\n");
 	m_gcfg1.save(true);// save configs on power off or exit wiiflow
 	m_gcfg2.save(true);

@@ -2086,8 +2086,11 @@ bool CCoverFlow::findId(const char *id, bool instant, bool path)
 	{
 		if(path)
 		{
+			//homebrew folder or rom title.ext
 			const char *name = strrchr(m_items[i].hdr->path, '/');
 			if(name != NULL && strcmp(name + 1, id) == 0)
+				break;
+			else if(strcmp(m_items[i].hdr->path, id) == 0)// scummvm
 				break;
 		}
 		else if(strcmp(m_items[i].hdr->id, id) == 0)

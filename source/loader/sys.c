@@ -110,11 +110,11 @@ void Sys_Exit(void)
 	/* We wanna to boot sth */
 	WII_Initialize();
 	if(ExitOption == EXIT_TO_WFNK2O)
-		Launch_nk(0x1000144574641LL, NeekPath, 0);
+		Launch_nk(0x1000157464C41LL, NeekPath, 0);// 57464C41 = WFLA : 44574641 = DWFA
 	else if(ExitOption == EXIT_TO_SMNK2O)
 		Launch_nk(0, NeekPath, 0);
 	else if(ExitOption == EXIT_TO_BOOTMII)
-		IOS_ReloadIOS(0xfe);
+		IOS_ReloadIOS(0xfe);// IOS254 Bootmii IOS
 	else if(ExitOption == EXIT_TO_HBC)
 	{
 		WII_LaunchTitle(HBC_OHBC);

@@ -304,6 +304,8 @@ void CMenu::init()
 	}
 	
 	/* Emu nands init even if not being used */
+	memset(emu_nands_dir, 0, 64);
+	strncpy(emu_nands_dir, IsOnWiiU() ? "vwiinands" : "nands", 64);
 	_checkEmuNandSettings(false);// emu nand
 	_checkEmuNandSettings(true);// saves nand
 	
@@ -478,15 +480,17 @@ void CMenu::cleanup()
 		return;
 	//gprintf("MEM1_freesize(): %i\nMEM2_freesize(): %i\n", MEM1_freesize(), MEM2_freesize());
 	m_btnMgr.hide(m_mainLblCurMusic);
+	_stopSounds();
+	MusicPlayer.Cleanup();
 	_cleanupDefaultFont();
 	CoverFlow.shutdown(); /* possibly plugin flow crash so cleanup early */
 	m_banner.DeleteBanner();
 	m_plugin.Cleanup();
 	m_source.unload();
 
-	_stopSounds();
+	//_stopSounds();
 	_Theme_Cleanup();
-	MusicPlayer.Cleanup();
+	//MusicPlayer.Cleanup();
 	m_gameSound.FreeMemory();
 	SoundHandle.Cleanup();
 	soundDeinit();
@@ -1718,24 +1722,28 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 	if(Sys_Exiting())
 		exitHandler(BUTTON_CALLBACK);
 	// check if we need to start playing the game/banner sound
-	if(withCF && m_gameSelected && m_gamesound_changed && !m_soundThrdBusy && 
-		!m_gameSound.IsPlaying() && MusicPlayer.GetVolume() == 0)
+	// m_gameSelected means we are on the game selected menu
+	// m_gamesound_changed means a new game sound is loaded and ready to play
+	// the previous game sound needs to stop before playing new sound
+	// and the bg music volume needs to be 0 before playing game sound
+	if(withCF && m_gameSelected && m_gamesound_changed && !m_gameSound.IsPlaying() && MusicPlayer.GetVolume() == 0)
 	{
 		_stopGameSoundThread();// stop game sound loading thread
 		m_gameSound.Play(m_bnrSndVol);// play game sound
 		m_gamesound_changed = false;
 	}
 	// stop game/banner sound from playing if we exited game selected menu or if we move to new game
-	else if(!m_gameSelected)
+	else if((withCF && m_gameSelected && m_gamesound_changed && m_gameSound.IsPlaying()) || (!m_gameSelected && m_gameSound.IsPlaying()))
 		m_gameSound.Stop();
 	/* decrease music volume to zero if any of these are true:
-		plugin video playing or 
+		trailer video playing or 
+		game/banner sound is being loaded because we are switching to a new game or
 		game/banner sound is loaded and ready to play or
-		gamesound hasn't finished - when finishes music volume back to normal
+		gamesound hasn't finished - when finishes music volume back to normal - some gamesounds don't loop continuously
 		also this switches to next song if current song is done */
-	MusicPlayer.Tick(m_video_playing || 
-		(m_gameSelected && m_gamesound_changed && m_gameSound.IsLoaded()) ||  
-		(m_gameSound.IsPlaying() && !m_gamesound_changed));//this checks if gamesound has finished and thus allows music to play
+	MusicPlayer.Tick((withCF && (m_video_playing || (m_gameSelected && m_soundThrdBusy) || 
+		(m_gameSelected && m_gamesound_changed))) ||  
+		m_gameSound.IsPlaying());
 	// set song title and display it if music info is allowed
 	if(MusicPlayer.SongChanged() && m_music_info)
 	{
@@ -2160,7 +2168,10 @@ void CMenu::_initCF(void)
 	
 	if(!CoverFlow.empty())
 	{
-		bool path = m_sourceflow || m_current_view == COVERFLOW_PLUGIN || m_current_view == COVERFLOW_HOMEBREW;
+		bool path = false;
+		if((m_source_cnt > 1 && m_cfg.getInt(_domainFromView(), "current_item_type", 1) == TYPE_PLUGIN) ||
+				m_sourceflow || m_current_view == COVERFLOW_HOMEBREW || m_current_view == COVERFLOW_PLUGIN)
+			path = true;
 		if(!CoverFlow.findId(m_cfg.getString(_domainFromView(), "current_item").c_str(), true, path))
 			CoverFlow.defaultLoad();
 		CoverFlow.startCoverLoader();

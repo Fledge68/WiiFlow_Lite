@@ -147,18 +147,20 @@ void CMenu::_PluginSettings()
 					m_refreshGameList = true;
 					if(m_current_view != COVERFLOW_PLUGIN)
 					{
+						/* clear all plugins */
 						for(u8 j = 0; m_plugin.PluginExist(j); j++)
 							m_plugin.SetEnablePlugin(m_cfg, j, 1);
 						m_current_view = COVERFLOW_PLUGIN;
 					}
-					if(i == 0)
+					if(i == 0)// all button to clear all or set all
 					{
-						m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
+						m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);// get enabled plugins count
+						// if all clear then set(2) them else clear(1) them all
 						for(u8 j = 0; m_plugin.PluginExist(j); j++)
 							m_plugin.SetEnablePlugin(m_cfg, j, (enabledPluginsCount == 0) ? 2 : 1);
 					}
 					else
-						m_plugin.SetEnablePlugin(m_cfg, i+IteratorHelp-1);
+						m_plugin.SetEnablePlugin(m_cfg, i+IteratorHelp-1);// switch plugin from off to on or vice versa
 					_updatePluginCheckboxes();
 					break;
 				}
@@ -171,6 +173,7 @@ void CMenu::_PluginSettings()
 	{
 		m_cfg.setUInt("GENERAL", "sources", m_current_view);
 		m_source_cnt = 1;
+		m_catStartPage = 1;
 	}
 	else
 		m_current_view = m_cfg.getUInt("GENERAL", "sources");

@@ -105,7 +105,7 @@ void CMenu::_updateCheckboxes(void)
 
 }
 
-void CMenu::_getIDCats(void)
+void CMenu::_getGameCategories(void)
 {
 	const dir_discHdr *hdr = CoverFlow.getHdr();
 	switch(hdr->type)
@@ -156,7 +156,7 @@ void CMenu::_getIDCats(void)
 	m_btnMgr.setText(m_categoryLblTitle, CoverFlow.getTitle());
 }
 
-void CMenu::_setIDCats(void)
+void CMenu::_setGameCategories(void)
 {
 	const dir_discHdr *hdr = CoverFlow.getHdr();
 	string newIdCats = "";
@@ -176,6 +176,7 @@ void CMenu::_CategorySettings(bool fromGameSet)
 	SetupInput();
 	curPage = 1;
 	gameSet = fromGameSet;
+	m_newGame = false;
 	
 	if(m_source.loaded() && m_catStartPage > 0)
 		curPage = m_catStartPage;
@@ -188,7 +189,7 @@ void CMenu::_CategorySettings(bool fromGameSet)
 
 	if(fromGameSet)
 	{
-		_getIDCats();
+		_getGameCategories();
 	}
 	else
 	{
@@ -265,8 +266,8 @@ void CMenu::_CategorySettings(bool fromGameSet)
 			}
 			else
 			{
-				_setIDCats();
-				m_refreshGameList = true;
+				_setGameCategories();
+				//m_refreshGameList = true;
 			}
 			break;
 		}
@@ -276,22 +277,26 @@ void CMenu::_CategorySettings(bool fromGameSet)
 			m_btnMgr.down();
 		if(BTN_PLUS_PRESSED && fromGameSet)
 		{
-			_setIDCats();
+			_setGameCategories();
 			_hideCategorySettings();
 			CoverFlow.right();
 			curPage = 1;
+			m_newGame = true;
 			m_categories.assign(m_max_categories, '0');
-			_getIDCats();
+			_playGameSound();//changes banner and game sound
+			_getGameCategories();
 			_showCategorySettings();
 		}
 		if(BTN_MINUS_PRESSED && fromGameSet)
 		{
-			_setIDCats();
+			_setGameCategories();
 			_hideCategorySettings();
 			CoverFlow.left();
 			curPage = 1;
+			m_newGame = true;
 			m_categories.assign(m_max_categories, '0');
-			_getIDCats();
+			_playGameSound();
+			_getGameCategories();
 			_showCategorySettings();
 		}
 		if((BTN_LEFT_PRESSED && m_max_categories>11) || (BTN_A_PRESSED && m_btnMgr.selected(m_categoryBtnPageM)))

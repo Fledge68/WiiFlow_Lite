@@ -195,10 +195,10 @@ bool CMenu::_ExitTo(void)
 				}
 				else
 				{
-					bool nkWiiflow = m_cfg.getBool("NEEK2O", "launchwiiflow", true);
-					if(nkWiiflow)
-						exitHandler(EXIT_TO_WFNK2O);
-					else
+					//bool nkWiiflow = m_cfg.getBool("NEEK2O", "launchwiiflow", true);
+					//if(nkWiiflow)
+					//	exitHandler(EXIT_TO_WFNK2O);
+					//else
 						exitHandler(EXIT_TO_SMNK2O);
 				}
 				break;

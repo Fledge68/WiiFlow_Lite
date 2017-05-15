@@ -40,6 +40,7 @@ extern const u8 gc_ogg[];
 extern const u32 gc_ogg_size;
 
 bool m_zoom_banner = false;
+bool m_pluginBanner = false;
 s16 m_gameBtnPlayFull;
 s16 m_gameBtnBackFull;
 s16 m_gameBtnToggle;
@@ -275,6 +276,14 @@ static u8 GetRequestedGameIOS(dir_discHdr *hdr)
 	return IOS;
 }
 
+void CMenu::_setCurrentItem(const dir_discHdr *hdr)
+{
+	const char *title = CoverFlow.getPathId(hdr, true);// with extension
+	m_cfg.setString(_domainFromView(), "current_item", title);
+	if(m_source_cnt > 1)
+		m_cfg.setInt(_domainFromView(), "current_item_type", hdr->type);
+}
+
 void CMenu::_hideGame(bool instant)
 {
 	_cleanupVideo();
@@ -335,8 +344,11 @@ void CMenu::_cleanupVideo()
 
 static const char *getVideoPath(const string &videoDir, const char *videoId)
 {
-	const char *coverDir = m_plugin.GetCoverFolderName(CoverFlow.getHdr()->settings[0]);
+	const char *coverDir = NULL;
 	const char *videoPath = NULL;
+	if(CoverFlow.getHdr()->type == TYPE_PLUGIN)
+		coverDir = m_plugin.GetCoverFolderName(CoverFlow.getHdr()->settings[0]);
+	
 	if(coverDir == NULL || strlen(coverDir) == 0)
 		videoPath = fmt("%s/%s", videoDir.c_str(), videoId);
 	else
@@ -356,23 +368,26 @@ bool CMenu::_startVideo()
 	const dir_discHdr *GameHdr = CoverFlow.getHdr();
 	char curId3[4];
 	memset(curId3, 0, 4);
-	const char *videoId = CoverFlow.getPathId(GameHdr);
+	const char *videoId = CoverFlow.getPathId(GameHdr);//title.ext
 	if(!NoGameID(GameHdr->type))
 	{	//id3
 		memcpy(curId3, GameHdr->id, 3);
 		videoId = curId3;
 	}
+	//dev:/wiiflow/trailers/{coverfolder}/title.ext.thp or dev:/wiiflow/trailers/id3.thp
 	const char *videoPath = getVideoPath(m_videoDir, videoId);
 	const char *THP_Path = fmt("%s.thp", videoPath);
 	if(!fsop_FileExist(THP_Path))
 	{
 		if(GameHdr->type == TYPE_PLUGIN)
 		{
+			//dev:/wiiflow/trailers/magic#.thp
 			videoPath = getVideoDefaultPath(m_videoDir);
 			THP_Path = fmt("%s.thp", videoPath);
 		}
 		else if(!NoGameID(GameHdr->type))
 		{
+			//id6
 			videoPath = getVideoPath(m_videoDir, GameHdr->id);
 			THP_Path = fmt("%s.thp", videoPath);
 		}
@@ -396,6 +411,7 @@ bool CMenu::_startVideo()
 
 void CMenu::_game(bool launch)
 {
+	m_pluginBanner = false;
 	bool coverFlipped = false;
 	int cf_version = 1;
 	string domain;
@@ -405,6 +421,7 @@ void CMenu::_game(bool launch)
 	
 	dir_discHdr *hdr = (dir_discHdr*)MEM2_alloc(sizeof(dir_discHdr));
 	memcpy(hdr, CoverFlow.getHdr(), sizeof(dir_discHdr));
+	_setCurrentItem(hdr);
 	
 	const char *id = NULL;
 	char tmp1[74];// title/magic#
@@ -430,17 +447,13 @@ void CMenu::_game(bool launch)
 	}
 
 	m_zoom_banner = m_cfg.getBool(_domainFromView(), "show_full_banner", false);
-	if(NoGameID(hdr->type))
-	{
-		bool video_available = (hdr->type == TYPE_PLUGIN && 
-								(fsop_FileExist(fmt("%s.thp", getVideoPath(m_videoDir, CoverFlow.getPathId(hdr)))) || 
-								fsop_FileExist(fmt("%s.thp", getVideoDefaultPath(m_videoDir)))));
-		m_zoom_banner = m_zoom_banner && video_available;
-	}
-	currentMoviePos = (m_zoom_banner ? zoomedMoviePos : normalMoviePos);
+
 	if(m_banner.GetZoomSetting() != m_zoom_banner)
 		m_banner.ToggleZoom();
 
+	if(m_banner.GetInGameSettings())
+		m_banner.ToggleGameSettings();
+	m_gameSelected = true;
 	s8 startGameSound = -7;
 	SetupInput();
 
@@ -454,24 +467,14 @@ void CMenu::_game(bool launch)
 			
 		if(!launch)	
 			_mainLoopCommon(true);
-
-		if(startGameSound == -1)
-		{
-			_cleanupBanner(true);
-			m_gameSelected = false;
-		}
 			
 		if(startGameSound == 0)
 		{
-			m_gameSelected = true;// mark game selected and load sound/banner for main loop to start playing
 			startGameSound = 1;
 			_playGameSound();
 		}
 		/* move and zoom flipped cover */
-		if(coverFlipped && 
-			(BTN_PLUS_PRESSED || BTN_MINUS_PRESSED ||
-			BTN_LEFT_PRESSED || BTN_RIGHT_PRESSED ||
-			BTN_UP_PRESSED || BTN_DOWN_PRESSED))
+		if(coverFlipped)
 		{
 			float step = 0.05f;
 			if(BTN_PLUS_PRESSED || BTN_MINUS_PRESSED)
@@ -494,54 +497,62 @@ void CMenu::_game(bool launch)
 			}
 			CoverFlow.setCoverFlipPos(v);
 		}
-		/* if B on favorites btn goto game categories */
-		if(BTN_B_PRESSED && (m_btnMgr.selected(m_gameBtnFavoriteOn) || m_btnMgr.selected(m_gameBtnFavoriteOff)))
+		/* exit game menu */
+		if(BTN_HOME_PRESSED)
 		{
-			_hideGame();
-			m_banner.SetShowBanner(false);
-			if(m_locked)
-				error(_t("errgame15", L"WiiFlow locked! Unlock WiiFlow to use this feature."));
-			else
-				_CategorySettings(true);
-			_showGame();
-			m_banner.SetShowBanner(true);
-			if(!m_gameSound.IsPlaying()) 
-				startGameSound = -6;
-			continue;
+			_cleanupBanner();// also cleans up trailer movie including trailer sound
+			break;
 		}
-		/* exit game menu or reset flipped cover */
-		if(BTN_HOME_PRESSED || BTN_B_PRESSED)
+		else if(BTN_B_PRESSED)
 		{
-			if(BTN_B_PRESSED && coverFlipped)
+			/* de flip cover */
+			if(coverFlipped)
 			{
 				CoverFlow.flip();
 				coverFlipped = false;
+				m_banner.SetShowBanner(true);
 			}
+			/* if B on favorites btn goto game categories */
+			else if(m_btnMgr.selected(m_gameBtnFavoriteOn) || m_btnMgr.selected(m_gameBtnFavoriteOff))
+			{
+				_hideGame();
+				if(m_locked)
+				{
+					m_banner.SetShowBanner(false);
+					error(_t("errgame15", L"WiiFlow locked! Unlock WiiFlow to use this feature."));
+					m_banner.SetShowBanner(true);
+				}
+				else
+				{
+					// the mainloop handles drawing banner while in settings
+					m_banner.ToggleZoom();//zoom to full
+					m_banner.ToggleGameSettings();// dim brightness
+					_CategorySettings(true);
+					m_banner.ToggleGameSettings();//reset brightness
+					m_banner.ToggleZoom();//de zoom to small
+				}
+				_showGame();
+				if(m_newGame)
+					startGameSound = -10;
+			}
+			/* exit game selected menu */
 			else
 			{
 				_cleanupBanner();
 				break;
 			}
 		}
-		/* press + for game info screen */
-		else if(BTN_PLUS_PRESSED && !NoGameID(hdr->type) && !coverFlipped)
+		/* display game info screen */
+		else if(BTN_PLUS_PRESSED && !NoGameID(hdr->type) && !coverFlipped && !m_video_playing)
 		{
-			GameTDB m_gametdb; 
-			m_gametdb.OpenFile(fmt("%s/wiitdb.xml", m_settingsDir.c_str()));
-			if(m_gametdb.IsLoaded())
-			{
-				_hideGame();
-				m_banner.SetShowBanner(false);
-				_gameinfo();
-				m_gametdb.CloseFile();
-				_showGame();
-				m_banner.SetShowBanner(true);
-				if(!m_gameSound.IsPlaying())// this makes the game sound play when we return
-					startGameSound = -6;
-			}
+			_hideGame();// stops trailer movie too
+			m_banner.SetShowBanner(false);
+			_gameinfo();
+			_showGame();
+			m_banner.SetShowBanner(true);
 		}
-		/* play or stop a video (this is the old video play for non plugin games) */
-		else if(BTN_MINUS_PRESSED && !coverFlipped && !NoGameID(hdr->type))
+		/* play or stop a trailer video */
+		else if(BTN_MINUS_PRESSED && !coverFlipped)
 		{
 			if(m_video_playing)
 			{
@@ -555,7 +566,8 @@ void CMenu::_game(bool launch)
 			else
 				_startVideo();
 		}
-		else if((BTN_1_PRESSED || BTN_2_PRESSED) && !coverFlipped)
+		/* switch coverflow layout */
+		else if((BTN_1_PRESSED || BTN_2_PRESSED) && !coverFlipped && !m_video_playing)
 		{
 			s8 direction = BTN_1_PRESSED ? 1 : -1;
 			int cfVersion = loopNum((_getCFVersion() - 1) + direction, m_numCFVersions) + 1;
@@ -565,6 +577,7 @@ void CMenu::_game(bool launch)
 		}
 		else if(launch || BTN_A_PRESSED)
 		{
+			/* delete button */
 			if(m_btnMgr.selected(m_gameBtnDelete))
 			{
 				_hideGame();
@@ -573,32 +586,22 @@ void CMenu::_game(bool launch)
 					error(_t("errgame15", L"WiiFlow locked! Unlock WiiFlow to use this feature."));
 				else if(hdr->type == TYPE_CHANNEL)
 					error(_t("errgame17", L"Can not delete real NAND Channels!"));
-				else if(hdr->type == TYPE_PLUGIN)
-				{
-					const char *wfcPath = NULL;
-					const char *coverDir = NULL;
-					if(m_cfg.getBool(PLUGIN_DOMAIN, "subfolder_cache"))
-						coverDir = m_plugin.GetCoverFolderName(hdr->settings[0]);
-					if(coverDir == NULL || strlen(coverDir) == 0)
-						wfcPath = fmt("%s/%s.wfc", m_cacheDir.c_str(), CoverFlow.getPathId(hdr, true));
-					else
-						wfcPath = fmt("%s/%s/%s.wfc", m_cacheDir.c_str(), coverDir, CoverFlow.getPathId(hdr, true));
-					fsop_deleteFile(wfcPath);
-					CoverFlow.stopCoverLoader(true);
-					CoverFlow.startCoverLoader();
-				}
-				else
+				else /* delete wii, gamecube, emunand game or plugin rom */
 				{
 					if(_wbfsOp(WO_REMOVE_GAME))
 					{
+						m_refreshGameList = false;
+						_setCurrentItem(CoverFlow.getNextHdr());
 						_cleanupBanner();
-						break;
+						_loadList();
+						_initCF();
+						CoverFlow.select();
+						CoverFlow.applySettings();
+						startGameSound = -10;
 					}
 				}
 				_showGame();
 				m_banner.SetShowBanner(true);
-				if(!m_gameSound.IsPlaying())
-					startGameSound = -6;
 			}
 			else if(m_btnMgr.selected(m_gameBtnSettings))
 			{
@@ -609,21 +612,18 @@ void CMenu::_game(bool launch)
 					error(_t("errgame15", L"WiiFlow locked! Unlock WiiFlow to use this feature."));
 					m_banner.SetShowBanner(true);
 				}
-				/*else if(hdr->type == TYPE_PLUGIN)
-				{
-					m_banner.SetShowBanner(false);
-					error(_t("errgame16", L"Not available for plugin games!"));
-					m_banner.SetShowBanner(true);
-				}*/
 				else
 				{
-					m_banner.ToggleGameSettings();
+					// the mainloop handles drawing banner while in settings
+					m_banner.ToggleZoom();//zoom to full
+					m_banner.ToggleGameSettings();// dim brightness
 					_gameSettings(hdr);
-					m_banner.ToggleGameSettings();
+					m_banner.ToggleGameSettings();//reset brightness
+					m_banner.ToggleZoom();//de zoom to small
 				}
 				_showGame();
-				if(!m_gameSound.IsPlaying()) 
-					startGameSound = -6;
+				if(m_newGame)
+					startGameSound = -10;
 			}
 			else if(m_btnMgr.selected(m_gameBtnFavoriteOn) || m_btnMgr.selected(m_gameBtnFavoriteOff))
 			{
@@ -631,6 +631,8 @@ void CMenu::_game(bool launch)
 					m_gcfg1.setBool("FAVORITES_PLUGINS", id, !m_gcfg1.getBool("FAVORITES_PLUGINS", id, false));
 				else
 					m_gcfg1.setBool("FAVORITES", id, !m_gcfg1.getBool("FAVORITES", id, false));
+				if(m_favorites)
+					m_refreshGameList = true;
 			}
 			else if(m_btnMgr.selected(m_gameBtnAdultOn) || m_btnMgr.selected(m_gameBtnAdultOff))
 			{
@@ -640,8 +642,6 @@ void CMenu::_game(bool launch)
 					error(_t("errgame15", L"WiiFlow locked! Unlock WiiFlow to use this feature."));
 					m_banner.SetShowBanner(true);
 					_showGame();
-					if(!m_gameSound.IsPlaying()) 
-						startGameSound = -6;
 				}
 				else
 				{
@@ -649,6 +649,8 @@ void CMenu::_game(bool launch)
 						m_gcfg1.setBool("ADULTONLY_PLUGINS", id, !m_gcfg1.getBool("ADULTONLY_PLUGINS", id, false));
 					else
 						m_gcfg1.setBool("ADULTONLY", id, !m_gcfg1.getBool("ADULTONLY", id, false));
+					if(m_locked)
+						m_refreshGameList = true;
 				}
 			}
 			else if(m_btnMgr.selected(m_gameBtnBack) || m_btnMgr.selected(m_gameBtnBackFull))
@@ -657,17 +659,17 @@ void CMenu::_game(bool launch)
 				break;
 			}
 			else if((m_btnMgr.selected(m_gameBtnToggle) || m_btnMgr.selected(m_gameBtnToggleFull)) 
-					&& (!NoGameID(hdr->type) || m_video_playing))
+					&& (!NoGameID(hdr->type) || m_pluginBanner))
 			{
 				m_zoom_banner = m_banner.ToggleZoom();
 				m_cfg.setBool(_domainFromView(), "show_full_banner", m_zoom_banner);
-				currentMoviePos = (m_zoom_banner ? zoomedMoviePos : normalMoviePos);
 				m_show_zone_game = false;
 				m_btnMgr.hide(m_gameBtnPlayFull);
 				m_btnMgr.hide(m_gameBtnBackFull);
 				m_btnMgr.hide(m_gameBtnToggleFull);
 			}
-			else if(launch || m_btnMgr.selected(m_gameBtnPlay) || m_btnMgr.selected(m_gameBtnPlayFull) || !ShowPointer())
+			else if(launch || m_btnMgr.selected(m_gameBtnPlay) || m_btnMgr.selected(m_gameBtnPlayFull) || 
+					(!ShowPointer() && !m_video_playing && !coverFlipped))
 			{
 				_hideGame();
 				MusicPlayer.Stop();
@@ -731,9 +733,9 @@ void CMenu::_game(bool launch)
 				m_gcfg2.unload();
 				_showGame();
 			}
-			/* flip cover if mouse over */
 			else if(!coverFlipped)
 			{
+				/* flip cover if mouse over */
 				for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 				{
 					if(CoverFlow.mouseOver(m_cursor[chan].x(), m_cursor[chan].y()))
@@ -746,40 +748,39 @@ void CMenu::_game(bool launch)
 						v = m_coverflow.getVector3D(domain, key);
 						coverFlipped = true;
 						CoverFlow.flip();
+						m_banner.SetShowBanner(false);
 					}
 				}
 			}
 		}
-		if(!coverFlipped)
+		if(!coverFlipped && !m_video_playing)
 		{
+			/* move to new cover if needed */
 			if((startGameSound == 1 || startGameSound < -8) && (BTN_UP_REPEAT || RIGHT_STICK_UP))
 			{
-				//_cleanupBanner(true);
 				CoverFlow.up();
 				startGameSound = -10;
 			}
 			if((startGameSound == 1 || startGameSound < -8) && (BTN_RIGHT_REPEAT || RIGHT_STICK_RIGHT))
 			{
-				//_cleanupBanner(true);
 				CoverFlow.right();
 				startGameSound = -10;
 			}
 			if((startGameSound == 1 || startGameSound < -8) && (BTN_DOWN_REPEAT || RIGHT_STICK_DOWN))
 			{
-				//_cleanupBanner(true);
 				CoverFlow.down();
 				startGameSound = -10;
 			}
 			if((startGameSound == 1 || startGameSound < -8) && (BTN_LEFT_REPEAT || RIGHT_STICK_LEFT))
 			{
-				//_cleanupBanner(true);
 				CoverFlow.left();
 				startGameSound = -10;
 			}
 			if(startGameSound == -10)// if -10 then we moved to new cover
 			{
-				//m_gameSelected = false; // deselect game if moved to new cover
 				memcpy(hdr, CoverFlow.getHdr(), sizeof(dir_discHdr));// get new game header
+				_setCurrentItem(hdr);
+				
 				memset(tmp1, 0, 74);
 				memset(tmp2, 0, 64);
 				if(hdr->type == TYPE_PLUGIN)
@@ -799,25 +800,22 @@ void CMenu::_game(bool launch)
 						id = tmp1;
 					}
 				}
-				m_zoom_banner = m_cfg.getBool(_domainFromView(), "show_full_banner", false);
-				if(NoGameID(hdr->type))
+				if(m_newGame)
 				{
-					bool video_available = (hdr->type == TYPE_PLUGIN && 
-											(fsop_FileExist(fmt("%s.thp", getVideoPath(m_videoDir, CoverFlow.getPathId(hdr)))) || 
-											fsop_FileExist(fmt("%s.thp", getVideoDefaultPath(m_videoDir)))));
-					m_zoom_banner = m_zoom_banner && video_available;
+					m_newGame = false;
+					startGameSound = 1;
+					_playGameSound();
 				}
-				currentMoviePos = (m_zoom_banner ? zoomedMoviePos : normalMoviePos);
-				if(m_banner.GetZoomSetting() != m_zoom_banner)
-					m_banner.ToggleZoom();
 			}
 		}
 		/* show small banner frame if available */
-		if(m_gameLblUser[4] != -1 && !NoGameID(hdr->type)  && !m_zoom_banner)
+		if(!coverFlipped && m_gameLblUser[4] != -1 && (!NoGameID(hdr->type) || m_pluginBanner) && !m_zoom_banner && !m_video_playing)
 			m_btnMgr.show(m_gameLblUser[4]);
 		else
 			m_btnMgr.hide(m_gameLblUser[4]);
-		if(m_show_zone_game && !m_zoom_banner)
+		
+		/* show regular buttons if pointer is in game zone && banner is not zoomed && trailer video is not playing */
+		if(m_show_zone_game && !coverFlipped && (!m_zoom_banner || (NoGameID(hdr->type) && !m_pluginBanner)) && !m_video_playing)
 		{
 			m_btnMgr.hide(m_gameBtnPlayFull);
 			m_btnMgr.hide(m_gameBtnBackFull);
@@ -846,13 +844,19 @@ void CMenu::_game(bool launch)
 			m_btnMgr.show(b ? m_gameBtnAdultOn : m_gameBtnAdultOff);
 			m_btnMgr.hide(b ? m_gameBtnAdultOff : m_gameBtnAdultOn);
 		}
-		else
+		else /* show zoomed banner play and back buttons */
 		{
-			if(m_zoom_banner)
+			if(m_zoom_banner && (!NoGameID(hdr->type) || m_pluginBanner) && !m_video_playing)
 			{
 				m_btnMgr.show(m_gameBtnPlayFull);
 				m_btnMgr.show(m_gameBtnBackFull);
 				m_btnMgr.show(m_gameBtnToggleFull);
+			}
+			else
+			{
+				m_btnMgr.hide(m_gameBtnPlayFull);
+				m_btnMgr.hide(m_gameBtnBackFull);
+				m_btnMgr.hide(m_gameBtnToggleFull);
 			}
 			m_btnMgr.hide(m_gameBtnFavoriteOn);
 			m_btnMgr.hide(m_gameBtnFavoriteOff);
@@ -929,52 +933,53 @@ void CMenu::_launch(const dir_discHdr *hdr)
 		_launchChannel(&launchHdr);
 	else if(launchHdr.type == TYPE_PLUGIN)
 	{
-		//get dol name and name length for music plugin
+		/* get dol name and name length for music plugin */
 		const char *plugin_dol_name = m_plugin.GetDolName(launchHdr.settings[0]);
 		u8 plugin_dol_len = strlen(plugin_dol_name);
-		//get title and path from hdr
-		//example rom path - sd:/roms/super mario bros.zip
-		//example scummvm path - kq1-coco3
-		char title[101];
-		memset(&title, 0, sizeof(title));
+		/* check if music player plugin, if so set wiiflow's bckgrnd music player to play this song */
+		if(plugin_dol_len == 5 && strcasecmp(plugin_dol_name, "music") == 0)
+		{
+			MusicPlayer.LoadFile(launchHdr.path, false);
+			m_exit = false;
+			return;
+		}
+		/* get title from hdr */
 		u32 title_len_no_ext = 0;
+		const char *title = CoverFlow.getPathId(hdr, true);// with extension
+		//m_cfg.setString(_domainFromView(), "current_item", title);
+		
+		/* get path from hdr */
+		// example rom path - dev:/roms/super mario bros.zip
+		// example scummvm path - kq1-coco3		
 		const char *path = NULL;
 		if(strchr(launchHdr.path, ':') != NULL)//it's a rom path
 		{
-			//check if music player plugin, if so set wiiflow's bckgrnd music player to play this song
-			if(plugin_dol_len == 5 && strcasecmp(plugin_dol_name, "music") == 0)
-			{
-				MusicPlayer.LoadFile(launchHdr.path, false);
-				m_exit = false;
-				return;
-			}
-			//get rom title after last '/'
-			strncpy(title, strrchr(launchHdr.path, '/') + 1, 100);
-			//if there's extension get length of title without extension
+			// if there's extension get length of title without extension
 			if(strchr(launchHdr.path, '.') != NULL)
 				title_len_no_ext = strlen(title) - strlen(strrchr(title, '.'));
-			//get path
+			// get path
 			*strrchr(launchHdr.path, '/') = '\0'; //cut title off end of path
-			path = strchr(launchHdr.path, '/') + 1; //cut sd:/ off of path
+			path = strchr(launchHdr.path, '/') + 1; //cut dev:/ off of path
 		}
-		else //it's a scummvm game
-		{
+		else // it's a scummvm game
 			path = launchHdr.path;// kq1-coco3
-			wcstombs(title, launchHdr.title, 63);// King's Quest I: Quest for the Crown (CoCo3/English)
-		}
-		m_cfg.setString(_domainFromView(), "current_item", title);
 
+		/* get device */
 		const char *device = (currentPartition == 0 ? "sd" : (DeviceHandle.GetFSType(currentPartition) == PART_FS_NTFS ? "ntfs" : "usb"));
+		
+		/* get loader */
 		// I believe the loader is set just in case the user is using a old plugin where the arguments line still requires loader
 		const char *loader = fmt("%s:/%s/WiiFlowLoader.dol", device, strchr(m_pluginsDir.c_str(), '/') + 1);
 
+		/* set arguments */
 		vector<string> arguments = m_plugin.CreateArgs(device, path, title, loader, title_len_no_ext, launchHdr.settings[0]);
-		// find plugin dol - it does not have to be in dev:/wiiflow/plugins
-		const char *plugin_file = plugin_dol_name; /* try full path */
-		if(strchr(plugin_file, ':') == NULL || !fsop_FileExist(plugin_file)) /* if not found try wiiflow plugin folder */
+		
+		/* find plugin dol - it does not have to be in dev:/wiiflow/plugins */
+		const char *plugin_file = plugin_dol_name; // try full path
+		if(strchr(plugin_file, ':') == NULL || !fsop_FileExist(plugin_file)) // if not found try wiiflow plugin folder
 		{
 			plugin_file = fmt("%s/%s", m_pluginsDir.c_str(), plugin_dol_name);
-			if(!fsop_FileExist(plugin_file)) /* not found - try device search */
+			if(!fsop_FileExist(plugin_file)) // not found - try device search
 			{
 				for(u8 i = SD; i < MAXDEVICES; ++i)
 				{
@@ -984,6 +989,7 @@ void CMenu::_launch(const dir_discHdr *hdr)
 				}
 			}
 		}
+		/* launch plugin with args */
 		_launchHomebrew(plugin_file, arguments);
 	}
 	else if(launchHdr.type == TYPE_HOMEBREW)
@@ -1028,7 +1034,6 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	
 	m_gcfg1.setInt("PLAYCOUNT", id, m_gcfg1.getInt("PLAYCOUNT", id, 0) + 1);
 	m_gcfg1.setUInt("LASTPLAYED", id, time(NULL));
-	m_cfg.setString(_domainFromView(), "current_item", id);
 
 	if(has_enabled_providers() && _initNetwork() == 0)
 		add_game_to_card(id);
@@ -1416,16 +1421,15 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		if(has_enabled_providers() && _initNetwork() == 0)
 			add_game_to_card(id.c_str());
 	}
-	m_cfg.setString(_domainFromView(), "current_item", id);
 	m_gcfg1.setInt("PLAYCOUNT", id, m_gcfg1.getInt("PLAYCOUNT", id, 0) + 1); 
 	m_gcfg1.setUInt("LASTPLAYED", id, time(NULL));
 
-	string emuPath = fmt("/%s/%s", EMU_NANDS_DIR, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default").c_str());
+	string emuPath = fmt("/%s/%s", emu_nands_dir, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default").c_str());
 	int emulate_mode = min(max(0, m_cfg.getInt(CHANNEL_DOMAIN, "emulation", 1)), (int)ARRAY_SIZE(CMenu::_NandEmu) - 1);
 	
 	int userIOS = m_gcfg2.getInt(id, "ios", 0);
 	u64 gameTitle = TITLE_ID(hdr->settings[0],hdr->settings[1]);
-	bool useNK2o = (m_gcfg2.getBool(id, "useneek", false) && !neek2o());
+	bool useNK2o = (m_gcfg2.getBool(id, "useneek", false) && !neek2o());//if not in neek2o and use neek is set
 	bool use_led = m_gcfg2.getBool(id, "led", false);
 	u32 gameIOS = ChannelHandle.GetRequestedIOS(gameTitle);
 
@@ -1441,14 +1445,23 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		{
 			if(!Load_Neek2o_Kernel())
 			{
-				error(_t("errneek1", L"Cannot launch neek2o. Verify your neek2o setup"));
+				error(_t("errneek1", L"Cannot launch neek2o. Verify your neek2o setup"));//kernal.bin not found
 				_exitWiiflow();
 			}
 			else 
 			{
+				const char *nkrtrn = NULL;
+				if(IsOnWiiU())
+					nkrtrn = "HCVA";// Return to WiiU system channel
+				else
+					nkrtrn = "NK2O";
+				u32 nkreturnTo = nkrtrn[0] << 24 | nkrtrn[1] << 16 | nkrtrn[2] << 8 | nkrtrn[3];
 				cleanup();
 				ShutdownBeforeExit();
-				Launch_nk(gameTitle, NandHandle.Get_NandPath(), returnTo ? (((u64)(0x00010001) << 32) | (returnTo & 0xFFFFFFFF)) : 0);
+				if(IsOnWiiU())
+					Launch_nk(gameTitle, NandHandle.Get_NandPath(), ((u64)(0x00010002) << 32) | (nkreturnTo & 0xFFFFFFFF));
+				else
+					Launch_nk(gameTitle, NandHandle.Get_NandPath(), ((u64)(0x00010001) << 32) | (nkreturnTo & 0xFFFFFFFF));
 				while(1) usleep(500);
 			}
 		}
@@ -1515,7 +1528,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 	if(neek2o())
 	{
 		int discID = id.c_str()[0] << 24 | id.c_str()[1] << 16 | id.c_str()[2] << 8 | id.c_str()[3];
-		if(WDVD_NEEK_LoadDisc((discID&0xFFFFFFFF), 0x5D1C9EA3) > 0)
+		if(WDVD_NEEK_LoadDisc((discID&0xFFFFFFFF), 0x5D1C9EA3) > 0)//5D1C9EA3 is wii disc magic
 		{
 			dvd = true;
 			sleep(3);
@@ -1679,7 +1692,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 	u8 *gameconfig = NULL;
 	u32 cheatSize = 0, gameconfigSize = 0, returnTo = 0;
 
-	m_cfg.setString(_domainFromView(), "current_item", id);
 	m_gcfg1.setInt("PLAYCOUNT", id, m_gcfg1.getInt("PLAYCOUNT", id, 0) + 1);
 	m_gcfg1.setUInt("LASTPLAYED", id, time(NULL));
 
@@ -1884,15 +1896,6 @@ void CMenu::_gameSoundThread(CMenu *m)
 	CurrentBanner.ClearBanner();
 
 	const dir_discHdr *GameHdr = CoverFlow.getHdr();
-	if(GameHdr->type == TYPE_PLUGIN)
-	{
-		m_banner.DeleteBanner();
-		m->m_gameSound.Load(m_plugin.GetBannerSound(GameHdr->settings[0]), m_plugin.GetBannerSoundSize());
-		if(m->m_gameSound.IsLoaded())
-			m->m_gamesound_changed = true;
-		m->m_soundThrdBusy = false;
-		return;
-	}
 	u8 *custom_bnr_file = NULL;
 	u32 custom_bnr_size = 0;
 
@@ -1903,18 +1906,40 @@ void CMenu::_gameSoundThread(CMenu *m)
 	cached_banner[255] = '\0';
 	char custom_banner[256];
 	custom_banner[255] = '\0';
-	/* check custom ID6 first */
-	strncpy(custom_banner, fmt("%s/%s.bnr", m->m_customBnrDir.c_str(), GameHdr->id), 255);
-	fsop_GetFileSizeBytes(custom_banner, &custom_bnr_size);
-	if(custom_bnr_size > 0)
+	if(GameHdr->type == TYPE_PLUGIN)
 	{
-		custom_bnr_file = (u8*)MEM2_lo_alloc(custom_bnr_size);
-		if(custom_bnr_file != NULL)
-			fsop_ReadFileLoc(custom_banner, custom_bnr_size, (void*)custom_bnr_file);
+		const char *coverDir  = NULL;
+		coverDir = m_plugin.GetCoverFolderName(GameHdr->settings[0]);
+		
+		if(coverDir == NULL || strlen(coverDir) == 0)
+			strncpy(custom_banner, fmt("%s/%s.bnr", m->m_customBnrDir.c_str(), CoverFlow.getPathId(GameHdr)), 255);
+		else
+			strncpy(custom_banner, fmt("%s/%s/%s.bnr", m->m_customBnrDir.c_str(), coverDir, CoverFlow.getPathId(GameHdr)), 255);
+		fsop_GetFileSizeBytes(custom_banner, &custom_bnr_size);
+		if(custom_bnr_size > 0)
+		{
+			custom_bnr_file = (u8*)MEM2_lo_alloc(custom_bnr_size);
+			if(custom_bnr_file != NULL)
+			{
+				fsop_ReadFileLoc(custom_banner, custom_bnr_size, (void*)custom_bnr_file);
+				m_pluginBanner = true;
+			}
+		}
+		else
+		{
+			m_pluginBanner = false;
+			m_banner.DeleteBanner();
+			m->m_gameSound.Load(m_plugin.GetBannerSound(GameHdr->settings[0]), m_plugin.GetBannerSoundSize());
+			if(m->m_gameSound.IsLoaded())
+				m->m_gamesound_changed = true;
+			m->m_soundThrdBusy = false;
+			return;
+		}
 	}
-	else /* no custom ID6 or too big, try ID3 */
+	else
 	{
-		strncpy(custom_banner, fmt("%s/%.3s.bnr", m->m_customBnrDir.c_str(), GameHdr->id), 255);
+		/* check custom ID6 first */
+		strncpy(custom_banner, fmt("%s/%s.bnr", m->m_customBnrDir.c_str(), GameHdr->id), 255);
 		fsop_GetFileSizeBytes(custom_banner, &custom_bnr_size);
 		if(custom_bnr_size > 0)
 		{
@@ -1922,10 +1947,21 @@ void CMenu::_gameSoundThread(CMenu *m)
 			if(custom_bnr_file != NULL)
 				fsop_ReadFileLoc(custom_banner, custom_bnr_size, (void*)custom_bnr_file);
 		}
+		else /* no custom ID6 or too big, try ID3 */
+		{
+			strncpy(custom_banner, fmt("%s/%.3s.bnr", m->m_customBnrDir.c_str(), GameHdr->id), 255);
+			fsop_GetFileSizeBytes(custom_banner, &custom_bnr_size);
+			if(custom_bnr_size > 0)
+			{
+				custom_bnr_file = (u8*)MEM2_lo_alloc(custom_bnr_size);
+				if(custom_bnr_file != NULL)
+					fsop_ReadFileLoc(custom_banner, custom_bnr_size, (void*)custom_bnr_file);
+			}
+		}
 	}
 	if(custom_bnr_file == NULL && GameHdr->type == TYPE_GC_GAME)
 	{
-		//get the gc games banner without sound
+		//get the gc games banner without sound from ISO
 		GC_Disc_Reader.init(GameHdr->path);
 		u8 *opening_bnr = GC_Disc_Reader.GetGameCubeBanner();
 		if(opening_bnr != NULL)
@@ -1971,9 +2007,11 @@ void CMenu::_gameSoundThread(CMenu *m)
 	if(cached_bnr_file == NULL && custom_bnr_file == NULL)
 		fsop_WriteFile(cached_banner, CurrentBanner.GetBannerFile(), CurrentBanner.GetBannerFileSize());
 
+	//load and init banner
+	m_banner.LoadBanner(m->m_wbf1_font, m->m_wbf2_font);
+	
 	//get sound from wii, channel, or custom banner and load it to play with the banner
 	u32 sndSize = 0;
-	m_banner.LoadBanner(m->m_wbf1_font, m->m_wbf2_font);
 	u8 *soundBin = CurrentBanner.GetFile("sound.bin", &sndSize);
 	CurrentBanner.ClearBanner();
 
@@ -2016,17 +2054,7 @@ u8 *GameSoundStack = NULL;
 u32 GameSoundSize = 0x10000; //64kb
 void CMenu::_playGameSound(void)// starts banner and gamesound loading thread
 {
-	if(NoGameID(CoverFlow.getHdr()->type))
-	{
-		if(_startVideo())
-			return;
-		if(m_zoom_banner == true)
-		{
-			m_zoom_banner = m_banner.ToggleZoom();
-			//m_cfg.setBool(_domainFromView(), "show_full_banner", m_zoom_banner);
-			currentMoviePos = normalMoviePos;
-		}
-	}
+	_cleanupBanner(true);
 	m_gamesound_changed = false;
 	if(m_bnrSndVol == 0) 
 		return;
