@@ -4,7 +4,7 @@
 #define APP_DATA_DIR			"wiiflow"
 #define APPS_DIR				"apps/wiiflow_lite"
 
-#define EMU_NANDS_DIR			"nands"
+//#define EMU_NANDS_DIR			"nands"
 #define GAMES_DIR				"%s:/wbfs"
 #define HOMEBREW_DIR			"%s:/apps"
 #define DF_GC_GAMES_DIR			"%s:/games"

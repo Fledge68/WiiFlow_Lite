@@ -467,10 +467,11 @@ void CMenu::_gameSettings(const dir_discHdr *hdr, bool disc)
 	m_gcfg2.load(fmt("%s/" GAME_SETTINGS2_FILENAME, m_settingsDir.c_str()));
 	GameHdr = hdr;
 	const char *id = GameHdr->id;
-	//const char *id = CoverFlow.getId();
-	//const dir_discHdr *GameHdr = CoverFlow.getHdr();
-	videoScale = m_gcfg2.getInt(id, "nin_width", 127);
-	videoOffset = m_gcfg2.getInt(id, "nin_pos", 127);
+	if(GameHdr->type == TYPE_GC_GAME)
+	{
+		videoScale = m_gcfg2.getInt(id, "nin_width", 127);
+		videoOffset = m_gcfg2.getInt(id, "nin_pos", 127);
+	}
 	m_gameSettingsPage = 1;
 	_showGameSettings();
 	while(!m_exit)
@@ -529,13 +530,7 @@ void CMenu::_gameSettings(const dir_discHdr *hdr, bool disc)
 			}
 			else if(m_btnMgr.selected(m_gameSettingsBtnLaunchNK))
 			{
-				//show error msg if emunand not on USB1 && neek2o doesn't exist
-				if(m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0) != 1)
-					error(_t("cfgg48", L"EmuNAND not on USB1!"));
-				else if(!fsop_FileExist("usb1:/sneek/kernel.bin"))
-					error(_t("cfgg49", L"Neek2o Not Found!"));
-				else
-					m_gcfg2.setBool(id, "useneek", !m_gcfg2.getBool(id, "useneek", 0));
+				m_gcfg2.setBool(id, "useneek", !m_gcfg2.getBool(id, "useneek", 0));
 				_showGameSettings();
 			}
 			else if(m_btnMgr.selected(m_gameSettingsBtnDevoMemcardEmu))
@@ -753,8 +748,11 @@ void CMenu::_gameSettings(const dir_discHdr *hdr, bool disc)
 					// update these in case the user changed games while in cat menu
 					id = CoverFlow.getId();
 					GameHdr = CoverFlow.getHdr();
-					videoScale = m_gcfg2.getInt(id, "nin_width", 127);
-					videoOffset = m_gcfg2.getInt(id, "nin_pos", 127);
+					if(GameHdr->type == TYPE_GC_GAME)
+					{
+						videoScale = m_gcfg2.getInt(id, "nin_width", 127);
+						videoOffset = m_gcfg2.getInt(id, "nin_pos", 127);
+					}
 				}
 				_showGameSettings();
 			}

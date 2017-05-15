@@ -75,8 +75,8 @@ struct dir_discHdr
 {
 	char id[7]; //6+1 for null character
 
-	char path[256];
-	wchar_t title[64];
+	char path[256]; // full path including partion - path - rom.ext or game.iso or id6.wbfs
+	wchar_t title[64]; // wide character title used for displaying title in coverflow
 	u32 settings[2]; //chantitle, plugin magic, crc32, gamecube game on sd, etc
 
 	u8 type;

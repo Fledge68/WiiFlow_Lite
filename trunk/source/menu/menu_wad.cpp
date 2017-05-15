@@ -438,7 +438,7 @@ void CMenu::_Wad(const char *wad_path)
 	vector<string> emuNands;
 	string emuNand = m_cfg.getString(CHANNEL_DOMAIN, "current_emunand");
 	int emuPart = m_cfg.getInt(CHANNEL_DOMAIN, "partition");
-	_listEmuNands(fmt("%s:/%s", DeviceName[emuPart], EMU_NANDS_DIR), emuNands);
+	_listEmuNands(fmt("%s:/%s", DeviceName[emuPart],  emu_nands_dir), emuNands);
 	int curEmuNand = 0;
 	for(u8 i = 0; i < emuNands.size(); ++i)
 	{
@@ -476,7 +476,7 @@ void CMenu::_Wad(const char *wad_path)
 				/* mios is real nand, chans are emu */
 				if(mios == false)
 				{
-					const char *emu_char = fmt("/%s/%s", EMU_NANDS_DIR, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default").c_str());
+					const char *emu_char = fmt("/%s/%s",  emu_nands_dir, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default").c_str());
 					NandHandle.SetPaths(emu_char, DeviceName[currentPartition]);
 				}
 				_start_pThread();

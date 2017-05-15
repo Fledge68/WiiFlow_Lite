@@ -24,7 +24,7 @@ void CMenu::_gameinfo(void)
 	while(!m_exit)
 	{
 		_mainLoopCommon();
-		if(BTN_HOME_PRESSED || BTN_B_PRESSED)
+		if(BTN_HOME_PRESSED || BTN_B_PRESSED || !tdb_found)
 			break;
 		if((BTN_DOWN_PRESSED || BTN_DOWN_HELD) && page == 2 && synopsis_th > synopsis_h)
 		{
@@ -174,6 +174,8 @@ void CMenu::_showGameInfo(void)
 			if(m_gameinfoLblControls[i] != -1 && i < cnt_controls)
 				m_btnMgr.show(m_gameinfoLblControls[i]);
 	}
+	else
+		error(_t("errgame18", L"No game info!"));
 }
 
 void CMenu::_initGameInfoMenu()
@@ -245,6 +247,12 @@ void CMenu::_textGameInfo(void)
 		{
 			gameinfo_Title_w.fromUTF8(TMP_Char);
 			m_btnMgr.setText(m_gameinfoLblTitle, gameinfo_Title_w);
+		}
+		else
+		{
+			tdb_found = false;
+			gametdb.CloseFile();
+			return;
 		}
 		if(gametdb.GetSynopsis(GameID, TMP_Char))
 		{

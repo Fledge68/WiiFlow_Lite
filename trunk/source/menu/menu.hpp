@@ -55,6 +55,7 @@ private:
 	u8 m_catStartPage;
 	u8 m_max_categories;
 	bool m_clearCats;
+	bool m_newGame;
 	bool show_mem;
 	vector<dir_discHdr> m_gameList;
 
@@ -137,6 +138,7 @@ private:
 	string m_helpDir;
 
 	/* NandEmulation */
+	char emu_nands_dir[64];
 	string m_saveExtGameId;
 	bool m_forceext;
 	bool m_emuSaveNand;
@@ -1019,8 +1021,8 @@ private:
 	void _updatePluginText(void);
 	void _updatePluginCheckboxes(void);
 	void _updateCheckboxes(void);
-	void _getIDCats(void);
-	void _setIDCats(void);
+	void _getGameCategories(void);
+	void _setGameCategories(void);
 	void _setBg(const TexData &bgTex, const TexData &bglqTex);
 	void _updateBg(void);
 	void _drawBg(void);
@@ -1087,6 +1089,7 @@ private:
 	void _launchHomebrew(const char *filepath, vector<string> arguments);
 	void _launchGC(dir_discHdr *hdr, bool disc);
 	void _launchShutdown();
+	void _setCurrentItem(const dir_discHdr *hdr);
 	void _exitWiiflow();
 	void exitHandler(int ExitTo);
 	void _setAA(int aa);

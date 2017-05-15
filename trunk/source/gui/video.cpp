@@ -114,7 +114,7 @@ GXRModeObj TVPal574IntDfScale =
 
 struct movieP normalMoviePos = { 410, 31, 610, 181 };
 struct movieP zoomedMoviePos = { 0, 0, 640, 480 };
-struct movieP currentMoviePos = normalMoviePos;
+struct movieP currentMoviePos = zoomedMoviePos;
 
 const int CVideo::_stencilWidth = 128;
 const int CVideo::_stencilHeight = 128;

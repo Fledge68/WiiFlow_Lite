@@ -43,7 +43,7 @@ void BannerWindow::Init(u8 *font1, u8 *font2)
 	AnimPosX = 0.5f * (ScreenProps.x - fIconWidth);
 	AnimPosY = 0.5f * (ScreenProps.y - fIconHeight);
 	AnimationRunning = false;
-	Brightness = 0;
+	//Brightness = 0;
 
 	// this just looks better for banner/icon ratio
 	xDiff = 0.5f * (m_vid.wide() ? (m_vid.vid_50hz() ? 616 : 620.0f) : 608.0f);
@@ -222,7 +222,7 @@ void BannerWindow::Draw(void)
 
 void BannerWindow::ToggleGameSettings()
 {
-	ToggleZoom();
+	//ToggleZoom();
 	Brightness = (Brightness == 200 ? 0 : 200);
 }
 
