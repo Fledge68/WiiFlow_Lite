@@ -106,7 +106,7 @@ bool Identify(u64 titleid)
 				break;
 		}
 	}
-	gprintf("AHBPROT: %d, Key ID: %u\n", AHBRPOT_Patched(), keyId);
+	gprintf("AHBPROT: %d, Key ID: %u\n", AHBPROT_Patched(), keyId);
 	free(tmdBuffer);
 	free(tikBuffer);
 	free(certBuffer);

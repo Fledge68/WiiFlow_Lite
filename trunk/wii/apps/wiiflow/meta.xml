@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <app version="1">
-  <name> WiiFlow Lite</name>
+  <name>WiiFlow Lite</name>
   <coder>Fledge68</coder>
-  <version>4.4.0 r1130</version>
-  <release_date>20161412000000</release_date>
+  <version>4.4.0 r1135</version>
+  <release_date>20172109000000</release_date>
   <short_description>USB Loader app</short_description>
   <long_description>
-    WiiFlow Lite is a app for loading games from a USB Device, SD card, or an actual Disc.
-    It dispays your games in a coverflow with 3D full box covers.
+    WiiFlow Lite is a app for loading backup games from a USB Device or SD card.
+    It displays your games in a coverflow with 3D full box covers.
     
     Key features:
     * Emulated NAND support

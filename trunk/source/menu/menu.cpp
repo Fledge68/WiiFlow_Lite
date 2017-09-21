@@ -107,7 +107,7 @@ static void GrabINIFiles(char *FullPath)
 	INI_List.push_back(FullPath);
 }
 
-void CMenu::init()
+bool CMenu::init()
 {
 	SoundHandle.Init();
 	m_gameSound.SetVoice(1);
@@ -126,15 +126,24 @@ void CMenu::init()
 			break;
 		}
 	}
+	if(drive == check)//No apps/wiiflow folder found
+	{
+		for(int i = SD; i <= USB8; i++) // Find the first writable partition
+			if(DeviceHandle.IsInserted(i) && DeviceHandle.GetFSType(i) != PART_FS_WBFS)
+			{
+				drive = DeviceName[i];
+				break;
+			}
+	}
 	
-	_loadDefaultFont();// load default font
 	if(drive == check) // Should not happen
 	{
-		_buildMenus();
-		error(_fmt("errboot4", L"No apps/wiiflow directory found!"));
-		m_exit = true;
-		return;
+		/* Could not find a device to save configuration files on! */
+		//m_exit = true;
+		return false;
 	}
+
+	_loadDefaultFont();// load default font
 
 	/* Handle apps dir first, so handling wiiflow.ini does not fail */
 	m_appDir = fmt("%s:/%s", drive, APPS_DIR);
@@ -143,6 +152,7 @@ void CMenu::init()
 	
 	/* Load/Create wiiflow.ini so we can get settings to start Gecko and Network */
 	m_cfg.load(fmt("%s/" CFG_FILENAME, m_appDir.c_str()));
+	show_mem = m_cfg.getBool("DEBUG", "show_mem", false);
 	/* Check if we want WiFi Gecko */
 	m_use_wifi_gecko = m_cfg.getBool("DEBUG", "wifi_gecko", false);
 	WiFiDebugger.SetBuffer(m_use_wifi_gecko);
@@ -177,20 +187,16 @@ void CMenu::init()
 			for(u8 i = USB1; i <= USB8; i++)
 			{
 				if(DeviceHandle.IsInserted(i) && DeviceHandle.GetFSType(i) != PART_FS_WBFS)
-				drive = DeviceName[i];
-				break;
+					drive = DeviceName[i];
+					break;
 			}
 			if(drive == check && DeviceHandle.IsInserted(SD))//if no available USB partition then force SD
-			{
 				drive = DeviceName[SD];
-				//show error msg later to keep form calling _buildMenus() twice
-			}
 			else if(drive == check)
 			{
-				_buildMenus();
-				error(_fmt("errboot6", L"No available usb partitions for data and no SD inserted!\nExiting."));
-				m_exit = true;
-				return;
+				/* No available usb partitions for data and no SD inserted! */
+				//m_exit = true;
+				return false;
 			}
 		}
 		else
@@ -306,8 +312,7 @@ void CMenu::init()
 	/* Emu nands init even if not being used */
 	memset(emu_nands_dir, 0, 64);
 	strncpy(emu_nands_dir, IsOnWiiU() ? "vwiinands" : "nands", 64);
-	_checkEmuNandSettings(false);// emu nand
-	_checkEmuNandSettings(true);// saves nand
+	_checkEmuNandSettings();
 	
 	/* Cache Reload Checks */
 	int ini_rev = m_cfg.getInt("GENERAL", "ini_rev", 0);
@@ -417,10 +422,6 @@ void CMenu::init()
 	m_music_info = m_cfg.getBool("GENERAL", "display_music_info", false);
 
 	/* Init Button Manager and build the menus */
-	m_btnMgr.init();
-	m_btnMgr.setRumble(m_cfg.getBool("GENERAL", "rumble", true));
-	show_mem = m_cfg.getBool("DEBUG", "show_mem", false);
-		
 	_buildMenus();
 	if(drive == DeviceName[SD] && onUSB)
 		error(_fmt("errboot5", L"data_on_usb=yes and No available usb partitions for data!\nUsing SD."));
@@ -428,6 +429,7 @@ void CMenu::init()
 	/* Check if locked, set return to, set exit to, and init multi threading */
 	m_locked = m_cfg.getString("GENERAL", "parent_code", "").size() >= 4;
 	
+	/* Switch the WFLA and DWFA when using official wiiflow */
 	if(m_cfg.getString("GENERAL", "returnto", "WFLA") == "DWFA")
 		m_cfg.setString("GENERAL", "returnto", "WFLA");
 
@@ -436,7 +438,7 @@ void CMenu::init()
 			stat(fmt("%s:/bootmii/armboot.bin",DeviceName[SD]), &dummy) != 0 || 
 			stat(fmt("%s:/bootmii/ppcboot.elf", DeviceName[SD]), &dummy) != 0))
 		exit_to = EXIT_TO_HBC;
-	Sys_ExitTo(exit_to);
+	Sys_ExitTo(exit_to + 1);
 
 	LWP_MutexInit(&m_mutex, 0);
 
@@ -470,6 +472,7 @@ void CMenu::init()
 			);
 		}
 	}
+	return true;
 }
 
 bool cleaned_up = false;
@@ -939,6 +942,8 @@ void CMenu::_loadCFLayout(int version, bool forceAA, bool otherScrnFmt)
 
 void CMenu::_buildMenus(void)
 {
+	m_btnMgr.init();
+	m_btnMgr.setRumble(m_cfg.getBool("GENERAL", "rumble", true));
 	// Default fonts
 	theme.btnFont = _font("GENERAL", "button_font", BUTTONFONT);
 	theme.btnFontColor = m_theme.getColor("GENERAL", "button_font_color", 0xD0BFDFFF);
@@ -2286,13 +2291,9 @@ bool CMenu::_loadChannelList(void)
 	{
 		NANDemuView = true;
 		string emuPath;
-		int emuPartition = _FindEmuPart(emuPath, false, false);//check if exist & has sysconf, settings.txt, & RFL_DB.dat
+		int emuPartition = _FindEmuPart(emuPath, false, false);// check if emunand folder exist and on FAT
 		if(emuPartition >= 0)
 		{
-			/* copy real NAND sysconf, settings.txt, & RFL_DB.dat if you want to, they are replaced if they already exist */
-			NandHandle.PreNandCfg(m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_miis", false), 
-					m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_config", false));
-
 			currentPartition = emuPartition;
 			string cacheDir = fmt("%s/%s_channels.db", m_listCacheDir.c_str(), DeviceName[currentPartition]);
 			bool updateCache = m_cfg.getBool(CHANNEL_DOMAIN, "update_cache");

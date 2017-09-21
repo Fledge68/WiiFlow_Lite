@@ -52,6 +52,8 @@ void GC_Disc::init(const char *path)
 	}
 	else
 	{
+		if(strstr(GamePath, ".ciso") != NULL)
+			return;
 		GameType = TYPE_ISO;
 		f = fopen(GamePath, "rb");
 		if(f == NULL)

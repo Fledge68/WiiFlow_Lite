@@ -79,12 +79,12 @@ void Sys_ExitTo(int option)
 	//magic word to force wii menu in priiloader.
 	if(ExitOption == EXIT_TO_MENU)
 	{
-		*Priiloader_CFG1 = 0x50756E65;
+		*Priiloader_CFG1 = 0x50756E65;// Pune
 		*Priiloader_CFG2 = 0x50756E65;
 	}
 	else if(ExitOption == EXIT_TO_PRIILOADER)
 	{
-		*Priiloader_CFG1 = 0x4461636F;
+		*Priiloader_CFG1 = 0x4461636F;// Daco
 		*Priiloader_CFG2 = 0x4461636F;
 	}
 	else
@@ -98,8 +98,8 @@ void Sys_ExitTo(int option)
 
 void Sys_Exit(void)
 {
-	if(ExitOption == EXIT_TO_DISABLE)
-		return;
+	//if(ExitOption == EXIT_TO_DISABLE)
+	//	return;
 
 	/* Shutdown Inputs */
 	Close_Inputs();
@@ -123,6 +123,8 @@ void Sys_Exit(void)
 		WII_LaunchTitle(HBC_JODI);
 		WII_LaunchTitle(HBC_HAXX);
 	}
+	else if(ExitOption == EXIT_TO_WIIU)
+		WII_LaunchTitle(WIIU_CHANNEL);
 	/* else Return to Menu */
 	SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
 	exit(1);
@@ -145,7 +147,7 @@ void Sys_Init(void)
 	SYS_SetPowerCallback(__Sys_PowerCallback);
 }
 
-bool AHBRPOT_Patched(void)
+bool AHBPROT_Patched(void)
 {
 	return (*HW_AHBPROT == 0xFFFFFFFF);
 }
@@ -215,16 +217,16 @@ bool Sys_DolphinMode(void)
 	return DolphinMode;
 }
 
-bool hw_check = false;
+bool hw_checked = false;
 bool on_hw = false;
 bool Sys_HW_Access(void)
 {
-	if(hw_check == true)
+	if(hw_checked == true)
 		return on_hw;
 
 	check_neek2o();
-	on_hw = AHBRPOT_Patched() && (!Sys_DolphinMode() && !neek2o());
-	hw_check = true;
+	on_hw = AHBPROT_Patched() && (!Sys_DolphinMode() && !neek2o());
+	hw_checked = true;
 	return on_hw;
 }
 

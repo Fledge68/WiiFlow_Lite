@@ -15,14 +15,16 @@ extern "C" {
 #define HBC_HAXX			0x0001000148415858ULL
 #define RETURN_CHANNEL		0x0001000857494948ULL
 #define SYSTEM_MENU			0x0000000100000002ULL
+#define WIIU_CHANNEL		0x0001000248435641ULL//HCVA
 
 enum
 {
 	PRIILOADER_DEF = 0,
 	EXIT_TO_MENU,
 	EXIT_TO_HBC,
+	EXIT_TO_WIIU,
 	EXIT_TO_PRIILOADER,
-	EXIT_TO_DISABLE,
+	//EXIT_TO_DISABLE,
 	EXIT_TO_BOOTMII,
 	EXIT_TO_WFNK2O,
 	EXIT_TO_SMNK2O,
@@ -43,7 +45,7 @@ void Sys_SetNeekPath(const char*);
 void Open_Inputs(void);
 void Close_Inputs(void);
 
-bool AHBRPOT_Patched(void);
+bool AHBPROT_Patched(void);
 bool IsOnWiiU(void);
 
 /* All our extern C stuff */

@@ -193,8 +193,8 @@ void CMenu::_showCF(bool refreshList)
 	m_numCFVersions = min(max(1, m_coverflow.getInt(cf_domain, "number_of_modes", 1)), 15);
 	
 	/* filter list and start coverflow coverloader */	
-	_initCF();
 	_loadCFLayout(min(max(1, _getCFVersion()), (int)m_numCFVersions));
+	_initCF();
 	CoverFlow.applySettings();
 
 	/* display game count unless sourceflow or homebrew */
@@ -256,7 +256,7 @@ int CMenu::main(void)
 	}
 	SetupInput(true);
 
-	gprintf("start\n");
+	gprintf("start wiiflow main screen\n");
 	while(!m_exit)
 	{
 		/* IMPORTANT check if a disc is inserted */
@@ -608,16 +608,35 @@ int CMenu::main(void)
 			}
 			else if(BTN_MINUS_PRESSED && !CoverFlow.empty())
 			{
-				/* WiiFlow should boot a random game */
 				_hideMain();
 				srand(time(NULL));
 				u16 place = (rand() + rand() + rand()) % CoverFlow.size();
-				gprintf("Lets boot the random game number %u\n", place);
-				const dir_discHdr *gameHdr = CoverFlow.getSpecificHdr(place);
-				if(gameHdr != NULL)
-					_launch(gameHdr);
-				/* Shouldnt happen */
-				_showCF(false);
+				if(m_cfg.getBool("GENERAL", "random_select", false))
+				{
+					CoverFlow.setSelected(place);
+					_game(false);
+					if(m_exit)
+						break;
+					if(BTN_B_HELD)
+						bUsed = true;
+					if(m_refreshGameList)
+					{
+						/* if changes were made to favorites, parental lock, or categories */
+						_initCF();
+						m_refreshGameList = false;
+					}
+					else
+						CoverFlow.cancel();
+				}
+				else /* WiiFlow should boot a random game */
+				{
+					gprintf("Lets boot the random game number %u\n", place);
+					const dir_discHdr *gameHdr = CoverFlow.getSpecificHdr(place);
+					if(gameHdr != NULL)
+						_launch(gameHdr);
+					/* Shouldnt happen */
+					_showCF(false);
+				}
 			}
 		}
 		/* Hide Notice or Letter if times up */	
@@ -741,8 +760,8 @@ int CMenu::main(void)
 		if(!m_cfg.getBool(CHANNEL_DOMAIN, "neek_return_default", false))
 		{
 			string emuPath;
-			_FindEmuPart(emuPath, false, false);
-			ReturnPath = NandHandle.Get_NandPath();
+			if(_FindEmuPart(emuPath, false, false) >= 0)// make sure emunand folder exists
+				ReturnPath = NandHandle.Get_NandPath();
 		}
 		Sys_SetNeekPath(ReturnPath);
 	}

@@ -643,7 +643,7 @@ void CCoverFlow::stopCoverLoader(bool empty)
 				m_items[i].state = STATE_Loading;
 			}
 		}
-		//gprintf("Coverflow stopped!\n");
+		gprintf("Coverflow stopped!\n");
 	}
 }
 
@@ -657,7 +657,7 @@ void CCoverFlow::startCoverLoader(void)
 
 	LWP_CreateThread(&coverLoaderThread, (void*(*)(void*))CCoverFlow::_coverLoader, 
 						(void*)this, coverThreadStack, coverThreadStackSize, 30);
-	//gprintf("Coverflow started!\n");
+	gprintf("Coverflow started!\n");
 }
 
 void CCoverFlow::clear(void)
@@ -2074,6 +2074,15 @@ bool CCoverFlow::mouseOver(int x, int y)
 	return m_vid.stencilVal(x, y) == (int)m_range / 2 + 1;
 }
 
+void CCoverFlow::setSelected(int i)
+{
+	LockMutex lock(m_mutex);
+	m_moved = true;
+	_loadAllCovers(i);
+	_updateAllTargets(true);
+	select();
+}
+
 bool CCoverFlow::findId(const char *id, bool instant, bool path)
 {
 	LockMutex lock(m_mutex);
@@ -2611,7 +2620,6 @@ bool CCoverFlow::fullCoverCached(const char *id)
 
 bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover)
 {
-	gprintf("loading %s cover\n", box ? (blankBoxCover ? "blank" : "box") : "flat");
 	if(!m_loadingCovers) return false;
 
 	u8 textureFmt = m_compressTextures ? GX_TF_CMPR : GX_TF_RGB565;

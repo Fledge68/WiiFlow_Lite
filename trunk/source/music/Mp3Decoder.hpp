@@ -36,7 +36,7 @@ public:
 	int GetFormat() { return Format; };
 	int GetSampleRate() { return SampleRate; };
 	int Rewind();
-	int Read(u8 * buffer, int buffer_size, int pos);
+	int Read(u8 * buffer, int buffer_size);
 protected:
 	void OpenFile();
 	struct mad_stream Stream;

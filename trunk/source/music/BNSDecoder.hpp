@@ -47,7 +47,7 @@ public:
 	virtual ~BNSDecoder();
 	int GetFormat() { return SoundData.format; };
 	int GetSampleRate() { return SoundData.frequency; };
-	int Read(u8 * buffer, int buffer_size, int pos);
+	int Read(u8 * buffer, int buffer_size);
 protected:
 	void OpenFile();
 	void CloseFile();

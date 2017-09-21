@@ -1166,9 +1166,11 @@ void Nand::PatchAHB()
 	}
 }
 
+/* if AHB protection is currently disabled then call PatchAHB above */
+/* to set the ES_MODULE to keep it disabled for the next IOS */
 void Nand::Patch_AHB()
 {
-	if(AHBRPOT_Patched())
+	if(AHBPROT_Patched())
 	{
 		// Disable memory protection
 		write16(MEM_PROT, 0);

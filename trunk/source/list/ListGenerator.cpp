@@ -131,8 +131,10 @@ static void Create_Wii_EXT_List(char *FullPath)
 u8 gc_disc[1];
 const char *FST_APPEND = "sys/boot.bin";
 const u8 FST_APPEND_SIZE = strlen(FST_APPEND);
+static const u8 CISO_MAGIC[8] = {'C','I','S','O',0x00,0x00,0x20,0x00};
 static void Create_GC_List(char *FullPath)
 {
+	u32 hdr_offset = 0x00;
 	FILE *fp = fopen(FullPath, "rb");
 	if(!fp && strstr(FullPath, "/root") != NULL) //fst folder
 	{
@@ -143,12 +145,19 @@ static void Create_GC_List(char *FullPath)
 	if(fp)
 	{
 		fread((void*)&gc_hdr, 1, sizeof(gc_discHdr), fp);
+		//check for CISO disc image and change offset to read the true header
+		if(!memcmp((void*)&gc_hdr, CISO_MAGIC, sizeof(CISO_MAGIC)))
+		{
+			hdr_offset = 0x8000;
+			fseek(fp, hdr_offset, SEEK_SET);
+			fread((void*)&gc_hdr, 1, sizeof(gc_discHdr), fp);
+		}
 		if(gc_hdr.magic == GC_MAGIC)
 		{
 			AddISO((const char*)gc_hdr.id, (const char*)gc_hdr.title,
 					FullPath, 0x000000, TYPE_GC_GAME);
 			/* Check for disc 2 */
-			fseek(fp, 6, SEEK_SET);
+			fseek(fp, hdr_offset + 0x06, SEEK_SET);
 			fread(gc_disc, 1, 1, fp);
 			if(gc_disc[0])
 			{

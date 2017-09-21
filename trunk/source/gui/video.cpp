@@ -199,7 +199,7 @@ void CVideo::init(void)
 		m_rmode->viXOrigin += hoffset;
 
 	/* Widescreen Fix by tueidj, WiiU Check by crediar, thanks alot */
-	if(m_wide && AHBRPOT_Patched() && IsOnWiiU())
+	if(m_wide && AHBPROT_Patched() && IsOnWiiU())
 	{
 		write32(0xd8006a0, 0x30000004);
 		mask32(0xd8006a8, 0, 2);
