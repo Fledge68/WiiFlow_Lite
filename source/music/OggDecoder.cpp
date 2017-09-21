@@ -137,7 +137,7 @@ int OggDecoder::Seek(int pos)
 	return ov_raw_seek(&ogg_file, pos);
 }
 
-int OggDecoder::Read(u8 * buffer, int buffer_size, int)
+int OggDecoder::Read(u8 * buffer, int buffer_size)
 {
 	if(!file_fd)
 		return -1;

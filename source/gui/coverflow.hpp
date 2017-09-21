@@ -56,6 +56,7 @@ public:
 	void simulateOtherScreenFormat(bool s);
 	// Commands
 	void tick(void);
+	void setSelected(int i);
 	bool findId(const char *id, bool instant = false, bool path = false);
 	void pageUp(void);
 	void pageDown(void);
@@ -207,7 +208,7 @@ private:
 	} ATTRIBUTE_PACKED;
 	struct CCover// should be SCover because it's a struct
 	{
-		u32 index;
+		u32 index;// index is the number of the item in CItem list
 		Vector3D scale;
 		Vector3D targetScale;
 		Vector3D angle;

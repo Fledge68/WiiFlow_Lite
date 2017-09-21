@@ -37,7 +37,7 @@ public:
 	~AifDecoder();
 	int GetFormat() { return Format; };
 	int GetSampleRate() { return SampleRate; };
-	int Read(u8 *buffer, int buffer_size, int pos);
+	int Read(u8 *buffer, int buffer_size);
 protected:
 	void OpenFile();
 	void CloseFile();

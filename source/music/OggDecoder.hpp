@@ -37,7 +37,7 @@ public:
 	int GetFormat();
 	int GetSampleRate();
 	int Rewind();
-	int Read(u8 * buffer, int buffer_size, int pos);
+	int Read(u8 * buffer, int buffer_size);
 	int Tell();
 	int Seek(int pos);
 protected:

@@ -111,7 +111,7 @@ void BNSDecoder::CloseFile()
 	file_fd = NULL;
 }
 
-int BNSDecoder::Read(u8 * buffer, int buffer_size, int)
+int BNSDecoder::Read(u8 * buffer, int buffer_size)
 {
 	if(!SoundData.buffer)
 		return -1;

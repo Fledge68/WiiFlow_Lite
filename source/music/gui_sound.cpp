@@ -203,7 +203,7 @@ bool GuiSound::Load(const u8 *snd, u32 len, bool isallocated)
 	if(snd == NULL || len == 0)
 		return false;
 
-	if(!isallocated && memcmp(snd, "RIFF", 4) == 0)
+	if(!isallocated && memcmp(snd, "RIFF", 4) == 0)// "RIFF" is in WAV files
 		return LoadSoundEffect(snd, len);
 
 	sound = (u8*)snd;
@@ -245,7 +245,7 @@ bool GuiSound::LoadSoundEffect(const u8 * snd, u32 len)
 
 		sound = tmpsnd;
 
-		int read = decoder.Read(sound+done, 4096, done);
+		int read = decoder.Read(sound+done, 4096);
 		if(read <= 0)
 			break;
 

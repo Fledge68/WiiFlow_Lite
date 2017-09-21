@@ -90,7 +90,7 @@ void Mp3Decoder::OpenFile()
 	}
 
 	u8 dummybuff[4096];
-	int ret = Read((u8 *) &dummybuff, 4096, 0);
+	int ret = Read((u8 *) &dummybuff, 4096);
 	if(ret <= 0)
 	{
 		if(file_fd)
@@ -135,7 +135,7 @@ static inline s16 FixedToShort(mad_fixed_t Fixed)
 	return((s16)Fixed);
 }
 
-int Mp3Decoder::Read(u8 * buffer, int buffer_size, int)
+int Mp3Decoder::Read(u8 * buffer, int buffer_size)
 {
 	if(!file_fd)
 		return -1;
@@ -197,7 +197,7 @@ int Mp3Decoder::Read(u8 * buffer, int buffer_size, int)
 			if(MAD_RECOVERABLE(Stream.error))
 			{
 				if(Stream.error != MAD_ERROR_LOSTSYNC || !GuardPtr)
-				continue;
+					continue;
 			}
 			else
 			{
@@ -212,4 +212,6 @@ int Mp3Decoder::Read(u8 * buffer, int buffer_size, int)
 		mad_synth_frame(&Synth,&Frame);
 		SynthPos = 0;
 	}
+	
+	return 0;
 }

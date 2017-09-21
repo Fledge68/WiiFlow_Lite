@@ -81,35 +81,37 @@ int main(int argc, char **argv)
 	m_vid.waitMessage(0.15f);
 
 	Open_Inputs();
-	mainMenu.init();
-	if(CurrentIOS.Version != mainIOS && !neek2o() && !Sys_DolphinMode())
+	if(mainMenu.init())
 	{
-		if(useMainIOS || !DeviceHandle.UsablePartitionMounted())
+		if(CurrentIOS.Version != mainIOS && !neek2o() && !Sys_DolphinMode())
 		{
-			useMainIOS = false;
-			mainMenu.TempLoadIOS();
-			iosOK = CustomIOS(CurrentIOS.Type);
+			if(useMainIOS || !DeviceHandle.UsablePartitionMounted())
+			{
+				useMainIOS = false;
+				mainMenu.TempLoadIOS();
+				iosOK = CustomIOS(CurrentIOS.Type);
+			}
 		}
+		if(CurrentIOS.Version == mainIOS)
+			useMainIOS = true; //Needed for later checks
+		if(!iosOK)
+			mainMenu.terror("errboot1", L"No cIOS found!\ncIOS d2x 249 base 56 and 250 base 57 are enough for all your games.");
+		else if(!DeviceHandle.UsablePartitionMounted())
+			mainMenu.terror("errboot2", L"Could not find a device to save configuration files on!");
+		else if(WDVD_Init() < 0)
+			mainMenu.terror("errboot3", L"Could not initialize the DIP module!");
+		else 
+		{
+			writeStub();
+			if(gameid != NULL && strlen(gameid) == 6)
+				mainMenu.directlaunch(gameid);
+			else
+				mainMenu.main();
+				//if mainMenu.init set exit=true then mainMenu.main while loop does nothing and returns to here to exit wiiflow
+		}
+		//Exit WiiFlow, no game booted...
+		mainMenu.cleanup();// removes all sounds, fonts, images, coverflow, plugin stuff, source menu and clear memory
 	}
-	if(CurrentIOS.Version == mainIOS)
-		useMainIOS = true; //Needed for later checks
-	if(!iosOK)
-		mainMenu.terror("errboot1", L"No cIOS found!\ncIOS d2x 249 base 56 and 250 base 57 are enough for all your games.");
-	else if(!DeviceHandle.UsablePartitionMounted())
-		mainMenu.terror("errboot2", L"Could not find a device to save configuration files on!");
-	else if(WDVD_Init() < 0)
-		mainMenu.terror("errboot3", L"Could not initialize the DIP module!");
-	else 
-	{
-		writeStub();
-		if(gameid != NULL && strlen(gameid) == 6)
-			mainMenu.directlaunch(gameid);
-		else
-			mainMenu.main();
-			//if mainMenu.init set exit=true then mainMenu.main while loop does nothing and returns to here to exit wiiflow
-	}
-	//Exit WiiFlow, no game booted...
-	mainMenu.cleanup();// cleanup and clear memory
 	ShutdownBeforeExit();// unmount devices and close inputs
 	Sys_Exit();
 	return 0;

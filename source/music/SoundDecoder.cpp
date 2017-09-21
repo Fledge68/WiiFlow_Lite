@@ -84,7 +84,7 @@ int SoundDecoder::Rewind()
 	return 0;
 }
 
-int SoundDecoder::Read(u8 * buffer, int buffer_size, int)
+int SoundDecoder::Read(u8 * buffer, int buffer_size)
 {
 	int ret = file_fd->read(buffer, buffer_size);
 	CurPos += ret;
@@ -123,7 +123,7 @@ void SoundDecoder::Decode()
 
 	while(done < SoundBlockSize)
 	{
-		int ret = Read(&write_buf[done], SoundBlockSize-done, Tell());
+		int ret = Read(&write_buf[done], SoundBlockSize-done);
 
 		if(ret <= 0)
 		{

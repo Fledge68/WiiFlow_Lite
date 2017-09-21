@@ -178,7 +178,10 @@ bool CMenu::_ExitTo(void)
 			}
 			else if(m_btnMgr.selected(m_homeBtnExitToPriiloader))
 			{
-				exitHandler(EXIT_TO_PRIILOADER);
+				if(IsOnWiiU())
+					exitHandler(EXIT_TO_WIIU);
+				else
+					exitHandler(EXIT_TO_PRIILOADER);
 				break;
 			}
 			else if(m_btnMgr.selected(m_homeBtnExitToBootmii))
@@ -245,8 +248,9 @@ void CMenu::_showExitTo(void)
 
 	m_btnMgr.show(m_homeBtnExitToHBC);
 	m_btnMgr.show(m_homeBtnExitToMenu);
-	m_btnMgr.show(m_homeBtnExitToPriiloader);
-	m_btnMgr.show(m_homeBtnExitToBootmii);
+	m_btnMgr.show(m_homeBtnExitToPriiloader);// exit to wii u on wii u
+	if(IsOnWiiU() == false)
+		m_btnMgr.show(m_homeBtnExitToBootmii);
 	m_btnMgr.show(m_homeBtnExitToNeek);
 
 	for(u8 i = 0; i < ARRAY_SIZE(m_exittoLblUser); ++i)
@@ -335,9 +339,10 @@ void CMenu::_initHomeAndExitToMenu()
 
 	m_homeBtnExitToHBC = _addButton("EXIT_TO/HBC", theme.btnFont, L"", 185, 120, 270, 48, theme.btnFontColor);
 	m_homeBtnExitToMenu = _addButton("EXIT_TO/MENU", theme.btnFont, L"", 185, 180, 270, 48, theme.btnFontColor);
-	m_homeBtnExitToPriiloader = _addButton("EXIT_TO/PRIILOADER", theme.btnFont, L"", 185, 240, 270, 48, theme.btnFontColor);
-	m_homeBtnExitToBootmii = _addButton("EXIT_TO/BOOTMII", theme.btnFont, L"", 185, 300, 270, 48, theme.btnFontColor);
-	m_homeBtnExitToNeek = _addButton("EXIT_TO/NEEK", theme.btnFont, L"", 185, 360, 270, 48, theme.btnFontColor);
+	m_homeBtnExitToNeek = _addButton("EXIT_TO/NEEK", theme.btnFont, L"", 185, 240, 270, 48, theme.btnFontColor);
+	m_homeBtnExitToPriiloader = _addButton("EXIT_TO/PRIILOADER", theme.btnFont, L"", 185, 300, 270, 48, theme.btnFontColor);
+	m_homeBtnExitToBootmii = _addButton("EXIT_TO/BOOTMII", theme.btnFont, L"", 185, 360, 270, 48, theme.btnFontColor);
+
 	_setHideAnim(m_homeBtnExitToHBC, "EXIT_TO/HBC", 0, 0, -4.f, 0.f);
 	_setHideAnim(m_homeBtnExitToMenu, "EXIT_TO/MENU", 0, 0, -4.f, 0.f);
 	_setHideAnim(m_homeBtnExitToPriiloader, "EXIT_TO/PRIILOADER", 0, 0, -4.f, 0.f);
@@ -367,7 +372,10 @@ void CMenu::_textExitTo(void)
 	m_btnMgr.setText(m_exittoLblTitle, _t("exit_to", L"Exit To"));
 	m_btnMgr.setText(m_homeBtnExitToHBC, _t("hbc", L"Homebrew Channel"));
 	m_btnMgr.setText(m_homeBtnExitToMenu, _t("menu", L"System Menu"));
-	m_btnMgr.setText(m_homeBtnExitToPriiloader, _t("prii", L"Priiloader"));
+	if(IsOnWiiU())
+		m_btnMgr.setText(m_homeBtnExitToPriiloader, _t("wiiu", L"Wii U Menu"));
+	else
+		m_btnMgr.setText(m_homeBtnExitToPriiloader, _t("prii", L"Priiloader"));
 	m_btnMgr.setText(m_homeBtnExitToBootmii, _t("bootmii", L"Bootmii"));
 	if(!neek2o())
 		m_btnMgr.setText(m_homeBtnExitToNeek, _t("neek2o", L"neek2o"));

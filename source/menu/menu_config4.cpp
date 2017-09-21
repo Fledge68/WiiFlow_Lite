@@ -12,12 +12,10 @@ template <class T> static inline T loopNum(T i, T s)
 	return (i + s) % s;
 }
 
-const CMenu::SOption CMenu::_exitTo[5] = {
-	{ "def", L"Default" },
+const CMenu::SOption CMenu::_exitTo[3] = {
 	{ "menu", L"System Menu" },
 	{ "hbc", L"HBC" },
-	{ "prii", L"Priiloader" },
-	{ "bootmii", L"BootMii" }
+	{ "wiiu", L"Wii U Menu" },
 };
 
 void CMenu::_hideConfig4(bool instant)
@@ -102,7 +100,7 @@ int CMenu::_config4(void)
 			{
 				int exit_to = (int)loopNum((u32)m_cfg.getInt("GENERAL", "exit_to", 0) + 1, ARRAY_SIZE(CMenu::_exitTo));
 				m_cfg.setInt("GENERAL", "exit_to", exit_to);
-				Sys_ExitTo(exit_to);
+				Sys_ExitTo(exit_to + 1);
 				_showConfig4();
 			}
 			else if (m_btnMgr.selected(m_config4BtnSaveFavMode))

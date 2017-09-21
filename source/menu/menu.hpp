@@ -35,7 +35,7 @@ class CMenu
 {
 public:
 	CMenu();
-	void init();
+	bool init();
 	void error(const wstringEx &msg);
 	void terror(const char *key, const wchar_t *msg) { error(_fmt(key, msg)); }
 	int main(void);
@@ -1183,7 +1183,8 @@ private:
 	int _FindEmuPart(string &emuPath, bool searchvalid, bool savesnand);
 	bool _checkSave(string id, bool nand);
 	bool _TestEmuNand(int epart, const char *path, bool indept);
-	void _checkEmuNandSettings(bool savesnand);
+	void _checkEmuNandSettings(void);
+	void _FullNandCheck(void);
 	void _listEmuNands(const char *path, vector<string> &emuNands);
 
 	static u32 _downloadCheatFileAsync(void *obj);
@@ -1211,14 +1212,14 @@ private:
 
 	static const SOption _ChannelsType[3];
 	static const SOption _NandEmu[2];
-	static const SOption _SaveEmu[5];
-	static const SOption _GlobalSaveEmu[4];
+	static const SOption _SaveEmu[4];
+	static const SOption _GlobalSaveEmu[3];
 	static const SOption _AspectRatio[3];
 	static const SOption _NinEmuCard[5];
 	static const SOption _vidModePatch[4];
 	static const SOption _debugger[3];
 	static const SOption _hooktype[8];
-	static const SOption _exitTo[5];
+	static const SOption _exitTo[3];
 	
 	static map<u8, u8> _installed_cios;
 	typedef map<u8, u8>::iterator CIOSItr;

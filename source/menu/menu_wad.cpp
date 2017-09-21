@@ -411,6 +411,8 @@ void CMenu::update_pThread(u64 added)
 	}
 }
 
+/* only installs channel wads to emunand and mios wads to real nand */
+/* several places gecko prints are used but no error msg to the user is displayed */
 void CMenu::_Wad(const char *wad_path)
 {
 	if(wad_path == NULL)
@@ -436,21 +438,32 @@ void CMenu::_Wad(const char *wad_path)
 	}
 
 	vector<string> emuNands;
-	string emuNand = m_cfg.getString(CHANNEL_DOMAIN, "current_emunand");
-	int emuPart = m_cfg.getInt(CHANNEL_DOMAIN, "partition");
-	_listEmuNands(fmt("%s:/%s", DeviceName[emuPart],  emu_nands_dir), emuNands);
+	string emuNand = m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default");
 	int curEmuNand = 0;
-	for(u8 i = 0; i < emuNands.size(); ++i)
+	string emuPath;
+	int emuPart = 0;
+	if(!mios)
 	{
-		if(emuNands[i] == emuNand)
+		emuPart = _FindEmuPart(emuPath, false, false);
+		if(emuPart < 0)
 		{
-			curEmuNand = i;
-			break;
+			//cfgne8=No valid FAT partition found for NAND Emulation!
+			//error
+			return;
 		}
+		
+		_listEmuNands(fmt("%s:/%s", DeviceName[emuPart],  emu_nands_dir), emuNands);
+		for(u8 i = 0; i < emuNands.size(); ++i)
+		{
+			if(emuNands[i] == emuNand)
+			{
+				curEmuNand = i;
+				break;
+			}
+		}
+		m_btnMgr.setText(m_wadLblDialog, wfmt(_fmt("wad7", L"Ready to install %s\nChoose emuNAND and then click Go."), (strrchr(wad_path, '/')+1)));
+		m_btnMgr.setText(m_wadLblNandSelectVal, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand"));
 	}
-	
-	m_btnMgr.setText(m_wadLblDialog, wfmt(_fmt("wad7", L"Ready to install %s\nChoose emuNAND and then click Go."), (strrchr(wad_path, '/')+1)));
-	m_btnMgr.setText(m_wadLblNandSelectVal, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand"));
 	_showWad();
 
 	while(!m_exit)
@@ -476,8 +489,8 @@ void CMenu::_Wad(const char *wad_path)
 				/* mios is real nand, chans are emu */
 				if(mios == false)
 				{
-					const char *emu_char = fmt("/%s/%s",  emu_nands_dir, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default").c_str());
-					NandHandle.SetPaths(emu_char, DeviceName[currentPartition]);
+					const char *emu_char = fmt("/%s/%s",  emu_nands_dir, emuNands[curEmuNand].c_str());
+					NandHandle.SetPaths(emu_char, DeviceName[emuPart]);
 				}
 				_start_pThread();
 				m_thrdMessage = _t("wad4", L"Installing WAD, please wait...");
@@ -498,12 +511,15 @@ void CMenu::_Wad(const char *wad_path)
 			}
 		}
 	}
-	if(m_cfg.getString(CHANNEL_DOMAIN, "current_emunand") == emuNand)
+	if(!mios)
 	{
-		m_refreshGameList = true;
-		m_cfg.setBool(CHANNEL_DOMAIN, "update_cache", true);
+		if(m_cfg.getString(CHANNEL_DOMAIN, "current_emunand") == emuNand)
+		{
+			m_refreshGameList = true;
+			m_cfg.setBool(CHANNEL_DOMAIN, "update_cache", true);
+		}
+		m_cfg.setString(CHANNEL_DOMAIN, "current_emunand", emuNand);//restore it
 	}
-	m_cfg.setString(CHANNEL_DOMAIN, "current_emunand", emuNand);//restore it
 	_hideWad();
 	/* onscreen message might be onscreen still */
 	m_btnMgr.hide(m_wbfsLblMessage);
