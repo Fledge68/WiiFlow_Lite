@@ -426,7 +426,7 @@ int CMenu::_initNetwork()
 	if (!_isNetworkAvailable()) return -2;
 
 	char ip[16];
-	int val = if_config(ip, NULL, NULL, true);
+	int val = if_config(ip, NULL, NULL, true, 0);
 	
 	networkInit = !val;
 	return val;

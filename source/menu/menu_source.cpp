@@ -46,12 +46,10 @@ void CMenu::_sourceFlow()
 	else if(source == "emunand")
 	{
 		m_current_view = COVERFLOW_CHANNEL;
-		m_cfg.setUInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_EMU);
 	}
 	else if(source == "realnand")
 	{
 		m_current_view = COVERFLOW_CHANNEL;
-		m_cfg.setUInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_REAL);
 	}
 	else if(source == "homebrew")
 	{
@@ -184,8 +182,7 @@ void CMenu::_updateSourceBtns(void)
 					}
 				}
 			}
-			else if((btnSource == "realnand" && (m_cfg.getUInt(CHANNEL_DOMAIN, "channels_type") & CHANNELS_REAL)) || 
-					(btnSource == "emunand" && (m_cfg.getUInt(CHANNEL_DOMAIN, "channels_type") & CHANNELS_EMU)))
+			else if(btnSource == "realnand" || btnSource == "emunand")
 			{
 				if(m_current_view & COVERFLOW_CHANNEL)
 				{
@@ -323,7 +320,6 @@ bool CMenu::_Source()
 			}
 			if(!m_multisource && i <12)
 			{
-				m_current_view = COVERFLOW_NONE;
 				exitSource = true;
 				m_catStartPage = 1;
 				if(source == "dml")
@@ -333,10 +329,6 @@ bool CMenu::_Source()
 				}
 				else if(source == "emunand" || source == "realnand")
 				{
-					if(source == "emunand")
-						m_cfg.setUInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_EMU);
-					else
-						m_cfg.setUInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_REAL);
 					m_current_view = COVERFLOW_CHANNEL;
 					_setSrcOptions();
 				}
@@ -351,6 +343,7 @@ bool CMenu::_Source()
 					}
 					else
 					{
+						m_prev_view = m_current_view;
 						m_current_view = COVERFLOW_HOMEBREW;
 						_setSrcOptions();
 					}
@@ -397,27 +390,7 @@ bool CMenu::_Source()
 				else if(source == "dml")
 					m_current_view ^= COVERFLOW_GAMECUBE;
 				else if(source == "emunand" || source == "realnand")
-				{
-					u8 chantype = m_cfg.getUInt(CHANNEL_DOMAIN, "channels_type");
-					if(source == "realnand")
-					{
-						if(m_current_view & COVERFLOW_CHANNEL)
-							m_cfg.setUInt(CHANNEL_DOMAIN, "channels_type", (chantype ^= CHANNELS_REAL));
-						else
-							m_cfg.setUInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_REAL);
-					}
-					else
-					{
-						if(m_current_view & COVERFLOW_CHANNEL)
-							m_cfg.setUInt(CHANNEL_DOMAIN, "channels_type", (chantype ^= CHANNELS_EMU));
-						else
-							m_cfg.setUInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_EMU);
-					}
-					if(m_cfg.getUInt(CHANNEL_DOMAIN, "channels_type") & CHANNELS_BOTH)
-						m_current_view |= COVERFLOW_CHANNEL; //set on
-					else
-						m_current_view &= ~COVERFLOW_CHANNEL;// clear off
-				}
+					m_current_view ^= COVERFLOW_CHANNEL;
 				else if(source == "homebrew")
 				{
 					error(_t("errsource2", L"Homebrew in multisource not allowed!"));
@@ -482,7 +455,7 @@ static const char sideCovers[4][9] = {
 "57493634"  //Wii64
 };
 
-static const char shortCovers[12][9] = {
+static const char shortCovers[19][9] = {
 "474d4254", //Gambatte
 "474d4264", //Gambatte GB
 "474d4274", //Gambatte GBC
@@ -494,7 +467,14 @@ static const char shortCovers[12][9] = {
 "4d45445e", //WiiMednafen GB
 "4d45446e", //WiiMednafen GBC
 "4d45447e", //WiiMednafen GBA
-"57495358"	//WiiSX - playstation
+"57495358",	//WiiSX - playstation
+"51304d30", //QuakeGX Modloader ID
+"51304d31", //QuakeGX Modloader hipnotic
+"51304d32", //QuakeGX Modloader scourge
+"51304d51", //QuakeGX Modloader Q
+"51304d58", //QuakeGX Modloader X
+"51304d59", //QuakeGX Modloader Y
+"51304d5a" //QuakeGX Modloader Z
 };
 
 bool CMenu::_sideCover(const char *magic)
@@ -513,7 +493,7 @@ bool CMenu::_shortCover(const char *magic)
 {
 	if(magic == NULL)
 		return false;
-	for(i = 0; i < 12; i++)
+	for(i = 0; i < 15; i++)
 	{
 		if(strncasecmp(magic, shortCovers[i], 8) == 0)
 			return true;
@@ -543,10 +523,7 @@ void CMenu::_setSrcOptions(void)
 		memset(&m_autoboot_hdr, 0, sizeof(dir_discHdr));
 		if(source == "emunand" || source == "realnand")
 		{
-			if(source == "realnand")
-				m_autoboot_hdr.type = TYPE_CHANNEL;
-			else
-				m_autoboot_hdr.type = TYPE_EMUCHANNEL;
+			m_autoboot_hdr.type = TYPE_CHANNEL;
 			memcpy(m_autoboot_hdr.id, autoboot, 4);
 		}
 		else if(source == "wii")

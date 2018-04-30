@@ -2202,6 +2202,7 @@ bool CMenu::_loadList(void)
 	{
 		_loadHomebrewList();
 		gprintf("Apps found: %i\n", m_gameList.size());
+		m_cacheList.Clear();
 		return m_gameList.size() > 0 ? true : false;
 	}
 	gprintf("Creating Gamelist\n");
@@ -2251,7 +2252,6 @@ bool CMenu::_loadHomebrewList()
 	m_cacheList.CreateList(COVERFLOW_HOMEBREW, currentPartition, gameDir, stringToVector(".dol|.elf", '|'), std::string(), false);
 	for(vector<dir_discHdr>::iterator tmp_itr = m_cacheList.begin(); tmp_itr != m_cacheList.end(); tmp_itr++)
 		m_gameList.push_back(*tmp_itr);
-	m_cacheList.Clear();
 	return true;
 }
 
@@ -2308,10 +2308,12 @@ bool CMenu::_loadChannelList(void)
 
 bool CMenu::_loadPluginList()
 {
+	bool addHomebrew = false;
 	bool addGamecube = false;
 	bool addWii = false;
-	u8 addChannel = 0;
-	u8 addEmuChannel = 0;
+	bool addChannel = false;
+	//u8 addChannel = 0;
+	//u8 addEmuChannel = 0;
 	bool updateCache = m_cfg.getBool(PLUGIN_DOMAIN, "update_cache");
 
 	for(u8 i = 0; m_plugin.PluginExist(i); ++i)
@@ -2328,24 +2330,29 @@ bool CMenu::_loadPluginList()
 		const char *romDir = m_plugin.GetRomDir(i);
 		if(strcasecmp(romDir, "scummvm.ini") != 0)
 		{
-			if(strncasecmp(m_plugin.PluginMagicWord, "4E47434D", 8) == 0)
+			if(strncasecmp(m_plugin.PluginMagicWord, "48425257", 8) == 0)//HBRW
+			{
+				addHomebrew = true;
+				continue;
+			}
+			if(strncasecmp(m_plugin.PluginMagicWord, "4E47434D", 8) == 0)//NGCM
 			{
 				addGamecube = true;
 				continue;
 			}
-			if(strncasecmp(m_plugin.PluginMagicWord, "4E574949", 8) == 0)
+			if(strncasecmp(m_plugin.PluginMagicWord, "4E574949", 8) == 0)//NWII
 			{
 				addWii = true;
 				continue;
 			}
-			if(strncasecmp(m_plugin.PluginMagicWord, "4E414E44", 8) == 0)
+			if(strncasecmp(m_plugin.PluginMagicWord, "4E414E44", 8) == 0)//NAND
 			{
-				addChannel = CHANNELS_REAL;
+				addChannel = true; //addChannel = CHANNELS_REAL;
 				continue;
 			}
-			if(strncasecmp(m_plugin.PluginMagicWord, "454E414E", 8) == 0)
+			if(strncasecmp(m_plugin.PluginMagicWord, "454E414E", 8) == 0)//ENAN
 			{
-				addEmuChannel = CHANNELS_EMU;
+				addChannel = true; //addEmuChannel = CHANNELS_EMU;
 				continue;
 			}
 			string gameDir(fmt("%s:/%s", DeviceName[currentPartition], romDir));
@@ -2369,17 +2376,23 @@ bool CMenu::_loadPluginList()
 			vector<dir_discHdr>().swap(scummvmList);
 		}
 	}
+	if(addHomebrew)
+		_loadHomebrewList();
+		
 	if(addGamecube)
 		_loadGamecubeList();
 
 	if(addWii)
 		_loadWiiList();
 
-	if(addChannel || addEmuChannel)
+	if(addChannel)
+		_loadChannelList();
+		
+	/*if(addChannel || addEmuChannel)
 	{
 		m_cfg.setUInt(CHANNEL_DOMAIN, "channels_type", addChannel | addEmuChannel);
 		_loadChannelList();
-	}
+	}*/
 	m_cfg.remove(PLUGIN_DOMAIN, "update_cache");
 	return true;
 }
