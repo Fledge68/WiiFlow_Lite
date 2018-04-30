@@ -106,12 +106,6 @@ int CMenu::_config3(void)
 				s8 direction = m_btnMgr.selected(m_config3BtnChannelsTypeP) ? 1 : -1;
 				m_cfg.setInt(CHANNEL_DOMAIN, "channels_type", 1 + (int)loopNum((u32)m_cfg.getInt(CHANNEL_DOMAIN, "channels_type", 1) - 1 + direction, ARRAY_SIZE(CMenu::_ChannelsType)));
 				_showConfig3();
-				m_cfg.setBool(PLUGIN_ENABLED, "4e414e44", false);
-				m_cfg.setBool(PLUGIN_ENABLED, "454e414e", false);
-				if(m_cfg.getInt(CHANNEL_DOMAIN, "channels_type") & CHANNELS_REAL)
-					m_cfg.setBool(PLUGIN_ENABLED, "4e414e44", true);
-				if(m_cfg.getInt(CHANNEL_DOMAIN, "channels_type") & CHANNELS_EMU)
-					m_cfg.setBool(PLUGIN_ENABLED, "454e414e", true);
 				if(m_current_view & COVERFLOW_CHANNEL || m_current_view & COVERFLOW_PLUGIN)
 					m_refreshGameList = true;
 			}

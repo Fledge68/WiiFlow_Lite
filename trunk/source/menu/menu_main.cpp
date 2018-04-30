@@ -71,7 +71,7 @@ void CMenu::_showCF(bool refreshList)
 				switch(m_autoboot_hdr.type)
 				{
 					case TYPE_CHANNEL:
-					case TYPE_EMUCHANNEL:
+					//case TYPE_EMUCHANNEL:
 					case TYPE_WII_GAME:
 					case TYPE_GC_GAME:
 						if(strcmp(m_autoboot_hdr.id, element->id) == 0)
@@ -281,6 +281,7 @@ int CMenu::main(void)
 				if(m_current_view == COVERFLOW_HOMEBREW)
 				{
 					m_current_view = m_prev_view;
+					m_cfg.setUInt("GENERAL", "sources", m_current_view);
 					_showCF(true);
 					continue;
 				}

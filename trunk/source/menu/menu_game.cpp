@@ -421,6 +421,8 @@ void CMenu::_game(bool launch)
 	
 	dir_discHdr *hdr = (dir_discHdr*)MEM2_alloc(sizeof(dir_discHdr));
 	memcpy(hdr, CoverFlow.getHdr(), sizeof(dir_discHdr));
+	if(hdr->type == TYPE_HOMEBREW)
+		launch = true;
 	_setCurrentItem(hdr);
 	
 	const char *id = NULL;
@@ -1111,7 +1113,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	/* Get game settings */
 	const char *path = NULL;
 	if(disc)
-		path = fmt("%s:/", DeviceName[currentPartition]);
+		path = "di";
 	else
 		path = hdr->path;
 		
@@ -1189,21 +1191,24 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 			/* Generate Game Cheat path - usb1:/games/title [id]/ */
 			char GC_Path[256];
 			GC_Path[255] = '\0';
-			strncpy(GC_Path, path, 255);
-			if(strcasestr(path, "boot.bin") != NULL)//usb1:/games/title [id]/sys/boot.bin
+			if(!disc)
 			{
-				*strrchr(GC_Path, '/') = '\0'; //erase /boot.bin
-				*(strrchr(GC_Path, '/')+1) = '\0'; //erase sys folder
+				strncpy(GC_Path, path, 255);
+				if(strcasestr(path, "boot.bin") != NULL)//usb1:/games/title [id]/sys/boot.bin
+				{
+					*strrchr(GC_Path, '/') = '\0'; //erase /boot.bin
+					*(strrchr(GC_Path, '/')+1) = '\0'; //erase sys folder
+				}
+				else //usb1:/games/title [id]/game.iso
+					*(strrchr(GC_Path, '/')+1) = '\0'; //erase game.iso
 			}
-			else //usb1:/games/title [id]/game.iso
-				*(strrchr(GC_Path, '/')+1) = '\0'; //erase game.iso
 			
-			//use wiiflow cheat path if on same partition as game
-			if(strncasecmp(m_cheatDir.c_str(), DeviceName[currentPartition], strlen(DeviceName[currentPartition])) == 0)
+			//use wiiflow cheat folder if is a disc or is on same partition as game folder
+			if(disc || strncasecmp(m_cheatDir.c_str(), DeviceName[currentPartition], strlen(DeviceName[currentPartition])) == 0)
 				snprintf(CheatPath, sizeof(CheatPath), "%s/%s", m_cheatDir.c_str(), fmt("%s.gct", id));
 			else
 			{
-				// else copy cheat file to Game Cheat path above
+				// otherwise copy cheat file from wiiflow cheat folder to Game folder
 				snprintf(CheatPath, sizeof(CheatPath), "%s%s.gct", GC_Path, id);
 				fsop_CopyFile(fmt("%s/%s.gct", m_cheatDir.c_str(), id), CheatPath, NULL, NULL);
 				//might add err msg here if copy error

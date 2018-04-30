@@ -174,8 +174,8 @@ void Nintendont_SetOptions(const char *gamePath, const char *gameID, const char 
 		snprintf(NinCfg.CheatPath, sizeof(NinCfg.CheatPath), strchr(CheatPath, '/'));
 	
 	/* GamePath Setup */
-	if(strstr(gamePath, "games") == NULL)// set path for disc
-		snprintf(NinCfg.GamePath, sizeof(NinCfg.GamePath), "di");
+	if(strcmp(gamePath, "di") == 0)// should check for length of gamePath =2
+		strncpy(NinCfg.GamePath, gamePath, sizeof(NinCfg.GamePath));
 	else
 	{
 		strncpy(NinCfg.GamePath, strchr(gamePath, '/'), 254);
