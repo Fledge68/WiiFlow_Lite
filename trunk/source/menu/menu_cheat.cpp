@@ -299,7 +299,9 @@ void CMenu::_showCheatSettings(void)
 			// cheat in range?
 			if (((m_cheatSettingsPage-1)*CHEATSPERPAGE + i + 1) <= m_cheatfile.getCnt()) 
 			{
-				m_btnMgr.setText(m_cheatLblItem[i], m_cheatfile.getCheatName((m_cheatSettingsPage-1)*CHEATSPERPAGE + i));
+				wstringEx chtName;
+				chtName.fromUTF8(m_cheatfile.getCheatName((m_cheatSettingsPage-1)*CHEATSPERPAGE + i));
+				m_btnMgr.setText(m_cheatLblItem[i], chtName);
 				m_btnMgr.setText(m_cheatBtnItem[i], _optBoolToString(m_cheatfile.sCheatSelected[(m_cheatSettingsPage-1)*CHEATSPERPAGE + i]));
 				
 				m_btnMgr.show(m_cheatLblItem[i], true);

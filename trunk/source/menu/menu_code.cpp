@@ -35,7 +35,7 @@ bool CMenu::_code(char code[4], bool erase)
 	memset(code, 0, 4);
 	m_btnMgr.setText(m_codeLblTitle, codeLbl);
 	_showCode();
-	if(erase)
+	if(erase)//  only for setting code and erase btn clears the code so you no longer need to unlock wiiflow
 		m_btnMgr.show(m_codeBtnErase);
 
 	while(!m_exit)
@@ -98,7 +98,7 @@ bool CMenu::_code(char code[4], bool erase)
 		}
 	}
 	_hideCode();
-	return n == sizeof code;
+	return n == 4;
 }
 
 void CMenu::_initCodeMenu()

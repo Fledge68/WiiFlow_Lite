@@ -1,8 +1,8 @@
 
-#include <dirent.h>
-#include <unistd.h>
+//#include <dirent.h>
+//#include <unistd.h>
 #include "menu.hpp"
-#include "defines.h"
+//#include "defines.h"
 
 // Source menu
 s16 m_sourceLblPage;
@@ -148,8 +148,9 @@ void CMenu::_updateSourceBtns(void)
 		memset(current_btn, 0, 16);
 		strncpy(current_btn, fmt("BUTTON_%i", i), 15);
 		string btnSource = m_source.getString(current_btn, "source", "");
-		const char *btn_image = m_source.getString(current_btn,"image", "").c_str();
-		const char *btn_imageSel = m_source.getString(current_btn,"image_s", "").c_str();
+		bool src_selected = false;
+		//const char *btn_image = m_source.getString(current_btn,"image", "").c_str();
+		//const char *btn_imageSel = m_source.getString(current_btn,"image_s", "").c_str();
 		if(btnSource == "")
 			continue;
 		if(m_multisource)
@@ -163,7 +164,7 @@ void CMenu::_updateSourceBtns(void)
 					{
 						sourceBtn = i;
 						selectedBtns++;
-						btn_image = btn_imageSel;
+						src_selected = true;
 					}
 				}
 			}
@@ -178,7 +179,7 @@ void CMenu::_updateSourceBtns(void)
 					{
 						sourceBtn = i;
 						selectedBtns++;
-						btn_image = btn_imageSel;
+						src_selected = true;
 					}
 				}
 			}
@@ -188,7 +189,7 @@ void CMenu::_updateSourceBtns(void)
 				{
 					sourceBtn = i;
 					selectedBtns++;
-					btn_image = btn_imageSel;
+					src_selected = true;
 				}
 			}
 			else if(btnSource == "dml" || btnSource == "homebrew" || btnSource == "wii")
@@ -198,12 +199,20 @@ void CMenu::_updateSourceBtns(void)
 				{
 					sourceBtn = i;
 					selectedBtns++;
-					btn_image = btn_imageSel;
+					src_selected = true;
 				}
 			}
 		}
+		char btn_image[255];
+		if(src_selected)
+			snprintf(btn_image, sizeof(btn_image), "%s", m_source.getString(current_btn,"image_s", "").c_str());
+		else
+			snprintf(btn_image, sizeof(btn_image), "%s", m_source.getString(current_btn,"image", "").c_str());
+			
 		if(i >= j && i < (j + 12))
 		{
+			//m_btnMgr.hide(m_sourceBtnSource[i - j], true);
+			//m_btnMgr.tick();
 			TexData texConsoleImg;
 			TexData texConsoleImgs;
 			if(TexHandle.fromImageFile(texConsoleImg, fmt("%s/%s/%s", m_sourceDir.c_str(), themeName, btn_image)) != TE_OK)

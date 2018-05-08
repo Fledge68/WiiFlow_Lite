@@ -88,7 +88,7 @@ extern "C"
 typedef struct
   {
   unsigned int len;
-  unsigned int ABCD[4];
+  unsigned long int ABCD[4];
   int      b_used;
   unsigned char    block[64];
   } auth_md5Ctx;

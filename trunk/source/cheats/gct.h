@@ -34,30 +34,10 @@ public:
     //!\param filename name of TXT file
     //!\return error code
     int openTxtfile(const char * filename);
-    //!Creates GCT file for one cheat
-    //!\param nr selected Cheat Numbers
-    //!\param filename name of GCT file
-    //!\return error code
-    int createGCT(unsigned int nr,const char * filename);
-    //!Creates GCT file from a buffer
-    //!\param chtbuffer buffer that holds the cheat data
-    //!\param filename name of GCT file
-    //!\return error code
-    int createGCT(const char * chtbuffer,const char * filename);
-    //!Creates GCT file
-    //!\param nr[] array of selected Cheat Numbers
-    //!\param cnt size of array
-    //!\param filename name of GCT file
-    //!\return error code
-    int createGCT(int nr[],int cnt,const char * filename);
     //!Creates GCT file
     //!\param filename name of GCT file
     //!\return error code
     int createGCT(const char * filename);
-	//!Creates directly gct in memory
-    //!\param filename name of TXT file
-    //!\return GCT buffer
-    string createGCTbuff(int nr[],int cnt);
     //!Creates TXT file
     //!\param filename name of GCT file
     //!\return error code

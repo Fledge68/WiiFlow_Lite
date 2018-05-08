@@ -65,10 +65,10 @@ protected:
 	void ChangeGame(Banner *banner);
 	void Init(u8 *font1, u8 *font2);
 
-	static const float fBannerWidth = 608.f;
-	static const float fBannerHeight = 448.f;
-	static const float fIconWidth = 128.f;
-	static const float fIconHeight = 96.f;
+	static constexpr float fBannerWidth = 608.f;
+	static constexpr float fBannerHeight = 448.f;
+	static constexpr float fIconWidth = 128.f;
+	static constexpr float fIconHeight = 96.f;
 
 	bool reducedVol;
 	int returnVal;

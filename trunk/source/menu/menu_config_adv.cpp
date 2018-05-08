@@ -19,7 +19,7 @@ void AddLanguage(char *Path)
 	char lng[32];
 	memset(lng, 0, 32);
 	char *lang_chr = strrchr(Path, '/')+1;
-	memcpy(lng, lang_chr, min(31u, (u32)(strrchr(lang_chr, '.')-lang_chr)));
+	memcpy(lng, lang_chr, min(31ul, (u32)(strrchr(lang_chr, '.')-lang_chr)));
 	languages_available.push_back(lng);
 }
 
@@ -153,7 +153,7 @@ int CMenu::_configAdv(void)
 			else if(m_btnMgr.selected(m_configAdvBtnCurLanguageP) || m_btnMgr.selected(m_configAdvBtnCurLanguageM))
 			{
 				s8 direction = m_btnMgr.selected(m_configAdvBtnCurLanguageP) ? 1 : -1;
-				available_pos = loopNum(available_pos + direction, languages_available.size());
+				available_pos = loopNum(available_pos + direction, (u32)languages_available.size());
 				m_curLanguage = languages_available[available_pos];
 				if(!m_loc.load(fmt("%s/%s.ini", m_languagesDir.c_str(), m_curLanguage.c_str())))
 				{

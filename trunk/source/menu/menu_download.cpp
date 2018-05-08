@@ -607,8 +607,10 @@ int CMenu::_coverDownloader(bool missingOnly)
 										{
 											case EN:
 												if(( newID[3] == 'E' || newID[3] == 'X' || newID[3] == 'Y' || newID[3] == 'P') && m_downloadPrioVal&C_TYPE_EN )
+												{
 													url = makeURL(fmtURLBox[j], newID, "EN");
 													tdl = true;
+												}
 												break;
 											case JA:
 												if(newID[3] == 'J' && m_downloadPrioVal&C_TYPE_JA)

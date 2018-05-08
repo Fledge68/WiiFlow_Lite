@@ -663,7 +663,7 @@ error:
 //int (*read_wiidisc_callback_t)(void*fp,u32 offset,u32 count,void*iobuf);
 
 // connect wiidisc to wbfs_disc
-int read_wiidisc_wbfsdisc(void *fp, u32 offset, u32 count, void *iobuf)
+s32 read_wiidisc_wbfsdisc(void *fp, u32 offset, u32 count, void *iobuf)
 {
 	return wbfs_disc_read((wbfs_disc_t *)fp, offset, count, iobuf);
 }

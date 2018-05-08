@@ -28,7 +28,7 @@ public:
 	char name[128];
 private:
 	u8 *data;
-	size_t dataSize;
+	u32 dataSize;
 };
 
 struct SWord

@@ -33,7 +33,7 @@ static u64 folderSize = 0;
 u64 FolderProgressBytes;
 
 // return false if the file doesn't exist
-bool fsop_GetFileSizeBytes(const char *path, size_t *filesize)	// for me stats st_size report always 0 :(
+bool fsop_GetFileSizeBytes(const char *path, u32 *filesize)	// for me stats st_size report always 0 :(
 {
 	FILE *f;
 	size_t size = 0;
@@ -79,7 +79,7 @@ u64 fsop_GetFolderBytes(const char *source)
 			bytes += fsop_GetFolderBytes(newSource);
 		else	// It is a file !
 		{
-			size_t s;
+			u32 s;
 			fsop_GetFileSizeBytes(newSource, &s);
 			bytes += s;
 		}
@@ -203,7 +203,7 @@ bool fsop_CopyFile(const char *source, const char *target, progress_callback_t s
 		// write current block
 		wb = fwrite(&buff[bi*block], 1, rb, ft);
 
-		if(wb != wb || rb == 0)
+		if(wb != rb || rb == 0)
 			err = 1;
 
 		bytes += rb;

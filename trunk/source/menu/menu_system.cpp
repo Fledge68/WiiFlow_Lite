@@ -4,8 +4,7 @@
 #include "lockMutex.hpp"
 #include "loader/wbfs.h"
 
-int version_num = 0, num_versions = 0;
-static int i;
+unsigned int i, version_num = 0, num_versions = 0;
 const int CMenu::SVN_REV_NUM = atoi(SVN_REV);
 int CMenu::_version[9] = {0, SVN_REV_NUM, SVN_REV_NUM, SVN_REV_NUM, SVN_REV_NUM, SVN_REV_NUM, SVN_REV_NUM, SVN_REV_NUM, SVN_REV_NUM};
 
@@ -71,7 +70,7 @@ void CMenu::_system()
 					//add the changelog info here
 				}
 				if (num_versions > 1 && version_num == 0) version_num = 1;
-				i = min((u32)version_num, ARRAY_SIZE(CMenu::_version) -1u);
+				i = min(version_num, ARRAY_SIZE(CMenu::_version) -1u);
 				newVer = CMenu::_version[i];
 				_showSystem();
 			}
@@ -135,7 +134,7 @@ void CMenu::_system()
 					--version_num;
 				else
 					version_num = num_versions;
-				i = min((u32)version_num, ARRAY_SIZE(CMenu::_version) -1u);
+				i = min(version_num, ARRAY_SIZE(CMenu::_version) -1u);
 				{
 					m_btnMgr.setText(m_systemLblVerSelectVal, wstringEx(sfmt("%i", CMenu::_version[i])));
 					newVer = CMenu::_version[i];
@@ -155,7 +154,7 @@ void CMenu::_system()
 					++version_num;
 				else
 					version_num = 1;
-				i = min((u32)version_num, ARRAY_SIZE(CMenu::_version) -1u);
+				i = min(version_num, ARRAY_SIZE(CMenu::_version) -1u);
 				{
 					m_btnMgr.setText(m_systemLblVerSelectVal, wstringEx(sfmt("%i", CMenu::_version[i])));
 					newVer = CMenu::_version[i];
@@ -280,7 +279,7 @@ void CMenu::_textSystem(void)
 	m_btnMgr.setText(m_systemLblVersion, SVN_REV_W);
 	m_btnMgr.setText(m_systemBtnBack, _t("sys3", L"Cancel"));
 	m_btnMgr.setText(m_systemBtnDownload, _t("sys4", L"Upgrade"));
-	i = min((u32)version_num, ARRAY_SIZE(CMenu::_version) -1u);
+	i = min(version_num, ARRAY_SIZE(CMenu::_version) -1u);
 	if (i == 0)
 		m_btnMgr.setText(m_systemLblVerSelectVal, SVN_REV_W);
 	else

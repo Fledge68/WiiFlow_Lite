@@ -12,7 +12,7 @@ extern "C"
 
 typedef void (*progress_callback_t)(int status,int total,void *user_data);
 
-bool fsop_GetFileSizeBytes(const char *path, size_t *filesize);
+bool fsop_GetFileSizeBytes(const char *path, u32 *filesize);
 u64 fsop_GetFolderBytes(const char *source);
 u32 fsop_GetFolderKb(const char *source);
 u32 fsop_GetFreeSpaceKb(const char *path);

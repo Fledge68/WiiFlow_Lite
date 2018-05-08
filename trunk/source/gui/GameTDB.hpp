@@ -85,7 +85,7 @@ public:
 	//! Get the publish date of a game for a specific game id
 	//! First 1 byte is the day, than 1 byte month and last 2 bytes is the year
 	//! year = (return >> 16), month = (return >> 8) & 0xFF, day = return & 0xFF
-	unsigned int GetPublishDate(const char *id);
+	u32 GetPublishDate(const char *id);
 	//! Get the genre list of a game for a specific game id
 	bool GetGenres(const char * id, const char * &gen);
 	//! Get the rating type for a specific game id
@@ -110,7 +110,7 @@ public:
 	int GetAccessories(const char * id, vector<Accessory> & acc_list);
 	//! Get the box (case) color for a specific game id
 	//! Returns the color in RGB (first 3 bytes)
-	unsigned int GetCaseColor(const char * id);
+	u32 GetCaseColor(const char * id);
 	int GetCaseVersions(const char * id);
 	//! Convert a specific game rating to a string
 	static const char * RatingToString(int rating);
@@ -126,7 +126,7 @@ private:
 	bool SaveGameOffsets(const char * path);
 	bool CheckTitlesIni(const char * path);
 	bool FindTitle(char *data, const char * &title, const string &langCode);
-	unsigned int FindCaseColor(char * data);
+	u32 FindCaseColor(char * data);
 	inline int GetData(char * data, int offset, int size);
 	inline char * LoadGameNode(const char * id);
 	inline char * GetGameNode(const char * id);

@@ -309,7 +309,7 @@ void CCoverFlow::setHQcover(bool HQ)
 void CCoverFlow::setBufferSize(u32 numCovers)
 {
 	if(m_covers != NULL) return;
-	m_numBufCovers = min(max(4u, numCovers / 2u), 40u);//8 to 80 
+	m_numBufCovers = min(max(4ul, numCovers / 2ul), 40ul);//8 to 80 
 }
 
 void CCoverFlow::setTextures(const string &loadingPic, const string &loadingPicFlat, const string &noCoverPic, const string &noCoverPicFlat)
@@ -348,8 +348,8 @@ void CCoverFlow::_transposeCover(CCover* &dst, u32 rows, u32 columns, int pos)
 
 void CCoverFlow::setRange(u32 rows, u32 columns)
 {
-	rows = rows < 3u ? 1u : min(rows | 1u, 9u) + 2u;
-	columns = min(max(3u, columns | 1u), 21u) + 2u;
+	rows = rows < 3ul ? 1ul : min(rows | 1ul, 9ul) + 2ul;
+	columns = min(max(3ul, columns | 1ul), 21ul) + 2ul;
 	u32 range = rows * columns;
 	if (rows == m_rows && columns == m_columns && range == m_range)
 		return;
@@ -562,7 +562,7 @@ void CCoverFlow::setBlur(u32 blurResolution, u32 blurRadius, float blurFactor)
 	static const struct { u32 x; u32 y; } blurRes[] = {
 		{ 64, 48 }, { 96, 72 }, { 128, 96 }, { 192, 144 }
 	};
-	u32 i = min(max(0u, blurResolution), sizeof blurRes / sizeof blurRes[0] - 1u);
+	u32 i = min(max(0ul, blurResolution), sizeof blurRes / sizeof blurRes[0] - 1ul);
 	m_effectTex.width = blurRes[i].x;
 	m_effectTex.height = blurRes[i].y;
 	if(m_effectTex.data != NULL)
@@ -570,7 +570,7 @@ void CCoverFlow::setBlur(u32 blurResolution, u32 blurRadius, float blurFactor)
 		free(m_effectTex.data);
 		m_effectTex.data = NULL;
 	}
-	m_blurRadius = min(max(1u, blurRadius), 3u);
+	m_blurRadius = min(max(1ul, blurRadius), 3ul);
 	m_blurFactor = min(max(1.f, blurFactor), 2.f);
 }
 
@@ -2683,7 +2683,7 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover)
 					gameNameOrID = strrchr(blankCoverPath, '/') + 1;
 			}
 			else
-				gameNameOrID = getPathId(m_items[i].hdr);
+				gameNameOrID = getFilenameId(m_items[i].hdr);
 				
 			if(m_items[i].hdr->type == TYPE_PLUGIN && m_pluginCacheFolders && !blankBoxCover)
 				coverWfcDir = m_plugin.GetCoverFolderName(m_items[i].hdr->settings[0]);
@@ -2779,7 +2779,7 @@ void CCoverFlow::_dropHQLOD(int i)
 	m_items[i].texture = newTex;
 }
 
-const char *CCoverFlow::getPathId(const dir_discHdr *curHdr, bool extension)
+const char *CCoverFlow::getFilenameId(const dir_discHdr *curHdr, bool extension)
 {
 	const char *NameOrID = NULL;
 	if(NoGameID(curHdr->type))
@@ -2826,7 +2826,7 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 				gameNameOrID = strrchr(blankCoverPath, '/') + 1;
 		}
 		else
-			gameNameOrID = getPathId(m_items[i].hdr);
+			gameNameOrID = getFilenameId(m_items[i].hdr);
 			
 		if(m_items[i].hdr->type == TYPE_PLUGIN && m_pluginCacheFolders && !blankBoxCover)
 			coverWfcDir = m_plugin.GetCoverFolderName(m_items[i].hdr->settings[0]);
@@ -2945,7 +2945,7 @@ int CCoverFlow::_coverLoader(CCoverFlow *cf)
 	u32 i, j;
 	bool hq_req = cf->m_useHQcover;
 	bool cur_pos_hq = false;
-	u32 bufferSize = min(cf->m_numBufCovers * max(2u, cf->m_rows), 80u);
+	u32 bufferSize = min(cf->m_numBufCovers * max(2ul, cf->m_rows), 80ul);
 
 	while(cf->m_loadingCovers)
 	{
