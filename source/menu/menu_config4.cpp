@@ -98,7 +98,7 @@ int CMenu::_config4(void)
 		{
 			if (m_btnMgr.selected(m_config4BtnHome))
 			{
-				int exit_to = (int)loopNum((u32)m_cfg.getInt("GENERAL", "exit_to", 0) + 1, ARRAY_SIZE(CMenu::_exitTo));
+				int exit_to = (int)loopNum(m_cfg.getUInt("GENERAL", "exit_to", 0) + 1, ARRAY_SIZE(CMenu::_exitTo));
 				m_cfg.setInt("GENERAL", "exit_to", exit_to);
 				Sys_ExitTo(exit_to + 1);
 				_showConfig4();

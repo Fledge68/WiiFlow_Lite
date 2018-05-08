@@ -187,8 +187,10 @@ bool CMenu::init()
 			for(u8 i = USB1; i <= USB8; i++)
 			{
 				if(DeviceHandle.IsInserted(i) && DeviceHandle.GetFSType(i) != PART_FS_WBFS)
+				{
 					drive = DeviceName[i];
 					break;
+				}
 			}
 			if(drive == check && DeviceHandle.IsInserted(SD))//if no available USB partition then force SD
 				drive = DeviceName[SD];

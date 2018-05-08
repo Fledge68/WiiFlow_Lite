@@ -262,8 +262,8 @@ void CVideo::_clearScreen()
 
 void CVideo::set2DViewport(u32 w, u32 h, int x, int y)
 {
-	m_width2D = std::min(std::max(512u, w), 800u);
-	m_height2D = std::min(std::max(384u, h), 600u);
+	m_width2D = std::min(std::max(512ul, w), 800ul);
+	m_height2D = std::min(std::max(384ul, h), 600ul);
 	m_x2D = std::min(std::max(-50, x), 50);
 	m_y2D = std::min(std::max(-50, y), 50);
 }
@@ -271,8 +271,8 @@ void CVideo::set2DViewport(u32 w, u32 h, int x, int y)
 void CVideo::setup2DProjection(bool setViewPort, bool noScale)
 {
 	Mtx44 projMtx;
-	float width2D = noScale ? 640.f : (int)m_width2D;
-	float height2D = noScale ? 480.f : (int)m_height2D;
+	float width2D = noScale ? 640.f : (float)m_width2D;
+	float height2D = noScale ? 480.f : (float)m_height2D;
 	float x = noScale ? 0.f : (float)(640 - width2D) * 0.5f + (float)m_x2D;
 	float y = noScale ? 0.f : (float)(480 - height2D) * 0.5f + (float)m_y2D;
 

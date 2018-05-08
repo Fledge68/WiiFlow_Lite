@@ -206,7 +206,7 @@ void CMenu::LeftStick()
 			if(LEFT_STICK_LEFT)
 			{
 				speed = (u8)(left_stick_mag[chan] * 10.00);
-				pSpeed = (u8)((abs(PAD_StickX(chan))/10)|(abs(DS3_StickX()/10))|(abs(WUPC_lStickX(chan))/80));
+				pSpeed = (u8)(((int)abs(PAD_StickX(chan))/10)|((int)abs(DS3_StickX()/10))|((int)abs(WUPC_lStickX(chan))/80));
 				if(stickPointer_x[chan] > m_cursor[chan].width()/2)
 					stickPointer_x[chan] = stickPointer_x[chan]-speed-pSpeed;
 				pointerhidedelay[chan] = 150;
@@ -214,7 +214,7 @@ void CMenu::LeftStick()
 			if(LEFT_STICK_DOWN)
 			{
 				speed = (u8)(left_stick_mag[chan] * 10.00);
-				pSpeed = (u8)((abs(PAD_StickY(chan))/10)|(abs(DS3_StickY()/10))|(abs(WUPC_lStickY(chan))/80));
+				pSpeed = (u8)(((int)abs(PAD_StickY(chan))/10)|((int)abs(DS3_StickY()/10))|((int)abs(WUPC_lStickY(chan))/80));
 				if(stickPointer_y[chan] < (m_vid.height() + (m_cursor[chan].height()/2)))
 					stickPointer_y[chan] = stickPointer_y[chan]+speed+pSpeed;
 				pointerhidedelay[chan] = 150;
@@ -222,7 +222,7 @@ void CMenu::LeftStick()
 			if(LEFT_STICK_RIGHT)
 			{
 				speed = (u8)(left_stick_mag[chan] * 10.00);
-				pSpeed = (u8)((abs(PAD_StickX(chan))/10)|(abs(DS3_StickX()/10))|(abs(WUPC_lStickX(chan))/80));
+				pSpeed = (u8)(((int)abs(PAD_StickX(chan))/10)|((int)abs(DS3_StickX()/10))|((int)abs(WUPC_lStickX(chan))/80));
 				if(stickPointer_x[chan] < (m_vid.width() + (m_cursor[chan].width()/2)))
 					stickPointer_x[chan] = stickPointer_x[chan]+speed+pSpeed;
 				pointerhidedelay[chan] = 150;
@@ -230,7 +230,7 @@ void CMenu::LeftStick()
 			if(LEFT_STICK_UP)
 			{
 				speed = (u8)(left_stick_mag[chan] * 10.00);
-				pSpeed = (u8)((abs(PAD_StickY(chan))/10)|(abs(DS3_StickY()/10))|(abs(WUPC_lStickY(chan))/80));
+				pSpeed = (u8)(((int)abs(PAD_StickY(chan))/10)|((int)abs(DS3_StickY()/10))|((int)abs(WUPC_lStickY(chan))/80));
 				if(stickPointer_y[chan] > m_cursor[chan].height()/2)
 					stickPointer_y[chan] = stickPointer_y[chan]-speed-pSpeed;
 				pointerhidedelay[chan] = 150;

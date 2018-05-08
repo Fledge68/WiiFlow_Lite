@@ -73,8 +73,8 @@ int WifiGecko::Connect()
 	if(inited == false)
 		return -2;
 
-    if(connection != -1 || dest_ip == NULL || dest_port == 0)
-        return connection;
+	if(connection != -1 || dest_ip == NULL || dest_port == 0)
+		return connection;
 
 	int tmp_con = -1;
 	memset(&connect_addr, 0, sizeof(connect_addr));
@@ -85,8 +85,8 @@ int WifiGecko::Connect()
 	connect_addr.sin_family = AF_INET;
     tmp_con = net_socket(connect_addr.sin_family, SOCK_DGRAM, IPPROTO_IP);
 #endif
-    if(tmp_con < 0)
-        return -3;
+	if(tmp_con < 0)
+		return -3;
 
 	connect_addr.sin_port = htons(dest_port);
 	inet_aton(dest_ip, &connect_addr.sin_addr);

@@ -149,7 +149,7 @@ int split_get_file(split_info_t *s, u32 lba, u32 *sec_count, int fill)
 	return fd;
 }
 
-int split_read_sector(void *_fp, u32 lba, u32 count, void *buf)
+s32 split_read_sector(void *_fp, u32 lba, u32 count, void *buf)
 {
 	split_info_t *s = _fp;
 	int fd;
@@ -181,7 +181,7 @@ int split_read_sector(void *_fp, u32 lba, u32 count, void *buf)
 	return 0;
 }
 
-int split_write_sector(void *_fp, u32 lba, u32 count, void *buf)
+s32 split_write_sector(void *_fp, u32 lba, u32 count, void *buf)
 {
 	split_info_t *s = _fp;
 	int fd;                                 

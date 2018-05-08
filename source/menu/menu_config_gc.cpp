@@ -105,19 +105,19 @@ void CMenu::_configGC(void)
 			else if(m_btnMgr.selected(m_configGCBtnGCLanguageP) || m_btnMgr.selected(m_configGCBtnGCLanguageM))
 			{
 				s8 direction = m_btnMgr.selected(m_configGCBtnGCLanguageP) ? 1 : -1;
-				m_cfg.setInt(GC_DOMAIN, "game_language", (int)loopNum((u32)m_cfg.getInt(GC_DOMAIN, "game_language", 0) + direction, ARRAY_SIZE(CMenu::_GlobalGClanguages)));
+				m_cfg.setInt(GC_DOMAIN, "game_language", (int)loopNum(m_cfg.getUInt(GC_DOMAIN, "game_language", 0) + direction, ARRAY_SIZE(CMenu::_GlobalGClanguages)));
 				_showConfigGC();
 			}
 			else if(m_btnMgr.selected(m_configGCBtnGCVideoP) || m_btnMgr.selected(m_configGCBtnGCVideoM))
 			{
 				s8 direction = m_btnMgr.selected(m_configGCBtnGCVideoP) ? 1 : -1;
-				m_cfg.setInt(GC_DOMAIN, "video_mode", (int)loopNum((u32)m_cfg.getInt(GC_DOMAIN, "video_mode", 0) + direction, ARRAY_SIZE(CMenu::_GlobalGCvideoModes)));
+				m_cfg.setInt(GC_DOMAIN, "video_mode", (int)loopNum(m_cfg.getUInt(GC_DOMAIN, "video_mode", 0) + direction, ARRAY_SIZE(CMenu::_GlobalGCvideoModes)));
 				_showConfigGC();
 			}
 			else if(m_btnMgr.selected(m_configGCBtnGCLoaderP) || m_btnMgr.selected(m_configGCBtnGCLoaderM))
 			{
 				s8 direction = m_btnMgr.selected(m_configGCBtnGCLoaderP) ? 1 : -1;
-				m_cfg.setInt(GC_DOMAIN, "default_loader", (int)loopNum((u32)m_cfg.getInt(GC_DOMAIN, "default_loader", 1) + direction, ARRAY_SIZE(CMenu::_GlobalGCLoaders)));
+				m_cfg.setInt(GC_DOMAIN, "default_loader", (int)loopNum(m_cfg.getUInt(GC_DOMAIN, "default_loader", 1) + direction, ARRAY_SIZE(CMenu::_GlobalGCLoaders)));
 				_showConfigGC();
 			}
 		}

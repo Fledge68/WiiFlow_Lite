@@ -902,7 +902,7 @@ int GameTDB::GetAccessories(const char *id, vector<Accessory> & acc_list)
 
 u32 GameTDB::FindCaseColor(char *data)
 {
-	u32 color = -1;
+	u32 color = -1;// -1 = ffffffff
 
 	char *ColorNode = GetNodeText(data, "<case color=\"", "\"");
 	if(!ColorNode || strlen(ColorNode) == 0)
@@ -916,7 +916,7 @@ u32 GameTDB::FindCaseColor(char *data)
 
 u32 GameTDB::GetCaseColor(const char *id)
 {
-	u32 color = -1;
+	u32 color = -1;// -1 = ffffffff
 	if(!id)
 		return color;
 

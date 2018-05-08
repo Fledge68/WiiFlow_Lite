@@ -53,100 +53,6 @@ string GCTCheats::getCheatComment(unsigned int nr)
 	return ERRORRANGE;
 }
 
-int GCTCheats::createGCT(unsigned int nr,const char * filename)
-{
-	if (nr == 0)return 0;
-
-	ofstream filestr;
-	filestr.open(filename);
-	if (filestr.fail()) return 0;
-
-	//Header and Footer
-	char header[] = { 0x00, 0xd0, 0xc0, 0xde, 0x00, 0xd0, 0xc0, 0xde};
-	char footer[] = { 0xF0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-
-	string buf = getCheat(nr);
-	filestr.write(header,sizeof(header));
-
-	int x = 0;
-	while (x < (int)buf.size())
-	{
-		string temp = buf.substr(x,2);
-		 long int li = strtol(temp.c_str(),NULL,16);
-		temp = li;
-		filestr.write(temp.c_str(),1);
-		x +=2;
-	}
-	filestr.write(footer,sizeof(footer));
-	filestr.close();
-
-	return 1;
-}
-
-int GCTCheats::createGCT(const char * chtbuffer,const char * filename)
-{
-	ofstream filestr;
-	filestr.open(filename);
-	if (filestr.fail()) return 0;
-
-	//Header and Footer
-	char header[] = { 0x00, 0xd0, 0xc0, 0xde, 0x00, 0xd0, 0xc0, 0xde};
-	char footer[] = { 0xF0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-
-	string buf = chtbuffer;
-	filestr.write(header,sizeof(header));
-
-	int x = 0;
-	while (x < (int)buf.size())
-	{
-		string temp = buf.substr(x,2);
-		long int li = strtol(temp.c_str(),NULL,16);
-		temp = li;
-		filestr.write(temp.c_str(),1);
-		x +=2;
-	}
-	filestr.write(footer,sizeof(footer));
-	filestr.close();
-
-	return 1;
-}
-
-int GCTCheats::createGCT(int nr[],int cnt,const char * filename)
-{
-	if (cnt == 0) return 0;
-
-	ofstream filestr;
-	filestr.open(filename);
-	if (filestr.fail()) return 0;
-
-	//Header and Footer
-	char header[] = { 0x00, 0xd0, 0xc0, 0xde, 0x00, 0xd0, 0xc0, 0xde};
-	char footer[] = { 0xF0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-
-	filestr.write(header,sizeof(header));
-
-	int c = 0;
-	while (c != cnt)
-	{
-		string buf = getCheat(nr[c]);
-		
-		int x = 0;
-		while (x < (int)buf.size())
-		{
-			string temp = buf.substr(x,2);
-			long int li = strtol(temp.c_str(),NULL,16);
-			temp = li;
-			filestr.write(temp.c_str(),1);
-			x +=2;
-		}
-		c++;
-	}
-	filestr.write(footer,sizeof(footer));
-	filestr.close();
-
-	return 1;
-}
-
 //creates gct from internal array
 int GCTCheats::createGCT(const char * filename)
 {
@@ -182,7 +88,7 @@ int GCTCheats::createGCT(const char * filename)
 	return 1;
 }
 
-//creates txt from internal array
+//rewrite and save code.txt to mark which codes are #selected#
 int GCTCheats::createTXT(const char * filename)
 {
 
@@ -231,8 +137,6 @@ int GCTCheats::openTxtfile(const char * filename)
 
 	int i = 0;
 	string str;
-	int codestatus;
-	bool codedynamic = false; // cheat contains X-Codes?
 
 	filestr.seekg(0,ios_base::end);
 	int size = filestr.tellg();
@@ -247,36 +151,27 @@ int GCTCheats::openTxtfile(const char * filename)
 	if (sGameTitle[sGameTitle.length() - 1] == '\r')
 		sGameTitle.erase(sGameTitle.length() - 1);
 				
-	getline(filestr,sCheatName[i]);  // skip first line if file uses CRLF
-	if (!sGameTitle[sGameTitle.length() - 1] == '\r')
-	   filestr.seekg(0,ios_base::beg);
-
-	while (!filestr.eof()) {
-		getline(filestr,sCheatName[i]); // '\n' delimiter by default
+	while (!filestr.eof()) 
+	{
+		getline(filestr,sCheatName[i]);
 		if (sCheatName[i][sCheatName[i].length() - 1] == '\r')
 			sCheatName[i].erase(sCheatName[i].length() - 1);
 
+		if (sCheatName[i].length() == 0)
+			continue;
+			
 		string cheatdata;
-		bool emptyline = false;
 
-		while (!emptyline)
+		while (!filestr.eof())
 		{
 			getline(filestr,str);
 			if (str[str.length() - 1] == '\r')
 				str.erase(str.length() - 1);
 				 
 			if (str == "" || str[0] == '\r' || str[0] == '\n')
-			{
-				emptyline = true;
 				break;
-			}
 
-			codestatus = IsCodeEx(str);
-			if (codestatus == 1) 
-				// line contains X code, so whole cheat is dynamic
-				codedynamic = true;
-				
-			if (codestatus == 2)
+			if (IsCode(str))
 			{
 				// remove any garbage (comment) after code
 				while (str.size() > 17)
@@ -288,16 +183,13 @@ int GCTCheats::openTxtfile(const char * filename)
 			}
 			else
 				sCheatComment[i] = str;
-
-			if (filestr.eof()) break;
-		   
 		}
 
-		if (!codedynamic && cheatdata.size() > 0)
+		if (cheatdata.size() > 0)
 		{
 			sCheats[i] = cheatdata;
 			sCheatSelected[i] = false;
-			// if comment starts with dynamic, it is selected
+			// wiiflow rewrites and saves code.txt with #selected# added to comments if cheat selected
 			if (sCheatComment[i].compare(0,10,"#selected#") == 0)
 			{
 				sCheatSelected[i] = true;
@@ -308,7 +200,6 @@ int GCTCheats::openTxtfile(const char * filename)
 		else
 			sCheatComment[i] = "";
 			
-		codedynamic = false;
 		if (i == MAXCHEATS) break;
 	}
 	iCntCheats = i;

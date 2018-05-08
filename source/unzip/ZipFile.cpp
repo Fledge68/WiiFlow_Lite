@@ -67,8 +67,8 @@ bool ZipFile::ExtractAll(const char *dest)
 	if(buffer == NULL)
 		return false;
 
-	char writepath[MAXPATHLEN];
-	char filename[MAXPATHLEN];
+	char writepath[1024];
+	char filename[1024];
 	memset(filename, 0, sizeof(filename));
 
 	int ret = unzGoToFirstFile(File);

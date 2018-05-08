@@ -44,7 +44,7 @@ the_CFG normalCFG;
 #define LDR_ENTRY		((entry)LDR_ADDR)
 
 u8 *extldr_ptr = NULL;
-size_t extldr_size = 0;
+u32 extldr_size = 0;
 
 extern "C" {
 u8 configbytes[2];
@@ -59,7 +59,7 @@ extern u32 gameconfsize;
 extern u32 *gameconf;
 
 u8 *booter_ptr = NULL;
-size_t booter_size = 0;
+u32 booter_size = 0;
 
 void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, 
 	int aspectRatio, u32 returnTo, u8 BootType, bool use_led)

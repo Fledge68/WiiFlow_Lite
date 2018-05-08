@@ -37,7 +37,7 @@ typedef struct ss_device DS3;
 bool DS3_Init();
 void DS3_Rumble();
 void DS3_Cleanup();
-u32 DS3_ButtonsDown();
+unsigned int DS3_ButtonsDown();
 void DS3_ScanPads();
 int DS3_StickX();
 int DS3_SubStickX();

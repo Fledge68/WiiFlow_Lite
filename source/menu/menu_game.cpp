@@ -278,7 +278,7 @@ static u8 GetRequestedGameIOS(dir_discHdr *hdr)
 
 void CMenu::_setCurrentItem(const dir_discHdr *hdr)
 {
-	const char *title = CoverFlow.getPathId(hdr, true);// with extension
+	const char *title = CoverFlow.getFilenameId(hdr, true);// with extension
 	m_cfg.setString(_domainFromView(), "current_item", title);
 	if(m_source_cnt > 1)
 		m_cfg.setInt(_domainFromView(), "current_item_type", hdr->type);
@@ -368,7 +368,7 @@ bool CMenu::_startVideo()
 	const dir_discHdr *GameHdr = CoverFlow.getHdr();
 	char curId3[4];
 	memset(curId3, 0, 4);
-	const char *videoId = CoverFlow.getPathId(GameHdr);//title.ext
+	const char *videoId = CoverFlow.getFilenameId(GameHdr);//title.ext
 	if(!NoGameID(GameHdr->type))
 	{	//id3
 		memcpy(curId3, GameHdr->id, 3);
@@ -1017,7 +1017,7 @@ void CMenu::_launch(const dir_discHdr *hdr)
 		}
 		/* get title from hdr */
 		u32 title_len_no_ext = 0;
-		const char *title = CoverFlow.getPathId(hdr, true);// with extension
+		const char *title = CoverFlow.getFilenameId(hdr, true);// with extension
 		//m_cfg.setString(_domainFromView(), "current_item", title);
 		
 		/* get path from hdr */
@@ -1087,8 +1087,8 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	const char *id = hdr->id;
 	
 	/* Get loader choice*/
-	u8 loader = min((u32)m_gcfg2.getInt(id, "gc_loader", 0), ARRAY_SIZE(CMenu::_GCLoader) - 1u);
-	loader = (loader == 0) ? min((u32)m_cfg.getInt(GC_DOMAIN, "default_loader", 1), ARRAY_SIZE(CMenu::_GlobalGCLoaders) - 1u) : loader-1;
+	u8 loader = min(m_gcfg2.getUInt(id, "gc_loader", 0), ARRAY_SIZE(CMenu::_GCLoader) - 1u);
+	loader = (loader == 0) ? min(m_cfg.getUInt(GC_DOMAIN, "default_loader", 1), ARRAY_SIZE(CMenu::_GlobalGCLoaders) - 1u) : loader-1;
 	
 	if(disc)
 		loader = NINTENDONT;
@@ -1117,14 +1117,14 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	else
 		path = hdr->path;
 		
-	u8 GClanguage = min((u32)m_gcfg2.getInt(id, "language", 0), ARRAY_SIZE(CMenu::_GClanguages) - 1u);
-	GClanguage = (GClanguage == 0) ? min((u32)m_cfg.getInt(GC_DOMAIN, "game_language", 0), ARRAY_SIZE(CMenu::_GlobalGClanguages) - 1u) : GClanguage-1;
+	u8 GClanguage = min(m_gcfg2.getUInt(id, "language", 0), ARRAY_SIZE(CMenu::_GClanguages) - 1u);
+	GClanguage = (GClanguage == 0) ? min(m_cfg.getUInt(GC_DOMAIN, "game_language", 0), ARRAY_SIZE(CMenu::_GlobalGClanguages) - 1u) : GClanguage-1;
 	// language selection only works for PAL games
 	if(id[3] == 'E' || id[3] == 'J')
 		GClanguage = 1; //=english
 		
-	u8 videoMode = min((u32)m_gcfg2.getInt(id, "video_mode", 0), ARRAY_SIZE(CMenu::_GCvideoModes) - 1u);
-	videoMode = (videoMode == 0) ? min((u32)m_cfg.getInt(GC_DOMAIN, "video_mode", 0), ARRAY_SIZE(CMenu::_GlobalGCvideoModes) - 1u) : videoMode-1;
+	u8 videoMode = min(m_gcfg2.getUInt(id, "video_mode", 0), ARRAY_SIZE(CMenu::_GCvideoModes) - 1u);
+	videoMode = (videoMode == 0) ? min(m_cfg.getUInt(GC_DOMAIN, "video_mode", 0), ARRAY_SIZE(CMenu::_GlobalGCvideoModes) - 1u) : videoMode-1;
 
 	bool widescreen = m_gcfg2.getBool(id, "widescreen", false);
 	bool activity_led = m_gcfg2.getBool(id, "led", false);
@@ -1132,8 +1132,8 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	if(loader == NINTENDONT)
 	{
 		/* might add here - if not a disc use path to check for disc2.iso - if so then we need to prompt disc 1 or disc 2? */
-		u8 emuMC = min((u32)m_gcfg2.getInt(id, "emu_memcard", 0), ARRAY_SIZE(CMenu::_NinEmuCard) - 1u);
-		emuMC = (emuMC == 0) ? m_cfg.getInt(GC_DOMAIN, "emu_memcard", 1) : emuMC - 1;
+		u8 emuMC = min(m_gcfg2.getUInt(id, "emu_memcard", 0), ARRAY_SIZE(CMenu::_NinEmuCard) - 1u);
+		emuMC = (emuMC == 0) ? m_cfg.getUInt(GC_DOMAIN, "emu_memcard", 1) : emuMC - 1;
 		
 		// these 2 settings have global defaults in wfl main config
 		bool cc_rumble = m_gcfg2.testOptBool(id, "cc_rumble", m_cfg.getBool(GC_DOMAIN, "cc_rumble", false));
@@ -1475,14 +1475,14 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	bool cheat = m_gcfg2.getBool(id, "cheat", false);
 	bool countryPatch = m_gcfg2.getBool(id, "country_patch", false);
 
-	u8 videoMode = (u8)min((u32)m_gcfg2.getInt(id, "video_mode", 0), ARRAY_SIZE(CMenu::_VideoModes) - 1);
-	videoMode = (videoMode == 0) ? (u8)min((u32)m_cfg.getInt("GENERAL", "video_mode", 0), ARRAY_SIZE(CMenu::_GlobalVideoModes) - 1) : videoMode - 1;
+	u8 videoMode = min(m_gcfg2.getUInt(id, "video_mode", 0), ARRAY_SIZE(CMenu::_VideoModes) - 1u);
+	videoMode = (videoMode == 0) ? min(m_cfg.getUInt("GENERAL", "video_mode", 0), ARRAY_SIZE(CMenu::_GlobalVideoModes) - 1u) : videoMode - 1;
 
-	int language = min((u32)m_gcfg2.getInt(id, "language", 0), ARRAY_SIZE(CMenu::_languages) - 1);
-	language = (language == 0) ? min((u32)m_cfg.getInt("GENERAL", "game_language", 0), ARRAY_SIZE(CMenu::_languages) - 1) : language;
+	int language = min(m_gcfg2.getUInt(id, "language", 0), ARRAY_SIZE(CMenu::_languages) - 1u);
+	language = (language == 0) ? min(m_cfg.getUInt("GENERAL", "game_language", 0), ARRAY_SIZE(CMenu::_languages) - 1u) : language;
 
-	u8 patchVidMode = min((u32)m_gcfg2.getInt(id, "patch_video_modes", 0), ARRAY_SIZE(CMenu::_vidModePatch) - 1);
-	int aspectRatio = min((u32)m_gcfg2.getInt(id, "aspect_ratio", 0), ARRAY_SIZE(CMenu::_AspectRatio) - 1) - 1;// -1,0,1
+	u8 patchVidMode = min(m_gcfg2.getUInt(id, "patch_video_modes", 0), ARRAY_SIZE(CMenu::_vidModePatch) - 1u);
+	int aspectRatio = min(m_gcfg2.getUInt(id, "aspect_ratio", 0), ARRAY_SIZE(CMenu::_AspectRatio) - 1) - 1;// -1,0,1
 	const char *rtrn = m_gcfg2.getBool(id, "returnto", true) ? m_cfg.getString("GENERAL", "returnto").c_str() : NULL;
 	u32 returnTo = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
 
@@ -1690,17 +1690,17 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 	bool countryPatch = m_gcfg2.getBool(id, "country_patch", false);
 	bool private_server = m_gcfg2.getBool(id, "private_server", false);
 
-	u8 videoMode = (u8)min((u32)m_gcfg2.getInt(id, "video_mode", 0), ARRAY_SIZE(CMenu::_VideoModes) - 1u);
-	videoMode = (videoMode == 0) ? (u8)min((u32)m_cfg.getInt("GENERAL", "video_mode", 0), ARRAY_SIZE(CMenu::_GlobalVideoModes) - 1) : videoMode-1;
+	u8 videoMode = min(m_gcfg2.getUInt(id, "video_mode", 0), ARRAY_SIZE(CMenu::_VideoModes) - 1u);
+	videoMode = (videoMode == 0) ? min(m_cfg.getUInt("GENERAL", "video_mode", 0), ARRAY_SIZE(CMenu::_GlobalVideoModes) - 1u) : videoMode-1;
 
-	int language = min((u32)m_gcfg2.getInt(id, "language", 0), ARRAY_SIZE(CMenu::_languages) - 1u);
-	language = (language == 0) ? min((u32)m_cfg.getInt("GENERAL", "game_language", 0), ARRAY_SIZE(CMenu::_languages) - 1) : language;
+	int language = min(m_gcfg2.getUInt(id, "language", 0), ARRAY_SIZE(CMenu::_languages) - 1u);
+	language = (language == 0) ? min(m_cfg.getUInt("GENERAL", "game_language", 0), ARRAY_SIZE(CMenu::_languages) - 1u) : language;
 
 	const char *rtrn = m_cfg.getString("GENERAL", "returnto", "").c_str();
-	int aspectRatio = min((u32)m_gcfg2.getInt(id, "aspect_ratio", 0), ARRAY_SIZE(CMenu::_AspectRatio) - 1u) - 1;
-	u8 patchVidMode = min((u32)m_gcfg2.getInt(id, "patch_video_modes", 0), ARRAY_SIZE(CMenu::_vidModePatch) - 1u);
+	int aspectRatio = min(m_gcfg2.getUInt(id, "aspect_ratio", 0), ARRAY_SIZE(CMenu::_AspectRatio) - 1u) - 1;
+	u8 patchVidMode = min(m_gcfg2.getUInt(id, "patch_video_modes", 0), ARRAY_SIZE(CMenu::_vidModePatch) - 1u);
 
-	u8 emulate_mode = min((u32)m_gcfg2.getInt(id, "emulate_save", 0), ARRAY_SIZE(CMenu::_SaveEmu) - 1u);
+	u8 emulate_mode = min(m_gcfg2.getUInt(id, "emulate_save", 0), ARRAY_SIZE(CMenu::_SaveEmu) - 1u);
 	u8 gameEmuMode = emulate_mode;
 	if(emulate_mode == 0)// default then use global
 		emulate_mode = min(max(0, m_cfg.getInt(WII_DOMAIN, "save_emulation", 0)), (int)ARRAY_SIZE(CMenu::_GlobalSaveEmu) - 1);
@@ -1995,9 +1995,9 @@ void CMenu::_gameSoundThread(CMenu *m)
 		coverDir = m_plugin.GetCoverFolderName(GameHdr->settings[0]);
 		
 		if(coverDir == NULL || strlen(coverDir) == 0)
-			strncpy(custom_banner, fmt("%s/%s.bnr", m->m_customBnrDir.c_str(), CoverFlow.getPathId(GameHdr)), 255);
+			strncpy(custom_banner, fmt("%s/%s.bnr", m->m_customBnrDir.c_str(), CoverFlow.getFilenameId(GameHdr)), 255);
 		else
-			strncpy(custom_banner, fmt("%s/%s/%s.bnr", m->m_customBnrDir.c_str(), coverDir, CoverFlow.getPathId(GameHdr)), 255);
+			strncpy(custom_banner, fmt("%s/%s/%s.bnr", m->m_customBnrDir.c_str(), coverDir, CoverFlow.getFilenameId(GameHdr)), 255);
 		fsop_GetFileSizeBytes(custom_banner, &custom_bnr_size);
 		if(custom_bnr_size > 0)
 		{

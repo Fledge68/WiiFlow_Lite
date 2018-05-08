@@ -1101,7 +1101,7 @@ int pngu_info (IMGCTX ctx)
 int pngu_decode (IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, PNGU_u32 stripAlpha, int force32bit)
 {
 	u32 i;
-	int mem_err = 0;
+	//int mem_err = 0;
 
 	// Read info if it hasn't been read before
 	if (!ctx->infoRead)
@@ -1129,7 +1129,8 @@ int pngu_decode (IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, PNGU_u32 stripAlph
 		free(ctx->img_data);
 		pngu_free_info (ctx);
 		//printf("*** This is a corrupted image!!\n"); sleep(5);
-		return mem_err ? PNGU_LIB_ERROR : -666;
+		//return mem_err ? PNGU_LIB_ERROR : -666;
+		return PNGU_LIB_ERROR;
 	}
 	png_set_error_fn(ctx->png_ptr, NULL, user_error, user_error);
 	// Scale 16 bit samples to 8 bit
@@ -1163,14 +1164,14 @@ int pngu_decode (IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, PNGU_u32 stripAlph
 	ctx->img_data = malloc(rowbytes * ctx->prop.imgHeight);
 	if (!ctx->img_data)
 	{
-		mem_err = 1;
+		//mem_err = 1;
 		goto error;
 	}
 
 	ctx->row_pointers = malloc(sizeof (png_bytep) * ctx->prop.imgHeight);
 	if (!ctx->row_pointers)
 	{
-		mem_err = 1;
+		//mem_err = 1;
 		goto error;
 	}
 

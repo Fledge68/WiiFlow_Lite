@@ -551,7 +551,7 @@ void CButtonsMgr::up(void)
 	}
 	for(u32 i = 1; i <= m_elts.size(); ++i)
 	{
-		u32 j = loopNum(start - i, m_elts.size());
+		u32 j = loopNum<u32>(start - i, m_elts.size());
 		SElement &b = *m_elts[j];
 		if (b.t == GUIELT_BUTTON && b.visible)
 		{
@@ -584,7 +584,7 @@ void CButtonsMgr::down(void)
 	}
 	for(u32 i = 1; i <= m_elts.size(); ++i)
 	{
-		u32 j = loopNum(start + i, m_elts.size());
+		u32 j = loopNum<u32>(start + i, m_elts.size());
 		SElement &b = *m_elts[j];
 		if (b.t == GUIELT_BUTTON && b.visible)
 		{

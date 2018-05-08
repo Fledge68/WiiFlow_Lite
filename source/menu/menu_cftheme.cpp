@@ -351,10 +351,12 @@ void CMenu::_cfTheme(void)
 			if (copyVersion != cfVersion || copySelected != CoverFlow.selected())
 				m_coverflow.copyDomain(domDst, domSrc);
 			else if (copyWide != wide)
+			{
 				for (u32 i = 0; i < ARRAY_SIZE(CMenu::_cfParams); ++i)
 				{
 					const CMenu::SCFParamDesc &p = CMenu::_cfParams[i];
 					if (p.scrnFmt)
+					{
 						for (int k = 0; k < 4; ++k)
 						{
 							string keySrc(p.key[k]);
@@ -370,10 +372,12 @@ void CMenu::_cfTheme(void)
 							else if (p.paramType[k] == CMenu::SCFParamDesc::PDT_INT)
 								m_coverflow.setInt(domDst, keyDst, m_coverflow.getInt(domSrc, keySrc));
 						}
+					}
 				}
 				_showCFTheme(curParam, cfVersion, wide);
 				_loadCFLayout(cfVersion, true, wide != m_vid.wide());
 				CoverFlow.applySettings();
+			}
 		}
 		bool sel = CoverFlow.selected();
 		if (BTN_B_HELD)
@@ -381,7 +385,7 @@ void CMenu::_cfTheme(void)
 			if (BTN_PLUS_PRESSED || BTN_MINUS_PRESSED)
 			{
 				s8 direction = BTN_PLUS_PRESSED ? 1 : -1;
-				curParam = loopNum(curParam + direction, ARRAY_SIZE(CMenu::_cfParams));
+				curParam = loopNum(curParam + direction, (u32)ARRAY_SIZE(CMenu::_cfParams));
 				if (CMenu::_cfParams[curParam].domain == CMenu::SCFParamDesc::PDD_SELECTED)
 					CoverFlow.select();
 				_showCFTheme(curParam, cfVersion, wide);
@@ -447,7 +451,7 @@ void CMenu::_cfTheme(void)
 			else if (m_btnMgr.selected(m_cfThemeBtnParamP) || m_btnMgr.selected(m_cfThemeBtnParamM))
 			{
 				s8 direction = m_btnMgr.selected(m_cfThemeBtnParamP) ? 1 : -1;
-				curParam = loopNum(curParam + direction, ARRAY_SIZE(CMenu::_cfParams));
+				curParam = loopNum(curParam + direction, (u32)ARRAY_SIZE(CMenu::_cfParams));
 				if (CMenu::_cfParams[curParam].domain == CMenu::SCFParamDesc::PDD_SELECTED)
 					CoverFlow.select();
 				_showCFTheme(curParam, cfVersion, wide);
