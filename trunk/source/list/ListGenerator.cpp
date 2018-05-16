@@ -79,21 +79,26 @@ static void AddISO(const char *GameID, const char *GameTitle, const char *GamePa
 	if(GameID != NULL) strncpy(ListElement.id, GameID, 6);
 	if(GamePath != NULL) strncpy(ListElement.path, GamePath, sizeof(ListElement.path) - 1);
 	ListElement.casecolor = CustomTitles.getColor("COVERS", ListElement.id, GameColor).intVal();
-	const char *CustomTitle = CustomTitles.getString("TITLES", ListElement.id).c_str();
+	char CustomTitle[64];
+	memset(CustomTitle, 0, sizeof(CustomTitle));
+	strncpy(CustomTitle, CustomTitles.getString("TITLES", ListElement.id).c_str(), 63);
+	const char *gameTDB_Title = NULL;
 	if(gameTDB.IsLoaded())
 	{
 		if(ListElement.casecolor == GameColor)
 			ListElement.casecolor = gameTDB.GetCaseColor(ListElement.id);
 		ListElement.wifi = gameTDB.GetWifiPlayers(ListElement.id);
 		ListElement.players = gameTDB.GetPlayers(ListElement.id);
-		if(CustomTitle == NULL || CustomTitle[0] == '\0')
-			gameTDB.GetTitle(ListElement.id, CustomTitle);
+		if(strlen(CustomTitle) == 0)
+			gameTDB.GetTitle(ListElement.id, gameTDB_Title);
 	}
 	if(!ValidColor(ListElement.casecolor))
 		ListElement.casecolor = CoverFlow.InternalCoverColor(ListElement.id, GameColor);
 
-	if(CustomTitle != NULL && CustomTitle[0] != '\0')
+	if(strlen(CustomTitle) > 0)
 		mbstowcs(ListElement.title, CustomTitle, 63);
+	else if(gameTDB_Title != NULL && gameTDB_Title[0] != '\0')
+		mbstowcs(ListElement.title, gameTDB_Title, 63);
 	else if(GameTitle != NULL)
 		mbstowcs(ListElement.title, GameTitle, 63);
 	Asciify(ListElement.title);
@@ -183,8 +188,10 @@ static void Create_Plugin_List(char *FullPath)
 	char PluginMagicWord[9];
 	memset(PluginMagicWord, 0, sizeof(PluginMagicWord));
 	strncpy(PluginMagicWord, fmt("%08x", m_cacheList.Magic), 8);
-	const char *CustomTitle = CustomTitles.getString(PluginMagicWord, FolderTitle).c_str();
-	if(CustomTitle != NULL && CustomTitle[0] != '\0')
+	char CustomTitle[64];
+	memset(CustomTitle, 0, sizeof(CustomTitle));
+	strncpy(CustomTitle, CustomTitles.getString(PluginMagicWord, FolderTitle).c_str(), 63);
+	if(strlen(CustomTitle) > 0)
 		mbstowcs(ListElement.title, CustomTitle, 63);
 	else	
 		mbstowcs(ListElement.title, FolderTitle, 63);
@@ -236,18 +243,23 @@ static void Create_Channel_List(bool realNAND)
 		else
 			strncpy(ListElement.id, chan->id, 4);
 		ListElement.casecolor = CustomTitles.getColor("COVERS", ListElement.id, 0xFFFFFF).intVal();
-		const char *CustomTitle = CustomTitles.getString("TITLES", ListElement.id).c_str();
+		char CustomTitle[64];
+		memset(CustomTitle, 0, sizeof(CustomTitle));
+		strncpy(CustomTitle, CustomTitles.getString("TITLES", ListElement.id).c_str(), 63);
+		const char *gameTDB_Title = NULL;
 		if(gameTDB.IsLoaded())
 		{
 			if(ListElement.casecolor == 0xFFFFFF)
 				ListElement.casecolor = gameTDB.GetCaseColor(ListElement.id);
 			ListElement.wifi = gameTDB.GetWifiPlayers(ListElement.id);
 			ListElement.players = gameTDB.GetPlayers(ListElement.id);
-			if(CustomTitle == NULL || CustomTitle[0] == '\0')
-				gameTDB.GetTitle(ListElement.id, CustomTitle);
+			if(strlen(CustomTitle) == 0)
+				gameTDB.GetTitle(ListElement.id, gameTDB_Title);
 		}
-		if(CustomTitle != NULL && CustomTitle[0] != '\0')
+		if(strlen(CustomTitle) > 0)
 			mbstowcs(ListElement.title, CustomTitle, 63);
+		else if(gameTDB_Title != NULL && gameTDB_Title[0] != '\0')
+			mbstowcs(ListElement.title, gameTDB_Title, 63);
 		else
 			wcsncpy(ListElement.title, chan->name, 64);
 		if(realNAND)

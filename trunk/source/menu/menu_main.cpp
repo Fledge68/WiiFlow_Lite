@@ -1055,6 +1055,8 @@ int CMenu::_getCFVersion()
 					return m_cfg.getInt("PLUGIN_CFVERSION", m_plugin.PluginMagicWord, 1);
 			}
 		}
+		else if(strlen(single_sourcebtn))
+			return m_cfg.getInt("PLUGIN_CFVERSION", single_sourcebtn, 1);
 	}
 	return m_cfg.getInt(_domainFromView(), "last_cf_mode", 1);
 }
@@ -1074,6 +1076,11 @@ void CMenu::_setCFVersion(int version)
 					return;
 				}
 			}
+		}
+		else if(strlen(single_sourcebtn))
+		{
+			m_cfg.setInt("PLUGIN_CFVERSION", single_sourcebtn, version);
+			return;
 		}
 	}
 	m_cfg.setInt(_domainFromView(), "last_cf_mode", version);

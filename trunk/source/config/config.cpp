@@ -165,7 +165,7 @@ bool Config::load(const char *filename)
 		if (!file.bad() && !file.fail())
 		{
 			line = trimEnd(line);
-			if (line.empty() || line[0] == '#') continue;
+			if (line.empty() || line[0] == '#' || line[0] == '\0') continue;
 			if (line[0] == '[')
 			{
 				string::size_type i = line.find_first_of(']');
