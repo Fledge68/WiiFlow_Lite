@@ -434,8 +434,7 @@ int CMenu::_initNetwork()
 
 int CMenu::_coverDownloader(bool missingOnly)
 {
-	vector<string> coverList;
-	//vector<dir_discHdr> pluginCoverList;
+	vector<string> coverIDList;
 
 	int count = 0, countFlat = 0;
 	float listWeight = missingOnly ? 0.125f : 0.f;	// 1/8 of the progress bar for testing the PNGs we already have
@@ -467,53 +466,42 @@ int CMenu::_coverDownloader(bool missingOnly)
 		c_gameTDB.OpenFile(fmt("%s/wiitdb.xml", m_settingsDir.c_str()));
 		c_gameTDB.SetLanguageCode(m_curLanguage.c_str());
 	}
-
-	//Config m_checksums;
-	//m_checksums.load(fmt("%s/%s", m_settingsDir.c_str(), PLUGIN_CRCS_FILENAME));
-
+	char path[256];
+	char id[7];
+			
+	/* create list of cover ID's that need downloading */
 	if (m_coverDLGameId.empty())
 	{
-		coverList.reserve(m_gameList.size());
+		coverIDList.reserve(m_gameList.size());
 		for (u32 i = 0; i < m_gameList.size() && !m_thrdStop; ++i)
 		{
 			LWP_MutexLock(m_mutex);
 			_setThrdMsg(_t("dlmsg7", L"Listing covers to download..."), listWeight * (float)step / (float)nbSteps);
 			LWP_MutexUnlock(m_mutex);
 			++step;
-			char *path = NULL;
-			const char *id = NULL;
-			if(m_gameList[i].type == TYPE_PLUGIN)
-			{
+			
+			memset(path, 0, sizeof(path));
+			memset(id, 0, sizeof(id));
+			if(m_gameList[i].type == TYPE_PLUGIN || m_gameList[i].type == TYPE_HOMEBREW)
 				continue;
-			/*	char gamePath[256];
-				if(strchr(m_gameList[i].path, '/') != NULL)
-					strncpy(gamePath, strrchr(m_gameList[i].path, '/') + 1, sizeof(gamePath));
-				else
-					strncpy(gamePath, m_gameList[i].path, sizeof(gamePath));
-				path = fmt_malloc("%s/%s.png", m_boxPicDir.c_str(), gamePath);
-				id = path;*/
-			}
 			else
 			{
-				path = fmt_malloc("%s/%s.png", m_boxPicDir.c_str(), m_gameList[i].id);
-				id = m_gameList[i].id;
+				strncpy(id, m_gameList[i].id, 6);
+				strncpy(path, fmt("%s/%s.png", m_boxPicDir.c_str(), id), 255);
 			}
-			if(!missingOnly || (id != NULL && !CoverFlow.fullCoverCached(id) && path != NULL && !checkPNGFile(path)))
+			if(!missingOnly || (strlen(id) > 0 && !CoverFlow.fullCoverCached(id) && strlen(path) > 0 && !checkPNGFile(path)))
 			{
-				//if(m_gameList[i].type == TYPE_PLUGIN)
-				//	pluginCoverList.push_back(m_gameList[i]);
-				if(id != NULL)
-					coverList.push_back(id);
+				if(strlen(id) > 0)
+					coverIDList.push_back(id);
 			}
-			if(path != NULL)
-				MEM2_free(path);
-			path = NULL;
 		}
 	}
 	else
-		coverList.push_back(m_coverDLGameId);
+		coverIDList.push_back(m_coverDLGameId);
 
-	u32 n = coverList.size();
+	u32 n = coverIDList.size();
+	
+	/* initialize network connection */
 	if (n > 0 && !m_thrdStop)
 	{
 		step = 0;
@@ -532,30 +520,33 @@ int CMenu::_coverDownloader(bool missingOnly)
 		}
 		m_thrdStepLen = dlWeight / (float)nbSteps;
 
+		/* download covers in the list */
 		Config m_newID;
 		m_newID.load(fmt("%s/newid.ini", m_settingsDir.c_str()));
-		m_newID.setString("CHANNELS", "WFSF", "DWFA");
 		u32 CoverType = 0;
 
-		for(u32 i = 0; i < coverList.size() && !m_thrdStop; ++i)
+		for(u32 i = 0; i < coverIDList.size() && !m_thrdStop; ++i)
 		{
+			string coverID = coverIDList[i];
 			string url;
-			const char *domain = "NEWID";
 			bool success = false;
 			bool original = true;
 			bool custom = false;
 			int c_altCase = 0;
 
-			const string &newID = m_newID.getString(domain, coverList[i], coverList[i]);
-
-			if(!newID.empty() && strncasecmp(newID.c_str(), coverList[i].c_str(), coverList[i].length()) == 0)
-				m_newID.remove(domain, coverList[i]);
-			else if(!newID.empty())
+			if(m_newID.loaded())
 			{
-				gprintf("old id = %s\nnew id = %s\n", coverList[i].c_str(), newID.c_str());
+				const string &newID = m_newID.getString("NEWID", coverID, coverID);
+				if(!newID.empty() && strncasecmp(newID.c_str(), coverID.c_str(), coverID.length()) == 0)
+					m_newID.remove("NEWID", coverID);
+				else if(!newID.empty())
+				{
+					gprintf("old id = %s\nnew id = %s\n", coverID.c_str(), newID.c_str());
+					coverID = newID;
+				}
 			}
 
-			for( int p = 0; p < 4; ++p )
+			for(int p = 0; p < 4; ++p)
 			{
 				switch(p)
 				{
@@ -573,22 +564,22 @@ int CMenu::_coverDownloader(bool missingOnly)
 						break;
 				}
 
-				switch( CoverType )
+				switch(CoverType)
 				{
 					case BOX:
-						if( m_downloadPrioVal&C_TYPE_ONOR )
+						if(m_downloadPrioVal & C_TYPE_ONOR)
 							original = false;
-						if (!success && !m_thrdStop && original)
+						if(!success && !m_thrdStop && original)
 						{
-							char *path = fmt_malloc("%s/%s.png", m_boxPicDir.c_str(), coverList[i].c_str());
-							if(path != NULL && !checkPNGFile(path))
+							memset(path, 0, sizeof(path));
+							strncpy(path, fmt("%s/%s.png", m_boxPicDir.c_str(), coverID.c_str()), 255);
+							
+							/* if cover png doesn't already exist download it */
+							if(strlen(path) > 0 && !checkPNGFile(path))
 							{
-								for (u32 j = 0; !success && j < fmtURLBox.size() && !m_thrdStop; ++j)
+								for(u32 j = 0; !success && j < fmtURLBox.size() && !m_thrdStop; ++j)
 								{
-									/*if(pluginCoverList.size() && pluginCoverList[i].type == TYPE_PLUGIN)
-										url = m_plugin.GenerateCoverLink(pluginCoverList[i], fmtURLBox[j], m_checksums);
-									else*/
-										url = makeURL(fmtURLBox[j], newID, countryCode(newID));
+									url = makeURL(fmtURLBox[j], coverID, countryCode(coverID));
 									if (j == 0) ++step;
 									m_thrdStep = listWeight + dlWeight * (float)step / (float)nbSteps;
 									LWP_MutexLock(m_mutex);
@@ -596,96 +587,94 @@ int CMenu::_coverDownloader(bool missingOnly)
 									LWP_MutexUnlock(m_mutex);
 									download = downloadfile(buffer, bufferSize, url.c_str(), CMenu::_downloadProgress, this);
 
-									for( int o = 0; o < 12; ++o )
+									for(int o = 0; o < 12; ++o)
 									{
 										bool tdl = false;
 										if(download.data != NULL && download.size > 0 && checkPNGBuf(download.data))
 											break;
-										//if(pluginCoverList.size() && pluginCoverList[i].type == TYPE_PLUGIN)
-										//	break;
 										switch( o )
 										{
 											case EN:
-												if(( newID[3] == 'E' || newID[3] == 'X' || newID[3] == 'Y' || newID[3] == 'P') && m_downloadPrioVal&C_TYPE_EN )
+												if((coverID[3] == 'E' || coverID[3] == 'X' || coverID[3] == 'Y' || coverID[3] == 'P') && m_downloadPrioVal & C_TYPE_EN)
 												{
-													url = makeURL(fmtURLBox[j], newID, "EN");
+													url = makeURL(fmtURLBox[j], coverID, "EN");
 													tdl = true;
 												}
 												break;
 											case JA:
-												if(newID[3] == 'J' && m_downloadPrioVal&C_TYPE_JA)
+												if(coverID[3] == 'J' && m_downloadPrioVal&C_TYPE_JA)
 												{
-													url = makeURL(fmtURLBox[j], newID, "JA");
+													url = makeURL(fmtURLBox[j], coverID, "JA");
 													tdl = true;
 												}
 												break;
 											case FR:
-												if((newID[3] == 'F' || newID[3] == 'P') && m_downloadPrioVal&C_TYPE_FR)
+												if((coverID[3] == 'F' || coverID[3] == 'P') && m_downloadPrioVal&C_TYPE_FR)
 												{
-													url = makeURL(fmtURLBox[j], newID, "FR");
+													url = makeURL(fmtURLBox[j], coverID, "FR");
 													tdl = true;
 												}
 												break;
 											case DE:
-												if((newID[3] == 'D' || newID[3] == 'P') && m_downloadPrioVal&C_TYPE_DE)
+												if((coverID[3] == 'D' || coverID[3] == 'P') && m_downloadPrioVal&C_TYPE_DE)
 												{
-													url = makeURL(fmtURLBox[j], newID, "DE");
+													url = makeURL(fmtURLBox[j], coverID, "DE");
 													tdl = true;
 												}
 												break;
 											case ES:
-												if((newID[3] == 'S' || newID[3] == 'P') && m_downloadPrioVal&C_TYPE_ES)
+												if((coverID[3] == 'S' || coverID[3] == 'P') && m_downloadPrioVal&C_TYPE_ES)
 												{
-													url = makeURL(fmtURLBox[j], newID, "ES");
+													url = makeURL(fmtURLBox[j], coverID, "ES");
 													tdl = true;
 												}
 												break;
 											case IT:
-												if((newID[3] == 'I' || newID[3] == 'P') && m_downloadPrioVal&C_TYPE_IT)
+												if((coverID[3] == 'I' || coverID[3] == 'P') && m_downloadPrioVal&C_TYPE_IT)
 												{
-													url = makeURL(fmtURLBox[j], newID, "IT");
+													url = makeURL(fmtURLBox[j], coverID, "IT");
 													tdl = true;
 												}
 												break;
 											case NL:
-												if(newID[3] == 'P' && m_downloadPrioVal&C_TYPE_NL)
+												if(coverID[3] == 'P' && m_downloadPrioVal&C_TYPE_NL)
 												{
-													url = makeURL(fmtURLBox[j], newID, "NL");
+													url = makeURL(fmtURLBox[j], coverID, "NL");
 													tdl = true;
 												}
 												break;
 											case PT:
-												if(newID[3] == 'P' && m_downloadPrioVal&C_TYPE_PT)
+												if(coverID[3] == 'P' && m_downloadPrioVal&C_TYPE_PT)
 												{
-													url = makeURL(fmtURLBox[j], newID, "PT");
+													url = makeURL(fmtURLBox[j], coverID, "PT");
 													tdl = true;
 												}
 												break;
 											case RU:
-												if((newID[3] == 'R' || newID[3] == 'P') && m_downloadPrioVal&C_TYPE_RU)
+												if((coverID[3] == 'R' || coverID[3] == 'P') && m_downloadPrioVal&C_TYPE_RU)
 												{
-													url = makeURL(fmtURLBox[j], newID, "RU");
+													url = makeURL(fmtURLBox[j], coverID, "RU");
 													tdl = true;
 												}
 												break;
 											case KO:
-												if(newID[3] == 'K' && m_downloadPrioVal&C_TYPE_KO)
+												if(coverID[3] == 'K' && m_downloadPrioVal&C_TYPE_KO)
 												{
-													url = makeURL(fmtURLBox[j], newID, "KO");
+													url = makeURL(fmtURLBox[j], coverID, "KO");
 													tdl = true;
 												}
 												break;
 											case AU:
-												if(newID[3] == 'W' && m_downloadPrioVal&C_TYPE_ZHCN)
+												if(coverID[3] == 'W' && m_downloadPrioVal&C_TYPE_ZHCN)
 												{
-													url = makeURL(fmtURLBox[j], newID, "ZH");
+													url = makeURL(fmtURLBox[j], coverID, "ZH");
 													tdl = true;
 												}
 												break;
 											case ZHCN:
 												break;
 										}
-										if ( tdl )
+										if(tdl)
 										{
 											LWP_MutexLock(m_mutex);
 											_setThrdMsg(wfmt(_fmt("dlmsg3", L"Downloading from %s"), url.c_str()), m_thrdStep);
@@ -705,35 +694,31 @@ int CMenu::_coverDownloader(bool missingOnly)
 										fsop_WriteFile(path, download.data, download.size);
 									}
 									LWP_MutexLock(m_mutex);
-									_setThrdMsg(wfmt(_fmt("dlmsg10", L"Making %s"), sfmt("%s.wfc", coverList[i].c_str()).c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
+									_setThrdMsg(wfmt(_fmt("dlmsg10", L"Making %s"), sfmt("%s.wfc", coverID.c_str()).c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
 									LWP_MutexUnlock(m_mutex);
-									if (CoverFlow.preCacheCover(coverList[i].c_str(), download.data, true))
+									if(CoverFlow.preCacheCover(coverID.c_str(), download.data, true))
 									{
 										++count;
 										success = true;
 									}
 								}
 							}
-							if(path != NULL)
-								MEM2_free(path);
-							path = NULL;
 						}
 						break;
 					case CBOX:
 						if( m_downloadPrioVal&C_TYPE_ONCU )
 							custom = true;
-						c_altCase = c_gameTDB.GetCaseVersions( coverList[i].c_str() );
+						c_altCase = c_gameTDB.GetCaseVersions( coverID.c_str() );
 						if(!success && !m_thrdStop && c_gameTDB.IsLoaded() && c_altCase > 1 && custom)
 						{
-							char *path = fmt_malloc("%s/%s.png", m_boxPicDir.c_str(), coverList[i].c_str());
-							if(path != NULL && !checkPNGFile(path))
+							memset(path, 0, sizeof(path));
+							strncpy(path, fmt("%s/%s.png", m_boxPicDir.c_str(), coverID.c_str()), 255);
+							
+							if(strlen(path) > 0 && !checkPNGFile(path))
 							{
 								for (u32 j = 0; !success && j < fmtURLCBox.size() && !m_thrdStop; ++j)
 								{
-									/*if(pluginCoverList.size() && pluginCoverList[i].type == TYPE_PLUGIN)
-										url = m_plugin.GenerateCoverLink(pluginCoverList[i], fmtURLCBox[j], m_checksums);
-									else*/
-										url = makeURL(fmtURLCBox[j], newID, countryCode(newID));
+									url = makeURL(fmtURLCBox[j], coverID, countryCode(coverID));
 									if (j == 0) ++step;
 									m_thrdStep = listWeight + dlWeight * (float)step / (float)nbSteps;
 									LWP_MutexLock(m_mutex);
@@ -745,84 +730,82 @@ int CMenu::_coverDownloader(bool missingOnly)
 										bool tdl = false;
 										if(download.data != NULL && download.size > 0 && checkPNGBuf(download.data))
 											break;
-										//if(pluginCoverList.size() && pluginCoverList[i].type == TYPE_PLUGIN)
-										//	break;
 										switch( o )
 										{
 											case EN:
-												if(( newID[3] == 'E' || newID[3] == 'X' || newID[3] == 'Y' || newID[3] == 'P') && m_downloadPrioVal&C_TYPE_EN )
+												if(( coverID[3] == 'E' || coverID[3] == 'X' || coverID[3] == 'Y' || coverID[3] == 'P') && m_downloadPrioVal&C_TYPE_EN )
 												{
-													url = makeURL(fmtURLCBox[j], newID, "EN");
+													url = makeURL(fmtURLCBox[j], coverID, "EN");
 													tdl = true;
 												}
 												break;
 											case JA:
-												if(newID[3] == 'J' && m_downloadPrioVal&C_TYPE_JA)
+												if(coverID[3] == 'J' && m_downloadPrioVal&C_TYPE_JA)
 												{
-													url = makeURL(fmtURLCBox[j], newID, "JA");
+													url = makeURL(fmtURLCBox[j], coverID, "JA");
 													tdl = true;
 												}
 												break;
 											case FR:
-												if((newID[3] == 'F' || newID[3] == 'P') && m_downloadPrioVal&C_TYPE_FR)
+												if((coverID[3] == 'F' || coverID[3] == 'P') && m_downloadPrioVal&C_TYPE_FR)
 												{
-													url = makeURL(fmtURLCBox[j], newID, "FR");
+													url = makeURL(fmtURLCBox[j], coverID, "FR");
 													tdl = true;
 												}
 												break;
 											case DE:
-												if((newID[3] == 'D' || newID[3] == 'P') && m_downloadPrioVal&C_TYPE_DE)
+												if((coverID[3] == 'D' || coverID[3] == 'P') && m_downloadPrioVal&C_TYPE_DE)
 												{
-													url = makeURL(fmtURLCBox[j], newID, "DE");
+													url = makeURL(fmtURLCBox[j], coverID, "DE");
 													tdl = true;
 												}
 												break;
 											case ES:
-												if((newID[3] == 'S' || newID[3] == 'P') && m_downloadPrioVal&C_TYPE_ES)
+												if((coverID[3] == 'S' || coverID[3] == 'P') && m_downloadPrioVal&C_TYPE_ES)
 												{
-													url = makeURL(fmtURLCBox[j], newID, "ES");
+													url = makeURL(fmtURLCBox[j], coverID, "ES");
 													tdl = true;
 												}
 												break;
 											case IT:
-												if((newID[3] == 'I' || newID[3] == 'P') && m_downloadPrioVal&C_TYPE_IT)
+												if((coverID[3] == 'I' || coverID[3] == 'P') && m_downloadPrioVal&C_TYPE_IT)
 												{
-													url = makeURL(fmtURLCBox[j], newID, "IT");
+													url = makeURL(fmtURLCBox[j], coverID, "IT");
 													tdl = true;
 												}
 												break;
 											case NL:
-												if(newID[3] == 'P' && m_downloadPrioVal&C_TYPE_NL)
+												if(coverID[3] == 'P' && m_downloadPrioVal&C_TYPE_NL)
 												{
-													url = makeURL(fmtURLCBox[j], newID, "NL");
+													url = makeURL(fmtURLCBox[j], coverID, "NL");
 													tdl = true;
 												}
 												break;
 											case PT:
-												if(newID[3] == 'P' && m_downloadPrioVal&C_TYPE_PT)
+												if(coverID[3] == 'P' && m_downloadPrioVal&C_TYPE_PT)
 												{
-													url = makeURL(fmtURLCBox[j], newID, "PT");
+													url = makeURL(fmtURLCBox[j], coverID, "PT");
 													tdl = true;
 												}
 												break;
 											case RU:
-												if((newID[3] == 'R' || newID[3] == 'P') && m_downloadPrioVal&C_TYPE_RU)
+												if((coverID[3] == 'R' || coverID[3] == 'P') && m_downloadPrioVal&C_TYPE_RU)
 												{
-													url = makeURL(fmtURLCBox[j], newID, "RU");
+													url = makeURL(fmtURLCBox[j], coverID, "RU");
 													tdl = true;
 												}
 												break;
 											case KO:
-												if(newID[3] == 'K' && m_downloadPrioVal&C_TYPE_KO)
+												if(coverID[3] == 'K' && m_downloadPrioVal&C_TYPE_KO)
 												{
-													url = makeURL(fmtURLCBox[j], newID, "KO");
+													url = makeURL(fmtURLCBox[j], coverID, "KO");
 													tdl = true;
 												}
 												break;
 											case AU:
-												if(newID[3] == 'W' && m_downloadPrioVal&C_TYPE_ZHCN)
+												if(coverID[3] == 'W' && m_downloadPrioVal&C_TYPE_ZHCN)
 												{	
-													url = makeURL(fmtURLCBox[j], newID, "ZH");
+													url = makeURL(fmtURLCBox[j], coverID, "ZH");
 													tdl = true;
 												}
 												break;
@@ -850,18 +833,15 @@ int CMenu::_coverDownloader(bool missingOnly)
 										fsop_WriteFile(path, download.data, download.size);
 									}
 									LWP_MutexLock(m_mutex);
-									_setThrdMsg(wfmt(_fmt("dlmsg10", L"Making %s"), sfmt("%s.wfc", coverList[i].c_str()).c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
+									_setThrdMsg(wfmt(_fmt("dlmsg10", L"Making %s"), sfmt("%s.wfc", coverID.c_str()).c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
 									LWP_MutexUnlock(m_mutex);
-									if (CoverFlow.preCacheCover(coverList[i].c_str(), download.data, true))
+									if (CoverFlow.preCacheCover(coverID.c_str(), download.data, true))
 									{
 										++count;
 										success = true;
 									}
 								}
 							}
-							if(path != NULL)
-								MEM2_free(path);
-							path = NULL;
 						}
 						break;
 					case FLAT:
@@ -869,17 +849,16 @@ int CMenu::_coverDownloader(bool missingOnly)
 							original = false;
 						if(!success && !m_thrdStop && original)
 						{
-							char *path = fmt_malloc("%s/%s.png", m_picDir.c_str(), coverList[i].c_str());
-							if(path != NULL && !checkPNGFile(path))
+							memset(path, 0, sizeof(path));
+							strncpy(path, fmt("%s/%s.png", m_picDir.c_str(), coverID.c_str()), 255);
+							
+							if(strlen(path) > 0 && !checkPNGFile(path))
 							{
 								// Try to get the front cover
 								if (m_thrdStop) break;
 								for (u32 j = 0; !success && j < fmtURLFlat.size() && !m_thrdStop; ++j)
 								{
-									/*if(pluginCoverList.size() && pluginCoverList[i].type == TYPE_PLUGIN)
-										url = m_plugin.GenerateCoverLink(pluginCoverList[i], fmtURLFlat[j], m_checksums);
-									else*/
-										url = makeURL(fmtURLFlat[j], newID, countryCode(newID));
+									url = makeURL(fmtURLFlat[j], coverID, countryCode(coverID));
 									LWP_MutexLock(m_mutex);
 									_setThrdMsg(wfmt(_fmt("dlmsg8", L"Full cover not found. Downloading from %s"), url.c_str()), listWeight + dlWeight * (float)step / (float)nbSteps);
 									LWP_MutexUnlock(m_mutex);
@@ -890,84 +869,82 @@ int CMenu::_coverDownloader(bool missingOnly)
 										bool tdl = false;
 										if(download.data != NULL && download.size > 0 && checkPNGBuf(download.data))
 											break;
-										//if(pluginCoverList.size() && pluginCoverList[i].type == TYPE_PLUGIN)
-										//	break;
 										switch( o )
 										{
 											case EN:
-												if(( newID[3] == 'E' || newID[3] == 'X' || newID[3] == 'Y' || newID[3] == 'P') && m_downloadPrioVal&C_TYPE_EN )
+												if(( coverID[3] == 'E' || coverID[3] == 'X' || coverID[3] == 'Y' || coverID[3] == 'P') && m_downloadPrioVal&C_TYPE_EN )
 												{
-													url = makeURL(fmtURLFlat[j], newID, "EN");
+													url = makeURL(fmtURLFlat[j], coverID, "EN");
 													tdl = true;
 												}
 												break;
 											case JA:
-												if(newID[3] == 'J' && m_downloadPrioVal&C_TYPE_JA)
+												if(coverID[3] == 'J' && m_downloadPrioVal&C_TYPE_JA)
 												{
-													url = makeURL(fmtURLFlat[j], newID, "JA");
+													url = makeURL(fmtURLFlat[j], coverID, "JA");
 													tdl = true;
 												}
 												break;
 											case FR:
-												if((newID[3] == 'F' || newID[3] == 'P') && m_downloadPrioVal&C_TYPE_FR)
+												if((coverID[3] == 'F' || coverID[3] == 'P') && m_downloadPrioVal&C_TYPE_FR)
 												{
-													url = makeURL(fmtURLFlat[j], newID, "FR");
+													url = makeURL(fmtURLFlat[j], coverID, "FR");
 													tdl = true;
 												}
 												break;
 											case DE:
-												if((newID[3] == 'D' || newID[3] == 'P') && m_downloadPrioVal&C_TYPE_DE)
+												if((coverID[3] == 'D' || coverID[3] == 'P') && m_downloadPrioVal&C_TYPE_DE)
 												{
-													url = makeURL(fmtURLFlat[j], newID, "DE");
+													url = makeURL(fmtURLFlat[j], coverID, "DE");
 													tdl = true;
 												}
 												break;
 											case ES:
-												if((newID[3] == 'S' || newID[3] == 'P') && m_downloadPrioVal&C_TYPE_ES)
+												if((coverID[3] == 'S' || coverID[3] == 'P') && m_downloadPrioVal&C_TYPE_ES)
 												{
-													url = makeURL(fmtURLFlat[j], newID, "ES");
+													url = makeURL(fmtURLFlat[j], coverID, "ES");
 													tdl = true;
 												}
 												break;
 											case IT:
-												if((newID[3] == 'I' || newID[3] == 'P') && m_downloadPrioVal&C_TYPE_IT)
+												if((coverID[3] == 'I' || coverID[3] == 'P') && m_downloadPrioVal&C_TYPE_IT)
 												{
-													url = makeURL(fmtURLFlat[j], newID, "IT");
+													url = makeURL(fmtURLFlat[j], coverID, "IT");
 													tdl = true;
 												}
 												break;
 											case NL:
-												if(newID[3] == 'P' && m_downloadPrioVal&C_TYPE_NL)
+												if(coverID[3] == 'P' && m_downloadPrioVal&C_TYPE_NL)
 												{
-													url = makeURL(fmtURLFlat[j], newID, "NL");
+													url = makeURL(fmtURLFlat[j], coverID, "NL");
 													tdl = true;
 												}
 												break;
 											case PT:
-												if(newID[3] == 'P' && m_downloadPrioVal&C_TYPE_PT)
+												if(coverID[3] == 'P' && m_downloadPrioVal&C_TYPE_PT)
 												{
-													url = makeURL(fmtURLFlat[j], newID, "PT");
+													url = makeURL(fmtURLFlat[j], coverID, "PT");
 													tdl = true;
 												}
 												break;
 											case RU:
-												if((newID[3] == 'R' || newID[3] == 'P') && m_downloadPrioVal&C_TYPE_RU)
+												if((coverID[3] == 'R' || coverID[3] == 'P') && m_downloadPrioVal&C_TYPE_RU)
 												{
-													url = makeURL(fmtURLFlat[j], newID, "RU");
+													url = makeURL(fmtURLFlat[j], coverID, "RU");
 													tdl = true;
 												}
 												break;
 											case KO:
-												if(newID[3] == 'K' && m_downloadPrioVal&C_TYPE_KO)
+												if(coverID[3] == 'K' && m_downloadPrioVal&C_TYPE_KO)
 												{
-													url = makeURL(fmtURLFlat[j], newID, "KO");
+													url = makeURL(fmtURLFlat[j], coverID, "KO");
 													tdl = true;
 												}
 												break;
 											case AU:
-												if(newID[3] == 'W' && m_downloadPrioVal&C_TYPE_ZHCN)
+												if(coverID[3] == 'W' && m_downloadPrioVal&C_TYPE_ZHCN)
 												{
-													url = makeURL(fmtURLFlat[j], newID, "ZH");
+													url = makeURL(fmtURLFlat[j], coverID, "ZH");
 													tdl = true;
 												}
 												break;
@@ -994,18 +971,15 @@ int CMenu::_coverDownloader(bool missingOnly)
 										fsop_WriteFile(path, download.data, download.size);
 									}
 									LWP_MutexLock(m_mutex);
-									_setThrdMsg(wfmt(_fmt("dlmsg10", L"Making %s"), sfmt("%s.wfc", coverList[i].c_str()).c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
+									_setThrdMsg(wfmt(_fmt("dlmsg10", L"Making %s"), sfmt("%s.wfc", coverID.c_str()).c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
 									LWP_MutexUnlock(m_mutex);
-									if (CoverFlow.preCacheCover(coverList[i].c_str(), download.data, false))
+									if (CoverFlow.preCacheCover(coverID.c_str(), download.data, false))
 									{
 										++countFlat;
 										success = true;
 									}
 								}
 							}
-							if(path != NULL)
-								MEM2_free(path);
-							path = NULL;
 						}
 						break;
 					case CFLAT:
@@ -1013,14 +987,16 @@ int CMenu::_coverDownloader(bool missingOnly)
 							custom = true;
 						if(!success && !m_thrdStop && c_gameTDB.IsLoaded() && c_altCase > 1 && custom)
 						{
-							char *path = fmt_malloc("%s/%s.png", m_picDir.c_str(), coverList[i].c_str());
-							if(path != NULL && !checkPNGFile(path))
+							memset(path, 0, sizeof(path));
+							strncpy(path, fmt("%s/%s.png", m_picDir.c_str(), coverID.c_str()), 255);
+							
+							if(strlen(path) > 0 && !checkPNGFile(path))
 							{
 								// Try to get the front cover
 								if (m_thrdStop) break;
 								for (u32 j = 0; !success && j < fmtURLCFlat.size() && !m_thrdStop; ++j)
 								{
-									url = makeURL(fmtURLCFlat[j], newID, countryCode(newID));
+									url = makeURL(fmtURLCFlat[j], coverID, countryCode(coverID));
 									LWP_MutexLock(m_mutex);
 									_setThrdMsg(wfmt(_fmt("dlmsg8", L"Full cover not found. Downloading from %s"), url.c_str()), listWeight + dlWeight * (float)step / (float)nbSteps);
 									LWP_MutexUnlock(m_mutex);
@@ -1035,79 +1011,79 @@ int CMenu::_coverDownloader(bool missingOnly)
 										switch( o )
 										{
 											case EN:
-												if(( newID[3] == 'E' || newID[3] == 'X' || newID[3] == 'Y' || newID[3] == 'P') && m_downloadPrioVal&C_TYPE_EN )
+												if(( coverID[3] == 'E' || coverID[3] == 'X' || coverID[3] == 'Y' || coverID[3] == 'P') && m_downloadPrioVal&C_TYPE_EN )
 												{
-													url = makeURL(fmtURLCFlat[j], newID, "EN");
+													url = makeURL(fmtURLCFlat[j], coverID, "EN");
 													tdl = true;
 												}
 												break;
 											case JA:
-												if(newID[3] == 'J' && m_downloadPrioVal&C_TYPE_JA)
+												if(coverID[3] == 'J' && m_downloadPrioVal&C_TYPE_JA)
 												{
-													url = makeURL(fmtURLCFlat[j], newID, "JA");
+													url = makeURL(fmtURLCFlat[j], coverID, "JA");
 													tdl = true;
 												}
 												break;
 											case FR:
-												if((newID[3] == 'F' || newID[3] == 'P') && m_downloadPrioVal&C_TYPE_FR)
+												if((coverID[3] == 'F' || coverID[3] == 'P') && m_downloadPrioVal&C_TYPE_FR)
 												{
-													url = makeURL(fmtURLCFlat[j], newID, "FR");
+													url = makeURL(fmtURLCFlat[j], coverID, "FR");
 													tdl = true;
 												}
 												break;
 											case DE:
-												if((newID[3] == 'D' || newID[3] == 'P') && m_downloadPrioVal&C_TYPE_DE)
+												if((coverID[3] == 'D' || coverID[3] == 'P') && m_downloadPrioVal&C_TYPE_DE)
 												{
-													url = makeURL(fmtURLCFlat[j], newID, "DE");
+													url = makeURL(fmtURLCFlat[j], coverID, "DE");
 													tdl = true;
 												}
 												break;
 											case ES:
-												if((newID[3] == 'S' || newID[3] == 'P') && m_downloadPrioVal&C_TYPE_ES)
+												if((coverID[3] == 'S' || coverID[3] == 'P') && m_downloadPrioVal&C_TYPE_ES)
 												{
-													url = makeURL(fmtURLCFlat[j], newID, "ES");
+													url = makeURL(fmtURLCFlat[j], coverID, "ES");
 													tdl = true;
 												}
 												break;
 											case IT:
-												if((newID[3] == 'I' || newID[3] == 'P') && m_downloadPrioVal&C_TYPE_IT)
+												if((coverID[3] == 'I' || coverID[3] == 'P') && m_downloadPrioVal&C_TYPE_IT)
 												{
-													url = makeURL(fmtURLCFlat[j], newID, "IT");
+													url = makeURL(fmtURLCFlat[j], coverID, "IT");
 													tdl = true;
 												}
 												break;
 											case NL:
-												if(newID[3] == 'P' && m_downloadPrioVal&C_TYPE_NL)
+												if(coverID[3] == 'P' && m_downloadPrioVal&C_TYPE_NL)
 												{
-													url = makeURL(fmtURLCFlat[j], newID, "NL");
+													url = makeURL(fmtURLCFlat[j], coverID, "NL");
 													tdl = true;
 												}
 												break;
 											case PT:
-												if(newID[3] == 'P' && m_downloadPrioVal&C_TYPE_PT)
+												if(coverID[3] == 'P' && m_downloadPrioVal&C_TYPE_PT)
 												{
-													url = makeURL(fmtURLCFlat[j], newID, "PT");
+													url = makeURL(fmtURLCFlat[j], coverID, "PT");
 													tdl = true;
 												}
 												break;
 											case RU:
-												if((newID[3] == 'R' || newID[3] == 'P') && m_downloadPrioVal&C_TYPE_RU)
+												if((coverID[3] == 'R' || coverID[3] == 'P') && m_downloadPrioVal&C_TYPE_RU)
 												{
-													url = makeURL(fmtURLCFlat[j], newID, "RU");
+													url = makeURL(fmtURLCFlat[j], coverID, "RU");
 													tdl = true;
 												}
 												break;
 											case KO:
-												if(newID[3] == 'K' && m_downloadPrioVal&C_TYPE_KO)
+												if(coverID[3] == 'K' && m_downloadPrioVal&C_TYPE_KO)
 												{
-													url = makeURL(fmtURLCFlat[j], newID, "KO");
+													url = makeURL(fmtURLCFlat[j], coverID, "KO");
 													tdl = true;
 												}
 												break;
 											case AU:
-												if((newID[3] == 'P' || newID[3] == 'Y' || newID[3] == 'X') && m_downloadPrioVal&C_TYPE_ZHCN)
+												if((coverID[3] == 'P' || coverID[3] == 'Y' || coverID[3] == 'X') && m_downloadPrioVal&C_TYPE_ZHCN)
 												{
-													url = makeURL(fmtURLCFlat[j], newID, "ZH");
+													url = makeURL(fmtURLCFlat[j], coverID, "ZH");
 													tdl = true;
 												}
 												break;
@@ -1134,18 +1110,15 @@ int CMenu::_coverDownloader(bool missingOnly)
 										fsop_WriteFile(path, download.data, download.size);
 									}
 									LWP_MutexLock(m_mutex);
-									_setThrdMsg(wfmt(_fmt("dlmsg10", L"Making %s"), sfmt("%s.wfc", coverList[i].c_str()).c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
+									_setThrdMsg(wfmt(_fmt("dlmsg10", L"Making %s"), sfmt("%s.wfc", coverID.c_str()).c_str()), listWeight + dlWeight * (float)(step + 1) / (float)nbSteps);
 									LWP_MutexUnlock(m_mutex);
-									if (CoverFlow.preCacheCover(coverList[i].c_str(), download.data, false))
+									if (CoverFlow.preCacheCover(coverID.c_str(), download.data, false))
 									{
 										++countFlat;
 										success = true;
 									}
 								}
 							}
-							if(path != NULL)
-								MEM2_free(path);
-							path = NULL;
 						}
 						break;
 				}
@@ -1154,9 +1127,9 @@ int CMenu::_coverDownloader(bool missingOnly)
 		}
 		if(c_gameTDB.IsLoaded())
 			c_gameTDB.CloseFile();
-		coverList.clear();
-		//m_checksums.unload();
-		m_newID.unload();
+		coverIDList.clear();
+		if(m_newID.loaded())
+			m_newID.unload();
 	}
 	LWP_MutexLock(m_mutex);
 	if (countFlat == 0)
@@ -1165,8 +1138,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 		_setThrdMsg(wfmt(_fmt("dlmsg9", L"%i/%i files downloaded. %i are front covers only."), count + countFlat, n, countFlat), 1.f);
 	LWP_MutexUnlock(m_mutex);
 	m_thrdWorking = false;
-	//pluginCoverList.clear();
-	free(buffer);
+	MEM2_free(buffer);
 	return 0;
 }
 
@@ -1184,17 +1156,7 @@ void CMenu::_download(string gameId)
 	m_thrdStop = false;
 	m_thrdMessageAdded = false;
 
-	/*if(gameId.size() && CoverFlow.getHdr()->type == TYPE_PLUGIN)
-	{
-		char gamePath[256];
-		if(strchr(CoverFlow.getHdr()->path, '/') != NULL)
-			strncpy(gamePath, strrchr(CoverFlow.getHdr()->path, '/') + 1, sizeof(gamePath));
-		else
-			strncpy(gamePath, CoverFlow.getHdr()->path, sizeof(gamePath));
-		m_coverDLGameId = gamePath;
-	}
-	else*/
-		m_coverDLGameId = gameId;
+	m_coverDLGameId = gameId;
 
 	while(!m_exit)
 	{
@@ -1218,7 +1180,7 @@ void CMenu::_download(string gameId)
 		{
 			if ((m_btnMgr.selected(m_downloadBtnAll) || m_btnMgr.selected(m_downloadBtnMissing) || !gameId.empty()) && !m_thrdWorking)
 			{
-				m_refreshGameList = true;
+				m_refreshGameList = true;//
 				bool dlAll = m_btnMgr.selected(m_downloadBtnAll);
 				m_btnMgr.show(m_downloadPBar);
 				m_btnMgr.setProgress(m_downloadPBar, 0.f);

@@ -36,6 +36,7 @@ void CMenu::_sourceFlow()
 	else
 		m_cfg.remove(SOURCEFLOW_DOMAIN, "current_item");
 
+	memset(single_sourcebtn, 0, 16);
 	memset(btn_selected, 0, 16);
 	strncpy(btn_selected, fmt("BUTTON_%i", hdr->settings[0]), 15);
 	source = m_source.getString(btn_selected, "source", "");
@@ -67,6 +68,7 @@ void CMenu::_sourceFlow()
 	}
 	else if(source == "allplugins")
 	{
+		strncpy(single_sourcebtn, btn_selected, 16);
 		m_current_view = COVERFLOW_PLUGIN;
 		for(k = 0; k < m_numPlugins; ++k)
 			m_plugin.SetEnablePlugin(m_cfg, k, 2); /* force enable */
@@ -75,8 +77,10 @@ void CMenu::_sourceFlow()
 	{
 		magicNums.clear();
 		magicNums = m_source.getStrings(btn_selected, "magic", ',');
-		if(magicNums.size() > 0 )
+		if(magicNums.size() > 0)
 		{
+			if(magicNums.size() > 1)
+				strncpy(single_sourcebtn, btn_selected, 16);
 			m_current_view = COVERFLOW_PLUGIN;
 			for(k = 0; k < m_numPlugins; ++k)
 				m_plugin.SetEnablePlugin(m_cfg, k, 1); /* force disable */
@@ -271,8 +275,20 @@ bool CMenu::_Source()
 			}
 			if(selectedBtns == 1)
 			{
+				memset(single_sourcebtn, 0, 16);
 				memset(btn_selected, 0, 16);
 				strncpy(btn_selected, fmt("BUTTON_%i", sourceBtn), 15);
+
+				source = m_source.getString(btn_selected, "source", "");
+				if(source == "allplugins")
+					strncpy(single_sourcebtn, btn_selected, 16);
+				else if(source == "plugin")
+				{
+					magicNums.clear();
+					magicNums = m_source.getStrings(btn_selected, "magic", ',');
+					if(magicNums.size() > 1)
+						strncpy(single_sourcebtn, btn_selected, 16);
+				}
 				_setSrcOptions();
 			}
 			
@@ -329,6 +345,7 @@ bool CMenu::_Source()
 			}
 			if(!m_multisource && i <12)
 			{
+				memset(single_sourcebtn, 0, 16);
 				exitSource = true;
 				m_catStartPage = 1;
 				if(source == "dml")
@@ -359,6 +376,7 @@ bool CMenu::_Source()
 				}
 				else if(source == "allplugins")
 				{
+					strncpy(single_sourcebtn, btn_selected, 16);
 					m_current_view = COVERFLOW_PLUGIN;
 					for(k = 0; k < m_numPlugins; ++k)
 						m_plugin.SetEnablePlugin(m_cfg, k, 2); /* force enable */
@@ -374,6 +392,8 @@ bool CMenu::_Source()
 					magicNums = m_source.getStrings(btn_selected, "magic", ',');
 					if(magicNums.size() > 0)
 					{
+						if(magicNums.size() > 1)
+							strncpy(single_sourcebtn, btn_selected, 16);
 						for(vector<string>::iterator itr = magicNums.begin(); itr != magicNums.end(); itr++)
 						{
 							s8 exist = m_plugin.GetPluginPosition(strtoul(itr->c_str(), NULL, 16));// make sure magic# is valid
@@ -562,6 +582,7 @@ void CMenu::_setSrcOptions(void)
 
 void CMenu::_initSourceMenu()
 {
+	memset(single_sourcebtn, 0, 16);
 	m_use_source = false;
 	themeName = m_cfg.getString("GENERAL", "theme", "default").c_str();
 	if(!m_source.load(fmt("%s/%s/%s", m_sourceDir.c_str(), themeName, SOURCE_FILENAME)))

@@ -226,7 +226,9 @@ vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, const char *Device, u32
 	{
 		if(strlen(GameDomain) < 2)
 			break;
-		const char *GameName = ini.getString(GameDomain, "description").c_str();
+		char GameName[64];
+		memset(GameName, 0, sizeof(GameName));
+		strncpy(GameName, ini.getString(GameDomain, "description").c_str(), 63);
 		if(strlen(GameName) < 2 || strncasecmp(Device, ini.getString(GameDomain, "path").c_str(), 2) != 0)
 		{
 			GameDomain = ini.nextDomain().c_str();
