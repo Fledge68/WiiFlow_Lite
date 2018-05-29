@@ -180,7 +180,7 @@ static void Create_Plugin_List(char *FullPath)
 	memset((void*)&ListElement, 0, sizeof(dir_discHdr));
 
 	strncpy(ListElement.path, FullPath, sizeof(ListElement.path) - 1);
-	strncpy(ListElement.id, "PLUGIN", 6);
+	memcpy(ListElement.id, "PLUGIN", 6);
 
 	FolderTitle = strrchr(FullPath, '/') + 1;
 	*strrchr(FolderTitle, '.') = '\0';
@@ -211,7 +211,7 @@ static void Create_Homebrew_List(char *FullPath)
 	ListElement.index = m_cacheList.size();
 	*strrchr(FullPath, '/') = '\0';
 	strncpy(ListElement.path, FullPath, sizeof(ListElement.path) - 1);
-	strncpy(ListElement.id, "HB_APP", 6);
+	memcpy(ListElement.id, "HB_APP", 6);
 
 	FolderTitle = strrchr(FullPath, '/') + 1;
 	ListElement.casecolor = CustomTitles.getColor("COVERS", FolderTitle, 0xFFFFFF).intVal();
@@ -239,7 +239,7 @@ static void Create_Channel_List(bool realNAND)
 		ListElement.settings[0] = TITLE_UPPER(chan->title);
 		ListElement.settings[1] = TITLE_LOWER(chan->title);
 		if(chan->title == HBC_108)
-			strncpy(ListElement.id, "JODI", 4);
+			memcpy(ListElement.id, "JODI", 4);
 		else
 			strncpy(ListElement.id, chan->id, 4);
 		ListElement.casecolor = CustomTitles.getColor("COVERS", ListElement.id, 0xFFFFFF).intVal();
@@ -385,13 +385,16 @@ void ListGenerator::createSFList(u8 maxBtns, Config &m_sourceMenuCfg, const stri
 		
 		memset((void*)&ListElement, 0, sizeof(dir_discHdr));
 		ListElement.index = m_cacheList.size();
-		strncpy(ListElement.id, "SOURCE", 6);
+		memcpy(ListElement.id, "SOURCE", 6);
 		strncpy(ListElement.path, path, sizeof(ListElement.path) - 1);
 		ListElement.casecolor = 0xFFFFFF;
 		ListElement.type = TYPE_SOURCE;		
 		ListElement.settings[0] = i;
-		const char *title = m_sourceMenuCfg.getString(btn_selected, "title", fmt("title_%i", i)).c_str();
-		mbstowcs(ListElement.title, title, 63);
+		//const char *title = m_sourceMenuCfg.getString(btn_selected, "title", fmt("title_%i", i)).c_str();
+		char SourceTitle[64];
+		memset(SourceTitle, 0, sizeof(SourceTitle));
+		strncpy(SourceTitle, m_sourceMenuCfg.getString(btn_selected, "title", fmt("title_%i", i)).c_str(), 63);
+		mbstowcs(ListElement.title, SourceTitle, 63);
 		Asciify(ListElement.title);
 		m_cacheList.push_back(ListElement);
 	}

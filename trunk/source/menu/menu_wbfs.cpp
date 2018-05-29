@@ -106,7 +106,7 @@ void CMenu::GC_Messenger(int message, int info, char *cinfo)
 	m_thrdMessageAdded = true;
 }
 
-int CMenu::_gameInstaller(void *obj)
+void * CMenu::_gameInstaller(void *obj)
 {
 	CMenu &m = *(CMenu *)obj;
 	int ret;
@@ -115,7 +115,7 @@ int CMenu::_gameInstaller(void *obj)
 	if(!WBFS_Mounted())
 	{
 		m.m_thrdWorking = false;
-		return -1;
+		return NULL;
 	}
 	u64 comp_size = 0, real_size = 0;
 	f32 free, used;
@@ -127,7 +127,7 @@ int CMenu::_gameInstaller(void *obj)
 		m._setThrdMsg(wfmt(m._fmt("wbfsop10", L"Not enough space: %lld blocks needed, %i available"), comp_size, free), 0.f);
 		LWP_MutexUnlock(m.m_mutex);
 		//m.m_thrdWorking = false;
-		ret = -1;
+		//ret = -1;
 	}
 	else
 	{	
@@ -137,7 +137,7 @@ int CMenu::_gameInstaller(void *obj)
 		
 		ret = WBFS_AddGame(_addDiscProgress, obj);
 		LWP_MutexLock(m.m_mutex);
-		if (ret == 0)
+		if(ret == 0)
 			m._setThrdMsg(m._t("wbfsop8", L"Game installed, press B to exit."), 1.f);
 		else
 			m._setThrdMsg(m._t("wbfsop9", L"An error has occurred"), 1.f);
@@ -146,7 +146,7 @@ int CMenu::_gameInstaller(void *obj)
 	}
 	WBFS_Close();
 	m.m_thrdWorking = false;
-	return ret;
+	return NULL;
 }
 
 int CMenu::_GCgameInstaller()
@@ -213,7 +213,7 @@ int CMenu::_GCgameInstaller()
 	return ret;
 }
 
-int CMenu::_GCcopyGame(void *obj)
+void * CMenu::_GCcopyGame(void *obj)
 {
 	CMenu &m = *(CMenu *)obj;
 
@@ -345,7 +345,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 							m_thrdWorking = true;
 							m_thrdProgress = 0.f;
 							m_thrdMessageAdded = false;
-							LWP_CreateThread(&thread, (void *(*)(void *))_gameInstaller, (void *)this, 0, 8 * 1024, 64);
+							LWP_CreateThread(&thread, _gameInstaller, this, 0, 8 * 1024, 64);
 						}
 						else if(Disc_IsGC() == 0)
 						{

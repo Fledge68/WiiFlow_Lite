@@ -360,7 +360,7 @@ private:
 	static bool _sortByWifiPlayers(CItem item1, CItem item2);
 
 private:
-	static int _coverLoader(CCoverFlow *cf);
+	static void * _coverLoader(void *obj);
 	static float _step(float cur, float tgt, float spd);
 private:
 	CCoverFlow(const CCoverFlow &);

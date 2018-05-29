@@ -290,12 +290,12 @@ s32 GCDump::DumpGame()
 
 	char *FSTNameOff = NULL;
 
-	char folder[MAX_FAT_PATH];
-	memset(folder, 0, MAX_FAT_PATH);
-	char gamepath[MAX_FAT_PATH];
-	memset(gamepath, 0, MAX_FAT_PATH);
+	char folder[MAX_FAT_PATH + 76];
+	memset(folder, 0, sizeof(folder));
+	char gamepath[MAX_FAT_PATH + 90];
+	memset(gamepath, 0, sizeof(gamepath));
 	char basedir[MAX_FAT_PATH];
-	memset(basedir, 0, MAX_FAT_PATH);
+	memset(basedir, 0, sizeof(basedir));
 	strncpy(basedir, fmt(gc_gamesDir, gamepartition), MAX_FAT_PATH);
 
 	while(!gamedone)
@@ -409,7 +409,7 @@ s32 GCDump::DumpGame()
 		{
 			char *ptz = strstr(gamepath, "game.iso");
 			if(ptz != NULL)
-				strncpy(ptz, "gam1.iso", 8);
+				memcpy(ptz, "gam1.iso", 8);
 		}
 		gprintf("Writing %s\n", gamepath);
 		if(compressed)

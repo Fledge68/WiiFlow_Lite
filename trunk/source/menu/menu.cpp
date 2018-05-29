@@ -1973,6 +1973,16 @@ void CMenu::_initCF(void)
 	CoverFlow.clear();
 	CoverFlow.reserve(m_gameList.size());
 
+	char requiredCats[10];
+	char selectedCats[10];
+	char hiddenCats[10];
+	strcpy(requiredCats, m_cat.getString("GENERAL", "required_categories").c_str());
+	strcpy(selectedCats, m_cat.getString("GENERAL", "selected_categories").c_str());
+	strcpy(hiddenCats, m_cat.getString("GENERAL", "hidden_categories").c_str());
+	u8 numReqCats = strlen(requiredCats);
+	u8 numSelCats = strlen(selectedCats);
+	u8 numHidCats = strlen(hiddenCats);
+	
 	for(vector<dir_discHdr>::iterator hdr = m_gameList.begin(); hdr != m_gameList.end(); ++hdr)
 	{
 		const char *id = NULL;
@@ -1994,13 +2004,13 @@ void CMenu::_initCF(void)
 			strcat(tmp1, tmp2);
 			id = tmp1;*/
 		}
-		else if(hdr->type == TYPE_HOMEBREW)
+		if(hdr->type == TYPE_HOMEBREW)
 		{
 			CoverFlow.addItem(&(*hdr), 0, 0);
 			continue;
 			//id = strrchr(hdr->path, '/') + 1;
 		}
-		else if(hdr->type == TYPE_PLUGIN)
+		if(hdr->type == TYPE_PLUGIN)
 		{
 			strncpy(m_plugin.PluginMagicWord, fmt("%08x", hdr->settings[0]), 8);
 			wcstombs(tmp2, hdr->title, 64);
@@ -2020,37 +2030,26 @@ void CMenu::_initCF(void)
 				id = tmp1;
 			}
 		}
+		
 		if((!m_favorites || m_gcfg1.getBool(favDomain, id, false))
 			&& (!m_locked || !m_gcfg1.getBool(adultDomain, id, false)))
 		{
-			const char *catDomain = NULL;
-			switch(hdr->type)
-			{
-				case TYPE_CHANNEL:
-					catDomain = "NAND";
-					break;
-				case TYPE_EMUCHANNEL:
-					catDomain = "CHANNELS";
-					break;
-				case TYPE_GC_GAME:
-					catDomain = "GAMECUBE";
-					break;
-				case TYPE_WII_GAME:
-					catDomain = "WII";
-					break;
-				default:
-					catDomain = m_plugin.PluginMagicWord;
-					break;
-			}
-			const char *requiredCats = m_cat.getString("GENERAL", "required_categories").c_str();
-			const char *selectedCats = m_cat.getString("GENERAL", "selected_categories").c_str();
-			const char *hiddenCats = m_cat.getString("GENERAL", "hidden_categories").c_str();
-			u8 numReqCats = strlen(requiredCats);
-			u8 numSelCats = strlen(selectedCats);
-			u8 numHidCats = strlen(hiddenCats);
+			string catDomain = "";
+			if(hdr->type == TYPE_CHANNEL)
+				catDomain = "NAND";
+			else if(hdr->type == TYPE_EMUCHANNEL)
+				catDomain = "CHANNELS";
+			else if(hdr->type == TYPE_GC_GAME)
+				catDomain = "GAMECUBE";
+			else if(hdr->type == TYPE_WII_GAME)
+				catDomain = "WII";
+			else
+				catDomain = m_plugin.PluginMagicWord;
+
 			if(numReqCats != 0 || numSelCats != 0 || numHidCats != 0) // if all 0 skip checking cats and show all games
 			{
-				const char *idCats = m_cat.getString(catDomain, hdr->type == TYPE_PLUGIN? catID : id).c_str();
+				char idCats[10];
+				strcpy(idCats, m_cat.getString(catDomain, hdr->type == TYPE_PLUGIN? catID : id).c_str());
 				u8 numIdCats = strlen(idCats);
 				bool inaCat = false;
 				bool inHiddenCat = false;

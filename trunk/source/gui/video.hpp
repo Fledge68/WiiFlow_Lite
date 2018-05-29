@@ -120,7 +120,7 @@ private:
 	void _drawAASceneWithAlpha(float w, float h);
 	void _setViewPort(float x, float y, float w, float h);
 	void _clearScreen();
-	static void _showWaitMessages(CVideo *m);
+	static void * _showWaitMessages(void *obj);
 private:
 	CVideo(const CVideo &);
 };

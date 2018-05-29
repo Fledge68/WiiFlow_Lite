@@ -69,6 +69,7 @@ void CMenu::ScanInput()
 	WPAD_ScanPads();
 	PAD_ScanPads();
 	DS3_ScanPads();
+	//drc
 	
 	ButtonsPressed();
 	ButtonsHeld();
@@ -130,6 +131,7 @@ void CMenu::ScanInput()
 	ShowNextZone();
 	ShowGameZone();
 }
+
 extern "C" { extern bool shutdown; };
 void CMenu::ButtonsPressed()
 {
@@ -150,6 +152,7 @@ void CMenu::ButtonsPressed()
 			wii_btnsPressed[chan] = WPAD_ButtonsDown(chan);
 			gc_btnsPressed |= PAD_ButtonsDown(chan);
 			wupc_btnsPressed[chan] = WUPC_ButtonsDown(chan);
+			//drc
 		}
 	}
 }
@@ -162,6 +165,7 @@ void CMenu::ButtonsHeld()
 		wii_btnsHeld[chan] = WPAD_ButtonsHeld(chan);
 		gc_btnsHeld |= PAD_ButtonsHeld(chan);
 		wupc_btnsHeld[chan] = WUPC_ButtonsHeld(chan);
+		//drc
 	}
 }
 
@@ -238,8 +242,7 @@ void CMenu::LeftStick()
 		}
 		else
 		{
-			if(pointerhidedelay[chan] > 0 && !wii_btnsHeld[chan] && !wii_btnsPressed[chan] 
-				&& !gc_btnsHeld && !gc_btnsPressed) 
+			if(pointerhidedelay[chan] > 0 && !wii_btnsHeld[chan] && !wii_btnsPressed[chan] && !gc_btnsHeld && !gc_btnsPressed) 
 				pointerhidedelay[chan]--;
 		}
 		if (pointerhidedelay[chan] == 0)
@@ -310,9 +313,9 @@ bool CMenu::wii_btnRepeat(u8 btn)
 		else
 			m_wpadDownDelay = 0;
 	}
-	else if(btn == WBTN_LEFT || DBTN_LEFT)
+	else if(btn == WBTN_LEFT)
 	{
-		if(WBTN_LEFT_HELD || DBTN_LEFT_PRESSED)
+		if(WBTN_LEFT_HELD)
 		{
 			if(m_wpadLeftDelay == 0 || m_wpadLeftDelay >= g_repeatDelay)
 				b = true;

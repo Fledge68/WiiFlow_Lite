@@ -398,8 +398,8 @@ private:
 	s16 m_downloadBtnKOs;
 	s16 m_downloadBtnZHCNs;
 	s16 m_downloadBtnAUs;
-	static s8 _versionDownloaderInit(CMenu *m);
-	static s8 _versionTxtDownloaderInit(CMenu *m);
+	static void * _versionDownloaderInit(void *obj);
+	static void * _versionTxtDownloaderInit(void *obj);
 	s8 _versionDownloader();
 	s8 _versionTxtDownloader();
 //Game menu
@@ -1122,7 +1122,7 @@ private:
 	void _cleanupBanner(bool gamechange = false);
 	void _cleanupVideo();
 	bool _startVideo();
-	static int _pThread(void *obj);
+	static void * _pThread(void *obj);
 	void _start_pThread(void);
 	void _stop_pThread(void);
 	lwp_t m_thrdPtr;
@@ -1152,10 +1152,10 @@ private:
 	void _setThrdMsg(const wstringEx &msg, float progress);
 	void _setDumpMsg(const wstringEx &msg, float progress, float fileprog);
 	int _coverDownloader(bool missingOnly);
-	static int _coverDownloaderAll(CMenu *m);
-	static int _coverDownloaderMissing(CMenu *m);
+	static void * _coverDownloaderAll(void *obj);
+	static void * _coverDownloaderMissing(void *obj);
 	static bool _downloadProgress(void *obj, int size, int position);
-	static int _gametdbDownloader(CMenu *m);
+	static void * _gametdbDownloader(void *obj);
 	int _gametdbDownloaderAsync();
 
 	static s32 _networkComplete(s32 result, void *usrData);
@@ -1165,8 +1165,8 @@ private:
 	void LoadView(void);
 	static void _addDiscProgress(int status, int total, void *user_data);
 	static void _ShowProgress(int dumpstat, int dumpprog, int filestat, int fileprog, int files, int folders, const char *tmess, void *user_data);
-	static int _gameInstaller(void *obj);
-	static int _GCcopyGame(void *obj);
+	static void * _gameInstaller(void *obj);
+	static void * _GCcopyGame(void *obj);
 	bool _searchGamesByID(const char *gameId);
 	int _GCgameInstaller();
 	float m_progress;
@@ -1179,8 +1179,8 @@ private:
 	int m_nandexentry;
 	wstringEx _optBoolToString(int b);
 	void _stopSounds(void);
-	static int _NandDumper(void *obj);
-	static int _NandFlasher(void *obj);
+	static void * _NandDumper(void *obj);
+	static void * _NandFlasher(void *obj);
 	int _FindEmuPart(string &emuPath, bool searchvalid, bool savesnand);
 	bool _checkSave(string id, bool nand);
 	bool _TestEmuNand(int epart, const char *path, bool indept);
@@ -1188,13 +1188,13 @@ private:
 	void _FullNandCheck(void);
 	void _listEmuNands(const char *path, vector<string> &emuNands);
 
-	static u32 _downloadCheatFileAsync(void *obj);
-	static u32 _downloadBannerAsync(void *obj);
-	static u32 _downloadUrlAsync(void *obj);
+	static void * _downloadCheatFileAsync(void *obj);
+	static void * _downloadBannerAsync(void *obj);
+	static void * _downloadUrlAsync(void *obj);
 
 	void _playGameSound(void);
 	void _stopGameSoundThread(void);
-	static void _gameSoundThread(CMenu *m);
+	static void * _gameSoundThread(void *obj);
 
 	static void _load_installed_cioses();
 

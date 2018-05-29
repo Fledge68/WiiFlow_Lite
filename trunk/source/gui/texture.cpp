@@ -222,7 +222,7 @@ TexErr STexture::fromImageFile(TexData &dest, const char *filename, u8 f, u32 mi
 	u8 *Image = fsop_ReadFile(filename, &fileSize);
 	if(Image == NULL)
 	{
-		strncpy((char*)filename+(strlen(filename)-3), "jp", 2);
+		memcpy((char*)filename+(strlen(filename)-3), "jp", 2);// change .png to .jpg
 		Image = fsop_ReadFile(filename, &fileSize);
 	}
 	if(Image == NULL)

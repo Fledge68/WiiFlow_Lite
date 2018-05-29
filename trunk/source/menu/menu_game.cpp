@@ -1209,8 +1209,9 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 			else
 			{
 				// otherwise copy cheat file from wiiflow cheat folder to Game folder
-				snprintf(CheatPath, sizeof(CheatPath), "%s%s.gct", GC_Path, id);
-				fsop_CopyFile(fmt("%s/%s.gct", m_cheatDir.c_str(), id), CheatPath, NULL, NULL);
+				char GC_game_dir[strlen(GC_Path) + 11];
+				snprintf(GC_game_dir, sizeof(GC_game_dir), "%s%s.gct", GC_Path, id);
+				fsop_CopyFile(fmt("%s/%s.gct", m_cheatDir.c_str(), id), GC_game_dir, NULL, NULL);
 				//might add err msg here if copy error
 			}
 		}
@@ -1483,7 +1484,12 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 
 	u8 patchVidMode = min(m_gcfg2.getUInt(id, "patch_video_modes", 0), ARRAY_SIZE(CMenu::_vidModePatch) - 1u);
 	int aspectRatio = min(m_gcfg2.getUInt(id, "aspect_ratio", 0), ARRAY_SIZE(CMenu::_AspectRatio) - 1) - 1;// -1,0,1
-	const char *rtrn = m_gcfg2.getBool(id, "returnto", true) ? m_cfg.getString("GENERAL", "returnto").c_str() : NULL;
+	
+	//u32 returnTo = 0;
+	//const char *rtrn = m_cfg.getString("GENERAL", "returnto").c_str();
+	//if(strlen(rtrn) == 4)
+	//	returnTo = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
+	const char *rtrn = m_cfg.getString("GENERAL", "returnto").c_str();
 	u32 returnTo = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
 
 	u8 *cheatFile = NULL;
@@ -1696,7 +1702,9 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 	int language = min(m_gcfg2.getUInt(id, "language", 0), ARRAY_SIZE(CMenu::_languages) - 1u);
 	language = (language == 0) ? min(m_cfg.getUInt("GENERAL", "game_language", 0), ARRAY_SIZE(CMenu::_languages) - 1u) : language;
 
-	const char *rtrn = m_cfg.getString("GENERAL", "returnto", "").c_str();
+	const char *rtrn = m_cfg.getString("GENERAL", "returnto").c_str();
+	u32 returnTo = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
+	
 	int aspectRatio = min(m_gcfg2.getUInt(id, "aspect_ratio", 0), ARRAY_SIZE(CMenu::_AspectRatio) - 1u) - 1;
 	u8 patchVidMode = min(m_gcfg2.getUInt(id, "patch_video_modes", 0), ARRAY_SIZE(CMenu::_vidModePatch) - 1u);
 
@@ -1723,9 +1731,10 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 			bool need_config = false;
 			bool need_miis = false;
 			
-			char testpath[MAX_FAT_PATH];
+			//char testpath[MAX_FAT_PATH];
 			char basepath[MAX_FAT_PATH];
 			snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[emuPart], emuPath.c_str());
+			char testpath[strlen(basepath) + 42];
 			
 			// does not check to see if actual tmd exist just if the folder exist
 			if(!_checkSave(id, false))//if save is not on emunand
@@ -1774,7 +1783,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 
 	u8 *cheatFile = NULL;
 	u8 *gameconfig = NULL;
-	u32 cheatSize = 0, gameconfigSize = 0, returnTo = 0;
+	u32 cheatSize = 0, gameconfigSize = 0;
 
 	m_gcfg1.setInt("PLAYCOUNT", id, m_gcfg1.getInt("PLAYCOUNT", id, 0) + 1);
 	m_gcfg1.setUInt("LASTPLAYED", id, time(NULL));
@@ -1789,8 +1798,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 		_loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", id.c_str()));
 	_loadFile(gameconfig, gameconfigSize, m_txtCheatDir.c_str(), "gameconfig.txt");
 
-	if(strlen(rtrn) == 4)
-		returnTo = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
 	int userIOS = m_gcfg2.getInt(id, "ios", 0);
 	int gameIOS = dvd && !neek2o() ? userIOS : GetRequestedGameIOS(hdr);
 
@@ -1971,8 +1978,9 @@ struct IMD5Header
 } ATTRIBUTE_PACKED;
 
 // loads game banner and sound to be played by mainloop
-void CMenu::_gameSoundThread(CMenu *m)
+void * CMenu::_gameSoundThread(void *obj)
 {
+	CMenu *m = (CMenu*)obj;
 	m->m_soundThrdBusy = true;
 	m->m_gamesound_changed = false;
 	CurrentBanner.ClearBanner();//clear current banner from memory
@@ -2015,7 +2023,7 @@ void CMenu::_gameSoundThread(CMenu *m)
 			if(m->m_gameSound.IsLoaded())
 				m->m_gamesound_changed = true;
 			m->m_soundThrdBusy = false;
-			return;
+			return NULL;
 		}
 	}
 	else
@@ -2066,7 +2074,7 @@ void CMenu::_gameSoundThread(CMenu *m)
 		if(m->m_gameSound.IsLoaded())
 			m->m_gamesound_changed = true;
 		m->m_soundThrdBusy = false;
-		return;
+		return NULL;
 	}
 	if(custom_bnr_file == NULL)/* no custom and not GC game try cached banner id6 only*/
 	{
@@ -2105,7 +2113,7 @@ void CMenu::_gameSoundThread(CMenu *m)
 		m_banner.DeleteBanner();
 		CurrentBanner.ClearBanner();
 		m->m_soundThrdBusy = false;
-		return;
+		return NULL;
 	}
 	//save new wii or channel banner to cache folder, gc and custom banners are not cached
 	if(cached_bnr_file == NULL && custom_bnr_file == NULL)
@@ -2131,7 +2139,7 @@ void CMenu::_gameSoundThread(CMenu *m)
 				m->m_gameSound.FreeMemory();
 				m_banner.DeleteBanner();
 				m->m_soundThrdBusy = false;
-				return;
+				return NULL;
 			}
 		}
 		else
@@ -2152,6 +2160,7 @@ void CMenu::_gameSoundThread(CMenu *m)
 		m->m_gameSound.FreeMemory();
 	}
 	m->m_soundThrdBusy = false;
+	return NULL;
 }
 
 u8 *GameSoundStack = NULL;
@@ -2166,7 +2175,7 @@ void CMenu::_playGameSound(void)// starts banner and gamesound loading thread
 	if(m_gameSoundThread != LWP_THREAD_NULL)
 		_stopGameSoundThread();
 	GameSoundStack = (u8*)MEM2_lo_alloc(GameSoundSize);
-	LWP_CreateThread(&m_gameSoundThread, (void *(*)(void *))CMenu::_gameSoundThread, (void*)this, GameSoundStack, GameSoundSize, 60);
+	LWP_CreateThread(&m_gameSoundThread, _gameSoundThread, this, GameSoundStack, GameSoundSize, 60);
 }
 
 void CMenu::_stopGameSoundThread()//stops banner and gamesound loading thread
