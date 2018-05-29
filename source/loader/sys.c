@@ -39,6 +39,7 @@ void Open_Inputs(void)
 	WUPC_Init();
 	WPAD_Init();
 	DS3_Init();
+	//drc
 	
 	/* Set POWER button callback */
 	WPAD_SetPowerButtonCallback(__Wpad_PowerCallback);

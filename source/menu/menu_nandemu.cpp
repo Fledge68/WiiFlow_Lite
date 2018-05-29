@@ -204,20 +204,19 @@ void CMenu::_FullNandCheck(void)
 			bool need_config = false;
 			bool need_miis = false;
 				
-			char testpath[MAX_FAT_PATH];
-			char basepath[MAX_FAT_PATH];
-			snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[emuPart], emuPath.c_str());
+			string testpath;
+			string basepath = DeviceName[emuPart] + ':' + emuPath;
 			
 			//check config files
-			snprintf(testpath, sizeof(testpath), "%s/shared2/sys/SYSCONF", basepath);
-			if(!fsop_FileExist(testpath))
+			testpath.assign(basepath + "/shared2/sys/SYSCONF");
+			if(!fsop_FileExist(testpath.c_str()))
 				need_config = true;
-			snprintf(testpath, sizeof(testpath), "%s/title/00000001/00000002/data/setting.txt", basepath);
-			if(!fsop_FileExist(testpath))
+			testpath.assign(basepath + "/title/00000001/00000002/data/setting.txt");
+			if(!fsop_FileExist(testpath.c_str()))
 				need_config = true;
 			// Check Mii's
-			snprintf(testpath, sizeof(testpath), "%s/shared2/menu/FaceLib/RFL_DB.dat", basepath);
-			if(!fsop_FileExist(testpath))
+			testpath.assign(basepath + "/shared2/menu/FaceLib/RFL_DB.dat");
+			if(!fsop_FileExist(testpath.c_str()))
 				need_miis = true;
 				
 			NandHandle.PreNandCfg(need_miis, need_config);//copy to emunand if needed
@@ -623,7 +622,7 @@ int CMenu::_NandEmuCfg(void)
 				m_thrdStop = false;
 				m_thrdProgress = 0.f;
 				m_thrdWorking = true;
-				LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_NandDumper, (void *)this, 0, 32768, 40);
+				LWP_CreateThread(&thread, _NandDumper, this, 0, 32768, 40);
 			}
 		}
 		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnNandSelectP) || m_btnMgr.selected(m_nandemuBtnNandSelectM)))
@@ -738,7 +737,7 @@ int CMenu::_FlashSave(string gameId)
 			m_thrdStop = false;
 			m_thrdProgress = 0.f;
 			m_thrdWorking = true;
-			LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_NandFlasher, (void *)this, 0, 32768, 40);
+			LWP_CreateThread(&thread, _NandFlasher, this, 0, 32768, 40);
 		}
 		if(!m_thrdWorking && (BTN_HOME_PRESSED || BTN_B_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_nandemuBtnBack))))
 			break;
@@ -848,7 +847,7 @@ int CMenu::_AutoExtractSave(string gameId)// called from wii game config menu or
 			m_thrdStop = false;
 			m_thrdProgress = 0.f;
 			m_thrdWorking = true;
-			LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_NandDumper, (void *)this, 0, 32768, 40);
+			LWP_CreateThread(&thread, _NandDumper, this, 0, 32768, 40);
 		}
 		else if(BTN_A_PRESSED && m_btnMgr.selected(m_nandemuBtnDisable))//create new save
 		{
@@ -887,7 +886,7 @@ int CMenu::_AutoExtractSave(string gameId)// called from wii game config menu or
 	return 1;
 }
 
-int CMenu::_NandFlasher(void *obj)
+void * CMenu::_NandFlasher(void *obj)
 {
 	CMenu &m = *(CMenu *)obj;
 
@@ -928,7 +927,7 @@ int CMenu::_NandFlasher(void *obj)
 	return 0;
 }
 
-int CMenu::_NandDumper(void *obj)
+void * CMenu::_NandDumper(void *obj)
 {
 	CMenu &m = *(CMenu *)obj;
 

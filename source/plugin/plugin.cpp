@@ -235,7 +235,7 @@ vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, const char *Device, u32
 			continue;
 		}
 		memset((void*)&ListElement, 0, sizeof(dir_discHdr));
-		strncpy(ListElement.id, PLUGIN, 6);
+		memcpy(ListElement.id, PLUGIN, 6);
 		ListElement.casecolor = Plugins.back().caseColor;
 		mbstowcs(ListElement.title, GameName, 63);
 		strncpy(ListElement.path, GameDomain, sizeof(ListElement.path));

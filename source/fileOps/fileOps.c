@@ -63,7 +63,7 @@ u64 fsop_GetFolderBytes(const char *source)
 {
 	DIR *pdir;
 	struct dirent *pent;
-	char newSource[300];
+	char newSource[1024];
 	u64 bytes = 0;
 
 	pdir = opendir(source);
@@ -247,7 +247,7 @@ static bool doCopyFolder(const char *source, const char *target, progress_callba
 {
 	DIR *pdir;
 	struct dirent *pent;
-	char newSource[300], newTarget[300];
+	char newSource[1024], newTarget[1024];
 	bool ret = true;
 
 	// If target folder doesn't exist, create it !
@@ -288,7 +288,7 @@ void fsop_deleteFolder(const char *source)
 {
 	DIR *pdir;
 	struct dirent *pent;
-	char newSource[300];
+	char newSource[1024];
 
 	pdir = opendir(source);
 

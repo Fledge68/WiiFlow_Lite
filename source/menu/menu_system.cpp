@@ -47,8 +47,7 @@ void CMenu::_system()
 			m_btnMgr.setProgress(m_downloadPBar, 0.f);
 			m_thrdStop = false;
 			m_thrdWorking = true;
-			LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_versionTxtDownloaderInit, 
-								(void *)this, downloadStack, downloadStackSize, 40);
+			LWP_CreateThread(&thread, _versionTxtDownloaderInit, this, downloadStack, downloadStackSize, 40);
 		}
 		if (m_showtimer > 0 && !m_thrdWorking)
 		{
@@ -113,8 +112,7 @@ void CMenu::_system()
 				m_data_update_url = fmt("%s/r%i/data.zip", ("http://nintendont.gxarena.com/banners"), newVer);
 
 				m_showtimer = 120;
-				LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_versionDownloaderInit, 
-									(void *)this, downloadStack, downloadStackSize, 40);
+				LWP_CreateThread(&thread, _versionDownloaderInit, this, downloadStack, downloadStackSize, 40);
 				if (m_exit && !m_thrdWorking) 
 				{
 					m_thrdStop = true;

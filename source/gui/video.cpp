@@ -553,8 +553,9 @@ void CVideo::render(void)
 	GX_InvalidateTexAll();
 }
 
-void CVideo::_showWaitMessages(CVideo *m)
+void * CVideo::_showWaitMessages(void *obj)
 {
+	CVideo *m = static_cast<CVideo *>(obj);
 	m->m_showingWaitMessages = true;
 	u32 frames = m->m_waitMessageDelay * 50;
 	u32 waitFrames = frames;
@@ -600,6 +601,7 @@ void CVideo::_showWaitMessages(CVideo *m)
 	}
 	//gprintf("Wait Message Thread: End\n");
 	m->m_showingWaitMessages = false;
+	return NULL;
 }
 
 void CVideo::hideWaitMessage()
@@ -664,8 +666,7 @@ void CVideo::waitMessage(const vector<TexData> &tex, float delay)
 		wiiLightStartThread();
 		/* onscreen animation */
 		m_showWaitMessage = true;
-		LWP_CreateThread(&waitThread, (void *(*)(void *))_showWaitMessages, 
-					(void*)this, waitMessageStack, waitMessageStackSize, LWP_PRIO_HIGHEST);
+		LWP_CreateThread(&waitThread, _showWaitMessages, this, waitMessageStack, waitMessageStackSize, LWP_PRIO_HIGHEST);
 	}
 }
 

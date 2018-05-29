@@ -69,7 +69,7 @@ u32 hdd_sector_size[2] = { 512, 512 };
 bool first = false;
 int usb_libogc_mode = 0;
 
-inline s32 __USBStorage_isMEM2Buffer(const void *buffer)
+static inline s32 __USBStorage_isMEM2Buffer(const void *buffer)
 {
 	u32 high_addr = ((u32)buffer) >> 24;
 	return(high_addr == 0x90) || (high_addr == 0xD0);

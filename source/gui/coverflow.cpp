@@ -655,8 +655,7 @@ void CCoverFlow::startCoverLoader(void)
 	m_loadingCovers = true;
 	m_moved = true;
 
-	LWP_CreateThread(&coverLoaderThread, (void*(*)(void*))CCoverFlow::_coverLoader, 
-						(void*)this, coverThreadStack, coverThreadStackSize, 30);
+	LWP_CreateThread(&coverLoaderThread, _coverLoader, this, coverThreadStack, coverThreadStackSize, 30);
 	gprintf("Coverflow started!\n");
 }
 
@@ -2936,8 +2935,9 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 	return _loadCoverTexPNG(i, box, hq, blankBoxCover) ? CL_OK : CL_ERROR;
 }
 
-int CCoverFlow::_coverLoader(CCoverFlow *cf)
+void * CCoverFlow::_coverLoader(void *obj)
 {
+	CCoverFlow *cf = static_cast<CCoverFlow *>(obj);
 	cf->m_coverThrdBusy = true;
 	CLRet ret;
 	u32 firstItem;

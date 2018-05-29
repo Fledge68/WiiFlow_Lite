@@ -79,6 +79,7 @@ static string countryCode(const string &gameId)
 				case CONF_LANG_DUTCH:
 					return "NL";
 			}
+			return "other";
 		case 'A':
 			switch (CONF_GetArea())
 			{
@@ -335,17 +336,21 @@ bool CMenu::_downloadProgress(void *obj, int size, int position)
 	return !m->m_thrdStop;
 }
 
-int CMenu::_coverDownloaderAll(CMenu *m)
+void * CMenu::_coverDownloaderAll(void *obj)
 {
-	if (!m->m_thrdWorking) return 0;
+	CMenu *m = static_cast<CMenu *>(obj);
+	if(!m->m_thrdWorking)
+		return 0;
 	m->_coverDownloader(false);
 	m->m_thrdWorking = false;
 	return 0;
 }
 
-int CMenu::_coverDownloaderMissing(CMenu *m)
+void * CMenu::_coverDownloaderMissing(void *obj)
 {
-	if (!m->m_thrdWorking) return 0;
+	CMenu *m = static_cast<CMenu *>(obj);
+	if(!m->m_thrdWorking)
+		return 0;
 	m->_coverDownloader(true);
 	m->m_thrdWorking = false;
 	return 0;
@@ -434,22 +439,20 @@ int CMenu::_initNetwork()
 
 int CMenu::_coverDownloader(bool missingOnly)
 {
-	vector<string> coverIDList;
-
 	int count = 0, countFlat = 0;
 	float listWeight = missingOnly ? 0.125f : 0.f;	// 1/8 of the progress bar for testing the PNGs we already have
 	float dlWeight = 1.f - listWeight;
 
-	u32 bufferSize = 0x280000;	// Maximum download size 2 MB
-	u8 *buffer = (u8*)MEM2_alloc(bufferSize);
-	if(buffer == NULL)
+	Config m_newID;
+	m_newID.load(fmt("%s/newid.ini", m_settingsDir.c_str()));
+	
+	GameTDB c_gameTDB;
+	if(m_settingsDir.size() > 0)
 	{
-		LWP_MutexLock(m_mutex);
-		_setThrdMsg(_t("dlmsg27", L"Not enough memory!"), 1.f);
-		LWP_MutexUnlock(m_mutex);
-		m_thrdWorking = false;
-		return 0;
+		c_gameTDB.OpenFile(fmt("%s/wiitdb.xml", m_settingsDir.c_str()));
+		c_gameTDB.SetLanguageCode(m_curLanguage.c_str());
 	}
+	
 	bool savePNG = m_cfg.getBool("GENERAL", "keep_png", true);
 
 	vector<string> fmtURLBox = stringToVector(m_cfg.getString("GENERAL", "url_full_covers", FMT_BPIC_URL), '|');
@@ -460,20 +463,15 @@ int CMenu::_coverDownloader(bool missingOnly)
 	u32 nbSteps = m_gameList.size();
 	u32 step = 0;
 
-	GameTDB c_gameTDB;
-	if (m_settingsDir.size() > 0)
-	{
-		c_gameTDB.OpenFile(fmt("%s/wiitdb.xml", m_settingsDir.c_str()));
-		c_gameTDB.SetLanguageCode(m_curLanguage.c_str());
-	}
 	char path[256];
 	char id[7];
-			
+	vector<string> coverIDList;
+		
 	/* create list of cover ID's that need downloading */
-	if (m_coverDLGameId.empty())
+	if(m_coverDLGameId.empty())
 	{
 		coverIDList.reserve(m_gameList.size());
-		for (u32 i = 0; i < m_gameList.size() && !m_thrdStop; ++i)
+		for(u32 i = 0; i < m_gameList.size() && !m_thrdStop; ++i)
 		{
 			LWP_MutexLock(m_mutex);
 			_setThrdMsg(_t("dlmsg7", L"Listing covers to download..."), listWeight * (float)step / (float)nbSteps);
@@ -489,7 +487,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 				strncpy(id, m_gameList[i].id, 6);
 				strncpy(path, fmt("%s/%s.png", m_boxPicDir.c_str(), id), 255);
 			}
-			if(!missingOnly || (strlen(id) > 0 && !CoverFlow.fullCoverCached(id) && strlen(path) > 0 && !checkPNGFile(path)))
+			if(!missingOnly || (strlen(path) > 0 && fsop_FileExist(path)))
 			{
 				if(strlen(id) > 0)
 					coverIDList.push_back(id);
@@ -500,29 +498,48 @@ int CMenu::_coverDownloader(bool missingOnly)
 		coverIDList.push_back(m_coverDLGameId);
 
 	u32 n = coverIDList.size();
-	
+
+	u32 bufferSize = 0x280000;	// Maximum download size 2 MB
+	u8 *buffer = (u8*)MEM2_alloc(bufferSize);
+	if(buffer == NULL)
+	{
+		LWP_MutexLock(m_mutex);
+		_setThrdMsg(_t("dlmsg27", L"Not enough memory!"), 1.f);
+		LWP_MutexUnlock(m_mutex);
+		m_thrdWorking = false;
+		if(c_gameTDB.IsLoaded())
+			c_gameTDB.CloseFile();
+		coverIDList.clear();
+		if(m_newID.loaded())
+			m_newID.unload();
+		return 0;
+	}
+
 	/* initialize network connection */
-	if (n > 0 && !m_thrdStop)
+	if(n > 0 && !m_thrdStop)
 	{
 		step = 0;
 		nbSteps = 1 + n * 2;
 		LWP_MutexLock(m_mutex);
 		_setThrdMsg(_t("dlmsg1", L"Initializing network..."), listWeight + dlWeight * (float)step / (float)nbSteps);
 		LWP_MutexUnlock(m_mutex);
-		if (_initNetwork() < 0)
+		if(_initNetwork() < 0)
 		{
 			LWP_MutexLock(m_mutex);
 			_setThrdMsg(_t("dlmsg2", L"Network initialization failed!"), 1.f);
 			LWP_MutexUnlock(m_mutex);
 			m_thrdWorking = false;
-			free(buffer);
+			MEM2_free(buffer);
+			if(c_gameTDB.IsLoaded())
+				c_gameTDB.CloseFile();
+			coverIDList.clear();
+			if(m_newID.loaded())
+				m_newID.unload();
 			return 0;
 		}
 		m_thrdStepLen = dlWeight / (float)nbSteps;
 
 		/* download covers in the list */
-		Config m_newID;
-		m_newID.load(fmt("%s/newid.ini", m_settingsDir.c_str()));
 		u32 CoverType = 0;
 
 		for(u32 i = 0; i < coverIDList.size() && !m_thrdStop; ++i)
@@ -546,8 +563,10 @@ int CMenu::_coverDownloader(bool missingOnly)
 				}
 			}
 
+			/* try downloading the cover 4 times but a different type each time.*/
 			for(int p = 0; p < 4; ++p)
 			{
+				/* the cover type (BOX, CBOX, FLAT, CFLAT) is different each time based on m_downloadPrioVal */
 				switch(p)
 				{
 					case 0:
@@ -577,20 +596,23 @@ int CMenu::_coverDownloader(bool missingOnly)
 							/* if cover png doesn't already exist download it */
 							if(strlen(path) > 0 && !checkPNGFile(path))
 							{
-								for(u32 j = 0; !success && j < fmtURLBox.size() && !m_thrdStop; ++j)
+								/* each fmtURL may have more than one URL */
+								for(u8 j = 0; !success && j < fmtURLBox.size() && !m_thrdStop; ++j)
 								{
 									url = makeURL(fmtURLBox[j], coverID, countryCode(coverID));
+									
 									if (j == 0) ++step;
 									m_thrdStep = listWeight + dlWeight * (float)step / (float)nbSteps;
 									LWP_MutexLock(m_mutex);
-									_setThrdMsg(wfmt(_fmt("dlmsg3", L"Downloading from %s"), url.c_str()), m_thrdStep);
+									// add in n count decreasing
+									_setThrdMsg(wfmt(_fmt("dlmsg3", L"Downloading %i/%i from %s"), i + 1, n, url.c_str()), m_thrdStep);
 									LWP_MutexUnlock(m_mutex);
 									download = downloadfile(buffer, bufferSize, url.c_str(), CMenu::_downloadProgress, this);
 
 									for(int o = 0; o < 12; ++o)
 									{
 										bool tdl = false;
-										if(download.data != NULL && download.size > 0 && checkPNGBuf(download.data))
+										if(download.data != NULL && download.size > 0)// && checkPNGBuf(download.data))
 											break;
 										switch( o )
 										{
@@ -683,7 +705,7 @@ int CMenu::_coverDownloader(bool missingOnly)
 										}
 									}
 
-									if(download.data == NULL || download.size == 0 || !checkPNGBuf(download.data))
+									if(download.data == NULL || download.size == 0)// || !checkPNGBuf(download.data))
 										continue;
 
 									if (savePNG)
@@ -1125,11 +1147,6 @@ int CMenu::_coverDownloader(bool missingOnly)
 			}
 			++step;
 		}
-		if(c_gameTDB.IsLoaded())
-			c_gameTDB.CloseFile();
-		coverIDList.clear();
-		if(m_newID.loaded())
-			m_newID.unload();
 	}
 	LWP_MutexLock(m_mutex);
 	if (countFlat == 0)
@@ -1137,8 +1154,14 @@ int CMenu::_coverDownloader(bool missingOnly)
 	else
 		_setThrdMsg(wfmt(_fmt("dlmsg9", L"%i/%i files downloaded. %i are front covers only."), count + countFlat, n, countFlat), 1.f);
 	LWP_MutexUnlock(m_mutex);
+	
 	m_thrdWorking = false;
 	MEM2_free(buffer);
+	if(c_gameTDB.IsLoaded())
+		c_gameTDB.CloseFile();
+	coverIDList.clear();
+	if(m_newID.loaded())
+		m_newID.unload();
 	return 0;
 }
 
@@ -1197,11 +1220,9 @@ void CMenu::_download(string gameId)
 				m_thrdWorking = true;
 				gameId.clear();
 				if (dlAll)
-					LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_coverDownloaderAll, 
-									(void *)this, downloadStack, downloadStackSize, 40);
+					LWP_CreateThread(&thread, _coverDownloaderAll, this, downloadStack, downloadStackSize, 40);
 				else
-					LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_coverDownloaderMissing, 
-									(void *)this, downloadStack, downloadStackSize, 40);
+					LWP_CreateThread(&thread, _coverDownloaderMissing, this, downloadStack, downloadStackSize, 40);
 			}
 			else if (m_btnMgr.selected(m_downloadBtnPrioM) && !m_thrdWorking)
 			{
@@ -1428,8 +1449,7 @@ void CMenu::_download(string gameId)
 
 				_updateGametdb = true;
 
-				LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_gametdbDownloader, 
-								(void *)this, downloadStack, downloadStackSize, 40);
+				LWP_CreateThread(&thread, _gametdbDownloader, this, downloadStack, downloadStackSize, 40);
 			}
 			else if (m_btnMgr.selected(m_downloadBtnCancel))
 			{
@@ -1604,10 +1624,13 @@ void CMenu::_textDownload(void)
 	m_btnMgr.setText(m_downloadBtnBack, _t("dl18", L"Back"));
 }
 
-s8 CMenu::_versionTxtDownloaderInit(CMenu *m) //Handler to download versions txt file
+void * CMenu::_versionTxtDownloaderInit(void *obj) //Handler to download versions txt file
 {
-	if (!m->m_thrdWorking) return 0;
-	return m->_versionTxtDownloader();
+	CMenu *m = static_cast<CMenu *>(obj);
+	if(!m->m_thrdWorking)
+		return 0;
+	m->_versionTxtDownloader();
+	return 0;
 }
 
 s8 CMenu::_versionTxtDownloader() // code to download new version txt file
@@ -1694,11 +1717,13 @@ s8 CMenu::_versionTxtDownloader() // code to download new version txt file
 	return 0;
 }
 
-s8 CMenu::_versionDownloaderInit(CMenu *m) //Handler to download new dol
+void * CMenu::_versionDownloaderInit(void *obj) //Handler to download new dol
 {
-	if (!m->m_thrdWorking)
+	CMenu *m = static_cast<CMenu *>(obj);
+	if(!m->m_thrdWorking)
 		return 0;
-	return m->_versionDownloader();
+	m->_versionDownloader();
+	return 0;
 }
 
 s8 CMenu::_versionDownloader() // code to download new version
@@ -1887,10 +1912,13 @@ out:
 	return 0;
 }
 
-int CMenu::_gametdbDownloader(CMenu *m)
+void * CMenu::_gametdbDownloader(void *obj)
 {
-	if (!m->m_thrdWorking) return 0;
-	return m->_gametdbDownloaderAsync();
+	CMenu *m = static_cast<CMenu *>(obj);
+	if(!m->m_thrdWorking)
+		return 0;
+	m->_gametdbDownloaderAsync();
+	return 0;
 }
 
 int CMenu::_gametdbDownloaderAsync()
@@ -1983,10 +2011,10 @@ int CMenu::_gametdbDownloaderAsync()
 const char *banner_url = NULL;
 const char *banner_url_id3 = NULL;
 char *banner_location = NULL;
-u32 CMenu::_downloadBannerAsync(void *obj)
+void * CMenu::_downloadBannerAsync(void *obj)
 {
 	CMenu *m = (CMenu *)obj;
-	if (!m->m_thrdWorking)
+	if(!m->m_thrdWorking)
 		return 0;
 
 	m->m_thrdStop = false;
@@ -1995,13 +2023,13 @@ u32 CMenu::_downloadBannerAsync(void *obj)
 	m->_setThrdMsg(m->_t("cfgbnr7", L"Downloading banner..."), 0);
 	LWP_MutexUnlock(m->m_mutex);
 
-	if (m->_initNetwork() < 0)
+	if(m->_initNetwork() < 0)
 	{
 		LWP_MutexLock(m->m_mutex);
 		m->_setThrdMsg(m->_t("dlmsg2", L"Network initialization failed!"), 1.f);
 		LWP_MutexUnlock(m->m_mutex);
 		m->m_thrdWorking = false;
-		return -1;
+		return 0;
 	}
 
 	u32 bufferSize = 0x400000; /* 4mb max */
@@ -2012,14 +2040,14 @@ u32 CMenu::_downloadBannerAsync(void *obj)
 		m->_setThrdMsg(m->_t("dlmsg27", L"Not enough memory!"), 1.f);
 		LWP_MutexUnlock(m->m_mutex);
 		m->m_thrdWorking = false;
-		return -2;
+		return 0;
 	}
 	block banner = downloadfile(buffer, bufferSize, banner_url, CMenu::_downloadProgress, m);
 	if(banner.data == NULL || banner.size < 0x5000)
 		banner = downloadfile(buffer, bufferSize, banner_url_id3, CMenu::_downloadProgress, m);
 
 	/* minimum 50kb */
-	if (banner.data != NULL && banner.size > 51200 && banner.data[0] != '<')
+	if(banner.data != NULL && banner.size > 51200 && banner.data[0] != '<')
 	{
 		if(banner_location != NULL)
 			fsop_WriteFile(banner_location, banner.data, banner.size);
@@ -2037,8 +2065,9 @@ u32 CMenu::_downloadBannerAsync(void *obj)
 		LWP_MutexUnlock(m->m_mutex);
 		m->m_thrdWorking = false;
 		free(buffer);
-		return -3;
+		return 0;
 	}
+	return 0;
 }
 
 static const char *GAME_BNR_ID = "{gameid}";
@@ -2069,8 +2098,7 @@ void CMenu::_downloadBnr(const char *gameID)
 
 	m_thrdWorking = true;
 	lwp_t thread = LWP_THREAD_NULL;
-	LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_downloadBannerAsync, 
-						(void *)this, downloadStack, downloadStackSize, 40);
+	LWP_CreateThread(&thread, _downloadBannerAsync, this, downloadStack, downloadStackSize, 40);
 
 	wstringEx prevMsg;
 	while(m_thrdWorking)
@@ -2137,7 +2165,7 @@ void CMenu::_downloadBnr(const char *gameID)
 }
 
 const char *url_dl = NULL;
-void CMenu::_downloadUrl(const char *url, u8 **dl_file, u32 *dl_size)
+void CMenu::_downloadUrl(const char *url, u8 **dl_file, u32 *dl_size)// nothing uses this
 {
 	m_file = NULL;
 	m_filesize = 0;
@@ -2152,8 +2180,7 @@ void CMenu::_downloadUrl(const char *url, u8 **dl_file, u32 *dl_size)
 
 	m_thrdWorking = true;
 	lwp_t thread = LWP_THREAD_NULL;
-	LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_downloadUrlAsync, 
-						(void *)this, downloadStack, downloadStackSize, 40);
+	LWP_CreateThread(&thread, _downloadUrlAsync, this, downloadStack, downloadStackSize, 40);
 
 	wstringEx prevMsg;
 	while(m_thrdWorking)
@@ -2212,7 +2239,7 @@ void CMenu::_downloadUrl(const char *url, u8 **dl_file, u32 *dl_size)
 	url_dl = url;
 }
 
-u32 CMenu::_downloadUrlAsync(void *obj)
+void * CMenu::_downloadUrlAsync(void *obj)
 {
 	CMenu *m = (CMenu *)obj;
 	if (!m->m_thrdWorking)
@@ -2227,7 +2254,7 @@ u32 CMenu::_downloadUrlAsync(void *obj)
 	if(m->_initNetwork() < 0 || url_dl == NULL)
 	{
 		m->m_thrdWorking = false;
-		return -1;
+		return 0;
 	}
 
 	u32 bufferSize = 0x400000; /* 4mb max */
@@ -2235,7 +2262,7 @@ u32 CMenu::_downloadUrlAsync(void *obj)
 	if(m->m_buffer == NULL)
 	{
 		m->m_thrdWorking = false;
-		return -2;
+		return 0;
 	}
 	block file = downloadfile(m->m_buffer, bufferSize, url_dl, CMenu::_downloadProgress, m);
 	DCFlushRange(m->m_buffer, bufferSize);

@@ -342,7 +342,7 @@ int getTID(const char *path, u64 *tid)
 	return 0;
 }
 
-int CMenu::_pThread(void *obj)
+void * CMenu::_pThread(void *obj)
 {
 	CMenu *m = (CMenu*)obj;
 	while(m->m_thrdInstalling)
@@ -381,7 +381,7 @@ void CMenu::_start_pThread(void)
 	m_thrdProgress = 0.f;
 	m_thrdWritten = 0;
 	m_thrdTotal = 0;
-	LWP_CreateThread(&m_thrdPtr, (void *(*)(void *))_pThread, (void*)this, 0, 8 * 1024, 64);
+	LWP_CreateThread(&m_thrdPtr, _pThread, this, 0, 8 * 1024, 64);
 }
 
 void CMenu::_stop_pThread(void)

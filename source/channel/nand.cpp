@@ -250,8 +250,8 @@ void Nand::__GetNameList(const char *source, namelist **entries, int *count)
 	u32 i, j, k, l;
 	u32 numentries = 0;	
 	char *names = NULL;
-	char curentry[ISFS_MAXPATH];
-	char entrypath[ISFS_MAXPATH];
+	char curentry[ISFS_MAXPATH];//64
+	char entrypath[ISFS_MAXPATH];//64
 
 	s32 ret = ISFS_ReadDir(source, NULL, &numentries);
 	names = (char *)memalign(32, ALIGN32((ISFS_MAXPATH) * numentries));
@@ -284,11 +284,12 @@ void Nand::__GetNameList(const char *source, namelist **entries, int *count)
 
 		strcpy((*entries)[i].name, curentry);
 
-		if(source[strlen(source)-1] == '/')
-			snprintf(entrypath, sizeof(entrypath), "%s%s", source, curentry);
-		else
-			snprintf(entrypath, sizeof(entrypath), "%s/%s", source, curentry);
-
+		/* this could still cause a buffer overrun */
+		strcpy(entrypath, source);
+		if(source[strlen(source)-1] != '/')
+			strcat(entrypath, "/");
+		strcat(entrypath, curentry);
+		
 		ret = ISFS_ReadDir(entrypath, NULL, &l);		
 		(*entries)[i].type = ret < 0 ? 0 : 1;
 	}	
@@ -774,8 +775,8 @@ s32 Nand::__DumpNandFile(const char *source, const char *dest)
 
 s32 Nand::__FlashNandFolder(const char *source, const char *dest)
 {	
-	char nsource[MAX_FAT_PATH];
-	char ndest[ISFS_MAXPATH];
+	char nsource[MAX_FAT_PATH];//1024
+	char ndest[ISFS_MAXPATH];//64
 
 	DIR *dir_iter;
 	struct dirent *ent;
@@ -789,11 +790,12 @@ s32 Nand::__FlashNandFolder(const char *source, const char *dest)
 		if(ent->d_name[0] == '.') 
 			continue;
 
-		if(dest[strlen(dest)-1] == '/')
-			snprintf(ndest, sizeof(ndest), "%s%s", dest, ent->d_name);
-		else
-			snprintf(ndest, sizeof(ndest), "%s/%s", dest, ent->d_name);	
-			
+		/* this could still cause a buffer overrun */
+		strcpy(ndest, dest);
+		if(dest[strlen(dest)-1] != '/')
+			strcat(ndest, "/");
+		strcat(ndest, ent->d_name);
+
 		if(source[strlen(source)-1] == '/')
 			snprintf(nsource, sizeof(nsource), "%s%s", source, ent->d_name);
 		else
@@ -830,11 +832,12 @@ s32 Nand::__DumpNandFolder(const char *source, const char *dest)
 
 	for(i = 0; i < cnt; i++) 
 	{
-		if(source[strlen(source)-1] == '/')
-			snprintf(nsource, sizeof(nsource), "%s%s", source, names[i].name);
-		else
-			snprintf(nsource, sizeof(nsource), "%s/%s", source, names[i].name);
-
+		/* this could still cause a buffer overrun */
+		strcpy(nsource, source);
+		if(source[strlen(source)-1] != '/')
+			strcat(nsource, "/");
+		strcat(nsource, names[i].name);
+		
 		if(!names[i].type)
 		{
 			__FATify(tdest, nsource);

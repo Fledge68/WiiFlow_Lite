@@ -24,7 +24,7 @@ void CMenu::_showCheatDownload(void)
 	m_btnMgr.show(m_downloadPBar);
 }
 
-u32 CMenu::_downloadCheatFileAsync(void *obj)
+void * CMenu::_downloadCheatFileAsync(void *obj)
 {
 	CMenu *m = (CMenu *)obj;
 	if (!m->m_thrdWorking)
@@ -39,7 +39,7 @@ u32 CMenu::_downloadCheatFileAsync(void *obj)
 	if (m->_initNetwork() < 0)
 	{
 		m->m_thrdWorking = false;
-		return -1;
+		return 0;
 	}
 
 	u32 bufferSize = 0x080000;	// Maximum download size 512kb
@@ -47,7 +47,7 @@ u32 CMenu::_downloadCheatFileAsync(void *obj)
 	if(buffer == NULL)
 	{
 		m->m_thrdWorking = false;
-		return -2;
+		return 0;
 	}
 
 	const char *id = CoverFlow.getId();
@@ -64,7 +64,7 @@ u32 CMenu::_downloadCheatFileAsync(void *obj)
 	}
 	free(buffer);
 	m->m_thrdWorking = false;
-	return -3;
+	return 0;
 }
 
 void CMenu::_CheatSettings() 
@@ -176,8 +176,7 @@ void CMenu::_CheatSettings()
 
 				m_thrdWorking = true;
 				lwp_t thread = LWP_THREAD_NULL;
-				LWP_CreateThread(&thread, (void *(*)(void *))CMenu::_downloadCheatFileAsync, 
-									(void *)this, downloadStack, downloadStackSize, 40);
+				LWP_CreateThread(&thread, _downloadCheatFileAsync, this, downloadStack, downloadStackSize, 40);
 				while(m_thrdWorking)
 				{
 					_mainLoopCommon();

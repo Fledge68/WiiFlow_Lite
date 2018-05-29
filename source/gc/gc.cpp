@@ -264,7 +264,7 @@ void DEVO_SetOptions(const char *isopath, const char *gameID, u8 videomode, u8 l
 	struct stat st;
 	int data_fd;
 	char iso2path[256];
-	iso2path[255] = '\0';
+	memset(iso2path, 0, sizeof(iso2path));
 
 	stat(isopath, &st);
 	FILE *f = fopen(isopath, "rb");
@@ -293,15 +293,15 @@ void DEVO_SetOptions(const char *isopath, const char *gameID, u8 videomode, u8 l
 	char *ptz = strstr(iso2path, "game.iso");
 	if(ptz != NULL)
 	{
-		strncpy(ptz, "gam1.iso", 8);
+		memcpy(ptz, "gam1.iso", 8);
 		f = fopen(iso2path, "rb");
 		if(f == NULL)
 		{
-			strncpy(ptz, "gam2.iso", 8);
+			memcpy(ptz, "gam2.iso", 8);
 			f = fopen(iso2path, "rb");
 			if(f == NULL)
 			{
-				strncpy(ptz, "disc2.iso", 9);
+				memcpy(ptz, "disc2.iso", 9);
 				f = fopen(iso2path, "rb");
 			}
 		}
@@ -379,11 +379,11 @@ void DEVO_SetOptions(const char *isopath, const char *gameID, u8 videomode, u8 l
 		case 2:// PAL60 480i
 			rmode = &TVEurgb60Hz480IntDf;
 			rmode_reg = 5;// VI_EURGB60
-		default:
+			break;
 		case 3:// NTSC 480i
+		default:
 			rmode = &TVNtsc480IntDf;
 			break;
-		
 	}
 	
 	/* Set video mode register */
