@@ -193,9 +193,15 @@ void CMenu::_CategorySettings(bool fromGameSet)
 	}
 	else
 	{
-		const char *requiredCats = m_cat.getString("GENERAL", "required_categories").c_str();
-		const char *selectedCats = m_cat.getString("GENERAL", "selected_categories").c_str();
-		const char *hiddenCats = m_cat.getString("GENERAL", "hidden_categories").c_str();
+		//const char *requiredCats = m_cat.getString("GENERAL", "required_categories").c_str();
+		//const char *selectedCats = m_cat.getString("GENERAL", "selected_categories").c_str();
+		//const char *hiddenCats = m_cat.getString("GENERAL", "hidden_categories").c_str();
+		char requiredCats[10];
+		char selectedCats[10];
+		char hiddenCats[10];
+		strcpy(requiredCats, m_cat.getString("GENERAL", "required_categories").c_str());
+		strcpy(selectedCats, m_cat.getString("GENERAL", "selected_categories").c_str());
+		strcpy(hiddenCats, m_cat.getString("GENERAL", "hidden_categories").c_str());
 		u8 numReqCats = strlen(requiredCats);
 		u8 numSelCats = strlen(selectedCats);
 		u8 numHidCats = strlen(hiddenCats);
