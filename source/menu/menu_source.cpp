@@ -477,14 +477,15 @@ bool CMenu::_Source()
 	return newSource;
 }
 
-static const char sideCovers[4][9] = {
+static const char sideCovers[5][9] = {
 "534e5854", //Snes9X-Next
 "534e4553", //SNES9xGX
 "4e4f3634", //Not64
-"57493634"  //Wii64
+"57493634", //Wii64
+"513053xx" //QuakeGX Serverloader wild cards
 };
 
-static const char shortCovers[19][9] = {
+static const char shortCovers[13][9] = {
 "474d4254", //Gambatte
 "474d4264", //Gambatte GB
 "474d4274", //Gambatte GBC
@@ -497,22 +498,16 @@ static const char shortCovers[19][9] = {
 "4d45446e", //WiiMednafen GBC
 "4d45447e", //WiiMednafen GBA
 "57495358",	//WiiSX - playstation
-"51304d30", //QuakeGX Modloader ID
-"51304d31", //QuakeGX Modloader hipnotic
-"51304d32", //QuakeGX Modloader scourge
-"51304d51", //QuakeGX Modloader Q
-"51304d58", //QuakeGX Modloader X
-"51304d59", //QuakeGX Modloader Y
-"51304d5a" //QuakeGX Modloader Z
+"51304dxx" //QuakeGX Modloader wild cards
 };
 
 bool CMenu::_sideCover(const char *magic)
 {
 	if(magic == NULL)
 		return false;
-	for(i = 0; i < 4; i++)
+	for(i = 0; i < ARRAY_SIZE(sideCovers); i++)
 	{
-		if(strncasecmp(magic, sideCovers[i], 8) == 0)
+		if((sideCovers[i][6] == 'x' && strncasecmp(magic, sideCovers[i], 6) == 0) || strncasecmp(magic, sideCovers[i], 8) == 0)
 			return true;
 	}
 	return false;
@@ -522,9 +517,9 @@ bool CMenu::_shortCover(const char *magic)
 {
 	if(magic == NULL)
 		return false;
-	for(i = 0; i < 15; i++)
+	for(i = 0; i < ARRAY_SIZE(sideCovers); i++)
 	{
-		if(strncasecmp(magic, shortCovers[i], 8) == 0)
+		if((shortCovers[i][6] == 'x' && strncasecmp(magic, shortCovers[i], 6) == 0) || strncasecmp(magic, shortCovers[i], 8) == 0)
 			return true;
 	}
 	return false;
