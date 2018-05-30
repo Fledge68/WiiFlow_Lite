@@ -2069,10 +2069,13 @@ void * CMenu::_gameSoundThread(void *obj)
 		else
 			m_banner.DeleteBanner();
 		GC_Disc_Reader.clear();
-		//get wiiflow gc ogg sound to play with banner
-		m->m_gameSound.Load(gc_ogg, gc_ogg_size, false);
-		if(m->m_gameSound.IsLoaded())
-			m->m_gamesound_changed = true;
+		if(m->m_gc_play_default_sound)
+		{
+			//get wiiflow gc ogg sound to play with banner
+			m->m_gameSound.Load(gc_ogg, gc_ogg_size, false);
+			if(m->m_gameSound.IsLoaded())
+				m->m_gamesound_changed = true;
+		}
 		m->m_soundThrdBusy = false;
 		return NULL;
 	}
@@ -2127,7 +2130,7 @@ void * CMenu::_gameSoundThread(void *obj)
 	u8 *soundBin = CurrentBanner.GetFile("sound.bin", &sndSize);
 	CurrentBanner.ClearBanner();
 
-	if(soundBin != NULL)
+	if(soundBin != NULL && (GameHdr->type != TYPE_GC_GAME || m->m_gc_play_banner_sound))
 	{
 		if(memcmp(&((IMD5Header *)soundBin)->fcc, "IMD5", 4) == 0)
 		{

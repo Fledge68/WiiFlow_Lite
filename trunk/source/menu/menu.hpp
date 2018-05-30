@@ -145,6 +145,10 @@ private:
 	bool m_emuSaveNand;
 	s32 m_partRequest;
 
+	/* GC sound stuff */
+	bool m_gc_play_banner_sound;
+	bool m_gc_play_default_sound;
+	
 	/* Explorer stuff */
 	bool m_txt_view;
 	const char *m_txt_path;

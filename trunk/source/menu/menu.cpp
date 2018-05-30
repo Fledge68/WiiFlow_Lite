@@ -228,6 +228,8 @@ bool CMenu::init()
 	if(strncmp(gc_games_dir, "%s:/", 4) != 0)
 		strcpy(gc_games_dir, DF_GC_GAMES_DIR);
 	gprintf("GameCube Games Directory: %s\n", gc_games_dir);
+	m_gc_play_banner_sound = m_cfg.getBool(GC_DOMAIN, "play_banner_sound", true);
+	m_gc_play_default_sound = m_cfg.getBool(GC_DOMAIN, "play_default_sound", true);
 	
 	/* Load cIOS Map */
 	_installed_cios.clear();
