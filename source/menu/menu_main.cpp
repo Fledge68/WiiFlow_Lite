@@ -149,7 +149,7 @@ void CMenu::_showCF(bool refreshList)
 	}
 	
 	/* setup for filter list and coverflow stuff */
-	if(m_clearCats)// clear categories unless a source menu btn has selected one
+	if(refreshList && m_clearCats)// clear categories unless a source menu btn has selected one
 	{
 		// do not clear hidden categories to keep games hidden
 		m_cat.remove("GENERAL", "selected_categories");
@@ -471,7 +471,10 @@ int CMenu::main(void)
 					bUsed = true;
 				_setBg(m_mainBg, m_mainBgLQ);
 				if(m_refreshGameList)
+				{
+					m_refreshGameList = false;
 					_initCF();
+				}
 			}
 			else if(m_btnMgr.selected(m_mainBtnNext) || m_btnMgr.selected(m_mainBtnPrev))
 			{
