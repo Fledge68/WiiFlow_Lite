@@ -6,7 +6,6 @@
 #include "menu.hpp"
 #include "channel/nand.hpp"
 #include "devicemounter/DeviceHandler.hpp"
-#include "gui/GameTDB.hpp"
 #include "loader/alt_ios.h"
 #include "loader/cios.h"
 #include "loader/disc.h"

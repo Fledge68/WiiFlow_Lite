@@ -20,7 +20,6 @@
 #include "gc/gc.hpp"
 #include "gc/gcdisc.hpp"
 #include "gui/WiiMovie.hpp"
-#include "gui/GameTDB.hpp"
 #include "homebrew/homebrew.h"
 #include "loader/alt_ios.h"
 #include "loader/wdvd.h"

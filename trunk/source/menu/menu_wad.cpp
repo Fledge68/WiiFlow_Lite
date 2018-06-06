@@ -351,7 +351,12 @@ void * CMenu::_pThread(void *obj)
 		if(m->m_thrdUpdated)
 		{
 			m->m_thrdUpdated = false;
-			m->_addDiscProgress(m->m_thrdWritten, m->m_thrdTotal, obj);
+			m->_downloadProgress(obj, m->m_thrdTotal, m->m_thrdWritten);
+			if(m->m_thrdProgress > 0.f)
+			{
+				m_btnMgr.setText(m->m_wbfsLblMessage, wfmt(L"%i%%", (int)(m->m_thrdProgress * 100.f)));
+				m_btnMgr.setProgress(m->m_wbfsPBar, m->m_thrdProgress);
+			}
 			m->m_thrdDone = true;
 		}
 		if(m->m_thrdMessageAdded)
@@ -359,11 +364,6 @@ void * CMenu::_pThread(void *obj)
 			m->m_thrdMessageAdded = false;
 			if(!m->m_thrdMessage.empty())
 				m_btnMgr.setText(m->m_wbfsLblDialog, m->m_thrdMessage);
-			if(m->m_thrdProgress > 0.f)
-			{
-				m_btnMgr.setText(m->m_wbfsLblMessage, wfmt(L"%i%%", (int)(m->m_thrdProgress * 100.f)));
-				m_btnMgr.setProgress(m->m_wbfsPBar, m->m_thrdProgress);
-			}
 		}
 	}
 	m->m_thrdWorking = false;

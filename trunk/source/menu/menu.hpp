@@ -402,10 +402,6 @@ private:
 	s16 m_downloadBtnKOs;
 	s16 m_downloadBtnZHCNs;
 	s16 m_downloadBtnAUs;
-	static void * _versionDownloaderInit(void *obj);
-	static void * _versionTxtDownloaderInit(void *obj);
-	s8 _versionDownloader();
-	s8 _versionTxtDownloader();
 //Game menu
 	enum
 	{
@@ -1156,10 +1152,7 @@ private:
 	void _setThrdMsg(const wstringEx &msg, float progress);
 	void _setDumpMsg(const wstringEx &msg, float progress, float fileprog);
 	int _coverDownloader(bool missingOnly);
-	static void * _coverDownloaderAll(void *obj);
-	static void * _coverDownloaderMissing(void *obj);
-	static bool _downloadProgress(void *obj, int size, int position);
-	static void * _gametdbDownloader(void *obj);
+	void _downloadProgress(void *obj, int size, int position);
 	int _gametdbDownloaderAsync();
 
 	static s32 _networkComplete(s32 result, void *usrData);
@@ -1193,7 +1186,7 @@ private:
 	void _listEmuNands(const char *path, vector<string> &emuNands);
 
 	static void * _downloadCheatFileAsync(void *obj);
-	static void * _downloadBannerAsync(void *obj);
+	int _downloadBannerAsync();
 	static void * _downloadUrlAsync(void *obj);
 
 	void _playGameSound(void);

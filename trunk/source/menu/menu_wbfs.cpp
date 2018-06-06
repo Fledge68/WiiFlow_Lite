@@ -63,7 +63,7 @@ void CMenu::_addDiscProgress(int status, int total, void *user_data)
 	if(m.m_progress - m.m_thrdProgress >= 0.01f)
 	{
 		LWP_MutexLock(m.m_mutex);
-		m._setThrdMsg(L"", m.m_progress);
+		m._setThrdMsg(L"...", m.m_progress);
 		LWP_MutexUnlock(m.m_mutex);
 	}
 }

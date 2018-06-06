@@ -24,7 +24,7 @@ struct block
 
 extern const struct block emptyblock;
 
-struct block downloadfile(u8 *buffer, u32 bufferSize, const char *url, bool (*f)(void *, int, int), void *ud);
+struct block downloadfile(const char *url);
 
 #ifdef __cplusplus
 }
