@@ -5,6 +5,7 @@
 #include <ogc/pad.h>
 #include <vector>
 #include <map>
+#include <string>
 
 #include "btnmap.h"
 #include "channel/banner.h"
@@ -968,7 +969,6 @@ private:
 	void _hideCategorySettings(bool instant = false);
 	void _hideSystem(bool instant = false);
 	void _hideGameInfo(bool instant = false);
-	void _hideCheatDownload(bool instant = false);
 	void _hideNandEmu(bool instant = false);
 	void _hideNandEmuPg();
 	void _hideHome(bool instant = false);
@@ -1005,7 +1005,6 @@ private:
 	void _showWBFS(WBFS_OP op);
 	void _showCFTheme(u32 curParam, int version, bool wide);
 	void _showGameSettings(void);
-	void _showCheatDownload(void);
 	void _showHome(void);
 	void _showExitTo(void);
 	void _showCoverBanner(void);
@@ -1178,14 +1177,14 @@ private:
 	void _stopSounds(void);
 	static void * _NandDumper(void *obj);
 	static void * _NandFlasher(void *obj);
-	int _FindEmuPart(string &emuPath, bool searchvalid, bool savesnand);
+	int _FindEmuPart(bool searchvalid, bool savesnand);
 	bool _checkSave(string id, bool nand);
 	bool _TestEmuNand(int epart, const char *path, bool indept);
 	void _checkEmuNandSettings(void);
 	void _FullNandCheck(void);
 	void _listEmuNands(const char *path, vector<string> &emuNands);
 
-	static void * _downloadCheatFileAsync(void *obj);
+	int _downloadCheatFileAsync();
 	int _downloadBannerAsync();
 	static void * _downloadUrlAsync(void *obj);
 

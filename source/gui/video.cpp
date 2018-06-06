@@ -553,18 +553,18 @@ void CVideo::render(void)
 	GX_InvalidateTexAll();
 }
 
-void * CVideo::_showWaitMessages(void *obj)
+void * CVideo::_showWaitMessages(void *obj)// wait images thread
 {
 	CVideo *m = static_cast<CVideo *>(obj);
 	m->m_showingWaitMessages = true;
-	u32 frames = m->m_waitMessageDelay * 50;
-	u32 waitFrames = frames;
+	u32 frames = m->m_waitMessageDelay * 50;// set delay start
+	u32 waitFrames = frames;// set delay counter to delay start
 
 	s8 fadeDirection = 1;
-	s8 PNGfadeDirection = 1;
+	s8 PNGfadeDirection = 1;// set frames movement direction
 	s16 currentLightLevel = 0;
 
-	vector<TexData>::iterator waitItr = m->m_waitMessages.begin();
+	vector<TexData>::iterator waitItr = m->m_waitMessages.begin();// set start frame image
 	m->_clearScreen();
 
 	m->prepare();
@@ -586,25 +586,25 @@ void * CVideo::_showWaitMessages(void *obj)
 		}
 		wiiLightSetLevel(currentLightLevel);
 
-		if(waitFrames == 0)
+		if(waitFrames == 0)// if delay count reaches 0
 		{
-			m->waitMessage(*waitItr);
-			waitItr += PNGfadeDirection;
+			m->waitMessage(*waitItr);// draw frame image
+			waitItr += PNGfadeDirection;// move to next image
 			if(waitItr + 1 == m->m_waitMessages.end() || waitItr == m->m_waitMessages.begin())
-				PNGfadeDirection *= (-1);
-			waitFrames = frames;
+				PNGfadeDirection *= (-1);// change direction if at beginning or end
+			waitFrames = frames;// reset delay count
 			m->render();
 		}
 		else
 			VIDEO_WaitVSync();
-		waitFrames--;
+		waitFrames--;// decrement delay count
 	}
 	//gprintf("Wait Message Thread: End\n");
 	m->m_showingWaitMessages = false;
 	return NULL;
 }
 
-void CVideo::hideWaitMessage()
+void CVideo::hideWaitMessage()// stop wait images and wii disc slot light threads
 {
 	m_showWaitMessage = false;
 	if(waitThread != LWP_THREAD_NULL)
@@ -622,7 +622,7 @@ void CVideo::hideWaitMessage()
 	waitThread = LWP_THREAD_NULL;
 }
 
-void CVideo::waitMessage(float delay)
+void CVideo::waitMessage(float delay)// called from main.cpp to show wait animation on wf boot
 {
 	if(m_defaultWaitMessages.size() == 0)
 	{
@@ -638,10 +638,10 @@ void CVideo::waitMessage(float delay)
 		for(int i = 0; i < 8; i++)
 			m_defaultWaitMessages.push_back(m_wTextures[i]);
 	}
-	waitMessage(vector<TexData>(), delay);
+	waitMessage(m_defaultWaitMessages, delay);
 }
 
-void CVideo::waitMessage(const vector<TexData> &tex, float delay)
+void CVideo::waitMessage(const vector<TexData> &tex, float delay)// start wait images and wii slot light threads or draw
 {
 	hideWaitMessage();
 	m_WaitThreadRunning = true;
@@ -658,19 +658,19 @@ void CVideo::waitMessage(const vector<TexData> &tex, float delay)
 	}
 
 	if(m_waitMessages.size() == 1)
-		waitMessage(m_waitMessages[0]);
-	else if(m_waitMessages.size() > 1)
+		waitMessage(m_waitMessages[0]);// draws frame image using function below (for one frame image only) but no render?
+	else if(m_waitMessages.size() > 1)// if more than one frame
 	{
 		/* changing light */
 		wiiLightSetLevel(0);
-		wiiLightStartThread();
+		wiiLightStartThread();// start thread in gekko.c that pulses the wii disc slot light on and off
 		/* onscreen animation */
-		m_showWaitMessage = true;
+		m_showWaitMessage = true;// start wait images thread to animate them
 		LWP_CreateThread(&waitThread, _showWaitMessages, this, waitMessageStack, waitMessageStackSize, LWP_PRIO_HIGHEST);
 	}
 }
 
-void CVideo::waitMessage(const TexData &tex)
+void CVideo::waitMessage(const TexData &tex)//draw frame image
 {
 	Mtx modelViewMtx;
 	GXTexObj texObj;
@@ -715,7 +715,7 @@ s32 CVideo::TakeScreenshot(const char *path)
 	return ret;
 }
 
-void DrawTexture(TexData * &tex)
+void DrawTexture(TexData * &tex)// used by coverflow to draw cover texture. use in mainloopcommon() in menu.cpp
 {
 	if(tex == NULL)
 		return;
@@ -758,7 +758,7 @@ void DrawTexture(TexData * &tex)
 	GX_End();
 }
 
-void DrawRectangle(f32 x, f32 y, f32 width, f32 height, GXColor color)
+void DrawRectangle(f32 x, f32 y, f32 width, f32 height, GXColor color)// used by banner window and screen saver below
 {
 	Mtx modelViewMtx;
 	guMtxIdentity(modelViewMtx);
@@ -786,7 +786,7 @@ void DrawRectangle(f32 x, f32 y, f32 width, f32 height, GXColor color)
 	GX_SetTevOp(GX_TEVSTAGE0, GX_MODULATE);
 }
 
-void DrawTexturePos(const TexData *tex)
+void DrawTexturePos(const TexData *tex)// draws movie frame texture when playing movie in menu_game.cpp
 {
 	Mtx modelViewMtx;
 	GXTexObj texObj;

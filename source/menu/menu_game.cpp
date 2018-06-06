@@ -1716,8 +1716,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 		
 	if(emulate_mode && !dvd && !neek2o())
 	{
-		string emuPath;
-		int emuPart = _FindEmuPart(emuPath, true, true);
+		int emuPart = _FindEmuPart( true, true);
 		if(emuPart == -1)//if savepartition is unusable
 		{
 			_hideWaitMessage();
@@ -1729,10 +1728,11 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 		{
 			bool need_config = false;
 			bool need_miis = false;
+			const char *emuPath = NandHandle.Get_NandPath();
 			
-			//char testpath[MAX_FAT_PATH];
 			char basepath[MAX_FAT_PATH];
-			snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[emuPart], emuPath.c_str());
+			snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[emuPart], emuPath);
+			
 			char testpath[strlen(basepath) + 42];
 			
 			// does not check to see if actual tmd exist just if the folder exist

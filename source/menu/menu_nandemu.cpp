@@ -197,26 +197,30 @@ void CMenu::_FullNandCheck(void)
 			emulate_mode = 	m_cfg.getInt(WII_DOMAIN, "save_emulation", 0);
 		if((i == 0 && emulate_mode == 1) || (i == 1 && emulate_mode == 2))//full
 		{
-			string emuPath;
-			int emuPart = _FindEmuPart(emuPath, true, i);
+			int emuPart = _FindEmuPart( true, i);
 			if(emuPart < 0)
 				continue;
 			bool need_config = false;
 			bool need_miis = false;
-				
-			string testpath;
-			string basepath = DeviceName[emuPart] + ':' + emuPath;
+			const char *emuPath = NandHandle.Get_NandPath();
+			
+			char basepath[MAX_FAT_PATH];
+			snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[emuPart], emuPath);
+			
+			char testpath[MAX_FAT_PATH + 42];
 			
 			//check config files
-			testpath.assign(basepath + "/shared2/sys/SYSCONF");
-			if(!fsop_FileExist(testpath.c_str()))
+			snprintf(testpath, sizeof(testpath), "%s/shared2/sys/SYSCONF", basepath);
+			if(!fsop_FileExist(testpath))
 				need_config = true;
-			testpath.assign(basepath + "/title/00000001/00000002/data/setting.txt");
-			if(!fsop_FileExist(testpath.c_str()))
+				
+			snprintf(testpath, sizeof(testpath), "%s/title/00000001/00000002/data/setting.txt", basepath);
+			if(!fsop_FileExist(testpath))
 				need_config = true;
+				
 			// Check Mii's
-			testpath.assign(basepath + "/shared2/menu/FaceLib/RFL_DB.dat");
-			if(!fsop_FileExist(testpath.c_str()))
+			snprintf(testpath, sizeof(testpath), "%s/shared2/menu/FaceLib/RFL_DB.dat", basepath);
+			if(!fsop_FileExist(testpath))
 				need_miis = true;
 				
 			NandHandle.PreNandCfg(need_miis, need_config);//copy to emunand if needed
@@ -224,19 +228,19 @@ void CMenu::_FullNandCheck(void)
 	}
 }
 
-int CMenu::_FindEmuPart(string &emuPath, bool skipchecks, bool savesnand)
+int CMenu::_FindEmuPart(bool skipchecks, bool savesnand)
 {
 	int emuPart;
-	const char *tmpPath = NULL;
+	char tmpPath[MAX_FAT_PATH];
 	if(savesnand)
 	{
 		emuPart = m_cfg.getInt(WII_DOMAIN, "savepartition");
-		tmpPath = fmt("/%s/%s",  emu_nands_dir, m_cfg.getString(WII_DOMAIN, "current_save_emunand").c_str());
+		snprintf(tmpPath, sizeof(tmpPath), "/%s/%s",  emu_nands_dir, m_cfg.getString(WII_DOMAIN, "current_save_emunand").c_str());
 	}
 	else
 	{
 		emuPart = m_cfg.getInt(CHANNEL_DOMAIN, "partition");
-		tmpPath = fmt("/%s/%s",  emu_nands_dir, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand").c_str());
+		snprintf(tmpPath, sizeof(tmpPath), "/%s/%s",  emu_nands_dir, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand").c_str());
 	}
 	if(!DeviceHandle.PartitionUsableForNandEmu(emuPart))
 		return -1;
@@ -244,7 +248,6 @@ int CMenu::_FindEmuPart(string &emuPath, bool skipchecks, bool savesnand)
 	{
 		NandHandle.SetNANDEmu(emuPart);
 		NandHandle.SetPaths(tmpPath, DeviceName[emuPart]);
-		emuPath = tmpPath;
 		return emuPart;
 	}
 	return -2;
@@ -584,8 +587,7 @@ int CMenu::_NandEmuCfg(void)
 		}
 		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnNandDump) || m_btnMgr.selected(m_nandemuBtnAll) || m_btnMgr.selected(m_nandemuBtnMissing)))
 		{
-			string emuPath;
-			int emuPart = _FindEmuPart(emuPath, true, !m_fulldump);
+			int emuPart = _FindEmuPart(true, !m_fulldump);
 			if(emuPart < 0)
 			{
 				_hideNandEmu(true);
@@ -702,8 +704,7 @@ int CMenu::_NandEmuCfg(void)
 
 int CMenu::_FlashSave(string gameId)
 {
-	string emuPath;
-	if(_FindEmuPart(emuPath, false, true) < 0)// if savenand not found
+	if(_FindEmuPart(false, true) < 0)// if savenand not found
 		return 0;
 
 	if(!_checkSave(gameId, false))// if save not on savenand
@@ -772,8 +773,7 @@ int CMenu::_FlashSave(string gameId)
 
 int CMenu::_AutoExtractSave(string gameId)// called from wii game config menu or launching wii game
 {
-	string emuPath;
-	int emuPart = _FindEmuPart(emuPath, false, true);
+	int emuPart = _FindEmuPart(false, true);
 	if(m_forceext && emuPart == -1)// if game config force extract and savenand partition unusable
 	{
 		m_forceext = false;
@@ -781,7 +781,7 @@ int CMenu::_AutoExtractSave(string gameId)// called from wii game config menu or
 	}
 	/*else if(emuPart == -2)// emunand folder not found so make it
 	{
-		emuPart = _FindEmuPart(emuPath, true, true);
+		emuPart = _FindEmuPart(true, true);
 		char basepath[MAX_FAT_PATH];
 		snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[emuPart], emuPath.c_str());
 		NandHandle.CreatePath("%s/import", basepath);
@@ -893,21 +893,21 @@ void * CMenu::_NandFlasher(void *obj)
 	char source[MAX_FAT_PATH];
 	char dest[ISFS_MAXPATH];
 
-	string emuPath;
-	int emuPartition = m._FindEmuPart(emuPath, true, true);
+	int emuPartition = m._FindEmuPart(true, true);
 	
 	const char *SaveGameID = m.m_saveExtGameId.c_str();	
 	int flashID = SaveGameID[0] << 24 | SaveGameID[1] << 16 | SaveGameID[2] << 8 | SaveGameID[3];
-
+	const char *emuPath = NandHandle.Get_NandPath();
+	
 	/* we know it exist on emunand just need to figure out which folder */
-	if(_saveExists(fmt("%s:%s/title/00010000/%08x", DeviceName[emuPartition], emuPath.c_str(), flashID)))
+	if(_saveExists(fmt("%s:%s/title/00010000/%08x", DeviceName[emuPartition], emuPath, flashID)))
 	{
-		snprintf(source, sizeof(source), "%s:%s/title/00010000/%08x", DeviceName[emuPartition], emuPath.c_str(), flashID);
+		snprintf(source, sizeof(source), "%s:%s/title/00010000/%08x", DeviceName[emuPartition], emuPath, flashID);
 		snprintf(dest, sizeof(dest), "/title/00010000/%08x", flashID);
 	}
-	else //if(_saveExists(fmt("%s:%s/title/00010004/%08x", DeviceName[emuPartition], emuPath.c_str(), flashID)))
+	else //if(_saveExists(fmt("%s:%s/title/00010004/%08x", DeviceName[emuPartition], emuPath, flashID)))
 	{
-		snprintf(source, sizeof(source), "%s:%s/title/00010004/%08x", DeviceName[emuPartition], emuPath.c_str(), flashID);
+		snprintf(source, sizeof(source), "%s:%s/title/00010004/%08x", DeviceName[emuPartition], emuPath, flashID);
 		snprintf(dest, sizeof(dest), "/title/00010004/%08x", flashID);
 	}
 	NandHandle.ResetCounters();
@@ -939,10 +939,10 @@ void * CMenu::_NandDumper(void *obj)
 
 	NandHandle.ResetCounters();
 	
-	string emuPath;
-	int emuPartition = m._FindEmuPart(emuPath, true, !m_fulldump);
+	int emuPartition = m._FindEmuPart(true, !m_fulldump);
+	const char *emuPath = NandHandle.Get_NandPath();
 	char basepath[64];
-	snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[emuPartition], emuPath.c_str());
+	snprintf(basepath, sizeof(basepath), "%s:%s", DeviceName[emuPartition], emuPath);
 	/* create basepath in case it doesn't exist */
 	NandHandle.CreatePath("%s", basepath);
 	

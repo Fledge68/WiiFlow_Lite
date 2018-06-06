@@ -444,7 +444,7 @@ void CMenu::_Wad(const char *wad_path)
 	int emuPart = 0;
 	if(!mios)
 	{
-		emuPart = _FindEmuPart(emuPath, false, false);
+		emuPart = _FindEmuPart(false, false);
 		if(emuPart < 0)
 		{
 			//cfgne8=No valid FAT partition found for NAND Emulation!

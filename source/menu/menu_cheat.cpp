@@ -10,62 +10,29 @@
 
 u8 m_cheatSettingsPage = 0;
 
-void CMenu::_hideCheatDownload(bool instant)
+int CMenu::_downloadCheatFileAsync()
 {
-	m_btnMgr.hide(m_downloadBtnCancel, instant);
-	m_btnMgr.hide(m_downloadPBar, instant);
-	m_btnMgr.hide(m_downloadLblMessage[0], 0, 0, -2.f, 0.f, instant);
-	m_btnMgr.hide(m_downloadLblMessage[1], 0, 0, -2.f, 0.f, instant);
-}
-
-void CMenu::_showCheatDownload(void)
-{
-	_setBg(m_downloadBg, m_downloadBg);
-	m_btnMgr.show(m_downloadBtnCancel);
-	m_btnMgr.show(m_downloadPBar);
-}
-
-void * CMenu::_downloadCheatFileAsync(void *obj)
-{
-	CMenu *m = (CMenu *)obj;
-	if (!m->m_thrdWorking)
-		return 0;
-
-	m->m_thrdStop = false;
-
-	LWP_MutexLock(m->m_mutex);
-	m->_setThrdMsg(m->_t("cfgg23", L"Downloading cheat file..."), 0);
-	LWP_MutexUnlock(m->m_mutex);
-
-	if (m->_initNetwork() < 0)
+	m_thrdTotal = 2;// download and save
+	
+	m_thrdMessage = _t("dlmsg1", L"Initializing network...");
+	m_thrdMessageAdded = true;
+	if(_initNetwork() < 0)
 	{
-		m->m_thrdWorking = false;
-		return 0;
+		return -2;
 	}
-
-	/*u32 bufferSize = 0x080000;	// Maximum download size 512kb
-	u8 *buffer = (u8*)MEM2_alloc(bufferSize);
-	if(buffer == NULL)
-	{
-		m->m_thrdWorking = false;
-		return 0;
-	}*/
 
 	const char *id = CoverFlow.getId();
 	//char type = id[0] == 'S' ? 'R' : id[0];
 
 	block cheatfile = downloadfile(fmt(GECKOURL, id));
 
-	if (cheatfile.data != NULL && cheatfile.size > 65 && cheatfile.data[0] != '<')
+	if(cheatfile.data != NULL && cheatfile.size > 65 && cheatfile.data[0] != '<')
 	{
-		fsop_WriteFile(fmt("%s/%s.txt", m->m_txtCheatDir.c_str(), id), cheatfile.data, cheatfile.size);
-		//free(buffer);
-		m->m_thrdWorking = false;
+		update_pThread(1);//its downloaded
+		fsop_WriteFile(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id), cheatfile.data, cheatfile.size);
 		return 0;
 	}
-	//free(buffer);
-	m->m_thrdWorking = false;
-	return 0;
+	return -3;// download failed
 }
 
 void CMenu::_CheatSettings() 
@@ -164,73 +131,41 @@ void CMenu::_CheatSettings()
 			}
 			else if (m_btnMgr.selected(m_cheatBtnDownload))
 			{
-				int msg = 0;
-				wstringEx prevMsg;
-				
-				// Download cheat code
-				m_btnMgr.setProgress(m_downloadPBar, 0.f);
 				_hideCheatSettings();
-				_showCheatDownload();
-				m_btnMgr.setText(m_downloadBtnCancel, _t("dl1", L"Cancel"));
-				m_thrdStop = false;
-				m_thrdMessageAdded = false;
-
-				m_thrdWorking = true;
-				lwp_t thread = LWP_THREAD_NULL;
-				LWP_CreateThread(&thread, _downloadCheatFileAsync, this, downloadStack, downloadStackSize, 40);
-				while(m_thrdWorking)
+				bool dl_finished = false;
+				while(!m_exit)
 				{
 					_mainLoopCommon();
-					if ((BTN_HOME_PRESSED || BTN_B_PRESSED) && !m_thrdWorking)
+					if((BTN_HOME_PRESSED || BTN_B_PRESSED) && dl_finished)
+					{
+						m_btnMgr.hide(m_wbfsPBar);
+						m_btnMgr.hide(m_wbfsLblMessage);
+						m_btnMgr.hide(m_wbfsLblDialog);
 						break;
-					if (BTN_A_PRESSED && !(m_thrdWorking && m_thrdStop))
-					{
-						if (m_btnMgr.selected(m_downloadBtnCancel))
-						{
-							LockMutex lock(m_mutex);
-							m_thrdStop = true;
-							m_thrdMessageAdded = true;
-							m_thrdMessage = _t("dlmsg6", L"Canceling...");
-						}
 					}
-					if (Sys_Exiting())
+					if(!dl_finished)
 					{
-						LockMutex lock(m_mutex);
-						m_thrdStop = true;
-						m_thrdMessageAdded = true;
-						m_thrdMessage = _t("dlmsg6", L"Canceling...");
-						m_thrdWorking = false;
+						m_btnMgr.setProgress(m_wbfsPBar, 0.f, true);
+						m_btnMgr.setText(m_wbfsLblMessage, L"0%");
+						m_btnMgr.setText(m_wbfsLblDialog, L"");
+						m_btnMgr.show(m_wbfsPBar);
+						m_btnMgr.show(m_wbfsLblMessage);
+						m_btnMgr.show(m_wbfsLblDialog);
+						
+						_start_pThread();
+						int ret = _downloadCheatFileAsync();
+						_stop_pThread();
+						if(ret == -1)
+							m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg27", L"Not enough memory!"));
+						else if(ret == -2)
+							m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg2", L"Network initialization failed!"));
+						else if(ret == -3)
+							m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg12", L"Download failed!"));
+						else
+							m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg14", L"Done."));
+						dl_finished = true;
 					}
-
-					if (m_thrdMessageAdded)
-					{
-						LockMutex lock(m_mutex);
-						m_thrdMessageAdded = false;
-						m_btnMgr.setProgress(m_downloadPBar, m_thrdProgress);
-						if (m_thrdProgress >= 1.f) {
-							// m_btnMgr.setText(m_downloadBtnCancel, _t("dl2", L"Back"));
-							break;
-						}
-						if (prevMsg != m_thrdMessage)
-						{
-							prevMsg = m_thrdMessage;
-							m_btnMgr.setText(m_downloadLblMessage[msg], m_thrdMessage, false);
-							m_btnMgr.hide(m_downloadLblMessage[msg], 0, 0, -1.f, -1.f, true);
-							m_btnMgr.show(m_downloadLblMessage[msg]);
-							msg ^= 1;
-							m_btnMgr.hide(m_downloadLblMessage[msg], 0, 0, -1.f, -1.f);
-						}
-					}
-					if (m_thrdStop && !m_thrdWorking)
-						break;
 				}
-				if (thread != LWP_THREAD_NULL)
-				{
-					LWP_JoinThread(thread, NULL);
-					thread = LWP_THREAD_NULL;
-				}
-				_hideCheatDownload();
-				
 				txtavailable = m_cheatfile.openTxtfile(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id));
 				_showCheatSettings();
 
@@ -242,9 +177,9 @@ void CMenu::_CheatSettings()
 				if (m_cheatfile.getCnt() == 0)
 				{
 					// cheat code not found, show result
-					char type = id[0] == 'S' ? 'R' : id[0];
+					//char type = id[0] == 'S' ? 'R' : id[0];
 					m_btnMgr.setText(m_cheatLblItem[0], _t("cheat4", L"Download not found."));
-					m_btnMgr.setText(m_cheatLblItem[1], sfmt(GECKOURL, type, id));
+					m_btnMgr.setText(m_cheatLblItem[1], sfmt(GECKOURL, id));
 					m_btnMgr.show(m_cheatLblItem[1]);
 				}
 			}
