@@ -762,8 +762,7 @@ int CMenu::main(void)
 		const char *ReturnPath = NULL;
 		if(!m_cfg.getBool(CHANNEL_DOMAIN, "neek_return_default", false))
 		{
-			string emuPath;
-			if(_FindEmuPart(emuPath, false, false) >= 0)// make sure emunand folder exists
+			if(_FindEmuPart(false, false) >= 0)// make sure emunand folder exists
 				ReturnPath = NandHandle.Get_NandPath();
 		}
 		Sys_SetNeekPath(ReturnPath);

@@ -2292,8 +2292,7 @@ bool CMenu::_loadChannelList(void)
 	if(chantypes & CHANNELS_EMU)
 	{
 		NANDemuView = true;
-		string emuPath;
-		int emuPartition = _FindEmuPart(emuPath, false, false);// check if emunand folder exist and on FAT
+		int emuPartition = _FindEmuPart(false, false);// check if emunand folder exist and on FAT
 		if(emuPartition >= 0)
 		{
 			currentPartition = emuPartition;
@@ -2461,7 +2460,8 @@ void CMenu::_hideWaitMessage()
 
 void CMenu::_showWaitMessage()
 {
-	m_vid.waitMessage(_textures("GENERAL", "waitmessage"), m_theme.getFloat("GENERAL", "waitmessage_delay", 0.f));
+	m_vid.waitMessage(0.15f);
+	//m_vid.waitMessage(_textures("GENERAL", "waitmessage"), m_theme.getFloat("GENERAL", "waitmessage_delay", 0.f));
 }
 
 typedef struct map_entry
