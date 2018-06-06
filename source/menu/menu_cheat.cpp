@@ -4,7 +4,8 @@
 #include "lockMutex.hpp"
 #include "network/http.h"
 
-#define GECKOURL "http://geckocodes.org/codes/%c/%s.txt"
+//#define GECKOURL "http://geckocodes.org/codes/%c/%s.txt"
+#define GECKOURL "http://geckocodes.org/txt.php?txt=%s"
 #define CHEATSPERPAGE 4
 
 u8 m_cheatSettingsPage = 0;
@@ -42,27 +43,27 @@ void * CMenu::_downloadCheatFileAsync(void *obj)
 		return 0;
 	}
 
-	u32 bufferSize = 0x080000;	// Maximum download size 512kb
+	/*u32 bufferSize = 0x080000;	// Maximum download size 512kb
 	u8 *buffer = (u8*)MEM2_alloc(bufferSize);
 	if(buffer == NULL)
 	{
 		m->m_thrdWorking = false;
 		return 0;
-	}
+	}*/
 
 	const char *id = CoverFlow.getId();
-	char type = id[0] == 'S' ? 'R' : id[0];
+	//char type = id[0] == 'S' ? 'R' : id[0];
 
-	block cheatfile = downloadfile(buffer, bufferSize, fmt(GECKOURL, type, id), CMenu::_downloadProgress, m);
+	block cheatfile = downloadfile(fmt(GECKOURL, id));
 
 	if (cheatfile.data != NULL && cheatfile.size > 65 && cheatfile.data[0] != '<')
 	{
 		fsop_WriteFile(fmt("%s/%s.txt", m->m_txtCheatDir.c_str(), id), cheatfile.data, cheatfile.size);
-		free(buffer);
+		//free(buffer);
 		m->m_thrdWorking = false;
 		return 0;
 	}
-	free(buffer);
+	//free(buffer);
 	m->m_thrdWorking = false;
 	return 0;
 }

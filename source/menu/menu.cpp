@@ -15,7 +15,6 @@
 #include "channel/nand_save.hpp"
 #include "gc/gc.hpp"
 #include "hw/Gekko.h"
-#include "gui/GameTDB.hpp"
 #include "gui/WiiMovie.hpp"
 #include "loader/alt_ios.h"
 #include "loader/cios.h"
@@ -1649,7 +1648,7 @@ void CMenu::_addUserLabels(s16 *ids, u32 start, u32 size, const char *domain)
 
 void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 {
-	if(m_thrdWorking)
+	/*if(m_thrdWorking)
 	{
 		if(!MusicPlayer.IsStopped())
 			MusicPlayer.Stop();
@@ -1662,7 +1661,7 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 		m_btnMgr.draw();
 		m_vid.render();
 		return;
-	}
+	}*/
 	if(withCF)
 		CoverFlow.tick();
 	m_btnMgr.tick();

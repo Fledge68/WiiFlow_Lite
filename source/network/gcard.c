@@ -53,7 +53,7 @@ void add_game_to_card(const char *gameid)
 		str_replace(url, "{KEY}", providers[i].key, MAX_URL_SIZE);
 		str_replace(url, "{ID6}", gameid, MAX_URL_SIZE);
 		gprintf("Gamertag URL:\n%s\n", url);
-		downloadfile(NULL, 0, url, NULL, NULL);
+		downloadfile(url);
 	}
 	MEM2_free(url);
 }
