@@ -851,7 +851,7 @@ void CMenu::_initMainMenu()
 	m_mainBtnFavoritesOff = _addPicButton("MAIN/FAVORITES_OFF", texFavOff, texFavOffS, 288, 400, 64, 64);
 	m_mainLblLetter = _addLabel("MAIN/LETTER", theme.titleFont, L"", 540, 40, 80, 80, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, emptyTex);
 	m_mainLblNotice = _addLabel("MAIN/NOTICE", theme.titleFont, L"", 340, 40, 280, 80, theme.titleFontColor, FTGX_JUSTIFY_RIGHT | FTGX_ALIGN_MIDDLE, emptyTex);
-	m_mainLblCurMusic = _addLabel("MAIN/MUSIC", theme.btnFont, L"", 0, 20, 640, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_mainLblCurMusic = _addLabel("MAIN/MUSIC", theme.btnFont, L"", 0, 20, 900, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 //#ifdef SHOWMEM
 	m_mem1FreeSize = _addLabel("MEM1", theme.btnFont, L"", 40, 300, 480, 56, theme.btnFontColor, FTGX_JUSTIFY_LEFT, emptyTex);
 	m_mem2FreeSize = _addLabel("MEM2", theme.btnFont, L"", 40, 356, 480, 56, theme.btnFontColor, FTGX_JUSTIFY_LEFT, emptyTex);
