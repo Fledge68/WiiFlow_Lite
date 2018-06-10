@@ -1755,7 +1755,7 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 	// set song title and display it if music info is allowed
 	if(MusicPlayer.SongChanged() && m_music_info)
 	{
-		m_btnMgr.setText(m_mainLblCurMusic, MusicPlayer.GetFileName(), true);
+		m_btnMgr.setText(m_mainLblCurMusic, MusicPlayer.GetFileName(), false);// false for word wrap
 		m_btnMgr.show(m_mainLblCurMusic);
 		MusicPlayer.DisplayTime = time(NULL);
 	}

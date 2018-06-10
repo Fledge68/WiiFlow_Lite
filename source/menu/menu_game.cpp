@@ -888,8 +888,8 @@ void CMenu::_game(bool launch)
 				m_btnMgr.hide(m_gameBtnBack);
 				
 				m_btnMgr.hide(m_gameBtnToggle);
-				for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser) - 1; ++i)
-					if (m_gameLblUser[i] != -1)
+				for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser); ++i)
+					if(m_gameLblUser[i] != -1)
 						m_btnMgr.hide(m_gameLblUser[i]);
 			}
 			else // no banner for whatever reason
