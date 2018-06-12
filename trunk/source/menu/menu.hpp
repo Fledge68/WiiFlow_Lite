@@ -1063,6 +1063,7 @@ private:
 	void _gameinfo(void);
 	void _gameSettings(const dir_discHdr *GameHdr, bool disc = false);
 	void _CoverBanner(void);
+	int _cacheCovers(void);
 	void _Explorer(void);
 	const char *_FolderExplorer(const char *startPath);
 	void _wadExplorer(void);

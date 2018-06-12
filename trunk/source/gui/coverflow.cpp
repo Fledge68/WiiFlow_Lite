@@ -2570,6 +2570,40 @@ public:
 	}
 };
 
+bool CCoverFlow::cacheCover(const char *wfcPath, const char *coverPath, bool full)
+{
+	if(m_cachePath.empty())
+	{
+		return false;
+	}
+
+	TexData tex;
+	u8 textureFmt = m_compressTextures ? GX_TF_CMPR : GX_TF_RGB565;
+	if(TexHandle.fromImageFile(tex, coverPath, textureFmt, 32) != TE_OK)
+	{
+		return false;
+	}
+
+	u32 bufSize = fixGX_GetTexBufferSize(tex.width, tex.height, tex.format, tex.maxLOD > 0 ? GX_TRUE : GX_FALSE, tex.maxLOD);
+	uLongf zBufferSize = m_compressCache ? bufSize + bufSize / 100 + 12 : bufSize;
+	u8 *zBuffer = m_compressCache ? (u8*)MEM2_alloc(zBufferSize) : tex.data;
+	if(zBuffer != NULL && (!m_compressCache || compress(zBuffer, &zBufferSize, tex.data, bufSize) == Z_OK))
+	{
+		FILE *file = fopen(wfcPath, "wb");
+		if(file != NULL)
+		{
+			SWFCHeader header(tex, full, m_compressCache);
+			fwrite(&header, 1, sizeof(header), file);
+			fwrite(zBuffer, 1, zBufferSize, file);
+			fclose(file);
+		}
+	}
+	TexHandle.Cleanup(tex);
+	if(zBuffer != NULL && m_compressCache)
+		MEM2_free(zBuffer);
+	return true;
+}
+
 bool CCoverFlow::preCacheCover(const char *id, const u8 *png, bool full)
 {
 	if(m_cachePath.empty())
@@ -2600,11 +2634,11 @@ bool CCoverFlow::preCacheCover(const char *id, const u8 *png, bool full)
 	return true;
 }
 
-bool CCoverFlow::fullCoverCached(const char *id)
+bool CCoverFlow::fullCoverCached(const char *wfcPath)
 {
 	bool found = false;
 
-	FILE *file = fopen(fmt("%s/%s.wfc", m_cachePath.c_str(), id), "rb");
+	FILE *file = fopen(wfcPath, "rb");
 	if(file != NULL)
 	{
 		SWFCHeader header;
