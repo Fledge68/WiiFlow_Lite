@@ -1385,7 +1385,7 @@ int CMenu::_coverDownloader(bool download_all)
 									update_pThread(1);
 									m_thrdMessage = wfmt(_fmt("dlmsg10", L"Making %s"), sfmt("%s.wfc", coverID.c_str()));
 									m_thrdMessageAdded = true;
-									CoverFlow.preCacheCover(coverID.c_str(), download.data, true);//it may fail
+									CoverFlow.preCacheCover(coverID.c_str(), download.data, false);//it may fail
 									
 									++countFlat;
 									update_pThread(1);
@@ -1524,7 +1524,7 @@ int CMenu::_coverDownloader(bool download_all)
 									update_pThread(1);
 									m_thrdMessage = wfmt(_fmt("dlmsg10", L"Making %s"), sfmt("%s.wfc", coverID.c_str()));
 									m_thrdMessageAdded = true;
-									CoverFlow.preCacheCover(coverID.c_str(), download.data, true);//it may fail
+									CoverFlow.preCacheCover(coverID.c_str(), download.data, false);//it may fail
 									
 									++countFlat;
 									update_pThread(1);
