@@ -60,7 +60,7 @@ public:
 	GXRModeObj *vid_mode(void) const { return m_rmode; }
 	u32 width2D(void) { return m_width2D; }
 	u32 height2D(void) { return m_height2D; }
-	bool wide(void) const { return m_wide; }
+	bool wide(void) const { return m_wide; }// call m_vid.wide to check if wii is widescreen
 	bool vid_50hz(void) const { return m_50hz; }
 	u8 getAA(void) const { return m_aa; }
 	bool showingWaitMessage() { return m_WaitThreadRunning; }
@@ -68,11 +68,12 @@ public:
 	void prepareStencil(void);
 	void renderStencil(void);
 	int stencilVal(int x, int y);
+	void setCustomWaitImgs(const char *path, bool loop);
 	void hideWaitMessage();
 	void waitMessage(float delay);
 	void waitMessage(const vector<TexData> &tex, float delay);
 	void waitMessage(const TexData &tex);
-	s32 TakeScreenshot(const char *);
+	s32 TakeScreenshot(const char *path);
 	void shiftViewPort(float x, float y);
 private:
 	GXRModeObj *m_rmode;
