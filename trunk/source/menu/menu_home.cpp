@@ -93,6 +93,7 @@ bool CMenu::_Home(void)
 			}
 			else if(m_btnMgr.selected(m_homeBtnUpdate))
 			{
+				_hideHome();
 				m_btnMgr.setProgress(m_wbfsPBar, 0.f, true);
 				m_btnMgr.setText(m_wbfsLblMessage, L"0%");
 				m_btnMgr.setText(m_wbfsLblDialog, L"");

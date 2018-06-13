@@ -39,7 +39,10 @@ int main(int argc, char **argv)
 
 	char *gameid = NULL;
 	bool iosOK = true;
-
+	bool wait_loop = false;
+	char wait_dir[256];
+	memset(&wait_dir, 0, sizeof(wait_dir));
+	
 	for(u8 i = 0; i < argc; i++)
 	{
 		if(argv[i] != NULL && strcasestr(argv[i], "ios=") != NULL && strlen(argv[i]) > 4)
@@ -58,6 +61,16 @@ int main(int argc, char **argv)
 					gameid = NULL;
 			}
 		}
+		else if(strcasestr(argv[i], "waitdir=") != NULL)
+		{
+			char *ptr = strcasestr(argv[i], "waitdir=");
+			strncpy(wait_dir, ptr+strlen("waitdir="), sizeof(wait_dir));
+		}
+		else if(strcasestr(argv[i], "Waitloop") != NULL)
+		{
+			wait_loop = true;
+		}
+			
 	}
 	check_neek2o();
 	/* Init ISFS */
@@ -78,6 +91,7 @@ int main(int argc, char **argv)
 	Sys_ExitTo(EXIT_TO_HBC);
 
 	DeviceHandle.MountAll();
+	m_vid.setCustomWaitImgs(wait_dir, wait_loop);
 	m_vid.waitMessage(0.15f);
 
 	Open_Inputs();

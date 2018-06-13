@@ -11,6 +11,9 @@
 #include "gecko/gecko.hpp"
 #include "loader/sys.h"
 #include "loader/utils.h"
+#include "list/ListGenerator.hpp"
+#include "text.hpp"
+#include "fileOps/fileOps.h"
 
 #define DEFAULT_FIFO_SIZE	(256 * 1024)
 
@@ -553,6 +556,95 @@ void CVideo::render(void)
 	GX_InvalidateTexAll();
 }
 
+bool custom = false;
+bool waitLoop = false;
+static vector<string> waitImgs;
+static void GrabWaitFiles(char *FullPath)
+{
+	//Just push back
+	waitImgs.push_back(FullPath);
+}
+
+void CVideo::setCustomWaitImgs(const char *path, bool wait_loop)
+{
+	waitImgs.clear();
+	if(path != NULL && fsop_FolderExist(path))
+	{
+		GetFiles(path, stringToVector(".png|.jpg", '|'), GrabWaitFiles, false, 1);
+		if(waitImgs.size() > 0)
+		{
+			custom = true;
+			waitLoop = wait_loop;
+		}
+	}
+}
+
+void CVideo::waitMessage(float delay)// called from main.cpp to show wait animation on wf boot
+{
+	if(m_defaultWaitMessages.size() == 0)
+	{
+		if(custom)
+		{
+			u8 waitImgs_cnt = waitImgs.size();
+			TexData m_wTextures[waitImgs_cnt];
+			for(u8 i = 0; i < waitImgs_cnt; i++)
+			{
+				TexHandle.fromImageFile(m_wTextures[i], waitImgs[i].c_str());
+			}
+			for(u8 i = 0; i < waitImgs_cnt; i++)
+				m_defaultWaitMessages.push_back(m_wTextures[i]);
+		}
+		else
+		{
+			TexData m_wTextures[8];
+			TexHandle.fromJPG(m_wTextures[0], wait_01_jpg, wait_01_jpg_size);
+			TexHandle.fromJPG(m_wTextures[1], wait_02_jpg, wait_02_jpg_size);
+			TexHandle.fromJPG(m_wTextures[2], wait_03_jpg, wait_03_jpg_size);
+			TexHandle.fromJPG(m_wTextures[3], wait_04_jpg, wait_04_jpg_size);
+			TexHandle.fromJPG(m_wTextures[4], wait_05_jpg, wait_05_jpg_size);
+			TexHandle.fromJPG(m_wTextures[5], wait_06_jpg, wait_06_jpg_size);
+			TexHandle.fromJPG(m_wTextures[6], wait_07_jpg, wait_07_jpg_size);
+			TexHandle.fromJPG(m_wTextures[7], wait_08_jpg, wait_08_jpg_size);
+			for(int i = 0; i < 8; i++)
+				m_defaultWaitMessages.push_back(m_wTextures[i]);
+		}
+		
+	}
+	waitMessage(m_defaultWaitMessages, delay);
+}
+
+void CVideo::waitMessage(const vector<TexData> &tex, float delay)// start wait images and wii slot light threads or draw
+{
+	hideWaitMessage();
+
+	if(tex.size() == 0)
+	{
+		m_waitMessages = m_defaultWaitMessages;
+		m_waitMessageDelay = 0.15f;
+	}
+	else
+	{
+		m_waitMessages = tex;
+		m_waitMessageDelay = delay;
+	}
+
+	if(m_waitMessages.size() == 1)
+	{
+		waitMessage(m_waitMessages[0]);// draws frame image using function below (for one frame image only) but no render?
+		render();
+	}
+	else if(m_waitMessages.size() > 1)// if more than one frame
+	{
+		m_WaitThreadRunning = true;
+		/* changing light */
+		wiiLightSetLevel(0);
+		wiiLightStartThread();// start thread in gekko.c that pulses the wii disc slot light on and off
+		/* onscreen animation */
+		m_showWaitMessage = true;// start wait images thread to animate them
+		LWP_CreateThread(&waitThread, _showWaitMessages, this, waitMessageStack, waitMessageStackSize, LWP_PRIO_HIGHEST);
+	}
+}
+
 void * CVideo::_showWaitMessages(void *obj)// wait images thread
 {
 	CVideo *m = static_cast<CVideo *>(obj);
@@ -590,7 +682,9 @@ void * CVideo::_showWaitMessages(void *obj)// wait images thread
 		{
 			m->waitMessage(*waitItr);// draw frame image
 			waitItr += PNGfadeDirection;// move to next image
-			if(waitItr + 1 == m->m_waitMessages.end() || waitItr == m->m_waitMessages.begin())
+			if(waitLoop && waitItr == m->m_waitMessages.end())
+				waitItr = m->m_waitMessages.begin();
+			else if(!waitLoop && (waitItr + 1 == m->m_waitMessages.end() || waitItr == m->m_waitMessages.begin()))
 				PNGfadeDirection *= (-1);// change direction if at beginning or end
 			waitFrames = frames;// reset delay count
 			m->render();
@@ -622,54 +716,6 @@ void CVideo::hideWaitMessage()// stop wait images and wii disc slot light thread
 	waitThread = LWP_THREAD_NULL;
 }
 
-void CVideo::waitMessage(float delay)// called from main.cpp to show wait animation on wf boot
-{
-	if(m_defaultWaitMessages.size() == 0)
-	{
-		TexData m_wTextures[8];
-		TexHandle.fromJPG(m_wTextures[0], wait_01_jpg, wait_01_jpg_size);
-		TexHandle.fromJPG(m_wTextures[1], wait_02_jpg, wait_02_jpg_size);
-		TexHandle.fromJPG(m_wTextures[2], wait_03_jpg, wait_03_jpg_size);
-		TexHandle.fromJPG(m_wTextures[3], wait_04_jpg, wait_04_jpg_size);
-		TexHandle.fromJPG(m_wTextures[4], wait_05_jpg, wait_05_jpg_size);
-		TexHandle.fromJPG(m_wTextures[5], wait_06_jpg, wait_06_jpg_size);
-		TexHandle.fromJPG(m_wTextures[6], wait_07_jpg, wait_07_jpg_size);
-		TexHandle.fromJPG(m_wTextures[7], wait_08_jpg, wait_08_jpg_size);
-		for(int i = 0; i < 8; i++)
-			m_defaultWaitMessages.push_back(m_wTextures[i]);
-	}
-	waitMessage(m_defaultWaitMessages, delay);
-}
-
-void CVideo::waitMessage(const vector<TexData> &tex, float delay)// start wait images and wii slot light threads or draw
-{
-	hideWaitMessage();
-	m_WaitThreadRunning = true;
-
-	if(tex.size() == 0)
-	{
-		m_waitMessages = m_defaultWaitMessages;
-		m_waitMessageDelay = 0.15f;
-	}
-	else
-	{
-		m_waitMessages = tex;
-		m_waitMessageDelay = delay;
-	}
-
-	if(m_waitMessages.size() == 1)
-		waitMessage(m_waitMessages[0]);// draws frame image using function below (for one frame image only) but no render?
-	else if(m_waitMessages.size() > 1)// if more than one frame
-	{
-		/* changing light */
-		wiiLightSetLevel(0);
-		wiiLightStartThread();// start thread in gekko.c that pulses the wii disc slot light on and off
-		/* onscreen animation */
-		m_showWaitMessage = true;// start wait images thread to animate them
-		LWP_CreateThread(&waitThread, _showWaitMessages, this, waitMessageStack, waitMessageStackSize, LWP_PRIO_HIGHEST);
-	}
-}
-
 void CVideo::waitMessage(const TexData &tex)//draw frame image
 {
 	Mtx modelViewMtx;
@@ -696,13 +742,14 @@ void CVideo::waitMessage(const TexData &tex)//draw frame image
 	GX_InitTexObj(&texObj, tex.data, tex.width, tex.height, tex.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 	GX_LoadTexObj(&texObj, GX_TEXMAP0);
 	GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
-	GX_Position3f32((float)((640 - tex.width) / 2), (float)((480 - tex.height) / 2), 0.f);
+	u32 texWidth = m_wide ? tex.width * .75 : tex.width;
+	GX_Position3f32((float)((640 - texWidth) / 2), (float)((480 - tex.height) / 2), 0.f);// widescreen = tex.width * .80
 	GX_TexCoord2f32(0.f, 0.f);
-	GX_Position3f32((float)((640 + tex.width) / 2), (float)((480 - tex.height) / 2), 0.f);
+	GX_Position3f32((float)((640 + texWidth) / 2), (float)((480 - tex.height) / 2), 0.f);
 	GX_TexCoord2f32(1.f, 0.f);
-	GX_Position3f32((float)((640 + tex.width) / 2), (float)((480 + tex.height) / 2), 0.f);
+	GX_Position3f32((float)((640 + texWidth) / 2), (float)((480 + tex.height) / 2), 0.f);
 	GX_TexCoord2f32(1.f, 1.f);
-	GX_Position3f32((float)((640 - tex.width) / 2), (float)((480 + tex.height) / 2), 0.f);
+	GX_Position3f32((float)((640 - texWidth) / 2), (float)((480 + tex.height) / 2), 0.f);
 	GX_TexCoord2f32(0.f, 1.f);
 	GX_End();
 }
