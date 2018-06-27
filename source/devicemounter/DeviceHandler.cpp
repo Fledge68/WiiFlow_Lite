@@ -42,9 +42,10 @@ DeviceHandler DeviceHandle;
 
 void DeviceHandler::Init()
 {
+	/* PartitionHandle inits */
 	sd.Init();
 	usb.Init();
-	OGC_Device.Init();
+	OGC_Device.Init();// used for Devolution gamecube iso launcher
 }
 
 void DeviceHandler::MountAll()

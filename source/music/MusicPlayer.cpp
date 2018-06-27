@@ -150,7 +150,7 @@ void Musicplayer::LoadFile(const char *name, bool display_change)
 	}
 	else if(FileNames.size() == 1 && strcmp(name, PLUGIN_DOMAIN) == 0)
 	{
-		MusicFile.FreeMemory();
+		MusicFile.FreeMemory();// GuiSound is MusicFile in gui_sound.cpp
 		MusicStopped = true;
 		return;
 	}

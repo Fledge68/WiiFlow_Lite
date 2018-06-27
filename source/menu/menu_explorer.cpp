@@ -244,7 +244,8 @@ void CMenu::_Explorer(void)
 						else if(strcasestr(file, ".dol") != NULL || strcasestr(file, ".elf") != NULL)
 						{
 							_hideExplorer();
-							_launchHomebrew(file, m_homebrewArgs);
+							vector<string> arguments = _getMetaXML(file);
+							_launchHomebrew(file, arguments);
 							_showExplorer();
 						}
 						else if(strcasestr(file, ".txt") != NULL || strcasestr(file, ".nfo") != NULL

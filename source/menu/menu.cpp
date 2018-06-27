@@ -138,7 +138,6 @@ bool CMenu::init()
 	if(drive == check) // Should not happen
 	{
 		/* Could not find a device to save configuration files on! */
-		//m_exit = true;
 		return false;
 	}
 
@@ -166,7 +165,17 @@ bool CMenu::init()
 	bool onUSB = m_cfg.getBool("GENERAL", "data_on_usb", strncmp(drive, "usb", 3) == 0);
 	drive = check; //reset the drive variable for the check
 	//check for wiiflow data directory on USB or SD based on data_on_usb
-	if(onUSB)
+	if(!onUSB)
+	{
+		if(DeviceHandle.IsInserted(SD))// no need to find sd:/wiiflow, it will be made if not exist
+			drive = DeviceName[SD];
+		else
+		{
+			onUSB = true;
+			m_cfg.setBool("GENERAL", "data_on_usb", true);
+		}
+	}
+	else // onUSB = true
 	{
 		for(u8 i = USB1; i <= USB8; i++) //Look for first partition with a wiiflow folder in root
 		{
@@ -176,12 +185,7 @@ bool CMenu::init()
 				break;
 			}
 		}
-	}
-	if(!onUSB && DeviceHandle.IsInserted(SD) && stat(fmt("%s:/%s", DeviceName[SD], APP_DATA_DIR), &dummy) == 0)
-		drive = DeviceName[SD];
-	if(drive == check)//if wiiflow data directory not found then check just for a USB partition or SD card
-	{
-		if(onUSB)
+		if(drive == check)// if wiiflow data directory not found just find a valid USB partition
 		{
 			for(u8 i = USB1; i <= USB8; i++)
 			{
@@ -191,21 +195,16 @@ bool CMenu::init()
 					break;
 				}
 			}
-			if(drive == check && DeviceHandle.IsInserted(SD))//if no available USB partition then force SD
-				drive = DeviceName[SD];
-			else if(drive == check)
-			{
-				/* No available usb partitions for data and no SD inserted! */
-				//m_exit = true;
-				return false;
-			}
 		}
-		else
-		{ 
-			if(DeviceHandle.IsInserted(SD))
-				drive = DeviceName[SD];
-			else
-				drive = DeviceName[USB1];//if no SD insterted then force USB. may set this to the wf boot.dol partition
+		if(drive == check && DeviceHandle.IsInserted(SD))//if no valid USB partition then force SD if inserted
+		{
+			drive = DeviceName[SD];
+			// show error msg later after building menus
+		}
+		if(drive == check)// should not happen
+		{
+			/* No available usb partitions for data and no SD inserted! */
+			return false;
 		}
 	}
 	m_dataDir = fmt("%s:/%s", drive, APP_DATA_DIR);
@@ -427,7 +426,10 @@ bool CMenu::init()
 	/* Init Button Manager and build the menus */
 	_buildMenus();
 	if(drive == DeviceName[SD] && onUSB)
+	{
 		error(_fmt("errboot5", L"data_on_usb=yes and No available usb partitions for data!\nUsing SD."));
+		m_cfg.setBool("GENERAL", "data_on_usb", false);
+	}
 
 	/* Check if locked, set return to, set exit to, and init multi threading */
 	m_locked = m_cfg.getString("GENERAL", "parent_code", "").size() >= 4;
@@ -1662,12 +1664,17 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 		m_vid.render();
 		return;
 	}*/
+	
+	/* ticks - for moving and scaling covers and gui buttons and text */
 	if(withCF)
 		CoverFlow.tick();
 	m_btnMgr.tick();
 
+	/* video setup */
 	m_vid.prepare();
 	m_vid.setup2DProjection(false, true);
+	
+	/* background and coverflow drawing */
 	_updateBg();
 	if(CoverFlow.getRenderTex())
 		CoverFlow.RenderTex();
@@ -1704,6 +1711,8 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 				CoverFlow.drawText(adjusting);
 		}
 	}
+	
+	/* game video or banner drawing */
 	if(m_gameSelected)
 	{
 		if(m_video_playing)
@@ -1717,18 +1726,24 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 		else if(m_banner.GetSelectedGame() && (!m_banner.GetInGameSettings() || (m_banner.GetInGameSettings() && m_bnr_settings)))
 			m_banner.Draw();
 	}
+	
+	/* gui buttons and text drawing */
 	m_btnMgr.draw();
+	
+	/* reading controller inputs and drawing cursor pointers*/	
 	ScanInput();
-	// check if we need to start screensaver 
-	if(!m_vid.showingWaitMessage())
-	{
-		if(!m_cfg.getBool("GENERAL", "screensaver_disabled", true))
-			m_vid.screensaver(NoInputTime(), m_cfg.getInt("GENERAL", "screensaver_idle_seconds", 60));
-		m_vid.render();
-	}
+	
+	/* check if we want screensaver and if its idle long enuff, if so draw full screen black square with mild alpha */
+	if(!m_cfg.getBool("GENERAL", "screensaver_disabled", true))
+		m_vid.screensaver(NoInputTime(), m_cfg.getInt("GENERAL", "screensaver_idle_seconds", 60));
+
+	/* render everything on screen */
+	m_vid.render();
+	
 	// check if power button is pressed and exit wiiflow
 	if(Sys_Exiting())
 		exitHandler(BUTTON_CALLBACK);
+
 	// check if we need to start playing the game/banner sound
 	// m_gameSelected means we are on the game selected menu
 	// m_gamesound_changed means a new game sound is loaded and ready to play
@@ -1743,15 +1758,16 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 	// stop game/banner sound from playing if we exited game selected menu or if we move to new game
 	else if((withCF && m_gameSelected && m_gamesound_changed && m_gameSound.IsPlaying()) || (!m_gameSelected && m_gameSound.IsPlaying()))
 		m_gameSound.Stop();
+
 	/* decrease music volume to zero if any of these are true:
-		trailer video playing or 
-		game/banner sound is being loaded because we are switching to a new game or
-		game/banner sound is loaded and ready to play or
+		trailer video playing or||
+		game/banner sound is being loaded because we are switching to a new game or||
+		game/banner sound is loaded and ready to play or||
 		gamesound hasn't finished - when finishes music volume back to normal - some gamesounds don't loop continuously
 		also this switches to next song if current song is done */
 	MusicPlayer.Tick((withCF && (m_video_playing || (m_gameSelected && m_soundThrdBusy) || 
-		(m_gameSelected && m_gamesound_changed))) ||  
-		m_gameSound.IsPlaying());
+						(m_gameSelected && m_gamesound_changed))) ||  m_gameSound.IsPlaying());
+
 	// set song title and display it if music info is allowed
 	if(MusicPlayer.SongChanged() && m_music_info)
 	{

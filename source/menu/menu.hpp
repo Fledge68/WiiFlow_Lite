@@ -81,7 +81,7 @@ private:
 	Config m_titles;
 	Config m_version;
 	
-	vector<string> m_homebrewArgs;
+	//vector<string> m_homebrewArgs;
 	u8 *m_base_font;
 	u32 m_base_font_size;
 	u8 *m_wbf1_font;
@@ -1088,6 +1088,7 @@ private:
 	void _launchGame(dir_discHdr *hdr, bool dvd, bool disc_cfg = false);
 	void _launchChannel(dir_discHdr *hdr);
 	void _launchHomebrew(const char *filepath, vector<string> arguments);
+	vector<string> _getMetaXML(const char *bootpath);
 	void _launchGC(dir_discHdr *hdr, bool disc);
 	void _launchShutdown();
 	void _setCurrentItem(const dir_discHdr *hdr);

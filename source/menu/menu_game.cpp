@@ -5,6 +5,9 @@
 #include <time.h>
 #include <network.h>
 #include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #include "menu.hpp"
 #include "types.h"
@@ -1065,19 +1068,134 @@ void CMenu::_launch(const dir_discHdr *hdr)
 	}
 	else if(launchHdr.type == TYPE_HOMEBREW)
 	{
-		const char *gamepath = fmt("%s/boot.dol", launchHdr.path);
-		if(!fsop_FileExist(gamepath))
-			gamepath = fmt("%s/boot.elf", launchHdr.path);
-		if(fsop_FileExist(gamepath))
+		const char *bootpath = fmt("%s/boot.dol", launchHdr.path);
+		if(!fsop_FileExist(bootpath))
+			bootpath = fmt("%s/boot.elf", launchHdr.path);
+		if(fsop_FileExist(bootpath))
 		{
 			m_cfg.setString(HOMEBREW_DOMAIN, "current_item", strrchr(launchHdr.path, '/') + 1);
-			_launchHomebrew(gamepath, m_homebrewArgs);
-			/*m_homebrewArgs is basically an empty vector string not needed for homebrew
-			but used by plugins when _launchHomebrew is called */
+			vector<string> arguments = _getMetaXML(bootpath);
+			_launchHomebrew(bootpath, arguments);
 		}
 	}
 	ShutdownBeforeExit();
 	Sys_Exit();
+}
+
+void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
+{
+	/* clear coverflow, start wiiflow wait animation, set exit handler */	
+	_launchShutdown();
+	m_gcfg1.save(true);
+	m_gcfg2.save(true);
+	m_cat.save(true);
+	m_cfg.save(true);
+
+	Playlog_Delete();
+
+	bool ret = (LoadHomebrew(filepath) && LoadAppBooter(fmt("%s/app_booter.bin", m_binsDir.c_str())));
+	if(ret == false)
+	{
+		error(_t("errgame14", L"app_booter.bin not found!"));
+		_exitWiiflow();
+	}
+	/* no more error msgs - remove btns and sounds */
+	cleanup(); 
+
+	AddBootArgument(filepath);
+	for(u32 i = 0; i < arguments.size(); ++i)
+	{
+		gprintf("Argument: %s\n", arguments[i].c_str());
+		AddBootArgument(arguments[i].c_str());
+	}
+
+	ShutdownBeforeExit();// wifi and sd gecko doesnt work anymore after
+	loadIOS(58, false);
+	BootHomebrew();
+	Sys_Exit();
+}
+
+vector<string> CMenu::_getMetaXML(const char *bootpath)
+{
+	char *meta_buf = NULL;
+	vector<string> args;
+	char meta_path[200];
+	char *p;
+	char *e, *end;
+	struct stat st;
+	
+	/* load meta.xml */
+	
+	p = strrchr(bootpath, '/');
+	snprintf(meta_path, sizeof(meta_path), "%.*smeta.xml", p ? p-bootpath+1 : 0, bootpath);
+
+	if (stat(meta_path, &st) != 0)
+		return args;
+	if (st.st_size > 64*1024)
+		return args;
+
+	meta_buf = (char *) calloc(st.st_size + 1, 1);// +1 so that the buf is 0 terminated
+	if (!meta_buf)
+		return args;
+
+	int fd = open(meta_path, O_RDONLY);
+	if (fd < 0)
+	{
+		free(meta_buf); 
+		meta_buf = NULL; 
+		return args;
+	}
+	read(fd, meta_buf, st.st_size);
+	close(fd);
+
+	/* strip comments */
+
+	p = meta_buf;
+	int len;
+	while (p && *p) 
+	{
+		p = strstr(p, "<!--");
+		if (!p) 
+			break;
+		e = strstr(p, "-->");
+		if (!e) 
+		{
+			*p = 0; // terminate
+			break;
+		}
+		e += 3;
+		len = strlen(e);
+		memmove(p, e, len + 1); // +1 for 0 termination
+	}
+	
+	/* parse meta */
+
+	if (strstr(meta_buf, "<app") && strstr(meta_buf, "</app>") && strstr(meta_buf, "<arguments>") && strstr(meta_buf, "</arguments>"))
+	{
+		p = strstr(meta_buf, "<arguments>");
+		end = strstr(meta_buf, "</arguments>");
+
+		do 
+		{
+			p = strstr(p, "<arg>");
+			if (!p) 
+				break;
+				
+			p += 5; //strlen("<arg>");
+			e = strstr(p, "</arg>");
+			if (!e) 
+				break;
+
+			string arg(p, e-p);
+			args.push_back(arg);
+			p = e + 6;
+		} 
+		while (p < end);
+	}
+
+	free(meta_buf); 
+	meta_buf = NULL; 
+	return args;
 }
 
 void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
@@ -1340,39 +1458,6 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		ShutdownBeforeExit();
 		DEVO_Boot();
 	}
-	Sys_Exit();
-}
-
-void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
-{
-	/* clear coverflow, start wiiflow wait animation, set exit handler */	
-	_launchShutdown();
-	m_gcfg1.save(true);
-	m_gcfg2.save(true);
-	m_cat.save(true);
-	m_cfg.save(true);
-
-	Playlog_Delete();
-
-	bool ret = (LoadHomebrew(filepath) && LoadAppBooter(fmt("%s/app_booter.bin", m_binsDir.c_str())));
-	if(ret == false)
-	{
-		error(_t("errgame14", L"app_booter.bin not found!"));
-		_exitWiiflow();
-	}
-	/* no more error msgs - remove btns and sounds */
-	cleanup(); 
-
-	AddBootArgument(filepath);
-	for(u32 i = 0; i < arguments.size(); ++i)
-	{
-		gprintf("Argument: %s\n", arguments[i].c_str());
-		AddBootArgument(arguments[i].c_str());
-	}
-
-	ShutdownBeforeExit();// wifi and sd gecko doesnt work anymore after
-	loadIOS(58, false);
-	BootHomebrew();
 	Sys_Exit();
 }
 
