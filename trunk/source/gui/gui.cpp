@@ -748,6 +748,8 @@ void CButtonsMgr::_drawBtn(CButtonsMgr::SButton &b, bool selected, bool click)
 	if (!b.font.font) return;
 	b.font.font->reset();
 	//CColor txtColor(b.textColor.r, b.textColor.g, b.textColor.b, (u8)((int)b.textColor.a * (int)alpha / 0xFF));
+	if(m_vid.wide())
+		scaleX *= 0.8f;
 	b.font.font->setXScale(scaleX);
 	b.font.font->setYScale(scaleY);
 	//b.font.font->drawText(0, 0, b.text.c_str(), txtColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
@@ -795,6 +797,8 @@ void CButtonsMgr::_drawLbl(CButtonsMgr::SLabel &b)
 
 	b.font.font->reset();
 	b.text.setColor(CColor(b.textColor.r, b.textColor.g, b.textColor.b, (u8)((int)b.textColor.a * (int)alpha / 0xFF)));
+	if(m_vid.wide())
+		scaleX *= 0.8f;
 	b.font.font->setXScale(scaleX);
 	b.font.font->setYScale(scaleY);
 	float posX = b.pos.x;

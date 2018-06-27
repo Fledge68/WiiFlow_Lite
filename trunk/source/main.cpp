@@ -33,16 +33,14 @@ int main(int argc, char **argv)
 	Gecko_Init(); //USB Gecko and SD/WiFi buffer
 	gprintf(" \nWelcome to %s!\nThis is the debug output.\n", VERSION_STRING.c_str());
 
-	m_vid.init(); // Init video
-	DeviceHandle.Init();
-	NandHandle.Init();
-
-	char *gameid = NULL;
 	bool iosOK = true;
+	char *gameid = NULL;
+	bool showFlashImg = true;
+	bool sd_only = false;
 	bool wait_loop = false;
 	char wait_dir[256];
 	memset(&wait_dir, 0, sizeof(wait_dir));
-	
+
 	for(u8 i = 0; i < argc; i++)
 	{
 		if(argv[i] != NULL && strcasestr(argv[i], "ios=") != NULL && strlen(argv[i]) > 4)
@@ -52,6 +50,17 @@ int main(int argc, char **argv)
 			if(atoi(argv[i]) < 254 && atoi(argv[i]) > 0)
 				mainIOS = atoi(argv[i]);
 		}
+		else if(strcasestr(argv[i], "waitdir=") != NULL)
+		{
+			char *ptr = strcasestr(argv[i], "waitdir=");
+			strncpy(wait_dir, ptr+strlen("waitdir="), sizeof(wait_dir));
+		}
+		else if(strcasestr(argv[i], "Waitloop") != NULL)
+			wait_loop = true;
+		else if(strcasestr(argv[i], "noflash") != NULL)
+			showFlashImg = false;
+		else if(strcasestr(argv[i], "sdonly") != NULL)
+			sd_only = true;
 		else if(strlen(argv[i]) == 6)
 		{
 			gameid = argv[i];
@@ -60,41 +69,52 @@ int main(int argc, char **argv)
 				if(!isalnum(gameid[i]))
 					gameid = NULL;
 			}
-		}
-		else if(strcasestr(argv[i], "waitdir=") != NULL)
-		{
-			char *ptr = strcasestr(argv[i], "waitdir=");
-			strncpy(wait_dir, ptr+strlen("waitdir="), sizeof(wait_dir));
-		}
-		else if(strcasestr(argv[i], "Waitloop") != NULL)
-		{
-			wait_loop = true;
-		}
+		}	
 			
 	}
+	/* Init video */
+	m_vid.init();
+	if(showFlashImg)
+		m_vid.startImage();
+		
+	/* Init device partition handlers */
+	DeviceHandle.Init();
+	
+	/* Init NAND handlers */
+	NandHandle.Init();
 	check_neek2o();
-	/* Init ISFS */
 	if(neek2o() || Sys_DolphinMode())
 		NandHandle.Init_ISFS();
 	else
 		NandHandle.LoadDefaultIOS(); /* safe reload to preferred IOS */
-	/* Maybe new IOS and Port settings */
+		
+	/* load and check wiiflow save for possible new IOS and Port settings */
 	if(InternalSave.CheckSave())
 		InternalSave.LoadSettings();
+		
 	/* Handle (c)IOS Loading */
 	if(neek2o() || Sys_DolphinMode()) /* wont reload anythin */
 		iosOK = loadIOS(IOS_GetVersion(), false);
 	else if(useMainIOS && CustomIOS(IOS_GetType(mainIOS))) /* Requested */
 		iosOK = loadIOS(mainIOS, false) && CustomIOS(CurrentIOS.Type);
-	// Init
+		
+	/* set reset and power button callbacks and exitTo option */
 	Sys_Init();
 	Sys_ExitTo(EXIT_TO_HBC);
 
-	DeviceHandle.MountAll();
+	/* mount Devices */
+	DeviceHandle.MountSD();
+	if(!sd_only && !Sys_DolphinMode())
+		DeviceHandle.MountAllUSB();
+	
+	/* init wait images and show wait animation */
 	m_vid.setCustomWaitImgs(wait_dir, wait_loop);
 	m_vid.waitMessage(0.15f);
 
+	/* init controllers for input */
 	Open_Inputs();
+	
+	/* init configs, folders, coverflow, gui and more */
 	if(mainMenu.init())
 	{
 		if(CurrentIOS.Version != mainIOS && !neek2o() && !Sys_DolphinMode())
@@ -114,14 +134,13 @@ int main(int argc, char **argv)
 			mainMenu.terror("errboot2", L"Could not find a device to save configuration files on!");
 		else if(WDVD_Init() < 0)
 			mainMenu.terror("errboot3", L"Could not initialize the DIP module!");
-		else 
+		else // alls good lets start wiiflow
 		{
-			writeStub();
-			if(gameid != NULL && strlen(gameid) == 6)
+			writeStub();// copy return stub to memory
+			if(gameid != NULL && strlen(gameid) == 6)// if argv game ID then launch it
 				mainMenu.directlaunch(gameid);
 			else
-				mainMenu.main();
-				//if mainMenu.init set exit=true then mainMenu.main while loop does nothing and returns to here to exit wiiflow
+				mainMenu.main();// start wiiflow with main menu displayed
 		}
 		//Exit WiiFlow, no game booted...
 		mainMenu.cleanup();// removes all sounds, fonts, images, coverflow, plugin stuff, source menu and clear memory

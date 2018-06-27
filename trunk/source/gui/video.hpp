@@ -70,6 +70,7 @@ public:
 	int stencilVal(int x, int y);
 	void setCustomWaitImgs(const char *path, bool loop);
 	void hideWaitMessage();
+	void startImage(void);
 	void waitMessage(float delay);
 	void waitMessage(const vector<TexData> &tex, float delay);
 	void waitMessage(const TexData &tex);

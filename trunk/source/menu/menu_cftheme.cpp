@@ -218,6 +218,7 @@ void CMenu::_showCFTheme(u32 curParam, int version, bool wide)
 				}
 				break;
 			case CMenu::SCFParamDesc::PDT_FLOAT:
+				// should we use wstringEx(sfmt())
 				m_btnMgr.setText(m_cfThemeLblVal[k], sfmt("%.2f", m_coverflow.getFloat(domain, key)));
 				for (int j = 1; j < 4; ++j)
 				{

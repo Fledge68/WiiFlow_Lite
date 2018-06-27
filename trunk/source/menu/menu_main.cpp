@@ -754,7 +754,8 @@ int CMenu::main(void)
 		CoverFlow.clear();
 		_showWaitMessage();
 		exitHandler(PRIILOADER_DEF); //Making wiiflow ready to boot something
-		_launchHomebrew(fmt("%s/boot.dol", m_appDir.c_str()), m_homebrewArgs);
+		vector<string> arguments = _getMetaXML(fmt("%s/boot.dol", m_appDir.c_str()));
+		_launchHomebrew(fmt("%s/boot.dol", m_appDir.c_str()), arguments);
 		return 0;
 	}
 	else if(Sys_GetExitTo() == EXIT_TO_SMNK2O || Sys_GetExitTo() == EXIT_TO_WFNK2O)

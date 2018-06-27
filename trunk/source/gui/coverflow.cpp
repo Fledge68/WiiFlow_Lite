@@ -356,9 +356,16 @@ void CCoverFlow::setRange(u32 rows, u32 columns)
 	if (m_covers != NULL)
 	{
 		stopCoverLoader();
+		MEM2_free(m_covers);
 		CCover *tmpCovers = (CCover*)MEM2_alloc(sizeof(CCover) * range);
 		for(size_t i = 0; i < range; ++i)
-			tmpCovers[i] = *(new(tmpCovers+i) CCover);
+		{
+			// does not allocate memory -- calls: operator new (sizeof(CCover), tmpCovers+i)
+			// only constructs an object at tmpCovers+i
+			// delete is not needed
+			// this is the same as CCover tmpCovers[range] except the objects memory address is specified and won't go out of scope
+			tmpCovers[i] = *(new (tmpCovers+i) CCover);
+		}
 		if (rows >= 3)
 			for (u32 x = 0; x < columns; ++x)
 				for (u32 y = 1; y < rows - 1; ++y)
@@ -369,7 +376,6 @@ void CCoverFlow::setRange(u32 rows, u32 columns)
 		m_rows = rows;
 		m_columns = columns;
 		m_range = range;
-		MEM2_free(m_covers);
 		m_covers = tmpCovers;
 		_loadAllCovers(m_covers[m_range / 2].index);
 		_updateAllTargets();
@@ -1903,7 +1909,7 @@ bool CCoverFlow::start(const string &m_imgsDir)
 	m_covers = NULL;
 	if(m_range > 0)
 	{
-		m_covers = (CCover*)MEM2_alloc(sizeof(struct CCover) * m_range);
+		m_covers = (CCover*)MEM2_alloc(sizeof(CCover) * m_range);
 		for(size_t i = 0; i < m_range; ++i)
 			m_covers[i] = *(new(m_covers+i) CCover);
 	}
