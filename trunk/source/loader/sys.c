@@ -88,7 +88,7 @@ void Sys_ExitTo(int option)
 		*Priiloader_CFG1 = 0x4461636F;// Daco
 		*Priiloader_CFG2 = 0x4461636F;
 	}
-	else
+	else // PRIILOADER_DEF
 	{
 		*Priiloader_CFG1 = 0xFFFFFFFF;
 		*Priiloader_CFG2 = 0xFFFFFFFF;
@@ -99,17 +99,15 @@ void Sys_ExitTo(int option)
 
 void Sys_Exit(void)
 {
-	//if(ExitOption == EXIT_TO_DISABLE)
-	//	return;
-
 	/* Shutdown Inputs */
 	Close_Inputs();
 	/* Just shutdown  console*/
 	if(ExitOption == BUTTON_CALLBACK)
 		SYS_ResetSystem(SYS_POWEROFF_STANDBY, 0, 0);
 
-	/* We wanna to boot sth */
+	/* We wanna to boot something */
 	WII_Initialize();
+	/* if in neek2o mode Launch_nk will just return to neek2o system menu and not launch anything */
 	if(ExitOption == EXIT_TO_WFNK2O)
 		Launch_nk(0x1000157464C41LL, NeekPath, 0);// 57464C41 = WFLA : 44574641 = DWFA
 	else if(ExitOption == EXIT_TO_SMNK2O)
@@ -126,7 +124,7 @@ void Sys_Exit(void)
 	}
 	else if(ExitOption == EXIT_TO_WIIU)
 		WII_LaunchTitle(WIIU_CHANNEL);
-	/* else Return to Menu */
+	/* else Return to System Menu */
 	SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
 	exit(1);
 }
@@ -154,14 +152,18 @@ bool AHBPROT_Patched(void)
 }
 
 /* WiiU Check by crediar, thanks */
+bool WiiUChecked = false;
+bool WiiUMode = false;
 bool IsOnWiiU(void)
 {
+	if(WiiUChecked)
+		return WiiUMode;
+
 	if((*HW_PROCESSOR >> 16) == 0xCAFE)
-	{
-		gprintf("vWii Mode\n");
-		return true;
-	}
-	return false;
+		WiiUMode = true;
+
+	WiiUChecked = true;
+	return WiiUMode;
 }
 
 void Sys_SetNeekPath(const char *Path)
@@ -205,15 +207,10 @@ bool Sys_DolphinMode(void)
 
 	);
 	if(ofpr1 != 0x56cc62b2)
-	{
-		gprintf("Dolphin-Emu\n");
 		DolphinMode = true;
-	}
 	else
-	{
-		gprintf("Real Wii\n");
 		DolphinMode = false;
-	}
+		
 	ModeChecked = true;
 	return DolphinMode;
 }
@@ -225,7 +222,6 @@ bool Sys_HW_Access(void)
 	if(hw_checked == true)
 		return on_hw;
 
-	check_neek2o();
 	on_hw = AHBPROT_Patched() && (!Sys_DolphinMode() && !neek2o());
 	hw_checked = true;
 	return on_hw;

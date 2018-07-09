@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ****************************************************************************/
 #include "menu.hpp"
+#include "channel/nand.hpp"
 #include "loader/cios.h"
 #include "loader/nk.h"
 #include "const_str.hpp"
@@ -65,6 +66,7 @@ bool CMenu::_Home(void)
 			m_btnMgr.down();
 		else if(BTN_1_PRESSED)
 		{
+			m_theme.load(fmt("%s.ini", m_themeDataDir.c_str()));
 			m_theme.save();
 			_hideHome();
 			error(_t("savedtheme", L"Theme config saved!"));
@@ -179,7 +181,7 @@ bool CMenu::_ExitTo(void)
 			m_btnMgr.up();
 		else if(BTN_DOWN_PRESSED)
 			m_btnMgr.down();
-		else if(BTN_A_PRESSED)
+		else if(BTN_A_PRESSED)// note exitHandler sets m_exit = true
 		{
 			if(m_btnMgr.selected(m_homeBtnExitToHBC))
 			{
@@ -209,15 +211,28 @@ bool CMenu::_ExitTo(void)
 				if(!Load_Neek2o_Kernel())
 				{
 					error(_fmt("errneek1", L"Cannot launch neek2o. Verify your neek2o setup"));
-					exitHandler(PRIILOADER_DEF);
+					_showExitTo();
 				}
 				else
 				{
-					//bool nkWiiflow = m_cfg.getBool("NEEK2O", "launchwiiflow", true);
-					//if(nkWiiflow)
+					//if(m_cfg.getBool("NEEK2O", "launchwiiflow", true) && !neek2o())
 					//	exitHandler(EXIT_TO_WFNK2O);
 					//else
 						exitHandler(EXIT_TO_SMNK2O);
+					/* if exiting to Neek2o we must set the EmuNand Path for sys_exit() in sys.c */
+					const char *EmuNandPath = NULL;
+					/* but only if we are not already in neek2o mode */
+					if(!neek2o())
+					{
+						if(_FindEmuPart(EMU_NAND, false) >= 0)// make sure emunand exists
+							EmuNandPath = NandHandle.Get_NandPath();
+						else
+						{
+							error(_fmt("errneek1", L"Cannot launch neek2o. Verify your neek2o setup"));
+							_showExitTo();
+						}
+					}
+					Sys_SetNeekPath(EmuNandPath);
 				}
 				break;
 			}

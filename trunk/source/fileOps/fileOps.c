@@ -141,7 +141,7 @@ bool fsop_CopyFile(const char *source, const char *target, progress_callback_t s
 	if(!fs)
 		return false;
 
-	ft = fopen(target, "wt");
+	ft = fopen(target, "wb");
 	if(!ft)
 	{
 		fclose(fs);
@@ -292,6 +292,7 @@ void fsop_deleteFolder(const char *source)
 
 	pdir = opendir(source);
 
+	/* first delete all subfolders and files in the folder */
 	while((pent = readdir(pdir)) != NULL) 
 	{
 		// Skip it
@@ -313,8 +314,9 @@ void fsop_deleteFolder(const char *source)
 		}
 	}
 	closedir(pdir);
+	/* now actually delete the folder */
 	gprintf("Deleting directory: %s\n", source);
-	unlink(source);
+	unlink(source);// using POSIX unlink to delete the folder
 }
 
 bool fsop_FileExist(const char *fn)

@@ -168,7 +168,8 @@ void CMenu::_showGameSettings()
 			m_btnMgr.show(m_gameSettingsLblUser[i]);
 
 	wstringEx title(_t("cfgg1", L"Settings"));
-	title.append(wfmt(L" [%.6s]", id));
+	if(GameHdr->type != TYPE_PLUGIN)
+		title.append(wfmt(L" [%.6s]", id));
 	m_btnMgr.setText(m_gameSettingsLblTitle, title);
 	m_btnMgr.show(m_gameSettingsLblTitle);
 	
@@ -465,7 +466,7 @@ void CMenu::_showGameSettings()
 void CMenu::_gameSettings(const dir_discHdr *hdr, bool disc)
 {
 	m_gcfg2.load(fmt("%s/" GAME_SETTINGS2_FILENAME, m_settingsDir.c_str()));
-	GameHdr = hdr;
+	GameHdr = hdr;//
 	const char *id = GameHdr->id;
 	if(GameHdr->type == TYPE_GC_GAME)
 	{

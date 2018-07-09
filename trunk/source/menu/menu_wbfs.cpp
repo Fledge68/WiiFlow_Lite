@@ -323,7 +323,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						}
 						if (Disc_IsWii() == 0)
 						{
-							error(_t("wbfsoperr6", L"Install Wii game is broken, please use cleanrip."));
+							error(_t("wbfsoperr6", L"Install game is broken, please use cleanrip."));
 							out = true;
 							break;
 							
@@ -349,6 +349,10 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						}
 						else if(Disc_IsGC() == 0)
 						{
+							error(_t("wbfsoperr6", L"Install game is broken, please use cleanrip."));
+							out = true;
+							break;
+							
 							Disc_ReadGCHeader(&gc_hdr);
 							memcpy(GameID, gc_hdr.id, 6);
 							if(_searchGamesByID(GameID))
@@ -392,14 +396,14 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 							if(strcasestr(CF_Hdr->path, "boot.bin") != NULL)
 							{
 								strncpy(GC_Path, CF_Hdr->path, 1023);
-								*strrchr(GC_Path, '/') = '\0'; //boot.bin
-								*strrchr(GC_Path, '/') = '\0'; //sys
+								*strrchr(GC_Path, '/') = '\0'; // remove /boot.bin from path
+								*strrchr(GC_Path, '/') = '\0'; // remove /sys folder from path
 								fsop_deleteFolder(GC_Path);
 							}
 							else
 							{
 								strncpy(GC_Path, CF_Hdr->path, 1023);
-								*strrchr(GC_Path, '/') = '\0'; //iso path
+								*strrchr(GC_Path, '/') = '\0'; // remove /game.iso from path
 								const char *cmp = fmt(gc_games_dir, DeviceName[currentPartition]);
 								if(strcasecmp(GC_Path, cmp) == 0)
 									fsop_deleteFile(CF_Hdr->path);

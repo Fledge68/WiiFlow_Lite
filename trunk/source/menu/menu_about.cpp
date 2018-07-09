@@ -12,6 +12,7 @@ s16 m_aboutLblUser[4];
 s16 m_aboutLblIOS;
 
 bool showHelp;
+int thanks_h;
 
 void CMenu::_about(bool help)
 {
@@ -19,8 +20,6 @@ void CMenu::_about(bool help)
 	int pixels_to_skip = 10;
 	int amount_of_skips = 0;
 	int xtra_skips = 0;
-
-	int thanks_h = m_theme.getInt("ABOUT/INFO", "height", 300);
 	int thanks_th = 0;
 
 	SetupInput();
@@ -103,6 +102,7 @@ void CMenu::_initAboutMenu()
 	_setHideAnim(m_aboutLblIOS, "ABOUT/IOS", 0, 0, -2.f, 0.f);
 
 	_hideAbout(true);
+	thanks_h = m_theme.getInt("ABOUT/INFO", "height", 300);
 }
 
 void CMenu::_textAbout(void)

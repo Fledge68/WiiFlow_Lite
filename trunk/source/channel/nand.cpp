@@ -70,7 +70,7 @@ static NandDevice NandDeviceList[] =
 void Nand::Init()
 {
 	MountedDevice = 0;
-	EmuDevice = REAL_NAND;
+	EmuDevice = WII_NAND;
 	Partition = 0;
 	FullMode = 0x100;
 	memset(NandPath, 0, sizeof(NandPath));

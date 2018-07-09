@@ -48,10 +48,16 @@ void DeviceHandler::Init()
 	OGC_Device.Init();// used for Devolution gamecube iso launcher
 }
 
+bool mount_usb = false;
+void DeviceHandler::SetMountUSB(bool using_usb)
+{
+	mount_usb = using_usb;
+}
+
 void DeviceHandler::MountAll()
 {
 	MountSD();
-	if(!Sys_DolphinMode())
+	if(!Sys_DolphinMode() && mount_usb)
 		MountAllUSB();
 }
 

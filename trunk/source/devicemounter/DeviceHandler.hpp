@@ -66,6 +66,7 @@ class DeviceHandler
 public:
 	void Init();
 	void SetModes();
+	void SetMountUSB(bool using_usb);
 	void MountAll();
 	void UnMountAll();
 	bool Mount(int dev);
