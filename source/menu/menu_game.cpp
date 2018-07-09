@@ -1801,7 +1801,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 		
 	if(emulate_mode && !dvd && !neek2o())
 	{
-		int emuPart = _FindEmuPart( true, true);
+		int emuPart = _FindEmuPart(SAVES_NAND, true);
 		if(emuPart == -1)//if savepartition is unusable
 		{
 			_hideWaitMessage();
@@ -1809,7 +1809,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 			emulate_mode = 0;
 			_showWaitMessage();
 		}
-		else
+		else // partition is good so now check if save exists on savesnand
 		{
 			bool need_config = false;
 			bool need_miis = false;
@@ -1821,8 +1821,10 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 			char testpath[strlen(basepath) + 42];
 			
 			// does not check to see if actual tmd exist just if the folder exist
-			if(!_checkSave(id, false))//if save is not on emunand
+			if(!_checkSave(id, SAVES_NAND))//if save is not on saves emunand
 			{
+				/* still use savesnand to create a new save on the savesnand */
+				/* make savesnand folders in case they don't already exist */
 				NandHandle.CreatePath("%s/import", basepath);
 				NandHandle.CreatePath("%s/meta", basepath);
 				NandHandle.CreatePath("%s/shared1", basepath);
@@ -1833,7 +1835,8 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 				NandHandle.CreatePath("%s/tmp", basepath);
 				NandHandle.CreateTitleTMD(hdr);//setup emunand for wii gamesave
 			}
-			if(gameEmuMode == 3)//full per game setting - in case global is not full
+			/* check if saves emulation is set to full per this game in case the global defualt is not full */
+			if(gameEmuMode == 3)// if is then we need to make sure the savesnand contains mii's and config files
 			{
 				//check config files
 				snprintf(testpath, sizeof(testpath), "%s/shared2/sys/SYSCONF", basepath);
@@ -1852,7 +1855,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 		}
 	}
 	else
-		emulate_mode = 0;//sets to off we are using neek2o or launching a DVD game
+		emulate_mode = 0;//sets to off if we are using neek2o or launching a DVD game
 
 	bool use_led = m_gcfg2.getBool(id, "led", false);
 	bool cheat = m_gcfg2.getBool(id, "cheat", false);

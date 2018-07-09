@@ -171,8 +171,9 @@ void CVideo::init(void)
 	GX_SetDispCopyDst(m_rmode->fbWidth, m_xfbHeight);
 	GX_SetCopyFilter(m_rmode->aa, m_rmode->sample_pattern, GX_TRUE, m_rmode->vfilter);
 	GX_SetFieldMode(m_rmode->field_rendering, ((m_rmode->viHeight == 2 * m_rmode->xfbHeight) ? GX_ENABLE : GX_DISABLE));
+	
 	GX_SetCullMode(GX_CULL_NONE);
-	GX_CopyDisp(m_frameBuf[m_curFB], GX_TRUE);
+	//GX_CopyDisp(m_frameBuf[m_curFB], GX_TRUE);
 	GX_SetDispCopyGamma(GX_GM_1_0);
 	GX_ClearVtxDesc();
 	GX_SetVtxDesc(GX_VA_POS, GX_DIRECT);
@@ -251,7 +252,11 @@ void CVideo::_clearScreen()
 
 void CVideo::prepare(void)
 {
-	GX_SetPixelFmt(GX_PF_RGB8_Z24, GX_ZC_LINEAR);
+	if (m_rmode->aa)
+		GX_SetPixelFmt(GX_PF_RGBA6_Z24, GX_ZC_LINEAR);
+	else
+		GX_SetPixelFmt(GX_PF_RGB8_Z24, GX_ZC_LINEAR);
+	//GX_SetPixelFmt(GX_PF_RGB8_Z24, GX_ZC_LINEAR);
 	_setViewPort(0.f, 0.f, (float)m_rmode->fbWidth, (float)m_rmode->efbHeight);
 	GX_SetScissor(0, 0, m_rmode->fbWidth, m_rmode->efbHeight);
 	GX_InvVtxCache();
@@ -454,11 +459,11 @@ void CVideo::renderAAPass(int aaStep)
 
 void CVideo::render(void)
 {
-	GX_DrawDone();
 	GX_SetZMode(GX_DISABLE, GX_ALWAYS, GX_TRUE);
 	GX_SetColorUpdate(GX_TRUE);
 	GX_CopyDisp(MEM_K1_TO_K0(m_frameBuf[m_curFB]), GX_TRUE);
 	DCFlushRange(m_frameBuf[m_curFB], 2 * m_rmode->fbWidth * m_rmode->xfbHeight);
+	GX_DrawDone();
 	VIDEO_SetNextFramebuffer(m_frameBuf[m_curFB]);
 	VIDEO_Flush();
 	VIDEO_WaitVSync();
@@ -774,6 +779,7 @@ void DrawTexturePos(const TexData *tex)
 	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XY, GX_F32, 0);
 	GX_SetVtxDesc(GX_VA_TEX0, GX_DIRECT);
 	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+
 	GX_SetNumTexGens(1);
 	GX_SetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_TEXC);
 	GX_SetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
@@ -783,10 +789,13 @@ void DrawTexturePos(const TexData *tex)
 	GX_SetAlphaUpdate(GX_FALSE);
 	GX_SetCullMode(GX_CULL_NONE);
 	GX_SetZMode(GX_DISABLE, GX_ALWAYS, GX_FALSE);
+
 	guMtxIdentity(modelViewMtx);
 	GX_LoadPosMtxImm(modelViewMtx, GX_PNMTX0);
+
 	GX_InitTexObj(&texObj, tex->data, tex->width, tex->height, tex->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 	GX_LoadTexObj(&texObj, GX_TEXMAP0);
+
 	GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
 	GX_Position2f32(currentMoviePos.x1, currentMoviePos.y1);
 	GX_TexCoord2f32(0.f, 0.f);

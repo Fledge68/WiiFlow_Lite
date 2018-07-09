@@ -7,6 +7,7 @@ wstringEx gameinfo_Title_w;
 
 bool tdb_found = false;
 u8 cnt_controlsreq = 0, cnt_controls = 0;
+int synopsis_h;
 
 void CMenu::_gameinfo(void)
 { 
@@ -14,12 +15,10 @@ void CMenu::_gameinfo(void)
 	int pixels_to_skip = 10;	
 	int amount_of_skips = 0;
 	int xtra_skips = 0;
+	int synopsis_th = 0;
 
 	SetupInput();
 	_showGameInfo();
-
-	int synopsis_h = m_theme.getInt("GAMEINFO/SYNOPSIS", "height", 280);
-	int synopsis_th = 0;
 	
 	while(!m_exit)
 	{
@@ -226,6 +225,7 @@ void CMenu::_initGameInfoMenu()
 	_setHideAnim(m_gameinfoLblWifiplayers, "GAMEINFO/WIFIPLAYERS", 0, -100, 0.f, 0.f);
 	// 
 	_hideGameInfo(true);
+	synopsis_h = m_theme.getInt("GAMEINFO/SYNOPSIS", "height", 280);
 }
 
 void CMenu::_textGameInfo(void)

@@ -1176,7 +1176,11 @@ void CCoverFlow::_drawTitle(int i, bool mirror, bool rectangle)
 	if (m_covers[i].txtColor == 0) return;
 
 	color.a = mirror ? (u8)((float)m_covers[i].txtColor * m_txtMirrorAlpha) : m_covers[i].txtColor;
-	if (rectangle && !mirror)// rectangle (mainloop adjusting) is never set true
+	
+	// rectangle is never used. in menu.cpp _mainLoopCommon() adjusting is never set true
+	// but if it would be. rectangle is the same as using a frame for the text as when the gui draws a label.
+	// when using a frame the text style is used. otherwise it is not used.
+	if (rectangle && !mirror)
 	{
 		// GX setup
 		GX_SetNumTevStages(1);

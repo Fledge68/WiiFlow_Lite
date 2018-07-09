@@ -751,22 +751,9 @@ int CMenu::main(void)
 	ScanInput();
 	if(m_reload || BTN_B_HELD)// rebooting wiiflow
 	{
-		CoverFlow.clear();
-		_showWaitMessage();
-		exitHandler(PRIILOADER_DEF); //Making wiiflow ready to boot something
 		vector<string> arguments = _getMetaXML(fmt("%s/boot.dol", m_appDir.c_str()));
 		_launchHomebrew(fmt("%s/boot.dol", m_appDir.c_str()), arguments);
 		return 0;
-	}
-	else if(Sys_GetExitTo() == EXIT_TO_SMNK2O || Sys_GetExitTo() == EXIT_TO_WFNK2O)
-	{
-		const char *ReturnPath = NULL;
-		if(!m_cfg.getBool(CHANNEL_DOMAIN, "neek_return_default", false))
-		{
-			if(_FindEmuPart(false, false) >= 0)// make sure emunand folder exists
-				ReturnPath = NandHandle.Get_NandPath();
-		}
-		Sys_SetNeekPath(ReturnPath);
 	}
 	cleanup();
 	//gprintf("Saving configuration files\n");
@@ -1035,12 +1022,10 @@ void CMenu::exitHandler(int ExitTo)
 	if(ExitTo == EXIT_TO_BOOTMII) //Bootmii, check that the files are there, or ios will hang.
 	{
 		struct stat dummy;
-		if(!DeviceHandle.IsInserted(SD) || 
-		stat("sd:/bootmii/armboot.bin", &dummy) != 0 || 
-		stat("sd:/bootmii/ppcboot.elf", &dummy) != 0)
+		if(!DeviceHandle.IsInserted(SD) || stat("sd:/bootmii/armboot.bin", &dummy) != 0 || stat("sd:/bootmii/ppcboot.elf", &dummy) != 0)
 			ExitTo = EXIT_TO_HBC;
 	}
-	if(ExitTo != WIIFLOW_DEF)
+	if(ExitTo != WIIFLOW_DEF)// if not using wiiflows exit option then go ahead and set the exit to
 		Sys_ExitTo(ExitTo);
 }
 

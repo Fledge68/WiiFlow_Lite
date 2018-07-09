@@ -12,6 +12,12 @@ enum {
 };
 
 enum {
+	EMU_NAND = 0,
+	SAVES_NAND,
+	REAL_NAND
+};
+
+enum {
 	CHANNELS_REAL = 1,
 	CHANNELS_EMU,
 	CHANNELS_BOTH

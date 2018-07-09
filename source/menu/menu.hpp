@@ -1179,8 +1179,8 @@ private:
 	void _stopSounds(void);
 	static void * _NandDumper(void *obj);
 	static void * _NandFlasher(void *obj);
-	int _FindEmuPart(bool searchvalid, bool savesnand);
-	bool _checkSave(string id, bool nand);
+	int _FindEmuPart(bool savesnand, bool searchvalid);
+	bool _checkSave(string id, int nand_type);
 	bool _TestEmuNand(int epart, const char *path, bool indept);
 	void _checkEmuNandSettings(void);
 	void _FullNandCheck(void);

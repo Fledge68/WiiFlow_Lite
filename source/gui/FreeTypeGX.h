@@ -33,34 +33,43 @@
 #include <wchar.h>
 #include <map>
 
-typedef struct ftgxCharData_ {
-	uint16_t glyphAdvanceX;		/**< Character glyph X coordinate advance in pixels. */
-	uint16_t glyphIndex;		/**< Charachter glyph index in the font face. */
+typedef struct ftgxCharData_
+{
+	int16_t renderOffsetX; /**< Texture X axis bearing offset. */
+	uint16_t glyphAdvanceX; /**< Character glyph X coordinate advance in pixels. */
+	uint32_t glyphIndex; /**< Charachter glyph index in the font face. */
 
-	uint16_t textureWidth;		/**< Texture width in pixels/bytes. */
-	uint16_t textureHeight;		/**< Texture glyph height in pixels/bytes. */
+	uint16_t textureWidth; /**< Texture width in pixels/bytes. */
+	uint16_t textureHeight; /**< Texture glyph height in pixels/bytes. */
 
-	uint16_t renderOffsetY;		/**< Texture Y axis bearing offset. */
-	uint16_t renderOffsetMax;	/**< Texture Y axis bearing maximum value. */
-	uint16_t renderOffsetMin;	/**< Texture Y axis bearing minimum value. */
+	int16_t renderOffsetY; /**< Texture Y axis bearing offset. */
+	int16_t renderOffsetMax; /**< Texture Y axis bearing maximum value. */
+	int16_t renderOffsetMin; /**< Texture Y axis bearing minimum value. */
 
-	uint8_t* glyphDataTexture;	/**< Glyph texture bitmap data buffer. */
+	uint8_t* glyphDataTexture; /**< Glyph texture bitmap data buffer. */
 } ftgxCharData;
 
-typedef struct ftgxDataOffset_ {
-	uint16_t max;	/**< Maximum data offset. */
-	uint16_t min;	/**< Minimum data offset. */
+typedef struct ftgxDataOffset_
+{
+	int16_t ascender; /**< Maximum data offset. */
+	int16_t descender; /**< Minimum data offset. */
+	int16_t max; /**< Maximum data offset. */
+	int16_t min; /**< Minimum data offset. */
 } ftgxDataOffset;
 
 #define FTGX_NULL				0x0000
-#define FTGX_JUSTIFY_LEFT		0x0001
-#define FTGX_JUSTIFY_CENTER		0x0002
-#define FTGX_JUSTIFY_RIGHT		0x0004
-#define FTGX_JUSTIFY_MASK		0x000f
+#define FTGX_JUSTIFY_LEFT		0x0001 //0001
+#define FTGX_JUSTIFY_CENTER		0x0002 //0010
+#define FTGX_JUSTIFY_RIGHT		0x0004 //0100
+#define FTGX_JUSTIFY_MASK		0x000f //1111
 
 #define FTGX_ALIGN_TOP			0x0010
 #define FTGX_ALIGN_MIDDLE		0x0020
 #define FTGX_ALIGN_BOTTOM		0x0040
+#define FTGX_ALIGN_BASELINE	    0x0080
+#define FTGX_ALIGN_GLYPH_TOP	0x0100
+#define FTGX_ALIGN_GLYPH_MIDDLE 0x0200
+#define FTGX_ALIGN_GLYPH_BOTTOM 0x0400
 #define FTGX_ALIGN_MASK			0x0ff0
 
 #define FTGX_STYLE_UNDERLINE	0x1000
@@ -74,43 +83,48 @@ class FreeTypeGX {
 	private:
 		FT_Library ftLibrary;	/**< FreeType FT_Library instance. */
 		FT_Face ftFace;			/**< FreeType reusable FT_Face typographic object. */
-		FT_GlyphSlot ftSlot;	/**< FreeType reusable FT_GlyphSlot glyph container object. */
-		FT_UInt ftPointSize;	/**< Requested size of the rendered font. */
+		//FT_GlyphSlot ftSlot;	/**< FreeType reusable FT_GlyphSlot glyph container object. */
+		int16_t ftPointSize;	/**< Requested size of the rendered font. */
 		FT_Pos ftWeight;		/**< Requested weight of the rendered font. */
 		bool ftKerningEnabled;	/**< Flag indicating the availability of font kerning data. */
+
 		float xScale;
 		float yScale;
 		float xPos;
 		float yPos;
 
-		std::map<wchar_t, ftgxCharData> fontData; /**< Map which holds the glyph data structures for the corresponding characters. */
+		std::map<int16_t, std::map<wchar_t, ftgxCharData> > fontData; /**< Map which holds the glyph data structures for the corresponding characters in one size. */
+		std::map<int16_t, ftgxDataOffset> ftgxAlign; /**< Map which holds the ascender and decender for different sizes. */
+		
+		int16_t getStyleOffsetWidth(uint16_t width, uint16_t format);
+		int16_t getStyleOffsetHeight(int16_t format, uint16_t pixelSize);
 
-		static uint16_t getStyleOffsetWidth(uint16_t width, uint16_t format);
-		static uint16_t getStyleOffsetHeight(ftgxDataOffset offset, uint16_t format);
-
+		void unloadFont();
+		ftgxCharData *cacheGlyphData(wchar_t charCode, int16_t pixelSize);
+		uint16_t cacheGlyphDataComplete(int16_t pixelSize);
+		void loadGlyphData(FT_Bitmap *bmp, ftgxCharData *charData);
+		
+		void drawTextFeature(int16_t x, int16_t y, int16_t pixelSize, uint16_t width,
+				ftgxDataOffset *offsetData, uint16_t format, GXColor color);
 		void copyTextureToFramebuffer(GXTexObj *texObj, uint16_t texWidth, uint16_t texHeight, int16_t screenX, int16_t screenY, GXColor color);
 		void copyFeatureToFramebuffer(uint16_t featureWidth, uint16_t featureHeight, int16_t screenX, int16_t screenY, GXColor color);
 
-		void unloadFont();
-		ftgxCharData *cacheGlyphData(wchar_t charCode);
-		uint16_t cacheGlyphDataComplete();
-		void loadGlyphData(FT_Bitmap *bmp, ftgxCharData *charData);
-		void drawTextFeature(uint16_t x, uint16_t y, uint16_t width, ftgxDataOffset offsetData, uint16_t format, GXColor color);
-		
 	public:
 		FreeTypeGX();
 		~FreeTypeGX();
 
 		static wchar_t* charToWideChar(char* p);
 
-		uint16_t loadFont(FT_Byte *fontBuffer, FT_Long bufferSize, FT_UInt pointSize, FT_Pos weight = 0, uint32_t index = 0, bool cacheAll = false);
-		
-		uint16_t drawText(uint16_t x, uint16_t y, const wchar_t *text, GXColor color = ftgxWhite, uint16_t textStyling = FTGX_NULL);
+		void loadFont(const uint8_t* fontBuffer, FT_Long bufferSize, FT_Pos weight = 0, bool lastFace = false);
 
-		uint16_t getWidth(const wchar_t *text);
-		uint16_t getHeight(const wchar_t *text);
-		ftgxDataOffset getOffset(const wchar_t *text);
-		
+		uint16_t drawText(int16_t x, int16_t y, const wchar_t *text, int16_t pixelSize, GXColor color = ftgxWhite, 
+						uint16_t textStyling = FTGX_NULL, uint16_t textWidth = 0, uint16_t widthLimit = 0);
+
+		uint16_t getWidth(const wchar_t *text, int16_t pixelSize);
+		uint16_t getCharWidth(const wchar_t wChar, int16_t pixelSize, const wchar_t prevChar = 0x0000);
+		uint16_t getHeight(const wchar_t *text, int16_t pixelSize);
+		void getOffset(const wchar_t *text, int16_t pixelSize, uint16_t widthLimit = 0);
+
 		float getXScale(void) const { return xScale; }
 		float getYScale(void) const { return yScale; }
 		void setXScale(float f) { xScale = f; }

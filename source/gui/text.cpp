@@ -171,7 +171,7 @@ bool SFont::fromBuffer(const u8 *buffer, const u32 bufferSize, u32 size, u32 lsp
 	fSize = min(max(6ul, size), 1000ul);
 	lineSpacing = min(max(6ul, lspacing), 1000ul);
 	weight = min(w, 32ul);
-	index = idx;
+	index = idx;// currently not used
 
 	if(data != NULL)
 		free(data);
@@ -184,7 +184,7 @@ bool SFont::fromBuffer(const u8 *buffer, const u32 bufferSize, u32 size, u32 lsp
 
 	memcpy(name, fontname, 127);
 	font = new FreeTypeGX();
-	font->loadFont(data, dataSize, fSize, weight, index, false);
+	font->loadFont(data, dataSize, weight, true);
 	return true;
 }
 
@@ -192,7 +192,7 @@ bool SFont::fromFile(const char *path, u32 size, u32 lspacing, u32 w, u32 idx, c
 {
 	fSize = min(max(6ul, size), 1000ul);
 	weight = min(w, 32ul);
-	index = idx = 0;
+	index = idx;// currently not used
 
 	lineSpacing = min(max(6ul, lspacing), 1000ul);
 
@@ -206,11 +206,11 @@ bool SFont::fromFile(const char *path, u32 size, u32 lspacing, u32 w, u32 idx, c
 
 	memcpy(name, fontname, 127);
 	font = new FreeTypeGX();
-	font->loadFont(data, dataSize, fSize, weight, index, false);
+	font->loadFont(data, dataSize, weight, false);
 	return true;
 }
 
-static const wchar_t *g_whitespaces = L" \f\n\r\t\v";
+static const wchar_t *g_whitespaces = L" \f\n\r\t\v";// notice the first character is a space
 void CText::setText(const SFont &font, const wstringEx &t)
 {
 	SWord w;
@@ -232,18 +232,18 @@ void CText::setText(const SFont &font, const wstringEx &t)
 		wstringEx::size_type j;
 		while (i != wstringEx::npos)
 		{
-			j = l.find_first_of(g_whitespaces, i);
+			j = l.find_first_of(g_whitespaces, i);// find a space or end of line character
 			if (j != wstringEx::npos && j > i)
 			{
 				w.text.assign(l, i, j - i);
 				m_lines.back().push_back(w);
 				i = l.find_first_not_of(g_whitespaces, j);
 			}
-			else if (j == wstringEx::npos)
+			else if (j == wstringEx::npos)// if end of line
 			{
 				w.text.assign(l, i, l.size() - i);
 				m_lines.back().push_back(w);
-				i = wstringEx::npos;
+				i = wstringEx::npos;// or could just break;
 			}
 		}
 	}
@@ -298,7 +298,7 @@ void CText::setFrame(float width, u16 style, bool ignoreNewlines, bool instant)
 
 	float shift;
 	totalHeight = 0;
-	float space = m_font.font->getWidth(L" ");
+	float space = m_font.font->getWidth(L" ", m_font.fSize);//
 	float posX = 0.f;
 	float posY = 0.f;
 	u32 lineBeg = 0;
@@ -316,7 +316,7 @@ void CText::setFrame(float width, u16 style, bool ignoreNewlines, bool instant)
 
 		for (u32 i = 0; i < words.size(); ++i)
 		{
-			float wordWidth = m_font.font->getWidth(words[i].text.c_str());
+			float wordWidth = m_font.font->getWidth(words[i].text.c_str(), m_font.fSize);//
 			if (posX == 0.f || posX + (float)wordWidth + space * 2 <= width)
 			{
 				words[i].targetPos = Vector3D(posX, posY, 0.f);
@@ -370,10 +370,11 @@ void CText::setColor(const CColor &c)
 	m_color = c;
 }
 
+/* moves each word of each line of text from current pos to targetPos */
 void CText::tick(void)
 {
-	for (u32 k = 0; k < m_lines.size(); ++k)
-		for (u32 i = 0; i < m_lines[k].size(); ++i)
+	for (u32 k = 0; k < m_lines.size(); ++k)// lines of text
+		for (u32 i = 0; i < m_lines[k].size(); ++i)// number of words per line[k]
 			m_lines[k][i].pos += (m_lines[k][i].targetPos - m_lines[k][i].pos) * 0.05f;
 }
 
@@ -387,7 +388,7 @@ void CText::draw(void)
 		{
 			m_font.font->setX(m_lines[k][i].pos.x);
 			m_font.font->setY(m_lines[k][i].pos.y);
-			m_font.font->drawText(0, m_font.lineSpacing, m_lines[k][i].text.c_str(), m_color);
+			m_font.font->drawText(0, m_font.lineSpacing, m_lines[k][i].text.c_str(), m_font.fSize, m_color);
 		}
 }
 

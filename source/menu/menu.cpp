@@ -175,7 +175,7 @@ bool CMenu::init()
 			m_cfg.setBool("GENERAL", "data_on_usb", true);
 		}
 	}
-	else // onUSB = true
+	if(onUSB)
 	{
 		for(u8 i = USB1; i <= USB8; i++) //Look for first partition with a wiiflow folder in root
 		{
@@ -438,12 +438,10 @@ bool CMenu::init()
 	if(m_cfg.getString("GENERAL", "returnto", "WFLA") == "DWFA")
 		m_cfg.setString("GENERAL", "returnto", "WFLA");
 
-	int exit_to = m_cfg.getInt("GENERAL", "exit_to", 0);
-	if(exit_to == EXIT_TO_BOOTMII && (!DeviceHandle.IsInserted(SD) || 
-			stat(fmt("%s:/bootmii/armboot.bin",DeviceName[SD]), &dummy) != 0 || 
-			stat(fmt("%s:/bootmii/ppcboot.elf", DeviceName[SD]), &dummy) != 0))
-		exit_to = EXIT_TO_HBC;
-	Sys_ExitTo(exit_to + 1);
+	/* set WIIFLOW_DEF exit to option */
+	/* 0 thru 2 of exit to enum (EXIT_TO_MENU, EXIT_TO_HBC, EXIT_TO_WIIU) in sys.h */
+	int exit_to = min(max(0, m_cfg.getInt("GENERAL", "exit_to", 0)), (int)ARRAY_SIZE(CMenu::_exitTo) - 1);
+	Sys_ExitTo(exit_to);
 
 	LWP_MutexInit(&m_mutex, 0);
 
@@ -607,7 +605,7 @@ void CMenu::_Theme_Cleanup(void)
 	theme.texSet.clear();
 	theme.fontSet.clear();
 	theme.soundSet.clear();
-	m_theme.unload();
+	//m_theme.unload();
 	m_coverflow.unload();
 }
 
@@ -1302,6 +1300,7 @@ void CMenu::_buildMenus(void)
 	_initPathsMenu();
 
 	_loadCFCfg();
+	m_theme.unload();// done with theme.ini so lets unload it from mem
 }
 
 typedef struct
@@ -1315,6 +1314,7 @@ typedef struct
 
 SFont CMenu::_font(const char *domain, const char *key, u32 fontSize, u32 lineSpacing, u32 weight, u32 index, const char *genKey)
 {
+	/* get font info from theme.ini or use the default values */
 	string filename;
 	bool general = strncmp(domain, "GENERAL", 7) == 0;
 	FontHolder fonts[3] = {{ "_size", 6u, 300u, fontSize, 0 }, { "_line_height", 6u, 300u, lineSpacing, 0 }, { "_weight", 1u, 32u, weight, 0 }};
@@ -1325,12 +1325,13 @@ SFont CMenu::_font(const char *domain, const char *key, u32 fontSize, u32 lineSp
 		filename = m_theme.getString("GENERAL", genKey, genKey);
 	bool useDefault = filename == genKey;
 
+	/* get the resources - fontSize, lineSpacing, and weight */
 	for(u32 i = 0; i < 3; i++)
 	{
 		string defValue = genKey;
-		defValue += fonts[i].ext;
+		defValue += fonts[i].ext;// _size, _line_height, _weight
 		string value = key;
-		value += fonts[i].ext;
+		value += fonts[i].ext;// _size, _line_height, _weight
 
 		if(!general)
 			fonts[i].res = (u32)m_theme.getInt(domain, value);
@@ -1340,7 +1341,9 @@ SFont CMenu::_font(const char *domain, const char *key, u32 fontSize, u32 lineSp
 		fonts[i].res = min(max(fonts[i].min, fonts[i].res <= 0 ? fonts[i].def : fonts[i].res), fonts[i].max);
 	}
 
-	/* ONLY return the font if spacing and weight are the same */
+	/* check if font is already in memory */
+	/* and the filename, size, spacing, and weight are the same */
+	/* if so return this font */
 	std::vector<SFont>::iterator font_itr;
 	for(font_itr = theme.fontSet.begin(); font_itr != theme.fontSet.end(); ++font_itr)
 	{
@@ -1350,7 +1353,8 @@ SFont CMenu::_font(const char *domain, const char *key, u32 fontSize, u32 lineSp
 	}
 	if (font_itr != theme.fontSet.end()) return *font_itr;
 
-	// TTF not found in memory, load it to create a new font
+	/* font not found in memory, load it to create a new font */
+	/* unless useDefault font is specified */
 	SFont retFont;
 	if(!useDefault && retFont.fromFile(fmt("%s/%s", m_themeDataDir.c_str(), filename.c_str()), fonts[0].res, fonts[1].res, fonts[2].res, index, filename.c_str()))
 	{
@@ -1358,6 +1362,7 @@ SFont CMenu::_font(const char *domain, const char *key, u32 fontSize, u32 lineSp
 		theme.fontSet.push_back(retFont);
 		return retFont;
 	}
+	
 	/* try default font in imgs folder
 	if(retFont.fromFile(fmt("%s/font.ttf", m_imgsDir.c_str()), fonts[0].res, fonts[1].res, fonts[2].res, index, filename.c_str()))
 	{
@@ -1365,7 +1370,9 @@ SFont CMenu::_font(const char *domain, const char *key, u32 fontSize, u32 lineSp
 		theme.fontSet.push_back(retFont);
 		return retFont;
 	}*/
+	
 	/* Fallback to default font */
+	/* default font is the wii's system font */
 	if(retFont.fromBuffer(m_base_font, m_base_font_size, fonts[0].res, fonts[1].res, fonts[2].res, index, filename.c_str()))
 	{
 		// Default font
@@ -2308,7 +2315,7 @@ bool CMenu::_loadChannelList(void)
 	if(chantypes & CHANNELS_EMU)
 	{
 		NANDemuView = true;
-		int emuPartition = _FindEmuPart(false, false);// check if emunand folder exist and on FAT
+		int emuPartition = _FindEmuPart(EMU_NAND, false);// check if emunand folder exist and on FAT
 		if(emuPartition >= 0)
 		{
 			currentPartition = emuPartition;
@@ -2329,8 +2336,6 @@ bool CMenu::_loadPluginList()
 	bool addGamecube = false;
 	bool addWii = false;
 	bool addChannel = false;
-	//u8 addChannel = 0;
-	//u8 addEmuChannel = 0;
 	bool updateCache = m_cfg.getBool(PLUGIN_DOMAIN, "update_cache");
 
 	for(u8 i = 0; m_plugin.PluginExist(i); ++i)
@@ -2405,11 +2410,6 @@ bool CMenu::_loadPluginList()
 	if(addChannel)
 		_loadChannelList();
 		
-	/*if(addChannel || addEmuChannel)
-	{
-		m_cfg.setUInt(CHANNEL_DOMAIN, "channels_type", addChannel | addEmuChannel);
-		_loadChannelList();
-	}*/
 	m_cfg.remove(PLUGIN_DOMAIN, "update_cache");
 	return true;
 }
@@ -2477,7 +2477,6 @@ void CMenu::_hideWaitMessage()
 void CMenu::_showWaitMessage()
 {
 	m_vid.waitMessage(0.15f);
-	//m_vid.waitMessage(_textures("GENERAL", "waitmessage"), m_theme.getFloat("GENERAL", "waitmessage_delay", 0.f));
 }
 
 typedef struct map_entry
@@ -2645,7 +2644,8 @@ const char *CMenu::getBlankCoverPath(const dir_discHdr *element)
 		default:
 			blankCoverKey = "wii";
 	}
-	return fmt("%s/%s", m_boxPicDir.c_str(), m_theme.getString("BLANK_COVERS", blankCoverKey, fmt("%s.jpg", blankCoverKey)).c_str());
+	//return fmt("%s/%s", m_boxPicDir.c_str(), m_theme.getString("BLANK_COVERS", blankCoverKey, fmt("%s.jpg", blankCoverKey)).c_str());
+	return fmt("%s/%s.jpg", m_boxPicDir.c_str(), blankCoverKey);
 }
 
 const char *CMenu::getBoxPath(const dir_discHdr *element)

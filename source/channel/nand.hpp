@@ -10,7 +10,7 @@
 
 #include "loader/disc.h"
 
-#define REAL_NAND	0
+#define WII_NAND	0
 #define EMU_SD		1
 #define EMU_USB		2
 

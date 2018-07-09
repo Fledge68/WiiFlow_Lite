@@ -25,6 +25,56 @@ bool useMainIOS = false;
 volatile bool NANDemuView = false;
 volatile bool networkInit = false;
 
+/* quick check if we will be using a USB device. */
+/* if not then we can skip the 20 second cycle trying to connect a USB device. */
+/* this is nice for SD only users */
+bool isUsingUSB() {
+	/* First check if the app path exists on the SD card, if not then we're using USB */
+	struct stat dummy;
+	string appPath = fmt("%s:/%s", DeviceName[SD], APPS_DIR);
+	if(DeviceHandle.IsInserted(SD) && DeviceHandle.GetFSType(SD) != PART_FS_WBFS && stat(appPath.c_str(), &dummy) != 0)
+	{
+		// No app path exists on SD card, so assuming we're using USB.
+		return true;
+	}
+	
+	/* Check that the config file exists, or we can't do the following checks */
+	string configPath = fmt("%s/" CFG_FILENAME, appPath.c_str());
+	if(stat(configPath.c_str(), &dummy) != 0)
+	{
+		// The app path is on SD but no config file exists, so assuming we might need USB.
+		return true;
+	}
+	
+	/* Load the config file */
+	Config m_cfg;// = new Config();
+	if(!m_cfg.load(configPath.c_str())) 
+	{
+		// The app path is on SD and a config file exists, but we can't load it, so assuming we might need USB.
+		return true;
+	}
+	
+	/* If we have the WiiFlow data on USB, then we're using USB */
+	if(m_cfg.getBool("general", "data_on_usb", false))
+	{
+		// data_on_usb is true, so assuming we're using USB.
+		return true;
+	}
+	
+	/* If any of the sections have partition set > 0, we're on USB */
+	const char *domains[] = {WII_DOMAIN, GC_DOMAIN, CHANNEL_DOMAIN, PLUGIN_DOMAIN, HOMEBREW_DOMAIN};
+	for(int i = 0; i < 5; i++)
+	{
+		if(!m_cfg.getBool(domains[i], "disable", false) && m_cfg.getInt(domains[i], "partition", SD) != SD)
+		{
+			// a domain is enabled and partition is not SD, so assuming we're using USB.
+			return true;
+		}
+	}
+	gprintf("using SD only, no need for USB mounting.\n");
+	return false;
+}
+
 int main(int argc, char **argv)
 {
 	MEM_init(); //Inits both mem1lo and mem2
@@ -36,7 +86,6 @@ int main(int argc, char **argv)
 	bool iosOK = true;
 	char *gameid = NULL;
 	bool showFlashImg = true;
-	bool sd_only = false;
 	bool wait_loop = false;
 	char wait_dir[256];
 	memset(&wait_dir, 0, sizeof(wait_dir));
@@ -59,8 +108,6 @@ int main(int argc, char **argv)
 			wait_loop = true;
 		else if(strcasestr(argv[i], "noflash") != NULL)
 			showFlashImg = false;
-		else if(strcasestr(argv[i], "sdonly") != NULL)
-			sd_only = true;
 		else if(strlen(argv[i]) == 6)
 		{
 			gameid = argv[i];
@@ -72,6 +119,13 @@ int main(int argc, char **argv)
 		}	
 			
 	}
+	if(Sys_DolphinMode())
+		gprintf("Dolphin-Emu\n");
+	else if(IsOnWiiU())
+		gprintf("vWii Mode\n");
+	else 
+		gprintf("Real Wii\n");
+
 	/* Init video */
 	m_vid.init();
 	if(showFlashImg)
@@ -98,14 +152,13 @@ int main(int argc, char **argv)
 	else if(useMainIOS && CustomIOS(IOS_GetType(mainIOS))) /* Requested */
 		iosOK = loadIOS(mainIOS, false) && CustomIOS(CurrentIOS.Type);
 		
-	/* set reset and power button callbacks and exitTo option */
-	Sys_Init();
-	Sys_ExitTo(EXIT_TO_HBC);
+	/* sys inits */
+	Sys_Init();// set reset and power button callbacks
+	Sys_ExitTo(EXIT_TO_HBC);// set exit to in case of failed launch
 
 	/* mount Devices */
-	DeviceHandle.MountSD();
-	if(!sd_only && !Sys_DolphinMode())
-		DeviceHandle.MountAllUSB();
+	DeviceHandle.SetMountUSB(isUsingUSB());
+	DeviceHandle.MountAll();
 	
 	/* init wait images and show wait animation */
 	m_vid.setCustomWaitImgs(wait_dir, wait_loop);
