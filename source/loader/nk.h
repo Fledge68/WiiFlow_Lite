@@ -27,8 +27,6 @@ extern "C" {
 
 s32 Launch_nk(u64 TitleID, const char *nandpath, u64 ReturnTo);
 bool Load_Neek2o_Kernel();
-void check_neek2o(void);
-bool neek2o(void);
 /*void NKKeyCreate(u8 *TIK);
 void NKAESDecryptBlock(u8 *in, u8 *out);*/
 

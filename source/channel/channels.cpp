@@ -193,7 +193,7 @@ void Channels::Search()
 {
 	u32 count;
 	u64 *list = NULL;
-	if(!neek2o() && NANDemuView)
+	if(NANDemuView)
 		list = NandHandle.GetChannels(&count);
 	else
 		list = GetChannelList(&count);

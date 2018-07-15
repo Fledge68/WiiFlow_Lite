@@ -990,7 +990,7 @@ wstringEx CMenu::_getNoticeTranslation(int sorting, wstringEx curLetter)
 
 void CMenu::_setPartition(s8 direction)
 {
-	if((m_current_view == COVERFLOW_CHANNEL && neek2o()) || (m_source_cnt > 1 && !m_emuSaveNand))
+	if(m_source_cnt > 1 && !m_emuSaveNand)
 		return;
 	int FS_Type = 0;
 	/* change partition if direction is not zero */

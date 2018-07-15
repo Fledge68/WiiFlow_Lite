@@ -215,22 +215,19 @@ bool CMenu::_ExitTo(void)
 				}
 				else
 				{
-					//if(m_cfg.getBool("NEEK2O", "launchwiiflow", true) && !neek2o())
+					//if(m_cfg.getBool("NEEK2O", "launchwiiflow", true))
 					//	exitHandler(EXIT_TO_WFNK2O);
 					//else
 						exitHandler(EXIT_TO_SMNK2O);
 					/* if exiting to Neek2o we must set the EmuNand Path for sys_exit() in sys.c */
 					const char *EmuNandPath = NULL;
 					/* but only if we are not already in neek2o mode */
-					if(!neek2o())
+					if(_FindEmuPart(EMU_NAND, false) >= 0)// make sure emunand exists
+						EmuNandPath = NandHandle.Get_NandPath();
+					else
 					{
-						if(_FindEmuPart(EMU_NAND, false) >= 0)// make sure emunand exists
-							EmuNandPath = NandHandle.Get_NandPath();
-						else
-						{
-							error(_fmt("errneek1", L"Cannot launch neek2o. Verify your neek2o setup"));
-							_showExitTo();
-						}
+						error(_fmt("errneek1", L"Cannot launch neek2o. Verify your neek2o setup"));
+						_showExitTo();
 					}
 					Sys_SetNeekPath(EmuNandPath);
 				}
@@ -407,10 +404,7 @@ void CMenu::_textExitTo(void)
 	else
 		m_btnMgr.setText(m_homeBtnExitToPriiloader, _t("prii", L"Priiloader"));
 	m_btnMgr.setText(m_homeBtnExitToBootmii, _t("bootmii", L"Bootmii"));
-	if(!neek2o())
-		m_btnMgr.setText(m_homeBtnExitToNeek, _t("neek2o", L"neek2o"));
-	else
-		m_btnMgr.setText(m_homeBtnExitToNeek, _t("real", L"Real Nand"));
+	m_btnMgr.setText(m_homeBtnExitToNeek, _t("neek2o", L"neek2o"));
 }
 
 /*******************************************************************************/

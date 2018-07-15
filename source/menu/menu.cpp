@@ -231,10 +231,7 @@ bool CMenu::init()
 	
 	/* Load cIOS Map */
 	_installed_cios.clear();
-	if(!neek2o())
-		_load_installed_cioses();
-	else
-		_installed_cios[CurrentIOS.Version] = CurrentIOS.Version;
+	_load_installed_cioses();
 
 	/* Path Settings */
 	m_dol = fmt("%s/boot.dol", m_appDir.c_str());
@@ -2603,7 +2600,7 @@ void CMenu::RemoveCover(const char *id)
 void CMenu::TempLoadIOS(int IOS)
 {
 	/* Only temp reload in IOS58 mode */
-	if(useMainIOS || neek2o())
+	if(useMainIOS)
 		return;
 
 	if(IOS == IOS_TYPE_NORMAL_IOS)
