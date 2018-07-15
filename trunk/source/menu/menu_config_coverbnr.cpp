@@ -95,6 +95,7 @@ void CMenu::_CoverBanner(void)
 				fsop_deleteFile(fmt("%s/%.3s.bnr", m_bnrCacheDir.c_str(), id));
 				fsop_deleteFile(fmt("%s/%.3s.bnr", m_customBnrDir.c_str(), id));
 				_downloadBnr(id);
+				m_newGame = true;
 				_showCoverBanner();
 			}
 			else if(m_btnMgr.selected(m_coverbnrBtnDeleteBanner))
@@ -104,6 +105,7 @@ void CMenu::_CoverBanner(void)
 				fsop_deleteFile(fmt("%s/%s.bnr", m_customBnrDir.c_str(), id));
 				fsop_deleteFile(fmt("%s/%.3s.bnr", m_bnrCacheDir.c_str(), id));
 				fsop_deleteFile(fmt("%s/%.3s.bnr", m_customBnrDir.c_str(), id));
+				m_newGame = true;
 				_showCoverBanner();
 			}
 		}

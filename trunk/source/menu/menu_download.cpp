@@ -22,7 +22,7 @@
 #define TAG_CONSOLE		"{console}"
 
 #define GAMETDB_URL		"http://www.gametdb.com/wiitdb.zip?LANG=%s&FALLBACK=TRUE&WIIWARE=TRUE&GAMECUBE=TRUE"
-#define CUSTOM_BANNER_URL	"http://github.com/larsenv/Custom-Banners/raw/master/{gameid}.bnr"
+#define CUSTOM_BANNER_URL	"http://banner.rc24.xyz/{gameid}.bnr"
 
 static const char FMT_BPIC_URL[] = "http://art.gametdb.com/{console}/coverfullHQ/{loc}/{gameid}.png"\
 "|http://art.gametdb.com/{console}/coverfull/{loc}/{gameid}.png";
