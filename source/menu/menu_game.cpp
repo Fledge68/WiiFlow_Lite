@@ -1907,7 +1907,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 		error(_t("errgame15", L"Missing ext_loader.bin or ext_booter.bin!"));
 		_exitWiiflow();
 	}
-	if((!dvd || neek2o()) && !Sys_DolphinMode())
+	if(!dvd || neek2o())
 	{
 		if(_loadIOS(gameIOS, userIOS, id) == LOAD_IOS_FAILED)
 		{

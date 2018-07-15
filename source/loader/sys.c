@@ -171,50 +171,6 @@ void Sys_SetNeekPath(const char *Path)
 	NeekPath = Path;
 }
 
-bool ModeChecked = false;
-bool DolphinMode = false;
-bool Sys_DolphinMode(void)
-{
-	if(ModeChecked)
-		return DolphinMode;
-
-	/* Thanks to skidau for that code! */
-	u32 ifpr11 = 0x12345678;
-	u32 ifpr12 = 0x9abcdef0;
-	u32 ofpr1 = 0x00000000;
-	u32 ofpr2 = 0x00000000;
-	asm volatile (
-		"lwz 3,%[ifpr11]\n\t"
-		"stw 3,8(1)\n\t"
-		"lwz 3,%[ifpr12]\n\t"
-		"stw 3,12(1)\n\t"
-
-		"lfd 1,8(1)\n\t"
-		"frsqrte	1, 1\n\t"
-		"stfd 	1,8(1)\n\t"
-
-		"lwz 	3,8(1)\n\t" 
-		"stw	3, %[ofpr1]\n\t"
-		"lwz 	3,12(1)\n\t" 
-		"stw	3, %[ofpr2]\n\t"
-
-		:
-		 [ofpr1]"=m" (ofpr1)
-		,[ofpr2]"=m" (ofpr2)
-		:
-		 [ifpr11]"m" (ifpr11)
-		,[ifpr12]"m" (ifpr12)
-
-	);
-	if(ofpr1 != 0x56cc62b2)
-		DolphinMode = true;
-	else
-		DolphinMode = false;
-		
-	ModeChecked = true;
-	return DolphinMode;
-}
-
 bool hw_checked = false;
 bool on_hw = false;
 bool Sys_HW_Access(void)
@@ -222,7 +178,7 @@ bool Sys_HW_Access(void)
 	if(hw_checked == true)
 		return on_hw;
 
-	on_hw = AHBPROT_Patched() && (!Sys_DolphinMode() && !neek2o());
+	on_hw = AHBPROT_Patched() && !neek2o();
 	hw_checked = true;
 	return on_hw;
 }
