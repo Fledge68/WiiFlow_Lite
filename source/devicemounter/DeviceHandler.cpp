@@ -48,7 +48,6 @@ void DeviceHandler::Init()
 	OGC_Device.Init();// used for Devolution gamecube iso launcher
 }
 
-bool mount_usb = false;
 void DeviceHandler::SetMountUSB(bool using_usb)
 {
 	mount_usb = using_usb;
@@ -57,8 +56,7 @@ void DeviceHandler::SetMountUSB(bool using_usb)
 void DeviceHandler::MountAll()
 {
 	MountSD();
-	if(!Sys_DolphinMode() && mount_usb)
-		MountAllUSB();
+	MountAllUSB();
 }
 
 void DeviceHandler::UnMountAll()
@@ -147,6 +145,9 @@ bool DeviceHandler::MountUSB(int pos)
 
 bool DeviceHandler::MountAllUSB()
 {
+	if(!mount_usb)
+		return false;
+		
 	/* Kill possible USB thread */
 	KillUSBKeepAliveThread();
 	/* Wait for our slowass HDD */

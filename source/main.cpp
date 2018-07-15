@@ -1,6 +1,7 @@
 
 #include <ogc/system.h>
 #include <unistd.h>
+#include <sys/stat.h>
 
 #include "const_str.hpp"
 #include "booter/external_booter.hpp"
@@ -157,8 +158,9 @@ int main(int argc, char **argv)
 	Sys_ExitTo(EXIT_TO_HBC);// set exit to in case of failed launch
 
 	/* mount Devices */
-	DeviceHandle.SetMountUSB(isUsingUSB());
-	DeviceHandle.MountAll();
+	DeviceHandle.MountSD();// mount SD before calling isUsingUSB() duh!		
+	DeviceHandle.SetMountUSB(isUsingUSB() && !Sys_DolphinMode());
+	DeviceHandle.MountAllUSB();// only mounts any USB if isUsingUSB()
 	
 	/* init wait images and show wait animation */
 	m_vid.setCustomWaitImgs(wait_dir, wait_loop);

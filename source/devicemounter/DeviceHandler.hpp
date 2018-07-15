@@ -104,6 +104,7 @@ public:
 	void UnMountDevolution();
 private:
 	bool MountUSB(int part);
+	bool mount_usb;
 
 	PartitionHandle sd;
 	PartitionHandle usb;
