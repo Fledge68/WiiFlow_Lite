@@ -35,47 +35,12 @@
 #include "memory/mem2.hpp"
 #include "gecko/gecko.hpp"
 
-//static u32 KeyID;
-bool checked = false;
-bool neek = false;
 u32 kernelSize = 0;
 void *Kernel = NULL;
-
-void check_neek2o(void)
-{
-	if(checked == true)
-		return;
-	checked = true;
-
-	s32 ESHandle = IOS_Open("/dev/es", 0);
-	neek = (IOS_Ioctlv(ESHandle, 0xA2, 0, 0, NULL) == 0x666c6f77);
-	IOS_Close(ESHandle);
-	if(!neek)
-	{
-		s32 FSHandle = IOS_Open("/dev/fs", 0);
-		neek = (IOS_Ioctlv(FSHandle, 0x21, 0, 0, NULL) == 0);
-		IOS_Close(FSHandle);
-	}
-	if(!neek)
-	{
-		u32 num = 0;
-		ISFS_Initialize();
-		neek = (ISFS_ReadDir("/sneek", NULL, &num) == 0);
-		ISFS_Deinitialize();
-	}
-	gprintf("WiiFlow is in %s mode\n", neek ? "neek2o" : "real nand");
-}
-
-bool neek2o(void)
-{
-	return neek;
-}
 
 bool Load_Neek2o_Kernel()
 {
 	bool ret = true;
-	if(neek2o())
-		return ret;
 
 	if(IsOnWiiU())
 		Kernel = fsop_ReadFile("usb1:/sneek/vwiikernel.bin", &kernelSize);
@@ -93,11 +58,6 @@ bool Load_Neek2o_Kernel()
 
 s32 Launch_nk(u64 TitleID, const char *nandpath, u64 ReturnTo)
 {
-	if(neek2o())
-	{
-		SYS_ResetSystem(SYS_RESTART, 0, 0);
-		return 1;
-	}
 	memcpy((void*)0x91000000, Kernel, kernelSize);
 	DCFlushRange((void*)0x91000000, kernelSize);
 	free(Kernel);

@@ -178,7 +178,7 @@ bool Sys_HW_Access(void)
 	if(hw_checked == true)
 		return on_hw;
 
-	on_hw = AHBPROT_Patched() && !neek2o();
+	on_hw = AHBPROT_Patched();
 	hw_checked = true;
 	return on_hw;
 }

@@ -1465,7 +1465,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id, bool RealNAND_Channels)
 {
 	gprintf("Game ID# %s requested IOS %d.  User selected %d\n", id.c_str(), gameIOS, userIOS);
-	if(neek2o() || (RealNAND_Channels && IOS_GetType(mainIOS) == IOS_TYPE_STUB))
+	if(RealNAND_Channels && IOS_GetType(mainIOS) == IOS_TYPE_STUB)
 	{
 		/* doesn't use cIOS so we don't check userIOS */
 		bool ret = loadIOS(gameIOS, false);//load game requested IOS and patch nothing
@@ -1552,7 +1552,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	string id = string(hdr->id);
 
 	/* WII_Launch is used for launching real nand channels */
-	bool WII_Launch = (m_gcfg2.getBool(id, "custom", false) && (!NANDemuView || neek2o()));
+	bool WII_Launch = (m_gcfg2.getBool(id, "custom", false) && !NANDemuView);
 	/* use_dol = true to use the channels dol or false to use the old apploader method to boot channel */
 	bool use_dol = !m_gcfg2.getBool(id, "apploader", false);
 
@@ -1600,11 +1600,11 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	
 	int userIOS = m_gcfg2.getInt(id, "ios", 0);
 	u64 gameTitle = TITLE_ID(hdr->settings[0],hdr->settings[1]);
-	bool useNK2o = (m_gcfg2.getBool(id, "useneek", false) && !neek2o());//if not in neek2o and use neek is set
+	bool useNK2o = m_gcfg2.getBool(id, "useneek", false);//if not in neek2o and use neek is set
 	bool use_led = m_gcfg2.getBool(id, "led", false);
 	u32 gameIOS = ChannelHandle.GetRequestedIOS(gameTitle);
 
-	if(NANDemuView && !neek2o())
+	if(NANDemuView)
 	{
 		/* copy real NAND sysconf, settings.txt, & RFL_DB.dat if you want to, they are replaced if they already exist */
 		NandHandle.PreNandCfg(m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_miis", false), 
@@ -1619,7 +1619,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	m_cat.save(true);
 	m_cfg.save(true);
 
-	if(NANDemuView && !neek2o())
+	if(NANDemuView)
 	{
 		if(useNK2o)
 		{
@@ -1657,12 +1657,12 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		_exitWiiflow();
 	}
 
-	if((CurrentIOS.Type == IOS_TYPE_D2X || neek2o()) && returnTo != 0)
+	if(CurrentIOS.Type == IOS_TYPE_D2X && returnTo != 0)
 	{
 		if(D2X_PatchReturnTo(returnTo) >= 0)
 			memset(&returnTo, 0, sizeof(u32));// not needed - always set to 0 in external booter below
 	}
-	if(NANDemuView && !neek2o())
+	if(NANDemuView)
 	{
 		/* Enable our Emu NAND */
 		DeviceHandle.UnMountAll();
@@ -1705,15 +1705,6 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 {
 	string id(hdr->id);
 	string path(hdr->path);
-	if(neek2o())
-	{
-		int discID = id.c_str()[0] << 24 | id.c_str()[1] << 16 | id.c_str()[2] << 8 | id.c_str()[3];
-		if(WDVD_NEEK_LoadDisc((discID&0xFFFFFFFF), 0x5D1C9EA3) > 0)//5D1C9EA3 is wii disc magic
-		{
-			dvd = true;
-			sleep(3);
-		}
-	}
 
 	if(dvd)
 	{
@@ -1799,7 +1790,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 	else
 		emulate_mode--;
 		
-	if(emulate_mode && !dvd && !neek2o())
+	if(emulate_mode && !dvd)
 	{
 		int emuPart = _FindEmuPart(SAVES_NAND, true);
 		if(emuPart == -1)//if savepartition is unusable
@@ -1886,7 +1877,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 	_loadFile(gameconfig, gameconfigSize, m_txtCheatDir.c_str(), "gameconfig.txt");
 
 	int userIOS = m_gcfg2.getInt(id, "ios", 0);
-	int gameIOS = dvd && !neek2o() ? userIOS : GetRequestedGameIOS(hdr);
+	int gameIOS = dvd ? userIOS : GetRequestedGameIOS(hdr);
 
 	m_gcfg1.save(true);
 	m_gcfg2.save(true);
@@ -1895,7 +1886,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 
 	//this is a temp region change of real nand(rn) for gamesave or off or DVD if tempregionrn is set true
 	bool patchregion = false;
-	if(emulate_mode <= 1 && !neek2o() && m_cfg.getBool("GENERAL", "tempregionrn", false))
+	if(emulate_mode <= 1 && m_cfg.getBool("GENERAL", "tempregionrn", false))
 	{
 		gprintf("Temp region change applied\n");
 		// change real nand region to game ID[3] region. is reset when you turn wii off.
@@ -1907,7 +1898,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 		error(_t("errgame15", L"Missing ext_loader.bin or ext_booter.bin!"));
 		_exitWiiflow();
 	}
-	if(!dvd || neek2o())
+	if(!dvd)
 	{
 		if(_loadIOS(gameIOS, userIOS, id) == LOAD_IOS_FAILED)
 		{

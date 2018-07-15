@@ -191,8 +191,6 @@ void CMenu::_checkEmuNandSettings(void)
 
 void CMenu::_FullNandCheck(void)
 {
-	if(neek2o())
-		return;
 	for(u8 i = 0; i < 2; i++)
 	{
 		int emulate_mode;

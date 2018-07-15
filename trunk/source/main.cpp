@@ -135,20 +135,14 @@ int main(int argc, char **argv)
 	
 	/* Init NAND handlers */
 	NandHandle.Init();
-	check_neek2o();
-	if(neek2o())
-		NandHandle.Init_ISFS();
-	else
-		NandHandle.LoadDefaultIOS(); /* safe reload to preferred IOS */
+	NandHandle.LoadDefaultIOS(); /* safe reload to preferred IOS */
 		
 	/* load and check wiiflow save for possible new IOS and Port settings */
 	if(InternalSave.CheckSave())
 		InternalSave.LoadSettings();
 		
 	/* Handle (c)IOS Loading */
-	if(neek2o()) /* wont reload anythin */
-		iosOK = loadIOS(IOS_GetVersion(), false);
-	else if(useMainIOS && CustomIOS(IOS_GetType(mainIOS))) /* Requested */
+	if(useMainIOS && CustomIOS(IOS_GetType(mainIOS))) /* Requested */
 		iosOK = loadIOS(mainIOS, false) && CustomIOS(CurrentIOS.Type);
 		
 	/* sys inits */
@@ -170,9 +164,9 @@ int main(int argc, char **argv)
 	/* init configs, folders, coverflow, gui and more */
 	if(mainMenu.init())
 	{
-		if(CurrentIOS.Version != mainIOS && !neek2o())
+		if(CurrentIOS.Version != mainIOS)
 		{
-			if(useMainIOS || !DeviceHandle.UsablePartitionMounted())
+			if(useMainIOS || !DeviceHandle.UsablePartitionMounted())// if useMainIOS or there's isn't a FAT or NTFS partition
 			{
 				useMainIOS = false;
 				mainMenu.TempLoadIOS();
