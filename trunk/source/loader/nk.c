@@ -46,8 +46,6 @@ void check_neek2o(void)
 	if(checked == true)
 		return;
 	checked = true;
-	if(Sys_DolphinMode() == true)
-		return;
 
 	s32 ESHandle = IOS_Open("/dev/es", 0);
 	neek = (IOS_Ioctlv(ESHandle, 0xA2, 0, 0, NULL) == 0x666c6f77);

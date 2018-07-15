@@ -120,9 +120,7 @@ int main(int argc, char **argv)
 		}	
 			
 	}
-	if(Sys_DolphinMode())
-		gprintf("Dolphin-Emu\n");
-	else if(IsOnWiiU())
+	if(IsOnWiiU())
 		gprintf("vWii Mode\n");
 	else 
 		gprintf("Real Wii\n");
@@ -138,7 +136,7 @@ int main(int argc, char **argv)
 	/* Init NAND handlers */
 	NandHandle.Init();
 	check_neek2o();
-	if(neek2o() || Sys_DolphinMode())
+	if(neek2o())
 		NandHandle.Init_ISFS();
 	else
 		NandHandle.LoadDefaultIOS(); /* safe reload to preferred IOS */
@@ -148,7 +146,7 @@ int main(int argc, char **argv)
 		InternalSave.LoadSettings();
 		
 	/* Handle (c)IOS Loading */
-	if(neek2o() || Sys_DolphinMode()) /* wont reload anythin */
+	if(neek2o()) /* wont reload anythin */
 		iosOK = loadIOS(IOS_GetVersion(), false);
 	else if(useMainIOS && CustomIOS(IOS_GetType(mainIOS))) /* Requested */
 		iosOK = loadIOS(mainIOS, false) && CustomIOS(CurrentIOS.Type);
@@ -159,7 +157,7 @@ int main(int argc, char **argv)
 
 	/* mount Devices */
 	DeviceHandle.MountSD();// mount SD before calling isUsingUSB() duh!		
-	DeviceHandle.SetMountUSB(isUsingUSB() && !Sys_DolphinMode());
+	DeviceHandle.SetMountUSB(isUsingUSB());
 	DeviceHandle.MountAllUSB();// only mounts any USB if isUsingUSB()
 	
 	/* init wait images and show wait animation */
@@ -172,7 +170,7 @@ int main(int argc, char **argv)
 	/* init configs, folders, coverflow, gui and more */
 	if(mainMenu.init())
 	{
-		if(CurrentIOS.Version != mainIOS && !neek2o() && !Sys_DolphinMode())
+		if(CurrentIOS.Version != mainIOS && !neek2o())
 		{
 			if(useMainIOS || !DeviceHandle.UsablePartitionMounted())
 			{
