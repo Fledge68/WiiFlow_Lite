@@ -6,7 +6,6 @@
 
 #include <ogc/pad.h>
 #include "wiiuse/wpad.h"
-#include "wupc/wupc.h"
 #include "sicksaxis-wrapper/sicksaxis-wrapper.h"
 
 #include "video.hpp"
@@ -64,7 +63,7 @@ public:
 	void noHover(bool nohover = false);
 	void click(s16 id = -1);
 	bool selected(s16 button = -1);
-	void setRumble(int, bool wii = false, bool gc = false, bool wupc = false);
+	void setRumble(int, bool wii = false, bool gc = false);
 	void deselect(void){ for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--) m_selected[chan] = -1; }
 	void stopSounds(void);
 	void setSoundVolume(int vol);
@@ -148,7 +147,6 @@ private:
 	u8 m_rumble[WPAD_MAX_WIIMOTES];
 	bool wii_rumble[WPAD_MAX_WIIMOTES];
 	bool gc_rumble[WPAD_MAX_WIIMOTES];
-	bool wupc_rumble[WPAD_MAX_WIIMOTES];
 	GuiSound *m_sndHover;
 	GuiSound *m_sndClick;
 	u8 m_soundVolume;
