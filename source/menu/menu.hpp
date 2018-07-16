@@ -1088,9 +1088,10 @@ private:
 	void _launchGame(dir_discHdr *hdr, bool dvd, bool disc_cfg = false);
 	void _launchChannel(dir_discHdr *hdr);
 	void _launchHomebrew(const char *filepath, vector<string> arguments);
-	vector<string> _getMetaXML(const char *bootpath);
 	void _launchGC(dir_discHdr *hdr, bool disc);
 	void _launchShutdown();
+	vector<string> _getMetaXML(const char *bootpath);
+	void _extractBnr(const dir_discHdr *hdr);
 	void _setCurrentItem(const dir_discHdr *hdr);
 	void _exitWiiflow();
 	void exitHandler(int ExitTo);

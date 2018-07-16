@@ -252,11 +252,10 @@ void CVideo::_clearScreen()
 
 void CVideo::prepare(void)
 {
-	if (m_rmode->aa)
-		GX_SetPixelFmt(GX_PF_RGBA6_Z24, GX_ZC_LINEAR);
+	if(m_rmode->aa) 
+		GX_SetPixelFmt(GX_PF_RGB565_Z16, GX_ZC_LINEAR);// 16 bit color (565)
 	else
-		GX_SetPixelFmt(GX_PF_RGB8_Z24, GX_ZC_LINEAR);
-	//GX_SetPixelFmt(GX_PF_RGB8_Z24, GX_ZC_LINEAR);
+		GX_SetPixelFmt(GX_PF_RGB8_Z24, GX_ZC_LINEAR);// 24 bit color (888)
 	_setViewPort(0.f, 0.f, (float)m_rmode->fbWidth, (float)m_rmode->efbHeight);
 	GX_SetScissor(0, 0, m_rmode->fbWidth, m_rmode->efbHeight);
 	GX_InvVtxCache();
@@ -352,7 +351,7 @@ void CVideo::prepareAAPass(int aaStep)
 			y += CVideo::_jitter8[aaStep][1];
 			break;
 	}
-	GX_SetPixelFmt(m_aaAlpha ? GX_PF_RGBA6_Z24 : GX_PF_RGB8_Z24, GX_ZC_LINEAR);
+	GX_SetPixelFmt(m_aaAlpha ? GX_PF_RGBA6_Z24 : GX_PF_RGB8_Z24, GX_ZC_LINEAR);//rgba6 is 6 bit color with 6 bit alpha = 24bit (6666)
 	_setViewPort(x, y, (float)w, (float)h);
 	GX_SetScissor(0, 0, w, h);
 	GX_InvVtxCache();
