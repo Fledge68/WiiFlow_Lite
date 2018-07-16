@@ -430,19 +430,16 @@ int CMenu::_cacheCovers()
 		m_thrdMessageAdded = true;
 		
 		bool fullCover = true;
-		memset(&coverPath, 0, sizeof(coverPath));
-		memset(&wfcPath, 0, sizeof(wfcPath));
-		memset(&cachePath, 0, sizeof(cachePath));
 		
 		/* get game name or ID */
-		const char *gameNameOrID = CoverFlow.getFilenameId(&(*hdr));
+		const char *gameNameOrID = CoverFlow.getFilenameId(&(*hdr));// &(*hdr) converts iterator to pointer to mem address
 		
 		/* get cover png path */
-		strncpy(coverPath, getBoxPath(&(*hdr)), sizeof(coverPath));
+		strlcpy(coverPath, getBoxPath(&(*hdr)), sizeof(coverPath));
 		if(!fsop_FileExist(coverPath))
 		{
 			fullCover = false;
-			strncpy(coverPath, getFrontPath(&(*hdr)), sizeof(coverPath));
+			strlcpy(coverPath, getFrontPath(&(*hdr)), sizeof(coverPath));
 			if(!fsop_FileExist(coverPath))
 				continue;
 		}
@@ -467,7 +464,29 @@ int CMenu::_cacheCovers()
 			/* create cover texture */
 			CoverFlow.cacheCover(wfcPath, coverPath, fullCover);
 		}
+		
+		// cache wii and channel banners
+		if(hdr->type == TYPE_WII_GAME || hdr->type == TYPE_CHANNEL || hdr->type == TYPE_EMUCHANNEL)
+		{
+			CurrentBanner.ClearBanner();
+			char cached_banner[256];
+			strlcpy(cached_banner, fmt("%s/%s.bnr", m_bnrCacheDir.c_str(), hdr->id), sizeof(cached_banner));
+			if(fsop_FileExist(cached_banner))
+				continue;
+			if(hdr->type == TYPE_WII_GAME)
+			{
+				_extractBnr(&(*hdr));
+			}
+			else if(hdr->type == TYPE_CHANNEL || hdr->type == TYPE_EMUCHANNEL)
+			{
+				ChannelHandle.GetBanner(TITLE_ID(hdr->settings[0], hdr->settings[1]));
+			}
+			
+			if(CurrentBanner.IsValid())
+				fsop_WriteFile(cached_banner, CurrentBanner.GetBannerFile(), CurrentBanner.GetBannerFileSize());
+		}
 	}
+	CurrentBanner.ClearBanner();
 	CoverFlow.startCoverLoader();
 	return 0;
 }

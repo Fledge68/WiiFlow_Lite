@@ -198,38 +198,10 @@ const CMenu::SOption CMenu::_debugger[3] = {
 };
 
 map<u8, u8> CMenu::_installed_cios;
-u8 banner_title[84];
 
 static inline int loopNum(int i, int s)
 {
 	return (i + s) % s;
-}
-
-static void _extractBannerTitle(int language)
-{
-	memset(banner_title, 0, 84);
-	CurrentBanner.GetName(banner_title, language);
-}
-
-static void _extractChannelBnr(const u64 chantitle)
-{
-	ChannelHandle.GetBanner(chantitle);
-}
-
-static void _extractBnr(const dir_discHdr *hdr)
-{
-	u32 size = 0;
-	DeviceHandle.OpenWBFS(currentPartition);
-	wbfs_disc_t *disc = WBFS_OpenDisc((u8 *) &hdr->id, (char *) hdr->path);
-	if(disc != NULL)
-	{
-		void *bnr = NULL;
-		size = wbfs_extract_file(disc, (char*)"opening.bnr", &bnr);
-		if(size > 0)
-			CurrentBanner.SetBanner((u8*)bnr, size, false, true);
-		WBFS_CloseDisc(disc);
-	}
-	WBFS_Close();
 }
 
 static int GetLanguage(const char *lang)
@@ -276,6 +248,22 @@ static u8 GetRequestedGameIOS(dir_discHdr *hdr)
 	}
 	WBFS_Close();
 	return IOS;
+}
+
+void CMenu::_extractBnr(const dir_discHdr *hdr)
+{
+	u32 size = 0;
+	DeviceHandle.OpenWBFS(currentPartition);
+	wbfs_disc_t *disc = WBFS_OpenDisc((u8 *) &hdr->id, (char *) hdr->path);
+	if(disc != NULL)
+	{
+		void *bnr = NULL;
+		size = wbfs_extract_file(disc, (char*)"opening.bnr", &bnr);
+		if(size > 0)
+			CurrentBanner.SetBanner((u8*)bnr, size, false, true);
+		WBFS_CloseDisc(disc);
+	}
+	WBFS_Close();
 }
 
 void CMenu::_setCurrentItem(const dir_discHdr *hdr)
@@ -702,24 +690,27 @@ void CMenu::_game(bool launch)
 						currentPartition = romsPartition;
 						break;
 				}
+
 				/* Get Banner Title for Playlog */
-				CurrentBanner.ClearBanner();
-				NANDemuView = hdr->type == TYPE_EMUCHANNEL;
-				if(hdr->type == TYPE_CHANNEL || hdr->type == TYPE_EMUCHANNEL)
-				{
-					u64 chantitle = CoverFlow.getChanTitle();
-					_extractChannelBnr(chantitle);
-				}
-				else if(hdr->type == TYPE_WII_GAME)
-					_extractBnr(hdr);
-				if(CurrentBanner.IsValid())
-					_extractBannerTitle(GetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str()));
 				if(hdr->type == TYPE_WII_GAME || hdr->type == TYPE_CHANNEL || hdr->type == TYPE_EMUCHANNEL)
 				{
+					NANDemuView = hdr->type == TYPE_EMUCHANNEL;
+					CurrentBanner.ClearBanner();
+					if(hdr->type == TYPE_CHANNEL || hdr->type == TYPE_EMUCHANNEL)
+					{
+						u64 chantitle = CoverFlow.getChanTitle();
+						ChannelHandle.GetBanner(chantitle);
+					}
+					else if(hdr->type == TYPE_WII_GAME)
+						_extractBnr(hdr);
+					u8 banner_title[84];
+					memset(banner_title, 0, 84);
+					if(CurrentBanner.IsValid())
+						CurrentBanner.GetName(banner_title, GetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str()));
 					if(Playlog_Update(hdr->id, banner_title) < 0)
 						Playlog_Delete();
+					CurrentBanner.ClearBanner();
 				}
-				CurrentBanner.ClearBanner();
 
 				/* Finally boot it */
 				gprintf("Launching game %s\n", hdr->id);
@@ -2178,12 +2169,12 @@ void * CMenu::_gameSoundThread(void *obj)
 		CurrentBanner.SetBanner(cached_bnr_file, cached_bnr_size, false, true);
 	else if(GameHdr->type == TYPE_WII_GAME)
 	{
-		_extractBnr(GameHdr);
+		m->_extractBnr(GameHdr);
 		m_banner_loaded = true;
 	}
 	else if(GameHdr->type == TYPE_CHANNEL || GameHdr->type == TYPE_EMUCHANNEL)
 	{
-		_extractChannelBnr(TITLE_ID(GameHdr->settings[0], GameHdr->settings[1]));
+		ChannelHandle.GetBanner(TITLE_ID(GameHdr->settings[0], GameHdr->settings[1]));
 		m_banner_loaded = true;
 	}
 		
