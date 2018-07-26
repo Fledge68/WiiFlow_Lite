@@ -413,10 +413,11 @@ void CButtonsMgr::setSoundVolume(int vol)
 	m_soundVolume = min(max(0, vol), 0xFF);
 }
 
-void CButtonsMgr::setRumble(int chan, bool wii, bool gc)
+void CButtonsMgr::setRumble(int chan, bool wii, bool gc, bool wupc)
 {
 	wii_rumble[chan] = wii;
 	gc_rumble[chan] = gc;
+	wupc_rumble[chan] = wupc;
 }
 
 void CButtonsMgr::setMouse(bool enable)
@@ -459,6 +460,7 @@ void CButtonsMgr::click(s16 id)
 {
 	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 	{
+		WUPC_Rumble(chan, 0);
 		WPAD_Rumble(chan, 0);
 		PAD_ControlMotor(chan, 0);
 
@@ -517,6 +519,7 @@ void CButtonsMgr::mouse(int chan, int x, int y)
 					if(m_rumbleEnabled)
 					{
 						m_rumble[chan] = 4;
+						if(wupc_rumble[chan]) WUPC_Rumble(chan, 1);
 						if(wii_rumble[chan]) WPAD_Rumble(chan, 1);
 						if(gc_rumble[chan]) PAD_ControlMotor(chan, 1);
 					}
@@ -600,6 +603,7 @@ void CButtonsMgr::tick(void)
 	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 		if (m_rumble[chan] > 0 && --m_rumble[chan] == 0)
 		{
+			WUPC_Rumble(chan, 0);
 			WPAD_Rumble(chan, 0);
 			PAD_ControlMotor(chan, 0);
 		}

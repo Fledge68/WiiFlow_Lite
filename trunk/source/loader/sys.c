@@ -16,6 +16,7 @@
 #include "memory/mem2.hpp"
 #include "memory/memory.h"
 #include "wiiuse/wpad.h"
+#include "wupc/wupc.h"
 #include "sicksaxis-wrapper/sicksaxis-wrapper.h"
 
 /* Variables */
@@ -35,6 +36,7 @@ void Open_Inputs(void)
 {
 	/* Initialize Wiimote subsystem */
 	PAD_Init();
+	WUPC_Init();
 	WPAD_Init();
 	DS3_Init();
 	//drc
@@ -47,6 +49,8 @@ void Open_Inputs(void)
 
 void Close_Inputs(void)
 {
+	WUPC_Shutdown();
+
 	u32 cnt;
 
 	/* Disconnect Wiimotes */
