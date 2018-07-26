@@ -27,6 +27,7 @@
 #include "music/MusicPlayer.hpp"
 #include "plugin/plugin.hpp"
 #include "wiiuse/wpad.h"
+#include "wupc/wupc.h"
 #include "sicksaxis-wrapper/sicksaxis-wrapper.h"
 
 using namespace std;
@@ -666,6 +667,8 @@ private:
 	bool wBtn_HeldChan(int btn, u8 ext, int &chan);
 	u32 gc_btnsPressed;
 	u32 gc_btnsHeld;
+	u32 wupc_btnsPressed[WPAD_MAX_WIIMOTES];
+	u32 wupc_btnsHeld[WPAD_MAX_WIIMOTES];
 	bool ds3_btnRepeat(s64 btn);
 	bool m_show_pointer[WPAD_MAX_WIIMOTES];
 	float left_stick_angle[WPAD_MAX_WIIMOTES];
