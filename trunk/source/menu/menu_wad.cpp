@@ -345,6 +345,7 @@ int getTID(const char *path, u64 *tid)
 void * CMenu::_pThread(void *obj)
 {
 	CMenu *m = (CMenu*)obj;
+	m->SetupInput();
 	while(m->m_thrdInstalling)
 	{
 		m->_mainLoopCommon();

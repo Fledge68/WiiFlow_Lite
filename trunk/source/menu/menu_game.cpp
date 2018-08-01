@@ -197,7 +197,7 @@ const CMenu::SOption CMenu::_debugger[3] = {
 	{ "dbgfwrite", L"OSReport" },
 };
 
-map<u8, u8> CMenu::_installed_cios;
+//map<u8, u8> CMenu::_installed_cios;
 
 static inline int loopNum(int i, int s)
 {
@@ -663,69 +663,78 @@ void CMenu::_game(bool launch)
 					(!ShowPointer() && !m_video_playing && !coverFlipped))
 			{
 				_hideGame();
-				MusicPlayer.Stop();
-				_cleanupBanner();
-				m_cfg.setInt("GENERAL", "cat_startpage", m_catStartPage);
-				m_gcfg2.load(fmt("%s/" GAME_SETTINGS2_FILENAME, m_settingsDir.c_str()));
-				/* change to current game's partition */
-				switch(hdr->type)
+				if(isWiiVC && (hdr->type == TYPE_WII_GAME || hdr->type == TYPE_EMUCHANNEL))
 				{
-					case TYPE_CHANNEL:
-					case TYPE_EMUCHANNEL:
-						currentPartition = m_cfg.getInt(CHANNEL_DOMAIN, "partition", 1);
-						break;
-					case TYPE_HOMEBREW:
-						currentPartition = m_cfg.getInt(HOMEBREW_DOMAIN, "partition", 1);
-						break;
-					case TYPE_GC_GAME:
-						currentPartition = m_cfg.getInt(GC_DOMAIN, "partition", 1);
-						break;
-					case TYPE_WII_GAME:
-						currentPartition = m_cfg.getInt(WII_DOMAIN, "partition", 1);
-						break;
-					default:
-						int romsPartition = m_plugin.GetRomPartition(m_plugin.GetPluginPosition(hdr->settings[0]));
-						if(romsPartition < 0)
-							romsPartition = m_cfg.getInt(PLUGIN_DOMAIN, "partition", 0);
-						currentPartition = romsPartition;
-						break;
+					error(_t("errgame19", L"Can't launch in Wii virtual console mode!"));
+					launch = false;
+					_showGame();
 				}
-
-				/* Get Banner Title for Playlog */
-				if(hdr->type == TYPE_WII_GAME || hdr->type == TYPE_CHANNEL || hdr->type == TYPE_EMUCHANNEL)
+				else
 				{
-					NANDemuView = hdr->type == TYPE_EMUCHANNEL;
-					CurrentBanner.ClearBanner();
-					if(hdr->type == TYPE_CHANNEL || hdr->type == TYPE_EMUCHANNEL)
+					MusicPlayer.Stop();
+					_cleanupBanner();
+					m_cfg.setInt("GENERAL", "cat_startpage", m_catStartPage);
+					m_gcfg2.load(fmt("%s/" GAME_SETTINGS2_FILENAME, m_settingsDir.c_str()));
+					/* change to current game's partition */
+					switch(hdr->type)
 					{
-						u64 chantitle = CoverFlow.getChanTitle();
-						ChannelHandle.GetBanner(chantitle);
+						case TYPE_CHANNEL:
+						case TYPE_EMUCHANNEL:
+							currentPartition = m_cfg.getInt(CHANNEL_DOMAIN, "partition", 1);
+							break;
+						case TYPE_HOMEBREW:
+							currentPartition = m_cfg.getInt(HOMEBREW_DOMAIN, "partition", 1);
+							break;
+						case TYPE_GC_GAME:
+							currentPartition = m_cfg.getInt(GC_DOMAIN, "partition", 1);
+							break;
+						case TYPE_WII_GAME:
+							currentPartition = m_cfg.getInt(WII_DOMAIN, "partition", 1);
+							break;
+						default:
+							int romsPartition = m_plugin.GetRomPartition(m_plugin.GetPluginPosition(hdr->settings[0]));
+							if(romsPartition < 0)
+								romsPartition = m_cfg.getInt(PLUGIN_DOMAIN, "partition", 0);
+							currentPartition = romsPartition;
+							break;
 					}
-					else if(hdr->type == TYPE_WII_GAME)
-						_extractBnr(hdr);
-					u8 banner_title[84];
-					memset(banner_title, 0, 84);
-					if(CurrentBanner.IsValid())
-						CurrentBanner.GetName(banner_title, GetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str()));
-					if(Playlog_Update(hdr->id, banner_title) < 0)
-						Playlog_Delete();
-					CurrentBanner.ClearBanner();
+
+					/* Get Banner Title for Playlog */
+					if(hdr->type == TYPE_WII_GAME || hdr->type == TYPE_CHANNEL || hdr->type == TYPE_EMUCHANNEL)
+					{
+						NANDemuView = hdr->type == TYPE_EMUCHANNEL;
+						CurrentBanner.ClearBanner();
+						if(hdr->type == TYPE_CHANNEL || hdr->type == TYPE_EMUCHANNEL)
+						{
+							u64 chantitle = CoverFlow.getChanTitle();
+							ChannelHandle.GetBanner(chantitle);
+						}
+						else if(hdr->type == TYPE_WII_GAME)
+							_extractBnr(hdr);
+						u8 banner_title[84];
+						memset(banner_title, 0, 84);
+						if(CurrentBanner.IsValid())
+							CurrentBanner.GetName(banner_title, GetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str()));
+						if(Playlog_Update(hdr->id, banner_title) < 0)
+							Playlog_Delete();
+						CurrentBanner.ClearBanner();
+					}
+
+					/* Finally boot it */
+					gprintf("Launching game %s\n", hdr->id);
+					_launch(hdr);
+
+					if(m_exit)
+						break;
+
+					_hideWaitMessage();
+					launch = false;
+
+					for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
+						WPAD_SetVRes(chan, m_vid.width() + m_cursor[chan].width(), m_vid.height() + m_cursor[chan].height());
+					m_gcfg2.unload();
+					_showGame();
 				}
-
-				/* Finally boot it */
-				gprintf("Launching game %s\n", hdr->id);
-				_launch(hdr);
-
-				if(m_exit)
-					break;
-
-				_hideWaitMessage();
-				launch = false;
-
-				for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
-					WPAD_SetVRes(chan, m_vid.width() + m_cursor[chan].width(), m_vid.height() + m_cursor[chan].height());
-				m_gcfg2.unload();
-				_showGame();
 			}
 			else if(!coverFlipped)
 			{
@@ -1055,6 +1064,7 @@ void CMenu::_launch(const dir_discHdr *hdr)
 			}
 		}
 		/* launch plugin with args */
+		gprintf("launching plugin app\n");
 		_launchHomebrew(plugin_file, arguments);
 	}
 	else if(launchHdr.type == TYPE_HOMEBREW)
@@ -1066,6 +1076,7 @@ void CMenu::_launch(const dir_discHdr *hdr)
 		{
 			m_cfg.setString(HOMEBREW_DOMAIN, "current_item", strrchr(launchHdr.path, '/') + 1);
 			vector<string> arguments = _getMetaXML(bootpath);
+			gprintf("launching homebrew app\n");
 			_launchHomebrew(bootpath, arguments);
 		}
 	}
@@ -1084,6 +1095,7 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 
 	Playlog_Delete();
 
+	/* load boot.dol into memory and load app_booter.bin into memory */
 	bool ret = (LoadHomebrew(filepath) && LoadAppBooter(fmt("%s/app_booter.bin", m_binsDir.c_str())));
 	if(ret == false)
 	{
@@ -1096,7 +1108,7 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 	AddBootArgument(filepath);
 	for(u32 i = 0; i < arguments.size(); ++i)
 	{
-		gprintf("Argument: %s\n", arguments[i].c_str());
+		gprintf("app argument: %s\n", arguments[i].c_str());
 		AddBootArgument(arguments[i].c_str());
 	}
 
@@ -1455,7 +1467,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 /* dont confuse loadIOS with _loadIOS */
 int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id, bool RealNAND_Channels)
 {
-	gprintf("Game ID# %s requested IOS %d.  User selected %d\n", id.c_str(), gameIOS, userIOS);
+	gprintf("Game ID %s requested IOS %d.\nUser selected %d\n", id.c_str(), gameIOS, userIOS);
 	if(RealNAND_Channels && IOS_GetType(mainIOS) == IOS_TYPE_STUB)
 	{
 		/* doesn't use cIOS so we don't check userIOS */
@@ -1560,12 +1572,10 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	u8 patchVidMode = min(m_gcfg2.getUInt(id, "patch_video_modes", 0), ARRAY_SIZE(CMenu::_vidModePatch) - 1u);
 	int aspectRatio = min(m_gcfg2.getUInt(id, "aspect_ratio", 0), ARRAY_SIZE(CMenu::_AspectRatio) - 1) - 1;// -1,0,1
 	
-	//u32 returnTo = 0;
-	//const char *rtrn = m_cfg.getString("GENERAL", "returnto").c_str();
-	//if(strlen(rtrn) == 4)
-	//	returnTo = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
+	u32 returnTo = 0;
 	const char *rtrn = m_cfg.getString("GENERAL", "returnto").c_str();
-	u32 returnTo = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
+	if(strlen(rtrn) == 4)
+		returnTo = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
 
 	u8 *cheatFile = NULL;
 	u32 cheatSize = 0;
@@ -1683,7 +1693,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		setLanguage(language);
 		ocarina_load_code(cheatFile, cheatSize);
 		NandHandle.Patch_AHB(); /* Identify maybe uses it so keep AHBPROT disabled */
-		PatchIOS(true); /* Patch for everything */
+		PatchIOS(true,  isWiiVC); /* Patch for everything */
 		Identify(gameTitle);
 
 		ExternalBooter_ChannelSetup(gameTitle, use_dol);
@@ -1768,8 +1778,10 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 	int language = min(m_gcfg2.getUInt(id, "language", 0), ARRAY_SIZE(CMenu::_languages) - 1u);
 	language = (language == 0) ? min(m_cfg.getUInt("GENERAL", "game_language", 0), ARRAY_SIZE(CMenu::_languages) - 1u) : language;
 
+	u32 returnTo = 0;
 	const char *rtrn = m_cfg.getString("GENERAL", "returnto").c_str();
-	u32 returnTo = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
+	if(strlen(rtrn) == 4)
+		returnTo = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
 	
 	int aspectRatio = min(m_gcfg2.getUInt(id, "aspect_ratio", 0), ARRAY_SIZE(CMenu::_AspectRatio) - 1u) - 1;
 	u8 patchVidMode = min(m_gcfg2.getUInt(id, "patch_video_modes", 0), ARRAY_SIZE(CMenu::_vidModePatch) - 1u);

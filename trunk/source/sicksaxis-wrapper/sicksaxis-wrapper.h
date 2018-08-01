@@ -4,7 +4,7 @@
 #ifndef _DS3WRAPPER_H_
 #define _DS3WRAPPER_H_
 
-#include <gctypes.h>
+//#include <gctypes.h>
 
 struct ss_device;
 

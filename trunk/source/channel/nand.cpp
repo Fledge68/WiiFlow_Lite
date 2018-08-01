@@ -79,9 +79,9 @@ void Nand::Init()
 
 bool Nand::LoadDefaultIOS(void)
 {
-	Patch_AHB();
-	s32 ret = IOS_ReloadIOS(IOS_GetPreferredVersion());
-	loadIOS(IOS_GetVersion(), false);
+	Patch_AHB();//apply a patch so the new IOS will also have AHBPROT disabled
+	s32 ret = IOS_ReloadIOS(IOS_GetPreferredVersion());// reload to preferred IOS. not sure what wiiflows preferred IOS is.
+	loadIOS(IOS_GetVersion(), false);// this basically does nothing (well very little). definetly doesn't load a IOS or shutdown anything.
 	Init_ISFS();
 	return (ret == 0);
 }
@@ -1128,7 +1128,7 @@ void Nand::Init_ISFS()
 {
 	if(isfs_inited)
 		return;
-	PatchIOS(IOS_GetVersion() < 222);
+	PatchIOS(IOS_GetVersion() < 222, isWiiVC);
 	usleep(1000);
 	gprintf("Init ISFS\n");
 	ISFS_Initialize();

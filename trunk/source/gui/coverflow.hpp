@@ -8,8 +8,6 @@
 #include <string>
 
 #include "wiiuse/wpad.h"
-#include <ogc/pad.h>
-
 #include "video.hpp"
 #include "FreeTypeGX.h"
 #include "text.hpp"

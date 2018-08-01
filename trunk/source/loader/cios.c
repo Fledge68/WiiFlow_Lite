@@ -120,6 +120,8 @@ bool IOS_D2X(u8 ios, u8 *base)
 
 u8 IOS_GetType(u8 slot)
 {
+	if(isWiiVC)
+		return IOS_TYPE_NORMAL_IOS;
 	u32 TMD_Length;
 	signed_blob *TMD_Buffer = GetTMD(slot, &TMD_Length);
 	if(TMD_Buffer == NULL)
