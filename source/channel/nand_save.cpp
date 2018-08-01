@@ -163,7 +163,7 @@ void NandSave::LoadSettings()
 	ios_settings_t *file = (ios_settings_t*)ISFS_GetFile(ISFS_Path, &size, -1);
 	if(file != NULL && size == sizeof(ios_settings_t))
 	{
-		gprintf("Loading IOS Settings from NAND\n");
+		gprintf("Loading IOS Settings from wiiflow save\n");
 		cur_ios = file->cios;
 		if(cur_ios > 0)
 			mainIOS = cur_ios;
@@ -177,7 +177,7 @@ void NandSave::LoadSettings()
 	u8 *port = ISFS_GetFile(ISFS_Path, &size, -1);
 	if(port != NULL && size == sizeof(u8))
 	{
-		gprintf("Using Port Settings from NAND\n");
+		gprintf("Using Port Settings from wiiflow save\n");
 		currentPort = port[0] & 1;
 	}
 	if(port != NULL)
@@ -191,7 +191,7 @@ void NandSave::SaveIOS()
 	memset(&ios_settings, 0, sizeof(ios_settings_t));
 	ios_settings.cios = cur_ios;
 	ios_settings.use_cios = cur_load;
-	gprintf("Saving IOS Settings to NAND\n");
+	gprintf("Saving IOS Settings to wiiflow save\n");
 	WriteFile(IOS_SAVE_PATH, (u8*)&ios_settings, sizeof(ios_settings_t));
 }
 
@@ -199,7 +199,7 @@ void NandSave::SavePort(u8 port)
 {
 	if(loaded == false)
 		return;
-	gprintf("Saving Port Settings to NAND\n");
+	gprintf("Saving Port Settings to wiiflow save\n");
 	WriteFile(PORT_SAVE_PATH, &port, sizeof(port));
 }
 

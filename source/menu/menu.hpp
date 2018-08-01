@@ -26,9 +26,10 @@
 #include "music/gui_sound.h"
 #include "music/MusicPlayer.hpp"
 #include "plugin/plugin.hpp"
+#include "sicksaxis-wrapper/sicksaxis-wrapper.h"
 #include "wiiuse/wpad.h"
 #include "wupc/wupc.h"
-#include "sicksaxis-wrapper/sicksaxis-wrapper.h"
+#include "wiidrc/wiidrc.h"
 
 using namespace std;
 
@@ -634,60 +635,54 @@ private:
 	SZone m_gameButtonsZone;
 
 	WPADData *wd[WPAD_MAX_WIIMOTES];
-	void LeftStick();
-	u8 pointerhidedelay[WPAD_MAX_WIIMOTES];
-	u16 stickPointer_x[WPAD_MAX_WIIMOTES];
-	u16 stickPointer_y[WPAD_MAX_WIIMOTES];
 
+	u32 wii_btnsPressed[WPAD_MAX_WIIMOTES];
+	u32 wii_btnsHeld[WPAD_MAX_WIIMOTES];
+	u32 wupc_btnsPressed[WPAD_MAX_WIIMOTES];
+	u32 wupc_btnsHeld[WPAD_MAX_WIIMOTES];
+	u32 gc_btnsPressed;
+	u32 gc_btnsHeld;
+	u32 ds3_btnsPressed;
+	
+	bool wBtn_Pressed(int btn, u8 ext);
+	bool wBtn_PressedChan(int btn, u8 ext, int &chan);
+	bool wBtn_Held(int btn, u8 ext);
+	bool wBtn_HeldChan(int btn, u8 ext, int &chan);
+	u32 wiidrc_to_pad(u32 btns);
+	u32 ds3_to_pad(u32 btns);
+	
+	bool wii_btnRepeat(u8 btn);
 	u8 m_wpadLeftDelay;
 	u8 m_wpadDownDelay;
 	u8 m_wpadRightDelay;
 	u8 m_wpadUpDelay;
 	u8 m_wpadADelay;
 	//u8 m_wpadBDelay;
-	u8 m_dpadLeftDelay;
-	u8 m_dpadDownDelay;
-	u8 m_dpadRightDelay;
-	u8 m_dpadUpDelay;
-	u8 m_dpadADelay;
-	u8 m_dpadHDelay;
 
+	bool gc_btnRepeat(s64 btn);
 	u8 m_padLeftDelay;
 	u8 m_padDownDelay;
 	u8 m_padRightDelay;
 	u8 m_padUpDelay;
 	u8 m_padADelay;
 	//u8 m_padBDelay;
-	u32 ds3_btnsPressed;
-	u32 wii_btnsPressed[WPAD_MAX_WIIMOTES];
-	u32 wii_btnsHeld[WPAD_MAX_WIIMOTES];
-	bool wBtn_Pressed(int btn, u8 ext);
-	bool wBtn_PressedChan(int btn, u8 ext, int &chan);
-	bool wBtn_Held(int btn, u8 ext);
-	bool wBtn_HeldChan(int btn, u8 ext, int &chan);
-	u32 gc_btnsPressed;
-	u32 gc_btnsHeld;
-	u32 wupc_btnsPressed[WPAD_MAX_WIIMOTES];
-	u32 wupc_btnsHeld[WPAD_MAX_WIIMOTES];
-	bool ds3_btnRepeat(s64 btn);
-	bool m_show_pointer[WPAD_MAX_WIIMOTES];
+
 	float left_stick_angle[WPAD_MAX_WIIMOTES];
 	float left_stick_mag[WPAD_MAX_WIIMOTES];
 	float right_stick_angle[WPAD_MAX_WIIMOTES];
 	float right_stick_mag[WPAD_MAX_WIIMOTES];
-	float wmote_roll[WPAD_MAX_WIIMOTES];
 	s32   right_stick_skip[WPAD_MAX_WIIMOTES];
+	float wmote_roll[WPAD_MAX_WIIMOTES];
 	s32	  wmote_roll_skip[WPAD_MAX_WIIMOTES];
 	bool  enable_wmote_roll;
-	time_t no_input_time;
-
+	
 	void SetupInput(bool reset_pos = false);
 	void ScanInput(void);
-	u32 NoInputTime(void);
-
+	
 	void ButtonsPressed(void);
 	void ButtonsHeld(void);
 
+	void LeftStick();
 	bool lStick_Up(void);
 	bool lStick_Right(void);
 	bool lStick_Down(void);
@@ -701,12 +696,15 @@ private:
 	bool wRoll_Left(void);
 	bool wRoll_Right(void);
 
-	bool wii_btnRepeat(u8 btn);
-	bool gc_btnRepeat(s64 btn);
-
 	bool WPadIR_Valid(int chan);
 	bool WPadIR_ANY(void);
 
+	u8 pointerhidedelay[WPAD_MAX_WIIMOTES];
+	u16 stickPointer_x[WPAD_MAX_WIIMOTES];
+	u16 stickPointer_y[WPAD_MAX_WIIMOTES];
+	bool m_show_pointer[WPAD_MAX_WIIMOTES];
+	bool ShowPointer(void);
+	
 	void ShowZone(SZone zone, bool &showZone);
 	void ShowMainZone(void);
 	void ShowMainZone2(void);
@@ -714,13 +712,15 @@ private:
 	void ShowPrevZone(void);
 	void ShowNextZone(void);
 	void ShowGameZone(void);
-	bool ShowPointer(void);
 	bool m_show_zone_main;
 	bool m_show_zone_main2;
 	bool m_show_zone_main3;
 	bool m_show_zone_prev;
 	bool m_show_zone_next;
 	bool m_show_zone_game;
+
+	time_t no_input_time;
+	u32 NoInputTime(void);
 
 	volatile bool m_exit;
 	volatile bool m_thrdStop;
@@ -1195,7 +1195,9 @@ private:
 	void _stopGameSoundThread(void);
 	static void * _gameSoundThread(void *obj);
 
-	static void _load_installed_cioses();
+	void _load_installed_cioses();
+	map<u8, u8> _installed_cios;
+	typedef map<u8, u8>::iterator CIOSItr;
 
 	struct SOption { const char id[10]; const wchar_t text[16]; };
 
@@ -1221,8 +1223,6 @@ private:
 	static const SOption _hooktype[8];
 	static const SOption _exitTo[3];
 	
-	static map<u8, u8> _installed_cios;
-	typedef map<u8, u8>::iterator CIOSItr;
 	static int _version[9];
 	static const SCFParamDesc _cfParams[];
 	static const int _nbCfgPages;

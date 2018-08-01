@@ -6,7 +6,7 @@ extern "C"
 #ifndef _PATCHER_H_
 #define _PATCHER_H_
 
-void PatchIOS(bool patch_all);
+void PatchIOS(bool patch_all, bool WiiVC);
 
 #endif
 

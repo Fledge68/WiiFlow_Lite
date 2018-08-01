@@ -50,6 +50,7 @@ bool IsOnWiiU(void);
 extern void __exception_setreload(int t);
 extern int mainIOS;
 extern bool useMainIOS;
+extern bool isWiiVC;
 extern volatile bool NANDemuView;
 extern volatile bool networkInit;
 extern u8 currentPartition;

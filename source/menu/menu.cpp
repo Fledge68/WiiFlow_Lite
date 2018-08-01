@@ -25,7 +25,7 @@
 #include "music/SoundHandler.hpp"
 #include "network/gcard.h"
 #include "unzip/U8Archive.h"
-#include "sicksaxis-wrapper/sicksaxis-wrapper.h"
+
 // Sounds
 extern const u8 click_wav[];
 extern const u32 click_wav_size;
@@ -409,7 +409,7 @@ bool CMenu::init()
 	float pShadowY = m_theme.getFloat("GENERAL", "pointer_shadow_y", 3.f);
 	bool pShadowBlur = m_theme.getBool("GENERAL", "pointer_shadow_blur", false);
 
-	for(int chan = WPAD_MAX_WIIMOTES-2; chan >= 0; chan--)
+	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 	{
 		m_cursor[chan].init(fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString("GENERAL", fmt("pointer%i", chan+1)).c_str()),
 			m_vid.wide(), pShadowColor, pShadowX, pShadowY, pShadowBlur, chan);
@@ -2447,6 +2447,8 @@ bool CMenu::_loadFile(u8 * &buffer, u32 &size, const char *path, const char *fil
 
 void CMenu::_load_installed_cioses()
 {
+	if(isWiiVC)
+		return;
 	gprintf("Loading cIOS map\n");
 	_installed_cios[0] = 1;
 
@@ -2613,7 +2615,7 @@ void CMenu::TempLoadIOS(int IOS)
 		loadIOS(IOS, true);
 		Sys_Init();
 		Open_Inputs();
-		for(int chan = WPAD_MAX_WIIMOTES-2; chan >= 0; chan--)
+		for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 			WPAD_SetVRes(chan, m_vid.width() + m_cursor[chan].width(), m_vid.height() + m_cursor[chan].height());
 		_netInit();
 	}

@@ -7,7 +7,6 @@
 #include <ogc/pad.h>
 #include "wiiuse/wpad.h"
 #include "wupc/wupc.h"
-#include "sicksaxis-wrapper/sicksaxis-wrapper.h"
 
 #include "video.hpp"
 #include "FreeTypeGX.h"

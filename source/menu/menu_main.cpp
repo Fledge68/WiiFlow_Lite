@@ -253,9 +253,10 @@ int CMenu::main(void)
 		m_btnMgr.show(m_mem1FreeSize);
 		m_btnMgr.show(m_mem2FreeSize);
 	}
+	
 	SetupInput(true);
 
-	gprintf("start wiiflow main screen\n");
+	gprintf("wiiflow main screen ready!\n");
 	while(!m_exit)
 	{
 		/* IMPORTANT check if a disc is inserted */

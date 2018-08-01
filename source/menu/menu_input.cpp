@@ -2,13 +2,8 @@
 #include <ogc/lwp_watchdog.h>
 
 #include "menu.hpp"
-#include "sicksaxis-wrapper/sicksaxis-wrapper.h"
 
 static const u32 g_repeatDelay = 25;
-u64 button_time = 0;
-
-#define CheckTime()		(ticks_to_millisecs(diff_ticks((button_time), gettick())) > 200)
-#define UpdateTime()	button_time = gettick()
 
 void CMenu::SetupInput(bool reset_pos)
 {
@@ -59,6 +54,18 @@ static int CalculateRepeatSpeed(float magnitude, int current_value)
 
 void CMenu::ScanInput()
 {
+	/*for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
+	{
+		wd[chan] = WPAD_Data(chan);
+		if(wd[chan]->err < 0)
+		{
+			Close_Inputs();
+			Open_Inputs();
+			for(int chn = WPAD_MAX_WIIMOTES-1; chn >= 0; chn--)
+				WPAD_SetVRes(chn, m_vid.width() + m_cursor[chn].width(), m_vid.height() + m_cursor[chn].height());
+			break;
+		}
+	}*/
 	m_show_zone_main = false;
 	m_show_zone_main2 = false;
 	m_show_zone_main3 = false;
@@ -69,7 +76,8 @@ void CMenu::ScanInput()
 	WPAD_ScanPads();
 	PAD_ScanPads();
 	DS3_ScanPads();
-	//drc
+	if(WiiDRC_Inited() && WiiDRC_Connected())
+		WiiDRC_ScanPads();
 	
 	ButtonsPressed();
 	ButtonsHeld();
@@ -82,7 +90,7 @@ void CMenu::ScanInput()
 		left_stick_mag[chan] = 0;
 		right_stick_angle[chan] = 0;
 		right_stick_mag[chan] = 0;
-		switch(wd[chan]->exp.type)
+		switch(wd[chan]->exp.type)// exp = expansion
 		{
 			case WPAD_EXP_NUNCHUK:
 				right_stick_mag[chan] = wd[chan]->exp.nunchuk.js.mag;
@@ -108,22 +116,24 @@ void CMenu::ScanInput()
 		}
 		right_stick_skip[chan] = CalculateRepeatSpeed(right_stick_mag[chan], right_stick_skip[chan]);
 	}
+	/* handles wii/gc rumble and mouse/cursor position and drawing */
 	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 	{
         m_btnMgr.setRumble(chan, WPadIR_Valid(chan), PAD_StickX(chan) < -20 || PAD_StickX(chan) > 20 || PAD_StickY(chan) < -20 || PAD_StickY(chan) > 20,
             WUPC_lStickX(chan) < -160 || WUPC_lStickX(chan) > 160 || WUPC_lStickY(chan) < -160 || WUPC_lStickY(chan) > 160);
         m_btnMgr.setMouse(WPadIR_Valid(chan) || m_show_pointer[chan]);
-		if(WPadIR_Valid(chan))
+		if(WPadIR_Valid(chan))// wiimote IR
 		{
 			m_cursor[chan].draw(wd[chan]->ir.x, wd[chan]->ir.y, wd[chan]->ir.angle);
 			m_btnMgr.mouse(chan, wd[chan]->ir.x - m_cursor[chan].width() / 2, wd[chan]->ir.y - m_cursor[chan].height() / 2);
 		}
-		else if(m_show_pointer[chan])
+		else if(m_show_pointer[chan])// left stick
 		{
 			m_cursor[chan].draw(stickPointer_x[chan], stickPointer_y[chan], 0);
 			m_btnMgr.mouse(chan, stickPointer_x[chan] - m_cursor[chan].width() / 2, stickPointer_y[chan] - m_cursor[chan].height() / 2);
 		}
 	}
+	/* handles display zones */
 	ShowMainZone();
 	ShowMainZone2();
 	ShowMainZone3();
@@ -133,40 +143,109 @@ void CMenu::ScanInput()
 }
 
 extern "C" { extern bool shutdown; };
+u64 button_time = 0;
+#define CheckTime()		(ticks_to_millisecs(diff_ticks((button_time), gettick())) > 200)
+#define UpdateTime()	button_time = gettick()
+
 void CMenu::ButtonsPressed()
 {
-	
 	gc_btnsPressed = 0;
-	if (CheckTime())
+
+	/* ds3 controller */
+	if(CheckTime())
 	{
 		ds3_btnsPressed = DS3_ButtonsDown();
 		UpdateTime();
 	}
 	else
 		ds3_btnsPressed = 0;
-		
-	if(ds3_btnsPressed & DBTN_SELECT) shutdown = 1;
+
+	if(ds3_btnsPressed & DS3_BUTTON_SELECT)
+		shutdown = 1;
+	else
+		gc_btnsPressed |= ds3_to_pad(ds3_btnsPressed);
+
+	/* wii, gc, drc, and wupc */
+	gc_btnsPressed |= wiidrc_to_pad(WiiDRC_ButtonsDown());
+	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 	{
-		for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
-		{
-			wii_btnsPressed[chan] = WPAD_ButtonsDown(chan);
-			gc_btnsPressed |= PAD_ButtonsDown(chan);
-			wupc_btnsPressed[chan] = WUPC_ButtonsDown(chan);
-			//drc
-		}
+		wii_btnsPressed[chan] = WPAD_ButtonsDown(chan);
+		gc_btnsPressed |= PAD_ButtonsDown(chan);
+		wupc_btnsPressed[chan] = WUPC_ButtonsDown(chan);
 	}
 }
 
 void CMenu::ButtonsHeld()
 {
+	/* wii, gc, drc, and wupc controllers = no ds3 not sure why */
 	gc_btnsHeld = 0;
+	gc_btnsHeld |= wiidrc_to_pad(WiiDRC_ButtonsHeld());
 	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 	{
 		wii_btnsHeld[chan] = WPAD_ButtonsHeld(chan);
 		gc_btnsHeld |= PAD_ButtonsHeld(chan);
 		wupc_btnsHeld[chan] = WUPC_ButtonsHeld(chan);
-		//drc
 	}
+}
+
+/* convert wiidrc buttons to gc pad buttons */
+u32 CMenu::wiidrc_to_pad(u32 btns) {
+	u32 ret = 0;
+
+	if(btns & WIIDRC_BUTTON_LEFT)
+		ret |= PAD_BUTTON_LEFT;
+	if(btns & WIIDRC_BUTTON_RIGHT)
+		ret |= PAD_BUTTON_RIGHT;
+	if(btns & WIIDRC_BUTTON_UP)
+		ret |= PAD_BUTTON_UP;
+	if(btns & WIIDRC_BUTTON_DOWN)
+		ret |= PAD_BUTTON_DOWN;
+	if(btns & WIIDRC_BUTTON_A)
+		ret |= PAD_BUTTON_A;
+	if(btns & WIIDRC_BUTTON_B)
+		ret |= PAD_BUTTON_B;
+	if(btns & WIIDRC_BUTTON_X)
+		ret |= PAD_BUTTON_X;
+	if(btns & WIIDRC_BUTTON_Y)
+		ret |= PAD_BUTTON_Y;
+	if((btns & WIIDRC_BUTTON_L) || (btns & WIIDRC_BUTTON_ZL) || (btns & WIIDRC_BUTTON_MINUS))
+		ret |= PAD_TRIGGER_L;
+	if((btns & WIIDRC_BUTTON_R) || (btns & WIIDRC_BUTTON_ZR) || (btns & WIIDRC_BUTTON_PLUS))
+		ret |= PAD_TRIGGER_R;
+	if(btns & WIIDRC_BUTTON_HOME)
+		ret |= PAD_BUTTON_START;
+
+	return (ret&0xffff) ;
+}
+
+/* convert ds3 buttons to gc pad buttons */
+u32 CMenu::ds3_to_pad(u32 btns) {
+	u32 ret = 0;
+
+	if(btns & DS3_BUTTON_LEFT)
+		ret |= PAD_BUTTON_LEFT;
+	if(btns & DS3_BUTTON_RIGHT)
+		ret |= PAD_BUTTON_RIGHT;
+	if(btns & DS3_BUTTON_UP)
+		ret |= PAD_BUTTON_UP;
+	if(btns & DS3_BUTTON_DOWN)
+		ret |= PAD_BUTTON_DOWN;
+	if((btns & DS3_BUTTON_SQUARE) || (btns & DS3_BUTTON_CIRCLE))
+		ret |= PAD_BUTTON_A;
+	if(btns & DS3_BUTTON_CROSS)
+		ret |= PAD_BUTTON_B;
+	if(btns & DS3_BUTTON_R1)
+		ret |= PAD_BUTTON_X;
+	if(btns & DS3_BUTTON_L1)
+		ret |= PAD_BUTTON_Y;
+	if(btns & DS3_BUTTON_L2)
+		ret |= PAD_TRIGGER_L;
+	if(btns & DS3_BUTTON_R2)
+		ret |= PAD_TRIGGER_R;
+	if(btns & DS3_BUTTON_START)
+		ret |= PAD_BUTTON_START;
+
+	return (ret&0xffff) ;
 }
 
 bool CMenu::wBtn_PressedChan(int btn, u8 ext, int &chan)
@@ -199,18 +278,22 @@ bool CMenu::wBtn_Held(int btn, u8 ext)
 	return false;
 }
 
+/* Left Stick is used to show/hide the pointer and move it */
 void CMenu::LeftStick()
 {
 	u8 speed = 0, pSpeed = 0;
 	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 	{
-		if(left_stick_mag[chan] > 0.15 || abs(PAD_StickX(chan)) > 20 || abs(PAD_StickY(chan)) > 20 || (chan == 0 && (abs(DS3_StickX()) > 20 || abs(DS3_StickY()) > 20)) || abs(WUPC_lStickX(chan)) > 160 || abs(WUPC_lStickY(chan)) > 160)
+		if(left_stick_mag[chan] > 0.15 || abs(PAD_StickX(chan)) > 20 || abs(PAD_StickY(chan)) > 20 || abs(WUPC_lStickX(chan)) > 160 || abs(WUPC_lStickY(chan)) > 160 
+				|| (chan == 0 && (abs(DS3_StickX()) > 20 || abs(DS3_StickY()) > 20)) || (chan == 0 && (abs(WiiDRC_lStickX()) > 20 || abs(WiiDRC_lStickY()) > 20)))
 		{
 			m_show_pointer[chan] = true;
 			if(LEFT_STICK_LEFT)
 			{
 				speed = (u8)(left_stick_mag[chan] * 10.00);
-				pSpeed = (u8)(((int)abs(PAD_StickX(chan))/10)|((int)abs(DS3_StickX()/10))|((int)abs(WUPC_lStickX(chan))/80));
+				pSpeed = (u8)(((int)abs(PAD_StickX(chan))/10)|((int)abs(WUPC_lStickX(chan))/80)|((int)abs(WiiDRC_lStickX())/8));
+				if(chan == 0)
+					pSpeed |= (int)abs(DS3_StickX()/10);
 				if(stickPointer_x[chan] > m_cursor[chan].width()/2)
 					stickPointer_x[chan] = stickPointer_x[chan]-speed-pSpeed;
 				pointerhidedelay[chan] = 150;
@@ -218,7 +301,9 @@ void CMenu::LeftStick()
 			if(LEFT_STICK_DOWN)
 			{
 				speed = (u8)(left_stick_mag[chan] * 10.00);
-				pSpeed = (u8)(((int)abs(PAD_StickY(chan))/10)|((int)abs(DS3_StickY()/10))|((int)abs(WUPC_lStickY(chan))/80));
+				pSpeed = (u8)(((int)abs(PAD_StickY(chan))/10)|((int)abs(WUPC_lStickY(chan))/80)|((int)abs(WiiDRC_lStickY())/8));
+				if(chan == 0)
+					pSpeed |= (int)abs(DS3_StickY()/10);
 				if(stickPointer_y[chan] < (m_vid.height() + (m_cursor[chan].height()/2)))
 					stickPointer_y[chan] = stickPointer_y[chan]+speed+pSpeed;
 				pointerhidedelay[chan] = 150;
@@ -226,7 +311,9 @@ void CMenu::LeftStick()
 			if(LEFT_STICK_RIGHT)
 			{
 				speed = (u8)(left_stick_mag[chan] * 10.00);
-				pSpeed = (u8)(((int)abs(PAD_StickX(chan))/10)|((int)abs(DS3_StickX()/10))|((int)abs(WUPC_lStickX(chan))/80));
+				pSpeed = (u8)(((int)abs(PAD_StickX(chan))/10)|((int)abs(WUPC_lStickX(chan))/80)|((int)abs(WiiDRC_lStickX())/8));
+				if(chan == 0)
+					pSpeed |= (int)abs(DS3_StickX()/10);
 				if(stickPointer_x[chan] < (m_vid.width() + (m_cursor[chan].width()/2)))
 					stickPointer_x[chan] = stickPointer_x[chan]+speed+pSpeed;
 				pointerhidedelay[chan] = 150;
@@ -234,7 +321,9 @@ void CMenu::LeftStick()
 			if(LEFT_STICK_UP)
 			{
 				speed = (u8)(left_stick_mag[chan] * 10.00);
-				pSpeed = (u8)(((int)abs(PAD_StickY(chan))/10)|((int)abs(DS3_StickY()/10))|((int)abs(WUPC_lStickY(chan))/80));
+				pSpeed = (u8)(((int)abs(PAD_StickY(chan))/10)|((int)abs(WUPC_lStickY(chan))/80)|((int)abs(WiiDRC_lStickY())/8));
+				if(chan == 0)
+					pSpeed |= (int)abs(DS3_StickY()/10);
 				if(stickPointer_y[chan] > m_cursor[chan].height()/2)
 					stickPointer_y[chan] = stickPointer_y[chan]-speed-pSpeed;
 				pointerhidedelay[chan] = 150;
@@ -273,6 +362,9 @@ bool CMenu::WPadIR_ANY(void)
 	return (wd[0]->ir.valid || wd[1]->ir.valid || wd[2]->ir.valid || wd[3]->ir.valid);
 }
 
+/* all _btnRepeat's are used the same as right stick below */
+/* only called from menu_main and menu_game to move the coverflow up, down, left, right */
+/* btn A repeat is used in config screen, sound, and adjust coverflow */
 bool CMenu::wii_btnRepeat(u8 btn)
 {
 	bool b = false;
@@ -414,109 +506,13 @@ bool CMenu::gc_btnRepeat(s64 btn)
 	return b;
 }
 
-bool CMenu::ds3_btnRepeat(s64 btn)
-{
-	bool b = false;
-	if(btn == DBTN_UP)
-	{
-		if(ds3_btnsPressed & DBTN_UP)
-		{
-			if(m_dpadUpDelay == 0 || m_dpadUpDelay >= g_repeatDelay)
-				b = true;
-			if(m_dpadUpDelay < g_repeatDelay)
-				++m_dpadUpDelay;
-		}
-		else
-		{
-			m_dpadUpDelay = 0;
-			m_btnMgr.noClick();
-		}
-	}
-	else if(btn == DBTN_RIGHT)
-	{
-		if(ds3_btnsPressed & DBTN_RIGHT)
-		{
-			if(m_dpadRightDelay == 0 || m_dpadRightDelay >= g_repeatDelay)
-				b = true;
-			if(m_dpadRightDelay < g_repeatDelay)
-				++m_dpadRightDelay;
-		}
-		else
-		{
-			m_dpadRightDelay = 0;
-			m_btnMgr.noClick();
-		}
-	}
-	else if(btn == DBTN_DOWN)
-	{
-		if(ds3_btnsPressed & DBTN_DOWN)
-		{
-			if(m_dpadDownDelay == 0 || m_dpadDownDelay >= g_repeatDelay)
-				b = true;
-			if(m_dpadDownDelay < g_repeatDelay)
-				++m_dpadDownDelay;
-		}
-		else
-		{
-			m_dpadDownDelay = 0;
-			m_btnMgr.noClick();
-		}
-	}
-	else if(btn == DBTN_LEFT)
-	{
-		if(ds3_btnsPressed & DBTN_LEFT)
-		{
-			if(m_dpadLeftDelay == 0 || m_dpadLeftDelay >= g_repeatDelay)
-				b = true;
-			if(m_dpadLeftDelay < g_repeatDelay)
-				++m_dpadLeftDelay;
-		}
-		else
-		{
-			m_dpadLeftDelay = 0;
-			m_btnMgr.noClick();
-		}
-	}
-	else if(btn == DBTN_A)
-	{
-		if(ds3_btnsPressed & DBTN_A)
-		{
-			m_btnMgr.noClick(true);
-			if(m_dpadADelay == 1 || m_dpadADelay >= g_repeatDelay)
-				b = true;
-			if(m_dpadADelay < g_repeatDelay)
-				++m_dpadADelay;
-		}
-		else
-		{
-			m_dpadADelay = 1;
-			m_btnMgr.noClick();
-		}
-	}
-	else if(btn == DBTN_START)
-	{
-		if(ds3_btnsPressed & DBTN_START)
-		{
-			m_btnMgr.noClick(true);
-			if(m_dpadHDelay == 0.5 || m_dpadHDelay >= g_repeatDelay)
-				b = true;
-			if(m_dpadHDelay < g_repeatDelay)
-				++m_dpadHDelay;
-		}
-		else
-		{
-			m_dpadHDelay = 0.5;
-			m_btnMgr.noClick();
-		}
-	}        
-	return b;
-}
-
 bool CMenu::lStick_Up(void)
 {
+	if(WiiDRC_lStickY() > 20 || DS3_StickY() < -20)
+		return true;
 	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 	{
-		if((LEFT_STICK_ANG_UP && left_stick_mag[chan] > 0.15) || PAD_StickY(chan) > 20 || DS3_StickY() < -20 || WUPC_lStickY(chan) > 160)
+		if((LEFT_STICK_ANG_UP && left_stick_mag[chan] > 0.15) || PAD_StickY(chan) > 20 || WUPC_lStickY(chan) > 160)
 			return true;
 	}
 	return false;
@@ -524,9 +520,11 @@ bool CMenu::lStick_Up(void)
 
 bool CMenu::lStick_Right(void)
 {
+	if(WiiDRC_lStickX() > 20 || DS3_StickX() > 20)
+		return true;
 	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 	{
-		if((LEFT_STICK_ANG_RIGHT && left_stick_mag[chan] > 0.15) || PAD_StickX(chan) > 20 || DS3_StickX() > 20 || WUPC_lStickX(chan) > 160)
+		if((LEFT_STICK_ANG_RIGHT && left_stick_mag[chan] > 0.15) || PAD_StickX(chan) > 20 || WUPC_lStickX(chan) > 160)
 			return true;
 	}
 	return false;
@@ -534,9 +532,11 @@ bool CMenu::lStick_Right(void)
 
 bool CMenu::lStick_Down(void)
 {
+	if(WiiDRC_lStickY() < -20 || DS3_StickY() > 20)
+		return true;
 	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 	{
-		if((LEFT_STICK_ANG_DOWN && left_stick_mag[chan] > 0.15) || PAD_StickY(chan) < -20 || DS3_StickY() > 20 || WUPC_lStickY(chan) < -160)
+		if((LEFT_STICK_ANG_DOWN && left_stick_mag[chan] > 0.15) || PAD_StickY(chan) < -20 || WUPC_lStickY(chan) < -160)
 			return true;
 	}
 	return false;
@@ -544,16 +544,21 @@ bool CMenu::lStick_Down(void)
 
 bool CMenu::lStick_Left(void)
 {
+	if(WiiDRC_lStickX() < -20 || DS3_StickX() < -20)
+		return true;
 	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 	{
-		if((LEFT_STICK_ANG_LEFT && left_stick_mag[chan] > 0.15) || PAD_StickX(chan) < -20 || DS3_StickX() < -20 || WUPC_lStickX(chan) < -160)
+		if((LEFT_STICK_ANG_LEFT && left_stick_mag[chan] > 0.15) || PAD_StickX(chan) < -20 || WUPC_lStickX(chan) < -160)
 			return true;
 	}
 	return false;
 }
 
+/* right stick movements are only used in menu_main and menu_game to move the coverflow up, down, left, right just like the d-pad */
 bool CMenu::rStick_Up(void)
 {
+	if(WiiDRC_rStickY() > 30)
+		return true;
 	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 	{
 		if((RIGHT_STICK_ANG_UP && right_stick_mag[chan] > 0.15 && right_stick_skip[chan] == 0) || PAD_SubStickY(chan) > 20 || WUPC_rStickY(chan) > 160)
@@ -564,6 +569,8 @@ bool CMenu::rStick_Up(void)
 
 bool CMenu::rStick_Right(void)
 {
+	if(WiiDRC_rStickX() > 30)
+		return true;
 	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 	{
 		if((RIGHT_STICK_ANG_RIGHT && right_stick_mag[chan] > 0.15 && right_stick_skip[chan] == 0) || PAD_SubStickX(chan) > 20 || WUPC_rStickX(chan) > 160)
@@ -574,6 +581,8 @@ bool CMenu::rStick_Right(void)
 
 bool CMenu::rStick_Down(void)
 {
+	if(WiiDRC_rStickY() < -30)
+		return true;
 	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 	{
 		if((RIGHT_STICK_ANG_DOWN && right_stick_mag[chan] > 0.15 && right_stick_skip[chan] == 0) || PAD_SubStickY(chan) < -20 || WUPC_rStickY(chan) < -160)
@@ -584,6 +593,8 @@ bool CMenu::rStick_Down(void)
 
 bool CMenu::rStick_Left(void)
 {
+	if(WiiDRC_rStickX() < -30)
+		return true;
 	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 	{
 		if((RIGHT_STICK_ANG_LEFT && right_stick_mag[chan] > 0.15 && right_stick_skip[chan] == 0) || PAD_SubStickX(chan) < -20 || WUPC_rStickX(chan) < -160)
@@ -658,13 +669,16 @@ void CMenu::ShowGameZone()
 	ShowZone(m_gameButtonsZone, m_show_zone_game);
 }
 
+/* returns the elapsed time of no controller input */
 u32 CMenu::NoInputTime()
 {
 	bool input_found = false;
+	/* showpointer() = true if any wiimote IR at screen or any controller left stick is moving pointer */
 	if(ShowPointer() == true || RIGHT_STICK_MOVE == true || gc_btnsPressed != 0)
 		input_found = true;
 	else
 	{
+		/* check if any wiimote buttons are pressed or held */
 		for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 		{
 			if(wii_btnsPressed[chan] != 0 || wii_btnsHeld[chan] != 0)

@@ -22,6 +22,7 @@
 #include "menu/menu.hpp"
 #include "memory/memory.h"
 
+bool isWiiVC = false;
 bool useMainIOS = false;
 volatile bool NANDemuView = false;
 volatile bool networkInit = false;
@@ -30,6 +31,8 @@ volatile bool networkInit = false;
 /* if not then we can skip the 20 second cycle trying to connect a USB device. */
 /* this is nice for SD only users */
 bool isUsingUSB() {
+	if(isWiiVC)
+		return false;
 	/* First check if the app path exists on the SD card, if not then we're using USB */
 	struct stat dummy;
 	string appPath = fmt("%s:/%s", DeviceName[SD], APPS_DIR);
@@ -120,37 +123,61 @@ int main(int argc, char **argv)
 		}	
 			
 	}
-	if(IsOnWiiU())
-		gprintf("vWii Mode\n");
-	else 
-		gprintf("Real Wii\n");
-
 	/* Init video */
 	m_vid.init();
 	if(showFlashImg)
 		m_vid.startImage();
 		
+	/* check if WiiVC */
+	WiiDRC_Init();
+	isWiiVC = WiiDRC_Inited();
+	
+	if(IsOnWiiU())
+	{
+		gprintf("WiiU\n");
+		if(isWiiVC)
+			gprintf("WiiVC\n");
+		else
+			gprintf("vWii Mode\n");
+	}
+	else 
+		gprintf("Real Wii\n");
+		
+	gprintf("AHBPROT disabled = %s\n", AHBPROT_Patched() ? "yes" : "no");
+
 	/* Init device partition handlers */
 	DeviceHandle.Init();
 	
 	/* Init NAND handlers */
 	NandHandle.Init();
-	NandHandle.LoadDefaultIOS(); /* safe reload to preferred IOS */
-		
-	/* load and check wiiflow save for possible new IOS and Port settings */
-	if(InternalSave.CheckSave())
-		InternalSave.LoadSettings();
-		
-	/* Handle (c)IOS Loading */
-	if(useMainIOS && CustomIOS(IOS_GetType(mainIOS))) /* Requested */
-		iosOK = loadIOS(mainIOS, false) && CustomIOS(CurrentIOS.Type);
+
+	if(isWiiVC)
+	{
+		NandHandle.Init_ISFS();
+		IOS_GetCurrentIOSInfo();
+		DeviceHandle.SetModes();
+	}
+	else
+	{
+		NandHandle.LoadDefaultIOS(); /* safe reload to preferred IOS */
+	
+		/* load and check wiiflow save for possible new IOS and Port settings */
+		if(InternalSave.CheckSave())
+			InternalSave.LoadSettings();
+			
+		/* Handle (c)IOS Loading */
+		if(useMainIOS && CustomIOS(IOS_GetType(mainIOS))) /* Requested */
+			iosOK = loadIOS(mainIOS, false) && CustomIOS(CurrentIOS.Type);
+	}
 		
 	/* sys inits */
 	Sys_Init();// set reset and power button callbacks
 	Sys_ExitTo(EXIT_TO_HBC);// set exit to in case of failed launch
 
-	/* mount Devices */
-	DeviceHandle.MountSD();// mount SD before calling isUsingUSB() duh!		
+	/* mount SD */
+	DeviceHandle.MountSD();// mount SD before calling isUsingUSB() duh!	
+
+	/* mount USB if needed */
 	DeviceHandle.SetMountUSB(isUsingUSB());
 	DeviceHandle.MountAllUSB();// only mounts any USB if isUsingUSB()
 	
@@ -159,7 +186,7 @@ int main(int argc, char **argv)
 	m_vid.waitMessage(0.15f);
 
 	/* init controllers for input */
-	Open_Inputs();
+	Open_Inputs();// WPAD_SetVRes() is called later in mainMenu.init() during cursor init which gets the theme pointer images
 	
 	/* init configs, folders, coverflow, gui and more */
 	if(mainMenu.init())
@@ -183,7 +210,8 @@ int main(int argc, char **argv)
 			mainMenu.terror("errboot3", L"Could not initialize the DIP module!");
 		else // alls good lets start wiiflow
 		{
-			writeStub();// copy return stub to memory
+			if(!isWiiVC)
+				writeStub();// copy return stub to memory
 			if(gameid != NULL && strlen(gameid) == 6)// if argv game ID then launch it
 				mainMenu.directlaunch(gameid);
 			else

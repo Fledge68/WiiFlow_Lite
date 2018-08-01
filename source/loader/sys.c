@@ -1,9 +1,7 @@
 
-#include <ogc/machine/processor.h>
 #include <ogc/lwp_threads.h>
-#include <ogc/lwp_watchdog.h>
+#include <ogc/pad.h>
 #include <stdio.h>
-#include <ogcsys.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -15,9 +13,9 @@
 #include "gecko/gecko.hpp"
 #include "memory/mem2.hpp"
 #include "memory/memory.h"
+#include "sicksaxis-wrapper/sicksaxis-wrapper.h"
 #include "wiiuse/wpad.h"
 #include "wupc/wupc.h"
-#include "sicksaxis-wrapper/sicksaxis-wrapper.h"
 
 /* Variables */
 bool reset = false;
@@ -34,14 +32,13 @@ void __Wpad_PowerCallback()
 
 void Open_Inputs(void)
 {
-	/* Initialize Wiimote subsystem */
+	/* Initialize controllers - wiiu drc is inited only once in main.cpp */
 	PAD_Init();
 	WUPC_Init();
 	WPAD_Init();
 	DS3_Init();
-	//drc
 	
-	/* Set POWER button callback */
+	/* Set wiimote power button callback */
 	WPAD_SetPowerButtonCallback(__Wpad_PowerCallback);
 	WPAD_SetDataFormat(WPAD_CHAN_ALL, WPAD_FMT_BTNS_ACC_IR);
 	WPAD_SetIdleTimeout(60 * 2); // idle after 2 minutes
@@ -51,14 +48,13 @@ void Close_Inputs(void)
 {
 	WUPC_Shutdown();
 
-	u32 cnt;
-
 	/* Disconnect Wiimotes */
-	for(cnt = 0; cnt < 4; cnt++)
+	for(u32 cnt = 0; cnt < 4; cnt++)
 		WPAD_Disconnect(cnt);
 
 	/* Shutdown Wiimote subsystem */
 	WPAD_Shutdown();
+	
 	DS3_Cleanup();
 }
 

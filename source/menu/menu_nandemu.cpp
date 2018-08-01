@@ -103,6 +103,8 @@ void CMenu::_listEmuNands(const char *path, vector<string> &emuNands)
 
 void CMenu::_checkEmuNandSettings(void)
 {
+	if(isWiiVC)
+		return;
 	u8 i;
 	string emuNand = m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default");
 	int emuPart = m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0);
@@ -191,6 +193,8 @@ void CMenu::_checkEmuNandSettings(void)
 
 void CMenu::_FullNandCheck(void)
 {
+	if(isWiiVC)
+		return;
 	for(u8 i = 0; i < 2; i++)
 	{
 		int emulate_mode;

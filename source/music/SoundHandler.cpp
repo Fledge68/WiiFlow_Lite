@@ -47,12 +47,12 @@ void SoundHandler::Init()
 		DecoderList[i] = NULL;
 
 	LWP_CreateThread(&SoundThread, UpdateThread, this, SoundStack, SoundStackSize, LWP_PRIO_HIGHEST);
-	gprintf("SHND: Running sound thread\n");
+	gprintf("Running sound thread\n");
 }
 
 void SoundHandler::Cleanup()
 {
-	gprintf("SHND: Stopping sound thread\n");
+	gprintf("Stopping sound thread\n");
 
 	ExitRequested = true;
 	ThreadSignal();
@@ -60,7 +60,7 @@ void SoundHandler::Cleanup()
 	SoundThread = LWP_THREAD_NULL;
 
 	ClearDecoderList();
-	gprintf("SHND: Stopped sound thread\n");
+	gprintf("Stopped sound thread\n");
 }
 
 void SoundHandler::AddDecoder(int voice, const char * filepath)
