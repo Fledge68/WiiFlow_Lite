@@ -1,6 +1,7 @@
 #include <dirent.h>
 #include <unistd.h>
 #include <algorithm>
+#include <sys/stat.h>
 #include "menu.hpp"
 #include "defines.h"
 #include "lockMutex.hpp"

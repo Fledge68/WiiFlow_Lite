@@ -232,10 +232,10 @@ float HermiteKeyHandler::GetFrame(FrameNumber frame_number) const
 
 		// curvy code from marcan, :p
 		return
-			prev->second.slope * nf * (t + powf(t, 3) - 2 * powf(t, 2)) +
-			next->second.slope * nf * (powf(t, 3) - powf(t, 2)) +
-			prev->second.value * (1 + (2 * powf(t, 3) - 3 * powf(t, 2))) +
-			next->second.value * (-2 * powf(t, 3) + 3 * powf(t, 2));
+			prev->second.slope * nf * (t + pow(t, 3) - 2 * pow(t, 2)) +
+			next->second.slope * nf * (pow(t, 3) - pow(t, 2)) +
+			prev->second.value * (1 + (2 * pow(t, 3) - 3 * pow(t, 2))) +
+			next->second.value * (-2 * pow(t, 3) + 3 * pow(t, 2));
 	}
 }
 

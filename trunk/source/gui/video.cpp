@@ -578,8 +578,8 @@ void CVideo::waitMessage(const vector<TexData> &tex, float delay)// start wait i
 	{
 		m_WaitThreadRunning = true;
 		/* changing light */
-		wiiLightSetLevel(0);
-		wiiLightStartThread();// start thread in gekko.c that pulses the wii disc slot light on and off
+		//wiiLightSetLevel(0);
+		//wiiLightStartThread();// start thread in gekko.c that pulses the wii disc slot light on and off
 		/* onscreen animation */
 		m_showWaitMessage = true;// start wait images thread to animate them
 		LWP_CreateThread(&waitThread, _showWaitMessages, this, waitMessageStack, waitMessageStackSize, LWP_PRIO_HIGHEST);
@@ -593,9 +593,9 @@ void * CVideo::_showWaitMessages(void *obj)// wait images thread
 	u32 frames = m->m_waitMessageDelay * 50;// set delay start
 	u32 waitFrames = frames;// set delay counter to delay start
 
-	s8 fadeDirection = 1;
+	//s8 fadeDirection = 1;
 	s8 PNGfadeDirection = 1;// set frames movement direction
-	s16 currentLightLevel = 0;
+	//s16 currentLightLevel = 0;
 
 	vector<TexData>::iterator waitItr = m->m_waitMessages.begin();// set start frame image
 	m->_clearScreen();
@@ -606,7 +606,7 @@ void * CVideo::_showWaitMessages(void *obj)// wait images thread
 	//gprintf("Wait Message Thread: Start\nDelay: %d, Images: %d\n", waitFrames, m->m_waitMessages.size());
 	while(m->m_showWaitMessage)
 	{
-		currentLightLevel += fadeDirection * 5;
+		/*currentLightLevel += fadeDirection * 5;
 		if(currentLightLevel >= 255) 
 		{
 			currentLightLevel = 255;
@@ -616,8 +616,8 @@ void * CVideo::_showWaitMessages(void *obj)// wait images thread
 		{
 			currentLightLevel = 0;
 			fadeDirection = 1;
-		}
-		wiiLightSetLevel(currentLightLevel);
+		}*/
+		//wiiLightSetLevel(currentLightLevel);
 
 		if(waitFrames == 0)// if delay count reaches 0
 		{
@@ -651,7 +651,7 @@ void CVideo::hideWaitMessage()// stop wait images thread and wii disc slot light
 			usleep(50);
 		LWP_JoinThread(waitThread, NULL);
 		/* end light thread */
-		wiiLightEndThread();
+		//wiiLightEndThread();
 		m_WaitThreadRunning = false;
 	}
 	waitThread = LWP_THREAD_NULL;
