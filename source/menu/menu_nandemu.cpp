@@ -528,6 +528,11 @@ void CMenu::_showNandEmu(void)
 
 int CMenu::_NandEmuCfg(void)
 {	
+	if(isWiiVC)
+	{
+		error(_t("errboot7", L"Access denied in Wii VC mode."));
+		return 0;
+	}
 	nandemuPage = 1;
 	string ExtNand = "";
 	string emuNand = m_cfg.getString(CHANNEL_DOMAIN, "current_emunand");

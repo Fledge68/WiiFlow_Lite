@@ -101,28 +101,31 @@ void Sys_Exit(void)
 	if(ExitOption == BUTTON_CALLBACK)
 		SYS_ResetSystem(SYS_POWEROFF_STANDBY, 0, 0);
 
-	/* We wanna to boot something */
-	WII_Initialize();
-	/* if in neek2o mode Launch_nk will just return to neek2o system menu and not launch anything */
-	if(ExitOption == EXIT_TO_WFNK2O)
-		Launch_nk(0x1000157464C41LL, NeekPath, 0);// 57464C41 = WFLA : 44574641 = DWFA
-	else if(ExitOption == EXIT_TO_SMNK2O)
-		Launch_nk(0, NeekPath, 0);
-	else if(ExitOption == EXIT_TO_BOOTMII)
-		IOS_ReloadIOS(0xfe);// IOS254 Bootmii IOS
-	else if(ExitOption == EXIT_TO_HBC)
+	if(!isWiiVC)
 	{
-		WII_LaunchTitle(HBC_OHBC);
-		WII_LaunchTitle(HBC_LULZ);
-		WII_LaunchTitle(HBC_108);
-		WII_LaunchTitle(HBC_JODI);
-		WII_LaunchTitle(HBC_HAXX);
+		/* We wanna to boot something */
+		WII_Initialize();
+		/* if in neek2o mode Launch_nk will just return to neek2o system menu and not launch anything */
+		if(ExitOption == EXIT_TO_WFNK2O)
+			Launch_nk(0x1000157464C41LL, NeekPath, 0);// 57464C41 = WFLA : 44574641 = DWFA
+		else if(ExitOption == EXIT_TO_SMNK2O)
+			Launch_nk(0, NeekPath, 0);
+		else if(ExitOption == EXIT_TO_BOOTMII)
+			IOS_ReloadIOS(0xfe);// IOS254 Bootmii IOS
+		else if(ExitOption == EXIT_TO_HBC)
+		{
+			WII_LaunchTitle(HBC_OHBC);
+			WII_LaunchTitle(HBC_LULZ);
+			WII_LaunchTitle(HBC_108);
+			WII_LaunchTitle(HBC_JODI);
+			WII_LaunchTitle(HBC_HAXX);
+		}
+		else if(ExitOption == EXIT_TO_WIIU)
+			WII_LaunchTitle(WIIU_CHANNEL);
+		/* else Return to System Menu */
+		SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
 	}
-	else if(ExitOption == EXIT_TO_WIIU)
-		WII_LaunchTitle(WIIU_CHANNEL);
-	/* else Return to System Menu */
-	SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
-	exit(1);
+	exit(0);
 }
 
 void __Sys_ResetCallback(void)

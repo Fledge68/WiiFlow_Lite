@@ -253,6 +253,11 @@ void * CMenu::_GCcopyGame(void *obj)
 
 bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 {
+	if(op == WO_ADD_GAME)
+	{
+		error(_t("wbfsoperr6", L"Install game is broken,\nplease use cleanrip."));
+		return false;
+	}
 	lwp_t thread = 0;
 	char GameID[7];
 	GameID[6] = '\0';
@@ -323,9 +328,9 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						}
 						if (Disc_IsWii() == 0)
 						{
-							error(_t("wbfsoperr6", L"Install game is broken, please use cleanrip."));
-							out = true;
-							break;
+							//error(_t("wbfsoperr6", L"Install game is broken, please use cleanrip."));
+							//out = true;
+							//break;
 							
 							Disc_ReadHeader(&wii_hdr);
 							memcpy(GameID, wii_hdr.id, 6);
@@ -349,9 +354,9 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						}
 						else if(Disc_IsGC() == 0)
 						{
-							error(_t("wbfsoperr6", L"Install game is broken, please use cleanrip."));
-							out = true;
-							break;
+							//error(_t("wbfsoperr6", L"Install game is broken, please use cleanrip."));
+							//out = true;
+							//break;
 							
 							Disc_ReadGCHeader(&gc_hdr);
 							memcpy(GameID, gc_hdr.id, 6);
