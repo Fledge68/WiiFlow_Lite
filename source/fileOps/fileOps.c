@@ -14,6 +14,7 @@ en exposed s_fsop fsop structure can be used by callback to update operation sta
 #include <ogc/lwp_watchdog.h>
 #include <malloc.h>
 #include <sys/statvfs.h>
+#include <sys/stat.h>
 
 #include "fileOps/fileOps.h"
 #include "gecko/gecko.hpp"

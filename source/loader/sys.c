@@ -128,7 +128,7 @@ void Sys_Exit(void)
 	exit(0);
 }
 
-void __Sys_ResetCallback(void)
+void __Sys_ResetCallback(u32 irq, void *ctx)
 {
 	reset = true;
 }

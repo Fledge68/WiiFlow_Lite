@@ -100,11 +100,11 @@ void *light_loop()
 		timeoff = light_timeoff;
 		// Turn on the light and sleep for a bit
 		wiiLightOn();
-		nanosleep(&timeon);
+		nanosleep(&timeon, NULL);
 		// Turn off the light (if required) and sleep for a bit
 		if(timeoff.tv_nsec > 0)
 			wiiLightOff();
-		nanosleep(&timeoff);
+		nanosleep(&timeoff, NULL);
 	}
 	return NULL;
 }
