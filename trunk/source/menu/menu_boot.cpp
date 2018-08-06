@@ -78,6 +78,11 @@ void CMenu::_showBoot()
 
 bool CMenu::_Boot(void)
 {
+	if(isWiiVC)
+	{
+		error(_t("errboot7", L"Access denied in Wii VC mode."));
+		return false;
+	}
 	set_port = currentPort;
 	bool prev_load = cur_load;
 	u8 prev_ios = cur_ios;

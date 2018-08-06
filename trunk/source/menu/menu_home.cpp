@@ -135,6 +135,11 @@ bool CMenu::_Home(void)
 			else if(m_btnMgr.selected(m_homeBtnExitTo))
 			{
 				_hideHome();
+				if(isWiiVC)
+				{
+					exitHandler(EXIT_TO_MENU);
+					break;
+				}
 				if(m_locked)
 					exitHandler(WIIFLOW_DEF);
 				else 
@@ -158,7 +163,12 @@ bool CMenu::_Home(void)
 		}
 		else if(BTN_HOME_PRESSED)
 		{
-			exitHandler(WIIFLOW_DEF);
+			if(isWiiVC)
+			{
+				exitHandler(EXIT_TO_MENU);
+				break;
+			}
+			exitHandler(WIIFLOW_DEF);// WIIFLOW_DEF is what is set in main config as the exit to option
 			break;
 		}
 		else if(BTN_B_PRESSED)
@@ -390,7 +400,11 @@ void CMenu::_textHome(void)
 
 	m_btnMgr.setText(m_homeBtnInstall, _t("home7", L"Install Game"));
 	m_btnMgr.setText(m_homeBtnAbout, _t("home4", L"Credits"));
-	m_btnMgr.setText(m_homeBtnExitTo, _t("home5", L"Exit To"));
+	if(isWiiVC)
+		m_btnMgr.setText(m_homeBtnExitTo, _t("home12", L"Exit"));
+	else
+		m_btnMgr.setText(m_homeBtnExitTo, _t("home5", L"Exit To"));
+	
 	m_btnMgr.setText(m_homeBtnSelPlugin, _t("cfgpl1", L"Select Plugins"));
 }
 

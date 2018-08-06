@@ -43,7 +43,7 @@ bool CMenu::_code(char code[4], bool erase)
 		_mainLoopCommon();
 		if(BTN_HOME_PRESSED)
 			break;
-		else if(WPadIR_ANY())
+		else if(ShowPointer())//wpad ir any or controller left stick to show pointer
 		{
 			if(BTN_B_PRESSED)
 				break;
