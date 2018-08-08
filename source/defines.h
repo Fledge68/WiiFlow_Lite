@@ -1,5 +1,7 @@
+
 #define APP_NAME				"WiiFlow Lite"
 #define APP_VERSION				"4.4.0"
+#define SVN_REV 				"1161"
 
 #define APP_DATA_DIR			"wiiflow"
 #define APPS_DIR				"apps/wiiflow_lite"

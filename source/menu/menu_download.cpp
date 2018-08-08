@@ -4,7 +4,6 @@
 #include <fstream>
 
 #include "menu.hpp"
-#include "svnrev.h"
 #include "types.h"
 #include "lockMutex.hpp"
 #include "channel/nand.hpp"

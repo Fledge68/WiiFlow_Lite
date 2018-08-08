@@ -39,6 +39,8 @@ CMenu mainMenu;
 u8 CMenu::downloadStack[8192] ATTRIBUTE_ALIGN(32);
 const u32 CMenu::downloadStackSize = 8192;
 
+const int CMenu::SVN_REV_NUM = atoi(SVN_REV);
+
 CMenu::CMenu()
 {
 	m_aa = 0;

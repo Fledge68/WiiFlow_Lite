@@ -139,7 +139,6 @@ export OUTPUT	:=	$(CURDIR)/out/$(TARGET)
 #---------------------------------------------------------------------------------
 $(BUILD):
 	@[ -d $@ ] || mkdir -p $@
-	@bash ./scripts/svnrev.sh
 	@bash ./scripts/buildtype.sh $(ios)
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile.main
 
@@ -150,7 +149,7 @@ all:
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
-	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).dol $(CURDIR)/source/svnrev.h \
+	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).dol \
 		$(CURDIR)/source/loader/alt_ios_gen.h $(CURDIR)/out/bins/ext_loader.bin \
 		$(CURDIR)/out/bins/ext_booter.bin $(CURDIR)/out/bins/app_booter.bin
 
