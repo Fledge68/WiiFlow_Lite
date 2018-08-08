@@ -60,7 +60,8 @@ void Close_Inputs(void)
 
 bool Sys_Exiting(void)
 {
-	DCFlushRange(&reset, 32);
+	if(!isWiiVC)
+		DCFlushRange(&reset, 32);
 	DCFlushRange(&shutdown, 32);
 	return reset || shutdown;
 }
@@ -141,7 +142,8 @@ void __Sys_PowerCallback(void)
 void Sys_Init(void)
 {
 	/* Set RESET/POWER button callback */
-	SYS_SetResetCallback(__Sys_ResetCallback);
+	if(!isWiiVC)
+		SYS_SetResetCallback(__Sys_ResetCallback);
 	SYS_SetPowerCallback(__Sys_PowerCallback);
 }
 
