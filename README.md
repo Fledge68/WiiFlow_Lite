@@ -12,3 +12,10 @@ Simply download the latest release and extract it to your apps/wiiflow_lite fold
 
 ## Booting
 To start WiiFlow Lite you will need the Homebrew Channel or a WiiFlow Lite forwarder channel installed on your Wii or vWii system menu.
+
+## Useful Links
+[WiiFlow Lite GBATemp thread](https://gbatemp.net/threads/wiiflow-lite.422685/)
+
+[WiiFlow Wiki](https://sites.google.com/site/wiiflowiki4/)
+
+[Old Sourceforge Project Repository](https://sourceforge.net/projects/wiiflow-lite/)
