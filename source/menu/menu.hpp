@@ -901,7 +901,6 @@ private:
 	void _initCfgHB();
 	void _initPluginSettingsMenu();
 	void _initCategorySettingsMenu();
-	void _initSystemMenu();
 	void _initGameInfoMenu();
 	void _initNandEmuMenu();
 	void _initHomeAndExitToMenu();
@@ -916,7 +915,6 @@ private:
 	void _textPluginSettings(void);
 	void _textCategorySettings(void);
 	void _textCheatSettings(void);
-	void _textSystem(void);
 	void _textError(void);
 	void _textConfig(void);
 	void _textConfig3(void);
@@ -967,7 +965,6 @@ private:
 	void _hideSource(bool instant = false);
 	void _hidePluginSettings(bool instant = false);
 	void _hideCategorySettings(bool instant = false);
-	void _hideSystem(bool instant = false);
 	void _hideGameInfo(bool instant = false);
 	void _hideNandEmu(bool instant = false);
 	void _hideNandEmuPg();
@@ -1000,7 +997,6 @@ private:
 	void _showPluginSettings(void);
 	void _showCategorySettings(void);
 	void _showCheatSettings(void);
-	void _showSystem(void);
 	void _showGameInfo(void);
 	void _showWBFS(WBFS_OP op);
 	void _showCFTheme(u32 curParam, int version, bool wide);
@@ -1059,7 +1055,6 @@ private:
 	void _about(bool help = false);
 	bool _wbfsOp(WBFS_OP op);
 	void _cfTheme(void);
-	void _system(void);
 	void _gameinfo(void);
 	void _gameSettings(const dir_discHdr *GameHdr, bool disc = false);
 	void _CoverBanner(void);

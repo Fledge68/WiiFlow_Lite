@@ -23,7 +23,6 @@ void CMenu::error(const wstringEx &msg)
 	_hideWBFS();
 	_hideCFTheme();
 	_hideCategorySettings();
-	_hideSystem();
 	_hideGameInfo();
 	_hideGameSettings();
 	_hideSource();
