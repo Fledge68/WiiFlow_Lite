@@ -512,7 +512,7 @@ bool CMenu::lStick_Up(void)
 		return true;
 	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 	{
-		if((LEFT_STICK_ANG_UP && left_stick_mag[chan] > 0.15) || PAD_StickY(chan) > 20 || WUPC_lStickY(chan) > 160)
+		if((LEFT_STICK_ANG_UP && left_stick_mag[chan] > 0.15) || PAD_StickY(chan) > 20 || WUPC_lStickY(chan) > 180)
 			return true;
 	}
 	return false;
@@ -524,7 +524,7 @@ bool CMenu::lStick_Right(void)
 		return true;
 	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 	{
-		if((LEFT_STICK_ANG_RIGHT && left_stick_mag[chan] > 0.15) || PAD_StickX(chan) > 20 || WUPC_lStickX(chan) > 160)
+		if((LEFT_STICK_ANG_RIGHT && left_stick_mag[chan] > 0.15) || PAD_StickX(chan) > 20 || WUPC_lStickX(chan) > 180)
 			return true;
 	}
 	return false;
@@ -536,7 +536,7 @@ bool CMenu::lStick_Down(void)
 		return true;
 	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 	{
-		if((LEFT_STICK_ANG_DOWN && left_stick_mag[chan] > 0.15) || PAD_StickY(chan) < -20 || WUPC_lStickY(chan) < -160)
+		if((LEFT_STICK_ANG_DOWN && left_stick_mag[chan] > 0.15) || PAD_StickY(chan) < -20 || WUPC_lStickY(chan) < -180)
 			return true;
 	}
 	return false;
@@ -548,7 +548,7 @@ bool CMenu::lStick_Left(void)
 		return true;
 	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 	{
-		if((LEFT_STICK_ANG_LEFT && left_stick_mag[chan] > 0.15) || PAD_StickX(chan) < -20 || WUPC_lStickX(chan) < -160)
+		if((LEFT_STICK_ANG_LEFT && left_stick_mag[chan] > 0.15) || PAD_StickX(chan) < -20 || WUPC_lStickX(chan) < -180)
 			return true;
 	}
 	return false;
