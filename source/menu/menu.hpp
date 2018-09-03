@@ -112,6 +112,7 @@ private:
 	bool m_source_autoboot;
 	dir_discHdr m_autoboot_hdr;
 	s16 m_showtimer;
+	s16 m_musicTimer;
 	string m_curLanguage;
 
 	string m_sourceDir;

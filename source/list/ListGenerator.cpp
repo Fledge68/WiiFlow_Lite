@@ -374,7 +374,7 @@ void ListGenerator::createSFList(u8 maxBtns, Config &m_sourceMenuCfg, const stri
 {
 	Clear();
 	char btn_selected[256];	
-	for(u8 i = 0; i < maxBtns; i++)
+	for(u8 i = 0; i <= maxBtns; i++)
 	{
 		memset(btn_selected, 0, 256);
 		strncpy(btn_selected, fmt("BUTTON_%i", i), 255);
