@@ -92,7 +92,6 @@ private:
 	u8 m_aa;
 	u8 m_numCFVersions;
 	u8 m_numPlugins;
-	u8 m_max_source_btn;
 	const char *cf_domain;
 	bool m_use_source;// source_menu.ini found & ok to use source menu/flow
 	bool m_multisource;// multi select source menu
@@ -1075,6 +1074,7 @@ private:
 	bool _Boot();
 	void _Paths();
 	void _sourceFlow();
+	void _createSFList();
 	void _mainLoopCommon(bool withCF = false, bool adjusting = false);
 	void _netInit();
 	void _loadDefaultFont(void);

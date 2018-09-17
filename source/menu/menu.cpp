@@ -2216,7 +2216,7 @@ bool CMenu::_loadList(void)
 	
 	if(m_sourceflow)
 	{
-		m_cacheList.createSFList(m_max_source_btn, m_source, m_sourceDir);
+		_createSFList();
 		for(vector<dir_discHdr>::iterator tmp_itr = m_cacheList.begin(); tmp_itr != m_cacheList.end(); tmp_itr++)
 			m_gameList.push_back(*tmp_itr);
 		m_cacheList.Clear();
