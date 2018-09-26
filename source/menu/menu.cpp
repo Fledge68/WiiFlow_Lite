@@ -2074,6 +2074,8 @@ void CMenu::_initCF(void)
 				char idCats[10];
 				strcpy(idCats, m_cat.getString(catDomain, hdr->type == TYPE_PLUGIN? catID : id).c_str());
 				u8 numIdCats = strlen(idCats);
+				if(numIdCats == 0)
+					m_cat.remove(catDomain, hdr->type == TYPE_PLUGIN? catID : id);
 				bool inaCat = false;
 				bool inHiddenCat = false;
 				int reqMatch = 0;
