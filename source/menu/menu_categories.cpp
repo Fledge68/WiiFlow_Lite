@@ -153,6 +153,8 @@ void CMenu::_getGameCategories(void)
 			m_categories.at(k) = '1';
 		}
 	}
+	else
+		m_cat.remove(catDomain, hdr->type == TYPE_PLUGIN? pluginID : id);
 	m_btnMgr.setText(m_categoryLblTitle, CoverFlow.getTitle());
 }
 
