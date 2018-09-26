@@ -71,6 +71,7 @@ bool Plugin::AddPlugin(Config &plugin)
 	NewPlugin.romDir = plugin.getString(PLUGIN, "romDir");
 	NewPlugin.fileTypes = plugin.getString(PLUGIN, "fileTypes");
 	NewPlugin.Args = plugin.getStrings(PLUGIN, "arguments", '|');
+	NewPlugin.boxMode = plugin.getBool(PLUGIN, "boxmode", 1);
 	string PluginName = plugin.getString(PLUGIN, "displayname");
 	if(PluginName.size() < 2)
 	{
@@ -153,6 +154,11 @@ const string& Plugin::GetFileTypes(u8 pos)
 u32 Plugin::GetCaseColor(u8 pos)
 {
 	return Plugins[pos].caseColor;
+}
+
+bool Plugin::GetBoxMode(u8 pos)
+{
+	return Plugins[pos].boxMode;
 }
 
 wstringEx Plugin::GetPluginName(u8 pos)

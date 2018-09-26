@@ -58,19 +58,66 @@ void CMenu::_showCF(bool refreshList)
 		if(!m_vid.showingWaitMessage())
 			_showWaitMessage();
 		
-		/* create gameList */
+		/* create gameList based on sources selected */
 		_loadList();
 
-		/* autoboot stuff */
+		_hideWaitMessage();
+
+		/* if game list is empty display message letting user know */
+		wstringEx Msg;
+		wstringEx Pth;
+		if(m_gameList.empty())
+		{
+			if(m_source_cnt > 1)
+			{
+				Msg = _t("main8", L"game list empty!");
+				Pth = "";
+			}
+			else
+			{
+				switch(m_current_view)
+				{
+					case COVERFLOW_WII:
+						Msg = _t("main2", L"No games found in ");
+						Pth = wstringEx(fmt(wii_games_dir, DeviceName[currentPartition]));
+						break;
+					case COVERFLOW_GAMECUBE:
+						Msg = _t("main2", L"No games found in ");
+						Pth = wstringEx(fmt(gc_games_dir, DeviceName[currentPartition]));
+						break;
+					case COVERFLOW_CHANNEL:
+						Msg = _t("main3", L"No titles found in ");
+						Pth = wstringEx(fmt("%s:/%s/%s", DeviceName[currentPartition],  emu_nands_dir, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand").c_str()));
+						break;
+					case COVERFLOW_HOMEBREW:
+						Msg = _t("main4", L"No apps found in ");
+						Pth = wstringEx(fmt(HOMEBREW_DIR, DeviceName[currentPartition]));
+						break;
+					case COVERFLOW_PLUGIN:
+						m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
+						if(enabledPluginsCount == 0)
+							Msg = _t("main6", L"No plugins selected.");
+						else
+							Msg = _t("main5", L"No roms/items found.");
+						Pth = "";
+						break;
+				}
+			}
+			Msg.append(Pth);
+			m_btnMgr.setText(m_mainLblMessage, Msg);
+			m_btnMgr.show(m_mainLblMessage);
+			return;
+		}
+		
+		/* if source menu button set to autoboot */
 		if(m_source_autoboot == true)
-		{	/* search for the requested file */
+		{	/* search game list for the requested title */
 			bool game_found = false;
 			for(vector<dir_discHdr>::iterator element = m_gameList.begin(); element != m_gameList.end(); ++element)
 			{
 				switch(m_autoboot_hdr.type)
 				{
 					case TYPE_CHANNEL:
-					//case TYPE_EMUCHANNEL:
 					case TYPE_WII_GAME:
 					case TYPE_GC_GAME:
 						if(strcmp(m_autoboot_hdr.id, element->id) == 0)
@@ -90,7 +137,8 @@ void CMenu::_showCF(bool refreshList)
 					break;
 				}
 			}
-			if(game_found == true)
+			/* title found - launch it */
+			if(game_found == true) 
 			{
 				gprintf("Game found, autobooting...\n");
 				_launch(&m_autoboot_hdr);
@@ -98,56 +146,9 @@ void CMenu::_showCF(bool refreshList)
 			/* fail */
 			m_source_autoboot = false;
 		}
-		
-		_hideWaitMessage();
-	}
-
-	wstringEx Msg;
-	wstringEx Pth;
-	if(m_gameList.empty())
-	{
-		if(m_source_cnt > 1)
-		{
-			Msg = _t("main8", L"game list empty!");
-			Pth = "";
-		}
-		else
-		{
-			switch(m_current_view)
-			{
-				case COVERFLOW_WII:
-					Msg = _t("main2", L"No games found in ");
-					Pth = wstringEx(fmt(wii_games_dir, DeviceName[currentPartition]));
-					break;
-				case COVERFLOW_GAMECUBE:
-					Msg = _t("main2", L"No games found in ");
-					Pth = wstringEx(fmt(gc_games_dir, DeviceName[currentPartition]));
-					break;
-				case COVERFLOW_CHANNEL:
-					Msg = _t("main3", L"No titles found in ");
-					Pth = wstringEx(fmt("%s:/%s/%s", DeviceName[currentPartition],  emu_nands_dir, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand").c_str()));
-					break;
-				case COVERFLOW_HOMEBREW:
-					Msg = _t("main4", L"No apps found in ");
-					Pth = wstringEx(fmt(HOMEBREW_DIR, DeviceName[currentPartition]));
-					break;
-				case COVERFLOW_PLUGIN:
-					m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
-					if(enabledPluginsCount == 0)
-						Msg = _t("main6", L"No plugins selected.");
-					else
-						Msg = _t("main5", L"No roms/items found.");
-					Pth = "";
-					break;
-			}
-		}
-		Msg.append(Pth);
-		m_btnMgr.setText(m_mainLblMessage, Msg);
-		m_btnMgr.show(m_mainLblMessage);
-		return;
 	}
 	
-	/* setup for filter list and coverflow stuff */
+	/* setup categories and favorites for filtering the game list below */
 	if(refreshList && m_clearCats)// clear categories unless a source menu btn has selected one
 	{
 		// do not clear hidden categories to keep games hidden
@@ -160,6 +161,7 @@ void CMenu::_showCF(bool refreshList)
 	if(m_cfg.getBool("GENERAL", "save_favorites_mode", false))
 		m_favorites = m_cfg.getBool(_domainFromView(), "favorites", false);
 	
+	/* set CoverFlow domain to _COVERFLOW, _SMALLFLOW, _SIDEFLOW, _SHORTFLOW, or _FLATFLOW */
 	cf_domain = "_COVERFLOW";
 	if(!m_sourceflow && m_current_view == COVERFLOW_HOMEBREW && m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox", true))
 		cf_domain = "_SMALLFLOW";
@@ -172,11 +174,14 @@ void CMenu::_showCF(bool refreshList)
 		{
 			int sdc = 0;
 			int shc = 0;
+			int flatmode_cnt = 0;
 			for(u8 i = 0; m_plugin.PluginExist(i); ++i)
 			{
 				if(m_plugin.GetEnableStatus(m_cfg, m_plugin.getPluginMagic(i)))
 				{
-					if(_sideCover(m_plugin.PluginMagicWord))
+					if(!m_plugin.GetBoxMode(i))
+						flatmode_cnt++;
+					else if(_sideCover(m_plugin.PluginMagicWord))
 						sdc++;
 					else if(_shortCover(m_plugin.PluginMagicWord))
 						shc++;
@@ -186,17 +191,24 @@ void CMenu::_showCF(bool refreshList)
 				cf_domain = "_SIDEFLOW";
 			else if(shc == enabledPluginsCount)
 				cf_domain = "_SHORTFLOW";
+			if(flatmode_cnt == enabledPluginsCount)
+				cf_domain = "_FLATFLOW";
 		}
 	}
 
-	m_numCFVersions = min(max(1, m_coverflow.getInt(cf_domain, "number_of_modes", 1)), 15);
+	/* get the number of layouts (modes) for the CoverFlow domain */
+	m_numCFVersions = min(max(1, m_coverflow.getInt(cf_domain, "number_of_modes", 1)), 15);// max layouts is 15
 	
-	/* filter list and start coverflow coverloader */	
+	/* get the current cf layout number and use it to load the data used for that layout */
 	_loadCFLayout(min(max(1, _getCFVersion()), (int)m_numCFVersions));
+	
+	/* filter game list to create the cf cover list and start coverflow coverloader */	
 	_initCF();
+	
+	/* set the covers and titles to the positions and angles based on the cf layout */
 	CoverFlow.applySettings();
 
-	/* display game count unless sourceflow or homebrew */
+	/* display game count if not sourceflow or homebrew */
 	if(m_sourceflow || m_current_view == COVERFLOW_HOMEBREW)
 		return;
 

@@ -53,6 +53,7 @@ struct PluginOptions
 	u32 BannerSoundSize;
 	vector<string> Args;
 	wstringEx DisplayName;
+	bool boxMode;
 };
 
 class Plugin
@@ -69,6 +70,7 @@ public:
 	wstringEx GetPluginName(u8 pos);
 	u32 getPluginMagic(u8 pos);
 	s8 GetPluginPosition(u32 magic);
+	bool GetBoxMode(u8 pos);
 	
 	void init(const string& m_pluginsDir);
 	bool AddPlugin(Config &plugin);

@@ -2187,7 +2187,25 @@ void CMenu::_initCF(void)
 	}
 	else
 	{
-		CoverFlow.setBoxMode(m_cfg.getBool("GENERAL", "box_mode", true));
+		m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
+		if(m_current_view == COVERFLOW_PLUGIN && enabledPluginsCount > 0)// 1 main source is plugin mode
+		{
+			int boxmode_cnt = 0;
+			for(u8 i = 0; m_plugin.PluginExist(i); ++i)
+			{
+				if(m_plugin.GetEnableStatus(m_cfg, m_plugin.getPluginMagic(i)))
+				{
+					if(m_plugin.GetBoxMode(i))
+						boxmode_cnt++;
+				}
+			}
+			if(boxmode_cnt == 0)
+				CoverFlow.setBoxMode(false);
+			else
+				CoverFlow.setBoxMode(true);
+		}
+		else
+			CoverFlow.setBoxMode(m_cfg.getBool("GENERAL", "box_mode", true));
 		CoverFlow.setSmallBoxMode(false);
 	}
 	CoverFlow.setCompression(m_cfg.getBool("GENERAL", "allow_texture_compression", true));
