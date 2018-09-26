@@ -92,6 +92,31 @@ void CMenu::_sourceFlow()
 			}
 		}
 	}
+	else if(source =="new_source")
+	{
+		const char *fn = m_source.getString(btn_selected, "magic", "").c_str();
+		if(fsop_FileExist(fmt("%s/%s", m_sourceDir.c_str(), fn)))
+		{
+			m_source.unload();
+			m_source.load(fmt("%s/%s", m_sourceDir.c_str(), fn));
+			/* get max source button # */
+			m_max_source_btn = 0;
+			const char *srcDomain = m_source.firstDomain().c_str();
+			while(1)
+			{
+				if(strlen(srcDomain) < 2)
+					break;
+				if(strrchr(srcDomain, '_') != NULL)
+				{
+					int srcBtnNumber = atoi(strrchr(srcDomain, '_') + 1);
+					if(srcBtnNumber > m_max_source_btn)
+						m_max_source_btn = srcBtnNumber;
+				}
+				srcDomain = m_source.nextDomain().c_str();
+			}
+			return;
+		}
+	}
 	else //(source == "wii")
 		m_current_view = COVERFLOW_WII;
 	m_sourceflow = false;
@@ -143,80 +168,84 @@ void CMenu::_updateSourceBtns(void)
 		m_btnMgr.show(m_sourceBtnPageM);
 		m_btnMgr.show(m_sourceBtnPageP);
 	}
+	else
+	{
+		m_btnMgr.hide(m_sourceLblPage);
+		m_btnMgr.hide(m_sourceBtnPageM);
+		m_btnMgr.hide(m_sourceBtnPageP);
+	}
 
-	j = (curPage - 1) * 12;
 	sourceBtn = 0;
 	selectedBtns = 0;
-	for(i = 0; i < ((numPages - 1) * 12 + 12); ++i)
+	j = (curPage - 1) * 12;
+	for(i = j; i < (j + 12); ++i)
 	{
-		memset(current_btn, 0, 16);
-		strncpy(current_btn, fmt("BUTTON_%i", i), 15);
-		string btnSource = m_source.getString(current_btn, "source", "");
-		bool src_selected = false;
-		//const char *btn_image = m_source.getString(current_btn,"image", "").c_str();
-		//const char *btn_imageSel = m_source.getString(current_btn,"image_s", "").c_str();
-		if(btnSource == "")
-			continue;
-		if(m_multisource)
-		{
-			if(btnSource == "allplugins")
-			{
-				const vector<bool> &EnabledPlugins = m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
-				if(EnabledPlugins.size() == 0)//all plugins enabled
-				{
-					if(m_current_view & COVERFLOW_PLUGIN)
-					{
-						sourceBtn = i;
-						selectedBtns++;
-						src_selected = true;
-					}
-				}
-			}
-			else if(btnSource == "plugin")
-			{
-				magicNums.clear();
-				magicNums = m_source.getStrings(current_btn, "magic", ',');
-				u32 magic = strtoul(magicNums.at(0).c_str(), NULL, 16);
-				if(m_plugin.GetEnableStatus(m_cfg, magic))
-				{
-					if(m_current_view & COVERFLOW_PLUGIN)
-					{
-						sourceBtn = i;
-						selectedBtns++;
-						src_selected = true;
-					}
-				}
-			}
-			else if(btnSource == "realnand" || btnSource == "emunand")
-			{
-				if(m_current_view & COVERFLOW_CHANNEL)
-				{
-					sourceBtn = i;
-					selectedBtns++;
-					src_selected = true;
-				}
-			}
-			else if(btnSource == "dml" || btnSource == "homebrew" || btnSource == "wii")
-			{
-				u8 flow = (btnSource == "dml" ? COVERFLOW_GAMECUBE : (btnSource == "homebrew" ? COVERFLOW_HOMEBREW : COVERFLOW_WII));
-				if(m_current_view & flow)
-				{
-					sourceBtn = i;
-					selectedBtns++;
-					src_selected = true;
-				}
-			}
-		}
-		char btn_image[255];
-		if(src_selected)
-			snprintf(btn_image, sizeof(btn_image), "%s", m_source.getString(current_btn,"image_s", "").c_str());
+		if(i > m_max_source_btn)
+			m_btnMgr.hide(m_sourceBtnSource[i -j]);
 		else
-			snprintf(btn_image, sizeof(btn_image), "%s", m_source.getString(current_btn,"image", "").c_str());
-			
-		if(i >= j && i < (j + 12))
 		{
-			//m_btnMgr.hide(m_sourceBtnSource[i - j], true);
-			//m_btnMgr.tick();
+			memset(current_btn, 0, 16);
+			strncpy(current_btn, fmt("BUTTON_%i", i), 15);
+			string btnSource = m_source.getString(current_btn, "source", "");
+			bool src_selected = false;
+			if(btnSource == "")
+				continue;
+			if(m_multisource)
+			{
+				if(btnSource == "allplugins")
+				{
+					const vector<bool> &EnabledPlugins = m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
+					if(EnabledPlugins.size() == 0)//all plugins enabled
+					{
+						if(m_current_view & COVERFLOW_PLUGIN)
+						{
+							sourceBtn = i;
+							selectedBtns++;
+							src_selected = true;
+						}
+					}
+				}
+				else if(btnSource == "plugin")
+				{
+					magicNums.clear();
+					magicNums = m_source.getStrings(current_btn, "magic", ',');
+					u32 magic = strtoul(magicNums.at(0).c_str(), NULL, 16);
+					if(m_plugin.GetEnableStatus(m_cfg, magic))
+					{
+						if(m_current_view & COVERFLOW_PLUGIN)
+						{
+							sourceBtn = i;
+							selectedBtns++;
+							src_selected = true;
+						}
+					}
+				}
+				else if(btnSource == "realnand" || btnSource == "emunand")
+				{
+					if(m_current_view & COVERFLOW_CHANNEL)
+					{
+						sourceBtn = i;
+						selectedBtns++;
+						src_selected = true;
+					}
+				}
+				else if(btnSource == "dml" || btnSource == "homebrew" || btnSource == "wii")
+				{
+					u8 flow = (btnSource == "dml" ? COVERFLOW_GAMECUBE : (btnSource == "homebrew" ? COVERFLOW_HOMEBREW : COVERFLOW_WII));
+					if(m_current_view & flow)
+					{
+						sourceBtn = i;
+						selectedBtns++;
+						src_selected = true;
+					}
+				}
+			}
+			char btn_image[255];
+			if(src_selected)
+				snprintf(btn_image, sizeof(btn_image), "%s", m_source.getString(current_btn,"image_s", "").c_str());
+			else
+				snprintf(btn_image, sizeof(btn_image), "%s", m_source.getString(current_btn,"image", "").c_str());
+				
 			TexData texConsoleImg;
 			TexData texConsoleImgs;
 			if(TexHandle.fromImageFile(texConsoleImg, fmt("%s/%s/%s", m_sourceDir.c_str(), themeName, btn_image)) != TE_OK)
@@ -405,6 +434,34 @@ bool CMenu::_Source()
 					if(enabledPluginsCount == 0) // no magic #'s or invalid ones so default to first plugin in list
 						m_plugin.SetEnablePlugin(m_cfg, 0, 2);
 				}
+				else if(source =="new_source")
+				{
+					const char *fn = m_source.getString(btn_selected, "magic", "").c_str();
+					if(fsop_FileExist(fmt("%s/%s", m_sourceDir.c_str(), fn)))
+					{
+						m_source.unload();
+						m_source.load(fmt("%s/%s", m_sourceDir.c_str(), fn));
+						exitSource = false;
+						updateSource = true;
+						curPage = 1;
+						/* get max source button # */
+						m_max_source_btn = 0;
+						const char *srcDomain = m_source.firstDomain().c_str();
+						while(1)
+						{
+							if(strlen(srcDomain) < 2)
+								break;
+							if(strrchr(srcDomain, '_') != NULL)
+							{
+								int srcBtnNumber = atoi(strrchr(srcDomain, '_') + 1);
+								if(srcBtnNumber > m_max_source_btn)
+									m_max_source_btn = srcBtnNumber;
+							}
+							srcDomain = m_source.nextDomain().c_str();
+						}
+						numPages = (m_max_source_btn / 12) + 1;
+					}
+				}
 				else //if(source == "wii") or source is invalid or empty default to wii
 				{
 					m_current_view = COVERFLOW_WII;
@@ -457,6 +514,34 @@ bool CMenu::_Source()
 					}
 					m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
 					m_current_view = enabledPluginsCount > 0 ? (m_current_view | COVERFLOW_PLUGIN) : (m_current_view & ~COVERFLOW_PLUGIN);
+				}
+				else if(source =="new_source")
+				{
+					const char *fn = m_source.getString(btn_selected, "magic", "").c_str();
+					if(fsop_FileExist(fmt("%s/%s", m_sourceDir.c_str(), fn)))
+					{
+						m_source.unload();
+						m_source.load(fmt("%s/%s", m_sourceDir.c_str(), fn));
+						exitSource = false;
+						updateSource = true;
+						curPage = 1;
+						/* get max source button # */
+						m_max_source_btn = 0;
+						const char *srcDomain = m_source.firstDomain().c_str();
+						while(1)
+						{
+							if(strlen(srcDomain) < 2)
+								break;
+							if(strrchr(srcDomain, '_') != NULL)
+							{
+								int srcBtnNumber = atoi(strrchr(srcDomain, '_') + 1);
+								if(srcBtnNumber > m_max_source_btn)
+									m_max_source_btn = srcBtnNumber;
+							}
+							srcDomain = m_source.nextDomain().c_str();
+						}
+						numPages = (m_max_source_btn / 12) + 1;
+					}
 				}
 			}
 		}
