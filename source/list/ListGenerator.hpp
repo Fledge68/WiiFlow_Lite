@@ -32,7 +32,7 @@ using namespace std;
 class ListGenerator : public vector<dir_discHdr>
 {
 public:
-	void createSFList(u8 btn_cnt, Config &m_sourceMenuCfg, const string& sourceDir, const vector<int>& btns);
+	void createSFList(u8 maxBtns, Config &m_sourceMenuCfg, const string& sourceDir);
 	void Init(const char *settingsDir, const char *Language);
 	void Clear();
 	void CreateList(u32 Flow, u32 Device, const string& Path, const vector<string>& FileTypes, 

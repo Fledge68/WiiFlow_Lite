@@ -1,5 +1,8 @@
 
+//#include <dirent.h>
+//#include <unistd.h>
 #include "menu.hpp"
+//#include "defines.h"
 
 // Source menu
 s16 m_sourceLblPage;
@@ -22,28 +25,8 @@ static u8 i, j, k;
 int curPage;
 int numPages;
 vector<string> magicNums;
-vector<int> srcbtns_list;
-u8 srcbtns_cnt;
-u8 max_source_btn;
-int cur_folder = 0;
 char btn_selected[16];
 char current_btn[16];
-
-void CMenu::_createSFList()
-{
-	/* create filtered source btns list */
-	srcbtns_list.clear();
-	for(i = 0; i <= max_source_btn; ++i)
-	{
-		memset(current_btn, 0, 16);
-		strncpy(current_btn, fmt("BUTTON_%i", i), 15);
-		int src_folder = m_source.getInt(current_btn, "src_folder", 0);
-		if(src_folder == cur_folder)
-			srcbtns_list.push_back(i);
-	}
-	srcbtns_cnt = srcbtns_list.size();
-	m_cacheList.createSFList(srcbtns_cnt, m_source, m_sourceDir, srcbtns_list);
-}
 
 void CMenu::_sourceFlow()
 {
@@ -109,11 +92,6 @@ void CMenu::_sourceFlow()
 			}
 		}
 	}
-	else if(source == "folder")
-	{
-		cur_folder = m_source.getInt(btn_selected, "folder", 0);
-		return;
-	}
 	else //(source == "wii")
 		m_current_view = COVERFLOW_WII;
 	m_sourceflow = false;
@@ -158,23 +136,6 @@ void CMenu::_showSource(void)
 
 void CMenu::_updateSourceBtns(void)
 {
-	/* create filtered source btns list */
-	srcbtns_list.clear();
-	for(i = 0; i <= max_source_btn; ++i)
-	{
-		memset(current_btn, 0, 16);
-		strncpy(current_btn, fmt("BUTTON_%i", i), 15);
-		int src_folder = m_source.getInt(current_btn, "src_folder", 0);
-		if(src_folder == cur_folder)
-			srcbtns_list.push_back(i);
-	}
-	/* get number of pages based on list size */
-	numPages = 0;
-	srcbtns_cnt = srcbtns_list.size();
-	if(srcbtns_cnt > 0)
-		numPages = (srcbtns_cnt - 1)/12 + 1;
-	
-	/* show page button only if more than 12 buttons */
 	if(numPages > 1)
 	{
 		m_btnMgr.setText(m_sourceLblPage, wfmt(L"%i / %i", curPage, numPages));
@@ -182,31 +143,20 @@ void CMenu::_updateSourceBtns(void)
 		m_btnMgr.show(m_sourceBtnPageM);
 		m_btnMgr.show(m_sourceBtnPageP);
 	}
-	else
-	{
-		m_btnMgr.hide(m_sourceLblPage);
-		m_btnMgr.hide(m_sourceBtnPageM);
-		m_btnMgr.hide(m_sourceBtnPageP);
-	}
 
-	/* set image texture for each button and show it */
 	j = (curPage - 1) * 12;
 	sourceBtn = 0;
 	selectedBtns = 0;
-	for(i = 0; i < 12; ++i)
+	for(i = 0; i < ((numPages - 1) * 12 + 12); ++i)
 	{
-		if((i+j) >= srcbtns_cnt)
-		{
-			m_btnMgr.hide(m_sourceBtnSource[i]);
-			continue;
-		}
 		memset(current_btn, 0, 16);
-		strncpy(current_btn, fmt("BUTTON_%i", srcbtns_list[i + j]), 15);
+		strncpy(current_btn, fmt("BUTTON_%i", i), 15);
 		string btnSource = m_source.getString(current_btn, "source", "");
 		bool src_selected = false;
+		//const char *btn_image = m_source.getString(current_btn,"image", "").c_str();
+		//const char *btn_imageSel = m_source.getString(current_btn,"image_s", "").c_str();
 		if(btnSource == "")
 			continue;
-		/* if multisource we get selected image texture if button source is selected */
 		if(m_multisource)
 		{
 			if(btnSource == "allplugins")
@@ -257,27 +207,31 @@ void CMenu::_updateSourceBtns(void)
 				}
 			}
 		}
-		/* set button image textures and show it*/
 		char btn_image[255];
 		if(src_selected)
 			snprintf(btn_image, sizeof(btn_image), "%s", m_source.getString(current_btn,"image_s", "").c_str());
 		else
 			snprintf(btn_image, sizeof(btn_image), "%s", m_source.getString(current_btn,"image", "").c_str());
 			
-		TexData texConsoleImg;
-		TexData texConsoleImgs;
-		if(TexHandle.fromImageFile(texConsoleImg, fmt("%s/%s/%s", m_sourceDir.c_str(), themeName, btn_image)) != TE_OK)
+		if(i >= j && i < (j + 12))
 		{
-			if(TexHandle.fromImageFile(texConsoleImg, fmt("%s/%s", m_sourceDir.c_str(), btn_image)) != TE_OK)
-				TexHandle.fromImageFile(texConsoleImg, fmt("%s/favoriteson.png", m_imgsDir.c_str()));
+			//m_btnMgr.hide(m_sourceBtnSource[i - j], true);
+			//m_btnMgr.tick();
+			TexData texConsoleImg;
+			TexData texConsoleImgs;
+			if(TexHandle.fromImageFile(texConsoleImg, fmt("%s/%s/%s", m_sourceDir.c_str(), themeName, btn_image)) != TE_OK)
+			{
+				if(TexHandle.fromImageFile(texConsoleImg, fmt("%s/%s", m_sourceDir.c_str(), btn_image)) != TE_OK)
+					TexHandle.fromImageFile(texConsoleImg, fmt("%s/favoriteson.png", m_imgsDir.c_str()));
+			}
+			if(TexHandle.fromImageFile(texConsoleImgs, fmt("%s/%s/%s", m_sourceDir.c_str(), themeName, btn_image)) != TE_OK)
+			{
+				if(TexHandle.fromImageFile(texConsoleImgs, fmt("%s/%s", m_sourceDir.c_str(), btn_image)) != TE_OK)
+					TexHandle.fromImageFile(texConsoleImgs, fmt("%s/favoritesons.png", m_imgsDir.c_str()));
+			}
+			m_btnMgr.setBtnTexture(m_sourceBtnSource[i - j], texConsoleImg, texConsoleImgs);
+			m_btnMgr.show(m_sourceBtnSource[i - j]);
 		}
-		if(TexHandle.fromImageFile(texConsoleImgs, fmt("%s/%s/%s", m_sourceDir.c_str(), themeName, btn_image)) != TE_OK)
-		{
-			if(TexHandle.fromImageFile(texConsoleImgs, fmt("%s/%s", m_sourceDir.c_str(), btn_image)) != TE_OK)
-				TexHandle.fromImageFile(texConsoleImgs, fmt("%s/favoritesons.png", m_imgsDir.c_str()));
-		}
-		m_btnMgr.setBtnTexture(m_sourceBtnSource[i], texConsoleImg, texConsoleImgs);
-		m_btnMgr.show(m_sourceBtnSource[i]);
 	}
 }
 
@@ -287,6 +241,7 @@ bool CMenu::_Source()
 	bool updateSource = false;
 	exitSource = false;
 	curPage = 1;
+	numPages = (m_max_source_btn / 12) + 1;
 	
 	SetupInput();
 	_showSource();
@@ -383,12 +338,12 @@ bool CMenu::_Source()
 				if(m_btnMgr.selected(m_sourceBtnSource[i]))
 				{
 					memset(btn_selected, 0, 16);
-					strncpy(btn_selected, fmt("BUTTON_%i", srcbtns_list[i + j]), 15);
+					strncpy(btn_selected, fmt("BUTTON_%i", i + j), 15);
 					source = m_source.getString(btn_selected, "source", "");
 					break;
 				}
 			}
-			if(!m_multisource && i < 12)
+			if(!m_multisource && i <12)
 			{
 				memset(single_sourcebtn, 0, 16);
 				exitSource = true;
@@ -450,13 +405,6 @@ bool CMenu::_Source()
 					if(enabledPluginsCount == 0) // no magic #'s or invalid ones so default to first plugin in list
 						m_plugin.SetEnablePlugin(m_cfg, 0, 2);
 				}
-				else if(source == "folder")
-				{
-					cur_folder = m_source.getInt(btn_selected, "folder", 0);
-					exitSource = false;
-					updateSource = true;
-					curPage = 1;
-				}
 				else //if(source == "wii") or source is invalid or empty default to wii
 				{
 					m_current_view = COVERFLOW_WII;
@@ -509,13 +457,6 @@ bool CMenu::_Source()
 					}
 					m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
 					m_current_view = enabledPluginsCount > 0 ? (m_current_view | COVERFLOW_PLUGIN) : (m_current_view & ~COVERFLOW_PLUGIN);
-				}
-				else if(source == "folder")
-				{
-					cur_folder = m_source.getInt(btn_selected, "folder", 0);
-					exitSource = false;
-					updateSource = true;
-					curPage = 1;
 				}
 			}
 		}
@@ -649,7 +590,7 @@ void CMenu::_initSourceMenu()
 	
 	m_use_source = true;
 	/* get max source button # */
-	max_source_btn = 0;
+	m_max_source_btn = 0;
 	const char *srcDomain = m_source.firstDomain().c_str();
 	while(1)
 	{
@@ -658,8 +599,8 @@ void CMenu::_initSourceMenu()
 		if(strrchr(srcDomain, '_') != NULL)
 		{
 			int srcBtnNumber = atoi(strrchr(srcDomain, '_') + 1);
-			if(srcBtnNumber > max_source_btn)
-				max_source_btn = srcBtnNumber;
+			if(srcBtnNumber > m_max_source_btn)
+				m_max_source_btn = srcBtnNumber;
 		}
 		srcDomain = m_source.nextDomain().c_str();
 	}

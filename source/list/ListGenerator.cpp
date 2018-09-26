@@ -370,14 +370,14 @@ void GetFiles(const char *Path, const vector<string>& FileTypes,
 	SubPaths.clear();
 }
 
-void ListGenerator::createSFList(u8 btns_cnt, Config &m_sourceMenuCfg, const string& sourceDir, const vector<int>& btns)
+void ListGenerator::createSFList(u8 maxBtns, Config &m_sourceMenuCfg, const string& sourceDir)
 {
 	Clear();
 	char btn_selected[256];	
-	for(u8 i = 0; i < btns_cnt; i++)
+	for(u8 i = 0; i <= maxBtns; i++)
 	{
 		memset(btn_selected, 0, 256);
-		strncpy(btn_selected, fmt("BUTTON_%i", btns[i]), 255);
+		strncpy(btn_selected, fmt("BUTTON_%i", i), 255);
 		const char *source = m_sourceMenuCfg.getString(btn_selected, "source","").c_str();
 		if(source == NULL)
 			continue;
@@ -389,10 +389,11 @@ void ListGenerator::createSFList(u8 btns_cnt, Config &m_sourceMenuCfg, const str
 		strncpy(ListElement.path, path, sizeof(ListElement.path) - 1);
 		ListElement.casecolor = 0xFFFFFF;
 		ListElement.type = TYPE_SOURCE;		
-		ListElement.settings[0] = btns[i];
+		ListElement.settings[0] = i;
+		//const char *title = m_sourceMenuCfg.getString(btn_selected, "title", fmt("title_%i", i)).c_str();
 		char SourceTitle[64];
 		memset(SourceTitle, 0, sizeof(SourceTitle));
-		strncpy(SourceTitle, m_sourceMenuCfg.getString(btn_selected, "title", fmt("title_%i", btns[i])).c_str(), 63);
+		strncpy(SourceTitle, m_sourceMenuCfg.getString(btn_selected, "title", fmt("title_%i", i)).c_str(), 63);
 		mbstowcs(ListElement.title, SourceTitle, 63);
 		Asciify(ListElement.title);
 		m_cacheList.push_back(ListElement);
