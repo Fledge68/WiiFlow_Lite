@@ -596,15 +596,24 @@ int CMenu::main(void)
 				MusicPlayer.Next();
 			}
 			/* change sorting with btn B and + */
-			else if(BTN_PLUS_PRESSED && !m_locked  && !m_sourceflow && m_current_view < 8)
+			else if(BTN_PLUS_PRESSED && !m_locked && (m_current_view < 8 || m_sourceflow))// <8 excludes plugins and homebrew
 			{
 				bUsed = true;
-				u32 sort = 0;
-				sort = loopNum((m_cfg.getInt(domain, "sort", 0)) + 1, SORT_MAX);
-				//if((m_current_view == COVERFLOW_HOMEBREW || m_current_view == COVERFLOW_PLUGIN) && sort > SORT_LASTPLAYED)
-				//	sort = SORT_ALPHA;
+				u8 sort = 0;
+				if(m_sourceflow)
+				{
+					sort = m_cfg.getInt(SOURCEFLOW_DOMAIN, "sort", SORT_ALPHA);
+					if(sort == SORT_ALPHA)
+						sort = SORT_BTN_NUMBERS;
+					else
+						sort = SORT_ALPHA;
+				}
+				else
+					sort = loopNum((m_cfg.getInt(domain, "sort", 0)) + 1, SORT_MAX);
 				m_cfg.setInt(domain, "sort", sort);
+				/* set coverflow to new sorting */
 				_initCF();
+				/* set text to display */
 				wstringEx curSort ;
 				if(sort == SORT_ALPHA)
 					curSort = m_loc.getWString(m_curLanguage, "alphabetically", L"Alphabetically");
@@ -618,6 +627,8 @@ int CMenu::main(void)
 					curSort = m_loc.getWString(m_curLanguage, "bywifiplayers", L"By Wifi Players");
 				else if(sort == SORT_PLAYERS)
 					curSort = m_loc.getWString(m_curLanguage, "byplayers", L"By Players");
+				else if(sort == SORT_BTN_NUMBERS)
+					curSort = m_loc.getWString(m_curLanguage, "bybtnnumbers", L"By Button Numbers");
 				m_showtimer = 120;
 				m_btnMgr.setText(m_mainLblNotice, curSort);
 				m_btnMgr.show(m_mainLblNotice);

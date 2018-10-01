@@ -1846,6 +1846,12 @@ bool CCoverFlow::_sortByWifiPlayers(CItem item1, CItem item2)
 	return item1.hdr->wifi < item2.hdr->wifi;
 }
 
+bool CCoverFlow::_sortByBtnNumbers(CItem item1, CItem item2)
+{
+	if(item1.hdr->settings[0] == item2.hdr->settings[0]) return _sortByAlpha(item1, item2);
+	return item1.hdr->settings[0] < item2.hdr->settings[0];
+}
+
 bool CCoverFlow::start(const string &m_imgsDir)
 {
 	if (m_items.empty()) return true;
@@ -1863,6 +1869,8 @@ bool CCoverFlow::start(const string &m_imgsDir)
 		sort(m_items.begin(), m_items.end(), CCoverFlow::_sortByPlayers);
 	else if (m_sorting == SORT_WIFIPLAYERS)
 		sort(m_items.begin(), m_items.end(), CCoverFlow::_sortByWifiPlayers);
+	else if (m_sorting == SORT_BTN_NUMBERS)
+		sort(m_items.begin(), m_items.end(), CCoverFlow::_sortByBtnNumbers);
 
 	// Load resident textures
 	if(!m_dvdskin_loaded)
@@ -2254,7 +2262,7 @@ void CCoverFlow::_completeJump(void)
 
 void CCoverFlow::nextLetter(wchar_t *c)
 {
-	if (m_covers == NULL)
+	if (m_covers == NULL || m_sorting == SORT_BTN_NUMBERS)
 	{
 		c[0] = L'\0';
 		return;
@@ -2293,7 +2301,7 @@ void CCoverFlow::nextLetter(wchar_t *c)
 
 void CCoverFlow::prevLetter(wchar_t *c)
 {
-	if (m_covers == NULL)
+	if (m_covers == NULL || m_sorting == SORT_BTN_NUMBERS)
 	{
 		c[0] = L'\0';
 		return;

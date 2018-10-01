@@ -29,6 +29,7 @@ enum Sorting
 	SORT_MAX,
 	SORT_ESRB,
 	SORT_CONTROLLERS,
+	SORT_BTN_NUMBERS,
 };
 
 class CCoverFlow
@@ -357,6 +358,7 @@ private:
 	static bool _sortByAlpha(CItem item1, CItem item2);
 	static bool _sortByPlayers(CItem item1, CItem item2);
 	static bool _sortByWifiPlayers(CItem item1, CItem item2);
+	static bool _sortByBtnNumbers(CItem item1, CItem item2);
 
 private:
 	static void * _coverLoader(void *obj);
