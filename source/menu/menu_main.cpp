@@ -530,6 +530,7 @@ int CMenu::main(void)
 		}
 		if(!BTN_B_HELD)
 		{
+			/* move coverflow */
 			if(BTN_UP_REPEAT || RIGHT_STICK_UP)
 				CoverFlow.up();
 			else if(BTN_RIGHT_REPEAT || RIGHT_STICK_RIGHT)
@@ -538,6 +539,12 @@ int CMenu::main(void)
 				CoverFlow.down();
 			else if(BTN_LEFT_REPEAT || RIGHT_STICK_LEFT)
 				CoverFlow.left();
+			else if(BTN_MINUS_PRESSED)
+				CoverFlow.pageUp();
+			else if(BTN_PLUS_PRESSED)
+				CoverFlow.pageDown();
+				
+			/* change coverflow layout/mode */
 			else if(BTN_1_PRESSED || BTN_2_PRESSED)
 			{
 				s8 direction = BTN_1_PRESSED ? 1 : -1;
@@ -546,32 +553,31 @@ int CMenu::main(void)
 				_loadCFLayout(cfVersion);
 				CoverFlow.applySettings();
 			}
-			else if(BTN_MINUS_PRESSED)
-				CoverFlow.pageUp();
-			else if(BTN_PLUS_PRESSED)
-				CoverFlow.pageDown();
 		}
 		else // Button B Held
 		{
 			bheld = true;
 			const char *domain = _domainFromView();
-			//Search by Alphabet
+			
+			/* b+down or up = move to previous or next cover in sort order */
 			if(BTN_DOWN_PRESSED || BTN_UP_PRESSED)
 			{
 				bUsed = true;
 				int sorting = m_cfg.getInt(domain, "sort", SORT_ALPHA);
+				/* if for some reason domain sort value is not legal set it to alpha */
 				if(sorting != SORT_ALPHA && sorting != SORT_PLAYERS && sorting != SORT_WIFIPLAYERS && sorting != SORT_GAMEID)
 				{
 					CoverFlow.setSorting((Sorting)SORT_ALPHA);
 					m_cfg.setInt(domain, "sort", SORT_ALPHA);
 					sorting = SORT_ALPHA;
 				}
+				/* move coverflow */
 				wchar_t c[2] = {0, 0};
 				BTN_UP_PRESSED ? CoverFlow.prevLetter(c) : CoverFlow.nextLetter(c);
 
+				/* set sort text and display it */
 				curLetter.clear();
 				curLetter = wstringEx(c);
-
 				m_showtimer = 120;
 				if(sorting == SORT_ALPHA)
 				{
@@ -585,22 +591,22 @@ int CMenu::main(void)
 					m_btnMgr.show(m_mainLblNotice);
 				}
 			}
-			else if(BTN_LEFT_PRESSED)
+			else if(BTN_LEFT_PRESSED)// b+left = previous song
 			{
 				bUsed = true;
 				MusicPlayer.Previous();
 			}
-			else if(BTN_RIGHT_PRESSED)
+			else if(BTN_RIGHT_PRESSED)// b+right = next song
 			{
 				bUsed = true;
 				MusicPlayer.Next();
 			}
-			/* change sorting with btn B and + */
+			/* b+plus = change sort mode */
 			else if(BTN_PLUS_PRESSED && !m_locked && (m_current_view < 8 || m_sourceflow))// <8 excludes plugins and homebrew
 			{
 				bUsed = true;
 				u8 sort = 0;
-				if(m_sourceflow)
+				if(m_sourceflow)// change sourceflow sort mode
 				{
 					sort = m_cfg.getInt(SOURCEFLOW_DOMAIN, "sort", SORT_ALPHA);
 					if(sort == SORT_ALPHA)
@@ -608,12 +614,13 @@ int CMenu::main(void)
 					else
 						sort = SORT_ALPHA;
 				}
-				else
+				else // change all other coverflow sort mode
 					sort = loopNum((m_cfg.getInt(domain, "sort", 0)) + 1, SORT_MAX);
 				m_cfg.setInt(domain, "sort", sort);
+				
 				/* set coverflow to new sorting */
 				_initCF();
-				/* set text to display */
+				/* set sort mode text and display it */
 				wstringEx curSort ;
 				if(sort == SORT_ALPHA)
 					curSort = m_loc.getWString(m_curLanguage, "alphabetically", L"Alphabetically");
@@ -633,12 +640,14 @@ int CMenu::main(void)
 				m_btnMgr.setText(m_mainLblNotice, curSort);
 				m_btnMgr.show(m_mainLblNotice);
 			}
+			/* b+minus = select random game or boot random game */ 
 			else if(BTN_MINUS_PRESSED && !CoverFlow.empty())
 			{
 				_hideMain();
 				srand(time(NULL));
 				u16 place = (rand() + rand() + rand()) % CoverFlow.size();
-				if(m_cfg.getBool("GENERAL", "random_select", false))
+				
+				if(m_cfg.getBool("GENERAL", "random_select", false))// random select a game
 				{
 					CoverFlow.setSelected(place);
 					_game(false);
@@ -655,14 +664,13 @@ int CMenu::main(void)
 					else
 						CoverFlow.cancel();
 				}
-				else /* WiiFlow should boot a random game */
+				else // boot a random game
 				{
 					gprintf("Lets boot the random game number %u\n", place);
 					const dir_discHdr *gameHdr = CoverFlow.getSpecificHdr(place);
 					if(gameHdr != NULL)
 						_launch(gameHdr);
-					/* Shouldnt happen */
-					_showCF(false);
+					_showCF(false);// this shouldn't happen
 				}
 			}
 		}
@@ -1055,7 +1063,9 @@ void CMenu::exitHandler(int ExitTo)
 
 int CMenu::_getCFVersion()
 {
-	if(m_current_view == COVERFLOW_PLUGIN && !m_sourceflow)
+	if(m_sourceflow)
+		return _getSrcFlow();
+	else if(m_current_view == COVERFLOW_PLUGIN)
 	{
 		m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
 		if(enabledPluginsCount == 1)
@@ -1074,7 +1084,9 @@ int CMenu::_getCFVersion()
 
 void CMenu::_setCFVersion(int version)
 {
-	if(m_current_view == COVERFLOW_PLUGIN && !m_sourceflow)
+	if(m_sourceflow)
+		_setSrcFlow(version);
+	else if(m_current_view == COVERFLOW_PLUGIN)
 	{
 		m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
 		if(enabledPluginsCount == 1)
@@ -1082,17 +1094,12 @@ void CMenu::_setCFVersion(int version)
 			for(u8 i = 0; m_plugin.PluginExist(i); ++i)
 			{
 				if(m_plugin.GetEnableStatus(m_cfg, m_plugin.getPluginMagic(i)))
-				{
 					m_cfg.setInt("PLUGIN_CFVERSION", m_plugin.PluginMagicWord, version);
-					return;
-				}
 			}
 		}
 		else if(strlen(single_sourcebtn))
-		{
 			m_cfg.setInt("PLUGIN_CFVERSION", single_sourcebtn, version);
-			return;
-		}
 	}
-	m_cfg.setInt(_domainFromView(), "last_cf_mode", version);
+	else
+		m_cfg.setInt(_domainFromView(), "last_cf_mode", version);
 }

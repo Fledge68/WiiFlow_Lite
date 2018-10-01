@@ -27,6 +27,8 @@ int numPages;
 vector<string> magicNums;
 char btn_selected[16];
 char current_btn[16];
+int curflow = 1;
+bool sm_tier = false;
 
 void CMenu::_sourceFlow()
 {
@@ -97,6 +99,11 @@ void CMenu::_sourceFlow()
 		const char *fn = m_source.getString(btn_selected, "magic", "").c_str();
 		if(fsop_FileExist(fmt("%s/%s", m_sourceDir.c_str(), fn)))
 		{
+			if(strcmp(fn, SOURCE_FILENAME) == 0)
+				sm_tier = false;
+			else
+				sm_tier = true;
+			curflow = m_source.getInt(btn_selected, "flow", m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
 			m_source.unload();
 			m_source.load(fmt("%s/%s", m_sourceDir.c_str(), fn));
 			/* get max source button # */
@@ -123,6 +130,18 @@ void CMenu::_sourceFlow()
 	m_cfg.setUInt("GENERAL", "sources", m_current_view);
 	m_source_cnt = 1;
 	_setSrcOptions();
+}
+
+int CMenu::_getSrcFlow(void)
+{
+	return curflow;
+}
+
+void CMenu::_setSrcFlow(int version)
+{
+	curflow = version;
+	if(!sm_tier)
+		m_cfg.setInt(SOURCEFLOW_DOMAIN, "last_cf_mode", version);
 }
 
 void CMenu::_hideSource(bool instant)
@@ -439,6 +458,11 @@ bool CMenu::_Source()
 					const char *fn = m_source.getString(btn_selected, "magic", "").c_str();
 					if(fsop_FileExist(fmt("%s/%s", m_sourceDir.c_str(), fn)))
 					{
+						if(strcmp(fn, SOURCE_FILENAME) == 0)
+							sm_tier = false;
+						else
+							sm_tier = true;
+						curflow = m_source.getInt(btn_selected, "flow", m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
 						m_source.unload();
 						m_source.load(fmt("%s/%s", m_sourceDir.c_str(), fn));
 						exitSource = false;
@@ -520,6 +544,11 @@ bool CMenu::_Source()
 					const char *fn = m_source.getString(btn_selected, "magic", "").c_str();
 					if(fsop_FileExist(fmt("%s/%s", m_sourceDir.c_str(), fn)))
 					{
+						if(strcmp(fn, SOURCE_FILENAME) == 0)
+							sm_tier = false;
+						else
+							sm_tier = true;
+						curflow = m_source.getInt(btn_selected, "flow", m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
 						m_source.unload();
 						m_source.load(fmt("%s/%s", m_sourceDir.c_str(), fn));
 						exitSource = false;
@@ -664,16 +693,19 @@ void CMenu::_initSourceMenu()
 {
 	memset(single_sourcebtn, 0, 16);
 	m_use_source = false;
+	
 	themeName = m_cfg.getString("GENERAL", "theme", "default").c_str();
-	if(!m_source.load(fmt("%s/%s/%s", m_sourceDir.c_str(), themeName, SOURCE_FILENAME)))
+	if(!m_source.load(fmt("%s/%s/%s", m_sourceDir.c_str(), themeName, SOURCE_FILENAME)))// check for source_menu/theme/source_menu.ini
 	{
-		if(!m_source.load(fmt("%s/%s", m_sourceDir.c_str(), SOURCE_FILENAME)))
-			return;
+		if(!m_source.load(fmt("%s/%s", m_sourceDir.c_str(), SOURCE_FILENAME)))// check for source_menu/source_menu.ini
+			return;// no source_menu.ini so no init source menu just return.
 	}
-	else
+	else // if source_menu/theme/source_menu.ini found then change m_sourceDir to source_menu/theme/
 		m_sourceDir = fmt("%s/%s", m_sourceDir.c_str(), themeName);
 	
+	/* let wiiflow know source_menu.ini found and we will be using it */
 	m_use_source = true;
+	
 	/* get max source button # */
 	m_max_source_btn = 0;
 	const char *srcDomain = m_source.firstDomain().c_str();
@@ -689,6 +721,9 @@ void CMenu::_initSourceMenu()
 		}
 		srcDomain = m_source.nextDomain().c_str();
 	}
+
+	sm_tier = false;
+	curflow = m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1);
 	
 	_addUserLabels(m_sourceLblUser, ARRAY_SIZE(m_sourceLblUser), "SOURCE");
 	m_sourceBg = _texture("SOURCE/BG", "texture", theme.bg, false);
