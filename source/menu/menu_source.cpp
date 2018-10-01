@@ -96,16 +96,16 @@ void CMenu::_sourceFlow()
 	}
 	else if(source =="new_source")
 	{
-		const char *fn = m_source.getString(btn_selected, "magic", "").c_str();
-		if(fsop_FileExist(fmt("%s/%s", m_sourceDir.c_str(), fn)))
+		string fn = m_source.getString(btn_selected, "magic", "");
+		if(fsop_FileExist(fmt("%s/%s", m_sourceDir.c_str(), fn.c_str())))
 		{
-			if(strcmp(fn, SOURCE_FILENAME) == 0)
+			if(fn == SOURCE_FILENAME)
 				sm_tier = false;
 			else
 				sm_tier = true;
 			curflow = m_source.getInt(btn_selected, "flow", m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
 			m_source.unload();
-			m_source.load(fmt("%s/%s", m_sourceDir.c_str(), fn));
+			m_source.load(fmt("%s/%s", m_sourceDir.c_str(), fn.c_str()));
 			/* get max source button # */
 			m_max_source_btn = 0;
 			const char *srcDomain = m_source.firstDomain().c_str();
@@ -455,16 +455,16 @@ bool CMenu::_Source()
 				}
 				else if(source =="new_source")
 				{
-					const char *fn = m_source.getString(btn_selected, "magic", "").c_str();
-					if(fsop_FileExist(fmt("%s/%s", m_sourceDir.c_str(), fn)))
+					string fn = m_source.getString(btn_selected, "magic", "");
+					if(fsop_FileExist(fmt("%s/%s", m_sourceDir.c_str(), fn.c_str())))
 					{
-						if(strcmp(fn, SOURCE_FILENAME) == 0)
+						if(fn == SOURCE_FILENAME)
 							sm_tier = false;
 						else
 							sm_tier = true;
 						curflow = m_source.getInt(btn_selected, "flow", m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
 						m_source.unload();
-						m_source.load(fmt("%s/%s", m_sourceDir.c_str(), fn));
+						m_source.load(fmt("%s/%s", m_sourceDir.c_str(), fn.c_str()));
 						exitSource = false;
 						updateSource = true;
 						curPage = 1;
@@ -541,16 +541,16 @@ bool CMenu::_Source()
 				}
 				else if(source =="new_source")
 				{
-					const char *fn = m_source.getString(btn_selected, "magic", "").c_str();
-					if(fsop_FileExist(fmt("%s/%s", m_sourceDir.c_str(), fn)))
+					string fn = m_source.getString(btn_selected, "magic", "");
+					if(fsop_FileExist(fmt("%s/%s", m_sourceDir.c_str(), fn.c_str())))
 					{
-						if(strcmp(fn, SOURCE_FILENAME) == 0)
+						if(fn == SOURCE_FILENAME)
 							sm_tier = false;
 						else
 							sm_tier = true;
 						curflow = m_source.getInt(btn_selected, "flow", m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
 						m_source.unload();
-						m_source.load(fmt("%s/%s", m_sourceDir.c_str(), fn));
+						m_source.load(fmt("%s/%s", m_sourceDir.c_str(), fn.c_str()));
 						exitSource = false;
 						updateSource = true;
 						curPage = 1;
