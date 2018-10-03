@@ -226,12 +226,13 @@ int CMenu::main(void)
 	bool show_gamecube = !m_cfg.getBool(GC_DOMAIN, "disable", false);
 	m_multisource = m_cfg.getBool("GENERAL", "multisource", false);
 	bool m_source_on_start = m_cfg.getBool("GENERAL", "source_on_start", false);
-	bool bheld = false;
-	bool bUsed = false;
+	bool bheld = false;// bheld to indicate btn b was pressed or held
+	bool bUsed = false;// bused to indicate that it was actually used for something
 	m_emuSaveNand = false;
 	m_reload = false;
 	u32 disc_check = 0;
 
+	m_prev_view = 0;
 	m_current_view = m_cfg.getUInt("GENERAL", "sources", COVERFLOW_WII);
 	m_source_cnt = 0;
 	for(u8 i = 1; i < 16; i <<= 1)//not including coverflow_homebrew
@@ -290,9 +291,10 @@ int CMenu::main(void)
 					_showCF(true);
 					continue;
 				}
-				if(m_current_view == COVERFLOW_HOMEBREW)
+				if(m_current_view == COVERFLOW_HOMEBREW && m_prev_view != 0)
 				{
 					m_current_view = m_prev_view;
+					m_prev_view = 0;
 					m_cfg.setUInt("GENERAL", "sources", m_current_view);
 					_showCF(true);
 					continue;
@@ -372,7 +374,10 @@ int CMenu::main(void)
 				if(_Home())
 					break;// exit wiiflow
 				if(BTN_B_HELD)
+				{
+					bheld = true;
 					bUsed = true;
+				}
 				_showMain();
 			}
 			else if(m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnWii) || m_btnMgr.selected(m_mainBtnGamecube) || m_btnMgr.selected(m_mainBtnPlugin))
@@ -403,7 +408,10 @@ int CMenu::main(void)
 					break;
 				}
 				if(BTN_B_HELD)
+				{
+					bheld = true;
 					bUsed = true;
+				}
 				_showMain();
 			}
 			else if(m_btnMgr.selected(m_mainBtnHomebrew))
@@ -412,6 +420,11 @@ int CMenu::main(void)
 				if(m_locked && m_cfg.getBool(HOMEBREW_DOMAIN, "parental", false))
 				{
 					error(_t("errgame15", L"WiiFlow locked! Unlock WiiFlow to use this feature."));
+					if(BTN_B_HELD)
+					{
+						bheld = true;
+						bUsed = true;
+					}
 					_showMain();
 				}
 				else
@@ -420,8 +433,6 @@ int CMenu::main(void)
 					m_current_view = COVERFLOW_HOMEBREW;
 					_showCF(true);
 				}
-				if(BTN_B_HELD)
-					bUsed = true;
 			}
 			else if(m_btnMgr.selected(m_mainBtnDVD))
 			{
@@ -434,7 +445,10 @@ int CMenu::main(void)
 				/* Boot the Disc */
 				_launchGame(&hdr, true, BTN_B_HELD);
 				if(BTN_B_HELD)
+				{
+					bheld = true;
 					bUsed = true;
+				}
 				_showCF(false);
 			}
 			else if(m_btnMgr.selected(m_mainBtnFavoritesOn) || m_btnMgr.selected(m_mainBtnFavoritesOff))
@@ -460,7 +474,10 @@ int CMenu::main(void)
 					if(m_exit)
 						break;
 					if(BTN_B_HELD)
+					{
+						bheld = true;
 						bUsed = true;
+					}
 					if(m_refreshGameList)
 					{
 						/* if changes were made to favorites, parental lock, or categories */
@@ -474,13 +491,19 @@ int CMenu::main(void)
 		}
 		else if(BTN_B_PRESSED)
 		{
+			bheld = true;
 			/* Show Categories */
 			if(m_btnMgr.selected(m_mainBtnFavoritesOn) || m_btnMgr.selected(m_mainBtnFavoritesOff))
 			{
 				_hideMain();
 				_CategorySettings();
-				if(BTN_B_HELD)
+				if(BTN_B_HELD)// returned using the b btn
+				{
+					bheld = true;
 					bUsed = true;
+				}
+				else
+					bheld = false;
 				_setBg(m_mainBg, m_mainBgLQ);
 				if(m_refreshGameList)
 				{
@@ -521,12 +544,10 @@ int CMenu::main(void)
 		else if(WROLL_LEFT)
 		{
 			CoverFlow.left();
-			bUsed = true;
 		}
 		else if(WROLL_RIGHT)
 		{
 			CoverFlow.right();
-			bUsed = true;
 		}
 		if(!BTN_B_HELD)
 		{
@@ -654,7 +675,12 @@ int CMenu::main(void)
 					if(m_exit)
 						break;
 					if(BTN_B_HELD)
+					{
+						bheld = true;
 						bUsed = true;
+					}
+					else
+						bheld = false;
 					if(m_refreshGameList)
 					{
 						/* if changes were made to favorites, parental lock, or categories */

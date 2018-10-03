@@ -151,6 +151,7 @@ void CMenu::_partitionsCfg(void)
 		}
 	}
 	m_current_view = m_prev_view;
+	m_prev_view = 0;
 	currentPartition = prevPartition;
 	_hidePartitionsCfg();
 }

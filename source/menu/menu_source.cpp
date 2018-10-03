@@ -42,7 +42,6 @@ void CMenu::_sourceFlow()
 	memset(btn_selected, 0, 16);
 	strncpy(btn_selected, fmt("BUTTON_%i", hdr->settings[0]), 15);
 	source = m_source.getString(btn_selected, "source", "");
-	cf_domain = "_COVERFLOW";
 	
 	if(source == "dml")
 		m_current_view = COVERFLOW_GAMECUBE;
@@ -64,8 +63,6 @@ void CMenu::_sourceFlow()
 		else
 		{
 			m_current_view = COVERFLOW_HOMEBREW;
-			if(m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox", true))
-				cf_domain = "_SMALLFLOW";
 		}
 	}
 	else if(source == "allplugins")
@@ -313,7 +310,6 @@ bool CMenu::_Source()
 		if((BTN_A_PRESSED && m_btnMgr.selected(m_sourceBtnBack)) || BTN_B_PRESSED)
 		{
 			if(!m_multisource) break;
-			cf_domain = "_COVERFLOW";
 			if(selectedBtns == 0)
 			{
 				m_current_view = COVERFLOW_WII;
@@ -417,7 +413,6 @@ bool CMenu::_Source()
 					}
 					else
 					{
-						m_prev_view = m_current_view;
 						m_current_view = COVERFLOW_HOMEBREW;
 						_setSrcOptions();
 					}
