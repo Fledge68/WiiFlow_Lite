@@ -1778,16 +1778,14 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 	{
 		m_btnMgr.setText(m_mainLblCurMusic, MusicPlayer.GetFileName(), false);// false for word wrap
 		m_btnMgr.show(m_mainLblCurMusic);
-		m_musicTimer = 180;
+		MusicPlayer.DisplayTime = time(NULL);
 	}
 	// hide song title if it's displaying and been >3 seconds
-	if(m_musicTimer > 0)
+	else if(MusicPlayer.DisplayTime > 0 && time(NULL) - MusicPlayer.DisplayTime > 3)
 	{
-		if(--m_musicTimer == 0)
-		{
-			m_btnMgr.hide(m_mainLblCurMusic);
-			if(MusicPlayer.OneSong) m_music_info = false;
-		}
+		MusicPlayer.DisplayTime = 0;
+		m_btnMgr.hide(m_mainLblCurMusic);
+		if(MusicPlayer.OneSong) m_music_info = false;
 	}
 
 	//Take Screenshot

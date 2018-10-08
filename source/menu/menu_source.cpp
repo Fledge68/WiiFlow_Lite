@@ -261,7 +261,10 @@ void CMenu::_updateSourceBtns(void)
 				snprintf(btn_image, sizeof(btn_image), "%s", m_source.getString(current_btn,"image_s", "").c_str());
 			else
 				snprintf(btn_image, sizeof(btn_image), "%s", m_source.getString(current_btn,"image", "").c_str());
-				
+			
+			//char btn_image_s[255];
+			//snprintf(btn_image_s, sizeof(btn_image_s), "%s", m_source.getString(current_btn,"image_s", "").c_str());
+			
 			TexData texConsoleImg;
 			TexData texConsoleImgs;
 			if(TexHandle.fromImageFile(texConsoleImg, fmt("%s/%s/%s", m_sourceDir.c_str(), themeName, btn_image)) != TE_OK)
