@@ -561,9 +561,25 @@ int CMenu::main(void)
 			else if(BTN_LEFT_REPEAT || RIGHT_STICK_LEFT)
 				CoverFlow.left();
 			else if(BTN_MINUS_PRESSED)
-				CoverFlow.pageUp();
+			{
+				if(!m_sourceflow)
+					CoverFlow.pageUp();
+				else
+				{
+					_srcTierBack(false);
+					_showCF(true);
+				}
+			}
 			else if(BTN_PLUS_PRESSED)
-				CoverFlow.pageDown();
+			{
+				if(!m_sourceflow)
+					CoverFlow.pageDown();
+				else
+				{
+					_srcTierBack(true);
+					_showCF(true);
+				}
+			}
 				
 			/* change coverflow layout/mode */
 			else if(BTN_1_PRESSED || BTN_2_PRESSED)

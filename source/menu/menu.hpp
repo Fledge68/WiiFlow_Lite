@@ -1077,6 +1077,7 @@ private:
 	void _sourceFlow();
 	int _getSrcFlow();
 	void _setSrcFlow(int version);
+	void _srcTierBack(bool home);
 	void _mainLoopCommon(bool withCF = false, bool adjusting = false);
 	void _netInit();
 	void _loadDefaultFont(void);

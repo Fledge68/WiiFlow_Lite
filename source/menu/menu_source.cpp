@@ -25,6 +25,8 @@ static u8 i, j, k;
 int curPage;
 int numPages;
 vector<string> magicNums;
+vector<string> tiers;
+vector<int> flows;
 char btn_selected[16];
 char current_btn[16];
 int curflow = 1;
@@ -100,7 +102,9 @@ void CMenu::_sourceFlow()
 				sm_tier = false;
 			else
 				sm_tier = true;
+			tiers.push_back(fn);
 			curflow = m_source.getInt(btn_selected, "flow", m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
+			flows.push_back(curflow);
 			m_source.unload();
 			m_source.load(fmt("%s/%s", m_sourceDir.c_str(), fn.c_str()));
 			/* get max source button # */
@@ -139,6 +143,49 @@ void CMenu::_setSrcFlow(int version)
 	curflow = version;
 	if(!sm_tier)
 		m_cfg.setInt(SOURCEFLOW_DOMAIN, "last_cf_mode", version);
+}
+
+void CMenu::_srcTierBack(bool home)
+{
+	if(!sm_tier)
+		return;
+	string fn;
+	if(home)
+	{
+		fn = tiers[0];
+		tiers.erase(tiers.begin() + 1, tiers.end());
+		curflow = flows[0];
+		flows.erase(flows.begin() + 1, flows.end());
+	}
+	else
+	{
+		fn = tiers[tiers.size() - 2];
+		tiers.pop_back();
+		curflow = flows[flows.size() - 2];
+		flows.pop_back();
+	}
+	
+	if(fn == SOURCE_FILENAME)
+		sm_tier = false;
+	else
+		sm_tier = true;
+	m_source.unload();
+	m_source.load(fmt("%s/%s", m_sourceDir.c_str(), fn.c_str()));
+	/* get max source button # */
+	m_max_source_btn = 0;
+	const char *srcDomain = m_source.firstDomain().c_str();
+	while(1)
+	{
+		if(strlen(srcDomain) < 2)
+			break;
+		if(strrchr(srcDomain, '_') != NULL)
+		{
+			int srcBtnNumber = atoi(strrchr(srcDomain, '_') + 1);
+			if(srcBtnNumber > m_max_source_btn)
+				m_max_source_btn = srcBtnNumber;
+		}
+		srcDomain = m_source.nextDomain().c_str();
+	}
 }
 
 void CMenu::_hideSource(bool instant)
@@ -350,8 +397,7 @@ bool CMenu::_Source()
 			m_btnMgr.up();
 		else if(BTN_DOWN_PRESSED)
 			m_btnMgr.down();
-		else if(((BTN_LEFT_PRESSED || BTN_MINUS_PRESSED) && numPages > 1)
-				|| (BTN_A_PRESSED && m_btnMgr.selected(m_sourceBtnPageM)))
+		else if((BTN_LEFT_PRESSED && numPages > 1) || (BTN_A_PRESSED && m_btnMgr.selected(m_sourceBtnPageM)))
 		{
 			curPage--;
 			if(curPage < 1)
@@ -360,8 +406,7 @@ bool CMenu::_Source()
 				m_btnMgr.click(m_sourceBtnPageM);
 			_updateSourceBtns();
 		}
-		else if(((BTN_RIGHT_PRESSED || BTN_PLUS_PRESSED) && numPages > 1)
-				|| (BTN_A_PRESSED && m_btnMgr.selected(m_sourceBtnPageP)))
+		else if((BTN_RIGHT_PRESSED && numPages > 1) || (BTN_A_PRESSED && m_btnMgr.selected(m_sourceBtnPageP)))
 		{
 			curPage++;
 			if(curPage > numPages)
@@ -370,6 +415,14 @@ bool CMenu::_Source()
 				m_btnMgr.click(m_sourceBtnPageP);
 			_updateSourceBtns();
 		}
+		else if((BTN_MINUS_PRESSED || BTN_PLUS_PRESSED) && sm_tier)
+		{
+			_srcTierBack(BTN_PLUS_PRESSED);
+			updateSource = true;
+			curPage = 1;
+			numPages = (m_max_source_btn / 12) + 1;
+		}
+			
 		else if(BTN_A_PRESSED && m_btnMgr.selected(m_sourceBtnClear))
 		{
 			m_current_view = COVERFLOW_NONE;
@@ -460,7 +513,9 @@ bool CMenu::_Source()
 							sm_tier = false;
 						else
 							sm_tier = true;
+						tiers.push_back(fn);
 						curflow = m_source.getInt(btn_selected, "flow", m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
+						flows.push_back(curflow);
 						m_source.unload();
 						m_source.load(fmt("%s/%s", m_sourceDir.c_str(), fn.c_str()));
 						exitSource = false;
@@ -546,7 +601,9 @@ bool CMenu::_Source()
 							sm_tier = false;
 						else
 							sm_tier = true;
+						tiers.push_back(fn);
 						curflow = m_source.getInt(btn_selected, "flow", m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
+						flows.push_back(curflow);
 						m_source.unload();
 						m_source.load(fmt("%s/%s", m_sourceDir.c_str(), fn.c_str()));
 						exitSource = false;
@@ -720,8 +777,12 @@ void CMenu::_initSourceMenu()
 		srcDomain = m_source.nextDomain().c_str();
 	}
 
+	tiers.clear();
+	tiers.push_back(SOURCE_FILENAME);
 	sm_tier = false;
 	curflow = m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1);
+	flows.clear();
+	flows.push_back(curflow);
 	
 	_addUserLabels(m_sourceLblUser, ARRAY_SIZE(m_sourceLblUser), "SOURCE");
 	m_sourceBg = _texture("SOURCE/BG", "texture", theme.bg, false);
