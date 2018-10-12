@@ -168,6 +168,7 @@ private:
 	string m_ver;
 	
 // Background image stuff
+	TexData sfbgimg;
 	TexData m_curBg;
 	const TexData *m_prevBg;
 	const TexData *m_nextBg;
@@ -1020,7 +1021,7 @@ private:
 	void _updateCheckboxes(void);
 	void _getGameCategories(void);
 	void _setGameCategories(void);
-	void _setBg(const TexData &bgTex, const TexData &bglqTex);
+	void _setBg(const TexData &bgTex, const TexData &bglqTex, bool force_change = false);
 	void _updateBg(void);
 	void _drawBg(void);
 	void _updateText(void);
@@ -1078,6 +1079,7 @@ private:
 	int _getSrcFlow();
 	void _setSrcFlow(int version);
 	void _srcTierBack(bool home);
+	void _setSrcFlowBg();
 	void _mainLoopCommon(bool withCF = false, bool adjusting = false);
 	void _netInit();
 	void _loadDefaultFont(void);

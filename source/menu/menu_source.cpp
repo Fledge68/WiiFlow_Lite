@@ -122,6 +122,7 @@ void CMenu::_sourceFlow()
 				}
 				srcDomain = m_source.nextDomain().c_str();
 			}
+			_setSrcFlowBg();
 			return;
 		}
 	}
@@ -131,6 +132,7 @@ void CMenu::_sourceFlow()
 	m_cfg.setUInt("GENERAL", "sources", m_current_view);
 	m_source_cnt = 1;
 	_setSrcOptions();
+	_setBg(m_mainBg, m_mainBgLQ);
 }
 
 int CMenu::_getSrcFlow(void)
@@ -186,6 +188,23 @@ void CMenu::_srcTierBack(bool home)
 		}
 		srcDomain = m_source.nextDomain().c_str();
 	}
+	_setSrcFlowBg();
+}
+
+void CMenu::_setSrcFlowBg(void)
+{
+	string fn = m_source.getString("general", "background", "");
+	if(fn.length() > 0)
+	{
+		TexHandle.Cleanup(sfbgimg);
+		if(TexHandle.fromImageFile(sfbgimg, fmt("%s/backgrounds/%s", m_sourceDir.c_str(), fn.c_str())) == TE_OK)
+		{
+			//const TexData *sfbg = &sfbgimg;
+			_setBg(sfbgimg, sfbgimg, true);
+		}
+	}
+	else
+		_setBg(m_mainBg, m_mainBgLQ);
 }
 
 void CMenu::_hideSource(bool instant)

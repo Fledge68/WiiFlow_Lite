@@ -288,6 +288,7 @@ int CMenu::main(void)
 				if(m_sourceflow)//if exiting sourceflow via b button
 				{
 					m_sourceflow = false;
+					_setBg(m_mainBg, m_mainBgLQ);
 					_showCF(true);
 					continue;
 				}
@@ -305,6 +306,7 @@ int CMenu::main(void)
 					if(m_cfg.getBool(SOURCEFLOW_DOMAIN, "enabled", false))//if sourceflow show it
 					{
 						m_sourceflow = true;
+						_setSrcFlowBg();
 						_showCF(true);
 					}
 					else //show source menu

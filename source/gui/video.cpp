@@ -298,6 +298,8 @@ void CVideo::set2DViewport(u32 w, u32 h, int x, int y)
 	m_y2D = std::min(std::max(-50, y), 50);
 }
 
+/* this takes what is drawn in the frame buffer and copies it to make a new texture/image set as whatever TexData &tex is */
+/* this is used by coverflow and updatebg */
 void CVideo::renderToTexture(TexData &tex, bool clear)
 {
 	if(tex.data == NULL)

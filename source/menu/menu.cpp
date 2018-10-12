@@ -1826,10 +1826,10 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 #endif
 }
 
-void CMenu::_setBg(const TexData &bgTex, const TexData &bglqTex)
+void CMenu::_setBg(const TexData &bgTex, const TexData &bglqTex, bool force_change)
 {
 	/* Not setting same bg again */
-	if(m_nextBg == &bgTex)
+	if(!force_change && m_nextBg == &bgTex)
 		return;
 	m_lqBg = &bglqTex;
 	/* before setting new next bg set previous */
