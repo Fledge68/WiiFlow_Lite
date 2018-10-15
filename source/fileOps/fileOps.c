@@ -341,7 +341,7 @@ void fsop_ReadFileLoc(const char *path, const u32 size, void *loc)
 
 u8 *fsop_ReadFile(const char *path, u32 *size)
 {
-	*(size) = 0;
+	*size = 0;
 	u32 filesize = 0;
 	u8 *mem = NULL;
 	fsop_GetFileSizeBytes(path, &filesize);
@@ -352,7 +352,7 @@ u8 *fsop_ReadFile(const char *path, u32 *size)
 		{
 			//gprintf("Reading file: %s\n", path);
 			fsop_ReadFileLoc(path, filesize, mem);
-			*(size) = filesize;
+			*size = filesize;
 		}
 	}
 	return mem;

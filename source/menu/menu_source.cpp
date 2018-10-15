@@ -1,8 +1,5 @@
 
-//#include <dirent.h>
-//#include <unistd.h>
 #include "menu.hpp"
-//#include "defines.h"
 
 // Source menu
 s16 m_sourceLblPage;

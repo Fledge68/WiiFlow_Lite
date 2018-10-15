@@ -467,6 +467,7 @@ int Config::getInt(const string &domain, const string &key, int defVal)
 	return strtol(data.c_str(), 0, 10);
 }
 
+/* this returns true only if there's something after the '=' and value is set to the integer value */
 bool Config::getInt(const std::string &domain, const std::string &key, int *value)
 {
 	if (domain.empty() || key.empty()) return false;

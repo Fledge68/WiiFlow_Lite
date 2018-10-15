@@ -48,20 +48,6 @@ s16 m_gameBtnBackFull;
 s16 m_gameBtnToggle;
 s16 m_gameBtnToggleFull;
 
-const CMenu::SOption CMenu::_languages[11] = {
-	{ "lngdef", L"Default" },
-	{ "lngjap", L"Japanese" },
-	{ "lngeng", L"English" },
-	{ "lngger", L"German" },
-	{ "lngfre", L"French" },
-	{ "lngspa", L"Spanish" },
-	{ "lngita", L"Italian" },
-	{ "lngdut", L"Dutch" },
-	{ "lngsch", L"S. Chinese" },
-	{ "lngtch", L"T. Chinese" },
-	{ "lngkor", L"Korean" }
-};
-
 const CMenu::SOption CMenu::_GlobalVideoModes[6] = {
 	{ "vidgame", L"Game" },
 	{ "vidsys", L"System" },
@@ -100,6 +86,20 @@ const CMenu::SOption CMenu::_GCvideoModes[7] = {
 	{ "vidprog", L"Progressive" },
 };
 
+const CMenu::SOption CMenu::_languages[11] = {
+	{ "lngdef", L"Default" },// next should be console
+	{ "lngjap", L"Japanese" },
+	{ "lngeng", L"English" },
+	{ "lngger", L"German" },
+	{ "lngfre", L"French" },
+	{ "lngspa", L"Spanish" },
+	{ "lngita", L"Italian" },
+	{ "lngdut", L"Dutch" },
+	{ "lngsch", L"S. Chinese" },
+	{ "lngtch", L"T. Chinese" },
+	{ "lngkor", L"Korean" }
+};
+
 const CMenu::SOption CMenu::_GlobalGClanguages[7] = {
 	{ "lngsys", L"System" },
 	{ "lngeng", L"English" },
@@ -135,7 +135,6 @@ const CMenu::SOption CMenu::_NandEmu[2] = {
 const CMenu::SOption CMenu::_GlobalSaveEmu[3] = {
 	{ "SaveOffG", L"Off" },
 	{ "SavePartG", L"Game save" },
-	//{ "SaveRegG", L"Regionswitch" },
 	{ "SaveFullG", L"Full" },
 };
 
@@ -143,7 +142,6 @@ const CMenu::SOption CMenu::_SaveEmu[4] = {
 	{ "SaveDef", L"Default" },
 	{ "SaveOff", L"Off" },
 	{ "SavePart", L"Game save" },
-	//{ "SaveReg", L"Regionswitch" },
 	{ "SaveFull", L"Full" },
 };
 
@@ -153,13 +151,12 @@ const CMenu::SOption CMenu::_AspectRatio[3] = {
 	{ "aspect169", L"Force 16:9" },
 };
 
-//still need to change the NMM's
 const CMenu::SOption CMenu::_NinEmuCard[5] = {
-	{ "NMMDef", L"Default" },
-	{ "NMMOff", L"Disabled" },
-	{ "NMMon", L"Enabled" },
-	{ "NMMMulti", L"Multi Saves" },
-	{ "NMMdebug", L"Debug" },
+	{ "NinMCDef", L"Default" },
+	{ "NinMCOff", L"Disabled" },
+	{ "NinMCon", L"Enabled" },
+	{ "NinMCMulti", L"Multi Saves" },
+	{ "NinMCdebug", L"Debug" },
 };
 
 const CMenu::SOption CMenu::_GlobalGCLoaders[2] = {
@@ -196,8 +193,6 @@ const CMenu::SOption CMenu::_debugger[3] = {
 	{ "dbg_gecko", L"Gecko" },
 	{ "dbgfwrite", L"OSReport" },
 };
-
-//map<u8, u8> CMenu::_installed_cios;
 
 static inline int loopNum(int i, int s)
 {
@@ -1255,16 +1250,16 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		u8 emuMC = min(m_gcfg2.getUInt(id, "emu_memcard", 0), ARRAY_SIZE(CMenu::_NinEmuCard) - 1u);
 		emuMC = (emuMC == 0) ? m_cfg.getUInt(GC_DOMAIN, "emu_memcard", 1) : emuMC - 1;
 		
-		// these 2 settings have global defaults in wfl main config
+		// these 3 settings have global defaults in wfl main config
 		bool cc_rumble = m_gcfg2.testOptBool(id, "cc_rumble", m_cfg.getBool(GC_DOMAIN, "cc_rumble", false));
 		bool native_ctl = m_gcfg2.testOptBool(id, "native_ctl", m_cfg.getBool(GC_DOMAIN, "native_ctl", false));
-		
+		bool wiiu_widescreen = m_gcfg2.testOptBool(id, "wiiu_widescreen", m_cfg.getBool(GC_DOMAIN, "wiiu_widescreen", false));
+
 		bool deflicker = m_gcfg2.getBool(id, "deflicker", false);
 		bool tri_arcade = m_gcfg2.getBool(id, "triforce_arcade", false);
 		bool ipl = m_gcfg2.getBool(id, "skip_ipl", false);
 		bool patch_pal50 = m_gcfg2.getBool(id, "patch_pal50", false);
 		bool NIN_Debugger = (m_gcfg2.getInt(id, "debugger", 0) == 2);
-		bool wiiu_widescreen = m_gcfg2.getBool(id, "wiiu_widescreen", false);
 		bool cheats = m_gcfg2.getBool(id, "cheat", false);
 		
 		s8 vidscale = m_gcfg2.getInt(id, "nin_width", 127);
@@ -1428,7 +1423,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	else // loader == DEVOLUTION
 	{
 		// devolution does not allow force video and progressive mode
-		// igonore video setting choice and use game region always
+		// ignore video setting choice and use game region always
 		if(id[3] =='E' || id[3] =='J')
 		{
 			// if game is NTSC then video is based on console video

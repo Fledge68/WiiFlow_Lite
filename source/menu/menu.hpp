@@ -953,6 +953,7 @@ private:
 	void _hideConfigAdv(bool instant = false);
 	void _hideConfigSnd(bool instant = false);
 	void _hideConfigGC(bool instant = false);
+	void _hideConfigGCPage(bool instant = false);
 	void _hidePartitionsCfg(bool instant = false);
 	void _hideGame(bool instant = false);
 	void _hideDownload(bool instant = false);
@@ -987,6 +988,7 @@ private:
 	void _showConfigAdv(void);
 	void _showConfigSnd(void);
 	void _showConfigGC(void);
+	void _showConfigGCPage(void);
 	void _showPartitionsCfg(void);
 	void _showNandEmu(void);
 	void _showGame(void);
@@ -1200,7 +1202,7 @@ private:
 	map<u8, u8> _installed_cios;
 	typedef map<u8, u8>::iterator CIOSItr;
 
-	struct SOption { const char id[10]; const wchar_t text[16]; };
+	struct SOption { const char id[11]; const wchar_t text[16]; };
 
 	static const SOption _GlobalVideoModes[6];
 	static const SOption _VideoModes[7];
