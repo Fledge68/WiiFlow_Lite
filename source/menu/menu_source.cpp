@@ -23,7 +23,6 @@ int curPage;
 int numPages;
 vector<string> magicNums;
 vector<string> tiers;
-vector<int> flows;
 char btn_selected[16];
 char current_btn[16];
 int curflow = 1;
@@ -100,10 +99,9 @@ void CMenu::_sourceFlow()
 			else
 				sm_tier = true;
 			tiers.push_back(fn);
-			curflow = m_source.getInt(btn_selected, "flow", m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
-			flows.push_back(curflow);
 			m_source.unload();
 			m_source.load(fmt("%s/%s", m_sourceDir.c_str(), fn.c_str()));
+			curflow = m_source.getInt("general", "flow", m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
 			/* get max source button # */
 			m_max_source_btn = 0;
 			const char *srcDomain = m_source.firstDomain().c_str();
@@ -140,6 +138,8 @@ int CMenu::_getSrcFlow(void)
 void CMenu::_setSrcFlow(int version)
 {
 	curflow = version;
+	m_source.setInt("general", "flow", version);
+	m_source.save();
 	if(!sm_tier)
 		m_cfg.setInt(SOURCEFLOW_DOMAIN, "last_cf_mode", version);
 }
@@ -153,15 +153,11 @@ void CMenu::_srcTierBack(bool home)
 	{
 		fn = tiers[0];
 		tiers.erase(tiers.begin() + 1, tiers.end());
-		curflow = flows[0];
-		flows.erase(flows.begin() + 1, flows.end());
 	}
 	else
 	{
 		fn = tiers[tiers.size() - 2];
 		tiers.pop_back();
-		curflow = flows[flows.size() - 2];
-		flows.pop_back();
 	}
 	
 	if(fn == SOURCE_FILENAME)
@@ -170,6 +166,7 @@ void CMenu::_srcTierBack(bool home)
 		sm_tier = true;
 	m_source.unload();
 	m_source.load(fmt("%s/%s", m_sourceDir.c_str(), fn.c_str()));
+	curflow = m_source.getInt("general", "flow", m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
 	/* get max source button # */
 	m_max_source_btn = 0;
 	const char *srcDomain = m_source.firstDomain().c_str();
@@ -195,10 +192,7 @@ void CMenu::_setSrcFlowBg(void)
 	{
 		TexHandle.Cleanup(sfbgimg);
 		if(TexHandle.fromImageFile(sfbgimg, fmt("%s/backgrounds/%s", m_sourceDir.c_str(), fn.c_str())) == TE_OK)
-		{
-			//const TexData *sfbg = &sfbgimg;
 			_setBg(sfbgimg, sfbgimg, true);
-		}
 	}
 	else
 		_setBg(m_mainBg, m_mainBgLQ);
@@ -530,10 +524,9 @@ bool CMenu::_Source()
 						else
 							sm_tier = true;
 						tiers.push_back(fn);
-						curflow = m_source.getInt(btn_selected, "flow", m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
-						flows.push_back(curflow);
 						m_source.unload();
 						m_source.load(fmt("%s/%s", m_sourceDir.c_str(), fn.c_str()));
+						curflow = m_source.getInt("general", "flow", m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
 						exitSource = false;
 						updateSource = true;
 						curPage = 1;
@@ -618,10 +611,9 @@ bool CMenu::_Source()
 						else
 							sm_tier = true;
 						tiers.push_back(fn);
-						curflow = m_source.getInt(btn_selected, "flow", m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
-						flows.push_back(curflow);
 						m_source.unload();
 						m_source.load(fmt("%s/%s", m_sourceDir.c_str(), fn.c_str()));
+						curflow = m_source.getInt("general", "flow", m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
 						exitSource = false;
 						updateSource = true;
 						curPage = 1;
@@ -769,7 +761,7 @@ void CMenu::_initSourceMenu()
 	if(!m_source.load(fmt("%s/%s/%s", m_sourceDir.c_str(), themeName, SOURCE_FILENAME)))// check for source_menu/theme/source_menu.ini
 	{
 		if(!m_source.load(fmt("%s/%s", m_sourceDir.c_str(), SOURCE_FILENAME)))// check for source_menu/source_menu.ini
-			return;// no source_menu.ini so no init source menu just return.
+			return;// no source_menu.ini so we dont init nor use source menu, just return.
 	}
 	else // if source_menu/theme/source_menu.ini found then change m_sourceDir to source_menu/theme/
 		m_sourceDir = fmt("%s/%s", m_sourceDir.c_str(), themeName);
@@ -796,9 +788,7 @@ void CMenu::_initSourceMenu()
 	tiers.clear();
 	tiers.push_back(SOURCE_FILENAME);
 	sm_tier = false;
-	curflow = m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1);
-	flows.clear();
-	flows.push_back(curflow);
+	curflow = m_source.getInt("general", "flow", m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
 	
 	_addUserLabels(m_sourceLblUser, ARRAY_SIZE(m_sourceLblUser), "SOURCE");
 	m_sourceBg = _texture("SOURCE/BG", "texture", theme.bg, false);
