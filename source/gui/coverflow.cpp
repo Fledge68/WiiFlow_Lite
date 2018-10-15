@@ -236,6 +236,7 @@ bool CCoverFlow::init(const u8 *font, const u32 font_size, bool vid_50hz)
 	// Load font
 	m_font.fromBuffer(font, font_size, TITLEFONT);
 	m_fontColor = CColor(0xFFFFFFFF);
+	m_fanartFontColor = CColor(0xFFFFFFFF);
 
 	if(vid_50hz)
 	{
@@ -495,6 +496,16 @@ void CCoverFlow::setColors(bool selected, const CColor &begColor, const CColor &
 	lo.begColor = begColor;
 	lo.endColor = endColor;
 	lo.mouseOffColor = offColor;
+}
+
+void CCoverFlow::setFanartPlaying(const bool isPlaying)
+{
+	m_fanartPlaying = isPlaying;
+}
+
+void CCoverFlow::setFanartTextColor(const CColor textColor)
+{
+	m_fanartFontColor = textColor;
 }
 
 void CCoverFlow::setMirrorAlpha(float cover, float title)
@@ -1170,7 +1181,7 @@ void CCoverFlow::_drawTitle(int i, bool mirror, bool rectangle)
 	Mtx modelMtx;
 	Mtx modelViewMtx;
 	Vector3D rotAxis(0.f, 1.f, 0.f);
-	CColor color(m_fontColor);
+	CColor color(m_fanartPlaying ? m_fanartFontColor : m_fontColor);
 
 	if (m_hideCover) return;
 	if (m_covers[i].txtColor == 0) return;

@@ -17,6 +17,7 @@
 #include "gecko/wifi_gecko.hpp"
 #include "gui/coverflow.hpp"
 #include "gui/cursor.hpp"
+#include "gui/fanart.hpp"
 #include "gui/gui.hpp"
 #include "list/ListGenerator.hpp"
 #include "loader/disc.h"
@@ -71,6 +72,7 @@ private:
 		bool hide;
 	};
 	CCursor m_cursor[WPAD_MAX_WIIMOTES];
+	CFanart m_fa;
 	Config m_cfg;
 	Config m_loc;
 	Config m_cat;

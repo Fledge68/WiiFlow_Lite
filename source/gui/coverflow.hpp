@@ -106,6 +106,8 @@ public:
 	void setTitleWidth(bool selected, float side, float center);
 	void setTitleStyle(bool selected, u16 side, u16 center);
 	void setColors(bool selected, const CColor &begColor, const CColor &endColor, const CColor &offColor);
+	void setFanartPlaying(const bool isPlaying);
+	void setFanartTextColor(const CColor textColor);
 	void setShadowColors(bool selected, const CColor &centerColor, const CColor &begColor, const CColor &endColor, const CColor &offColor);
 	void setShadowPos(float scale, float x, float y);
 	void setMirrorAlpha(float cover, float title);
@@ -272,6 +274,8 @@ private:
 	u32 m_numBufCovers;
 	SFont m_font;
 	CColor m_fontColor;
+	CColor m_fanartFontColor;
+	bool m_fanartPlaying;
 	bool m_box;
 	bool m_smallBox;
 	bool m_useHQcover;

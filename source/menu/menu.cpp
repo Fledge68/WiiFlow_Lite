@@ -1674,6 +1674,10 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 	if(withCF)
 		CoverFlow.tick();
 	m_btnMgr.tick();
+	m_fa.tick();
+	m_fa.hideCover() ? 	CoverFlow.hideCover() : CoverFlow.showCover();
+	CoverFlow.setFanartPlaying(m_fa.isLoaded());
+	CoverFlow.setFanartTextColor(m_fa.getTextColor(m_theme.getColor("_COVERFLOW", "font_color", CColor(0xFFFFFFFF))));
 
 	/* video setup */
 	m_vid.prepare();
@@ -1693,6 +1697,7 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 			m_vid.prepareAAPass(i);
 			m_vid.setup2DProjection(false, true);
 			_drawBg();
+			m_fa.draw(false);
 			CoverFlow.draw();
 			m_vid.setup2DProjection(false, true);
 			CoverFlow.drawEffect();
@@ -1707,6 +1712,7 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 	{
 		m_vid.setup2DProjection();
 		_drawBg();
+		m_fa.draw(false);
 		if(withCF)
 		{
 			CoverFlow.draw();
@@ -1720,7 +1726,9 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 	/* game video or banner drawing */
 	if(m_gameSelected)
 	{
-		if(m_video_playing)
+		if(m_fa.isLoaded())
+			m_fa.draw();
+		else if(m_video_playing)
 		{
 			if(movie.Frame != NULL)
 			{

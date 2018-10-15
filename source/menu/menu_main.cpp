@@ -480,6 +480,7 @@ int CMenu::main(void)
 						bheld = true;
 						bUsed = true;
 					}
+					_setBg(m_mainBg, m_mainBgLQ);
 					if(m_refreshGameList)
 					{
 						/* if changes were made to favorites, parental lock, or categories */

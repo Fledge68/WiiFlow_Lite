@@ -272,6 +272,9 @@ void CMenu::_setCurrentItem(const dir_discHdr *hdr)
 void CMenu::_hideGame(bool instant)
 {
 	_cleanupVideo();
+	m_fa.unload();
+	CoverFlow.showCover();
+
 	m_btnMgr.hide(m_gameBtnPlay, instant);
 	m_btnMgr.hide(m_gameBtnBack, instant);
 	m_btnMgr.hide(m_gameBtnPlayFull, instant);
@@ -291,7 +294,21 @@ void CMenu::_hideGame(bool instant)
 
 void CMenu::_showGame(void)
 {
-	_setBg(m_gameBg, m_gameBgLQ);
+	CoverFlow.showCover();
+
+	//if(m_fa.load(m_cfg, m_fanartDir.c_str(), CoverFlow.getFilenameId(CoverFlow.getHdr(), false)))
+	if(m_fa.load(m_cfg, m_fanartDir.c_str(), CoverFlow.getId()))
+	{
+		const TexData *bg = NULL;
+		const TexData *bglq = NULL;
+		m_fa.getBackground(bg, bglq);
+		if(bg != NULL && bglq != NULL)
+			_setBg(*bg, *bglq);
+		if (m_fa.hideCover())
+			CoverFlow.hideCover();
+	}
+	else
+		_setBg(m_gameBg, m_gameBgLQ);
 	return;
 	if(!m_zoom_banner)
 	{
@@ -319,6 +336,8 @@ void CMenu::_cleanupBanner(bool gamechange)
 	m_banner.DeleteBanner(gamechange);
 	//movie
 	_cleanupVideo();
+	//fanart
+	//m_fa.unload();
 }
 
 void CMenu::_cleanupVideo()
@@ -776,6 +795,8 @@ void CMenu::_game(bool launch)
 			}
 			if(startGameSound == -10)// if -10 then we moved to new cover
 			{
+				m_fa.unload();
+				CoverFlow.showCover();
 				memcpy(hdr, CoverFlow.getHdr(), sizeof(dir_discHdr));// get new game header
 				_setCurrentItem(hdr);
 				
