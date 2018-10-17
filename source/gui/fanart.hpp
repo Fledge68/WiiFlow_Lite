@@ -62,7 +62,7 @@ public:
 	~CFanart(void);
 
 	void unload();
-	bool load(Config &m_globalConfig, const char *path, const char *id);
+	bool load(Config &m_globalConfig, const char *path, const char *id, bool plugin_rom);
 	bool isAnimationComplete();
 	bool isLoaded();
 

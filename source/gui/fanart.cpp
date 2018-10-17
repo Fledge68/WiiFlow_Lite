@@ -1,3 +1,4 @@
+
 #include "fanart.hpp"
 #include "pngu.h"
 #include "boxmesh.hpp"
@@ -30,7 +31,7 @@ void CFanart::unload()
 	TexHandle.Cleanup(m_bglq);
 }
 
-bool CFanart::load(Config &m_globalConfig, const char *path, const char *id)
+bool CFanart::load(Config &m_globalConfig, const char *path, const char *id, bool plugin_rom)
 {
 	bool retval = false;
 
@@ -44,7 +45,7 @@ bool CFanart::load(Config &m_globalConfig, const char *path, const char *id)
 	strncpy(dir, fmt("%s/%s", path, id), 63);
 
 	TexErr texErr = TexHandle.fromImageFile(m_bg, fmt("%s/background.png", dir));
-	if(texErr == TE_ERROR)
+	if(texErr == TE_ERROR && !plugin_rom)
 	{
 		strncpy(dir, fmt("%s/%.3s", path, id), 63);
 		texErr = TexHandle.fromImageFile(m_bg, fmt("%s/background.png", dir));
@@ -55,12 +56,15 @@ bool CFanart::load(Config &m_globalConfig, const char *path, const char *id)
 		cfg_char[63] = '\0';
 		strncpy(cfg_char, fmt("%s/%s.ini", dir, id), 63);
 		m_cfg.load(cfg_char);
-		if(!m_cfg.loaded())
+		if(!m_cfg.loaded() && !plugin_rom)
 		{
 			strncpy(cfg_char, fmt("%s/%.3s.ini", dir, id), 63);
 			m_cfg.load(cfg_char);
 			if(!m_cfg.loaded())
+			{
+				TexHandle.Cleanup(m_bg);
 				return retval;
+			}
 		}
 		TexHandle.fromImageFile(m_bglq, fmt("%s/background_lq.png", dir));
 		for(int i = 1; i <= 6; i++)

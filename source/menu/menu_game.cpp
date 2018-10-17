@@ -295,9 +295,16 @@ void CMenu::_hideGame(bool instant)
 void CMenu::_showGame(void)
 {
 	CoverFlow.showCover();
-
-	//if(m_fa.load(m_cfg, m_fanartDir.c_str(), CoverFlow.getFilenameId(CoverFlow.getHdr(), false)))
-	if(m_fa.load(m_cfg, m_fanartDir.c_str(), CoverFlow.getId()))
+	const char *coverDir = NULL;
+	const char *Path = NULL;
+	if(CoverFlow.getHdr()->type == TYPE_PLUGIN)
+		coverDir = m_plugin.GetCoverFolderName(CoverFlow.getHdr()->settings[0]);
+	
+	if(coverDir == NULL || strlen(coverDir) == 0)
+		Path = fmt("%s", m_fanartDir.c_str());
+	else
+		Path = fmt("%s/%s", m_fanartDir.c_str(), coverDir);
+	if(m_fa.load(m_cfg, Path, CoverFlow.getFilenameId(CoverFlow.getHdr(), false), CoverFlow.getHdr()->type == TYPE_PLUGIN))
 	{
 		const TexData *bg = NULL;
 		const TexData *bglq = NULL;
@@ -336,8 +343,6 @@ void CMenu::_cleanupBanner(bool gamechange)
 	m_banner.DeleteBanner(gamechange);
 	//movie
 	_cleanupVideo();
-	//fanart
-	//m_fa.unload();
 }
 
 void CMenu::_cleanupVideo()
@@ -795,8 +800,6 @@ void CMenu::_game(bool launch)
 			}
 			if(startGameSound == -10)// if -10 then we moved to new cover
 			{
-				m_fa.unload();
-				CoverFlow.showCover();
 				memcpy(hdr, CoverFlow.getHdr(), sizeof(dir_discHdr));// get new game header
 				_setCurrentItem(hdr);
 				
@@ -829,7 +832,7 @@ void CMenu::_game(bool launch)
 		}
 		
 		/* showing and hiding buttons based on banner zoomed state */
-		if(!m_zoom_banner)
+		if(!m_zoom_banner || m_fa.isLoaded())
 		{
 			/* always hide full banner buttons */
 			m_btnMgr.hide(m_gameBtnPlayFull);
@@ -875,7 +878,7 @@ void CMenu::_game(bool launch)
 			}
 			
 			/* show or hide small banner toggle btn and frame */
-			if(m_banner_loaded && !m_soundThrdBusy && !coverFlipped && !m_video_playing)
+			if(m_banner_loaded && !m_soundThrdBusy && !coverFlipped && !m_video_playing && !m_fa.isLoaded())
 			{
 				/* show only if the game has a banner */
 				m_btnMgr.show(m_gameBtnToggle);
@@ -2036,7 +2039,7 @@ void CMenu::_initGameMenu()
 	m_gameBtnToggle = _addPicButton("GAME/TOOGLE_BTN", texToggleBanner, texToggleBanner, 385, 31, 236, 127);
 	m_gameBtnToggleFull = _addPicButton("GAME/TOOGLE_FULL_BTN", texToggleBanner, texToggleBanner, 20, 12, 608, 344);
 
-	m_gameButtonsZone.x = m_theme.getInt("GAME/ZONES", "buttons_x", 0);
+	m_gameButtonsZone.x = m_theme.getInt("GAME/ZONES", "buttons_x", 380);
 	m_gameButtonsZone.y = m_theme.getInt("GAME/ZONES", "buttons_y", 0);
 	m_gameButtonsZone.w = m_theme.getInt("GAME/ZONES", "buttons_w", 640);
 	m_gameButtonsZone.h = m_theme.getInt("GAME/ZONES", "buttons_h", 480);
