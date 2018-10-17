@@ -295,28 +295,31 @@ void CMenu::_hideGame(bool instant)
 void CMenu::_showGame(void)
 {
 	CoverFlow.showCover();
+	
+	const dir_discHdr *GameHdr = CoverFlow.getHdr();
 	const char *coverDir = NULL;
 	const char *Path = NULL;
-	if(CoverFlow.getHdr()->type == TYPE_PLUGIN)
-		coverDir = m_plugin.GetCoverFolderName(CoverFlow.getHdr()->settings[0]);
+	if(GameHdr->type == TYPE_PLUGIN)
+		coverDir = m_plugin.GetCoverFolderName(GameHdr->settings[0]);
 	
 	if(coverDir == NULL || strlen(coverDir) == 0)
 		Path = fmt("%s", m_fanartDir.c_str());
 	else
 		Path = fmt("%s/%s", m_fanartDir.c_str(), coverDir);
-	if(m_fa.load(m_cfg, Path, CoverFlow.getFilenameId(CoverFlow.getHdr(), false), CoverFlow.getHdr()->type == TYPE_PLUGIN))
+	if(m_fa.load(m_cfg, Path, CoverFlow.getFilenameId(GameHdr, false), GameHdr->type == TYPE_PLUGIN))
 	{
 		const TexData *bg = NULL;
 		const TexData *bglq = NULL;
 		m_fa.getBackground(bg, bglq);
 		if(bg != NULL && bglq != NULL)
 			_setBg(*bg, *bglq);
-		if (m_fa.hideCover())
+		if(m_fa.hideCover())
 			CoverFlow.hideCover();
 	}
 	else
 		_setBg(m_gameBg, m_gameBgLQ);
 	return;
+	
 	if(!m_zoom_banner)
 	{
 		for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser) - 1; ++i)
@@ -2094,6 +2097,8 @@ void * CMenu::_gameSoundThread(void *obj)
 	u32 cached_bnr_size = 0;
 	char cached_banner[256];
 	cached_banner[255] = '\0';
+	char game_sound[256];
+	game_sound[255] = '\0';
 	
 	m_banner_loaded = false;
 	const dir_discHdr *GameHdr = CoverFlow.getHdr();	
@@ -2103,9 +2108,17 @@ void * CMenu::_gameSoundThread(void *obj)
 		coverDir = m_plugin.GetCoverFolderName(GameHdr->settings[0]);
 		
 		if(coverDir == NULL || strlen(coverDir) == 0)
+		{
 			strncpy(custom_banner, fmt("%s/%s.bnr", m->m_customBnrDir.c_str(), CoverFlow.getFilenameId(GameHdr)), 255);
+			strncpy(game_sound, fmt("%s/gamesounds/%s", m->m_dataDir.c_str(), CoverFlow.getFilenameId(GameHdr)), 255);
+		}
 		else
+		{
 			strncpy(custom_banner, fmt("%s/%s/%s.bnr", m->m_customBnrDir.c_str(), coverDir, CoverFlow.getFilenameId(GameHdr)), 255);
+			strncpy(game_sound, fmt("%s/gamesounds/%s/%s", m->m_dataDir.c_str(), coverDir, CoverFlow.getFilenameId(GameHdr)), 255);
+		}
+		
+		/* get plugin rom custom banner */
 		fsop_GetFileSizeBytes(custom_banner, &custom_bnr_size);
 		if(custom_bnr_size > 0)
 		{
@@ -2116,10 +2129,35 @@ void * CMenu::_gameSoundThread(void *obj)
 				m_banner_loaded = true;
 			}
 		}
-		else
+		else // if no banner get plugin rom gamesound or just the default plugin gamesound
 		{
 			m_banner.DeleteBanner();
-			m->m_gameSound.Load(m_plugin.GetBannerSound(GameHdr->settings[0]), m_plugin.GetBannerSoundSize());
+			bool found = false;
+			char soundPath[256];
+			soundPath[255] = '\0';
+			if(fsop_FileExist(fmt("%s.mp3", game_sound)))
+			{
+				strncpy(soundPath, fmt("%s.mp3", game_sound), 255);
+				found = true;
+			}
+			else if(fsop_FileExist(fmt("%s.wav", game_sound)))
+			{
+				strncpy(soundPath, fmt("%s.wav", game_sound), 255);
+				found = true;
+			}
+			else if(fsop_FileExist(fmt("%s.ogg", game_sound)))
+			{
+				strncpy(soundPath, fmt("%s.ogg", game_sound), 255);
+				found = true;
+			}
+			if(found)
+			{
+				u32 size = 0;
+				u8 *sf = fsop_ReadFile(soundPath, &size);
+				m->m_gameSound.Load(sf, size);
+			}
+			else
+				m->m_gameSound.Load(m_plugin.GetBannerSound(GameHdr->settings[0]), m_plugin.GetBannerSoundSize());
 			if(m->m_gameSound.IsLoaded())
 				m->m_gamesound_changed = true;
 			m->m_soundThrdBusy = false;
