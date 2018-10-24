@@ -313,8 +313,7 @@ void CMenu::_showGame(void)
 		m_fa.getBackground(bg, bglq);
 		if(bg != NULL && bglq != NULL)
 			_setBg(*bg, *bglq);
-		if(m_fa.hideCover())
-			CoverFlow.hideCover();
+		CoverFlow.hideCover();
 	}
 	else
 		_setBg(m_gameBg, m_gameBgLQ);
@@ -473,11 +472,22 @@ void CMenu::_game(bool launch)
 
 	while(!m_exit)
 	{
+		if(m_fa.isLoaded() && m_fa.isAnimationComplete())
+		{
+			if(m_fa.noLoop())
+			{
+				m_fa.unload();
+				CoverFlow.showCover();
+				_setBg(m_gameBg, m_gameBgLQ);
+			}
+			else //loop fanart
+				m_fa.reset();
+		}
 		if(startGameSound < 1)
 			startGameSound++;
 
 		if(startGameSound == -5)
-			_showGame();
+			_showGame();// this also starts fanart with unloading previous fanart.
 			
 		if(!launch)	
 			_mainLoopCommon(true);
@@ -591,8 +601,15 @@ void CMenu::_game(bool launch)
 		}
 		else if(launch || BTN_A_PRESSED)
 		{
+			if(m_fa.isLoaded() && ShowPointer())
+			{
+				m_fa.unload();
+				CoverFlow.showCover();
+				_setBg(m_gameBg, m_gameBgLQ);
+				continue;
+			}
 			/* delete button */
-			if(m_btnMgr.selected(m_gameBtnDelete))
+			else if(m_btnMgr.selected(m_gameBtnDelete))
 			{
 				_hideGame();
 				m_banner.SetShowBanner(false);
@@ -835,7 +852,7 @@ void CMenu::_game(bool launch)
 		}
 		
 		/* showing and hiding buttons based on banner zoomed state */
-		if(!m_zoom_banner || m_fa.isLoaded())
+		if(!m_zoom_banner && !m_fa.isLoaded())
 		{
 			/* always hide full banner buttons */
 			m_btnMgr.hide(m_gameBtnPlayFull);
@@ -895,7 +912,7 @@ void CMenu::_game(bool launch)
 					m_btnMgr.hide(m_gameLblUser[4]);
 			}
 		}
-		else // banner zoomed full screen
+		else if(!m_fa.isLoaded())// banner zoomed full screen
 		{
 			if(m_banner_loaded && !m_soundThrdBusy)// there is a banner
 			{

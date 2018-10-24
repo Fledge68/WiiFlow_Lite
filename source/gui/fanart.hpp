@@ -67,10 +67,10 @@ public:
 	bool isLoaded();
 
 	void getBackground(const TexData * &hq, const TexData * &lq);
-	CColor getTextColor(CColor themeTxtColor = CColor(0xFFFFFFFF));
-	bool hideCover();
 	void draw(bool front = true);
 	void tick();
+	bool noLoop();
+	void reset();
 
 private:
 	vector<CFanartElement> m_elms;

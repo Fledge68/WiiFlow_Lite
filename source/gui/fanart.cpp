@@ -31,6 +31,7 @@ void CFanart::unload()
 	TexHandle.Cleanup(m_bglq);
 }
 
+char fanartDir[164];
 bool CFanart::load(Config &m_globalConfig, const char *path, const char *id, bool plugin_rom)
 {
 	bool retval = false;
@@ -40,25 +41,25 @@ bool CFanart::load(Config &m_globalConfig, const char *path, const char *id, boo
 
 	unload();
 
-	char dir[64];
-	dir[63] = '\0';
-	strncpy(dir, fmt("%s/%s", path, id), 63);
+	//char dir[164];
+	fanartDir[163] = '\0';
+	strncpy(fanartDir, fmt("%s/%s", path, id), 163);
 
-	TexErr texErr = TexHandle.fromImageFile(m_bg, fmt("%s/background.png", dir));
+	TexErr texErr = TexHandle.fromImageFile(m_bg, fmt("%s/background.png", fanartDir));
 	if(texErr == TE_ERROR && !plugin_rom)
 	{
-		strncpy(dir, fmt("%s/%.3s", path, id), 63);
-		texErr = TexHandle.fromImageFile(m_bg, fmt("%s/background.png", dir));
+		strncpy(fanartDir, fmt("%s/%.3s", path, id), 163);
+		texErr = TexHandle.fromImageFile(m_bg, fmt("%s/background.png", fanartDir));
 	}
 	if(texErr == TE_OK)
 	{
-		char cfg_char[64];
-		cfg_char[63] = '\0';
-		strncpy(cfg_char, fmt("%s/%s.ini", dir, id), 63);
+		char cfg_char[164];
+		cfg_char[163] = '\0';
+		strncpy(cfg_char, fmt("%s/%s.ini", fanartDir, id), 163);
 		m_cfg.load(cfg_char);
 		if(!m_cfg.loaded() && !plugin_rom)
 		{
-			strncpy(cfg_char, fmt("%s/%.3s.ini", dir, id), 63);
+			strncpy(cfg_char, fmt("%s/%.3s.ini", fanartDir, id), 163);
 			m_cfg.load(cfg_char);
 			if(!m_cfg.loaded())
 			{
@@ -66,10 +67,10 @@ bool CFanart::load(Config &m_globalConfig, const char *path, const char *id, boo
 				return retval;
 			}
 		}
-		TexHandle.fromImageFile(m_bglq, fmt("%s/background_lq.png", dir));
+		TexHandle.fromImageFile(m_bglq, fmt("%s/background_lq.png", fanartDir));
 		for(int i = 1; i <= 6; i++)
 		{
-			CFanartElement elm(m_cfg, dir, i);
+			CFanartElement elm(m_cfg, fanartDir, i);
 			if (elm.IsValid()) m_elms.push_back(elm);
 		}
 		m_loaded = true;
@@ -94,45 +95,23 @@ void CFanart::getBackground(const TexData * &hq, const TexData * &lq)
 		lq = hq;
 }
 
-CColor CFanart::getTextColor(CColor themeTxtColor)
+void CFanart::reset()
 {
-	return m_loaded ? m_cfg.getColor("GENERAL", "textcolor", CColor(themeTxtColor)) : themeTxtColor;
+	for(vector<CFanartElement>::iterator Elm = m_elms.begin(); Elm != m_elms.end(); Elm++)
+		Elm->Cleanup();
+	m_elms.clear();
+	for(int i = 1; i <= 6; i++)
+	{
+		CFanartElement elm(m_cfg, fanartDir, i);
+		if (elm.IsValid()) m_elms.push_back(elm);
+	}
 }
 
-bool CFanart::hideCover()
+bool CFanart::noLoop()
 {
-	if(!m_loaded)
-		return false; // If no fanart is loaded, return false
-/*
-
-fanart_hidecover defaults to True
-fanart_showafter defaults to False
-
- hideCover | fanart_hideCover | showAfter | fanart_showAfter | animating | hide
-1   True              *             *              *               *       True
-2   False             *             *              *               *       False
-3  default          False           *              *               *       False
-4  default      default/True      True             *             True      True 
-5  default      default/True      True             *             False     False
-6  default      default/True      False            *               *       True
-7  default      default/True     default          True           True      True
-8  default      default/True     default          True           False     False
-9    *                *               *            *               *       True   
-*/
-	// rules 1 and 2
-	if(m_globalHideCover != 2)
-		return m_globalHideCover == 1;
-	// rule 3
-	if(!m_cfg.getBool("GENERAL", "hidecover", true))
-		return false;
-	// rules 4, 5 and 6
 	if(m_globalShowCoverAfterAnimation != 2)
-		return m_globalShowCoverAfterAnimation == 0 || !isAnimationComplete();
-	// rules 7 and 8
-	if(m_cfg.getBool("GENERAL", "show_cover_after_animation", false))
-		return !isAnimationComplete();
-	// rule 9
-	return true;
+		return m_globalShowCoverAfterAnimation == 1;
+	return m_cfg.getBool("GENERAL", "show_cover_after_animation", false);
 }
 
 bool CFanart::isLoaded()
@@ -147,6 +126,7 @@ bool CFanart::isAnimationComplete()
 
 void CFanart::tick()
 {
+	if(!m_loaded) return;
 	m_animationComplete = true;
 	for(u32 i = 0; i < m_elms.size(); ++i)
 	{

@@ -1675,9 +1675,6 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 		CoverFlow.tick();
 	m_btnMgr.tick();
 	m_fa.tick();
-	m_fa.hideCover() ? 	CoverFlow.hideCover() : CoverFlow.showCover();
-	CoverFlow.setFanartPlaying(m_fa.isLoaded());
-	CoverFlow.setFanartTextColor(m_fa.getTextColor(m_theme.getColor("_COVERFLOW", "font_color", CColor(0xFFFFFFFF))));
 
 	/* video setup */
 	m_vid.prepare();
