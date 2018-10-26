@@ -5,7 +5,6 @@
 
 #include <ogcsys.h>
 #include <gccore.h>
-#include <string>
 
 #include "gui.hpp"
 #include "texture.hpp"
@@ -22,7 +21,6 @@ public:
 	
 	bool IsValid();
 	bool IsAnimationComplete();
-	bool ShowOnTop();
 private:
 	TexData m_art;
 	int m_artwork;
@@ -50,8 +48,6 @@ private:
 	float m_step_scaleY;
 	float m_step_angle;
 	
-	bool m_show_on_top;
-	
 	bool m_isValid;
 };
 
@@ -62,12 +58,12 @@ public:
 	~CFanart(void);
 
 	void unload();
-	bool load(Config &m_globalConfig, const char *path, const char *id, bool plugin_rom);
+	bool load(Config &m_wiiflowConfig, const char *path, const char *id, bool plugin_rom);
 	bool isAnimationComplete();
 	bool isLoaded();
 
 	void getBackground(const TexData * &hq, const TexData * &lq);
-	void draw(bool front = true);
+	void draw();
 	void tick();
 	bool noLoop();
 	void reset();
@@ -77,12 +73,10 @@ private:
 
 	bool m_animationComplete;
 	u16 m_delayAfterAnimation;
-	u8 m_globalHideCover;
 	u8 m_globalShowCoverAfterAnimation;
 	u16 m_defaultDelay;
-	bool m_allowArtworkOnTop;
 	bool m_loaded;
-	Config m_cfg;
+	Config m_faConfig;
 
 	TexData m_bg;
 	TexData m_bglq;

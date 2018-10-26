@@ -1,10 +1,7 @@
 
 #include "fanart.hpp"
-#include "pngu.h"
-#include "boxmesh.hpp"
-#include "text.hpp"
-#include "gecko/gecko.hpp"
 #include "memory/mem2.hpp"
+
 using namespace std;
 
 static  guVector  _GRRaxisx = (guVector){1, 0, 0}; // DO NOT MODIFY!!!
@@ -12,7 +9,7 @@ static  guVector  _GRRaxisy = (guVector){0, 1, 0}; // Even at runtime
 static  guVector  _GRRaxisz = (guVector){0, 0, 1}; // NOT ever!
 
 CFanart::CFanart(void)
-	: m_animationComplete(false), m_loaded(false), m_cfg(), m_bg(), m_bglq()
+	: m_animationComplete(false), m_loaded(false), m_faConfig(), m_bg(), m_bglq()
 {
 }
 
@@ -22,7 +19,7 @@ CFanart::~CFanart(void)
 
 void CFanart::unload()
 {
-	m_cfg.unload();
+	m_faConfig.unload();
 	m_loaded = false;
 	for(vector<CFanartElement>::iterator Elm = m_elms.begin(); Elm != m_elms.end(); Elm++)
 		Elm->Cleanup();
@@ -32,16 +29,15 @@ void CFanart::unload()
 }
 
 char fanartDir[164];
-bool CFanart::load(Config &m_globalConfig, const char *path, const char *id, bool plugin_rom)
+bool CFanart::load(Config &m_wiiflowConfig, const char *path, const char *id, bool plugin_rom)
 {
 	bool retval = false;
 
-	if(!m_globalConfig.getBool("FANART", "enable_fanart", true))
+	if(!m_wiiflowConfig.getBool("FANART", "enable_fanart", true))
 		return retval;
 
 	unload();
 
-	//char dir[164];
 	fanartDir[163] = '\0';
 	strncpy(fanartDir, fmt("%s/%s", path, id), 163);
 
@@ -53,15 +49,15 @@ bool CFanart::load(Config &m_globalConfig, const char *path, const char *id, boo
 	}
 	if(texErr == TE_OK)
 	{
-		char cfg_char[164];
-		cfg_char[163] = '\0';
-		strncpy(cfg_char, fmt("%s/%s.ini", fanartDir, id), 163);
-		m_cfg.load(cfg_char);
-		if(!m_cfg.loaded() && !plugin_rom)
+		char faConfig_Path[164];
+		faConfig_Path[163] = '\0';
+		strncpy(faConfig_Path, fmt("%s/%s.ini", fanartDir, id), 163);
+		m_faConfig.load(faConfig_Path);
+		if(!m_faConfig.loaded() && !plugin_rom)
 		{
-			strncpy(cfg_char, fmt("%s/%.3s.ini", fanartDir, id), 163);
-			m_cfg.load(cfg_char);
-			if(!m_cfg.loaded())
+			strncpy(faConfig_Path, fmt("%s/%.3s.ini", fanartDir, id), 163);
+			m_faConfig.load(faConfig_Path);
+			if(!m_faConfig.loaded())
 			{
 				TexHandle.Cleanup(m_bg);
 				return retval;
@@ -70,16 +66,14 @@ bool CFanart::load(Config &m_globalConfig, const char *path, const char *id, boo
 		TexHandle.fromImageFile(m_bglq, fmt("%s/background_lq.png", fanartDir));
 		for(int i = 1; i <= 6; i++)
 		{
-			CFanartElement elm(m_cfg, fanartDir, i);
+			CFanartElement elm(m_faConfig, fanartDir, i);
 			if (elm.IsValid()) m_elms.push_back(elm);
 		}
 		m_loaded = true;
 		retval = true;
-		m_defaultDelay = m_globalConfig.getInt("FANART", "delay_after_animation", 200);
-		m_delayAfterAnimation = m_cfg.getInt("GENERAL", "delay_after_animation", m_defaultDelay);
-		m_allowArtworkOnTop = m_globalConfig.getBool("FANART", "allow_artwork_on_top", true);
-		m_globalHideCover = m_globalConfig.getOptBool("FANART", "hidecover", 2); // 0 is false, 1 is true, 2 is default
-		m_globalShowCoverAfterAnimation = m_globalConfig.getOptBool("FANART", "show_cover_after_animation", 2);
+		m_defaultDelay = m_wiiflowConfig.getInt("FANART", "delay_after_animation", 200);
+		m_delayAfterAnimation = m_faConfig.getInt("GENERAL", "delay_after_animation", m_defaultDelay);
+		m_globalShowCoverAfterAnimation = m_wiiflowConfig.getOptBool("FANART", "show_cover_after_animation", 2);
 	}
 	return retval;
 }
@@ -102,7 +96,7 @@ void CFanart::reset()
 	m_elms.clear();
 	for(int i = 1; i <= 6; i++)
 	{
-		CFanartElement elm(m_cfg, fanartDir, i);
+		CFanartElement elm(m_faConfig, fanartDir, i);
 		if (elm.IsValid()) m_elms.push_back(elm);
 	}
 }
@@ -111,7 +105,7 @@ bool CFanart::noLoop()
 {
 	if(m_globalShowCoverAfterAnimation != 2)
 		return m_globalShowCoverAfterAnimation == 1;
-	return m_cfg.getBool("GENERAL", "show_cover_after_animation", false);
+	return m_faConfig.getBool("GENERAL", "show_cover_after_animation", false);
 }
 
 bool CFanart::isLoaded()
@@ -138,11 +132,9 @@ void CFanart::tick()
 		m_delayAfterAnimation--;
 }
 
-void CFanart::draw(bool front)
+void CFanart::draw()
 {
-	if(!m_loaded) return; //derp
-	if(!m_allowArtworkOnTop && front)
-		return;	// It's not allowed to draw fanart on top, it has already been drawn
+	if(!m_loaded) return;
 
 	GX_SetNumChans(1);
 	GX_ClearVtxDesc();
@@ -162,8 +154,7 @@ void CFanart::draw(bool front)
 	GX_SetZMode(GX_DISABLE, GX_LEQUAL, GX_TRUE);
 
 	for(u32 i = 0; i < m_elms.size(); ++i)
-		if(!m_allowArtworkOnTop || ((front && m_elms[i].ShowOnTop()) || !front))
-			m_elms[i].draw();
+		m_elms[i].draw();
 }
 
 CFanartElement::CFanartElement(Config &cfg, const char *dir, int artwork)
@@ -173,27 +164,25 @@ CFanartElement::CFanartElement(Config &cfg, const char *dir, int artwork)
 	if(!m_isValid)
 		return;
 
-	char *section = fmt_malloc("artwork%d", artwork);
-	if(section == NULL)
+	char *domain = fmt_malloc("artwork%d", artwork);
+	if(domain == NULL)
 		return;
 
-	m_show_on_top = cfg.getBool(section, "show_on_top", true);
+	m_x = cfg.getInt(domain, "x", 0);
+	m_y = cfg.getInt(domain, "y", 0);
+	m_scaleX = cfg.getFloat(domain, "scale_x", 1.f);
+	m_scaleY = cfg.getFloat(domain, "scale_y", 1.f);
+	m_alpha = min(cfg.getInt(domain, "alpha", 255), 255);
+	m_delay = (int) (cfg.getFloat(domain, "delay", 0.f) * 50);
+	m_angle = cfg.getFloat(domain, "angle", 0.f);
 
-	m_x = cfg.getInt(section, "x", 0);
-	m_y = cfg.getInt(section, "y", 0);
-	m_scaleX = cfg.getFloat(section, "scale_x", 1.f);
-	m_scaleY = cfg.getFloat(section, "scale_y", 1.f);
-	m_alpha = min(cfg.getInt(section, "alpha", 255), 255);
-	m_delay = (int) (cfg.getFloat(section, "delay", 0.f) * 50);
-	m_angle = cfg.getFloat(section, "angle", 0.f);
-
-	m_event_duration = (int) (cfg.getFloat(section, "duration", 0.f) * 50);
-	m_event_x = m_event_duration == 0 ? m_x : cfg.getInt(section, "event_x", m_x);
-	m_event_y = m_event_duration == 0 ? m_y : cfg.getInt(section, "event_y", m_y);
-	m_event_scaleX = m_event_duration == 0 ? m_scaleX : cfg.getInt(section, "event_scale_x", m_scaleX);
-	m_event_scaleY = m_event_duration == 0 ? m_scaleY : cfg.getInt(section, "event_scale_y", m_scaleY);
-	m_event_alpha = m_event_duration == 0 ? m_alpha : min(cfg.getInt(section, "event_alpha", m_alpha), 255); // Not from m_alpha, because the animation can start less translucent than m_alpha
-	m_event_angle = m_event_duration == 0 ? m_angle : cfg.getFloat(section, "event_angle", m_angle);
+	m_event_duration = (int) (cfg.getFloat(domain, "duration", 0.f) * 50);
+	m_event_x = m_event_duration == 0 ? m_x : cfg.getInt(domain, "event_x", m_x);
+	m_event_y = m_event_duration == 0 ? m_y : cfg.getInt(domain, "event_y", m_y);
+	m_event_scaleX = m_event_duration == 0 ? m_scaleX : cfg.getInt(domain, "event_scale_x", m_scaleX);
+	m_event_scaleY = m_event_duration == 0 ? m_scaleY : cfg.getInt(domain, "event_scale_y", m_scaleY);
+	m_event_alpha = m_event_duration == 0 ? m_alpha : min(cfg.getInt(domain, "event_alpha", m_alpha), 255); // Not from m_alpha, because the animation can start less translucent than m_alpha
+	m_event_angle = m_event_duration == 0 ? m_angle : cfg.getFloat(domain, "event_angle", m_angle);
 
 	m_step_x = m_event_duration == 0 ? 0 : (m_x - m_event_x) / m_event_duration;
 	m_step_y = m_event_duration == 0 ? 0 : (m_y - m_event_y) / m_event_duration;
@@ -202,7 +191,7 @@ CFanartElement::CFanartElement(Config &cfg, const char *dir, int artwork)
 	m_step_alpha = m_event_duration == 0 ? 0 : (m_alpha - m_event_alpha) / m_event_duration;
 	m_step_angle = m_event_duration == 0 ? 0 : (m_angle - m_event_angle) / m_event_duration;
 
-	MEM2_free(section);
+	MEM2_free(domain);
 }
 
 void CFanartElement::Cleanup(void)
@@ -218,11 +207,6 @@ bool CFanartElement::IsValid()
 bool CFanartElement::IsAnimationComplete()
 {
 	return m_event_duration == 0;
-}
-
-bool CFanartElement::ShowOnTop()
-{
-	return m_show_on_top;
 }
 
 void CFanartElement::tick()

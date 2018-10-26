@@ -1694,7 +1694,6 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 			m_vid.prepareAAPass(i);
 			m_vid.setup2DProjection(false, true);
 			_drawBg();
-			m_fa.draw(false);
 			CoverFlow.draw();
 			m_vid.setup2DProjection(false, true);
 			CoverFlow.drawEffect();
@@ -1709,7 +1708,6 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 	{
 		m_vid.setup2DProjection();
 		_drawBg();
-		m_fa.draw(false);
 		if(withCF)
 		{
 			CoverFlow.draw();
