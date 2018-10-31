@@ -65,6 +65,11 @@ void Musicplayer::Init(Config &cfg, const string& musicDir, const string& themeM
 	CurrentFileName = FileNames.begin();
 }
 
+void Musicplayer::SetFadeRate(u8 faderate)
+{
+	FadeRate = faderate;
+}
+
 void Musicplayer::SetMaxVolume(u8 volume)
 {
 	Volume = volume;

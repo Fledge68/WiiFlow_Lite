@@ -1,8 +1,6 @@
 
 #include "menu.hpp"
 
-static const int g_curPage = 6;
-
 void CMenu::_hideConfigScreen(bool instant)
 {
 	_hideConfigCommon(instant);
@@ -30,7 +28,7 @@ void CMenu::_hideConfigScreen(bool instant)
 
 void CMenu::_showConfigScreen(void)
 {
-	_showConfigCommon(m_configScreenBg, g_curPage);
+	_showConfigCommon(m_configScreenBg, 6);
 
 	m_btnMgr.show(m_configScreenLblTVHeight);
 	m_btnMgr.show(m_configScreenLblTVHeightVal);

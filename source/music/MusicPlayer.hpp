@@ -31,6 +31,7 @@ public:
 	void Init(Config &cfg, const string& musicDir, const string& themeMusicDir);
 	void Tick(bool attenuate);
 
+	void SetFadeRate(u8 faderate);
 	void SetVolume(u8 volume);
 	void SetMaxVolume(u8 volume);
 	u8 GetVolume() { return CurrentVolume; };

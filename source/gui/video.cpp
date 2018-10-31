@@ -360,6 +360,31 @@ void CVideo::prepareAAPass(int aaStep)
 	GX_InvalidateTexAll();
 }
 
+void CVideo::renderAAPass(int aaStep)
+{
+	u8 texFmt = GX_TF_RGBA8;
+	u32 w = m_aaWidth <= 0 ? m_rmode->fbWidth : (u32)m_aaWidth;
+	u32 h = m_aaHeight <= 0 ? m_rmode->efbHeight: (u32)m_aaHeight;
+	u32 bufLen = GX_GetTexBufferSize(w, h, texFmt, GX_FALSE, 0);
+
+	if (!m_aaBuffer[aaStep] || m_aaBufferSize[aaStep] < bufLen)
+	{
+		m_aaBuffer[aaStep] = (u8*)MEM2_alloc(bufLen);
+		if (m_aaBuffer[aaStep] != NULL)
+			m_aaBufferSize[aaStep] = bufLen;
+	}
+	if (!m_aaBuffer[aaStep] || m_aaBufferSize[aaStep] < bufLen)
+		return;
+	GX_SetZMode(GX_DISABLE, GX_ALWAYS, GX_TRUE);
+	GX_DrawDone();
+	GX_SetCopyFilter(GX_FALSE, NULL, GX_FALSE, NULL);
+	GX_SetTexCopySrc(0, 0, w, h);
+	GX_SetTexCopyDst(w, h, texFmt, GX_FALSE);
+	GX_CopyTex(m_aaBuffer[aaStep], GX_TRUE);
+	GX_PixModeSync();
+	GX_SetCopyFilter(m_rmode->aa, m_rmode->sample_pattern, GX_TRUE, m_rmode->vfilter);
+}
+
 void CVideo::drawAAScene(bool fs)
 {
 	GXTexObj texObj[8];
@@ -431,31 +456,6 @@ void CVideo::drawAAScene(bool fs)
 	GX_SetNumChans(1);
 	GX_SetNumTexGens(1);
 	GX_SetNumTevStages(1);
-}
-
-void CVideo::renderAAPass(int aaStep)
-{
-	u8 texFmt = GX_TF_RGBA8;
-	u32 w = m_aaWidth <= 0 ? m_rmode->fbWidth : (u32)m_aaWidth;
-	u32 h = m_aaHeight <= 0 ? m_rmode->efbHeight: (u32)m_aaHeight;
-	u32 bufLen = GX_GetTexBufferSize(w, h, texFmt, GX_FALSE, 0);
-
-	if (!m_aaBuffer[aaStep] || m_aaBufferSize[aaStep] < bufLen)
-	{
-		m_aaBuffer[aaStep] = (u8*)MEM2_alloc(bufLen);
-		if (m_aaBuffer[aaStep] != NULL)
-			m_aaBufferSize[aaStep] = bufLen;
-	}
-	if (!m_aaBuffer[aaStep] || m_aaBufferSize[aaStep] < bufLen)
-		return;
-	GX_SetZMode(GX_DISABLE, GX_ALWAYS, GX_TRUE);
-	GX_DrawDone();
-	GX_SetCopyFilter(GX_FALSE, NULL, GX_FALSE, NULL);
-	GX_SetTexCopySrc(0, 0, w, h);
-	GX_SetTexCopyDst(w, h, texFmt, GX_FALSE);
-	GX_CopyTex(m_aaBuffer[aaStep], GX_TRUE);
-	GX_PixModeSync();
-	GX_SetCopyFilter(m_rmode->aa, m_rmode->sample_pattern, GX_TRUE, m_rmode->vfilter);
 }
 
 void CVideo::render(void)

@@ -1,8 +1,6 @@
 
 #include "menu.hpp"
 
-static const int g_curPage = 5;
-
 void CMenu::_hideConfigSnd(bool instant)
 {
 	_hideConfigCommon(instant);
@@ -30,7 +28,7 @@ void CMenu::_hideConfigSnd(bool instant)
 
 void CMenu::_showConfigSnd(void)
 {
-	_showConfigCommon(m_configSndBg, g_curPage);
+	_showConfigCommon(m_configSndBg, 5);
 
 	m_btnMgr.show(m_configSndLblBnrVol);
 	m_btnMgr.show(m_configSndLblBnrVolVal);

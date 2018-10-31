@@ -3,8 +3,7 @@
 #include "channel/nand.hpp"
 #include "loader/nk.h"
 
-const int CMenu::_nbCfgPages = 6;
-static const int g_curPage = 1;
+const int CMenu::_nbCfgPages = 11;
 
 void CMenu::_hideConfigCommon(bool instant)
 {
@@ -46,7 +45,7 @@ void CMenu::_showConfigCommon(const TexData &bg, int page)
 
 void CMenu::_showConfig(void)
 {
-	_showConfigCommon(m_configBg, g_curPage);
+	_showConfigCommon(m_configBg, 1);
 
 	if(!m_locked)
 	{
@@ -91,6 +90,21 @@ void CMenu::_config(int page)
 				break;
 			case 6:
 				change = _configScreen();
+				break;
+			case 7:
+				change = _config7(page);
+				break;
+			case 8:
+				change = _config7(page);
+				break;
+			case 9:
+				change = _config7(page);
+				break;
+			case 10:
+				change = _config7(page);
+				break;
+			case 11:
+				change = _config7(page);
 				break;
 		}
 		if(change == CONFIG_PAGE_BACK)
@@ -142,8 +156,6 @@ int CMenu::_config1(void)
 		if (change != CONFIG_PAGE_NO_CHANGE)
 			break;
 
-		if (BTN_HOME_PRESSED || BTN_B_PRESSED)
-			break;
 		if (BTN_A_PRESSED)
 		{
 			if (m_btnMgr.selected(m_configBtnDownload))

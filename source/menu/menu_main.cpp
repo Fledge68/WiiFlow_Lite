@@ -414,6 +414,9 @@ int CMenu::main(void)
 					bheld = true;
 					bUsed = true;
 				}
+				show_channel = !m_cfg.getBool(CHANNEL_DOMAIN, "disable", false);
+				show_plugin = !m_cfg.getBool(PLUGIN_DOMAIN, "disable", false);
+				show_gamecube = !m_cfg.getBool(GC_DOMAIN, "disable", false);
 				_showMain();
 			}
 			else if(m_btnMgr.selected(m_mainBtnHomebrew))

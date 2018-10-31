@@ -2,7 +2,6 @@
 #include "menu.hpp"
 #include "channel/channels.h"
 
-static const int g_curPage = 4;
 Config custom_titles;
 int currentChannelIndex = -1;
 int amountOfChannels = -1;
@@ -39,7 +38,7 @@ void CMenu::_hideConfig4(bool instant)
 
 void CMenu::_showConfig4(void)
 {
-	_showConfigCommon(m_config4Bg, g_curPage);
+	_showConfigCommon(m_config4Bg, 4);
 
 	m_btnMgr.show(m_config4LblPathManager);
 	m_btnMgr.show(m_config4BtnPathManager);

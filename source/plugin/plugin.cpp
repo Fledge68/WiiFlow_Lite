@@ -34,7 +34,7 @@ void Plugin::init(const string& m_pluginsDir)
 {
 	PluginMagicWord[8] = '\0';
 	pluginsDir = m_pluginsDir;
-	//Ready to add plugins
+	Plugins.clear();
 	adding = true;
 }
 

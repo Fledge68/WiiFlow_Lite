@@ -58,10 +58,10 @@ bool isUsingUSB() {
 		return true;
 	}
 	
-	/* If we have the WiiFlow data on USB, then we're using USB */
-	if(m_cfg.getBool("general", "data_on_usb", false))
+	/* if sd_only is false, then we're using USB */
+	if(!m_cfg.getBool("general", "sd_only", true))
 	{
-		// data_on_usb is true, so assuming we're using USB.
+		// sd_only is false, so assuming we're using USB.
 		return true;
 	}
 	

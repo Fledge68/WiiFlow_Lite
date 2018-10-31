@@ -158,17 +158,6 @@ private:
 	bool m_txt_view;
 	const char *m_txt_path;
 
-	/* Updates */
-	char m_app_update_drive[6];
-	const char* m_app_update_url;
-	const char* m_data_update_url;
-	string m_dol;
-	string m_app_update_zip;
-	u32 m_app_update_size;
-	string m_data_update_zip;
-	u32 m_data_update_size;
-	string m_ver;
-	
 // Background image stuff
 	TexData sfbgimg;
 	TexData m_curBg;
@@ -891,6 +880,7 @@ private:
 	void _initConfigSndMenu();
 	void _initConfigScreenMenu();
 	void _initConfigGCMenu();
+	void _initConfig7Menu();
 	void _initPartitionsCfgMenu();
 	void _initGameMenu();
 	void _initDownloadMenu();
@@ -956,6 +946,7 @@ private:
 	void _hideConfigSnd(bool instant = false);
 	void _hideConfigGC(bool instant = false);
 	void _hideConfigGCPage(bool instant = false);
+	void _hideConfig7(bool instant = false);
 	void _hidePartitionsCfg(bool instant = false);
 	void _hideGame(bool instant = false);
 	void _hideDownload(bool instant = false);
@@ -991,6 +982,7 @@ private:
 	void _showConfigSnd(void);
 	void _showConfigGC(void);
 	void _showConfigGCPage(void);
+	void _showConfig7(int curPage);
 	void _showPartitionsCfg(void);
 	void _showNandEmu(void);
 	void _showGame(void);
@@ -1042,6 +1034,7 @@ private:
 	int _configAdv(void);
 	int _configSnd(void);
 	void _configGC(void);
+	int _config7(int curPage);
 	void _partitionsCfg(void);
 	int _NandEmuCfg(void);
 	int _AutoExtractSave(string gameId);

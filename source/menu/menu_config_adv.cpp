@@ -5,8 +5,6 @@
 
 using namespace std;
 
-static const int g_curPage = 2;
-
 template <class T> static inline T loopNum(T i, T s)
 {
 	return (i + s) % s;
@@ -46,7 +44,7 @@ void CMenu::_hideConfigAdv(bool instant)
 
 void CMenu::_showConfigAdv(void)
 {
-	_showConfigCommon(m_configAdvBg, g_curPage);
+	_showConfigCommon(m_configAdvBg, 2);
 
 	m_btnMgr.show(m_configAdvLblCurTheme);
 	m_btnMgr.show(m_configAdvBtnCurThemeM);

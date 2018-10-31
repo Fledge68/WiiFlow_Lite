@@ -1,8 +1,6 @@
 
 #include "menu.hpp"
 
-static const int g_curPage = 3;
-
 template <class T> static inline T loopNum(T i, T s)
 {
 	return (i + s) % s;
@@ -37,7 +35,7 @@ void CMenu::_hideConfig3(bool instant)
 
 void CMenu::_showConfig3(void)
 {
-	_showConfigCommon(m_config3Bg, g_curPage);
+	_showConfigCommon(m_config3Bg, 3);
 
 	m_btnMgr.show(m_config3LblGameLanguage);
 	m_btnMgr.show(m_config3LblLanguage);

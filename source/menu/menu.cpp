@@ -59,7 +59,6 @@ CMenu::CMenu()
 	m_numCFVersions = 0;
 	m_bgCrossFade = 0;
 	m_bnrSndVol = 0;
-	m_bnr_settings = true;
 	m_directLaunch = false;
 	m_exit = false;
 	m_reload = false;
@@ -115,7 +114,7 @@ bool CMenu::init()
 	/* Clear Playlog */
 	Playlog_Delete();
 
-	/*  Find the first partition with apps/wiiflow folder */
+	/* Find the first partition with apps/wiiflow folder */
 	const char *drive = "empty";
 	const char *check = "empty";
 	struct stat dummy;
@@ -163,57 +162,19 @@ bool CMenu::init()
 	m_init_network = (m_cfg.getBool("GENERAL", "async_network") || has_enabled_providers() || m_use_wifi_gecko);
 	_netInit();
 	
-	/* Try to find/make the wiiflow data directory */
-	bool onUSB = m_cfg.getBool("GENERAL", "data_on_usb", strncmp(drive, "usb", 3) == 0);
-	drive = check; //reset the drive variable for the check
-	//check for wiiflow data directory on USB or SD based on data_on_usb
-	if(!onUSB)
+	/* Set SD only to off if any usb device is attached and format is FAT, NTFS, WBFS, or LINUX */
+	m_cfg.setBool("GENERAL", "sd_only", true);
+	for(int i = USB1; i <= USB8; i++)
 	{
-		if(DeviceHandle.IsInserted(SD))// no need to find sd:/wiiflow, it will be made if not exist
-			drive = DeviceName[SD];
-		else
-		{
-			onUSB = true;
-			m_cfg.setBool("GENERAL", "data_on_usb", true);
-		}
+		if(DeviceHandle.IsInserted(i) && DeviceHandle.GetFSType(i) >= 0)
+			m_cfg.setBool("GENERAL", "sd_only", false);
 	}
-	if(onUSB)
-	{
-		for(u8 i = USB1; i <= USB8; i++) //Look for first partition with a wiiflow folder in root
-		{
-			if(DeviceHandle.IsInserted(i) && DeviceHandle.GetFSType(i) != PART_FS_WBFS && stat(fmt("%s:/%s", DeviceName[i], APP_DATA_DIR), &dummy) == 0)
-			{
-				drive = DeviceName[i];
-				break;
-			}
-		}
-		if(drive == check)// if wiiflow data directory not found just find a valid USB partition
-		{
-			for(u8 i = USB1; i <= USB8; i++)
-			{
-				if(DeviceHandle.IsInserted(i) && DeviceHandle.GetFSType(i) != PART_FS_WBFS)
-				{
-					drive = DeviceName[i];
-					break;
-				}
-			}
-		}
-		if(drive == check && DeviceHandle.IsInserted(SD))//if no valid USB partition then force SD if inserted
-		{
-			drive = DeviceName[SD];
-			// show error msg later after building menus
-		}
-		if(drive == check)// should not happen
-		{
-			/* No available usb partitions for data and no SD inserted! */
-			return false;
-		}
-	}
+
+	/* Set data folder on same device as the apps/wiiflow folder */
 	m_dataDir = fmt("%s:/%s", drive, APP_DATA_DIR);
 	gprintf("Data Directory: %s\n", m_dataDir.c_str());
-	snprintf(m_app_update_drive, sizeof(m_app_update_drive), "%s:/", drive);
 	
-	/* Our Wii game dir */
+	/* Our Wii games dir */
 	memset(wii_games_dir, 0, 64);
 	strncpy(wii_games_dir, m_cfg.getString(WII_DOMAIN, "wii_games_dir", GAMES_DIR).c_str(), 64);
 	if(strncmp(wii_games_dir, "%s:/", 4) != 0)
@@ -234,12 +195,6 @@ bool CMenu::init()
 	/* Load cIOS Map */
 	_installed_cios.clear();
 	_load_installed_cioses();
-
-	/* Path Settings */
-	m_dol = fmt("%s/boot.dol", m_appDir.c_str());
-	m_ver = fmt("%s/versions", m_appDir.c_str());
-	m_app_update_zip = fmt("%s/update.zip", m_appDir.c_str());
-	m_data_update_zip = fmt("%s/update.zip", m_dataDir.c_str());
 
 	m_imgsDir = fmt("%s/imgs", m_appDir.c_str());
 	m_binsDir = fmt("%s/bins", m_appDir.c_str());
@@ -336,14 +291,14 @@ bool CMenu::init()
 	if(!m_coverflow.loaded())
 		m_coverflow.load(fmt("%s/coverflows/default.ini", m_themeDir.c_str()));
 	
-	/* Get plugin ini files if plugin view enabled */
-	if(!m_cfg.getBool(PLUGIN_DOMAIN, "disable", false))
+	/* Get plugin ini files */
+	m_plugin.init(m_pluginsDir);
+	INI_List.clear();
+	GetFiles(m_pluginsDir.c_str(), stringToVector(".ini", '|'), GrabINIFiles, false, 1);
+
+	if(INI_List.size() > 0)
 	{
-		m_plugin.init(m_pluginsDir);
 		Config m_plugin_cfg;
-		INI_List.clear();
-		GetFiles(m_pluginsDir.c_str(), stringToVector(".ini", '|'), GrabINIFiles, false, 1);
-	
 		for(vector<string>::const_iterator iniFile = INI_List.begin(); iniFile != INI_List.end(); ++iniFile)
 		{
 			if(iniFile->find("scummvm.ini") != string::npos)
@@ -356,8 +311,9 @@ bool CMenu::init()
 			}
 			m_plugin_cfg.unload();
 		}
-		m_plugin.EndAdd();
 	}
+	m_plugin.EndAdd();
+	
 	/* Set wiiflow language */
 	const char *defLang = "Default";
 	switch (CONF_GetLanguage())
@@ -424,11 +380,6 @@ bool CMenu::init()
 
 	/* Init Button Manager and build the menus */
 	_buildMenus();
-	if(drive == DeviceName[SD] && onUSB)
-	{
-		error(_fmt("errboot5", L"data_on_usb=yes and No available usb partitions for data!\nUsing SD."));
-		m_cfg.setBool("GENERAL", "data_on_usb", false);
-	}
 
 	/* Check if locked, set return to, set exit to, and init multi threading */
 	m_locked = m_cfg.getString("GENERAL", "parent_code", "").size() >= 4;
@@ -1276,6 +1227,7 @@ void CMenu::_buildMenus(void)
 	_initConfig3Menu();
 	_initConfigMenu();
 	_initConfigGCMenu();
+	_initConfig7Menu();
 	_initPartitionsCfgMenu();
 	_initGameMenu();
 	_initDownloadMenu();

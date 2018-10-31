@@ -988,7 +988,7 @@ void CMenu::_game(bool launch)
 	if(coverFlipped)
 	{
 		m_coverflow.setVector3D(domain, key, savedv);
-		_loadCFLayout(cf_version, true);
+		_loadCFLayout(cf_version, true);// true?
 		CoverFlow.applySettings();
 	}
 	m_gameSelected = false;
