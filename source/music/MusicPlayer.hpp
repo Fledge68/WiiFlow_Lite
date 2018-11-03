@@ -29,6 +29,7 @@ class Musicplayer
 public:
 	void Cleanup();
 	void Init(Config &cfg, const string& musicDir, const string& themeMusicDir);
+	int InitPlaylist(Config &cfg, const char *playlist, u8 device);
 	void Tick(bool attenuate);
 
 	void SetFadeRate(u8 faderate);
@@ -60,6 +61,9 @@ protected:
 	int CurrentPosition;
 	bool MusicStopped;
 	bool MusicChanged;
+	const char *curPlaylist;
+	bool usingPlaylist = false;
+	u8 pl_device;
 
 	GuiSound MusicFile;
 };

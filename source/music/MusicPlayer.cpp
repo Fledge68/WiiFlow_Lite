@@ -16,8 +16,11 @@
  ****************************************************************************/
 #include <cstdio>
 #include <algorithm>
+#include <fstream>
+
 #include "MusicPlayer.hpp"
 #include "SoundHandler.hpp"
+#include "devicemounter/DeviceHandler.hpp"
 #include "list/ListGenerator.hpp"
 #include "gui/text.hpp"
 #include "gecko/gecko.hpp"
@@ -46,6 +49,11 @@ static inline void FileNameAdder(char *Path)
 
 void Musicplayer::Init(Config &cfg, const string& musicDir, const string& themeMusicDir) 
 {
+	if(usingPlaylist)
+	{
+		InitPlaylist(cfg, curPlaylist, pl_device);
+		return;
+	}
 	Cleanup();
 	FadeRate = cfg.getInt("GENERAL", "music_fade_rate", 8);
 	Volume = cfg.getInt("GENERAL", "sound_volume_music", 255);
@@ -61,8 +69,53 @@ void Musicplayer::Init(Config &cfg, const string& musicDir, const string& themeM
 		srand(unsigned(time(NULL)));
 		random_shuffle(FileNames.begin(), FileNames.end());
 	}
+	usingPlaylist = false;
 	OneSong = (FileNames.size() == 1);
 	CurrentFileName = FileNames.begin();
+}
+
+int Musicplayer::InitPlaylist(Config &cfg, const char *playlist, u8 device)
+{
+	ifstream filestr;
+	filestr.open(playlist);
+	
+	if(filestr.fail())
+		return 0;
+		
+	filestr.seekg(0,ios_base::end);
+	int size = filestr.tellg();
+	if(size <= 0)
+		return -1;
+	filestr.seekg(0,ios_base::beg);
+	
+	string song;
+	FileNames.clear();
+	while(!filestr.eof()) 
+	{
+		getline(filestr, song, '\r');
+		if(song.find(".mp3") == string::npos && song.find(".ogg") == string::npos)// if not song path continue to next line
+			continue;
+		while(song.find("\\") != string::npos)// convert all '\' to '/'
+			song.replace(song.find("\\"), 1, "/");
+		string::size_type p = song.find("/");// remove drive letter and anything else before first /
+		song.erase(0, p);
+		const char *songPath = fmt("%s:%s", DeviceName[device], song.c_str());
+		FileNames.push_back(songPath);
+	}
+	filestr.close();
+	
+	curPlaylist = playlist;
+	usingPlaylist = true;
+	pl_device = device;
+	if(cfg.getBool("GENERAL", "randomize_music", true) && FileNames.size() > 0)
+	{
+		srand(unsigned(time(NULL)));
+		random_shuffle(FileNames.begin(), FileNames.end());
+	}
+	OneSong = (FileNames.size() == 1);
+	CurrentFileName = FileNames.begin();
+	LoadCurrentFile();
+	return 1;
 }
 
 void Musicplayer::SetFadeRate(u8 faderate)
@@ -123,7 +176,7 @@ void Musicplayer::Stop()
 {
 	if(!MusicFile.IsPlaying())
 		return;
-	MusicFile.Pause();
+	MusicFile.Pause();// why not Stop()
 	CurrentPosition = SoundHandle.Decoder(MusicFile.GetVoice())->Tell();
 	MusicFile.FreeMemory();
 	MusicStopped = true;

@@ -1052,7 +1052,10 @@ void CMenu::_launch(const dir_discHdr *hdr)
 		/* check if music player plugin, if so set wiiflow's bckgrnd music player to play this song */
 		if(plugin_dol_len == 5 && strcasecmp(plugin_dol_name, "music") == 0)
 		{
-			MusicPlayer.LoadFile(launchHdr.path, false);
+			if(strstr(launchHdr.path, ".pls") == NULL && strstr(launchHdr.path, ".m3u") == NULL)
+				MusicPlayer.LoadFile(launchHdr.path, false);
+			else
+				MusicPlayer.InitPlaylist(m_cfg, launchHdr.path, currentPartition);// maybe error msg if trouble loading playlist
 			m_exit = false;
 			return;
 		}
