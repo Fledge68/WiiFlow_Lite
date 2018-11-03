@@ -385,8 +385,13 @@ bool CMenu::init()
 	m_locked = m_cfg.getString("GENERAL", "parent_code", "").size() >= 4;
 	
 	/* Switch the WFLA and DWFA when using official wiiflow */
+#ifdef APP_WIIFLOW
+	if(m_cfg.getString("GENERAL", "returnto", "DWFA") == "WFLA")
+		m_cfg.setString("GENERAL", "returnto", "DWFA");
+#else
 	if(m_cfg.getString("GENERAL", "returnto", "WFLA") == "DWFA")
 		m_cfg.setString("GENERAL", "returnto", "WFLA");
+#endif
 
 	/* set WIIFLOW_DEF exit to option */
 	/* 0 thru 2 of exit to enum (EXIT_TO_MENU, EXIT_TO_HBC, EXIT_TO_WIIU) in sys.h */

@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 #include "homebrew.h"
+#include "loader/sys.h"
 #include "banner/AnimatedBanner.h"
 #include "fileOps/fileOps.h"
 #include "gecko/gecko.hpp"
@@ -26,8 +27,13 @@ u8 *appbooter_ptr = NULL;
 u32 appbooter_size = 0;
 using namespace std;
 
+#ifdef APP_WIIFLOW
+extern const u8 wfstub_bin[];
+extern const u32 wfstub_bin_size;
+#else
 extern const u8 stub_bin[];
 extern const u32 stub_bin_size;
+#endif
 
 u8 valid = 0;
 
@@ -136,7 +142,11 @@ void writeStub()
 
 	/* Extract our stub */
 	u32 StubSize = 0;
+#ifdef APP_WIIFLOW
+	u8 *Stub = DecompressCopy(wfstub_bin, wfstub_bin_size, &StubSize);
+#else
 	u8 *Stub = DecompressCopy(stub_bin, stub_bin_size, &StubSize);
+#endif
 
 	/* Copy our own stub into memory */
 	memcpy((void*)0x80001800, Stub, StubSize);

@@ -225,9 +225,11 @@ bool CMenu::_ExitTo(void)
 				}
 				else
 				{
-					//if(m_cfg.getBool("NEEK2O", "launchwiiflow", true))
-					//	exitHandler(EXIT_TO_WFNK2O);
-					//else
+#ifdef APP_WIIFLOW
+					if(m_cfg.getBool("NEEK2O", "launchwiiflow", true))
+						exitHandler(EXIT_TO_WFNK2O);
+					else
+#endif
 						exitHandler(EXIT_TO_SMNK2O);
 					/* if exiting to Neek2o we must set the EmuNand Path for sys_exit() in sys.c */
 					const char *EmuNandPath = NULL;

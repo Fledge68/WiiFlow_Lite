@@ -1,10 +1,16 @@
 
+#include "loader/sys.h"
+
 #define APP_NAME				"WiiFlow Lite"
 #define APP_VERSION				"4.5.0"
 #define SVN_REV 				"1162"
 
 #define APP_DATA_DIR			"wiiflow"
+#ifdef APP_WIIFLOW
+#define APPS_DIR				"apps/wiiflow"
+#else
 #define APPS_DIR				"apps/wiiflow_lite"
+#endif
 
 //#define EMU_NANDS_DIR			"nands"
 #define GAMES_DIR				"%s:/wbfs"

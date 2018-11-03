@@ -2,6 +2,8 @@
 #ifndef _SYS_H_
 #define _SYS_H_
 
+//#define APP_WIIFLOW
+
 #include "utils.h"
 
 #ifdef __cplusplus
