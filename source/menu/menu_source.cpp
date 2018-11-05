@@ -801,24 +801,13 @@ void CMenu::_initSourceMenu()
 
 	int row;
 	int col;
-	const char *ImgName = NULL;
-	
 	for(i = 0; i < 12; ++i)
 	{
 		TexData texConsoleImg;
 		TexData texConsoleImgs;
-		ImgName = m_source.getString(fmt("BUTTON_%i", i),"image", "").c_str();
-		if(TexHandle.fromImageFile(texConsoleImg, fmt("%s/%s", m_themeDataDir.c_str(), ImgName)) != TE_OK)
-		{
-			if(TexHandle.fromImageFile(texConsoleImg, fmt("%s/%s", m_sourceDir.c_str(), ImgName)) != TE_OK)
-				TexHandle.fromImageFile(texConsoleImg, fmt("%s/favoriteson.png", m_imgsDir.c_str()));
-		}
-		ImgName = m_source.getString(fmt("BUTTON_%i", i),"image_s", "").c_str();
-		if(TexHandle.fromImageFile(texConsoleImgs, fmt("%s/%s", m_themeDataDir.c_str(), ImgName)) != TE_OK)
-		{
-			if(TexHandle.fromImageFile(texConsoleImgs, fmt("%s/%s", m_sourceDir.c_str(), ImgName)) != TE_OK)
-				TexHandle.fromImageFile(texConsoleImgs, fmt("%s/favoritesons.png", m_imgsDir.c_str()));
-		}
+		// use favoriteson.png just to initialize the buttons
+		TexHandle.fromImageFile(texConsoleImg, fmt("%s/favoriteson.png", m_imgsDir.c_str()));
+		TexHandle.fromImageFile(texConsoleImgs, fmt("%s/favoritesons.png", m_imgsDir.c_str()));
 	
 		row = i / 4;
 		col = i - (row * 4);

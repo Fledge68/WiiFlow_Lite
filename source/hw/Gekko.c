@@ -106,7 +106,7 @@ void *light_loop()
 		if(timeoff.tv_nsec > 0)
 			wiiLightOff();
 		//nanosleep(&timeoff, NULL);
-		nanosleep(&timeon);
+		nanosleep(&timeoff);
 	}
 	return NULL;
 }
