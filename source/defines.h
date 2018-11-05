@@ -2,8 +2,7 @@
 #include "loader/sys.h"
 
 #define APP_NAME				"WiiFlow Lite"
-#define APP_VERSION				"4.5.0"
-#define SVN_REV 				"1162"
+#define APP_VERSION				"5.0.0"
 
 #define APP_DATA_DIR			"wiiflow"
 #ifdef APP_WIIFLOW

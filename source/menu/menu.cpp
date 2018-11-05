@@ -39,8 +39,6 @@ CMenu mainMenu;
 u8 CMenu::downloadStack[8192] ATTRIBUTE_ALIGN(32);
 const u32 CMenu::downloadStackSize = 8192;
 
-const int CMenu::SVN_REV_NUM = atoi(SVN_REV);
-
 CMenu::CMenu()
 {
 	m_aa = 0;
@@ -270,15 +268,6 @@ bool CMenu::init()
 	memset(emu_nands_dir, 0, 64);
 	strncpy(emu_nands_dir, IsOnWiiU() ? "vwiinands" : "nands", 64);
 	_checkEmuNandSettings();
-	
-	/* Cache Reload Checks */
-	int ini_rev = m_cfg.getInt("GENERAL", "ini_rev", 0);
-	if(ini_rev != SVN_REV_NUM)
-	{
-		fsop_deleteFolder(m_listCacheDir.c_str());
-		fsop_MakeFolder(m_listCacheDir.c_str());
-	}
-	m_cfg.setInt("GENERAL", "ini_rev", SVN_REV_NUM);
 	
 	CoverFlow.init(m_base_font, m_base_font_size, m_vid.vid_50hz());
 
