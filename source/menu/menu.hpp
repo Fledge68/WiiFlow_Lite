@@ -61,6 +61,7 @@ private:
 	bool m_clearCats;
 	bool m_newGame;
 	bool show_mem;
+	bool cacheCovers;
 	vector<dir_discHdr> m_gameList;
 
 	struct SZone

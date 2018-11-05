@@ -80,6 +80,7 @@ CMenu::CMenu()
 	m_numPlugins = 0;
 	m_clearCats = true;
 	m_catStartPage = 1;
+	cacheCovers = false;
 	/* Explorer stuff */
 	m_txt_view = false;
 	m_txt_path = NULL;
@@ -2236,6 +2237,8 @@ bool CMenu::_loadWiiList(void)
 	string gameDir(fmt(wii_games_dir, DeviceName[currentPartition]));
 	string cacheDir(fmt("%s/%s_wii.db", m_listCacheDir.c_str(), DeviceName[currentPartition]));
 	bool updateCache = m_cfg.getBool(WII_DOMAIN, "update_cache");
+	if(updateCache || !fsop_FileExist(cacheDir.c_str()))
+		cacheCovers = true;
 	m_cacheList.CreateList(COVERFLOW_WII, currentPartition, gameDir, stringToVector(".wbfs|.iso", '|'), cacheDir, updateCache);
 	WBFS_Close();
 	m_cfg.remove(WII_DOMAIN, "update_cache");
@@ -2266,6 +2269,8 @@ bool CMenu::_loadGamecubeList()
 	string gameDir(fmt(gc_games_dir, DeviceName[currentPartition]));
 	string cacheDir(fmt("%s/%s_gamecube.db", m_listCacheDir.c_str(), DeviceName[currentPartition]));
 	bool updateCache = m_cfg.getBool(GC_DOMAIN, "update_cache");
+	if(updateCache || !fsop_FileExist(cacheDir.c_str()))
+		cacheCovers = true;
 	m_cacheList.CreateList(COVERFLOW_GAMECUBE, currentPartition, gameDir, stringToVector(".iso|.ciso|root", '|'), cacheDir, updateCache);
 	m_cfg.remove(GC_DOMAIN, "update_cache");
 	for(vector<dir_discHdr>::iterator tmp_itr = m_cacheList.begin(); tmp_itr != m_cacheList.end(); tmp_itr++)
@@ -2298,6 +2303,8 @@ bool CMenu::_loadChannelList(void)
 			currentPartition = emuPartition;
 			string cacheDir = fmt("%s/%s_channels.db", m_listCacheDir.c_str(), DeviceName[currentPartition]);
 			bool updateCache = m_cfg.getBool(CHANNEL_DOMAIN, "update_cache");
+			if(updateCache || !fsop_FileExist(cacheDir.c_str()))
+				cacheCovers = true;
 			m_cacheList.CreateList(COVERFLOW_CHANNEL, currentPartition, std::string(), NullVector, cacheDir, updateCache);
 			m_cfg.remove(CHANNEL_DOMAIN, "update_cache");
 			for(vector<dir_discHdr>::iterator tmp_itr = m_cacheList.begin(); tmp_itr != m_cacheList.end(); tmp_itr++)
@@ -2356,6 +2363,8 @@ bool CMenu::_loadPluginList()
 			}
 			string gameDir(fmt("%s:/%s", DeviceName[currentPartition], romDir));
 			string cacheDir(fmt("%s/%s_%s.db", m_listCacheDir.c_str(), DeviceName[currentPartition], m_plugin.PluginMagicWord));
+			if(updateCache || !fsop_FileExist(cacheDir.c_str()))
+				cacheCovers = true;
 			vector<string> FileTypes = stringToVector(m_plugin.GetFileTypes(i), '|');
 			m_cacheList.Color = m_plugin.GetCaseColor(i);
 			m_cacheList.Magic = Magic;

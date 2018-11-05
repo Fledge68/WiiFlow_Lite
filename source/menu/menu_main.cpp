@@ -146,6 +146,34 @@ void CMenu::_showCF(bool refreshList)
 			/* fail */
 			m_source_autoboot = false;
 		}
+		if(cacheCovers)
+		{
+			cacheCovers = false;
+			m_btnMgr.setProgress(m_wbfsPBar, 0.f, true);
+			m_btnMgr.setText(m_wbfsLblMessage, L"0%");
+			m_btnMgr.setText(m_wbfsLblDialog, L"");
+			m_btnMgr.show(m_wbfsPBar);
+			m_btnMgr.show(m_wbfsLblMessage);
+			m_btnMgr.show(m_wbfsLblDialog);
+		
+			_start_pThread();
+			_cacheCovers();
+			_stop_pThread();
+			m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg14", L"Done."));
+			u8 pause = 240;
+			while(!m_exit)
+			{
+				_mainLoopCommon();
+				pause--;
+				if(pause == 0)
+				{
+					m_btnMgr.hide(m_wbfsPBar);
+					m_btnMgr.hide(m_wbfsLblMessage);
+					m_btnMgr.hide(m_wbfsLblDialog);
+					break;
+				}
+			}
+		}
 	}
 	
 	/* setup categories and favorites for filtering the game list below */
