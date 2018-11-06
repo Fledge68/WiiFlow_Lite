@@ -248,21 +248,25 @@ bool CMenu::init()
 	fsop_MakeFolder(m_screenshotDir.c_str());
 	fsop_MakeFolder(m_helpDir.c_str());
 
-	/* Check to make sure wii games partition is ok */
-	u8 partition = m_cfg.getInt(WII_DOMAIN, "partition", 0);
-	if(partition > USB8 || !DeviceHandle.IsInserted(partition))//if not ok then find wbfs folder or wbfs partition
+	/* set default wii games partition in case this is the first boot */
+	int dp = -1;
+	for(int i = SD; i <= USB8; i++) // Find a wbfs folder or a partition of wbfs file system
 	{
-		m_cfg.remove(WII_DOMAIN, "partition");
-		for(int i = SD; i <= USB8; i++) // Find a usb partition with a wbfs folder or wbfs file system, else leave it blank (defaults to usb1 later)
+		if(DeviceHandle.IsInserted(i) && (DeviceHandle.GetFSType(i) == PART_FS_WBFS || stat(fmt(GAMES_DIR, DeviceName[i]), &dummy) == 0))
 		{
-			if(DeviceHandle.IsInserted(i) && (DeviceHandle.GetFSType(i) == PART_FS_WBFS || stat(fmt(GAMES_DIR, DeviceName[i]), &dummy) == 0))
-			{
-				gprintf("Setting Wii games partition to: %i\n", i);
-				m_cfg.setInt(WII_DOMAIN, "partition", i);
-				break;
-			}
+			dp = i;
+			break;
 		}
 	}
+	if(dp < 0)// not found 
+	{
+		if(DeviceHandle.IsInserted(SD))// set to sd if inserted otherwise USB1
+			dp = 0;
+		else
+			dp = 1;
+	}
+	u8 partition = m_cfg.getInt(WII_DOMAIN, "partition", dp);
+	gprintf("Setting Wii games partition to: %i\n", partition);
 	
 	/* Emu nands init even if not being used */
 	memset(emu_nands_dir, 0, 64);
