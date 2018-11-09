@@ -1249,16 +1249,17 @@ u8 *Nand::GetTMD(u64 title, u32 *size)
 
 void Nand::SetPaths(const char *emuPath, const char *currentPart)
 {
-	memset(&NandPath, 0, sizeof(NandPath));
-	for(u32 i = 0; emuPath[i] != '\0'; i++)
-		strncat(NandPath, &emuPath[i], 1);
+	/* emuPath should = /nands/nand_name */
 
-	/* Our WiiFlow handle Path */
-	memset(&FullNANDPath, 0, sizeof(FullNANDPath));
-	strcat(FullNANDPath, fmt("%s:%s", currentPart, NandPath));
-	gprintf("Emu NAND Full Path = %s\n", FullNANDPath);
-	/* For d2x IOS Path */
-	if(strlen(NandPath) == 0) strcat(NandPath, "/");
+	/* set wiiflow full nand path */
+	snprintf(FullNANDPath, sizeof(FullNANDPath), "%s:%s", currentPart, emuPath);
+	gprintf("Emu NAND Full Path = %s\n", FullNANDPath);	
+	
+	/* set IOS compatible NAND Path */
+	strncpy(NandPath, emuPath, sizeof(NandPath));
+	NandPath[sizeof(NandPath) - 1] = '\0';
+	if(strlen(NandPath) == 0)
+		strcat(NandPath, "/");
 	gprintf("IOS Compatible NAND Path = %s\n", NandPath);
 }
 

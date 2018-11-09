@@ -145,7 +145,7 @@ private:
 	string m_helpDir;
 
 	/* NandEmulation */
-	char emu_nands_dir[64];
+	char emu_nands_dir[32];
 	string m_saveExtGameId;
 	bool m_forceext;
 	bool m_emuSaveNand;

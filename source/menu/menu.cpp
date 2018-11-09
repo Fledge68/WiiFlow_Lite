@@ -269,8 +269,8 @@ bool CMenu::init()
 	gprintf("Setting Wii games partition to: %i\n", partition);
 	
 	/* Emu nands init even if not being used */
-	memset(emu_nands_dir, 0, 64);
-	strncpy(emu_nands_dir, IsOnWiiU() ? "vwiinands" : "nands", 64);
+	memset(emu_nands_dir, 0, sizeof(emu_nands_dir));
+	strncpy(emu_nands_dir, IsOnWiiU() ? "vwiinands" : "nands", sizeof(emu_nands_dir) - 1);
 	_checkEmuNandSettings();
 	
 	CoverFlow.init(m_base_font, m_base_font_size, m_vid.vid_50hz());

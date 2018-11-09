@@ -218,32 +218,17 @@ bool CMenu::_ExitTo(void)
 			}
 			else if(m_btnMgr.selected(m_homeBtnExitToNeek))
 			{
-				if(!Load_Neek2o_Kernel())
+				if(Load_Neek2o_Kernel() && _FindEmuPart(EMU_NAND, false) >= 0)// make sure neek2o and emunand exists
+				{
+					Sys_SetNeekPath(NandHandle.Get_NandPath());
+					exitHandler(EXIT_TO_SMNK2O);
+					break;
+				}
+				else
 				{
 					error(_fmt("errneek1", L"Cannot launch neek2o. Verify your neek2o setup"));
 					_showExitTo();
 				}
-				else
-				{
-#ifdef APP_WIIFLOW
-					if(m_cfg.getBool("NEEK2O", "launchwiiflow", true))
-						exitHandler(EXIT_TO_WFNK2O);
-					else
-#endif
-						exitHandler(EXIT_TO_SMNK2O);
-					/* if exiting to Neek2o we must set the EmuNand Path for sys_exit() in sys.c */
-					const char *EmuNandPath = NULL;
-					/* but only if we are not already in neek2o mode */
-					if(_FindEmuPart(EMU_NAND, false) >= 0)// make sure emunand exists
-						EmuNandPath = NandHandle.Get_NandPath();
-					else
-					{
-						error(_fmt("errneek1", L"Cannot launch neek2o. Verify your neek2o setup"));
-						_showExitTo();
-					}
-					Sys_SetNeekPath(EmuNandPath);
-				}
-				break;
 			}
 		}
 		else if(BTN_HOME_PRESSED)

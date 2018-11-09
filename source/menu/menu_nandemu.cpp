@@ -239,16 +239,17 @@ void CMenu::_FullNandCheck(void)
 int CMenu::_FindEmuPart(bool savesnand, bool skipchecks)
 {
 	int emuPart;
-	char tmpPath[MAX_FAT_PATH];
+	char tmpPath[32];
+	tmpPath[31] = '\0';
 	if(savesnand)
 	{
 		emuPart = m_cfg.getInt(WII_DOMAIN, "savepartition");
-		snprintf(tmpPath, sizeof(tmpPath), "/%s/%s",  emu_nands_dir, m_cfg.getString(WII_DOMAIN, "current_save_emunand").c_str());
+		strncpy(tmpPath, fmt("/%s/%s",  emu_nands_dir, m_cfg.getString(WII_DOMAIN, "current_save_emunand").c_str()), sizeof(tmpPath));
 	}
 	else
 	{
 		emuPart = m_cfg.getInt(CHANNEL_DOMAIN, "partition");
-		snprintf(tmpPath, sizeof(tmpPath), "/%s/%s",  emu_nands_dir, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand").c_str());
+		strncpy(tmpPath, fmt("/%s/%s",  emu_nands_dir, m_cfg.getString(WII_DOMAIN, "current_emunand").c_str()), sizeof(tmpPath));
 	}
 	if(!DeviceHandle.PartitionUsableForNandEmu(emuPart))//check if device is mounted and partition is FAT
 		return -1;
