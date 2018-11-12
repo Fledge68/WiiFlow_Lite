@@ -123,10 +123,10 @@ public:
 	void stopSound(void);
 	// 
 	void applySettings(void);
-	void setCachePath(const char *path, bool deleteSource, bool compress, bool pluginCacheFolders);
+	void setCachePath(const char *path, bool pluginCacheFolders);
 	bool fullCoverCached(const char *wfcPath);
-	bool preCacheCover(const char *id, const u8 *png, bool full);
-	bool cacheCover(const char *wfcPath, const char *coverPath, bool full);
+	bool cacheCoverBuffer(const char *wfcPath, const u8 *png, bool full);
+	bool cacheCoverFile(const char *wfcPath, const char *coverPath, bool full);
 	// 
 	const char *getId(void) const;
 	const char *getNextId(void) const;

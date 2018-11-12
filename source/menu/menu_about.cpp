@@ -1,7 +1,6 @@
 
 #include "menu.hpp"
 #include "loader/cios.h"
-#include "const_str.hpp"
 
 extern const u8 english_txt[];
 static const wstringEx ENGLISH_TXT_W((const char*)english_txt);
@@ -146,7 +145,7 @@ void CMenu::_textAbout(void)
 		return; 
 	}
 	// show credits and current cIOS
-	m_btnMgr.setText(m_aboutLblTitle, VERSION_STRING);
+	m_btnMgr.setText(m_aboutLblTitle, wfmt(L"%s %s", APP_NAME, APP_VERSION));
 
 	wstringEx developers(wfmt(_fmt("about6", L"Current Developers:\n%s"), DEVELOPERS));
 	wstringEx pDevelopers(wfmt(_fmt("about7", L"Past Developers:\n%s"), PAST_DEVELOPERS));

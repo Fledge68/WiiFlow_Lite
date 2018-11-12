@@ -27,7 +27,6 @@
 #include <cstring>
 #include "GameTDB.hpp"
 #include "video.hpp"
-#include "defines.h"
 #include "text.hpp"
 #include "config/config.hpp"
 #include "gecko/gecko.hpp"

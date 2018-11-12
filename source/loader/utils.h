@@ -3,7 +3,6 @@
 #define _UTILS_H_
 
 #include <gctypes.h>
-#include "defines.h"
 
 #define KB_SIZE				1024.0
 #define MB_SIZE				1048576.0

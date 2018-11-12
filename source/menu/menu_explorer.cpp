@@ -19,7 +19,6 @@
 #include <algorithm>
 #include "menu.hpp"
 #include "channel/nand.hpp"
-#include "defines.h"
 
 TexData m_explorerBg;
 s16 entries[7];
@@ -213,7 +212,7 @@ void CMenu::_Explorer(void)
 					else
 					{
 						memset(file, 0, MAX_FAT_PATH);
-						strncpy(file, fmt("%s%s", dir, elements[start_pos+(i-1)].name), MAX_FAT_PATH);
+						strncpy(file, fmt("%s%s", dir, elements[start_pos+(i-1)].name), MAX_FAT_PATH - 1);
 						if(strcasestr(file, ".mp3") != NULL || strcasestr(file, ".ogg") != NULL)
 							MusicPlayer.LoadFile(file, false);
 						else if(strcasestr(file, ".iso") != NULL || strcasestr(file, ".wbfs") != NULL)

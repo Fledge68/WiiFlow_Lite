@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <sys/stat.h>
 #include "menu.hpp"
-#include "defines.h"
 #include "lockMutex.hpp"
 #include "channel/nand.hpp"
 #include "loader/cios.h"
@@ -244,12 +243,12 @@ int CMenu::_FindEmuPart(bool savesnand, bool skipchecks)
 	if(savesnand)
 	{
 		emuPart = m_cfg.getInt(WII_DOMAIN, "savepartition");
-		strncpy(tmpPath, fmt("/%s/%s",  emu_nands_dir, m_cfg.getString(WII_DOMAIN, "current_save_emunand").c_str()), sizeof(tmpPath));
+		strncpy(tmpPath, fmt("/%s/%s",  emu_nands_dir, m_cfg.getString(WII_DOMAIN, "current_save_emunand").c_str()), sizeof(tmpPath) - 1);
 	}
 	else
 	{
 		emuPart = m_cfg.getInt(CHANNEL_DOMAIN, "partition");
-		strncpy(tmpPath, fmt("/%s/%s",  emu_nands_dir, m_cfg.getString(WII_DOMAIN, "current_emunand").c_str()), sizeof(tmpPath));
+		strncpy(tmpPath, fmt("/%s/%s",  emu_nands_dir, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand").c_str()), sizeof(tmpPath) - 1);
 	}
 	if(!DeviceHandle.PartitionUsableForNandEmu(emuPart))//check if device is mounted and partition is FAT
 		return -1;

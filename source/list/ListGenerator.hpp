@@ -21,6 +21,7 @@
 #include <vector>
 #include <stdio.h>
 
+#include "defines.h"
 #include "types.h"
 #include "config/config.hpp"
 #include "loader/wbfs.h"

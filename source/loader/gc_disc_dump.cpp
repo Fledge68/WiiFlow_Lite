@@ -40,7 +40,7 @@
 #include "gui/text.hpp"
 #include "memory/mem2.hpp"
 #include "menu/menu.hpp"
-#include "defines.h"
+
 using namespace std;
 
 static u8 *FSTable ATTRIBUTE_ALIGN(32);

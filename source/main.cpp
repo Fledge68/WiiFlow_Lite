@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
-#include "const_str.hpp"
+#include "defines.h"
 #include "booter/external_booter.hpp"
 #include "channel/nand.hpp"
 #include "channel/nand_save.hpp"
@@ -85,7 +85,7 @@ int main(int argc, char **argv)
 	mainIOS = DOL_MAIN_IOS;// 249
 	__exception_setreload(10);
 	Gecko_Init(); //USB Gecko and SD/WiFi buffer
-	gprintf(" \nWelcome to %s!\nThis is the debug output.\n", VERSION_STRING.c_str());
+	gprintf(" \nWelcome to %s %s!\nThis is the debug output.\n", APP_NAME, APP_VERSION);
 
 	bool iosOK = true;
 	char *gameid = NULL;
@@ -106,7 +106,7 @@ int main(int argc, char **argv)
 		else if(strcasestr(argv[i], "waitdir=") != NULL)
 		{
 			char *ptr = strcasestr(argv[i], "waitdir=");
-			strncpy(wait_dir, ptr+strlen("waitdir="), sizeof(wait_dir));
+			strncpy(wait_dir, ptr+strlen("waitdir="), sizeof(wait_dir) - 1);
 		}
 		else if(strcasestr(argv[i], "Waitloop") != NULL)
 			wait_loop = true;

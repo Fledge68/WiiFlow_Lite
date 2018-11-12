@@ -175,7 +175,7 @@ bool CMenu::init()
 	
 	/* Our Wii games dir */
 	memset(wii_games_dir, 0, 64);
-	strncpy(wii_games_dir, m_cfg.getString(WII_DOMAIN, "wii_games_dir", GAMES_DIR).c_str(), 64);
+	strncpy(wii_games_dir, m_cfg.getString(WII_DOMAIN, "wii_games_dir", GAMES_DIR).c_str(), 63);
 	if(strncmp(wii_games_dir, "%s:/", 4) != 0)
 		strcpy(wii_games_dir, GAMES_DIR);
 	gprintf("Wii Games Directory: %s\n", wii_games_dir);
@@ -184,7 +184,7 @@ bool CMenu::init()
 	m_devo_installed = DEVO_Installed(m_dataDir.c_str());
 	m_nintendont_installed = Nintendont_Installed();
 	memset(gc_games_dir, 0, 64);
-	strncpy(gc_games_dir, m_cfg.getString(GC_DOMAIN, "gc_games_dir", DF_GC_GAMES_DIR).c_str(), 64);
+	strncpy(gc_games_dir, m_cfg.getString(GC_DOMAIN, "gc_games_dir", DF_GC_GAMES_DIR).c_str(), 63);
 	if(strncmp(gc_games_dir, "%s:/", 4) != 0)
 		strcpy(gc_games_dir, DF_GC_GAMES_DIR);
 	gprintf("GameCube Games Directory: %s\n", gc_games_dir);
@@ -380,10 +380,10 @@ bool CMenu::init()
 	
 	/* Switch the WFLA and DWFA when using official wiiflow */
 #ifdef APP_WIIFLOW
-	if(m_cfg.getString("GENERAL", "returnto", "DWFA") == "WFLA")
+	if(m_cfg.getString("GENERAL", "returnto") == "WFLA")
 		m_cfg.setString("GENERAL", "returnto", "DWFA");
 #else
-	if(m_cfg.getString("GENERAL", "returnto", "WFLA") == "DWFA")
+	if(m_cfg.getString("GENERAL", "returnto") == "DWFA")
 		m_cfg.setString("GENERAL", "returnto", "WFLA");
 #endif
 
@@ -592,8 +592,7 @@ void CMenu::_loadCFCfg()
 	const char *domain = "_COVERFLOW";
 
 	//gprintf("Preparing to load sounds from %s\n", m_themeDataDir.c_str());
-	CoverFlow.setCachePath(m_cacheDir.c_str(), !m_cfg.getBool("GENERAL", "keep_png", true),
-		m_cfg.getBool("GENERAL", "compress_cache", false), m_cfg.getBool(PLUGIN_DOMAIN, "subfolder_cache", true));
+	CoverFlow.setCachePath(m_cacheDir.c_str(), m_cfg.getBool(PLUGIN_DOMAIN, "subfolder_cache", true));
 	CoverFlow.setBufferSize(m_cfg.getInt("GENERAL", "cover_buffer", 20));
 	// Coverflow Sounds
 	CoverFlow.setSounds(
@@ -2162,7 +2161,6 @@ void CMenu::_initCF(void)
 			CoverFlow.setBoxMode(m_cfg.getBool("GENERAL", "box_mode", true));
 		CoverFlow.setSmallBoxMode(false);
 	}
-	CoverFlow.setCompression(m_cfg.getBool("GENERAL", "allow_texture_compression", true));
 	CoverFlow.setBufferSize(m_cfg.getInt("GENERAL", "cover_buffer", 20));
 	CoverFlow.setHQcover(m_cfg.getBool("GENERAL", "cover_use_hq", true));
 	CoverFlow.start(m_imgsDir);

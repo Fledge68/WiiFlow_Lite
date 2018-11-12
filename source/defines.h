@@ -1,5 +1,5 @@
 
-#include "loader/sys.h"
+//#define APP_WIIFLOW
 
 #define APP_NAME				"WiiFlow Lite"
 #define APP_VERSION				"5.0.0"

@@ -18,7 +18,7 @@
 #include "channel/nand.hpp"
 #include "loader/cios.h"
 #include "loader/nk.h"
-#include "const_str.hpp"
+#include "wstringEx/wstringEx.hpp"
 
 /* home menu */
 s16 m_homeLblTitle;
@@ -46,6 +46,7 @@ s16 m_homeBtnExitToBootmii;
 s16 m_homeBtnExitToNeek;
 
 TexData m_homeBg;
+static const wstringEx PLAYER_BATTERY_LABEL("P1 %003.f%% | P2 %003.f%% | P3 %003.f%% | P4 %003.f%%");
 
 bool CMenu::_Home(void)
 {
@@ -379,7 +380,7 @@ void CMenu::_initHomeAndExitToMenu()
 
 void CMenu::_textHome(void)
 {
-	m_btnMgr.setText(m_homeLblTitle, VERSION_STRING);
+	m_btnMgr.setText(m_homeLblTitle, wfmt(L"%s %s", APP_NAME, APP_VERSION));
 	m_btnMgr.setText(m_homeBtnSettings, _t("about10", L"Help Guide"));
 	m_btnMgr.setText(m_homeBtnReloadCache, _t("home2", L"Reload Cache"));
 	m_btnMgr.setText(m_homeBtnUpdate, _t("home11", L"Cache Covers"));
@@ -463,7 +464,7 @@ int CMenu::_cacheCovers()
 				fsop_MakeFolder(cachePath);
 		
 			/* create cover texture */
-			CoverFlow.cacheCover(wfcPath, coverPath, fullCover);
+			CoverFlow.cacheCoverFile(wfcPath, coverPath, fullCover);
 		}
 		
 		// cache wii and channel banners

@@ -2,7 +2,6 @@
 #define WIIDISC_H
 #include <stdio.h>
 #include "libwbfs_os.h" // this file is provided by the project wanting to compile libwbfs and wiidisc
-#include "defines.h"
 
 #ifdef __cplusplus
 extern "C"

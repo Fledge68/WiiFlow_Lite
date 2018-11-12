@@ -878,8 +878,6 @@ int CMenu::_coverDownloader(bool download_all)
 		c_gameTDB.SetLanguageCode(m_curLanguage.c_str());
 	}
 	
-	//bool savePNG = m_cfg.getBool("GENERAL", "keep_png", true);
-
 	vector<string> fmtURLBox = stringToVector(m_cfg.getString("GENERAL", "url_full_covers", FMT_BPIC_URL), '|');
 	vector<string> fmtURLFlat = stringToVector(m_cfg.getString("GENERAL", "url_flat_covers", FMT_PIC_URL), '|');
 	vector<string> fmtURLCBox = stringToVector(m_cfg.getString("GENERAL", "url_custom_full_covers", FMT_CBPIC_URL), '|');
@@ -1107,7 +1105,7 @@ int CMenu::_coverDownloader(bool download_all)
 									update_pThread(1);
 									m_thrdMessage = wfmt(_fmt("dlmsg10", L"Making %s.wfc"), coverID.c_str());
 									m_thrdMessageAdded = true;
-									CoverFlow.preCacheCover(coverID.c_str(), download.data, true);//it may fail
+									CoverFlow.cacheCoverBuffer(fmt("%s/%s.wfc", m_cacheDir.c_str(), coverID.c_str()), download.data, true);//it may fail
 									
 									++count;
 									update_pThread(1);
@@ -1249,7 +1247,7 @@ int CMenu::_coverDownloader(bool download_all)
 									update_pThread(1);
 									m_thrdMessage = wfmt(_fmt("dlmsg10", L"Making %s.wfc"), coverID.c_str());
 									m_thrdMessageAdded = true;
-									CoverFlow.preCacheCover(coverID.c_str(), download.data, true);//it may fail
+									CoverFlow.cacheCoverBuffer(fmt("%s/%s.wfc", m_cacheDir.c_str(), coverID.c_str()), download.data, true);//it may fail
 									
 									update_pThread(1);
 									++count;
@@ -1384,7 +1382,7 @@ int CMenu::_coverDownloader(bool download_all)
 									update_pThread(1);
 									m_thrdMessage = wfmt(_fmt("dlmsg10", L"Making %s"), sfmt("%s.wfc", coverID.c_str()));
 									m_thrdMessageAdded = true;
-									CoverFlow.preCacheCover(coverID.c_str(), download.data, false);//it may fail
+									CoverFlow.cacheCoverBuffer(fmt("%s/%s.wfc", m_cacheDir.c_str(), coverID.c_str()), download.data, false);//it may fail
 									
 									++countFlat;
 									update_pThread(1);
@@ -1523,7 +1521,7 @@ int CMenu::_coverDownloader(bool download_all)
 									update_pThread(1);
 									m_thrdMessage = wfmt(_fmt("dlmsg10", L"Making %s"), sfmt("%s.wfc", coverID.c_str()));
 									m_thrdMessageAdded = true;
-									CoverFlow.preCacheCover(coverID.c_str(), download.data, false);//it may fail
+									CoverFlow.cacheCoverBuffer(fmt("%s/%s.wfc", m_cacheDir.c_str(), coverID.c_str()), download.data, false);//it may fail
 									
 									++countFlat;
 									update_pThread(1);
