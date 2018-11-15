@@ -292,8 +292,8 @@ void CVideo::shiftViewPort(float x, float y)
 
 void CVideo::set2DViewport(u32 w, u32 h, int x, int y)
 {
-	m_width2D = std::min(std::max(512ul, w), 800ul);
-	m_height2D = std::min(std::max(384ul, h), 600ul);
+	m_width2D = std::min(std::max(512u, w), 800u);
+	m_height2D = std::min(std::max(384u, h), 600u);
 	m_x2D = std::min(std::max(-50, x), 50);
 	m_y2D = std::min(std::max(-50, y), 50);
 }

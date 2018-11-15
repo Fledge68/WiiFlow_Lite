@@ -185,7 +185,7 @@ private:
 			u32 tevregid		: 2;
 			u32 clamp			: 1;
 
-		} ATTRIBUTE_PACKED color_in, ATTRIBUTE_PACKED alpha_in;
+		} ATTRIBUTE_PACKED color_in, alpha_in;
 
 		struct
 		{

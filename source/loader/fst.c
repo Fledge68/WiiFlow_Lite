@@ -160,7 +160,7 @@ int app_gameconfig_load(const char *discid, u8 *tempgameconf, u32 tempgameconfsi
 					}
 					if (strncasecmp("poke", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 4)
 					{
-						ret = sscanf((char *) tempgameconf + i, "( %lx , %lx", &codeaddr, &codeval);
+						ret = sscanf((char *) tempgameconf + i, "( %x , %x", &codeaddr, &codeval);
 						if (ret == 2)
 						{
 							*(gameconf + (gameconfsize / 4)) = 0;
@@ -176,7 +176,7 @@ int app_gameconfig_load(const char *discid, u8 *tempgameconf, u32 tempgameconfsi
 					}
 					if (strncasecmp("pokeifequal", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 11)
 					{
-						ret = sscanf((char *) (tempgameconf + i), "( %lx , %lx , %lx , %lx", &codeaddr, &codeval,
+						ret = sscanf((char *) (tempgameconf + i), "( %x , %x , %x , %x", &codeaddr, &codeval,
 								&codeaddr2, &codeval2);
 						if (ret == 4)
 						{
@@ -196,7 +196,7 @@ int app_gameconfig_load(const char *discid, u8 *tempgameconf, u32 tempgameconfsi
 					if (strncasecmp("searchandpoke", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer)
 							== 13)
 					{
-						ret = sscanf((char *) (tempgameconf + i), "( %lx%ln", &codeval, &tempoffset);
+						ret = sscanf((char *) (tempgameconf + i), "( %x%n", &codeval, &tempoffset);
 						if (ret == 1)
 						{
 							gameconfsize += 4;
@@ -207,10 +207,10 @@ int app_gameconfig_load(const char *discid, u8 *tempgameconf, u32 tempgameconfsi
 								gameconfsize += 4;
 								temp++;
 								i += tempoffset;
-								ret = sscanf((char *) (tempgameconf + i), " %lx%ln", &codeval, &tempoffset);
+								ret = sscanf((char *) (tempgameconf + i), " %x%n", &codeval, &tempoffset);
 							}
 							*(gameconf + (gameconfsize / 4) - temp - 1) = temp;
-							ret = sscanf((char *) (tempgameconf + i), " , %lx , %lx , %lx , %lx", &codeaddr, &codeaddr2,
+							ret = sscanf((char *) (tempgameconf + i), " , %x , %x , %x , %x", &codeaddr, &codeaddr2,
 									&codeoffset, &codeval2);
 							if (ret == 4)
 							{

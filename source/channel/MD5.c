@@ -175,7 +175,7 @@ static const uint32_t T[4][16] =
  * Static Functions:
  */
 
-static void Permute( uint32_t ABCD[4], const unsigned char block[64] )
+static void Permute( unsigned long int ABCD[4], const unsigned char block[64] )
   /* ------------------------------------------------------------------------ **
    * Permute the ABCD "registers" using the 64-byte <block> as a driver.
    *
