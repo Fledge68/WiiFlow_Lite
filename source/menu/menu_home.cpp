@@ -53,7 +53,6 @@ bool CMenu::_Home(void)
 	SetupInput();
 	_showHome();
 
-	string prevTheme = m_cfg.getString("GENERAL", "theme", "default");
 	while(!m_exit)
 	{
 		/* battery gets refreshed in here... */
@@ -67,7 +66,7 @@ bool CMenu::_Home(void)
 			m_btnMgr.down();
 		else if(BTN_1_PRESSED)
 		{
-			m_theme.load(fmt("%s.ini", m_themeDataDir.c_str()));
+			//m_theme.load(fmt("%s.ini", m_themeDataDir.c_str()));
 			m_theme.save();
 			_hideHome();
 			error(_t("savedtheme", L"Theme config saved!"));

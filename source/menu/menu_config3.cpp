@@ -65,7 +65,7 @@ void CMenu::_showConfig3(void)
 	i = min(max(0, m_cfg.getInt("GENERAL", "game_language", 0)), (int)ARRAY_SIZE(CMenu::_languages) - 1);
 	m_btnMgr.setText(m_config3LblLanguage, _t(CMenu::_languages[i].id, CMenu::_languages[i].text));
 	
-	i = m_cfg.getInt(CHANNEL_DOMAIN, "channels_type") - 1;
+	i = m_cfg.getInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_REAL) - 1;
 	m_btnMgr.setText(m_config3LblChannelsTypeVal, _t(CMenu::_ChannelsType[i].id, CMenu::_ChannelsType[i].text));
 }
 

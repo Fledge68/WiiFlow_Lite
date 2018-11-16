@@ -131,6 +131,8 @@ void Sys_Exit(void)
 
 void __Sys_ResetCallback(u32 irq, void *ctx)
 {
+	(void)irq;// to remove unused parameter warning
+	(void)ctx;
 	reset = true;
 }
 

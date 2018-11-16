@@ -2168,9 +2168,22 @@ void CMenu::_initCF(void)
 	if(!CoverFlow.empty())
 	{
 		bool path = false;
-		if((m_source_cnt > 1 && m_cfg.getInt(_domainFromView(), "current_item_type", 1) == TYPE_PLUGIN) ||
-				m_sourceflow || m_current_view == COVERFLOW_HOMEBREW || m_current_view == COVERFLOW_PLUGIN)
+		if((m_source_cnt > 1 && m_cfg.getInt("MULTI", "current_item_type", 1) == TYPE_PLUGIN) || m_sourceflow || m_current_view == COVERFLOW_HOMEBREW)
 			path = true;
+		if(m_current_view == COVERFLOW_PLUGIN && !m_sourceflow && m_source_cnt == 1)
+		{
+			switch(m_cfg.getInt(PLUGIN_DOMAIN, "current_item_type", TYPE_PLUGIN))
+			{
+				case TYPE_CHANNEL:
+				case TYPE_EMUCHANNEL:
+				case TYPE_GC_GAME:
+				case TYPE_WII_GAME:
+					path = false;
+					break;
+				default:
+					path = true;
+			}
+		}
 		if(!CoverFlow.findId(m_cfg.getString(_domainFromView(), "current_item").c_str(), true, path))
 			CoverFlow.defaultLoad();
 		CoverFlow.startCoverLoader();

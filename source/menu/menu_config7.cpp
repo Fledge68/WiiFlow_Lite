@@ -100,9 +100,9 @@ void CMenu::_showConfig7(int curPage)
 		m_btnMgr.setText(m_config7Lbl1, _t("cfg705", L"Show banner in game settings"));
 		m_btnMgr.setText(m_config7Btn1, m_cfg.getBool("GENERAL", "banner_in_settings") ? _t("yes", L"Yes") : _t("no", L"No"));
 		m_btnMgr.setText(m_config7Lbl2, _t("cfg706", L"Enable fanart"));
-		m_btnMgr.setText(m_config7Btn1, m_cfg.getBool("FANART", "enable_fanart") ? _t("yes", L"Yes") : _t("no", L"No"));
+		m_btnMgr.setText(m_config7Btn2, m_cfg.getBool("FANART", "enable_fanart") ? _t("yes", L"Yes") : _t("no", L"No"));
 		m_btnMgr.setText(m_config7Lbl3, _t("cfg707", L"Fanart default loop"));
-		m_btnMgr.setText(m_config7Btn1, !m_cfg.getBool("FANART", "show_cover_after_animation") ? _t("yes", L"Yes") : _t("no", L"No"));
+		m_btnMgr.setText(m_config7Btn3, !m_cfg.getBool("FANART", "show_cover_after_animation") ? _t("yes", L"Yes") : _t("no", L"No"));
 		m_btnMgr.setText(m_config7Lbl4, _t("cfg708", L"Fanart default ending delay"));
 		m_btnMgr.setText(m_config7Lbl4Val, wfmt(L"%i", m_cfg.getInt("FANART", "delay_after_animation", 200)));
 	}
@@ -220,7 +220,7 @@ int CMenu::_config7(int curPage)
 				else if(m_btnMgr.selected(m_config7Btn3))
 				{
 					m_cfg.setBool("GENERAL", "screensaver_disabled", !m_cfg.getBool("GENERAL", "screensaver_disabled"));
-					m_btnMgr.setText(m_config7Btn3, m_cfg.getBool("GENERAL", "screensaver_disabled") ?  _t("on", L"On") : _t("off", L"Off"));
+					m_btnMgr.setText(m_config7Btn3, !m_cfg.getBool("GENERAL", "screensaver_disabled") ?  _t("on", L"On") : _t("off", L"Off"));
 				}
 				else if(m_btnMgr.selected(m_config7Btn4P) || m_btnMgr.selected(m_config7Btn4M))
 				{

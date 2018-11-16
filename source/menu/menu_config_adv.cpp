@@ -92,7 +92,7 @@ static void listThemes(const char * path, vector<string> &themes)
 		closedir(d);
 	}
 	if (!def)
-		themes.push_back("DEFAULT");
+		themes.push_back("default");
 	sort(themes.begin(), themes.end());
 }
 
