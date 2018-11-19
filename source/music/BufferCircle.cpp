@@ -62,6 +62,7 @@ void BufferCircle::SetBufferBlockSize(int size)
 
 void BufferCircle::Resize(int size)
 {
+	// this while() only gets done if new size is smaller than old size
 	while(size < Size())
 		RemoveBuffer(Size()-1);
 
@@ -71,6 +72,7 @@ void BufferCircle::Resize(int size)
 	BufferSize.resize(size);
 	BufferReady.resize(size);
 
+	// this for() only gets done if new size is bigger than old size
 	for(int i = oldSize; i < Size(); i++)
 	{
 		if(BufferBlockSize > 0)

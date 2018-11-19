@@ -1603,12 +1603,13 @@ void CMenu::_addUserLabels(s16 *ids, u32 start, u32 size, const char *domain)
 	}
 }
 
+bool musicPaused = false;
 void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 {
-	/*if(m_thrdWorking)
+	if(m_thrdWorking)
 	{
-		if(!MusicPlayer.IsStopped())
-			MusicPlayer.Stop();
+		musicPaused = true;
+		MusicPlayer.Pause();
 		m_btnMgr.tick();
 		m_vid.prepare();
 		m_vid.setup2DProjection(false, true);
@@ -1618,7 +1619,12 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 		m_btnMgr.draw();
 		m_vid.render();
 		return;
-	}*/
+	}
+	if(musicPaused && !m_thrdWorking)
+	{
+		musicPaused = false;
+		MusicPlayer.Resume();
+	}
 	
 	/* ticks - for moving and scaling covers and gui buttons and text */
 	if(withCF)
@@ -2389,16 +2395,32 @@ bool CMenu::_loadPluginList()
 		}
 	}
 	if(addHomebrew)
+	{
+		if(updateCache)
+			m_cfg.setBool(HOMEBREW_DOMAIN, "update_cache", true);
 		_loadHomebrewList();
+	}
 		
 	if(addGamecube)
+	{
+		if(updateCache)
+			m_cfg.setBool(GC_DOMAIN, "update_cache", true);
 		_loadGamecubeList();
+	}
 
 	if(addWii)
+	{
+		if(updateCache)
+			m_cfg.setBool(WII_DOMAIN, "update_cache", true);
 		_loadWiiList();
+	}
 
 	if(addChannel)
+	{
+		if(updateCache)
+			m_cfg.setBool(CHANNEL_DOMAIN, "update_cache", true);
 		_loadChannelList();
+	}
 		
 	m_cfg.remove(PLUGIN_DOMAIN, "update_cache");
 	return true;

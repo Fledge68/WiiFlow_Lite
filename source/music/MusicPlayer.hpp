@@ -41,6 +41,8 @@ public:
 	void Previous();
 	void Next();
 	void Stop();
+	void Pause();
+	void Resume();
 
 	bool IsStopped() { return MusicStopped; };
 

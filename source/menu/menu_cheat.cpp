@@ -30,8 +30,12 @@ int CMenu::_downloadCheatFileAsync()
 	{
 		update_pThread(1);//its downloaded
 		fsop_WriteFile(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id), cheatfile.data, cheatfile.size);
+		if(cheatfile.data != NULL)
+			free(cheatfile.data);
 		return 0;
 	}
+	if(cheatfile.data != NULL)
+		free(cheatfile.data);
 	return -3;// download failed
 }
 

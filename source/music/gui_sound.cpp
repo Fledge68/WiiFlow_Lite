@@ -48,7 +48,7 @@ static bool VoiceUsed[MAX_SND_VOICES] =
 
 static inline int GetFirstUnusedVoice()
 {
-	for(u8 i = 0; i < MAX_SND_VOICES; i++)
+	for(u8 i = 2; i < MAX_SND_VOICES; i++)// voice 0 is bg music, voice 1 is gamesound
 	{
 		if(VoiceUsed[i] == false)
 			return i;

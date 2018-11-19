@@ -176,10 +176,22 @@ void Musicplayer::Stop()
 {
 	if(!MusicFile.IsPlaying())
 		return;
-	MusicFile.Pause();// why not Stop()
+	MusicFile.Pause();// pause for now
 	CurrentPosition = SoundHandle.Decoder(MusicFile.GetVoice())->Tell();
-	MusicFile.FreeMemory();
+	MusicFile.FreeMemory();// does MusicFile.Stop() then frees mem
 	MusicStopped = true;
+}
+
+void Musicplayer::Pause()
+{
+	if(!MusicFile.IsPlaying())
+		return;
+	MusicFile.Pause();
+}
+
+void Musicplayer::Resume()
+{
+	MusicFile.Resume();
 }
 
 void Musicplayer::Tick(bool attenuate)// attenuate means fade to zero volume

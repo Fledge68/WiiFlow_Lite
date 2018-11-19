@@ -38,9 +38,12 @@ public:
 	//!Copy Constructor
 	GuiSound(GuiSound *g);
 	//!Constructor
+	//!\param file path
+	//!\param voice number - if blank defaults to first unused voice 2-15
+	GuiSound(const char *path, int voice = -1);
+	//!Constructor
 	//!\param sound Pointer to the sound data
 	//!\param filesize Length of sound data
-	GuiSound(const char *path, int voice = -1);
 	GuiSound(const u8 * snd, u32 len, const char *name, bool allocated = false, int voice = -1);
 	//!Stops sound and frees all memory/closes files
 	void FreeMemory();

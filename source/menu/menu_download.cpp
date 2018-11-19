@@ -221,6 +221,8 @@ void CMenu::_showDownload(void)
 			m_btnMgr.show(m_downloadLblUser[i]);	
 }
 
+int count, countFlat;
+u32 n;
 void CMenu::_download(string gameId)
 {
 	m_coverDLGameId = gameId;
@@ -283,14 +285,23 @@ void CMenu::_download(string gameId)
 				_start_pThread();
 				int ret = _coverDownloader(dlAll);
 				_stop_pThread();
+				if(countFlat == 0)
+				{
+					m_thrdMessage = wfmt(_fmt("dlmsg5", L"%i/%i files downloaded."), count, n);
+					m_btnMgr.setText(m_wbfsLblDialog, m_thrdMessage);
+				}
+				else
+				{
+					m_thrdMessage = wfmt(_fmt("dlmsg9", L"%i/%i files downloaded. %i are front covers only."), count + countFlat, n, countFlat);
+					m_btnMgr.setText(m_wbfsLblDialog, m_thrdMessage);
+				}
+				
 				if(ret == -1)
 					m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg27", L"Not enough memory!"));
 				else if(ret == -2)
 					m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg2", L"Network initialization failed!"));
 				else if(ret == -3)
 					m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg30", L"No covers missing."));
-				else
-					m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg14", L"Done."));
 				dl_finished = true;
 				gameId.clear();
 				//maybe show back button
@@ -869,7 +880,8 @@ void CMenu::_downloadProgress(void *obj, int size, int position)
 
 int CMenu::_coverDownloader(bool download_all)
 {
-	int count = 0, countFlat = 0;
+	count = 0;
+	countFlat = 0;
 
 	GameTDB c_gameTDB;
 	if(m_settingsDir.size() > 0)
@@ -916,7 +928,7 @@ int CMenu::_coverDownloader(bool download_all)
 	else
 		coverIDList.push_back(m_coverDLGameId);
 
-	u32 n = coverIDList.size();
+	n = coverIDList.size();
 	m_thrdTotal = n * 3;// 3 = download cover, save png, and make wfc
 
 	if(m_thrdTotal == 0)
@@ -1106,7 +1118,9 @@ int CMenu::_coverDownloader(bool download_all)
 									m_thrdMessage = wfmt(_fmt("dlmsg10", L"Making %s.wfc"), coverID.c_str());
 									m_thrdMessageAdded = true;
 									CoverFlow.cacheCoverBuffer(fmt("%s/%s.wfc", m_cacheDir.c_str(), coverID.c_str()), download.data, true);//it may fail
-									
+									if(download.data != NULL)
+										free(download.data);
+
 									++count;
 									update_pThread(1);
 									success = true;
@@ -1248,6 +1262,8 @@ int CMenu::_coverDownloader(bool download_all)
 									m_thrdMessage = wfmt(_fmt("dlmsg10", L"Making %s.wfc"), coverID.c_str());
 									m_thrdMessageAdded = true;
 									CoverFlow.cacheCoverBuffer(fmt("%s/%s.wfc", m_cacheDir.c_str(), coverID.c_str()), download.data, true);//it may fail
+									if(download.data != NULL)
+										free(download.data);
 									
 									update_pThread(1);
 									++count;
@@ -1383,7 +1399,9 @@ int CMenu::_coverDownloader(bool download_all)
 									m_thrdMessage = wfmt(_fmt("dlmsg10", L"Making %s"), sfmt("%s.wfc", coverID.c_str()));
 									m_thrdMessageAdded = true;
 									CoverFlow.cacheCoverBuffer(fmt("%s/%s.wfc", m_cacheDir.c_str(), coverID.c_str()), download.data, false);//it may fail
-									
+									if(download.data != NULL)
+										free(download.data);
+
 									++countFlat;
 									update_pThread(1);
 									success = true;
@@ -1522,7 +1540,9 @@ int CMenu::_coverDownloader(bool download_all)
 									m_thrdMessage = wfmt(_fmt("dlmsg10", L"Making %s"), sfmt("%s.wfc", coverID.c_str()));
 									m_thrdMessageAdded = true;
 									CoverFlow.cacheCoverBuffer(fmt("%s/%s.wfc", m_cacheDir.c_str(), coverID.c_str()), download.data, false);//it may fail
-									
+									if(download.data != NULL)
+										free(download.data);
+
 									++countFlat;
 									update_pThread(1);
 									success = true;
@@ -1532,14 +1552,11 @@ int CMenu::_coverDownloader(bool download_all)
 						break;
 				}
 			}
+			if(!success)
+				update_pThread(3);
 		}
 	}
-	if(countFlat == 0)
-		m_thrdMessage = wfmt(_fmt("dlmsg5", L"%i/%i files downloaded."), count, n);
-	else
-		m_thrdMessage = wfmt(_fmt("dlmsg9", L"%i/%i files downloaded. %i are front covers only."), count + countFlat, n, countFlat);
-	m_thrdMessageAdded = true;
-	
+	/* cover list done and downloading complete */
 	if(c_gameTDB.IsLoaded())
 		c_gameTDB.CloseFile();
 	coverIDList.clear();
@@ -1583,6 +1600,8 @@ int CMenu::_gametdbDownloaderAsync()
 				m_thrdMessage = wfmt(_fmt("dlmsg4", L"Saving %s"), "wiitdb.zip");
 				m_thrdMessageAdded = true;	
 				res = fsop_WriteFile(zippath, download.data, download.size);
+				if(download.data != NULL)
+					free(download.data);
 			}
 			if(res == false)
 			{
@@ -1654,8 +1673,12 @@ int CMenu::_downloadBannerAsync()
 		if(banner_location != NULL)
 			fsop_WriteFile(banner_location, download.data, download.size);
 		update_pThread(1);// its saved
+		if(download.data != NULL)
+			free(download.data);
 		return 0;
 	}
+	if(download.data != NULL)
+		free(download.data);
 	return -3;// download failed
 }
 
