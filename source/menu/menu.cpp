@@ -1609,7 +1609,7 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 	if(m_thrdWorking)
 	{
 		musicPaused = true;
-		MusicPlayer.Pause();
+		MusicPlayer.Pause();//note - bg music is paused but sound thread is still running. so banner gamesound still plays
 		m_btnMgr.tick();
 		m_vid.prepare();
 		m_vid.setup2DProjection(false, true);
@@ -2174,22 +2174,10 @@ void CMenu::_initCF(void)
 	if(!CoverFlow.empty())
 	{
 		bool path = false;
-		if((m_source_cnt > 1 && m_cfg.getInt("MULTI", "current_item_type", 1) == TYPE_PLUGIN) || m_sourceflow || m_current_view == COVERFLOW_HOMEBREW)
+		if(m_sourceflow || m_current_view == COVERFLOW_HOMEBREW || 
+			(m_source_cnt > 1 && m_cfg.getInt("MULTI", "current_item_type", TYPE_PLUGIN) == TYPE_PLUGIN) || 
+			(m_source_cnt == 1 && m_current_view == COVERFLOW_PLUGIN && m_cfg.getInt(PLUGIN_DOMAIN, "current_item_type", TYPE_PLUGIN) == TYPE_PLUGIN))
 			path = true;
-		if(m_current_view == COVERFLOW_PLUGIN && !m_sourceflow && m_source_cnt == 1)
-		{
-			switch(m_cfg.getInt(PLUGIN_DOMAIN, "current_item_type", TYPE_PLUGIN))
-			{
-				case TYPE_CHANNEL:
-				case TYPE_EMUCHANNEL:
-				case TYPE_GC_GAME:
-				case TYPE_WII_GAME:
-					path = false;
-					break;
-				default:
-					path = true;
-			}
-		}
 		if(!CoverFlow.findId(m_cfg.getString(_domainFromView(), "current_item").c_str(), true, path))
 			CoverFlow.defaultLoad();
 		CoverFlow.startCoverLoader();
@@ -2710,9 +2698,14 @@ const char *CMenu::getFrontPath(const dir_discHdr *element)
 		const char *coverPath = fmt("%s/front_covers/%s", m_sourceDir.c_str(), coverImg);
 		if(m_cfg.getBool(SOURCEFLOW_DOMAIN, "smallbox") || !fsop_FileExist(coverPath))
 		{
-			coverPath = fmt("%s/small_covers/%s", m_sourceDir.c_str(), coverImg);
+			string themeName = m_cfg.getString("GENERAL", "theme", "default");
+			coverPath = fmt("%s/small_covers/%s/%s", m_sourceDir.c_str(), themeName.c_str(), coverImg);
 			if(!fsop_FileExist(coverPath))
-				return element->path;
+			{
+				coverPath = fmt("%s/small_covers/%s", m_sourceDir.c_str(), coverImg);
+				if(!fsop_FileExist(coverPath))
+					return element->path;
+			}
 		}
 		return coverPath;
 	}

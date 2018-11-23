@@ -266,20 +266,7 @@ void CMenu::_setCurrentItem(const dir_discHdr *hdr)
 	const char *title = CoverFlow.getFilenameId(hdr, true);// with extension
 	m_cfg.setString(_domainFromView(), "current_item", title);
 	if(m_current_view == COVERFLOW_PLUGIN && m_source_cnt == 1)
-	{
 		m_cfg.setInt(PLUGIN_DOMAIN, "current_item_type", hdr->type);
-		switch(hdr->type)
-		{
-			case TYPE_CHANNEL:
-			case TYPE_EMUCHANNEL:
-			case TYPE_GC_GAME:
-			case TYPE_WII_GAME:
-				m_cfg.setBool(PLUGIN_DOMAIN, "current_item_id", true);
-				break;
-			default:
-				m_cfg.setBool(PLUGIN_DOMAIN, "current_item_id", false);
-		}
-	}
 	if(m_source_cnt > 1)
 		m_cfg.setInt("MULTI", "current_item_type", hdr->type);
 }

@@ -7,6 +7,7 @@
  * to complete a request
  */
 const struct block emptyblock = {0, NULL};
+
 //The maximum amount of bytes to send per net_write() call
 //#define NET_BUFFER_SIZE 1024
 #define NET_BUFFER_SIZE 3600
@@ -16,7 +17,8 @@ static u8 retryloop = 0;
 // Write our message to the server
 static s32 send_message(s32 server, char *msg)
 {
-	s32 bytes_transferred = 0, remaining = strlen(msg);
+	s32 bytes_transferred = 0;
+	s32 remaining = strlen(msg);
 	while (remaining)
 	{
 		if((bytes_transferred = net_write(server, msg, remaining > NET_BUFFER_SIZE ? NET_BUFFER_SIZE : remaining)) > 0)
@@ -142,7 +144,8 @@ struct block read_message(s32 connection)
 }
 
 /* Downloads the contents of a URL to memory
- * This method is not threadsafe (because networking is not threadsafe on the Wii) */
+ * This method is not threadsafe (because networking is not threadsafe on the Wii) 
+ */
 struct block downloadfile(const char *url)
 {
 	//Check if the url starts with "http://", if not it is not considered a valid url

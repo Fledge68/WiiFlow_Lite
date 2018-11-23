@@ -153,11 +153,7 @@ void writeStub()
 	DCFlushRange((void*)0x80001800, StubSize);
 
 	/* And free the memory again */
-#ifdef APP_WIIFLOW
-	if(Stub != wfstub_bin)
-#else
-	if(Stub != stub_bin)
-#endif
+	if(Stub != NULL)
 		free(Stub);
 }
 

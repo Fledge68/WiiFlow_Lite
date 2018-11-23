@@ -313,8 +313,8 @@ private:
 	s16 m_downloadPrioVal;
 	enum CoverPrio
 	{
-		C_TYPE_PRIOA = (1<<0),
-		C_TYPE_PRIOB = (1<<1),
+		C_TYPE_PRIOA = (1<<0),//C_TYPE_ACUSTM
+		C_TYPE_PRIOB = (1<<1),//C_TYPE_BCUSTM
 		C_TYPE_EN =    (1<<2),
 		C_TYPE_JA =    (1<<3),
 		C_TYPE_FR =    (1<<4),
@@ -327,8 +327,8 @@ private:
 		C_TYPE_KO =    (1<<11),
 		C_TYPE_ZHCN =  (1<<12),
 		C_TYPE_AU =    (1<<13),
-		C_TYPE_ONOR =  (1<<14),
-		C_TYPE_ONCU =  (1<<15),
+		C_TYPE_ONOR =  (1<<14),//C_TYPE_ONCU
+		C_TYPE_ONCU =  (1<<15),//C_TYPE_ANB
 		
 	};
 	enum CoverType
@@ -722,7 +722,6 @@ private:
 	volatile bool m_thrdNetwork;
 	float m_thrdStep;
 	float m_thrdStepLen;
-	string m_coverDLGameId;
 	mutex_t m_mutex;
 	wstringEx m_thrdMessage;
 	volatile float m_thrdProgress;
@@ -1152,7 +1151,7 @@ private:
 	// 
 	void _setThrdMsg(const wstringEx &msg, float progress);
 	void _setDumpMsg(const wstringEx &msg, float progress, float fileprog);
-	int _coverDownloader(bool missingOnly);
+	int _coverDownloader();
 	void _downloadProgress(void *obj, int size, int position);
 	int _gametdbDownloaderAsync();
 

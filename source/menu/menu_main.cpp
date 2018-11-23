@@ -434,6 +434,7 @@ int CMenu::main(void)
 				if(strcmp(prevTheme, m_cfg.getString("GENERAL", "theme").c_str()) != 0)
 				{
 					/* new theme - exit wiiflow and reload */
+					fsop_deleteFolder(fmt("%s/sourceflow", m_cacheDir.c_str()));
 					m_reload = true;
 					break;
 				}
