@@ -901,11 +901,11 @@ void Nand::CreateTitleTMD(dir_discHdr *hdr)
 	u32 highTID = *(u32*)(titleTMD+0x18c);
 	u32 lowTID = *(u32*)(titleTMD+0x190);
 
-	CreatePath("%s/title/%08x/%08x/data", FullNANDPath, highTID, lowTID);
-	CreatePath("%s/title/%08x/%08x/content", FullNANDPath, highTID, lowTID);
+	CreatePath("%s/title/%08lx/%08lx/data", FullNANDPath, highTID, lowTID);
+	CreatePath("%s/title/%08lx/%08lx/content", FullNANDPath, highTID, lowTID);
 
 	char nandpath[MAX_FAT_PATH];
-	snprintf(nandpath, sizeof(nandpath), "%s/title/%08x/%08x/content/title.tmd", FullNANDPath, highTID, lowTID);
+	snprintf(nandpath, sizeof(nandpath), "%s/title/%08lx/%08lx/content/title.tmd", FullNANDPath, highTID, lowTID);
 
 	if(fsop_FileExist(nandpath))
 	{

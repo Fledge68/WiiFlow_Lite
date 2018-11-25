@@ -566,7 +566,7 @@ void CCoverFlow::setBlur(u32 blurResolution, u32 blurRadius, float blurFactor)
 	static const struct { u32 x; u32 y; } blurRes[] = {
 		{ 64, 48 }, { 96, 72 }, { 128, 96 }, { 192, 144 }
 	};
-	u32 i = min(max(0u, blurResolution), sizeof blurRes / sizeof blurRes[0] - 1u);
+	u32 i = min(max(0ul, blurResolution), sizeof blurRes / sizeof blurRes[0] - 1ul);
 	m_effectTex.width = blurRes[i].x;
 	m_effectTex.height = blurRes[i].y;
 	if(m_effectTex.data != NULL)
@@ -574,7 +574,7 @@ void CCoverFlow::setBlur(u32 blurResolution, u32 blurRadius, float blurFactor)
 		free(m_effectTex.data);
 		m_effectTex.data = NULL;
 	}
-	m_blurRadius = min(max(1u, blurRadius), 3u);
+	m_blurRadius = min(max(1ul, blurRadius), 3ul);
 	m_blurFactor = min(max(1.f, blurFactor), 2.f);
 }
 
@@ -2955,7 +2955,7 @@ void * CCoverFlow::_coverLoader(void *obj)
 	u32 i, j;
 	bool hq_req = cf->m_useHQcover;
 	bool cur_pos_hq = false;
-	u32 bufferSize = min(cf->m_numBufCovers * max(2u, cf->m_rows), 80u);
+	u32 bufferSize = min(cf->m_numBufCovers * max(2ul, cf->m_rows), 80ul);
 
 	while(cf->m_loadingCovers)
 	{

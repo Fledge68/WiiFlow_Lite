@@ -90,7 +90,7 @@ void wiiLightSetLevel(int level)
  */
 void *light_loop()
 {
-	struct timespec timeon;
+	/*struct timespec timeon;
 	struct timespec timeoff;
 
 	// Loop whilst the light is still 'on'
@@ -100,13 +100,13 @@ void *light_loop()
 		timeoff = light_timeoff;
 		// Turn on the light and sleep for a bit
 		wiiLightOn();
-		nanosleep(&timeon, NULL);
+		//nanosleep(&timeon, NULL);
 		//nanosleep(&timeon);
 		// Turn off the light (if required) and sleep for a bit
 		if(timeoff.tv_nsec > 0)
 			wiiLightOff();
-		nanosleep(&timeoff, NULL);
+		//nanosleep(&timeoff, NULL);
 		//nanosleep(&timeoff);
-	}
+	}*/
 	return NULL;
 }
