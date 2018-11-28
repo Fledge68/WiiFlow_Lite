@@ -426,7 +426,7 @@ int CMenu::_cacheCovers()
 	for(vector<dir_discHdr>::iterator hdr = m_gameList.begin(); hdr != m_gameList.end(); ++hdr)
 	{
 		index++;
-		update_pThread(1);
+		update_pThread(index, false);
 		m_thrdMessage = wfmt(_fmt("dlmsg31", L"converting cover %i of %i"), index, total);
 		m_thrdMessageAdded = true;
 		

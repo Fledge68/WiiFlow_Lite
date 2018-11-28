@@ -1824,6 +1824,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 
 	u32 returnTo = 0;
 	const char *rtrn = m_cfg.getString("GENERAL", "returnto").c_str();
+	/* this if is done in case "returnto" is set to disabled in which case rtrn would point to nothing */
 	if(strlen(rtrn) == 4)
 		returnTo = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
 	

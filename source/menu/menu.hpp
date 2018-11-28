@@ -1117,7 +1117,7 @@ public:
 
 	/* general thread updating stuff */
 	u64 m_thrdTotal;
-	void update_pThread(u64 added);
+	void update_pThread(u64 amount, bool add = true);
 private:
 	void _cleanupBanner(bool gamechange = false);
 	void _cleanupVideo();

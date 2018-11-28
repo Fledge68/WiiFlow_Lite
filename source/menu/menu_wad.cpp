@@ -402,12 +402,15 @@ void CMenu::_stop_pThread(void)
 	m_btnMgr.setText(m_wbfsLblMessage, L"100%");
 }
 
-void CMenu::update_pThread(u64 added)
+void CMenu::update_pThread(u64 amount, bool add)
 {
 	if(m_thrdDone)
 	{
 		m_thrdDone = false;
-		m_thrdWritten += added;
+		if(add)
+			m_thrdWritten += amount;
+		else
+			m_thrdWritten = amount;
 		m_thrdUpdated = true;
 	}
 }
