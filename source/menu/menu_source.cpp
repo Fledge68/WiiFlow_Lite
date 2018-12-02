@@ -472,6 +472,7 @@ bool CMenu::_Source()
 				{
 					if(m_locked && m_cfg.getBool(HOMEBREW_DOMAIN, "parental", false))
 					{
+						_hideSource();
 						error(_t("errsource1", L"Homebrew locked!"));
 						exitSource = false;
 						_showSource();
@@ -565,6 +566,7 @@ bool CMenu::_Source()
 					m_current_view ^= COVERFLOW_CHANNEL;
 				else if(source == "homebrew")
 				{
+					_hideSource();
 					error(_t("errsource2", L"Homebrew in multisource not allowed!"));
 					updateSource = false;
 					_showSource();

@@ -264,11 +264,28 @@ void CMenu::_extractBnr(const dir_discHdr *hdr)
 void CMenu::_setCurrentItem(const dir_discHdr *hdr)
 {
 	const char *title = CoverFlow.getFilenameId(hdr, true);// with extension
-	m_cfg.setString(_domainFromView(), "current_item", title);
-	if(m_current_view == COVERFLOW_PLUGIN && m_source_cnt == 1)
-		m_cfg.setInt(PLUGIN_DOMAIN, "current_item_type", hdr->type);
-	if(m_source_cnt > 1)
-		m_cfg.setInt("MULTI", "current_item_type", hdr->type);
+	if(m_current_view == COVERFLOW_PLUGIN)
+	{
+		if(hdr->type == TYPE_PLUGIN)
+			strncpy(m_plugin.PluginMagicWord, fmt("%08x", hdr->settings[0]), 8);
+		else
+		{
+			if(hdr->type == TYPE_WII_GAME)
+				strncpy(m_plugin.PluginMagicWord, "4E574949", 9);
+			else if(hdr->type == TYPE_GC_GAME)
+				strncpy(m_plugin.PluginMagicWord, "4E47434D", 9);
+			else
+				strncpy(m_plugin.PluginMagicWord, "4E414E44", 9);
+		}
+		m_cfg.setString(PLUGIN_DOMAIN, "cur_magic", m_plugin.PluginMagicWord);
+		m_cfg.setString("plugin_item", m_plugin.PluginMagicWord, title);
+	}
+	else
+	{
+		m_cfg.setString(_domainFromView(), "current_item", title);
+		if(m_source_cnt > 1)
+			m_cfg.setInt("MULTI", "current_item_type", hdr->type);
+	}
 }
 
 void CMenu::_hideGame(bool instant)

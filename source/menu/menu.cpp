@@ -2174,11 +2174,38 @@ void CMenu::_initCF(void)
 	if(!CoverFlow.empty())
 	{
 		bool path = false;
-		if(m_sourceflow || m_current_view == COVERFLOW_HOMEBREW || 
-			(m_source_cnt > 1 && m_cfg.getInt("MULTI", "current_item_type", TYPE_PLUGIN) == TYPE_PLUGIN) || 
-			(m_source_cnt == 1 && m_current_view == COVERFLOW_PLUGIN && m_cfg.getInt(PLUGIN_DOMAIN, "current_item_type", TYPE_PLUGIN) == TYPE_PLUGIN))
+		char cur_item[64];
+		cur_item[63] = '\0';
+		if(m_current_view == COVERFLOW_PLUGIN)
+		{
+			strncpy(m_plugin.PluginMagicWord, m_cfg.getString(PLUGIN_DOMAIN, "cur_magic").c_str(), 8);
+			if(!m_cfg.getBool("PLUGINS_ENABLED", m_plugin.PluginMagicWord, false))
+			{
+				for(u8 i = 0; m_plugin.PluginExist(i); ++i)
+				{
+					if(m_plugin.GetEnableStatus(m_cfg, m_plugin.getPluginMagic(i)))// sets m_plugin.PluginMagicWord
+					{
+						m_cfg.setString(PLUGIN_DOMAIN, "cur_magic", m_plugin.PluginMagicWord);
+						break;
+					}
+				}
+			}
 			path = true;
-		if(!CoverFlow.findId(m_cfg.getString(_domainFromView(), "current_item").c_str(), true, path))
+			if(strncasecmp(m_plugin.PluginMagicWord, "4E47434D", 8) == 0)//NGCM
+				path = false;
+			if(strncasecmp(m_plugin.PluginMagicWord, "4E574949", 8) == 0)//NWII
+				path = false;
+			if(strncasecmp(m_plugin.PluginMagicWord, "4E414E44", 8) == 0)//NAND
+				path = false;
+			strncpy(cur_item, m_cfg.getString("plugin_item", m_plugin.PluginMagicWord).c_str(), 63);
+		}
+		else
+		{
+			if(m_sourceflow || m_current_view == COVERFLOW_HOMEBREW || (m_source_cnt > 1 && m_cfg.getInt("MULTI", "current_item_type", TYPE_PLUGIN) == TYPE_PLUGIN)) 
+				path = true;
+			strncpy(cur_item, m_cfg.getString(_domainFromView(), "current_item").c_str(), 63);
+		}
+		if(!CoverFlow.findId(cur_item, true, path))
 			CoverFlow.defaultLoad();
 		CoverFlow.startCoverLoader();
 	}
