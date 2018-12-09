@@ -160,7 +160,7 @@ void CMenu::_showCF(bool refreshList)
 			_cacheCovers();
 			_stop_pThread();
 			m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg14", L"Done."));
-			u8 pause = 240;
+			u8 pause = 150;
 			while(!m_exit)
 			{
 				_mainLoopCommon();

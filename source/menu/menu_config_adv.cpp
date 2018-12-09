@@ -124,7 +124,7 @@ int CMenu::_configAdv(void)
 			break;
 		}
 	}
-	bool lang_changed = false;
+	string prevLanguage = languages_available[available_pos];
 
 	_showConfigAdv();
 	while(!m_exit)
@@ -161,7 +161,6 @@ int CMenu::_configAdv(void)
 				}
 				else
 					m_cfg.setString("GENERAL", "language", m_curLanguage.c_str());
-				lang_changed = true;
 				_updateText();
 				_showConfigAdv();
 			}
@@ -175,8 +174,13 @@ int CMenu::_configAdv(void)
 		}
 	}
 	_hideConfigAdv();
-	if(lang_changed)
+	if(m_curLanguage != prevLanguage)
+	{
+		m_cacheList.Init(m_settingsDir.c_str(), m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
+		fsop_deleteFolder(m_listCacheDir.c_str());// delete cache lists folder and remake it so all lists update.
+		fsop_MakeFolder(m_listCacheDir.c_str());
 		m_refreshGameList = true;
+	}
 
 	return change;
 }

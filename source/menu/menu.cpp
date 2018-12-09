@@ -339,8 +339,11 @@ bool CMenu::init()
 		case CONF_LANG_KOREAN:
 			defLang = "korean";
 			break;
+		case CONF_LANG_ENGLISH:
+			defLang = "english";
+			break;
 	}
-	if (CONF_GetArea() == CONF_AREA_BRA)
+	if(CONF_GetArea() == CONF_AREA_BRA)
 		defLang = "brazilian";
 
 	m_curLanguage = m_cfg.getString("GENERAL", "language", defLang);
@@ -1910,7 +1913,8 @@ void CMenu::_drawBg(void)
 
 void CMenu::_updateText(void)
 {
-	_textSource();
+	if(m_use_source)
+		_textSource();
 	_textPluginSettings();
 	_textCategorySettings();
 	_textCheatSettings();
