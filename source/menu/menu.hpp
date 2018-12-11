@@ -346,6 +346,8 @@ private:
 	s16 m_downloadBtnMissing;
 	s16 m_downloadLblGameTDBDownload;
 	s16 m_downloadBtnGameTDBDownload;
+	s16 m_downloadLblBanners;
+	s16 m_downloadBtnBanners;
 	s16 m_downloadLblCoverSet;
 	s16 m_downloadBtnCoverSet;
 	s16 m_downloadBtnCancel;// used as back btn
@@ -1154,6 +1156,7 @@ private:
 	int _coverDownloader();
 	void _downloadProgress(void *obj, int size, int position);
 	int _gametdbDownloaderAsync();
+	int _downloadBnrAll();
 
 	static s32 _networkComplete(s32 result, void *usrData);
 	void _initAsyncNetwork();

@@ -188,15 +188,17 @@ void CMenu::_hideDownload(bool instant)
 	m_btnMgr.hide(m_downloadLblTitle, instant);
 	m_btnMgr.hide(m_downloadBtnBack, instant);
 	m_btnMgr.hide(m_downloadBtnCancel, instant);
+	m_btnMgr.hide(m_downloadLblCovers, instant);
 	m_btnMgr.hide(m_downloadBtnAll, instant);
 	m_btnMgr.hide(m_downloadLblCoverSet, instant);
 	m_btnMgr.hide(m_downloadBtnCoverSet, instant);
+	m_btnMgr.hide(m_downloadLblGameTDBDownload, instant);
 	m_btnMgr.hide(m_downloadBtnGameTDBDownload, instant);
+	m_btnMgr.hide(m_downloadLblBanners, instant);
+	m_btnMgr.hide(m_downloadBtnBanners, instant);
 	m_btnMgr.hide(m_downloadPBar, instant);
 	m_btnMgr.hide(m_downloadLblMessage[0], 0, 0, -2.f, 0.f, instant);
 	m_btnMgr.hide(m_downloadLblMessage[1], 0, 0, -2.f, 0.f, instant);
-	m_btnMgr.hide(m_downloadLblCovers, instant);
-	m_btnMgr.hide(m_downloadLblGameTDBDownload, instant);
 	m_btnMgr.hide(m_downloadLblGameTDB, instant);
 	for(u8 i = 0; i < ARRAY_SIZE(m_downloadLblUser); ++i)
 		if(m_downloadLblUser[i] != -1)
@@ -216,6 +218,8 @@ void CMenu::_showDownload(void)
 	m_btnMgr.show(m_downloadBtnCoverSet);
 	m_btnMgr.show(m_downloadLblGameTDBDownload);
 	m_btnMgr.show(m_downloadBtnGameTDBDownload);
+	m_btnMgr.show(m_downloadLblBanners);
+	m_btnMgr.show(m_downloadBtnBanners);
 	for(u8 i = 0; i < ARRAY_SIZE(m_downloadLblUser); ++i)
 		if(m_downloadLblUser[i] != -1)
 			m_btnMgr.show(m_downloadLblUser[i]);	
@@ -270,6 +274,8 @@ void CMenu::_download(string gameId)
 				m_btnMgr.hide(m_downloadBtnGameTDBDownload);
 				m_btnMgr.hide(m_downloadLblCoverSet);
 				m_btnMgr.hide(m_downloadBtnCoverSet);
+				m_btnMgr.hide(m_downloadLblBanners);
+				m_btnMgr.hide(m_downloadBtnBanners);
 				m_btnMgr.hide(m_downloadBtnBack);
 				
 				m_btnMgr.setProgress(m_wbfsPBar, 0.f, true);
@@ -306,6 +312,46 @@ void CMenu::_download(string gameId)
 				//maybe show back button
 				//m_btnMgr.show(m_downloadBtnBack);
 			}
+			if(m_btnMgr.selected(m_downloadBtnBanners))// || !gameId.empty())
+			{
+				//m_refreshGameList = true;
+				
+				m_btnMgr.hide(m_downloadLblCovers);
+				m_btnMgr.hide(m_downloadBtnAll);
+				m_btnMgr.hide(m_downloadLblGameTDBDownload);
+				m_btnMgr.hide(m_downloadBtnGameTDBDownload);
+				m_btnMgr.hide(m_downloadLblCoverSet);
+				m_btnMgr.hide(m_downloadBtnCoverSet);
+				m_btnMgr.hide(m_downloadLblBanners);
+				m_btnMgr.hide(m_downloadBtnBanners);
+				m_btnMgr.hide(m_downloadBtnBack);
+				
+				m_btnMgr.setProgress(m_wbfsPBar, 0.f, true);
+				m_btnMgr.setText(m_wbfsLblMessage, L"0%");
+				m_btnMgr.setText(m_wbfsLblDialog, L"");
+				m_btnMgr.show(m_wbfsPBar);
+				m_btnMgr.show(m_wbfsLblMessage);
+				m_btnMgr.show(m_wbfsLblDialog);
+				
+				_start_pThread();
+				int ret = _downloadBnrAll();
+				_stop_pThread();
+				if(ret == 0)
+				{
+					m_thrdMessage = wfmt(_fmt("dlmsg5", L"%i/%i files downloaded."), count, n);
+					m_btnMgr.setText(m_wbfsLblDialog, m_thrdMessage);
+				}
+				else if(ret == -1)
+					m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg34", L"Banner URL not set properly!"));//banner url not set
+				else if(ret == -2)
+					m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg2", L"Network initialization failed!"));
+				else if(ret == -3)
+					m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg33", L"No covers missing."));// no banners missing
+				dl_finished = true;
+				gameId.clear();
+				//maybe show back button
+				//m_btnMgr.show(m_downloadBtnBack);
+			}
 			else if(m_btnMgr.selected(m_downloadBtnGameTDBDownload))
 			{
 				m_refreshGameList = true;// to refresh titles
@@ -316,6 +362,8 @@ void CMenu::_download(string gameId)
 				m_btnMgr.hide(m_downloadBtnGameTDBDownload);
 				m_btnMgr.hide(m_downloadLblCoverSet);
 				m_btnMgr.hide(m_downloadBtnCoverSet);
+				m_btnMgr.hide(m_downloadLblBanners);
+				m_btnMgr.hide(m_downloadBtnBanners);
 				m_btnMgr.hide(m_downloadBtnBack);
 				
 				m_btnMgr.setProgress(m_wbfsPBar, 0.f, true);
@@ -551,12 +599,16 @@ void CMenu::_initDownloadMenu()
 	_addUserLabels(m_downloadLblUser, ARRAY_SIZE(m_downloadLblUser), "DOWNLOAD");
 	m_downloadBg = _texture("DOWNLOAD/BG", "texture", theme.bg, false);
 	m_downloadLblTitle = _addTitle("DOWNLOAD/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+
 	m_downloadLblCovers = _addLabel("DOWNLOAD/COVERS", theme.btnFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_downloadBtnAll = _addButton("DOWNLOAD/ALL_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
 	m_downloadLblCoverSet = _addLabel("DOWNLOAD/COVERSSET", theme.btnFont, L"", 20, 185, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_downloadBtnCoverSet = _addButton("DOWNLOAD/COVERSET_BTN", theme.btnFont, L"", 420, 190, 200, 48, theme.btnFontColor);
 	m_downloadLblGameTDBDownload = _addLabel("DOWNLOAD/GAMETDB_DOWNLOAD", theme.btnFont, L"", 20, 245, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_downloadBtnGameTDBDownload = _addButton("DOWNLOAD/GAMETDB_DOWNLOAD_BTN", theme.btnFont, L"", 420, 250, 200, 48, theme.btnFontColor);
+	m_downloadLblBanners = _addLabel("DOWNLOAD/BANNERS", theme.btnFont, L"", 20, 305, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_downloadBtnBanners = _addButton("DOWNLOAD/BANNERS_BTN", theme.btnFont, L"", 420, 310, 200, 48, theme.btnFontColor);
+
 	m_downloadLblGameTDB = _addLabel("DOWNLOAD/GAMETDB", theme.lblFont, L"", 20, 390, 370, 60, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_downloadBtnCancel = _addButton("DOWNLOAD/CANCEL_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
 	m_downloadPBar = _addProgressBar("DOWNLOAD/PROGRESS_BAR", 40, 200, 560, 20);
@@ -604,6 +656,9 @@ void CMenu::_initDownloadMenu()
 	_setHideAnim(m_downloadBtnCoverSet, "DOWNLOAD/COVERSET_BTN", -50, 0, 1.f, 0.f);
 	_setHideAnim(m_downloadLblGameTDBDownload, "DOWNLOAD/GAMETDB_DOWNLOAD", 50, 0, -2.f, 0.f);
 	_setHideAnim(m_downloadBtnGameTDBDownload, "DOWNLOAD/GAMETDB_DOWNLOAD_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_downloadLblBanners, "DOWNLOAD/BANNERS", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_downloadBtnBanners, "DOWNLOAD/BANNERS_BTN", -50, 0, 1.f, 0.f);
+
 	_setHideAnim(m_downloadLblGameTDB, "DOWNLOAD/GAMETDB", 50, 0, -2.f, 0.f);
 	_setHideAnim(m_downloadPBar, "DOWNLOAD/PROGRESS_BAR", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_downloadBtnCancel, "DOWNLOAD/CANCEL_BTN", 0, 0, 1.f, -1.f);
@@ -656,6 +711,9 @@ void CMenu::_textDownload(void)
 	m_btnMgr.setText(m_downloadBtnCoverSet, _t("dl16", L"Set"));	
 	m_btnMgr.setText(m_downloadLblGameTDBDownload, _t("dl12", L"GameTDB"));
 	m_btnMgr.setText(m_downloadBtnGameTDBDownload, _t("dl6", L"Download"));
+	m_btnMgr.setText(m_downloadLblBanners, _t("dl26", L"GC Custom Banners"));
+	m_btnMgr.setText(m_downloadBtnBanners, _t("dl6", L"Download"));	
+
 	m_btnMgr.setText(m_downloadLblGameTDB, _t("dl10", L"Please donate\nto GameTDB.com"));
 	m_btnMgr.setText(m_downloadBtnCancel, _t("dl1", L"Cancel"));
 	
@@ -1697,6 +1755,80 @@ void CMenu::_downloadBnr(const char *gameID)
 		MEM2_free(banner_location);
 		banner_location = NULL;
 	}
+}
+
+int CMenu::_downloadBnrAll()
+{
+	vector<string> BnrIDList;
+	count = 0;
+
+	currentPartition = m_cfg.getInt(GC_DOMAIN, "partition", USB1);
+	string gameDir(fmt(gc_games_dir, DeviceName[currentPartition]));
+	string cacheDir(fmt("%s/%s_gamecube.db", m_listCacheDir.c_str(), DeviceName[currentPartition]));
+	m_cacheList.CreateList(COVERFLOW_GAMECUBE, currentPartition, gameDir, stringToVector(".iso|.ciso|root", '|'), cacheDir, false);
+	
+	for(u32 i = 0; i < m_cacheList.size(); ++i)
+	{
+		
+		if(!fsop_FileExist(fmt("%s/%s.bnr", m_customBnrDir.c_str(), m_cacheList[i].id)))
+			BnrIDList.push_back(m_cacheList[i].id);
+	}
+	m_cacheList.clear();
+	
+	n = BnrIDList.size();
+	m_thrdTotal = n;
+	
+	if(n == 0)
+	{
+		BnrIDList.clear();
+		return -3;
+	}
+	
+	m_thrdMessage = _t("dlmsg1", L"Initializing network...");
+	m_thrdMessageAdded = true;
+	if(_initNetwork() < 0)
+	{
+		BnrIDList.clear();
+		return -2;
+	}
+	
+	string base_url = m_cfg.getString("GENERAL", "custom_banner_url", CUSTOM_BANNER_URL);
+	if(base_url.size() < 3 || base_url.find(GAME_BNR_ID) == string::npos)
+	{
+		BnrIDList.clear();
+		return -1;
+	}
+	
+	for(u32 i = 0; i < BnrIDList.size(); ++i)
+	{
+		string base_url_id6 = base_url;
+		base_url_id6.replace(base_url_id6.find(GAME_BNR_ID), strlen(GAME_BNR_ID), BnrIDList[i]);
+		banner_url = base_url.c_str();
+
+		string base_url_id3 = base_url;
+		base_url_id3.replace(base_url_id3.find(GAME_BNR_ID), strlen(GAME_BNR_ID), BnrIDList[i].c_str(), 3);
+		banner_url_id3 = base_url_id3.c_str();
+
+		m_thrdMessage = wfmt(_fmt("dlmsg3", L"Downloading banner %i/%i"), i + 1, n);
+		m_thrdMessageAdded = true;
+		
+		download = downloadfile(banner_url);
+		if(download.data == NULL || download.size < 0x5000)
+			download = downloadfile(banner_url_id3);
+
+		/* minimum 50kb */
+		if(download.data != NULL && download.size > 51200 && download.data[0] != '<')
+		{
+			fsop_WriteFile(fmt("%s/%s.bnr", m_customBnrDir.c_str(), BnrIDList[i].c_str()), download.data, download.size);
+			count++;
+			if(download.data != NULL)
+				free(download.data);
+		}
+		else if(download.data != NULL)
+			free(download.data);
+		update_pThread(1);
+	}
+	return 0;
 }
 
 /**************************************************************************************/
