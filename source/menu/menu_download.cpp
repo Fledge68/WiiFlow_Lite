@@ -346,7 +346,7 @@ void CMenu::_download(string gameId)
 				else if(ret == -2)
 					m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg2", L"Network initialization failed!"));
 				else if(ret == -3)
-					m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg33", L"No covers missing."));// no banners missing
+					m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg33", L"No banners missing."));// no banners missing
 				dl_finished = true;
 				gameId.clear();
 				//maybe show back button
