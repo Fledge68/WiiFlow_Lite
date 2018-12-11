@@ -1769,7 +1769,6 @@ int CMenu::_downloadBnrAll()
 	
 	for(u32 i = 0; i < m_cacheList.size(); ++i)
 	{
-		
 		if(!fsop_FileExist(fmt("%s/%s.bnr", m_customBnrDir.c_str(), m_cacheList[i].id)))
 			BnrIDList.push_back(m_cacheList[i].id);
 	}
@@ -1803,7 +1802,7 @@ int CMenu::_downloadBnrAll()
 	{
 		string base_url_id6 = base_url;
 		base_url_id6.replace(base_url_id6.find(GAME_BNR_ID), strlen(GAME_BNR_ID), BnrIDList[i]);
-		banner_url = base_url.c_str();
+		banner_url = base_url_id6.c_str();
 
 		string base_url_id3 = base_url;
 		base_url_id3.replace(base_url_id3.find(GAME_BNR_ID), strlen(GAME_BNR_ID), BnrIDList[i].c_str(), 3);
@@ -1821,10 +1820,8 @@ int CMenu::_downloadBnrAll()
 		{
 			fsop_WriteFile(fmt("%s/%s.bnr", m_customBnrDir.c_str(), BnrIDList[i].c_str()), download.data, download.size);
 			count++;
-			if(download.data != NULL)
-				free(download.data);
 		}
-		else if(download.data != NULL)
+		if(download.data != NULL)
 			free(download.data);
 		update_pThread(1);
 	}
