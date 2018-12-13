@@ -248,8 +248,8 @@ void CMenu::_initConfigMenu()
 void CMenu::_textConfig(void)
 {
 	m_btnMgr.setText(m_configLblTitle, _t("cfg1", L"Settings"));
-	m_btnMgr.setText(m_configLblDownload, _t("cfg3", L"Download covers & titles"));
-	m_btnMgr.setText(m_configBtnDownload, _t("cfg4", L"Download"));
+	m_btnMgr.setText(m_configLblDownload, _t("cfg3", L"Download covers & banners"));
+	m_btnMgr.setText(m_configBtnDownload, _t("cfgc5", L"Go"));
 	m_btnMgr.setText(m_configLblParental, _t("cfg5", L"Parental control"));
 	m_btnMgr.setText(m_configBtnUnlock, _t("cfg6", L"Unlock"));
 	m_btnMgr.setText(m_configBtnSetCode, _t("cfg7", L"Set code"));
