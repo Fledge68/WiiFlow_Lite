@@ -78,7 +78,7 @@ void CMenu::_CoverBanner(void)
 			if(m_btnMgr.selected(m_coverbnrBtnDlCover))
 			{
 				_hideCoverBanner();
-				_download(id);
+				_download(id, 1);
 				_showCoverBanner();
 			}
 			else if(m_btnMgr.selected(m_coverbnrBtnDeleteCover))
@@ -95,7 +95,7 @@ void CMenu::_CoverBanner(void)
 				fsop_deleteFile(fmt("%s/%s.bnr", m_customBnrDir.c_str(), id));
 				fsop_deleteFile(fmt("%s/%.3s.bnr", m_bnrCacheDir.c_str(), id));
 				fsop_deleteFile(fmt("%s/%.3s.bnr", m_customBnrDir.c_str(), id));
-				_downloadBnr(id);
+				_download(id, 2);
 				m_newGame = true;
 				_showCoverBanner();
 			}

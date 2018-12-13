@@ -68,6 +68,14 @@ void CMenu::_addDiscProgress(int status, int total, void *user_data)
 	}
 }
 
+void CMenu::_setThrdMsg(const wstringEx &msg, float progress)
+{
+	if (m_thrdStop) return;
+	if (msg != L"...") m_thrdMessage = msg;
+	m_thrdMessageAdded = true;
+	m_thrdProgress = progress;
+}
+
 bool CMenu::_searchGamesByID(const char *gameId)
 {
 	for(vector<dir_discHdr>::iterator itr = m_gameList.begin(); itr != m_gameList.end(); ++itr)

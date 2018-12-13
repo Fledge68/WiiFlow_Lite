@@ -1050,8 +1050,7 @@ private:
 	};
 	void _game(bool launch = false);
 	void _downloadUrl(const char *url, u8 **dl_file, u32 *dl_size);
-	void _download(string gameId = string());
-	void _downloadBnr(const char *gameID);
+	void _download(string gameId = string(), int dl_type = 0);
 	bool _code(char code[4], bool erase = false);
 	void _about(bool help = false);
 	bool _wbfsOp(WBFS_OP op);
@@ -1153,10 +1152,10 @@ private:
 	// 
 	void _setThrdMsg(const wstringEx &msg, float progress);
 	void _setDumpMsg(const wstringEx &msg, float progress, float fileprog);
-	int _coverDownloader();
 	void _downloadProgress(void *obj, int size, int position);
+	int _coverDownloader();
 	int _gametdbDownloaderAsync();
-	int _downloadBnrAll();
+	int _bannerDownloader();
 
 	static s32 _networkComplete(s32 result, void *usrData);
 	void _initAsyncNetwork();
@@ -1189,7 +1188,6 @@ private:
 	void _listEmuNands(const char *path, vector<string> &emuNands);
 
 	int _downloadCheatFileAsync();
-	int _downloadBannerAsync();
 	static void * _downloadUrlAsync(void *obj);
 
 	void _playGameSound(void);
