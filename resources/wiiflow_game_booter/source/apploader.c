@@ -35,6 +35,7 @@ static void Anti_002_fix(void *Address, int Size);
 static bool Remove_001_Protection(void *Address, int Size);
 static void PrinceOfPersiaPatch();
 static void NewSuperMarioBrosPatch();
+static void MarioKartWiiWiimmfiPatch( bool server);
 bool hookpatched = false;
 
 /* Thanks Tinyload */
@@ -102,6 +103,8 @@ u32 Apploader_Run(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryStrin
 	free_wip();
 	if(hooktype != 0 && hookpatched)
 		ocarina_do_code();
+		
+	MarioKartWiiWiimmfiPatch(private_server); 
 
 	/* Set entry point from apploader */
 	return (u32)appldr_final();
@@ -166,6 +169,13 @@ static void Anti_002_fix(void *Address, int Size)
 			memcpy(Addr, PatchData, sizeof PatchData);
 		Addr += 4;
 	}
+}
+
+static void MarioKartWiiWiimmfiPatch( bool server) {
+	if(memcmp("RMC", GameID, 3) != 0) return;	// This isn't MKWii
+	if(server == 0) return; 					// no Wiimmfi patch wanted
+	
+	do_new_wiimmfi(); 
 }
 
 static void PrinceOfPersiaPatch()

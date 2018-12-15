@@ -1118,7 +1118,7 @@ void CMenu::_textGameSettings(void)
 
 	m_btnMgr.setText(m_gameSettingsLblFlashSave, _t("cfgg32", L"Flash Save to NAND"));
 	m_btnMgr.setText(m_gameSettingsBtnFlashSave, _t("cfgg33", L"Flash"));
-	m_btnMgr.setText(m_gameSettingsLblPrivateServer, _t("cfgg45", L"Private Server"));
+	m_btnMgr.setText(m_gameSettingsLblPrivateServer, _t("cfgg45", L"Private Server (Wiimmfi)"));
 	m_btnMgr.setText(m_gameSettingsLblWidth, _t("cfgg54", L"Video Width"));
 	m_btnMgr.setText(m_gameSettingsLblPos, _t("cfgg55", L"Video Position"));
 }
