@@ -2,7 +2,7 @@
 //#define APP_WIIFLOW	//uncomment this line to compile wfl as wiiflow
 
 #define APP_NAME				"WiiFlow Lite"
-#define APP_VERSION				"5.0.1"
+#define APP_VERSION				"5.1.0"
 
 #define APP_DATA_DIR			"wiiflow"
 #ifdef APP_WIIFLOW
