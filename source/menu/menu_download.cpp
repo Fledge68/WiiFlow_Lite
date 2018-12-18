@@ -1450,7 +1450,7 @@ int CMenu::_coverDownloader()
 								continue;
 
 							/*download succeeded - save png */
-							strncpy(path, fmt("%s/%s.png", m_boxPicDir.c_str(), coverID.c_str()), 255);
+							strncpy(path, fmt("%s/%s.png", m_picDir.c_str(), coverID.c_str()), 255);
 							update_pThread(1);
 							m_thrdMessage = wfmt(_fmt("dlmsg4", L"Saving %s"), path);
 							m_thrdMessageAdded = true;
@@ -1586,7 +1586,7 @@ int CMenu::_coverDownloader()
 								continue;
 
 							/* save png */
-							strncpy(path, fmt("%s/%s.png", m_boxPicDir.c_str(), coverID.c_str()), 255);
+							strncpy(path, fmt("%s/%s.png", m_picDir.c_str(), coverID.c_str()), 255);
 							update_pThread(1);
 							m_thrdMessage = wfmt(_fmt("dlmsg4", L"Saving %s"), path);
 							m_thrdMessageAdded = true;
