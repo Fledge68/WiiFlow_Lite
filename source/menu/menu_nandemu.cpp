@@ -160,7 +160,8 @@ void CMenu::_checkEmuNandSettings(void)
 			}
 		}
 	}
-
+	gprintf("emu nand path = %s:/%s/%s\n", DeviceName[emuPart],  emu_nands_dir, emuNands[curEmuNand]);
+ 
 	_listEmuNands(fmt("%s:/%s", DeviceName[savesPart],  emu_nands_dir), savesNands);
 	curSavesNand = 0;
 	for(i = 0; i < savesNands.size(); ++i)// find current savesnand folder
@@ -182,6 +183,7 @@ void CMenu::_checkEmuNandSettings(void)
 			}
 		}
 	}
+	gprintf("saves nand path = %s:/%s/%s\n", DeviceName[savesPart],  emu_nands_dir, savesNands[curSavesNand]);
 	
 	m_cfg.setString(WII_DOMAIN, "current_save_emunand", savesNands[curSavesNand]);
 	m_cfg.setInt(WII_DOMAIN, "savepartition", savesPart);

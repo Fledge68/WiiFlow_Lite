@@ -158,7 +158,7 @@ bool CMenu::init()
 	m_use_sd_logging = m_cfg.getBool("DEBUG", "sd_write_log", false);
 	LogToSD_SetBuffer(m_use_sd_logging);
 	/* Init Network if wanted */
-	m_init_network = (m_cfg.getBool("GENERAL", "async_network") || has_enabled_providers() || m_use_wifi_gecko);
+	m_init_network = (has_enabled_providers() || m_use_wifi_gecko);
 	_netInit();
 	
 	/* Set SD only to off if any usb device is attached and format is FAT, NTFS, WBFS, or LINUX */
@@ -559,15 +559,6 @@ void CMenu::_Theme_Cleanup(void)
 	theme.soundSet.clear();
 	//m_theme.unload();
 	m_coverflow.unload();
-}
-
-void CMenu::_netInit(void)
-{
-	if(networkInit || !m_init_network || m_exit)
-		return;
-	_initAsyncNetwork();
-	while(net_get_status() == -EBUSY)
-		usleep(100);
 }
 
 void CMenu::_setAA(int aa)
@@ -2262,6 +2253,7 @@ bool CMenu::_loadWiiList(void)
 	if(!DeviceHandle.IsInserted(currentPartition))
 		return false;
 
+	gprintf("Adding wii list\n");
 	DeviceHandle.OpenWBFS(currentPartition);
 	string gameDir(fmt(wii_games_dir, DeviceName[currentPartition]));
 	string cacheDir(fmt("%s/%s_wii.db", m_listCacheDir.c_str(), DeviceName[currentPartition]));
@@ -2282,6 +2274,7 @@ bool CMenu::_loadHomebrewList()
 	if(!DeviceHandle.IsInserted(currentPartition))
 		return false;
 
+	gprintf("Adding homebrew list\n");
 	string gameDir(fmt(HOMEBREW_DIR, DeviceName[currentPartition]));
 	m_cacheList.CreateList(COVERFLOW_HOMEBREW, currentPartition, gameDir, stringToVector(".dol|.elf", '|'), std::string(), false);
 	for(vector<dir_discHdr>::iterator tmp_itr = m_cacheList.begin(); tmp_itr != m_cacheList.end(); tmp_itr++)
@@ -2295,6 +2288,7 @@ bool CMenu::_loadGamecubeList()
 	if(!DeviceHandle.IsInserted(currentPartition))
 		return false;
 
+	gprintf("Adding gamecube list\n");
 	string gameDir(fmt(gc_games_dir, DeviceName[currentPartition]));
 	string cacheDir(fmt("%s/%s_gamecube.db", m_listCacheDir.c_str(), DeviceName[currentPartition]));
 	bool updateCache = m_cfg.getBool(GC_DOMAIN, "update_cache");
@@ -2318,6 +2312,7 @@ bool CMenu::_loadChannelList(void)
 	vector<string> NullVector;
 	if(chantypes & CHANNELS_REAL)
 	{
+		gprintf("Adding real nand list\n");
 		NANDemuView = false;
 		m_cacheList.CreateList(COVERFLOW_CHANNEL, 9, std::string(), NullVector, std::string(), false);
 		for(vector<dir_discHdr>::iterator tmp_itr = m_cacheList.begin(); tmp_itr != m_cacheList.end(); tmp_itr++)
@@ -2329,6 +2324,7 @@ bool CMenu::_loadChannelList(void)
 		int emuPartition = _FindEmuPart(EMU_NAND, false);// check if emunand folder exist and on FAT
 		if(emuPartition >= 0)
 		{
+			gprintf("Adding emu nand list\n");
 			currentPartition = emuPartition;
 			string cacheDir = fmt("%s/%s_channels.db", m_listCacheDir.c_str(), DeviceName[currentPartition]);
 			bool updateCache = m_cfg.getBool(CHANNEL_DOMAIN, "update_cache");
@@ -2351,6 +2347,7 @@ bool CMenu::_loadPluginList()
 	bool addChannel = false;
 	bool updateCache = m_cfg.getBool(PLUGIN_DOMAIN, "update_cache");
 
+	gprintf("Adding plugins list\n");
 	for(u8 i = 0; m_plugin.PluginExist(i); ++i)
 	{
 		u32 Magic = m_plugin.getPluginMagic(i);

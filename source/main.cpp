@@ -168,6 +168,8 @@ int main(int argc, char **argv)
 		/* Handle (c)IOS Loading */
 		if(useMainIOS && CustomIOS(IOS_GetType(mainIOS))) /* Requested */
 			iosOK = loadIOS(mainIOS, false) && CustomIOS(CurrentIOS.Type);
+		else
+			gprintf("Using IOS58\n");
 	}
 		
 	/* sys inits */

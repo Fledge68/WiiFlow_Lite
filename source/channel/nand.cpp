@@ -1253,14 +1253,16 @@ void Nand::SetPaths(const char *emuPath, const char *currentPart)
 
 	/* set wiiflow full nand path */
 	snprintf(FullNANDPath, sizeof(FullNANDPath), "%s:%s", currentPart, emuPath);
-	gprintf("Emu NAND Full Path = %s\n", FullNANDPath);	
+	// example - sd:/nands/default
 	
 	/* set IOS compatible NAND Path */
 	strncpy(NandPath, emuPath, sizeof(NandPath));
+	// example - /nands/default
+	
 	NandPath[sizeof(NandPath) - 1] = '\0';
+	
 	if(strlen(NandPath) == 0)
 		strcat(NandPath, "/");
-	gprintf("IOS Compatible NAND Path = %s\n", NandPath);
 }
 
 /*

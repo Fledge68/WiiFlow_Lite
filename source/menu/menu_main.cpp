@@ -236,6 +236,8 @@ void CMenu::_showCF(bool refreshList)
 	/* set the covers and titles to the positions and angles based on the cf layout */
 	CoverFlow.applySettings();
 
+	gprintf("Displaying covers\n");
+
 	/* display game count if not sourceflow or homebrew */
 	if(m_sourceflow || m_current_view == COVERFLOW_HOMEBREW)
 		return;
@@ -287,6 +289,8 @@ int CMenu::main(void)
 	m_vid.set2DViewport(m_cfg.getInt("GENERAL", "tv_width", 640), m_cfg.getInt("GENERAL", "tv_height", 480),
 						m_cfg.getInt("GENERAL", "tv_x", 0), m_cfg.getInt("GENERAL", "tv_y", 0));
 
+	gprintf("Bootup completed!\n");
+
 	m_refreshGameList = true;
 	_showMain();
 	if(show_mem)
@@ -294,10 +298,8 @@ int CMenu::main(void)
 		m_btnMgr.show(m_mem1FreeSize);
 		m_btnMgr.show(m_mem2FreeSize);
 	}
-	
 	SetupInput(true);
 
-	gprintf("wiiflow main screen ready!\n");
 	while(!m_exit)
 	{
 		/* IMPORTANT check if a disc is inserted */

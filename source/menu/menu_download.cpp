@@ -730,6 +730,15 @@ void CMenu::_textDownload(void)
 
 /************************************* Setup network connection *********************************************/
 
+void CMenu::_netInit(void)
+{
+	if(networkInit || !m_init_network || m_exit)
+		return;
+	_initAsyncNetwork();
+	while(net_get_status() == -EBUSY)
+		usleep(100);
+}
+
 void CMenu::_initAsyncNetwork()
 {
 	if(!_isNetworkAvailable())

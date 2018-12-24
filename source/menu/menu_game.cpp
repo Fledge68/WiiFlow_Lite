@@ -780,6 +780,10 @@ void CMenu::_game(bool launch)
 
 					/* Finally boot it */
 					gprintf("Launching game %s\n", hdr->id);
+					if(hdr->type == TYPE_EMUCHANNEL)
+						gprintf("from emu nand\n");
+					else if(hdr->type == TYPE_CHANNEL)
+						gprintf("from real nand\n");
 					_launch(hdr);
 
 					if(m_exit)

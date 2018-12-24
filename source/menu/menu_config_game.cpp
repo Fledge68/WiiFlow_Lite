@@ -894,9 +894,6 @@ void CMenu::_initGameSettingsMenu()
 	m_gameSettingsBtnLaunchNK = _addButton("GAME_SETTINGS/LAUNCHNEEK_BTN", theme.btnFont, L"", 420, 250, 200, 48, theme.btnFontColor);
 
 //GC Nintendont Page 4
-	//m_gameSettingsLblUSB_HID = _addLabel("GAME_SETTINGS/USB_HID", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	//m_gameSettingsBtnUSB_HID = _addButton("GAME_SETTINGS/USB_HID_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
-
 	m_gameSettingsLblCC_Rumble = _addLabel("GAME_SETTINGS/CC_RUMBLE", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsBtnCC_Rumble = _addButton("GAME_SETTINGS/CC_RUMBLE_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
 

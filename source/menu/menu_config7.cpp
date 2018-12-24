@@ -134,8 +134,10 @@ void CMenu::_showConfig7(int curPage)
 		m_btnMgr.setText(m_config7Btn1, m_cfg.getBool("GENERAL", "random_select") ? _t("select", L"Select") : _t("boot", L"Boot"));
 		m_btnMgr.setText(m_config7Lbl2, _t("cfg718", L"Source Menu on start"));
 		m_btnMgr.setText(m_config7Btn2, m_cfg.getBool("GENERAL", "source_on_start") ? _t("yes", L"Yes") : _t("no", L"No"));
-		m_btnMgr.setText(m_config7Lbl3, _t("cfg719", L"SD only"));
-		m_btnMgr.setText(m_config7Btn3, m_cfg.getBool("GENERAL", "sd_only") ? _t("yes", L"Yes") : _t("no", L"No"));
+		m_btnMgr.setText(m_config7Lbl3, _t("cfg720", L"Play GC banner sound"));
+		m_btnMgr.setText(m_config7Btn3, m_cfg.getBool(GC_DOMAIN, "play_banner_sound") ?  _t("yes", L"Yes") : _t("no", L"No"));
+		m_btnMgr.setText(m_config7Lbl4, _t("cfg721", L"Play GC default sound"));
+		m_btnMgr.setText(m_config7Btn4, m_cfg.getBool(GC_DOMAIN, "play_default_sound") ?  _t("yes", L"Yes") : _t("no", L"No"));
 	}
 }
 
@@ -273,8 +275,13 @@ int CMenu::_config7(int curPage)
 				}
 				else if(m_btnMgr.selected(m_config7Btn3))
 				{
-					m_cfg.setBool("GENERAL", "sd_only", !m_cfg.getBool("GENERAL", "sd_only"));
-					m_btnMgr.setText(m_config7Btn3, m_cfg.getBool("GENERAL", "sd_only") ?  _t("yes", L"Yes") : _t("no", L"No"));
+					m_cfg.setBool(GC_DOMAIN, "play_banner_sound", !m_cfg.getBool(GC_DOMAIN, "play_banner_sound"));
+					m_btnMgr.setText(m_config7Btn3, m_cfg.getBool(GC_DOMAIN, "play_banner_sound") ?  _t("yes", L"Yes") : _t("no", L"No"));
+				}
+				else if(m_btnMgr.selected(m_config7Btn4))
+				{
+					m_cfg.setBool(GC_DOMAIN, "play_default_sound", !m_cfg.getBool(GC_DOMAIN, "play_default_sound"));
+					m_btnMgr.setText(m_config7Btn4, m_cfg.getBool(GC_DOMAIN, "play_default_sound") ?  _t("yes", L"Yes") : _t("no", L"No"));
 				}
 			}
 		}
