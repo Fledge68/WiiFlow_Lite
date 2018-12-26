@@ -1305,13 +1305,13 @@ SFont CMenu::_font(const char *domain, const char *key, u32 fontSize, u32 lineSp
 		return retFont;
 	}
 	
-	/* try default font in imgs folder
+	/* try default font in imgs folder */
 	if(retFont.fromFile(fmt("%s/font.ttf", m_imgsDir.c_str()), fonts[0].res, fonts[1].res, fonts[2].res, index, filename.c_str()))
 	{
 		// Default font
 		theme.fontSet.push_back(retFont);
 		return retFont;
-	}*/
+	}
 	
 	/* Fallback to default font */
 	/* default font is the wii's system font */

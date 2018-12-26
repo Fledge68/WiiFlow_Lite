@@ -72,12 +72,11 @@ void CMenu::_showConfig7(int curPage)
 	m_btnMgr.show(m_config7Btn2);
 	m_btnMgr.show(m_config7Lbl3);
 	m_btnMgr.show(m_config7Btn3);
-	if(curPage != 11)
-		m_btnMgr.show(m_config7Lbl4);
+	m_btnMgr.show(m_config7Lbl4);
 
-	if(curPage == 7)
+	if(curPage == 7 || curPage == 11)
 		m_btnMgr.show(m_config7Btn4);
-	else if(curPage != 11)
+	else
 	{
 		m_btnMgr.show(m_config7Lbl4Val);
 		m_btnMgr.show(m_config7Btn4M);

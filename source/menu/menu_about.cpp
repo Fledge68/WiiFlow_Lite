@@ -91,7 +91,7 @@ void CMenu::_initAboutMenu()
 {
 	_addUserLabels(m_aboutLblUser, 0, 2, "ABOUT");
 	m_aboutBg = _texture("ABOUT/BG", "texture", theme.bg, false);
-	m_aboutLblInfo = _addText("ABOUT/INFO", theme.txtFont, L"", 40, 100, 560, 300, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
+	m_aboutLblInfo = _addText("ABOUT/INFO", theme.txtFont, L"", 40, 80, 560, 300, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
 	_addUserLabels(m_aboutLblUser, 2, 2, "ABOUT");
 	m_aboutLblTitle = _addTitle("ABOUT/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 	m_aboutLblIOS = _addLabel("ABOUT/IOS", theme.lblFont, L"", 240, 400, 360, 56, theme.lblFontColor, FTGX_JUSTIFY_RIGHT | FTGX_ALIGN_MIDDLE);
