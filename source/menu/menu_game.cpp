@@ -2310,7 +2310,7 @@ void * CMenu::_gameSoundThread(void *obj)
 	//get sound from wii, channel, or custom banner and load it to play with the banner
 	u32 sndSize = 0;
 	u8 *soundBin = CurrentBanner.GetFile("sound.bin", &sndSize);
-	CurrentBanner.ClearBanner();
+	CurrentBanner.ClearBanner();// got sound.bin and banner for displaying is loaded so no longer need current banner.
 
 	if(soundBin != NULL && (GameHdr->type != TYPE_GC_GAME || m->m_gc_play_banner_sound))
 	{
@@ -2318,11 +2318,11 @@ void * CMenu::_gameSoundThread(void *obj)
 		{
 			u32 newSize = 0;
 			u8 *newSound = DecompressCopy(soundBin, sndSize, &newSize);
+			free(soundBin);// no longer needed, now using decompressed newSound
 			if(newSound == NULL || newSize == 0 || !m->m_gameSound.Load(newSound, newSize))
 			{
-				free(soundBin);
-				m->m_gameSound.FreeMemory();
-				m_banner.DeleteBanner();
+				m->m_gameSound.FreeMemory();// frees newSound
+				m_banner.DeleteBanner();// the same as UnloadBanner
 				m->m_soundThrdBusy = false;
 				return NULL;
 			}
@@ -2334,15 +2334,17 @@ void * CMenu::_gameSoundThread(void *obj)
 			m->m_gamesound_changed = true;
 		else
 		{
-			m->m_gameSound.FreeMemory();
+			m->m_gameSound.FreeMemory();// frees soundBin
 			m_banner.DeleteBanner();
 		}
 	}
 	else
 	{
-		gprintf("WARNING: No sound found in banner!\n");
+		if(soundBin != NULL)
+			free(soundBin);
+		//gprintf("WARNING: No sound found in banner!\n");
 		m->m_gamesound_changed = true;
-		m->m_gameSound.FreeMemory();
+		m->m_gameSound.FreeMemory();// frees previous game sound
 	}
 	m->m_soundThrdBusy = false;
 	return NULL;

@@ -276,11 +276,13 @@ int CMenu::_config7(int curPage)
 				{
 					m_cfg.setBool(GC_DOMAIN, "play_banner_sound", !m_cfg.getBool(GC_DOMAIN, "play_banner_sound"));
 					m_btnMgr.setText(m_config7Btn3, m_cfg.getBool(GC_DOMAIN, "play_banner_sound") ?  _t("yes", L"Yes") : _t("no", L"No"));
+					m_gc_play_banner_sound = m_cfg.getBool(GC_DOMAIN, "play_banner_sound", true);
 				}
 				else if(m_btnMgr.selected(m_config7Btn4))
 				{
 					m_cfg.setBool(GC_DOMAIN, "play_default_sound", !m_cfg.getBool(GC_DOMAIN, "play_default_sound"));
 					m_btnMgr.setText(m_config7Btn4, m_cfg.getBool(GC_DOMAIN, "play_default_sound") ?  _t("yes", L"Yes") : _t("no", L"No"));
+					m_gc_play_default_sound = m_cfg.getBool(GC_DOMAIN, "play_default_sound", true);
 				}
 			}
 		}
