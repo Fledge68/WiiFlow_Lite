@@ -269,7 +269,7 @@ void CMenu::_initCheatSettingsMenu()
 {
 	_addUserLabels(m_cheatLblUser, ARRAY_SIZE(m_cheatLblUser), "CHEAT");
 	m_cheatBg = _texture("CHEAT/BG", "texture", theme.bg, false);
-	m_cheatLblTitle = _addTitle("CHEAT/TITLE", theme.titleFont, L"Cheats", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_cheatLblTitle = _addLabel("CHEAT/TITLE", theme.titleFont, L"Cheats", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 	m_cheatBtnBack = _addButton("CHEAT/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
 	m_cheatBtnApply = _addButton("CHEAT/APPLY_BTN", theme.btnFont, L"", 220, 400, 200, 48, theme.btnFontColor);
 	m_cheatBtnDownload = _addButton("CHEAT/DOWNLOAD_BTN", theme.btnFont, L"", 470, 130, 150, 48, theme.btnFontColor);

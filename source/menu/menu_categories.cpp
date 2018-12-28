@@ -408,7 +408,7 @@ void CMenu::_initCategorySettingsMenu()
 {
 	_addUserLabels(m_categoryLblUser, ARRAY_SIZE(m_categoryLblUser), "CATEGORY");
 	m_categoryBg = _texture("CATEGORY/BG", "texture", theme.bg, false);
-	m_categoryLblTitle = _addTitle("CATEGORY/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_categoryLblTitle = _addLabel("CATEGORY/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 	m_categoryBtnPageM = _addPicButton("CATEGORY/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 20, 400, 48, 48);
 	m_categoryLblPage = _addLabel("CATEGORY/PAGE_BTN", theme.btnFont, L"", 68, 400, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_categoryBtnPageP = _addPicButton("CATEGORY/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 172, 400, 48, 48);

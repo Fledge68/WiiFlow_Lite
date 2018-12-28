@@ -119,7 +119,7 @@ void CMenu::_initCoverBanner()
 {
 	m_coverbnrBg = _texture("COVERBNR/BG", "texture", theme.bg, false);
 	_addUserLabels(m_coverbnrLblUser, ARRAY_SIZE(m_coverbnrLblUser), "COVERBNR");
-	m_coverbnrLblTitle = _addTitle("COVERBNR/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_coverbnrLblTitle = _addLabel("COVERBNR/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 	m_coverbnrBtnBack = _addButton("COVERBNR/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
 
 	m_coverbnrLblDlCover = _addLabel("COVERBNR/DLCOVER", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);

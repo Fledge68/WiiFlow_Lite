@@ -183,7 +183,7 @@ void CMenu::_initPluginSettingsMenu()
 {
 	_addUserLabels(m_pluginLblUser, ARRAY_SIZE(m_pluginLblUser), "PLUGIN");
 	m_pluginBg = _texture("PLUGIN/BG", "texture", theme.bg, false);
-	m_pluginLblTitle = _addTitle("PLUGIN/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_pluginLblTitle = _addLabel("PLUGIN/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 	m_pluginBtnBack = _addButton("PLUGIN/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
 	m_pluginLblPage = _addLabel("PLUGIN/PAGE_BTN", theme.btnFont, L"", 68, 400, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_pluginBtnPageM = _addPicButton("PLUGIN/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 20, 400, 48, 48);

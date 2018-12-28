@@ -248,7 +248,7 @@ void CMenu::_initConfigGCMenu(void)
 	m_configGCBg = _texture("CONFIGGC/BG", "texture", theme.bg, false);
 
 	_addUserLabels(m_configGCLblUser, ARRAY_SIZE(m_configGCLblUser), "CONFIGGC");
-	m_configGCLblTitle = _addTitle("CONFIGGC/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_configGCLblTitle = _addLabel("CONFIGGC/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 	m_configGCBtnBack = _addButton("CONFIGGC/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
 	m_configGCLblPage = _addLabel("CONFIGGC/PAGE_BTN", theme.btnFont, L"", 68, 400, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_configGCBtnPageM = _addPicButton("CONFIGGC/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 20, 400, 48, 48);

@@ -324,7 +324,7 @@ void CMenu::_initHomeAndExitToMenu()
 	
 	//Home Menu
 	_addUserLabels(m_homeLblUser, ARRAY_SIZE(m_homeLblUser), "HOME");
-	m_homeLblTitle = _addTitle("HOME/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_homeLblTitle = _addLabel("HOME/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 
 	m_homeBtnSettings = _addButton("HOME/SETTINGS", theme.btnFont, L"", 60, 100, 250, 48, theme.btnFontColor);
 	m_homeBtnReloadCache = _addButton("HOME/RELOAD_CACHE", theme.btnFont, L"", 60, 180, 250, 48, theme.btnFontColor);
@@ -357,7 +357,7 @@ void CMenu::_initHomeAndExitToMenu()
 	
 	//ExitTo Menu
 	_addUserLabels(m_exittoLblUser, ARRAY_SIZE(m_exittoLblUser), "EXIT_TO");
-	m_exittoLblTitle = _addTitle("EXIT_TO/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_exittoLblTitle = _addLabel("EXIT_TO/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 
 	m_homeBtnExitToHBC = _addButton("EXIT_TO/HBC", theme.btnFont, L"", 185, 120, 270, 48, theme.btnFontColor);
 	m_homeBtnExitToMenu = _addButton("EXIT_TO/MENU", theme.btnFont, L"", 185, 180, 270, 48, theme.btnFontColor);

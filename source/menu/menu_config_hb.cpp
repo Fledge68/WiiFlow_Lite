@@ -131,7 +131,7 @@ void CMenu::_initCfgHB(void)
 	m_cfghbBg = _texture("CFG_HB/BG", "texture", theme.bg, false);
 	
 	_addUserLabels(m_cfghbLblUser, ARRAY_SIZE(m_cfghbLblUser), "CFG_HB");
-	m_cfghbLblTitle = _addTitle("CFG_HB/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_cfghbLblTitle = _addLabel("CFG_HB/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 	m_cfghbBtnBack = _addButton("CFG_HB/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
 	
 	m_cfghbLblAdjustCF = _addLabel("CFG_HB/ADJUST_CF", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);

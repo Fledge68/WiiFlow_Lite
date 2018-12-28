@@ -463,7 +463,7 @@ void CMenu::_initWad()
 	_addUserLabels(m_wadLblUser, ARRAY_SIZE(m_wadLblUser), "WAD");
 
 	m_wadBg = _texture("WAD/BG", "texture", theme.bg, false);
-	m_wadLblTitle = _addTitle("WAD/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_wadLblTitle = _addLabel("WAD/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 	m_wadLblDialog = _addLabel("WAD/DIALOG", theme.lblFont, L"", 20, 75, 600, 200, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_wadLblNandSelect = _addLabel("WAD/NAND_SELECT", theme.lblFont, L"", 20, 245, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_wadLblNandSelectVal = _addLabel("WAD/NAND_SELECT_BTN", theme.btnFont, L"", 468, 250, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);

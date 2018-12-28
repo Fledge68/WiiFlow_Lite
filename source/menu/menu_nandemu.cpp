@@ -1016,7 +1016,7 @@ void CMenu::_initNandEmuMenu()
 {
 	_addUserLabels(m_nandemuLblUser, ARRAY_SIZE(m_nandemuLblUser), "NANDEMU");
 	m_nandemuBg = _texture("NANDEMU/BG", "texture", theme.bg, false);
-	m_nandemuLblTitle = _addTitle("NANDEMU/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_nandemuLblTitle = _addLabel("NANDEMU/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 
 	m_nandfilePBar = _addProgressBar("NANDEMU/FILEPROGRESS_BAR", 40, 80, 560, 20);
 	m_nandfileLblMessage = _addLabel("NANDEMU/FMESSAGE", theme.lblFont, L"", 40, 110, 560, 100, theme.lblFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_TOP);

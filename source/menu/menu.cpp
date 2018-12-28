@@ -1492,34 +1492,6 @@ s16 CMenu::_addPicButton(const char *domain, TexData &texNormal, TexData &texSel
 	return m_btnMgr.addPicButton(tex1, tex2, x, y, width, height, clickSound, hoverSound);
 }
 
-s16 CMenu::_addTitle(const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, s16 style)
-{
-	CColor c(color);
-
-	c = m_theme.getColor(domain, "color", c);
-	x = m_theme.getInt(domain, "x", x);
-	y = m_theme.getInt(domain, "y", y);
-	width = m_theme.getInt(domain, "width", width);
-	height = m_theme.getInt(domain, "height", height);
-	font = _font(domain, "font", TITLEFONT);
-	style = _textStyle(domain, "style", style);
-	return m_btnMgr.addLabel(font, text, x, y, width, height, c, style);
-}
-
-s16 CMenu::_addText(const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, s16 style)
-{
-	CColor c(color);
-
-	c = m_theme.getColor(domain, "color", c);
-	x = m_theme.getInt(domain, "x", x);
-	y = m_theme.getInt(domain, "y", y);
-	width = m_theme.getInt(domain, "width", width);
-	height = m_theme.getInt(domain, "height", height);
-	font = _font(domain, "font", TEXTFONT);
-	style = _textStyle(domain, "style", style);
-	return m_btnMgr.addLabel(font, text, x, y, width, height, c, style);
-}
-
 s16 CMenu::_addLabel(const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, s16 style)
 {
 	CColor c(color);
@@ -1529,7 +1501,7 @@ s16 CMenu::_addLabel(const char *domain, SFont font, const wstringEx &text, int 
 	y = m_theme.getInt(domain, "y", y);
 	width = m_theme.getInt(domain, "width", width);
 	height = m_theme.getInt(domain, "height", height);
-	font = _font(domain, "font", LABELFONT);
+	font = _font(domain, "font", font.fSize, font.lineSpacing, font.weight, font.index, font.name);
 	style = _textStyle(domain, "style", style);
 	return m_btnMgr.addLabel(font, text, x, y, width, height, c, style);
 }
@@ -1543,7 +1515,7 @@ s16 CMenu::_addLabel(const char *domain, SFont font, const wstringEx &text, int 
 	y = m_theme.getInt(domain, "y", y);
 	width = m_theme.getInt(domain, "width", width);
 	height = m_theme.getInt(domain, "height", height);
-	font = _font(domain, "font", BUTTONFONT);
+	font = _font(domain, "font", font.fSize, font.lineSpacing, font.weight, font.index, font.name);
 	TexData texBg = _texture(domain, "background_texture", bg, false);
 	style = _textStyle(domain, "style", style);
 	return m_btnMgr.addLabel(font, text, x, y, width, height, c, style, texBg);
