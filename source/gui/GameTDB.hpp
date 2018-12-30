@@ -74,6 +74,8 @@ public:
 	const char * GetLanguageCode() { return LangCode.c_str(); };
 	//! Get the title of a specific game id in the language defined in LangCode
 	bool GetTitle(const char *id, const char * &title);
+	//! Get the name of a specific game id
+	bool GetName(const char *id, const char * &name);
 	//! Get the synopsis of a specific game id in the language defined in LangCode
 	bool GetSynopsis(const char *id, const char * &synopsis);
 	//! Get the region of a game for a specific game id

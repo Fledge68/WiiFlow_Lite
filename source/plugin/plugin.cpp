@@ -29,6 +29,13 @@
 #include "types.h"
 #include "crc32.h"
 
+// For PS1 serial
+#ifdef MSB_FIRST
+#define MODETEST_VAL    0x00ffffff
+#else
+#define MODETEST_VAL    0xffffff00
+#endif
+
 Plugin m_plugin;
 void Plugin::init(const string& m_pluginsDir)
 {
@@ -278,6 +285,322 @@ vector<string> Plugin::CreateArgs(const char *device, const char *path,
 		args.push_back(Argument);
 	}
 	return args;
+}
+
+/* Give the current game a simplified name */
+string Plugin::GetRomName(const dir_discHdr *gameHeader)
+{
+	if(strrchr(gameHeader->path, '/') != NULL)
+	{
+		// Remove extension
+		string FullName = strrchr(gameHeader->path, '/') + 1;
+		FullName = FullName.substr(0, FullName.find_last_of("."));
+
+		// Remove common suffixes and replace unwanted characters. 
+		string ShortName = FullName.substr(0, FullName.find(" (")).substr(0, FullName.find(" ["));
+		replace(ShortName.begin(), ShortName.end(), '_', ' ');
+		return ShortName;
+	}
+	return NULL;
+}
+
+/* Get serial from PS1 header's iso (Borrowed from Retroarch with a few c++ changes)*/
+static int GetSerialPS1(const char *path, string &Serial, int sub_channel_mixed)
+{
+	char *tmp;
+	int skip, frame_size, is_mode1, cd_sector;
+	char buffer[2048 * 2];
+
+	ifstream fp;
+	fp.open(path, ios::binary);
+
+	buffer[0] = '\0';
+	is_mode1  = 0;
+
+	if ( !fp.seekg(0, ios::end) )
+		goto error;
+
+	if (!sub_channel_mixed)
+	{
+		if ( (!fp.tellg()) & 0x7FF)
+		{
+			unsigned int mode_test = 0;
+
+			if ( !fp.seekg(0, ios::beg) )
+				goto error;
+
+			fp.read(reinterpret_cast<char *>(mode_test), 4);
+
+			if (mode_test != MODETEST_VAL)
+				is_mode1 = 1;
+		}
+	}
+
+	skip = is_mode1? 0: 24;
+	frame_size = sub_channel_mixed? 2448: is_mode1? 2048: 2352;
+
+	if ( !fp.seekg(156 + skip + 16 * frame_size, ios::beg) )
+		goto error;
+
+	fp.read(buffer, 6);
+
+	cd_sector = buffer[2] | (buffer[3] << 8) | (buffer[4] << 16);
+
+	if ( !fp.seekg(skip + cd_sector * frame_size, ios::beg) )
+	goto error;
+
+	fp.read(buffer, 2048 * 2);
+
+	tmp = buffer;
+	while (tmp < (buffer + 2048 * 2))
+	{
+		if (!*tmp)
+		goto error;
+
+		if (!strncasecmp((const char*)(tmp + 33), "SYSTEM.CNF;1", 12))
+			break;
+		tmp += *tmp;
+	}
+
+	if(tmp >= (buffer + 2048 * 2))
+		goto error;
+
+	cd_sector = tmp[2] | (tmp[3] << 8) | (tmp[4] << 16);
+	if ( !fp.seekg(skip + cd_sector * frame_size, ios::beg) )
+		goto error;
+
+	fp.read(buffer, 256);
+	buffer[256] = '\0';
+
+	tmp = buffer;
+	while(*tmp && strncasecmp((const char*)tmp, "boot", 4))
+		tmp++;
+
+	if(!*tmp)
+		goto error;
+
+	Serial = tmp;
+	Serial.erase(0, Serial.find_first_of('\\') + 1); 
+	replace(Serial.begin(), Serial.end(), '_', '-');
+	Serial.erase(remove(Serial.begin(), Serial.end(), '.'), Serial.end());
+	Serial.erase(Serial.find_first_of(';'));
+
+	fp.close();
+
+	return 1;
+
+error:
+	return 0;
+}
+
+/* Get serial from MegaCD header's iso 
+*
+* All headers should have "SEGADISCSYSTEM" in the first bytes.
+* The offset differs, the serial search depends on it.    
+*/
+
+void GetSerialMegaCD(const char *path, string &Serial)
+{
+	ifstream infile;
+	char buf[10];
+
+	infile.open(path, ios::binary);
+	infile.seekg(0, ios::beg);
+	infile.read ((char*)buf, 4);
+	buf[4] = '\0';
+
+	// iso or bin offset.
+	if (!strcasecmp(buf, "SEGA"))
+		infile.seekg(0x182, ios::beg);
+	else
+	{
+		infile.seekg(0x10, ios::beg);
+		infile.read ((char*)buf, 4);
+
+		if (!strcasecmp(buf, "SEGA"))
+			infile.seekg(0x192, ios::beg);
+	}
+
+	infile.read(buf, 9);
+	buf[9] = '\0';
+	infile.close();
+
+	Serial = buf;
+	Serial.erase(remove(Serial.begin(), Serial.end(), ' '), Serial.end());
+
+	// Cut at second dash, we don't need any extra code. 
+	// Sonic CD : MK-4407(-00)
+	size_t dash = std::count(Serial.begin(), Serial.end(), '-');
+
+	if(dash > 1)
+		Serial.erase(Serial.find_last_of('-'));
+
+	infile.close();
+}
+
+
+/* Get the Game ID based on name or CRC/Serial
+*
+* It returns the ID used to search in the platform database(SUPERNES.xml for instance)
+* and can also be used for snapshots/cartriges/discs images.
+* The Game ID is a 6 length alphanumerical value. It's screenscraper ID filled with 'A' letter.
+*/
+string Plugin::GetRomId(const dir_discHdr *gameHeader, const char *datadir, char *platform, const string &name)
+{
+	string GameID;
+	string CRC_Serial(12, '*');
+
+	// Load a platform list that is used to identify the current game.
+	// It contains a default filename(preferably No-intro without region flag), the GameID and then all known CRC32/serials.
+	// filename=GameID|crc1|crc2|etc...
+	// For example in SUPERNES.ini : Super Aleste=2241AA|5CA5781B|...
+	Config m_crc;
+	m_crc.unload();
+	m_crc.load(fmt("%s/%s/%s.ini", datadir, platform, platform) );
+
+	bool found_name = false;
+	found_name = m_crc.has(platform, name.c_str());
+
+	// Get game ID based on the filename
+	if(found_name)
+	{
+		vector<string> searchID = m_crc.getStrings(platform, name.c_str(), '|');
+
+		if(!searchID.empty())
+		{
+			GameID = searchID[0];
+		}
+
+		m_crc.unload();
+	}
+	// Get game ID by CRC or serial
+	else
+	{
+		m_crc.unload();
+
+		char crc_string[9];
+		crc_string[0] = '\0';
+		u32 buffer;
+		ifstream infile;
+
+		// For arcade games use the crc zip
+		if(strcasestr(platform, "ARCADE") || strcasestr(platform, "CPS") || !strncasecmp(platform, "NEOGEO", 6))
+		{
+			strncpy(crc_string, fmt("%08x", crc32file(gameHeader->path)), 8);
+			crc_string[8] = '\0';
+		}
+		else
+		{
+			// Look for for the file's crc inside the archive 
+			if(strstr(gameHeader->path, ".zip") != NULL)
+			{
+				infile.open(gameHeader->path, ios::binary);
+				infile.seekg(0x0e, ios::beg);
+				infile.read((char*)&buffer, 8);
+				infile.close();
+				strncpy(crc_string, fmt("%08x", (u32)__builtin_bswap32(buffer)), 8);
+				crc_string[8] = '\0';
+			}
+			else
+			{
+				// Check a serial in header's file instead of crc for these CD based platforms.
+				// CRC calculation would take up to 30 seconds!
+				if(!strcasecmp(platform, "MEGACD"))
+				{
+					GetSerialMegaCD(gameHeader->path, CRC_Serial);
+				}
+				else if(!strcasecmp(platform, "PS1"))
+				{
+					bool found;
+					found = GetSerialPS1(gameHeader->path, CRC_Serial, 0);
+
+					if(!found)
+					GetSerialPS1(gameHeader->path, CRC_Serial, 1);
+				}
+				else if(!strcasecmp(platform, "ATARIST"))
+				{
+					s8 pos = m_plugin.GetPluginPosition(gameHeader->settings[0]);
+					string FileTypes = m_plugin.GetFileTypes(pos);
+					string path;
+
+					// Parse config to get floppy A path
+					if(strcasestr(FileTypes.c_str(), ".cfg"))
+					{
+						Config m_cfg;
+						m_cfg.unload();
+						m_cfg.load(fmt("%s", gameHeader->path) );
+						path = m_cfg.getString("Floppy", "szDiskAFileName", "");
+						m_cfg.unload();
+
+						// Replace usb:/ with usb1:/ if needed
+						if (path.find("usb:/") != std::string::npos)
+						{
+							path.insert(3, "1");
+						}
+					}
+					else
+					{
+						path = gameHeader->path;
+					}
+
+					if (path.find(".zip") != std::string::npos)
+					{
+						infile.open(path, ios::binary);
+						infile.seekg(0x0e, ios::beg);
+						infile.read((char*)&buffer, 8);
+						infile.close();
+						strncpy(crc_string, fmt("%08x", (u32)__builtin_bswap32(buffer)), 8);
+						crc_string[8] = '\0';
+					}
+					else
+					{
+						strncpy(crc_string, fmt("%08x", crc32file(path.c_str())), 8);
+						crc_string[8] = '\0';
+					}
+				}
+				// Just check CRC for a regular file on any other system.
+				else
+				{
+					strncpy(crc_string, fmt("%08x", crc32file(gameHeader->path)), 8);
+					crc_string[8] = '\0';
+				}
+			}
+		}
+		
+		if(crc_string[0] != '\0')
+			CRC_Serial = crc_string;
+
+		// Now search ID with the obtained CRC/Serial
+		// Just add 2 pipes in the pattern to be sure we don't find a crc instead of ID
+		size_t idx;
+		idx=CRC_Serial.length();
+		CRC_Serial.insert(0, "|").insert(idx+1, "|");
+
+		ifstream inputFile;
+		inputFile.open( fmt("%s/%s/%s.ini", datadir, platform, platform) );
+		string line;
+
+		while(getline(inputFile, line))
+		{
+			// FIXME ahem, ignore case... 
+			if (line.find(lowerCase( CRC_Serial ), 0) != string::npos || line.find(upperCase( CRC_Serial ), 0) != string::npos)
+			{
+				unsigned first = (line.find('=') + 1);
+				unsigned last = line.find_first_of('|');
+				string ID = line.substr (first,last-first);
+
+				if(ID.empty())
+				{
+					return "";
+				}
+
+				GameID = ID;
+				break;
+			}
+		}
+	}
+	
+	return GameID;
 }
 
 string Plugin::GenerateCoverLink(dir_discHdr gameHeader, const string& constURL, Config &Checksums)

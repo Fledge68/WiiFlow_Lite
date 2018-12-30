@@ -586,7 +586,7 @@ void CMenu::_game(bool launch)
 			}
 		}
 		/* display game info screen */
-		else if(BTN_PLUS_PRESSED && !NoGameID(hdr->type) && !coverFlipped && !m_video_playing)
+		else if(BTN_PLUS_PRESSED && hdr->type != TYPE_HOMEBREW && hdr->type != TYPE_SOURCE && !coverFlipped && !m_video_playing)
 		{
 			_hideGame();// stops trailer movie too
 			m_banner.SetShowBanner(false);

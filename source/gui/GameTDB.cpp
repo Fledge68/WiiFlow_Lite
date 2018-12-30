@@ -31,6 +31,9 @@
 #include "config/config.hpp"
 #include "gecko/gecko.hpp"
 #include "memory/mem2.hpp"
+#include "types.h"
+#include "gui/coverflow.hpp"
+
 #define NAME_OFFSET_DB	"gametdb_offsets.bin"
 #define MAXREADSIZE		1024*1024   //Cache size only for parsing the offsets: 1MB
 
@@ -458,6 +461,17 @@ bool GameTDB::ParseFile()
 
 bool GameTDB::FindTitle(char *data, const char * &title, const string &langCode)
 {
+
+	if(CoverFlow.getHdr()->type == TYPE_PLUGIN)
+	{
+		title = GetNodeText(data, "<title>", "</title>");
+
+		if(title == NULL)
+			return false;
+		return true;
+
+	}
+
 	char *language = SeekLang(data, langCode.c_str());
 	if(language == NULL)
 	{
@@ -465,6 +479,7 @@ bool GameTDB::FindTitle(char *data, const char * &title, const string &langCode)
 		if(language == NULL)
 			return false;
 	}
+
 	title = GetNodeText(language, "<title>", "</title>");
 
 	if(title == NULL)
@@ -485,6 +500,24 @@ bool GameTDB::GetTitle(const char *id, const char * &title)
 	MEM2_free(data);
 
 	return retval;
+}
+
+bool GameTDB::GetName(const char *id, const char * &name)
+{
+	name = NULL;
+	if(!id)
+		return false;
+
+	char *data = GetGameNode(id);
+	if(!data)
+		return false;
+
+	name = GetNodeText(data, "<game name=\"", "\"");
+	MEM2_free(data);
+
+	if(name == NULL)
+		return false;
+	return true;
 }
 
 bool GameTDB::GetSynopsis(const char *id, const char * &synopsis)
@@ -508,6 +541,22 @@ bool GameTDB::GetSynopsis(const char *id, const char * &synopsis)
 		}
 	}
 	synopsis = GetNodeText(language, "<synopsis>", "</synopsis>");
+
+	if(CoverFlow.getHdr()->type == TYPE_PLUGIN)
+	{
+		// Default to English
+		if(synopsis == NULL)
+		{
+			language = SeekLang(data, "EN");
+			if(language == NULL)
+			{
+				MEM2_free(data);
+				return false;
+			}
+			synopsis = GetNodeText(language, "<synopsis>", "</synopsis>");
+		}
+	}
+
 	MEM2_free(data);
 
 	if(synopsis == NULL)
@@ -618,6 +667,46 @@ u32 GameTDB::GetPublishDate(const char *id)
 bool GameTDB::GetGenres(const char *id, const char * &gen)
 {
 	gen = NULL;
+
+	if(CoverFlow.getHdr()->type == TYPE_PLUGIN)
+	{
+		if(!id)
+			return false;
+
+		char *data = GetGameNode(id);
+		if(!data)
+			return false;
+
+		char *language = SeekLang(data, LangCode.c_str());
+		if(language == NULL)
+		{
+			language = SeekLang(data, "EN");
+			if(language == NULL)
+			{
+				MEM2_free(data);
+				return false;
+			}
+		}
+		gen = GetNodeText(language, "<genre>", "</genre>");
+
+		// If not found try in English
+		if(gen == NULL)
+		{
+			language = SeekLang(data, "EN");
+			if(language == NULL)
+			{
+				MEM2_free(data);
+				return false;
+			}
+
+			gen = GetNodeText(language, "<genre>", "</genre>");
+		}
+		MEM2_free(data);
+
+		if(gen == NULL)
+			return false;
+		return true;
+	}
 
 	if(id == NULL)
 		return false;
