@@ -220,7 +220,10 @@ bool CMenu::init()
 	m_fanartDir = m_cfg.getString("GENERAL", "dir_fanart", fmt("%s/fanart", m_dataDir.c_str()));
 	m_screenshotDir = m_cfg.getString("GENERAL", "dir_screenshot", fmt("%s/screenshots", m_dataDir.c_str()));
 	m_helpDir = m_cfg.getString("GENERAL", "dir_help", fmt("%s/help", m_dataDir.c_str()));
-	
+	m_cartDir = m_cfg.getString("GENERAL", "dir_cart", fmt("%s/cart_disk", m_dataDir.c_str()));
+	m_snapDir = m_cfg.getString("GENERAL", "dir_snap", fmt("%s/snapshots", m_dataDir.c_str()));
+	m_pluginDataDir = m_cfg.getString("GENERAL", "dir_plugins_data", fmt("%s/plugins_data", m_dataDir.c_str()));
+
 	/* Create our Folder Structure */
 	fsop_MakeFolder(m_dataDir.c_str()); //D'OH!
 

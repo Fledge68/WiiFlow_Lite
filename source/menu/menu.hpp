@@ -142,6 +142,9 @@ private:
 	string m_screenshotDir;
 	string m_settingsDir;
 	string m_languagesDir;
+	string m_cartDir;
+	string m_snapDir;
+	string m_pluginDataDir;
 	string m_helpDir;
 
 	/* NandEmulation */
@@ -618,6 +621,12 @@ private:
 	s16 m_gameinfoLblUser[5];
 	s16 m_gameinfoLblControlsReq[4];
 	s16 m_gameinfoLblControls[4];
+	s16 m_gameinfoLblSnap;
+	s16 m_gameinfoLblCartDisk;
+	s16 m_gameinfoLblOverlay;
+	TexData m_snap;
+	TexData m_cart;
+	TexData m_overlay;
 	TexData m_rating;
 	TexData m_wifi;
 	TexData m_controlsreq[4];

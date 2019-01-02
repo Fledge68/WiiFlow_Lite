@@ -65,6 +65,8 @@ public:
 	const char *GetDolName(u32 magic);
 	const char *GetCoverFolderName(u32 magic);
 	const char *GetRomDir(u8 pos);
+	string GetRomName(const dir_discHdr *gameHeader);
+	string GetRomId(const dir_discHdr *gameHeader,const char *datadir, char *platform, const string &name);
 	int GetRomPartition(u8 pos);
 	const string& GetFileTypes(u8 pos);
 	wstringEx GetPluginName(u8 pos);

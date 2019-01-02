@@ -1,6 +1,9 @@
 
+#include <algorithm>
 #include "menu.hpp"
 #include "gui/GameTDB.hpp"
+#include "plugin/plugin.hpp"
+#include "plugin/crc32.h"
 
 wstringEx gameinfo_Synopsis_w;
 wstringEx gameinfo_Title_w;
@@ -64,6 +67,9 @@ void CMenu::_gameinfo(void)
 			m_btnMgr.hide(m_gameinfoLblGenre, true);
 			m_btnMgr.hide(m_gameinfoLblRating, true);
 			m_btnMgr.hide(m_gameinfoLblWifiplayers, true);
+			m_btnMgr.hide(m_gameinfoLblSnap, true);
+			m_btnMgr.hide(m_gameinfoLblCartDisk, true);
+			m_btnMgr.hide(m_gameinfoLblOverlay, true);
 
 			for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControlsReq); ++i)
 				if(m_gameinfoLblControlsReq[i] != -1)
@@ -96,6 +102,9 @@ void CMenu::_gameinfo(void)
 			m_btnMgr.show(m_gameinfoLblGenre);
 			m_btnMgr.show(m_gameinfoLblRating);
 			m_btnMgr.show(m_gameinfoLblWifiplayers);
+			m_btnMgr.show(m_gameinfoLblSnap);
+			m_btnMgr.show(m_gameinfoLblCartDisk);
+			m_btnMgr.show(m_gameinfoLblOverlay);
 
 			for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControlsReq); ++i)
 				if(m_gameinfoLblControlsReq[i] != -1 && i < cnt_controlsreq)
@@ -130,6 +139,9 @@ void CMenu::_hideGameInfo(bool instant)
 	m_btnMgr.hide(m_gameinfoLblGenre, instant);
 	m_btnMgr.hide(m_gameinfoLblRating, instant);
 	m_btnMgr.hide(m_gameinfoLblWifiplayers, instant);
+	m_btnMgr.hide(m_gameinfoLblSnap, instant);
+	m_btnMgr.hide(m_gameinfoLblCartDisk, instant);
+	m_btnMgr.hide(m_gameinfoLblOverlay, instant);
 	
 	for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControlsReq); ++i)
 		if(m_gameinfoLblControlsReq[i] != -1)
@@ -161,6 +173,13 @@ void CMenu::_showGameInfo(void)
 		m_btnMgr.show(m_gameinfoLblGenre);
 		m_btnMgr.show(m_gameinfoLblWifiplayers);
 
+		if(m_current_view == COVERFLOW_PLUGIN)
+		{
+			m_btnMgr.show(m_gameinfoLblSnap);
+			m_btnMgr.show(m_gameinfoLblCartDisk);
+			m_btnMgr.show(m_gameinfoLblOverlay);
+		}
+
 		for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblUser); ++i)
 			if(i < ARRAY_SIZE(m_gameinfoLblUser) / 2)
 				m_btnMgr.show(m_gameinfoLblUser[i]);
@@ -190,9 +209,12 @@ void CMenu::_initGameInfoMenu()
 	m_gameinfoLblPublisher = _addLabel("GAMEINFO/PUBLISHER", theme.txtFont, L"", 40, 200, 460, 56, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
 	m_gameinfoLblRlsdate = _addLabel("GAMEINFO/RLSDATE", theme.txtFont, L"", 40, 230, 460, 56, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
 	m_gameinfoLblRegion = _addLabel("GAMEINFO/REGION", theme.txtFont, L"", 40, 260, 460, 56, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
-	m_gameinfoLblRating = _addLabel("GAMEINFO/RATING", theme.titleFont, L"", 550, 380, 48, 60, theme.titleFontColor, 0, m_rating);
+	m_gameinfoLblRating = _addLabel("GAMEINFO/RATING", theme.txtFont, L"", 550, 380, 48, 60, theme.txtFontColor, 0, m_rating);
 	m_gameinfoLblSynopsis = _addLabel("GAMEINFO/SYNOPSIS", theme.txtFont, L"", 40, 80, 560, 280, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
 	m_gameinfoLblWifiplayers = _addLabel("GAMEINFO/WIFIPLAYERS", theme.txtFont, L"", 550, 110, 68, 60, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP,m_wifi);
+	m_gameinfoLblSnap = _addLabel("GAMEINFO/SNAP", theme.titleFont, L"", 485, 200, m_snap.width, m_snap.height, theme.titleFontColor, 0, m_snap);
+	m_gameinfoLblOverlay = _addLabel("GAMEINFO/OVERLAY", theme.txtFont, L"",  485, 200, m_snap.width, m_snap.height, theme.titleFontColor, 0, m_overlay);
+	m_gameinfoLblCartDisk = _addLabel("GAMEINFO/CART", theme.txtFont, L"", 435, 364, m_cart.width, m_cart.height, theme.txtFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE,m_cart);
 
 	_addUserLabels(m_gameinfoLblUser, 1, 1, "GAMEINFO");
 	_addUserLabels(m_gameinfoLblUser, 3, 2, "GAMEINFO");
@@ -223,6 +245,9 @@ void CMenu::_initGameInfoMenu()
 	_setHideAnim(m_gameinfoLblRlsdate, "GAMEINFO/RLSDATE", 0, -100, 0.f, 0.f);
 	_setHideAnim(m_gameinfoLblGenre, "GAMEINFO/GENRE", 0, -100, 0.f, 0.f);
 	_setHideAnim(m_gameinfoLblWifiplayers, "GAMEINFO/WIFIPLAYERS", 0, -100, 0.f, 0.f);
+	_setHideAnim(m_gameinfoLblSnap, "GAMEINFO/SNAP", 0, -100, 0.f, 0.f);
+	_setHideAnim(m_gameinfoLblCartDisk, "GAMEINFO/CART", 0, -100, 0.f, 0.f);
+	_setHideAnim(m_gameinfoLblOverlay, "GAMEINFO/OVERLAY", 0, -100, 0.f, 0.f);
 	// 
 	_hideGameInfo(true);
 	synopsis_h = m_theme.getInt("GAMEINFO/SYNOPSIS", "height", 280);
@@ -234,7 +259,25 @@ void CMenu::_textGameInfo(void)
 	cnt_controls = 0;
 
 	GameTDB gametdb;
-	gametdb.OpenFile(fmt("%s/wiitdb.xml", m_settingsDir.c_str()));
+	char platformName[264];
+
+	if(CoverFlow.getHdr()->type == TYPE_PLUGIN)
+	{
+		// Check the platform name corresponding to the current magic number.
+		// We can't use magic # directly since it'd require hardcoding values and a # can be several systems(genplus) 
+		// We can't rely on coverfolder either. Different systems can share the same folder. Or combined plugins used for the same system.
+		Config m_platform;
+		m_platform.unload();
+		m_platform.load(fmt("%s/platform.ini", m_pluginDataDir.c_str()) );
+		snprintf(platformName, sizeof(platformName), "%s", m_platform.getString("PLUGINS", m_plugin.PluginMagicWord).c_str());
+		m_platform.unload();
+		gametdb.OpenFile(fmt("%s/%s/%s.xml", m_pluginDataDir.c_str(), platformName, platformName));
+	}
+	else
+	{
+		gametdb.OpenFile(fmt("%s/wiitdb.xml", m_settingsDir.c_str()));
+	}
+
 	gametdb.SetLanguageCode(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
 	const char *TMP_Char = NULL;
 	tdb_found = gametdb.IsLoaded();
@@ -242,11 +285,100 @@ void CMenu::_textGameInfo(void)
 	{
 		char GameID[7];
 		GameID[6] = '\0';
-		strncpy(GameID, CoverFlow.getId(), 6);
+
+		string ShortName;
+
+		// Clear text and textures 
+		TexData emptyTex;
+		gameinfo_Synopsis_w.fromUTF8("");
+		m_btnMgr.setText(m_gameinfoLblDev, wfmt(_fmt("",L"")), true);
+		m_btnMgr.setText(m_gameinfoLblPublisher, wfmt(_fmt("",L"")), true);
+		m_btnMgr.setText(m_gameinfoLblRegion, wfmt(_fmt("",L"")), true);
+		m_btnMgr.setText(m_gameinfoLblRating, wfmt(_fmt("",L"")), true);
+		m_btnMgr.setTexture(m_gameinfoLblRating, emptyTex);
+
+		m_btnMgr.setTexture(m_gameinfoLblSnap, emptyTex);
+		m_btnMgr.setTexture(m_gameinfoLblCartDisk, emptyTex);
+		m_btnMgr.setTexture(m_gameinfoLblOverlay, emptyTex);
+
+		// Get Game ID
+		if(CoverFlow.getHdr()->type == TYPE_PLUGIN)
+		{
+			const dir_discHdr *GameHdr = CoverFlow.getHdr();
+			ShortName = m_plugin.GetRomName(GameHdr);
+			strncpy(GameID, m_plugin.GetRomId(GameHdr, m_pluginDataDir.c_str(), platformName, ShortName).c_str(), 6);
+		}
+		else
+		{
+			strncpy(GameID, CoverFlow.getId(), 6);
+		}
+
 		if(gametdb.GetTitle(GameID, TMP_Char))
 		{
 			gameinfo_Title_w.fromUTF8(TMP_Char);
 			m_btnMgr.setText(m_gameinfoLblTitle, gameinfo_Title_w);
+
+			if(CoverFlow.getHdr()->type == TYPE_PLUGIN)
+			{
+				// Try to find images by game's name
+				if(gametdb.GetName(GameID, TMP_Char))
+				{
+					const char *snap_path = NULL;
+					const char *cart_path = NULL;
+					const char *overlay_path = NULL;
+
+					// Use real filename without extension for arcade games.
+					if(strcasestr(platformName, "ARCADE") || strcasestr(platformName, "CPS") || !strncasecmp(platformName, "NEOGEO", 6))
+					{
+						snap_path = fmt("%s/%s/%s.png", m_snapDir.c_str(), platformName, ShortName.c_str());
+						cart_path = fmt("%s/%s/%s_2D.png", m_cartDir.c_str(), platformName, ShortName.c_str());
+					}
+					// Name from the database.
+					else
+					{
+						snap_path = fmt("%s/%s/%s.png", m_snapDir.c_str(), platformName, TMP_Char);
+						cart_path = fmt("%s/%s/%s_2D.png", m_cartDir.c_str(), platformName, TMP_Char);
+					}
+
+					// Try to find images by game's ID
+					if(!fsop_FileExist( snap_path ))
+					{
+						snap_path = fmt("%s/%s/%s.png", m_snapDir.c_str(), platformName, GameID);
+						cart_path = fmt("%s/%s/%s_2D.png", m_cartDir.c_str(), platformName, GameID);
+
+						if(!fsop_FileExist( snap_path ))
+						{
+							TexHandle.Cleanup(m_snap);
+							TexHandle.Cleanup(m_cart);
+						}
+					}
+
+					TexHandle.fromImageFile(m_snap, snap_path);
+					m_btnMgr.setTexture(m_gameinfoLblSnap, m_snap, m_snap.width, m_snap.height);
+					TexHandle.fromImageFile(m_cart, cart_path);
+
+					if( m_cart.height > 112 )
+					{
+						m_btnMgr.setTexture(m_gameinfoLblCartDisk, m_cart, 114, 128);
+					}
+					else
+					{
+						m_btnMgr.setTexture(m_gameinfoLblCartDisk, m_cart, 160, 112);
+					}
+
+					overlay_path = fmt("%s/%s_overlay.png", m_snapDir.c_str(), platformName);
+
+					if(fsop_FileExist( overlay_path ))
+					{
+						TexHandle.fromImageFile(m_overlay, overlay_path);
+						m_btnMgr.setTexture(m_gameinfoLblOverlay, m_overlay, m_overlay.width, m_overlay.height);
+					}
+					else
+					{
+						m_btnMgr.setTexture(m_gameinfoLblOverlay, emptyTex);
+					}			
+				}
+			}
 		}
 		else
 		{
@@ -254,29 +386,54 @@ void CMenu::_textGameInfo(void)
 			gametdb.CloseFile();
 			return;
 		}
+
 		if(gametdb.GetSynopsis(GameID, TMP_Char))
-		{
+		{						
 			gameinfo_Synopsis_w.fromUTF8(TMP_Char);
 			m_btnMgr.setText(m_gameinfoLblSynopsis, gameinfo_Synopsis_w);
 		}
 		m_btnMgr.setText(m_gameinfoLblID, wfmt(L"GameID: %s", GameID), true);
-		if(gametdb.GetDeveloper(GameID, TMP_Char))
-			m_btnMgr.setText(m_gameinfoLblDev, wfmt(_fmt("gameinfo1",L"Developer: %s"), TMP_Char), true);
-		if(gametdb.GetPublisher(GameID, TMP_Char))
-			m_btnMgr.setText(m_gameinfoLblPublisher, wfmt(_fmt("gameinfo2",L"Publisher: %s"), TMP_Char), true);
-		if(gametdb.GetRegion(GameID, TMP_Char))
-			m_btnMgr.setText(m_gameinfoLblRegion, wfmt(_fmt("gameinfo3",L"Region: %s"), TMP_Char), true);
-		if(gametdb.GetGenres(GameID, TMP_Char))
+
+		// Only show retrieved data else the text is often underneath the snapshot.
+		// It's still too long sometimes. Maybe, we should cut the string at a max length.
+		if(CoverFlow.getHdr()->type == TYPE_PLUGIN)
 		{
-			vector<string> genres = stringToVector(TMP_Char, ',');
-			string s;
-			for(u32 i = 0; i < genres.size(); ++i)
+			if(gametdb.GetDeveloper(GameID, TMP_Char))
+				m_btnMgr.setText(m_gameinfoLblDev, wfmt(_fmt("",L"%s"), TMP_Char), true);
+			if(gametdb.GetPublisher(GameID, TMP_Char))
+				m_btnMgr.setText(m_gameinfoLblPublisher, wfmt(_fmt("",L"%s"), TMP_Char), true);
+			if(gametdb.GetRegion(GameID, TMP_Char))
+				m_btnMgr.setText(m_gameinfoLblRegion, wfmt(_fmt("gameinfo3",L"Region: %s"), TMP_Char), true);
+			if(gametdb.GetGenres(GameID, TMP_Char))
 			{
-				if(i > 0)
-					s.append(", ");// add comma & space between genres
-				s.append(genres[i]);
+				m_btnMgr.setText(m_gameinfoLblGenre, wfmt(_fmt("",L"%s"), TMP_Char), true);
 			}
-			m_btnMgr.setText(m_gameinfoLblGenre, wfmt(_fmt("gameinfo5",L"Genre: %s"), s.c_str()), true);
+			else
+			{
+				// Genre not found, show nothing.
+				m_btnMgr.setText(m_gameinfoLblGenre, wfmt(_fmt("",L"")), true);
+			}
+		}
+		else
+		{
+			if(gametdb.GetDeveloper(GameID, TMP_Char))
+				m_btnMgr.setText(m_gameinfoLblDev, wfmt(_fmt("gameinfo1",L"Developer: %s"), TMP_Char), true);
+			if(gametdb.GetPublisher(GameID, TMP_Char))
+				m_btnMgr.setText(m_gameinfoLblPublisher, wfmt(_fmt("gameinfo2",L"Publisher: %s"), TMP_Char), true);
+			if(gametdb.GetRegion(GameID, TMP_Char))
+				m_btnMgr.setText(m_gameinfoLblRegion, wfmt(_fmt("gameinfo3",L"Region: %s"), TMP_Char), true);
+			if(gametdb.GetGenres(GameID, TMP_Char))
+			{
+				vector<string> genres = stringToVector(TMP_Char, ',');
+				string s;
+				for(u32 i = 0; i < genres.size(); ++i)
+				{
+					if(i > 0)
+						s.append(", ");// add comma & space between genres
+					s.append(genres[i]);
+				}
+				m_btnMgr.setText(m_gameinfoLblGenre, wfmt(_fmt("gameinfo5",L"Genre: %s"), s.c_str()), true);
+			}
 		}
 
 		int PublishDate = gametdb.GetPublishDate(GameID);
@@ -288,15 +445,34 @@ void CMenu::_textGameInfo(void)
 			case 0:
 			case 4:
 			case 5:
-				m_btnMgr.setText(m_gameinfoLblRlsdate, wfmt(_fmt("gameinfo4",L"Release Date: %i-%i-%i"), year, month, day), true);
+				if(CoverFlow.getHdr()->type == TYPE_PLUGIN)
+					m_btnMgr.setText(m_gameinfoLblRlsdate, wfmt(_fmt("",L"%i-%i-%i"), year, month, day), true);
+				else
+					m_btnMgr.setText(m_gameinfoLblRlsdate, wfmt(_fmt("gameinfo4",L"Release Date: %i-%i-%i"), year, month, day), true);
 				break;
 			case 1:
-				m_btnMgr.setText(m_gameinfoLblRlsdate, wfmt(_fmt("gameinfo4",L"Release Date: %i-%i-%i"), month, day, year), true);
+				if(CoverFlow.getHdr()->type == TYPE_PLUGIN)
+					m_btnMgr.setText(m_gameinfoLblRlsdate, wfmt(_fmt("",L"%i-%i-%i"), month, day, year), true);
+				else
+					m_btnMgr.setText(m_gameinfoLblRlsdate, wfmt(_fmt("gameinfo4",L"Release Date: %i-%i-%i"), month, day, year), true);
 				break;
 			case 2:
-				m_btnMgr.setText(m_gameinfoLblRlsdate, wfmt(_fmt("gameinfo4",L"Release Date: %i-%i-%i"), day, month, year), true);
+				if(CoverFlow.getHdr()->type == TYPE_PLUGIN)
+					m_btnMgr.setText(m_gameinfoLblRlsdate, wfmt(_fmt("",L"%i-%i-%i"), day, month, year), true);
+				else
+					m_btnMgr.setText(m_gameinfoLblRlsdate, wfmt(_fmt("gameinfo4",L"Release Date: %i-%i-%i"), day, month, year), true);
 				break;
 		}
+
+		// Only display year or nothing if there's no date at all
+		if(day == 0 && month == 0)
+		{
+			if(year != 0)
+				m_btnMgr.setText(m_gameinfoLblRlsdate, wfmt(_fmt("",L"%i"), year), true);
+			else
+				m_btnMgr.setText(m_gameinfoLblRlsdate, wfmt(_fmt("",L"")), true);
+		}
+
 		//Ratings
 		TexHandle.fromImageFile(m_rating, fmt("%s/norating.png", m_imgsDir.c_str()));
 		const char *RatingValue = NULL;
@@ -356,10 +532,28 @@ void CMenu::_textGameInfo(void)
 					break;
 			}
 		}
-		m_btnMgr.setTexture(m_gameinfoLblRating, m_rating);
+		// Display the user's mark /20 instead because most of the rating data is missing.
+		if(CoverFlow.getHdr()->type == TYPE_PLUGIN)
+		{ 
+			if(gametdb.GetRatingValue(GameID, RatingValue))
+			{
+				if(RatingValue[0] != '\0')
+				{
+					m_btnMgr.setText(m_gameinfoLblRating, wfmt(_fmt("",L"%s/20"), RatingValue), true);
+				}
+			}
+			else
+			{
+				m_btnMgr.setText(m_gameinfoLblRating, wfmt(_fmt("",L"")), true);
+			}
+		}
+		else
+		{
+			m_btnMgr.setText(m_gameinfoLblRating, wfmt(_fmt("",L"")), true);
+			m_btnMgr.setTexture(m_gameinfoLblRating, m_rating);
+		}
 		//Wifi players
 		int WifiPlayers = gametdb.GetWifiPlayers(GameID);
-		TexData emptyTex;
 		if(WifiPlayers == 1)
 			TexHandle.fromImageFile(m_wifi, fmt("%s/wifi1.png", m_imgsDir.c_str()));
 		else if(WifiPlayers == 2)
@@ -440,6 +634,8 @@ void CMenu::_textGameInfo(void)
 				TexHandle.fromImageFile(m_controlsreq[x], fmt("%s/wiimote3.png", m_imgsDir.c_str()));
 			else if(players == 4)
 				TexHandle.fromImageFile(m_controlsreq[x], fmt("%s/wiimote4.png", m_imgsDir.c_str()));
+			else if(players == 5)
+				TexHandle.fromImageFile(m_controlsreq[x], fmt("%s/wiimote5.png", m_imgsDir.c_str()));
 			else if(players == 6)
 				TexHandle.fromImageFile(m_controlsreq[x], fmt("%s/wiimote6.png", m_imgsDir.c_str()));
 			else if(players == 8)
