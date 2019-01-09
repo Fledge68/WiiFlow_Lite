@@ -1615,6 +1615,8 @@ int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id, bool RealNAND_Channels)
 
 void CMenu::_launchChannel(dir_discHdr *hdr)
 {
+	NANDemuView = hdr->type == TYPE_EMUCHANNEL;
+	
 	/* clear coverflow, start wiiflow wait animation, set exit handler */	
 	_launchShutdown();
 	string id = string(hdr->id);

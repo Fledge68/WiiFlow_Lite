@@ -560,7 +560,7 @@ void CMenu::_Theme_Cleanup(void)
 	theme.texSet.clear();
 	theme.fontSet.clear();
 	theme.soundSet.clear();
-	//m_theme.unload();
+	m_theme.unload();
 	m_coverflow.unload();
 }
 
@@ -1245,7 +1245,6 @@ void CMenu::_buildMenus(void)
 	_initPathsMenu();
 
 	_loadCFCfg();
-	m_theme.unload();// done with theme.ini so lets unload it from mem
 }
 
 typedef struct
@@ -2649,8 +2648,8 @@ const char *CMenu::getBlankCoverPath(const dir_discHdr *element)
 		default:
 			blankCoverKey = "wii";
 	}
-	//return fmt("%s/%s", m_boxPicDir.c_str(), m_theme.getString("BLANK_COVERS", blankCoverKey, fmt("%s.jpg", blankCoverKey)).c_str());
-	return fmt("%s/%s.jpg", m_boxPicDir.c_str(), blankCoverKey);
+	return fmt("%s/%s", m_boxPicDir.c_str(), m_theme.getString("BLANK_COVERS", blankCoverKey, fmt("%s.jpg", blankCoverKey)).c_str());
+	//return fmt("%s/%s.jpg", m_boxPicDir.c_str(), blankCoverKey);
 }
 
 const char *CMenu::getBoxPath(const dir_discHdr *element)

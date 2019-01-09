@@ -27,6 +27,7 @@ char btn_selected[16];
 char current_btn[16];
 int curflow = 1;
 bool sm_tier = false;
+int channels_type;
 
 void CMenu::_sourceFlow()
 {
@@ -45,10 +46,17 @@ void CMenu::_sourceFlow()
 		m_current_view = COVERFLOW_GAMECUBE;
 	else if(source == "emunand")
 	{
+		m_cfg.setInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_EMU);
 		m_current_view = COVERFLOW_CHANNEL;
 	}
 	else if(source == "realnand")
 	{
+		m_cfg.setInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_REAL);
+		m_current_view = COVERFLOW_CHANNEL;
+	}
+	else if(source == "bothnand")
+	{
+		m_cfg.setInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_BOTH);
 		m_current_view = COVERFLOW_CHANNEL;
 	}
 	else if(source == "homebrew")
@@ -293,14 +301,23 @@ void CMenu::_updateSourceBtns(void)
 						}
 					}
 				}
-				else if(btnSource == "realnand" || btnSource == "emunand")
+				else if(btnSource == "realnand" && (m_current_view & COVERFLOW_CHANNEL) && (channels_type & CHANNELS_REAL))
 				{
-					if(m_current_view & COVERFLOW_CHANNEL)
-					{
-						sourceBtn = i;
-						selectedBtns++;
-						src_selected = true;
-					}
+					sourceBtn = i;
+					selectedBtns++;
+					src_selected = true;
+				}
+				else if(btnSource == "emunand" && (m_current_view & COVERFLOW_CHANNEL) && (channels_type & CHANNELS_EMU))
+				{
+					sourceBtn = i;
+					selectedBtns++;
+					src_selected = true;
+				}
+				else if(btnSource == "bothnand" && (m_current_view & COVERFLOW_CHANNEL) && (channels_type & CHANNELS_BOTH))
+				{
+					sourceBtn = i;
+					selectedBtns++;
+					src_selected = true;
 				}
 				else if(btnSource == "dml" || btnSource == "homebrew" || btnSource == "wii")
 				{
@@ -347,6 +364,7 @@ bool CMenu::_Source()
 	exitSource = false;
 	curPage = 1;
 	numPages = (m_max_source_btn / 12) + 1;
+	channels_type = m_cfg.getInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_REAL);
 	
 	SetupInput();
 	_showSource();
@@ -463,8 +481,14 @@ bool CMenu::_Source()
 					m_current_view = COVERFLOW_GAMECUBE;
 					_setSrcOptions();
 				}
-				else if(source == "emunand" || source == "realnand")
+				else if(source == "emunand" || source == "realnand" || source == "bothnand")
 				{
+					if(source == "emunand")
+						channels_type = CHANNELS_EMU;
+					else if(source == "realnand")
+						channels_type = CHANNELS_REAL;
+					else if(source == "bothnand")
+						channels_type = CHANNELS_BOTH;
 					m_current_view = COVERFLOW_CHANNEL;
 					_setSrcOptions();
 				}
@@ -562,8 +586,48 @@ bool CMenu::_Source()
 					m_current_view ^= COVERFLOW_WII;// toggle on/off
 				else if(source == "dml")
 					m_current_view ^= COVERFLOW_GAMECUBE;
-				else if(source == "emunand" || source == "realnand")
-					m_current_view ^= COVERFLOW_CHANNEL;
+				else if(source == "emunand")
+				{
+					if(m_current_view & COVERFLOW_CHANNEL)// if cf channel on then swith only emu type
+						channels_type ^= CHANNELS_EMU;
+					else
+						channels_type = CHANNELS_EMU;// if cf channel off then set to only emu type
+					if(channels_type == 0)// if cf channel on and type is set to nothing
+					{
+						channels_type = CHANNELS_REAL;// make sure channels type is set to default REAL
+						m_current_view &= ~COVERFLOW_CHANNEL;// turn off coverflow channels
+					}
+					else
+						m_current_view |= COVERFLOW_CHANNEL;// turn on coverflow channels
+				}
+				else if(source == "realnand")
+				{
+					if(m_current_view & COVERFLOW_CHANNEL)
+						channels_type ^= CHANNELS_REAL;
+					else
+						channels_type = CHANNELS_REAL;
+					if(channels_type == 0)
+					{
+						channels_type = CHANNELS_REAL;
+						m_current_view &= ~COVERFLOW_CHANNEL;
+					}
+					else
+						m_current_view |= COVERFLOW_CHANNEL;
+				}
+				else if(source == "bothnand")
+				{
+					if(m_current_view & COVERFLOW_CHANNEL)
+						channels_type ^= CHANNELS_BOTH;
+					else
+						channels_type = CHANNELS_BOTH;
+					if(channels_type == 0)
+					{
+						channels_type = CHANNELS_REAL;
+						m_current_view &= ~COVERFLOW_CHANNEL;
+					}
+					else
+						m_current_view |= COVERFLOW_CHANNEL;
+				}
 				else if(source == "homebrew")
 				{
 					_hideSource();
@@ -652,6 +716,7 @@ bool CMenu::_Source()
 			_updateSourceBtns();
 		}
 	}
+	m_cfg.setInt(CHANNEL_DOMAIN, "channels_type", channels_type);
 	_hideSource(true);
 	return newSource;
 }
@@ -696,7 +761,7 @@ bool CMenu::_shortCover(const char *magic)
 {
 	if(magic == NULL)
 		return false;
-	for(i = 0; i < ARRAY_SIZE(sideCovers); i++)
+	for(i = 0; i < ARRAY_SIZE(shortCovers); i++)
 	{
 		if((shortCovers[i][6] == 'x' && strncasecmp(magic, shortCovers[i], 6) == 0) || strncasecmp(magic, shortCovers[i], 8) == 0)
 			return true;
