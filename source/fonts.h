@@ -13,7 +13,7 @@ const u8 WFB_HASH[] =			{0x4f, 0xad, 0x97, 0xfd, 0x4a, 0x28, 0x8c, 0x47, 0xe0, 0
 #define TITLEFONT_PT_SZ	24u
 #define BTNFONT_PT_SZ	20u
 #define LBLFONT_PT_SZ	20u
-#define TEXTFONT_PT_SZ	16u
+#define TEXTFONT_PT_SZ	14u
 
 #define TITLEFONT	TITLEFONT_PT_SZ, TITLEFONT_PT_SZ - 4, FONT_NOBOLD, 1, "title_font"
 #define BUTTONFONT	BTNFONT_PT_SZ, BTNFONT_PT_SZ - 4, FONT_NOBOLD, 1, "button_font"

@@ -250,8 +250,12 @@ void CButtonsMgr::setTexture(s16 id, TexData &bg, int width, int height)
 			case GUIELT_LABEL:
 				lbl = (SLabel*)m_elts[id];
 				lbl->texBg = bg;//change texture
+				lbl->x = lbl->x - lbl->w / 2;
+				lbl->y = lbl->y - lbl->h / 2;
 				lbl->w = width;
 				lbl->h = height;
+				lbl->x = lbl->x + width / 2;
+				lbl->y = lbl->y + height / 2;
 				break;
 			case GUIELT_PROGRESS:
 				break;
