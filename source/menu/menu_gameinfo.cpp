@@ -272,7 +272,7 @@ void CMenu::_initGameInfoMenu()
 	m_gameinfoLblSynopsis = _addLabel("GAMEINFO/SYNOPSIS", theme.txtFont, L"", 40, 80, 560, 280, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
 	m_gameinfoLblWifiplayers = _addLabel("GAMEINFO/WIFIPLAYERS", theme.txtFont, L"", 550, 110, 68, 60, theme.txtFontColor, 0, m_wifi);
 	m_gameinfoLblSnap = _addLabel("GAMEINFO/SNAP", theme.txtFont, L"", 350, 80, 100, 100, theme.txtFontColor, 0, m_snap);
-	m_gameinfoLblOverlay = _addLabel("GAMEINFO/OVERLAY", theme.txtFont, L"",  370, 80, 100, 100, theme.txtFontColor, 0, m_overlay);
+	m_gameinfoLblOverlay = _addLabel("GAMEINFO/OVERLAY", theme.txtFont, L"", 350, 80, 100, 100, theme.txtFontColor, 0, m_overlay);
 	m_gameinfoLblCartDisk = _addLabel("GAMEINFO/CART", theme.txtFont, L"", 400, 320, 100, 100, theme.txtFontColor, 0, m_cart);
 	m_gameinfoLblRomInfo = _addLabel("GAMEINFO/ROMINFO", theme.txtFont, L"", 40, 80, 300, 300, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
 
@@ -462,7 +462,15 @@ void CMenu::_textGameInfo(void)
 		if(gametdb.GetGenres(GameID, TMP_Char))
 		{
 			rom_info.append(L"\n\n");
-			rom_info.append(wfmt(_fmt("gameinfo5",L"Genre: %s"), TMP_Char));
+			vector<string> genres = stringToVector(TMP_Char, ',');
+			string s;
+			for(u8 i = 0; i < genres.size(); ++i)
+			{
+				if(i > 0)
+					s.append(", ");// add comma & space between genres
+				s.append(genres[i]);
+			}
+			rom_info.append(wfmt(_fmt("gameinfo5",L"Genre: %s"), s.c_str()));
 		}
 		int PublishDate = gametdb.GetPublishDate(GameID);
 		int year = PublishDate >> 16;

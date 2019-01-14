@@ -461,8 +461,9 @@ bool GameTDB::ParseFile()
 
 bool GameTDB::FindTitle(char *data, const char * &title, const string &langCode)
 {
-
-	if(CoverFlow.getHdr()->type == TYPE_PLUGIN)
+	// Coverflow.getHdr() will return NULL if coverflow list is empty or not made yet
+	// because list generator hasn't made the game list yet.
+	if(CoverFlow.getHdr() != NULL && CoverFlow.getHdr()->type == TYPE_PLUGIN)
 	{
 		title = GetNodeText(data, "<title>", "</title>");
 
