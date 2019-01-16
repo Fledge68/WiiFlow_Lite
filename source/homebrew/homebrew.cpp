@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 #include "homebrew.h"
+#include "defines.h"
 #include "loader/sys.h"
 #include "banner/AnimatedBanner.h"
 #include "fileOps/fileOps.h"
@@ -27,13 +28,10 @@ u8 *appbooter_ptr = NULL;
 u32 appbooter_size = 0;
 using namespace std;
 
-#ifdef APP_WIIFLOW
 extern const u8 wfstub_bin[];
 extern const u32 wfstub_bin_size;
-#else
 extern const u8 stub_bin[];
 extern const u32 stub_bin_size;
-#endif
 
 u8 valid = 0;
 
