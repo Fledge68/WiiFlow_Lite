@@ -174,6 +174,7 @@ void CMenu::_PluginSettings()
 		m_cfg.setUInt("GENERAL", "sources", m_current_view);
 		m_source_cnt = 1;
 		m_catStartPage = 1;
+		m_cfg.remove("GENERAL", "main_background");
 	}
 	else
 		m_current_view = m_cfg.getUInt("GENERAL", "sources");

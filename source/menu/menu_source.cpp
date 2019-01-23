@@ -135,7 +135,6 @@ void CMenu::_sourceFlow()
 	m_cfg.setUInt("GENERAL", "sources", m_current_view);
 	m_source_cnt = 1;
 	_setSrcOptions();
-	_setBg(m_mainBg, m_mainBgLQ);
 }
 
 int CMenu::_getSrcFlow(void)
@@ -201,6 +200,8 @@ void CMenu::_setSrcFlowBg(void)
 		TexHandle.Cleanup(sfbgimg);
 		if(TexHandle.fromImageFile(sfbgimg, fmt("%s/backgrounds/%s", m_sourceDir.c_str(), fn.c_str())) == TE_OK)
 			_setBg(sfbgimg, sfbgimg, true);
+		else
+			_setBg(m_mainBg, m_mainBgLQ);
 	}
 	else
 		_setBg(m_mainBg, m_mainBgLQ);
@@ -771,6 +772,7 @@ bool CMenu::_shortCover(const char *magic)
 
 void CMenu::_setSrcOptions(void)
 {
+	m_cfg.setString("GENERAL", "main_background", m_source.getString(btn_selected, "background", ""));
 	m_catStartPage = m_source.getInt(btn_selected, "cat_page", 1);
 	u8 category = m_source.getInt(btn_selected, "category", 0);
 	if(category > 0)

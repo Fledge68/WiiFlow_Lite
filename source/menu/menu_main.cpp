@@ -41,9 +41,24 @@ void CMenu::_hideMain(bool instant)
 			m_btnMgr.hide(m_mainLblUser[i], instant);
 }
 
+void CMenu::_setMainBg()
+{
+	string fn = m_cfg.getString("general", "main_background", "");
+	if(fn.length() > 0)
+	{
+		TexHandle.Cleanup(m_mainAltBg);
+		if(TexHandle.fromImageFile(m_mainAltBg, fmt("%s/backgrounds/%s", m_dataDir.c_str(), fn.c_str())) == TE_OK)
+			_setBg(m_mainAltBg, m_mainAltBg, true);
+		else
+			_setBg(m_mainBg, m_mainBgLQ);
+	}
+	else
+		_setBg(m_mainBg, m_mainBgLQ);
+}
+
 void CMenu::_showMain()
 {
-	_setBg(m_mainBg, m_mainBgLQ);
+	_setMainBg();
 	if(m_refreshGameList)
 		_showCF(m_refreshGameList);
 }
@@ -318,7 +333,7 @@ int CMenu::main(void)
 				if(m_sourceflow)//if exiting sourceflow via b button
 				{
 					m_sourceflow = false;
-					_setBg(m_mainBg, m_mainBgLQ);
+					_setMainBg();
 					_showCF(true);
 					continue;
 				}
@@ -426,6 +441,8 @@ int CMenu::main(void)
 				m_source_cnt = 1;
 				m_cfg.setUInt("GENERAL", "sources", m_current_view);
 				m_catStartPage = 1;
+				m_cfg.remove("GENERAL", "main_background");
+				_setMainBg();
 				_showCF(true);
 			}
 			else if(m_btnMgr.selected(m_mainBtnConfig))
@@ -501,6 +518,7 @@ int CMenu::main(void)
 				if(m_sourceflow)
 				{
 					_sourceFlow();// set the source selected
+					_setMainBg();
 					_showCF(true);
 					continue;
 				}
@@ -514,7 +532,7 @@ int CMenu::main(void)
 						bheld = true;
 						bUsed = true;
 					}
-					_setBg(m_mainBg, m_mainBgLQ);
+					_setMainBg();
 					if(m_refreshGameList)
 					{
 						/* if changes were made to favorites, parental lock, or categories */
@@ -541,7 +559,7 @@ int CMenu::main(void)
 				}
 				else
 					bheld = false;
-				_setBg(m_mainBg, m_mainBgLQ);
+				_setMainBg();
 				if(m_refreshGameList)
 				{
 					m_refreshGameList = false;

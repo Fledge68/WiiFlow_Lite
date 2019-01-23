@@ -335,7 +335,7 @@ void CMenu::_showGame(void)
 		CoverFlow.hideCover();
 	}
 	else
-		_setBg(m_gameBg, m_gameBgLQ);
+		_setMainBg();
 	return;
 	
 	if(!m_zoom_banner)

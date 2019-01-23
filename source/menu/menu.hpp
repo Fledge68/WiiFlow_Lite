@@ -163,13 +163,14 @@ private:
 	const char *m_txt_path;
 
 // Background image stuff
-	TexData sfbgimg;
 	TexData m_curBg;
 	const TexData *m_prevBg;
 	const TexData *m_nextBg;
 	const TexData *m_lqBg;
 	u8 m_bgCrossFade;
 	//
+	TexData sfbgimg;
+	TexData m_mainAltBg;
 	TexData m_errorBg;
 	TexData m_mainBg;
 	TexData m_configBg;
@@ -1028,6 +1029,7 @@ private:
 	void _updateCheckboxes(void);
 	void _getGameCategories(void);
 	void _setGameCategories(void);
+	void _setMainBg(void);
 	void _setBg(const TexData &bgTex, const TexData &bglqTex, bool force_change = false);
 	void _updateBg(void);
 	void _drawBg(void);
