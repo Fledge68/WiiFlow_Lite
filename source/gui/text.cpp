@@ -182,7 +182,7 @@ bool SFont::fromBuffer(const u8 *buffer, const u32 bufferSize, u32 size, u32 lsp
 	memcpy(data, buffer, bufferSize);
 	DCFlushRange(data, dataSize);
 
-	memcpy(name, fontname, 127);
+	strncpy(name, fontname, 127);
 	font = new FreeTypeGX();
 	font->loadFont(data, dataSize, weight, true);
 	return true;
@@ -204,7 +204,7 @@ bool SFont::fromFile(const char *path, u32 size, u32 lspacing, u32 w, u32 idx, c
 
 	DCFlushRange(data, dataSize);
 
-	memcpy(name, fontname, 127);
+	strncpy(name, fontname, 127);
 	font = new FreeTypeGX();
 	font->loadFont(data, dataSize, weight, false);
 	return true;

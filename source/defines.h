@@ -1,5 +1,5 @@
 
-//#define APP_WIIFLOW	//uncomment this line to compile wfl as wiiflow
+#define APP_WIIFLOW	//uncomment this line to compile wfl as wiiflow
 
 #ifdef APP_WIIFLOW
 #define APP_NAME				"WiiFlow WFL"

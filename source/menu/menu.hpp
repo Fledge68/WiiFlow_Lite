@@ -1119,7 +1119,8 @@ private:
 	const char *_cfDomain(bool selected = false);
 	//void UpdateCache(u32 view = COVERFLOW_MAX);
 	void RemoveCover(const char *id);
-	SFont _font(const char *domain, const char *key, u32 fontSize, u32 lineSpacing, u32 weight, u32 index, const char *genKey);
+	SFont _dfltFont(u32 fontSize, u32 lineSpacing, u32 weight, u32 index, const char *genKey);
+	SFont _font(const char *domain, const char *key, SFont def_font);
 	TexData _texture(const char *domain, const char *key, TexData &def, bool freeDef = true);
 	vector<TexData> _textures(const char *domain, const char *key);
 	void _showWaitMessage();
