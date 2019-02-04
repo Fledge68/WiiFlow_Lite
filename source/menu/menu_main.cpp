@@ -43,17 +43,27 @@ void CMenu::_hideMain(bool instant)
 
 void CMenu::_setMainBg()
 {
-	string fn = m_cfg.getString("general", "main_background", "");
-	if(fn.length() > 0)
+	if(m_sourceflow)
+		_setSrcFlowBg();
+	else
 	{
-		TexHandle.Cleanup(m_mainAltBg);
-		if(TexHandle.fromImageFile(m_mainAltBg, fmt("%s/backgrounds/%s", m_dataDir.c_str(), fn.c_str())) == TE_OK)
-			_setBg(m_mainAltBg, m_mainAltBg, true);
+		string fn = m_cfg.getString("general", "main_background", "");
+		if(fn.length() > 0)
+		{
+			string themeName = m_cfg.getString("GENERAL", "theme", "default");
+			if(TexHandle.fromImageFile(m_mainAltBg, fmt("%s/backgrounds/%s/%s", m_dataDir.c_str(), themeName.c_str(), fn.c_str())) != TE_OK)
+			{	
+				if(TexHandle.fromImageFile(m_mainAltBg, fmt("%s/backgrounds/%s", m_dataDir.c_str(), fn.c_str())) != TE_OK)
+				{
+					_setBg(m_mainBg, m_mainBgLQ);
+					return;
+				}
+			}
+			_setBg(m_mainAltBg, m_mainAltBg);
+		}
 		else
 			_setBg(m_mainBg, m_mainBgLQ);
 	}
-	else
-		_setBg(m_mainBg, m_mainBgLQ);
 }
 
 void CMenu::_showMain()
@@ -356,7 +366,6 @@ int CMenu::main(void)
 					}
 					else //show source menu
 					{
-						
 						m_refreshGameList = _Source();
 						if(BTN_B_HELD)
 							bUsed = true;
@@ -382,8 +391,6 @@ int CMenu::main(void)
 				{
 					m_sourceflow = false;
 					m_refreshGameList = true;
-					//_showMain();
-					//continue;
 				}
 				_showMain();
 			}

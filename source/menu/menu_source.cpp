@@ -125,7 +125,6 @@ void CMenu::_sourceFlow()
 				}
 				srcDomain = m_source.nextDomain().c_str();
 			}
-			_setSrcFlowBg();
 			return;
 		}
 	}
@@ -197,11 +196,16 @@ void CMenu::_setSrcFlowBg(void)
 	string fn = m_source.getString("general", "background", "");
 	if(fn.length() > 0)
 	{
-		TexHandle.Cleanup(sfbgimg);
-		if(TexHandle.fromImageFile(sfbgimg, fmt("%s/backgrounds/%s", m_sourceDir.c_str(), fn.c_str())) == TE_OK)
-			_setBg(sfbgimg, sfbgimg, true);
-		else
-			_setBg(m_mainBg, m_mainBgLQ);
+		string themeName = m_cfg.getString("GENERAL", "theme", "default");
+		if(TexHandle.fromImageFile(sfbgimg, fmt("%s/backgrounds/%s/%s", m_sourceDir.c_str(), themeName.c_str(), fn.c_str())) != TE_OK)
+		{
+			if(TexHandle.fromImageFile(sfbgimg, fmt("%s/backgrounds/%s", m_sourceDir.c_str(), fn.c_str())) != TE_OK)
+			{
+				_setBg(m_mainBg, m_mainBgLQ);
+				return;
+			}
+		}
+		_setBg(sfbgimg, sfbgimg, true);
 	}
 	else
 		_setBg(m_mainBg, m_mainBgLQ);
