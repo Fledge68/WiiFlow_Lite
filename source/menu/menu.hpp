@@ -879,7 +879,7 @@ private:
 	bool _loadGamecubeList(void);
 	bool _loadChannelList(void);
 	bool _loadPluginList(void);
-	bool _loadHomebrewList(void);
+	bool _loadHomebrewList(const char *HB_Dir);
 	void _initCF(void);
 	//
 	void _initBoot(void);

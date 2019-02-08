@@ -2236,7 +2236,7 @@ bool CMenu::_loadList(void)
 	}
 	if(m_current_view == COVERFLOW_HOMEBREW)
 	{
-		_loadHomebrewList();
+		_loadHomebrewList(HOMEBREW_DIR);
 		gprintf("Apps found: %i\n", m_gameList.size());
 		m_cacheList.Clear();
 		return m_gameList.size() > 0 ? true : false;
@@ -2281,14 +2281,14 @@ bool CMenu::_loadWiiList(void)
 	return true;
 }
 
-bool CMenu::_loadHomebrewList()
+bool CMenu::_loadHomebrewList(const char *HB_Dir)
 {
 	currentPartition = m_cfg.getInt(HOMEBREW_DOMAIN, "partition", SD);
 	if(!DeviceHandle.IsInserted(currentPartition))
 		return false;
 
 	gprintf("Adding homebrew list\n");
-	string gameDir(fmt(HOMEBREW_DIR, DeviceName[currentPartition]));
+	string gameDir(fmt("%s:/%s", DeviceName[currentPartition], HB_Dir));
 	m_cacheList.CreateList(COVERFLOW_HOMEBREW, currentPartition, gameDir, stringToVector(".dol|.elf", '|'), std::string(), false);
 	for(vector<dir_discHdr>::iterator tmp_itr = m_cacheList.begin(); tmp_itr != m_cacheList.end(); tmp_itr++)
 		m_gameList.push_back(*tmp_itr);
@@ -2354,12 +2354,8 @@ bool CMenu::_loadChannelList(void)
 
 bool CMenu::_loadPluginList()
 {
-	bool addHomebrew = false;
-	bool addGamecube = false;
-	bool addWii = false;
-	bool addChannel = false;
 	bool updateCache = m_cfg.getBool(PLUGIN_DOMAIN, "update_cache");
-
+	int channels_type = m_cfg.getInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_REAL);
 	gprintf("Adding plugins list\n");
 	for(u8 i = 0; m_plugin.PluginExist(i); ++i)
 	{
@@ -2375,41 +2371,51 @@ bool CMenu::_loadPluginList()
 		const char *romDir = m_plugin.GetRomDir(i);
 		if(strcasecmp(romDir, "scummvm.ini") != 0)
 		{
-			if(strncasecmp(m_plugin.PluginMagicWord, "48425257", 8) == 0)//HBRW
+			if(strncasecmp(m_plugin.PluginMagicWord, "484252", 6) == 0)//HBRW
 			{
-				addHomebrew = true;
-				continue;
+				if(updateCache)
+					m_cfg.setBool(HOMEBREW_DOMAIN, "update_cache", true);
+				_loadHomebrewList(romDir);
 			}
-			if(strncasecmp(m_plugin.PluginMagicWord, "4E47434D", 8) == 0)//NGCM
+			else if(strncasecmp(m_plugin.PluginMagicWord, "4E47434D", 8) == 0)//NGCM
 			{
-				addGamecube = true;
-				continue;
+				if(updateCache)
+					m_cfg.setBool(GC_DOMAIN, "update_cache", true);
+				_loadGamecubeList();
 			}
-			if(strncasecmp(m_plugin.PluginMagicWord, "4E574949", 8) == 0)//NWII
+			else if(strncasecmp(m_plugin.PluginMagicWord, "4E574949", 8) == 0)//NWII
 			{
-				addWii = true;
-				continue;
+				if(updateCache)
+					m_cfg.setBool(WII_DOMAIN, "update_cache", true);
+				_loadWiiList();
 			}
-			if(strncasecmp(m_plugin.PluginMagicWord, "4E414E44", 8) == 0)//NAND
+			else if(strncasecmp(m_plugin.PluginMagicWord, "4E414E44", 8) == 0)//NAND
 			{
-				addChannel = true; //addChannel = CHANNELS_REAL;
-				continue;
+				if(updateCache)
+					m_cfg.setBool(CHANNEL_DOMAIN, "update_cache", true);
+				m_cfg.setInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_REAL);
+				_loadChannelList();
 			}
-			if(strncasecmp(m_plugin.PluginMagicWord, "454E414E", 8) == 0)//ENAN
+			else if(strncasecmp(m_plugin.PluginMagicWord, "454E414E", 8) == 0)//ENAN
 			{
-				addChannel = true; //addEmuChannel = CHANNELS_EMU;
-				continue;
+				if(updateCache)
+					m_cfg.setBool(CHANNEL_DOMAIN, "update_cache", true);
+				m_cfg.setInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_EMU);
+				_loadChannelList();
 			}
-			string gameDir(fmt("%s:/%s", DeviceName[currentPartition], romDir));
-			string cacheDir(fmt("%s/%s_%s.db", m_listCacheDir.c_str(), DeviceName[currentPartition], m_plugin.PluginMagicWord));
-			if(updateCache || !fsop_FileExist(cacheDir.c_str()))
-				cacheCovers = true;
-			vector<string> FileTypes = stringToVector(m_plugin.GetFileTypes(i), '|');
-			m_cacheList.Color = m_plugin.GetCaseColor(i);
-			m_cacheList.Magic = Magic;
-			m_cacheList.CreateList(COVERFLOW_PLUGIN, currentPartition, gameDir, FileTypes, cacheDir, updateCache);
-			for(vector<dir_discHdr>::iterator tmp_itr = m_cacheList.begin(); tmp_itr != m_cacheList.end(); tmp_itr++)
-				m_gameList.push_back(*tmp_itr);
+			else
+			{
+				string gameDir(fmt("%s:/%s", DeviceName[currentPartition], romDir));
+				string cacheDir(fmt("%s/%s_%s.db", m_listCacheDir.c_str(), DeviceName[currentPartition], m_plugin.PluginMagicWord));
+				if(updateCache || !fsop_FileExist(cacheDir.c_str()))
+					cacheCovers = true;
+				vector<string> FileTypes = stringToVector(m_plugin.GetFileTypes(i), '|');
+				m_cacheList.Color = m_plugin.GetCaseColor(i);
+				m_cacheList.Magic = Magic;
+				m_cacheList.CreateList(COVERFLOW_PLUGIN, currentPartition, gameDir, FileTypes, cacheDir, updateCache);
+				for(vector<dir_discHdr>::iterator tmp_itr = m_cacheList.begin(); tmp_itr != m_cacheList.end(); tmp_itr++)
+					m_gameList.push_back(*tmp_itr);
+			}
 		}
 		else
 		{
@@ -2423,35 +2429,8 @@ bool CMenu::_loadPluginList()
 			vector<dir_discHdr>().swap(scummvmList);
 		}
 	}
-	if(addHomebrew)
-	{
-		if(updateCache)
-			m_cfg.setBool(HOMEBREW_DOMAIN, "update_cache", true);
-		_loadHomebrewList();
-	}
-		
-	if(addGamecube)
-	{
-		if(updateCache)
-			m_cfg.setBool(GC_DOMAIN, "update_cache", true);
-		_loadGamecubeList();
-	}
-
-	if(addWii)
-	{
-		if(updateCache)
-			m_cfg.setBool(WII_DOMAIN, "update_cache", true);
-		_loadWiiList();
-	}
-
-	if(addChannel)
-	{
-		if(updateCache)
-			m_cfg.setBool(CHANNEL_DOMAIN, "update_cache", true);
-		_loadChannelList();
-	}
-		
 	m_cfg.remove(PLUGIN_DOMAIN, "update_cache");
+	m_cfg.setInt(CHANNEL_DOMAIN, "channels_type", channels_type);
 	return true;
 }
 

@@ -6,7 +6,7 @@
 #else
 #define APP_NAME				"WiiFlow Lite"
 #endif
-#define APP_VERSION				"5.1.0"
+#define APP_VERSION				"5.2.0"
 
 #define APP_DATA_DIR			"wiiflow"
 #ifdef APP_WIIFLOW
@@ -17,7 +17,7 @@
 
 //#define EMU_NANDS_DIR			"nands"
 #define GAMES_DIR				"%s:/wbfs"
-#define HOMEBREW_DIR			"%s:/apps"
+#define HOMEBREW_DIR			"apps"
 #define DF_GC_GAMES_DIR			"%s:/games"
 #define CFG_FILENAME			"wiiflow_lite.ini"
 #define CAT_FILENAME			"categories_lite.ini"
