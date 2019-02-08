@@ -175,6 +175,12 @@ void CMenu::_PluginSettings()
 		m_source_cnt = 1;
 		m_catStartPage = 1;
 		m_cfg.remove("GENERAL", "main_background");
+		int channels_type = 0;
+		if(m_cfg.getBool(PLUGIN_ENABLED, "454E414E"))
+			channels_type |= CHANNELS_EMU;
+		if(m_cfg.getBool(PLUGIN_ENABLED, "4E414E44"))
+			channels_type |= CHANNELS_REAL;
+		m_cfg.setInt(CHANNEL_DOMAIN, "channels_type", channels_type);
 	}
 	else
 		m_current_view = m_cfg.getUInt("GENERAL", "sources");
@@ -200,7 +206,7 @@ void CMenu::_initPluginSettingsMenu()
 		// right half
 		m_pluginBtnCat[i+5] = _addPicButton(fmt("PLUGIN/PLUGIN_%i_BTN", i+5), theme.checkboxoff, theme.checkboxoffs, 325, (39+i*58), 44, 48);
 		m_pluginBtnCats[i+5] = _addPicButton(fmt("PLUGIN/PLUGIN_%i_BTNS", i+5), theme.checkboxon, theme.checkboxons, 325, (39+i*58), 44, 48);
-		m_pluginLblCat[i+5] = _addLabel(fmt("PLUGIN/PLUGIN_%i", i+5), theme.txtFont, L"", 380, (42+i*58), 230, 48, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+		m_pluginLblCat[i+5] = _addLabel(fmt("PLUGIN/PLUGIN_%i", i+5), theme.lblFont, L"", 380, (42+i*58), 230, 48, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	}
 	_setHideAnim(m_pluginLblTitle, "PLUGIN/TITLE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_pluginLblPage, "PLUGIN/PAGE_BTN", 0, 0, 1.f, -1.f);
