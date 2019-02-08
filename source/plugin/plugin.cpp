@@ -301,7 +301,7 @@ string Plugin::GetRomName(const dir_discHdr *gameHeader)
 		replace(ShortName.begin(), ShortName.end(), '_', ' ');
 		return ShortName;
 	}
-	return NULL;
+	return NULL;// scummvm game
 }
 
 /* Get serial from PS1 header's iso (Borrowed from Retroarch with a few c++ changes)*/

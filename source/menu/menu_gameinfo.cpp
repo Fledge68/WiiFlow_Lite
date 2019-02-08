@@ -332,35 +332,37 @@ void CMenu::_textGameInfo(void)
 		// Check the platform name corresponding to the current magic number.
 		// We can't use magic # directly since it'd require hardcoding values and a # can be several systems(genplus) 
 		// We can't rely on coverfolder either. Different systems can share the same folder. Or combined plugins used for the same system.
+		
+		/* load platform.ini */
 		Config m_platform;
 		m_platform.load(fmt("%s/platform.ini", m_pluginDataDir.c_str()) );
 		if(!m_platform.loaded())
 			return;// no platform.ini found
 		
+		/* Search platform.ini to find plugin magic to get platformName */
 		snprintf(platformName, sizeof(platformName), "%s", m_platform.getString("PLUGINS", m_plugin.PluginMagicWord).c_str());
 		m_platform.unload();
 		if(strlen(platformName) == 0)
 			return;// no platform name found to match plugin magic #
 		
+		/* Get Game's crc/serial to be used as gameID by searching platformName.ini file */
+		const dir_discHdr *GameHdr = CoverFlow.getHdr();
+		string romID;// this will be the crc or serial
+		string ShortName = m_plugin.GetRomName(GameHdr);// if scummvm game then shortname=NULL
+		if(!ShortName.empty())
+			romID = m_plugin.GetRomId(GameHdr, m_pluginDataDir.c_str(), platformName, ShortName);
+		if(romID.empty())// no romID. possibly scummvm game or short name and crc/serial not found
+			return;
+			
+		strncpy(GameID, romID.c_str(), 6);// copy crc/serial to be used as gameID to get game info from xml
+		
+		/* Load platform name.xml database to get game's info using the gameID (crc/serial) */
 		gametdb.OpenFile(fmt("%s/%s/%s.xml", m_pluginDataDir.c_str(), platformName, platformName));
 		tdb_found = gametdb.IsLoaded();
 		if(!tdb_found)
 			return;// no platform xml found
 		
 		gametdb.SetLanguageCode(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
-
-		// Get Game ID
-		const dir_discHdr *GameHdr = CoverFlow.getHdr();
-		string ShortName = m_plugin.GetRomName(GameHdr);
-		string romID = m_plugin.GetRomId(GameHdr, m_pluginDataDir.c_str(), platformName, ShortName);
-		if(romID.empty())// no romID. possibly no platfromName.ini or not found in ini or other problem.
-		{
-			tdb_found = false;
-			gametdb.CloseFile();
-			return;
-		}
-			
-		strncpy(GameID, romID.c_str(), 6);
 		
 		// Get title
 		if(gametdb.GetTitle(GameID, TMP_Char))
