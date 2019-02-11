@@ -223,7 +223,9 @@ void CMenu::_showCF(bool refreshList)
 	if(m_current_view == COVERFLOW_PLUGIN && !m_sourceflow)
 	{
 		m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
-		if(enabledPluginsCount > 0)
+		if(enabledPluginsCount == 1 && m_cfg.getBool(PLUGIN_ENABLED, "48425257") && m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox"))
+			cf_domain = "_smallflow";
+		else if(enabledPluginsCount > 0)
 		{
 			int sdc = 0;
 			int shc = 0;

@@ -2798,24 +2798,16 @@ void CCoverFlow::_dropHQLOD(int i)
 	m_items[i].texture = newTex;
 }
 
-const char *CCoverFlow::getFilenameId(const dir_discHdr *curHdr, bool extension)
+const char *CCoverFlow::getFilenameId(const dir_discHdr *curHdr)
 {
-	const char *NameOrID = NULL;
 	if(NoGameID(curHdr->type))
 	{
 		if(strrchr(curHdr->path, '/') != NULL)
-		{
-			if(curHdr->type == TYPE_HOMEBREW || extension)
-				NameOrID = strrchr(curHdr->path, '/') + 1;//returns title.ext or folder name for app
-			else // plugin and sourceflow
-				NameOrID = fmt("%ls", curHdr->title);// title without extension in lowercase
-		}
+			return strrchr(curHdr->path, '/') + 1;// app folder or rom name.ext
 		else
-			NameOrID = curHdr->path;//title for scummvm
+			return curHdr->path;// title for scummvm
 	}
-	else
-		NameOrID = curHdr->id;// ID for Wii, GC, & Channels
-	return NameOrID;
+	return curHdr->id;// ID for Wii, GC, & Channels
 }
 
 CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blankBoxCover)

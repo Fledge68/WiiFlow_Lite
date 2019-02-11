@@ -147,10 +147,29 @@ void CMenu::_hideGameSettingsPg(bool instant)
 
 void CMenu::_showGameSettings()
 {
-	//const char *id = CoverFlow.getId();
-	//const dir_discHdr *GameHdr = CoverFlow.getHdr();
+	u32 i;
 	const char *id = GameHdr->id;
 	
+	_setBg(m_gameSettingsBg, m_gameSettingsBg);
+	for(i = 0; i < ARRAY_SIZE(m_gameSettingsLblUser); ++i)
+		if(m_gameSettingsLblUser[i] != -1)
+			m_btnMgr.show(m_gameSettingsLblUser[i]);
+
+	wstringEx title(_t("cfgg1", L"Settings"));
+	if(!NoGameID(GameHdr->type))
+		title.append(wfmt(L" [%.6s]", id));
+	m_btnMgr.setText(m_gameSettingsLblTitle, title);
+	m_btnMgr.show(m_gameSettingsLblTitle);
+	
+	m_btnMgr.show(m_gameSettingsBtnBack);
+	
+	if(GameHdr->type == TYPE_PLUGIN || GameHdr->type == TYPE_HOMEBREW)
+	{
+		m_btnMgr.show(m_gameSettingsBtnCategoryMain);
+		m_btnMgr.show(m_gameSettingsLblCategoryMain);
+		return;
+	}
+
 	if(GameHdr->type == TYPE_GC_GAME)
 	{
 		GCLoader = min(m_gcfg2.getUInt(id, "gc_loader", 0), ARRAY_SIZE(CMenu::_GCLoader) - 1u);
@@ -160,27 +179,6 @@ void CMenu::_showGameSettings()
 	m_gameSettingsMaxPgs = 5;
 	if(GameHdr->type == TYPE_GC_GAME && GCLoader == DEVOLUTION)
 		m_gameSettingsMaxPgs = 2;
-
-	_setBg(m_gameSettingsBg, m_gameSettingsBg);
-	u32 i = 0;
-	for(i = 0; i < ARRAY_SIZE(m_gameSettingsLblUser); ++i)
-		if(m_gameSettingsLblUser[i] != -1)
-			m_btnMgr.show(m_gameSettingsLblUser[i]);
-
-	wstringEx title(_t("cfgg1", L"Settings"));
-	if(GameHdr->type != TYPE_PLUGIN)
-		title.append(wfmt(L" [%.6s]", id));
-	m_btnMgr.setText(m_gameSettingsLblTitle, title);
-	m_btnMgr.show(m_gameSettingsLblTitle);
-	
-	m_btnMgr.show(m_gameSettingsBtnBack);
-	
-	if(GameHdr->type == TYPE_PLUGIN)
-	{
-		m_btnMgr.show(m_gameSettingsBtnCategoryMain);
-		m_btnMgr.show(m_gameSettingsLblCategoryMain);
-		return;
-	}
 	
 	m_btnMgr.setText(m_gameSettingsLblPage, wfmt(L"%i / %i", m_gameSettingsPage, m_gameSettingsMaxPgs));
 	m_btnMgr.show(m_gameSettingsLblPage);

@@ -1970,18 +1970,16 @@ void CMenu::_initCF(void)
 	u8 numReqCats = strlen(requiredCats);
 	u8 numSelCats = strlen(selectedCats);
 	u8 numHidCats = strlen(hiddenCats);
+	char id[74];
+	char catID[64];
 	
 	for(vector<dir_discHdr>::iterator hdr = m_gameList.begin(); hdr != m_gameList.end(); ++hdr)
 	{
-		const char *id = NULL;
-		const char *catID = NULL;
 		const char *favDomain = "FAVORITES";
 		const char *adultDomain = "ADULTONLY";
 		
-		char tmp1[74];//title plus magic#
-		memset(tmp1, 0, 74);
-		char tmp2[64];
-		memset(tmp2, 0, 64);
+		memset(id, 0, 74);
+		memset(catID, 0, 64);
 		
 		if(m_sourceflow)
 		{
@@ -1992,31 +1990,34 @@ void CMenu::_initCF(void)
 			strcat(tmp1, tmp2);
 			id = tmp1;*/
 		}
-		if(hdr->type == TYPE_HOMEBREW)
+		else if(m_current_view == COVERFLOW_HOMEBREW)
 		{
 			CoverFlow.addItem(&(*hdr), 0, 0);
 			continue;
-			//id = strrchr(hdr->path, '/') + 1;
 		}
-		if(hdr->type == TYPE_PLUGIN)
+		else if(hdr->type == TYPE_HOMEBREW)
+		{
+			wcstombs(id, hdr->title, 63);
+			strcpy(catID, id);
+		}
+		else if(hdr->type == TYPE_PLUGIN)
 		{
 			strncpy(m_plugin.PluginMagicWord, fmt("%08x", hdr->settings[0]), 8);
-			wcstombs(tmp2, hdr->title, 64);
-			strcat(tmp1, m_plugin.PluginMagicWord);
-			strcat(tmp1, fmt("/%s", tmp2));
-			id = tmp1;
-			catID = tmp2;
+			if(strrchr(hdr->path, '/') != NULL)
+				wcstombs(catID, hdr->title, 63);
+			else
+				strncpy(catID, hdr->path, 63);// scummvm
+			strcpy(id, m_plugin.PluginMagicWord);
+			strcat(id, fmt("/%s", catID));
 			favDomain = "FAVORITES_PLUGINS";
 			adultDomain = "ADULTONLY_PLUGINS";
 		}
 		else
 		{
-			id = hdr->id;
+			strcpy(id, hdr->id);
 			if(hdr->type == TYPE_GC_GAME && hdr->settings[0] == 1) /* disc 2 */
-			{
-				strcat(tmp1, fmt("%.6s_2", hdr->id));
-				id = tmp1;
-			}
+				strcat(id, "_2");
+			strcpy(catID, id);
 		}
 		
 		if((!m_favorites || m_gcfg1.getBool(favDomain, id, false))
@@ -2031,16 +2032,18 @@ void CMenu::_initCF(void)
 				catDomain = "GAMECUBE";
 			else if(hdr->type == TYPE_WII_GAME)
 				catDomain = "WII";
+			else if(hdr->type == TYPE_HOMEBREW)
+				catDomain = "HOMEBREW";
 			else
 				catDomain = m_plugin.PluginMagicWord;
 
 			if(numReqCats != 0 || numSelCats != 0 || numHidCats != 0) // if all 0 skip checking cats and show all games
 			{
 				char idCats[10];
-				strcpy(idCats, m_cat.getString(catDomain, hdr->type == TYPE_PLUGIN? catID : id).c_str());
+				strcpy(idCats, m_cat.getString(catDomain, catID).c_str());
 				u8 numIdCats = strlen(idCats);
 				if(numIdCats == 0)
-					m_cat.remove(catDomain, hdr->type == TYPE_PLUGIN? catID : id);
+					m_cat.remove(catDomain, catID);
 				bool inaCat = false;
 				bool inHiddenCat = false;
 				int reqMatch = 0;
@@ -2103,7 +2106,7 @@ void CMenu::_initCF(void)
 				}
 			}
 
-			if(dumpGameLst && hdr->type != TYPE_PLUGIN)
+			if(dumpGameLst && !NoGameID(hdr->type))
 			{
 				const char *domain = NULL;
 				switch(hdr->type)
@@ -2133,6 +2136,11 @@ void CMenu::_initCF(void)
 				CoverFlow.addItem(&(*hdr), playcount, lastPlayed);
 			}
 		}
+		/* remove them if false to keep file short */
+		if(!m_gcfg1.getBool(favDomain, id))
+			m_cfg.remove(favDomain, id);
+		if(!m_gcfg1.getBool(adultDomain, id))
+			m_cfg.remove(adultDomain, id);
 	}
 
 	if(dumpGameLst)
@@ -2152,28 +2160,31 @@ void CMenu::_initCF(void)
 		CoverFlow.setBoxMode(m_cfg.getBool(SOURCEFLOW_DOMAIN, "box_mode", true));
 		CoverFlow.setSmallBoxMode(m_cfg.getBool(SOURCEFLOW_DOMAIN, "smallbox", false));
 	}
+	else if(m_current_view != COVERFLOW_PLUGIN)
+	{
+		CoverFlow.setBoxMode(m_cfg.getBool("GENERAL", "box_mode", true));
+		CoverFlow.setSmallBoxMode(false);
+	}
 	else
 	{
 		m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
-		if(m_current_view == COVERFLOW_PLUGIN && enabledPluginsCount > 0)// 1 main source is plugin mode
-		{
-			int boxmode_cnt = 0;
-			for(u8 i = 0; m_plugin.PluginExist(i); ++i)
-			{
-				if(m_plugin.GetEnableStatus(m_cfg, m_plugin.getPluginMagic(i)))
-				{
-					if(m_plugin.GetBoxMode(i))
-						boxmode_cnt++;
-				}
-			}
-			if(boxmode_cnt == 0)
-				CoverFlow.setBoxMode(false);
-			else
-				CoverFlow.setBoxMode(true);
-		}
+		if(enabledPluginsCount == 1 && m_cfg.getBool(PLUGIN_ENABLED, "48425257") && m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox"))
+			CoverFlow.setSmallBoxMode(true);
 		else
-			CoverFlow.setBoxMode(m_cfg.getBool("GENERAL", "box_mode", true));
-		CoverFlow.setSmallBoxMode(false);
+			CoverFlow.setSmallBoxMode(false);
+		int boxmode_cnt = 0;
+		for(u8 i = 0; m_plugin.PluginExist(i); ++i)
+		{
+			if(m_plugin.GetEnableStatus(m_cfg, m_plugin.getPluginMagic(i)))
+			{
+				if(m_plugin.GetBoxMode(i))
+					boxmode_cnt++;
+			}
+		}
+		if(boxmode_cnt == 0)
+			CoverFlow.setBoxMode(false);
+		else
+			CoverFlow.setBoxMode(true);
 	}
 	CoverFlow.setBufferSize(m_cfg.getInt("GENERAL", "cover_buffer", 20));
 	CoverFlow.setHQcover(m_cfg.getBool("GENERAL", "cover_use_hq", true));
@@ -2205,11 +2216,13 @@ void CMenu::_initCF(void)
 				path = false;
 			if(strncasecmp(m_plugin.PluginMagicWord, "4E414E44", 8) == 0)//NAND
 				path = false;
+			if(strncasecmp(m_plugin.PluginMagicWord, "454E414E", 8) == 0)//EMUNAND
+				path = false;
 			strncpy(cur_item, m_cfg.getString("plugin_item", m_plugin.PluginMagicWord).c_str(), 63);
 		}
 		else
 		{
-			if(m_sourceflow || m_current_view == COVERFLOW_HOMEBREW || (m_source_cnt > 1 && m_cfg.getInt("MULTI", "current_item_type", TYPE_PLUGIN) == TYPE_PLUGIN)) 
+			if(m_sourceflow || m_current_view == COVERFLOW_HOMEBREW || (m_source_cnt > 1 && NoGameID(m_cfg.getInt("MULTI", "current_item_type", TYPE_PLUGIN)))) 
 				path = true;
 			strncpy(cur_item, m_cfg.getString(_domainFromView(), "current_item").c_str(), 63);
 		}

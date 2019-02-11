@@ -263,7 +263,7 @@ void CMenu::_extractBnr(const dir_discHdr *hdr)
 
 void CMenu::_setCurrentItem(const dir_discHdr *hdr)
 {
-	const char *title = CoverFlow.getFilenameId(hdr, true);// with extension
+	const char *title = CoverFlow.getFilenameId(hdr);
 	if(m_current_view == COVERFLOW_PLUGIN)
 	{
 		if(hdr->type == TYPE_PLUGIN)
@@ -274,8 +274,12 @@ void CMenu::_setCurrentItem(const dir_discHdr *hdr)
 				strncpy(m_plugin.PluginMagicWord, "4E574949", 9);
 			else if(hdr->type == TYPE_GC_GAME)
 				strncpy(m_plugin.PluginMagicWord, "4E47434D", 9);
-			else
+			else if(hdr->type == TYPE_CHANNEL)
 				strncpy(m_plugin.PluginMagicWord, "4E414E44", 9);
+			else if(hdr->type == TYPE_EMUCHANNEL)
+				strncpy(m_plugin.PluginMagicWord, "454E414E", 9);
+			else //HOMEBREW
+				strncpy(m_plugin.PluginMagicWord, "48425257", 9);
 		}
 		m_cfg.setString(PLUGIN_DOMAIN, "cur_magic", m_plugin.PluginMagicWord);
 		m_cfg.setString("plugin_item", m_plugin.PluginMagicWord, title);
@@ -325,7 +329,7 @@ void CMenu::_showGame(void)
 		Path = fmt("%s", m_fanartDir.c_str());
 	else
 		Path = fmt("%s/%s", m_fanartDir.c_str(), coverDir);
-	if(m_fa.load(m_cfg, Path, CoverFlow.getFilenameId(GameHdr, false), GameHdr->type == TYPE_PLUGIN))
+	if(m_fa.load(m_cfg, Path, CoverFlow.getHdr()))
 	{
 		const TexData *bg = NULL;
 		const TexData *bglq = NULL;
@@ -336,24 +340,6 @@ void CMenu::_showGame(void)
 	}
 	else
 		_setMainBg();
-	return;
-	
-	if(!m_zoom_banner)
-	{
-		for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser) - 1; ++i)
-			if(m_gameLblUser[i] != -1)
-				m_btnMgr.show(m_gameLblUser[i]);
-	
-		m_btnMgr.show(m_gameBtnPlay);
-		m_btnMgr.show(m_gameBtnBack);
-		m_btnMgr.show(m_gameBtnToggle);
-	}
-	else
-	{
-		m_btnMgr.show(m_gameBtnPlayFull);
-		m_btnMgr.show(m_gameBtnBackFull);
-		m_btnMgr.show(m_gameBtnToggleFull);
-	}
 }
 
 void CMenu::_cleanupBanner(bool gamechange)
@@ -451,31 +437,30 @@ void CMenu::_game(bool launch)
 	
 	dir_discHdr *hdr = (dir_discHdr*)MEM2_alloc(sizeof(dir_discHdr));
 	memcpy(hdr, CoverFlow.getHdr(), sizeof(dir_discHdr));
-	if(hdr->type == TYPE_HOMEBREW)
-		launch = true;
 	_setCurrentItem(hdr);
 	
-	const char *id = NULL;
-	char tmp1[74];// title/magic#
-	memset(tmp1, 0, 74);
-	char tmp2[64];
-	memset(tmp2, 0, 64);
-	if(hdr->type == TYPE_PLUGIN)
+	char id[74];
+	char catID[64];
+	memset(id, 0, 74);
+	memset(catID, 0, 64);
+	
+	if(hdr->type == TYPE_HOMEBREW)
+		wcstombs(id, hdr->title, 63);
+	else if(hdr->type == TYPE_PLUGIN)
 	{
 		strncpy(m_plugin.PluginMagicWord, fmt("%08x", hdr->settings[0]), 8);
-		wcstombs(tmp2, hdr->title, 64);
-		strcat(tmp1, m_plugin.PluginMagicWord);
-		strcat(tmp1, fmt("/%s", tmp2));
-		id = tmp1;
+		if(strrchr(hdr->path, '/') != NULL)
+			wcstombs(catID, hdr->title, 63);
+		else
+			strncpy(catID, hdr->path, 63);// scummvm
+		strcpy(id, m_plugin.PluginMagicWord);
+		strcat(id, fmt("/%s", catID));
 	}
 	else
 	{
-		id = hdr->id;
+		strcpy(id, hdr->id);
 		if(hdr->type == TYPE_GC_GAME && hdr->settings[0] == 1) /* disc 2 */
-		{
-			strcat(tmp1, fmt("%.6s_2", hdr->id));
-			id = tmp1;
-		}
+			strcat(id, "_2");
 	}
 
 	m_zoom_banner = m_cfg.getBool(_domainFromView(), "show_full_banner", false);
@@ -497,7 +482,7 @@ void CMenu::_game(bool launch)
 			{
 				m_fa.unload();
 				CoverFlow.showCover();
-				_setBg(m_gameBg, m_gameBgLQ);
+				_setMainBg();
 			}
 			else //loop fanart
 				m_fa.reset();
@@ -620,15 +605,15 @@ void CMenu::_game(bool launch)
 		}
 		else if(launch || BTN_A_PRESSED)
 		{
-			if(m_fa.isLoaded() && ShowPointer())
+			if(m_fa.isLoaded() && ShowPointer())// stop and unload fanart
 			{
 				m_fa.unload();
 				CoverFlow.showCover();
-				_setBg(m_gameBg, m_gameBgLQ);
+				_setMainBg();
 				continue;
 			}
 			/* delete button */
-			else if(m_btnMgr.selected(m_gameBtnDelete))
+			else if(m_btnMgr.selected(m_gameBtnDelete) && hdr->type != TYPE_HOMEBREW)
 			{
 				_hideGame();
 				m_banner.SetShowBanner(false);
@@ -846,24 +831,26 @@ void CMenu::_game(bool launch)
 				memcpy(hdr, CoverFlow.getHdr(), sizeof(dir_discHdr));// get new game header
 				_setCurrentItem(hdr);
 				
-				memset(tmp1, 0, 74);
-				memset(tmp2, 0, 64);
-				if(hdr->type == TYPE_PLUGIN)
+				memset(id, 0, 74);
+				memset(catID, 0, 64);
+	
+				if(hdr->type == TYPE_HOMEBREW)
+					wcstombs(id, hdr->title, 64);
+				else if(hdr->type == TYPE_PLUGIN)
 				{
 					strncpy(m_plugin.PluginMagicWord, fmt("%08x", hdr->settings[0]), 8);
-					wcstombs(tmp2, hdr->title, 64);
-					strcat(tmp1, m_plugin.PluginMagicWord);
-					strcat(tmp1, fmt("/%s", tmp2));
-					id = tmp1;
+					if(strrchr(hdr->path, '/') != NULL)
+						wcstombs(catID, hdr->title, 63);
+					else
+						strncpy(catID, hdr->path, 63);// scummvm
+					strcpy(id, m_plugin.PluginMagicWord);
+					strcat(id, fmt("/%s", catID));
 				}
 				else
 				{
-					id = hdr->id;
+					strcpy(id, hdr->id);
 					if(hdr->type == TYPE_GC_GAME && hdr->settings[0] == 1) /* disc 2 */
-					{
-						strcat(tmp1, fmt("%.6s_2", hdr->id));
-						id = tmp1;
-					}
+						strcat(id, "_2");
 				}
 				if(m_newGame)
 				{
@@ -1084,8 +1071,7 @@ void CMenu::_launch(const dir_discHdr *hdr)
 		}
 		/* get title from hdr */
 		u32 title_len_no_ext = 0;
-		const char *title = CoverFlow.getFilenameId(hdr, true);// with extension
-		//m_cfg.setString(_domainFromView(), "current_item", title);
+		const char *title = CoverFlow.getFilenameId(hdr);// with extension
 		
 		/* get path from hdr */
 		// example rom path - dev:/roms/super mario bros.zip

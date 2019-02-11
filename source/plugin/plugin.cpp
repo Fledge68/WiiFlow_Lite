@@ -226,6 +226,10 @@ const vector<bool> &Plugin::GetEnabledPlugins(Config &cfg, u8 *num)
 	return enabledPlugins;
 }
 
+/* notes: "description" is used as the title because it basically is the title */
+/* the [GameDomain] is used as the path even thought it isn't the path */
+/* the [GameDomain] is usually short without any '/' */
+/* in scummvm.ini the path is the path without the exe or main app file added on */
 vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, const char *Device, u32 Magic)
 {
 	gprintf("Parsing scummvm.ini\n");

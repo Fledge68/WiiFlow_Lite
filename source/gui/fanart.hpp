@@ -9,6 +9,7 @@
 #include "gui.hpp"
 #include "texture.hpp"
 #include "config/config.hpp"
+#include "loader/disc.h"
 
 class CFanartElement
 {
@@ -58,7 +59,7 @@ public:
 	~CFanart(void);
 
 	void unload();
-	bool load(Config &m_wiiflowConfig, const char *path, const char *id, bool plugin_rom);
+	bool load(Config &m_wiiflowConfig, const char *path, const dir_discHdr *hdr);
 	bool isAnimationComplete();
 	bool isLoaded();
 
