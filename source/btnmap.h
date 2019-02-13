@@ -1,4 +1,5 @@
 
+/* button presses for wiimote && classic controller && nunchuck Z button, also wiiu pro as expansion classic controller */
 #define WBTN_UP_PRESSED (wBtn_Pressed(WPAD_BUTTON_UP, WPAD_EXP_NONE) \
 		|| wBtn_Pressed(WPAD_CLASSIC_BUTTON_UP, WPAD_EXP_CLASSIC))
 #define WBTN_DOWN_PRESSED (wBtn_Pressed(WPAD_BUTTON_DOWN, WPAD_EXP_NONE) \
@@ -47,7 +48,7 @@
 #define WBTN_2_HELD (wBtn_Held(WPAD_BUTTON_2, WPAD_EXP_NONE) \
 		|| wBtn_Held(WPAD_CLASSIC_BUTTON_X, WPAD_EXP_CLASSIC))
 
-/* gamecube controller */
+/* button presses for gamecube controller && DS3 && WiiDRC */
 #define GBTN_UP (PAD_BUTTON_UP)
 #define GBTN_DOWN (PAD_BUTTON_DOWN)
 #define GBTN_LEFT (PAD_BUTTON_LEFT)
@@ -86,7 +87,7 @@
 #define GBTN_1_HELD (gc_btnsHeld & GBTN_1)
 #define GBTN_2_HELD (gc_btnsHeld & GBTN_2)
 
-/* All controllers */
+/* All controllers (wii & gc combined ) */
 #define BTN_UP_PRESSED (WBTN_UP_PRESSED || GBTN_UP_PRESSED)
 #define BTN_DOWN_PRESSED (WBTN_DOWN_PRESSED || GBTN_DOWN_PRESSED)
 #define BTN_LEFT_PRESSED (WBTN_LEFT_PRESSED || GBTN_LEFT_PRESSED)
@@ -126,6 +127,9 @@ enum
 #define BTN_RIGHT_REPEAT (wii_btnRepeat(WBTN_RIGHT) || gc_btnRepeat(GBTN_RIGHT))
 #define BTN_A_REPEAT (wii_btnRepeat(WBTN_A) || gc_btnRepeat(GBTN_A))
 
+/* joysticks */
+/* left stick = cc left stick && GH3, right stick = cc right stick && nunchuck stick */
+/* ds3, wiidrc, and wiiu pro use their own stick values */ 
 #define LEFT_STICK_UP lStick_Up()
 #define LEFT_STICK_DOWN lStick_Down()
 #define LEFT_STICK_LEFT lStick_Left()
@@ -140,15 +144,15 @@ enum
 #define WROLL_LEFT  wRoll_Left()
 #define WROLL_RIGHT wRoll_Right()
 
-/* Internal */
-#define LEFT_STICK_ANG_UP ((left_stick_angle[chan] >= 300 && left_stick_angle[chan] <= 360) \
-		|| (left_stick_angle[chan] >= 0 && left_stick_angle[chan] <= 60))
+/* convert stick angles to be used by l or r Stick_direction() above */
+#define LEFT_STICK_ANG_UP (left_stick_angle[chan] >= -60 && left_stick_angle[chan] <= 60)
 #define LEFT_STICK_ANG_RIGHT (left_stick_angle[chan] >= 30 && left_stick_angle[chan] <= 150)
-#define LEFT_STICK_ANG_DOWN (left_stick_angle[chan] >= 120 && left_stick_angle[chan] <= 240)
-#define LEFT_STICK_ANG_LEFT (left_stick_angle[chan] >= 210 && left_stick_angle[chan] <= 330)
+#define LEFT_STICK_ANG_DOWN ((left_stick_angle[chan] >= 120 && left_stick_angle[chan] <= 180) \
+		|| (left_stick_angle[chan] >= -180 && left_stick_angle[chan] <= -120))
+#define LEFT_STICK_ANG_LEFT (left_stick_angle[chan] >= -150 && left_stick_angle[chan] <= -30)
 
-#define RIGHT_STICK_ANG_UP ((right_stick_angle[chan] >= 300 && right_stick_angle[chan] <= 360) \
-		|| (right_stick_angle[chan] >= 0 && right_stick_angle[chan] <= 60))
+#define RIGHT_STICK_ANG_UP (right_stick_angle[chan] >= -60 && right_stick_angle[chan] <= 60)
 #define RIGHT_STICK_ANG_RIGHT (right_stick_angle[chan] >= 30 && right_stick_angle[chan] <= 150)
-#define RIGHT_STICK_ANG_DOWN (right_stick_angle[chan] >= 120 && right_stick_angle[chan] <= 240)
-#define RIGHT_STICK_ANG_LEFT (right_stick_angle[chan] >= 210 && right_stick_angle[chan] <= 330)
+#define RIGHT_STICK_ANG_DOWN ((right_stick_angle[chan] >= 120 && right_stick_angle[chan] <= 180) \
+		|| (right_stick_angle[chan] >= -180 && right_stick_angle[chan] <= -120))
+#define RIGHT_STICK_ANG_LEFT (right_stick_angle[chan] >= -150 && right_stick_angle[chan] <= -30)
