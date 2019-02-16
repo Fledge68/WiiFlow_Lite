@@ -218,8 +218,12 @@ void CMenu::_showCFTheme(u32 curParam, int version, bool wide)
 				}
 				break;
 			case CMenu::SCFParamDesc::PDT_FLOAT:
+			{
+				float val = m_coverflow.getFloat(domain, key);
+				string v = sfmt("%.2f", val);
+				if(v == "-0.00") v = "0.00";
 				// should we use wstringEx(sfmt())
-				m_btnMgr.setText(m_cfThemeLblVal[k], sfmt("%.2f", m_coverflow.getFloat(domain, key)));
+				m_btnMgr.setText(m_cfThemeLblVal[k], v);
 				for (int j = 1; j < 4; ++j)
 				{
 					m_btnMgr.hide(m_cfThemeLblVal[k + j]);
@@ -230,12 +234,19 @@ void CMenu::_showCFTheme(u32 curParam, int version, bool wide)
 				m_btnMgr.show(m_cfThemeBtnValM[k]);
 				m_btnMgr.show(m_cfThemeBtnValP[k]);
 				break;
+			}
 			case CMenu::SCFParamDesc::PDT_V3D:
 			{
 				Vector3D v(m_coverflow.getVector3D(domain, key));
-				m_btnMgr.setText(m_cfThemeLblVal[k + 0], sfmt("%.2f", v.x));
-				m_btnMgr.setText(m_cfThemeLblVal[k + 1], sfmt("%.2f", v.y));
-				m_btnMgr.setText(m_cfThemeLblVal[k + 2], sfmt("%.2f", v.z));
+				string x = sfmt("%.2f", v.x);
+				if(x == "-0.00") x = "0.00";
+				string y = sfmt("%.2f", v.y);
+				if(y == "-0.00") y = "0.00";
+				string z = sfmt("%.2f", v.z);
+				if(z == "-0.00") z = "0.00";
+				m_btnMgr.setText(m_cfThemeLblVal[k + 0], x);
+				m_btnMgr.setText(m_cfThemeLblVal[k + 1], y);
+				m_btnMgr.setText(m_cfThemeLblVal[k + 2], z);
 				for (int j = 0; j < 3; ++j)
 				{
 					m_btnMgr.show(m_cfThemeLblVal[k + j]);
@@ -589,9 +600,9 @@ void CMenu::_initCFThemeMenu()
 	m_cfThemeBtnAlt = _addButton("CFTHEME/ALT_BTN", theme.btnFont, L"", 20, 20, 80, 32, theme.btnFontColor);
 	m_cfThemeBtnSelect = _addButton("CFTHEME/SELECT_BTN", theme.btnFont, L"", 100, 20, 80, 32, theme.btnFontColor);
 	m_cfThemeBtnWide = _addButton("CFTHEME/WIDE_BTN", theme.btnFont, L"", 436, 20, 80, 32, theme.btnFontColor);
-	m_cfThemeLblParam = _addLabel("CFTHEME/PARAM_BTN", theme.btnFont, L"", 212, 20, 192, 32, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_cfThemeBtnParamM = _addPicButton("CFTHEME/PARAM_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 180, 20, 32, 32);
-	m_cfThemeBtnParamP = _addPicButton("CFTHEME/PARAM_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 404, 20, 32, 32);
+	m_cfThemeLblParam = _addLabel("CFTHEME/PARAM_BTN", theme.btnFont, L"", 52, 54, 192, 32, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_cfThemeBtnParamM = _addPicButton("CFTHEME/PARAM_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 20, 54, 32, 32);
+	m_cfThemeBtnParamP = _addPicButton("CFTHEME/PARAM_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 244, 54, 32, 32);
 	m_cfThemeBtnSave = _addButton("CFTHEME/SAVE_BTN", theme.btnFont, L"Save", 516, 20, 104, 32, theme.btnFontColor);
 	m_cfThemeBtnCancel = _addButton("CFTHEME/CANCEL_BTN", theme.btnFont, L"Cancel", 516, 54, 104, 32, theme.btnFontColor);
 	// 
