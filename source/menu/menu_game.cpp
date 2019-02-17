@@ -317,7 +317,7 @@ void CMenu::_hideGame(bool instant)
 
 void CMenu::_showGame(void)
 {
-	CoverFlow.showCover();
+	bool faPrevLoaded = m_fa.isLoaded();
 	
 	const dir_discHdr *GameHdr = CoverFlow.getHdr();
 	const char *coverDir = NULL;
@@ -334,12 +334,14 @@ void CMenu::_showGame(void)
 		const TexData *bg = NULL;
 		const TexData *bglq = NULL;
 		m_fa.getBackground(bg, bglq);
-		if(bg != NULL && bglq != NULL)
-			_setBg(*bg, *bglq);
+		_setBg(*bg, *bglq);
 		CoverFlow.hideCover();
 	}
-	else
+	else if(faPrevLoaded)
+	{
+		CoverFlow.showCover();		
 		_setMainBg();
+	}
 }
 
 void CMenu::_cleanupBanner(bool gamechange)

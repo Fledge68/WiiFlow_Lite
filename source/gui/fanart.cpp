@@ -58,33 +58,37 @@ bool CFanart::load(Config &m_wiiflowConfig, const char *path, const dir_discHdr 
 		strncpy(fanartDir, fmt("%s/%.3s", path, id), 163);
 		texErr = TexHandle.fromImageFile(m_bg, fmt("%s/background.png", fanartDir));
 	}
-	if(texErr == TE_OK)
+	if(texErr == TE_ERROR)
 	{
-		char faConfig_Path[164];
-		faConfig_Path[163] = '\0';
-		strncpy(faConfig_Path, fmt("%s/%s.ini", fanartDir, id), 163);
-		m_faConfig.load(faConfig_Path);
-		if(!m_faConfig.loaded() && !NoGameID(hdr->type))
-		{
-			strncpy(faConfig_Path, fmt("%s/%.3s.ini", fanartDir, id), 163);
-			m_faConfig.load(faConfig_Path);
-			if(!m_faConfig.loaded())
-			{
-				TexHandle.Cleanup(m_bg);
-				return false;
-			}
-		}
-		TexHandle.fromImageFile(m_bglq, fmt("%s/background_lq.png", fanartDir));
-		for(int i = 1; i <= 6; i++)
-		{
-			CFanartElement elm(m_faConfig, fanartDir, i);
-			if (elm.IsValid()) m_elms.push_back(elm);
-		}
-		m_loaded = true;
-		m_defaultDelay = m_wiiflowConfig.getInt("FANART", "delay_after_animation", 200);
-		m_delayAfterAnimation = m_faConfig.getInt("GENERAL", "delay_after_animation", m_defaultDelay);
-		m_globalShowCoverAfterAnimation = m_wiiflowConfig.getOptBool("FANART", "show_cover_after_animation", 2);
+		TexHandle.Cleanup(m_bg);
+		return false;
 	}
+
+	char faConfig_Path[164];
+	faConfig_Path[163] = '\0';
+	strncpy(faConfig_Path, fmt("%s/%s.ini", fanartDir, id), 163);
+	m_faConfig.load(faConfig_Path);
+	if(!m_faConfig.loaded() && !NoGameID(hdr->type))
+	{
+		strncpy(faConfig_Path, fmt("%s/%.3s.ini", fanartDir, id), 163);
+		m_faConfig.load(faConfig_Path);
+	}
+	if(!m_faConfig.loaded())
+	{
+		TexHandle.Cleanup(m_bg);
+		return false;
+	}
+	
+	TexHandle.fromImageFile(m_bglq, fmt("%s/background_lq.png", fanartDir));
+	for(int i = 1; i <= 6; i++)
+	{
+		CFanartElement elm(m_faConfig, fanartDir, i);
+		if(elm.IsValid()) m_elms.push_back(elm);
+	}
+	m_loaded = true;
+	m_defaultDelay = m_wiiflowConfig.getInt("FANART", "delay_after_animation", 200);
+	m_delayAfterAnimation = m_faConfig.getInt("GENERAL", "delay_after_animation", m_defaultDelay);
+	m_globalShowCoverAfterAnimation = m_wiiflowConfig.getOptBool("FANART", "show_cover_after_animation", 2);
 	return true;
 }
 
