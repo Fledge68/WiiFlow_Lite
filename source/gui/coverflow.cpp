@@ -659,7 +659,7 @@ void CCoverFlow::startCoverLoader(void)
 	m_loadingCovers = true;
 	m_moved = true;
 
-	LWP_CreateThread(&coverLoaderThread, _coverLoader, this, coverThreadStack, coverThreadStackSize, 30);
+	LWP_CreateThread(&coverLoaderThread, _coverLoader, this, coverThreadStack, coverThreadStackSize, 40);
 	//gprintf("Coverflow started!\n");
 }
 
@@ -1603,10 +1603,58 @@ void CCoverFlow::cancel(void)
 	_playSound(m_cancelSound);
 }
 
-void CCoverFlow::defaultLoad(void)
+u32 CCoverFlow::_currentPos(void) const
 {
-	_loadAllCovers(0);
+	if (m_covers == NULL) return 0;
+
+	return m_covers[m_range / 2].index;
+}
+
+void CCoverFlow::_setCurPos(u32 index)
+{
+	_loadAllCovers(index);
 	_updateAllTargets(true);
+}
+
+bool CCoverFlow::_setCurPosToID(const char *id, bool instant, bool path)
+{
+	LockMutex lock(m_mutex);
+	u32 i, curPos = _currentPos();
+
+	if(m_items.empty() || (instant && m_covers == NULL) || strlen(id) == 0)
+		return false;
+	// 
+	for(i = 0; i < m_items.size(); ++i)
+	{
+		if(path)
+		{
+			//homebrew folder or rom title.ext
+			const char *name = strrchr(m_items[i].hdr->path, '/');
+			if(name != NULL && strcmp(name + 1, id) == 0)
+				break;
+			else if(strcmp(m_items[i].hdr->path, id) == 0)// scummvm
+				break;
+		}
+		else if(strcmp(m_items[i].hdr->id, id) == 0)
+			break;
+	}
+	if(i >= m_items.size())
+		return false;
+	m_jump = 0;
+	if (instant)
+	{
+		_loadAllCovers(i);
+		_updateAllTargets(true);
+	}
+	else
+	{
+		int j = (int)i - (int)curPos;
+		if (abs(j) <= (int)m_items.size() / 2)
+			_setJump(j);
+		else
+			_setJump(j < 0 ? j + (int)m_items.size() : j - (int)m_items.size());
+	}
+	return true;
 }
 
 void CCoverFlow::_updateAllTargets(bool instant)
@@ -2047,13 +2095,6 @@ void CCoverFlow::_right(int repeatDelay, u32 step)
 	m_covers[m_range / 2].pos -= _coverMovesP();
 }
 
-u32 CCoverFlow::_currentPos(void) const
-{
-	if (m_covers == NULL) return 0;
-
-	return m_covers[m_range / 2].index;
-}
-
 void CCoverFlow::mouse(int chan, int x, int y)
 {
 	if (m_covers == NULL) return;
@@ -2096,47 +2137,6 @@ void CCoverFlow::setSelected(int i)
 	_loadAllCovers(i);
 	_updateAllTargets(true);
 	select();
-}
-
-bool CCoverFlow::findId(const char *id, bool instant, bool path)
-{
-	LockMutex lock(m_mutex);
-	u32 i, curPos = _currentPos();
-
-	if(m_items.empty() || (instant && m_covers == NULL) || strlen(id) == 0)
-		return false;
-	// 
-	for(i = 0; i < m_items.size(); ++i)
-	{
-		if(path)
-		{
-			//homebrew folder or rom title.ext
-			const char *name = strrchr(m_items[i].hdr->path, '/');
-			if(name != NULL && strcmp(name + 1, id) == 0)
-				break;
-			else if(strcmp(m_items[i].hdr->path, id) == 0)// scummvm
-				break;
-		}
-		else if(strcmp(m_items[i].hdr->id, id) == 0)
-			break;
-	}
-	if(i >= m_items.size())
-		return false;
-	m_jump = 0;
-	if (instant)
-	{
-		_loadAllCovers(i);
-		_updateAllTargets(true);
-	}
-	else
-	{
-		int j = (int)i - (int)curPos;
-		if (abs(j) <= (int)m_items.size() / 2)
-			_setJump(j);
-		else
-			_setJump(j < 0 ? j + (int)m_items.size() : j - (int)m_items.size());
-	}
-	return true;
 }
 
 void CCoverFlow::pageUp(void)
@@ -2880,6 +2880,7 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 					fclose(fp);
 					return _loadCoverTexPNG(i, box, hq, blankBoxCover) ? CL_OK : CL_ERROR;
 				}
+				DCFlushRange(&header, sizeof(header));
 				//make sure wfc cache file matches what we want
 				if(header.newFmt == 1 && (header.full != 0) == box && (header.cmpr != 0) == m_compressTextures)
 				{
@@ -2907,13 +2908,13 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 							fclose(fp);
 							return _loadCoverTexPNG(i, box, hq, blankBoxCover) ? CL_OK : CL_ERROR;
 						}
+						DCFlushRange(tex.data, texLen);
 					}
 					if(!allocFailed)
 					{
 						LockMutex lock(m_mutex);
 						TexHandle.Cleanup(m_items[i].texture);
 						m_items[i].texture = tex;
-						DCFlushRange(tex.data, texLen);
 						m_items[i].state = STATE_Ready;
 						m_items[i].boxTexture = header.full != 0;
 						success = true;

@@ -2226,8 +2226,8 @@ void CMenu::_initCF(void)
 				path = true;
 			strncpy(cur_item, m_cfg.getString(_domainFromView(), "current_item").c_str(), 63);
 		}
-		if(!CoverFlow.findId(cur_item, true, path))
-			CoverFlow.defaultLoad();
+		if(!CoverFlow._setCurPosToID(cur_item, true, path))
+			CoverFlow._setCurPos(0);
 		CoverFlow.startCoverLoader();
 	}
 }

@@ -599,11 +599,13 @@ void CMenu::_game(bool launch)
 		/* switch coverflow layout */
 		else if((BTN_1_PRESSED || BTN_2_PRESSED) && !coverFlipped && !m_video_playing)
 		{
+			u32 curPos = CoverFlow._currentPos();
 			s8 direction = BTN_1_PRESSED ? 1 : -1;
 			int cfVersion = loopNum((_getCFVersion() - 1) + direction, m_numCFVersions) + 1;
-			_loadCFLayout(cfVersion);
-			CoverFlow.applySettings();
 			_setCFVersion(cfVersion);
+			_loadCFLayout(cfVersion);
+			CoverFlow._setCurPos(curPos);
+			CoverFlow.applySettings();
 		}
 		else if(launch || BTN_A_PRESSED)
 		{

@@ -648,10 +648,12 @@ int CMenu::main(void)
 			/* change coverflow layout/mode */
 			else if(BTN_1_PRESSED || BTN_2_PRESSED)
 			{
+				u32 curPos = CoverFlow._currentPos();
 				s8 direction = BTN_1_PRESSED ? 1 : -1;
 				int cfVersion = 1 + loopNum((_getCFVersion() - 1) + direction, m_numCFVersions);
 				_setCFVersion(cfVersion);
 				_loadCFLayout(cfVersion);
+				CoverFlow._setCurPos(curPos);
 				CoverFlow.applySettings();
 			}
 		}

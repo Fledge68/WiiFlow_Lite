@@ -50,13 +50,14 @@ public:
 	bool start(const string &m_imgsDir);
 	void stopCoverLoader(bool empty = false);
 	void startCoverLoader(void);
-	void defaultLoad(void);
+	u32 _currentPos(void) const;
+	void _setCurPos(u32 index);
+	bool _setCurPosToID(const char *id, bool instant = false, bool path = false);
 	// 
 	void simulateOtherScreenFormat(bool s);
 	// Commands
 	void tick(void);
 	void setSelected(int i);
-	bool findId(const char *id, bool instant = false, bool path = false);
 	void pageUp(void);
 	void pageDown(void);
 	void nextLetter(wchar_t *c);
@@ -316,7 +317,6 @@ private:
 	static const u32 coverThreadStackSize;
 private:
 	void _draw(DrawMode dm = CFDR_NORMAL, bool mirror = false, bool blend = true);
-	u32 _currentPos(void) const;
 	void _effectBg(const TexData * &tex);
 	void _effectBlur(bool vertical);
 	bool _effectVisible(void);

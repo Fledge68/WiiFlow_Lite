@@ -46,7 +46,7 @@ void SoundHandler::Init()
 	for(u32 i = 0; i < MAX_DECODERS; ++i)
 		DecoderList[i] = NULL;
 
-	LWP_CreateThread(&SoundThread, UpdateThread, this, SoundStack, SoundStackSize, LWP_PRIO_HIGHEST);
+	LWP_CreateThread(&SoundThread, UpdateThread, this, SoundStack, SoundStackSize, 64);
 	gprintf("Running sound thread\n");
 }
 
