@@ -4,6 +4,7 @@
 #include "gui/GameTDB.hpp"
 #include "plugin/plugin.hpp"
 #include "plugin/crc32.h"
+#include "unzip/ZipFile.h"
 
 s16 m_gameinfoLblRomInfo;
 
@@ -326,8 +327,9 @@ void CMenu::_textGameInfo(void)
 	tdb_found = false;
 	GameTDB gametdb;
 	TexData emptyTex;
+	const dir_discHdr *GameHdr = CoverFlow.getHdr();
 	
-	if(CoverFlow.getHdr()->type == TYPE_PLUGIN)
+	if(GameHdr->type == TYPE_PLUGIN)
 	{
 		// Check the platform name corresponding to the current magic number.
 		// We can't use magic # directly since it'd require hardcoding values and a # can be several systems(genplus) 
@@ -341,12 +343,26 @@ void CMenu::_textGameInfo(void)
 		
 		/* Search platform.ini to find plugin magic to get platformName */
 		snprintf(platformName, sizeof(platformName), "%s", m_platform.getString("PLUGINS", m_plugin.PluginMagicWord).c_str());
+		if(strstr(platformName, "multi") != NULL)// if multi platform ie. vbagx, genplusgx, get file extension
+		{
+			char ext[4];
+			if(strstr(GameHdr->path, ".zip") != NULL)// if zip get internal filename extension
+			{
+				ZipFile zFile(GameHdr->path);
+				const char *fileName = zFile.GetFileName();
+				strcpy(ext, strrchr(fileName, '.') + 1);
+			}
+			else
+			{
+				strcpy(ext, strrchr(GameHdr->path, '.') + 1);
+			}
+			snprintf(platformName, sizeof(platformName), "%s", m_platform.getString("ext", ext).c_str());
+		}	
 		m_platform.unload();
 		if(strlen(platformName) == 0)
 			return;// no platform name found to match plugin magic #
 		
 		/* Get Game's crc/serial to be used as gameID by searching platformName.ini file */
-		const dir_discHdr *GameHdr = CoverFlow.getHdr();
 		string romID;// this will be the crc or serial
 		string ShortName = m_plugin.GetRomName(GameHdr);// if scummvm game then shortname=NULL
 		if(!ShortName.empty())
