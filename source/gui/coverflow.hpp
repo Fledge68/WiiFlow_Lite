@@ -253,8 +253,6 @@ private:
 	//
 	bool m_selected;
 	int m_tickCount;
-	TexData *m_loadingTexture;
-	TexData *m_noCoverTexture;
 	TexData m_flatLoadingTexture;
 	TexData m_flatNoCoverTexture;
 	TexData m_boxLoadingTexture;

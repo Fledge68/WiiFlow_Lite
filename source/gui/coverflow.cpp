@@ -224,9 +224,6 @@ CCoverFlow::CCoverFlow(void)
 	m_selectSound = NULL;
 	m_cancelSound = NULL;
 	//
-	m_loadingTexture = NULL;
-	m_noCoverTexture = NULL;
-	//
 	m_covers = NULL;
 	LWP_MutexInit(&m_mutex, 0);
 }
@@ -1304,7 +1301,12 @@ void CCoverFlow::_drawCover(int i, bool mirror, CCoverFlow::DrawMode dm)
 const TexData *CCoverFlow::_coverTexture(int i)
 {
 	if(m_items[i].texture.data == NULL)
-		return (m_items[i].state == STATE_Loading) ? m_loadingTexture : m_noCoverTexture;
+	{
+		if(m_box)
+			return (m_items[i].state == STATE_Loading) ? &m_boxLoadingTexture : &m_boxNoCoverTexture;
+		else
+			return (m_items[i].state == STATE_Loading) ? &m_flatLoadingTexture : &m_flatNoCoverTexture;
+	}
 	return &m_items[i].texture;
 }
 
@@ -1408,9 +1410,10 @@ void CCoverFlow::_drawCoverBox(int i, bool mirror, CCoverFlow::DrawMode dm)
 			GX_SetTevKColor(GX_KCOLOR0, color);
 			break;
 	}
+	/* this draws the colored spine of the box */
 	if(dm == CCoverFlow::CFDR_NORMAL)
 	{
-		// set dvd box texture, depending on game
+		// set dvd spine color texture, depending on game
 		switch(m_items[m_covers[i].index].hdr->casecolor)
 		{
 			case 0x000000:
@@ -1435,7 +1438,7 @@ void CCoverFlow::_drawCoverBox(int i, bool mirror, CCoverFlow::DrawMode dm)
 		}
 		GX_LoadTexObj(&texObj, GX_TEXMAP0);
 	}
-	GX_Begin(GX_QUADS, GX_VTXFMT0, g_boxMeshQSize);
+	GX_Begin(GX_QUADS, GX_VTXFMT0, g_boxMeshQSize);// Quads
 	for (u32 j = 0; j < g_boxMeshQSize; ++j)
 	{
 		GX_Position3f32(g_boxMeshQ[j].pos.x, g_boxMeshQ[j].pos.y, g_boxMeshQ[j].pos.z);
@@ -1443,7 +1446,7 @@ void CCoverFlow::_drawCoverBox(int i, bool mirror, CCoverFlow::DrawMode dm)
 			GX_TexCoord2f32(g_boxMeshQ[j].texCoord.x, g_boxMeshQ[j].texCoord.y);
 	}
 	GX_End();
-	GX_Begin(GX_TRIANGLES, GX_VTXFMT0, g_boxMeshTSize);
+	GX_Begin(GX_TRIANGLES, GX_VTXFMT0, g_boxMeshTSize);// triangles
 	for (u32 j = 0; j < g_boxMeshTSize; ++j)
 	{
 		GX_Position3f32(g_boxMeshT[j].pos.x, g_boxMeshT[j].pos.y, g_boxMeshT[j].pos.z);
@@ -1451,11 +1454,13 @@ void CCoverFlow::_drawCoverBox(int i, bool mirror, CCoverFlow::DrawMode dm)
 			GX_TexCoord2f32(g_boxMeshT[j].texCoord.x, g_boxMeshT[j].texCoord.y);
 	}
 	GX_End();
+	/* draw back of cover and title spine texture */
 	if (dm == CCoverFlow::CFDR_NORMAL)
 	{
 		const TexData *myTex = tex;
+		/* if we have front cover texture only then draw back and spine textures using the default box no cover texture */
 		if(flatTex)
-			myTex = m_noCoverTexture;
+			myTex = &m_boxNoCoverTexture;
 		GX_InitTexObj(&texObj, myTex->data, myTex->width, myTex->height, myTex->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		if (myTex->maxLOD > 0)
 			GX_InitTexObjLOD(&texObj, GX_LIN_MIP_LIN, GX_LINEAR, 0.f, (float)myTex->maxLOD, mirror ? 1.f : m_lodBias, GX_FALSE, m_edgeLOD ? GX_TRUE : GX_FALSE, m_aniso);
@@ -1469,6 +1474,8 @@ void CCoverFlow::_drawCoverBox(int i, bool mirror, CCoverFlow::DrawMode dm)
 			GX_TexCoord2f32(g_boxBackCoverMesh[j].texCoord.x, g_boxBackCoverMesh[j].texCoord.y);
 	}
 	GX_End();
+	/* draw front of cover texture */
+	/* if front cover only we need to change texObj from box no cover texture to the front cover texture */
 	if (dm == CCoverFlow::CFDR_NORMAL && flatTex)
 	{
 		GX_InitTexObj(&texObj, tex->data, tex->width, tex->height, tex->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
@@ -1959,8 +1966,6 @@ bool CCoverFlow::start(const string &m_imgsDir)
 		}
 		m_defcovers_loaded = true;
 	}
-	m_loadingTexture = (m_box ? &m_boxLoadingTexture : &m_flatLoadingTexture);
-	m_noCoverTexture = (m_box ? &m_boxNoCoverTexture : &m_flatNoCoverTexture);
 
 	if(m_covers != NULL)
 		MEM2_free(m_covers);
