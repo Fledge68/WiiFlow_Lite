@@ -305,7 +305,19 @@ string Plugin::GetRomName(const dir_discHdr *gameHeader)
 		replace(ShortName.begin(), ShortName.end(), '_', ' ');
 		return ShortName;
 	}
-	return NULL;// scummvm game
+	else
+	{
+		// ScummVM
+		char title[1024];
+		wcstombs(title, gameHeader->title, 63);
+
+		string FullName = title;
+		if(FullName.empty())
+				return NULL;
+
+		string ShortName = FullName.substr(0, FullName.find(" (")).substr(0, FullName.find(" ["));
+		return ShortName;
+	}
 }
 
 /* Get serial from PS1 header's iso (Borrowed from Retroarch with a few c++ changes)*/
