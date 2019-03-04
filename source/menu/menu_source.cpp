@@ -60,17 +60,7 @@ void CMenu::_sourceFlow()
 		m_current_view = COVERFLOW_CHANNEL;
 	}
 	else if(source == "homebrew")
-	{
-		if(m_locked && m_cfg.getBool(HOMEBREW_DOMAIN, "parental", false))
-		{
-			error(_t("errsource1", L"Homebrew locked!"));
-			m_current_view = COVERFLOW_WII;// or return
-		}
-		else
-		{
-			m_current_view = COVERFLOW_HOMEBREW;
-		}
-	}
+		m_current_view = COVERFLOW_HOMEBREW;
 	else if(source == "allplugins")
 	{
 		strncpy(single_sourcebtn, btn_selected, 16);
@@ -421,7 +411,7 @@ bool CMenu::_Source()
 			
 			m_cfg.setUInt("GENERAL", "sources", m_current_view);
 			m_source_cnt = 0;
-			for(i = 1; i < 16; i <<= 1)//not including coverflow_homebrew
+			for(i = 1; i < 32; i <<= 1)
 				if(m_current_view & i)
 					m_source_cnt++;
 			break;
@@ -499,19 +489,8 @@ bool CMenu::_Source()
 				}
 				else if(source == "homebrew")
 				{
-					if(m_locked && m_cfg.getBool(HOMEBREW_DOMAIN, "parental", false))
-					{
-						_hideSource();
-						error(_t("errsource1", L"Homebrew locked!"));
-						exitSource = false;
-						_showSource();
-						_updateSourceBtns();
-					}
-					else
-					{
-						m_current_view = COVERFLOW_HOMEBREW;
-						_setSrcOptions();
-					}
+					m_current_view = COVERFLOW_HOMEBREW;
+					_setSrcOptions();
 				}
 				else if(source == "allplugins")
 				{
@@ -634,13 +613,7 @@ bool CMenu::_Source()
 						m_current_view |= COVERFLOW_CHANNEL;
 				}
 				else if(source == "homebrew")
-				{
-					_hideSource();
-					error(_t("errsource2", L"Homebrew in multisource not allowed!"));
-					updateSource = false;
-					_showSource();
-					_updateSourceBtns();
-				}
+					m_current_view ^= COVERFLOW_HOMEBREW;
 				else if(source == "allplugins")
 				{
 					m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);

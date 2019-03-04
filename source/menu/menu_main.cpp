@@ -23,6 +23,7 @@ void CMenu::_hideMain(bool instant)
 {
 	m_btnMgr.hide(m_mainBtnNext, instant);
 	m_btnMgr.hide(m_mainBtnPrev, instant);
+	m_btnMgr.hide(m_mainBtnCategories, instant);
 	m_btnMgr.hide(m_mainBtnConfig, instant);
 	m_btnMgr.hide(m_mainBtnHome, instant);
 	m_btnMgr.hide(m_mainBtnHomebrew, instant);
@@ -281,6 +282,7 @@ int CMenu::main(void)
 	bool show_channel = !m_cfg.getBool(CHANNEL_DOMAIN, "disable", false);
 	bool show_plugin = !m_cfg.getBool(PLUGIN_DOMAIN, "disable", false);
 	bool show_gamecube = !m_cfg.getBool(GC_DOMAIN, "disable", false);
+	bool show_homebrew = !m_cfg.getBool(HOMEBREW_DOMAIN, "disable", false);
 	m_multisource = m_cfg.getBool("GENERAL", "multisource", false);
 	bool m_source_on_start = m_cfg.getBool("GENERAL", "source_on_start", false);
 	bool bheld = false;// bheld to indicate btn b was pressed or held
@@ -292,7 +294,7 @@ int CMenu::main(void)
 	m_prev_view = 0;
 	m_current_view = m_cfg.getUInt("GENERAL", "sources", COVERFLOW_WII);
 	m_source_cnt = 0;
-	for(u8 i = 1; i < 16; i <<= 1)//not including coverflow_homebrew
+	for(u8 i = 1; i < 32; i <<= 1)
 		if(m_current_view & i)
 			m_source_cnt++;
 			
@@ -396,24 +398,16 @@ int CMenu::main(void)
 				}
 				_showMain();
 			}
-			/* homebrew flow config menu */
-			else if(m_current_view == COVERFLOW_HOMEBREW)
-			{
-				_CfgHB();
-				if(BTN_B_HELD)
-				{
-					bheld = true;
-					bUsed = true;
-				}
-				_showMain();
-			}
 			/* Home menu */
 			else
 			{
 				if(_Home())
 					break;// exit wiiflow
 				if(BTN_B_HELD)
+				{
+					bheld = true;
 					bUsed = true;
+				}
 				_showMain();
 			}
 		}
@@ -436,16 +430,20 @@ int CMenu::main(void)
 				}
 				_showMain();
 			}
-			else if(m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnWii) || m_btnMgr.selected(m_mainBtnGamecube) || m_btnMgr.selected(m_mainBtnPlugin))
+			else if(m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnWii) || m_btnMgr.selected(m_mainBtnGamecube) 
+					|| m_btnMgr.selected(m_mainBtnPlugin) || m_btnMgr.selected(m_mainBtnHomebrew))
 			{
 				/* change source via view button on main menu */
 				if(m_current_view == COVERFLOW_WII) 
-					m_current_view = show_gamecube ? COVERFLOW_GAMECUBE : (show_channel ? COVERFLOW_CHANNEL : (show_plugin ? COVERFLOW_PLUGIN : COVERFLOW_WII));
+					m_current_view = show_gamecube ? COVERFLOW_GAMECUBE : (show_channel ? COVERFLOW_CHANNEL : 
+									(show_plugin ? COVERFLOW_PLUGIN : (show_homebrew ? COVERFLOW_HOMEBREW : COVERFLOW_WII)));
 				else if(m_current_view == COVERFLOW_GAMECUBE)
-					m_current_view = show_channel ? COVERFLOW_CHANNEL : (show_plugin ? COVERFLOW_PLUGIN : COVERFLOW_WII);
+					m_current_view = show_channel ? COVERFLOW_CHANNEL : (show_plugin ? COVERFLOW_PLUGIN : (show_homebrew ? COVERFLOW_HOMEBREW : COVERFLOW_WII));
 				else if(m_current_view == COVERFLOW_CHANNEL)
-					m_current_view = show_plugin ? COVERFLOW_PLUGIN : COVERFLOW_WII;
-				else if(m_current_view == COVERFLOW_PLUGIN || m_source_cnt > 1)
+					m_current_view = show_plugin ? COVERFLOW_PLUGIN : (show_homebrew ? COVERFLOW_HOMEBREW : COVERFLOW_WII);
+				else if(m_current_view == COVERFLOW_PLUGIN)
+					m_current_view = show_homebrew ? COVERFLOW_HOMEBREW : COVERFLOW_WII;
+				else if(m_current_view == COVERFLOW_HOMEBREW || m_source_cnt > 1)
 					m_current_view = COVERFLOW_WII;
 				m_source_cnt = 1;
 				m_cfg.setUInt("GENERAL", "sources", m_current_view);
@@ -476,12 +474,44 @@ int CMenu::main(void)
 				show_gamecube = !m_cfg.getBool(GC_DOMAIN, "disable", false);
 				_showMain();
 			}
-			else if(m_btnMgr.selected(m_mainBtnHomebrew))
+			else if(m_btnMgr.selected(m_mainBtnCategories))
 			{
-				/* launch homebrew flow */
-				if(m_locked && m_cfg.getBool(HOMEBREW_DOMAIN, "parental", false))
+				_hideMain();
+				_CategorySettings();
+				if(BTN_B_HELD)// returned using the b btn
 				{
-					error(_t("errgame15", L"WiiFlow locked! Unlock WiiFlow to use this feature."));
+					bheld = true;
+					bUsed = true;
+				}
+				_setMainBg();
+				if(m_refreshGameList)
+				{
+					m_refreshGameList = false;
+					_initCF();
+				}
+			}
+			else if(m_btnMgr.selected(m_mainBtnDVD))
+			{
+				if(disc_check & 0x2)
+				{
+					/* Boot DVD in drive */
+					_hideMain(true);
+					/* Create Fake Header */
+					dir_discHdr hdr;
+					memset(&hdr, 0, sizeof(dir_discHdr));
+					memcpy(&hdr.id, "dvddvd", 6);//this must be set for neek2o
+					/* Boot the Disc */
+					_launchGame(&hdr, true, BTN_B_HELD);
+					if(BTN_B_HELD)
+					{
+						bheld = true;
+						bUsed = true;
+					}
+					_showCF(false);
+				}
+				else
+				{
+					error(_t("main8", L"No disc in drive!"));
 					if(BTN_B_HELD)
 					{
 						bheld = true;
@@ -489,29 +519,6 @@ int CMenu::main(void)
 					}
 					_showMain();
 				}
-				else
-				{
-					m_prev_view = m_current_view;
-					m_current_view = COVERFLOW_HOMEBREW;
-					_showCF(true);
-				}
-			}
-			else if(m_btnMgr.selected(m_mainBtnDVD))
-			{
-				/* Boot DVD in drive */
-				_hideMain(true);
-				/* Create Fake Header */
-				dir_discHdr hdr;
-				memset(&hdr, 0, sizeof(dir_discHdr));
-				memcpy(&hdr.id, "dvddvd", 6);//this must be set for neek2o
-				/* Boot the Disc */
-				_launchGame(&hdr, true, BTN_B_HELD);
-				if(BTN_B_HELD)
-				{
-					bheld = true;
-					bUsed = true;
-				}
-				_showCF(false);
 			}
 			else if(m_btnMgr.selected(m_mainBtnFavoritesOn) || m_btnMgr.selected(m_mainBtnFavoritesOff))
 			{
@@ -533,7 +540,7 @@ int CMenu::main(void)
 				}
 				else
 				{
-					_game(BTN_B_HELD || m_current_view == COVERFLOW_HOMEBREW);
+					_game(BTN_B_HELD);
 					if(m_exit)
 						break;
 					if(BTN_B_HELD)
@@ -556,26 +563,7 @@ int CMenu::main(void)
 		else if(BTN_B_PRESSED)
 		{
 			bheld = true;
-			/* Show Categories */
-			if(m_btnMgr.selected(m_mainBtnFavoritesOn) || m_btnMgr.selected(m_mainBtnFavoritesOff))
-			{
-				_hideMain();
-				_CategorySettings();
-				if(BTN_B_HELD)// returned using the b btn
-				{
-					bheld = true;
-					bUsed = true;
-				}
-				else
-					bheld = false;
-				_setMainBg();
-				if(m_refreshGameList)
-				{
-					m_refreshGameList = false;
-					_initCF();
-				}
-			}
-			else if(m_btnMgr.selected(m_mainBtnNext) || m_btnMgr.selected(m_mainBtnPrev))
+			if(m_btnMgr.selected(m_mainBtnNext) || m_btnMgr.selected(m_mainBtnPrev))
 			{
 				bUsed = true;
 				const char *domain = _domainFromView();
@@ -792,21 +780,21 @@ int CMenu::main(void)
 			}
 		}
 		/*zones, showing and hiding buttons */
-		if(!m_gameList.empty() && m_show_zone_prev && !m_sourceflow && m_current_view != COVERFLOW_HOMEBREW)
+		if(!m_gameList.empty() && m_show_zone_prev && !m_sourceflow)
 			m_btnMgr.show(m_mainBtnPrev);
 		else
 			m_btnMgr.hide(m_mainBtnPrev);
 			
-		if(!m_gameList.empty() && m_show_zone_next && !m_sourceflow && m_current_view != COVERFLOW_HOMEBREW)
+		if(!m_gameList.empty() && m_show_zone_next && !m_sourceflow)
 			m_btnMgr.show(m_mainBtnNext);
 		else
 			m_btnMgr.hide(m_mainBtnNext);
 			
-		if(m_show_zone_main && !m_sourceflow && m_current_view != COVERFLOW_HOMEBREW)
+		if(m_show_zone_main && !m_sourceflow)
 		{
 			m_btnMgr.show(m_mainLblUser[0]);
 			m_btnMgr.show(m_mainLblUser[1]);
-			m_btnMgr.show(m_mainBtnHomebrew);
+			m_btnMgr.show(m_mainBtnCategories);
 			m_btnMgr.show(m_mainBtnConfig);
 			m_btnMgr.show(m_mainBtnHome);
 			static bool change = m_favorites;
@@ -819,12 +807,12 @@ int CMenu::main(void)
 			m_btnMgr.hide(m_mainLblUser[0]);
 			m_btnMgr.hide(m_mainLblUser[1]);
 			m_btnMgr.hide(m_mainBtnConfig);
-			m_btnMgr.hide(m_mainBtnHomebrew);
+			m_btnMgr.hide(m_mainBtnCategories);
 			m_btnMgr.hide(m_mainBtnHome);
 			m_btnMgr.hide(m_mainBtnFavoritesOn);
 			m_btnMgr.hide(m_mainBtnFavoritesOff);
 		}
-		if(!m_cfg.getBool("GENERAL", "hideviews", false) && m_show_zone_main2 && !m_sourceflow && m_current_view != COVERFLOW_HOMEBREW)
+		if(!m_cfg.getBool("GENERAL", "hideviews", false) && m_show_zone_main2 && !m_sourceflow)
 		{
 			switch(m_current_view)
 			{
@@ -835,6 +823,8 @@ int CMenu::main(void)
 						m_btnMgr.show(m_mainBtnChannel);
 					else if(show_plugin)
 						m_btnMgr.show(m_mainBtnPlugin);
+					else if(show_homebrew)
+						m_btnMgr.show(m_mainBtnHomebrew);
 					else
 						m_btnMgr.show(m_mainBtnWii);
 					break;
@@ -843,12 +833,22 @@ int CMenu::main(void)
 						m_btnMgr.show(m_mainBtnChannel);
 					else if(show_plugin)
 						m_btnMgr.show(m_mainBtnPlugin);
+					else if(show_homebrew)
+						m_btnMgr.show(m_mainBtnHomebrew);
 					else 
 						m_btnMgr.show(m_mainBtnWii);
 					break;
 				case COVERFLOW_CHANNEL:
 					if(show_plugin)
 						m_btnMgr.show(m_mainBtnPlugin);
+					else if(show_homebrew)
+						m_btnMgr.show(m_mainBtnHomebrew);
+					else
+						m_btnMgr.show(m_mainBtnWii);
+					break;
+				case COVERFLOW_PLUGIN:
+					if(show_homebrew)
+						m_btnMgr.show(m_mainBtnHomebrew);
 					else
 						m_btnMgr.show(m_mainBtnWii);
 					break;
@@ -865,10 +865,11 @@ int CMenu::main(void)
 			m_btnMgr.hide(m_mainBtnWii);
 			m_btnMgr.hide(m_mainBtnGamecube);
 			m_btnMgr.hide(m_mainBtnPlugin);
+			m_btnMgr.hide(m_mainBtnHomebrew);
 			m_btnMgr.hide(m_mainLblUser[2]);
 			m_btnMgr.hide(m_mainLblUser[3]);
 		}
-		if((disc_check & 0x2) && m_show_zone_main3 && !m_sourceflow && m_current_view != COVERFLOW_HOMEBREW)
+		if(m_show_zone_main3 && !m_sourceflow)
 		{
 			m_btnMgr.show(m_mainBtnDVD);
 			m_btnMgr.show(m_mainLblUser[4]);
@@ -906,6 +907,8 @@ int CMenu::main(void)
 
 void CMenu::_initMainMenu()
 {
+	TexData texCategories;
+	TexData texCategoriesS;
 	TexData texHome;
 	TexData texHomeS;
 	TexData texConfig;
@@ -937,7 +940,9 @@ void CMenu::_initMainMenu()
 	if(m_theme.loaded() && TexHandle.fromImageFile(bgLQ, fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString("MAIN/BG", "texture").c_str()), GX_TF_CMPR, 64, 64) == TE_OK)
 		m_mainBgLQ = bgLQ;
 
-	TexHandle.fromImageFile(texHome, fmt("%s/btnquit.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texCategories, fmt("%s/btncat.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texCategoriesS, fmt("%s/btncats.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texHome, fmt("%s/btnquit.png", m_imgsDir.c_str()));// home button
 	TexHandle.fromImageFile(texHomeS, fmt("%s/btnquits.png", m_imgsDir.c_str()));
 	TexHandle.fromImageFile(texConfig, fmt("%s/btnconfig.png", m_imgsDir.c_str()));
 	TexHandle.fromImageFile(texConfigS, fmt("%s/btnconfigs.png", m_imgsDir.c_str()));
@@ -957,29 +962,32 @@ void CMenu::_initMainMenu()
 	TexHandle.fromImageFile(texPrevS, fmt("%s/btnprevs.png", m_imgsDir.c_str()));
 	TexHandle.fromImageFile(texNext, fmt("%s/btnnext.png", m_imgsDir.c_str()));
 	TexHandle.fromImageFile(texNextS, fmt("%s/btnnexts.png", m_imgsDir.c_str()));
-	TexHandle.fromImageFile(texFavOn, fmt("%s/favoriteson.png", m_imgsDir.c_str()));
-	TexHandle.fromImageFile(texFavOnS, fmt("%s/favoritesons.png", m_imgsDir.c_str()));
-	TexHandle.fromImageFile(texFavOff, fmt("%s/favoritesoff.png", m_imgsDir.c_str()));
-	TexHandle.fromImageFile(texFavOffS, fmt("%s/favoritesoffs.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texFavOn, fmt("%s/gamefavon.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texFavOnS, fmt("%s/gamefavons.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texFavOff, fmt("%s/gamefavoff.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texFavOffS, fmt("%s/gamefavoffs.png", m_imgsDir.c_str()));
 
 	_addUserLabels(m_mainLblUser, ARRAY_SIZE(m_mainLblUser), "MAIN");
 
-	m_mainBtnConfig = _addPicButton("MAIN/CONFIG_BTN", texConfig, texConfigS, 70, 400, 48, 48);
-	m_mainBtnHome = _addPicButton("MAIN/QUIT_BTN", texHome, texHomeS, 570, 400, 48, 48);
-	m_mainBtnChannel = _addPicButton("MAIN/CHANNEL_BTN", texChannel, texChannels, 520, 400, 48, 48);
-	m_mainBtnHomebrew = _addPicButton("MAIN/HOMEBREW_BTN", texHomebrew, texHomebrews, 20, 400, 48, 48);
-	m_mainBtnWii = _addPicButton("MAIN/USB_BTN", texWii, texWiis, 520, 400, 48, 48);
-	m_mainBtnGamecube = _addPicButton("MAIN/DML_BTN", texGamecube, texGamecubes, 520, 400, 48, 48);
-	m_mainBtnPlugin = _addPicButton("MAIN/EMU_BTN", texPlugin, texPlugins, 520, 400, 48, 48);
-	m_mainBtnDVD = _addPicButton("MAIN/DVD_BTN", texDVD, texDVDs, 470, 400, 48, 48);
+	m_mainBtnCategories = _addPicButton("MAIN/CATEGORIES_BTN", texCategories, texCategoriesS, 126, 400, 48, 48);
+	m_mainBtnFavoritesOn = _addPicButton("MAIN/FAVORITES_ON", texFavOn, texFavOnS, 194, 400, 48, 48);
+	m_mainBtnFavoritesOff = _addPicButton("MAIN/FAVORITES_OFF", texFavOff, texFavOffS, 194, 400, 48, 48);
+	m_mainBtnConfig = _addPicButton("MAIN/CONFIG_BTN", texConfig, texConfigS, 262, 400, 48, 48);
+	m_mainBtnHome = _addPicButton("MAIN/QUIT_BTN", texHome, texHomeS, 330, 400, 48, 48);
+	m_mainBtnChannel = _addPicButton("MAIN/CHANNEL_BTN", texChannel, texChannels,398, 400, 48, 48);
+	m_mainBtnHomebrew = _addPicButton("MAIN/HOMEBREW_BTN", texHomebrew, texHomebrews, 398, 400, 48, 48);
+	m_mainBtnWii = _addPicButton("MAIN/USB_BTN", texWii, texWiis, 398, 400, 48, 48);
+	m_mainBtnGamecube = _addPicButton("MAIN/DML_BTN", texGamecube, texGamecubes, 398, 400, 48, 48);
+	m_mainBtnPlugin = _addPicButton("MAIN/EMU_BTN", texPlugin, texPlugins, 398, 400, 48, 48);
+	m_mainBtnDVD = _addPicButton("MAIN/DVD_BTN", texDVD, texDVDs, 466, 400, 48, 48);
+	
 	m_mainBtnNext = _addPicButton("MAIN/NEXT_BTN", texNext, texNextS, 540, 146, 80, 80);
 	m_mainBtnPrev = _addPicButton("MAIN/PREV_BTN", texPrev, texPrevS, 20, 146, 80, 80);
-	m_mainBtnFavoritesOn = _addPicButton("MAIN/FAVORITES_ON", texFavOn, texFavOnS, 288, 400, 64, 64);
-	m_mainBtnFavoritesOff = _addPicButton("MAIN/FAVORITES_OFF", texFavOff, texFavOffS, 288, 400, 64, 64);
+
 	m_mainLblMessage = _addLabel("MAIN/MESSAGE", theme.lblFont, L"", 40, 40, 560, 140, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_mainLblLetter = _addLabel("MAIN/LETTER", theme.titleFont, L"", 540, 40, 80, 80, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, emptyTex);
 	m_mainLblNotice = _addLabel("MAIN/NOTICE", theme.txtFont, L"", 340, 40, 280, 80, theme.titleFontColor, FTGX_JUSTIFY_RIGHT | FTGX_ALIGN_MIDDLE);
-	m_mainLblCurMusic = _addLabel("MAIN/MUSIC", theme.btnFont, L"", 0, 40, 640, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_mainLblCurMusic = _addLabel("MAIN/MUSIC", theme.txtFont, L"", 0, 10, 640, 32, theme.txtFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 //#ifdef SHOWMEM
 	m_mem1FreeSize = _addLabel("MEM1", theme.btnFont, L"", 40, 300, 480, 56, theme.btnFontColor, FTGX_JUSTIFY_LEFT, emptyTex);
 	m_mem2FreeSize = _addLabel("MEM2", theme.btnFont, L"", 40, 356, 480, 56, theme.btnFontColor, FTGX_JUSTIFY_LEFT, emptyTex);
@@ -1017,6 +1025,7 @@ void CMenu::_initMainMenu()
 	//
 	_setHideAnim(m_mainBtnNext, "MAIN/NEXT_BTN", 0, 0, 0.f, 0.f);
 	_setHideAnim(m_mainBtnPrev, "MAIN/PREV_BTN", 0, 0, 0.f, 0.f);
+	_setHideAnim(m_mainBtnCategories, "MAIN/CATEGORIES_BTN", 0, 40, 0.f, 0.f);
 	_setHideAnim(m_mainBtnConfig, "MAIN/CONFIG_BTN", 0, 40, 0.f, 0.f);
 	_setHideAnim(m_mainBtnHome, "MAIN/QUIT_BTN", 0, 40, 0.f, 0.f);
 	_setHideAnim(m_mainBtnChannel, "MAIN/CHANNEL_BTN", 0, 40, 0.f, 0.f);

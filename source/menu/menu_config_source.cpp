@@ -120,14 +120,14 @@ void CMenu::_CfgSrc(void)
 			else if(m_btnMgr.selected(m_cfgsrcBtnSmallbox))
 			{
 				m_refreshGameList = true;
-				fsop_deleteFolder(fmt("%s/sourceflow", m_cacheDir.c_str()));
+				//fsop_deleteFolder(fmt("%s/sourceflow", m_cacheDir.c_str()));
 				m_cfg.setBool(SOURCEFLOW_DOMAIN, "smallbox", !m_cfg.getBool(SOURCEFLOW_DOMAIN, "smallbox", false));
 				m_btnMgr.setText(m_cfgsrcBtnSmallbox, m_cfg.getBool(SOURCEFLOW_DOMAIN, "smallbox") ? _t("on", L"On") : _t("off", L"Off"));
 			}
 			else if(m_btnMgr.selected(m_cfgsrcBtnBoxMode))
 			{
 				m_refreshGameList = true;
-				fsop_deleteFolder(fmt("%s/sourceflow", m_cacheDir.c_str()));
+				//fsop_deleteFolder(fmt("%s/sourceflow", m_cacheDir.c_str()));
 				m_cfg.setBool(SOURCEFLOW_DOMAIN, "box_mode", !m_cfg.getBool(SOURCEFLOW_DOMAIN, "box_mode", false));
 				m_btnMgr.setText(m_cfgsrcBtnBoxMode, m_cfg.getBool(SOURCEFLOW_DOMAIN, "box_mode") ? _t("on", L"On") : _t("off", L"Off"));
 			}

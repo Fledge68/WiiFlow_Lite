@@ -1637,7 +1637,7 @@ bool CCoverFlow::_setCurPosToID(const char *id, bool instant, bool path)
 		{
 			//homebrew folder or rom title.ext
 			const char *name = strrchr(m_items[i].hdr->path, '/');
-			if(name != NULL && strcmp(name + 1, id) == 0)
+			if(name != NULL && strcasecmp(name + 1, id) == 0)
 				break;
 			else if(strcmp(m_items[i].hdr->path, id) == 0)// scummvm
 				break;
@@ -2659,6 +2659,9 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover)
 	if(!m_loadingCovers)
 		return false;
 
+	if(box && m_smallBox)// prevent full cover for smallbox mode
+		return false;
+		
 	/* get path to cover png or jpg */
 	const char *path = box ? (blankBoxCover ? mainMenu.getBlankCoverPath(m_items[i].hdr) : 
 			mainMenu.getBoxPath(m_items[i].hdr)) : mainMenu.getFrontPath(m_items[i].hdr);
@@ -2733,10 +2736,18 @@ bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover)
 			if(wfcCoverDir != NULL)
 			{
 				fsop_MakeFolder(fmt("%s/%s", m_cachePath.c_str(), wfcCoverDir));// will make subfolders if needed
-				strncpy(full_path, fmt("%s/%s/%s.wfc", m_cachePath.c_str(), wfcCoverDir, wfcTitle), MAX_FAT_PATH);
+				if(m_smallBox)
+					strncpy(full_path, fmt("%s/%s/%s_small.wfc", m_cachePath.c_str(), wfcCoverDir, wfcTitle), MAX_FAT_PATH);
+				else
+					strncpy(full_path, fmt("%s/%s/%s.wfc", m_cachePath.c_str(), wfcCoverDir, wfcTitle), MAX_FAT_PATH);
 			}
 			else
-				strncpy(full_path, fmt("%s/%s.wfc", m_cachePath.c_str(), wfcTitle), MAX_FAT_PATH);
+			{
+				if(m_smallBox)
+					strncpy(full_path, fmt("%s/%s_small.wfc", m_cachePath.c_str(), wfcTitle), MAX_FAT_PATH);
+				else
+					strncpy(full_path, fmt("%s/%s.wfc", m_cachePath.c_str(), wfcTitle), MAX_FAT_PATH);
+			}
 		
 			DCFlushRange(full_path, MAX_FAT_PATH+1);
 
@@ -2855,9 +2866,19 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 			
 		/* set full path of wfc file */
 		if(wfcCoverDir != NULL)
-			strncpy(full_path, fmt("%s/%s/%s.wfc", m_cachePath.c_str(), wfcCoverDir, wfcTitle), MAX_FAT_PATH);
+		{
+			if(m_smallBox)
+				strncpy(full_path, fmt("%s/%s/%s_small.wfc", m_cachePath.c_str(), wfcCoverDir, wfcTitle), MAX_FAT_PATH);
+			else
+				strncpy(full_path, fmt("%s/%s/%s.wfc", m_cachePath.c_str(), wfcCoverDir, wfcTitle), MAX_FAT_PATH);
+		}
 		else
-			strncpy(full_path, fmt("%s/%s.wfc", m_cachePath.c_str(), wfcTitle), MAX_FAT_PATH);
+		{
+			if(m_smallBox)
+				strncpy(full_path, fmt("%s/%s_small.wfc", m_cachePath.c_str(), wfcTitle), MAX_FAT_PATH);
+			else
+				strncpy(full_path, fmt("%s/%s.wfc", m_cachePath.c_str(), wfcTitle), MAX_FAT_PATH);
+		}
 	
 		DCFlushRange(full_path, MAX_FAT_PATH+1);
 		

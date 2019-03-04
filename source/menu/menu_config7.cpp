@@ -66,21 +66,31 @@ void CMenu::_showConfig7(int curPage)
 		if(m_config7LblUser[i] != -1)
 			m_btnMgr.show(m_config7LblUser[i]);
 
-	m_btnMgr.show(m_config7Lbl1);
-	m_btnMgr.show(m_config7Btn1);
-	m_btnMgr.show(m_config7Lbl2);
-	m_btnMgr.show(m_config7Btn2);
-	m_btnMgr.show(m_config7Lbl3);
-	m_btnMgr.show(m_config7Btn3);
-	m_btnMgr.show(m_config7Lbl4);
-
-	if(curPage == 7 || curPage == 11)
-		m_btnMgr.show(m_config7Btn4);
+	if(curPage == 12)
+	{
+		m_btnMgr.show(m_config7Lbl1);
+		m_btnMgr.show(m_config7Btn1);
+		//m_btnMgr.show(m_config7Lbl2);
+		//m_btnMgr.show(m_config7Btn2);
+	}
 	else
 	{
-		m_btnMgr.show(m_config7Lbl4Val);
-		m_btnMgr.show(m_config7Btn4M);
-		m_btnMgr.show(m_config7Btn4P);
+		m_btnMgr.show(m_config7Lbl1);
+		m_btnMgr.show(m_config7Btn1);
+		m_btnMgr.show(m_config7Lbl2);
+		m_btnMgr.show(m_config7Btn2);
+		m_btnMgr.show(m_config7Lbl3);
+		m_btnMgr.show(m_config7Btn3);
+		m_btnMgr.show(m_config7Lbl4);
+
+		if(curPage == 7 || curPage == 11)
+			m_btnMgr.show(m_config7Btn4);
+		else
+		{
+			m_btnMgr.show(m_config7Lbl4Val);
+			m_btnMgr.show(m_config7Btn4M);
+			m_btnMgr.show(m_config7Btn4P);
+		}
 	}
 	
 	if(curPage == 7)
@@ -127,7 +137,7 @@ void CMenu::_showConfig7(int curPage)
 		m_btnMgr.setText(m_config7Lbl4, _t("cfg716", L"Music fade rate"));
 		m_btnMgr.setText(m_config7Lbl4Val, wfmt(L"%i", m_cfg.getInt("GENERAL", "music_fade_rate", 8)));
 	}
-	else // page 11
+	else if(curPage == 11)
 	{
 		m_btnMgr.setText(m_config7Lbl1, _t("cfg717", L"Random game boot or select"));
 		m_btnMgr.setText(m_config7Btn1, m_cfg.getBool("GENERAL", "random_select") ? _t("select", L"Select") : _t("boot", L"Boot"));
@@ -137,6 +147,13 @@ void CMenu::_showConfig7(int curPage)
 		m_btnMgr.setText(m_config7Btn3, m_cfg.getBool(GC_DOMAIN, "play_banner_sound") ?  _t("yes", L"Yes") : _t("no", L"No"));
 		m_btnMgr.setText(m_config7Lbl4, _t("cfg721", L"Play GC default sound"));
 		m_btnMgr.setText(m_config7Btn4, m_cfg.getBool(GC_DOMAIN, "play_default_sound") ?  _t("yes", L"Yes") : _t("no", L"No"));
+	}
+	else // page 12
+	{
+		m_btnMgr.setText(m_config7Lbl1, _t("cfg722", L"Homebrew settings"));
+		m_btnMgr.setText(m_config7Btn1, _t("cfg14", L"Set"));
+		//m_btnMgr.setText(m_config7Lbl2, _t("cfg723", L"Source menu settings"));
+		//m_btnMgr.setText(m_config7Btn2, _t("cfg14", L"Set"));
 	}
 }
 
@@ -284,6 +301,21 @@ int CMenu::_config7(int curPage)
 					m_btnMgr.setText(m_config7Btn4, m_cfg.getBool(GC_DOMAIN, "play_default_sound") ?  _t("yes", L"Yes") : _t("no", L"No"));
 					m_gc_play_default_sound = m_cfg.getBool(GC_DOMAIN, "play_default_sound", true);
 				}
+			}
+			if(curPage == 12)
+			{
+				if(m_btnMgr.selected(m_config7Btn1))
+				{
+					_hideConfig7();
+					_CfgHB();
+					_showConfig7(12);
+				}
+				/*else if(m_btnMgr.selected(m_config7Btn2))
+				{
+					_hideConfig7();
+					_CfgSrc();
+					_showConfig7(12);
+				}*/
 			}
 		}
 	}

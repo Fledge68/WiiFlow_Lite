@@ -3,7 +3,7 @@
 #include "channel/nand.hpp"
 #include "loader/nk.h"
 
-const int CMenu::_nbCfgPages = 11;
+const int CMenu::_nbCfgPages = 12;
 
 void CMenu::_hideConfigCommon(bool instant)
 {
@@ -91,19 +91,7 @@ void CMenu::_config(int page)
 			case 6:
 				change = _configScreen();
 				break;
-			case 7:
-				change = _config7(page);
-				break;
-			case 8:
-				change = _config7(page);
-				break;
-			case 9:
-				change = _config7(page);
-				break;
-			case 10:
-				change = _config7(page);
-				break;
-			case 11:
+			default:
 				change = _config7(page);
 				break;
 		}
@@ -115,7 +103,7 @@ void CMenu::_config(int page)
 			page += change;
 			if (page > _nbCfgPages)
 				page = 1;
-			else if (page < 0)
+			else if (page <= 0)
 				page = _nbCfgPages;
 		}
 	}

@@ -192,6 +192,7 @@ private:
 	TexData m_mainBgLQ;
 	
 //Main Coverflow
+	s16 m_mainBtnCategories;
 	s16 m_mainBtnConfig;
 	s16 m_mainBtnHome;
 	s16 m_mainBtnFavoritesOn;
@@ -413,8 +414,7 @@ private:
 	};
 	s16 m_gameBtnFavoriteOn;
 	s16 m_gameBtnFavoriteOff;
-	s16 m_gameBtnAdultOn;
-	s16 m_gameBtnAdultOff;
+	s16 m_gameBtnCategories;
 	s16 m_gameBtnDelete;
 	s16 m_gameBtnSettings;
 	s16 m_gameBtnPlay;
@@ -569,8 +569,8 @@ private:
 	s16 m_gameSettingsLblCheat;
 	s16 m_gameSettingsBtnCheat;
 	
-	s16 m_gameSettingsLblCategoryMain;
-	s16 m_gameSettingsBtnCategoryMain;
+	s16 m_gameSettingsLblAdultOnly;
+	s16 m_gameSettingsBtnAdultOnly;
 	
  	s16 m_gameSettingsLblGameIOS;
  	s16 m_gameSettingsLblIOS;

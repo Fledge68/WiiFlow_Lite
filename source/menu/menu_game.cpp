@@ -308,8 +308,7 @@ void CMenu::_hideGame(bool instant)
 	m_btnMgr.hide(m_gameBtnToggleFull, instant);
 	m_btnMgr.hide(m_gameBtnFavoriteOn, instant);
 	m_btnMgr.hide(m_gameBtnFavoriteOff, instant);
-	m_btnMgr.hide(m_gameBtnAdultOn, instant);
-	m_btnMgr.hide(m_gameBtnAdultOff, instant);
+	m_btnMgr.hide(m_gameBtnCategories, instant);
 	for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser); ++i)
 		if(m_gameLblUser[i] != -1)
 			m_btnMgr.hide(m_gameLblUser[i], instant);
@@ -542,29 +541,6 @@ void CMenu::_game(bool launch)
 				coverFlipped = false;
 				m_banner.SetShowBanner(true);
 			}
-			/* if B on favorites btn goto game categories */
-			else if(m_btnMgr.selected(m_gameBtnFavoriteOn) || m_btnMgr.selected(m_gameBtnFavoriteOff))
-			{
-				_hideGame();
-				if(m_locked)
-				{
-					m_banner.SetShowBanner(false);
-					error(_t("errgame15", L"WiiFlow locked! Unlock WiiFlow to use this feature."));
-					m_banner.SetShowBanner(true);
-				}
-				else
-				{
-					// the mainloop handles drawing banner while in settings
-					m_banner.ToggleZoom();//zoom to full
-					m_banner.ToggleGameSettings();// dim brightness
-					_CategorySettings(true);
-					m_banner.ToggleGameSettings();//reset brightness
-					m_banner.ToggleZoom();//de zoom to small
-				}
-				_showGame();
-				if(m_newGame)
-					startGameSound = -10;
-			}
 			/* exit game selected menu */
 			else
 			{
@@ -661,8 +637,6 @@ void CMenu::_game(bool launch)
 					m_banner.ToggleZoom();//de zoom to small
 				}
 				_showGame();
-				if(m_newGame)
-					startGameSound = -10;
 			}
 			else if(m_btnMgr.selected(m_gameBtnFavoriteOn) || m_btnMgr.selected(m_gameBtnFavoriteOff))
 			{
@@ -673,24 +647,27 @@ void CMenu::_game(bool launch)
 				if(m_favorites)
 					m_refreshGameList = true;
 			}
-			else if(m_btnMgr.selected(m_gameBtnAdultOn) || m_btnMgr.selected(m_gameBtnAdultOff))
+			else if(m_btnMgr.selected(m_gameBtnCategories))
 			{
 				if(m_locked)
 				{
 					m_banner.SetShowBanner(false);
 					error(_t("errgame15", L"WiiFlow locked! Unlock WiiFlow to use this feature."));
 					m_banner.SetShowBanner(true);
-					_showGame();
 				}
 				else
 				{
-					if(hdr->type == TYPE_PLUGIN)
-						m_gcfg1.setBool("ADULTONLY_PLUGINS", id, !m_gcfg1.getBool("ADULTONLY_PLUGINS", id, false));
-					else
-						m_gcfg1.setBool("ADULTONLY", id, !m_gcfg1.getBool("ADULTONLY", id, false));
-					if(m_locked)
-						m_refreshGameList = true;
+					_hideGame();
+					// the mainloop handles drawing banner while in settings
+					m_banner.ToggleZoom();//zoom to full
+					m_banner.ToggleGameSettings();// dim brightness
+					_CategorySettings(true);
+					m_banner.ToggleGameSettings();//reset brightness
+					m_banner.ToggleZoom();//de zoom to small
 				}
+				_showGame();
+				if(m_newGame)
+					startGameSound = -10;
 			}
 			else if(m_btnMgr.selected(m_gameBtnBack) || m_btnMgr.selected(m_gameBtnBackFull))
 			{
@@ -879,6 +856,7 @@ void CMenu::_game(bool launch)
 				m_btnMgr.show(m_gameBtnBack);
 				m_btnMgr.show(m_gameBtnSettings);
 				m_btnMgr.show(m_gameBtnDelete);
+				m_btnMgr.show(m_gameBtnCategories);
 				bool b;
 				if(hdr->type == TYPE_PLUGIN)
 					b = m_gcfg1.getBool("FAVORITES_PLUGINS", id, false);
@@ -886,12 +864,6 @@ void CMenu::_game(bool launch)
 					b = m_gcfg1.getBool("FAVORITES", id, false);
 				m_btnMgr.show(b ? m_gameBtnFavoriteOn : m_gameBtnFavoriteOff);
 				m_btnMgr.hide(b ? m_gameBtnFavoriteOff : m_gameBtnFavoriteOn);
-				if(hdr->type == TYPE_PLUGIN)
-					b = m_gcfg1.getBool("ADULTONLY_PLUGINS", id, false);
-				else
-					b = m_gcfg1.getBool("ADULTONLY", id, false);
-				m_btnMgr.show(b ? m_gameBtnAdultOn : m_gameBtnAdultOff);
-				m_btnMgr.hide(b ? m_gameBtnAdultOff : m_gameBtnAdultOn);
 				for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser) - 2; ++i)// #4 is used for banner frame
 					if(m_gameLblUser[i] != -1)
 						m_btnMgr.show(m_gameLblUser[i]);
@@ -900,8 +872,7 @@ void CMenu::_game(bool launch)
 			{
 				m_btnMgr.hide(m_gameBtnFavoriteOn);
 				m_btnMgr.hide(m_gameBtnFavoriteOff);
-				m_btnMgr.hide(m_gameBtnAdultOn);
-				m_btnMgr.hide(m_gameBtnAdultOff);
+				m_btnMgr.hide(m_gameBtnCategories);
 				m_btnMgr.hide(m_gameBtnSettings);
 				m_btnMgr.hide(m_gameBtnDelete);
 				m_btnMgr.hide(m_gameBtnPlay);
@@ -936,8 +907,7 @@ void CMenu::_game(bool launch)
 				
 				m_btnMgr.hide(m_gameBtnFavoriteOn);
 				m_btnMgr.hide(m_gameBtnFavoriteOff);
-				m_btnMgr.hide(m_gameBtnAdultOn);
-				m_btnMgr.hide(m_gameBtnAdultOff);
+				m_btnMgr.hide(m_gameBtnCategories);
 				m_btnMgr.hide(m_gameBtnSettings);
 				m_btnMgr.hide(m_gameBtnDelete);
 				m_btnMgr.hide(m_gameBtnPlay);
@@ -963,6 +933,7 @@ void CMenu::_game(bool launch)
 					m_btnMgr.show(m_gameBtnBack);
 					m_btnMgr.show(m_gameBtnSettings);
 					m_btnMgr.show(m_gameBtnDelete);
+					m_btnMgr.show(m_gameBtnCategories);
 					bool b;
 					if(hdr->type == TYPE_PLUGIN)
 						b = m_gcfg1.getBool("FAVORITES_PLUGINS", id, false);
@@ -970,12 +941,6 @@ void CMenu::_game(bool launch)
 						b = m_gcfg1.getBool("FAVORITES", id, false);
 					m_btnMgr.show(b ? m_gameBtnFavoriteOn : m_gameBtnFavoriteOff);
 					m_btnMgr.hide(b ? m_gameBtnFavoriteOff : m_gameBtnFavoriteOn);
-					if(hdr->type == TYPE_PLUGIN)
-						b = m_gcfg1.getBool("ADULTONLY_PLUGINS", id, false);
-					else
-						b = m_gcfg1.getBool("ADULTONLY", id, false);
-					m_btnMgr.show(b ? m_gameBtnAdultOn : m_gameBtnAdultOff);
-					m_btnMgr.hide(b ? m_gameBtnAdultOff : m_gameBtnAdultOn);
 					for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser) - 2; ++i)// don't include small banner frame
 						if(m_gameLblUser[i] != -1)
 							m_btnMgr.show(m_gameLblUser[i]);
@@ -984,8 +949,7 @@ void CMenu::_game(bool launch)
 				{
 					m_btnMgr.hide(m_gameBtnFavoriteOn);
 					m_btnMgr.hide(m_gameBtnFavoriteOff);
-					m_btnMgr.hide(m_gameBtnAdultOn);
-					m_btnMgr.hide(m_gameBtnAdultOff);
+					m_btnMgr.hide(m_gameBtnCategories);
 					m_btnMgr.hide(m_gameBtnSettings);
 					m_btnMgr.hide(m_gameBtnDelete);
 					m_btnMgr.hide(m_gameBtnPlay);
@@ -2035,10 +1999,8 @@ void CMenu::_initGameMenu()
 	TexData texGameFavOnSel;
 	TexData texGameFavOff;
 	TexData texGameFavOffSel;
-	TexData texAdultOn;
-	TexData texAdultOnSel;
-	TexData texAdultOff;
-	TexData texAdultOffSel;
+	TexData texCategories;
+	TexData texCategoriesSel;
 	TexData texDelete;
 	TexData texDeleteSel;
 	TexData texSettings;
@@ -2050,14 +2012,12 @@ void CMenu::_initGameMenu()
 	TexHandle.fromImageFile(texGameFavOnSel, fmt("%s/gamefavons.png", m_imgsDir.c_str()));
 	TexHandle.fromImageFile(texGameFavOff, fmt("%s/gamefavoff.png", m_imgsDir.c_str()));
 	TexHandle.fromImageFile(texGameFavOffSel, fmt("%s/gamefavoffs.png", m_imgsDir.c_str()));
-	TexHandle.fromImageFile(texAdultOn, fmt("%s/stopkidon.png", m_imgsDir.c_str()));
-	TexHandle.fromImageFile(texAdultOnSel, fmt("%s/stopkidons.png", m_imgsDir.c_str()));
-	TexHandle.fromImageFile(texAdultOff, fmt("%s/stopkidoff.png", m_imgsDir.c_str()));
-	TexHandle.fromImageFile(texAdultOffSel, fmt("%s/stopkidoffs.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texCategories, fmt("%s/btncat.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texCategoriesSel, fmt("%s/btncats.png", m_imgsDir.c_str()));
 	TexHandle.fromImageFile(texDelete, fmt("%s/delete.png", m_imgsDir.c_str()));
 	TexHandle.fromImageFile(texDeleteSel, fmt("%s/deletes.png", m_imgsDir.c_str()));
-	TexHandle.fromImageFile(texSettings, fmt("%s/btngamecfg.png", m_imgsDir.c_str()));
-	TexHandle.fromImageFile(texSettingsSel, fmt("%s/btngamecfgs.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texSettings, fmt("%s/btnconfig.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texSettingsSel, fmt("%s/btnconfigs.png", m_imgsDir.c_str()));
 	TexHandle.fromImageFile(texToggleBanner, fmt("%s/blank.png", m_imgsDir.c_str()));
 
 	_addUserLabels(m_gameLblUser, ARRAY_SIZE(m_gameLblUser), "GAME");
@@ -2069,8 +2029,7 @@ void CMenu::_initGameMenu()
 	m_gameBtnBack = _addButton("GAME/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
 	m_gameBtnFavoriteOn = _addPicButton("GAME/FAVORITE_ON", texGameFavOn, texGameFavOnSel, 460, 200, 48, 48);
 	m_gameBtnFavoriteOff = _addPicButton("GAME/FAVORITE_OFF", texGameFavOff, texGameFavOffSel, 460, 200, 48, 48);
-	m_gameBtnAdultOn = _addPicButton("GAME/ADULTONLY_ON", texAdultOn, texAdultOnSel, 532, 200, 48, 48);
-	m_gameBtnAdultOff = _addPicButton("GAME/ADULTONLY_OFF", texAdultOff, texAdultOffSel, 532, 200, 48, 48);
+	m_gameBtnCategories = _addPicButton("GAME/CATEGORIES_BTN", texCategories, texCategoriesSel, 532, 200, 48, 48);
 	m_gameBtnSettings = _addPicButton("GAME/SETTINGS_BTN", texSettings, texSettingsSel, 460, 272, 48, 48);
 	m_gameBtnDelete = _addPicButton("GAME/DELETE_BTN", texDelete, texDeleteSel, 532, 272, 48, 48);
 	m_gameBtnBackFull = _addButton("GAME/BACK_FULL_BTN", theme.btnFont, L"", 100, 390, 200, 56, theme.btnFontColor);
@@ -2088,8 +2047,7 @@ void CMenu::_initGameMenu()
 	_setHideAnim(m_gameBtnBack, "GAME/BACK_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_gameBtnFavoriteOn, "GAME/FAVORITE_ON", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_gameBtnFavoriteOff, "GAME/FAVORITE_OFF", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_gameBtnAdultOn, "GAME/ADULTONLY_ON", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_gameBtnAdultOff, "GAME/ADULTONLY_OFF", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_gameBtnCategories, "GAME/CATEGORIES_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_gameBtnSettings, "GAME/SETTINGS_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_gameBtnDelete, "GAME/DELETE_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_gameBtnPlayFull, "GAME/PLAY_FULL_BTN", 0, 0, 1.f, 0.f);

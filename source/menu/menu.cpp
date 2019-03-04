@@ -1990,11 +1990,6 @@ void CMenu::_initCF(void)
 			strcat(tmp1, tmp2);
 			id = tmp1;*/
 		}
-		else if(m_current_view == COVERFLOW_HOMEBREW)
-		{
-			CoverFlow.addItem(&(*hdr), 0, 0);
-			continue;
-		}
 		else if(hdr->type == TYPE_HOMEBREW)
 		{
 			wcstombs(id, hdr->title, 63);
@@ -2012,7 +2007,7 @@ void CMenu::_initCF(void)
 			favDomain = "FAVORITES_PLUGINS";
 			adultDomain = "ADULTONLY_PLUGINS";
 		}
-		else
+		else // wii, gc, channels
 		{
 			strcpy(id, hdr->id);
 			if(hdr->type == TYPE_GC_GAME && hdr->settings[0] == 1) /* disc 2 */
@@ -2138,9 +2133,9 @@ void CMenu::_initCF(void)
 		}
 		/* remove them if false to keep file short */
 		if(!m_gcfg1.getBool(favDomain, id))
-			m_cfg.remove(favDomain, id);
+			m_gcfg1.remove(favDomain, id);
 		if(!m_gcfg1.getBool(adultDomain, id))
-			m_cfg.remove(adultDomain, id);
+			m_gcfg1.remove(adultDomain, id);
 	}
 
 	if(dumpGameLst)
@@ -2150,42 +2145,47 @@ void CMenu::_initCF(void)
 	}
 
 	CoverFlow.setSorting(m_source_cnt > 1 ? (Sorting)0 : (Sorting)m_cfg.getInt(_domainFromView(), "sort", 0));
-	if(m_current_view == COVERFLOW_HOMEBREW)
+	
+	if(!m_sourceflow)
 	{
-		CoverFlow.setBoxMode(m_cfg.getBool(HOMEBREW_DOMAIN, "box_mode", true));
-		CoverFlow.setSmallBoxMode(m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox", false));
+		if(m_current_view == COVERFLOW_HOMEBREW)
+		{
+			CoverFlow.setBoxMode(m_cfg.getBool(HOMEBREW_DOMAIN, "box_mode", true));
+			CoverFlow.setSmallBoxMode(m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox", false));
+		}
+		else if(m_current_view == COVERFLOW_PLUGIN)
+		{
+			m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
+			if(enabledPluginsCount == 1 && m_cfg.getBool(PLUGIN_ENABLED, "48425257") && m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox"))
+				CoverFlow.setSmallBoxMode(true);
+			else
+				CoverFlow.setSmallBoxMode(false);
+			int boxmode_cnt = 0;
+			for(u8 i = 0; m_plugin.PluginExist(i); ++i)
+			{
+				if(m_plugin.GetEnableStatus(m_cfg, m_plugin.getPluginMagic(i)))
+				{
+					if(m_plugin.GetBoxMode(i))
+						boxmode_cnt++;
+				}
+			}
+			if(boxmode_cnt == 0)
+				CoverFlow.setBoxMode(false);
+			else
+				CoverFlow.setBoxMode(true);
+		}
+		else
+		{
+			CoverFlow.setBoxMode(m_cfg.getBool("GENERAL", "box_mode", true));
+			CoverFlow.setSmallBoxMode(false);
+		}
 	}
-	else if(m_sourceflow)
+	else // sourceflow
 	{
 		CoverFlow.setBoxMode(m_cfg.getBool(SOURCEFLOW_DOMAIN, "box_mode", true));
 		CoverFlow.setSmallBoxMode(m_cfg.getBool(SOURCEFLOW_DOMAIN, "smallbox", false));
 	}
-	else if(m_current_view != COVERFLOW_PLUGIN)
-	{
-		CoverFlow.setBoxMode(m_cfg.getBool("GENERAL", "box_mode", true));
-		CoverFlow.setSmallBoxMode(false);
-	}
-	else
-	{
-		m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
-		if(enabledPluginsCount == 1 && m_cfg.getBool(PLUGIN_ENABLED, "48425257") && m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox"))
-			CoverFlow.setSmallBoxMode(true);
-		else
-			CoverFlow.setSmallBoxMode(false);
-		int boxmode_cnt = 0;
-		for(u8 i = 0; m_plugin.PluginExist(i); ++i)
-		{
-			if(m_plugin.GetEnableStatus(m_cfg, m_plugin.getPluginMagic(i)))
-			{
-				if(m_plugin.GetBoxMode(i))
-					boxmode_cnt++;
-			}
-		}
-		if(boxmode_cnt == 0)
-			CoverFlow.setBoxMode(false);
-		else
-			CoverFlow.setBoxMode(true);
-	}
+	
 	CoverFlow.setBufferSize(m_cfg.getInt("GENERAL", "cover_buffer", 20));
 	CoverFlow.setHQcover(m_cfg.getBool("GENERAL", "cover_use_hq", true));
 	CoverFlow.start(m_imgsDir);
@@ -2195,7 +2195,7 @@ void CMenu::_initCF(void)
 		bool path = false;
 		char cur_item[64];
 		cur_item[63] = '\0';
-		if(m_current_view == COVERFLOW_PLUGIN)
+		if(m_current_view == COVERFLOW_PLUGIN && !m_sourceflow)
 		{
 			strncpy(m_plugin.PluginMagicWord, m_cfg.getString(PLUGIN_DOMAIN, "cur_magic").c_str(), 8);
 			if(!m_cfg.getBool("PLUGINS_ENABLED", m_plugin.PluginMagicWord, false))
@@ -2247,13 +2247,6 @@ bool CMenu::_loadList(void)
 		m_cacheList.Clear();
 		return true;
 	}
-	if(m_current_view == COVERFLOW_HOMEBREW)
-	{
-		_loadHomebrewList(HOMEBREW_DIR);
-		gprintf("Apps found: %i\n", m_gameList.size());
-		m_cacheList.Clear();
-		return m_gameList.size() > 0 ? true : false;
-	}
 	gprintf("Creating Gamelist\n");
 	if(m_current_view & COVERFLOW_PLUGIN)
 		_loadPluginList();
@@ -2266,6 +2259,9 @@ bool CMenu::_loadList(void)
 
 	if(m_current_view & COVERFLOW_GAMECUBE)
 		_loadGamecubeList();
+
+	if(m_current_view & COVERFLOW_HOMEBREW)
+		_loadHomebrewList(HOMEBREW_DIR);
 
 	m_cacheList.Clear();
 

@@ -12,15 +12,15 @@ Controls:
 -- B+A  =  Launch game immediately
 -- B+Left / B+Right  =  Change Song
 -- B+UP / B+DOWN  =  Previous / next game in sorted list (alpha default)
--- B+Minus  =  Boot a random game of the current coverflow
+-- B+Minus  =  Boot or select a random game of the current coverflow
 -- B+Plus  =  Select sort type (alpha, wifi, players, playcount, etc...)
 -- Z / ZR  =  Take Screenshot
 
 -- A on Onscreen Arrows  =  Fast skip through games
 -- B on Onscreen Arrows  =  previous / next game in sorted list (alpha default)
 -- A on Star Icon  =  Favorites
--- B on Star Icon  =  Categories
--- A on Gear Icon  =  WiiFlow settings
+-- A on Categories Icon  =  Select categories to use
+-- A on Gear Icon  =  Main settings menu
 -- A on USB(Wii), GC, Channels, Plugin, or Homebrew Icon  =  Switch to that source
 -- A on Home Icon  =  Open Home Menu / Exit WiiFlow
 -- A on Disc Icon (Game Disc in Drive)  =  Launch game disc
@@ -29,7 +29,7 @@ Controls:
 -- A on box  =  Flip Cover
 -- A out of screen  =  Launch game
 -- A on Star Icon  =  Toggle Favorite (Yellow = Favorite)
--- B on Star Icon  =  Set Categories for game
+-- A on Categories Icon  =  Set Categories for current game
 -- A on Hand Icon  =  Parental Lock (Red = locked)
 -- A on Gear Icon  =  Game Settings
 -- A on X Icon  =   Delete Game
@@ -47,7 +47,7 @@ Controls:
 -- Plus  =  Zoom in
 -- Minus  =  Zoom out
  
-- Settings menus:
+- All Settings menus:
 -- Minus / Plus  =  Previous / next page
 -- Left / Right  =  Previous / next page
 -- Up / Down  =  Previous / next button

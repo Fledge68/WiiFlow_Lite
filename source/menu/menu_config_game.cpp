@@ -81,8 +81,8 @@ void CMenu::_hideGameSettingsPg(bool instant)
 	//All
 	m_btnMgr.hide(m_gameSettingsLblManage, instant);
 	m_btnMgr.hide(m_gameSettingsBtnManage, instant);
-	m_btnMgr.hide(m_gameSettingsBtnCategoryMain, instant);
-	m_btnMgr.hide(m_gameSettingsLblCategoryMain, instant);
+	m_btnMgr.hide(m_gameSettingsBtnAdultOnly, instant);
+	m_btnMgr.hide(m_gameSettingsLblAdultOnly, instant);
 	m_btnMgr.hide(m_gameSettingsLblGameLanguage, instant);
 	m_btnMgr.hide(m_gameSettingsLblLanguage, instant);
 	m_btnMgr.hide(m_gameSettingsBtnLanguageP, instant);
@@ -148,7 +148,29 @@ void CMenu::_hideGameSettingsPg(bool instant)
 void CMenu::_showGameSettings()
 {
 	u32 i;
-	const char *id = GameHdr->id;
+	char id[74];
+	char catID[64];
+	memset(id, 0, 74);
+	memset(catID, 0, 64);
+	
+	if(GameHdr->type == TYPE_HOMEBREW)
+		wcstombs(id, GameHdr->title, 63);
+	else if(GameHdr->type == TYPE_PLUGIN)
+	{
+		strncpy(m_plugin.PluginMagicWord, fmt("%08x", GameHdr->settings[0]), 8);
+		if(strrchr(GameHdr->path, '/') != NULL)
+			wcstombs(catID, GameHdr->title, 63);
+		else
+			strncpy(catID, GameHdr->path, 63);// scummvm
+		strcpy(id, m_plugin.PluginMagicWord);
+		strcat(id, fmt("/%s", catID));
+	}
+	else
+	{
+		strcpy(id, GameHdr->id);
+		if(GameHdr->type == TYPE_GC_GAME && GameHdr->settings[0] == 1) /* disc 2 */
+			strcat(id, "_2");
+	}
 	
 	_setBg(m_gameSettingsBg, m_gameSettingsBg);
 	for(i = 0; i < ARRAY_SIZE(m_gameSettingsLblUser); ++i)
@@ -165,8 +187,12 @@ void CMenu::_showGameSettings()
 	
 	if(GameHdr->type == TYPE_PLUGIN || GameHdr->type == TYPE_HOMEBREW)
 	{
-		m_btnMgr.show(m_gameSettingsBtnCategoryMain);
-		m_btnMgr.show(m_gameSettingsLblCategoryMain);
+		m_btnMgr.show(m_gameSettingsBtnAdultOnly);
+		m_btnMgr.show(m_gameSettingsLblAdultOnly);
+		if(GameHdr->type == TYPE_PLUGIN)
+			m_btnMgr.setText(m_gameSettingsBtnAdultOnly, m_gcfg1.getBool("ADULTONLY_PLUGINS", id, false) ? _t("yes", L"Yes") : _t("no", L"No"));
+		else
+			m_btnMgr.setText(m_gameSettingsBtnAdultOnly, m_gcfg1.getBool("ADULTONLY", id, false) ? _t("yes", L"Yes") : _t("no", L"No"));
 		return;
 	}
 
@@ -187,8 +213,8 @@ void CMenu::_showGameSettings()
 	
 	if(m_gameSettingsPage == 1)
 	{
-		m_btnMgr.show(m_gameSettingsBtnCategoryMain);
-		m_btnMgr.show(m_gameSettingsLblCategoryMain);
+		m_btnMgr.show(m_gameSettingsBtnAdultOnly);
+		m_btnMgr.show(m_gameSettingsLblAdultOnly);
 		
 		if(GameHdr->type == TYPE_GC_GAME)
 		{
@@ -376,6 +402,7 @@ void CMenu::_showGameSettings()
 		}
 	}
 
+	m_btnMgr.setText(m_gameSettingsBtnAdultOnly, m_gcfg1.getBool("ADULTONLY", id, false) ? _t("yes", L"Yes") : _t("no", L"No"));
 	m_btnMgr.setText(m_gameSettingsBtnOcarina, _optBoolToString(m_gcfg2.getOptBool(id, "cheat", 0)));
 	m_btnMgr.setText(m_gameSettingsBtnLED, _optBoolToString(m_gcfg2.getOptBool(id, "led", 0)));
 	
@@ -465,7 +492,30 @@ void CMenu::_gameSettings(const dir_discHdr *hdr, bool disc)
 {
 	m_gcfg2.load(fmt("%s/" GAME_SETTINGS2_FILENAME, m_settingsDir.c_str()));
 	GameHdr = hdr;//
-	const char *id = GameHdr->id;
+	char id[74];
+	char catID[64];
+	memset(id, 0, 74);
+	memset(catID, 0, 64);
+	
+	if(GameHdr->type == TYPE_HOMEBREW)
+		wcstombs(id, GameHdr->title, 63);
+	else if(GameHdr->type == TYPE_PLUGIN)
+	{
+		strncpy(m_plugin.PluginMagicWord, fmt("%08x", GameHdr->settings[0]), 8);
+		if(strrchr(GameHdr->path, '/') != NULL)
+			wcstombs(catID, GameHdr->title, 63);
+		else
+			strncpy(catID, GameHdr->path, 63);// scummvm
+		strcpy(id, m_plugin.PluginMagicWord);
+		strcat(id, fmt("/%s", catID));
+	}
+	else
+	{
+		strcpy(id, GameHdr->id);
+		if(GameHdr->type == TYPE_GC_GAME && GameHdr->settings[0] == 1) /* disc 2 */
+			strcat(id, "_2");
+	}
+	
 	if(GameHdr->type == TYPE_GC_GAME)
 	{
 		videoScale = m_gcfg2.getInt(id, "nin_width", 127);
@@ -736,22 +786,16 @@ void CMenu::_gameSettings(const dir_discHdr *hdr, bool disc)
 				m_gcfg2.setBool(id, "private_server", !m_gcfg2.getBool(id, "private_server", 0));
 				_showGameSettings();
 			}
-			else if(m_btnMgr.selected(m_gameSettingsBtnCategoryMain))
+			else if(m_btnMgr.selected(m_gameSettingsBtnAdultOnly))
 			{
 				if(disc)
 					error(_t("cfgg57", L"Not allowed for disc!"));
 				else
 				{
-					_hideGameSettings();
-					_CategorySettings(true);
-					// update these in case the user changed games while in cat menu
-					id = CoverFlow.getId();
-					GameHdr = CoverFlow.getHdr();
-					if(GameHdr->type == TYPE_GC_GAME)
-					{
-						videoScale = m_gcfg2.getInt(id, "nin_width", 127);
-						videoOffset = m_gcfg2.getInt(id, "nin_pos", 127);
-					}
+					if(GameHdr->type == TYPE_PLUGIN)
+						m_gcfg1.setBool("ADULTONLY_PLUGINS", id, !m_gcfg1.getBool("ADULTONLY_PLUGINS", id, false));
+					else
+						m_gcfg1.setBool("ADULTONLY", id, !m_gcfg1.getBool("ADULTONLY", id, false));
 				}
 				_showGameSettings();
 			}
@@ -785,8 +829,8 @@ void CMenu::_initGameSettingsMenu()
 	m_gameSettingsLblTitle = _addLabel("GAME_SETTINGS/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 
 // Page 1
-	m_gameSettingsLblCategoryMain = _addLabel("GAME_SETTINGS/CAT_MAIN", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsBtnCategoryMain = _addButton("GAME_SETTINGS/CAT_MAIN_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
+	m_gameSettingsLblAdultOnly = _addLabel("GAME_SETTINGS/ADULT_ONLY", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsBtnAdultOnly = _addButton("GAME_SETTINGS/ADULT_ONLY_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
 
 	m_gameSettingsLblGameIOS = _addLabel("GAME_SETTINGS/IOS", theme.lblFont, L"", 20, 185, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsLblIOS = _addLabel("GAME_SETTINGS/IOS_BTN", theme.btnFont, L"", 468, 190, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
@@ -1056,8 +1100,8 @@ void CMenu::_initGameSettingsMenu()
 	_setHideAnim(m_gameSettingsLblFlashSave, "GAME_SETTINGS/FLASH_SAVE", 50, 0, -2.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnFlashSave, "GAME_SETTINGS/FLASH_SAVE_BTN", -50, 0, 1.f, 0.f);
 
-	_setHideAnim(m_gameSettingsLblCategoryMain, "GAME_SETTINGS/CAT_MAIN", 50, 0, -2.f, 0.f);
-	_setHideAnim(m_gameSettingsBtnCategoryMain, "GAME_SETTINGS/CAT_MAIN_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsLblAdultOnly, "GAME_SETTINGS/ADULT_ONLY", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_gameSettingsBtnAdultOnly, "GAME_SETTINGS/ADULT_ONLY_BTN", -50, 0, 1.f, 0.f);
 
 	_setHideAnim(m_gameSettingsLblPage, "GAME_SETTINGS/PAGE_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_gameSettingsBtnPageM, "GAME_SETTINGS/PAGE_MINUS", 0, 0, 1.f, -1.f);
@@ -1075,8 +1119,7 @@ void CMenu::_textGameSettings(void)
 	
 	m_btnMgr.setText(m_gameSettingsLblManage, _t("cfgg40", L"Manage Cover and Banner"));
 	m_btnMgr.setText(m_gameSettingsBtnManage, _t("cfgg41", L"Manage"));
-	m_btnMgr.setText(m_gameSettingsLblCategoryMain, _t("cfgg17", L"Categories"));
-	m_btnMgr.setText(m_gameSettingsBtnCategoryMain, _t("cfgg16", L"Select"));
+	m_btnMgr.setText(m_gameSettingsLblAdultOnly, _t("cfgg58", L"Adult only"));
 	m_btnMgr.setText(m_gameSettingsLblGCLoader, _t("cfgg35", L"GameCube Loader"));
 	m_btnMgr.setText(m_gameSettingsLblGameVideo, _t("cfgg2", L"Video mode"));
 	m_btnMgr.setText(m_gameSettingsLblGameLanguage, _t("cfgg3", L"Language"));
