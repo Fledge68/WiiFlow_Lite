@@ -89,14 +89,20 @@ static void _showCfgSrc(bool m_sourceflow)
 
 void CMenu::_CfgSrc(void)
 {
+	if(!m_use_source)
+	{
+		error(_t("cfgsmerr", L"No source menu found!"));
+		return;
+	}
 	SetupInput();
 	_setBg(m_cfgsrcBg, m_cfgsrcBg);
 	m_btnMgr.setText(m_cfgsrcBtnEnableSF, m_cfg.getBool(SOURCEFLOW_DOMAIN, "enabled") ? _t("on", L"On") : _t("off", L"Off"));
 	m_btnMgr.setText(m_cfgsrcBtnSmallbox, m_cfg.getBool(SOURCEFLOW_DOMAIN, "smallbox") ? _t("on", L"On") : _t("off", L"Off"));
 	m_btnMgr.setText(m_cfgsrcBtnBoxMode, m_cfg.getBool(SOURCEFLOW_DOMAIN, "box_mode") ? _t("on", L"On") : _t("off", L"Off"));
 	m_btnMgr.setText(m_cfgsrcBtnMultisource, m_cfg.getBool("GENERAL", "multisource") ? _t("on", L"On") : _t("off", L"Off"));
-	_showCfgSrc(m_sourceflow);
-
+	_showCfgSrc(m_cfg.getBool(SOURCEFLOW_DOMAIN, "enabled", false));
+	bool temp;
+	
 	while(!m_exit)
 	{
 		_mainLoopCommon();
@@ -112,31 +118,32 @@ void CMenu::_CfgSrc(void)
 				break;
 			else if(m_btnMgr.selected(m_cfgsrcBtnEnableSF))
 			{
-				m_sourceflow = !m_sourceflow;
-				m_cfg.setBool(SOURCEFLOW_DOMAIN, "enabled", m_sourceflow);
-				m_btnMgr.setText(m_cfgsrcBtnEnableSF, m_sourceflow ? _t("on", L"On") : _t("off", L"Off"));
-				_showCfgSrc(m_sourceflow);
+				temp = !m_cfg.getBool(SOURCEFLOW_DOMAIN, "enabled", false);
+				m_cfg.setBool(SOURCEFLOW_DOMAIN, "enabled", temp);
+				m_btnMgr.setText(m_cfgsrcBtnEnableSF, temp ? _t("on", L"On") : _t("off", L"Off"));
+				_showCfgSrc(temp);
 			}
 			else if(m_btnMgr.selected(m_cfgsrcBtnSmallbox))
 			{
-				m_refreshGameList = true;
-				//fsop_deleteFolder(fmt("%s/sourceflow", m_cacheDir.c_str()));
-				m_cfg.setBool(SOURCEFLOW_DOMAIN, "smallbox", !m_cfg.getBool(SOURCEFLOW_DOMAIN, "smallbox", false));
-				m_btnMgr.setText(m_cfgsrcBtnSmallbox, m_cfg.getBool(SOURCEFLOW_DOMAIN, "smallbox") ? _t("on", L"On") : _t("off", L"Off"));
+				temp = !m_cfg.getBool(SOURCEFLOW_DOMAIN, "smallbox", false);
+				m_cfg.setBool(SOURCEFLOW_DOMAIN, "smallbox", temp);
+				m_btnMgr.setText(m_cfgsrcBtnSmallbox, temp ? _t("on", L"On") : _t("off", L"Off"));
 			}
 			else if(m_btnMgr.selected(m_cfgsrcBtnBoxMode))
 			{
-				m_refreshGameList = true;
-				//fsop_deleteFolder(fmt("%s/sourceflow", m_cacheDir.c_str()));
-				m_cfg.setBool(SOURCEFLOW_DOMAIN, "box_mode", !m_cfg.getBool(SOURCEFLOW_DOMAIN, "box_mode", false));
-				m_btnMgr.setText(m_cfgsrcBtnBoxMode, m_cfg.getBool(SOURCEFLOW_DOMAIN, "box_mode") ? _t("on", L"On") : _t("off", L"Off"));
+				temp = !m_cfg.getBool(SOURCEFLOW_DOMAIN, "box_mode", false);
+				m_cfg.setBool(SOURCEFLOW_DOMAIN, "box_mode", temp);
+				m_btnMgr.setText(m_cfgsrcBtnBoxMode, temp ? _t("on", L"On") : _t("off", L"Off"));
 			}
 			else if(m_btnMgr.selected(m_cfgsrcBtnAdjustCF))
 			{
-				m_refreshGameList = true;
 				_hideCfgSrc(true);
+				m_sourceflow = true;
+				_showCF(true);
 				_cfTheme();
-				_showCfgSrc(m_sourceflow);
+				m_sourceflow = false;
+				_showCF(true);
+				_showCfgSrc(true);
 			}
 			else if(m_btnMgr.selected(m_cfgsrcBtnMultisource))
 			{

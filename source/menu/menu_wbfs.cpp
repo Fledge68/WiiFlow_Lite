@@ -284,6 +284,8 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 
 	SetupInput();
 	_showWBFS(op);
+	m_btnMgr.show(m_wbfsLblMessage);
+	m_btnMgr.setText(m_wbfsLblMessage, _t("wbfsop27", L"Or press 'B' to go back."));
 	switch (op)
 	{
 		case WO_ADD_GAME:

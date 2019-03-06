@@ -70,8 +70,8 @@ void CMenu::_showConfig7(int curPage)
 	{
 		m_btnMgr.show(m_config7Lbl1);
 		m_btnMgr.show(m_config7Btn1);
-		//m_btnMgr.show(m_config7Lbl2);
-		//m_btnMgr.show(m_config7Btn2);
+		m_btnMgr.show(m_config7Lbl2);
+		m_btnMgr.show(m_config7Btn2);
 	}
 	else
 	{
@@ -152,8 +152,8 @@ void CMenu::_showConfig7(int curPage)
 	{
 		m_btnMgr.setText(m_config7Lbl1, _t("cfg722", L"Homebrew settings"));
 		m_btnMgr.setText(m_config7Btn1, _t("cfg14", L"Set"));
-		//m_btnMgr.setText(m_config7Lbl2, _t("cfg723", L"Source menu settings"));
-		//m_btnMgr.setText(m_config7Btn2, _t("cfg14", L"Set"));
+		m_btnMgr.setText(m_config7Lbl2, _t("cfg723", L"Source menu settings"));
+		m_btnMgr.setText(m_config7Btn2, _t("cfg14", L"Set"));
 	}
 }
 
@@ -310,12 +310,12 @@ int CMenu::_config7(int curPage)
 					_CfgHB();
 					_showConfig7(12);
 				}
-				/*else if(m_btnMgr.selected(m_config7Btn2))
+				else if(m_btnMgr.selected(m_config7Btn2))
 				{
 					_hideConfig7();
 					_CfgSrc();
 					_showConfig7(12);
-				}*/
+				}
 			}
 		}
 	}

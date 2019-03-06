@@ -382,34 +382,15 @@ int CMenu::main(void)
 		if(BTN_HOME_PRESSED)
 		{
 			_hideMain();
-			/* sourceflow config menu */
-			if(m_sourceflow)
-			{
-				_CfgSrc();
-				if(BTN_B_HELD)
-				{
-					bheld = true;
-					bUsed = true;
-				}
-				if(!m_cfg.getBool(SOURCEFLOW_DOMAIN, "enabled"))
-				{
-					m_sourceflow = false;
-					m_refreshGameList = true;
-				}
-				_showMain();
-			}
 			/* Home menu */
-			else
+			if(_Home())
+				break;// exit wiiflow
+			if(BTN_B_HELD)
 			{
-				if(_Home())
-					break;// exit wiiflow
-				if(BTN_B_HELD)
-				{
-					bheld = true;
-					bUsed = true;
-				}
-				_showMain();
+				bheld = true;
+				bUsed = true;
 			}
+			_showMain();
 		}
 		else if(BTN_A_PRESSED)
 		{
