@@ -289,6 +289,7 @@ int CMenu::main(void)
 	bool bUsed = false;// bused to indicate that it was actually used for something
 	m_emuSaveNand = false;
 	m_reload = false;
+	CFLocked = m_cfg.getBool("GENERAL", "cf_locked", false);
 	u32 disc_check = 0;
 
 	m_prev_view = 0;
@@ -615,7 +616,7 @@ int CMenu::main(void)
 			}
 				
 			/* change coverflow layout/mode */
-			else if(BTN_1_PRESSED || BTN_2_PRESSED)
+			else if((BTN_1_PRESSED || BTN_2_PRESSED) && !CFLocked)
 			{
 				u32 curPos = CoverFlow._currentPos();
 				s8 direction = BTN_1_PRESSED ? 1 : -1;

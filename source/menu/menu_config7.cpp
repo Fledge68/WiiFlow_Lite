@@ -72,6 +72,8 @@ void CMenu::_showConfig7(int curPage)
 		m_btnMgr.show(m_config7Btn1);
 		m_btnMgr.show(m_config7Lbl2);
 		m_btnMgr.show(m_config7Btn2);
+		m_btnMgr.show(m_config7Lbl3);
+		m_btnMgr.show(m_config7Btn3);
 	}
 	else
 	{
@@ -154,6 +156,8 @@ void CMenu::_showConfig7(int curPage)
 		m_btnMgr.setText(m_config7Btn1, _t("cfg14", L"Set"));
 		m_btnMgr.setText(m_config7Lbl2, _t("cfg723", L"Source menu settings"));
 		m_btnMgr.setText(m_config7Btn2, _t("cfg14", L"Set"));
+		m_btnMgr.setText(m_config7Lbl3, _t("cfg724", L"Lock coverflow layouts"));
+		m_btnMgr.setText(m_config7Btn3, m_cfg.getBool("general", "cf_locked") ?  _t("yes", L"Yes") : _t("no", L"No"));
 	}
 }
 
@@ -315,6 +319,13 @@ int CMenu::_config7(int curPage)
 					_hideConfig7();
 					_CfgSrc();
 					_showConfig7(12);
+				}
+				else if(m_btnMgr.selected(m_config7Btn3))
+				{
+					bool val = !m_cfg.getBool("general", "cf_locked");
+					m_cfg.setBool("general", "cf_locked", val);
+					m_btnMgr.setText(m_config7Btn3, val ?  _t("yes", L"Yes") : _t("no", L"No"));
+					CFLocked = val;
 				}
 			}
 		}
