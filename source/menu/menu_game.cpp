@@ -551,10 +551,14 @@ void CMenu::_game(bool launch)
 		/* display game info screen */
 		else if(BTN_PLUS_PRESSED && hdr->type != TYPE_HOMEBREW && hdr->type != TYPE_SOURCE && !coverFlipped && !m_video_playing)
 		{
-			_hideGame();// stops trailer movie too
+			bool faLoaded = m_fa.isLoaded();
+			_hideGame();// stops trailer movie and unloads fanart
 			m_banner.SetShowBanner(false);
 			_gameinfo();
-			_showGame();
+			if(faLoaded)
+				_showGame();// reloads fanart
+			else
+				_setMainBg();// show custom bg if available
 			m_banner.SetShowBanner(true);
 		}
 		/* play or stop a trailer video */
