@@ -97,7 +97,7 @@ private:
 	u8 m_numCFVersions;
 	u8 m_numPlugins;
 	u8 m_max_source_btn;
-	const char *cf_domain;
+	char cf_domain[16];
 	bool m_use_source;// source_menu.ini found & ok to use source menu/flow
 	bool m_multisource;// multi select source menu
 	bool m_sourceflow;// in sourceflow view
@@ -1022,8 +1022,6 @@ private:
 	void _showCF(bool refreshList = false);
 	void _refreshExplorer(s8 direction = 0);
 	void _setSrcOptions(void);
-	bool _sideCover(const char *magic);
-	bool _shortCover(const char *magic);
 	void _updateSourceBtns(void);
 	void _updatePluginText(void);
 	void _updatePluginCheckboxes(void);

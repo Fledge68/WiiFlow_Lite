@@ -475,6 +475,8 @@ void CMenu::_Theme_Cleanup(void)
 	m_nextBg = NULL;
 	TexHandle.Cleanup(m_curBg);
 	m_lqBg = NULL;
+	TexHandle.Cleanup(sfbgimg);
+	TexHandle.Cleanup(m_mainAltBg);
 	/* Buttons */
 	TexHandle.Cleanup(theme.btnTexL);
 	TexHandle.Cleanup(theme.btnTexR);
@@ -664,9 +666,7 @@ void CMenu::_loadCFLayout(int version, bool forceAA, bool otherScrnFmt)
 {
 	string domain = fmt("%s_%i", cf_domain, version);
 	string domainSel = fmt("%s_%i_S", cf_domain, version);
-	bool smallflow = (strcmp(cf_domain, "_SMALLFLOW") == 0);
-	bool shortflow = (strcmp(cf_domain, "_SHORTFLOW") == 0);
-	bool sideflow = (strcmp(cf_domain, "_SIDEFLOW") == 0);
+	bool smallflow = strcasecmp(cf_domain, "_SMALLFLOW") == 0;
 	bool sf = otherScrnFmt;
 
 	int max_fsaa = m_coverflow.getInt(domain, "max_fsaa", 3);
@@ -696,11 +696,10 @@ void CMenu::_loadCFLayout(int version, bool forceAA, bool otherScrnFmt)
 
 	float def_cvr_posX = smallflow ? 1.f : 1.6f;
 	float def_cvr_posY = smallflow ? -0.8f : -1.f;
-	float def_cvr_posX1 = sideflow ? .10f : 0.f;
 	CoverFlow.setCoverPos(false,
 		_getCFV3D(domain, "left_pos", Vector3D(-def_cvr_posX, def_cvr_posY, 0.f), sf),
 		_getCFV3D(domain, "right_pos", Vector3D(def_cvr_posX, def_cvr_posY, 0.f), sf),
-		_getCFV3D(domain, "center_pos", Vector3D(def_cvr_posX1, def_cvr_posY, 1.f), sf),
+		_getCFV3D(domain, "center_pos", Vector3D(def_cvr_posX, def_cvr_posY, 1.f), sf),
 		_getCFV3D(domain, "row_center_pos", Vector3D(0.f, def_cvr_posY, 0.f), sf));
 
 	if(smallflow)
@@ -750,11 +749,10 @@ void CMenu::_loadCFLayout(int version, bool forceAA, bool otherScrnFmt)
 		m_coverflow.getVector3D(domainSel, "right_delta_angle"));
 
 	float angleY = smallflow ? 0.f : 70.f;
-	float angleZ = sideflow ? 90.f : 0.f;
 	CoverFlow.setAngles(false,
 		m_coverflow.getVector3D(domain, "left_angle", Vector3D(0.f, angleY, 0.f)),
 		m_coverflow.getVector3D(domain, "right_angle", Vector3D(0.f, -angleY, 0.f)),
-		m_coverflow.getVector3D(domain, "center_angle", Vector3D(0.f, 0.f, angleZ)),
+		m_coverflow.getVector3D(domain, "center_angle", Vector3D(0.f, 0.f, 0.f)),
 		m_coverflow.getVector3D(domain, "row_center_angle"));
 
 	angleY = smallflow ? 0.f : 90.f;
@@ -763,7 +761,7 @@ void CMenu::_loadCFLayout(int version, bool forceAA, bool otherScrnFmt)
 	CoverFlow.setAngles(true,
 		m_coverflow.getVector3D(domainSel, "left_angle", Vector3D(angleX, angleY, 0.f)),
 		m_coverflow.getVector3D(domainSel, "right_angle", Vector3D(angleX, -angleY, 0.f)),
-		m_coverflow.getVector3D(domainSel, "center_angle", Vector3D(0.f, angleY1, angleZ)),
+		m_coverflow.getVector3D(domainSel, "center_angle", Vector3D(0.f, angleY1, 0.f)),
 		m_coverflow.getVector3D(domainSel, "row_center_angle"));
 
 	angleX = smallflow ? 0.f : 20.f;
@@ -860,9 +858,7 @@ void CMenu::_loadCFLayout(int version, bool forceAA, bool otherScrnFmt)
 		m_coverflow.getVector3D(domainSel, "top_angle"),
 		m_coverflow.getVector3D(domainSel, "bottom_angle"));
 
-	Vector3D def_cvr_scale = smallflow ? Vector3D(0.66f, 0.25f, 1.f)
-	: (shortflow ? Vector3D(1.f, 0.66f, 1.f) 
-	: Vector3D(1.f, 1.f, 1.f));
+	Vector3D def_cvr_scale = smallflow ? Vector3D(0.66f, 0.25f, 1.f) : Vector3D(1.f, 1.f, 1.f);
 
 	CoverFlow.setCoverScale(false,
 		m_coverflow.getVector3D(domain, "left_scale", def_cvr_scale),

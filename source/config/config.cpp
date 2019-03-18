@@ -98,7 +98,7 @@ bool Config::hasDomain(const string &domain) const
 
 void Config::copyDomain(const string &dst, const string &src)
 {
-	m_domains[dst] = m_domains[src];
+	m_domains[upperCase(dst)] = m_domains[upperCase(src)];
 }
 
 const string &Config::firstDomain(void)

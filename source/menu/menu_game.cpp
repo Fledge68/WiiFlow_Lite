@@ -43,6 +43,7 @@ extern const u32 gc_ogg_size;
 
 bool m_zoom_banner = false;
 bool m_banner_loaded = false;
+bool m_set_bg = false;
 s16 m_gameBtnPlayFull;
 s16 m_gameBtnBackFull;
 s16 m_gameBtnToggle;
@@ -316,8 +317,6 @@ void CMenu::_hideGame(bool instant)
 
 void CMenu::_showGame(void)
 {
-	bool faPrevLoaded = m_fa.isLoaded();
-	
 	const dir_discHdr *GameHdr = CoverFlow.getHdr();
 	const char *coverDir = NULL;
 	const char *Path = NULL;
@@ -336,11 +335,12 @@ void CMenu::_showGame(void)
 		_setBg(*bg, *bglq);
 		CoverFlow.hideCover();
 	}
-	else if(faPrevLoaded)
+	else if(m_set_bg)
 	{
 		CoverFlow.showCover();		
 		_setMainBg();
 	}
+	m_set_bg = true;
 }
 
 void CMenu::_cleanupBanner(bool gamechange)
@@ -383,14 +383,18 @@ static const char *getVideoDefaultPath(const string &videoDir)
 bool CMenu::_startVideo()
 {
 	const dir_discHdr *GameHdr = CoverFlow.getHdr();
+	
+	const char *videoId = NULL;
 	char curId3[4];
 	memset(curId3, 0, 4);
-	const char *videoId = CoverFlow.getFilenameId(GameHdr);//title.ext
 	if(!NoGameID(GameHdr->type))
 	{	//id3
 		memcpy(curId3, GameHdr->id, 3);
 		videoId = curId3;
 	}
+	else
+		videoId = CoverFlow.getFilenameId(GameHdr);//title.ext
+
 	//dev:/wiiflow/trailers/{coverfolder}/title.ext.thp or dev:/wiiflow/trailers/id3.thp
 	const char *videoPath = getVideoPath(m_videoDir, videoId);
 	const char *THP_Path = fmt("%s.thp", videoPath);
@@ -429,6 +433,7 @@ bool CMenu::_startVideo()
 void CMenu::_game(bool launch)
 {
 	m_banner_loaded = false;
+	m_set_bg = false;
 	bool coverFlipped = false;
 	int cf_version = 1;
 	string domain;
@@ -551,14 +556,10 @@ void CMenu::_game(bool launch)
 		/* display game info screen */
 		else if(BTN_PLUS_PRESSED && hdr->type != TYPE_HOMEBREW && hdr->type != TYPE_SOURCE && !coverFlipped && !m_video_playing)
 		{
-			bool faLoaded = m_fa.isLoaded();
-			_hideGame();// stops trailer movie and unloads fanart
+			_hideGame();
 			m_banner.SetShowBanner(false);
 			_gameinfo();
-			if(faLoaded)
-				_showGame();// reloads fanart
-			else
-				_setMainBg();// show custom bg if available
+			_showGame();
 			m_banner.SetShowBanner(true);
 		}
 		/* play or stop a trailer video */

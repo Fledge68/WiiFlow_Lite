@@ -183,6 +183,7 @@ void CMenu::_srcTierBack(bool home)
 
 void CMenu::_setSrcFlowBg(void)
 {
+	TexHandle.Cleanup(sfbgimg);
 	string fn = m_source.getString("general", "background", "");
 	if(fn.length() > 0)
 	{
@@ -697,54 +698,6 @@ bool CMenu::_Source()
 	m_cfg.setInt(CHANNEL_DOMAIN, "channels_type", channels_type);
 	_hideSource(true);
 	return newSource;
-}
-
-static const char sideCovers[5][9] = {
-"534e5854", //Snes9X-Next
-"534e4553", //SNES9xGX
-"4e4f3634", //Not64
-"57493634", //Wii64
-"513053xx" //QuakeGX Serverloader wild cards
-};
-
-static const char shortCovers[13][9] = {
-"474d4254", //Gambatte
-"474d4264", //Gambatte GB
-"474d4274", //Gambatte GBC
-"56425854", //VBA-Next
-"56424158", //VbaGX
-"56424168", //VbaGX GB
-"56424178", //VbaGX GBC
-"56424188", //VbaGX GBA
-"4d45445e", //WiiMednafen GB
-"4d45446e", //WiiMednafen GBC
-"4d45447e", //WiiMednafen GBA
-"57495358",	//WiiSX - playstation
-"51304dxx" //QuakeGX Modloader wild cards
-};
-
-bool CMenu::_sideCover(const char *magic)
-{
-	if(magic == NULL)
-		return false;
-	for(i = 0; i < ARRAY_SIZE(sideCovers); i++)
-	{
-		if((sideCovers[i][6] == 'x' && strncasecmp(magic, sideCovers[i], 6) == 0) || strncasecmp(magic, sideCovers[i], 8) == 0)
-			return true;
-	}
-	return false;
-}
-
-bool CMenu::_shortCover(const char *magic)
-{
-	if(magic == NULL)
-		return false;
-	for(i = 0; i < ARRAY_SIZE(shortCovers); i++)
-	{
-		if((shortCovers[i][6] == 'x' && strncasecmp(magic, shortCovers[i], 6) == 0) || strncasecmp(magic, shortCovers[i], 8) == 0)
-			return true;
-	}
-	return false;
 }
 
 void CMenu::_setSrcOptions(void)

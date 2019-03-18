@@ -48,6 +48,7 @@ void CMenu::_setMainBg()
 		_setSrcFlowBg();
 	else
 	{
+		TexHandle.Cleanup(m_mainAltBg);
 		string fn = m_cfg.getString("general", "main_background", "");
 		if(fn.length() > 0)
 		{
@@ -215,40 +216,54 @@ void CMenu::_showCF(bool refreshList)
 	if(m_cfg.getBool("GENERAL", "save_favorites_mode", false))
 		m_favorites = m_cfg.getBool(_domainFromView(), "favorites", false);
 	
-	/* set CoverFlow domain to _COVERFLOW, _SMALLFLOW, _SIDEFLOW, _SHORTFLOW, or _FLATFLOW */
-	cf_domain = "_COVERFLOW";
+	strcpy(cf_domain, "_COVERFLOW");
 	if(!m_sourceflow && m_current_view == COVERFLOW_HOMEBREW && m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox", true))
-		cf_domain = "_SMALLFLOW";
+		strcpy(cf_domain, "_SMALLFLOW");
 	if(m_sourceflow && m_cfg.getBool(SOURCEFLOW_DOMAIN, "smallbox", true))
-		cf_domain = "_SMALLFLOW";
+		strcpy(cf_domain, "_SMALLFLOW");
 	if(m_current_view == COVERFLOW_PLUGIN && !m_sourceflow)
 	{
 		m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
+		/* check if homebrew plugin */
 		if(enabledPluginsCount == 1 && m_cfg.getBool(PLUGIN_ENABLED, "48425257") && m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox"))
-			cf_domain = "_smallflow";
+			strcpy(cf_domain, "_SMALLFLOW");
 		else if(enabledPluginsCount > 0)
 		{
-			int sdc = 0;
-			int shc = 0;
-			int flatmode_cnt = 0;
-			for(u8 i = 0; m_plugin.PluginExist(i); ++i)
+			/* load platform.ini */
+			Config m_platform;
+			m_platform.load(fmt("%s/platform.ini", m_pluginDataDir.c_str()) );
+			if(m_platform.loaded())
 			{
-				if(m_plugin.GetEnableStatus(m_cfg, m_plugin.getPluginMagic(i)))
+				string flow_domain;
+				for(u8 i = 0; m_plugin.PluginExist(i); ++i)
 				{
-					if(!m_plugin.GetBoxMode(i))
-						flatmode_cnt++;
-					else if(_sideCover(m_plugin.PluginMagicWord))
-						sdc++;
-					else if(_shortCover(m_plugin.PluginMagicWord))
-						shc++;
+					if(m_plugin.GetEnableStatus(m_cfg, m_plugin.getPluginMagic(i)))
+					{
+						strncpy(m_plugin.PluginMagicWord, fmt("%08x", m_plugin.getPluginMagic(i)), 8);
+						flow_domain = m_platform.getString("FLOWS", m_platform.getString("PLUGINS", m_plugin.PluginMagicWord));
+						break;
+					}
 				}
+				if(!flow_domain.empty())
+				{
+					bool match = true;
+					for(u8 i = 0; m_plugin.PluginExist(i); ++i)
+					{
+						if(m_plugin.GetEnableStatus(m_cfg, m_plugin.getPluginMagic(i)))
+						{
+							strncpy(m_plugin.PluginMagicWord, fmt("%08x", m_plugin.getPluginMagic(i)), 8);
+							if(flow_domain != m_platform.getString("FLOWS", m_platform.getString("PLUGINS", m_plugin.PluginMagicWord)))
+							{
+								match = false;
+								break;
+							}
+						}
+					}
+					if(match)
+						snprintf(cf_domain, sizeof(cf_domain), "%s", flow_domain.c_str());
+				}
+				m_platform.unload();
 			}
-			if(sdc == enabledPluginsCount)
-				cf_domain = "_SIDEFLOW";
-			else if(shc == enabledPluginsCount)
-				cf_domain = "_SHORTFLOW";
-			if(flatmode_cnt == enabledPluginsCount)
-				cf_domain = "_FLATFLOW";
 		}
 	}
 
@@ -349,14 +364,6 @@ int CMenu::main(void)
 				{
 					m_sourceflow = false;
 					_setMainBg();
-					_showCF(true);
-					continue;
-				}
-				if(m_current_view == COVERFLOW_HOMEBREW && m_prev_view != 0)
-				{
-					m_current_view = m_prev_view;
-					m_prev_view = 0;
-					m_cfg.setUInt("GENERAL", "sources", m_current_view);
 					_showCF(true);
 					continue;
 				}
