@@ -2831,7 +2831,10 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 	if(!m_loadingCovers) 
 		return CL_ERROR;
 
-	if(box && m_smallBox)//prevent smallbox from loading full box cover
+	if(box && m_smallBox)// prevent smallbox from loading full box cover
+		return CL_ERROR;
+		
+	if(blankBoxCover && m_items[i].hdr->type == TYPE_SOURCE)// blank covers not used for sourceflow
 		return CL_ERROR;
 		
 	bool allocFailed = false;
@@ -2860,9 +2863,9 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 			strncpy(wfcTitle, getFilenameId(m_items[i].hdr), sizeof(wfcTitle) - 1);
 			
 		/* get coverfolder for plugins, sourceflow, and homebrew */
-		if(m_items[i].hdr->type == TYPE_PLUGIN && m_pluginCacheFolders && !blankBoxCover)
+		if(m_items[i].hdr->type == TYPE_PLUGIN && m_pluginCacheFolders)
 			wfcCoverDir = m_plugin.GetCoverFolderName(m_items[i].hdr->settings[0]);
-		if(m_items[i].hdr->type == TYPE_SOURCE && !blankBoxCover)
+		if(m_items[i].hdr->type == TYPE_SOURCE)
 			wfcCoverDir = "sourceflow";
 		if(m_items[i].hdr->type == TYPE_HOMEBREW)
 			wfcCoverDir = "homebrew";
