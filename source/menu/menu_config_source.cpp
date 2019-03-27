@@ -125,12 +125,14 @@ void CMenu::_CfgSrc(void)
 			}
 			else if(m_btnMgr.selected(m_cfgsrcBtnSmallbox))
 			{
+				SF_cacheCovers = true;
 				temp = !m_cfg.getBool(SOURCEFLOW_DOMAIN, "smallbox", false);
 				m_cfg.setBool(SOURCEFLOW_DOMAIN, "smallbox", temp);
 				m_btnMgr.setText(m_cfgsrcBtnSmallbox, temp ? _t("on", L"On") : _t("off", L"Off"));
 			}
 			else if(m_btnMgr.selected(m_cfgsrcBtnBoxMode))
 			{
+				SF_cacheCovers = true;
 				temp = !m_cfg.getBool(SOURCEFLOW_DOMAIN, "box_mode", false);
 				m_cfg.setBool(SOURCEFLOW_DOMAIN, "box_mode", temp);
 				m_btnMgr.setText(m_cfgsrcBtnBoxMode, temp ? _t("on", L"On") : _t("off", L"Off"));

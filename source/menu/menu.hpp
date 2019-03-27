@@ -62,6 +62,7 @@ private:
 	bool m_newGame;
 	bool show_mem;
 	bool cacheCovers;
+	bool SF_cacheCovers;
 	bool CFLocked;
 	vector<dir_discHdr> m_gameList;
 

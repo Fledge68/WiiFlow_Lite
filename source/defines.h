@@ -6,7 +6,7 @@
 #else
 #define APP_NAME				"WiiFlow Lite"
 #endif
-#define APP_VERSION				"5.3.0 beta 2"
+#define APP_VERSION				"5.3.0 beta 3"
 
 #define APP_DATA_DIR			"wiiflow"
 #ifdef APP_WIIFLOW

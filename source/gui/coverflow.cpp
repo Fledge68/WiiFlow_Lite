@@ -2839,7 +2839,8 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 	/* try to find the wfc texture file in the cache folder */
 	if(!m_cachePath.empty())
 	{
-		const char *wfcTitle = NULL;
+		char wfcTitle[64];
+		wfcTitle[63] = '\0';
 		const char *wfcCoverDir = NULL;
 		char *full_path = (char*)MEM2_alloc(MAX_FAT_PATH+1);
 		if(full_path == NULL)
@@ -2851,18 +2852,20 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 		{
 			const char *blankCoverPath = mainMenu.getBlankCoverPath(m_items[i].hdr);
 			if(blankCoverPath != NULL && strrchr(blankCoverPath, '/') != NULL)
-				wfcTitle = strrchr(blankCoverPath, '/') + 1;
+				strncpy(wfcTitle, strrchr(blankCoverPath, '/') + 1, sizeof(wfcTitle) - 1);
 			else
 				return CL_ERROR;
 		}
 		else
-			wfcTitle = getFilenameId(m_items[i].hdr);
+			strncpy(wfcTitle, getFilenameId(m_items[i].hdr), sizeof(wfcTitle) - 1);
 			
-		/* get coverfolder for plugins and sourceflow */
+		/* get coverfolder for plugins, sourceflow, and homebrew */
 		if(m_items[i].hdr->type == TYPE_PLUGIN && m_pluginCacheFolders && !blankBoxCover)
 			wfcCoverDir = m_plugin.GetCoverFolderName(m_items[i].hdr->settings[0]);
 		if(m_items[i].hdr->type == TYPE_SOURCE && !blankBoxCover)
 			wfcCoverDir = "sourceflow";
+		if(m_items[i].hdr->type == TYPE_HOMEBREW)
+			wfcCoverDir = "homebrew";
 			
 		/* set full path of wfc file */
 		if(wfcCoverDir != NULL)
@@ -2879,7 +2882,6 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 			else
 				strncpy(full_path, fmt("%s/%s.wfc", m_cachePath.c_str(), wfcTitle), MAX_FAT_PATH);
 		}
-	
 		DCFlushRange(full_path, MAX_FAT_PATH+1);
 		
 		/* load wfc file */
@@ -2890,13 +2892,17 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 		if(fp != NULL)//if wfc chache file is found
 		{
 			bool success = false;
-			struct stat stat_buf;
-			if(fstat(fileno(fp), &stat_buf) != 0)
+			if(fseek(fp, 0, SEEK_END) != 0)
 			{
 				fclose(fp);
-				return _loadCoverTexPNG(i, box, hq, blankBoxCover) ? CL_OK : CL_ERROR;
+				return CL_ERROR;
 			}
-			u32 fileSize = stat_buf.st_size;
+			u32 fileSize = ftell(fp);
+			if(fseek(fp, 0, SEEK_SET) != 0)
+			{
+				fclose(fp);
+				return CL_ERROR;
+			}
 			
 			SWFCHeader header;
 			if(fileSize > sizeof(header))
@@ -2904,7 +2910,7 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 				if(fread(&header, 1, sizeof(header), fp) != sizeof(header))
 				{
 					fclose(fp);
-					return _loadCoverTexPNG(i, box, hq, blankBoxCover) ? CL_OK : CL_ERROR;
+					return CL_ERROR;
 				}
 				DCFlushRange(&header, sizeof(header));
 				//make sure wfc cache file matches what we want
@@ -2929,21 +2935,16 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 					{
 						/* if not HQ cover then skip (bufSize - texLen) texture data after header */
 						fseek(fp, sizeof(header) + (bufSize - texLen), SEEK_SET);
-						if(fread(tex.data, 1, texLen, fp) != texLen)
+						if(fread(tex.data, 1, texLen, fp) == texLen)
 						{
-							fclose(fp);
-							return _loadCoverTexPNG(i, box, hq, blankBoxCover) ? CL_OK : CL_ERROR;
+							DCFlushRange(tex.data, texLen);
+							LockMutex lock(m_mutex);
+							TexHandle.Cleanup(m_items[i].texture);
+							m_items[i].texture = tex;
+							m_items[i].state = STATE_Ready;
+							m_items[i].boxTexture = header.full != 0;
+							success = true;
 						}
-						DCFlushRange(tex.data, texLen);
-					}
-					if(!allocFailed)
-					{
-						LockMutex lock(m_mutex);
-						TexHandle.Cleanup(m_items[i].texture);
-						m_items[i].texture = tex;
-						m_items[i].state = STATE_Ready;
-						m_items[i].boxTexture = header.full != 0;
-						success = true;
 					}
 					if(!success && tex.data != NULL)
 					{
@@ -2960,8 +2961,7 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 	if(allocFailed)
 		return CL_NOMEM;
 
-	// If wfc cache file not found, load the PNG and create a wfc cache file
-	return _loadCoverTexPNG(i, box, hq, blankBoxCover) ? CL_OK : CL_ERROR;
+	return CL_ERROR;
 }
 
 void * CCoverFlow::_coverLoader(void *obj)
@@ -2993,19 +2993,30 @@ void * CCoverFlow::_coverLoader(void *obj)
 			}
 		}
 		ret = CL_OK;
-		for(j = 0; j <= bufferSize && !cf->m_moved && update && ret != CL_NOMEM; ++j)
+		bool hq_done = false;
+		/* we try 3 passes to get the full cover. because the cover loader randomly skips the wfc file for unknown reasons */
+		/* first time is full cover only */
+		/* second time is full then front */
+		/* third is full then front then custom blank cover */
+		for(u8 k = 1; k < 4 && !cf->m_moved && update && ret != CL_NOMEM; k++)
 		{
-			i = loopNum((j & 1) ? firstItem - (j + 1) / 2 : firstItem + j / 2, cf->m_items.size());
-			cur_pos_hq = (hq_req && i == firstItem);
-			if((!hq_req || !cur_pos_hq) && cf->m_items[i].state != STATE_Loading)
-				continue;
-			if((ret = cf->_loadCoverTex(i, cf->m_box, cur_pos_hq, false)) == CL_ERROR)
+			for(j = 0; j <= bufferSize && !cf->m_moved && update && ret != CL_NOMEM; ++j)
 			{
-				if ((ret = cf->_loadCoverTex(i, !cf->m_box, cur_pos_hq, false)) == CL_ERROR)
+				i = loopNum((j & 1) ? firstItem - (j + 1) / 2 : firstItem + j / 2, cf->m_items.size());
+				cur_pos_hq = (hq_req && i == firstItem);
+				if(!cur_pos_hq && cf->m_items[i].state != STATE_Loading)
+					continue;
+				if(cur_pos_hq && hq_done)
+					continue;
+				if(((ret = cf->_loadCoverTex(i, true, cur_pos_hq, false)) == CL_ERROR) && k > 1)
 				{
-					if((ret = cf->_loadCoverTex(i, cf->m_box, cur_pos_hq, true)) == CL_ERROR)
-						cf->m_items[i].state = STATE_NoCover;
+					if(((ret = cf->_loadCoverTex(i, false, cur_pos_hq, false)) == CL_ERROR) && k > 2)
+					{
+						if((ret = cf->_loadCoverTex(i, true, cur_pos_hq, true)) == CL_ERROR)
+							cf->m_items[i].state = STATE_NoCover;
+					}
 				}
+				hq_done = (hq_done == false && ret == CL_OK && cur_pos_hq);
 			}
 		}
 		if(ret == CL_NOMEM && bufferSize > 3)

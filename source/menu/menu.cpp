@@ -79,6 +79,7 @@ CMenu::CMenu()
 	m_clearCats = true;
 	m_catStartPage = 1;
 	cacheCovers = false;
+	SF_cacheCovers = true;
 	/* Explorer stuff */
 	m_txt_view = false;
 	m_txt_path = NULL;
@@ -2241,6 +2242,11 @@ bool CMenu::_loadList(void)
 		for(vector<dir_discHdr>::iterator tmp_itr = m_cacheList.begin(); tmp_itr != m_cacheList.end(); tmp_itr++)
 			m_gameList.push_back(*tmp_itr);
 		m_cacheList.Clear();
+		if(SF_cacheCovers)
+		{
+			SF_cacheCovers = false;
+			cacheCovers = true;
+		}
 		return true;
 	}
 	gprintf("Creating Gamelist\n");
@@ -2294,7 +2300,12 @@ bool CMenu::_loadHomebrewList(const char *HB_Dir)
 
 	gprintf("Adding homebrew list\n");
 	string gameDir(fmt("%s:/%s", DeviceName[currentPartition], HB_Dir));
-	m_cacheList.CreateList(COVERFLOW_HOMEBREW, currentPartition, gameDir, stringToVector(".dol|.elf", '|'), std::string(), false);
+	string cacheDir(fmt("%s/%s_%s.db", m_listCacheDir.c_str(), DeviceName[currentPartition], HB_Dir));
+	bool updateCache = m_cfg.getBool(HOMEBREW_DOMAIN, "update_cache");
+	if(updateCache || !fsop_FileExist(cacheDir.c_str()))
+		cacheCovers = true;
+	m_cacheList.CreateList(COVERFLOW_HOMEBREW, currentPartition, gameDir, stringToVector(".dol|.elf", '|'), cacheDir, updateCache);
+	m_cfg.remove(HOMEBREW_DOMAIN, "update_cache");
 	for(vector<dir_discHdr>::iterator tmp_itr = m_cacheList.begin(); tmp_itr != m_cacheList.end(); tmp_itr++)
 		m_gameList.push_back(*tmp_itr);
 	return true;
@@ -2671,8 +2682,7 @@ const char *CMenu::getBlankCoverPath(const dir_discHdr *element)
 		default:
 			blankCoverKey = "wii";
 	}
-	return fmt("%s/%s", m_boxPicDir.c_str(), m_theme.getString("BLANK_COVERS", blankCoverKey, fmt("%s.jpg", blankCoverKey)).c_str());
-	//return fmt("%s/%s.jpg", m_boxPicDir.c_str(), blankCoverKey);
+	return fmt("%s/blank_covers/%s", m_boxPicDir.c_str(), m_theme.getString("BLANK_COVERS", blankCoverKey, fmt("%s.jpg", blankCoverKey)).c_str());
 }
 
 const char *CMenu::getBoxPath(const dir_discHdr *element)
@@ -2689,7 +2699,7 @@ const char *CMenu::getBoxPath(const dir_discHdr *element)
 			return fmt("%s/%s.png", m_boxPicDir.c_str(), tempname);
 	}
 	else if(element->type == TYPE_HOMEBREW)
-		return fmt("%s/%s.png", m_boxPicDir.c_str(), strrchr(element->path, '/') + 1);
+		return fmt("%s/homebrew/%s.png", m_boxPicDir.c_str(), strrchr(element->path, '/') + 1);
 	else if(element->type == TYPE_SOURCE)//sourceflow
 	{
 		const char *coverImg = strrchr(element->path, '/') + 1;
@@ -2714,7 +2724,12 @@ const char *CMenu::getFrontPath(const dir_discHdr *element)
 			return fmt("%s/%s.png", m_picDir.c_str(), tempname);
 	}
 	else if(element->type == TYPE_HOMEBREW)
-		return fmt("%s/icon.png", element->path);
+	{
+		if(m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox"))
+			return fmt("%s/icon.png", element->path);
+		else
+			return fmt("%s/homebrew/%s.png", m_picDir.c_str(), strrchr(element->path, '/') + 1);
+	}
 	else if(element->type == TYPE_SOURCE)//sourceflow
 	{
 		const char *coverImg = strrchr(element->path, '/') + 1;

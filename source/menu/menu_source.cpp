@@ -99,6 +99,7 @@ void CMenu::_sourceFlow()
 			tiers.push_back(fn);
 			m_source.unload();
 			m_source.load(fmt("%s/%s", m_sourceDir.c_str(), fn.c_str()));
+			SF_cacheCovers = true;
 			curflow = m_source.getInt("general", "flow", m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
 			/* get max source button # */
 			m_max_source_btn = 0;

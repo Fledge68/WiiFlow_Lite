@@ -90,6 +90,8 @@ bool CMenu::_Home(void)
 					m_cfg.setBool(CHANNEL_DOMAIN, "update_cache", true);
 				if(m_current_view & COVERFLOW_PLUGIN)
 					m_cfg.setBool(PLUGIN_DOMAIN, "update_cache", true);
+				if(m_current_view & COVERFLOW_HOMEBREW)
+					m_cfg.setBool(HOMEBREW_DOMAIN, "update_cache", true);
 				m_refreshGameList = true;
 				break;
 			}
@@ -416,13 +418,25 @@ int CMenu::_cacheCovers()
 	bool m_pluginCacheFolders = m_cfg.getBool(PLUGIN_DOMAIN, "subfolder_cache", true);
 	
 	char coverPath[MAX_FAT_PATH];
-	char wfcPath[MAX_FAT_PATH+5];
+	char wfcPath[MAX_FAT_PATH+20];
 	char cachePath[MAX_FAT_PATH];
 	
 	u32 total = m_gameList.size();
 	m_thrdTotal = total;
 	u32 index = 0;
 	
+	bool smallBox = false;
+	if(m_current_view == COVERFLOW_HOMEBREW && !m_sourceflow)
+		smallBox = m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox", false);
+	else if(m_sourceflow)
+		smallBox = m_cfg.getBool(SOURCEFLOW_DOMAIN, "smallbox", false);
+	else if(m_current_view == COVERFLOW_PLUGIN && !m_sourceflow)
+	{
+		m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
+		if(enabledPluginsCount == 1 && m_cfg.getBool(PLUGIN_ENABLED, "48425257"))
+			smallBox = m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox", false);
+	}
+
 	for(vector<dir_discHdr>::iterator hdr = m_gameList.begin(); hdr != m_gameList.end(); ++hdr)
 	{
 		index++;
@@ -430,30 +444,42 @@ int CMenu::_cacheCovers()
 		m_thrdMessage = wfmt(_fmt("dlmsg31", L"converting cover %i of %i"), index, total);
 		m_thrdMessageAdded = true;
 		
-		bool fullCover = true;
-		
 		/* get game name or ID */
-		const char *gameNameOrID = CoverFlow.getFilenameId(&(*hdr));// &(*hdr) converts iterator to pointer to mem address
+		const char *gameNameOrID = NULL;
+		gameNameOrID = CoverFlow.getFilenameId(&(*hdr));// &(*hdr) converts iterator to pointer to mem address
 		
 		/* get cover png path */
+		bool fullCover = true;
 		strlcpy(coverPath, getBoxPath(&(*hdr)), sizeof(coverPath));
-		if(!fsop_FileExist(coverPath))
+		if(!fsop_FileExist(coverPath) || smallBox)
 		{
 			fullCover = false;
 			strlcpy(coverPath, getFrontPath(&(*hdr)), sizeof(coverPath));
-			if(!fsop_FileExist(coverPath))
-				continue;
+			if(!fsop_FileExist(coverPath) && !smallBox)
+			{
+				fullCover = true;
+				strlcpy(coverPath, getBlankCoverPath(&(*hdr)), sizeof(coverPath));
+				gameNameOrID = strrchr(coverPath, '/') + 1;
+				if(!fsop_FileExist(coverPath))
+					continue;
+			}
 		}
 				
-		/* get cover wfc path */
+		/* get cache folder path */
 		if(hdr->type == TYPE_PLUGIN && m_pluginCacheFolders)
-		{
 			snprintf(cachePath, sizeof(cachePath), "%s/%s", m_cacheDir.c_str(), m_plugin.GetCoverFolderName(hdr->settings[0]));
-		}
+		else if(m_sourceflow)
+			snprintf(cachePath, sizeof(cachePath), "%s/sourceflow", m_cacheDir.c_str());
+		else if(hdr->type == TYPE_HOMEBREW)
+			snprintf(cachePath, sizeof(cachePath), "%s/homebrew", m_cacheDir.c_str());
 		else
 			snprintf(cachePath, sizeof(cachePath), "%s", m_cacheDir.c_str());
 			
-		snprintf(wfcPath, sizeof(wfcPath), "%s/%s.wfc", cachePath, gameNameOrID);
+		/* get cover wfc path */
+		if(smallBox)
+			snprintf(wfcPath, sizeof(wfcPath), "%s/%s_small.wfc", cachePath, gameNameOrID);
+		else
+			snprintf(wfcPath, sizeof(wfcPath), "%s/%s.wfc", cachePath, gameNameOrID);
 		
 		/* if wfc doesn't exist or is flat and have full cover */
 		if(!fsop_FileExist(wfcPath) || (!CoverFlow.fullCoverCached(wfcPath) && fullCover))

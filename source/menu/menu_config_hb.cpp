@@ -103,6 +103,7 @@ void CMenu::_CfgHB(void)
 			else if (m_btnMgr.selected(m_cfghbBtnSmallbox))
 			{
 				m_refreshGameList = true;
+				m_cfg.setBool(HOMEBREW_DOMAIN, "update_cache", true);
 				m_cfg.setBool(HOMEBREW_DOMAIN, "smallbox", !m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox", false));
 				m_btnMgr.setText(m_cfghbBtnSmallbox, m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox") ? _t("on", L"On") : _t("off", L"Off"));
 			}
@@ -115,6 +116,7 @@ void CMenu::_CfgHB(void)
 			else if (m_btnMgr.selected(m_cfghbBtnPartitionP) || m_btnMgr.selected(m_cfghbBtnPartitionM))
 			{
 				m_refreshGameList = true;
+				m_cfg.setBool(HOMEBREW_DOMAIN, "update_cache", true);
 				s8 direction = m_btnMgr.selected(m_cfghbBtnPartitionP) ? 1 : -1;
 				_setPartition(direction);
 				const char *partitionname = DeviceName[currentPartition];

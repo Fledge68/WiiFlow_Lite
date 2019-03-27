@@ -139,7 +139,7 @@ void CMenu::_checkEmuNandSettings(void)
 			savesPart = SD;
 	}
 	//cfgne8=No valid FAT partition found for NAND Emulation!
-	_listEmuNands(fmt("%s:/%s", DeviceName[emuPart],  emu_nands_dir), emuNands);
+	_listEmuNands(fmt("%s:/%s", DeviceName[emuPart], emu_nands_dir), emuNands);
 	curEmuNand = 0;
 	for(i = 0; i < emuNands.size(); ++i)// find current emunand folder
 	{
@@ -160,7 +160,7 @@ void CMenu::_checkEmuNandSettings(void)
 			}
 		}
 	}
-	gprintf("emu nand path = %s:/%s/%s\n", DeviceName[emuPart],  emu_nands_dir, emuNands[curEmuNand]);
+	gprintf("emu nand path = %s:/%s/%s\n", DeviceName[emuPart], emu_nands_dir, emuNands[curEmuNand].c_str());
  
 	_listEmuNands(fmt("%s:/%s", DeviceName[savesPart],  emu_nands_dir), savesNands);
 	curSavesNand = 0;
@@ -183,7 +183,7 @@ void CMenu::_checkEmuNandSettings(void)
 			}
 		}
 	}
-	gprintf("saves nand path = %s:/%s/%s\n", DeviceName[savesPart],  emu_nands_dir, savesNands[curSavesNand]);
+	gprintf("saves nand path = %s:/%s/%s\n", DeviceName[savesPart],  emu_nands_dir, savesNands[curSavesNand].c_str());
 	
 	m_cfg.setString(WII_DOMAIN, "current_save_emunand", savesNands[curSavesNand]);
 	m_cfg.setInt(WII_DOMAIN, "savepartition", savesPart);
