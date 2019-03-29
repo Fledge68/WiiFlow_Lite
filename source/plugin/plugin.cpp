@@ -574,7 +574,77 @@ string Plugin::GetRomId(const dir_discHdr *gameHeader, const char *datadir, char
 						crc_string[8] = '\0';
 					}
 				}
-				// Just check CRC for a regular file on any other system.
+				else if(!strcasecmp(platform, "DOS"))
+                {
+                    s8 pos = m_plugin.GetPluginPosition(gameHeader->settings[0]);
+                    string FileTypes = m_plugin.GetFileTypes(pos);
+
+                    if(strcasestr(FileTypes.c_str(), ".conf"))
+                    {
+                        ifstream inputFile;
+                        inputFile.open(gameHeader->path, std::ios::binary);
+                        string line;
+                        std::string dospath;
+                        std::string temp;
+                        string delimiter = "mount c ";
+                        int found = 0;
+
+                        while(getline(inputFile, line))
+                        {
+                            // Construct exe path in 3 steps:
+                            // 1. base folder from 'mount c' command
+                            // 2. game's folder from 'cd'
+                            // 3. executable name.
+                            if (line.find( delimiter, 0) != string::npos && found != 3)
+                            {
+                                found++;
+                                // Remove special line ending(^M) introduced by notepad.
+                                // Without this, dospath concatenation is messed up.
+                                // line = trimEnd(line) from config.cpp may be a better alternative.
+                                if (!line.empty() && line[line.length()-1] == '\r')
+                                {
+                                    line.erase(line.length()-1);
+                                }
+                                temp = line.substr (delimiter.length(), (line.length() - delimiter.length()));
+                            }
+
+                            if(found == 1)
+                            {
+                                delimiter = "cd ";
+                                dospath = temp;
+
+                            }
+                            else if(found == 2)
+                            {
+                                dospath = dospath + '/' + temp + '/';
+                                found++;
+                               // break;
+                            }
+                            else if(found == 3)
+                            {
+                                if(strcasestr(line.c_str(), ".bat") || strcasestr(line.c_str(), ".com") || strcasestr(line.c_str(), ".exe"))
+                                {
+                                    if (!line.empty() && line[line.length()-1] == '\r')
+                                    {
+                                        line.erase(line.length()-1);
+                                    }
+
+                                    dospath += line;
+
+                                    // Replace usb:/ with usb1:/ if needed
+                                    if (dospath.find("usb:/") != std::string::npos)
+                                    {
+                                        dospath.insert(3, "1");
+                                    }
+
+                                    strncpy(crc_string, fmt("%08x", crc32file(dospath.c_str())), 8);
+                                    crc_string[8] = '\0';
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }// Just check CRC for a regular file on any other system.
 				else
 				{
 					strncpy(crc_string, fmt("%08x", crc32file(gameHeader->path)), 8);
