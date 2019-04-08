@@ -294,7 +294,7 @@ bool CMenu::init()
 	/* Get plugin ini files */
 	m_plugin.init(m_pluginsDir);
 	INI_List.clear();
-	GetFiles(m_pluginsDir.c_str(), stringToVector(".ini", '|'), GrabINIFiles, false, 1);
+	GetFiles(m_pluginsDir.c_str(), stringToVector(".ini", '|'), GrabINIFiles, false, 3);
 
 	if(INI_List.size() > 0)
 	{
