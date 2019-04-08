@@ -2442,13 +2442,18 @@ bool CMenu::_loadPluginList()
 		{
 			Config scummvm;
 			vector<dir_discHdr> scummvmList;
-			scummvm.load(fmt("%s/%s", m_pluginsDir.c_str(), "scummvm.ini"));
+			if(!scummvm.load(fmt("%s/scummvm.ini", m_pluginsDir.c_str())))
+			{
+				if(!scummvm.load(fmt("%s/scummvm/scummvm.ini", m_pluginsDir.c_str())))
+					scummvm.load(fmt("%s:/apps/scummvm/scummvm.ini", DeviceName[currentPartition]));
+			}
 			//also check if in apps folder
 			scummvmList = m_plugin.ParseScummvmINI(scummvm, DeviceName[currentPartition], Magic);
 			for(vector<dir_discHdr>::iterator tmp_itr = scummvmList.begin(); tmp_itr != scummvmList.end(); tmp_itr++)
 				m_gameList.push_back(*tmp_itr);
 			scummvmList.clear();
 			vector<dir_discHdr>().swap(scummvmList);
+			scummvm.unload();
 		}
 	}
 	m_cfg.remove(PLUGIN_DOMAIN, "update_cache");
