@@ -717,8 +717,10 @@ void CMenu::_setSrcOptions(void)
 	}
 	if(m_multisource) return;
 	/* autoboot */
-	const char *autoboot = m_source.getString(btn_selected, "autoboot", "").c_str();
-	if(autoboot != NULL && autoboot[0] != '\0')
+	char autoboot[64];
+	autoboot[63] = '\0';
+	strncpy(autoboot, m_source.getString(btn_selected, "autoboot", "").c_str(), sizeof(autoboot) - 1);
+	if(autoboot[0] != '\0')
 	{
 		m_source_autoboot = true;
 		memset(&m_autoboot_hdr, 0, sizeof(dir_discHdr));

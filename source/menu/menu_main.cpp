@@ -295,7 +295,7 @@ void CMenu::_showCF(bool refreshList)
 int CMenu::main(void)
 {
 	wstringEx curLetter;
-	const char *prevTheme = m_cfg.getString("GENERAL", "theme", "default").c_str();
+	string prevTheme = m_cfg.getString("GENERAL", "theme", "default");
 	bool show_channel = !m_cfg.getBool(CHANNEL_DOMAIN, "disable", false);
 	bool show_plugin = !m_cfg.getBool(PLUGIN_DOMAIN, "disable", false);
 	bool show_gamecube = !m_cfg.getBool(GC_DOMAIN, "disable", false);
@@ -448,7 +448,7 @@ int CMenu::main(void)
 				/* main menu global settings */
 				_hideMain();
 				_config(1);
-				if(strcmp(prevTheme, m_cfg.getString("GENERAL", "theme").c_str()) != 0)
+				if(prevTheme != m_cfg.getString("GENERAL", "theme"))
 				{
 					/* new theme - exit wiiflow and reload */
 					fsop_deleteFolder(fmt("%s/sourceflow", m_cacheDir.c_str()));
