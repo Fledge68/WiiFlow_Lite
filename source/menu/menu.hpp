@@ -84,8 +84,7 @@ private:
 	Config m_gcfg2;
 	Config m_theme;
 	Config m_coverflow;
-	Config m_titles;
-	Config m_version;
+	Config m_platform;
 	
 	//vector<string> m_homebrewArgs;
 	u8 *m_base_font;

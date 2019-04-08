@@ -231,7 +231,8 @@ bool CMenu::init()
 	fsop_MakeFolder(m_sourceDir.c_str());
 	fsop_MakeFolder(m_customBnrDir.c_str());
 	fsop_MakeFolder(m_pluginsDir.c_str());
-
+	fsop_MakeFolder(m_pluginDataDir.c_str());
+	
 	fsop_MakeFolder(m_cacheDir.c_str());
 	fsop_MakeFolder(m_listCacheDir.c_str());
 	fsop_MakeFolder(m_bnrCacheDir.c_str());
@@ -288,6 +289,7 @@ bool CMenu::init()
 	m_coverflow.load(fmt("%s/coverflows/%s.ini", m_themeDir.c_str(), themeName.c_str()));
 	if(!m_coverflow.loaded())
 		m_coverflow.load(fmt("%s/coverflows/default.ini", m_themeDir.c_str()));
+	m_platform.load(fmt("%s/platform.ini", m_pluginDataDir.c_str()));
 	
 	/* Get plugin ini files */
 	m_plugin.init(m_pluginsDir);
@@ -449,10 +451,13 @@ void CMenu::cleanup()
 	m_banner.DeleteBanner();
 	m_plugin.Cleanup();
 	m_source.unload();
-
-	//_stopSounds();
+	m_platform.unload();
+	m_loc.unload();
+	
 	_Theme_Cleanup();
-	//MusicPlayer.Cleanup();
+	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
+		m_cursor[chan].cleanup();
+		
 	m_gameSound.FreeMemory();
 	SoundHandle.Cleanup();
 	soundDeinit();
@@ -2438,6 +2443,7 @@ bool CMenu::_loadPluginList()
 			Config scummvm;
 			vector<dir_discHdr> scummvmList;
 			scummvm.load(fmt("%s/%s", m_pluginsDir.c_str(), "scummvm.ini"));
+			//also check if in apps folder
 			scummvmList = m_plugin.ParseScummvmINI(scummvm, DeviceName[currentPartition], Magic);
 			for(vector<dir_discHdr>::iterator tmp_itr = scummvmList.begin(); tmp_itr != scummvmList.end(); tmp_itr++)
 				m_gameList.push_back(*tmp_itr);
@@ -2660,29 +2666,40 @@ void CMenu::TempLoadIOS(int IOS)
 	}
 }
 
+static char blankCoverPath[MAX_FAT_PATH];
 const char *CMenu::getBlankCoverPath(const dir_discHdr *element)
 {
-	const char *blankCoverKey = NULL;
-	switch(element->type)
+	string blankCoverTitle = "wii";
+	if(m_platform.loaded())
 	{
-		case TYPE_CHANNEL:
-		case TYPE_EMUCHANNEL:
-			blankCoverKey = "channels";
-			break;
-		case TYPE_HOMEBREW:
-			blankCoverKey = "homebrew";
-			break;
-		case TYPE_GC_GAME:
-			blankCoverKey = "gamecube";
-			break;
-		case TYPE_PLUGIN:
-			strncpy(m_plugin.PluginMagicWord, fmt("%08x", element->settings[0]), 8);
-			blankCoverKey = m_plugin.PluginMagicWord;
-			break;
-		default:
-			blankCoverKey = "wii";
+		switch(element->type)
+		{
+			case TYPE_CHANNEL:
+				strncpy(m_plugin.PluginMagicWord, "4E414E44", 9);
+				break;
+			case TYPE_EMUCHANNEL:
+				strncpy(m_plugin.PluginMagicWord, "454E414E", 9);
+				break;
+			case TYPE_HOMEBREW:
+				strncpy(m_plugin.PluginMagicWord, "48425257", 9);
+				break;
+			case TYPE_GC_GAME:
+				strncpy(m_plugin.PluginMagicWord, "4E47434D", 9);
+				break;
+			case TYPE_PLUGIN:
+				strncpy(m_plugin.PluginMagicWord, fmt("%08x", element->settings[0]), 8);
+				break;
+			default:// wii
+				strncpy(m_plugin.PluginMagicWord, "4E574949", 9);
+		}
+		blankCoverTitle = m_platform.getString("PLUGINS", m_plugin.PluginMagicWord, "wii");
 	}
-	return fmt("%s/blank_covers/%s", m_boxPicDir.c_str(), m_theme.getString("BLANK_COVERS", blankCoverKey, fmt("%s.jpg", blankCoverKey)).c_str());
+	if(blankCoverTitle.find("multi") != string::npos && (blankCoverTitle.find("fceu") != string::npos || blankCoverTitle.find("nes") != string::npos))
+		blankCoverTitle = "nes";
+	snprintf(blankCoverPath, sizeof(blankCoverPath), "%s/blank_covers/%s.jpg", m_boxPicDir.c_str(), blankCoverTitle.c_str());
+	if(!fsop_FileExist(blankCoverPath))
+		snprintf(blankCoverPath, sizeof(blankCoverPath), "%s/blank_covers/%s.png", m_boxPicDir.c_str(), blankCoverTitle.c_str());
+	return blankCoverPath;
 }
 
 const char *CMenu::getBoxPath(const dir_discHdr *element)

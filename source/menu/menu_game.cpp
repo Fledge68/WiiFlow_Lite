@@ -1706,7 +1706,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		DeviceHandle.MountAll();
 	}
 	
-	cleanup();//done with error menu can now cleanup
+	cleanup();//no more error messages we can now cleanup
 	
 	if(WII_Launch)
 	{
@@ -1752,25 +1752,25 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 			}
 			else
 			{
+				if(!m_nintendont_installed)
+				{
+					error(_t("errgame12", L"Nintendont not found! Can't launch GC Disc."));
+					return;
+				}
 				/* Read GC disc header */
 				Disc_ReadGCHeader(&gc_hdr);
 				memcpy(hdr->id, gc_hdr.id, 6);
 				hdr->type = TYPE_GC_GAME;
 				
 				/* Launching GC Game */
-				if(m_nintendont_installed)
-				{
-					if(disc_cfg)
-						_gameSettings(hdr, dvd);
-					MusicPlayer.Stop();
-					m_cfg.setInt("GENERAL", "cat_startpage", m_catStartPage);
-					if(!disc_cfg)
-						m_gcfg2.load(fmt("%s/" GAME_SETTINGS2_FILENAME, m_settingsDir.c_str()));
-					currentPartition = m_cfg.getInt(GC_DOMAIN, "partition", 1);
-					_launchGC(hdr, dvd);
-				}
-				else
-					error(_t("errgame12", L"Nintendont not found! Can't launch GC Disc."));
+				if(disc_cfg)
+					_gameSettings(hdr, dvd);
+				MusicPlayer.Stop();
+				m_cfg.setInt("GENERAL", "cat_startpage", m_catStartPage);
+				if(!disc_cfg)
+					m_gcfg2.load(fmt("%s/" GAME_SETTINGS2_FILENAME, m_settingsDir.c_str()));
+				currentPartition = m_cfg.getInt(GC_DOMAIN, "partition", 1);
+				_launchGC(hdr, dvd);
 				return;
 			}
 		}

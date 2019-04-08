@@ -335,9 +335,7 @@ void CMenu::_textGameInfo(void)
 		// We can't use magic # directly since it'd require hardcoding values and a # can be several systems(genplus) 
 		// We can't rely on coverfolder either. Different systems can share the same folder. Or combined plugins used for the same system.
 		
-		/* load platform.ini */
-		Config m_platform;
-		m_platform.load(fmt("%s/platform.ini", m_pluginDataDir.c_str()) );
+		/* is platform.ini available? */
 		if(!m_platform.loaded())
 			return;// no platform.ini found
 		
@@ -358,10 +356,16 @@ void CMenu::_textGameInfo(void)
 			}
 			snprintf(platformName, sizeof(platformName), "%s", m_platform.getString("ext", ext).c_str());
 		}	
-		m_platform.unload();
 		if(strlen(platformName) == 0)
 			return;// no platform name found to match plugin magic #
-		
+			
+		if(!strcasecmp(platformName, "mame") || !strcasecmp(platformName, "fba_pgm") || !strcasecmp(platformName, "fba_psikyo") || !strcasecmp(platformName, "fb_alpha"))
+			snprintf(platformName, sizeof(platformName), "%s", "arcade");
+		if(!strcasecmp(platformName, "turbografx"))
+			snprintf(platformName, sizeof(platformName), "%s", "pcengine");
+		if(!strcasecmp(platformName, "genesis"))
+			snprintf(platformName, sizeof(platformName), "%s", "megadrive");
+			
 		/* Get Game's crc/serial to be used as gameID by searching platformName.ini file */
 		string romID;// this will be the crc or serial
 		string ShortName = m_plugin.GetRomName(GameHdr);// if scummvm game then shortname=NULL

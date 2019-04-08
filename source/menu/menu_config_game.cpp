@@ -818,7 +818,7 @@ void CMenu::_gameSettings(const dir_discHdr *hdr, bool disc)
 		}
 	}
 	if(!disc)
-		m_gcfg2.save(true);
+		m_gcfg2.save(true);// do not save changes for disc games
 	_hideGameSettings();
 }
 

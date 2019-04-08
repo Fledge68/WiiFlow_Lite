@@ -231,11 +231,10 @@ void CMenu::_showCF(bool refreshList)
 			strcpy(cf_domain, "_SMALLFLOW");
 		else if(enabledPluginsCount > 0)
 		{
-			/* load platform.ini */
-			Config m_platform;
-			m_platform.load(fmt("%s/platform.ini", m_pluginDataDir.c_str()) );
+			/* check if platform.ini is loaded */
 			if(m_platform.loaded())
 			{
+				/* get first plugin flow domain */
 				string flow_domain;
 				for(u8 i = 0; m_plugin.PluginExist(i); ++i)
 				{
@@ -246,6 +245,7 @@ void CMenu::_showCF(bool refreshList)
 						break;
 					}
 				}
+				/* check if all plugin flow domains match */
 				if(!flow_domain.empty())
 				{
 					bool match = true;
@@ -261,10 +261,10 @@ void CMenu::_showCF(bool refreshList)
 							}
 						}
 					}
+					/* if all match we use that flow domain */
 					if(match)
 						snprintf(cf_domain, sizeof(cf_domain), "%s", flow_domain.c_str());
 				}
-				m_platform.unload();
 			}
 		}
 	}
