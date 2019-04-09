@@ -2699,8 +2699,6 @@ const char *CMenu::getBlankCoverPath(const dir_discHdr *element)
 		}
 		blankCoverTitle = m_platform.getString("PLUGINS", m_plugin.PluginMagicWord, "wii");
 	}
-	if(blankCoverTitle.find("multi") != string::npos && (blankCoverTitle.find("fceu") != string::npos || blankCoverTitle.find("nes") != string::npos))
-		blankCoverTitle = "nes";
 	snprintf(blankCoverPath, sizeof(blankCoverPath), "%s/blank_covers/%s.jpg", m_boxPicDir.c_str(), blankCoverTitle.c_str());
 	if(!fsop_FileExist(blankCoverPath))
 		snprintf(blankCoverPath, sizeof(blankCoverPath), "%s/blank_covers/%s.png", m_boxPicDir.c_str(), blankCoverTitle.c_str());

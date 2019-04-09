@@ -703,7 +703,6 @@ bool CMenu::_Source()
 
 void CMenu::_setSrcOptions(void)
 {
-	m_cfg.setString("GENERAL", "main_background", m_source.getString(btn_selected, "background", ""));
 	m_catStartPage = m_source.getInt(btn_selected, "cat_page", 1);
 	u8 category = m_source.getInt(btn_selected, "category", 0);
 	if(category > 0)

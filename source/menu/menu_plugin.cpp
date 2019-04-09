@@ -174,7 +174,6 @@ void CMenu::_PluginSettings()
 		m_cfg.setUInt("GENERAL", "sources", m_current_view);
 		m_source_cnt = 1;
 		m_catStartPage = 1;
-		m_cfg.remove("GENERAL", "main_background");
 		int channels_type = 0;
 		if(m_cfg.getBool(PLUGIN_ENABLED, "454E414E"))
 			channels_type |= CHANNELS_EMU;

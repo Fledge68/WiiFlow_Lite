@@ -49,19 +49,55 @@ void CMenu::_setMainBg()
 	else
 	{
 		TexHandle.Cleanup(m_mainAltBg);
-		string fn = m_cfg.getString("general", "main_background", "");
+		string fn = "";
+		if(m_platform.loaded())
+		{
+			switch(m_current_view)
+			{
+				case COVERFLOW_CHANNEL:
+					strncpy(m_plugin.PluginMagicWord, "4E414E44", 9);
+					//EMUCHANNEL:
+					//strncpy(m_plugin.PluginMagicWord, "454E414E", 9);
+					break;
+				case COVERFLOW_HOMEBREW:
+					strncpy(m_plugin.PluginMagicWord, "48425257", 9);
+					break;
+				case COVERFLOW_GAMECUBE:
+					strncpy(m_plugin.PluginMagicWord, "4E47434D", 9);
+					break;
+				case COVERFLOW_PLUGIN:
+					for(u8 i = 0; m_plugin.PluginExist(i); ++i)
+					{
+						if(m_plugin.GetEnableStatus(m_cfg, m_plugin.getPluginMagic(i)))
+						{
+							strncpy(m_plugin.PluginMagicWord, fmt("%08x", m_plugin.getPluginMagic(i)), 8);
+							break;
+						}
+					}
+					break;
+				default:// wii
+					strncpy(m_plugin.PluginMagicWord, "4E574949", 9);
+			}
+			fn = m_platform.getString("PLUGINS", m_plugin.PluginMagicWord, "");
+		}
 		if(fn.length() > 0)
 		{
 			string themeName = m_cfg.getString("GENERAL", "theme", "default");
-			if(TexHandle.fromImageFile(m_mainAltBg, fmt("%s/backgrounds/%s/%s", m_dataDir.c_str(), themeName.c_str(), fn.c_str())) != TE_OK)
+			if(TexHandle.fromImageFile(m_mainAltBg, fmt("%s/backgrounds/%s/%s.png", m_dataDir.c_str(), themeName.c_str(), fn.c_str())) != TE_OK)
 			{	
-				if(TexHandle.fromImageFile(m_mainAltBg, fmt("%s/backgrounds/%s", m_dataDir.c_str(), fn.c_str())) != TE_OK)
+				if(TexHandle.fromImageFile(m_mainAltBg, fmt("%s/backgrounds/%s/%s.jpg", m_dataDir.c_str(), themeName.c_str(), fn.c_str())) != TE_OK)
 				{
-					_setBg(m_mainBg, m_mainBgLQ);
-					return;
+					if(TexHandle.fromImageFile(m_mainAltBg, fmt("%s/backgrounds/%s.png", m_dataDir.c_str(), fn.c_str())) != TE_OK)
+					{
+						if(TexHandle.fromImageFile(m_mainAltBg, fmt("%s/backgrounds/%s.jpg", m_dataDir.c_str(), fn.c_str())) != TE_OK)
+						{
+							_setBg(m_mainBg, m_mainBgLQ);
+							return;
+						}
+					}
 				}
 			}
-			_setBg(m_mainAltBg, m_mainAltBg);
+			_setBg(m_mainAltBg, m_mainAltBg, true);
 		}
 		else
 			_setBg(m_mainBg, m_mainBgLQ);
@@ -439,7 +475,6 @@ int CMenu::main(void)
 				m_source_cnt = 1;
 				m_cfg.setUInt("GENERAL", "sources", m_current_view);
 				m_catStartPage = 1;
-				m_cfg.remove("GENERAL", "main_background");
 				_setMainBg();
 				_showCF(true);
 			}
