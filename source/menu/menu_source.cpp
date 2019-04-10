@@ -669,7 +669,7 @@ bool CMenu::_Source()
 						m_source.unload();
 						m_source.load(fmt("%s/%s", m_sourceDir.c_str(), fn.c_str()));
 						fn.replace(fn.find("."), 4, "_flow");
-						curflow = m_source.getInt(SOURCEFLOW_DOMAIN, fn, m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
+						curflow = m_cfg.getInt(SOURCEFLOW_DOMAIN, fn, m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
 						exitSource = false;
 						updateSource = true;
 						curPage = 1;
