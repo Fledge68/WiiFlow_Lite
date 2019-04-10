@@ -359,13 +359,13 @@ void CMenu::_textGameInfo(void)
 		if(strlen(platformName) == 0)
 			return;// no platform name found to match plugin magic #
 			
-		if(!strcasecmp(platformName, "mame") || !strcasecmp(platformName, "fba_pgm") || !strcasecmp(platformName, "fba_psikyo") || !strcasecmp(platformName, "fb_alpha"))
-			snprintf(platformName, sizeof(platformName), "%s", "arcade");
-		if(!strcasecmp(platformName, "turbografx"))
-			snprintf(platformName, sizeof(platformName), "%s", "pcengine");
-		if(!strcasecmp(platformName, "genesis"))
-			snprintf(platformName, sizeof(platformName), "%s", "megadrive");
-			
+		/* check COMBINED for database platform name */
+		string newName = m_platform.getString("COMBINED", platformName);
+		if(newName.empty())
+			m_platform.remove("COMBINED", platformName);
+		else
+			snprintf(platformName, sizeof(platformName), "%s", newName.c_str());
+
 		/* Get Game's crc/serial to be used as gameID by searching platformName.ini file */
 		string romID;// this will be the crc or serial
 		string ShortName = m_plugin.GetRomName(GameHdr);// if scummvm game then shortname=NULL
