@@ -93,14 +93,20 @@ void CMenu::_sourceFlow()
 		if(fsop_FileExist(fmt("%s/%s", m_sourceDir.c_str(), fn.c_str())))
 		{
 			if(fn == SOURCE_FILENAME)
+			{
 				sm_tier = false;
+				tiers.erase(tiers.begin() + 1, tiers.end());
+			}
 			else
+			{
 				sm_tier = true;
-			tiers.push_back(fn);
+				tiers.push_back(fn);
+			}
 			m_source.unload();
 			m_source.load(fmt("%s/%s", m_sourceDir.c_str(), fn.c_str()));
 			SF_cacheCovers = true;
-			curflow = m_source.getInt("general", "flow", m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
+			fn.replace(fn.find("."), 4, "_flow");
+			curflow = m_cfg.getInt(SOURCEFLOW_DOMAIN, fn, m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
 			/* get max source button # */
 			m_max_source_btn = 0;
 			const char *srcDomain = m_source.firstDomain().c_str();
@@ -135,10 +141,11 @@ int CMenu::_getSrcFlow(void)
 void CMenu::_setSrcFlow(int version)
 {
 	curflow = version;
-	m_source.setInt("general", "flow", version);
-	m_source.save();
+	string fn = tiers[tiers.size() - 1];
+	fn.replace(fn.find("."), 4, "_flow");
+	m_cfg.setInt(SOURCEFLOW_DOMAIN, fn, curflow);
 	if(!sm_tier)
-		m_cfg.setInt(SOURCEFLOW_DOMAIN, "last_cf_mode", version);
+		m_cfg.setInt(SOURCEFLOW_DOMAIN, "last_cf_mode", curflow);
 }
 
 void CMenu::_srcTierBack(bool home)
@@ -163,7 +170,8 @@ void CMenu::_srcTierBack(bool home)
 		sm_tier = true;
 	m_source.unload();
 	m_source.load(fmt("%s/%s", m_sourceDir.c_str(), fn.c_str()));
-	curflow = m_source.getInt("general", "flow", m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
+	fn.replace(fn.find("."), 4, "_flow");
+	curflow = m_cfg.getInt(SOURCEFLOW_DOMAIN, fn, m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
 	/* get max source button # */
 	m_max_source_btn = 0;
 	const char *srcDomain = m_source.firstDomain().c_str();
@@ -537,7 +545,8 @@ bool CMenu::_Source()
 						tiers.push_back(fn);
 						m_source.unload();
 						m_source.load(fmt("%s/%s", m_sourceDir.c_str(), fn.c_str()));
-						curflow = m_source.getInt("general", "flow", m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
+						fn.replace(fn.find("."), 4, "_flow");
+						curflow = m_cfg.getInt(SOURCEFLOW_DOMAIN, fn, m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
 						exitSource = false;
 						updateSource = true;
 						curPage = 1;
@@ -659,7 +668,8 @@ bool CMenu::_Source()
 						tiers.push_back(fn);
 						m_source.unload();
 						m_source.load(fmt("%s/%s", m_sourceDir.c_str(), fn.c_str()));
-						curflow = m_source.getInt("general", "flow", m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
+						fn.replace(fn.find("."), 4, "_flow");
+						curflow = m_source.getInt(SOURCEFLOW_DOMAIN, fn, m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
 						exitSource = false;
 						updateSource = true;
 						curPage = 1;
@@ -789,7 +799,9 @@ void CMenu::_initSourceMenu()
 	tiers.clear();
 	tiers.push_back(SOURCE_FILENAME);
 	sm_tier = false;
-	curflow = m_source.getInt("general", "flow", m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
+	string fn = tiers[0];
+	fn.replace(fn.find("."), 4, "_flow");
+	curflow = m_cfg.getInt(SOURCEFLOW_DOMAIN, fn, m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
 	
 	_addUserLabels(m_sourceLblUser, ARRAY_SIZE(m_sourceLblUser), "SOURCE");
 	m_sourceBg = _texture("SOURCE/BG", "texture", theme.bg, false);
