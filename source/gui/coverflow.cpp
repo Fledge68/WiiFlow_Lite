@@ -2842,8 +2842,8 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 	/* try to find the wfc texture file in the cache folder */
 	if(!m_cachePath.empty())
 	{
-		char wfcTitle[64];
-		wfcTitle[63] = '\0';
+		char wfcTitle[128];
+		wfcTitle[127] = '\0';
 		const char *wfcCoverDir = NULL;
 		char *full_path = (char*)MEM2_alloc(MAX_FAT_PATH+1);
 		if(full_path == NULL)

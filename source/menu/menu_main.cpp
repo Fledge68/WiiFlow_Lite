@@ -131,6 +131,7 @@ void CMenu::_showCF(bool refreshList)
 		wstringEx Pth;
 		if(m_gameList.empty())
 		{
+			cachecovers = false;
 			if(m_source_cnt > 1)
 			{
 				Msg = _t("main8", L"game list empty!");
@@ -498,6 +499,7 @@ int CMenu::main(void)
 				show_channel = !m_cfg.getBool(CHANNEL_DOMAIN, "disable", false);
 				show_plugin = !m_cfg.getBool(PLUGIN_DOMAIN, "disable", false);
 				show_gamecube = !m_cfg.getBool(GC_DOMAIN, "disable", false);
+				show_homebrew = !m_cfg.getBool(HOMEBREW_DOMAIN, "disable", false);
 				_showMain();
 			}
 			else if(m_btnMgr.selected(m_mainBtnCategories))

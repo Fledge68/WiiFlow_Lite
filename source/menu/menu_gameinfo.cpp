@@ -360,6 +360,8 @@ void CMenu::_textGameInfo(void)
 			return;// no platform name found to match plugin magic #
 			
 		/* check COMBINED for database platform name */
+		/* some platforms have different names per country (ex. Genesis/Megadrive) */
+		/* but we use only one platform name for both */
 		string newName = m_platform.getString("COMBINED", platformName);
 		if(newName.empty())
 			m_platform.remove("COMBINED", platformName);

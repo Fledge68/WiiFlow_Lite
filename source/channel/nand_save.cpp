@@ -43,6 +43,10 @@ NandSave::NandSave()
 	loaded = false;
 }
 
+/* checks for wiiflow save WFSF by searching for the banner.bin. if found then wiiflow save found. */
+/* if not found then we use save.bin to create banner.bin, tik.bin, and tmd.bin which are compressed into save.bin. */
+/* the IOS and port settings are only created if they are changed in startup settings menu. */
+/* also the ticket and its folder are deleted after the tmd is created. */
 bool NandSave::CheckSave()
 {
 	/* 10 million variables */

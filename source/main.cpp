@@ -23,7 +23,7 @@
 #include "memory/memory.h"
 
 bool isWiiVC = false;
-bool useMainIOS = false;
+bool useMainIOS = true;
 volatile bool NANDemuView = false;
 volatile bool networkInit = false;
 
@@ -167,9 +167,9 @@ int main(int argc, char **argv)
 			
 		/* Handle (c)IOS Loading */
 		if(useMainIOS && CustomIOS(IOS_GetType(mainIOS))) /* Requested */
-			iosOK = loadIOS(mainIOS, false) && CustomIOS(CurrentIOS.Type);
+			iosOK = loadIOS(mainIOS, false) && CustomIOS(CurrentIOS.Type);// reload to cIOS (249 by default)
 		else
-			gprintf("Using IOS58\n");
+			gprintf("Using IOS58\n");// stay on IOS58. no reload to cIOS
 	}
 		
 	/* sys inits */

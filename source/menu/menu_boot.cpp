@@ -58,7 +58,7 @@ void CMenu::_showBoot()
 	if(cur_ios > 0)
 		m_btnMgr.setText(m_bootLblCurCIOSrev, wfmt(L"%i", cur_ios));
 	else
-		m_btnMgr.setText(m_bootLblCurCIOSrev, L"AUTO");
+		m_btnMgr.setText(m_bootLblCurCIOSrev, L"AUTO");// cIOS 249 unless the user changed it via the meta.xml
 	
 	m_btnMgr.show(m_bootLblLoadCIOS);
 	m_btnMgr.show(m_bootBtnLoadCIOS);

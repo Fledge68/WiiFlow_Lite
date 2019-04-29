@@ -2328,7 +2328,7 @@ bool CMenu::_loadGamecubeList()
 	bool updateCache = m_cfg.getBool(GC_DOMAIN, "update_cache");
 	if(updateCache || !fsop_FileExist(cacheDir.c_str()))
 		cacheCovers = true;
-	m_cacheList.CreateList(COVERFLOW_GAMECUBE, currentPartition, gameDir, stringToVector(".iso|.ciso|root", '|'), cacheDir, updateCache);
+	m_cacheList.CreateList(COVERFLOW_GAMECUBE, currentPartition, gameDir, stringToVector(".iso|.gcm|.ciso|root", '|'), cacheDir, updateCache);
 	m_cfg.remove(GC_DOMAIN, "update_cache");
 	for(vector<dir_discHdr>::iterator tmp_itr = m_cacheList.begin(); tmp_itr != m_cacheList.end(); tmp_itr++)
 		m_gameList.push_back(*tmp_itr);
