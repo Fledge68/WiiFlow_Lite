@@ -131,7 +131,7 @@ void CMenu::_showCF(bool refreshList)
 		wstringEx Pth;
 		if(m_gameList.empty())
 		{
-			cachecovers = false;
+			cacheCovers = false;
 			if(m_source_cnt > 1)
 			{
 				Msg = _t("main8", L"game list empty!");
