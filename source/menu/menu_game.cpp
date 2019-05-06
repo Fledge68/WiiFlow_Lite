@@ -1636,8 +1636,8 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		/* copy real NAND sysconf, settings.txt, & RFL_DB.dat if you want to, they are replaced if they already exist */
 		NandHandle.PreNandCfg(m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_miis", false), 
 								m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_config", false));
-		m_cfg.setBool(CHANNEL_DOMAIN, "real_nand_miis", false); 
-		m_cfg.setBool(CHANNEL_DOMAIN, "real_nand_config", false);
+		//m_cfg.setBool(CHANNEL_DOMAIN, "real_nand_miis", false); 
+		//m_cfg.setBool(CHANNEL_DOMAIN, "real_nand_config", false);
 	}
 
 	/* configs no longer needed */

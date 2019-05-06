@@ -44,6 +44,10 @@ s16 m_nandemuBtnSavePartitionP;
 
 s16 m_nandemuLblInstallWad;
 s16 m_nandemuBtnInstallWad;
+s16 m_nandemuLblRealConfig;
+s16 m_nandemuBtnRealConfig;
+s16 m_nandemuLblRealMiis;
+s16 m_nandemuBtnRealMiis;
 
 s16 m_nandfileLblMessage;
 s16 m_nandemuLblMessage;
@@ -403,6 +407,12 @@ void CMenu::_hideNandEmu(bool instant)
 	m_btnMgr.hide(m_nandemuLblInstallWad, instant);
 	m_btnMgr.hide(m_nandemuBtnInstallWad, instant);
 
+	m_btnMgr.hide(m_nandemuLblRealConfig, instant);
+	m_btnMgr.hide(m_nandemuBtnRealConfig, instant);
+	
+	m_btnMgr.hide(m_nandemuLblRealMiis, instant);
+	m_btnMgr.hide(m_nandemuBtnRealMiis, instant);
+
 	m_btnMgr.hide(m_nandemuBtnExtract, instant);
 	m_btnMgr.hide(m_nandemuBtnDisable, instant);
 	m_btnMgr.hide(m_nandemuLblInit, instant);
@@ -455,6 +465,12 @@ void CMenu::_hideNandEmuPg(void)
 		m_btnMgr.hide(m_nandemuLblSavePartitionVal);
 		m_btnMgr.hide(m_nandemuBtnSavePartitionP);
 		m_btnMgr.hide(m_nandemuBtnSavePartitionM);
+		
+		m_btnMgr.hide(m_nandemuLblRealConfig);
+		m_btnMgr.hide(m_nandemuBtnRealConfig);
+		
+		m_btnMgr.hide(m_nandemuLblRealMiis);
+		m_btnMgr.hide(m_nandemuBtnRealMiis);
 	}
 }
 
@@ -518,10 +534,19 @@ void CMenu::_showNandEmu(void)
 		const char *partitionname = DeviceName[m_cfg.getInt(WII_DOMAIN, "savepartition")];
 		m_btnMgr.setText(m_nandemuLblSavePartitionVal, upperCase(partitionname));
 
+		m_btnMgr.setText(m_nandemuBtnRealConfig, m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_config", false) ? _t("on", L"On") : _t("off", L"Off"));
+		m_btnMgr.setText(m_nandemuBtnRealMiis, m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_miis", false) ? _t("on", L"On") : _t("off", L"Off"));
+		
 		m_btnMgr.show(m_nandemuLblSavePartition);
 		m_btnMgr.show(m_nandemuLblSavePartitionVal);
 		m_btnMgr.show(m_nandemuBtnSavePartitionP);
 		m_btnMgr.show(m_nandemuBtnSavePartitionM);
+		
+		m_btnMgr.show(m_nandemuLblRealConfig);
+		m_btnMgr.show(m_nandemuBtnRealConfig);
+		
+		m_btnMgr.show(m_nandemuLblRealMiis);
+		m_btnMgr.show(m_nandemuBtnRealMiis);
 	}
 	
 	for(u8 i = 0; i < ARRAY_SIZE(m_nandemuLblUser); ++i)
@@ -578,94 +603,107 @@ int CMenu::_NandEmuCfg(void)
 			m_btnMgr.up();
 		else if(BTN_DOWN_PRESSED && !m_thrdWorking)
 			m_btnMgr.down();
-		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnEmulationP) || m_btnMgr.selected(m_nandemuBtnEmulationM)))
+		else if(BTN_A_PRESSED)
 		{
-			s8 direction = m_btnMgr.selected(m_nandemuBtnEmulationP) ? 1 : -1;
-			m_cfg.setInt(CHANNEL_DOMAIN, "emulation", loopNum(m_cfg.getInt(CHANNEL_DOMAIN, "emulation", 0) + direction, ARRAY_SIZE(CMenu::_NandEmu)));
-			_showNandEmu();
-		}
-		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnSaveEmulationP) || m_btnMgr.selected(m_nandemuBtnSaveEmulationM)))
-		{
-			s8 direction = m_btnMgr.selected(m_nandemuBtnSaveEmulationP) ? 1 : -1;
-			m_cfg.setInt(WII_DOMAIN, "save_emulation", loopNum(m_cfg.getInt(WII_DOMAIN, "save_emulation", 0) + direction, ARRAY_SIZE(CMenu::_GlobalSaveEmu)));
-			_showNandEmu();
-		}
-		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnSavePartitionP) || m_btnMgr.selected(m_nandemuBtnSavePartitionM)))
-		{
-			s8 direction = m_btnMgr.selected(m_nandemuBtnSavePartitionP) ? 1 : -1;
-			currentPartition = m_cfg.getInt(WII_DOMAIN, "savepartition");
-			m_emuSaveNand = true;
-			_setPartition(direction);
-			m_emuSaveNand = false;
-			_checkEmuNandSettings();// refresh emunands in case the partition was changed
-			_showNandEmu();
-		}
-		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnNandDump) || m_btnMgr.selected(m_nandemuBtnAll) || m_btnMgr.selected(m_nandemuBtnMissing)))
-		{
-			m_nanddump = m_btnMgr.selected(m_nandemuBtnNandDump) ? true : false;
-			m_saveall = m_btnMgr.selected(m_nandemuBtnAll) ? true : false;
-			
-			m_btnMgr.hide(m_nandemuBtnBack);
-			_hideNandEmu(true);
-			int emuPart = _FindEmuPart(!m_nanddump, true);
-			if(emuPart < 0)
+			if(m_btnMgr.selected(m_nandemuBtnEmulationP) || m_btnMgr.selected(m_nandemuBtnEmulationM))
 			{
-				error(_t("cfgne8", L"No valid FAT partition found for NAND Emulation!"));
+				s8 direction = m_btnMgr.selected(m_nandemuBtnEmulationP) ? 1 : -1;
+				m_cfg.setInt(CHANNEL_DOMAIN, "emulation", loopNum(m_cfg.getInt(CHANNEL_DOMAIN, "emulation", 0) + direction, ARRAY_SIZE(CMenu::_NandEmu)));
 				_showNandEmu();
 			}
-			else
+			else if(m_btnMgr.selected(m_nandemuBtnSaveEmulationP) || m_btnMgr.selected(m_nandemuBtnSaveEmulationM))
 			{
-				m_btnMgr.show(m_nandemuLblTitle);
-				m_btnMgr.show(m_nandfilePBar);
-				m_btnMgr.show(m_nandemuPBar);
-				m_btnMgr.show(m_nandfileLblMessage);
-				m_btnMgr.show(m_nandemuLblMessage);
-				m_btnMgr.show(m_nandfileLblDialog);
-				m_btnMgr.show(m_nandemuLblDialog);
-				m_btnMgr.setText(m_nandemuLblMessage, L"");
-				m_btnMgr.setText(m_nandfileLblMessage, L"");
-				m_btnMgr.setText(m_nandemuLblDialog, _t("cfgne11", L"Overall Progress:"));
-				if(m_nanddump)
-				{
-					ExtNand = emuNands[curEmuNand];// set for later to refresh game list
-					m_btnMgr.setText(m_nandemuLblTitle, _t("cfgne12", L"NAND Extractor"));
-				}
-				else // saves dump
-				{
-					//ExtNand = savesNands[curSavesNand];
-					m_btnMgr.setText(m_nandemuLblTitle, _t("cfgne13", L"Game Save Extractor"));
-				}
-				m_thrdStop = false;
-				m_thrdProgress = 0.f;
-				m_thrdWorking = true;
-				LWP_CreateThread(&thread, _NandDumper, this, 0, 32768, 40);
+				s8 direction = m_btnMgr.selected(m_nandemuBtnSaveEmulationP) ? 1 : -1;
+				m_cfg.setInt(WII_DOMAIN, "save_emulation", loopNum(m_cfg.getInt(WII_DOMAIN, "save_emulation", 0) + direction, ARRAY_SIZE(CMenu::_GlobalSaveEmu)));
+				_showNandEmu();
 			}
-		}
-		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnNandSelectP) || m_btnMgr.selected(m_nandemuBtnNandSelectM)))
-		{
-			s8 direction = m_btnMgr.selected(m_nandemuBtnNandSelectP) ? 1 : -1;
-			curEmuNand = loopNum(curEmuNand + direction, emuNands.size());
-			m_cfg.setString(CHANNEL_DOMAIN, "current_emunand", emuNands[curEmuNand]);
-			_showNandEmu();
-		}
-		else if(BTN_A_PRESSED && (m_btnMgr.selected(m_nandemuBtnSaveNandSelectP) || m_btnMgr.selected(m_nandemuBtnSaveNandSelectM)))
-		{
-			s8 direction = m_btnMgr.selected(m_nandemuBtnSaveNandSelectP) ? 1 : -1;
-			curSavesNand = loopNum(curSavesNand + direction, savesNands.size());
-			m_cfg.setString(WII_DOMAIN, "current_save_emunand", savesNands[curSavesNand]);
-			_showNandEmu();
-		}
-		else if(BTN_A_PRESSED && m_btnMgr.selected(m_nandemuBtnInstallWad))
-		{
-			_hideNandEmu();
-			_wadExplorer();
-			nandemuPage = 1;
-			_showNandEmu();
-		}			
-		else if(BTN_A_PRESSED && m_btnMgr.selected(m_nandemuBtnBack))
-		{
-			m_cfg.save();
-			break;
+			else if(m_btnMgr.selected(m_nandemuBtnSavePartitionP) || m_btnMgr.selected(m_nandemuBtnSavePartitionM))
+			{
+				s8 direction = m_btnMgr.selected(m_nandemuBtnSavePartitionP) ? 1 : -1;
+				currentPartition = m_cfg.getInt(WII_DOMAIN, "savepartition");
+				m_emuSaveNand = true;
+				_setPartition(direction);
+				m_emuSaveNand = false;
+				_checkEmuNandSettings();// refresh emunands in case the partition was changed
+				_showNandEmu();
+			}
+			else if(m_btnMgr.selected(m_nandemuBtnNandDump) || m_btnMgr.selected(m_nandemuBtnAll) || m_btnMgr.selected(m_nandemuBtnMissing))
+			{
+				m_nanddump = m_btnMgr.selected(m_nandemuBtnNandDump) ? true : false;
+				m_saveall = m_btnMgr.selected(m_nandemuBtnAll) ? true : false;
+				
+				m_btnMgr.hide(m_nandemuBtnBack);
+				_hideNandEmu(true);
+				int emuPart = _FindEmuPart(!m_nanddump, true);
+				if(emuPart < 0)
+				{
+					error(_t("cfgne8", L"No valid FAT partition found for NAND Emulation!"));
+					_showNandEmu();
+				}
+				else
+				{
+					m_btnMgr.show(m_nandemuLblTitle);
+					m_btnMgr.show(m_nandfilePBar);
+					m_btnMgr.show(m_nandemuPBar);
+					m_btnMgr.show(m_nandfileLblMessage);
+					m_btnMgr.show(m_nandemuLblMessage);
+					m_btnMgr.show(m_nandfileLblDialog);
+					m_btnMgr.show(m_nandemuLblDialog);
+					m_btnMgr.setText(m_nandemuLblMessage, L"");
+					m_btnMgr.setText(m_nandfileLblMessage, L"");
+					m_btnMgr.setText(m_nandemuLblDialog, _t("cfgne11", L"Overall Progress:"));
+					if(m_nanddump)
+					{
+						ExtNand = emuNands[curEmuNand];// set for later to refresh game list
+						m_btnMgr.setText(m_nandemuLblTitle, _t("cfgne12", L"NAND Extractor"));
+					}
+					else // saves dump
+					{
+						//ExtNand = savesNands[curSavesNand];
+						m_btnMgr.setText(m_nandemuLblTitle, _t("cfgne13", L"Game Save Extractor"));
+					}
+					m_thrdStop = false;
+					m_thrdProgress = 0.f;
+					m_thrdWorking = true;
+					LWP_CreateThread(&thread, _NandDumper, this, 0, 32768, 40);
+				}
+			}
+			else if(m_btnMgr.selected(m_nandemuBtnNandSelectP) || m_btnMgr.selected(m_nandemuBtnNandSelectM))
+			{
+				s8 direction = m_btnMgr.selected(m_nandemuBtnNandSelectP) ? 1 : -1;
+				curEmuNand = loopNum(curEmuNand + direction, emuNands.size());
+				m_cfg.setString(CHANNEL_DOMAIN, "current_emunand", emuNands[curEmuNand]);
+				_showNandEmu();
+			}
+			else if(m_btnMgr.selected(m_nandemuBtnSaveNandSelectP) || m_btnMgr.selected(m_nandemuBtnSaveNandSelectM))
+			{
+				s8 direction = m_btnMgr.selected(m_nandemuBtnSaveNandSelectP) ? 1 : -1;
+				curSavesNand = loopNum(curSavesNand + direction, savesNands.size());
+				m_cfg.setString(WII_DOMAIN, "current_save_emunand", savesNands[curSavesNand]);
+				_showNandEmu();
+			}
+			else if(m_btnMgr.selected(m_nandemuBtnInstallWad))
+			{
+				_hideNandEmu();
+				_wadExplorer();
+				nandemuPage = 1;
+				_showNandEmu();
+			}
+			else if (m_btnMgr.selected(m_nandemuBtnRealConfig))
+			{
+				m_cfg.setBool(CHANNEL_DOMAIN, "real_nand_config", !m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_config"));
+				_showNandEmu();
+			}
+			else if (m_btnMgr.selected(m_nandemuBtnRealMiis))
+			{
+				m_cfg.setBool(CHANNEL_DOMAIN, "real_nand_miis", !m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_miis"));
+				_showNandEmu();
+			}
+			else if(m_btnMgr.selected(m_nandemuBtnBack))
+			{
+				m_cfg.save();
+				break;
+			}
 		}
 
 		if(m_thrdMessageAdded)
@@ -1055,6 +1093,10 @@ void CMenu::_initNandEmuMenu()
 	m_nandemuLblSavePartitionVal = _addLabel("NANDEMU/SAVE_PART_BTN", theme.btnFont, L"", 468,130, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_nandemuBtnSavePartitionM = _addPicButton("NANDEMU/SAVE_PART_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 420, 130, 48, 48);
 	m_nandemuBtnSavePartitionP = _addPicButton("NANDEMU/SAVE_PART_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 572, 130, 48, 48);
+	m_nandemuLblRealConfig = _addLabel("NANDEMU/REAL_CONFIG", theme.lblFont, L"", 20, 185, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_nandemuBtnRealConfig = _addButton("NANDEMU/REAL_CONFIG_BTN", theme.btnFont, L"", 420, 190, 200, 48, theme.btnFontColor);
+	m_nandemuLblRealMiis = _addLabel("NANDEMU/REAL_MIIS", theme.lblFont, L"", 20, 245, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_nandemuBtnRealMiis = _addButton("NANDEMU/REAL_MIIS_BTN", theme.btnFont, L"", 420, 250, 200, 48, theme.btnFontColor);
 
 	m_nandemuBtnBack = _addButton("NANDEMU/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
 	m_nandemuLblPage = _addLabel("NANDEMU/PAGE_BTN", theme.btnFont, L"", 68, 400, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
@@ -1103,6 +1145,10 @@ void CMenu::_initNandEmuMenu()
 	
 	_setHideAnim(m_nandemuLblInstallWad, "NANDEMU/INSTALL_WAD", 50, 0, -2.f, 0.f);
 	_setHideAnim(m_nandemuBtnInstallWad, "NANDEMU/INSTALL_WAD_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_nandemuLblRealConfig, "NANDEMU/REAL_CONFIG", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_nandemuBtnRealConfig, "NANDEMU/REAL_CONFIG_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_nandemuLblRealMiis, "NANDEMU/REAL_MIIS", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_nandemuBtnRealMiis, "NANDEMU/REAL_MIIS_BTN", -50, 0, 1.f, 0.f);
 	
 	_setHideAnim(m_nandemuBtnBack, "NANDEMU/BACK_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_nandemuLblPage, "NANDEMU/PAGE_BTN", 0, 0, 1.f, -1.f);
@@ -1131,5 +1177,7 @@ void CMenu::_textNandEmu(void)
 	m_btnMgr.setText(m_nandemuBtnNandDump, _t("cfgne6", L"Start"));
 	m_btnMgr.setText(m_nandemuLblInstallWad, _t("cfgne98", L"Install Wad"));
 	m_btnMgr.setText(m_nandemuBtnInstallWad, _t("cfgne99", L"Go"));
+	m_btnMgr.setText(m_nandemuLblRealConfig, _t("cfgne40", L"Use Real NAND Config"));
+	m_btnMgr.setText(m_nandemuLblRealMiis, _t("cfgne41", L"Use Real NAND Miis"));
 	m_btnMgr.setText(m_nandemuBtnBack, _t("cfgne7", L"Back"));
 }
