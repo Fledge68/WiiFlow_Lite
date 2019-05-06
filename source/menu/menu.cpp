@@ -1715,7 +1715,12 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 	
 	// check if power button is pressed and exit wiiflow
 	if(Sys_Exiting())
-		exitHandler(BUTTON_CALLBACK);
+	{
+		if(m_cfg.getBool("GENERAL", "idle_standby", false))
+			exitHandler(SHUTDOWN_IDLE);
+		else
+			exitHandler(SHUTDOWN_STANDBY);
+	}
 
 	// check if we need to start playing the game/banner sound
 	// m_gameSelected means we are on the game selected menu

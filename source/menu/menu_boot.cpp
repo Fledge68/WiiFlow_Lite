@@ -151,7 +151,7 @@ bool CMenu::_Boot(void)
 	bool cur_sd = m_cfg.getBool("GENERAL", "sd_only");
 	if(prev_load != cur_load || prev_ios != cur_ios || set_port != currentPort || prev_sd != cur_sd)
 	{
-		error(_t("errboot8", L"Rebooting ..."));
+		error(_t("errboot8", L"Press 'A' to reload WiiFlow"));
 		m_exit = true;
 		m_reload = true;
 		return 1;
