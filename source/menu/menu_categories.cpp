@@ -161,7 +161,7 @@ void CMenu::_setGameCategories(void)
 		if(m_categories.at(i) == '1')
 		{
 			char cCh = static_cast<char>(i + 32);
-			gameCats =+ cCh;
+			gameCats += cCh;
 		}
 	}
 	m_cat.setString(catDomain, id, gameCats);
