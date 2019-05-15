@@ -250,14 +250,17 @@ void CMenu::_showHome(void)
 	_setBg(m_homeBg, m_homeBg);
 	m_btnMgr.show(m_homeLblTitle);
 
-	m_btnMgr.show(m_homeBtnSettings);
-	m_btnMgr.show(m_homeBtnReloadCache);
-	m_btnMgr.show(m_homeBtnUpdate);
-	m_btnMgr.show(m_homeBtnExplorer);
+	if(!m_locked)
+	{	
+		m_btnMgr.show(m_homeBtnSettings);
+		m_btnMgr.show(m_homeBtnReloadCache);
+		m_btnMgr.show(m_homeBtnUpdate);
+		m_btnMgr.show(m_homeBtnExplorer);
 
-	m_btnMgr.show(m_homeBtnInstall);
-	m_btnMgr.show(m_homeBtnAbout);
-	m_btnMgr.show(m_homeBtnExitTo);
+		m_btnMgr.show(m_homeBtnInstall);
+		m_btnMgr.show(m_homeBtnAbout);
+		m_btnMgr.show(m_homeBtnExitTo);
+	}
 	m_btnMgr.show(m_homeBtnSelPlugin);
 
 	m_btnMgr.show(m_homeLblBattery);
