@@ -58,13 +58,6 @@ bool isUsingUSB() {
 		return true;
 	}
 	
-	/* if sd_only is false, then we're using USB */
-	if(!m_cfg.getBool("general", "sd_only", true))
-	{
-		// sd_only is false, so assuming we're using USB.
-		return true;
-	}
-	
 	/* If any of the sections have partition set > 0, we're on USB */
 	const char *domains[] = {WII_DOMAIN, GC_DOMAIN, CHANNEL_DOMAIN, PLUGIN_DOMAIN, HOMEBREW_DOMAIN};
 	for(int i = 0; i < 5; i++)
@@ -75,6 +68,14 @@ bool isUsingUSB() {
 			return true;
 		}
 	}
+	
+	/* if sd_only is false, then we're using USB */
+	if(!m_cfg.getBool("general", "sd_only", true))
+	{
+		// sd_only is false, so assuming we're using USB.
+		return true;
+	}
+	
 	gprintf("using SD only, no need for USB mounting.\n");
 	return false;
 }

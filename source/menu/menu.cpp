@@ -163,7 +163,7 @@ bool CMenu::init()
 	_netInit();
 	
 	/* Set SD only to off if any usb device is attached and format is FAT, NTFS, WBFS, or LINUX */
-	m_cfg.setBool("GENERAL", "sd_only", true);
+	m_cfg.getBool("GENERAL", "sd_only", true);// will only set it true if this doesn't already exist
 	for(int i = USB1; i <= USB8; i++)
 	{
 		if(DeviceHandle.IsInserted(i) && DeviceHandle.GetFSType(i) >= 0)
