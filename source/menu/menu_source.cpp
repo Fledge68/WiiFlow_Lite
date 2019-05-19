@@ -148,10 +148,10 @@ void CMenu::_setSrcFlow(int version)
 		m_cfg.setInt(SOURCEFLOW_DOMAIN, "last_cf_mode", curflow);
 }
 
-void CMenu::_srcTierBack(bool home)
+bool CMenu::_srcTierBack(bool home)
 {
 	if(!sm_tier)
-		return;
+		return false;
 	string fn;
 	if(home)
 	{
@@ -188,6 +188,7 @@ void CMenu::_srcTierBack(bool home)
 		srcDomain = m_source.nextDomain().c_str();
 	}
 	_setSrcFlowBg();
+	return true;
 }
 
 void CMenu::_setSrcFlowBg(void)

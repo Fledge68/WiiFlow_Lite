@@ -399,10 +399,13 @@ int CMenu::main(void)
 				bUsed = false;
 			else
 			{
-				if(m_sourceflow)//if exiting sourceflow via b button
+				if(m_sourceflow)//back a tier or exit sourceflow
 				{
-					m_sourceflow = false;
-					_setMainBg();
+					if(!_srcTierBack(false))// back a tier
+					{
+						m_sourceflow = false;// if not back a tier then exit sourceflow
+						_setMainBg();
+					}
 					_showCF(true);
 					continue;
 				}
@@ -641,22 +644,14 @@ int CMenu::main(void)
 			else if(BTN_LEFT_REPEAT || RIGHT_STICK_LEFT)
 				CoverFlow.left();
 			else if(BTN_MINUS_PRESSED)
-			{
-				if(!m_sourceflow)
 					CoverFlow.pageUp();
-				else
-				{
-					_srcTierBack(false);
-					_showCF(true);
-				}
-			}
 			else if(BTN_PLUS_PRESSED)
 			{
 				if(!m_sourceflow)
 					CoverFlow.pageDown();
 				else
 				{
-					_srcTierBack(true);
+					_srcTierBack(true);// back to the 1st sourceflow tier
 					_showCF(true);
 				}
 			}
