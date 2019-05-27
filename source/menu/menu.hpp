@@ -1092,12 +1092,13 @@ private:
 	void _netInit();
 	void _loadDefaultFont(void);
 	bool _loadFile(u8 * &buffer, u32 &size, const char *path, const char *file);
-	int _loadIOS(u8 ios, int userIOS, string id, bool RealNAND_Channels = false);
+	int _loadGameIOS(u8 ios, int userIOS, string id, bool RealNAND_Channels = false);
 	void _launch(const dir_discHdr *hdr);
-	void _launchGame(dir_discHdr *hdr, bool dvd, bool disc_cfg = false);
+	void _launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg = false);
 	void _launchChannel(dir_discHdr *hdr);
 	void _launchHomebrew(const char *filepath, vector<string> arguments);
 	void _launchGC(dir_discHdr *hdr, bool disc);
+	void _launchPlugin(dir_discHdr *hdr);
 	void _launchShutdown();
 	vector<string> _getMetaXML(const char *bootpath);
 	void _extractBnr(const dir_discHdr *hdr);

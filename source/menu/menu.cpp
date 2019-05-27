@@ -2654,6 +2654,8 @@ void CMenu::RemoveCover(const char *id)
 	fsop_deleteFile(CoverPath);
 }
 
+/* if wiiflow using IOS58 this switches to cIOS for certain functions and back to IOS58 when done. */
+/* if wiiflow using cIOS no need to temp switch */
 void CMenu::TempLoadIOS(int IOS)
 {
 	/* Only temp reload in IOS58 mode */
@@ -2667,7 +2669,7 @@ void CMenu::TempLoadIOS(int IOS)
 
 	if(CurrentIOS.Version != IOS)
 	{
-		loadIOS(IOS, true);
+		loadIOS(IOS, true);// switch to new IOS
 		Sys_Init();
 		Open_Inputs();
 		for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)

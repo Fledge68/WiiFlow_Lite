@@ -199,7 +199,7 @@ int main(int argc, char **argv)
 			if(useMainIOS || !DeviceHandle.UsablePartitionMounted())// if useMainIOS or there's isn't a FAT or NTFS partition
 			{
 				useMainIOS = false;
-				mainMenu.TempLoadIOS();
+				mainMenu.TempLoadIOS();// switch to cIOS
 				iosOK = CustomIOS(CurrentIOS.Type);
 			}
 		}

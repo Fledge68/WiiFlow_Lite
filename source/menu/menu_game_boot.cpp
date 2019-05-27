@@ -73,7 +73,7 @@ void CMenu::directlaunch(const char *GameID)// from boot arg for wii game only
 		{
 			if(strncasecmp(GameID, m_cacheList[i].id, 6) == 0)
 			{
-				_launchGame(&m_cacheList[i], false); // Launch will exit wiiflow
+				_launchWii(&m_cacheList[i], false); // Launch will exit wiiflow
 				break;
 			}
 		}
@@ -88,86 +88,19 @@ void CMenu::_launchShutdown()
 	exitHandler(PRIILOADER_DEF); //Making wiiflow ready to boot something
 }
 
-bool gcLaunchFail = false;
 void CMenu::_launch(const dir_discHdr *hdr)
 {
 	dir_discHdr launchHdr;
 	memcpy(&launchHdr, hdr, sizeof(dir_discHdr));
 	/* Lets boot that shit */
 	if(launchHdr.type == TYPE_WII_GAME)
-		_launchGame(&launchHdr, false);
+		_launchWii(&launchHdr, false);
 	else if(launchHdr.type == TYPE_GC_GAME)
-	{
-		gcLaunchFail = false;
 		_launchGC(&launchHdr, false);
-		if(gcLaunchFail) return;
-	}
 	else if(launchHdr.type == TYPE_CHANNEL || launchHdr.type == TYPE_EMUCHANNEL)
 		_launchChannel(&launchHdr);
 	else if(launchHdr.type == TYPE_PLUGIN)
-	{
-		/* get dol name and name length for music plugin */
-		const char *plugin_dol_name = m_plugin.GetDolName(launchHdr.settings[0]);
-		u8 plugin_dol_len = strlen(plugin_dol_name);
-		/* check if music player plugin, if so set wiiflow's bckgrnd music player to play this song */
-		if(plugin_dol_len == 5 && strcasecmp(plugin_dol_name, "music") == 0)
-		{
-			if(strstr(launchHdr.path, ".pls") == NULL && strstr(launchHdr.path, ".m3u") == NULL)
-				MusicPlayer.LoadFile(launchHdr.path, false);
-			else
-				MusicPlayer.InitPlaylist(m_cfg, launchHdr.path, currentPartition);// maybe error msg if trouble loading playlist
-			m_exit = false;
-			return;
-		}
-		/* get title from hdr */
-		u32 title_len_no_ext = 0;
-		const char *title = CoverFlow.getFilenameId(hdr);// with extension
-		
-		/* get path from hdr */
-		// example rom path - dev:/roms/super mario bros.zip
-		// example scummvm path - kq1-coco3		
-		const char *path = NULL;
-		if(strchr(launchHdr.path, ':') != NULL)//it's a rom path
-		{
-			// if there's extension get length of title without extension
-			if(strchr(launchHdr.path, '.') != NULL)
-				title_len_no_ext = strlen(title) - strlen(strrchr(title, '.'));
-			// get path
-			*strrchr(launchHdr.path, '/') = '\0'; //cut title off end of path
-			path = strchr(launchHdr.path, '/') + 1; //cut dev:/ off of path
-		}
-		else // it's a scummvm game
-			path = launchHdr.path;// kq1-coco3
-
-		/* get device */
-		const char *device = (currentPartition == 0 ? "sd" : (DeviceHandle.GetFSType(currentPartition) == PART_FS_NTFS ? "ntfs" : "usb"));
-		
-		/* get loader */
-		// I believe the loader is set just in case the user is using a old plugin where the arguments line still requires loader
-		const char *loader = fmt("%s:/%s/WiiFlowLoader.dol", device, strchr(m_pluginsDir.c_str(), '/') + 1);
-
-		/* set arguments */
-		vector<string> arguments = m_plugin.CreateArgs(device, path, title, loader, title_len_no_ext, launchHdr.settings[0]);
-		
-		/* find plugin dol - it does not have to be in dev:/wiiflow/plugins */
-		const char *plugin_file = plugin_dol_name; // try full path
-		if(strchr(plugin_file, ':') == NULL || !fsop_FileExist(plugin_file)) // if not found try wiiflow plugin folder
-		{
-			plugin_file = fmt("%s/%s", m_pluginsDir.c_str(), plugin_dol_name);
-			if(!fsop_FileExist(plugin_file)) // not found - try device search
-			{
-				for(u8 i = SD; i < MAXDEVICES; ++i)
-				{
-					plugin_file = fmt("%s:/%s", DeviceName[i], plugin_dol_name);
-					if(fsop_FileExist(plugin_file))
-						break;
-				}
-			}
-		}
-		/* launch plugin with args */
-		gprintf("launching plugin app\n");
-		_launchHomebrew(plugin_file, arguments);
-	}
+		_launchPlugin(&launchHdr);
 	else if(launchHdr.type == TYPE_HOMEBREW)
 	{
 		const char *bootpath = fmt("%s/boot.dol", launchHdr.path);
@@ -181,8 +114,72 @@ void CMenu::_launch(const dir_discHdr *hdr)
 			_launchHomebrew(bootpath, arguments);
 		}
 	}
-	ShutdownBeforeExit();
-	Sys_Exit();
+}
+
+void CMenu::_launchPlugin(dir_discHdr *hdr)
+{
+	/* get dol name and name length for music plugin */
+	const char *plugin_dol_name = m_plugin.GetDolName(hdr->settings[0]);
+	u8 plugin_dol_len = strlen(plugin_dol_name);
+	/* check if music player plugin, if so set wiiflow's bckgrnd music player to play this song */
+	if(plugin_dol_len == 5 && strcasecmp(plugin_dol_name, "music") == 0)
+	{
+		if(strstr(hdr->path, ".pls") == NULL && strstr(hdr->path, ".m3u") == NULL)
+			MusicPlayer.LoadFile(hdr->path, false);
+		else
+			MusicPlayer.InitPlaylist(m_cfg, hdr->path, currentPartition);// maybe error msg if trouble loading playlist
+		return;
+	}
+	/* get title from hdr */
+	u32 title_len_no_ext = 0;
+	const char *title = CoverFlow.getFilenameId(hdr);// with extension
+	
+	/* get path from hdr */
+	// example rom path - dev:/roms/super mario bros.zip
+	// example scummvm path - kq1-coco3		
+	const char *path = NULL;
+	if(strchr(hdr->path, ':') != NULL)//it's a rom path
+	{
+		// if there's extension get length of title without extension
+		if(strchr(hdr->path, '.') != NULL)
+			title_len_no_ext = strlen(title) - strlen(strrchr(title, '.'));
+		// get path
+		*strrchr(hdr->path, '/') = '\0'; //cut title off end of path
+		path = strchr(hdr->path, '/') + 1; //cut dev:/ off of path
+	}
+	else // it's a scummvm game
+		path = hdr->path;// kq1-coco3
+
+	/* get device */
+	const char *device = (currentPartition == 0 ? "sd" : (DeviceHandle.GetFSType(currentPartition) == PART_FS_NTFS ? "ntfs" : "usb"));
+	
+	/* get loader */
+	// the loader arg was used and added to plugin mods that fix94 made.
+	// it was used because postloader 4 also used the wiiflow plugins and the emus needed to know which loader to return to.
+	// the wiimednafen plugin mod still requires this loader arg. most others don't use it.
+	const char *loader = fmt("%s:/%s/WiiFlowLoader.dol", device, strchr(m_pluginsDir.c_str(), '/') + 1);
+
+	/* set arguments */
+	vector<string> arguments = m_plugin.CreateArgs(device, path, title, loader, title_len_no_ext, hdr->settings[0]);
+	
+	/* find plugin dol - it does not have to be in dev:/wiiflow/plugins */
+	const char *plugin_file = plugin_dol_name; // try full path
+	if(strchr(plugin_file, ':') == NULL || !fsop_FileExist(plugin_file)) // if not found try wiiflow plugin folder
+	{
+		plugin_file = fmt("%s/%s", m_pluginsDir.c_str(), plugin_dol_name);
+		if(!fsop_FileExist(plugin_file)) // not found - try device search
+		{
+			for(u8 i = SD; i < MAXDEVICES; ++i)
+			{
+				plugin_file = fmt("%s:/%s", DeviceName[i], plugin_dol_name);
+				if(fsop_FileExist(plugin_file))
+					break;
+			}
+		}
+	}
+	/* launch plugin with args */
+	gprintf("launching plugin app\n");
+	_launchHomebrew(plugin_file, arguments);
 }
 
 void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
@@ -318,7 +315,6 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	if((loader == NINTENDONT && !m_nintendont_installed) || (loader == DEVOLUTION && !m_devo_installed))
 	{
 		error(_t("errgame11", L"GameCube Loader not found! Can't launch game."));
-		gcLaunchFail = true;
 		return;
 	}
 	
@@ -565,8 +561,9 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	Sys_Exit();
 }
 
-/* dont confuse loadIOS with _loadIOS */
-int CMenu::_loadIOS(u8 gameIOS, int userIOS, string id, bool RealNAND_Channels)
+/* used by wii and channel games to load the cIOS to use for the game */
+/* plugins, apps, and gamecube games don't use cIOS */
+int CMenu::_loadGameIOS(u8 gameIOS, int userIOS, string id, bool RealNAND_Channels)
 {
 	gprintf("Game ID %s requested IOS %d.\nUser selected %d\n", id.c_str(), gameIOS, userIOS);
 	if(RealNAND_Channels && IOS_GetType(mainIOS) == IOS_TYPE_STUB)
@@ -755,7 +752,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		error(_t("errgame15", L"Missing ext_loader.bin or ext_booter.bin!"));
 		_exitWiiflow();
 	}
-	if(_loadIOS(gameIOS, userIOS, id, !NANDemuView) == LOAD_IOS_FAILED)//in neek2o this will only load the game IOS not a cIOS
+	if(_loadGameIOS(gameIOS, userIOS, id, !NANDemuView) == LOAD_IOS_FAILED)//in neek2o this will only load the game IOS not a cIOS
 	{
 		/* error message already shown */
 		_exitWiiflow();
@@ -805,7 +802,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	Sys_Exit();
 }
 
-void CMenu::_launchGame(dir_discHdr *hdr, bool dvd, bool disc_cfg)
+void CMenu::_launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 {
 	string id(hdr->id);
 	string path(hdr->path);
@@ -1007,7 +1004,7 @@ void CMenu::_launchGame(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 	}
 	if(!dvd)
 	{
-		if(_loadIOS(gameIOS, userIOS, id) == LOAD_IOS_FAILED)
+		if(_loadGameIOS(gameIOS, userIOS, id) == LOAD_IOS_FAILED)
 		{
 			/* error message already shown */
 			_exitWiiflow();

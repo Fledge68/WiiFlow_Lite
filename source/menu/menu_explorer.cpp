@@ -231,7 +231,7 @@ void CMenu::_Explorer(void)
 							if(wii_hdr.magic == WII_MAGIC)
 							{
 								currentPartition = explorer_partition;
-								_launchGame(&tmpHdr, false);
+								_launchWii(&tmpHdr, false);
 							}
 							else if(wii_hdr.gc_magic == GC_MAGIC)
 							{

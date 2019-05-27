@@ -532,7 +532,7 @@ int CMenu::main(void)
 					memset(&hdr, 0, sizeof(dir_discHdr));
 					memcpy(&hdr.id, "dvddvd", 6);//this must be set for neek2o
 					/* Boot the Disc */
-					_launchGame(&hdr, true, BTN_B_HELD);
+					_launchWii(&hdr, true, BTN_B_HELD);
 					if(BTN_B_HELD)
 					{
 						bheld = true;
