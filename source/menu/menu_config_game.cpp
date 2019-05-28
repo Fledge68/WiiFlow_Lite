@@ -149,9 +149,7 @@ void CMenu::_showGameSettings()
 {
 	u32 i;
 	char id[74];
-	char catID[64];
 	memset(id, 0, 74);
-	memset(catID, 0, 64);
 	
 	if(GameHdr->type == TYPE_HOMEBREW)
 		wcstombs(id, GameHdr->title, 63);
@@ -159,11 +157,14 @@ void CMenu::_showGameSettings()
 	{
 		strncpy(m_plugin.PluginMagicWord, fmt("%08x", GameHdr->settings[0]), 8);
 		if(strrchr(GameHdr->path, '/') != NULL)
-			wcstombs(catID, GameHdr->title, 63);
+		{
+			char gameTitle[64];
+			gameTitle[63] = '\0';
+			wcstombs(gameTitle, GameHdr->title, 63);
+			strncpy(id, fmt("%s/%s", m_plugin.PluginMagicWord, gameTitle), sizeof(id) - 1);
+		}
 		else
-			strncpy(catID, GameHdr->path, 63);// scummvm
-		strcpy(id, m_plugin.PluginMagicWord);
-		strcat(id, fmt("/%s", catID));
+			strncpy(id, fmt("%s/%s", m_plugin.PluginMagicWord, GameHdr->path), sizeof(id) - 1);
 	}
 	else
 	{
@@ -491,11 +492,9 @@ void CMenu::_showGameSettings()
 void CMenu::_gameSettings(const dir_discHdr *hdr, bool disc)
 {
 	m_gcfg2.load(fmt("%s/" GAME_SETTINGS2_FILENAME, m_settingsDir.c_str()));
-	GameHdr = hdr;//
+	GameHdr = hdr;// set for global use in other fuctions
 	char id[74];
-	char catID[64];
 	memset(id, 0, 74);
-	memset(catID, 0, 64);
 	
 	if(GameHdr->type == TYPE_HOMEBREW)
 		wcstombs(id, GameHdr->title, 63);
@@ -503,11 +502,14 @@ void CMenu::_gameSettings(const dir_discHdr *hdr, bool disc)
 	{
 		strncpy(m_plugin.PluginMagicWord, fmt("%08x", GameHdr->settings[0]), 8);
 		if(strrchr(GameHdr->path, '/') != NULL)
-			wcstombs(catID, GameHdr->title, 63);
+		{
+			char gameTitle[64];
+			gameTitle[63] = '\0';
+			wcstombs(gameTitle, GameHdr->title, 63);
+			strncpy(id, fmt("%s/%s", m_plugin.PluginMagicWord, gameTitle), sizeof(id) - 1);
+		}
 		else
-			strncpy(catID, GameHdr->path, 63);// scummvm
-		strcpy(id, m_plugin.PluginMagicWord);
-		strcat(id, fmt("/%s", catID));
+			strncpy(id, fmt("%s/%s", m_plugin.PluginMagicWord, GameHdr->path), sizeof(id) - 1);
 	}
 	else
 	{
