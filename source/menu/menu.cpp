@@ -2163,23 +2163,25 @@ void CMenu::_initCF(void)
 		else if(m_current_view == COVERFLOW_PLUGIN)
 		{
 			m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
-			if(enabledPluginsCount == 1 && m_cfg.getBool(PLUGIN_ENABLED, "48425257") && m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox"))
-				CoverFlow.setSmallBoxMode(true);
-			else
-				CoverFlow.setSmallBoxMode(false);
-			int boxmode_cnt = 0;
-			for(u8 i = 0; m_plugin.PluginExist(i); ++i)
+			if(enabledPluginsCount == 1 && m_cfg.getBool(PLUGIN_ENABLED, "48425257"))// homebrew plugin
 			{
-				if(m_plugin.GetEnableStatus(m_cfg, m_plugin.getPluginMagic(i)))
-				{
-					if(m_plugin.GetBoxMode(i))
-						boxmode_cnt++;
-				}
+				CoverFlow.setBoxMode(m_cfg.getBool(HOMEBREW_DOMAIN, "box_mode", true));
+				CoverFlow.setSmallBoxMode(m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox", false));
 			}
-			if(boxmode_cnt == 0)
-				CoverFlow.setBoxMode(false);
 			else
-				CoverFlow.setBoxMode(true);
+			{
+				int boxmode_cnt = 0;
+				for(u8 i = 0; m_plugin.PluginExist(i); ++i)
+				{
+					if(m_plugin.GetEnableStatus(m_cfg, m_plugin.getPluginMagic(i)))
+					{
+						if(m_plugin.GetBoxMode(i))
+							boxmode_cnt++;
+					}
+				}
+				CoverFlow.setBoxMode(boxmode_cnt > 0);
+				CoverFlow.setSmallBoxMode(false);
+			}
 		}
 		else
 		{
