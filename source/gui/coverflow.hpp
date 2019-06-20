@@ -232,7 +232,7 @@ private:
 	};
 	enum CLRet { CL_OK, CL_ERROR, CL_NOMEM };
 private:
-	Mtx m_projMtx;
+	Mtx44 m_projMtx;
 	Mtx m_viewMtx;
 	Vector3D m_cameraPos;
 	Vector3D m_cameraAim;
