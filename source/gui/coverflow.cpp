@@ -245,7 +245,7 @@ bool CCoverFlow::init(const u8 *font, const u32 font_size, bool vid_50hz)
 	if (CONF_GetAspectRatio() == CONF_ASPECT_16_9)
 		guPerspective(m_projMtx, 45, 16.f / 9.f, .1f, 300.f);
 	else
-		guPerspective(m_projMtx, RadToDeg(2.f * atan(tan(DegToRad(45 / 2) / (4.f / 3.f) * (16.f / 9.f))), 4.f / 3.f, .1f, 300.f);
+		guPerspective(m_projMtx, RadToDeg(2.f * atan(tan(DegToRad(45 / 2)) / (4.f / 3.f) * (16.f / 9.f))), 4.f / 3.f, .1f, 300.f);
 	return true;
 }
 
@@ -254,7 +254,7 @@ void CCoverFlow::simulateOtherScreenFormat(bool s)
 	if ((CONF_GetAspectRatio() == CONF_ASPECT_16_9) != s)
 		guPerspective(m_projMtx, 45, 16.f / 9.f, .1f, 300.f);
 	else
-		guPerspective(m_projMtx, RadToDeg(2.f * atan(tan(DegToRad(45 / 2) / (4.f / 3.f) * (16.f / 9.f))), 4.f / 3.f, .1f, 300.f);
+		guPerspective(m_projMtx, RadToDeg(2.f * atan(tan(DegToRad(45 / 2)) / (4.f / 3.f) * (16.f / 9.f))), 4.f / 3.f, .1f, 300.f);
 }
 
 CCoverFlow::~CCoverFlow(void)
