@@ -325,7 +325,7 @@ void CMenu::_showCF(bool refreshList)
 		return;
 
 	m_showtimer = 240;
-	m_btnMgr.setText(m_mainLblNotice, wfmt(_fmt("main7", L"Total Games: %u"), CoverFlow.size()));
+	m_btnMgr.setText(m_mainLblNotice, wfmt(_fmt("main7", L"Total Games: %i"), CoverFlow.size()));
 	m_btnMgr.show(m_mainLblNotice);
 }
 
