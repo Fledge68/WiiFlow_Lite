@@ -64,6 +64,7 @@ private:
 	bool cacheCovers;
 	bool SF_cacheCovers;
 	bool CFLocked;
+	bool Auto_hide_icons;
 	vector<dir_discHdr> m_gameList;
 
 	struct SZone

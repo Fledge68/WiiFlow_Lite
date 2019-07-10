@@ -793,7 +793,7 @@ void CMenu::_game(bool launch)
 			m_btnMgr.hide(m_gameBtnBackFull);
 			m_btnMgr.hide(m_gameBtnToggleFull);
 			
-			if(m_show_zone_game && !coverFlipped && !m_video_playing)
+			if((!Auto_hide_icons || m_show_zone_game) && !coverFlipped && !m_video_playing)
 			{
 				m_btnMgr.show(m_gameBtnPlay);
 				m_btnMgr.show(m_gameBtnBack);

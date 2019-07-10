@@ -344,6 +344,7 @@ int CMenu::main(void)
 	m_emuSaveNand = false;
 	m_reload = false;
 	CFLocked = m_cfg.getBool("GENERAL", "cf_locked", false);
+	Auto_hide_icons = m_cfg.getBool("GENERAL", "auto_hide_icons", true);
 	u32 disc_check = 0;
 
 	m_prev_view = 0;
@@ -813,7 +814,7 @@ int CMenu::main(void)
 		else
 			m_btnMgr.hide(m_mainBtnNext);
 			
-		if(m_show_zone_main && !m_sourceflow)
+		if((!Auto_hide_icons || m_show_zone_main) && !m_sourceflow)
 		{
 			m_btnMgr.show(m_mainLblUser[0]);
 			m_btnMgr.show(m_mainLblUser[1]);
@@ -835,7 +836,7 @@ int CMenu::main(void)
 			m_btnMgr.hide(m_mainBtnFavoritesOn);
 			m_btnMgr.hide(m_mainBtnFavoritesOff);
 		}
-		if(!m_cfg.getBool("GENERAL", "hideviews", false) && m_show_zone_main2 && !m_sourceflow)
+		if(!m_cfg.getBool("GENERAL", "hideviews", false) && (!Auto_hide_icons || m_show_zone_main2) && !m_sourceflow)
 		{
 			switch(m_current_view)
 			{
@@ -892,7 +893,7 @@ int CMenu::main(void)
 			m_btnMgr.hide(m_mainLblUser[2]);
 			m_btnMgr.hide(m_mainLblUser[3]);
 		}
-		if(m_show_zone_main3 && !m_sourceflow)
+		if((!Auto_hide_icons || m_show_zone_main3) && !m_sourceflow)
 		{
 			m_btnMgr.show(m_mainBtnDVD);
 			m_btnMgr.show(m_mainLblUser[4]);
