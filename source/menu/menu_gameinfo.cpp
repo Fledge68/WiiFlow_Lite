@@ -359,7 +359,7 @@ void CMenu::_textGameInfo(void)
 		if(strlen(platformName) == 0)
 			return;// no platform name found to match plugin magic #
 			
-		/* check COMBINED for database platform name */
+		/* check COMBINED for platform names that mean the same system just different region */
 		/* some platforms have different names per country (ex. Genesis/Megadrive) */
 		/* but we use only one platform name for both */
 		string newName = m_platform.getString("COMBINED", platformName);
@@ -368,17 +368,20 @@ void CMenu::_textGameInfo(void)
 		else
 			snprintf(platformName, sizeof(platformName), "%s", newName.c_str());
 
-		/* Get Game's crc/serial to be used as gameID by searching platformName.ini file */
-		string romID;// this will be the crc or serial
-		string ShortName = m_plugin.GetRomName(GameHdr);// if scummvm game then shortname=NULL
+		/* Get roms's title without the extra ()'s or []'s */
+		string ShortName = m_plugin.GetRomName(GameHdr);
+		
+		/* Get 6 character unique romID (from Screenscraper.fr) using shortName. if fails then use CRC or CD serial */
+		string romID;
 		if(!ShortName.empty())
 			romID = m_plugin.GetRomId(GameHdr, m_pluginDataDir.c_str(), platformName, ShortName);
-		if(romID.empty())// no romID. possibly scummvm game or short name and crc/serial not found
-			return;
-			
-		strncpy(GameID, romID.c_str(), 6);// copy crc/serial to be used as gameID to get game info from xml
+		else
+			return;// no romID. short name and crc/serial not found
 		
-		/* Load platform name.xml database to get game's info using the gameID (crc/serial) */
+		/* copy romID to be used as gameID to get game info from xml */
+		strncpy(GameID, romID.c_str(), 6);
+		
+		/* Load platform name.xml database to get game's info using the gameID */
 		gametdb.OpenFile(fmt("%s/%s/%s.xml", m_pluginDataDir.c_str(), platformName, platformName));
 		tdb_found = gametdb.IsLoaded();
 		if(!tdb_found)
@@ -386,31 +389,12 @@ void CMenu::_textGameInfo(void)
 		
 		gametdb.SetLanguageCode(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
 		
-		// Get title
-		if(gametdb.GetTitle(GameID, TMP_Char))
-		{
-			gameinfo_Title_w.fromUTF8(TMP_Char);
-			m_btnMgr.setText(m_gameinfoLblTitle, gameinfo_Title_w);
-		}
-		else
-		{
-			tdb_found = false;
-			gametdb.CloseFile();// gameID not found in xml
-			return;
-		}
-
-		if(gametdb.GetSynopsis(GameID, TMP_Char))
-			gameinfo_Synopsis_w.fromUTF8(TMP_Char);
-		else
-			gameinfo_Synopsis_w.fromUTF8("");
-		m_btnMgr.setText(m_gameinfoLblSynopsis, gameinfo_Synopsis_w);
-
-		// Clear textures 
+		/* Set to empty textures in case images not found */
 		m_btnMgr.setTexture(m_gameinfoLblSnap, emptyTex);
 		m_btnMgr.setTexture(m_gameinfoLblCartDisk, emptyTex);
 		m_btnMgr.setTexture(m_gameinfoLblOverlay, emptyTex);
 
-		// Try to find images by game's xml name
+		/*  Get rom name from current xml and get rom images if name is found */
 		if(gametdb.GetName(GameID, TMP_Char))
 		{
 			const char *snap_path = NULL;
@@ -465,6 +449,26 @@ void CMenu::_textGameInfo(void)
 			}			
 		}
 		
+		// Get title
+		if(gametdb.GetTitle(GameID, TMP_Char))
+		{
+			gameinfo_Title_w.fromUTF8(TMP_Char);
+			m_btnMgr.setText(m_gameinfoLblTitle, gameinfo_Title_w);
+		}
+		else
+		{
+			tdb_found = false;
+			gametdb.CloseFile();// gameID not found in xml
+			return;
+		}
+
+		// Get Synopsis
+		if(gametdb.GetSynopsis(GameID, TMP_Char))
+			gameinfo_Synopsis_w.fromUTF8(TMP_Char);
+		else
+			gameinfo_Synopsis_w.fromUTF8("");
+		m_btnMgr.setText(m_gameinfoLblSynopsis, gameinfo_Synopsis_w);
+
 		// Create Rom Info
 		wstringEx rom_info;
 		rom_info = wfmt(_fmt("gameinfo7",L"GameID: %s"), GameID);
