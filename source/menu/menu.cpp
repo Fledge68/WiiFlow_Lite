@@ -2163,23 +2163,61 @@ void CMenu::_initCF(void)
 		else if(m_current_view == COVERFLOW_PLUGIN)
 		{
 			m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
-			if(enabledPluginsCount == 1 && m_cfg.getBool(PLUGIN_ENABLED, "48425257"))// homebrew plugin
+			if(enabledPluginsCount == 1)// only one plugin enabled
 			{
-				CoverFlow.setBoxMode(m_cfg.getBool(HOMEBREW_DOMAIN, "box_mode", true));
-				CoverFlow.setSmallBoxMode(m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox", false));
+				if(m_cfg.getBool(PLUGIN_ENABLED, "48425257"))// homebrew plugin
+				{
+					CoverFlow.setBoxMode(m_cfg.getBool(HOMEBREW_DOMAIN, "box_mode", true));
+					CoverFlow.setSmallBoxMode(m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox", false));
+				}
+				else 
+				{
+					s8 bm = -1;
+					for(u8 i = 0; m_plugin.PluginExist(i); ++i)// get plugins box mode value
+					{
+						if(m_plugin.GetEnableStatus(m_cfg, m_plugin.getPluginMagic(i)))
+						{
+							bm = m_plugin.GetBoxMode(i);
+							break;
+						}
+					}
+					if(bm < 0)// if negative then use default setting
+						CoverFlow.setBoxMode(m_cfg.getBool("GENERAL", "box_mode", true));
+					else 
+						CoverFlow.setBoxMode(bm == 0 ? false : true);
+					CoverFlow.setSmallBoxMode(false);
+				}
 			}
-			else
+			else // more than 1 plugin enabled
 			{
-				int boxmode_cnt = 0;
-				for(u8 i = 0; m_plugin.PluginExist(i); ++i)
+				s8 bm1 = -1;
+				s8 bm2 = -1;
+				u8 i;
+				for(i = 0; m_plugin.PluginExist(i); ++i)// get first enabled plugins box mode
 				{
 					if(m_plugin.GetEnableStatus(m_cfg, m_plugin.getPluginMagic(i)))
 					{
-						if(m_plugin.GetBoxMode(i))
-							boxmode_cnt++;
+						bm1 = m_plugin.GetBoxMode(i);
+						if(bm1 < 0)
+							bm1 = m_cfg.getBool("GENERAL", "box_mode", true);
+						break;
 					}
 				}
-				CoverFlow.setBoxMode(boxmode_cnt > 0);
+				for(i = 0; m_plugin.PluginExist(i); ++i)// check all other enabled are the same
+				{
+					if(m_plugin.GetEnableStatus(m_cfg, m_plugin.getPluginMagic(i)))
+					{
+						bm2 = m_plugin.GetBoxMode(i);
+						if(bm2 < 0)
+							bm2 = m_cfg.getBool("GENERAL", "box_mode", true);
+						if(bm2 != bm1)
+							break;
+					}
+				}
+				if(m_plugin.PluginExist(i))// broke out of loop because not all the same so use default
+					CoverFlow.setBoxMode(m_cfg.getBool("GENERAL", "box_mode", true));
+				else // made it thru loop so they all match
+					CoverFlow.setBoxMode(bm1 == 0 ? false : true);
 				CoverFlow.setSmallBoxMode(false);
 			}
 		}

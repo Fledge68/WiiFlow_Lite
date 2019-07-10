@@ -78,7 +78,7 @@ bool Plugin::AddPlugin(Config &plugin)
 	NewPlugin.romDir = plugin.getString(PLUGIN, "romDir");
 	NewPlugin.fileTypes = plugin.getString(PLUGIN, "fileTypes");
 	NewPlugin.Args = plugin.getStrings(PLUGIN, "arguments", '|');
-	NewPlugin.boxMode = plugin.getBool(PLUGIN, "boxmode", 1);
+	NewPlugin.boxMode = plugin.getInt(PLUGIN, "boxmode", -1);
 	string PluginName = plugin.getString(PLUGIN, "displayname");
 	if(PluginName.size() < 2)
 	{
@@ -163,7 +163,7 @@ u32 Plugin::GetCaseColor(u8 pos)
 	return Plugins[pos].caseColor;
 }
 
-bool Plugin::GetBoxMode(u8 pos)
+s8 Plugin::GetBoxMode(u8 pos)
 {
 	return Plugins[pos].boxMode;
 }
@@ -308,12 +308,11 @@ string Plugin::GetRomName(const dir_discHdr *gameHeader)
 	else
 	{
 		// ScummVM
-		char title[1024];
+		char title[64];
 		wcstombs(title, gameHeader->title, 63);
+		title[63] = '\0';
 
 		string FullName = title;
-		if(FullName.empty())
-				return NULL;
 
 		string ShortName = FullName.substr(0, FullName.find(" (")).substr(0, FullName.find(" ["));
 		return ShortName;
