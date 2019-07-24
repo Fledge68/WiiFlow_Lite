@@ -350,7 +350,7 @@ void GetFiles(const char *Path, const vector<string>& FileTypes,
 				AddFile(FullPathChar);
 				continue;
 			}
-			else if(depth < max_depth) //thanks libntfs (fail opendir) and thanks seekdir (slowass speed)
+			else if(depth < max_depth && strcmp(pent->d_name, "samples") != 0) //skip samples folder in mame roms folder
 				SubPaths.push_back(FullPathChar);
 		}
 		else if(pent->d_type == DT_REG)
