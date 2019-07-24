@@ -83,13 +83,13 @@ void CMenu::_setMainBg()
 		if(fn.length() > 0)
 		{
 			string themeName = m_cfg.getString("GENERAL", "theme", "default");
-			if(TexHandle.fromImageFile(m_mainAltBg, fmt("%s/backgrounds/%s/%s.png", m_dataDir.c_str(), themeName.c_str(), fn.c_str())) != TE_OK)
+			if(TexHandle.fromImageFile(m_mainAltBg, fmt("%s/%s/%s.png", m_bckgrndsDir.c_str(), themeName.c_str(), fn.c_str())) != TE_OK)
 			{	
-				if(TexHandle.fromImageFile(m_mainAltBg, fmt("%s/backgrounds/%s/%s.jpg", m_dataDir.c_str(), themeName.c_str(), fn.c_str())) != TE_OK)
+				if(TexHandle.fromImageFile(m_mainAltBg, fmt("%s/%s/%s.jpg", m_bckgrndsDir.c_str(), themeName.c_str(), fn.c_str())) != TE_OK)
 				{
-					if(TexHandle.fromImageFile(m_mainAltBg, fmt("%s/backgrounds/%s.png", m_dataDir.c_str(), fn.c_str())) != TE_OK)
+					if(TexHandle.fromImageFile(m_mainAltBg, fmt("%s/%s.png", m_bckgrndsDir.c_str(), fn.c_str())) != TE_OK)
 					{
-						if(TexHandle.fromImageFile(m_mainAltBg, fmt("%s/backgrounds/%s.jpg", m_dataDir.c_str(), fn.c_str())) != TE_OK)
+						if(TexHandle.fromImageFile(m_mainAltBg, fmt("%s/%s.jpg", m_bckgrndsDir.c_str(), fn.c_str())) != TE_OK)
 						{
 							_setBg(m_mainBg, m_mainBgLQ);
 							return;

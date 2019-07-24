@@ -120,34 +120,42 @@ private:
 	s16 m_musicTimer;
 	string m_curLanguage;
 
-	string m_sourceDir;
-	string m_themeDataDir;
+	/* Dir strings */
 	string m_appDir;
 	string m_imgsDir;
 	string m_binsDir;
 	string m_dataDir;
-	string m_pluginsDir;
-	string m_customBnrDir;
-	string m_picDir;
-	string m_boxPicDir;
-	string m_boxcPicDir;
+	
 	string m_cacheDir;
 	string m_listCacheDir;
 	string m_bnrCacheDir;
-	string m_themeDir;
-	string m_musicDir;
+	string m_customBnrDir;
+	
 	string m_txtCheatDir;
 	string m_cheatDir;
 	string m_wipDir;
-	string m_videoDir;
-	string m_fanartDir;
-	string m_screenshotDir;
+	
 	string m_settingsDir;
 	string m_languagesDir;
+	string m_helpDir;
+	string m_screenshotDir;
+	
+	string m_boxPicDir;
+	string m_picDir;
+	string m_themeDir;
+	string m_themeDataDir;
+	string m_coverflowsDir;
+	string m_musicDir;
+	string m_videoDir;
+	string m_fanartDir;
+	string m_bckgrndsDir;
+
+	string m_sourceDir;
+	string m_pluginsDir;
+	string m_pluginDataDir;
 	string m_cartDir;
 	string m_snapDir;
-	string m_pluginDataDir;
-	string m_helpDir;
+
 
 	/* NandEmulation */
 	char emu_nands_dir[32];

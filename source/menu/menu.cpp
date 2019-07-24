@@ -199,13 +199,10 @@ bool CMenu::init()
 	m_imgsDir = fmt("%s/imgs", m_appDir.c_str());
 	m_binsDir = fmt("%s/bins", m_appDir.c_str());
 
-	m_sourceDir = m_cfg.getString("GENERAL", "dir_Source", fmt("%s/source_menu", m_dataDir.c_str()));
-	m_customBnrDir = m_cfg.getString("GENERAL", "dir_custom_banners", fmt("%s/custom_banners", m_dataDir.c_str()));
-	m_pluginsDir = m_cfg.getString("GENERAL", "dir_plugins", fmt("%s/plugins", m_dataDir.c_str()));
-
 	m_cacheDir = m_cfg.getString("GENERAL", "dir_cache", fmt("%s/cache", m_dataDir.c_str()));
 	m_listCacheDir = m_cfg.getString("GENERAL", "dir_list_cache", fmt("%s/lists", m_cacheDir.c_str()));
 	m_bnrCacheDir = m_cfg.getString("GENERAL", "dir_banner_cache", fmt("%s/banners", m_cacheDir.c_str()));
+	m_customBnrDir = m_cfg.getString("GENERAL", "dir_custom_banners", fmt("%s/custom_banners", m_dataDir.c_str()));
 
 	m_txtCheatDir = m_cfg.getString("GENERAL", "dir_txtcheat", fmt("%s/codes", m_dataDir.c_str()));
 	m_cheatDir = m_cfg.getString("GENERAL", "dir_cheat", fmt("%s/gct", m_txtCheatDir.c_str()));
@@ -213,29 +210,32 @@ bool CMenu::init()
 
 	m_settingsDir = m_cfg.getString("GENERAL", "dir_settings", fmt("%s/settings", m_dataDir.c_str()));
 	m_languagesDir = m_cfg.getString("GENERAL", "dir_languages", fmt("%s/languages", m_dataDir.c_str()));
+	m_helpDir = m_cfg.getString("GENERAL", "dir_help", fmt("%s/help", m_dataDir.c_str()));
+	m_screenshotDir = m_cfg.getString("GENERAL", "dir_screenshot", fmt("%s/screenshots", m_dataDir.c_str()));
+	
 	m_boxPicDir = m_cfg.getString("GENERAL", "dir_box_covers", fmt("%s/boxcovers", m_dataDir.c_str()));
 	m_picDir = m_cfg.getString("GENERAL", "dir_flat_covers", fmt("%s/covers", m_dataDir.c_str()));
 	m_themeDir = m_cfg.getString("GENERAL", "dir_themes_lite", fmt("%s/themes_lite", m_dataDir.c_str()));
+	m_coverflowsDir = m_cfg.getString("GENERAL", "dir_coverflows", fmt("%s/coverflows", m_themeDir.c_str()));
 	m_musicDir = m_cfg.getString("GENERAL", "dir_music", fmt("%s/music", m_dataDir.c_str())); 
 	m_videoDir = m_cfg.getString("GENERAL", "dir_trailers", fmt("%s/trailers", m_dataDir.c_str()));
 	m_fanartDir = m_cfg.getString("GENERAL", "dir_fanart", fmt("%s/fanart", m_dataDir.c_str()));
-	m_screenshotDir = m_cfg.getString("GENERAL", "dir_screenshot", fmt("%s/screenshots", m_dataDir.c_str()));
-	m_helpDir = m_cfg.getString("GENERAL", "dir_help", fmt("%s/help", m_dataDir.c_str()));
+	m_bckgrndsDir = m_cfg.getString("GENERAL", "dir_backgrounds", fmt("%s/backgrounds", m_dataDir.c_str()));
+	
+	m_sourceDir = m_cfg.getString("GENERAL", "dir_Source", fmt("%s/source_menu", m_dataDir.c_str()));
+	m_pluginsDir = m_cfg.getString("GENERAL", "dir_plugins", fmt("%s/plugins", m_dataDir.c_str()));
+	m_pluginDataDir = m_cfg.getString("GENERAL", "dir_plugins_data", fmt("%s/plugins_data", m_dataDir.c_str()));
 	m_cartDir = m_cfg.getString("GENERAL", "dir_cart", fmt("%s/cart_disk", m_dataDir.c_str()));
 	m_snapDir = m_cfg.getString("GENERAL", "dir_snap", fmt("%s/snapshots", m_dataDir.c_str()));
-	m_pluginDataDir = m_cfg.getString("GENERAL", "dir_plugins_data", fmt("%s/plugins_data", m_dataDir.c_str()));
+
 
 	/* Create our Folder Structure */
 	fsop_MakeFolder(m_dataDir.c_str()); //D'OH!
 
-	fsop_MakeFolder(m_sourceDir.c_str());
-	fsop_MakeFolder(m_customBnrDir.c_str());
-	fsop_MakeFolder(m_pluginsDir.c_str());
-	fsop_MakeFolder(m_pluginDataDir.c_str());
-	
 	fsop_MakeFolder(m_cacheDir.c_str());
 	fsop_MakeFolder(m_listCacheDir.c_str());
 	fsop_MakeFolder(m_bnrCacheDir.c_str());
+	fsop_MakeFolder(m_customBnrDir.c_str());
 
 	fsop_MakeFolder(m_txtCheatDir.c_str());
 	fsop_MakeFolder(m_cheatDir.c_str());
@@ -243,16 +243,24 @@ bool CMenu::init()
 
 	fsop_MakeFolder(m_settingsDir.c_str());
 	fsop_MakeFolder(m_languagesDir.c_str());
-	fsop_MakeFolder(m_boxPicDir.c_str());
-	fsop_MakeFolder(m_picDir.c_str());
-	fsop_MakeFolder(m_themeDir.c_str());
-	fsop_MakeFolder(fmt("%s/coverflows", m_themeDir.c_str()));
-	fsop_MakeFolder(m_musicDir.c_str());
-	fsop_MakeFolder(m_videoDir.c_str());
-	fsop_MakeFolder(m_fanartDir.c_str());
 	fsop_MakeFolder(m_screenshotDir.c_str());
 	fsop_MakeFolder(m_helpDir.c_str());
 
+	fsop_MakeFolder(m_boxPicDir.c_str());
+	fsop_MakeFolder(m_picDir.c_str());
+	fsop_MakeFolder(m_themeDir.c_str());
+	fsop_MakeFolder(m_coverflowsDir.c_str());
+	fsop_MakeFolder(m_musicDir.c_str());
+	fsop_MakeFolder(m_videoDir.c_str());
+	fsop_MakeFolder(m_fanartDir.c_str());
+	fsop_MakeFolder(m_bckgrndsDir.c_str());
+
+	fsop_MakeFolder(m_sourceDir.c_str());
+	fsop_MakeFolder(m_pluginsDir.c_str());
+	fsop_MakeFolder(m_pluginDataDir.c_str());
+	fsop_MakeFolder(m_cartDir.c_str());
+	fsop_MakeFolder(m_snapDir.c_str());
+	
 	/* set default wii games partition in case this is the first boot */
 	int dp = -1;
 	for(int i = SD; i <= USB8; i++) // Find a wbfs folder or a partition of wbfs file system
@@ -286,9 +294,9 @@ bool CMenu::init()
 	string themeName = m_cfg.getString("GENERAL", "theme", "default");
 	m_themeDataDir = fmt("%s/%s", m_themeDir.c_str(), themeName.c_str());
 	m_theme.load(fmt("%s.ini", m_themeDataDir.c_str()));
-	m_coverflow.load(fmt("%s/coverflows/%s.ini", m_themeDir.c_str(), themeName.c_str()));
+	m_coverflow.load(fmt("%s/%s.ini", m_coverflowsDir.c_str(), themeName.c_str()));
 	if(!m_coverflow.loaded())
-		m_coverflow.load(fmt("%s/coverflows/default.ini", m_themeDir.c_str()));
+		m_coverflow.load(fmt("%s/default.ini", m_coverflowsDir.c_str()));
 	m_platform.load(fmt("%s/platform.ini", m_pluginDataDir.c_str()));
 	
 	/* Get plugin ini files */
