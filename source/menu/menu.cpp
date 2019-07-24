@@ -291,10 +291,10 @@ bool CMenu::init()
 	/* Load categories and theme INI files */
 	m_cat.load(fmt("%s/" CAT_FILENAME, m_settingsDir.c_str()));
 	m_gcfg1.load(fmt("%s/" GAME_SETTINGS1_FILENAME, m_settingsDir.c_str()));
-	string themeName = m_cfg.getString("GENERAL", "theme", "default");
-	m_themeDataDir = fmt("%s/%s", m_themeDir.c_str(), themeName.c_str());
+	m_themeName = m_cfg.getString("GENERAL", "theme", "default");
+	m_themeDataDir = fmt("%s/%s", m_themeDir.c_str(), m_themeName.c_str());
 	m_theme.load(fmt("%s.ini", m_themeDataDir.c_str()));
-	m_coverflow.load(fmt("%s/%s.ini", m_coverflowsDir.c_str(), themeName.c_str()));
+	m_coverflow.load(fmt("%s/%s.ini", m_coverflowsDir.c_str(), m_themeName.c_str()));
 	if(!m_coverflow.loaded())
 		m_coverflow.load(fmt("%s/default.ini", m_coverflowsDir.c_str()));
 	m_platform.load(fmt("%s/platform.ini", m_pluginDataDir.c_str()));

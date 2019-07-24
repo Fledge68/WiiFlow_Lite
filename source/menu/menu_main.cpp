@@ -82,10 +82,9 @@ void CMenu::_setMainBg()
 		}
 		if(fn.length() > 0)
 		{
-			string themeName = m_cfg.getString("GENERAL", "theme", "default");
-			if(TexHandle.fromImageFile(m_mainAltBg, fmt("%s/%s/%s.png", m_bckgrndsDir.c_str(), themeName.c_str(), fn.c_str())) != TE_OK)
+			if(TexHandle.fromImageFile(m_mainAltBg, fmt("%s/%s/%s.png", m_bckgrndsDir.c_str(), m_themeName.c_str(), fn.c_str())) != TE_OK)
 			{	
-				if(TexHandle.fromImageFile(m_mainAltBg, fmt("%s/%s/%s.jpg", m_bckgrndsDir.c_str(), themeName.c_str(), fn.c_str())) != TE_OK)
+				if(TexHandle.fromImageFile(m_mainAltBg, fmt("%s/%s/%s.jpg", m_bckgrndsDir.c_str(), m_themeName.c_str(), fn.c_str())) != TE_OK)
 				{
 					if(TexHandle.fromImageFile(m_mainAltBg, fmt("%s/%s.png", m_bckgrndsDir.c_str(), fn.c_str())) != TE_OK)
 					{
@@ -332,7 +331,7 @@ void CMenu::_showCF(bool refreshList)
 int CMenu::main(void)
 {
 	wstringEx curLetter;
-	string prevTheme = m_cfg.getString("GENERAL", "theme", "default");
+	string prevTheme = m_themeName;
 	bool show_channel = !m_cfg.getBool(CHANNEL_DOMAIN, "disable", false);
 	bool show_plugin = !m_cfg.getBool(PLUGIN_DOMAIN, "disable", false);
 	bool show_gamecube = !m_cfg.getBool(GC_DOMAIN, "disable", false);
@@ -488,7 +487,7 @@ int CMenu::main(void)
 				/* main menu global settings */
 				_hideMain();
 				_config(1);
-				if(prevTheme != m_cfg.getString("GENERAL", "theme"))
+				if(prevTheme != m_themeName)
 				{
 					/* new theme - exit wiiflow and reload */
 					fsop_deleteFolder(fmt("%s/sourceflow", m_cacheDir.c_str()));

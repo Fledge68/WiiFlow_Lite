@@ -119,6 +119,7 @@ private:
 	s16 m_showtimer;
 	s16 m_musicTimer;
 	string m_curLanguage;
+	string m_themeName;
 
 	/* Dir strings */
 	string m_appDir;

@@ -14,7 +14,6 @@ s16 m_sourceLblUser[4];
 TexData m_sourceBg;
 
 string source;
-const char *themeName = NULL;
 bool exitSource = false;
 u8 sourceBtn;
 u8 selectedBtns;
@@ -197,8 +196,7 @@ void CMenu::_setSrcFlowBg(void)
 	string fn = m_source.getString("general", "background", "");
 	if(fn.length() > 0)
 	{
-		string themeName = m_cfg.getString("GENERAL", "theme", "default");
-		if(TexHandle.fromImageFile(sfbgimg, fmt("%s/backgrounds/%s/%s", m_sourceDir.c_str(), themeName.c_str(), fn.c_str())) != TE_OK)
+		if(TexHandle.fromImageFile(sfbgimg, fmt("%s/backgrounds/%s/%s", m_sourceDir.c_str(), m_themeName.c_str(), fn.c_str())) != TE_OK)
 		{
 			if(TexHandle.fromImageFile(sfbgimg, fmt("%s/backgrounds/%s", m_sourceDir.c_str(), fn.c_str())) != TE_OK)
 			{
@@ -347,12 +345,12 @@ void CMenu::_updateSourceBtns(void)
 			
 			TexData texConsoleImg;
 			TexData texConsoleImgs;
-			if(TexHandle.fromImageFile(texConsoleImg, fmt("%s/%s/%s", m_sourceDir.c_str(), themeName, btn_image)) != TE_OK)
+			if(TexHandle.fromImageFile(texConsoleImg, fmt("%s/%s/%s", m_sourceDir.c_str(), m_themeName.c_str(), btn_image)) != TE_OK)
 			{
 				if(TexHandle.fromImageFile(texConsoleImg, fmt("%s/%s", m_sourceDir.c_str(), btn_image)) != TE_OK)
 					TexHandle.fromImageFile(texConsoleImg, fmt("%s/favoriteson.png", m_imgsDir.c_str()));
 			}
-			if(TexHandle.fromImageFile(texConsoleImgs, fmt("%s/%s/%s", m_sourceDir.c_str(), themeName, btn_image)) != TE_OK)
+			if(TexHandle.fromImageFile(texConsoleImgs, fmt("%s/%s/%s", m_sourceDir.c_str(), m_themeName.c_str(), btn_image)) != TE_OK)
 			{
 				if(TexHandle.fromImageFile(texConsoleImgs, fmt("%s/%s", m_sourceDir.c_str(), btn_image)) != TE_OK)
 					TexHandle.fromImageFile(texConsoleImgs, fmt("%s/favoritesons.png", m_imgsDir.c_str()));
@@ -769,14 +767,13 @@ void CMenu::_initSourceMenu()
 	memset(single_sourcebtn, 0, 16);
 	m_use_source = false;
 	
-	themeName = m_cfg.getString("GENERAL", "theme", "default").c_str();
-	if(!m_source.load(fmt("%s/%s/%s", m_sourceDir.c_str(), themeName, SOURCE_FILENAME)))// check for source_menu/theme/source_menu.ini
+	if(!m_source.load(fmt("%s/%s/%s", m_sourceDir.c_str(), m_themeName.c_str(), SOURCE_FILENAME)))// check for source_menu/theme/source_menu.ini
 	{
 		if(!m_source.load(fmt("%s/%s", m_sourceDir.c_str(), SOURCE_FILENAME)))// check for source_menu/source_menu.ini
 			return;// no source_menu.ini so we dont init nor use source menu, just return.
 	}
 	else // if source_menu/theme/source_menu.ini found then change m_sourceDir to source_menu/theme/
-		m_sourceDir = fmt("%s/%s", m_sourceDir.c_str(), themeName);
+		m_sourceDir = fmt("%s/%s", m_sourceDir.c_str(), m_themeName.c_str());
 	
 	/* let wiiflow know source_menu.ini found and we will be using it */
 	m_use_source = true;
