@@ -95,8 +95,9 @@ bool LoadHomebrew(const char *filepath)
 		DCFlushRange(EXECUTE_ADDR, filesize);
 		homebrew_ptr = (char*)EXECUTE_ADDR;
 		homebrew_size = filesize;
+		return true;
 	}
-	return true;
+	return false;
 }
 
 char *GetHomebrew(unsigned int *size)
@@ -168,7 +169,7 @@ void BootHomebrew()
 
 	memcpy(BOOTER_ADDR, appbooter_ptr, appbooter_size);
 	DCFlushRange(BOOTER_ADDR, appbooter_size);
-
+	free(appbooter_ptr);
 	JumpToEntry(BOOTER_ENTRY);
 }
 
