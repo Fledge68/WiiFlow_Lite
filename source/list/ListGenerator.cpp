@@ -71,6 +71,8 @@ static void AddToList(const dir_discHdr *element)
 	
 }
 */
+
+/* used for adding wii games to the list */
 static void AddISO(const char *GameID, const char *GameTitle, const char *GamePath, 
 							u32 GameColor, u8 Type)
 {
@@ -107,6 +109,7 @@ static void AddISO(const char *GameID, const char *GameTitle, const char *GamePa
 	m_cacheList.push_back(ListElement);
 }
 
+/* read wbfs partition to add wii games to the list */
 static void Create_Wii_WBFS_List(wbfs_t *handle)
 {
 	for(u32 i = 0; i < wbfs_count_discs(handle); i++)
@@ -119,7 +122,8 @@ static void Create_Wii_WBFS_List(wbfs_t *handle)
 	}
 }
 
-static void Create_Wii_EXT_List(char *FullPath)
+/* add wii game iso(ntfs) or wbfs(fat) to the list. wbf1 and wbf2 are skipped and not added. */
+static void Add_Wii_Game(char *FullPath)
 {
 	FILE *fp = fopen(FullPath, "rb");
 	if(fp)
@@ -133,15 +137,16 @@ static void Create_Wii_EXT_List(char *FullPath)
 	}
 }
 
+/* add gamecube game to the list */
 u8 gc_disc[1];
 const char *FST_APPEND = "sys/boot.bin";
 const u8 FST_APPEND_SIZE = strlen(FST_APPEND);
 static const u8 CISO_MAGIC[8] = {'C','I','S','O',0x00,0x00,0x20,0x00};
-static void Create_GC_List(char *FullPath)
+static void Add_GameCube_Game(char *FullPath)
 {
 	u32 hdr_offset = 0x00;
 	FILE *fp = fopen(FullPath, "rb");
-	if(!fp && strstr(FullPath, "/root") != NULL) //fst folder
+	if(!fp && strstr(FullPath, "/root") != NULL) //fst folder (extracted game)
 	{
 		*(strstr(FullPath, "/root") + 1) = '\0';
 		if(strlen(FullPath) + FST_APPEND_SIZE < MAX_MSG_SIZE) strcat(FullPath, FST_APPEND);
@@ -174,27 +179,28 @@ static void Create_GC_List(char *FullPath)
 	}
 }
 
-const char *FolderTitle = NULL;
-static void Create_Plugin_List(char *FullPath)
+/* add plugin rom, song, or video to the list */
+const char *RomTitle = NULL;
+static void Add_Plugin_Game(char *FullPath)
 {
 	memset((void*)&ListElement, 0, sizeof(dir_discHdr));
 
 	strncpy(ListElement.path, FullPath, sizeof(ListElement.path) - 1);
 	memcpy(ListElement.id, "PLUGIN", 6);
 
-	FolderTitle = strrchr(FullPath, '/') + 1;
-	*strrchr(FolderTitle, '.') = '\0';
+	RomTitle = strrchr(FullPath, '/') + 1;
+	*strrchr(RomTitle, '.') = '\0';
 	
 	char PluginMagicWord[9];
 	memset(PluginMagicWord, 0, sizeof(PluginMagicWord));
 	strncpy(PluginMagicWord, fmt("%08x", m_cacheList.Magic), 8);
 	char CustomTitle[64];
 	memset(CustomTitle, 0, sizeof(CustomTitle));
-	strncpy(CustomTitle, CustomTitles.getString(PluginMagicWord, FolderTitle).c_str(), 63);
+	strncpy(CustomTitle, CustomTitles.getString(PluginMagicWord, RomTitle).c_str(), 63);
 	if(strlen(CustomTitle) > 0)
 		mbstowcs(ListElement.title, CustomTitle, 63);
 	else	
-		mbstowcs(ListElement.title, FolderTitle, 63);
+		mbstowcs(ListElement.title, RomTitle, 63);
 	Asciify(ListElement.title);
 
 	ListElement.settings[0] = m_cacheList.Magic; //Plugin magic
@@ -203,7 +209,8 @@ static void Create_Plugin_List(char *FullPath)
 	m_cacheList.push_back(ListElement);
 }
 
-static void Create_Homebrew_List(char *FullPath)
+/* add homebrew boot.dol to the list */
+static void Add_Homebrew_Dol(char *FullPath)
 {
 	if(strcasestr(FullPath, "boot.") == NULL)
 		return;
@@ -226,6 +233,7 @@ static void Create_Homebrew_List(char *FullPath)
 	m_cacheList.push_back(ListElement);
 }
 
+/* create channel list from nand or emu nand */
 Channel *chan = NULL;
 static void Create_Channel_List(bool realNAND)
 {
@@ -292,7 +300,7 @@ void ListGenerator::CreateList(u32 Flow, u32 Device, const string& Path, const v
 		if(DeviceHandle.GetFSType(Device) == PART_FS_WBFS)
 			Create_Wii_WBFS_List(DeviceHandle.GetWbfsHandle(Device));
 		else
-			GetFiles(Path.c_str(), FileTypes, Create_Wii_EXT_List, false);
+			GetFiles(Path.c_str(), FileTypes, Add_Wii_Game, false);
 	}
 	else if(Flow == COVERFLOW_CHANNEL)
 	{
@@ -305,11 +313,11 @@ void ListGenerator::CreateList(u32 Flow, u32 Device, const string& Path, const v
 	else if(DeviceHandle.GetFSType(Device) != PART_FS_WBFS)
 	{
 		if(Flow == COVERFLOW_GAMECUBE)
-			GetFiles(Path.c_str(), FileTypes, Create_GC_List, true);//the only one that looks for a folder (/root)
+			GetFiles(Path.c_str(), FileTypes, Add_GameCube_Game, true);// true means to look for a folder (/root)
 		else if(Flow == COVERFLOW_PLUGIN)
-			GetFiles(Path.c_str(), FileTypes, Create_Plugin_List, false, 30);//wow 30 subfolders! really?
+			GetFiles(Path.c_str(), FileTypes, Add_Plugin_Game, false, 30);//wow 30 subfolders! really?
 		else if(Flow == COVERFLOW_HOMEBREW)
-			GetFiles(Path.c_str(), FileTypes, Create_Homebrew_List, false);
+			GetFiles(Path.c_str(), FileTypes, Add_Homebrew_Dol, false);
 	}
 	CloseConfigs();
 	if(!this->empty() && !DBName.empty()) /* Write a new Cache */
@@ -370,6 +378,7 @@ void GetFiles(const char *Path, const vector<string>& FileTypes,
 	SubPaths.clear();
 }
 
+/* create sourceflow list from current source_menu.ini */
 void ListGenerator::createSFList(u8 maxBtns, Config &m_sourceMenuCfg, const string& sourceDir)
 {
 	Clear();
