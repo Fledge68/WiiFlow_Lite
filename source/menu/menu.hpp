@@ -57,7 +57,6 @@ private:
 	u8 enabledPluginsCount;
 	u8 m_catStartPage;
 	u8 m_max_categories;
-	char single_sourcebtn[16];
 	bool m_clearCats;
 	bool m_newGame;
 	bool show_mem;

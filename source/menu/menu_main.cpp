@@ -1207,17 +1207,20 @@ int CMenu::_getCFVersion()
 		return _getSrcFlow();
 	else if(m_current_view == COVERFLOW_PLUGIN)
 	{
-		m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
-		if(enabledPluginsCount == 1)
+		int first = 0;
+		for(u8 i = 0; m_plugin.PluginExist(i); ++i)
 		{
-			for(u8 i = 0; m_plugin.PluginExist(i); ++i)
+			if(m_plugin.GetEnableStatus(m_cfg, m_plugin.getPluginMagic(i)) && m_cfg.has("PLUGIN_CFVERSION", m_plugin.PluginMagicWord))
 			{
-				if(m_plugin.GetEnableStatus(m_cfg, m_plugin.getPluginMagic(i)))
-					return m_cfg.getInt("PLUGIN_CFVERSION", m_plugin.PluginMagicWord, 1);
+				if(first > 0 && m_cfg.getInt("PLUGIN_CFVERSION", m_plugin.PluginMagicWord, 1) != first)
+					return m_cfg.getInt(_domainFromView(), "last_cf_mode", 1);
+				else if(first == 0)	
+					first = m_cfg.getInt("PLUGIN_CFVERSION", m_plugin.PluginMagicWord, 1);
 			}
 		}
-		else if(strlen(single_sourcebtn))
-			return m_cfg.getInt("PLUGIN_CFVERSION", single_sourcebtn, 1);
+		if(first == 0)
+			first++;
+		return first;
 	}
 	return m_cfg.getInt(_domainFromView(), "last_cf_mode", 1);
 }
@@ -1228,17 +1231,25 @@ void CMenu::_setCFVersion(int version)
 		_setSrcFlow(version);
 	else if(m_current_view == COVERFLOW_PLUGIN)
 	{
-		m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
-		if(enabledPluginsCount == 1)
+		int first = 0;
+		for(u8 i = 0; m_plugin.PluginExist(i); ++i)
 		{
-			for(u8 i = 0; m_plugin.PluginExist(i); ++i)
+			if(m_plugin.GetEnableStatus(m_cfg, m_plugin.getPluginMagic(i)) && m_cfg.has("PLUGIN_CFVERSION", m_plugin.PluginMagicWord))
 			{
-				if(m_plugin.GetEnableStatus(m_cfg, m_plugin.getPluginMagic(i)))
-					m_cfg.setInt("PLUGIN_CFVERSION", m_plugin.PluginMagicWord, version);
+				if(first > 0 && m_cfg.getInt("PLUGIN_CFVERSION", m_plugin.PluginMagicWord, 1) != first)
+				{
+					m_cfg.setInt(_domainFromView(), "last_cf_mode", version);
+					return;
+				}
+				else if(first == 0)	
+					first = m_cfg.getInt("PLUGIN_CFVERSION", m_plugin.PluginMagicWord, 1);
 			}
 		}
-		else if(strlen(single_sourcebtn))
-			m_cfg.setInt("PLUGIN_CFVERSION", single_sourcebtn, version);
+		for(u8 i = 0; m_plugin.PluginExist(i); ++i)
+		{
+			if(m_plugin.GetEnableStatus(m_cfg, m_plugin.getPluginMagic(i)))
+				m_cfg.setInt("PLUGIN_CFVERSION", m_plugin.PluginMagicWord, version);
+		}
 	}
 	else
 		m_cfg.setInt(_domainFromView(), "last_cf_mode", version);

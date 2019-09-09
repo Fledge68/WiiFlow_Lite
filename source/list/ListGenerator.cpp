@@ -220,7 +220,7 @@ static void Add_Homebrew_Dol(char *FullPath)
 	strncpy(ListElement.path, FullPath, sizeof(ListElement.path) - 1);
 	memcpy(ListElement.id, "HB_APP", 6);
 
-	FolderTitle = strrchr(FullPath, '/') + 1;
+	const char *FolderTitle = strrchr(FullPath, '/') + 1;
 	ListElement.casecolor = CustomTitles.getColor("COVERS", FolderTitle, 0xFFFFFF).intVal();
 	const string &CustomTitle = CustomTitles.getString("TITLES", FolderTitle);
 	if(CustomTitle.size() > 0)
