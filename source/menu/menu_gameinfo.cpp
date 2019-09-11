@@ -343,7 +343,8 @@ void CMenu::_textGameInfo(void)
 		snprintf(platformName, sizeof(platformName), "%s", m_platform.getString("PLUGINS", m_plugin.PluginMagicWord).c_str());
 		if(strstr(platformName, "multi") != NULL)// if multi platform ie. vbagx, genplusgx, get file extension
 		{
-			char ext[4];
+			return; //if multi found (old platform.ini) 
+			/*char ext[4];
 			if(strstr(GameHdr->path, ".zip") != NULL)// if zip get internal filename extension
 			{
 				ZipFile zFile(GameHdr->path);
@@ -354,7 +355,7 @@ void CMenu::_textGameInfo(void)
 			{
 				strcpy(ext, strrchr(GameHdr->path, '.') + 1);
 			}
-			snprintf(platformName, sizeof(platformName), "%s", m_platform.getString("ext", ext).c_str());
+			snprintf(platformName, sizeof(platformName), "%s", m_platform.getString("ext", ext).c_str());*/
 		}	
 		if(strlen(platformName) == 0)
 			return;// no platform name found to match plugin magic #
@@ -369,17 +370,12 @@ void CMenu::_textGameInfo(void)
 			snprintf(platformName, sizeof(platformName), "%s", newName.c_str());
 
 		/* Get roms's title without the extra ()'s or []'s */
-		string ShortName = m_plugin.GetRomName(GameHdr);
+		string ShortName = m_plugin.GetRomName(GameHdr->path);
 		
-		/* Get 6 character unique romID (from Screenscraper.fr) using shortName. if fails then use CRC or CD serial */
-		string romID;
-		if(!ShortName.empty())
-			romID = m_plugin.GetRomId(GameHdr, m_pluginDataDir.c_str(), platformName, ShortName);
-		else
-			return;// no romID. short name and crc/serial not found
-		
-		/* copy romID to be used as gameID to get game info from xml */
-		strncpy(GameID, romID.c_str(), 6);
+		/* copy rom ID to be used as gameID to get game info from xml */
+		strncpy(GameID, GameHdr->id, 6);
+		if(strcasecmp(GameID, "PLUGIN") == 0)
+			return;
 		
 		/* Load platform name.xml database to get game's info using the gameID */
 		gametdb.OpenFile(fmt("%s/%s/%s.xml", m_pluginDataDir.c_str(), platformName, platformName));

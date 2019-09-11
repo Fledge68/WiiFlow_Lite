@@ -176,7 +176,7 @@ int CMenu::_configAdv(void)
 	_hideConfigAdv();
 	if(m_curLanguage != prevLanguage)
 	{
-		m_cacheList.Init(m_settingsDir.c_str(), m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
+		m_cacheList.Init(m_settingsDir.c_str(), m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str(), m_pluginDataDir.c_str());
 		fsop_deleteFolder(m_listCacheDir.c_str());// delete cache lists folder and remake it so all lists update.
 		fsop_MakeFolder(m_listCacheDir.c_str());
 		m_refreshGameList = true;

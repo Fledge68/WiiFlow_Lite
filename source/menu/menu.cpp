@@ -369,7 +369,7 @@ bool CMenu::init()
 	}
 
 	/* Init gametdb and custom titles for game list making */
-	m_cacheList.Init(m_settingsDir.c_str(), m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
+	m_cacheList.Init(m_settingsDir.c_str(), m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str(), m_pluginDataDir.c_str());
 
 	/* Init the onscreen pointer */
 	m_aa = 3;
@@ -2434,7 +2434,7 @@ bool CMenu::_loadPluginList()
 	for(u8 i = 0; m_plugin.PluginExist(i); ++i)
 	{
 		u32 Magic = m_plugin.getPluginMagic(i);
-		if(!m_plugin.GetEnableStatus(m_cfg, Magic))
+		if(!m_plugin.GetEnableStatus(m_cfg, Magic))// m_plugin.PluginMagicWord is set here.
 			continue;
 		int romsPartition = m_plugin.GetRomPartition(i);
 		if(romsPartition < 0)
@@ -2479,29 +2479,31 @@ bool CMenu::_loadPluginList()
 			}
 			else
 			{
-				string gameDir(fmt("%s:/%s", DeviceName[currentPartition], romDir));
-				string cacheDir(fmt("%s/%s_%s.db", m_listCacheDir.c_str(), DeviceName[currentPartition], m_plugin.PluginMagicWord));
-				if(updateCache || !fsop_FileExist(cacheDir.c_str()))
+				string romsDir(fmt("%s:/%s", DeviceName[currentPartition], romDir));
+				string cachedListFile(fmt("%s/%s_%s.db", m_listCacheDir.c_str(), DeviceName[currentPartition], m_plugin.PluginMagicWord));
+				if(updateCache || !fsop_FileExist(cachedListFile.c_str()))
 					cacheCovers = true;
 				vector<string> FileTypes = stringToVector(m_plugin.GetFileTypes(i), '|');
 				m_cacheList.Color = m_plugin.GetCaseColor(i);
 				m_cacheList.Magic = Magic;
-				m_cacheList.CreateList(COVERFLOW_PLUGIN, currentPartition, gameDir, FileTypes, cacheDir, updateCache);
+				m_cacheList.CreateRomList(m_platform, romsDir, FileTypes, cachedListFile, updateCache);
 				for(vector<dir_discHdr>::iterator tmp_itr = m_cacheList.begin(); tmp_itr != m_cacheList.end(); tmp_itr++)
 					m_gameList.push_back(*tmp_itr);
 			}
 		}
 		else
 		{
-			Config scummvm;
 			vector<dir_discHdr> scummvmList;
+			Config scummvm;
 			if(!scummvm.load(fmt("%s/scummvm.ini", m_pluginsDir.c_str())))
 			{
 				if(!scummvm.load(fmt("%s/scummvm/scummvm.ini", m_pluginsDir.c_str())))
 					scummvm.load(fmt("%s:/apps/scummvm/scummvm.ini", DeviceName[currentPartition]));
 			}
-			//also check if in apps folder
-			scummvmList = m_plugin.ParseScummvmINI(scummvm, DeviceName[currentPartition], Magic);
+			string platformName = "";
+			if(m_platform.loaded())/* convert plugin magic to platform name */
+				platformName = m_platform.getString("PLUGINS", m_plugin.PluginMagicWord);
+			scummvmList = m_plugin.ParseScummvmINI(scummvm, DeviceName[currentPartition], Magic, m_pluginDataDir.c_str(), platformName.c_str());
 			for(vector<dir_discHdr>::iterator tmp_itr = scummvmList.begin(); tmp_itr != scummvmList.end(); tmp_itr++)
 				m_gameList.push_back(*tmp_itr);
 			scummvmList.clear();

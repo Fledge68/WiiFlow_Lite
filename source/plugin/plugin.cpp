@@ -227,18 +227,22 @@ const vector<bool> &Plugin::GetEnabledPlugins(Config &cfg, u8 *num)
 }
 
 /* notes: "description" is used as the title because it basically is the title */
-/* the [GameDomain] is used as the path even thought it isn't the path */
+/* the [GameDomain] is used as the path even though it isn't the path */
 /* the [GameDomain] is usually short without any '/' */
 /* in scummvm.ini the path is the path without the exe or main app file added on */
-vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, const char *Device, u32 Magic)
+vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, const char *Device, u32 Magic, const char *datadir, const char *platform)
 {
 	gprintf("Parsing scummvm.ini\n");
-	vector<dir_discHdr> gameHeader;
+	vector<dir_discHdr> ScummvmList;
 	if(!ini.loaded())
-		return gameHeader;
+		return ScummvmList;
 
-	const char *GameDomain = ini.firstDomain().c_str();
+	Config m_crc;
+	if(platform != NULL)
+		m_crc.load(fmt("%s/%s/%s.ini", datadir, platform, platform));
 	dir_discHdr ListElement;
+	
+	const char *GameDomain = ini.firstDomain().c_str();
 	while(1)
 	{
 		if(strlen(GameDomain) < 2)
@@ -251,18 +255,35 @@ vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, const char *Device, u32
 			GameDomain = ini.nextDomain().c_str();
 			continue;
 		}
+		
+		/* get shortName */
+		char *cp;
+		if((cp = strstr(GameName, " (")) != NULL)
+			*cp = '\0';
+		
+		/* get Game ID */
+		string GameID = "PLUGIN";
+		// Get game ID based on GameName
+		if(m_crc.loaded() && m_crc.has(platform, GameName))
+		{
+			vector<string> searchID = m_crc.getStrings(platform, GameName, '|');
+			if(!searchID[0].empty())
+				GameID = searchID[0];
+		}
+		
 		memset((void*)&ListElement, 0, sizeof(dir_discHdr));
-		memcpy(ListElement.id, PLUGIN, 6);
+		memcpy(ListElement.id, GameID.c_str(), 6);
 		ListElement.casecolor = Plugins.back().caseColor;
 		mbstowcs(ListElement.title, GameName, 63);
 		strncpy(ListElement.path, GameDomain, sizeof(ListElement.path));
-		gprintf("Found: %s\n", GameDomain);
+		//gprintf("Found: %s\n", GameDomain);
 		ListElement.settings[0] = Magic;
 		ListElement.type = TYPE_PLUGIN;
-		gameHeader.push_back(ListElement);
+		ScummvmList.push_back(ListElement);
 		GameDomain = ini.nextDomain().c_str();
 	}
-	return gameHeader;
+	m_crc.unload();
+	return ScummvmList;
 }
 
 vector<string> Plugin::CreateArgs(const char *device, const char *path,
@@ -292,31 +313,15 @@ vector<string> Plugin::CreateArgs(const char *device, const char *path,
 }
 
 /* Give the current game a simplified name */
-string Plugin::GetRomName(const dir_discHdr *gameHeader)
+string Plugin::GetRomName(const char *FullPath)
 {
-	if(strrchr(gameHeader->path, '/') != NULL)
-	{
-		// Remove extension
-		string FullName = strrchr(gameHeader->path, '/') + 1;
-		FullName = FullName.substr(0, FullName.find_last_of("."));
+	string FullName = strrchr(FullPath, '/') + 1;
+	FullName = FullName.substr(0, FullName.find_last_of("."));
 
-		// Remove common suffixes and replace unwanted characters. 
-		string ShortName = FullName.substr(0, FullName.find(" (")).substr(0, FullName.find(" ["));
-		replace(ShortName.begin(), ShortName.end(), '_', ' ');
-		return ShortName;
-	}
-	else
-	{
-		// ScummVM
-		char title[64];
-		wcstombs(title, gameHeader->title, 63);
-		title[63] = '\0';
-
-		string FullName = title;
-
-		string ShortName = FullName.substr(0, FullName.find(" (")).substr(0, FullName.find(" ["));
-		return ShortName;
-	}
+	// Remove common suffixes and replace unwanted characters. 
+	string ShortName = FullName.substr(0, FullName.find(" (")).substr(0, FullName.find(" ["));
+	replace(ShortName.begin(), ShortName.end(), '_', ' ');
+	return ShortName;
 }
 
 /* Get serial from PS1 header's iso (Borrowed from Retroarch with a few c++ changes)*/
@@ -460,39 +465,26 @@ void GetSerialMegaCD(const char *path, string &Serial)
 * and can also be used for snapshots/cartriges/discs images.
 * The Game ID is a 6 length alphanumerical value. It's screenscraper ID filled with 'A' letter.
 */
-string Plugin::GetRomId(const dir_discHdr *gameHeader, const char *datadir, char *platform, const string &name)
+string Plugin::GetRomId(char *romPath, u32 Magic, Config &m_crc, const char *datadir, const char *platform, const char *name)
 {
-	string GameID;
-	string CRC_Serial(12, '*');
+	string GameID = "";
+	string CRC_Serial(12, '*');// 12 digits because of ps1 and megaCD serials which can be 10 or more digits
 
-	// Load a platform list that is used to identify the current game.
+	// Search a platform list that is used to identify the current game.
 	// It contains a default filename(preferably No-intro without region flag), the GameID and then all known CRC32/serials.
 	// filename=GameID|crc1|crc2|etc...
 	// For example in SUPERNES.ini : Super Aleste=2241AA|5CA5781B|...
-	Config m_crc;
-	m_crc.unload();
-	m_crc.load(fmt("%s/%s/%s.ini", datadir, platform, platform) );
-
-	bool found_name = false;
-	found_name = m_crc.has(platform, name.c_str());
 
 	// Get game ID based on the filename
-	if(found_name)
+	if(m_crc.has(platform, name))
 	{
-		vector<string> searchID = m_crc.getStrings(platform, name.c_str(), '|');
-
-		if(!searchID.empty())
-		{
+		vector<string> searchID = m_crc.getStrings(platform, name, '|');
+		if(!searchID[0].empty())
 			GameID = searchID[0];
-		}
-
-		m_crc.unload();
 	}
 	// Get game ID by CRC or serial
 	else
 	{
-		m_crc.unload();
-
 		char crc_string[9];
 		crc_string[0] = '\0';
 		u32 buffer;
@@ -501,15 +493,15 @@ string Plugin::GetRomId(const dir_discHdr *gameHeader, const char *datadir, char
 		// For arcade games use the crc zip
 		if(strcasestr(platform, "ARCADE") || strcasestr(platform, "CPS") || !strncasecmp(platform, "NEOGEO", 6))
 		{
-			strncpy(crc_string, fmt("%08x", crc32file(gameHeader->path)), 8);
+			strncpy(crc_string, fmt("%08x", crc32file(romPath)), 8);
 			crc_string[8] = '\0';
 		}
 		else
 		{
 			// Look for for the file's crc inside the archive 
-			if(strstr(gameHeader->path, ".zip") != NULL)
+			if(strstr(romPath, ".zip") != NULL)
 			{
-				infile.open(gameHeader->path, ios::binary);
+				infile.open(romPath, ios::binary);
 				infile.seekg(0x0e, ios::beg);
 				infile.read((char*)&buffer, 8);
 				infile.close();
@@ -522,19 +514,19 @@ string Plugin::GetRomId(const dir_discHdr *gameHeader, const char *datadir, char
 				// CRC calculation would take up to 30 seconds!
 				if(!strcasecmp(platform, "MEGACD"))
 				{
-					GetSerialMegaCD(gameHeader->path, CRC_Serial);
+					GetSerialMegaCD(romPath, CRC_Serial);
 				}
 				else if(!strcasecmp(platform, "PS1"))
 				{
 					bool found;
-					found = GetSerialPS1(gameHeader->path, CRC_Serial, 0);
+					found = GetSerialPS1(romPath, CRC_Serial, 0);
 
 					if(!found)
-					GetSerialPS1(gameHeader->path, CRC_Serial, 1);
+					GetSerialPS1(romPath, CRC_Serial, 1);
 				}
 				else if(!strcasecmp(platform, "ATARIST"))
 				{
-					s8 pos = m_plugin.GetPluginPosition(gameHeader->settings[0]);
+					s8 pos = m_plugin.GetPluginPosition(Magic);
 					string FileTypes = m_plugin.GetFileTypes(pos);
 					string path;
 
@@ -543,7 +535,7 @@ string Plugin::GetRomId(const dir_discHdr *gameHeader, const char *datadir, char
 					{
 						Config m_cfg;
 						m_cfg.unload();
-						m_cfg.load(fmt("%s", gameHeader->path) );
+						m_cfg.load(fmt("%s", romPath) );
 						path = m_cfg.getString("Floppy", "szDiskAFileName", "");
 						m_cfg.unload();
 
@@ -555,7 +547,7 @@ string Plugin::GetRomId(const dir_discHdr *gameHeader, const char *datadir, char
 					}
 					else
 					{
-						path = gameHeader->path;
+						path = romPath;
 					}
 
 					if (path.find(".zip") != std::string::npos)
@@ -575,13 +567,13 @@ string Plugin::GetRomId(const dir_discHdr *gameHeader, const char *datadir, char
 				}
 				else if(!strcasecmp(platform, "DOS"))
                 {
-                    s8 pos = m_plugin.GetPluginPosition(gameHeader->settings[0]);
+                    s8 pos = m_plugin.GetPluginPosition(Magic);
                     string FileTypes = m_plugin.GetFileTypes(pos);
 
                     if(strcasestr(FileTypes.c_str(), ".conf"))
                     {
                         ifstream inputFile;
-                        inputFile.open(gameHeader->path, std::ios::binary);
+                        inputFile.open(romPath, std::ios::binary);
                         string line;
                         std::string dospath;
                         std::string temp;
@@ -646,17 +638,22 @@ string Plugin::GetRomId(const dir_discHdr *gameHeader, const char *datadir, char
                 }// Just check CRC for a regular file on any other system.
 				else
 				{
-					strncpy(crc_string, fmt("%08x", crc32file(gameHeader->path)), 8);
+					strncpy(crc_string, fmt("%08x", crc32file(romPath)), 8);
 					crc_string[8] = '\0';
 				}
 			}
 		}
 		
 		if(crc_string[0] != '\0')
+		{
 			CRC_Serial = crc_string;
+			//gprintf("romCRC=%s\n", crc_string);
+		}
 
-		// Now search ID with the obtained CRC/Serial
-		// Just add 2 pipes in the pattern to be sure we don't find a crc instead of ID
+		/****************************************************************/
+		/* Now search ID with the obtained CRC/Serial */
+		/* Just add 2 pipes in the pattern to be sure we don't find a crc instead of ID */
+		/* note crc's are 8 digits but serials can be more, thats why we use idx for CRC_Serial length */
 		size_t idx;
 		idx=CRC_Serial.length();
 		CRC_Serial.insert(0, "|").insert(idx+1, "|");
@@ -667,24 +664,19 @@ string Plugin::GetRomId(const dir_discHdr *gameHeader, const char *datadir, char
 
 		while(getline(inputFile, line))
 		{
-			// FIXME ahem, ignore case... 
-			if (line.find(lowerCase( CRC_Serial ), 0) != string::npos || line.find(upperCase( CRC_Serial ), 0) != string::npos)
+			// FIXME ahem, ignore case... - line could contain a mix of lower and upper case. if so this 'if' will not work
+			if(line.find(lowerCase( CRC_Serial ), 0) != string::npos || line.find(upperCase( CRC_Serial ), 0) != string::npos)
 			{
 				unsigned first = (line.find('=') + 1);
-				unsigned last = line.find_first_of('|');
+				unsigned last = line.find_first_of('|');//  we could just use first + 6 since all ID's are 6 digits
 				string ID = line.substr (first,last-first);
 
-				if(ID.empty())
-				{
-					return "";
-				}
-
-				GameID = ID;
+				if(!ID.empty())
+					GameID = ID;
 				break;
 			}
 		}
 	}
-	
 	return GameID;
 }
 

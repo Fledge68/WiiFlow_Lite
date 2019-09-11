@@ -27,6 +27,7 @@
 #include "loader/wbfs.h"
 #include "loader/disc.h"
 #include "gui/GameTDB.hpp"
+#include "plugin/plugin.hpp"
 
 using namespace std;
 
@@ -34,8 +35,9 @@ class ListGenerator : public vector<dir_discHdr>
 {
 public:
 	void createSFList(u8 maxBtns, Config &m_sourceMenuCfg, const string& sourceDir);
-	void Init(const char *settingsDir, const char *Language);
+	void Init(const char *settingsDir, const char *Language, const char *plgnsDataDir);
 	void Clear();
+	void CreateRomList(Config &platform_cfg, const string& romsDir, const vector<string>& FileTypes, const string& DBName, bool UpdateCache);
 	void CreateList(u32 Flow, u32 Device, const string& Path, const vector<string>& FileTypes, 
 				const string& DBName, bool UpdateCache);
 	u32 Color;

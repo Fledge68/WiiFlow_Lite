@@ -28,9 +28,12 @@
 ListGenerator m_cacheList;
 Config CustomTitles;
 GameTDB gameTDB;
+Config romNamesDB;
+string platformName;
+string pluginsDataDir;
 
 dir_discHdr ListElement;
-void ListGenerator::Init(const char *settingsDir, const char *Language)
+void ListGenerator::Init(const char *settingsDir, const char *Language, const char *plgnsDataDir)
 {
 	if(settingsDir != NULL)
 	{
@@ -38,6 +41,7 @@ void ListGenerator::Init(const char *settingsDir, const char *Language)
 		CustomTitlesPath = fmt("%s/" CTITLES_FILENAME, settingsDir);
 	}
 	if(Language != NULL) gameTDB_Language = Language;
+	if(plgnsDataDir != NULL) pluginsDataDir = fmt("%s", plgnsDataDir);
 }
 
 void ListGenerator::Clear(void)
@@ -179,36 +183,6 @@ static void Add_GameCube_Game(char *FullPath)
 	}
 }
 
-/* add plugin rom, song, or video to the list */
-const char *RomTitle = NULL;
-static void Add_Plugin_Game(char *FullPath)
-{
-	memset((void*)&ListElement, 0, sizeof(dir_discHdr));
-
-	strncpy(ListElement.path, FullPath, sizeof(ListElement.path) - 1);
-	memcpy(ListElement.id, "PLUGIN", 6);
-
-	RomTitle = strrchr(FullPath, '/') + 1;
-	*strrchr(RomTitle, '.') = '\0';
-	
-	char PluginMagicWord[9];
-	memset(PluginMagicWord, 0, sizeof(PluginMagicWord));
-	strncpy(PluginMagicWord, fmt("%08x", m_cacheList.Magic), 8);
-	char CustomTitle[64];
-	memset(CustomTitle, 0, sizeof(CustomTitle));
-	strncpy(CustomTitle, CustomTitles.getString(PluginMagicWord, RomTitle).c_str(), 63);
-	if(strlen(CustomTitle) > 0)
-		mbstowcs(ListElement.title, CustomTitle, 63);
-	else	
-		mbstowcs(ListElement.title, RomTitle, 63);
-	Asciify(ListElement.title);
-
-	ListElement.settings[0] = m_cacheList.Magic; //Plugin magic
-	ListElement.casecolor = m_cacheList.Color;
-	ListElement.type = TYPE_PLUGIN;
-	m_cacheList.push_back(ListElement);
-}
-
 /* add homebrew boot.dol to the list */
 static void Add_Homebrew_Dol(char *FullPath)
 {
@@ -278,6 +252,105 @@ static void Create_Channel_List(bool realNAND)
 	}
 }
 
+/* add plugin rom, song, or video to the list. */
+static void Add_Plugin_Game(char *FullPath)
+{
+	/* Get roms's title without the extra ()'s or []'s */
+	string ShortName = m_plugin.GetRomName(FullPath);
+	//gprintf("shortName=%s\n", ShortName.c_str());
+	
+	/* get rom's ID */
+	string romID = "";
+	if(gameTDB.IsLoaded())
+	{
+		/* Get 6 character unique romID (from Screenscraper.fr) using shortName. if fails then use CRC or CD serial to get romID */
+		romID = m_plugin.GetRomId(FullPath, m_cacheList.Magic, romNamesDB, pluginsDataDir.c_str(), platformName.c_str(), ShortName.c_str());
+	}
+	if(romID.empty())
+		romID = "PLUGIN";
+	//gprintf("romID=%s\n", romID.c_str());
+
+	/* add rom to list */
+	memset((void*)&ListElement, 0, sizeof(dir_discHdr));
+
+	strncpy(ListElement.path, FullPath, sizeof(ListElement.path) - 1);
+	strncpy(ListElement.id, romID.c_str(), 6);
+
+	/* Get titles - Rom filename, custom title, and database xml title */
+	const char *RomFilename = strrchr(FullPath, '/') + 1;
+	*strrchr(RomFilename, '.') = '\0';
+	
+	char CustomTitle[64];
+	memset(CustomTitle, 0, sizeof(CustomTitle));
+	strncpy(CustomTitle, CustomTitles.getString(m_plugin.PluginMagicWord, RomFilename).c_str(), 63);
+	
+	const char *gameTDB_Title = NULL;
+	if(gameTDB.IsLoaded() && strlen(CustomTitle) == 0)
+		gameTDB.GetName(ListElement.id, gameTDB_Title);
+	
+	/* set the roms title */
+	if(strlen(CustomTitle) > 0)
+		mbstowcs(ListElement.title, CustomTitle, 63);
+	else if(gameTDB_Title != NULL && gameTDB_Title[0] != '\0')
+		mbstowcs(ListElement.title, gameTDB_Title, 63);
+	else
+		mbstowcs(ListElement.title, RomFilename, 63);
+	Asciify(ListElement.title);
+	
+	ListElement.settings[0] = m_cacheList.Magic; //Plugin magic
+	ListElement.casecolor = m_cacheList.Color;
+	ListElement.type = TYPE_PLUGIN;
+	m_cacheList.push_back(ListElement);
+}
+
+/* note: scummvm games have list generator in plugin.cpp */
+void ListGenerator::CreateRomList(Config &platform_cfg, const string& romsDir, const vector<string>& FileTypes, const string& DBName, bool UpdateCache)
+{
+	Clear();
+	if(!DBName.empty())
+	{
+		if(UpdateCache)
+			fsop_deleteFile(DBName.c_str());
+		else
+		{
+			CCache(*this, DBName, LOAD);
+			if(!this->empty())
+				return;
+			fsop_deleteFile(DBName.c_str());
+		}
+	}
+	
+	if(platform_cfg.loaded())
+	{
+		/* Search platform.ini to find plugin magic to get platformName */
+		platformName = platform_cfg.getString("PLUGINS", m_plugin.PluginMagicWord);
+		if(!platformName.empty())
+		{
+			/* check COMBINED for platform names that mean the same system just different region */
+			/* some platforms have different names per country (ex. Genesis/Megadrive) */
+			/* but we use only one platform name for both */
+			string newName = platform_cfg.getString("COMBINED", platformName);
+			if(newName.empty())
+				platform_cfg.remove("COMBINED", platformName);
+			else
+				platformName = newName;
+			
+			/* Load rom names and crc database */
+			romNamesDB.load(fmt("%s/%s/%s.ini", pluginsDataDir.c_str(), platformName.c_str(), platformName.c_str()));
+			/* Load platform name.xml database to get game's info using the gameID */
+			gameTDB.OpenFile(fmt("%s/%s/%s.xml", pluginsDataDir.c_str(), platformName.c_str(), platformName.c_str()));
+			if(gameTDB.IsLoaded())
+				gameTDB.SetLanguageCode(gameTDB_Language.c_str());
+		}
+	}
+	CustomTitles.load(CustomTitlesPath.c_str());
+	GetFiles(romsDir.c_str(), FileTypes, Add_Plugin_Game, false, 30);//wow 30 subfolders! really?
+	CloseConfigs();
+	romNamesDB.unload();
+	if(!this->empty() && !DBName.empty()) /* Write a new Cache */
+		CCache(*this, DBName, SAVE);
+}
+	
 void ListGenerator::CreateList(u32 Flow, u32 Device, const string& Path, const vector<string>& FileTypes, 
 								const string& DBName, bool UpdateCache)
 {
@@ -314,8 +387,6 @@ void ListGenerator::CreateList(u32 Flow, u32 Device, const string& Path, const v
 	{
 		if(Flow == COVERFLOW_GAMECUBE)
 			GetFiles(Path.c_str(), FileTypes, Add_GameCube_Game, true);// true means to look for a folder (/root)
-		else if(Flow == COVERFLOW_PLUGIN)
-			GetFiles(Path.c_str(), FileTypes, Add_Plugin_Game, false, 30);//wow 30 subfolders! really?
 		else if(Flow == COVERFLOW_HOMEBREW)
 			GetFiles(Path.c_str(), FileTypes, Add_Homebrew_Dol, false);
 	}
