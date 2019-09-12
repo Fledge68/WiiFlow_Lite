@@ -446,7 +446,9 @@ void CMenu::_textGameInfo(void)
 		}
 		
 		// Get title
-		if(gametdb.GetTitle(GameID, TMP_Char))
+		m_btnMgr.setText(m_gameinfoLblTitle, GameHdr->title);
+		
+		/*if(gametdb.GetTitle(GameID, TMP_Char))
 		{
 			gameinfo_Title_w.fromUTF8(TMP_Char);
 			m_btnMgr.setText(m_gameinfoLblTitle, gameinfo_Title_w);
@@ -456,7 +458,7 @@ void CMenu::_textGameInfo(void)
 			tdb_found = false;
 			gametdb.CloseFile();// gameID not found in xml
 			return;
-		}
+		}*/
 
 		// Get Synopsis
 		if(gametdb.GetSynopsis(GameID, TMP_Char))
@@ -571,11 +573,12 @@ void CMenu::_textGameInfo(void)
 
 	strncpy(GameID, CoverFlow.getId(), 6);
 
-	if(gametdb.GetTitle(GameID, TMP_Char))
+	m_btnMgr.setText(m_gameinfoLblTitle, GameHdr->title);
+	/*if(gametdb.GetTitle(GameID, TMP_Char))
 	{
 		gameinfo_Title_w.fromUTF8(TMP_Char);
 		m_btnMgr.setText(m_gameinfoLblTitle, gameinfo_Title_w);
-	}
+	}*/
 
 	if(gametdb.GetSynopsis(GameID, TMP_Char))
 	{						
