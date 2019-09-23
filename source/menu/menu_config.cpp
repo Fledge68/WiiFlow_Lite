@@ -3,7 +3,7 @@
 #include "channel/nand.hpp"
 #include "loader/nk.h"
 
-const int CMenu::_nbCfgPages = 12;
+const int CMenu::_nbCfgPages = 13;
 
 void CMenu::_hideConfigCommon(bool instant)
 {

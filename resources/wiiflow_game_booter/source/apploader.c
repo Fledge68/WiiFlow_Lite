@@ -48,7 +48,8 @@ static struct
 	s32 padding;
 } apploader_hdr ATTRIBUTE_ALIGN(32);
 
-u32 Apploader_Run(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo, bool patchregion , bool private_server)
+u32 Apploader_Run(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo, 
+					bool patchregion , bool private_server, bool patchFix480p)
 {
 	PrinceOfPersiaPatch();
 	NewSuperMarioBrosPatch();
@@ -103,7 +104,10 @@ u32 Apploader_Run(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryStrin
 	free_wip();
 	if(hooktype != 0 && hookpatched)
 		ocarina_do_code();
-		
+	
+	if(patchFix480p)
+		PatchFix480p();
+
 	MarioKartWiiWiimmfiPatch(private_server); 
 
 	/* Set entry point from apploader */

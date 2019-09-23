@@ -551,6 +551,9 @@ private:
 	s16 m_gameSettingsLblPrivateServer;
 	s16 m_gameSettingsBtnPrivateServer;
 	
+	s16 m_gameSettingsLblFix480p;
+	s16 m_gameSettingsBtnFix480p;
+	
 	s16 m_gameSettingsLblManage;
 	s16 m_gameSettingsBtnManage;
 	

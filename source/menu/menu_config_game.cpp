@@ -78,6 +78,8 @@ void CMenu::_hideGameSettingsPg(bool instant)
 	m_btnMgr.hide(m_gameSettingsBtnFlashSave, instant);
 	m_btnMgr.hide(m_gameSettingsLblPrivateServer, instant);
 	m_btnMgr.hide(m_gameSettingsBtnPrivateServer, instant);
+	m_btnMgr.hide(m_gameSettingsLblFix480p, instant);
+	m_btnMgr.hide(m_gameSettingsBtnFix480p, instant);
 	//All
 	m_btnMgr.hide(m_gameSettingsLblManage, instant);
 	m_btnMgr.hide(m_gameSettingsBtnManage, instant);
@@ -399,6 +401,8 @@ void CMenu::_showGameSettings()
 			{
 				m_btnMgr.show(m_gameSettingsLblPrivateServer);
 				m_btnMgr.show(m_gameSettingsBtnPrivateServer);
+				m_btnMgr.show(m_gameSettingsLblFix480p);
+				m_btnMgr.show(m_gameSettingsBtnFix480p);
 			}
 		}
 	}
@@ -452,6 +456,7 @@ void CMenu::_showGameSettings()
 		m_btnMgr.setText(m_gameSettingsBtnVipatch, _optBoolToString(m_gcfg2.getOptBool(id, "vipatch", 0)));
 		m_btnMgr.setText(m_gameSettingsBtnCountryPatch, _optBoolToString(m_gcfg2.getOptBool(id, "country_patch", 0)));
 		m_btnMgr.setText(m_gameSettingsBtnPrivateServer, _optBoolToString(m_gcfg2.getOptBool(id, "private_server", 0)));
+		m_btnMgr.setText(m_gameSettingsBtnFix480p, _optBoolToString(m_gcfg2.getOptBool(id, "fix480p", 2)));
 		m_btnMgr.setText(m_gameSettingsBtnCustom, _optBoolToString(m_gcfg2.getOptBool(id, "custom", 0)));
 		m_btnMgr.setText(m_gameSettingsBtnLaunchNK, _optBoolToString(m_gcfg2.getOptBool(id, "useneek", 0)));
 		m_btnMgr.setText(m_gameSettingsBtnApploader, _optBoolToString(m_gcfg2.getOptBool(id, "apploader", 0)));
@@ -788,6 +793,11 @@ void CMenu::_gameSettings(const dir_discHdr *hdr, bool disc)
 				m_gcfg2.setBool(id, "private_server", !m_gcfg2.getBool(id, "private_server", 0));
 				_showGameSettings();
 			}
+			else if(m_btnMgr.selected(m_gameSettingsBtnFix480p))
+			{
+				m_gcfg2.setOptBool(id, "fix480p", loopNum(m_gcfg2.getOptBool(id, "fix480p") + 1, 3));
+				_showGameSettings();
+			}
 			else if(m_btnMgr.selected(m_gameSettingsBtnAdultOnly))
 			{
 				if(disc)
@@ -956,6 +966,9 @@ void CMenu::_initGameSettingsMenu()
 
 	m_gameSettingsLblPrivateServer = _addLabel("GAME_SETTINGS/PRIVATE_SERVER", theme.lblFont, L"", 20, 185, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsBtnPrivateServer = _addButton("GAME_SETTINGS/PRIVATE_SERVER_BTN", theme.btnFont, L"", 420, 190, 200, 48, theme.btnFontColor);
+	
+	m_gameSettingsLblFix480p = _addLabel("GAME_SETTINGS/FIX480P", theme.lblFont, L"", 20, 245, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsBtnFix480p = _addButton("GAME_SETTINGS/FIX480P_BTN", theme.btnFont, L"", 420, 250, 200, 48, theme.btnFontColor);
 	//GC
 	m_gameSettingsLblWidth = _addLabel("GAME_SETTINGS/NIN_WIDTH", theme.lblFont, L"", 20, 185, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsLblWidthVal = _addLabel("GAME_SETTINGS/NIN_WIDTH_BTN", theme.btnFont, L"", 468, 190, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
@@ -1006,6 +1019,9 @@ void CMenu::_initGameSettingsMenu()
 
 	_setHideAnim(m_gameSettingsLblPrivateServer, "GAME_SETTINGS/PRIVATE_SERVER", 50, 0, -2.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnPrivateServer, "GAME_SETTINGS/PRIVATE_SERVER_BTN", -50, 0, 1.f, 0.f);
+
+	_setHideAnim(m_gameSettingsLblFix480p, "GAME_SETTINGS/FIX480P", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_gameSettingsBtnFix480p, "GAME_SETTINGS/FIX480P_BTN", -50, 0, 1.f, 0.f);
 
 	_setHideAnim(m_gameSettingsLblVipatch, "GAME_SETTINGS/VIPATCH", 50, 0, -2.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnVipatch, "GAME_SETTINGS/VIPATCH_BTN", -50, 0, 1.f, 0.f);
@@ -1159,6 +1175,7 @@ void CMenu::_textGameSettings(void)
 	m_btnMgr.setText(m_gameSettingsLblFlashSave, _t("cfgg32", L"Flash Save to NAND"));
 	m_btnMgr.setText(m_gameSettingsBtnFlashSave, _t("cfgg33", L"Flash"));
 	m_btnMgr.setText(m_gameSettingsLblPrivateServer, _t("cfgg45", L"Private Server (Wiimmfi)"));
+	m_btnMgr.setText(m_gameSettingsLblFix480p, _t("cfgg49", L"480p Pixel Patch"));
 	m_btnMgr.setText(m_gameSettingsLblWidth, _t("cfgg54", L"Video Width"));
 	m_btnMgr.setText(m_gameSettingsLblPos, _t("cfgg55", L"Video Position"));
 }

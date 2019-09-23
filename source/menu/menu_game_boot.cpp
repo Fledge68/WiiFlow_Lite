@@ -871,6 +871,8 @@ void CMenu::_launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 	bool vipatch = m_gcfg2.getBool(id, "vipatch", false);
 	bool countryPatch = m_gcfg2.getBool(id, "country_patch", false);
 	bool private_server = m_gcfg2.getBool(id, "private_server", false);
+	int fix480pVal = m_gcfg2.getOptBool(id, "fix480p", 2);
+	bool fix480p = fix480pVal == 0 ? false : (fix480pVal == 1 ? true : m_cfg.getBool(WII_DOMAIN, "fix480p", false));
 
 	u8 videoMode = min(m_gcfg2.getUInt(id, "video_mode", 0), ARRAY_SIZE(CMenu::_VideoModes) - 1u);
 	videoMode = (videoMode == 0) ? min(m_cfg.getUInt("GENERAL", "video_mode", 0), ARRAY_SIZE(CMenu::_GlobalVideoModes) - 1u) : videoMode-1;
@@ -1056,7 +1058,7 @@ void CMenu::_launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 		free(gameconfig);
 	}
 
-	ExternalBooter_WiiGameSetup(wbfs_partition, dvd, patchregion, private_server, id.c_str());
+	ExternalBooter_WiiGameSetup(wbfs_partition, dvd, patchregion, private_server, fix480p, id.c_str());
 	WiiFlow_ExternalBooter(videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, returnTo, TYPE_WII_GAME, use_led);
 
 	Sys_Exit();

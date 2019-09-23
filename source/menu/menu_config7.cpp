@@ -66,17 +66,17 @@ void CMenu::_showConfig7(int curPage)
 		if(m_config7LblUser[i] != -1)
 			m_btnMgr.show(m_config7LblUser[i]);
 
-	/*if(curPage == 12)
+	if(curPage == 13)
 	{
 		m_btnMgr.show(m_config7Lbl1);
 		m_btnMgr.show(m_config7Btn1);
-		m_btnMgr.show(m_config7Lbl2);
-		m_btnMgr.show(m_config7Btn2);
-		m_btnMgr.show(m_config7Lbl3);
-		m_btnMgr.show(m_config7Btn3);
+		//m_btnMgr.show(m_config7Lbl2);
+		//m_btnMgr.show(m_config7Btn2);
+		//m_btnMgr.show(m_config7Lbl3);
+		//m_btnMgr.show(m_config7Btn3);
 	}
 	else
-	{*/
+	{
 		m_btnMgr.show(m_config7Lbl1);
 		m_btnMgr.show(m_config7Btn1);
 		m_btnMgr.show(m_config7Lbl2);
@@ -93,7 +93,7 @@ void CMenu::_showConfig7(int curPage)
 			m_btnMgr.show(m_config7Btn4M);
 			m_btnMgr.show(m_config7Btn4P);
 		}
-	//}
+	}
 	
 	if(curPage == 7)
 	{
@@ -150,16 +150,21 @@ void CMenu::_showConfig7(int curPage)
 		m_btnMgr.setText(m_config7Lbl4, _t("cfg721", L"Play GC default sound"));
 		m_btnMgr.setText(m_config7Btn4, m_cfg.getBool(GC_DOMAIN, "play_default_sound") ?  _t("yes", L"Yes") : _t("no", L"No"));
 	}
-	else // page 12
+	else if(curPage == 12)
 	{
 		m_btnMgr.setText(m_config7Lbl1, _t("cfg722", L"Homebrew settings"));
 		m_btnMgr.setText(m_config7Btn1, _t("cfg14", L"Set"));
 		m_btnMgr.setText(m_config7Lbl2, _t("cfg723", L"Source menu settings"));
 		m_btnMgr.setText(m_config7Btn2, _t("cfg14", L"Set"));
 		m_btnMgr.setText(m_config7Lbl3, _t("cfg724", L"Lock coverflow layouts"));
-		m_btnMgr.setText(m_config7Btn3, m_cfg.getBool("general", "cf_locked") ?  _t("yes", L"Yes") : _t("no", L"No"));
+		m_btnMgr.setText(m_config7Btn3, m_cfg.getBool("general", "cf_locked") ? _t("yes", L"Yes") : _t("no", L"No"));
 		m_btnMgr.setText(m_config7Lbl4, _t("cfg725", L"Shutdown to idle standby"));
-		m_btnMgr.setText(m_config7Btn4, m_cfg.getBool("general", "idle_standby", false) ?  _t("yes", L"Yes") : _t("no", L"No"));
+		m_btnMgr.setText(m_config7Btn4, m_cfg.getBool("general", "idle_standby", false) ? _t("yes", L"Yes") : _t("no", L"No"));
+	}
+	else // page 13
+	{
+		m_btnMgr.setText(m_config7Lbl1, _t("cfgg49", L"480p Pixel Patch"));
+		m_btnMgr.setText(m_config7Btn1, m_cfg.getBool(WII_DOMAIN, "fix480p", false) ? _t("on", L"On") : _t("off", L"Off"));
 	}
 }
 
@@ -334,6 +339,15 @@ int CMenu::_config7(int curPage)
 					bool val = !m_cfg.getBool("general", "idle_standby");
 					m_cfg.setBool("general", "idle_standby", val);
 					m_btnMgr.setText(m_config7Btn4, val ?  _t("yes", L"Yes") : _t("no", L"No"));
+				}
+			}
+			if(curPage == 13)
+			{
+				if(m_btnMgr.selected(m_config7Btn1))
+				{
+					bool val = !m_cfg.getBool(WII_DOMAIN, "fix480p");
+					m_cfg.setBool(WII_DOMAIN, "fix480p", val);
+					m_btnMgr.setText(m_config7Btn1, val ? _t("on", L"On") : _t("off", L"Off"));
 				}
 			}
 		}

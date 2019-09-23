@@ -40,6 +40,7 @@ bool PatchReturnTo(void *Address, int Size, u32 id);
 void Patch_fwrite(void *Address, int Size);
 s32 BlockIOSReload(void);
 void PatchRegion(void *Address, int Size);
+void PatchFix480p();
 u32 do_new_wiimmfi(); 
 void PrivateServerPatcher(void *addr, u32 len);
 void domainpatcher(void *addr, u32 len, const char* domain);
