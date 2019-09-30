@@ -248,6 +248,8 @@ void CMenu::_hideGame(bool instant)
 	m_btnMgr.hide(m_gameBtnFavoriteOn, instant);
 	m_btnMgr.hide(m_gameBtnFavoriteOff, instant);
 	m_btnMgr.hide(m_gameBtnCategories, instant);
+	m_btnMgr.hide(m_gameLblSnap, instant);
+	m_btnMgr.hide(m_gameLblOverlay, instant);
 	for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser); ++i)
 		if(m_gameLblUser[i] != -1)
 			m_btnMgr.hide(m_gameLblUser[i], instant);
@@ -257,15 +259,15 @@ void CMenu::_showGame(void)
 {
 	const dir_discHdr *GameHdr = CoverFlow.getHdr();
 	const char *coverDir = NULL;
-	const char *Path = NULL;
+	const char *FanartPath = NULL;
 	if(GameHdr->type == TYPE_PLUGIN)
 		coverDir = m_plugin.GetCoverFolderName(GameHdr->settings[0]);
 	
 	if(coverDir == NULL || strlen(coverDir) == 0)
-		Path = fmt("%s", m_fanartDir.c_str());
+		FanartPath = fmt("%s", m_fanartDir.c_str());
 	else
-		Path = fmt("%s/%s", m_fanartDir.c_str(), coverDir);
-	if(m_fa.load(m_cfg, Path, CoverFlow.getHdr()))
+		FanartPath = fmt("%s/%s", m_fanartDir.c_str(), coverDir);
+	if(m_fa.load(m_cfg, FanartPath, CoverFlow.getHdr()))
 	{
 		const TexData *bg = NULL;
 		const TexData *bglq = NULL;
@@ -786,12 +788,25 @@ void CMenu::_game(bool launch)
 		}
 		
 		/* showing and hiding buttons based on banner zoomed state */
-		if(!m_zoom_banner && !m_fa.isLoaded())
+		if(((!m_banner_loaded && !m_soundThrdBusy) || !m_zoom_banner) && !m_fa.isLoaded())
 		{
 			/* always hide full banner buttons */
 			m_btnMgr.hide(m_gameBtnPlayFull);
 			m_btnMgr.hide(m_gameBtnBackFull);
 			m_btnMgr.hide(m_gameBtnToggleFull);
+			
+			// show snapshot label here if !coverFlipped && !m_video_playing && hdr->type == TYPE_PLUGIN
+			// load snapshot texture in banner sound loading thread
+			if(hdr->type == TYPE_PLUGIN && (!m_banner_loaded && !m_soundThrdBusy) && !coverFlipped && !m_video_playing)
+			{
+				m_btnMgr.show(m_gameLblSnap);
+				m_btnMgr.show(m_gameLblOverlay);
+			}
+			else
+			{
+				m_btnMgr.hide(m_gameLblSnap);
+				m_btnMgr.hide(m_gameLblOverlay);
+			}
 			
 			if((!Auto_hide_icons || m_show_zone_game) && !coverFlipped && !m_video_playing)
 			{
@@ -912,6 +927,12 @@ void CMenu::_game(bool launch)
 		_loadCFLayout(cf_version, true);// true?
 		CoverFlow.applySettings();
 	}
+	m_snapshot_loaded = false;
+	TexData emptyTex;
+	m_btnMgr.setTexture(m_gameLblSnap, emptyTex);
+	m_btnMgr.setTexture(m_gameLblOverlay, emptyTex);
+	TexHandle.Cleanup(m_snap);
+	TexHandle.Cleanup(m_overlay);
 	m_gameSelected = false;
 	MEM2_free(hdr);
 	_hideGame();
@@ -953,14 +974,16 @@ void CMenu::_initGameMenu()
 	m_gameBtnPlay = _addButton("GAME/PLAY_BTN", theme.btnFont, L"", 420, 344, 200, 48, theme.btnFontColor);
 	m_gameBtnBack = _addButton("GAME/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
 	m_gameBtnFavoriteOn = _addPicButton("GAME/FAVORITE_ON", texGameFavOn, texGameFavOnSel, 460, 200, 48, 48);
-	m_gameBtnFavoriteOff = _addPicButton("GAME/FAVORITE_OFF", texGameFavOff, texGameFavOffSel, 460, 200, 48, 48);
-	m_gameBtnCategories = _addPicButton("GAME/CATEGORIES_BTN", texCategories, texCategoriesSel, 532, 200, 48, 48);
-	m_gameBtnSettings = _addPicButton("GAME/SETTINGS_BTN", texSettings, texSettingsSel, 460, 272, 48, 48);
-	m_gameBtnDelete = _addPicButton("GAME/DELETE_BTN", texDelete, texDeleteSel, 532, 272, 48, 48);
+	m_gameBtnFavoriteOff = _addPicButton("GAME/FAVORITE_OFF", texGameFavOff, texGameFavOffSel, 460, 220, 48, 48);
+	m_gameBtnCategories = _addPicButton("GAME/CATEGORIES_BTN", texCategories, texCategoriesSel, 532, 220, 48, 48);
+	m_gameBtnSettings = _addPicButton("GAME/SETTINGS_BTN", texSettings, texSettingsSel, 460, 280, 48, 48);
+	m_gameBtnDelete = _addPicButton("GAME/DELETE_BTN", texDelete, texDeleteSel, 532, 280, 48, 48);
 	m_gameBtnBackFull = _addButton("GAME/BACK_FULL_BTN", theme.btnFont, L"", 100, 390, 200, 56, theme.btnFontColor);
 	m_gameBtnPlayFull = _addButton("GAME/PLAY_FULL_BTN", theme.btnFont, L"", 340, 390, 200, 56, theme.btnFontColor);
 	m_gameBtnToggle = _addPicButton("GAME/TOOGLE_BTN", texToggleBanner, texToggleBanner, 385, 31, 236, 127);
 	m_gameBtnToggleFull = _addPicButton("GAME/TOOGLE_FULL_BTN", texToggleBanner, texToggleBanner, 20, 12, 608, 344);
+	m_gameLblSnap = _addLabel("GAME/SNAP", theme.txtFont, L"", 420, 40, 100, 100, theme.txtFontColor, 0, m_snap);
+	m_gameLblOverlay = _addLabel("GAME/OVERLAY", theme.txtFont, L"", 420, 40, 100, 100, theme.txtFontColor, 0, m_overlay);
 
 	m_gameButtonsZone.x = m_theme.getInt("GAME/ZONES", "buttons_x", 380);
 	m_gameButtonsZone.y = m_theme.getInt("GAME/ZONES", "buttons_y", 0);
@@ -979,6 +1002,8 @@ void CMenu::_initGameMenu()
 	_setHideAnim(m_gameBtnBackFull, "GAME/BACK_FULL_BTN", 0, 0, 1.f, 0.f);
 	_setHideAnim(m_gameBtnToggle, "GAME/TOOGLE_BTN", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameBtnToggleFull, "GAME/TOOGLE_FULL_BTN", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameLblSnap, "GAME/SNAP", 0, 0, 0.f, 0.f);
+	_setHideAnim(m_gameLblOverlay, "GAME/OVERLAY", 0, 0, 0.f, 0.f);
 	_hideGame(true);
 	_textGame();
 }
@@ -1050,8 +1075,74 @@ void * CMenu::_gameSoundThread(void *obj)
 				m_banner_loaded = true;
 			}
 		}
-		else // if no banner get plugin rom gamesound or just the default plugin gamesound
+		/* if no banner try getting snap shot */
+		if((custom_bnr_size == 0 || custom_bnr_file == NULL) && m->m_platform.loaded())
 		{
+			char GameID[7];
+			GameID[6] = '\0';
+			char platformName[264];
+			const char *TMP_Char = NULL;
+			GameTDB gametdb;
+			TexData emptyTex;
+			
+			snprintf(platformName, sizeof(platformName), "%s", m->m_platform.getString("PLUGINS", m_plugin.PluginMagicWord).c_str());
+			strncpy(GameID, GameHdr->id, 6);
+			
+			if(strlen(platformName) != 0 && strcasecmp(GameID, "PLUGIN") != 0)
+			{	
+				string newName = m->m_platform.getString("COMBINED", platformName);
+				if(newName.empty())
+					m->m_platform.remove("COMBINED", platformName);
+				else
+					snprintf(platformName, sizeof(platformName), "%s", newName.c_str());
+
+				/* Load platform name.xml database to get game's info using the gameID */
+				gametdb.OpenFile(fmt("%s/%s/%s.xml", m->m_pluginDataDir.c_str(), platformName, platformName));
+				if(gametdb.IsLoaded())
+				{
+					gametdb.SetLanguageCode(m->m_loc.getString(m->m_curLanguage, "gametdb_code", "EN").c_str());
+			
+					/* Get roms's title without the extra ()'s or []'s */
+					string ShortName = m_plugin.GetRomName(GameHdr->path);
+
+					/* Set to empty textures in case images not found */
+					m_btnMgr.setTexture(m->m_gameLblSnap, emptyTex);
+					m_btnMgr.setTexture(m->m_gameLblOverlay, emptyTex);
+
+					const char *snap_path = NULL;
+					if(strcasestr(platformName, "ARCADE") || strcasestr(platformName, "CPS") || !strncasecmp(platformName, "NEOGEO", 6))
+						snap_path = fmt("%s/%s/%s.png", m->m_snapDir.c_str(), platformName, ShortName.c_str());
+					else if(gametdb.GetName(GameID, TMP_Char))
+						snap_path = fmt("%s/%s/%s.png", m->m_snapDir.c_str(), platformName, TMP_Char);
+					
+					gametdb.CloseFile();
+					if(snap_path == NULL || !fsop_FileExist(snap_path))
+						snap_path = fmt("%s/%s/%s.png", m->m_snapDir.c_str(), platformName, GameID);
+
+					if(fsop_FileExist(snap_path))
+					{
+						m->m_snapshot_loaded = true;
+						TexHandle.fromImageFile(m->m_snap, snap_path);
+						m_btnMgr.setTexture(m->m_gameLblSnap, m->m_snap, m->m_snap.width*.75, m->m_snap.height*.75);
+						
+						const char *overlay_path = fmt("%s/%s_overlay.png", m->m_snapDir.c_str(), platformName);
+						if(fsop_FileExist(overlay_path))
+						{
+							TexHandle.fromImageFile(m->m_overlay, overlay_path);
+							m_btnMgr.setTexture(m->m_gameLblOverlay, m->m_overlay, m->m_overlay.width*.75, m->m_overlay.height*.75);
+						}
+						else
+							TexHandle.Cleanup(m->m_overlay);
+					}
+					else
+					{
+						m->m_snapshot_loaded = false;
+						TexHandle.Cleanup(m->m_snap);
+						TexHandle.Cleanup(m->m_overlay);
+					}
+				}
+			}
+			/* try to get plugin rom gamesound or just the default plugin gamesound */
 			m_banner.DeleteBanner();
 			bool found = false;
 			if(fsop_FileExist(fmt("%s.mp3", game_sound)))

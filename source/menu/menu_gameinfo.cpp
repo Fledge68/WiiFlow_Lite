@@ -306,9 +306,9 @@ void CMenu::_initGameInfoMenu()
 	_setHideAnim(m_gameinfoLblRlsdate, "GAMEINFO/RLSDATE", 0, -100, 0.f, 0.f);
 	_setHideAnim(m_gameinfoLblGenre, "GAMEINFO/GENRE", 0, -100, 0.f, 0.f);
 	_setHideAnim(m_gameinfoLblWifiplayers, "GAMEINFO/WIFIPLAYERS", 0, -100, 0.f, 0.f);
-	_setHideAnim(m_gameinfoLblSnap, "GAMEINFO/SNAP", 0, -100, 0.f, 0.f);
-	_setHideAnim(m_gameinfoLblCartDisk, "GAMEINFO/CART", 0, -100, 0.f, 0.f);
-	_setHideAnim(m_gameinfoLblOverlay, "GAMEINFO/OVERLAY", 0, -100, 0.f, 0.f);
+	_setHideAnim(m_gameinfoLblSnap, "GAMEINFO/SNAP", 0, 0, 0.f, 0.f);
+	_setHideAnim(m_gameinfoLblCartDisk, "GAMEINFO/CART", 0, 0, 0.f, 0.f);
+	_setHideAnim(m_gameinfoLblOverlay, "GAMEINFO/OVERLAY", 0, 0, 0.f, 0.f);
 	_setHideAnim(m_gameinfoLblRomInfo, "GAMEINFO/ROMINFO", 0, -100, 0.f, 0.f);
 	// 
 	_hideGameInfo(true);
@@ -341,23 +341,8 @@ void CMenu::_textGameInfo(void)
 		
 		/* Search platform.ini to find plugin magic to get platformName */
 		snprintf(platformName, sizeof(platformName), "%s", m_platform.getString("PLUGINS", m_plugin.PluginMagicWord).c_str());
-		if(strstr(platformName, "multi") != NULL)// if multi platform ie. vbagx, genplusgx, get file extension
-		{
-			return; //if multi found (old platform.ini) 
-			/*char ext[4];
-			if(strstr(GameHdr->path, ".zip") != NULL)// if zip get internal filename extension
-			{
-				ZipFile zFile(GameHdr->path);
-				const char *fileName = zFile.GetFileName();
-				strcpy(ext, strrchr(fileName, '.') + 1);
-			}
-			else
-			{
-				strcpy(ext, strrchr(GameHdr->path, '.') + 1);
-			}
-			snprintf(platformName, sizeof(platformName), "%s", m_platform.getString("ext", ext).c_str());*/
-		}	
-		if(strlen(platformName) == 0)
+		strncpy(GameID, GameHdr->id, 6);
+		if(strlen(platformName) == 0 || strcasecmp(GameID, "PLUGIN") == 0)
 			return;// no platform name found to match plugin magic #
 			
 		/* check COMBINED for platform names that mean the same system just different region */
@@ -369,14 +354,6 @@ void CMenu::_textGameInfo(void)
 		else
 			snprintf(platformName, sizeof(platformName), "%s", newName.c_str());
 
-		/* Get roms's title without the extra ()'s or []'s */
-		string ShortName = m_plugin.GetRomName(GameHdr->path);
-		
-		/* copy rom ID to be used as gameID to get game info from xml */
-		strncpy(GameID, GameHdr->id, 6);
-		if(strcasecmp(GameID, "PLUGIN") == 0)
-			return;
-		
 		/* Load platform name.xml database to get game's info using the gameID */
 		gametdb.OpenFile(fmt("%s/%s/%s.xml", m_pluginDataDir.c_str(), platformName, platformName));
 		tdb_found = gametdb.IsLoaded();
@@ -385,81 +362,43 @@ void CMenu::_textGameInfo(void)
 		
 		gametdb.SetLanguageCode(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
 		
+		/* Get roms's title without the extra ()'s or []'s */
+		string ShortName = m_plugin.GetRomName(GameHdr->path);
+		
 		/* Set to empty textures in case images not found */
 		m_btnMgr.setTexture(m_gameinfoLblSnap, emptyTex);
 		m_btnMgr.setTexture(m_gameinfoLblCartDisk, emptyTex);
 		m_btnMgr.setTexture(m_gameinfoLblOverlay, emptyTex);
 
-		/*  Get rom name from current xml and get rom images if name is found */
-		if(gametdb.GetName(GameID, TMP_Char))
-		{
-			const char *snap_path = NULL;
-			const char *cart_path = NULL;
-			const char *overlay_path = NULL;
-
-			// Use real filename without extension for arcade games.
-			if(strcasestr(platformName, "ARCADE") || strcasestr(platformName, "CPS") || !strncasecmp(platformName, "NEOGEO", 6))
-			{
-				snap_path = fmt("%s/%s/%s.png", m_snapDir.c_str(), platformName, ShortName.c_str());
-				cart_path = fmt("%s/%s/%s_2D.png", m_cartDir.c_str(), platformName, ShortName.c_str());
-			}
-			// Name from the database.
-			else
-			{
-				snap_path = fmt("%s/%s/%s.png", m_snapDir.c_str(), platformName, TMP_Char);
-				cart_path = fmt("%s/%s/%s_2D.png", m_cartDir.c_str(), platformName, TMP_Char);
-			}
-
-			// Try to find images by game's ID
-			if(!fsop_FileExist(snap_path))
-			{
-				snap_path = fmt("%s/%s/%s.png", m_snapDir.c_str(), platformName, GameID);
-				cart_path = fmt("%s/%s/%s_2D.png", m_cartDir.c_str(), platformName, GameID);
-
-				if(!fsop_FileExist(snap_path))
-				{
-					TexHandle.Cleanup(m_snap);
-					TexHandle.Cleanup(m_cart);
-				}
-			}
-
-			TexHandle.fromImageFile(m_snap, snap_path);
+		if(m_snap.data != NULL)
 			m_btnMgr.setTexture(m_gameinfoLblSnap, m_snap, m_snap.width, m_snap.height);
 			
+		if(m_overlay.data != NULL)
+			m_btnMgr.setTexture(m_gameinfoLblOverlay, m_overlay, m_overlay.width, m_overlay.height);
+			
+		const char *cart_path = NULL;
+		if(strcasestr(platformName, "ARCADE") || strcasestr(platformName, "CPS") || !strncasecmp(platformName, "NEOGEO", 6))
+			cart_path = fmt("%s/%s/%s_2D.png", m_cartDir.c_str(), platformName, ShortName.c_str());
+		else if(gametdb.GetName(GameID, TMP_Char))
+			cart_path = fmt("%s/%s/%s_2D.png", m_cartDir.c_str(), platformName, TMP_Char);
+		
+		if(cart_path == NULL || !fsop_FileExist(cart_path))
+			cart_path = fmt("%s/%s/%s_2D.png", m_cartDir.c_str(), platformName, GameID);
+
+		if(fsop_FileExist(cart_path))
+		{
 			TexHandle.fromImageFile(m_cart, cart_path);
 			if(m_cart.height > 112)
 				m_btnMgr.setTexture(m_gameinfoLblCartDisk, m_cart, 114, 128);
 			else
 				m_btnMgr.setTexture(m_gameinfoLblCartDisk, m_cart, 160, 112);
-
-			overlay_path = fmt("%s/%s_overlay.png", m_snapDir.c_str(), platformName);
-
-			if(fsop_FileExist(overlay_path))
-			{
-				TexHandle.fromImageFile(m_overlay, overlay_path);
-				m_btnMgr.setTexture(m_gameinfoLblOverlay, m_overlay, m_overlay.width, m_overlay.height);
-			}
-			else
-			{
-				m_btnMgr.setTexture(m_gameinfoLblOverlay, emptyTex);
-			}			
 		}
+		else
+			TexHandle.Cleanup(m_cart);
 		
 		// Get title
 		m_btnMgr.setText(m_gameinfoLblTitle, GameHdr->title);
 		
-		/*if(gametdb.GetTitle(GameID, TMP_Char))
-		{
-			gameinfo_Title_w.fromUTF8(TMP_Char);
-			m_btnMgr.setText(m_gameinfoLblTitle, gameinfo_Title_w);
-		}
-		else
-		{
-			tdb_found = false;
-			gametdb.CloseFile();// gameID not found in xml
-			return;
-		}*/
-
 		// Get Synopsis
 		if(gametdb.GetSynopsis(GameID, TMP_Char))
 			gameinfo_Synopsis_w.fromUTF8(TMP_Char);
@@ -531,7 +470,6 @@ void CMenu::_textGameInfo(void)
 					break;
 			}
 		}
-		//m_btnMgr.setText(m_gameinfoLblRomInfo, rom_info);
 		
 		//
 		u8 players = gametdb.GetPlayers(GameID);

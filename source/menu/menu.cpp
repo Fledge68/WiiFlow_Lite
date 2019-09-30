@@ -80,6 +80,7 @@ CMenu::CMenu()
 	m_catStartPage = 1;
 	cacheCovers = false;
 	SF_cacheCovers = true;
+	m_snapshot_loaded = false;
 	/* Explorer stuff */
 	m_txt_view = false;
 	m_txt_path = NULL;
@@ -1670,7 +1671,7 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 			CoverFlow.draw();
 			m_vid.setup2DProjection(false, true);
 			CoverFlow.drawEffect();
-			if(!m_banner.GetSelectedGame())
+			if(!m_banner.GetSelectedGame() && !m_snapshot_loaded)
 				CoverFlow.drawText(adjusting);
 			m_vid.renderAAPass(i);
 		}
@@ -1686,7 +1687,7 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 			CoverFlow.draw();
 			m_vid.setup2DProjection();
 			CoverFlow.drawEffect();
-			if(!m_banner.GetSelectedGame())
+			if(!m_banner.GetSelectedGame() && !m_snapshot_loaded)
 				CoverFlow.drawText(adjusting);
 		}
 	}
