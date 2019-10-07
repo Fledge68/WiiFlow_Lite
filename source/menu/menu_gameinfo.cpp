@@ -177,6 +177,7 @@ void CMenu::_gameinfo(void)
 		}
 	}
 	_hideGameInfo(false);
+	TexHandle.Cleanup(m_cart);
 }
 
 void CMenu::_hideGameInfo(bool instant)

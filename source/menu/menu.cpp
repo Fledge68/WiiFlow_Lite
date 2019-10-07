@@ -1671,7 +1671,7 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 			CoverFlow.draw();
 			m_vid.setup2DProjection(false, true);
 			CoverFlow.drawEffect();
-			if(!m_banner.GetSelectedGame() && !m_snapshot_loaded)
+			if(!m_banner.GetSelectedGame() && (!m_snapshot_loaded && !m_soundThrdBusy && m_gameSelected))
 				CoverFlow.drawText(adjusting);
 			m_vid.renderAAPass(i);
 		}
@@ -1687,7 +1687,7 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 			CoverFlow.draw();
 			m_vid.setup2DProjection();
 			CoverFlow.drawEffect();
-			if(!m_banner.GetSelectedGame() && !m_snapshot_loaded)
+			if(!m_banner.GetSelectedGame() && (!m_snapshot_loaded && !m_soundThrdBusy && m_gameSelected))
 				CoverFlow.drawText(adjusting);
 		}
 	}

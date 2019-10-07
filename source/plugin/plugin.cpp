@@ -139,11 +139,7 @@ const char *Plugin::GetDolName(u32 magic)
 const char *Plugin::GetCoverFolderName(u32 magic)
 {
 	if((Plugin_Pos = GetPluginPosition(magic)) >= 0)
-	{	
-		string cf = Plugins[Plugin_Pos].coverFolder;
-		if(!cf.empty())
-			return cf.c_str();
-	}
+		return Plugins[Plugin_Pos].coverFolder.c_str();
 	return NULL;
 }
 

@@ -280,17 +280,15 @@ static void Add_Plugin_Game(char *FullPath)
 	const char *RomFilename = strrchr(FullPath, '/') + 1;
 	*strrchr(RomFilename, '.') = '\0';
 	
-	char CustomTitle[64];
-	memset(CustomTitle, 0, sizeof(CustomTitle));
-	strncpy(CustomTitle, CustomTitles.getString(m_plugin.PluginMagicWord, RomFilename).c_str(), 63);
+	string customTitle = CustomTitles.getString(m_plugin.PluginMagicWord, RomFilename, "");
 	
 	const char *gameTDB_Title = NULL;
-	if(gameTDB.IsLoaded() && strlen(CustomTitle) == 0)
+	if(gameTDB.IsLoaded() && customTitle.empty())
 		gameTDB.GetTitle(ListElement.id, gameTDB_Title);
 	
 	/* set the roms title */
-	if(strlen(CustomTitle) > 0)
-		mbstowcs(ListElement.title, CustomTitle, 63);
+	if(!customTitle.empty())
+		mbstowcs(ListElement.title, customTitle.c_str(), 63);
 	else if(gameTDB_Title != NULL && gameTDB_Title[0] != '\0')
 		mbstowcs(ListElement.title, gameTDB_Title, 63);
 	else

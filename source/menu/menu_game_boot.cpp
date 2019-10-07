@@ -121,7 +121,8 @@ void CMenu::_launchPlugin(dir_discHdr *hdr)
 	/* get dol name and name length for music plugin */
 	const char *plugin_dol_name = m_plugin.GetDolName(hdr->settings[0]);
 	u8 plugin_dol_len = strlen(plugin_dol_name);
-	/* check if music player plugin, if so set wiiflow's bckgrnd music player to play this song */
+	
+	/* check if music player plugin, if so set wiiflow's bckgrnd music player to play this song or playlist */
 	if(plugin_dol_len == 5 && strcasecmp(plugin_dol_name, "music") == 0)
 	{
 		if(strstr(hdr->path, ".pls") == NULL && strstr(hdr->path, ".m3u") == NULL)
@@ -130,6 +131,7 @@ void CMenu::_launchPlugin(dir_discHdr *hdr)
 			MusicPlayer.InitPlaylist(m_cfg, hdr->path, currentPartition);// maybe error msg if trouble loading playlist
 		return;
 	}
+	
 	/* get title from hdr */
 	u32 title_len_no_ext = 0;
 	const char *title = CoverFlow.getFilenameId(hdr);// with extension
@@ -177,6 +179,7 @@ void CMenu::_launchPlugin(dir_discHdr *hdr)
 			}
 		}
 	}
+	
 	/* launch plugin with args */
 	gprintf("launching plugin app\n");
 	_launchHomebrew(plugin_file, arguments);

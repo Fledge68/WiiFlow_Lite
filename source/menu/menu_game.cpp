@@ -16,6 +16,7 @@ s16 m_gameBtnPlayFull;
 s16 m_gameBtnBackFull;
 s16 m_gameBtnToggle;
 s16 m_gameBtnToggleFull;
+s16 m_gameLblSnapBg;
 
 const CMenu::SOption CMenu::_GlobalVideoModes[6] = {
 	{ "vidgame", L"Game" },
@@ -787,82 +788,19 @@ void CMenu::_game(bool launch)
 			}
 		}
 		
-		/* showing and hiding buttons based on banner zoomed state */
-		if(((!m_banner_loaded && !m_soundThrdBusy) || !m_zoom_banner) && !m_fa.isLoaded())
+		if(!m_fa.isLoaded() && !coverFlipped && !m_video_playing)
 		{
-			/* always hide full banner buttons */
-			m_btnMgr.hide(m_gameBtnPlayFull);
-			m_btnMgr.hide(m_gameBtnBackFull);
-			m_btnMgr.hide(m_gameBtnToggleFull);
-			
-			// show snapshot label here if !coverFlipped && !m_video_playing && hdr->type == TYPE_PLUGIN
-			// load snapshot texture in banner sound loading thread
-			if(hdr->type == TYPE_PLUGIN && (!m_banner_loaded && !m_soundThrdBusy) && !coverFlipped && !m_video_playing)
-			{
-				m_btnMgr.show(m_gameLblSnap);
-				m_btnMgr.show(m_gameLblOverlay);
-			}
-			else
-			{
-				m_btnMgr.hide(m_gameLblSnap);
-				m_btnMgr.hide(m_gameLblOverlay);
-			}
-			
-			if((!Auto_hide_icons || m_show_zone_game) && !coverFlipped && !m_video_playing)
-			{
-				m_btnMgr.show(m_gameBtnPlay);
-				m_btnMgr.show(m_gameBtnBack);
-				m_btnMgr.show(m_gameBtnSettings);
-				m_btnMgr.show(m_gameBtnDelete);
-				m_btnMgr.show(m_gameBtnCategories);
-				bool b;
-				if(hdr->type == TYPE_PLUGIN)
-					b = m_gcfg1.getBool("FAVORITES_PLUGINS", id, false);
-				else
-					b = m_gcfg1.getBool("FAVORITES", id, false);
-				m_btnMgr.show(b ? m_gameBtnFavoriteOn : m_gameBtnFavoriteOff);
-				m_btnMgr.hide(b ? m_gameBtnFavoriteOff : m_gameBtnFavoriteOn);
-				for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser) - 2; ++i)// #4 is used for banner frame
-					if(m_gameLblUser[i] != -1)
-						m_btnMgr.show(m_gameLblUser[i]);
-			}
-			else
-			{
-				m_btnMgr.hide(m_gameBtnFavoriteOn);
-				m_btnMgr.hide(m_gameBtnFavoriteOff);
-				m_btnMgr.hide(m_gameBtnCategories);
-				m_btnMgr.hide(m_gameBtnSettings);
-				m_btnMgr.hide(m_gameBtnDelete);
-				m_btnMgr.hide(m_gameBtnPlay);
-				m_btnMgr.hide(m_gameBtnBack);
-				for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser) - 2; ++i)
-					if (m_gameLblUser[i] != -1)
-						m_btnMgr.hide(m_gameLblUser[i]);
-			}
-			
-			/* show or hide small banner toggle btn and frame */
-			if(m_banner_loaded && !m_soundThrdBusy && !coverFlipped && !m_video_playing && !m_fa.isLoaded())
-			{
-				/* show only if the game has a banner */
-				m_btnMgr.show(m_gameBtnToggle);
-				if(m_gameLblUser[4] != -1)
-					m_btnMgr.show(m_gameLblUser[4]);
-			}
-			else
-			{
-				m_btnMgr.hide(m_gameBtnToggle);
-				if(m_gameLblUser[4] != -1)
-					m_btnMgr.hide(m_gameLblUser[4]);
-			}
-		}
-		else if(!m_fa.isLoaded())// banner zoomed full screen
-		{
-			if(m_banner_loaded && !m_soundThrdBusy)// there is a banner
+			if(m_banner_loaded && !m_soundThrdBusy && m_zoom_banner)
 			{
 				m_btnMgr.show(m_gameBtnPlayFull);
 				m_btnMgr.show(m_gameBtnBackFull);
 				m_btnMgr.show(m_gameBtnToggleFull);
 				
+				m_btnMgr.hide(m_gameLblSnapBg, true);
+				m_btnMgr.hide(m_gameLblSnap, true);
+				m_btnMgr.hide(m_gameLblOverlay, true);
+				m_btnMgr.hide(m_gameBtnToggle, true);
+				
 				m_btnMgr.hide(m_gameBtnFavoriteOn);
 				m_btnMgr.hide(m_gameBtnFavoriteOff);
 				m_btnMgr.hide(m_gameBtnCategories);
@@ -870,22 +808,13 @@ void CMenu::_game(bool launch)
 				m_btnMgr.hide(m_gameBtnDelete);
 				m_btnMgr.hide(m_gameBtnPlay);
 				m_btnMgr.hide(m_gameBtnBack);
-				
-				m_btnMgr.hide(m_gameBtnToggle);
-				for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser); ++i)
+				for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser); ++i)// hide all including mini banner frame
 					if(m_gameLblUser[i] != -1)
 						m_btnMgr.hide(m_gameLblUser[i]);
 			}
-			else // no banner for whatever reason
+			else
 			{
-				if(!m_soundThrdBusy)
-				{
-					m_btnMgr.hide(m_gameBtnPlayFull);
-					m_btnMgr.hide(m_gameBtnBackFull);
-					m_btnMgr.hide(m_gameBtnToggleFull);
-				}
-					
-				if(m_show_zone_game && !m_soundThrdBusy)
+				if(!Auto_hide_icons || m_show_zone_game)
 				{
 					m_btnMgr.show(m_gameBtnPlay);
 					m_btnMgr.show(m_gameBtnBack);
@@ -899,7 +828,7 @@ void CMenu::_game(bool launch)
 						b = m_gcfg1.getBool("FAVORITES", id, false);
 					m_btnMgr.show(b ? m_gameBtnFavoriteOn : m_gameBtnFavoriteOff);
 					m_btnMgr.hide(b ? m_gameBtnFavoriteOff : m_gameBtnFavoriteOn);
-					for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser) - 2; ++i)// don't include small banner frame
+					for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser) - 1; ++i)// #4 is used for banner frame
 						if(m_gameLblUser[i] != -1)
 							m_btnMgr.show(m_gameLblUser[i]);
 				}
@@ -912,13 +841,72 @@ void CMenu::_game(bool launch)
 					m_btnMgr.hide(m_gameBtnDelete);
 					m_btnMgr.hide(m_gameBtnPlay);
 					m_btnMgr.hide(m_gameBtnBack);
-					
-					m_btnMgr.hide(m_gameBtnToggle);
 					for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser) - 1; ++i)
 						if (m_gameLblUser[i] != -1)
 							m_btnMgr.hide(m_gameLblUser[i]);
 				}
+				if(m_banner_loaded && !m_soundThrdBusy && !m_zoom_banner)
+				{
+					m_btnMgr.hide(m_gameBtnPlayFull);
+					m_btnMgr.hide(m_gameBtnBackFull);
+					m_btnMgr.hide(m_gameBtnToggleFull);
+					
+					m_btnMgr.hide(m_gameLblSnapBg, true);
+					m_btnMgr.hide(m_gameLblSnap, true);
+					m_btnMgr.hide(m_gameLblOverlay, true);
+					
+					m_btnMgr.show(m_gameBtnToggle);
+					if(m_gameLblUser[4] != -1)// show mini banner frame if available
+						m_btnMgr.show(m_gameLblUser[4]);
+				}
+				if(m_snapshot_loaded && !m_soundThrdBusy)
+				{
+					m_btnMgr.hide(m_gameBtnPlayFull);
+					m_btnMgr.hide(m_gameBtnBackFull);
+					m_btnMgr.hide(m_gameBtnToggleFull);
+					m_btnMgr.hide(m_gameBtnToggle);
+					
+					m_btnMgr.show(m_gameLblSnapBg);
+					m_btnMgr.show(m_gameLblSnap);
+					m_btnMgr.show(m_gameLblOverlay);
+					if(m_gameLblUser[4] != -1)// frame if available
+						m_btnMgr.show(m_gameLblUser[4]);
+				}
+				if(!m_banner_loaded && !m_snapshot_loaded && !m_soundThrdBusy)
+				{
+					m_btnMgr.hide(m_gameBtnPlayFull);
+					m_btnMgr.hide(m_gameBtnBackFull);
+					m_btnMgr.hide(m_gameBtnToggleFull);
+					m_btnMgr.hide(m_gameBtnToggle);
+					m_btnMgr.hide(m_gameLblSnapBg);
+					m_btnMgr.hide(m_gameLblSnap);
+					m_btnMgr.hide(m_gameLblOverlay);
+					if(m_gameLblUser[4] != -1)// hide frame
+						m_btnMgr.hide(m_gameLblUser[4]);
+				}
+				
 			}
+		}
+		else
+		{
+			m_btnMgr.hide(m_gameLblSnapBg);
+			m_btnMgr.hide(m_gameLblSnap);
+			m_btnMgr.hide(m_gameLblOverlay);
+			m_btnMgr.hide(m_gameBtnPlayFull);
+			m_btnMgr.hide(m_gameBtnBackFull);
+			m_btnMgr.hide(m_gameBtnToggle);
+			m_btnMgr.hide(m_gameBtnToggleFull);
+			m_btnMgr.hide(m_gameBtnPlay);
+			m_btnMgr.hide(m_gameBtnBack);
+			m_btnMgr.hide(m_gameBtnDelete);
+			m_btnMgr.hide(m_gameBtnSettings);
+			m_btnMgr.hide(m_gameBtnFavoriteOn);
+			m_btnMgr.hide(m_gameBtnFavoriteOff);
+			m_btnMgr.hide(m_gameBtnCategories);
+			
+			for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser); ++i)
+				if(m_gameLblUser[i] != -1)
+					m_btnMgr.hide(m_gameLblUser[i]);
 		}
 	}
 	if(coverFlipped)
@@ -952,6 +940,7 @@ void CMenu::_initGameMenu()
 	TexData texSettings;
 	TexData texSettingsSel;
 	TexData texToggleBanner;
+	TexData texSnapShotBg;
 	TexData bgLQ;
 
 	TexHandle.fromImageFile(texGameFavOn, fmt("%s/gamefavon.png", m_imgsDir.c_str()));
@@ -965,6 +954,7 @@ void CMenu::_initGameMenu()
 	TexHandle.fromImageFile(texSettings, fmt("%s/btnconfig.png", m_imgsDir.c_str()));
 	TexHandle.fromImageFile(texSettingsSel, fmt("%s/btnconfigs.png", m_imgsDir.c_str()));
 	TexHandle.fromImageFile(texToggleBanner, fmt("%s/blank.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texSnapShotBg, fmt("%s/blank.png", m_imgsDir.c_str()));
 
 	_addUserLabels(m_gameLblUser, ARRAY_SIZE(m_gameLblUser), "GAME");
 	m_gameBg = _texture("GAME/BG", "texture", theme.bg, false);
@@ -982,8 +972,9 @@ void CMenu::_initGameMenu()
 	m_gameBtnPlayFull = _addButton("GAME/PLAY_FULL_BTN", theme.btnFont, L"", 340, 390, 200, 56, theme.btnFontColor);
 	m_gameBtnToggle = _addPicButton("GAME/TOOGLE_BTN", texToggleBanner, texToggleBanner, 385, 31, 236, 127);
 	m_gameBtnToggleFull = _addPicButton("GAME/TOOGLE_FULL_BTN", texToggleBanner, texToggleBanner, 20, 12, 608, 344);
-	m_gameLblSnap = _addLabel("GAME/SNAP", theme.txtFont, L"", 420, 40, 100, 100, theme.txtFontColor, 0, m_snap);
-	m_gameLblOverlay = _addLabel("GAME/OVERLAY", theme.txtFont, L"", 420, 40, 100, 100, theme.txtFontColor, 0, m_overlay);
+	m_gameLblSnapBg = _addLabel("GAME/SNAP_BG", theme.txtFont, L"", 385, 31, 246, 127, theme.txtFontColor, 0, texSnapShotBg);
+	m_gameLblSnap = _addLabel("GAME/SNAP", theme.txtFont, L"", 385, 31, 100, 100, theme.txtFontColor, 0, m_snap);
+	m_gameLblOverlay = _addLabel("GAME/OVERLAY", theme.txtFont, L"", 385, 31, 100, 100, theme.txtFontColor, 0, m_overlay);
 
 	m_gameButtonsZone.x = m_theme.getInt("GAME/ZONES", "buttons_x", 380);
 	m_gameButtonsZone.y = m_theme.getInt("GAME/ZONES", "buttons_y", 0);
@@ -1002,10 +993,15 @@ void CMenu::_initGameMenu()
 	_setHideAnim(m_gameBtnBackFull, "GAME/BACK_FULL_BTN", 0, 0, 1.f, 0.f);
 	_setHideAnim(m_gameBtnToggle, "GAME/TOOGLE_BTN", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameBtnToggleFull, "GAME/TOOGLE_FULL_BTN", 200, 0, 1.f, 0.f);
+	_setHideAnim(m_gameLblSnapBg, "GAME/SNAP_BG", 0, 0, 0.f, 0.f);
 	_setHideAnim(m_gameLblSnap, "GAME/SNAP", 0, 0, 0.f, 0.f);
 	_setHideAnim(m_gameLblOverlay, "GAME/OVERLAY", 0, 0, 0.f, 0.f);
 	_hideGame(true);
 	_textGame();
+	snapbg_x = m_theme.getInt("GAME/SNAP_BG", "x", 385);
+	snapbg_y = m_theme.getInt("GAME/SNAP_BG", "y", 31);
+	snapbg_w = m_theme.getInt("GAME/SNAP_BG", "width", 246);
+	snapbg_h = m_theme.getInt("GAME/SNAP_BG", "height", 127);
 }
 
 void CMenu::_textGame(void)
@@ -1046,6 +1042,7 @@ void * CMenu::_gameSoundThread(void *obj)
 	char game_sound[256];
 	game_sound[255] = '\0';
 	
+	m->m_snapshot_loaded = false;
 	m_banner_loaded = false;
 	const dir_discHdr *GameHdr = CoverFlow.getHdr();	
 	if(GameHdr->type == TYPE_PLUGIN)
@@ -1085,6 +1082,10 @@ void * CMenu::_gameSoundThread(void *obj)
 			GameTDB gametdb;
 			TexData emptyTex;
 			
+			/* Set to empty textures in case images not found */
+			m_btnMgr.setTexture(m->m_gameLblSnap, emptyTex);
+			m_btnMgr.setTexture(m->m_gameLblOverlay, emptyTex);
+			
 			snprintf(platformName, sizeof(platformName), "%s", m->m_platform.getString("PLUGINS", m_plugin.PluginMagicWord).c_str());
 			strncpy(GameID, GameHdr->id, 6);
 			
@@ -1105,10 +1106,6 @@ void * CMenu::_gameSoundThread(void *obj)
 					/* Get roms's title without the extra ()'s or []'s */
 					string ShortName = m_plugin.GetRomName(GameHdr->path);
 
-					/* Set to empty textures in case images not found */
-					m_btnMgr.setTexture(m->m_gameLblSnap, emptyTex);
-					m_btnMgr.setTexture(m->m_gameLblOverlay, emptyTex);
-
 					const char *snap_path = NULL;
 					if(strcasestr(platformName, "ARCADE") || strcasestr(platformName, "CPS") || !strncasecmp(platformName, "NEOGEO", 6))
 						snap_path = fmt("%s/%s/%s.png", m->m_snapDir.c_str(), platformName, ShortName.c_str());
@@ -1123,25 +1120,50 @@ void * CMenu::_gameSoundThread(void *obj)
 					{
 						m->m_snapshot_loaded = true;
 						TexHandle.fromImageFile(m->m_snap, snap_path);
-						m_btnMgr.setTexture(m->m_gameLblSnap, m->m_snap, m->m_snap.width*.75, m->m_snap.height*.75);
+						/* get snapshot position and dimensions to center it on the snap background */
+						int snap_w = m->m_snap.width;
+						int snap_h = m->m_snap.height;
+						int width_over = snap_w - m->snapbg_w;
+						int height_over = snap_h - m->snapbg_h;
+						float aspect_ratio = (float)snap_w / (float)snap_h;
+						if(width_over > 0 || height_over > 0)
+						{
+							if(width_over > height_over)
+							{
+								snap_w = m->snapbg_w;
+								snap_h = (int)((float)snap_w / aspect_ratio);
+							}
+							else
+							{
+								snap_h = m->snapbg_h;
+								snap_w = (int)((float)snap_h * aspect_ratio);
+							}
+						}
+
+						int x_pos = (m->snapbg_w - snap_w) / 2 + m->snapbg_x;
+						int y_pos = (m->snapbg_h - snap_h) / 2 + m->snapbg_y;
+						m_btnMgr.setTexture(m->m_gameLblSnap, m->m_snap, x_pos, y_pos, snap_w, snap_h);
 						
+						/* get possible overlay */
 						const char *overlay_path = fmt("%s/%s_overlay.png", m->m_snapDir.c_str(), platformName);
 						if(fsop_FileExist(overlay_path))
 						{
 							TexHandle.fromImageFile(m->m_overlay, overlay_path);
-							m_btnMgr.setTexture(m->m_gameLblOverlay, m->m_overlay, m->m_overlay.width*.75, m->m_overlay.height*.75);
+							m_btnMgr.setTexture(m->m_gameLblOverlay, m->m_overlay, x_pos, y_pos, snap_w, snap_h);
 						}
 						else
 							TexHandle.Cleanup(m->m_overlay);
 					}
-					else
-					{
-						m->m_snapshot_loaded = false;
-						TexHandle.Cleanup(m->m_snap);
-						TexHandle.Cleanup(m->m_overlay);
-					}
 				}
 			}
+			if(!m->m_snapshot_loaded)
+			{
+				TexHandle.Cleanup(m->m_snap);
+				TexHandle.Cleanup(m->m_overlay);
+			}
+		}
+		if(custom_bnr_size == 0 || custom_bnr_file == NULL)
+		{
 			/* try to get plugin rom gamesound or just the default plugin gamesound */
 			m_banner.DeleteBanner();
 			bool found = false;
@@ -1170,12 +1192,16 @@ void * CMenu::_gameSoundThread(void *obj)
 				m->m_gameSound.Load(m_plugin.GetBannerSound(GameHdr->settings[0]), m_plugin.GetBannerSoundSize());
 			if(m->m_gameSound.IsLoaded())
 				m->m_gamesound_changed = true;
+		}
+		if(custom_bnr_size == 0 || custom_bnr_file == NULL)// no custom banner so we are done. exit sound thread.
+		{
 			m->m_soundThrdBusy = false;
 			return NULL;
 		}
 	}
 	else
 	{
+		/* try to get custom banner for wii, gc, and channels */
 		/* check custom ID6 first */
 		strncpy(custom_banner, fmt("%s/%s.bnr", m->m_customBnrDir.c_str(), GameHdr->id), 255);
 		fsop_GetFileSizeBytes(custom_banner, &custom_bnr_size);
@@ -1205,6 +1231,7 @@ void * CMenu::_gameSoundThread(void *obj)
 	}
 	if(GameHdr->type == TYPE_GC_GAME && custom_bnr_file == NULL)
 	{
+		/* gc game but no custom banner. so we make one ourselves. and exit sound thread. */
 		//get the gc game's opening.bnr from ISO - a 96x32 image to add to the gc banner included with wiiflow
 		GC_Disc_Reader.init(GameHdr->path);
 		u8 *opening_bnr = GC_Disc_Reader.GetGameCubeBanner();
@@ -1227,7 +1254,7 @@ void * CMenu::_gameSoundThread(void *obj)
 		m->m_soundThrdBusy = false;
 		return NULL;
 	}
-	if(custom_bnr_file == NULL)/* no custom and not GC game try cached banner id6 only*/
+	if(custom_bnr_file == NULL)/* no custom banner load and if wii or channel game try cached banner id6 only*/
 	{
 		strncpy(cached_banner, fmt("%s/%s.bnr", m->m_bnrCacheDir.c_str(), GameHdr->id), 255);
 		fsop_GetFileSizeBytes(cached_banner, &cached_bnr_size);

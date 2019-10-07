@@ -431,6 +431,7 @@ private:
 	s16 m_gameBtnPlay;
 	s16 m_gameBtnBack;
 	s16 m_gameLblUser[5];
+	int snapbg_x, snapbg_y, snapbg_w, snapbg_h;
 // Parental code menu
 	s16 m_codeLblTitle;
 	s16 m_codeBtnKey[10];

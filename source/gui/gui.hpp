@@ -45,6 +45,7 @@ public:
 	void freeBtnTexture(s16 id);
 	void setTexture(s16 id ,TexData &bg);
 	void setTexture(s16 id, TexData &bg, int width, int height);
+	void setTexture(s16 id, TexData &bg, int x_pos, int y_pos, int width, int height);
 	void setProgress(s16 id, float f, bool instant = false);
 	void reset(s16 id, bool instant = false);
 	void moveBy(s16 id, int x, int y, bool instant = false);
