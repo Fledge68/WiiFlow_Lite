@@ -58,6 +58,7 @@ private:
 	u8 m_catStartPage;
 	u8 m_max_categories;
 	bool m_clearCats;
+	bool m_getFavs;
 	bool m_newGame;
 	bool show_mem;
 	bool cacheCovers;

@@ -76,7 +76,8 @@ CMenu::CMenu()
 	m_use_source = true;
 	m_sourceflow = false;
 	m_numPlugins = 0;
-	m_clearCats = true;
+	m_clearCats = false;
+	m_getFavs = true;
 	m_catStartPage = 1;
 	cacheCovers = false;
 	SF_cacheCovers = true;

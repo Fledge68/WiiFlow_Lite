@@ -239,20 +239,22 @@ void CMenu::_showCF(bool refreshList)
 				}
 			}
 		}
+		/* setup categories and favorites for filtering the game list below */
+		if(m_clearCats)// false on boot up and if a source menu button selects a category
+		{
+			// do not clear hidden categories to keep games hidden
+			m_cat.remove("GENERAL", "selected_categories");
+			m_cat.remove("GENERAL", "required_categories");
+		}
+		m_clearCats = true;// set to true for next source
+		
+		m_favorites = false;
+		if(m_getFavs || m_cfg.getBool("GENERAL", "save_favorites_mode", false))
+			m_favorites = m_cfg.getBool(_domainFromView(), "favorites", false);
+		else
+			m_cfg.setBool(_domainFromView(), "favorites", false);
+		m_getFavs = false;
 	}
-	
-	/* setup categories and favorites for filtering the game list below */
-	if(refreshList && m_clearCats)// clear categories unless a source menu btn has selected one
-	{
-		// do not clear hidden categories to keep games hidden
-		m_cat.remove("GENERAL", "selected_categories");
-		m_cat.remove("GENERAL", "required_categories");
-	}
-	m_clearCats = true;
-	
-	m_favorites = false;
-	if(m_cfg.getBool("GENERAL", "save_favorites_mode", false))
-		m_favorites = m_cfg.getBool(_domainFromView(), "favorites", false);
 	
 	strcpy(cf_domain, "_COVERFLOW");
 	if(!m_sourceflow && m_current_view == COVERFLOW_HOMEBREW && m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox", true))
@@ -820,10 +822,8 @@ int CMenu::main(void)
 			m_btnMgr.show(m_mainBtnCategories);
 			m_btnMgr.show(m_mainBtnConfig);
 			m_btnMgr.show(m_mainBtnHome);
-			static bool change = m_favorites;
-			m_btnMgr.show(m_favorites ? m_mainBtnFavoritesOn : m_mainBtnFavoritesOff, change != m_favorites);
-			m_btnMgr.hide(m_favorites ? m_mainBtnFavoritesOff : m_mainBtnFavoritesOn, change != m_favorites);
-			change = m_favorites;
+			m_btnMgr.show(m_favorites ? m_mainBtnFavoritesOn : m_mainBtnFavoritesOff, true);
+			m_btnMgr.hide(m_favorites ? m_mainBtnFavoritesOff : m_mainBtnFavoritesOn, true);
 		}
 		else
 		{
