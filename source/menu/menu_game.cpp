@@ -17,6 +17,8 @@ s16 m_gameBtnBackFull;
 s16 m_gameBtnToggle;
 s16 m_gameBtnToggleFull;
 s16 m_gameLblSnapBg;
+s16 m_gameLblSnapFrame;
+s16 m_gameLblBannerFrame;
 
 const CMenu::SOption CMenu::_GlobalVideoModes[6] = {
 	{ "vidgame", L"Game" },
@@ -251,6 +253,8 @@ void CMenu::_hideGame(bool instant)
 	m_btnMgr.hide(m_gameBtnCategories, instant);
 	m_btnMgr.hide(m_gameLblSnap, instant);
 	m_btnMgr.hide(m_gameLblOverlay, instant);
+	m_btnMgr.hide(m_gameLblSnapFrame, instant);
+	m_btnMgr.hide(m_gameLblBannerFrame, instant);
 	for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser); ++i)
 		if(m_gameLblUser[i] != -1)
 			m_btnMgr.hide(m_gameLblUser[i], instant);
@@ -800,6 +804,8 @@ void CMenu::_game(bool launch)
 				m_btnMgr.hide(m_gameLblSnap, true);
 				m_btnMgr.hide(m_gameLblOverlay, true);
 				m_btnMgr.hide(m_gameBtnToggle, true);
+				m_btnMgr.hide(m_gameLblSnapFrame, true);
+				m_btnMgr.hide(m_gameLblBannerFrame, true);
 				
 				m_btnMgr.hide(m_gameBtnFavoriteOn);
 				m_btnMgr.hide(m_gameBtnFavoriteOff);
@@ -808,7 +814,7 @@ void CMenu::_game(bool launch)
 				m_btnMgr.hide(m_gameBtnDelete);
 				m_btnMgr.hide(m_gameBtnPlay);
 				m_btnMgr.hide(m_gameBtnBack);
-				for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser); ++i)// hide all including mini banner frame
+				for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser); ++i)
 					if(m_gameLblUser[i] != -1)
 						m_btnMgr.hide(m_gameLblUser[i]);
 			}
@@ -828,7 +834,7 @@ void CMenu::_game(bool launch)
 						b = m_gcfg1.getBool("FAVORITES", id, false);
 					m_btnMgr.show(b ? m_gameBtnFavoriteOn : m_gameBtnFavoriteOff);
 					m_btnMgr.hide(b ? m_gameBtnFavoriteOff : m_gameBtnFavoriteOn);
-					for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser) - 1; ++i)// #4 is used for banner frame
+					for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser); ++i)
 						if(m_gameLblUser[i] != -1)
 							m_btnMgr.show(m_gameLblUser[i]);
 				}
@@ -841,7 +847,7 @@ void CMenu::_game(bool launch)
 					m_btnMgr.hide(m_gameBtnDelete);
 					m_btnMgr.hide(m_gameBtnPlay);
 					m_btnMgr.hide(m_gameBtnBack);
-					for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser) - 1; ++i)
+					for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser); ++i)
 						if (m_gameLblUser[i] != -1)
 							m_btnMgr.hide(m_gameLblUser[i]);
 				}
@@ -854,10 +860,10 @@ void CMenu::_game(bool launch)
 					m_btnMgr.hide(m_gameLblSnapBg, true);
 					m_btnMgr.hide(m_gameLblSnap, true);
 					m_btnMgr.hide(m_gameLblOverlay, true);
+					m_btnMgr.hide(m_gameLblSnapFrame, true);
 					
 					m_btnMgr.show(m_gameBtnToggle);
-					if(m_gameLblUser[4] != -1)// show mini banner frame if available
-						m_btnMgr.show(m_gameLblUser[4]);
+					m_btnMgr.show(m_gameLblBannerFrame);
 				}
 				if(m_snapshot_loaded && !m_soundThrdBusy)
 				{
@@ -865,12 +871,12 @@ void CMenu::_game(bool launch)
 					m_btnMgr.hide(m_gameBtnBackFull);
 					m_btnMgr.hide(m_gameBtnToggleFull);
 					m_btnMgr.hide(m_gameBtnToggle);
+					m_btnMgr.hide(m_gameLblBannerFrame);
 					
 					m_btnMgr.show(m_gameLblSnapBg);
 					m_btnMgr.show(m_gameLblSnap);
 					m_btnMgr.show(m_gameLblOverlay);
-					if(m_gameLblUser[4] != -1)// frame if available
-						m_btnMgr.show(m_gameLblUser[4]);
+					m_btnMgr.show(m_gameLblSnapFrame);
 				}
 				if(!m_banner_loaded && !m_snapshot_loaded && !m_soundThrdBusy)
 				{
@@ -881,14 +887,16 @@ void CMenu::_game(bool launch)
 					m_btnMgr.hide(m_gameLblSnapBg);
 					m_btnMgr.hide(m_gameLblSnap);
 					m_btnMgr.hide(m_gameLblOverlay);
-					if(m_gameLblUser[4] != -1)// hide frame
-						m_btnMgr.hide(m_gameLblUser[4]);
+					m_btnMgr.hide(m_gameLblSnapFrame);
+					m_btnMgr.hide(m_gameLblBannerFrame);
 				}
 				
 			}
 		}
 		else
 		{
+			m_btnMgr.hide(m_gameLblSnapFrame);
+			m_btnMgr.hide(m_gameLblBannerFrame);
 			m_btnMgr.hide(m_gameLblSnapBg);
 			m_btnMgr.hide(m_gameLblSnap);
 			m_btnMgr.hide(m_gameLblOverlay);
@@ -941,6 +949,8 @@ void CMenu::_initGameMenu()
 	TexData texSettingsSel;
 	TexData texToggleBanner;
 	TexData texSnapShotBg;
+	TexData texSnapShotFrame;
+	TexData texBannerFrame;
 	TexData bgLQ;
 
 	TexHandle.fromImageFile(texGameFavOn, fmt("%s/gamefavon.png", m_imgsDir.c_str()));
@@ -955,6 +965,8 @@ void CMenu::_initGameMenu()
 	TexHandle.fromImageFile(texSettingsSel, fmt("%s/btnconfigs.png", m_imgsDir.c_str()));
 	TexHandle.fromImageFile(texToggleBanner, fmt("%s/blank.png", m_imgsDir.c_str()));
 	TexHandle.fromImageFile(texSnapShotBg, fmt("%s/blank.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texSnapShotFrame, fmt("%s/blank.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texBannerFrame, fmt("%s/blank.png", m_imgsDir.c_str()));
 
 	_addUserLabels(m_gameLblUser, ARRAY_SIZE(m_gameLblUser), "GAME");
 	m_gameBg = _texture("GAME/BG", "texture", theme.bg, false);
@@ -963,18 +975,21 @@ void CMenu::_initGameMenu()
 
 	m_gameBtnPlay = _addButton("GAME/PLAY_BTN", theme.btnFont, L"", 420, 344, 200, 48, theme.btnFontColor);
 	m_gameBtnBack = _addButton("GAME/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
-	m_gameBtnFavoriteOn = _addPicButton("GAME/FAVORITE_ON", texGameFavOn, texGameFavOnSel, 460, 200, 48, 48);
+	m_gameBtnFavoriteOn = _addPicButton("GAME/FAVORITE_ON", texGameFavOn, texGameFavOnSel, 460, 220, 48, 48);
 	m_gameBtnFavoriteOff = _addPicButton("GAME/FAVORITE_OFF", texGameFavOff, texGameFavOffSel, 460, 220, 48, 48);
 	m_gameBtnCategories = _addPicButton("GAME/CATEGORIES_BTN", texCategories, texCategoriesSel, 532, 220, 48, 48);
 	m_gameBtnSettings = _addPicButton("GAME/SETTINGS_BTN", texSettings, texSettingsSel, 460, 280, 48, 48);
 	m_gameBtnDelete = _addPicButton("GAME/DELETE_BTN", texDelete, texDeleteSel, 532, 280, 48, 48);
 	m_gameBtnBackFull = _addButton("GAME/BACK_FULL_BTN", theme.btnFont, L"", 100, 390, 200, 56, theme.btnFontColor);
 	m_gameBtnPlayFull = _addButton("GAME/PLAY_FULL_BTN", theme.btnFont, L"", 340, 390, 200, 56, theme.btnFontColor);
-	m_gameBtnToggle = _addPicButton("GAME/TOOGLE_BTN", texToggleBanner, texToggleBanner, 385, 31, 236, 127);
+	m_gameBtnToggle = _addPicButton("GAME/TOOGLE_BTN", texToggleBanner, texToggleBanner, 385, 31, 246, 135);
 	m_gameBtnToggleFull = _addPicButton("GAME/TOOGLE_FULL_BTN", texToggleBanner, texToggleBanner, 20, 12, 608, 344);
-	m_gameLblSnapBg = _addLabel("GAME/SNAP_BG", theme.txtFont, L"", 385, 31, 246, 127, theme.txtFontColor, 0, texSnapShotBg);
+	m_gameLblSnapBg = _addLabel("GAME/SNAP_BG", theme.txtFont, L"", 385, 31, 246, 170, theme.txtFontColor, 0, texSnapShotBg);
 	m_gameLblSnap = _addLabel("GAME/SNAP", theme.txtFont, L"", 385, 31, 100, 100, theme.txtFontColor, 0, m_snap);
 	m_gameLblOverlay = _addLabel("GAME/OVERLAY", theme.txtFont, L"", 385, 31, 100, 100, theme.txtFontColor, 0, m_overlay);
+	// 8 pixel width frames
+	m_gameLblSnapFrame = _addLabel("GAME/SNAP_FRAME", theme.txtFont, L"", 377, 23, 262, 186, theme.txtFontColor, 0, texSnapShotFrame);
+	m_gameLblBannerFrame = _addLabel("GAME/BANNER_FRAME", theme.txtFont, L"", 377, 23, 262, 151, theme.txtFontColor, 0, texBannerFrame);
 
 	m_gameButtonsZone.x = m_theme.getInt("GAME/ZONES", "buttons_x", 380);
 	m_gameButtonsZone.y = m_theme.getInt("GAME/ZONES", "buttons_y", 0);
@@ -993,15 +1008,18 @@ void CMenu::_initGameMenu()
 	_setHideAnim(m_gameBtnBackFull, "GAME/BACK_FULL_BTN", 0, 0, 1.f, 0.f);
 	_setHideAnim(m_gameBtnToggle, "GAME/TOOGLE_BTN", 200, 0, 1.f, 0.f);
 	_setHideAnim(m_gameBtnToggleFull, "GAME/TOOGLE_FULL_BTN", 200, 0, 1.f, 0.f);
-	_setHideAnim(m_gameLblSnapBg, "GAME/SNAP_BG", 0, 0, 0.f, 0.f);
-	_setHideAnim(m_gameLblSnap, "GAME/SNAP", 0, 0, 0.f, 0.f);
-	_setHideAnim(m_gameLblOverlay, "GAME/OVERLAY", 0, 0, 0.f, 0.f);
+	_setHideAnim(m_gameLblSnapBg, "GAME/SNAP_BG", 0, 0, 1.f, 1.f);
+	_setHideAnim(m_gameLblSnap, "GAME/SNAP", 0, 0, 1.f, 1.f);
+	_setHideAnim(m_gameLblOverlay, "GAME/OVERLAY", 0, 0, 1.f, 1.f);
+	_setHideAnim(m_gameLblSnapFrame, "GAME/SNAP_FRAME", 0, 0, 1.f, 1.f);
+	_setHideAnim(m_gameLblBannerFrame, "GAME/BANNER_FRAME", 0, 0, 1.f, 1.f);
+	
 	_hideGame(true);
 	_textGame();
 	snapbg_x = m_theme.getInt("GAME/SNAP_BG", "x", 385);
 	snapbg_y = m_theme.getInt("GAME/SNAP_BG", "y", 31);
 	snapbg_w = m_theme.getInt("GAME/SNAP_BG", "width", 246);
-	snapbg_h = m_theme.getInt("GAME/SNAP_BG", "height", 127);
+	snapbg_h = m_theme.getInt("GAME/SNAP_BG", "height", 170);
 }
 
 void CMenu::_textGame(void)
