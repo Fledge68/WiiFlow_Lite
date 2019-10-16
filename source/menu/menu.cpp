@@ -1672,7 +1672,8 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 			CoverFlow.draw();
 			m_vid.setup2DProjection(false, true);
 			CoverFlow.drawEffect();
-			if(!m_banner.GetSelectedGame() && (!m_snapshot_loaded && !m_soundThrdBusy && m_gameSelected))
+			//if(startGameSound == 1 && !m_soundThrdBusy && !m_banner.GetSelectedGame() && !m_snapshot_loaded)
+			if(!m_soundThrdBusy && !m_banner.GetSelectedGame() && !m_snapshot_loaded)
 				CoverFlow.drawText(adjusting);
 			m_vid.renderAAPass(i);
 		}
@@ -1688,7 +1689,7 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 			CoverFlow.draw();
 			m_vid.setup2DProjection();
 			CoverFlow.drawEffect();
-			if(!m_banner.GetSelectedGame() && (!m_snapshot_loaded && !m_soundThrdBusy && m_gameSelected))
+			if(!m_soundThrdBusy && !m_banner.GetSelectedGame() && !m_snapshot_loaded)
 				CoverFlow.drawText(adjusting);
 		}
 	}
@@ -2161,8 +2162,10 @@ void CMenu::_initCF(void)
 		m_cfg.setBool("GENERAL", "dump_list", false);
 	}
 
+	/*********************** sort coverflow list ***********************/
 	CoverFlow.setSorting(m_source_cnt > 1 ? (Sorting)0 : (Sorting)m_cfg.getInt(_domainFromView(), "sort", 0));
 	
+	/*********************** set box mode and small box mode **************************/
 	if(!m_sourceflow)
 	{
 		if(m_current_view == COVERFLOW_HOMEBREW)
@@ -2243,15 +2246,17 @@ void CMenu::_initCF(void)
 		CoverFlow.setSmallBoxMode(m_cfg.getBool(SOURCEFLOW_DOMAIN, "smallbox", false));
 	}
 	
+	/*********************** Setup coverflow covers settings ***********************/
 	CoverFlow.setBufferSize(m_cfg.getInt("GENERAL", "cover_buffer", 20));
 	CoverFlow.setHQcover(m_cfg.getBool("GENERAL", "cover_use_hq", true));
 	CoverFlow.start(m_imgsDir);
 	
+	/*********************** Get and set game list current item to center cover **************************/
 	if(!CoverFlow.empty())
 	{
-		bool path = false;
-		char cur_item[64];
-		cur_item[63] = '\0';
+		/* get ID or filename or source number of center cover */
+		string ID = "", filename = "";
+		u32 sourceNumber = 0;
 		if(m_current_view == COVERFLOW_PLUGIN && !m_sourceflow)
 		{
 			strncpy(m_plugin.PluginMagicWord, m_cfg.getString(PLUGIN_DOMAIN, "cur_magic").c_str(), 8);
@@ -2266,25 +2271,29 @@ void CMenu::_initCF(void)
 					}
 				}
 			}
-			path = true;
 			if(strncasecmp(m_plugin.PluginMagicWord, "4E47434D", 8) == 0)//NGCM
-				path = false;
-			if(strncasecmp(m_plugin.PluginMagicWord, "4E574949", 8) == 0)//NWII
-				path = false;
-			if(strncasecmp(m_plugin.PluginMagicWord, "4E414E44", 8) == 0)//NAND
-				path = false;
-			if(strncasecmp(m_plugin.PluginMagicWord, "454E414E", 8) == 0)//EMUNAND
-				path = false;
-			strncpy(cur_item, m_cfg.getString("plugin_item", m_plugin.PluginMagicWord).c_str(), 63);
+				ID = m_cfg.getString("plugin_item", m_plugin.PluginMagicWord, "");
+			else if(strncasecmp(m_plugin.PluginMagicWord, "4E574949", 8) == 0)//NWII
+				ID = m_cfg.getString("plugin_item", m_plugin.PluginMagicWord, "");
+			else if(strncasecmp(m_plugin.PluginMagicWord, "4E414E44", 8) == 0)//NAND
+				ID = m_cfg.getString("plugin_item", m_plugin.PluginMagicWord, "");
+			else if(strncasecmp(m_plugin.PluginMagicWord, "454E414E", 8) == 0)//EMUNAND
+				ID = m_cfg.getString("plugin_item", m_plugin.PluginMagicWord, "");
+			else
+				filename = m_cfg.getString("plugin_item", m_plugin.PluginMagicWord, "");
 		}
+		else if(m_sourceflow && sm_numbers.size() > 0)
+			sourceNumber = stoi(sm_numbers[sm_numbers.size() - 1]);
+		else if(m_current_view == COVERFLOW_HOMEBREW || (m_source_cnt > 1 && NoGameID(m_cfg.getInt("MULTI", "current_item_type", TYPE_PLUGIN)))) 
+			filename = m_cfg.getString(_domainFromView(), "current_item", "");
 		else
-		{
-			if(m_sourceflow || m_current_view == COVERFLOW_HOMEBREW || (m_source_cnt > 1 && NoGameID(m_cfg.getInt("MULTI", "current_item_type", TYPE_PLUGIN)))) 
-				path = true;
-			strncpy(cur_item, m_cfg.getString(_domainFromView(), "current_item").c_str(), 63);
-		}
-		if(!CoverFlow._setCurPosToID(cur_item, true, path))
-			CoverFlow._setCurPos(0);
+			ID = m_cfg.getString(_domainFromView(), "current_item", "");
+			
+		/* set center cover as coverflow current position */
+		if(!CoverFlow._setCurPosToCurItem(ID.c_str(), filename.c_str(), sourceNumber, true))
+			CoverFlow._setCurPos(0);// if not found set first cover as coverflow current position
+			
+		/************************** create and start the cover loader thread *************************/
 		CoverFlow.startCoverLoader();
 	}
 }

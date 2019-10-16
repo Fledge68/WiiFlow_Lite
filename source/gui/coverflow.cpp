@@ -1623,27 +1623,35 @@ void CCoverFlow::_setCurPos(u32 index)
 	_updateAllTargets(true);
 }
 
-bool CCoverFlow::_setCurPosToID(const char *id, bool instant, bool path)
+bool CCoverFlow::_setCurPosToCurItem(const char *id, const char *filename, u32 sourceNumber, bool instant)
 {
 	LockMutex lock(m_mutex);
 	u32 i, curPos = _currentPos();
 
-	if(m_items.empty() || (instant && m_covers == NULL) || strlen(id) == 0)
+	if(m_items.empty() || (instant && m_covers == NULL))
 		return false;
 	// 
 	for(i = 0; i < m_items.size(); ++i)
 	{
-		if(path)
+		if(strlen(filename) > 0)
 		{
 			//homebrew folder or rom title.ext
 			const char *name = strrchr(m_items[i].hdr->path, '/');
-			if(name != NULL && strcasecmp(name + 1, id) == 0)
+			if(name != NULL && strcasecmp(name + 1, filename) == 0)
 				break;
-			else if(strcmp(m_items[i].hdr->path, id) == 0)// scummvm
+			else if(strcmp(m_items[i].hdr->path, filename) == 0)// scummvm
 				break;
 		}
-		else if(strcmp(m_items[i].hdr->id, id) == 0)
-			break;
+		else if(strlen(id) > 0)
+		{
+			if(strcasecmp(m_items[i].hdr->id, id) == 0)
+				break;
+		}
+		else
+		{
+			if(m_items[i].hdr->settings[0] == sourceNumber)
+				break;
+		}
 	}
 	if(i >= m_items.size())
 		return false;
@@ -1909,7 +1917,7 @@ bool CCoverFlow::start(const string &m_imgsDir)
 {
 	if (m_items.empty()) return true;
 
-	// Sort items
+	/* sort coverflow items list based on sort type */
 	if (m_sorting == SORT_ALPHA)
 		sort(m_items.begin(), m_items.end(), CCoverFlow::_sortByAlpha);
 	else if (m_sorting == SORT_PLAYCOUNT)
@@ -1925,7 +1933,7 @@ bool CCoverFlow::start(const string &m_imgsDir)
 	else if (m_sorting == SORT_BTN_NUMBERS)
 		sort(m_items.begin(), m_items.end(), CCoverFlow::_sortByBtnNumbers);
 
-	// Load resident textures
+	/* load the colored skin/spine images if not already done */
 	if(!m_dvdskin_loaded)
 	{
 		if(TexHandle.fromImageFile(m_dvdSkin, fmt("%s/dvdskin.jpg", m_imgsDir.c_str())) != TE_OK)
@@ -1942,6 +1950,7 @@ bool CCoverFlow::start(const string &m_imgsDir)
 			return false;
 		m_dvdskin_loaded = true;
 	}
+	/* load the no pic or loading cover images if not already done */
 	if(!m_defcovers_loaded)
 	{
 		if(m_pngLoadCover.empty() || TexHandle.fromImageFile(m_boxLoadingTexture, m_pngLoadCover.c_str(), GX_TF_CMPR, 32, 512) != TE_OK)
@@ -1967,6 +1976,7 @@ bool CCoverFlow::start(const string &m_imgsDir)
 		m_defcovers_loaded = true;
 	}
 
+	/* allocate enough memory for the covers list (m_covers) based on rows * columns (m_range) */
 	if(m_covers != NULL)
 		MEM2_free(m_covers);
 	m_covers = NULL;

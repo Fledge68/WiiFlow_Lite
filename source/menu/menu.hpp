@@ -67,7 +67,9 @@ private:
 	bool Auto_hide_icons;
 	bool m_snapshot_loaded;
 	vector<dir_discHdr> m_gameList;
-
+	vector<string> tiers;
+	vector<string> sm_numbers;
+	
 	struct SZone
 	{
 		int x;

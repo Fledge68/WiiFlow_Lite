@@ -5,6 +5,7 @@
 #include "plugin/plugin.hpp"
 #include "plugin/crc32.h"
 #include "unzip/ZipFile.h"
+#include "banner/BannerWindow.hpp"
 
 s16 m_gameinfoLblRomInfo;
 
@@ -178,6 +179,11 @@ void CMenu::_gameinfo(void)
 	}
 	_hideGameInfo(false);
 	TexHandle.Cleanup(m_cart);
+	if(m_banner.GetSelectedGame())// if banner is available we need to clear snap and overlay here.
+	{
+		TexHandle.Cleanup(m_snap);
+		TexHandle.Cleanup(m_overlay);
+	}
 }
 
 void CMenu::_hideGameInfo(bool instant)
@@ -364,17 +370,52 @@ void CMenu::_textGameInfo(void)
 		gametdb.SetLanguageCode(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str());
 		
 		/* Get roms's title without the extra ()'s or []'s */
-		string ShortName = m_plugin.GetRomName(GameHdr->path);
+		string ShortName;
+		if(strrchr(GameHdr->path, '/') != NULL)
+			ShortName = m_plugin.GetRomName(GameHdr->path);
+		else
+		{
+			char title[64];
+			wcstombs(title, GameHdr->title, 63);
+			title[63] = '\0';
+			ShortName = title;
+		}
 		
 		/* Set to empty textures in case images not found */
 		m_btnMgr.setTexture(m_gameinfoLblSnap, emptyTex);
 		m_btnMgr.setTexture(m_gameinfoLblCartDisk, emptyTex);
 		m_btnMgr.setTexture(m_gameinfoLblOverlay, emptyTex);
 
-		if(m_snap.data != NULL)
+		if(m_banner.GetSelectedGame())
+		{
+			const char *snap_path = NULL;
+			if(strcasestr(platformName, "ARCADE") || strcasestr(platformName, "CPS") || !strncasecmp(platformName, "NEOGEO", 6))
+				snap_path = fmt("%s/%s/%s.png", m_snapDir.c_str(), platformName, ShortName.c_str());
+			else if(gametdb.GetName(GameID, TMP_Char))
+				snap_path = fmt("%s/%s/%s.png", m_snapDir.c_str(), platformName, TMP_Char);
+			
+			if(snap_path == NULL || !fsop_FileExist(snap_path))
+				snap_path = fmt("%s/%s/%s.png", m_snapDir.c_str(), platformName, GameID);
+
+			if(fsop_FileExist(snap_path))
+			{
+				TexHandle.fromImageFile(m_snap, snap_path);
+				m_btnMgr.setTexture(m_gameinfoLblSnap, m_snap, m_snap.width, m_snap.height);
+			}
+		}
+		else if(m_snap.data != NULL)
 			m_btnMgr.setTexture(m_gameinfoLblSnap, m_snap, m_snap.width, m_snap.height);
 			
-		if(m_overlay.data != NULL)
+		if(m_banner.GetSelectedGame())
+		{
+			const char *overlay_path = fmt("%s/%s_overlay.png", m_snapDir.c_str(), platformName);
+			if(fsop_FileExist(overlay_path))
+			{
+				TexHandle.fromImageFile(m_overlay, overlay_path);
+				m_btnMgr.setTexture(m_gameinfoLblOverlay, m_overlay, m_overlay.width, m_overlay.height);
+			}
+		}
+		else if(m_overlay.data != NULL)
 			m_btnMgr.setTexture(m_gameinfoLblOverlay, m_overlay, m_overlay.width, m_overlay.height);
 			
 		const char *cart_path = NULL;

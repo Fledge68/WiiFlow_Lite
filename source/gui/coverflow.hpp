@@ -52,7 +52,7 @@ public:
 	void startCoverLoader(void);
 	u32 _currentPos(void) const;
 	void _setCurPos(u32 index);
-	bool _setCurPosToID(const char *id, bool instant = false, bool path = false);
+	bool _setCurPosToCurItem(const char *id, const char *filename, u32 sourceNumber, bool instant = false);
 	// 
 	void simulateOtherScreenFormat(bool s);
 	// Commands

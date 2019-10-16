@@ -251,6 +251,7 @@ void CMenu::_hideGame(bool instant)
 	m_btnMgr.hide(m_gameBtnFavoriteOn, instant);
 	m_btnMgr.hide(m_gameBtnFavoriteOff, instant);
 	m_btnMgr.hide(m_gameBtnCategories, instant);
+	m_btnMgr.hide(m_gameLblSnapBg, instant);
 	m_btnMgr.hide(m_gameLblSnap, instant);
 	m_btnMgr.hide(m_gameLblOverlay, instant);
 	m_btnMgr.hide(m_gameLblSnapFrame, instant);
@@ -1044,7 +1045,15 @@ void * CMenu::_gameSoundThread(void *obj)
 	CMenu *m = (CMenu*)obj;
 	m->m_soundThrdBusy = true;
 	m->m_gamesound_changed = false;
+	m->m_snapshot_loaded = false;
+	m_banner_loaded = false;
+
 	CurrentBanner.ClearBanner();//clear current banner from memory
+
+	/* Set to empty textures to clear current snapshot from screen */
+	TexData emptyTex;
+	m_btnMgr.setTexture(m->m_gameLblSnap, emptyTex);
+	m_btnMgr.setTexture(m->m_gameLblOverlay, emptyTex);
 
 	u8 *custom_bnr_file = NULL;
 	u32 custom_bnr_size = 0;
@@ -1060,9 +1069,8 @@ void * CMenu::_gameSoundThread(void *obj)
 	char game_sound[256];
 	game_sound[255] = '\0';
 	
-	m->m_snapshot_loaded = false;
-	m_banner_loaded = false;
-	const dir_discHdr *GameHdr = CoverFlow.getHdr();	
+	const dir_discHdr *GameHdr = CoverFlow.getHdr();
+	
 	if(GameHdr->type == TYPE_PLUGIN)
 	{
 		const char *coverDir  = NULL;
@@ -1093,17 +1101,15 @@ void * CMenu::_gameSoundThread(void *obj)
 		/* if no banner try getting snap shot */
 		if((custom_bnr_size == 0 || custom_bnr_file == NULL) && m->m_platform.loaded())
 		{
+			gprintf("trying to get snapshot\n");
+			m_banner.DeleteBanner();
 			char GameID[7];
 			GameID[6] = '\0';
 			char platformName[264];
 			const char *TMP_Char = NULL;
 			GameTDB gametdb;
-			TexData emptyTex;
 			
-			/* Set to empty textures in case images not found */
-			m_btnMgr.setTexture(m->m_gameLblSnap, emptyTex);
-			m_btnMgr.setTexture(m->m_gameLblOverlay, emptyTex);
-			
+			strncpy(m_plugin.PluginMagicWord, fmt("%08x", GameHdr->settings[0]), 8);
 			snprintf(platformName, sizeof(platformName), "%s", m->m_platform.getString("PLUGINS", m_plugin.PluginMagicWord).c_str());
 			strncpy(GameID, GameHdr->id, 6);
 			
@@ -1122,7 +1128,16 @@ void * CMenu::_gameSoundThread(void *obj)
 					gametdb.SetLanguageCode(m->m_loc.getString(m->m_curLanguage, "gametdb_code", "EN").c_str());
 			
 					/* Get roms's title without the extra ()'s or []'s */
-					string ShortName = m_plugin.GetRomName(GameHdr->path);
+					string ShortName;
+					if(strrchr(GameHdr->path, '/') != NULL)
+						ShortName = m_plugin.GetRomName(GameHdr->path);
+					else
+					{
+						char title[64];
+						wcstombs(title, GameHdr->title, 63);
+						title[63] = '\0';
+						ShortName = title;
+					}
 
 					const char *snap_path = NULL;
 					if(strcasestr(platformName, "ARCADE") || strcasestr(platformName, "CPS") || !strncasecmp(platformName, "NEOGEO", 6))

@@ -21,7 +21,7 @@ static u8 i, j, k;
 int curPage;
 int numPages;
 vector<string> magicNums;
-vector<string> tiers;
+
 char btn_selected[16];
 char current_btn[16];
 int curflow = 1;
@@ -30,11 +30,16 @@ int channels_type;
 
 void CMenu::_sourceFlow()
 {
+	string numbers;
+	string trs;
 	const dir_discHdr *hdr = CoverFlow.getHdr();
-	if(m_cfg.getBool(SOURCEFLOW_DOMAIN, "remember_last_item", true))
-		m_cfg.setString(SOURCEFLOW_DOMAIN, "current_item", strrchr(hdr->path, '/') + 1);
-	else
-		m_cfg.remove(SOURCEFLOW_DOMAIN, "current_item");
+	
+	// save source number for return
+	sm_numbers[sm_numbers.size() - 1] = to_string(hdr->settings[0]);
+	numbers = sm_numbers[0];
+	for(u8 i = 1; i < sm_numbers.size(); i++)
+		numbers.append(',' + sm_numbers[i]);
+	m_cfg.setString(SOURCEFLOW_DOMAIN, "numbers", numbers);
 
 	memset(btn_selected, 0, 16);
 	strncpy(btn_selected, fmt("BUTTON_%i", hdr->settings[0]), 15);
@@ -91,12 +96,24 @@ void CMenu::_sourceFlow()
 			{
 				sm_tier = false;
 				tiers.erase(tiers.begin() + 1, tiers.end());
+				sm_numbers.erase(sm_numbers.begin() + 1, sm_numbers.end());
 			}
 			else
 			{
 				sm_tier = true;
 				tiers.push_back(fn);
+				sm_numbers.push_back("0");
 			}
+			trs = tiers[0];
+			numbers = sm_numbers[0];
+			for(u8 i = 1; i < tiers.size(); i++)
+			{
+				trs.append(',' + tiers[i]);
+				numbers.append(',' + sm_numbers[i]);
+			}
+			m_cfg.setString(SOURCEFLOW_DOMAIN, "tiers", trs);
+			m_cfg.setString(SOURCEFLOW_DOMAIN, "numbers", numbers);
+			
 			m_source.unload();
 			m_source.load(fmt("%s/%s", m_sourceDir.c_str(), fn.c_str()));
 			SF_cacheCovers = true;
@@ -152,11 +169,13 @@ bool CMenu::_srcTierBack(bool home)
 	{
 		fn = tiers[0];
 		tiers.erase(tiers.begin() + 1, tiers.end());
+		sm_numbers.erase(sm_numbers.begin() + 1, sm_numbers.end());
 	}
 	else
 	{
 		fn = tiers[tiers.size() - 2];
 		tiers.pop_back();
+		sm_numbers.pop_back();
 	}
 	
 	if(fn == SOURCE_FILENAME)
@@ -182,7 +201,13 @@ bool CMenu::_srcTierBack(bool home)
 		}
 		srcDomain = m_source.nextDomain().c_str();
 	}
-	_setSrcFlowBg();
+	if(m_sourceflow)
+		_setSrcFlowBg();
+	else
+	{
+		curPage = stoi(sm_numbers[sm_numbers.size() - 1]) / 12 + 1;
+		numPages = (m_max_source_btn / 12) + 1;
+	}
 	return true;
 }
 
@@ -362,7 +387,7 @@ bool CMenu::_Source()
 	bool newSource = false;
 	bool updateSource = false;
 	exitSource = false;
-	curPage = 1;
+	curPage = stoi(sm_numbers[sm_numbers.size() - 1]) / 12 + 1;
 	numPages = (m_max_source_btn / 12) + 1;
 	channels_type = m_cfg.getInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_REAL);
 	
@@ -374,18 +399,14 @@ bool CMenu::_Source()
 	{
 		updateSource = false;
 		_mainLoopCommon();
-		if(BTN_HOME_PRESSED)
+		if(BTN_HOME_PRESSED || BTN_B_PRESSED)
 		{
-			_hideSource();
-			_CfgSrc();
-			if(m_cfg.getBool(SOURCEFLOW_DOMAIN, "enabled"))
-				return true;
-			if(m_multisource)
-				newSource = true;
-			_showSource();
-			_updateSourceBtns();
+			if(!_srcTierBack(BTN_HOME_PRESSED))
+				exitSource = true;
+			else
+				_updateSourceBtns();
 		}
-		if((BTN_A_PRESSED && m_btnMgr.selected(m_sourceBtnBack)) || BTN_B_PRESSED)
+		if((BTN_A_PRESSED && m_btnMgr.selected(m_sourceBtnBack)) || exitSource)
 		{
 			if(!m_multisource) break;
 			if(selectedBtns == 0)
@@ -460,8 +481,10 @@ bool CMenu::_Source()
 					break;
 				}
 			}
-			if(!m_multisource && i <12)
+			if(!m_multisource && i < 12)
 			{
+				// save source number for return
+				sm_numbers.push_back(to_string(i + j));
 				exitSource = true;
 				m_catStartPage = 1;
 				if(source == "dml")
@@ -519,17 +542,33 @@ bool CMenu::_Source()
 					if(fsop_FileExist(fmt("%s/%s", m_sourceDir.c_str(), fn.c_str())))
 					{
 						if(fn == SOURCE_FILENAME)
+						{
 							sm_tier = false;
+							tiers.erase(tiers.begin() + 1, tiers.end());
+							sm_numbers.erase(sm_numbers.begin() + 1, sm_numbers.end());
+						}
 						else
+						{
 							sm_tier = true;
-						tiers.push_back(fn);
+							tiers.push_back(fn);
+							sm_numbers.push_back("0");
+						}
+						string trs = tiers[0];
+						string numbers = sm_numbers[0];
+						for(u8 i = 1; i < tiers.size(); i++)
+						{
+							trs.append(',' + tiers[i]);
+							numbers.append(',' + sm_numbers[i]);
+						}
+						m_cfg.setString(SOURCEFLOW_DOMAIN, "tiers", trs);
+						m_cfg.setString(SOURCEFLOW_DOMAIN, "numbers", numbers);
+			
 						m_source.unload();
 						m_source.load(fmt("%s/%s", m_sourceDir.c_str(), fn.c_str()));
 						fn.replace(fn.find("."), 4, "_flow");
 						curflow = m_cfg.getInt(SOURCEFLOW_DOMAIN, fn, m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
 						exitSource = false;
 						updateSource = true;
-						curPage = 1;
 						/* get max source button # */
 						m_max_source_btn = 0;
 						const char *srcDomain = m_source.firstDomain().c_str();
@@ -545,6 +584,7 @@ bool CMenu::_Source()
 							}
 							srcDomain = m_source.nextDomain().c_str();
 						}
+						curPage = stoi(sm_numbers[sm_numbers.size() - 1]) / 12 + 1;
 						numPages = (m_max_source_btn / 12) + 1;
 					}
 				}
@@ -747,9 +787,9 @@ void CMenu::_initSourceMenu()
 {
 	m_use_source = false;
 	
-	if(!m_source.load(fmt("%s/%s/%s", m_sourceDir.c_str(), m_themeName.c_str(), SOURCE_FILENAME)))// check for source_menu/theme/source_menu.ini
+	if(!fsop_FileExist(fmt("%s/%s/%s", m_sourceDir.c_str(), m_themeName.c_str(), SOURCE_FILENAME)))// check for source_menu/theme/source_menu.ini
 	{
-		if(!m_source.load(fmt("%s/%s", m_sourceDir.c_str(), SOURCE_FILENAME)))// check for source_menu/source_menu.ini
+		if(!fsop_FileExist(fmt("%s/%s", m_sourceDir.c_str(), SOURCE_FILENAME)))// check for source_menu/source_menu.ini
 			return;// no source_menu.ini so we dont init nor use source menu, just return.
 	}
 	else // if source_menu/theme/source_menu.ini found then change m_sourceDir to source_menu/theme/
@@ -757,6 +797,35 @@ void CMenu::_initSourceMenu()
 	
 	/* let wiiflow know source_menu.ini found and we will be using it */
 	m_use_source = true;
+	
+	sm_numbers.clear();
+	tiers.clear();
+	sm_numbers = m_cfg.getStrings(SOURCEFLOW_DOMAIN, "numbers");
+	tiers = m_cfg.getStrings(SOURCEFLOW_DOMAIN, "tiers");
+	if(tiers.size() == 0)
+	{
+		tiers.push_back(SOURCE_FILENAME);
+		sm_numbers.push_back("0");
+	}
+	sm_tier = false;
+	if(tiers.size() > 1)
+		sm_tier = true;
+		
+	string trs = tiers[0];
+	string numbers = sm_numbers[0];
+	for(u8 i = 1; i < tiers.size(); i++)
+	{
+		trs.append(',' + tiers[i]);
+		numbers.append(',' + sm_numbers[i]);
+	}
+	m_cfg.setString(SOURCEFLOW_DOMAIN, "tiers", trs);
+	m_cfg.setString(SOURCEFLOW_DOMAIN, "numbers", numbers);
+	
+	string fn = tiers[tiers.size() - 1];
+	m_source.load(fmt("%s/%s", m_sourceDir.c_str(), fn.c_str()));
+
+	fn.replace(fn.find("."), 4, "_flow");
+	curflow = m_cfg.getInt(SOURCEFLOW_DOMAIN, fn, m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
 	
 	/* get max source button # */
 	m_max_source_btn = 0;
@@ -774,13 +843,6 @@ void CMenu::_initSourceMenu()
 		srcDomain = m_source.nextDomain().c_str();
 	}
 
-	tiers.clear();
-	tiers.push_back(SOURCE_FILENAME);
-	sm_tier = false;
-	string fn = tiers[0];
-	fn.replace(fn.find("."), 4, "_flow");
-	curflow = m_cfg.getInt(SOURCEFLOW_DOMAIN, fn, m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
-	
 	_addUserLabels(m_sourceLblUser, ARRAY_SIZE(m_sourceLblUser), "SOURCE");
 	m_sourceBg = _texture("SOURCE/BG", "texture", theme.bg, false);
 	m_sourceLblTitle = _addLabel("SOURCE/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
