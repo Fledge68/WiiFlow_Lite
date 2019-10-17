@@ -55,9 +55,10 @@ void CMenu::_setMainBg()
 			switch(m_current_view)
 			{
 				case COVERFLOW_CHANNEL:
-					strncpy(m_plugin.PluginMagicWord, "4E414E44", 9);
-					//EMUCHANNEL:
-					//strncpy(m_plugin.PluginMagicWord, "454E414E", 9);
+					if(m_cfg.getInt(CHANNEL_DOMAIN, "channels_type") & CHANNELS_EMU)
+						strncpy(m_plugin.PluginMagicWord, "454E414E", 9);
+					else
+						strncpy(m_plugin.PluginMagicWord, "4E414E44", 9);
 					break;
 				case COVERFLOW_HOMEBREW:
 					strncpy(m_plugin.PluginMagicWord, "48425257", 9);
