@@ -88,19 +88,19 @@ private:
 		SHideParam hideParam;
 		EltType t;
 		bool visible;
-		int x;
+		int x;// x & y center of element (x + (width/2))
 		int y;
 		int w;
 		int h;
-		Vector3D pos;
-		Vector3D targetPos;
+		Vector3D pos;// actual current position (x,y,z) as it moves from hide x,y to targetpos or vice versa
+		Vector3D targetPos;// position to move to (x,y,z) usually hide position or x,y of element
 		u8 alpha;
 		u8 targetAlpha;
 		float scaleX;
 		float scaleY;
 		float targetScaleX;
 		float targetScaleY;
-		int moveByX;
+		int moveByX;// keeps track of how much element has moved so when reset function is called x and y can be reset.
 		int moveByY;
 	public:
 		virtual ~SElement(void) { }

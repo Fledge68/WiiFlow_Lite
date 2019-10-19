@@ -258,6 +258,8 @@ void CButtonsMgr::setTexture(s16 id, TexData &bg, int width, int height)
 				lbl->h = height;
 				lbl->x = lbl->x + width / 2;// set to new center based on new w and h
 				lbl->y = lbl->y + height / 2;
+				lbl->targetPos = Vector3D((float)(lbl->x + lbl->hideParam.dx), (float)(lbl->y + lbl->hideParam.dy), 0.f);
+				lbl->pos = lbl->targetPos;
 				break;
 			case GUIELT_PROGRESS:
 				break;
@@ -282,6 +284,8 @@ void CButtonsMgr::setTexture(s16 id, TexData &bg, int x_pos, int y_pos, int widt
 				lbl->h = height;
 				lbl->x = x_pos + width / 2;
 				lbl->y = y_pos + height / 2;
+				lbl->targetPos = Vector3D((float)(lbl->x + lbl->hideParam.dx), (float)(lbl->y + lbl->hideParam.dy), 0.f);
+				lbl->pos = lbl->targetPos;
 				break;
 			case GUIELT_PROGRESS:
 				break;

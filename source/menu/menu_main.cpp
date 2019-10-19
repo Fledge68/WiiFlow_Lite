@@ -823,8 +823,8 @@ int CMenu::main(void)
 			m_btnMgr.show(m_mainBtnCategories);
 			m_btnMgr.show(m_mainBtnConfig);
 			m_btnMgr.show(m_mainBtnHome);
-			m_btnMgr.show(m_favorites ? m_mainBtnFavoritesOn : m_mainBtnFavoritesOff, true);
-			m_btnMgr.hide(m_favorites ? m_mainBtnFavoritesOff : m_mainBtnFavoritesOn, true);
+			m_btnMgr.show(m_favorites ? m_mainBtnFavoritesOn : m_mainBtnFavoritesOff);
+			m_btnMgr.hide(m_favorites ? m_mainBtnFavoritesOff : m_mainBtnFavoritesOn);
 		}
 		else
 		{
