@@ -138,10 +138,6 @@ public:
 	u64 getChanTitle(void) const;
 	const char *getFilenameId(const dir_discHdr *curHdr);
 	//
-	bool getRenderTex(void);
-	void setRenderTex(bool);
-	void RenderTex(void);
-	//
 	static u32 InternalCoverColor(const char *ID, u32 DefCaseColor);
 	static bool checkCoverColor(const char *ID, const char *checkID[], u32 len);
 private:
@@ -341,7 +337,6 @@ private:
 	void _loadAllCovers(int i);
 	static bool _calcTexLQLOD(TexData &tex);
 	void _dropHQLOD(int i);
-	bool _loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover);
 	CLRet _loadCoverTex(u32 i, bool box, bool hq, bool blankBoxCover);
 	bool _invisibleCover(u32 x, u32 y);
 	void _instantTarget(int i);

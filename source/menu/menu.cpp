@@ -1657,8 +1657,6 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 	
 	/* background and coverflow drawing */
 	_updateBg();
-	if(CoverFlow.getRenderTex())
-		CoverFlow.RenderTex();
 	if(withCF && m_lqBg != NULL)
 		CoverFlow.makeEffectTexture(m_lqBg);
 	if(withCF && m_aa > 0)

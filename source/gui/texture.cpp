@@ -430,24 +430,6 @@ TexErr STexture::fromPNG(TexData &dest, const u8 *buffer, u8 f, u32 minMipSize, 
 		memset(tmpData2, 0, Size2);
 		PNGU_DecodeToRGBA8(ctx, imgProp.imgWidth, imgProp.imgHeight, tmpData2, 0, 0xFF);
 		PNGU_ReleaseImageContext(ctx);
-		if(dest.thread && (imgProp.imgColorType == PNGU_COLOR_TYPE_GRAY_ALPHA 
-			|| imgProp.imgColorType == PNGU_COLOR_TYPE_RGB_ALPHA)
-			&& imgProp.imgWidth <= 640 && imgProp.imgHeight <= 480)
-		{
-			dest.format = GX_TF_RGBA8;
-			dest.width = imgProp.imgWidth;
-			dest.height = imgProp.imgHeight;
-			dest.dataSize = GX_GetTexBufferSize(dest.width, dest.height, dest.format, GX_FALSE, 0);
-			dest.data = (u8*)MEM2_alloc(dest.dataSize);
-			_convertToRGBA8(dest.data, tmpData2, dest.width, dest.height);
-			DCFlushRange(dest.data, dest.dataSize);
-			CoverFlow.setRenderTex(true);
-			while(CoverFlow.getRenderTex())
-				usleep(50);
-			_convertToRGBA(tmpData2, dest.data, dest.width, dest.height);
-			DCFlushRange(tmpData2, Size2);
-			Cleanup(dest);
-		}
 		tmpData2 = _genMipMaps(tmpData2, imgProp.imgWidth, imgProp.imgHeight, maxLODTmp, baseWidth, baseHeight);
 		if(tmpData2 == NULL)
 		{
