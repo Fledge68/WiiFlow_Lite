@@ -339,7 +339,7 @@ int CMenu::main(void)
 	bool show_plugin = !m_cfg.getBool(PLUGIN_DOMAIN, "disable", false);
 	bool show_gamecube = !m_cfg.getBool(GC_DOMAIN, "disable", false);
 	bool show_homebrew = !m_cfg.getBool(HOMEBREW_DOMAIN, "disable", false);
-	m_multisource = m_cfg.getBool("GENERAL", "multisource", false);
+	//m_multisource = m_cfg.getBool("GENERAL", "multisource", false);
 	bool m_source_on_start = m_cfg.getBool("GENERAL", "source_on_start", false);
 	bool bheld = false;// bheld to indicate btn b was pressed or held
 	bool bUsed = false;// bused to indicate that it was actually used for something

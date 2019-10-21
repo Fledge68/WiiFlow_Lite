@@ -103,7 +103,6 @@ private:
 	u8 m_max_source_btn;
 	char cf_domain[16];
 	bool m_use_source;// source_menu.ini found & ok to use source menu/flow
-	bool m_multisource;// multi select source menu
 	bool m_sourceflow;// in sourceflow view
 	bool m_refreshGameList;
 	bool m_bnr_settings;

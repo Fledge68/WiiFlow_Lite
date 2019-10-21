@@ -6,7 +6,6 @@ s16 m_sourceLblPage;
 s16 m_sourceBtnPageM;
 s16 m_sourceBtnPageP;
 s16 m_sourceBtnBack;
-s16 m_sourceBtnClear;
 s16 m_sourceLblTitle;
 s16 m_sourceBtnSource[12];
 s16 m_sourceLblUser[4];
@@ -15,8 +14,6 @@ TexData m_sourceBg;
 
 string source;
 bool exitSource = false;
-u8 sourceBtn;
-u8 selectedBtns;
 static u8 i, j, k;
 int curPage;
 int numPages;
@@ -28,6 +25,7 @@ int curflow = 1;
 bool sm_tier = false;
 int channels_type;
 
+/* this is what happens when a sourceflow cover is clicked on */
 void CMenu::_sourceFlow()
 {
 	string numbers;
@@ -145,11 +143,13 @@ void CMenu::_sourceFlow()
 	_setSrcOptions();
 }
 
+/* get sourceflow cover layout number */
 int CMenu::_getSrcFlow(void)
 {
 	return curflow;
 }
 
+/* set sourceflow cover layout to version number and set it in wiiflow_lite.ini */
 void CMenu::_setSrcFlow(int version)
 {
 	curflow = version;
@@ -160,6 +160,7 @@ void CMenu::_setSrcFlow(int version)
 		m_cfg.setInt(SOURCEFLOW_DOMAIN, "last_cf_mode", curflow);
 }
 
+/* return back to previous tier or home base tier */
 bool CMenu::_srcTierBack(bool home)
 {
 	if(!sm_tier)
@@ -211,6 +212,7 @@ bool CMenu::_srcTierBack(bool home)
 	return true;
 }
 
+/* set custom sourceflow background image if available */
 void CMenu::_setSrcFlowBg(void)
 {
 	TexHandle.Cleanup(sfbgimg);
@@ -231,6 +233,7 @@ void CMenu::_setSrcFlowBg(void)
 		_setBg(m_mainBg, m_mainBgLQ);
 }
 
+/* end of sourceflow stuff - start of source menu stuff */
 void CMenu::_hideSource(bool instant)
 {
 	m_btnMgr.hide(m_sourceLblTitle, instant);
@@ -238,7 +241,6 @@ void CMenu::_hideSource(bool instant)
 	m_btnMgr.hide(m_sourceBtnPageM, instant);
 	m_btnMgr.hide(m_sourceBtnPageP, instant);
 	m_btnMgr.hide(m_sourceBtnBack, instant);
-	m_btnMgr.hide(m_sourceBtnClear, instant);	
 
 	for(i = 0; i < ARRAY_SIZE(m_sourceLblUser); ++i)
 		if(m_sourceLblUser[i] != -1)
@@ -261,8 +263,6 @@ void CMenu::_showSource(void)
 
 	m_btnMgr.show(m_sourceLblTitle);
 	m_btnMgr.show(m_sourceBtnBack);
-	if(m_multisource)
-		m_btnMgr.show(m_sourceBtnClear);
 }
 
 void CMenu::_updateSourceBtns(void)
@@ -281,8 +281,6 @@ void CMenu::_updateSourceBtns(void)
 		m_btnMgr.hide(m_sourceBtnPageP);
 	}
 
-	sourceBtn = 0;
-	selectedBtns = 0;
 	j = (curPage - 1) * 12;
 	for(i = j; i < (j + 12); ++i)
 	{
@@ -293,76 +291,14 @@ void CMenu::_updateSourceBtns(void)
 			memset(current_btn, 0, 16);
 			strncpy(current_btn, fmt("BUTTON_%i", i), 15);
 			string btnSource = m_source.getString(current_btn, "source", "");
-			bool src_selected = false;
 			if(btnSource == "")
 				continue;
-			if(m_multisource)
-			{
-				if(btnSource == "allplugins")
-				{
-					const vector<bool> &EnabledPlugins = m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
-					if(EnabledPlugins.size() == 0)//all plugins enabled
-					{
-						if(m_current_view & COVERFLOW_PLUGIN)
-						{
-							sourceBtn = i;
-							selectedBtns++;
-							src_selected = true;
-						}
-					}
-				}
-				else if(btnSource == "plugin")
-				{
-					magicNums.clear();
-					magicNums = m_source.getStrings(current_btn, "magic", ',');
-					u32 magic = strtoul(magicNums.at(0).c_str(), NULL, 16);
-					if(m_plugin.GetEnableStatus(m_cfg, magic))
-					{
-						if(m_current_view & COVERFLOW_PLUGIN)
-						{
-							sourceBtn = i;
-							selectedBtns++;
-							src_selected = true;
-						}
-					}
-				}
-				else if(btnSource == "realnand" && (m_current_view & COVERFLOW_CHANNEL) && (channels_type & CHANNELS_REAL))
-				{
-					sourceBtn = i;
-					selectedBtns++;
-					src_selected = true;
-				}
-				else if(btnSource == "emunand" && (m_current_view & COVERFLOW_CHANNEL) && (channels_type & CHANNELS_EMU))
-				{
-					sourceBtn = i;
-					selectedBtns++;
-					src_selected = true;
-				}
-				else if(btnSource == "bothnand" && (m_current_view & COVERFLOW_CHANNEL) && (channels_type & CHANNELS_BOTH))
-				{
-					sourceBtn = i;
-					selectedBtns++;
-					src_selected = true;
-				}
-				else if(btnSource == "dml" || btnSource == "homebrew" || btnSource == "wii")
-				{
-					u8 flow = (btnSource == "dml" ? COVERFLOW_GAMECUBE : (btnSource == "homebrew" ? COVERFLOW_HOMEBREW : COVERFLOW_WII));
-					if(m_current_view & flow)
-					{
-						sourceBtn = i;
-						selectedBtns++;
-						src_selected = true;
-					}
-				}
-			}
-			char btn_image[255];
-			if(src_selected)
-				snprintf(btn_image, sizeof(btn_image), "%s", m_source.getString(current_btn,"image_s", "").c_str());
-			else
-				snprintf(btn_image, sizeof(btn_image), "%s", m_source.getString(current_btn,"image", "").c_str());
 			
-			//char btn_image_s[255];
-			//snprintf(btn_image_s, sizeof(btn_image_s), "%s", m_source.getString(current_btn,"image_s", "").c_str());
+			char btn_image[255];
+			snprintf(btn_image, sizeof(btn_image), "%s", m_source.getString(current_btn,"image", "").c_str());
+			
+			char btn_image_s[255];
+			snprintf(btn_image_s, sizeof(btn_image_s), "%s", m_source.getString(current_btn,"image_s", "").c_str());
 			
 			TexData texConsoleImg;
 			TexData texConsoleImgs;
@@ -371,9 +307,9 @@ void CMenu::_updateSourceBtns(void)
 				if(TexHandle.fromImageFile(texConsoleImg, fmt("%s/%s", m_sourceDir.c_str(), btn_image)) != TE_OK)
 					TexHandle.fromImageFile(texConsoleImg, fmt("%s/favoriteson.png", m_imgsDir.c_str()));
 			}
-			if(TexHandle.fromImageFile(texConsoleImgs, fmt("%s/%s/%s", m_sourceDir.c_str(), m_themeName.c_str(), btn_image)) != TE_OK)
+			if(TexHandle.fromImageFile(texConsoleImgs, fmt("%s/%s/%s", m_sourceDir.c_str(), m_themeName.c_str(), btn_image_s)) != TE_OK)
 			{
-				if(TexHandle.fromImageFile(texConsoleImgs, fmt("%s/%s", m_sourceDir.c_str(), btn_image)) != TE_OK)
+				if(TexHandle.fromImageFile(texConsoleImgs, fmt("%s/%s", m_sourceDir.c_str(), btn_image_s)) != TE_OK)
 					TexHandle.fromImageFile(texConsoleImgs, fmt("%s/favoritesons.png", m_imgsDir.c_str()));
 			}
 			m_btnMgr.setBtnTexture(m_sourceBtnSource[i - j], texConsoleImg, texConsoleImgs);
@@ -385,7 +321,6 @@ void CMenu::_updateSourceBtns(void)
 bool CMenu::_Source()
 {
 	bool newSource = false;
-	bool updateSource = false;
 	exitSource = false;
 	curPage = stoi(sm_numbers[sm_numbers.size() - 1]) / 12 + 1;
 	numPages = (m_max_source_btn / 12) + 1;
@@ -397,40 +332,16 @@ bool CMenu::_Source()
 
 	while(!m_exit)
 	{
-		updateSource = false;
 		_mainLoopCommon();
 		if(BTN_HOME_PRESSED || BTN_B_PRESSED)
 		{
 			if(!_srcTierBack(BTN_HOME_PRESSED))
-				exitSource = true;
+				break;
 			else
 				_updateSourceBtns();
 		}
-		if((BTN_A_PRESSED && m_btnMgr.selected(m_sourceBtnBack)) || exitSource)
-		{
-			if(!m_multisource) break;
-			if(selectedBtns == 0)
-			{
-				m_current_view = COVERFLOW_WII;
-				m_source_cnt = 1;
-				m_cfg.setUInt("GENERAL", "sources", m_current_view);
-				break;
-			}
-			if(selectedBtns == 1)
-			{
-				memset(btn_selected, 0, 16);
-				strncpy(btn_selected, fmt("BUTTON_%i", sourceBtn), 15);
-				source = m_source.getString(btn_selected, "source", "");
-				_setSrcOptions();
-			}
-			
-			m_cfg.setUInt("GENERAL", "sources", m_current_view);
-			m_source_cnt = 0;
-			for(i = 1; i < 32; i <<= 1)
-				if(m_current_view & i)
-					m_source_cnt++;
+		if(BTN_A_PRESSED && m_btnMgr.selected(m_sourceBtnBack))
 			break;
-		}
 		else if(BTN_UP_PRESSED)
 			m_btnMgr.up();
 		else if(BTN_DOWN_PRESSED)
@@ -453,21 +364,6 @@ bool CMenu::_Source()
 				m_btnMgr.click(m_sourceBtnPageP);
 			_updateSourceBtns();
 		}
-		else if((BTN_MINUS_PRESSED || BTN_PLUS_PRESSED) && sm_tier)
-		{
-			_srcTierBack(BTN_PLUS_PRESSED);
-			updateSource = true;
-			curPage = 1;
-			numPages = (m_max_source_btn / 12) + 1;
-		}
-			
-		else if(BTN_A_PRESSED && m_btnMgr.selected(m_sourceBtnClear))
-		{
-			m_current_view = COVERFLOW_NONE;
-			for(j = 0; m_plugin.PluginExist(j); j++)
-				m_plugin.SetEnablePlugin(m_cfg, j, 1);
-			updateSource = true;
-		}
 		else if(BTN_A_PRESSED)
 		{
 			j = (curPage - 1) * 12;
@@ -481,7 +377,7 @@ bool CMenu::_Source()
 					break;
 				}
 			}
-			if(!m_multisource && i < 12)
+			if(i < 12)
 			{
 				// save source number for return
 				sm_numbers.push_back(to_string(i + j));
@@ -568,7 +464,6 @@ bool CMenu::_Source()
 						fn.replace(fn.find("."), 4, "_flow");
 						curflow = m_cfg.getInt(SOURCEFLOW_DOMAIN, fn, m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
 						exitSource = false;
-						updateSource = true;
 						/* get max source button # */
 						m_max_source_btn = 0;
 						const char *srcDomain = m_source.firstDomain().c_str();
@@ -586,130 +481,13 @@ bool CMenu::_Source()
 						}
 						curPage = stoi(sm_numbers[sm_numbers.size() - 1]) / 12 + 1;
 						numPages = (m_max_source_btn / 12) + 1;
+						_updateSourceBtns();
 					}
 				}
 				else //if(source == "wii") or source is invalid or empty default to wii
 				{
 					m_current_view = COVERFLOW_WII;
 					_setSrcOptions();
-				}
-			}
-			if(m_multisource && i < 12) /* m_multisource */
-			{
-				updateSource = true;
-				if(source == "wii")
-					m_current_view ^= COVERFLOW_WII;// toggle on/off
-				else if(source == "dml")
-					m_current_view ^= COVERFLOW_GAMECUBE;
-				else if(source == "emunand")
-				{
-					if(m_current_view & COVERFLOW_CHANNEL)// if cf channel on then swith only emu type
-						channels_type ^= CHANNELS_EMU;
-					else
-						channels_type = CHANNELS_EMU;// if cf channel off then set to only emu type
-					if(channels_type == 0)// if cf channel on and type is set to nothing
-					{
-						channels_type = CHANNELS_REAL;// make sure channels type is set to default REAL
-						m_current_view &= ~COVERFLOW_CHANNEL;// turn off coverflow channels
-					}
-					else
-						m_current_view |= COVERFLOW_CHANNEL;// turn on coverflow channels
-				}
-				else if(source == "realnand")
-				{
-					if(m_current_view & COVERFLOW_CHANNEL)
-						channels_type ^= CHANNELS_REAL;
-					else
-						channels_type = CHANNELS_REAL;
-					if(channels_type == 0)
-					{
-						channels_type = CHANNELS_REAL;
-						m_current_view &= ~COVERFLOW_CHANNEL;
-					}
-					else
-						m_current_view |= COVERFLOW_CHANNEL;
-				}
-				else if(source == "bothnand")
-				{
-					if(m_current_view & COVERFLOW_CHANNEL)
-						channels_type ^= CHANNELS_BOTH;
-					else
-						channels_type = CHANNELS_BOTH;
-					if(channels_type == 0)
-					{
-						channels_type = CHANNELS_REAL;
-						m_current_view &= ~COVERFLOW_CHANNEL;
-					}
-					else
-						m_current_view |= COVERFLOW_CHANNEL;
-				}
-				else if(source == "homebrew")
-					m_current_view ^= COVERFLOW_HOMEBREW;
-				else if(source == "allplugins")
-				{
-					m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
-					for(j = 0; m_plugin.PluginExist(j); ++j)		/* opposite */
-						m_plugin.SetEnablePlugin(m_cfg, j, (enabledPluginsCount == 0) ? 2 : 1);
-					m_current_view = enabledPluginsCount == 0 ? (m_current_view | COVERFLOW_PLUGIN) : (m_current_view & ~COVERFLOW_PLUGIN);
-				}
-				else if(source == "plugin")
-				{
-					if(!(m_current_view & COVERFLOW_PLUGIN))
-					{
-						for(j = 0; m_plugin.PluginExist(j); ++j)		/* clear all */
-							m_plugin.SetEnablePlugin(m_cfg, j, 1);
-					}
-					magicNums.clear();
-					magicNums = m_source.getStrings(btn_selected, "magic", ',');
-					if(!magicNums.empty())
-					{
-						for(vector<string>::iterator itr = magicNums.begin(); itr != magicNums.end(); itr++)
-						{
-							s8 exist = m_plugin.GetPluginPosition(strtoul(itr->c_str(), NULL, 16));
-							if(exist >= 0)
-							{
-								bool enabled = m_plugin.GetEnableStatus(m_cfg, strtoul(itr->c_str(), NULL, 16));
-								m_plugin.SetEnablePlugin(m_cfg, exist, enabled ? 1 : 2);
-							}
-						}
-					}
-					m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
-					m_current_view = enabledPluginsCount > 0 ? (m_current_view | COVERFLOW_PLUGIN) : (m_current_view & ~COVERFLOW_PLUGIN);
-				}
-				else if(source =="new_source")
-				{
-					string fn = m_source.getString(btn_selected, "magic", "");
-					if(fsop_FileExist(fmt("%s/%s", m_sourceDir.c_str(), fn.c_str())))
-					{
-						if(fn == SOURCE_FILENAME)
-							sm_tier = false;
-						else
-							sm_tier = true;
-						tiers.push_back(fn);
-						m_source.unload();
-						m_source.load(fmt("%s/%s", m_sourceDir.c_str(), fn.c_str()));
-						fn.replace(fn.find("."), 4, "_flow");
-						curflow = m_cfg.getInt(SOURCEFLOW_DOMAIN, fn, m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
-						exitSource = false;
-						updateSource = true;
-						curPage = 1;
-						/* get max source button # */
-						m_max_source_btn = 0;
-						const char *srcDomain = m_source.firstDomain().c_str();
-						while(1)
-						{
-							if(strlen(srcDomain) < 2)
-								break;
-							if(strrchr(srcDomain, '_') != NULL)
-							{
-								int srcBtnNumber = atoi(strrchr(srcDomain, '_') + 1);
-								if(srcBtnNumber > m_max_source_btn)
-									m_max_source_btn = srcBtnNumber;
-							}
-							srcDomain = m_source.nextDomain().c_str();
-						}
-						numPages = (m_max_source_btn / 12) + 1;
-					}
 				}
 			}
 		}
@@ -719,11 +497,6 @@ bool CMenu::_Source()
 			m_source_cnt = 1;
 			newSource = true;
 			break;
-		}
-		if(updateSource)
-		{
-			newSource = true;
-			_updateSourceBtns();
 		}
 	}
 	m_cfg.setInt(CHANNEL_DOMAIN, "channels_type", channels_type);
@@ -744,7 +517,6 @@ void CMenu::_setSrcOptions(void)
 		m_cat.setString("GENERAL", "selected_categories", newSelCats);
 		m_clearCats = false;
 	}
-	if(m_multisource) return;
 	/* autoboot */
 	char autoboot[64];
 	autoboot[63] = '\0';
@@ -850,7 +622,6 @@ void CMenu::_initSourceMenu()
 	m_sourceBtnPageM = _addPicButton("SOURCE/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 20, 400, 48, 48);
 	m_sourceBtnPageP = _addPicButton("SOURCE/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 172, 400, 48, 48);
 	m_sourceBtnBack = _addButton("SOURCE/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
-	m_sourceBtnClear = _addButton("SOURCE/ALL_BTN", theme.btnFont, L"", 270, 400, 100, 48, theme.btnFontColor);
 
 	int row;
 	int col;
@@ -872,7 +643,6 @@ void CMenu::_initSourceMenu()
 	_setHideAnim(m_sourceBtnPageM, "SOURCE/PAGE_MINUS", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_sourceBtnPageP, "SOURCE/PAGE_PLUS", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_sourceBtnBack, "SOURCE/BACK_BTN", 0, 0, 1.f, -1.f);
-	_setHideAnim(m_sourceBtnClear, "SOURCE/ALL_BTN", 0, 0, 1.f, -1.f);
 
 	_textSource();
 	_hideSource(true);
@@ -882,5 +652,4 @@ void CMenu::_textSource(void)
 {
 	m_btnMgr.setText(m_sourceLblTitle, _t("stup1", L"Select Source"));
 	m_btnMgr.setText(m_sourceBtnBack, _t("cfg10", L"Back"));
-	m_btnMgr.setText(m_sourceBtnClear, _t("cat2", L"Clear"));
 }
