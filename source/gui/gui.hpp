@@ -64,6 +64,7 @@ public:
 	void noHover(bool nohover = false);
 	void click(s16 id = -1);
 	bool selected(s16 button = -1);
+	void setSelected(s16 button);
 	void setRumble(int, bool wii = false, bool gc = false, bool wupc = false);
 	void deselect(void){ for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--) m_selected[chan] = -1; }
 	void stopSounds(void);

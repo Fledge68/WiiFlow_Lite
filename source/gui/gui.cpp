@@ -487,6 +487,15 @@ bool CButtonsMgr::selected(s16 button)
 	return false;
 }
 
+void CButtonsMgr::setSelected(s16 button)
+{
+	SElement &b = *m_elts[button];
+	m_selected[0] = button;
+	b.targetScaleX = 1.1f;
+	b.targetScaleY = 1.1f;
+}
+
+
 // **********************************************************************************************
 // * Plays the click sound for the function above.  Also sets rumble off and enlarges button    *
 // **********************************************************************************************

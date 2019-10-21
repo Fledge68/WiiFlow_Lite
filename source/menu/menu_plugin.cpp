@@ -162,6 +162,7 @@ void CMenu::_PluginSettings()
 					else
 						m_plugin.SetEnablePlugin(m_cfg, i+IteratorHelp-1);// switch plugin from off to on or vice versa
 					_updatePluginCheckboxes();
+					m_btnMgr.setSelected(m_pluginBtn[i]);
 					break;
 				}
 			}

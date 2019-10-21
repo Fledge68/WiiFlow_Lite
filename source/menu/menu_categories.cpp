@@ -375,15 +375,19 @@ void CMenu::_CategorySettings(bool fromGameSet)
 					{
 						case '0':
 							m_btnMgr.show(m_categoryBtnCat[i]);
+							m_btnMgr.setSelected(m_categoryBtnCat[i]);
 							break;
 						case '1':
 							m_btnMgr.show(m_categoryBtnCats[i]);
+							m_btnMgr.setSelected(m_categoryBtnCats[i]);
 							break;
 						case '2':
 							m_btnMgr.show(m_categoryBtnCatHid[i]);
+							m_btnMgr.setSelected(m_categoryBtnCatHid[i]);
 							break;
 						default:
 							m_btnMgr.show(m_categoryBtnCatReq[i]);
+							m_btnMgr.setSelected(m_categoryBtnCatReq[i]);
 							break;
 					}
 					break;
