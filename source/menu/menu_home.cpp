@@ -24,15 +24,15 @@
 s16 m_homeLblTitle;
 s16 m_homeLblUser[4];
 
-s16 m_homeBtnSettings;
+s16 m_homeBtnHelp;
 s16 m_homeBtnReloadCache;
-s16 m_homeBtnUpdate;
 s16 m_homeBtnExplorer;
-
-s16 m_homeBtnInstall;
-s16 m_homeBtnAbout;
-s16 m_homeBtnExitTo;
 s16 m_homeBtnSelPlugin;
+
+s16 m_homeBtnCredits;
+s16 m_homeBtnInstall;
+s16 m_homeBtnExitTo;
+s16 m_homeBtnSettings;
 
 s16 m_homeLblBattery;
 
@@ -41,9 +41,9 @@ s16 m_exittoLblTitle;
 s16 m_exittoLblUser[4];
 s16 m_homeBtnExitToHBC;
 s16 m_homeBtnExitToMenu;
+s16 m_homeBtnExitToNeek;
 s16 m_homeBtnExitToPriiloader;
 s16 m_homeBtnExitToBootmii;
-s16 m_homeBtnExitToNeek;
 
 TexData m_homeBg;
 static const wstringEx PLAYER_BATTERY_LABEL("P1 %003.f%% | P2 %003.f%% | P3 %003.f%% | P4 %003.f%%");
@@ -51,6 +51,10 @@ static const wstringEx PLAYER_BATTERY_LABEL("P1 %003.f%% | P2 %003.f%% | P3 %003
 bool CMenu::_Home(void)
 {
 	SetupInput();
+	if(isWiiVC || m_locked)
+		m_btnMgr.setText(m_homeBtnExitTo, _t("home12", L"Exit"));
+	else
+		m_btnMgr.setText(m_homeBtnExitTo, _t("home5", L"Exit To"));
 	_showHome();
 
 	while(!m_exit)
@@ -74,7 +78,7 @@ bool CMenu::_Home(void)
 		}
 		else if(BTN_A_PRESSED)
 		{
-			if(m_btnMgr.selected(m_homeBtnSettings))//actually help guide btn
+			if(m_btnMgr.selected(m_homeBtnHelp))
 			{
 				_hideHome();
 				_about(true);
@@ -95,7 +99,16 @@ bool CMenu::_Home(void)
 				m_refreshGameList = true;
 				break;
 			}
-			else if(m_btnMgr.selected(m_homeBtnUpdate))
+			else if(m_btnMgr.selected(m_homeBtnSettings))
+			{
+				_hideHome();
+				_config(1);
+				//if(m_refreshGameList)
+					break;
+				_showHome();
+			}
+			/* use this for export game list
+			else if(m_btnMgr.selected(m_homeBtnUpdate))// cache covers
 			{
 				_hideHome();
 				m_btnMgr.setProgress(m_wbfsPBar, 0.f, true);
@@ -121,14 +134,14 @@ bool CMenu::_Home(void)
 					}
 				}
 				_showHome();
-			}
-			else if(m_btnMgr.selected(m_homeBtnInstall))
+			}*/
+			else if(m_btnMgr.selected(m_homeBtnInstall))// replace
 			{
 				_hideHome();
 				_wbfsOp(WO_ADD_GAME);
 				_showHome();
 			}
-			else if(m_btnMgr.selected(m_homeBtnAbout))
+			else if(m_btnMgr.selected(m_homeBtnCredits))
 			{
 				_hideHome();
 				_about();
@@ -142,10 +155,7 @@ bool CMenu::_Home(void)
 					exitHandler(EXIT_TO_MENU);
 					break;
 				}
-				if(m_locked)
-					exitHandler(WIIFLOW_DEF);
-				else 
-					_ExitTo();
+				_ExitTo();
 				_showHome();
 			}
 			else if(m_btnMgr.selected(m_homeBtnExplorer))
@@ -252,15 +262,15 @@ void CMenu::_showHome(void)
 
 	if(!m_locked)
 	{	
-		m_btnMgr.show(m_homeBtnSettings);
+		m_btnMgr.show(m_homeBtnHelp);
 		m_btnMgr.show(m_homeBtnReloadCache);
-		m_btnMgr.show(m_homeBtnUpdate);
 		m_btnMgr.show(m_homeBtnExplorer);
 
+		m_btnMgr.show(m_homeBtnCredits);
 		m_btnMgr.show(m_homeBtnInstall);
-		m_btnMgr.show(m_homeBtnAbout);
 		m_btnMgr.show(m_homeBtnExitTo);
 	}
+	m_btnMgr.show(m_homeBtnSettings);
 	m_btnMgr.show(m_homeBtnSelPlugin);
 
 	m_btnMgr.show(m_homeLblBattery);
@@ -277,10 +287,10 @@ void CMenu::_showExitTo(void)
 
 	m_btnMgr.show(m_homeBtnExitToHBC);
 	m_btnMgr.show(m_homeBtnExitToMenu);
+	m_btnMgr.show(m_homeBtnExitToNeek);
 	m_btnMgr.show(m_homeBtnExitToPriiloader);// exit to wii u on wii u
 	if(IsOnWiiU() == false)
 		m_btnMgr.show(m_homeBtnExitToBootmii);
-	m_btnMgr.show(m_homeBtnExitToNeek);
 
 	for(u8 i = 0; i < ARRAY_SIZE(m_exittoLblUser); ++i)
 		if(m_exittoLblUser[i] != -1)
@@ -291,15 +301,15 @@ void CMenu::_hideHome(bool instant)
 {
 	m_btnMgr.hide(m_homeLblTitle, instant);
 
-	m_btnMgr.hide(m_homeBtnSettings, instant);
+	m_btnMgr.hide(m_homeBtnHelp, instant);
 	m_btnMgr.hide(m_homeBtnReloadCache, instant);
-	m_btnMgr.hide(m_homeBtnUpdate, instant);
 	m_btnMgr.hide(m_homeBtnExplorer, instant);
-
-	m_btnMgr.hide(m_homeBtnInstall, instant);
-	m_btnMgr.hide(m_homeBtnAbout, instant);
-	m_btnMgr.hide(m_homeBtnExitTo, instant);
 	m_btnMgr.hide(m_homeBtnSelPlugin, instant);
+
+	m_btnMgr.hide(m_homeBtnCredits, instant);
+	m_btnMgr.hide(m_homeBtnInstall, instant);
+	m_btnMgr.hide(m_homeBtnExitTo, instant);
+	m_btnMgr.hide(m_homeBtnSettings, instant);
 
 	m_btnMgr.hide(m_homeLblBattery, instant);
 
@@ -314,9 +324,9 @@ void CMenu::_hideExitTo(bool instant)
 
 	m_btnMgr.hide(m_homeBtnExitToHBC, instant);
 	m_btnMgr.hide(m_homeBtnExitToMenu, instant);
+	m_btnMgr.hide(m_homeBtnExitToNeek, instant);
 	m_btnMgr.hide(m_homeBtnExitToPriiloader, instant);
 	m_btnMgr.hide(m_homeBtnExitToBootmii, instant);
-	m_btnMgr.hide(m_homeBtnExitToNeek, instant);
 
 	for(u8 i = 0; i < ARRAY_SIZE(m_exittoLblUser); ++i)
 		if(m_exittoLblUser[i] != -1)
@@ -331,29 +341,29 @@ void CMenu::_initHomeAndExitToMenu()
 	_addUserLabels(m_homeLblUser, ARRAY_SIZE(m_homeLblUser), "HOME");
 	m_homeLblTitle = _addLabel("HOME/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 
-	m_homeBtnSettings = _addButton("HOME/SETTINGS", theme.btnFont, L"", 60, 100, 250, 48, theme.btnFontColor);
+	m_homeBtnHelp = _addButton("HOME/HELP", theme.btnFont, L"", 60, 100, 250, 48, theme.btnFontColor);
 	m_homeBtnReloadCache = _addButton("HOME/RELOAD_CACHE", theme.btnFont, L"", 60, 180, 250, 48, theme.btnFontColor);
 	m_homeBtnExplorer = _addButton("HOME/EXPLORER", theme.btnFont, L"", 60, 260, 250, 48, theme.btnFontColor);
-	m_homeBtnSelPlugin = _addButton("HOME/FTP", theme.btnFont, L"", 60, 340, 250, 48, theme.btnFontColor);
+	m_homeBtnSelPlugin = _addButton("HOME/SELECT_PLUGIN", theme.btnFont, L"", 60, 340, 250, 48, theme.btnFontColor);
 
-	m_homeBtnAbout = _addButton("HOME/ABOUT", theme.btnFont, L"", 330, 100, 250, 48, theme.btnFontColor);
+	m_homeBtnCredits = _addButton("HOME/CREDITS", theme.btnFont, L"", 330, 100, 250, 48, theme.btnFontColor);
 	m_homeBtnInstall = _addButton("HOME/INSTALL", theme.btnFont, L"", 330, 180, 250, 48, theme.btnFontColor);
 	m_homeBtnExitTo = _addButton("HOME/EXIT_TO", theme.btnFont, L"", 330, 260, 250, 48, theme.btnFontColor);
-	m_homeBtnUpdate = _addButton("HOME/UPDATE", theme.btnFont, L"", 330, 340, 250, 48, theme.btnFontColor);
+	m_homeBtnSettings = _addButton("HOME/SETTINGS", theme.btnFont, L"", 330, 340, 250, 48, theme.btnFontColor);
 
 	m_homeLblBattery = _addLabel("HOME/BATTERY", theme.btnFont, L"", 0, 420, 640, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 
 	_setHideAnim(m_homeLblTitle, "HOME/TITLE", 0, 0, -2.f, 0.f);
 
-	_setHideAnim(m_homeBtnSettings, "HOME/SETTINGS", 50, 0, 1.f, 0.f);
+	_setHideAnim(m_homeBtnHelp, "HOME/HELP", 50, 0, 1.f, 0.f);
 	_setHideAnim(m_homeBtnReloadCache, "HOME/RELOAD_CACHE", 50, 0, 1.f, 0.f);
-	_setHideAnim(m_homeBtnSelPlugin, "HOME/FTP", 50, 0, 1.f, 0.f);
 	_setHideAnim(m_homeBtnExplorer, "HOME/EXPLORER", 50, 0, 1.f, 0.f);
-
+	_setHideAnim(m_homeBtnSelPlugin, "HOME/SELECT_PLUGIN", 50, 0, 1.f, 0.f);
+	
+	_setHideAnim(m_homeBtnCredits, "HOME/CREDITS", -50, 0, 1.f, 0.f);
 	_setHideAnim(m_homeBtnInstall, "HOME/INSTALL", -50, 0, 1.f, 0.f);
-	_setHideAnim(m_homeBtnAbout, "HOME/ABOUT", -50, 0, 1.f, 0.f);
 	_setHideAnim(m_homeBtnExitTo, "HOME/EXIT_TO", -50, 0, 1.f, 0.f);
-	_setHideAnim(m_homeBtnUpdate, "HOME/UPDATE", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_homeBtnSettings, "HOME/SETTINGS", -50, 0, 1.f, 0.f);
 
 	_setHideAnim(m_homeLblBattery, "HOME/BATTERY", 0, 0, -2.f, 0.f);
 
@@ -385,19 +395,15 @@ void CMenu::_initHomeAndExitToMenu()
 void CMenu::_textHome(void)
 {
 	m_btnMgr.setText(m_homeLblTitle, wfmt(L"%s %s", APP_NAME, APP_VERSION));
-	m_btnMgr.setText(m_homeBtnSettings, _t("about10", L"Help Guide"));
+	m_btnMgr.setText(m_homeBtnHelp, _t("about10", L"Help Guide"));
 	m_btnMgr.setText(m_homeBtnReloadCache, _t("home2", L"Reload Cache"));
-	m_btnMgr.setText(m_homeBtnUpdate, _t("home11", L"Cache Covers"));
 	m_btnMgr.setText(m_homeBtnExplorer, _t("home8", L"File Explorer"));
-
-	m_btnMgr.setText(m_homeBtnInstall, _t("home7", L"Install Game"));
-	m_btnMgr.setText(m_homeBtnAbout, _t("home4", L"Credits"));
-	if(isWiiVC)
-		m_btnMgr.setText(m_homeBtnExitTo, _t("home12", L"Exit"));
-	else
-		m_btnMgr.setText(m_homeBtnExitTo, _t("home5", L"Exit To"));
-	
 	m_btnMgr.setText(m_homeBtnSelPlugin, _t("cfgpl1", L"Select Plugins"));
+
+	m_btnMgr.setText(m_homeBtnCredits, _t("home4", L"Credits"));
+	m_btnMgr.setText(m_homeBtnInstall, _t("home7", L"Install Game"));
+	m_btnMgr.setText(m_homeBtnExitTo, _t("home5", L"Exit To"));
+	m_btnMgr.setText(m_homeBtnSettings, _t("cfg1", L"Settings"));
 }
 
 void CMenu::_textExitTo(void)
@@ -405,12 +411,12 @@ void CMenu::_textExitTo(void)
 	m_btnMgr.setText(m_exittoLblTitle, _t("exit_to", L"Exit To"));
 	m_btnMgr.setText(m_homeBtnExitToHBC, _t("hbc", L"Homebrew Channel"));
 	m_btnMgr.setText(m_homeBtnExitToMenu, _t("menu", L"System Menu"));
+	m_btnMgr.setText(m_homeBtnExitToNeek, _t("neek2o", L"neek2o"));
 	if(IsOnWiiU())
 		m_btnMgr.setText(m_homeBtnExitToPriiloader, _t("wiiu", L"Wii U Menu"));
 	else
 		m_btnMgr.setText(m_homeBtnExitToPriiloader, _t("prii", L"Priiloader"));
 	m_btnMgr.setText(m_homeBtnExitToBootmii, _t("bootmii", L"Bootmii"));
-	m_btnMgr.setText(m_homeBtnExitToNeek, _t("neek2o", L"neek2o"));
 }
 
 /*******************************************************************************/
