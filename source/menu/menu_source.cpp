@@ -62,12 +62,6 @@ void CMenu::_sourceFlow()
 	}
 	else if(source == "homebrew")
 		m_current_view = COVERFLOW_HOMEBREW;
-	else if(source == "allplugins")
-	{
-		m_current_view = COVERFLOW_PLUGIN;
-		for(k = 0; k < m_numPlugins; ++k)
-			m_plugin.SetEnablePlugin(m_cfg, k, 2); /* force enable */
-	}
 	else if(source == "plugin")
 	{
 		magicNums.clear();
@@ -402,13 +396,6 @@ bool CMenu::_Source()
 				else if(source == "homebrew")
 				{
 					m_current_view = COVERFLOW_HOMEBREW;
-					_setSrcOptions();
-				}
-				else if(source == "allplugins")
-				{
-					m_current_view = COVERFLOW_PLUGIN;
-					for(k = 0; k < m_numPlugins; ++k)
-						m_plugin.SetEnablePlugin(m_cfg, k, 2); /* force enable */
 					_setSrcOptions();
 				}
 				else if(source == "plugin")
