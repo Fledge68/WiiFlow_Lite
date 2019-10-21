@@ -1179,21 +1179,21 @@ void CMenu::_buildMenus(void)
 	theme.btnZHCNOffs = _texture("GENERAL", "button_zhcn_off_selected", theme.btnZHCNOffs);
 
 	/* Default textures */
-	TexHandle.fromImageFile(theme.checkboxoff, fmt("%s/checkbox.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(theme.checkboxoff, fmt("%s/checkboxoff.png", m_imgsDir.c_str()));
 	theme.checkboxoff = _texture("GENERAL", "checkbox_off", theme.checkboxoff);
-	TexHandle.fromImageFile(theme.checkboxoffs, fmt("%s/checkbox.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(theme.checkboxoffs, fmt("%s/checkboxoffs.png", m_imgsDir.c_str()));
 	theme.checkboxoffs = _texture("GENERAL", "checkbox_off_selected", theme.checkboxoffs);
-	TexHandle.fromImageFile(theme.checkboxon, fmt("%s/checkboxs.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(theme.checkboxon, fmt("%s/checkboxon.png", m_imgsDir.c_str()));
 	theme.checkboxon = _texture("GENERAL", "checkbox_on", theme.checkboxon);
-	TexHandle.fromImageFile(theme.checkboxons, fmt("%s/checkboxs.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(theme.checkboxons, fmt("%s/checkboxons.png", m_imgsDir.c_str()));
 	theme.checkboxons = _texture("GENERAL", "checkbox_on_selected", theme.checkboxons);
 	TexHandle.fromImageFile(theme.checkboxHid, fmt("%s/checkboxhid.png", m_imgsDir.c_str()));
 	theme.checkboxHid = _texture("GENERAL", "checkbox_Hid", theme.checkboxHid);
-	TexHandle.fromImageFile(theme.checkboxHids, fmt("%s/checkboxhid.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(theme.checkboxHids, fmt("%s/checkboxhids.png", m_imgsDir.c_str()));
 	theme.checkboxHids = _texture("GENERAL", "checkbox_Hid_selected", theme.checkboxHids);
 	TexHandle.fromImageFile(theme.checkboxReq, fmt("%s/checkboxreq.png", m_imgsDir.c_str()));
 	theme.checkboxReq = _texture("GENERAL", "checkbox_Req", theme.checkboxReq);
-	TexHandle.fromImageFile(theme.checkboxReqs, fmt("%s/checkboxreq.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(theme.checkboxReqs, fmt("%s/checkboxreqs.png", m_imgsDir.c_str()));
 	theme.checkboxReqs = _texture("GENERAL", "checkbox_Req_selected", theme.checkboxReqs);
 
 	TexHandle.fromImageFile(theme.pbarTexL, fmt("%s/pbarleft.png", m_imgsDir.c_str()));
