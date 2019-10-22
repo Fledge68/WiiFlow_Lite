@@ -55,10 +55,10 @@ void CMenu::_setMainBg()
 			switch(m_current_view)
 			{
 				case COVERFLOW_CHANNEL:
-					if(m_cfg.getInt(CHANNEL_DOMAIN, "channels_type") & CHANNELS_EMU)
-						strncpy(m_plugin.PluginMagicWord, "454E414E", 9);
-					else
+					if(m_cfg.getInt(CHANNEL_DOMAIN, "channels_type") & CHANNELS_REAL)
 						strncpy(m_plugin.PluginMagicWord, "4E414E44", 9);
+					else
+						strncpy(m_plugin.PluginMagicWord, "454E414E", 9);
 					break;
 				case COVERFLOW_HOMEBREW:
 					strncpy(m_plugin.PluginMagicWord, "48425257", 9);
@@ -339,7 +339,6 @@ int CMenu::main(void)
 	bool show_plugin = !m_cfg.getBool(PLUGIN_DOMAIN, "disable", false);
 	bool show_gamecube = !m_cfg.getBool(GC_DOMAIN, "disable", false);
 	bool show_homebrew = !m_cfg.getBool(HOMEBREW_DOMAIN, "disable", false);
-	//m_multisource = m_cfg.getBool("GENERAL", "multisource", false);
 	bool m_source_on_start = m_cfg.getBool("GENERAL", "source_on_start", false);
 	bool bheld = false;// bheld to indicate btn b was pressed or held
 	bool bUsed = false;// bused to indicate that it was actually used for something
