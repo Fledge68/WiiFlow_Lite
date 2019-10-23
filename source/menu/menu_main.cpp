@@ -431,27 +431,39 @@ int CMenu::main(void)
 		}
 		if(BTN_HOME_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_mainBtnHome)))
 		{
-			_hideMain();
-			/* Home menu */
-			if(_Home())
-				break;// exit wiiflow
-			if(prevTheme != m_themeName)
+			if(m_sourceflow)//back to base tier or exit sourceflow
 			{
-				/* new theme - exit wiiflow and reload */
-				fsop_deleteFolder(fmt("%s/sourceflow", m_cacheDir.c_str()));
-				m_reload = true;
-				break;
+				if(!_srcTierBack(true))// if already on base tier exit sourceflow
+				{
+					m_sourceflow = false;
+					_setMainBg();
+				}
+				_showCF(true);
 			}
-			if(BTN_B_HELD)
+			else
 			{
-				bheld = true;
-				bUsed = true;
+				_hideMain();
+				/* Home menu */
+				if(_Home())
+					break;// exit wiiflow
+				if(prevTheme != m_themeName)
+				{
+					/* new theme - exit wiiflow and reload */
+					fsop_deleteFolder(fmt("%s/sourceflow", m_cacheDir.c_str()));
+					m_reload = true;
+					break;
+				}
+				if(BTN_B_HELD)
+				{
+					bheld = true;
+					bUsed = true;
+				}
+				show_channel = !m_cfg.getBool(CHANNEL_DOMAIN, "disable", false);
+				show_plugin = !m_cfg.getBool(PLUGIN_DOMAIN, "disable", false);
+				show_gamecube = !m_cfg.getBool(GC_DOMAIN, "disable", false);
+				show_homebrew = !m_cfg.getBool(HOMEBREW_DOMAIN, "disable", false);
+				_showMain();
 			}
-			show_channel = !m_cfg.getBool(CHANNEL_DOMAIN, "disable", false);
-			show_plugin = !m_cfg.getBool(PLUGIN_DOMAIN, "disable", false);
-			show_gamecube = !m_cfg.getBool(GC_DOMAIN, "disable", false);
-			show_homebrew = !m_cfg.getBool(HOMEBREW_DOMAIN, "disable", false);
-			_showMain();
 		}
 		else if(BTN_A_PRESSED)
 		{
@@ -642,17 +654,9 @@ int CMenu::main(void)
 			else if(BTN_LEFT_REPEAT || RIGHT_STICK_LEFT)
 				CoverFlow.left();
 			else if(BTN_MINUS_PRESSED)
-					CoverFlow.pageUp();
+				CoverFlow.pageUp();
 			else if(BTN_PLUS_PRESSED)
-			{
-				if(!m_sourceflow)
-					CoverFlow.pageDown();
-				else
-				{
-					_srcTierBack(true);// back to the 1st sourceflow tier
-					_showCF(true);
-				}
-			}
+				CoverFlow.pageDown();
 				
 			/* change coverflow layout/mode */
 			else if((BTN_1_PRESSED || BTN_2_PRESSED) && !CFLocked)
