@@ -1,7 +1,7 @@
 
 #include <string.h>
 #include "gcard.h"
-#include "http.h"
+#include "https.h"
 #include "loader/utils.h"
 #include "gecko/gecko.hpp"
 #include "memory/mem2.hpp"
@@ -53,7 +53,9 @@ void add_game_to_card(const char *gameid)
 		str_replace(url, "{KEY}", providers[i].key, MAX_URL_SIZE);
 		str_replace(url, "{ID6}", gameid, MAX_URL_SIZE);
 		gprintf("Gamertag URL:\n%s\n", url);
-		downloadfile(url);
+		struct download file = {};
+		file.skip_response = 1;
+		downloadfile(url, &file);
 	}
 	MEM2_free(url);
 }

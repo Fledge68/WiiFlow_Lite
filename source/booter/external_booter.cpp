@@ -33,7 +33,7 @@
 #include "homebrew/homebrew.h"
 #include "memory/mem2.hpp"
 //#include "network/FTP_Dir.hpp"
-#include "network/http.h"
+#include "network/https.h"
 #include "plugin/crc32.h"
 
 /* External WiiFlow Game Booter */
@@ -93,8 +93,6 @@ void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 pat
 	*EXT_ADDR_CFG = ((u32)lowCFG);
 	/* Unmount devices etc */
 	ShutdownBeforeExit();
-	/* Wii Games will need it */
-	net_wc24cleanup();
 	/* Set proper time */
 	settime(secs_to_ticks(time(NULL) - 946684800));
 	/* Copy in booter */
@@ -159,6 +157,8 @@ void ShutdownBeforeExit(void)
 			usleep(50);
 		WiFiDebugger.Close();
 		//ftp_endTread();
+		wolfSSL_Cleanup();
+		net_wc24cleanup();
 		net_deinit();
 		networkInit = false;
 	}

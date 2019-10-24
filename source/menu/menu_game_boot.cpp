@@ -23,7 +23,6 @@
 #include "loader/cios.h"
 #include "loader/nk.h"
 #include "memory/memory.h"
-#include "network/http.h"
 #include "network/gcard.h"
 
 static void setLanguage(int l)

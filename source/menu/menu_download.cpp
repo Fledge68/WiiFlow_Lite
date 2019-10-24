@@ -13,23 +13,22 @@
 #include "loader/fs.h"
 #include "loader/wbfs.h"
 #include "loader/wdvd.h"
-#include "network/http.h"
+#include "network/https.h"
 #include "unzip/ZipFile.h"
 
 #define TAG_GAME_ID		"{gameid}"
 #define TAG_LOC			"{loc}"
 #define TAG_CONSOLE		"{console}"
 
-#define GAMETDB_URL		"http://www.gametdb.com/wiitdb.zip?LANG=%s&FALLBACK=TRUE&WIIWARE=TRUE&GAMECUBE=TRUE"
-#define CUSTOM_BANNER_URL	"http://banner.rc24.xyz/{gameid}.bnr"
+#define GAMETDB_URL		"https://www.gametdb.com/wiitdb.zip?LANG=%s&FALLBACK=TRUE&WIIWARE=TRUE&GAMECUBE=TRUE"
+#define CUSTOM_BANNER_URL	"https://banner.rc24.xyz/{gameid}.bnr"
 
-static const char FMT_BPIC_URL[] = "http://art.gametdb.com/{console}/coverfullHQ/{loc}/{gameid}.png"\
-"|http://art.gametdb.com/{console}/coverfull/{loc}/{gameid}.png";
-static const char FMT_PIC_URL[] = "http://art.gametdb.com/{console}/cover/{loc}/{gameid}.png";
-static const char FMT_CBPIC_URL[] = "http://art.gametdb.com/{console}/coverfullHQ2/{loc}/{gameid}.png";
-static const char FMT_CPIC_URL[] = "http://art.gametdb.com/{console}/cover2/{loc}/{gameid}.png";
+static const char FMT_BPIC_URL[] = "https://art.gametdb.com/{console}/coverfullHQ/{loc}/{gameid}.png"\
+"|https://art.gametdb.com/{console}/coverfull/{loc}/{gameid}.png";
+static const char FMT_PIC_URL[] = "https://art.gametdb.com/{console}/cover/{loc}/{gameid}.png";
+static const char FMT_CBPIC_URL[] = "https://art.gametdb.com/{console}/coverfullHQ2/{loc}/{gameid}.png";
+static const char FMT_CPIC_URL[] = "https://art.gametdb.com/{console}/cover2/{loc}/{gameid}.png";
 
-static block download = { 0, 0 };
 static bool settingsmenu = false;
 static string dl_gameID;
 
@@ -794,7 +793,10 @@ int CMenu::_initNetwork()
 
 	char ip[16];
 	int val = if_config(ip, NULL, NULL, true, 0);
-	
+
+	if (val == 0)
+		wolfSSL_Init();
+
 	networkInit = !val;
 	return val;
 }
@@ -1086,12 +1088,13 @@ int CMenu::_coverDownloader()
 							
 							m_thrdMessage = wfmt(_fmt("dlmsg3", L"Downloading %i/%i from %s"), i + 1, n, url.c_str());
 							m_thrdMessageAdded = true;
-							download = downloadfile(url.c_str());
+							struct download file = {};
+							downloadfile(url.c_str(), &file);
 
 							for(int o = 0; o < 12; ++o)
 							{
 								bool tdl = false;// tdl = try download
-								if(download.data != NULL && download.size > 0)// && checkPNGBuf(download.data))
+								if(file.size > 0)// && checkPNGBuf(file.data))
 									break;
 								switch( o )
 								{
@@ -1179,11 +1182,11 @@ int CMenu::_coverDownloader()
 								{
 									m_thrdMessage = wfmt(_fmt("dlmsg3", L"Downloading %i/%i from %s"), i + 1, n, url.c_str());
 									m_thrdMessageAdded = true;
-									download = downloadfile(url.c_str());
+									downloadfile(url.c_str(), &file);
 								}
 							}
 							/* if none of the downloads succeeded */
-							if(download.data == NULL || download.size == 0)// || !checkPNGBuf(download.data))
+							if(file.size == 0)// || !checkPNGBuf(file.data))
 								continue;
 							
 							/* a download succeeded */
@@ -1193,15 +1196,15 @@ int CMenu::_coverDownloader()
 							update_pThread(1);
 							m_thrdMessage = wfmt(_fmt("dlmsg4", L"Saving %s"), path);
 							m_thrdMessageAdded = true;
-							fsop_WriteFile(path, download.data, download.size);
+							fsop_WriteFile(path, file.data, file.size);
 							
 							/* make cover cache file (wfc) */
 							update_pThread(1);
 							m_thrdMessage = wfmt(_fmt("dlmsg10", L"Making %s.wfc"), coverID.c_str());
 							m_thrdMessageAdded = true;
-							CoverFlow.cacheCoverBuffer(fmt("%s/%s.wfc", m_cacheDir.c_str(), coverID.c_str()), download.data, true);//it may fail
-							if(download.data != NULL)
-								free(download.data);
+							CoverFlow.cacheCoverBuffer(fmt("%s/%s.wfc", m_cacheDir.c_str(), coverID.c_str()), (u8*)file.data, true);//it may fail
+							if(file.size > 0)
+								free(file.data);
 
 							++count;
 							update_pThread(1);
@@ -1222,12 +1225,13 @@ int CMenu::_coverDownloader()
 
 							m_thrdMessage = wfmt(_fmt("dlmsg3", L"Downloading %i/%i from %s"), i + 1, n, url.c_str());
 							m_thrdMessageAdded = true;
-							download = downloadfile(url.c_str());
+							struct download file = {};
+							downloadfile(url.c_str(), &file);
 							
 							for(int o = 0; o < 12; ++o)
 							{
 								bool tdl = false;
-								if(download.data != NULL && download.size > 0)// && checkPNGBuf(download.data))
+								if(file.size > 0)// && checkPNGBuf(file.data))
 									break;
 								switch( o )
 								{
@@ -1316,12 +1320,12 @@ int CMenu::_coverDownloader()
 								{
 									m_thrdMessage = wfmt(_fmt("dlmsg3", L"Downloading %i/%i from %s"), i + 1, n, url.c_str());
 									m_thrdMessageAdded = true;
-									download = downloadfile(url.c_str());
+									downloadfile(url.c_str(), &file);
 								}
 							}
 
 							/* if none of the downloads succeeded */
-							if(download.data == NULL || download.size == 0)// || !checkPNGBuf(download.data))
+							if(file.size <= 0)// || !checkPNGBuf(file.data))
 								continue;
 
 							/* a download succeeded */
@@ -1331,15 +1335,15 @@ int CMenu::_coverDownloader()
 							update_pThread(1);
 							m_thrdMessage = wfmt(_fmt("dlmsg4", L"Saving %s"), path);
 							m_thrdMessageAdded = true;
-							fsop_WriteFile(path, download.data, download.size);
+							fsop_WriteFile(path, file.data, file.size);
 							
 							/* make cover cache file (wfc) */
 							update_pThread(1);
 							m_thrdMessage = wfmt(_fmt("dlmsg10", L"Making %s.wfc"), coverID.c_str());
 							m_thrdMessageAdded = true;
-							CoverFlow.cacheCoverBuffer(fmt("%s/%s.wfc", m_cacheDir.c_str(), coverID.c_str()), download.data, true);//it may fail
-							if(download.data != NULL)
-								free(download.data);
+							CoverFlow.cacheCoverBuffer(fmt("%s/%s.wfc", m_cacheDir.c_str(), coverID.c_str()), (u8*)file.data, true);//it may fail
+							if(file.size > 0)
+								free(file.data);
 							
 							update_pThread(1);
 							++count;
@@ -1358,12 +1362,13 @@ int CMenu::_coverDownloader()
 							
 							m_thrdMessage = wfmt(_fmt("dlmsg3", L"Downloading %i/%i from %s"), i + 1, n, url.c_str());
 							m_thrdMessageAdded = true;
-							download = downloadfile(url.c_str());
+							struct download file = {};
+							downloadfile(url.c_str(), &file);
 
 							for(int o = 0; o < 12; ++o)
 							{
 								bool tdl = false;
-								if(download.data != NULL && download.size > 0)// && checkPNGBuf(download.data))
+								if(file.size > 0)// && checkPNGBuf(file.data))
 									break;
 								switch( o )
 								{
@@ -1451,11 +1456,11 @@ int CMenu::_coverDownloader()
 								{
 									m_thrdMessage = wfmt(_fmt("dlmsg3", L"Downloading %i/%i from %s"), i + 1, n, url.c_str());
 									m_thrdMessageAdded = true;
-									download = downloadfile(url.c_str());
+									downloadfile(url.c_str(), &file);
 								}
 							}
 
-							if(download.data == NULL || download.size == 0)// || !checkPNGBuf(download.data))
+							if(file.size <= 0)// || !checkPNGBuf(file.data))
 								continue;
 
 							/*download succeeded - save png */
@@ -1463,15 +1468,15 @@ int CMenu::_coverDownloader()
 							update_pThread(1);
 							m_thrdMessage = wfmt(_fmt("dlmsg4", L"Saving %s"), path);
 							m_thrdMessageAdded = true;
-							fsop_WriteFile(path, download.data, download.size);
+							fsop_WriteFile(path, file.data, file.size);
 							
 							/* make cover cache file (wfc) */
 							update_pThread(1);
 							m_thrdMessage = wfmt(_fmt("dlmsg10", L"Making %s"), sfmt("%s.wfc", coverID.c_str()));
 							m_thrdMessageAdded = true;
-							CoverFlow.cacheCoverBuffer(fmt("%s/%s.wfc", m_cacheDir.c_str(), coverID.c_str()), download.data, false);//it may fail
-							if(download.data != NULL)
-								free(download.data);
+							CoverFlow.cacheCoverBuffer(fmt("%s/%s.wfc", m_cacheDir.c_str(), coverID.c_str()), (u8*)file.data, false);//it may fail
+							if(file.size > 0)
+								free(file.data);
 
 							++countFlat;
 							update_pThread(1);
@@ -1490,12 +1495,13 @@ int CMenu::_coverDownloader()
 							
 							m_thrdMessage = wfmt(_fmt("dlmsg3", L"Downloading %i/%i from %s"), i + 1, n, url.c_str());
 							m_thrdMessageAdded = true;
-							download = downloadfile(url.c_str());
+							struct download file = {};
+							downloadfile(url.c_str(), &file);
 							
 							for(int o = 0; o < 12; ++o)
 							{
 								bool tdl = false;
-								if(download.data != NULL && download.size > 0)// && checkPNGBuf(download.data))
+								if(file.size > 0)// && checkPNGBuf(file.data))
 									break;
 
 								switch( o )
@@ -1587,11 +1593,11 @@ int CMenu::_coverDownloader()
 									m_thrdMessageAdded = true;
 									LWP_MutexUnlock(m_mutex);
 									
-									download = downloadfile(url.c_str());
+									downloadfile(url.c_str(), &file);
 								}
 							}
 
-							if(download.data == NULL || download.size == 0)// || !checkPNGBuf(download.data))
+							if(file.size <= 0)// || !checkPNGBuf(file.data))
 								continue;
 
 							/* save png */
@@ -1599,15 +1605,15 @@ int CMenu::_coverDownloader()
 							update_pThread(1);
 							m_thrdMessage = wfmt(_fmt("dlmsg4", L"Saving %s"), path);
 							m_thrdMessageAdded = true;
-							fsop_WriteFile(path, download.data, download.size);
+							fsop_WriteFile(path, file.data, file.size);
 							
 							/* make wfc */
 							update_pThread(1);
 							m_thrdMessage = wfmt(_fmt("dlmsg10", L"Making %s"), sfmt("%s.wfc", coverID.c_str()));
 							m_thrdMessageAdded = true;
-							CoverFlow.cacheCoverBuffer(fmt("%s/%s.wfc", m_cacheDir.c_str(), coverID.c_str()), download.data, false);//it may fail
-							if(download.data != NULL)
-								free(download.data);
+							CoverFlow.cacheCoverBuffer(fmt("%s/%s.wfc", m_cacheDir.c_str(), coverID.c_str()), (u8*)file.data, false);//it may fail
+							if(file.size > 0)
+								free(file.data);
 
 							++countFlat;
 							update_pThread(1);
@@ -1644,9 +1650,10 @@ int CMenu::_gametdbDownloaderAsync()
 	else
 	{
 		m_thrdMessage = _t("dlmsg11", L"Downloading...");
-		m_thrdMessageAdded = true;	
-		download = downloadfile(fmt(GAMETDB_URL, langCode.c_str()));
-		if(download.data == 0)
+		m_thrdMessageAdded = true;
+		struct download file = {};
+		downloadfile(fmt(GAMETDB_URL, langCode.c_str()), &file);
+		if(file.size <= 0)
 		{
 			return -3;
 		}
@@ -1663,9 +1670,9 @@ int CMenu::_gametdbDownloaderAsync()
 				
 				m_thrdMessage = wfmt(_fmt("dlmsg4", L"Saving %s"), "wiitdb.zip");
 				m_thrdMessageAdded = true;	
-				res = fsop_WriteFile(zippath, download.data, download.size);
-				if(download.data != NULL)
-					free(download.data);
+				res = fsop_WriteFile(zippath, file.data, file.size);
+				if(file.size > 0)
+					free(file.data);
 			}
 			if(res == false)
 			{
@@ -1773,19 +1780,24 @@ int CMenu::_bannerDownloader()
 		else
 			m_thrdMessage = _t("cfgbnr7", L"Downloading banner...");
 		m_thrdMessageAdded = true;
-		
-		download = downloadfile(banner_url);
-		if(download.data == NULL || download.size < 0x5000)
-			download = downloadfile(banner_url_id3);
+
+		struct download file = {};
+		downloadfile(banner_url, &file);
+		if(file.size < 0x5000)
+		{
+			if(file.size > 0)
+				free(file.data); // More than 0 bytes and less than 50kb
+			downloadfile(banner_url_id3, &file);
+		}
 
 		/* minimum 50kb */
-		if(download.data != NULL && download.size > 51200 && download.data[0] != '<')
+		if(file.size > 51200 && file.data[0] != '<')
 		{
-			fsop_WriteFile(fmt("%s/%s.bnr", m_customBnrDir.c_str(), BnrIDList[i].c_str()), download.data, download.size);
+			fsop_WriteFile(fmt("%s/%s.bnr", m_customBnrDir.c_str(), BnrIDList[i].c_str()), file.data, file.size);
 			count++;
 		}
-		if(download.data != NULL)
-			free(download.data);
+		if(file.size > 0)
+			free(file.data);
 		update_pThread(1);
 	}
 	return 0;
