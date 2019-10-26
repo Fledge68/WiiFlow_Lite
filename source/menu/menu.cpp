@@ -109,7 +109,7 @@ static void GrabINIFiles(char *FullPath)
 	INI_List.push_back(FullPath);
 }
 
-bool CMenu::init()
+bool CMenu::init(bool usb_mounted)
 {
 	SoundHandle.Init();
 	m_gameSound.SetVoice(1);
@@ -182,6 +182,13 @@ bool CMenu::init()
 	if(strncmp(wii_games_dir, "%s:/", 4) != 0)
 		strcpy(wii_games_dir, GAMES_DIR);
 	gprintf("Wii Games Directory: %s\n", wii_games_dir);
+	if(m_cfg.getBool(WII_DOMAIN, "prefer_usb", false))
+	{
+		if(usb_mounted)
+			m_cfg.setInt(WII_DOMAIN, "partition", USB1);
+		else
+			m_cfg.setInt(WII_DOMAIN, "partition", SD);
+	}
 	
 	/* GameCube stuff */
 	m_devo_installed = DEVO_Installed(m_dataDir.c_str());
@@ -193,6 +200,13 @@ bool CMenu::init()
 	gprintf("GameCube Games Directory: %s\n", gc_games_dir);
 	m_gc_play_banner_sound = m_cfg.getBool(GC_DOMAIN, "play_banner_sound", true);
 	m_gc_play_default_sound = m_cfg.getBool(GC_DOMAIN, "play_default_sound", true);
+	if(m_cfg.getBool(GC_DOMAIN, "prefer_usb", false))
+	{
+		if(usb_mounted)
+			m_cfg.setInt(GC_DOMAIN, "partition", USB1);
+		else
+			m_cfg.setInt(GC_DOMAIN, "partition", SD);
+	}
 	
 	/* Load cIOS Map */
 	_installed_cios.clear();
@@ -1977,15 +1991,13 @@ void CMenu::_initCF(void)
 	CoverFlow.clear();
 	CoverFlow.reserve(m_gameList.size());
 
-	char requiredCats[10];
-	char selectedCats[10];
-	char hiddenCats[10];
-	strcpy(requiredCats, m_cat.getString("GENERAL", "required_categories").c_str());
-	strcpy(selectedCats, m_cat.getString("GENERAL", "selected_categories").c_str());
-	strcpy(hiddenCats, m_cat.getString("GENERAL", "hidden_categories").c_str());
-	u8 numReqCats = strlen(requiredCats);
-	u8 numSelCats = strlen(selectedCats);
-	u8 numHidCats = strlen(hiddenCats);
+	string requiredCats = m_cat.getString("GENERAL", "required_categories", "");
+	string selectedCats = m_cat.getString("GENERAL", "selected_categories", "");
+	string hiddenCats = m_cat.getString("GENERAL", "hidden_categories", "");
+	u8 numReqCats = requiredCats.length();
+	u8 numSelCats = selectedCats.length();
+	u8 numHidCats = hiddenCats.length();
+
 	char id[74];
 	char catID[64];
 	
@@ -2050,9 +2062,8 @@ void CMenu::_initCF(void)
 
 			if(numReqCats != 0 || numSelCats != 0 || numHidCats != 0) // if all 0 skip checking cats and show all games
 			{
-				char idCats[10];
-				strcpy(idCats, m_cat.getString(catDomain, catID).c_str());
-				u8 numIdCats = strlen(idCats);
+				string idCats= m_cat.getString(catDomain, catID, "");
+				u8 numIdCats = idCats.length();
 				if(numIdCats == 0)
 					m_cat.remove(catDomain, catID);
 				bool inaCat = false;

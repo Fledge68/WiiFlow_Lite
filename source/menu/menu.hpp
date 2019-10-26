@@ -38,7 +38,7 @@ class CMenu
 {
 public:
 	CMenu();
-	bool init();
+	bool init(bool usb_mounted);
 	void error(const wstringEx &msg);
 	void terror(const char *key, const wchar_t *msg) { error(_fmt(key, msg)); }
 	int main(void);

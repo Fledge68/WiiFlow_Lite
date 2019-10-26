@@ -189,15 +189,12 @@ void CMenu::_CategorySettings(bool fromGameSet)
 	}
 	else
 	{
-		char requiredCats[10];
-		char selectedCats[10];
-		char hiddenCats[10];
-		strcpy(requiredCats, m_cat.getString("GENERAL", "required_categories").c_str());
-		strcpy(selectedCats, m_cat.getString("GENERAL", "selected_categories").c_str());
-		strcpy(hiddenCats, m_cat.getString("GENERAL", "hidden_categories").c_str());
-		u8 numReqCats = strlen(requiredCats);
-		u8 numSelCats = strlen(selectedCats);
-		u8 numHidCats = strlen(hiddenCats);
+		string requiredCats = m_cat.getString("GENERAL", "required_categories", "");
+		string selectedCats = m_cat.getString("GENERAL", "selected_categories", "");
+		string hiddenCats = m_cat.getString("GENERAL", "hidden_categories", "");
+		u8 numReqCats = requiredCats.length();
+		u8 numSelCats = selectedCats.length();
+		u8 numHidCats = hiddenCats.length();
 		
 		if(numReqCats != 0)
 		{

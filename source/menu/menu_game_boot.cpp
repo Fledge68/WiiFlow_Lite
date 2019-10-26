@@ -212,8 +212,8 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 		AddBootArgument(arguments[i].c_str());
 	}
 
-	ShutdownBeforeExit();// wifi and sd gecko doesnt work anymore after
 	loadIOS(58, false);
+	ShutdownBeforeExit();// wifi and sd gecko doesnt work anymore after
 	BootHomebrew();
 	Sys_Exit();
 }
@@ -519,9 +519,10 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		}
 
 		Nintendont_SetOptions(path, id, CheatPath, GClanguage, n_config, n_videomode, vidscale, vidoffset);
-		ShutdownBeforeExit();
+		
 		loadIOS(58, false); //nintendont NEEDS ios58 and AHBPROT disabled
 		/* should be a check for error loading IOS58 and AHBPROT disabled */
+		ShutdownBeforeExit();
 		BootHomebrew(); //regular dol
 	}
 	else // loader == DEVOLUTION

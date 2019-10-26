@@ -182,7 +182,7 @@ int main(int argc, char **argv)
 
 	/* mount USB if needed */
 	DeviceHandle.SetMountUSB(isUsingUSB());
-	DeviceHandle.MountAllUSB();// only mounts any USB if isUsingUSB()
+	bool usb_mounted = DeviceHandle.MountAllUSB();// only mounts any USB if isUsingUSB()
 	
 	/* init wait images and show wait animation */
 	m_vid.setCustomWaitImgs(wait_dir, wait_loop);
@@ -192,7 +192,7 @@ int main(int argc, char **argv)
 	Open_Inputs();// WPAD_SetVRes() is called later in mainMenu.init() during cursor init which gets the theme pointer images
 	
 	/* init configs, folders, coverflow, gui and more */
-	if(mainMenu.init())
+	if(mainMenu.init(usb_mounted))
 	{
 		if(CurrentIOS.Version != mainIOS)
 		{
