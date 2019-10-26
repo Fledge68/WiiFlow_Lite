@@ -2,10 +2,10 @@
 #include "menu.hpp"
 #include "gui/text.hpp"
 #include "lockMutex.hpp"
-#include "network/http.h"
+#include "network/https.h"
 
 //#define GECKOURL "http://geckocodes.org/codes/%c/%s.txt"
-#define GECKOURL "http://geckocodes.org/txt.php?txt=%s"
+#define GECKOURL "https://www.geckocodes.org/txt.php?txt=%s"
 #define CHEATSPERPAGE 4
 
 u8 m_cheatSettingsPage = 0;
@@ -24,18 +24,17 @@ int CMenu::_downloadCheatFileAsync()
 	const char *id = CoverFlow.getId();
 	//char type = id[0] == 'S' ? 'R' : id[0];
 
-	block cheatfile = downloadfile(fmt(GECKOURL, id));
-
-	if(cheatfile.data != NULL && cheatfile.size > 65 && cheatfile.data[0] != '<')
+	struct download file = {};
+	downloadfile(fmt(GECKOURL, id), &file);
+	if(file.size > 0 && file.data[0] != '<')
 	{
-		update_pThread(1);//its downloaded
-		fsop_WriteFile(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id), cheatfile.data, cheatfile.size);
-		if(cheatfile.data != NULL)
-			free(cheatfile.data);
+		update_pThread(1);// its downloaded
+		fsop_WriteFile(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id), file.data, file.size);
+		free(file.data);
 		return 0;
 	}
-	if(cheatfile.data != NULL)
-		free(cheatfile.data);
+	if(file.size > 0)
+		free(file.data);// received a 301/302 redirect instead of a 404?
 	return -3;// download failed
 }
 
