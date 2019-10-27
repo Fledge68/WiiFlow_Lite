@@ -33,8 +33,11 @@ int CMenu::_downloadCheatFileAsync()
 		free(file.data);
 		return 0;
 	}
-	if(file.size > 0)
-		free(file.data);// received a 301/302 redirect instead of a 404?
+	if(file.size > 0)// received a 301/302 redirect instead of a 404?
+	{
+		free(file.data);
+		return -4;// the file doesn't exist on the server
+	}
 	return -3;// download failed
 }
 
@@ -164,6 +167,8 @@ void CMenu::_CheatSettings()
 							m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg2", L"Network initialization failed!"));
 						else if(ret == -3)
 							m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg12", L"Download failed!"));
+						else if(ret == -4)
+							m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg35", L"No cheats available."));
 						else
 							m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg14", L"Done."));
 						dl_finished = true;
