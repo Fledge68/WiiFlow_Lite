@@ -20,14 +20,16 @@ int CMenu::_downloadCheatFileAsync()
 	{
 		return -2;
 	}
-
+	m_thrdMessage = _t("dlmsg11", L"Downloading...");
+	m_thrdMessageAdded = true;
+	
 	const char *id = CoverFlow.getId();
-	//char type = id[0] == 'S' ? 'R' : id[0];
-
 	struct download file = {};
 	downloadfile(fmt(GECKOURL, id), &file);
 	if(file.size > 0 && file.data[0] != '<')
 	{
+		m_thrdMessage = _t("dlmsg13", L"Saving...");
+		m_thrdMessageAdded = true;
 		update_pThread(1);// its downloaded
 		fsop_WriteFile(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id), file.data, file.size);
 		free(file.data);
