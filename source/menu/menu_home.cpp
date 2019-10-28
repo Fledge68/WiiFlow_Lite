@@ -30,7 +30,7 @@ s16 m_homeBtnExplorer;
 s16 m_homeBtnSelPlugin;
 
 s16 m_homeBtnCredits;
-s16 m_homeBtnInstall;
+s16 m_homeBtnShutdown;
 s16 m_homeBtnExitTo;
 s16 m_homeBtnSettings;
 
@@ -44,6 +44,12 @@ s16 m_homeBtnExitToMenu;
 s16 m_homeBtnExitToNeek;
 s16 m_homeBtnExitToPriiloader;
 s16 m_homeBtnExitToBootmii;
+
+/* shutdown menu */
+s16 m_shutdownLblQuestion;
+s16 m_shutdownBtnFull;
+s16 m_shutdownBtnStandby;
+s16 m_shutdownBtnCancel;
 
 TexData m_homeBg;
 static const wstringEx PLAYER_BATTERY_LABEL("P1 %003.f%% | P2 %003.f%% | P3 %003.f%% | P4 %003.f%%");
@@ -107,38 +113,10 @@ bool CMenu::_Home(void)
 					break;
 				_showHome();
 			}
-			/* use this for export game list
-			else if(m_btnMgr.selected(m_homeBtnUpdate))// cache covers
+			else if(m_btnMgr.selected(m_homeBtnShutdown))
 			{
 				_hideHome();
-				m_btnMgr.setProgress(m_wbfsPBar, 0.f, true);
-				m_btnMgr.setText(m_wbfsLblMessage, L"0%");
-				m_btnMgr.setText(m_wbfsLblDialog, L"");
-				m_btnMgr.show(m_wbfsPBar);
-				m_btnMgr.show(m_wbfsLblMessage);
-				m_btnMgr.show(m_wbfsLblDialog);
-			
-				_start_pThread();
-				_cacheCovers();
-				_stop_pThread();
-				m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg14", L"Done."));
-				while(!m_exit)
-				{
-					_mainLoopCommon();
-					if(BTN_HOME_PRESSED || BTN_B_PRESSED)
-					{
-						m_btnMgr.hide(m_wbfsPBar);
-						m_btnMgr.hide(m_wbfsLblMessage);
-						m_btnMgr.hide(m_wbfsLblDialog);
-						break;
-					}
-				}
-				_showHome();
-			}*/
-			else if(m_btnMgr.selected(m_homeBtnInstall))// replace
-			{
-				_hideHome();
-				_wbfsOp(WO_ADD_GAME);
+				_Shutdown();
 				_showHome();
 			}
 			else if(m_btnMgr.selected(m_homeBtnCredits))
@@ -255,6 +233,33 @@ bool CMenu::_ExitTo(void)
 	return m_exit;
 }
 
+void CMenu::_Shutdown(void)
+{
+	SetupInput();
+	_showShutdown();
+
+	while(!m_exit)
+	{
+		_mainLoopCommon();
+		if(BTN_UP_PRESSED)
+			m_btnMgr.up();
+		else if(BTN_DOWN_PRESSED)
+			m_btnMgr.down();
+		else if(BTN_B_PRESSED)
+			break;
+		else if(BTN_A_PRESSED)// note exitHandler sets m_exit = true
+		{
+			if(m_btnMgr.selected(m_shutdownBtnFull))
+				exitHandler(SHUTDOWN_STANDBY);
+			else if(m_btnMgr.selected(m_shutdownBtnStandby))
+				exitHandler(SHUTDOWN_IDLE);
+			else if(m_btnMgr.selected(m_shutdownBtnCancel))
+				break;
+		}
+	}
+	_hideShutdown();
+}
+
 void CMenu::_showHome(void)
 {
 	_setBg(m_homeBg, m_homeBg);
@@ -267,7 +272,7 @@ void CMenu::_showHome(void)
 		m_btnMgr.show(m_homeBtnExplorer);
 
 		m_btnMgr.show(m_homeBtnCredits);
-		m_btnMgr.show(m_homeBtnInstall);
+		m_btnMgr.show(m_homeBtnShutdown);
 		m_btnMgr.show(m_homeBtnExitTo);
 	}
 	m_btnMgr.show(m_homeBtnSettings);
@@ -297,6 +302,17 @@ void CMenu::_showExitTo(void)
 			m_btnMgr.show(m_exittoLblUser[i]);
 }
 
+void CMenu::_showShutdown(void)
+{
+	_setBg(m_homeBg, m_homeBg);
+
+	m_btnMgr.show(m_shutdownLblQuestion);
+	m_btnMgr.show(m_shutdownBtnFull);
+	if(IsOnWiiU() == false)
+		m_btnMgr.show(m_shutdownBtnStandby);
+	m_btnMgr.show(m_shutdownBtnCancel);
+}
+
 void CMenu::_hideHome(bool instant)
 {
 	m_btnMgr.hide(m_homeLblTitle, instant);
@@ -307,7 +323,7 @@ void CMenu::_hideHome(bool instant)
 	m_btnMgr.hide(m_homeBtnSelPlugin, instant);
 
 	m_btnMgr.hide(m_homeBtnCredits, instant);
-	m_btnMgr.hide(m_homeBtnInstall, instant);
+	m_btnMgr.hide(m_homeBtnShutdown, instant);
 	m_btnMgr.hide(m_homeBtnExitTo, instant);
 	m_btnMgr.hide(m_homeBtnSettings, instant);
 
@@ -333,6 +349,14 @@ void CMenu::_hideExitTo(bool instant)
 			m_btnMgr.hide(m_exittoLblUser[i], instant);
 }
 
+void CMenu::_hideShutdown(bool instant)
+{
+	m_btnMgr.hide(m_shutdownLblQuestion, instant);
+	m_btnMgr.hide(m_shutdownBtnFull, instant);
+	m_btnMgr.hide(m_shutdownBtnStandby, instant);
+	m_btnMgr.hide(m_shutdownBtnCancel, instant);
+}
+
 void CMenu::_initHomeAndExitToMenu()
 {
 	m_homeBg = _texture("HOME/BG", "texture", theme.bg, false);
@@ -347,7 +371,7 @@ void CMenu::_initHomeAndExitToMenu()
 	m_homeBtnSelPlugin = _addButton("HOME/SELECT_PLUGIN", theme.btnFont, L"", 60, 340, 250, 48, theme.btnFontColor);
 
 	m_homeBtnCredits = _addButton("HOME/CREDITS", theme.btnFont, L"", 330, 100, 250, 48, theme.btnFontColor);
-	m_homeBtnInstall = _addButton("HOME/INSTALL", theme.btnFont, L"", 330, 180, 250, 48, theme.btnFontColor);
+	m_homeBtnShutdown = _addButton("HOME/SHUTDOWN", theme.btnFont, L"", 330, 180, 250, 48, theme.btnFontColor);
 	m_homeBtnExitTo = _addButton("HOME/EXIT_TO", theme.btnFont, L"", 330, 260, 250, 48, theme.btnFontColor);
 	m_homeBtnSettings = _addButton("HOME/SETTINGS", theme.btnFont, L"", 330, 340, 250, 48, theme.btnFontColor);
 
@@ -361,7 +385,7 @@ void CMenu::_initHomeAndExitToMenu()
 	_setHideAnim(m_homeBtnSelPlugin, "HOME/SELECT_PLUGIN", 50, 0, 1.f, 0.f);
 	
 	_setHideAnim(m_homeBtnCredits, "HOME/CREDITS", -50, 0, 1.f, 0.f);
-	_setHideAnim(m_homeBtnInstall, "HOME/INSTALL", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_homeBtnShutdown, "HOME/SHUTDOWN", -50, 0, 1.f, 0.f);
 	_setHideAnim(m_homeBtnExitTo, "HOME/EXIT_TO", -50, 0, 1.f, 0.f);
 	_setHideAnim(m_homeBtnSettings, "HOME/SETTINGS", -50, 0, 1.f, 0.f);
 
@@ -390,6 +414,20 @@ void CMenu::_initHomeAndExitToMenu()
 
 	_textExitTo();
 	_hideExitTo(true);
+	
+	//Shutdown Menu
+	m_shutdownLblQuestion = _addLabel("SHUTDOWN/QUESTION", theme.lblFont, L"", 185, 120, 270, 48, theme.lblFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_shutdownBtnFull = _addButton("SHUTDOWN/FULL", theme.btnFont, L"", 185, 180, 270, 48, theme.btnFontColor);
+	m_shutdownBtnStandby = _addButton("SHUTDOWN/STANDBY", theme.btnFont, L"", 185, 240, 270, 48, theme.btnFontColor);
+	m_shutdownBtnCancel = _addButton("SHUTDOWN/CANCEL", theme.btnFont, L"", 185, 300, 270, 48, theme.btnFontColor);
+
+	_setHideAnim(m_shutdownLblQuestion, "SHUTDOWN/QUESTION", 0, 0, -4.f, 0.f);
+	_setHideAnim(m_shutdownBtnFull, "SHUTDOWN/FULL", 0, 0, -4.f, 0.f);
+	_setHideAnim(m_shutdownBtnStandby, "SHUTDOWN/STANDBY", 0, 0, -4.f, 0.f);
+	_setHideAnim(m_shutdownBtnCancel, "SHUTDOWN/CANCEL", 0, 0, -4.f, 0.f);
+
+	_textShutdown();
+	_hideShutdown(true);
 }
 
 void CMenu::_textHome(void)
@@ -401,7 +439,7 @@ void CMenu::_textHome(void)
 	m_btnMgr.setText(m_homeBtnSelPlugin, _t("cfgpl1", L"Select Plugins"));
 
 	m_btnMgr.setText(m_homeBtnCredits, _t("home4", L"Credits"));
-	m_btnMgr.setText(m_homeBtnInstall, _t("home7", L"Install Game"));
+	m_btnMgr.setText(m_homeBtnShutdown, _t("home13", L"Shutdown"));
 	m_btnMgr.setText(m_homeBtnExitTo, _t("home5", L"Exit To"));
 	m_btnMgr.setText(m_homeBtnSettings, _t("cfg1", L"Settings"));
 }
@@ -419,6 +457,13 @@ void CMenu::_textExitTo(void)
 	m_btnMgr.setText(m_homeBtnExitToBootmii, _t("bootmii", L"Bootmii"));
 }
 
+void CMenu::_textShutdown(void)
+{
+	m_btnMgr.setText(m_shutdownLblQuestion, _t("shutdown1", L"Shutdown how?"));
+	m_btnMgr.setText(m_shutdownBtnFull, _t("shutdown2", L"Full Shutdown"));
+	m_btnMgr.setText(m_shutdownBtnStandby, _t("shutdown3", L"Standby"));
+	m_btnMgr.setText(m_shutdownBtnCancel, _t("shutdown4", L"Cancel"));
+}
 /*******************************************************************************/
 
 int CMenu::_cacheCovers()

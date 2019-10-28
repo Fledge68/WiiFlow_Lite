@@ -1969,6 +1969,7 @@ void CMenu::_updateText(void)
 	_textNandEmu();
 	_textHome();
 	_textExitTo();
+	_textShutdown();
 	_textBoot();
 	_textCoverBanner();
 	_textExplorer();

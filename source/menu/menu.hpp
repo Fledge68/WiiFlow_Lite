@@ -959,6 +959,7 @@ private:
 	void _textNandEmu(void);
 	void _textHome(void);
 	void _textExitTo(void);
+	void _textShutdown(void);
 	void _textBoot(void);
 	void _textCoverBanner(void);
 	void _textExplorer(void);
@@ -997,6 +998,7 @@ private:
 	void _hideNandEmuPg();
 	void _hideHome(bool instant = false);
 	void _hideExitTo(bool instant = false);
+	void _hideShutdown(bool instant = false);
 	void _hideCoverBanner(bool instant = false);
 	void _hideExplorer(bool instant = false);
 	void _hideWad(bool instant = false);
@@ -1032,6 +1034,7 @@ private:
 	void _showGameSettings(void);
 	void _showHome(void);
 	void _showExitTo(void);
+	void _showShutdown(void);
 	void _showCoverBanner(void);
 	void _showExplorer(void);
 	void _showWad(void);
@@ -1099,6 +1102,7 @@ private:
 	void _CategorySettings(bool fromGameSet = false);
 	bool _Home();
 	bool _ExitTo();
+	void _Shutdown();
 	bool _Boot();
 	void _Paths();
 	void _sourceFlow();
