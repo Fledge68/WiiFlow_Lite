@@ -2450,7 +2450,7 @@ bool CMenu::_loadChannelList(void)
 bool CMenu::_loadPluginList()
 {
 	bool updateCache = m_cfg.getBool(PLUGIN_DOMAIN, "update_cache");
-	int channels_type = m_cfg.getInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_REAL);
+	int channels_type = min(max(1, m_cfg.getInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_REAL)), (int)ARRAY_SIZE(CMenu::_ChannelsType));
 	gprintf("Adding plugins list\n");
 	for(u8 i = 0; m_plugin.PluginExist(i); ++i)
 	{
