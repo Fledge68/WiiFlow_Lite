@@ -29,7 +29,7 @@ int https_write(HTTP_INFO *httpinfo, char *buffer, int len)
         if (ret == 0)
             continue;
         else if (ret <= 0)
-            return ret; // timeout would return -1
+            return ret; // Timeout would return -1
 
         slen += ret;
         if (slen >= len)
@@ -40,9 +40,10 @@ int https_write(HTTP_INFO *httpinfo, char *buffer, int len)
 
 int https_read(HTTP_INFO *httpinfo, char *buffer, int len)
 {
+    if (len > 8192)
+        len = 8192; // 16KB is the max on a Wii, but 8KB is safe
     if (httpinfo->use_https)
         return wolfSSL_read(httpinfo->ssl, buffer, len);
-
     return net_read(httpinfo->sock, buffer, len);
 }
 
