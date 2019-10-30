@@ -24,7 +24,7 @@ void CMenu::_hideMain(bool instant)
 	m_btnMgr.hide(m_mainBtnNext, instant);
 	m_btnMgr.hide(m_mainBtnPrev, instant);
 	m_btnMgr.hide(m_mainBtnCategories, instant);
-	//m_btnMgr.hide(m_mainBtnConfig, instant);
+	m_btnMgr.hide(m_mainBtnConfig, instant);
 	m_btnMgr.hide(m_mainBtnHome, instant);
 	m_btnMgr.hide(m_mainBtnHomebrew, instant);
 	m_btnMgr.hide(m_mainBtnChannel, instant);
@@ -492,14 +492,14 @@ int CMenu::main(void)
 				_setMainBg();
 				_showCF(true);
 			}
-			/*else if(m_btnMgr.selected(m_mainBtnConfig))
+			else if(m_btnMgr.selected(m_mainBtnConfig))
 			{
-				// main menu global settings //
+				// main menu global settings
 				_hideMain();
 				_config(1);
 				if(prevTheme != m_themeName)
 				{
-					// new theme - exit wiiflow and reload //
+					// new theme - exit wiiflow and reload
 					fsop_deleteFolder(fmt("%s/sourceflow", m_cacheDir.c_str()));
 					m_reload = true;
 					break;
@@ -514,7 +514,7 @@ int CMenu::main(void)
 				show_gamecube = !m_cfg.getBool(GC_DOMAIN, "disable", false);
 				show_homebrew = !m_cfg.getBool(HOMEBREW_DOMAIN, "disable", false);
 				_showMain();
-			}*/
+			}
 			else if(m_btnMgr.selected(m_mainBtnCategories))
 			{
 				_hideMain();
@@ -820,7 +820,7 @@ int CMenu::main(void)
 			m_btnMgr.show(m_mainLblUser[0]);
 			m_btnMgr.show(m_mainLblUser[1]);
 			m_btnMgr.show(m_mainBtnCategories);
-			//m_btnMgr.show(m_mainBtnConfig);
+			m_btnMgr.show(m_mainBtnConfig);
 			m_btnMgr.show(m_mainBtnHome);
 			m_btnMgr.show(m_favorites ? m_mainBtnFavoritesOn : m_mainBtnFavoritesOff);
 			m_btnMgr.hide(m_favorites ? m_mainBtnFavoritesOff : m_mainBtnFavoritesOn);
@@ -829,7 +829,7 @@ int CMenu::main(void)
 		{
 			m_btnMgr.hide(m_mainLblUser[0]);
 			m_btnMgr.hide(m_mainLblUser[1]);
-			//m_btnMgr.hide(m_mainBtnConfig);
+			m_btnMgr.hide(m_mainBtnConfig);
 			m_btnMgr.hide(m_mainBtnCategories);
 			m_btnMgr.hide(m_mainBtnHome);
 			m_btnMgr.hide(m_mainBtnFavoritesOn);
@@ -934,8 +934,8 @@ void CMenu::_initMainMenu()
 	TexData texCategoriesS;
 	TexData texHome;
 	TexData texHomeS;
-	//TexData texConfig;
-	//TexData texConfigS;
+	TexData texConfig;
+	TexData texConfigS;
 	TexData texGamecube;
 	TexData texGamecubes;
 	TexData texPlugin;
@@ -965,10 +965,10 @@ void CMenu::_initMainMenu()
 
 	TexHandle.fromImageFile(texCategories, fmt("%s/btncat.png", m_imgsDir.c_str()));
 	TexHandle.fromImageFile(texCategoriesS, fmt("%s/btncats.png", m_imgsDir.c_str()));
-	TexHandle.fromImageFile(texHome, fmt("%s/btnconfig.png", m_imgsDir.c_str()));// home button
-	TexHandle.fromImageFile(texHomeS, fmt("%s/btnconfigs.png", m_imgsDir.c_str()));
-	//TexHandle.fromImageFile(texConfig, fmt("%s/btnconfig.png", m_imgsDir.c_str()));
-	//TexHandle.fromImageFile(texConfigS, fmt("%s/btnconfigs.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texHome, fmt("%s/btnquit.png", m_imgsDir.c_str()));// home button
+	TexHandle.fromImageFile(texHomeS, fmt("%s/btnquits.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texConfig, fmt("%s/btnconfig.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texConfigS, fmt("%s/btnconfigs.png", m_imgsDir.c_str()));
 	TexHandle.fromImageFile(texDVD, fmt("%s/btndvd.png", m_imgsDir.c_str()));
 	TexHandle.fromImageFile(texDVDs, fmt("%s/btndvds.png", m_imgsDir.c_str()));
 	TexHandle.fromImageFile(texWii, fmt("%s/btnusb.png", m_imgsDir.c_str()));
@@ -992,17 +992,17 @@ void CMenu::_initMainMenu()
 
 	_addUserLabels(m_mainLblUser, ARRAY_SIZE(m_mainLblUser), "MAIN");
 
-	m_mainBtnCategories = _addPicButton("MAIN/CATEGORIES_BTN", texCategories, texCategoriesS, 160, 400, 48, 48);
-	m_mainBtnFavoritesOn = _addPicButton("MAIN/FAVORITES_ON", texFavOn, texFavOnS, 228, 400, 48, 48);
-	m_mainBtnFavoritesOff = _addPicButton("MAIN/FAVORITES_OFF", texFavOff, texFavOffS, 228, 400, 48, 48);
-	//m_mainBtnConfig = _addPicButton("MAIN/CONFIG_BTN", texConfig, texConfigS, 262, 400, 48, 48);
-	m_mainBtnHome = _addPicButton("MAIN/QUIT_BTN", texHome, texHomeS, 296, 400, 48, 48);
-	m_mainBtnChannel = _addPicButton("MAIN/CHANNEL_BTN", texChannel, texChannels,364, 400, 48, 48);
-	m_mainBtnHomebrew = _addPicButton("MAIN/HOMEBREW_BTN", texHomebrew, texHomebrews, 364, 400, 48, 48);
-	m_mainBtnWii = _addPicButton("MAIN/USB_BTN", texWii, texWiis, 364, 400, 48, 48);
-	m_mainBtnGamecube = _addPicButton("MAIN/DML_BTN", texGamecube, texGamecubes, 364, 400, 48, 48);
-	m_mainBtnPlugin = _addPicButton("MAIN/EMU_BTN", texPlugin, texPlugins, 364, 400, 48, 48);
-	m_mainBtnDVD = _addPicButton("MAIN/DVD_BTN", texDVD, texDVDs, 432, 400, 48, 48);
+	m_mainBtnCategories = _addPicButton("MAIN/CATEGORIES_BTN", texCategories, texCategoriesS, 126, 400, 48, 48);
+	m_mainBtnFavoritesOn = _addPicButton("MAIN/FAVORITES_ON", texFavOn, texFavOnS, 194, 400, 48, 48);
+	m_mainBtnFavoritesOff = _addPicButton("MAIN/FAVORITES_OFF", texFavOff, texFavOffS, 194, 400, 48, 48);
+	m_mainBtnConfig = _addPicButton("MAIN/CONFIG_BTN", texConfig, texConfigS, 262, 400, 48, 48);
+	m_mainBtnHome = _addPicButton("MAIN/QUIT_BTN", texHome, texHomeS, 330, 400, 48, 48);
+	m_mainBtnChannel = _addPicButton("MAIN/CHANNEL_BTN", texChannel, texChannels, 398, 400, 48, 48);
+	m_mainBtnHomebrew = _addPicButton("MAIN/HOMEBREW_BTN", texHomebrew, texHomebrews, 398, 400, 48, 48);
+	m_mainBtnWii = _addPicButton("MAIN/USB_BTN", texWii, texWiis, 398, 400, 48, 48);
+	m_mainBtnGamecube = _addPicButton("MAIN/DML_BTN", texGamecube, texGamecubes, 398, 400, 48, 48);
+	m_mainBtnPlugin = _addPicButton("MAIN/EMU_BTN", texPlugin, texPlugins, 398, 400, 48, 48);
+	m_mainBtnDVD = _addPicButton("MAIN/DVD_BTN", texDVD, texDVDs, 466, 400, 48, 48);
 	
 	m_mainBtnNext = _addPicButton("MAIN/NEXT_BTN", texNext, texNextS, 540, 146, 80, 80);
 	m_mainBtnPrev = _addPicButton("MAIN/PREV_BTN", texPrev, texPrevS, 20, 146, 80, 80);
@@ -1011,10 +1011,9 @@ void CMenu::_initMainMenu()
 	m_mainLblLetter = _addLabel("MAIN/LETTER", theme.titleFont, L"", 540, 40, 80, 80, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, emptyTex);
 	m_mainLblNotice = _addLabel("MAIN/NOTICE", theme.txtFont, L"", 340, 40, 280, 80, theme.titleFontColor, FTGX_JUSTIFY_RIGHT | FTGX_ALIGN_MIDDLE);
 	m_mainLblCurMusic = _addLabel("MAIN/MUSIC", theme.txtFont, L"", 0, 10, 640, 32, theme.txtFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-//#ifdef SHOWMEM
+
 	m_mem1FreeSize = _addLabel("MEM1", theme.btnFont, L"", 40, 300, 480, 56, theme.btnFontColor, FTGX_JUSTIFY_LEFT, emptyTex);
 	m_mem2FreeSize = _addLabel("MEM2", theme.btnFont, L"", 40, 356, 480, 56, theme.btnFontColor, FTGX_JUSTIFY_LEFT, emptyTex);
-//#endif
 	// 
 	m_mainPrevZone.x = m_theme.getInt("MAIN/ZONES", "prev_x", -32);
 	m_mainPrevZone.y = m_theme.getInt("MAIN/ZONES", "prev_y", -32);
@@ -1049,7 +1048,7 @@ void CMenu::_initMainMenu()
 	_setHideAnim(m_mainBtnNext, "MAIN/NEXT_BTN", 0, 0, 0.f, 0.f);
 	_setHideAnim(m_mainBtnPrev, "MAIN/PREV_BTN", 0, 0, 0.f, 0.f);
 	_setHideAnim(m_mainBtnCategories, "MAIN/CATEGORIES_BTN", 0, 40, 0.f, 0.f);
-	//_setHideAnim(m_mainBtnConfig, "MAIN/CONFIG_BTN", 0, 40, 0.f, 0.f);
+	_setHideAnim(m_mainBtnConfig, "MAIN/CONFIG_BTN", 0, 40, 0.f, 0.f);
 	_setHideAnim(m_mainBtnHome, "MAIN/QUIT_BTN", 0, 40, 0.f, 0.f);
 	_setHideAnim(m_mainBtnChannel, "MAIN/CHANNEL_BTN", 0, 40, 0.f, 0.f);
 	_setHideAnim(m_mainBtnHomebrew, "MAIN/HOMEBREW_BTN", 0, 40, 0.f, 0.f);
