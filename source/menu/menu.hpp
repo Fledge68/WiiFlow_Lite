@@ -531,6 +531,14 @@ private:
 	s16 m_gameSettingsLblPosVal;
 	s16 m_gameSettingsBtnPosP;
 	s16 m_gameSettingsBtnPosM;
+	
+	s16 m_gameSettingsLblBBA;
+	s16 m_gameSettingsBtnBBA;
+
+	s16 m_gameSettingsLblNetProf;
+	s16 m_gameSettingsLblNetProfVal;
+	s16 m_gameSettingsBtnNetProfP;
+	s16 m_gameSettingsBtnNetProfM;
 
 	s16 m_gameSettingsLblGCLoader;
 	s16 m_gameSettingsLblGCLoader_Val;

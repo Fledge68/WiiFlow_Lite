@@ -338,7 +338,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		
 	u8 GClanguage = min(m_gcfg2.getUInt(id, "language", 0), ARRAY_SIZE(CMenu::_GClanguages) - 1u);
 	GClanguage = (GClanguage == 0) ? min(m_cfg.getUInt(GC_DOMAIN, "game_language", 0), ARRAY_SIZE(CMenu::_GlobalGClanguages) - 1u) : GClanguage-1;
-	// language selection only works for PAL games
+	// language selection only works for PAL games. E and J are always set to english.
 	if(id[3] == 'E' || id[3] == 'J')
 		GClanguage = 1; //=english
 		
@@ -362,6 +362,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		bool deflicker = m_gcfg2.getBool(id, "deflicker", false);
 		bool tri_arcade = m_gcfg2.getBool(id, "triforce_arcade", false);
 		bool ipl = m_gcfg2.getBool(id, "skip_ipl", false);
+		bool bba = m_gcfg2.getBool(id, "bba_emu", false);
 		bool patch_pal50 = m_gcfg2.getBool(id, "patch_pal50", false);
 		bool NIN_Debugger = (m_gcfg2.getInt(id, "debugger", 0) == 2);
 		bool cheats = m_gcfg2.getBool(id, "cheat", false);
@@ -372,6 +373,9 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		s8 vidoffset = m_gcfg2.getInt(id, "nin_pos", 127);
 		if(vidoffset == 127)
 			vidoffset = m_cfg.getInt(GC_DOMAIN, "nin_pos", 0);
+		u8 netprofile = 0;
+		if(!IsOnWiiU())
+			netprofile = m_gcfg2.getUInt(id, "net_profile", 0);
 
 		/* configs no longer needed */
 		m_gcfg1.save(true);
@@ -458,7 +462,10 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 
 		if(ipl)
 			n_config |= NIN_CFG_SKIP_IPL;
-			
+
+		if(bba)
+			n_config |= NIN_CFG_BBA_EMU;
+
 		/* set memcard options */
 		if(emuMC > 0 || IsOnWiiU() == true) //force memcardemu for wii u vwii
 			n_config |= NIN_CFG_MEMCARDEMU;
@@ -518,7 +525,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 				break;
 		}
 
-		Nintendont_SetOptions(path, id, CheatPath, GClanguage, n_config, n_videomode, vidscale, vidoffset);
+		Nintendont_SetOptions(path, id, CheatPath, GClanguage, n_config, n_videomode, vidscale, vidoffset, netprofile);
 		
 		loadIOS(58, false); //nintendont NEEDS ios58 and AHBPROT disabled
 		/* should be a check for error loading IOS58 and AHBPROT disabled */

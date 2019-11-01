@@ -138,6 +138,12 @@ void CMenu::_hideGameSettingsPg(bool instant)
 	m_btnMgr.hide(m_gameSettingsLblPos, instant);
 	m_btnMgr.hide(m_gameSettingsBtnPosP, instant);
 	m_btnMgr.hide(m_gameSettingsBtnPosM, instant);
+	m_btnMgr.hide(m_gameSettingsLblBBA, instant);
+	m_btnMgr.hide(m_gameSettingsBtnBBA, instant);
+	m_btnMgr.hide(m_gameSettingsLblNetProfVal, instant);
+	m_btnMgr.hide(m_gameSettingsLblNetProf, instant);
+	m_btnMgr.hide(m_gameSettingsBtnNetProfP, instant);
+	m_btnMgr.hide(m_gameSettingsBtnNetProfM, instant);
 	// Channels only
 	m_btnMgr.hide(m_gameSettingsLblApploader, instant);
 	m_btnMgr.hide(m_gameSettingsBtnApploader, instant);
@@ -206,8 +212,13 @@ void CMenu::_showGameSettings()
 	}
 	
 	m_gameSettingsMaxPgs = 5;
-	if(GameHdr->type == TYPE_GC_GAME && GCLoader == DEVOLUTION)
-		m_gameSettingsMaxPgs = 2;
+	if(GameHdr->type == TYPE_GC_GAME)
+	{
+		if(GCLoader == DEVOLUTION)
+			m_gameSettingsMaxPgs = 2;
+		else
+			m_gameSettingsMaxPgs = 6;
+	}
 	
 	m_btnMgr.setText(m_gameSettingsLblPage, wfmt(L"%i / %i", m_gameSettingsPage, m_gameSettingsMaxPgs));
 	m_btnMgr.show(m_gameSettingsLblPage);
@@ -401,10 +412,21 @@ void CMenu::_showGameSettings()
 			{
 				m_btnMgr.show(m_gameSettingsLblPrivateServer);
 				m_btnMgr.show(m_gameSettingsBtnPrivateServer);
+				
 				m_btnMgr.show(m_gameSettingsLblFix480p);
 				m_btnMgr.show(m_gameSettingsBtnFix480p);
 			}
 		}
+	}
+	if(m_gameSettingsPage == 6)
+	{
+		m_btnMgr.show(m_gameSettingsLblBBA);
+		m_btnMgr.show(m_gameSettingsBtnBBA);
+		
+		m_btnMgr.show(m_gameSettingsLblNetProfVal);
+		m_btnMgr.show(m_gameSettingsLblNetProf);
+		m_btnMgr.show(m_gameSettingsBtnNetProfP);
+		m_btnMgr.show(m_gameSettingsBtnNetProfM);
 	}
 
 	m_btnMgr.setText(m_gameSettingsBtnAdultOnly, m_gcfg1.getBool("ADULTONLY", id, false) ? _t("yes", L"Yes") : _t("no", L"No"));
@@ -426,6 +448,13 @@ void CMenu::_showGameSettings()
 		m_btnMgr.setText(m_gameSettingsBtnArcade, _optBoolToString(m_gcfg2.getOptBool(id, "triforce_arcade", 0)));
 		m_btnMgr.setText(m_gameSettingsBtnSkip_IPL, _optBoolToString(m_gcfg2.getOptBool(id, "skip_ipl", 0)));
 		m_btnMgr.setText(m_gameSettingsBtnPatch50, _optBoolToString(m_gcfg2.getOptBool(id, "patch_pal50", 0)));
+		m_btnMgr.setText(m_gameSettingsBtnBBA, _optBoolToString(m_gcfg2.getOptBool(id, "bba_emu", 0)));
+		
+		u8 netprofile = m_gcfg2.getUInt(id, "net_profile", 0);
+		if(netprofile == 0)
+			m_btnMgr.setText(m_gameSettingsLblNetProfVal, _t("GC_Auto", L"Auto"));
+		else
+			m_btnMgr.setText(m_gameSettingsLblNetProfVal, wfmt(L"%i", netprofile));
 		
 		if(videoScale == 0)
 			m_btnMgr.setText(m_gameSettingsLblWidthVal, _t("GC_Auto", L"Auto"));
@@ -788,6 +817,17 @@ void CMenu::_gameSettings(const dir_discHdr *hdr, bool disc)
 				m_gcfg2.setBool(id, "patch_pal50", !m_gcfg2.getBool(id, "patch_pal50", 0));
 				_showGameSettings();
 			}
+			else if(m_btnMgr.selected(m_gameSettingsBtnBBA))
+			{
+				m_gcfg2.setBool(id, "bba_emu", !m_gcfg2.getBool(id, "bba_emu", 0));
+				_showGameSettings();
+			}
+			else if(m_btnMgr.selected(m_gameSettingsBtnNetProfP) || m_btnMgr.selected(m_gameSettingsBtnNetProfM))
+			{
+				s8 direction = m_btnMgr.selected(m_gameSettingsBtnNetProfP) ? 1 : -1;
+				m_gcfg2.setInt(id, "net_profile", loopNum(m_gcfg2.getInt(id, "net_profile") + direction, 4));
+				_showGameSettings();
+			}
 			else if(m_btnMgr.selected(m_gameSettingsBtnPrivateServer))
 			{
 				m_gcfg2.setBool(id, "private_server", !m_gcfg2.getBool(id, "private_server", 0));
@@ -983,6 +1023,15 @@ void CMenu::_initGameSettingsMenu()
 	m_gameSettingsLblPatch50 = _addLabel("GAME_SETTINGS/PATCH_PAL50", theme.lblFont, L"", 20, 305, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsBtnPatch50 = _addButton("GAME_SETTINGS/PATCH_PAL50_BTN", theme.btnFont, L"", 420, 310, 200, 48, theme.btnFontColor);
 
+//Page 6 GC only
+	m_gameSettingsLblBBA = _addLabel("GAME_SETTINGS/BBA", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsBtnBBA = _addButton("GAME_SETTINGS/BBA_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
+	
+	m_gameSettingsLblNetProf = _addLabel("GAME_SETTINGS/NET_PROFILE", theme.lblFont, L"", 20, 185, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsLblNetProfVal = _addLabel("GAME_SETTINGS/NET_PROFILE_BTN", theme.btnFont, L"", 468, 190, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_gameSettingsBtnNetProfM = _addPicButton("GAME_SETTINGS/NET_PROFILE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 420, 190, 48, 48);
+	m_gameSettingsBtnNetProfP = _addPicButton("GAME_SETTINGS/NET_PROFILE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 572, 190, 48, 48);
+	
 //Footer
 	m_gameSettingsLblPage = _addLabel("GAME_SETTINGS/PAGE_BTN", theme.btnFont, L"", 68, 400, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_gameSettingsBtnPageM = _addPicButton("GAME_SETTINGS/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 20, 400, 48, 48);
@@ -1092,6 +1141,14 @@ void CMenu::_initGameSettingsMenu()
 	_setHideAnim(m_gameSettingsBtnPosM, "GAME_SETTINGS/NIN_POS_MINUS", -50, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnPosP, "GAME_SETTINGS/NIN_POS_PLUS", -50, 0, 1.f, 0.f);
 
+	_setHideAnim(m_gameSettingsLblBBA, "GAME_SETTINGS/BBA", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_gameSettingsBtnBBA, "GAME_SETTINGS/BBA_BTN", -50, 0, 1.f, 0.f);
+
+	_setHideAnim(m_gameSettingsLblNetProf, "GAME_SETTINGS/NET_PROFILE", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_gameSettingsLblNetProfVal, "GAME_SETTINGS/NET_PROFILE_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsBtnNetProfM, "GAME_SETTINGS/NET_PROFILE_MINUS", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsBtnNetProfP, "GAME_SETTINGS/NET_PROFILE_PLUS", -50, 0, 1.f, 0.f);
+	
 	_setHideAnim(m_gameSettingsLblGCLoader, "GAME_SETTINGS/GC_LOADER", 50, 0, -2.f, 0.f);
 	_setHideAnim(m_gameSettingsLblGCLoader_Val, "GAME_SETTINGS/GC_LOADER_BTN", -50, 0, 1.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnGCLoader_P, "GAME_SETTINGS/GC_LOADER_PLUS", -50, 0, 1.f, 0.f);
@@ -1162,6 +1219,8 @@ void CMenu::_textGameSettings(void)
 	m_btnMgr.setText(m_gameSettingsLblNATIVE_CTL, _t("cfgg43", L"Native Control"));
 	m_btnMgr.setText(m_gameSettingsLblSkip_IPL, _t("cfgg53", L"Skip IPL BIOS"));
 	m_btnMgr.setText(m_gameSettingsLblPatch50, _t("cfgg56", L"Patch PAL50"));
+	m_btnMgr.setText(m_gameSettingsLblBBA, _t("cfgg59", L"BBA Emulation"));
+	m_btnMgr.setText(m_gameSettingsLblNetProf, _t("cfgg60", L"BBA Net Profile"));
 	
 	m_btnMgr.setText(m_gameSettingsLblArcade, _t("cfgg48", L"Triforce Arcade Mode"));
 	m_btnMgr.setText(m_gameSettingsLblEmulation, _t("cfgg24", L"NAND Emulation"));

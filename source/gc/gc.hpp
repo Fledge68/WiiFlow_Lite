@@ -26,7 +26,7 @@
 bool Nintendont_Installed();
 bool Nintendont_GetLoader();
 void Nintendont_SetOptions(const char *gamePath, const char *gameID, const char *CheatPath, u8 lang, u32 n_cfg, 
-							u32 n_vm, s8 vidscale, s8 vidoffset);
+							u32 n_vm, s8 vidscale, s8 vidoffset, u8 netprofile);
 
 // Devolution
 #define DEVO_LOADER_PATH "%s/loader.bin"
