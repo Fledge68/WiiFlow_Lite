@@ -110,7 +110,10 @@ void CMenu::_sourceFlow()
 			m_source.load(fmt("%s/%s", m_sourceDir.c_str(), fn.c_str()));
 			SF_cacheCovers = true;
 			fn.replace(fn.find("."), 4, "_flow");
-			curflow = m_cfg.getInt(SOURCEFLOW_DOMAIN, fn, m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
+			if(m_source.has("general", "flow"))
+				curflow = m_source.getInt("general", "flow", 1);
+			else
+				curflow = m_cfg.getInt(SOURCEFLOW_DOMAIN, fn, m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
 			/* get max source button # */
 			m_max_source_btn = 0;
 			const char *srcDomain = m_source.firstDomain().c_str();
@@ -180,7 +183,10 @@ bool CMenu::_srcTierBack(bool home)
 	m_source.unload();
 	m_source.load(fmt("%s/%s", m_sourceDir.c_str(), fn.c_str()));
 	fn.replace(fn.find("."), 4, "_flow");
-	curflow = m_cfg.getInt(SOURCEFLOW_DOMAIN, fn, m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
+	if(m_source.has("general", "flow"))
+		curflow = m_source.getInt("general", "flow", 1);
+	else
+		curflow = m_cfg.getInt(SOURCEFLOW_DOMAIN, fn, m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
 	/* get max source button # */
 	m_max_source_btn = 0;
 	const char *srcDomain = m_source.firstDomain().c_str();
@@ -584,7 +590,10 @@ void CMenu::_initSourceMenu()
 	m_source.load(fmt("%s/%s", m_sourceDir.c_str(), fn.c_str()));
 
 	fn.replace(fn.find("."), 4, "_flow");
-	curflow = m_cfg.getInt(SOURCEFLOW_DOMAIN, fn, m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
+	if(m_source.has("general", "flow"))
+		curflow = m_source.getInt("general", "flow", 1);
+	else
+		curflow = m_cfg.getInt(SOURCEFLOW_DOMAIN, fn, m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
 	
 	/* get max source button # */
 	m_max_source_btn = 0;

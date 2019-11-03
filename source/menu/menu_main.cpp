@@ -450,6 +450,8 @@ int CMenu::main(void)
 				{
 					/* new theme - exit wiiflow and reload */
 					fsop_deleteFolder(fmt("%s/sourceflow", m_cacheDir.c_str()));
+					m_cfg.remove(SOURCEFLOW_DOMAIN, "numbers");
+					m_cfg.remove(SOURCEFLOW_DOMAIN, "tiers");
 					m_reload = true;
 					break;
 				}
@@ -501,6 +503,8 @@ int CMenu::main(void)
 				{
 					// new theme - exit wiiflow and reload
 					fsop_deleteFolder(fmt("%s/sourceflow", m_cacheDir.c_str()));
+					m_cfg.remove(SOURCEFLOW_DOMAIN, "numbers");
+					m_cfg.remove(SOURCEFLOW_DOMAIN, "tiers");
 					m_reload = true;
 					break;
 				}
