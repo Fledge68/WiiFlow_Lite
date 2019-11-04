@@ -9,6 +9,7 @@
 #define CHEATSPERPAGE 4
 
 u8 m_cheatSettingsPage = 0;
+int txtavailable;
 
 int CMenu::_downloadCheatFileAsync()
 {
@@ -50,16 +51,11 @@ void CMenu::_CheatSettings()
 	const char *id = CoverFlow.getId();
 
 	m_cheatSettingsPage = 1;
-	int txtavailable = m_cheatfile.openTxtfile(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id)); 
+	txtavailable = m_cheatfile.openTxtfile(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id)); 
 	
-	_showCheatSettings();
 	_textCheatSettings();
-	
-	if (txtavailable)
-		m_btnMgr.setText(m_cheatLblTitle, m_cheatfile.getGameName());
-	else 
-		m_btnMgr.setText(m_cheatLblTitle, L"");
-	
+	_showCheatSettings();
+
 	while(!m_exit)
 	{
 		_mainLoopCommon();
@@ -89,7 +85,7 @@ void CMenu::_CheatSettings()
 			if(BTN_RIGHT_PRESSED || BTN_PLUS_PRESSED) m_btnMgr.click(m_cheatBtnPageP);
 			_showCheatSettings();
 		}
-		else if ((WBTN_2_HELD && WBTN_1_PRESSED) || (WBTN_1_HELD && WBTN_2_PRESSED))
+		else if ((WBTN_2_HELD && WBTN_1_PRESSED) || (WBTN_1_HELD && WBTN_2_PRESSED))// pressing 1 and 2 deletes everything so cheats can be downloaded again.
 		{
 			fsop_deleteFile(fmt("%s/%s.gct", m_cheatDir.c_str(), id));
 			fsop_deleteFile(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id));
@@ -170,7 +166,7 @@ void CMenu::_CheatSettings()
 						else if(ret == -3)
 							m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg12", L"Download failed!"));
 						else if(ret == -4)
-							m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg35", L"No cheats available."));
+							m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg36", L"No cheat file available to download."));
 						else
 							m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg14", L"Done."));
 						dl_finished = true;
@@ -178,20 +174,6 @@ void CMenu::_CheatSettings()
 				}
 				txtavailable = m_cheatfile.openTxtfile(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id));
 				_showCheatSettings();
-
-				if(txtavailable)
-					m_btnMgr.setText(m_cheatLblTitle, m_cheatfile.getGameName());
-				else 
-					m_btnMgr.setText(m_cheatLblTitle, L"");
-
-				if (m_cheatfile.getCnt() == 0)
-				{
-					// cheat code not found, show result
-					//char type = id[0] == 'S' ? 'R' : id[0];
-					m_btnMgr.setText(m_cheatLblItem[0], _t("cheat4", L"Download not found."));
-					m_btnMgr.setText(m_cheatLblItem[1], sfmt(GECKOURL, id));
-					m_btnMgr.show(m_cheatLblItem[1]);
-				}
 			}
 		}
 	}
@@ -221,15 +203,20 @@ void CMenu::_hideCheatSettings(bool instant)
 
 void CMenu::_showCheatSettings(void)
 {
+	if(txtavailable && m_cheatfile.getCnt() > 0)
+		m_btnMgr.setText(m_cheatLblTitle, m_cheatfile.getGameName());
+	else 
+		m_btnMgr.setText(m_cheatLblTitle, L"");
+
 	_setBg(m_cheatBg, m_cheatBg);
-	m_btnMgr.show(m_cheatBtnBack);
 	m_btnMgr.show(m_cheatLblTitle);
+	m_btnMgr.show(m_cheatBtnBack);
 
 	for(u8 i = 0; i < ARRAY_SIZE(m_cheatLblUser); ++i)
 		if(m_cheatLblUser[i] != -1)
 			m_btnMgr.show(m_cheatLblUser[i]);
 
-	if (m_cheatfile.getCnt() > 0)
+	if(m_cheatfile.getCnt() > 0)
 	{
 		// cheat found, show apply
 		m_btnMgr.show(m_cheatBtnApply);
@@ -260,13 +247,17 @@ void CMenu::_showCheatSettings(void)
 			}
 		}
 	}
-	else
+	else if(!txtavailable)
 	{
 		// no cheat found, allow downloading
 		m_btnMgr.show(m_cheatBtnDownload);
 		m_btnMgr.setText(m_cheatLblItem[0], _t("cheat3", L"Cheat file for game not found."));
 		m_btnMgr.show(m_cheatLblItem[0]);
-		
+	}
+	else
+	{
+		m_btnMgr.setText(m_cheatLblItem[0], _t("dlmsg35", L"Downloaded cheat file has no cheats!"));
+		m_btnMgr.show(m_cheatLblItem[0]);
 	}
 }
 
