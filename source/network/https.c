@@ -8,7 +8,6 @@
 #include <network.h>
 #include <ogc/lwp_watchdog.h>
 #include <unistd.h>
-#include <assert.h>
 
 #include "https.h"
 #include "gecko/gecko.hpp"
@@ -62,27 +61,28 @@ void https_close(HTTP_INFO *httpinfo)
 #endif
 }
 
-char *get_header_value(struct phr_header *headers, size_t num_headers, char *header)
+u8 get_header_value(struct phr_header *headers, size_t num_headers, char *dst, char *header)
 {
     for (size_t i = 0; i != num_headers; ++i)
     {
-        char *header_name = strndup(headers[i].name, headers[i].name_len);
-        char *header_value = strndup(headers[i].value, headers[i].value_len);
-        if (strcasecmp(header_name, header) == 0)
-            return header_value;
+        if (strncasecmp(header, headers[i].name, headers[i].name_len) == 0)
+        {
+            strlcpy(dst, headers[i].value, headers[i].value_len + 1);
+            return 1;
+        }
     }
-    return NULL;
+    return 0;
 }
 
 u8 is_chunked(struct phr_header *headers, size_t num_headers)
 {
-    char *header = get_header_value(headers, num_headers, "transfer-encoding");
-    if (header == NULL)
+    char encoding[10] = {};
+    if (!get_header_value(headers, num_headers, encoding, "transfer-encoding"))
         return 0;
-    return (strcasecmp(header, "chunked") == 0) ? 1 : 0;
+    return (strcasecmp(encoding, "chunked") == 0) ? 1 : 0;
 }
 
-int read_chunked(HTTP_INFO *httpinfo, struct download *buffer, size_t start_pos)
+void read_chunked(HTTP_INFO *httpinfo, struct download *buffer, size_t start_pos)
 {
     struct phr_chunked_decoder decoder = {};
     size_t capacity = 4096, rsize;
@@ -100,35 +100,32 @@ int read_chunked(HTTP_INFO *httpinfo, struct download *buffer, size_t start_pos)
 #endif
             capacity *= 2;
             buffer->data = realloc(buffer->data, capacity);
-            assert(buffer->data != NULL);
         }
-        while ((rret = https_read(httpinfo, buffer->data + start_pos, capacity - start_pos)) == -1 && errno == EINTR)
+        while ((rret = https_read(httpinfo, &buffer->data[start_pos], capacity - start_pos)) == -1 && errno == EINTR)
             ;
         if (rret <= 0)
         {
 #ifdef DEBUG_NETWORK
             gprintf("IO error\n");
 #endif
-            return -1;
+            return;
         }
         rsize = rret;
-        pret = phr_decode_chunked(&decoder, buffer->data + start_pos, &rsize);
+        pret = phr_decode_chunked(&decoder, &buffer->data[start_pos], &rsize);
         if (pret == -1)
         {
 #ifdef DEBUG_NETWORK
             gprintf("Parse error\n");
 #endif
-            return -2;
+            return;
         }
         start_pos += rsize;
     } while (pret == -2);
-    assert(pret >= 0);
     buffer->size = start_pos;
     buffer->data = realloc(buffer->data, buffer->size);
-    return start_pos;
 }
 
-int read_all(HTTP_INFO *httpinfo, struct download *buffer, size_t start_pos)
+void read_all(HTTP_INFO *httpinfo, struct download *buffer, size_t start_pos)
 {
     size_t capacity = 4096;
     ssize_t ret;
@@ -144,9 +141,8 @@ int read_all(HTTP_INFO *httpinfo, struct download *buffer, size_t start_pos)
 #endif
             capacity *= 2;
             buffer->data = realloc(buffer->data, capacity);
-            assert(buffer->data != NULL);
         }
-        while ((ret = https_read(httpinfo, buffer->data + start_pos, capacity - start_pos)) == -1 && errno == EINTR)
+        while ((ret = https_read(httpinfo, &buffer->data[start_pos], capacity - start_pos)) == -1 && errno == EINTR)
             ;
         if (ret <= 0)
             break;
@@ -155,7 +151,6 @@ int read_all(HTTP_INFO *httpinfo, struct download *buffer, size_t start_pos)
     };
     buffer->size = start_pos;
     buffer->data = realloc(buffer->data, buffer->size);
-    return start_pos;
 }
 
 int connect(char *host, u16 port)
@@ -363,12 +358,12 @@ void downloadfile(const char *url, struct download *buffer)
     while (1)
     {
         // Read the response
-        while ((rret = https_read(&httpinfo, response + buflen, 1)) == -1 && errno == EINTR)
+        while ((rret = https_read(&httpinfo, &response[buflen], 1)) == -1 && errno == EINTR)
             ;
         if (rret <= 0)
         {
 #ifdef DEBUG_NETWORK
-            gprintf("rret error %i", rret);
+            gprintf("rret error %i\n", rret);
 #endif
             https_close(&httpinfo);
             return;
@@ -383,13 +378,12 @@ void downloadfile(const char *url, struct download *buffer)
         else if (pret == -1)
         {
 #ifdef DEBUG_NETWORK
-            gprintf("pret error %i", pret);
+            gprintf("pret error %i\n", pret);
 #endif
             https_close(&httpinfo);
             return;
         }
         // Response is incomplete so continue the loop
-        assert(pret == -2);
         if (buflen == sizeof(response))
         {
 #ifdef DEBUG_NETWORK
@@ -407,18 +401,18 @@ void downloadfile(const char *url, struct download *buffer)
         if (loop == REDIRECT_LIMIT)
         {
 #ifdef DEBUG_NETWORK
-            gprintf("Reached redirect limit");
+            gprintf("Reached redirect limit\n");
 #endif
             return;
         }
         loop++;
-        char *header = get_header_value(headers, num_headers, "location");
-        if (header == NULL)
+        char location[2100] = {};
+        if (!get_header_value(headers, num_headers, location, "location"))
             return;
 #ifdef DEBUG_NETWORK
-        gprintf("Redirect #%i - %s\n", loop, header);
+        gprintf("Redirect #%i - %s\n", loop, location);
 #endif
-        downloadfile(header, buffer);
+        downloadfile(location, buffer);
         return;
     }
     // It's not 301 or 302, so reset the loop
@@ -428,7 +422,7 @@ void downloadfile(const char *url, struct download *buffer)
     {
         buffer->data = malloc(4096);
         buffer->size = 4096;
-        memcpy(buffer->data, response + pret, buflen - pret);
+        memcpy(buffer->data, &response[pret], buflen - pret);
         // Determine how to read the data
         if (is_chunked(headers, num_headers))
             read_chunked(&httpinfo, buffer, buflen - pret);
