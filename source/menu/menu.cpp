@@ -405,6 +405,13 @@ bool CMenu::init(bool usb_mounted)
 	MusicPlayer.Init(m_cfg, m_musicDir, fmt("%s/music", m_themeDataDir.c_str()));
 	m_music_info = m_cfg.getBool("GENERAL", "display_music_info", false);
 
+	/* Source Menu on start reset tiers before buid menus */
+	if(m_cfg.getBool("GENERAL", "source_on_start", false))
+	{
+		m_cfg.remove(SOURCEFLOW_DOMAIN, "tiers");
+		m_cfg.remove(SOURCEFLOW_DOMAIN, "numbers");
+	}
+	
 	/* Init Button Manager and build the menus */
 	_buildMenus();
 

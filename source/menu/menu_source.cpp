@@ -132,6 +132,11 @@ void CMenu::_sourceFlow()
 			return;
 		}
 	}
+	else if(source == "back_tier")
+	{
+		_srcTierBack(false);
+		return;
+	}
 	else //(source == "wii")
 		m_current_view = COVERFLOW_WII;
 	m_sourceflow = false;
@@ -476,6 +481,12 @@ bool CMenu::_Source()
 						numPages = (m_max_source_btn / 12) + 1;
 						_updateSourceBtns();
 					}
+				}
+				else if(source == "back_tier")
+				{
+					exitSource = false;
+					_srcTierBack(false);
+					_updateSourceBtns();
 				}
 				else //if(source == "wii") or source is invalid or empty default to wii
 				{
