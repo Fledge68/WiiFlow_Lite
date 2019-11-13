@@ -112,7 +112,7 @@ void DeviceHandler::SetModes()
 		usb_libogc_mode = 0;
 		/* But not for SD */
 		if(CurrentIOS.Type != IOS_TYPE_NEEK2O)
-			sdhc_mode_sd = 0;
+			sdhc_mode_sd = 1;// don't use cIOS for SD
 	}
 }
 

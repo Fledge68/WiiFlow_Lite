@@ -347,6 +347,7 @@ void CMenu::_textGameInfo(void)
 			return;// no platform.ini found
 		
 		/* Search platform.ini to find plugin magic to get platformName */
+		strncpy(m_plugin.PluginMagicWord, fmt("%08x", GameHdr->settings[0]), 8);
 		snprintf(platformName, sizeof(platformName), "%s", m_platform.getString("PLUGINS", m_plugin.PluginMagicWord).c_str());
 		strncpy(GameID, GameHdr->id, 6);
 		if(strlen(platformName) == 0 || strcasecmp(GameID, "PLUGIN") == 0)
