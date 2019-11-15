@@ -379,7 +379,7 @@ s8 PartitionHandle::CheckGPT(u8 PartNum)
 
 			bool bootable = (memcmp(part_entry->part_type_guid, TYPE_BIOS, 16) == 0);
 
-			AddPartition("GUID-Entry", le64(part_entry->part_first_lba), le64(part_entry->part_last_lba), bootable, PARTITION_TYPE_GPT, PartNum);
+			AddPartition("GUID-Entry", le64(part_entry->part_first_lba), le64(part_entry->part_last_lba)-le64(part_entry->part_first_lba), bootable, PARTITION_TYPE_GPT, PartNum);
 		}
 		next_lba++;
 	}
