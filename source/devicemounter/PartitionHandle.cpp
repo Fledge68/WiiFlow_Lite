@@ -274,7 +274,7 @@ s8 PartitionHandle::FindPartitions()
 
 		if(partition->type == PARTITION_TYPE_GPT)
 		{
-			s8 ret = CheckGPT(i);
+			s8 ret = CheckGPT();
 			if(ret == 0) // if it's a GPT we don't need to go on looking through the mbr anymore
 				return ret;
 		}
@@ -332,7 +332,7 @@ static const u8 TYPE_UNUSED[16] = { 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
 static const u8 TYPE_BIOS[16] = { 0x48,0x61,0x68,0x21,0x49,0x64,0x6F,0x6E,0x74,0x4E,0x65,0x65,0x64,0x45,0x46,0x49 };
 static const u8 TYPE_LINUX_MS_BASIC_DATA[16] = { 0xA2,0xA0,0xD0,0xEB,0xE5,0xB9,0x33,0x44,0x87,0xC0,0x68,0xB6,0xB7,0x26,0x99,0xC7 };
 
-s8 PartitionHandle::CheckGPT(u8 PartNum)
+s8 PartitionHandle::CheckGPT()
 {
 	GPT_HEADER *gpt_header = (GPT_HEADER*)MEM2_alloc(MAX_BYTES_PER_SECTOR);
 	if(gpt_header == NULL)
@@ -379,7 +379,7 @@ s8 PartitionHandle::CheckGPT(u8 PartNum)
 
 			bool bootable = (memcmp(part_entry->part_type_guid, TYPE_BIOS, 16) == 0);
 
-			AddPartition("GUID-Entry", le64(part_entry->part_first_lba), le64(part_entry->part_last_lba)-le64(part_entry->part_first_lba), bootable, PARTITION_TYPE_GPT, PartNum);
+			AddPartition("GUID-Entry", le64(part_entry->part_first_lba), le64(part_entry->part_last_lba)-le64(part_entry->part_first_lba), bootable, PARTITION_TYPE_GPT, i);
 		}
 		next_lba++;
 	}
