@@ -17,8 +17,8 @@ s16 m_bootLblCIOSrevP;
 s16 m_bootLblUSBPort;
 s16 m_bootBtnUSBPort;
 
-s16 m_bootLblAsyncNet;
-s16 m_bootBtnAsyncNet;
+s16 m_bootLblSDOnly;
+s16 m_bootBtnSDOnly;
 
 u8 set_port = 0;
 
@@ -41,8 +41,8 @@ void CMenu::_hideBoot(bool instant)
 	m_btnMgr.hide(m_bootLblUSBPort, instant);
 	m_btnMgr.hide(m_bootBtnUSBPort, instant);
 	
-	m_btnMgr.hide(m_bootLblAsyncNet, instant);
-	m_btnMgr.hide(m_bootBtnAsyncNet, instant);
+	m_btnMgr.hide(m_bootLblSDOnly, instant);
+	m_btnMgr.hide(m_bootBtnSDOnly, instant);
 }
 
 void CMenu::_showBoot()
@@ -58,7 +58,7 @@ void CMenu::_showBoot()
 	if(cur_ios > 0)
 		m_btnMgr.setText(m_bootLblCurCIOSrev, wfmt(L"%i", cur_ios));
 	else
-		m_btnMgr.setText(m_bootLblCurCIOSrev, L"AUTO");
+		m_btnMgr.setText(m_bootLblCurCIOSrev, L"AUTO");// cIOS 249 unless the user changed it via the meta.xml
 	
 	m_btnMgr.show(m_bootLblLoadCIOS);
 	m_btnMgr.show(m_bootBtnLoadCIOS);
@@ -71,9 +71,9 @@ void CMenu::_showBoot()
 	m_btnMgr.show(m_bootLblUSBPort);
 	m_btnMgr.show(m_bootBtnUSBPort);
 
-	m_btnMgr.setText(m_bootBtnAsyncNet, m_cfg.getBool("GENERAL", "async_network", false) ? _t("on", L"On") : _t("off", L"Off"));
-	m_btnMgr.show(m_bootLblAsyncNet);
-	m_btnMgr.show(m_bootBtnAsyncNet);
+	m_btnMgr.setText(m_bootBtnSDOnly, m_cfg.getBool("GENERAL", "sd_only") ? _t("yes", L"Yes") : _t("no", L"No"));
+	m_btnMgr.show(m_bootLblSDOnly);
+	m_btnMgr.show(m_bootBtnSDOnly);
 }
 
 bool CMenu::_Boot(void)
@@ -86,6 +86,7 @@ bool CMenu::_Boot(void)
 	set_port = currentPort;
 	bool prev_load = cur_load;
 	u8 prev_ios = cur_ios;
+	bool prev_sd = m_cfg.getBool("GENERAL", "sd_only");
 	SetupInput();
 	_showBoot();
 
@@ -134,10 +135,10 @@ bool CMenu::_Boot(void)
 				set_port = !set_port;
 				m_btnMgr.setText(m_bootBtnUSBPort, wfmt(L"%i", set_port));
 			}
-			else if (m_btnMgr.selected(m_bootBtnAsyncNet))
+			else if (m_btnMgr.selected(m_bootBtnSDOnly))
 			{
-				m_cfg.setBool("GENERAL", "async_network", !m_cfg.getBool("GENERAL", "async_network", false));
-				m_btnMgr.setText(m_bootBtnAsyncNet, m_cfg.getBool("GENERAL", "async_network", false) ? _t("on", L"On") : _t("off", L"Off"));
+				m_cfg.setBool("GENERAL", "sd_only", !m_cfg.getBool("GENERAL", "sd_only"));
+				m_btnMgr.setText(m_bootBtnSDOnly, m_cfg.getBool("GENERAL", "sd_only") ?  _t("yes", L"Yes") : _t("no", L"No"));
 			}
 		}
 	}
@@ -147,8 +148,10 @@ bool CMenu::_Boot(void)
 		InternalSave.SavePort(set_port);
 	_hideBoot();
 
-	if(prev_load != cur_load || prev_ios != cur_ios || set_port != currentPort)
+	bool cur_sd = m_cfg.getBool("GENERAL", "sd_only");
+	if(prev_load != cur_load || prev_ios != cur_ios || set_port != currentPort || prev_sd != cur_sd)
 	{
+		error(_t("errboot8", L"Press 'A' to reload WiiFlow"));
 		m_exit = true;
 		m_reload = true;
 		return 1;
@@ -159,7 +162,7 @@ bool CMenu::_Boot(void)
 void CMenu::_initBoot(void)
 {
 	_addUserLabels(m_bootLblUser, ARRAY_SIZE(m_bootLblUser), "BOOT");
-	m_bootLblTitle = _addTitle("BOOT/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_bootLblTitle = _addLabel("BOOT/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 	m_bootBtnBack = _addButton("BOOT/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
 	
 	m_bootLblLoadCIOS = _addLabel("BOOT/LOAD_CIOS", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
@@ -173,8 +176,8 @@ void CMenu::_initBoot(void)
 	m_bootLblUSBPort = _addLabel("BOOT/USB_PORT", theme.lblFont, L"", 20, 245, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_bootBtnUSBPort = _addButton("BOOT/USB_PORT_BTN", theme.btnFont, L"", 420, 250, 200, 48, theme.btnFontColor);
 	
-	m_bootLblAsyncNet = _addLabel("BOOT/ASYNCNET", theme.lblFont, L"", 20, 305, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_bootBtnAsyncNet = _addButton("BOOT/ASYNCNET_BTN", theme.btnFont, L"", 420, 310, 200, 48, theme.btnFontColor);
+	m_bootLblSDOnly = _addLabel("BOOT/SD_ONLY", theme.lblFont, L"", 20, 305, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_bootBtnSDOnly = _addButton("BOOT/SD_ONLY_BTN", theme.btnFont, L"", 420, 310, 200, 48, theme.btnFontColor);
 
 	_setHideAnim(m_bootLblTitle, "BOOT/TITLE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_bootBtnBack, "BOOT/BACK_BTN", 0, 0, 1.f, -1.f);
@@ -190,8 +193,8 @@ void CMenu::_initBoot(void)
 	_setHideAnim(m_bootLblUSBPort, "BOOT/USB_PORT", 50, 0, -2.f, 0.f);
 	_setHideAnim(m_bootBtnUSBPort, "BOOT/USB_PORT_BTN", -50, 0, 1.f, 0.f);
 
-	_setHideAnim(m_bootLblAsyncNet, "BOOT/ASYNCNET", 50, 0, -2.f, 0.f);
-	_setHideAnim(m_bootBtnAsyncNet, "BOOT/ASYNCNET_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_bootLblSDOnly, "BOOT/SD_ONLY", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_bootBtnSDOnly, "BOOT/SD_ONLY_BTN", -50, 0, 1.f, 0.f);
 	
 	_hideBoot(true);
 	_textBoot();
@@ -203,6 +206,6 @@ void CMenu::_textBoot(void)
 	m_btnMgr.setText(m_bootLblLoadCIOS, _t("cfgbt2", L"Force Load cIOS"));
 	m_btnMgr.setText(m_bootLblCIOSrev, _t("cfgbt3", L"Force cIOS Revision"));
 	m_btnMgr.setText(m_bootLblUSBPort, _t("cfgbt4", L"USB Port"));
-	m_btnMgr.setText(m_bootLblAsyncNet, _t("cfgp3", L"Init network on boot"));
+	m_btnMgr.setText(m_bootLblSDOnly, _t("cfg719", L"Mount SD only"));
 	m_btnMgr.setText(m_bootBtnBack, _t("cfg10", L"Back"));
 }

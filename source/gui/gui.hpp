@@ -45,6 +45,7 @@ public:
 	void freeBtnTexture(s16 id);
 	void setTexture(s16 id ,TexData &bg);
 	void setTexture(s16 id, TexData &bg, int width, int height);
+	void setTexture(s16 id, TexData &bg, int x_pos, int y_pos, int width, int height);
 	void setProgress(s16 id, float f, bool instant = false);
 	void reset(s16 id, bool instant = false);
 	void moveBy(s16 id, int x, int y, bool instant = false);
@@ -63,6 +64,7 @@ public:
 	void noHover(bool nohover = false);
 	void click(s16 id = -1);
 	bool selected(s16 button = -1);
+	void setSelected(s16 button);
 	void setRumble(int, bool wii = false, bool gc = false, bool wupc = false);
 	void deselect(void){ for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--) m_selected[chan] = -1; }
 	void stopSounds(void);
@@ -87,19 +89,19 @@ private:
 		SHideParam hideParam;
 		EltType t;
 		bool visible;
-		int x;
+		int x;// x & y center of element (x + (width/2))
 		int y;
 		int w;
 		int h;
-		Vector3D pos;
-		Vector3D targetPos;
+		Vector3D pos;// actual current position (x,y,z) as it moves from hide x,y to targetpos or vice versa
+		Vector3D targetPos;// position to move to (x,y,z) usually hide position or x,y of element
 		u8 alpha;
 		u8 targetAlpha;
 		float scaleX;
 		float scaleY;
 		float targetScaleX;
 		float targetScaleY;
-		int moveByX;
+		int moveByX;// keeps track of how much element has moved so when reset function is called x and y can be reset.
 		int moveByY;
 	public:
 		virtual ~SElement(void) { }

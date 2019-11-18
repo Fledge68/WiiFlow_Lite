@@ -3,7 +3,7 @@
 #include "channel/nand.hpp"
 #include "loader/nk.h"
 
-const int CMenu::_nbCfgPages = 11;
+const int CMenu::_nbCfgPages = 13;
 
 void CMenu::_hideConfigCommon(bool instant)
 {
@@ -91,19 +91,7 @@ void CMenu::_config(int page)
 			case 6:
 				change = _configScreen();
 				break;
-			case 7:
-				change = _config7(page);
-				break;
-			case 8:
-				change = _config7(page);
-				break;
-			case 9:
-				change = _config7(page);
-				break;
-			case 10:
-				change = _config7(page);
-				break;
-			case 11:
+			default:
 				change = _config7(page);
 				break;
 		}
@@ -115,7 +103,7 @@ void CMenu::_config(int page)
 			page += change;
 			if (page > _nbCfgPages)
 				page = 1;
-			else if (page < 0)
+			else if (page <= 0)
 				page = _nbCfgPages;
 		}
 	}
@@ -211,7 +199,7 @@ void CMenu::_initConfigMenu()
 {
 	_addUserLabels(m_configLblUser, ARRAY_SIZE(m_configLblUser), "CONFIG");
 	m_configBg = _texture("CONFIG/BG", "texture", theme.bg, false);
-	m_configLblTitle = _addTitle("CONFIG/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_configLblTitle = _addLabel("CONFIG/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 	m_configLblDownload = _addLabel("CONFIG/DOWNLOAD", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_configBtnDownload = _addButton("CONFIG/DOWNLOAD_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
 	m_configLblParental = _addLabel("CONFIG/PARENTAL", theme.lblFont, L"", 20, 185, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
@@ -248,8 +236,8 @@ void CMenu::_initConfigMenu()
 void CMenu::_textConfig(void)
 {
 	m_btnMgr.setText(m_configLblTitle, _t("cfg1", L"Settings"));
-	m_btnMgr.setText(m_configLblDownload, _t("cfg3", L"Download covers & titles"));
-	m_btnMgr.setText(m_configBtnDownload, _t("cfg4", L"Download"));
+	m_btnMgr.setText(m_configLblDownload, _t("cfg3", L"Download covers & banners"));
+	m_btnMgr.setText(m_configBtnDownload, _t("cfgc5", L"Go"));
 	m_btnMgr.setText(m_configLblParental, _t("cfg5", L"Parental control"));
 	m_btnMgr.setText(m_configBtnUnlock, _t("cfg6", L"Unlock"));
 	m_btnMgr.setText(m_configBtnSetCode, _t("cfg7", L"Set code"));

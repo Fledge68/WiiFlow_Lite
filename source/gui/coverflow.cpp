@@ -224,9 +224,6 @@ CCoverFlow::CCoverFlow(void)
 	m_selectSound = NULL;
 	m_cancelSound = NULL;
 	//
-	m_loadingTexture = NULL;
-	m_noCoverTexture = NULL;
-	//
 	m_covers = NULL;
 	LWP_MutexInit(&m_mutex, 0);
 }
@@ -248,7 +245,7 @@ bool CCoverFlow::init(const u8 *font, const u32 font_size, bool vid_50hz)
 	if (CONF_GetAspectRatio() == CONF_ASPECT_16_9)
 		guPerspective(m_projMtx, 45, 16.f / 9.f, .1f, 300.f);
 	else
-		guPerspective(m_projMtx, 45, 4.f / 3.f, .1f, 300.f);
+		guPerspective(m_projMtx, RadToDeg(2.f * atan(tan(DegToRad(45 / 2)) / (4.f / 3.f) * (16.f / 9.f))), 4.f / 3.f, .1f, 300.f);
 	return true;
 }
 
@@ -257,7 +254,7 @@ void CCoverFlow::simulateOtherScreenFormat(bool s)
 	if ((CONF_GetAspectRatio() == CONF_ASPECT_16_9) != s)
 		guPerspective(m_projMtx, 45, 16.f / 9.f, .1f, 300.f);
 	else
-		guPerspective(m_projMtx, 45, 4.f / 3.f, .1f, 300.f);
+		guPerspective(m_projMtx, RadToDeg(2.f * atan(tan(DegToRad(45 / 2)) / (4.f / 3.f) * (16.f / 9.f))), 4.f / 3.f, .1f, 300.f);
 }
 
 CCoverFlow::~CCoverFlow(void)
@@ -566,7 +563,7 @@ void CCoverFlow::setBlur(u32 blurResolution, u32 blurRadius, float blurFactor)
 	static const struct { u32 x; u32 y; } blurRes[] = {
 		{ 64, 48 }, { 96, 72 }, { 128, 96 }, { 192, 144 }
 	};
-	u32 i = min(max(0u, blurResolution), sizeof blurRes / sizeof blurRes[0] - 1u);
+	u32 i = min(max(0ul, blurResolution), sizeof blurRes / sizeof blurRes[0] - 1ul);
 	m_effectTex.width = blurRes[i].x;
 	m_effectTex.height = blurRes[i].y;
 	if(m_effectTex.data != NULL)
@@ -574,7 +571,7 @@ void CCoverFlow::setBlur(u32 blurResolution, u32 blurRadius, float blurFactor)
 		free(m_effectTex.data);
 		m_effectTex.data = NULL;
 	}
-	m_blurRadius = min(max(1u, blurRadius), 3u);
+	m_blurRadius = min(max(1ul, blurRadius), 3ul);
 	m_blurFactor = min(max(1.f, blurFactor), 2.f);
 }
 
@@ -647,7 +644,7 @@ void CCoverFlow::stopCoverLoader(bool empty)
 				m_items[i].state = STATE_Loading;
 			}
 		}
-		gprintf("Coverflow stopped!\n");
+		//gprintf("Coverflow stopped!\n");
 	}
 }
 
@@ -659,8 +656,8 @@ void CCoverFlow::startCoverLoader(void)
 	m_loadingCovers = true;
 	m_moved = true;
 
-	LWP_CreateThread(&coverLoaderThread, _coverLoader, this, coverThreadStack, coverThreadStackSize, 30);
-	gprintf("Coverflow started!\n");
+	LWP_CreateThread(&coverLoaderThread, _coverLoader, this, coverThreadStack, coverThreadStackSize, 40);
+	//gprintf("Coverflow started!\n");
 }
 
 void CCoverFlow::clear(void)
@@ -1304,7 +1301,12 @@ void CCoverFlow::_drawCover(int i, bool mirror, CCoverFlow::DrawMode dm)
 const TexData *CCoverFlow::_coverTexture(int i)
 {
 	if(m_items[i].texture.data == NULL)
-		return (m_items[i].state == STATE_Loading) ? m_loadingTexture : m_noCoverTexture;
+	{
+		if(m_box)
+			return (m_items[i].state == STATE_Loading) ? &m_boxLoadingTexture : &m_boxNoCoverTexture;
+		else
+			return (m_items[i].state == STATE_Loading) ? &m_flatLoadingTexture : &m_flatNoCoverTexture;
+	}
 	return &m_items[i].texture;
 }
 
@@ -1408,9 +1410,10 @@ void CCoverFlow::_drawCoverBox(int i, bool mirror, CCoverFlow::DrawMode dm)
 			GX_SetTevKColor(GX_KCOLOR0, color);
 			break;
 	}
+	/* this draws the colored spine of the box */
 	if(dm == CCoverFlow::CFDR_NORMAL)
 	{
-		// set dvd box texture, depending on game
+		// set dvd spine color texture, depending on game
 		switch(m_items[m_covers[i].index].hdr->casecolor)
 		{
 			case 0x000000:
@@ -1435,7 +1438,7 @@ void CCoverFlow::_drawCoverBox(int i, bool mirror, CCoverFlow::DrawMode dm)
 		}
 		GX_LoadTexObj(&texObj, GX_TEXMAP0);
 	}
-	GX_Begin(GX_QUADS, GX_VTXFMT0, g_boxMeshQSize);
+	GX_Begin(GX_QUADS, GX_VTXFMT0, g_boxMeshQSize);// Quads
 	for (u32 j = 0; j < g_boxMeshQSize; ++j)
 	{
 		GX_Position3f32(g_boxMeshQ[j].pos.x, g_boxMeshQ[j].pos.y, g_boxMeshQ[j].pos.z);
@@ -1443,7 +1446,7 @@ void CCoverFlow::_drawCoverBox(int i, bool mirror, CCoverFlow::DrawMode dm)
 			GX_TexCoord2f32(g_boxMeshQ[j].texCoord.x, g_boxMeshQ[j].texCoord.y);
 	}
 	GX_End();
-	GX_Begin(GX_TRIANGLES, GX_VTXFMT0, g_boxMeshTSize);
+	GX_Begin(GX_TRIANGLES, GX_VTXFMT0, g_boxMeshTSize);// triangles
 	for (u32 j = 0; j < g_boxMeshTSize; ++j)
 	{
 		GX_Position3f32(g_boxMeshT[j].pos.x, g_boxMeshT[j].pos.y, g_boxMeshT[j].pos.z);
@@ -1451,11 +1454,13 @@ void CCoverFlow::_drawCoverBox(int i, bool mirror, CCoverFlow::DrawMode dm)
 			GX_TexCoord2f32(g_boxMeshT[j].texCoord.x, g_boxMeshT[j].texCoord.y);
 	}
 	GX_End();
+	/* draw back of cover and title spine texture */
 	if (dm == CCoverFlow::CFDR_NORMAL)
 	{
 		const TexData *myTex = tex;
+		/* if we have front cover texture only then draw back and spine textures using the default box no cover texture */
 		if(flatTex)
-			myTex = m_noCoverTexture;
+			myTex = &m_boxNoCoverTexture;
 		GX_InitTexObj(&texObj, myTex->data, myTex->width, myTex->height, myTex->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		if (myTex->maxLOD > 0)
 			GX_InitTexObjLOD(&texObj, GX_LIN_MIP_LIN, GX_LINEAR, 0.f, (float)myTex->maxLOD, mirror ? 1.f : m_lodBias, GX_FALSE, m_edgeLOD ? GX_TRUE : GX_FALSE, m_aniso);
@@ -1469,6 +1474,8 @@ void CCoverFlow::_drawCoverBox(int i, bool mirror, CCoverFlow::DrawMode dm)
 			GX_TexCoord2f32(g_boxBackCoverMesh[j].texCoord.x, g_boxBackCoverMesh[j].texCoord.y);
 	}
 	GX_End();
+	/* draw front of cover texture */
+	/* if front cover only we need to change texObj from box no cover texture to the front cover texture */
 	if (dm == CCoverFlow::CFDR_NORMAL && flatTex)
 	{
 		GX_InitTexObj(&texObj, tex->data, tex->width, tex->height, tex->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
@@ -1542,27 +1549,6 @@ u64 CCoverFlow::getChanTitle(void) const
 					m_items[loopNum(m_covers[m_range / 2].index + m_jump, m_items.size())].hdr->settings[1]);
 }
 
-bool CCoverFlow::getRenderTex(void)
-{
-	return m_renderTex;
-}
-
-void CCoverFlow::setRenderTex(bool val)
-{
-	m_renderTex = val;
-}
-
-void CCoverFlow::RenderTex(void)
-{
-	if(m_renderingTex != NULL && m_renderingTex->data != NULL)
-	{
-		LockMutex lock(m_mutex);
-		DrawTexture(m_renderingTex);
-		m_vid.renderToTexture(*m_renderingTex, true);
-	}
-	setRenderTex(false);
-}
-
 bool CCoverFlow::select(void)
 {
 	if (m_covers == NULL || m_jump != 0) return false;
@@ -1603,10 +1589,66 @@ void CCoverFlow::cancel(void)
 	_playSound(m_cancelSound);
 }
 
-void CCoverFlow::defaultLoad(void)
+u32 CCoverFlow::_currentPos(void) const
 {
-	_loadAllCovers(0);
+	if (m_covers == NULL) return 0;
+
+	return m_covers[m_range / 2].index;
+}
+
+void CCoverFlow::_setCurPos(u32 index)
+{
+	_loadAllCovers(index);
 	_updateAllTargets(true);
+}
+
+bool CCoverFlow::_setCurPosToCurItem(const char *id, const char *filename, u32 sourceNumber, bool instant)
+{
+	LockMutex lock(m_mutex);
+	u32 i, curPos = _currentPos();
+
+	if(m_items.empty() || (instant && m_covers == NULL))
+		return false;
+	// 
+	for(i = 0; i < m_items.size(); ++i)
+	{
+		if(strlen(filename) > 0)
+		{
+			//homebrew folder or rom title.ext
+			const char *name = strrchr(m_items[i].hdr->path, '/');
+			if(name != NULL && strcasecmp(name + 1, filename) == 0)
+				break;
+			else if(strcmp(m_items[i].hdr->path, filename) == 0)// scummvm
+				break;
+		}
+		else if(strlen(id) > 0)
+		{
+			if(strcasecmp(m_items[i].hdr->id, id) == 0)
+				break;
+		}
+		else
+		{
+			if(m_items[i].hdr->settings[0] == sourceNumber)
+				break;
+		}
+	}
+	if(i >= m_items.size())
+		return false;
+	m_jump = 0;
+	if (instant)
+	{
+		_loadAllCovers(i);
+		_updateAllTargets(true);
+	}
+	else
+	{
+		int j = (int)i - (int)curPos;
+		if (abs(j) <= (int)m_items.size() / 2)
+			_setJump(j);
+		else
+			_setJump(j < 0 ? j + (int)m_items.size() : j - (int)m_items.size());
+	}
+	return true;
 }
 
 void CCoverFlow::_updateAllTargets(bool instant)
@@ -1854,7 +1896,7 @@ bool CCoverFlow::start(const string &m_imgsDir)
 {
 	if (m_items.empty()) return true;
 
-	// Sort items
+	/* sort coverflow items list based on sort type */
 	if (m_sorting == SORT_ALPHA)
 		sort(m_items.begin(), m_items.end(), CCoverFlow::_sortByAlpha);
 	else if (m_sorting == SORT_PLAYCOUNT)
@@ -1870,7 +1912,7 @@ bool CCoverFlow::start(const string &m_imgsDir)
 	else if (m_sorting == SORT_BTN_NUMBERS)
 		sort(m_items.begin(), m_items.end(), CCoverFlow::_sortByBtnNumbers);
 
-	// Load resident textures
+	/* load the colored skin/spine images if not already done */
 	if(!m_dvdskin_loaded)
 	{
 		if(TexHandle.fromImageFile(m_dvdSkin, fmt("%s/dvdskin.jpg", m_imgsDir.c_str())) != TE_OK)
@@ -1887,6 +1929,7 @@ bool CCoverFlow::start(const string &m_imgsDir)
 			return false;
 		m_dvdskin_loaded = true;
 	}
+	/* load the no pic or loading cover images if not already done */
 	if(!m_defcovers_loaded)
 	{
 		if(m_pngLoadCover.empty() || TexHandle.fromImageFile(m_boxLoadingTexture, m_pngLoadCover.c_str(), GX_TF_CMPR, 32, 512) != TE_OK)
@@ -1911,9 +1954,8 @@ bool CCoverFlow::start(const string &m_imgsDir)
 		}
 		m_defcovers_loaded = true;
 	}
-	m_loadingTexture = (m_box ? &m_boxLoadingTexture : &m_flatLoadingTexture);
-	m_noCoverTexture = (m_box ? &m_boxNoCoverTexture : &m_flatNoCoverTexture);
 
+	/* allocate enough memory for the covers list (m_covers) based on rows * columns (m_range) */
 	if(m_covers != NULL)
 		MEM2_free(m_covers);
 	m_covers = NULL;
@@ -2047,13 +2089,6 @@ void CCoverFlow::_right(int repeatDelay, u32 step)
 	m_covers[m_range / 2].pos -= _coverMovesP();
 }
 
-u32 CCoverFlow::_currentPos(void) const
-{
-	if (m_covers == NULL) return 0;
-
-	return m_covers[m_range / 2].index;
-}
-
 void CCoverFlow::mouse(int chan, int x, int y)
 {
 	if (m_covers == NULL) return;
@@ -2096,47 +2131,6 @@ void CCoverFlow::setSelected(int i)
 	_loadAllCovers(i);
 	_updateAllTargets(true);
 	select();
-}
-
-bool CCoverFlow::findId(const char *id, bool instant, bool path)
-{
-	LockMutex lock(m_mutex);
-	u32 i, curPos = _currentPos();
-
-	if(m_items.empty() || (instant && m_covers == NULL) || strlen(id) == 0)
-		return false;
-	// 
-	for(i = 0; i < m_items.size(); ++i)
-	{
-		if(path)
-		{
-			//homebrew folder or rom title.ext
-			const char *name = strrchr(m_items[i].hdr->path, '/');
-			if(name != NULL && strcmp(name + 1, id) == 0)
-				break;
-			else if(strcmp(m_items[i].hdr->path, id) == 0)// scummvm
-				break;
-		}
-		else if(strcmp(m_items[i].hdr->id, id) == 0)
-			break;
-	}
-	if(i >= m_items.size())
-		return false;
-	m_jump = 0;
-	if (instant)
-	{
-		_loadAllCovers(i);
-		_updateAllTargets(true);
-	}
-	else
-	{
-		int j = (int)i - (int)curPos;
-		if (abs(j) <= (int)m_items.size() / 2)
-			_setJump(j);
-		else
-			_setJump(j < 0 ? j + (int)m_items.size() : j - (int)m_items.size());
-	}
-	return true;
 }
 
 void CCoverFlow::pageUp(void)
@@ -2649,112 +2643,6 @@ bool CCoverFlow::fullCoverCached(const char *wfcPath)
 	return found;
 }
 
-bool CCoverFlow::_loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover)
-{
-	if(!m_loadingCovers)
-		return false;
-
-	/* get path to cover png or jpg */
-	const char *path = box ? (blankBoxCover ? mainMenu.getBlankCoverPath(m_items[i].hdr) : 
-			mainMenu.getBoxPath(m_items[i].hdr)) : mainMenu.getFrontPath(m_items[i].hdr);
-	if(path == NULL)
-		return false;
-
-	/* copy path to coverPath */
-	size_t path_len = strlen(path);
-	char *coverPath = (char*)MEM2_alloc(path_len+1);
-	if(coverPath == NULL)
-		return false;
-	memset(coverPath, 0, path_len+1);
-	memcpy(coverPath, path, path_len);
-	DCFlushRange(coverPath, path_len+1);
-	
-	/* load cover png or jpg as a new texture */
-	TexData tex;
-	tex.thread = true;
-	m_renderingTex = &tex;
-	u8 textureFmt = m_compressTextures ? GX_TF_CMPR : GX_TF_RGB565;
-	if(TexHandle.fromImageFile(tex, coverPath, textureFmt, 32) != TE_OK)
-	{
-		MEM2_free(coverPath);
-		m_renderingTex = NULL;
-		return false;
-	}
-	MEM2_free(coverPath);
-	m_renderingTex = NULL;
-	if(!m_loadingCovers)
-		return false;
-
-	/* set the current coverflow cover to the new texture */
-	LWP_MutexLock(m_mutex);
-	TexHandle.Cleanup(m_items[i].texture);
-	m_items[i].texture = tex;
-	m_items[i].boxTexture = box;
-	m_items[i].state = STATE_Ready;
-	LWP_MutexUnlock(m_mutex);
-
-	/* save the texture as a wfc file to the cache folder for the next time */
-	if(!m_cachePath.empty())
-	{
-		u32 bufSize = fixGX_GetTexBufferSize(tex.width, tex.height, tex.format, tex.maxLOD > 0 ? GX_TRUE : GX_FALSE, tex.maxLOD);
-		if(tex.data != NULL)
-		{
-			const char *wfcTitle = NULL;
-			const char *wfcCoverDir = NULL;
-			char *full_path = (char*)MEM2_alloc(MAX_FAT_PATH+1);
-			if(full_path == NULL)
-				return false;
-			memset(full_path, 0, MAX_FAT_PATH+1);
-			
-			/* get title for wfc file */
-			if(blankBoxCover)
-			{
-				const char *blankCoverPath = mainMenu.getBlankCoverPath(m_items[i].hdr);
-				if(blankCoverPath != NULL && strrchr(blankCoverPath, '/') != NULL)
-					wfcTitle = strrchr(blankCoverPath, '/') + 1;
-				else
-					return false;
-			}
-			else
-				wfcTitle = getFilenameId(m_items[i].hdr);
-				
-			/* get coverfolder for plugins and sourceflow */
-			if(m_items[i].hdr->type == TYPE_PLUGIN && m_pluginCacheFolders && !blankBoxCover)
-				wfcCoverDir = m_plugin.GetCoverFolderName(m_items[i].hdr->settings[0]);
-			if(m_items[i].hdr->type == TYPE_SOURCE && !blankBoxCover)
-				wfcCoverDir = "sourceflow";
-
-			/* make coverfolder if needed and set full path of wfc file */
-			if(wfcCoverDir != NULL)
-			{
-				fsop_MakeFolder(fmt("%s/%s", m_cachePath.c_str(), wfcCoverDir));// will make subfolders if needed
-				strncpy(full_path, fmt("%s/%s/%s.wfc", m_cachePath.c_str(), wfcCoverDir, wfcTitle), MAX_FAT_PATH);
-			}
-			else
-				strncpy(full_path, fmt("%s/%s.wfc", m_cachePath.c_str(), wfcTitle), MAX_FAT_PATH);
-		
-			DCFlushRange(full_path, MAX_FAT_PATH+1);
-
-			/* finally write the wfc file to the cache */
-			FILE *file;
-			file = fopen(full_path, "wb");
-			MEM2_free(full_path);
-			if(file != NULL)
-			{
-				SWFCHeader header(tex, box, false);
-				fwrite(&header, 1, sizeof(header), file);
-				fwrite(tex.data, 1, bufSize, file);
-				fclose(file);
-			}
-		}
-	}
-	/* note the wfc texture file is full LOD */
-	if(!hq)
-		_dropHQLOD(i);// drop Level Of Detail of texture
-
-	return true;
-}
-
 bool CCoverFlow::_calcTexLQLOD(TexData &tex)
 {
 	bool done = false;
@@ -2798,24 +2686,16 @@ void CCoverFlow::_dropHQLOD(int i)
 	m_items[i].texture = newTex;
 }
 
-const char *CCoverFlow::getFilenameId(const dir_discHdr *curHdr, bool extension)
+const char *CCoverFlow::getFilenameId(const dir_discHdr *curHdr)
 {
-	const char *NameOrID = NULL;
 	if(NoGameID(curHdr->type))
 	{
 		if(strrchr(curHdr->path, '/') != NULL)
-		{
-			if(curHdr->type == TYPE_HOMEBREW || extension)
-				NameOrID = strrchr(curHdr->path, '/') + 1;//returns title.ext or folder name for app
-			else // plugin and sourceflow
-				NameOrID = fmt("%ls", curHdr->title);// title without extension in lowercase
-		}
+			return strrchr(curHdr->path, '/') + 1;// app folder or rom name.ext
 		else
-			NameOrID = curHdr->path;//title for scummvm
+			return curHdr->path;// title for scummvm
 	}
-	else
-		NameOrID = curHdr->id;// ID for Wii, GC, & Channels
-	return NameOrID;
+	return curHdr->id;// ID for Wii, GC, & Channels
 }
 
 CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blankBoxCover)
@@ -2823,7 +2703,10 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 	if(!m_loadingCovers) 
 		return CL_ERROR;
 
-	if(box && m_smallBox)//prevent smallbox from loading full box cover
+	if(box && m_smallBox)// prevent smallbox from loading full box cover
+		return CL_ERROR;
+		
+	if(blankBoxCover && m_items[i].hdr->type == TYPE_SOURCE)// blank covers not used for sourceflow
 		return CL_ERROR;
 		
 	bool allocFailed = false;
@@ -2831,7 +2714,8 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 	/* try to find the wfc texture file in the cache folder */
 	if(!m_cachePath.empty())
 	{
-		const char *wfcTitle = NULL;
+		char wfcTitle[128];
+		wfcTitle[127] = '\0';
 		const char *wfcCoverDir = NULL;
 		char *full_path = (char*)MEM2_alloc(MAX_FAT_PATH+1);
 		if(full_path == NULL)
@@ -2843,25 +2727,36 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 		{
 			const char *blankCoverPath = mainMenu.getBlankCoverPath(m_items[i].hdr);
 			if(blankCoverPath != NULL && strrchr(blankCoverPath, '/') != NULL)
-				wfcTitle = strrchr(blankCoverPath, '/') + 1;
+				strncpy(wfcTitle, strrchr(blankCoverPath, '/') + 1, sizeof(wfcTitle) - 1);
 			else
 				return CL_ERROR;
 		}
 		else
-			wfcTitle = getFilenameId(m_items[i].hdr);
+			strncpy(wfcTitle, getFilenameId(m_items[i].hdr), sizeof(wfcTitle) - 1);
 			
-		/* get coverfolder for plugins and sourceflow */
-		if(m_items[i].hdr->type == TYPE_PLUGIN && m_pluginCacheFolders && !blankBoxCover)
+		/* get coverfolder for plugins, sourceflow, and homebrew */
+		if(m_items[i].hdr->type == TYPE_PLUGIN && m_pluginCacheFolders)
 			wfcCoverDir = m_plugin.GetCoverFolderName(m_items[i].hdr->settings[0]);
-		if(m_items[i].hdr->type == TYPE_SOURCE && !blankBoxCover)
+		if(m_items[i].hdr->type == TYPE_SOURCE)
 			wfcCoverDir = "sourceflow";
+		if(m_items[i].hdr->type == TYPE_HOMEBREW)
+			wfcCoverDir = "homebrew";
 			
 		/* set full path of wfc file */
 		if(wfcCoverDir != NULL)
-			strncpy(full_path, fmt("%s/%s/%s.wfc", m_cachePath.c_str(), wfcCoverDir, wfcTitle), MAX_FAT_PATH);
+		{
+			if(m_smallBox)
+				strncpy(full_path, fmt("%s/%s/%s_small.wfc", m_cachePath.c_str(), wfcCoverDir, wfcTitle), MAX_FAT_PATH);
+			else
+				strncpy(full_path, fmt("%s/%s/%s.wfc", m_cachePath.c_str(), wfcCoverDir, wfcTitle), MAX_FAT_PATH);
+		}
 		else
-			strncpy(full_path, fmt("%s/%s.wfc", m_cachePath.c_str(), wfcTitle), MAX_FAT_PATH);
-	
+		{
+			if(m_smallBox)
+				strncpy(full_path, fmt("%s/%s_small.wfc", m_cachePath.c_str(), wfcTitle), MAX_FAT_PATH);
+			else
+				strncpy(full_path, fmt("%s/%s.wfc", m_cachePath.c_str(), wfcTitle), MAX_FAT_PATH);
+		}
 		DCFlushRange(full_path, MAX_FAT_PATH+1);
 		
 		/* load wfc file */
@@ -2872,13 +2767,17 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 		if(fp != NULL)//if wfc chache file is found
 		{
 			bool success = false;
-			struct stat stat_buf;
-			if(fstat(fileno(fp), &stat_buf) != 0)
+			if(fseek(fp, 0, SEEK_END) != 0)
 			{
 				fclose(fp);
-				return _loadCoverTexPNG(i, box, hq, blankBoxCover) ? CL_OK : CL_ERROR;
+				return CL_ERROR;
 			}
-			u32 fileSize = stat_buf.st_size;
+			u32 fileSize = ftell(fp);
+			if(fseek(fp, 0, SEEK_SET) != 0)
+			{
+				fclose(fp);
+				return CL_ERROR;
+			}
 			
 			SWFCHeader header;
 			if(fileSize > sizeof(header))
@@ -2886,8 +2785,9 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 				if(fread(&header, 1, sizeof(header), fp) != sizeof(header))
 				{
 					fclose(fp);
-					return _loadCoverTexPNG(i, box, hq, blankBoxCover) ? CL_OK : CL_ERROR;
+					return CL_ERROR;
 				}
+				DCFlushRange(&header, sizeof(header));
 				//make sure wfc cache file matches what we want
 				if(header.newFmt == 1 && (header.full != 0) == box && (header.cmpr != 0) == m_compressTextures)
 				{
@@ -2910,21 +2810,16 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 					{
 						/* if not HQ cover then skip (bufSize - texLen) texture data after header */
 						fseek(fp, sizeof(header) + (bufSize - texLen), SEEK_SET);
-						if(fread(tex.data, 1, texLen, fp) != texLen)
+						if(fread(tex.data, 1, texLen, fp) == texLen)
 						{
-							fclose(fp);
-							return _loadCoverTexPNG(i, box, hq, blankBoxCover) ? CL_OK : CL_ERROR;
+							DCFlushRange(tex.data, texLen);
+							LockMutex lock(m_mutex);
+							TexHandle.Cleanup(m_items[i].texture);
+							m_items[i].texture = tex;
+							m_items[i].state = STATE_Ready;
+							m_items[i].boxTexture = header.full != 0;
+							success = true;
 						}
-					}
-					if(!allocFailed)
-					{
-						LockMutex lock(m_mutex);
-						TexHandle.Cleanup(m_items[i].texture);
-						m_items[i].texture = tex;
-						DCFlushRange(tex.data, texLen);
-						m_items[i].state = STATE_Ready;
-						m_items[i].boxTexture = header.full != 0;
-						success = true;
 					}
 					if(!success && tex.data != NULL)
 					{
@@ -2941,8 +2836,7 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 	if(allocFailed)
 		return CL_NOMEM;
 
-	// If wfc cache file not found, load the PNG and create a wfc cache file
-	return _loadCoverTexPNG(i, box, hq, blankBoxCover) ? CL_OK : CL_ERROR;
+	return CL_ERROR;
 }
 
 void * CCoverFlow::_coverLoader(void *obj)
@@ -2955,7 +2849,7 @@ void * CCoverFlow::_coverLoader(void *obj)
 	u32 i, j;
 	bool hq_req = cf->m_useHQcover;
 	bool cur_pos_hq = false;
-	u32 bufferSize = min(cf->m_numBufCovers * max(2u, cf->m_rows), 80u);
+	u32 bufferSize = min(cf->m_numBufCovers * max(2ul, cf->m_rows), 80ul);
 
 	while(cf->m_loadingCovers)
 	{
@@ -2974,19 +2868,30 @@ void * CCoverFlow::_coverLoader(void *obj)
 			}
 		}
 		ret = CL_OK;
-		for(j = 0; j <= bufferSize && !cf->m_moved && update && ret != CL_NOMEM; ++j)
+		bool hq_done = false;
+		/* we try 3 passes to get the full cover. because the cover loader randomly skips the wfc file for unknown reasons */
+		/* first time is full cover only */
+		/* second time is full then front */
+		/* third is full then front then custom blank cover */
+		for(u8 k = 1; k < 4 && !cf->m_moved && update && ret != CL_NOMEM; k++)
 		{
-			i = loopNum((j & 1) ? firstItem - (j + 1) / 2 : firstItem + j / 2, cf->m_items.size());
-			cur_pos_hq = (hq_req && i == firstItem);
-			if((!hq_req || !cur_pos_hq) && cf->m_items[i].state != STATE_Loading)
-				continue;
-			if((ret = cf->_loadCoverTex(i, cf->m_box, cur_pos_hq, false)) == CL_ERROR)
+			for(j = 0; j <= bufferSize && !cf->m_moved && update && ret != CL_NOMEM; ++j)
 			{
-				if ((ret = cf->_loadCoverTex(i, !cf->m_box, cur_pos_hq, false)) == CL_ERROR)
+				i = loopNum((j & 1) ? firstItem - (j + 1) / 2 : firstItem + j / 2, cf->m_items.size());
+				cur_pos_hq = (hq_req && i == firstItem);
+				if(!cur_pos_hq && cf->m_items[i].state != STATE_Loading)
+					continue;
+				if(cur_pos_hq && hq_done)
+					continue;
+				if(((ret = cf->_loadCoverTex(i, true, cur_pos_hq, false)) == CL_ERROR) && k > 1)
 				{
-					if((ret = cf->_loadCoverTex(i, cf->m_box, cur_pos_hq, true)) == CL_ERROR)
-						cf->m_items[i].state = STATE_NoCover;
+					if(((ret = cf->_loadCoverTex(i, false, cur_pos_hq, false)) == CL_ERROR) && k > 2)
+					{
+						if((ret = cf->_loadCoverTex(i, true, cur_pos_hq, true)) == CL_ERROR)
+							cf->m_items[i].state = STATE_NoCover;
+					}
 				}
+				hq_done = (hq_done == false && ret == CL_OK && cur_pos_hq);
 			}
 		}
 		if(ret == CL_NOMEM && bufferSize > 3)

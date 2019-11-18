@@ -292,8 +292,8 @@ void CVideo::shiftViewPort(float x, float y)
 
 void CVideo::set2DViewport(u32 w, u32 h, int x, int y)
 {
-	m_width2D = std::min(std::max(512u, w), 800u);
-	m_height2D = std::min(std::max(384u, h), 600u);
+	m_width2D = std::min(std::max(512ul, w), 800ul);
+	m_height2D = std::min(std::max(384ul, h), 600ul);
 	m_x2D = std::min(std::max(-50, x), 50);
 	m_y2D = std::min(std::max(-50, y), 50);
 }
@@ -474,8 +474,10 @@ void CVideo::render(void)
 
 /* wait animation control */
 
-extern const u8 splash_jpg[];
-extern const u32 splash_jpg_size;
+extern const u8 wfsplash_jpg[];
+extern const u32 wfsplash_jpg_size;
+extern const u8 wflsplash_jpg[];
+extern const u32 wflsplash_jpg_size;
 
 extern const u8 wait_01_jpg[];
 extern const u32 wait_01_jpg_size;
@@ -703,7 +705,12 @@ void CVideo::waitMessage(const TexData &tex)
 void CVideo::startImage(void)
 {
 	TexData splashTex;
-	TexHandle.fromJPG(splashTex, splash_jpg, splash_jpg_size);
+#ifdef APP_WIIFLOW
+	TexHandle.fromJPG(splashTex, wfsplash_jpg, wfsplash_jpg_size);
+#else
+	TexHandle.fromJPG(splashTex, wflsplash_jpg, wflsplash_jpg_size);
+#endif
+
 	waitMessage(splashTex);
 	render();
 	TexHandle.Cleanup(splashTex);

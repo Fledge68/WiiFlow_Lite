@@ -78,13 +78,14 @@ void CMenu::_CoverBanner(void)
 			if(m_btnMgr.selected(m_coverbnrBtnDlCover))
 			{
 				_hideCoverBanner();
-				_download(id);
+				_download(id, 1);
 				_showCoverBanner();
 			}
 			else if(m_btnMgr.selected(m_coverbnrBtnDeleteCover))
 			{
 				_hideCoverBanner();
 				RemoveCover(id);
+				error(_t("deltcover", L"Cover is deleted."));
 				_showCoverBanner();
 			}
 			else if(m_btnMgr.selected(m_coverbnrBtnDlBanner))
@@ -94,7 +95,7 @@ void CMenu::_CoverBanner(void)
 				fsop_deleteFile(fmt("%s/%s.bnr", m_customBnrDir.c_str(), id));
 				fsop_deleteFile(fmt("%s/%.3s.bnr", m_bnrCacheDir.c_str(), id));
 				fsop_deleteFile(fmt("%s/%.3s.bnr", m_customBnrDir.c_str(), id));
-				_downloadBnr(id);
+				_download(id, 2);
 				m_newGame = true;
 				_showCoverBanner();
 			}
@@ -105,6 +106,7 @@ void CMenu::_CoverBanner(void)
 				fsop_deleteFile(fmt("%s/%s.bnr", m_customBnrDir.c_str(), id));
 				fsop_deleteFile(fmt("%s/%.3s.bnr", m_bnrCacheDir.c_str(), id));
 				fsop_deleteFile(fmt("%s/%.3s.bnr", m_customBnrDir.c_str(), id));
+				error(_t("deltbanner", L"Banner is deleted."));
 				m_newGame = true;
 				_showCoverBanner();
 			}
@@ -117,7 +119,7 @@ void CMenu::_initCoverBanner()
 {
 	m_coverbnrBg = _texture("COVERBNR/BG", "texture", theme.bg, false);
 	_addUserLabels(m_coverbnrLblUser, ARRAY_SIZE(m_coverbnrLblUser), "COVERBNR");
-	m_coverbnrLblTitle = _addTitle("COVERBNR/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_coverbnrLblTitle = _addLabel("COVERBNR/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 	m_coverbnrBtnBack = _addButton("COVERBNR/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
 
 	m_coverbnrLblDlCover = _addLabel("COVERBNR/DLCOVER", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);

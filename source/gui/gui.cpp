@@ -250,8 +250,42 @@ void CButtonsMgr::setTexture(s16 id, TexData &bg, int width, int height)
 			case GUIELT_LABEL:
 				lbl = (SLabel*)m_elts[id];
 				lbl->texBg = bg;//change texture
+				/* x and y are currently the center of the w and h plus x and y */
+				/* we need to set x and y back to upper left corner */
+				lbl->x = lbl->x - lbl->w / 2;
+				lbl->y = lbl->y - lbl->h / 2;
 				lbl->w = width;
 				lbl->h = height;
+				lbl->x = lbl->x + width / 2;// set to new center based on new w and h
+				lbl->y = lbl->y + height / 2;
+				lbl->targetPos = Vector3D((float)(lbl->x + lbl->hideParam.dx), (float)(lbl->y + lbl->hideParam.dy), 0.f);
+				lbl->pos = lbl->targetPos;
+				break;
+			case GUIELT_PROGRESS:
+				break;
+		}
+	}
+}
+
+void CButtonsMgr::setTexture(s16 id, TexData &bg, int x_pos, int y_pos, int width, int height)
+{
+	if (id == -1) return;
+	if (id < (s32)m_elts.size())
+	{
+		SLabel *lbl = NULL;
+		switch(m_elts[id]->t)
+		{
+			case GUIELT_BUTTON:
+				break;
+			case GUIELT_LABEL:
+				lbl = (SLabel*)m_elts[id];
+				lbl->texBg = bg;//change texture
+				lbl->w = width;
+				lbl->h = height;
+				lbl->x = x_pos + width / 2;
+				lbl->y = y_pos + height / 2;
+				lbl->targetPos = Vector3D((float)(lbl->x + lbl->hideParam.dx), (float)(lbl->y + lbl->hideParam.dy), 0.f);
+				lbl->pos = lbl->targetPos;
 				break;
 			case GUIELT_PROGRESS:
 				break;
@@ -452,6 +486,15 @@ bool CButtonsMgr::selected(s16 button)
 	}
 	return false;
 }
+
+void CButtonsMgr::setSelected(s16 button)
+{
+	SElement &b = *m_elts[button];
+	m_selected[0] = button;
+	b.targetScaleX = 1.1f;
+	b.targetScaleY = 1.1f;
+}
+
 
 // **********************************************************************************************
 // * Plays the click sound for the function above.  Also sets rumble off and enlarges button    *

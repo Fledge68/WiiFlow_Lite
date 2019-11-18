@@ -48,6 +48,7 @@ public:
 	//!Extract all files from a zip file to a directory
 	//!\param dest Destination path to where to extract
 	bool ExtractAll(const char *dest);
+	const char *GetFileName();
 protected:
 	bool LoadList();
 	unzFile File;

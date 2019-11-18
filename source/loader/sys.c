@@ -98,10 +98,15 @@ void Sys_Exit(void)
 {
 	/* Shutdown Inputs */
 	Close_Inputs();
-	/* Just shutdown  console*/
-	if(ExitOption == BUTTON_CALLBACK)
+	
+	/* shutdown console without wc24*/
+	if(ExitOption == SHUTDOWN_STANDBY)
 		SYS_ResetSystem(SYS_POWEROFF_STANDBY, 0, 0);
-
+		
+	/* shutdown console with wc24 (riiconnect24) */
+	if(ExitOption == SHUTDOWN_IDLE)
+		SYS_ResetSystem(SYS_POWEROFF_IDLE, 0, 0);
+		
 	if(!isWiiVC)
 	{
 		/* We wanna to boot something */

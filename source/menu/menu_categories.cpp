@@ -19,11 +19,8 @@ TexData m_categoryBg;
 vector<char> m_categories;
 static u8 curPage;
 u8 lastBtn;
-const char *catSettings = NULL;
-const char *id = NULL;
-const char *pluginID = NULL;
+char id[64];
 const char *catDomain = NULL;
-char tmp[64];
 bool gameSet;
 
 void CMenu::_hideCategorySettings(bool instant)
@@ -128,49 +125,46 @@ void CMenu::_getGameCategories(void)
 		default:
 			catDomain = m_plugin.PluginMagicWord;
 	}
-	memset(tmp, 0, 64);
-	if(hdr->type == TYPE_PLUGIN)
+
+	memset(id, 0, 64);
+	if(NoGameID(hdr->type))
 	{
-		wcstombs(tmp, hdr->title, 64);
-		pluginID = tmp;
+		if(strrchr(hdr->path, '/') != NULL)
+			wcstombs(id, hdr->title, sizeof(id) - 1);
+		else
+			strncpy(id, hdr->path, sizeof(id) - 1);// scummvm
 	}
 	else
+		strcpy(id, hdr->id);
+	if(hdr->type == TYPE_GC_GAME && hdr->settings[0] == 1) /* disc 2 */
+		strcat(id, "_2");
+
+	const char *gameCats = m_cat.getString(catDomain, id, "").c_str();
+	if(strlen(gameCats) > 0)
 	{
-		id = hdr->id;
-		if(hdr->type == TYPE_GC_GAME && hdr->settings[0] == 1) /* disc 2 */
+		for(u8 j = 0; j < strlen(gameCats); ++j)
 		{
-			strcat(tmp, fmt("%.6s_2", hdr->id));
-			id = tmp;
-		}
-	}
-	const char *idCats = m_cat.getString(catDomain, hdr->type == TYPE_PLUGIN? pluginID : id).c_str();
-	u8 numIdCats = strlen(idCats);
-	if(numIdCats != 0)
-	{
-		for(u8 j = 0; j < numIdCats; ++j)
-		{
-			int k = (static_cast<int>(idCats[j])) - 32;
+			int k = (static_cast<int>(gameCats[j])) - 32;
 			m_categories.at(k) = '1';
 		}
 	}
 	else
-		m_cat.remove(catDomain, hdr->type == TYPE_PLUGIN? pluginID : id);
+		m_cat.remove(catDomain, id);
 	m_btnMgr.setText(m_categoryLblTitle, CoverFlow.getTitle());
 }
 
 void CMenu::_setGameCategories(void)
 {
-	const dir_discHdr *hdr = CoverFlow.getHdr();
-	string newIdCats = "";
+	string gameCats = "";
 	for(int i = 1; i < m_max_categories; i++)
 	{
 		if(m_categories.at(i) == '1')
 		{
-			char cCh = static_cast<char>( i + 32);
-			newIdCats = newIdCats + cCh;
+			char cCh = static_cast<char>(i + 32);
+			gameCats += cCh;
 		}
 	}
-	m_cat.setString(catDomain, hdr->type == TYPE_PLUGIN? pluginID : id, newIdCats);
+	m_cat.setString(catDomain, id, gameCats);
 }
 	
 void CMenu::_CategorySettings(bool fromGameSet)
@@ -195,18 +189,12 @@ void CMenu::_CategorySettings(bool fromGameSet)
 	}
 	else
 	{
-		//const char *requiredCats = m_cat.getString("GENERAL", "required_categories").c_str();
-		//const char *selectedCats = m_cat.getString("GENERAL", "selected_categories").c_str();
-		//const char *hiddenCats = m_cat.getString("GENERAL", "hidden_categories").c_str();
-		char requiredCats[10];
-		char selectedCats[10];
-		char hiddenCats[10];
-		strcpy(requiredCats, m_cat.getString("GENERAL", "required_categories").c_str());
-		strcpy(selectedCats, m_cat.getString("GENERAL", "selected_categories").c_str());
-		strcpy(hiddenCats, m_cat.getString("GENERAL", "hidden_categories").c_str());
-		u8 numReqCats = strlen(requiredCats);
-		u8 numSelCats = strlen(selectedCats);
-		u8 numHidCats = strlen(hiddenCats);
+		string requiredCats = m_cat.getString("GENERAL", "required_categories", "");
+		string selectedCats = m_cat.getString("GENERAL", "selected_categories", "");
+		string hiddenCats = m_cat.getString("GENERAL", "hidden_categories", "");
+		u8 numReqCats = requiredCats.length();
+		u8 numSelCats = selectedCats.length();
+		u8 numHidCats = hiddenCats.length();
 		
 		if(numReqCats != 0)
 		{
@@ -275,7 +263,6 @@ void CMenu::_CategorySettings(bool fromGameSet)
 			else
 			{
 				_setGameCategories();
-				//m_refreshGameList = true;
 			}
 			break;
 		}
@@ -385,15 +372,19 @@ void CMenu::_CategorySettings(bool fromGameSet)
 					{
 						case '0':
 							m_btnMgr.show(m_categoryBtnCat[i]);
+							m_btnMgr.setSelected(m_categoryBtnCat[i]);
 							break;
 						case '1':
 							m_btnMgr.show(m_categoryBtnCats[i]);
+							m_btnMgr.setSelected(m_categoryBtnCats[i]);
 							break;
 						case '2':
 							m_btnMgr.show(m_categoryBtnCatHid[i]);
+							m_btnMgr.setSelected(m_categoryBtnCatHid[i]);
 							break;
 						default:
 							m_btnMgr.show(m_categoryBtnCatReq[i]);
+							m_btnMgr.setSelected(m_categoryBtnCatReq[i]);
 							break;
 					}
 					break;
@@ -408,7 +399,7 @@ void CMenu::_initCategorySettingsMenu()
 {
 	_addUserLabels(m_categoryLblUser, ARRAY_SIZE(m_categoryLblUser), "CATEGORY");
 	m_categoryBg = _texture("CATEGORY/BG", "texture", theme.bg, false);
-	m_categoryLblTitle = _addTitle("CATEGORY/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_categoryLblTitle = _addLabel("CATEGORY/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 	m_categoryBtnPageM = _addPicButton("CATEGORY/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 20, 400, 48, 48);
 	m_categoryLblPage = _addLabel("CATEGORY/PAGE_BTN", theme.btnFont, L"", 68, 400, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_categoryBtnPageP = _addPicButton("CATEGORY/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 172, 400, 48, 48);

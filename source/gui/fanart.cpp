@@ -1,6 +1,7 @@
 
 #include "fanart.hpp"
 #include "memory/mem2.hpp"
+#include "types.h"
 
 using namespace std;
 
@@ -29,53 +30,66 @@ void CFanart::unload()
 }
 
 char fanartDir[164];
-bool CFanart::load(Config &m_wiiflowConfig, const char *path, const char *id, bool plugin_rom)
+bool CFanart::load(Config &m_wiiflowConfig, const char *path, const dir_discHdr *hdr)
 {
-	bool retval = false;
-
 	if(!m_wiiflowConfig.getBool("FANART", "enable_fanart", true))
-		return retval;
+		return false;
 
 	unload();
 
+	char id[64];
+	memset(id, 0, sizeof(id));
+	if(NoGameID(hdr->type))
+	{
+		if(strrchr(hdr->path, '/') != NULL)
+			wcstombs(id, hdr->title, sizeof(id) - 1);
+		else
+			strncpy(id, hdr->path, sizeof(id) - 1);// scummvm
+	}
+	else
+		strcpy(id, hdr->id);
+		
 	fanartDir[163] = '\0';
 	strncpy(fanartDir, fmt("%s/%s", path, id), 163);
 
 	TexErr texErr = TexHandle.fromImageFile(m_bg, fmt("%s/background.png", fanartDir));
-	if(texErr == TE_ERROR && !plugin_rom)
+	if(texErr == TE_ERROR && !NoGameID(hdr->type))
 	{
 		strncpy(fanartDir, fmt("%s/%.3s", path, id), 163);
 		texErr = TexHandle.fromImageFile(m_bg, fmt("%s/background.png", fanartDir));
 	}
-	if(texErr == TE_OK)
+	if(texErr == TE_ERROR)
 	{
-		char faConfig_Path[164];
-		faConfig_Path[163] = '\0';
-		strncpy(faConfig_Path, fmt("%s/%s.ini", fanartDir, id), 163);
-		m_faConfig.load(faConfig_Path);
-		if(!m_faConfig.loaded() && !plugin_rom)
-		{
-			strncpy(faConfig_Path, fmt("%s/%.3s.ini", fanartDir, id), 163);
-			m_faConfig.load(faConfig_Path);
-			if(!m_faConfig.loaded())
-			{
-				TexHandle.Cleanup(m_bg);
-				return retval;
-			}
-		}
-		TexHandle.fromImageFile(m_bglq, fmt("%s/background_lq.png", fanartDir));
-		for(int i = 1; i <= 6; i++)
-		{
-			CFanartElement elm(m_faConfig, fanartDir, i);
-			if (elm.IsValid()) m_elms.push_back(elm);
-		}
-		m_loaded = true;
-		retval = true;
-		m_defaultDelay = m_wiiflowConfig.getInt("FANART", "delay_after_animation", 200);
-		m_delayAfterAnimation = m_faConfig.getInt("GENERAL", "delay_after_animation", m_defaultDelay);
-		m_globalShowCoverAfterAnimation = m_wiiflowConfig.getOptBool("FANART", "show_cover_after_animation", 2);
+		TexHandle.Cleanup(m_bg);
+		return false;
 	}
-	return retval;
+
+	char faConfig_Path[164];
+	faConfig_Path[163] = '\0';
+	strncpy(faConfig_Path, fmt("%s/%s.ini", fanartDir, id), 163);
+	m_faConfig.load(faConfig_Path);
+	if(!m_faConfig.loaded() && !NoGameID(hdr->type))
+	{
+		strncpy(faConfig_Path, fmt("%s/%.3s.ini", fanartDir, id), 163);
+		m_faConfig.load(faConfig_Path);
+	}
+	if(!m_faConfig.loaded())
+	{
+		TexHandle.Cleanup(m_bg);
+		return false;
+	}
+	
+	TexHandle.fromImageFile(m_bglq, fmt("%s/background_lq.png", fanartDir));
+	for(int i = 1; i <= 6; i++)
+	{
+		CFanartElement elm(m_faConfig, fanartDir, i);
+		if(elm.IsValid()) m_elms.push_back(elm);
+	}
+	m_loaded = true;
+	m_defaultDelay = m_wiiflowConfig.getInt("FANART", "delay_after_animation", 200);
+	m_delayAfterAnimation = m_faConfig.getInt("GENERAL", "delay_after_animation", m_defaultDelay);
+	m_globalShowCoverAfterAnimation = m_wiiflowConfig.getOptBool("FANART", "show_cover_after_animation", 2);
+	return true;
 }
 
 void CFanart::getBackground(const TexData * &hq, const TexData * &lq)

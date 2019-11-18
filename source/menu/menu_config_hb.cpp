@@ -5,8 +5,8 @@ s16 m_cfghbLblTitle;
 s16 m_cfghbBtnBack;
 s16 m_cfghbLblUser[4];
 
-s16 m_cfghbLblAdjustCF;
-s16 m_cfghbBtnAdjustCF;
+s16 m_cfghbLblHideHB;
+s16 m_cfghbBtnHideHB;
 
 s16 m_cfghbLblSmallbox;
 s16 m_cfghbBtnSmallbox;
@@ -29,8 +29,8 @@ static void _showCfgHB(void)
 		if(m_cfghbLblUser[i] != -1)
 			m_btnMgr.show(m_cfghbLblUser[i]);
 
-	m_btnMgr.show(m_cfghbLblAdjustCF);
-	m_btnMgr.show(m_cfghbBtnAdjustCF);
+	m_btnMgr.show(m_cfghbLblHideHB);
+	m_btnMgr.show(m_cfghbBtnHideHB);
 	
 	m_btnMgr.show(m_cfghbLblSmallbox);
 	m_btnMgr.show(m_cfghbBtnSmallbox);
@@ -53,8 +53,8 @@ static void _hideCfgHB(bool instant)
 		if(m_cfghbLblUser[i] != -1)
 			m_btnMgr.hide(m_cfghbLblUser[i], instant);
 
-	m_btnMgr.hide(m_cfghbLblAdjustCF, instant);
-	m_btnMgr.hide(m_cfghbBtnAdjustCF, instant);
+	m_btnMgr.hide(m_cfghbLblHideHB, instant);
+	m_btnMgr.hide(m_cfghbBtnHideHB, instant);
 	
 	m_btnMgr.hide(m_cfghbLblSmallbox, instant);
 	m_btnMgr.hide(m_cfghbBtnSmallbox, instant);
@@ -70,6 +70,7 @@ static void _hideCfgHB(bool instant)
 
 void CMenu::_CfgHB(void)
 {
+	m_btnMgr.setText(m_cfghbBtnHideHB, m_cfg.getBool(HOMEBREW_DOMAIN, "disable", false) ? _t("yes", L"Yes") : _t("no", L"No"));
 	m_btnMgr.setText(m_cfghbBtnSmallbox, m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox") ? _t("on", L"On") : _t("off", L"Off"));
 	m_btnMgr.setText(m_cfghbBtnBoxMode, m_cfg.getBool(HOMEBREW_DOMAIN, "box_mode") ? _t("on", L"On") : _t("off", L"Off"));
 	
@@ -94,16 +95,15 @@ void CMenu::_CfgHB(void)
 		{
 			if(m_btnMgr.selected(m_cfghbBtnBack))
 				break;
-			else if (m_btnMgr.selected(m_cfghbBtnAdjustCF))
+			else if (m_btnMgr.selected(m_cfghbBtnHideHB))
 			{
-				m_refreshGameList = true;
-				_hideCfgHB(true);
-				_cfTheme();
-				_showCfgHB();
+				m_cfg.setBool(HOMEBREW_DOMAIN, "disable", !m_cfg.getBool(HOMEBREW_DOMAIN, "disable"));
+				m_btnMgr.setText(m_cfghbBtnHideHB, m_cfg.getBool(HOMEBREW_DOMAIN, "disable") ? _t("yes", L"Yes") : _t("no", L"No"));
 			}
 			else if (m_btnMgr.selected(m_cfghbBtnSmallbox))
 			{
 				m_refreshGameList = true;
+				m_cfg.setBool(HOMEBREW_DOMAIN, "update_cache", true);
 				m_cfg.setBool(HOMEBREW_DOMAIN, "smallbox", !m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox", false));
 				m_btnMgr.setText(m_cfghbBtnSmallbox, m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox") ? _t("on", L"On") : _t("off", L"Off"));
 			}
@@ -116,6 +116,7 @@ void CMenu::_CfgHB(void)
 			else if (m_btnMgr.selected(m_cfghbBtnPartitionP) || m_btnMgr.selected(m_cfghbBtnPartitionM))
 			{
 				m_refreshGameList = true;
+				m_cfg.setBool(HOMEBREW_DOMAIN, "update_cache", true);
 				s8 direction = m_btnMgr.selected(m_cfghbBtnPartitionP) ? 1 : -1;
 				_setPartition(direction);
 				const char *partitionname = DeviceName[currentPartition];
@@ -131,11 +132,11 @@ void CMenu::_initCfgHB(void)
 	m_cfghbBg = _texture("CFG_HB/BG", "texture", theme.bg, false);
 	
 	_addUserLabels(m_cfghbLblUser, ARRAY_SIZE(m_cfghbLblUser), "CFG_HB");
-	m_cfghbLblTitle = _addTitle("CFG_HB/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_cfghbLblTitle = _addLabel("CFG_HB/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 	m_cfghbBtnBack = _addButton("CFG_HB/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
 	
-	m_cfghbLblAdjustCF = _addLabel("CFG_HB/ADJUST_CF", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_cfghbBtnAdjustCF = _addButton("CFG_HB/ADJUST_CF_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
+	m_cfghbLblHideHB = _addLabel("CFG_HB/HIDE_HB", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_cfghbBtnHideHB = _addButton("CFG_HB/HIDE_HB_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
 
 	m_cfghbLblSmallbox = _addLabel("CFG_HB/HB_SMALLBOX", theme.lblFont, L"", 20, 185, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_cfghbBtnSmallbox = _addButton("CFG_HB/HB_SMALLBOX_BTN", theme.btnFont, L"", 420, 190, 200, 48, theme.btnFontColor);
@@ -151,8 +152,8 @@ void CMenu::_initCfgHB(void)
 	_setHideAnim(m_cfghbLblTitle, "CFG_HB/TITLE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_cfghbBtnBack, "CFG_HB/BACK_BTN", 0, 0, 1.f, -1.f);
 	
-	_setHideAnim(m_cfghbLblAdjustCF, "CFG_HB/ADJUST_CF", -50, 0, -2.f, 0.f);
-	_setHideAnim(m_cfghbBtnAdjustCF, "CFG_HB/ADJUST_CF_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_cfghbLblHideHB, "CFG_HB/HIDE_HB", -50, 0, -2.f, 0.f);
+	_setHideAnim(m_cfghbBtnHideHB, "CFG_HB/HIDE_HB_BTN", -50, 0, 1.f, 0.f);
 	
 	_setHideAnim(m_cfghbLblSmallbox, "CFG_HB/HB_SMALLBOX", -50, 0, -2.f, 0.f);
 	_setHideAnim(m_cfghbBtnSmallbox, "CFG_HB/HB_SMALLBOX_BTN", -50, 0, 1.f, 0.f);
@@ -172,8 +173,7 @@ void CMenu::_initCfgHB(void)
 void CMenu::_textCfgHB(void)
 {
 	m_btnMgr.setText(m_cfghbLblTitle, _t("cfghb1", L"Homebrew Settings"));
-	m_btnMgr.setText(m_cfghbLblAdjustCF, _t("cfgc4", L"Adjust Coverflow"));
-	m_btnMgr.setText(m_cfghbBtnAdjustCF, _t("cfgc5", L"Go"));
+	m_btnMgr.setText(m_cfghbLblHideHB, _t("cfghb5", L"Hide homebrew button"));
 	m_btnMgr.setText(m_cfghbLblSmallbox, _t("cfghb2", L"Coverflow Smallbox"));
 	m_btnMgr.setText(m_cfghbLblBoxMode, _t("cfghb4", L"Box Mode"));
 	m_btnMgr.setText(m_cfghbLblPartition, _t("cfghb3", L"Homebrew Partition"));

@@ -28,9 +28,12 @@
 ListGenerator m_cacheList;
 Config CustomTitles;
 GameTDB gameTDB;
+Config romNamesDB;
+string platformName;
+string pluginsDataDir;
 
 dir_discHdr ListElement;
-void ListGenerator::Init(const char *settingsDir, const char *Language)
+void ListGenerator::Init(const char *settingsDir, const char *Language, const char *plgnsDataDir)
 {
 	if(settingsDir != NULL)
 	{
@@ -38,6 +41,7 @@ void ListGenerator::Init(const char *settingsDir, const char *Language)
 		CustomTitlesPath = fmt("%s/" CTITLES_FILENAME, settingsDir);
 	}
 	if(Language != NULL) gameTDB_Language = Language;
+	if(plgnsDataDir != NULL) pluginsDataDir = fmt("%s", plgnsDataDir);
 }
 
 void ListGenerator::Clear(void)
@@ -71,6 +75,8 @@ static void AddToList(const dir_discHdr *element)
 	
 }
 */
+
+/* used for adding wii games to the list */
 static void AddISO(const char *GameID, const char *GameTitle, const char *GamePath, 
 							u32 GameColor, u8 Type)
 {
@@ -107,6 +113,7 @@ static void AddISO(const char *GameID, const char *GameTitle, const char *GamePa
 	m_cacheList.push_back(ListElement);
 }
 
+/* read wbfs partition to add wii games to the list */
 static void Create_Wii_WBFS_List(wbfs_t *handle)
 {
 	for(u32 i = 0; i < wbfs_count_discs(handle); i++)
@@ -119,7 +126,8 @@ static void Create_Wii_WBFS_List(wbfs_t *handle)
 	}
 }
 
-static void Create_Wii_EXT_List(char *FullPath)
+/* add wii game iso(ntfs) or wbfs(fat) to the list. wbf1 and wbf2 are skipped and not added. */
+static void Add_Wii_Game(char *FullPath)
 {
 	FILE *fp = fopen(FullPath, "rb");
 	if(fp)
@@ -133,15 +141,16 @@ static void Create_Wii_EXT_List(char *FullPath)
 	}
 }
 
+/* add gamecube game to the list */
 u8 gc_disc[1];
 const char *FST_APPEND = "sys/boot.bin";
 const u8 FST_APPEND_SIZE = strlen(FST_APPEND);
 static const u8 CISO_MAGIC[8] = {'C','I','S','O',0x00,0x00,0x20,0x00};
-static void Create_GC_List(char *FullPath)
+static void Add_GameCube_Game(char *FullPath)
 {
 	u32 hdr_offset = 0x00;
 	FILE *fp = fopen(FullPath, "rb");
-	if(!fp && strstr(FullPath, "/root") != NULL) //fst folder
+	if(!fp && strstr(FullPath, "/root") != NULL) //fst folder (extracted game)
 	{
 		*(strstr(FullPath, "/root") + 1) = '\0';
 		if(strlen(FullPath) + FST_APPEND_SIZE < MAX_MSG_SIZE) strcat(FullPath, FST_APPEND);
@@ -174,36 +183,8 @@ static void Create_GC_List(char *FullPath)
 	}
 }
 
-const char *FolderTitle = NULL;
-static void Create_Plugin_List(char *FullPath)
-{
-	memset((void*)&ListElement, 0, sizeof(dir_discHdr));
-
-	strncpy(ListElement.path, FullPath, sizeof(ListElement.path) - 1);
-	memcpy(ListElement.id, "PLUGIN", 6);
-
-	FolderTitle = strrchr(FullPath, '/') + 1;
-	*strrchr(FolderTitle, '.') = '\0';
-	
-	char PluginMagicWord[9];
-	memset(PluginMagicWord, 0, sizeof(PluginMagicWord));
-	strncpy(PluginMagicWord, fmt("%08x", m_cacheList.Magic), 8);
-	char CustomTitle[64];
-	memset(CustomTitle, 0, sizeof(CustomTitle));
-	strncpy(CustomTitle, CustomTitles.getString(PluginMagicWord, FolderTitle).c_str(), 63);
-	if(strlen(CustomTitle) > 0)
-		mbstowcs(ListElement.title, CustomTitle, 63);
-	else	
-		mbstowcs(ListElement.title, FolderTitle, 63);
-	Asciify(ListElement.title);
-
-	ListElement.settings[0] = m_cacheList.Magic; //Plugin magic
-	ListElement.casecolor = m_cacheList.Color;
-	ListElement.type = TYPE_PLUGIN;
-	m_cacheList.push_back(ListElement);
-}
-
-static void Create_Homebrew_List(char *FullPath)
+/* add homebrew boot.dol to the list */
+static void Add_Homebrew_Dol(char *FullPath)
 {
 	if(strcasestr(FullPath, "boot.") == NULL)
 		return;
@@ -213,7 +194,7 @@ static void Create_Homebrew_List(char *FullPath)
 	strncpy(ListElement.path, FullPath, sizeof(ListElement.path) - 1);
 	memcpy(ListElement.id, "HB_APP", 6);
 
-	FolderTitle = strrchr(FullPath, '/') + 1;
+	const char *FolderTitle = strrchr(FullPath, '/') + 1;
 	ListElement.casecolor = CustomTitles.getColor("COVERS", FolderTitle, 0xFFFFFF).intVal();
 	const string &CustomTitle = CustomTitles.getString("TITLES", FolderTitle);
 	if(CustomTitle.size() > 0)
@@ -226,6 +207,7 @@ static void Create_Homebrew_List(char *FullPath)
 	m_cacheList.push_back(ListElement);
 }
 
+/* create channel list from nand or emu nand */
 Channel *chan = NULL;
 static void Create_Channel_List(bool realNAND)
 {
@@ -270,6 +252,103 @@ static void Create_Channel_List(bool realNAND)
 	}
 }
 
+/* add plugin rom, song, or video to the list. */
+static void Add_Plugin_Game(char *FullPath)
+{
+	/* Get roms's title without the extra ()'s or []'s */
+	string ShortName = m_plugin.GetRomName(FullPath);
+	//gprintf("shortName=%s\n", ShortName.c_str());
+	
+	/* get rom's ID */
+	string romID = "";
+	if(gameTDB.IsLoaded())
+	{
+		/* Get 6 character unique romID (from Screenscraper.fr) using shortName. if fails then use CRC or CD serial to get romID */
+		romID = m_plugin.GetRomId(FullPath, m_cacheList.Magic, romNamesDB, pluginsDataDir.c_str(), platformName.c_str(), ShortName.c_str());
+	}
+	if(romID.empty())
+		romID = "PLUGIN";
+	//gprintf("romID=%s\n", romID.c_str());
+
+	/* add rom to list */
+	memset((void*)&ListElement, 0, sizeof(dir_discHdr));
+
+	strncpy(ListElement.path, FullPath, sizeof(ListElement.path) - 1);
+	strncpy(ListElement.id, romID.c_str(), 6);
+
+	/* Get titles - Rom filename, custom title, and database xml title */
+	const char *RomFilename = strrchr(FullPath, '/') + 1;
+	*strrchr(RomFilename, '.') = '\0';
+	
+	string customTitle = CustomTitles.getString(m_plugin.PluginMagicWord, RomFilename, "");
+	
+	const char *gameTDB_Title = NULL;
+	if(gameTDB.IsLoaded() && customTitle.empty())
+		gameTDB.GetTitle(ListElement.id, gameTDB_Title, true);
+	
+	/* set the roms title */
+	if(!customTitle.empty())
+		mbstowcs(ListElement.title, customTitle.c_str(), 63);
+	else if(gameTDB_Title != NULL && gameTDB_Title[0] != '\0')
+		mbstowcs(ListElement.title, gameTDB_Title, 63);
+	else
+		mbstowcs(ListElement.title, RomFilename, 63);
+	Asciify(ListElement.title);
+	
+	ListElement.settings[0] = m_cacheList.Magic; //Plugin magic
+	ListElement.casecolor = m_cacheList.Color;
+	ListElement.type = TYPE_PLUGIN;
+	m_cacheList.push_back(ListElement);
+}
+
+/* note: scummvm games have list generator in plugin.cpp */
+void ListGenerator::CreateRomList(Config &platform_cfg, const string& romsDir, const vector<string>& FileTypes, const string& DBName, bool UpdateCache)
+{
+	Clear();
+	if(!DBName.empty())
+	{
+		if(UpdateCache)
+			fsop_deleteFile(DBName.c_str());
+		else
+		{
+			CCache(*this, DBName, LOAD);
+			if(!this->empty())
+				return;
+			fsop_deleteFile(DBName.c_str());
+		}
+	}
+	
+	if(platform_cfg.loaded())
+	{
+		/* Search platform.ini to find plugin magic to get platformName */
+		platformName = platform_cfg.getString("PLUGINS", m_plugin.PluginMagicWord);
+		if(!platformName.empty())
+		{
+			/* check COMBINED for platform names that mean the same system just different region */
+			/* some platforms have different names per country (ex. Genesis/Megadrive) */
+			/* but we use only one platform name for both */
+			string newName = platform_cfg.getString("COMBINED", platformName);
+			if(newName.empty())
+				platform_cfg.remove("COMBINED", platformName);
+			else
+				platformName = newName;
+			
+			/* Load rom names and crc database */
+			romNamesDB.load(fmt("%s/%s/%s.ini", pluginsDataDir.c_str(), platformName.c_str(), platformName.c_str()));
+			/* Load platform name.xml database to get game's info using the gameID */
+			gameTDB.OpenFile(fmt("%s/%s/%s.xml", pluginsDataDir.c_str(), platformName.c_str(), platformName.c_str()));
+			if(gameTDB.IsLoaded())
+				gameTDB.SetLanguageCode(gameTDB_Language.c_str());
+		}
+	}
+	CustomTitles.load(CustomTitlesPath.c_str());
+	GetFiles(romsDir.c_str(), FileTypes, Add_Plugin_Game, false, 30);//wow 30 subfolders! really?
+	CloseConfigs();
+	romNamesDB.unload();
+	if(!this->empty() && !DBName.empty()) /* Write a new Cache */
+		CCache(*this, DBName, SAVE);
+}
+	
 void ListGenerator::CreateList(u32 Flow, u32 Device, const string& Path, const vector<string>& FileTypes, 
 								const string& DBName, bool UpdateCache)
 {
@@ -292,7 +371,7 @@ void ListGenerator::CreateList(u32 Flow, u32 Device, const string& Path, const v
 		if(DeviceHandle.GetFSType(Device) == PART_FS_WBFS)
 			Create_Wii_WBFS_List(DeviceHandle.GetWbfsHandle(Device));
 		else
-			GetFiles(Path.c_str(), FileTypes, Create_Wii_EXT_List, false);
+			GetFiles(Path.c_str(), FileTypes, Add_Wii_Game, false);
 	}
 	else if(Flow == COVERFLOW_CHANNEL)
 	{
@@ -305,11 +384,9 @@ void ListGenerator::CreateList(u32 Flow, u32 Device, const string& Path, const v
 	else if(DeviceHandle.GetFSType(Device) != PART_FS_WBFS)
 	{
 		if(Flow == COVERFLOW_GAMECUBE)
-			GetFiles(Path.c_str(), FileTypes, Create_GC_List, true);//the only one that looks for a folder (/root)
-		else if(Flow == COVERFLOW_PLUGIN)
-			GetFiles(Path.c_str(), FileTypes, Create_Plugin_List, false, 30);//wow 30 subfolders! really?
+			GetFiles(Path.c_str(), FileTypes, Add_GameCube_Game, true);// true means to look for a folder (/root)
 		else if(Flow == COVERFLOW_HOMEBREW)
-			GetFiles(Path.c_str(), FileTypes, Create_Homebrew_List, false);
+			GetFiles(Path.c_str(), FileTypes, Add_Homebrew_Dol, false);
 	}
 	CloseConfigs();
 	if(!this->empty() && !DBName.empty()) /* Write a new Cache */
@@ -350,7 +427,7 @@ void GetFiles(const char *Path, const vector<string>& FileTypes,
 				AddFile(FullPathChar);
 				continue;
 			}
-			else if(depth < max_depth) //thanks libntfs (fail opendir) and thanks seekdir (slowass speed)
+			else if(depth < max_depth && strcmp(pent->d_name, "samples") != 0) //skip samples folder in mame roms folder
 				SubPaths.push_back(FullPathChar);
 		}
 		else if(pent->d_type == DT_REG)
@@ -370,6 +447,7 @@ void GetFiles(const char *Path, const vector<string>& FileTypes,
 	SubPaths.clear();
 }
 
+/* create sourceflow list from current source_menu.ini */
 void ListGenerator::createSFList(u8 maxBtns, Config &m_sourceMenuCfg, const string& sourceDir)
 {
 	Clear();

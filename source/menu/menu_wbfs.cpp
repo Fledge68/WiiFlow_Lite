@@ -68,6 +68,14 @@ void CMenu::_addDiscProgress(int status, int total, void *user_data)
 	}
 }
 
+void CMenu::_setThrdMsg(const wstringEx &msg, float progress)
+{
+	if (m_thrdStop) return;
+	if (msg != L"...") m_thrdMessage = msg;
+	m_thrdMessageAdded = true;
+	m_thrdProgress = progress;
+}
+
 bool CMenu::_searchGamesByID(const char *gameId)
 {
 	for(vector<dir_discHdr>::iterator itr = m_gameList.begin(); itr != m_gameList.end(); ++itr)
@@ -276,6 +284,8 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 
 	SetupInput();
 	_showWBFS(op);
+	m_btnMgr.show(m_wbfsLblMessage);
+	m_btnMgr.setText(m_wbfsLblMessage, _t("wbfsop27", L"Or press 'B' to go back."));
 	switch (op)
 	{
 		case WO_ADD_GAME:
@@ -519,7 +529,7 @@ void CMenu::_initWBFSMenu()
 {
 	_addUserLabels(m_wbfsLblUser, ARRAY_SIZE(m_wbfsLblUser), "WBFS");
 	m_wbfsBg = _texture("WBFS/BG", "texture", theme.bg, false);
-	m_wbfsLblTitle = _addTitle("WBFS/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_wbfsLblTitle = _addLabel("WBFS/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 	m_wbfsLblDialog = _addLabel("WBFS/DIALOG", theme.lblFont, L"", 40, 75, 600, 200, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_wbfsLblMessage = _addLabel("WBFS/MESSAGE", theme.lblFont, L"", 40, 300, 600, 100, theme.lblFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_TOP);
 	m_wbfsPBar = _addProgressBar("WBFS/PROGRESS_BAR", 40, 200, 560, 20);

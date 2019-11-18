@@ -55,6 +55,20 @@ bool ZipFile::LoadList()
 	return true;
 }
 
+char filename[256];
+const char *ZipFile::GetFileName()
+{
+	memset(filename, 0, sizeof(filename));
+
+	if(unzGoToFirstFile(File) == UNZ_OK)
+	{
+		if(unzGetCurrentFileInfo(File, &cur_file_info, filename, sizeof(filename), NULL, 0, NULL, 0) != UNZ_OK)
+			filename[0] = '\0';
+	}
+	
+	return filename;
+}
+
 bool ZipFile::ExtractAll(const char *dest)
 {
 	if(!File)

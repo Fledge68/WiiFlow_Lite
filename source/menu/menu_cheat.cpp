@@ -2,13 +2,14 @@
 #include "menu.hpp"
 #include "gui/text.hpp"
 #include "lockMutex.hpp"
-#include "network/http.h"
+#include "network/https.h"
 
 //#define GECKOURL "http://geckocodes.org/codes/%c/%s.txt"
-#define GECKOURL "http://geckocodes.org/txt.php?txt=%s"
+#define GECKOURL "https://www.geckocodes.org/txt.php?txt=%s"
 #define CHEATSPERPAGE 4
 
 u8 m_cheatSettingsPage = 0;
+int txtavailable;
 
 int CMenu::_downloadCheatFileAsync()
 {
@@ -20,22 +21,26 @@ int CMenu::_downloadCheatFileAsync()
 	{
 		return -2;
 	}
-
+	m_thrdMessage = _t("dlmsg11", L"Downloading...");
+	m_thrdMessageAdded = true;
+	
 	const char *id = CoverFlow.getId();
-	//char type = id[0] == 'S' ? 'R' : id[0];
-
-	block cheatfile = downloadfile(fmt(GECKOURL, id));
-
-	if(cheatfile.data != NULL && cheatfile.size > 65 && cheatfile.data[0] != '<')
+	struct download file = {};
+	downloadfile(fmt(GECKOURL, id), &file);
+	if(file.size > 0 && file.data[0] != '<')
 	{
-		update_pThread(1);//its downloaded
-		fsop_WriteFile(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id), cheatfile.data, cheatfile.size);
-		if(cheatfile.data != NULL)
-			free(cheatfile.data);
+		m_thrdMessage = _t("dlmsg13", L"Saving...");
+		m_thrdMessageAdded = true;
+		update_pThread(1);// its downloaded
+		fsop_WriteFile(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id), file.data, file.size);
+		free(file.data);
 		return 0;
 	}
-	if(cheatfile.data != NULL)
-		free(cheatfile.data);
+	if(file.size > 0)// received a 301/302 redirect instead of a 404?
+	{
+		free(file.data);
+		return -4;// the file doesn't exist on the server
+	}
 	return -3;// download failed
 }
 
@@ -46,16 +51,11 @@ void CMenu::_CheatSettings()
 	const char *id = CoverFlow.getId();
 
 	m_cheatSettingsPage = 1;
-	int txtavailable = m_cheatfile.openTxtfile(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id)); 
+	txtavailable = m_cheatfile.openTxtfile(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id)); 
 	
-	_showCheatSettings();
 	_textCheatSettings();
-	
-	if (txtavailable)
-		m_btnMgr.setText(m_cheatLblTitle, m_cheatfile.getGameName());
-	else 
-		m_btnMgr.setText(m_cheatLblTitle, L"");
-	
+	_showCheatSettings();
+
 	while(!m_exit)
 	{
 		_mainLoopCommon();
@@ -85,7 +85,7 @@ void CMenu::_CheatSettings()
 			if(BTN_RIGHT_PRESSED || BTN_PLUS_PRESSED) m_btnMgr.click(m_cheatBtnPageP);
 			_showCheatSettings();
 		}
-		else if ((WBTN_2_HELD && WBTN_1_PRESSED) || (WBTN_1_HELD && WBTN_2_PRESSED))
+		else if ((WBTN_2_HELD && WBTN_1_PRESSED) || (WBTN_1_HELD && WBTN_2_PRESSED))// pressing 1 and 2 deletes everything so cheats can be downloaded again.
 		{
 			fsop_deleteFile(fmt("%s/%s.gct", m_cheatDir.c_str(), id));
 			fsop_deleteFile(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id));
@@ -165,6 +165,8 @@ void CMenu::_CheatSettings()
 							m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg2", L"Network initialization failed!"));
 						else if(ret == -3)
 							m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg12", L"Download failed!"));
+						else if(ret == -4)
+							m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg36", L"No cheat file available to download."));
 						else
 							m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg14", L"Done."));
 						dl_finished = true;
@@ -172,20 +174,6 @@ void CMenu::_CheatSettings()
 				}
 				txtavailable = m_cheatfile.openTxtfile(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id));
 				_showCheatSettings();
-
-				if(txtavailable)
-					m_btnMgr.setText(m_cheatLblTitle, m_cheatfile.getGameName());
-				else 
-					m_btnMgr.setText(m_cheatLblTitle, L"");
-
-				if (m_cheatfile.getCnt() == 0)
-				{
-					// cheat code not found, show result
-					//char type = id[0] == 'S' ? 'R' : id[0];
-					m_btnMgr.setText(m_cheatLblItem[0], _t("cheat4", L"Download not found."));
-					m_btnMgr.setText(m_cheatLblItem[1], sfmt(GECKOURL, id));
-					m_btnMgr.show(m_cheatLblItem[1]);
-				}
 			}
 		}
 	}
@@ -215,15 +203,20 @@ void CMenu::_hideCheatSettings(bool instant)
 
 void CMenu::_showCheatSettings(void)
 {
+	if(txtavailable && m_cheatfile.getCnt() > 0)
+		m_btnMgr.setText(m_cheatLblTitle, m_cheatfile.getGameName());
+	else 
+		m_btnMgr.setText(m_cheatLblTitle, L"");
+
 	_setBg(m_cheatBg, m_cheatBg);
-	m_btnMgr.show(m_cheatBtnBack);
 	m_btnMgr.show(m_cheatLblTitle);
+	m_btnMgr.show(m_cheatBtnBack);
 
 	for(u8 i = 0; i < ARRAY_SIZE(m_cheatLblUser); ++i)
 		if(m_cheatLblUser[i] != -1)
 			m_btnMgr.show(m_cheatLblUser[i]);
 
-	if (m_cheatfile.getCnt() > 0)
+	if(m_cheatfile.getCnt() > 0)
 	{
 		// cheat found, show apply
 		m_btnMgr.show(m_cheatBtnApply);
@@ -254,13 +247,17 @@ void CMenu::_showCheatSettings(void)
 			}
 		}
 	}
-	else
+	else if(!txtavailable)
 	{
 		// no cheat found, allow downloading
 		m_btnMgr.show(m_cheatBtnDownload);
 		m_btnMgr.setText(m_cheatLblItem[0], _t("cheat3", L"Cheat file for game not found."));
 		m_btnMgr.show(m_cheatLblItem[0]);
-		
+	}
+	else
+	{
+		m_btnMgr.setText(m_cheatLblItem[0], _t("dlmsg35", L"Downloaded cheat file has no cheats!"));
+		m_btnMgr.show(m_cheatLblItem[0]);
 	}
 }
 
@@ -269,7 +266,7 @@ void CMenu::_initCheatSettingsMenu()
 {
 	_addUserLabels(m_cheatLblUser, ARRAY_SIZE(m_cheatLblUser), "CHEAT");
 	m_cheatBg = _texture("CHEAT/BG", "texture", theme.bg, false);
-	m_cheatLblTitle = _addTitle("CHEAT/TITLE", theme.titleFont, L"Cheats", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_cheatLblTitle = _addLabel("CHEAT/TITLE", theme.titleFont, L"Cheats", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 	m_cheatBtnBack = _addButton("CHEAT/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
 	m_cheatBtnApply = _addButton("CHEAT/APPLY_BTN", theme.btnFont, L"", 220, 400, 200, 48, theme.btnFontColor);
 	m_cheatBtnDownload = _addButton("CHEAT/DOWNLOAD_BTN", theme.btnFont, L"", 470, 130, 150, 48, theme.btnFontColor);

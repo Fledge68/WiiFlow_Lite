@@ -162,6 +162,7 @@ void CMenu::_PluginSettings()
 					else
 						m_plugin.SetEnablePlugin(m_cfg, i+IteratorHelp-1);// switch plugin from off to on or vice versa
 					_updatePluginCheckboxes();
+					m_btnMgr.setSelected(m_pluginBtn[i]);
 					break;
 				}
 			}
@@ -174,6 +175,12 @@ void CMenu::_PluginSettings()
 		m_cfg.setUInt("GENERAL", "sources", m_current_view);
 		m_source_cnt = 1;
 		m_catStartPage = 1;
+		int channels_type = 0;
+		if(m_cfg.getBool(PLUGIN_ENABLED, "454E414E"))
+			channels_type |= CHANNELS_EMU;
+		if(m_cfg.getBool(PLUGIN_ENABLED, "4E414E44"))
+			channels_type |= CHANNELS_REAL;
+		m_cfg.setInt(CHANNEL_DOMAIN, "channels_type", channels_type);
 	}
 	else
 		m_current_view = m_cfg.getUInt("GENERAL", "sources");
@@ -183,7 +190,7 @@ void CMenu::_initPluginSettingsMenu()
 {
 	_addUserLabels(m_pluginLblUser, ARRAY_SIZE(m_pluginLblUser), "PLUGIN");
 	m_pluginBg = _texture("PLUGIN/BG", "texture", theme.bg, false);
-	m_pluginLblTitle = _addTitle("PLUGIN/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_pluginLblTitle = _addLabel("PLUGIN/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 	m_pluginBtnBack = _addButton("PLUGIN/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
 	m_pluginLblPage = _addLabel("PLUGIN/PAGE_BTN", theme.btnFont, L"", 68, 400, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_pluginBtnPageM = _addPicButton("PLUGIN/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 20, 400, 48, 48);
@@ -199,7 +206,7 @@ void CMenu::_initPluginSettingsMenu()
 		// right half
 		m_pluginBtnCat[i+5] = _addPicButton(fmt("PLUGIN/PLUGIN_%i_BTN", i+5), theme.checkboxoff, theme.checkboxoffs, 325, (39+i*58), 44, 48);
 		m_pluginBtnCats[i+5] = _addPicButton(fmt("PLUGIN/PLUGIN_%i_BTNS", i+5), theme.checkboxon, theme.checkboxons, 325, (39+i*58), 44, 48);
-		m_pluginLblCat[i+5] = _addLabel(fmt("PLUGIN/PLUGIN_%i", i+5), theme.txtFont, L"", 380, (42+i*58), 230, 48, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+		m_pluginLblCat[i+5] = _addLabel(fmt("PLUGIN/PLUGIN_%i", i+5), theme.lblFont, L"", 380, (42+i*58), 230, 48, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	}
 	_setHideAnim(m_pluginLblTitle, "PLUGIN/TITLE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_pluginLblPage, "PLUGIN/PAGE_BTN", 0, 0, 1.f, -1.f);

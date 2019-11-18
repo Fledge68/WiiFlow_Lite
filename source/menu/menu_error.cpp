@@ -25,12 +25,11 @@ void CMenu::error(const wstringEx &msg)
 	_hideCategorySettings();
 	_hideGameInfo();
 	_hideGameSettings();
-	_hideSource();
 	_hideWaitMessage();
 	m_btnMgr.setText(m_errorLblMessage, msg, true);
 	_showError();
 
-	gprintf(msg.toUTF8().c_str());
+	gprintf("error msg: %s\n", msg.toUTF8().c_str());
 	do
 	{
 		_mainLoopCommon();

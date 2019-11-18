@@ -33,7 +33,7 @@
 #include "homebrew/homebrew.h"
 #include "memory/mem2.hpp"
 //#include "network/FTP_Dir.hpp"
-#include "network/http.h"
+#include "network/https.h"
 #include "plugin/crc32.h"
 
 /* External WiiFlow Game Booter */
@@ -93,8 +93,6 @@ void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 pat
 	*EXT_ADDR_CFG = ((u32)lowCFG);
 	/* Unmount devices etc */
 	ShutdownBeforeExit();
-	/* Wii Games will need it */
-	net_wc24cleanup();
 	/* Set proper time */
 	settime(secs_to_ticks(time(NULL) - 946684800));
 	/* Copy in booter */
@@ -126,7 +124,7 @@ bool ExternalBooter_LoadBins(const char *binDir)
 extern FragList *frag_list;
 extern s32 wbfsDev;
 extern u32 wbfs_part_idx;
-void ExternalBooter_WiiGameSetup(bool wbfs, bool dvd, bool patchregion, bool private_server, const char *ID)
+void ExternalBooter_WiiGameSetup(bool wbfs, bool dvd, bool patchregion, bool private_server, bool patchFix480p, const char *ID)
 {
 	memset(&normalCFG, 0, sizeof(the_CFG));
 	normalCFG.GameBootType = dvd ? TYPE_WII_DISC : (wbfs ? TYPE_WII_WBFS : TYPE_WII_WBFS_EXT);
@@ -136,6 +134,7 @@ void ExternalBooter_WiiGameSetup(bool wbfs, bool dvd, bool patchregion, bool pri
 	normalCFG.wbfsPart = wbfs_part_idx;
 	normalCFG.patchregion = patchregion;
 	normalCFG.private_server = private_server;
+	normalCFG.patchFix480p = patchFix480p;
 }
 
 void ExternalBooter_ChannelSetup(u64 title, bool dol)
@@ -158,6 +157,8 @@ void ShutdownBeforeExit(void)
 			usleep(50);
 		WiFiDebugger.Close();
 		//ftp_endTread();
+		wolfSSL_Cleanup();
+		net_wc24cleanup();
 		net_deinit();
 		networkInit = false;
 	}

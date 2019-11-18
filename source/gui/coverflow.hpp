@@ -50,13 +50,14 @@ public:
 	bool start(const string &m_imgsDir);
 	void stopCoverLoader(bool empty = false);
 	void startCoverLoader(void);
-	void defaultLoad(void);
+	u32 _currentPos(void) const;
+	void _setCurPos(u32 index);
+	bool _setCurPosToCurItem(const char *id, const char *filename, u32 sourceNumber, bool instant = false);
 	// 
 	void simulateOtherScreenFormat(bool s);
 	// Commands
 	void tick(void);
 	void setSelected(int i);
-	bool findId(const char *id, bool instant = false, bool path = false);
 	void pageUp(void);
 	void pageDown(void);
 	void nextLetter(wchar_t *c);
@@ -135,11 +136,7 @@ public:
 	const dir_discHdr * getSpecificHdr(u32) const;
 	wstringEx getTitle(void) const;
 	u64 getChanTitle(void) const;
-	const char *getFilenameId(const dir_discHdr *curHdr, bool extension = true);
-	//
-	bool getRenderTex(void);
-	void setRenderTex(bool);
-	void RenderTex(void);
+	const char *getFilenameId(const dir_discHdr *curHdr);
 	//
 	static u32 InternalCoverColor(const char *ID, u32 DefCaseColor);
 	static bool checkCoverColor(const char *ID, const char *checkID[], u32 len);
@@ -231,7 +228,7 @@ private:
 	};
 	enum CLRet { CL_OK, CL_ERROR, CL_NOMEM };
 private:
-	Mtx m_projMtx;
+	Mtx44 m_projMtx;
 	Mtx m_viewMtx;
 	Vector3D m_cameraPos;
 	Vector3D m_cameraAim;
@@ -252,8 +249,6 @@ private:
 	//
 	bool m_selected;
 	int m_tickCount;
-	TexData *m_loadingTexture;
-	TexData *m_noCoverTexture;
 	TexData m_flatLoadingTexture;
 	TexData m_flatNoCoverTexture;
 	TexData m_boxLoadingTexture;
@@ -316,7 +311,6 @@ private:
 	static const u32 coverThreadStackSize;
 private:
 	void _draw(DrawMode dm = CFDR_NORMAL, bool mirror = false, bool blend = true);
-	u32 _currentPos(void) const;
 	void _effectBg(const TexData * &tex);
 	void _effectBlur(bool vertical);
 	bool _effectVisible(void);
@@ -343,7 +337,6 @@ private:
 	void _loadAllCovers(int i);
 	static bool _calcTexLQLOD(TexData &tex);
 	void _dropHQLOD(int i);
-	bool _loadCoverTexPNG(u32 i, bool box, bool hq, bool blankBoxCover);
 	CLRet _loadCoverTex(u32 i, bool box, bool hq, bool blankBoxCover);
 	bool _invisibleCover(u32 x, u32 y);
 	void _instantTarget(int i);

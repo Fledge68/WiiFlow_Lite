@@ -10,14 +10,13 @@ template <class T> static inline T loopNum(T i, T s)
 	return (i + s) % s;
 }
 
-u32 available_pos = 0;
 vector<string> languages_available;
 void AddLanguage(char *Path)
 {
 	char lng[32];
 	memset(lng, 0, 32);
 	char *lang_chr = strrchr(Path, '/')+1;
-	memcpy(lng, lang_chr, min(31u, (u32)(strrchr(lang_chr, '.')-lang_chr)));
+	memcpy(lng, lang_chr, min(31ul, (u32)(strrchr(lang_chr, '.')-lang_chr)));
 	languages_available.push_back(lng);
 }
 
@@ -66,7 +65,7 @@ void CMenu::_showConfigAdv(void)
 		if(m_configAdvLblUser[i] != -1)
 			m_btnMgr.show(m_configAdvLblUser[i]);
 
-	m_btnMgr.setText(m_configAdvLblCurTheme, m_cfg.getString("GENERAL", "theme"));
+	m_btnMgr.setText(m_configAdvLblCurTheme, m_themeName);
 	m_btnMgr.setText(m_configAdvLblCurLanguage, m_curLanguage);
 }
 
@@ -92,7 +91,7 @@ static void listThemes(const char * path, vector<string> &themes)
 		closedir(d);
 	}
 	if (!def)
-		themes.push_back("default");
+		themes.push_back("Default");
 	sort(themes.begin(), themes.end());
 }
 
@@ -101,11 +100,10 @@ int CMenu::_configAdv(void)
 	int change = CONFIG_PAGE_NO_CHANGE;
 	
 	vector<string> themes;
-	string prevTheme = m_cfg.getString("GENERAL", "theme");
 	listThemes(m_themeDir.c_str(), themes);
-	int curTheme = 0;
+	u32 curTheme = 0;
 	for (u32 i = 0; i < themes.size(); ++i)
-		if (themes[i] == prevTheme)
+		if (themes[i] == m_themeName)
 		{
 			curTheme = i;
 			break;
@@ -116,15 +114,16 @@ int CMenu::_configAdv(void)
 	GetFiles(m_languagesDir.c_str(), stringToVector(".ini", '|'), AddLanguage, false, 0);
 	sort(languages_available.begin(), languages_available.end());
 
+	u32 curLang = 0;
 	for(u32 i = 0; i < languages_available.size(); ++i)
 	{
 		if(m_curLanguage == languages_available[i])
 		{
-			available_pos = i;
+			curLang = i;
 			break;
 		}
 	}
-	bool lang_changed = false;
+	string prevLanguage = m_curLanguage;
 
 	_showConfigAdv();
 	while(!m_exit)
@@ -144,24 +143,24 @@ int CMenu::_configAdv(void)
 			else if(m_btnMgr.selected(m_configAdvBtnCurThemeP) || m_btnMgr.selected(m_configAdvBtnCurThemeM))
 			{
 				s8 direction = m_btnMgr.selected(m_configAdvBtnCurThemeP) ? 1 : -1;
-				curTheme = loopNum(curTheme + direction, (int)themes.size());
-				m_cfg.setString("GENERAL", "theme", themes[curTheme]);
+				curTheme = loopNum(curTheme + direction, (u32)themes.size());
+				m_themeName = themes[curTheme];
+				m_cfg.setString("GENERAL", "theme", m_themeName);
 				_showConfigAdv();
 			}
 			else if(m_btnMgr.selected(m_configAdvBtnCurLanguageP) || m_btnMgr.selected(m_configAdvBtnCurLanguageM))
 			{
 				s8 direction = m_btnMgr.selected(m_configAdvBtnCurLanguageP) ? 1 : -1;
-				available_pos = loopNum(available_pos + direction, (u32)languages_available.size());
-				m_curLanguage = languages_available[available_pos];
+				curLang = loopNum(curLang + direction, (u32)languages_available.size());
+				m_curLanguage = languages_available[curLang];
 				if(!m_loc.load(fmt("%s/%s.ini", m_languagesDir.c_str(), m_curLanguage.c_str())))
 				{
 					m_curLanguage = "Default";
-					m_cfg.setString("GENERAL", "language", m_curLanguage.c_str());
+					m_cfg.setString("GENERAL", "language", m_curLanguage);
 					m_loc.unload();
 				}
 				else
-					m_cfg.setString("GENERAL", "language", m_curLanguage.c_str());
-				lang_changed = true;
+					m_cfg.setString("GENERAL", "language", m_curLanguage);
 				_updateText();
 				_showConfigAdv();
 			}
@@ -175,8 +174,13 @@ int CMenu::_configAdv(void)
 		}
 	}
 	_hideConfigAdv();
-	if(lang_changed)
+	if(m_curLanguage != prevLanguage)
+	{
+		m_cacheList.Init(m_settingsDir.c_str(), m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str(), m_pluginDataDir.c_str());
+		fsop_deleteFolder(m_listCacheDir.c_str());// delete cache lists folder and remake it so all lists update.
+		fsop_MakeFolder(m_listCacheDir.c_str());
 		m_refreshGameList = true;
+	}
 
 	return change;
 }

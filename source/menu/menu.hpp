@@ -38,7 +38,7 @@ class CMenu
 {
 public:
 	CMenu();
-	bool init();
+	bool init(bool usb_mounted);
 	void error(const wstringEx &msg);
 	void terror(const char *key, const wchar_t *msg) { error(_fmt(key, msg)); }
 	int main(void);
@@ -57,13 +57,19 @@ private:
 	u8 enabledPluginsCount;
 	u8 m_catStartPage;
 	u8 m_max_categories;
-	char single_sourcebtn[16];
 	bool m_clearCats;
+	bool m_getFavs;
 	bool m_newGame;
 	bool show_mem;
 	bool cacheCovers;
+	bool SF_cacheCovers;
+	bool CFLocked;
+	bool Auto_hide_icons;
+	bool m_snapshot_loaded;
 	vector<dir_discHdr> m_gameList;
-
+	vector<string> tiers;
+	vector<string> sm_numbers;
+	
 	struct SZone
 	{
 		int x;
@@ -82,8 +88,7 @@ private:
 	Config m_gcfg2;
 	Config m_theme;
 	Config m_coverflow;
-	Config m_titles;
-	Config m_version;
+	Config m_platform;
 	
 	//vector<string> m_homebrewArgs;
 	u8 *m_base_font;
@@ -96,9 +101,8 @@ private:
 	u8 m_numCFVersions;
 	u8 m_numPlugins;
 	u8 m_max_source_btn;
-	const char *cf_domain;
+	char cf_domain[16];
 	bool m_use_source;// source_menu.ini found & ok to use source menu/flow
-	bool m_multisource;// multi select source menu
 	bool m_sourceflow;// in sourceflow view
 	bool m_refreshGameList;
 	bool m_bnr_settings;
@@ -117,32 +121,44 @@ private:
 	s16 m_showtimer;
 	s16 m_musicTimer;
 	string m_curLanguage;
+	string m_themeName;
 
-	string m_sourceDir;
-	string m_themeDataDir;
+	/* Dir strings */
 	string m_appDir;
 	string m_imgsDir;
 	string m_binsDir;
 	string m_dataDir;
-	string m_pluginsDir;
-	string m_customBnrDir;
-	string m_picDir;
-	string m_boxPicDir;
-	string m_boxcPicDir;
+	
 	string m_cacheDir;
 	string m_listCacheDir;
 	string m_bnrCacheDir;
-	string m_themeDir;
-	string m_musicDir;
+	string m_customBnrDir;
+	
 	string m_txtCheatDir;
 	string m_cheatDir;
 	string m_wipDir;
-	string m_videoDir;
-	string m_fanartDir;
-	string m_screenshotDir;
+	
 	string m_settingsDir;
 	string m_languagesDir;
 	string m_helpDir;
+	string m_screenshotDir;
+	
+	string m_boxPicDir;
+	string m_picDir;
+	string m_themeDir;
+	string m_themeDataDir;
+	string m_coverflowsDir;
+	string m_musicDir;
+	string m_videoDir;
+	string m_fanartDir;
+	string m_bckgrndsDir;
+
+	string m_sourceDir;
+	string m_pluginsDir;
+	string m_pluginDataDir;
+	string m_cartDir;
+	string m_snapDir;
+
 
 	/* NandEmulation */
 	char emu_nands_dir[32];
@@ -160,13 +176,14 @@ private:
 	const char *m_txt_path;
 
 // Background image stuff
-	TexData sfbgimg;
 	TexData m_curBg;
 	const TexData *m_prevBg;
 	const TexData *m_nextBg;
 	const TexData *m_lqBg;
 	u8 m_bgCrossFade;
 	//
+	TexData sfbgimg;
+	TexData m_mainAltBg;
 	TexData m_errorBg;
 	TexData m_mainBg;
 	TexData m_configBg;
@@ -188,6 +205,7 @@ private:
 	TexData m_mainBgLQ;
 	
 //Main Coverflow
+	s16 m_mainBtnCategories;
 	s16 m_mainBtnConfig;
 	s16 m_mainBtnHome;
 	s16 m_mainBtnFavoritesOn;
@@ -313,8 +331,8 @@ private:
 	s16 m_downloadPrioVal;
 	enum CoverPrio
 	{
-		C_TYPE_PRIOA = (1<<0),
-		C_TYPE_PRIOB = (1<<1),
+		C_TYPE_PRIOA = (1<<0),//C_TYPE_ACUSTM
+		C_TYPE_PRIOB = (1<<1),//C_TYPE_BCUSTM
 		C_TYPE_EN =    (1<<2),
 		C_TYPE_JA =    (1<<3),
 		C_TYPE_FR =    (1<<4),
@@ -327,8 +345,8 @@ private:
 		C_TYPE_KO =    (1<<11),
 		C_TYPE_ZHCN =  (1<<12),
 		C_TYPE_AU =    (1<<13),
-		C_TYPE_ONOR =  (1<<14),
-		C_TYPE_ONCU =  (1<<15),
+		C_TYPE_ONOR =  (1<<14),//C_TYPE_ONCU
+		C_TYPE_ONCU =  (1<<15),//C_TYPE_ANB
 		
 	};
 	enum CoverType
@@ -346,6 +364,8 @@ private:
 	s16 m_downloadBtnMissing;
 	s16 m_downloadLblGameTDBDownload;
 	s16 m_downloadBtnGameTDBDownload;
+	s16 m_downloadLblBanners;
+	s16 m_downloadBtnBanners;
 	s16 m_downloadLblCoverSet;
 	s16 m_downloadBtnCoverSet;
 	s16 m_downloadBtnCancel;// used as back btn
@@ -407,13 +427,13 @@ private:
 	};
 	s16 m_gameBtnFavoriteOn;
 	s16 m_gameBtnFavoriteOff;
-	s16 m_gameBtnAdultOn;
-	s16 m_gameBtnAdultOff;
+	s16 m_gameBtnCategories;
 	s16 m_gameBtnDelete;
 	s16 m_gameBtnSettings;
 	s16 m_gameBtnPlay;
 	s16 m_gameBtnBack;
 	s16 m_gameLblUser[5];
+	int snapbg_x, snapbg_y, snapbg_w, snapbg_h;
 // Parental code menu
 	s16 m_codeLblTitle;
 	s16 m_codeBtnKey[10];
@@ -511,6 +531,14 @@ private:
 	s16 m_gameSettingsLblPosVal;
 	s16 m_gameSettingsBtnPosP;
 	s16 m_gameSettingsBtnPosM;
+	
+	s16 m_gameSettingsLblBBA;
+	s16 m_gameSettingsBtnBBA;
+
+	s16 m_gameSettingsLblNetProf;
+	s16 m_gameSettingsLblNetProfVal;
+	s16 m_gameSettingsBtnNetProfP;
+	s16 m_gameSettingsBtnNetProfM;
 
 	s16 m_gameSettingsLblGCLoader;
 	s16 m_gameSettingsLblGCLoader_Val;
@@ -534,6 +562,9 @@ private:
 	
 	s16 m_gameSettingsLblPrivateServer;
 	s16 m_gameSettingsBtnPrivateServer;
+	
+	s16 m_gameSettingsLblFix480p;
+	s16 m_gameSettingsBtnFix480p;
 	
 	s16 m_gameSettingsLblManage;
 	s16 m_gameSettingsBtnManage;
@@ -563,8 +594,8 @@ private:
 	s16 m_gameSettingsLblCheat;
 	s16 m_gameSettingsBtnCheat;
 	
-	s16 m_gameSettingsLblCategoryMain;
-	s16 m_gameSettingsBtnCategoryMain;
+	s16 m_gameSettingsLblAdultOnly;
+	s16 m_gameSettingsBtnAdultOnly;
 	
  	s16 m_gameSettingsLblGameIOS;
  	s16 m_gameSettingsLblIOS;
@@ -616,6 +647,14 @@ private:
 	s16 m_gameinfoLblUser[5];
 	s16 m_gameinfoLblControlsReq[4];
 	s16 m_gameinfoLblControls[4];
+	s16 m_gameinfoLblSnap;
+	s16 m_gameinfoLblCartDisk;
+	s16 m_gameinfoLblOverlay;
+	s16 m_gameLblSnap;
+	s16 m_gameLblOverlay;
+	TexData m_snap;
+	TexData m_cart;
+	TexData m_overlay;
 	TexData m_rating;
 	TexData m_wifi;
 	TexData m_controlsreq[4];
@@ -722,7 +761,6 @@ private:
 	volatile bool m_thrdNetwork;
 	float m_thrdStep;
 	float m_thrdStepLen;
-	string m_coverDLGameId;
 	mutex_t m_mutex;
 	wstringEx m_thrdMessage;
 	volatile float m_thrdProgress;
@@ -868,7 +906,7 @@ private:
 	bool _loadGamecubeList(void);
 	bool _loadChannelList(void);
 	bool _loadPluginList(void);
-	bool _loadHomebrewList(void);
+	bool _loadHomebrewList(const char *HB_Dir);
 	void _initCF(void);
 	//
 	void _initBoot(void);
@@ -929,6 +967,7 @@ private:
 	void _textNandEmu(void);
 	void _textHome(void);
 	void _textExitTo(void);
+	void _textShutdown(void);
 	void _textBoot(void);
 	void _textCoverBanner(void);
 	void _textExplorer(void);
@@ -967,6 +1006,7 @@ private:
 	void _hideNandEmuPg();
 	void _hideHome(bool instant = false);
 	void _hideExitTo(bool instant = false);
+	void _hideShutdown(bool instant = false);
 	void _hideCoverBanner(bool instant = false);
 	void _hideExplorer(bool instant = false);
 	void _hideWad(bool instant = false);
@@ -1002,6 +1042,7 @@ private:
 	void _showGameSettings(void);
 	void _showHome(void);
 	void _showExitTo(void);
+	void _showShutdown(void);
 	void _showCoverBanner(void);
 	void _showExplorer(void);
 	void _showWad(void);
@@ -1010,14 +1051,13 @@ private:
 	void _showCF(bool refreshList = false);
 	void _refreshExplorer(s8 direction = 0);
 	void _setSrcOptions(void);
-	bool _sideCover(const char *magic);
-	bool _shortCover(const char *magic);
 	void _updateSourceBtns(void);
 	void _updatePluginText(void);
 	void _updatePluginCheckboxes(void);
 	void _updateCheckboxes(void);
 	void _getGameCategories(void);
 	void _setGameCategories(void);
+	void _setMainBg(void);
 	void _setBg(const TexData &bgTex, const TexData &bglqTex, bool force_change = false);
 	void _updateBg(void);
 	void _drawBg(void);
@@ -1049,8 +1089,7 @@ private:
 	};
 	void _game(bool launch = false);
 	void _downloadUrl(const char *url, u8 **dl_file, u32 *dl_size);
-	void _download(string gameId = string());
-	void _downloadBnr(const char *gameID);
+	void _download(string gameId = string(), int dl_type = 0);
 	bool _code(char code[4], bool erase = false);
 	void _about(bool help = false);
 	bool _wbfsOp(WBFS_OP op);
@@ -1071,23 +1110,25 @@ private:
 	void _CategorySettings(bool fromGameSet = false);
 	bool _Home();
 	bool _ExitTo();
+	void _Shutdown();
 	bool _Boot();
 	void _Paths();
 	void _sourceFlow();
 	int _getSrcFlow();
 	void _setSrcFlow(int version);
-	void _srcTierBack(bool home);
+	bool _srcTierBack(bool home);
 	void _setSrcFlowBg();
 	void _mainLoopCommon(bool withCF = false, bool adjusting = false);
 	void _netInit();
 	void _loadDefaultFont(void);
 	bool _loadFile(u8 * &buffer, u32 &size, const char *path, const char *file);
-	int _loadIOS(u8 ios, int userIOS, string id, bool RealNAND_Channels = false);
+	int _loadGameIOS(u8 ios, int userIOS, string id, bool RealNAND_Channels = false);
 	void _launch(const dir_discHdr *hdr);
-	void _launchGame(dir_discHdr *hdr, bool dvd, bool disc_cfg = false);
+	void _launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg = false);
 	void _launchChannel(dir_discHdr *hdr);
 	void _launchHomebrew(const char *filepath, vector<string> arguments);
 	void _launchGC(dir_discHdr *hdr, bool disc);
+	void _launchPlugin(dir_discHdr *hdr);
 	void _launchShutdown();
 	vector<string> _getMetaXML(const char *bootpath);
 	void _extractBnr(const dir_discHdr *hdr);
@@ -1108,7 +1149,8 @@ private:
 	const char *_cfDomain(bool selected = false);
 	//void UpdateCache(u32 view = COVERFLOW_MAX);
 	void RemoveCover(const char *id);
-	SFont _font(const char *domain, const char *key, u32 fontSize, u32 lineSpacing, u32 weight, u32 index, const char *genKey);
+	SFont _dfltFont(u32 fontSize, u32 lineSpacing, u32 weight, u32 index, const char *genKey);
+	SFont _font(const char *domain, const char *key, SFont def_font);
 	TexData _texture(const char *domain, const char *key, TexData &def, bool freeDef = true);
 	vector<TexData> _textures(const char *domain, const char *key);
 	void _showWaitMessage();
@@ -1118,7 +1160,7 @@ public:
 
 	/* general thread updating stuff */
 	u64 m_thrdTotal;
-	void update_pThread(u64 added);
+	void update_pThread(u64 amount, bool add = true);
 private:
 	void _cleanupBanner(bool gamechange = false);
 	void _cleanupVideo();
@@ -1137,8 +1179,6 @@ private:
 	u16 _textStyle(const char *domain, const char *key, u16 def, bool coverflow = false);
 	s16 _addButton(const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color);
 	s16 _addPicButton(const char *domain, TexData &texNormal, TexData &texSelected, int x, int y, u32 width, u32 height);
-	s16 _addTitle(const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, s16 style);
-	s16 _addText(const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, s16 style);
 	s16 _addLabel(const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, s16 style);
 	s16 _addLabel(const char *domain, SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, s16 style, TexData &bg);
 	s16 _addProgressBar(const char *domain, int x, int y, u32 width, u32 height);
@@ -1152,9 +1192,10 @@ private:
 	// 
 	void _setThrdMsg(const wstringEx &msg, float progress);
 	void _setDumpMsg(const wstringEx &msg, float progress, float fileprog);
-	int _coverDownloader(bool missingOnly);
 	void _downloadProgress(void *obj, int size, int position);
+	int _coverDownloader();
 	int _gametdbDownloaderAsync();
+	int _bannerDownloader();
 
 	static s32 _networkComplete(s32 result, void *usrData);
 	void _initAsyncNetwork();
@@ -1187,7 +1228,6 @@ private:
 	void _listEmuNands(const char *path, vector<string> &emuNands);
 
 	int _downloadCheatFileAsync();
-	int _downloadBannerAsync();
 	static void * _downloadUrlAsync(void *obj);
 
 	void _playGameSound(void);

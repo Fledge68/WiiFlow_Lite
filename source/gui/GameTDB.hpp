@@ -65,15 +65,15 @@ public:
 	bool OpenFile(const char * filepath);
 	//! Closes the GameTDB xml file
 	void CloseFile();
-	//! Refresh the GameTDB xml file, in case the file has been updated
-	void Refresh();
 	//! Set the language code which should be use to find the appropriate language
 	//! If the language code is not found, the language code defaults to EN
 	void SetLanguageCode(const char * code) { if(code) LangCode = code; };
 	//! Get the current set language code
 	const char * GetLanguageCode() { return LangCode.c_str(); };
 	//! Get the title of a specific game id in the language defined in LangCode
-	bool GetTitle(const char *id, const char * &title);
+	bool GetTitle(const char *id, const char * &title, bool plugin = false);
+	//! Get the name of a specific game id
+	bool GetName(const char *id, const char * &name);
 	//! Get the synopsis of a specific game id in the language defined in LangCode
 	bool GetSynopsis(const char *id, const char * &synopsis);
 	//! Get the region of a game for a specific game id
@@ -124,9 +124,6 @@ private:
 	bool ParseFile();
 	bool LoadGameOffsets(const char * path);
 	bool SaveGameOffsets(const char * path);
-	bool CheckTitlesIni(const char * path);
-	bool FindTitle(char *data, const char * &title, const string &langCode);
-	u32 FindCaseColor(char * data);
 	inline int GetData(char * data, int offset, int size);
 	inline char * LoadGameNode(const char * id);
 	inline char * GetGameNode(const char * id);
@@ -135,10 +132,8 @@ private:
 	inline char * GetNodeText(char *data, const char *nodestart, const char *nodeend);
 
 	bool isLoaded;
-	bool isParsed;
 	vector<GameOffsets> OffsetMap;
 	FILE * file;
-	const char *filepath;
 	string LangCode;
 	char *GameNodeCache;
 	char GameIDCache[7];

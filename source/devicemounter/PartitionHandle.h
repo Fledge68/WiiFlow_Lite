@@ -168,7 +168,7 @@ protected:
 	bool IsExisting(u64 lba);
 	s8 FindPartitions();
 	void CheckEBR(u8 PartNum, sec_t ebr_lba);
-	s8 CheckGPT(u8 PartNum);
+	s8 CheckGPT();
 
 	const DISC_INTERFACE *interface;
 	vector<PartitionFS> PartitionList;

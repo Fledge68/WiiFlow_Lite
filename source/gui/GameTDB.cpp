@@ -31,6 +31,9 @@
 #include "config/config.hpp"
 #include "gecko/gecko.hpp"
 #include "memory/mem2.hpp"
+#include "types.h"
+#include "gui/coverflow.hpp"
+
 #define NAME_OFFSET_DB	"gametdb_offsets.bin"
 #define MAXREADSIZE		1024*1024   //Cache size only for parsing the offsets: 1MB
 
@@ -53,12 +56,12 @@ static const ReplaceStruct Replacements[] =
 };
 
 GameTDB::GameTDB()
-	: isLoaded(false), isParsed(false), file(0), filepath(0), LangCode("EN"), GameNodeCache(NULL)
+	: isLoaded(false), file(0), LangCode("EN"), GameNodeCache(NULL)
 {
 }
 
 GameTDB::GameTDB(const char *filepath)
-	: isLoaded(false), isParsed(false), file(0), filepath(0), LangCode("EN"), GameNodeCache(NULL)
+	: isLoaded(false), file(0), LangCode("EN"), GameNodeCache(NULL)
 {
 	OpenFile(filepath);
 }
@@ -73,14 +76,9 @@ bool GameTDB::OpenFile(const char *filepath)
 	if(!filepath)
 		return false;
 
-	//gprintf("Trying to open '%s'...", filepath);
 	file = fopen(filepath, "rb");
 	if(file)
 	{
-		this->filepath = filepath;
-
-		//gprintf("success\n");
-
 		int pos;
 		string OffsetsPath = filepath;
 		if((pos = OffsetsPath.find_last_of('/')) != (int) string::npos)
@@ -88,15 +86,8 @@ bool GameTDB::OpenFile(const char *filepath)
 		else
 			OffsetsPath.clear(); //! Relative path
 
-		//gprintf("Checking game offsets\n");
 		LoadGameOffsets(OffsetsPath.c_str());
-		/*if (!isParsed)
-		{
-		gprintf("Checking titles.ini\n");
-		CheckTitlesIni(OffsetsPath.c_str());
-		}*/
 	}
-	//else gprintf("failed\n");
 
 	isLoaded = (file != NULL);
 	return isLoaded;
@@ -114,17 +105,6 @@ void GameTDB::CloseFile()
 	if(file)
 		fclose(file);
 	file = NULL;
-}
-
-void GameTDB::Refresh()
-{
-	gprintf("Refreshing file '%s'\n", filepath);
-	CloseFile();
-
-	if(filepath == NULL)
-		return;
-
-	OpenFile(filepath);
 }
 
 bool GameTDB::LoadGameOffsets(const char *path)
@@ -456,23 +436,7 @@ bool GameTDB::ParseFile()
 	return true;
 }
 
-bool GameTDB::FindTitle(char *data, const char * &title, const string &langCode)
-{
-	char *language = SeekLang(data, langCode.c_str());
-	if(language == NULL)
-	{
-		language = SeekLang(data, "EN");
-		if(language == NULL)
-			return false;
-	}
-	title = GetNodeText(language, "<title>", "</title>");
-
-	if(title == NULL)
-		return false;
-	return true;
-}
-
-bool GameTDB::GetTitle(const char *id, const char * &title)
+bool GameTDB::GetTitle(const char *id, const char * &title, bool plugin)
 {
 	title = NULL;
 	if(id == NULL)
@@ -481,10 +445,57 @@ bool GameTDB::GetTitle(const char *id, const char * &title)
 	char *data = GetGameNode(id);
 	if(data == NULL)
 		return false;
-	bool retval = FindTitle(data, title, LangCode);
+		
+	char *language = SeekLang(data, LangCode.c_str());
+	if(language == NULL)
+	{
+		language = SeekLang(data, "EN");
+		if(language == NULL)
+		{
+			MEM2_free(data);
+			return false;
+		}
+	}
+	
+	title = GetNodeText(language, "<title>", "</title>");
+
+	if(title == NULL && plugin)// If current language doesn't have Title then try in English
+	{
+		language = SeekLang(data, "EN");
+		if(language == NULL)
+		{
+			MEM2_free(data);
+			return false;
+		}
+
+		title = GetNodeText(language, "<title>", "</title>");
+	}
+	
 	MEM2_free(data);
 
-	return retval;
+	if(title == NULL)
+		return false;
+	return true;
+}
+
+/* used for plugins database files */
+/* gets no-intro filename used for snapshots and cart/disk images */
+bool GameTDB::GetName(const char *id, const char * &name)
+{
+	name = NULL;
+	if(!id)
+		return false;
+
+	char *data = GetGameNode(id);
+	if(!data)
+		return false;
+
+	name = GetNodeText(data, "<game name=\"", "\"");
+	MEM2_free(data);
+
+	if(name == NULL)
+		return false;
+	return true;
 }
 
 bool GameTDB::GetSynopsis(const char *id, const char * &synopsis)
@@ -508,6 +519,22 @@ bool GameTDB::GetSynopsis(const char *id, const char * &synopsis)
 		}
 	}
 	synopsis = GetNodeText(language, "<synopsis>", "</synopsis>");
+
+	if(CoverFlow.getHdr()->type == TYPE_PLUGIN)
+	{
+		// Default to English
+		if(synopsis == NULL)
+		{
+			language = SeekLang(data, "EN");
+			if(language == NULL)
+			{
+				MEM2_free(data);
+				return false;
+			}
+			synopsis = GetNodeText(language, "<synopsis>", "</synopsis>");
+		}
+	}
+
 	MEM2_free(data);
 
 	if(synopsis == NULL)
@@ -618,6 +645,46 @@ u32 GameTDB::GetPublishDate(const char *id)
 bool GameTDB::GetGenres(const char *id, const char * &gen)
 {
 	gen = NULL;
+
+	if(CoverFlow.getHdr()->type == TYPE_PLUGIN)
+	{
+		if(!id)
+			return false;
+
+		char *data = GetGameNode(id);
+		if(!data)
+			return false;
+
+		char *language = SeekLang(data, LangCode.c_str());
+		if(language == NULL)
+		{
+			language = SeekLang(data, "EN");
+			if(language == NULL)
+			{
+				MEM2_free(data);
+				return false;
+			}
+		}
+		gen = GetNodeText(language, "<genre>", "</genre>");
+
+		// If not found try in English
+		if(gen == NULL)
+		{
+			language = SeekLang(data, "EN");
+			if(language == NULL)
+			{
+				MEM2_free(data);
+				return false;
+			}
+
+			gen = GetNodeText(language, "<genre>", "</genre>");
+		}
+		MEM2_free(data);
+
+		if(gen == NULL)
+			return false;
+		return true;
+	}
 
 	if(id == NULL)
 		return false;
@@ -899,20 +966,6 @@ int GameTDB::GetAccessories(const char *id, vector<Accessory> & acc_list)
 	return acc_list.size();
 }
 
-u32 GameTDB::FindCaseColor(char *data)
-{
-	u32 color = -1;// -1 = ffffffff
-
-	char *ColorNode = GetNodeText(data, "<case color=\"", "\"");
-	if(!ColorNode || strlen(ColorNode) == 0)
-		return color;
-
-	char format[8];
-	sprintf(format, "0x%s", ColorNode);
-
-	return strtoul(format, NULL, 16);
-}
-
 u32 GameTDB::GetCaseColor(const char *id)
 {
 	u32 color = -1;// -1 = ffffffff
@@ -923,10 +976,16 @@ u32 GameTDB::GetCaseColor(const char *id)
 	if(!data)
 		return color;
 
-	color = FindCaseColor(data);
+	char *ColorNode = GetNodeText(data, "<case color=\"", "\"");
+	if(!ColorNode)
+	{
+		MEM2_free(data);
+		return color;
+	}
 
-	if(color != 0xffffffff)
-		gprintf("GameTDB: Found alternate color(%x) for: %s\n", color, id);
+	color = strtoul(ColorNode, NULL, 16);
+	//if(color != 0xffffffff)
+	//	gprintf("GameTDB: Found alternate color(%x) for: %s\n", color, id);
 
 	MEM2_free(data);
 	return color;

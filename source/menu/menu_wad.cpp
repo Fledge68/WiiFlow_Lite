@@ -342,76 +342,6 @@ int getTID(const char *path, u64 *tid)
 	return 0;
 }
 
-void * CMenu::_pThread(void *obj)
-{
-	CMenu *m = (CMenu*)obj;
-	m->SetupInput();
-	while(m->m_thrdInstalling)
-	{
-		m->_mainLoopCommon();
-		if(m->m_thrdUpdated)
-		{
-			m->m_thrdUpdated = false;
-			m->_downloadProgress(obj, m->m_thrdTotal, m->m_thrdWritten);
-			if(m->m_thrdProgress > 0.f)
-			{
-				m_btnMgr.setText(m->m_wbfsLblMessage, wfmt(L"%i%%", (int)(m->m_thrdProgress * 100.f)));
-				m_btnMgr.setProgress(m->m_wbfsPBar, m->m_thrdProgress);
-			}
-			m->m_thrdDone = true;
-		}
-		if(m->m_thrdMessageAdded)
-		{
-			m->m_thrdMessageAdded = false;
-			if(!m->m_thrdMessage.empty())
-				m_btnMgr.setText(m->m_wbfsLblDialog, m->m_thrdMessage);
-		}
-	}
-	m->m_thrdWorking = false;
-	return 0;
-}
-
-void CMenu::_start_pThread(void)
-{
-	m_thrdPtr = LWP_THREAD_NULL;
-	m_thrdWorking = true;
-	m_thrdMessageAdded = false;
-	m_thrdInstalling = true;
-	m_thrdUpdated = false;
-	m_thrdDone = true;
-	m_thrdProgress = 0.f;
-	m_thrdWritten = 0;
-	m_thrdTotal = 0;
-	LWP_CreateThread(&m_thrdPtr, _pThread, this, 0, 8 * 1024, 64);
-}
-
-void CMenu::_stop_pThread(void)
-{
-	if(m_thrdPtr == LWP_THREAD_NULL)
-		return;
-
-	if(LWP_ThreadIsSuspended(m_thrdPtr))
-		LWP_ResumeThread(m_thrdPtr);
-	m_thrdInstalling = false;
-	while(m_thrdWorking)
-		usleep(50);
-	LWP_JoinThread(m_thrdPtr, NULL);
-	m_thrdPtr = LWP_THREAD_NULL;
-
-	m_btnMgr.setProgress(m_wbfsPBar, 1.f);
-	m_btnMgr.setText(m_wbfsLblMessage, L"100%");
-}
-
-void CMenu::update_pThread(u64 added)
-{
-	if(m_thrdDone)
-	{
-		m_thrdDone = false;
-		m_thrdWritten += added;
-		m_thrdUpdated = true;
-	}
-}
-
 /* only installs channel wads to emunand and mios wads to real nand */
 /* several places gecko prints are used but no error msg to the user is displayed */
 void CMenu::_Wad(const char *wad_path)
@@ -533,7 +463,7 @@ void CMenu::_initWad()
 	_addUserLabels(m_wadLblUser, ARRAY_SIZE(m_wadLblUser), "WAD");
 
 	m_wadBg = _texture("WAD/BG", "texture", theme.bg, false);
-	m_wadLblTitle = _addTitle("WAD/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_wadLblTitle = _addLabel("WAD/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 	m_wadLblDialog = _addLabel("WAD/DIALOG", theme.lblFont, L"", 20, 75, 600, 200, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_wadLblNandSelect = _addLabel("WAD/NAND_SELECT", theme.lblFont, L"", 20, 245, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_wadLblNandSelectVal = _addLabel("WAD/NAND_SELECT_BTN", theme.btnFont, L"", 468, 250, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);

@@ -1,8 +1,12 @@
 
-//#define APP_WIIFLOW
+#define APP_WIIFLOW	//uncomment this line to compile wfl as wiiflow
 
+#ifdef APP_WIIFLOW
+#define APP_NAME				"WiiFlow WFL"
+#else
 #define APP_NAME				"WiiFlow Lite"
-#define APP_VERSION				"5.0.1"
+#endif
+#define APP_VERSION				"5.3.0 beta 14"
 
 #define APP_DATA_DIR			"wiiflow"
 #ifdef APP_WIIFLOW
@@ -13,7 +17,7 @@
 
 //#define EMU_NANDS_DIR			"nands"
 #define GAMES_DIR				"%s:/wbfs"
-#define HOMEBREW_DIR			"%s:/apps"
+#define HOMEBREW_DIR			"apps"
 #define DF_GC_GAMES_DIR			"%s:/games"
 #define CFG_FILENAME			"wiiflow_lite.ini"
 #define CAT_FILENAME			"categories_lite.ini"

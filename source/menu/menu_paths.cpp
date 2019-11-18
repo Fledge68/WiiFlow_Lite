@@ -250,7 +250,7 @@ void CMenu::_initPathsMenu()
 {
 	_addUserLabels(m_pathsLblUser, ARRAY_SIZE(m_pathsLblUser), "PATHS");
 	m_pathsBg = _texture("PATHS/BG", "texture", theme.bg, false);
-	m_pathsLblTitle = _addTitle("PATHS/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_pathsLblTitle = _addLabel("PATHS/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 	m_pathsLblPage = _addLabel("PATHS/PAGE_BTN", theme.btnFont, L"", 68, 400, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_pathsBtnPageM = _addPicButton("PATHS/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 20, 400, 48, 48);
 	m_pathsBtnPageP = _addPicButton("PATHS/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 172, 400, 48, 48);

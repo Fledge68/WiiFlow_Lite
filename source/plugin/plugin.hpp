@@ -53,7 +53,7 @@ struct PluginOptions
 	u32 BannerSoundSize;
 	vector<string> Args;
 	wstringEx DisplayName;
-	bool boxMode;
+	s8 boxMode;
 };
 
 class Plugin
@@ -65,12 +65,14 @@ public:
 	const char *GetDolName(u32 magic);
 	const char *GetCoverFolderName(u32 magic);
 	const char *GetRomDir(u8 pos);
+	string GetRomName(const char *FullPath);
+	string GetRomId(char *romPath, u32 Magic, Config &m_crc, const char *datadir, const char *platform, const char *name);
 	int GetRomPartition(u8 pos);
 	const string& GetFileTypes(u8 pos);
 	wstringEx GetPluginName(u8 pos);
 	u32 getPluginMagic(u8 pos);
 	s8 GetPluginPosition(u32 magic);
-	bool GetBoxMode(u8 pos);
+	s8 GetBoxMode(u8 pos);
 	
 	void init(const string& m_pluginsDir);
 	bool AddPlugin(Config &plugin);
@@ -83,7 +85,7 @@ public:
 	
 	vector<string> CreateArgs(const char *device, const char *path, 
 		const char *title, const char *loader, u32 title_len_no_ext, u32 magic);
-	vector<dir_discHdr> ParseScummvmINI(Config &ini, const char *Device, u32 Magic);
+	vector<dir_discHdr> ParseScummvmINI(Config &ini, const char *Device, u32 Magic, const char *datadir, const char *platform);
 	string GenerateCoverLink(dir_discHdr gameHeader, const string& constURL, Config &Checksums);
 	char PluginMagicWord[9];
 	

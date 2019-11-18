@@ -23,7 +23,7 @@
 #include "memory/memory.h"
 
 bool isWiiVC = false;
-bool useMainIOS = false;
+bool useMainIOS = true;
 volatile bool NANDemuView = false;
 volatile bool networkInit = false;
 
@@ -58,13 +58,6 @@ bool isUsingUSB() {
 		return true;
 	}
 	
-	/* if sd_only is false, then we're using USB */
-	if(!m_cfg.getBool("general", "sd_only", true))
-	{
-		// sd_only is false, so assuming we're using USB.
-		return true;
-	}
-	
 	/* If any of the sections have partition set > 0, we're on USB */
 	const char *domains[] = {WII_DOMAIN, GC_DOMAIN, CHANNEL_DOMAIN, PLUGIN_DOMAIN, HOMEBREW_DOMAIN};
 	for(int i = 0; i < 5; i++)
@@ -75,6 +68,14 @@ bool isUsingUSB() {
 			return true;
 		}
 	}
+	
+	/* if sd_only is false, then we're using USB */
+	if(!m_cfg.getBool("general", "sd_only", true))
+	{
+		// sd_only is false, so assuming we're using USB.
+		return true;
+	}
+	
 	gprintf("using SD only, no need for USB mounting.\n");
 	return false;
 }
@@ -167,7 +168,9 @@ int main(int argc, char **argv)
 			
 		/* Handle (c)IOS Loading */
 		if(useMainIOS && CustomIOS(IOS_GetType(mainIOS))) /* Requested */
-			iosOK = loadIOS(mainIOS, false) && CustomIOS(CurrentIOS.Type);
+			iosOK = loadIOS(mainIOS, false) && CustomIOS(CurrentIOS.Type);// reload to cIOS (249 by default)
+		else
+			gprintf("Using IOS58\n");// stay on IOS58. no reload to cIOS
 	}
 		
 	/* sys inits */
@@ -179,7 +182,7 @@ int main(int argc, char **argv)
 
 	/* mount USB if needed */
 	DeviceHandle.SetMountUSB(isUsingUSB());
-	DeviceHandle.MountAllUSB();// only mounts any USB if isUsingUSB()
+	bool usb_mounted = DeviceHandle.MountAllUSB();// only mounts any USB if isUsingUSB()
 	
 	/* init wait images and show wait animation */
 	m_vid.setCustomWaitImgs(wait_dir, wait_loop);
@@ -189,14 +192,14 @@ int main(int argc, char **argv)
 	Open_Inputs();// WPAD_SetVRes() is called later in mainMenu.init() during cursor init which gets the theme pointer images
 	
 	/* init configs, folders, coverflow, gui and more */
-	if(mainMenu.init())
+	if(mainMenu.init(usb_mounted))
 	{
 		if(CurrentIOS.Version != mainIOS)
 		{
 			if(useMainIOS || !DeviceHandle.UsablePartitionMounted())// if useMainIOS or there's isn't a FAT or NTFS partition
 			{
 				useMainIOS = false;
-				mainMenu.TempLoadIOS();
+				mainMenu.TempLoadIOS();// switch to cIOS
 				iosOK = CustomIOS(CurrentIOS.Type);
 			}
 		}

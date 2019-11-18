@@ -160,7 +160,7 @@ void CMenu::_initPartitionsCfgMenu()
 {
 	m_partitionsBg = _texture("PARTCFG/BG", "texture", theme.bg, false);
 	_addUserLabels(m_partitionsLblUser, ARRAY_SIZE(m_partitionsLblUser), "PARTCFG");
-	m_partitionsLblTitle = _addTitle("PARTCFG/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_partitionsLblTitle = _addLabel("PARTCFG/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 	m_partitionsBtnBack = _addButton("PARTCFG/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
 
 	m_partitionsLblWii = _addLabel("PARTCFG/WII", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);

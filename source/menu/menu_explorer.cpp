@@ -231,7 +231,7 @@ void CMenu::_Explorer(void)
 							if(wii_hdr.magic == WII_MAGIC)
 							{
 								currentPartition = explorer_partition;
-								_launchGame(&tmpHdr, false);
+								_launchWii(&tmpHdr, false);
 							}
 							else if(wii_hdr.gc_magic == GC_MAGIC)
 							{
@@ -284,7 +284,7 @@ void CMenu::_initExplorer()
 	m_explorerBg = _texture("EXPLORER/BG", "texture", theme.bg, false);
 	_addUserLabels(m_explorerLblUser, ARRAY_SIZE(m_explorerLblUser), "EXPLORER");
 	m_explorerLblSelFolderBg = _addLabel("EXPLORER/SELECTED_FOLDER_BG", theme.txtFont, L"", 0, 18, 640, 48, theme.txtFontColor, FTGX_JUSTIFY_LEFT, theme.btnTexC);
-	m_explorerLblSelFolder = _addText("EXPLORER/SELECTED_FOLDER", theme.txtFont, L"", 30, 30, 560, 40, theme.txtFontColor, FTGX_JUSTIFY_LEFT);
+	m_explorerLblSelFolder = _addLabel("EXPLORER/SELECTED_FOLDER", theme.txtFont, L"", 30, 30, 560, 40, theme.txtFontColor, FTGX_JUSTIFY_LEFT);
 	m_explorerBtnSet = _addButton("EXPLORER/SET_BTN", theme.btnFont, L"", 220, 400, 200, 48, theme.btnFontColor);
 	m_explorerBtnBack = _addButton("EXPLORER/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
 	m_explorerBtnPageM = _addPicButton("EXPLORER/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 20, 400, 48, 48);
@@ -302,7 +302,7 @@ void CMenu::_initExplorer()
 	for(u8 i = 0; i < 7; ++i)
 	{
 		entries_sel[i] = _addPicButton(fmt("EXPLORER/ENTRY_%i_BTN", i), blank_btn, blank_btn, 40, 75+(i*45), 380, 45);
-		entries[i] = _addText(fmt("EXPLORER/ENTRY_%i", i), theme.txtFont, L"", 40, 75+(i*45), 480, 40, theme.txtFontColor, FTGX_JUSTIFY_LEFT);
+		entries[i] = _addLabel(fmt("EXPLORER/ENTRY_%i", i), theme.txtFont, L"", 40, 75+(i*45), 480, 40, theme.txtFontColor, FTGX_JUSTIFY_LEFT);
 		_setHideAnim(entries[i], fmt("EXPLORER/ENTRY_%i", i), 0, 0, 1.f, 0.f);
 		_setHideAnim(entries_sel[i], fmt("EXPLORER/ENTRY_%i_BTN", i), 0, 0, 1.f, 0.f);
 	}

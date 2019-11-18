@@ -64,6 +64,13 @@ bool CCursor::init(const char *png, bool wideFix, CColor shadowColor, float shad
 	return ok;
 }
 
+void CCursor::cleanup(void)
+{
+	TexHandle.Cleanup(m_texture);
+	if(m_shadow.data != NULL)
+		TexHandle.Cleanup(m_shadow);
+}
+
 void CCursor::draw(int x, int y, float a)
 {
 	GXTexObj texObj;

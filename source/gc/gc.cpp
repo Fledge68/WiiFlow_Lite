@@ -79,7 +79,7 @@ since wiiflow lite doesn't support versions less than v3.358
 we will use argsboot and version detection every time. */
 
 void Nintendont_SetOptions(const char *gamePath, const char *gameID, const char *CheatPath, u8 lang, 
-							u32 n_cfg, u32 n_vm, s8 vidscale, s8 vidoffset)
+							u32 n_cfg, u32 n_vm, s8 vidscale, s8 vidoffset, u8 netprofile)
 {
 	memset(&NinCfg, 0, sizeof(NIN_CFG));
 	NinCfg.Magicbytes = 0x01070CF6;
@@ -123,6 +123,8 @@ void Nintendont_SetOptions(const char *gamePath, const char *gameID, const char 
 		NIN_cfg_version = 6;
 	else if(NINRev >= 424 && NINRev < 431)
 		NIN_cfg_version = 7;
+	else if(NINRev >= 431 && NINRev < 487)
+		NIN_cfg_version = 8;
 	
 	NinCfg.Version = NIN_cfg_version;
 
@@ -134,6 +136,9 @@ void Nintendont_SetOptions(const char *gamePath, const char *gameID, const char 
 	
 	NinCfg.VideoScale = vidscale;
 	NinCfg.VideoOffset = vidoffset;
+	
+	/* bba network profile */
+	NinCfg.NetworkProfile = netprofile;
 
 	/* language setup */
 	if(lang == 0)

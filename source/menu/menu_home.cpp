@@ -24,15 +24,15 @@
 s16 m_homeLblTitle;
 s16 m_homeLblUser[4];
 
-s16 m_homeBtnSettings;
+s16 m_homeBtnHelp;
 s16 m_homeBtnReloadCache;
-s16 m_homeBtnUpdate;
 s16 m_homeBtnExplorer;
-
-s16 m_homeBtnInstall;
-s16 m_homeBtnAbout;
-s16 m_homeBtnExitTo;
 s16 m_homeBtnSelPlugin;
+
+s16 m_homeBtnCredits;
+s16 m_homeBtnShutdown;
+s16 m_homeBtnExitTo;
+s16 m_homeBtnSettings;
 
 s16 m_homeLblBattery;
 
@@ -41,9 +41,15 @@ s16 m_exittoLblTitle;
 s16 m_exittoLblUser[4];
 s16 m_homeBtnExitToHBC;
 s16 m_homeBtnExitToMenu;
+s16 m_homeBtnExitToNeek;
 s16 m_homeBtnExitToPriiloader;
 s16 m_homeBtnExitToBootmii;
-s16 m_homeBtnExitToNeek;
+
+/* shutdown menu */
+s16 m_shutdownLblQuestion;
+s16 m_shutdownBtnFull;
+s16 m_shutdownBtnStandby;
+s16 m_shutdownBtnCancel;
 
 TexData m_homeBg;
 static const wstringEx PLAYER_BATTERY_LABEL("P1 %003.f%% | P2 %003.f%% | P3 %003.f%% | P4 %003.f%%");
@@ -51,6 +57,10 @@ static const wstringEx PLAYER_BATTERY_LABEL("P1 %003.f%% | P2 %003.f%% | P3 %003
 bool CMenu::_Home(void)
 {
 	SetupInput();
+	if(isWiiVC || m_locked)
+		m_btnMgr.setText(m_homeBtnExitTo, _t("home12", L"Exit"));
+	else
+		m_btnMgr.setText(m_homeBtnExitTo, _t("home5", L"Exit To"));
 	_showHome();
 
 	while(!m_exit)
@@ -74,7 +84,7 @@ bool CMenu::_Home(void)
 		}
 		else if(BTN_A_PRESSED)
 		{
-			if(m_btnMgr.selected(m_homeBtnSettings))//actually help guide btn
+			if(m_btnMgr.selected(m_homeBtnHelp))
 			{
 				_hideHome();
 				_about(true);
@@ -90,43 +100,26 @@ bool CMenu::_Home(void)
 					m_cfg.setBool(CHANNEL_DOMAIN, "update_cache", true);
 				if(m_current_view & COVERFLOW_PLUGIN)
 					m_cfg.setBool(PLUGIN_DOMAIN, "update_cache", true);
+				if(m_current_view & COVERFLOW_HOMEBREW)
+					m_cfg.setBool(HOMEBREW_DOMAIN, "update_cache", true);
 				m_refreshGameList = true;
 				break;
 			}
-			else if(m_btnMgr.selected(m_homeBtnUpdate))
+			else if(m_btnMgr.selected(m_homeBtnSettings))
 			{
 				_hideHome();
-				m_btnMgr.setProgress(m_wbfsPBar, 0.f, true);
-				m_btnMgr.setText(m_wbfsLblMessage, L"0%");
-				m_btnMgr.setText(m_wbfsLblDialog, L"");
-				m_btnMgr.show(m_wbfsPBar);
-				m_btnMgr.show(m_wbfsLblMessage);
-				m_btnMgr.show(m_wbfsLblDialog);
-			
-				_start_pThread();
-				_cacheCovers();
-				_stop_pThread();
-				m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg14", L"Done."));
-				while(!m_exit)
-				{
-					_mainLoopCommon();
-					if(BTN_HOME_PRESSED || BTN_B_PRESSED)
-					{
-						m_btnMgr.hide(m_wbfsPBar);
-						m_btnMgr.hide(m_wbfsLblMessage);
-						m_btnMgr.hide(m_wbfsLblDialog);
-						break;
-					}
-				}
+				_config(1);
+				//if(m_refreshGameList)
+					break;
 				_showHome();
 			}
-			else if(m_btnMgr.selected(m_homeBtnInstall))
+			else if(m_btnMgr.selected(m_homeBtnShutdown))
 			{
 				_hideHome();
-				_wbfsOp(WO_ADD_GAME);
+				_Shutdown();
 				_showHome();
 			}
-			else if(m_btnMgr.selected(m_homeBtnAbout))
+			else if(m_btnMgr.selected(m_homeBtnCredits))
 			{
 				_hideHome();
 				_about();
@@ -140,10 +133,7 @@ bool CMenu::_Home(void)
 					exitHandler(EXIT_TO_MENU);
 					break;
 				}
-				if(m_locked)
-					exitHandler(WIIFLOW_DEF);
-				else 
-					_ExitTo();
+				_ExitTo();
 				_showHome();
 			}
 			else if(m_btnMgr.selected(m_homeBtnExplorer))
@@ -243,19 +233,49 @@ bool CMenu::_ExitTo(void)
 	return m_exit;
 }
 
+void CMenu::_Shutdown(void)
+{
+	SetupInput();
+	_showShutdown();
+
+	while(!m_exit)
+	{
+		_mainLoopCommon();
+		if(BTN_UP_PRESSED)
+			m_btnMgr.up();
+		else if(BTN_DOWN_PRESSED)
+			m_btnMgr.down();
+		else if(BTN_B_PRESSED)
+			break;
+		else if(BTN_A_PRESSED)// note exitHandler sets m_exit = true
+		{
+			if(m_btnMgr.selected(m_shutdownBtnFull))
+				exitHandler(SHUTDOWN_STANDBY);
+			else if(m_btnMgr.selected(m_shutdownBtnStandby))
+				exitHandler(SHUTDOWN_IDLE);
+			else if(m_btnMgr.selected(m_shutdownBtnCancel))
+				break;
+		}
+	}
+	_hideShutdown();
+}
+
 void CMenu::_showHome(void)
 {
 	_setBg(m_homeBg, m_homeBg);
 	m_btnMgr.show(m_homeLblTitle);
 
-	m_btnMgr.show(m_homeBtnSettings);
-	m_btnMgr.show(m_homeBtnReloadCache);
-	m_btnMgr.show(m_homeBtnUpdate);
-	m_btnMgr.show(m_homeBtnExplorer);
+	if(!m_locked)
+	{	
+		m_btnMgr.show(m_homeBtnHelp);
+		m_btnMgr.show(m_homeBtnReloadCache);
+		m_btnMgr.show(m_homeBtnExplorer);
 
-	m_btnMgr.show(m_homeBtnInstall);
-	m_btnMgr.show(m_homeBtnAbout);
-	m_btnMgr.show(m_homeBtnExitTo);
+		m_btnMgr.show(m_homeBtnCredits);
+		m_btnMgr.show(m_homeBtnShutdown);
+		m_btnMgr.show(m_homeBtnExitTo);
+	}
+	m_btnMgr.show(m_homeBtnSettings);
 	m_btnMgr.show(m_homeBtnSelPlugin);
 
 	m_btnMgr.show(m_homeLblBattery);
@@ -272,29 +292,40 @@ void CMenu::_showExitTo(void)
 
 	m_btnMgr.show(m_homeBtnExitToHBC);
 	m_btnMgr.show(m_homeBtnExitToMenu);
+	m_btnMgr.show(m_homeBtnExitToNeek);
 	m_btnMgr.show(m_homeBtnExitToPriiloader);// exit to wii u on wii u
 	if(IsOnWiiU() == false)
 		m_btnMgr.show(m_homeBtnExitToBootmii);
-	m_btnMgr.show(m_homeBtnExitToNeek);
 
 	for(u8 i = 0; i < ARRAY_SIZE(m_exittoLblUser); ++i)
 		if(m_exittoLblUser[i] != -1)
 			m_btnMgr.show(m_exittoLblUser[i]);
 }
 
+void CMenu::_showShutdown(void)
+{
+	_setBg(m_homeBg, m_homeBg);
+
+	m_btnMgr.show(m_shutdownLblQuestion);
+	m_btnMgr.show(m_shutdownBtnFull);
+	if(IsOnWiiU() == false)
+		m_btnMgr.show(m_shutdownBtnStandby);
+	m_btnMgr.show(m_shutdownBtnCancel);
+}
+
 void CMenu::_hideHome(bool instant)
 {
 	m_btnMgr.hide(m_homeLblTitle, instant);
 
-	m_btnMgr.hide(m_homeBtnSettings, instant);
+	m_btnMgr.hide(m_homeBtnHelp, instant);
 	m_btnMgr.hide(m_homeBtnReloadCache, instant);
-	m_btnMgr.hide(m_homeBtnUpdate, instant);
 	m_btnMgr.hide(m_homeBtnExplorer, instant);
-
-	m_btnMgr.hide(m_homeBtnInstall, instant);
-	m_btnMgr.hide(m_homeBtnAbout, instant);
-	m_btnMgr.hide(m_homeBtnExitTo, instant);
 	m_btnMgr.hide(m_homeBtnSelPlugin, instant);
+
+	m_btnMgr.hide(m_homeBtnCredits, instant);
+	m_btnMgr.hide(m_homeBtnShutdown, instant);
+	m_btnMgr.hide(m_homeBtnExitTo, instant);
+	m_btnMgr.hide(m_homeBtnSettings, instant);
 
 	m_btnMgr.hide(m_homeLblBattery, instant);
 
@@ -309,13 +340,21 @@ void CMenu::_hideExitTo(bool instant)
 
 	m_btnMgr.hide(m_homeBtnExitToHBC, instant);
 	m_btnMgr.hide(m_homeBtnExitToMenu, instant);
+	m_btnMgr.hide(m_homeBtnExitToNeek, instant);
 	m_btnMgr.hide(m_homeBtnExitToPriiloader, instant);
 	m_btnMgr.hide(m_homeBtnExitToBootmii, instant);
-	m_btnMgr.hide(m_homeBtnExitToNeek, instant);
 
 	for(u8 i = 0; i < ARRAY_SIZE(m_exittoLblUser); ++i)
 		if(m_exittoLblUser[i] != -1)
 			m_btnMgr.hide(m_exittoLblUser[i], instant);
+}
+
+void CMenu::_hideShutdown(bool instant)
+{
+	m_btnMgr.hide(m_shutdownLblQuestion, instant);
+	m_btnMgr.hide(m_shutdownBtnFull, instant);
+	m_btnMgr.hide(m_shutdownBtnStandby, instant);
+	m_btnMgr.hide(m_shutdownBtnCancel, instant);
 }
 
 void CMenu::_initHomeAndExitToMenu()
@@ -324,31 +363,31 @@ void CMenu::_initHomeAndExitToMenu()
 	
 	//Home Menu
 	_addUserLabels(m_homeLblUser, ARRAY_SIZE(m_homeLblUser), "HOME");
-	m_homeLblTitle = _addTitle("HOME/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_homeLblTitle = _addLabel("HOME/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 
-	m_homeBtnSettings = _addButton("HOME/SETTINGS", theme.btnFont, L"", 60, 100, 250, 48, theme.btnFontColor);
+	m_homeBtnHelp = _addButton("HOME/HELP", theme.btnFont, L"", 60, 100, 250, 48, theme.btnFontColor);
 	m_homeBtnReloadCache = _addButton("HOME/RELOAD_CACHE", theme.btnFont, L"", 60, 180, 250, 48, theme.btnFontColor);
 	m_homeBtnExplorer = _addButton("HOME/EXPLORER", theme.btnFont, L"", 60, 260, 250, 48, theme.btnFontColor);
-	m_homeBtnSelPlugin = _addButton("HOME/FTP", theme.btnFont, L"", 60, 340, 250, 48, theme.btnFontColor);
+	m_homeBtnSelPlugin = _addButton("HOME/SELECT_PLUGIN", theme.btnFont, L"", 60, 340, 250, 48, theme.btnFontColor);
 
-	m_homeBtnAbout = _addButton("HOME/ABOUT", theme.btnFont, L"", 330, 100, 250, 48, theme.btnFontColor);
-	m_homeBtnInstall = _addButton("HOME/INSTALL", theme.btnFont, L"", 330, 180, 250, 48, theme.btnFontColor);
+	m_homeBtnCredits = _addButton("HOME/CREDITS", theme.btnFont, L"", 330, 100, 250, 48, theme.btnFontColor);
+	m_homeBtnShutdown = _addButton("HOME/SHUTDOWN", theme.btnFont, L"", 330, 180, 250, 48, theme.btnFontColor);
 	m_homeBtnExitTo = _addButton("HOME/EXIT_TO", theme.btnFont, L"", 330, 260, 250, 48, theme.btnFontColor);
-	m_homeBtnUpdate = _addButton("HOME/UPDATE", theme.btnFont, L"", 330, 340, 250, 48, theme.btnFontColor);
+	m_homeBtnSettings = _addButton("HOME/SETTINGS", theme.btnFont, L"", 330, 340, 250, 48, theme.btnFontColor);
 
 	m_homeLblBattery = _addLabel("HOME/BATTERY", theme.btnFont, L"", 0, 420, 640, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 
 	_setHideAnim(m_homeLblTitle, "HOME/TITLE", 0, 0, -2.f, 0.f);
 
-	_setHideAnim(m_homeBtnSettings, "HOME/SETTINGS", 50, 0, 1.f, 0.f);
+	_setHideAnim(m_homeBtnHelp, "HOME/HELP", 50, 0, 1.f, 0.f);
 	_setHideAnim(m_homeBtnReloadCache, "HOME/RELOAD_CACHE", 50, 0, 1.f, 0.f);
-	_setHideAnim(m_homeBtnSelPlugin, "HOME/FTP", 50, 0, 1.f, 0.f);
 	_setHideAnim(m_homeBtnExplorer, "HOME/EXPLORER", 50, 0, 1.f, 0.f);
-
-	_setHideAnim(m_homeBtnInstall, "HOME/INSTALL", -50, 0, 1.f, 0.f);
-	_setHideAnim(m_homeBtnAbout, "HOME/ABOUT", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_homeBtnSelPlugin, "HOME/SELECT_PLUGIN", 50, 0, 1.f, 0.f);
+	
+	_setHideAnim(m_homeBtnCredits, "HOME/CREDITS", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_homeBtnShutdown, "HOME/SHUTDOWN", -50, 0, 1.f, 0.f);
 	_setHideAnim(m_homeBtnExitTo, "HOME/EXIT_TO", -50, 0, 1.f, 0.f);
-	_setHideAnim(m_homeBtnUpdate, "HOME/UPDATE", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_homeBtnSettings, "HOME/SETTINGS", -50, 0, 1.f, 0.f);
 
 	_setHideAnim(m_homeLblBattery, "HOME/BATTERY", 0, 0, -2.f, 0.f);
 
@@ -357,7 +396,7 @@ void CMenu::_initHomeAndExitToMenu()
 	
 	//ExitTo Menu
 	_addUserLabels(m_exittoLblUser, ARRAY_SIZE(m_exittoLblUser), "EXIT_TO");
-	m_exittoLblTitle = _addTitle("EXIT_TO/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_exittoLblTitle = _addLabel("EXIT_TO/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 
 	m_homeBtnExitToHBC = _addButton("EXIT_TO/HBC", theme.btnFont, L"", 185, 120, 270, 48, theme.btnFontColor);
 	m_homeBtnExitToMenu = _addButton("EXIT_TO/MENU", theme.btnFont, L"", 185, 180, 270, 48, theme.btnFontColor);
@@ -375,24 +414,34 @@ void CMenu::_initHomeAndExitToMenu()
 
 	_textExitTo();
 	_hideExitTo(true);
+	
+	//Shutdown Menu
+	m_shutdownLblQuestion = _addLabel("SHUTDOWN/QUESTION", theme.lblFont, L"", 185, 120, 270, 48, theme.lblFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_shutdownBtnFull = _addButton("SHUTDOWN/FULL", theme.btnFont, L"", 185, 180, 270, 48, theme.btnFontColor);
+	m_shutdownBtnStandby = _addButton("SHUTDOWN/STANDBY", theme.btnFont, L"", 185, 240, 270, 48, theme.btnFontColor);
+	m_shutdownBtnCancel = _addButton("SHUTDOWN/CANCEL", theme.btnFont, L"", 185, 300, 270, 48, theme.btnFontColor);
+
+	_setHideAnim(m_shutdownLblQuestion, "SHUTDOWN/QUESTION", 0, 0, -4.f, 0.f);
+	_setHideAnim(m_shutdownBtnFull, "SHUTDOWN/FULL", 0, 0, -4.f, 0.f);
+	_setHideAnim(m_shutdownBtnStandby, "SHUTDOWN/STANDBY", 0, 0, -4.f, 0.f);
+	_setHideAnim(m_shutdownBtnCancel, "SHUTDOWN/CANCEL", 0, 0, -4.f, 0.f);
+
+	_textShutdown();
+	_hideShutdown(true);
 }
 
 void CMenu::_textHome(void)
 {
 	m_btnMgr.setText(m_homeLblTitle, wfmt(L"%s %s", APP_NAME, APP_VERSION));
-	m_btnMgr.setText(m_homeBtnSettings, _t("about10", L"Help Guide"));
+	m_btnMgr.setText(m_homeBtnHelp, _t("about10", L"Help Guide"));
 	m_btnMgr.setText(m_homeBtnReloadCache, _t("home2", L"Reload Cache"));
-	m_btnMgr.setText(m_homeBtnUpdate, _t("home11", L"Cache Covers"));
 	m_btnMgr.setText(m_homeBtnExplorer, _t("home8", L"File Explorer"));
-
-	m_btnMgr.setText(m_homeBtnInstall, _t("home7", L"Install Game"));
-	m_btnMgr.setText(m_homeBtnAbout, _t("home4", L"Credits"));
-	if(isWiiVC)
-		m_btnMgr.setText(m_homeBtnExitTo, _t("home12", L"Exit"));
-	else
-		m_btnMgr.setText(m_homeBtnExitTo, _t("home5", L"Exit To"));
-	
 	m_btnMgr.setText(m_homeBtnSelPlugin, _t("cfgpl1", L"Select Plugins"));
+
+	m_btnMgr.setText(m_homeBtnCredits, _t("home4", L"Credits"));
+	m_btnMgr.setText(m_homeBtnShutdown, _t("home13", L"Shutdown"));
+	m_btnMgr.setText(m_homeBtnExitTo, _t("home5", L"Exit To"));
+	m_btnMgr.setText(m_homeBtnSettings, _t("cfg1", L"Settings"));
 }
 
 void CMenu::_textExitTo(void)
@@ -400,14 +449,21 @@ void CMenu::_textExitTo(void)
 	m_btnMgr.setText(m_exittoLblTitle, _t("exit_to", L"Exit To"));
 	m_btnMgr.setText(m_homeBtnExitToHBC, _t("hbc", L"Homebrew Channel"));
 	m_btnMgr.setText(m_homeBtnExitToMenu, _t("menu", L"System Menu"));
+	m_btnMgr.setText(m_homeBtnExitToNeek, _t("neek2o", L"neek2o"));
 	if(IsOnWiiU())
 		m_btnMgr.setText(m_homeBtnExitToPriiloader, _t("wiiu", L"Wii U Menu"));
 	else
 		m_btnMgr.setText(m_homeBtnExitToPriiloader, _t("prii", L"Priiloader"));
 	m_btnMgr.setText(m_homeBtnExitToBootmii, _t("bootmii", L"Bootmii"));
-	m_btnMgr.setText(m_homeBtnExitToNeek, _t("neek2o", L"neek2o"));
 }
 
+void CMenu::_textShutdown(void)
+{
+	m_btnMgr.setText(m_shutdownLblQuestion, _t("shutdown1", L"Shutdown how?"));
+	m_btnMgr.setText(m_shutdownBtnFull, _t("shutdown2", L"Full Shutdown"));
+	m_btnMgr.setText(m_shutdownBtnStandby, _t("shutdown3", L"Standby"));
+	m_btnMgr.setText(m_shutdownBtnCancel, _t("shutdown4", L"Cancel"));
+}
 /*******************************************************************************/
 
 int CMenu::_cacheCovers()
@@ -416,44 +472,68 @@ int CMenu::_cacheCovers()
 	bool m_pluginCacheFolders = m_cfg.getBool(PLUGIN_DOMAIN, "subfolder_cache", true);
 	
 	char coverPath[MAX_FAT_PATH];
-	char wfcPath[MAX_FAT_PATH+5];
+	char wfcPath[MAX_FAT_PATH+20];
 	char cachePath[MAX_FAT_PATH];
 	
 	u32 total = m_gameList.size();
 	m_thrdTotal = total;
 	u32 index = 0;
 	
+	bool smallBox = false;
+	if(m_current_view == COVERFLOW_HOMEBREW && !m_sourceflow)
+		smallBox = m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox", false);
+	else if(m_sourceflow)
+		smallBox = m_cfg.getBool(SOURCEFLOW_DOMAIN, "smallbox", false);
+	else if(m_current_view == COVERFLOW_PLUGIN && !m_sourceflow)
+	{
+		m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
+		if(enabledPluginsCount == 1 && m_cfg.getBool(PLUGIN_ENABLED, "48425257"))
+			smallBox = m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox", false);
+	}
+
 	for(vector<dir_discHdr>::iterator hdr = m_gameList.begin(); hdr != m_gameList.end(); ++hdr)
 	{
 		index++;
-		update_pThread(1);
+		update_pThread(index, false);
 		m_thrdMessage = wfmt(_fmt("dlmsg31", L"converting cover %i of %i"), index, total);
 		m_thrdMessageAdded = true;
 		
-		bool fullCover = true;
-		
 		/* get game name or ID */
-		const char *gameNameOrID = CoverFlow.getFilenameId(&(*hdr));// &(*hdr) converts iterator to pointer to mem address
+		const char *gameNameOrID = NULL;
+		gameNameOrID = CoverFlow.getFilenameId(&(*hdr));// &(*hdr) converts iterator to pointer to mem address
 		
 		/* get cover png path */
+		bool fullCover = true;
 		strlcpy(coverPath, getBoxPath(&(*hdr)), sizeof(coverPath));
-		if(!fsop_FileExist(coverPath))
+		if(!fsop_FileExist(coverPath) || smallBox)
 		{
 			fullCover = false;
 			strlcpy(coverPath, getFrontPath(&(*hdr)), sizeof(coverPath));
-			if(!fsop_FileExist(coverPath))
-				continue;
+			if(!fsop_FileExist(coverPath) && !smallBox)
+			{
+				fullCover = true;
+				strlcpy(coverPath, getBlankCoverPath(&(*hdr)), sizeof(coverPath));
+				gameNameOrID = strrchr(coverPath, '/') + 1;
+				if(!fsop_FileExist(coverPath))
+					continue;
+			}
 		}
 				
-		/* get cover wfc path */
+		/* get cache folder path */
 		if(hdr->type == TYPE_PLUGIN && m_pluginCacheFolders)
-		{
 			snprintf(cachePath, sizeof(cachePath), "%s/%s", m_cacheDir.c_str(), m_plugin.GetCoverFolderName(hdr->settings[0]));
-		}
+		else if(m_sourceflow)
+			snprintf(cachePath, sizeof(cachePath), "%s/sourceflow", m_cacheDir.c_str());
+		else if(hdr->type == TYPE_HOMEBREW)
+			snprintf(cachePath, sizeof(cachePath), "%s/homebrew", m_cacheDir.c_str());
 		else
 			snprintf(cachePath, sizeof(cachePath), "%s", m_cacheDir.c_str());
 			
-		snprintf(wfcPath, sizeof(wfcPath), "%s/%s.wfc", cachePath, gameNameOrID);
+		/* get cover wfc path */
+		if(smallBox)
+			snprintf(wfcPath, sizeof(wfcPath), "%s/%s_small.wfc", cachePath, gameNameOrID);
+		else
+			snprintf(wfcPath, sizeof(wfcPath), "%s/%s.wfc", cachePath, gameNameOrID);
 		
 		/* if wfc doesn't exist or is flat and have full cover */
 		if(!fsop_FileExist(wfcPath) || (!CoverFlow.fullCoverCached(wfcPath) && fullCover))

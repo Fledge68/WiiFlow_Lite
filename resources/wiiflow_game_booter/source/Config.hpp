@@ -33,6 +33,7 @@ struct the_CFG {
 	bool use_led;
 	bool patchregion;
 	bool private_server;
+	bool patchFix480p;
 	/* needed for channels */
 	u64 title;
 	bool use_dol;
