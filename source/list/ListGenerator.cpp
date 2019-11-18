@@ -284,7 +284,7 @@ static void Add_Plugin_Game(char *FullPath)
 	
 	const char *gameTDB_Title = NULL;
 	if(gameTDB.IsLoaded() && customTitle.empty())
-		gameTDB.GetTitle(ListElement.id, gameTDB_Title);
+		gameTDB.GetTitle(ListElement.id, gameTDB_Title, true);
 	
 	/* set the roms title */
 	if(!customTitle.empty())
