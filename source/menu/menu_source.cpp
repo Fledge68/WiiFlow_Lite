@@ -330,6 +330,8 @@ bool CMenu::_Source()
 	curPage = stoi(sm_numbers[sm_numbers.size() - 1]) / 12 + 1;
 	numPages = (m_max_source_btn / 12) + 1;
 	channels_type = m_cfg.getInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_REAL);
+	sm_numbers_backup = m_cfg.getString(SOURCEFLOW_DOMAIN, "numbers");//backup for possible restore later
+	sm_tiers_backup = m_cfg.getString(SOURCEFLOW_DOMAIN, "tiers");
 	
 	SetupInput();
 	_showSource();
@@ -341,12 +343,20 @@ bool CMenu::_Source()
 		if(BTN_HOME_PRESSED || BTN_B_PRESSED)
 		{
 			if(!_srcTierBack(BTN_HOME_PRESSED))
+			{
+				m_cfg.setString(SOURCEFLOW_DOMAIN, "numbers", sm_numbers_backup);// restore if no source chosen
+				m_cfg.setString(SOURCEFLOW_DOMAIN, "tiers", sm_tiers_backup);
 				break;
+			}
 			else
 				_updateSourceBtns();
 		}
 		if(BTN_A_PRESSED && m_btnMgr.selected(m_sourceBtnBack))
+		{
+			m_cfg.setString(SOURCEFLOW_DOMAIN, "numbers", sm_numbers_backup);// restore if no source chosen
+			m_cfg.setString(SOURCEFLOW_DOMAIN, "tiers", sm_tiers_backup);
 			break;
+		}
 		else if(BTN_UP_PRESSED)
 			m_btnMgr.up();
 		else if(BTN_DOWN_PRESSED)
@@ -573,6 +583,13 @@ void CMenu::_initSourceMenu()
 	
 	/* let wiiflow know source_menu.ini found and we will be using it */
 	m_use_source = true;
+	
+	/* Source Menu on start reset tiers before buid menus */
+	if(m_cfg.getBool("GENERAL", "source_on_start", false))
+	{
+		m_cfg.remove(SOURCEFLOW_DOMAIN, "tiers");
+		m_cfg.remove(SOURCEFLOW_DOMAIN, "numbers");
+	}
 	
 	sm_numbers.clear();
 	tiers.clear();

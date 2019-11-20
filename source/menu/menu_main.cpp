@@ -403,17 +403,22 @@ int CMenu::main(void)
 				{
 					if(!_srcTierBack(false))// back a tier
 					{
+						// not back a tier - exit sourceflow and return to coverflow
+						m_cfg.setString(SOURCEFLOW_DOMAIN, "numbers", sm_numbers_backup);// restore if no source chosen
+						m_cfg.setString(SOURCEFLOW_DOMAIN, "tiers", sm_tiers_backup);
 						m_sourceflow = false;// if not back a tier then exit sourceflow
 						_setMainBg();
 					}
 					_showCF(true);
 					continue;
 				}
-				if(m_use_source)//if source_menu enabled
+				else if(m_use_source)//if source_menu enabled
 				{
 					_hideMain();
 					if(m_cfg.getBool(SOURCEFLOW_DOMAIN, "enabled", false))//if sourceflow show it
 					{
+						sm_numbers_backup = m_cfg.getString(SOURCEFLOW_DOMAIN, "numbers");//backup for possible restore later
+						sm_tiers_backup = m_cfg.getString(SOURCEFLOW_DOMAIN, "tiers");
 						m_sourceflow = true;
 						_setSrcFlowBg();
 						_showCF(true);
@@ -435,6 +440,8 @@ int CMenu::main(void)
 			{
 				if(!_srcTierBack(true))// if already on base tier exit sourceflow
 				{
+					m_cfg.setString(SOURCEFLOW_DOMAIN, "numbers", sm_numbers_backup);// restore if no source chosen
+					m_cfg.setString(SOURCEFLOW_DOMAIN, "tiers", sm_tiers_backup);
 					m_sourceflow = false;
 					_setMainBg();
 				}

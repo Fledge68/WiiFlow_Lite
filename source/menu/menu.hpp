@@ -69,6 +69,8 @@ private:
 	vector<dir_discHdr> m_gameList;
 	vector<string> tiers;
 	vector<string> sm_numbers;
+	string sm_numbers_backup;
+	string sm_tiers_backup;
 	
 	struct SZone
 	{
