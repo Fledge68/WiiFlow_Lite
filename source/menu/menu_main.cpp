@@ -42,13 +42,16 @@ void CMenu::_hideMain(bool instant)
 			m_btnMgr.hide(m_mainLblUser[i], instant);
 }
 
-void CMenu::_setMainBg()
+void CMenu::_getCustomBgTex()
 {
+	curCustBg += 1;
+	if(curCustBg == 2)
+		curCustBg = 0;
 	if(m_sourceflow)
 		_setSrcFlowBg();
 	else
 	{
-		TexHandle.Cleanup(m_mainAltBg);
+		TexHandle.Cleanup(m_mainCustomBg[curCustBg]);
 		string fn = "";
 		if(m_platform.loaded())
 		{
@@ -83,25 +86,33 @@ void CMenu::_setMainBg()
 		}
 		if(fn.length() > 0)
 		{
-			if(TexHandle.fromImageFile(m_mainAltBg, fmt("%s/%s/%s.png", m_bckgrndsDir.c_str(), m_themeName.c_str(), fn.c_str())) != TE_OK)
+			if(TexHandle.fromImageFile(m_mainCustomBg[curCustBg], fmt("%s/%s/%s.png", m_bckgrndsDir.c_str(), m_themeName.c_str(), fn.c_str())) != TE_OK)
 			{	
-				if(TexHandle.fromImageFile(m_mainAltBg, fmt("%s/%s/%s.jpg", m_bckgrndsDir.c_str(), m_themeName.c_str(), fn.c_str())) != TE_OK)
+				if(TexHandle.fromImageFile(m_mainCustomBg[curCustBg], fmt("%s/%s/%s.jpg", m_bckgrndsDir.c_str(), m_themeName.c_str(), fn.c_str())) != TE_OK)
 				{
-					if(TexHandle.fromImageFile(m_mainAltBg, fmt("%s/%s.png", m_bckgrndsDir.c_str(), fn.c_str())) != TE_OK)
+					if(TexHandle.fromImageFile(m_mainCustomBg[curCustBg], fmt("%s/%s.png", m_bckgrndsDir.c_str(), fn.c_str())) != TE_OK)
 					{
-						if(TexHandle.fromImageFile(m_mainAltBg, fmt("%s/%s.jpg", m_bckgrndsDir.c_str(), fn.c_str())) != TE_OK)
+						if(TexHandle.fromImageFile(m_mainCustomBg[curCustBg], fmt("%s/%s.jpg", m_bckgrndsDir.c_str(), fn.c_str())) != TE_OK)
 						{
-							_setBg(m_mainBg, m_mainBgLQ);
+							customBg = false;
 							return;
 						}
 					}
 				}
 			}
-			_setBg(m_mainAltBg, m_mainAltBg, true);
+			customBg = true;
 		}
 		else
-			_setBg(m_mainBg, m_mainBgLQ);
+			customBg = false;
 	}
+}
+
+void CMenu::_setMainBg()
+{
+	if(customBg)
+		_setBg(m_mainCustomBg[curCustBg], m_mainCustomBg[curCustBg]);
+	else
+		_setBg(m_mainBg, m_mainBgLQ);
 }
 
 void CMenu::_showMain()
@@ -376,6 +387,7 @@ int CMenu::main(void)
 	gprintf("Bootup completed!\n");
 
 	m_refreshGameList = true;
+	_getCustomBgTex();
 	_showMain();
 	if(show_mem)
 	{
@@ -407,6 +419,7 @@ int CMenu::main(void)
 						m_cfg.setString(SOURCEFLOW_DOMAIN, "numbers", sm_numbers_backup);// restore if no source chosen
 						m_cfg.setString(SOURCEFLOW_DOMAIN, "tiers", sm_tiers_backup);
 						m_sourceflow = false;// if not back a tier then exit sourceflow
+						_getCustomBgTex();
 						_setMainBg();
 					}
 					_showCF(true);
@@ -420,7 +433,7 @@ int CMenu::main(void)
 						sm_numbers_backup = m_cfg.getString(SOURCEFLOW_DOMAIN, "numbers");//backup for possible restore later
 						sm_tiers_backup = m_cfg.getString(SOURCEFLOW_DOMAIN, "tiers");
 						m_sourceflow = true;
-						_setSrcFlowBg();
+						_getCustomBgTex();
 						_showCF(true);
 					}
 					else //show source menu
@@ -443,6 +456,7 @@ int CMenu::main(void)
 					m_cfg.setString(SOURCEFLOW_DOMAIN, "numbers", sm_numbers_backup);// restore if no source chosen
 					m_cfg.setString(SOURCEFLOW_DOMAIN, "tiers", sm_tiers_backup);
 					m_sourceflow = false;
+					_getCustomBgTex();
 					_setMainBg();
 				}
 				_showCF(true);
@@ -498,6 +512,7 @@ int CMenu::main(void)
 				m_source_cnt = 1;
 				m_cfg.setUInt("GENERAL", "sources", m_current_view);
 				m_catStartPage = 1;
+				_getCustomBgTex();
 				_setMainBg();
 				_showCF(true);
 			}
@@ -586,6 +601,7 @@ int CMenu::main(void)
 				if(m_sourceflow)
 				{
 					_sourceFlow();// set the source selected
+					_getCustomBgTex();
 					_setMainBg();
 					_showCF(true);
 					continue;

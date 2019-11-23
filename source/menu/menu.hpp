@@ -66,6 +66,7 @@ private:
 	bool CFLocked;
 	bool Auto_hide_icons;
 	bool m_snapshot_loaded;
+	bool customBg;
 	vector<dir_discHdr> m_gameList;
 	vector<string> tiers;
 	vector<string> sm_numbers;
@@ -103,6 +104,7 @@ private:
 	u8 m_numCFVersions;
 	u8 m_numPlugins;
 	u8 m_max_source_btn;
+	u8 curCustBg;
 	char cf_domain[16];
 	bool m_use_source;// source_menu.ini found & ok to use source menu/flow
 	bool m_sourceflow;// in sourceflow view
@@ -184,10 +186,7 @@ private:
 	const TexData *m_lqBg;
 	u8 m_bgCrossFade;
 	//
-	TexData sfbgimg;
-	TexData m_mainAltBg;
 	TexData m_errorBg;
-	TexData m_mainBg;
 	TexData m_configBg;
 	TexData m_config3Bg;
 	TexData m_configScreenBg;
@@ -197,14 +196,16 @@ private:
 	TexData m_cheatBg;
 	TexData m_downloadBg;
 	TexData m_gameinfoBg;
-	TexData m_gameBg;
 	TexData m_codeBg;
 	TexData m_aboutBg;
 	TexData m_systemBg;
 	TexData m_wbfsBg;
 	TexData m_gameSettingsBg;
+	TexData m_gameBg;
 	TexData m_gameBgLQ;
+	TexData m_mainBg;
 	TexData m_mainBgLQ;
+	TexData m_mainCustomBg[2];
 	
 //Main Coverflow
 	s16 m_mainBtnCategories;
@@ -1059,8 +1060,9 @@ private:
 	void _updateCheckboxes(void);
 	void _getGameCategories(void);
 	void _setGameCategories(void);
+	void _getCustomBgTex(void);
 	void _setMainBg(void);
-	void _setBg(const TexData &bgTex, const TexData &bglqTex, bool force_change = false);
+	void _setBg(const TexData &bgTex, const TexData &bglqTex);
 	void _updateBg(void);
 	void _drawBg(void);
 	void _updateText(void);

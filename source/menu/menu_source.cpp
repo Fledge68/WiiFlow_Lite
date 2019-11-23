@@ -208,7 +208,7 @@ bool CMenu::_srcTierBack(bool home)
 		srcDomain = m_source.nextDomain().c_str();
 	}
 	if(m_sourceflow)
-		_setSrcFlowBg();
+		_getCustomBgTex();
 	else
 	{
 		curPage = stoi(sm_numbers[sm_numbers.size() - 1]) / 12 + 1;
@@ -220,19 +220,19 @@ bool CMenu::_srcTierBack(bool home)
 /* set custom sourceflow background image if available */
 void CMenu::_setSrcFlowBg(void)
 {
-	TexHandle.Cleanup(sfbgimg);
+	TexHandle.Cleanup(m_mainCustomBg[curCustBg]);
 	string fn = m_source.getString("general", "background", "");
 	if(fn.length() > 0)
 	{
-		if(TexHandle.fromImageFile(sfbgimg, fmt("%s/backgrounds/%s/%s", m_sourceDir.c_str(), m_themeName.c_str(), fn.c_str())) != TE_OK)
+		if(TexHandle.fromImageFile(m_mainCustomBg[curCustBg], fmt("%s/backgrounds/%s/%s", m_sourceDir.c_str(), m_themeName.c_str(), fn.c_str())) != TE_OK)
 		{
-			if(TexHandle.fromImageFile(sfbgimg, fmt("%s/backgrounds/%s", m_sourceDir.c_str(), fn.c_str())) != TE_OK)
+			if(TexHandle.fromImageFile(m_mainCustomBg[curCustBg], fmt("%s/backgrounds/%s", m_sourceDir.c_str(), fn.c_str())) != TE_OK)
 			{
 				_setBg(m_mainBg, m_mainBgLQ);
 				return;
 			}
 		}
-		_setBg(sfbgimg, sfbgimg, true);
+		_setBg(m_mainCustomBg[curCustBg], m_mainCustomBg[curCustBg]);
 	}
 	else
 		_setBg(m_mainBg, m_mainBgLQ);

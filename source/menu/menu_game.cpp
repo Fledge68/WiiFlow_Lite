@@ -11,7 +11,7 @@ extern const u32 gc_ogg_size;
 
 bool m_zoom_banner = false;
 bool m_banner_loaded = false;
-bool m_set_bg = false;
+bool m_setMainBg = false;
 s16 m_gameBtnPlayFull;
 s16 m_gameBtnBackFull;
 s16 m_gameBtnToggle;
@@ -280,13 +280,17 @@ void CMenu::_showGame(void)
 		m_fa.getBackground(bg, bglq);
 		_setBg(*bg, *bglq);
 		CoverFlow.hideCover();
+		m_setMainBg = true;
 	}
-	else if(m_set_bg)
+	else if(m_setMainBg)
 	{
 		CoverFlow.showCover();		
-		_setMainBg();
+		if(customBg)
+			_setBg(m_mainCustomBg[curCustBg], m_mainCustomBg[curCustBg]);
+		else
+			_setBg(m_gameBg, m_gameBgLQ);
+		m_setMainBg = false;
 	}
-	m_set_bg = true;
 }
 
 void CMenu::_cleanupBanner(bool gamechange)
@@ -379,7 +383,7 @@ bool CMenu::_startVideo()
 void CMenu::_game(bool launch)
 {
 	m_banner_loaded = false;
-	m_set_bg = false;
+	m_setMainBg = true;
 	bool coverFlipped = false;
 	int cf_version = 1;
 	string domain;
@@ -434,7 +438,11 @@ void CMenu::_game(bool launch)
 			{
 				m_fa.unload();
 				CoverFlow.showCover();
-				_setMainBg();
+				if(customBg)
+					_setBg(m_mainCustomBg[curCustBg], m_mainCustomBg[curCustBg]);
+				else
+					_setBg(m_gameBg, m_gameBgLQ);
+				m_setMainBg = false;
 			}
 			else //loop fanart
 				m_fa.reset();
@@ -505,6 +513,7 @@ void CMenu::_game(bool launch)
 			_hideGame();
 			m_banner.SetShowBanner(false);
 			_gameinfo();
+			m_setMainBg = true;
 			_showGame();
 			m_banner.SetShowBanner(true);
 		}
@@ -541,6 +550,7 @@ void CMenu::_game(bool launch)
 				m_fa.unload();
 				CoverFlow.showCover();
 				_setMainBg();
+				m_setMainBg = false;
 				continue;
 			}
 			/* delete button */
@@ -566,6 +576,7 @@ void CMenu::_game(bool launch)
 						startGameSound = -10;
 					}
 				}
+				m_setMainBg = true;
 				_showGame();
 				m_banner.SetShowBanner(true);
 			}
@@ -587,6 +598,7 @@ void CMenu::_game(bool launch)
 					m_banner.ToggleGameSettings();//reset brightness
 					m_banner.ToggleZoom();//de zoom to small
 				}
+				m_setMainBg = true;
 				_showGame();
 			}
 			else if(m_btnMgr.selected(m_gameBtnFavoriteOn) || m_btnMgr.selected(m_gameBtnFavoriteOff))
@@ -616,6 +628,7 @@ void CMenu::_game(bool launch)
 					m_banner.ToggleGameSettings();//reset brightness
 					m_banner.ToggleZoom();//de zoom to small
 				}
+				m_setMainBg = true;
 				_showGame();
 				if(m_newGame)
 					startGameSound = -10;
@@ -642,6 +655,7 @@ void CMenu::_game(bool launch)
 				{
 					error(_t("errgame19", L"Can't launch in Wii virtual console mode!"));
 					launch = false;
+					m_setMainBg = true;
 					_showGame();
 				}
 				else

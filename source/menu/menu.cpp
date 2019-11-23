@@ -82,6 +82,7 @@ CMenu::CMenu()
 	cacheCovers = false;
 	SF_cacheCovers = true;
 	m_snapshot_loaded = false;
+	curCustBg = 1;
 	/* Explorer stuff */
 	m_txt_view = false;
 	m_txt_path = NULL;
@@ -505,8 +506,8 @@ void CMenu::_Theme_Cleanup(void)
 	m_nextBg = NULL;
 	TexHandle.Cleanup(m_curBg);
 	m_lqBg = NULL;
-	TexHandle.Cleanup(sfbgimg);
-	TexHandle.Cleanup(m_mainAltBg);
+	TexHandle.Cleanup(m_mainCustomBg[0]);
+	TexHandle.Cleanup(m_mainCustomBg[1]);
 	/* Buttons */
 	TexHandle.Cleanup(theme.btnTexL);
 	TexHandle.Cleanup(theme.btnTexR);
@@ -1822,10 +1823,10 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 #endif
 }
 
-void CMenu::_setBg(const TexData &bgTex, const TexData &bglqTex, bool force_change)
+void CMenu::_setBg(const TexData &bgTex, const TexData &bglqTex)
 {
 	/* Not setting same bg again */
-	if(!force_change && m_nextBg == &bgTex)
+	if(m_nextBg == &bgTex)
 		return;
 	m_lqBg = &bglqTex;
 	/* before setting new next bg set previous */
