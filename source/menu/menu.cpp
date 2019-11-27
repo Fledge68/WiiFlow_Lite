@@ -2364,7 +2364,7 @@ bool CMenu::_loadWiiList(void)
 	bool updateCache = m_cfg.getBool(WII_DOMAIN, "update_cache");
 	if(updateCache || !fsop_FileExist(cacheDir.c_str()))
 		cacheCovers = true;
-	m_cacheList.CreateList(COVERFLOW_WII, currentPartition, gameDir, stringToVector(".wbfs|.iso", '|'), cacheDir, updateCache);
+	m_cacheList.CreateList(COVERFLOW_WII, gameDir, stringToVector(".wbfs|.iso", '|'), cacheDir, updateCache);
 	WBFS_Close();
 	m_cfg.remove(WII_DOMAIN, "update_cache");
 	for(vector<dir_discHdr>::iterator tmp_itr = m_cacheList.begin(); tmp_itr != m_cacheList.end(); tmp_itr++)
@@ -2384,7 +2384,7 @@ bool CMenu::_loadHomebrewList(const char *HB_Dir)
 	bool updateCache = m_cfg.getBool(HOMEBREW_DOMAIN, "update_cache");
 	if(updateCache || !fsop_FileExist(cacheDir.c_str()))
 		cacheCovers = true;
-	m_cacheList.CreateList(COVERFLOW_HOMEBREW, currentPartition, gameDir, stringToVector(".dol|.elf", '|'), cacheDir, updateCache);
+	m_cacheList.CreateList(COVERFLOW_HOMEBREW, gameDir, stringToVector(".dol|.elf", '|'), cacheDir, updateCache);
 	m_cfg.remove(HOMEBREW_DOMAIN, "update_cache");
 	for(vector<dir_discHdr>::iterator tmp_itr = m_cacheList.begin(); tmp_itr != m_cacheList.end(); tmp_itr++)
 		m_gameList.push_back(*tmp_itr);
@@ -2403,7 +2403,7 @@ bool CMenu::_loadGamecubeList()
 	bool updateCache = m_cfg.getBool(GC_DOMAIN, "update_cache");
 	if(updateCache || !fsop_FileExist(cacheDir.c_str()))
 		cacheCovers = true;
-	m_cacheList.CreateList(COVERFLOW_GAMECUBE, currentPartition, gameDir, stringToVector(".iso|.gcm|.ciso|root", '|'), cacheDir, updateCache);
+	m_cacheList.CreateList(COVERFLOW_GAMECUBE, gameDir, stringToVector(".iso|.gcm|.ciso|root", '|'), cacheDir, updateCache);
 	m_cfg.remove(GC_DOMAIN, "update_cache");
 	for(vector<dir_discHdr>::iterator tmp_itr = m_cacheList.begin(); tmp_itr != m_cacheList.end(); tmp_itr++)
 		m_gameList.push_back(*tmp_itr);
@@ -2423,7 +2423,7 @@ bool CMenu::_loadChannelList(void)
 	{
 		gprintf("Adding real nand list\n");
 		NANDemuView = false;
-		m_cacheList.CreateList(COVERFLOW_CHANNEL, 9, std::string(), NullVector, std::string(), false);
+		m_cacheList.CreateList(COVERFLOW_CHANNEL, std::string(), NullVector, std::string(), false);
 		for(vector<dir_discHdr>::iterator tmp_itr = m_cacheList.begin(); tmp_itr != m_cacheList.end(); tmp_itr++)
 			m_gameList.push_back(*tmp_itr);
 	}
@@ -2439,7 +2439,7 @@ bool CMenu::_loadChannelList(void)
 			bool updateCache = m_cfg.getBool(CHANNEL_DOMAIN, "update_cache");
 			if(updateCache || !fsop_FileExist(cacheDir.c_str()))
 				cacheCovers = true;
-			m_cacheList.CreateList(COVERFLOW_CHANNEL, currentPartition, std::string(), NullVector, cacheDir, updateCache);
+			m_cacheList.CreateList(COVERFLOW_CHANNEL, std::string(), NullVector, cacheDir, updateCache);
 			m_cfg.remove(CHANNEL_DOMAIN, "update_cache");
 			for(vector<dir_discHdr>::iterator tmp_itr = m_cacheList.begin(); tmp_itr != m_cacheList.end(); tmp_itr++)
 				m_gameList.push_back(*tmp_itr);
@@ -2508,6 +2508,7 @@ bool CMenu::_loadPluginList()
 				vector<string> FileTypes = stringToVector(m_plugin.GetFileTypes(i), '|');
 				m_cacheList.Color = m_plugin.GetCaseColor(i);
 				m_cacheList.Magic = Magic;
+				m_cacheList.usePluginDBTitles = m_cfg.getBool(PLUGIN_DOMAIN, "database_titles", true);
 				m_cacheList.CreateRomList(m_platform, romsDir, FileTypes, cachedListFile, updateCache);
 				for(vector<dir_discHdr>::iterator tmp_itr = m_cacheList.begin(); tmp_itr != m_cacheList.end(); tmp_itr++)
 					m_gameList.push_back(*tmp_itr);

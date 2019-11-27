@@ -70,10 +70,10 @@ void CMenu::_showConfig7(int curPage)
 	{
 		m_btnMgr.show(m_config7Lbl1);
 		m_btnMgr.show(m_config7Btn1);
-		//m_btnMgr.show(m_config7Lbl2);
-		//m_btnMgr.show(m_config7Btn2);
-		//m_btnMgr.show(m_config7Lbl3);
-		//m_btnMgr.show(m_config7Btn3);
+		m_btnMgr.show(m_config7Lbl2);
+		m_btnMgr.show(m_config7Btn2);
+		m_btnMgr.show(m_config7Lbl3);
+		m_btnMgr.show(m_config7Btn3);
 	}
 	else
 	{
@@ -165,6 +165,10 @@ void CMenu::_showConfig7(int curPage)
 	{
 		m_btnMgr.setText(m_config7Lbl1, _t("cfgg49", L"480p Pixel Patch"));
 		m_btnMgr.setText(m_config7Btn1, m_cfg.getBool(WII_DOMAIN, "fix480p", false) ? _t("on", L"On") : _t("off", L"Off"));
+		m_btnMgr.setText(m_config7Lbl2, _t("cfg726", L"Covers Box Mode"));
+		m_btnMgr.setText(m_config7Btn2, m_cfg.getBool("general", "box_mode", false) ? _t("on", L"On") : _t("off", L"Off"));
+		m_btnMgr.setText(m_config7Lbl3, _t("cfg727", L"Use Plugin Database Titles"));
+		m_btnMgr.setText(m_config7Btn3, m_cfg.getBool(PLUGIN_DOMAIN, "database_titles", true) ?  _t("yes", L"Yes") : _t("no", L"No"));
 	}
 }
 
@@ -172,6 +176,8 @@ int CMenu::_config7(int curPage)
 {
 	bool rand_music = m_cfg.getBool("GENERAL", "randomize_music");
 	bool hq_covers = m_cfg.getBool("GENERAL", "cover_use_hq");
+	bool box_mode = m_cfg.getBool("GENERAL", "box_mode", true);
+	bool db_titles = m_cfg.getBool(PLUGIN_DOMAIN, "database_titles", true);
 	int change = CONFIG_PAGE_NO_CHANGE;
 	_showConfig7(curPage);
 	
@@ -349,12 +355,30 @@ int CMenu::_config7(int curPage)
 					m_cfg.setBool(WII_DOMAIN, "fix480p", val);
 					m_btnMgr.setText(m_config7Btn1, val ? _t("on", L"On") : _t("off", L"Off"));
 				}
+				if(m_btnMgr.selected(m_config7Btn2))
+				{
+					bool val = !m_cfg.getBool("general", "box_mode");
+					m_cfg.setBool("general", "box_mode", val);
+					m_btnMgr.setText(m_config7Btn2, val ? _t("on", L"On") : _t("off", L"Off"));
+				}
+				if(m_btnMgr.selected(m_config7Btn3))
+				{
+					bool val = !m_cfg.getBool(PLUGIN_DOMAIN, "database_titles");
+					m_cfg.setBool(PLUGIN_DOMAIN, "database_titles", val);
+					m_btnMgr.setText(m_config7Btn3, val ? _t("yes", L"Yes") : _t("no", L"No"));
+				}
 			}
 		}
 	}
 	if(rand_music != m_cfg.getBool("GENERAL", "randomize_music"))
 		MusicPlayer.Init(m_cfg, m_musicDir, fmt("%s/music", m_themeDataDir.c_str()));
-	if(hq_covers != m_cfg.getBool("GENERAL", "cover_use_hq"))
+	if(db_titles != m_cfg.getBool(PLUGIN_DOMAIN, "database_titles"))
+	{
+		fsop_deleteFolder(m_listCacheDir.c_str());
+		fsop_MakeFolder(m_listCacheDir.c_str());
+		m_refreshGameList = true;
+	}
+	if(!m_refreshGameList && (hq_covers != m_cfg.getBool("GENERAL", "cover_use_hq") || box_mode != m_cfg.getBool("general", "box_mode")))
 		_initCF();
 	_hideConfig7();
 	return change;

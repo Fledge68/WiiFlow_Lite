@@ -25,14 +25,14 @@
 #include "gui/text.hpp"
 #include "loader/sys.h"
 
-ListGenerator m_cacheList;
+ListGenerator m_cacheList;// needed by the static void functions since they are not part of ListGenerator class.
+dir_discHdr ListElement;
 Config CustomTitles;
 GameTDB gameTDB;
 Config romNamesDB;
 string platformName;
 string pluginsDataDir;
 
-dir_discHdr ListElement;
 void ListGenerator::Init(const char *settingsDir, const char *Language, const char *plgnsDataDir)
 {
 	if(settingsDir != NULL)
@@ -209,7 +209,7 @@ static void Add_Homebrew_Dol(char *FullPath)
 
 /* create channel list from nand or emu nand */
 Channel *chan = NULL;
-static void Create_Channel_List(bool realNAND)
+static void Create_Channel_List()
 {
 	for(u32 i = 0; i < ChannelHandle.Count(); i++)
 	{
@@ -244,7 +244,7 @@ static void Create_Channel_List(bool realNAND)
 			mbstowcs(ListElement.title, gameTDB_Title, 63);
 		else
 			wcsncpy(ListElement.title, chan->name, 64);
-		if(realNAND)
+		if(!NANDemuView)
 			ListElement.type = TYPE_CHANNEL;
 		else
 			ListElement.type = TYPE_EMUCHANNEL;
@@ -283,7 +283,7 @@ static void Add_Plugin_Game(char *FullPath)
 	string customTitle = CustomTitles.getString(m_plugin.PluginMagicWord, RomFilename, "");
 	
 	const char *gameTDB_Title = NULL;
-	if(gameTDB.IsLoaded() && customTitle.empty())
+	if(gameTDB.IsLoaded() && customTitle.empty() && m_cacheList.usePluginDBTitles)
 		gameTDB.GetTitle(ListElement.id, gameTDB_Title, true);
 	
 	/* set the roms title */
@@ -349,7 +349,7 @@ void ListGenerator::CreateRomList(Config &platform_cfg, const string& romsDir, c
 		CCache(*this, DBName, SAVE);
 }
 	
-void ListGenerator::CreateList(u32 Flow, u32 Device, const string& Path, const vector<string>& FileTypes, 
+void ListGenerator::CreateList(u32 Flow, const string& Path, const vector<string>& FileTypes, 
 								const string& DBName, bool UpdateCache)
 {
 	Clear();
@@ -366,6 +366,7 @@ void ListGenerator::CreateList(u32 Flow, u32 Device, const string& Path, const v
 		}
 	}
 	OpenConfigs();
+	u32 Device = DeviceHandle.PathToDriveType(Path.c_str());
 	if(Flow == COVERFLOW_WII)
 	{
 		if(DeviceHandle.GetFSType(Device) == PART_FS_WBFS)
@@ -376,10 +377,7 @@ void ListGenerator::CreateList(u32 Flow, u32 Device, const string& Path, const v
 	else if(Flow == COVERFLOW_CHANNEL)
 	{
 		ChannelHandle.Init(gameTDB_Language);
-		if(Device == 9)
-			Create_Channel_List(true);
-		else
-			Create_Channel_List(false);
+		Create_Channel_List();
 	}
 	else if(DeviceHandle.GetFSType(Device) != PART_FS_WBFS)
 	{

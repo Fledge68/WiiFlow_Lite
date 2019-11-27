@@ -1726,7 +1726,7 @@ int CMenu::_bannerDownloader()
 		currentPartition = m_cfg.getInt(GC_DOMAIN, "partition", USB1);
 		string gameDir(fmt(gc_games_dir, DeviceName[currentPartition]));
 		string cacheDir(fmt("%s/%s_gamecube.db", m_listCacheDir.c_str(), DeviceName[currentPartition]));
-		m_cacheList.CreateList(COVERFLOW_GAMECUBE, currentPartition, gameDir, stringToVector(".iso|.ciso|root", '|'), cacheDir, false);
+		m_cacheList.CreateList(COVERFLOW_GAMECUBE, gameDir, stringToVector(".iso|.ciso|root", '|'), cacheDir, false);
 		
 		for(u32 i = 0; i < m_cacheList.size(); ++i)
 		{

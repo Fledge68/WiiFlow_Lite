@@ -38,10 +38,10 @@ public:
 	void Init(const char *settingsDir, const char *Language, const char *plgnsDataDir);
 	void Clear();
 	void CreateRomList(Config &platform_cfg, const string& romsDir, const vector<string>& FileTypes, const string& DBName, bool UpdateCache);
-	void CreateList(u32 Flow, u32 Device, const string& Path, const vector<string>& FileTypes, 
-				const string& DBName, bool UpdateCache);
+	void CreateList(u32 Flow, const string& Path, const vector<string>& FileTypes, const string& DBName, bool UpdateCache);
 	u32 Color;
 	u32 Magic;
+	bool usePluginDBTitles;
 private:
 	void OpenConfigs();
 	void CloseConfigs();

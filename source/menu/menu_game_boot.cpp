@@ -65,8 +65,7 @@ void CMenu::directlaunch(const char *GameID)// from boot arg for wii game only
 		DeviceHandle.OpenWBFS(currentPartition);
 		string gameDir(fmt(wii_games_dir, DeviceName[currentPartition]));
 		string cacheDir(fmt("%s/%s_wii.db", m_listCacheDir.c_str(), DeviceName[currentPartition]));
-		m_cacheList.CreateList(COVERFLOW_WII, currentPartition, gameDir,
-				stringToVector(".wbfs|.iso", '|'), cacheDir, false);
+		m_cacheList.CreateList(COVERFLOW_WII, gameDir, stringToVector(".wbfs|.iso", '|'), cacheDir, false);
 		WBFS_Close();
 		for(u32 i = 0; i < m_cacheList.size(); i++)
 		{

@@ -417,7 +417,7 @@ void CMenu::_initCategorySettingsMenu()
 		m_categoryBtnCats[i+5] = _addPicButton(fmt("CATEGORY/CAT_%i_BTNS", i+5), theme.checkboxon, theme.checkboxons, 325, (39+i*58), 44, 48);
 		m_categoryBtnCatHid[i+5] = _addPicButton(fmt("CATEGORY/CAT_%i_BTNHID", i+5), theme.checkboxHid, theme.checkboxHids, 325, (39+i*58), 44, 48);
 		m_categoryBtnCatReq[i+5] = _addPicButton(fmt("CATEGORY/CAT_%i_BTNREQ", i+5), theme.checkboxReq, theme.checkboxReqs, 325, (39+i*58), 44, 48);
-		m_categoryLblCat[i+5] = _addLabel(fmt("CATEGORY/CAT_%i", i+5), theme.txtFont, L"", 380, (42+i*58), 230, 48, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+		m_categoryLblCat[i+5] = _addLabel(fmt("CATEGORY/CAT_%i", i+5), theme.lblFont, L"", 380, (42+i*58), 230, 48, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	}
 	_setHideAnim(m_categoryLblTitle, "CATEGORY/TITLE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_categoryLblPage, "CATEGORY/PAGE_BTN", 0, 0, 1.f, -1.f);
