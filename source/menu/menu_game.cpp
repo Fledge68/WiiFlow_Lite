@@ -827,7 +827,7 @@ void CMenu::_game(bool launch)
 			}
 			else
 			{
-				if(!Auto_hide_icons || m_show_zone_game)
+				if((!Auto_hide_icons || m_show_zone_game) && !m_soundThrdBusy)
 				{
 					m_btnMgr.show(m_gameBtnPlay);
 					m_btnMgr.show(m_gameBtnBack);
@@ -845,7 +845,7 @@ void CMenu::_game(bool launch)
 						if(m_gameLblUser[i] != -1)
 							m_btnMgr.show(m_gameLblUser[i]);
 				}
-				else
+				else if(!m_soundThrdBusy)
 				{
 					m_btnMgr.hide(m_gameBtnFavoriteOn);
 					m_btnMgr.hide(m_gameBtnFavoriteOff);
