@@ -207,9 +207,7 @@ bool CMenu::_srcTierBack(bool home)
 		}
 		srcDomain = m_source.nextDomain().c_str();
 	}
-	if(m_sourceflow)
-		_getCustomBgTex();
-	else
+	if(!m_sourceflow)
 	{
 		curPage = stoi(sm_numbers[sm_numbers.size() - 1]) / 12 + 1;
 		numPages = (m_max_source_btn / 12) + 1;
@@ -332,6 +330,7 @@ bool CMenu::_Source()
 	channels_type = m_cfg.getInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_REAL);
 	sm_numbers_backup = m_cfg.getString(SOURCEFLOW_DOMAIN, "numbers");//backup for possible restore later
 	sm_tiers_backup = m_cfg.getString(SOURCEFLOW_DOMAIN, "tiers");
+	sm_numbers.pop_back();
 	
 	SetupInput();
 	_showSource();

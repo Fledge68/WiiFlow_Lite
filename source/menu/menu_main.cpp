@@ -413,16 +413,16 @@ int CMenu::main(void)
 			{
 				if(m_sourceflow)//back a tier or exit sourceflow
 				{
+					m_refreshGameList = true;
 					if(!_srcTierBack(false))// back a tier
 					{
 						// not back a tier - exit sourceflow and return to coverflow
 						m_cfg.setString(SOURCEFLOW_DOMAIN, "numbers", sm_numbers_backup);// restore if no source chosen
 						m_cfg.setString(SOURCEFLOW_DOMAIN, "tiers", sm_tiers_backup);
 						m_sourceflow = false;// if not back a tier then exit sourceflow
-						_getCustomBgTex();
-						_setMainBg();
 					}
-					_showCF(true);
+					_getCustomBgTex();
+					_showMain();
 					continue;
 				}
 				else if(m_use_source)//if source_menu enabled
@@ -430,17 +430,19 @@ int CMenu::main(void)
 					_hideMain();
 					if(m_cfg.getBool(SOURCEFLOW_DOMAIN, "enabled", false))//if sourceflow show it
 					{
+						m_refreshGameList = true;
 						sm_numbers_backup = m_cfg.getString(SOURCEFLOW_DOMAIN, "numbers");//backup for possible restore later
 						sm_tiers_backup = m_cfg.getString(SOURCEFLOW_DOMAIN, "tiers");
 						m_sourceflow = true;
 						_getCustomBgTex();
-						_showCF(true);
+						_showMain();
 					}
 					else //show source menu
 					{
 						m_refreshGameList = _Source();
 						if(BTN_B_HELD)
 							bUsed = true;
+						_getCustomBgTex();
 						_showMain();
 					}
 					continue;
@@ -451,15 +453,15 @@ int CMenu::main(void)
 		{
 			if(m_sourceflow)//back to base tier or exit sourceflow
 			{
+				m_refreshGameList = true;
 				if(!_srcTierBack(true))// if already on base tier exit sourceflow
 				{
 					m_cfg.setString(SOURCEFLOW_DOMAIN, "numbers", sm_numbers_backup);// restore if no source chosen
 					m_cfg.setString(SOURCEFLOW_DOMAIN, "tiers", sm_tiers_backup);
 					m_sourceflow = false;
-					_getCustomBgTex();
-					_setMainBg();
 				}
-				_showCF(true);
+				_getCustomBgTex();
+				_showMain();
 			}
 			else
 			{
@@ -600,10 +602,10 @@ int CMenu::main(void)
 				_hideMain();
 				if(m_sourceflow)
 				{
+					m_refreshGameList = true;
 					_sourceFlow();// set the source selected
 					_getCustomBgTex();
-					_setMainBg();
-					_showCF(true);
+					_showMain();
 					continue;
 				}
 				else
