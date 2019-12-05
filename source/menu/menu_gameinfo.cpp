@@ -292,14 +292,14 @@ void CMenu::_initGameInfoMenu()
 	for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControlsReq); ++i)
 	{
 		string dom(fmt("GAMEINFO/CONTROLSREQ%i", i + 1));
-		m_gameinfoLblControlsReq[i] = _addLabel(dom.c_str(), theme.txtFont, L"", 40 + (i*60), 310, 60, 40, theme.txtFontColor, 0, emptyTex);
+		m_gameinfoLblControlsReq[i] = _addLabel(dom.c_str(), theme.txtFont, L"", 40 + (i*60), 310, 52, 60, theme.txtFontColor, 0, emptyTex);
 		_setHideAnim(m_gameinfoLblControlsReq[i], dom.c_str(), 0, -100, 0.f, 0.f);
 	}
 
 	for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControls); ++i)
 	{
 		string dom(fmt("GAMEINFO/CONTROLS%i", i + 1));
-		m_gameinfoLblControls[i] = _addLabel(dom.c_str(), theme.txtFont, L"", 40 + (i*60), 380, 60, 40, theme.txtFontColor, 0, emptyTex);
+		m_gameinfoLblControls[i] = _addLabel(dom.c_str(), theme.txtFont, L"", 40 + (i*60), 380, 52, 60, theme.txtFontColor, 0, emptyTex);
 		_setHideAnim(m_gameinfoLblControls[i], dom.c_str(), 0, -100, 0.f, 0.f);
 	}
 	// 
@@ -755,55 +755,55 @@ void CMenu::_textGameInfo(void)
 			TexHandle.fromImageFile(m_controlsreq[x], fmt("%s/wiimote6.png", m_imgsDir.c_str()));
 		else if(players == 8)
 			TexHandle.fromImageFile(m_controlsreq[x], fmt("%s/wiimote8.png", m_imgsDir.c_str()));
-		m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 20, 60);
+		m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x]);
 		x++;
 	}
 	if(nunchuk && x < max_controlsReq)
 	{
 		TexHandle.fromImageFile(m_controlsreq[x], fmt("%s/nunchukR.png", m_imgsDir.c_str()));
-		m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 52, 60);
+		m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x]);
 		x++;
 	}
 	if(guitar && x < max_controlsReq)
 	{
 		TexHandle.fromImageFile(m_controlsreq[x], fmt("%s/guitarR.png", m_imgsDir.c_str()));
-		m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 52, 60);
+		m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x]);
 		x++;
 	}
 	if(drums && x < max_controlsReq)
 	{
 		TexHandle.fromImageFile(m_controlsreq[x], fmt("%s/drumsR.png", m_imgsDir.c_str()));
-		m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 52, 60);
+		m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x]);
 		x++;
 	}
 	if(motionplus && x < max_controlsReq)
 	{
 		TexHandle.fromImageFile(m_controlsreq[x], fmt("%s/motionplusR.png", m_imgsDir.c_str()));
-		m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 20, 60);
+		m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x]);
 		x++;
 	}
 	if(dancepad && x < max_controlsReq)
 	{
 		TexHandle.fromImageFile(m_controlsreq[x], fmt("%s/dancepadR.png", m_imgsDir.c_str()));
-		m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 52, 60);
+		m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x]);
 		x++;
 	}
 	if(microphone && x < max_controlsReq)
 	{
 		TexHandle.fromImageFile(m_controlsreq[x], fmt("%s/microphoneR.png", m_imgsDir.c_str()));
-		m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 52, 60);
+		m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x]);
 		x++;
 	}
 	if(balanceboard && x < max_controlsReq)
 	{
 		TexHandle.fromImageFile(m_controlsreq[x], fmt("%s/balanceboardR.png", m_imgsDir.c_str()));
-		m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 52, 60);
+		m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x]);
 		x++;
 	}
 	if(udraw && x < max_controlsReq)
 	{
 		TexHandle.fromImageFile(m_controlsreq[x], fmt("%s/udrawR.png", m_imgsDir.c_str()));
-		m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x], 52, 60);
+		m_btnMgr.setTexture(m_gameinfoLblControlsReq[x] ,m_controlsreq[x]);
 		x++;
 	}
 	cnt_controlsreq = x;
@@ -859,79 +859,79 @@ void CMenu::_textGameInfo(void)
 	if(classiccontroller && x < max_controls)
 	{
 		TexHandle.fromImageFile(m_controls[x], fmt("%s/classiccontroller.png", m_imgsDir.c_str()));
-		m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 60);
+		m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x]);
 		x++;
 	}
 	if(nunchuk && x < max_controls)
 	{
 		TexHandle.fromImageFile(m_controls[x], fmt("%s/nunchuk.png", m_imgsDir.c_str()));
-		m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 60);
+		m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x]);
 		x++;
 	}
 	if(guitar && x < max_controls)
 	{
 		TexHandle.fromImageFile(m_controls[x], fmt("%s/guitar.png", m_imgsDir.c_str()));
-		m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 60);
+		m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x]);
 		x++;
 	}
 	if(drums && x < max_controls)
 	{
 		TexHandle.fromImageFile(m_controls[x], fmt("%s/drums.png", m_imgsDir.c_str()));
-		m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 60);
+		m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x]);
 		x++;
 	}
 	if(dancepad && x < max_controls)
 	{
 		TexHandle.fromImageFile(m_controls[x], fmt("%s/dancepad.png", m_imgsDir.c_str()));
-		m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 60);
+		m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x]);
 		x++;
 	}
 	if(motionplus && x < max_controls)
 	{
 		TexHandle.fromImageFile(m_controls[x], fmt("%s/motionplus.png", m_imgsDir.c_str()));
-		m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 20, 60);
+		m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x]);
 		x++;
 	}
 	if(balanceboard && x < max_controls)
 	{
 		TexHandle.fromImageFile(m_controls[x], fmt("%s/balanceboard.png", m_imgsDir.c_str()));
-		m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 60);
+		m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x]);
 		x++;
 	}
 	if(microphone && x < max_controls)
 	{
 		TexHandle.fromImageFile(m_controls[x], fmt("%s/microphone.png", m_imgsDir.c_str()));
-		m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 48, 60);
+		m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x]);
 		x++;
 	}
 	if(gamecube && x < max_controls)
 	{
 		TexHandle.fromImageFile(m_controls[x], fmt("%s/gcncontroller.png", m_imgsDir.c_str()));
-		m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 48, 60);
+		m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x]);
 		x++;
 	}
 	if(keyboard && x < max_controls)
 	{
 		TexHandle.fromImageFile(m_controls[x], fmt("%s/keyboard.png", m_imgsDir.c_str()));
-		m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 60);
+		m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x]);
 		x++;
 	}
 	if(udraw && x < max_controls)
 	{
 		TexHandle.fromImageFile(m_controls[x], fmt("%s/udraw.png", m_imgsDir.c_str()));
-		m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 60);
+		m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x]);
 		x++;
 	}
 	if(zapper && x < max_controls)
 	{
 		TexHandle.fromImageFile(m_controls[x], fmt("%s/zapper.png", m_imgsDir.c_str()));
-		m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 70);
+		m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x]);
 		x++;
 	}
 	if(wheel && x < max_controls)
 	{
 		TexHandle.fromImageFile(m_controls[x], fmt("%s/wheel.png", m_imgsDir.c_str()));
-		m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x], 52, 60);
+		m_btnMgr.setTexture(m_gameinfoLblControls[x] ,m_controls[x]);
 		x++;
 	}
 	cnt_controls = x;
