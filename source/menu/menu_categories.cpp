@@ -136,8 +136,6 @@ void CMenu::_getGameCategories(void)
 	}
 	else
 		strcpy(id, hdr->id);
-	if(hdr->type == TYPE_GC_GAME && hdr->settings[0] == 1) /* disc 2 */
-		strcat(id, "_2");
 
 	const char *gameCats = m_cat.getString(catDomain, id, "").c_str();
 	if(strlen(gameCats) > 0)

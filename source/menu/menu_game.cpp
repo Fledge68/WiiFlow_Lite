@@ -411,8 +411,6 @@ void CMenu::_game(bool launch)
 	else
 	{
 		strcpy(id, hdr->id);
-		if(hdr->type == TYPE_GC_GAME && hdr->settings[0] == 1) /* disc 2 */
-			strcat(id, "_2");
 	}
 
 	m_zoom_banner = m_cfg.getBool(_domainFromView(), "show_full_banner", false);
@@ -787,8 +785,6 @@ void CMenu::_game(bool launch)
 				else
 				{
 					strcpy(id, hdr->id);
-					if(hdr->type == TYPE_GC_GAME && hdr->settings[0] == 1) /* disc 2 */
-						strcat(id, "_2");
 				}
 				if(m_newGame)
 				{
@@ -1027,6 +1023,20 @@ void CMenu::_initGameMenu()
 	snapbg_y = m_theme.getInt("GAME/SNAP_BG", "y", 31);
 	snapbg_w = m_theme.getInt("GAME/SNAP_BG", "width", 246);
 	snapbg_h = m_theme.getInt("GAME/SNAP_BG", "height", 170);
+	
+	/* gc disc prompt menu */
+	m_promptBg = _texture("PROMPT/BG", "texture", theme.bg, false);
+	m_promptLblQuestion = _addLabel("PROMPT/QUESTION", theme.lblFont, L"", 112, 0, 500, 420, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_promptBtnChoice1 = _addButton("PROMPT/CHOICE1", theme.btnFont, L"", 112, 320, 200, 48, theme.btnFontColor);
+	m_promptBtnChoice2 = _addButton("PROMPT/CHOICE2", theme.btnFont, L"", 332, 320, 200, 48, theme.btnFontColor);
+	
+	_setHideAnim(m_promptLblQuestion, "PROMPT/QUESTION", 0, 0, 0.f, 0.f);
+	_setHideAnim(m_promptBtnChoice1, "PROMPT/CHOICE1", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_promptBtnChoice2, "PROMPT/CHOICE2", 0, 0, 1.f, -1.f);
+	
+	m_btnMgr.hide(m_promptLblQuestion, true);
+	m_btnMgr.hide(m_promptBtnChoice1, true);
+	m_btnMgr.hide(m_promptBtnChoice2, true);
 }
 
 void CMenu::_textGame(void)

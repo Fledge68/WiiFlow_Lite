@@ -2040,8 +2040,6 @@ void CMenu::_initCF(void)
 		else // wii, gc, channels
 		{
 			strcpy(id, hdr->id);
-			if(hdr->type == TYPE_GC_GAME && hdr->settings[0] == 1) /* disc 2 */
-				strcat(id, "_2");
 			strcpy(catID, id);
 		}
 		
@@ -2406,7 +2404,11 @@ bool CMenu::_loadGamecubeList()
 	m_cacheList.CreateList(COVERFLOW_GAMECUBE, gameDir, stringToVector(".iso|.gcm|.ciso|root", '|'), cacheDir, updateCache);
 	m_cfg.remove(GC_DOMAIN, "update_cache");
 	for(vector<dir_discHdr>::iterator tmp_itr = m_cacheList.begin(); tmp_itr != m_cacheList.end(); tmp_itr++)
+	{
+		if(tmp_itr->settings[0] == 1) /* disc 2 */
+			continue;// skip gc disc 2 if its still part of the cached list
 		m_gameList.push_back(*tmp_itr);
+	}
 	return true;
 }
 

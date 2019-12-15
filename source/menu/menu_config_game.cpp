@@ -177,8 +177,6 @@ void CMenu::_showGameSettings()
 	else
 	{
 		strcpy(id, GameHdr->id);
-		if(GameHdr->type == TYPE_GC_GAME && GameHdr->settings[0] == 1) /* disc 2 */
-			strcat(id, "_2");
 	}
 	
 	_setBg(m_gameSettingsBg, m_gameSettingsBg);
@@ -548,8 +546,6 @@ void CMenu::_gameSettings(const dir_discHdr *hdr, bool disc)
 	else
 	{
 		strcpy(id, GameHdr->id);
-		if(GameHdr->type == TYPE_GC_GAME && GameHdr->settings[0] == 1) /* disc 2 */
-			strcat(id, "_2");
 	}
 	
 	if(GameHdr->type == TYPE_GC_GAME)

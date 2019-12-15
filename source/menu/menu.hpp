@@ -201,6 +201,7 @@ private:
 	TexData m_systemBg;
 	TexData m_wbfsBg;
 	TexData m_gameSettingsBg;
+	TexData m_promptBg;
 	TexData m_gameBg;
 	TexData m_gameBgLQ;
 	TexData m_mainBg;
@@ -437,6 +438,10 @@ private:
 	s16 m_gameBtnBack;
 	s16 m_gameLblUser[5];
 	int snapbg_x, snapbg_y, snapbg_w, snapbg_h;
+// disc 2 prompt menu
+	s16 m_promptLblQuestion;
+	s16 m_promptBtnChoice1;
+	s16 m_promptBtnChoice2;
 // Parental code menu
 	s16 m_codeLblTitle;
 	s16 m_codeBtnKey[10];

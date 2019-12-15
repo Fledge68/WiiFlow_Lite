@@ -153,7 +153,7 @@ static void Add_GameCube_Game(char *FullPath)
 	if(!fp && strstr(FullPath, "/root") != NULL) //fst folder (extracted game)
 	{
 		*(strstr(FullPath, "/root") + 1) = '\0';
-		if(strlen(FullPath) + FST_APPEND_SIZE < MAX_MSG_SIZE) strcat(FullPath, FST_APPEND);
+		if(strlen(FullPath) + FST_APPEND_SIZE < MAX_MSG_SIZE) strcat(FullPath, FST_APPEND);// append "sys/boot.bin" to end of path
 		fp = fopen(FullPath, "rb");
 	}
 	if(fp)
@@ -168,16 +168,11 @@ static void Add_GameCube_Game(char *FullPath)
 		}
 		if(gc_hdr.magic == GC_MAGIC)
 		{
-			AddISO((const char*)gc_hdr.id, (const char*)gc_hdr.title,
-					FullPath, 0x000000, TYPE_GC_GAME);
 			/* Check for disc 2 */
 			fseek(fp, hdr_offset + 0x06, SEEK_SET);
 			fread(gc_disc, 1, 1, fp);
-			if(gc_disc[0])
-			{
-				wcslcat(m_cacheList.back().title, L" disc 2", 63);
-				m_cacheList.back().settings[0] = 1;
-			}
+			if(!gc_disc[0])// If not disc 2 add game iso
+				AddISO((const char*)gc_hdr.id, (const char*)gc_hdr.title, FullPath, 0x000000, TYPE_GC_GAME);
 		}
 		fclose(fp);
 	}

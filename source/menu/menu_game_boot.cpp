@@ -319,6 +319,64 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		return;
 	}
 	
+	/* Set game path */
+	char path[256];
+	if(disc)
+		snprintf(path, sizeof(path), "%s", "di");
+	else
+		snprintf(path, sizeof(path), "%s", hdr->path);
+		
+	if(loader == NINTENDONT && !disc)// Check if game has multi Discs
+	{
+		char disc2Path[256];
+		disc2Path[255] = '\0';
+		strncpy(disc2Path, path, sizeof(disc2Path) - 1);
+		char *pathPtr = strrchr(disc2Path, '/');
+		if(pathPtr) *pathPtr = 0;
+		strncpy(disc2Path, fmt("%s/disc2.iso", disc2Path), sizeof(disc2Path) - 1);
+		// note fst extracted /boot.bin paths will not have disc2.iso
+		if(fsop_FileExist(disc2Path))
+		{
+			SetupInput();
+			_setBg(m_promptBg, m_promptBg);
+			m_btnMgr.show(m_promptLblQuestion);
+			m_btnMgr.show(m_promptBtnChoice1);
+			m_btnMgr.show(m_promptBtnChoice2);
+			m_btnMgr.setText(m_promptLblQuestion, _t("discq", L"This game has multiple discs. Please select the disc to launch."));
+			m_btnMgr.setText(m_promptBtnChoice1, _t("disc1", L"Disc 1"));
+			m_btnMgr.setText(m_promptBtnChoice2, _t("disc2", L"Disc 2"));
+			int choice = -1;
+			while(!m_exit)
+			{
+				_mainLoopCommon();
+				if(BTN_UP_PRESSED)
+					m_btnMgr.up();
+				else if(BTN_DOWN_PRESSED)
+					m_btnMgr.down();
+				else if(BTN_A_PRESSED)
+				{
+					if(m_btnMgr.selected(m_promptBtnChoice1))
+					{
+						choice = 0;
+						break;
+					}
+					else if(m_btnMgr.selected(m_promptBtnChoice2))
+					{
+						choice = 1;
+						break;
+					}
+				}
+			}
+			m_btnMgr.hide(m_promptLblQuestion);
+			m_btnMgr.hide(m_promptBtnChoice1);
+			m_btnMgr.hide(m_promptBtnChoice2);
+			if(choice < 0)
+				return;
+			if(choice == 1)
+				snprintf(path, sizeof(path), "%s", disc2Path);
+		}
+	}
+	
 	/* clear coverflow, start wiiflow wait animation, set exit handler */	
 	_launchShutdown();
 	
@@ -329,12 +387,6 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		add_game_to_card(id);
 
 	/* Get game settings */
-	const char *path = NULL;
-	if(disc)
-		path = "di";
-	else
-		path = hdr->path;
-		
 	u8 GClanguage = min(m_gcfg2.getUInt(id, "language", 0), ARRAY_SIZE(CMenu::_GClanguages) - 1u);
 	GClanguage = (GClanguage == 0) ? min(m_cfg.getUInt(GC_DOMAIN, "game_language", 0), ARRAY_SIZE(CMenu::_GlobalGClanguages) - 1u) : GClanguage-1;
 	// language selection only works for PAL games. E and J are always set to english.
