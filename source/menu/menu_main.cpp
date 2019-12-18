@@ -254,9 +254,17 @@ void CMenu::_showCF(bool refreshList)
 		/* setup categories and favorites for filtering the game list below */
 		if(m_clearCats)// false on boot up and if a source menu button selects a category
 		{
-			// do not clear hidden categories to keep games hidden
-			m_cat.remove("GENERAL", "selected_categories");
-			m_cat.remove("GENERAL", "required_categories");
+			if(m_autoboot_hdr.type == TYPE_PLUGIN && m_cat.hasDomain("PLUGINS"))
+			{
+				m_cat.remove("PLUGINS", "selected_categories");
+				m_cat.remove("PLUGINS", "required_categories");
+			}
+			else
+			{
+				// do not clear hidden categories to keep games hidden
+				m_cat.remove("GENERAL", "selected_categories");
+				m_cat.remove("GENERAL", "required_categories");
+			}
 		}
 		m_clearCats = true;// set to true for next source
 		

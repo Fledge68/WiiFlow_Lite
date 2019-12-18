@@ -1065,6 +1065,7 @@ private:
 	void _updateCheckboxes(void);
 	void _getGameCategories(void);
 	void _setGameCategories(void);
+	void _setCatGenDomain(void);
 	void _getCustomBgTex(void);
 	void _setMainBg(void);
 	void _setBg(const TexData &bgTex, const TexData &bglqTex);

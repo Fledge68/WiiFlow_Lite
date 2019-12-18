@@ -22,6 +22,7 @@ u8 lastBtn;
 char id[64];
 const char *catDomain = NULL;
 bool gameSet;
+string genDomain;
 
 void CMenu::_hideCategorySettings(bool instant)
 {
@@ -59,6 +60,40 @@ void CMenu::_showCategorySettings(void)
 	_updateCheckboxes();
 }
 
+void CMenu::_setCatGenDomain()
+{
+	genDomain = "GENERAL";
+	if(!m_cat.hasDomain("PLUGINS"))// if still using old style categories_lite.ini set as "GENERAL" and return
+		return;
+	if(gameSet)
+	{
+		const dir_discHdr *hdr = CoverFlow.getHdr();
+		if(hdr->type == TYPE_PLUGIN)
+			genDomain = "PLUGINS";
+	}
+	else if(m_current_view & COVERFLOW_PLUGIN)
+	{
+		for(u8 i = 0; m_plugin.PluginExist(i); ++i)// only set "PLUGINS" for real plugins
+		{
+			if(m_plugin.GetEnableStatus(m_cfg, m_plugin.getPluginMagic(i)))
+			{
+				if(strncasecmp(m_plugin.PluginMagicWord, "4E47434D", 8) == 0)//NGCM
+					continue;
+				else if(strncasecmp(m_plugin.PluginMagicWord, "4E574949", 8) == 0)//NWII
+					continue;
+				else if(strncasecmp(m_plugin.PluginMagicWord, "4E414E44", 8) == 0)//NAND
+					continue;
+				else if(strncasecmp(m_plugin.PluginMagicWord, "454E414E", 8) == 0)//EMUNAND
+					continue;
+				else if(strncasecmp(m_plugin.PluginMagicWord, "48425257", 8) == 0)//HBRW
+					continue;	
+				else
+					genDomain = "PLUGINS";
+			}
+		}
+	}
+}
+
 void CMenu::_updateCheckboxes(void)
 {
 	for(u8 i = 1; i < 11; ++i)
@@ -77,6 +112,7 @@ void CMenu::_updateCheckboxes(void)
 		m_btnMgr.show(m_categoryBtnPageM);
 		m_btnMgr.show(m_categoryBtnPageP);
 	}
+
 	for(u8 i = 1; i < 11; ++i)
 	{
 		int j = i + ((curPage - 1) * 10);
@@ -96,7 +132,7 @@ void CMenu::_updateCheckboxes(void)
 			default:
 				m_btnMgr.show(m_categoryBtnCatReq[i]);
 		}
-		m_btnMgr.setText(m_categoryLblCat[i], m_cat.getWString("GENERAL", fmt("cat%d",j), wfmt(L"Category %i",j).c_str()));	
+		m_btnMgr.setText(m_categoryLblCat[i], m_cat.getWString(genDomain, fmt("cat%d",j), wfmt(L"Category %i",j).c_str()));
 		m_btnMgr.show(m_categoryLblCat[i]);
 	}
 
@@ -174,8 +210,10 @@ void CMenu::_CategorySettings(bool fromGameSet)
 	
 	if(m_source.loaded() && m_catStartPage > 0)
 		curPage = m_catStartPage;
+
+	_setCatGenDomain();
 	
-	m_max_categories = m_cat.getInt("GENERAL", "numcategories", 6);
+	m_max_categories = m_cat.getInt(genDomain, "numcategories", 6);
 	if(curPage < 1 || curPage > (((m_max_categories - 2)/ 10) + 1))
 		curPage = 1;
 	m_categories.resize(m_max_categories, '0');
@@ -187,9 +225,9 @@ void CMenu::_CategorySettings(bool fromGameSet)
 	}
 	else
 	{
-		string requiredCats = m_cat.getString("GENERAL", "required_categories", "");
-		string selectedCats = m_cat.getString("GENERAL", "selected_categories", "");
-		string hiddenCats = m_cat.getString("GENERAL", "hidden_categories", "");
+		string requiredCats = m_cat.getString(genDomain, "required_categories", "");
+		string selectedCats = m_cat.getString(genDomain, "selected_categories", "");
+		string hiddenCats = m_cat.getString(genDomain, "hidden_categories", "");
 		u8 numReqCats = requiredCats.length();
 		u8 numSelCats = selectedCats.length();
 		u8 numHidCats = hiddenCats.length();
@@ -254,9 +292,9 @@ void CMenu::_CategorySettings(bool fromGameSet)
 						newReqCats = newReqCats + cCh;
 					}
 				}
-				m_cat.setString("GENERAL", "selected_categories", newSelCats);
-				m_cat.setString("GENERAL", "hidden_categories", newHidCats);
-				m_cat.setString("GENERAL", "required_categories", newReqCats);
+				m_cat.setString(genDomain, "selected_categories", newSelCats);
+				m_cat.setString(genDomain, "hidden_categories", newHidCats);
+				m_cat.setString(genDomain, "required_categories", newReqCats);
 			}
 			else
 			{

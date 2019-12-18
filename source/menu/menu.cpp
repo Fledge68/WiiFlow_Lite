@@ -1993,18 +1993,18 @@ void CMenu::_initCF(void)
 	CoverFlow.clear();
 	CoverFlow.reserve(m_gameList.size());
 
-	string requiredCats = m_cat.getString("GENERAL", "required_categories", "");
-	string selectedCats = m_cat.getString("GENERAL", "selected_categories", "");
-	string hiddenCats = m_cat.getString("GENERAL", "hidden_categories", "");
-	u8 numReqCats = requiredCats.length();
-	u8 numSelCats = selectedCats.length();
-	u8 numHidCats = hiddenCats.length();
-
+	string requiredCats;
+	string selectedCats;
+	string hiddenCats;
 	char id[74];
 	char catID[64];
 	
 	for(vector<dir_discHdr>::iterator hdr = m_gameList.begin(); hdr != m_gameList.end(); ++hdr)
 	{
+		requiredCats = m_cat.getString("GENERAL", "required_categories", "");
+		selectedCats = m_cat.getString("GENERAL", "selected_categories", "");
+		hiddenCats = m_cat.getString("GENERAL", "hidden_categories", "");
+		
 		const char *favDomain = "FAVORITES";
 		const char *adultDomain = "ADULTONLY";
 		
@@ -2027,6 +2027,13 @@ void CMenu::_initCF(void)
 		}
 		else if(hdr->type == TYPE_PLUGIN)
 		{
+			if(m_cat.hasDomain("PLUGINS"))// if using new style categories_lite.ini
+			{
+				requiredCats = m_cat.getString("PLUGINS", "required_categories", "");
+				selectedCats = m_cat.getString("PLUGINS", "selected_categories", "");
+				hiddenCats = m_cat.getString("PLUGINS", "hidden_categories", "");
+			}
+			
 			strncpy(m_plugin.PluginMagicWord, fmt("%08x", hdr->settings[0]), 8);
 			if(strrchr(hdr->path, '/') != NULL)
 				wcstombs(catID, hdr->title, 63);
@@ -2042,6 +2049,10 @@ void CMenu::_initCF(void)
 			strcpy(id, hdr->id);
 			strcpy(catID, id);
 		}
+		
+		u8 numReqCats = requiredCats.length();
+		u8 numSelCats = selectedCats.length();
+		u8 numHidCats = hiddenCats.length();
 		
 		if((!m_favorites || m_gcfg1.getBool(favDomain, id, false))
 			&& (!m_locked || !m_gcfg1.getBool(adultDomain, id, false)))
@@ -2289,7 +2300,7 @@ void CMenu::_initCF(void)
 			else if(strncasecmp(m_plugin.PluginMagicWord, "454E414E", 8) == 0)//EMUNAND
 				ID = m_cfg.getString("plugin_item", m_plugin.PluginMagicWord, "");
 			else
-				filename = m_cfg.getString("plugin_item", m_plugin.PluginMagicWord, "");
+				filename = m_cfg.getString("plugin_item", m_plugin.PluginMagicWord, "");// homebrew and plugins
 		}
 		else if(m_sourceflow && sm_numbers.size() > 0)
 			sourceNumber = stoi(sm_numbers[sm_numbers.size() - 1]);
