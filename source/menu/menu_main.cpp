@@ -425,8 +425,7 @@ int CMenu::main(void)
 					if(!_srcTierBack(false))// back a tier
 					{
 						// not back a tier - exit sourceflow and return to coverflow
-						m_cfg.setString(SOURCEFLOW_DOMAIN, "numbers", sm_numbers_backup);// restore if no source chosen
-						m_cfg.setString(SOURCEFLOW_DOMAIN, "tiers", sm_tiers_backup);
+						_restoreSrcTiers();
 						m_sourceflow = false;// if not back a tier then exit sourceflow
 					}
 					_getCustomBgTex();
@@ -464,8 +463,7 @@ int CMenu::main(void)
 				m_refreshGameList = true;
 				if(!_srcTierBack(true))// if already on base tier exit sourceflow
 				{
-					m_cfg.setString(SOURCEFLOW_DOMAIN, "numbers", sm_numbers_backup);// restore if no source chosen
-					m_cfg.setString(SOURCEFLOW_DOMAIN, "tiers", sm_tiers_backup);
+					_restoreSrcTiers();
 					m_sourceflow = false;
 				}
 				_getCustomBgTex();

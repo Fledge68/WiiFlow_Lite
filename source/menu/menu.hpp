@@ -1127,6 +1127,8 @@ private:
 	int _getSrcFlow();
 	void _setSrcFlow(int version);
 	bool _srcTierBack(bool home);
+	void _srcTierLoad(string fn);
+	void _restoreSrcTiers();
 	void _setSrcFlowBg();
 	void _mainLoopCommon(bool withCF = false, bool adjusting = false);
 	void _netInit();
