@@ -705,11 +705,7 @@ void CVideo::waitMessage(const TexData &tex)
 void CVideo::startImage(void)
 {
 	TexData splashTex;
-#ifdef APP_WIIFLOW
 	TexHandle.fromJPG(splashTex, wfsplash_jpg, wfsplash_jpg_size);
-#else
-	TexHandle.fromJPG(splashTex, wflsplash_jpg, wflsplash_jpg_size);
-#endif
 
 	waitMessage(splashTex);
 	render();

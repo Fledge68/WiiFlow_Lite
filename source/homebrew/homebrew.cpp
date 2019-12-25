@@ -141,22 +141,14 @@ void writeStub()
 
 	/* Extract our stub */
 	u32 StubSize = 0;
-#ifdef APP_WIIFLOW
 	u8 *Stub = DecompressCopy(wfstub_bin, wfstub_bin_size, &StubSize);
-#else
-	u8 *Stub = DecompressCopy(stub_bin, stub_bin_size, &StubSize);
-#endif
 
 	/* Copy our own stub into memory */
 	memcpy((void*)0x80001800, Stub, StubSize);
 	DCFlushRange((void*)0x80001800, StubSize);
 
 	/* And free the memory again */
-#ifdef APP_WIIFLOW
 	if(Stub != wfstub_bin)
-#else
-	if(Stub != stub_bin)
-#endif
 		free(Stub);
 }
 

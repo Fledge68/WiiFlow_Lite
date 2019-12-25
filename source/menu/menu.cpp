@@ -412,14 +412,9 @@ bool CMenu::init(bool usb_mounted)
 	/* Check if locked, set return to, set exit to, and init multi threading */
 	m_locked = m_cfg.getString("GENERAL", "parent_code", "").size() >= 4;
 	
-	/* Switch the WFLA and DWFA when using official wiiflow */
-#ifdef APP_WIIFLOW
+	/* Switch WFLA to DWFA in case they were using old wiiflow lite */
 	if(m_cfg.getString("GENERAL", "returnto") == "WFLA")
 		m_cfg.setString("GENERAL", "returnto", "DWFA");
-#else
-	if(m_cfg.getString("GENERAL", "returnto") == "DWFA")
-		m_cfg.setString("GENERAL", "returnto", "WFLA");
-#endif
 
 	/* set WIIFLOW_DEF exit to option */
 	/* 0 thru 2 of exit to enum (EXIT_TO_MENU, EXIT_TO_HBC, EXIT_TO_WIIU) in sys.h */
