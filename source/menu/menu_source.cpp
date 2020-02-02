@@ -25,6 +25,11 @@ int curflow = 1;
 bool sm_tier = false;
 int channels_type;
 
+static inline int loopNum(int i, int s)
+{
+	return (i + s) % s;
+}
+
 /* this is what happens when a sourceflow cover is clicked on */
 void CMenu::_sourceFlow()
 {
@@ -106,29 +111,7 @@ void CMenu::_sourceFlow()
 			m_cfg.setString(SOURCEFLOW_DOMAIN, "tiers", trs);
 			m_cfg.setString(SOURCEFLOW_DOMAIN, "numbers", numbers);
 			
-			m_source.unload();
-			m_source.load(fmt("%s/%s", m_sourceDir.c_str(), fn.c_str()));
-			SF_cacheCovers = true;
-			fn.replace(fn.find("."), 4, "_flow");
-			if(m_source.has("general", "flow"))
-				curflow = m_source.getInt("general", "flow", 1);
-			else
-				curflow = m_cfg.getInt(SOURCEFLOW_DOMAIN, fn, m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
-			/* get max source button # */
-			m_max_source_btn = 0;
-			const char *srcDomain = m_source.firstDomain().c_str();
-			while(1)
-			{
-				if(strlen(srcDomain) < 2)
-					break;
-				if(strrchr(srcDomain, '_') != NULL)
-				{
-					int srcBtnNumber = atoi(strrchr(srcDomain, '_') + 1);
-					if(srcBtnNumber > m_max_source_btn)
-						m_max_source_btn = srcBtnNumber;
-				}
-				srcDomain = m_source.nextDomain().c_str();
-			}
+			_srcTierLoad(fn);
 			return;
 		}
 	}
@@ -198,6 +181,11 @@ void CMenu::_srcTierLoad(string fn)
 		curflow = m_source.getInt("general", "flow", 1);
 	else
 		curflow = m_cfg.getInt(SOURCEFLOW_DOMAIN, fn, m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
+	if(m_source.has("general", "box_mode"))
+		m_cfg.setBool(SOURCEFLOW_DOMAIN, "box_mode", m_source.getBool("general", "box_mode", true));
+	if(m_source.has("general", "smallbox"))
+		m_cfg.setBool(SOURCEFLOW_DOMAIN, "smallbox", m_source.getBool("general", "smallbox", false));
+	SF_cacheCovers = true;
 	/* get max source button # */
 	m_max_source_btn = 0;
 	const char *srcDomain = m_source.firstDomain().c_str();
@@ -234,10 +222,10 @@ void CMenu::_restoreSrcTiers()
 	_srcTierLoad(tiers[tiers.size() - 1]);
 }
 
-/* set custom sourceflow background image if available */
-void CMenu::_setSrcFlowBg(void)
+/* get custom sourceflow background image if available */
+void CMenu::_getSFlowBgTex(void)
 {
-	TexHandle.Cleanup(m_mainCustomBg[curCustBg]);
+	curCustBg = loopNum(curCustBg + 1, 2);
 	string fn = m_source.getString("general", "background", "");
 	if(fn.length() > 0)
 	{
@@ -245,14 +233,18 @@ void CMenu::_setSrcFlowBg(void)
 		{
 			if(TexHandle.fromImageFile(m_mainCustomBg[curCustBg], fmt("%s/backgrounds/%s", m_sourceDir.c_str(), fn.c_str())) != TE_OK)
 			{
-				_setBg(m_mainBg, m_mainBgLQ);
+				curCustBg = loopNum(curCustBg + 1, 2);//reset it
+				customBg = false;
 				return;
 			}
 		}
-		_setBg(m_mainCustomBg[curCustBg], m_mainCustomBg[curCustBg]);
+		customBg = true;
 	}
 	else
-		_setBg(m_mainBg, m_mainBgLQ);
+	{
+		curCustBg = loopNum(curCustBg + 1, 2);//reset it
+		customBg = false;
+	}
 }
 
 /* end of sourceflow stuff - start of source menu stuff */

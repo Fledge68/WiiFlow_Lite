@@ -37,6 +37,7 @@ public:
 	void createSFList(u8 maxBtns, Config &m_sourceMenuCfg, const string& sourceDir);
 	void Init(const char *settingsDir, const char *Language, const char *plgnsDataDir);
 	void Clear();
+	void ParseScummvmINI(Config &ini, const char *Device, const char *datadir, const char *platform, const string& DBName, bool UpdateCache);
 	void CreateRomList(Config &platform_cfg, const string& romsDir, const vector<string>& FileTypes, const string& DBName, bool UpdateCache);
 	void CreateList(u32 Flow, const string& Path, const vector<string>& FileTypes, const string& DBName, bool UpdateCache);
 	u32 Color;

@@ -427,6 +427,9 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		u8 netprofile = 0;
 		if(!IsOnWiiU())
 			netprofile = m_gcfg2.getUInt(id, "net_profile", 0);
+		// project slippi is a mod of nintendont to play patched version of smash bros melee
+		bool use_slippi = (m_cfg.getBool(GC_DOMAIN, "use_slippi", false) && strncasecmp(hdr->id, "GAL", 3) == 0);
+		gprintf("use slippi %s\n", use_slippi ? "yes" : "no");
 
 		/* configs no longer needed */
 		m_gcfg1.save(true);
@@ -434,7 +437,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		m_cat.save(true);
 		m_cfg.save(true);
 
-		bool ret = (Nintendont_GetLoader() && LoadAppBooter(fmt("%s/app_booter.bin", m_binsDir.c_str())));
+		bool ret = (Nintendont_GetLoader(use_slippi) && LoadAppBooter(fmt("%s/app_booter.bin", m_binsDir.c_str())));
 		if(ret == false)
 		{
 			error(_t("errgame14", L"app_booter.bin not found!"));

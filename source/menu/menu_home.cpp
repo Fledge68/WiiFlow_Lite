@@ -498,11 +498,8 @@ int CMenu::_cacheCovers()
 		m_thrdMessage = wfmt(_fmt("dlmsg31", L"converting cover %i of %i"), index, total);
 		m_thrdMessageAdded = true;
 		
-		/* get game name or ID */
-		const char *gameNameOrID = NULL;
-		gameNameOrID = CoverFlow.getFilenameId(&(*hdr));// &(*hdr) converts iterator to pointer to mem address
-		
 		/* get cover png path */
+		bool blankCover = false;
 		bool fullCover = true;
 		strlcpy(coverPath, getBoxPath(&(*hdr)), sizeof(coverPath));
 		if(!fsop_FileExist(coverPath) || smallBox)
@@ -513,7 +510,7 @@ int CMenu::_cacheCovers()
 			{
 				fullCover = true;
 				strlcpy(coverPath, getBlankCoverPath(&(*hdr)), sizeof(coverPath));
-				gameNameOrID = strrchr(coverPath, '/') + 1;
+				blankCover = true;
 				if(!fsop_FileExist(coverPath))
 					continue;
 			}
@@ -529,6 +526,13 @@ int CMenu::_cacheCovers()
 		else
 			snprintf(cachePath, sizeof(cachePath), "%s", m_cacheDir.c_str());
 			
+		/* get game name or ID */
+		const char *gameNameOrID = NULL;
+		if(!blankCover)
+			gameNameOrID = CoverFlow.getFilenameId(&(*hdr));// &(*hdr) converts iterator to pointer to mem address
+		else
+			gameNameOrID = strrchr(coverPath, '/') + 1;
+		
 		/* get cover wfc path */
 		if(smallBox)
 			snprintf(wfcPath, sizeof(wfcPath), "%s/%s_small.wfc", cachePath, gameNameOrID);

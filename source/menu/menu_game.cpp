@@ -505,8 +505,12 @@ void CMenu::_game(bool launch)
 		{
 			_hideGame();
 			m_banner.SetShowBanner(false);
-			_gameinfo();
+			m_gameSelected = false;
+			launch = _gameinfo();
+			m_gameSelected = true;
 			_showGame();
+			if(m_newGame)
+				startGameSound = -10;
 			m_banner.SetShowBanner(true);
 		}
 		/* play or stop a trailer video */
@@ -930,8 +934,8 @@ void CMenu::_game(bool launch)
 	TexData emptyTex;
 	m_btnMgr.setTexture(m_gameLblSnap, emptyTex);
 	m_btnMgr.setTexture(m_gameLblOverlay, emptyTex);
-	TexHandle.Cleanup(m_snap);
-	TexHandle.Cleanup(m_overlay);
+	TexHandle.Cleanup(m_game_snap);
+	TexHandle.Cleanup(m_game_overlay);
 	m_gameSelected = false;
 	MEM2_free(hdr);
 	_hideGame();
@@ -988,8 +992,8 @@ void CMenu::_initGameMenu()
 	m_gameBtnToggle = _addPicButton("GAME/TOOGLE_BTN", texToggleBanner, texToggleBanner, 385, 31, 246, 135);
 	m_gameBtnToggleFull = _addPicButton("GAME/TOOGLE_FULL_BTN", texToggleBanner, texToggleBanner, 20, 12, 608, 344);
 	m_gameLblSnapBg = _addLabel("GAME/SNAP_BG", theme.txtFont, L"", 385, 31, 246, 170, theme.txtFontColor, 0, texSnapShotBg);
-	m_gameLblSnap = _addLabel("GAME/SNAP", theme.txtFont, L"", 385, 31, 100, 100, theme.txtFontColor, 0, m_snap);
-	m_gameLblOverlay = _addLabel("GAME/OVERLAY", theme.txtFont, L"", 385, 31, 100, 100, theme.txtFontColor, 0, m_overlay);
+	m_gameLblSnap = _addLabel("GAME/SNAP", theme.txtFont, L"", 385, 31, 100, 100, theme.txtFontColor, 0, m_game_snap);
+	m_gameLblOverlay = _addLabel("GAME/OVERLAY", theme.txtFont, L"", 385, 31, 100, 100, theme.txtFontColor, 0, m_game_overlay);
 	// 8 pixel width frames
 	m_gameLblSnapFrame = _addLabel("GAME/SNAP_FRAME", theme.txtFont, L"", 377, 23, 262, 186, theme.txtFontColor, 0, texSnapShotFrame);
 	m_gameLblBannerFrame = _addLabel("GAME/BANNER_FRAME", theme.txtFont, L"", 377, 23, 262, 151, theme.txtFontColor, 0, texBannerFrame);
@@ -1168,10 +1172,10 @@ void * CMenu::_gameSoundThread(void *obj)
 					if(fsop_FileExist(snap_path))
 					{
 						m->m_snapshot_loaded = true;
-						TexHandle.fromImageFile(m->m_snap, snap_path);
+						TexHandle.fromImageFile(m->m_game_snap, snap_path);
 						/* get snapshot position and dimensions to center it on the snap background */
-						int snap_w = m->m_snap.width;
-						int snap_h = m->m_snap.height;
+						int snap_w = m->m_game_snap.width;
+						int snap_h = m->m_game_snap.height;
 						int width_over = snap_w - m->snapbg_w;
 						int height_over = snap_h - m->snapbg_h;
 						float aspect_ratio = (float)snap_w / (float)snap_h;
@@ -1191,24 +1195,24 @@ void * CMenu::_gameSoundThread(void *obj)
 
 						int x_pos = (m->snapbg_w - snap_w) / 2 + m->snapbg_x;
 						int y_pos = (m->snapbg_h - snap_h) / 2 + m->snapbg_y;
-						m_btnMgr.setTexture(m->m_gameLblSnap, m->m_snap, x_pos, y_pos, snap_w, snap_h);
+						m_btnMgr.setTexture(m->m_gameLblSnap, m->m_game_snap, x_pos, y_pos, snap_w, snap_h);
 						
 						/* get possible overlay */
 						const char *overlay_path = fmt("%s/%s_overlay.png", m->m_snapDir.c_str(), platformName);
 						if(fsop_FileExist(overlay_path))
 						{
-							TexHandle.fromImageFile(m->m_overlay, overlay_path);
-							m_btnMgr.setTexture(m->m_gameLblOverlay, m->m_overlay, x_pos, y_pos, snap_w, snap_h);
+							TexHandle.fromImageFile(m->m_game_overlay, overlay_path);
+							m_btnMgr.setTexture(m->m_gameLblOverlay, m->m_game_overlay, x_pos, y_pos, snap_w, snap_h);
 						}
 						else
-							TexHandle.Cleanup(m->m_overlay);
+							TexHandle.Cleanup(m->m_game_overlay);
 					}
 				}
 			}
 			if(!m->m_snapshot_loaded)
 			{
-				TexHandle.Cleanup(m->m_snap);
-				TexHandle.Cleanup(m->m_overlay);
+				TexHandle.Cleanup(m->m_game_snap);
+				TexHandle.Cleanup(m->m_game_overlay);
 			}
 		}
 		if(custom_bnr_size == 0 || custom_bnr_file == NULL)

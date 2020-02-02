@@ -18,23 +18,50 @@ int synopsis_h;
 int rominfo_h;
 int rominfo_th = 0;
 
-void CMenu::_gameinfo(void)
+bool CMenu::_gameinfo(void)
 { 
 	u8 page = 1;
 	int pixels_to_skip = 10;	
 	int amount_of_skips = 0;
 	int xtra_skips = 0;
 	int synopsis_th = 0;
-
+	bool launchGame = false;
+	
 	SetupInput();
 	_showGameInfo();
 	
 	while(!m_exit)
 	{
 		_mainLoopCommon();
-		if(BTN_HOME_PRESSED || BTN_B_PRESSED || !tdb_found)
+		CoverFlow.tick();
+		if(BTN_HOME_PRESSED || BTN_B_PRESSED)
 			break;
-		if((BTN_DOWN_PRESSED || BTN_DOWN_HELD))
+		else if(BTN_PLUS_PRESSED)
+		{
+			_hideGameInfo(false);
+			CoverFlow.right();
+			m_newGame = true;
+			page = 1;
+			amount_of_skips = 0;
+			xtra_skips = 0;
+			_showGameInfo();
+		}
+		else if(BTN_MINUS_PRESSED)
+		{
+			_hideGameInfo(false);
+			CoverFlow.left();
+			m_newGame = true;
+			page = 1;
+			amount_of_skips = 0;
+			xtra_skips = 0;
+			_showGameInfo();
+		}
+		else if(BTN_A_PRESSED)
+		{
+			launchGame = true;
+			break;
+		}
+		else if((BTN_DOWN_PRESSED || BTN_DOWN_HELD))
 		{
 			if(page == 2 && synopsis_th > synopsis_h)
 			{
@@ -179,11 +206,9 @@ void CMenu::_gameinfo(void)
 	}
 	_hideGameInfo(false);
 	TexHandle.Cleanup(m_cart);
-	if(m_banner.GetSelectedGame())// if banner is available we need to clear snap and overlay here.
-	{
-		TexHandle.Cleanup(m_snap);
-		TexHandle.Cleanup(m_overlay);
-	}
+	TexHandle.Cleanup(m_snap);
+	TexHandle.Cleanup(m_overlay);
+	return launchGame;
 }
 
 void CMenu::_hideGameInfo(bool instant)
@@ -221,11 +246,16 @@ void CMenu::_showGameInfo(void)
 
 	_textGameInfo();
 	
-	if(tdb_found)
+	m_btnMgr.show(m_gameinfoLblTitle);
+	
+	if(CoverFlow.getHdr()->type == TYPE_PLUGIN)
 	{
-		m_btnMgr.show(m_gameinfoLblTitle);
-
-		if(CoverFlow.getHdr()->type == TYPE_PLUGIN)
+		if(!tdb_found)
+		{
+			m_btnMgr.setText(m_gameinfoLblRomInfo, _t("errgame18", L"No game info!"));
+			m_btnMgr.show(m_gameinfoLblRomInfo);
+		}
+		else
 		{
 			m_btnMgr.reset(m_gameinfoLblRomInfo);
 			m_btnMgr.show(m_gameinfoLblRomInfo, false);
@@ -234,6 +264,14 @@ void CMenu::_showGameInfo(void)
 			m_btnMgr.show(m_gameinfoLblSnap);
 			m_btnMgr.show(m_gameinfoLblCartDisk);
 			m_btnMgr.show(m_gameinfoLblOverlay);
+		}
+	}
+	else
+	{
+		if(!tdb_found)
+		{
+			m_btnMgr.setText(m_gameinfoLblID, _t("errgame18", L"No game info!"));
+			m_btnMgr.show(m_gameinfoLblID);
 		}
 		else
 		{
@@ -246,21 +284,19 @@ void CMenu::_showGameInfo(void)
 			m_btnMgr.show(m_gameinfoLblGenre);
 			m_btnMgr.show(m_gameinfoLblWifiplayers);
 		}
-
-		for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblUser); ++i)
-			if(i < ARRAY_SIZE(m_gameinfoLblUser) / 2)
-				m_btnMgr.show(m_gameinfoLblUser[i]);
-		
-		for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControlsReq); ++i)
-			if(m_gameinfoLblControlsReq[i] != -1 && i < cnt_controlsreq)
-				m_btnMgr.show(m_gameinfoLblControlsReq[i]);
-			
-		for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControls); ++i)
-			if(m_gameinfoLblControls[i] != -1 && i < cnt_controls)
-				m_btnMgr.show(m_gameinfoLblControls[i]);
 	}
-	else
-		error(_t("errgame18", L"No game info!"));
+
+	for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblUser); ++i)
+		if(i < ARRAY_SIZE(m_gameinfoLblUser) / 2)
+			m_btnMgr.show(m_gameinfoLblUser[i]);
+	
+	for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControlsReq); ++i)
+		if(m_gameinfoLblControlsReq[i] != -1 && i < cnt_controlsreq)
+			m_btnMgr.show(m_gameinfoLblControlsReq[i]);
+	
+	for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControls); ++i)
+		if(m_gameinfoLblControls[i] != -1 && i < cnt_controls)
+			m_btnMgr.show(m_gameinfoLblControls[i]);
 }
 
 void CMenu::_initGameInfoMenu()
@@ -342,6 +378,9 @@ void CMenu::_textGameInfo(void)
 		// We can't use magic # directly since it'd require hardcoding values and a # can be several systems(genplus) 
 		// We can't rely on coverfolder either. Different systems can share the same folder. Or combined plugins used for the same system.
 		
+		// Get title
+		m_btnMgr.setText(m_gameinfoLblTitle, GameHdr->title);
+		
 		/* is platform.ini available? */
 		if(!m_platform.loaded())
 			return;// no platform.ini found
@@ -387,37 +426,27 @@ void CMenu::_textGameInfo(void)
 		m_btnMgr.setTexture(m_gameinfoLblCartDisk, emptyTex);
 		m_btnMgr.setTexture(m_gameinfoLblOverlay, emptyTex);
 
-		if(m_banner.GetSelectedGame())
-		{
-			const char *snap_path = NULL;
-			if(strcasestr(platformName, "ARCADE") || strcasestr(platformName, "CPS") || !strncasecmp(platformName, "NEOGEO", 6))
-				snap_path = fmt("%s/%s/%s.png", m_snapDir.c_str(), platformName, ShortName.c_str());
-			else if(gametdb.GetName(GameID, TMP_Char))
-				snap_path = fmt("%s/%s/%s.png", m_snapDir.c_str(), platformName, TMP_Char);
-			
-			if(snap_path == NULL || !fsop_FileExist(snap_path))
-				snap_path = fmt("%s/%s/%s.png", m_snapDir.c_str(), platformName, GameID);
+		const char *snap_path = NULL;
+		if(strcasestr(platformName, "ARCADE") || strcasestr(platformName, "CPS") || !strncasecmp(platformName, "NEOGEO", 6))
+			snap_path = fmt("%s/%s/%s.png", m_snapDir.c_str(), platformName, ShortName.c_str());
+		else if(gametdb.GetName(GameID, TMP_Char))
+			snap_path = fmt("%s/%s/%s.png", m_snapDir.c_str(), platformName, TMP_Char);
+		
+		if(snap_path == NULL || !fsop_FileExist(snap_path))
+			snap_path = fmt("%s/%s/%s.png", m_snapDir.c_str(), platformName, GameID);
 
-			if(fsop_FileExist(snap_path))
-			{
-				TexHandle.fromImageFile(m_snap, snap_path);
-				m_btnMgr.setTexture(m_gameinfoLblSnap, m_snap, m_snap.width, m_snap.height);
-			}
-		}
-		else if(m_snap.data != NULL)
-			m_btnMgr.setTexture(m_gameinfoLblSnap, m_snap, m_snap.width, m_snap.height);
-			
-		if(m_banner.GetSelectedGame())
+		if(fsop_FileExist(snap_path))
 		{
-			const char *overlay_path = fmt("%s/%s_overlay.png", m_snapDir.c_str(), platformName);
-			if(fsop_FileExist(overlay_path))
-			{
-				TexHandle.fromImageFile(m_overlay, overlay_path);
-				m_btnMgr.setTexture(m_gameinfoLblOverlay, m_overlay, m_overlay.width, m_overlay.height);
-			}
+			TexHandle.fromImageFile(m_snap, snap_path);
+			m_btnMgr.setTexture(m_gameinfoLblSnap, m_snap, m_snap.width, m_snap.height);
 		}
-		else if(m_overlay.data != NULL)
+			
+		const char *overlay_path = fmt("%s/%s_overlay.png", m_snapDir.c_str(), platformName);
+		if(fsop_FileExist(overlay_path))
+		{
+			TexHandle.fromImageFile(m_overlay, overlay_path);
 			m_btnMgr.setTexture(m_gameinfoLblOverlay, m_overlay, m_overlay.width, m_overlay.height);
+		}
 			
 		const char *cart_path = NULL;
 		if(strcasestr(platformName, "ARCADE") || strcasestr(platformName, "CPS") || !strncasecmp(platformName, "NEOGEO", 6))
@@ -438,9 +467,6 @@ void CMenu::_textGameInfo(void)
 		}
 		else
 			TexHandle.Cleanup(m_cart);
-		
-		// Get title
-		m_btnMgr.setText(m_gameinfoLblTitle, GameHdr->title);
 		
 		// Get Synopsis
 		if(gametdb.GetSynopsis(GameID, TMP_Char))
@@ -545,6 +571,8 @@ void CMenu::_textGameInfo(void)
 	
 	/******************* Wii and GameCube game infos **********************/
 	
+	m_btnMgr.setText(m_gameinfoLblTitle, GameHdr->title);
+	
 	gametdb.OpenFile(fmt("%s/wiitdb.xml", m_settingsDir.c_str()));
 	tdb_found = gametdb.IsLoaded();
 	if(!tdb_found)
@@ -554,7 +582,6 @@ void CMenu::_textGameInfo(void)
 
 	strncpy(GameID, CoverFlow.getId(), 6);
 
-	m_btnMgr.setText(m_gameinfoLblTitle, GameHdr->title);
 	/*if(gametdb.GetTitle(GameID, TMP_Char))
 	{
 		gameinfo_Title_w.fromUTF8(TMP_Char);

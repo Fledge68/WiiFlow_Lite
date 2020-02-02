@@ -1641,9 +1641,9 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 		MusicPlayer.Pause();//note - bg music is paused but sound thread is still running. so banner gamesound still plays
 		m_btnMgr.tick();
 		m_vid.prepare();
-		m_vid.setup2DProjection(false, true);
+		m_vid.setup2DProjection(false, true);// false = prepare() already set view port, true = no scaling - draw at 640x480
 		_updateBg();
-		m_vid.setup2DProjection();
+		m_vid.setup2DProjection();// this time set the view port and allow scaling
 		_drawBg();
 		m_btnMgr.draw();
 		m_vid.render();
@@ -1680,7 +1680,6 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 			CoverFlow.draw();
 			m_vid.setup2DProjection(false, true);
 			CoverFlow.drawEffect();
-			//if(startGameSound == 1 && !m_soundThrdBusy && !m_banner.GetSelectedGame() && !m_snapshot_loaded)
 			if(!m_soundThrdBusy && !m_banner.GetSelectedGame() && !m_snapshot_loaded)
 				CoverFlow.drawText(adjusting);
 			m_vid.renderAAPass(i);
@@ -2524,7 +2523,9 @@ bool CMenu::_loadPluginList()
 		}
 		else
 		{
-			vector<dir_discHdr> scummvmList;
+			string cachedListFile(fmt("%s/%s_%s.db", m_listCacheDir.c_str(), DeviceName[currentPartition], m_plugin.PluginMagicWord));
+			if(updateCache || !fsop_FileExist(cachedListFile.c_str()))
+				cacheCovers = true;
 			Config scummvm;
 			if(!scummvm.load(fmt("%s/scummvm.ini", m_pluginsDir.c_str())))
 			{
@@ -2534,11 +2535,11 @@ bool CMenu::_loadPluginList()
 			string platformName = "";
 			if(m_platform.loaded())/* convert plugin magic to platform name */
 				platformName = m_platform.getString("PLUGINS", m_plugin.PluginMagicWord);
-			scummvmList = m_plugin.ParseScummvmINI(scummvm, DeviceName[currentPartition], Magic, m_pluginDataDir.c_str(), platformName.c_str());
-			for(vector<dir_discHdr>::iterator tmp_itr = scummvmList.begin(); tmp_itr != scummvmList.end(); tmp_itr++)
+			m_cacheList.Color = m_plugin.GetCaseColor(i);
+			m_cacheList.Magic = Magic;
+			m_cacheList.ParseScummvmINI(scummvm, DeviceName[currentPartition], m_pluginDataDir.c_str(), platformName.c_str(), cachedListFile, updateCache);
+			for(vector<dir_discHdr>::iterator tmp_itr = m_cacheList.begin(); tmp_itr != m_cacheList.end(); tmp_itr++)
 				m_gameList.push_back(*tmp_itr);
-			scummvmList.clear();
-			vector<dir_discHdr>().swap(scummvmList);
 			scummvm.unload();
 		}
 	}

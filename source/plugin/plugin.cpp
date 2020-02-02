@@ -226,66 +226,6 @@ const vector<bool> &Plugin::GetEnabledPlugins(Config &cfg, u8 *num)
 	return enabledPlugins;
 }
 
-/* notes: "description" is used as the title because it basically is the title */
-/* the [GameDomain] is used as the path even though it isn't the path */
-/* the [GameDomain] is usually short without any '/' */
-/* in scummvm.ini the path is the path without the exe or main app file added on */
-vector<dir_discHdr> Plugin::ParseScummvmINI(Config &ini, const char *Device, u32 Magic, const char *datadir, const char *platform)
-{
-	gprintf("Parsing scummvm.ini\n");
-	vector<dir_discHdr> ScummvmList;
-	if(!ini.loaded())
-		return ScummvmList;
-
-	Config m_crc;
-	if(platform != NULL)
-		m_crc.load(fmt("%s/%s/%s.ini", datadir, platform, platform));
-	dir_discHdr ListElement;
-	
-	const char *GameDomain = ini.firstDomain().c_str();
-	while(1)
-	{
-		if(strlen(GameDomain) < 2)
-			break;
-		char GameName[64];
-		memset(GameName, 0, sizeof(GameName));
-		strncpy(GameName, ini.getString(GameDomain, "description").c_str(), 63);
-		if(strlen(GameName) < 2 || strncasecmp(Device, ini.getString(GameDomain, "path").c_str(), 2) != 0)
-		{
-			GameDomain = ini.nextDomain().c_str();
-			continue;
-		}
-		
-		/* get shortName */
-		char *cp;
-		if((cp = strstr(GameName, " (")) != NULL)
-			*cp = '\0';
-		
-		/* get Game ID */
-		string GameID = "PLUGIN";
-		// Get game ID based on GameName
-		if(m_crc.loaded() && m_crc.has(platform, GameName))
-		{
-			vector<string> searchID = m_crc.getStrings(platform, GameName, '|');
-			if(!searchID[0].empty())
-				GameID = searchID[0];
-		}
-		
-		memset((void*)&ListElement, 0, sizeof(dir_discHdr));
-		memcpy(ListElement.id, GameID.c_str(), 6);
-		ListElement.casecolor = Plugins.back().caseColor;
-		mbstowcs(ListElement.title, GameName, 63);
-		strncpy(ListElement.path, GameDomain, sizeof(ListElement.path));
-		//gprintf("Found: %s\n", GameDomain);
-		ListElement.settings[0] = Magic;
-		ListElement.type = TYPE_PLUGIN;
-		ScummvmList.push_back(ListElement);
-		GameDomain = ini.nextDomain().c_str();
-	}
-	m_crc.unload();
-	return ScummvmList;
-}
-
 vector<string> Plugin::CreateArgs(const char *device, const char *path,
 			const char *title, const char *loader, u32 title_len_no_ext, u32 magic)
 {

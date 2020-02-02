@@ -85,7 +85,6 @@ public:
 	
 	vector<string> CreateArgs(const char *device, const char *path, 
 		const char *title, const char *loader, u32 title_len_no_ext, u32 magic);
-	vector<dir_discHdr> ParseScummvmINI(Config &ini, const char *Device, u32 Magic, const char *datadir, const char *platform);
 	string GenerateCoverLink(dir_discHdr gameHeader, const string& constURL, Config &Checksums);
 	char PluginMagicWord[9];
 	

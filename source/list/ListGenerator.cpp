@@ -296,7 +296,79 @@ static void Add_Plugin_Game(char *FullPath)
 	m_cacheList.push_back(ListElement);
 }
 
-/* note: scummvm games have list generator in plugin.cpp */
+/* notes: "description" is used as the title because it basically is the title */
+/* the [GameDomain] is used as the path even though it isn't the path */
+/* the [GameDomain] is usually short without any '/' */
+/* in scummvm.ini the path is the path without the exe or main app file added on */
+void ListGenerator::ParseScummvmINI(Config &ini, const char *Device, const char *datadir, const char *platform, const string& DBName, bool UpdateCache)
+{
+	Clear();
+	if(!DBName.empty())
+	{
+		if(UpdateCache)
+			fsop_deleteFile(DBName.c_str());
+		else
+		{
+			CCache(*this, DBName, LOAD);
+			if(!this->empty())
+				return;
+			fsop_deleteFile(DBName.c_str());
+		}
+	}
+	
+	gprintf("Parsing scummvm.ini\n");
+	if(!ini.loaded())
+		return;
+
+	Config m_crc;
+	if(platform != NULL)
+		m_crc.load(fmt("%s/%s/%s.ini", datadir, platform, platform));
+	
+	const char *GameDomain = ini.firstDomain().c_str();
+	while(1)
+	{
+		if(strlen(GameDomain) < 2)
+			break;
+		char GameName[64];
+		memset(GameName, 0, sizeof(GameName));
+		strncpy(GameName, ini.getString(GameDomain, "description").c_str(), 63);
+		if(strlen(GameName) < 2 || strncasecmp(Device, ini.getString(GameDomain, "path").c_str(), 2) != 0)
+		{
+			GameDomain = ini.nextDomain().c_str();
+			continue;
+		}
+		
+		/* get shortName */
+		char *cp;
+		if((cp = strstr(GameName, " (")) != NULL)
+			*cp = '\0';
+		
+		/* get Game ID */
+		string GameID = "PLUGIN";
+		// Get game ID based on GameName
+		if(m_crc.loaded() && m_crc.has(platform, GameName))
+		{
+			vector<string> searchID = m_crc.getStrings(platform, GameName, '|');
+			if(!searchID[0].empty())
+				GameID = searchID[0];
+		}
+		
+		memset((void*)&ListElement, 0, sizeof(dir_discHdr));
+		memcpy(ListElement.id, GameID.c_str(), 6);
+		mbstowcs(ListElement.title, GameName, 63);
+		strncpy(ListElement.path, GameDomain, sizeof(ListElement.path));
+		ListElement.settings[0] = m_cacheList.Magic; //scummvm magic
+		ListElement.casecolor = m_cacheList.Color;
+		ListElement.type = TYPE_PLUGIN;
+		m_cacheList.push_back(ListElement);
+		GameDomain = ini.nextDomain().c_str();
+	}
+	m_crc.unload();
+	if(!this->empty() && !DBName.empty()) /* Write a new Cache */
+		CCache(*this, DBName, SAVE);
+}
+
+/* note: scummvm games are parsed above */
 void ListGenerator::CreateRomList(Config &platform_cfg, const string& romsDir, const vector<string>& FileTypes, const string& DBName, bool UpdateCache)
 {
 	Clear();
@@ -313,6 +385,7 @@ void ListGenerator::CreateRomList(Config &platform_cfg, const string& romsDir, c
 		}
 	}
 	
+	platformName = "";
 	if(platform_cfg.loaded())
 	{
 		/* Search platform.ini to find plugin magic to get platformName */
@@ -344,8 +417,7 @@ void ListGenerator::CreateRomList(Config &platform_cfg, const string& romsDir, c
 		CCache(*this, DBName, SAVE);
 }
 	
-void ListGenerator::CreateList(u32 Flow, const string& Path, const vector<string>& FileTypes, 
-								const string& DBName, bool UpdateCache)
+void ListGenerator::CreateList(u32 Flow, const string& Path, const vector<string>& FileTypes, const string& DBName, bool UpdateCache)
 {
 	Clear();
 	if(!DBName.empty())

@@ -841,6 +841,7 @@ int GameTDB::GetWifiPlayers(const char *id)
 
 	players = atoi(PlayersNode);
 
+	MEM2_free(data);
 	return players;
 }
 
@@ -912,6 +913,7 @@ int GameTDB::GetPlayers(const char *id)
 
 	players = atoi(PlayersNode);
 
+	MEM2_free(data);
 	return players;
 }
 
@@ -1005,15 +1007,16 @@ int GameTDB::GetCaseVersions(const char *id)
 		return altcase;
 	}
 
-	char *PlayersNode = GetNodeText(data, "case versions=\"", "\"");
-	if(!PlayersNode)
+	char *CaseVersionsNode = GetNodeText(data, "case versions=\"", "\"");
+	if(!CaseVersionsNode)
 	{
 		MEM2_free(data);
 		return altcase;
 	}
 
-	altcase = atoi(PlayersNode);
+	altcase = atoi(CaseVersionsNode);
 
+	MEM2_free(data);
 	return altcase;
 }
 

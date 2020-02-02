@@ -22,9 +22,10 @@
 // Nintendont
 #include "nin_cfg.h"
 #define NIN_LOADER_PATH "%s:/apps/nintendont/boot.dol"
+#define NIN_SLIPPI_PATH "%s:/apps/nintendont slippi/boot.dol"
 
 bool Nintendont_Installed();
-bool Nintendont_GetLoader();
+bool Nintendont_GetLoader(bool use_slippi);
 void Nintendont_SetOptions(const char *gamePath, const char *gameID, const char *CheatPath, u8 lang, u32 n_cfg, 
 							u32 n_vm, s8 vidscale, s8 vidoffset, u8 netprofile);
 

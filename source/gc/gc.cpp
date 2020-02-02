@@ -72,6 +72,7 @@ u8 get_wii_language()
 
 // Nintendont
 NIN_CFG NinCfg;
+bool slippi;
 
 /* since Nintendont v1.98 argsboot is supported.
 since v3.324 '$$Version:' string was added for loaders to detect.
@@ -90,9 +91,13 @@ void Nintendont_SetOptions(const char *gamePath, const char *gameID, const char 
 	u32 NIN_cfg_version = NIN_CFG_VERSION;
 	char NINVersion[7]= "";
 	u32 NINRev = 0;
+	const char *dol_path = NULL;
 	for(u8 i = SD; i < MAXDEVICES; ++i)
 	{
-		const char *dol_path = fmt(NIN_LOADER_PATH, DeviceName[i]);
+		if(slippi)
+			dol_path = fmt(NIN_SLIPPI_PATH, DeviceName[i]);
+		else
+			dol_path = fmt(NIN_LOADER_PATH, DeviceName[i]);
 		if(!fsop_FileExist(dol_path))
 			continue;
 		u8 *buffer = NULL;
@@ -213,12 +218,17 @@ bool Nintendont_Installed()
 	return false;
 }
 
-bool Nintendont_GetLoader()
+bool Nintendont_GetLoader(bool use_slippi)
 {
+	slippi = use_slippi;
 	bool ret = false;
+	const char *dol_path = NULL;
 	for(u8 i = SD; i < MAXDEVICES; ++i)
 	{
-		const char *dol_path = fmt(NIN_LOADER_PATH, DeviceName[i]);
+		if(slippi)
+			dol_path = fmt(NIN_SLIPPI_PATH, DeviceName[i]);
+		else
+			dol_path = fmt(NIN_LOADER_PATH, DeviceName[i]);
 		ret = (LoadHomebrew(dol_path) == 1);
 		if(ret == true)
 		{

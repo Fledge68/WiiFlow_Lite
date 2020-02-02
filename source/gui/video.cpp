@@ -272,7 +272,7 @@ void CVideo::setup2DProjection(bool setViewPort, bool noScale)
 
 	if (setViewPort)
 		_setViewPort(0, 0, m_rmode->fbWidth, m_rmode->efbHeight);
-	guOrtho(projMtx, y, height2D + y, x, width2D + x, 0.f, 1000.0f);
+	guOrtho(projMtx, y, height2D - 1 + y, x, width2D - 1 + x, 0.f, 1000.0f);
 	GX_LoadProjectionMtx(projMtx, GX_ORTHOGRAPHIC);
 }
 
@@ -299,7 +299,8 @@ void CVideo::set2DViewport(u32 w, u32 h, int x, int y)
 }
 
 /* this takes what is drawn in the frame buffer and copies it to make a new texture/image set as whatever TexData &tex is */
-/* this is used by coverflow and updatebg */
+/* this is used by updatebg to fade old bg into new bg */
+/* and coverflow after drawing bg and covers to make mirror bg with blur */
 void CVideo::renderToTexture(TexData &tex, bool clear)
 {
 	if(tex.data == NULL)

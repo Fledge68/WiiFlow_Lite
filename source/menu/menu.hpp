@@ -660,6 +660,8 @@ private:
 	s16 m_gameinfoLblOverlay;
 	s16 m_gameLblSnap;
 	s16 m_gameLblOverlay;
+	TexData m_game_snap;
+	TexData m_game_overlay;
 	TexData m_snap;
 	TexData m_cart;
 	TexData m_overlay;
@@ -1104,7 +1106,7 @@ private:
 	void _about(bool help = false);
 	bool _wbfsOp(WBFS_OP op);
 	void _cfTheme(void);
-	void _gameinfo(void);
+	bool _gameinfo(void);
 	void _gameSettings(const dir_discHdr *GameHdr, bool disc = false);
 	void _CoverBanner(void);
 	int _cacheCovers(void);
@@ -1129,7 +1131,7 @@ private:
 	bool _srcTierBack(bool home);
 	void _srcTierLoad(string fn);
 	void _restoreSrcTiers();
-	void _setSrcFlowBg();
+	void _getSFlowBgTex();
 	void _mainLoopCommon(bool withCF = false, bool adjusting = false);
 	void _netInit();
 	void _loadDefaultFont(void);

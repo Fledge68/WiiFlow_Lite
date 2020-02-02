@@ -44,14 +44,11 @@ void CMenu::_hideMain(bool instant)
 
 void CMenu::_getCustomBgTex()
 {
-	curCustBg += 1;
-	if(curCustBg == 2)
-		curCustBg = 0;
 	if(m_sourceflow)
-		_setSrcFlowBg();
+		_getSFlowBgTex();
 	else
 	{
-		TexHandle.Cleanup(m_mainCustomBg[curCustBg]);
+		curCustBg = loopNum(curCustBg + 1, 2);
 		string fn = "";
 		if(m_platform.loaded())
 		{
@@ -94,6 +91,7 @@ void CMenu::_getCustomBgTex()
 					{
 						if(TexHandle.fromImageFile(m_mainCustomBg[curCustBg], fmt("%s/%s.jpg", m_bckgrndsDir.c_str(), fn.c_str())) != TE_OK)
 						{
+							curCustBg = loopNum(curCustBg + 1, 2);// reset it
 							customBg = false;
 							return;
 						}
@@ -103,7 +101,10 @@ void CMenu::_getCustomBgTex()
 			customBg = true;
 		}
 		else
+		{
+			curCustBg = loopNum(curCustBg + 1, 2);// reset it
 			customBg = false;
+		}
 	}
 }
 
@@ -394,9 +395,12 @@ int CMenu::main(void)
 
 	gprintf("Bootup completed!\n");
 
-	m_refreshGameList = true;
-	_getCustomBgTex();
-	_showMain();
+	if(!m_source_on_start)
+	{
+		_getCustomBgTex();
+		_setMainBg();
+		_showCF(true);
+	}
 	if(show_mem)
 	{
 		m_btnMgr.show(m_mem1FreeSize);
@@ -421,15 +425,14 @@ int CMenu::main(void)
 			{
 				if(m_sourceflow)//back a tier or exit sourceflow
 				{
-					m_refreshGameList = true;
-					if(!_srcTierBack(false))// back a tier
+					if(!_srcTierBack(false))// not back a tier - exit sourceflow and return to coverflow
 					{
-						// not back a tier - exit sourceflow and return to coverflow
 						_restoreSrcTiers();
-						m_sourceflow = false;// if not back a tier then exit sourceflow
+						m_sourceflow = false;
 					}
 					_getCustomBgTex();
-					_showMain();
+					_setMainBg();
+					_showCF(true);//refresh coverflow or sourceflow list
 					continue;
 				}
 				else if(m_use_source)//if source_menu enabled
@@ -437,12 +440,12 @@ int CMenu::main(void)
 					_hideMain();
 					if(m_cfg.getBool(SOURCEFLOW_DOMAIN, "enabled", false))//if sourceflow show it
 					{
-						m_refreshGameList = true;
 						sm_numbers_backup = m_cfg.getString(SOURCEFLOW_DOMAIN, "numbers");//backup for possible restore later
 						sm_tiers_backup = m_cfg.getString(SOURCEFLOW_DOMAIN, "tiers");
 						m_sourceflow = true;
 						_getCustomBgTex();
-						_showMain();
+						_setMainBg();
+						_showCF(true);//refresh sourceflow list
 					}
 					else //show source menu
 					{
@@ -450,7 +453,8 @@ int CMenu::main(void)
 						if(BTN_B_HELD)
 							bUsed = true;
 						_getCustomBgTex();
-						_showMain();
+						_setMainBg();
+						_showCF(m_refreshGameList);//refresh coverflow list if new source selected
 					}
 					continue;
 				}
@@ -460,14 +464,14 @@ int CMenu::main(void)
 		{
 			if(m_sourceflow)//back to base tier or exit sourceflow
 			{
-				m_refreshGameList = true;
 				if(!_srcTierBack(true))// if already on base tier exit sourceflow
 				{
 					_restoreSrcTiers();
 					m_sourceflow = false;
 				}
 				_getCustomBgTex();
-				_showMain();
+				_setMainBg();
+				_showCF(true);//refresh coverflow or sourceflow list
 			}
 			else
 			{
@@ -608,10 +612,10 @@ int CMenu::main(void)
 				_hideMain();
 				if(m_sourceflow)
 				{
-					m_refreshGameList = true;
-					_sourceFlow();// set the source selected
+					_sourceFlow();// set the source selected or new source tier
 					_getCustomBgTex();
-					_showMain();
+					_setMainBg();
+					_showCF(true);// refresh coverflow or sourceflow list
 					continue;
 				}
 				else
@@ -625,11 +629,10 @@ int CMenu::main(void)
 						bUsed = true;
 					}
 					_setMainBg();
-					if(m_refreshGameList)
+					if(m_refreshGameList)// if changes were made to favorites, parental lock, or categories
 					{
-						/* if changes were made to favorites, parental lock, or categories */
-						_initCF();
 						m_refreshGameList = false;
+						_initCF();
 					}
 					else
 						CoverFlow.cancel();
