@@ -272,7 +272,7 @@ void CVideo::setup2DProjection(bool setViewPort, bool noScale)
 
 	if (setViewPort)
 		_setViewPort(0, 0, m_rmode->fbWidth, m_rmode->efbHeight);
-	guOrtho(projMtx, y, height2D - 1 + y, x, width2D - 1 + x, 0.f, 1000.0f);
+	guOrtho(projMtx, y, height2D + y, x, width2D + x, 0.f, 1000.0f);
 	GX_LoadProjectionMtx(projMtx, GX_ORTHOGRAPHIC);
 }
 

@@ -188,12 +188,12 @@ void CMenu::_Paths(void)
 						const char *partval = &path[3];
 						m_cfg.setInt(WII_DOMAIN, "partition", atoi(partval));
 					}
-					char tmpPath[MAX_FAT_PATH];
+					char tmpPath[64];
 					strcpy(tmpPath, "%s");
 					strcat(tmpPath, strchr(path, ':'));
+					tmpPath[63] = '\0';
 					m_cfg.setString(WII_DOMAIN, "wii_games_dir", tmpPath);
-					memset(wii_games_dir, 0, 64);
-					strncpy(wii_games_dir, tmpPath, 63);
+					strcpy(wii_games_dir, tmpPath);
 					m_cfg.setBool(WII_DOMAIN, "update_cache", true);
 					if(m_current_view & COVERFLOW_WII)
 						m_refreshGameList = true;
@@ -216,12 +216,12 @@ void CMenu::_Paths(void)
 						const char *partval = &path[3];
 						m_cfg.setInt(GC_DOMAIN, "partition", atoi(partval));
 					}
-					char tmpPath[MAX_FAT_PATH];
+					char tmpPath[64];
 					strcpy(tmpPath, "%s");
 					strcat(tmpPath, strchr(path, ':'));
+					tmpPath[63] = '\0';
 					m_cfg.setString(GC_DOMAIN, "gc_games_dir", tmpPath);
-					memset(gc_games_dir, 0, 64);
-					strncpy(gc_games_dir, tmpPath, 63);
+					strcpy(gc_games_dir, tmpPath);
 					m_cfg.setBool(GC_DOMAIN, "update_cache", true);
 					if(m_current_view & COVERFLOW_GAMECUBE)
 						m_refreshGameList = true;

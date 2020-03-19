@@ -6,12 +6,12 @@
 #include "gecko/gecko.hpp"
 #include "memory/mem2.hpp"
 
-#define MAX_URL_SIZE 178 // 128 + 48 + 6
+#define MAX_URL_SIZE 263 // 128 + 129 + 6
 
 struct provider
 {
 	char url[128];
-	char key[48];
+	char key[129];
 };
 
 struct provider *providers = NULL;
@@ -23,8 +23,8 @@ u8 register_card_provider(const char *url, const char *key)
 	{
 		providers = (struct provider*)MEM2_realloc(providers, (amount_of_providers + 1) * sizeof(struct provider));
 		memset(&providers[amount_of_providers], 0, sizeof(struct provider));
-		strncpy(providers[amount_of_providers].url, url, 128);
-		strncpy(providers[amount_of_providers].key, key, 48);
+		strncpy(providers[amount_of_providers].url, url, 127);
+		strncpy(providers[amount_of_providers].key, key, 128);
 		amount_of_providers++;
 		gprintf("Gamercard provider is valid!\n");
 		return 0;

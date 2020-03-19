@@ -168,7 +168,7 @@ void CMenu::_getGameCategories(void)
 		if(strrchr(hdr->path, '/') != NULL)
 			wcstombs(id, hdr->title, sizeof(id) - 1);
 		else
-			strncpy(id, hdr->path, sizeof(id) - 1);// scummvm
+			strcpy(id, hdr->path);// scummvm
 	}
 	else
 		strcpy(id, hdr->id);

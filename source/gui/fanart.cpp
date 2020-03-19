@@ -44,7 +44,7 @@ bool CFanart::load(Config &m_wiiflowConfig, const char *path, const dir_discHdr 
 		if(strrchr(hdr->path, '/') != NULL)
 			wcstombs(id, hdr->title, sizeof(id) - 1);
 		else
-			strncpy(id, hdr->path, sizeof(id) - 1);// scummvm
+			strcpy(id, hdr->path);// scummvm
 	}
 	else
 		strcpy(id, hdr->id);

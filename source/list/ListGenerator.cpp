@@ -356,7 +356,7 @@ void ListGenerator::ParseScummvmINI(Config &ini, const char *Device, const char 
 		memset((void*)&ListElement, 0, sizeof(dir_discHdr));
 		memcpy(ListElement.id, GameID.c_str(), 6);
 		mbstowcs(ListElement.title, GameName, 63);
-		strncpy(ListElement.path, GameDomain, sizeof(ListElement.path));
+		strcpy(ListElement.path, GameDomain);
 		ListElement.settings[0] = m_cacheList.Magic; //scummvm magic
 		ListElement.casecolor = m_cacheList.Color;
 		ListElement.type = TYPE_PLUGIN;

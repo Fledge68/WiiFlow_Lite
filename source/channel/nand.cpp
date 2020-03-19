@@ -486,16 +486,14 @@ u32 Nand::__configsetsetting(const char *item, const char *val)
 		if(strlen(val) > len)
 		{
 			static char buffer[0x100];
-			u32 nlen;
-			nlen = txtbuffer-(curstrt+strlen(val));
-			strcpy( buffer, txtbuffer+nlen );
-			strncpy( curstrt, val, strlen(val));
+			strcpy( buffer, curend );
+			memcpy( curstrt, val, strlen(val));
 			curstrt += strlen(val); 
-			strncpy(curstrt, buffer, strlen(buffer));
+			memcpy(curstrt, buffer, strlen(buffer));
 		}
 		else
 		{
-			strncpy(curstrt, val, strlen(val));
+			memcpy(curstrt, val, strlen(val));
 		}
 
 		__configshifttxt(txtbuffer);

@@ -202,12 +202,12 @@ bool PartitionHandle::Mount(int pos, const char *name, bool forceFAT)
 
 void PartitionHandle::UnMount(int pos)
 {
-	if(!interface || (pos >= (int)MountNameList.size()) || (MountNameList[pos].size() == 0))
+	if(!interface || (pos < 0 || pos >= (int)MountNameList.size()) || (MountNameList[pos].size() == 0))
 		return;
 
 	WBFS_Close();
 	char DeviceSyn[10];
-	memcpy(DeviceSyn, MountName(pos), 8);
+	strcpy(DeviceSyn, MountName(pos));
 	strcat(DeviceSyn, ":");
 	DeviceSyn[9] = '\0';
 

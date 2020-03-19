@@ -296,7 +296,7 @@ s32 GCDump::DumpGame()
 	memset(gamepath, 0, sizeof(gamepath));
 	char basedir[MAX_FAT_PATH];
 	memset(basedir, 0, sizeof(basedir));
-	strncpy(basedir, fmt(gc_gamesDir, gamepartition), MAX_FAT_PATH);
+	strcpy(basedir, fmt(gc_gamesDir, gamepartition));
 
 	while(!gamedone)
 	{

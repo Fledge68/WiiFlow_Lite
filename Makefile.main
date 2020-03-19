@@ -22,7 +22,6 @@ SOURCES		:=	source \
 				source/channel \
 				source/cheats \
 				source/config \
-				source/data \
 				source/devicemounter \
 				source/fileOps \
 				source/gc \
@@ -40,7 +39,6 @@ SOURCES		:=	source \
 				source/plugin \
 				source/sicksaxis-wrapper \
 				source/unzip \
-				source/xml \
 				source/wstringEx
 DATA		:=	data \
 				data/images \
@@ -55,7 +53,7 @@ ios			:=	249
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-CFLAGS		=	-g -ggdb -Os -Wall -Wextra $(MACHDEP) $(INCLUDE) -D_GNU_SOURCE -DHAVE_CONFIG_H
+CFLAGS		=	-g -ggdb -O2 -Wall -Wextra $(MACHDEP) $(INCLUDE) -D_GNU_SOURCE -DHAVE_CONFIG_H
 CXXFLAGS	=	$(CFLAGS)
 LDFLAGS		=	-g -ggdb $(MACHDEP) -Wl,-Map,$(notdir $@).map,--section-start,.init=0x80620000,-wrap,malloc,-wrap,free,-wrap,memalign,-wrap,calloc,-wrap,realloc,-wrap,malloc_usable_size,-wrap,wiiuse_register
 
@@ -129,8 +127,7 @@ export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
 #---------------------------------------------------------------------------------
 # build a list of library paths
 #---------------------------------------------------------------------------------
-export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib) -L$(CURDIR)/source/libs/libfat/ \
-					-L$(CURDIR)/source/libs/libntfs/ -L$(CURDIR)/source/libs/libext2fs/ \
+export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib) \
 					-L$(CURDIR)/source/libwolfssl/ -L$(LIBOGC_LIB) -L$(PORTLIBS)/lib
 
 export OUTPUT	:=	$(CURDIR)/out/$(TARGET)

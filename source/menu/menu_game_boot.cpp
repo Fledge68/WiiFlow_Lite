@@ -322,18 +322,18 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	/* Set game path */
 	char path[256];
 	if(disc)
-		snprintf(path, sizeof(path), "%s", "di");
+		strcpy(path, "di");
 	else
-		snprintf(path, sizeof(path), "%s", hdr->path);
+		strcpy(path, hdr->path);
+	path[255] = '\0';
 		
 	if(loader == NINTENDONT && !disc)// Check if game has multi Discs
 	{
 		char disc2Path[256];
+		strcpy(disc2Path, path);
 		disc2Path[255] = '\0';
-		strncpy(disc2Path, path, sizeof(disc2Path) - 1);
-		char *pathPtr = strrchr(disc2Path, '/');
-		if(pathPtr) *pathPtr = 0;
-		strncpy(disc2Path, fmt("%s/disc2.iso", disc2Path), sizeof(disc2Path) - 1);
+		*strrchr(disc2Path, '/') = '\0';
+		strcat(disc2Path, "/disc2.iso");
 		// note fst extracted /boot.bin paths will not have disc2.iso
 		if(fsop_FileExist(disc2Path))
 		{
@@ -465,12 +465,15 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 			n_config |= NIN_CFG_CHEAT_PATH;
 			n_config |= NIN_CFG_CHEATS;
 			
-			/* Generate Game Cheat path - usb1:/games/title [id]/ */
-			char GC_Path[256];
-			GC_Path[255] = '\0';
-			if(!disc)
+			//use wiiflow cheat folder if is a disc or is on same partition as game folder
+			if(disc || strncasecmp(m_cheatDir.c_str(), DeviceName[currentPartition], strlen(DeviceName[currentPartition])) == 0)
+				snprintf(CheatPath, sizeof(CheatPath), "%s/%s", m_cheatDir.c_str(), fmt("%s.gct", id));
+			else
 			{
-				strncpy(GC_Path, path, 255);
+				/* Generate Game Cheat path - usb1:/games/title [id]/ */
+				char GC_Path[256];
+				strcpy(GC_Path, path);
+				GC_Path[255] = '\0';
 				if(strcasestr(path, "boot.bin") != NULL)//usb1:/games/title [id]/sys/boot.bin
 				{
 					*strrchr(GC_Path, '/') = '\0'; //erase /boot.bin
@@ -478,14 +481,8 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 				}
 				else //usb1:/games/title [id]/game.iso
 					*(strrchr(GC_Path, '/')+1) = '\0'; //erase game.iso
-			}
 			
-			//use wiiflow cheat folder if is a disc or is on same partition as game folder
-			if(disc || strncasecmp(m_cheatDir.c_str(), DeviceName[currentPartition], strlen(DeviceName[currentPartition])) == 0)
-				snprintf(CheatPath, sizeof(CheatPath), "%s/%s", m_cheatDir.c_str(), fmt("%s.gct", id));
-			else
-			{
-				// otherwise copy cheat file from wiiflow cheat folder to Game folder
+				// copy cheat file from wiiflow cheat folder to Game folder
 				char GC_game_dir[strlen(GC_Path) + 11];
 				snprintf(GC_game_dir, sizeof(GC_game_dir), "%s%s.gct", GC_Path, id);
 				fsop_CopyFile(fmt("%s/%s.gct", m_cheatDir.c_str(), id), GC_game_dir, NULL, NULL);

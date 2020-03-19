@@ -29,7 +29,7 @@ GC_Disc GC_Disc_Reader;
 
 void GC_Disc::init(const char *path)
 {
-	strncpy(GamePath, path, MAX_FAT_PATH);
+	strcpy(GamePath, path);
 	opening_bnr = NULL;
 	FSTable = NULL;
 

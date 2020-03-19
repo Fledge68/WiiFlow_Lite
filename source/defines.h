@@ -52,5 +52,5 @@ uLoader, NeoGamma, Mighty Channels, WiiXplorer, Triiforce, \
 postLoader"
 
 
-#define WIINNERTAG_URL 			"http://www.wiinnertag.com/wiinnertag_scripts/update_sign.php?key={KEY}&game_id={ID6}"
+#define WIINNERTAG_URL 			"http://tag.rc24.xyz/wii?game={ID6}&key={KEY}"// RiiTag as of 3/11/2020
 #define DUTAG_URL				"http://tag.darkumbra.net/{KEY}.update={ID6}"

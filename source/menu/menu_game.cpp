@@ -404,7 +404,7 @@ void CMenu::_game(bool launch)
 		if(strrchr(hdr->path, '/') != NULL)
 			wcstombs(catID, hdr->title, 63);
 		else
-			strncpy(catID, hdr->path, 63);// scummvm
+			strcpy(catID, hdr->path);// scummvm
 		strcpy(id, m_plugin.PluginMagicWord);
 		strcat(id, fmt("/%s", catID));
 	}
@@ -782,7 +782,7 @@ void CMenu::_game(bool launch)
 					if(strrchr(hdr->path, '/') != NULL)
 						wcstombs(catID, hdr->title, 63);
 					else
-						strncpy(catID, hdr->path, 63);// scummvm
+						strcpy(catID, hdr->path);// scummvm
 					strcpy(id, m_plugin.PluginMagicWord);
 					strcat(id, fmt("/%s", catID));
 				}
@@ -1131,7 +1131,7 @@ void * CMenu::_gameSoundThread(void *obj)
 			
 			strncpy(m_plugin.PluginMagicWord, fmt("%08x", GameHdr->settings[0]), 8);
 			snprintf(platformName, sizeof(platformName), "%s", m->m_platform.getString("PLUGINS", m_plugin.PluginMagicWord).c_str());
-			strncpy(GameID, GameHdr->id, 6);
+			strcpy(GameID, GameHdr->id);
 			
 			if(strlen(platformName) != 0 && strcasecmp(GameID, "PLUGIN") != 0)
 			{	

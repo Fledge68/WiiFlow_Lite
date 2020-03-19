@@ -161,6 +161,27 @@ bool CMenu::init(bool usb_mounted)
 	/* Check if we want SD Gecko */
 	m_use_sd_logging = m_cfg.getBool("DEBUG", "sd_write_log", false);
 	LogToSD_SetBuffer(m_use_sd_logging);
+	/* Init gamer tags now in case we need to init network on boot */
+	m_cfg.setString("GAMERCARD", "gamercards", "wiinnertag");
+	m_cfg.getString("GAMERCARD", "wiinnertag_url", WIINNERTAG_URL);
+	m_cfg.getString("GAMERCARD", "wiinnertag_key", "");
+	if (m_cfg.getBool("GAMERCARD", "gamercards_enable", false))
+	{
+		vector<string> gamercards = stringToVector(m_cfg.getString("GAMERCARD", "gamercards"), '|');
+		if (gamercards.size() == 0)
+		{
+			gamercards.push_back("wiinnertag");
+		}
+
+		for (vector<string>::iterator itr = gamercards.begin(); itr != gamercards.end(); itr++)
+		{
+			gprintf("Found gamercard provider: %s\n",(*itr).c_str());
+			register_card_provider(
+				m_cfg.getString("GAMERCARD", fmt("%s_url", (*itr).c_str())).c_str(),
+				m_cfg.getString("GAMERCARD", fmt("%s_key", (*itr).c_str())).c_str()
+			);
+		}
+	}
 	/* Init Network if wanted */
 	m_init_network = (has_enabled_providers() || m_use_wifi_gecko);
 	_netInit();
@@ -429,30 +450,6 @@ bool CMenu::init(bool usb_mounted)
 	m_bnrSndVol = m_cfg.getInt("GENERAL", "sound_volume_bnr", 255);
 	m_bnr_settings = m_cfg.getBool("GENERAL", "banner_in_settings", true);
 
-	/* Init gamer tags */
-	m_cfg.setString("GAMERCARD", "gamercards", "wiinnertag|dutag");
-	m_cfg.getString("GAMERCARD", "wiinnertag_url", WIINNERTAG_URL);
-	m_cfg.getString("GAMERCARD", "wiinnertag_key", "");
-	m_cfg.getString("GAMERCARD", "dutag_url", DUTAG_URL);
-	m_cfg.getString("GAMERCARD", "dutag_key", "");
-	if (m_cfg.getBool("GAMERCARD", "gamercards_enable", false))
-	{
-		vector<string> gamercards = stringToVector(m_cfg.getString("GAMERCARD", "gamercards"), '|');
-		if (gamercards.size() == 0)
-		{
-			gamercards.push_back("wiinnertag");
-			gamercards.push_back("dutag");
-		}
-
-		for (vector<string>::iterator itr = gamercards.begin(); itr != gamercards.end(); itr++)
-		{
-			gprintf("Found gamercard provider: %s\n",(*itr).c_str());
-			register_card_provider(
-				m_cfg.getString("GAMERCARD", fmt("%s_url", (*itr).c_str())).c_str(),
-				m_cfg.getString("GAMERCARD", fmt("%s_key", (*itr).c_str())).c_str()
-			);
-		}
-	}
 	return true;
 }
 

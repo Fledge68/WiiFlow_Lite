@@ -471,7 +471,7 @@ int CMenu::_cacheCovers()
 	CoverFlow.stopCoverLoader(true);
 	bool m_pluginCacheFolders = m_cfg.getBool(PLUGIN_DOMAIN, "subfolder_cache", true);
 	
-	char coverPath[MAX_FAT_PATH];
+	char coverPath[MAX_FAT_PATH];//1024
 	char wfcPath[MAX_FAT_PATH+20];
 	char cachePath[MAX_FAT_PATH];
 	
@@ -502,14 +502,17 @@ int CMenu::_cacheCovers()
 		bool blankCover = false;
 		bool fullCover = true;
 		strlcpy(coverPath, getBoxPath(&(*hdr)), sizeof(coverPath));
+		//gprintf("boxpath=%s\n", coverPath);
 		if(!fsop_FileExist(coverPath) || smallBox)
 		{
 			fullCover = false;
 			strlcpy(coverPath, getFrontPath(&(*hdr)), sizeof(coverPath));
+			//gprintf("frontpath=%s\n", coverPath);
 			if(!fsop_FileExist(coverPath) && !smallBox)
 			{
 				fullCover = true;
 				strlcpy(coverPath, getBlankCoverPath(&(*hdr)), sizeof(coverPath));
+				//gprintf("blankpath=%s\n", coverPath);
 				blankCover = true;
 				if(!fsop_FileExist(coverPath))
 					continue;
@@ -525,6 +528,7 @@ int CMenu::_cacheCovers()
 			snprintf(cachePath, sizeof(cachePath), "%s/homebrew", m_cacheDir.c_str());
 		else
 			snprintf(cachePath, sizeof(cachePath), "%s", m_cacheDir.c_str());
+		//gprintf("cachepath=%s\n", cachePath);
 			
 		/* get game name or ID */
 		const char *gameNameOrID = NULL;
@@ -532,12 +536,14 @@ int CMenu::_cacheCovers()
 			gameNameOrID = CoverFlow.getFilenameId(&(*hdr));// &(*hdr) converts iterator to pointer to mem address
 		else
 			gameNameOrID = strrchr(coverPath, '/') + 1;
+		//gprintf("nameorid=%s\n", gameNameOrID);
 		
 		/* get cover wfc path */
 		if(smallBox)
 			snprintf(wfcPath, sizeof(wfcPath), "%s/%s_small.wfc", cachePath, gameNameOrID);
 		else
 			snprintf(wfcPath, sizeof(wfcPath), "%s/%s.wfc", cachePath, gameNameOrID);
+		//gprintf("wfcpath=%s\n", wfcPath);
 		
 		/* if wfc doesn't exist or is flat and have full cover */
 		if(!fsop_FileExist(wfcPath) || (!CoverFlow.fullCoverCached(wfcPath) && fullCover))

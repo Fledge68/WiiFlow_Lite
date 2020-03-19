@@ -40,10 +40,9 @@ bool Identify_GenerateTik(signed_blob **outbuf, u32 *outlen)
 bool Identify(u64 titleid)
 {
 	char filepath[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
-	memset(filepath, 0, ISFS_MAXPATH);
 
 	gprintf("Reading TMD for %08lx %08lx...", TITLE_UPPER(titleid), TITLE_LOWER(titleid));
-	sprintf(filepath, "/title/%08lx/%08lx/content/title.tmd", TITLE_UPPER(titleid), TITLE_LOWER(titleid));
+	snprintf(filepath, ISFS_MAXPATH, "/title/%08lx/%08lx/content/title.tmd", TITLE_UPPER(titleid), TITLE_LOWER(titleid));
 	u32 tmdSize;
 	u8 *tmdBuffer = ISFS_GetFile(filepath, &tmdSize, -1);
 	if (tmdBuffer == NULL || tmdSize == 0)

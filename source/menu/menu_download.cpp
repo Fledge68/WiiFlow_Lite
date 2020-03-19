@@ -752,6 +752,9 @@ s32 CMenu::_networkComplete(s32 ok, void *usrData)
 
 	networkInit = ok == 0;
 	m->m_thrdNetwork = false;
+	
+	if(networkInit)
+		wolfSSL_Init();
 
 	gprintf("NET: Network init complete, enabled wifi_gecko: %s\n", m->m_use_wifi_gecko ? "yes" : "no");
 	if(m->m_use_wifi_gecko)

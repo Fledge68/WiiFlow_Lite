@@ -183,7 +183,7 @@ int CMenu::_GCgameInstaller()
 	}
 
 	char partition[6];
-	strncpy(partition, fmt("%s:/", DeviceName[currentPartition]), sizeof(partition));
+	strcpy(partition, fmt("%s:/", DeviceName[currentPartition]));
 
 	u32 needed = 0;
 

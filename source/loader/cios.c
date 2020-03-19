@@ -70,7 +70,7 @@ iosinfo_t *IOS_GetInfo(u8 ios)
 	if(TMD == NULL)
 		return NULL;
 	char filepath[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
-	sprintf(filepath, "/title/00000001/%08x/content/%08x.app", ios, *(u8 *)((u32)TMD+0x1E7));
+	snprintf(filepath, ISFS_MAXPATH, "/title/00000001/%08x/content/%08x.app", ios, *(u8 *)((u32)TMD+0x1E7));
 	MEM2_free(TMD);
 
 	u32 size = 0;

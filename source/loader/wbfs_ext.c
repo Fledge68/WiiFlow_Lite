@@ -39,7 +39,7 @@ struct statvfs wbfs_ext_vfs;
 #define STRCOPY(DEST,SRC) strcopy(DEST,SRC,sizeof(DEST)) 
 char* strcopy(char *dest, const char *src, int size)
 {
-	strncpy(dest,src,size);
+	memcpy(dest,src,size);
 	dest[size-1] = 0;
 	return dest;
 }
@@ -187,13 +187,13 @@ s32 WBFS_Ext_AddGame(progress_callback_t spinner, void *spinner_data)
 	asprintf(&cleantitle, header.title);
 	for(cp = strpbrk(cleantitle, illegal); cp; cp = strpbrk(cp, illegal))
 		*cp = '_';
-	strncpy(folder, fmt(wii_games_dir, wbfs_fs_drive), sizeof(folder));
+	memcpy(folder, fmt(wii_games_dir, wbfs_fs_drive), sizeof(folder));
 	fsop_MakeFolder(folder);
-	strncpy(folder, fmt("%s/%s [%s]", folder, cleantitle, header.id), sizeof(folder));
+	memcpy(folder, fmt("%s/%s [%s]", folder, cleantitle, header.id), sizeof(folder));
 	fsop_MakeFolder(folder);
 	free(cleantitle);
 
-	strncpy(gamepath, fmt("%s/%s.wbfs", folder, header.id), sizeof(gamepath));
+	memcpy(gamepath, fmt("%s/%s.wbfs", folder, header.id), sizeof(gamepath));
 	u64 size = (u64)143432*2*0x8000ULL;
 	u32 n_sector = size / 512;
 
