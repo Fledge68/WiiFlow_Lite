@@ -401,6 +401,9 @@ int CMenu::main(void)
 		_setMainBg();
 		_showCF(true);
 	}
+	else
+		_hideWaitMessage();
+		
 	if(show_mem)
 	{
 		m_btnMgr.show(m_mem1FreeSize);
@@ -417,7 +420,6 @@ int CMenu::main(void)
 		//this will make the source menu/flow display. what happens when a sourceflow cover is selected is taken care of later.
 		if((bheld && !BTN_B_HELD) || m_source_on_start)//if button b was held and now released
 		{
-			m_source_on_start = false;
 			bheld = false;
 			if(bUsed)//if b button used for something don't show souce menu or sourceflow
 				bUsed = false;
@@ -454,8 +456,9 @@ int CMenu::main(void)
 							bUsed = true;
 						_getCustomBgTex();
 						_setMainBg();
-						_showCF(m_refreshGameList);//refresh coverflow list if new source selected
+						_showCF(m_refreshGameList || m_source_on_start);//refresh coverflow list if new source selected
 					}
+					m_source_on_start = false;
 					continue;
 				}
 			}
@@ -700,7 +703,7 @@ int CMenu::main(void)
 				CoverFlow.pageDown();
 				
 			/* change coverflow layout/mode */
-			else if((BTN_1_PRESSED || BTN_2_PRESSED) && !CFLocked)
+			else if((BTN_1_PRESSED || BTN_2_PRESSED) && !CFLocked && !CoverFlow.empty())
 			{
 				u32 curPos = CoverFlow._currentPos();
 				s8 direction = BTN_1_PRESSED ? 1 : -1;
@@ -717,7 +720,7 @@ int CMenu::main(void)
 			const char *domain = _domainFromView();
 			
 			/* b+down or up = move to previous or next cover in sort order */
-			if(BTN_DOWN_PRESSED || BTN_UP_PRESSED)
+			if(!CoverFlow.empty() && (BTN_DOWN_PRESSED || BTN_UP_PRESSED))
 			{
 				bUsed = true;
 				int sorting = m_cfg.getInt(domain, "sort", SORT_ALPHA);
@@ -759,7 +762,7 @@ int CMenu::main(void)
 				MusicPlayer.Next();
 			}
 			/* b+plus = change sort mode */
-			else if(BTN_PLUS_PRESSED && !m_locked && (m_current_view < 8 || m_sourceflow))// <8 excludes plugins and homebrew
+			else if(!CoverFlow.empty() && BTN_PLUS_PRESSED && !m_locked && (m_current_view < 8 || m_sourceflow))// <8 excludes plugins and homebrew
 			{
 				bUsed = true;
 				u8 sort = 0;

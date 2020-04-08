@@ -552,7 +552,7 @@ void CMenu::_game(bool launch)
 				continue;
 			}
 			/* delete button */
-			else if(m_btnMgr.selected(m_gameBtnDelete) && hdr->type != TYPE_HOMEBREW)
+			else if(m_btnMgr.selected(m_gameBtnDelete))
 			{
 				_hideGame();
 				m_banner.SetShowBanner(false);
@@ -560,6 +560,18 @@ void CMenu::_game(bool launch)
 					error(_t("errgame15", L"WiiFlow locked! Unlock WiiFlow to use this feature."));
 				else if(hdr->type == TYPE_CHANNEL)
 					error(_t("errgame17", L"Can not delete real NAND Channels!"));
+				else if(hdr->type == TYPE_HOMEBREW)
+				{
+					bool smallBox = m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox", false);
+					const char *gameNameOrID = CoverFlow.getFilenameId(hdr);
+					if(smallBox)
+						fsop_deleteFile(fmt("%s/homebrew/%s_small.wfc", m_cacheDir.c_str(), gameNameOrID));
+					else
+						fsop_deleteFile(fmt("%s/homebrew/%s.wfc", m_cacheDir.c_str(), gameNameOrID));
+					_initCF();
+					CoverFlow.select();
+					CoverFlow.applySettings();
+				}
 				else /* delete wii, gamecube, emunand game or plugin rom */
 				{
 					if(_wbfsOp(WO_REMOVE_GAME))

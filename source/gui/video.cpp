@@ -173,7 +173,7 @@ void CVideo::init(void)
 	GX_SetFieldMode(m_rmode->field_rendering, ((m_rmode->viHeight == 2 * m_rmode->xfbHeight) ? GX_ENABLE : GX_DISABLE));
 	
 	GX_SetCullMode(GX_CULL_NONE);
-	//GX_CopyDisp(m_frameBuf[m_curFB], GX_TRUE);
+	GX_CopyDisp(m_frameBuf[m_curFB], GX_TRUE);
 	GX_SetDispCopyGamma(GX_GM_1_0);
 	GX_ClearVtxDesc();
 	GX_SetVtxDesc(GX_VA_POS, GX_DIRECT);

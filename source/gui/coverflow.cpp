@@ -1549,6 +1549,17 @@ u64 CCoverFlow::getChanTitle(void) const
 					m_items[loopNum(m_covers[m_range / 2].index + m_jump, m_items.size())].hdr->settings[1]);
 }
 
+/* this is used for smallbox homebrew icon png's that have alpha transparency */
+/* cover textures can't have transparency. this creates a new texture by filling the transparent parts */
+void CCoverFlow::RenderTex(void)
+{
+	if(m_renderingTex != NULL && m_renderingTex->data != NULL)
+	{
+		DrawTexture(m_renderingTex);
+		m_vid.renderToTexture(*m_renderingTex, true);
+	}
+}
+
 bool CCoverFlow::select(void)
 {
 	if (m_covers == NULL || m_jump != 0) return false;
@@ -2583,10 +2594,16 @@ public:
 bool CCoverFlow::cacheCoverFile(const char *wfcPath, const char *coverPath, bool full)
 {
 	TexData tex;
-	u8 textureFmt = m_compressTextures ? GX_TF_CMPR : GX_TF_RGB565;
+	tex.thread = true;// lets TexHandle know this texture is a cover image and in case its a homebrew icon.png
+	m_renderingTex = &tex;// only used if cover has alpha transparency - homebrew icon.png and sourceflow smallbox
+	u8 textureFmt = m_compressTextures ? GX_TF_CMPR : GX_TF_RGBA8;// always GX_TF_CMPR
 	if(TexHandle.fromImageFile(tex, coverPath, textureFmt, 32) != TE_OK)
+	{
+		m_renderingTex = NULL;
 		return false;
-
+	}
+	m_renderingTex = NULL;
+	tex.thread = false;
 	u32 bufSize = fixGX_GetTexBufferSize(tex.width, tex.height, tex.format, tex.maxLOD > 0 ? GX_TRUE : GX_FALSE, tex.maxLOD);
 	if(tex.data != NULL)
 	{
@@ -2606,7 +2623,7 @@ bool CCoverFlow::cacheCoverFile(const char *wfcPath, const char *coverPath, bool
 bool CCoverFlow::cacheCoverBuffer(const char *wfcPath, const u8 *png, bool full)
 {
 	TexData tex;
-	u8 textureFmt = m_compressTextures ? GX_TF_CMPR : GX_TF_RGB565;
+	u8 textureFmt = m_compressTextures ? GX_TF_CMPR : GX_TF_RGB565;// always GX_TF_CMPR
 	if(TexHandle.fromPNG(tex, png, textureFmt, 32) != TE_OK)
 		return false;
 

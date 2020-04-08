@@ -129,16 +129,6 @@ bool CMenu::init(bool usb_mounted)
 			break;
 		}
 	}
-	if(drive == check)//No apps/wiiflow folder found
-	{
-		for(int i = SD; i <= USB8; i++) // Find the first writable partition
-			if(DeviceHandle.IsInserted(i) && DeviceHandle.GetFSType(i) != PART_FS_WBFS)
-			{
-				drive = DeviceName[i];
-				break;
-			}
-	}
-	
 	if(drive == check) // Should not happen
 	{
 		/* Could not find a device to save configuration files on! */
@@ -2167,6 +2157,12 @@ void CMenu::_initCF(void)
 			m_gcfg1.remove(adultDomain, id);
 	}
 
+	if(CoverFlow.empty())
+	{
+		dump.unload();
+		return;
+	}
+		
 	if(dumpGameLst)
 	{
 		dump.save(true);
@@ -2427,7 +2423,11 @@ bool CMenu::_loadChannelList(void)
 	{
 		gprintf("Adding real nand list\n");
 		NANDemuView = false;
+		bool updateCache = m_cfg.getBool(CHANNEL_DOMAIN, "update_cache");
+		if(updateCache)
+			cacheCovers = true;// real nand channels list is not cached but covers may still need to be updated
 		m_cacheList.CreateList(COVERFLOW_CHANNEL, std::string(), NullVector, std::string(), false);
+		m_cfg.remove(CHANNEL_DOMAIN, "update_cache");
 		for(vector<dir_discHdr>::iterator tmp_itr = m_cacheList.begin(); tmp_itr != m_cacheList.end(); tmp_itr++)
 			m_gameList.push_back(*tmp_itr);
 	}

@@ -1200,14 +1200,14 @@ int CMenu::_coverDownloader()
 							m_thrdMessage = wfmt(_fmt("dlmsg4", L"Saving %s"), path);
 							m_thrdMessageAdded = true;
 							fsop_WriteFile(path, file.data, file.size);
+							if(file.size > 0)
+								free(file.data);
 							
 							/* make cover cache file (wfc) */
 							update_pThread(1);
 							m_thrdMessage = wfmt(_fmt("dlmsg10", L"Making %s.wfc"), coverID.c_str());
 							m_thrdMessageAdded = true;
-							CoverFlow.cacheCoverBuffer(fmt("%s/%s.wfc", m_cacheDir.c_str(), coverID.c_str()), (u8*)file.data, true);//it may fail
-							if(file.size > 0)
-								free(file.data);
+							CoverFlow.cacheCoverFile(fmt("%s/%s.wfc", m_cacheDir.c_str(), coverID.c_str()), path, true);//it may fail
 
 							++count;
 							update_pThread(1);
@@ -1339,14 +1339,14 @@ int CMenu::_coverDownloader()
 							m_thrdMessage = wfmt(_fmt("dlmsg4", L"Saving %s"), path);
 							m_thrdMessageAdded = true;
 							fsop_WriteFile(path, file.data, file.size);
-							
+							if(file.size > 0)
+								free(file.data);
+								
 							/* make cover cache file (wfc) */
 							update_pThread(1);
 							m_thrdMessage = wfmt(_fmt("dlmsg10", L"Making %s.wfc"), coverID.c_str());
 							m_thrdMessageAdded = true;
-							CoverFlow.cacheCoverBuffer(fmt("%s/%s.wfc", m_cacheDir.c_str(), coverID.c_str()), (u8*)file.data, true);//it may fail
-							if(file.size > 0)
-								free(file.data);
+							CoverFlow.cacheCoverFile(fmt("%s/%s.wfc", m_cacheDir.c_str(), coverID.c_str()), path, true);//it may fail
 							
 							update_pThread(1);
 							++count;
@@ -1472,14 +1472,14 @@ int CMenu::_coverDownloader()
 							m_thrdMessage = wfmt(_fmt("dlmsg4", L"Saving %s"), path);
 							m_thrdMessageAdded = true;
 							fsop_WriteFile(path, file.data, file.size);
-							
+							if(file.size > 0)
+								free(file.data);
+								
 							/* make cover cache file (wfc) */
 							update_pThread(1);
 							m_thrdMessage = wfmt(_fmt("dlmsg10", L"Making %s"), sfmt("%s.wfc", coverID.c_str()));
 							m_thrdMessageAdded = true;
-							CoverFlow.cacheCoverBuffer(fmt("%s/%s.wfc", m_cacheDir.c_str(), coverID.c_str()), (u8*)file.data, false);//it may fail
-							if(file.size > 0)
-								free(file.data);
+							CoverFlow.cacheCoverFile(fmt("%s/%s.wfc", m_cacheDir.c_str(), coverID.c_str()), path, false);//it may fail
 
 							++countFlat;
 							update_pThread(1);
@@ -1609,14 +1609,14 @@ int CMenu::_coverDownloader()
 							m_thrdMessage = wfmt(_fmt("dlmsg4", L"Saving %s"), path);
 							m_thrdMessageAdded = true;
 							fsop_WriteFile(path, file.data, file.size);
-							
+							if(file.size > 0)
+								free(file.data);
+								
 							/* make wfc */
 							update_pThread(1);
 							m_thrdMessage = wfmt(_fmt("dlmsg10", L"Making %s"), sfmt("%s.wfc", coverID.c_str()));
 							m_thrdMessageAdded = true;
-							CoverFlow.cacheCoverBuffer(fmt("%s/%s.wfc", m_cacheDir.c_str(), coverID.c_str()), (u8*)file.data, false);//it may fail
-							if(file.size > 0)
-								free(file.data);
+							CoverFlow.cacheCoverFile(fmt("%s/%s.wfc", m_cacheDir.c_str(), coverID.c_str()), path, false);//it may fail
 
 							++countFlat;
 							update_pThread(1);
