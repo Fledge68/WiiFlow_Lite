@@ -1,7 +1,6 @@
-/*
-    Code by blackb0x @ GBAtemp.net
-    This allows the Wii to download from servers that use SNI.
-*/
+// Code by blackb0x @ GBAtemp.net
+// This allows the Wii to download from servers that use SNI.
+
 #ifndef _HTTPS_H_
 #define _HTTPS_H_
 
@@ -16,11 +15,11 @@ extern "C"
 // #define DEBUG_NETWORK
 #define REDIRECT_LIMIT 3
 #define TCP_CONNECT_TIMEOUT 5000
-#define READ_WRITE_TIMEOUT 10
+#define READ_WRITE_TIMEOUT 5000
 
     struct download
     {
-        u8 skip_response;   // Used by WiinnerTag
+        u8 skip_response; // Used by WiinnerTag
         u64 size;
         char *data;
     };
