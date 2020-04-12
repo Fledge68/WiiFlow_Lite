@@ -1926,17 +1926,17 @@ bool CCoverFlow::start(const string &m_imgsDir)
 	/* load the colored skin/spine images if not already done */
 	if(!m_dvdskin_loaded)
 	{
-		if(TexHandle.fromImageFile(m_dvdSkin, fmt("%s/dvdskin.jpg", m_imgsDir.c_str())) != TE_OK)
+		if(TexHandle.fromImageFile(m_dvdSkin, fmt("%s/dvdskin.png", m_imgsDir.c_str())) != TE_OK)
 			return false;
-		if(TexHandle.fromImageFile(m_dvdSkin_Red, fmt("%s/dvdskin_red.jpg", m_imgsDir.c_str())) != TE_OK)
+		if(TexHandle.fromImageFile(m_dvdSkin_Red, fmt("%s/dvdskin_red.png", m_imgsDir.c_str())) != TE_OK)
 			return false;
-		if(TexHandle.fromImageFile(m_dvdSkin_Black, fmt("%s/dvdskin_black.jpg", m_imgsDir.c_str())) != TE_OK)
+		if(TexHandle.fromImageFile(m_dvdSkin_Black, fmt("%s/dvdskin_black.png", m_imgsDir.c_str())) != TE_OK)
 			return false;
-		if(TexHandle.fromImageFile(m_dvdSkin_Yellow, fmt("%s/dvdskin_yellow.jpg", m_imgsDir.c_str())) != TE_OK)
+		if(TexHandle.fromImageFile(m_dvdSkin_Yellow, fmt("%s/dvdskin_yellow.png", m_imgsDir.c_str())) != TE_OK)
 			return false;
-		if(TexHandle.fromImageFile(m_dvdSkin_GreenOne, fmt("%s/dvdskin_greenone.jpg", m_imgsDir.c_str())) != TE_OK)
+		if(TexHandle.fromImageFile(m_dvdSkin_GreenOne, fmt("%s/dvdskin_greenone.png", m_imgsDir.c_str())) != TE_OK)
 			return false;
-		if(TexHandle.fromImageFile(m_dvdSkin_GreenTwo, fmt("%s/dvdskin_greentwo.jpg", m_imgsDir.c_str())) != TE_OK)
+		if(TexHandle.fromImageFile(m_dvdSkin_GreenTwo, fmt("%s/dvdskin_greentwo.png", m_imgsDir.c_str())) != TE_OK)
 			return false;
 		m_dvdskin_loaded = true;
 	}
@@ -1945,7 +1945,7 @@ bool CCoverFlow::start(const string &m_imgsDir)
 	{
 		if(m_pngLoadCover.empty() || TexHandle.fromImageFile(m_boxLoadingTexture, m_pngLoadCover.c_str(), GX_TF_CMPR, 32, 512) != TE_OK)
 		{
-			if(TexHandle.fromImageFile(m_boxLoadingTexture, fmt("%s/loading.jpg", m_imgsDir.c_str()), GX_TF_CMPR, 32, 512) != TE_OK)
+			if(TexHandle.fromImageFile(m_boxLoadingTexture, fmt("%s/loading.png", m_imgsDir.c_str()), GX_TF_CMPR, 32, 512) != TE_OK)
 				return false;
 		}
 		if(m_pngNoCover.empty() || TexHandle.fromImageFile(m_boxNoCoverTexture, m_pngNoCover.c_str(), GX_TF_CMPR, 32, 512) != TE_OK)
@@ -1955,7 +1955,7 @@ bool CCoverFlow::start(const string &m_imgsDir)
 		}
 		if(m_pngLoadCoverFlat.empty() || TexHandle.fromImageFile(m_flatLoadingTexture, m_pngLoadCoverFlat.c_str(), GX_TF_CMPR, 32, 512) != TE_OK)
 		{
-			if(TexHandle.fromImageFile(m_flatLoadingTexture, fmt("%s/flatloading.jpg", m_imgsDir.c_str()), GX_TF_CMPR, 32, 512) != TE_OK)
+			if(TexHandle.fromImageFile(m_flatLoadingTexture, fmt("%s/flatloading.png", m_imgsDir.c_str()), GX_TF_CMPR, 32, 512) != TE_OK)
 				return false;
 		}
 		if(m_pngNoCoverFlat.empty() || TexHandle.fromImageFile(m_flatNoCoverTexture, m_pngNoCoverFlat.c_str(), GX_TF_CMPR, 32, 512) != TE_OK)

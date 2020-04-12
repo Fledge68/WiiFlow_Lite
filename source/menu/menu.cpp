@@ -1215,8 +1215,8 @@ void CMenu::_buildMenus(void)
 	theme.btnTexMinusS = _texture("GENERAL", "minus_button_texture_selected", theme.btnTexMinusS);
 
 	// Default background
-	TexHandle.fromImageFile(theme.bg, fmt("%s/background.jpg", m_imgsDir.c_str()));
-	TexHandle.fromImageFile(m_mainBgLQ, fmt("%s/background.jpg", m_imgsDir.c_str()), GX_TF_CMPR, 64, 64);
+	TexHandle.fromImageFile(theme.bg, fmt("%s/background.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(m_mainBgLQ, fmt("%s/background.png", m_imgsDir.c_str()), GX_TF_CMPR, 64, 64);
 	m_gameBgLQ = m_mainBgLQ;
 
 	// Build menus
@@ -2785,9 +2785,9 @@ const char *CMenu::getBlankCoverPath(const dir_discHdr *element)
 		}
 		blankCoverTitle = m_platform.getString("PLUGINS", m_plugin.PluginMagicWord, "wii");
 	}
-	snprintf(blankCoverPath, sizeof(blankCoverPath), "%s/blank_covers/%s.jpg", m_boxPicDir.c_str(), blankCoverTitle.c_str());
+	snprintf(blankCoverPath, sizeof(blankCoverPath), "%s/blank_covers/%s.png", m_boxPicDir.c_str(), blankCoverTitle.c_str());
 	if(!fsop_FileExist(blankCoverPath))
-		snprintf(blankCoverPath, sizeof(blankCoverPath), "%s/blank_covers/%s.png", m_boxPicDir.c_str(), blankCoverTitle.c_str());
+		snprintf(blankCoverPath, sizeof(blankCoverPath), "%s/blank_covers/%s.jpg", m_boxPicDir.c_str(), blankCoverTitle.c_str());
 	return blankCoverPath;
 }
 
