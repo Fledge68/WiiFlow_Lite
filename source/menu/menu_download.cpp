@@ -756,7 +756,6 @@ s32 CMenu::_networkComplete(s32 ok, void *usrData)
 	if(networkInit)
 		wolfSSL_Init();
 
-	gprintf("NET: Network init complete, enabled wifi_gecko: %s\n", m->m_use_wifi_gecko ? "yes" : "no");
 	if(m->m_use_wifi_gecko)
 	{
 		const string &ip = m->m_cfg.getString("DEBUG", "wifi_gecko_ip");

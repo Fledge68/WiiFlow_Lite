@@ -52,7 +52,7 @@ void add_game_to_card(const char *gameid)
 		strcpy(url, providers[i].url);
 		str_replace(url, "{KEY}", providers[i].key, MAX_URL_SIZE);
 		str_replace(url, "{ID6}", gameid, MAX_URL_SIZE);
-		gprintf("Gamertag URL:\n%s\n", url);
+		gprintf("Gamertag URL: %s\n", url);
 		struct download file = {};
 		file.skip_response = 1;
 		downloadfile(url, &file);
