@@ -12,6 +12,7 @@
 #include "https.h"
 #include "gecko/gecko.hpp"
 #include "picohttpparser.h"
+#include "memory/mem2.hpp"
 
 u8 loop;
 
@@ -99,7 +100,7 @@ void read_chunked(HTTP_INFO *httpinfo, struct download *buffer, size_t start_pos
             gprintf("Increased buffer size\n");
 #endif
             capacity *= 2;
-            buffer->data = realloc(buffer->data, capacity);
+            buffer->data = MEM2_realloc(buffer->data, capacity);
         }
         while ((rret = https_read(httpinfo, &buffer->data[start_pos], capacity - start_pos)) == -1 && errno == EINTR)
             ;
@@ -122,7 +123,7 @@ void read_chunked(HTTP_INFO *httpinfo, struct download *buffer, size_t start_pos
         start_pos += rsize;
     } while (pret == -2);
     buffer->size = start_pos;
-    buffer->data = realloc(buffer->data, buffer->size);
+    buffer->data = MEM2_realloc(buffer->data, buffer->size);
 }
 
 void read_all(HTTP_INFO *httpinfo, struct download *buffer, size_t start_pos)
@@ -140,7 +141,7 @@ void read_all(HTTP_INFO *httpinfo, struct download *buffer, size_t start_pos)
             gprintf("Increased buffer size\n");
 #endif
             capacity *= 2;
-            buffer->data = realloc(buffer->data, capacity);
+            buffer->data = MEM2_realloc(buffer->data, capacity);
         }
         while ((ret = https_read(httpinfo, &buffer->data[start_pos], capacity - start_pos)) == -1 && errno == EINTR)
             ;
@@ -150,7 +151,7 @@ void read_all(HTTP_INFO *httpinfo, struct download *buffer, size_t start_pos)
         start_pos += ret;
     };
     buffer->size = start_pos;
-    buffer->data = realloc(buffer->data, buffer->size);
+    buffer->data = MEM2_realloc(buffer->data, buffer->size);
 }
 
 int connect(char *host, u16 port)
@@ -420,7 +421,7 @@ void downloadfile(const char *url, struct download *buffer)
     // We got what we wanted
     if (status == 200)
     {
-        buffer->data = malloc(4096);
+        buffer->data = MEM2_alloc(4096);
         buffer->size = 4096;
         memcpy(buffer->data, &response[pret], buflen - pret);
         // Determine how to read the data

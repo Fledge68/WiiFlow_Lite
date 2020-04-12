@@ -1199,8 +1199,7 @@ int CMenu::_coverDownloader()
 							m_thrdMessage = wfmt(_fmt("dlmsg4", L"Saving %s"), path);
 							m_thrdMessageAdded = true;
 							fsop_WriteFile(path, file.data, file.size);
-							if(file.size > 0)
-								free(file.data);
+							MEM2_free(file.data);
 							
 							/* make cover cache file (wfc) */
 							update_pThread(1);
@@ -1338,8 +1337,7 @@ int CMenu::_coverDownloader()
 							m_thrdMessage = wfmt(_fmt("dlmsg4", L"Saving %s"), path);
 							m_thrdMessageAdded = true;
 							fsop_WriteFile(path, file.data, file.size);
-							if(file.size > 0)
-								free(file.data);
+							MEM2_free(file.data);
 								
 							/* make cover cache file (wfc) */
 							update_pThread(1);
@@ -1471,8 +1469,7 @@ int CMenu::_coverDownloader()
 							m_thrdMessage = wfmt(_fmt("dlmsg4", L"Saving %s"), path);
 							m_thrdMessageAdded = true;
 							fsop_WriteFile(path, file.data, file.size);
-							if(file.size > 0)
-								free(file.data);
+							MEM2_free(file.data);
 								
 							/* make cover cache file (wfc) */
 							update_pThread(1);
@@ -1608,8 +1605,7 @@ int CMenu::_coverDownloader()
 							m_thrdMessage = wfmt(_fmt("dlmsg4", L"Saving %s"), path);
 							m_thrdMessageAdded = true;
 							fsop_WriteFile(path, file.data, file.size);
-							if(file.size > 0)
-								free(file.data);
+							MEM2_free(file.data);
 								
 							/* make wfc */
 							update_pThread(1);
@@ -1673,8 +1669,7 @@ int CMenu::_gametdbDownloaderAsync()
 				m_thrdMessage = wfmt(_fmt("dlmsg4", L"Saving %s"), "wiitdb.zip");
 				m_thrdMessageAdded = true;	
 				res = fsop_WriteFile(zippath, file.data, file.size);
-				if(file.size > 0)
-					free(file.data);
+				MEM2_free(file.data);
 			}
 			if(res == false)
 			{
@@ -1788,7 +1783,7 @@ int CMenu::_bannerDownloader()
 		if(file.size < 0x5000)
 		{
 			if(file.size > 0)
-				free(file.data); // More than 0 bytes and less than 50kb
+				MEM2_free(file.data); // More than 0 bytes and less than 50kb
 			downloadfile(banner_url_id3, &file);
 		}
 
@@ -1799,7 +1794,7 @@ int CMenu::_bannerDownloader()
 			count++;
 		}
 		if(file.size > 0)
-			free(file.data);
+			MEM2_free(file.data);
 		update_pThread(1);
 	}
 	return 0;
