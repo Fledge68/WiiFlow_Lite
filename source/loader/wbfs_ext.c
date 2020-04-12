@@ -146,9 +146,9 @@ s32 WBFS_Ext_RemoveGame(u8 *discid, char *gamepath)
 {
 	DIR *dir_iter;
 	struct dirent *ent;
-	char file[MAX_FAT_PATH + 768];//not sure why 768 but whatever
+	char file[MAX_FAT_PATH];
 	char folder[MAX_FAT_PATH];
-	STRCOPY(folder, gamepath);//STRCOPY ?
+	STRCOPY(folder, gamepath);// why function STRCOPY and not just strcpy?
 	char *p = strrchr(folder, '/');
 	if(p) *p = 0;
 
@@ -158,9 +158,8 @@ s32 WBFS_Ext_RemoveGame(u8 *discid, char *gamepath)
 	{
 		if(strstr(ent->d_name, (char*)discid) != NULL)
 		{
-			snprintf(file, sizeof(file), "%s/%s", folder, ent->d_name);
+			strcpy(file, fmt("%s/%s", folder, ent->d_name)); 
 			remove(file);
-			break;
 		}
 	}
 	closedir(dir_iter);
