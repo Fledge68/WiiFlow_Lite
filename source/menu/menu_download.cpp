@@ -82,52 +82,52 @@ void CMenu::_showSettings()
 	m_btnMgr.show(m_downloadLblPrio);
 	m_btnMgr.show(m_downloadBtnPrioM);
 	m_btnMgr.show(m_downloadBtnPrioP);
-	m_btnMgr.show(m_downloadLblRegion);	
+	m_btnMgr.show(m_downloadLblRegion);
 	if( m_downloadPrioVal&C_TYPE_EN )
 		m_btnMgr.show(m_downloadBtnENs);
 	else
 		m_btnMgr.show(m_downloadBtnEN);
-		
+
 	if( m_downloadPrioVal&C_TYPE_JA )
 		m_btnMgr.show(m_downloadBtnJAs);
 	else
 		m_btnMgr.show(m_downloadBtnJA);
-		
+
 	if( m_downloadPrioVal&C_TYPE_FR )
 		m_btnMgr.show(m_downloadBtnFRs);
 	else
 		m_btnMgr.show(m_downloadBtnFR);
-	
+
 	if( m_downloadPrioVal&C_TYPE_DE )
 		m_btnMgr.show(m_downloadBtnDEs);
 	else
-		m_btnMgr.show(m_downloadBtnDE);	
-		
+		m_btnMgr.show(m_downloadBtnDE);
+
 	if( m_downloadPrioVal&C_TYPE_ES )
 		m_btnMgr.show(m_downloadBtnESs);
 	else
 		m_btnMgr.show(m_downloadBtnES);
-	
+
 	if( m_downloadPrioVal&C_TYPE_IT )
 		m_btnMgr.show(m_downloadBtnITs);
 	else
 		m_btnMgr.show(m_downloadBtnIT);
-		
+
 	if( m_downloadPrioVal&C_TYPE_NL )
 		m_btnMgr.show(m_downloadBtnNLs);
 	else
 		m_btnMgr.show(m_downloadBtnNL);
-	
+
 	if( m_downloadPrioVal&C_TYPE_PT )
 		m_btnMgr.show(m_downloadBtnPTs);
 	else
-		m_btnMgr.show(m_downloadBtnPT);	
-		
+		m_btnMgr.show(m_downloadBtnPT);
+
 	if( m_downloadPrioVal&C_TYPE_RU )
 		m_btnMgr.show(m_downloadBtnRUs);
 	else
 		m_btnMgr.show(m_downloadBtnRU);
-	
+
 	if( m_downloadPrioVal&C_TYPE_KO )
 		m_btnMgr.show(m_downloadBtnKOs);
 	else
@@ -137,16 +137,16 @@ void CMenu::_showSettings()
 		m_btnMgr.show(m_downloadBtnZHCNs);
 	else
 		m_btnMgr.show(m_downloadBtnZHCN);
-	
+
 	if( m_downloadPrioVal&C_TYPE_AU )
 		m_btnMgr.show(m_downloadBtnAUs);
 	else
 		m_btnMgr.show(m_downloadBtnAU);
-		
+
 	//
 	if( m_downloadPrioVal&C_TYPE_ONOR )
 	{
-		m_btnMgr.setText(m_downloadLblPrio, _t("dl24", L"Custom only"));	
+		m_btnMgr.setText(m_downloadLblPrio, _t("dl24", L"Custom only"));
 	}
 	else
 	{
@@ -158,7 +158,7 @@ void CMenu::_showSettings()
 				{
 					m_btnMgr.setText(m_downloadLblPrio, _t("dl23", L"Custom/Custom"));
 				}
-				else						
+				else
 				{
 					m_btnMgr.setText(m_downloadLblPrio, _t("dl22", L"Custom/Original"));
 				}
@@ -221,7 +221,7 @@ void CMenu::_showDownload(void)
 	m_btnMgr.show(m_downloadBtnBanners);
 	for(u8 i = 0; i < ARRAY_SIZE(m_downloadLblUser); ++i)
 		if(m_downloadLblUser[i] != -1)
-			m_btnMgr.show(m_downloadLblUser[i]);	
+			m_btnMgr.show(m_downloadLblUser[i]);
 }
 
 int count, countFlat;
@@ -265,8 +265,8 @@ void CMenu::_download(string gameId, int dl_type)
 		{
 			if(m_btnMgr.selected(m_downloadBtnAll) || dl_type == 1)
 			{
-				m_refreshGameList = true;// not needed instead just initcf()
-				
+				m_refreshGameList = true; // Not needed instead just initcf()
+
 				m_btnMgr.hide(m_downloadLblCovers);
 				m_btnMgr.hide(m_downloadBtnAll);
 				m_btnMgr.hide(m_downloadLblGameTDBDownload);
@@ -276,14 +276,14 @@ void CMenu::_download(string gameId, int dl_type)
 				m_btnMgr.hide(m_downloadLblBanners);
 				m_btnMgr.hide(m_downloadBtnBanners);
 				m_btnMgr.hide(m_downloadBtnBack);
-				
+
 				m_btnMgr.setProgress(m_wbfsPBar, 0.f, true);
 				m_btnMgr.setText(m_wbfsLblMessage, L"0%");
 				m_btnMgr.setText(m_wbfsLblDialog, L"");
 				m_btnMgr.show(m_wbfsPBar);
 				m_btnMgr.show(m_wbfsLblMessage);
 				m_btnMgr.show(m_wbfsLblDialog);
-				
+
 				_start_pThread();
 				int ret = _coverDownloader();
 				_stop_pThread();
@@ -308,13 +308,13 @@ void CMenu::_download(string gameId, int dl_type)
 					m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg30", L"No covers missing."));
 				dl_finished = true;
 				dl_type = 0;
-				//maybe show back button
+				// Maybe show back button
 				//m_btnMgr.show(m_downloadBtnBack);
 			}
 			if(m_btnMgr.selected(m_downloadBtnBanners) || dl_type == 2)
 			{
 				//m_refreshGameList = true;
-				
+
 				m_btnMgr.hide(m_downloadLblCovers);
 				m_btnMgr.hide(m_downloadBtnAll);
 				m_btnMgr.hide(m_downloadLblGameTDBDownload);
@@ -324,14 +324,14 @@ void CMenu::_download(string gameId, int dl_type)
 				m_btnMgr.hide(m_downloadLblBanners);
 				m_btnMgr.hide(m_downloadBtnBanners);
 				m_btnMgr.hide(m_downloadBtnBack);
-				
+
 				m_btnMgr.setProgress(m_wbfsPBar, 0.f, true);
 				m_btnMgr.setText(m_wbfsLblMessage, L"0%");
 				m_btnMgr.setText(m_wbfsLblDialog, L"");
 				m_btnMgr.show(m_wbfsPBar);
 				m_btnMgr.show(m_wbfsLblMessage);
 				m_btnMgr.show(m_wbfsLblDialog);
-				
+
 				_start_pThread();
 				int ret = _bannerDownloader();
 				_stop_pThread();
@@ -346,19 +346,19 @@ void CMenu::_download(string gameId, int dl_type)
 						m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg14", L"Done."));
 				}
 				else if(ret == -1)
-					m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg34", L"Banner URL not set properly!"));//banner url not set
+					m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg34", L"Banner URL not set properly!")); // Banner URL not set
 				else if(ret == -2)
 					m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg2", L"Network initialization failed!"));
 				else if(ret == -3)
-					m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg33", L"No banners missing."));// no banners missing
+					m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg33", L"No banners missing.")); // No banners missing
 				dl_finished = true;
 				dl_type = 0;
-				//maybe show back button
+				// Maybe show back button
 				//m_btnMgr.show(m_downloadBtnBack);
 			}
 			else if(m_btnMgr.selected(m_downloadBtnGameTDBDownload))
 			{
-				m_refreshGameList = true;// to refresh titles
+				m_refreshGameList = true; // To refresh titles
 				m_btnMgr.hide(m_downloadLblCovers);
 				m_btnMgr.hide(m_downloadBtnAll);
 				m_btnMgr.hide(m_downloadBtnMissing);
@@ -369,14 +369,14 @@ void CMenu::_download(string gameId, int dl_type)
 				m_btnMgr.hide(m_downloadLblBanners);
 				m_btnMgr.hide(m_downloadBtnBanners);
 				m_btnMgr.hide(m_downloadBtnBack);
-				
+
 				m_btnMgr.setProgress(m_wbfsPBar, 0.f, true);
 				m_btnMgr.setText(m_wbfsLblMessage, L"0%");
 				m_btnMgr.setText(m_wbfsLblDialog, L"");
 				m_btnMgr.show(m_wbfsPBar);
 				m_btnMgr.show(m_wbfsLblMessage);
 				m_btnMgr.show(m_wbfsLblDialog);
-				
+
 				_start_pThread();
 				int ret = _gametdbDownloaderAsync();
 				_stop_pThread();
@@ -402,7 +402,7 @@ void CMenu::_download(string gameId, int dl_type)
 			else if(m_btnMgr.selected(m_downloadBtnCoverSet))
 			{
 				settingsmenu = true;
-				_showSettings();				
+				_showSettings();
 			}
 			else if(m_btnMgr.selected(m_downloadBtnBack))
 			{
@@ -667,7 +667,7 @@ void CMenu::_initDownloadMenu()
 	_setHideAnim(m_downloadPBar, "DOWNLOAD/PROGRESS_BAR", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_downloadBtnCancel, "DOWNLOAD/CANCEL_BTN", 0, 0, 1.f, -1.f);
 
-	// Cover settings	
+	// Cover settings
 	_setHideAnim(m_downloadLblSetTitle, "DOWNLOAD/SETTITLE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_downloadLblCoverPrio, "DOWNLOAD/COVERPRIO", 50, 0, -2.f, 0.f);
 	_setHideAnim(m_downloadLblPrio, "DOWNLOAD/PRIO_BTN", -50, 0, 1.f, 0.f);
@@ -712,15 +712,15 @@ void CMenu::_textDownload(void)
 	m_btnMgr.setText(m_downloadLblCovers, _t("dl8", L"Covers"));
 	m_btnMgr.setText(m_downloadBtnAll, _t("dl6", L"Download"));
 	m_btnMgr.setText(m_downloadLblCoverSet, _t("dl15", L"Cover download settings"));
-	m_btnMgr.setText(m_downloadBtnCoverSet, _t("dl16", L"Set"));	
+	m_btnMgr.setText(m_downloadBtnCoverSet, _t("dl16", L"Set"));
 	m_btnMgr.setText(m_downloadLblGameTDBDownload, _t("dl12", L"GameTDB"));
 	m_btnMgr.setText(m_downloadBtnGameTDBDownload, _t("dl6", L"Download"));
 	m_btnMgr.setText(m_downloadLblBanners, _t("dl26", L"GC Custom Banners"));
-	m_btnMgr.setText(m_downloadBtnBanners, _t("dl6", L"Download"));	
+	m_btnMgr.setText(m_downloadBtnBanners, _t("dl6", L"Download"));
 
 	m_btnMgr.setText(m_downloadLblGameTDB, _t("dl10", L"Please donate\nto GameTDB.com"));
 	m_btnMgr.setText(m_downloadBtnCancel, _t("dl1", L"Cancel"));
-	
+
 	m_btnMgr.setText(m_downloadLblSetTitle, _t("dl17", L"Cover Download Settings"));
 	m_btnMgr.setText(m_downloadLblCoverPrio, _t("dl13", L"Download order"));
 	m_btnMgr.setText(m_downloadLblRegion, _t("dl14", L"Select regions to check for covers:"));
@@ -752,11 +752,10 @@ s32 CMenu::_networkComplete(s32 ok, void *usrData)
 
 	networkInit = ok == 0;
 	m->m_thrdNetwork = false;
-	
+
 	if(networkInit)
 		wolfSSL_Init();
 
-	gprintf("NET: Network init complete, enabled wifi_gecko: %s\n", m->m_use_wifi_gecko ? "yes" : "no");
 	if(m->m_use_wifi_gecko)
 	{
 		const string &ip = m->m_cfg.getString("DEBUG", "wifi_gecko_ip");
@@ -787,7 +786,7 @@ int CMenu::_initNetwork()
 {
 	while(net_get_status() == -EBUSY && m_thrdNetwork == true)
 	{
-		usleep(100);// Async initialization may be busy, wait to see if it succeeds.
+		usleep(100); // Async initialization may be busy, wait to see if it succeeds.
 	}
 	if(networkInit)
 		return 0;
@@ -893,7 +892,7 @@ static string makeURL(const string format, const string gameId, const string cou
 {
 	string url = format;
 	if(url.find(TAG_LOC) != url.npos)
- 		url.replace(url.find(TAG_LOC), strlen(TAG_LOC), country.c_str());
+		url.replace(url.find(TAG_LOC), strlen(TAG_LOC), country.c_str());
 
 	if(url.find(TAG_CONSOLE) != url.npos)
 		url.replace(url.find(TAG_CONSOLE), strlen(TAG_CONSOLE), "wii");
@@ -1000,15 +999,15 @@ int CMenu::_coverDownloader()
 		c_gameTDB.OpenFile(fmt("%s/wiitdb.xml", m_settingsDir.c_str()));
 		c_gameTDB.SetLanguageCode(m_curLanguage.c_str());
 	}
-	
+
 	vector<string> fmtURLBox = stringToVector(m_cfg.getString("GENERAL", "url_full_covers", FMT_BPIC_URL), '|');
 	vector<string> fmtURLFlat = stringToVector(m_cfg.getString("GENERAL", "url_flat_covers", FMT_PIC_URL), '|');
 	vector<string> fmtURLCBox = stringToVector(m_cfg.getString("GENERAL", "url_custom_full_covers", FMT_CBPIC_URL), '|');
 	vector<string> fmtURLCFlat = stringToVector(m_cfg.getString("GENERAL", "url_custom_flat_covers", FMT_CPIC_URL), '|');
 
 	vector<string> coverIDList;
-		
-	/* create list of cover ID's that need downloading */
+
+	/* Create list of cover ID's that need downloading */
 	if(dl_gameID.empty())
 	{
 		for(u32 i = 0; i < m_gameList.size(); ++i)
@@ -1023,7 +1022,7 @@ int CMenu::_coverDownloader()
 		coverIDList.push_back(dl_gameID);
 
 	n = coverIDList.size();
-	m_thrdTotal = n * 3;// 3 = download cover, save png, and make wfc
+	m_thrdTotal = n * 3; // 3 = Download cover, save png and make wfc
 
 	if(m_thrdTotal == 0)
 	{
@@ -1033,7 +1032,7 @@ int CMenu::_coverDownloader()
 		return -3;
 	}
 
-	/* initialize network connection */
+	/* Initialize network connection */
 	m_thrdMessage = _t("dlmsg1", L"Initializing network...");
 	m_thrdMessageAdded = true;
 	if(_initNetwork() < 0)
@@ -1044,7 +1043,7 @@ int CMenu::_coverDownloader()
 		return -2;
 	}
 
-	/* download covers in the list */
+	/* Download covers in the list */
 	u32 CoverType = 0;
 	string url;
 	char path[256];
@@ -1057,20 +1056,20 @@ int CMenu::_coverDownloader()
 		bool custom = false;
 		int c_altCase = 0;
 
-		/* try downloading the cover 4 times but a different type each time.*/
+		/* Try downloading the cover 4 times but a different type each time.*/
 		for(int p = 0; p < 4; ++p)
 		{
-			/* the cover type (BOX, CBOX, FLAT, CFLAT) is different each time based on m_downloadPrioVal */
+			/* The cover type (BOX, CBOX, FLAT, CFLAT) is different each time based on m_downloadPrioVal */
 			switch(p)
 			{
 				case 0:
 					CoverType = m_downloadPrioVal & C_TYPE_PRIOA ? CBOX : BOX;
 					break;
 				case 1:
-					CoverType = m_downloadPrioVal & C_TYPE_PRIOA ? (m_downloadPrioVal & C_TYPE_PRIOB ? CFLAT : BOX) :  (m_downloadPrioVal & C_TYPE_PRIOB ? CBOX : FLAT);
+					CoverType = m_downloadPrioVal & C_TYPE_PRIOA ? (m_downloadPrioVal & C_TYPE_PRIOB ? CFLAT : BOX) : (m_downloadPrioVal & C_TYPE_PRIOB ? CBOX : FLAT);
 					break;
 				case 2:
-					CoverType = m_downloadPrioVal & C_TYPE_PRIOA ? (m_downloadPrioVal & C_TYPE_PRIOB ? BOX : CFLAT) :  (m_downloadPrioVal & C_TYPE_PRIOB ? FLAT : CBOX);
+					CoverType = m_downloadPrioVal & C_TYPE_PRIOA ? (m_downloadPrioVal & C_TYPE_PRIOB ? BOX : CFLAT) : (m_downloadPrioVal & C_TYPE_PRIOB ? FLAT : CBOX);
 					break;
 				case 3:
 					CoverType = m_downloadPrioVal & C_TYPE_PRIOA ? FLAT : CFLAT;
@@ -1084,11 +1083,11 @@ int CMenu::_coverDownloader()
 						original = false;
 					if(!success && original)
 					{
-						/* each fmtURL may have more than one URL */
+						/* Each fmtURL may have more than one URL */
 						for(u8 j = 0; !success && j < fmtURLBox.size(); ++j)
 						{
 							url = makeURL(fmtURLBox[j], coverID, countryCode(coverID));
-							
+
 							m_thrdMessage = wfmt(_fmt("dlmsg3", L"Downloading %i/%i from %s"), i + 1, n, url.c_str());
 							m_thrdMessageAdded = true;
 							struct download file = {};
@@ -1096,7 +1095,7 @@ int CMenu::_coverDownloader()
 
 							for(int o = 0; o < 12; ++o)
 							{
-								bool tdl = false;// tdl = try download
+								bool tdl = false; // tdl = try download
 								if(file.size > 0)// && checkPNGBuf(file.data))
 									break;
 								switch( o )
@@ -1181,33 +1180,30 @@ int CMenu::_coverDownloader()
 									case ZHCN:
 										break;
 								}
-								if(tdl)// try another download
+								if(tdl) // Try another download
 								{
 									m_thrdMessage = wfmt(_fmt("dlmsg3", L"Downloading %i/%i from %s"), i + 1, n, url.c_str());
 									m_thrdMessageAdded = true;
 									downloadfile(url.c_str(), &file);
 								}
 							}
-							/* if none of the downloads succeeded */
+							/* If none of the downloads succeeded */
 							if(file.size == 0)// || !checkPNGBuf(file.data))
 								continue;
-							
-							/* a download succeeded */
-							
-							/* save cover png */
+
+							/* Download succeeded - save png */
 							strncpy(path, fmt("%s/%s.png", m_boxPicDir.c_str(), coverID.c_str()), 255);
 							update_pThread(1);
 							m_thrdMessage = wfmt(_fmt("dlmsg4", L"Saving %s"), path);
 							m_thrdMessageAdded = true;
 							fsop_WriteFile(path, file.data, file.size);
-							if(file.size > 0)
-								free(file.data);
-							
-							/* make cover cache file (wfc) */
+							MEM2_free(file.data);
+
+							/* Make cover cache file (wfc) */
 							update_pThread(1);
 							m_thrdMessage = wfmt(_fmt("dlmsg10", L"Making %s.wfc"), coverID.c_str());
 							m_thrdMessageAdded = true;
-							CoverFlow.cacheCoverFile(fmt("%s/%s.wfc", m_cacheDir.c_str(), coverID.c_str()), path, true);//it may fail
+							CoverFlow.cacheCoverFile(fmt("%s/%s.wfc", m_cacheDir.c_str(), coverID.c_str()), path, true); // Might fail if OOM
 
 							++count;
 							update_pThread(1);
@@ -1221,7 +1217,7 @@ int CMenu::_coverDownloader()
 					c_altCase = c_gameTDB.GetCaseVersions(coverID.c_str());
 					if(!success && c_gameTDB.IsLoaded() && c_altCase > 1 && custom)
 					{
-						/* each fmtURL may have more than one URL */
+						/* Each fmtURL may have more than one URL */
 						for(u8 j = 0; !success && j < fmtURLCBox.size(); ++j)
 						{
 							url = makeURL(fmtURLCBox[j], coverID, countryCode(coverID));
@@ -1230,7 +1226,7 @@ int CMenu::_coverDownloader()
 							m_thrdMessageAdded = true;
 							struct download file = {};
 							downloadfile(url.c_str(), &file);
-							
+
 							for(int o = 0; o < 12; ++o)
 							{
 								bool tdl = false;
@@ -1310,7 +1306,7 @@ int CMenu::_coverDownloader()
 										break;
 									case AU:
 										if(coverID[3] == 'W' && m_downloadPrioVal&C_TYPE_ZHCN)
-										{	
+										{
 											url = makeURL(fmtURLCBox[j], coverID, "ZH");
 											tdl = true;
 										}
@@ -1327,29 +1323,26 @@ int CMenu::_coverDownloader()
 								}
 							}
 
-							/* if none of the downloads succeeded */
+							/* If none of the downloads succeeded */
 							if(file.size <= 0)// || !checkPNGBuf(file.data))
 								continue;
 
-							/* a download succeeded */
-							
-							/* save cover png */
+							/* Download succeeded - save png */
 							strncpy(path, fmt("%s/%s.png", m_boxPicDir.c_str(), coverID.c_str()), 255);
 							update_pThread(1);
 							m_thrdMessage = wfmt(_fmt("dlmsg4", L"Saving %s"), path);
 							m_thrdMessageAdded = true;
 							fsop_WriteFile(path, file.data, file.size);
-							if(file.size > 0)
-								free(file.data);
-								
-							/* make cover cache file (wfc) */
+							MEM2_free(file.data);
+
+							/* Make cover cache file (wfc) */
 							update_pThread(1);
 							m_thrdMessage = wfmt(_fmt("dlmsg10", L"Making %s.wfc"), coverID.c_str());
 							m_thrdMessageAdded = true;
-							CoverFlow.cacheCoverFile(fmt("%s/%s.wfc", m_cacheDir.c_str(), coverID.c_str()), path, true);//it may fail
-							
-							update_pThread(1);
+							CoverFlow.cacheCoverFile(fmt("%s/%s.wfc", m_cacheDir.c_str(), coverID.c_str()), path, true); // Might fail if OOM
+
 							++count;
+							update_pThread(1);
 							success = true;
 						}
 					}
@@ -1359,10 +1352,11 @@ int CMenu::_coverDownloader()
 						original = false;
 					if(!success && original)
 					{
+						/* Each fmtURL may have more than one URL */
 						for(u8 j = 0; !success && j < fmtURLFlat.size(); ++j)
 						{
 							url = makeURL(fmtURLFlat[j], coverID, countryCode(coverID));
-							
+
 							m_thrdMessage = wfmt(_fmt("dlmsg3", L"Downloading %i/%i from %s"), i + 1, n, url.c_str());
 							m_thrdMessageAdded = true;
 							struct download file = {};
@@ -1463,23 +1457,23 @@ int CMenu::_coverDownloader()
 								}
 							}
 
+							/* If none of the downloads succeeded */
 							if(file.size <= 0)// || !checkPNGBuf(file.data))
 								continue;
 
-							/*download succeeded - save png */
+							/* Download succeeded - save png */
 							strncpy(path, fmt("%s/%s.png", m_picDir.c_str(), coverID.c_str()), 255);
 							update_pThread(1);
 							m_thrdMessage = wfmt(_fmt("dlmsg4", L"Saving %s"), path);
 							m_thrdMessageAdded = true;
 							fsop_WriteFile(path, file.data, file.size);
-							if(file.size > 0)
-								free(file.data);
-								
-							/* make cover cache file (wfc) */
+							MEM2_free(file.data);
+
+							/* Make cover cache file (wfc) */
 							update_pThread(1);
 							m_thrdMessage = wfmt(_fmt("dlmsg10", L"Making %s"), sfmt("%s.wfc", coverID.c_str()));
 							m_thrdMessageAdded = true;
-							CoverFlow.cacheCoverFile(fmt("%s/%s.wfc", m_cacheDir.c_str(), coverID.c_str()), path, false);//it may fail
+							CoverFlow.cacheCoverFile(fmt("%s/%s.wfc", m_cacheDir.c_str(), coverID.c_str()), path, false); // Might fail if OOM
 
 							++countFlat;
 							update_pThread(1);
@@ -1492,15 +1486,16 @@ int CMenu::_coverDownloader()
 						custom = true;
 					if(!success && c_gameTDB.IsLoaded() && c_altCase > 1 && custom)
 					{
+						/* Each fmtURL may have more than one URL */
 						for(u8 j = 0; !success && j < fmtURLCFlat.size(); ++j)
 						{
 							url = makeURL(fmtURLCFlat[j], coverID, countryCode(coverID));
-							
+
 							m_thrdMessage = wfmt(_fmt("dlmsg3", L"Downloading %i/%i from %s"), i + 1, n, url.c_str());
 							m_thrdMessageAdded = true;
 							struct download file = {};
 							downloadfile(url.c_str(), &file);
-							
+
 							for(int o = 0; o < 12; ++o)
 							{
 								bool tdl = false;
@@ -1595,28 +1590,27 @@ int CMenu::_coverDownloader()
 									m_thrdMessage = wfmt(_fmt("dlmsg3", L"Downloading %i/%i from %s"), i + 1, n, url.c_str());
 									m_thrdMessageAdded = true;
 									LWP_MutexUnlock(m_mutex);
-									
 									downloadfile(url.c_str(), &file);
 								}
 							}
 
+							/* If none of the downloads succeeded */
 							if(file.size <= 0)// || !checkPNGBuf(file.data))
 								continue;
 
-							/* save png */
+							/* Download succeeded - save png */
 							strncpy(path, fmt("%s/%s.png", m_picDir.c_str(), coverID.c_str()), 255);
 							update_pThread(1);
 							m_thrdMessage = wfmt(_fmt("dlmsg4", L"Saving %s"), path);
 							m_thrdMessageAdded = true;
 							fsop_WriteFile(path, file.data, file.size);
-							if(file.size > 0)
-								free(file.data);
-								
-							/* make wfc */
+							MEM2_free(file.data);
+
+							/* Make cover cache file (wfc) */
 							update_pThread(1);
 							m_thrdMessage = wfmt(_fmt("dlmsg10", L"Making %s"), sfmt("%s.wfc", coverID.c_str()));
 							m_thrdMessageAdded = true;
-							CoverFlow.cacheCoverFile(fmt("%s/%s.wfc", m_cacheDir.c_str(), coverID.c_str()), path, false);//it may fail
+							CoverFlow.cacheCoverFile(fmt("%s/%s.wfc", m_cacheDir.c_str(), coverID.c_str()), path, false); // Might fail if OOM
 
 							++countFlat;
 							update_pThread(1);
@@ -1629,7 +1623,7 @@ int CMenu::_coverDownloader()
 		if(!success)
 			update_pThread(3);
 	}
-	/* cover list done and downloading complete */
+	/* Cover list done and downloading complete */
 	if(c_gameTDB.IsLoaded())
 		c_gameTDB.CloseFile();
 	coverIDList.clear();
@@ -1642,8 +1636,8 @@ int CMenu::_coverDownloader()
 int CMenu::_gametdbDownloaderAsync()
 {
 	const string &langCode = m_loc.getString(m_curLanguage, "gametdb_code", "EN");
-	m_thrdTotal = 3;// download, save, and unzip
-	
+	m_thrdTotal = 3; // Download, save and unzip
+
 	m_thrdMessage = _t("dlmsg1", L"Initializing network...");
 	m_thrdMessageAdded = true;
 	if(_initNetwork() < 0)
@@ -1662,20 +1656,19 @@ int CMenu::_gametdbDownloaderAsync()
 		}
 		else
 		{
-			update_pThread(1);//its downloaded
+			update_pThread(1); // It's downloaded
 			bool res = false;
 			char *zippath = fmt_malloc("%s/wiitdb.zip", m_settingsDir.c_str());
 			if(zippath != NULL)
 			{
 				gprintf("Writing file to '%s'\n", zippath);
-				
+
 				fsop_deleteFile(zippath);
-				
+
 				m_thrdMessage = wfmt(_fmt("dlmsg4", L"Saving %s"), "wiitdb.zip");
-				m_thrdMessageAdded = true;	
+				m_thrdMessageAdded = true;
 				res = fsop_WriteFile(zippath, file.data, file.size);
-				if(file.size > 0)
-					free(file.data);
+				MEM2_free(file.data);
 			}
 			if(res == false)
 			{
@@ -1686,15 +1679,15 @@ int CMenu::_gametdbDownloaderAsync()
 			}
 			else
 			{
-				update_pThread(1);//its saved
+				update_pThread(1); // It's saved
 				gprintf("Extracting zip file: ");
 
 				m_thrdMessage = wfmt(_fmt("dlmsg24", L"Extracting %s"), "wiitdb.zip");
-				m_thrdMessageAdded = true;	
+				m_thrdMessageAdded = true;
 				ZipFile zFile(zippath);
 				bool zres = zFile.ExtractAll(m_settingsDir.c_str());
 				gprintf(zres ? "success\n" : "failed\n");
-				//may add if zres failed return -4 extraction failed
+				// May add if zres failed return -4 extraction failed
 
 				// We don't need the zipfile anymore
 				fsop_deleteFile(zippath);
@@ -1702,8 +1695,8 @@ int CMenu::_gametdbDownloaderAsync()
 
 				// We should always remove the offsets file to make sure it's reloaded
 				fsop_deleteFile(fmt("%s/gametdb_offsets.bin", m_settingsDir.c_str()));
-				
-				update_pThread(1);//its extracted
+
+				update_pThread(1); // It's extracted
 
 				// Update cache
 				m_cfg.setBool(WII_DOMAIN, "update_cache", true);
@@ -1730,7 +1723,7 @@ int CMenu::_bannerDownloader()
 		string gameDir(fmt(gc_games_dir, DeviceName[currentPartition]));
 		string cacheDir(fmt("%s/%s_gamecube.db", m_listCacheDir.c_str(), DeviceName[currentPartition]));
 		m_cacheList.CreateList(COVERFLOW_GAMECUBE, gameDir, stringToVector(".iso|.ciso|root", '|'), cacheDir, false);
-		
+
 		for(u32 i = 0; i < m_cacheList.size(); ++i)
 		{
 			if(!fsop_FileExist(fmt("%s/%s.bnr", m_customBnrDir.c_str(), m_cacheList[i].id)))
@@ -1740,16 +1733,16 @@ int CMenu::_bannerDownloader()
 	}
 	else
 		BnrIDList.push_back(dl_gameID);
-	
+
 	n = BnrIDList.size();
 	m_thrdTotal = n;
-	
+
 	if(n == 0)
 	{
 		BnrIDList.clear();
 		return -3;
 	}
-	
+
 	const char *banner_url = NULL;
 	const char *banner_url_id3 = NULL;
 	const char *GAME_BNR_ID = "{gameid}";
@@ -1767,7 +1760,7 @@ int CMenu::_bannerDownloader()
 		BnrIDList.clear();
 		return -2;
 	}
-	
+
 	for(u32 i = 0; i < BnrIDList.size(); ++i)
 	{
 		string base_url_id6 = base_url;
@@ -1789,18 +1782,18 @@ int CMenu::_bannerDownloader()
 		if(file.size < 0x5000)
 		{
 			if(file.size > 0)
-				free(file.data); // More than 0 bytes and less than 50kb
+				MEM2_free(file.data); // More than 0 bytes and less than 50kb
 			downloadfile(banner_url_id3, &file);
 		}
 
-		/* minimum 50kb */
+		/* Minimum 50kb */
 		if(file.size > 51200 && file.data[0] != '<')
 		{
 			fsop_WriteFile(fmt("%s/%s.bnr", m_customBnrDir.c_str(), BnrIDList[i].c_str()), file.data, file.size);
 			count++;
 		}
 		if(file.size > 0)
-			free(file.data);
+			MEM2_free(file.data);
 		update_pThread(1);
 	}
 	return 0;
@@ -1810,7 +1803,7 @@ int CMenu::_bannerDownloader()
 /**************************************************************************************/
 
 const char *url_dl = NULL;
-void CMenu::_downloadUrl(const char *url, u8 **dl_file, u32 *dl_size)// nothing uses this
+void CMenu::_downloadUrl(const char *url, u8 **dl_file, u32 *dl_size) // Nothing uses this
 {
 	m_file = NULL;
 	m_filesize = 0;

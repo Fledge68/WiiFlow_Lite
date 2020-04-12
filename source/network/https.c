@@ -1,7 +1,6 @@
-/*
-    Code by blackb0x @ GBAtemp.net
-    This allows the Wii to download from servers that use SNI.
-*/
+// Code by blackb0x @ GBAtemp.net
+// This allows the Wii to download from servers that use SNI.
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,8 +11,10 @@
 #include "https.h"
 #include "gecko/gecko.hpp"
 #include "picohttpparser.h"
+#include "memory/mem2.hpp"
 
 u8 loop;
+WOLFSSL_SESSION *session;
 
 int https_write(HTTP_INFO *httpinfo, char *buffer, int len)
 {
@@ -39,11 +40,31 @@ int https_write(HTTP_INFO *httpinfo, char *buffer, int len)
 
 int https_read(HTTP_INFO *httpinfo, char *buffer, int len)
 {
-    if (len > 8192)
-        len = 8192; // 16KB is the max on a Wii, but 8KB is safe
-    if (httpinfo->use_https)
-        return wolfSSL_read(httpinfo->ssl, buffer, len);
-    return net_read(httpinfo->sock, buffer, len);
+    struct pollsd fds[1];
+    fds[0].socket = httpinfo->sock;
+    fds[0].events = POLLIN;
+
+    net_fcntl(httpinfo->sock, F_SETFL, 4);
+    switch (net_poll(fds, 1, READ_WRITE_TIMEOUT))
+    {
+    case -1:
+#ifdef DEBUG_NETWORK
+        gprintf("net_poll error\n");
+#endif
+        return -1;
+    case 0:
+#ifdef DEBUG_NETWORK
+        gprintf("The connection timed out\n");
+#endif
+        return -ETIMEDOUT;
+    default:
+        net_fcntl(httpinfo->sock, F_SETFL, 0);
+        if (len > 8192)
+            len = 8192; // 16KB is the max on a Wii, but 8KB is safe
+        if (httpinfo->use_https)
+            return wolfSSL_read(httpinfo->ssl, buffer, len);
+        return net_read(httpinfo->sock, buffer, len);
+    }
 }
 
 void https_close(HTTP_INFO *httpinfo)
@@ -99,7 +120,7 @@ void read_chunked(HTTP_INFO *httpinfo, struct download *buffer, size_t start_pos
             gprintf("Increased buffer size\n");
 #endif
             capacity *= 2;
-            buffer->data = realloc(buffer->data, capacity);
+            buffer->data = MEM2_realloc(buffer->data, capacity);
         }
         while ((rret = https_read(httpinfo, &buffer->data[start_pos], capacity - start_pos)) == -1 && errno == EINTR)
             ;
@@ -122,7 +143,7 @@ void read_chunked(HTTP_INFO *httpinfo, struct download *buffer, size_t start_pos
         start_pos += rsize;
     } while (pret == -2);
     buffer->size = start_pos;
-    buffer->data = realloc(buffer->data, buffer->size);
+    buffer->data = MEM2_realloc(buffer->data, buffer->size);
 }
 
 void read_all(HTTP_INFO *httpinfo, struct download *buffer, size_t start_pos)
@@ -140,7 +161,7 @@ void read_all(HTTP_INFO *httpinfo, struct download *buffer, size_t start_pos)
             gprintf("Increased buffer size\n");
 #endif
             capacity *= 2;
-            buffer->data = realloc(buffer->data, capacity);
+            buffer->data = MEM2_realloc(buffer->data, capacity);
         }
         while ((ret = https_read(httpinfo, &buffer->data[start_pos], capacity - start_pos)) == -1 && errno == EINTR)
             ;
@@ -150,7 +171,7 @@ void read_all(HTTP_INFO *httpinfo, struct download *buffer, size_t start_pos)
         start_pos += ret;
     };
     buffer->size = start_pos;
-    buffer->data = realloc(buffer->data, buffer->size);
+    buffer->data = MEM2_realloc(buffer->data, buffer->size);
 }
 
 int connect(char *host, u16 port)
@@ -181,7 +202,7 @@ int connect(char *host, u16 port)
         if (ticks_to_millisecs(diff_ticks(t, gettime())) > TCP_CONNECT_TIMEOUT)
         {
 #ifdef DEBUG_NETWORK
-            gprintf("The connection has timed out\n");
+            gprintf("The connection timed out\n");
 #endif
             net_close(sock);
             return -ETIMEDOUT;
@@ -202,11 +223,6 @@ int connect(char *host, u16 port)
         break;
     }
     net_fcntl(sock, F_SETFL, 0);
-    // Set a read and write timeout
-    struct timeval timeout;
-    timeout.tv_sec = READ_WRITE_TIMEOUT;
-    net_setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout));
-    net_setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout, sizeof(timeout));
     return sock;
 }
 
@@ -255,8 +271,9 @@ void downloadfile(const char *url, struct download *buffer)
 
     if (httpinfo.use_https)
     {
-        // Create a new SSL context and use the highest possible protocol version
-        if ((httpinfo.ctx = wolfSSL_CTX_new(wolfSSLv23_client_method())) == NULL)
+        // Create a new SSL context
+        // wolfSSLv23_client_method() works, but resume would require further changes
+        if ((httpinfo.ctx = wolfSSL_CTX_new(wolfTLSv1_2_client_method())) == NULL)
         {
 #ifdef DEBUG_NETWORK
             gprintf("Failed to create WOLFSSL_CTX\n");
@@ -293,6 +310,14 @@ void downloadfile(const char *url, struct download *buffer)
             https_close(&httpinfo);
             return;
         }
+        // Attempt to resume the session
+        if (session != NULL && wolfSSL_set_session(httpinfo.ssl, session) != SSL_SUCCESS)
+        {
+#ifdef DEBUG_NETWORK
+            gprintf("Failed to set session (session timed out?)\n");
+#endif
+            session = NULL;
+        }
         // Initiate a handshake
         if (wolfSSL_connect(httpinfo.ssl) != SSL_SUCCESS)
         {
@@ -301,6 +326,14 @@ void downloadfile(const char *url, struct download *buffer)
 #endif
             https_close(&httpinfo);
             return;
+        }
+        // Check if we resumed successfully
+        if (session != NULL && !wolfSSL_session_reused(httpinfo.ssl))
+        {
+#ifdef DEBUG_NETWORK
+            gprintf("Failed to resume session\n");
+#endif
+            session = NULL;
         }
         // Cipher info
 #ifdef DEBUG_NETWORK
@@ -313,13 +346,13 @@ void downloadfile(const char *url, struct download *buffer)
     }
 
     // Send our request
-    char request[2048];
+    char request[2200];
     char isgecko[36] = "Cookie: challenge=BitMitigate.com\r\n";
     int ret, len;
     if (strcmp(host, "www.geckocodes.org") != 0)
         memset(isgecko, 0, sizeof(isgecko)); // Not geckocodes, so don't set a cookie
 
-    len = snprintf(request, 2048,
+    len = snprintf(request, 2200,
                    "GET %s HTTP/1.1\r\n"
                    "Host: %s\r\n"
                    "User-Agent: WiiFlow-Lite\r\n"
@@ -420,7 +453,7 @@ void downloadfile(const char *url, struct download *buffer)
     // We got what we wanted
     if (status == 200)
     {
-        buffer->data = malloc(4096);
+        buffer->data = MEM2_alloc(4096);
         buffer->size = 4096;
         memcpy(buffer->data, &response[pret], buflen - pret);
         // Determine how to read the data
@@ -428,6 +461,9 @@ void downloadfile(const char *url, struct download *buffer)
             read_chunked(&httpinfo, buffer, buflen - pret);
         else
             read_all(&httpinfo, buffer, buflen - pret);
+        // Save the session
+        if (httpinfo.use_https)
+            session = wolfSSL_get_session(httpinfo.ssl);
         // Finished
         https_close(&httpinfo);
 #ifdef DEBUG_NETWORK
@@ -439,5 +475,8 @@ void downloadfile(const char *url, struct download *buffer)
         return;
     }
     // Close on all other status codes
+#ifdef DEBUG_NETWORK
+    gprintf("Status code: %i - %s\n", status, url);
+#endif
     https_close(&httpinfo);
 }

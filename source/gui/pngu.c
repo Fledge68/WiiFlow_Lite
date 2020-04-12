@@ -1114,8 +1114,12 @@ int pngu_decode (IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, PNGU_u32 stripAlph
 	if ( (ctx->prop.imgWidth != width) || (ctx->prop.imgHeight != height) )
 		return PNGU_INVALID_WIDTH_OR_HEIGHT;
 
+	// Support paletted images
+	if (ctx->prop.imgColorType == PNG_COLOR_TYPE_PALETTE)
+		png_set_palette_to_rgb(ctx->png_ptr);
+
 	// Check if color type is supported by PNGU
-	if ( (ctx->prop.imgColorType == PNGU_COLOR_TYPE_PALETTE) || (ctx->prop.imgColorType == PNGU_COLOR_TYPE_UNKNOWN) )
+	if ( (ctx->prop.imgColorType == PNGU_COLOR_TYPE_UNKNOWN) )
 		return PNGU_UNSUPPORTED_COLOR_TYPE;
 
 	 // error handling

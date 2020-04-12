@@ -33,12 +33,12 @@ int CMenu::_downloadCheatFileAsync()
 		m_thrdMessageAdded = true;
 		update_pThread(1);// its downloaded
 		fsop_WriteFile(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id), file.data, file.size);
-		free(file.data);
+		MEM2_free(file.data);
 		return 0;
 	}
 	if(file.size > 0)// received a 301/302 redirect instead of a 404?
 	{
-		free(file.data);
+		MEM2_free(file.data);
 		return -4;// the file doesn't exist on the server
 	}
 	return -3;// download failed

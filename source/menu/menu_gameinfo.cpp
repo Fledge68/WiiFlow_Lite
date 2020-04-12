@@ -654,17 +654,17 @@ void CMenu::_textGameInfo(void)
 				break;
 			case GAMETDB_RATING_TYPE_ESRB:
 				if(RatingValue[0] == 'E')
-					TexHandle.fromImageFile(m_rating, fmt("%s/esrb_e.jpg", m_imgsDir.c_str()));
+					TexHandle.fromImageFile(m_rating, fmt("%s/esrb_e.png", m_imgsDir.c_str()));
 				else if(memcmp(RatingValue, "EC", 2) == 0)
-					TexHandle.fromImageFile(m_rating, fmt("%s/esrb_ec.jpg", m_imgsDir.c_str()));
+					TexHandle.fromImageFile(m_rating, fmt("%s/esrb_ec.png", m_imgsDir.c_str()));
 				else if(memcmp(RatingValue, "E10+", 4) == 0)
-					TexHandle.fromImageFile(m_rating, fmt("%s/esrb_eten.jpg", m_imgsDir.c_str()));
+					TexHandle.fromImageFile(m_rating, fmt("%s/esrb_eten.png", m_imgsDir.c_str()));
 				else if(RatingValue[0] == 'T')
-					TexHandle.fromImageFile(m_rating, fmt("%s/esrb_t.jpg", m_imgsDir.c_str()));
+					TexHandle.fromImageFile(m_rating, fmt("%s/esrb_t.png", m_imgsDir.c_str()));
 				else if(RatingValue[0] == 'M')
-					TexHandle.fromImageFile(m_rating, fmt("%s/esrb_m.jpg", m_imgsDir.c_str()));
+					TexHandle.fromImageFile(m_rating, fmt("%s/esrb_m.png", m_imgsDir.c_str()));
 				else if(memcmp(RatingValue, "AO", 2) == 0)
-					TexHandle.fromImageFile(m_rating, fmt("%s/esrb_ao.jpg", m_imgsDir.c_str()));
+					TexHandle.fromImageFile(m_rating, fmt("%s/esrb_ao.png", m_imgsDir.c_str()));
 				break;
 			case GAMETDB_RATING_TYPE_PEGI:
 				if(RatingValue[0] == '3')
