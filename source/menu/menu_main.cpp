@@ -170,12 +170,27 @@ void CMenu::_showCF(bool refreshList)
 						Pth = wstringEx(fmt(HOMEBREW_DIR, DeviceName[currentPartition]));
 						break;
 					case COVERFLOW_PLUGIN:
+						Pth = "";
 						m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
 						if(enabledPluginsCount == 0)
 							Msg = _t("main6", L"No plugins selected.");
-						else
+						else if(enabledPluginsCount > 1)
 							Msg = _t("main5", L"No roms/items found.");
-						Pth = "";
+						else
+						{
+							Msg = _t("main2", L"No games found in ");
+							for(u8 i = 0; m_plugin.PluginExist(i); ++i)
+							{
+								if(m_plugin.GetEnableStatus(m_cfg, m_plugin.getPluginMagic(i)))
+								{
+									int romsPartition = m_plugin.GetRomPartition(i);
+									if(romsPartition < 0)
+										romsPartition = m_cfg.getInt(PLUGIN_DOMAIN, "partition", 0);
+									Pth = wstringEx(fmt("%s:/%s", DeviceName[romsPartition], m_plugin.GetRomDir(i)));
+									break;
+								}
+							}
+						}
 						break;
 				}
 			}
