@@ -103,7 +103,7 @@ u8 is_chunked(struct phr_header *headers, size_t num_headers)
     return (strcasecmp(encoding, "chunked") == 0) ? 1 : 0;
 }
 
-void read_chunked(HTTP_INFO *httpinfo, struct download *buffer, size_t start_pos)
+u8 read_chunked(HTTP_INFO *httpinfo, struct download *buffer, size_t start_pos)
 {
     struct phr_chunked_decoder decoder = {};
     size_t capacity = 4096, rsize;
@@ -129,7 +129,7 @@ void read_chunked(HTTP_INFO *httpinfo, struct download *buffer, size_t start_pos
 #ifdef DEBUG_NETWORK
             gprintf("IO error\n");
 #endif
-            return;
+            return 0;
         }
         rsize = rret;
         pret = phr_decode_chunked(&decoder, &buffer->data[start_pos], &rsize);
@@ -138,15 +138,16 @@ void read_chunked(HTTP_INFO *httpinfo, struct download *buffer, size_t start_pos
 #ifdef DEBUG_NETWORK
             gprintf("Parse error\n");
 #endif
-            return;
+            return 0;
         }
         start_pos += rsize;
     } while (pret == -2);
     buffer->size = start_pos;
     buffer->data = MEM2_realloc(buffer->data, buffer->size);
+    return 1;
 }
 
-void read_all(HTTP_INFO *httpinfo, struct download *buffer, size_t start_pos)
+u8 read_all(HTTP_INFO *httpinfo, struct download *buffer, size_t start_pos)
 {
     size_t capacity = 4096;
     ssize_t ret;
@@ -165,13 +166,16 @@ void read_all(HTTP_INFO *httpinfo, struct download *buffer, size_t start_pos)
         }
         while ((ret = https_read(httpinfo, &buffer->data[start_pos], capacity - start_pos)) == -1 && errno == EINTR)
             ;
-        if (ret <= 0)
+        if (ret == 0)
             break;
+        if (ret < 0)
+            return 0;
 
         start_pos += ret;
     };
     buffer->size = start_pos;
     buffer->data = MEM2_realloc(buffer->data, buffer->size);
+    return 1;
 }
 
 int connect(char *host, u16 port)
@@ -383,7 +387,7 @@ void downloadfile(const char *url, struct download *buffer)
     // Get the response
     char response[4096];
     struct phr_header headers[100];
-    int pret, minor_version, status;
+    int pret, minor_version, status, dl_valid;
     size_t buflen = 0, prevbuflen = 0, num_headers, msg_len;
     ssize_t rret;
     const char *msg;
@@ -454,13 +458,23 @@ void downloadfile(const char *url, struct download *buffer)
     if (status == 200)
     {
         buffer->data = MEM2_alloc(4096);
-        buffer->size = 4096;
         memcpy(buffer->data, &response[pret], buflen - pret);
         // Determine how to read the data
         if (is_chunked(headers, num_headers))
-            read_chunked(&httpinfo, buffer, buflen - pret);
+            dl_valid = read_chunked(&httpinfo, buffer, buflen - pret);
         else
-            read_all(&httpinfo, buffer, buflen - pret);
+            dl_valid = read_all(&httpinfo, buffer, buflen - pret);
+        // Check if the download is incomplete
+        if (!dl_valid || buffer->size <= 0)
+        {
+            buffer->size = 0;
+            MEM2_free(buffer->data);
+#ifdef DEBUG_NETWORK
+            gprintf("Removed incomplete download\n");
+#endif
+            https_close(&httpinfo);
+            return;
+        }
         // Save the session
         if (httpinfo.use_https)
             session = wolfSSL_get_session(httpinfo.ssl);
