@@ -1,3 +1,8 @@
+*.d
+*.o
+*.elf
+*.map
+/source/loader/alt_ios_gen.h
 /wiiflow.pnproj
 /wiiflow.pnps
 /build
