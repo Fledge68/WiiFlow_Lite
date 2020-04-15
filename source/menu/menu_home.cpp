@@ -495,7 +495,7 @@ int CMenu::_cacheCovers()
 	{
 		index++;
 		update_pThread(index, false);
-		m_thrdMessage = wfmt(_fmt("dlmsg31", L"converting cover %i of %i"), index, total);
+		m_thrdMessage = wfmt(_fmt("dlmsg31", L"Converting cover %i of %i"), index, total);
 		m_thrdMessageAdded = true;
 		
 		/* get cover png path */
