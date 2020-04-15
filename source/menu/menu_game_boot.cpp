@@ -211,8 +211,9 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 		AddBootArgument(arguments[i].c_str());
 	}
 
-	loadIOS(58, false);
 	ShutdownBeforeExit();// wifi and sd gecko doesnt work anymore after
+	NandHandle.Patch_AHB();
+	IOS_ReloadIOS(58);
 	BootHomebrew();
 	Sys_Exit();
 }
@@ -577,27 +578,25 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		}
 
 		Nintendont_SetOptions(path, id, CheatPath, GClanguage, n_config, n_videomode, vidscale, vidoffset, netprofile);
-		
-		loadIOS(58, false); //nintendont NEEDS ios58 and AHBPROT disabled
-		/* should be a check for error loading IOS58 and AHBPROT disabled */
 		ShutdownBeforeExit();
+		NandHandle.Patch_AHB();
+		IOS_ReloadIOS(58);
 		BootHomebrew(); //regular dol
 	}
 	else // loader == DEVOLUTION
 	{
-		// devolution does not allow force video and progressive mode
+		// devolution does not allow force video
 		// ignore video setting choice and use game region always
-		if(id[3] =='E' || id[3] =='J')
+		if(id[3] =='E' || id[3] =='J')// if game is NTSC then video is based on console video
 		{
-			// if game is NTSC then video is based on console video
-			if(CONF_GetVideo() == CONF_VIDEO_PAL)
-				videoMode = 2; //PAL 480i
+			if(CONF_GetVideo() == CONF_VIDEO_PAL)// get console video
+				videoMode = 2; //PAL 480i 60hz
 			else
-				videoMode = 3; //NTSC 480i
+				videoMode = 3; //NTSC 480i 60hz
 		}
 		else
-			videoMode = 1; //PAL 576i 50hz
-			
+			videoMode = 1; //PAL 528i 50hz
+
 		bool memcard_emu = m_gcfg2.testOptBool(id, "devo_memcard_emu", m_cfg.getBool(GC_DOMAIN, "devo_memcard_emu", false));
 		
 		/* configs no longer needed */
@@ -611,12 +610,9 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 
 		DEVO_GetLoader(m_dataDir.c_str());
 		DEVO_SetOptions(path, id, videoMode, GClanguage, memcard_emu, widescreen, activity_led, m_use_wifi_gecko);
-		
-		if(AHBPROT_Patched())
-			loadIOS(58, false);
-		else //use cIOS instead to make sure Devolution works anyways
-			loadIOS(mainIOS, false);
 		ShutdownBeforeExit();
+		NandHandle.Patch_AHB();
+		IOS_ReloadIOS(58);
 		DEVO_Boot();
 	}
 	Sys_Exit();

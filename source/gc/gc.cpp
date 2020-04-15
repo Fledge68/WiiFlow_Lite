@@ -406,7 +406,7 @@ void DEVO_SetOptions(const char *isopath, const char *gameID, u8 videomode, u8 l
 	DCFlushRange((void*)Video_Mode, 4);
 
 	/* Set video mode */
-	if(rmode != 0)
+	if(rmode != NULL)
 		VIDEO_Configure(rmode);
 
 	/* Setup video */
@@ -429,7 +429,8 @@ void DEVO_SetOptions(const char *isopath, const char *gameID, u8 videomode, u8 l
 	sram = __SYS_LockSram();
 	sram->lang = lang;
 	__SYS_UnlockSram(1); // 1 -> write changes
-	while(!__SYS_SyncSram());
+	while(!__SYS_SyncSram())
+		usleep(100);
 }
 
 void DEVO_Boot()
