@@ -105,6 +105,8 @@ int main()
 		u32 offset = 0;
 		Disc_FindPartition(&offset);
 		WDVD_OpenPartition(offset, &GameIOS);
+		if(normalCFG.vidMode == 5)
+			normalCFG.patchVidMode = 1; //progressive mode requires this
 		vmode = Disc_SelectVMode(normalCFG.vidMode, &vmode_reg);
 		AppEntrypoint = Apploader_Run(normalCFG.vidMode, vmode, normalCFG.vipatch, normalCFG.countryString, normalCFG.patchVidMode, normalCFG.aspectRatio, 
 						normalCFG.returnTo, normalCFG.patchregion, normalCFG.private_server, normalCFG.patchFix480p);
