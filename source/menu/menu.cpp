@@ -1630,6 +1630,8 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 		m_vid.prepare();
 		m_vid.setup2DProjection(false, true);// false = prepare() already set view port, true = no scaling - draw at 640x480
 		_updateBg();
+		if(CoverFlow.getRenderTex())
+			CoverFlow.RenderTex();
 		m_vid.setup2DProjection();// this time set the view port and allow scaling
 		_drawBg();
 		m_btnMgr.draw();
@@ -1654,6 +1656,8 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 	
 	/* background and coverflow drawing */
 	_updateBg();
+	if(CoverFlow.getRenderTex())
+		CoverFlow.RenderTex();
 	if(withCF && m_lqBg != NULL)
 		CoverFlow.makeEffectTexture(m_lqBg);
 	if(withCF && m_aa > 0)

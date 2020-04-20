@@ -448,9 +448,9 @@ TexErr STexture::fromPNG(TexData &dest, const u8 *buffer, u8 f, u32 minMipSize, 
 			}
 			_convertToRGBA8(dest.data, tmpData2, dest.width, dest.height);
 			DCFlushRange(dest.data, dest.dataSize);
-			m_vid.prepare();
-			m_vid.setup2DProjection(false, true);// false = prepare() already set view port, true = no scaling - draw at 640x480
-			CoverFlow.RenderTex();
+			CoverFlow.setRenderTex(true);
+			while(CoverFlow.getRenderTex())
+				usleep(50);
 			_convertToRGBA(tmpData2, dest.data, dest.width, dest.height);
 			DCFlushRange(tmpData2, Size2);
 			Cleanup(dest);

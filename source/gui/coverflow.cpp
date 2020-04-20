@@ -1549,6 +1549,16 @@ u64 CCoverFlow::getChanTitle(void) const
 					m_items[loopNum(m_covers[m_range / 2].index + m_jump, m_items.size())].hdr->settings[1]);
 }
 
+bool CCoverFlow::getRenderTex(void)
+{
+	return m_renderTex;
+}
+
+void CCoverFlow::setRenderTex(bool val)
+{
+	m_renderTex = val;
+}
+
 /* this is used for smallbox homebrew icon png's that have alpha transparency */
 /* cover textures can't have transparency. this creates a new texture by filling the transparent parts */
 void CCoverFlow::RenderTex(void)
@@ -1558,6 +1568,7 @@ void CCoverFlow::RenderTex(void)
 		DrawTexture(m_renderingTex);
 		m_vid.renderToTexture(*m_renderingTex, true);
 	}
+	setRenderTex(false);
 }
 
 bool CCoverFlow::select(void)

@@ -137,6 +137,8 @@ public:
 	wstringEx getTitle(void) const;
 	u64 getChanTitle(void) const;
 	const char *getFilenameId(const dir_discHdr *curHdr);
+	bool getRenderTex(void);
+	void setRenderTex(bool);
 	void RenderTex(void);
 	//
 	static u32 InternalCoverColor(const char *ID, u32 DefCaseColor);
