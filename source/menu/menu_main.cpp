@@ -539,9 +539,12 @@ int CMenu::main(void)
 					m_current_view = show_homebrew ? COVERFLOW_HOMEBREW : COVERFLOW_WII;
 				else if(m_current_view == COVERFLOW_HOMEBREW || m_source_cnt > 1)
 					m_current_view = COVERFLOW_WII;
-				sm_numbers_backup = "0";
-				sm_tiers_backup = SOURCE_FILENAME;
-				_restoreSrcTiers();
+				if(m_use_source)
+				{
+					sm_numbers_backup = "0";
+					sm_tiers_backup = SOURCE_FILENAME;
+					_restoreSrcTiers();
+				}
 				m_source_cnt = 1;
 				m_cfg.setUInt("GENERAL", "sources", m_current_view);
 				m_catStartPage = 1;
