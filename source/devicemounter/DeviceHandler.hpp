@@ -82,7 +82,7 @@ public:
 	bool USB_Inserted() { return usb.IsInserted(); }
 	bool UsablePartitionMounted();
 	bool PartitionUsableForNandEmu(int Partition);
-	void WaitForDevice(const DISC_INTERFACE *Handle);
+	bool WaitForDevice(const DISC_INTERFACE *Handle);
 
 	void UnMountSD() { sd.UnMountAll(); }
 	void UnMountUSB(int pos);

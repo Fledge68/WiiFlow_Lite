@@ -77,15 +77,6 @@ void Nand::Init()
 	isfs_inited = false;
 }
 
-bool Nand::LoadDefaultIOS(void)
-{
-	Patch_AHB();//apply a patch so the new IOS will also have AHBPROT disabled
-	s32 ret = IOS_ReloadIOS(IOS_GetPreferredVersion());// reload to preferred IOS. not sure what wiiflows preferred IOS is.
-	loadIOS(IOS_GetVersion(), false);// this basically does nothing (well very little). definetly doesn't load a IOS or shutdown anything.
-	Init_ISFS();
-	return (ret == 0);
-}
-
 void Nand::SetNANDEmu(u32 partition)
 {
 	EmuDevice = partition == 0 ? EMU_SD : EMU_USB;

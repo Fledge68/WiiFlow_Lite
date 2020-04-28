@@ -240,31 +240,33 @@ void CMenu::_showCF(bool refreshList)
 		if(cacheCovers)
 		{
 			cacheCovers = false;
-			m_btnMgr.setProgress(m_wbfsPBar, 0.f, true);
-			m_btnMgr.setText(m_wbfsLblMessage, L"0%");
-			m_btnMgr.setText(m_wbfsLblDialog, L"");
-			m_btnMgr.show(m_wbfsPBar);
-			m_btnMgr.show(m_wbfsLblMessage);
-			m_btnMgr.show(m_wbfsLblDialog);
-		
-			_start_pThread();
-			_cacheCovers();
-			_stop_pThread();
-			m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg14", L"Done."));
-			u8 pause = 150;
-			if(m_sourceflow)
-				pause = 1;
-			while(!m_exit)
+			if(!m_sourceflow || _sfCacheCoversNeeded() > 0)
 			{
-				_mainLoopCommon();
-				pause--;
-				if(pause == 0)
+				m_btnMgr.setProgress(m_wbfsPBar, 0.f, true);
+				m_btnMgr.setText(m_wbfsLblMessage, L"0%");
+				m_btnMgr.setText(m_wbfsLblDialog, L"");
+				m_btnMgr.show(m_wbfsPBar);
+				m_btnMgr.show(m_wbfsLblMessage);
+				m_btnMgr.show(m_wbfsLblDialog);
+			
+				_start_pThread();
+				_cacheCovers();
+				_stop_pThread();
+				m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg14", L"Done."));
+				u8 pause = 150;
+				if(m_sourceflow)
+					pause = 1;
+				do
 				{
-					m_btnMgr.hide(m_wbfsPBar);
-					m_btnMgr.hide(m_wbfsLblMessage);
-					m_btnMgr.hide(m_wbfsLblDialog);
-					break;
-				}
+					_mainLoopCommon();
+					pause--;
+					if(pause == 0)
+					{
+						m_btnMgr.hide(m_wbfsPBar);
+						m_btnMgr.hide(m_wbfsLblMessage);
+						m_btnMgr.hide(m_wbfsLblDialog);
+					}
+				}while(!m_exit && pause > 0);
 			}
 		}
 		/* setup categories and favorites for filtering the game list below */
@@ -416,9 +418,7 @@ int CMenu::main(void)
 		_setMainBg();
 		_showCF(true);
 	}
-	else
-		_hideWaitMessage();
-		
+
 	if(show_mem)
 	{
 		m_btnMgr.show(m_mem1FreeSize);

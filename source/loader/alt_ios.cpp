@@ -24,7 +24,7 @@
 #include "dip_plugin_249.h"
 #include "mload_modules.h"
 
-static int load_ehc_module_ex(void)
+void load_ehc_module_ex(void)
 {
 	u8 *ehc_cfg = search_for_ehcmodule_cfg((u8 *)ehcmodule_5, size_ehcmodule_5);
 	if(ehc_cfg)
@@ -35,7 +35,6 @@ static int load_ehc_module_ex(void)
 		DCFlushRange((void *) (((u32)ehc_cfg[0]) & ~31), 32);
 	}
 	load_ehc_module();
-	return 0;
 }
 
 void load_dip_249()

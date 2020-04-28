@@ -466,6 +466,57 @@ void CMenu::_textShutdown(void)
 }
 /*******************************************************************************/
 
+int CMenu::_sfCacheCoversNeeded()// for sourceflow
+{
+	CoverFlow.stopCoverLoader(true);
+	
+	string coverPath;
+	string wfcPath;
+	string cachePath = m_cacheDir + "/sourceflow/";
+	string gameNameOrID;
+
+	bool smallBox = m_cfg.getBool(SOURCEFLOW_DOMAIN, "smallbox", false);
+	int missing = 0;
+	
+	for(vector<dir_discHdr>::iterator hdr = m_gameList.begin(); hdr != m_gameList.end(); ++hdr)
+	{
+		/* get cover png path */
+		bool blankCover = false;
+		bool fullCover = true;
+		coverPath.assign(getBoxPath(&(*hdr)));
+		if(!fsop_FileExist(coverPath.c_str()) || smallBox)
+		{
+			fullCover = false;
+			coverPath.assign(getFrontPath(&(*hdr)));
+			if(!fsop_FileExist(coverPath.c_str()) && !smallBox)
+			{
+				fullCover = true;
+				coverPath.assign(getBlankCoverPath(&(*hdr)));
+				blankCover = true;
+				if(!fsop_FileExist(coverPath.c_str()))
+					continue;
+			}
+		}
+
+		/* get game name or ID */
+		if(!blankCover)
+			gameNameOrID.assign(CoverFlow.getFilenameId(&(*hdr)));
+		else
+			gameNameOrID.assign(coverPath.substr(coverPath.find_last_of("/") + 1));
+		
+		/* get cover wfc path */
+		if(smallBox)
+			wfcPath.assign(cachePath + gameNameOrID + "_small.wfc");
+		else
+			wfcPath.assign(cachePath + gameNameOrID);
+		
+		/* if wfc doesn't exist or is flat and have full cover */
+		if(!fsop_FileExist(wfcPath.c_str()) || (!CoverFlow.fullCoverCached(wfcPath.c_str()) && fullCover))
+			missing++;
+	}
+	return missing;
+}
+
 int CMenu::_cacheCovers()
 {
 	CoverFlow.stopCoverLoader(true);

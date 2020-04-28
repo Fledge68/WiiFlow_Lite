@@ -160,23 +160,33 @@ int main(int argc, char **argv)
 	}
 	else
 	{
-		NandHandle.LoadDefaultIOS(); /* safe reload to preferred IOS */
-	
+		NandHandle.Init_ISFS();
+		
 		/* load and check wiiflow save for possible new IOS and Port settings */
 		if(InternalSave.CheckSave())
 			InternalSave.LoadSettings();
 			
 		/* Handle (c)IOS Loading */
-		if(useMainIOS && CustomIOS(IOS_GetType(mainIOS))) /* Requested */
-			iosOK = loadIOS(mainIOS, false) && CustomIOS(CurrentIOS.Type);// reload to cIOS (249 by default)
+		if(useMainIOS && CustomIOS(IOS_GetType(mainIOS)))// load cios
+		{
+			NandHandle.DeInit_ISFS();
+			NandHandle.Patch_AHB();
+			iosOK = IOS_ReloadIOS(mainIOS) == 0;
+			gprintf("AHBPROT disabled after IOS Reload: %s\n", AHBPROT_Patched() ? "yes" : "no");
+			NandHandle.Init_ISFS();
+		}
 		else
 			gprintf("Using IOS58\n");// stay on IOS58. no reload to cIOS
+		
+		IOS_GetCurrentIOSInfo();
+		if(CurrentIOS.Type == IOS_TYPE_HERMES)
+			load_ehc_module_ex();
+		else if(CurrentIOS.Type == IOS_TYPE_WANIN && CurrentIOS.Revision >= 18)
+			load_dip_249();
+		DeviceHandle.SetModes();
+		WDVD_Init();
 	}
 		
-	/* sys inits */
-	Sys_Init();// set reset and power button callbacks
-	Sys_ExitTo(EXIT_TO_HBC);// set exit to in case of failed launch
-
 	/* mount SD */
 	DeviceHandle.MountSD();// mount SD before calling isUsingUSB() duh!	
 
@@ -190,21 +200,14 @@ int main(int argc, char **argv)
 
 	/* init controllers for input */
 	Open_Inputs();// WPAD_SetVRes() is called later in mainMenu.init() during cursor init which gets the theme pointer images
+
+	/* sys inits */
+	Sys_Init();// set reset and power button callbacks
 	
+	bool startup_successful = false;
 	/* init configs, folders, coverflow, gui and more */
 	if(mainMenu.init(usb_mounted))
 	{
-		if(CurrentIOS.Version != mainIOS)
-		{
-			if(useMainIOS || !DeviceHandle.UsablePartitionMounted())// if useMainIOS or there's isn't a FAT or NTFS partition
-			{
-				useMainIOS = false;
-				mainMenu.TempLoadIOS();// switch to cIOS
-				iosOK = CustomIOS(CurrentIOS.Type);
-			}
-		}
-		if(CurrentIOS.Version == mainIOS)
-			useMainIOS = true; //Needed for later checks
 		if(!iosOK)
 			mainMenu.terror("errboot1", L"No cIOS found!\ncIOS d2x 249 base 56 and 250 base 57 are enough for all your games.");
 		else if(!DeviceHandle.UsablePartitionMounted())
@@ -213,6 +216,7 @@ int main(int argc, char **argv)
 			mainMenu.terror("errboot3", L"Could not initialize the DIP module!");
 		else // alls good lets start wiiflow
 		{
+			startup_successful = true;
 			if(!isWiiVC)
 				writeStub();// copy return stub to memory
 			if(gameid != NULL && strlen(gameid) == 6)// if argv game ID then launch it
@@ -224,6 +228,7 @@ int main(int argc, char **argv)
 		mainMenu.cleanup();// removes all sounds, fonts, images, coverflow, plugin stuff, source menu and clear memory
 	}
 	ShutdownBeforeExit();// unmount devices and close inputs
-	Sys_Exit();
+	if(startup_successful)// use wiiflow's exit choice otherwise just exit to loader (system menu or hbc)
+		Sys_Exit();
 	return 0;
 }

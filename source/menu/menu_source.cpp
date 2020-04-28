@@ -343,6 +343,7 @@ bool CMenu::_Source()
 	SetupInput();
 	_showSource();
 	_updateSourceBtns();
+	_hideWaitMessage();// needed for source menu on start
 
 	while(!m_exit)
 	{

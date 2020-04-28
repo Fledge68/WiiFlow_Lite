@@ -149,9 +149,10 @@ bool DeviceHandler::MountAllUSB()
 		return false;
 		
 	/* Kill possible USB thread */
-	KillUSBKeepAliveThread();
-	/* Wait for our slowass HDD */
-	WaitForDevice(GetUSBInterface());
+	//KillUSBKeepAliveThread();
+	/* usb spinup - Wait for our slowass HDD */
+	if(WaitForDevice(GetUSBInterface()) == false)
+		return false;
 	/* Get Partitions and Mount them */
 	if(!usb.IsInserted() || !usb.IsMounted(0))
 		usb.SetDevice(GetUSBInterface());
@@ -162,6 +163,7 @@ bool DeviceHandler::MountAllUSB()
 		if(MountUSB(i))
 			result = true;
 	}
+	// why force FAT? why not just return result?
 	if(!result)
 		result = usb.Mount(0, DeviceName[USB1], true); /* Force FAT */
 	//if(result && usb_libogc_mode)
@@ -260,17 +262,19 @@ s32 DeviceHandler::OpenWBFS(int dev)
 	return WBFS_Init(GetWbfsHandle(dev), part_fs, part_idx, part_lba, partition);
 }
 
-void DeviceHandler::WaitForDevice(const DISC_INTERFACE *Handle)
+/* usb spinup wait for 20 seconds */
+bool DeviceHandler::WaitForDevice(const DISC_INTERFACE *Handle)
 {
-	if(Handle == NULL)
-		return;
+	if(Handle == NULL)// apparently this never happens
+		return false;
 	time_t timeout = time(NULL);
 	while(time(NULL) - timeout < 20)
 	{
 		if(Handle->startup() && Handle->isInserted())
-			break;
+			return true;
 		usleep(50000);
 	}
+	return false;
 }
 
 bool DeviceHandler::MountDevolution()

@@ -1109,6 +1109,7 @@ private:
 	bool _gameinfo(void);
 	void _gameSettings(const dir_discHdr *GameHdr, bool disc = false);
 	void _CoverBanner(void);
+	int _sfCacheCoversNeeded();
 	int _cacheCovers(void);
 	void _Explorer(void);
 	const char *_FolderExplorer(const char *startPath);

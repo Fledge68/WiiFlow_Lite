@@ -54,18 +54,6 @@ static int CalculateRepeatSpeed(float magnitude, int current_value)
 
 void CMenu::ScanInput()
 {
-	/*for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
-	{
-		wd[chan] = WPAD_Data(chan);
-		if(wd[chan]->err < 0)
-		{
-			Close_Inputs();
-			Open_Inputs();
-			for(int chn = WPAD_MAX_WIIMOTES-1; chn >= 0; chn--)
-				WPAD_SetVRes(chn, m_vid.width() + m_cursor[chn].width(), m_vid.height() + m_cursor[chn].height());
-			break;
-		}
-	}*/
 	m_show_zone_main = false;
 	m_show_zone_main2 = false;
 	m_show_zone_main3 = false;

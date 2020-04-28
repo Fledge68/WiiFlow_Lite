@@ -8,6 +8,8 @@ extern "C" {
 #endif
 
 bool loadIOS(int ios, bool MountDevices);
+void load_ehc_module_ex(void);
+void load_dip_249();
 
 #ifdef __cplusplus
 }
