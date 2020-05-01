@@ -623,6 +623,9 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 int CMenu::_loadGameIOS(u8 gameIOS, int userIOS, string id, bool RealNAND_Channels)
 {
 	gprintf("Game ID %s requested IOS %d.\nUser selected %d\n", id.c_str(), gameIOS, userIOS);
+	
+	// this if seems to have been used if wiiflow was in neek2o mode
+	// or cios 249 is a stub and wiiflow runs on ios58
 	if(RealNAND_Channels && IOS_GetType(mainIOS) == IOS_TYPE_STUB)
 	{
 		/* doesn't use cIOS so we don't check userIOS */
@@ -638,55 +641,24 @@ int CMenu::_loadGameIOS(u8 gameIOS, int userIOS, string id, bool RealNAND_Channe
 	
 	if(userIOS)// if IOS is not 'auto' and set to a specific cIOS then set gameIOS to that cIOS if it's installed
 	{
+		// we need to find it just in case the gameconfig has been manually edited or that cios deleted.
+		bool found = false;
 		for(CIOSItr itr = _installed_cios.begin(); itr != _installed_cios.end(); itr++)
 		{
 			if(itr->second == userIOS || itr->first == userIOS)
 			{
+				found = true;
 				gameIOS = itr->first;
 				break;
 			}
 		}
+		if(!found)
+			gameIOS = mainIOS;
 	}
-	else if(gameIOS != 57)// if IOS is 'auto' but gameIOS is not IOS57 then set gameIOS to wiiflow's mainIOS
+	else
 		gameIOS = mainIOS;// mainIOS is usually 249 unless changed by boot args or changed on startup settings menu
 	gprintf("Changed requested IOS to %d.\n", gameIOS);
 
-	// remap a gameIOS of IOS57 to a cIOS base 57 or if the specific cIOS selected is not installed then
-	// remap game IOS to a CIOS with the same base IOS
-	if(gameIOS < 0x64)// < 100
-	{
-		if(_installed_cios.size() <= 0)
-		{
-			error(_t("errgame2", L"No cIOS found!"));
-			Sys_Exit();
-		}
-		u8 IOS[3];
-		IOS[0] = gameIOS;
-		IOS[1] = 56;
-		IOS[2] = 57;
-		bool found = false;
-		// compare the base of each cios to the game ios
-		// if no match then find the first cios with base 56
-		// if no match then find the first cios with base 57
-		for(u8 num = 0; num < 3; num++)
-		{
-			if(found)
-				break;
-			if(IOS[num] == 0)
-				continue;
-			for(CIOSItr itr = _installed_cios.begin(); itr != _installed_cios.end(); itr++)
-			{
-				if(itr->second == IOS[num] || itr->first == IOS[num])
-				{
-					gameIOS = itr->first;
-					found = true;
-					break;
-				}
-			}
-		}
-		if(!found)
-			return LOAD_IOS_FAILED;
-	}
 	/* at this point gameIOS is a cIOS */
 	if(gameIOS != CurrentIOS.Version)
 	{
@@ -809,7 +781,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		error(_t("errgame15", L"Missing ext_loader.bin or ext_booter.bin!"));
 		_exitWiiflow();
 	}
-	if(_loadGameIOS(gameIOS, userIOS, id, !NANDemuView) == LOAD_IOS_FAILED)//in neek2o this will only load the game IOS not a cIOS
+	if(_loadGameIOS(gameIOS, userIOS, id, !NANDemuView) == LOAD_IOS_FAILED)
 	{
 		/* error message already shown */
 		_exitWiiflow();

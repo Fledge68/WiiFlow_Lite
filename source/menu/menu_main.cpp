@@ -412,8 +412,9 @@ int CMenu::main(void)
 
 	gprintf("Bootup completed!\n");
 
-	if(!m_source_on_start)
+	if(!m_use_source || !m_source_on_start)
 	{
+		m_source_on_start = false;
 		_getCustomBgTex();
 		_setMainBg();
 		_showCF(true);

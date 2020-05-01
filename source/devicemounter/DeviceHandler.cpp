@@ -105,14 +105,12 @@ void DeviceHandler::UnMount(int dev)
 
 void DeviceHandler::SetModes()
 {
-	sdhc_mode_sd = 1;
-	usb_libogc_mode = 1;
-	if(CustomIOS(CurrentIOS.Type))
-	{	/* For USB you can use every cIOS */
-		usb_libogc_mode = 0;
-		/* But not for SD */
-		if(CurrentIOS.Type != IOS_TYPE_NEEK2O)
-			sdhc_mode_sd = 0;// don't use cIOS for SD
+	sdhc_mode_sd = 1;// use libogc and ios 58 (wiisd_libogc.c)
+	usb_libogc_mode = 1;// use libogc and ios 58 (usbstorage_libogc.c)
+	if(CustomIOS(CurrentIOS.Type))// if wiiflow is using a cios (force cios is on)
+	{
+		usb_libogc_mode = 0;// use cios for USB (usbstorage.c)
+		sdhc_mode_sd = 0;// use cios for SD (sdhc.c)
 	}
 }
 
