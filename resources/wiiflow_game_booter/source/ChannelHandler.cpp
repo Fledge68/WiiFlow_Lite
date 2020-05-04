@@ -150,12 +150,12 @@ u32 LoadChannel(u64 title, bool dol, u32 *IOS)
 	return entry;
 }
 
-void PatchChannel(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio)
+void PatchChannel(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u8 bootType)
 {
 	bool hookpatched = false;
 	for(u8 i = 0; i < dolchunkcount; i++)
 	{		
-		patchVideoModes(dolchunkoffset[i], dolchunksize[i], vidMode, vmode, patchVidModes);
+		patchVideoModes(dolchunkoffset[i], dolchunksize[i], vidMode, vmode, patchVidModes, bootType);
 		if(vipatch)
 			vidolpatcher(dolchunkoffset[i], dolchunksize[i]);
 		if(configbytes[0] != 0xCD)

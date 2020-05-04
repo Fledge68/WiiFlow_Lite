@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-void patchVideoModes(void *dst, u32 len, int vidMode, GXRModeObj *vmode, int patchVidModes); 
+void patchVideoModes(void *dst, u32 len, int vidMode, GXRModeObj *vmode, int patchVidModes, u8 bootType); 
 
 #ifdef __cplusplus
 }
