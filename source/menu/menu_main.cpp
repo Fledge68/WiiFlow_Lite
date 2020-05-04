@@ -432,9 +432,10 @@ int CMenu::main(void)
 		/* IMPORTANT check if a disc is inserted */
 		WDVD_GetCoverStatus(&disc_check);
 		/* Main Loop */
-		_mainLoopCommon(true);
+		if(!m_source_on_start)
+			_mainLoopCommon(true);
 		//this will make the source menu/flow display. what happens when a sourceflow cover is selected is taken care of later.
-		if((bheld && !BTN_B_HELD) || m_source_on_start)//if button b was held and now released
+		if(m_source_on_start || (bheld && !BTN_B_HELD))//if button b was held and now released
 		{
 			bheld = false;
 			if(bUsed)//if b button used for something don't show souce menu or sourceflow
