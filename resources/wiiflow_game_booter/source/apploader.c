@@ -29,7 +29,7 @@ static const char *GameID = (const char*)0x80000000;
 #define APPLDR_CODE		0x918
 
 void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipatch, 
-				bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo, bool patchregion, bool private_server);
+				bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo, bool patchregion, bool private_server, u8 bootType);
 static void patch_NoDiscinDrive(void *buffer, u32 len);
 static void Anti_002_fix(void *Address, int Size);
 static bool Remove_001_Protection(void *Address, int Size);
@@ -49,7 +49,7 @@ static struct
 } apploader_hdr ATTRIBUTE_ALIGN(32);
 
 u32 Apploader_Run(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo, 
-					bool patchregion , bool private_server, bool patchFix480p)
+					bool patchregion , bool private_server, bool patchFix480p, u8 bootType)
 {
 	PrinceOfPersiaPatch();
 	NewSuperMarioBrosPatch();
@@ -96,7 +96,7 @@ u32 Apploader_Run(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryStrin
 		/* Read data from DVD */
 		WDVD_Read(dst, len, offset);
 		maindolpatches(dst, len, vidMode, vmode, vipatch, countryString, 
-						patchVidModes, aspectRatio, returnTo, patchregion, private_server);
+						patchVidModes, aspectRatio, returnTo, patchregion, private_server, bootType);
 		DCFlushRange(dst, len);
 		ICInvalidateRange(dst, len);
 		prog(20);
@@ -114,7 +114,7 @@ u32 Apploader_Run(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryStrin
 	return (u32)appldr_final();
 }
 
-void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo, bool patchregion , bool private_server)
+void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo, bool patchregion , bool private_server, u8 bootType)
 {
 	do_wip_code((u8 *)dst, len);
 	Remove_001_Protection(dst, len);
@@ -122,7 +122,7 @@ void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipa
 		Anti_002_fix(dst, len);
 	if((CurrentIOS.Type == IOS_TYPE_WANIN && CurrentIOS.Revision < 13) || CurrentIOS.Type == IOS_TYPE_HERMES)
 		patch_NoDiscinDrive(dst, len);
-	patchVideoModes(dst, len, vidMode, vmode, patchVidModes);
+	patchVideoModes(dst, len, vidMode, vmode, patchVidModes, bootType);
 
 	if(debuggerselect == 2)
 		Patch_fwrite(dst, len);

@@ -3,6 +3,7 @@
 #include "videopatch.h"
 
 #include <string.h>
+#include <types.h>
 
 #define ARRAY_SIZE(a)	(sizeof a / sizeof a[0])
 
@@ -265,12 +266,13 @@ static bool Search_and_patch_Video_Modes(void *Address, u32 Size, GXRModeObj* Ta
 	return found;
 }
 
-void patchVideoModes(void *dst, u32 len, int vidMode, GXRModeObj *vmode, int patchVidModes)
+void patchVideoModes(void *dst, u32 len, int vidMode, GXRModeObj *vmode, int patchVidModes, u8 bootType)
 {
 	GXRModeObj **table = 0;
+	char region = *((char *)(0x80000003));
 
-	// Video patch set to "all" or the video mode is progressive
-	if((patchVidModes == 3 || vidMode == 5) && vmode != 0)
+	// Video patch set to "all" or the video mode is progressive and it's a PAL Wii game
+	if((patchVidModes == 3 || (vidMode == 5 && region == 'P' && bootType == TYPE_WII_GAME)) && vmode != 0)
 		applyVideoPatch(dst, len, vmode, true);
 	// Video patch set to "more"
 	else if(patchVidModes == 2 && vmode != 0)
