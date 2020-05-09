@@ -475,27 +475,16 @@ void CVideo::render(void)
 
 /* wait animation control */
 
-extern const u8 wfsplash_jpg[];
-extern const u32 wfsplash_jpg_size;
-extern const u8 wflsplash_jpg[];
-extern const u32 wflsplash_jpg_size;
+extern const u8 wfsplash_png[];
 
-extern const u8 wait_01_jpg[];
-extern const u32 wait_01_jpg_size;
-extern const u8 wait_02_jpg[];
-extern const u32 wait_02_jpg_size;
-extern const u8 wait_03_jpg[];
-extern const u32 wait_03_jpg_size;
-extern const u8 wait_04_jpg[];
-extern const u32 wait_04_jpg_size;
-extern const u8 wait_05_jpg[];
-extern const u32 wait_05_jpg_size;
-extern const u8 wait_06_jpg[];
-extern const u32 wait_06_jpg_size;
-extern const u8 wait_07_jpg[];
-extern const u32 wait_07_jpg_size;
-extern const u8 wait_08_jpg[];
-extern const u32 wait_08_jpg_size;
+extern const u8 wait_01_png[];
+extern const u8 wait_02_png[];
+extern const u8 wait_03_png[];
+extern const u8 wait_04_png[];
+extern const u8 wait_05_png[];
+extern const u8 wait_06_png[];
+extern const u8 wait_07_png[];
+extern const u8 wait_08_png[];
 
 static lwp_t waitThread = LWP_THREAD_NULL;
 u8 CVideo::waitMessageStack[2048] ATTRIBUTE_ALIGN(32);
@@ -543,14 +532,14 @@ void CVideo::waitMessage(float delay)// set wait images from custom or internal
 		else
 		{
 			TexData m_wTextures[8];
-			TexHandle.fromJPG(m_wTextures[0], wait_01_jpg, wait_01_jpg_size);
-			TexHandle.fromJPG(m_wTextures[1], wait_02_jpg, wait_02_jpg_size);
-			TexHandle.fromJPG(m_wTextures[2], wait_03_jpg, wait_03_jpg_size);
-			TexHandle.fromJPG(m_wTextures[3], wait_04_jpg, wait_04_jpg_size);
-			TexHandle.fromJPG(m_wTextures[4], wait_05_jpg, wait_05_jpg_size);
-			TexHandle.fromJPG(m_wTextures[5], wait_06_jpg, wait_06_jpg_size);
-			TexHandle.fromJPG(m_wTextures[6], wait_07_jpg, wait_07_jpg_size);
-			TexHandle.fromJPG(m_wTextures[7], wait_08_jpg, wait_08_jpg_size);
+			TexHandle.fromPNG(m_wTextures[0], wait_01_png);
+			TexHandle.fromPNG(m_wTextures[1], wait_02_png);
+			TexHandle.fromPNG(m_wTextures[2], wait_03_png);
+			TexHandle.fromPNG(m_wTextures[3], wait_04_png);
+			TexHandle.fromPNG(m_wTextures[4], wait_05_png);
+			TexHandle.fromPNG(m_wTextures[5], wait_06_png);
+			TexHandle.fromPNG(m_wTextures[6], wait_07_png);
+			TexHandle.fromPNG(m_wTextures[7], wait_08_png);
 			for(int i = 0; i < 8; i++)
 				m_defaultWaitMessages.push_back(m_wTextures[i]);
 		}
@@ -706,7 +695,7 @@ void CVideo::waitMessage(const TexData &tex)
 void CVideo::startImage(void)
 {
 	TexData splashTex;
-	TexHandle.fromJPG(splashTex, wfsplash_jpg, wfsplash_jpg_size);
+	TexHandle.fromPNG(splashTex, wfsplash_png);
 
 	waitMessage(splashTex);
 	render();
