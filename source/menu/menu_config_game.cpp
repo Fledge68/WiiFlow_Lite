@@ -497,13 +497,17 @@ void CMenu::_showGameSettings()
 		i = min(m_gcfg2.getUInt(id, "aspect_ratio", 0), ARRAY_SIZE(CMenu::_AspectRatio) - 1u);
 		m_btnMgr.setText(m_gameSettingsLblAspectRatioVal, _t(CMenu::_AspectRatio[i].id, CMenu::_AspectRatio[i].text));
 
+		// this getInt() is different than the normal getInt()
+		// this getInt() will actually set the j variable to the value of the key. hence the & before j.
+		// this appears to be the only time this getInt() is called of all wiiflow code.
+		// why they didn't just set int j = m_gcfg2.getInt(id, "ios", 0); i do not know.
 		int j = 0;
-		if(m_gcfg2.getInt(id, "ios", j) && _installed_cios.size() > 0)
+		if(m_gcfg2.getInt(id, "ios", &j) && _installed_cios.size() > 0)
 		{
 			CIOSItr itr = _installed_cios.find(j);
 			j = (itr == _installed_cios.end()) ? 0 : itr->first;
 		}
-		//else j = 0;
+		else j = 0;
 
 		if(j > 0)
 			m_btnMgr.setText(m_gameSettingsLblIOS, wfmt(L"%i", j));
