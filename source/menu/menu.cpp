@@ -416,6 +416,7 @@ bool CMenu::init(bool usb_mounted)
 	/* Init background Music Player and song info */
 	MusicPlayer.Init(m_cfg, m_musicDir, fmt("%s/music", m_themeDataDir.c_str()));
 	m_music_info = m_cfg.getBool("GENERAL", "display_music_info", false);
+	MusicPlayer.SetResampleSetting(m_cfg.getBool("general", "resample_to_48khz", false));
 
 	/* Init Button Manager and build the menus */
 	_buildMenus();

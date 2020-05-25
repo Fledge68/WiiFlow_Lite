@@ -31,12 +31,14 @@ public:
 	void Init(Config &cfg, const string& musicDir, const string& themeMusicDir);
 	int InitPlaylist(Config &cfg, const char *playlist, u8 device);
 	void Tick(bool attenuate);
-
+	
 	void SetFadeRate(u8 faderate);
 	void SetVolume(u8 volume);
 	void SetMaxVolume(u8 volume);
 	u8 GetVolume() { return CurrentVolume; };
 	u8 GetMaxVolume() { return Volume; };
+	bool ResampleSetting;
+	void SetResampleSetting(bool resample);
 
 	void Previous();
 	void Next();
@@ -51,11 +53,11 @@ public:
 	bool SongChanged();
 	time_t DisplayTime;
 	bool OneSong;
-	/* Plugin */
+
 	void LoadFile(const char *name, bool display_change = true);
+	void LoadCurrentFile();
 protected:
 	bool PosFromPrevFile();
-	void LoadCurrentFile();
 
 	u8 Volume;
 	u8 CurrentVolume;

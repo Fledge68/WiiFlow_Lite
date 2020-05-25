@@ -135,6 +135,11 @@ void Musicplayer::SetVolume(u8 volume)
 	MusicFile.SetVolume(CurrentVolume);
 }
 
+void Musicplayer::SetResampleSetting(bool resample)
+{
+	ResampleSetting = resample;
+}
+
 void Musicplayer::Previous()
 {
 	if(FileNames.empty() || PosFromPrevFile())

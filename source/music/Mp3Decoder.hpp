@@ -33,8 +33,6 @@ public:
 	Mp3Decoder(const char * filepath);
 	Mp3Decoder(const u8 * sound, int len);
 	~Mp3Decoder();
-	int GetFormat() { return Format; };
-	int GetSampleRate() { return SampleRate; };
 	int Rewind();
 	int Read(u8 * buffer, int buffer_size);
 protected:
@@ -45,7 +43,5 @@ protected:
 	mad_timer_t Timer;
 	u8 * GuardPtr;
 	u8 * ReadBuffer;
-	u8 Format;
-	u32 SampleRate;
 	u32 SynthPos;
 };

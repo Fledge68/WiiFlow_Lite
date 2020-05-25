@@ -96,23 +96,16 @@ void OggDecoder::OpenFile()
 	}
 
 	ogg_info = ov_info(&ogg_file, -1);
+	if(!ogg_info)
+	{
+		ov_clear(&ogg_file);
+		delete file_fd;
+		file_fd = NULL;
+		return;
+	}
+	Format = ((ogg_info->channels == 2) ? VOICE_STEREO_16BIT : VOICE_MONO_16BIT);
+	SampleRate = ogg_info->rate;
 	Decode();
-}
-
-int OggDecoder::GetFormat()
-{
-	if(!file_fd)
-		return VOICE_STEREO_16BIT;
-
-	return ((ogg_info->channels == 2) ? VOICE_STEREO_16BIT : VOICE_MONO_16BIT);
-}
-
-int OggDecoder::GetSampleRate()
-{
-	if(!file_fd)
-		return 0;
-
-	return (int) ogg_info->rate;
 }
 
 int OggDecoder::Rewind()

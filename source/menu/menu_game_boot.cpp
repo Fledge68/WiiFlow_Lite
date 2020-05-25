@@ -193,16 +193,16 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 	m_cfg.save(true);
 
 	Playlog_Delete();
-	/* no more error msgs - remove btns and sounds */
-	cleanup(); 
 
 	/* load boot.dol into memory and load app_booter.bin into memory */
 	bool ret = (LoadHomebrew(filepath) && LoadAppBooter(fmt("%s/app_booter.bin", m_binsDir.c_str())));
 	if(ret == false)
 	{
-		//error(_t("errgame14", L"app_booter.bin not found!"));
+		error(_t("errgame14", L"app_booter.bin not found!"));
 		_exitWiiflow();
 	}
+	/* no more error msgs - remove btns and sounds */
+	cleanup(); 
 
 	AddBootArgument(filepath);
 	for(u32 i = 0; i < arguments.size(); ++i)

@@ -66,33 +66,21 @@ void CMenu::_showConfig7(int curPage)
 		if(m_config7LblUser[i] != -1)
 			m_btnMgr.show(m_config7LblUser[i]);
 
-	if(curPage == 13)
-	{
-		m_btnMgr.show(m_config7Lbl1);
-		m_btnMgr.show(m_config7Btn1);
-		m_btnMgr.show(m_config7Lbl2);
-		m_btnMgr.show(m_config7Btn2);
-		m_btnMgr.show(m_config7Lbl3);
-		m_btnMgr.show(m_config7Btn3);
-	}
+	m_btnMgr.show(m_config7Lbl1);
+	m_btnMgr.show(m_config7Btn1);
+	m_btnMgr.show(m_config7Lbl2);
+	m_btnMgr.show(m_config7Btn2);
+	m_btnMgr.show(m_config7Lbl3);
+	m_btnMgr.show(m_config7Btn3);
+	m_btnMgr.show(m_config7Lbl4);
+
+	if(curPage == 7 || curPage == 11 || curPage == 12 || curPage == 13)
+		m_btnMgr.show(m_config7Btn4);
 	else
 	{
-		m_btnMgr.show(m_config7Lbl1);
-		m_btnMgr.show(m_config7Btn1);
-		m_btnMgr.show(m_config7Lbl2);
-		m_btnMgr.show(m_config7Btn2);
-		m_btnMgr.show(m_config7Lbl3);
-		m_btnMgr.show(m_config7Btn3);
-		m_btnMgr.show(m_config7Lbl4);
-
-		if(curPage == 7 || curPage == 11 || curPage == 12)
-			m_btnMgr.show(m_config7Btn4);
-		else
-		{
-			m_btnMgr.show(m_config7Lbl4Val);
-			m_btnMgr.show(m_config7Btn4M);
-			m_btnMgr.show(m_config7Btn4P);
-		}
+		m_btnMgr.show(m_config7Lbl4Val);
+		m_btnMgr.show(m_config7Btn4M);
+		m_btnMgr.show(m_config7Btn4P);
 	}
 	
 	if(curPage == 7)
@@ -169,6 +157,8 @@ void CMenu::_showConfig7(int curPage)
 		m_btnMgr.setText(m_config7Btn2, m_cfg.getBool("general", "box_mode", false) ? _t("on", L"On") : _t("off", L"Off"));
 		m_btnMgr.setText(m_config7Lbl3, _t("cfg727", L"Use Plugin Database Titles"));
 		m_btnMgr.setText(m_config7Btn3, m_cfg.getBool(PLUGIN_DOMAIN, "database_titles", true) ?  _t("yes", L"Yes") : _t("no", L"No"));
+		m_btnMgr.setText(m_config7Lbl4, _t("cfg728", L"Upsample music to 48khz"));
+		m_btnMgr.setText(m_config7Btn4, m_cfg.getBool("general", "resample_to_48khz", true) ?  _t("yes", L"Yes") : _t("no", L"No"));
 	}
 }
 
@@ -366,6 +356,15 @@ int CMenu::_config7(int curPage)
 					bool val = !m_cfg.getBool(PLUGIN_DOMAIN, "database_titles");
 					m_cfg.setBool(PLUGIN_DOMAIN, "database_titles", val);
 					m_btnMgr.setText(m_config7Btn3, val ? _t("yes", L"Yes") : _t("no", L"No"));
+				}
+				if(m_btnMgr.selected(m_config7Btn4))
+				{
+					bool val = !m_cfg.getBool("general", "resample_to_48khz");
+					m_cfg.setBool("general", "resample_to_48khz", val);
+					m_btnMgr.setText(m_config7Btn4, val ? _t("yes", L"Yes") : _t("no", L"No"));
+					MusicPlayer.SetResampleSetting(val);
+					MusicPlayer.Stop();
+					MusicPlayer.LoadCurrentFile();
 				}
 			}
 		}

@@ -100,6 +100,9 @@ void BNSDecoder::OpenFile()
 		CloseFile();
 		return;
 	}
+	// set sound information
+	Format = SoundData.format;
+	SampleRate = SoundData.frequency;
 	Decode();
 }
 

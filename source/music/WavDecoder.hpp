@@ -82,16 +82,12 @@ public:
 	WavDecoder(const char * filepath);
 	WavDecoder(const u8 * snd, int len);
 	~WavDecoder();
-	int GetFormat() { return Format; };
-	int GetSampleRate() { return SampleRate; };
 	int Read(u8 * buffer, int buffer_size);
 protected:
 	void OpenFile();
 	void CloseFile();
 	u32 DataOffset;
 	u32 DataSize;
-	u32 SampleRate;
-	u8 Format;
 	bool Is16Bit;
 };
 
