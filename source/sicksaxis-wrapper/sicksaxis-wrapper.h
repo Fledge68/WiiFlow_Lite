@@ -39,10 +39,10 @@ void DS3_Rumble();
 void DS3_Cleanup();
 unsigned int DS3_ButtonsDown();
 void DS3_ScanPads();
-int DS3_StickX();
-int DS3_SubStickX();
-int DS3_StickY();
-int DS3_SubStickY();
+int DS3_LStickX();
+int DS3_RStickX();
+int DS3_LStickY();
+int DS3_RStickY();
 
 #ifdef __cplusplus
 }

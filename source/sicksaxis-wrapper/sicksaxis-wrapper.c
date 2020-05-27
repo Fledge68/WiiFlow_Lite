@@ -5,45 +5,41 @@
 #include <sicksaxis.h>
 #include "sicksaxis-wrapper.h"
 
-static DS3 first;
+static DS3 Controller1;
 static bool psPressed = false;
 
-bool DS3_Init()
+bool DS3_Init()// does not check for and connect controller
 {
 	USB_Initialize();
-
-	if (ss_init() < 0)
-	{
-		return false;
-	}
-
-	ss_initialize(&first);
-
+	ss_init();// add controller to ios heap
+	ss_initialize(&Controller1);// set all values to initial states
 	return true;
 }
 
 void DS3_Rumble()
 {
-	if (first.connected && psPressed)
+	//if (DS3_Connected())
+	if (Controller1.connected && psPressed)
 	{
-		ss_set_rumble(&first, 2, 255, 2, 255);
+		ss_set_rumble(&Controller1, 2, 255, 2, 255);
 	}
 }
 
 void DS3_Cleanup()
 {
 	psPressed = false;
-	ss_close(&first);
+	ss_close(&Controller1);
 	USB_Deinitialize();
 }
 
 unsigned int DS3_ButtonsDown()
 {
-	if (!ss_is_connected(&first) || !psPressed)
+	//if (!DS3_Connected())
+	if (!ss_is_connected(&Controller1) || !psPressed)
 		return 0;
 
 	DS3 *controller;
-	controller = &first;
+	controller = &Controller1;
 
 	unsigned int pressed = 0;
 
@@ -68,46 +64,48 @@ unsigned int DS3_ButtonsDown()
 	return pressed;
 }
 
-bool DS3_Connected()
+bool DS3_Connected()// not used but could be used in the functions ButtonsDown() and Rumble() above
 {
-	return first.connected > 0 && psPressed;
+	return Controller1.connected > 0 && psPressed;
 }
 
+/* does not scan pads. simply connects with the controller and starts a thread to read the controller. */
+/* on later calls it simply checks if the PS button on the controller has been pressed and lights up the LED */
 void DS3_ScanPads()
 {
-	if (!ss_is_connected(&first))
+	if (!ss_is_connected(&Controller1))
 	{
 		psPressed = false;
-		ss_initialize(&first);
-		if (ss_open(&first) > 0)
+		ss_initialize(&Controller1);
+		if (ss_open(&Controller1) > 0)
 		{
-			ss_start_reading(&first);
-			ss_set_led(&first, 0);
+			ss_start_reading(&Controller1);
+			ss_set_led(&Controller1, 0);
 		}
 	}
-	else if (first.pad.buttons.PS && !psPressed)
+	else if (Controller1.pad.buttons.PS && !psPressed)
 	{
 		psPressed = true;
-		ss_set_led(&first, 1);
+		ss_set_led(&Controller1, 1);
 	}
 }
 
-int DS3_StickX()
+int DS3_LStickX()
 {
-	return psPressed? first.pad.left_analog.x - 128 : 0;
+	return psPressed? Controller1.pad.left_analog.x - 128 : 0;
 }
 
-int DS3_SubStickX()
+int DS3_RStickX()
 {
-	return psPressed? first.pad.right_analog.x - 128 : 0;
+	return psPressed? Controller1.pad.right_analog.x - 128 : 0;
 }
 
-int DS3_StickY()
+int DS3_LStickY()
 {
-	return psPressed? first.pad.left_analog.y - 128 : 0;
+	return psPressed? Controller1.pad.left_analog.y - 128 : 0;
 }
 
-int DS3_SubStickY()
+int DS3_RStickY()
 {
-	return psPressed? first.pad.right_analog.y - 128 : 0;
+	return psPressed? Controller1.pad.right_analog.y - 128 : 0;
 }

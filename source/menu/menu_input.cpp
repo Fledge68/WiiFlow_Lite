@@ -140,6 +140,7 @@ void CMenu::ButtonsPressed()
 	gc_btnsPressed = 0;
 
 	/* ds3 controller */
+	/* libsicksaxis uses a thread to do scan pads so we need to use a delay here to give that thread time to read the controller */
 	if(CheckTime())
 	{
 		ds3_btnsPressed = DS3_ButtonsDown();
@@ -165,7 +166,7 @@ void CMenu::ButtonsPressed()
 
 void CMenu::ButtonsHeld()
 {
-	/* wii, gc, drc, and wupc controllers = no ds3 not sure why */
+	/* wii, gc, drc, and wupc controllers = no ds3 because libsicksaxis does not have a function to check for buttons held */
 	gc_btnsHeld = 0;
 	gc_btnsHeld |= wiidrc_to_pad(WiiDRC_ButtonsHeld());
 	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
@@ -273,7 +274,7 @@ void CMenu::LeftStick()
 	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 	{
 		if(left_stick_mag[chan] > 0.15 || abs(PAD_StickX(chan)) > 20 || abs(PAD_StickY(chan)) > 20 || abs(WUPC_lStickX(chan)) > 160 || abs(WUPC_lStickY(chan)) > 160 
-				|| (chan == 0 && (abs(DS3_StickX()) > 20 || abs(DS3_StickY()) > 20)) || (chan == 0 && (abs(WiiDRC_lStickX()) > 20 || abs(WiiDRC_lStickY()) > 20)))
+				|| (chan == 0 && (abs(DS3_LStickX()) > 20 || abs(DS3_LStickY()) > 20)) || (chan == 0 && (abs(WiiDRC_lStickX()) > 20 || abs(WiiDRC_lStickY()) > 20)))
 		{
 			m_show_pointer[chan] = true;
 			if(LEFT_STICK_LEFT)
@@ -281,7 +282,7 @@ void CMenu::LeftStick()
 				speed = (u8)(left_stick_mag[chan] * 10.00);
 				pSpeed = (u8)(((int)abs(PAD_StickX(chan))/10)|((int)abs(WUPC_lStickX(chan))/80)|((int)abs(WiiDRC_lStickX())/8));
 				if(chan == 0)
-					pSpeed |= (int)abs(DS3_StickX()/10);
+					pSpeed |= (int)abs(DS3_LStickX()/10);
 				if(stickPointer_x[chan] > m_cursor[chan].width()/2)
 					stickPointer_x[chan] = stickPointer_x[chan]-speed-pSpeed;
 				pointerhidedelay[chan] = 150;
@@ -291,7 +292,7 @@ void CMenu::LeftStick()
 				speed = (u8)(left_stick_mag[chan] * 10.00);
 				pSpeed = (u8)(((int)abs(PAD_StickY(chan))/10)|((int)abs(WUPC_lStickY(chan))/80)|((int)abs(WiiDRC_lStickY())/8));
 				if(chan == 0)
-					pSpeed |= (int)abs(DS3_StickY()/10);
+					pSpeed |= (int)abs(DS3_LStickY()/10);
 				if(stickPointer_y[chan] < (m_vid.height() + (m_cursor[chan].height()/2)))
 					stickPointer_y[chan] = stickPointer_y[chan]+speed+pSpeed;
 				pointerhidedelay[chan] = 150;
@@ -301,7 +302,7 @@ void CMenu::LeftStick()
 				speed = (u8)(left_stick_mag[chan] * 10.00);
 				pSpeed = (u8)(((int)abs(PAD_StickX(chan))/10)|((int)abs(WUPC_lStickX(chan))/80)|((int)abs(WiiDRC_lStickX())/8));
 				if(chan == 0)
-					pSpeed |= (int)abs(DS3_StickX()/10);
+					pSpeed |= (int)abs(DS3_LStickX()/10);
 				if(stickPointer_x[chan] < (m_vid.width() + (m_cursor[chan].width()/2)))
 					stickPointer_x[chan] = stickPointer_x[chan]+speed+pSpeed;
 				pointerhidedelay[chan] = 150;
@@ -311,7 +312,7 @@ void CMenu::LeftStick()
 				speed = (u8)(left_stick_mag[chan] * 10.00);
 				pSpeed = (u8)(((int)abs(PAD_StickY(chan))/10)|((int)abs(WUPC_lStickY(chan))/80)|((int)abs(WiiDRC_lStickY())/8));
 				if(chan == 0)
-					pSpeed |= (int)abs(DS3_StickY()/10);
+					pSpeed |= (int)abs(DS3_LStickY()/10);
 				if(stickPointer_y[chan] > m_cursor[chan].height()/2)
 					stickPointer_y[chan] = stickPointer_y[chan]-speed-pSpeed;
 				pointerhidedelay[chan] = 150;
@@ -496,7 +497,7 @@ bool CMenu::gc_btnRepeat(s64 btn)
 
 bool CMenu::lStick_Up(void)
 {
-	if(WiiDRC_lStickY() > 20 || DS3_StickY() < -20)
+	if(WiiDRC_lStickY() > 20 || DS3_LStickY() < -20)
 		return true;
 	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 	{
@@ -508,7 +509,7 @@ bool CMenu::lStick_Up(void)
 
 bool CMenu::lStick_Right(void)
 {
-	if(WiiDRC_lStickX() > 20 || DS3_StickX() > 20)
+	if(WiiDRC_lStickX() > 20 || DS3_LStickX() > 20)
 		return true;
 	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 	{
@@ -520,7 +521,7 @@ bool CMenu::lStick_Right(void)
 
 bool CMenu::lStick_Down(void)
 {
-	if(WiiDRC_lStickY() < -20 || DS3_StickY() > 20)
+	if(WiiDRC_lStickY() < -20 || DS3_LStickY() > 20)
 		return true;
 	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 	{
@@ -532,7 +533,7 @@ bool CMenu::lStick_Down(void)
 
 bool CMenu::lStick_Left(void)
 {
-	if(WiiDRC_lStickX() < -20 || DS3_StickX() < -20)
+	if(WiiDRC_lStickX() < -20 || DS3_LStickX() < -20)
 		return true;
 	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 	{
@@ -543,6 +544,7 @@ bool CMenu::lStick_Left(void)
 }
 
 /* right stick movements are only used in menu_main and menu_game to move the coverflow up, down, left, right just like the d-pad */
+/* DS3 right stick is not checked */
 bool CMenu::rStick_Up(void)
 {
 	if(WiiDRC_rStickY() > 30)
