@@ -99,17 +99,12 @@ public:
 	wbfs_t *GetWbfsHandle(int dev);
 	s32 OpenWBFS(int dev);
 
-	/* Special Devolution Stuff */
-	bool MountDevolution();
-	void UnMountDevolution();
 private:
 	bool MountUSB(int part);
 	bool mount_usb;
 
 	PartitionHandle sd;
 	PartitionHandle usb;
-	/* Special Devolution Stuff */
-	PartitionHandle OGC_Device;
 };
 
 extern DeviceHandler DeviceHandle;

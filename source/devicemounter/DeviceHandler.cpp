@@ -45,7 +45,6 @@ void DeviceHandler::Init()
 	/* PartitionHandle inits */
 	sd.Init();
 	usb.Init();
-	OGC_Device.Init();// used for Devolution gamecube iso launcher
 }
 
 void DeviceHandler::SetMountUSB(bool using_usb)
@@ -273,24 +272,6 @@ bool DeviceHandler::WaitForDevice(const DISC_INTERFACE *Handle)
 		usleep(50000);
 	}
 	return false;
-}
-
-bool DeviceHandler::MountDevolution()
-{
-	int NewPartition = (currentPartition == SD ? currentPartition : currentPartition - 1);
-	const DISC_INTERFACE *handle = (currentPartition == SD) ? &__io_wiisd_ogc : &__io_usbstorage_ogc;
-	/* We need to wait for the device to get ready for a remount */
-	WaitForDevice(handle);
-	/* Only mount the partition we need */
-	OGC_Device.SetDevice(handle);
-	return OGC_Device.Mount(NewPartition, DeviceName[currentPartition], true);
-}
-
-void DeviceHandler::UnMountDevolution()
-{
-	int NewPartition = (currentPartition == SD ? currentPartition : currentPartition - 1);
-	OGC_Device.UnMount(NewPartition);
-	OGC_Device.Cleanup();
 }
 
 bool DeviceHandler::UsablePartitionMounted()

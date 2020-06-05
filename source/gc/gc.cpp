@@ -272,14 +272,7 @@ void DEVO_GetLoader(const char *path)
 void DEVO_SetOptions(const char *isopath, const char *gameID, u8 videomode, u8 lang, 
 						bool memcard_emu, bool widescreen, bool activity_led, bool wifi)
 {
-	// re-mount device we need
-	//DeviceHandle.MountDevolution();
-
-	//start writing cfg to mem
 	struct stat st;
-	int data_fd;
-	char iso2path[256];
-	memset(iso2path, 0, sizeof(iso2path));
 
 	stat(isopath, &st);
 	FILE *f = fopen(isopath, "rb");
@@ -292,7 +285,12 @@ void DEVO_SetOptions(const char *isopath, const char *gameID, u8 videomode, u8 l
 	memset(DEVO_CONFIG, 0, sizeof(gconfig));
 	DEVO_CONFIG->signature = DEVO_CONFIG_SIG;
 	DEVO_CONFIG->version = DEVO_CONFIG_VERSION;
-	DEVO_CONFIG->device_signature = st.st_dev;
+	// if wiiflow is using a cIOS the custom disc interface device usbstorage.c will cause st.st_dev to return 'WUMS' instead of 'WUSB'.
+	// if wiiflow is using IOS58 usbstorage_libogc interface and st.st_dev will return the proper result 'WUSB'.
+	// for sd it always return 'WISD'.
+	// only last two letters are returned by DevkitPro 'SD', 'SB' or 'MS'.
+	// so we use this little trick to make sure device signature is always set to the proper 2 letter ID.
+	DEVO_CONFIG->device_signature = st.st_dev == 'SD' ? 'SD' : 'SB';
 	DEVO_CONFIG->disc1_cluster = st.st_ino;
 
 	// Pergame options
@@ -304,6 +302,8 @@ void DEVO_SetOptions(const char *isopath, const char *gameID, u8 videomode, u8 l
 		DEVO_CONFIG->options |= DEVO_CONFIG_NOLED;
 
 	// If 2nd iso file tell Devo about it
+	char iso2path[256];
+	memset(iso2path, 0, sizeof(iso2path));
 	strncpy(iso2path, isopath, 255);
 	char *ptz = strstr(iso2path, "game.iso");
 	if(ptz != NULL)
@@ -333,6 +333,8 @@ void DEVO_SetOptions(const char *isopath, const char *gameID, u8 videomode, u8 l
 	fsop_MakeFolder(fmt("%s:/apps", DeviceName[currentPartition]));
 	fsop_MakeFolder(fmt("%s:/apps/gc_devo", DeviceName[currentPartition]));
 
+	// setup memcard
+	int data_fd;
 	if(memcard_emu)
 	{
 		const char *memcard_dir = NULL;
@@ -379,8 +381,6 @@ void DEVO_SetOptions(const char *isopath, const char *gameID, u8 videomode, u8 l
 	// flush disc ID and Devolution config out to memory
 	DCFlushRange((void*)Disc_ID, 64);
 
-	//DeviceHandle.UnMountDevolution();
-	
 	// GX Render Mode (rmode) and register (rmode_reg)
 	GXRModeObj *rmode = VIDEO_GetPreferredMode(0);
 	int rmode_reg = 0;// VI_NTSC
