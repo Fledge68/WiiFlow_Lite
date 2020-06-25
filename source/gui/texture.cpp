@@ -185,7 +185,7 @@ static inline void _convertToCMPR(u8 *dst, const u8 *src, u32 width, u32 height)
 void STexture::Cleanup(TexData &tex)
 {
 	if(tex.data != NULL)
-		free(tex.data);//mem2_free maybe
+		MEM2_free(tex.data);
 	tex.data = NULL;
 	tex.dataSize = 0;
 	tex.width = 0;
@@ -314,7 +314,7 @@ TexErr STexture::fromJPG(TexData &dest, const u8 *buffer, const u32 buffer_size,
 		if(dest.data == NULL)
 		{
 			Cleanup(dest);
-			free(rawData);
+			MEM2_free(rawData);
 			VideoF.dealloc();
 			return TE_NOMEM;
 		}
@@ -343,7 +343,7 @@ TexErr STexture::fromJPG(TexData &dest, const u8 *buffer, const u32 buffer_size,
 			nWidth >>= 1;
 			nHeight >>= 1;
 		}
-		free(rawData);
+		MEM2_free(rawData);
 		dest.maxLOD = maxLODTmp - minLODTmp;
 		dest.width = newWidth;
 		dest.height = newHeight;
@@ -409,9 +409,12 @@ TexErr STexture::fromPNG(TexData &dest, const u8 *buffer, u8 f, u32 minMipSize, 
 	}
 	u32 pngWidth = imgProp.imgWidth & (f == GX_TF_CMPR ? ~7u : ~3u);
 	u32 pngHeight = imgProp.imgHeight & (f == GX_TF_CMPR ? ~7u : ~3u);
+	// the following 2 if's are for cover's.
+	// gui elements will not have mipSizes and maxLODTmp.
+	// only exception is lqBG gui element.
 	if(minMipSize > 0 || maxMipSize > 0)
 		_calcMipMaps(maxLODTmp, minLODTmp, baseWidth, baseHeight, imgProp.imgWidth, imgProp.imgHeight, minMipSize, maxMipSize);
-	if (maxLODTmp > 0)
+	if(maxLODTmp > 0)
 	{
 		u32 newWidth = baseWidth;
 		u32 newHeight = baseHeight;
@@ -443,7 +446,7 @@ TexErr STexture::fromPNG(TexData &dest, const u8 *buffer, u8 f, u32 minMipSize, 
 			if(dest.data == NULL)
 			{
 				Cleanup(dest);
-				free(tmpData2);
+				MEM2_free(tmpData2);
 				return TE_NOMEM;
 			}
 			_convertToRGBA8(dest.data, tmpData2, dest.width, dest.height);
@@ -471,7 +474,7 @@ TexErr STexture::fromPNG(TexData &dest, const u8 *buffer, u8 f, u32 minMipSize, 
 		if(dest.data == NULL)
 		{
 			Cleanup(dest);
-			free(tmpData2);
+			MEM2_free(tmpData2);
 			return TE_NOMEM;
 		}
 		memset(dest.data, 0, dest.dataSize);
@@ -495,13 +498,13 @@ TexErr STexture::fromPNG(TexData &dest, const u8 *buffer, u8 f, u32 minMipSize, 
 			nWidth >>= 1;
 			nHeight >>= 1;
 		}
-		free(tmpData2);
+		MEM2_free(tmpData2);
 		dest.maxLOD = maxLODTmp - minLODTmp;
 		dest.format = f;
 		dest.width = newWidth;
 		dest.height = newHeight;
 	}
-	else
+	else // this is used for gui elements
 	{
 		dest.dataSize = GX_GetTexBufferSize(pngWidth, pngHeight, f, GX_FALSE, 0);
 		dest.data = (u8*)MEM2_alloc(dest.dataSize);
@@ -531,6 +534,8 @@ TexErr STexture::fromPNG(TexData &dest, const u8 *buffer, u8 f, u32 minMipSize, 
 		PNGU_ReleaseImageContext(ctx);
 	}
 	DCFlushRange(dest.data, dest.dataSize);
+	// reduceAlpha only used for cover region flag images on cover settings menu.
+	// on and off images use the same image but off has its alpha reduced.
 	_reduceAlpha(dest, reduce_alpha);
 	return TE_OK;
 }
@@ -672,7 +677,7 @@ u8 *STexture::_genMipMaps(u8 *&src, u32 width, u32 height, u8 maxLOD, u32 lod0Wi
 	memset(dstData, 0, bufSize);
 	_resize(dstData, lod0Width, lod0Height, src, width, height);
 	DCFlushRange(dstData, lod0Width * lod0Height * 4);
-	free(src);
+	MEM2_free(src);
 	src = NULL;
 
 	u32 nWidth = lod0Width;

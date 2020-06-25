@@ -237,14 +237,15 @@ vector<string> CMenu::_getMetaXML(const char *bootpath)
 	if (st.st_size > 64*1024)
 		return args;
 
-	meta_buf = (char *) calloc(st.st_size + 1, 1);// +1 so that the buf is 0 terminated
+	meta_buf = (char *) MEM2_alloc(st.st_size + 1);// +1 so that the buf is 0 terminated
 	if (!meta_buf)
 		return args;
-
+	memset(meta_buf, 0, st.st_size + 1);
+	
 	int fd = open(meta_path, O_RDONLY);
 	if (fd < 0)
 	{
-		free(meta_buf); 
+		MEM2_free(meta_buf); 
 		meta_buf = NULL; 
 		return args;
 	}
@@ -296,7 +297,7 @@ vector<string> CMenu::_getMetaXML(const char *bootpath)
 		while (p < end);
 	}
 
-	free(meta_buf); 
+	MEM2_free(meta_buf); 
 	meta_buf = NULL; 
 	return args;
 }
@@ -821,6 +822,8 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	{
 		setLanguage(language);
 		ocarina_load_code(cheatFile, cheatSize);
+		if(cheatFile != NULL)
+			MEM2_free(cheatFile);
 		NandHandle.Patch_AHB(); /* Identify maybe uses it so keep AHBPROT disabled */
 		PatchIOS(true,  isWiiVC); /* Patch for everything */
 		Identify(gameTitle);
@@ -1079,12 +1082,12 @@ void CMenu::_launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 	if(cheatFile != NULL)
 	{
 		ocarina_load_code(cheatFile, cheatSize);
-		free(cheatFile);
+		MEM2_free(cheatFile);
 	}
 	if(gameconfig != NULL)
 	{
 		app_gameconfig_load(id.c_str(), gameconfig, gameconfigSize);
-		free(gameconfig);
+		MEM2_free(gameconfig);
 	}
 
 	ExternalBooter_WiiGameSetup(wbfs_partition, dvd, patchregion, private_server, fix480p, id.c_str());

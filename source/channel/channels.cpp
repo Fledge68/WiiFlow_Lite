@@ -83,7 +83,7 @@ u8 Channels::GetRequestedIOS(u64 title)
 	if(size > 0x18B)
 		IOS = titleTMD[0x18B];
 
-	free(titleTMD);
+	MEM2_free(titleTMD);
 	gprintf("Requested Game IOS: %i\n", IOS);
 	return IOS;
 }
@@ -124,7 +124,7 @@ bool Channels::GetAppNameFromTmd(u64 title, char *app, u32 *bootcontent)
 	if(data == NULL || size < 0x208)
 	{
 		if(data != NULL)
-			free(data);
+			MEM2_free(data);
 		return ret;
 	}
 	_tmd *tmd_file = (_tmd *)SIGNATURE_PAYLOAD((u32 *)data);
@@ -140,7 +140,7 @@ bool Channels::GetAppNameFromTmd(u64 title, char *app, u32 *bootcontent)
 		}
 	}
 
-	free(data);
+	MEM2_free(data);
 
 	return ret;
 }
@@ -219,7 +219,7 @@ void Channels::Search()
 			}
 		}
 	}
-	free(list);
+	MEM2_free(list);
 }
 
 wchar_t * Channels::GetName(int index)

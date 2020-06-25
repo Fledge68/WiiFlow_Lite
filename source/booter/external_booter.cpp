@@ -115,7 +115,7 @@ bool ExternalBooter_LoadBins(const char *binDir)
 	if(booter_size > 0 && booter_ptr != NULL)
 		return true;
 
-	free(extldr_ptr);
+	MEM2_free(extldr_ptr);
 	extldr_ptr = NULL;
 	extldr_size = 0;
 	return false;

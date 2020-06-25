@@ -170,7 +170,7 @@ u8 *DecompressCopy(const u8 *stuff, u32 len, u32 *size)
 	{
 		//u32 len2 = len;
 		// ASH0
-		ret = DecompressAsh(stuff, len);
+		ret = DecompressAsh(stuff, len);// mem2_lo_alloc
 		if(!ret)
 		{
 			gprintf("out of memory\n");
@@ -180,7 +180,7 @@ u8 *DecompressCopy(const u8 *stuff, u32 len, u32 *size)
 	else if(isLZ77compressed(stuff))
 	{
 		// LZ77 with no magic word
-		if(decompressLZ77content(stuff, len, &ret, &len))
+		if(decompressLZ77content(stuff, len, &ret, &len))// mem2_alloc
 			return NULL;
 	}
 	else if(*(u32*)(stuff) == 0x4C5A3737) // LZ77

@@ -1422,7 +1422,7 @@ TexData CMenu::_texture(const char *domain, const char *key, TexData &def, bool 
 			{
 				if(freeDef && def.data != NULL)
 				{
-					free(def.data);
+					MEM2_free(def.data);
 					def.data = NULL;
 				}
 				theme.texSet[filename] = themetex;
@@ -2585,7 +2585,7 @@ bool CMenu::_loadFile(u8 * &buffer, u32 &size, const char *path, const char *fil
 		return false;
 
 	if(buffer != NULL)
-		free(buffer);
+		MEM2_free(buffer);
 	buffer = fileBuf;
 	size = fileSize;
 	return true;
@@ -2672,7 +2672,7 @@ retry:
 				memcpy(m_base_font, font_file, size);
 				DCFlushRange(m_base_font, size);
 				m_base_font_size = size;
-				free(u8_font_archive);
+				MEM2_free(u8_font_archive);
 			}
 		}
 		else if(memcmp(cm[i].sha1, WFB_HASH, 20) == 0 && m_wbf1_font == NULL && m_wbf2_font == NULL)
@@ -2691,7 +2691,7 @@ retry:
 				memcpy(m_wbf2_font, font_file2, size);
 				DCFlushRange(m_wbf2_font, size);
 
-				free(u8_font_archive);
+				MEM2_free(u8_font_archive);
 			}
 		}
 	}
@@ -2700,7 +2700,7 @@ retry:
 		retry = true;
 		goto retry;
 	}
-	free(content);
+	MEM2_free(content);
 }
 
 void CMenu::_cleanupDefaultFont()

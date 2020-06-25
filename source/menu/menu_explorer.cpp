@@ -68,7 +68,7 @@ void CMenu::_hideExplorer(bool instant)
 			m_btnMgr.hide(m_explorerLblUser[i], instant);
 	}
 	if(elements != NULL)
-		free(elements);
+		MEM2_free(elements);
 	elements = NULL;
 	elements_num = 0;
 }
@@ -381,7 +381,7 @@ void CMenu::_refreshExplorer(s8 direction)
 			}
 			u32 pos = 0;
 			if(elements != NULL)
-				free(elements);
+				MEM2_free(elements);
 			elements_num = (folderExplorer ? dirs : dirs+files);
 			elements = (list_element*)MEM2_alloc(elements_num*sizeof(list_element));
 			if(dirs > 0)

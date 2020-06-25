@@ -20,7 +20,7 @@
 #include "gecko/gecko.hpp"
 #include "loader/utils.h"
 
-static const u32 MEM_BLOCK_SIZE = 0x80;
+static const u32 MEM_BLOCK_SIZE = 0x80;// 128
 
 MemManager::MemManager()
 {

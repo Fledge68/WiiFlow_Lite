@@ -22,10 +22,10 @@
 
 enum mem_states
 {
-	MEM_FREE = (1<<0),
-	ALLOC_USED = (1<<1),
-	ALLOC_END = (1<<2),
-	MEM_END = (1<<3),
+	MEM_FREE = (1<<0),//1
+	ALLOC_USED = (1<<1),//2
+	ALLOC_END = (1<<2),//4
+	MEM_END = (1<<3),//8
 };
 
 class MemManager {

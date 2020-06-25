@@ -58,6 +58,7 @@ bool Identify(u64 titleid)
 	gprintf("Generating fake ticket...");
 	if(!Identify_GenerateTik(&tikBuffer, &tikSize))
 	{
+		MEM2_free(tmdBuffer);
 		gprintf("Failed!\n");
 		return false;
 	}
@@ -72,8 +73,8 @@ bool Identify(u64 titleid)
 	if (certBuffer == NULL || certSize == 0)
 	{
 		gprintf("Failed!\n");
-		free(tmdBuffer);
-		free(tikBuffer);
+		MEM2_free(tmdBuffer);
+		MEM2_free(tikBuffer);
 		return false;
 	}
 	gprintf("Success!\n");
@@ -106,9 +107,9 @@ bool Identify(u64 titleid)
 		}
 	}
 	gprintf("AHBPROT: %d, Key ID: %u\n", AHBPROT_Patched(), keyId);
-	free(tmdBuffer);
-	free(tikBuffer);
-	free(certBuffer);
+	MEM2_free(tmdBuffer);
+	MEM2_free(tikBuffer);
+	MEM2_free(certBuffer);
 
 	return ret < 0 ? false : true;
 }

@@ -9,9 +9,10 @@
 #include "gecko/gecko.hpp"
 #include "loader/utils.h"
 
-static const u32 MEM2_PRIORITY_SIZE = 0x1000;
+static const u32 MEM2_PRIORITY_SIZE = 0x1000;// 4k or 4096
 
-// Forbid the use of MEM2 through malloc
+// Forbid the use of MEM2 through malloc by setting MALLOC_MEM2 = 0; if not 0 then malloc can use mem2
+// calls to malloc, memalign, calloc, free are handled below by the wrappers which decide whether to use mem1 or mem2.
 u32 MALLOC_MEM2 = 0;
 
 u8 *MEM1_lo_start = (u8*)0x80004000;
@@ -144,6 +145,8 @@ unsigned int MEM2_freesize()
 	return g_mem2gp.FreeSize();
 }
 
+// these wrap's are used when malloc, calloc, memalign, free are called in wiiflow.
+// they decide based on if the size >= mem2_prio_size (4k) to use mem2 or mem1. using the __real means to use mem1 because MALLOC_MEM2 = 0.
 void *__wrap_malloc(size_t size)
 {
 	void *p;

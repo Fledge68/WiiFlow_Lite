@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ****************************************************************************/
 #include <malloc.h>
+#include "memory/mem2.hpp"
 #include "nand_save.hpp"
 #include "nand.hpp"
 #include "identify.h"
@@ -132,7 +133,7 @@ bool NandSave::CheckSave()
 		ISFS_Delete(ISFS_Path);
 		goto error;
 	}
-	free(certBuffer);
+	MEM2_free(certBuffer);
 	if(u8_bin != save_bin)
 		free(u8_bin);
 	gprintf("Created WiiFlow Save\n");
@@ -145,7 +146,7 @@ error:
 	loaded = false;
 	ES_AddTitleCancel();
 	if(certBuffer != NULL)
-		free(certBuffer);
+		MEM2_free(certBuffer);
 	certBuffer = NULL;
 	if(u8_bin != NULL)
 		free(u8_bin);
@@ -175,7 +176,7 @@ void NandSave::LoadSettings()
 		useMainIOS = cur_load;
 	}
 	if(file != NULL)
-		free(file);
+		MEM2_free(file);
 
 	strcpy(ISFS_Path, PORT_SAVE_PATH);
 	u8 *port = ISFS_GetFile(ISFS_Path, &size, -1);
@@ -185,7 +186,7 @@ void NandSave::LoadSettings()
 		currentPort = port[0] & 1;
 	}
 	if(port != NULL)
-		free(port);
+		MEM2_free(port);
 }
 
 void NandSave::SaveIOS()

@@ -120,7 +120,7 @@ void CMenu::_textAbout(void)
 				*(txt_mem+txt_size) = '\0';
 			txt_file_content.fromUTF8(txt_mem);
 			m_btnMgr.setText(m_aboutLblInfo, txt_file_content);
-			free(txt_mem);
+			MEM2_free(txt_mem);
 		}
 		txt_mem = NULL;
 		return;
@@ -137,7 +137,7 @@ void CMenu::_textAbout(void)
 				*(txt_mem+txt_size) = '\0';
 			help_text.fromUTF8(txt_mem);
 			m_btnMgr.setText(m_aboutLblInfo, help_text);
-			free(txt_mem);
+			MEM2_free(txt_mem);
 		}
 		else
 			m_btnMgr.setText(m_aboutLblInfo, ENGLISH_TXT_W);

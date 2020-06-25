@@ -90,7 +90,7 @@ void Banner::SetBanner(u8 *bnr, u32 bnr_size, bool custom, bool alloc)
 void Banner::ClearBanner()
 {
 	if(allocated == true && opening != NULL)
-		free(opening);
+		MEM2_free(opening);
 	opening = NULL;
 	opening_size = 0;
 	allocated = false;
@@ -177,7 +177,7 @@ void Banner::GetBanner(char *appname, bool imetOnly)
 	if(size == 0)
 	{
 		if(buf != NULL)
-			free(buf);
+			MEM2_free(buf);
 		return;
 	}
 	SetBanner(buf, size, false, true);

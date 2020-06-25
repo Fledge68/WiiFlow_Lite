@@ -2607,7 +2607,7 @@ bool CCoverFlow::cacheCoverFile(const char *wfcPath, const char *coverPath, bool
 	TexData tex;
 	tex.thread = true;// lets TexHandle know this texture is a cover image and in case its a homebrew icon.png
 	m_renderingTex = &tex;// only used if cover has alpha transparency - homebrew icon.png and sourceflow smallbox
-	u8 textureFmt = m_compressTextures ? GX_TF_CMPR : GX_TF_RGBA8;// always GX_TF_CMPR
+	u8 textureFmt = m_compressTextures ? GX_TF_CMPR : GX_TF_RGB565;// always GX_TF_CMPR
 	if(TexHandle.fromImageFile(tex, coverPath, textureFmt, 32) != TE_OK)
 	{
 		m_renderingTex = NULL;

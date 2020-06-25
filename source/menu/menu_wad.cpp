@@ -109,16 +109,16 @@ int installWad(const char *path)
 		if(uid_buf == NULL)
 		{
 			gprintf("No uid.sys found!\n");
-			free(tmd_buf);
-			free(tik_buf);
+			MEM2_free(tmd_buf);
+			MEM2_free(tik_buf);
 			return -5;
 		}
 		else if(uid_size % 0xC != 0)
 		{
 			gprintf("uid.sys size is invalid!\n");
-			free(tmd_buf);
-			free(tik_buf);
-			free(uid_buf);
+			MEM2_free(tmd_buf);
+			MEM2_free(tik_buf);
+			MEM2_free(uid_buf);
 			return -6;
 		}
 
@@ -251,8 +251,8 @@ int installWad(const char *path)
 		isfs_WriteFile(fmt("/ticket/%08x/%08x.tik", (u32)(tid>>32), (u32)tid&0xFFFFFFFF), tik_buf, hdr.tik_len);
 		isfs_WriteFile(fmt("/title/%08x/%08x/content/title.tmd", (u32)(tid>>32), (u32)tid&0xFFFFFFFF), tmd_buf, hdr.tmd_len);
 	}
-	free(tik_buf);
-	free(tmd_buf);
+	MEM2_free(tik_buf);
+	MEM2_free(tmd_buf);
 
 	return hash_errors;
 }
@@ -337,7 +337,7 @@ int getTID(const char *path, u64 *tid)
 	/* get its tid, return and free mem */
 	const tmd *tmd_ptr = (const tmd*)SIGNATURE_PAYLOAD(tmd_buf);
 	(*tid) = tmd_ptr->title_id;
-	free(tmd_buf);
+	MEM2_free(tmd_buf);
 
 	return 0;
 }

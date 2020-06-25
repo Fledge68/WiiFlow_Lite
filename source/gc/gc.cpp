@@ -116,7 +116,7 @@ void Nintendont_SetOptions(const char *gamePath, const char *gameID, const char 
 				break;
 			}
 		}
-		free(buffer);
+		MEM2_free(buffer);
 		break;
 	}
 	if(NINRev == 0 || NINRev < 358)

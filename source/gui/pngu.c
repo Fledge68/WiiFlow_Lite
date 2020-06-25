@@ -774,12 +774,6 @@ int PNGU_DecodeToCMPR(IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, void *buffer)
 	return PNGU_OK;
 }
 
-void user_error(png_structp png_ptr, png_const_charp c)
-{
-	longjmp(png_ptr->jmpbuf, 1);
-	gprintf("%s\n", c);
-}
-
 int PNGU_EncodeFromYCbYCr(IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, void *buffer, PNGU_u32 stride)
 {
 	// Erase from the context any readed info
@@ -1101,7 +1095,6 @@ int pngu_info (IMGCTX ctx)
 int pngu_decode (IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, PNGU_u32 stripAlpha, int force32bit)
 {
 	u32 i;
-	//int mem_err = 0;
 
 	// Read info if it hasn't been read before
 	if (!ctx->infoRead)
@@ -1122,21 +1115,6 @@ int pngu_decode (IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, PNGU_u32 stripAlph
 	if ( (ctx->prop.imgColorType == PNGU_COLOR_TYPE_UNKNOWN) )
 		return PNGU_UNSUPPORTED_COLOR_TYPE;
 
-	 // error handling
-	jmp_buf save_jmp;
-	memcpy(save_jmp, png_jmpbuf(ctx->png_ptr), sizeof(save_jmp));
-	if (setjmp(png_jmpbuf(ctx->png_ptr)))
-	{
-		error:
-		memcpy(png_jmpbuf(ctx->png_ptr), save_jmp, sizeof(save_jmp));
-		free(ctx->row_pointers);
-		free(ctx->img_data);
-		pngu_free_info (ctx);
-		//printf("*** This is a corrupted image!!\n"); sleep(5);
-		//return mem_err ? PNGU_LIB_ERROR : -666;
-		return PNGU_LIB_ERROR;
-	}
-	png_set_error_fn(ctx->png_ptr, NULL, user_error, user_error);
 	// Scale 16 bit samples to 8 bit
 	if (ctx->prop.imgBitDepth == 16)
 		png_set_strip_16 (ctx->png_ptr);
@@ -1168,15 +1146,16 @@ int pngu_decode (IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, PNGU_u32 stripAlph
 	ctx->img_data = malloc(rowbytes * ctx->prop.imgHeight);
 	if (!ctx->img_data)
 	{
-		//mem_err = 1;
-		goto error;
+		pngu_free_info (ctx);
+		return PNGU_LIB_ERROR;
 	}
 
 	ctx->row_pointers = malloc(sizeof (png_bytep) * ctx->prop.imgHeight);
 	if (!ctx->row_pointers)
 	{
-		//mem_err = 1;
-		goto error;
+		free (ctx->img_data);
+		pngu_free_info (ctx);
+		return PNGU_LIB_ERROR;
 	}
 
 	for (i = 0; i < ctx->prop.imgHeight; i++)
@@ -1184,7 +1163,7 @@ int pngu_decode (IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, PNGU_u32 stripAlph
 
 	// Transform the image and copy it to our allocated memory
 	if (png_get_interlace_type(ctx->png_ptr, ctx->info_ptr) != PNG_INTERLACE_NONE)
-	png_read_image (ctx->png_ptr, ctx->row_pointers);
+		png_read_image (ctx->png_ptr, ctx->row_pointers);
 	else
 	{
 		int rowsLeft = ctx->prop.imgHeight;
@@ -1198,9 +1177,6 @@ int pngu_decode (IMGCTX ctx, PNGU_u32 width, PNGU_u32 height, PNGU_u32 stripAlph
 			rowsLeft -= chunk;
 		}
 	}
-
-	// restore default error handling
-	memcpy(png_jmpbuf(ctx->png_ptr), save_jmp, sizeof(save_jmp));
 
 	// Free resources
 	pngu_free_info(ctx);
