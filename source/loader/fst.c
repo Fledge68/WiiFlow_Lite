@@ -114,7 +114,8 @@ int app_gameconfig_load(const char *discid, u8 *tempgameconf, u32 tempgameconfsi
 					else if (tempgameconf[i] == ' ')
 						break;
 					else i++;
-					if (parsebufpos == 8) break;
+					if (parsebufpos == 8)
+						break;
 				}
 				parsebuffer[parsebufpos] = 0;
 				if (strncasecmp("DEFAULT", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 7)
@@ -138,19 +139,18 @@ int app_gameconfig_load(const char *discid, u8 *tempgameconf, u32 tempgameconfsi
 				parsebufpos = 0;
 				while ((i != tempgameconfsize) && (tempgameconf[i] != 10 && tempgameconf[i] != 13))
 				{
-					if (tempgameconf[i] != 0 && tempgameconf[i] != ' ' && tempgameconf[i] != '(' && tempgameconf[i]
-							!= ':')
+					if (tempgameconf[i] != 0 && tempgameconf[i] != ' ' && tempgameconf[i] != '(' && tempgameconf[i] != ':')
 						parsebuffer[parsebufpos++] = tempgameconf[i++];
 					else if (tempgameconf[i] == ' ' || tempgameconf[i] == '(' || tempgameconf[i] == ':')
 						break;
 					else i++;
-					if (parsebufpos == 17) break;
+					if (parsebufpos == 17) 
+						break;
 				}
 				parsebuffer[parsebufpos] = 0;
 				//if (!autobootcheck)
 				{
-					if (strncasecmp("codeliststart", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer)
-							== 13)
+					if (strncasecmp("codeliststart", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 13)
 					{
 						sscanf((char *) (tempgameconf + i), " = %x", (unsigned int *) &codelist);
 					}
@@ -176,8 +176,7 @@ int app_gameconfig_load(const char *discid, u8 *tempgameconf, u32 tempgameconfsi
 					}
 					if (strncasecmp("pokeifequal", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 11)
 					{
-						ret = sscanf((char *) (tempgameconf + i), "( %lx , %lx , %lx , %lx", &codeaddr, &codeval,
-								&codeaddr2, &codeval2);
+						ret = sscanf((char *) (tempgameconf + i), "( %lx , %lx , %lx , %lx", &codeaddr, &codeval, &codeaddr2, &codeval2);
 						if (ret == 4)
 						{
 							*(gameconf + (gameconfsize / 4)) = 0;
@@ -193,8 +192,7 @@ int app_gameconfig_load(const char *discid, u8 *tempgameconf, u32 tempgameconfsi
 							DCFlushRange((void *) (gameconf + (gameconfsize / 4) - 5), 20);
 						}
 					}
-					if (strncasecmp("searchandpoke", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer)
-							== 13)
+					if (strncasecmp("searchandpoke", parsebuffer, strlen(parsebuffer)) == 0 && strlen(parsebuffer) == 13)
 					{
 						ret = sscanf((char *) (tempgameconf + i), "( %lx%ln", &codeval, &tempoffset);
 						if (ret == 1)
@@ -210,8 +208,7 @@ int app_gameconfig_load(const char *discid, u8 *tempgameconf, u32 tempgameconfsi
 								ret = sscanf((char *) (tempgameconf + i), " %lx%ln", &codeval, &tempoffset);
 							}
 							*(gameconf + (gameconfsize / 4) - temp - 1) = temp;
-							ret = sscanf((char *) (tempgameconf + i), " , %lx , %lx , %lx , %lx", &codeaddr, &codeaddr2,
-									&codeoffset, &codeval2);
+							ret = sscanf((char *) (tempgameconf + i), " , %lx , %lx , %lx , %lx", &codeaddr, &codeaddr2, &codeoffset, &codeval2);
 							if (ret == 4)
 							{
 								*(gameconf + (gameconfsize / 4)) = codeaddr;
@@ -233,11 +230,13 @@ int app_gameconfig_load(const char *discid, u8 *tempgameconf, u32 tempgameconfsi
 				{
 					while ((i != tempgameconfsize) && (tempgameconf[i] != 10 && tempgameconf[i] != 13))
 						i++;
-					if (i != tempgameconfsize) i++;
+					if (i != tempgameconfsize)
+						i++;
 				}
 			}
-			if (i != tempgameconfsize) while ((tempgameconf[i] != 10 && tempgameconf[i] != 13) && (i != 0))
-				i--;
+			if (i != tempgameconfsize)
+				while ((tempgameconf[i] != 10 && tempgameconf[i] != 13) && (i != 0))
+					i--;
 		}
 	}
 	return 0;
