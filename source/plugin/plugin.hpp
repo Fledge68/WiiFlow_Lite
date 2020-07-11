@@ -68,10 +68,10 @@ public:
 	string GetRomName(const char *FullPath);
 	string GetRomId(char *romPath, u32 Magic, Config &m_crc, const char *datadir, const char *platform, const char *name);
 	int GetRomPartition(u8 pos);
-	const string& GetFileTypes(u8 pos);
+	const string& GetFileTypes(s16 pos);
 	wstringEx GetPluginName(u8 pos);
 	u32 getPluginMagic(u8 pos);
-	s8 GetPluginPosition(u32 magic);
+	s16 GetPluginPosition(u32 magic);
 	s8 GetBoxMode(u8 pos);
 	
 	void init(const string& m_pluginsDir);
@@ -91,7 +91,7 @@ public:
 private:
 	vector<PluginOptions> Plugins;
 	vector<bool> enabledPlugins;
-	s8 Plugin_Pos;
+	s16 Plugin_Pos;
 	string pluginsDir;
 	bool adding;
 };

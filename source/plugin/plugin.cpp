@@ -96,12 +96,12 @@ bool Plugin::AddPlugin(Config &plugin)
 	return false;
 }
 
-s8 Plugin::GetPluginPosition(u32 magic)
+s16 Plugin::GetPluginPosition(u32 magic)
 {
 	for(u8 pos = 0; pos < Plugins.size(); pos++)
 	{
 		if(magic == Plugins[pos].magic)
-			return pos;
+			return (s16)pos;
 	}
 	return -1;
 }
@@ -153,7 +153,7 @@ const char *Plugin::GetRomDir(u8 pos)
 	return Plugins[pos].romDir.c_str();
 }
 
-const string& Plugin::GetFileTypes(u8 pos)
+const string& Plugin::GetFileTypes(s16 pos)
 {
 	return Plugins[pos].fileTypes;
 }
@@ -466,7 +466,7 @@ string Plugin::GetRomId(char *romPath, u32 Magic, Config &m_crc, const char *dat
 				}
 				else if(!strcasecmp(platform, "ATARIST"))
 				{
-					s8 pos = m_plugin.GetPluginPosition(Magic);
+					s16 pos = m_plugin.GetPluginPosition(Magic);
 					string FileTypes = m_plugin.GetFileTypes(pos);
 					string path;
 
@@ -507,7 +507,7 @@ string Plugin::GetRomId(char *romPath, u32 Magic, Config &m_crc, const char *dat
 				}
 				else if(!strcasecmp(platform, "DOS"))
                 {
-                    s8 pos = m_plugin.GetPluginPosition(Magic);
+                    s16 pos = m_plugin.GetPluginPosition(Magic);
                     string FileTypes = m_plugin.GetFileTypes(pos);
 
                     if(strcasestr(FileTypes.c_str(), ".conf"))

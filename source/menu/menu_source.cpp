@@ -75,10 +75,10 @@ void CMenu::_sourceFlow()
 		{
 			m_current_view = COVERFLOW_PLUGIN;
 			for(k = 0; k < m_numPlugins; ++k)
-				m_plugin.SetEnablePlugin(m_cfg, k, 1); /* force disable */
+				m_plugin.SetEnablePlugin(m_cfg, k, 1); // force disable all
 			for(vector<string>::iterator itr = magicNums.begin(); itr != magicNums.end(); itr++)
 			{
-				s8 exist = m_plugin.GetPluginPosition(strtoul(itr->c_str(), NULL, 16));
+				s16 exist = m_plugin.GetPluginPosition(strtoul(itr->c_str(), NULL, 16));
 				if(exist >= 0)
 					m_plugin.SetEnablePlugin(m_cfg, exist, 2);
 			}
@@ -435,7 +435,7 @@ bool CMenu::_Source()
 					{
 						for(vector<string>::iterator itr = magicNums.begin(); itr != magicNums.end(); itr++)
 						{
-							s8 exist = m_plugin.GetPluginPosition(strtoul(itr->c_str(), NULL, 16));// make sure magic# is valid
+							s16 exist = m_plugin.GetPluginPosition(strtoul(itr->c_str(), NULL, 16));// make sure magic# is valid
 							if(exist >= 0)
 								m_plugin.SetEnablePlugin(m_cfg, exist, 2);
 						}
