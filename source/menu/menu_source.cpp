@@ -14,7 +14,7 @@ TexData m_sourceBg;
 
 string source;
 bool exitSource = false;
-static u8 i, j, k;
+static u8 i, j;
 int curPage;
 int numPages;
 vector<string> magicNums;
@@ -73,15 +73,25 @@ void CMenu::_sourceFlow()
 		magicNums = m_source.getStrings(btn_selected, "magic", ',');
 		if(magicNums.size() > 0)
 		{
-			m_current_view = COVERFLOW_PLUGIN;
-			for(k = 0; k < m_numPlugins; ++k)
-				m_plugin.SetEnablePlugin(m_cfg, k, 1); // force disable all
-			for(vector<string>::iterator itr = magicNums.begin(); itr != magicNums.end(); itr++)
+			for(u8 pos = 0; m_plugin.PluginExist(pos); pos++)
+				m_plugin.SetEnablePlugin(pos, 1); // force disable all
+			enabledPluginsCount = 0;
+			string enabledMagics;
+			for(i = 0; i < magicNums.size(); i++)
 			{
-				s16 exist = m_plugin.GetPluginPosition(strtoul(itr->c_str(), NULL, 16));
-				if(exist >= 0)
-					m_plugin.SetEnablePlugin(m_cfg, exist, 2);
+				u8 pos = m_plugin.GetPluginPosition(strtoul(magicNums[i].c_str(), NULL, 16));
+				if(pos < 255)
+				{
+					enabledPluginsCount++;
+					m_plugin.SetEnablePlugin(pos, 2);
+					if(i == 0)
+						enabledMagics = magicNums[0];
+					else
+						enabledMagics.append(',' + magicNums[i]);
+				}
 			}
+			m_cfg.setString(PLUGIN_DOMAIN, "enabled_plugins", enabledMagics);
+			m_current_view = COVERFLOW_PLUGIN;
 		}
 	}
 	else if(source =="new_source")
@@ -425,24 +435,31 @@ bool CMenu::_Source()
 				}
 				else if(source == "plugin")
 				{
-					m_current_view = COVERFLOW_PLUGIN;
-					_setSrcOptions();
-					for(k = 0; k < m_numPlugins; ++k)
-						m_plugin.SetEnablePlugin(m_cfg, k, 1); /* force disable */
 					magicNums.clear();
 					magicNums = m_source.getStrings(btn_selected, "magic", ',');
 					if(magicNums.size() > 0)
 					{
-						for(vector<string>::iterator itr = magicNums.begin(); itr != magicNums.end(); itr++)
+						for(u8 pos = 0; m_plugin.PluginExist(pos); pos++)
+							m_plugin.SetEnablePlugin(pos, 1); // force disable all
+						enabledPluginsCount = 0;
+						string enabledMagics;
+						for(i = 0; i < magicNums.size(); i++)
 						{
-							s16 exist = m_plugin.GetPluginPosition(strtoul(itr->c_str(), NULL, 16));// make sure magic# is valid
-							if(exist >= 0)
-								m_plugin.SetEnablePlugin(m_cfg, exist, 2);
+							u8 pos = m_plugin.GetPluginPosition(strtoul(magicNums[i].c_str(), NULL, 16));
+							if(pos < 255)
+							{
+								enabledPluginsCount++;
+								m_plugin.SetEnablePlugin(pos, 2);
+								if(i == 0)
+									enabledMagics = magicNums[0];
+								else
+									enabledMagics.append(',' + magicNums[i]);
+							}
 						}
+						m_cfg.setString(PLUGIN_DOMAIN, "enabled_plugins", enabledMagics);
+						m_current_view = COVERFLOW_PLUGIN;
+						_setSrcOptions();
 					}
-					m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
-					if(enabledPluginsCount == 0) // no magic #'s or invalid ones so default to first plugin in list
-						m_plugin.SetEnablePlugin(m_cfg, 0, 2);
 				}
 				else if(source =="new_source")
 				{

@@ -26,6 +26,7 @@
 #include "gecko/gecko.hpp"
 #include "devicemounter/PartitionHandle.h"
 #include "devicemounter/DeviceHandler.hpp"
+#include "list/ListGenerator.hpp"
 #include "types.h"
 #include "crc32.h"
 
@@ -36,15 +37,6 @@
 #define MODETEST_VAL    0xffffff00
 #endif
 
-Plugin m_plugin;
-void Plugin::init(const string& m_pluginsDir)
-{
-	PluginMagicWord[8] = '\0';
-	pluginsDir = m_pluginsDir;
-	Plugins.clear();
-	adding = true;
-}
-
 static bool PluginOptions_cmp(PluginOptions lhs, PluginOptions rhs)
 {
 	const wchar_t *first = lhs.DisplayName.c_str();
@@ -52,23 +44,48 @@ static bool PluginOptions_cmp(PluginOptions lhs, PluginOptions rhs)
 	return wchar_cmp(first, second, wcslen(first), wcslen(second));
 }
 
-void Plugin::EndAdd()
+static vector<string> INI_List;
+static void GrabINIFiles(char *FullPath)
 {
+	//Just push back
+	INI_List.push_back(FullPath);
+}
+
+Plugin m_plugin;
+void Plugin::init(const string& m_pluginsDir)
+{
+	PluginMagicWord[8] = '\0';
+	pluginsDir = m_pluginsDir;
+	Plugins.clear();
+
+	INI_List.clear();
+	GetFiles(m_pluginsDir.c_str(), stringToVector(".ini", '|'), GrabINIFiles, false, 3);
+
+	if(INI_List.size() > 0)
+	{
+		Config m_plugin_cfg;
+		for(vector<string>::const_iterator iniFile = INI_List.begin(); iniFile != INI_List.end(); ++iniFile)
+		{
+			if(iniFile->find("scummvm.ini") != string::npos)
+				continue;
+			m_plugin_cfg.load(iniFile->c_str());
+			if(m_plugin_cfg.loaded())
+			{
+				m_plugin.AddPlugin(m_plugin_cfg);
+			}
+			m_plugin_cfg.unload();
+		}
+	}
 	std::sort(Plugins.begin(), Plugins.end(), PluginOptions_cmp);
-	adding = false;
 }
 
 void Plugin::Cleanup()
 {
 	Plugins.clear();
-	adding = true;
 }
 
-bool Plugin::AddPlugin(Config &plugin)
+void Plugin::AddPlugin(Config &plugin)
 {
-	if(!adding)
-		return false;
-
 	PluginOptions NewPlugin;
 	NewPlugin.DolName = plugin.getString(PLUGIN, "dolFile");
 	NewPlugin.coverFolder = plugin.getString(PLUGIN, "coverFolder");
@@ -79,6 +96,7 @@ bool Plugin::AddPlugin(Config &plugin)
 	NewPlugin.fileTypes = plugin.getString(PLUGIN, "fileTypes");
 	NewPlugin.Args = plugin.getStrings(PLUGIN, "arguments", '|');
 	NewPlugin.boxMode = plugin.getInt(PLUGIN, "boxmode", -1);
+	NewPlugin.state = false;
 	string PluginName = plugin.getString(PLUGIN, "displayname");
 	if(PluginName.size() < 2)
 	{
@@ -93,27 +111,26 @@ bool Plugin::AddPlugin(Config &plugin)
 	if(NewPlugin.BannerSoundSize > 0)
 		NewPlugin.BannerSound = bannerfilepath;
 	Plugins.push_back(NewPlugin);
-	return false;
 }
 
-s16 Plugin::GetPluginPosition(u32 magic)
+u8 Plugin::GetPluginPosition(u32 magic)
 {
 	for(u8 pos = 0; pos < Plugins.size(); pos++)
 	{
 		if(magic == Plugins[pos].magic)
 			return (s16)pos;
 	}
-	return -1;
+	return 255;
 }
 
-u32 Plugin::getPluginMagic(u8 pos)
+u32 Plugin::GetPluginMagic(u8 pos)
 {
 	return Plugins[pos].magic;
 }
 
 u8* Plugin::GetBannerSound(u32 magic)
 {
-	if((Plugin_Pos = GetPluginPosition(magic)) >= 0)
+	if((Plugin_Pos = GetPluginPosition(magic)) < 255)
 	{
 		u32 size = 0;
 		return fsop_ReadFile(Plugins[Plugin_Pos].BannerSound.c_str(), &size);
@@ -131,21 +148,23 @@ u32 Plugin::GetBannerSoundSize()
 
 const char *Plugin::GetDolName(u32 magic)
 {
-	if((Plugin_Pos = GetPluginPosition(magic)) >= 0)
+	if((Plugin_Pos = GetPluginPosition(magic)) < 255)
 		return Plugins[Plugin_Pos].DolName.c_str();
 	return NULL;
 }
 
 const char *Plugin::GetCoverFolderName(u32 magic)
 {
-	if((Plugin_Pos = GetPluginPosition(magic)) >= 0)
+	if((Plugin_Pos = GetPluginPosition(magic)) < 255)
 		return Plugins[Plugin_Pos].coverFolder.c_str();
 	return NULL;
 }
 
 int Plugin::GetRomPartition(u8 pos)
 {
-	return Plugins[pos].romPartition;
+	if(pos < Plugins.size())
+		return Plugins[pos].romPartition;
+	return -1;
 }
 
 const char *Plugin::GetRomDir(u8 pos)
@@ -153,7 +172,7 @@ const char *Plugin::GetRomDir(u8 pos)
 	return Plugins[pos].romDir.c_str();
 }
 
-const string& Plugin::GetFileTypes(s16 pos)
+const string& Plugin::GetFileTypes(u8 pos)
 {
 	return Plugins[pos].fileTypes;
 }
@@ -180,44 +199,36 @@ bool Plugin::PluginExist(u8 pos)
 	return false;
 }
 
-void Plugin::SetEnablePlugin(Config &cfg, u8 pos, u8 ForceMode)
+void Plugin::SetEnablePlugin(u8 pos, u8 ForceMode)
 {
 	if(pos < Plugins.size())
 	{
-		strncpy(PluginMagicWord, fmt("%08x", Plugins[pos].magic), 8);
 		if(ForceMode == 1)
-			cfg.setBool(PLUGIN_ENABLED, PluginMagicWord, false);
+			Plugins[pos].state = false;
 		else if(ForceMode == 2)
-			cfg.setBool(PLUGIN_ENABLED, PluginMagicWord, true);
+			Plugins[pos].state = true;
 		else
-			cfg.setBool(PLUGIN_ENABLED, PluginMagicWord, cfg.getBool(PLUGIN_ENABLED, PluginMagicWord) ? false : true);
+			Plugins[pos].state  = Plugins[pos].state  ? false : true;
 	}
 }
 
-bool Plugin::GetEnableStatus(Config &cfg, u32 magic)
+bool Plugin::GetEnabledStatus(u8 pos)
 {
-	if((Plugin_Pos = GetPluginPosition(magic)) >= 0)
-	{
-		strncpy(PluginMagicWord, fmt("%08x", magic), 8);
-		return cfg.getBool(PLUGIN_ENABLED, PluginMagicWord, true);
-	}
+	if(pos < Plugins.size())
+		return Plugins[pos].state;
 	return false;
 }
 
-const vector<bool> &Plugin::GetEnabledPlugins(Config &cfg, u8 *num)
+const vector<bool> &Plugin::GetEnabledPlugins(u8 *num)
 {
 	enabledPlugins.clear();
 	u8 enabledPluginsNumber = 0;
 	for(u8 i = 0; i < Plugins.size(); i++)
 	{
-		strncpy(PluginMagicWord, fmt("%08x", Plugins[i].magic), 8);
-		if(cfg.getBool(PLUGIN_ENABLED, PluginMagicWord, true))
-		{
+		enabledPlugins.push_back(GetEnabledStatus(i));
+		if(GetEnabledStatus(i))
 			enabledPluginsNumber++;
-			enabledPlugins.push_back(true);
-		}
-		else
-			enabledPlugins.push_back(false);
+
 	}
 	if(enabledPluginsNumber == Plugins.size())
 		enabledPlugins.clear();
@@ -231,7 +242,7 @@ vector<string> Plugin::CreateArgs(const char *device, const char *path,
 {
 	vector<string> args;
 	Plugin_Pos = GetPluginPosition(magic);
-	if(Plugin_Pos < 0)
+	if(Plugin_Pos == 255)
 		return args;
 	for(vector<string>::const_iterator arg = Plugins[Plugin_Pos].Args.begin();
 								arg != Plugins[Plugin_Pos].Args.end(); ++arg)
@@ -466,7 +477,7 @@ string Plugin::GetRomId(char *romPath, u32 Magic, Config &m_crc, const char *dat
 				}
 				else if(!strcasecmp(platform, "ATARIST"))
 				{
-					s16 pos = m_plugin.GetPluginPosition(Magic);
+					u8 pos = m_plugin.GetPluginPosition(Magic);
 					string FileTypes = m_plugin.GetFileTypes(pos);
 					string path;
 
@@ -507,7 +518,7 @@ string Plugin::GetRomId(char *romPath, u32 Magic, Config &m_crc, const char *dat
 				}
 				else if(!strcasecmp(platform, "DOS"))
                 {
-                    s16 pos = m_plugin.GetPluginPosition(Magic);
+                    u8 pos = m_plugin.GetPluginPosition(Magic);
                     string FileTypes = m_plugin.GetFileTypes(pos);
 
                     if(strcasestr(FileTypes.c_str(), ".conf"))

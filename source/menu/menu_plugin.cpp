@@ -72,7 +72,7 @@ void CMenu::_updatePluginCheckboxes(void)
 		m_btnMgr.hide(m_pluginBtn[i]);
 		m_btnMgr.hide(m_pluginLblCat[i]);
 	}
-	const vector<bool> &EnabledPlugins = m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
+	const vector<bool> &EnabledPlugins = m_plugin.GetEnabledPlugins(&enabledPluginsCount);
 	/* ALL Button */
 	if(EnabledPlugins.size() == 0)
 		m_pluginBtn[0] = m_pluginBtnCats[0];
@@ -99,10 +99,8 @@ void CMenu::_PluginSettings()
 	while(m_plugin.PluginExist(i)) i++;
 	Plugin_Pages = static_cast<int>(ceil(static_cast<float>(i)/static_cast<float>(10)));
 	m_max_plugins = i;
-	//gprintf("Plugins found: %i, Pages: %i\n", m_max_plugins, Plugin_Pages);
-	if(Plugin_Pages == 0)
+	if(Plugin_Pages == 0)// Only use Plugin Settings if Plugins are found
 		return;
-	/* Only use Plugin Settings if Plugins are found */
 	SetupInput();
 	Plugin_curPage = 1;
 	_showPluginSettings();
@@ -112,7 +110,6 @@ void CMenu::_PluginSettings()
 		_mainLoopCommon();
 		if(BTN_HOME_PRESSED || BTN_B_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_pluginBtnBack)))
 		{
-			//m_cfg.save();
 			break;
 		}
 		else if(BTN_UP_PRESSED)
@@ -149,18 +146,17 @@ void CMenu::_PluginSettings()
 					{
 						/* clear all plugins */
 						for(u8 j = 0; m_plugin.PluginExist(j); j++)
-							m_plugin.SetEnablePlugin(m_cfg, j, 1);
+							m_plugin.SetEnablePlugin(j, 1);
 						m_current_view = COVERFLOW_PLUGIN;
 					}
 					if(i == 0)// all button to clear all or set all
 					{
-						m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);// get enabled plugins count
 						// if all clear then set(2) them else clear(1) them all
 						for(u8 j = 0; m_plugin.PluginExist(j); j++)
-							m_plugin.SetEnablePlugin(m_cfg, j, (enabledPluginsCount == 0) ? 2 : 1);
+							m_plugin.SetEnablePlugin(j, (enabledPluginsCount == 0) ? 2 : 1);
 					}
 					else
-						m_plugin.SetEnablePlugin(m_cfg, i+IteratorHelp-1);// switch plugin from off to on or vice versa
+						m_plugin.SetEnablePlugin(i+IteratorHelp-1);// switch plugin from off to on or vice versa
 					_updatePluginCheckboxes();
 					m_btnMgr.setSelected(m_pluginBtn[i]);
 					break;
@@ -169,7 +165,20 @@ void CMenu::_PluginSettings()
 		}
 	}
 	_hidePluginSettings();
-	m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
+	string enabledMagics;
+	for(u8 i = 0; m_plugin.PluginExist(i); i++)
+	{
+		if(m_plugin.GetEnabledStatus(i))
+		{
+			string magic = sfmt("%08x", m_plugin.GetPluginMagic(i));
+			if(i == 0)
+				enabledMagics = magic;
+			else
+				enabledMagics.append(',' + magic);
+		}
+	}
+	m_cfg.setString(PLUGIN_DOMAIN, "enabled_plugins", enabledMagics);
+
 	if(m_refreshGameList && enabledPluginsCount > 0)
 	{
 		m_cfg.setUInt("GENERAL", "sources", m_current_view);

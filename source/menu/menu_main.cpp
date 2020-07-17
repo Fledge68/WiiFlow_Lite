@@ -52,6 +52,8 @@ void CMenu::_getCustomBgTex()
 		string fn = "";
 		if(m_platform.loaded())
 		{
+			m_plugin.PluginMagicWord[0] = '\0';
+			u8 i = 0;
 			switch(m_current_view)
 			{
 				case COVERFLOW_CHANNEL:
@@ -67,19 +69,15 @@ void CMenu::_getCustomBgTex()
 					strncpy(m_plugin.PluginMagicWord, "4E47434D", 9);
 					break;
 				case COVERFLOW_PLUGIN:
-					for(u8 i = 0; m_plugin.PluginExist(i); ++i)
-					{
-						if(m_plugin.GetEnableStatus(m_cfg, m_plugin.getPluginMagic(i)))
-						{
-							strncpy(m_plugin.PluginMagicWord, fmt("%08x", m_plugin.getPluginMagic(i)), 8);
-							break;
-						}
-					}
+					while(m_plugin.PluginExist(i) && !m_plugin.GetEnabledStatus(i)) { ++i; }
+					if(m_plugin.PluginExist(i))
+						strncpy(m_plugin.PluginMagicWord, fmt("%08x", m_plugin.GetPluginMagic(i)), 8);
 					break;
 				default:// wii
 					strncpy(m_plugin.PluginMagicWord, "4E574949", 9);
 			}
-			fn = m_platform.getString("PLUGINS", m_plugin.PluginMagicWord, "");
+			if(strlen(m_plugin.PluginMagicWord) == 8)
+				fn = m_platform.getString("PLUGINS", m_plugin.PluginMagicWord, "");
 		}
 		if(fn.length() > 0)
 		{
@@ -171,7 +169,6 @@ void CMenu::_showCF(bool refreshList)
 						break;
 					case COVERFLOW_PLUGIN:
 						Pth = "";
-						m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
 						if(enabledPluginsCount == 0)
 							Msg = _t("main6", L"No plugins selected.");
 						else if(enabledPluginsCount > 1)
@@ -179,17 +176,13 @@ void CMenu::_showCF(bool refreshList)
 						else
 						{
 							Msg = _t("main2", L"No games found in ");
-							for(u8 i = 0; m_plugin.PluginExist(i); ++i)
-							{
-								if(m_plugin.GetEnableStatus(m_cfg, m_plugin.getPluginMagic(i)))
-								{
-									int romsPartition = m_plugin.GetRomPartition(i);
-									if(romsPartition < 0)
-										romsPartition = m_cfg.getInt(PLUGIN_DOMAIN, "partition", 0);
-									Pth = wstringEx(fmt("%s:/%s", DeviceName[romsPartition], m_plugin.GetRomDir(i)));
-									break;
-								}
-							}
+							u8 i = 0;
+							while(m_plugin.PluginExist(i) && !m_plugin.GetEnabledStatus(i)){ ++i; }
+							int romsPartition = m_plugin.GetRomPartition(i);
+							if(romsPartition < 0)
+								romsPartition = m_cfg.getInt(PLUGIN_DOMAIN, "partition", 0);
+							Pth = wstringEx(fmt("%s:/%s", DeviceName[romsPartition], m_plugin.GetRomDir(i)));
+							break;
 						}
 						break;
 				}
@@ -301,47 +294,33 @@ void CMenu::_showCF(bool refreshList)
 		strcpy(cf_domain, "_SMALLFLOW");
 	if(m_current_view == COVERFLOW_PLUGIN && !m_sourceflow)
 	{
-		m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
 		/* check if homebrew plugin */
-		if(enabledPluginsCount == 1 && m_cfg.getBool(PLUGIN_ENABLED, "48425257") && m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox"))
+		if(enabledPluginsCount == 1 && m_plugin.GetEnabledStatus(m_plugin.GetPluginPosition(strtoul("48425257", NULL, 16))) && m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox"))
 			strcpy(cf_domain, "_SMALLFLOW");
-		else if(enabledPluginsCount > 0)
+		else if(enabledPluginsCount > 0 && m_platform.loaded())
 		{
-			/* check if platform.ini is loaded */
-			if(m_platform.loaded())
+			/* get first plugin flow domain */
+			u8 i = 0;
+			while(m_plugin.PluginExist(i) && !m_plugin.GetEnabledStatus(i)){ ++i; }
+			string flow_domain = m_platform.getString("FLOWS", m_platform.getString("PLUGINS", sfmt("%08x", m_plugin.GetPluginMagic(i)), ""), "_COVERFLOW");
+			
+			/* check if all plugin flow domains match */
+			bool match = true;
+			i++;
+			while(m_plugin.PluginExist(i))
 			{
-				/* get first plugin flow domain */
-				string flow_domain;
-				for(u8 i = 0; m_plugin.PluginExist(i); ++i)
+				if(m_plugin.GetEnabledStatus(i) &&
+					flow_domain != m_platform.getString("FLOWS", m_platform.getString("PLUGINS", sfmt("%08x", m_plugin.GetPluginMagic(i)), ""), "_COVERFLOW"))
 				{
-					if(m_plugin.GetEnableStatus(m_cfg, m_plugin.getPluginMagic(i)))
-					{
-						strncpy(m_plugin.PluginMagicWord, fmt("%08x", m_plugin.getPluginMagic(i)), 8);
-						flow_domain = m_platform.getString("FLOWS", m_platform.getString("PLUGINS", m_plugin.PluginMagicWord));
-						break;
-					}
+					match = false;
+					break;
 				}
-				/* check if all plugin flow domains match */
-				if(!flow_domain.empty())
-				{
-					bool match = true;
-					for(u8 i = 0; m_plugin.PluginExist(i); ++i)
-					{
-						if(m_plugin.GetEnableStatus(m_cfg, m_plugin.getPluginMagic(i)))
-						{
-							strncpy(m_plugin.PluginMagicWord, fmt("%08x", m_plugin.getPluginMagic(i)), 8);
-							if(flow_domain != m_platform.getString("FLOWS", m_platform.getString("PLUGINS", m_plugin.PluginMagicWord)))
-							{
-								match = false;
-								break;
-							}
-						}
-					}
-					/* if all match we use that flow domain */
-					if(match)
-						snprintf(cf_domain, sizeof(cf_domain), "%s", flow_domain.c_str());
-				}
+				i++;
 			}
+
+			/* if all match we use that flow domain */
+			if(match)
+				snprintf(cf_domain, sizeof(cf_domain), "%s", flow_domain.c_str());
 		}
 	}
 
@@ -1273,12 +1252,16 @@ int CMenu::_getCFVersion()
 		int first = 0;
 		for(u8 i = 0; m_plugin.PluginExist(i); ++i)
 		{
-			if(m_plugin.GetEnableStatus(m_cfg, m_plugin.getPluginMagic(i)) && m_cfg.has("PLUGIN_CFVERSION", m_plugin.PluginMagicWord))
+			if(m_plugin.GetEnabledStatus(i))
 			{
-				if(first > 0 && m_cfg.getInt("PLUGIN_CFVERSION", m_plugin.PluginMagicWord, 1) != first)
-					return m_cfg.getInt(_domainFromView(), "last_cf_mode", 1);
-				else if(first == 0)	
-					first = m_cfg.getInt("PLUGIN_CFVERSION", m_plugin.PluginMagicWord, 1);
+				string magic = sfmt("%08x", m_plugin.GetPluginMagic(i));
+				if(m_cfg.has("PLUGIN_CFVERSION", magic))
+				{
+					if(first > 0 && m_cfg.getInt("PLUGIN_CFVERSION", magic, 1) != first)
+						return m_cfg.getInt(_domainFromView(), "last_cf_mode", 1);
+					else if(first == 0)	
+						first = m_cfg.getInt("PLUGIN_CFVERSION", magic, 1);
+				}
 			}
 		}
 		if(first == 0)
@@ -1297,21 +1280,25 @@ void CMenu::_setCFVersion(int version)
 		int first = 0;
 		for(u8 i = 0; m_plugin.PluginExist(i); ++i)
 		{
-			if(m_plugin.GetEnableStatus(m_cfg, m_plugin.getPluginMagic(i)) && m_cfg.has("PLUGIN_CFVERSION", m_plugin.PluginMagicWord))
+			if(m_plugin.GetEnabledStatus(i))
 			{
-				if(first > 0 && m_cfg.getInt("PLUGIN_CFVERSION", m_plugin.PluginMagicWord, 1) != first)
+				string magic = sfmt("%08x", m_plugin.GetPluginMagic(i));
+				if(m_cfg.has("PLUGIN_CFVERSION", magic))
 				{
-					m_cfg.setInt(_domainFromView(), "last_cf_mode", version);
-					return;
+					if(first > 0 && m_cfg.getInt("PLUGIN_CFVERSION", magic, 1) != first)
+					{
+						m_cfg.setInt(_domainFromView(), "last_cf_mode", version);
+						return;
+					}
+					else if(first == 0)	
+						first = m_cfg.getInt("PLUGIN_CFVERSION", magic, 1);
 				}
-				else if(first == 0)	
-					first = m_cfg.getInt("PLUGIN_CFVERSION", m_plugin.PluginMagicWord, 1);
 			}
 		}
 		for(u8 i = 0; m_plugin.PluginExist(i); ++i)
 		{
-			if(m_plugin.GetEnableStatus(m_cfg, m_plugin.getPluginMagic(i)))
-				m_cfg.setInt("PLUGIN_CFVERSION", m_plugin.PluginMagicWord, version);
+			if(m_plugin.GetEnabledStatus(i))
+				m_cfg.setInt("PLUGIN_CFVERSION", sfmt("%08x", m_plugin.GetPluginMagic(i)), version);
 		}
 	}
 	else

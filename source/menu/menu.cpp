@@ -75,7 +75,6 @@ CMenu::CMenu()
 	m_init_network = false;
 	m_use_source = true;
 	m_sourceflow = false;
-	m_numPlugins = 0;
 	m_clearCats = false;
 	m_getFavs = true;
 	m_catStartPage = 1;
@@ -101,13 +100,6 @@ CMenu::CMenu()
 	no_input_time = 0;
 	/* Autoboot stuff */
 	m_source_autoboot = false;
-}
-
-static vector<string> INI_List;
-static void GrabINIFiles(char *FullPath)
-{
-	//Just push back
-	INI_List.push_back(FullPath);
 }
 
 bool CMenu::init(bool usb_mounted)
@@ -327,28 +319,29 @@ bool CMenu::init(bool usb_mounted)
 		m_coverflow.load(fmt("%s/default.ini", m_coverflowsDir.c_str()));
 	m_platform.load(fmt("%s/platform.ini", m_pluginDataDir.c_str()));
 	
-	/* Get plugin ini files */
+	/* Init plugins */
 	m_plugin.init(m_pluginsDir);
-	INI_List.clear();
-	GetFiles(m_pluginsDir.c_str(), stringToVector(".ini", '|'), GrabINIFiles, false, 3);
-
-	if(INI_List.size() > 0)
+	vector<string> magics = m_cfg.getStrings(PLUGIN_DOMAIN, "enabled_plugins", ',');
+	if(magics.size() > 0)
 	{
-		Config m_plugin_cfg;
-		for(vector<string>::const_iterator iniFile = INI_List.begin(); iniFile != INI_List.end(); ++iniFile)
+		enabledPluginsCount = 0;
+		string enabledMagics;
+		for(u8 i = 0; i < magics.size(); i++)
 		{
-			if(iniFile->find("scummvm.ini") != string::npos)
-				continue;
-			m_plugin_cfg.load(iniFile->c_str());
-			if(m_plugin_cfg.loaded())
+			u8 pos = m_plugin.GetPluginPosition(strtoul(magics[i].c_str(), NULL, 16));
+			if(pos < 255)
 			{
-				m_plugin.AddPlugin(m_plugin_cfg);
-				m_numPlugins++;
+				enabledPluginsCount++;
+				m_plugin.SetEnablePlugin(pos, 2);
+				if(i == 0)
+					enabledMagics = magics[0];
+				else
+					enabledMagics.append(',' + magics[i]);
 			}
-			m_plugin_cfg.unload();
 		}
+		m_cfg.setString(PLUGIN_DOMAIN, "enabled_plugins", enabledMagics);
+		magics.clear();
 	}
-	m_plugin.EndAdd();
 	
 	/* Set wiiflow language */
 	const char *defLang = "Default";
@@ -2146,7 +2139,7 @@ void CMenu::_initCF(void)
 				dump.setWString(domain, id, hdr->title);
 			}
 
-			if(hdr->type == TYPE_PLUGIN && m_plugin.GetEnableStatus(m_cfg, hdr->settings[0]))
+			if(hdr->type == TYPE_PLUGIN && m_plugin.GetEnabledStatus(m_plugin.GetPluginPosition(hdr->settings[0])))
 				CoverFlow.addItem(&(*hdr), 0, 0);
 			else
 			{
@@ -2187,10 +2180,9 @@ void CMenu::_initCF(void)
 		}
 		else if(m_current_view == COVERFLOW_PLUGIN)
 		{
-			m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
 			if(enabledPluginsCount == 1)// only one plugin enabled
 			{
-				if(m_cfg.getBool(PLUGIN_ENABLED, "48425257"))// homebrew plugin
+				if(m_plugin.GetEnabledStatus(m_plugin.GetPluginPosition(strtoul("48425257", NULL, 16))))// homebrew plugin
 				{
 					CoverFlow.setBoxMode(m_cfg.getBool(HOMEBREW_DOMAIN, "box_mode", true));
 					CoverFlow.setSmallBoxMode(m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox", false));
@@ -2198,9 +2190,9 @@ void CMenu::_initCF(void)
 				else 
 				{
 					s8 bm = -1;
-					for(u8 i = 0; m_plugin.PluginExist(i); ++i)// get plugins box mode value
+					for(u8 i = 0; m_plugin.PluginExist(i); ++i)
 					{
-						if(m_plugin.GetEnableStatus(m_cfg, m_plugin.getPluginMagic(i)))
+						if(m_plugin.GetEnabledStatus(i))
 						{
 							bm = m_plugin.GetBoxMode(i);
 							break;
@@ -2217,31 +2209,33 @@ void CMenu::_initCF(void)
 			{
 				s8 bm1 = -1;
 				s8 bm2 = -1;
-				u8 i;
-				for(i = 0; m_plugin.PluginExist(i); ++i)// get first enabled plugins box mode
+				bool all_same = true;
+				for(u8 i = 0; m_plugin.PluginExist(i); ++i)
 				{
-					if(m_plugin.GetEnableStatus(m_cfg, m_plugin.getPluginMagic(i)))
+					if(m_plugin.GetEnabledStatus(i))
 					{
-						bm1 = m_plugin.GetBoxMode(i);
-						if(bm1 < 0)
-							bm1 = m_cfg.getBool("GENERAL", "box_mode", true);
-						break;
+						if(bm1 == -1)
+						{
+							bm1 = m_plugin.GetBoxMode(i);
+							if(bm1 < 0)
+								bm1 = m_cfg.getBool("GENERAL", "box_mode", true) ? 1 : 0;
+						}
+						else
+						{
+							bm2 = m_plugin.GetBoxMode(i);
+							if(bm2 < 0)
+								bm2 = m_cfg.getBool("GENERAL", "box_mode", true) ? 1 : 0;
+							if(bm2 != bm1)
+							{
+								all_same = false;
+								break;
+							}
+						}
 					}
 				}
-				for(i = 0; m_plugin.PluginExist(i); ++i)// check all other enabled are the same
-				{
-					if(m_plugin.GetEnableStatus(m_cfg, m_plugin.getPluginMagic(i)))
-					{
-						bm2 = m_plugin.GetBoxMode(i);
-						if(bm2 < 0)
-							bm2 = m_cfg.getBool("GENERAL", "box_mode", true);
-						if(bm2 != bm1)
-							break;
-					}
-				}
-				if(m_plugin.PluginExist(i))// broke out of loop because not all the same so use default
+				if(!all_same)
 					CoverFlow.setBoxMode(m_cfg.getBool("GENERAL", "box_mode", true));
-				else // made it thru loop so they all match
+				else
 					CoverFlow.setBoxMode(bm1 == 0 ? false : true);
 				CoverFlow.setSmallBoxMode(false);
 			}
@@ -2271,18 +2265,20 @@ void CMenu::_initCF(void)
 		u32 sourceNumber = 0;
 		if(m_current_view == COVERFLOW_PLUGIN && !m_sourceflow)
 		{
-			strncpy(m_plugin.PluginMagicWord, m_cfg.getString(PLUGIN_DOMAIN, "cur_magic").c_str(), 8);
-			if(!m_cfg.getBool("PLUGINS_ENABLED", m_plugin.PluginMagicWord, false))
+			if(!m_plugin.GetEnabledStatus(m_plugin.GetPluginPosition(strtoul(m_cfg.getString(PLUGIN_DOMAIN, "cur_magic", "00000000").c_str(), NULL, 16))))
 			{
 				for(u8 i = 0; m_plugin.PluginExist(i); ++i)
 				{
-					if(m_plugin.GetEnableStatus(m_cfg, m_plugin.getPluginMagic(i)))// sets m_plugin.PluginMagicWord
+					if(m_plugin.GetEnabledStatus(i))
 					{
-						m_cfg.setString(PLUGIN_DOMAIN, "cur_magic", m_plugin.PluginMagicWord);
+						m_cfg.setString(PLUGIN_DOMAIN, "cur_magic", sfmt("%08x", m_plugin.GetPluginMagic(i)));
 						break;
 					}
 				}
 			}
+
+			strncpy(m_plugin.PluginMagicWord, m_cfg.getString(PLUGIN_DOMAIN, "cur_magic").c_str(), 8);
+			
 			if(strncasecmp(m_plugin.PluginMagicWord, "4E47434D", 8) == 0)//NGCM
 				ID = m_cfg.getString("plugin_item", m_plugin.PluginMagicWord, "");
 			else if(strncasecmp(m_plugin.PluginMagicWord, "4E574949", 8) == 0)//NWII
@@ -2468,8 +2464,7 @@ bool CMenu::_loadPluginList()
 	gprintf("Adding plugins list\n");
 	for(u8 i = 0; m_plugin.PluginExist(i); ++i)
 	{
-		u32 Magic = m_plugin.getPluginMagic(i);
-		if(!m_plugin.GetEnableStatus(m_cfg, Magic))// m_plugin.PluginMagicWord is set here.
+		if(!m_plugin.GetEnabledStatus(i))
 			continue;
 		int romsPartition = m_plugin.GetRomPartition(i);
 		if(romsPartition < 0)
@@ -2477,6 +2472,7 @@ bool CMenu::_loadPluginList()
 		currentPartition = romsPartition;
 		if(!DeviceHandle.IsInserted(currentPartition))
 			continue;
+		strncpy(m_plugin.PluginMagicWord, fmt("%08x", m_plugin.GetPluginMagic(i)), 8);
 		const char *romDir = m_plugin.GetRomDir(i);
 		if(strcasecmp(romDir, "scummvm.ini") != 0)
 		{
@@ -2519,7 +2515,7 @@ bool CMenu::_loadPluginList()
 				bool preCachedList = fsop_FileExist(cachedListFile.c_str());
 				vector<string> FileTypes = stringToVector(m_plugin.GetFileTypes(i), '|');
 				m_cacheList.Color = m_plugin.GetCaseColor(i);
-				m_cacheList.Magic = Magic;
+				m_cacheList.Magic =  m_plugin.GetPluginMagic(i);
 				m_cacheList.usePluginDBTitles = m_cfg.getBool(PLUGIN_DOMAIN, "database_titles", true);
 				m_cacheList.CreateRomList(m_platform, romsDir, FileTypes, cachedListFile, updateCache);
 				for(vector<dir_discHdr>::iterator tmp_itr = m_cacheList.begin(); tmp_itr != m_cacheList.end(); tmp_itr++)
@@ -2543,7 +2539,7 @@ bool CMenu::_loadPluginList()
 			if(m_platform.loaded())/* convert plugin magic to platform name */
 				platformName = m_platform.getString("PLUGINS", m_plugin.PluginMagicWord);
 			m_cacheList.Color = m_plugin.GetCaseColor(i);
-			m_cacheList.Magic = Magic;
+			m_cacheList.Magic =  m_plugin.GetPluginMagic(i);
 			m_cacheList.ParseScummvmINI(scummvm, DeviceName[currentPartition], m_pluginDataDir.c_str(), platformName.c_str(), cachedListFile, updateCache);
 			for(vector<dir_discHdr>::iterator tmp_itr = m_cacheList.begin(); tmp_itr != m_cacheList.end(); tmp_itr++)
 				m_gameList.push_back(*tmp_itr);

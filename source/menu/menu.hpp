@@ -102,7 +102,6 @@ private:
 	u8 *m_buffer;
 	u8 m_aa;
 	u8 m_numCFVersions;
-	u8 m_numPlugins;
 	u8 m_max_source_btn;
 	u8 curCustBg;
 	char cf_domain[16];

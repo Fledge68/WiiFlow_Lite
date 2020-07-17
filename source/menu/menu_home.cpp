@@ -537,8 +537,7 @@ int CMenu::_cacheCovers()
 		smallBox = m_cfg.getBool(SOURCEFLOW_DOMAIN, "smallbox", false);
 	else if(m_current_view == COVERFLOW_PLUGIN && !m_sourceflow)
 	{
-		m_plugin.GetEnabledPlugins(m_cfg, &enabledPluginsCount);
-		if(enabledPluginsCount == 1 && m_cfg.getBool(PLUGIN_ENABLED, "48425257"))
+		if(enabledPluginsCount == 1 && m_plugin.GetEnabledStatus(m_plugin.GetPluginPosition(strtoul("48425257", NULL, 16))))
 			smallBox = m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox", false);
 	}
 

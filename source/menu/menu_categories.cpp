@@ -75,8 +75,9 @@ void CMenu::_setCatGenDomain()
 	{
 		for(u8 i = 0; m_plugin.PluginExist(i); ++i)// only set "PLUGINS" for real plugins
 		{
-			if(m_plugin.GetEnableStatus(m_cfg, m_plugin.getPluginMagic(i)))
+			if(m_plugin.GetEnabledStatus(i))
 			{
+				strncpy(m_plugin.PluginMagicWord, fmt("%08x", m_plugin.GetPluginMagic(i)), 8);
 				if(strncasecmp(m_plugin.PluginMagicWord, "4E47434D", 8) == 0)//NGCM
 					continue;
 				else if(strncasecmp(m_plugin.PluginMagicWord, "4E574949", 8) == 0)//NWII
@@ -88,7 +89,10 @@ void CMenu::_setCatGenDomain()
 				else if(strncasecmp(m_plugin.PluginMagicWord, "48425257", 8) == 0)//HBRW
 					continue;	
 				else
+				{
 					genDomain = "PLUGINS";
+					break;
+				}
 			}
 		}
 	}
