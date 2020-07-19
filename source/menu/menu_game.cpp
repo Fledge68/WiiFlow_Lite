@@ -3,7 +3,6 @@
 #include "banner/BannerWindow.hpp"
 #include "gc/gcdisc.hpp"
 #include "gui/WiiMovie.hpp"
-#include "loader/playlog.h"
 
 //sounds
 extern const u8 gc_ogg[];
@@ -168,22 +167,6 @@ const CMenu::SOption CMenu::_debugger[3] = {
 static inline int loopNum(int i, int s)
 {
 	return (i + s) % s;
-}
-
-static int GetLanguage(const char *lang)
-{
-	if (strncmp(lang, "JP", 2) == 0) return CONF_LANG_JAPANESE;
-	else if (strncmp(lang, "EN", 2) == 0) return CONF_LANG_ENGLISH;
-	else if (strncmp(lang, "DE", 2) == 0) return CONF_LANG_GERMAN;
-	else if (strncmp(lang, "FR", 2) == 0) return CONF_LANG_FRENCH;
-	else if (strncmp(lang, "ES", 2) == 0) return CONF_LANG_SPANISH;
-	else if (strncmp(lang, "IT", 2) == 0) return CONF_LANG_ITALIAN;
-	else if (strncmp(lang, "NL", 2) == 0) return CONF_LANG_DUTCH;
-	else if (strncmp(lang, "ZHTW", 4) == 0) return CONF_LANG_TRAD_CHINESE;
-	else if (strncmp(lang, "ZH", 2) == 0) return CONF_LANG_SIMP_CHINESE;
-	else if (strncmp(lang, "KO", 2) == 0) return CONF_LANG_KOREAN;
-	
-	return CONF_LANG_ENGLISH; // Default to EN
 }
 
 void CMenu::_extractBnr(const dir_discHdr *hdr)
@@ -666,61 +649,7 @@ void CMenu::_game(bool launch)
 				}
 				else
 				{
-					MusicPlayer.Stop();
 					_cleanupBanner();
-					m_cfg.setInt("GENERAL", "cat_startpage", m_catStartPage);
-					m_gcfg2.load(fmt("%s/" GAME_SETTINGS2_FILENAME, m_settingsDir.c_str()));
-					/* change to current game's partition */
-					switch(hdr->type)
-					{
-						case TYPE_CHANNEL:
-						case TYPE_EMUCHANNEL:
-							currentPartition = m_cfg.getInt(CHANNEL_DOMAIN, "partition", 1);
-							break;
-						case TYPE_HOMEBREW:
-							currentPartition = m_cfg.getInt(HOMEBREW_DOMAIN, "partition", 1);
-							break;
-						case TYPE_GC_GAME:
-							currentPartition = m_cfg.getInt(GC_DOMAIN, "partition", 1);
-							break;
-						case TYPE_WII_GAME:
-							currentPartition = m_cfg.getInt(WII_DOMAIN, "partition", 1);
-							break;
-						default:
-							int romsPartition = m_plugin.GetRomPartition(m_plugin.GetPluginPosition(hdr->settings[0]));
-							if(romsPartition < 0)
-								romsPartition = m_cfg.getInt(PLUGIN_DOMAIN, "partition", 0);
-							currentPartition = romsPartition;
-							break;
-					}
-
-					/* Get Banner Title for Playlog */
-					if(hdr->type == TYPE_WII_GAME || hdr->type == TYPE_CHANNEL || hdr->type == TYPE_EMUCHANNEL)
-					{
-						NANDemuView = hdr->type == TYPE_EMUCHANNEL;
-						CurrentBanner.ClearBanner();
-						if(hdr->type == TYPE_CHANNEL || hdr->type == TYPE_EMUCHANNEL)
-						{
-							u64 chantitle = CoverFlow.getChanTitle();
-							ChannelHandle.GetBanner(chantitle);
-						}
-						else if(hdr->type == TYPE_WII_GAME)
-							_extractBnr(hdr);
-						u8 banner_title[84];
-						memset(banner_title, 0, 84);
-						if(CurrentBanner.IsValid())
-							CurrentBanner.GetName(banner_title, GetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str()));
-						if(Playlog_Update(hdr->id, banner_title) < 0)
-							Playlog_Delete();
-						CurrentBanner.ClearBanner();
-					}
-
-					/* Finally boot it */
-					gprintf("Launching game %s\n", hdr->id);
-					if(hdr->type == TYPE_EMUCHANNEL)
-						gprintf("from emu nand\n");
-					else if(hdr->type == TYPE_CHANNEL)
-						gprintf("from real nand\n");
 					_launch(hdr);
 
 					if(m_exit)

@@ -33,6 +33,22 @@ static void setLanguage(int l)
 		configbytes[0] = 0xCD;
 }
 
+static int GetLanguage(const char *lang)
+{
+	if (strncmp(lang, "JP", 2) == 0) return CONF_LANG_JAPANESE;
+	else if (strncmp(lang, "EN", 2) == 0) return CONF_LANG_ENGLISH;
+	else if (strncmp(lang, "DE", 2) == 0) return CONF_LANG_GERMAN;
+	else if (strncmp(lang, "FR", 2) == 0) return CONF_LANG_FRENCH;
+	else if (strncmp(lang, "ES", 2) == 0) return CONF_LANG_SPANISH;
+	else if (strncmp(lang, "IT", 2) == 0) return CONF_LANG_ITALIAN;
+	else if (strncmp(lang, "NL", 2) == 0) return CONF_LANG_DUTCH;
+	else if (strncmp(lang, "ZHTW", 4) == 0) return CONF_LANG_TRAD_CHINESE;
+	else if (strncmp(lang, "ZH", 2) == 0) return CONF_LANG_SIMP_CHINESE;
+	else if (strncmp(lang, "KO", 2) == 0) return CONF_LANG_KOREAN;
+	
+	return CONF_LANG_ENGLISH; // Default to EN
+}
+
 static u8 GetRequestedGameIOS(dir_discHdr *hdr)
 {
 	u8 IOS = 0;
@@ -90,6 +106,62 @@ void CMenu::_launch(const dir_discHdr *hdr)
 {
 	dir_discHdr launchHdr;
 	memcpy(&launchHdr, hdr, sizeof(dir_discHdr));
+	
+	MusicPlayer.Stop();
+	m_cfg.setInt("GENERAL", "cat_startpage", m_catStartPage);
+	m_gcfg2.load(fmt("%s/" GAME_SETTINGS2_FILENAME, m_settingsDir.c_str()));
+
+	/* change to current game's partition */
+	switch(launchHdr.type)
+	{
+		case TYPE_CHANNEL:
+		case TYPE_EMUCHANNEL:
+			currentPartition = m_cfg.getInt(CHANNEL_DOMAIN, "partition", 1);
+			break;
+		case TYPE_HOMEBREW:
+			currentPartition = m_cfg.getInt(HOMEBREW_DOMAIN, "partition", 1);
+			break;
+		case TYPE_GC_GAME:
+			currentPartition = m_cfg.getInt(GC_DOMAIN, "partition", 1);
+			break;
+		case TYPE_WII_GAME:
+			currentPartition = m_cfg.getInt(WII_DOMAIN, "partition", 1);
+			break;
+		default:
+			int romsPartition = m_plugin.GetRomPartition(m_plugin.GetPluginPosition(launchHdr.settings[0]));
+			if(romsPartition < 0)
+				romsPartition = m_cfg.getInt(PLUGIN_DOMAIN, "partition", 0);
+			currentPartition = romsPartition;
+			break;
+	}
+
+	/* Get Banner Title for Playlog */
+	if(launchHdr.type == TYPE_WII_GAME || launchHdr.type == TYPE_CHANNEL || launchHdr.type == TYPE_EMUCHANNEL)
+	{
+		NANDemuView = launchHdr.type == TYPE_EMUCHANNEL;
+		CurrentBanner.ClearBanner();
+		if(launchHdr.type == TYPE_CHANNEL || launchHdr.type == TYPE_EMUCHANNEL)
+		{
+			u64 chantitle = CoverFlow.getChanTitle();
+			ChannelHandle.GetBanner(chantitle);
+		}
+		else if(launchHdr.type == TYPE_WII_GAME)
+			_extractBnr(&launchHdr);
+		u8 banner_title[84];
+		memset(banner_title, 0, 84);
+		if(CurrentBanner.IsValid())
+			CurrentBanner.GetName(banner_title, GetLanguage(m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str()));
+		if(Playlog_Update(launchHdr.id, banner_title) < 0)
+			Playlog_Delete();
+		CurrentBanner.ClearBanner();
+	}
+
+	gprintf("Launching game %s\n", launchHdr.id);
+	if(launchHdr.type == TYPE_EMUCHANNEL)
+		gprintf("from emu nand\n");
+	else if(launchHdr.type == TYPE_CHANNEL)
+		gprintf("from real nand\n");
+
 	/* Lets boot that shit */
 	if(launchHdr.type == TYPE_WII_GAME)
 		_launchWii(&launchHdr, false);
