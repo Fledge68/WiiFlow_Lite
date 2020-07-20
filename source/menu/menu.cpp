@@ -2515,7 +2515,7 @@ bool CMenu::_loadPluginList()
 				bool preCachedList = fsop_FileExist(cachedListFile.c_str());
 				vector<string> FileTypes = stringToVector(m_plugin.GetFileTypes(i), '|');
 				m_cacheList.Color = m_plugin.GetCaseColor(i);
-				m_cacheList.Magic =  m_plugin.GetPluginMagic(i);
+				m_cacheList.Magic = m_plugin.GetPluginMagic(i);
 				m_cacheList.usePluginDBTitles = m_cfg.getBool(PLUGIN_DOMAIN, "database_titles", true);
 				m_cacheList.CreateRomList(m_platform, romsDir, FileTypes, cachedListFile, updateCache);
 				for(vector<dir_discHdr>::iterator tmp_itr = m_cacheList.begin(); tmp_itr != m_cacheList.end(); tmp_itr++)
@@ -2539,7 +2539,7 @@ bool CMenu::_loadPluginList()
 			if(m_platform.loaded())/* convert plugin magic to platform name */
 				platformName = m_platform.getString("PLUGINS", m_plugin.PluginMagicWord);
 			m_cacheList.Color = m_plugin.GetCaseColor(i);
-			m_cacheList.Magic =  m_plugin.GetPluginMagic(i);
+			m_cacheList.Magic = m_plugin.GetPluginMagic(i);
 			m_cacheList.ParseScummvmINI(scummvm, DeviceName[currentPartition], m_pluginDataDir.c_str(), platformName.c_str(), cachedListFile, updateCache);
 			for(vector<dir_discHdr>::iterator tmp_itr = m_cacheList.begin(); tmp_itr != m_cacheList.end(); tmp_itr++)
 				m_gameList.push_back(*tmp_itr);

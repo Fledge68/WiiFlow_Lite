@@ -182,7 +182,6 @@ void CMenu::_showCF(bool refreshList)
 							if(romsPartition < 0)
 								romsPartition = m_cfg.getInt(PLUGIN_DOMAIN, "partition", 0);
 							Pth = wstringEx(fmt("%s:/%s", DeviceName[romsPartition], m_plugin.GetRomDir(i)));
-							break;
 						}
 						break;
 				}
