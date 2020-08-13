@@ -559,6 +559,10 @@ void CMenu::_Theme_Cleanup(void)
 	TexHandle.Cleanup(theme.pbarTexLS);
 	TexHandle.Cleanup(theme.pbarTexRS);
 	TexHandle.Cleanup(theme.pbarTexCS);
+	/* plugin game snapshot and overlay */
+	TexHandle.Cleanup(m_game_snap);
+	TexHandle.Cleanup(m_game_overlay);
+
 	/* Other Theme Stuff */
 	for(TexSet::iterator texture = theme.texSet.begin(); texture != theme.texSet.end(); ++texture)
 		TexHandle.Cleanup(texture->second);

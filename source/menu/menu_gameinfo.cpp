@@ -208,6 +208,12 @@ bool CMenu::_gameinfo(void)
 	TexHandle.Cleanup(m_cart);
 	TexHandle.Cleanup(m_snap);
 	TexHandle.Cleanup(m_overlay);
+	for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControlsReq); i++)
+		TexHandle.Cleanup(m_controlsreq[i]);
+	for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblControls); i++)
+		TexHandle.Cleanup(m_controls[i]);
+	TexHandle.Cleanup(m_wifi);
+	TexHandle.Cleanup(m_rating);
 	return launchGame;
 }
 
