@@ -145,7 +145,8 @@ int main(int argc, char **argv)
 		gprintf("Real Wii\n");
 		
 	gprintf("AHBPROT disabled = %s\n", AHBPROT_Patched() ? "yes" : "no");
-
+	IOS_GetCurrentIOSInfo();
+	
 	/* Init device partition handlers */
 	DeviceHandle.Init();
 	
@@ -172,8 +173,9 @@ int main(int argc, char **argv)
 			NandHandle.DeInit_ISFS();
 			NandHandle.Patch_AHB();
 			iosOK = IOS_ReloadIOS(mainIOS) == 0;
-			gprintf("AHBPROT disabled after IOS Reload: %s\n", AHBPROT_Patched() ? "yes" : "no");
 			NandHandle.Init_ISFS();
+			gprintf("AHBPROT disabled after IOS Reload: %s\n", AHBPROT_Patched() ? "yes" : "no");
+			gprintf("Now using ");
 		}
 		else
 			gprintf("Using IOS58\n");// stay on IOS58. no reload to cIOS

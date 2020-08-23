@@ -72,7 +72,7 @@ CMenu::CMenu()
 	m_lqBg = NULL;
 	m_use_sd_logging = false;
 	m_use_wifi_gecko = false;
-	m_init_network = false;
+	//m_init_network = false;
 	m_use_source = true;
 	m_sourceflow = false;
 	m_clearCats = false;
@@ -137,12 +137,17 @@ bool CMenu::init(bool usb_mounted)
 	/* Load/Create wiiflow.ini so we can get settings to start Gecko and Network */
 	m_cfg.load(fmt("%s/" CFG_FILENAME, m_appDir.c_str()));
 	show_mem = m_cfg.getBool("DEBUG", "show_mem", false);
+	
 	/* Check if we want WiFi Gecko */
 	m_use_wifi_gecko = m_cfg.getBool("DEBUG", "wifi_gecko", false);
 	WiFiDebugger.SetBuffer(m_use_wifi_gecko);
+	if(m_use_wifi_gecko)
+		_initAsyncNetwork();
+		
 	/* Check if we want SD Gecko */
 	m_use_sd_logging = m_cfg.getBool("DEBUG", "sd_write_log", false);
 	LogToSD_SetBuffer(m_use_sd_logging);
+	
 	/* Init gamer tags now in case we need to init network on boot */
 	m_cfg.setString("GAMERCARD", "gamercards", "wiinnertag");
 	m_cfg.getString("GAMERCARD", "wiinnertag_url", WIINNERTAG_URL);
@@ -164,9 +169,9 @@ bool CMenu::init(bool usb_mounted)
 			);
 		}
 	}
-	/* Init Network if wanted */
-	m_init_network = (has_enabled_providers() || m_use_wifi_gecko);
-	_netInit();
+	/* Init Network if wanted for gamercard if it isn't already inited */
+	if(has_enabled_providers())
+		_initAsyncNetwork();
 	
 	/* Set SD only to off if any usb device is attached and format is FAT, NTFS, WBFS, or LINUX */
 	m_cfg.getBool("GENERAL", "sd_only", true);// will only set it true if this doesn't already exist
@@ -186,6 +191,7 @@ bool CMenu::init(bool usb_mounted)
 	if(strncmp(wii_games_dir, "%s:/", 4) != 0)
 		strcpy(wii_games_dir, GAMES_DIR);
 	gprintf("Wii Games Directory: %s\n", wii_games_dir);
+	
 	if(m_cfg.getBool(WII_DOMAIN, "prefer_usb", false))
 	{
 		if(usb_mounted)
@@ -2769,7 +2775,8 @@ void CMenu::TempLoadIOS(int IOS)
 		Open_Inputs();
 		for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 			WPAD_SetVRes(chan, m_vid.width() + m_cursor[chan].width(), m_vid.height() + m_cursor[chan].height());
-		_netInit();
+		if(has_enabled_providers() || m_use_wifi_gecko)
+			_initAsyncNetwork();
 	}
 }
 

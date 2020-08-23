@@ -1119,14 +1119,14 @@ void Nand::Init_ISFS()
 		return;
 	PatchIOS(IOS_GetVersion() < 222, isWiiVC);
 	usleep(1000);
-	gprintf("Init ISFS\n");
+	//gprintf("Init ISFS\n");
 	ISFS_Initialize();
 	isfs_inited = true;
 }
 
 void Nand::DeInit_ISFS()
 {
-	gprintf("Deinit ISFS\n");
+	//gprintf("Deinit ISFS\n");
 	ISFS_Deinitialize();
 	isfs_inited = false;
 	usleep(1000);

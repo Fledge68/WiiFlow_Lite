@@ -703,7 +703,8 @@ int CMenu::_loadGameIOS(u8 gameIOS, int userIOS, string id, bool RealNAND_Channe
 	{
 		/* doesn't use cIOS so we don't check userIOS */
 		bool ret = loadIOS(gameIOS, false);//load game requested IOS and patch nothing
-		_netInit();// needed after IOS change
+		if(has_enabled_providers() || m_use_wifi_gecko)
+			_initAsyncNetwork();// needed after IOS change
 		if(ret == false)
 		{
 			error(wfmt(_fmt("errgame4", L"Couldn't load IOS %i"), gameIOS));
@@ -737,7 +738,8 @@ int CMenu::_loadGameIOS(u8 gameIOS, int userIOS, string id, bool RealNAND_Channe
 	{
 		gprintf("Reloading IOS into %d\n", gameIOS);
 		bool ret = loadIOS(gameIOS, true);// cIOS patch everything
-		_netInit();// always seem to do netinit after changing IOS
+		if(has_enabled_providers() || m_use_wifi_gecko)
+			_initAsyncNetwork();// always seem to do netinit after changing IOS
 		if(ret == false)
 		{
 			error(wfmt(_fmt("errgame4", L"Couldn't load IOS %i"), gameIOS));

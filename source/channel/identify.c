@@ -28,7 +28,7 @@ static inline bool apply_patch(char *name, const u8 *old, const u8 *patch, u32 s
 	}
 	IRQ_Restore(level);
 
-	gprintf("patched %s %u times.\n", name, found);
+	//gprintf("patched %s %u times.\n", name, found);
 	return (found > 0);
 }
 

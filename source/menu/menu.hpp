@@ -118,7 +118,7 @@ private:
 	bool m_reload;
 	bool m_use_wifi_gecko;
 	bool m_use_sd_logging;
-	bool m_init_network;
+	//bool m_init_network;
 	bool m_source_autoboot;
 	dir_discHdr m_autoboot_hdr;
 	s16 m_showtimer;
@@ -1133,7 +1133,6 @@ private:
 	void _restoreSrcTiers();
 	void _getSFlowBgTex();
 	void _mainLoopCommon(bool withCF = false, bool adjusting = false);
-	void _netInit();
 	void _loadDefaultFont(void);
 	bool _loadFile(u8 * &buffer, u32 &size, const char *path, const char *file);
 	int _loadGameIOS(u8 ios, int userIOS, string id, bool RealNAND_Channels = false);
@@ -1211,10 +1210,11 @@ private:
 	int _gametdbDownloaderAsync();
 	int _bannerDownloader();
 
-	static s32 _networkComplete(s32 result, void *usrData);
+	//void _netInit();
 	void _initAsyncNetwork();
+	static s32 _networkComplete(s32 result, void *usrData);
 	bool _isNetworkAvailable();
-	int _initNetwork();
+	s32 _initNetwork();
 	void LoadView(void);
 	static void _addDiscProgress(int status, int total, void *user_data);
 	static void _ShowProgress(int dumpstat, int dumpprog, int filestat, int fileprog, int files, int folders, const char *tmess, void *user_data);

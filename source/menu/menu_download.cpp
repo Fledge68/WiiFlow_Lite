@@ -728,22 +728,26 @@ void CMenu::_textDownload(void)
 }
 
 /************************************* Setup network connection *********************************************/
-
+/*
 void CMenu::_netInit(void)
 {
-	if(networkInit || !m_init_network || m_exit)
+	if(networkInit || m_exit)
 		return;
 	_initAsyncNetwork();
 	while(net_get_status() == -EBUSY)
 		usleep(100);
 }
-
+*/
 void CMenu::_initAsyncNetwork()
 {
+	if(networkInit || m_exit)
+		return;
 	if(!_isNetworkAvailable())
 		return;
 	m_thrdNetwork = true;
 	net_init_async(_networkComplete, this);
+	while(net_get_status() == -EBUSY)
+		usleep(100);
 }
 
 s32 CMenu::_networkComplete(s32 ok, void *usrData)
@@ -754,14 +758,15 @@ s32 CMenu::_networkComplete(s32 ok, void *usrData)
 	m->m_thrdNetwork = false;
 
 	if(networkInit)
-		wolfSSL_Init();
-
-	if(m->m_use_wifi_gecko)
 	{
-		const string &ip = m->m_cfg.getString("DEBUG", "wifi_gecko_ip");
-		u16 port = m->m_cfg.getInt("DEBUG", "wifi_gecko_port", 4405);
-		if(ip.size() > 0 && port != 0)
-			WiFiDebugger.Init(ip.c_str(), port);
+		wolfSSL_Init();
+		if(m->m_use_wifi_gecko)
+		{
+			const string &ip = m->m_cfg.getString("DEBUG", "wifi_gecko_ip");
+			u16 port = m->m_cfg.getInt("DEBUG", "wifi_gecko_port", 4405);
+			if(ip.size() > 0 && port != 0)
+				WiFiDebugger.Init(ip.c_str(), port);
+		}
 	}
 
 	return 0;
@@ -769,38 +774,41 @@ s32 CMenu::_networkComplete(s32 ok, void *usrData)
 
 bool CMenu::_isNetworkAvailable()
 {
-	bool retval = false;
+	bool ret = false;
 	u32 size;
 	char ISFS_Filepath[32] ATTRIBUTE_ALIGN(32);
 	strcpy(ISFS_Filepath, "/shared2/sys/net/02/config.dat");
 	u8 *buf = ISFS_GetFile(ISFS_Filepath, &size, -1);
 	if(buf && size > 4)
 	{
-		retval = buf[4] > 0; // There is a valid connection defined.
+		ret = buf[4] > 0; // There is a valid connection defined.
 	}
 	MEM2_free(buf);
-	return retval;
+	return ret;
 }
 
-int CMenu::_initNetwork()
+s32 CMenu::_initNetwork()
 {
 	while(net_get_status() == -EBUSY && m_thrdNetwork == true)
 	{
 		usleep(100); // Async initialization may be busy, wait to see if it succeeds.
 	}
+	
 	if(networkInit)
 		return 0;
+
 	if(!_isNetworkAvailable())
 		return -2;
 
 	char ip[16];
-	int val = if_config(ip, NULL, NULL, true, 0);
+	s32 ret = if_config(ip, NULL, NULL, true, 0);
 
-	if (val == 0)
+	if(ret == 0)
+	{
 		wolfSSL_Init();
-
-	networkInit = !val;
-	return val;
+		networkInit = true;
+	}
+	return ret;
 }
 
 /************************************* Cover Downloading ******************************/
