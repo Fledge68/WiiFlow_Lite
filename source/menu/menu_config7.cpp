@@ -3,24 +3,6 @@
 
 using namespace std;
 
-s16 m_config7Lbl1;
-s16 m_config7Lbl2;
-s16 m_config7Lbl3;
-s16 m_config7Lbl4;
-
-s16 m_config7Btn1;
-s16 m_config7Btn2;
-s16 m_config7Btn3;
-s16 m_config7Btn4;
-
-s16 m_config7Lbl4Val;
-s16 m_config7Btn4M;
-s16 m_config7Btn4P;
-
-s16 m_config7LblUser[4];
-
-TexData m_config7Bg;
-
 void CMenu::_hideConfig7(bool instant)
 {
 	_hideConfigCommon(instant);
@@ -118,8 +100,8 @@ void CMenu::_showConfig7(int curPage)
 	}
 	else if(curPage == 10)
 	{
-		m_btnMgr.setText(m_config7Lbl1, _t("cfg713", L"Use HQ covers"));
-		m_btnMgr.setText(m_config7Btn1, m_cfg.getBool("GENERAL", "cover_use_hq") ? _t("yes", L"Yes") : _t("no", L"No"));
+		m_btnMgr.setText(m_config7Lbl1, _t("cfg728", L"Upsample music to 48khz"));
+		m_btnMgr.setText(m_config7Btn1, m_cfg.getBool("general", "resample_to_48khz", true) ?  _t("yes", L"Yes") : _t("no", L"No"));
 		m_btnMgr.setText(m_config7Lbl2, _t("cfg714", L"Display music title"));
 		m_btnMgr.setText(m_config7Btn2, m_cfg.getBool("GENERAL", "display_music_info") ? _t("yes", L"Yes") : _t("no", L"No"));
 		m_btnMgr.setText(m_config7Lbl3, _t("cfg715", L"Randomize music"));
@@ -131,8 +113,8 @@ void CMenu::_showConfig7(int curPage)
 	{
 		m_btnMgr.setText(m_config7Lbl1, _t("cfg717", L"Random game boot or select"));
 		m_btnMgr.setText(m_config7Btn1, m_cfg.getBool("GENERAL", "random_select") ? _t("select", L"Select") : _t("boot", L"Boot"));
-		m_btnMgr.setText(m_config7Lbl2, _t("cfg718", L"Source Menu on start"));
-		m_btnMgr.setText(m_config7Btn2, m_cfg.getBool("GENERAL", "source_on_start") ? _t("yes", L"Yes") : _t("no", L"No"));
+		m_btnMgr.setText(m_config7Lbl2, _t("cfg725", L"Shutdown to idle standby"));
+		m_btnMgr.setText(m_config7Btn2, m_cfg.getBool("general", "idle_standby", false) ? _t("yes", L"Yes") : _t("no", L"No"));
 		m_btnMgr.setText(m_config7Lbl3, _t("cfg720", L"Play GC banner sound"));
 		m_btnMgr.setText(m_config7Btn3, m_cfg.getBool(GC_DOMAIN, "play_banner_sound") ?  _t("yes", L"Yes") : _t("no", L"No"));
 		m_btnMgr.setText(m_config7Lbl4, _t("cfg721", L"Play GC default sound"));
@@ -142,12 +124,12 @@ void CMenu::_showConfig7(int curPage)
 	{
 		m_btnMgr.setText(m_config7Lbl1, _t("cfg722", L"Homebrew settings"));
 		m_btnMgr.setText(m_config7Btn1, _t("cfg14", L"Set"));
-		m_btnMgr.setText(m_config7Lbl2, _t("cfg723", L"Source menu settings"));
+		m_btnMgr.setText(m_config7Lbl2, _t("cfg723", L"Sourceflow settings"));
 		m_btnMgr.setText(m_config7Btn2, _t("cfg14", L"Set"));
-		m_btnMgr.setText(m_config7Lbl3, _t("cfg724", L"Lock coverflow layouts"));
-		m_btnMgr.setText(m_config7Btn3, m_cfg.getBool("general", "cf_locked") ? _t("yes", L"Yes") : _t("no", L"No"));
-		m_btnMgr.setText(m_config7Lbl4, _t("cfg725", L"Shutdown to idle standby"));
-		m_btnMgr.setText(m_config7Btn4, m_cfg.getBool("general", "idle_standby", false) ? _t("yes", L"Yes") : _t("no", L"No"));
+		m_btnMgr.setText(m_config7Lbl3, _t("cfg718", L"Source Menu on start"));
+		m_btnMgr.setText(m_config7Btn3, m_cfg.getBool("GENERAL", "source_on_start") ? _t("yes", L"Yes") : _t("no", L"No"));
+		m_btnMgr.setText(m_config7Lbl4, _t("cfg727", L"Use Plugin Database Titles"));
+		m_btnMgr.setText(m_config7Btn4, m_cfg.getBool(PLUGIN_DOMAIN, "database_titles", true) ?  _t("yes", L"Yes") : _t("no", L"No"));
 	}
 	else // page 13
 	{
@@ -155,10 +137,10 @@ void CMenu::_showConfig7(int curPage)
 		m_btnMgr.setText(m_config7Btn1, m_cfg.getBool(WII_DOMAIN, "fix480p", false) ? _t("on", L"On") : _t("off", L"Off"));
 		m_btnMgr.setText(m_config7Lbl2, _t("cfg726", L"Covers Box Mode"));
 		m_btnMgr.setText(m_config7Btn2, m_cfg.getBool("general", "box_mode", false) ? _t("on", L"On") : _t("off", L"Off"));
-		m_btnMgr.setText(m_config7Lbl3, _t("cfg727", L"Use Plugin Database Titles"));
-		m_btnMgr.setText(m_config7Btn3, m_cfg.getBool(PLUGIN_DOMAIN, "database_titles", true) ?  _t("yes", L"Yes") : _t("no", L"No"));
-		m_btnMgr.setText(m_config7Lbl4, _t("cfg728", L"Upsample music to 48khz"));
-		m_btnMgr.setText(m_config7Btn4, m_cfg.getBool("general", "resample_to_48khz", true) ?  _t("yes", L"Yes") : _t("no", L"No"));
+		m_btnMgr.setText(m_config7Lbl3, _t("cfg713", L"Use HQ covers"));
+		m_btnMgr.setText(m_config7Btn3, m_cfg.getBool("GENERAL", "cover_use_hq") ? _t("yes", L"Yes") : _t("no", L"No"));
+		m_btnMgr.setText(m_config7Lbl4, _t("cfg724", L"Lock coverflow layouts"));
+		m_btnMgr.setText(m_config7Btn4, m_cfg.getBool("general", "cf_locked") ? _t("yes", L"Yes") : _t("no", L"No"));
 	}
 }
 
@@ -260,8 +242,12 @@ int CMenu::_config7(int curPage)
 			{
 				if(m_btnMgr.selected(m_config7Btn1))
 				{
-					m_cfg.setBool("GENERAL", "cover_use_hq", !m_cfg.getBool("GENERAL", "cover_use_hq"));
-					m_btnMgr.setText(m_config7Btn1, m_cfg.getBool("GENERAL", "cover_use_hq") ? _t("yes", L"Yes") : _t("no", L"No"));
+					bool val = !m_cfg.getBool("general", "resample_to_48khz");
+					m_cfg.setBool("general", "resample_to_48khz", val);
+					m_btnMgr.setText(m_config7Btn1, val ? _t("yes", L"Yes") : _t("no", L"No"));
+					MusicPlayer.SetResampleSetting(val);
+					MusicPlayer.Stop();
+					MusicPlayer.LoadCurrentFile();
 				}
 				else if(m_btnMgr.selected(m_config7Btn2))
 				{
@@ -293,8 +279,9 @@ int CMenu::_config7(int curPage)
 				}
 				else if(m_btnMgr.selected(m_config7Btn2))
 				{
-					m_cfg.setBool("GENERAL", "source_on_start", !m_cfg.getBool("GENERAL", "source_on_start"));
-					m_btnMgr.setText(m_config7Btn2, m_cfg.getBool("GENERAL", "source_on_start") ?  _t("yes", L"Yes") : _t("no", L"No"));
+					bool val = !m_cfg.getBool("general", "idle_standby");
+					m_cfg.setBool("general", "idle_standby", val);
+					m_btnMgr.setText(m_config7Btn2, val ?  _t("yes", L"Yes") : _t("no", L"No"));
 				}
 				else if(m_btnMgr.selected(m_config7Btn3))
 				{
@@ -325,16 +312,14 @@ int CMenu::_config7(int curPage)
 				}
 				else if(m_btnMgr.selected(m_config7Btn3))
 				{
-					bool val = !m_cfg.getBool("general", "cf_locked");
-					m_cfg.setBool("general", "cf_locked", val);
-					m_btnMgr.setText(m_config7Btn3, val ?  _t("yes", L"Yes") : _t("no", L"No"));
-					CFLocked = val;
+					m_cfg.setBool("GENERAL", "source_on_start", !m_cfg.getBool("GENERAL", "source_on_start"));
+					m_btnMgr.setText(m_config7Btn3, m_cfg.getBool("GENERAL", "source_on_start") ?  _t("yes", L"Yes") : _t("no", L"No"));
 				}
 				else if(m_btnMgr.selected(m_config7Btn4))
 				{
-					bool val = !m_cfg.getBool("general", "idle_standby");
-					m_cfg.setBool("general", "idle_standby", val);
-					m_btnMgr.setText(m_config7Btn4, val ?  _t("yes", L"Yes") : _t("no", L"No"));
+					bool val = !m_cfg.getBool(PLUGIN_DOMAIN, "database_titles");
+					m_cfg.setBool(PLUGIN_DOMAIN, "database_titles", val);
+					m_btnMgr.setText(m_config7Btn4, val ? _t("yes", L"Yes") : _t("no", L"No"));
 				}
 			}
 			if(curPage == 13)
@@ -345,26 +330,23 @@ int CMenu::_config7(int curPage)
 					m_cfg.setBool(WII_DOMAIN, "fix480p", val);
 					m_btnMgr.setText(m_config7Btn1, val ? _t("on", L"On") : _t("off", L"Off"));
 				}
-				if(m_btnMgr.selected(m_config7Btn2))
+				else if(m_btnMgr.selected(m_config7Btn2))
 				{
 					bool val = !m_cfg.getBool("general", "box_mode");
 					m_cfg.setBool("general", "box_mode", val);
 					m_btnMgr.setText(m_config7Btn2, val ? _t("on", L"On") : _t("off", L"Off"));
 				}
-				if(m_btnMgr.selected(m_config7Btn3))
+				else if(m_btnMgr.selected(m_config7Btn3))
 				{
-					bool val = !m_cfg.getBool(PLUGIN_DOMAIN, "database_titles");
-					m_cfg.setBool(PLUGIN_DOMAIN, "database_titles", val);
-					m_btnMgr.setText(m_config7Btn3, val ? _t("yes", L"Yes") : _t("no", L"No"));
+					m_cfg.setBool("GENERAL", "cover_use_hq", !m_cfg.getBool("GENERAL", "cover_use_hq"));
+					m_btnMgr.setText(m_config7Btn3, m_cfg.getBool("GENERAL", "cover_use_hq") ? _t("yes", L"Yes") : _t("no", L"No"));
 				}
-				if(m_btnMgr.selected(m_config7Btn4))
+				else if(m_btnMgr.selected(m_config7Btn4))
 				{
-					bool val = !m_cfg.getBool("general", "resample_to_48khz");
-					m_cfg.setBool("general", "resample_to_48khz", val);
-					m_btnMgr.setText(m_config7Btn4, val ? _t("yes", L"Yes") : _t("no", L"No"));
-					MusicPlayer.SetResampleSetting(val);
-					MusicPlayer.Stop();
-					MusicPlayer.LoadCurrentFile();
+					bool val = !m_cfg.getBool("general", "cf_locked");
+					m_cfg.setBool("general", "cf_locked", val);
+					m_btnMgr.setText(m_config7Btn4, val ?  _t("yes", L"Yes") : _t("no", L"No"));
+					CFLocked = val;
 				}
 			}
 		}

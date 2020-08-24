@@ -17,6 +17,7 @@ bool exitSource = false;
 static u8 i, j;
 int curPage;
 int numPages;
+vector<u8> nonHiddenSources;
 vector<string> magicNums;
 
 char btn_selected[16];
@@ -213,8 +214,23 @@ void CMenu::_srcTierLoad(string fn)
 	}
 	if(!m_sourceflow)
 	{
-		curPage = stoi(sm_numbers[sm_numbers.size() - 1]) / 12 + 1;
-		numPages = (m_max_source_btn / 12) + 1;
+		nonHiddenSources.clear();
+		for(i = 0; i <= m_max_source_btn; i++)
+		{
+			if(!m_source.getBool(sfmt("BUTTON_%i", i), "hidden", false))
+				nonHiddenSources.push_back(i);
+		}
+		u8 num = stoi(sm_numbers[sm_numbers.size() - 1]);
+		curPage = 1;
+		for(i = 0; i < nonHiddenSources.size(); i++)
+		{
+			if(nonHiddenSources[i] == num)
+			{
+				curPage = i / 12 + 1;
+				break;
+			}
+		}
+		numPages = (nonHiddenSources.size() / 12) + 1;
 	}
 }
 
@@ -257,6 +273,7 @@ void CMenu::_getSFlowBgTex(void)
 	}
 }
 
+// *******************************************************************************************
 /* end of sourceflow stuff - start of source menu stuff */
 void CMenu::_hideSource(bool instant)
 {
@@ -308,12 +325,12 @@ void CMenu::_updateSourceBtns(void)
 	j = (curPage - 1) * 12;
 	for(i = j; i < (j + 12); ++i)
 	{
-		if(i > m_max_source_btn)
+		if(i >= nonHiddenSources.size())
 			m_btnMgr.hide(m_sourceBtnSource[i -j]);
 		else
 		{
 			memset(current_btn, 0, 16);
-			strncpy(current_btn, fmt("BUTTON_%i", i), 15);
+			strncpy(current_btn, fmt("BUTTON_%i", nonHiddenSources[i]), 15);
 			string btnSource = m_source.getString(current_btn, "source", "");
 			if(btnSource == "")
 				continue;
@@ -358,9 +375,9 @@ bool CMenu::_Source()
 	while(!m_exit)
 	{
 		_mainLoopCommon();
-		if(BTN_HOME_PRESSED || BTN_B_PRESSED)
+		if(BTN_B_PRESSED)
 		{
-			if(!_srcTierBack(BTN_HOME_PRESSED))
+			if(!_srcTierBack(false))
 			{
 				_restoreSrcTiers();
 				break;
@@ -368,7 +385,14 @@ bool CMenu::_Source()
 			else
 				_updateSourceBtns();
 		}
-		if(BTN_A_PRESSED && m_btnMgr.selected(m_sourceBtnBack))
+		else if(BTN_HOME_PRESSED)
+		{
+			_hideSource();
+			_SM_Editor();
+			_showSource();
+			_updateSourceBtns();
+		}
+		else if(BTN_A_PRESSED && m_btnMgr.selected(m_sourceBtnBack))
 		{
 			_restoreSrcTiers();
 			break;

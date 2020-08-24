@@ -41,6 +41,7 @@ using namespace std;
 
 struct PluginOptions
 {
+	string path;
 	u32 magic;
 	u32 caseColor;
 	int romPartition;
@@ -66,17 +67,20 @@ public:
 	const char *GetDolName(u32 magic);
 	const char *GetCoverFolderName(u32 magic);
 	const char *GetRomDir(u8 pos);
+	void SetRomDir(u8 pos, const string &rd);
 	string GetRomName(const char *FullPath);
 	string GetRomId(char *romPath, u32 Magic, Config &m_crc, const char *datadir, const char *platform, const char *name);
 	int GetRomPartition(u8 pos);
+	void SetRomPartition(u8 pos, int part);
 	const string& GetFileTypes(u8 pos);
 	wstringEx GetPluginName(u8 pos);
+	string GetPluginPath(u8 pos);
 	u32 GetPluginMagic(u8 pos);
 	u8 GetPluginPosition(u32 magic);
 	s8 GetBoxMode(u8 pos);
 	
 	void init(const string& m_pluginsDir);
-	void AddPlugin(Config &plugin);
+	void AddPlugin(Config &plugin, const string &iniPath);
 	void Cleanup();
 	bool GetEnabledStatus(u8 pos);
 	void SetEnablePlugin(u8 pos, u8 ForceMode = 0);

@@ -192,6 +192,7 @@ private:
 	TexData m_config4Bg;
 	TexData m_configAdvBg;
 	TexData m_configSndBg;
+	TexData m_config7Bg;
 	TexData m_cheatBg;
 	TexData m_downloadBg;
 	TexData m_gameinfoBg;
@@ -330,6 +331,20 @@ private:
 	s16 m_configScreenBtnTVYM;
 	s16 m_configScreenBtnTVYP;
 	s16 m_configScreenLblUser[4];
+
+	s16 m_config7Lbl1;
+	s16 m_config7Lbl2;
+	s16 m_config7Lbl3;
+	s16 m_config7Lbl4;
+	s16 m_config7Btn1;
+	s16 m_config7Btn2;
+	s16 m_config7Btn3;
+	s16 m_config7Btn4;
+	s16 m_config7Lbl4Val;
+	s16 m_config7Btn4M;
+	s16 m_config7Btn4P;
+	s16 m_config7LblUser[4];
+
 //Download menu
 	s16 m_downloadPrioVal;
 	enum CoverPrio
@@ -950,6 +965,7 @@ private:
 	void _initExplorer();
 	void _initWad();
 	void _initPathsMenu();
+	void _initCheckboxesMenu();
 	//
 	void _textSource(void);
 	void _textCfgSrc(void);
@@ -982,6 +998,7 @@ private:
 	void _textExplorer(void);
 	void _textWad(void);
 	void _textPaths(void);
+	void _textCheckboxesMenu(void);
 	//
 	void _hideCheatSettings(bool instant = false);
 	void _hideError(bool instant = false);
@@ -1020,6 +1037,8 @@ private:
 	void _hideExplorer(bool instant = false);
 	void _hideWad(bool instant = false);
 	void _hidePaths(bool instant = false);
+	void _hideCheckboxesMenu(bool instant = false);
+	void _hideSM_Editor(bool instant = false);
 	//
 	void _showError(void);
 	void _showMain(void);
@@ -1056,6 +1075,8 @@ private:
 	void _showExplorer(void);
 	void _showWad(void);
 	void _showPaths(void);
+	void _showCheckboxesMenu(void);
+	void _showSM_Editor(void);
 
 	void _showCF(bool refreshList = false);
 	void _refreshExplorer(s8 direction = 0);
@@ -1063,7 +1084,9 @@ private:
 	void _updateSourceBtns(void);
 	void _updatePluginText(void);
 	void _updatePluginCheckboxes(void);
+	void _updateCheckboxesText(void);
 	void _updateCheckboxes(void);
+	void _updateCatCheckboxes(void);
 	void _getGameCategories(void);
 	void _setGameCategories(void);
 	void _setCatGenDomain(void);
@@ -1119,6 +1142,8 @@ private:
 	void _CfgSrc();
 	void _CfgHB();
 	void _PluginSettings();
+	void _checkboxesMenu(u8 md);
+	void _SM_Editor();
 	void _CategorySettings(bool fromGameSet = false);
 	bool _Home();
 	bool _ExitTo();

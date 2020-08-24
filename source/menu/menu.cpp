@@ -106,7 +106,7 @@ bool CMenu::init(bool usb_mounted)
 {
 	SoundHandle.Init();
 	m_gameSound.SetVoice(1);
-	/* Clear Playlog */
+	/* Clear Playlog to prevent wiiflow from being added to it */
 	Playlog_Delete();
 
 	/* Find the first partition with apps/wiiflow folder */
@@ -1256,6 +1256,7 @@ void CMenu::_buildMenus(void)
 	_initExplorer();
 	_initBoot();
 	_initPathsMenu();
+	_initCheckboxesMenu();
 
 	_loadCFCfg();
 }
@@ -1964,6 +1965,7 @@ void CMenu::_updateText(void)
 	_textCoverBanner();
 	_textExplorer();
 	_textWad();
+	_textCheckboxesMenu();
 }
 
 const wstringEx CMenu::_fmt(const char *key, const wchar_t *def)
@@ -2002,12 +2004,9 @@ void CMenu::_initCF(void)
 		
 		if(m_sourceflow)
 		{
-			CoverFlow.addItem(&(*hdr), 0, 0);
+			if(m_source.getBool(sfmt("button_%i", hdr->settings[0]), "hidden", false) == false)
+				CoverFlow.addItem(&(*hdr), 0, 0);
 			continue;
-			/*strcpy(tmp1, "source/");
-			wcstombs(tmp2, hdr->title, 64);
-			strcat(tmp1, tmp2);
-			id = tmp1;*/
 		}
 		else if(hdr->type == TYPE_HOMEBREW)
 		{

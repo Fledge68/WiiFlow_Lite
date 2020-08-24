@@ -462,14 +462,23 @@ int CMenu::main(void)
 		{
 			if(m_sourceflow)//back to base tier or exit sourceflow
 			{
-				if(!_srcTierBack(true))// if already on base tier exit sourceflow
+				/*if(!_srcTierBack(true))// if already on base tier exit sourceflow
 				{
 					_restoreSrcTiers();
 					m_sourceflow = false;
 				}
 				_getCustomBgTex();
 				_setMainBg();
-				_showCF(true);//refresh coverflow or sourceflow list
+				_showCF(true);//refresh coverflow or sourceflow list*/
+				_hideMain();
+				_SM_Editor();
+				if(BTN_B_HELD)
+				{
+					bheld = true;
+					bUsed = true;
+				}
+				_setMainBg();
+				_showCF(true);
 			}
 			else
 			{

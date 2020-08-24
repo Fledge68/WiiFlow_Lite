@@ -57,7 +57,7 @@ void CMenu::_showCategorySettings(void)
 	m_btnMgr.show(m_categoryLblTitle);
 	m_btnMgr.show(m_categoryBtnClear);
 	m_btnMgr.show(m_categoryBtnBack);
-	_updateCheckboxes();
+	_updateCatCheckboxes();
 }
 
 void CMenu::_setCatGenDomain()
@@ -98,7 +98,7 @@ void CMenu::_setCatGenDomain()
 	}
 }
 
-void CMenu::_updateCheckboxes(void)
+void CMenu::_updateCatCheckboxes(void)
 {
 	for(u8 i = 1; i < 11; ++i)
 	{
@@ -343,7 +343,7 @@ void CMenu::_CategorySettings(bool fromGameSet)
 				curPage = ((m_max_categories - 2) / 10) + 1;
 			if(BTN_LEFT_PRESSED || BTN_MINUS_PRESSED)
 				m_btnMgr.click(m_categoryBtnPageM);
-			_updateCheckboxes();
+			_updateCatCheckboxes();
 		}
 		else if((BTN_RIGHT_PRESSED && m_max_categories>11) || (BTN_A_PRESSED && m_btnMgr.selected(m_categoryBtnPageP)))
 		{
@@ -354,7 +354,7 @@ void CMenu::_CategorySettings(bool fromGameSet)
 				curPage = 1;
 			if(BTN_RIGHT_PRESSED || BTN_PLUS_PRESSED)
 				m_btnMgr.click(m_categoryBtnPageP);
-			_updateCheckboxes();
+			_updateCatCheckboxes();
 		}
 		if(BTN_A_PRESSED)
 		{
@@ -373,7 +373,7 @@ void CMenu::_CategorySettings(bool fromGameSet)
 				}
 				if(!hiddenCat)
 					m_categories.at(0) = '1';
-				_updateCheckboxes();
+				_updateCatCheckboxes();
 			}
 			for(u8 i = 1; i < 11; ++i)
 			{

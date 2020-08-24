@@ -180,7 +180,7 @@ void CMenu::_initCfgSrc(void)
 
 void CMenu::_textCfgSrc(void)
 {
-	m_btnMgr.setText(m_cfgsrcLblTitle, _t("cfgsm1", L"Source Menu Settings"));
+	m_btnMgr.setText(m_cfgsrcLblTitle, _t("cfgsm1", L"Sourceflow Settings"));
 	m_btnMgr.setText(m_cfgsrcLblEnableSF, _t("cfgsm3", L"Enable Sourceflow"));
 	m_btnMgr.setText(m_cfgsrcLblSmallbox, _t("cfgsm4", L"Sourceflow Smallbox"));
 	m_btnMgr.setText(m_cfgsrcLblBoxMode, _t("cfghb4", L"Box Mode"));

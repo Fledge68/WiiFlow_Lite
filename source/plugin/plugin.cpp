@@ -71,7 +71,7 @@ void Plugin::init(const string& m_pluginsDir)
 			m_plugin_cfg.load(iniFile->c_str());
 			if(m_plugin_cfg.loaded())
 			{
-				m_plugin.AddPlugin(m_plugin_cfg);
+				m_plugin.AddPlugin(m_plugin_cfg, *iniFile);
 			}
 			m_plugin_cfg.unload();
 		}
@@ -84,9 +84,10 @@ void Plugin::Cleanup()
 	Plugins.clear();
 }
 
-void Plugin::AddPlugin(Config &plugin)
+void Plugin::AddPlugin(Config &plugin, const string &iniPath)
 {
 	PluginOptions NewPlugin;
+	NewPlugin.path = iniPath;
 	NewPlugin.DolName = plugin.getString(PLUGIN, "dolFile");
 	NewPlugin.coverFolder = plugin.getString(PLUGIN, "coverFolder");
 	NewPlugin.magic = strtoul(plugin.getString(PLUGIN, "magic").c_str(), NULL, 16);
@@ -121,6 +122,11 @@ u8 Plugin::GetPluginPosition(u32 magic)
 			return (s16)pos;
 	}
 	return 255;
+}
+
+string Plugin::GetPluginPath(u8 pos)
+{
+	return Plugins[pos].path;
 }
 
 u32 Plugin::GetPluginMagic(u8 pos)
@@ -167,9 +173,19 @@ int Plugin::GetRomPartition(u8 pos)
 	return -1;
 }
 
+void Plugin::SetRomPartition(u8 pos, int part)
+{
+	Plugins[pos].romPartition = part;
+}
+
 const char *Plugin::GetRomDir(u8 pos)
 {
 	return Plugins[pos].romDir.c_str();
+}
+
+void Plugin::SetRomDir(u8 pos, const string &rd)
+{
+	Plugins[pos].romDir = rd;
 }
 
 const string& Plugin::GetFileTypes(u8 pos)
