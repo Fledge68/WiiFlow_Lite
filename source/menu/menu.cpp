@@ -339,8 +339,8 @@ bool CMenu::init(bool usb_mounted)
 			{
 				enabledPluginsCount++;
 				m_plugin.SetEnablePlugin(pos, 2);
-				if(i == 0)
-					enabledMagics = magics[0];
+				if(enabledPluginsCount == 1)
+					enabledMagics = magics[i];
 				else
 					enabledMagics.append(',' + magics[i]);
 			}
@@ -2826,7 +2826,7 @@ const char *CMenu::getBoxPath(const dir_discHdr *element)
 		else
 			return fmt("%s/%s.png", m_boxPicDir.c_str(), tempname);
 	}
-	else if(element->type == TYPE_HOMEBREW)
+	else if(element->type == TYPE_HOMEBREW)// use folder name for the png name
 		return fmt("%s/homebrew/%s.png", m_boxPicDir.c_str(), strrchr(element->path, '/') + 1);
 	else if(element->type == TYPE_SOURCE)//sourceflow
 	{
@@ -2854,7 +2854,13 @@ const char *CMenu::getFrontPath(const dir_discHdr *element)
 	else if(element->type == TYPE_HOMEBREW)
 	{
 		if(m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox"))
-			return fmt("%s/icon.png", element->path);
+		{
+			const char *coverPath = fmt("%s/homebrew_small/%s.png", m_picDir.c_str(), strrchr(element->path, '/') + 1);
+			if(!fsop_FileExist(coverPath))
+				return fmt("%s/icon.png", element->path);
+			else
+				return coverPath;
+		}
 		else
 			return fmt("%s/homebrew/%s.png", m_picDir.c_str(), strrchr(element->path, '/') + 1);
 	}

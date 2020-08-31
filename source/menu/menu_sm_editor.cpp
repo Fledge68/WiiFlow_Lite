@@ -295,6 +295,8 @@ void CMenu::_checkboxesMenu(u8 md)
 							plugin_ok = false;
 						else if(strncasecmp(m_plugin.PluginMagicWord, "454E414E", 8) == 0)//ENAN
 							plugin_ok = false;
+						else if(strncasecmp(m_plugin.PluginMagicWord, "5343564D", 8) == 0)//scummvm
+							plugin_ok = false;
 							
 						if(!plugin_ok)
 						{

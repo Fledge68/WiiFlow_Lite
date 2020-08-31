@@ -56,6 +56,7 @@ public:
 
 	void LoadFile(const char *name, bool display_change = true);
 	void LoadCurrentFile();
+	void ReLoadCurrentFile();
 protected:
 	bool PosFromPrevFile();
 

@@ -85,8 +85,8 @@ void CMenu::_sourceFlow()
 				{
 					enabledPluginsCount++;
 					m_plugin.SetEnablePlugin(pos, 2);
-					if(i == 0)
-						enabledMagics = magicNums[0];
+					if(enabledPluginsCount == 1)
+						enabledMagics = magicNums[i];
 					else
 						enabledMagics.append(',' + magicNums[i]);
 				}
@@ -187,16 +187,20 @@ void CMenu::_srcTierLoad(string fn)
 {
 	m_source.unload();
 	m_source.load(fmt("%s/%s", m_sourceDir.c_str(), fn.c_str()));
+	
 	fn.replace(fn.find("."), 4, "_flow");
 	if(m_source.has("general", "flow"))
 		curflow = m_source.getInt("general", "flow", 1);
 	else
 		curflow = m_cfg.getInt(SOURCEFLOW_DOMAIN, fn, m_cfg.getInt(SOURCEFLOW_DOMAIN, "last_cf_mode", 1));
+	
 	if(m_source.has("general", "box_mode"))
 		m_cfg.setBool(SOURCEFLOW_DOMAIN, "box_mode", m_source.getBool("general", "box_mode", true));
 	if(m_source.has("general", "smallbox"))
 		m_cfg.setBool(SOURCEFLOW_DOMAIN, "smallbox", m_source.getBool("general", "smallbox", false));
+	
 	SF_cacheCovers = true;
+	
 	/* get max source button # */
 	m_max_source_btn = 0;
 	const char *srcDomain = m_source.firstDomain().c_str();
@@ -212,6 +216,7 @@ void CMenu::_srcTierLoad(string fn)
 		}
 		srcDomain = m_source.nextDomain().c_str();
 	}
+	
 	if(!m_sourceflow)
 	{
 		nonHiddenSources.clear();
@@ -323,14 +328,14 @@ void CMenu::_updateSourceBtns(void)
 	}
 
 	j = (curPage - 1) * 12;
-	for(i = j; i < (j + 12); ++i)
+	for(i = 0; i < 12; ++i)
 	{
-		if(i >= nonHiddenSources.size())
-			m_btnMgr.hide(m_sourceBtnSource[i -j]);
+		if((i + j) >= nonHiddenSources.size())
+			m_btnMgr.hide(m_sourceBtnSource[i]);
 		else
 		{
 			memset(current_btn, 0, 16);
-			strncpy(current_btn, fmt("BUTTON_%i", nonHiddenSources[i]), 15);
+			strncpy(current_btn, fmt("BUTTON_%i", nonHiddenSources[i + j]), 15);
 			string btnSource = m_source.getString(current_btn, "source", "");
 			if(btnSource == "")
 				continue;
@@ -353,8 +358,8 @@ void CMenu::_updateSourceBtns(void)
 				if(TexHandle.fromImageFile(texConsoleImgs, fmt("%s/%s", m_sourceDir.c_str(), btn_image_s)) != TE_OK)
 					TexHandle.fromImageFile(texConsoleImgs, fmt("%s/favoritesons.png", m_imgsDir.c_str()));
 			}
-			m_btnMgr.setBtnTexture(m_sourceBtnSource[i - j], texConsoleImg, texConsoleImgs);
-			m_btnMgr.show(m_sourceBtnSource[i - j]);
+			m_btnMgr.setBtnTexture(m_sourceBtnSource[i], texConsoleImg, texConsoleImgs);
+			m_btnMgr.show(m_sourceBtnSource[i]);
 		}
 	}
 }
@@ -389,6 +394,23 @@ bool CMenu::_Source()
 		{
 			_hideSource();
 			_SM_Editor();
+			nonHiddenSources.clear();
+			for(i = 0; i <= m_max_source_btn; i++)
+			{
+				if(!m_source.getBool(sfmt("BUTTON_%i", i), "hidden", false))
+					nonHiddenSources.push_back(i);
+			}
+			u8 num = stoi(sm_numbers[sm_numbers.size() - 1]);
+			curPage = 1;
+			for(i = 0; i < nonHiddenSources.size(); i++)
+			{
+				if(nonHiddenSources[i] == num)
+				{
+					curPage = i / 12 + 1;
+					break;
+				}
+			}
+			numPages = (nonHiddenSources.size() / 12) + 1;
 			_showSource();
 			_updateSourceBtns();
 		}
@@ -427,7 +449,7 @@ bool CMenu::_Source()
 				if(m_btnMgr.selected(m_sourceBtnSource[i]))
 				{
 					memset(btn_selected, 0, 16);
-					strncpy(btn_selected, fmt("BUTTON_%i", i + j), 15);
+					strncpy(btn_selected, fmt("BUTTON_%i", nonHiddenSources[i + j]), 15);
 					source = m_source.getString(btn_selected, "source", "");
 					break;
 				}
@@ -474,8 +496,8 @@ bool CMenu::_Source()
 							{
 								enabledPluginsCount++;
 								m_plugin.SetEnablePlugin(pos, 2);
-								if(i == 0)
-									enabledMagics = magicNums[0];
+								if(enabledPluginsCount == 1)
+									enabledMagics = magicNums[i];
 								else
 									enabledMagics.append(',' + magicNums[i]);
 							}
@@ -532,8 +554,23 @@ bool CMenu::_Source()
 							}
 							srcDomain = m_source.nextDomain().c_str();
 						}
-						curPage = stoi(sm_numbers[sm_numbers.size() - 1]) / 12 + 1;
-						numPages = (m_max_source_btn / 12) + 1;
+						nonHiddenSources.clear();
+						for(i = 0; i <= m_max_source_btn; i++)
+						{
+							if(!m_source.getBool(sfmt("BUTTON_%i", i), "hidden", false))
+								nonHiddenSources.push_back(i);
+						}
+						u8 num = stoi(sm_numbers[sm_numbers.size() - 1]);
+						curPage = 1;
+						for(i = 0; i < nonHiddenSources.size(); i++)
+						{
+							if(nonHiddenSources[i] == num)
+							{
+								curPage = i / 12 + 1;
+								break;
+							}
+						}
+						numPages = (nonHiddenSources.size() / 12) + 1;
 						_updateSourceBtns();
 					}
 				}

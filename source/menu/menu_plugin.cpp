@@ -165,16 +165,25 @@ void CMenu::_PluginSettings()
 		}
 	}
 	_hidePluginSettings();
+	
+	int channels_type = 0;
 	string enabledMagics;
+	enabledPluginsCount = 0;
 	for(u8 i = 0; m_plugin.PluginExist(i); i++)
 	{
 		if(m_plugin.GetEnabledStatus(i))
 		{
+			enabledPluginsCount++;
 			string magic = sfmt("%08x", m_plugin.GetPluginMagic(i));
-			if(i == 0)
+			if(enabledPluginsCount == 1)
 				enabledMagics = magic;
 			else
 				enabledMagics.append(',' + magic);
+				
+			if(magic == "454e414e")
+				channels_type |= CHANNELS_EMU;
+			else if(magic == "4e414e44")
+				channels_type |= CHANNELS_REAL;
 		}
 	}
 	m_cfg.setString(PLUGIN_DOMAIN, "enabled_plugins", enabledMagics);
@@ -184,11 +193,6 @@ void CMenu::_PluginSettings()
 		m_cfg.setUInt("GENERAL", "sources", m_current_view);
 		m_source_cnt = 1;
 		m_catStartPage = 1;
-		int channels_type = 0;
-		if(m_cfg.getBool(PLUGIN_ENABLED, "454E414E"))
-			channels_type |= CHANNELS_EMU;
-		if(m_cfg.getBool(PLUGIN_ENABLED, "4E414E44"))
-			channels_type |= CHANNELS_REAL;
 		m_cfg.setInt(CHANNEL_DOMAIN, "channels_type", channels_type);
 	}
 	else

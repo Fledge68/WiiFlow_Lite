@@ -198,7 +198,10 @@ void CMenu::_launchPlugin(dir_discHdr *hdr)
 		if(strstr(hdr->path, ".pls") == NULL && strstr(hdr->path, ".m3u") == NULL)
 			MusicPlayer.LoadFile(hdr->path, false);
 		else
+		{
+			m_music_info = m_cfg.getBool("GENERAL", "display_music_info", false);
 			MusicPlayer.InitPlaylist(m_cfg, hdr->path, currentPartition);// maybe error msg if trouble loading playlist
+		}
 		return;
 	}
 	

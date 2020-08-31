@@ -237,7 +237,7 @@ void CMenu::_Paths(void)
 					m_cfg.setString("GENERAL", "dir_music", path);
 					m_musicDir = path;
 					MusicPlayer.Init(m_cfg, m_musicDir, fmt("%s/music", m_themeDataDir.c_str()));
-
+					m_music_info = m_cfg.getBool("GENERAL", "display_music_info", false);
 				}
 				_showPaths();
 			}

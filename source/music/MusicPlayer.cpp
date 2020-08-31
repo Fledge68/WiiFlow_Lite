@@ -58,8 +58,8 @@ void Musicplayer::Init(Config &cfg, const string& musicDir, const string& themeM
 	FadeRate = cfg.getInt("GENERAL", "music_fade_rate", 8);
 	Volume = cfg.getInt("GENERAL", "sound_volume_music", 255);
 
-	SetVolume(0);
 	MusicFile.SetVoice(0);
+	SetVolume(0);
 
 	vector<string> Types = stringToVector(".mp3|.ogg", '|');
 	GetFiles(musicDir.c_str(), Types, FileNameAdder, false, MUSIC_DEPTH);
@@ -237,6 +237,16 @@ void Musicplayer::LoadFile(const char *name, bool display_change)
 	MusicChanged = display_change;
 }
 
+void Musicplayer::ReLoadCurrentFile()
+{
+	char curFile[1024];
+	strcpy(curFile, MusicFile.GetName());
+	if(strlen(curFile) == 0)
+		return;
+	Stop();
+	LoadFile(curFile, false);
+}
+	
 /* For our GUI */
 wstringEx Musicplayer::GetFileName()
 {

@@ -246,8 +246,7 @@ int CMenu::_config7(int curPage)
 					m_cfg.setBool("general", "resample_to_48khz", val);
 					m_btnMgr.setText(m_config7Btn1, val ? _t("yes", L"Yes") : _t("no", L"No"));
 					MusicPlayer.SetResampleSetting(val);
-					MusicPlayer.Stop();
-					MusicPlayer.LoadCurrentFile();
+					MusicPlayer.ReLoadCurrentFile();
 				}
 				else if(m_btnMgr.selected(m_config7Btn2))
 				{

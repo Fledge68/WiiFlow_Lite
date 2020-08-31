@@ -504,6 +504,8 @@ int CMenu::main(void)
 				show_plugin = !m_cfg.getBool(PLUGIN_DOMAIN, "disable", false);
 				show_gamecube = !m_cfg.getBool(GC_DOMAIN, "disable", false);
 				show_homebrew = !m_cfg.getBool(HOMEBREW_DOMAIN, "disable", false);
+				if(m_refreshGameList)
+					_getCustomBgTex();
 				_showMain();
 			}
 		}
