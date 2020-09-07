@@ -258,14 +258,14 @@ bool connect_proxy(HTTP_INFO *httpinfo, char *host, char *username, char *passwo
 {
 	HTTP_RESPONSE response = {0};
 	char request[500];
-	char credentials[65];
+	char credentials[66];
 	char *auth;
 	int len;
 	if (username && password)
 	{
-		if(!snprintf(credentials, sizeof(credentials), "%s:%s", username, password))
+		if (!snprintf(credentials, sizeof(credentials), "%s:%s", username, password))
 			return false;
-		if(!(auth = base64(credentials, strlen(credentials), &len)))
+		if (!(auth = base64(credentials, strlen(credentials), &len)))
 			return false;
 		len = snprintf(request, sizeof(request), "CONNECT %s:%i HTTP/1.1\r\nProxy-Authorization: Basic %s\r\nUser-Agent: curl/7.55.1\r\n\r\n", host, httpinfo->use_https ? 443 : 80, auth);
 		free(auth);
