@@ -246,6 +246,7 @@ void CMenu::_checkboxesMenu(u8 md)
 					else if(mode == 4)
 					{
 						bool found = false;
+						u8 pluginsCount = 0;
 						string newMagics;
 						string pluginMagic = sfmt("%08x", m_plugin.GetPluginMagic(firstCheckbox + i - 1));
 						string button = sfmt("button_%i", curSource);
@@ -261,10 +262,11 @@ void CMenu::_checkboxesMenu(u8 md)
 								}
 								else
 								{
-									if(j == 0)
-										newMagics = magicNums[0];
+									if(pluginsCount == 0)
+										newMagics = magicNums[j];
 									else
 										newMagics.append(',' + magicNums[j]);
+									pluginsCount++;
 								}
 							}
 						}

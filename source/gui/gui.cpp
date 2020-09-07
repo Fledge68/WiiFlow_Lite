@@ -62,6 +62,24 @@ s16 CButtonsMgr::addButton(SFont font, const wstringEx &text, int x, int y, u32 
 	return m_elts.size() > sz ? m_elts.size() - 1 : -2;
 }
 
+s16 CButtonsMgr::addPicButton(TexData &texNormal, TexData &texSelected, int x, int y, u32 width, u32 height, GuiSound *clickSound, GuiSound *hoverSound)
+{
+	SButtonTextureSet texSet;
+
+	texSet.center = texNormal;
+	texSet.centerSel = texSelected;
+	return addButton(SFont(), wstringEx(), x, y, width, height, CColor(), texSet, clickSound, hoverSound);
+}
+
+s16 CButtonsMgr::addPicButton(const u8 *pngNormal, const u8 *pngSelected, int x, int y, u32 width, u32 height, GuiSound *clickSound, GuiSound *hoverSound)
+{
+	SButtonTextureSet texSet;
+
+	TexHandle.fromPNG(texSet.center, pngNormal);
+	TexHandle.fromPNG(texSet.centerSel, pngSelected);
+	return addButton(SFont(), wstringEx(), x, y, width, height, CColor(), texSet, clickSound, hoverSound);
+}
+
 s16 CButtonsMgr::addLabel(SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, s16 style, const TexData &bg)
 {
 	SLabel *b = new SLabel;
@@ -117,24 +135,6 @@ s16 CButtonsMgr::addProgressBar(int x, int y, u32 width, u32 height, SButtonText
 	m_elts.push_back(b);
 
 	return m_elts.size() > sz ? m_elts.size() - 1 : -2;
-}
-
-s16 CButtonsMgr::addPicButton(TexData &texNormal, TexData &texSelected, int x, int y, u32 width, u32 height, GuiSound *clickSound, GuiSound *hoverSound)
-{
-	SButtonTextureSet texSet;
-
-	texSet.center = texNormal;
-	texSet.centerSel = texSelected;
-	return addButton(SFont(), wstringEx(), x, y, width, height, CColor(), texSet, clickSound, hoverSound);
-}
-
-s16 CButtonsMgr::addPicButton(const u8 *pngNormal, const u8 *pngSelected, int x, int y, u32 width, u32 height, GuiSound *clickSound, GuiSound *hoverSound)
-{
-	SButtonTextureSet texSet;
-
-	TexHandle.fromPNG(texSet.center, pngNormal);
-	TexHandle.fromPNG(texSet.centerSel, pngSelected);
-	return addButton(SFont(), wstringEx(), x, y, width, height, CColor(), texSet, clickSound, hoverSound);
 }
 
 void CButtonsMgr::setText(s16 id, const wstringEx &text, bool unwrap)// unwrap means no wrap
@@ -530,12 +530,12 @@ void CButtonsMgr::mouse(int chan, int x, int y)
 	if (m_elts.empty()) return;
 
 	float w, h;
-	u16 start = -1;
+	s32 start = -1;
 	if(m_selected[chan] != -1 && m_selected[chan] < (s32)m_elts.size())
 	{
 		m_elts[m_selected[chan]]->targetScaleX = 1.f;
 		m_elts[m_selected[chan]]->targetScaleY = 1.f;
-		start = (u16)m_selected[chan];
+		start = m_selected[chan];
 	}
 	m_selected[chan] = -1;
 	for(int i = (int)m_elts.size() - 1; i >= 0; --i)
@@ -790,12 +790,8 @@ void CButtonsMgr::_drawBtn(CButtonsMgr::SButton &b, bool selected, bool click)
 	}
 	if (!b.font.font) return;
 	b.font.font->reset();
-	//CColor txtColor(b.textColor.r, b.textColor.g, b.textColor.b, (u8)((int)b.textColor.a * (int)alpha / 0xFF));
-	//if(m_vid.wide())
-	//	scaleX *= 0.8f;
 	b.font.font->setXScale(scaleX);
 	b.font.font->setYScale(scaleY);
-	//b.font.font->drawText(0, 0, b.text.c_str(), txtColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 	b.text.setColor(CColor(b.textColor.r, b.textColor.g, b.textColor.b, (u8)((int)b.textColor.a * (int)alpha / 0xFF)));
 	b.text.setFrame(b.w, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, true, true);
 	b.text.draw();
@@ -839,9 +835,6 @@ void CButtonsMgr::_drawLbl(CButtonsMgr::SLabel &b)
 	if (!b.font.font) return;
 
 	b.font.font->reset();
-	b.text.setColor(CColor(b.textColor.r, b.textColor.g, b.textColor.b, (u8)((int)b.textColor.a * (int)alpha / 0xFF)));
-	//if(m_vid.wide())
-	//	scaleX *= 0.8f;
 	b.font.font->setXScale(scaleX);
 	b.font.font->setYScale(scaleY);
 	float posX = b.pos.x;
@@ -864,8 +857,9 @@ void CButtonsMgr::_drawLbl(CButtonsMgr::SLabel &b)
 	guMtxTransApply(modelViewMtx, modelViewMtx, posX, posY, 0.f);
 	GX_LoadPosMtxImm(modelViewMtx, GX_PNMTX0);
 	if (b.moveByX != 0 || b.moveByY != 0)
-	GX_SetScissor(b.targetPos.x - b.moveByX - b.w/2, b.targetPos.y - b.moveByY - b.h/2, b.w, b.h);
+		GX_SetScissor(b.targetPos.x - b.moveByX - b.w/2, b.targetPos.y - b.moveByY - b.h/2, b.w, b.h);
 
+	b.text.setColor(CColor(b.textColor.r, b.textColor.g, b.textColor.b, (u8)((int)b.textColor.a * (int)alpha / 0xFF)));
 	b.text.draw();
 	if (b.moveByX != 0 || b.moveByY != 0)
 		GX_SetScissor(0, 0, m_vid.width(), m_vid.height());
