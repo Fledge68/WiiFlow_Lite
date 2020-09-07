@@ -367,7 +367,7 @@ void downloadfile(const char *url, struct download *buffer)
 #ifdef DEBUG_NETWORK
 	gprintf("\nConnected\n");
 #endif
-	// Connect to a web proxy without credentials
+	// Connect to a web proxy
 	if (getProxyAddress() && getProxyPort() > 0)
 	{
 		if (!connect_proxy(&httpinfo, host, getProxyUsername(), getProxyPassword()))
