@@ -1200,8 +1200,8 @@ public:
 	bool proxyUseSystem;
 	char proxyAddress[256];
 	u16 proxyPort;
-	char proxyUsername[34];
-	char proxyPassword[34];
+	char proxyUsername[33];
+	char proxyPassword[33];
 
 	/* general thread updating stuff */
 	u64 m_thrdTotal;
