@@ -25,6 +25,7 @@
 #include "music/SoundHandler.hpp"
 #include "network/gcard.h"
 #include "unzip/U8Archive.h"
+#include "network/proxysettings.h"
 
 // Sounds
 extern const u8 click_wav[];
@@ -172,6 +173,16 @@ bool CMenu::init(bool usb_mounted)
 	/* Init Network if wanted for gamercard if it isn't already inited */
 	if(has_enabled_providers())
 		_initAsyncNetwork();
+	/* Set the proxy settings */
+	proxyUseSystem = m_cfg.getBool("PROXY", "proxy_use_system", true);
+	memset(proxyAddress, 0, sizeof(proxyAddress));
+	strncpy(proxyAddress, m_cfg.getString("PROXY", "proxy_address", "").c_str(), sizeof(proxyAddress) - 1);
+	proxyPort = m_cfg.getInt("PROXY", "proxy_port", 0);
+	memset(proxyUsername, 0, sizeof(proxyUsername));
+	strncpy(proxyUsername, m_cfg.getString("PROXY", "proxy_username", "").c_str(), sizeof(proxyUsername) - 1);
+	memset(proxyPassword, 0, sizeof(proxyPassword));
+	strncpy(proxyPassword, m_cfg.getString("PROXY", "proxy_password", "").c_str(), sizeof(proxyPassword) - 1);
+	getProxyInfo();
 	
 	/* Set SD only to off if any usb device is attached and format is FAT, NTFS, WBFS, or LINUX */
 	m_cfg.getBool("GENERAL", "sd_only", true);// will only set it true if this doesn't already exist

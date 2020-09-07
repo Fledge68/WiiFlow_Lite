@@ -126,6 +126,8 @@
         #include <errno.h>
     #elif defined(WOLFSSL_ZEPHYR)
         #include <net/socket.h>
+    #elif defined(MICROCHIP_PIC32)
+        #include <sys/errno.h>
     #elif defined(HAVE_NETX)
         #include "nx_api.h"
         #include "errno.h"
@@ -147,7 +149,6 @@
                 && !defined(WOLFSSL_CONTIKI) && !defined(WOLFSSL_WICED) \
                 && !defined(WOLFSSL_GNRC) && !defined(WOLFSSL_RIOT_OS)
             #include <network.h>
-            //#include <sys/socket.h>
             //#include <arpa/inet.h>
             //#include <netinet/in.h>
             //#include <netdb.h>
@@ -159,7 +160,7 @@
         #endif
     #endif
 
-    #if defined(WOLFSSL_RENESAS_RA6M3G) /* Uses FREERTOS_TCP */
+    #if defined(WOLFSSL_RENESAS_RA6M3G) || defined(WOLFSSL_RENESAS_RA6M3) /* Uses FREERTOS_TCP */
         #include <errno.h>
     #endif
 
