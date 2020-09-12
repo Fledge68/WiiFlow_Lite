@@ -1196,6 +1196,13 @@ public:
 	void _hideWaitMessage();
 	void GC_Messenger(int message, int info, char *cinfo);
 
+	/* proxy settings */
+	bool proxyUseSystem;
+	char proxyAddress[256];
+	u16 proxyPort;
+	char proxyUsername[33];
+	char proxyPassword[33];
+
 	/* general thread updating stuff */
 	u64 m_thrdTotal;
 	void update_pThread(u64 amount, bool add = true);

@@ -50,15 +50,18 @@ void CMenu::_showConfig7(int curPage)
 
 	m_btnMgr.show(m_config7Lbl1);
 	m_btnMgr.show(m_config7Btn1);
-	m_btnMgr.show(m_config7Lbl2);
-	m_btnMgr.show(m_config7Btn2);
-	m_btnMgr.show(m_config7Lbl3);
-	m_btnMgr.show(m_config7Btn3);
-	m_btnMgr.show(m_config7Lbl4);
+	if(curPage != 14)
+	{
+		m_btnMgr.show(m_config7Lbl2);
+		m_btnMgr.show(m_config7Btn2);
+		m_btnMgr.show(m_config7Lbl3);
+		m_btnMgr.show(m_config7Btn3);
+		m_btnMgr.show(m_config7Lbl4);
+	}
 
 	if(curPage == 7 || curPage == 11 || curPage == 12 || curPage == 13)
 		m_btnMgr.show(m_config7Btn4);
-	else
+	else if(curPage != 14)
 	{
 		m_btnMgr.show(m_config7Lbl4Val);
 		m_btnMgr.show(m_config7Btn4M);
@@ -131,7 +134,7 @@ void CMenu::_showConfig7(int curPage)
 		m_btnMgr.setText(m_config7Lbl4, _t("cfg727", L"Use Plugin Database Titles"));
 		m_btnMgr.setText(m_config7Btn4, m_cfg.getBool(PLUGIN_DOMAIN, "database_titles", true) ?  _t("yes", L"Yes") : _t("no", L"No"));
 	}
-	else // page 13
+	else if(curPage == 13)
 	{
 		m_btnMgr.setText(m_config7Lbl1, _t("cfgg49", L"480p Pixel Patch"));
 		m_btnMgr.setText(m_config7Btn1, m_cfg.getBool(WII_DOMAIN, "fix480p", false) ? _t("on", L"On") : _t("off", L"Off"));
@@ -141,6 +144,11 @@ void CMenu::_showConfig7(int curPage)
 		m_btnMgr.setText(m_config7Btn3, m_cfg.getBool("GENERAL", "cover_use_hq") ? _t("yes", L"Yes") : _t("no", L"No"));
 		m_btnMgr.setText(m_config7Lbl4, _t("cfg724", L"Lock coverflow layouts"));
 		m_btnMgr.setText(m_config7Btn4, m_cfg.getBool("general", "cf_locked") ? _t("yes", L"Yes") : _t("no", L"No"));
+	}
+	else // page 14
+	{
+		m_btnMgr.setText(m_config7Lbl1, _t("cfg729", L"Use system proxy settings"));
+		m_btnMgr.setText(m_config7Btn1, m_cfg.getBool("PROXY", "proxy_use_system") ? _t("on", L"On") : _t("off", L"Off"));
 	}
 }
 
@@ -346,6 +354,16 @@ int CMenu::_config7(int curPage)
 					m_cfg.setBool("general", "cf_locked", val);
 					m_btnMgr.setText(m_config7Btn4, val ?  _t("yes", L"Yes") : _t("no", L"No"));
 					CFLocked = val;
+				}
+			}
+			if(curPage == 14)
+			{
+				if(m_btnMgr.selected(m_config7Btn1))
+				{
+					bool val = !m_cfg.getBool("PROXY", "proxy_use_system");
+					m_cfg.setBool("PROXY", "proxy_use_system", val);
+					mainMenu.proxyUseSystem = val;
+					m_btnMgr.setText(m_config7Btn1, val ? _t("on", L"On") : _t("off", L"Off"));
 				}
 			}
 		}
