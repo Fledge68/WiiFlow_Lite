@@ -268,7 +268,7 @@ bool connect_proxy(HTTP_INFO *httpinfo, char *host, char *username, char *passwo
 		if (!(auth = base64(credentials, strlen(credentials), &len)))
 			return false;
 		len = snprintf(request, sizeof(request), "CONNECT %s:%i HTTP/1.1\r\nProxy-Authorization: Basic %s\r\nUser-Agent: curl/7.55.1\r\n\r\n", host, httpinfo->use_https ? 443 : 80, auth);
-		free(auth);
+		MEM2_free(auth);
 	}
 	else
 		len = snprintf(request, sizeof(request), "CONNECT %s:%i HTTP/1.1\r\nUser-Agent: curl/7.55.1\r\n\r\n", host, httpinfo->use_https ? 443 : 80);
@@ -475,15 +475,15 @@ void downloadfile(const char *url, struct download *buffer)
 	int ret, len;
 	if (strncmp(host, "www.geckocodes.org", 18) != 0)
 		memset(isgecko, 0, sizeof(isgecko)); // Not geckocodes, so don't set a cookie
-    len = snprintf(request, sizeof(request),
-                   "GET %s HTTP/1.1\r\n"
-                   "Host: %s\r\n"
-                   "User-Agent: WiiFlow-Lite\r\n"
-                   "Connection: close\r\n"
-                   "%s"
-                   "Pragma: no-cache\r\n"
-                   "Cache-Control: no-cache\r\n\r\n",
-                   path, host, isgecko);
+	len = snprintf(request, sizeof(request),
+				   "GET %s HTTP/1.1\r\n"
+				   "Host: %s\r\n"
+				   "User-Agent: WiiFlow-Lite\r\n"
+				   "Connection: close\r\n"
+				   "%s"
+				   "Pragma: no-cache\r\n"
+				   "Cache-Control: no-cache\r\n\r\n",
+				   path, host, isgecko);
 	if ((ret = https_write(&httpinfo, request, len, false)) != len)
 	{
 #ifdef DEBUG_NETWORK

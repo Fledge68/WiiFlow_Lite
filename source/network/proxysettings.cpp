@@ -20,15 +20,15 @@ void getProxyInfo()
 	int fd = ISFS_Open("/shared2/sys/net/02/config.dat", ISFS_OPEN_READ);
 	if (fd >= 0)
 	{
-		fstats stats ATTRIBUTE_ALIGN(32) = {};
+		fstats stats ATTRIBUTE_ALIGN(32);
 		if(ISFS_GetFileStats(fd, &stats) >= 0)
 		{
 			if (stats.file_length > 0)
 			{
-				buffer = (char*)MEM2_alloc(ALIGN32(stats.file_length));
+				buffer = (char *)MEM2_alloc(ALIGN32(stats.file_length));
 				if (buffer)
 				{
-					if(ISFS_Read(fd, buffer, stats.file_length) == 7004)
+					if (ISFS_Read(fd, buffer, stats.file_length) == 7004)
 					{
 						proxy_enabled = buffer[44];
 						strncpy(proxy_address, buffer + 48, sizeof(proxy_address) - 1);
@@ -44,7 +44,7 @@ void getProxyInfo()
 	}
 }
 
-char* getProxyAddress()
+char *getProxyAddress()
 {
 	if (mainMenu.proxyUseSystem)
 		return proxy_enabled ? proxy_address : NULL;
@@ -58,14 +58,14 @@ u16 getProxyPort()
 	return mainMenu.proxyPort; 
 }
 
-char* getProxyUsername()
+char *getProxyUsername()
 {
 	if (mainMenu.proxyUseSystem)
 		return proxy_enabled ? proxy_username : NULL;
 	return (strlen(mainMenu.proxyUsername) > 0) ? mainMenu.proxyUsername : NULL;
 }
 
-char* getProxyPassword()
+char *getProxyPassword()
 {
 	if (mainMenu.proxyUseSystem)
 		return proxy_enabled ? proxy_password : NULL;
