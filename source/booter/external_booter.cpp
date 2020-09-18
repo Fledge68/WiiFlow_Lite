@@ -158,8 +158,9 @@ void ShutdownBeforeExit(void)
 		WiFiDebugger.Close();
 		//ftp_endTread();
 		wolfSSL_Cleanup();
-		net_wc24cleanup();
 		net_deinit();
 		networkInit = false;
 	}
+	/* Avoid issues on vWii by always calling this */
+	net_wc24cleanup();
 }
