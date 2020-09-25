@@ -235,7 +235,7 @@ void CMenu::_srcTierLoad(string fn)
 				break;
 			}
 		}
-		numPages = (nonHiddenSources.size() / 12) + 1;
+		numPages = ((nonHiddenSources.size() - 1) / 12) + 1;
 	}
 }
 
@@ -394,6 +394,11 @@ bool CMenu::_Source()
 		{
 			_hideSource();
 			_SM_Editor();
+			if(m_refreshGameList)// if romdir changed
+			{
+				m_refreshGameList = false;
+				newSource = true;// in case no source is selected and they return via B button 
+			}
 			nonHiddenSources.clear();
 			for(i = 0; i <= m_max_source_btn; i++)
 			{
@@ -410,7 +415,7 @@ bool CMenu::_Source()
 					break;
 				}
 			}
-			numPages = (nonHiddenSources.size() / 12) + 1;
+			numPages = ((nonHiddenSources.size() - 1) / 12) + 1;
 			_showSource();
 			_updateSourceBtns();
 		}

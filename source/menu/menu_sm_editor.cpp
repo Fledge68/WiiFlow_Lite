@@ -170,13 +170,20 @@ void CMenu::_checkboxesMenu(u8 md)
 		{
 			if(mode == 4)
 			{
-				m_btnMgr.setText(m_checkboxesLblTitle, _t("smedit2", L"Choose Source"));
 				mode = 2;
 				max_checkbox = m_max_source_btn;
 				CB_curPage = (curSource + 1) / 10 + 1;
 				CB_numPages = (max_checkbox / 10) + 1;
+				m_btnMgr.hide(m_checkboxesLblTitle, true);
+				for(int i = 0; i < 11; ++i)
+				{
+					m_btnMgr.hide(m_checkboxBtn[i], true);
+					m_btnMgr.hide(m_checkboxLblTxt[i], true);
+				}
 				_updateCheckboxes();
 				_updateCheckboxesText();
+				m_btnMgr.setText(m_checkboxesLblTitle, _t("smedit2", L"Choose Source"));
+				m_btnMgr.show(m_checkboxesLblTitle);
 			}
 			else
 				break;
@@ -238,9 +245,16 @@ void CMenu::_checkboxesMenu(u8 md)
 							while(m_plugin.PluginExist(max_checkbox)) max_checkbox++;
 							CB_curPage = 1;
 							CB_numPages = (max_checkbox / 10) + 1;
+							m_btnMgr.hide(m_checkboxesLblTitle, true);
+							for(int i = 0; i < 11; ++i)
+							{
+								m_btnMgr.hide(m_checkboxBtn[i], true);
+								m_btnMgr.hide(m_checkboxLblTxt[i], true);
+							}
 							_updateCheckboxes();
 							_updateCheckboxesText();
 							m_btnMgr.setText(m_checkboxesLblTitle, _t("smedit4", L"Choose Plugins"));
+							m_btnMgr.show(m_checkboxesLblTitle);
 						}
 					}
 					else if(mode == 4)
@@ -335,6 +349,7 @@ void CMenu::_checkboxesMenu(u8 md)
 									m_plugin_cfg.save(true);
 									string cachedListFile(fmt("%s/%s_%s.db", m_listCacheDir.c_str(), DeviceName[romsPartition], m_plugin.PluginMagicWord));
 									fsop_deleteFile(cachedListFile.c_str());
+									m_refreshGameList = true;
 								}
 							}
 						}
