@@ -27,8 +27,10 @@ This library provides single precision (SP) integer math functions.
 #ifndef WOLF_CRYPT_SP_INT_H
 #define WOLF_CRYPT_SP_INT_H
 
+#ifndef WOLFSSL_LINUXKM
 #include <stdint.h>
 #include <limits.h>
+#endif
 
 /* Make sure WOLFSSL_SP_ASM build option defined when requested */
 #if !defined(WOLFSSL_SP_ASM) && ( \
@@ -85,8 +87,6 @@ This library provides single precision (SP) integer math functions.
     #endif
     typedef uint128_t sp_int_word;
     typedef int128_t sp_int_sword;
-  #else
-    #error Word size not defined
   #endif
 #else
   #if SP_WORD_SIZE == 32
@@ -106,12 +106,16 @@ This library provides single precision (SP) integer math functions.
     #endif
     typedef uint128_t sp_int_word;
     typedef int128_t sp_int_sword;
-  #else
-    #error Word size not defined
   #endif
 #endif
 
-#define SP_MASK    (sp_digit)(-1)
+#if SP_WORD_SIZE == 32
+    #define SP_MASK ((sp_int_digit)0xffffffffU)
+#elif SP_WORD_SIZE == 64
+    #define SP_MASK ((sp_int_digit)0xffffffffffffffffUL)
+#else
+    #error Word size not defined
+#endif
 
 
 #if defined(WOLFSSL_HAVE_SP_ECC) && defined(WOLFSSL_SP_NONBLOCK)

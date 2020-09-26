@@ -215,6 +215,10 @@
 /* Uncomment next line if using Solaris OS*/
 /* #define WOLFSSL_SOLARIS */
 
+/* Uncomment next line if building for Linux Kernel Module */
+/* #define WOLFSSL_LINUXKM */
+
+
 #include <libwolfssl/wolfcrypt/visibility.h>
 
 #ifdef WOLFSSL_USER_SETTINGS
@@ -831,7 +835,9 @@ extern void uITRON4_free(void *p) ;
         #undef SIZEOF_LONG
         #define SIZEOF_LONG_LONG 8
     #else
-        #error settings.h - please implement SIZEOF_LONG and SIZEOF_LONG_LONG
+        #if !defined(SIZEOF_LONG) && !defined(SIZEOF_LONG_LONG)
+            #error settings.h - please implement SIZEOF_LONG and SIZEOF_LONG_LONG
+        #endif
     #endif
 
     #define XMALLOC(s, h, type) ((void *)rtp_malloc((s), SSL_PRO_MALLOC))
@@ -841,7 +847,9 @@ extern void uITRON4_free(void *p) ;
     #if (WINMSP3)
         #define XSTRNCASECMP(s1,s2,n)  _strnicmp((s1),(s2),(n))
     #else
-        #sslpro: settings.h - please implement XSTRNCASECMP - needed for HAVE_ECC
+        #ifndef XSTRNCASECMP
+            #error settings.h - please implement XSTRNCASECMP - needed for HAVE_ECC
+        #endif
     #endif
 
     #define WOLFSSL_HAVE_MAX
@@ -1255,11 +1263,11 @@ extern void uITRON4_free(void *p) ;
     #endif
     #define NO_OLD_RNGNAME
     #ifdef WOLFSSL_STM32_CUBEMX
-		#if defined(WOLFSSL_STM32F1)
-			#include "stm32f1xx_hal.h"
+        #if defined(WOLFSSL_STM32F1)
+            #include "stm32f1xx_hal.h"
         #elif defined(WOLFSSL_STM32F2)
             #include "stm32f2xx_hal.h"
-		#elif defined(WOLFSSL_STM32L5)
+        #elif defined(WOLFSSL_STM32L5)
             #include "stm32l5xx_hal.h"
         #elif defined(WOLFSSL_STM32L4)
             #include "stm32l4xx_hal.h"
@@ -1298,7 +1306,7 @@ extern void uITRON4_free(void *p) ;
             #ifdef STM32_HASH
                 #include "stm32f4xx_hash.h"
             #endif
-		#elif defined(WOLFSSL_STM32L5)
+        #elif defined(WOLFSSL_STM32L5)
             #include "stm32l5xx.h"
             #ifdef STM32_CRYPTO
                 #include "stm32l5xx_cryp.h"
@@ -1306,7 +1314,7 @@ extern void uITRON4_free(void *p) ;
             #ifdef STM32_HASH
                 #include "stm32l5xx_hash.h"
             #endif
-    	#elif defined(WOLFSSL_STM32L4)
+        #elif defined(WOLFSSL_STM32L4)
             #include "stm32l4xx.h"
             #ifdef STM32_CRYPTO
                 #include "stm32l4xx_cryp.h"
@@ -1323,7 +1331,7 @@ extern void uITRON4_free(void *p) ;
         #endif
     #endif /* WOLFSSL_STM32_CUBEMX */
 #endif /* WOLFSSL_STM32F2 || WOLFSSL_STM32F4 || WOLFSSL_STM32L4 || 
-		  WOLFSSL_STM32L5 || WOLFSSL_STM32F7 || WOLFSSL_STMWB || WOLFSSL_STM32H7 */
+          WOLFSSL_STM32L5 || WOLFSSL_STM32F7 || WOLFSSL_STMWB || WOLFSSL_STM32H7 */
 #ifdef WOLFSSL_DEOS
     #include <deos.h>
     #include <timeout.h>
@@ -2074,6 +2082,52 @@ extern void uITRON4_free(void *p) ;
 /* for backwards compatibility */
 #if defined(TEST_IPV6) && !defined(WOLFSSL_IPV6)
     #define WOLFSSL_IPV6
+#endif
+
+
+#ifdef WOLFSSL_LINUXKM
+    #ifndef NO_DEV_RANDOM
+        #define NO_DEV_RANDOM
+    #endif
+    #ifndef NO_WRITEV
+        #define NO_WRITEV
+    #endif
+    #ifndef NO_FILESYSTEM
+        #define NO_FILESYSTEM
+    #endif
+    #ifndef NO_STDIO_FILESYSTEM
+        #define NO_STDIO_FILESYSTEM
+    #endif
+    #ifndef WOLFSSL_NO_SOCK
+        #define WOLFSSL_NO_SOCK
+    #endif
+    #ifndef WOLFSSL_DH_CONST
+        #define WOLFSSL_DH_CONST
+    #endif
+    #ifndef WOLFSSL_USER_IO
+        #define WOLFSSL_USER_IO
+    #endif
+    #ifndef USE_WOLF_STRTOK
+        #define USE_WOLF_STRTOK
+    #endif
+    #ifndef WOLFSSL_SP_MOD_WORD_RP
+        #define WOLFSSL_SP_MOD_WORD_RP
+    #endif
+    #ifndef WOLFSSL_OLD_PRIME_CHECK
+        #define WOLFSSL_OLD_PRIME_CHECK
+    #endif
+    #undef HAVE_STRINGS_H
+    #undef HAVE_ERRNO_H
+    #undef HAVE_THREAD_LS
+    #undef WOLFSSL_HAVE_MIN
+    #undef WOLFSSL_HAVE_MAX
+    #define SIZEOF_LONG         8
+    #define SIZEOF_LONG_LONG    8
+    #define CHAR_BIT            8
+    #define WOLFSSL_SP_DIV_64
+    #define WOLFSSL_SP_DIV_WORD_HALF
+    #define SP_HALF_SIZE        32
+    #define SP_HALF_MAX         4294967295U
 #endif
 
 

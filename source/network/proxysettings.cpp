@@ -9,6 +9,7 @@
 #define ALIGN32(x) (((x) + 31) & ~31)
 
 bool proxy_enabled;
+bool proxy_creds_enabled;
 char proxy_address[256];
 u16 proxy_port;
 char proxy_username[33];
@@ -23,7 +24,7 @@ void getProxyInfo()
 		fstats stats ATTRIBUTE_ALIGN(32);
 		if(ISFS_GetFileStats(fd, &stats) >= 0)
 		{
-			if (stats.file_length > 0)
+			if (stats.file_length == 7004)
 			{
 				buffer = (char *)MEM2_alloc(ALIGN32(stats.file_length));
 				if (buffer)
@@ -31,6 +32,7 @@ void getProxyInfo()
 					if (ISFS_Read(fd, buffer, stats.file_length) == 7004)
 					{
 						proxy_enabled = buffer[44];
+						proxy_creds_enabled = buffer[45];
 						strncpy(proxy_address, buffer + 48, sizeof(proxy_address) - 1);
 						proxy_port = ((buffer[304] & 0xFF) << 8) | (buffer[305] & 0xFF);
 						strncpy(proxy_username, buffer + 306, sizeof(proxy_username) - 1);
@@ -61,13 +63,13 @@ u16 getProxyPort()
 char *getProxyUsername()
 {
 	if (mainMenu.proxyUseSystem)
-		return proxy_enabled ? proxy_username : NULL;
+		return proxy_enabled && proxy_creds_enabled ? proxy_username : NULL;
 	return (strlen(mainMenu.proxyUsername) > 0) ? mainMenu.proxyUsername : NULL;
 }
 
 char *getProxyPassword()
 {
 	if (mainMenu.proxyUseSystem)
-		return proxy_enabled ? proxy_password : NULL;
+		return proxy_enabled && proxy_creds_enabled ? proxy_password : NULL;
 	return (strlen(mainMenu.proxyPassword) > 0) ? mainMenu.proxyPassword : NULL;
 }
