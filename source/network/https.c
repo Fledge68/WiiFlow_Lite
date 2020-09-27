@@ -17,7 +17,7 @@ WOLFSSL_SESSION *session;
 int https_write(HTTP_INFO *httpinfo, char *buffer, int len, bool proxy)
 {
 	int ret, pos = 0;
-	int rlen = (len > BLOCK_SIZE) ? BLOCK_SIZE : len;
+	int rlen = len > BLOCK_SIZE ? BLOCK_SIZE : len;
 	u64 time = gettime();
 	while (ticks_to_millisecs(diff_ticks(time, gettime())) < READ_WRITE_TIMEOUT)
 	{
@@ -28,7 +28,7 @@ int https_write(HTTP_INFO *httpinfo, char *buffer, int len, bool proxy)
 		if (ret > 0)
 		{
 			pos += ret;
-			rlen = (len - pos > BLOCK_SIZE) ? BLOCK_SIZE : len - pos;
+			rlen = len - pos > BLOCK_SIZE ? BLOCK_SIZE : len - pos;
 			if (pos >= len)
 				return pos;
 			time = gettime();
@@ -143,7 +143,7 @@ bool is_chunked(struct phr_header *headers, size_t num_headers)
 	char encoding[9];
 	if (!get_header_value(headers, num_headers, encoding, "transfer-encoding"))
 		return false;
-	return (strcasecmp(encoding, "chunked") == 0) ? true : false;
+	return (strcasecmp(encoding, "chunked") == 0);
 }
 
 bool read_chunked(HTTP_INFO *httpinfo, struct download *buffer, size_t start_pos)
@@ -209,7 +209,7 @@ bool read_all(HTTP_INFO *httpinfo, struct download *buffer, size_t start_pos)
 	};
 	buffer->size = start_pos;
 	buffer->data = MEM2_realloc(buffer->data, buffer->size);
-	return (buffer->content_length > 0 && buffer->content_length == start_pos) ? true : false;
+	return (buffer->content_length > 0 && buffer->content_length == start_pos);
 }
 
 bool get_response(HTTP_INFO *httpinfo, HTTP_RESPONSE *resp, bool proxy)
@@ -227,7 +227,7 @@ bool get_response(HTTP_INFO *httpinfo, HTTP_RESPONSE *resp, bool proxy)
 		// Parse the response
 		resp->num_headers = sizeof(resp->headers) / sizeof(resp->headers[0]);
 		if ((resp->pret = phr_parse_response(resp->data, resp->buflen, &minor_version, &resp->status, &msg, &msg_len, resp->headers, &resp->num_headers, prevbuflen)) > 0)
-			return true; // Successfully parsed the response
+			return true;
 		else if (resp->pret == -1)
 		{
 #ifdef DEBUG_NETWORK
@@ -251,7 +251,7 @@ bool check_ip(char *str)
 	int partA, partB, partC, partD;
 	char extra;
 	// We avoid using regex because it increases the file size
-	return (sscanf(str, "%d.%d.%d.%d%c", &partA, &partB, &partC, &partD, &extra) == 4) ? true : false;
+	return (sscanf(str, "%d.%d.%d.%d%c", &partA, &partB, &partC, &partD, &extra) == 4);
 }
 
 bool connect_proxy(HTTP_INFO *httpinfo, char *host, char *username, char *password)
@@ -387,7 +387,7 @@ void downloadfile(const char *url, struct download *buffer)
 	if (httpinfo.use_https)
 	{
 		// Create a new SSL context
-		// wolfSSLv23_client_method() works but resume would require further changes
+		// wolfSSLv23_client_method() works but TLS 1.2 is slightly faster on Wii
 		if ((httpinfo.ctx = wolfSSL_CTX_new(wolfTLSv1_2_client_method())) == NULL)
 		{
 #ifdef DEBUG_NETWORK
