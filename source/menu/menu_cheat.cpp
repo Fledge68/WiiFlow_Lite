@@ -4,8 +4,7 @@
 #include "lockMutex.hpp"
 #include "network/https.h"
 
-//#define GECKOURL "http://geckocodes.org/codes/%c/%s.txt"
-#define GECKOURL "https://www.geckocodes.org/txt.php?txt=%s"
+#define GECKOURL "https://codes.rc24.xyz/txt.php?txt=%s"
 #define CHEATSPERPAGE 4
 
 u8 m_cheatSettingsPage = 0;

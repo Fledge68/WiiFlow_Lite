@@ -471,19 +471,15 @@ void downloadfile(const char *url, struct download *buffer)
 	}
 	// Send our request
 	char request[2300];
-	char isgecko[36] = "Cookie: challenge=BitMitigate.com\r\n";
 	int ret, len;
-	if (strncmp(host, "www.geckocodes.org", 18) != 0)
-		memset(isgecko, 0, sizeof(isgecko)); // Not geckocodes, so don't set a cookie
 	len = snprintf(request, sizeof(request),
 				   "GET %s HTTP/1.1\r\n"
 				   "Host: %s\r\n"
 				   "User-Agent: WiiFlow-Lite\r\n"
 				   "Connection: close\r\n"
-				   "%s"
 				   "Pragma: no-cache\r\n"
 				   "Cache-Control: no-cache\r\n\r\n",
-				   path, host, isgecko);
+				   path, host);
 	if ((ret = https_write(&httpinfo, request, len, false)) != len)
 	{
 #ifdef DEBUG_NETWORK
