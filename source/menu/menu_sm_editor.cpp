@@ -274,7 +274,7 @@ void CMenu::_checkboxesMenu(u8 md)
 								{
 									found = true;// and don't add it
 								}
-								else
+								else if(m_plugin.GetPluginPosition(strtoul(magicNums[i].c_str(), NULL, 16)) < 255)// make sure plugin exist
 								{
 									if(pluginsCount == 0)
 										newMagics = magicNums[j];

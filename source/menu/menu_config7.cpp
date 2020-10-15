@@ -50,10 +50,10 @@ void CMenu::_showConfig7(int curPage)
 
 	m_btnMgr.show(m_config7Lbl1);
 	m_btnMgr.show(m_config7Btn1);
+	m_btnMgr.show(m_config7Lbl2);
+	m_btnMgr.show(m_config7Btn2);
 	if(curPage != 14)
 	{
-		m_btnMgr.show(m_config7Lbl2);
-		m_btnMgr.show(m_config7Btn2);
 		m_btnMgr.show(m_config7Lbl3);
 		m_btnMgr.show(m_config7Btn3);
 		m_btnMgr.show(m_config7Lbl4);
@@ -149,6 +149,8 @@ void CMenu::_showConfig7(int curPage)
 	{
 		m_btnMgr.setText(m_config7Lbl1, _t("cfg729", L"Use system proxy settings"));
 		m_btnMgr.setText(m_config7Btn1, m_cfg.getBool("PROXY", "proxy_use_system") ? _t("on", L"On") : _t("off", L"Off"));
+		m_btnMgr.setText(m_config7Lbl2, _t("cfg730", L"Always show main icons"));
+		m_btnMgr.setText(m_config7Btn2, !m_cfg.getBool("GENERAL", "auto_hide_icons", true) ?  _t("yes", L"Yes") : _t("no", L"No"));
 	}
 }
 
@@ -364,6 +366,13 @@ int CMenu::_config7(int curPage)
 					m_cfg.setBool("PROXY", "proxy_use_system", val);
 					mainMenu.proxyUseSystem = val;
 					m_btnMgr.setText(m_config7Btn1, val ? _t("on", L"On") : _t("off", L"Off"));
+				}
+				else if(m_btnMgr.selected(m_config7Btn2))
+				{
+					bool val = !m_cfg.getBool("GENERAL", "auto_hide_icons");
+					m_cfg.setBool("GENERAL", "auto_hide_icons", val);
+					m_btnMgr.setText(m_config7Btn2, !val ?  _t("yes", L"Yes") : _t("no", L"No"));
+					Auto_hide_icons = val;
 				}
 			}
 		}

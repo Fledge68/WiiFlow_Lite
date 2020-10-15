@@ -69,7 +69,7 @@ void Plugin::init(const string& m_pluginsDir)
 			if(iniFile->find("scummvm.ini") != string::npos)
 				continue;
 			m_plugin_cfg.load(iniFile->c_str());
-			if(m_plugin_cfg.loaded())
+			if(m_plugin_cfg.loaded() && Plugins.size() < 256)// max plugins count = 255
 			{
 				m_plugin.AddPlugin(m_plugin_cfg, *iniFile);
 			}
@@ -119,7 +119,7 @@ u8 Plugin::GetPluginPosition(u32 magic)
 	for(u8 pos = 0; pos < Plugins.size(); pos++)
 	{
 		if(magic == Plugins[pos].magic)
-			return (s16)pos;
+			return pos;
 	}
 	return 255;
 }

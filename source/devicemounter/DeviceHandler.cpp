@@ -61,7 +61,7 @@ void DeviceHandler::MountAll()
 void DeviceHandler::UnMountAll()
 {
 	/* Kill possible USB thread */
-	KillUSBKeepAliveThread();
+	//KillUSBKeepAliveThread();
 
 	for(u32 i = SD; i < MAXDEVICES; i++)
 		UnMount(i);

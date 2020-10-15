@@ -160,18 +160,9 @@ bool AHBPROT_Patched(void)
 }
 
 /* WiiU Check by crediar, thanks */
-bool WiiUChecked = false;
-bool WiiUMode = false;
 bool IsOnWiiU(void)
 {
-	if(WiiUChecked)
-		return WiiUMode;
-
-	if((*HW_PROCESSOR >> 16) == 0xCAFE)
-		WiiUMode = true;
-
-	WiiUChecked = true;
-	return WiiUMode;
+	return ((*HW_PROCESSOR >> 16 ) == 0xCAFE);
 }
 
 void Sys_SetNeekPath(const char *Path)

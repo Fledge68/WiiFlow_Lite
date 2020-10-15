@@ -138,7 +138,7 @@ void CMenu::_showCF(bool refreshList)
 
 		/* if game list is empty display message letting user know */
 		wstringEx Msg;
-		wstringEx Pth;
+		string Pth;
 		if(m_gameList.empty())
 		{
 			cacheCovers = false;
@@ -152,20 +152,20 @@ void CMenu::_showCF(bool refreshList)
 				switch(m_current_view)
 				{
 					case COVERFLOW_WII:
-						Msg = _t("main2", L"No games found in ");
-						Pth = wstringEx(fmt(wii_games_dir, DeviceName[currentPartition]));
+						Msg = _t("main2", L"No games found in");
+						Pth = sfmt(wii_games_dir, DeviceName[currentPartition]);
 						break;
 					case COVERFLOW_GAMECUBE:
-						Msg = _t("main2", L"No games found in ");
-						Pth = wstringEx(fmt(gc_games_dir, DeviceName[currentPartition]));
+						Msg = _t("main2", L"No games found in");
+						Pth = sfmt(gc_games_dir, DeviceName[currentPartition]);
 						break;
 					case COVERFLOW_CHANNEL:
-						Msg = _t("main3", L"No titles found in ");
-						Pth = wstringEx(fmt("%s:/%s/%s", DeviceName[currentPartition],  emu_nands_dir, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand").c_str()));
+						Msg = _t("main3", L"No titles found in");
+						Pth = sfmt("%s:/%s/%s", DeviceName[currentPartition],  emu_nands_dir, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand").c_str());
 						break;
 					case COVERFLOW_HOMEBREW:
-						Msg = _t("main4", L"No apps found in ");
-						Pth = wstringEx(fmt(HOMEBREW_DIR, DeviceName[currentPartition]));
+						Msg = _t("main4", L"No apps found in");
+						Pth = sfmt(HOMEBREW_DIR, DeviceName[currentPartition]);
 						break;
 					case COVERFLOW_PLUGIN:
 						Pth = "";
@@ -175,18 +175,18 @@ void CMenu::_showCF(bool refreshList)
 							Msg = _t("main5", L"No roms/items found.");
 						else
 						{
-							Msg = _t("main2", L"No games found in ");
+							Msg = _t("main2", L"No games found in");
 							u8 i = 0;
 							while(m_plugin.PluginExist(i) && !m_plugin.GetEnabledStatus(i)){ ++i; }
 							int romsPartition = m_plugin.GetRomPartition(i);
 							if(romsPartition < 0)
 								romsPartition = m_cfg.getInt(PLUGIN_DOMAIN, "partition", 0);
-							Pth = wstringEx(fmt("%s:/%s", DeviceName[romsPartition], m_plugin.GetRomDir(i)));
+							Pth = sfmt("%s:/%s", DeviceName[romsPartition], m_plugin.GetRomDir(i));
 						}
 						break;
 				}
 			}
-			Msg.append(Pth);
+			Msg.append(wstringEx(' ' + Pth));
 			m_btnMgr.setText(m_mainLblMessage, Msg);
 			m_btnMgr.show(m_mainLblMessage);
 			return;
