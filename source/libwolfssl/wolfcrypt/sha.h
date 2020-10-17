@@ -72,6 +72,9 @@
 #ifdef WOLFSSL_ESP32WROOM32_CRYPT
     #include <libwolfssl/wolfcrypt/port/Espressif/esp32-crypt.h>
 #endif
+#ifdef WOLFSSL_IMXRT_DCP
+    #include <libwolfssl/wolfcrypt/port/nxp/dcp_port.h>
+#endif
 
 #if !defined(NO_OLD_SHA_NAMES)
     #define SHA             WC_SHA
