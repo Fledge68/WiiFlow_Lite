@@ -9,7 +9,7 @@
 #include "memory/memory.h"
 #include "identify.h"
 
-static inline bool apply_patch(char *name, const u8 *old, const u8 *patch, u32 size)
+static inline bool apply_patch(__attribute__((unused)) char *name, const u8 *old, const u8 *patch, u32 size)
 {
 	u8 i;
 	u32 found = 0;

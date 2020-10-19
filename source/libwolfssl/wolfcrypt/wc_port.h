@@ -158,8 +158,8 @@
 #else /* ! WOLFSSL_LINUXKM */
 
     #ifdef BUILDING_WOLFSSL
-        #define SAVE_VECTOR_REGISTERS() ({})
-        #define RESTORE_VECTOR_REGISTERS() ({})
+        #define SAVE_VECTOR_REGISTERS() do{}while(0)
+        #define RESTORE_VECTOR_REGISTERS() do{}while(0)
     #endif
 
 #endif /* WOLFSSL_LINUXKM */
@@ -836,11 +836,12 @@ WOLFSSL_API int wolfCrypt_Cleanup(void);
     #endif
 #endif
 #if !defined(XGMTIME) && !defined(TIME_OVERRIDES)
-    #if defined(WOLFSSL_GMTIME) || !defined(HAVE_GMTIME_R) || defined(WOLF_C99)
-        #define XGMTIME(c, t)   gmtime((c))
-    #else
+    /* Always use gmtime_r if available. */
+    #if defined(HAVE_GMTIME_R)
         #define XGMTIME(c, t)   gmtime_r((c), (t))
         #define NEED_TMP_TIME
+    #else
+        #define XGMTIME(c, t)   gmtime((c))
     #endif
 #endif
 #if !defined(XVALIDATE_DATE) && !defined(HAVE_VALIDATE_DATE)

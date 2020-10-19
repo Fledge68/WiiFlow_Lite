@@ -6,11 +6,11 @@
 extern "C"
 {
 #endif
-	void getProxyInfo();
-	char *getProxyAddress();
-	u16 getProxyPort();
-	char *getProxyUsername();
-	char *getProxyPassword();
+    void getProxyInfo();
+    char *getProxyAddress();
+    u16 getProxyPort();
+    char *getProxyUsername();
+    char *getProxyPassword();
 #ifdef __cplusplus
 }
 #endif

@@ -1091,7 +1091,9 @@ extern void uITRON4_free(void *p) ;
 
     /* random seed */
     #define NO_OLD_RNGNAME
-    #if defined(FSL_FEATURE_SOC_TRNG_COUNT) && (FSL_FEATURE_SOC_TRNG_COUNT > 0)
+    #if   defined(FREESCALE_NO_RNG)
+        /* nothing to define */
+    #elif defined(FSL_FEATURE_SOC_TRNG_COUNT) && (FSL_FEATURE_SOC_TRNG_COUNT > 0)
         #define FREESCALE_KSDK_2_0_TRNG
     #elif defined(FSL_FEATURE_SOC_RNG_COUNT) && (FSL_FEATURE_SOC_RNG_COUNT > 0)
         #ifdef FREESCALE_KSDK_1_3
@@ -1621,6 +1623,12 @@ extern void uITRON4_free(void *p) ;
 #endif
 #endif
 
+/* If DCP is used without SINGLE_THREADED, enforce WOLFSSL_CRYPT_HW_MUTEX */
+#if defined(WOLFSSL_IMXRT_DCP) && !defined(SINGLE_THREADED)
+    #undef WOLFSSL_CRYPT_HW_MUTEX
+    #define WOLFSSL_CRYPT_HW_MUTEX 1
+#endif
+
 #if !defined(XMALLOC_USER) && !defined(MICRIUM_MALLOC) && \
     !defined(WOLFSSL_LEANPSK) && !defined(NO_WOLFSSL_MEMORY) && \
     !defined(XMALLOC_OVERRIDE)
@@ -2124,10 +2132,18 @@ extern void uITRON4_free(void *p) ;
     #define SIZEOF_LONG         8
     #define SIZEOF_LONG_LONG    8
     #define CHAR_BIT            8
-    #define WOLFSSL_SP_DIV_64
-    #define WOLFSSL_SP_DIV_WORD_HALF
-    #define SP_HALF_SIZE        32
-    #define SP_HALF_MAX         4294967295U
+    #ifndef WOLFSSL_SP_DIV_64
+        #define WOLFSSL_SP_DIV_64
+    #endif
+    #ifndef WOLFSSL_SP_DIV_WORD_HALF
+        #define WOLFSSL_SP_DIV_WORD_HALF
+    #endif
+    #ifndef SP_HALF_SIZE
+        #define SP_HALF_SIZE        32
+    #endif
+    #ifndef SP_HALF_MAX
+        #define SP_HALF_MAX         4294967295U
+    #endif
 #endif
 
 
