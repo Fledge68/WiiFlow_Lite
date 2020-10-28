@@ -276,7 +276,7 @@ s8 PartitionHandle::FindPartitions()
 		{
 			s8 ret = CheckGPT();
 			if(ret == 0) // if it's a GPT we don't need to go on looking through the mbr anymore
-				return ret;
+				break;
 		}
 		if(partition->type == PARTITION_TYPE_DOS33_EXTENDED || partition->type == PARTITION_TYPE_WIN95_EXTENDED)
 		{
