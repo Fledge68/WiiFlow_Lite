@@ -630,13 +630,11 @@ void CMenu::_loadCFCfg()
 	);
 
 	// Textures
-	/*
 	string texLoading = fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString(domain, "loading_cover_box").c_str());
 	string texNoCover = fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString(domain, "missing_cover_box").c_str());
 	string texLoadingFlat = fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString(domain, "loading_cover_flat").c_str());
 	string texNoCoverFlat = fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString(domain, "missing_cover_flat").c_str());
 	CoverFlow.setTextures(texLoading, texLoadingFlat, texNoCover, texNoCoverFlat);
-	*/
 	// Font
 	CoverFlow.setFont(_font(domain, "font", theme.titleFont), m_theme.getColor(domain, "font_color", CColor(0xFFFFFFFF)));
 }
@@ -2002,47 +2000,6 @@ void CMenu::_initCF(void)
 	string hiddenCats;
 	char id[74];
 	char catID[64];
-	
-	// Set loading and no cover textures
-	// Set box no cover to custom blank cover to use for spine and back of cover if only front image available
-	string texLoading = fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString("_COVERFLOW", "loading_cover_box").c_str());
-	string texLoadingFlat = fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString("_COVERFLOW", "loading_cover_flat").c_str());
-	string texNoCoverFlat = fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString("_COVERFLOW", "missing_cover_flat").c_str());
-	string texNoCover = fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString("_COVERFLOW", "missing_cover_box").c_str());
-	string temp;
-	if(m_source_cnt == 1 && m_platform.loaded())
-	{
-		if(m_current_view == COVERFLOW_PLUGIN)
-		{
-			u8 i = 0;
-			string name;
-			while(m_plugin.PluginExist(i) && !m_plugin.GetEnabledStatus(i)){ ++i; }
-			if(m_plugin.PluginExist(i))
-				name = m_platform.getString("PLUGINS", sfmt("%08x", m_plugin.GetPluginMagic(i)), "");
-			if(!name.empty())
-			{
-				bool match = true;
-				i++;
-				while(m_plugin.PluginExist(i))
-				{
-					if(m_plugin.GetEnabledStatus(i) && name != m_platform.getString("PLUGINS", sfmt("%08x", m_plugin.GetPluginMagic(i)), ""))
-					{
-						match = false;
-						break;
-					}
-					i++;
-				}
-				/* if all match we use that blank cover image */
-				if(match)
-					temp = getBlankCoverPath(&m_gameList[0]);
-			}
-		}
-		else
-			temp = getBlankCoverPath(&m_gameList[0]);
-		if(!temp.empty() && fsop_FileExist(temp.c_str()))
-			texNoCover = temp;
-	}
-	CoverFlow.setTextures(texLoading, texLoadingFlat, texNoCover, texNoCoverFlat);
 	
 	// filter list based on categories and favorites
 	for(vector<dir_discHdr>::iterator hdr = m_gameList.begin(); hdr != m_gameList.end(); ++hdr)

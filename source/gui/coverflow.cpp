@@ -1974,7 +1974,7 @@ bool CCoverFlow::start(const string &m_imgsDir)
 			if(TexHandle.fromImageFile(m_flatNoCoverTexture, fmt("%s/flatnopic.png", m_imgsDir.c_str()), GX_TF_CMPR, 32, 512) != TE_OK)
 				return false;
 		}
-		m_defcovers_loaded = false;
+		m_defcovers_loaded = true;
 	}
 
 	/* allocate enough memory for the covers list (m_covers) based on rows * columns (m_range) */

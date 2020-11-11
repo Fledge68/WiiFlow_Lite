@@ -219,7 +219,7 @@ void CMenu::_checkboxesMenu(u8 md)
 			{
 				if(m_btnMgr.selected(m_checkboxBtn[i]))
 				{
-					if(mode == 1)
+					if(mode == 1)// hide source button
 					{
 						string button = sfmt("button_%i", firstCheckbox + i - 1);
 						bool val = !m_source.getBool(button, "hidden", false);
@@ -228,7 +228,7 @@ void CMenu::_checkboxesMenu(u8 md)
 						m_btnMgr.setSelected(m_checkboxBtn[i]);
 						break;
 					}
-					else if(mode == 2)
+					else if(mode == 2)// link - choose source
 					{
 						string source = m_source.getString(sfmt("button_%i", firstCheckbox + i - 1), "source", "");
 						if(source != "plugin")
@@ -239,7 +239,7 @@ void CMenu::_checkboxesMenu(u8 md)
 						}
 						else
 						{
-							mode = 4;
+							mode = 4;// link - choose plugins
 							curSource = firstCheckbox + i - 1;
 							max_checkbox = 0;
 							while(m_plugin.PluginExist(max_checkbox)) max_checkbox++;
@@ -257,7 +257,7 @@ void CMenu::_checkboxesMenu(u8 md)
 							m_btnMgr.show(m_checkboxesLblTitle);
 						}
 					}
-					else if(mode == 4)
+					else if(mode == 4)// link - choose plugins
 					{
 						bool found = false;
 						u8 pluginsCount = 0;
@@ -274,7 +274,7 @@ void CMenu::_checkboxesMenu(u8 md)
 								{
 									found = true;// and don't add it
 								}
-								else if(m_plugin.GetPluginPosition(strtoul(magicNums[i].c_str(), NULL, 16)) < 255)// make sure plugin exist
+								else if(m_plugin.GetPluginPosition(strtoul(magicNums[j].c_str(), NULL, 16)) < 255)// make sure plugin exist
 								{
 									if(pluginsCount == 0)
 										newMagics = magicNums[j];
@@ -295,7 +295,7 @@ void CMenu::_checkboxesMenu(u8 md)
 							m_source.setString(button, "magic", newMagics);
 						_updateCheckboxes();
 					}
-					else if(mode == 3)
+					else if(mode == 3)// set roms path
 					{
 						_hideCheckboxesMenu();
 						u8 pos = firstCheckbox + i - 1;
