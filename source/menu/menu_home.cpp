@@ -432,7 +432,11 @@ void CMenu::_initHomeAndExitToMenu()
 
 void CMenu::_textHome(void)
 {
+	#ifdef COMMITHASH
+	m_btnMgr.setText(m_homeLblTitle, wfmt(L"%s %s %s", APP_NAME, APP_VERSION, COMMITHASH));
+	#else
 	m_btnMgr.setText(m_homeLblTitle, wfmt(L"%s %s", APP_NAME, APP_VERSION));
+	#endif
 	m_btnMgr.setText(m_homeBtnHelp, _t("about10", L"Help Guide"));
 	m_btnMgr.setText(m_homeBtnReloadCache, _t("home2", L"Reload Cache"));
 	m_btnMgr.setText(m_homeBtnExplorer, _t("home8", L"File Explorer"));

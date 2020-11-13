@@ -145,7 +145,11 @@ void CMenu::_textAbout(void)
 		return; 
 	}
 	// show credits and current cIOS
-	m_btnMgr.setText(m_aboutLblTitle, wfmt(L"%s %s", APP_NAME, APP_VERSION));
+	#ifdef COMMITHASH
+		m_btnMgr.setText(m_aboutLblTitle, wfmt(L"%s %s %s", APP_NAME, APP_VERSION, COMMITHASH));
+	#else
+		m_btnMgr.setText(m_aboutLblTitle, wfmt(L"%s %s", APP_NAME, APP_VERSION));
+	#endif
 
 	wstringEx developers(wfmt(_fmt("about6", L"Current Developers:\n%s"), DEVELOPERS));
 	wstringEx pDevelopers(wfmt(_fmt("about7", L"Past Developers:\n%s"), PAST_DEVELOPERS));

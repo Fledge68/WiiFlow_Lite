@@ -86,7 +86,11 @@ int main(int argc, char **argv)
 	mainIOS = DOL_MAIN_IOS;// 249
 	__exception_setreload(10);
 	Gecko_Init(); //USB Gecko and SD/WiFi buffer
-	gprintf(" \nWelcome to %s %s!\nThis is the debug output.\n", APP_NAME, APP_VERSION);
+	#ifdef COMMITHASH
+		gprintf(" \nWelcome to %s %s %s!\nThis is the debug output.\n", APP_NAME, APP_VERSION, COMMITHASH);
+	#else
+		gprintf(" \nWelcome to %s %s!\nThis is the debug output.\n", APP_NAME, APP_VERSION);
+	#endif
 
 	bool iosOK = true;
 	char *gameid = NULL;
