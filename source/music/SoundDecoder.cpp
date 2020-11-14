@@ -108,7 +108,7 @@ void SoundDecoder::EnableUpsample(void)
 	if(   (ResampleBuffer == NULL)
 	   && IsStereo() && Is16Bit()
 	   && SampleRate != 32000
-	   && SampleRate != 48000)
+	   && SampleRate < 48000)
 	{
 		ResampleBuffer = (u8*)memalign(32, SoundBlockSize);
 		ResampleRatio =  ( FixedPointScale * SampleRate ) / 48000;

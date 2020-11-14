@@ -56,7 +56,7 @@ public:
 	virtual int Seek(int pos) { CurPos = pos; return file_fd->seek(CurPos, SEEK_SET); };
 	virtual int Rewind();
 	virtual u8 GetFormat() { return Format; }
-	virtual u16 GetSampleRate() { return SampleRate; }
+	virtual u32 GetSampleRate() { return SampleRate; }
 	virtual void Decode();
 	virtual u32 GetBufferSize() { return SoundBuffer.GetBufferSize(); };
 	virtual u8 * GetBuffer() { return SoundBuffer.GetBuffer(); };
@@ -94,7 +94,7 @@ protected:
 	bool Decoding;
 	bool ExitRequested;
 	u8 Format;
-	u16 SampleRate;
+	u32 SampleRate;
 	u8 *ResampleBuffer;
 	u32 ResampleRatio;
 };
