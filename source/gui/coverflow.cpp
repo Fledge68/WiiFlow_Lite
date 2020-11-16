@@ -679,6 +679,7 @@ void CCoverFlow::shutdown(void)
 	TexHandle.Cleanup(m_dvdSkin_Yellow);
 	TexHandle.Cleanup(m_dvdSkin_GreenOne);
 	TexHandle.Cleanup(m_dvdSkin_GreenTwo);
+	TexHandle.Cleanup(m_dvdSkin_Clear);
 	clear();
 
 	if(m_flipSound != NULL)
@@ -1432,6 +1433,9 @@ void CCoverFlow::_drawCoverBox(int i, bool mirror, CCoverFlow::DrawMode dm)
 			case 0x00E360:
 				GX_InitTexObj(&texObj, m_dvdSkin_GreenTwo.data, m_dvdSkin_GreenTwo.width, m_dvdSkin_GreenTwo.height, m_dvdSkin_GreenTwo.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 				break;
+			case 0x111111:
+				GX_InitTexObj(&texObj, m_dvdSkin_Clear.data, m_dvdSkin_Clear.width, m_dvdSkin_Clear.height, m_dvdSkin_Clear.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+				break;
 			default:
 				GX_InitTexObj(&texObj, m_dvdSkin.data, m_dvdSkin.width, m_dvdSkin.height, m_dvdSkin.format, GX_CLAMP, GX_CLAMP, GX_FALSE);
 				break;
@@ -1948,6 +1952,8 @@ bool CCoverFlow::start(const string &m_imgsDir)
 		if(TexHandle.fromImageFile(m_dvdSkin_GreenOne, fmt("%s/dvdskin_greenone.png", m_imgsDir.c_str())) != TE_OK)
 			return false;
 		if(TexHandle.fromImageFile(m_dvdSkin_GreenTwo, fmt("%s/dvdskin_greentwo.png", m_imgsDir.c_str())) != TE_OK)
+			return false;
+		if(TexHandle.fromImageFile(m_dvdSkin_Clear, fmt("%s/dvdskin_clear.png", m_imgsDir.c_str())) != TE_OK)
 			return false;
 		m_dvdskin_loaded = true;
 	}

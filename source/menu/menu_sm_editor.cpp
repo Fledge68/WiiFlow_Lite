@@ -158,7 +158,7 @@ void CMenu::_checkboxesMenu(u8 md)
 	}
 	
 	CB_curPage = 1;
-	CB_numPages = (max_checkbox / 10) + 1;
+	CB_numPages = ((max_checkbox - 1) / 10) + 1;
 	
 	SetupInput();
 	_showCheckboxesMenu();
@@ -171,9 +171,9 @@ void CMenu::_checkboxesMenu(u8 md)
 			if(mode == 4)
 			{
 				mode = 2;
-				max_checkbox = m_max_source_btn;
+				max_checkbox = m_max_source_btn + 1;
 				CB_curPage = (curSource + 1) / 10 + 1;
-				CB_numPages = (max_checkbox / 10) + 1;
+				CB_numPages = ((max_checkbox - 1) / 10) + 1;
 				m_btnMgr.hide(m_checkboxesLblTitle, true);
 				for(int i = 0; i < 11; ++i)
 				{
@@ -244,7 +244,7 @@ void CMenu::_checkboxesMenu(u8 md)
 							max_checkbox = 0;
 							while(m_plugin.PluginExist(max_checkbox)) max_checkbox++;
 							CB_curPage = 1;
-							CB_numPages = (max_checkbox / 10) + 1;
+							CB_numPages = ((max_checkbox - 1)/ 10) + 1;
 							m_btnMgr.hide(m_checkboxesLblTitle, true);
 							for(int i = 0; i < 11; ++i)
 							{

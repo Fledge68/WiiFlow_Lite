@@ -262,6 +262,7 @@ private:
 	TexData m_dvdSkin_Yellow;
 	TexData m_dvdSkin_GreenOne;
 	TexData m_dvdSkin_GreenTwo;
+	TexData m_dvdSkin_Clear;
 	// Settings
 	string m_pngLoadCover;
 	string m_pngLoadCoverFlat;
