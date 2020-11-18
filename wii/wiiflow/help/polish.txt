@@ -1,0 +1,59 @@
+Sterowanie:
+- Menu główne (coverflow) :
+-- Góra / Dół  =  Poprzednia / następna gra (pionowo)
+-- Lewo / Prawo =  Poprzednia / następna gra (poziomo)
+-- Minus / Plus  =  Szybkie przejście między grami
+-- Home  =  Otwórz Home Menu / Wyjdź z WiiFlow
+-- Home (sourceflow/menu)  =  Otwórz menu konfiguracji źródeł
+-- Home (homebrew flow)  =  Otwórz konfigurację homebrew flow
+-- 1 / 2  =  Poprzednie / następny układ coverflow
+-- A  =  Wybierz grę
+-- B  =  Otwórz menu źródeł (jeśli zainstalowane)
+-- B+A  =  Uruchom grę natychmiast
+-- B+Lewo / B+Prawo  =  Zmień muzykę
+-- B+GÓRA / B+DÓŁ  =  Poprzednia / następna gra w liście sortowanej (domyślna alpha)
+-- B+Minus  =  Uruchom lub wybierz losową grę z obecnej listy
+-- B+Plus  =  Wybierz typ sortowania (alpha, wifi, gracze, liczba uruchomień, itp...)
+-- Z / ZR  =  Zrób zrzut ekranu
+
+-- A na strzałkach na ekranie  =  Szybkie przejście między grami
+-- B na strzałkach na ekranie  =  poprzednia / następna gra w sortowanej liście (domyślna alpha)
+-- A na ikonie gwiazdy =  Ulubione
+-- A na ikonie kategorii  =  Następna kategoria do użycia
+-- A na ikonie koła zębatego  =  Główne menu ustawień
+-- A na USB(Wii), GC, Kanałach, Pluginach, lub ikonie Homebrew  =  Przejdź do tego źródła
+-- A na ikonie home  =  Otwórz Menu Home / Wyjdź z WiiFlow
+-- A na ikonie płyty (Płyta z grą w stacji dysków)  =  Uruchom nośnik z grą
+
+- Gra:
+-- A na opakowaniu =  Obróć okładkę
+-- A poza ekranem =  Uruchom grę
+-- A na ikonie gwiazdy =  Zmień ustawienie ulubionych (Zółty = Ulubione)
+-- A na ikonie kategorii=  Ustaw kategorię dla obecnej gry
+-- A na ikonie dłoni  =  Kontrola rodzicielska (Czerwony = zablokowane)
+-- A na ikonie koła zębatego  =  Ustawienia gry
+-- A na ikonie X =   Skasuj grę
+-- B  =  Powróć do coverflow
+-- Góra / Dół  =  Poprzednia / następna gra (pionowo)
+-- Lewo / Prawo  =  Poprzednia / następna gra (poziomo)
+-- Minus  =  Odtwórz film z gry jeżeli jest dostępny
+-- Plus  =  Informacje o grze
+---Prawo (w informacjach o grze)  =  Opis gry
+---Lewo  (w informacjach o grze)  =  Informacja o grze
+
+- Obrócona okładka:
+-- B  =  Zresetuj okładkę
+-- Góra / Dół / Lewo / Prawo  =  Poruszaj okładką
+-- Plus  =  Zbliż
+-- Minus  =  Oddal
+ 
+- Wszystkie menu ustawień:
+-- Minus / Plus  =  Poprzednia / następna strona
+-- Lewo / Prawo  =  Poprzednia / następna strona
+-- Góra / Dół  =  Poprzedni / następny przycisk
+
+- Dostosowywanie ustawień Coverflow:
+-- B+Minus / B+Plus  =  Poprzednia / następna strona
+-- B  =  Szybsze dostosowywanie (B+A zamiast po prostu A aby nacisnąć na przycisk)
+-- B+1  =  Skopiuj cały coverflow
+-- B+2  =  Skopiuj coverflow
