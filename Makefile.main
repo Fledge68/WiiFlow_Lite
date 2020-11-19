@@ -57,6 +57,12 @@ CFLAGS		=	-g -ggdb -O2 -Wall -Wno-multichar -Wextra $(MACHDEP) $(INCLUDE) -D_GNU
 CXXFLAGS	=	$(CFLAGS)
 LDFLAGS		=	-g -ggdb $(MACHDEP) -Wl,-Map,$(notdir $@).map,--section-start,.init=0x80620000,-wrap,malloc,-wrap,free,-wrap,memalign,-wrap,calloc,-wrap,realloc,-wrap,malloc_usable_size,-wrap,wiiuse_register
 
+ifeq ($(GITHUB_ACTIONS),true)
+SHA = $(GITHUB_SHA)
+CFLAGS += -DCOMMITHASH='"$(shell echo "$(SHA)" | cut -c 1-8)"'
+CXXFLAGS += -DCOMMITHASH='"$(shell echo "$(SHA)" | cut -c 1-8)"'
+endif
+
 ifeq ($(BUILDMODE),channel)
 CFLAGS += -DFULLCHANNEL
 CXXFLAGS += -DFULLCHANNEL

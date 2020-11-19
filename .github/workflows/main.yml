@@ -1,0 +1,73 @@
+name: Build binaries
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Cache
+        id: cache-1
+        uses: actions/cache@v2
+        with:
+          path: cache
+          key: ${{ runner.os }}-cache-1
+
+      - name: Download devkitPPC r30, libogc 1.8.19, bin2s and elf2dol
+        if: steps.cache-1.outputs.cache-hit != 'true'
+        # general-tools is needed for bin2s and gamecube-tools is needed for elf2dol
+        run: | 
+          mkdir cache && cd cache
+          wget "https://wii.leseratte10.de/devkitPro/file.php/devkitPPC-r30-1-linux.pkg.tar.xz"
+          wget "https://wii.leseratte10.de/devkitPro/file.php/libogc-1.8.19-1-any.pkg.tar.xz"
+          wget "https://wii.leseratte10.de/devkitPro/file.php/general-tools-1.2.0-1-linux.pkg.tar.xz"
+          wget "https://wii.leseratte10.de/devkitPro/file.php/gamecube-tools-1.0.2-1-linux.pkg.tar.xz"
+          cd ..
+
+      - name: Extract devkitPPC r30, libogc 1.8.19, bin2s and elf2dol
+        # general-tools is needed for bin2s and gamecube-tools is needed for elf2dol
+        run: | 
+          tar -xf cache/devkitPPC-r30-1-linux.pkg.tar.xz opt/devkitpro/devkitPPC --strip-components=1
+          tar -xf cache/libogc-1.8.19-1-any.pkg.tar.xz opt/devkitpro/libogc --strip-components=1
+          tar -xf cache/general-tools-1.2.0-1-linux.pkg.tar.xz opt/devkitpro/tools/bin/bin2s --strip-components=4
+          sudo cp bin2s /usr/local/bin/bin2s
+          tar -xf cache/gamecube-tools-1.0.2-1-linux.pkg.tar.xz opt/devkitpro/tools/bin/elf2dol --strip-components=4
+          sudo cp elf2dol /usr/local/bin/elf2dol
+
+      - name: Patch libogc
+        run: |
+          if [[ "$(xxd -s 608918 -g4 -l4 $(pwd)/devkitpro/libogc/lib/wii/libogc.a | cut -d\  -f2)" == "38800001" ]]; then
+            echo "Found correct value at offset 608918 (0x94a96) -> patching libogc ..."
+            printf '\x38\x80\x00\x03' | dd of=$(pwd)/devkitpro/libogc/lib/wii/libogc.a bs=1 seek=608918 count=4 conv=notrunc
+            if [[ "$(xxd -s 608918 -g4 -l4 $(pwd)/devkitpro/libogc/lib/wii/libogc.a | cut -d\  -f2)" == "38800003" ]]; then
+              echo "Patch successful"
+            else
+              echo "Patch failed!!"
+              /bin/false
+            fi
+          else
+            echo "Fail: $(xxd -s 608918 -g4 -l4 $(pwd)/devkitpro/libogc/lib/wii/libogc.a | cut -d\  -f2)"
+          fi
+      - name: Compile
+        run: |
+          PATH=$(pwd)/devkitpro/devkitPPC/bin:$PATH DEVKITPPC=$(pwd)/devkitpro/devkitPPC DEVKITPRO=$(pwd)/devkitpro make
+      - name: Package
+        run: |
+          cp -r wii/apps apps
+          mkdir -p apps/wiiflow/
+          cp -r out/bins apps/wiiflow/bins
+          cp -r out/imgs apps/wiiflow/imgs
+          cp out/boot.dol apps/wiiflow/
+          mkdir -p wiiflow
+          cp -r wii/wiiflow/Languages wiiflow/languages
+
+      - name: Upload binaries
+        uses: actions/upload-artifact@v2
+        with: 
+          name: wiiflow_lite
+          path: |
+            apps
+            wiiflow
