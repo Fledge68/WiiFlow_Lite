@@ -12,6 +12,158 @@ u8 GCLoader = 0;
 int videoScale, videoOffset;
 const dir_discHdr *GameHdr;
 
+const CMenu::SOption CMenu::_GlobalVideoModes[6] = {
+	{ "vidgame", L"Game" },
+	{ "vidsys", L"System" },
+	{ "vidp50", L"PAL 50Hz" },
+	{ "vidp60", L"PAL 60Hz" },
+	{ "vidntsc", L"NTSC" },
+	{ "vidprog", L"Progressive" },
+};
+
+const CMenu::SOption CMenu::_VideoModes[7] = {
+	{ "viddef", L"Default" },
+	{ "vidgame", L"Game" },
+	{ "vidsys", L"System" },
+	{ "vidp50", L"PAL 50Hz" },
+	{ "vidp60", L"PAL 60Hz" },
+	{ "vidntsc", L"NTSC" },
+	{ "vidprog", L"Progressive" },
+};
+
+const CMenu::SOption CMenu::_GlobalGCvideoModes[6] = {
+	{ "vidgame", L"Game" },
+	{ "vidp50", L"PAL 50Hz" },
+	{ "vidp60", L"PAL 60Hz" },
+	{ "vidntsc", L"NTSC" },
+	{ "DMLmpal", L"MPAL" },
+	{ "vidprog", L"Progressive" },
+};
+
+const CMenu::SOption CMenu::_GCvideoModes[7] = {
+	{ "viddef", L"Default" },
+	{ "vidgame", L"Game" },
+	{ "vidp50", L"PAL 50Hz" },
+	{ "vidp60", L"PAL 60Hz" },
+	{ "vidntsc", L"NTSC" },
+	{ "DMLmpal", L"MPAL" },
+	{ "vidprog", L"Progressive" },
+};
+
+const CMenu::SOption CMenu::_languages[11] = {
+	{ "lngdef", L"Default" },// next should be console
+	{ "lngjap", L"Japanese" },
+	{ "lngeng", L"English" },
+	{ "lngger", L"German" },
+	{ "lngfre", L"French" },
+	{ "lngspa", L"Spanish" },
+	{ "lngita", L"Italian" },
+	{ "lngdut", L"Dutch" },
+	{ "lngsch", L"S. Chinese" },
+	{ "lngtch", L"T. Chinese" },
+	{ "lngkor", L"Korean" }
+};
+
+const CMenu::SOption CMenu::_GlobalGClanguages[7] = {
+	{ "lngsys", L"System" },
+	{ "lngeng", L"English" },
+	{ "lngger", L"German" },
+	{ "lngfre", L"French" },
+	{ "lngspa", L"Spanish" },
+	{ "lngita", L"Italian" },
+	{ "lngdut", L"Dutch" }
+};
+
+const CMenu::SOption CMenu::_GClanguages[8] = {
+	{ "lngdef", L"Default" },
+	{ "lngsys", L"System" },
+	{ "lngeng", L"English" },
+	{ "lngger", L"German" },
+	{ "lngfre", L"French" },
+	{ "lngspa", L"Spanish" },
+	{ "lngita", L"Italian" },
+	{ "lngdut", L"Dutch" }
+};
+
+const CMenu::SOption CMenu::_ChannelsType[3] = {
+	{ "ChanReal", L"Real NAND" },
+	{ "ChanEmu", L"Emu NAND" },
+	{ "ChanBoth", L"Both" },
+};
+
+const CMenu::SOption CMenu::_NandEmu[2] = {
+	{ "NANDpart", L"Partial" },
+	{ "NANDfull", L"Full" },
+};
+
+const CMenu::SOption CMenu::_GlobalSaveEmu[3] = {
+	{ "SaveOffG", L"Off" },
+	{ "SavePartG", L"Game save" },
+	{ "SaveFullG", L"Full" },
+};
+
+const CMenu::SOption CMenu::_SaveEmu[4] = {
+	{ "SaveDef", L"Default" },
+	{ "SaveOff", L"Off" },
+	{ "SavePart", L"Game save" },
+	{ "SaveFull", L"Full" },
+};
+
+const CMenu::SOption CMenu::_AspectRatio[3] = {
+	{ "aspectDef", L"Default" },
+	{ "aspect43", L"Force 4:3" },
+	{ "aspect169", L"Force 16:9" },
+};
+
+const CMenu::SOption CMenu::_NinEmuCard[5] = {
+	{ "NinMCDef", L"Default" },
+	{ "NinMCOff", L"Disabled" },
+	{ "NinMCon", L"Enabled" },
+	{ "NinMCMulti", L"Multi Saves" },
+	{ "NinMCdebug", L"Debug" },
+};
+
+const CMenu::SOption CMenu::_GlobalGCLoaders[2] = {
+	{ "GC_Devo", L"Devolution" },
+	{ "GC_Nindnt", L"Nintendont" },
+};
+
+const CMenu::SOption CMenu::_GCLoader[3] = {
+	{ "GC_Def", L"Default" },
+	{ "GC_Devo", L"Devolution" },
+	{ "GC_Nindnt", L"Nintendont" },
+};
+
+const CMenu::SOption CMenu::_vidModePatch[4] = {
+	{ "vmpnone", L"None" },
+	{ "vmpnormal", L"Normal" },
+	{ "vmpmore", L"More" },
+	{ "vmpall", L"All" }
+};
+
+const CMenu::SOption CMenu::_hooktype[8] = {
+	{ "hook_auto", L"AUTO" },
+	{ "hooktype1", L"VBI" },
+	{ "hooktype2", L"KPAD read" },
+	{ "hooktype3", L"Joypad" },
+	{ "hooktype4", L"GXDraw" },
+	{ "hooktype5", L"GXFlush" },
+	{ "hooktype6", L"OSSleepThread" },
+	{ "hooktype7", L"AXNextFrame" },
+};
+
+const CMenu::SOption CMenu::_debugger[3] = {
+	{ "disabled", L"Disabled" },
+	{ "dbg_gecko", L"Gecko" },
+	{ "dbgfwrite", L"OSReport" },
+};
+
+const CMenu::SOption CMenu::_privateServer[3] = {
+	{ "off", L"Off" },
+	{ "ps_nossl", L"No SSL only" },
+	{ "ps_wiimmfi", L"wiimmfi" },
+};
+
 template <class T> static inline T loopNum(T i, T s)
 {
 	return (i + s) % s;
@@ -77,7 +229,9 @@ void CMenu::_hideGameSettingsPg(bool instant)
 	m_btnMgr.hide(m_gameSettingsLblFlashSave, instant);
 	m_btnMgr.hide(m_gameSettingsBtnFlashSave, instant);
 	m_btnMgr.hide(m_gameSettingsLblPrivateServer, instant);
-	m_btnMgr.hide(m_gameSettingsBtnPrivateServer, instant);
+	m_btnMgr.hide(m_gameSettingsLblPrivateServerVal, instant);
+	m_btnMgr.hide(m_gameSettingsBtnPrivateServerP, instant);
+	m_btnMgr.hide(m_gameSettingsBtnPrivateServerM, instant);
 	m_btnMgr.hide(m_gameSettingsLblFix480p, instant);
 	m_btnMgr.hide(m_gameSettingsBtnFix480p, instant);
 	//All
@@ -406,14 +560,16 @@ void CMenu::_showGameSettings()
 			m_btnMgr.show(m_gameSettingsLblLED);
 			m_btnMgr.show(m_gameSettingsBtnLED);
 
-			if(GameHdr->type == TYPE_WII_GAME)
-			{
+			//if(GameHdr->type == TYPE_WII_GAME)
+			//{
 				m_btnMgr.show(m_gameSettingsLblPrivateServer);
-				m_btnMgr.show(m_gameSettingsBtnPrivateServer);
+				m_btnMgr.show(m_gameSettingsLblPrivateServerVal);
+				m_btnMgr.show(m_gameSettingsBtnPrivateServerP);
+				m_btnMgr.show(m_gameSettingsBtnPrivateServerM);
 				
 				m_btnMgr.show(m_gameSettingsLblFix480p);
 				m_btnMgr.show(m_gameSettingsBtnFix480p);
-			}
+			//}
 		}
 	}
 	if(m_gameSettingsPage == 6)
@@ -482,7 +638,9 @@ void CMenu::_showGameSettings()
 	{
 		m_btnMgr.setText(m_gameSettingsBtnVipatch, _optBoolToString(m_gcfg2.getOptBool(id, "vipatch", 0)));
 		m_btnMgr.setText(m_gameSettingsBtnCountryPatch, _optBoolToString(m_gcfg2.getOptBool(id, "country_patch", 0)));
-		m_btnMgr.setText(m_gameSettingsBtnPrivateServer, _optBoolToString(m_gcfg2.getOptBool(id, "private_server", 0)));
+		i = min(m_gcfg2.getUInt(id, "private_server", 0), ARRAY_SIZE(CMenu::_privateServer) - 1u);
+		m_btnMgr.setText(m_gameSettingsLblPrivateServerVal, _t(CMenu::_privateServer[i].id, CMenu::_privateServer[i].text));
+		
 		m_btnMgr.setText(m_gameSettingsBtnFix480p, _optBoolToString(m_gcfg2.getOptBool(id, "fix480p", 2)));
 		m_btnMgr.setText(m_gameSettingsBtnCustom, _optBoolToString(m_gcfg2.getOptBool(id, "custom", 0)));
 		m_btnMgr.setText(m_gameSettingsBtnLaunchNK, _optBoolToString(m_gcfg2.getOptBool(id, "useneek", 0)));
@@ -828,9 +986,10 @@ void CMenu::_gameSettings(const dir_discHdr *hdr, bool disc)
 				m_gcfg2.setInt(id, "net_profile", loopNum(m_gcfg2.getInt(id, "net_profile") + direction, 4));
 				_showGameSettings();
 			}
-			else if(m_btnMgr.selected(m_gameSettingsBtnPrivateServer))
+			else if(m_btnMgr.selected(m_gameSettingsBtnPrivateServerP) || m_btnMgr.selected(m_gameSettingsBtnPrivateServerM))
 			{
-				m_gcfg2.setBool(id, "private_server", !m_gcfg2.getBool(id, "private_server", 0));
+				s8 direction = m_btnMgr.selected(m_gameSettingsBtnPrivateServerP) ? 1 : -1;
+				m_gcfg2.setInt(id, "private_server", loopNum(m_gcfg2.getUInt(id, "private_server") + direction, ARRAY_SIZE(CMenu::_privateServer)));
 				_showGameSettings();
 			}
 			else if(m_btnMgr.selected(m_gameSettingsBtnFix480p))
@@ -1005,7 +1164,9 @@ void CMenu::_initGameSettingsMenu()
 	m_gameSettingsBtnLED = _addButton("GAME_SETTINGS/LED_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
 
 	m_gameSettingsLblPrivateServer = _addLabel("GAME_SETTINGS/PRIVATE_SERVER", theme.lblFont, L"", 20, 185, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_gameSettingsBtnPrivateServer = _addButton("GAME_SETTINGS/PRIVATE_SERVER_BTN", theme.btnFont, L"", 420, 190, 200, 48, theme.btnFontColor);
+	m_gameSettingsLblPrivateServerVal = _addLabel("GAME_SETTINGS/PRIVATE_SERVER_BTN", theme.btnFont, L"", 468, 190, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_gameSettingsBtnPrivateServerM = _addPicButton("GAME_SETTINGS/PRIVATE_SERVER_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 420, 190, 48, 48);
+	m_gameSettingsBtnPrivateServerP = _addPicButton("GAME_SETTINGS/PRIVATE_SERVER_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 572, 190, 48, 48);
 	
 	m_gameSettingsLblFix480p = _addLabel("GAME_SETTINGS/FIX480P", theme.lblFont, L"", 20, 245, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsBtnFix480p = _addButton("GAME_SETTINGS/FIX480P_BTN", theme.btnFont, L"", 420, 250, 200, 48, theme.btnFontColor);
@@ -1067,7 +1228,9 @@ void CMenu::_initGameSettingsMenu()
 	_setHideAnim(m_gameSettingsBtnCountryPatch, "GAME_SETTINGS/COUNTRY_PATCH_BTN", -50, 0, 1.f, 0.f);
 
 	_setHideAnim(m_gameSettingsLblPrivateServer, "GAME_SETTINGS/PRIVATE_SERVER", 50, 0, -2.f, 0.f);
-	_setHideAnim(m_gameSettingsBtnPrivateServer, "GAME_SETTINGS/PRIVATE_SERVER_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsLblPrivateServerVal, "GAME_SETTINGS/PRIVATE_SERVER_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsBtnPrivateServerM, "GAME_SETTINGS/PRIVATE_SERVER_MINUS", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsBtnPrivateServerP, "GAME_SETTINGS/PRIVATE_SERVER_PLUS", -50, 0, 1.f, 0.f);
 
 	_setHideAnim(m_gameSettingsLblFix480p, "GAME_SETTINGS/FIX480P", 50, 0, -2.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnFix480p, "GAME_SETTINGS/FIX480P_BTN", -50, 0, 1.f, 0.f);
@@ -1233,7 +1396,7 @@ void CMenu::_textGameSettings(void)
 
 	m_btnMgr.setText(m_gameSettingsLblFlashSave, _t("cfgg32", L"Flash Save to NAND"));
 	m_btnMgr.setText(m_gameSettingsBtnFlashSave, _t("cfgg33", L"Flash"));
-	m_btnMgr.setText(m_gameSettingsLblPrivateServer, _t("cfgg45", L"Private Server (Wiimmfi)"));
+	m_btnMgr.setText(m_gameSettingsLblPrivateServer, _t("cfgg45", L"Private Server"));
 	m_btnMgr.setText(m_gameSettingsLblFix480p, _t("cfgg49", L"480p Pixel Patch"));
 	m_btnMgr.setText(m_gameSettingsLblWidth, _t("cfgg54", L"Video Width"));
 	m_btnMgr.setText(m_gameSettingsLblPos, _t("cfgg55", L"Video Position"));

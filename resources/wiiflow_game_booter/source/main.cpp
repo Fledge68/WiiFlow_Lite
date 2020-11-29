@@ -117,8 +117,8 @@ int main()
 		*Disc_ID = TITLE_LOWER(normalCFG.title);
 		vmode = Disc_SelectVMode(normalCFG.vidMode, &vmode_reg);
 		AppEntrypoint = LoadChannel(normalCFG.title, normalCFG.use_dol, &GameIOS);
-		PatchChannel(normalCFG.vidMode, vmode, normalCFG.vipatch, normalCFG.countryString, 
-					normalCFG.patchVidMode, normalCFG.aspectRatio, normalCFG.BootType);
+		PatchChannel(normalCFG.vidMode, vmode, normalCFG.vipatch, normalCFG.countryString, normalCFG.patchVidMode, normalCFG.aspectRatio,
+					normalCFG.private_server,  normalCFG.patchFix480p, normalCFG.BootType);
 		ISFS_Deinitialize();
 	}
 	gprintf("Entrypoint: %08x, Requested Game IOS: %i\n", AppEntrypoint, GameIOS);
@@ -129,6 +129,9 @@ int main()
 	if(normalCFG.BootType == TYPE_CHANNEL && AppEntrypoint != 0x3400)
 		Disc_SetLowMemChan(); /* Real DOL without appldr */
 
+	/* Enable front LED if requested */
+	if(normalCFG.use_led) *HW_GPIOB_OUT |= 0x20;
+
 	/* Set an appropriate video mode */
 	Disc_SetVMode(vmode, vmode_reg);
 
@@ -136,9 +139,6 @@ int main()
 	u32 level = IRQ_Disable();
 	__IOS_ShutdownSubsystems();
 	__exception_closeall();
-
-	/* Enable front LED if requested */
-	if(normalCFG.use_led) *HW_GPIOB_OUT |= 0x20;
 
 	/* Originally from tueidj - taken from NeoGamma (thx) */
 	*(vu32*)0xCC003024 = 1;

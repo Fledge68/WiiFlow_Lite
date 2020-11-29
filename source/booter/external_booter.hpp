@@ -28,11 +28,11 @@ extern u32 hooktype;
 }
 #endif
 
-void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, 
-			int aspectRatio, u32 returnTo, u8 BootType, bool use_led);
+void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, s8 aspectRatio, u8 private_server, bool patchFix480p, 
+							u32 returnTo, u8 BootType, bool use_led);
 bool ExternalBooter_LoadBins(const char *binDir);
 void ExternalBooter_ChannelSetup(u64 title, bool dol);
-void ExternalBooter_WiiGameSetup(bool wbfs, bool dvd, bool patchregion, bool private_server, bool patchFix480p, const char *ID);
+void ExternalBooter_WiiGameSetup(bool wbfs, bool dvd, bool patchregion, const char *ID);
 void ShutdownBeforeExit(void);
 
 #endif

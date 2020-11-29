@@ -150,7 +150,8 @@ u32 LoadChannel(u64 title, bool dol, u32 *IOS)
 	return entry;
 }
 
-void PatchChannel(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u8 bootType)
+void PatchChannel(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, 
+				u8 private_server, bool patchFix480p, u8 bootType)
 {
 	bool hookpatched = false;
 	for(u8 i = 0; i < dolchunkcount; i++)
@@ -164,6 +165,8 @@ void PatchChannel(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryStrin
 			PatchCountryStrings(dolchunkoffset[i], dolchunksize[i]);
 		if(aspectRatio != -1)
 			PatchAspectRatio(dolchunkoffset[i], dolchunksize[i], aspectRatio);
+		if(private_server)
+			PrivateServerPatcher(dolchunkoffset[i], dolchunksize[i], private_server);	
 		if(hooktype != 0 && hookpatched == false)
 			hookpatched = dogamehooks(dolchunkoffset[i], dolchunksize[i], true);
 		DCFlushRange(dolchunkoffset[i], dolchunksize[i]);
@@ -172,4 +175,7 @@ void PatchChannel(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryStrin
 	}
 	if(hookpatched)
 		ocarina_do_code();
+	
+	if(patchFix480p)
+		PatchFix480p();
 }

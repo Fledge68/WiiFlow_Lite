@@ -583,7 +583,9 @@ private:
 	s16 m_gameSettingsBtnCountryPatch;
 	
 	s16 m_gameSettingsLblPrivateServer;
-	s16 m_gameSettingsBtnPrivateServer;
+	s16 m_gameSettingsLblPrivateServerVal;
+	s16 m_gameSettingsBtnPrivateServerM;
+	s16 m_gameSettingsBtnPrivateServerP;
 	
 	s16 m_gameSettingsLblFix480p;
 	s16 m_gameSettingsBtnFix480p;
@@ -1307,6 +1309,7 @@ private:
 	static const SOption _debugger[3];
 	static const SOption _hooktype[8];
 	static const SOption _exitTo[3];
+	static const SOption _privateServer[3];
 	
 	static int _version[9];
 	static const SCFParamDesc _cfParams[];

@@ -42,7 +42,7 @@ s32 BlockIOSReload(void);
 void PatchRegion(void *Address, int Size);
 void PatchFix480p();
 u32 do_new_wiimmfi(); 
-void PrivateServerPatcher(void *addr, u32 len);
+void PrivateServerPatcher(void *addr, u32 len, u8 private_server);
 void domainpatcher(void *addr, u32 len, const char* domain);
 
 #ifdef __cplusplus

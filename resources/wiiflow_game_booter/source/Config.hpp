@@ -30,31 +30,31 @@ struct the_CFG {
 	u8 GameBootType;
 	WIP_Code *wip_list;
 	u32 wip_count;
-	bool use_led;
+	u32 *gameconf;
+	u32 gameconfsize;
+	void *codelist;
+	u8 *codelistend;
 	bool patchregion;
-	bool private_server;
-	bool patchFix480p;
 	/* needed for channels */
 	u64 title;
 	bool use_dol;
-	/* General Stuff */
+	/* needed for both channels and wii games */	
 	IOS_Info IOS;
 	u8 BootType;
+	u8 configbytes[2];// [0] used for language. [1] not used
+	u8 countryString;
 	u8 vidMode;
 	u8 patchVidMode;
-	u8 configbytes[2];
-	u8 debugger;
 	u8 vipatch;
-	u8 countryString;
-	int aspectRatio;
-	void *codelist;
-	u8 *codelistend;
+	s8 aspectRatio;
+	bool patchFix480p;
+	u8 private_server;
 	u8 *cheats;
 	u32 cheatSize;
+	u8 debugger;
 	u32 hooktype;
-	u32 *gameconf;
-	u32 gameconfsize;
 	u32 returnTo;
+	bool use_led;
 } ATTRIBUTE_PACKED;
 
 #endif /* _CFG_HPP_ */

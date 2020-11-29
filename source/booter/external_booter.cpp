@@ -61,14 +61,16 @@ extern u32 *gameconf;
 u8 *booter_ptr = NULL;
 u32 booter_size = 0;
 
-void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, 
-	int aspectRatio, u32 returnTo, u8 BootType, bool use_led)
+void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, s8 aspectRatio, u8 private_server, bool patchFix480p, 
+							u32 returnTo, u8 BootType, bool use_led)
 {
 	normalCFG.vidMode = vidMode;
 	normalCFG.vipatch = vipatch;
 	normalCFG.countryString = countryString;
 	normalCFG.patchVidMode = patchVidMode;
 	normalCFG.aspectRatio = aspectRatio;
+	normalCFG.private_server = private_server;
+	normalCFG.patchFix480p = patchFix480p;
 	normalCFG.returnTo = returnTo;
 	normalCFG.configbytes[0] = configbytes[0];
 	normalCFG.configbytes[1] = configbytes[1];
@@ -124,7 +126,7 @@ bool ExternalBooter_LoadBins(const char *binDir)
 extern FragList *frag_list;
 extern s32 wbfsDev;
 extern u32 wbfs_part_idx;
-void ExternalBooter_WiiGameSetup(bool wbfs, bool dvd, bool patchregion, bool private_server, bool patchFix480p, const char *ID)
+void ExternalBooter_WiiGameSetup(bool wbfs, bool dvd, bool patchregion, const char *ID)
 {
 	memset(&normalCFG, 0, sizeof(the_CFG));
 	normalCFG.GameBootType = dvd ? TYPE_WII_DISC : (wbfs ? TYPE_WII_WBFS : TYPE_WII_WBFS_EXT);
@@ -133,8 +135,6 @@ void ExternalBooter_WiiGameSetup(bool wbfs, bool dvd, bool patchregion, bool pri
 	normalCFG.wbfsDevice = wbfsDev;
 	normalCFG.wbfsPart = wbfs_part_idx;
 	normalCFG.patchregion = patchregion;
-	normalCFG.private_server = private_server;
-	normalCFG.patchFix480p = patchFix480p;
 }
 
 void ExternalBooter_ChannelSetup(u64 title, bool dol)

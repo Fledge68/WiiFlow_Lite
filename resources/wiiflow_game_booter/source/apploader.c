@@ -29,13 +29,13 @@ static const char *GameID = (const char*)0x80000000;
 #define APPLDR_CODE		0x918
 
 void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipatch, 
-				bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo, bool patchregion, bool private_server, u8 bootType);
+				bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo, bool patchregion, u8 private_server, u8 bootType);
 static void patch_NoDiscinDrive(void *buffer, u32 len);
 static void Anti_002_fix(void *Address, int Size);
 static bool Remove_001_Protection(void *Address, int Size);
 static void PrinceOfPersiaPatch();
 static void NewSuperMarioBrosPatch();
-static void MarioKartWiiWiimmfiPatch( bool server);
+static void MarioKartWiiWiimmfiPatch(u8 server);
 bool hookpatched = false;
 
 /* Thanks Tinyload */
@@ -49,7 +49,7 @@ static struct
 } apploader_hdr ATTRIBUTE_ALIGN(32);
 
 u32 Apploader_Run(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo, 
-					bool patchregion , bool private_server, bool patchFix480p, u8 bootType)
+					bool patchregion , u8 private_server, bool patchFix480p, u8 bootType)
 {
 	PrinceOfPersiaPatch();
 	NewSuperMarioBrosPatch();
@@ -95,8 +95,12 @@ u32 Apploader_Run(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryStrin
 	{
 		/* Read data from DVD */
 		WDVD_Read(dst, len, offset);
-		maindolpatches(dst, len, vidMode, vmode, vipatch, countryString, 
-						patchVidModes, aspectRatio, returnTo, patchregion, private_server, bootType);
+		// if server is wiimmfi and game is mario kart wii don't use private server. use MarioKartWiiWiimmfiPatch below
+		if(private_server == PRIVSERV_WIIMMFI && memcmp("RMC", GameID, 3) == 0)// 2= wiimmfi
+			maindolpatches(dst, len, vidMode, vmode, vipatch, countryString, patchVidModes, aspectRatio, returnTo, patchregion, 0, bootType);
+		else
+			maindolpatches(dst, len, vidMode, vmode, vipatch, countryString, patchVidModes, aspectRatio, returnTo, patchregion, private_server, bootType);
+			
 		DCFlushRange(dst, len);
 		ICInvalidateRange(dst, len);
 		prog(20);
@@ -108,13 +112,13 @@ u32 Apploader_Run(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryStrin
 	if(patchFix480p)
 		PatchFix480p();
 
-	MarioKartWiiWiimmfiPatch(private_server); 
+	MarioKartWiiWiimmfiPatch(private_server);// only done if wiimfi server and game is mario kart wii 
 
 	/* Set entry point from apploader */
 	return (u32)appldr_final();
 }
 
-void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo, bool patchregion , bool private_server, u8 bootType)
+void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo, bool patchregion , u8 private_server, u8 bootType)
 {
 	do_wip_code((u8 *)dst, len);
 	Remove_001_Protection(dst, len);
@@ -143,7 +147,7 @@ void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipa
 	if(patchregion)
 		PatchRegion(dst, len);
 	if(private_server)
-		PrivateServerPatcher(dst,len);	
+		PrivateServerPatcher(dst,len, private_server);	
 }
 
 static void patch_NoDiscinDrive(void *buffer, u32 len)
@@ -175,9 +179,9 @@ static void Anti_002_fix(void *Address, int Size)
 	}
 }
 
-static void MarioKartWiiWiimmfiPatch( bool server) {
+static void MarioKartWiiWiimmfiPatch(u8 server) {
 	if(memcmp("RMC", GameID, 3) != 0) return;	// This isn't MKWii
-	if(server == 0) return; 					// no Wiimmfi patch wanted
+	if(server != PRIVSERV_WIIMMFI) return; 					// no Wiimmfi patch wanted
 	
 	do_new_wiimmfi(); 
 }
