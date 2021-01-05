@@ -36,6 +36,7 @@ static bool Remove_001_Protection(void *Address, int Size);
 static void PrinceOfPersiaPatch();
 static void NewSuperMarioBrosPatch();
 static void MarioKartWiiWiimmfiPatch(u8 server);
+static void Patch_23400_and_MKWii_vulnerability();
 bool hookpatched = false;
 
 /* Thanks Tinyload */
@@ -51,6 +52,13 @@ static struct
 u32 Apploader_Run(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo, 
 					bool patchregion , u8 private_server, bool patchFix480p, u8 bootType)
 {
+	//! Disable private server for games that still have official servers.
+	if (memcmp(GameID, "SC7", 3) == 0 || memcmp(GameID, "RJA", 3) == 0 ||
+		memcmp(GameID, "SM8", 3) == 0 || memcmp(GameID, "SZB", 3) == 0 || memcmp(GameID, "R9J", 3) == 0)
+	{
+		private_server = PRIVSERV_OFF; // Private server patching causes error 20100
+	}
+	
 	PrinceOfPersiaPatch();
 	NewSuperMarioBrosPatch();
 
@@ -112,6 +120,12 @@ u32 Apploader_Run(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryStrin
 	if(patchFix480p)
 		PatchFix480p();
 
+	//! If we're NOT on Wiimmfi, patch the known RCE vulnerability in MKWii. 
+	//! Wiimmfi will handle that on its own through the update payload.
+	//! This will also patch error 23400 for a couple games that still have official servers.
+	if(private_server != PRIVSERV_WIIMMFI)
+		Patch_23400_and_MKWii_vulnerability();
+	
 	MarioKartWiiWiimmfiPatch(private_server);// only done if wiimfi server and game is mario kart wii 
 
 	/* Set entry point from apploader */
@@ -179,11 +193,10 @@ static void Anti_002_fix(void *Address, int Size)
 	}
 }
 
-static void MarioKartWiiWiimmfiPatch(u8 server) {
-	if(memcmp("RMC", GameID, 3) != 0) return;	// This isn't MKWii
-	if(server != PRIVSERV_WIIMMFI) return; 					// no Wiimmfi patch wanted
-	
-	do_new_wiimmfi(); 
+static void MarioKartWiiWiimmfiPatch(u8 server)
+{
+	if(memcmp("RMC", GameID, 3) == 0 && server == PRIVSERV_WIIMMFI)
+		do_new_wiimmfi(); 
 }
 
 static void PrinceOfPersiaPatch()
@@ -270,4 +283,89 @@ static bool Remove_001_Protection(void *Address, int Size)
 		}
 	}
 	return false;
+}
+
+static void Patch_23400_and_MKWii_vulnerability()
+{
+	// Thanks to Seeky for the MKWii gecko codes
+	// Thanks to InvoxiPlayGames for the gecko codes for the 23400 fix.
+	// Reimplemented by Leseratte without the need for a code handler.
+
+	u32 * patch_addr = 0;
+	char * patched = 0; 
+
+	// Patch error 23400 for CoD (Black Ops, Reflex, MW3) and Rock Band 3 / The Beatles
+
+	if (memcmp(GameID, "SC7", 3) == 0) 
+	{
+		gprintf("Patching error 23400 for game %s\n", GameID);
+		*(u32 *)0x8023c954 = 0x41414141;
+	}
+
+	else if (memcmp(GameID, "RJA", 3) == 0) 
+	{
+		gprintf("Patching error 23400 for game %s\n", GameID);
+		*(u32 *)0x801b838c = 0x41414141;
+	}
+
+	else if (memcmp(GameID, "SM8", 3) == 0) 
+	{
+		gprintf("Patching error 23400 for game %s\n", GameID);
+		*(u32 *)0x80238c74 = 0x41414141;
+	}
+
+	else if (memcmp(GameID, "SZB", 3) == 0) 
+	{
+		gprintf("Patching error 23400 for game %s\n", GameID);
+		*(u32 *)0x808e3b20 = 0x41414141;
+	}
+
+	else if (memcmp(GameID, "R9J", 3) == 0) 
+	{
+		gprintf("Patching error 23400 for game %s\n", GameID);
+		*(u32 *)0x808d6934 = 0x41414141;
+	}
+
+	// Patch RCE vulnerability in MKWii.
+	else if (memcmp(GameID, "RMC", 3) == 0) 
+	{
+		switch (GameID[3]) {
+
+			case 'P':
+				patched = (char *)0x80276054;
+				patch_addr = (u32 *)0x8089a194;
+				break; 
+			
+			case 'E': 
+				patched = (char *)0x80271d14;
+				patch_addr = (u32 *)0x80895ac4;
+				break; 
+
+			case 'J': 
+				patched = (char *)0x802759f4;
+				patch_addr = (u32 *)0x808992f4;
+				break;
+			
+			case 'K': 
+				patched = (char *)0x80263E34; 
+				patch_addr = (u32 *)0x808885cc; 
+				break; 
+
+			default:
+				gprintf("NOT patching RCE vulnerability due to invalid game ID: %s\n", GameID);
+				return;
+		}
+
+		if (*patched != '*')
+		{
+			gprintf("Game is already Wiimmfi-patched, don't apply the RCE fix\n");
+		}
+		else
+		{
+			gprintf("Patching RCE vulnerability for game ID %s\n", GameID);
+
+			for (int i = 0; i < 7; i++)
+				*patch_addr++ = 0xff; 
+		}
+	}
 }
