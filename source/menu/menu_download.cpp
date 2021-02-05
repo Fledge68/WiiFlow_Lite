@@ -1658,10 +1658,10 @@ int CMenu::_gametdbDownloaderAsync()
 		m_thrdMessageAdded = true;
 		struct download file = {};
 		downloadfile(fmt(GAMETDB_URL, langCode.c_str()), &file);
-		if(file.size <= 0)
-		{
+		if(errno == ENOMEM)
+			return -1;
+		else if(file.size <= 0)
 			return -3;
-		}
 		else
 		{
 			update_pThread(1); // It's downloaded
