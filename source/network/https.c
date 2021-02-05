@@ -165,6 +165,14 @@ bool read_chunked(HTTP_INFO *httpinfo, struct download *buffer, size_t start_pos
 #endif
             capacity *= 2;
             buffer->data = MEM2_realloc(buffer->data, capacity);
+            if (!buffer->data) // A custom theme is using too much memory
+            {
+#ifdef DEBUG_NETWORK
+                gprintf("Out of memory!\n");
+#endif
+                errno = ENOMEM;
+                return false;
+            }
         }
         if ((ret = https_read(httpinfo, &buffer->data[start_pos], capacity - start_pos, false)) < 1)
             return false;
@@ -200,6 +208,14 @@ bool read_all(HTTP_INFO *httpinfo, struct download *buffer, size_t start_pos)
 #endif
             capacity *= 2;
             buffer->data = MEM2_realloc(buffer->data, capacity);
+            if (!buffer->data) // A custom theme is using too much memory
+            {
+#ifdef DEBUG_NETWORK
+                gprintf("Out of memory!\n");
+#endif
+                errno = ENOMEM;
+                return false;
+            }
         }
         if ((ret = https_read(httpinfo, &buffer->data[start_pos], capacity - start_pos, false)) == 0)
             break;
@@ -347,7 +363,7 @@ void downloadfile(const char *url, struct download *buffer)
     }
     else
         return;
-    if (path == NULL)
+    if (!path)
         return;
     // Get the host
     int domainlength = path - url - 7 - httpinfo.use_https;
@@ -434,7 +450,7 @@ void downloadfile(const char *url, struct download *buffer)
             return;
         }
         // Attempt to resume the session
-        if (session != NULL && wolfSSL_set_session(httpinfo.ssl, session) != SSL_SUCCESS)
+        if (session && wolfSSL_set_session(httpinfo.ssl, session) != SSL_SUCCESS)
         {
 #ifdef DEBUG_NETWORK
             gprintf("Failed to set session (session timed out?)\n");
@@ -458,7 +474,7 @@ void downloadfile(const char *url, struct download *buffer)
             usleep(10000);
         }
         // Check if we resumed successfully
-        if (session != NULL && !wolfSSL_session_reused(httpinfo.ssl))
+        if (session && !wolfSSL_session_reused(httpinfo.ssl))
         {
 #ifdef DEBUG_NETWORK
             gprintf("Failed to resume session\n");
