@@ -35,7 +35,7 @@ static void Anti_002_fix(void *Address, int Size);
 static bool Remove_001_Protection(void *Address, int Size);
 static void PrinceOfPersiaPatch();
 static void NewSuperMarioBrosPatch();
-static void MarioKartWiiWiimmfiPatch(u8 server);
+static void WiimmfiPatch(u8 server);
 static void Patch_23400_and_MKWii_vulnerability();
 bool hookpatched = false;
 
@@ -126,7 +126,7 @@ u32 Apploader_Run(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryStrin
 	if(private_server != PRIVSERV_WIIMMFI)
 		Patch_23400_and_MKWii_vulnerability();
 	
-	MarioKartWiiWiimmfiPatch(private_server);// only done if wiimfi server and game is mario kart wii 
+	WiimmfiPatch(private_server);// only done if wiimfi server and game is mario kart wii 
 
 	/* Set entry point from apploader */
 	return (u32)appldr_final();
@@ -193,10 +193,19 @@ static void Anti_002_fix(void *Address, int Size)
 	}
 }
 
-static void MarioKartWiiWiimmfiPatch(u8 server)
+static void WiimmfiPatch(u8 server)
 {
-	if(memcmp("RMC", GameID, 3) == 0 && server == PRIVSERV_WIIMMFI)
+
+	if (server != PRIVSERV_WIIMMFI) return; 	// no Wiimmfi Patch needed
+
+	if(memcmp("RMC", GameID, 3) != 0) {
+		// This isn't MKWii, perform the patch for other games.
+		do_new_wiimmfi_nonMKWii(); 
+	}
+	else {
+		// This is MKWii, perform the known patch from 2018.
 		do_new_wiimmfi(); 
+	}
 }
 
 static void PrinceOfPersiaPatch()
