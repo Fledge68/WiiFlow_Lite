@@ -788,6 +788,231 @@ void PatchFix480p()
     return;
 }
 
+
+static inline int GetOpcode(unsigned int* instructionAddr)
+{
+	return ((*instructionAddr >> 26) & 0x3f);
+}
+
+static inline int GetImmediateDataVal(unsigned int* instructionAddr)
+{
+	return (*instructionAddr & 0xffff);
+}
+
+static inline int GetLoadTargetReg(unsigned int* instructionAddr)
+{
+	return (int)((*instructionAddr >> 21) & 0x1f);
+}
+
+static inline int GetComparisonTargetReg(unsigned int* instructionAddr)
+{
+	return (int)((*instructionAddr >> 16) & 0x1f);
+}
+
+
+
+u32 do_new_wiimmfi_nonMKWii() {
+		// As of February 2021, Wiimmfi requires a special Wiimmfi patcher 
+		// update which does a bit more than just patch the server adresses. 
+		// This function is being called by apploader.c, right before 
+		// jumping to the entry point (only for non-MKWii games on Wiimmfi), 
+		// and applies all the necessary security fixes to the game. 
+
+		// This function has been implemented by Leseratte. Please don't
+		// try to modify it without speaking to the Wiimmfi team because
+		// doing so could have unintended side effects. 
+
+		int hasGT2Error = 0;
+        char gt2locator[] = { 0x38, 0x61, 0x00, 0x08, 0x38, 0xA0, 0x00, 0x14};        
+        
+    	unsigned char opCodeChainP2P_v1[22] =    { 32, 32, 21, 21, 21, 21, 20, 20, 31, 40, 21, 20, 20, 31, 31, 10, 20, 36, 21, 44, 36, 16 };
+    	unsigned char opCodeChainP2P_v2[22] =    { 32, 32, 21, 21, 20, 21, 20, 21, 31, 40, 21, 20, 20, 31, 31, 10, 20, 36, 21, 44, 36, 16 };
+
+    	unsigned char opCodeChainMASTER_v1[22] = { 21, 21, 21, 21, 40, 20, 20, 20, 20, 31, 31, 14, 31, 20, 21, 44, 21, 36, 36, 18, 11, 16 };
+    	unsigned char opCodeChainMASTER_v2[22] = { 21, 21, 21, 21, 40, 20, 20, 20, 20, 31, 31, 14, 31, 20, 21, 36, 21, 44, 36, 18, 11, 16 };
+       
+
+        int MASTERopcodeChainOffset = 0;
+
+		char * cur = (char *)0x80004000; 
+		const char * end = (const char *)0x80900000;
+
+		// Check if the game needs the new patch. 
+		do {
+			if (memcmp(cur, "<GT2> RECV-0x%02x <- [--------:-----] [pid=%u]", 0x2e) == 0) 
+            {
+                hasGT2Error++;
+            }
+		} while (++cur < end); 
+
+		cur = (char *)0x80004000; 
+
+		if (hasGT2Error > 1) return 1; 	// error, this either doesn't exist, or exists once. Can't exist multiple times. 
+
+		int successful_patch_p2p = 0; 
+		int successful_patch_master = 0;
+
+
+		do {
+
+			// Patch the User-Agent so Wiimmfi knows this game has been patched. 
+			// This also identifies patcher (H=WiiFlow Lite) and patch version (=1), please
+			// do not change this without talking to Leseratte first.
+			if (memcmp(cur, "User-Agent\x00\x00RVL SDK/", 20) == 0) {
+
+				if (hasGT2Error) 
+					memcpy(cur + 12, "H-3-1\x00", 6); 
+				else
+					memcpy(cur + 12, "H-3-0\x00", 6); 
+				
+			}
+
+			if (hasGT2Error)
+			{
+				if (memcmp(cur, &gt2locator, 8) == 0)
+				{
+					int found_opcode_chain_P2P_v1 = 1; 
+					int found_opcode_chain_P2P_v2 = 1; 
+		
+						for (int i = 0; i < 22; i++) {
+							int offset = (i * 4) + 12;
+							if (opCodeChainP2P_v1[i] != (unsigned char)(GetOpcode((unsigned int *)(cur + offset)))) {
+								found_opcode_chain_P2P_v1 = 0; 
+							}
+							if (opCodeChainP2P_v2[i] != (unsigned char)(GetOpcode((unsigned int *)(cur + offset)))) {
+								found_opcode_chain_P2P_v2 = 0; 
+							}
+						}
+						int found_opcode_chain_MASTER;
+						for (int dynamic = 0; dynamic < 40; dynamic += 4) {
+							found_opcode_chain_MASTER = 1; 
+							int offset = 0; 
+							for (int i = 0; i < 22; i++) {
+								offset = (i * 4) + 12 + dynamic;
+								if (
+									(opCodeChainMASTER_v1[i] != (unsigned char)(GetOpcode((unsigned int *)(cur + offset)))) && 
+									(opCodeChainMASTER_v2[i] != (unsigned char)(GetOpcode((unsigned int *)(cur + offset))))
+								) {
+									found_opcode_chain_MASTER = 0; 
+								}
+							}
+
+							if (found_opcode_chain_MASTER) {
+								MASTERopcodeChainOffset = (int)(cur + 12 + dynamic);
+								break;
+							}
+
+						}
+						if (found_opcode_chain_P2P_v1 || found_opcode_chain_P2P_v2) {
+
+							if (
+								GetImmediateDataVal((unsigned int *)(cur + 0x0c)) == 0x0c && 
+								GetImmediateDataVal((unsigned int *)(cur + 0x10)) == 0x18 &&
+								GetImmediateDataVal((unsigned int *)(cur + 0x30)) == 0x12 &&
+								GetImmediateDataVal((unsigned int *)(cur + 0x48)) == 0x5a &&
+								GetImmediateDataVal((unsigned int *)(cur + 0x50)) == 0x0c && 
+								GetImmediateDataVal((unsigned int *)(cur + 0x58)) == 0x12 && 
+								GetImmediateDataVal((unsigned int *)(cur + 0x5c)) == 0x18 && 
+								GetImmediateDataVal((unsigned int *)(cur + 0x60)) == 0x18
+							)
+							{
+							
+								int loadedDataReg = GetLoadTargetReg((unsigned int *)(cur + 0x14));
+								int comparisonDataReg = GetComparisonTargetReg((unsigned int *)(cur + 0x48));
+								
+								if (found_opcode_chain_P2P_v1) {
+									
+									*(int *)(cur + 0x14) = (0x88010011 | (comparisonDataReg << 21)); 
+									*(int *)(cur + 0x18) = (0x28000080 | (comparisonDataReg << 16)); 
+									*(int *)(cur + 0x24) = 0x41810064;                               
+									*(int *)(cur + 0x28) = 0x60000000;                               
+									*(int *)(cur + 0x2c) = 0x60000000;                               
+									*(int *)(cur + 0x34) = (0x3C005A00 | (comparisonDataReg << 21)); 
+									*(int *)(cur + 0x48) = (0x7C000000 | (comparisonDataReg << 16) | (loadedDataReg << 11)); 
+									successful_patch_p2p++;
+								}
+								if (found_opcode_chain_P2P_v2) {
+
+									loadedDataReg = 12;
+
+									*(int *)(cur + 0x14) = (0x88010011 | (comparisonDataReg << 21)); 
+									*(int *)(cur + 0x18) = (0x28000080 | (comparisonDataReg << 16)); 
+									*(int *)(cur + 0x1c) = 0x41810070; 
+									*(int *)(cur + 0x24) = *(int *)(cur + 0x28); 
+									*(int *)(cur + 0x28) = (0x8001000c | (loadedDataReg << 21)); 
+									*(int *)(cur + 0x2c) = (0x3C005A00 | (comparisonDataReg << 21)); 
+									*(int *)(cur + 0x34) = (0x7c000000 | (comparisonDataReg << 16) | (loadedDataReg << 11)); 
+									*(int *)(cur + 0x48) = 0x60000000; 
+									successful_patch_p2p++;
+								}
+
+							}
+						}
+
+						else if (found_opcode_chain_MASTER) {
+							if (
+								GetImmediateDataVal((unsigned int *)(MASTERopcodeChainOffset + 0x10)) == 0x12 &&
+								GetImmediateDataVal((unsigned int *)(MASTERopcodeChainOffset + 0x2c)) == 0x04 &&
+								
+								GetImmediateDataVal((unsigned int *)(MASTERopcodeChainOffset + 0x48)) == 0x18 &&
+								GetImmediateDataVal((unsigned int *)(MASTERopcodeChainOffset + 0x50)) == 0x00 &&
+								GetImmediateDataVal((unsigned int *)(MASTERopcodeChainOffset + 0x54)) == 0x18
+							)
+							{
+
+
+								int master_patch_version = 0; 
+
+								// Check which version we have:
+								if ((GetImmediateDataVal((unsigned int *)(MASTERopcodeChainOffset + 0x3c)) == 0x12 && 
+								GetImmediateDataVal((unsigned int *)(MASTERopcodeChainOffset + 0x44)) == 0x0c) ) {
+									master_patch_version = 1; 
+								}
+								else if ((GetImmediateDataVal((unsigned int *)(MASTERopcodeChainOffset + 0x3c)) == 0x0c && 
+								GetImmediateDataVal((unsigned int *)(MASTERopcodeChainOffset + 0x44)) == 0x12) ) {
+									master_patch_version = 2; 
+								}
+
+
+								if (master_patch_version == 2) {
+									// Different opcode order ...
+									*(int *)(MASTERopcodeChainOffset + 0x3c) = *(int *)(MASTERopcodeChainOffset + 0x44);
+								}
+
+								if (master_patch_version != 0) {
+									int rY = GetComparisonTargetReg((unsigned int *)MASTERopcodeChainOffset);
+									int rX = GetLoadTargetReg((unsigned int *)MASTERopcodeChainOffset); 
+
+									*(int *)(MASTERopcodeChainOffset + 0x00) = 0x38000004 | (rX << 21); 
+									*(int *)(MASTERopcodeChainOffset + 0x04) = 0x7c00042c | (rY << 21) | (3 << 16) | (rX << 11); 
+									*(int *)(MASTERopcodeChainOffset + 0x14) = 0x9000000c | (rY << 21) | (1 << 16); 
+									*(int *)(MASTERopcodeChainOffset + 0x18) = 0x88000011 | (rY << 21) | (1 << 16); 
+									*(int *)(MASTERopcodeChainOffset + 0x28) = 0x28000080 | (rY << 16); 
+									*(int *)(MASTERopcodeChainOffset + 0x38) = 0x60000000; 
+									*(int *)(MASTERopcodeChainOffset + 0x44) = 0x41810014; 
+									successful_patch_master++;
+
+								}
+
+							}
+                    	}
+
+				}
+			}
+
+		} while (++cur < end); 
+
+		if (hasGT2Error) {
+			if (successful_patch_master == 0 || successful_patch_p2p == 0) {
+				return 2; 
+			}
+		}
+
+		return 0;
+
+}
+
+
 u32 do_new_wiimmfi() {
 
 	// As of November 2018, Wiimmfi requires a special Wiimmfi patcher 
@@ -801,11 +1026,14 @@ u32 do_new_wiimmfi() {
 	// This function has been implemented by Leseratte. Please don't
 	// try to modify it without speaking to the Wiimmfi team because
 	// doing so could have unintended side effects. 
+
+	// Updated in 2021 to add the 51420 error fix.
 	
 	// check region: 
 	char region = *((char *)(0x80000003)); 
 	char * patched; 
 	void * patch1_offset, *patch2_offset, *patch3_offset; 
+	void * errorfix_offset;
 	
 	// define some offsets and variables depending on the region:
 	switch (region) {
@@ -814,24 +1042,28 @@ u32 do_new_wiimmfi() {
 			patch1_offset = (void*)0x800ee3a0;
 			patch2_offset = (void*)0x801d4efc; 
 			patch3_offset = (void*)0x801A72E0; 
+			errorfix_offset = (void*)0x80658ce4;
 			break; 
 		case 'E':
 			patched = (char*)0x80271d14; 
 			patch1_offset = (void*)0x800ee300;
 			patch2_offset = (void*)0x801d4e5c; 
 			patch3_offset = (void*)0x801A7240; 
+			errorfix_offset = (void*)0x8065485c;
 			break; 
 		case 'J': 
 			patched = (char*)0x802759f4;
 			patch1_offset = (void*)0x800ee2c0;
 			patch2_offset = (void*)0x801d4e1c; 
 			patch3_offset = (void*)0x801A7200; 
+			errorfix_offset = (void*)0x80658360;
 			break; 
 		case 'K': 
 			patched = (char*)0x80263E34;
 			patch1_offset = (void*)0x800ee418; 
 			patch2_offset = (void*)0x801d5258;
 			patch3_offset = (void*)0x801A763c;
+			errorfix_offset = (void*)0x80646ffc;
 			break;
 		default: 
 			return -1; 
@@ -896,11 +1128,11 @@ u32 do_new_wiimmfi() {
 			break; 
 	}
 
-	// Make some space on heap (0x400) for our custom code. 
+	// Make some space on heap (0x500) for our custom code. 
 	u32 old_heap_ptr = *(u32*)0x80003110; 
-	*((u32*)0x80003110) = (old_heap_ptr - 0x400); 
-	u32 heap_space = old_heap_ptr-0x400; 
-	memset((void*)old_heap_ptr-0x400, 0xed, 0x400); 
+	*((u32*)0x80003110) = (old_heap_ptr - 0x500); 
+	u32 heap_space = old_heap_ptr-0x500; 
+	memset((void*)old_heap_ptr-0x500, 0xed, 0x500); 
 	
 	// Binary blobs with Wiimmfi patches. Do not modify. 
 	// Provided by Leseratte on 2018-12-14.		
@@ -957,6 +1189,26 @@ u32 do_new_wiimmfi() {
 					 0x1567268D, 0x668ECD00, 0xD614F5C8, 0x133037CF, 
 					 0x92F26CF2, 0x00000000, 0x00000000, 0x00000000, 
 					 0x00000000, 0x00000000, 0x00000000, 0x00000000};	
+
+	// Fix for error 51420:
+	int patchCodeFix51420[] = { 
+		0x4800000d, 0x00000000,
+		0x00000000, 0x7cc803a6,
+		0x80860000, 0x7c041800,
+		0x4182004c, 0x80a60004,
+		0x38a50001, 0x2c050003,
+		0x4182003c, 0x90a60004,
+		0x90660000, 0x38610010,
+		0x3ca08066, 0x38a58418,
+		0x3c808066, 0x38848498,
+		0x90a10010, 0x90810014,
+		0x3ce08066, 0x38e78ce4,
+		0x38e7fef0, 0x7ce903a6,
+		0x4e800420, 0x3c80801d,
+		0x388415f4, 0x7c8803a6,
+		0x4e800021, 0x00000000
+		};
+
 	
 	// Prepare patching process ....
 	int i = 3; 
@@ -977,6 +1229,15 @@ u32 do_new_wiimmfi() {
 			binary[185] = 0x61295C74; 	
 			binary[189] = 0x61295D40;	
 			binary[198] = 0x61086F5C; 	
+
+			patchCodeFix51420[14] = 0x3ca08065;
+			patchCodeFix51420[15] = 0x38a53f90;
+			patchCodeFix51420[16] = 0x3c808065;
+			patchCodeFix51420[17] = 0x38844010;
+			patchCodeFix51420[20] = 0x3ce08065;
+			patchCodeFix51420[21] = 0x38e7485c;
+			patchCodeFix51420[26] = 0x38841554;
+
 			break; 
 		case 'J': 
 			binary[29] = binary[70]; 
@@ -984,7 +1245,16 @@ u32 do_new_wiimmfi() {
 			binary[43] = binary[72];
 			binary[185] = 0x612997CC; 	
 			binary[189] = 0x61299898;	
-			binary[198] = 0x61086F1C; 	
+			binary[198] = 0x61086F1C; 
+
+			patchCodeFix51420[14] = 0x3ca08065;
+			patchCodeFix51420[15] = 0x38a57a84;
+			patchCodeFix51420[16] = 0x3c808065;
+			patchCodeFix51420[17] = 0x38847b04;
+			patchCodeFix51420[20] = 0x3ce08065;
+			patchCodeFix51420[21] = 0x38e78350;
+			patchCodeFix51420[26] = 0x38841514;
+	
 			break; 
 		case 'K': 
 			binary[6] = binary[73]; 	
@@ -1000,7 +1270,16 @@ u32 do_new_wiimmfi() {
 			binary[185] = 0x61298AA4; 	
 			binary[188] = 0x3D208088;	
 			binary[189] = 0x61298B58;	
-			binary[198] = 0x61087358; 	
+			binary[198] = 0x61087358; 
+
+			patchCodeFix51420[14] = 0x3ca08064;
+			patchCodeFix51420[15] = 0x38a56730;
+			patchCodeFix51420[16] = 0x3c808064;
+			patchCodeFix51420[17] = 0x388467b0;
+			patchCodeFix51420[20] = 0x3ce08064;
+			patchCodeFix51420[21] = 0x38e76ffc;
+			patchCodeFix51420[26] = 0x38841950;
+	
 			break; 
 	}
 
@@ -1019,6 +1298,12 @@ u32 do_new_wiimmfi() {
 	*((u32*)patch2_offset) = 0x48000000 + (((u32)(code_offset_3) - ((u32)(patch2_offset))) & 0x3ffffff); 
 	*((u32*)code_offset_4) = 0x48000000 + (((u32)(patch2_offset + 4) - ((u32)(code_offset_4))) & 0x3ffffff); 
 	*((u32*)patch3_offset) = 0x48000000 + (((u32)(code_offset_5) - ((u32)(patch3_offset))) & 0x3ffffff); 
+
+	// Add the 51420 fix: 
+	memcpy((void*)heap_space + 0x400, (void*)patchCodeFix51420, 0x78);
+	*((u32*)errorfix_offset) = 0x48000000 + (((u32)(heap_space + 0x400) - ((u32)(errorfix_offset))) & 0x3ffffff);
+	*((u32*)heap_space + 0x400 + 0x74) = 0x48000000 + (((u32)(errorfix_offset + 4) - ((u32)(heap_space + 0x400 + 0x74))) & 0x3ffffff);
+
 	
 	// Patches successfully installed
 	// returns 0 when all patching is done and game is ready to be booted. 
