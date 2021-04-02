@@ -63,6 +63,7 @@ jobs:
           cp out/boot.dol apps/wiiflow/
           mkdir -p wiiflow
           cp -r wii/wiiflow/Languages wiiflow/languages
+          echo "::set-output name=sha::$(echo ${GITHUB_SHA} | head -c 7)"
 
       - name: Upload binaries
         uses: actions/upload-artifact@v2
