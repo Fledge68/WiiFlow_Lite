@@ -67,7 +67,7 @@ jobs:
       - name: Upload binaries
         uses: actions/upload-artifact@v2
         with: 
-          name: wiiflow_lite
+          name: wiiflow_lite_${{ steps.pack.outputs.sha }}
           path: |
             apps
             wiiflow
