@@ -13,8 +13,9 @@ class Config
 {
 public:
 	Config(void);
-	void clear(void) { m_domains.clear(); }
+	void clear(void) { m_domains.clear(); m_groupCustomTitles.clear();}
 	bool load(const char *filename = 0);
+	void groupCustomTitles(void);
 	void unload(void);
 	void save(bool unload = false);
 	bool loaded(void) const { return m_loaded; }
@@ -32,6 +33,7 @@ public:
 	// Get
 	wstringEx getWString(const std::string &domain, const std::string &key, const wstringEx &defVal = wstringEx());
 	std::string getString(const std::string &domain, const std::string &key, const std::string &defVal = std::string());
+	std::string getStringCustomTitles(const std::string &domain, const std::string &key, const std::string &defVal = std::string());
 	vector<std::string> getStrings(const std::string &domain, const std::string &key, char seperator = ',', const std::string &defval = std::string());
 	bool getBool(const std::string &domain, const std::string &key, bool defVal = false);
 	int getOptBool(const std::string &domain, const std::string &key, int defVal = 2);
@@ -60,6 +62,7 @@ private:
 	DomainMap m_domains;
 	std::string m_filename;
 	DomainMap::iterator m_iter;
+	KeyMap m_groupCustomTitles;
 	static const std::string emptyString;
 private:
 	Config(const Config &);
