@@ -1,5 +1,6 @@
 
 #include <fstream>
+#include <sstream>
 
 #include "config.hpp"
 #include "gecko/gecko.hpp"
@@ -196,6 +197,7 @@ void Config::unload(void)
 	m_changed = false;
 	m_filename = emptyString;
 	m_domains.clear();
+	m_groupCustomTitles.clear();
 }
 
 void Config::save(bool unload)
@@ -223,6 +225,18 @@ bool Config::has(const std::string &domain, const std::string &key) const
 	DomainMap::const_iterator i = m_domains.find(upperCase(domain));
 	if (i == m_domains.end()) return false;
 	return i->second.find(lowerCase(key)) != i->second.end();
+}
+
+void Config::groupCustomTitles(void)
+{
+	for (Config::DomainMap::iterator k = m_domains.begin(); k != m_domains.end(); ++k)
+	{
+		string uc_domain(upperCase(k->first));
+		istringstream f(uc_domain);
+		string s;
+		while (getline(f, s, ','))
+			m_groupCustomTitles[s] = uc_domain;
+	}
 }
 
 void Config::setWString(const string &domain, const string &key, const wstringEx &val)
@@ -336,6 +350,22 @@ string Config::getString(const string &domain, const string &key, const string &
 	if(domain.empty() || key.empty())
 		return defVal;
 	string &data = m_domains[upperCase(domain)][lowerCase(key)];
+	if(data.empty())
+	{
+		data = defVal;
+		//gprintf("setString %s\n", defVal.c_str());
+		m_changed = true;
+	}
+	return data;
+}
+
+string Config::getStringCustomTitles(const string &domain, const string &key, const string &defVal)
+{
+	if(domain.empty() || key.empty())
+		return defVal;
+	KeyMap::iterator i = m_groupCustomTitles.find(upperCase(domain));
+	if (i == m_groupCustomTitles.end()) return defVal;
+	string &data = m_domains[i->second][lowerCase(key)];
 	if(data.empty())
 	{
 		data = defVal;

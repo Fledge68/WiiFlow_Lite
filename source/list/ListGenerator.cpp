@@ -56,6 +56,7 @@ void ListGenerator::OpenConfigs()
 	if(gameTDB.IsLoaded())
 		gameTDB.SetLanguageCode(gameTDB_Language.c_str());
 	CustomTitles.load(CustomTitlesPath.c_str());
+	CustomTitles.groupCustomTitles();
 }
 
 void ListGenerator::CloseConfigs()
@@ -275,7 +276,7 @@ static void Add_Plugin_Game(char *FullPath)
 	const char *RomFilename = strrchr(FullPath, '/') + 1;
 	*strrchr(RomFilename, '.') = '\0';
 	
-	string customTitle = CustomTitles.getString(m_plugin.PluginMagicWord, RomFilename, "");
+	string customTitle = CustomTitles.getStringCustomTitles(m_plugin.PluginMagicWord, RomFilename, "");
 	
 	const char *gameTDB_Title = NULL;
 	if(gameTDB.IsLoaded() && customTitle.empty() && m_cacheList.usePluginDBTitles)
@@ -410,6 +411,7 @@ void ListGenerator::CreateRomList(Config &platform_cfg, const string& romsDir, c
 		}
 	}
 	CustomTitles.load(CustomTitlesPath.c_str());
+	CustomTitles.groupCustomTitles();
 	GetFiles(romsDir.c_str(), FileTypes, Add_Plugin_Game, false, 30);//wow 30 subfolders! really?
 	CloseConfigs();
 	romNamesDB.unload();
