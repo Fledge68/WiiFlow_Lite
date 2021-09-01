@@ -22,7 +22,8 @@ jobs:
         run: | 
           mkdir cache && cd cache
           wget "https://wii.leseratte10.de/devkitPro/file.php/devkitPPC-r36-1-linux.pkg.tar.xz"
-          wget "https://wii.leseratte10.de/devkitPro/file.php/libogc-1.8.24-1-any.pkg.tar.xz"
+          wget "https://wii.leseratte10.de/devkitPro/file.php/devkitppc-rules-1.0.1-1-any.pkg.xz"
+		  wget "https://wii.leseratte10.de/devkitPro/file.php/libogc-1.8.24-1-any.pkg.tar.xz"
           wget "https://wii.leseratte10.de/devkitPro/file.php/general-tools-1.2.0-1-linux.pkg.tar.xz"
           wget "https://wii.leseratte10.de/devkitPro/file.php/gamecube-tools-1.0.2-1-linux.pkg.tar.xz"
           cd ..
@@ -31,7 +32,8 @@ jobs:
         # general-tools is needed for bin2s and gamecube-tools is needed for elf2dol
         run: | 
           tar -xf cache/devkitPPC-r36-1-linux.pkg.tar.xz opt/devkitpro/devkitPPC --strip-components=1
-          tar -xf cache/libogc-1.8.24-1-any.pkg.tar.xz opt/devkitpro/libogc --strip-components=1
+          tar -xf cache/devkitppc-rules-1.0.1-1-any.pkg.xz opt/devkitpro/devkitPPC --strip-components=1
+		  tar -xf cache/libogc-1.8.24-1-any.pkg.tar.xz opt/devkitpro/libogc --strip-components=1
           tar -xf cache/general-tools-1.2.0-1-linux.pkg.tar.xz opt/devkitpro/tools/bin/bin2s --strip-components=4
           sudo cp bin2s /usr/local/bin/bin2s
           tar -xf cache/gamecube-tools-1.0.2-1-linux.pkg.tar.xz opt/devkitpro/tools/bin/elf2dol --strip-components=4
