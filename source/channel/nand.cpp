@@ -890,11 +890,11 @@ void Nand::CreateTitleTMD(dir_discHdr *hdr)
 	u32 highTID = *(u32*)(titleTMD+0x18c);
 	u32 lowTID = *(u32*)(titleTMD+0x190);
 
-	CreatePath("%s/title/%08lx/%08lx/data", FullNANDPath, highTID, lowTID);
-	CreatePath("%s/title/%08lx/%08lx/content", FullNANDPath, highTID, lowTID);
+	CreatePath("%s/title/%08x/%08x/data", FullNANDPath, highTID, lowTID);
+	CreatePath("%s/title/%08x/%08x/content", FullNANDPath, highTID, lowTID);
 
 	char nandpath[MAX_FAT_PATH];
-	snprintf(nandpath, sizeof(nandpath), "%s/title/%08lx/%08lx/content/title.tmd", FullNANDPath, highTID, lowTID);
+	snprintf(nandpath, sizeof(nandpath), "%s/title/%08x/%08x/content/title.tmd", FullNANDPath, highTID, lowTID);
 
 	if(fsop_FileExist(nandpath))
 	{
@@ -1226,7 +1226,7 @@ u8 *Nand::GetTMD(u64 title, u32 *size)
 {
 	u8 *tmd_buf = NULL;
 	u32 tmd_size = 0;
-	char *tmd_path = fmt_malloc("/title/%08lx/%08lx/content/title.tmd", TITLE_UPPER(title), TITLE_LOWER(title));
+	char *tmd_path = fmt_malloc("/title/%08x/%08x/content/title.tmd", TITLE_UPPER(title), TITLE_LOWER(title));
 	if(tmd_path != NULL)
 	{
 		tmd_buf = GetEmuFile(tmd_path, &tmd_size);

@@ -60,8 +60,8 @@ static const devoptab_t gecko_out = {
 	NULL,			// device chmod_r
 	NULL,			// device fchmod_r
 	NULL,			// device rmdir_r
-	//NULL,			// lstat_r
-	//NULL,			// utimes_r
+	NULL,			// lstat_r
+	NULL,			// utimes_r
 };
 
 static void USBGeckoOutput()

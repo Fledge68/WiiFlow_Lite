@@ -2551,11 +2551,11 @@ bool CMenu::_loadPluginList()
 			bool preCachedList = fsop_FileExist(cachedListFile.c_str());
 			
 			Config scummvm;
-			if(!scummvm.load(fmt("%s/scummvm.ini", m_pluginsDir.c_str())))
-			{
-				if(!scummvm.load(fmt("%s/scummvm/scummvm.ini", m_pluginsDir.c_str())))
-					scummvm.load(fmt("%s:/apps/scummvm/scummvm.ini", DeviceName[currentPartition]));
-			}
+			if(strchr(romDir, ':') == NULL || !fsop_FileExist(romDir))
+				scummvm.load(fmt("%s/%s", m_pluginsDir.c_str(), romDir));
+			else
+				scummvm.load(romDir);
+			// should add error msg if loading scummvm fails or is not found
 			string platformName = "";
 			if(m_platform.loaded())/* convert plugin magic to platform name */
 				platformName = m_platform.getString("PLUGINS", m_plugin.PluginMagicWord);

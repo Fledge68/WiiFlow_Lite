@@ -71,13 +71,14 @@ endif
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:=	-lwolfssl -lcustomfat -lcustomntfs -lcustomext2fs -lpng -lturbojpeg -lm -lz -lwiiuse -lwupc -lwiidrc -lbte -lasnd -logc -lfreetype -lvorbisidec -lmad -lsicksaxis
+LIBS	:=	-lwolfssl -lcustomfat -lcustomntfs -lcustomext2fs -lpng -lturbojpeg -lm -lz -lwiiuse -lbte -lwupc -lwiidrc -lsicksaxis -lasnd -lmad -lvorbisidec -logg -lfreetype -lbz2 -logc
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
 # include and lib
 #---------------------------------------------------------------------------------
 LIBDIRS	:=	$(CURDIR)/portlibs
+
 #---------------------------------------------------------------------------------
 # no real need to edit anything past this point unless you need to add additional
 # rules for different file extensions
@@ -127,14 +128,13 @@ export OFILES	:=	$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) \
 #---------------------------------------------------------------------------------
 export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
 					$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
-					-I$(CURDIR)/$(BUILD) -I$(LIBOGC_INC) \
-					-I$(PORTLIBS)/include
+					-I$(CURDIR)/$(BUILD) -I$(LIBOGC_INC)
 
 #---------------------------------------------------------------------------------
 # build a list of library paths
 #---------------------------------------------------------------------------------
 export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib) \
-					-L$(CURDIR)/source/libwolfssl/ -L$(LIBOGC_LIB) -L$(PORTLIBS)/lib
+					-L$(CURDIR)/source/libwolfssl -L$(LIBOGC_LIB)
 
 export OUTPUT	:=	$(CURDIR)/out/$(TARGET)
 .PHONY: $(BUILD) all clean

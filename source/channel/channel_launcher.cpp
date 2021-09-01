@@ -41,8 +41,8 @@ bool Identify(u64 titleid)
 {
 	char filepath[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
 
-	gprintf("Reading TMD for %08lx %08lx...", TITLE_UPPER(titleid), TITLE_LOWER(titleid));
-	snprintf(filepath, ISFS_MAXPATH, "/title/%08lx/%08lx/content/title.tmd", TITLE_UPPER(titleid), TITLE_LOWER(titleid));
+	gprintf("Reading TMD for %08x %08x...", TITLE_UPPER(titleid), TITLE_LOWER(titleid));
+	snprintf(filepath, ISFS_MAXPATH, "/title/%08x/%08x/content/title.tmd", TITLE_UPPER(titleid), TITLE_LOWER(titleid));
 	u32 tmdSize;
 	u8 *tmdBuffer = ISFS_GetFile(filepath, &tmdSize, -1);
 	if (tmdBuffer == NULL || tmdSize == 0)

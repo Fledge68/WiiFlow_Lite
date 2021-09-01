@@ -53,7 +53,7 @@ char filepath[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
 
 static u8 *GetDol(u32 bootcontent, u64 title)
 {
-	snprintf(filepath, ISFS_MAXPATH, "/title/%08lx/%08lx/content/%08lx.app", TITLE_UPPER(title), TITLE_LOWER(title), bootcontent);
+	snprintf(filepath, ISFS_MAXPATH, "/title/%08x/%08x/content/%08x.app", TITLE_UPPER(title), TITLE_LOWER(title), bootcontent);
 
 	u32 contentSize = 0;
 
@@ -81,7 +81,7 @@ static bool GetAppNameFromTmd(bool dol, u32 *bootcontent, u64 title, u32 *IOS)
 {
 	bool ret = false;
 
-	snprintf(filepath, ISFS_MAXPATH, "/title/%08lx/%08lx/content/title.tmd", TITLE_UPPER(title), TITLE_LOWER(title));
+	snprintf(filepath, ISFS_MAXPATH, "/title/%08x/%08x/content/title.tmd", TITLE_UPPER(title), TITLE_LOWER(title));
 
 	u32 size;
 	u8 *data = ISFS_GetFile(filepath, &size, -1);

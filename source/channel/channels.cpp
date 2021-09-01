@@ -74,7 +74,7 @@ u8 Channels::GetRequestedIOS(u64 title)
 	else
 	{
 		char tmd[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
-		snprintf(tmd, ISFS_MAXPATH, "/title/%08lx/%08lx/content/title.tmd", TITLE_UPPER(title), TITLE_LOWER(title));
+		snprintf(tmd, ISFS_MAXPATH, "/title/%08x/%08x/content/title.tmd", TITLE_UPPER(title), TITLE_LOWER(title));
 		titleTMD = ISFS_GetFile(tmd, &size, -1);
 	}
 	if(titleTMD == NULL)
@@ -118,7 +118,7 @@ bool Channels::GetAppNameFromTmd(u64 title, char *app, u32 *bootcontent)
 	else
 	{
 		char tmd[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
-		snprintf(tmd, ISFS_MAXPATH, "/title/%08lx/%08lx/content/title.tmd", TITLE_UPPER(title), TITLE_LOWER(title));
+		snprintf(tmd, ISFS_MAXPATH, "/title/%08x/%08x/content/title.tmd", TITLE_UPPER(title), TITLE_LOWER(title));
 		data = ISFS_GetFile(tmd, &size, -1);
 	}
 	if(data == NULL || size < 0x208)
@@ -134,7 +134,7 @@ bool Channels::GetAppNameFromTmd(u64 title, char *app, u32 *bootcontent)
 		if(tmd_file->contents[i].index == 0)
 		{
 			*bootcontent = tmd_file->contents[i].cid;
-			snprintf(app, ISFS_MAXPATH, "/title/%08lx/%08lx/content/%08lx.app", TITLE_UPPER(title), TITLE_LOWER(title), *bootcontent);
+			snprintf(app, ISFS_MAXPATH, "/title/%08x/%08x/content/%08x.app", TITLE_UPPER(title), TITLE_LOWER(title), *bootcontent);
 			ret = true;
 			break;
 		}

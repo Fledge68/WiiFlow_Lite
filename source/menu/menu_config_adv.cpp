@@ -16,7 +16,7 @@ void AddLanguage(char *Path)
 	char lng[32];
 	memset(lng, 0, 32);
 	char *lang_chr = strrchr(Path, '/')+1;
-	memcpy(lng, lang_chr, min(31ul, (u32)(strrchr(lang_chr, '.')-lang_chr)));
+	memcpy(lng, lang_chr, min(31u, (u32)(strrchr(lang_chr, '.')-lang_chr)));
 	languages_available.push_back(lng);
 }
 

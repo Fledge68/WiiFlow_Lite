@@ -23,10 +23,7 @@ extern "C"
 {
 #endif /* __cplusplus */
 
-#include "ogg.h"
-
-struct vorbis_dsp_state;
-typedef struct vorbis_dsp_state vorbis_dsp_state;
+#include <ogg/ogg.h>
 
 typedef struct vorbis_info{
   int version;
@@ -56,7 +53,80 @@ typedef struct vorbis_info{
   void *codec_setup;
 } vorbis_info;
 
+/* vorbis_dsp_state buffers the current vorbis audio
+   analysis/synthesis state.  The DSP state belongs to a specific
+   logical bitstream ****************************************************/
+typedef struct vorbis_dsp_state{
+  int analysisp;
+  vorbis_info *vi;
+
+  ogg_int32_t **pcm;
+  ogg_int32_t **pcmret;
+  int      pcm_storage;
+  int      pcm_current;
+  int      pcm_returned;
+
+  int  preextrapolate;
+  int  eofflag;
+
+  long lW;
+  long W;
+  long nW;
+  long centerW;
+
+  ogg_int64_t granulepos;
+  ogg_int64_t sequence;
+
+  void       *backend_state;
+} vorbis_dsp_state;
+
+typedef struct vorbis_block{
+  /* necessary stream state for linking to the framing abstraction */
+  ogg_int32_t  **pcm;       /* this is a pointer into local storage */ 
+  oggpack_buffer opb;
+  
+  long  lW;
+  long  W;
+  long  nW;
+  int   pcmend;
+  int   mode;
+
+  int         eofflag;
+  ogg_int64_t granulepos;
+  ogg_int64_t sequence;
+  vorbis_dsp_state *vd; /* For read-only access of configuration */
+
+  /* local storage to avoid remallocing; it's up to the mapping to
+     structure it */
+  void               *localstore;
+  long                localtop;
+  long                localalloc;
+  long                totaluse;
+  struct alloc_chain *reap;
+
+} vorbis_block;
+
+/* vorbis_block is a single block of data to be processed as part of
+the analysis/synthesis stream; it belongs to a specific logical
+bitstream, but is independant from other vorbis_blocks belonging to
+that logical bitstream. *************************************************/
+
+struct alloc_chain{
+  void *ptr;
+  struct alloc_chain *next;
+};
+
+/* vorbis_info contains all the setup information specific to the
+   specific compression/decompression mode in progress (eg,
+   psychoacoustic settings, channel setup, options, codebook
+   etc). vorbis_info and substructures are in backends.h.
+*********************************************************************/
+
+/* the comments are not part of vorbis_info so that vorbis_info can be
+   static storage */
 typedef struct vorbis_comment{
+  /* unlimited user comment fields.  libvorbis writes 'libvorbis'
+     whatever vendor is set to in encode */
   char **user_comments;
   int   *comment_lengths;
   int    comments;
@@ -64,6 +134,18 @@ typedef struct vorbis_comment{
 
 } vorbis_comment;
 
+
+/* libvorbis encodes in two abstraction layers; first we perform DSP
+   and produce a packet (see docs/analysis.txt).  The packet is then
+   coded into a framed OggSquish bitstream by the second layer (see
+   docs/framing.txt).  Decode is the reverse process; we sync/frame
+   the bitstream and extract individual packets, then decode the
+   packet back into PCM audio.
+
+   The extra framing/packetizing is used in streaming formats, such as
+   files.  Over the net (such as with UDP), the framing and
+   packetization aren't necessary as they're provided by the transport
+   and the streaming layer is not used */
 
 /* Vorbis PRIMITIVES: general ***************************************/
 
@@ -77,6 +159,24 @@ extern void     vorbis_comment_add_tag(vorbis_comment *vc,
 extern char    *vorbis_comment_query(vorbis_comment *vc, char *tag, int count);
 extern int      vorbis_comment_query_count(vorbis_comment *vc, char *tag);
 extern void     vorbis_comment_clear(vorbis_comment *vc);
+
+extern int      vorbis_block_init(vorbis_dsp_state *v, vorbis_block *vb);
+extern int      vorbis_block_clear(vorbis_block *vb);
+extern void     vorbis_dsp_clear(vorbis_dsp_state *v);
+
+/* Vorbis PRIMITIVES: synthesis layer *******************************/
+extern int      vorbis_synthesis_idheader(ogg_packet *op);
+extern int      vorbis_synthesis_headerin(vorbis_info *vi,vorbis_comment *vc,
+					  ogg_packet *op);
+
+extern int      vorbis_synthesis_init(vorbis_dsp_state *v,vorbis_info *vi);
+extern int      vorbis_synthesis_restart(vorbis_dsp_state *v);
+extern int      vorbis_synthesis(vorbis_block *vb,ogg_packet *op);
+extern int      vorbis_synthesis_trackonly(vorbis_block *vb,ogg_packet *op);
+extern int      vorbis_synthesis_blockin(vorbis_dsp_state *v,vorbis_block *vb);
+extern int      vorbis_synthesis_pcmout(vorbis_dsp_state *v,ogg_int32_t ***pcm);
+extern int      vorbis_synthesis_read(vorbis_dsp_state *v,int samples);
+extern long     vorbis_packet_blocksize(vorbis_info *vi,ogg_packet *op);
 
 /* Vorbis ERRORS and return codes ***********************************/
 
