@@ -2766,7 +2766,7 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 				return CL_ERROR;
 		}
 		else
-			strncpy(wfcTitle, getFilenameId(m_items[i].hdr), sizeof(wfcTitle) - 1);
+			strncpy(wfcTitle, fmt("%s", getFilenameId(m_items[i].hdr)), sizeof(wfcTitle) - 1);
 			
 		/* get coverfolder for plugins, sourceflow, and homebrew */
 		if(m_items[i].hdr->type == TYPE_PLUGIN && m_pluginCacheFolders)

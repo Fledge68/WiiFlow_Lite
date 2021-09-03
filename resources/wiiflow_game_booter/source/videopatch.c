@@ -6,7 +6,7 @@
 #include <types.h>
 
 #define ARRAY_SIZE(a)	(sizeof a / sizeof a[0])
-
+/*
 GXRModeObj TVPal528Prog = 
 {
     6,      		 // viDisplayMode
@@ -111,7 +111,7 @@ GXRModeObj TVPal524ProgAa =
 	}
 
 };
-
+*/
 static GXRModeObj* vmodes[] = {
 	&TVNtsc240Ds,
 	&TVNtsc240DsAa,
@@ -128,12 +128,12 @@ static GXRModeObj* vmodes[] = {
 	&TVPal264DsAa,
 	&TVPal264Int,
 	&TVPal264IntAa,
-	&TVPal524ProgAa,
+	//&TVPal524ProgAa,
 	&TVPal524IntAa,
 	&TVPal528Int,
 	&TVPal528IntDf,
-	&TVPal528Prog,
-	&TVPal528ProgSoft,
+	//&TVPal528Prog,
+	//&TVPal528ProgSoft,
 	&TVPal576IntDfScale,
 	&TVEurgb60Hz240Ds,
 	&TVEurgb60Hz240DsAa,
