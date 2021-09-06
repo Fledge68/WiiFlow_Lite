@@ -10,14 +10,14 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Cache
-        id: cache-1
+        id: cache-2
         uses: actions/cache@v2
         with:
           path: cache
-          key: ${{ runner.os }}-cache-1
+          key: ${{ runner.os }}-cache-2
 
       - name: Download devkitPPC r39, libogc 2.3.1 and required tools
-        if: steps.cache-1.outputs.cache-hit != 'true'
+        if: steps.cache-2.outputs.cache-hit != 'true'
         # general-tools is needed for bin2s and gamecube-tools is needed for elf2dol
         run: | 
           mkdir cache && cd cache
