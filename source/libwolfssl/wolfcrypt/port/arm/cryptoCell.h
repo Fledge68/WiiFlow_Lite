@@ -27,7 +27,7 @@
 extern "C" {
 #endif
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 #include "sns_silib.h"
 

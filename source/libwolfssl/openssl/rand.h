@@ -21,8 +21,8 @@
 
 /* rand.h for openSSL */
 
-#include <libs/libwolfssl/openssl/ssl.h>
-#include <libs/libwolfssl/wolfcrypt/random.h>
+#include <libwolfssl/openssl/ssl.h>
+#include <libwolfssl/wolfcrypt/random.h>
 
 typedef WOLFSSL_RAND_METHOD RAND_METHOD;
 

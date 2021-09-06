@@ -28,11 +28,11 @@
 #ifndef WOLFCRYPT_SRP_H
 #define WOLFCRYPT_SRP_H
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
-#include <libs/libwolfssl/wolfcrypt/sha.h>
-#include <libs/libwolfssl/wolfcrypt/sha256.h>
-#include <libs/libwolfssl/wolfcrypt/sha512.h>
-#include <libs/libwolfssl/wolfcrypt/integer.h>
+#include <libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/sha.h>
+#include <libwolfssl/wolfcrypt/sha256.h>
+#include <libwolfssl/wolfcrypt/sha512.h>
+#include <libwolfssl/wolfcrypt/integer.h>
 
 #ifdef __cplusplus
     extern "C" {

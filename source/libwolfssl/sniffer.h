@@ -24,8 +24,8 @@
 #ifndef WOLFSSL_SNIFFER_H
 #define WOLFSSL_SNIFFER_H
 
-#include <libs/libwolfssl/wolfcrypt/settings.h>
-#include <libs/libwolfssl/wolfcrypt/asn_public.h>
+#include <libwolfssl/wolfcrypt/settings.h>
+#include <libwolfssl/wolfcrypt/asn_public.h>
 
 #ifdef _WIN32
     #ifdef SSL_SNIFFER_EXPORTS

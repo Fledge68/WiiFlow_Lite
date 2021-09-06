@@ -34,7 +34,7 @@ that can be serialized and deserialized in a cross-platform way.
 #ifndef WOLF_CRYPT_ASN_H
 #define WOLF_CRYPT_ASN_H
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 #ifndef NO_ASN
 
@@ -43,7 +43,7 @@ that can be serialized and deserialized in a cross-platform way.
     #define NO_ASN_TIME /* backwards compatibility with NO_TIME_H */
 #endif
 
-#include <libs/libwolfssl/wolfcrypt/integer.h>
+#include <libwolfssl/wolfcrypt/integer.h>
 
 /* fips declare of RsaPrivateKeyDecode @wc_fips */
 #if defined(HAVE_FIPS) && !defined(NO_RSA) && \
@@ -52,19 +52,19 @@ that can be serialized and deserialized in a cross-platform way.
 #endif
 
 #ifndef NO_DH
-    #include <libs/libwolfssl/wolfcrypt/dh.h>
+    #include <libwolfssl/wolfcrypt/dh.h>
 #endif
 #ifndef NO_DSA
-    #include <libs/libwolfssl/wolfcrypt/dsa.h>
+    #include <libwolfssl/wolfcrypt/dsa.h>
 #endif
 #ifndef NO_SHA
-    #include <libs/libwolfssl/wolfcrypt/sha.h>
+    #include <libwolfssl/wolfcrypt/sha.h>
 #endif
 #ifndef NO_MD5
-    #include <libs/libwolfssl/wolfcrypt/md5.h>
+    #include <libwolfssl/wolfcrypt/md5.h>
 #endif
-#include <libs/libwolfssl/wolfcrypt/sha256.h>
-#include <libs/libwolfssl/wolfcrypt/asn_public.h>   /* public interface */
+#include <libwolfssl/wolfcrypt/sha256.h>
+#include <libwolfssl/wolfcrypt/asn_public.h>   /* public interface */
 
 #if defined(NO_SHA) && defined(NO_SHA256)
     #define WC_SHA256_DIGEST_SIZE 32

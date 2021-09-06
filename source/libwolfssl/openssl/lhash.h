@@ -28,7 +28,7 @@
     extern "C" {
 #endif
 
-#include <libs/libwolfssl/openssl/ssl.h>
+#include <libwolfssl/openssl/ssl.h>
 
 #ifdef OPENSSL_ALL
 #define IMPLEMENT_LHASH_HASH_FN(name, type) \

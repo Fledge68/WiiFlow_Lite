@@ -27,7 +27,7 @@
 #endif
 
 #ifndef SINGLE_THREADED
-    #include <libs/libwolfssl/wolfcrypt/wc_port.h>
+    #include <libwolfssl/wolfcrypt/wc_port.h>
 #endif
 
 typedef struct WOLF_EVENT WOLF_EVENT;

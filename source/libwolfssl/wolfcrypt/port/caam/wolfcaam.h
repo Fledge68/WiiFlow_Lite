@@ -22,12 +22,12 @@
 #ifndef WOLF_CRYPT_CAAM_INIT_H
 #define WOLF_CRYPT_CAAM_INIT_H
 
-#include <libs/libwolfssl/wolfcrypt/settings.h>
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/settings.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 /* include for porting layer */
 #ifdef WOLFSSL_QNX_CAAM
-    #include <libs/libwolfssl/wolfcrypt/port/caam/wolfcaam_qnx.h>
+    #include <libwolfssl/wolfcrypt/port/caam/wolfcaam_qnx.h>
 #endif
 
 #if defined(WOLFSSL_IMX6_CAAM) || defined(WOLFSSL_IMX6_CAAM_RNG) || \

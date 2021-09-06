@@ -27,7 +27,7 @@
 #ifndef WOLF_CRYPT_RABBIT_H
 #define WOLF_CRYPT_RABBIT_H
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 #ifndef NO_RABBIT
 

@@ -33,7 +33,7 @@ RSA keys can be used to encrypt, decrypt, sign and verify data.
 #ifndef WOLF_CRYPT_RSA_H
 #define WOLF_CRYPT_RSA_H
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 #ifndef NO_RSA
 
@@ -71,23 +71,23 @@ RSA keys can be used to encrypt, decrypt, sign and verify data.
     #define WOLFSSL_KEY_GEN
 #endif
 #else
-    #include <libs/libwolfssl/wolfcrypt/integer.h>
-    #include <libs/libwolfssl/wolfcrypt/random.h>
+    #include <libwolfssl/wolfcrypt/integer.h>
+    #include <libwolfssl/wolfcrypt/random.h>
 #endif /* HAVE_FIPS && HAVE_FIPS_VERION 1 */
 #if defined(HAVE_FIPS) && \
 	defined(HAVE_FIPS_VERSION) && (HAVE_FIPS_VERSION >= 2)
-#include <libs/libwolfssl/wolfcrypt/fips.h>
+#include <libwolfssl/wolfcrypt/fips.h>
 #endif
 
 /* header file needed for OAEP padding */
-#include <libs/libwolfssl/wolfcrypt/hash.h>
+#include <libwolfssl/wolfcrypt/hash.h>
 
 #ifdef WOLFSSL_XILINX_CRYPT
 #include "xsecure_rsa.h"
 #endif
 
 #if defined(WOLFSSL_CRYPTOCELL)
-    #include <libs/libwolfssl/wolfcrypt/port/arm/cryptoCell.h>
+    #include <libwolfssl/wolfcrypt/port/arm/cryptoCell.h>
 #endif
 
 #ifdef __cplusplus
@@ -107,9 +107,9 @@ RSA keys can be used to encrypt, decrypt, sign and verify data.
     (defined(HAVE_FIPS_VERSION) && (HAVE_FIPS_VERSION >= 2))
 
 #ifdef WOLFSSL_ASYNC_CRYPT
-    #include <libs/libwolfssl/wolfcrypt/async.h>
+    #include <libwolfssl/wolfcrypt/async.h>
     #ifdef WOLFSSL_CERT_GEN
-        #include <libs/libwolfssl/wolfcrypt/asn.h>
+        #include <libwolfssl/wolfcrypt/asn.h>
     #endif
 #endif
 

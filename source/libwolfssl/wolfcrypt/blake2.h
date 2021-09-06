@@ -26,11 +26,11 @@
 #ifndef WOLF_CRYPT_BLAKE2_H
 #define WOLF_CRYPT_BLAKE2_H
 
-#include <libs/libwolfssl/wolfcrypt/settings.h>
+#include <libwolfssl/wolfcrypt/settings.h>
 
 #if defined(HAVE_BLAKE2) || defined(HAVE_BLAKE2S)
 
-#include <libs/libwolfssl/wolfcrypt/blake2-int.h>
+#include <libwolfssl/wolfcrypt/blake2-int.h>
 
 /* call old functions if using fips for the sake of hmac @wc_fips */
 #ifdef HAVE_FIPS

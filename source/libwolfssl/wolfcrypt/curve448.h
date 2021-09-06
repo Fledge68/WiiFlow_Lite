@@ -25,15 +25,15 @@
 #ifndef WOLF_CRYPT_CURVE448_H
 #define WOLF_CRYPT_CURVE448_H
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 #ifdef HAVE_CURVE448
 
-#include <libs/libwolfssl/wolfcrypt/fe_448.h>
-#include <libs/libwolfssl/wolfcrypt/random.h>
+#include <libwolfssl/wolfcrypt/fe_448.h>
+#include <libwolfssl/wolfcrypt/random.h>
 
 #ifdef WOLFSSL_ASYNC_CRYPT
-    #include <libs/libwolfssl/wolfcrypt/async.h>
+    #include <libwolfssl/wolfcrypt/async.h>
 #endif
 
 #ifdef __cplusplus

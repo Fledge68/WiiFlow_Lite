@@ -24,8 +24,8 @@
 #ifndef WOLFSSL_x509v3_H
 #define WOLFSSL_x509v3_H
 
-#include <libs/libwolfssl/openssl/conf.h>
-#include <libs/libwolfssl/openssl/bio.h>
+#include <libwolfssl/openssl/conf.h>
+#include <libwolfssl/openssl/bio.h>
 
 #ifdef __cplusplus
     extern "C" {

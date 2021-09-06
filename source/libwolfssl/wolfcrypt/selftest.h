@@ -24,7 +24,7 @@
 #ifndef WOLFCRYPT_SELF_TEST_H
 #define WOLFCRYPT_SELF_TEST_H
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 
 #ifdef __cplusplus

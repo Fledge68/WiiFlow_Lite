@@ -39,12 +39,12 @@
 #ifndef WOLF_CRYPT_TFM_H
 #define WOLF_CRYPT_TFM_H
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/types.h>
 #ifndef CHAR_BIT
     #include <limits.h>
 #endif
 
-#include <libs/libwolfssl/wolfcrypt/random.h>
+#include <libwolfssl/wolfcrypt/random.h>
 
 #ifdef __cplusplus
     extern "C" {
@@ -339,7 +339,7 @@ typedef fp_int   mp_int;
 
 
 /* wolf big int and common functions */
-#include <libs/libwolfssl/wolfcrypt/wolfmath.h>
+#include <libwolfssl/wolfcrypt/wolfmath.h>
 
 
 /* externally define this symbol to ignore the default settings, useful for changing the build from the make process */

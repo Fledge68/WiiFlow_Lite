@@ -27,7 +27,7 @@
     extern "C" {
 #endif
 
-#include <libs/libwolfssl/wolfcrypt/settings.h>
+#include <libwolfssl/wolfcrypt/settings.h>
 
 #ifdef WOLFSSL_MICROCHIP_PIC32MZ
 

@@ -22,7 +22,7 @@
 #ifndef _WOLFPKCS11_H_
 #define _WOLFPKCS11_H_
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 #ifdef HAVE_PKCS11
 
@@ -30,8 +30,8 @@
     #error PKCS11 support requires ./configure --enable-cryptocb or WOLF_CRYPTO_CB to be defined
 #endif
 
-#include <libs/libwolfssl/wolfcrypt/cryptocb.h>
-#include <libs/libwolfssl/wolfcrypt/pkcs11.h>
+#include <libwolfssl/wolfcrypt/cryptocb.h>
+#include <libwolfssl/wolfcrypt/pkcs11.h>
 
 #ifdef __cplusplus
     extern "C" {

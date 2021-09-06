@@ -27,7 +27,7 @@
 #ifndef WOLF_CRYPT_HC128_H
 #define WOLF_CRYPT_HC128_H
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 #ifndef NO_HC128
 

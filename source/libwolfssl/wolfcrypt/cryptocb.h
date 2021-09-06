@@ -22,7 +22,7 @@
 #ifndef _WOLF_CRYPTO_CB_H_
 #define _WOLF_CRYPTO_CB_H_
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 #ifdef __cplusplus
     extern "C" {
@@ -36,40 +36,40 @@
 #ifdef WOLF_CRYPTO_CB
 
 #ifndef NO_RSA
-    #include <libs/libwolfssl/wolfcrypt/rsa.h>
+    #include <libwolfssl/wolfcrypt/rsa.h>
 #endif
 #ifdef HAVE_ECC
-    #include <libs/libwolfssl/wolfcrypt/ecc.h>
+    #include <libwolfssl/wolfcrypt/ecc.h>
 #endif
 #ifndef NO_AES
-    #include <libs/libwolfssl/wolfcrypt/aes.h>
+    #include <libwolfssl/wolfcrypt/aes.h>
 #endif
 #ifndef NO_SHA
-    #include <libs/libwolfssl/wolfcrypt/sha.h>
+    #include <libwolfssl/wolfcrypt/sha.h>
 #endif
 #ifndef NO_SHA256
-    #include <libs/libwolfssl/wolfcrypt/sha256.h>
+    #include <libwolfssl/wolfcrypt/sha256.h>
 #endif
 #ifndef NO_HMAC
-    #include <libs/libwolfssl/wolfcrypt/hmac.h>
+    #include <libwolfssl/wolfcrypt/hmac.h>
 #endif
 #ifndef WC_NO_RNG
-    #include <libs/libwolfssl/wolfcrypt/random.h>
+    #include <libwolfssl/wolfcrypt/random.h>
 #endif
 #ifndef NO_DES3
-    #include <libs/libwolfssl/wolfcrypt/des3.h>
+    #include <libwolfssl/wolfcrypt/des3.h>
 #endif
 #ifdef WOLFSSL_CMAC
-    #include <libs/libwolfssl/wolfcrypt/cmac.h>
+    #include <libwolfssl/wolfcrypt/cmac.h>
 #endif
 #ifdef HAVE_ED25519
-    #include <libs/libwolfssl/wolfcrypt/ed25519.h>
+    #include <libwolfssl/wolfcrypt/ed25519.h>
 #endif
 #ifdef HAVE_CURVE25519
-    #include <libs/libwolfssl/wolfcrypt/curve25519.h>
+    #include <libwolfssl/wolfcrypt/curve25519.h>
 #endif
 #if defined(WOLFSSL_SHA512) || defined(WOLFSSL_SHA384)
-    #include <libs/libwolfssl/wolfcrypt/sha512.h>
+    #include <libwolfssl/wolfcrypt/sha512.h>
 #endif
 
 /* Crypto Information Structure for callbacks */

@@ -220,7 +220,7 @@ WOLFSSL_ABI WOLFSSL_API int wc_RNG_GenerateBlock(WC_RNG*, byte*, word32 sz);
 WOLFSSL_API int  wc_RNG_GenerateByte(WC_RNG*, byte*);
 WOLFSSL_API int  wc_FreeRng(WC_RNG*);
 #else
-#include <libs/libwolfssl/wolfcrypt/error-crypt.h>
+#include <libwolfssl/wolfcrypt/error-crypt.h>
 #define wc_InitRng(rng) NOT_COMPILED_IN
 #define wc_InitRng_ex(rng, h, d) NOT_COMPILED_IN
 #define wc_InitRngNonce(rng, n, s) NOT_COMPILED_IN

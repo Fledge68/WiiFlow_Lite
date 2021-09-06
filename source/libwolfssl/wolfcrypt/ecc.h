@@ -27,43 +27,43 @@
 #ifndef WOLF_CRYPT_ECC_H
 #define WOLF_CRYPT_ECC_H
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 #ifdef HAVE_ECC
 
 #if defined(HAVE_FIPS) && \
     defined(HAVE_FIPS_VERSION) && (HAVE_FIPS_VERSION >= 2)
-    #include <libs/libwolfssl/wolfcrypt/fips.h>
+    #include <libwolfssl/wolfcrypt/fips.h>
 #endif /* HAVE_FIPS_VERSION >= 2 */
 
-#include <libs/libwolfssl/wolfcrypt/integer.h>
-#include <libs/libwolfssl/wolfcrypt/random.h>
+#include <libwolfssl/wolfcrypt/integer.h>
+#include <libwolfssl/wolfcrypt/random.h>
 
 #ifdef HAVE_X963_KDF
-    #include <libs/libwolfssl/wolfcrypt/hash.h>
+    #include <libwolfssl/wolfcrypt/hash.h>
 #endif
 
 #ifdef WOLFSSL_ASYNC_CRYPT
-    #include <libs/libwolfssl/wolfcrypt/async.h>
+    #include <libwolfssl/wolfcrypt/async.h>
     #ifdef WOLFSSL_CERT_GEN
-        #include <libs/libwolfssl/wolfcrypt/asn.h>
+        #include <libwolfssl/wolfcrypt/asn.h>
     #endif
 #endif
 
 #if defined(WOLFSSL_ATECC508A) || defined(WOLFSSL_ATECC608A)
-    #include <libs/libwolfssl/wolfcrypt/port/atmel/atmel.h>
+    #include <libwolfssl/wolfcrypt/port/atmel/atmel.h>
 #endif /* WOLFSSL_ATECC508A */
 
 #if defined(WOLFSSL_CRYPTOCELL)
-    #include <libs/libwolfssl/wolfcrypt/port/arm/cryptoCell.h>
+    #include <libwolfssl/wolfcrypt/port/arm/cryptoCell.h>
 #endif
 
 #ifdef WOLFSSL_SILABS_SE_ACCEL
-    #include <libs/libwolfssl/wolfcrypt/port/silabs/silabs_ecc.h>
+    #include <libwolfssl/wolfcrypt/port/silabs/silabs_ecc.h>
 #endif
 
 #ifdef WOLFSSL_HAVE_SP_ECC
-    #include <libs/libwolfssl/wolfcrypt/sp_int.h>
+    #include <libwolfssl/wolfcrypt/sp_int.h>
 #endif
 
 

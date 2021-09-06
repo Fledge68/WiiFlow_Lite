@@ -22,8 +22,8 @@
 /* pkcs12.h for openssl */
 
 
-#include <libs/libwolfssl/openssl/ssl.h>
-#include <libs/libwolfssl/wolfcrypt/pkcs12.h>
+#include <libwolfssl/openssl/ssl.h>
+#include <libwolfssl/wolfcrypt/pkcs12.h>
 
 #ifndef WOLFSSL_PKCS12_COMPAT_H_
 #define WOLFSSL_PKCS12_COMPAT_H_

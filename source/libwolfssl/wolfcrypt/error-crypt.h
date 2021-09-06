@@ -31,7 +31,7 @@ the error status.
 #ifndef WOLF_CRYPT_ERROR_H
 #define WOLF_CRYPT_ERROR_H
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 #if defined(HAVE_FIPS) && \
     (!defined(HAVE_FIPS_VERSION) || (HAVE_FIPS_VERSION < 2))

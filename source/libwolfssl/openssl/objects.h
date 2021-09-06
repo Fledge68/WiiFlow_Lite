@@ -23,11 +23,11 @@
 #ifndef WOLFSSL_OBJECTS_H_
 #define WOLFSSL_OBJECTS_H_
 
-#include <libs/libwolfssl/wolfcrypt/settings.h>
-//#include <libs/libwolfssl/openssl/ssl.h>
+#include <libwolfssl/wolfcrypt/settings.h>
+//#include <libwolfssl/openssl/ssl.h>
 #ifndef OPENSSL_EXTRA_SSL_GUARD
 #define OPENSSL_EXTRA_SSL_GUARD
-#include <libs/libwolfssl/ssl.h>
+#include <libwolfssl/ssl.h>
 #endif /* OPENSSL_EXTRA_SSL_GUARD */
 
 #ifdef __cplusplus

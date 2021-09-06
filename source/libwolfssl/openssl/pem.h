@@ -29,11 +29,11 @@
 #ifndef WOLFSSL_PEM_H_
 #define WOLFSSL_PEM_H_
 
-#include <libs/libwolfssl/openssl/evp.h>
-#include <libs/libwolfssl/openssl/bio.h>
-#include <libs/libwolfssl/openssl/rsa.h>
-#include <libs/libwolfssl/openssl/dsa.h>
-#include <libs/libwolfssl/ssl.h>
+#include <libwolfssl/openssl/evp.h>
+#include <libwolfssl/openssl/bio.h>
+#include <libwolfssl/openssl/rsa.h>
+#include <libwolfssl/openssl/dsa.h>
+#include <libwolfssl/ssl.h>
 
 #ifdef __cplusplus
     extern "C" {

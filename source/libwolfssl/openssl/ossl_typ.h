@@ -27,6 +27,6 @@
 #ifndef WOLFSSL_OSSL_TYP_H_
 #define WOLFSSL_OSSL_TYP_H_
 
-#include <libs/libwolfssl/openssl/ssl.h>
+#include <libwolfssl/openssl/ssl.h>
 
 #endif /* !WOLFSSL_OSSL_TYP_H_ */

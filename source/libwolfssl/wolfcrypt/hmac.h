@@ -28,7 +28,7 @@
 #ifndef WOLF_CRYPT_HMAC_H
 #define WOLF_CRYPT_HMAC_H
 
-#include <libs/libwolfssl/wolfcrypt/hash.h>
+#include <libwolfssl/wolfcrypt/hash.h>
 
 #if defined(HAVE_FIPS) && \
 	(!defined(HAVE_FIPS_VERSION) || (HAVE_FIPS_VERSION < 2))
@@ -40,7 +40,7 @@
 
 #if defined(HAVE_FIPS) && \
 	defined(HAVE_FIPS_VERSION) && (HAVE_FIPS_VERSION >= 2)
-	#include <libs/libwolfssl/wolfcrypt/fips.h>
+	#include <libwolfssl/wolfcrypt/fips.h>
 #endif
 
 #ifdef __cplusplus
@@ -52,7 +52,7 @@
     (defined(HAVE_FIPS_VERSION) && (HAVE_FIPS_VERSION >= 2))
 
 #ifdef WOLFSSL_ASYNC_CRYPT
-    #include <libs/libwolfssl/wolfcrypt/async.h>
+    #include <libwolfssl/wolfcrypt/async.h>
 #endif
 
 #ifndef NO_OLD_WC_NAMES

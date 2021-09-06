@@ -27,7 +27,7 @@
 #ifndef WOLF_CRYPT_MD5_H
 #define WOLF_CRYPT_MD5_H
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 #ifndef NO_MD5
 
@@ -63,13 +63,13 @@ enum {
 
 
 #ifdef WOLFSSL_MICROCHIP_PIC32MZ
-    #include <libs/libwolfssl/wolfcrypt/port/pic32/pic32mz-crypt.h>
+    #include <libwolfssl/wolfcrypt/port/pic32/pic32mz-crypt.h>
 #endif
 #ifdef STM32_HASH
-    #include <libs/libwolfssl/wolfcrypt/port/st/stm32.h>
+    #include <libwolfssl/wolfcrypt/port/st/stm32.h>
 #endif
 #ifdef WOLFSSL_ASYNC_CRYPT
-    #include <libs/libwolfssl/wolfcrypt/async.h>
+    #include <libwolfssl/wolfcrypt/async.h>
 #endif
 
 #ifdef WOLFSSL_TI_HASH

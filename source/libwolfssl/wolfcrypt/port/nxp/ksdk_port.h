@@ -22,17 +22,17 @@
 #ifndef _KSDK_PORT_H_
 #define _KSDK_PORT_H_
 
-#include <libs/libwolfssl/wolfcrypt/settings.h>
+#include <libwolfssl/wolfcrypt/settings.h>
 #ifdef USE_FAST_MATH
-    #include <libs/libwolfssl/wolfcrypt/tfm.h>
+    #include <libwolfssl/wolfcrypt/tfm.h>
 #elif defined WOLFSSL_SP_MATH
-    #include <libs/libwolfssl/wolfcrypt/sp_int.h>
+    #include <libwolfssl/wolfcrypt/sp_int.h>
 #else
-    #include <libs/libwolfssl/wolfcrypt/integer.h>
+    #include <libwolfssl/wolfcrypt/integer.h>
 #endif
-#include <libs/libwolfssl/wolfcrypt/ecc.h>
-#include <libs/libwolfssl/wolfcrypt/curve25519.h>
-#include <libs/libwolfssl/wolfcrypt/ed25519.h>
+#include <libwolfssl/wolfcrypt/ecc.h>
+#include <libwolfssl/wolfcrypt/curve25519.h>
+#include <libwolfssl/wolfcrypt/ed25519.h>
 
 
 /* API to init required hardware */

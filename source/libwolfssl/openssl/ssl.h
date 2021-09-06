@@ -32,28 +32,28 @@
 /* wolfssl_openssl compatibility layer */
 #ifndef OPENSSL_EXTRA_SSL_GUARD
 #define OPENSSL_EXTRA_SSL_GUARD
-#include <libs/libwolfssl/ssl.h>
+#include <libwolfssl/ssl.h>
 #endif /* OPENSSL_EXTRA_SSL_GUARD */
 
-#include <libs/libwolfssl/openssl/tls1.h>
-#include <libs/libwolfssl/openssl/evp.h>
-#include <libs/libwolfssl/openssl/bio.h>
+#include <libwolfssl/openssl/tls1.h>
+#include <libwolfssl/openssl/evp.h>
+#include <libwolfssl/openssl/bio.h>
 #ifdef OPENSSL_EXTRA
-#include <libs/libwolfssl/openssl/crypto.h>
+#include <libwolfssl/openssl/crypto.h>
 #endif
 
 #if defined(WOLFSSL_QT) || defined(OPENSSL_ALL)
-#include <libs/libwolfssl/openssl/dh.h>
-#include <libs/libwolfssl/openssl/objects.h>
+#include <libwolfssl/openssl/dh.h>
+#include <libwolfssl/openssl/objects.h>
 #endif
 
 /* need MIN_CODE_E to determine wolfSSL error range */
-#include <libs/libwolfssl/wolfcrypt/error-crypt.h>
+#include <libwolfssl/wolfcrypt/error-crypt.h>
 
 /* all NID_* values are in asn.h */
-#include <libs/libwolfssl/wolfcrypt/asn.h>
+#include <libwolfssl/wolfcrypt/asn.h>
 
-#include <libs/libwolfssl/openssl/x509.h>
+#include <libwolfssl/openssl/x509.h>
 
 #ifdef __cplusplus
     extern "C" {
@@ -1059,7 +1059,7 @@ wolfSSL_X509_STORE_set_verify_cb((WOLFSSL_X509_STORE *)(s), (WOLFSSL_X509_STORE_
 
 #if defined(OPENSSL_ALL) || defined(WOLFSSL_ASIO) || defined(WOLFSSL_HAPROXY) \
     || defined(WOLFSSL_NGINX)
-#include <libs/libwolfssl/openssl/pem.h>
+#include <libwolfssl/openssl/pem.h>
 
 #define SSL_CTRL_CHAIN       88
 #define ERR_LIB_SSL          20
@@ -1199,7 +1199,7 @@ wolfSSL_X509_STORE_set_verify_cb((WOLFSSL_X509_STORE *)(s), (WOLFSSL_X509_STORE_
 
 #if defined(HAVE_STUNNEL) || defined(WOLFSSL_NGINX) || defined(OPENSSL_EXTRA) \
                                                          || defined(OPENSSL_ALL)
-#include <libs/libwolfssl/openssl/asn1.h>
+#include <libwolfssl/openssl/asn1.h>
 
 #define SSL23_ST_SR_CLNT_HELLO_A        (0x210|0x2000)
 #define SSL3_ST_SR_CLNT_HELLO_A         (0x110|0x2000)
@@ -1307,7 +1307,7 @@ wolfSSL_X509_STORE_set_verify_cb((WOLFSSL_X509_STORE *)(s), (WOLFSSL_X509_STORE_
     defined(WOLFSSL_MYSQL_COMPATIBLE) || defined(OPENSSL_ALL) || \
     defined(HAVE_LIGHTY) || defined(HAVE_STUNNEL)
 
-#include <libs/libwolfssl/error-ssl.h>
+#include <libwolfssl/error-ssl.h>
 
 #define OPENSSL_STRING    WOLFSSL_STRING
 #define OPENSSL_CSTRING   WOLFSSL_STRING

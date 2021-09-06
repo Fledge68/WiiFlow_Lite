@@ -99,7 +99,7 @@
     #include <libwolfssl/wolfcrypt/port/arm/cryptoCell.h>
 #endif
 #if defined(WOLFSSL_SILABS_SE_ACCEL)
-    #include <libs/libwolfssl/wolfcrypt/port/silabs/silabs_hash.h>
+    #include <libwolfssl/wolfcrypt/port/silabs/silabs_hash.h>
 #endif
 
 #if defined(_MSC_VER)

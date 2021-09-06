@@ -87,8 +87,8 @@
     #endif
 
 #elif (defined(OPENSSL_EXTRA) || defined(OPENSSL_EXTRA_X509_SMALL))
-    #include <libs/libwolfssl/openssl/bn.h>
-    #include <libs/libwolfssl/openssl/hmac.h>
+    #include <libwolfssl/openssl/bn.h>
+    #include <libwolfssl/openssl/hmac.h>
 
     /* We need the old SSL names */
     #ifdef NO_OLD_SSL_NAMES
@@ -3625,7 +3625,7 @@ WOLFSSL_API int wolfSSL_accept_ex(WOLFSSL*, HandShakeCallBack, TimeoutCallBack,
 /* Smaller subset of X509 compatibility functions. Avoid increasing the size of
  * this subset and its memory usage */
 
-#include <libs/libwolfssl/openssl/asn1.h>
+#include <libwolfssl/openssl/asn1.h>
 struct WOLFSSL_X509_NAME_ENTRY {
     WOLFSSL_ASN1_OBJECT* object;  /* static object just for keeping grp, type */
     WOLFSSL_ASN1_STRING* value;  /* points to data, for lighttpd port */
@@ -3977,7 +3977,7 @@ WOLFSSL_API WOLFSSL_X509 *wolfSSL_X509_to_X509_REQ(WOLFSSL_X509 *x,
 #if defined(OPENSSL_ALL) || defined(HAVE_STUNNEL) || defined(WOLFSSL_NGINX) \
     || defined(WOLFSSL_HAPROXY) || defined(OPENSSL_EXTRA) || defined(HAVE_LIGHTY)
 
-#include <libs/libwolfssl/openssl/crypto.h>
+#include <libwolfssl/openssl/crypto.h>
 
 WOLFSSL_API int wolfSSL_CRYPTO_set_mem_functions(
         wolfSSL_Malloc_cb  m,
@@ -4183,7 +4183,7 @@ WOLFSSL_API WOLFSSL_X509_CRL *wolfSSL_X509_OBJECT_get0_X509_CRL(WOLFSSL_X509_OBJ
 #endif /* OPENSSL_ALL || HAVE_STUNNEL || WOLFSSL_NGINX || WOLFSSL_HAPROXY || HAVE_LIGHTY */
 
 #if defined(OPENSSL_EXTRA) || defined(WOLFSSL_WPAS_SMALL)
-#include <libs/libwolfssl/openssl/stack.h>
+#include <libwolfssl/openssl/stack.h>
 WOLFSSL_API void wolfSSL_sk_X509_pop_free(WOLF_STACK_OF(WOLFSSL_X509)* sk, void (*f) (WOLFSSL_X509*));
 #endif /* OPENSSL_EXTRA || WOLFSSL_WPAS_SMALL */
 

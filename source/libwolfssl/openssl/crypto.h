@@ -24,7 +24,7 @@
 #ifndef WOLFSSL_CRYPTO_H_
 #define WOLFSSL_CRYPTO_H_
 
-#include <libs/libwolfssl/wolfcrypt/settings.h>
+#include <libwolfssl/wolfcrypt/settings.h>
 
 typedef struct WOLFSSL_INIT_SETTINGS {
     char* appname;
@@ -40,8 +40,8 @@ typedef struct CRYPTO_EX_DATA            CRYPTO_EX_DATA;
 typedef void (CRYPTO_free_func)(void* parent, void* ptr, CRYPTO_EX_DATA* ad, int idx,
         long argl, void* argp);
 
-#include <libs/libwolfssl/openssl/opensslv.h>
-#include <libs/libwolfssl/openssl/conf.h>
+#include <libwolfssl/openssl/opensslv.h>
+#include <libwolfssl/openssl/conf.h>
 
 #ifdef WOLFSSL_PREFIX
 #include "prefix_crypto.h"

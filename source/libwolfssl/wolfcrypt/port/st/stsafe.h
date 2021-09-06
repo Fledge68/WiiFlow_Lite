@@ -22,16 +22,16 @@
 #ifndef _WOLFPORT_STSAFE_H_
 #define _WOLFPORT_STSAFE_H_
 
-#include <libs/libwolfssl/wolfcrypt/settings.h>
-#include <libs/libwolfssl/wolfcrypt/ecc.h>
-#include <libs/libwolfssl/wolfcrypt/error-crypt.h>
+#include <libwolfssl/wolfcrypt/settings.h>
+#include <libwolfssl/wolfcrypt/ecc.h>
+#include <libwolfssl/wolfcrypt/error-crypt.h>
 
 #ifdef WOLF_CRYPTO_CB
-#include <libs/libwolfssl/wolfcrypt/cryptocb.h>
+#include <libwolfssl/wolfcrypt/cryptocb.h>
 #endif
 
 #if !defined(WOLFCRYPT_ONLY) && defined(HAVE_PK_CALLBACKS)
-#include <libs/libwolfssl/ssl.h>
+#include <libwolfssl/ssl.h>
 #endif
 
 #ifdef WOLFSSL_STSAFEA100

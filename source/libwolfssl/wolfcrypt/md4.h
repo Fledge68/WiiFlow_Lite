@@ -26,7 +26,7 @@
 #ifndef WOLF_CRYPT_MD4_H
 #define WOLF_CRYPT_MD4_H
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 #ifndef NO_MD4
 

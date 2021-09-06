@@ -32,7 +32,7 @@ This library contains implementation for the ChaCha20 stream cipher.
 #ifndef WOLF_CRYPT_CHACHA_H
 #define WOLF_CRYPT_CHACHA_H
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 #ifdef HAVE_CHACHA
 

@@ -346,7 +346,7 @@ typedef struct sp_ecc_ctx {
 #endif
 
 #if defined(WOLFSSL_SP_MATH) || defined(WOLFSSL_SP_MATH_ALL)
-#include <libs/libwolfssl/wolfcrypt/random.h>
+#include <libwolfssl/wolfcrypt/random.h>
 
 #ifdef SP_INT_BITS
     /* Calculate number of digits to have in an sp_int based maximum size of
@@ -760,7 +760,7 @@ typedef sp_int_digit mp_digit;
 
 
 /* Include the maths operations that are not implementation specific. */
-#include <libs/libwolfssl/wolfcrypt/wolfmath.h>
+#include <libwolfssl/wolfcrypt/wolfmath.h>
 
 /*
  * Function prototypes.

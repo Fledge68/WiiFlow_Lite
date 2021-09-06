@@ -27,7 +27,7 @@
 #ifndef WOLF_CRYPT_COMPRESS_H
 #define WOLF_CRYPT_COMPRESS_H
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 #ifdef HAVE_LIBZ
 

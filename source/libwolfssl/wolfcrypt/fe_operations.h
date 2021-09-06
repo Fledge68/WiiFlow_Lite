@@ -23,11 +23,11 @@
 #ifndef WOLF_CRYPT_FE_OPERATIONS_H
 #define WOLF_CRYPT_FE_OPERATIONS_H
 
-#include <libs/libwolfssl/wolfcrypt/settings.h>
+#include <libwolfssl/wolfcrypt/settings.h>
 
 #if defined(HAVE_CURVE25519) || defined(HAVE_ED25519)
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 #if defined(USE_INTEL_SPEEDUP) && !defined(NO_CURVED25519_X64)
     #define CURVED25519_X64

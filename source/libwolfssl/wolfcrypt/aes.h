@@ -34,13 +34,13 @@ block cipher mechanism that uses n-bit binary string parameter key with 128-bits
 #ifndef WOLF_CRYPT_AES_H
 #define WOLF_CRYPT_AES_H
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 #ifndef NO_AES
 
 #if defined(HAVE_FIPS) && \
     defined(HAVE_FIPS_VERSION) && (HAVE_FIPS_VERSION >= 2)
-    #include <libs/libwolfssl/wolfcrypt/fips.h>
+    #include <libwolfssl/wolfcrypt/fips.h>
 #endif /* HAVE_FIPS_VERSION >= 2 */
 
 /* included for fips @wc_fips */
@@ -56,10 +56,10 @@ block cipher mechanism that uses n-bit binary string parameter key with 128-bits
 #endif
 
 #ifndef WC_NO_RNG
-    #include <libs/libwolfssl/wolfcrypt/random.h>
+    #include <libwolfssl/wolfcrypt/random.h>
 #endif
 #ifdef STM32_CRYPTO
-    #include <libs/libwolfssl/wolfcrypt/port/st/stm32.h>
+    #include <libwolfssl/wolfcrypt/port/st/stm32.h>
 #endif
 
 #ifdef WOLFSSL_IMXRT_DCP
@@ -72,29 +72,29 @@ block cipher mechanism that uses n-bit binary string parameter key with 128-bits
 
 #if defined(WOLFSSL_AFALG) || defined(WOLFSSL_AFALG_XILINX_AES)
 /* included for struct msghdr */
-#include <libs/libwolfssl/wolfcrypt/port/af_alg/wc_afalg.h>
+#include <libwolfssl/wolfcrypt/port/af_alg/wc_afalg.h>
 #endif
 
 #if defined(WOLFSSL_DEVCRYPTO_AES) || defined(WOLFSSL_DEVCRYPTO_CBC)
-#include <libs/libwolfssl/wolfcrypt/port/devcrypto/wc_devcrypto.h>
+#include <libwolfssl/wolfcrypt/port/devcrypto/wc_devcrypto.h>
 #endif
 
 #ifdef WOLFSSL_SILABS_SE_ACCEL
-    #include <libs/libwolfssl/wolfcrypt/port/silabs/silabs_aes.h>
+    #include <libwolfssl/wolfcrypt/port/silabs/silabs_aes.h>
 #endif
 
 
 #if defined(HAVE_AESGCM) && !defined(WC_NO_RNG)
-    #include <libs/libwolfssl/wolfcrypt/random.h>
+    #include <libwolfssl/wolfcrypt/random.h>
 #endif
 
 #if defined(WOLFSSL_CRYPTOCELL)
-    #include <libs/libwolfssl/wolfcrypt/port/arm/cryptoCell.h>
+    #include <libwolfssl/wolfcrypt/port/arm/cryptoCell.h>
 #endif
 
 #if defined(WOLFSSL_RENESAS_TSIP_TLS) && \
     defined(WOLFSSL_RENESAS_TSIP_TLS_AES_CRYPT)
-    #include <libs/libwolfssl/wolfcrypt/port/Renesas/renesas-tsip-crypt.h>
+    #include <libwolfssl/wolfcrypt/port/Renesas/renesas-tsip-crypt.h>
 #endif
 
 #ifdef __cplusplus
@@ -118,7 +118,7 @@ enum {
     (defined(HAVE_FIPS_VERSION) && (HAVE_FIPS_VERSION >= 2))
 
 #ifdef WOLFSSL_ASYNC_CRYPT
-    #include <libs/libwolfssl/wolfcrypt/async.h>
+    #include <libwolfssl/wolfcrypt/async.h>
 #endif
 
 enum {

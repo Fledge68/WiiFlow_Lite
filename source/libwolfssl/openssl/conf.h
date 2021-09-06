@@ -28,8 +28,8 @@
     extern "C" {
 #endif
 
-#include <libs/libwolfssl/wolfcrypt/settings.h>
-#include <libs/libwolfssl/version.h>
+#include <libwolfssl/wolfcrypt/settings.h>
+#include <libwolfssl/version.h>
 
 typedef struct WOLFSSL_CONF_VALUE {
     char *section;
@@ -38,7 +38,7 @@ typedef struct WOLFSSL_CONF_VALUE {
 } WOLFSSL_CONF_VALUE;
 
 /* ssl.h requires WOLFSSL_CONF_VALUE */
-#include <libs/libwolfssl/ssl.h>
+#include <libwolfssl/ssl.h>
 
 typedef struct WOLFSSL_CONF {
     void *meth_data;

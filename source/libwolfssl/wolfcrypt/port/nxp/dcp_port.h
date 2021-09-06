@@ -21,23 +21,23 @@
 #ifndef _DCP_PORT_H_
 #define _DCP_PORT_H_
 
-#include <libs/libwolfssl/wolfcrypt/settings.h>
+#include <libwolfssl/wolfcrypt/settings.h>
 #include "fsl_dcp.h"
 
 #ifndef NO_SHA256
-#include <libs/libwolfssl/wolfcrypt/sha256.h>
+#include <libwolfssl/wolfcrypt/sha256.h>
 void DCPSha256Free(wc_Sha256 *sha256);
 #endif
 
 #ifndef NO_SHA
-#include <libs/libwolfssl/wolfcrypt/sha.h>
+#include <libwolfssl/wolfcrypt/sha.h>
 void DCPShaFree(wc_Sha *sha);
 #endif
 
 int wc_dcp_init(void);
 
 #ifndef NO_AES
-#include <libs/libwolfssl/wolfcrypt/aes.h>
+#include <libwolfssl/wolfcrypt/aes.h>
 int  DCPAesInit(Aes* aes);
 void DCPAesFree(Aes *aes);
 

@@ -29,7 +29,7 @@
 #endif
 
 #include "r_tsip_rx_if.h"
-#include <libs/libwolfssl/wolfcrypt/logging.h>
+#include <libwolfssl/wolfcrypt/logging.h>
 
 #ifdef __cplusplus
 extern "C" {

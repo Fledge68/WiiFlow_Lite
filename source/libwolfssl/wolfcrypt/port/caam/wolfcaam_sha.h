@@ -22,11 +22,11 @@
 #ifndef WOLF_CRYPT_CAAM_SHA_H
 #define WOLF_CRYPT_CAAM_SHA_H
 
-#include <libs/libwolfssl/wolfcrypt/settings.h>
+#include <libwolfssl/wolfcrypt/settings.h>
 
 #ifdef WOLFSSL_IMX6_CAAM
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 #define WOLFSSL_NO_HASH_RAW
 

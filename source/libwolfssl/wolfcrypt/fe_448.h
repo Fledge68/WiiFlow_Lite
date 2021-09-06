@@ -23,11 +23,11 @@
 #ifndef WOLF_CRYPT_FE_448_H
 #define WOLF_CRYPT_FE_448_H
 
-#include <libs/libwolfssl/wolfcrypt/settings.h>
+#include <libwolfssl/wolfcrypt/settings.h>
 
 #if defined(HAVE_CURVE448) || defined(HAVE_ED448)
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 #if defined(HAVE___UINT128_T) && !defined(NO_CURVED448_128BIT)
     #define CURVED448_128BIT

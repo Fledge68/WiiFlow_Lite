@@ -327,7 +327,7 @@ decouple library dependencies with standard string, memory and so on.
     #elif (defined(WOLFSSL_ASYNC_CRYPT) && defined(HAVE_INTEL_QA)) || \
           defined(HAVE_INTEL_QA_SYNC)
         #ifndef HAVE_INTEL_QA_SYNC
-            #include <libs/libwolfssl/wolfcrypt/port/intel/quickassist_mem.h>
+            #include <libwolfssl/wolfcrypt/port/intel/quickassist_mem.h>
             #undef USE_WOLFSSL_MEMORY
             #ifdef WOLFSSL_DEBUG_MEMORY
                 #define XMALLOC(s, h, t)     IntelQaMalloc((s), (h), (t), __func__, __LINE__)
@@ -339,7 +339,7 @@ decouple library dependencies with standard string, memory and so on.
                 #define XREALLOC(p, n, h, t) IntelQaRealloc((p), (n), (h), (t))
             #endif /* WOLFSSL_DEBUG_MEMORY */
         #else
-            #include <libs/libwolfssl/wolfcrypt/port/intel/quickassist_sync.h>
+            #include <libwolfssl/wolfcrypt/port/intel/quickassist_sync.h>
             #undef USE_WOLFSSL_MEMORY
             #ifdef WOLFSSL_DEBUG_MEMORY
                 #define XMALLOC(s, h, t)     wc_CryptoCb_IntelQaMalloc((s), (h), (t), __func__, __LINE__)

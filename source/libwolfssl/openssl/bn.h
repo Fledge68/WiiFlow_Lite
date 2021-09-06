@@ -30,8 +30,8 @@
 #ifndef WOLFSSL_BN_H_
 #define WOLFSSL_BN_H_
 
-#include <libs/libwolfssl/wolfcrypt/settings.h>
-#include <libs/libwolfssl/wolfcrypt/integer.h>
+#include <libwolfssl/wolfcrypt/settings.h>
+#include <libwolfssl/wolfcrypt/integer.h>
 
 #ifdef __cplusplus
     extern "C" {

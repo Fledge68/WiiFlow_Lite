@@ -27,7 +27,7 @@
     #include <config.h>
 #endif
 
-#include <libs/libwolfssl/wolfcrypt/settings.h>
+#include <libwolfssl/wolfcrypt/settings.h>
 
 #if defined(WOLFSSL_TI_CRYPT) ||  defined(WOLFSSL_TI_HASH)
 

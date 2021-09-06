@@ -25,8 +25,8 @@
 /* Generic STM32 Hashing and Crypto Functions */
 /* Supports CubeMX HAL or Standard Peripheral Library */
 
-#include <libs/libwolfssl/wolfcrypt/settings.h>
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/settings.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 #ifdef STM32_HASH
 

@@ -23,7 +23,7 @@
 #ifndef WOLFSSL_DEVCRYPTO_H
 #define WOLFSSL_DEVCRYPTO_H
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 #ifdef WOLFSSL_DEVCRYPTO
 

@@ -25,8 +25,8 @@
 #ifndef WOLFSSL_SHA_H_
 #define WOLFSSL_SHA_H_
 
-#include <libs/libwolfssl/wolfcrypt/settings.h>
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/settings.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 #ifdef WOLFSSL_PREFIX
 #include "prefix_sha.h"

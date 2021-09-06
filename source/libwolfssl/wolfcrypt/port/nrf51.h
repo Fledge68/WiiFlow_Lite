@@ -27,7 +27,7 @@
 extern "C" {
 #endif
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 /* Public Functions */
 int nrf51_random_generate(byte* output, word32 sz);

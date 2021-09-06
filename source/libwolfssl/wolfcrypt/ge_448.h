@@ -23,11 +23,11 @@
 #ifndef WOLF_CRYPT_GE_448_H
 #define WOLF_CRYPT_GE_448_H
 
-#include <libs/libwolfssl/wolfcrypt/settings.h>
+#include <libwolfssl/wolfcrypt/settings.h>
 
 #ifdef HAVE_ED448
 
-#include <libs/libwolfssl/wolfcrypt/fe_448.h>
+#include <libwolfssl/wolfcrypt/fe_448.h>
 
 /*
 ge448 means group element.

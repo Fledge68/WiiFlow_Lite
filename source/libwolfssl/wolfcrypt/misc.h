@@ -29,7 +29,7 @@ masking and clearing memory logic.
 #define WOLF_CRYPT_MISC_H
 
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 
 #ifdef __cplusplus

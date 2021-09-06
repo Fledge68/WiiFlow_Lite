@@ -24,9 +24,9 @@
 #ifndef WOLFSSL_EC_H_
 #define WOLFSSL_EC_H_
 
-#include <libs/libwolfssl/openssl/bn.h>
-#include <libs/libwolfssl/wolfcrypt/asn.h>
-#include <libs/libwolfssl/wolfcrypt/ecc.h>
+#include <libwolfssl/openssl/bn.h>
+#include <libwolfssl/wolfcrypt/asn.h>
+#include <libwolfssl/wolfcrypt/ecc.h>
 
 #ifdef __cplusplus
 extern "C" {

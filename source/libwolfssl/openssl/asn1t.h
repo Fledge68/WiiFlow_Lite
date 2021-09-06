@@ -24,7 +24,7 @@
 #ifndef WOLFSSL_ASN1T_H_
 #define WOLFSSL_ASN1T_H_
 
-#include <libs/libwolfssl/wolfcrypt/asn.h>
-#include <libs/libwolfssl/openssl/asn1.h>
+#include <libwolfssl/wolfcrypt/asn.h>
+#include <libwolfssl/openssl/asn1.h>
 
 #endif /* WOLFSSL_ASN1T_H_ */

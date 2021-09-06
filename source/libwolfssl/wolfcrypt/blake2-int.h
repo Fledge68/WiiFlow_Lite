@@ -37,7 +37,7 @@
 #ifndef WOLFCRYPT_BLAKE2_INT_H
 #define WOLFCRYPT_BLAKE2_INT_H
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 #if defined(__cplusplus)
     extern "C" {

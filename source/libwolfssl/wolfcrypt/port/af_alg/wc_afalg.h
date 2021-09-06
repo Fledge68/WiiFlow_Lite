@@ -23,7 +23,7 @@
 #ifndef WOLFSSL_AFALG_H
 #define WOLFSSL_AFALG_H
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 #include <sys/socket.h>
 #include <linux/if_alg.h>

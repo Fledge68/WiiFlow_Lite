@@ -23,7 +23,7 @@
 #ifndef WOLF_CRYPT_AFALG_HASH_H
 #define WOLF_CRYPT_AFALG_HASH_H
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 #undef  WOLFSSL_NO_HASH_RAW
 #define WOLFSSL_NO_HASH_RAW

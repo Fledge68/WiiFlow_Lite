@@ -24,7 +24,7 @@
 #ifndef WOLFSSL_ASN1_H_
 #define WOLFSSL_ASN1_H_
 
-#include <libs/libwolfssl/openssl/ssl.h>
+#include <libwolfssl/openssl/ssl.h>
 
 #define ASN1_STRING_new      wolfSSL_ASN1_STRING_new
 #define ASN1_STRING_type_new wolfSSL_ASN1_STRING_type_new

@@ -22,7 +22,7 @@
 #ifndef _PSOC6_CRYPTO_PORT_H_
 #define _PSOC6_CRYPTO_PORT_H_
 
-#include <libs/libwolfssl/wolfcrypt/settings.h>
+#include <libwolfssl/wolfcrypt/settings.h>
 #include "cy_crypto_core_sha.h"
 #include "cy_device_headers.h"
 #include "psoc6_02_config.h"
@@ -31,17 +31,17 @@
 
 
 #ifdef WOLFSSL_SHA512
-#include <libs/libwolfssl/wolfcrypt/sha512.h>
+#include <libwolfssl/wolfcrypt/sha512.h>
 #endif
 
 #ifndef NO_SHA256
-#include <libs/libwolfssl/wolfcrypt/sha.h>
-#include <libs/libwolfssl/wolfcrypt/sha256.h>
+#include <libwolfssl/wolfcrypt/sha.h>
+#include <libwolfssl/wolfcrypt/sha256.h>
 #endif /* !def NO_SHA256 */
 
 
 #ifdef HAVE_ECC
-#include <libs/libwolfssl/wolfcrypt/ecc.h>
+#include <libwolfssl/wolfcrypt/ecc.h>
 int psoc6_ecc_verify_hash_ex(mp_int *r, mp_int *s, const byte* hash,
                     word32 hashlen, int* verif_res, ecc_key* key);
 #endif /* HAVE_ECC */

@@ -54,7 +54,7 @@
 #ifndef WOLF_CRYPT_CAMELLIA_H
 #define WOLF_CRYPT_CAMELLIA_H
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 #ifdef HAVE_CAMELLIA
 

@@ -24,8 +24,8 @@
 
 #include <stdint.h>
 
-#include <libs/libwolfssl/wolfcrypt/settings.h>
-#include <libs/libwolfssl/wolfcrypt/error-crypt.h>
+#include <libwolfssl/wolfcrypt/settings.h>
+#include <libwolfssl/wolfcrypt/error-crypt.h>
 
 #if defined(WOLFSSL_ATECC508A) || defined(WOLFSSL_ATECC608A) || \
     defined(WOLFSSL_ATECC_PKCB)
@@ -68,7 +68,7 @@
 #endif
 
 /* ATECC_KEY_SIZE required for ecc.h */
-#include <libs/libwolfssl/wolfcrypt/ecc.h>
+#include <libwolfssl/wolfcrypt/ecc.h>
 
 struct WOLFSSL;
 struct WOLFSSL_CTX;

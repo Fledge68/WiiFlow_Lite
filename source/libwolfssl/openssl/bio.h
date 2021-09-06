@@ -25,7 +25,7 @@
 #ifndef WOLFSSL_BIO_H_
 #define WOLFSSL_BIO_H_
 
-#include <libs/libwolfssl/openssl/ssl.h>
+#include <libwolfssl/openssl/ssl.h>
 
 
 #ifdef __cplusplus

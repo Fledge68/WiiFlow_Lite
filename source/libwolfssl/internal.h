@@ -25,113 +25,113 @@
 #define WOLFSSL_INT_H
 
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
-#include <libs/libwolfssl/ssl.h>
+#include <libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/ssl.h>
 #ifdef HAVE_CRL
-    #include <libs/libwolfssl/crl.h>
+    #include <libwolfssl/crl.h>
 #endif
-#include <libs/libwolfssl/wolfcrypt/random.h>
+#include <libwolfssl/wolfcrypt/random.h>
 #ifndef NO_DES3
-    #include <libs/libwolfssl/wolfcrypt/des3.h>
+    #include <libwolfssl/wolfcrypt/des3.h>
 #endif
 #ifndef NO_HC128
-    #include <libs/libwolfssl/wolfcrypt/hc128.h>
+    #include <libwolfssl/wolfcrypt/hc128.h>
 #endif
 #ifndef NO_RABBIT
-    #include <libs/libwolfssl/wolfcrypt/rabbit.h>
+    #include <libwolfssl/wolfcrypt/rabbit.h>
 #endif
 #ifdef HAVE_CHACHA
-    #include <libs/libwolfssl/wolfcrypt/chacha.h>
+    #include <libwolfssl/wolfcrypt/chacha.h>
 #endif
 #ifndef NO_ASN
-    #include <libs/libwolfssl/wolfcrypt/asn.h>
-    #include <libs/libwolfssl/wolfcrypt/pkcs12.h>
+    #include <libwolfssl/wolfcrypt/asn.h>
+    #include <libwolfssl/wolfcrypt/pkcs12.h>
 #endif
 #ifndef NO_MD5
-    #include <libs/libwolfssl/wolfcrypt/md5.h>
+    #include <libwolfssl/wolfcrypt/md5.h>
 #endif
 #ifndef NO_SHA
-    #include <libs/libwolfssl/wolfcrypt/sha.h>
+    #include <libwolfssl/wolfcrypt/sha.h>
 #endif
 #ifndef NO_AES
-    #include <libs/libwolfssl/wolfcrypt/aes.h>
+    #include <libwolfssl/wolfcrypt/aes.h>
 #endif
 #ifdef HAVE_POLY1305
-    #include <libs/libwolfssl/wolfcrypt/poly1305.h>
+    #include <libwolfssl/wolfcrypt/poly1305.h>
 #endif
 #if defined(HAVE_CHACHA) && defined(HAVE_POLY1305) && defined(OPENSSL_EXTRA)
-    #include <libs/libwolfssl/wolfcrypt/chacha20_poly1305.h>
+    #include <libwolfssl/wolfcrypt/chacha20_poly1305.h>
 #endif
 #ifdef HAVE_CAMELLIA
-    #include <libs/libwolfssl/wolfcrypt/camellia.h>
+    #include <libwolfssl/wolfcrypt/camellia.h>
 #endif
-#include <libs/libwolfssl/wolfcrypt/logging.h>
+#include <libwolfssl/wolfcrypt/logging.h>
 #ifndef NO_HMAC
-    #include <libs/libwolfssl/wolfcrypt/hmac.h>
+    #include <libwolfssl/wolfcrypt/hmac.h>
 #endif
 #ifndef NO_RC4
-    #include <libs/libwolfssl/wolfcrypt/arc4.h>
+    #include <libwolfssl/wolfcrypt/arc4.h>
 #endif
 #ifndef NO_SHA256
-    #include <libs/libwolfssl/wolfcrypt/sha256.h>
+    #include <libwolfssl/wolfcrypt/sha256.h>
 #endif
 #if defined(WOLFSSL_SHA384)
-    #include <libs/libwolfssl/wolfcrypt/sha512.h>
+    #include <libwolfssl/wolfcrypt/sha512.h>
 #endif
 #ifdef HAVE_OCSP
-    #include <libs/libwolfssl/ocsp.h>
+    #include <libwolfssl/ocsp.h>
 #endif
 #ifdef WOLFSSL_SHA384
-    #include <libs/libwolfssl/wolfcrypt/sha512.h>
+    #include <libwolfssl/wolfcrypt/sha512.h>
 #endif
 #ifdef WOLFSSL_SHA512
-    #include <libs/libwolfssl/wolfcrypt/sha512.h>
+    #include <libwolfssl/wolfcrypt/sha512.h>
 #endif
 #ifdef HAVE_AESGCM
-    #include <libs/libwolfssl/wolfcrypt/sha512.h>
+    #include <libwolfssl/wolfcrypt/sha512.h>
 #endif
 #ifdef WOLFSSL_RIPEMD
-    #include <libs/libwolfssl/wolfcrypt/ripemd.h>
+    #include <libwolfssl/wolfcrypt/ripemd.h>
 #endif
 #ifdef HAVE_IDEA
-    #include <libs/libwolfssl/wolfcrypt/idea.h>
+    #include <libwolfssl/wolfcrypt/idea.h>
 #endif
 #ifndef NO_RSA
-    #include <libs/libwolfssl/wolfcrypt/rsa.h>
+    #include <libwolfssl/wolfcrypt/rsa.h>
 #endif
 #ifdef HAVE_ECC
-    #include <libs/libwolfssl/wolfcrypt/ecc.h>
+    #include <libwolfssl/wolfcrypt/ecc.h>
 #endif
 #ifndef NO_DH
-    #include <libs/libwolfssl/wolfcrypt/dh.h>
+    #include <libwolfssl/wolfcrypt/dh.h>
 #endif
 #ifdef HAVE_ED25519
-    #include <libs/libwolfssl/wolfcrypt/ed25519.h>
+    #include <libwolfssl/wolfcrypt/ed25519.h>
 #endif
 #ifdef HAVE_CURVE25519
-    #include <libs/libwolfssl/wolfcrypt/curve25519.h>
+    #include <libwolfssl/wolfcrypt/curve25519.h>
 #endif
 #ifdef HAVE_ED448
-    #include <libs/libwolfssl/wolfcrypt/ed448.h>
+    #include <libwolfssl/wolfcrypt/ed448.h>
 #endif
 #ifdef HAVE_CURVE448
-    #include <libs/libwolfssl/wolfcrypt/curve448.h>
+    #include <libwolfssl/wolfcrypt/curve448.h>
 #endif
 #ifndef WOLFSSL_NO_DEF_TICKET_ENC_CB
     #if defined(HAVE_CHACHA) && defined(HAVE_POLY1305) && \
         !defined(WOLFSSL_TICKET_ENC_AES128_GCM) && \
         !defined(WOLFSSL_TICKET_ENC_AES256_GCM)
-        #include <libs/libwolfssl/wolfcrypt/chacha20_poly1305.h>
+        #include <libwolfssl/wolfcrypt/chacha20_poly1305.h>
     #else
-        #include <libs/libwolfssl/wolfcrypt/aes.h>
+        #include <libwolfssl/wolfcrypt/aes.h>
     #endif
 #endif
 
-#include <libs/libwolfssl/wolfcrypt/wc_encrypt.h>
-#include <libs/libwolfssl/wolfcrypt/hash.h>
+#include <libwolfssl/wolfcrypt/wc_encrypt.h>
+#include <libwolfssl/wolfcrypt/hash.h>
 
 #if defined(WOLFSSL_CALLBACKS) || defined(OPENSSL_EXTRA)
-    #include <libs/libwolfssl/callbacks.h>
+    #include <libwolfssl/callbacks.h>
 #endif
 #ifdef WOLFSSL_CALLBACKS
     #include <signal.h>
@@ -230,12 +230,12 @@
 #endif
 
 #ifdef WOLFSSL_ASYNC_CRYPT
-    #include <libs/libwolfssl/wolfcrypt/async.h>
+    #include <libwolfssl/wolfcrypt/async.h>
 #endif
 
 #ifdef OPENSSL_EXTRA
     #ifdef WOLFCRYPT_HAVE_SRP
-        #include <libs/libwolfssl/wolfcrypt/srp.h>
+        #include <libwolfssl/wolfcrypt/srp.h>
     #endif
 #endif
 

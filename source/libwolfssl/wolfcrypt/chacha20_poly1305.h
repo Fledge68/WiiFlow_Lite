@@ -34,9 +34,9 @@ or Authenticated Encryption with Additional Data (AEAD) algorithm.
 #ifndef WOLF_CRYPT_CHACHA20_POLY1305_H
 #define WOLF_CRYPT_CHACHA20_POLY1305_H
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
-#include <libs/libwolfssl/wolfcrypt/chacha.h>
-#include <libs/libwolfssl/wolfcrypt/poly1305.h>
+#include <libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/chacha.h>
+#include <libwolfssl/wolfcrypt/poly1305.h>
 
 #if defined(HAVE_CHACHA) && defined(HAVE_POLY1305)
 

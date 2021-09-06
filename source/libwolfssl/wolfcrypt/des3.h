@@ -26,13 +26,13 @@
 #ifndef WOLF_CRYPT_DES3_H
 #define WOLF_CRYPT_DES3_H
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 #ifndef NO_DES3
 
 #if defined(HAVE_FIPS) && \
     defined(HAVE_FIPS_VERSION) && (HAVE_FIPS_VERSION >= 2)
-    #include <libs/libwolfssl/wolfcrypt/fips.h>
+    #include <libwolfssl/wolfcrypt/fips.h>
 #endif /* HAVE_FIPS_VERSION >= 2 */
 
 #if defined(HAVE_FIPS) && \
@@ -58,7 +58,7 @@ enum {
     (defined(HAVE_FIPS_VERSION) && (HAVE_FIPS_VERSION >= 2))
 
 #ifdef WOLFSSL_ASYNC_CRYPT
-    #include <libs/libwolfssl/wolfcrypt/async.h>
+    #include <libwolfssl/wolfcrypt/async.h>
 #endif
 
 enum {

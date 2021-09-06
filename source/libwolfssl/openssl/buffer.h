@@ -23,8 +23,8 @@
 #ifndef WOLFSSL_BUFFER_H_
 #define WOLFSSL_BUFFER_H_
 
-#include <libs/libwolfssl/wolfcrypt/settings.h>
-#include <libs/libwolfssl/openssl/ssl.h>
+#include <libwolfssl/wolfcrypt/settings.h>
+#include <libwolfssl/openssl/ssl.h>
 
 #ifdef __cplusplus
     extern "C" {

@@ -24,7 +24,7 @@
 #ifndef WOLFSSL_ERROR_H
 #define WOLFSSL_ERROR_H
 
-#include <libs/libwolfssl/wolfcrypt/error-crypt.h>   /* pull in wolfCrypt errors */
+#include <libwolfssl/wolfcrypt/error-crypt.h>   /* pull in wolfCrypt errors */
 
 #ifdef __cplusplus
     extern "C" {

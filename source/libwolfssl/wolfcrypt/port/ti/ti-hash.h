@@ -23,7 +23,7 @@
 #ifndef WOLF_CRYPT_TI_HASH_H
 #define WOLF_CRYPT_TI_HASH_H
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 #ifndef WOLFSSL_TI_INITBUFF
     #define WOLFSSL_TI_INITBUFF    64

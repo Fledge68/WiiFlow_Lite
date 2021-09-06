@@ -23,7 +23,7 @@
 #ifndef WOLF_CRYPT_PKCS12_H
 #define WOLF_CRYPT_PKCS12_H
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 #ifdef __cplusplus
     extern "C" {

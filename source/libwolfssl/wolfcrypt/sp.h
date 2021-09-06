@@ -23,7 +23,7 @@
 #ifndef WOLF_CRYPT_SP_H
 #define WOLF_CRYPT_SP_H
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 #if defined(WOLFSSL_HAVE_SP_RSA) || defined(WOLFSSL_HAVE_SP_DH) || \
                                     defined(WOLFSSL_HAVE_SP_ECC)
@@ -38,10 +38,10 @@
     #include <stdint.h>
 #endif
 
-#include <libs/libwolfssl/wolfcrypt/integer.h>
-#include <libs/libwolfssl/wolfcrypt/sp_int.h>
+#include <libwolfssl/wolfcrypt/integer.h>
+#include <libwolfssl/wolfcrypt/sp_int.h>
 
-#include <libs/libwolfssl/wolfcrypt/ecc.h>
+#include <libwolfssl/wolfcrypt/ecc.h>
 
 #ifdef noinline
     #define SP_NOINLINE noinline

@@ -24,7 +24,7 @@
 #ifndef WOLF_CRYPT_FIPS_TEST_H
 #define WOLF_CRYPT_FIPS_TEST_H
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 
 #ifdef __cplusplus

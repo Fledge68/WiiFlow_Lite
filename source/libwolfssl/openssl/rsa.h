@@ -25,9 +25,9 @@
 #ifndef WOLFSSL_RSA_H_
 #define WOLFSSL_RSA_H_
 
-#include <libs/libwolfssl/openssl/bn.h>
-#include <libs/libwolfssl/openssl/err.h>
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/openssl/bn.h>
+#include <libwolfssl/openssl/err.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 #ifdef __cplusplus
     extern "C" {

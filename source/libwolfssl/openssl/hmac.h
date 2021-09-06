@@ -29,13 +29,13 @@
 #ifndef WOLFSSL_HMAC_H_
 #define WOLFSSL_HMAC_H_
 
-#include <libs/libwolfssl/wolfcrypt/settings.h>
+#include <libwolfssl/wolfcrypt/settings.h>
 
 #ifdef WOLFSSL_PREFIX
 #include "prefix_hmac.h"
 #endif
 
-#include <libs/libwolfssl/wolfcrypt/hmac.h>
+#include <libwolfssl/wolfcrypt/hmac.h>
 
 typedef struct WOLFSSL_HMAC_CTX {
     Hmac hmac;
@@ -44,8 +44,8 @@ typedef struct WOLFSSL_HMAC_CTX {
     word32  save_opad[WC_HMAC_BLOCK_SIZE  / sizeof(word32)];
 } WOLFSSL_HMAC_CTX;
 
-#include <libs/libwolfssl/openssl/evp.h>
-#include <libs/libwolfssl/openssl/opensslv.h>
+#include <libwolfssl/openssl/evp.h>
+#include <libwolfssl/openssl/opensslv.h>
 
 #ifdef __cplusplus
     extern "C" {

@@ -27,18 +27,18 @@
 #ifndef WOLF_CRYPT_ENCRYPT_H
 #define WOLF_CRYPT_ENCRYPT_H
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/types.h>
 #ifndef NO_AES
-    #include <libs/libwolfssl/wolfcrypt/aes.h>
+    #include <libwolfssl/wolfcrypt/aes.h>
 #endif
 #ifdef HAVE_CHACHA
-    #include <libs/libwolfssl/wolfcrypt/chacha.h>
+    #include <libwolfssl/wolfcrypt/chacha.h>
 #endif
 #ifndef NO_DES3
-    #include <libs/libwolfssl/wolfcrypt/des3.h>
+    #include <libwolfssl/wolfcrypt/des3.h>
 #endif
 #ifndef NO_RC4
-    #include <libs/libwolfssl/wolfcrypt/arc4.h>
+    #include <libwolfssl/wolfcrypt/arc4.h>
 #endif
 
 #ifdef __cplusplus

@@ -25,8 +25,8 @@
 #ifndef WOLFSSL_PKCS7_H_
 #define WOLFSSL_PKCS7_H_
 
-#include <libs/libwolfssl/openssl/ssl.h>
-#include <libs/libwolfssl/wolfcrypt/pkcs7.h>
+#include <libwolfssl/openssl/ssl.h>
+#include <libwolfssl/wolfcrypt/pkcs7.h>
 
 #ifdef __cplusplus
     extern "C" {

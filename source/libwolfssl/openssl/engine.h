@@ -1,6 +1,6 @@
 /* engine.h for libcurl */
 
-#include <libs/libwolfssl/openssl/err.h>
+#include <libwolfssl/openssl/err.h>
 
 #undef HAVE_OPENSSL_ENGINE_H
 

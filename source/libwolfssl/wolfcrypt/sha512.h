@@ -27,14 +27,14 @@
 #ifndef WOLF_CRYPT_SHA512_H
 #define WOLF_CRYPT_SHA512_H
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 #if defined(WOLFSSL_SHA512) || defined(WOLFSSL_SHA384)
 
 
 #if defined(HAVE_FIPS) && \
     defined(HAVE_FIPS_VERSION) && (HAVE_FIPS_VERSION >= 2)
-    #include <libs/libwolfssl/wolfcrypt/fips.h>
+    #include <libwolfssl/wolfcrypt/fips.h>
 #endif /* HAVE_FIPS_VERSION >= 2 */
 
 #if defined(HAVE_FIPS) && \
@@ -71,13 +71,13 @@
     (defined(HAVE_FIPS_VERSION) && (HAVE_FIPS_VERSION >= 2))
 
 #ifdef WOLFSSL_ASYNC_CRYPT
-    #include <libs/libwolfssl/wolfcrypt/async.h>
+    #include <libwolfssl/wolfcrypt/async.h>
 #endif
 #ifdef WOLFSSL_ESP32WROOM32_CRYPT
-    #include <libs/libwolfssl/wolfcrypt/port/Espressif/esp32-crypt.h>
+    #include <libwolfssl/wolfcrypt/port/Espressif/esp32-crypt.h>
 #endif
 #if defined(WOLFSSL_SILABS_SE_ACCEL)
-    #include <libs/libwolfssl/wolfcrypt/port/silabs/silabs_hash.h>
+    #include <libwolfssl/wolfcrypt/port/silabs/silabs_hash.h>
 #endif
 #if defined(WOLFSSL_PSOC6_CRYPTO)
     #include "cy_crypto_core_sha.h"

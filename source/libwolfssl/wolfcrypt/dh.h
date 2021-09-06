@@ -26,24 +26,24 @@
 #ifndef WOLF_CRYPT_DH_H
 #define WOLF_CRYPT_DH_H
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 #ifndef NO_DH
 
 #if defined(HAVE_FIPS) && \
     defined(HAVE_FIPS_VERSION) && (HAVE_FIPS_VERSION >= 2)
-    #include <libs/libwolfssl/wolfcrypt/fips.h>
+    #include <libwolfssl/wolfcrypt/fips.h>
 #endif /* HAVE_FIPS_VERSION >= 2 */
 
-#include <libs/libwolfssl/wolfcrypt/integer.h>
-#include <libs/libwolfssl/wolfcrypt/random.h>
+#include <libwolfssl/wolfcrypt/integer.h>
+#include <libwolfssl/wolfcrypt/random.h>
 
 #ifdef __cplusplus
     extern "C" {
 #endif
 
 #ifdef WOLFSSL_ASYNC_CRYPT
-    #include <libs/libwolfssl/wolfcrypt/async.h>
+    #include <libwolfssl/wolfcrypt/async.h>
 #endif
 
 typedef struct DhParams {

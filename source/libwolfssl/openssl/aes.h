@@ -29,10 +29,10 @@
 #ifndef WOLFSSL_AES_H_
 #define WOLFSSL_AES_H_
 
-#include <libs/libwolfssl/wolfcrypt/settings.h>
+#include <libwolfssl/wolfcrypt/settings.h>
 
 #ifndef NO_AES
-#include <libs/libwolfssl/openssl/ssl.h> /* for size_t */
+#include <libwolfssl/openssl/ssl.h> /* for size_t */
 
 #ifdef __cplusplus
     extern "C" {

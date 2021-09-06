@@ -22,7 +22,7 @@
 #ifndef WOLFSSL_OPENSSL_ERR_
 #define WOLFSSL_OPENSSL_ERR_
 
-#include <libs/libwolfssl/wolfcrypt/logging.h>
+#include <libwolfssl/wolfcrypt/logging.h>
 
 /* err.h for openssl */
 #define ERR_load_crypto_strings          wolfSSL_ERR_load_crypto_strings

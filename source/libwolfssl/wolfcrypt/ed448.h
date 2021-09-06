@@ -27,20 +27,20 @@
 #ifndef WOLF_CRYPT_ED448_H
 #define WOLF_CRYPT_ED448_H
 
-#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libwolfssl/wolfcrypt/types.h>
 
 #ifdef HAVE_ED448
 
-#include <libs/libwolfssl/wolfcrypt/fe_448.h>
-#include <libs/libwolfssl/wolfcrypt/ge_448.h>
-#include <libs/libwolfssl/wolfcrypt/random.h>
+#include <libwolfssl/wolfcrypt/fe_448.h>
+#include <libwolfssl/wolfcrypt/ge_448.h>
+#include <libwolfssl/wolfcrypt/random.h>
 #ifndef WOLFSSL_SHAKE256
 #error ED448 requires SHAKE256
 #endif
-#include <libs/libwolfssl/wolfcrypt/sha3.h>
+#include <libwolfssl/wolfcrypt/sha3.h>
 
 #ifdef WOLFSSL_ASYNC_CRYPT
-    #include <libs/libwolfssl/wolfcrypt/async.h>
+    #include <libwolfssl/wolfcrypt/async.h>
 #endif
 
 #ifdef __cplusplus

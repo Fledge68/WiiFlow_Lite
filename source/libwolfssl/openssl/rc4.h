@@ -28,8 +28,8 @@
 #ifndef WOLFSSL_RC4_COMPAT_H_
 #define WOLFSSL_RC4_COMPAT_H_
 
-#include <libs/libwolfssl/wolfcrypt/settings.h>
-#include <libs/libwolfssl/openssl/ssl.h> /* included for size_t */
+#include <libwolfssl/wolfcrypt/settings.h>
+#include <libwolfssl/openssl/ssl.h> /* included for size_t */
 
 #ifdef __cplusplus
     extern "C" {
