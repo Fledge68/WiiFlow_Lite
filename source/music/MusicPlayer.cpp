@@ -76,17 +76,17 @@ void Musicplayer::Init(Config &cfg, const string& musicDir, const string& themeM
 
 int Musicplayer::InitPlaylist(Config &cfg, const char *playlist, u8 device)
 {
-	ifstream filestr;
+	std::ifstream filestr;
 	filestr.open(playlist);
 	
 	if(filestr.fail())
 		return 0;
 		
-	filestr.seekg(0,ios_base::end);
+	filestr.seekg(0, std::ios_base::end);
 	int size = filestr.tellg();
 	if(size <= 0)
 		return -1;
-	filestr.seekg(0,ios_base::beg);
+	filestr.seekg(0, std::ios_base::beg);
 	
 	string song;
 	FileNames.clear();

@@ -1,6 +1,6 @@
 /* renesas-tsip-crypt.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -29,7 +29,7 @@
 #endif
 
 #include "r_tsip_rx_if.h"
-#include <libwolfssl/wolfcrypt/logging.h>
+#include <libs/libwolfssl/wolfcrypt/logging.h>
 
 #ifdef __cplusplus
 extern "C" {

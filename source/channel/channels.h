@@ -35,7 +35,8 @@
 
 #define IMET_MAX_NAME_LEN 0x2a
 
-using namespace std;
+using std::string;
+using std::vector;
 
 typedef struct
 {

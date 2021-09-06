@@ -1,8 +1,6 @@
 #include "gui.hpp"
 #include <algorithm>
 
-using namespace std;
-
 template <class T> static inline T loopNum(T i, T s)
 {
 	return (i + s) % s;
@@ -444,7 +442,7 @@ void CButtonsMgr::stopSounds(void)
 
 void CButtonsMgr::setSoundVolume(int vol)
 {
-	m_soundVolume = min(max(0, vol), 0xFF);
+	m_soundVolume = std::min(std::max(0, vol), 0xFF);
 }
 
 void CButtonsMgr::setRumble(int chan, bool wii, bool gc, bool wupc)

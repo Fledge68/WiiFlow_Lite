@@ -1,8 +1,6 @@
 
 #include "menu.hpp"
 
-using namespace std;
-
 const CMenu::SCFParamDesc CMenu::_cfParams[] = {
 	{ { CMenu::SCFParamDesc::PDT_V3D, CMenu::SCFParamDesc::PDT_V3D, CMenu::SCFParamDesc::PDT_V3D, CMenu::SCFParamDesc::PDT_V3D },
 		CMenu::SCFParamDesc::PDD_BOTH, true, "Camera", { "Position", "Aim", "Oscillation speed", "Oscillation scale" },

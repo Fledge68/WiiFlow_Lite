@@ -1,6 +1,6 @@
 /* pem.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -29,11 +29,11 @@
 #ifndef WOLFSSL_PEM_H_
 #define WOLFSSL_PEM_H_
 
-#include <libwolfssl/openssl/evp.h>
-#include <libwolfssl/openssl/bio.h>
-#include <libwolfssl/openssl/rsa.h>
-#include <libwolfssl/openssl/dsa.h>
-#include <libwolfssl/ssl.h>
+#include <libs/libwolfssl/openssl/evp.h>
+#include <libs/libwolfssl/openssl/bio.h>
+#include <libs/libwolfssl/openssl/rsa.h>
+#include <libs/libwolfssl/openssl/dsa.h>
+#include <libs/libwolfssl/ssl.h>
 
 #ifdef __cplusplus
     extern "C" {
@@ -242,6 +242,9 @@ int wolfSSL_PEM_write_DHparams(XFILE fp, WOLFSSL_DH* dh);
 #define PEM_write_ECPrivateKey          wolfSSL_PEM_write_ECPrivateKey
 #define PEM_read_bio_ECPrivateKey       wolfSSL_PEM_read_bio_ECPrivateKey
 #define PEM_read_bio_EC_PUBKEY          wolfSSL_PEM_read_bio_EC_PUBKEY
+#ifndef NO_WOLFSSL_STUB
+#define PEM_write_bio_ECPKParameters(...) 0
+#endif
 /* EVP_KEY */
 #define PEM_read_bio_PrivateKey         wolfSSL_PEM_read_bio_PrivateKey
 #define PEM_read_PUBKEY                 wolfSSL_PEM_read_PUBKEY

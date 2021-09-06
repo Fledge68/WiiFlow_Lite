@@ -34,7 +34,6 @@
 #include "gecko.h"
 
 #define EXT_ADDR_CFG	((vu32*)0x90100000)
-using namespace std;
 IOS_Info CurrentIOS;
 
 /* Boot Variables */

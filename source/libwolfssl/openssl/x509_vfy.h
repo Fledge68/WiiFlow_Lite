@@ -1,6 +1,6 @@
 /* x509_vfy.h
  *
- * Copyright (C) 2006-2017 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -24,7 +24,7 @@
 #ifndef WOLFSSL_x509_vfy_H_
 #define WOLFSSL_x509_vfy_H_
 
-#include <libwolfssl/openssl/x509v3.h>
+#include <libs/libwolfssl/openssl/x509v3.h>
 
 #ifdef __cplusplus
     extern "C" {

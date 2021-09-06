@@ -1,6 +1,6 @@
 /* pic32mz-crypt.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -27,7 +27,7 @@
     extern "C" {
 #endif
 
-#include <libwolfssl/wolfcrypt/settings.h>
+#include <libs/libwolfssl/wolfcrypt/settings.h>
 
 #ifdef WOLFSSL_MICROCHIP_PIC32MZ
 

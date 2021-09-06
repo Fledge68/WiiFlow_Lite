@@ -1,6 +1,6 @@
 /* pkcs7.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -26,21 +26,22 @@
 #ifndef WOLF_CRYPT_PKCS7_H
 #define WOLF_CRYPT_PKCS7_H
 
-#include <libwolfssl/wolfcrypt/types.h>
+#include <libs/libwolfssl/wolfcrypt/types.h>
 
 #ifdef HAVE_PKCS7
 
 #ifndef NO_ASN
-    #include <libwolfssl/wolfcrypt/asn.h>
+    #include <libs/libwolfssl/wolfcrypt/asn.h>
 #endif
-#include <libwolfssl/wolfcrypt/asn_public.h>
-#include <libwolfssl/wolfcrypt/random.h>
+#include <libs/libwolfssl/wolfcrypt/asn_public.h>
+#include <libs/libwolfssl/wolfcrypt/random.h>
 #ifndef NO_AES
-    #include <libwolfssl/wolfcrypt/aes.h>
+    #include <libs/libwolfssl/wolfcrypt/aes.h>
 #endif
 #ifndef NO_DES3
-    #include <libwolfssl/wolfcrypt/des3.h>
+    #include <libs/libwolfssl/wolfcrypt/des3.h>
 #endif
+#include <libs/libwolfssl/wolfcrypt/wc_encrypt.h>
 
 #ifdef __cplusplus
     extern "C" {
@@ -48,7 +49,11 @@
 
 /* Max number of certificates that PKCS7 structure can parse */
 #ifndef MAX_PKCS7_CERTS
+#ifdef OPENSSL_ALL
+    #define MAX_PKCS7_CERTS 15
+#else
     #define MAX_PKCS7_CERTS 4
+#endif
 #endif
 
 #ifndef MAX_ORI_TYPE_SZ
@@ -153,15 +158,6 @@ enum Pkcs7_Misc {
     MAX_RECIP_SZ          = MAX_VERSION_SZ +
                             MAX_SEQ_SZ + ASN_NAME_MAX + MAX_SN_SZ +
                             MAX_SEQ_SZ + MAX_ALGO_SZ + 1 + MAX_ENCRYPTED_KEY_SZ,
-#if (defined(HAVE_FIPS) && defined(HAVE_FIPS_VERSION) && \
-     (HAVE_FIPS_VERSION >= 2)) || (defined(HAVE_SELFTEST) && \
-     (!defined(HAVE_SELFTEST_VERSION) || HAVE_SELFTEST_VERSION < 2))
-    /* In the event of fips cert 3389 or CAVP selftest v1 build, these enums are
-     * not in aes.h for use with pkcs7 so enumerate it here outside the fips
-     * boundary */
-    GCM_NONCE_MID_SZ = 12, /* The usual default nonce size for AES-GCM. */
-    CCM_NONCE_MIN_SZ = 7,
-#endif
 };
 
 enum Cms_Options {

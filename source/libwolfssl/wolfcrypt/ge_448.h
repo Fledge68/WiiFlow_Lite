@@ -1,6 +1,6 @@
 /* ge_448.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -23,11 +23,11 @@
 #ifndef WOLF_CRYPT_GE_448_H
 #define WOLF_CRYPT_GE_448_H
 
-#include <libwolfssl/wolfcrypt/settings.h>
+#include <libs/libwolfssl/wolfcrypt/settings.h>
 
 #ifdef HAVE_ED448
 
-#include <libwolfssl/wolfcrypt/fe_448.h>
+#include <libs/libwolfssl/wolfcrypt/fe_448.h>
 
 /*
 ge448 means group element.
@@ -45,10 +45,10 @@ Representations:
     typedef byte     ge448;
     #define GE448_WORDS    56
 #elif defined(CURVED448_128BIT)
-    typedef int64_t  ge448;
+    typedef sword64  ge448;
     #define GE448_WORDS    8
 #else
-    typedef int32_t  ge448;
+    typedef sword32  ge448;
     #define GE448_WORDS    16
 #endif
 

@@ -1,6 +1,6 @@
 /* ripemd.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -25,7 +25,7 @@
 #ifndef WOLFSSL_RIPEMD_H_
 #define WOLFSSL_RIPEMD_H_
 
-#include <libwolfssl/wolfcrypt/settings.h>
+#include <libs/libwolfssl/wolfcrypt/settings.h>
 
 #ifdef __cplusplus
     extern "C" {

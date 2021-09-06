@@ -1,6 +1,6 @@
 /* asn1t.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -24,7 +24,7 @@
 #ifndef WOLFSSL_ASN1T_H_
 #define WOLFSSL_ASN1T_H_
 
-#include <libwolfssl/wolfcrypt/asn.h>
-#include <libwolfssl/openssl/asn1.h>
+#include <libs/libwolfssl/wolfcrypt/asn.h>
+#include <libs/libwolfssl/openssl/asn1.h>
 
 #endif /* WOLFSSL_ASN1T_H_ */

@@ -1,6 +1,6 @@
 /* arc4.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -26,14 +26,14 @@
 #ifndef WOLF_CRYPT_ARC4_H
 #define WOLF_CRYPT_ARC4_H
 
-#include <libwolfssl/wolfcrypt/types.h>
+#include <libs/libwolfssl/wolfcrypt/types.h>
 
 #ifdef __cplusplus
     extern "C" {
 #endif
 
 #ifdef WOLFSSL_ASYNC_CRYPT
-    #include <libwolfssl/wolfcrypt/async.h>
+    #include <libs/libwolfssl/wolfcrypt/async.h>
 #endif
 
 enum {

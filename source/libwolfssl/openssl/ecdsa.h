@@ -1,6 +1,6 @@
 /* ecdsa.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -24,8 +24,8 @@
 #ifndef WOLFSSL_ECDSA_H_
 #define WOLFSSL_ECDSA_H_
 
-#include <libwolfssl/openssl/bn.h>
-#include <libwolfssl/openssl/ec.h>
+#include <libs/libwolfssl/openssl/bn.h>
+#include <libs/libwolfssl/openssl/ec.h>
 
 
 #ifdef __cplusplus

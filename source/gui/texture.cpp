@@ -12,8 +12,6 @@
 #include "pngu.h"
 #include "gcvid.h"
 
-using namespace std;
-
 STexture TexHandle;
 
 static u32 upperPower(u32 width)
@@ -657,11 +655,11 @@ void STexture::_calcMipMaps(u8 &maxLOD, u8 &minLOD, u32 &lod0Width, u32 &lod0Hei
 	if (height - (lod0Height >> 1) < lod0Height >> 3 && minSize <= lod0Height >> 1)
 		lod0Height >>= 1;
 	maxLOD = 0;
-	for (u32 i = min(lod0Width, lod0Height); i > minSize; i >>= 1)
+	for (u32 i = std::min(lod0Width, lod0Height); i > minSize; i >>= 1)
 		++maxLOD;
 	minLOD = 0;
 	if (maxSize > 8)
-		for (u32 i = max(lod0Width, lod0Height); i > maxSize; i >>= 1)
+		for (u32 i = std::max(lod0Width, lod0Height); i > maxSize; i >>= 1)
 			++minLOD;
 	if (minLOD > maxLOD)
 		maxLOD = minLOD;

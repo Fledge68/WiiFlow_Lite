@@ -168,9 +168,9 @@ bool SFont::fromBuffer(const u8 *buffer, const u32 bufferSize, u32 size, u32 lsp
 {
 	if(buffer == NULL)
 		return false;
-	fSize = min(max(6u, size), 1000u);
-	lineSpacing = min(max(6u, lspacing), 1000u);
-	weight = min(w, 32u);
+	fSize = std::min(std::max(6u, size), 1000u);
+	lineSpacing = std::min(std::max(6u, lspacing), 1000u);
+	weight = std::min(w, 32u);
 	index = idx;// currently not used
 
 	if(data != NULL)
@@ -190,11 +190,11 @@ bool SFont::fromBuffer(const u8 *buffer, const u32 bufferSize, u32 size, u32 lsp
 
 bool SFont::fromFile(const char *path, u32 size, u32 lspacing, u32 w, u32 idx, const char *fontname)
 {
-	fSize = min(max(6u, size), 1000u);
-	weight = min(w, 32u);
+	fSize = std::min(std::max(6u, size), 1000u);
+	weight = std::min(w, 32u);
 	index = idx;// currently not used
 
-	lineSpacing = min(max(6u, lspacing), 1000u);
+	lineSpacing = std::min(std::max(6u, lspacing), 1000u);
 
 	if(data != NULL)
 		free(data);
@@ -425,14 +425,14 @@ string lowerCase(string text)
 // trim from start
 string ltrim(string s)
 {
-	s.erase(s.begin(), find_if(s.begin(), s.end(), not1(ptr_fun<int, int>(isspace))));
+	s.erase(s.begin(), find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(isspace))));
 	return s;
 }
 
 // trim from end
 string rtrim(string s)
 {
-	s.erase(find_if(s.rbegin(), s.rend(), not1(ptr_fun<int, int>(isspace))).base(), s.end());
+	s.erase(find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(isspace))).base(), s.end());
 	return s;
 }
 

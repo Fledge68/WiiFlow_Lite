@@ -1,6 +1,6 @@
 /* objects.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -23,11 +23,11 @@
 #ifndef WOLFSSL_OBJECTS_H_
 #define WOLFSSL_OBJECTS_H_
 
-#include <libwolfssl/wolfcrypt/settings.h>
-//#include <libwolfssl/openssl/ssl.h>
+#include <libs/libwolfssl/wolfcrypt/settings.h>
+//#include <libs/libwolfssl/openssl/ssl.h>
 #ifndef OPENSSL_EXTRA_SSL_GUARD
 #define OPENSSL_EXTRA_SSL_GUARD
-#include <libwolfssl/ssl.h>
+#include <libs/libwolfssl/ssl.h>
 #endif /* OPENSSL_EXTRA_SSL_GUARD */
 
 #ifdef __cplusplus

@@ -23,7 +23,8 @@ INCLUDES	:=	source
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-CFLAGS		=	-g -ggdb -O1 -Wall -Wextra -Wno-shift-negative-value $(MACHDEP) $(INCLUDE) -DHAVE_CONFIG_H
+FALSE_POSITIVES := -Wno-array-bounds -Wno-stringop-overflow -Wno-stringop-overread
+CFLAGS		=	-g -ggdb -O1 -Wall -Wextra -Wno-shift-negative-value $(FALSE_POSITIVES) $(MACHDEP) $(INCLUDE) -DHAVE_CONFIG_H
 CXXFLAGS	=	$(CFLAGS)
 LDFLAGS		=	-g -ggdb $(MACHDEP) -Wl,-Map,$(notdir $@).map,--section-start,.init=0x80A80000
 

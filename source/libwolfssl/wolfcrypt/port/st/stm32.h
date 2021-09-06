@@ -1,6 +1,6 @@
 /* stm32.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -25,8 +25,8 @@
 /* Generic STM32 Hashing and Crypto Functions */
 /* Supports CubeMX HAL or Standard Peripheral Library */
 
-#include <libwolfssl/wolfcrypt/settings.h>
-#include <libwolfssl/wolfcrypt/types.h>
+#include <libs/libwolfssl/wolfcrypt/settings.h>
+#include <libs/libwolfssl/wolfcrypt/types.h>
 
 #ifdef STM32_HASH
 

@@ -1,6 +1,6 @@
 /* wc_pkcs11.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -22,7 +22,7 @@
 #ifndef _WOLFPKCS11_H_
 #define _WOLFPKCS11_H_
 
-#include <libwolfssl/wolfcrypt/types.h>
+#include <libs/libwolfssl/wolfcrypt/types.h>
 
 #ifdef HAVE_PKCS11
 
@@ -30,8 +30,8 @@
     #error PKCS11 support requires ./configure --enable-cryptocb or WOLF_CRYPTO_CB to be defined
 #endif
 
-#include <libwolfssl/wolfcrypt/cryptocb.h>
-#include <libwolfssl/wolfcrypt/pkcs11.h>
+#include <libs/libwolfssl/wolfcrypt/cryptocb.h>
+#include <libs/libwolfssl/wolfcrypt/pkcs11.h>
 
 #ifdef __cplusplus
     extern "C" {
@@ -66,7 +66,6 @@ enum Pkcs11KeyType {
     PKCS11_KEY_TYPE_RSA,
     PKCS11_KEY_TYPE_EC,
 };
-
 
 WOLFSSL_API int wc_Pkcs11_Initialize(Pkcs11Dev* dev, const char* library,
                                      void* heap);

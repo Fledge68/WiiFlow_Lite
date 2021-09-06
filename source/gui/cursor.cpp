@@ -4,7 +4,7 @@
 #include "memory/mem2.hpp"
 #include <algorithm>
 
-using namespace std;
+//using namespace std;
 
 extern const u8 player1_point_png[];
 extern const u8 player2_point_png[];
@@ -172,13 +172,13 @@ void CCursor::_blur(void)
 		return;
 	for (int i = 0; i < w; ++i)
 	{
-		xmax[i] = min(i + radius + 1, w - 1);
-		xmin[i] = max(i - radius, 0);
+		xmax[i] = std::min(i + radius + 1, w - 1);
+		xmin[i] = std::max(i - radius, 0);
 	}
 	for (int i = 0; i < h; ++i)
 	{
-		ymax[i] = min(i + radius + 1, h - 1) * w;
-		ymin[i] = max(i - radius, 0) * w;
+		ymax[i] = std::min(i + radius + 1, h - 1) * w;
+		ymin[i] = std::max(i - radius, 0) * w;
 	}
 	for (int k = 0; k < pass; ++k)	// 2 passes for much better quality
 	{
@@ -187,7 +187,7 @@ void CCursor::_blur(void)
 		{
 			sum = 0;
 			for (int i = -radius; i <= radius; ++i)
-				sum += pic[coordsI8(min(max(0, i), w - 1), y, w)];
+				sum += pic[coordsI8(std::min(std::max(0, i), w - 1), y, w)];
 			for (int x = 0; x < w; ++x)
 			{
 				r[yi] = sum / div;
@@ -202,7 +202,7 @@ void CCursor::_blur(void)
 			yp = -radius * w;
 			for (int i = -radius; i <= radius; ++i)
 			{
-				yi = max(0, yp) + x;
+				yi = std::max(0, yp) + x;
 				sum += r[yi];
 				yp += w;
 			}

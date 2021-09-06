@@ -56,7 +56,7 @@ string GCTCheats::getCheatComment(unsigned int nr)
 //creates gct from internal array
 int GCTCheats::createGCT(const char * filename)
 {
-	ofstream filestr;
+	std::ofstream filestr;
 	filestr.open(filename);
 	if (filestr.fail()) return 0;
 
@@ -93,33 +93,33 @@ int GCTCheats::createTXT(const char * filename)
 {
 
 	// save gct file
-	fstream file;
-	file.open(filename,ios::out);
+	std::fstream file;
+	file.open(filename, std::ios::out);
 
-	file << sGameID << endl;
-	file << sGameTitle << endl << endl;
+	file << sGameID << std::endl;
+	file << sGameTitle << std::endl << std::endl;
 
 	for (unsigned int i=0; i < iCntCheats; ++i)
 		if  (sCheatSelected[i])
 		{
-			file << sCheatName[i] << endl;
+			file << sCheatName[i] << std::endl;
 			for (unsigned int j=0; j+8 < sCheats[i].size(); j+=16)
-				file << sCheats[i].substr(j,8) << " " << sCheats[i].substr(j+8,8) << endl;
+				file << sCheats[i].substr(j,8) << " " << sCheats[i].substr(j+8,8) << std::endl;
 
-			file << "#selected#" << sCheatComment[i] << endl;
-			file << endl;
+			file << "#selected#" << sCheatComment[i] << std::endl;
+			file << std::endl;
 		}
 			
 	for (unsigned int i=0; i < iCntCheats; ++i)
 		if  (!sCheatSelected[i])
 		{
-			file << sCheatName[i] << endl;
+			file << sCheatName[i] << std::endl;
 			for (unsigned int j=0; j+8 < sCheats[i].size(); j+=16)
-				file << sCheats[i].substr(j,8) << " " << sCheats[i].substr(j+8,8) << endl;
+				file << sCheats[i].substr(j,8) << " " << sCheats[i].substr(j+8,8) << std::endl;
 
 			if (sCheatComment[i].size() > 1)
-				file << sCheatComment[i] << endl;
-			file << endl;
+				file << sCheatComment[i] << std::endl;
+			file << std::endl;
 		}
 
 	file.close();
@@ -131,17 +131,17 @@ int GCTCheats::openTxtfile(const char * filename)
 {
 	Reset();
 
-	ifstream filestr;
+	std::ifstream filestr;
 	filestr.open(filename);
 	if (filestr.fail()) return 0;
 
 	int i = 0;
 	string str;
 
-	filestr.seekg(0,ios_base::end);
+	filestr.seekg(0, std::ios_base::end);
 	int size = filestr.tellg();
 	if (size <= 0) return -1;
-	filestr.seekg(0,ios_base::beg);
+	filestr.seekg(0, std::ios_base::beg);
 
 	getline(filestr,sGameID);
 	if (sGameID[sGameID.length() - 1] == '\r')

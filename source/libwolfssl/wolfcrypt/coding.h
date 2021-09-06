@@ -1,6 +1,6 @@
 /* coding.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -26,7 +26,7 @@
 #ifndef WOLF_CRYPT_CODING_H
 #define WOLF_CRYPT_CODING_H
 
-#include <libwolfssl/wolfcrypt/types.h>
+#include <libs/libwolfssl/wolfcrypt/types.h>
 
 #ifdef __cplusplus
     extern "C" {
@@ -79,6 +79,8 @@ WOLFSSL_API int Base64_Decode(const byte* in, word32 inLen, byte* out,
     int Base16_Encode(const byte* in, word32 inLen, byte* out, word32* outLen);
 #endif
 
+ WOLFSSL_LOCAL int Base64_SkipNewline(const byte* in, word32* inLen,
+            word32* outJ);
 
 #ifdef __cplusplus
     } /* extern "C" */

@@ -45,6 +45,7 @@ DATA		:=	data \
 				data/help \
 				data/sounds
 INCLUDES	:=	source
+FALSE_POSITIVES := -Wno-array-bounds -Wno-stringop-overflow -Wno-stringop-overread
 
 #---------------------------------------------------------------------------------
 # Default build shell script options
@@ -53,7 +54,7 @@ ios			:=	249
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-CFLAGS		=	-g -ggdb -O2 -Wall -Wno-multichar -Wno-address-of-packed-member -Wextra $(MACHDEP) $(INCLUDE) -D_GNU_SOURCE -DHAVE_CONFIG_H
+CFLAGS		=	-g -ggdb -O2 -Wall -Wno-multichar -Wno-address-of-packed-member -Wextra $(FALSE_POSITIVES) $(MACHDEP) $(INCLUDE) -D_GNU_SOURCE -DHAVE_CONFIG_H
 CXXFLAGS	=	$(CFLAGS)
 LDFLAGS		=	-g -ggdb $(MACHDEP) -Wl,-Map,$(notdir $@).map,--section-start,.init=0x80620000,-wrap,malloc,-wrap,free,-wrap,memalign,-wrap,calloc,-wrap,realloc,-wrap,malloc_usable_size,-wrap,wiiuse_register
 

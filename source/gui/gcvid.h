@@ -32,7 +32,8 @@
 #include <stdio.h> //FILE*
 #include <string>
 #include <vector>
-using namespace std;
+using std::string;
+using std::vector;
 
 #include <gccore.h>
 

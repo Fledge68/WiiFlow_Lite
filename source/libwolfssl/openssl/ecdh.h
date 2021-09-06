@@ -1,6 +1,6 @@
 /* ecdh.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -24,8 +24,8 @@
 #ifndef WOLFSSL_ECDH_H_
 #define WOLFSSL_ECDH_H_
 
-#include <libwolfssl/openssl/ssl.h>
-#include <libwolfssl/openssl/bn.h>
+#include <libs/libwolfssl/openssl/ssl.h>
+#include <libs/libwolfssl/openssl/bn.h>
 
 #ifdef __cplusplus
 extern "C" {

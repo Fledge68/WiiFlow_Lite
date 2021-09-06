@@ -1,6 +1,6 @@
 /* aes.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -29,10 +29,10 @@
 #ifndef WOLFSSL_AES_H_
 #define WOLFSSL_AES_H_
 
-#include <libwolfssl/wolfcrypt/settings.h>
+#include <libs/libwolfssl/wolfcrypt/settings.h>
 
 #ifndef NO_AES
-#include <libwolfssl/openssl/ssl.h> /* for size_t */
+#include <libs/libwolfssl/openssl/ssl.h> /* for size_t */
 
 #ifdef __cplusplus
     extern "C" {
@@ -42,26 +42,7 @@
  * OpenSSL compatibility layer. This makes code working with an AES structure
  * to need the size of the structure. */
 typedef struct WOLFSSL_AES_KEY {
-    /* aligned and big enough for Aes from wolfssl/wolfcrypt/aes.h */
-    ALIGN16 void* holder[(376 + WC_ASYNC_DEV_SIZE)/ sizeof(void*)];
-    #ifdef GCM_TABLE
-    /* key-based fast multiplication table. */
-    ALIGN16 void* M0[4096 / sizeof(void*)];
-    #endif /* GCM_TABLE */
-    #if defined(WOLFSSL_DEVCRYPTO) && \
-        (defined(WOLFSSL_DEVCRYPTO_AES) || defined(WOLFSSL_DEVCRYPTO_CBC))
-    /* large enough for additional devcrypto information */
-    void* devKey[288 / sizeof(void*)];
-    #endif
-    #ifdef WOLFSSL_AFALG
-    void* afalg_holder[288 / sizeof(void*)];
-    #endif
-    #ifdef HAVE_PKCS11
-    void* pkcs11_holder[(AES_MAX_ID_LEN + sizeof(int)) / sizeof(void*)];
-    #endif
-    #if defined(WOLFSSL_ASYNC_CRYPT) || defined(WOLF_CRYPTO_CB)
-    void* async_holder[128 / sizeof(void*)];
-    #endif
+    ALIGN16 void *buf[(sizeof(Aes) / sizeof(void *)) + 1];
 } WOLFSSL_AES_KEY;
 typedef WOLFSSL_AES_KEY AES_KEY;
 
@@ -78,12 +59,20 @@ WOLFSSL_API void wolfSSL_AES_ecb_encrypt
 WOLFSSL_API void wolfSSL_AES_cfb128_encrypt
     (const unsigned char *in, unsigned char* out, size_t len,
      AES_KEY *key, unsigned char* iv, int* num, const int enc);
+WOLFSSL_API int wolfSSL_AES_wrap_key(AES_KEY *key, const unsigned char *iv,
+                 unsigned char *out,
+                 const unsigned char *in, unsigned int inlen);
+WOLFSSL_API int wolfSSL_AES_unwrap_key(AES_KEY *key, const unsigned char *iv,
+                   unsigned char *out,
+                   const unsigned char *in, unsigned int inlen);
 
 #define AES_cbc_encrypt     wolfSSL_AES_cbc_encrypt
 #define AES_ecb_encrypt     wolfSSL_AES_ecb_encrypt
 #define AES_cfb128_encrypt  wolfSSL_AES_cfb128_encrypt
 #define AES_set_encrypt_key wolfSSL_AES_set_encrypt_key
 #define AES_set_decrypt_key wolfSSL_AES_set_decrypt_key
+#define AES_wrap_key        wolfSSL_AES_wrap_key
+#define AES_unwrap_key      wolfSSL_AES_unwrap_key
 
 #ifdef WOLFSSL_AES_DIRECT
 WOLFSSL_API void wolfSSL_AES_encrypt

@@ -1,6 +1,6 @@
 /* stsafe.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -22,16 +22,16 @@
 #ifndef _WOLFPORT_STSAFE_H_
 #define _WOLFPORT_STSAFE_H_
 
-#include <libwolfssl/wolfcrypt/settings.h>
-#include <libwolfssl/wolfcrypt/ecc.h>
-#include <libwolfssl/wolfcrypt/error-crypt.h>
+#include <libs/libwolfssl/wolfcrypt/settings.h>
+#include <libs/libwolfssl/wolfcrypt/ecc.h>
+#include <libs/libwolfssl/wolfcrypt/error-crypt.h>
 
 #ifdef WOLF_CRYPTO_CB
-#include <libwolfssl/wolfcrypt/cryptocb.h>
+#include <libs/libwolfssl/wolfcrypt/cryptocb.h>
 #endif
 
 #if !defined(WOLFCRYPT_ONLY) && defined(HAVE_PK_CALLBACKS)
-#include <libwolfssl/ssl.h>
+#include <libs/libwolfssl/ssl.h>
 #endif
 
 #ifdef WOLFSSL_STSAFEA100

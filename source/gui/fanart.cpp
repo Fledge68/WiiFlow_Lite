@@ -3,7 +3,7 @@
 #include "memory/mem2.hpp"
 #include "types.h"
 
-using namespace std;
+//using namespace std;
 
 static  guVector  _GRRaxisx = (guVector){1, 0, 0}; // DO NOT MODIFY!!!
 static  guVector  _GRRaxisy = (guVector){0, 1, 0}; // Even at runtime
@@ -22,7 +22,7 @@ void CFanart::unload()
 {
 	m_faConfig.unload();
 	m_loaded = false;
-	for(vector<CFanartElement>::iterator Elm = m_elms.begin(); Elm != m_elms.end(); Elm++)
+	for(std::vector<CFanartElement>::iterator Elm = m_elms.begin(); Elm != m_elms.end(); Elm++)
 		Elm->Cleanup();
 	m_elms.clear();
 	TexHandle.Cleanup(m_bg);
@@ -105,7 +105,7 @@ void CFanart::getBackground(const TexData * &hq, const TexData * &lq)
 
 void CFanart::reset()
 {
-	for(vector<CFanartElement>::iterator Elm = m_elms.begin(); Elm != m_elms.end(); Elm++)
+	for(std::vector<CFanartElement>::iterator Elm = m_elms.begin(); Elm != m_elms.end(); Elm++)
 		Elm->Cleanup();
 	m_elms.clear();
 	for(int i = 1; i <= 6; i++)
@@ -186,7 +186,7 @@ CFanartElement::CFanartElement(Config &cfg, const char *dir, int artwork)
 	m_y = cfg.getInt(domain, "y", 0);
 	m_scaleX = cfg.getFloat(domain, "scale_x", 1.f);
 	m_scaleY = cfg.getFloat(domain, "scale_y", 1.f);
-	m_alpha = min(cfg.getInt(domain, "alpha", 255), 255);
+	m_alpha = std::min(cfg.getInt(domain, "alpha", 255), 255);
 	m_delay = (int) (cfg.getFloat(domain, "delay", 0.f) * 50);
 	m_angle = cfg.getFloat(domain, "angle", 0.f);
 
@@ -195,7 +195,7 @@ CFanartElement::CFanartElement(Config &cfg, const char *dir, int artwork)
 	m_event_y = m_event_duration == 0 ? m_y : cfg.getInt(domain, "event_y", m_y);
 	m_event_scaleX = m_event_duration == 0 ? m_scaleX : cfg.getInt(domain, "event_scale_x", m_scaleX);
 	m_event_scaleY = m_event_duration == 0 ? m_scaleY : cfg.getInt(domain, "event_scale_y", m_scaleY);
-	m_event_alpha = m_event_duration == 0 ? m_alpha : min(cfg.getInt(domain, "event_alpha", m_alpha), 255); // Not from m_alpha, because the animation can start less translucent than m_alpha
+	m_event_alpha = m_event_duration == 0 ? m_alpha : std::min(cfg.getInt(domain, "event_alpha", m_alpha), 255); // Not from m_alpha, because the animation can start less translucent than m_alpha
 	m_event_angle = m_event_duration == 0 ? m_angle : cfg.getFloat(domain, "event_angle", m_angle);
 
 	m_step_x = m_event_duration == 0 ? 0 : (m_x - m_event_x) / m_event_duration;

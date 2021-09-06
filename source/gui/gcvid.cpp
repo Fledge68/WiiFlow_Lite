@@ -36,8 +36,6 @@
 #include "loader/utils.h"
 #include "memory/mem2.hpp"
 
-using namespace std;
-
 void readThpHeader(FILE* f, ThpHeader& h)
 {
 	fread(&h, sizeof(h), 1, f);

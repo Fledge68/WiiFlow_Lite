@@ -37,8 +37,6 @@
 
 #define MAX_SND_VOICES	16
 
-using namespace std;
-
 static bool VoiceUsed[MAX_SND_VOICES] =
 {
 	false, false, false, false, false, false,

@@ -10,7 +10,8 @@
 #include "video.hpp"
 #include "wstringEx/wstringEx.hpp"
 
-using namespace std;
+using std::string;
+using std::vector;
 
 class SFont// should be either struct SFont or class CFont
 {
@@ -59,17 +60,17 @@ private:
 
 // Nothing to do with CText. Q&D helpers for string formating.
 
-std::string sfmt(const char *format, ...);
+string sfmt(const char *format, ...);
 wstringEx wfmt(const wstringEx &format, ...);
 bool checkFmt(const wstringEx &ref, const wstringEx &format);
-std::string vectorToString(const vector<std::string> &vect, std::string sep);
+string vectorToString(const vector<string> &vect, string sep);
 wstringEx vectorToString(const vector<wstringEx> &vect, char sep);
 vector<wstringEx> stringToVector(const wstringEx &text, char sep);
-vector<std::string> stringToVector(const std::string &text, char sep);
-std::string upperCase(std::string text);
-std::string lowerCase(std::string text);
-std::string ltrim(std::string s);
-std::string rtrim(std::string s);
+vector<std::string> stringToVector(const string &text, char sep);
+string upperCase(string text);
+string lowerCase(string text);
+string ltrim(string s);
+string rtrim(string s);
 bool wchar_cmp(const wchar_t *first, const wchar_t *second, u32 first_len, u32 second_len);
 bool char_cmp(const char *first, const char *second, u32 first_len, u32 second_len);
 

@@ -1,6 +1,6 @@
 /* sha.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -27,13 +27,13 @@
 #ifndef WOLF_CRYPT_SHA_H
 #define WOLF_CRYPT_SHA_H
 
-#include <libwolfssl/wolfcrypt/types.h>
+#include <libs/libwolfssl/wolfcrypt/types.h>
 
 #ifndef NO_SHA
 
 #if defined(HAVE_FIPS) && \
     defined(HAVE_FIPS_VERSION) && (HAVE_FIPS_VERSION >= 2)
-    #include <libwolfssl/wolfcrypt/fips.h>
+    #include <libs/libwolfssl/wolfcrypt/fips.h>
 #endif /* HAVE_FIPS_VERSION >= 2 */
 
 #if defined(HAVE_FIPS) && \
@@ -52,6 +52,10 @@
     #include "fsl_ltc.h"
 #endif
 
+#ifdef WOLFSSL_IMXRT_DCP
+	#include "fsl_dcp.h"
+#endif
+
 #ifdef __cplusplus
     extern "C" {
 #endif
@@ -61,19 +65,19 @@
     (defined(HAVE_FIPS_VERSION) && (HAVE_FIPS_VERSION >= 2))
 
 #ifdef WOLFSSL_MICROCHIP_PIC32MZ
-    #include <libwolfssl/wolfcrypt/port/pic32/pic32mz-crypt.h>
+    #include <libs/libwolfssl/wolfcrypt/port/pic32/pic32mz-crypt.h>
 #endif
 #ifdef STM32_HASH
-    #include <libwolfssl/wolfcrypt/port/st/stm32.h>
+    #include <libs/libwolfssl/wolfcrypt/port/st/stm32.h>
 #endif
 #ifdef WOLFSSL_ASYNC_CRYPT
-    #include <libwolfssl/wolfcrypt/async.h>
+    #include <libs/libwolfssl/wolfcrypt/async.h>
 #endif
 #ifdef WOLFSSL_ESP32WROOM32_CRYPT
-    #include <libwolfssl/wolfcrypt/port/Espressif/esp32-crypt.h>
+    #include <libs/libwolfssl/wolfcrypt/port/Espressif/esp32-crypt.h>
 #endif
-#ifdef WOLFSSL_IMXRT_DCP
-    #include <libwolfssl/wolfcrypt/port/nxp/dcp_port.h>
+#if defined(WOLFSSL_SILABS_SE_ACCEL)
+    #include <libs/libwolfssl/wolfcrypt/port/silabs/silabs_hash.h>
 #endif
 
 #if !defined(NO_OLD_SHA_NAMES)
@@ -99,13 +103,11 @@ enum {
 #if defined(WOLFSSL_TI_HASH)
     #include "wolfssl/wolfcrypt/port/ti/ti-hash.h"
 
-#elif defined(WOLFSSL_IMX6_CAAM)
+#elif defined(WOLFSSL_IMX6_CAAM) && !defined(WOLFSSL_QNX_CAAM)
     #include "wolfssl/wolfcrypt/port/caam/wolfcaam_sha.h"
 #elif defined(WOLFSSL_RENESAS_TSIP_CRYPT) && \
    !defined(NO_WOLFSSL_RENESAS_TSIP_CRYPT_HASH)
     #include "wolfssl/wolfcrypt/port/Renesas/renesas-tsip-crypt.h"
-#elif defined(WOLFSSL_PSOC6_CRYPTO)
-    #include "wolfssl/wolfcrypt/port/cypress/psoc6_crypto.h"
 #else
 
 /* Sha digest */
@@ -114,6 +116,11 @@ struct wc_Sha {
         ltc_hash_ctx_t ctx;
 #elif defined(STM32_HASH)
         STM32_HASH_Context stmCtx;
+#elif defined(WOLFSSL_SILABS_SE_ACCEL)
+        wc_silabs_sha_t silabsCtx;
+#elif defined(WOLFSSL_IMXRT_DCP)
+        dcp_handle_t handle;
+        dcp_hash_ctx_t ctx;
 #else
         word32  buffLen;   /* in bytes          */
         word32  loLen;     /* length in bytes   */
@@ -164,6 +171,9 @@ WOLFSSL_API void wc_ShaFree(wc_Sha*);
 
 WOLFSSL_API int wc_ShaGetHash(wc_Sha*, byte*);
 WOLFSSL_API int wc_ShaCopy(wc_Sha*, wc_Sha*);
+#if defined(OPENSSL_EXTRA)
+WOLFSSL_API int wc_ShaTransform(wc_Sha*, const byte*);
+#endif
 
 #ifdef WOLFSSL_PIC32MZ_HASH
 WOLFSSL_API void wc_ShaSizeSet(wc_Sha* sha, word32 len);

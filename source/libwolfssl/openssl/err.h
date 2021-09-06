@@ -1,6 +1,6 @@
 /* err.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -22,7 +22,7 @@
 #ifndef WOLFSSL_OPENSSL_ERR_
 #define WOLFSSL_OPENSSL_ERR_
 
-#include <libwolfssl/wolfcrypt/logging.h>
+#include <libs/libwolfssl/wolfcrypt/logging.h>
 
 /* err.h for openssl */
 #define ERR_load_crypto_strings          wolfSSL_ERR_load_crypto_strings

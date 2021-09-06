@@ -32,7 +32,8 @@
 #include "wupc/wupc.h"
 #include "wiidrc/wiidrc.h"
 
-using namespace std;
+using std::string;
+using std::vector;
 
 class CMenu
 {
@@ -808,8 +809,8 @@ private:
 		WO_FORMAT,
 		WO_COPY_GAME,
 	};
-	typedef map<string, TexData> TexSet;
-	typedef map<string, GuiSound*> SoundSet;
+	typedef std::map<string, TexData> TexSet;
+	typedef std::map<string, GuiSound*> SoundSet;
 	struct SThemeData
 	{
 		TexSet texSet;
@@ -1283,8 +1284,8 @@ private:
 	static void * _gameSoundThread(void *obj);
 
 	void _load_installed_cioses();
-	map<u8, u8> _installed_cios;
-	typedef map<u8, u8>::iterator CIOSItr;
+	std::map<u8, u8> _installed_cios;
+	typedef std::map<u8, u8>::iterator CIOSItr;
 
 	struct SOption { const char id[11]; const wchar_t text[16]; };
 

@@ -2,16 +2,16 @@
 #include "wstringEx.hpp"
 
 wstringEx::wstringEx(const wchar_t *s) :
-	basic_string<wchar_t, char_traits<wchar_t>, allocator<wchar_t> >(s)
+	std::basic_string<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> >(s)
 {
 }
 
-wstringEx::wstringEx(const basic_string<wchar_t, char_traits<wchar_t>, allocator<wchar_t> > &ws) :
-	basic_string<wchar_t, char_traits<wchar_t>, allocator<wchar_t> >(ws)
+wstringEx::wstringEx(const std::basic_string<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> > &ws) :
+	std::basic_string<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> >(ws)
 {
 }
 
-wstringEx::wstringEx(const string &s)
+wstringEx::wstringEx(const std::string &s)
 {
 	size_type size = s.size();
 	resize(size);
@@ -19,7 +19,7 @@ wstringEx::wstringEx(const string &s)
 		(*this)[i] = (unsigned char)s[i];
 }
 
-wstringEx &wstringEx::operator=(const string &s)
+wstringEx &wstringEx::operator=(const std::string &s)
 {
 	size_type size = s.size();
 	resize(size);
@@ -28,7 +28,7 @@ wstringEx &wstringEx::operator=(const string &s)
 	return *this;
 }
 
-static inline size_t utf8Len(const string &s)
+static inline size_t utf8Len(const std::string &s)
 {
 	size_t len = 0;
 
@@ -66,7 +66,7 @@ static inline size_t utf8Len(const string &s)
 	return len;
 }
 
-void wstringEx::fromUTF8(const string &s)
+void wstringEx::fromUTF8(const std::string &s)
 {
 	size_t len = utf8Len(s);
 
@@ -99,9 +99,9 @@ void wstringEx::fromUTF8(const string &s)
 	}
 }
 
-string wstringEx::toUTF8(void) const
+std::string wstringEx::toUTF8(void) const
 {
-	string s;
+	std::string s;
 	size_t len = 0;
 	wchar_t wc;
 

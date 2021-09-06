@@ -1,6 +1,6 @@
 /* port/ti/ti_ccm.c
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -27,7 +27,7 @@
     #include <config.h>
 #endif
 
-#include <libwolfssl/wolfcrypt/settings.h>
+#include <libs/libwolfssl/wolfcrypt/settings.h>
 
 #if defined(WOLFSSL_TI_CRYPT) ||  defined(WOLFSSL_TI_HASH)
 

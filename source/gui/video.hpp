@@ -4,10 +4,12 @@
 
 #include <gccore.h>
 #include <vector>
+#include <string>
 #include "vector.hpp"
 #include "texture.hpp"
 
-using namespace std;
+using std::string;
+using std::vector;
 
 class CTexCoord
 {

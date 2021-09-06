@@ -59,7 +59,8 @@ typedef struct _uid
 	u16 uid;
 } ATTRIBUTE_PACKED uid;
 
-using namespace std;
+using std::string;
+using std::min;
 
 class Nand
 {

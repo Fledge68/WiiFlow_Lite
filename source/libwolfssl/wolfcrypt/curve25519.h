@@ -1,6 +1,6 @@
 /* curve25519.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -27,15 +27,15 @@
 #ifndef WOLF_CRYPT_CURVE25519_H
 #define WOLF_CRYPT_CURVE25519_H
 
-#include <libwolfssl/wolfcrypt/types.h>
+#include <libs/libwolfssl/wolfcrypt/types.h>
 
 #ifdef HAVE_CURVE25519
 
-#include <libwolfssl/wolfcrypt/fe_operations.h>
-#include <libwolfssl/wolfcrypt/random.h>
+#include <libs/libwolfssl/wolfcrypt/fe_operations.h>
+#include <libs/libwolfssl/wolfcrypt/random.h>
 
 #ifdef WOLFSSL_ASYNC_CRYPT
-    #include <libwolfssl/wolfcrypt/async.h>
+    #include <libs/libwolfssl/wolfcrypt/async.h>
 #endif
 
 #ifdef __cplusplus
@@ -79,6 +79,9 @@ typedef struct curve25519_key {
 #ifdef WOLFSSL_ASYNC_CRYPT
     WC_ASYNC_DEV asyncDev;
 #endif
+#if defined(WOLF_CRYPTO_CB)
+    int devId;
+#endif
 } curve25519_key;
 
 enum {
@@ -113,6 +116,8 @@ int wc_curve25519_shared_secret_ex(curve25519_key* private_key,
 
 WOLFSSL_API
 int wc_curve25519_init(curve25519_key* key);
+WOLFSSL_API
+int wc_curve25519_init_ex(curve25519_key* key, void* heap, int devId);
 
 WOLFSSL_API
 void wc_curve25519_free(curve25519_key* key);

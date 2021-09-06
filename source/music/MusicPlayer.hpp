@@ -22,8 +22,6 @@
 #include "config/config.hpp"
 #include "wstringEx/wstringEx.hpp"
 
-using namespace std;
-
 class Musicplayer
 {
 public:

@@ -1,6 +1,6 @@
 /* sha3.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -23,13 +23,13 @@
 #ifndef WOLF_CRYPT_SHA3_H
 #define WOLF_CRYPT_SHA3_H
 
-#include <libwolfssl/wolfcrypt/types.h>
+#include <libs/libwolfssl/wolfcrypt/types.h>
 
 #ifdef WOLFSSL_SHA3
 
 #ifdef HAVE_FIPS
     /* for fips @wc_fips */
-    #include <libwolfssl/wolfcrypt/fips.h>
+    #include <libs/libwolfssl/wolfcrypt/fips.h>
 #endif
 
 #ifdef __cplusplus
@@ -37,7 +37,7 @@
 #endif
 
 #ifdef WOLFSSL_ASYNC_CRYPT
-    #include <libwolfssl/wolfcrypt/async.h>
+    #include <libs/libwolfssl/wolfcrypt/async.h>
 #endif
 
 /* in bytes */
@@ -86,11 +86,11 @@ enum {
 #ifdef WOLFSSL_XILINX_CRYPT
     #include "wolfssl/wolfcrypt/port/xilinx/xil-sha3.h"
 #elif defined(WOLFSSL_AFALG_XILINX_SHA3)
-    #include <libwolfssl/wolfcrypt/port/af_alg/afalg_hash.h>
+    #include <libs/libwolfssl/wolfcrypt/port/af_alg/afalg_hash.h>
 #else
 
 /* Sha3 digest */
-struct Sha3 {
+struct wc_Sha3 {
     /* State data that is processed for each block. */
     word64 s[25];
     /* Unprocessed message data. */
@@ -109,7 +109,7 @@ struct Sha3 {
 };
 
 #ifndef WC_SHA3_TYPE_DEFINED
-    typedef struct Sha3 wc_Sha3;
+    typedef struct wc_Sha3 wc_Sha3;
     #define WC_SHA3_TYPE_DEFINED
 #endif
 

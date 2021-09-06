@@ -29,8 +29,6 @@
 #include <string>
 #include <vector>
 
-using namespace std;
-
 #define MAX_PARTITIONS			32 /* Maximum number of partitions that can be found */
 #define MAX_MOUNTS				10 /* Maximum number of mounts available at one time */
 #define MAX_SYMLINK_DEPTH		10 /* Maximum search depth when resolving symbolic links */
@@ -171,8 +169,8 @@ protected:
 	s8 CheckGPT();
 
 	const DISC_INTERFACE *interface;
-	vector<PartitionFS> PartitionList;
-	vector<string> MountNameList;
+	std::vector<PartitionFS> PartitionList;
+	std::vector<std::string> MountNameList;
 };
 
 #endif

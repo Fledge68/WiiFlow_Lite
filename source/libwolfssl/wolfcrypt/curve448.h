@@ -1,6 +1,6 @@
 /* curve448.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -25,15 +25,15 @@
 #ifndef WOLF_CRYPT_CURVE448_H
 #define WOLF_CRYPT_CURVE448_H
 
-#include <libwolfssl/wolfcrypt/types.h>
+#include <libs/libwolfssl/wolfcrypt/types.h>
 
 #ifdef HAVE_CURVE448
 
-#include <libwolfssl/wolfcrypt/fe_448.h>
-#include <libwolfssl/wolfcrypt/random.h>
+#include <libs/libwolfssl/wolfcrypt/fe_448.h>
+#include <libs/libwolfssl/wolfcrypt/random.h>
 
 #ifdef WOLFSSL_ASYNC_CRYPT
-    #include <libwolfssl/wolfcrypt/async.h>
+    #include <libs/libwolfssl/wolfcrypt/async.h>
 #endif
 
 #ifdef __cplusplus

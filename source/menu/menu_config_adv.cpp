@@ -3,8 +3,6 @@
 #include <algorithm>
 #include "menu.hpp"
 
-using namespace std;
-
 template <class T> static inline T loopNum(T i, T s)
 {
 	return (i + s) % s;

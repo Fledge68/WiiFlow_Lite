@@ -1,6 +1,6 @@
 /* integer.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -33,7 +33,7 @@
    may not be faster on all
 */
 #include <libwolfssl/wolfcrypt/types.h>       /* will set MP_xxBIT if not default */
-#ifdef WOLFSSL_SP_MATH
+#if defined(WOLFSSL_SP_MATH) || defined(WOLFSSL_SP_MATH_ALL)
     #include <libwolfssl/wolfcrypt/sp_int.h>
 #elif defined(USE_FAST_MATH)
     #include <libwolfssl/wolfcrypt/tfm.h>
@@ -72,7 +72,7 @@ extern "C" {
 
 
 /* detect 64-bit mode if possible */
-#if defined(__x86_64__) && !(defined (_MSC_VER) && defined(__clang__))
+#if (defined(__x86_64__) || defined(__aarch64__)) && !(defined (_MSC_VER) && defined(__clang__))
    #if !(defined(MP_64BIT) && defined(MP_16BIT) && defined(MP_8BIT))
       #define MP_64BIT
    #endif
@@ -161,7 +161,7 @@ extern "C" {
 #define MP_OKAY       0   /* ok result */
 #define MP_MEM        -2  /* out of mem */
 #define MP_VAL        -3  /* invalid input */
-#define MP_NOT_INF	  -4  /* point not at infinity */
+#define MP_NOT_INF    -4  /* point not at infinity */
 #define MP_RANGE      MP_NOT_INF
 
 #define MP_YES        1   /* yes response */
@@ -227,7 +227,8 @@ typedef int ltm_prime_callback(unsigned char *dst, int len, void *dat);
 /* ---> Basic Manipulations <--- */
 #define mp_iszero(a) (((a)->used == 0) ? MP_YES : MP_NO)
 #define mp_isone(a) \
-    (((((a)->used == 1)) && ((a)->dp[0] == 1u)) ? MP_YES : MP_NO)
+    (((((a)->used == 1)) && ((a)->dp[0] == 1u) && ((a)->sign == MP_ZPOS)) \
+                                                               ? MP_YES : MP_NO)
 #define mp_iseven(a) \
     (((a)->used > 0 && (((a)->dp[0] & 1u) == 0u)) ? MP_YES : MP_NO)
 #define mp_isodd(a) \
@@ -255,9 +256,6 @@ typedef int ltm_prime_callback(unsigned char *dst, int len, void *dat);
 #define mp_prime_random(a, t, size, bbs, cb, dat) \
    mp_prime_random_ex(a, t, ((size) * 8) + 1, (bbs==1)?LTM_PRIME_BBS:0, cb, dat)
 
-#define mp_read_raw(mp, str, len) mp_read_signed_bin((mp), (str), (len))
-#define mp_raw_size(mp)           mp_signed_bin_size(mp)
-#define mp_toraw(mp, str)         mp_to_signed_bin((mp), (str))
 #define mp_read_mag(mp, str, len) mp_read_unsigned_bin((mp), (str), (len))
 #define mp_mag_size(mp)           mp_unsigned_bin_size(mp)
 #define mp_tomag(mp, str)         mp_to_unsigned_bin((mp), (str))
@@ -285,7 +283,7 @@ MP_API int  mp_init (mp_int * a);
 MP_API void mp_clear (mp_int * a);
 MP_API void mp_free (mp_int * a);
 MP_API void mp_forcezero(mp_int * a);
-MP_API int  mp_unsigned_bin_size(mp_int * a);
+MP_API int  mp_unsigned_bin_size(const mp_int * a);
 MP_API int  mp_read_unsigned_bin (mp_int * a, const unsigned char *b, int c);
 MP_API int  mp_to_unsigned_bin_at_pos(int x, mp_int *t, unsigned char *b);
 MP_API int  mp_to_unsigned_bin (mp_int * a, unsigned char *b);
@@ -296,10 +294,10 @@ MP_API int  mp_exptmod_ex (mp_int * G, mp_int * X, int digits, mp_int * P,
 /* end functions needed by Rsa */
 
 /* functions added to support above needed, removed TOOM and KARATSUBA */
-MP_API int  mp_count_bits (mp_int * a);
+MP_API int  mp_count_bits (const mp_int * a);
 MP_API int  mp_leading_bit (mp_int * a);
 MP_API int  mp_init_copy (mp_int * a, mp_int * b);
-MP_API int  mp_copy (mp_int * a, mp_int * b);
+MP_API int  mp_copy (const mp_int * a, mp_int * b);
 MP_API int  mp_grow (mp_int * a, int size);
 MP_API int  mp_div_2d (mp_int * a, int b, mp_int * c, mp_int * d);
 MP_API void mp_zero (mp_int * a);

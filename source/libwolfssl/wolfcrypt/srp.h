@@ -1,6 +1,6 @@
 /* srp.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -28,11 +28,11 @@
 #ifndef WOLFCRYPT_SRP_H
 #define WOLFCRYPT_SRP_H
 
-#include <libwolfssl/wolfcrypt/types.h>
-#include <libwolfssl/wolfcrypt/sha.h>
-#include <libwolfssl/wolfcrypt/sha256.h>
-#include <libwolfssl/wolfcrypt/sha512.h>
-#include <libwolfssl/wolfcrypt/integer.h>
+#include <libs/libwolfssl/wolfcrypt/types.h>
+#include <libs/libwolfssl/wolfcrypt/sha.h>
+#include <libs/libwolfssl/wolfcrypt/sha256.h>
+#include <libs/libwolfssl/wolfcrypt/sha512.h>
+#include <libs/libwolfssl/wolfcrypt/integer.h>
 
 #ifdef __cplusplus
     extern "C" {
@@ -246,7 +246,7 @@ WOLFSSL_API int wc_SrpSetPrivate(Srp* srp, const byte* priv, word32 size);
  *
  * The public ephemeral value is known as:
  *   A at the client side. A = g ^ a % N
- *   B at the server side. B = (k * v + (g ˆ b % N)) % N
+ *   B at the server side. B = (k * v + (g ^ b % N)) % N
  * This function MUST be called after wc_SrpSetPassword or wc_SrpSetVerifier.
  *
  * @param[in,out] srp       the Srp structure.

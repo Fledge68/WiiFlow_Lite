@@ -1,6 +1,6 @@
 /* md4.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -23,7 +23,7 @@
 #ifndef WOLFSSL_MD4_H_
 #define WOLFSSL_MD4_H_
 
-#include <libwolfssl/wolfcrypt/settings.h>
+#include <libs/libwolfssl/wolfcrypt/settings.h>
 
 #ifndef NO_MD4
 

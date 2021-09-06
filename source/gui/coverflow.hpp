@@ -16,7 +16,9 @@
 #include "loader/utils.h"
 #include "music/gui_sound.h"
 
-using namespace std;
+//using namespace std;
+using std::min;
+using std::max;
 
 enum Sorting
 {
@@ -47,7 +49,7 @@ public:
 	bool empty(void) const { return m_items.empty(); }
 	u32 size(void) const { return m_items.size(); }
 	// 
-	bool start(const string &m_imgsDir);
+	bool start(const std::string &m_imgsDir);
 	void stopCoverLoader(bool empty = false);
 	void startCoverLoader(void);
 	u32 _currentPos(void) const;
@@ -86,7 +88,7 @@ public:
 	void setCompression(bool enable) { m_compressTextures = enable; }
 	bool getBoxMode(void) const { return m_box;}
 	void setBufferSize(u32 numCovers);
-	void setTextures(const string &loadingPic, const string &loadingPicFlat, const string &noCoverPic, const string &noCoverPicFlat);
+	void setTextures(const std::string &loadingPic, const std::string &loadingPicFlat, const std::string &noCoverPic, const std::string &noCoverPicFlat);
 	void setFont(const SFont &font, const CColor &color);
 	void setRange(u32 rows, u32 columns);
 	void setBoxMode(bool box);
@@ -237,7 +239,7 @@ private:
 	Vector3D m_cameraAim;
 	Vector3D m_targetCameraPos;
 	Vector3D m_targetCameraAim;
-	vector<CItem> m_items;
+	std::vector<CItem> m_items;
 	CCover *m_covers;
 	int m_delay;
 	int m_minDelay;
@@ -264,10 +266,10 @@ private:
 	TexData m_dvdSkin_GreenTwo;
 	TexData m_dvdSkin_Clear;
 	// Settings
-	string m_pngLoadCover;
-	string m_pngLoadCoverFlat;
-	string m_pngNoCover;
-	string m_pngNoCoverFlat;
+	std::string m_pngLoadCover;
+	std::string m_pngLoadCoverFlat;
+	std::string m_pngNoCover;
+	std::string m_pngNoCoverFlat;
 	u32 m_numBufCovers;
 	SFont m_font;
 	CColor m_fontColor;
@@ -285,7 +287,7 @@ private:
 	bool m_hideCover;
 	bool m_compressTextures;
 	bool m_compressCache;
-	string m_cachePath;
+	std::string m_cachePath;
 	bool m_deletePicsAfterCaching;
 	bool m_pluginCacheFolders;
 	bool m_mirrorBlur;

@@ -1,6 +1,6 @@
 /* md5.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -25,11 +25,11 @@
 #ifndef WOLFSSL_MD5_H_
 #define WOLFSSL_MD5_H_
 
-#include <libwolfssl/wolfcrypt/settings.h>
+#include <libs/libwolfssl/wolfcrypt/settings.h>
 
 #ifndef NO_MD5
 
-#include <libwolfssl/wolfcrypt/hash.h>
+#include <libs/libwolfssl/wolfcrypt/hash.h>
 
 #ifdef WOLFSSL_PREFIX
 #include "prefix_md5.h"
@@ -52,13 +52,14 @@ typedef struct WOLFSSL_MD5_CTX {
 WOLFSSL_API int wolfSSL_MD5_Init(WOLFSSL_MD5_CTX*);
 WOLFSSL_API int wolfSSL_MD5_Update(WOLFSSL_MD5_CTX*, const void*, unsigned long);
 WOLFSSL_API int wolfSSL_MD5_Final(unsigned char*, WOLFSSL_MD5_CTX*);
-
+WOLFSSL_API int wolfSSL_MD5_Transform(WOLFSSL_MD5_CTX*, const unsigned char*);
 
 typedef WOLFSSL_MD5_CTX MD5_CTX;
 
 #define MD5_Init wolfSSL_MD5_Init
 #define MD5_Update wolfSSL_MD5_Update
 #define MD5_Final wolfSSL_MD5_Final
+#define MD5_Transform wolfSSL_MD5_Transform
 
 #ifdef OPENSSL_EXTRA_BSD
     #define MD5Init wolfSSL_MD5_Init

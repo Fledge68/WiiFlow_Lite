@@ -1,6 +1,6 @@
 /* cryptoCell.h
  *
- * Copyright (C) 2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -27,7 +27,7 @@
 extern "C" {
 #endif
 
-#include <libwolfssl/wolfcrypt/types.h>
+#include <libs/libwolfssl/wolfcrypt/types.h>
 
 #include "sns_silib.h"
 

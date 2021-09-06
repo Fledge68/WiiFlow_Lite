@@ -29,9 +29,7 @@
 #include "gui/GameTDB.hpp"
 #include "plugin/plugin.hpp"
 
-using namespace std;
-
-class ListGenerator : public vector<dir_discHdr>
+class ListGenerator : public std::vector<dir_discHdr>
 {
 public:
 	void createSFList(u8 maxBtns, Config &m_sourceMenuCfg, const string& sourceDir);
@@ -52,7 +50,7 @@ private:
 };
 
 typedef void (*FileAdder)(char *Path);
-void GetFiles(const char *Path, const vector<string>& FileTypes, 
+void GetFiles(const char *Path, const std::vector<string>& FileTypes, 
 			FileAdder AddFile, bool CompareFolders, u32 max_depth = 2, u32 depth = 1);
 extern ListGenerator m_cacheList;
 

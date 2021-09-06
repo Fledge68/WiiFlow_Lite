@@ -1,6 +1,6 @@
 /* dh.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -26,31 +26,24 @@
 #ifndef WOLF_CRYPT_DH_H
 #define WOLF_CRYPT_DH_H
 
-#include <libwolfssl/wolfcrypt/types.h>
+#include <libs/libwolfssl/wolfcrypt/types.h>
 
 #ifndef NO_DH
 
 #if defined(HAVE_FIPS) && \
     defined(HAVE_FIPS_VERSION) && (HAVE_FIPS_VERSION >= 2)
-    #include <libwolfssl/wolfcrypt/fips.h>
+    #include <libs/libwolfssl/wolfcrypt/fips.h>
 #endif /* HAVE_FIPS_VERSION >= 2 */
 
-#include <libwolfssl/wolfcrypt/integer.h>
-#include <libwolfssl/wolfcrypt/random.h>
+#include <libs/libwolfssl/wolfcrypt/integer.h>
+#include <libs/libwolfssl/wolfcrypt/random.h>
 
 #ifdef __cplusplus
     extern "C" {
 #endif
 
 #ifdef WOLFSSL_ASYNC_CRYPT
-    #include <libwolfssl/wolfcrypt/async.h>
-#endif
-
-/* Optional support extended DH public / private keys */
-#if !defined(WOLFSSL_DH_EXTRA) && (defined(WOLFSSL_QT) || \
-        defined(OPENSSL_ALL) || defined(WOLFSSL_OPENSSH) || \
-        defined(WOLFSSL_STATIC_EPHEMERAL))
-    #define WOLFSSL_DH_EXTRA
+    #include <libs/libwolfssl/wolfcrypt/async.h>
 #endif
 
 typedef struct DhParams {
@@ -117,12 +110,14 @@ WOLFSSL_API int wc_DhSetKey_ex(DhKey* key, const byte* p, word32 pSz,
                         const byte* g, word32 gSz, const byte* q, word32 qSz);
 
 #ifdef WOLFSSL_DH_EXTRA
+WOLFSSL_API int wc_DhPublicKeyDecode(const byte* input, word32* inOutIdx,
+                        DhKey* key, word32 inSz);
 WOLFSSL_API int wc_DhImportKeyPair(DhKey* key, const byte* priv, word32 privSz,
                                    const byte* pub, word32 pubSz);
 WOLFSSL_API int wc_DhExportKeyPair(DhKey* key, byte* priv, word32* pPrivSz, 
                                    byte* pub, word32* pPubSz);
-#endif /* WOLFSSL_DH_EXTRA */
-
+WOLFSSL_LOCAL int wc_DhKeyCopy(DhKey* src, DhKey* dst);
+#endif
 WOLFSSL_API int wc_DhSetCheckKey(DhKey* key, const byte* p, word32 pSz,
                         const byte* g, word32 gSz, const byte* q, word32 qSz,
                         int trusted, WC_RNG* rng);

@@ -1,6 +1,6 @@
 /* ossl_typ.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -27,6 +27,6 @@
 #ifndef WOLFSSL_OSSL_TYP_H_
 #define WOLFSSL_OSSL_TYP_H_
 
-#include <libwolfssl/openssl/ssl.h>
+#include <libs/libwolfssl/openssl/ssl.h>
 
 #endif /* !WOLFSSL_OSSL_TYP_H_ */

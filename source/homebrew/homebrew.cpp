@@ -26,7 +26,9 @@ u32 homebrew_size = 0;
 
 u8 *appbooter_ptr = NULL;
 u32 appbooter_size = 0;
-using namespace std;
+
+using std::string;
+using std::vector;
 
 extern const u8 wfstub_bin[];
 extern const u32 wfstub_bin_size;

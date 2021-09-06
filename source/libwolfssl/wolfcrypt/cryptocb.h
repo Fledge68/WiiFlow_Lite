@@ -1,6 +1,6 @@
 /* cryptocb.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -15,13 +15,14 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1335, USA
  */
 
 #ifndef _WOLF_CRYPTO_CB_H_
 #define _WOLF_CRYPTO_CB_H_
 
-#include <libwolfssl/wolfcrypt/types.h>
+#include <libs/libwolfssl/wolfcrypt/types.h>
 
 #ifdef __cplusplus
     extern "C" {
@@ -35,30 +36,41 @@
 #ifdef WOLF_CRYPTO_CB
 
 #ifndef NO_RSA
-    #include <libwolfssl/wolfcrypt/rsa.h>
+    #include <libs/libwolfssl/wolfcrypt/rsa.h>
 #endif
 #ifdef HAVE_ECC
-    #include <libwolfssl/wolfcrypt/ecc.h>
+    #include <libs/libwolfssl/wolfcrypt/ecc.h>
 #endif
 #ifndef NO_AES
-    #include <libwolfssl/wolfcrypt/aes.h>
+    #include <libs/libwolfssl/wolfcrypt/aes.h>
 #endif
 #ifndef NO_SHA
-    #include <libwolfssl/wolfcrypt/sha.h>
+    #include <libs/libwolfssl/wolfcrypt/sha.h>
 #endif
 #ifndef NO_SHA256
-    #include <libwolfssl/wolfcrypt/sha256.h>
+    #include <libs/libwolfssl/wolfcrypt/sha256.h>
 #endif
 #ifndef NO_HMAC
-    #include <libwolfssl/wolfcrypt/hmac.h>
+    #include <libs/libwolfssl/wolfcrypt/hmac.h>
 #endif
 #ifndef WC_NO_RNG
-    #include <libwolfssl/wolfcrypt/random.h>
+    #include <libs/libwolfssl/wolfcrypt/random.h>
 #endif
 #ifndef NO_DES3
-    #include <libwolfssl/wolfcrypt/des3.h>
+    #include <libs/libwolfssl/wolfcrypt/des3.h>
 #endif
-
+#ifdef WOLFSSL_CMAC
+    #include <libs/libwolfssl/wolfcrypt/cmac.h>
+#endif
+#ifdef HAVE_ED25519
+    #include <libs/libwolfssl/wolfcrypt/ed25519.h>
+#endif
+#ifdef HAVE_CURVE25519
+    #include <libs/libwolfssl/wolfcrypt/curve25519.h>
+#endif
+#if defined(WOLFSSL_SHA512) || defined(WOLFSSL_SHA384)
+    #include <libs/libwolfssl/wolfcrypt/sha512.h>
+#endif
 
 /* Crypto Information Structure for callbacks */
 typedef struct wc_CryptoInfo {
@@ -85,6 +97,11 @@ typedef struct wc_CryptoInfo {
                 WC_RNG* rng;
             } rsakg;
         #endif
+            struct {
+                RsaKey*     key;
+                const byte* pubKey;
+                word32      pubKeySz;
+            } rsa_check;
         #endif
         #ifdef HAVE_ECC
             struct {
@@ -115,6 +132,55 @@ typedef struct wc_CryptoInfo {
                 int*        res;
                 ecc_key*    key;
             } eccverify;
+            struct {
+                ecc_key*    key;
+                const byte* pubKey;
+                word32      pubKeySz;
+            } ecc_check;
+        #endif
+        #ifdef HAVE_CURVE25519
+            struct {
+                WC_RNG*  rng;
+                int      size;
+                curve25519_key* key;
+                int      curveId;
+            } curve25519kg;
+            struct {
+                curve25519_key* private_key;
+                curve25519_key* public_key;
+                byte*    out;
+                word32*  outlen;
+                int      endian;
+            } curve25519;
+        #endif
+        #ifdef HAVE_ED25519
+            struct {
+                WC_RNG*  rng;
+                int      size;
+                ed25519_key* key;
+                int      curveId;
+            } ed25519kg;
+            struct {
+                const byte*  in;
+                word32       inLen;
+                byte*        out;
+                word32*      outLen;
+                ed25519_key* key;
+                byte         type;
+                const byte*  context;
+                byte         contextLen;
+            } ed25519sign;
+            struct {
+                const byte*  sig;
+                word32       sigLen;
+                const byte*  msg;
+                word32       msgLen;
+                int*         res;
+                ed25519_key* key;
+                byte         type;
+                const byte*  context;
+                byte         contextLen;
+            } ed25519verify;
         #endif
         };
     } pk;
@@ -169,7 +235,8 @@ typedef struct wc_CryptoInfo {
         };
     } cipher;
 #endif /* !NO_AES || !NO_DES3 */
-#if !defined(NO_SHA) || !defined(NO_SHA256)
+#if !defined(NO_SHA) || !defined(NO_SHA256) || \
+    defined(WOLFSSL_SHA512) || defined(WOLFSSL_SHA384)
     struct {
         int type; /* enum wc_HashType */
         const byte* in;
@@ -181,6 +248,12 @@ typedef struct wc_CryptoInfo {
         #endif
         #ifndef NO_SHA256
             wc_Sha256* sha256;
+        #endif
+        #ifdef WOLFSSL_SHA384
+            wc_Sha384* sha384;
+        #endif
+        #ifdef WOLFSSL_SHA512
+            wc_Sha512* sha512;
         #endif
         };
     } hash;
@@ -206,13 +279,26 @@ typedef struct wc_CryptoInfo {
         word32 sz;
     } seed;
 #endif
+#ifdef WOLFSSL_CMAC
+    struct {
+        Cmac* cmac;
+        void* ctx;
+        const byte* key;
+        const byte* in;
+        byte*       out;
+        word32* outSz;
+        word32  keySz;
+        word32  inSz;
+        int type;
+    } cmac;
+#endif
 } wc_CryptoInfo;
 
 
 typedef int (*CryptoDevCallbackFunc)(int devId, wc_CryptoInfo* info, void* ctx);
 
 WOLFSSL_LOCAL void wc_CryptoCb_Init(void);
-
+WOLFSSL_LOCAL int wc_CryptoCb_GetDevIdAtIndex(int startIdx);
 WOLFSSL_API int  wc_CryptoCb_RegisterDevice(int devId, CryptoDevCallbackFunc cb, void* ctx);
 WOLFSSL_API void wc_CryptoCb_UnRegisterDevice(int devId);
 
@@ -229,6 +315,9 @@ WOLFSSL_LOCAL int wc_CryptoCb_Rsa(const byte* in, word32 inLen, byte* out,
 WOLFSSL_LOCAL int wc_CryptoCb_MakeRsaKey(RsaKey* key, int size, long e,
     WC_RNG* rng);
 #endif /* WOLFSSL_KEY_GEN */
+
+WOLFSSL_LOCAL int wc_CryptoCb_RsaCheckPrivKey(RsaKey* key, const byte* pubKey,
+    word32 pubKeySz);
 #endif /* !NO_RSA */
 
 #ifdef HAVE_ECC
@@ -243,7 +332,29 @@ WOLFSSL_LOCAL int wc_CryptoCb_EccSign(const byte* in, word32 inlen, byte* out,
 
 WOLFSSL_LOCAL int wc_CryptoCb_EccVerify(const byte* sig, word32 siglen,
     const byte* hash, word32 hashlen, int* res, ecc_key* key);
+
+WOLFSSL_LOCAL int wc_CryptoCb_EccCheckPrivKey(ecc_key* key, const byte* pubKey,
+    word32 pubKeySz);
 #endif /* HAVE_ECC */
+
+#ifdef HAVE_CURVE25519
+WOLFSSL_LOCAL int wc_CryptoCb_Curve25519Gen(WC_RNG* rng, int keySize,
+    curve25519_key* key);
+
+WOLFSSL_LOCAL int wc_CryptoCb_Curve25519(curve25519_key* private_key,
+    curve25519_key* public_key, byte* out, word32* outlen, int endian);
+#endif /* HAVE_CURVE25519 */
+
+#ifdef HAVE_ED25519
+WOLFSSL_LOCAL int wc_CryptoCb_Ed25519Gen(WC_RNG* rng, int keySize,
+    ed25519_key* key);
+WOLFSSL_LOCAL int wc_CryptoCb_Ed25519Sign(const byte* in, word32 inLen,
+    byte* out, word32 *outLen, ed25519_key* key, byte type, const byte* context,
+    byte contextLen);
+WOLFSSL_LOCAL int wc_CryptoCb_Ed25519Verify(const byte* sig, word32 sigLen,
+    const byte* msg, word32 msgLen, int* res, ed25519_key* key, byte type,
+    const byte* context, byte contextLen);
+#endif /* HAVE_ED25519 */
 
 #ifndef NO_AES
 #ifdef HAVE_AESGCM
@@ -280,6 +391,15 @@ WOLFSSL_LOCAL int wc_CryptoCb_ShaHash(wc_Sha* sha, const byte* in,
 WOLFSSL_LOCAL int wc_CryptoCb_Sha256Hash(wc_Sha256* sha256, const byte* in,
     word32 inSz, byte* digest);
 #endif /* !NO_SHA256 */
+#ifdef WOLFSSL_SHA384
+WOLFSSL_LOCAL int wc_CryptoCb_Sha384Hash(wc_Sha384* sha384, const byte* in,
+    word32 inSz, byte* digest);
+#endif
+#ifdef WOLFSSL_SHA512
+WOLFSSL_LOCAL int wc_CryptoCb_Sha512Hash(wc_Sha512* sha512, const byte* in,
+    word32 inSz, byte* digest);
+#endif
+
 #ifndef NO_HMAC
 WOLFSSL_LOCAL int wc_CryptoCb_Hmac(Hmac* hmac, int macType, const byte* in,
     word32 inSz, byte* digest);
@@ -288,6 +408,12 @@ WOLFSSL_LOCAL int wc_CryptoCb_Hmac(Hmac* hmac, int macType, const byte* in,
 #ifndef WC_NO_RNG
 WOLFSSL_LOCAL int wc_CryptoCb_RandomBlock(WC_RNG* rng, byte* out, word32 sz);
 WOLFSSL_LOCAL int wc_CryptoCb_RandomSeed(OS_Seed* os, byte* seed, word32 sz);
+#endif
+
+#ifdef WOLFSSL_CMAC
+WOLFSSL_LOCAL int wc_CryptoCb_Cmac(Cmac* cmac, const byte* key, word32 keySz,
+        const byte* in, word32 inSz, byte* out, word32* outSz, int type,
+        void* ctx);
 #endif
 
 #endif /* WOLF_CRYPTO_CB */

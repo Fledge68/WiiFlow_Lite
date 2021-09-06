@@ -11,7 +11,7 @@
 
 #define MAXCHEATS 100
 
-using namespace std;
+using std::string;
 
 //!Handles Ocarina TXT Cheatfiles
 class GCTCheats {

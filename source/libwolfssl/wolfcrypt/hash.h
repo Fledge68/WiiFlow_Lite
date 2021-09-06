@@ -1,6 +1,6 @@
 /* hash.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -26,34 +26,34 @@
 #ifndef WOLF_CRYPT_HASH_H
 #define WOLF_CRYPT_HASH_H
 
-#include <libwolfssl/wolfcrypt/types.h>
+#include <libs/libwolfssl/wolfcrypt/types.h>
 
 #ifndef NO_MD5
-    #include <libwolfssl/wolfcrypt/md5.h>
+    #include <libs/libwolfssl/wolfcrypt/md5.h>
 #endif
 #ifndef NO_SHA
-    #include <libwolfssl/wolfcrypt/sha.h>
+    #include <libs/libwolfssl/wolfcrypt/sha.h>
 #endif
 #if defined(WOLFSSL_SHA224) || !defined(NO_SHA256)
-    #include <libwolfssl/wolfcrypt/sha256.h>
+    #include <libs/libwolfssl/wolfcrypt/sha256.h>
 #endif
 #if defined(WOLFSSL_SHA384) || defined(WOLFSSL_SHA512)
-    #include <libwolfssl/wolfcrypt/sha512.h>
+    #include <libs/libwolfssl/wolfcrypt/sha512.h>
 #endif
 #ifdef HAVE_BLAKE2
-    #include <libwolfssl/wolfcrypt/blake2.h>
+    #include <libs/libwolfssl/wolfcrypt/blake2.h>
 #endif
 #ifdef WOLFSSL_SHA3
-    #include <libwolfssl/wolfcrypt/sha3.h>
+    #include <libs/libwolfssl/wolfcrypt/sha3.h>
 #endif
 #ifndef NO_MD4
-    #include <libwolfssl/wolfcrypt/md4.h>
+    #include <libs/libwolfssl/wolfcrypt/md4.h>
 #endif
 #ifdef WOLFSSL_MD2
-    #include <libwolfssl/wolfcrypt/md2.h>
+    #include <libs/libwolfssl/wolfcrypt/md2.h>
 #endif
 #if defined(HAVE_BLAKE2) || defined(HAVE_BLAKE2S)
-    #include <libwolfssl/wolfcrypt/blake2.h>
+    #include <libs/libwolfssl/wolfcrypt/blake2.h>
 #endif
 
 
@@ -88,7 +88,7 @@ enum wc_HashFlags {
 #endif
 };
 
-
+#ifndef NO_HASH_WRAPPER
 typedef union {
     #ifndef NO_MD5
         wc_Md5 md5;
@@ -112,6 +112,7 @@ typedef union {
         wc_Sha3 sha3;
     #endif
 } wc_HashAlg;
+#endif /* !NO_HASH_WRAPPER */
 
 /* Find largest possible digest size
    Note if this gets up to the size of 80 or over check smallstack build */
@@ -151,6 +152,8 @@ WOLFSSL_API enum wc_HashType wc_OidGetHash(int oid);
 
 WOLFSSL_API enum wc_HashType wc_HashTypeConvert(int hashType);
 
+#ifndef NO_HASH_WRAPPER
+
 WOLFSSL_API int wc_HashGetDigestSize(enum wc_HashType hash_type);
 WOLFSSL_API int wc_HashGetBlockSize(enum wc_HashType hash_type);
 WOLFSSL_API int wc_Hash(enum wc_HashType hash_type,
@@ -175,37 +178,37 @@ WOLFSSL_API int wc_HashFree(wc_HashAlg* hash, enum wc_HashType type);
 #endif
 
 #ifndef NO_MD5
-#include <libwolfssl/wolfcrypt/md5.h>
+#include <libs/libwolfssl/wolfcrypt/md5.h>
 WOLFSSL_API int wc_Md5Hash(const byte* data, word32 len, byte* hash);
 #endif
 
 #ifndef NO_SHA
-#include <libwolfssl/wolfcrypt/sha.h>
+#include <libs/libwolfssl/wolfcrypt/sha.h>
 WOLFSSL_API int wc_ShaHash(const byte*, word32, byte*);
 #endif
 
 #ifdef WOLFSSL_SHA224
-#include <libwolfssl/wolfcrypt/sha256.h>
+#include <libs/libwolfssl/wolfcrypt/sha256.h>
 WOLFSSL_API int wc_Sha224Hash(const byte*, word32, byte*);
 #endif /* defined(WOLFSSL_SHA224) */
 
 #ifndef NO_SHA256
-#include <libwolfssl/wolfcrypt/sha256.h>
+#include <libs/libwolfssl/wolfcrypt/sha256.h>
 WOLFSSL_API int wc_Sha256Hash(const byte*, word32, byte*);
 #endif
 
 #ifdef WOLFSSL_SHA384
-#include <libwolfssl/wolfcrypt/sha512.h>
+#include <libs/libwolfssl/wolfcrypt/sha512.h>
 WOLFSSL_API int wc_Sha384Hash(const byte*, word32, byte*);
 #endif /* defined(WOLFSSL_SHA384) */
 
 #ifdef WOLFSSL_SHA512
-#include <libwolfssl/wolfcrypt/sha512.h>
+#include <libs/libwolfssl/wolfcrypt/sha512.h>
 WOLFSSL_API int wc_Sha512Hash(const byte*, word32, byte*);
 #endif /* WOLFSSL_SHA512 */
 
 #ifdef WOLFSSL_SHA3
-#include <libwolfssl/wolfcrypt/sha3.h>
+#include <libs/libwolfssl/wolfcrypt/sha3.h>
 WOLFSSL_API int wc_Sha3_224Hash(const byte*, word32, byte*);
 WOLFSSL_API int wc_Sha3_256Hash(const byte*, word32, byte*);
 WOLFSSL_API int wc_Sha3_384Hash(const byte*, word32, byte*);
@@ -214,6 +217,8 @@ WOLFSSL_API int wc_Sha3_512Hash(const byte*, word32, byte*);
 WOLFSSL_API int wc_Shake256Hash(const byte*, word32, byte*, word32);
 #endif
 #endif /* WOLFSSL_SHA3 */
+
+#endif /* !NO_HASH_WRAPPER */
 
 enum max_prf {
 #ifdef HAVE_FFDHE_8192

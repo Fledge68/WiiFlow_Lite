@@ -42,8 +42,6 @@
 #include "videopatch.h"
 #include "video_tinyload.h"
 
-using namespace std;
-
 void *dolchunkoffset[18];
 u32	dolchunksize[18];
 u32	dolchunkcount;

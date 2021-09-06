@@ -1,6 +1,6 @@
 /* wc_afalg.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -23,7 +23,7 @@
 #ifndef WOLFSSL_AFALG_H
 #define WOLFSSL_AFALG_H
 
-#include <libwolfssl/wolfcrypt/types.h>
+#include <libs/libwolfssl/wolfcrypt/types.h>
 
 #include <sys/socket.h>
 #include <linux/if_alg.h>

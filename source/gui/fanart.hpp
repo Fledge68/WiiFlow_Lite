@@ -70,7 +70,7 @@ public:
 	void reset();
 
 private:
-	vector<CFanartElement> m_elms;
+	std::vector<CFanartElement> m_elms;
 
 	bool m_animationComplete;
 	u16 m_delayAfterAnimation;

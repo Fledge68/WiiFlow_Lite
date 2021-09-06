@@ -8,7 +8,8 @@
 #include "loader/disc.h"
 
 //#include "gecko.hpp"
-using namespace std;
+using std::string;
+using std::vector;
 
 const char io[2][3] = {
 	"wb",

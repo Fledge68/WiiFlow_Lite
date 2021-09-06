@@ -1,8 +1,6 @@
 
 #include "menu.hpp"
 
-using namespace std;
-
 s16 m_pathsLblTitle;
 s16 m_pathsLblPage;
 s16 m_pathsBtnPageM;

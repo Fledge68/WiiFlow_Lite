@@ -1,6 +1,6 @@
 /* blake2.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -26,11 +26,11 @@
 #ifndef WOLF_CRYPT_BLAKE2_H
 #define WOLF_CRYPT_BLAKE2_H
 
-#include <libwolfssl/wolfcrypt/settings.h>
+#include <libs/libwolfssl/wolfcrypt/settings.h>
 
 #if defined(HAVE_BLAKE2) || defined(HAVE_BLAKE2S)
 
-#include <libwolfssl/wolfcrypt/blake2-int.h>
+#include <libs/libwolfssl/wolfcrypt/blake2-int.h>
 
 /* call old functions if using fips for the sake of hmac @wc_fips */
 #ifdef HAVE_FIPS

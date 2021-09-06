@@ -5,8 +5,6 @@
 #include "Timer.h"
 #include "texture.hpp"
 
-using namespace std;
-
 class WiiMovie
 {
 public:

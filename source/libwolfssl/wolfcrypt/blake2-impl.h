@@ -12,7 +12,7 @@
 */
 /* blake2-impl.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -36,7 +36,7 @@
 #ifndef WOLFCRYPT_BLAKE2_IMPL_H
 #define WOLFCRYPT_BLAKE2_IMPL_H
 
-#include <libwolfssl/wolfcrypt/types.h>
+#include <libs/libwolfssl/wolfcrypt/types.h>
 
 static WC_INLINE word32 load32( const void *src )
 {
@@ -85,7 +85,7 @@ static WC_INLINE void store32( void *dst, word32 w )
 
 static WC_INLINE void store64( void *dst, word64 w )
 {
-#if defined(LITTLE_ENDIAN_ORDER)
+#if defined(LITTLE_ENDIAN_ORDER) && !defined(WOLFSSL_GENERAL_ALIGNMENT)
   *( word64 * )( dst ) = w;
 #else
   byte *p = ( byte * )dst;

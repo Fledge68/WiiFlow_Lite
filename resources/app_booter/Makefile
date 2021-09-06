@@ -35,8 +35,9 @@ INCLUDES	:=
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
+FALSE_POSITIVES := -Wno-array-bounds -Wno-stringop-overflow -Wno-stringop-overread
 MACHDEP := -mno-eabi -mno-sdata -mcpu=750
-CFLAGS	:= -Wall -W -O1 -ffreestanding -std=gnu99 -Wstrict-aliasing=2 $(MACHDEP) $(INCLUDE)
+CFLAGS	:= -Wall -W -O1 -ffreestanding -std=gnu99 -Wstrict-aliasing=2 $(FALSE_POSITIVES) $(MACHDEP) $(INCLUDE)
 LDFLAGS	:= -nostartfiles -nostdlib $(MACHDEP)
 
 #---------------------------------------------------------------------------------

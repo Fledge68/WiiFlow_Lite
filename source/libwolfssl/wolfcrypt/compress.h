@@ -1,6 +1,6 @@
 /* compress.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -27,7 +27,7 @@
 #ifndef WOLF_CRYPT_COMPRESS_H
 #define WOLF_CRYPT_COMPRESS_H
 
-#include <libwolfssl/wolfcrypt/types.h>
+#include <libs/libwolfssl/wolfcrypt/types.h>
 
 #ifdef HAVE_LIBZ
 
@@ -47,6 +47,8 @@ WOLFSSL_API int wc_Compress_ex(byte* out, word32 outSz, const byte* in,
 WOLFSSL_API int wc_DeCompress(byte*, word32, const byte*, word32);
 WOLFSSL_API int wc_DeCompress_ex(byte* out, word32 outSz, const byte* in,
     word32 inSz, int windowBits);
+WOLFSSL_API int wc_DeCompressDynamic(byte** out, int max, int memoryType,
+        const byte* in, word32 inSz, int windowBits, void* heap);
 
 #ifdef __cplusplus
     } /* extern "C" */

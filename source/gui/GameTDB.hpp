@@ -28,7 +28,7 @@
 #include <string>
 #include <gccore.h>
 
-using namespace std;
+//using namespace std;
 
 enum
 {
@@ -40,7 +40,7 @@ enum
 
 typedef struct _Accessory
 {
-	string Name;
+	std::string Name;
 	bool Required;
 } Accessory;
 
@@ -95,19 +95,19 @@ public:
 	bool GetRatingValue(const char * id, const char * &rating_value);
 	//! Get the rating descriptor list inside a vector for a specific game id
 	//! Returns the amount of descriptors found or -1 if failed
-	int GetRatingDescriptors(const char * id, vector<string> & desc_list);
+	int GetRatingDescriptors(const char * id, std::vector<std::string> & desc_list);
 	//! Get the wifi player count for a specific game id
 	//! Returns the amount of wifi players or -1 if failed
 	int GetWifiPlayers(const char * id);
 	//! Get the wifi feature list inside a vector for a specific game id
 	//! Returns the amount of wifi features found or -1 if failed
-	int GetWifiFeatures(const char * id, vector<string> & feat_list);
+	int GetWifiFeatures(const char * id, std::vector<std::string> & feat_list);
 	//! Get the player count for a specific game id
 	//! Returns the amount of players or -1 if failed
 	int GetPlayers(const char * id);
 	//! Returns the amount of accessoires found or -1 if failed
 	//! Get the accessoire (inputs) list inside a vector for a specific game id
-	int GetAccessories(const char * id, vector<Accessory> & acc_list);
+	int GetAccessories(const char * id, std::vector<Accessory> & acc_list);
 	//! Get the box (case) color for a specific game id
 	//! Returns the color in RGB (first 3 bytes)
 	u32 GetCaseColor(const char * id);
@@ -132,9 +132,9 @@ private:
 	inline char * GetNodeText(char *data, const char *nodestart, const char *nodeend);
 
 	bool isLoaded;
-	vector<GameOffsets> OffsetMap;
+	std::vector<GameOffsets> OffsetMap;
 	FILE * file;
-	string LangCode;
+	std::string LangCode;
 	char *GameNodeCache;
 	char GameIDCache[7];
 };

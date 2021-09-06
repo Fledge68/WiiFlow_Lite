@@ -1,6 +1,6 @@
 /* rc4.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -28,8 +28,8 @@
 #ifndef WOLFSSL_RC4_COMPAT_H_
 #define WOLFSSL_RC4_COMPAT_H_
 
-#include <libwolfssl/wolfcrypt/settings.h>
-#include <libwolfssl/openssl/ssl.h> /* included for size_t */
+#include <libs/libwolfssl/wolfcrypt/settings.h>
+#include <libs/libwolfssl/openssl/ssl.h> /* included for size_t */
 
 #ifdef __cplusplus
     extern "C" {

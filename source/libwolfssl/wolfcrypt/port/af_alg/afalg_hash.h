@@ -1,6 +1,6 @@
 /* afalg_hash.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -23,7 +23,7 @@
 #ifndef WOLF_CRYPT_AFALG_HASH_H
 #define WOLF_CRYPT_AFALG_HASH_H
 
-#include <libwolfssl/wolfcrypt/types.h>
+#include <libs/libwolfssl/wolfcrypt/types.h>
 
 #undef  WOLFSSL_NO_HASH_RAW
 #define WOLFSSL_NO_HASH_RAW

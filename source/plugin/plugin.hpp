@@ -25,7 +25,10 @@
 #include "config/config.hpp"
 #include "loader/disc.h"
 
-using namespace std;
+using std::string;
+using std::vector;
+using std::ifstream;
+using std::ios;
 
 #define TAG_GAME_ID		"{gameid}"
 #define TAG_LOC			"{loc}"

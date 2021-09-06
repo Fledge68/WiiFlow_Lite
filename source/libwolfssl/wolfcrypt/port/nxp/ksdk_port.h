@@ -1,6 +1,6 @@
 /* ksdk_port.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -22,17 +22,17 @@
 #ifndef _KSDK_PORT_H_
 #define _KSDK_PORT_H_
 
-#include <libwolfssl/wolfcrypt/settings.h>
+#include <libs/libwolfssl/wolfcrypt/settings.h>
 #ifdef USE_FAST_MATH
-    #include <libwolfssl/wolfcrypt/tfm.h>
+    #include <libs/libwolfssl/wolfcrypt/tfm.h>
 #elif defined WOLFSSL_SP_MATH
-    #include <libwolfssl/wolfcrypt/sp_int.h>
+    #include <libs/libwolfssl/wolfcrypt/sp_int.h>
 #else
-    #include <libwolfssl/wolfcrypt/integer.h>
+    #include <libs/libwolfssl/wolfcrypt/integer.h>
 #endif
-#include <libwolfssl/wolfcrypt/ecc.h>
-#include <libwolfssl/wolfcrypt/curve25519.h>
-#include <libwolfssl/wolfcrypt/ed25519.h>
+#include <libs/libwolfssl/wolfcrypt/ecc.h>
+#include <libs/libwolfssl/wolfcrypt/curve25519.h>
+#include <libs/libwolfssl/wolfcrypt/ed25519.h>
 
 
 /* API to init required hardware */
@@ -46,6 +46,7 @@ int ksdk_port_init(void);
 	int wolfcrypt_mp_mod(mp_int *a, mp_int *b, mp_int *c);
 	int wolfcrypt_mp_invmod(mp_int *a, mp_int *b, mp_int *c);
 	int wolfcrypt_mp_exptmod(mp_int *G, mp_int *X, mp_int *P, mp_int *Y);
+	int wolfcrypt_mp_prime_is_prime_ex(mp_int* a, int t, int* result, WC_RNG* rng);
 
     /* Exported mp_mulmod function */
     int mp_mulmod(mp_int *a, mp_int *b, mp_int *c, mp_int *d);

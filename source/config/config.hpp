@@ -34,7 +34,7 @@ public:
 	wstringEx getWString(const std::string &domain, const std::string &key, const wstringEx &defVal = wstringEx());
 	std::string getString(const std::string &domain, const std::string &key, const std::string &defVal = std::string());
 	std::string getStringCustomTitles(const std::string &domain, const std::string &key, const std::string &defVal = std::string());
-	vector<std::string> getStrings(const std::string &domain, const std::string &key, char seperator = ',', const std::string &defval = std::string());
+	std::vector<std::string> getStrings(const std::string &domain, const std::string &key, char seperator = ',', const std::string &defval = std::string());
 	bool getBool(const std::string &domain, const std::string &key, bool defVal = false);
 	int getOptBool(const std::string &domain, const std::string &key, int defVal = 2);
 	bool testOptBool(const std::string &domain, const std::string &key, bool defVal);

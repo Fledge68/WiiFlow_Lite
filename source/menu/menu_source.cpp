@@ -39,7 +39,7 @@ void CMenu::_sourceFlow()
 	const dir_discHdr *hdr = CoverFlow.getHdr();
 	
 	// save source number for return
-	sm_numbers[sm_numbers.size() - 1] = to_string(hdr->settings[0]);
+	sm_numbers[sm_numbers.size() - 1] = std::to_string(hdr->settings[0]);
 	numbers = sm_numbers[0];
 	for(u8 i = 1; i < sm_numbers.size(); i++)
 		numbers.append(',' + sm_numbers[i]);
@@ -596,7 +596,7 @@ bool CMenu::_Source()
 		{
 			// save source number for return
 			sm_numbers.pop_back();
-			sm_numbers.push_back(to_string(i + j));
+			sm_numbers.push_back(std::to_string(i + j));
 			string numbers = sm_numbers[0];
 			for(u8 i = 1; i < sm_numbers.size(); i++)
 				numbers.append(',' + sm_numbers[i]);

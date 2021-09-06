@@ -80,8 +80,8 @@ bool GameTDB::OpenFile(const char *filepath)
 	if(file)
 	{
 		int pos;
-		string OffsetsPath = filepath;
-		if((pos = OffsetsPath.find_last_of('/')) != (int) string::npos)
+		std::string OffsetsPath = filepath;
+		if((pos = OffsetsPath.find_last_of('/')) != (int) std::string::npos)
 			OffsetsPath[pos] = '\0';
 		else
 			OffsetsPath.clear(); //! Relative path
@@ -96,7 +96,7 @@ bool GameTDB::OpenFile(const char *filepath)
 void GameTDB::CloseFile()
 {
 	OffsetMap.clear();
-	vector<GameOffsets>().swap(OffsetMap);
+	std::vector<GameOffsets>().swap(OffsetMap);
 
 	if(GameNodeCache)
 		MEM2_free(GameNodeCache);
@@ -112,7 +112,7 @@ bool GameTDB::LoadGameOffsets(const char *path)
 	if(!path)
 		return false;
 
-	string OffsetDBPath = path;
+	std::string OffsetDBPath = path;
 	if(strlen(path) > 0 && path[strlen(path)-1] != '/')
 		OffsetDBPath += '/';
 	OffsetDBPath += NAME_OFFSET_DB;
@@ -777,7 +777,7 @@ bool GameTDB::GetRatingValue(const char *id, const char * &rating_value)
 	return true;
 }
 
-int GameTDB::GetRatingDescriptors(const char *id, vector<string> & desc_list)
+int GameTDB::GetRatingDescriptors(const char *id, std::vector<std::string> & desc_list)
 {
 	desc_list.clear();
 	if(!id)
@@ -845,7 +845,7 @@ int GameTDB::GetWifiPlayers(const char *id)
 	return players;
 }
 
-int GameTDB::GetWifiFeatures(const char *id, vector<string> & feat_list)
+int GameTDB::GetWifiFeatures(const char *id, std::vector<std::string> & feat_list)
 {
 	feat_list.clear();
 	if(!id)
@@ -917,7 +917,7 @@ int GameTDB::GetPlayers(const char *id)
 	return players;
 }
 
-int GameTDB::GetAccessories(const char *id, vector<Accessory> & acc_list)
+int GameTDB::GetAccessories(const char *id, std::vector<Accessory> & acc_list)
 {
 	acc_list.clear();
 	if(!id)

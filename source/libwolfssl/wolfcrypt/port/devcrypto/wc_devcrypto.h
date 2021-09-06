@@ -1,6 +1,6 @@
 /* wc_devcrypto.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -23,7 +23,7 @@
 #ifndef WOLFSSL_DEVCRYPTO_H
 #define WOLFSSL_DEVCRYPTO_H
 
-#include <libwolfssl/wolfcrypt/types.h>
+#include <libs/libwolfssl/wolfcrypt/types.h>
 
 #ifdef WOLFSSL_DEVCRYPTO
 

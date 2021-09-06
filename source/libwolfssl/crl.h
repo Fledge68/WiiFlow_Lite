@@ -1,6 +1,6 @@
 /* crl.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -27,8 +27,8 @@
 
 #ifdef HAVE_CRL
 
-#include <libwolfssl/ssl.h>
-#include <libwolfssl/wolfcrypt/asn.h>
+#include <libs/libwolfssl/ssl.h>
+#include <libs/libwolfssl/wolfcrypt/asn.h>
 
 #ifdef __cplusplus
     extern "C" {

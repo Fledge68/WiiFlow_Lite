@@ -21,8 +21,6 @@
 #include "FreeTypeGX.h"
 #include "memory/mem2.hpp"
 
-using namespace std;
-
 #define ALIGN8(x) (((x) + 7) & ~7)
 
 FreeTypeGX::FreeTypeGX()
@@ -88,8 +86,8 @@ void FreeTypeGX::unloadFont()
 {
 	if (this->fontData.size() == 0) return;
 
-	map<int16_t, map<wchar_t, ftgxCharData> >::iterator itr;
-	map<wchar_t, ftgxCharData>::iterator itr2;
+	std::map<int16_t, std::map<wchar_t, ftgxCharData> >::iterator itr;
+	std::map<wchar_t, ftgxCharData>::iterator itr2;
 
 	for (itr = fontData.begin(); itr != fontData.end(); itr++)
 	{
@@ -105,10 +103,10 @@ void FreeTypeGX::unloadFont()
 
 ftgxCharData * FreeTypeGX::cacheGlyphData(wchar_t charCode, int16_t pixelSize)
 {
-	map<int16_t, map<wchar_t, ftgxCharData> >::iterator itr = fontData.find(pixelSize);
+	std::map<int16_t, std::map<wchar_t, ftgxCharData> >::iterator itr = fontData.find(pixelSize);
 	if (itr != fontData.end())
 	{
-		map<wchar_t, ftgxCharData>::iterator itr2 = itr->second.find(charCode);
+		std::map<wchar_t, ftgxCharData>::iterator itr2 = itr->second.find(charCode);
 		if (itr2 != itr->second.end())
 		{
 			return &itr2->second;
@@ -124,7 +122,7 @@ ftgxCharData * FreeTypeGX::cacheGlyphData(wchar_t charCode, int16_t pixelSize)
 		FT_Set_Pixel_Sizes(ftFace, 0, ftPointSize);
 
 		//!Cache ascender and decender as well
-		map<int16_t, ftgxDataOffset>::iterator itrAlign = ftgxAlign.find(ftPointSize);
+		std::map<int16_t, ftgxDataOffset>::iterator itrAlign = ftgxAlign.find(ftPointSize);
 		if (itrAlign == ftgxAlign.end())
 		{
 			ftgxAlign[ftPointSize].ascender = (int16_t) ftFace->size->metrics.ascender >> 6;
@@ -231,7 +229,7 @@ int16_t FreeTypeGX::getStyleOffsetWidth(uint16_t width, uint16_t format)
 
 int16_t FreeTypeGX::getStyleOffsetHeight(int16_t format, uint16_t pixelSize)
 {
-	map<int16_t, ftgxDataOffset>::iterator itrAlign = ftgxAlign.find(pixelSize);
+	std::map<int16_t, ftgxDataOffset>::iterator itrAlign = ftgxAlign.find(pixelSize);
 	if (itrAlign == ftgxAlign.end()) return 0;
 
 	switch (format & FTGX_ALIGN_MASK)

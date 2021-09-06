@@ -1,6 +1,6 @@
 /* hmac.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -28,7 +28,7 @@
 #ifndef WOLF_CRYPT_HMAC_H
 #define WOLF_CRYPT_HMAC_H
 
-#include <libwolfssl/wolfcrypt/hash.h>
+#include <libs/libwolfssl/wolfcrypt/hash.h>
 
 #if defined(HAVE_FIPS) && \
 	(!defined(HAVE_FIPS_VERSION) || (HAVE_FIPS_VERSION < 2))
@@ -40,7 +40,7 @@
 
 #if defined(HAVE_FIPS) && \
 	defined(HAVE_FIPS_VERSION) && (HAVE_FIPS_VERSION >= 2)
-	#include <libwolfssl/wolfcrypt/fips.h>
+	#include <libs/libwolfssl/wolfcrypt/fips.h>
 #endif
 
 #ifdef __cplusplus
@@ -52,7 +52,7 @@
     (defined(HAVE_FIPS_VERSION) && (HAVE_FIPS_VERSION >= 2))
 
 #ifdef WOLFSSL_ASYNC_CRYPT
-    #include <libwolfssl/wolfcrypt/async.h>
+    #include <libs/libwolfssl/wolfcrypt/async.h>
 #endif
 
 #ifndef NO_OLD_WC_NAMES
@@ -94,7 +94,8 @@ enum {
     WC_SHA3_512 = WC_HASH_TYPE_SHA3_512,
 #endif
 #ifdef HAVE_PKCS11
-    HMAC_MAX_ID_LEN = 32,
+    HMAC_MAX_ID_LEN    = 32,
+    HMAC_MAX_LABEL_LEN = 32,
 #endif
 };
 
@@ -153,6 +154,8 @@ struct Hmac {
 #ifdef HAVE_PKCS11
     byte    id[HMAC_MAX_ID_LEN];
     int     idLen;
+    char    label[HMAC_MAX_LABEL_LEN];
+    int     labelLen;
 #endif
 #if defined(WOLFSSL_ASYNC_CRYPT) || defined(WOLF_CRYPTO_CB)
     word16  keyLen;          /* hmac key length (key in ipad) */
@@ -174,8 +177,12 @@ WOLFSSL_API int wc_HmacFinal(Hmac*, byte*);
 WOLFSSL_API int wc_HmacSizeByType(int type);
 
 WOLFSSL_API int wc_HmacInit(Hmac* hmac, void* heap, int devId);
+#ifdef HAVE_PKCS11
 WOLFSSL_API int wc_HmacInit_Id(Hmac* hmac, byte* id, int len, void* heap,
                                int devId);
+WOLFSSL_API int wc_HmacInit_Label(Hmac* hmac, const char* label, void* heap,
+                                  int devId);
+#endif
 WOLFSSL_API void wc_HmacFree(Hmac*);
 
 WOLFSSL_API int wolfSSL_GetHmacMaxSize(void);

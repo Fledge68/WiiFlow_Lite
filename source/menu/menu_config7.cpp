@@ -1,8 +1,6 @@
 
 #include "menu.hpp"
 
-using namespace std;
-
 void CMenu::_hideConfig7(bool instant)
 {
 	_hideConfigCommon(instant);

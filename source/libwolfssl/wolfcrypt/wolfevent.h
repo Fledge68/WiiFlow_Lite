@@ -1,6 +1,6 @@
 /* wolfevent.h
  *
- * Copyright (C) 2006-2020 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -27,7 +27,7 @@
 #endif
 
 #ifndef SINGLE_THREADED
-    #include <libwolfssl/wolfcrypt/wc_port.h>
+    #include <libs/libwolfssl/wolfcrypt/wc_port.h>
 #endif
 
 typedef struct WOLF_EVENT WOLF_EVENT;
