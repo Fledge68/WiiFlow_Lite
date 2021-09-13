@@ -249,12 +249,19 @@ static void Create_Channel_List()
 }
 
 /* add plugin rom, song, or video to the list. */
+string PrevName;
 static void Add_Plugin_Game(char *FullPath)
 {
 	/* Get roms's title without the extra ()'s or []'s */
 	string ShortName = m_plugin.GetRomName(FullPath);
 	//gprintf("shortName=%s\n", ShortName.c_str());
-	
+
+	/* only add disc 1 of multi disc games */
+	if(ShortName == PrevName)
+		return;
+	else
+		PrevName = ShortName;
+
 	/* get rom's ID */
 	string romID = "";
 	if(gameTDB.IsLoaded())
@@ -386,6 +393,7 @@ void ListGenerator::CreateRomList(Config &platform_cfg, const string& romsDir, c
 		}
 	}
 	
+	PrevName = "";
 	platformName = "";
 	if(platform_cfg.loaded())
 	{
