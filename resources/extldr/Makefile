@@ -10,9 +10,8 @@ OBJCOPY = $(PREFIX)objcopy
 RANLIB = $(PREFIX)ranlib
 STRIP = $(PREFIX)strip
 
-FALSE_POSITIVES := -Wno-array-bounds -Wno-stringop-overflow -Wno-stringop-overread
 MACHDEP = -mcpu=750 -mno-eabi
-CFLAGS = $(FALSE_POSITIVES) $(MACHDEP) -O1 -Werror -Wall -pipe -mno-sdata
+CFLAGS = $(MACHDEP) -O1 -Werror -Wall -pipe -mno-sdata
 LDFLAGS = $(MACHDEP) -n -nostartfiles -nostdlib -Wl,-T,link.ld -L.
 ASFLAGS = -D_LANGUAGE_ASSEMBLY -DHW_RVL -x assembler-with-cpp
 

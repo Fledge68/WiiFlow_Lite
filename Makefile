@@ -8,12 +8,6 @@ all:
 	@mv -u $(CURDIR_TMP)/resources/app_booter/app_booter.bin \
 		$(CURDIR_TMP)/out/bins/app_booter.bin
 
-	@echo Make WiiFlow Loader
-	@$(MAKE) --no-print-directory -C $(CURDIR_TMP)/resources/extldr \
-			-f $(CURDIR_TMP)/resources/extldr/Makefile
-	@mv -u $(CURDIR_TMP)/resources/extldr/extldr.bin \
-		$(CURDIR_TMP)/out/bins/ext_loader.bin
-
 	@echo Make WiiFlow Booter
 	@$(MAKE) --no-print-directory -C $(CURDIR_TMP)/resources/wiiflow_game_booter \
 		-f $(CURDIR_TMP)/resources/wiiflow_game_booter/Makefile
@@ -27,10 +21,6 @@ clean:
 	@echo Cleanup App Booter
 	@$(MAKE) --no-print-directory -C $(CURDIR_TMP)/resources/app_booter \
 			-f $(CURDIR_TMP)/resources/app_booter/Makefile clean
-
-	@echo Cleanup WiiFlow Loader
-	@$(MAKE) --no-print-directory -C $(CURDIR_TMP)/resources/extldr \
-			-f $(CURDIR_TMP)/resources/extldr/Makefile clean
 
 	@echo Cleanup WiiFlow Booter
 	@$(MAKE) --no-print-directory -C $(CURDIR_TMP)/resources/wiiflow_game_booter \
