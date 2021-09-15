@@ -253,7 +253,7 @@ static void Add_Plugin_Game(char *FullPath)
 {
 	/* Get roms's title without the extra ()'s or []'s */
 	string ShortName = m_plugin.GetRomName(FullPath);
-	//gprintf("shortName=%s\n", ShortName.c_str());
+	//gprintf("fullName=%s, shortName=%s\n", FullPath, ShortName.c_str());
 
 	/* only add disc 1 of multi disc games */
 	const char *RomFilename = strrchr(FullPath, '/') + 1;
@@ -466,9 +466,11 @@ void ListGenerator::CreateList(u32 Flow, const string& Path, const vector<string
 
 static inline bool IsFileSupported(const char *File, const vector<string>& FileTypes)
 {
-	for(vector<string>::const_iterator cmp = FileTypes.begin(); cmp != FileTypes.end(); ++cmp)
+	auto fileName = std::string(File);
+	for (auto & fileType : FileTypes)
 	{
-		if(strcasecmp(File, cmp->c_str()) == 0)
+		if (fileName.length() >= fileType.length() &&
+		    fileName.ends_with(fileType))
 			return true;
 	}
 	return false;
@@ -503,9 +505,7 @@ void GetFiles(const char *Path, const vector<string>& FileTypes,
 		}
 		else if(pent->d_type == DT_REG)
 		{
-			NewFileName = strrchr(pent->d_name, '.');//the extension
-			if(NewFileName == NULL) NewFileName = pent->d_name;
-			if(IsFileSupported(NewFileName, FileTypes))
+			if(IsFileSupported(pent->d_name, FileTypes))
 			{
 				AddFile(FullPathChar);
 				continue;
