@@ -181,7 +181,11 @@ void CMenu::_showCF(bool refreshList)
 							int romsPartition = m_plugin.GetRomPartition(i);
 							if(romsPartition < 0)
 								romsPartition = m_cfg.getInt(PLUGIN_DOMAIN, "partition", 0);
-							Pth = sfmt("%s:/%s", DeviceName[romsPartition], m_plugin.GetRomDir(i));
+							const char *romDir = m_plugin.GetRomDir(i);
+							if(strstr(romDir, "scummvm.ini") != NULL && strchr(romDir, ':') != NULL)
+								Pth = sfmt("%s", romDir);
+							else
+								Pth = sfmt("%s:/%s", DeviceName[romsPartition], m_plugin.GetRomDir(i));
 						}
 						break;
 				}

@@ -2495,7 +2495,7 @@ bool CMenu::_loadPluginList()
 			continue;
 		strncpy(m_plugin.PluginMagicWord, fmt("%08x", m_plugin.GetPluginMagic(i)), 8);
 		const char *romDir = m_plugin.GetRomDir(i);
-		if(strcasecmp(romDir, "scummvm.ini") != 0)
+		if(strstr(romDir, "scummvm.ini") == NULL)
 		{
 			if(strncasecmp(m_plugin.PluginMagicWord, "484252", 6) == 0)//HBRW
 			{

@@ -249,7 +249,6 @@ static void Create_Channel_List()
 }
 
 /* add plugin rom, song, or video to the list. */
-string PrevName;
 static void Add_Plugin_Game(char *FullPath)
 {
 	/* Get roms's title without the extra ()'s or []'s */
@@ -257,10 +256,9 @@ static void Add_Plugin_Game(char *FullPath)
 	//gprintf("shortName=%s\n", ShortName.c_str());
 
 	/* only add disc 1 of multi disc games */
-	if(ShortName == PrevName)
+	const char *RomFilename = strrchr(FullPath, '/') + 1;
+	if((strstr(RomFilename, "disc") != NULL || strstr(RomFilename, "disk") != NULL) && strstr(RomFilename, ".d1") == NULL)
 		return;
-	else
-		PrevName = ShortName;
 
 	/* get rom's ID */
 	string romID = "";
@@ -280,8 +278,7 @@ static void Add_Plugin_Game(char *FullPath)
 	strncpy(ListElement.id, romID.c_str(), 6);
 
 	/* Get titles - Rom filename, custom title, and database xml title */
-	const char *RomFilename = strrchr(FullPath, '/') + 1;
-	*strrchr(RomFilename, '.') = '\0';
+	*strrchr(RomFilename, '.') = '\0';// remove extension
 	
 	string customTitle = CustomTitles.getStringCustomTitles(m_plugin.PluginMagicWord, RomFilename, "");
 	
@@ -393,7 +390,6 @@ void ListGenerator::CreateRomList(Config &platform_cfg, const string& romsDir, c
 		}
 	}
 	
-	PrevName = "";
 	platformName = "";
 	if(platform_cfg.loaded())
 	{
