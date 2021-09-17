@@ -470,7 +470,14 @@ static inline bool IsFileSupported(const char *File, const vector<string>& FileT
 	for (auto & fileType : FileTypes)
 	{
 		if (fileName.length() >= fileType.length() &&
-		    fileName.ends_with(fileType))
+		    std::equal(fileName.end() - fileType.length(),
+                               fileName.end(), fileType.begin(),
+			       [](const char & c1, const char & c2)
+			       {
+					return (c1 == c2 ||
+						std::toupper(c1) ==
+						std::toupper(c2));
+			       }))
 			return true;
 	}
 	return false;
