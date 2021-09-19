@@ -55,7 +55,7 @@ ios			:=	249
 #---------------------------------------------------------------------------------
 FALSE_POSITIVES := -Wno-array-bounds -Wno-stringop-overflow -Wno-stringop-overread
 CFLAGS		=	-g -ggdb -O2 -Wall -Wno-multichar -Wno-address-of-packed-member -Wextra $(FALSE_POSITIVES) $(MACHDEP) $(INCLUDE) -D_GNU_SOURCE -DHAVE_CONFIG_H
-CXXFLAGS	=	$(CFLAGS)
+CXXFLAGS	=	$(CFLAGS) -std=c++20
 LDFLAGS		=	-g -ggdb $(MACHDEP) -Wl,-Map,$(notdir $@).map,--section-start,.init=0x80620000,-wrap,malloc,-wrap,free,-wrap,memalign,-wrap,calloc,-wrap,realloc,-wrap,malloc_usable_size,-wrap,wiiuse_register
 
 ifeq ($(GITHUB_ACTIONS),true)
