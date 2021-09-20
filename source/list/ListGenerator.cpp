@@ -16,6 +16,7 @@
  ****************************************************************************/
 #include <dirent.h>
 #include <unistd.h>
+#include <regex>
 #include "ListGenerator.hpp"
 #include "cache.hpp"
 #include "channel/channels.h"
@@ -32,8 +33,10 @@ GameTDB gameTDB;
 Config romNamesDB;
 string platformName;
 string pluginsDataDir;
+std::regex fileNameSkipRegex;
 
-void ListGenerator::Init(const char *settingsDir, const char *Language, const char *plgnsDataDir)
+void ListGenerator::Init(const char *settingsDir, const char *Language,
+			 const char *plgnsDataDir, const std::string& fileNameSkipPattern)
 {
 	if(settingsDir != NULL)
 	{
@@ -42,6 +45,10 @@ void ListGenerator::Init(const char *settingsDir, const char *Language, const ch
 	}
 	if(Language != NULL) gameTDB_Language = Language;
 	if(plgnsDataDir != NULL) pluginsDataDir = fmt("%s", plgnsDataDir);
+
+	fileNameSkipRegex = std::regex(fileNameSkipPattern,
+					  std::regex_constants::extended |
+					  std::regex_constants::icase);
 }
 
 void ListGenerator::Clear(void)
@@ -253,12 +260,16 @@ static void Add_Plugin_Game(char *FullPath)
 {
 	/* Get roms's title without the extra ()'s or []'s */
 	string ShortName = m_plugin.GetRomName(FullPath);
-	//gprintf("fullName=%s, shortName=%s\n", FullPath, ShortName.c_str());
+	//gprintf("Add_Plugin_Game: fullName=%s, shortName=%s\n", FullPath, ShortName.c_str());
 
 	/* only add disc 1 of multi disc games */
 	const char *RomFilename = strrchr(FullPath, '/') + 1;
-	if((strstr(RomFilename, "disc") != NULL || strstr(RomFilename, "disk") != NULL) && strstr(RomFilename, ".d1") == NULL)
+
+	if (std::regex_search(std::string(FullPath), fileNameSkipRegex)) 
+	{
+		//gprintf("Add_Plugin_Game: skipping '%s'\n", FullPath);
 		return;
+	}
 
 	/* get rom's ID */
 	string romID = "";

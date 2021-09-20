@@ -29,11 +29,15 @@
 #include "gui/GameTDB.hpp"
 #include "plugin/plugin.hpp"
 
+#define CONFIG_FILENAME_SKIP_DOMAIN	"PLUGINS"
+#define CONFIG_FILENAME_SKIP_KEY	"filename_skip_regex"
+#define CONFIG_FILENAME_SKIP_DEFAULT	"((dis[ck]|tape|side|track)[ _-]?[b-z2-9])"
+
 class ListGenerator : public std::vector<dir_discHdr>
 {
 public:
 	void createSFList(u8 maxBtns, Config &m_sourceMenuCfg, const string& sourceDir);
-	void Init(const char *settingsDir, const char *Language, const char *plgnsDataDir);
+	void Init(const char *settingsDir, const char *Language, const char *plgnsDataDir, const std::string& fileNameSkipPattern);
 	void Clear();
 	void ParseScummvmINI(Config &ini, const char *Device, const char *datadir, const char *platform, const string& DBName, bool UpdateCache);
 	void CreateRomList(Config &platform_cfg, const string& romsDir, const vector<string>& FileTypes, const string& DBName, bool UpdateCache);
