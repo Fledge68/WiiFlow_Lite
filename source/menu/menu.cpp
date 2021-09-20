@@ -407,7 +407,8 @@ bool CMenu::init(bool usb_mounted)
 	}
 
 	/* Init gametdb and custom titles for game list making */
-	m_cacheList.Init(m_settingsDir.c_str(), m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str(), m_pluginDataDir.c_str());
+	m_cacheList.Init(m_settingsDir.c_str(), m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str(), m_pluginDataDir.c_str(),
+			 m_cfg.getString(CONFIG_FILENAME_SKIP_DOMAIN,CONFIG_FILENAME_SKIP_KEY,CONFIG_FILENAME_SKIP_DEFAULT));
 
 	/* Init the onscreen pointer */
 	m_aa = 3;
