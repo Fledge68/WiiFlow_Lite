@@ -989,7 +989,7 @@ void CMenu::update_pThread(u64 amount, bool add)
 	{
 		m_thrdDone = false;
 		if(add)
-			m_thrdWritten += amount;
+			m_thrdWritten = m_thrdWritten + amount;
 		else
 			m_thrdWritten = amount;
 		m_thrdUpdated = true;
