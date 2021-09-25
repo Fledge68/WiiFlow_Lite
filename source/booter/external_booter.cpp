@@ -62,7 +62,7 @@ u8 *booter_ptr = NULL;
 u32 booter_size = 0;
 
 void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 patchVidMode, s8 aspectRatio, u8 private_server, bool patchFix480p, 
-							u32 returnTo, u8 BootType, bool use_led)
+							u8 deflicker, u32 returnTo, u8 BootType, bool use_led)
 {
 	normalCFG.vidMode = vidMode;
 	normalCFG.vipatch = vipatch;
@@ -71,6 +71,7 @@ void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 pat
 	normalCFG.aspectRatio = aspectRatio;
 	normalCFG.private_server = private_server;
 	normalCFG.patchFix480p = patchFix480p;
+	normalCFG.deflicker = deflicker;
 	normalCFG.returnTo = returnTo;
 	normalCFG.configbytes[0] = configbytes[0];
 	normalCFG.configbytes[1] = configbytes[1];

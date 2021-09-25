@@ -30,6 +30,9 @@ extern u32 hooktype;
 extern u8 configbytes[2];
 
 // Function prototypes
+void deflicker_patch(void *addr, u32 len);
+void patch_vfilters(void *addr, u32 len, u8 *vfilter);
+void patch_vfilters_rogue(void *addr, u32 len, u8 *vfilter);
 bool dogamehooks(void *addr, u32 len, bool channel);
 void langpatcher(void *addr, u32 len);
 void vidolpatcher(void *addr, u32 len);

@@ -29,7 +29,7 @@ static const char *GameID = (const char*)0x80000000;
 #define APPLDR_CODE		0x918
 
 void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipatch, 
-				bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo, bool patchregion, u8 private_server, u8 bootType);
+				bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo, bool patchregion, u8 private_server, u8 deflicker, u8 bootType);
 static void patch_NoDiscinDrive(void *buffer, u32 len);
 static void Anti_002_fix(void *Address, int Size);
 static bool Remove_001_Protection(void *Address, int Size);
@@ -50,7 +50,7 @@ static struct
 } apploader_hdr ATTRIBUTE_ALIGN(32);
 
 u32 Apploader_Run(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo, 
-					bool patchregion , u8 private_server, bool patchFix480p, u8 bootType)
+					bool patchregion , u8 private_server, bool patchFix480p, u8 deflicker, u8 bootType)
 {
 	//! Disable private server for games that still have official servers.
 	if (memcmp(GameID, "SC7", 3) == 0 || memcmp(GameID, "RJA", 3) == 0 ||
@@ -105,9 +105,9 @@ u32 Apploader_Run(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryStrin
 		WDVD_Read(dst, len, offset);
 		// if server is wiimmfi and game is mario kart wii don't use private server. use MarioKartWiiWiimmfiPatch below
 		if(private_server == PRIVSERV_WIIMMFI && memcmp("RMC", GameID, 3) == 0)// 2= wiimmfi
-			maindolpatches(dst, len, vidMode, vmode, vipatch, countryString, patchVidModes, aspectRatio, returnTo, patchregion, 0, bootType);
+			maindolpatches(dst, len, vidMode, vmode, vipatch, countryString, patchVidModes, aspectRatio, returnTo, patchregion, 0, deflicker, bootType);
 		else
-			maindolpatches(dst, len, vidMode, vmode, vipatch, countryString, patchVidModes, aspectRatio, returnTo, patchregion, private_server, bootType);
+			maindolpatches(dst, len, vidMode, vmode, vipatch, countryString, patchVidModes, aspectRatio, returnTo, patchregion, private_server, deflicker, bootType);
 			
 		DCFlushRange(dst, len);
 		ICInvalidateRange(dst, len);
@@ -132,8 +132,13 @@ u32 Apploader_Run(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryStrin
 	return (u32)appldr_final();
 }
 
-void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo, bool patchregion , u8 private_server, u8 bootType)
+void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo, bool patchregion , u8 private_server, u8 deflicker, u8 bootType)
 {
+	u8 vfilter_off[7] = {0, 0, 21, 22, 21, 0, 0};
+	u8 vfilter_low[7] = {4, 4, 16, 16, 16, 4, 4};
+	u8 vfilter_medium[7] = {4, 8, 12, 16, 12, 8, 4};
+	u8 vfilter_high[7] = {8, 8, 10, 12, 10, 8, 8};
+
 	do_wip_code((u8 *)dst, len);
 	Remove_001_Protection(dst, len);
 	if(CurrentIOS.Type == IOS_TYPE_WANIN && CurrentIOS.Revision < 13)
@@ -161,7 +166,31 @@ void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipa
 	if(patchregion)
 		PatchRegion(dst, len);
 	if(private_server)
-		PrivateServerPatcher(dst,len, private_server);	
+		PrivateServerPatcher(dst,len, private_server);
+
+	if(deflicker == DEFLICKER_ON_LOW)
+	{
+		patch_vfilters(dst, len, vfilter_low);
+		patch_vfilters_rogue(dst, len, vfilter_low);
+	}
+	else if(deflicker == DEFLICKER_ON_MEDIUM)
+	{
+		patch_vfilters(dst, len, vfilter_medium);
+		patch_vfilters_rogue(dst, len, vfilter_medium);
+	}
+	else if(deflicker == DEFLICKER_ON_HIGH)
+	{
+		patch_vfilters(dst, len, vfilter_high);
+		patch_vfilters_rogue(dst, len, vfilter_high);
+	}
+	else if(deflicker != DEFLICKER_NORMAL) // Either safe or extended
+	{
+		patch_vfilters(dst, len, vfilter_off);
+		patch_vfilters_rogue(dst, len, vfilter_off);
+		// This might break fade and brightness effects
+		if (deflicker == DEFLICKER_OFF_EXTENDED)
+			deflicker_patch(dst, len);
+	}
 }
 
 static void patch_NoDiscinDrive(void *buffer, u32 len)

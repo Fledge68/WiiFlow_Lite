@@ -339,7 +339,12 @@ private:
 	s16 m_config7Lbl4;
 	s16 m_config7Btn1;
 	s16 m_config7Btn2;
+
 	s16 m_config7Btn3;
+	s16 m_config7Lbl3Val;
+	s16 m_config7Btn3M;
+	s16 m_config7Btn3P;
+
 	s16 m_config7Btn4;
 	s16 m_config7Lbl4Val;
 	s16 m_config7Btn4M;
@@ -590,6 +595,11 @@ private:
 	
 	s16 m_gameSettingsLblFix480p;
 	s16 m_gameSettingsBtnFix480p;
+
+	s16 m_gameSettingsLblDeflickerWii;
+	s16 m_gameSettingsLblDeflickerWiiVal;
+	s16 m_gameSettingsBtnDeflickerWiiM;
+	s16 m_gameSettingsBtnDeflickerWiiP;
 	
 	s16 m_gameSettingsLblManage;
 	s16 m_gameSettingsBtnManage;
@@ -1292,7 +1302,9 @@ private:
 	static const SOption _GlobalVideoModes[6];
 	static const SOption _VideoModes[7];
 	static const SOption _languages[11];
-	
+
+	static const SOption _GlobalDeflickerOptions[6];
+	static const SOption _DeflickerOptions[7];
 	static const SOption _GlobalGCvideoModes[6];
 	static const SOption _GlobalGClanguages[7];
 	static const SOption _GCvideoModes[7];
