@@ -31,6 +31,25 @@ const CMenu::SOption CMenu::_VideoModes[7] = {
 	{ "vidprog", L"Progressive" },
 };
 
+const CMenu::SOption CMenu::_GlobalDeflickerOptions[6] = {
+	{ "df_norm", L"Normal" },
+	{ "df_off", L"Off (Safe)" },
+	{ "df_ext", L"Off (Extended)" },
+	{ "df_low", L"On (Low)" },
+	{ "df_med", L"On (Medium)" },
+	{ "df_high", L"On (High)" },
+};
+
+const CMenu::SOption CMenu::_DeflickerOptions[7] = {
+	{ "df_def", L"Default" },
+	{ "df_norm", L"Normal" },
+	{ "df_off", L"Off (Safe)" },
+	{ "df_ext", L"Off (Extended)" },
+	{ "df_low", L"On (Low)" },
+	{ "df_med", L"On (Medium)" },
+	{ "df_high", L"On (High)" },
+};
+
 const CMenu::SOption CMenu::_GlobalGCvideoModes[6] = {
 	{ "vidgame", L"Game" },
 	{ "vidp50", L"PAL 50Hz" },
@@ -234,6 +253,10 @@ void CMenu::_hideGameSettingsPg(bool instant)
 	m_btnMgr.hide(m_gameSettingsBtnPrivateServerM, instant);
 	m_btnMgr.hide(m_gameSettingsLblFix480p, instant);
 	m_btnMgr.hide(m_gameSettingsBtnFix480p, instant);
+	m_btnMgr.hide(m_gameSettingsLblDeflickerWii, instant);
+	m_btnMgr.hide(m_gameSettingsLblDeflickerWiiVal, instant);
+	m_btnMgr.hide(m_gameSettingsBtnDeflickerWiiP, instant);
+	m_btnMgr.hide(m_gameSettingsBtnDeflickerWiiM, instant);
 	//All
 	m_btnMgr.hide(m_gameSettingsLblManage, instant);
 	m_btnMgr.hide(m_gameSettingsBtnManage, instant);
@@ -569,6 +592,11 @@ void CMenu::_showGameSettings()
 				
 				m_btnMgr.show(m_gameSettingsLblFix480p);
 				m_btnMgr.show(m_gameSettingsBtnFix480p);
+
+				m_btnMgr.show(m_gameSettingsLblDeflickerWii);
+				m_btnMgr.show(m_gameSettingsLblDeflickerWiiVal);
+				m_btnMgr.show(m_gameSettingsBtnDeflickerWiiM);
+				m_btnMgr.show(m_gameSettingsBtnDeflickerWiiP);
 			//}
 		}
 	}
@@ -642,6 +670,10 @@ void CMenu::_showGameSettings()
 		m_btnMgr.setText(m_gameSettingsLblPrivateServerVal, _t(CMenu::_privateServer[i].id, CMenu::_privateServer[i].text));
 		
 		m_btnMgr.setText(m_gameSettingsBtnFix480p, _optBoolToString(m_gcfg2.getOptBool(id, "fix480p", 2)));
+
+		i = min(m_gcfg2.getUInt(id, "deflicker_wii", 0), ARRAY_SIZE(CMenu::_DeflickerOptions) - 1u);
+		m_btnMgr.setText(m_gameSettingsLblDeflickerWiiVal, _t(CMenu::_DeflickerOptions[i].id, CMenu::_DeflickerOptions[i].text));
+
 		m_btnMgr.setText(m_gameSettingsBtnCustom, _optBoolToString(m_gcfg2.getOptBool(id, "custom", 0)));
 		m_btnMgr.setText(m_gameSettingsBtnLaunchNK, _optBoolToString(m_gcfg2.getOptBool(id, "useneek", 0)));
 		m_btnMgr.setText(m_gameSettingsBtnApploader, _optBoolToString(m_gcfg2.getOptBool(id, "apploader", 0)));
@@ -997,6 +1029,12 @@ void CMenu::_gameSettings(const dir_discHdr *hdr, bool disc)
 				m_gcfg2.setOptBool(id, "fix480p", loopNum(m_gcfg2.getOptBool(id, "fix480p") + 1, 3));
 				_showGameSettings();
 			}
+			else if(m_btnMgr.selected(m_gameSettingsBtnDeflickerWiiP) || m_btnMgr.selected(m_gameSettingsBtnDeflickerWiiM))
+			{
+				s8 direction = m_btnMgr.selected(m_gameSettingsBtnDeflickerWiiP) ? 1 : -1;
+				m_gcfg2.setInt(id, "deflicker_wii", loopNum(m_gcfg2.getUInt(id, "deflicker_wii") + direction, ARRAY_SIZE(CMenu::_DeflickerOptions)));
+				_showGameSettings();
+			}
 			else if(m_btnMgr.selected(m_gameSettingsBtnAdultOnly))
 			{
 				if(disc)
@@ -1170,6 +1208,12 @@ void CMenu::_initGameSettingsMenu()
 	
 	m_gameSettingsLblFix480p = _addLabel("GAME_SETTINGS/FIX480P", theme.lblFont, L"", 20, 245, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsBtnFix480p = _addButton("GAME_SETTINGS/FIX480P_BTN", theme.btnFont, L"", 420, 250, 200, 48, theme.btnFontColor);
+
+	m_gameSettingsLblDeflickerWii = _addLabel("GAME_SETTINGS/DEFLICKER_WII", theme.lblFont, L"", 20, 305, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsLblDeflickerWiiVal = _addLabel("GAME_SETTINGS/DEFLICKER_WII_BTN", theme.btnFont, L"", 468, 310, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_gameSettingsBtnDeflickerWiiM = _addPicButton("GAME_SETTINGS/DEFLICKER_WII_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 420, 310, 48, 48);
+	m_gameSettingsBtnDeflickerWiiP = _addPicButton("GAME_SETTINGS/DEFLICKER_WII_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 572, 310, 48, 48);
+
 	//GC
 	m_gameSettingsLblWidth = _addLabel("GAME_SETTINGS/NIN_WIDTH", theme.lblFont, L"", 20, 185, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsLblWidthVal = _addLabel("GAME_SETTINGS/NIN_WIDTH_BTN", theme.btnFont, L"", 468, 190, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
@@ -1234,6 +1278,11 @@ void CMenu::_initGameSettingsMenu()
 
 	_setHideAnim(m_gameSettingsLblFix480p, "GAME_SETTINGS/FIX480P", 50, 0, -2.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnFix480p, "GAME_SETTINGS/FIX480P_BTN", -50, 0, 1.f, 0.f);
+
+	_setHideAnim(m_gameSettingsLblDeflickerWii, "GAME_SETTINGS/DEFLICKER_WII", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_gameSettingsLblDeflickerWiiVal, "GAME_SETTINGS/DEFLICKER_WII_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsBtnDeflickerWiiM, "GAME_SETTINGS/DEFLICKER_WII_MINUS", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsBtnDeflickerWiiP, "GAME_SETTINGS/DEFLICKER_WII_PLUS", -50, 0, 1.f, 0.f);
 
 	_setHideAnim(m_gameSettingsLblVipatch, "GAME_SETTINGS/VIPATCH", 50, 0, -2.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnVipatch, "GAME_SETTINGS/VIPATCH_BTN", -50, 0, 1.f, 0.f);
@@ -1400,4 +1449,5 @@ void CMenu::_textGameSettings(void)
 	m_btnMgr.setText(m_gameSettingsLblFix480p, _t("cfgg49", L"480p Pixel Patch"));
 	m_btnMgr.setText(m_gameSettingsLblWidth, _t("cfgg54", L"Video Width"));
 	m_btnMgr.setText(m_gameSettingsLblPos, _t("cfgg55", L"Video Position"));
+	m_btnMgr.setText(m_gameSettingsLblDeflickerWii, _t("cfgg61", L"Deflicker Filter"));
 }

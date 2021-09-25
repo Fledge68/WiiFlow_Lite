@@ -107,7 +107,7 @@ int main()
 			normalCFG.patchVidMode = 1; //progressive mode requires this
 		vmode = Disc_SelectVMode(normalCFG.vidMode, &vmode_reg);
 		AppEntrypoint = Apploader_Run(normalCFG.vidMode, vmode, normalCFG.vipatch, normalCFG.countryString, normalCFG.patchVidMode, normalCFG.aspectRatio, 
-						normalCFG.returnTo, normalCFG.patchregion, normalCFG.private_server, normalCFG.patchFix480p, normalCFG.BootType);
+						normalCFG.returnTo, normalCFG.patchregion, normalCFG.private_server, normalCFG.patchFix480p, normalCFG.deflicker, normalCFG.BootType);
 		WDVD_Close();
 	}
 	else if(normalCFG.BootType == TYPE_CHANNEL)
@@ -117,7 +117,7 @@ int main()
 		vmode = Disc_SelectVMode(normalCFG.vidMode, &vmode_reg);
 		AppEntrypoint = LoadChannel(normalCFG.title, normalCFG.use_dol, &GameIOS);
 		PatchChannel(normalCFG.vidMode, vmode, normalCFG.vipatch, normalCFG.countryString, normalCFG.patchVidMode, normalCFG.aspectRatio,
-					normalCFG.private_server,  normalCFG.patchFix480p, normalCFG.BootType);
+					normalCFG.private_server,  normalCFG.patchFix480p, normalCFG.deflicker, normalCFG.BootType);
 		ISFS_Deinitialize();
 	}
 	gprintf("Entrypoint: %08x, Requested Game IOS: %i\n", AppEntrypoint, GameIOS);

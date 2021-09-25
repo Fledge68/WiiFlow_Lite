@@ -41,6 +41,7 @@
 #include "utils.h"
 #include "videopatch.h"
 #include "video_tinyload.h"
+#include "apploader.h"
 
 void *dolchunkoffset[18];
 u32	dolchunksize[18];
@@ -149,8 +150,13 @@ u32 LoadChannel(u64 title, bool dol, u32 *IOS)
 }
 
 void PatchChannel(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, 
-				u8 private_server, bool patchFix480p, u8 bootType)
+				u8 private_server, bool patchFix480p, u8 deflicker, u8 bootType)
 {
+	u8 vfilter_off[7] = {0, 0, 21, 22, 21, 0, 0};
+	u8 vfilter_low[7] = {4, 4, 16, 16, 16, 4, 4};
+	u8 vfilter_medium[7] = {4, 8, 12, 16, 12, 8, 4};
+	u8 vfilter_high[7] = {8, 8, 10, 12, 10, 8, 8};
+
 	bool hookpatched = false;
 	for(u8 i = 0; i < dolchunkcount; i++)
 	{		
@@ -167,6 +173,31 @@ void PatchChannel(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryStrin
 			PrivateServerPatcher(dolchunkoffset[i], dolchunksize[i], private_server);	
 		if(hooktype != 0 && hookpatched == false)
 			hookpatched = dogamehooks(dolchunkoffset[i], dolchunksize[i], true);
+
+		if (deflicker == DEFLICKER_ON_LOW)
+		{
+			patch_vfilters(dolchunkoffset[i], dolchunksize[i], vfilter_low);
+			patch_vfilters_rogue(dolchunkoffset[i], dolchunksize[i], vfilter_low);
+		}
+		else if (deflicker == DEFLICKER_ON_MEDIUM)
+		{
+			patch_vfilters(dolchunkoffset[i], dolchunksize[i], vfilter_medium);
+			patch_vfilters_rogue(dolchunkoffset[i], dolchunksize[i], vfilter_medium);
+		}
+		else if (deflicker == DEFLICKER_ON_HIGH)
+		{
+			patch_vfilters(dolchunkoffset[i], dolchunksize[i], vfilter_high);
+			patch_vfilters_rogue(dolchunkoffset[i], dolchunksize[i], vfilter_high);
+		}
+		else if (deflicker != DEFLICKER_NORMAL) // Either safe or extended
+		{
+			patch_vfilters(dolchunkoffset[i], dolchunksize[i], vfilter_off);
+			patch_vfilters_rogue(dolchunkoffset[i], dolchunksize[i], vfilter_off);
+			// This might break fade and brightness effects
+			if (deflicker == DEFLICKER_OFF_EXTENDED)
+				deflicker_patch(dolchunkoffset[i], dolchunksize[i]);
+		}
+
 		DCFlushRange(dolchunkoffset[i], dolchunksize[i]);
 		ICInvalidateRange(dolchunkoffset[i], dolchunksize[i]);
 		prog10();

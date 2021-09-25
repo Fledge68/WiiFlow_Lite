@@ -184,6 +184,20 @@ unsigned char patch_setting[44] =
 	0x00, 0x00, 0x00, 0x00,
 };
 
+const u8 PATTERN[12][2] = {
+	{6, 6}, {6, 6}, {6, 6},
+	{6, 6}, {6, 6}, {6, 6},
+	{6, 6}, {6, 6}, {6, 6},
+	{6, 6}, {6, 6}, {6, 6}
+};
+
+const u8 PATTERN_AA[12][2] = {
+    {3, 2}, {9, 6}, {3, 10},
+    {3, 2}, {9, 6}, {3, 10},
+    {9, 2}, {3, 6}, {9, 10},
+    {9, 2}, {3, 6}, {9, 10}
+};
+
 bool dogamehooks(void *addr, u32 len, bool channel)
 {
 	/*
@@ -1308,4 +1322,84 @@ u32 do_new_wiimmfi() {
 	// Patches successfully installed
 	// returns 0 when all patching is done and game is ready to be booted. 
 	return 0; 	
+}
+
+// Deflicker filter patching by wiidev (blackb0x @ GBAtemp)
+void patch_vfilters(void *addr, u32 len, u8 *vfilter)
+{
+	u8 *addr_start = addr;
+	while (len >= sizeof(GXRModeObj))
+	{
+		GXRModeObj *vidmode = (GXRModeObj *)addr_start;
+		if ((memcmp(vidmode->sample_pattern, PATTERN, 24) == 0 || memcmp(vidmode->sample_pattern, PATTERN_AA, 24) == 0) &&
+			(vidmode->fbWidth == 640 || vidmode->fbWidth == 608 || vidmode->fbWidth == 512) &&
+			(vidmode->field_rendering == 0 || vidmode->field_rendering == 1) &&
+			(vidmode->aa == 0 || vidmode->aa == 1))
+		{
+			gprintf("Replaced vfilter %02x%02x%02x%02x%02x%02x%02x @ %p (GXRModeObj)\n",
+					vidmode->vfilter[0], vidmode->vfilter[1], vidmode->vfilter[2], vidmode->vfilter[3],
+					vidmode->vfilter[4], vidmode->vfilter[5], vidmode->vfilter[6], addr_start);
+			memcpy(vidmode->vfilter, vfilter, 7);
+			addr_start += (sizeof(GXRModeObj) - 4);
+			len -= (sizeof(GXRModeObj) - 4);
+		}
+		addr_start += 4;
+		len -= 4;
+	}
+}
+
+void patch_vfilters_rogue(void *addr, u32 len, u8 *vfilter)
+{
+	u8 known_vfilters[7][7] = {
+		{8, 8, 10, 12, 10, 8, 8},
+		{4, 8, 12, 16, 12, 8, 4},
+		{7, 7, 12, 12, 12, 7, 7},
+		{5, 5, 15, 14, 15, 5, 5},
+		{4, 4, 15, 18, 15, 4, 4},
+		{4, 4, 16, 16, 16, 4, 4},
+		{2, 2, 17, 22, 17, 2, 2}
+	};
+	u8 *addr_start = addr;
+	u8 *addr_end = addr + len - 8;
+	while (addr_start <= addr_end)
+	{
+		u8 known_vfilter[7];
+		for (int i = 0; i < 7; i++)
+		{
+			for (int x = 0; x < 7; x++)
+				known_vfilter[x] = known_vfilters[i][x];
+			if (!addr_start[7] && memcmp(addr_start, known_vfilter, 7) == 0)
+			{
+				gprintf("Replaced vfilter %02x%02x%02x%02x%02x%02x%02x @ %p\n", addr_start[0], addr_start[1], addr_start[2],
+						addr_start[3], addr_start[4], addr_start[5], addr_start[6], addr_start);
+				memcpy(addr_start, vfilter, 7);
+				addr_start += 7;
+				break;
+			}
+		}
+		addr_start += 1;
+	}
+}
+
+void deflicker_patch(void *addr, u32 len)
+{
+	u32 SearchPattern[18] = {
+		0x3D20CC01, 0x39400061, 0x99498000,
+		0x2C050000, 0x38800053, 0x39600000,
+		0x90098000, 0x38000054, 0x39800000,
+		0x508BC00E, 0x99498000, 0x500CC00E,
+		0x90698000, 0x99498000, 0x90E98000,
+		0x99498000, 0x91098000, 0x41820040};
+	u8 *addr_start = addr;
+	u8 *addr_end = addr + len - sizeof(SearchPattern);
+	while (addr_start <= addr_end)
+	{
+		if (memcmp(addr_start, SearchPattern, sizeof(SearchPattern)) == 0)
+		{
+			*((u32 *)addr_start + 17) = 0x48000040; // Change beq to b
+			gprintf("Patched GXSetCopyFilter @ %p\n", addr_start);
+			return;
+		}
+		addr_start += 4;
+	}
 }

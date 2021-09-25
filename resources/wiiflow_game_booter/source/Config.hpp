@@ -48,6 +48,7 @@ struct the_CFG {
 	u8 vipatch;
 	s8 aspectRatio;
 	bool patchFix480p;
+	u8 deflicker;
 	u8 private_server;
 	u8 *cheats;
 	u32 cheatSize;

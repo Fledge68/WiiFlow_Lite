@@ -1,6 +1,11 @@
 
 #include "menu.hpp"
 
+template <class T> static inline T loopNum(T i, T s)
+{
+	return (i + s) % s;
+}
+
 void CMenu::_hideConfig7(bool instant)
 {
 	_hideConfigCommon(instant);
@@ -13,6 +18,10 @@ void CMenu::_hideConfig7(bool instant)
 	m_btnMgr.hide(m_config7Btn3, instant);
 	m_btnMgr.hide(m_config7Lbl4, instant);
 	m_btnMgr.hide(m_config7Btn4, instant);
+
+	m_btnMgr.hide(m_config7Lbl3Val, instant);
+	m_btnMgr.hide(m_config7Btn3M, instant);
+	m_btnMgr.hide(m_config7Btn3P, instant);
 	
 	m_btnMgr.hide(m_config7Lbl4Val, instant);
 	m_btnMgr.hide(m_config7Btn4M, instant);
@@ -35,6 +44,10 @@ void CMenu::_showConfig7(int curPage)
 	m_btnMgr.hide(m_config7Btn3, true);
 	m_btnMgr.hide(m_config7Lbl4, true);
 	m_btnMgr.hide(m_config7Btn4, true);
+
+	m_btnMgr.hide(m_config7Lbl3Val, true);
+	m_btnMgr.hide(m_config7Btn3M, true);
+	m_btnMgr.hide(m_config7Btn3P, true);
 
 	m_btnMgr.hide(m_config7Lbl4Val, true);
 	m_btnMgr.hide(m_config7Btn4M, true);
@@ -59,6 +72,13 @@ void CMenu::_showConfig7(int curPage)
 
 	if(curPage == 7 || curPage == 11 || curPage == 12 || curPage == 13)
 		m_btnMgr.show(m_config7Btn4);
+	else if(curPage == 14)
+	{
+		m_btnMgr.show(m_config7Lbl3);
+		m_btnMgr.show(m_config7Lbl3Val);
+		m_btnMgr.show(m_config7Btn3M);
+		m_btnMgr.show(m_config7Btn3P);
+	}
 	else if(curPage != 14)
 	{
 		m_btnMgr.show(m_config7Lbl4Val);
@@ -149,6 +169,9 @@ void CMenu::_showConfig7(int curPage)
 		m_btnMgr.setText(m_config7Btn1, m_cfg.getBool("PROXY", "proxy_use_system") ? _t("on", L"On") : _t("off", L"Off"));
 		m_btnMgr.setText(m_config7Lbl2, _t("cfg730", L"Always show main icons"));
 		m_btnMgr.setText(m_config7Btn2, !m_cfg.getBool("GENERAL", "auto_hide_icons", true) ?  _t("yes", L"Yes") : _t("no", L"No"));
+		m_btnMgr.setText(m_config7Lbl3, _t("cfgg61", L"Deflicker Filter"));
+		int i = min(max(0, m_cfg.getInt("GENERAL", "deflicker_wii", 0)), (int)ARRAY_SIZE(CMenu::_GlobalDeflickerOptions) - 1);
+		m_btnMgr.setText(m_config7Lbl3Val, _t(CMenu::_GlobalDeflickerOptions[i].id, CMenu::_GlobalDeflickerOptions[i].text));
 	}
 }
 
@@ -372,6 +395,13 @@ int CMenu::_config7(int curPage)
 					m_btnMgr.setText(m_config7Btn2, !val ?  _t("yes", L"Yes") : _t("no", L"No"));
 					Auto_hide_icons = val;
 				}
+				else if(m_btnMgr.selected(m_config7Btn3P) || m_btnMgr.selected(m_config7Btn3M))
+				{
+					s8 direction = m_btnMgr.selected(m_config7Btn3P) ? 1 : -1;
+					m_cfg.setInt("GENERAL", "deflicker_wii", loopNum(m_cfg.getUInt("GENERAL", "deflicker_wii") + direction, ARRAY_SIZE(CMenu::_GlobalDeflickerOptions)));
+					int val = m_cfg.getInt("GENERAL", "deflicker_wii");
+					m_btnMgr.setText(m_config7Lbl3Val, _t(CMenu::_GlobalDeflickerOptions[val].id, CMenu::_GlobalDeflickerOptions[val].text));
+				}
 			}
 		}
 	}
@@ -402,6 +432,10 @@ void CMenu::_initConfig7Menu()
 	m_config7Btn3 = _addButton("CONFIG7/LINE3_BTN", theme.btnFont, L"", 420, 250, 200, 48, theme.btnFontColor);
 	m_config7Lbl4 = _addLabel("CONFIG7/LINE4", theme.lblFont, L"", 20, 305, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_config7Btn4 = _addButton("CONFIG7/LINE4_BTN", theme.btnFont, L"", 420, 310, 200, 48, theme.btnFontColor);
+
+	m_config7Lbl3Val = _addLabel("CONFIG7/LINE3_VAL", theme.btnFont, L"", 468, 250, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_config7Btn3M = _addPicButton("CONFIG7/LINE3_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 420, 250, 48, 48);
+	m_config7Btn3P = _addPicButton("CONFIG7/LINE3_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 572, 250, 48, 48);
 	
 	m_config7Lbl4Val = _addLabel("CONFIG7/LINE4_VAL", theme.btnFont, L"", 468, 310, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_config7Btn4M = _addPicButton("CONFIG7/LINE4_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 420, 310, 48, 48);
@@ -415,6 +449,10 @@ void CMenu::_initConfig7Menu()
 	_setHideAnim(m_config7Btn3, "CONFIG7/LINE3_BTN", -50, 0, 1.f, 0.f);
 	_setHideAnim(m_config7Lbl4, "CONFIG7/LINE4", 50, 0, -2.f, 0.f);
 	_setHideAnim(m_config7Btn4, "CONFIG7/LINE4_BTN", -50, 0, 1.f, 0.f);
+
+	_setHideAnim(m_config7Lbl3Val, "CONFIG7/LINE3_VAL", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_config7Btn3M, "CONFIG7/LINE3_MINUS", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_config7Btn3P, "CONFIG7/LINE3_PLUS", -50, 0, 1.f, 0.f);
 	
 	_setHideAnim(m_config7Lbl4Val, "CONFIG7/LINE4_VAL", -50, 0, 1.f, 0.f);
 	_setHideAnim(m_config7Btn4M, "CONFIG7/LINE4_MINUS", -50, 0, 1.f, 0.f);
