@@ -28,14 +28,13 @@ static const char *GameID = (const char*)0x80000000;
 #define APPLDR_OFFSET	0x910
 #define APPLDR_CODE		0x918
 
-void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipatch, 
-				bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo, bool patchregion, u8 private_server, u8 deflicker, u8 bootType);
+void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, 
+					u32 returnTo, bool patchregion, u8 private_server, const char *server_addr, u8 deflicker, u8 bootType);
 static void patch_NoDiscinDrive(void *buffer, u32 len);
 static void Anti_002_fix(void *Address, int Size);
 static bool Remove_001_Protection(void *Address, int Size);
 static void PrinceOfPersiaPatch();
 static void NewSuperMarioBrosPatch();
-static void WiimmfiPatch(u8 server);
 static void Patch_23400_and_MKWii_vulnerability();
 bool hookpatched = false;
 
@@ -50,7 +49,7 @@ static struct
 } apploader_hdr ATTRIBUTE_ALIGN(32);
 
 u32 Apploader_Run(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo, 
-					bool patchregion , u8 private_server, bool patchFix480p, u8 deflicker, u8 bootType)
+					bool patchregion , u8 private_server, const char *server_addr, bool patchFix480p, u8 deflicker, u8 bootType)
 {
 	//! Disable private server for games that still have official servers.
 	if (memcmp(GameID, "SC7", 3) == 0 || memcmp(GameID, "RJA", 3) == 0 ||
@@ -103,11 +102,13 @@ u32 Apploader_Run(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryStrin
 	{
 		/* Read data from DVD */
 		WDVD_Read(dst, len, offset);
-		// if server is wiimmfi and game is mario kart wii don't use private server. use MarioKartWiiWiimmfiPatch below
-		if(private_server == PRIVSERV_WIIMMFI && memcmp("RMC", GameID, 3) == 0)// 2= wiimmfi
-			maindolpatches(dst, len, vidMode, vmode, vipatch, countryString, patchVidModes, aspectRatio, returnTo, patchregion, 0, deflicker, bootType);
+		// if server is wiimmfi and game is mario kart wii don't patch private server here, do_new_wiimfi() patches it below.
+		if(private_server == PRIVSERV_WIIMMFI && memcmp("RMC", GameID, 3) == 0)
+			maindolpatches(dst, len, vidMode, vmode, vipatch, countryString, patchVidModes, aspectRatio, returnTo, patchregion, 
+							0, NULL, deflicker, bootType);
 		else
-			maindolpatches(dst, len, vidMode, vmode, vipatch, countryString, patchVidModes, aspectRatio, returnTo, patchregion, private_server, deflicker, bootType);
+			maindolpatches(dst, len, vidMode, vmode, vipatch, countryString, patchVidModes, aspectRatio, returnTo, patchregion, 
+							private_server,  server_addr, deflicker, bootType);
 			
 		DCFlushRange(dst, len);
 		ICInvalidateRange(dst, len);
@@ -126,13 +127,20 @@ u32 Apploader_Run(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryStrin
 	if(private_server != PRIVSERV_WIIMMFI)
 		Patch_23400_and_MKWii_vulnerability();
 	
-	WiimmfiPatch(private_server);// only done if wiimfi server and game is mario kart wii 
+	else //wiimmfi patch
+	{
+		if(memcmp("RMC", GameID, 3) != 0)// This isn't MKWii, perform the patch for other games.
+			do_new_wiimmfi_nonMKWii(); 
+		else // This is MKWii, perform the known patch from 2018.
+			do_new_wiimmfi(); 
+	}
 
 	/* Set entry point from apploader */
 	return (u32)appldr_final();
 }
 
-void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo, bool patchregion , u8 private_server, u8 deflicker, u8 bootType)
+void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, 
+					u32 returnTo, bool patchregion , u8 private_server, const char *serverAddr, u8 deflicker, u8 bootType)
 {
 	u8 vfilter_off[7] = {0, 0, 21, 22, 21, 0, 0};
 	u8 vfilter_low[7] = {4, 4, 16, 16, 16, 4, 4};
@@ -166,7 +174,7 @@ void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipa
 	if(patchregion)
 		PatchRegion(dst, len);
 	if(private_server)
-		PrivateServerPatcher(dst,len, private_server);
+		PrivateServerPatcher(dst, len, private_server, serverAddr);	
 
 	if(deflicker == DEFLICKER_ON_LOW)
 	{
@@ -219,21 +227,6 @@ static void Anti_002_fix(void *Address, int Size)
 		if(memcmp(Addr, SearchPattern, sizeof SearchPattern) == 0) 
 			memcpy(Addr, PatchData, sizeof PatchData);
 		Addr += 4;
-	}
-}
-
-static void WiimmfiPatch(u8 server)
-{
-
-	if (server != PRIVSERV_WIIMMFI) return; 	// no Wiimmfi Patch needed
-
-	if(memcmp("RMC", GameID, 3) != 0) {
-		// This isn't MKWii, perform the patch for other games.
-		do_new_wiimmfi_nonMKWii(); 
-	}
-	else {
-		// This is MKWii, perform the known patch from 2018.
-		do_new_wiimmfi(); 
 	}
 }
 

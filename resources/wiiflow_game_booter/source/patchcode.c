@@ -657,7 +657,7 @@ void PatchRegion(void *Address, int Size)
 }
 
 /** Patch URLs for private Servers - Thanks to ULGX **/
-void PrivateServerPatcher(void *addr, u32 len, u8 private_server)
+void PrivateServerPatcher(void *addr, u32 len, u8 private_server, const char *serverAddr)
 {
 	// Patch protocol https -> http
 	char *cur = (char *)addr;
@@ -675,6 +675,8 @@ void PrivateServerPatcher(void *addr, u32 len, u8 private_server)
 	while (++cur < end);
 	if(private_server == PRIVSERV_WIIMMFI)
 		domainpatcher(addr, len, "wiimmfi.de");
+	else if (private_server > PRIVSERV_WIIMMFI && strlen(serverAddr) > 3)
+		domainpatcher(addr, len, serverAddr);
 }
 
 void domainpatcher(void *addr, u32 len, const char* domain)
@@ -1099,7 +1101,7 @@ u32 do_new_wiimmfi() {
 	strncpy(patched, (char *)&patcher, 42); 
 	
 	// Do the plain old patching with the string search
-	PrivateServerPatcher((void*)0x80004000, 0x385200, PRIVSERV_WIIMMFI); 
+	PrivateServerPatcher((void*)0x80004000, 0x385200, PRIVSERV_WIIMMFI, NULL); 
 	
 	// Replace some URLs for Wiimmfi's new update system
 	char newURL1[] = "http://ca.nas.wiimmfi.de/ca";

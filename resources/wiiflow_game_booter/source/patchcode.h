@@ -46,7 +46,7 @@ void PatchRegion(void *Address, int Size);
 void PatchFix480p();
 u32 do_new_wiimmfi(); 
 u32 do_new_wiimmfi_nonMKWii(); 
-void PrivateServerPatcher(void *addr, u32 len, u8 private_server);
+void PrivateServerPatcher(void *addr, u32 len, u8 private_server, const char *serverAddr);
 void domainpatcher(void *addr, u32 len, const char* domain);
 
 #ifdef __cplusplus

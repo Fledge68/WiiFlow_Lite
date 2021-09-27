@@ -50,6 +50,7 @@ struct the_CFG {
 	bool patchFix480p;
 	u8 deflicker;
 	u8 private_server;
+	char server_addr[24];
 	u8 *cheats;
 	u32 cheatSize;
 	u8 debugger;

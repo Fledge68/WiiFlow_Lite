@@ -332,6 +332,7 @@ void CMenu::_hideGameSettingsPg(bool instant)
 
 void CMenu::_showGameSettings()
 {
+	vector<string> custom_servers = stringToVector(m_cfg.getString("custom_servers", "servers"), '|');
 	u32 i;
 	char id[74];
 	memset(id, 0, 74);
@@ -667,7 +668,10 @@ void CMenu::_showGameSettings()
 		m_btnMgr.setText(m_gameSettingsBtnVipatch, _optBoolToString(m_gcfg2.getOptBool(id, "vipatch", 0)));
 		m_btnMgr.setText(m_gameSettingsBtnCountryPatch, _optBoolToString(m_gcfg2.getOptBool(id, "country_patch", 0)));
 		i = min(m_gcfg2.getUInt(id, "private_server", 0), ARRAY_SIZE(CMenu::_privateServer) - 1u);
-		m_btnMgr.setText(m_gameSettingsLblPrivateServerVal, _t(CMenu::_privateServer[i].id, CMenu::_privateServer[i].text));
+		if(i < 3)
+			m_btnMgr.setText(m_gameSettingsLblPrivateServerVal, _t(CMenu::_privateServer[i].id, CMenu::_privateServer[i].text));
+		else
+			m_btnMgr.setText(m_gameSettingsLblPrivateServerVal, custom_servers[i - 3]);//wstringEx()
 		
 		m_btnMgr.setText(m_gameSettingsBtnFix480p, _optBoolToString(m_gcfg2.getOptBool(id, "fix480p", 2)));
 
@@ -717,6 +721,7 @@ void CMenu::_showGameSettings()
 
 void CMenu::_gameSettings(const dir_discHdr *hdr, bool disc)
 {
+	vector<string> custom_servers = stringToVector(m_cfg.getString("custom_servers", "servers"), '|');
 	m_gcfg2.load(fmt("%s/" GAME_SETTINGS2_FILENAME, m_settingsDir.c_str()));
 	GameHdr = hdr;// set for global use in other fuctions
 	char id[74];
@@ -1021,7 +1026,8 @@ void CMenu::_gameSettings(const dir_discHdr *hdr, bool disc)
 			else if(m_btnMgr.selected(m_gameSettingsBtnPrivateServerP) || m_btnMgr.selected(m_gameSettingsBtnPrivateServerM))
 			{
 				s8 direction = m_btnMgr.selected(m_gameSettingsBtnPrivateServerP) ? 1 : -1;
-				m_gcfg2.setInt(id, "private_server", loopNum(m_gcfg2.getUInt(id, "private_server") + direction, ARRAY_SIZE(CMenu::_privateServer)));
+				u8 val = loopNum(m_gcfg2.getUInt(id, "private_server") + direction, ARRAY_SIZE(CMenu::_privateServer) + custom_servers.size());
+				m_gcfg2.setUInt(id, "private_server", val);
 				_showGameSettings();
 			}
 			else if(m_btnMgr.selected(m_gameSettingsBtnFix480p))
