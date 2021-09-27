@@ -2276,7 +2276,7 @@ void CMenu::_initCF(void)
 	
 	/*********************** Setup coverflow covers settings ***********************/
 	CoverFlow.setBufferSize(m_cfg.getInt("GENERAL", "cover_buffer", 20));
-	CoverFlow.setHQcover(m_cfg.getBool("GENERAL", "cover_use_hq", true));
+	CoverFlow.setHQcover(m_cfg.getBool("GENERAL", "cover_use_hq", false));
 	CoverFlow.start(m_imgsDir);
 	
 	/*********************** Get and set game list current item to center cover **************************/
