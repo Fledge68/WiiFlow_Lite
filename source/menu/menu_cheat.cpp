@@ -25,7 +25,7 @@ int CMenu::_downloadCheatFileAsync()
 	
 	const char *id = CoverFlow.getId();
 	struct download file = {};
-	downloadfile(fmt(GECKOURL, id), &file);
+	downloadfile(fmt(m_cfg.getString("general", "cheats_url", GECKOURL).c_str(), id), &file);
 	if(file.size > 0 && file.data[0] != '<')
 	{
 		m_thrdMessage = _t("dlmsg13", L"Saving...");
