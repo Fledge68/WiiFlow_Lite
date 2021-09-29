@@ -134,6 +134,12 @@ const CMenu::SOption CMenu::_AspectRatio[3] = {
 	{ "aspect169", L"Force 16:9" },
 };
 
+const CMenu::SOption CMenu::_WidescreenWiiu[3] = {
+	{ "lngsys", L"System" },
+	{ "aspect43", L"Force 4:3" },
+	{ "aspect169", L"Force 16:9" },
+};
+
 const CMenu::SOption CMenu::_NinEmuCard[5] = {
 	{ "NinMCDef", L"Default" },
 	{ "NinMCOff", L"Disabled" },
@@ -238,6 +244,10 @@ void CMenu::_hideGameSettingsPg(bool instant)
 	m_btnMgr.hide(m_gameSettingsLblIOS, instant);
 	m_btnMgr.hide(m_gameSettingsBtnIOSP, instant);
 	m_btnMgr.hide(m_gameSettingsBtnIOSM, instant);
+	m_btnMgr.hide(m_gameSettingsLblWidescreenWiiu, instant);
+	m_btnMgr.hide(m_gameSettingsLblWidescreenWiiuVal, instant);
+	m_btnMgr.hide(m_gameSettingsBtnWidescreenWiiuP, instant);
+	m_btnMgr.hide(m_gameSettingsBtnWidescreenWiiuM, instant);
 	//wii only
 	m_btnMgr.hide(m_gameSettingsLblEmulation, instant);
 	m_btnMgr.hide(m_gameSettingsLblEmulationVal, instant);
@@ -387,7 +397,7 @@ void CMenu::_showGameSettings()
 		GCLoader = (GCLoader == 0) ? min(m_cfg.getUInt(GC_DOMAIN, "default_loader", 1), ARRAY_SIZE(CMenu::_GlobalGCLoaders) - 1u) : GCLoader-1;
 	}
 	
-	m_gameSettingsMaxPgs = 5;
+	m_gameSettingsMaxPgs = IsOnWiiU() ? 6 : 5;
 	if(GameHdr->type == TYPE_GC_GAME)
 	{
 		if(GCLoader == DEVOLUTION)
@@ -603,13 +613,23 @@ void CMenu::_showGameSettings()
 	}
 	if(m_gameSettingsPage == 6)
 	{
-		m_btnMgr.show(m_gameSettingsLblBBA);
-		m_btnMgr.show(m_gameSettingsBtnBBA);
+		if(GameHdr->type == TYPE_GC_GAME)
+		{
+			m_btnMgr.show(m_gameSettingsLblBBA);
+			m_btnMgr.show(m_gameSettingsBtnBBA);
 		
-		m_btnMgr.show(m_gameSettingsLblNetProfVal);
-		m_btnMgr.show(m_gameSettingsLblNetProf);
-		m_btnMgr.show(m_gameSettingsBtnNetProfP);
-		m_btnMgr.show(m_gameSettingsBtnNetProfM);
+			m_btnMgr.show(m_gameSettingsLblNetProfVal);
+			m_btnMgr.show(m_gameSettingsLblNetProf);
+			m_btnMgr.show(m_gameSettingsBtnNetProfP);
+			m_btnMgr.show(m_gameSettingsBtnNetProfM);
+		}
+		else
+		{
+			m_btnMgr.show(m_gameSettingsLblWidescreenWiiu);
+			m_btnMgr.show(m_gameSettingsLblWidescreenWiiuVal);
+			m_btnMgr.show(m_gameSettingsBtnWidescreenWiiuP);
+			m_btnMgr.show(m_gameSettingsBtnWidescreenWiiuM);
+		}
 	}
 
 	m_btnMgr.setText(m_gameSettingsBtnAdultOnly, m_gcfg1.getBool("ADULTONLY", id, false) ? _t("yes", L"Yes") : _t("no", L"No"));
@@ -678,6 +698,9 @@ void CMenu::_showGameSettings()
 		i = min(m_gcfg2.getUInt(id, "deflicker_wii", 0), ARRAY_SIZE(CMenu::_DeflickerOptions) - 1u);
 		m_btnMgr.setText(m_gameSettingsLblDeflickerWiiVal, _t(CMenu::_DeflickerOptions[i].id, CMenu::_DeflickerOptions[i].text));
 
+		i = min(m_gcfg2.getUInt(id, "widescreen_wiiu", 0), ARRAY_SIZE(CMenu::_WidescreenWiiu) - 1u);
+		m_btnMgr.setText(m_gameSettingsLblWidescreenWiiuVal, _t(CMenu::_WidescreenWiiu[i].id, CMenu::_WidescreenWiiu[i].text));
+		
 		m_btnMgr.setText(m_gameSettingsBtnCustom, _optBoolToString(m_gcfg2.getOptBool(id, "custom", 0)));
 		m_btnMgr.setText(m_gameSettingsBtnLaunchNK, _optBoolToString(m_gcfg2.getOptBool(id, "useneek", 0)));
 		m_btnMgr.setText(m_gameSettingsBtnApploader, _optBoolToString(m_gcfg2.getOptBool(id, "apploader", 0)));
@@ -826,6 +849,12 @@ void CMenu::_gameSettings(const dir_discHdr *hdr, bool disc)
 			else if(m_btnMgr.selected(m_gameSettingsBtnWiiuWidescreen))
 			{
 				m_gcfg2.setBool(id, "wiiu_widescreen", !m_gcfg2.getBool(id, "wiiu_widescreen", 0));
+				_showGameSettings();
+			}
+			else if(m_btnMgr.selected(m_gameSettingsBtnWidescreenWiiuP) || m_btnMgr.selected(m_gameSettingsBtnWidescreenWiiuM))
+			{
+				s8 direction = m_btnMgr.selected(m_gameSettingsBtnWidescreenWiiuP) ? 1 : -1;
+				m_gcfg2.setInt(id, "widescreen_wiiu", (int)loopNum(m_gcfg2.getUInt(id, "widescreen_wiiu", 0) + direction, ARRAY_SIZE(CMenu::_WidescreenWiiu)));
 				_showGameSettings();
 			}
 			else if(m_btnMgr.selected(m_gameSettingsBtnLanguageP) || m_btnMgr.selected(m_gameSettingsBtnLanguageM))
@@ -1234,7 +1263,7 @@ void CMenu::_initGameSettingsMenu()
 	m_gameSettingsLblPatch50 = _addLabel("GAME_SETTINGS/PATCH_PAL50", theme.lblFont, L"", 20, 305, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsBtnPatch50 = _addButton("GAME_SETTINGS/PATCH_PAL50_BTN", theme.btnFont, L"", 420, 310, 200, 48, theme.btnFontColor);
 
-//Page 6 GC only
+//Page 6 GC
 	m_gameSettingsLblBBA = _addLabel("GAME_SETTINGS/BBA", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_gameSettingsBtnBBA = _addButton("GAME_SETTINGS/BBA_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
 	
@@ -1242,6 +1271,12 @@ void CMenu::_initGameSettingsMenu()
 	m_gameSettingsLblNetProfVal = _addLabel("GAME_SETTINGS/NET_PROFILE_BTN", theme.btnFont, L"", 468, 190, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_gameSettingsBtnNetProfM = _addPicButton("GAME_SETTINGS/NET_PROFILE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 420, 190, 48, 48);
 	m_gameSettingsBtnNetProfP = _addPicButton("GAME_SETTINGS/NET_PROFILE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 572, 190, 48, 48);
+	
+	//wii
+	m_gameSettingsLblWidescreenWiiu = _addLabel("GAME_SETTINGS/WIDESCREEN_WIIU", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
+	m_gameSettingsLblWidescreenWiiuVal = _addLabel("GAME_SETTINGS/WIDESCREEN_WIIU_BTN", theme.btnFont, L"", 468, 130, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
+	m_gameSettingsBtnWidescreenWiiuM = _addPicButton("GAME_SETTINGS/WIDESCREEN_WIIU_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 420, 130, 48, 48);
+	m_gameSettingsBtnWidescreenWiiuP = _addPicButton("GAME_SETTINGS/WIDESCREEN_WIIU_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 572, 130, 48, 48);
 	
 //Footer
 	m_gameSettingsLblPage = _addLabel("GAME_SETTINGS/PAGE_BTN", theme.btnFont, L"", 68, 400, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
@@ -1340,6 +1375,11 @@ void CMenu::_initGameSettingsMenu()
 	_setHideAnim(m_gameSettingsLblWiiuWidescreen, "GAME_SETTINGS/WIIU_WIDESCREEN", 50, 0, -2.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnWiiuWidescreen, "GAME_SETTINGS/WIIU_WIDESCREEN_BTN", -50, 0, 1.f, 0.f);
 
+	_setHideAnim(m_gameSettingsLblWidescreenWiiu, "GAME_SETTINGS/WIDESCREEN_WIIU", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_gameSettingsLblWidescreenWiiuVal, "GAME_SETTINGS/WIDESCREEN_WIIU_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsBtnWidescreenWiiuM, "GAME_SETTINGS/WIDESCREEN_WIIU_MINUS", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_gameSettingsBtnWidescreenWiiuP, "GAME_SETTINGS/WIDESCREEN_WIIU_PLUS", -50, 0, 1.f, 0.f);
+
 	_setHideAnim(m_gameSettingsLblArcade, "GAME_SETTINGS/ARCADE", 50, 0, -2.f, 0.f);
 	_setHideAnim(m_gameSettingsBtnArcade, "GAME_SETTINGS/ARCADE_BTN", -50, 0, 1.f, 0.f);
 
@@ -1426,6 +1466,7 @@ void CMenu::_textGameSettings(void)
 	m_btnMgr.setText(m_gameSettingsLblDevoMemcardEmu, _t("cfgg47", L"Emulated MemCard"));
 	m_btnMgr.setText(m_gameSettingsLblWidescreen, _t("cfgg36", L"Widescreen Patch"));
 	m_btnMgr.setText(m_gameSettingsLblWiiuWidescreen, _t("cfgg46", L"WiiU Widescreen"));
+	m_btnMgr.setText(m_gameSettingsLblWidescreenWiiu, _t("cfgg46", L"WiiU Widescreen"));
 	
 	m_btnMgr.setText(m_gameSettingsLblCountryPatch, _t("cfgg4", L"Patch country strings"));
 	m_btnMgr.setText(m_gameSettingsLblVipatch, _t("cfgg7", L"Vipatch"));

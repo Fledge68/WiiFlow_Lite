@@ -1,5 +1,6 @@
 
 #include <fcntl.h>
+#include <ogc/machine/processor.h>
 
 #include "menu.hpp"
 #include "types.h"
@@ -777,7 +778,9 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	language = (language == 0) ? min(m_cfg.getUInt("GENERAL", "game_language", 0), ARRAY_SIZE(CMenu::_languages) - 1u) : language;
 
 	u8 patchVidMode = min(m_gcfg2.getUInt(id, "patch_video_modes", 0), ARRAY_SIZE(CMenu::_vidModePatch) - 1u);
+
 	s8 aspectRatio = min(m_gcfg2.getUInt(id, "aspect_ratio", 0), ARRAY_SIZE(CMenu::_AspectRatio) - 1) - 1;// -1,0,1
+
 	u8 private_server = m_gcfg2.getUInt(id, "private_server", 0);
 	string server_addr = "";
 	if(private_server > 2)
@@ -785,8 +788,12 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		vector<string> custom_servers = stringToVector(m_cfg.getString("custom_servers", "servers"), '|');
 		server_addr = m_cfg.getString("custom_servers", fmt("%s_url", custom_servers[private_server - 3]), "");
 	}
+
 	int fix480pVal = m_gcfg2.getOptBool(id, "fix480p", 2);
 	bool fix480p = fix480pVal == 0 ? false : (fix480pVal == 1 ? true : m_cfg.getBool(WII_DOMAIN, "fix480p", false));
+
+	u8 wiiuWidescreen = min(m_gcfg2.getUInt(id, "widescreen_wiiu", 0), ARRAY_SIZE(CMenu::_WidescreenWiiu) - 1u);
+
 	u8 deflicker = min(m_gcfg2.getUInt(id, "deflicker_wii", 0), ARRAY_SIZE(CMenu::_DeflickerOptions) - 1u);
 	deflicker = (deflicker == 0) ? min(m_cfg.getUInt("GENERAL", "deflicker_wii", 0), ARRAY_SIZE(CMenu::_GlobalDeflickerOptions) - 1u) : deflicker - 1;
 	
@@ -900,6 +907,12 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	
 	cleanup();//no more error messages we can now cleanup
 	
+	if(wiiuWidescreen > 0 && IsOnWiiU())
+	{
+		write32(0xd8006a0, wiiuWidescreen == 2 ? 0x30000004 : 0x30000002);
+		mask32(0xd8006a8, 0, 2);
+	}
+
 	if(WII_Launch)
 	{
 		ShutdownBeforeExit();
@@ -1004,6 +1017,8 @@ void CMenu::_launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 	u8 deflicker = min(m_gcfg2.getUInt(id, "deflicker_wii", 0), ARRAY_SIZE(CMenu::_DeflickerOptions) - 1u);
 	deflicker = (deflicker == 0) ? min(m_cfg.getUInt("GENERAL", "deflicker_wii", 0), ARRAY_SIZE(CMenu::_GlobalDeflickerOptions) - 1u) : deflicker-1;
 
+	u8 wiiuWidescreen = min(m_gcfg2.getUInt(id, "widescreen_wiiu", 0), ARRAY_SIZE(CMenu::_WidescreenWiiu) - 1u);
+	
 	u8 videoMode = min(m_gcfg2.getUInt(id, "video_mode", 0), ARRAY_SIZE(CMenu::_VideoModes) - 1u);
 	videoMode = (videoMode == 0) ? min(m_cfg.getUInt("GENERAL", "video_mode", 0), ARRAY_SIZE(CMenu::_GlobalVideoModes) - 1u) : videoMode-1;
 
@@ -1187,7 +1202,12 @@ void CMenu::_launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 		app_gameconfig_load(id.c_str(), gameconfig, gameconfigSize);
 		MEM2_free(gameconfig);
 	}
-
+	
+	if(wiiuWidescreen > 0 && IsOnWiiU())
+	{
+		write32(0xd8006a0, wiiuWidescreen == 2 ? 0x30000004 : 0x30000002);
+		mask32(0xd8006a8, 0, 2);
+	}
 	ExternalBooter_WiiGameSetup(wbfs_partition, dvd, patchregion, id.c_str());
 	WiiFlow_ExternalBooter(videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, private_server, server_addr.c_str(), 
 							fix480p, deflicker, returnTo, TYPE_WII_GAME, use_led);

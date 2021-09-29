@@ -596,6 +596,11 @@ private:
 	s16 m_gameSettingsLblFix480p;
 	s16 m_gameSettingsBtnFix480p;
 
+	s16 m_gameSettingsLblWidescreenWiiu;
+	s16 m_gameSettingsLblWidescreenWiiuVal;
+	s16 m_gameSettingsBtnWidescreenWiiuM;
+	s16 m_gameSettingsBtnWidescreenWiiuP;
+
 	s16 m_gameSettingsLblDeflickerWii;
 	s16 m_gameSettingsLblDeflickerWiiVal;
 	s16 m_gameSettingsBtnDeflickerWiiM;
@@ -1317,6 +1322,7 @@ private:
 	static const SOption _SaveEmu[4];
 	static const SOption _GlobalSaveEmu[3];
 	static const SOption _AspectRatio[3];
+	static const SOption _WidescreenWiiu[3];
 	static const SOption _NinEmuCard[5];
 	static const SOption _vidModePatch[4];
 	static const SOption _debugger[3];
