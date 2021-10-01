@@ -1157,8 +1157,6 @@ void * CMenu::_gameSoundThread(void *obj)
 			free(soundBin);// no longer needed, now using decompressed newSound
 			if(newSound != NULL && newSize != 0)
 				m->m_gameSound.Load(newSound, newSize);
-			else
-				m->m_gameSound.FreeMemory();// frees newSound
 		}
 		else
 			m->m_gameSound.Load(soundBin, sndSize);
@@ -1166,7 +1164,7 @@ void * CMenu::_gameSoundThread(void *obj)
 		if(m->m_gameSound.IsLoaded())
 			m->m_gamesound_changed = true;
 		else
-			m->m_gameSound.FreeMemory();// frees soundBin
+			m->m_gameSound.FreeMemory();// frees soundBin or newSound
 	}
 	else // no sound.bin or gc banner sound disabled
 	{
