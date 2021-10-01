@@ -81,10 +81,16 @@ void Banner::SetBanner(u8 *bnr, u32 bnr_size, bool custom, bool alloc)
 		if(memcmp(imetmd5, md5, 16) == 0 || custom)
 			this->imet = imet;
 		else
+		{
+			imet = NULL;
 			gprintf("Invalid md5, banner not valid\n");
+		}
 	}
 	else
+	{
+		imet = NULL;
 		gprintf("Invalid signature found, banner not valid\n");
+	}
 }
 
 void Banner::ClearBanner()

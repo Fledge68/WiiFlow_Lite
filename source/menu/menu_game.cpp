@@ -1145,14 +1145,9 @@ void * CMenu::_gameSoundThread(void *obj)
 	if(cached_bnr_file == NULL && custom_bnr_file == NULL)
 		fsop_WriteFile(cached_banner, CurrentBanner.GetBannerFile(), CurrentBanner.GetBannerFileSize());
 
-	//load and init banner
-	m_banner.LoadBanner(m->m_wbf1_font, m->m_wbf2_font);
-	
 	//get sound from wii, channel, or custom banner and load it to play with the banner
 	u32 sndSize = 0;
 	u8 *soundBin = CurrentBanner.GetFile("sound.bin", &sndSize);
-	CurrentBanner.ClearBanner();// got sound.bin and banner for displaying is loaded so no longer need current banner.
-
 	if(soundBin != NULL && (GameHdr->type != TYPE_GC_GAME || m->m_gc_play_banner_sound))
 	{
 		if(memcmp(&((IMD5Header *)soundBin)->fcc, "IMD5", 4) == 0)
@@ -1160,13 +1155,10 @@ void * CMenu::_gameSoundThread(void *obj)
 			u32 newSize = 0;
 			u8 *newSound = DecompressCopy(soundBin, sndSize, &newSize);
 			free(soundBin);// no longer needed, now using decompressed newSound
-			if(newSound == NULL || newSize == 0 || !m->m_gameSound.Load(newSound, newSize))
-			{
+			if(newSound != NULL && newSize != 0)
+				m->m_gameSound.Load(newSound, newSize);
+			else
 				m->m_gameSound.FreeMemory();// frees newSound
-				m_banner.DeleteBanner();// the same as UnloadBanner
-				m->m_soundThrdBusy = false;
-				return NULL;
-			}
 		}
 		else
 			m->m_gameSound.Load(soundBin, sndSize);
@@ -1174,19 +1166,18 @@ void * CMenu::_gameSoundThread(void *obj)
 		if(m->m_gameSound.IsLoaded())
 			m->m_gamesound_changed = true;
 		else
-		{
 			m->m_gameSound.FreeMemory();// frees soundBin
-			m_banner.DeleteBanner();
-		}
 	}
-	else
+	else // no sound.bin or gc banner sound disabled
 	{
 		if(soundBin != NULL)
 			free(soundBin);
-		//gprintf("WARNING: No sound found in banner!\n");
 		m->m_gamesound_changed = true;
 		m->m_gameSound.FreeMemory();// frees previous game sound
 	}
+	//load and init banner here after getting game sound so that DecompressCopy() doesn't conflict with the DecompressCopy() in AnimatedBanner.cpp
+	m_banner.LoadBanner(m->m_wbf1_font, m->m_wbf2_font);
+	CurrentBanner.ClearBanner();
 	m->m_soundThrdBusy = false;
 	return NULL;
 }

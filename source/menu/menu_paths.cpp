@@ -175,9 +175,8 @@ void CMenu::_Paths(void)
 			{
 				_hidePaths();
 				currentPartition = m_cfg.getInt(WII_DOMAIN, "partition", USB1);
-				string gameDir(fmt(wii_games_dir, DeviceName[currentPartition]));
-				path = _FolderExplorer(gameDir.c_str());
-				if(strlen(path) > 0)
+				path = _FolderExplorer(fmt(wii_games_dir, DeviceName[currentPartition]));
+				if(strlen(path) > 6)// "usb1:/"
 				{
 					if(strncmp(path, "sd:/", 4) == 0)
 						m_cfg.setInt(WII_DOMAIN, "partition", 0);
@@ -186,12 +185,9 @@ void CMenu::_Paths(void)
 						const char *partval = &path[3];
 						m_cfg.setInt(WII_DOMAIN, "partition", atoi(partval));
 					}
-					char tmpPath[64];
-					strcpy(tmpPath, "%s");
-					strcat(tmpPath, strchr(path, ':'));
-					tmpPath[63] = '\0';
+					string tmpPath = "%s" + string(strchr(path, ':'));
 					m_cfg.setString(WII_DOMAIN, "wii_games_dir", tmpPath);
-					strcpy(wii_games_dir, tmpPath);
+					strcpy(wii_games_dir, tmpPath.c_str());
 					m_cfg.setBool(WII_DOMAIN, "update_cache", true);
 					if(m_current_view & COVERFLOW_WII)
 						m_refreshGameList = true;
@@ -202,9 +198,8 @@ void CMenu::_Paths(void)
 			{
 				_hidePaths();
 				currentPartition = m_cfg.getInt(GC_DOMAIN, "partition", USB1);
-				string gameDir(fmt(gc_games_dir, DeviceName[currentPartition]));
-				path = _FolderExplorer(gameDir.c_str());
-				if(strlen(path) > 0)
+				path = _FolderExplorer(fmt(gc_games_dir, DeviceName[currentPartition]));
+				if(strlen(path) > 6)// "usb1:/"
 				{
 					if(strncmp(path, "sd:/", 4) == 0)
 						m_cfg.setInt(GC_DOMAIN, "partition", 0);
@@ -214,12 +209,9 @@ void CMenu::_Paths(void)
 						const char *partval = &path[3];
 						m_cfg.setInt(GC_DOMAIN, "partition", atoi(partval));
 					}
-					char tmpPath[64];
-					strcpy(tmpPath, "%s");
-					strcat(tmpPath, strchr(path, ':'));
-					tmpPath[63] = '\0';
+					string tmpPath = "%s" + string(strchr(path, ':'));
 					m_cfg.setString(GC_DOMAIN, "gc_games_dir", tmpPath);
-					strcpy(gc_games_dir, tmpPath);
+					strcpy(gc_games_dir, tmpPath.c_str());
 					m_cfg.setBool(GC_DOMAIN, "update_cache", true);
 					if(m_current_view & COVERFLOW_GAMECUBE)
 						m_refreshGameList = true;
