@@ -672,7 +672,6 @@ private:
 	s16 m_cheatLblItem[4];
 	s16 m_cheatBtnItem[4];
 	s16 m_cheatLblUser[4];
-	GCTCheats m_cheatfile;
 // Gameinfo menu
 	s16 m_gameinfoLblTitle;
 	s16 m_gameinfoLblID;

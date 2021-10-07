@@ -9,6 +9,7 @@
 
 u8 m_cheatSettingsPage = 0;
 int txtavailable;
+GCTCheats m_cheatfile;
 
 int CMenu::_downloadCheatFileAsync()
 {

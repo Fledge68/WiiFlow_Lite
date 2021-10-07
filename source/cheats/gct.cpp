@@ -92,7 +92,7 @@ int GCTCheats::createGCT(const char * filename)
 int GCTCheats::createTXT(const char * filename)
 {
 
-	// save gct file
+	// save txt file
 	std::fstream file;
 	file.open(filename, std::ios::out);
 
