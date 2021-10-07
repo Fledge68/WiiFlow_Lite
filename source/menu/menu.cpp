@@ -105,14 +105,11 @@ CMenu::CMenu()
 
 bool CMenu::init(bool usb_mounted)
 {
-	SoundHandle.Init();
-	m_gameSound.SetVoice(1);
 	/* Clear Playlog to prevent wiiflow from being added to it */
 	Playlog_Delete();
 
 	/* Find the first partition with apps/wiiflow folder */
-	const char *drive = "empty";
-	const char *check = "empty";
+	const char *drive = NULL;
 	struct stat dummy;
 	for(int i = SD; i <= USB8; i++)
 	{
@@ -122,21 +119,24 @@ bool CMenu::init(bool usb_mounted)
 			break;
 		}
 	}
-	if(drive == check) // Should not happen
-	{
-		/* Could not find a device to save configuration files on! */
+	if(drive == NULL) // Could not find apps/wiiflow so we can't go on
 		return false;
-	}
 
-	_loadDefaultFont();// load default font
-
-	/* Handle apps dir first, so handling wiiflow.ini does not fail */
 	m_appDir = fmt("%s:/%s", drive, APPS_DIR);
 	gprintf("Wiiflow boot.dol Location: %s\n", m_appDir.c_str());
-	fsop_MakeFolder(m_appDir.c_str());
+
+	m_imgsDir = fmt("%s/imgs", m_appDir.c_str());
+	m_binsDir = fmt("%s/bins", m_appDir.c_str());
+	
+	/* Set data folder on same device as the apps/wiiflow folder */
+	m_dataDir = fmt("%s:/%s", drive, APP_DATA_DIR);
+	gprintf("Data Directory: %s\n", m_dataDir.c_str());
 	
 	/* Load/Create wiiflow.ini so we can get settings to start Gecko and Network */
 	m_cfg.load(fmt("%s/" CFG_FILENAME, m_appDir.c_str()));
+	
+	/* ------------------------------------------------------*/
+	/* setup debugging stuff after loading wiiflow.ini */
 	show_mem = m_cfg.getBool("DEBUG", "show_mem", false);
 	
 	/* Check if we want WiFi Gecko */
@@ -148,12 +148,13 @@ bool CMenu::init(bool usb_mounted)
 	/* Check if we want SD Gecko */
 	m_use_sd_logging = m_cfg.getBool("DEBUG", "sd_write_log", false);
 	LogToSD_SetBuffer(m_use_sd_logging);
+	/* ------------------------------------------------------*/
 	
 	/* Init gamer tags now in case we need to init network on boot */
 	m_cfg.setString("GAMERCARD", "gamercards", "wiinnertag");
 	m_cfg.getString("GAMERCARD", "wiinnertag_url", WIINNERTAG_URL);
 	m_cfg.getString("GAMERCARD", "wiinnertag_key", "");
-	if (m_cfg.getBool("GAMERCARD", "gamercards_enable", false))
+	if(m_cfg.getBool("GAMERCARD", "gamercards_enable", false))
 	{
 		vector<string> gamercards = stringToVector(m_cfg.getString("GAMERCARD", "gamercards"), '|');
 		if (gamercards.size() == 0)
@@ -173,6 +174,7 @@ bool CMenu::init(bool usb_mounted)
 	/* Init Network if wanted for gamercard if it isn't already inited */
 	if(has_enabled_providers())
 		_initAsyncNetwork();
+
 	/* Set the proxy settings */
 	proxyUseSystem = m_cfg.getBool("PROXY", "proxy_use_system", true);
 	memset(proxyAddress, 0, sizeof(proxyAddress));
@@ -184,58 +186,74 @@ bool CMenu::init(bool usb_mounted)
 	strncpy(proxyPassword, m_cfg.getString("PROXY", "proxy_password", "").c_str(), sizeof(proxyPassword) - 1);
 	getProxyInfo();
 	
-	/* Set SD only to off if any usb device is attached and format is FAT, NTFS, WBFS, or LINUX */
-	m_cfg.getBool("GENERAL", "sd_only", true);// will only set it true if this doesn't already exist
-	for(int i = USB1; i <= USB8; i++)
-	{
-		if(DeviceHandle.IsInserted(i) && DeviceHandle.GetFSType(i) >= 0)
-			m_cfg.setBool("GENERAL", "sd_only", false);
-	}
+	/* Set SD only to off if any usb device is attached */
+	m_cfg.getBool("GENERAL", "sd_only", usb_mounted ? false : true);// will only set it if this doesn't already exist - very first boot up
 
-	/* Set data folder on same device as the apps/wiiflow folder */
-	m_dataDir = fmt("%s:/%s", drive, APP_DATA_DIR);
-	gprintf("Data Directory: %s\n", m_dataDir.c_str());
+	/* set default wii games partition in case this is the first boot */
+	if(!m_cfg.has(WII_DOMAIN, "partition"))
+	{
+		int wp = -1;
+		if(!m_cfg.getBool("GENERAL", "sd_only"))
+		{
+			for(int i = SD; i <= USB8; i++) // Find first wbfs folder or a partition of wbfs file system
+			{
+				if(DeviceHandle.IsInserted(i) && (DeviceHandle.GetFSType(i) == PART_FS_WBFS || stat(fmt(GAMES_DIR, DeviceName[i]), &dummy) == 0))
+				{
+					wp = i;
+					break;
+				}
+			}
+		}
+		if(wp < 0)// not found 
+		{
+			if(DeviceHandle.IsInserted(SD))// set to sd if inserted otherwise USB1
+				wp = 0;
+			else
+				wp = 1;
+		}
+		m_cfg.setInt(WII_DOMAIN, "partition", wp);
+	}
+	
+	/* preferred partition setting - negative 1 means not set by user so skip this */
+	int pp;
+	if((pp = m_cfg.getInt(WII_DOMAIN, "preferred_partition", -1)) >= 0)
+	{
+		if(usb_mounted && pp > 0)
+			m_cfg.setInt(WII_DOMAIN, "partition", pp);
+		else
+			m_cfg.setInt(WII_DOMAIN, "partition", SD);
+	}
+	if((pp = m_cfg.getInt(GC_DOMAIN, "preferred_partition", -1)) >= 0)
+	{
+		if(usb_mounted && pp > 0)
+			m_cfg.setInt(GC_DOMAIN, "partition", USB1);
+		else
+			m_cfg.setInt(GC_DOMAIN, "partition", SD);
+	}
 	
 	/* Our Wii games dir */
+	u8 partition = m_cfg.getInt(WII_DOMAIN, "partition");
+	gprintf("Setting Wii games partition to: %i\n", partition);
+	
 	memset(wii_games_dir, 0, 64);
 	strncpy(wii_games_dir, m_cfg.getString(WII_DOMAIN, "wii_games_dir", GAMES_DIR).c_str(), 63);
 	if(strncmp(wii_games_dir, "%s:/", 4) != 0)
 		strcpy(wii_games_dir, GAMES_DIR);
 	gprintf("Wii Games Directory: %s\n", wii_games_dir);
 	
-	if(m_cfg.getBool(WII_DOMAIN, "prefer_usb", false))
-	{
-		if(usb_mounted)
-			m_cfg.setInt(WII_DOMAIN, "partition", USB1);
-		else
-			m_cfg.setInt(WII_DOMAIN, "partition", SD);
-	}
-	
 	/* GameCube stuff */
-	m_devo_installed = DEVO_Installed(m_dataDir.c_str());
-	m_nintendont_installed = Nintendont_Installed();
 	memset(gc_games_dir, 0, 64);
 	strncpy(gc_games_dir, m_cfg.getString(GC_DOMAIN, "gc_games_dir", DF_GC_GAMES_DIR).c_str(), 63);
 	if(strncmp(gc_games_dir, "%s:/", 4) != 0)
 		strcpy(gc_games_dir, DF_GC_GAMES_DIR);
 	gprintf("GameCube Games Directory: %s\n", gc_games_dir);
+
+	m_devo_installed = DEVO_Installed(m_dataDir.c_str());
+	m_nintendont_installed = Nintendont_Installed();
 	m_gc_play_banner_sound = m_cfg.getBool(GC_DOMAIN, "play_banner_sound", true);
 	m_gc_play_default_sound = m_cfg.getBool(GC_DOMAIN, "play_default_sound", true);
-	if(m_cfg.getBool(GC_DOMAIN, "prefer_usb", false))
-	{
-		if(usb_mounted)
-			m_cfg.setInt(GC_DOMAIN, "partition", USB1);
-		else
-			m_cfg.setInt(GC_DOMAIN, "partition", SD);
-	}
 	
-	/* Load cIOS Map */
-	_installed_cios.clear();
-	_load_installed_cioses();
-
-	m_imgsDir = fmt("%s/imgs", m_appDir.c_str());
-	m_binsDir = fmt("%s/bins", m_appDir.c_str());
-
+	/* init directories */
 	m_cacheDir = m_cfg.getString("GENERAL", "dir_cache", fmt("%s/cache", m_dataDir.c_str()));
 	m_listCacheDir = m_cfg.getString("GENERAL", "dir_list_cache", fmt("%s/lists", m_cacheDir.c_str()));
 	m_bnrCacheDir = m_cfg.getString("GENERAL", "dir_banner_cache", fmt("%s/banners", m_cacheDir.c_str()));
@@ -264,7 +282,6 @@ bool CMenu::init(bool usb_mounted)
 	m_pluginDataDir = m_cfg.getString("GENERAL", "dir_plugins_data", fmt("%s/plugins_data", m_dataDir.c_str()));
 	m_cartDir = m_cfg.getString("GENERAL", "dir_cart", fmt("%s/cart_disk", m_dataDir.c_str()));
 	m_snapDir = m_cfg.getString("GENERAL", "dir_snap", fmt("%s/snapshots", m_dataDir.c_str()));
-
 
 	/* Create our Folder Structure */
 	fsop_MakeFolder(m_dataDir.c_str()); //D'OH!
@@ -298,42 +315,36 @@ bool CMenu::init(bool usb_mounted)
 	fsop_MakeFolder(m_cartDir.c_str());
 	fsop_MakeFolder(m_snapDir.c_str());
 	
-	/* set default wii games partition in case this is the first boot */
-	int dp = -1;
-	for(int i = SD; i <= USB8; i++) // Find a wbfs folder or a partition of wbfs file system
-	{
-		if(DeviceHandle.IsInserted(i) && (DeviceHandle.GetFSType(i) == PART_FS_WBFS || stat(fmt(GAMES_DIR, DeviceName[i]), &dummy) == 0))
-		{
-			dp = i;
-			break;
-		}
-	}
-	if(dp < 0)// not found 
-	{
-		if(DeviceHandle.IsInserted(SD))// set to sd if inserted otherwise USB1
-			dp = 0;
-		else
-			dp = 1;
-	}
-	u8 partition = m_cfg.getInt(WII_DOMAIN, "partition", dp);
-	gprintf("Setting Wii games partition to: %i\n", partition);
-	
 	/* Emu nands init even if not being used */
 	memset(emu_nands_dir, 0, sizeof(emu_nands_dir));
 	strncpy(emu_nands_dir, IsOnWiiU() ? "vwiinands" : "nands", sizeof(emu_nands_dir) - 1);
 	_checkEmuNandSettings();
 	
-	CoverFlow.init(m_base_font, m_base_font_size, m_vid.vid_50hz());
+	/* misc. setup */
+	SoundHandle.Init();
+	m_gameSound.SetVoice(1);
+	_loadDefaultFont();// load default font
+	LWP_MutexInit(&m_mutex, 0);
 
-	/* Load categories and theme INI files */
+	/* Load cIOS Map */
+	_installed_cios.clear();
+	_load_installed_cioses();
+	
+	/* Check if wiiflow is parental locked */
+	m_locked = m_cfg.getString("GENERAL", "parent_code", "").size() >= 4;
+	
+	/* Switch WFLA to DWFA in case they were using old wiiflow lite */
+	if(m_cfg.getString("GENERAL", "returnto") == "WFLA")
+		m_cfg.setString("GENERAL", "returnto", "DWFA");
+
+	/* set WIIFLOW_DEF exit to option */
+	/* 0 thru 2 of exit to enum (EXIT_TO_MENU, EXIT_TO_HBC, EXIT_TO_WIIU) in sys.h */
+	int exit_to = min(max(0, m_cfg.getInt("GENERAL", "exit_to", 0)), (int)ARRAY_SIZE(CMenu::_exitTo) - 1);
+	Sys_ExitTo(exit_to);
+
+	/* load misc config files */
 	m_cat.load(fmt("%s/" CAT_FILENAME, m_settingsDir.c_str()));
 	m_gcfg1.load(fmt("%s/" GAME_SETTINGS1_FILENAME, m_settingsDir.c_str()));
-	m_themeName = m_cfg.getString("GENERAL", "theme", "default");
-	m_themeDataDir = fmt("%s/%s", m_themeDir.c_str(), m_themeName.c_str());
-	m_theme.load(fmt("%s.ini", m_themeDataDir.c_str()));
-	m_coverflow.load(fmt("%s/%s.ini", m_coverflowsDir.c_str(), m_themeName.c_str()));
-	if(!m_coverflow.loaded())
-		m_coverflow.load(fmt("%s/default.ini", m_coverflowsDir.c_str()));
 	m_platform.load(fmt("%s/platform.ini", m_pluginDataDir.c_str()));
 	
 	/* Init plugins */
@@ -408,8 +419,19 @@ bool CMenu::init(bool usb_mounted)
 
 	/* Init gametdb and custom titles for game list making */
 	m_cacheList.Init(m_settingsDir.c_str(), m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str(), m_pluginDataDir.c_str(),
-			 m_cfg.getString(CONFIG_FILENAME_SKIP_DOMAIN,CONFIG_FILENAME_SKIP_KEY,CONFIG_FILENAME_SKIP_DEFAULT));
+			 m_cfg.getString(CONFIG_FILENAME_SKIP_DOMAIN, CONFIG_FILENAME_SKIP_KEY, CONFIG_FILENAME_SKIP_DEFAULT));
 
+	/* Coverflow init */
+	CoverFlow.init(m_base_font, m_base_font_size, m_vid.vid_50hz());
+
+	/* Load theme and coverflow files */
+	m_themeName = m_cfg.getString("GENERAL", "theme", "default");
+	m_themeDataDir = fmt("%s/%s", m_themeDir.c_str(), m_themeName.c_str());
+	m_theme.load(fmt("%s.ini", m_themeDataDir.c_str()));
+	m_coverflow.load(fmt("%s/%s.ini", m_coverflowsDir.c_str(), m_themeName.c_str()));
+	if(!m_coverflow.loaded())
+		m_coverflow.load(fmt("%s/default.ini", m_coverflowsDir.c_str()));
+		
 	/* Init the onscreen pointer */
 	m_aa = 3;
 	CColor pShadowColor = m_theme.getColor("GENERAL", "pointer_shadow_color", CColor(0x3F000000));
@@ -429,34 +451,19 @@ bool CMenu::init(bool usb_mounted)
 	m_music_info = m_cfg.getBool("GENERAL", "display_music_info", false);
 	MusicPlayer.SetResampleSetting(m_cfg.getBool("general", "resample_to_48khz", false));
 
-	/* Init Button Manager and build the menus */
-	_buildMenus();
-
-	/* Check if locked, set return to, set exit to, and init multi threading */
-	m_locked = m_cfg.getString("GENERAL", "parent_code", "").size() >= 4;
-	
-	/* Switch WFLA to DWFA in case they were using old wiiflow lite */
-	if(m_cfg.getString("GENERAL", "returnto") == "WFLA")
-		m_cfg.setString("GENERAL", "returnto", "DWFA");
-
-	/* set WIIFLOW_DEF exit to option */
-	/* 0 thru 2 of exit to enum (EXIT_TO_MENU, EXIT_TO_HBC, EXIT_TO_WIIU) in sys.h */
-	int exit_to = min(max(0, m_cfg.getInt("GENERAL", "exit_to", 0)), (int)ARRAY_SIZE(CMenu::_exitTo) - 1);
-	Sys_ExitTo(exit_to);
-
-	LWP_MutexInit(&m_mutex, 0);
-
 	/* set sound volumes */
 	CoverFlow.setSoundVolume(m_cfg.getInt("GENERAL", "sound_volume_coverflow", 255));
 	m_btnMgr.setSoundVolume(m_cfg.getInt("GENERAL", "sound_volume_gui", 255));
 	m_bnrSndVol = m_cfg.getInt("GENERAL", "sound_volume_bnr", 255);
 	m_bnr_settings = m_cfg.getBool("GENERAL", "banner_in_settings", true);
 
+	/* Init Button Manager and build the menus */
+	_buildMenus();
+
 	return true;
 }
 
 bool cleaned_up = false;
-
 void CMenu::cleanup()
 {
 	if(cleaned_up)
@@ -1723,7 +1730,12 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 			}
 		}
 		else if(m_banner.GetSelectedGame() && (!m_banner.GetInGameSettings() || (m_banner.GetInGameSettings() && m_bnr_settings)))
-			m_banner.Draw();
+		{
+			if(!m_soundThrdBusy)// banner loaded
+				m_banner.Draw();
+			else if(m_banner.GetZoomSetting())// banner not loaded but in full zoom mode
+				DrawRectangle(0.0f, 0.0f, m_vid.width(), m_vid.height(), (GXColor) {0, 0, 0, 0xFF});// to prevent coverflow from showing
+		}
 	}
 	
 	/* gui buttons and text drawing */
@@ -1753,14 +1765,14 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 	// m_gamesound_changed means a new game sound is loaded and ready to play
 	// the previous game sound needs to stop before playing new sound
 	// and the bg music volume needs to be 0 before playing game sound
-	if(withCF && m_gameSelected && m_gamesound_changed && !m_gameSound.IsPlaying() && MusicPlayer.GetVolume() == 0)
+	if(!m_soundThrdBusy && withCF && m_gameSelected && m_gamesound_changed && !m_gameSound.IsPlaying() && MusicPlayer.GetVolume() == 0)
 	{
 		_stopGameSoundThread();// stop game sound loading thread
 		m_gameSound.Play(m_bnrSndVol);// play game sound
 		m_gamesound_changed = false;
 	}
 	// stop game/banner sound from playing if we exited game selected menu or if we move to new game
-	else if((withCF && m_gameSelected && m_gamesound_changed && m_gameSound.IsPlaying()) || (!m_gameSelected && m_gameSound.IsPlaying()))
+	else if((!m_soundThrdBusy && withCF && m_gameSelected && m_gamesound_changed && m_gameSound.IsPlaying()) || (!m_gameSelected && m_gameSound.IsPlaying()))
 		m_gameSound.Stop();
 
 	/* decrease music volume to zero if any of these are true:
