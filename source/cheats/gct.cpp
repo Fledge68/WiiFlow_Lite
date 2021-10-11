@@ -1,254 +1,231 @@
-#include <iostream>
-#include <fstream>
+/****************************************************************************
+ * Copyright (C) 2009 nIxx
+ * Copyright (C) 2012 Dimok
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ ****************************************************************************/
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "gct.h"
 
 #define ERRORRANGE "Error: CheatNr out of range"
 
+//Header and Footer
+static const char GCT_Header[] = { 0x00, 0xd0, 0xc0, 0xde, 0x00, 0xd0, 0xc0, 0xde };
+static const char GCT_Footer[] = { 0xF0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+
 GCTCheats::GCTCheats(void)
 {
-	Reset();
 }
 
 GCTCheats::~GCTCheats(void)
 {
-	string sGameID ="";
-	string sGameTitle = "";
 }
 
-unsigned int GCTCheats::getCnt()
+void GCTCheats::Clear(void)
 {
-	return iCntCheats;
+	cheatList.clear();
+	sGameID.clear();
+	sGameTitle.clear();
+	sCheatSelected.clear();
 }
 
-string GCTCheats::getGameName(void)
+std::string GCTCheats::getGameName(void)
 {
 	return sGameTitle;
 }
 
-string GCTCheats::getGameID(void)
+std::string GCTCheats::getGameID(void)
 {
 	return sGameID;
 }
 
-string GCTCheats::getCheat(unsigned int nr)
+std::vector<unsigned int> GCTCheats::getCheat(int nr)
 {
-	if (nr <= (iCntCheats-1))
-		return sCheats[nr];
-	return ERRORRANGE;
+	if((unsigned int)nr >= cheatList.size())
+		return std::vector<unsigned int>();
+
+	return cheatList[nr].sCheats;
 }
 
-string GCTCheats::getCheatName(unsigned int nr)
+std::string GCTCheats::getCheatName(int nr)
 {
-	if (nr <= (iCntCheats-1))
-		return sCheatName[nr];
-	return ERRORRANGE;
+	if((unsigned int)nr >= cheatList.size())
+		return ERRORRANGE;
+
+	return cheatList[nr].sCheatName;
 }
 
-string GCTCheats::getCheatComment(unsigned int nr)
+std::string GCTCheats::getCheatComment(int nr)
 {
-	if (nr <= (iCntCheats-1))
-		return sCheatComment[nr];
-	return ERRORRANGE;
+	if((unsigned int)nr >= cheatList.size())
+		return ERRORRANGE;
+
+	return cheatList[nr].sCheatComment;
 }
 
-//creates gct from internal array
-int GCTCheats::createGCT(const char * filename)
+int GCTCheats::createGCT(const char *filename)
 {
-	std::ofstream filestr;
-	filestr.open(filename);
-	if (filestr.fail()) return 0;
+	if (!filename)
+		return 0;
 
-	//Header and Footer
-	char header[] = { 0x00, 0xd0, 0xc0, 0xde, 0x00, 0xd0, 0xc0, 0xde};
-	char footer[] = { 0xF0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+	FILE *pFile = fopen(filename, "wb");
 
-	filestr.write(header,sizeof(header));
+	if (!pFile)
+		return 0;
 
-	for (unsigned int i=0; i < iCntCheats; ++i)
-		if (sCheatSelected[i] == true)
-		{
-			// cheat is selected, export it
-			string buf = getCheat(i);
+	fwrite(GCT_Header, sizeof(GCT_Header), 1, pFile);
 
-			int x = 0;
-			while (x < (int)buf.size())
-			{
-				string temp = buf.substr(x,2);
-				long int li = strtol(temp.c_str(),NULL,16);
-				temp = li;
-				filestr.write(temp.c_str(),1);
-				x +=2;
-			}
-		}
-	filestr.write(footer,sizeof(footer));
-	filestr.close();
-
-	return 1;
-}
-
-//rewrite and save code.txt to mark which codes are #selected#
-int GCTCheats::createTXT(const char * filename)
-{
-
-	// save txt file
-	std::fstream file;
-	file.open(filename, std::ios::out);
-
-	file << sGameID << std::endl;
-	file << sGameTitle << std::endl << std::endl;
-
-	for (unsigned int i=0; i < iCntCheats; ++i)
-		if  (sCheatSelected[i])
-		{
-			file << sCheatName[i] << std::endl;
-			for (unsigned int j=0; j+8 < sCheats[i].size(); j+=16)
-				file << sCheats[i].substr(j,8) << " " << sCheats[i].substr(j+8,8) << std::endl;
-
-			file << "#selected#" << sCheatComment[i] << std::endl;
-			file << std::endl;
-		}
-			
-	for (unsigned int i=0; i < iCntCheats; ++i)
-		if  (!sCheatSelected[i])
-		{
-			file << sCheatName[i] << std::endl;
-			for (unsigned int j=0; j+8 < sCheats[i].size(); j+=16)
-				file << sCheats[i].substr(j,8) << " " << sCheats[i].substr(j+8,8) << std::endl;
-
-			if (sCheatComment[i].size() > 1)
-				file << sCheatComment[i] << std::endl;
-			file << std::endl;
-		}
-
-	file.close();
-	return 1;
-}
-
-
-int GCTCheats::openTxtfile(const char * filename)
-{
-	Reset();
-
-	std::ifstream filestr;
-	filestr.open(filename);
-	if (filestr.fail()) return 0;
-
-	int i = 0;
-	string str;
-
-	filestr.seekg(0, std::ios_base::end);
-	int size = filestr.tellg();
-	if (size <= 0) return -1;
-	filestr.seekg(0, std::ios_base::beg);
-
-	getline(filestr,sGameID);
-	if (sGameID[sGameID.length() - 1] == '\r')
-		sGameID.erase(sGameID.length() - 1);
-	
-	getline(filestr,sGameTitle);
-	if (sGameTitle[sGameTitle.length() - 1] == '\r')
-		sGameTitle.erase(sGameTitle.length() - 1);
-				
-	while (!filestr.eof()) 
+	for(unsigned int i = 0; i < cheatList.size(); ++i)
 	{
-		getline(filestr,sCheatName[i]);
-		if (sCheatName[i][sCheatName[i].length() - 1] == '\r')
-			sCheatName[i].erase(sCheatName[i].length() - 1);
-
-		if (sCheatName[i].length() == 0)
-			continue;
-			
-		string cheatdata;
-
-		while (!filestr.eof())
+		if(sCheatSelected[i])
 		{
-			getline(filestr,str);
-			if (str[str.length() - 1] == '\r')
-				str.erase(str.length() - 1);
-				 
-			if (str == "" || str[0] == '\r' || str[0] == '\n')
+			std::vector<unsigned int> &cheatBuf = cheatList[i].sCheats;
+			if(cheatBuf.size() > 0)
+				fwrite((char*)&cheatBuf[0], cheatBuf.size() * sizeof(unsigned int), 1, pFile);
+		}
+	}
+
+	fwrite(GCT_Footer, sizeof(GCT_Footer), 1, pFile);
+	fclose(pFile);
+	return 1;
+}
+
+static inline void RemoveLineEnds(char *str)
+{
+	const char *strPtr = str;
+	while(*strPtr != 0)
+	{
+		if(*strPtr == '\n' || *strPtr == '\r')
+		{
+			strPtr++;
+			continue;
+		}
+
+		*str = *strPtr;
+		str++;
+		strPtr++;
+	}
+	*str = 0;
+}
+
+int GCTCheats::openTxtfile(const char *filename)
+{
+	//! clear already loaded things
+	Clear();
+
+	FILE *pFile = fopen(filename, "rb");
+	if (!pFile)
+		return 0;
+
+	fseek(pFile, 0, SEEK_END);
+	int size = ftell(pFile);
+	fseek(pFile, 0, SEEK_SET);
+
+	if (size <= 0) {
+		fclose(pFile);
+		return -1;
+	}
+
+	const int max_line_size = 4096;
+	char *line = new (std::nothrow) char[max_line_size];
+	if (!line)
+	{
+		fclose(pFile);
+		return -1;
+	}
+
+	fgets(line, max_line_size, pFile);
+	RemoveLineEnds(line);
+	sGameID = line;
+	fgets(line, max_line_size, pFile);
+	RemoveLineEnds(line);
+	sGameTitle = line;
+
+	while (fgets(line, max_line_size, pFile))
+	{
+		RemoveLineEnds(line);
+
+		if (*line == 0)
+			continue;
+
+		// first line is the cheat name
+		CheatEntry cheatEntry;
+		cheatEntry.sCheatName = line;
+
+		while (fgets(line, max_line_size, pFile))
+		{
+			RemoveLineEnds(line);
+
+			if (*line == 0)  // empty line means start of new cheat
 				break;
 
-			if (IsCode(str))
+			if (IsCode(line))
 			{
 				// remove any garbage (comment) after code
-				while (str.size() > 17)
-					str.erase(str.length() - 1);
+				line[8] = 0;
+				line[17] = 0;
 
-				cheatdata.append(str);
-				size_t found=cheatdata.find(' ');
-				cheatdata.replace(found,1,"");
+				cheatEntry.sCheats.push_back(strtoul(&line[0], 0, 16));
+				cheatEntry.sCheats.push_back(strtoul(&line[9], 0, 16));
 			}
 			else
-				sCheatComment[i] = str;
+			{
+				cheatEntry.sCheatComment = line;
+			}
 		}
 
-		if (cheatdata.size() > 0)
-		{
-			sCheats[i] = cheatdata;
-			sCheatSelected[i] = false;
-			// wiiflow rewrites and saves code.txt with #selected# added to comments if cheat selected
-			if (sCheatComment[i].compare(0,10,"#selected#") == 0)
-			{
-				sCheatSelected[i] = true;
-				sCheatComment[i].erase(0,10);
-			}
-			i++;
-		}
-		else
-			sCheatComment[i] = "";
-			
-		if (i == MAXCHEATS) break;
+		if (!cheatEntry.sCheats.empty())
+			cheatList.push_back(cheatEntry);
 	}
-	iCntCheats = i;
-	filestr.close();
+	fclose(pFile);
+	delete [] line;
 	return 1;
 }
 
-bool GCTCheats::IsCode(const std::string& str)
+bool GCTCheats::IsCode(const char *str)
 {
-	if (str[8] == ' ' && str.size() >= 17)
+	if (strlen(str) >= 17 && str[8] == ' ')
 	{
 		// accept strings longer than 17 in case there is a comment on the same line as the code
 		char part1[9];
 		char part2[9];
-		snprintf(part1,sizeof(part1),"%c%c%c%c%c%c%c%c",str[0],str[1],str[2],str[3],str[4],str[5],str[6],str[7]);
-		snprintf(part2,sizeof(part2),"%c%c%c%c%c%c%c%c",str[9],str[10],str[11],str[12],str[13],str[14],str[15],str[16]);
-		if ((strtok(part1,"0123456789ABCDEFabcdef") == NULL) && (strtok(part2,"0123456789ABCDEFabcdef") == NULL))
+		snprintf(part1, sizeof(part1), "%c%c%c%c%c%c%c%c", str[0], str[1], str[2], str[3], str[4], str[5], str[6],
+				str[7]);
+		snprintf(part2, sizeof(part2), "%c%c%c%c%c%c%c%c", str[9], str[10], str[11], str[12], str[13], str[14],
+				str[15], str[16]);
+		if ((strtok(part1, "0123456789ABCDEFabcdef") == NULL) && (strtok(part2, "0123456789ABCDEFabcdef") == NULL))
+		{
 			return true;
+		}
 	}
 	return false;
 }
 
-
-int GCTCheats::IsCodeEx(const std::string& str)
+bool GCTCheats::IsCheatIncluded(int iCheat, const unsigned char *gctBuf, unsigned int gctSize)
 {
-	int status = 2;
-	if (str[8] == ' ' && str.size() >= 17)
+	if(!gctBuf || (unsigned int)iCheat >= cheatList.size())
+		return false;
+
+	std::vector<unsigned int> &Cheat = cheatList[iCheat].sCheats;
+	int len = Cheat.size() * sizeof(unsigned int);
+
+	for(unsigned int i = sizeof(GCT_Header); i + len <= gctSize - sizeof(GCT_Footer); i += 4)
 	{
-		// accept strings longer than 17 in case there is a comment on the same line as the code
-		for (int i = 0; i < 17; ++i)
-		{
-			if (!(str[i] == '0' || str[i] == '1' || str[i] == '2' || str[i] == '3' ||
-				  str[i] == '4' || str[i] == '5' || str[i] == '6' || str[i] == '7' ||
-				  str[i] == '8' || str[i] == '9' || str[i] == 'a' || str[i] == 'b' ||
-				  str[i] == 'c' || str[i] == 'd' || str[i] == 'e' || str[i] == 'f' ||
-				  str[i] == 'A' || str[i] == 'B' || str[i] == 'C' || str[i] == 'D' ||
-				  str[i] == 'E' || str[i] == 'F' || str[i] == 'x' || str[i] == 'X') && i!=8 )
-				status  = 0; // not even x -> no code
-			if ((str[i] == 'x' || str[i] == 'X') && i!=8 && status >= 1)
-				status  = 1;
-		}
-		return status;
+		if(memcmp(&Cheat[0], &gctBuf[i], len) == 0)
+			return true;
 	}
-	return 0; // no code
-}
-
-void GCTCheats::Reset()
-{
-	iCntCheats = 0;
-	for (int i=0;i<MAXCHEATS;++i) 
-		sCheatSelected[i] = false;
+	return false;
 }

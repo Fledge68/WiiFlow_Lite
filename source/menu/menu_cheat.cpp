@@ -47,11 +47,24 @@ int CMenu::_downloadCheatFileAsync()
 void CMenu::_CheatSettings() 
 {
 	SetupInput();
+	m_cheatSettingsPage = 1;
 
 	const char *id = CoverFlow.getId();
-
-	m_cheatSettingsPage = 1;
-	txtavailable = m_cheatfile.openTxtfile(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id)); 
+	txtavailable = m_cheatfile.openTxtfile(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id));
+	
+	u32 gctSize = 0;
+	u8 *gctBuf = NULL;
+	if(txtavailable > 0)
+		gctBuf = fsop_ReadFile(fmt("%s/%s.gct", m_cheatDir.c_str(), id), &gctSize);
+	
+	u8 chtsCnt = m_cheatfile.getCnt();
+	for(u8 i = 0; i < chtsCnt; ++i)
+	{
+		if(gctBuf && m_cheatfile.IsCheatIncluded(i, gctBuf, gctSize))
+			m_cheatfile.sCheatSelected.push_back(true);
+		else
+			m_cheatfile.sCheatSelected.push_back(false);
+	}
 	
 	_textCheatSettings();
 	_showCheatSettings();
@@ -130,7 +143,7 @@ void CMenu::_CheatSettings()
 					m_gcfg2.remove(id, "cheat");
 					m_gcfg2.remove(id, "hooktype");
 				}
-				m_cheatfile.createTXT(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id));
+				//m_cheatfile.createTXT(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id));
 				break;
 			}
 			else if (m_btnMgr.selected(m_cheatBtnDownload))
@@ -173,6 +186,17 @@ void CMenu::_CheatSettings()
 					}
 				}
 				txtavailable = m_cheatfile.openTxtfile(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id));
+				if(txtavailable > 0)
+					gctBuf = fsop_ReadFile(fmt("%s/%s.gct", m_cheatDir.c_str(), id), &gctSize);
+	
+				chtsCnt = m_cheatfile.getCnt();
+				for(u8 i = 0; i < chtsCnt; ++i)
+				{
+					if(gctBuf && m_cheatfile.IsCheatIncluded(i, gctBuf, gctSize))
+						m_cheatfile.sCheatSelected.push_back(true);
+					else
+						m_cheatfile.sCheatSelected.push_back(false);
+				}
 				_showCheatSettings();
 			}
 		}
