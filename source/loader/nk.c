@@ -27,13 +27,16 @@
 #include <ogcsys.h>
 #include <string.h>
 #include <malloc.h>
+#include <ogc/machine/processor.h>
 
 #include "nk.h"
 #include "sys.h"
-#include "armboot.h"
 #include "fileOps/fileOps.h"
 #include "memory/mem2.hpp"
 #include "gecko/gecko.hpp"
+
+#define MEM_REG_BASE 0xd8b4000
+#define MEM_PROT (MEM_REG_BASE + 0x20a)
 
 u32 kernelSize = 0;
 void *Kernel = NULL;
@@ -84,21 +87,44 @@ s32 Launch_nk(u64 TitleID, const char *nandpath, u64 ReturnTo)
 	DCFlushRange((void *)(0x81200000), sizeof(memcfg));
 	free(MC);
 
-	/*** Thnx giantpune! ***/
-	void *mini = MEM1_memalign(32, armboot_size);
-	if(!mini)
-		return 0;
- 
-	// uses bootmii mini to run wiiflow internal armboot.bin for neek2o
-	memcpy(mini, armboot, armboot_size);
-	DCFlushRange(mini, armboot_size);
-	*(u32*)0xc150f000 = 0x424d454d;//BMEM
-	asm volatile("eieio");
-	*(u32*)0xc150f004 = MEM_VIRTUAL_TO_PHYSICAL(mini);
-	asm volatile("eieio");
-	IOS_ReloadIOS(0xfe);// IOS254 bootmii
-	MEM1_free(mini);
-	return 1;
+	/** boot mini without BootMii IOS code by Crediar. **/
+	
+	write32(MEM_PROT, read32(MEM_PROT) & 0x0000FFFF);
+	unsigned int i = 0x939F02F0;
+	unsigned char ES_ImportBoot2[16] =
+		{ 0x68, 0x4B, 0x2B, 0x06, 0xD1, 0x0C, 0x68, 0x8B, 0x2B, 0x00, 0xD1, 0x09, 0x68, 0xC8, 0x68, 0x42 };
+	
+	if( memcmp( (void*)(i), ES_ImportBoot2, sizeof(ES_ImportBoot2) ) != 0 )
+		for( i = 0x939F0000; i < 0x939FE000; i+=4 )
+			if( memcmp( (void*)(i), ES_ImportBoot2, sizeof(ES_ImportBoot2) ) == 0 )
+				break;
+	
+	if(i >= 0x939FE000)
+	{
+		gprintf("ES_ImportBoot2 not patched !! Exiting...\n");
+		//SYS_ResetSystem( SYS_RETURNTOMENU, 0, 0 );
+		return -1;
+	}
+	
+	DCInvalidateRange( (void*)i, 0x20 );
+	
+	*(vu32*)(i+0x00)        = 0x48034904;   // LDR R0, 0x10, LDR R1, 0x14
+	*(vu32*)(i+0x04)        = 0x477846C0;   // BX PC, NOP
+	*(vu32*)(i+0x08)        = 0xE6000870;   // SYSCALL
+	*(vu32*)(i+0x0C)        = 0xE12FFF1E;   // BLR
+	*(vu32*)(i+0x10)        = 0x11000000;   // kernel offset from 0x80000000. Kernel loaded to (void *)0x91000000
+	*(vu32*)(i+0x14)        = 0x0000FF01;   // version
+	
+	DCFlushRange( (void*)i, 0x20 );
+	__IOS_ShutdownSubsystems();
+	
+	s32 fd = IOS_Open( "/dev/es", 0 );
+	
+	u8 *buffer = (u8*)memalign( 32, 0x100 );
+	memset( buffer, 0, 0x100 );
+	
+	IOS_IoctlvAsync( fd, 0x1F, 0, 0, (ioctlv*)buffer, NULL, NULL );
+	return 0;
 }
 /*
 void NKKeyCreate(u8 *tik)
