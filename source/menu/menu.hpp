@@ -594,7 +594,9 @@ private:
 	s16 m_gameSettingsBtnPrivateServerP;
 	
 	s16 m_gameSettingsLblFix480p;
-	s16 m_gameSettingsBtnFix480p;
+	s16 m_gameSettingsLblFix480pVal;
+	s16 m_gameSettingsBtnFix480pM;
+	s16 m_gameSettingsBtnFix480pP;
 
 	s16 m_gameSettingsLblWidescreenWiiu;
 	s16 m_gameSettingsLblWidescreenWiiuVal;
