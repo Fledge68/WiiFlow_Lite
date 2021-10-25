@@ -32,8 +32,6 @@ using std::vector;
 
 extern const u8 wfstub_bin[];
 extern const u32 wfstub_bin_size;
-extern const u8 stub_bin[];
-extern const u32 stub_bin_size;
 
 u8 valid = 0;
 

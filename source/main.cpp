@@ -92,7 +92,6 @@ int main(int argc, char **argv)
 		gprintf(" \nWelcome to %s %s!\nThis is the debug output.\n", APP_NAME, APP_VERSION);
 	#endif
 
-	bool iosOK = true;
 	char *gameid = NULL;
 	bool showFlashImg = true;
 	bool wait_loop = false;
@@ -176,10 +175,10 @@ int main(int argc, char **argv)
 		{
 			NandHandle.DeInit_ISFS();
 			NandHandle.Patch_AHB();
-			iosOK = IOS_ReloadIOS(mainIOS) == 0;
+			IOS_ReloadIOS(mainIOS);
 			NandHandle.Init_ISFS();
 			gprintf("AHBPROT disabled after IOS Reload: %s\n", AHBPROT_Patched() ? "yes" : "no");
-			gprintf("Now using ");
+			gprintf("Now using ");// gprintf finished in IOS_GetCurrentIOSInfo()
 		}
 		else
 			gprintf("Using IOS58\n");// stay on IOS58. no reload to cIOS
@@ -214,27 +213,17 @@ int main(int argc, char **argv)
 	/* init configs, folders, coverflow, gui and more */
 	if(mainMenu.init(usb_mounted))
 	{
-		if(!iosOK)
-			mainMenu.terror("errboot1", L"No cIOS found!\ncIOS d2x 249 base 56 and 250 base 57 are enough for all your games.");
-		else if(!DeviceHandle.UsablePartitionMounted())
-			mainMenu.terror("errboot2", L"Could not find a device to save configuration files on!");
-		else if(WDVD_Init() < 0)
-			mainMenu.terror("errboot3", L"Could not initialize the DIP module!");
-		else // alls good lets start wiiflow
-		{
-			startup_successful = true;
-			if(!isWiiVC)
-				writeStub();// copy return stub to memory
-			if(gameid != NULL && strlen(gameid) == 6)// if argv game ID then launch it
-				mainMenu.directlaunch(gameid);
-			else
-				mainMenu.main();// start wiiflow with main menu displayed
-		}
-		//Exit WiiFlow, no game booted...
-		mainMenu.cleanup();// removes all sounds, fonts, images, coverflow, plugin stuff, source menu and clear memory
+		startup_successful = true;
+		if(!isWiiVC)
+			writeStub();// copy return stub to memory
+		if(!isWiiVC && gameid != NULL && strlen(gameid) == 6)// if argv game ID then launch it
+			mainMenu.directlaunch(gameid);
+		else
+			mainMenu.main();// start wiiflow with main menu displayed
 	}
+	// at this point either wiiflow bootup failed or the user is exiting wiiflow
 	ShutdownBeforeExit();// unmount devices and close inputs
-	if(startup_successful)// use wiiflow's exit choice otherwise just exit to loader (system menu or hbc)
+	if(startup_successful)// use wiiflow's exit choice
 		Sys_Exit();
-	return 0;
+	return 0;// otherwise just exit to loader (system menu or hbc).
 }

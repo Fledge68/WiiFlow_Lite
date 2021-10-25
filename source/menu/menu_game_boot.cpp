@@ -75,10 +75,9 @@ static u8 GetRequestedGameIOS(dir_discHdr *hdr)
 void CMenu::directlaunch(const char *GameID)// from boot arg for wii game only
 {
 	m_directLaunch = true;
-	for(currentPartition = SD; currentPartition < USB8; currentPartition++)
+	currentPartition = m_cfg.getInt(WII_DOMAIN, "partition");
+	if(DeviceHandle.IsInserted(currentPartition))
 	{
-		if(!DeviceHandle.IsInserted(currentPartition))
-			continue;
 		DeviceHandle.OpenWBFS(currentPartition);
 		string gameDir(fmt(wii_games_dir, DeviceName[currentPartition]));
 		string cacheDir(fmt("%s/%s_wii.db", m_listCacheDir.c_str(), DeviceName[currentPartition]));
