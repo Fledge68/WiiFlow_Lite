@@ -190,9 +190,9 @@ bool CMenu::init(bool usb_mounted)
 	m_cfg.getBool("GENERAL", "sd_only", usb_mounted ? false : true);// will only set it if this doesn't already exist - very first boot up
 
 	/* set default wii games partition in case this is the first boot */
-	if(!m_cfg.has(WII_DOMAIN, "partition"))
+	int wp = m_cfg.getInt(WII_DOMAIN, "partition", -1);
+	if(wp < 0)
 	{
-		int wp = -1;
 		if(!m_cfg.getBool("GENERAL", "sd_only"))
 		{
 			for(int i = SD; i <= USB8; i++) // Find first wbfs folder or a partition of wbfs file system
@@ -215,15 +215,16 @@ bool CMenu::init(bool usb_mounted)
 	}
 	
 	/* preferred partition setting - negative 1 means not set by user so skip this */
-	int pp;
-	if((pp = m_cfg.getInt(WII_DOMAIN, "preferred_partition", -1)) >= 0)
+	int pp = m_cfg.getInt(WII_DOMAIN, "preferred_partition", -1);
+	if(pp >= 0)
 	{
 		if(usb_mounted && pp > 0)
 			m_cfg.setInt(WII_DOMAIN, "partition", pp);
 		else
 			m_cfg.setInt(WII_DOMAIN, "partition", SD);
 	}
-	if((pp = m_cfg.getInt(GC_DOMAIN, "preferred_partition", -1)) >= 0)
+	pp = m_cfg.getInt(GC_DOMAIN, "preferred_partition", -1);
+	if(pp >= 0)
 	{
 		if(usb_mounted && pp > 0)
 			m_cfg.setInt(GC_DOMAIN, "partition", USB1);
@@ -315,10 +316,52 @@ bool CMenu::init(bool usb_mounted)
 	fsop_MakeFolder(m_cartDir.c_str());
 	fsop_MakeFolder(m_snapDir.c_str());
 	
-	/* Emu nands init even if not being used */
-	memset(emu_nands_dir, 0, sizeof(emu_nands_dir));
-	strncpy(emu_nands_dir, IsOnWiiU() ? "vwiinands" : "nands", sizeof(emu_nands_dir) - 1);
-	_checkEmuNandSettings();
+	if(!isWiiVC)
+	{
+		/* Emu nands init even if not being used */
+		memset(emu_nands_dir, 0, sizeof(emu_nands_dir));
+		strncpy(emu_nands_dir, IsOnWiiU() ? "vwiinands" : "nands", sizeof(emu_nands_dir) - 1);
+		
+		string emuNand = m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default");// just to set to default on first boot
+		int emuPart = m_cfg.getInt(CHANNEL_DOMAIN, "partition", -1);
+		string savesNand = m_cfg.getString(WII_DOMAIN, "current_save_emunand", "default");
+		int savesPart = m_cfg.getInt(WII_DOMAIN, "savepartition", -1);
+
+		if(emuPart < 0)
+		{
+			u8 i;
+			for(i = SD; i < MAXDEVICES; i++)// find first usable partition
+			{
+				if(DeviceHandle.PartitionUsableForNandEmu(i))
+				{
+					emuPart = i;
+					break;
+				}
+			}
+			if(i == MAXDEVICES)// if no usable partitions found set to SD for now
+				emuPart = SD;// cfgne8=No valid FAT partition found for NAND Emulation!
+			m_cfg.setInt(CHANNEL_DOMAIN, "partition", emuPart);
+		}
+		gprintf("emunand = %s:/%s/%s\n", DeviceName[emuPart], emu_nands_dir, emuNand.c_str());
+		
+		if(savesPart < 0)
+		{
+			u8 i;
+			for(i = SD; i < MAXDEVICES; i++)
+			{
+				if(DeviceHandle.PartitionUsableForNandEmu(i))
+				{
+					savesPart = i;
+					break;
+				}
+			}
+			if(i == MAXDEVICES)
+				savesPart = SD;
+			m_cfg.setInt(WII_DOMAIN, "savepartition", savesPart);
+		}
+		gprintf("savesnand = %s:/%s/%s\n", DeviceName[savesPart],  emu_nands_dir, savesNand.c_str());
+		_FullNandCheck();
+	}
 	
 	/* misc. setup */
 	SoundHandle.Init();

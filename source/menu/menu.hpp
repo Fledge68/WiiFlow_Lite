@@ -1288,9 +1288,9 @@ private:
 	int _FindEmuPart(bool savesnand, bool searchvalid);
 	bool _checkSave(string id, int nand_type);
 	bool _TestEmuNand(int epart, const char *path, bool indept);
-	void _checkEmuNandSettings(void);
+	void _getEmuNands(void);
 	void _FullNandCheck(void);
-	void _listEmuNands(const char *path, vector<string> &emuNands);
+	void _listEmuNands(const char *path, vector<string> &nands);
 
 	int _downloadCheatFileAsync();
 	static void * _downloadUrlAsync(void *obj);

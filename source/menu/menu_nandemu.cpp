@@ -77,11 +77,11 @@ static inline int loopNum(int i, int s)
 	return (i + s) % s;
 }
 
-void CMenu::_listEmuNands(const char *path, vector<string> &emuNands)
+void CMenu::_listEmuNands(const char *path, vector<string> &nands)
 {
 	DIR *d;
 	struct dirent *dir;
-	emuNands.clear();
+	nands.clear();
 	bool add_def = true;
 
 	d = opendir(path);
@@ -93,57 +93,34 @@ void CMenu::_listEmuNands(const char *path, vector<string> &emuNands)
 				continue;
 			if(dir->d_type == DT_DIR)
 			{
-				emuNands.push_back(dir->d_name);
+				nands.push_back(dir->d_name);
 				if(strlen(dir->d_name) == 7 && strcasecmp(dir->d_name, "default") == 0)
 					add_def = false;
 			}
 		}
 		closedir(d);
 	}
+	else
+		return;
 	if(add_def)
-		emuNands.push_back("default");
-	sort(emuNands.begin(), emuNands.end());
+		nands.push_back("default");
+	sort(nands.begin(), nands.end());
 }
 
-void CMenu::_checkEmuNandSettings(void)
+void CMenu::_getEmuNands(void)
 {
-	if(isWiiVC)
-		return;
 	u8 i;
 	string emuNand = m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default");
-	int emuPart = m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0);
+	int emuPart = m_cfg.getInt(CHANNEL_DOMAIN, "partition", -1);
 	string savesNand = m_cfg.getString(WII_DOMAIN, "current_save_emunand", "default");
-	int savesPart = m_cfg.getInt(WII_DOMAIN, "savepartition", 0);
+	int savesPart = m_cfg.getInt(WII_DOMAIN, "savepartition", -1);
 
-	if(!DeviceHandle.PartitionUsableForNandEmu(emuPart))// current partition no good
-	{
-		for(i = SD; i < MAXDEVICES; i++)// find first usable partition
-		{
-			if(DeviceHandle.PartitionUsableForNandEmu(i))
-			{
-				emuPart = i;
-				break;
-			}
-		}
-		if(i == MAXDEVICES)// if no usable partitions found set to SD for now
-			emuPart = SD;
-	}
-	
-	if(!DeviceHandle.PartitionUsableForNandEmu(savesPart))// do same for savesnand partition
-	{
-		for(i = SD; i < MAXDEVICES; i++)
-		{
-			if(DeviceHandle.PartitionUsableForNandEmu(i))
-			{
-				savesPart = i;
-				break;
-			}
-		}
-		if(i == MAXDEVICES)
-			savesPart = SD;
-	}
-	//cfgne8=No valid FAT partition found for NAND Emulation!
+	/* emu Nands */
 	_listEmuNands(fmt("%s:/%s", DeviceName[emuPart], emu_nands_dir), emuNands);
+	
+	if(emuNands.empty())// in case device has been temporarily disconnected
+		emuNands.push_back(emuNand);
+	
 	curEmuNand = 0;
 	for(i = 0; i < emuNands.size(); ++i)// find current emunand folder
 	{
@@ -164,9 +141,13 @@ void CMenu::_checkEmuNandSettings(void)
 			}
 		}
 	}
-	gprintf("emu nand path = %s:/%s/%s\n", DeviceName[emuPart], emu_nands_dir, emuNands[curEmuNand].c_str());
- 
+	
+	/* saves Nands */
 	_listEmuNands(fmt("%s:/%s", DeviceName[savesPart],  emu_nands_dir), savesNands);
+
+	if(savesNands.empty())
+		savesNands.push_back(savesNand);
+ 
 	curSavesNand = 0;
 	for(i = 0; i < savesNands.size(); ++i)// find current savesnand folder
 	{
@@ -187,30 +168,24 @@ void CMenu::_checkEmuNandSettings(void)
 			}
 		}
 	}
-	gprintf("saves nand path = %s:/%s/%s\n", DeviceName[savesPart],  emu_nands_dir, savesNands[curSavesNand].c_str());
-	
-	m_cfg.setString(WII_DOMAIN, "current_save_emunand", savesNands[curSavesNand]);
-	m_cfg.setInt(WII_DOMAIN, "savepartition", savesPart);
-	m_cfg.setString(CHANNEL_DOMAIN, "current_emunand", emuNands[curEmuNand]);
-	m_cfg.setInt(CHANNEL_DOMAIN, "partition", emuPart);
-	// add check if full emulation and if is then check for config and mii files
-	_FullNandCheck();
 }
 
+/* This checks if nand emulation is set to Full */
+/* if is then it copies SYSCONF, setting.txt, and RFL_DB.dat only if they don't already exist */
+/* this is helpful if you use a modmii created nand, wiiflow dumped nand will already have these files */
+/* if you wish to overwrite these files then use the real nand mii's and config options */
 void CMenu::_FullNandCheck(void)
 {
-	if(isWiiVC)
-		return;
 	for(u8 i = 0; i < 2; i++)
 	{
 		int emulate_mode;
 		if(i == EMU_NAND)
-			emulate_mode = 	m_cfg.getInt(CHANNEL_DOMAIN, "emulation", 0);
+			emulate_mode = 	m_cfg.getInt(CHANNEL_DOMAIN, "emulation", 1);// full by default
 		else
-			emulate_mode = 	m_cfg.getInt(WII_DOMAIN, "save_emulation", 0);
+			emulate_mode = 	m_cfg.getInt(WII_DOMAIN, "save_emulation", 2);// full by default
 		if((i == EMU_NAND && emulate_mode == 1) || (i == SAVES_NAND && emulate_mode == 2))//full
 		{
-			int emuPart = _FindEmuPart(i, true);
+			int emuPart = _FindEmuPart(i, false);
 			if(emuPart < 0)
 				continue;
 			bool need_config = false;
@@ -566,7 +541,7 @@ int CMenu::_NandEmuCfg(void)
 	string emuNand = m_cfg.getString(CHANNEL_DOMAIN, "current_emunand");
 	lwp_t thread = 0;
 	SetupInput();
-	_checkEmuNandSettings();
+	_getEmuNands();
 	_showNandEmu();
 
 	m_thrdStop = false;
@@ -624,7 +599,7 @@ int CMenu::_NandEmuCfg(void)
 				m_emuSaveNand = true;
 				_setPartition(direction);
 				m_emuSaveNand = false;
-				_checkEmuNandSettings();// refresh emunands in case the partition was changed
+				_getEmuNands();// refresh emunands in case the partition was changed
 				_showNandEmu();
 			}
 			else if(m_btnMgr.selected(m_nandemuBtnNandDump) || m_btnMgr.selected(m_nandemuBtnAll) || m_btnMgr.selected(m_nandemuBtnMissing))
@@ -689,12 +664,12 @@ int CMenu::_NandEmuCfg(void)
 				nandemuPage = 1;
 				_showNandEmu();
 			}
-			else if (m_btnMgr.selected(m_nandemuBtnRealConfig))
+			else if(m_btnMgr.selected(m_nandemuBtnRealConfig))
 			{
 				m_cfg.setBool(CHANNEL_DOMAIN, "real_nand_config", !m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_config"));
 				_showNandEmu();
 			}
-			else if (m_btnMgr.selected(m_nandemuBtnRealMiis))
+			else if(m_btnMgr.selected(m_nandemuBtnRealMiis))
 			{
 				m_cfg.setBool(CHANNEL_DOMAIN, "real_nand_miis", !m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_miis"));
 				_showNandEmu();
@@ -822,11 +797,12 @@ int CMenu::_FlashSave(string gameId)
 
 int CMenu::_AutoExtractSave(string gameId)// called from game settings menu to extract a gamesave from real nand to savesnand
 {
+	if(!_checkSave(gameId, REAL_NAND))//if save not on real nand
+		return 0;
+
 	int emuPart = _FindEmuPart(SAVES_NAND, false);
 	if(emuPart == -1)// if savesnand partition unusable
-	{
 		return 0;
-	}
 	else if(emuPart == -2)// emunand folder not found so make it
 	{
 		emuPart = _FindEmuPart(SAVES_NAND, true);
@@ -842,9 +818,6 @@ int CMenu::_AutoExtractSave(string gameId)// called from game settings menu to e
 		NandHandle.CreatePath("%s/ticket", basepath);
 		NandHandle.CreatePath("%s/tmp", basepath);
 	}
-
-	if(!_checkSave(gameId, REAL_NAND))//if save not on real nand
-		return 0;
 
 	lwp_t thread = 0;
 	m_thrdStop = false;
@@ -914,10 +887,10 @@ void * CMenu::_NandFlasher(void *obj)
 	char dest[ISFS_MAXPATH];
 
 	int emuPartition = m._FindEmuPart(SAVES_NAND, true);
+	const char *emuPath = NandHandle.Get_NandPath();
 	
 	const char *SaveGameID = m.m_saveExtGameId.c_str();	
 	int flashID = SaveGameID[0] << 24 | SaveGameID[1] << 16 | SaveGameID[2] << 8 | SaveGameID[3];
-	const char *emuPath = NandHandle.Get_NandPath();
 	
 	/* we know it exist on emunand just need to figure out which folder */
 	if(_saveExists(fmt("%s:%s/title/00010000/%08x", DeviceName[emuPartition], emuPath, flashID)))

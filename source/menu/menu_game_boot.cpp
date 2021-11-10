@@ -526,7 +526,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		
 		//GameID for Video mode when booting a Disc
 		memcpy((u8*)Disc_ID, id, 6);
-		DCFlushRange((u8*)Disc_ID, 32);
+		DCFlushRange((u8*)Disc_ID, 6);
 		
 		/* set nintendont conifg options */
 		u32 n_config = 0;
@@ -1043,7 +1043,7 @@ void CMenu::_launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 	if(emulate_mode && !dvd)
 	{
 		int emuPart = _FindEmuPart(SAVES_NAND, true);
-		if(emuPart == -1)//if savepartition is unusable
+		if(emuPart < 0)//if savepartition is unusable
 		{
 			_hideWaitMessage();
 			error(_t("errgame13", L"EmuNAND for gamesave not found! Using real NAND."));
