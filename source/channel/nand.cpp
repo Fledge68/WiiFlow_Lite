@@ -1241,17 +1241,11 @@ void Nand::SetPaths(const char *emuPath, const char *currentPart)
 	/* emuPath should = /nands/nand_name */
 
 	/* set wiiflow full nand path */
-	snprintf(FullNANDPath, sizeof(FullNANDPath), "%s:%s", currentPart, emuPath);
-	// example - sd:/nands/default
+	snprintf(FullNANDPath, sizeof(FullNANDPath), "%s:%s", currentPart, emuPath);// example - sd:/nands/default
 	
 	/* set IOS compatible NAND Path */
-	strncpy(NandPath, emuPath, sizeof(NandPath));
-	// example - /nands/default
-	
-	NandPath[sizeof(NandPath) - 1] = '\0';
-	
-	if(strlen(NandPath) == 0)
-		strcat(NandPath, "/");
+	memset(NandPath, 0, sizeof(NandPath));
+	strncpy(NandPath, emuPath, sizeof(NandPath) - 1);
 }
 
 /*

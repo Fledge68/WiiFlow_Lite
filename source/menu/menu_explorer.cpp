@@ -148,7 +148,8 @@ void CMenu::_Explorer(void)
 					if(strchr(dir, '/') != NULL)
 						*(strrchr(dir, '/')+1) = '\0';
 				}
-				strcpy(folderPath, dir);
+				strcpy(folderPath, dir);// copy dir path to folderPath. folderPath is what is display on screen.
+				
 				//if dir is just device and : then clear path completely
 				if(strchr(dir, '/') == NULL)
 				{
@@ -158,7 +159,7 @@ void CMenu::_Explorer(void)
 				else if(strchr(folderPath, '/') != strrchr(folderPath, '/'))
 				{
 					*strrchr(folderPath, '/') = '\0';
-					while(strlen(folderPath) > 48)
+					while(strlen(folderPath) > 48)// shrink onscreen folder path down to 48 characters to fit on screen
 					{
 						if(strchr(folderPath, '/') == strrchr(folderPath, '/'))
 							break;
@@ -166,7 +167,7 @@ void CMenu::_Explorer(void)
 						strncpy(tmpPath, strchr(folderPath, '/') + 1, MAX_FAT_PATH - 1);
 						strcpy(folderPath, tmpPath);
 					}
-					memset(tmpPath, 0, MAX_FAT_PATH);
+					memset(tmpPath, 0, MAX_FAT_PATH);// now add beginning and ending '/''s to folderPath
 					if(strchr(folderPath, ':') == NULL)
 						strcpy(tmpPath, "/");
 					strcat(tmpPath, folderPath);

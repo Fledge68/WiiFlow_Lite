@@ -56,8 +56,8 @@ extern volatile bool NANDemuView;
 extern volatile bool networkInit;
 extern u8 currentPartition;
 extern u8 currentPort;
-extern char wii_games_dir[];
-extern char gc_games_dir[];
+extern char wii_games_dir[64];
+extern char gc_games_dir[64];
 
 #ifdef __cplusplus
 }

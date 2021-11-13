@@ -176,9 +176,9 @@ void CMenu::_Paths(void)
 				_hidePaths();
 				currentPartition = m_cfg.getInt(WII_DOMAIN, "partition", USB1);
 				path = _FolderExplorer(fmt(wii_games_dir, DeviceName[currentPartition]));
-				if(strlen(path) > 6)// "usb1:/"
+				if(strchr(path, '/') != NULL)// path includes a folder and not just sd: or usb:
 				{
-					if(strncmp(path, "sd:/", 4) == 0)
+					if(strncmp(path, "sd:", 3) == 0)
 						m_cfg.setInt(WII_DOMAIN, "partition", 0);
 					else
 					{
@@ -187,7 +187,8 @@ void CMenu::_Paths(void)
 					}
 					string tmpPath = "%s" + string(strchr(path, ':'));
 					m_cfg.setString(WII_DOMAIN, "wii_games_dir", tmpPath);
-					strcpy(wii_games_dir, tmpPath.c_str());
+					memset(wii_games_dir, 0, sizeof(wii_games_dir));
+					strncpy(wii_games_dir, tmpPath.c_str(), sizeof(wii_games_dir) - 1);
 					m_cfg.setBool(WII_DOMAIN, "update_cache", true);
 					if(m_current_view & COVERFLOW_WII)
 						m_refreshGameList = true;
@@ -199,9 +200,9 @@ void CMenu::_Paths(void)
 				_hidePaths();
 				currentPartition = m_cfg.getInt(GC_DOMAIN, "partition", USB1);
 				path = _FolderExplorer(fmt(gc_games_dir, DeviceName[currentPartition]));
-				if(strlen(path) > 6)// "usb1:/"
+				if(strchr(path, '/') != NULL)// path includes a folder and not just sd: or usb:
 				{
-					if(strncmp(path, "sd:/", 4) == 0)
+					if(strncmp(path, "sd:", 3) == 0)
 						m_cfg.setInt(GC_DOMAIN, "partition", 0);
 					else
 					{
@@ -211,7 +212,8 @@ void CMenu::_Paths(void)
 					}
 					string tmpPath = "%s" + string(strchr(path, ':'));
 					m_cfg.setString(GC_DOMAIN, "gc_games_dir", tmpPath);
-					strcpy(gc_games_dir, tmpPath.c_str());
+					memset(gc_games_dir, 0, sizeof(gc_games_dir));
+					strncpy(gc_games_dir, tmpPath.c_str(), sizeof(gc_games_dir) - 1);
 					m_cfg.setBool(GC_DOMAIN, "update_cache", true);
 					if(m_current_view & COVERFLOW_GAMECUBE)
 						m_refreshGameList = true;
