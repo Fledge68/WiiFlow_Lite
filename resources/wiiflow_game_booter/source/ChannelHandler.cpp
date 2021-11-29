@@ -42,11 +42,13 @@
 #include "videopatch.h"
 #include "video_tinyload.h"
 #include "apploader.h"
+#include "memory.h"
 
 void *dolchunkoffset[18];
 u32	dolchunksize[18];
 u32	dolchunkcount;
 u32 bootcontent;
+bool isForwarder = false;
 
 char filepath[ISFS_MAXPATH] ATTRIBUTE_ALIGN(32);
 
@@ -78,29 +80,70 @@ static u8 *GetDol(u32 bootcontent, u64 title)
 
 static bool GetAppNameFromTmd(bool dol, u32 *bootcontent, u64 title, u32 *IOS)
 {
-	bool ret = false;
-
+	static const u8 dolsign[6] = {0x00, 0x00, 0x01, 0x00, 0x00, 0x00};
+    static u8 dolhead[32] ATTRIBUTE_ALIGN(32);
+	bool found = false;
 	snprintf(filepath, ISFS_MAXPATH, "/title/%08x/%08x/content/title.tmd", TITLE_UPPER(title), TITLE_LOWER(title));
 
 	u32 size;
 	u8 *data = ISFS_GetFile(filepath, &size, -1);
 	if(data == NULL || size < 0x208)
-		return ret;
+		return found;
 	*IOS = data[0x18B];
 
 	_tmd *tmd_file = (_tmd *)SIGNATURE_PAYLOAD((u32 *)data);
-	for(u16 i = 0; i < tmd_file->num_contents; ++i)
+	
+	if(dol)
 	{
-		if(tmd_file->contents[i].index == (dol ? 0x01 : tmd_file->boot_index))
+		// check for dol signature - channels and vc
+        for(u32 i = 0; i < tmd_file->num_contents; ++i)
+        {
+            if(tmd_file->contents[i].index == tmd_file->boot_index)
+                continue; // Skip app loader
+
+            snprintf(filepath, ISFS_MAXPATH, "/title/%08x/%08x/content/%08x.app", TITLE_UPPER(title), TITLE_LOWER(title), tmd_file->contents[i].cid);
+
+            s32 fd = ISFS_Open(filepath, ISFS_OPEN_READ);
+            if(fd < 0)
+                continue;
+
+            s32 ret = ISFS_Read(fd, dolhead, 32);
+            ISFS_Close(fd);
+
+            if(ret != 32)
+                continue;
+
+            if(memcmp(dolhead, dolsign, sizeof(dolsign)) == 0)
+            {
+                // Normal channels and VC use 1
+                if(tmd_file->contents[i].index != 1)// forwarder channel
+                    isForwarder = true;
+				*bootcontent = tmd_file->contents[i].cid;
+				found = true;
+                break;
+            }
+        }
+	}
+	if(!found) // WiiWare not matching a dol signature or apploader selected
+	{
+		for(u32 i = 0; i < tmd_file->num_contents; ++i)
 		{
-			*bootcontent = tmd_file->contents[i].cid;
-			ret = true;
-			break;
+			if(tmd_file->contents[i].index == (dol ? 0x01 : tmd_file->boot_index))
+			{
+				*bootcontent = tmd_file->contents[i].cid;
+				found = true;
+				break;
+			}
 		}
 	}
+	//fall back to app loader if main dol wanted but not found
+	if(!found && dol)
+	{
+		*bootcontent = tmd_file->contents[tmd_file->boot_index].cid;
+		found = true;
+	}
 	free(data);
-
-	return ret;
+	return found;
 }
 
 static u32 MoveDol(u8 *buffer)
@@ -108,10 +151,10 @@ static u32 MoveDol(u8 *buffer)
 	dolchunkcount = 0;
 	dolheader *dolfile = (dolheader *)buffer;
 
-	if(dolfile->bss_start)
+	if(dolfile->bss_start)// if start is not zero
 	{
-		if(!(dolfile->bss_start & 0x80000000))
-			dolfile->bss_start |= 0x80000000;
+		if(!(dolfile->bss_start & 0x80000000))// if start isn't >=80000000 
+			dolfile->bss_start |= 0x80000000;// set it to 80000000 or greater
 
 		memset((void *)dolfile->bss_start, 0, dolfile->bss_size);
 		DCFlushRange((void *)dolfile->bss_start, dolfile->bss_size);
@@ -120,11 +163,11 @@ static u32 MoveDol(u8 *buffer)
 
 	for(u8 i = 0; i < 18; i++)
 	{
-		if(!dolfile->section_size[i]) 
+		if(!dolfile->section_size[i])// if section size is zero don't move 
 			continue;
-		if(dolfile->section_pos[i] < sizeof(dolheader)) 
+		if(dolfile->section_pos[i] < sizeof(dolheader)) // if section position is within the header don't move
 			continue;
-		if(!(dolfile->section_start[i] & 0x80000000)) 
+		if(!(dolfile->section_start[i] & 0x80000000)) // maker sure section start is 80000000 or greater
 			dolfile->section_start[i] |= 0x80000000;
 
 		dolchunkoffset[dolchunkcount] = (void *)dolfile->section_start[i];
@@ -146,11 +189,24 @@ u32 LoadChannel(u64 title, bool dol, u32 *IOS)
 	entry = MoveDol(data);
 	free(data);
 
+	// Preparations
+    memset((void *)Disc_ID, 0, 6);
+    *Disc_ID = TITLE_LOWER(title);                	  // Game ID
+    *Arena_H = 0;                                     // Arena High, the apploader does this too
+    *BI2 = 0x817FE000;                                // BI2, the apploader does this too
+    *Bus_Speed = 0x0E7BE2C0;                          // bus speed
+    *CPU_Speed = 0x2B73A840;                          // cpu speed
+    *GameID_Address = 0x81000000;                     // Game id address, while there's all 0s at 0x81000000 when using the apploader...
+    memcpy((void *)Online_Check, (void *)Disc_ID, 4); // online check
+
+    memset((void *)0x817FE000, 0, 0x2000); // Clearing BI2
+    DCFlushRange((void *)0x817FE000, 0x2000);
+
 	return entry;
 }
 
 void PatchChannel(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, 
-				u8 private_server, const char *server_addr, bool patchFix480p, u8 deflicker, u8 bootType)
+				u32 returnTo, u8 private_server, const char *server_addr, bool patchFix480p, u8 deflicker, u8 bootType)
 {
 	u8 vfilter_off[7] = {0, 0, 21, 22, 21, 0, 0};
 	u8 vfilter_low[7] = {4, 4, 16, 16, 16, 4, 4};
@@ -169,6 +225,8 @@ void PatchChannel(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryStrin
 			PatchCountryStrings(dolchunkoffset[i], dolchunksize[i]);
 		if(aspectRatio != -1)
 			PatchAspectRatio(dolchunkoffset[i], dolchunksize[i], aspectRatio);
+		if(returnTo)
+			PatchReturnTo(dolchunkoffset[i], dolchunksize[i], returnTo);
 		if(private_server)
 			PrivateServerPatcher(dolchunkoffset[i], dolchunksize[i], private_server, server_addr);	
 		if(hooktype != 0 && hookpatched == false)
@@ -207,4 +265,7 @@ void PatchChannel(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryStrin
 	
 	if(patchFix480p)
 		PatchFix480p();
+		
+	if(private_server == PRIVSERV_WIIMMFI)
+		do_new_wiimmfi_nonMKWii();
 }

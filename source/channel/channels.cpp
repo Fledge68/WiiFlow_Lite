@@ -108,7 +108,7 @@ u64 *Channels::GetChannelList(u32 *count)
 	return titles;
 }
 
-bool Channels::GetAppNameFromTmd(u64 title, char *app, u32 *bootcontent)
+bool Channels::GetAppNameFromTmd(u64 title, char *app, u32 *bootcontent)// get banner .app name
 {
 	bool ret = false;
 	u32 size = 0;
@@ -128,10 +128,9 @@ bool Channels::GetAppNameFromTmd(u64 title, char *app, u32 *bootcontent)
 		return ret;
 	}
 	_tmd *tmd_file = (_tmd *)SIGNATURE_PAYLOAD((u32 *)data);
-	u16 i;
-	for(i = 0; i < tmd_file->num_contents; ++i)
+	for(u32 i = 0; i < tmd_file->num_contents; ++i)
 	{
-		if(tmd_file->contents[i].index == 0)
+		if(tmd_file->contents[i].index == 0)// banner app
 		{
 			*bootcontent = tmd_file->contents[i].cid;
 			snprintf(app, ISFS_MAXPATH, "/title/%08x/%08x/content/%08x.app", TITLE_UPPER(title), TITLE_LOWER(title), *bootcontent);

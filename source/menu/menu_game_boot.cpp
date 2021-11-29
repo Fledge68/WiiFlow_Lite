@@ -705,7 +705,7 @@ int CMenu::_loadGameIOS(u8 gameIOS, int userIOS, string id, bool RealNAND_Channe
 	if(RealNAND_Channels && IOS_GetType(mainIOS) == IOS_TYPE_STUB)
 	{
 		/* doesn't use cIOS so we don't check userIOS */
-		bool ret = loadIOS(gameIOS, false);//load game requested IOS and patch nothing
+		bool ret = loadIOS(gameIOS, false);//load game requested IOS and do not remount sd and USB 
 		if(has_enabled_providers() || m_use_wifi_gecko)
 			_initAsyncNetwork();// needed after IOS change
 		if(ret == false)
@@ -740,7 +740,7 @@ int CMenu::_loadGameIOS(u8 gameIOS, int userIOS, string id, bool RealNAND_Channe
 	if(gameIOS != CurrentIOS.Version)
 	{
 		gprintf("Reloading IOS into %d\n", gameIOS);
-		bool ret = loadIOS(gameIOS, true);// cIOS patch everything
+		bool ret = loadIOS(gameIOS, true);//load cIOS requested and then remount sd and USB devices
 		if(has_enabled_providers() || m_use_wifi_gecko)
 			_initAsyncNetwork();// always seem to do netinit after changing IOS
 		if(ret == false)
@@ -755,38 +755,51 @@ int CMenu::_loadGameIOS(u8 gameIOS, int userIOS, string id, bool RealNAND_Channe
 
 void CMenu::_launchChannel(dir_discHdr *hdr)
 {
-	NANDemuView = hdr->type == TYPE_EMUCHANNEL;
-	
 	/* clear coverflow, start wiiflow wait animation, set exit handler */	
 	_launchShutdown();
-	string id = string(hdr->id);
 
-	/* WII_Launch is used for launching real nand channels */
+	NANDemuView = hdr->type == TYPE_EMUCHANNEL;
+	string id = string(hdr->id);
+	u64 gameTitle = TITLE_ID(hdr->settings[0],hdr->settings[1]);
+	m_gcfg1.setInt("PLAYCOUNT", id, m_gcfg1.getInt("PLAYCOUNT", id, 0) + 1); 
+	m_gcfg1.setUInt("LASTPLAYED", id, time(NULL));
+
+	bool hbc = false;
+	if(gameTitle == HBC_OHBC || gameTitle == HBC_LULZ || gameTitle == HBC_108 || gameTitle == HBC_JODI || gameTitle == HBC_HAXX)
+		hbc = true;
+		
+	/* WII_Launch is used only for launching real nand channels */
+	/* note: no patches, cheats, or cIOS settings allowed */
 	bool WII_Launch = (m_gcfg2.getBool(id, "custom", false) && !NANDemuView);
+	if(WII_Launch || (hbc && !NANDemuView))
+	{
+		/* configs no longer needed */
+		m_gcfg1.save(true);
+		m_gcfg2.save(true);
+		m_cat.save(true);
+		m_cfg.save(true);
+		cleanup();//no more error messages we can now cleanup
+		ShutdownBeforeExit();
+		WII_Initialize();
+		WII_LaunchTitle(gameTitle);
+	}
+		
 	/* use_dol = true to use the channels dol or false to use the old apploader method to boot channel */
 	bool use_dol = !m_gcfg2.getBool(id, "apploader", false);
-
-	bool vipatch = m_gcfg2.getBool(id, "vipatch", false);
-	bool cheat = m_gcfg2.getBool(id, "cheat", false);
-	bool countryPatch = m_gcfg2.getBool(id, "country_patch", false);
-
-	u8 videoMode = min(m_gcfg2.getUInt(id, "video_mode", 0), ARRAY_SIZE(CMenu::_VideoModes) - 1u);
-	videoMode = (videoMode == 0) ? min(m_cfg.getUInt("GENERAL", "video_mode", 0), ARRAY_SIZE(CMenu::_GlobalVideoModes) - 1u) : videoMode - 1;
+	bool use_led = m_gcfg2.getBool(id, "led", false);
 
 	int language = min(m_gcfg2.getUInt(id, "language", 0), ARRAY_SIZE(CMenu::_languages) - 1u);
 	language = (language == 0) ? min(m_cfg.getUInt("GENERAL", "game_language", 0), ARRAY_SIZE(CMenu::_languages) - 1u) : language;
 
+	bool vipatch = m_gcfg2.getBool(id, "vipatch", false);
+	bool countryPatch = m_gcfg2.getBool(id, "country_patch", false);
+
+	u8 videoMode = min(m_gcfg2.getUInt(id, "video_mode", 0), ARRAY_SIZE(CMenu::_VideoModes) - 1u);
+	videoMode = (videoMode == 0) ? min(m_cfg.getUInt("GENERAL", "video_mode", 0), ARRAY_SIZE(CMenu::_GlobalVideoModes) - 1u) : videoMode - 1;
+	
 	u8 patchVidMode = min(m_gcfg2.getUInt(id, "patch_video_modes", 0), ARRAY_SIZE(CMenu::_vidModePatch) - 1u);
 
 	s8 aspectRatio = min(m_gcfg2.getUInt(id, "aspect_ratio", 0), ARRAY_SIZE(CMenu::_AspectRatio) - 1) - 1;// -1,0,1
-
-	u8 private_server = m_gcfg2.getUInt(id, "private_server", 0);
-	string server_addr = "";
-	if(private_server > 2)
-	{
-		vector<string> custom_servers = stringToVector(m_cfg.getString("custom_servers", "servers"), '|');
-		server_addr = m_cfg.getString("custom_servers", fmt("%s_url", custom_servers[private_server - 3]), "");
-	}
 
 	int fix480pVal = m_gcfg2.getOptBool(id, "fix480p", 2);
 	bool fix480p = fix480pVal == 0 ? false : (fix480pVal == 1 ? true : m_cfg.getBool(WII_DOMAIN, "fix480p", false));
@@ -796,6 +809,14 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	u8 deflicker = min(m_gcfg2.getUInt(id, "deflicker_wii", 0), ARRAY_SIZE(CMenu::_DeflickerOptions) - 1u);
 	deflicker = (deflicker == 0) ? min(m_cfg.getUInt("GENERAL", "deflicker_wii", 0), ARRAY_SIZE(CMenu::_GlobalDeflickerOptions) - 1u) : deflicker - 1;
 	
+	u8 private_server = m_gcfg2.getUInt(id, "private_server", 0);
+	string server_addr = "";
+	if(private_server > 2)
+	{
+		vector<string> custom_servers = stringToVector(m_cfg.getString("custom_servers", "servers"), '|');
+		server_addr = m_cfg.getString("custom_servers", fmt("%s_url", custom_servers[private_server - 3]), "");
+	}
+
 	u32 returnTo = 0;
 	const char *rtrn = m_cfg.getString("GENERAL", "returnto").c_str();
 	if(strlen(rtrn) == 4)
@@ -803,31 +824,26 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 
 	u8 *cheatFile = NULL;
 	u32 cheatSize = 0;
-	if(!WII_Launch)
-	{
-		hooktype = (u32) m_gcfg2.getInt(id, "hooktype", 0);
-		debuggerselect = m_gcfg2.getInt(id, "debugger", 0);
-		if((cheat || debuggerselect == 1) && hooktype == 0)
-			hooktype = 1;
-		else if(!cheat && debuggerselect != 1)
-			hooktype = 0;
+	bool cheat = m_gcfg2.getBool(id, "cheat", false);
+	hooktype = (u32) m_gcfg2.getInt(id, "hooktype", 0);
+	debuggerselect = m_gcfg2.getInt(id, "debugger", 0);
+	if((cheat || debuggerselect == 1) && hooktype == 0)
+		hooktype = 1;
+	else if(!cheat && debuggerselect != 1)
+		hooktype = 0;
+	if(cheat)
+		_loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", id.c_str()));
 
-		if(cheat)
-			_loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", id.c_str()));
-		if(has_enabled_providers() && _initNetwork() == 0)
-			add_game_to_card(id.c_str());
-	}
-	m_gcfg1.setInt("PLAYCOUNT", id, m_gcfg1.getInt("PLAYCOUNT", id, 0) + 1); 
-	m_gcfg1.setUInt("LASTPLAYED", id, time(NULL));
+	if(has_enabled_providers() && _initNetwork() == 0)
+		add_game_to_card(id.c_str());
 
+	int userIOS = m_gcfg2.getInt(id, "ios", 0);
+	u32 gameIOS = ChannelHandle.GetRequestedIOS(gameTitle);
+	
 	//interesting - there is only a global option for nand emulation - no per game choice
 	int emulate_mode = min(max(0, m_cfg.getInt(CHANNEL_DOMAIN, "emulation", 1)), (int)ARRAY_SIZE(CMenu::_NandEmu) - 1);
 	
-	int userIOS = m_gcfg2.getInt(id, "ios", 0);
-	u64 gameTitle = TITLE_ID(hdr->settings[0],hdr->settings[1]);
 	bool useNK2o = m_gcfg2.getBool(id, "useneek", false);//if not in neek2o and use neek is set
-	bool use_led = m_gcfg2.getBool(id, "led", false);
-	u32 gameIOS = ChannelHandle.GetRequestedIOS(gameTitle);
 
 	if(NANDemuView)
 	{
@@ -871,11 +887,13 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 			}
 		}
 	}
-	if(WII_Launch == false && ExternalBooter_LoadBins(m_binsDir.c_str()) == false)
+
+	if(ExternalBooter_LoadBins(m_binsDir.c_str()) == false)
 	{
 		error(_t("errgame15", L"Missing ext_loader.bin or ext_booter.bin!"));
 		_exitWiiflow();
 	}
+
 	if(_loadGameIOS(gameIOS, userIOS, id, !NANDemuView) == LOAD_IOS_FAILED)
 	{
 		/* error message already shown */
@@ -885,8 +903,9 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	if(CurrentIOS.Type == IOS_TYPE_D2X && returnTo != 0)
 	{
 		if(D2X_PatchReturnTo(returnTo) >= 0)
-			memset(&returnTo, 0, sizeof(u32));// not needed - always set to 0 in external booter below
+			memset(&returnTo, 0, sizeof(u32));//Already patched - no need for giantpune patch in external booter
 	}
+
 	if(NANDemuView)
 	{
 		/* Enable our Emu NAND */
@@ -912,26 +931,18 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		mask32(0xd8006a8, 0, 2);
 	}
 
-	if(WII_Launch)
-	{
-		ShutdownBeforeExit();
-		WII_Initialize();
-		WII_LaunchTitle(gameTitle);
-	}
-	else
-	{
-		setLanguage(language);
-		ocarina_load_code(cheatFile, cheatSize);
-		if(cheatFile != NULL)
-			MEM2_free(cheatFile);
-		NandHandle.Patch_AHB(); /* Identify maybe uses it so keep AHBPROT disabled */
-		PatchIOS(true,  isWiiVC); /* Patch for everything */
-		Identify(gameTitle);
+	setLanguage(language);// set configbyte[0] for external booter
+	ocarina_load_code(cheatFile, cheatSize);// copy to address used by external booter
+	if(cheatFile != NULL)
+		MEM2_free(cheatFile);
+	NandHandle.Patch_AHB(); /* Identify maybe uses it so keep AHBPROT disabled */
+	PatchIOS(true,  isWiiVC); /* Patch cIOS for everything */
+	Identify(gameTitle);// identify title with E-Ticket Service (ES) module
 
-		ExternalBooter_ChannelSetup(gameTitle, use_dol);
-		WiiFlow_ExternalBooter(videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, private_server, server_addr.c_str(), 
-								fix480p, deflicker, 0, TYPE_CHANNEL, use_led);
-	}
+	ExternalBooter_ChannelSetup(gameTitle, use_dol);
+	WiiFlow_ExternalBooter(videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, private_server, server_addr.c_str(), 
+							fix480p, deflicker, 0, TYPE_CHANNEL, use_led);
+
 	Sys_Exit();
 }
 
@@ -1101,7 +1112,7 @@ void CMenu::_launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 	bool use_led = m_gcfg2.getBool(id, "led", false);
 	bool cheat = m_gcfg2.getBool(id, "cheat", false);
 	debuggerselect = m_gcfg2.getInt(id, "debugger", 0); // debuggerselect is defined in fst.h
-	if((id == "RPWE41" || id == "RPWZ41" || id == "SPXP41") && debuggerselect == 1) // Prince of Persia, Rival Swords
+	if((id == "RPWE41" || id == "RPWZ41" || id == "SPXP41") && debuggerselect == 1) // Prince of Persia: Rival Swords
 		debuggerselect = 0;
 	hooktype = (u32)m_gcfg2.getInt(id, "hooktype", 0); // hooktype is defined in patchcode.h
 	if((cheat || debuggerselect == 1) && hooktype == 0)
@@ -1160,7 +1171,7 @@ void CMenu::_launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 	if(CurrentIOS.Type == IOS_TYPE_D2X)
 	{
 		if(returnTo != 0 && !m_directLaunch && D2X_PatchReturnTo(returnTo) >= 0)
-			memset(&returnTo, 0, sizeof(u32));//set to null to keep external booter from setting it again if using d2x 
+			memset(&returnTo, 0, sizeof(u32));//Already patched - no need for giantpune patch in external booter
 		if(emulate_mode)
 		{
 			/* Enable our Emu NAND */
@@ -1186,9 +1197,11 @@ void CMenu::_launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 	if(!dvd)
 	{
 		DeviceHandle.OpenWBFS(currentPartition);
-		wbfs_partition = (DeviceHandle.GetFSType(currentPartition) == PART_FS_WBFS);
+		wbfs_partition = (DeviceHandle.GetFSType(currentPartition) == PART_FS_WBFS);// if USB device formatted to WBFS
+		/* if not WBFS formatted get fragmented list. */
+		/* if SD card (currentPartition == 0) set sector size to 512 (0x200) */
 		if(!wbfs_partition && get_frag_list((u8 *)id.c_str(), (char*)path.c_str(), currentPartition == 0 ? 0x200 : USBStorage2_GetSectorSize()) < 0)
-			Sys_Exit();
+			Sys_Exit();// failed to get frag list
 		WBFS_Close();
 	}
 	if(cheatFile != NULL)

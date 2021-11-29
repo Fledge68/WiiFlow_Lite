@@ -52,12 +52,14 @@ u32 Apploader_Run(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryStrin
 					bool patchregion , u8 private_server, const char *server_addr, bool patchFix480p, u8 deflicker, u8 bootType)
 {
 	//! Disable private server for games that still have official servers.
-	if (memcmp(GameID, "SC7", 3) == 0 || memcmp(GameID, "RJA", 3) == 0 ||
+	if(memcmp(GameID, "SC7", 3) == 0 || memcmp(GameID, "RJA", 3) == 0 ||
 		memcmp(GameID, "SM8", 3) == 0 || memcmp(GameID, "SZB", 3) == 0 || memcmp(GameID, "R9J", 3) == 0)
 	{
 		private_server = PRIVSERV_OFF; // Private server patching causes error 20100
 	}
 	
+	// if either of these 2 games - adds internal wip codes before do_wip_code() is called in maindolpatches()
+	// note: using external .wip codes for these games will prevent their internal codes.
 	PrinceOfPersiaPatch();
 	NewSuperMarioBrosPatch();
 
@@ -118,21 +120,35 @@ u32 Apploader_Run(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryStrin
 	if(hooktype != 0 && hookpatched)
 		ocarina_do_code();
 	
-	if(patchFix480p)
+	//! Apply the 480p fix.
+	//! This needs to be done after the call to maindolpatches(), after loading any code handler.
+	//! Can (and should) be done before Wiimmfi patching, can't be done in maindolpatches() itself.
+	//! Exclude Prince of Persia: The Forgotten Sands and a few games that use MetaFortress
+	bool excludeGame = false;
+	if(memcmp(GameID, "RPW", 3) == 0 || memcmp(GameID, "SPX", 3) == 0 ||
+		memcmp(GameID, "R3D", 3) == 0 || memcmp(GameID, "SDV", 3) == 0 ||
+		memcmp(GameID, "SUK", 3) == 0 || memcmp(GameID, "STN", 3) == 0 ||
+		memcmp(GameID, "S7S", 3) == 0 || memcmp(GameID, "SDUP41", 6) == 0 ||
+		memcmp(GameID, "SDUE41", 6) == 0 || memcmp(GameID, "SDUX41", 6) == 0)
+	{
+		excludeGame = true;
+	}
+
+	if(patchFix480p && !excludeGame)
 		PatchFix480p();
 
-	//! If we're NOT on Wiimmfi, patch the known RCE vulnerability in MKWii. 
+	//! If we're NOT on Wiimmfi, patch the known Remote Code Execution (RCE) vulnerability in MKWii. 
 	//! Wiimmfi will handle that on its own through the update payload.
 	//! This will also patch error 23400 for a couple games that still have official servers.
 	if(private_server != PRIVSERV_WIIMMFI)
 		Patch_23400_and_MKWii_vulnerability();
 	
-	else //wiimmfi patch
+	else //PRIVSERV_WIIMMFI
 	{
 		if(memcmp("RMC", GameID, 3) != 0)// This isn't MKWii, perform the patch for other games.
-			do_new_wiimmfi_nonMKWii(); 
+			do_new_wiimmfi_nonMKWii();// does not patch the server address - done in maindolpatches()
 		else // This is MKWii, perform the known patch from 2018.
-			do_new_wiimmfi(); 
+			do_new_wiimmfi();// includes patching the server address
 	}
 
 	/* Set entry point from apploader */
@@ -174,7 +190,7 @@ void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipa
 	if(patchregion)
 		PatchRegion(dst, len);
 	if(private_server)
-		PrivateServerPatcher(dst, len, private_server, serverAddr);	
+		PrivateServerPatcher(dst, len, private_server, serverAddr);
 
 	if(deflicker == DEFLICKER_ON_LOW)
 	{

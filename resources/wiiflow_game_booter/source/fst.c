@@ -144,6 +144,7 @@ void app_pokevalues()
 
 void load_handler()
 {
+	memset((void*)0x80001800, 0, 0x1800);
 	if(debuggerselect == 0x01)
 	{
 		gprintf("Ocarina: Debugger selected.\n");

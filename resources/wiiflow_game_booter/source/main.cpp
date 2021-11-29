@@ -56,12 +56,12 @@ int main()
 	InitGecko();
 	gprintf("WiiFlow External Booter by FIX94\n");
 	memcpy(&normalCFG, ((void*)*EXT_ADDR_CFG), sizeof(the_CFG));
-	VIDEO_Init();
-	video_init();
+	VIDEO_Init();// libogc
+	video_init();// tinyload progress bar
 	prog10();
 
-	configbytes[0] = normalCFG.configbytes[0];
-	configbytes[1] = normalCFG.configbytes[1];
+	configbytes[0] = normalCFG.configbytes[0];// game language 0 - 9 or 0xCD = not patched
+	configbytes[1] = normalCFG.configbytes[1];// not used
 	hooktype = normalCFG.hooktype;
 	debuggerselect = normalCFG.debugger;
 	CurrentIOS = normalCFG.IOS;
@@ -72,9 +72,6 @@ int main()
 	wbfsDev = normalCFG.wbfsDevice;
 	wbfs_part_idx = normalCFG.wbfsPart;
 	prog10();
-
-	/* Setup Low Memory */
-	Disc_SetLowMemPre();
 
 	if(normalCFG.BootType == TYPE_WII_GAME)
 	{
@@ -103,6 +100,7 @@ int main()
 		u32 offset = 0;
 		Disc_FindPartition(&offset);
 		WDVD_OpenPartition(offset, &GameIOS);
+		Disc_SetLowMem();
 		if(normalCFG.vidMode == 5)
 			normalCFG.patchVidMode = 1; //progressive mode requires this
 		vmode = Disc_SelectVMode(normalCFG.vidMode, &vmode_reg);
@@ -112,22 +110,24 @@ int main()
 	}
 	else if(normalCFG.BootType == TYPE_CHANNEL)
 	{
-		ISFS_Initialize();
-		*Disc_ID = TITLE_LOWER(normalCFG.title);
 		vmode = Disc_SelectVMode(normalCFG.vidMode, &vmode_reg);
+		ISFS_Initialize();
 		AppEntrypoint = LoadChannel(normalCFG.title, normalCFG.use_dol, &GameIOS);
-		PatchChannel(normalCFG.vidMode, vmode, normalCFG.vipatch, normalCFG.countryString, normalCFG.patchVidMode, normalCFG.aspectRatio,
-					normalCFG.private_server, normalCFG.server_addr, normalCFG.patchFix480p, normalCFG.deflicker, normalCFG.BootType);
 		ISFS_Deinitialize();
+		PatchChannel(normalCFG.vidMode, vmode, normalCFG.vipatch, normalCFG.countryString, normalCFG.patchVidMode, normalCFG.aspectRatio,
+					normalCFG.returnTo, normalCFG.private_server, normalCFG.server_addr, normalCFG.patchFix480p, normalCFG.deflicker, normalCFG.BootType);
 	}
 	gprintf("Entrypoint: %08x, Requested Game IOS: %i\n", AppEntrypoint, GameIOS);
 	setprog(320);
 
-	/* Setup Low Memory */
-	Disc_SetLowMem(GameIOS);
-	if(normalCFG.BootType == TYPE_CHANNEL && AppEntrypoint != 0x3400)
-		Disc_SetLowMemChan(); /* Real DOL without appldr */
-
+	   /* Error 002 Fix (thanks WiiPower and uLoader) */
+	*Current_IOS = (GameIOS << 16) | 0xffff;
+	if(!isForwarder)
+		*Apploader_IOS = (GameIOS << 16) | 0xffff;
+	
+	/* Flush everything */
+	DCFlushRange((void*)0x80000000, 0x3f00);
+	
 	/* Enable front LED if requested */
 	if(normalCFG.use_led) *HW_GPIOB_OUT |= 0x20;
 

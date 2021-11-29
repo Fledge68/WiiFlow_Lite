@@ -13,8 +13,10 @@ typedef struct _dolheader
 	u32 padding[7];
 } ATTRIBUTE_PACKED dolheader;
 
-void PatchChannel(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, 
-					u8 patchVidModes, int aspectRatio, u8 private_server, const char *server_addr, bool patchFix480p, u8 deflicker, u8 bootType);
+void PatchChannel(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, 
+					u32 returnTo, u8 private_server, const char *server_addr, bool patchFix480p, u8 deflicker, u8 bootType);
 u32 LoadChannel(u64 title, bool dol, u32 *IOS);
+
+extern bool isForwarder;
 
 #endif /* __CHANHANDLE_HPP_ */
