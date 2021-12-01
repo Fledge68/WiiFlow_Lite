@@ -123,18 +123,7 @@ u32 Apploader_Run(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryStrin
 	//! Apply the 480p fix.
 	//! This needs to be done after the call to maindolpatches(), after loading any code handler.
 	//! Can (and should) be done before Wiimmfi patching, can't be done in maindolpatches() itself.
-	//! Exclude Prince of Persia: The Forgotten Sands and a few games that use MetaFortress
-	bool excludeGame = false;
-	if(memcmp(GameID, "RPW", 3) == 0 || memcmp(GameID, "SPX", 3) == 0 ||
-		memcmp(GameID, "R3D", 3) == 0 || memcmp(GameID, "SDV", 3) == 0 ||
-		memcmp(GameID, "SUK", 3) == 0 || memcmp(GameID, "STN", 3) == 0 ||
-		memcmp(GameID, "S7S", 3) == 0 || memcmp(GameID, "SDUP41", 6) == 0 ||
-		memcmp(GameID, "SDUE41", 6) == 0 || memcmp(GameID, "SDUX41", 6) == 0)
-	{
-		excludeGame = true;
-	}
-
-	if(patchFix480p && !excludeGame)
+	if(patchFix480p)
 		PatchFix480p();
 
 	//! If we're NOT on Wiimmfi, patch the known Remote Code Execution (RCE) vulnerability in MKWii. 
