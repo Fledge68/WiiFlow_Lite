@@ -146,7 +146,9 @@ const std::string &Config::prevDomain(const std::string &start) const
 
 bool Config::load(const char *filename)
 {
-	if (m_loaded && m_changed) save();
+	if(m_loaded)
+		return true;
+	//if (m_loaded && m_changed) save();
 	
 	std::ifstream file(filename, std::ios::in | std::ios::binary);
 	std::string line;

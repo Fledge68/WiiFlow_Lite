@@ -246,7 +246,7 @@ static void Anti_002_fix(void *Address, int Size)
 	}
 }
 
-static void PrinceOfPersiaPatch()
+static void PrinceOfPersiaPatch()// Prince of Persia: The Forgotten Sands
 {
 	if(memcmp("SPX", GameID, 3) != 0 && memcmp("RPW", GameID, 3) != 0)
 		return;

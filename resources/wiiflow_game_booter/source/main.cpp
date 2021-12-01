@@ -78,6 +78,7 @@ int main()
 		WDVD_Init();
 		if(CurrentIOS.Type == IOS_TYPE_D2X)
 		{
+			// only for wii games - no known channels require block IOS Reload
 			s32 ret = BlockIOSReload();
 			gprintf("Block IOS Reload using d2x %s.\n", ret < 0 ? "failed" : "succeeded");
 		}

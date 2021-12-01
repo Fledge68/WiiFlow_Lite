@@ -822,17 +822,25 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	if(strlen(rtrn) == 4)
 		returnTo = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
 
-	u8 *cheatFile = NULL;
-	u32 cheatSize = 0;
+	/* get debugger selected - 0(off), 1(gecko), 2(OSReport) */
+	/* gecko requires a hooktype */
+	/* Operating System (OS) Report patches every fwrite() in main dol to send debug info. no hooktype is needed. */
+	/* 2(OSReport) fwrite() patch is not patched for channels. not sure if it can be */
+	debuggerselect = m_gcfg2.getInt(id, "debugger", 0);
+
 	bool cheat = m_gcfg2.getBool(id, "cheat", false);
 	hooktype = (u32) m_gcfg2.getInt(id, "hooktype", 0);
-	debuggerselect = m_gcfg2.getInt(id, "debugger", 0);
-	if((cheat || debuggerselect == 1) && hooktype == 0)
+	if((cheat || debuggerselect == 1) && hooktype == 0)// cheats or gecko debugger enabled, set hooktype (0)auto to (1)vbi
 		hooktype = 1;
 	else if(!cheat && debuggerselect != 1)
 		hooktype = 0;
+	
+	u8 *cheatFile = NULL;
+	u32 cheatSize = 0;
 	if(cheat)
 		_loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", id.c_str()));
+		
+	/* note: no .wip or gameconfig.txt support for channels. not sure why */
 
 	if(has_enabled_providers() && _initNetwork() == 0)
 		add_game_to_card(id.c_str());
@@ -860,6 +868,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	m_cat.save(true);
 	m_cfg.save(true);
 
+	/* launch via neek2o */
 	if(NANDemuView)
 	{
 		if(useNK2o)
@@ -888,24 +897,32 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		}
 	}
 
+	/* load external booter bins */
 	if(ExternalBooter_LoadBins(m_binsDir.c_str()) == false)
 	{
 		error(_t("errgame15", L"Missing ext_loader.bin or ext_booter.bin!"));
 		_exitWiiflow();
 	}
 
+	/* load selected cIOS if necessary */
 	if(_loadGameIOS(gameIOS, userIOS, id, !NANDemuView) == LOAD_IOS_FAILED)
 	{
 		/* error message already shown */
 		_exitWiiflow();
 	}
 
+	/* if d2x cios patch returnto */
 	if(CurrentIOS.Type == IOS_TYPE_D2X && returnTo != 0)
 	{
 		if(D2X_PatchReturnTo(returnTo) >= 0)
 			memset(&returnTo, 0, sizeof(u32));//Already patched - no need for giantpune patch in external booter
 	}
 
+
+	// nand emulation not available with hermes cios
+	// waninkoko cios rev14 started nand emulation (must be on root of device)
+	// waninkoko cios rev18 added full nand emulation
+	// rev21 and d2x cios added path support
 	if(NANDemuView)
 	{
 		/* Enable our Emu NAND */
@@ -948,9 +965,6 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 
 void CMenu::_launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 {
-	string id(hdr->id);
-	string path(hdr->path);
-
 	if(dvd)
 	{
 		TempLoadIOS();// switch to cIOS if using IOS58 and not in neek2o
@@ -968,52 +982,88 @@ void CMenu::_launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 				error(_t("errgame9", L"This is not a Wii or GC disc"));
 				Sys_Exit();
 			}
-			else
+			else // GC disc
 			{
 				if(!m_nintendont_installed)
 				{
 					error(_t("errgame12", L"Nintendont not found! Can't launch GC Disc."));
 					return;
 				}
-				/* Read GC disc header */
+				/* Read GC disc header to get id*/
 				Disc_ReadGCHeader(&gc_hdr);
 				memcpy(hdr->id, gc_hdr.id, 6);
+				
+				/* set game type */
 				hdr->type = TYPE_GC_GAME;
 				
-				/* Launching GC Game */
+				/* load game configs - gameconfig2.ini */
+				m_gcfg2.load(fmt("%s/" GAME_SETTINGS2_FILENAME, m_settingsDir.c_str()));
+				
+				/* go to game settings menu if wanted to make changes */
 				if(disc_cfg)
 					_gameSettings(hdr, dvd);
+				
+				/* prepare to launch GC disc */
 				MusicPlayer.Stop();
 				m_cfg.setInt("GENERAL", "cat_startpage", m_catStartPage);
-				if(!disc_cfg)
-					m_gcfg2.load(fmt("%s/" GAME_SETTINGS2_FILENAME, m_settingsDir.c_str()));
 				currentPartition = m_cfg.getInt(GC_DOMAIN, "partition", 1);
 				_launchGC(hdr, dvd);
 				return;
 			}
 		}
-		else
+		else // Wii disc
 		{
-			/* Read header */
+			/* Read Wii disc header to get id */
 			Disc_ReadHeader(&wii_hdr);
 			memcpy(hdr->id, wii_hdr.id, 6);
-			id = string((const char*)wii_hdr.id, 6);
+			
+			/* set game type */
 			hdr->type = TYPE_WII_GAME;
+			
+			/* load game configs - gameconfig2.ini */
+			m_gcfg2.load(fmt("%s/" GAME_SETTINGS2_FILENAME, m_settingsDir.c_str()));
+			
+			/* go to game settings menu if wanted to make changes */
 			if(disc_cfg)
 				_gameSettings(hdr, dvd);
+			
+			/* prepare to launch Wii disc */
 			MusicPlayer.Stop();
 			m_cfg.setInt("GENERAL", "cat_startpage", m_catStartPage);
-			if(!disc_cfg)
-				m_gcfg2.load(fmt("%s/" GAME_SETTINGS2_FILENAME, m_settingsDir.c_str()));
 			currentPartition = m_cfg.getInt(WII_DOMAIN, "partition", 1);
 		}
-		gprintf("Game ID: %s\n", id.c_str());
 	}
 	
 	/* clear coverflow, start wiiflow wait animation, set exit handler */	
 	_launchShutdown();
+	string id(hdr->id);
+	string path(hdr->path);// empty if a dvd
+	m_gcfg1.setInt("PLAYCOUNT", id, m_gcfg1.getInt("PLAYCOUNT", id, 0) + 1);
+	m_gcfg1.setUInt("LASTPLAYED", id, time(NULL));
+	
+	bool use_led = m_gcfg2.getBool(id, "led", false);
+	
+	int language = min(m_gcfg2.getUInt(id, "language", 0), ARRAY_SIZE(CMenu::_languages) - 1u);
+	language = (language == 0) ? min(m_cfg.getUInt("GENERAL", "game_language", 0), ARRAY_SIZE(CMenu::_languages) - 1u) : language;
+
 	bool vipatch = m_gcfg2.getBool(id, "vipatch", false);
 	bool countryPatch = m_gcfg2.getBool(id, "country_patch", false);
+
+	u8 videoMode = min(m_gcfg2.getUInt(id, "video_mode", 0), ARRAY_SIZE(CMenu::_VideoModes) - 1u);
+	videoMode = (videoMode == 0) ? min(m_cfg.getUInt("GENERAL", "video_mode", 0), ARRAY_SIZE(CMenu::_GlobalVideoModes) - 1u) : videoMode-1;
+
+	u8 patchVidMode = min(m_gcfg2.getUInt(id, "patch_video_modes", 0), ARRAY_SIZE(CMenu::_vidModePatch) - 1u);
+
+	s8 aspectRatio = min(m_gcfg2.getUInt(id, "aspect_ratio", 0), ARRAY_SIZE(CMenu::_AspectRatio) - 1u) - 1;
+
+	int fix480pVal = m_gcfg2.getOptBool(id, "fix480p", 2);
+	bool fix480p = fix480pVal == 0 ? false : (fix480pVal == 1 ? true : m_cfg.getBool(WII_DOMAIN, "fix480p", false));
+
+	u8 wiiuWidescreen = min(m_gcfg2.getUInt(id, "widescreen_wiiu", 0), ARRAY_SIZE(CMenu::_WidescreenWiiu) - 1u);
+
+	u8 deflicker = min(m_gcfg2.getUInt(id, "deflicker_wii", 0), ARRAY_SIZE(CMenu::_DeflickerOptions) - 1u);
+	deflicker = (deflicker == 0) ? min(m_cfg.getUInt("GENERAL", "deflicker_wii", 0), ARRAY_SIZE(CMenu::_GlobalDeflickerOptions) - 1u) : deflicker-1;
+
 	u8 private_server = m_gcfg2.getUInt(id, "private_server", 0);
 	string server_addr = "";
 	if(private_server > 2)
@@ -1021,29 +1071,47 @@ void CMenu::_launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 		vector<string> custom_servers = stringToVector(m_cfg.getString("custom_servers", "servers"), '|');
 		server_addr = m_cfg.getString("custom_servers", fmt("%s_url", custom_servers[private_server - 3]), "");
 	}
-	int fix480pVal = m_gcfg2.getOptBool(id, "fix480p", 2);
-	bool fix480p = fix480pVal == 0 ? false : (fix480pVal == 1 ? true : m_cfg.getBool(WII_DOMAIN, "fix480p", false));
-
-	u8 deflicker = min(m_gcfg2.getUInt(id, "deflicker_wii", 0), ARRAY_SIZE(CMenu::_DeflickerOptions) - 1u);
-	deflicker = (deflicker == 0) ? min(m_cfg.getUInt("GENERAL", "deflicker_wii", 0), ARRAY_SIZE(CMenu::_GlobalDeflickerOptions) - 1u) : deflicker-1;
-
-	u8 wiiuWidescreen = min(m_gcfg2.getUInt(id, "widescreen_wiiu", 0), ARRAY_SIZE(CMenu::_WidescreenWiiu) - 1u);
-	
-	u8 videoMode = min(m_gcfg2.getUInt(id, "video_mode", 0), ARRAY_SIZE(CMenu::_VideoModes) - 1u);
-	videoMode = (videoMode == 0) ? min(m_cfg.getUInt("GENERAL", "video_mode", 0), ARRAY_SIZE(CMenu::_GlobalVideoModes) - 1u) : videoMode-1;
-
-	int language = min(m_gcfg2.getUInt(id, "language", 0), ARRAY_SIZE(CMenu::_languages) - 1u);
-	language = (language == 0) ? min(m_cfg.getUInt("GENERAL", "game_language", 0), ARRAY_SIZE(CMenu::_languages) - 1u) : language;
 
 	u32 returnTo = 0;
 	const char *rtrn = m_cfg.getString("GENERAL", "returnto").c_str();
-	/* this if is done in case "returnto" is set to disabled in which case rtrn would point to nothing */
 	if(strlen(rtrn) == 4)
 		returnTo = rtrn[0] << 24 | rtrn[1] << 16 | rtrn[2] << 8 | rtrn[3];
 	
-	s8 aspectRatio = min(m_gcfg2.getUInt(id, "aspect_ratio", 0), ARRAY_SIZE(CMenu::_AspectRatio) - 1u) - 1;
-	u8 patchVidMode = min(m_gcfg2.getUInt(id, "patch_video_modes", 0), ARRAY_SIZE(CMenu::_vidModePatch) - 1u);
+	/* get debugger selected - 0(off), 1(gecko), 2(OSReport) */
+	/* gecko requires a hooktype */
+	/* Operating System (OS) Report patches every fwrite() in main dol to send debug info. no hooktype is needed. */
+	debuggerselect = m_gcfg2.getInt(id, "debugger", 0); // debuggerselect is defined in fst.h
+	
+	/* not sure why we disable debugger if it's Prince of Persia: The Forgotten Sands */
+	/* there's wip patches for this game in apploader.c */
+	if((id == "RPWE41" || id == "RPWZ41" || id == "SPXP41") && debuggerselect == 1) // Prince of Persia: The Forgotten Sands
+		debuggerselect = 0;
+		
+	bool cheat = m_gcfg2.getBool(id, "cheat", false);	
+	hooktype = (u32)m_gcfg2.getInt(id, "hooktype", 0); // hooktype is defined in patchcode.h
+	if((cheat || debuggerselect == 1) && hooktype == 0)// cheats or gecko debugger enabled, set hooktype (0)auto to (1)vbi
+		hooktype = 1;
+	else if(!cheat && debuggerselect != 1)
+		hooktype = 0;
 
+	load_wip_patches((u8 *)m_wipDir.c_str(), (u8 *) &id);
+
+	u8 *cheatFile = NULL;
+	u8 *gameconfig = NULL;
+	u32 cheatSize = 0, gameconfigSize = 0;
+	if(cheat)
+		_loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", id.c_str()));
+	_loadFile(gameconfig, gameconfigSize, m_txtCheatDir.c_str(), "gameconfig.txt");
+
+	if(has_enabled_providers() && _initNetwork() == 0)
+		add_game_to_card(id.c_str());
+
+	int userIOS = m_gcfg2.getInt(id, "ios", 0);
+	int gameIOS = dvd ? userIOS : GetRequestedGameIOS(hdr);
+	
+	setLanguage(language);
+
+	/* emunand gamesave setup if necessary */
 	u8 emulate_mode = min(m_gcfg2.getUInt(id, "emulate_save", 0), ARRAY_SIZE(CMenu::_SaveEmu) - 1u);
 	u8 gameEmuMode = emulate_mode;
 	if(emulate_mode == 0)// default then use global
@@ -1087,7 +1155,7 @@ void CMenu::_launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 				NandHandle.CreatePath("%s/tmp", basepath);
 				NandHandle.CreateTitleTMD(hdr);//setup emunand for wii gamesave
 			}
-			/* check if saves emulation is set to full per this game in case the global defualt is not full */
+			/* check if saves emulation is set to full per this game in case the global default is not full */
 			if(gameEmuMode == 3)// if is then we need to make sure the savesnand contains mii's and config files
 			{
 				//check config files
@@ -1109,43 +1177,12 @@ void CMenu::_launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 	else
 		emulate_mode = 0;//sets to off if we are using neek2o or launching a DVD game
 
-	bool use_led = m_gcfg2.getBool(id, "led", false);
-	bool cheat = m_gcfg2.getBool(id, "cheat", false);
-	debuggerselect = m_gcfg2.getInt(id, "debugger", 0); // debuggerselect is defined in fst.h
-	if((id == "RPWE41" || id == "RPWZ41" || id == "SPXP41") && debuggerselect == 1) // Prince of Persia: Rival Swords
-		debuggerselect = 0;
-	hooktype = (u32)m_gcfg2.getInt(id, "hooktype", 0); // hooktype is defined in patchcode.h
-	if((cheat || debuggerselect == 1) && hooktype == 0)
-		hooktype = 1;
-	else if(!cheat && debuggerselect != 1)
-		hooktype = 0;
-
-	u8 *cheatFile = NULL;
-	u8 *gameconfig = NULL;
-	u32 cheatSize = 0, gameconfigSize = 0;
-
-	m_gcfg1.setInt("PLAYCOUNT", id, m_gcfg1.getInt("PLAYCOUNT", id, 0) + 1);
-	m_gcfg1.setUInt("LASTPLAYED", id, time(NULL));
-
-	if(has_enabled_providers() && _initNetwork() == 0)
-		add_game_to_card(id.c_str());
-
-	setLanguage(language);
-
-	load_wip_patches((u8 *)m_wipDir.c_str(), (u8 *) &id);
-	if(cheat)
-		_loadFile(cheatFile, cheatSize, m_cheatDir.c_str(), fmt("%s.gct", id.c_str()));
-	_loadFile(gameconfig, gameconfigSize, m_txtCheatDir.c_str(), "gameconfig.txt");
-
-	int userIOS = m_gcfg2.getInt(id, "ios", 0);
-	int gameIOS = dvd ? userIOS : GetRequestedGameIOS(hdr);
-
-	m_gcfg1.save(true);
-	m_gcfg2.save(true);
-	m_cat.save(true);
-	m_cfg.save(true);
-
-	//this is a temp region change of real nand(rn) for gamesave or off or DVD if tempregionrn is set true
+	// this is a temporary region change of real nand(rn) if 'tempregionrn' is set true.
+	// added by overjoy but he never added a gamesettings option. must be set by editing wiiflow_lite.ini.
+	// when gamesave emulation set to full it doesn't use real nand, only full emunand emulation.
+	// if I understand this, the real nand configs are changed in memory here.
+	// and the games dol is patched in the external booter to stop it from changing the config files.
+	// honestly though i don't understand the need for this.
 	bool patchregion = false;
 	if(emulate_mode <= 1 && m_cfg.getBool("GENERAL", "tempregionrn", false))
 	{
@@ -1153,12 +1190,21 @@ void CMenu::_launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 		// change real nand region to game ID[3] region. is reset when you turn wii off.
 		patchregion = NandHandle.Do_Region_Change(id, true);
 	}
-	//load external booter bin file
+	
+	/* save and close config files */
+	m_gcfg1.save(true);
+	m_gcfg2.save(true);
+	m_cat.save(true);
+	m_cfg.save(true);
+
+	/* load external booter bin files */
 	if(ExternalBooter_LoadBins(m_binsDir.c_str()) == false)
 	{
 		error(_t("errgame15", L"Missing ext_loader.bin or ext_booter.bin!"));
 		_exitWiiflow();
 	}
+
+	/* load selected cIOS if necessary */
 	if(!dvd)
 	{
 		if(_loadGameIOS(gameIOS, userIOS, id) == LOAD_IOS_FAILED)
@@ -1168,10 +1214,14 @@ void CMenu::_launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 		}
 	}
 
+	/* if d2x cios patch returnto and enable emu nand */
+	/* hermes cios can be used for wii games but does not have nand emulation support */
+	/* waninkoko cios have some nand emulation support */
 	if(CurrentIOS.Type == IOS_TYPE_D2X)
 	{
 		if(returnTo != 0 && !m_directLaunch && D2X_PatchReturnTo(returnTo) >= 0)
 			memset(&returnTo, 0, sizeof(u32));//Already patched - no need for giantpune patch in external booter
+		
 		if(emulate_mode)
 		{
 			/* Enable our Emu NAND */
@@ -1193,6 +1243,7 @@ void CMenu::_launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 	/* no more error msgs - clear btns and snds */
 	cleanup();
 
+	/* handle frag_list for .wbfs files only */
 	bool wbfs_partition = false;
 	if(!dvd)
 	{
@@ -1204,22 +1255,28 @@ void CMenu::_launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 			Sys_Exit();// failed to get frag list
 		WBFS_Close();
 	}
+	
+	/* move cheats for external booter */
 	if(cheatFile != NULL)
 	{
 		ocarina_load_code(cheatFile, cheatSize);
 		MEM2_free(cheatFile);
 	}
+	
+	/* move gameconfig for external booter */
 	if(gameconfig != NULL)
 	{
 		app_gameconfig_load(id.c_str(), gameconfig, gameconfigSize);
 		MEM2_free(gameconfig);
 	}
 	
+	/* if on a wiiu set its widescreen to users choice */
 	if(wiiuWidescreen > 0 && IsOnWiiU())
 	{
 		write32(0xd8006a0, wiiuWidescreen == 2 ? 0x30000004 : 0x30000002);
 		mask32(0xd8006a8, 0, 2);
 	}
+	
 	ExternalBooter_WiiGameSetup(wbfs_partition, dvd, patchregion, id.c_str());
 	WiiFlow_ExternalBooter(videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, private_server, server_addr.c_str(), 
 							fix480p, deflicker, returnTo, TYPE_WII_GAME, use_led);
