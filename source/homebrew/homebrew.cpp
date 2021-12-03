@@ -21,6 +21,8 @@ static entry BOOTER_ENTRY = (entry)BOOTER_ADDR;
 static __argv *ARGS_ADDR = (__argv*)0x93300800; //more than twice as much as the appbooter, just for safety
 static char *CMD_ADDR = (char*)ARGS_ADDR + sizeof(struct __argv);
 
+extern "C" { void __exception_closeall(); }
+
 char *homebrew_ptr = NULL;
 u32 homebrew_size = 0;
 
@@ -129,6 +131,8 @@ static int SetupARGV()
 		position += Arguments[i].size() + 1;
 	}
 	args->commandLine[args->length - 1] = '\0';
+	args->argv = &args->commandLine;
+	args->endARGV = args->argv + 1;
 	Arguments.clear();
 
 	return 0;
@@ -159,10 +163,17 @@ void BootHomebrew()
 	else
 		gprintf("Homebrew Boot Arguments disabled\n");
 
+	u32 cpu_isr;
 	memcpy(BOOTER_ADDR, appbooter_ptr, appbooter_size);
 	DCFlushRange(BOOTER_ADDR, appbooter_size);
+	ICInvalidateRange(BOOTER_ADDR, appbooter_size);
 	free(appbooter_ptr);
-	JumpToEntry(BOOTER_ENTRY);
+	//JumpToEntry(BOOTER_ENTRY);
+	SYS_ResetSystem(SYS_SHUTDOWN, 0, 0);
+	_CPU_ISR_Disable( cpu_isr );
+	__exception_closeall();
+	BOOTER_ENTRY();
+	_CPU_ISR_Restore( cpu_isr );
 }
 
 extern "C" { extern void __exception_closeall(); }
