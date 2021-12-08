@@ -1,6 +1,6 @@
 
 #define APP_NAME				"WiiFlow WFL"
-#define APP_VERSION				"5.5.0 beta 12"
+#define APP_VERSION				"5.5.0"
 
 #define APP_DATA_DIR			"wiiflow"
 #define APPS_DIR				"apps/wiiflow"
