@@ -1175,7 +1175,7 @@ void CMenu::_launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 		}
 	}
 	else
-		emulate_mode = 0;//sets to off if we are using neek2o or launching a DVD game
+		emulate_mode = 0;//sets to off if we are launching a DVD game
 
 	// this is a temporary region change of real nand(rn) if 'tempregionrn' is set true.
 	// added by overjoy but he never added a gamesettings option. must be set by editing wiiflow_lite.ini.

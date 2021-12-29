@@ -52,25 +52,21 @@ void DeviceHandler::SetMountUSB(bool using_usb)
 	mount_usb = using_usb;
 }
 
+void DeviceHandler::SetModes()
+{
+	sdhc_mode_sd = 1;// use libogc and ios 58 (wiisd_libogc.c)
+	usb_libogc_mode = 1;// use libogc and ios 58 (usbstorage_libogc.c)
+	if(CustomIOS(CurrentIOS.Type))// if wiiflow is using a cios (force cios is on)
+	{
+		usb_libogc_mode = 0;// use cios for USB (usbstorage.c)
+		sdhc_mode_sd = 0;// use cios for SD (sdhc.c)
+	}
+}
+
 void DeviceHandler::MountAll()
 {
 	MountSD();
 	MountAllUSB();
-}
-
-void DeviceHandler::UnMountAll()
-{
-	/* Kill possible USB thread */
-	//KillUSBKeepAliveThread();
-
-	for(u32 i = SD; i < MAXDEVICES; i++)
-		UnMount(i);
-	USBStorage2_Deinit();
-	USB_Deinitialize();
-	SDHC_Close();
-
-	sd.Cleanup();
-	usb.Cleanup();
 }
 
 bool DeviceHandler::Mount(int dev)
@@ -82,35 +78,6 @@ bool DeviceHandler::Mount(int dev)
 		return MountUSB(dev-USB1);
 
 	return false;
-}
-
-bool DeviceHandler::IsInserted(int dev)
-{
-	if(dev == SD)
-		return SD_Inserted() && sd.IsMounted(0);
-	else if(dev >= USB1 && dev <= USB8)
-		return usb.IsMounted(dev-USB1);
-
-	return false;
-}
-
-void DeviceHandler::UnMount(int dev)
-{
-	if(dev == SD)
-		UnMountSD();
-	else if(dev >= USB1 && dev <= USB8)
-		UnMountUSB(dev-USB1);
-}
-
-void DeviceHandler::SetModes()
-{
-	sdhc_mode_sd = 1;// use libogc and ios 58 (wiisd_libogc.c)
-	usb_libogc_mode = 1;// use libogc and ios 58 (usbstorage_libogc.c)
-	if(CustomIOS(CurrentIOS.Type))// if wiiflow is using a cios (force cios is on)
-	{
-		usb_libogc_mode = 0;// use cios for USB (usbstorage.c)
-		sdhc_mode_sd = 0;// use cios for SD (sdhc.c)
-	}
 }
 
 bool DeviceHandler::MountSD()
@@ -128,7 +95,7 @@ bool DeviceHandler::MountSD()
 		}
 		sd.SetDevice(&__io_sdhc);
 		//! Mount only one SD Partition
-		return sd.Mount(0, DeviceName[SD], true); /* Force FAT */
+		return sd.Mount(0, DeviceName[SD], true); /* Force FAT, SD cards should always be FAT */
 	}
 	return true;
 }
@@ -147,12 +114,15 @@ bool DeviceHandler::MountAllUSB()
 		
 	/* Kill possible USB thread */
 	//KillUSBKeepAliveThread();
+
 	/* usb spinup - Wait for our slowass HDD */
 	if(WaitForDevice(GetUSBInterface()) == false)
-		return false;
-	/* Get Partitions and Mount them */
+		return false;// failed to spin up in time or no USB HDD connected
+
 	if(!usb.IsInserted() || !usb.IsMounted(0))
 		usb.SetDevice(GetUSBInterface());
+
+	/* Get Partitions and Mount them */
 	bool result = false;
 	int partCount = GetUSBPartitionCount();
 	for(int i = 0; i < partCount; i++)
@@ -160,12 +130,47 @@ bool DeviceHandler::MountAllUSB()
 		if(MountUSB(i))
 			result = true;
 	}
-	// why force FAT? why not just return result?
+	// in case no partition is mounted for some strange reason, we force mount the first partition to FAT
 	if(!result)
 		result = usb.Mount(0, DeviceName[USB1], true); /* Force FAT */
+
 	//if(result && usb_libogc_mode)
 	//	CreateUSBKeepAliveThread();
+
 	return result;
+}
+
+bool DeviceHandler::IsInserted(int dev)
+{
+	if(dev == SD)
+		return sd.IsInserted() && sd.IsMounted(0);
+	else if(dev >= USB1 && dev <= USB8)
+		return usb.IsMounted(dev-USB1);
+
+	return false;
+}
+
+void DeviceHandler::UnMount(int dev)
+{
+	if(dev == SD)
+		UnMountSD();
+	else if(dev >= USB1 && dev <= USB8)
+		UnMountUSB(dev-USB1);
+}
+
+void DeviceHandler::UnMountAll()
+{
+	/* Kill possible USB thread */
+	//KillUSBKeepAliveThread();
+
+	for(u32 i = SD; i < MAXDEVICES; i++)
+		UnMount(i);
+	USBStorage2_Deinit();
+	USB_Deinitialize();
+	SDHC_Close();
+
+	sd.Cleanup();
+	usb.Cleanup();
 }
 
 void DeviceHandler::UnMountUSB(int pos)
