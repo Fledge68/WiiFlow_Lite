@@ -41,7 +41,7 @@ void CMenu::_extractBnr(const dir_discHdr *hdr)
 
 void CMenu::_setCurrentItem(const dir_discHdr *hdr)
 {
-	const char *title = CoverFlow.getFilenameId(hdr);
+	const char *fn_id = CoverFlow.getFilenameId(hdr);
 	if(m_current_view == COVERFLOW_PLUGIN)
 	{
 		if(hdr->type == TYPE_PLUGIN)
@@ -60,11 +60,11 @@ void CMenu::_setCurrentItem(const dir_discHdr *hdr)
 				strncpy(m_plugin.PluginMagicWord, "48425257", 9);
 		}
 		m_cfg.setString(PLUGIN_DOMAIN, "cur_magic", m_plugin.PluginMagicWord);
-		m_cfg.setString("plugin_item", m_plugin.PluginMagicWord, title);
+		m_cfg.setString("plugin_item", m_plugin.PluginMagicWord, fn_id);
 	}
 	else
 	{
-		m_cfg.setString(_domainFromView(), "current_item", title);
+		m_cfg.setString(_domainFromView(), "current_item", fn_id);
 		if(m_source_cnt > 1)
 			m_cfg.setInt("MULTI", "current_item_type", hdr->type);
 	}
@@ -100,16 +100,16 @@ void CMenu::_hideGame(bool instant)
 void CMenu::_showGame(void)
 {
 	const dir_discHdr *GameHdr = CoverFlow.getHdr();
-	const char *coverDir = NULL;
 	const char *FanartPath = NULL;
-	if(GameHdr->type == TYPE_PLUGIN)
-		coverDir = m_plugin.GetCoverFolderName(GameHdr->settings[0]);
 	
-	if(coverDir == NULL || strlen(coverDir) == 0)
-		FanartPath = fmt("%s", m_fanartDir.c_str());
+	/* set fanart path */
+	if(GameHdr->type == TYPE_PLUGIN)
+		FanartPath = fmt("%s/%s", m_fanartDir.c_str(), m_plugin.GetCoverFolderName(GameHdr->settings[0]));
 	else
-		FanartPath = fmt("%s/%s", m_fanartDir.c_str(), coverDir);
-	if(m_fa.load(m_cfg, FanartPath, CoverFlow.getHdr()))
+		FanartPath = fmt("%s", m_fanartDir.c_str());
+
+	/* Load fanart config if available */
+	if(m_fa.load(m_cfg, FanartPath, GameHdr))
 	{
 		const TexData *bg = NULL;
 		const TexData *bglq = NULL;
@@ -117,7 +117,7 @@ void CMenu::_showGame(void)
 		_setBg(*bg, *bglq);
 		CoverFlow.hideCover();
 	}
-	else
+	else // no fanart config so we show the cover and game menu background
 	{
 		CoverFlow.showCover();		
 		if(customBg)
@@ -143,57 +143,39 @@ void CMenu::_cleanupVideo()
 	movie.DeInit();
 }
 
-static const char *getVideoPath(const string &videoDir, const char *videoId)
-{
-	const char *coverDir = NULL;
-	const char *videoPath = NULL;
-	if(CoverFlow.getHdr()->type == TYPE_PLUGIN)
-		coverDir = m_plugin.GetCoverFolderName(CoverFlow.getHdr()->settings[0]);
-	
-	if(coverDir == NULL || strlen(coverDir) == 0)
-		videoPath = fmt("%s/%s", videoDir.c_str(), videoId);
-	else
-		videoPath = fmt("%s/%s/%s", videoDir.c_str(), coverDir, videoId);
-	return videoPath;
-}
-
-static const char *getVideoDefaultPath(const string &videoDir)
-{
-	//strncpy(m_plugin.PluginMagicWord, fmt("%08x", CoverFlow.getHdr()->settings[0]), 8);
-	const char *videoPath = fmt("%s/%s", videoDir.c_str(), m_plugin.PluginMagicWord);
-	return videoPath;
-}
-
 bool CMenu::_startVideo()
 {
 	const dir_discHdr *GameHdr = CoverFlow.getHdr();
+	const char *videoPath = NULL;
+	const char *THP_Path = NULL;
 	
-	const char *videoId = NULL;
-	char curId3[4];
-	memset(curId3, 0, 4);
-	if(!NoGameID(GameHdr->type))
-	{	//id3
-		memcpy(curId3, GameHdr->id, 3);
-		videoId = curId3;
+	if(GameHdr->type == TYPE_PLUGIN)
+	{
+		const char *fn = CoverFlow.getFilenameId(GameHdr);//title.ext
+		const char *coverDir = m_plugin.GetCoverFolderName(GameHdr->settings[0]);
+		videoPath = fmt("%s/%s/%s", m_videoDir.c_str(), coverDir, fn);
+		THP_Path = fmt("%s.thp", videoPath);
+		if(!fsop_FileExist(THP_Path))
+		{
+			if(strrchr(videoPath, '.') != NULL)
+			{
+				*strrchr(videoPath, '.') = '\0';
+				THP_Path = fmt("%s.thp", videoPath);
+			}
+			if(!fsop_FileExist(THP_Path))//default video for all games of this plugin
+			{
+				videoPath = fmt("%s/%s", m_videoDir.c_str(), m_plugin.PluginMagicWord);// use magic number as the filename
+				THP_Path = fmt("%s.thp", videoPath);
+			}
+		}
 	}
 	else
-		videoId = CoverFlow.getFilenameId(GameHdr);//title.ext
-
-	//dev:/wiiflow/trailers/{coverfolder}/title.ext.thp or dev:/wiiflow/trailers/id3.thp
-	const char *videoPath = getVideoPath(m_videoDir, videoId);
-	const char *THP_Path = fmt("%s.thp", videoPath);
-	if(!fsop_FileExist(THP_Path))
 	{
-		if(GameHdr->type == TYPE_PLUGIN)
+		videoPath = fmt("%s/%s.3", m_videoDir.c_str(), GameHdr->id);// try id3 first
+		THP_Path = fmt("%s.thp", videoPath);	
+		if(!fsop_FileExist(THP_Path))
 		{
-			//dev:/wiiflow/trailers/magic#.thp
-			videoPath = getVideoDefaultPath(m_videoDir);
-			THP_Path = fmt("%s.thp", videoPath);
-		}
-		else if(!NoGameID(GameHdr->type))
-		{
-			//id6
-			videoPath = getVideoPath(m_videoDir, GameHdr->id);
+			videoPath = fmt("%s/%s", m_videoDir.c_str(), GameHdr->id);
 			THP_Path = fmt("%s.thp", videoPath);
 		}
 	}
@@ -880,27 +862,31 @@ void * CMenu::_gameSoundThread(void *obj)
 	char cached_banner[256];
 	cached_banner[255] = '\0';
 	
-	/* plugin individual game sound */
-	char game_sound[256];
-	game_sound[255] = '\0';
-	
 	const dir_discHdr *GameHdr = CoverFlow.getHdr();
 	
 	if(GameHdr->type == TYPE_PLUGIN)
 	{
-		const char *coverDir  = NULL;
-		coverDir = m_plugin.GetCoverFolderName(GameHdr->settings[0]);
+		char game_sound[256];
+		game_sound[255] = '\0';
+		char fileNameFull[128];
+		fileNameFull[127] = '\0';
+		char fileName[128];
+		fileName[127] = '\0';
+
+		strncpy(fileNameFull, CoverFlow.getFilenameId(GameHdr), sizeof(fileNameFull) - 1);
+		strcpy(fileName, fileNameFull);
+		if(strrchr(fileName, '.') != NULL)
+			*strrchr(fileName, '.') = '\0';// remove .ext
 		
-		if(coverDir == NULL || strlen(coverDir) == 0)
-		{
-			strncpy(custom_banner, fmt("%s/%s.bnr", m->m_customBnrDir.c_str(), CoverFlow.getFilenameId(GameHdr)), 255);
-			strncpy(game_sound, fmt("%s/gamesounds/%s", m->m_dataDir.c_str(), CoverFlow.getFilenameId(GameHdr)), 251);//save for .ext
-		}
-		else
-		{
-			strncpy(custom_banner, fmt("%s/%s/%s.bnr", m->m_customBnrDir.c_str(), coverDir, CoverFlow.getFilenameId(GameHdr)), 255);
-			strncpy(game_sound, fmt("%s/gamesounds/%s/%s", m->m_dataDir.c_str(), coverDir, CoverFlow.getFilenameId(GameHdr)), 251);
-		}
+		const char *coverDir = m_plugin.GetCoverFolderName(GameHdr->settings[0]);
+
+		strncpy(custom_banner, fmt("%s/%s/%s.bnr", m->m_customBnrDir.c_str(), coverDir, fileNameFull), sizeof(custom_banner) - 1);
+		if(!fsop_FileExist(custom_banner))
+			strncpy(custom_banner, fmt("%s/%s/%s.bnr", m->m_customBnrDir.c_str(), coverDir, fileName), sizeof(custom_banner) - 1);
+
+		strncpy(game_sound, fmt("%s/gamesounds/%s/%s", m->m_dataDir.c_str(), coverDir, fileNameFull), sizeof(game_sound) - 1);
+		if(!fsop_FileExist(game_sound))
+			strncpy(game_sound, fmt("%s/gamesounds/%s/%s", m->m_dataDir.c_str(), coverDir, fileName), sizeof(game_sound) - 1);
 		
 		/* get plugin rom custom banner */
 		fsop_GetFileSizeBytes(custom_banner, &custom_bnr_size);
@@ -916,17 +902,16 @@ void * CMenu::_gameSoundThread(void *obj)
 		/* if no banner try getting snap shot */
 		if((custom_bnr_size == 0 || custom_bnr_file == NULL) && m->m_platform.loaded())
 		{
-			gprintf("trying to get snapshot\n");
+			//gprintf("trying to get snapshot\n");
 			m_banner.DeleteBanner();
 			char GameID[7];
-			GameID[6] = '\0';
-			char platformName[264];
+			char platformName[16];
 			const char *TMP_Char = NULL;
 			GameTDB gametdb;
 			
 			strncpy(m_plugin.PluginMagicWord, fmt("%08x", GameHdr->settings[0]), 8);
-			snprintf(platformName, sizeof(platformName), "%s", m->m_platform.getString("PLUGINS", m_plugin.PluginMagicWord).c_str());
-			strcpy(GameID, GameHdr->id);
+			snprintf(platformName, sizeof(platformName), "%s", m->m_platform.getString("PLUGINS", m_plugin.PluginMagicWord, "").c_str());
+			strcpy(GameID, GameHdr->id);// GameHdr->id is null terminated
 			
 			if(strlen(platformName) != 0 && strcasecmp(GameID, "PLUGIN") != 0)
 			{	
@@ -949,8 +934,8 @@ void * CMenu::_gameSoundThread(void *obj)
 					else
 					{
 						char title[64];
-						wcstombs(title, GameHdr->title, 63);
 						title[63] = '\0';
+						wcstombs(title, GameHdr->title, sizeof(title) - 1);
 						ShortName = title;
 					}
 
@@ -1009,11 +994,7 @@ void * CMenu::_gameSoundThread(void *obj)
 				TexHandle.Cleanup(m->m_game_snap);
 				TexHandle.Cleanup(m->m_game_overlay);
 			}
-		}
-		if(custom_bnr_size == 0 || custom_bnr_file == NULL)
-		{
 			/* try to get plugin rom gamesound or just the default plugin gamesound */
-			m_banner.DeleteBanner();
 			bool found = false;
 			if(fsop_FileExist(fmt("%s.mp3", game_sound)))
 			{
@@ -1040,9 +1021,6 @@ void * CMenu::_gameSoundThread(void *obj)
 				m->m_gameSound.Load(m_plugin.GetBannerSound(GameHdr->settings[0]), m_plugin.GetBannerSoundSize());
 			if(m->m_gameSound.IsLoaded())
 				m->m_gamesound_changed = true;
-		}
-		if(custom_bnr_size == 0 || custom_bnr_file == NULL)// no custom banner so we are done. exit sound thread.
-		{
 			m->m_soundThrdBusy = false;
 			return NULL;
 		}

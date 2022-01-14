@@ -524,7 +524,6 @@ int CMenu::_sfCacheCoversNeeded()// for sourceflow
 int CMenu::_cacheCovers()
 {
 	CoverFlow.stopCoverLoader(true);
-	bool m_pluginCacheFolders = m_cfg.getBool(PLUGIN_DOMAIN, "subfolder_cache", true);
 	
 	char coverPath[MAX_FAT_PATH];//1024
 	char wfcPath[MAX_FAT_PATH+20];
@@ -574,7 +573,7 @@ int CMenu::_cacheCovers()
 		}
 				
 		/* get cache folder path */
-		if(hdr->type == TYPE_PLUGIN && m_pluginCacheFolders)
+		if(hdr->type == TYPE_PLUGIN)
 			snprintf(cachePath, sizeof(cachePath), "%s/%s", m_cacheDir.c_str(), m_plugin.GetCoverFolderName(hdr->settings[0]));
 		else if(m_sourceflow)
 			snprintf(cachePath, sizeof(cachePath), "%s/sourceflow", m_cacheDir.c_str());

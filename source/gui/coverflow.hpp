@@ -126,7 +126,7 @@ public:
 	void stopSound(void);
 	// 
 	void applySettings(void);
-	void setCachePath(const char *path, bool pluginCacheFolders);
+	void setCachePath(const char *path);
 	bool fullCoverCached(const char *wfcPath);
 	bool cacheCoverBuffer(const char *wfcPath, const u8 *png, bool full);
 	bool cacheCoverFile(const char *wfcPath, const char *coverPath, bool full);
@@ -289,7 +289,6 @@ private:
 	bool m_compressCache;
 	std::string m_cachePath;
 	bool m_deletePicsAfterCaching;
-	bool m_pluginCacheFolders;
 	bool m_mirrorBlur;
 	float m_mirrorAlpha;
 	float m_txtMirrorAlpha;

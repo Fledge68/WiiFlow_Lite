@@ -97,24 +97,24 @@ int main()
 				Hermes_shadow_mload();
 		}
 		prog(20);
-		Disc_Open(normalCFG.GameBootType);
+		Disc_Open(normalCFG.GameBootType);// sets Disc_ID
 		u32 offset = 0;
 		Disc_FindPartition(&offset);
 		WDVD_OpenPartition(offset, &GameIOS);
 		Disc_SetLowMem();
 		if(normalCFG.vidMode == 5)
 			normalCFG.patchVidMode = 1; //progressive mode requires this
-		vmode = Disc_SelectVMode(normalCFG.vidMode, &vmode_reg);
+		vmode = Disc_SelectVMode(normalCFG.vidMode, &vmode_reg);// requires Disc_ID[3]
 		AppEntrypoint = Apploader_Run(normalCFG.vidMode, vmode, normalCFG.vipatch, normalCFG.countryString, normalCFG.patchVidMode, normalCFG.aspectRatio, 
 						normalCFG.returnTo, normalCFG.patchregion, normalCFG.private_server, normalCFG.server_addr, normalCFG.patchFix480p, normalCFG.deflicker, normalCFG.BootType);
 		WDVD_Close();
 	}
 	else if(normalCFG.BootType == TYPE_CHANNEL)
 	{
-		vmode = Disc_SelectVMode(normalCFG.vidMode, &vmode_reg);
 		ISFS_Initialize();
-		AppEntrypoint = LoadChannel(normalCFG.title, normalCFG.use_dol, &GameIOS);
+		AppEntrypoint = LoadChannel(normalCFG.title, normalCFG.use_dol, &GameIOS);// sets Disc_ID
 		ISFS_Deinitialize();
+		vmode = Disc_SelectVMode(normalCFG.vidMode, &vmode_reg);// requires Disc_ID[3]
 		PatchChannel(normalCFG.vidMode, vmode, normalCFG.vipatch, normalCFG.countryString, normalCFG.patchVidMode, normalCFG.aspectRatio,
 					normalCFG.returnTo, normalCFG.private_server, normalCFG.server_addr, normalCFG.patchFix480p, normalCFG.deflicker, normalCFG.BootType);
 	}

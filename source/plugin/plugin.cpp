@@ -70,13 +70,12 @@ void Plugin::init(const string& m_pluginsDir)
 				continue;
 			m_plugin_cfg.load(iniFile->c_str());
 			if(m_plugin_cfg.loaded() && Plugins.size() < 255)// max plugins count = 255
-			{
 				m_plugin.AddPlugin(m_plugin_cfg, *iniFile);
-			}
+
 			m_plugin_cfg.unload();
 		}
+		std::sort(Plugins.begin(), Plugins.end(), PluginOptions_cmp);
 	}
-	std::sort(Plugins.begin(), Plugins.end(), PluginOptions_cmp);
 }
 
 void Plugin::Cleanup()
@@ -87,11 +86,14 @@ void Plugin::Cleanup()
 void Plugin::AddPlugin(Config &plugin, const string &iniPath)
 {
 	PluginOptions NewPlugin;
+	string magic = plugin.getString(PLUGIN, "magic", "");
+	if(magic.empty())// no magic number don't add to list.
+		return;
 	NewPlugin.path = iniPath;
 	NewPlugin.DolName = plugin.getString(PLUGIN, "dolFile");
-	NewPlugin.coverFolder = plugin.getString(PLUGIN, "coverFolder");
-	NewPlugin.magic = strtoul(plugin.getString(PLUGIN, "magic").c_str(), NULL, 16);
-	NewPlugin.caseColor = strtoul(plugin.getString(PLUGIN, "coverColor").c_str(), NULL, 16);
+	NewPlugin.coverFolder = plugin.getString(PLUGIN, "coverFolder", magic);// no coverfolder use magic as folder name
+	NewPlugin.magic = strtoul(magic.c_str(), NULL, 16);
+	NewPlugin.caseColor = strtoul(plugin.getString(PLUGIN, "coverColor", "000000").c_str(), NULL, 16);
 	NewPlugin.romPartition = plugin.getInt(PLUGIN, "rompartition", -1);
 	NewPlugin.romDir = plugin.getString(PLUGIN, "romDir");
 	NewPlugin.fileTypes = plugin.getString(PLUGIN, "fileTypes");

@@ -670,7 +670,7 @@ void CMenu::_loadCFCfg()
 	const char *domain = "_COVERFLOW";
 
 	//gprintf("Preparing to load sounds from %s\n", m_themeDataDir.c_str());
-	CoverFlow.setCachePath(m_cacheDir.c_str(), m_cfg.getBool(PLUGIN_DOMAIN, "subfolder_cache", true));
+	CoverFlow.setCachePath(m_cacheDir.c_str());
 	CoverFlow.setBufferSize(m_cfg.getInt("GENERAL", "cover_buffer", 20));
 	// Coverflow Sounds
 	CoverFlow.setSounds(
@@ -2633,7 +2633,7 @@ bool CMenu::_loadPluginList()
 void CMenu::_stopSounds(void)
 {
 	// Fade out sounds
-	int fade_rate = m_cfg.getInt("GENERAL", "music_fade_rate", 8);
+	int fade_rate = 20;
 
 	if(!MusicPlayer.IsStopped())
 	{
@@ -2885,14 +2885,14 @@ const char *CMenu::getBoxPath(const dir_discHdr *element)
 {
 	if(element->type == TYPE_PLUGIN)
 	{
-		const char *tempname = element->path;
-		if(strchr(element->path, '/') != NULL)
-			tempname = strrchr(element->path, '/') + 1;
+		const char *filename = fmt("%s", element->path);
+		if(strchr(filename, '/') != NULL)
+		{
+			filename = fmt("%s", strrchr(element->path, '/') + 1);
+		}
+
 		const char *coverFolder = m_plugin.GetCoverFolderName(element->settings[0]);
-		if(strlen(coverFolder) > 0)
-			return fmt("%s/%s/%s.png", m_boxPicDir.c_str(), coverFolder, tempname);
-		else
-			return fmt("%s/%s.png", m_boxPicDir.c_str(), tempname);
+		return fmt("%s/%s/%s.png", m_boxPicDir.c_str(), coverFolder, filename);
 	}
 	else if(element->type == TYPE_HOMEBREW)// use folder name for the png name
 		return fmt("%s/homebrew/%s.png", m_boxPicDir.c_str(), strrchr(element->path, '/') + 1);

@@ -204,7 +204,6 @@ CCoverFlow::CCoverFlow(void)
 	m_compressTextures = true;
 	m_compressCache = false;
 	m_deletePicsAfterCaching = false;
-	m_pluginCacheFolders = false;
 	m_box = true;
 	m_smallBox = false;
 	m_useHQcover = false;
@@ -263,10 +262,9 @@ CCoverFlow::~CCoverFlow(void)
 	LWP_MutexDestroy(m_mutex);
 }
 
-void CCoverFlow::setCachePath(const char *path, bool pluginCacheFolders)
+void CCoverFlow::setCachePath(const char *path)
 {
 	m_cachePath = path;
-	m_pluginCacheFolders = pluginCacheFolders;
 }
 
 void CCoverFlow::setTextureQuality(float lodBias, int aniso, bool edgeLOD)
@@ -2769,7 +2767,7 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 			strncpy(wfcTitle, fmt("%s", getFilenameId(m_items[i].hdr)), sizeof(wfcTitle) - 1);
 			
 		/* get coverfolder for plugins, sourceflow, and homebrew */
-		if(m_items[i].hdr->type == TYPE_PLUGIN && m_pluginCacheFolders)
+		if(m_items[i].hdr->type == TYPE_PLUGIN)
 			wfcCoverDir = m_plugin.GetCoverFolderName(m_items[i].hdr->settings[0]);
 		if(m_items[i].hdr->type == TYPE_SOURCE)
 			wfcCoverDir = "sourceflow";
@@ -2782,7 +2780,17 @@ CCoverFlow::CLRet CCoverFlow::_loadCoverTex(u32 i, bool box, bool hq, bool blank
 			if(m_smallBox)
 				strncpy(full_path, fmt("%s/%s/%s_small.wfc", m_cachePath.c_str(), wfcCoverDir, wfcTitle), MAX_FAT_PATH);
 			else
+			{
 				strncpy(full_path, fmt("%s/%s/%s.wfc", m_cachePath.c_str(), wfcCoverDir, wfcTitle), MAX_FAT_PATH);
+				/*if(!fsop_FileExist(full_path))
+				{
+					if(strrchr(wfcTitle, '.') != NULL)
+					{
+						*strrchr(wfcTitle, '.') = '\0';
+						strncpy(full_path, fmt("%s/%s/%s.wfc", m_cachePath.c_str(), wfcCoverDir, wfcTitle), MAX_FAT_PATH);
+					}
+				}*/
+			}
 		}
 		else
 		{

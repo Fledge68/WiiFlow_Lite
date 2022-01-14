@@ -125,7 +125,7 @@ bool PartitionHandle::Mount(int pos, const char *name, bool forceFAT)
 	if(valid(pos))
 		UnMount(pos);
 
-	if(!name)
+	if(!name || strlen(name) > 8)
 		return false;
 
 	if(pos >= (int)MountNameList.size())
@@ -133,9 +133,8 @@ bool PartitionHandle::Mount(int pos, const char *name, bool forceFAT)
 
 	MountNameList[pos] = name;
 	char DeviceSyn[10];
-	memcpy(DeviceSyn, name, 8);
+	strcpy(DeviceSyn, name);
 	strcat(DeviceSyn, ":");
-	DeviceSyn[9] = '\0';
 
 	//! Some stupid partition manager think they don't need to edit the freaken MBR.
 	//! So we need to check the first 64 sectors and see if some partition is there.
