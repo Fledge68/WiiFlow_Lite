@@ -113,7 +113,7 @@ bool DeviceHandler::MountAllUSB()
 		return false;
 		
 	/* Kill possible USB thread */
-	//KillUSBKeepAliveThread();
+	KillUSBKeepAliveThread();
 
 	/* usb spinup - Wait for our slowass HDD */
 	if(WaitForDevice(GetUSBInterface()) == false)
@@ -134,8 +134,8 @@ bool DeviceHandler::MountAllUSB()
 	if(!result)
 		result = usb.Mount(0, DeviceName[USB1], true); /* Force FAT */
 
-	//if(result && usb_libogc_mode)
-	//	CreateUSBKeepAliveThread();
+	if(result && usb_libogc_mode)
+		CreateUSBKeepAliveThread();
 
 	return result;
 }
@@ -161,7 +161,7 @@ void DeviceHandler::UnMount(int dev)
 void DeviceHandler::UnMountAll()
 {
 	/* Kill possible USB thread */
-	//KillUSBKeepAliveThread();
+	KillUSBKeepAliveThread();
 
 	for(u32 i = SD; i < MAXDEVICES; i++)
 		UnMount(i);

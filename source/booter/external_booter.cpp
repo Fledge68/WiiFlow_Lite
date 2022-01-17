@@ -148,9 +148,6 @@ void ExternalBooter_ChannelSetup(u64 title, bool dol)
 
 void ShutdownBeforeExit(void)
 {
-	DeviceHandle.UnMountAll();
-	NandHandle.DeInit_ISFS();
-	WDVD_Close();
 	Close_Inputs();
 	/* Deinit network */
 	if(networkInit == true)
@@ -165,4 +162,7 @@ void ShutdownBeforeExit(void)
 	}
 	/* Avoid issues on vWii by always calling this */
 	net_wc24cleanup();
+	NandHandle.DeInit_ISFS();
+	DeviceHandle.UnMountAll();
+	WDVD_Close();
 }

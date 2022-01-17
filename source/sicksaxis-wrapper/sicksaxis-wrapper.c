@@ -29,7 +29,7 @@ void DS3_Cleanup()
 {
 	psPressed = false;
 	ss_close(&Controller1);
-	USB_Deinitialize();
+	//USB_Deinitialize();
 }
 
 unsigned int DS3_ButtonsDown()

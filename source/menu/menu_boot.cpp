@@ -76,12 +76,12 @@ void CMenu::_showBoot()
 	m_btnMgr.show(m_bootBtnSDOnly);
 }
 
-bool CMenu::_Boot(void)
+void CMenu::_Boot(void)
 {
 	if(isWiiVC)
 	{
 		error(_t("errboot7", L"Access denied in Wii VC mode."));
-		return false;
+		return;
 	}
 	set_port = currentPort;
 	bool prev_load = cur_load;
@@ -152,11 +152,9 @@ bool CMenu::_Boot(void)
 	if(prev_load != cur_load || prev_ios != cur_ios || set_port != currentPort || prev_sd != cur_sd)
 	{
 		error(_t("errboot8", L"Press 'A' to reload WiiFlow"));
-		m_exit = true;
-		m_reload = true;
-		return 1;
+		vector<string> arguments = _getMetaXML(fmt("%s/boot.dol", m_appDir.c_str()));
+		_launchHomebrew(fmt("%s/boot.dol", m_appDir.c_str()), arguments);
 	}
-	return 0;
 }
 
 void CMenu::_initBoot(void)

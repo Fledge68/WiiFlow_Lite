@@ -1167,7 +1167,7 @@ private:
 	bool _Home();
 	bool _ExitTo();
 	void _Shutdown();
-	bool _Boot();
+	void _Boot();
 	void _Paths();
 	void _sourceFlow();
 	int _getSrcFlow();
