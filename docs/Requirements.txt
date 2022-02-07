@@ -1,6 +1,0 @@
-WiiFlow 1.1 since R23 was compiled using devkitPPC r18 or r19.
-Since R39 it was compiled using devkitPPC r21 and libogc 1.8.3.
-Since around R374 Wiiflow was compiled using devkitPPC r23 and libogc 1.8.7
-Since around R400 Wiiflow was compiled using devkitPPC r24 and libogc 1.8.8
-All required portlibs are included in the source and dont need to be bothered with for compilation.
-
