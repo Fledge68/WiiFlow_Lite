@@ -456,15 +456,17 @@ TexErr STexture::fromPNG(TexData &dest, const u8 *buffer, u8 f, u32 minMipSize, 
 			DCFlushRange(tmpData2, Size2);
 			Cleanup(dest);
 		}
-		tmpData2 = _genMipMaps(tmpData2, imgProp.imgWidth, imgProp.imgHeight, maxLODTmp, baseWidth, baseHeight);
-		if(tmpData2 == NULL)
+		u8 *tmpData3 = _genMipMaps(tmpData2, imgProp.imgWidth, imgProp.imgHeight, maxLODTmp, baseWidth, baseHeight);
+		if(tmpData3 == NULL)
 		{
 			Cleanup(dest);
+			MEM2_free(tmpData2);
 			return TE_NOMEM;
 		}
+		MEM2_free(tmpData2);
 		u32 nWidth = newWidth;
 		u32 nHeight = newHeight;
-		u8 *pSrc = tmpData2;
+		u8 *pSrc = tmpData3;
 		if(minLODTmp > 0)
 			pSrc += fixGX_GetTexBufferSize(baseWidth, baseHeight, f, minLODTmp > 1 ? GX_TRUE : GX_FALSE, minLODTmp - 1);
 		dest.dataSize = fixGX_GetTexBufferSize(newWidth, newHeight, f, GX_TRUE, maxLODTmp - minLODTmp);
@@ -472,7 +474,8 @@ TexErr STexture::fromPNG(TexData &dest, const u8 *buffer, u8 f, u32 minMipSize, 
 		if(dest.data == NULL)
 		{
 			Cleanup(dest);
-			MEM2_free(tmpData2);
+			MEM2_free(tmpData3);
+			//MEM2_free(tmpData2);
 			return TE_NOMEM;
 		}
 		memset(dest.data, 0, dest.dataSize);
@@ -496,7 +499,7 @@ TexErr STexture::fromPNG(TexData &dest, const u8 *buffer, u8 f, u32 minMipSize, 
 			nWidth >>= 1;
 			nHeight >>= 1;
 		}
-		MEM2_free(tmpData2);
+		MEM2_free(tmpData3);
 		dest.maxLOD = maxLODTmp - minLODTmp;
 		dest.format = f;
 		dest.width = newWidth;

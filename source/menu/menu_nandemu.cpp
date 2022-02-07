@@ -180,9 +180,9 @@ void CMenu::_FullNandCheck(void)
 	{
 		int emulate_mode;
 		if(i == EMU_NAND)
-			emulate_mode = 	m_cfg.getInt(CHANNEL_DOMAIN, "emulation", 1);// full by default
+			emulate_mode = 	m_cfg.getInt(CHANNEL_DOMAIN, "emulation");// partial by default
 		else
-			emulate_mode = 	m_cfg.getInt(WII_DOMAIN, "save_emulation", 2);// full by default
+			emulate_mode = 	m_cfg.getInt(WII_DOMAIN, "save_emulation");// off by default
 		if((i == EMU_NAND && emulate_mode == 1) || (i == SAVES_NAND && emulate_mode == 2))//full
 		{
 			int emuPart = _FindEmuPart(i, false);
@@ -197,11 +197,12 @@ void CMenu::_FullNandCheck(void)
 			
 			char testpath[MAX_FAT_PATH + 42];
 			
-			//check config files
+			//check config file - time and date, video settings, etc...
 			snprintf(testpath, sizeof(testpath), "%s/shared2/sys/SYSCONF", basepath);
 			if(!fsop_FileExist(testpath))
 				need_config = true;
 				
+			// system info like model and serial numbers, not real important. modmii creates this file.
 			snprintf(testpath, sizeof(testpath), "%s/title/00000001/00000002/data/setting.txt", basepath);
 			if(!fsop_FileExist(testpath))
 				need_config = true;

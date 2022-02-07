@@ -1240,7 +1240,7 @@ void CMenu::_launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 		}
 	}
 	
-	/* no more error msgs - clear btns and snds */
+	/* no more error msgs - clear btns and snds  and stop wait animation */
 	cleanup();
 
 	/* handle frag_list for .wbfs files only */

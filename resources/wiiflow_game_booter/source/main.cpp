@@ -97,6 +97,8 @@ int main()
 				Hermes_shadow_mload();
 		}
 		prog(20);
+		/* Clear Disc ID */
+		memset((u8*)Disc_ID, 0, 32);
 		Disc_Open(normalCFG.GameBootType);// sets Disc_ID
 		u32 offset = 0;
 		Disc_FindPartition(&offset);
@@ -121,7 +123,10 @@ int main()
 	gprintf("Entrypoint: %08x, Requested Game IOS: %i\n", AppEntrypoint, GameIOS);
 	setprog(320);
 
-	   /* Error 002 Fix (thanks WiiPower and uLoader) */
+	/* Set Disc ID for WiiRD - must be set after ocarina stuff is done */
+	memcpy((void*)0x80001800, (void*)Disc_ID, 8);
+	
+	/* Error 002 Fix (thanks WiiPower and uLoader) */
 	*Current_IOS = (GameIOS << 16) | 0xffff;
 	if(!isForwarder)
 		*Apploader_IOS = (GameIOS << 16) | 0xffff;

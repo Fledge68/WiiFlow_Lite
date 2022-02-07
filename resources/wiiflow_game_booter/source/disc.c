@@ -35,6 +35,7 @@ void Disc_SetLowMem(void)
 	*Sys_Magic			= 0x0D15EA5E; // Standard Boot Code
 	*Sys_Version		= 0x00000001; // Version
 	*Arena_L			= 0x00000000; // Arena Low
+	*BI2				= 0x817E5480; // BI2
 	*Bus_Speed			= 0x0E7BE2C0; // Console Bus Speed
 	*CPU_Speed			= 0x2B73A840; // Console CPU Speed
 	*Assembler			= 0x38A00040; // Assembler

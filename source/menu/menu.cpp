@@ -360,7 +360,8 @@ bool CMenu::init(bool usb_mounted)
 			m_cfg.setInt(WII_DOMAIN, "savepartition", savesPart);
 		}
 		gprintf("savesnand = %s:/%s/%s\n", DeviceName[savesPart],  emu_nands_dir, savesNand.c_str());
-		_FullNandCheck();
+		m_cfg.getInt(CHANNEL_DOMAIN, "emulation", 0);// partial by default
+		m_cfg.getInt(WII_DOMAIN, "save_emulation", 0);// off by default
 	}
 	
 	/* misc. setup */
