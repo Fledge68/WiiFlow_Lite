@@ -73,15 +73,15 @@ static u32 ios_60[16] ATTRIBUTE_ALIGN(32)=
 	0x20203750+1, // ios_printf (thumb)
 };
 
-u32 patch_datas[8] ATTRIBUTE_ALIGN(32);
-
-data_elf my_data_elf;
+static u32 patch_datas[8] ATTRIBUTE_ALIGN(32);
 static int my_thread_id = 0;
+static data_elf my_data_elf;
 
 int load_ehc_module()
 {
 	if(mload_init() < 0)
 		return -1;
+
 	mload_elf((void *)ehcmodule_5, &my_data_elf);
 	my_thread_id = mload_run_thread(my_data_elf.start, my_data_elf.stack, my_data_elf.size_stack, my_data_elf.prio);
 	if(my_thread_id < 0)
@@ -89,8 +89,8 @@ int load_ehc_module()
 	usleep(350*1000);
 
 	int is_ios = mload_get_IOS_base();
-	//u32 dip_address = 0x1377E000;
 	u32 dip_address = 0x1377C000;
+
 	switch(is_ios)
 	{
 		case 36:
@@ -150,8 +150,7 @@ int load_ehc_module()
 			break;
 	}
 	mload_elf((void *)sdhc_module, &my_data_elf);
-	my_thread_id = mload_run_thread(my_data_elf.start, my_data_elf.stack,
-			my_data_elf.size_stack, my_data_elf.prio);
+	my_thread_id = mload_run_thread(my_data_elf.start, my_data_elf.stack, my_data_elf.size_stack, my_data_elf.prio);
 	if(my_thread_id < 0)
 		return -2;
 	mload_close();

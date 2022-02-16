@@ -179,16 +179,14 @@ void IOS_GetCurrentIOSInfo()
 		iosinfo_t *iosInfo = IOS_GetInfo(CurrentIOS.Version);
 		CurrentIOS.Revision = iosInfo->version;
 		CurrentIOS.Base = iosInfo->baseios;
-		gprintf("D2X IOS%i[%i] v%i\n", CurrentIOS.Version, CurrentIOS.Base, 
-			CurrentIOS.Revision);
+		gprintf("D2X IOS%i[%i] v%i\n", CurrentIOS.Version, CurrentIOS.Base, CurrentIOS.Revision);
 		MEM2_free(iosInfo);
 	}
 	else if(CurrentIOS.Type == IOS_TYPE_WANIN)
 	{
 		if(CurrentIOS.Revision >= 18)
 			CurrentIOS.Base = wanin_mload_get_IOS_base();
-		gprintf("Waninkoko IOS%i[%i] v%i\n", CurrentIOS.Version, CurrentIOS.Base, 
-			CurrentIOS.Revision);
+		gprintf("Waninkoko IOS%i[%i] v%i\n", CurrentIOS.Version, CurrentIOS.Base, CurrentIOS.Revision);
 	}
 	else if(CurrentIOS.Type == IOS_TYPE_HERMES)
 	{
@@ -198,8 +196,7 @@ void IOS_GetCurrentIOSInfo()
 			CurrentIOS.Revision = mload_get_version() >> 4;
 			CurrentIOS.SubRevision = mload_get_version() & 0xF;
 		}
-		gprintf("Hermes IOS%i[%i] v%d.%d\n", CurrentIOS.Version, CurrentIOS.Base, 
-			CurrentIOS.Revision, CurrentIOS.SubRevision);
+		gprintf("Hermes IOS%i[%i] v%d.%d\n", CurrentIOS.Version, CurrentIOS.Base, CurrentIOS.Revision, CurrentIOS.SubRevision);
 	}
 	else
 		gprintf("IOS%i v%i\n", CurrentIOS.Version, CurrentIOS.Revision);

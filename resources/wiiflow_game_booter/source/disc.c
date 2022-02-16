@@ -42,8 +42,10 @@ void Disc_SetLowMem(void)
 	*OS_Thread			= 0x80431A80; // Thread Init
 	*Dev_Debugger		= 0x81800000; // Dev Debugger Monitor Address
 	*Simulated_Mem		= 0x01800000; // Simulated Memory Size
-	*GameID_Address		= 0x80000000; // Fix for Sam & Max (WiiPower)
 	*(vu32 *) 0xCD00643C = 0x00000000;	// 32Mhz on Bus
+
+	if(CurrentIOS.Type != IOS_TYPE_HERMES && CurrentIOS.Revision >= 18)
+		*GameID_Address		= 0x80000000; // Fix for Sam & Max (WiiPower)
 
 	/* Copy Disc ID */
 	memcpy((void*)Online_Check, (void*)Disc_ID, 4);
@@ -240,13 +242,14 @@ s32 Disc_SetUSB(const u8 *id, bool frag)
 	/* ENABLE USB in cIOS */
 	if(id)
 	{
-		if(frag)
+		if(frag)// true for wii games in wbfs folder
 			return set_frag_list();
+		/* for WBFS partitioned drives */
 		s32 part = -1;
 		if(CurrentIOS.Type == IOS_TYPE_HERMES)
 			part = wbfs_part_idx ? wbfs_part_idx - 1 : 0;
 		return WDVD_SetUSBMode(wbfsDev, (u8*)id, part);
 	}
-	/* DISABLE USB in cIOS */
+	/* DISABLE USB in cIOS for actual disc */
 	return WDVD_SetUSBMode(0, NULL, -1);
 }
