@@ -98,7 +98,8 @@ void CMenu::directlaunch(const char *GameID)// from boot arg for wii game only
 void CMenu::_launchShutdown()
 {
 	CoverFlow.clear();
-	_showWaitMessage();
+	if(!m_directLaunch)
+		_showWaitMessage();
 	exitHandler(PRIILOADER_DEF); //Making wiiflow ready to boot something
 }
 

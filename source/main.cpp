@@ -129,7 +129,7 @@ int main(int argc, char **argv)
 	}
 	/* Init video */
 	m_vid.init();
-	if(showFlashImg)
+	if(showFlashImg && gameid == NULL)// dont show if autobooting a wii game.
 		m_vid.startImage();
 		
 	/* check if WiiVC */
@@ -200,8 +200,11 @@ int main(int argc, char **argv)
 	bool usb_mounted = DeviceHandle.MountAllUSB();// only mounts any USB if isUsingUSB()
 	
 	/* init wait images and show wait animation */
-	m_vid.setCustomWaitImgs(wait_dir, wait_loop);
-	m_vid.waitMessage(0.15f);
+	if(gameid == NULL)// dont show if autobooting a wii game.
+	{
+		m_vid.setCustomWaitImgs(wait_dir, wait_loop);
+		m_vid.waitMessage(0.15f);
+	}
 
 	/* init controllers for input */
 	Open_Inputs();// WPAD_SetVRes() is called later in mainMenu.init() during cursor init which gets the theme pointer images
