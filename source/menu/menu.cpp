@@ -320,45 +320,16 @@ bool CMenu::init(bool usb_mounted)
 	{
 		/* Emu nands init even if not being used */
 		memset(emu_nands_dir, 0, sizeof(emu_nands_dir));
-		strncpy(emu_nands_dir, IsOnWiiU() ? "vwiinands" : "nands", sizeof(emu_nands_dir) - 1);
+		bool vwiinands = IsOnWiiU() && m_cfg.getBool(CHANNEL_DOMAIN, "use_vwiinands", true);
+		strncpy(emu_nands_dir, vwiinands ? "vwiinands" : "nands", sizeof(emu_nands_dir) - 1);
 		
+		int dev = DeviceHandle.PartitionUsableForNandEmu(SD) ? 0 : 1;
 		string emuNand = m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default");// just to set to default on first boot
-		int emuPart = m_cfg.getInt(CHANNEL_DOMAIN, "partition", -1);
+		int emuPart = m_cfg.getInt(CHANNEL_DOMAIN, "partition", dev);
 		string savesNand = m_cfg.getString(WII_DOMAIN, "current_save_emunand", "default");
-		int savesPart = m_cfg.getInt(WII_DOMAIN, "savepartition", -1);
+		int savesPart = m_cfg.getInt(WII_DOMAIN, "savepartition", dev);
 
-		if(emuPart < 0)
-		{
-			u8 i;
-			for(i = SD; i < MAXDEVICES; i++)// find first usable partition
-			{
-				if(DeviceHandle.PartitionUsableForNandEmu(i))
-				{
-					emuPart = i;
-					break;
-				}
-			}
-			if(i == MAXDEVICES)// if no usable partitions found set to SD for now
-				emuPart = SD;// cfgne8=No valid FAT partition found for NAND Emulation!
-			m_cfg.setInt(CHANNEL_DOMAIN, "partition", emuPart);
-		}
 		gprintf("emunand = %s:/%s/%s\n", DeviceName[emuPart], emu_nands_dir, emuNand.c_str());
-		
-		if(savesPart < 0)
-		{
-			u8 i;
-			for(i = SD; i < MAXDEVICES; i++)
-			{
-				if(DeviceHandle.PartitionUsableForNandEmu(i))
-				{
-					savesPart = i;
-					break;
-				}
-			}
-			if(i == MAXDEVICES)
-				savesPart = SD;
-			m_cfg.setInt(WII_DOMAIN, "savepartition", savesPart);
-		}
 		gprintf("savesnand = %s:/%s/%s\n", DeviceName[savesPart],  emu_nands_dir, savesNand.c_str());
 		m_cfg.getInt(CHANNEL_DOMAIN, "emulation", 0);// partial by default
 		m_cfg.getInt(WII_DOMAIN, "save_emulation", 0);// off by default
