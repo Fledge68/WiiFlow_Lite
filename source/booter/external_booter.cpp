@@ -96,7 +96,7 @@ void WiiFlow_ExternalBooter(u8 vidMode, bool vipatch, bool countryString, u8 pat
 	DCFlushRange(&lowCFG, sizeof(the_CFG));
 	*EXT_ADDR_CFG = ((u32)lowCFG);
 	/* Unmount devices etc */
-	ShutdownBeforeExit();
+	ShutdownBeforeExit();// before launching wii game or channel via external booter
 	/* Set proper time */
 	settime(secs_to_ticks(time(NULL) - 946684800));
 	/* Copy in booter */

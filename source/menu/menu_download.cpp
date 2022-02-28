@@ -1644,6 +1644,7 @@ int CMenu::_coverDownloader()
 int CMenu::_gametdbDownloaderAsync()
 {
 	const string &langCode = m_loc.getString(m_curLanguage, "gametdb_code", "EN");
+	string gametdb_url = m_cfg.getString("GENERAL", "gametdb_url", GAMETDB_URL);
 	m_thrdTotal = 3; // Download, save and unzip
 
 	m_thrdMessage = _t("dlmsg1", L"Initializing network...");
@@ -1657,7 +1658,7 @@ int CMenu::_gametdbDownloaderAsync()
 		m_thrdMessage = _t("dlmsg11", L"Downloading...");
 		m_thrdMessageAdded = true;
 		struct download file = {};
-		downloadfile(fmt(GAMETDB_URL, langCode.c_str()), &file);
+		downloadfile(fmt(gametdb_url.c_str(), langCode.c_str()), &file);
 		if(errno == ENOMEM)
 			return -1;
 		else if(file.size <= 0)

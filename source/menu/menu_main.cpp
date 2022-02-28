@@ -464,16 +464,8 @@ int CMenu::main(void)
 		}
 		if(BTN_HOME_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_mainBtnHome)))
 		{
-			if(m_sourceflow)//back to base tier or exit sourceflow
+			if(m_sourceflow)// open Source Menu Editor Menu
 			{
-				/*if(!_srcTierBack(true))// if already on base tier exit sourceflow
-				{
-					_restoreSrcTiers();
-					m_sourceflow = false;
-				}
-				_getCustomBgTex();
-				_setMainBg();
-				_showCF(true);//refresh coverflow or sourceflow list*/
 				_hideMain();
 				_SM_Editor();
 				if(BTN_B_HELD)
@@ -484,19 +476,18 @@ int CMenu::main(void)
 				_setMainBg();
 				_showCF(true);
 			}
-			else
+			else // open Home Menu 
 			{
 				_hideMain();
-				/* Home menu */
 				if(_Home())
-					break;// exit wiiflow
+					break;// if exit or shutdown option was selected then exit wiiflow
 				if(prevTheme != m_themeName)
 				{
 					/* new theme - exit wiiflow and reload */
 					fsop_deleteFolder(fmt("%s/sourceflow", m_cacheDir.c_str()));
 					m_cfg.remove(SOURCEFLOW_DOMAIN, "numbers");
 					m_cfg.remove(SOURCEFLOW_DOMAIN, "tiers");
-					m_reload = true;
+					m_reload = true;// reload for new theme
 					break;
 				}
 				if(BTN_B_HELD)
@@ -558,7 +549,7 @@ int CMenu::main(void)
 					fsop_deleteFolder(fmt("%s/sourceflow", m_cacheDir.c_str()));
 					m_cfg.remove(SOURCEFLOW_DOMAIN, "numbers");
 					m_cfg.remove(SOURCEFLOW_DOMAIN, "tiers");
-					m_reload = true;
+					m_reload = true;// reload for new theme
 					break;
 				}
 				if(BTN_B_HELD)
@@ -969,8 +960,7 @@ int CMenu::main(void)
 				CoverFlow.mouse(chan, -1, -1);
 		}
 	}
-	ScanInput();
-	if(m_reload || BTN_B_HELD)// rebooting wiiflow
+	if(m_reload)// rebooting wiiflow (forced in Home Menu or new theme)
 	{
 		vector<string> arguments = _getMetaXML(fmt("%s/boot.dol", m_appDir.c_str()));
 		_launchHomebrew(fmt("%s/boot.dol", m_appDir.c_str()), arguments);

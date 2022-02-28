@@ -153,6 +153,11 @@ bool CMenu::_Home(void)
 		}
 		else if(BTN_HOME_PRESSED)
 		{
+			if(BTN_B_HELD)// reboot wiiflow if B button held and HOME button pressed.
+			{
+				m_reload = true;
+				return true;
+			}
 			if(isWiiVC)
 			{
 				exitHandler(EXIT_TO_MENU);

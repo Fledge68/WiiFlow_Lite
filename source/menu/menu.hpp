@@ -1190,7 +1190,6 @@ private:
 	vector<string> _getMetaXML(const char *bootpath);
 	void _extractBnr(const dir_discHdr *hdr);
 	void _setCurrentItem(const dir_discHdr *hdr);
-	void _exitWiiflow();
 	void exitHandler(int ExitTo);
 	void _setAA(int aa);
 	void _loadCFCfg();

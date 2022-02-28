@@ -185,6 +185,11 @@ void CMenu::_launch(const dir_discHdr *hdr)
 			_launchHomebrew(bootpath, arguments);
 		}
 	}
+	// if we make it here it means the launch failed.
+	//Exit WiiFlow, no game booted...
+	cleanup();// cleanup and clear memory
+	ShutdownBeforeExit();// unmount devices and close inputs. launch game failed.
+	Sys_Exit();
 }
 
 void CMenu::_launchPlugin(dir_discHdr *hdr)
@@ -275,7 +280,7 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 	if(ret == false)
 	{
 		error(_t("errgame14", L"app_booter.bin not found!"));
-		_exitWiiflow();
+		return;
 	}
 	/* no more error msgs - remove btns and sounds */
 	cleanup(); 
@@ -287,7 +292,7 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 		AddBootArgument(arguments[i].c_str());
 	}
 
-	ShutdownBeforeExit();// wifi and sd gecko doesnt work anymore after
+	ShutdownBeforeExit();// before launching homebrew or plugin dol
 	NandHandle.Patch_AHB();
 	IOS_ReloadIOS(58);
 	BootHomebrew();
@@ -519,7 +524,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		if(ret == false)
 		{
 			error(_t("errgame14", L"app_booter.bin not found!"));
-			_exitWiiflow();
+			return;
 		}
 		
 		/* no more error msgs - remove btns and sounds */
@@ -655,7 +660,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		}
 
 		Nintendont_SetOptions(path, id, CheatPath, GClanguage, n_config, n_videomode, vidscale, vidoffset, netprofile);
-		ShutdownBeforeExit();
+		ShutdownBeforeExit();// before launching nintendont
 		NandHandle.Patch_AHB();
 		IOS_ReloadIOS(58);
 		BootHomebrew(); //regular dol
@@ -687,7 +692,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 
 		DEVO_GetLoader(m_dataDir.c_str());
 		DEVO_SetOptions(path, id, videoMode, GClanguage, memcard_emu, widescreen, activity_led, m_use_wifi_gecko);
-		ShutdownBeforeExit();
+		ShutdownBeforeExit();// before launching devolution
 		NandHandle.Patch_AHB();
 		IOS_ReloadIOS(58);
 		DEVO_Boot();
@@ -780,7 +785,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		m_cat.save(true);
 		m_cfg.save(true);
 		cleanup();//no more error messages we can now cleanup
-		ShutdownBeforeExit();
+		ShutdownBeforeExit();// before wii_launch channel
 		WII_Initialize();
 		WII_LaunchTitle(gameTitle);
 	}
@@ -877,7 +882,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 			if(!Load_Neek2o_Kernel())
 			{
 				error(_t("errneek1", L"Cannot launch neek2o. Verify your neek2o setup"));//kernal.bin not found
-				_exitWiiflow();
+				return;
 			}
 			else 
 			{
@@ -888,7 +893,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 					nkrtrn = "NK2O";
 				u32 nkreturnTo = nkrtrn[0] << 24 | nkrtrn[1] << 16 | nkrtrn[2] << 8 | nkrtrn[3];
 				cleanup();
-				ShutdownBeforeExit();
+				ShutdownBeforeExit();// before using neek2o to launch a channel
 				if(IsOnWiiU())
 					Launch_nk(gameTitle, NandHandle.Get_NandPath(), ((u64)(0x00010002) << 32) | (nkreturnTo & 0xFFFFFFFF));
 				else
@@ -902,14 +907,14 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	if(ExternalBooter_LoadBins(m_binsDir.c_str()) == false)
 	{
 		error(_t("errgame15", L"Missing ext_loader.bin or ext_booter.bin!"));
-		_exitWiiflow();
+		return;
 	}
 
 	/* load selected cIOS if necessary */
 	if(_loadGameIOS(gameIOS, userIOS, id, !NANDemuView) == LOAD_IOS_FAILED)
 	{
 		/* error message already shown */
-		_exitWiiflow();
+		return;
 	}
 
 	/* if d2x cios patch returnto */
@@ -936,7 +941,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		{
 			NandHandle.Disable_Emu();
 			error(_t("errgame5", L"Enabling emu failed!"));
-			_exitWiiflow();
+			return;
 		}
 		DeviceHandle.MountAll();
 	}
@@ -1202,7 +1207,7 @@ void CMenu::_launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 	if(ExternalBooter_LoadBins(m_binsDir.c_str()) == false)
 	{
 		error(_t("errgame15", L"Missing ext_loader.bin or ext_booter.bin!"));
-		_exitWiiflow();
+		return;
 	}
 
 	/* load selected cIOS if necessary */
@@ -1211,7 +1216,7 @@ void CMenu::_launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 		if(_loadGameIOS(gameIOS, userIOS, id) == LOAD_IOS_FAILED)
 		{
 			/* error message already shown */
-			_exitWiiflow();
+			return;
 		}
 	}
 
@@ -1282,13 +1287,5 @@ void CMenu::_launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 	WiiFlow_ExternalBooter(videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, private_server, server_addr.c_str(), 
 							fix480p, deflicker, returnTo, TYPE_WII_GAME, use_led);
 
-	Sys_Exit();
-}
-
-void CMenu::_exitWiiflow()
-{
-	//Exit WiiFlow, no game booted...
-	cleanup();// cleanup and clear memory
-	ShutdownBeforeExit();// unmount devices and close inputs
 	Sys_Exit();
 }
