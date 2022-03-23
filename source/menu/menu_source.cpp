@@ -38,8 +38,10 @@ void CMenu::_sourceFlow()
 	string trs;
 	const dir_discHdr *hdr = CoverFlow.getHdr();
 	
-	// save source number for return
-	sm_numbers[sm_numbers.size() - 1] = std::to_string(hdr->settings[0]);
+	// save source menu button number for centering coverflow on that cover when we come back to sourceflow.
+	// we use a vector because of the tiers
+	sm_numbers[sm_numbers.size() - 1] = std::to_string(hdr->settings[0]);// hdr->settings[0] is the number of the source menu button.
+	// create string of numbers to save in wiiflow_lite.ini.
 	numbers = sm_numbers[0];
 	for(u8 i = 1; i < sm_numbers.size(); i++)
 		numbers.append(',' + sm_numbers[i]);
@@ -81,7 +83,7 @@ void CMenu::_sourceFlow()
 			for(i = 0; i < magicNums.size(); i++)
 			{
 				u8 pos = m_plugin.GetPluginPosition(strtoul(magicNums[i].c_str(), NULL, 16));
-				if(pos < 255)
+				if(pos < 255)// if pos == 255 then it doesn't exist
 				{
 					enabledPluginsCount++;
 					m_plugin.SetEnablePlugin(pos, 2);
