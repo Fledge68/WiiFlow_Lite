@@ -1781,7 +1781,7 @@ int CMenu::_bannerDownloader()
 		banner_url_id3 = base_url_id3.c_str();
 
 		if(dl_gameID.empty())
-			m_thrdMessage = wfmt(_fmt("dlmsg3", L"Downloading banner %i/%i"), i + 1, n);
+			m_thrdMessage = wfmt(_fmt("dlmsg32", L"Downloading banner %i/%i"), i + 1, n);
 		else
 			m_thrdMessage = _t("cfgbnr7", L"Downloading banner...");
 		m_thrdMessageAdded = true;
