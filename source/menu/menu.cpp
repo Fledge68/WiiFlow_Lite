@@ -468,7 +468,6 @@ bool CMenu::init(bool usb_mounted)
 
 	/* set sound volumes */
 	CoverFlow.setSoundVolume(m_cfg.getInt("GENERAL", "sound_volume_coverflow", 255));
-	m_btnMgr.setSoundVolume(m_cfg.getInt("GENERAL", "sound_volume_gui", 255));
 	m_bnrSndVol = m_cfg.getInt("GENERAL", "sound_volume_bnr", 255);
 	m_bnr_settings = m_cfg.getBool("GENERAL", "banner_in_settings", true);
 
@@ -938,6 +937,7 @@ void CMenu::_loadCFLayout(int version, bool forceAA, bool otherScrnFmt)
 void CMenu::_buildMenus(void)
 {
 	m_btnMgr.init();
+	m_btnMgr.setSoundVolume(m_cfg.getInt("GENERAL", "sound_volume_gui", 255));
 	m_btnMgr.setRumble(m_cfg.getBool("GENERAL", "rumble", true));
 	// Default fonts
 	theme.btnFont = _dfltFont(BUTTONFONT);

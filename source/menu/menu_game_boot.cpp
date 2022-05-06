@@ -295,6 +295,7 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 	ShutdownBeforeExit();// before launching homebrew or plugin dol
 	NandHandle.Patch_AHB();
 	IOS_ReloadIOS(58);
+	WII_Initialize();
 	BootHomebrew();
 	Sys_Exit();
 }

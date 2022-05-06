@@ -95,6 +95,7 @@ static void getBaseColors(u8 *color0, u8 *color1, const u8 *srcBlock)
 {
 	int maxDistance = -1;
 	for (int i = 0; i < 15; ++i)
+	{
 		for (int j = i + 1; j < 16; ++j)
 		{
 			int distance = colorDistance(srcBlock + i * 4, srcBlock + j * 4);
@@ -105,6 +106,7 @@ static void getBaseColors(u8 *color0, u8 *color1, const u8 *srcBlock)
 				*(u32 *)color1 = ((u32 *)srcBlock)[j];
 			}
 		}
+	}
 	if (rgb8ToRGB565(color0) < rgb8ToRGB565(color1))
 	{
 		u32 tmp;
@@ -161,7 +163,9 @@ static inline void _convertToCMPR(u8 *dst, const u8 *src, u32 width, u32 height)
 	u8 color1[4];
 
 	for (u32 jj = 0; jj < height; jj += 8)
+	{
 		for (u32 ii = 0; ii < width; ii += 8)
+		{
 			for (u32 k = 0; k < 4; ++k)
 			{
 				int i = ii + ((k & 1) << 2);
@@ -178,6 +182,8 @@ static inline void _convertToCMPR(u8 *dst, const u8 *src, u32 width, u32 height)
 				*(u32 *)dst = colorIndices(color0, color1, srcBlock);
 				dst += 4;
 			}
+		}
+	}
 }
 
 void STexture::Cleanup(TexData &tex)
@@ -650,7 +656,8 @@ void STexture::_resizeD2x2(u8 *dst, const u8 *src, u32 srcWidth, u32 srcHeight)
 
 void STexture::_calcMipMaps(u8 &maxLOD, u8 &minLOD, u32 &lod0Width, u32 &lod0Height, u32 width, u32 height, u32 minSize, u32 maxSize)
 {
-	if (minSize < 8) minSize = 8;
+	if (minSize < 8)
+		minSize = 8;
 	lod0Width = upperPower(width);
 	lod0Height = upperPower(height);
 	if (width - (lod0Width >> 1) < lod0Width >> 3 && minSize <= lod0Width >> 1)
@@ -662,8 +669,10 @@ void STexture::_calcMipMaps(u8 &maxLOD, u8 &minLOD, u32 &lod0Width, u32 &lod0Hei
 		++maxLOD;
 	minLOD = 0;
 	if (maxSize > 8)
+	{
 		for (u32 i = std::max(lod0Width, lod0Height); i > maxSize; i >>= 1)
 			++minLOD;
+	}
 	if (minLOD > maxLOD)
 		maxLOD = minLOD;
 }

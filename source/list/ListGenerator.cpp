@@ -258,10 +258,6 @@ static void Create_Channel_List()
 /* add plugin rom, song, or video to the list. */
 static void Add_Plugin_Game(char *FullPath)
 {
-	/* Get roms's title without the extra ()'s or []'s */
-	string ShortName = m_plugin.GetRomName(FullPath);
-	//gprintf("Add_Plugin_Game: fullName=%s, shortName=%s\n", FullPath, ShortName.c_str());
-
 	/* only add disc 1 of multi disc games */
 	const char *RomFilename = strrchr(FullPath, '/') + 1;
 
@@ -271,6 +267,10 @@ static void Add_Plugin_Game(char *FullPath)
 		return;
 	}
 
+	/* Get roms's title without the extra ()'s or []'s */
+	string ShortName = m_plugin.GetRomName(FullPath);
+	//gprintf("Add_Plugin_Game: fullName=%s, shortName=%s\n", FullPath, ShortName.c_str());
+	
 	/* get rom's ID */
 	string romID = "";
 	if(gameTDB.IsLoaded())

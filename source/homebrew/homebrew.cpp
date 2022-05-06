@@ -13,15 +13,13 @@
 #include "fileOps/fileOps.h"
 #include "gecko/gecko.hpp"
 
-static u8 *EXECUTE_ADDR = (u8*)0x92000000;
+static u8 *EXECUTE_ADDR = (u8*)0x92000000;// 92000000 usblgx app booter
 
-static u8 *BOOTER_ADDR = (u8*)0x93300000;
+static u8 *BOOTER_ADDR = (u8*)0x93300000;//93000000 usblgx app booter
 static entry BOOTER_ENTRY = (entry)BOOTER_ADDR;
 
-static __argv *ARGS_ADDR = (__argv*)0x93300800; //more than twice as much as the appbooter, just for safety
+static __argv *ARGS_ADDR = (__argv*)0x93300800; // 93200000 usblgx app booter
 static char *CMD_ADDR = (char*)ARGS_ADDR + sizeof(struct __argv);
-
-extern "C" { void __exception_closeall(); }
 
 char *homebrew_ptr = NULL;
 u32 homebrew_size = 0;
@@ -131,8 +129,8 @@ static int SetupARGV()
 		position += Arguments[i].size() + 1;
 	}
 	args->commandLine[args->length - 1] = '\0';
-	args->argv = &args->commandLine;
-	args->endARGV = args->argv + 1;
+	//args->argv = &args->commandLine;
+	//args->endARGV = args->argv + 1;
 	Arguments.clear();
 
 	return 0;
@@ -156,6 +154,7 @@ void writeStub()
 		free(Stub);
 }
 
+//extern "C" { void __exception_closeall(); }
 void BootHomebrew()
 {
 	if(!IsDollZ(EXECUTE_ADDR) && !IsSpecialELF(EXECUTE_ADDR))
@@ -163,17 +162,18 @@ void BootHomebrew()
 	else
 		gprintf("Homebrew Boot Arguments disabled\n");
 
-	u32 cpu_isr;
 	memcpy(BOOTER_ADDR, appbooter_ptr, appbooter_size);
 	DCFlushRange(BOOTER_ADDR, appbooter_size);
 	ICInvalidateRange(BOOTER_ADDR, appbooter_size);
 	free(appbooter_ptr);
-	//JumpToEntry(BOOTER_ENTRY);
+	JumpToEntry(BOOTER_ENTRY);
+	
+	/*u32 cpu_isr;
 	SYS_ResetSystem(SYS_SHUTDOWN, 0, 0);
 	_CPU_ISR_Disable( cpu_isr );
 	__exception_closeall();
 	BOOTER_ENTRY();
-	_CPU_ISR_Restore( cpu_isr );
+	_CPU_ISR_Restore( cpu_isr );*/
 }
 
 extern "C" { extern void __exception_closeall(); }
@@ -182,10 +182,11 @@ void JumpToEntry(entry EntryPoint)
 {
 	AppEntrypoint = (u32)EntryPoint;
 	gprintf("Jumping to %08x\n", AppEntrypoint);
-	u32 level = IRQ_Disable();
-	__IOS_ShutdownSubsystems();
+	SYS_ResetSystem(SYS_SHUTDOWN, 0, 0);// does __IOS_ShutdownSubsystems() and __lwp_thread_closeall() before IRQ_Disable()
+	u32 level = IRQ_Disable();// does _CPU_ISR_Disable()
+	//__IOS_ShutdownSubsystems();
 	__exception_closeall();
-	__lwp_thread_closeall(); //dont like it but whatever
+	//__lwp_thread_closeall(); //dont like it but whatever
 	asm volatile (
 		"lis %r3, AppEntrypoint@h\n"
 		"ori %r3, %r3, AppEntrypoint@l\n"

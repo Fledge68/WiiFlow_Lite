@@ -73,7 +73,7 @@ static u32 ios_60[16] ATTRIBUTE_ALIGN(32)=
 	0x20203750+1, // ios_printf (thumb)
 };
 
-static u32 patch_datas[8] ATTRIBUTE_ALIGN(32);
+u32 patch_datas[8] ATTRIBUTE_ALIGN(32);
 static int my_thread_id = 0;
 static data_elf my_data_elf;
 
@@ -165,7 +165,7 @@ int load_ehc_module()
 #define IOCTL_FAT_UMOUNTUSB	0xF3
 
 #define IOCTL_FFS_MODE		0x80
-
+/*
 void disable_ffs_patch(void)
 {
 	
@@ -231,14 +231,14 @@ s32 ret;
 		}
 	usleep(350*1000);
 
-	/* Create heap */
+	// Create heap
 	if (hid < 0) {
 		hid = iosCreateHeap(0x100);
 		if (hid < 0)
 			return -1; 
 	}
 
-	/* Open USB device */
+	// Open USB device 
 	fd = IOS_Open(fs, 0);
 	
 	if (fd < 0)
@@ -287,49 +287,34 @@ return 0;
 
 int enable_ffs(int mode)
 {
-static char fs[] ATTRIBUTE_ALIGN(32) = "fat";
- s32 hid = -1, fd = -1;
-s32 ret;
+	static char fs[] ATTRIBUTE_ALIGN(32) = "fat";
+	s32 hid = -1, fd = -1;
+	s32 ret;
 
-	/* Create heap */
+	// Create heap 
 	if (hid < 0) {
 		hid = iosCreateHeap(0x100);
 		if (hid < 0)
 			return -1; 
 	}
 
-	/* Open USB device */
-	fd = IOS_Open(fs, 0);
-	
+	// Open USB device 
+	fd = IOS_Open(fs, 0);	
 	if (fd < 0)
-		{
-		if(hid>=0)
-			{
-			iosDestroyHeap(hid);
-			hid=-1;
-			}
+	{			
+		iosDestroyHeap(hid);
+		hid = -1;
 		return -1;
-		}
-
-
-	ret=IOS_IoctlvFormat(hid, fd, IOCTL_FFS_MODE, "i:", mode);
-	
-
-    if (fd >= 0) {
-		IOS_Close(fd);
-		fd = -1;
 	}
 
-	if(hid>=0)
-		{
-		iosDestroyHeap(hid);
-		hid=-1;
-		}
-	
+	ret=IOS_IoctlvFormat(hid, fd, IOCTL_FFS_MODE, "i:", mode);
+	IOS_Close(fd);
+	fd = -1;
 
-
-return ret;
-}
+	iosDestroyHeap(hid);
+	hid=-1;
+	return ret;
+}*/
 
 void enable_ES_ioctlv_vector(void)
 {
@@ -344,7 +329,7 @@ void Set_DIP_BCA_Datas(u8 *bca_data)
 	mload_write(bca_data, 64);
 	mload_close();
 }
-
+/*
 void test_and_patch_for_port1()
 {
 	// test for port 1
@@ -390,7 +375,7 @@ void free_usb_ports()
 	mload_getw((void *) (addr+0x48), &dat);
 	if((dat & 0x2001)==1) mload_setw((void *) (addr+0x48), 0x2000);
 	
-}
+}*/
 
 #endif
 

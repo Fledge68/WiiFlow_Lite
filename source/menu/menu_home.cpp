@@ -559,21 +559,31 @@ int CMenu::_cacheCovers()
 		/* get cover png path */
 		bool blankCover = false;
 		bool fullCover = true;
-		strlcpy(coverPath, getBoxPath(&(*hdr)), sizeof(coverPath));
-		//gprintf("boxpath=%s\n", coverPath);
-		if(!fsop_FileExist(coverPath) || smallBox)
+		if(smallBox)// homebrew or sourceflow
 		{
 			fullCover = false;
 			strlcpy(coverPath, getFrontPath(&(*hdr)), sizeof(coverPath));
-			//gprintf("frontpath=%s\n", coverPath);
-			if(!fsop_FileExist(coverPath) && !smallBox)
-			{
-				fullCover = true;
-				strlcpy(coverPath, getBlankCoverPath(&(*hdr)), sizeof(coverPath));
-				//gprintf("blankpath=%s\n", coverPath);
-				blankCover = true;
-				if(!fsop_FileExist(coverPath))
+			if(!fsop_FileExist(coverPath))
 					continue;
+		}
+		else
+		{
+			strlcpy(coverPath, getBoxPath(&(*hdr)), sizeof(coverPath));
+			//gprintf("boxpath=%s\n", coverPath);
+			if(!fsop_FileExist(coverPath))
+			{
+				fullCover = false;
+				strlcpy(coverPath, getFrontPath(&(*hdr)), sizeof(coverPath));
+				//gprintf("frontpath=%s\n", coverPath);
+				if(!fsop_FileExist(coverPath))
+				{
+					fullCover = true;
+					strlcpy(coverPath, getBlankCoverPath(&(*hdr)), sizeof(coverPath));
+					//gprintf("blankpath=%s\n", coverPath);
+					blankCover = true;
+					if(!fsop_FileExist(coverPath))
+						continue;
+				}
 			}
 		}
 				
@@ -606,15 +616,15 @@ int CMenu::_cacheCovers()
 		/* if wfc doesn't exist or is flat and have full cover */
 		if(!fsop_FileExist(wfcPath) || (!CoverFlow.fullCoverCached(wfcPath) && fullCover))
 		{
-			/* create cache subfolders if needed */
+			// create cache subfolders if needed
 			if(!fsop_FolderExist(cachePath))
 				fsop_MakeFolder(cachePath);
 		
-			/* create cover texture */
+			// create cover texture
 			CoverFlow.cacheCoverFile(wfcPath, coverPath, fullCover);
 		}
 		
-		// cache wii and channel banners
+		/* cache wii and channel banners */
 		if(hdr->type == TYPE_WII_GAME || hdr->type == TYPE_CHANNEL || hdr->type == TYPE_EMUCHANNEL)
 		{
 			CurrentBanner.ClearBanner();
