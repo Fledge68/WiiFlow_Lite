@@ -189,12 +189,6 @@ private:
 	//
 	TexData m_errorBg;
 	TexData m_configBg;
-	//TexData m_config3Bg;
-	//TexData m_configScreenBg;
-	//TexData m_config4Bg;
-	//TexData m_configAdvBg;
-	//TexData m_configSndBg;
-	//TexData m_config7Bg;
 	TexData m_cheatBg;
 	TexData m_downloadBg;
 	TexData m_gameinfoBg;
@@ -271,113 +265,7 @@ private:
 	s16 m_configLbl4Val;
 	s16 m_configBtn4M;
 	s16 m_configBtn4P;
-/*	
-	s16 m_configLblDownload;
-	s16 m_configBtnDownload; 
-	s16 m_configLblParental;
-	s16 m_configBtnUnlock;
-	s16 m_configBtnSetCode;
-	s16 m_configLblPartition;
-	s16 m_configBtnPartition;
-	s16 m_configLblCfg4;
-	s16 m_configBtnCfg4;
 
-	s16 m_configAdvLblTheme;
-	s16 m_configAdvLblCurTheme;
-	s16 m_configAdvBtnCurThemeM;
-	s16 m_configAdvBtnCurThemeP;
-	s16 m_configAdvLblLanguage;
-	s16 m_configAdvLblCurLanguage;
-	s16 m_configAdvBtnCurLanguageM;
-	s16 m_configAdvBtnCurLanguageP;
-	s16 m_configAdvLblCFTheme;
-	s16 m_configAdvBtnCFTheme;
-	s16 m_configAdvLblBootChange;
-	s16 m_configAdvBtnBootChange;
-	s16 m_configAdvLblUser[4];
-	
-	s16 m_config3LblGameLanguage;
-	s16 m_config3LblLanguage;
-	s16 m_config3BtnLanguageP;
-	s16 m_config3BtnLanguageM;
-	s16 m_config3LblGameVideo;
-	s16 m_config3LblVideo;
-	s16 m_config3BtnVideoP;
-	s16 m_config3BtnVideoM;
-	s16 m_config3LblGCDefaults;
-	s16 m_config3BtnGCDefaults;
-	s16 m_config3LblChannelsType;
-	s16 m_config3LblChannelsTypeVal;
-	s16 m_config3BtnChannelsTypeP;
-	s16 m_config3BtnChannelsTypeM;
-	s16 m_config3LblUser[4];
-	
-	s16 m_config4LblReturnTo;
-	s16 m_config4LblReturnToVal;
-	s16 m_config4BtnReturnToM;
-	s16 m_config4BtnReturnToP;
-	s16 m_config4LblHome;
-	s16 m_config4BtnHome;
-	s16 m_config4LblSaveFavMode;
-	s16 m_config4BtnSaveFavMode;
-	s16 m_config4LblPathManager;
-	s16 m_config4BtnPathManager;
-	s16 m_config4LblUser[4];
-	
-	s16 m_configSndLblBnrVol;
-	s16 m_configSndLblBnrVolVal;
-	s16 m_configSndBtnBnrVolP;
-	s16 m_configSndBtnBnrVolM;
-	s16 m_configSndLblMusicVol;
-	s16 m_configSndLblMusicVolVal;
-	s16 m_configSndBtnMusicVolP;
-	s16 m_configSndBtnMusicVolM;
-	s16 m_configSndLblGuiVol;
-	s16 m_configSndLblGuiVolVal;
-	s16 m_configSndBtnGuiVolP;
-	s16 m_configSndBtnGuiVolM;
-	s16 m_configSndLblCFVol;
-	s16 m_configSndLblCFVolVal;
-	s16 m_configSndBtnCFVolP;
-	s16 m_configSndBtnCFVolM;
-	s16 m_configSndLblUser[4];
-	
-	s16 m_configScreenLblTVHeight;
-	s16 m_configScreenLblTVHeightVal;
-	s16 m_configScreenBtnTVHeightP;
-	s16 m_configScreenBtnTVHeightM;
-	s16 m_configScreenLblTVWidth;
-	s16 m_configScreenLblTVWidthVal;
-	s16 m_configScreenBtnTVWidthP;
-	s16 m_configScreenBtnTVWidthM;
-	s16 m_configScreenLblTVX;
-	s16 m_configScreenLblTVXVal;
-	s16 m_configScreenBtnTVXM;
-	s16 m_configScreenBtnTVXP;
-	s16 m_configScreenLblTVY;
-	s16 m_configScreenLblTVYVal;
-	s16 m_configScreenBtnTVYM;
-	s16 m_configScreenBtnTVYP;
-	s16 m_configScreenLblUser[4];
-
-	s16 m_config7Lbl1;
-	s16 m_config7Lbl2;
-	s16 m_config7Lbl3;
-	s16 m_config7Lbl4;
-	s16 m_config7Btn1;
-	s16 m_config7Btn2;
-
-	s16 m_config7Btn3;
-	s16 m_config7Lbl3Val;
-	s16 m_config7Btn3M;
-	s16 m_config7Btn3P;
-
-	s16 m_config7Btn4;
-	s16 m_config7Lbl4Val;
-	s16 m_config7Btn4M;
-	s16 m_config7Btn4P;
-	s16 m_config7LblUser[4];
-*/
 //Download menu
 	s16 m_downloadPrioVal;
 	enum CoverPrio
@@ -983,13 +871,7 @@ private:
 	void _initMainMenu();
 	void _initErrorMenu();
 	void _initConfigMenu();
-	//void _initConfigAdvMenu();
-	//void _initConfig3Menu();
-	//void _initConfig4Menu();
-	//void _initConfigSndMenu();
-	//void _initConfigScreenMenu();
 	void _initConfigGCMenu();
-	//void _initConfig7Menu();
 	void _initPartitionsCfgMenu();
 	void _initGameMenu();
 	void _initDownloadMenu();
@@ -1021,11 +903,6 @@ private:
 	void _textCheatSettings(void);
 	void _textError(void);
 	void _textConfig(void);
-	//void _textConfig3(void);
-	//void _textConfigScreen(void);
-	//void _textConfig4(void);
-	//void _textConfigAdv(void);
-	//void _textConfigSnd(void);
 	void _textConfigGC(void);
 	void _textPartitionsCfg(void);
 	void _textGame(void);
@@ -1049,16 +926,9 @@ private:
 	void _hideCheatSettings(bool instant = false);
 	void _hideError(bool instant = false);
 	void _hideMain(bool instant = false);
-	//void _hideConfigCommon(bool instant = false);
 	void _hideConfigMain(bool instant = false);
-	//void _hideConfig3(bool instant = false);
-	//void _hideConfigScreen(bool instant = false);
-	//void _hideConfig4(bool instant = false);
-	//void _hideConfigAdv(bool instant = false);
-	//void _hideConfigSnd(bool instant = false);
 	void _hideConfigGC(bool instant = false);
 	void _hideConfigGCPage(bool instant = false);
-	//void _hideConfig7(bool instant = false);
 	void _hidePartitionsCfg(bool instant = false);
 	void _hideGame(bool instant = false);
 	void _hideDownload(bool instant = false);
@@ -1088,16 +958,9 @@ private:
 	//
 	void _showError(void);
 	void _showMain(void);
-	//void _showConfigCommon(const TexData & bg, int page);
 	void _showConfigMain(int curPage);
-	//void _showConfig3(void);
-	//void _showConfigScreen(void);
-	//void _showConfig4(void);
-	//void _showConfigAdv(void);
-	//void _showConfigSnd(void);
 	void _showConfigGC(void);
 	void _showConfigGCPage(void);
-	//void _showConfig7(int curPage);
 	void _showPartitionsCfg(void);
 	void _showNandEmu(void);
 	void _showGame(void);
@@ -1146,18 +1009,9 @@ private:
 	void _setCFVersion(int version);
 	int _getCFVersion(void);
 	//
-	//void _config(void);
 	void _configMain(void);
-	//int _configCommon(void);
 	wstringEx _getChannelName(void);
-	//int _config1(void);
-	//int _config3(void);
-	//int _configScreen(void);
-	//int _config4(void);
-	//int _configAdv(void);
-	//int _configSnd(void);
 	void _configGC(void);
-	//int _config7(int curPage);
 	void _partitionsCfg(void);
 	int _NandEmuCfg(void);
 	int _AutoExtractSave(string gameId);

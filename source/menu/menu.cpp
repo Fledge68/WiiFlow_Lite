@@ -1262,14 +1262,8 @@ void CMenu::_buildMenus(void)
 	_initErrorMenu();
 	_initWad();
 	_initWBFSMenu();
-	//_initConfigAdvMenu();
-	//_initConfigSndMenu();
-	//_initConfig4Menu();
-	//_initConfigScreenMenu();
-	//_initConfig3Menu();
 	_initConfigMenu();
 	_initConfigGCMenu();
-	//_initConfig7Menu();
 	_initPartitionsCfgMenu();
 	_initGameMenu();
 	_initDownloadMenu();
@@ -1982,12 +1976,6 @@ void CMenu::_updateText(void)
 	_textPluginSettings();
 	_textCategorySettings();
 	_textCheatSettings();
-	//_textConfig();
-	//_textConfig3();
-	//_textConfigScreen();
-	//_textConfig4();
-	//_textConfigAdv();
-	//_textConfigSnd();
 	_textConfigGC();
 	_textPartitionsCfg();
 	_textCfgHB();

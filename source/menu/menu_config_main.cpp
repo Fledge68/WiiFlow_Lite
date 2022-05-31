@@ -2,76 +2,8 @@
 #include <algorithm>
 #include "menu.hpp"
 
-//using namespace std;
-
 const int CMenu::_nbCfgPages = 14;
-/*
-void CMenu::_hideConfigCommon(bool instant)
-{
-	m_btnMgr.hide(m_configLblTitle, instant);
-	m_btnMgr.hide(m_configBtnBack, instant);
-	m_btnMgr.hide(m_configLblPage, instant);
-	m_btnMgr.hide(m_configBtnPageM, instant);
-	m_btnMgr.hide(m_configBtnPageP, instant);
-}
 
-void CMenu::_showConfigCommon(const TexData &bg, int page)
-{
-	_setBg(bg, bg);
-	m_btnMgr.show(m_configLblTitle);
-	m_btnMgr.show(m_configBtnBack);
-	m_btnMgr.show(m_configLblPage);
-	m_btnMgr.show(m_configBtnPageM);
-	m_btnMgr.show(m_configBtnPageP);
-	m_btnMgr.setText(m_configLblPage, wfmt(L"%i / %i", page, m_locked ? page : _nbCfgPages));
-	m_btnMgr.setText(m_configLblTitle, _t("cfg1", L"Settings"));
-	m_btnMgr.setText(m_configBtnBack, _t("cfg10", L"Back"));
-}
-
-int CMenu::_configCommon(void)
-{
-	_mainLoopCommon();
-	if (BTN_HOME_PRESSED || BTN_B_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_configBtnBack)))
-		return CONFIG_PAGE_BACK;
-	else if (BTN_UP_PRESSED)
-		m_btnMgr.up();
-	else if (BTN_DOWN_PRESSED)
-		m_btnMgr.down();
-	else if (BTN_LEFT_PRESSED || BTN_MINUS_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_configBtnPageM)))
-	{
-		if(BTN_LEFT_PRESSED || BTN_MINUS_PRESSED) m_btnMgr.click(m_configBtnPageM);
-		return CONFIG_PAGE_DEC;
-	}
-	else if (BTN_RIGHT_PRESSED || BTN_PLUS_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_configBtnPageP)))
-	{
-		if(BTN_RIGHT_PRESSED || BTN_PLUS_PRESSED) m_btnMgr.click(m_configBtnPageP);
-		return CONFIG_PAGE_INC;
-	}
-	return CONFIG_PAGE_NO_CHANGE;
-}
-
-void CMenu::_config()
-{
-	int page = 1;
-	int change = CONFIG_PAGE_NO_CHANGE;
-	while(!m_exit)
-	{
-		change = _configMain(page);
-
-		if(change == CONFIG_PAGE_BACK)
-			break;
-		if(!m_locked)
-		{
-			// assumes change is in the range of CONFIG_PAGE_DEC to CONFIG_PAGE_INC
-			page += change;
-			if (page > _nbCfgPages)
-				page = 1;
-			else if (page < 1)
-				page = _nbCfgPages;
-		}
-	}
-}
-*/
 template <class T> static inline T loopNum(T i, T s)
 {
 	return (i + s) % s;
@@ -147,7 +79,6 @@ wstringEx CMenu::_getChannelName()
 
 void CMenu::_hideConfigMain(bool instant)
 {
-	//_hideConfigCommon(instant);
 	m_btnMgr.hide(m_configLblTitle, instant);
 	m_btnMgr.hide(m_configBtnBack, instant);
 	m_btnMgr.hide(m_configLblPage, instant);
@@ -186,7 +117,6 @@ void CMenu::_hideConfigMain(bool instant)
 
 void CMenu::_showConfigMain(int curPage)
 {
-	//_showConfigCommon(m_configBg,curPage);
 	_setBg(m_configBg,m_configBg);
 	m_btnMgr.show(m_configLblTitle);
 	m_btnMgr.show(m_configBtnBack);
@@ -441,8 +371,6 @@ void CMenu::_showConfigMain(int curPage)
 		m_btnMgr.show(m_configLbl4Val);
 		m_btnMgr.show(m_configBtn4M);
 		m_btnMgr.show(m_configBtn4P);
-		//m_btnMgr.setText(m_configLbl1, _t("cfg713", L"Use HQ covers"));
-		//m_btnMgr.setText(m_configBtn1, m_cfg.getBool("GENERAL", "cover_use_hq") ? _t("yes", L"Yes") : _t("no", L"No"));
 		m_btnMgr.setText(m_configLbl1, _t("cfg728", L"Upsample music to 48khz"));
 		m_btnMgr.setText(m_configBtn1, m_cfg.getBool("general", "resample_to_48khz", true) ?  _t("yes", L"Yes") : _t("no", L"No"));
 		m_btnMgr.setText(m_configLbl2, _t("cfg714", L"Display music title"));
@@ -460,8 +388,6 @@ void CMenu::_showConfigMain(int curPage)
 		m_btnMgr.show(m_configBtn4);
 		m_btnMgr.setText(m_configLbl1, _t("cfg717", L"Random game boot or select"));
 		m_btnMgr.setText(m_configBtn1, m_cfg.getBool("GENERAL", "random_select") ? _t("select", L"Select") : _t("boot", L"Boot"));
-		//m_btnMgr.setText(m_configLbl2, _t("cfg718", L"Source Menu on start"));
-		//m_btnMgr.setText(m_configBtn2, m_cfg.getBool("GENERAL", "source_on_start") ? _t("yes", L"Yes") : _t("no", L"No"));
 		m_btnMgr.setText(m_configLbl2, _t("cfg725", L"Shutdown to idle standby"));
 		m_btnMgr.setText(m_configBtn2, m_cfg.getBool("general", "idle_standby", false) ? _t("yes", L"Yes") : _t("no", L"No"));
 		m_btnMgr.setText(m_configLbl3, _t("cfg720", L"Play GC banner sound"));
@@ -529,35 +455,31 @@ void CMenu::_configMain(void)
 	vector<string> themes;
 	string prevLanguage;
 	
-	//if(curPage == 2)
-	//{
-		string prevTheme = m_cfg.getString("GENERAL", "theme");
-		listThemes(m_themeDir.c_str(), themes);
-		for(u32 i = 0; i < themes.size(); ++i)
+	string prevTheme = m_cfg.getString("GENERAL", "theme");
+	listThemes(m_themeDir.c_str(), themes);
+	for(u32 i = 0; i < themes.size(); ++i)
+	{
+		if(themes[i] == prevTheme)
 		{
-			if(themes[i] == prevTheme)
-			{
-				curTheme = i;
-				break;
-			}
+			curTheme = i;
+			break;
 		}
-		
-		languages_available.clear();
-		languages_available.push_back("Default");
-		GetFiles(m_languagesDir.c_str(), stringToVector(".ini", '|'), AddLanguage, false, 0);
-		sort(languages_available.begin(), languages_available.end());
+	}
+	
+	languages_available.clear();
+	languages_available.push_back("Default");
+	GetFiles(m_languagesDir.c_str(), stringToVector(".ini", '|'), AddLanguage, false, 0);
+	sort(languages_available.begin(), languages_available.end());
 
-		for(u32 i = 0; i < languages_available.size(); ++i)
+	for(u32 i = 0; i < languages_available.size(); ++i)
+	{
+		if(m_curLanguage == languages_available[i])
 		{
-			if(m_curLanguage == languages_available[i])
-			{
-				curLanguage = i;
-				break;
-			}
+			curLanguage = i;
+			break;
 		}
-		prevLanguage = languages_available[curLanguage];
-	//}
-	//int change = CONFIG_PAGE_NO_CHANGE;
+	}
+	prevLanguage = languages_available[curLanguage];
 	_showConfigMain(curPage);
 	
 	while(!m_exit)
@@ -905,11 +827,6 @@ void CMenu::_configMain(void)
 			}
 			if(curPage == 10)
 			{
-				/*if(m_btnMgr.selected(m_configBtn1))
-				{
-					m_cfg.setBool("GENERAL", "cover_use_hq", !m_cfg.getBool("GENERAL", "cover_use_hq"));
-					m_btnMgr.setText(m_configBtn1, m_cfg.getBool("GENERAL", "cover_use_hq") ? _t("yes", L"Yes") : _t("no", L"No"));
-				}*/
 				if(m_btnMgr.selected(m_configBtn1))
 				{
 					bool val = !m_cfg.getBool("general", "resample_to_48khz");
@@ -946,11 +863,6 @@ void CMenu::_configMain(void)
 					m_cfg.setBool("GENERAL", "random_select", !m_cfg.getBool("GENERAL", "random_select"));
 					m_btnMgr.setText(m_configBtn1, m_cfg.getBool("GENERAL", "random_select") ? _t("select", L"Select") : _t("boot", L"Boot"));
 				}
-				/*else if(m_btnMgr.selected(m_configBtn2))
-				{
-					m_cfg.setBool("GENERAL", "source_on_start", !m_cfg.getBool("GENERAL", "source_on_start"));
-					m_btnMgr.setText(m_configBtn2, m_cfg.getBool("GENERAL", "source_on_start") ?  _t("yes", L"Yes") : _t("no", L"No"));
-				}*/
 				else if(m_btnMgr.selected(m_configBtn2))
 				{
 					bool val = !m_cfg.getBool("general", "idle_standby");
@@ -1070,7 +982,6 @@ void CMenu::_configMain(void)
 	if(!m_refreshGameList && (hq_covers != m_cfg.getBool("GENERAL", "cover_use_hq") || box_mode != m_cfg.getBool("general", "box_mode")))
 		_initCF();
 	_hideConfigMain();
-	//return change;
 }
 
 void CMenu::_initConfigMenu()
