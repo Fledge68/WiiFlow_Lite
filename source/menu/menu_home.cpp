@@ -108,7 +108,7 @@ bool CMenu::_Home(void)
 			else if(m_btnMgr.selected(m_homeBtnSettings))
 			{
 				_hideHome();
-				_config(1);
+				_configMain();
 				//if(m_refreshGameList)
 					break;
 				_showHome();

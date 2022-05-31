@@ -34,6 +34,7 @@
 
 using std::string;
 using std::vector;
+using std::min;
 
 class CMenu
 {
@@ -188,12 +189,12 @@ private:
 	//
 	TexData m_errorBg;
 	TexData m_configBg;
-	TexData m_config3Bg;
-	TexData m_configScreenBg;
-	TexData m_config4Bg;
-	TexData m_configAdvBg;
-	TexData m_configSndBg;
-	TexData m_config7Bg;
+	//TexData m_config3Bg;
+	//TexData m_configScreenBg;
+	//TexData m_config4Bg;
+	//TexData m_configAdvBg;
+	//TexData m_configSndBg;
+	//TexData m_config7Bg;
 	TexData m_cheatBg;
 	TexData m_downloadBg;
 	TexData m_gameinfoBg;
@@ -242,8 +243,35 @@ private:
 	s16 m_configBtnPageM;
 	s16 m_configBtnPageP;
 	s16 m_configBtnBack;
-	s16 m_configLblTitle;
+	s16 m_configLblTitle;	
+	s16 m_configLblUser[4];
 	
+	s16 m_configLbl1;
+	s16 m_configLbl2;
+	s16 m_configLbl3;
+	s16 m_configLbl4;
+
+	s16 m_configBtn1;
+	s16 m_configBtn2;
+	s16 m_configBtn3;
+	s16 m_configBtn4;
+
+	s16 m_configLbl1Val;
+	s16 m_configBtn1M;
+	s16 m_configBtn1P;
+
+	s16 m_configLbl2Val;
+	s16 m_configBtn2M;
+	s16 m_configBtn2P;
+
+	s16 m_configLbl3Val;
+	s16 m_configBtn3M;
+	s16 m_configBtn3P;
+
+	s16 m_configLbl4Val;
+	s16 m_configBtn4M;
+	s16 m_configBtn4P;
+/*	
 	s16 m_configLblDownload;
 	s16 m_configBtnDownload; 
 	s16 m_configLblParental;
@@ -253,7 +281,6 @@ private:
 	s16 m_configBtnPartition;
 	s16 m_configLblCfg4;
 	s16 m_configBtnCfg4;
-	s16 m_configLblUser[4];
 
 	s16 m_configAdvLblTheme;
 	s16 m_configAdvLblCurTheme;
@@ -350,7 +377,7 @@ private:
 	s16 m_config7Btn4M;
 	s16 m_config7Btn4P;
 	s16 m_config7LblUser[4];
-
+*/
 //Download menu
 	s16 m_downloadPrioVal;
 	enum CoverPrio
@@ -956,13 +983,13 @@ private:
 	void _initMainMenu();
 	void _initErrorMenu();
 	void _initConfigMenu();
-	void _initConfigAdvMenu();
-	void _initConfig3Menu();
-	void _initConfig4Menu();
-	void _initConfigSndMenu();
-	void _initConfigScreenMenu();
+	//void _initConfigAdvMenu();
+	//void _initConfig3Menu();
+	//void _initConfig4Menu();
+	//void _initConfigSndMenu();
+	//void _initConfigScreenMenu();
 	void _initConfigGCMenu();
-	void _initConfig7Menu();
+	//void _initConfig7Menu();
 	void _initPartitionsCfgMenu();
 	void _initGameMenu();
 	void _initDownloadMenu();
@@ -994,11 +1021,11 @@ private:
 	void _textCheatSettings(void);
 	void _textError(void);
 	void _textConfig(void);
-	void _textConfig3(void);
-	void _textConfigScreen(void);
-	void _textConfig4(void);
-	void _textConfigAdv(void);
-	void _textConfigSnd(void);
+	//void _textConfig3(void);
+	//void _textConfigScreen(void);
+	//void _textConfig4(void);
+	//void _textConfigAdv(void);
+	//void _textConfigSnd(void);
 	void _textConfigGC(void);
 	void _textPartitionsCfg(void);
 	void _textGame(void);
@@ -1022,16 +1049,16 @@ private:
 	void _hideCheatSettings(bool instant = false);
 	void _hideError(bool instant = false);
 	void _hideMain(bool instant = false);
-	void _hideConfigCommon(bool instant = false);
-	void _hideConfig(bool instant = false);
-	void _hideConfig3(bool instant = false);
-	void _hideConfigScreen(bool instant = false);
-	void _hideConfig4(bool instant = false);
-	void _hideConfigAdv(bool instant = false);
-	void _hideConfigSnd(bool instant = false);
+	//void _hideConfigCommon(bool instant = false);
+	void _hideConfigMain(bool instant = false);
+	//void _hideConfig3(bool instant = false);
+	//void _hideConfigScreen(bool instant = false);
+	//void _hideConfig4(bool instant = false);
+	//void _hideConfigAdv(bool instant = false);
+	//void _hideConfigSnd(bool instant = false);
 	void _hideConfigGC(bool instant = false);
 	void _hideConfigGCPage(bool instant = false);
-	void _hideConfig7(bool instant = false);
+	//void _hideConfig7(bool instant = false);
 	void _hidePartitionsCfg(bool instant = false);
 	void _hideGame(bool instant = false);
 	void _hideDownload(bool instant = false);
@@ -1061,16 +1088,16 @@ private:
 	//
 	void _showError(void);
 	void _showMain(void);
-	void _showConfigCommon(const TexData & bg, int page);
-	void _showConfig(void);
-	void _showConfig3(void);
-	void _showConfigScreen(void);
-	void _showConfig4(void);
-	void _showConfigAdv(void);
-	void _showConfigSnd(void);
+	//void _showConfigCommon(const TexData & bg, int page);
+	void _showConfigMain(int curPage);
+	//void _showConfig3(void);
+	//void _showConfigScreen(void);
+	//void _showConfig4(void);
+	//void _showConfigAdv(void);
+	//void _showConfigSnd(void);
 	void _showConfigGC(void);
 	void _showConfigGCPage(void);
-	void _showConfig7(int curPage);
+	//void _showConfig7(int curPage);
 	void _showPartitionsCfg(void);
 	void _showNandEmu(void);
 	void _showGame(void);
@@ -1119,16 +1146,18 @@ private:
 	void _setCFVersion(int version);
 	int _getCFVersion(void);
 	//
-	void _config(int page);
-	int _configCommon(void);
-	int _config1(void);
-	int _config3(void);
-	int _configScreen(void);
-	int _config4(void);
-	int _configAdv(void);
-	int _configSnd(void);
+	//void _config(void);
+	void _configMain(void);
+	//int _configCommon(void);
+	wstringEx _getChannelName(void);
+	//int _config1(void);
+	//int _config3(void);
+	//int _configScreen(void);
+	//int _config4(void);
+	//int _configAdv(void);
+	//int _configSnd(void);
 	void _configGC(void);
-	int _config7(int curPage);
+	//int _config7(int curPage);
 	void _partitionsCfg(void);
 	int _NandEmuCfg(void);
 	int _AutoExtractSave(string gameId);

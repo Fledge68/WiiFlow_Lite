@@ -146,7 +146,7 @@ bool CMenu::_gameinfo(void)
 				if(m_gameinfoLblControls[i] != -1)
 					m_btnMgr.hide(m_gameinfoLblControls[i], true);
 
-			// When showing synopsis, only show user labels 2 and 3
+			// When showing synopsis, only show user labels 3 thru 5. 1 and 2 are hidden.
 			for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblUser); ++i)
 				if(i < ARRAY_SIZE(m_gameinfoLblUser) / 2)
 					m_btnMgr.hide(m_gameinfoLblUser[i], true);
@@ -196,7 +196,7 @@ bool CMenu::_gameinfo(void)
 				if(m_gameinfoLblControls[i] != -1 && i < cnt_controls)
 					m_btnMgr.show(m_gameinfoLblControls[i]);
 
-			// When showing synopsis, only show user labels 2 and 3
+			// When showing synopsis, only show user labels 3 thru 5. 1 and 2 are hidden.
 			for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblUser); ++i)
 				if(i < ARRAY_SIZE(m_gameinfoLblUser) / 2)
 					m_btnMgr.show(m_gameinfoLblUser[i]);
@@ -292,7 +292,7 @@ void CMenu::_showGameInfo(void)
 		}
 	}
 
-	for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblUser); ++i)
+	for(u8 i = 0; i < ARRAY_SIZE(m_gameinfoLblUser); ++i)// show user labels 1 and 2.
 		if(i < ARRAY_SIZE(m_gameinfoLblUser) / 2)
 			m_btnMgr.show(m_gameinfoLblUser[i]);
 	
@@ -308,7 +308,7 @@ void CMenu::_showGameInfo(void)
 void CMenu::_initGameInfoMenu()
 {
 	TexData emptyTex;
-	_addUserLabels(m_gameinfoLblUser, 0, 1, "GAMEINFO");
+	_addUserLabels(m_gameinfoLblUser, 0, 1, "GAMEINFO");// 1 and 3 will be underneath everything.
 	_addUserLabels(m_gameinfoLblUser, 2, 1, "GAMEINFO");
 	
 	m_gameinfoBg = _texture("GAMEINFO/BG", "texture", theme.bg, false);
@@ -326,7 +326,7 @@ void CMenu::_initGameInfoMenu()
 	m_gameinfoLblCartDisk = _addLabel("GAMEINFO/CART", theme.txtFont, L"", 400, 320, 100, 100, theme.txtFontColor, 0, m_cart);
 	m_gameinfoLblRomInfo = _addLabel("GAMEINFO/ROMINFO", theme.txtFont, L"", 40, 80, 300, 300, theme.txtFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP);
 
-	_addUserLabels(m_gameinfoLblUser, 1, 1, "GAMEINFO");
+	_addUserLabels(m_gameinfoLblUser, 1, 1, "GAMEINFO");// 2, 4, and 5 will be above everything except for the things that follow below.
 	_addUserLabels(m_gameinfoLblUser, 3, 2, "GAMEINFO");
 
 	m_gameinfoLblTitle = _addLabel("GAMEINFO/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);

@@ -542,7 +542,7 @@ int CMenu::main(void)
 			{
 				// main menu global settings
 				_hideMain();
-				_config(1);
+				_configMain();
 				if(prevTheme != m_themeName)
 				{
 					// new theme - exit wiiflow and reload
@@ -615,6 +615,9 @@ int CMenu::main(void)
 				m_favorites = !m_favorites;
 				m_cfg.setBool(_domainFromView(), "favorites", m_favorites);
 				_initCF();
+				m_showtimer = 240;
+				m_btnMgr.setText(m_mainLblNotice, wfmt(_fmt("main7", L"Total Games: %i"), CoverFlow.size()));
+				m_btnMgr.show(m_mainLblNotice);
 			}
 			else if(!CoverFlow.empty() && CoverFlow.select())
 			{
@@ -1005,6 +1008,7 @@ void CMenu::_initMainMenu()
 	TexData texFavOffS;
 	TexData bgLQ;
 	TexData emptyTex;
+	TexData texUser1;
 
 	m_mainBg = _texture("MAIN/BG", "texture", theme.bg, false);
 	if(m_theme.loaded() && TexHandle.fromImageFile(bgLQ, fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString("MAIN/BG", "texture").c_str()), GX_TF_CMPR, 64, 64) == TE_OK)
@@ -1036,6 +1040,7 @@ void CMenu::_initMainMenu()
 	TexHandle.fromImageFile(texFavOnS, fmt("%s/gamefavons.png", m_imgsDir.c_str()));
 	TexHandle.fromImageFile(texFavOff, fmt("%s/gamefavoff.png", m_imgsDir.c_str()));
 	TexHandle.fromImageFile(texFavOffS, fmt("%s/gamefavoffs.png", m_imgsDir.c_str()));
+	TexHandle.fromImageFile(texUser1, fmt("%s/mainUser1.png", m_imgsDir.c_str()));
 
 	_addUserLabels(m_mainLblUser, ARRAY_SIZE(m_mainLblUser), "MAIN");
 

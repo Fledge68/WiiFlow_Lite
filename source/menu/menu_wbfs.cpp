@@ -431,6 +431,10 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						{
 							fsop_deleteFile(CF_Hdr->path);
 							upd_plgin = true;
+							const char *coverFolder = m_plugin.GetCoverFolderName(CF_Hdr->settings[0]);
+							const char *gameNameOrID = CoverFlow.getFilenameId(CF_Hdr);
+							//delete cached wfc but not cover png
+							fsop_deleteFile(fmt("%s/%s/%s.wfc", m_cacheDir.c_str(), coverFolder, gameNameOrID));
 						}
 						else if(CF_Hdr->type == TYPE_WII_GAME)
 						{
@@ -459,8 +463,13 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 							out = true;
 							break;
 						}
-						if(m_cfg.getBool("GENERAL", "delete_cover_and_game", false))
-							RemoveCover(CF_Hdr->id);
+						if(CF_Hdr->type != TYPE_PLUGIN)
+						{
+							if(m_cfg.getBool("GENERAL", "delete_cover_and_game", false))
+								RemoveCover(CF_Hdr->id);
+							else // always remove the cached wfc file
+								fsop_deleteFile(fmt("%s/%s.wfc", m_cacheDir.c_str(), CF_Hdr->id));
+						}
 						m_btnMgr.show(m_wbfsPBar);
 						m_btnMgr.setProgress(m_wbfsPBar, 0.f, true);
 						m_btnMgr.setProgress(m_wbfsPBar, 1.f);

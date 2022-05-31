@@ -490,7 +490,7 @@ void CMenu::cleanup()
 	CoverFlow.shutdown(); /* possibly plugin flow crash so cleanup early */
 	m_banner.DeleteBanner();
 	m_plugin.Cleanup();
-	m_source.unload();
+	m_source.save(true);
 	m_platform.unload();
 	m_loc.unload();
 	
@@ -1262,14 +1262,14 @@ void CMenu::_buildMenus(void)
 	_initErrorMenu();
 	_initWad();
 	_initWBFSMenu();
-	_initConfigAdvMenu();
-	_initConfigSndMenu();
-	_initConfig4Menu();
-	_initConfigScreenMenu();
-	_initConfig3Menu();
+	//_initConfigAdvMenu();
+	//_initConfigSndMenu();
+	//_initConfig4Menu();
+	//_initConfigScreenMenu();
+	//_initConfig3Menu();
 	_initConfigMenu();
 	_initConfigGCMenu();
-	_initConfig7Menu();
+	//_initConfig7Menu();
 	_initPartitionsCfgMenu();
 	_initGameMenu();
 	_initDownloadMenu();
@@ -1982,12 +1982,12 @@ void CMenu::_updateText(void)
 	_textPluginSettings();
 	_textCategorySettings();
 	_textCheatSettings();
-	_textConfig();
-	_textConfig3();
-	_textConfigScreen();
-	_textConfig4();
-	_textConfigAdv();
-	_textConfigSnd();
+	//_textConfig();
+	//_textConfig3();
+	//_textConfigScreen();
+	//_textConfig4();
+	//_textConfigAdv();
+	//_textConfigSnd();
 	_textConfigGC();
 	_textPartitionsCfg();
 	_textCfgHB();

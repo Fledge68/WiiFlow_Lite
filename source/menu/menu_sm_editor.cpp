@@ -417,56 +417,56 @@ void CMenu::_hideSM_Editor(bool instant)
 	m_btnMgr.hide(m_configLblTitle, instant);
 	m_btnMgr.hide(m_configBtnBack, instant);
 	
-	m_btnMgr.hide(m_config7Lbl1, instant);
-	m_btnMgr.hide(m_config7Btn1, instant);
-	m_btnMgr.hide(m_config7Lbl2, instant);
-	m_btnMgr.hide(m_config7Btn2, instant);
-	m_btnMgr.hide(m_config7Lbl3, instant);
-	m_btnMgr.hide(m_config7Btn3, instant);
-	//m_btnMgr.hide(m_config7Lbl4, instant);
-	//m_btnMgr.hide(m_config7Btn4, instant);
+	m_btnMgr.hide(m_configLbl1, instant);
+	m_btnMgr.hide(m_configBtn1, instant);
+	m_btnMgr.hide(m_configLbl2, instant);
+	m_btnMgr.hide(m_configBtn2, instant);
+	m_btnMgr.hide(m_configLbl3, instant);
+	m_btnMgr.hide(m_configBtn3, instant);
+	//m_btnMgr.hide(m_configLbl4, instant);
+	//m_btnMgr.hide(m_configBtn4, instant);
 	
-	for(u8 i = 0; i < ARRAY_SIZE(m_config7LblUser); ++i)
-		if(m_config7LblUser[i] != -1)
-			m_btnMgr.hide(m_config7LblUser[i], instant);
+	for(u8 i = 0; i < ARRAY_SIZE(m_configLblUser); ++i)
+		if(m_configLblUser[i] != -1)
+			m_btnMgr.hide(m_configLblUser[i], instant);
 }
 
 void CMenu::_showSM_Editor()
 {
-	m_btnMgr.hide(m_config7Lbl1, true);
-	m_btnMgr.hide(m_config7Btn1, true);
-	m_btnMgr.hide(m_config7Lbl2, true);
-	m_btnMgr.hide(m_config7Btn2, true);
-	m_btnMgr.hide(m_config7Lbl3, true);
-	m_btnMgr.hide(m_config7Btn3, true);
-	//m_btnMgr.hide(m_config7Lbl4, true);
-	//m_btnMgr.hide(m_config7Btn4, true);
+	m_btnMgr.hide(m_configLbl1, true);
+	m_btnMgr.hide(m_configBtn1, true);
+	m_btnMgr.hide(m_configLbl2, true);
+	m_btnMgr.hide(m_configBtn2, true);
+	m_btnMgr.hide(m_configLbl3, true);
+	m_btnMgr.hide(m_configBtn3, true);
+	//m_btnMgr.hide(m_configLbl4, true);
+	//m_btnMgr.hide(m_configBtn4, true);
 	
-	_setBg(m_config7Bg, m_config7Bg);
-	for(u32 i = 0; i < ARRAY_SIZE(m_config7LblUser); ++i)
-		if(m_config7LblUser[i] != -1)
-			m_btnMgr.show(m_config7LblUser[i]);
+	_setBg(m_configBg, m_configBg);
+	for(u32 i = 0; i < ARRAY_SIZE(m_configLblUser); ++i)
+		if(m_configLblUser[i] != -1)
+			m_btnMgr.show(m_configLblUser[i]);
 
 	m_btnMgr.show(m_configLblTitle);
 	m_btnMgr.show(m_configBtnBack);
 
-	m_btnMgr.show(m_config7Lbl1);
-	m_btnMgr.show(m_config7Btn1);
-	m_btnMgr.show(m_config7Lbl2);
-	m_btnMgr.show(m_config7Btn2);
-	m_btnMgr.show(m_config7Lbl3);
-	m_btnMgr.show(m_config7Btn3);
-	//m_btnMgr.show(m_config7Lbl4);
-	//m_btnMgr.show(m_config7Btn4);
+	m_btnMgr.show(m_configLbl1);
+	m_btnMgr.show(m_configBtn1);
+	m_btnMgr.show(m_configLbl2);
+	m_btnMgr.show(m_configBtn2);
+	m_btnMgr.show(m_configLbl3);
+	m_btnMgr.show(m_configBtn3);
+	//m_btnMgr.show(m_configLbl4);
+	//m_btnMgr.show(m_configBtn4);
 	
-	m_btnMgr.setText(m_config7Lbl1, _t("smedit5", L"Hide source buttons"));
-	m_btnMgr.setText(m_config7Btn1, _t("cfg14", L"Set"));
-	m_btnMgr.setText(m_config7Lbl2, _t("smedit6", L"Link source buttons to plugins"));
-	m_btnMgr.setText(m_config7Btn2, _t("cfg14", L"Set"));
-	m_btnMgr.setText(m_config7Lbl3, _t("smedit7", L"Set plugin ROMs path"));
-	m_btnMgr.setText(m_config7Btn3, _t("cfg14", L"Set"));
-	//m_btnMgr.setText(m_config7Lbl4, _t("smedit8", L"Sourceflow settings"));
-	//m_btnMgr.setText(m_config7Btn4, _t("cfg14", L"Set"));
+	m_btnMgr.setText(m_configLbl1, _t("smedit5", L"Hide source buttons"));
+	m_btnMgr.setText(m_configBtn1, _t("cfg14", L"Set"));
+	m_btnMgr.setText(m_configLbl2, _t("smedit6", L"Link source buttons to plugins"));
+	m_btnMgr.setText(m_configBtn2, _t("cfg14", L"Set"));
+	m_btnMgr.setText(m_configLbl3, _t("smedit7", L"Set plugin ROMs path"));
+	m_btnMgr.setText(m_configBtn3, _t("cfg14", L"Set"));
+	//m_btnMgr.setText(m_configLbl4, _t("smedit8", L"Sourceflow settings"));
+	//m_btnMgr.setText(m_configBtn4, _t("cfg14", L"Set"));
 }
 
 void CMenu::_SM_Editor()
@@ -487,25 +487,25 @@ void CMenu::_SM_Editor()
 			m_btnMgr.down();
 		if(BTN_A_PRESSED)
 		{
-			if(m_btnMgr.selected(m_config7Btn1))
+			if(m_btnMgr.selected(m_configBtn1))
 			{
 				_hideSM_Editor();
 				_checkboxesMenu(1);
 				_showSM_Editor();
 			}
-			else if(m_btnMgr.selected(m_config7Btn2))
+			else if(m_btnMgr.selected(m_configBtn2))
 			{
 				_hideSM_Editor();
 				_checkboxesMenu(2);
 				_showSM_Editor();
 			}
-			else if(m_btnMgr.selected(m_config7Btn3))
+			else if(m_btnMgr.selected(m_configBtn3))
 			{
 				_hideSM_Editor();
 				_checkboxesMenu(3);
 				_showSM_Editor();
 			}
-			/*else if(m_btnMgr.selected(m_config7Btn4))
+			/*else if(m_btnMgr.selected(m_configBtn4))
 			{
 				_hideSM_Editor();
 				_CfgSrc();

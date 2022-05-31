@@ -156,6 +156,8 @@ void CMenu::_setSrcFlow(int version)
 	m_cfg.setInt(SOURCEFLOW_DOMAIN, fn, curflow);
 	if(!sm_tier)
 		m_cfg.setInt(SOURCEFLOW_DOMAIN, "last_cf_mode", curflow);
+	if(m_source.has("general", "flow"))
+		m_source.setInt("general", "flow", curflow);// saved later when exiting or launching a game.
 }
 
 /* return back to previous tier or home base tier */
