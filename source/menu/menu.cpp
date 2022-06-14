@@ -2459,16 +2459,16 @@ bool CMenu::_loadChannelList(void)
 		m_cfg.setUInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_REAL);
 		chantypes = CHANNELS_REAL;
 	}
+	bool updateCache = m_cfg.getBool(CHANNEL_DOMAIN, "update_cache");
+	m_cfg.remove(CHANNEL_DOMAIN, "update_cache");
 	vector<string> NullVector;
 	if(chantypes & CHANNELS_REAL)
 	{
 		gprintf("Adding real nand list\n");
 		NANDemuView = false;
-		bool updateCache = m_cfg.getBool(CHANNEL_DOMAIN, "update_cache");
 		if(updateCache)
 			cacheCovers = true;// real nand channels list is not cached but covers may still need to be updated
 		m_cacheList.CreateList(COVERFLOW_CHANNEL, std::string(), NullVector, std::string(), false);
-		m_cfg.remove(CHANNEL_DOMAIN, "update_cache");
 		for(vector<dir_discHdr>::iterator tmp_itr = m_cacheList.begin(); tmp_itr != m_cacheList.end(); tmp_itr++)
 			m_gameList.push_back(*tmp_itr);
 	}
@@ -2481,10 +2481,8 @@ bool CMenu::_loadChannelList(void)
 			gprintf("Adding emu nand list\n");
 			currentPartition = emuPartition;
 			string cacheDir = fmt("%s/%s_channels.db", m_listCacheDir.c_str(), DeviceName[currentPartition]);
-			bool updateCache = m_cfg.getBool(CHANNEL_DOMAIN, "update_cache");
 			bool preCachedList = fsop_FileExist(cacheDir.c_str());
 			m_cacheList.CreateList(COVERFLOW_CHANNEL, std::string(), NullVector, cacheDir, updateCache);
-			m_cfg.remove(CHANNEL_DOMAIN, "update_cache");
 			for(vector<dir_discHdr>::iterator tmp_itr = m_cacheList.begin(); tmp_itr != m_cacheList.end(); tmp_itr++)
 				m_gameList.push_back(*tmp_itr);
 			if(updateCache || (!preCachedList && fsop_FileExist(cacheDir.c_str())))

@@ -927,6 +927,7 @@ private:
 	void _hideError(bool instant = false);
 	void _hideMain(bool instant = false);
 	void _hideConfigMain(bool instant = false);
+	void _hideConfigButtons(bool instant = false);
 	void _hideConfigGC(bool instant = false);
 	void _hideConfigGCPage(bool instant = false);
 	void _hidePartitionsCfg(bool instant = false);

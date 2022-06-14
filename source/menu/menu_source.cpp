@@ -43,7 +43,7 @@ void CMenu::_sourceFlow()
 	sm_numbers[sm_numbers.size() - 1] = std::to_string(hdr->settings[0]);// hdr->settings[0] is the number of the source menu button.
 	// create string of numbers to save in wiiflow_lite.ini.
 	numbers = sm_numbers[0];
-	for(u8 i = 1; i < sm_numbers.size(); i++)
+	for(i = 1; i < sm_numbers.size(); i++)
 		numbers.append(',' + sm_numbers[i]);
 	m_cfg.setString(SOURCEFLOW_DOMAIN, "numbers", numbers);
 
@@ -116,7 +116,7 @@ void CMenu::_sourceFlow()
 			}
 			trs = tiers[0];
 			numbers = sm_numbers[0];
-			for(u8 i = 1; i < tiers.size(); i++)
+			for(i = 1; i < tiers.size(); i++)
 			{
 				trs.append(',' + tiers[i]);
 				numbers.append(',' + sm_numbers[i]);
@@ -375,6 +375,7 @@ bool CMenu::_Source()
 	channels_type = m_cfg.getInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_REAL);
 	sm_numbers_backup = m_cfg.getString(SOURCEFLOW_DOMAIN, "numbers");//backup for possible restore later
 	sm_tiers_backup = m_cfg.getString(SOURCEFLOW_DOMAIN, "tiers");
+	u8 selected_button = 0;
 	
 	SetupInput();
 	_showSource();
@@ -458,7 +459,8 @@ bool CMenu::_Source()
 				if(m_btnMgr.selected(m_sourceBtnSource[i]))
 				{
 					memset(btn_selected, 0, 16);
-					strncpy(btn_selected, fmt("BUTTON_%i", nonHiddenSources[i + j]), 15);
+					selected_button = nonHiddenSources[i + j];
+					strncpy(btn_selected, fmt("BUTTON_%i", selected_button), 15);
 					source = m_source.getString(btn_selected, "source", "");
 					break;
 				}
@@ -535,7 +537,7 @@ bool CMenu::_Source()
 						}
 						string trs = tiers[0];
 						string numbers = sm_numbers[0];
-						for(u8 i = 1; i < tiers.size(); i++)
+						for(i = 1; i < tiers.size(); i++)
 						{
 							trs.append(',' + tiers[i]);
 							numbers.append(',' + sm_numbers[i]);
@@ -599,10 +601,9 @@ bool CMenu::_Source()
 		if(exitSource)// a new source has been chosen
 		{
 			// save source number for return
-			sm_numbers.pop_back();
-			sm_numbers.push_back(std::to_string(i + j));
+			sm_numbers[sm_numbers.size() - 1] = std::to_string(selected_button);
 			string numbers = sm_numbers[0];
-			for(u8 i = 1; i < sm_numbers.size(); i++)
+			for(i = 1; i < sm_numbers.size(); i++)
 				numbers.append(',' + sm_numbers[i]);
 			m_cfg.setString(SOURCEFLOW_DOMAIN, "numbers", numbers);
 			m_cfg.setUInt("GENERAL", "sources", m_current_view);

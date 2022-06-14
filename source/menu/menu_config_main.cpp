@@ -77,14 +77,8 @@ wstringEx CMenu::_getChannelName()
 	return channelName;
 }
 
-void CMenu::_hideConfigMain(bool instant)
+void CMenu::_hideConfigButtons(bool instant)
 {
-	m_btnMgr.hide(m_configLblTitle, instant);
-	m_btnMgr.hide(m_configBtnBack, instant);
-	m_btnMgr.hide(m_configLblPage, instant);
-	m_btnMgr.hide(m_configBtnPageM, instant);
-	m_btnMgr.hide(m_configBtnPageP, instant);
-	
 	m_btnMgr.hide(m_configLbl1, instant);
 	m_btnMgr.hide(m_configBtn1, instant);
 	m_btnMgr.hide(m_configLbl2, instant);
@@ -109,6 +103,17 @@ void CMenu::_hideConfigMain(bool instant)
 	m_btnMgr.hide(m_configLbl4Val, instant);
 	m_btnMgr.hide(m_configBtn4M, instant);
 	m_btnMgr.hide(m_configBtn4P, instant);
+}
+
+void CMenu::_hideConfigMain(bool instant)
+{
+	m_btnMgr.hide(m_configLblTitle, instant);
+	m_btnMgr.hide(m_configBtnBack, instant);
+	m_btnMgr.hide(m_configLblPage, instant);
+	m_btnMgr.hide(m_configBtnPageM, instant);
+	m_btnMgr.hide(m_configBtnPageP, instant);
+	
+	_hideConfigButtons(instant);
 
 	for(u8 i = 0; i < ARRAY_SIZE(m_configLblUser); ++i)
 		if(m_configLblUser[i] != -1)
