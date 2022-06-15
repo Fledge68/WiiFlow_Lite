@@ -331,12 +331,13 @@ void CMenu::_updateSourceBtns(void)
 		m_btnMgr.hide(m_sourceBtnPageP);
 	}
 
+	for(i = 0; i < 12; ++i)
+		m_btnMgr.hide(m_sourceBtnSource[i], true);
+	
 	j = (curPage - 1) * 12;
 	for(i = 0; i < 12; ++i)
 	{
-		if((i + j) >= nonHiddenSources.size())
-			m_btnMgr.hide(m_sourceBtnSource[i]);
-		else
+		if((i + j) < nonHiddenSources.size())
 		{
 			memset(current_btn, 0, 16);
 			strncpy(current_btn, fmt("BUTTON_%i", nonHiddenSources[i + j]), 15);
