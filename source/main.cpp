@@ -24,61 +24,9 @@
 
 bool isWiiVC = false;
 bool useMainIOS = true;
+bool sdOnly = false;
 volatile bool NANDemuView = false;
 volatile bool networkInit = false;
-
-/* quick check if we will be using a USB device. */
-/* if not then we can skip the 20 second cycle trying to connect a USB device. */
-/* this is nice for SD only users */
-bool isUsingUSB() {
-	if(isWiiVC)
-		return false;
-	/* First check if the app path exists on the SD card, if not then we're using USB */
-	struct stat dummy;
-	string appPath = fmt("%s:/%s", DeviceName[SD], APPS_DIR);
-	if(DeviceHandle.IsInserted(SD) && DeviceHandle.GetFSType(SD) != PART_FS_WBFS && stat(appPath.c_str(), &dummy) != 0)
-	{
-		// No app path exists on SD card, so assuming we're using USB.
-		return true;
-	}
-	
-	/* Check that the config file exists, or we can't do the following checks */
-	string configPath = fmt("%s/" CFG_FILENAME, appPath.c_str());
-	if(stat(configPath.c_str(), &dummy) != 0)
-	{
-		// The app path is on SD but no config file exists, so assuming we might need USB.
-		return true;
-	}
-	
-	/* Load the config file */
-	Config m_cfg;// = new Config();
-	if(!m_cfg.load(configPath.c_str())) 
-	{
-		// The app path is on SD and a config file exists, but we can't load it, so assuming we might need USB.
-		return true;
-	}
-	
-	/* If any of the sections have partition set > 0, we're on USB */
-	const char *domains[] = {WII_DOMAIN, GC_DOMAIN, CHANNEL_DOMAIN, PLUGIN_DOMAIN, HOMEBREW_DOMAIN};
-	for(int i = 0; i < 5; i++)
-	{
-		if(!m_cfg.getBool(domains[i], "disable", false) && m_cfg.getInt(domains[i], "partition", SD) != SD)
-		{
-			// a domain is enabled and partition is not SD, so assuming we're using USB.
-			return true;
-		}
-	}
-	
-	/* if sd_only is false, then we're using USB */
-	if(!m_cfg.getBool("general", "sd_only", true))
-	{
-		// sd_only is false, so assuming we're using USB.
-		return true;
-	}
-	
-	gprintf("using SD only, no need for USB mounting.\n");
-	return false;
-}
 
 int main(int argc, char **argv)
 {
@@ -93,7 +41,6 @@ int main(int argc, char **argv)
 	#endif
 
 	char *gameid = NULL;
-	bool showFlashImg = true;
 	bool wait_loop = false;
 	char wait_dir[256];
 	memset(&wait_dir, 0, sizeof(wait_dir));
@@ -114,8 +61,6 @@ int main(int argc, char **argv)
 		}
 		else if(strcasestr(argv[i], "Waitloop") != NULL)
 			wait_loop = true;
-		else if(strcasestr(argv[i], "noflash") != NULL)
-			showFlashImg = false;
 		else if(strlen(argv[i]) == 6)
 		{
 			gameid = argv[i];
@@ -129,9 +74,7 @@ int main(int argc, char **argv)
 	}
 	/* Init video */
 	m_vid.init();
-	if(showFlashImg && gameid == NULL)// dont show if autobooting a wii game.
-		m_vid.startImage();
-		
+
 	/* check if WiiVC */
 	WiiDRC_Init();
 	isWiiVC = WiiDRC_Inited();
@@ -196,8 +139,8 @@ int main(int argc, char **argv)
 	DeviceHandle.MountSD();// mount SD before calling isUsingUSB() duh!	
 
 	/* mount USB if needed */
-	DeviceHandle.SetMountUSB(isUsingUSB());
-	bool usb_mounted = DeviceHandle.MountAllUSB();// only mounts any USB if isUsingUSB()
+	DeviceHandle.SetMountUSB(!sdOnly && !isWiiVC);
+	bool usb_mounted = DeviceHandle.MountAllUSB();// only mounts any USB if !sdOnly
 	
 	/* init wait images and show wait animation */
 	if(gameid == NULL)// dont show if autobooting a wii game.

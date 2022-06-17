@@ -33,6 +33,7 @@ public:
 	void LoadSettings();
 	void SaveIOS();
 	void SavePort(u8 port);
+	void SaveSDOnly(bool sd_only);
 private:
 	void WriteFile(const char *file_name, u8 *content, u32 size);
 	s32 fd;

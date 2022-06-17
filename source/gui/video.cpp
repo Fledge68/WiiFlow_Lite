@@ -475,8 +475,6 @@ void CVideo::render(void)
 
 /* wait animation control */
 
-extern const u8 wfsplash_png[];
-
 extern const u8 wait_01_png[];
 extern const u8 wait_02_png[];
 extern const u8 wait_03_png[];
@@ -689,17 +687,6 @@ void CVideo::waitMessage(const TexData &tex)
 	GX_Position3f32((float)((640 - texWidth) / 2), (float)((480 + tex.height) / 2), 0.f);
 	GX_TexCoord2f32(0.f, 1.f);
 	GX_End();
-}
-
-/* draw and render startup splash screen */
-void CVideo::startImage(void)
-{
-	TexData splashTex;
-	TexHandle.fromPNG(splashTex, wfsplash_png);
-
-	waitMessage(splashTex);
-	render();
-	TexHandle.Cleanup(splashTex);
 }
 
 /* save screenshot */

@@ -87,6 +87,7 @@ void CMenu::_Boot(void)
 	bool prev_load = cur_load;
 	u8 prev_ios = cur_ios;
 	bool prev_sd = m_cfg.getBool("GENERAL", "sd_only");
+	bool cur_sd = prev_sd;
 	SetupInput();
 	_showBoot();
 
@@ -137,10 +138,15 @@ void CMenu::_Boot(void)
 			}
 			else if (m_btnMgr.selected(m_bootBtnSDOnly))
 			{
-				m_cfg.setBool("GENERAL", "sd_only", !m_cfg.getBool("GENERAL", "sd_only"));
-				m_btnMgr.setText(m_bootBtnSDOnly, m_cfg.getBool("GENERAL", "sd_only") ?  _t("yes", L"Yes") : _t("no", L"No"));
+				cur_sd = !cur_sd;
+				m_btnMgr.setText(m_bootBtnSDOnly, cur_sd ?  _t("yes", L"Yes") : _t("no", L"No"));
 			}
 		}
+	}
+	if(cur_sd != prev_sd)
+	{
+		InternalSave.SaveSDOnly(cur_sd);
+		m_cfg.setBool("GENERAL", "sd_only", cur_sd);// backwards compatibity
 	}
 	if(prev_load != cur_load || prev_ios != cur_ios)
 		InternalSave.SaveIOS();
@@ -148,7 +154,6 @@ void CMenu::_Boot(void)
 		InternalSave.SavePort(set_port);
 	_hideBoot();
 
-	bool cur_sd = m_cfg.getBool("GENERAL", "sd_only");
 	if(prev_load != cur_load || prev_ios != cur_ios || set_port != currentPort || prev_sd != cur_sd)
 	{
 		error(_t("errboot8", L"Press 'A' to reload WiiFlow"));

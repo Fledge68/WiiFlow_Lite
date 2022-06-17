@@ -187,7 +187,9 @@ bool CMenu::init(bool usb_mounted)
 	getProxyInfo();
 	
 	/* Set SD only to off if any usb device is attached */
-	m_cfg.getBool("GENERAL", "sd_only", usb_mounted ? false : true);// will only set it if this doesn't already exist - very first boot up
+	bool cfg_sdonly = m_cfg.getBool("GENERAL", "sd_only", usb_mounted ? false : true);// will only set it if this doesn't already exist - very first boot up
+	if(cfg_sdonly != sdOnly)// done for backwards compatibility with older wiiflow lite's
+		InternalSave.SaveSDOnly(cfg_sdonly);
 
 	/* set default wii games partition in case this is the first boot */
 	int wp = m_cfg.getInt(WII_DOMAIN, "partition", -1);
