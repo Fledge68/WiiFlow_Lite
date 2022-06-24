@@ -68,7 +68,8 @@ bool CMenu::_code(char code[4], bool erase)
 						if(m_btnMgr.selected(m_codeBtnKey[i]))
 						{
 							codeLbl[n * 2] = 'X';
-							code[n++] = '0' + i;
+							code[n] = '0' + i;
+							n++;
 							m_btnMgr.setText(m_codeLblTitle, codeLbl);
 							break;
 						}
@@ -92,7 +93,8 @@ bool CMenu::_code(char code[4], bool erase)
 			if(c != -1)
 			{
 				codeLbl[n * 2] = 'X';
-				code[n++] = '0' + c;
+				code[n] = '0' + c;
+				n++;
 				m_btnMgr.setText(m_codeLblTitle, codeLbl);
 			}
 		}

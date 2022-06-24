@@ -2,23 +2,11 @@
 #include "menu.hpp"
 #include "channel/nand_save.hpp"
 
+TexData m_bootBg;
+
 s16 m_bootLblTitle;
 s16 m_bootBtnBack;
 s16 m_bootLblUser[4];
-
-s16 m_bootLblLoadCIOS;
-s16 m_bootBtnLoadCIOS;
-
-s16 m_bootLblCIOSrev;
-s16 m_bootLblCurCIOSrev;
-s16 m_bootLblCIOSrevM;
-s16 m_bootLblCIOSrevP;
-
-s16 m_bootLblUSBPort;
-s16 m_bootBtnUSBPort;
-
-s16 m_bootLblSDOnly;
-s16 m_bootBtnSDOnly;
 
 u8 set_port = 0;
 
@@ -30,50 +18,44 @@ void CMenu::_hideBoot(bool instant)
 		if(m_bootLblUser[i] != -1)
 			m_btnMgr.hide(m_bootLblUser[i], instant);
 				
-	m_btnMgr.hide(m_bootLblLoadCIOS, instant);
-	m_btnMgr.hide(m_bootBtnLoadCIOS, instant);
-
-	m_btnMgr.hide(m_bootLblCIOSrev, instant);
-	m_btnMgr.hide(m_bootLblCurCIOSrev, instant);
-	m_btnMgr.hide(m_bootLblCIOSrevM, instant);
-	m_btnMgr.hide(m_bootLblCIOSrevP, instant);
-
-	m_btnMgr.hide(m_bootLblUSBPort, instant);
-	m_btnMgr.hide(m_bootBtnUSBPort, instant);
-	
-	m_btnMgr.hide(m_bootLblSDOnly, instant);
-	m_btnMgr.hide(m_bootBtnSDOnly, instant);
+	_hideConfigButtons(instant);
 }
 
 void CMenu::_showBoot()
 {
+	_setBg(m_bootBg, m_bootBg);
 	m_btnMgr.show(m_bootLblTitle);
 	m_btnMgr.show(m_bootBtnBack);
 	for(u8 i = 0; i < ARRAY_SIZE(m_bootLblUser); ++i)
 		if(m_bootLblUser[i] != -1)
 			m_btnMgr.show(m_bootLblUser[i]);
 
-	m_btnMgr.setText(m_bootBtnLoadCIOS, _optBoolToString(cur_load));
-	m_btnMgr.setText(m_bootBtnUSBPort, wfmt(L"%i", set_port));
+	m_btnMgr.setText(m_configLbl1, _t("cfgbt2", L"Force Load cIOS"));
+	m_btnMgr.setText(m_configLbl2, _t("cfgbt3", L"Force cIOS Revision"));
+	m_btnMgr.setText(m_configLbl3, _t("cfgbt4", L"USB Port"));
+	m_btnMgr.setText(m_configLbl4, _t("cfg719", L"Mount SD only"));
+
+	m_btnMgr.setText(m_configBtn1, _optBoolToString(cur_load));
 	if(cur_ios > 0)
-		m_btnMgr.setText(m_bootLblCurCIOSrev, wfmt(L"%i", cur_ios));
+		m_btnMgr.setText(m_configLbl2Val, wfmt(L"%i", cur_ios));
 	else
-		m_btnMgr.setText(m_bootLblCurCIOSrev, L"AUTO");// cIOS 249 unless the user changed it via the meta.xml
-	
-	m_btnMgr.show(m_bootLblLoadCIOS);
-	m_btnMgr.show(m_bootBtnLoadCIOS);
+		m_btnMgr.setText(m_configLbl2Val, L"AUTO");// cIOS 249 unless the user changed it via the meta.xml
+	m_btnMgr.setText(m_configBtn3, wfmt(L"%i", set_port));
+	m_btnMgr.setText(m_configBtn4, m_cfg.getBool("GENERAL", "sd_only") ? _t("yes", L"Yes") : _t("no", L"No"));
 
-	m_btnMgr.show(m_bootLblCIOSrev);
-	m_btnMgr.show(m_bootLblCurCIOSrev);
-	m_btnMgr.show(m_bootLblCIOSrevM);
-	m_btnMgr.show(m_bootLblCIOSrevP);
+	m_btnMgr.show(m_configLbl1);
+	m_btnMgr.show(m_configBtn1);
 
-	m_btnMgr.show(m_bootLblUSBPort);
-	m_btnMgr.show(m_bootBtnUSBPort);
+	m_btnMgr.show(m_configLbl2);
+	m_btnMgr.show(m_configLbl2Val);
+	m_btnMgr.show(m_configBtn2M);
+	m_btnMgr.show(m_configBtn2P);
 
-	m_btnMgr.setText(m_bootBtnSDOnly, m_cfg.getBool("GENERAL", "sd_only") ? _t("yes", L"Yes") : _t("no", L"No"));
-	m_btnMgr.show(m_bootLblSDOnly);
-	m_btnMgr.show(m_bootBtnSDOnly);
+	m_btnMgr.show(m_configLbl3);
+	m_btnMgr.show(m_configBtn3);
+
+	m_btnMgr.show(m_configLbl4);
+	m_btnMgr.show(m_configBtn4);
 }
 
 void CMenu::_Boot(void)
@@ -104,14 +86,14 @@ void CMenu::_Boot(void)
 		{
 			if(m_btnMgr.selected(m_bootBtnBack))
 				break;
-			else if(m_btnMgr.selected(m_bootBtnLoadCIOS))
+			else if(m_btnMgr.selected(m_configBtn1))
 			{
 				cur_load = !cur_load;
-				m_btnMgr.setText(m_bootBtnLoadCIOS, _optBoolToString(cur_load));
+				m_btnMgr.setText(m_configBtn1, _optBoolToString(cur_load));
 			}
-			else if(m_btnMgr.selected(m_bootLblCIOSrevM) || m_btnMgr.selected(m_bootLblCIOSrevP))
+			else if(m_btnMgr.selected(m_configBtn2M) || m_btnMgr.selected(m_configBtn2P))
 			{
-				bool increase = m_btnMgr.selected(m_bootLblCIOSrevP);
+				bool increase = m_btnMgr.selected(m_configBtn2P);
 				CIOSItr itr = _installed_cios.find(cur_ios);
 				if(increase)
 				{
@@ -127,19 +109,19 @@ void CMenu::_Boot(void)
 				}
 				cur_ios = itr->first;
 				if(cur_ios > 0)
-					m_btnMgr.setText(m_bootLblCurCIOSrev, wfmt(L"%i", cur_ios));
+					m_btnMgr.setText(m_configLbl2Val, wfmt(L"%i", cur_ios));
 				else
-					m_btnMgr.setText(m_bootLblCurCIOSrev, L"AUTO");
+					m_btnMgr.setText(m_configLbl2Val, L"AUTO");
 			}
-			else if(m_btnMgr.selected(m_bootBtnUSBPort))
+			else if(m_btnMgr.selected(m_configBtn3))
 			{
 				set_port = !set_port;
-				m_btnMgr.setText(m_bootBtnUSBPort, wfmt(L"%i", set_port));
+				m_btnMgr.setText(m_configBtn3, wfmt(L"%i", set_port));
 			}
-			else if (m_btnMgr.selected(m_bootBtnSDOnly))
+			else if (m_btnMgr.selected(m_configBtn4))
 			{
 				cur_sd = !cur_sd;
-				m_btnMgr.setText(m_bootBtnSDOnly, cur_sd ?  _t("yes", L"Yes") : _t("no", L"No"));
+				m_btnMgr.setText(m_configBtn4, cur_sd ?  _t("yes", L"Yes") : _t("no", L"No"));
 			}
 		}
 	}
@@ -164,40 +146,14 @@ void CMenu::_Boot(void)
 
 void CMenu::_initBoot(void)
 {
+	m_bootBg = _texture("BOOT/BG", "texture", theme.bg, false);
+	
 	_addUserLabels(m_bootLblUser, ARRAY_SIZE(m_bootLblUser), "BOOT");
 	m_bootLblTitle = _addLabel("BOOT/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
 	m_bootBtnBack = _addButton("BOOT/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
 	
-	m_bootLblLoadCIOS = _addLabel("BOOT/LOAD_CIOS", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_bootBtnLoadCIOS = _addButton("BOOT/LOAD_CIOS_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
-
-	m_bootLblCIOSrev = _addLabel("BOOT/CIOS_REV", theme.lblFont, L"", 20, 185, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_bootLblCurCIOSrev = _addLabel("BOOT/CIOS_REV_BTN", theme.btnFont, L"", 468, 190, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
-	m_bootLblCIOSrevM = _addPicButton("BOOT/CIOS_REV_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 420, 190, 48, 48);
-	m_bootLblCIOSrevP = _addPicButton("BOOT/CIOS_REV_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 572, 190, 48, 48);
-
-	m_bootLblUSBPort = _addLabel("BOOT/USB_PORT", theme.lblFont, L"", 20, 245, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_bootBtnUSBPort = _addButton("BOOT/USB_PORT_BTN", theme.btnFont, L"", 420, 250, 200, 48, theme.btnFontColor);
-	
-	m_bootLblSDOnly = _addLabel("BOOT/SD_ONLY", theme.lblFont, L"", 20, 305, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_bootBtnSDOnly = _addButton("BOOT/SD_ONLY_BTN", theme.btnFont, L"", 420, 310, 200, 48, theme.btnFontColor);
-
 	_setHideAnim(m_bootLblTitle, "BOOT/TITLE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_bootBtnBack, "BOOT/BACK_BTN", 0, 0, 1.f, -1.f);
-
-	_setHideAnim(m_bootLblLoadCIOS, "BOOT/LOAD_CIOS", 50, 0, -2.f, 0.f);
-	_setHideAnim(m_bootBtnLoadCIOS, "BOOT/LOAD_CIOS_BTN", -50, 0, 1.f, 0.f);
-
-	_setHideAnim(m_bootLblCIOSrev, "BOOT/CIOS_REV", 50, 0, -2.f, 0.f);
-	_setHideAnim(m_bootLblCurCIOSrev, "BOOT/CIOS_REV_BTN", -50, 0, 1.f, 0.f);
-	_setHideAnim(m_bootLblCIOSrevM, "BOOT/CIOS_REV_MINUS", -50, 0, 1.f, 0.f);
-	_setHideAnim(m_bootLblCIOSrevP, "BOOT/CIOS_REV_PLUS", -50, 0, 1.f, 0.f);
-
-	_setHideAnim(m_bootLblUSBPort, "BOOT/USB_PORT", 50, 0, -2.f, 0.f);
-	_setHideAnim(m_bootBtnUSBPort, "BOOT/USB_PORT_BTN", -50, 0, 1.f, 0.f);
-
-	_setHideAnim(m_bootLblSDOnly, "BOOT/SD_ONLY", 50, 0, -2.f, 0.f);
-	_setHideAnim(m_bootBtnSDOnly, "BOOT/SD_ONLY_BTN", -50, 0, 1.f, 0.f);
 	
 	_hideBoot(true);
 	_textBoot();
@@ -206,9 +162,5 @@ void CMenu::_initBoot(void)
 void CMenu::_textBoot(void)
 {
 	m_btnMgr.setText(m_bootLblTitle, _t("cfgbt1", L"Startup Settings"));
-	m_btnMgr.setText(m_bootLblLoadCIOS, _t("cfgbt2", L"Force Load cIOS"));
-	m_btnMgr.setText(m_bootLblCIOSrev, _t("cfgbt3", L"Force cIOS Revision"));
-	m_btnMgr.setText(m_bootLblUSBPort, _t("cfgbt4", L"USB Port"));
-	m_btnMgr.setText(m_bootLblSDOnly, _t("cfg719", L"Mount SD only"));
 	m_btnMgr.setText(m_bootBtnBack, _t("cfg10", L"Back"));
 }

@@ -11,8 +11,6 @@ s16 m_configGCLblPage;
 s16 m_configGCBtnPageM;
 s16 m_configGCBtnPageP;
 
-static int curPage;
-
 template <class T> static inline T loopNum(T i, T s)
 {
 	return (i + s) % s;
@@ -21,18 +19,19 @@ template <class T> static inline T loopNum(T i, T s)
 void CMenu::_hideConfigGC(bool instant)
 {
 	m_btnMgr.hide(m_configGCLblTitle, instant);
+	m_btnMgr.hide(m_configGCBtnBack, instant);
 	m_btnMgr.hide(m_configGCLblPage, instant);
 	m_btnMgr.hide(m_configGCBtnPageM, instant);
 	m_btnMgr.hide(m_configGCBtnPageP, instant);
-	m_btnMgr.hide(m_configGCBtnBack, instant);
 	for(u8 i = 0; i < ARRAY_SIZE(m_configGCLblUser); ++i)
 		if(m_configGCLblUser[i] != -1)
 			m_btnMgr.hide(m_configGCLblUser[i], instant);
 	_hideConfigButtons(instant);
 }
 
-void CMenu::_showConfigGC(void)
+void CMenu::_showConfigGC(int curPage)
 {
+	_setBg(m_configGCBg, m_configGCBg);
 	m_btnMgr.show(m_configGCLblTitle);
 	m_btnMgr.show(m_configGCBtnBack);
 	for(u8 i = 0; i < ARRAY_SIZE(m_configGCLblUser); ++i)
@@ -42,13 +41,9 @@ void CMenu::_showConfigGC(void)
 	m_btnMgr.show(m_configGCLblPage);
 	m_btnMgr.show(m_configGCBtnPageM);
 	m_btnMgr.show(m_configGCBtnPageP);
-	_showConfigGCPage();
-}
-
-void CMenu::_showConfigGCPage(void)
-{
-	_hideConfigButtons(true);
 	m_btnMgr.setText(m_configGCLblPage, wfmt(L"%i / %i", curPage, 2));
+
+	_hideConfigButtons(true);
 
 	int i;
 	if(curPage == 1)
@@ -108,10 +103,9 @@ void CMenu::_configGC(void)
 {
 	int i;
 	bool j;
-	curPage = 1;
+	int curPage = 1;
 	SetupInput();
-	_setBg(m_configGCBg, m_configGCBg);
-	_showConfigGC();
+	_showConfigGC(curPage);
 	while(!m_exit)
 	{
 		_mainLoopCommon();
@@ -128,7 +122,7 @@ void CMenu::_configGC(void)
 				curPage = 2;
 			if(!BTN_A_PRESSED)
 				m_btnMgr.click(m_configGCBtnPageM);
-			_showConfigGCPage();
+			_showConfigGC(curPage);
 		}
 		else if(BTN_RIGHT_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_configGCBtnPageP)))
 		{
@@ -137,7 +131,7 @@ void CMenu::_configGC(void)
 				curPage = 1;
 			if(!BTN_A_PRESSED)
 				m_btnMgr.click(m_configGCBtnPageP);
-			_showConfigGCPage();
+			_showConfigGC(curPage);
 		}
 		else if(BTN_A_PRESSED)
 		{

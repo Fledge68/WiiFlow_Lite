@@ -49,33 +49,14 @@ void listThemes(const char * path, vector<string> &themes)
 /* page 4 stuff */
 Config custom_titles;
 int currentChannelIndex = -1;
-int amountOfChannels = -1;
+int amountOfChannels = 0;
+wstringEx channelName;
 
 const CMenu::SOption CMenu::_exitTo[3] = {
 	{ "menu", L"System Menu" },
 	{ "hbc", L"HBC" },
 	{ "wiiu", L"Wii U Menu" },
 };
-
-wstringEx CMenu::_getChannelName()
-{
-	wstringEx channelName = m_loc.getWString(m_curLanguage, "disabled", L"Disabled");
-	const string &currentChanId = m_cfg.getString("GENERAL", "returnto");
-	currentChannelIndex = -1;
-	if(!currentChanId.empty())
-	{
-		for(int i = 0; i < amountOfChannels; i++)
-		{
-			if(strncmp(currentChanId.c_str(), ChannelHandle.GetId(i), 4) == 0)
-			{
-				channelName = custom_titles.getWString("TITLES", currentChanId, ChannelHandle.GetName(i));
-				currentChannelIndex = i;
-				break;
-			}
-		}
-	}
-	return channelName;
-}
 
 void CMenu::_hideConfigButtons(bool instant)
 {
@@ -112,57 +93,29 @@ void CMenu::_hideConfigMain(bool instant)
 	m_btnMgr.hide(m_configLblPage, instant);
 	m_btnMgr.hide(m_configBtnPageM, instant);
 	m_btnMgr.hide(m_configBtnPageP, instant);
-	
-	_hideConfigButtons(instant);
-
 	for(u8 i = 0; i < ARRAY_SIZE(m_configLblUser); ++i)
 		if(m_configLblUser[i] != -1)
 			m_btnMgr.hide(m_configLblUser[i], instant);
+	
+	_hideConfigButtons(instant);
 }
 
 void CMenu::_showConfigMain(int curPage)
 {
-	_setBg(m_configBg,m_configBg);
+	_setBg(m_configBg, m_configBg);
 	m_btnMgr.show(m_configLblTitle);
 	m_btnMgr.show(m_configBtnBack);
+	for(u8 i = 0; i < ARRAY_SIZE(m_configLblUser); ++i)
+		if(m_configLblUser[i] != -1)
+			m_btnMgr.show(m_configLblUser[i]);
+
 	m_btnMgr.show(m_configLblPage);
 	m_btnMgr.show(m_configBtnPageM);
 	m_btnMgr.show(m_configBtnPageP);
 	m_btnMgr.setText(m_configLblPage, wfmt(L"%i / %i", curPage, m_locked ? curPage : _nbCfgPages));
-	m_btnMgr.setText(m_configLblTitle, _t("cfg1", L"Settings"));
-	m_btnMgr.setText(m_configBtnBack, _t("cfg10", L"Back"));
 	
-	m_btnMgr.hide(m_configLbl1, true);
-	m_btnMgr.hide(m_configBtn1, true);
-	m_btnMgr.hide(m_configLbl2, true);
-	m_btnMgr.hide(m_configBtn2, true);
-	m_btnMgr.hide(m_configLbl3, true);
-	m_btnMgr.hide(m_configBtn3, true);
-	m_btnMgr.hide(m_configLbl4, true);
-	m_btnMgr.hide(m_configBtn4, true);
-
-	m_btnMgr.hide(m_configLbl1Val, true);
-	m_btnMgr.hide(m_configBtn1M, true);
-	m_btnMgr.hide(m_configBtn1P, true);
-
-	m_btnMgr.hide(m_configLbl2Val, true);
-	m_btnMgr.hide(m_configBtn2M, true);
-	m_btnMgr.hide(m_configBtn2P, true);
-
-	m_btnMgr.hide(m_configLbl3Val, true);
-	m_btnMgr.hide(m_configBtn3M, true);
-	m_btnMgr.hide(m_configBtn3P, true);
-
-	m_btnMgr.hide(m_configLbl4Val, true);
-	m_btnMgr.hide(m_configBtn4M, true);
-	m_btnMgr.hide(m_configBtn4P, true);
+	_hideConfigButtons(true);
 	
-	_setBg(m_configBg, m_configBg);
-
-	for(u32 i = 0; i < ARRAY_SIZE(m_configLblUser); ++i)
-		if(m_configLblUser[i] != -1)
-			m_btnMgr.show(m_configLblUser[i]);
-
 	m_btnMgr.show(m_configLbl2);
 	if(!m_locked)
 	{
@@ -271,7 +224,22 @@ void CMenu::_showConfigMain(int curPage)
 		ChannelHandle.Init(m_loc.getString(m_curLanguage, "gametdb_code", "EN"));
 		NANDemuView = prevNANDemuView;
 		amountOfChannels = ChannelHandle.Count();
-		m_btnMgr.setText(m_configLbl4Val, _getChannelName());
+		channelName = m_loc.getWString(m_curLanguage, "disabled", L"Disabled");
+		currentChannelIndex = -1;
+		const string &currentChanId = m_cfg.getString("GENERAL", "returnto");
+		if(!currentChanId.empty())
+		{
+			for(int i = 0; i < amountOfChannels; i++)
+			{
+				if(strncmp(currentChanId.c_str(), ChannelHandle.GetId(i), 4) == 0)
+				{
+					channelName = custom_titles.getWString("TITLES", currentChanId, ChannelHandle.GetName(i));
+					currentChannelIndex = i;
+					break;
+				}
+			}
+		}
+		m_btnMgr.setText(m_configLbl4Val, channelName);
 	}
 	else if(curPage == 5)
 	{
@@ -658,21 +626,36 @@ void CMenu::_configMain(void)
 				}
 				else if(m_btnMgr.selected(m_configBtn4P))
 				{
-					if(currentChannelIndex >= (amountOfChannels - 1))
+					if(currentChannelIndex == (amountOfChannels - 1))
+					{
+						currentChannelIndex = -1;
 						m_cfg.remove("GENERAL", "returnto");
+						channelName = m_loc.getWString(m_curLanguage, "disabled", L"Disabled");
+					}
 					else
-						m_cfg.setString("GENERAL", "returnto", ChannelHandle.GetId(currentChannelIndex + 1));
-					m_btnMgr.setText(m_configLbl4Val, _getChannelName());
+					{
+						currentChannelIndex++;
+						m_cfg.setString("GENERAL", "returnto", ChannelHandle.GetId(currentChannelIndex));
+						channelName = custom_titles.getWString("TITLES", m_cfg.getString("GENERAL", "returnto"), ChannelHandle.GetName(currentChannelIndex));
+					}
+					m_btnMgr.setText(m_configLbl4Val, channelName);
 				}
 				else if(m_btnMgr.selected(m_configBtn4M))
 				{
-					if(currentChannelIndex == -1)
-						currentChannelIndex = amountOfChannels;
-					if((currentChannelIndex - 1) == -1)
-						m_cfg.remove("GENERAL", "returnto");
+					currentChannelIndex--;
+					if(currentChannelIndex == -2)
+						currentChannelIndex = amountOfChannels - 1;
+					if(currentChannelIndex >= 0)
+					{
+						m_cfg.setString("GENERAL", "returnto", ChannelHandle.GetId(currentChannelIndex));
+						channelName = custom_titles.getWString("TITLES", m_cfg.getString("GENERAL", "returnto"), ChannelHandle.GetName(currentChannelIndex));
+					}
 					else
-						m_cfg.setString("GENERAL", "returnto", ChannelHandle.GetId(currentChannelIndex - 1));
-					m_btnMgr.setText(m_configLbl4Val, _getChannelName());
+					{
+						m_cfg.remove("GENERAL", "returnto");
+						channelName = m_loc.getWString(m_curLanguage, "disabled", L"Disabled");
+					}
+					m_btnMgr.setText(m_configLbl4Val, channelName);
 				}
 			}
 			if(curPage == 5)
@@ -892,7 +875,7 @@ void CMenu::_configMain(void)
 				if(m_btnMgr.selected(m_configBtn1))
 				{
 					_hideConfigMain();
-					_CfgHB();
+					_ConfigHB();
 					_showConfigMain(12);
 				}
 				else if(m_btnMgr.selected(m_configBtn2))
@@ -991,13 +974,14 @@ void CMenu::_configMain(void)
 
 void CMenu::_initConfigMenu()
 {
-	_addUserLabels(m_configLblUser, ARRAY_SIZE(m_configLblUser), "CONFIG");
 	m_configBg = _texture("CONFIG/BG", "texture", theme.bg, false);
+
+	_addUserLabels(m_configLblUser, ARRAY_SIZE(m_configLblUser), "CONFIG");
 	m_configLblTitle = _addLabel("CONFIG/TITLE", theme.titleFont, L"", 0, 10, 640, 60, theme.titleFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE);
+	m_configBtnBack = _addButton("CONFIG/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
 	m_configLblPage = _addLabel("CONFIG/PAGE_BTN", theme.btnFont, L"", 68, 400, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_configBtnPageM = _addPicButton("CONFIG/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 20, 400, 48, 48);
 	m_configBtnPageP = _addPicButton("CONFIG/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 172, 400, 48, 48);
-	m_configBtnBack = _addButton("CONFIG/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
 	
 	m_configLbl1 = _addLabel("CONFIG/LINE1", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	m_configBtn1 = _addButton("CONFIG/LINE1_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
@@ -1050,10 +1034,11 @@ void CMenu::_initConfigMenu()
 	_setHideAnim(m_configBtnPageP, "CONFIG/PAGE_PLUS", 0, 0, 1.f, -1.f);
 
 	_hideConfigMain(true);
+	_textConfig();
 }
 
-/*
 void CMenu::_textConfig(void)
 {
+	m_btnMgr.setText(m_configLblTitle, _t("cfg1", L"Settings"));
+	m_btnMgr.setText(m_configBtnBack, _t("cfg10", L"Back"));
 }
-*/

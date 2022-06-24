@@ -883,7 +883,7 @@ private:
 	void _initCheatSettingsMenu();
 	void _initSourceMenu();
 	void _initCfgSrc();
-	void _initCfgHB();
+	void _initConfigHB();
 	void _initPluginSettingsMenu();
 	void _initCategorySettingsMenu();
 	void _initGameInfoMenu();
@@ -897,7 +897,7 @@ private:
 	//
 	void _textSource(void);
 	void _textCfgSrc(void);
-	void _textCfgHB(void);
+	void _textConfigHB(void);
 	void _textPluginSettings(void);
 	void _textCategorySettings(void);
 	void _textCheatSettings(void);
@@ -926,17 +926,17 @@ private:
 	void _hideCheatSettings(bool instant = false);
 	void _hideError(bool instant = false);
 	void _hideMain(bool instant = false);
-	void _hideConfigMain(bool instant = false);
+	void _hideConfigMain(bool instant = true);
 	void _hideConfigButtons(bool instant = false);
-	void _hideConfigGC(bool instant = false);
-	void _hideConfigGCPage(bool instant = false);
+	void _hideConfigGC(bool instant = true);
+	void _hideConfigHB(bool instant = true);
 	void _hidePartitionsCfg(bool instant = false);
 	void _hideGame(bool instant = false);
 	void _hideDownload(bool instant = false);
 	void _hideSettings(bool instant = false);
 	void _hideCode(bool instant = false);
 	void _hideAbout(bool instant = false);
-	void _hideBoot(bool instant = false);
+	void _hideBoot(bool instant = true);
 	void _hideWBFS(bool instant = false);
 	void _hideCFTheme(bool instant = false);
 	void _hideGameSettings(bool instant = false);
@@ -960,8 +960,8 @@ private:
 	void _showError(void);
 	void _showMain(void);
 	void _showConfigMain(int curPage);
-	void _showConfigGC(void);
-	void _showConfigGCPage(void);
+	void _showConfigGC(int curPage);
+	void _showConfigHB(void);
 	void _showPartitionsCfg(void);
 	void _showNandEmu(void);
 	void _showGame(void);
@@ -1011,19 +1011,11 @@ private:
 	int _getCFVersion(void);
 	//
 	void _configMain(void);
-	wstringEx _getChannelName(void);
 	void _configGC(void);
 	void _partitionsCfg(void);
 	int _NandEmuCfg(void);
 	int _AutoExtractSave(string gameId);
 	int _FlashSave(string gameId);
-	enum configPageChanges
-	{
-		CONFIG_PAGE_DEC = -1,
-		CONFIG_PAGE_NO_CHANGE = 0,
-		CONFIG_PAGE_INC = 1,
-		CONFIG_PAGE_BACK,
-	};
 	void _game(bool launch = false);
 	void _downloadUrl(const char *url, u8 **dl_file, u32 *dl_size);
 	void _download(string gameId = string(), int dl_type = 0);
@@ -1043,7 +1035,7 @@ private:
 	void _CheatSettings();
 	bool _Source();
 	void _CfgSrc();
-	void _CfgHB();
+	void _ConfigHB();
 	void _PluginSettings();
 	void _checkboxesMenu(u8 md);
 	void _SM_Editor();
