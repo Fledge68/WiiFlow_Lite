@@ -906,7 +906,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	/* load external booter bins */
 	if(ExternalBooter_LoadBins(m_binsDir.c_str()) == false)
 	{
-		error(_t("errgame15", L"Missing ext_loader.bin or ext_booter.bin!"));
+		error(_t("errgame16", L"Missing ext_loader.bin or ext_booter.bin!"));
 		return;
 	}
 
@@ -1206,7 +1206,7 @@ void CMenu::_launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 	/* load external booter bin files */
 	if(ExternalBooter_LoadBins(m_binsDir.c_str()) == false)
 	{
-		error(_t("errgame15", L"Missing ext_loader.bin or ext_booter.bin!"));
+		error(_t("errgame16", L"Missing ext_loader.bin or ext_booter.bin!"));
 		return;
 	}
 
