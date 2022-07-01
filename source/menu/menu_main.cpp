@@ -464,7 +464,7 @@ int CMenu::main(void)
 		}
 		if(BTN_HOME_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_mainBtnHome)))
 		{
-			if(m_sourceflow)// open Source Menu Editor Menu
+			if(m_sourceflow && !m_locked)// open Source Menu Editor Menu
 			{
 				_hideMain();
 				_SM_Editor();
@@ -1008,7 +1008,7 @@ void CMenu::_initMainMenu()
 	TexData texFavOffS;
 	TexData bgLQ;
 	TexData emptyTex;
-	TexData texUser1;
+	//TexData texUser1;
 
 	m_mainBg = _texture("MAIN/BG", "texture", theme.bg, false);
 	if(m_theme.loaded() && TexHandle.fromImageFile(bgLQ, fmt("%s/%s", m_themeDataDir.c_str(), m_theme.getString("MAIN/BG", "texture").c_str()), GX_TF_CMPR, 64, 64) == TE_OK)
@@ -1040,7 +1040,7 @@ void CMenu::_initMainMenu()
 	TexHandle.fromImageFile(texFavOnS, fmt("%s/gamefavons.png", m_imgsDir.c_str()));
 	TexHandle.fromImageFile(texFavOff, fmt("%s/gamefavoff.png", m_imgsDir.c_str()));
 	TexHandle.fromImageFile(texFavOffS, fmt("%s/gamefavoffs.png", m_imgsDir.c_str()));
-	TexHandle.fromImageFile(texUser1, fmt("%s/mainUser1.png", m_imgsDir.c_str()));
+	//TexHandle.fromImageFile(texUser1, fmt("%s/mainUser1.png", m_imgsDir.c_str()));
 
 	_addUserLabels(m_mainLblUser, ARRAY_SIZE(m_mainLblUser), "MAIN");
 

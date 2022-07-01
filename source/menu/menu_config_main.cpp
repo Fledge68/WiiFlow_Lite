@@ -881,7 +881,7 @@ void CMenu::_configMain(void)
 				else if(m_btnMgr.selected(m_configBtn2))
 				{
 					_hideConfigMain();
-					_CfgSrc();
+					_ConfigSrc();
 					_showConfigMain(12);
 				}
 				else if(m_btnMgr.selected(m_configBtn3))

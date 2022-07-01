@@ -396,7 +396,7 @@ bool CMenu::_Source()
 			else
 				_updateSourceBtns();
 		}
-		else if(BTN_HOME_PRESSED)
+		else if(BTN_HOME_PRESSED && !m_locked)
 		{
 			_hideSource();
 			_SM_Editor();

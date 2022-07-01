@@ -882,7 +882,7 @@ private:
 	void _initGameSettingsMenu();
 	void _initCheatSettingsMenu();
 	void _initSourceMenu();
-	void _initCfgSrc();
+	void _initConfigSrc();
 	void _initConfigHB();
 	void _initPluginSettingsMenu();
 	void _initCategorySettingsMenu();
@@ -896,7 +896,7 @@ private:
 	void _initCheckboxesMenu();
 	//
 	void _textSource(void);
-	void _textCfgSrc(void);
+	void _textConfigSrc(void);
 	void _textConfigHB(void);
 	void _textPluginSettings(void);
 	void _textCategorySettings(void);
@@ -930,6 +930,7 @@ private:
 	void _hideConfigButtons(bool instant = false);
 	void _hideConfigGC(bool instant = true);
 	void _hideConfigHB(bool instant = true);
+	void _hideConfigSrc(bool instant = true);
 	void _hidePartitionsCfg(bool instant = false);
 	void _hideGame(bool instant = false);
 	void _hideDownload(bool instant = false);
@@ -962,6 +963,7 @@ private:
 	void _showConfigMain(int curPage);
 	void _showConfigGC(int curPage);
 	void _showConfigHB(void);
+	void _showConfigSrc(bool m_sourceflow = false);
 	void _showPartitionsCfg(void);
 	void _showNandEmu(void);
 	void _showGame(void);
@@ -1012,6 +1014,8 @@ private:
 	//
 	void _configMain(void);
 	void _configGC(void);
+	void _ConfigSrc();
+	void _ConfigHB();
 	void _partitionsCfg(void);
 	int _NandEmuCfg(void);
 	int _AutoExtractSave(string gameId);
@@ -1034,8 +1038,6 @@ private:
 	void _Wad(const char *wad_path = NULL);
 	void _CheatSettings();
 	bool _Source();
-	void _CfgSrc();
-	void _ConfigHB();
 	void _PluginSettings();
 	void _checkboxesMenu(u8 md);
 	void _SM_Editor();

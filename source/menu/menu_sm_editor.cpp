@@ -508,7 +508,7 @@ void CMenu::_SM_Editor()
 			/*else if(m_btnMgr.selected(m_configBtn4))
 			{
 				_hideSM_Editor();
-				_CfgSrc();
+				_ConfigSrc();
 				_showSM_Editor();
 			}*/
 		}

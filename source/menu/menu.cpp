@@ -1275,7 +1275,7 @@ void CMenu::_buildMenus(void)
 	_initGameSettingsMenu();
 	_initCheatSettingsMenu(); 
 	_initSourceMenu();
-	_initCfgSrc();
+	_initConfigSrc();
 	_initConfigHB();
 	_initPluginSettingsMenu();
 	_initCategorySettingsMenu();
@@ -1981,6 +1981,7 @@ void CMenu::_updateText(void)
 	_textConfigGC();
 	_textPartitionsCfg();
 	_textConfigHB();
+	_textConfigSrc();
 	_textGame();
 	_textDownload();
 	_textCode();
