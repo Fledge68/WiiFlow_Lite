@@ -27,14 +27,20 @@ void CMenu::_showConfigSrc(bool m_sourceflow)
 		if(m_cfgsrcLblUser[i] != -1)
 			m_btnMgr.show(m_cfgsrcLblUser[i]);
 
+	m_btnMgr.setText(m_configLbl1, _t("cfgsm3", L"Enable Sourceflow"));
 	m_btnMgr.setText(m_configBtn1, m_cfg.getBool(SOURCEFLOW_DOMAIN, "enabled") ? _t("on", L"On") : _t("off", L"Off"));
 	m_btnMgr.show(m_configLbl1);
 	m_btnMgr.show(m_configBtn1);
 	
 	if(m_sourceflow)
 	{
+		m_btnMgr.setText(m_configLbl2, _t("cfgsm4", L"Sourceflow Smallbox"));
+		m_btnMgr.setText(m_configLbl3, _t("cfghb4", L"Box Mode"));
+		m_btnMgr.setText(m_configLbl4, _t("cfgc4", L"Adjust Coverflow"));
+
 		m_btnMgr.setText(m_configBtn2, m_cfg.getBool(SOURCEFLOW_DOMAIN, "smallbox") ? _t("on", L"On") : _t("off", L"Off"));
 		m_btnMgr.setText(m_configBtn3, m_cfg.getBool(SOURCEFLOW_DOMAIN, "box_mode") ? _t("on", L"On") : _t("off", L"Off"));
+		m_btnMgr.setText(m_configBtn4, _t("cfgc5", L"Go"));
 	
 		m_btnMgr.show(m_configLbl2);
 		m_btnMgr.show(m_configBtn2);
@@ -135,10 +141,5 @@ void CMenu::_initConfigSrc(void)
 void CMenu::_textConfigSrc(void)
 {
 	m_btnMgr.setText(m_cfgsrcLblTitle, _t("cfgsm1", L"Sourceflow Settings"));
-	m_btnMgr.setText(m_configLbl1, _t("cfgsm3", L"Enable Sourceflow"));
-	m_btnMgr.setText(m_configLbl2, _t("cfgsm4", L"Sourceflow Smallbox"));
-	m_btnMgr.setText(m_configLbl3, _t("cfghb4", L"Box Mode"));
-	m_btnMgr.setText(m_configLbl4, _t("cfgc4", L"Adjust Coverflow"));
-	m_btnMgr.setText(m_configBtn4, _t("cfgc5", L"Go"));
 	m_btnMgr.setText(m_cfgsrcBtnBack, _t("cfg10", L"Back"));
 }

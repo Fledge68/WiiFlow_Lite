@@ -556,7 +556,8 @@ void CMenu::_configMain(void)
 					}
 					else
 						m_cfg.setString("GENERAL", "language", m_curLanguage.c_str());
-					m_btnMgr.setText(m_configLbl2Val, m_curLanguage);
+					_updateText();
+					_showConfigMain(2);
 				}
 				else if(m_btnMgr.selected(m_configBtn3))
 				{

@@ -1978,10 +1978,13 @@ void CMenu::_updateText(void)
 	_textPluginSettings();
 	_textCategorySettings();
 	_textCheatSettings();
-	_textConfigGC();
 	_textPartitionsCfg();
+	_textConfig();
+	_textConfigGC();
 	_textConfigHB();
 	_textConfigSrc();
+	_textBoot();
+	_textCoverBanner();
 	_textGame();
 	_textDownload();
 	_textCode();
@@ -1991,8 +1994,6 @@ void CMenu::_updateText(void)
 	_textHome();
 	_textExitTo();
 	_textShutdown();
-	_textBoot();
-	_textCoverBanner();
 	_textExplorer();
 	_textWad();
 	_textCheckboxesMenu();
