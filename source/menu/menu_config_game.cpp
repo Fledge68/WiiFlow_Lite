@@ -1093,7 +1093,7 @@ void CMenu::_gameSettings(const dir_discHdr *hdr, bool disc)
 			{
 				_hideGameSettings();
 				m_forceext = true;
-				if(!_AutoExtractSave(id))
+				if(!_ExtractGameSave(id))
 					error(_t("cfgg50", L"No save to extract!"));
 				_showGameSettings();
 			}
@@ -1101,7 +1101,7 @@ void CMenu::_gameSettings(const dir_discHdr *hdr, bool disc)
 			{
 				_hideGameSettings();
 				m_forceext = true;
-				if(!_FlashSave(id))
+				if(!_FlashGameSave(id))
 					error(_t("cfgg51", L"No save to flash to real NAND!"));
 				_showGameSettings();
 			}

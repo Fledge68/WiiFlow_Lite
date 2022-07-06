@@ -935,8 +935,7 @@ private:
 	void _hideCoverBanner(bool instant = true);
 	void _hidePartitionsCfg(bool instant = false);
 	void _hidePaths(bool instant = false);
-	void _hideNandEmu(bool instant = false);
-	void _hideNandEmuPg();
+	void _hideNandEmu(bool instant = true);
 	void _hideDownload(bool instant = false);
 	void _hideSettings(bool instant = false);
 	void _hideCode(bool instant = false);
@@ -1018,8 +1017,8 @@ private:
 	void _ConfigHB();
 	void _partitionsCfg(void);
 	int _NandEmuCfg(void);
-	int _AutoExtractSave(string gameId);
-	int _FlashSave(string gameId);
+	int _ExtractGameSave(string gameId);
+	int _FlashGameSave(string gameId);
 	void _game(bool launch = false);
 	void _downloadUrl(const char *url, u8 **dl_file, u32 *dl_size);
 	void _download(string gameId = string(), int dl_type = 0);
