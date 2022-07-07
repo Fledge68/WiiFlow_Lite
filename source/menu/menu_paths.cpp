@@ -5,18 +5,7 @@ s16 m_pathsLblTitle;
 s16 m_pathsLblPage;
 s16 m_pathsBtnPageM;
 s16 m_pathsBtnPageP;
-s16 m_pathsBtnBack;
-	
-s16 m_pathsLbl1;
-s16 m_pathsLbl2;
-s16 m_pathsLbl3;
-s16 m_pathsLbl4;
-
-s16 m_pathsBtn1;
-s16 m_pathsBtn2;
-s16 m_pathsBtn3;
-s16 m_pathsBtn4;
-
+s16 m_pathsBtnBack;	
 s16 m_pathsLblUser[4];
 
 TexData m_pathsBg;
@@ -31,60 +20,54 @@ void CMenu::_hidePaths(bool instant)
 	m_btnMgr.hide(m_pathsLblPage, instant);
 	m_btnMgr.hide(m_pathsBtnPageM, instant);
 	m_btnMgr.hide(m_pathsBtnPageP, instant);
-	m_btnMgr.hide(m_pathsLbl1, instant);
-	m_btnMgr.hide(m_pathsBtn1, instant);
-	m_btnMgr.hide(m_pathsLbl2, instant);
-	m_btnMgr.hide(m_pathsBtn2, instant);
-	m_btnMgr.hide(m_pathsLbl3, instant);
-	m_btnMgr.hide(m_pathsBtn3, instant);
-	m_btnMgr.hide(m_pathsLbl4, instant);
-	m_btnMgr.hide(m_pathsBtn4, instant);
-
 	for(u8 i = 0; i < ARRAY_SIZE(m_pathsLblUser); ++i)
 		if(m_pathsLblUser[i] != -1)
 			m_btnMgr.hide(m_pathsLblUser[i], instant);
+	
+	_hideConfigButtons(instant);	
 }
 
 void CMenu::_showPaths(void)
 {
-	m_btnMgr.hide(m_pathsLbl1, true);
-	m_btnMgr.hide(m_pathsBtn1, true);
-	m_btnMgr.hide(m_pathsLbl2, true);
-	m_btnMgr.hide(m_pathsBtn2, true);
-	m_btnMgr.hide(m_pathsLbl3, true);
-	m_btnMgr.hide(m_pathsBtn3, true);
-	m_btnMgr.hide(m_pathsLbl4, true);
-	m_btnMgr.hide(m_pathsBtn4, true);
 	_setBg(m_pathsBg, m_pathsBg);
 	m_btnMgr.show(m_pathsLblTitle);
 	m_btnMgr.show(m_pathsBtnBack);
-	m_btnMgr.show(m_pathsLblPage);
-	m_btnMgr.show(m_pathsBtnPageM);
-	m_btnMgr.show(m_pathsBtnPageP);
 	for(u32 i = 0; i < ARRAY_SIZE(m_pathsLblUser); ++i)
 		if(m_pathsLblUser[i] != -1)
 			m_btnMgr.show(m_pathsLblUser[i]);
+	
 	m_btnMgr.setText(m_pathsLblPage, wfmt(L"%i / %i", paths_curPage, paths_Pages));
-	m_btnMgr.show(m_pathsLbl1);
-	m_btnMgr.show(m_pathsBtn1);
-	m_btnMgr.show(m_pathsLbl2);
-	m_btnMgr.show(m_pathsBtn2);
-	m_btnMgr.show(m_pathsLbl3);
-	m_btnMgr.show(m_pathsBtn3);
+	m_btnMgr.show(m_pathsLblPage);
+	m_btnMgr.show(m_pathsBtnPageM);
+	m_btnMgr.show(m_pathsBtnPageP);
+	
+	_hideConfigButtons(true);
+
+	m_btnMgr.setText(m_configBtn1, _t("dl16", L"Set"));
+	m_btnMgr.setText(m_configBtn2, _t("dl16", L"Set"));
+	m_btnMgr.setText(m_configBtn3, _t("dl16", L"Set"));
+	m_btnMgr.setText(m_configBtn4, _t("dl16", L"Set"));
+	
+	m_btnMgr.show(m_configLbl1);
+	m_btnMgr.show(m_configBtn1);
+	m_btnMgr.show(m_configLbl2);
+	m_btnMgr.show(m_configBtn2);
+	m_btnMgr.show(m_configLbl3);
+	m_btnMgr.show(m_configBtn3);
 	if(paths_curPage == 1)
 	{
-		m_btnMgr.show(m_pathsLbl4);
-		m_btnMgr.show(m_pathsBtn4);
-		m_btnMgr.setText(m_pathsLbl1, _t("cfgp8", L"Box Covers"));
-		m_btnMgr.setText(m_pathsLbl2, _t("cfgp2", L"Flat Covers"));
-		m_btnMgr.setText(m_pathsLbl3, _t("cfgp9", L"Custom Banners"));
-		m_btnMgr.setText(m_pathsLbl4, _t("cfgp4", L"Banners Cache"));
+		m_btnMgr.show(m_configLbl4);
+		m_btnMgr.show(m_configBtn4);
+		m_btnMgr.setText(m_configLbl1, _t("cfgp8", L"Box Covers"));
+		m_btnMgr.setText(m_configLbl2, _t("cfgp2", L"Flat Covers"));
+		m_btnMgr.setText(m_configLbl3, _t("cfgp9", L"Custom Banners"));
+		m_btnMgr.setText(m_configLbl4, _t("cfgp4", L"Banners Cache"));
 	}
 	else
 	{
-		m_btnMgr.setText(m_pathsLbl1, _t("cfgp5", L"Wii Games"));
-		m_btnMgr.setText(m_pathsLbl2, _t("cfgp6", L"GameCube Games"));
-		m_btnMgr.setText(m_pathsLbl3, _t("cfgp7", L"Music"));
+		m_btnMgr.setText(m_configLbl1, _t("cfgp5", L"Wii Games"));
+		m_btnMgr.setText(m_configLbl2, _t("cfgp6", L"GameCube Games"));
+		m_btnMgr.setText(m_configLbl3, _t("cfgp7", L"Music"));
 	}
 }
 
@@ -120,7 +103,7 @@ void CMenu::_Paths(void)
 		}
 		else if (BTN_A_PRESSED && paths_curPage == 1)
 		{
-			if (m_btnMgr.selected(m_pathsBtn1))
+			if (m_btnMgr.selected(m_configBtn1))
 			{
 				_hidePaths();
 				path = _FolderExplorer(m_cfg.getString("GENERAL", "dir_box_covers").c_str());
@@ -133,7 +116,7 @@ void CMenu::_Paths(void)
 				}
 				_showPaths();
 			}
-			else if (m_btnMgr.selected(m_pathsBtn2))
+			else if (m_btnMgr.selected(m_configBtn2))
 			{
 				_hidePaths();
 				path = _FolderExplorer(m_cfg.getString("GENERAL", "dir_flat_covers").c_str());
@@ -146,7 +129,7 @@ void CMenu::_Paths(void)
 				}
 				_showPaths();
 			}
-			else if (m_btnMgr.selected(m_pathsBtn3))
+			else if (m_btnMgr.selected(m_configBtn3))
 			{
 				_hidePaths();
 				path = _FolderExplorer(m_cfg.getString("GENERAL", "dir_custom_banners").c_str());
@@ -157,7 +140,7 @@ void CMenu::_Paths(void)
 				}
 				_showPaths();
 			}
-			else if (m_btnMgr.selected(m_pathsBtn4))
+			else if (m_btnMgr.selected(m_configBtn4))
 			{
 				_hidePaths();
 				path = _FolderExplorer(m_cfg.getString("GENERAL", "dir_banner_cache").c_str());
@@ -171,7 +154,7 @@ void CMenu::_Paths(void)
 		}
 		else if (BTN_A_PRESSED && paths_curPage == 2)
 		{
-			if (m_btnMgr.selected(m_pathsBtn1))
+			if (m_btnMgr.selected(m_configBtn1))
 			{
 				_hidePaths();
 				currentPartition = m_cfg.getInt(WII_DOMAIN, "partition", USB1);
@@ -195,7 +178,7 @@ void CMenu::_Paths(void)
 				}
 				_showPaths();
 			}
-			else if (m_btnMgr.selected(m_pathsBtn2))
+			else if (m_btnMgr.selected(m_configBtn2))
 			{
 				_hidePaths();
 				currentPartition = m_cfg.getInt(GC_DOMAIN, "partition", USB1);
@@ -220,7 +203,7 @@ void CMenu::_Paths(void)
 				}
 				_showPaths();
 			}
-			if (m_btnMgr.selected(m_pathsBtn3))
+			if (m_btnMgr.selected(m_configBtn3))
 			{
 				_hidePaths();
 				path = _FolderExplorer(m_cfg.getString("GENERAL", "dir_music").c_str());
@@ -248,29 +231,11 @@ void CMenu::_initPathsMenu()
 	m_pathsBtnPageP = _addPicButton("PATHS/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 172, 400, 48, 48);
 	m_pathsBtnBack = _addButton("PATHS/BACK_BTN", theme.btnFont, L"", 420, 400, 200, 48, theme.btnFontColor);
 	
-	m_pathsLbl1 = _addLabel("PATHS/DIR1", theme.lblFont, L"", 20, 125, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_pathsBtn1 = _addButton("PATHS/DIR1_BTN", theme.btnFont, L"", 420, 130, 200, 48, theme.btnFontColor);
-	m_pathsLbl2 = _addLabel("PATHS/DIR2", theme.lblFont, L"", 20, 185, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_pathsBtn2 = _addButton("PATHS/DIR2_BTN", theme.btnFont, L"", 420, 190, 200, 48, theme.btnFontColor);
-	m_pathsLbl3 = _addLabel("PATHS/DIR3", theme.lblFont, L"", 20, 245, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_pathsBtn3 = _addButton("PATHS/DIR3_BTN", theme.btnFont, L"", 420, 250, 200, 48, theme.btnFontColor);
-	m_pathsLbl4 = _addLabel("PATHS/DIR4", theme.lblFont, L"", 20, 305, 385, 56, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	m_pathsBtn4 = _addButton("PATHS/DIR4_BTN", theme.btnFont, L"", 420, 310, 200, 48, theme.btnFontColor);
-
 	_setHideAnim(m_pathsLblTitle, "PATHS/TITLE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_pathsBtnBack, "PATHS/BACK_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_pathsLblPage, "PATHS/PAGE_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_pathsBtnPageM, "PATHS/PAGE_MINUS", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_pathsBtnPageP, "PATHS/PAGE_PLUS", 0, 0, 1.f, -1.f);
-
-	_setHideAnim(m_pathsLbl1, "PATHS/DIR1", 50, 0, -2.f, 0.f);
-	_setHideAnim(m_pathsBtn1, "PATHS/DIR1_BTN", -50, 0, 1.f, 0.f);
-	_setHideAnim(m_pathsLbl2, "PATHS/DIR2", 50, 0, -2.f, 0.f);
-	_setHideAnim(m_pathsBtn2, "PATHS/DIR2_BTN", -50, 0, 1.f, 0.f);
-	_setHideAnim(m_pathsLbl3, "PATHS/DIR3", 50, 0, -2.f, 0.f);
-	_setHideAnim(m_pathsBtn3, "PATHS/DIR3_BTN", -50, 0, 1.f, 0.f);
-	_setHideAnim(m_pathsLbl4, "PATHS/DIR4", 50, 0, -2.f, 0.f);
-	_setHideAnim(m_pathsBtn4, "PATHS/DIR4_BTN", -50, 0, 1.f, 0.f);
 
 	_hidePaths(true);
 	_textPaths();
@@ -280,8 +245,4 @@ void CMenu::_textPaths(void)
 {
 	m_btnMgr.setText(m_pathsLblTitle, _t("cfgd4", L"Path Manager"));
 	m_btnMgr.setText(m_pathsBtnBack, _t("cfg10", L"Back"));
-	m_btnMgr.setText(m_pathsBtn1, _t("dl16", L"Set"));
-	m_btnMgr.setText(m_pathsBtn2, _t("dl16", L"Set"));
-	m_btnMgr.setText(m_pathsBtn3, _t("dl16", L"Set"));
-	m_btnMgr.setText(m_pathsBtn4, _t("dl16", L"Set"));
 }
