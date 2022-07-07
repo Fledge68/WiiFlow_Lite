@@ -933,7 +933,7 @@ private:
 	void _hideConfigSrc(bool instant = true);
 	void _hideBoot(bool instant = true);
 	void _hideCoverBanner(bool instant = true);
-	void _hidePartitionsCfg(bool instant = false);
+	void _hidePartitionsCfg(bool instant = true);
 	void _hidePaths(bool instant = true);
 	void _hideNandEmu(bool instant = true);
 	void _hideDownload(bool instant = false);
