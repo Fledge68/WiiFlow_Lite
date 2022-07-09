@@ -267,6 +267,18 @@ private:
 	s16 m_configBtn4P;
 
 //Download menu
+	s16 m_downloadLblTitle;
+	s16 m_downloadBtnBack;
+	s16 m_downloadLblGameTDB;
+	s16 m_downloadLblUser[4];
+	s16 m_downloadPBar;
+	s16 m_downloadLblMessage;
+	s16 m_downloadLblDialog;
+	//download cover settings
+	s16 m_downloadLblCoverPrio;
+	s16 m_downloadLblPrio;
+	s16 m_downloadBtnPrioM;
+	s16 m_downloadBtnPrioP;
 	s16 m_downloadPrioVal;
 	enum CoverPrio
 	{
@@ -295,28 +307,6 @@ private:
 		FLAT,
 		CFLAT,
 	};
-	s16 m_downloadLblTitle;
-	s16 m_downloadLblGameTDB;
-	s16 m_downloadLblUser[4];
-	s16 m_downloadLblCovers;
-	s16 m_downloadBtnAll;
-	s16 m_downloadBtnMissing;
-	s16 m_downloadLblGameTDBDownload;
-	s16 m_downloadBtnGameTDBDownload;
-	s16 m_downloadLblBanners;
-	s16 m_downloadBtnBanners;
-	s16 m_downloadLblCoverSet;
-	s16 m_downloadBtnCoverSet;
-	s16 m_downloadBtnCancel;// used as back btn
-	s16 m_downloadPBar;
-	s16 m_downloadLblMessage[2];
-	//settings
-	s16 m_downloadLblSetTitle;
-	s16 m_downloadBtnBack;
-	s16 m_downloadLblCoverPrio;
-	s16 m_downloadLblPrio;
-	s16 m_downloadBtnPrioM;
-	s16 m_downloadBtnPrioP;
 	s16 m_downloadLblRegion;
 	enum Regions
 	{
@@ -936,8 +926,7 @@ private:
 	void _hidePartitionsCfg(bool instant = true);
 	void _hidePaths(bool instant = true);
 	void _hideNandEmu(bool instant = true);
-	void _hideDownload(bool instant = false);
-	void _hideSettings(bool instant = false);
+	void _hideDownload(bool instant = true);
 	void _hideCode(bool instant = false);
 	void _hideAbout(bool instant = false);
 	void _hideWBFS(bool instant = false);
@@ -967,7 +956,6 @@ private:
 	void _showNandEmu(void);
 	void _showGame(void);
 	void _showDownload(void);
-	void _showSettings();
 	void _showCode(void);
 	void _showAbout(void);
 	void _showBoot(void);
@@ -1020,7 +1008,7 @@ private:
 	int _ExtractGameSave(string gameId);
 	int _FlashGameSave(string gameId);
 	void _game(bool launch = false);
-	void _downloadUrl(const char *url, u8 **dl_file, u32 *dl_size);
+	//void _downloadUrl(const char *url, u8 **dl_file, u32 *dl_size);
 	void _download(string gameId = string(), int dl_type = 0);
 	bool _code(char code[4], bool erase = false);
 	void _about(bool help = false);
@@ -1169,7 +1157,7 @@ private:
 	void _listEmuNands(const char *path, vector<string> &nands);
 
 	int _downloadCheatFileAsync();
-	static void * _downloadUrlAsync(void *obj);
+	//static void * _downloadUrlAsync(void *obj);
 
 	void _playGameSound(void);
 	void _stopGameSoundThread(void);
