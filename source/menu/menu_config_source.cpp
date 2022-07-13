@@ -68,7 +68,7 @@ void CMenu::_ConfigSrc(void)
 {
 	if(!m_use_source)
 	{
-		error(_t("cfgsmerr", L"No source menu found!"));
+		_error(_t("cfgsmerr", L"No source menu found!"));
 		return;
 	}
 	SetupInput();

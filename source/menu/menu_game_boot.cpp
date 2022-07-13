@@ -92,7 +92,7 @@ void CMenu::directlaunch(const char *GameID)// from boot arg for wii game only
 			}
 		}
 	}
-	error(wfmt(_fmt("errgame1", L"Cannot find the game with ID: %s"), GameID));
+	_error(wfmt(_fmt("errgame1", L"Cannot find the game with ID: %s"), GameID));
 }
 
 void CMenu::_launchShutdown()
@@ -279,7 +279,7 @@ void CMenu::_launchHomebrew(const char *filepath, vector<string> arguments)
 	bool ret = (LoadHomebrew(filepath) && LoadAppBooter(fmt("%s/app_booter.bin", m_binsDir.c_str())));
 	if(ret == false)
 	{
-		error(_t("errgame14", L"app_booter.bin not found!"));
+		_error(_t("errgame14", L"app_booter.bin not found!"));
 		return;
 	}
 	/* no more error msgs - remove btns and sounds */
@@ -399,7 +399,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	/* Check if loader installed */
 	if((loader == NINTENDONT && !m_nintendont_installed) || (loader == DEVOLUTION && !m_devo_installed))
 	{
-		error(_t("errgame11", L"GameCube Loader not found! Can't launch game."));
+		_error(_t("errgame11", L"GameCube Loader not found! Can't launch game."));
 		return;
 	}
 	
@@ -524,7 +524,7 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 		bool ret = (Nintendont_GetLoader(use_slippi) && LoadAppBooter(fmt("%s/app_booter.bin", m_binsDir.c_str())));
 		if(ret == false)
 		{
-			error(_t("errgame14", L"app_booter.bin not found!"));
+			_error(_t("errgame14", L"app_booter.bin not found!"));
 			return;
 		}
 		
@@ -701,6 +701,21 @@ void CMenu::_launchGC(dir_discHdr *hdr, bool disc)
 	Sys_Exit();
 }
 
+/* used to load gameconfig.txt and cheats .gct */
+bool CMenu::_loadFile(u8 * &buffer, u32 &size, const char *path, const char *file)
+{
+	u32 fileSize = 0;
+	u8 *fileBuf = fsop_ReadFile(file == NULL ? path : fmt("%s/%s", path, file), &fileSize);
+	if(fileBuf == NULL)
+		return false;
+
+	if(buffer != NULL)
+		MEM2_free(buffer);
+	buffer = fileBuf;
+	size = fileSize;
+	return true;
+}
+
 /* used by wii and channel games to load the cIOS to use for the game */
 /* plugins, apps, and gamecube games don't use cIOS */
 int CMenu::_loadGameIOS(u8 gameIOS, int userIOS, string id, bool RealNAND_Channels)
@@ -717,7 +732,7 @@ int CMenu::_loadGameIOS(u8 gameIOS, int userIOS, string id, bool RealNAND_Channe
 			_initAsyncNetwork();// needed after IOS change
 		if(ret == false)
 		{
-			error(wfmt(_fmt("errgame4", L"Couldn't load IOS %i"), gameIOS));
+			_error(wfmt(_fmt("errgame4", L"Couldn't load IOS %i"), gameIOS));
 			return LOAD_IOS_FAILED;
 		}
 		return LOAD_IOS_SUCCEEDED;
@@ -752,7 +767,7 @@ int CMenu::_loadGameIOS(u8 gameIOS, int userIOS, string id, bool RealNAND_Channe
 			_initAsyncNetwork();// always seem to do netinit after changing IOS
 		if(ret == false)
 		{
-			error(wfmt(_fmt("errgame4", L"Couldn't load IOS %i"), gameIOS));
+			_error(wfmt(_fmt("errgame4", L"Couldn't load IOS %i"), gameIOS));
 			return LOAD_IOS_FAILED;
 		}
 		return LOAD_IOS_SUCCEEDED;
@@ -882,7 +897,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		{
 			if(!Load_Neek2o_Kernel())
 			{
-				error(_t("errneek1", L"Cannot launch neek2o. Verify your neek2o setup"));//kernal.bin not found
+				_error(_t("errneek1", L"Cannot launch neek2o. Verify your neek2o setup"));//kernal.bin not found
 				return;
 			}
 			else 
@@ -907,7 +922,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	/* load external booter bins */
 	if(ExternalBooter_LoadBins(m_binsDir.c_str()) == false)
 	{
-		error(_t("errgame16", L"Missing ext_loader.bin or ext_booter.bin!"));
+		_error(_t("errgame16", L"Missing ext_loader.bin or ext_booter.bin!"));
 		return;
 	}
 
@@ -941,7 +956,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 		if(NandHandle.Enable_Emu() < 0)
 		{
 			NandHandle.Disable_Emu();
-			error(_t("errgame5", L"Enabling emu failed!"));
+			_error(_t("errgame5", L"Enabling emu failed!"));
 			return;
 		}
 		DeviceHandle.MountAll();
@@ -978,7 +993,7 @@ void CMenu::_launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 		/* Open Disc */
 		if(Disc_Open(true) < 0)
 		{
-			error(_t("wbfsoperr2", L"Disc_Open failed"));
+			_error(_t("wbfsoperr2", L"Disc_Open failed"));
 			Sys_Exit();
 		}
 		/* Check disc */
@@ -986,14 +1001,14 @@ void CMenu::_launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 		{
 			if(Disc_IsGC() < 0) 
 			{
-				error(_t("errgame9", L"This is not a Wii or GC disc"));
+				_error(_t("errgame9", L"This is not a Wii or GC disc"));
 				Sys_Exit();
 			}
 			else // GC disc
 			{
 				if(!m_nintendont_installed)
 				{
-					error(_t("errgame12", L"Nintendont not found! Can't launch GC Disc."));
+					_error(_t("errgame12", L"Nintendont not found! Can't launch GC Disc."));
 					return;
 				}
 				/* Read GC disc header to get id*/
@@ -1132,7 +1147,7 @@ void CMenu::_launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 		if(emuPart < 0)//if savepartition is unusable
 		{
 			_hideWaitMessage();
-			error(_t("errgame13", L"EmuNAND for gamesave not found! Using real NAND."));
+			_error(_t("errgame13", L"EmuNAND for gamesave not found! Using real NAND."));
 			emulate_mode = 0;
 			_showWaitMessage();
 		}
@@ -1207,7 +1222,7 @@ void CMenu::_launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 	/* load external booter bin files */
 	if(ExternalBooter_LoadBins(m_binsDir.c_str()) == false)
 	{
-		error(_t("errgame16", L"Missing ext_loader.bin or ext_booter.bin!"));
+		_error(_t("errgame16", L"Missing ext_loader.bin or ext_booter.bin!"));
 		return;
 	}
 
@@ -1240,7 +1255,7 @@ void CMenu::_launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 			if(NandHandle.Enable_Emu() < 0)
 			{
 				NandHandle.Disable_Emu();
-				error(_t("errgame6", L"Enabling emu after reload failed!"));
+				_error(_t("errgame6", L"Enabling emu after reload failed!"));
 				Sys_Exit();
 			}
 			DeviceHandle.MountAll();

@@ -5,7 +5,7 @@ s16 m_errorLblMessage;
 s16 m_errorLblIcon;
 s16 m_errorLblUser[4];
 
-void CMenu::error(const wstringEx &msg)
+void CMenu::_error(const wstringEx &msg)
 {
 	SetupInput();
 	_hideAbout();

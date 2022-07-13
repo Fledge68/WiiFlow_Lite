@@ -2,7 +2,8 @@
 #include <algorithm>
 #include "menu.hpp"
 
-const int CMenu::_nbCfgPages = 14;
+u8 mainCfg_Pages = 14;
+u8 mainCfg_curPage = 1;
 
 template <class T> static inline T loopNum(T i, T s)
 {
@@ -100,7 +101,7 @@ void CMenu::_hideConfigMain(bool instant)
 	_hideConfigButtons(instant);
 }
 
-void CMenu::_showConfigMain(int curPage)
+void CMenu::_showConfigMain()
 {
 	_setBg(m_configBg, m_configBg);
 	m_btnMgr.show(m_configLblTitle);
@@ -112,7 +113,7 @@ void CMenu::_showConfigMain(int curPage)
 	m_btnMgr.show(m_configLblPage);
 	m_btnMgr.show(m_configBtnPageM);
 	m_btnMgr.show(m_configBtnPageP);
-	m_btnMgr.setText(m_configLblPage, wfmt(L"%i / %i", curPage, m_locked ? curPage : _nbCfgPages));
+	m_btnMgr.setText(m_configLblPage, wfmt(L"%i / %i", mainCfg_curPage, m_locked ? mainCfg_curPage : mainCfg_Pages));
 	
 	_hideConfigButtons(true);
 	
@@ -121,11 +122,11 @@ void CMenu::_showConfigMain(int curPage)
 	{
 		m_btnMgr.show(m_configLbl1);
 		m_btnMgr.show(m_configLbl3);
-		if(curPage != 14)
+		if(mainCfg_curPage != 14)
 			m_btnMgr.show(m_configLbl4);
 	}
 
-	if(curPage == 1)
+	if(mainCfg_curPage == 1)
 	{
 		m_btnMgr.show(m_configBtn2);
 		if(!m_locked)
@@ -147,7 +148,7 @@ void CMenu::_showConfigMain(int curPage)
 		m_btnMgr.setText(m_configBtn3, _t("cfg14", L"Set"));
 		m_btnMgr.setText(m_configBtn4, _t("cfg14", L"Set"));
 	}
-	else if(curPage == 2)
+	else if(mainCfg_curPage == 2)
 	{
 		m_btnMgr.show(m_configLbl1Val);
 		m_btnMgr.show(m_configBtn1M);
@@ -168,7 +169,7 @@ void CMenu::_showConfigMain(int curPage)
 		m_btnMgr.setText(m_configBtn3, _t("cfgc5", L"Go"));
 		m_btnMgr.setText(m_configBtn4, _t("cfgc5", L"Go"));
 	}	
-	else if(curPage == 3)
+	else if(mainCfg_curPage == 3)
 	{
 		m_btnMgr.show(m_configLbl1Val);
 		m_btnMgr.show(m_configBtn1M);
@@ -197,7 +198,7 @@ void CMenu::_showConfigMain(int curPage)
 		i = min(max(1, m_cfg.getInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_REAL)), (int)ARRAY_SIZE(CMenu::_ChannelsType)) - 1;
 		m_btnMgr.setText(m_configLbl4Val, _t(CMenu::_ChannelsType[i].id, CMenu::_ChannelsType[i].text));
 	}
-	else if(curPage == 4)
+	else if(mainCfg_curPage == 4)
 	{
 		m_btnMgr.show(m_configBtn1);
 		m_btnMgr.show(m_configBtn2);
@@ -241,7 +242,7 @@ void CMenu::_showConfigMain(int curPage)
 		}
 		m_btnMgr.setText(m_configLbl4Val, channelName);
 	}
-	else if(curPage == 5)
+	else if(mainCfg_curPage == 5)
 	{
 		m_btnMgr.show(m_configLbl1Val);
 		m_btnMgr.show(m_configBtn1M);
@@ -264,7 +265,7 @@ void CMenu::_showConfigMain(int curPage)
 		m_btnMgr.setText(m_configLbl4, _t("cfgs4", L"Game sound volume"));
 		m_btnMgr.setText(m_configLbl4Val, wfmt(L"%i", m_cfg.getInt("GENERAL", "sound_volume_bnr", 255)));
 	}
-	else if(curPage == 6)
+	else if(mainCfg_curPage == 6)
 	{
 		m_btnMgr.show(m_configLbl1Val);
 		m_btnMgr.show(m_configBtn1M);
@@ -287,7 +288,7 @@ void CMenu::_showConfigMain(int curPage)
 		m_btnMgr.setText(m_configLbl4, _t("cfgc7", L"Vertical offset"));
 		m_btnMgr.setText(m_configLbl4Val, wfmt(L"%i", m_cfg.getInt("GENERAL", "tv_y", 0)));
 	}	
-	else if(curPage == 7)
+	else if(mainCfg_curPage == 7)
 	{
 		m_btnMgr.show(m_configBtn1);
 		m_btnMgr.show(m_configBtn2);
@@ -302,7 +303,7 @@ void CMenu::_showConfigMain(int curPage)
 		m_btnMgr.setText(m_configLbl4, _t("cfg704", L"Hide plugins button"));
 		m_btnMgr.setText(m_configBtn4, m_cfg.getBool(PLUGIN_DOMAIN, "disable") ?  _t("yes", L"Yes") : _t("no", L"No"));
 	}
-	else if(curPage == 8)
+	else if(mainCfg_curPage == 8)
 	{
 		m_btnMgr.show(m_configBtn1);
 		m_btnMgr.show(m_configBtn2);
@@ -319,7 +320,7 @@ void CMenu::_showConfigMain(int curPage)
 		m_btnMgr.setText(m_configLbl4, _t("cfg708", L"Fanart default ending delay"));
 		m_btnMgr.setText(m_configLbl4Val, wfmt(L"%i", m_cfg.getInt("FANART", "delay_after_animation", 200)));
 	}
-	else if(curPage == 9)
+	else if(mainCfg_curPage == 9)
 	{
 		m_btnMgr.show(m_configBtn1);
 		m_btnMgr.show(m_configBtn2);
@@ -336,7 +337,7 @@ void CMenu::_showConfigMain(int curPage)
 		m_btnMgr.setText(m_configLbl4, _t("cfg712", L"Screensaver idle seconds"));
 		m_btnMgr.setText(m_configLbl4Val, wfmt(L"%i", m_cfg.getInt("GENERAL", "screensaver_idle_seconds", 60)));// inc by 30
 	}
-	else if(curPage == 10)
+	else if(mainCfg_curPage == 10)
 	{
 		m_btnMgr.show(m_configBtn1);
 		m_btnMgr.show(m_configBtn2);
@@ -353,7 +354,7 @@ void CMenu::_showConfigMain(int curPage)
 		m_btnMgr.setText(m_configLbl4, _t("cfg716", L"Music fade rate"));
 		m_btnMgr.setText(m_configLbl4Val, wfmt(L"%i", m_cfg.getInt("GENERAL", "music_fade_rate", 8)));
 	}
-	else if(curPage == 11)
+	else if(mainCfg_curPage == 11)
 	{
 		m_btnMgr.show(m_configBtn1);
 		m_btnMgr.show(m_configBtn2);
@@ -368,7 +369,7 @@ void CMenu::_showConfigMain(int curPage)
 		m_btnMgr.setText(m_configLbl4, _t("cfg721", L"Play GC default sound"));
 		m_btnMgr.setText(m_configBtn4, m_cfg.getBool(GC_DOMAIN, "play_default_sound") ?  _t("yes", L"Yes") : _t("no", L"No"));
 	}
-	else if(curPage == 12)
+	else if(mainCfg_curPage == 12)
 	{
 		m_btnMgr.show(m_configBtn1);
 		m_btnMgr.show(m_configBtn2);
@@ -383,7 +384,7 @@ void CMenu::_showConfigMain(int curPage)
 		m_btnMgr.setText(m_configLbl4, _t("cfg727", L"Use Plugin Database Titles"));
 		m_btnMgr.setText(m_configBtn4, m_cfg.getBool(PLUGIN_DOMAIN, "database_titles", true) ?  _t("yes", L"Yes") : _t("no", L"No"));
 	}
-	else if(curPage == 13)
+	else if(mainCfg_curPage == 13)
 	{
 		m_btnMgr.show(m_configBtn1);
 		m_btnMgr.show(m_configBtn2);
@@ -417,7 +418,7 @@ void CMenu::_showConfigMain(int curPage)
 
 void CMenu::_configMain(void)
 {
-	int curPage = 1;
+	mainCfg_curPage = 1;
 	int val;
 	bool rand_music = m_cfg.getBool("GENERAL", "randomize_music");
 	bool hq_covers = m_cfg.getBool("GENERAL", "cover_use_hq");
@@ -453,7 +454,7 @@ void CMenu::_configMain(void)
 		}
 	}
 	prevLanguage = languages_available[curLanguage];
-	_showConfigMain(curPage);
+	_showConfigMain();
 	
 	while(!m_exit)
 	{
@@ -468,29 +469,29 @@ void CMenu::_configMain(void)
 		{
 			if(BTN_LEFT_PRESSED || BTN_MINUS_PRESSED)
 				m_btnMgr.click(m_configBtnPageM);
-			curPage -= 1;
-			if(curPage < 1)
-				curPage = _nbCfgPages;
-			_showConfigMain(curPage);
+			mainCfg_curPage -= 1;
+			if(mainCfg_curPage < 1)
+				mainCfg_curPage = mainCfg_Pages;
+			_showConfigMain();
 		}
 		else if(!m_locked && (BTN_RIGHT_PRESSED || BTN_PLUS_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_configBtnPageP))))
 		{
 			if(BTN_RIGHT_PRESSED || BTN_PLUS_PRESSED)
 				m_btnMgr.click(m_configBtnPageP);
-			curPage += 1;
-			if(curPage > _nbCfgPages)
-				curPage = 1;
-			_showConfigMain(curPage);
+			mainCfg_curPage += 1;
+			if(mainCfg_curPage > mainCfg_Pages)
+				mainCfg_curPage = 1;
+			_showConfigMain();
 		}
 		else if(BTN_A_PRESSED)
 		{
-			if(curPage == 1)
+			if(mainCfg_curPage == 1)
 			{
 				if(m_btnMgr.selected(m_configBtn1))
 				{
 					_hideConfigMain();
 					_download();
-					_showConfigMain(1);
+					_showConfigMain();
 				}
 				else if(m_btnMgr.selected(m_configBtn2))
 				{
@@ -504,8 +505,8 @@ void CMenu::_configMain(void)
 							m_locked = false;
 						}
 						else
-							error(_t("cfgg25",L"Password incorrect."));
-						_showConfigMain(1);
+							_error(_t("cfgg25",L"Password incorrect."));
+						_showConfigMain();
 					}
 					else //set code
 					{
@@ -517,23 +518,23 @@ void CMenu::_configMain(void)
 							m_cfg.setString("GENERAL", "parent_code", string(code, 4).c_str());
 							m_locked = true;
 						}
-						_showConfigMain(1);
+						_showConfigMain();
 					}
 				}
 				else if(m_btnMgr.selected(m_configBtn3))
 				{
 					_hideConfigMain();
 					_partitionsCfg();
-					_showConfigMain(1);
+					_showConfigMain();
 				}
 				else if(m_btnMgr.selected(m_configBtn4))
 				{
 					_hideConfigMain();
 					_NandEmuCfg();
-					_showConfigMain(1);
+					_showConfigMain();
 				}
 			}
-			if(curPage == 2)
+			if(mainCfg_curPage == 2)
 			{
 				if(m_btnMgr.selected(m_configBtn1P) || m_btnMgr.selected(m_configBtn1M))
 				{
@@ -557,23 +558,23 @@ void CMenu::_configMain(void)
 					else
 						m_cfg.setString("GENERAL", "language", m_curLanguage.c_str());
 					_updateText();
-					_showConfigMain(2);
+					_showConfigMain();
 				}
 				else if(m_btnMgr.selected(m_configBtn3))
 				{
 					m_refreshGameList = true;
 					_hideConfigMain();
 					_cfTheme();
-					_showConfigMain(2);
+					_showConfigMain();
 				}
 				else if(m_btnMgr.selected(m_configBtn4))
 				{
 					_hideConfigMain();
 					_Boot();
-					_showConfigMain(2);
+					_showConfigMain();
 				}
 			}
-			if(curPage == 3)
+			if(mainCfg_curPage == 3)
 			{
 				if(m_btnMgr.selected(m_configBtn1P) || m_btnMgr.selected(m_configBtn1M))
 				{
@@ -593,7 +594,7 @@ void CMenu::_configMain(void)
 				{
 					_hideConfigMain();
 					_configGC();
-					_showConfigMain(3);
+					_showConfigMain();
 				}
 				else if(m_btnMgr.selected(m_configBtn4P) || m_btnMgr.selected(m_configBtn4M))
 				{
@@ -605,7 +606,7 @@ void CMenu::_configMain(void)
 						m_refreshGameList = true;
 				}
 			}
-			if(curPage == 4)
+			if(mainCfg_curPage == 4)
 			{
 				if(m_btnMgr.selected(m_configBtn1))
 				{
@@ -623,7 +624,7 @@ void CMenu::_configMain(void)
 				{
 					_hideConfigMain();
 					_Paths();
-					_showConfigMain(curPage);
+					_showConfigMain();
 				}
 				else if(m_btnMgr.selected(m_configBtn4P))
 				{
@@ -659,7 +660,7 @@ void CMenu::_configMain(void)
 					m_btnMgr.setText(m_configLbl4Val, channelName);
 				}
 			}
-			if(curPage == 5)
+			if(mainCfg_curPage == 5)
 			{
 				if(m_btnMgr.selected(m_configBtn1P) || m_btnMgr.selected(m_configBtn1M))
 				{
@@ -697,7 +698,7 @@ void CMenu::_configMain(void)
 					m_bnrSndVol = m_cfg.getInt("GENERAL", "sound_volume_bnr");
 				}
 			}
-			if(curPage == 6)
+			if(mainCfg_curPage == 6)
 			{
 				if(m_btnMgr.selected(m_configBtn1P) || m_btnMgr.selected(m_configBtn1M))
 				{
@@ -736,7 +737,7 @@ void CMenu::_configMain(void)
 					m_vid.set2DViewport(m_cfg.getInt("GENERAL", "tv_width", 640), m_cfg.getInt("GENERAL", "tv_height", 480), m_cfg.getInt("GENERAL", "tv_x", 0), m_cfg.getInt("GENERAL", "tv_y", 0));
 				}
 			}
-			if(curPage == 7)
+			if(mainCfg_curPage == 7)
 			{
 				if(m_btnMgr.selected(m_configBtn1))
 				{
@@ -759,7 +760,7 @@ void CMenu::_configMain(void)
 					m_btnMgr.setText(m_configBtn4, m_cfg.getBool(PLUGIN_DOMAIN, "disable") ?  _t("yes", L"Yes") : _t("no", L"No"));
 				}
 			}
-			if(curPage == 8)
+			if(mainCfg_curPage == 8)
 			{
 				if(m_btnMgr.selected(m_configBtn1))
 				{
@@ -786,7 +787,7 @@ void CMenu::_configMain(void)
 					m_btnMgr.setText(m_configLbl4Val, wfmt(L"%i", m_cfg.getInt("FANART", "delay_after_animation")));
 				}
 			}
-			if(curPage == 9)
+			if(mainCfg_curPage == 9)
 			{
 				if(m_btnMgr.selected(m_configBtn1))
 				{
@@ -814,7 +815,7 @@ void CMenu::_configMain(void)
 					m_btnMgr.setText(m_configLbl4Val, wfmt(L"%i", m_cfg.getInt("GENERAL", "screensaver_idle_seconds")));
 				}
 			}
-			if(curPage == 10)
+			if(mainCfg_curPage == 10)
 			{
 				if(m_btnMgr.selected(m_configBtn1))
 				{
@@ -845,7 +846,7 @@ void CMenu::_configMain(void)
 					MusicPlayer.SetFadeRate(m_cfg.getInt("GENERAL", "music_fade_rate"));
 				}
 			}
-			if(curPage == 11)
+			if(mainCfg_curPage == 11)
 			{
 				if(m_btnMgr.selected(m_configBtn1))
 				{
@@ -871,19 +872,19 @@ void CMenu::_configMain(void)
 					m_gc_play_default_sound = m_cfg.getBool(GC_DOMAIN, "play_default_sound", true);
 				}
 			}
-			if(curPage == 12)
+			if(mainCfg_curPage == 12)
 			{
 				if(m_btnMgr.selected(m_configBtn1))
 				{
 					_hideConfigMain();
 					_ConfigHB();
-					_showConfigMain(12);
+					_showConfigMain();
 				}
 				else if(m_btnMgr.selected(m_configBtn2))
 				{
 					_hideConfigMain();
 					_ConfigSrc();
-					_showConfigMain(12);
+					_showConfigMain();
 				}
 				else if(m_btnMgr.selected(m_configBtn3))
 				{
@@ -897,7 +898,7 @@ void CMenu::_configMain(void)
 					m_btnMgr.setText(m_configBtn4, val ? _t("yes", L"Yes") : _t("no", L"No"));
 				}
 			}
-			if(curPage == 13)
+			if(mainCfg_curPage == 13)
 			{
 				if(m_btnMgr.selected(m_configBtn1))
 				{
@@ -924,7 +925,7 @@ void CMenu::_configMain(void)
 					CFLocked = val;
 				}
 			}
-			if(curPage == 14)
+			if(mainCfg_curPage == 14)
 			{
 				if(m_btnMgr.selected(m_configBtn1))
 				{
@@ -950,7 +951,7 @@ void CMenu::_configMain(void)
 			}
 		}
 	}
-	if(curPage == 2 && m_curLanguage != prevLanguage)
+	if(mainCfg_curPage == 2 && m_curLanguage != prevLanguage)
 	{
 		m_cacheList.Init(m_settingsDir.c_str(), m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str(), m_pluginDataDir.c_str(),
 				 m_cfg.getString(CONFIG_FILENAME_SKIP_DOMAIN,CONFIG_FILENAME_SKIP_KEY,CONFIG_FILENAME_SKIP_DEFAULT));

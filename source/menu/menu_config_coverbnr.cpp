@@ -74,7 +74,7 @@ void CMenu::_CoverBanner(void)
 			{
 				_hideCoverBanner();
 				RemoveCover(id);
-				error(_t("deltcover", L"Cover is deleted."));
+				_error(_t("deltcover", L"Cover is deleted."));
 				_showCoverBanner();
 			}
 			else if(m_btnMgr.selected(m_configBtn3))
@@ -95,7 +95,7 @@ void CMenu::_CoverBanner(void)
 				fsop_deleteFile(fmt("%s/%s.bnr", m_customBnrDir.c_str(), id));
 				fsop_deleteFile(fmt("%s/%.3s.bnr", m_bnrCacheDir.c_str(), id));
 				fsop_deleteFile(fmt("%s/%.3s.bnr", m_customBnrDir.c_str(), id));
-				error(_t("deltbanner", L"Banner is deleted."));
+				_error(_t("deltbanner", L"Banner is deleted."));
 				m_newGame = true;
 				_showCoverBanner();
 			}

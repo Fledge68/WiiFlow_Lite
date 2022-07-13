@@ -971,7 +971,7 @@ void CMenu::_gameSettings(const dir_discHdr *hdr, bool disc)
 			else if(m_btnMgr.selected(m_gameSettingsBtnManage))
 			{
 				if(disc)
-					error(_t("cfgg57", L"Not allowed for disc!"));
+					_error(_t("cfgg57", L"Not allowed for disc!"));
 				else
 				{
 					CoverFlow.stopCoverLoader(true);
@@ -1079,7 +1079,7 @@ void CMenu::_gameSettings(const dir_discHdr *hdr, bool disc)
 			else if(m_btnMgr.selected(m_gameSettingsBtnAdultOnly))
 			{
 				if(disc)
-					error(_t("cfgg57", L"Not allowed for disc!"));
+					_error(_t("cfgg57", L"Not allowed for disc!"));
 				else
 				{
 					if(GameHdr->type == TYPE_PLUGIN)
@@ -1094,7 +1094,7 @@ void CMenu::_gameSettings(const dir_discHdr *hdr, bool disc)
 				_hideGameSettings();
 				m_forceext = true;
 				if(!_ExtractGameSave(id))
-					error(_t("cfgg50", L"No save to extract!"));
+					_error(_t("cfgg50", L"No save to extract!"));
 				_showGameSettings();
 			}
 			else if(m_btnMgr.selected(m_gameSettingsBtnFlashSave))
@@ -1102,7 +1102,7 @@ void CMenu::_gameSettings(const dir_discHdr *hdr, bool disc)
 				_hideGameSettings();
 				m_forceext = true;
 				if(!_FlashGameSave(id))
-					error(_t("cfgg51", L"No save to flash to real NAND!"));
+					_error(_t("cfgg51", L"No save to flash to real NAND!"));
 				_showGameSettings();
 			}
 		}

@@ -234,7 +234,7 @@ void CMenu::_checkboxesMenu(u8 md)
 						if(source != "plugin")
 						{
 							_hideCheckboxesMenu();
-							error(_t("smediterr", L"Not allowed!"));
+							_error(_t("smediterr", L"Not allowed!"));
 							_showCheckboxesMenu();
 						}
 						else
@@ -316,7 +316,7 @@ void CMenu::_checkboxesMenu(u8 md)
 							
 						if(!plugin_ok)
 						{
-							error(_t("smediterr", L"Not allowed!"));
+							_error(_t("smediterr", L"Not allowed!"));
 						}
 						else
 						{

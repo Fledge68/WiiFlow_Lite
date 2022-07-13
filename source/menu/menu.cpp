@@ -37,8 +37,8 @@ extern const u32 camera_wav_size;
 
 CMenu mainMenu;
 
-u8 CMenu::downloadStack[8192] ATTRIBUTE_ALIGN(32);
-const u32 CMenu::downloadStackSize = 8192;
+//u8 CMenu::downloadStack[8192] ATTRIBUTE_ALIGN(32);
+//const u32 CMenu::downloadStackSize = 8192;
 
 CMenu::CMenu()
 {
@@ -46,8 +46,6 @@ CMenu::CMenu()
 	m_thrdWorking = false;
 	m_thrdStop = false;
 	m_thrdProgress = 0.f;
-	m_thrdStep = 0.f;
-	m_thrdStepLen = 0.f;
 	m_locked = false;
 	m_favorites = false;
 	m_thrdNetwork = false;
@@ -2610,20 +2608,6 @@ void CMenu::_stopSounds(void)
 	m_btnMgr.stopSounds();
 	CoverFlow.stopSound();
 	m_gameSound.Stop();
-}
-
-bool CMenu::_loadFile(u8 * &buffer, u32 &size, const char *path, const char *file)
-{
-	u32 fileSize = 0;
-	u8 *fileBuf = fsop_ReadFile(file == NULL ? path : fmt("%s/%s", path, file), &fileSize);
-	if(fileBuf == NULL)
-		return false;
-
-	if(buffer != NULL)
-		MEM2_free(buffer);
-	buffer = fileBuf;
-	size = fileSize;
-	return true;
 }
 
 /* wiiflow creates a map<u8, u8> _installed_cios list for slots 200 to 253 and slot 0

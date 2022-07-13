@@ -600,7 +600,7 @@ int CMenu::main(void)
 				}
 				else
 				{
-					error(_t("main8", L"No disc in drive!"));
+					_error(_t("main8", L"No disc in drive!"));
 					if(BTN_B_HELD)
 					{
 						bheld = true;

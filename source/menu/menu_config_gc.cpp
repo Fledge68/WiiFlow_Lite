@@ -11,6 +11,8 @@ s16 m_configGCLblPage;
 s16 m_configGCBtnPageM;
 s16 m_configGCBtnPageP;
 
+u8 configGC_curPage = 1;
+
 template <class T> static inline T loopNum(T i, T s)
 {
 	return (i + s) % s;
@@ -29,7 +31,7 @@ void CMenu::_hideConfigGC(bool instant)
 	_hideConfigButtons(instant);
 }
 
-void CMenu::_showConfigGC(int curPage)
+void CMenu::_showConfigGC(void)
 {
 	_setBg(m_configGCBg, m_configGCBg);
 	m_btnMgr.show(m_configGCLblTitle);
@@ -41,12 +43,12 @@ void CMenu::_showConfigGC(int curPage)
 	m_btnMgr.show(m_configGCLblPage);
 	m_btnMgr.show(m_configGCBtnPageM);
 	m_btnMgr.show(m_configGCBtnPageP);
-	m_btnMgr.setText(m_configGCLblPage, wfmt(L"%i / %i", curPage, 2));
+	m_btnMgr.setText(m_configGCLblPage, wfmt(L"%i / %i", configGC_curPage, 2));
 
 	_hideConfigButtons(true);
 
 	int i;
-	if(curPage == 1)
+	if(configGC_curPage == 1)
 	{
 		m_btnMgr.setText(m_configLbl1, _t("cfgb5", L"Video mode"));
 		m_btnMgr.setText(m_configLbl2, _t("cfgb6", L"Game language"));
@@ -103,9 +105,9 @@ void CMenu::_configGC(void)
 {
 	int i;
 	bool j;
-	int curPage = 1;
+	configGC_curPage = 1;
 	SetupInput();
-	_showConfigGC(curPage);
+	_showConfigGC();
 	while(!m_exit)
 	{
 		_mainLoopCommon();
@@ -117,27 +119,27 @@ void CMenu::_configGC(void)
 			m_btnMgr.down();
 		else if(BTN_LEFT_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_configGCBtnPageM)))
 		{
-			curPage--;
-			if(curPage < 1)
-				curPage = 2;
+			configGC_curPage--;
+			if(configGC_curPage < 1)
+				configGC_curPage = 2;
 			if(!BTN_A_PRESSED)
 				m_btnMgr.click(m_configGCBtnPageM);
-			_showConfigGC(curPage);
+			_showConfigGC();
 		}
 		else if(BTN_RIGHT_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_configGCBtnPageP)))
 		{
-			curPage++;
-			if(curPage > 2)
-				curPage = 1;
+			configGC_curPage++;
+			if(configGC_curPage > 2)
+				configGC_curPage = 1;
 			if(!BTN_A_PRESSED)
 				m_btnMgr.click(m_configGCBtnPageP);
-			_showConfigGC(curPage);
+			_showConfigGC();
 		}
 		else if(BTN_A_PRESSED)
 		{
 			if(m_btnMgr.selected(m_configGCBtnBack))
 				break;
-			if(curPage == 1)
+			if(configGC_curPage == 1)
 			{
 				if(m_btnMgr.selected(m_configBtn2P) || m_btnMgr.selected(m_configBtn2M))
 				{

@@ -159,7 +159,7 @@ int CMenu::_NandEmuCfg(void)
 {	
 	if(isWiiVC)
 	{
-		error(_t("errboot7", L"Access denied in Wii VC mode."));
+		_error(_t("errboot7", L"Access denied in Wii VC mode."));
 		return 0;
 	}
 	s8 direction;
@@ -251,7 +251,7 @@ int CMenu::_NandEmuCfg(void)
 					int emuPart = _FindEmuPart(!m_nanddump, true);
 					if(emuPart < 0)
 					{
-						error(_t("cfgne8", L"No valid FAT partition found for NAND Emulation!"));
+						_error(_t("cfgne8", L"No valid FAT partition found for NAND Emulation!"));
 						_showNandEmu();
 					}
 					else

@@ -79,7 +79,7 @@ bool CMenu::_Home(void)
 			//m_theme.load(fmt("%s.ini", m_themeDataDir.c_str()));
 			m_theme.save();
 			_hideHome();
-			error(_t("savedtheme", L"Theme config saved!"));
+			_error(_t("savedtheme", L"Theme config saved!"));
 			_showHome();
 		}
 		else if(BTN_A_PRESSED)
@@ -221,7 +221,7 @@ bool CMenu::_ExitTo(void)
 				}
 				else
 				{
-					error(_fmt("errneek1", L"Cannot launch neek2o. Verify your neek2o setup"));
+					_error(_fmt("errneek1", L"Cannot launch neek2o. Verify your neek2o setup"));
 					_showExitTo();
 				}
 			}

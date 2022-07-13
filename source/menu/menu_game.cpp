@@ -376,9 +376,9 @@ void CMenu::_game(bool launch)
 				_hideGame();
 				m_banner.SetShowBanner(false);
 				if(m_locked)
-					error(_t("errgame15", L"WiiFlow locked! Unlock WiiFlow to use this feature."));
+					_error(_t("errgame15", L"WiiFlow locked! Unlock WiiFlow to use this feature."));
 				else if(hdr->type == TYPE_CHANNEL)
-					error(_t("errgame17", L"Can not delete real NAND Channels!"));
+					_error(_t("errgame17", L"Can not delete real NAND Channels!"));
 				else if(hdr->type == TYPE_HOMEBREW)
 				{
 					bool smallBox = m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox", false);
@@ -414,7 +414,7 @@ void CMenu::_game(bool launch)
 				if(m_locked)
 				{
 					m_banner.SetShowBanner(false);
-					error(_t("errgame15", L"WiiFlow locked! Unlock WiiFlow to use this feature."));
+					_error(_t("errgame15", L"WiiFlow locked! Unlock WiiFlow to use this feature."));
 					m_banner.SetShowBanner(true);
 				}
 				else
@@ -442,7 +442,7 @@ void CMenu::_game(bool launch)
 				if(m_locked)
 				{
 					m_banner.SetShowBanner(false);
-					error(_t("errgame15", L"WiiFlow locked! Unlock WiiFlow to use this feature."));
+					_error(_t("errgame15", L"WiiFlow locked! Unlock WiiFlow to use this feature."));
 					m_banner.SetShowBanner(true);
 				}
 				else
@@ -479,7 +479,7 @@ void CMenu::_game(bool launch)
 				_hideGame();
 				if(isWiiVC && (hdr->type == TYPE_WII_GAME || hdr->type == TYPE_EMUCHANNEL))
 				{
-					error(_t("errgame19", L"Can't launch in Wii virtual console mode!"));
+					_error(_t("errgame19", L"Can't launch in Wii virtual console mode!"));
 					launch = false;
 					_showGame();
 				}

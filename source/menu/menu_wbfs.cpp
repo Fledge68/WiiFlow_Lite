@@ -263,7 +263,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 {
 	if(op == WO_ADD_GAME)
 	{
-		error(_t("wbfsoperr6", L"Install game is broken,\nplease use cleanrip."));
+		_error(_t("wbfsoperr6", L"Install game is broken,\nplease use cleanrip."));
 		return false;
 	}
 	lwp_t thread = 0;
@@ -326,19 +326,19 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						m_btnMgr.setText(m_wbfsLblMessage, L"");
 						if (Disc_Wait() < 0)
 						{
-							error(_t("wbfsoperr1", L"Disc_Wait failed"));
+							_error(_t("wbfsoperr1", L"Disc_Wait failed"));
 							out = true;
 							break;
 						}
 						if (Disc_Open(false) < 0)
 						{
-							error(_t("wbfsoperr2", L"Disc_Open failed"));
+							_error(_t("wbfsoperr2", L"Disc_Open failed"));
 							out = true;
 							break;
 						}
 						if (Disc_IsWii() == 0)
 						{
-							//error(_t("wbfsoperr6", L"Install game is broken, please use cleanrip."));
+							//_error(_t("wbfsoperr6", L"Install game is broken, please use cleanrip."));
 							//out = true;
 							//break;
 							
@@ -346,7 +346,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 							memcpy(GameID, wii_hdr.id, 6);
 							if(_searchGamesByID(GameID))
 							{
-								error(_t("wbfsoperr4", L"Game already installed"));
+								_error(_t("wbfsoperr4", L"Game already installed"));
 								out = true;
 								break;
 							}
@@ -364,7 +364,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						}
 						else if(Disc_IsGC() == 0)
 						{
-							//error(_t("wbfsoperr6", L"Install game is broken, please use cleanrip."));
+							//_error(_t("wbfsoperr6", L"Install game is broken, please use cleanrip."));
 							//out = true;
 							//break;
 							
@@ -372,7 +372,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 							memcpy(GameID, gc_hdr.id, 6);
 							if(_searchGamesByID(GameID))
 							{
-								error(_t("wbfsoperr4", L"Game already installed"));
+								_error(_t("wbfsoperr4", L"Game already installed"));
 								out = true;
 								break;
 							}
@@ -398,7 +398,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						}
 						else
 						{
-							error(_t("wbfsoperr3", L"This is not a Wii or GC disc!"));
+							_error(_t("wbfsoperr3", L"This is not a Wii or GC disc!"));
 							out = true;
 						}
 						break;
@@ -447,7 +447,7 @@ bool CMenu::_wbfsOp(CMenu::WBFS_OP op)
 						{
 							if(CF_Hdr->settings[0] != 0x00010001)
 							{
-								error(_t("wbfsoperr5", L"Deleting this Channel is not allowed!"));
+								_error(_t("wbfsoperr5", L"Deleting this Channel is not allowed!"));
 								done = true;
 								out = true;
 								break;
