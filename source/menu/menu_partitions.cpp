@@ -14,6 +14,8 @@ void CMenu::_hidePartitionsCfg(bool instant)
 	for(u8 i = 0; i < ARRAY_SIZE(m_partitionsLblUser); ++i)
 		if(m_partitionsLblUser[i] != -1)
 			m_btnMgr.hide(m_partitionsLblUser[i], instant);
+
+	_hideConfigButtons(instant);
 }
 
 void CMenu::_showPartitionsCfg(void)

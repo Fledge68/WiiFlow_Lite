@@ -192,7 +192,6 @@ private:
 	TexData m_gameinfoBg;
 	TexData m_codeBg;
 	TexData m_aboutBg;
-	TexData m_systemBg;
 	TexData m_wbfsBg;
 	TexData m_gameSettingsBg;
 	TexData m_promptBg;
