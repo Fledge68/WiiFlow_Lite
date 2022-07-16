@@ -1061,6 +1061,7 @@ private:
 	//
 	void _showError(void);
 	void _showMain(void);
+	void _showTotalGames(const int numberOfGames);
 	void _showConfigCommon(const TexData & bg, int page);
 	void _showConfig(void);
 	void _showConfig3(void);
