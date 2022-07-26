@@ -30,6 +30,7 @@ void CMenu::_error(const wstringEx &msg)
 	_hideAbout();
 	_hideCode();
 	_hideConfigMain();
+	_hideConfigGCGame();
 	_hideDownload();
 	_hideExitTo();
 	_hideGame();

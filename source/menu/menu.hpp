@@ -453,61 +453,6 @@ private:
 	s16 m_gameSettingsBtnAspectRatioP;
 	s16 m_gameSettingsBtnAspectRatioM;
 
-	s16 m_gameSettingsLblEmuMemCard;
-	s16 m_gameSettingsLblEmuMemCard_Val;
-	s16 m_gameSettingsBtnEmuMemCard_P;
-	s16 m_gameSettingsBtnEmuMemCard_M;
-
-	s16 m_gameSettingsLblDevoMemcardEmu;
-	s16 m_gameSettingsBtnDevoMemcardEmu;
-
-	s16 m_gameSettingsLblWidescreen;
-	s16 m_gameSettingsBtnWidescreen;
-	
-	s16 m_gameSettingsLblWiiuWidescreen;
-	s16 m_gameSettingsBtnWiiuWidescreen;
-
-	s16 m_gameSettingsLblCC_Rumble;
-	s16 m_gameSettingsBtnCC_Rumble;
-  
-	s16 m_gameSettingsLblNATIVE_CTL;
-	s16 m_gameSettingsBtnNATIVE_CTL;
-  
-	s16 m_gameSettingsLblDeflicker;
-	s16 m_gameSettingsBtnDeflicker;
-
-	s16 m_gameSettingsLblArcade;
-	s16 m_gameSettingsBtnArcade;
-
-	s16 m_gameSettingsLblSkip_IPL;
-	s16 m_gameSettingsBtnSkip_IPL;
-
-	s16 m_gameSettingsLblPatch50;
-	s16 m_gameSettingsBtnPatch50;
-
-	s16 m_gameSettingsLblWidth;
-	s16 m_gameSettingsLblWidthVal;
-	s16 m_gameSettingsBtnWidthP;
-	s16 m_gameSettingsBtnWidthM;
-
-	s16 m_gameSettingsLblPos;
-	s16 m_gameSettingsLblPosVal;
-	s16 m_gameSettingsBtnPosP;
-	s16 m_gameSettingsBtnPosM;
-	
-	s16 m_gameSettingsLblBBA;
-	s16 m_gameSettingsBtnBBA;
-
-	s16 m_gameSettingsLblNetProf;
-	s16 m_gameSettingsLblNetProfVal;
-	s16 m_gameSettingsBtnNetProfP;
-	s16 m_gameSettingsBtnNetProfM;
-
-	s16 m_gameSettingsLblGCLoader;
-	s16 m_gameSettingsLblGCLoader_Val;
-	s16 m_gameSettingsBtnGCLoader_P;
-	s16 m_gameSettingsBtnGCLoader_M;
-
 	s16 m_gameSettingsLblCustom;
 	s16 m_gameSettingsBtnCustom;
 	
@@ -925,6 +870,7 @@ private:
 	void _hideGameInfo(bool instant = false);
 	void _hideGameSettings(bool instant = false);
 	void _hideGameSettingsPg(bool instant = false);
+	void _hideConfigGCGame(bool instant = true);
 	void _hideCheatSettings(bool instant = false);
 	void _hideCoverBanner(bool instant = true);
 	void _hideWBFS(bool instant = false);
@@ -956,6 +902,7 @@ private:
 	void _showCFTheme(u32 curParam, int version, bool wide);
 	void _showGame(void);
 	void _showGameSettings(void);
+	void _showConfigGCGame(void);
 	void _showGameInfo(void);
 	void _showCheatSettings(void);
 	void _showCoverBanner(void);
@@ -987,6 +934,7 @@ private:
 	void _game(bool launch = false);
 	bool _gameinfo(void);
 	void _gameSettings(const dir_discHdr *GameHdr, bool disc = false);
+	void _configGCGame(const dir_discHdr *GameHdr, bool disc = false);
 	void _CheatSettings();
 	void _CoverBanner(void);
 	bool _wbfsOp(WBFS_OP op);
