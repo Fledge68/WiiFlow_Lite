@@ -39,7 +39,7 @@ void CMenu::_error(const wstringEx &msg)
 	_hideCFTheme();
 	_hideCategorySettings();
 	_hideGameInfo();
-	_hideGameSettings();
+	_hideConfigGame();
 	_hideWaitMessage();
 	m_btnMgr.setText(m_errorLblMessage, msg, true);
 	_showError();

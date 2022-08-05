@@ -422,7 +422,10 @@ void CMenu::_game(bool launch)
 					// the mainloop handles drawing banner while in settings
 					m_banner.ToggleZoom();//zoom to full
 					m_banner.ToggleGameSettings();// dim brightness
-					_gameSettings(hdr);
+					if(hdr->type == TYPE_GC_GAME)
+						_configGCGame(hdr);
+					else
+						_configGame(hdr);
 					m_banner.ToggleGameSettings();//reset brightness
 					m_banner.ToggleZoom();//de zoom to small
 				}

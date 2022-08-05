@@ -1023,7 +1023,7 @@ void CMenu::_launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 				
 				/* go to game settings menu if wanted to make changes */
 				if(disc_cfg)
-					_gameSettings(hdr, dvd);
+					_configGCGame(hdr, dvd);
 				
 				/* prepare to launch GC disc */
 				MusicPlayer.Stop();
@@ -1047,7 +1047,7 @@ void CMenu::_launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 			
 			/* go to game settings menu if wanted to make changes */
 			if(disc_cfg)
-				_gameSettings(hdr, dvd);
+				_configGame(hdr, dvd);
 			
 			/* prepare to launch Wii disc */
 			MusicPlayer.Stop();

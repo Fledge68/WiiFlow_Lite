@@ -92,7 +92,7 @@ void CMenu::_showConfigGCGame()
 	
 	string id(GameHdr->id);
 	wstringEx title(_t("cfgg1", L"Settings"));
-	title.append(wfmt(L" [%s]", id));
+	title.append(wfmt(L" [%.6s]", id.c_str()));
 	m_btnMgr.setText(m_gameSettingsLblTitle, title);
 	m_btnMgr.show(m_gameSettingsLblTitle);
 	
@@ -375,10 +375,10 @@ void CMenu::_configGCGame(const dir_discHdr *hdr, bool disc)
 		{
 			if(m_configGCGamePage == 1)
 			{
-				//m_btnMgr.setText(m_configLbl1, _t("cfgg58", L"Adult only"));
-				//m_btnMgr.setText(m_configLbl2, _t("cfgg35", L"GameCube Loader"));
-				//m_btnMgr.setText(m_configLbl3, _t("cfgg2", L"Video mode"));
-				//m_btnMgr.setText(m_configLbl4, _t("cfgg3", L"Language"));
+				//Adult only
+				//GameCube Loader
+				//Video mode
+				//Language
 				if(m_btnMgr.selected(m_configBtn1))
 				{
 					if(disc)
@@ -395,22 +395,22 @@ void CMenu::_configGCGame(const dir_discHdr *hdr, bool disc)
 				else if(m_btnMgr.selected(m_configBtn2P) || m_btnMgr.selected(m_configBtn2M))
 				{
 					s8 direction = m_btnMgr.selected(m_configBtn2P) ? 1 : -1;
-					m_gcfg2.setInt(id, "gc_loader", (int)loopNum(m_gcfg2.getUInt(id, "gc_loader", 0) + direction, ARRAY_SIZE(CMenu::_GCLoader)));
-					i = min(m_gcfg2.getUInt(id, "gc_loader", 0), ARRAY_SIZE(CMenu::_GCLoader) - 1u);
+					m_gcfg2.setInt(id, "gc_loader", loopNum(m_gcfg2.getUInt(id, "gc_loader", 0) + direction, ARRAY_SIZE(CMenu::_GCLoader)));
+					i = m_gcfg2.getUInt(id, "gc_loader");
 					m_btnMgr.setText(m_configLbl2Val, _t(CMenu::_GCLoader[i].id, CMenu::_GCLoader[i].text));
 				}
 				else if(m_btnMgr.selected(m_configBtn3P) || m_btnMgr.selected(m_configBtn3M))
 				{
 					s8 direction = m_btnMgr.selected(m_configBtn3P) ? 1 : -1;
-					m_gcfg2.setInt(id, "language", (int)loopNum(m_gcfg2.getUInt(id, "language", 0) + direction, ARRAY_SIZE(CMenu::_GClanguages)));
-					i = min(m_gcfg2.getUInt(id, "language", 0), ARRAY_SIZE(CMenu::_GClanguages) - 1u);
+					m_gcfg2.setInt(id, "language", loopNum(m_gcfg2.getUInt(id, "language", 0) + direction, ARRAY_SIZE(CMenu::_GClanguages)));
+					i = m_gcfg2.getUInt(id, "language");
 					m_btnMgr.setText(m_configLbl3Val, _t(CMenu::_GClanguages[i].id, CMenu::_GClanguages[i].text));
 				}
 				else if(m_btnMgr.selected(m_configBtn4P) || m_btnMgr.selected(m_configBtn4M))
 				{
 					s8 direction = m_btnMgr.selected(m_configBtn4P) ? 1 : -1;
-					m_gcfg2.setInt(id, "video_mode", (int)loopNum(m_gcfg2.getUInt(id, "video_mode", 0) + direction, ARRAY_SIZE(CMenu::_GCvideoModes)));
-					i = min(m_gcfg2.getUInt(id, "video_mode", 0), ARRAY_SIZE(CMenu::_GCvideoModes) - 1u);
+					m_gcfg2.setInt(id, "video_mode", loopNum(m_gcfg2.getUInt(id, "video_mode", 0) + direction, ARRAY_SIZE(CMenu::_GCvideoModes)));
+					i = m_gcfg2.getUInt(id, "video_mode");
 					m_btnMgr.setText(m_configLbl4Val, _t(CMenu::_GCvideoModes[i].id, CMenu::_GCvideoModes[i].text));
 				}
 			}
@@ -418,10 +418,10 @@ void CMenu::_configGCGame(const dir_discHdr *hdr, bool disc)
 			{
 				if(GCLoader == DEVOLUTION)
 				{
-					//m_btnMgr.setText(m_configLbl1, _t("cfgg38", L"Activity LED"));
-					//m_btnMgr.setText(m_configLbl2, _t("cfgg47", L"Emulated MemCard"));
-					//m_btnMgr.setText(m_configLbl3, _t("cfgg36", L"Widescreen Patch"));
-					//m_btnMgr.setText(m_configLbl4, _t("cfgg40", L"Manage Cover and Banner"))
+					//Activity LED
+					//Emulated MemCard
+					//Widescreen Patch
+					//Manage Cover and Banner
 					if(m_btnMgr.selected(m_configBtn1))
 					{
 						m_gcfg2.setBool(id, "led", !m_gcfg2.getBool(id, "led", 0));
@@ -453,15 +453,15 @@ void CMenu::_configGCGame(const dir_discHdr *hdr, bool disc)
 				}
 				else
 				{
-					//m_btnMgr.setText(m_configLbl1, _t("cfgg22", L"Debugger"));
-					//m_btnMgr.setText(m_configLbl2, _t("cfgg44", L"Video Deflicker"));
-					//m_btnMgr.setText(m_configLbl3, _t("cfgg5", L"Ocarina"));
-					//m_btnMgr.setText(m_configLbl4, _t("cfgg15", L"Cheat Codes"));
+					//Debugger
+					//Video Deflicker
+					//Ocarina
+					//Cheat Codes
 					if(m_btnMgr.selected(m_configBtn1P) || m_btnMgr.selected(m_configBtn1M))
 					{
 						s8 direction = m_btnMgr.selected(m_configBtn1P) ? 1 : -1;
-						m_gcfg2.setInt(id, "debugger", (int)loopNum(m_gcfg2.getUInt(id, "debugger", 0) + direction, ARRAY_SIZE(CMenu::_debugger)));
-						i = min(m_gcfg2.getUInt(id, "debugger", 0), ARRAY_SIZE(CMenu::_debugger) - 1u);
+						m_gcfg2.setInt(id, "debugger", loopNum(m_gcfg2.getUInt(id, "debugger", 0) + direction, ARRAY_SIZE(CMenu::_debugger)));
+						i = m_gcfg2.getUInt(id, "debugger");
 						m_btnMgr.setText(m_configLbl1Val, _t(CMenu::_debugger[i].id, CMenu::_debugger[i].text));
 					}
 					else if(m_btnMgr.selected(m_configBtn2))
@@ -484,10 +484,10 @@ void CMenu::_configGCGame(const dir_discHdr *hdr, bool disc)
 			}
 			else if(m_configGCGamePage == 3)
 			{
-				//m_btnMgr.setText(m_configLbl1, _t("cfgg46", L"WiiU Widescreen"));
-				//m_btnMgr.setText(m_configLbl2, _t("cfgg47", L"Emulated MemCard"));
-				//m_btnMgr.setText(m_configLbl3, _t("cfgg36", L"Widescreen Patch"));
-				//m_btnMgr.setText(m_configLbl4, _t("cfgg40", L"Manage Cover and Banner"))
+				//WiiU Widescreen
+				//Emulated MemCard
+				//Widescreen Patch
+				//Manage Cover and Banner
 				if(m_btnMgr.selected(m_configBtn1))
 				{
 					m_gcfg2.setBool(id, "wiiu_widescreen", !m_gcfg2.getBool(id, "wiiu_widescreen", 0));
@@ -496,8 +496,8 @@ void CMenu::_configGCGame(const dir_discHdr *hdr, bool disc)
 				else if(m_btnMgr.selected(m_configBtn2P) || m_btnMgr.selected(m_configBtn2M))
 				{
 					s8 direction = m_btnMgr.selected(m_configBtn2P) ? 1 : -1;
-					m_gcfg2.setInt(id, "emu_memcard", (int)loopNum(m_gcfg2.getUInt(id, "emu_memcard", 2) + direction, ARRAY_SIZE(CMenu::_NinEmuCard)));
-					i = min(m_gcfg2.getUInt(id, "emu_memcard", 0), ARRAY_SIZE(CMenu::_NinEmuCard) - 1u);
+					m_gcfg2.setInt(id, "emu_memcard", loopNum(m_gcfg2.getUInt(id, "emu_memcard", 2) + direction, ARRAY_SIZE(CMenu::_NinEmuCard)));
+					i = m_gcfg2.getUInt(id, "emu_memcard");
 					m_btnMgr.setText(m_configLbl2Val, _t(CMenu::_NinEmuCard[i].id, CMenu::_NinEmuCard[i].text));
 				}
 				else if(m_btnMgr.selected(m_configBtn3))
@@ -521,10 +521,10 @@ void CMenu::_configGCGame(const dir_discHdr *hdr, bool disc)
 			}
 			else if(m_configGCGamePage == 4)
 			{
-				//m_btnMgr.setText(m_configLbl1, _t("cfgg52", L"Wiimote CC Rumble"));
-				//m_btnMgr.setText(m_configLbl2, _t("cfgg43", L"Native Control"));
-				//m_btnMgr.setText(m_configLbl3, _t("cfgg48", L"Triforce Arcade Mode"));
-				//m_btnMgr.setText(m_configLbl4, _t("cfgg53", L"Skip IPL BIOS"));
+				//Wiimote CC Rumble
+				//Native Control
+				//Triforce Arcade Mode
+				//Skip IPL BIOS
 				if(m_btnMgr.selected(m_configBtn1))
 				{
 					m_gcfg2.setOptBool(id, "cc_rumble", loopNum(m_gcfg2.getOptBool(id, "cc_rumble") + 1, 3));
@@ -548,10 +548,10 @@ void CMenu::_configGCGame(const dir_discHdr *hdr, bool disc)
 			}
 			else if(m_configGCGamePage == 5)
 			{
-				//m_btnMgr.setText(m_configLbl1, _t("cfgg38", L"Activity LED"));
-				//m_btnMgr.setText(m_configLbl2, _t("cfgg54", L"Video Width"));
-				//m_btnMgr.setText(m_configLbl3, _t("cfgg55", L"Video Position"));
-				//m_btnMgr.setText(m_configLbl4, _t("cfgg56", L"Patch PAL50"));
+				//Activity LED
+				//Video Width
+				//Video Position
+				//Patch PAL50
 				if(m_btnMgr.selected(m_configBtn1))
 				{
 					m_gcfg2.setBool(id, "led", !m_gcfg2.getBool(id, "led", 0));
@@ -615,8 +615,8 @@ void CMenu::_configGCGame(const dir_discHdr *hdr, bool disc)
 			}
 			else
 			{
-				//m_btnMgr.setText(m_configLbl1, _t("cfgg59", L"BBA Emulation"));
-				//m_btnMgr.setText(m_configLbl2, _t("cfgg60", L"BBA Net Profile"));
+				//BBA Emulation
+				//BBA Net Profile
 				if(m_btnMgr.selected(m_configBtn1))
 				{
 					m_gcfg2.setBool(id, "bba_emu", !m_gcfg2.getBool(id, "bba_emu", 0));

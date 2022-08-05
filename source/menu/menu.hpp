@@ -431,104 +431,7 @@ private:
 	s16 m_gameSettingsBtnPageP;
 	s16 m_gameSettingsBtnBack;
 	s16 m_gameSettingsLblTitle;
-	
-	s16 m_gameSettingsLblGameLanguage;
-	s16 m_gameSettingsLblLanguage;
-	s16 m_gameSettingsBtnLanguageP;
-	s16 m_gameSettingsBtnLanguageM;
-	
-	s16 m_gameSettingsLblGameVideo;
-	s16 m_gameSettingsLblVideo;
-	s16 m_gameSettingsBtnVideoP;
-	s16 m_gameSettingsBtnVideoM;
-	
-	s16 m_gameSettingsLblApploader;
-	s16 m_gameSettingsBtnApploader;
-
-	s16 m_gameSettingsLblLED;
-	s16 m_gameSettingsBtnLED;
-
-	s16 m_gameSettingsLblAspectRatio;
-	s16 m_gameSettingsLblAspectRatioVal;
-	s16 m_gameSettingsBtnAspectRatioP;
-	s16 m_gameSettingsBtnAspectRatioM;
-
-	s16 m_gameSettingsLblCustom;
-	s16 m_gameSettingsBtnCustom;
-	
-	s16 m_gameSettingsLblLaunchNK;
-	s16 m_gameSettingsBtnLaunchNK;
-
-	s16 m_gameSettingsLblOcarina;
-	s16 m_gameSettingsBtnOcarina;
-	
-	s16 m_gameSettingsLblVipatch;
-	s16 m_gameSettingsBtnVipatch;
-	
-	s16 m_gameSettingsLblCountryPatch;
-	s16 m_gameSettingsBtnCountryPatch;
-	
-	s16 m_gameSettingsLblPrivateServer;
-	s16 m_gameSettingsLblPrivateServerVal;
-	s16 m_gameSettingsBtnPrivateServerM;
-	s16 m_gameSettingsBtnPrivateServerP;
-	
-	s16 m_gameSettingsLblFix480p;
-	s16 m_gameSettingsLblFix480pVal;
-	s16 m_gameSettingsBtnFix480pM;
-	s16 m_gameSettingsBtnFix480pP;
-
-	s16 m_gameSettingsLblWidescreenWiiu;
-	s16 m_gameSettingsLblWidescreenWiiuVal;
-	s16 m_gameSettingsBtnWidescreenWiiuM;
-	s16 m_gameSettingsBtnWidescreenWiiuP;
-
-	s16 m_gameSettingsLblDeflickerWii;
-	s16 m_gameSettingsLblDeflickerWiiVal;
-	s16 m_gameSettingsBtnDeflickerWiiM;
-	s16 m_gameSettingsBtnDeflickerWiiP;
-	
-	s16 m_gameSettingsLblManage;
-	s16 m_gameSettingsBtnManage;
-	
-	s16 m_gameSettingsLblPatchVidModes;
-	s16 m_gameSettingsLblPatchVidModesVal;
-	s16 m_gameSettingsBtnPatchVidModesM;
-	s16 m_gameSettingsBtnPatchVidModesP;
-	
 	s16 m_gameSettingsLblUser[3 * 2];
-	
-	s16 m_gameSettingsLblHooktype;
-	s16 m_gameSettingsLblHooktypeVal;
-	s16 m_gameSettingsBtnHooktypeM;
-	s16 m_gameSettingsBtnHooktypeP;
-	
-	s16 m_gameSettingsLblEmulationVal;
-	s16 m_gameSettingsBtnEmulationP;
-	s16 m_gameSettingsBtnEmulationM;
-	s16 m_gameSettingsLblEmulation;
-	
-	s16 m_gameSettingsLblDebugger;
-	s16 m_gameSettingsLblDebuggerV;
-	s16 m_gameSettingsBtnDebuggerP;
-	s16 m_gameSettingsBtnDebuggerM;
-	
-	s16 m_gameSettingsLblCheat;
-	s16 m_gameSettingsBtnCheat;
-	
-	s16 m_gameSettingsLblAdultOnly;
-	s16 m_gameSettingsBtnAdultOnly;
-	
- 	s16 m_gameSettingsLblGameIOS;
- 	s16 m_gameSettingsLblIOS;
- 	s16 m_gameSettingsBtnIOSP;
- 	s16 m_gameSettingsBtnIOSM;
-	
-	s16 m_gameSettingsLblExtractSave;
-	s16 m_gameSettingsBtnExtractSave;
-	
-	s16 m_gameSettingsLblFlashSave;
-	s16 m_gameSettingsBtnFlashSave;
 //Cheat menu
 	s16 m_cheatBtnBack;
 	s16 m_cheatBtnApply;
@@ -811,7 +714,7 @@ private:
 	void _initCFThemeMenu();
 	void _initGameMenu();
 	void _initGameInfoMenu();
-	void _initGameSettingsMenu();
+	void _initConfigGameMenu();
 	void _initCheatSettingsMenu();
 	void _initCoverBanner();
 	void _initWBFSMenu();
@@ -837,7 +740,7 @@ private:
 	void _textCode(void);
 	void _textGame(void);
 	void _textGameInfo(void);
-	void _textGameSettings(void);
+	void _textConfigGame(void);
 	void _textCheatSettings(void);
 	void _textCoverBanner(void);
 	void _textWBFS(void);
@@ -868,8 +771,7 @@ private:
 	void _hideCFTheme(bool instant = false);
 	void _hideGame(bool instant = false);
 	void _hideGameInfo(bool instant = false);
-	void _hideGameSettings(bool instant = false);
-	void _hideGameSettingsPg(bool instant = false);
+	void _hideConfigGame(bool instant = true);
 	void _hideConfigGCGame(bool instant = true);
 	void _hideCheatSettings(bool instant = false);
 	void _hideCoverBanner(bool instant = true);
@@ -901,7 +803,7 @@ private:
 	void _showCode(void);
 	void _showCFTheme(u32 curParam, int version, bool wide);
 	void _showGame(void);
-	void _showGameSettings(void);
+	void _showConfigGame(void);
 	void _showConfigGCGame(void);
 	void _showGameInfo(void);
 	void _showCheatSettings(void);
@@ -933,7 +835,7 @@ private:
 	void _cfTheme(void);
 	void _game(bool launch = false);
 	bool _gameinfo(void);
-	void _gameSettings(const dir_discHdr *GameHdr, bool disc = false);
+	void _configGame(const dir_discHdr *GameHdr, bool disc = false);
 	void _configGCGame(const dir_discHdr *GameHdr, bool disc = false);
 	void _CheatSettings();
 	void _CoverBanner(void);

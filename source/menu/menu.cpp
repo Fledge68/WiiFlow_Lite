@@ -1260,33 +1260,62 @@ void CMenu::_buildMenus(void)
 	// Build menus
 	_initMainMenu();
 	_initErrorMenu();
-	_initWad();
-	_initWBFSMenu();
 	_initConfigMenu();
 	_initConfigGCMenu();
-	_initPartitionsCfgMenu();
-	_initGameMenu();
-	_initDownloadMenu();
-	_initCodeMenu();
-	_initAboutMenu();
-	_initCFThemeMenu();
-	_initGameSettingsMenu();
-	_initCheatSettingsMenu(); 
-	_initSourceMenu();
 	_initConfigSrc();
 	_initConfigHB();
-	_initPluginSettingsMenu();
-	_initCategorySettingsMenu();
-	_initGameInfoMenu();
-	_initNandEmuMenu();
-	_initHomeAndExitToMenu();
-	_initCoverBanner();
-	_initExplorer();
 	_initBoot();
+	_initNandEmuMenu();
+	_initPartitionsCfgMenu();
 	_initPathsMenu();
+	_initDownloadMenu();
+	_initCodeMenu();
+	_initCFThemeMenu();
+	_initGameMenu();
+	_initGameInfoMenu();
+	_initConfigGameMenu();
+	_initCheatSettingsMenu(); 
+	_initCoverBanner();
+	_initWBFSMenu();
+	_initCategorySettingsMenu();
+	_initHomeAndExitToMenu();
+	_initAboutMenu();
+	_initExplorer();
+	_initWad();
+	_initSourceMenu();
+	_initPluginSettingsMenu();
 	_initCheckboxesMenu();
 
 	_loadCFCfg();
+}
+
+void CMenu::_updateText(void)
+{
+	_textConfig();
+	_textConfigGC();
+	_textConfigSrc();
+	_textConfigHB();
+	_textBoot();
+	_textNandEmu();
+	_textPartitionsCfg();
+	_textPaths();
+	_textDownload();
+	_textCode();
+	_textGame();
+	_textConfigGame();
+	_textCheatSettings();
+	_textCoverBanner();
+	_textWBFS();
+	_textCategorySettings();
+	_textHome();
+	_textExitTo();
+	_textShutdown();
+	_textExplorer();
+	_textWad();
+	if(m_use_source)
+		_textSource();
+	_textPluginSettings();
+	_textCheckboxesMenu();
 }
 
 typedef struct
@@ -1967,34 +1996,6 @@ void CMenu::_drawBg(void)
 	GX_Position3f32(0.f, 480.f, 0.f);
 	GX_TexCoord2f32(0.f, 1.f);
 	GX_End();
-}
-
-void CMenu::_updateText(void)
-{
-	if(m_use_source)
-		_textSource();
-	_textPluginSettings();
-	_textCategorySettings();
-	_textCheatSettings();
-	_textPartitionsCfg();
-	_textConfig();
-	_textConfigGC();
-	_textConfigHB();
-	_textConfigSrc();
-	_textBoot();
-	_textCoverBanner();
-	_textGame();
-	_textDownload();
-	_textCode();
-	_textWBFS();
-	_textGameSettings();
-	_textNandEmu();
-	_textHome();
-	_textExitTo();
-	_textShutdown();
-	_textExplorer();
-	_textWad();
-	_textCheckboxesMenu();
 }
 
 const wstringEx CMenu::_fmt(const char *key, const wchar_t *def)
