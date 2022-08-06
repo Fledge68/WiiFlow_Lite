@@ -31,7 +31,7 @@
 
 #define CONFIG_FILENAME_SKIP_DOMAIN	"PLUGINS"
 #define CONFIG_FILENAME_SKIP_KEY	"filename_skip_regex"
-#define CONFIG_FILENAME_SKIP_DEFAULT	"((dis[ck]|tape|side|track)[ _-]([b-l][^a-z]|0*[2-9]|0*[1-9][0-9]))|(disc2[.]iso)|(neogeo[.]zip)|(FUNBOOT[.]ROM)"
+#define CONFIG_FILENAME_SKIP_DEFAULT	"((dis[ck]|tape|side|track)[ _-]([b-l][^a-z]|0*[2-9]|0*[1-9][0-9]))|(^disc2[.]iso$)|(^neogeo[.]zip$)|(^funboot[.]rom$)|(^(ecs|exec|grom)[.]bin$)"
 
 class ListGenerator : public std::vector<dir_discHdr>
 {
