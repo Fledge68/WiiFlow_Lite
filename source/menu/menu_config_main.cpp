@@ -1007,14 +1007,14 @@ void CMenu::_initConfigMenu()
 	m_configBtn4M = _addPicButton("CONFIG/LINE4_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 420, 310, 48, 48);
 	m_configBtn4P = _addPicButton("CONFIG/LINE4_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 572, 310, 48, 48);
 
-	_setHideAnim(m_configLbl1, "CONFIG7/LINE1", 50, 0, -2.f, 0.f);
-	_setHideAnim(m_configBtn1, "CONFIG7/LINE1_BTN", -50, 0, 1.f, 0.f);
-	_setHideAnim(m_configLbl2, "CONFIG7/LINE2", 50, 0, -2.f, 0.f);
-	_setHideAnim(m_configBtn2, "CONFIG7/LINE2_BTN", -50, 0, 1.f, 0.f);
-	_setHideAnim(m_configLbl3, "CONFIG7/LINE3", 50, 0, -2.f, 0.f);
-	_setHideAnim(m_configBtn3, "CONFIG7/LINE3_BTN", -50, 0, 1.f, 0.f);
-	_setHideAnim(m_configLbl4, "CONFIG7/LINE4", 50, 0, -2.f, 0.f);
-	_setHideAnim(m_configBtn4, "CONFIG7/LINE4_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_configLbl1, "CONFIG/LINE1", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_configBtn1, "CONFIG/LINE1_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_configLbl2, "CONFIG/LINE2", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_configBtn2, "CONFIG/LINE2_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_configLbl3, "CONFIG/LINE3", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_configBtn3, "CONFIG/LINE3_BTN", -50, 0, 1.f, 0.f);
+	_setHideAnim(m_configLbl4, "CONFIG/LINE4", 50, 0, -2.f, 0.f);
+	_setHideAnim(m_configBtn4, "CONFIG/LINE4_BTN", -50, 0, 1.f, 0.f);
 	
 	_setHideAnim(m_configLbl1Val, "CONFIG/LINE1_VAL", -50, 0, 1.f, 0.f);
 	_setHideAnim(m_configBtn1M, "CONFIG/LINE1_MINUS", -50, 0, 1.f, 0.f);
