@@ -411,12 +411,12 @@ void CMenu::_Wad(const char *wad_path)
 			if(m_btnMgr.selected(m_wadBtnInstall))
 			{
 				_hideWad(true);
-				m_btnMgr.setProgress(m_wbfsPBar, 0.f);
-				m_btnMgr.setText(m_wbfsLblMessage, L"");
-				m_btnMgr.setText(m_wbfsLblDialog, L"");
-				m_btnMgr.show(m_wbfsPBar);
-				m_btnMgr.show(m_wbfsLblMessage);
-				m_btnMgr.show(m_wbfsLblDialog);
+				m_btnMgr.setProgress(m_downloadPBar, 0.f);
+				m_btnMgr.setText(m_downloadLblMessage, L"");
+				m_btnMgr.setText(m_downloadLblDialog, L"");
+				m_btnMgr.show(m_downloadPBar);
+				m_btnMgr.show(m_downloadLblMessage);
+				m_btnMgr.show(m_downloadLblDialog);
 				/* mios is real nand, chans are emu */
 				if(mios == false)
 				{
@@ -429,9 +429,9 @@ void CMenu::_Wad(const char *wad_path)
 				int result = installWad(wad_path);
 				_stop_pThread();
 				if(result < 0)
-					m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wad5", L"Installation error %i!"), result));
+					m_btnMgr.setText(m_downloadLblDialog, wfmt(_fmt("wad5", L"Installation error %i!"), result));
 				else
-					m_btnMgr.setText(m_wbfsLblDialog, wfmt(_fmt("wad6", L"Installation finished with %i hash fails."), result));
+					m_btnMgr.setText(m_downloadLblDialog, wfmt(_fmt("wad6", L"Installation finished with %i hash fails."), result));
 			}
 			else if(BTN_A_PRESSED && (m_btnMgr.selected(m_wadBtnNandSelectP) || m_btnMgr.selected(m_wadBtnNandSelectM)))
 			{
@@ -453,9 +453,9 @@ void CMenu::_Wad(const char *wad_path)
 	}
 	_hideWad();
 	/* onscreen message might be onscreen still */
-	m_btnMgr.hide(m_wbfsLblMessage);
-	m_btnMgr.hide(m_wbfsLblDialog);
-	m_btnMgr.hide(m_wbfsPBar);
+	m_btnMgr.hide(m_downloadLblMessage);
+	m_btnMgr.hide(m_downloadLblDialog);
+	m_btnMgr.hide(m_downloadPBar);
 }
 
 void CMenu::_initWad()

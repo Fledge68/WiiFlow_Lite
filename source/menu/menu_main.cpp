@@ -238,17 +238,17 @@ void CMenu::_showCF(bool refreshList)
 			cacheCovers = false;
 			if(!m_sourceflow || _sfCacheCoversNeeded() > 0)
 			{
-				m_btnMgr.setProgress(m_wbfsPBar, 0.f, true);
-				m_btnMgr.setText(m_wbfsLblMessage, L"0%");
-				m_btnMgr.setText(m_wbfsLblDialog, L"");
-				m_btnMgr.show(m_wbfsPBar);
-				m_btnMgr.show(m_wbfsLblMessage);
-				m_btnMgr.show(m_wbfsLblDialog);
+				m_btnMgr.setProgress(m_downloadPBar, 0.f, true);
+				m_btnMgr.setText(m_downloadLblMessage, L"0%");
+				m_btnMgr.setText(m_downloadLblDialog, L"");
+				m_btnMgr.show(m_downloadPBar);
+				m_btnMgr.show(m_downloadLblMessage);
+				m_btnMgr.show(m_downloadLblDialog);
 			
 				_start_pThread();
 				_cacheCovers();
 				_stop_pThread();
-				m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg14", L"Done."));
+				m_btnMgr.setText(m_downloadLblDialog, _t("dlmsg14", L"Done."));
 				u8 pause = 150;
 				if(m_sourceflow)
 					pause = 1;
@@ -258,9 +258,9 @@ void CMenu::_showCF(bool refreshList)
 					pause--;
 					if(pause == 0)
 					{
-						m_btnMgr.hide(m_wbfsPBar);
-						m_btnMgr.hide(m_wbfsLblMessage);
-						m_btnMgr.hide(m_wbfsLblDialog);
+						m_btnMgr.hide(m_downloadPBar);
+						m_btnMgr.hide(m_downloadLblMessage);
+						m_btnMgr.hide(m_downloadLblDialog);
 					}
 				}while(!m_exit && pause > 0);
 			}

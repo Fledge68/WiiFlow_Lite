@@ -11,199 +11,6 @@ u8 m_cheatSettingsPage = 0;
 int txtavailable;
 GCTCheats m_cheatfile;
 
-int CMenu::_downloadCheatFileAsync()
-{
-	m_thrdTotal = 2;// download and save
-	
-	m_thrdMessage = _t("dlmsg1", L"Initializing network...");
-	m_thrdMessageAdded = true;
-	if(_initNetwork() < 0)
-	{
-		return -2;
-	}
-	m_thrdMessage = _t("dlmsg11", L"Downloading...");
-	m_thrdMessageAdded = true;
-	
-	const char *id = CoverFlow.getId();
-	struct download file = {};
-	downloadfile(fmt(m_cfg.getString("general", "cheats_url", GECKOURL).c_str(), id), &file);
-	if(file.size > 0 && file.data[0] != '<')
-	{
-		m_thrdMessage = _t("dlmsg13", L"Saving...");
-		m_thrdMessageAdded = true;
-		update_pThread(1);// its downloaded
-		fsop_WriteFile(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id), file.data, file.size);
-		MEM2_free(file.data);
-		return 0;
-	}
-	if(file.size > 0)// received a 301/302 redirect instead of a 404?
-	{
-		MEM2_free(file.data);
-		return -4;// the file doesn't exist on the server
-	}
-	return -3;// download failed
-}
-
-void CMenu::_CheatSettings() 
-{
-	SetupInput();
-	m_cheatSettingsPage = 1;
-
-	const char *id = CoverFlow.getId();
-	txtavailable = m_cheatfile.openTxtfile(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id));
-	
-	u32 gctSize = 0;
-	u8 *gctBuf = NULL;
-	if(txtavailable > 0)
-		gctBuf = fsop_ReadFile(fmt("%s/%s.gct", m_cheatDir.c_str(), id), &gctSize);
-	
-	u8 chtsCnt = m_cheatfile.getCnt();
-	for(u8 i = 0; i < chtsCnt; ++i)
-	{
-		if(gctBuf && m_cheatfile.IsCheatIncluded(i, gctBuf, gctSize))
-			m_cheatfile.sCheatSelected.push_back(true);
-		else
-			m_cheatfile.sCheatSelected.push_back(false);
-	}
-	
-	_textCheatSettings();
-	_showCheatSettings();
-
-	while(!m_exit)
-	{
-		_mainLoopCommon();
-		if(BTN_HOME_PRESSED || BTN_B_PRESSED)
-			break;
-		else if (BTN_UP_PRESSED)
-			m_btnMgr.up();
-		else if (BTN_DOWN_PRESSED)
-			m_btnMgr.down();
-		else if (txtavailable && (BTN_MINUS_PRESSED || BTN_LEFT_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_cheatBtnPageM))))
-		{
-			_hideCheatSettings();
-			if (m_cheatSettingsPage == 1)
-				m_cheatSettingsPage = (m_cheatfile.getCnt()+CHEATSPERPAGE-1)/CHEATSPERPAGE;
-			else if (m_cheatSettingsPage > 1)
-				--m_cheatSettingsPage;
-			if(BTN_LEFT_PRESSED || BTN_MINUS_PRESSED) m_btnMgr.click(m_cheatBtnPageM);
-			_showCheatSettings();
-		}
-		else if (txtavailable && (BTN_PLUS_PRESSED || BTN_RIGHT_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_cheatBtnPageP))))
-		{
-			_hideCheatSettings();
-			if (m_cheatSettingsPage == (m_cheatfile.getCnt()+CHEATSPERPAGE-1)/CHEATSPERPAGE)
-				m_cheatSettingsPage = 1;
-			else if (m_cheatSettingsPage < (m_cheatfile.getCnt()+CHEATSPERPAGE-1)/CHEATSPERPAGE)
-				++m_cheatSettingsPage;
-			if(BTN_RIGHT_PRESSED || BTN_PLUS_PRESSED) m_btnMgr.click(m_cheatBtnPageP);
-			_showCheatSettings();
-		}
-		else if ((WBTN_2_HELD && WBTN_1_PRESSED) || (WBTN_1_HELD && WBTN_2_PRESSED))// pressing 1 and 2 deletes everything so cheats can be downloaded again.
-		{
-			fsop_deleteFile(fmt("%s/%s.gct", m_cheatDir.c_str(), id));
-			fsop_deleteFile(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id));
-			m_gcfg2.remove(id, "cheat");
-			m_gcfg2.remove(id, "hooktype");
-			break;
-		}
-		else if (BTN_A_PRESSED)
-		{
-			if (m_btnMgr.selected(m_cheatBtnBack))
-				break;
-			for (int i = 0; i < CHEATSPERPAGE; ++i)
-				if (m_btnMgr.selected(m_cheatBtnItem[i]))
-				{
-					// handling code for clicked cheat
-					m_cheatfile.sCheatSelected[(m_cheatSettingsPage-1)*CHEATSPERPAGE + i] = !m_cheatfile.sCheatSelected[(m_cheatSettingsPage-1)*CHEATSPERPAGE + i];
-					_showCheatSettings();
-				}
-			
- 			if (m_btnMgr.selected(m_cheatBtnApply))
-			{
-				bool selected = false;
-				//checks if at least one cheat is selected
-				for (unsigned int i=0; i < m_cheatfile.getCnt(); ++i)
-				{
-					if (m_cheatfile.sCheatSelected[i] == true) 
-					{
-						selected = true;
-						break;
-					}
-				}
-					
-				if (selected)
-				{
-					m_cheatfile.createGCT(fmt("%s/%s.gct", m_cheatDir.c_str(), id)); 
-					m_gcfg2.setOptBool(id, "cheat", 1);
-					m_gcfg2.setInt(id, "hooktype", m_gcfg2.getInt(id, "hooktype", 1));
-				}
-				else
-				{
-					fsop_deleteFile(fmt("%s/%s.gct", m_cheatDir.c_str(), id));
-					m_gcfg2.remove(id, "cheat");
-					m_gcfg2.remove(id, "hooktype");
-				}
-				//m_cheatfile.createTXT(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id));
-				break;
-			}
-			else if (m_btnMgr.selected(m_cheatBtnDownload))
-			{
-				_hideCheatSettings();
-				bool dl_finished = false;
-				while(!m_exit)
-				{
-					_mainLoopCommon();
-					if((BTN_HOME_PRESSED || BTN_B_PRESSED) && dl_finished)
-					{
-						m_btnMgr.hide(m_wbfsPBar);
-						m_btnMgr.hide(m_wbfsLblMessage);
-						m_btnMgr.hide(m_wbfsLblDialog);
-						break;
-					}
-					if(!dl_finished)
-					{
-						m_btnMgr.setProgress(m_wbfsPBar, 0.f, true);
-						m_btnMgr.setText(m_wbfsLblMessage, L"0%");
-						m_btnMgr.setText(m_wbfsLblDialog, L"");
-						m_btnMgr.show(m_wbfsPBar);
-						m_btnMgr.show(m_wbfsLblMessage);
-						m_btnMgr.show(m_wbfsLblDialog);
-						
-						_start_pThread();
-						int ret = _downloadCheatFileAsync();
-						_stop_pThread();
-						if(ret == -1)
-							m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg27", L"Not enough memory!"));
-						else if(ret == -2)
-							m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg2", L"Network initialization failed!"));
-						else if(ret == -3)
-							m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg12", L"Download failed!"));
-						else if(ret == -4)
-							m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg36", L"No cheat file available to download."));
-						else
-							m_btnMgr.setText(m_wbfsLblDialog, _t("dlmsg14", L"Done."));
-						dl_finished = true;
-					}
-				}
-				txtavailable = m_cheatfile.openTxtfile(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id));
-				if(txtavailable > 0)
-					gctBuf = fsop_ReadFile(fmt("%s/%s.gct", m_cheatDir.c_str(), id), &gctSize);
-	
-				chtsCnt = m_cheatfile.getCnt();
-				for(u8 i = 0; i < chtsCnt; ++i)
-				{
-					if(gctBuf && m_cheatfile.IsCheatIncluded(i, gctBuf, gctSize))
-						m_cheatfile.sCheatSelected.push_back(true);
-					else
-						m_cheatfile.sCheatSelected.push_back(false);
-				}
-				_showCheatSettings();
-			}
-		}
-	}
-	_hideCheatSettings();
-}
-
 void CMenu::_hideCheatSettings(bool instant)
 {
 	m_btnMgr.hide(m_cheatBtnBack, instant);
@@ -285,6 +92,165 @@ void CMenu::_showCheatSettings(void)
 	}
 }
 
+void CMenu::_CheatSettings() 
+{
+	SetupInput();
+	m_cheatSettingsPage = 1;
+
+	const char *id = CoverFlow.getId();
+	txtavailable = m_cheatfile.openTxtfile(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id));
+	
+	u32 gctSize = 0;
+	u8 *gctBuf = NULL;
+	if(txtavailable > 0)
+		gctBuf = fsop_ReadFile(fmt("%s/%s.gct", m_cheatDir.c_str(), id), &gctSize);
+	
+	u8 chtsCnt = m_cheatfile.getCnt();
+	for(u8 i = 0; i < chtsCnt; ++i)
+	{
+		if(gctBuf && m_cheatfile.IsCheatIncluded(i, gctBuf, gctSize))
+			m_cheatfile.sCheatSelected.push_back(true);
+		else
+			m_cheatfile.sCheatSelected.push_back(false);
+	}
+	
+	_textCheatSettings();
+	_showCheatSettings();
+
+	while(!m_exit)
+	{
+		_mainLoopCommon();
+		if(BTN_HOME_PRESSED || BTN_B_PRESSED)
+			break;
+		else if (BTN_UP_PRESSED)
+			m_btnMgr.up();
+		else if (BTN_DOWN_PRESSED)
+			m_btnMgr.down();
+		else if (txtavailable && (BTN_MINUS_PRESSED || BTN_LEFT_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_cheatBtnPageM))))
+		{
+			_hideCheatSettings(true);
+			if (m_cheatSettingsPage == 1)
+				m_cheatSettingsPage = (m_cheatfile.getCnt()+CHEATSPERPAGE-1)/CHEATSPERPAGE;
+			else if (m_cheatSettingsPage > 1)
+				--m_cheatSettingsPage;
+			if(BTN_LEFT_PRESSED || BTN_MINUS_PRESSED) m_btnMgr.click(m_cheatBtnPageM);
+			_showCheatSettings();
+		}
+		else if (txtavailable && (BTN_PLUS_PRESSED || BTN_RIGHT_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_cheatBtnPageP))))
+		{
+			_hideCheatSettings(true);
+			if (m_cheatSettingsPage == (m_cheatfile.getCnt()+CHEATSPERPAGE-1)/CHEATSPERPAGE)
+				m_cheatSettingsPage = 1;
+			else if (m_cheatSettingsPage < (m_cheatfile.getCnt()+CHEATSPERPAGE-1)/CHEATSPERPAGE)
+				++m_cheatSettingsPage;
+			if(BTN_RIGHT_PRESSED || BTN_PLUS_PRESSED) m_btnMgr.click(m_cheatBtnPageP);
+			_showCheatSettings();
+		}
+		else if ((WBTN_2_HELD && WBTN_1_PRESSED) || (WBTN_1_HELD && WBTN_2_PRESSED))// pressing 1 and 2 deletes everything so cheats can be downloaded again.
+		{
+			fsop_deleteFile(fmt("%s/%s.gct", m_cheatDir.c_str(), id));
+			fsop_deleteFile(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id));
+			m_gcfg2.remove(id, "cheat");
+			m_gcfg2.remove(id, "hooktype");
+			break;
+		}
+		else if (BTN_A_PRESSED)
+		{
+			if (m_btnMgr.selected(m_cheatBtnBack))
+				break;
+			for (int i = 0; i < CHEATSPERPAGE; ++i)
+				if (m_btnMgr.selected(m_cheatBtnItem[i]))
+				{
+					// handling code for clicked cheat
+					m_cheatfile.sCheatSelected[(m_cheatSettingsPage-1)*CHEATSPERPAGE + i] = !m_cheatfile.sCheatSelected[(m_cheatSettingsPage-1)*CHEATSPERPAGE + i];
+					_showCheatSettings();
+				}
+			
+ 			if (m_btnMgr.selected(m_cheatBtnApply))
+			{
+				bool selected = false;
+				//checks if at least one cheat is selected
+				for (unsigned int i=0; i < m_cheatfile.getCnt(); ++i)
+				{
+					if (m_cheatfile.sCheatSelected[i] == true) 
+					{
+						selected = true;
+						break;
+					}
+				}
+					
+				if (selected)
+				{
+					m_cheatfile.createGCT(fmt("%s/%s.gct", m_cheatDir.c_str(), id)); 
+					m_gcfg2.setOptBool(id, "cheat", 1);
+					m_gcfg2.setInt(id, "hooktype", m_gcfg2.getInt(id, "hooktype", 1));
+				}
+				else
+				{
+					fsop_deleteFile(fmt("%s/%s.gct", m_cheatDir.c_str(), id));
+					m_gcfg2.remove(id, "cheat");
+					m_gcfg2.remove(id, "hooktype");
+				}
+				//m_cheatfile.createTXT(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id));
+				break;
+			}
+			else if (m_btnMgr.selected(m_cheatBtnDownload))
+			{
+				_hideCheatSettings();
+				bool dl_finished = false;
+				while(!m_exit)
+				{
+					_mainLoopCommon();
+					if((BTN_HOME_PRESSED || BTN_B_PRESSED) && dl_finished)
+					{
+						m_btnMgr.hide(m_downloadPBar);
+						m_btnMgr.hide(m_downloadLblMessage);
+						m_btnMgr.hide(m_downloadLblDialog);
+						break;
+					}
+					if(!dl_finished)
+					{
+						m_btnMgr.setProgress(m_downloadPBar, 0.f, true);
+						m_btnMgr.setText(m_downloadLblMessage, L"0%");
+						m_btnMgr.setText(m_downloadLblDialog, L"");
+						m_btnMgr.show(m_downloadPBar);
+						m_btnMgr.show(m_downloadLblMessage);
+						m_btnMgr.show(m_downloadLblDialog);
+						
+						_start_pThread();
+						int ret = _downloadCheatFileAsync();
+						_stop_pThread();
+						if(ret == -1)
+							m_btnMgr.setText(m_downloadLblDialog, _t("dlmsg27", L"Not enough memory!"));
+						else if(ret == -2)
+							m_btnMgr.setText(m_downloadLblDialog, _t("dlmsg2", L"Network initialization failed!"));
+						else if(ret == -3)
+							m_btnMgr.setText(m_downloadLblDialog, _t("dlmsg12", L"Download failed!"));
+						else if(ret == -4)
+							m_btnMgr.setText(m_downloadLblDialog, _t("dlmsg36", L"No cheat file available to download."));
+						else
+							m_btnMgr.setText(m_downloadLblDialog, _t("dlmsg14", L"Done."));
+						dl_finished = true;
+					}
+				}
+				txtavailable = m_cheatfile.openTxtfile(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id));
+				if(txtavailable > 0)
+					gctBuf = fsop_ReadFile(fmt("%s/%s.gct", m_cheatDir.c_str(), id), &gctSize);
+	
+				chtsCnt = m_cheatfile.getCnt();
+				for(u8 i = 0; i < chtsCnt; ++i)
+				{
+					if(gctBuf && m_cheatfile.IsCheatIncluded(i, gctBuf, gctSize))
+						m_cheatfile.sCheatSelected.push_back(true);
+					else
+						m_cheatfile.sCheatSelected.push_back(false);
+				}
+				_showCheatSettings();
+			}
+		}
+	}
+	_hideCheatSettings();
+}
 
 void CMenu::_initCheatSettingsMenu()
 {
@@ -330,4 +296,37 @@ void CMenu::_textCheatSettings(void)
 	m_btnMgr.setText(m_cheatBtnBack, _t("cheat1", L"Back"));
 	m_btnMgr.setText(m_cheatBtnApply, _t("cheat2", L"Apply"));
 	m_btnMgr.setText(m_cheatBtnDownload, _t("cfg4", L"Download"));
+}
+
+int CMenu::_downloadCheatFileAsync()
+{
+	m_thrdTotal = 2;// download and save
+	
+	m_thrdMessage = _t("dlmsg1", L"Initializing network...");
+	m_thrdMessageAdded = true;
+	if(_initNetwork() < 0)
+	{
+		return -2;
+	}
+	m_thrdMessage = _t("dlmsg11", L"Downloading...");
+	m_thrdMessageAdded = true;
+	
+	const char *id = CoverFlow.getId();
+	struct download file = {};
+	downloadfile(fmt(m_cfg.getString("general", "cheats_url", GECKOURL).c_str(), id), &file);
+	if(file.size > 0 && file.data[0] != '<')
+	{
+		m_thrdMessage = _t("dlmsg13", L"Saving...");
+		m_thrdMessageAdded = true;
+		update_pThread(1);// its downloaded
+		fsop_WriteFile(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id), file.data, file.size);
+		MEM2_free(file.data);
+		return 0;
+	}
+	if(file.size > 0)// received a 301/302 redirect instead of a 404?
+	{
+		MEM2_free(file.data);
+		return -4;// the file doesn't exist on the server
+	}
+	return -3;// download failed
 }
