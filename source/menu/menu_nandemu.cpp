@@ -217,26 +217,28 @@ int CMenu::_NandEmuCfg(void)
 					direction = m_btnMgr.selected(m_configBtn1P) ? 1 : -1;
 					curEmuNand = loopNum(curEmuNand + direction, emuNands.size());
 					m_cfg.setString(CHANNEL_DOMAIN, "current_emunand", emuNands[curEmuNand]);
-					_showNandEmu();
+					m_btnMgr.setText(m_configLbl1Val, emuNands[curEmuNand]);
 				}
 				else if(m_btnMgr.selected(m_configBtn2P) || m_btnMgr.selected(m_configBtn2M))
 				{
 					direction = m_btnMgr.selected(m_configBtn2P) ? 1 : -1;
 					m_cfg.setInt(CHANNEL_DOMAIN, "emulation", loopNum(m_cfg.getInt(CHANNEL_DOMAIN, "emulation", 0) + direction, ARRAY_SIZE(CMenu::_NandEmu)));
-					_showNandEmu();
+					int i = min(max(0, m_cfg.getInt(CHANNEL_DOMAIN, "emulation", 0)), (int)ARRAY_SIZE(CMenu::_NandEmu) - 1);
+					m_btnMgr.setText(m_configLbl2Val, _t(CMenu::_NandEmu[i].id, CMenu::_NandEmu[i].text));
 				}
 				else if(m_btnMgr.selected(m_configBtn3P) || m_btnMgr.selected(m_configBtn3M))
 				{
 					direction = m_btnMgr.selected(m_configBtn3P) ? 1 : -1;
 					curSavesNand = loopNum(curSavesNand + direction, savesNands.size());
 					m_cfg.setString(WII_DOMAIN, "current_save_emunand", savesNands[curSavesNand]);
-					_showNandEmu();
+					m_btnMgr.setText(m_configLbl3Val, savesNands[curSavesNand]);
 				}
 				else if(m_btnMgr.selected(m_configBtn4P) || m_btnMgr.selected(m_configBtn4M))
 				{
 					direction = m_btnMgr.selected(m_configBtn4P) ? 1 : -1;
 					m_cfg.setInt(WII_DOMAIN, "save_emulation", loopNum(m_cfg.getInt(WII_DOMAIN, "save_emulation", 0) + direction, ARRAY_SIZE(CMenu::_GlobalSaveEmu)));
-					_showNandEmu();
+					int i = min(max(0, m_cfg.getInt(WII_DOMAIN, "save_emulation", 0)), (int)ARRAY_SIZE(CMenu::_GlobalSaveEmu) - 1);
+					m_btnMgr.setText(m_configLbl4Val, _t(CMenu::_GlobalSaveEmu[i].id, CMenu::_GlobalSaveEmu[i].text));
 				}
 			}
 			else if(nandemuPage == 2)
@@ -300,17 +302,18 @@ int CMenu::_NandEmuCfg(void)
 					_setPartition(direction);
 					m_emuSaveNand = false;
 					_getEmuNands();// refresh emunands in case the partition was changed
-					_showNandEmu();
+					const char *partitionname = DeviceName[m_cfg.getInt(WII_DOMAIN, "savepartition")];
+					m_btnMgr.setText(m_configLbl1Val, upperCase(partitionname));
 				}
 				else if(m_btnMgr.selected(m_configBtn2))
 				{
 					m_cfg.setBool(CHANNEL_DOMAIN, "real_nand_config", !m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_config"));
-					_showNandEmu();
+					m_btnMgr.setText(m_configBtn2, m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_config", false) ? _t("on", L"On") : _t("off", L"Off"));
 				}
 				else if(m_btnMgr.selected(m_configBtn3))
 				{
 					m_cfg.setBool(CHANNEL_DOMAIN, "real_nand_miis", !m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_miis"));
-					_showNandEmu();
+					m_btnMgr.setText(m_configBtn3, m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_miis", false) ? _t("on", L"On") : _t("off", L"Off"));
 				}
 			}
 		}
