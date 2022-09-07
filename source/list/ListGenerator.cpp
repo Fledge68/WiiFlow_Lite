@@ -312,7 +312,6 @@ static void Add_Plugin_Game(char *FullPath)
 	m_cacheList.push_back(ListElement);
 }
 
-/* notes: "description" is used as the title because it basically is the title */
 /* the [GameDomain] is used as the path even though it isn't the path */
 /* the [GameDomain] is usually short without any '/' */
 /* in scummvm.ini the path is the path without the exe or main app file added on */
@@ -338,16 +337,24 @@ void ListGenerator::ParseScummvmINI(Config &ini, const char *Device, const char 
 
 	Config m_crc;
 	if(platform != NULL)
+  {
 		m_crc.load(fmt("%s/%s/%s.ini", datadir, platform, platform));
+		/* Load platform name.xml database to get game's info using the gameID */
+		gameTDB.OpenFile(fmt("%s/%s/%s.xml", datadir, platform, platform));
+		if(gameTDB.IsLoaded())
+			gameTDB.SetLanguageCode(gameTDB_Language.c_str());
+	}
 	
 	const char *GameDomain = ini.firstDomain().c_str();
 	while(1)
 	{
 		if(strlen(GameDomain) < 2)
 			break;
-		char GameName[64];
+		// GameName has to be at least as large as the longest key in m_crc,
+		// otherwise the game won't be found.
+		char GameName[128];
 		memset(GameName, 0, sizeof(GameName));
-		strncpy(GameName, ini.getString(GameDomain, "description").c_str(), 63);
+		strncpy(GameName, ini.getString(GameDomain, "description").c_str(), sizeof(GameName)-1);
 		if(strlen(GameName) < 2 || strncasecmp(Device, ini.getString(GameDomain, "path").c_str(), 2) != 0)
 		{
 			GameDomain = ini.nextDomain().c_str();
@@ -371,8 +378,20 @@ void ListGenerator::ParseScummvmINI(Config &ini, const char *Device, const char 
 		
 		memset((void*)&ListElement, 0, sizeof(dir_discHdr));
 		memcpy(ListElement.id, GameID.c_str(), 6);
-		mbstowcs(ListElement.title, GameName, 63);
+
+		const char *gameTDB_Title = NULL;
+		if(gameTDB.IsLoaded() && m_cacheList.usePluginDBTitles)
+		{
+			gameTDB.GetTitle(ListElement.id, gameTDB_Title, true);
+		}
+
+		if(gameTDB_Title != NULL && gameTDB_Title[0] != '\0')
+			mbstowcs(ListElement.title, gameTDB_Title, 63);
+		else
+			mbstowcs(ListElement.title, GameName, 63);
+		Asciify(ListElement.title);
 		strcpy(ListElement.path, GameDomain);
+
 		ListElement.settings[0] = m_cacheList.Magic; //scummvm magic
 		ListElement.casecolor = m_cacheList.Color;
 		ListElement.type = TYPE_PLUGIN;
@@ -380,6 +399,7 @@ void ListGenerator::ParseScummvmINI(Config &ini, const char *Device, const char 
 		GameDomain = ini.nextDomain().c_str();
 	}
 	m_crc.unload();
+  CloseConfigs();
 	if(!this->empty() && !DBName.empty()) /* Write a new Cache */
 		CCache(*this, DBName, SAVE);
 }

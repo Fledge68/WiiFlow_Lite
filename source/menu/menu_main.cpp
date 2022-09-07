@@ -121,6 +121,13 @@ void CMenu::_showMain()
 		_showCF(m_refreshGameList);
 }
 
+void CMenu::_showTotalGames(const int numberOfGames)
+{
+	m_showtimer = 240;
+	m_btnMgr.setText(m_mainLblNotice, wfmt(_fmt("main7", L"Total Games: %i"), numberOfGames));
+	m_btnMgr.show(m_mainLblNotice);
+}
+
 void CMenu::_showCF(bool refreshList)
 {
 	m_refreshGameList = false;
@@ -345,9 +352,7 @@ void CMenu::_showCF(bool refreshList)
 	if(m_sourceflow || m_current_view == COVERFLOW_HOMEBREW)
 		return;
 
-	m_showtimer = 240;
-	m_btnMgr.setText(m_mainLblNotice, wfmt(_fmt("main7", L"Total Games: %i"), CoverFlow.size()));
-	m_btnMgr.show(m_mainLblNotice);
+	_showTotalGames(CoverFlow.size());
 }
 
 int CMenu::main(void)
@@ -577,6 +582,7 @@ int CMenu::main(void)
 				{
 					m_refreshGameList = false;
 					_initCF();
+					_showTotalGames(CoverFlow.size());
 				}
 			}
 			else if(m_btnMgr.selected(m_mainBtnDVD))
@@ -615,9 +621,7 @@ int CMenu::main(void)
 				m_favorites = !m_favorites;
 				m_cfg.setBool(_domainFromView(), "favorites", m_favorites);
 				_initCF();
-				m_showtimer = 240;
-				m_btnMgr.setText(m_mainLblNotice, wfmt(_fmt("main7", L"Total Games: %i"), CoverFlow.size()));
-				m_btnMgr.show(m_mainLblNotice);
+				_showTotalGames(CoverFlow.size());
 			}
 			else if(!CoverFlow.empty() && CoverFlow.select())
 			{
@@ -646,6 +650,7 @@ int CMenu::main(void)
 					{
 						m_refreshGameList = false;
 						_initCF();
+						_showTotalGames(CoverFlow.size());
 					}
 					else
 						CoverFlow.cancel();

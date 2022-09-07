@@ -790,6 +790,7 @@ private:
 // menu shows
 	void _showMain(void);
 	void _showCF(bool refreshList = false);
+	void _showTotalGames(const int numberOfGames);
 	void _showError(void);
 	void _showConfigMain(void);
 	void _showConfigGC(void);
