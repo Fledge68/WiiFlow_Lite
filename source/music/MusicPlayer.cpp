@@ -96,7 +96,10 @@ int Musicplayer::InitPlaylist(Config &cfg, const char *playlist, u8 device)
 		if(song.find(".mp3") == string::npos && song.find(".ogg") == string::npos)// if not song path continue to next line
 			continue;
 		while(song.find("\\") != string::npos)// convert all '\' to '/'
-			song.replace(song.find("\\"), 1, "/");
+		{
+			//song.replace(song.find("\\"), 1, "/");
+			song[song.find("\\")] = '/';
+		}
 		string::size_type p = song.find("/");// remove drive letter and anything else before first /
 		song.erase(0, p);
 		const char *songPath = fmt("%s:%s", DeviceName[device], song.c_str());

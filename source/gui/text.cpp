@@ -423,18 +423,18 @@ string lowerCase(string text)
 }
 
 // trim from start
-string ltrim(string s)
+/*string ltrim(string s)
 {
 	s.erase(s.begin(), find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(isspace))));
 	return s;
 }
-
+*/
 // trim from end
-string rtrim(string s)
+/*string rtrim(string s)
 {
 	s.erase(find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(isspace))).base(), s.end());
 	return s;
-}
+}*/
 
 bool wchar_cmp(const wchar_t *first, const wchar_t *second, u32 first_len, u32 second_len)
 {

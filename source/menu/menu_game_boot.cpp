@@ -1,6 +1,7 @@
 
 #include <fcntl.h>
 #include <ogc/machine/processor.h>
+#include <ogc/lwp_watchdog.h>
 
 #include "menu.hpp"
 #include "types.h"
@@ -258,6 +259,10 @@ void CMenu::_launchPlugin(dir_discHdr *hdr)
 			}
 		}
 	}
+	
+	/* date fixes for specific plugins */
+	if(hdr->settings[0] == 1414875969) //wiituka
+		settime(637962048000000000);// Aug 16, 2022
 	
 	/* launch plugin with args */
 	gprintf("launching plugin app\n");

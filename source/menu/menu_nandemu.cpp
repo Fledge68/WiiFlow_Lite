@@ -74,12 +74,12 @@ void CMenu::_showNandEmu(void)
 
 	if(nandemuPage == 1)
 	{
-		m_btnMgr.setText(m_configLbl1Val, m_cfg.getString(WII_DOMAIN, "current_save_emunand"));
+		m_btnMgr.setText(m_configLbl1Val, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand"));
 
 		int i = min(max(0, m_cfg.getInt(CHANNEL_DOMAIN, "emulation", 0)), (int)ARRAY_SIZE(CMenu::_NandEmu) - 1);
 		m_btnMgr.setText(m_configLbl2Val, _t(CMenu::_NandEmu[i].id, CMenu::_NandEmu[i].text));
 		
-		m_btnMgr.setText(m_configLbl3Val, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand"));
+		m_btnMgr.setText(m_configLbl3Val, m_cfg.getString(WII_DOMAIN, "current_save_emunand"));
 		
 		i = min(max(0, m_cfg.getInt(WII_DOMAIN, "save_emulation", 0)), (int)ARRAY_SIZE(CMenu::_GlobalSaveEmu) - 1);
 		m_btnMgr.setText(m_configLbl4Val, _t(CMenu::_GlobalSaveEmu[i].id, CMenu::_GlobalSaveEmu[i].text));

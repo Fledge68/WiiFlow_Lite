@@ -217,7 +217,7 @@ static void Create_Channel_List()
 	for(u32 i = 0; i < ChannelHandle.Count(); i++)
 	{
 		chan = ChannelHandle.GetChannel(i);
-		if(chan->id == NULL) 
+		if(strlen(chan->id) == 0) 
 			continue; // Skip invalid channels
 		memset((void*)&ListElement, 0, sizeof(dir_discHdr));
 		ListElement.index = m_cacheList.size();

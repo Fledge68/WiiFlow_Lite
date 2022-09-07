@@ -69,8 +69,8 @@ vector<wstringEx> stringToVector(const wstringEx &text, char sep);
 vector<std::string> stringToVector(const string &text, char sep);
 string upperCase(string text);
 string lowerCase(string text);
-string ltrim(string s);
-string rtrim(string s);
+//string ltrim(string s);
+//string rtrim(string s);
 bool wchar_cmp(const wchar_t *first, const wchar_t *second, u32 first_len, u32 second_len);
 bool char_cmp(const char *first, const char *second, u32 first_len, u32 second_len);
 

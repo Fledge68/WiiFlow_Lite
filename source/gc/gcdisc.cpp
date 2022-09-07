@@ -103,7 +103,7 @@ void GC_Disc::Read_FST(FILE *f, u32 FST_size)
 
 u8 *GC_Disc::GetGameCubeBanner()
 {
-	if(FSTable == NULL || GamePath == NULL)
+	if(FSTable == NULL || strlen(GamePath) == 0)
 		return NULL;
 
 	FILE *bnr_fp = NULL;
