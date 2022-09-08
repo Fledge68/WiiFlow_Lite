@@ -558,7 +558,15 @@ void CMenu::_configMain(void)
 					else
 						m_cfg.setString("GENERAL", "language", m_curLanguage.c_str());
 					_updateText();
-					_showConfigMain();
+					m_btnMgr.setText(m_configLbl1, _t("cfga7", L"Theme"));
+					m_btnMgr.setText(m_configLbl2, _t("cfgc9", L"WiiFlow Language"));
+					m_btnMgr.setText(m_configLbl3, _t("cfgc4", L"Adjust Coverflow"));
+					m_btnMgr.setText(m_configLbl4, _t("cfgc8", L"Startup Settings"));
+					
+					m_btnMgr.setText(m_configLbl1Val, m_cfg.getString("GENERAL", "theme"));
+					m_btnMgr.setText(m_configLbl2Val, m_curLanguage);
+					m_btnMgr.setText(m_configBtn3, _t("cfgc5", L"Go"));
+					m_btnMgr.setText(m_configBtn4, _t("cfgc5", L"Go"));
 				}
 				else if(m_btnMgr.selected(m_configBtn3))
 				{
