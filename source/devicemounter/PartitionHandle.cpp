@@ -210,23 +210,24 @@ void PartitionHandle::UnMount(int pos)
 	strcat(DeviceSyn, ":");
 	DeviceSyn[9] = '\0';
 
-	if(strncmp(GetFSName(pos), "WBFS", 4) == 0)
+	const char *FSName = GetFSName(pos);
+	if(strncmp(FSName, "WBFS", 4) == 0)
 	{
 		wbfs_t *wbfshandle = GetWbfsHandle(pos);
 		if(wbfshandle) wbfs_close(wbfshandle);
 		gprintf("WBFS Partition at %s unmounted.\n", DeviceSyn);
 	}
-	else if(strncmp(GetFSName(pos), "FAT", 3) == 0)
+	else if(strncmp(FSName, "FAT", 3) == 0)
 	{
 		fatUnmount(DeviceSyn);
 		gprintf("FAT Partition at %s unmounted.\n", DeviceSyn);
 	}
-	else if(strncmp(GetFSName(pos), "NTFS", 4) == 0)
+	else if(strncmp(FSName, "NTFS", 4) == 0)
 	{
 		ntfsUnmount(DeviceSyn, true);
 		gprintf("NTFS Partition at %s unmounted.\n", DeviceSyn);
 	}
-	else if(strncmp(GetFSName(pos), "LINUX", 5) == 0)
+	else if(strncmp(FSName, "LINUX", 5) == 0)
 	{
 		ext2Unmount(DeviceSyn);
 		gprintf("EXT Partition at %s unmounted.\n", DeviceSyn);
