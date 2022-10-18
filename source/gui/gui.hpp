@@ -41,7 +41,7 @@ public:
 	s16 addProgressBar(int x, int y, u32 width, u32 height, SButtonTextureSet &texSet);
 	void setText(s16 id, const wstringEx &text, bool unwrap = false);
 	void setText(s16 id, const wstringEx &text, u32 startline, bool unwrap = false);
-	void setBtnTexture(s16 id, TexData &texNormal, TexData &texSelected);
+	void setBtnTexture(s16 id, TexData &texNormal, TexData &texSelected, bool cleanup = true);
 	void freeBtnTexture(s16 id);
 	void setTexture(s16 id ,TexData &bg);
 	void setTexture(s16 id, TexData &bg, int width, int height);
@@ -61,7 +61,6 @@ public:
 	void draw(void);
 	void tick(void);
 	void noClick(bool noclick = false);
-	void noHover(bool nohover = false);
 	void click(s16 id = -1);
 	bool selected(s16 button = -1);
 	void setSelected(s16 button);
@@ -154,7 +153,6 @@ private:
 	GuiSound *m_sndClick;
 	u8 m_soundVolume;
 	bool m_noclick;
-	bool m_nohover;
 	bool m_mouse;
 private:
 	void _drawBtn(SButton &b, bool selected, bool click);

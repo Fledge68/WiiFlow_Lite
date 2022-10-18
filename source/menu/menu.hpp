@@ -263,6 +263,10 @@ private:
 	s16 m_configBtn4M;
 	s16 m_configBtn4P;
 
+// checkbox menus
+	s16 m_checkboxLblTxt[11];
+	s16 m_checkboxBtn[11];
+
 // Download menu
 	s16 m_downloadLblTitle;
 	s16 m_downloadBtnBack;

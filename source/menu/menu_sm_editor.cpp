@@ -20,11 +20,6 @@ s16 m_checkboxesBtnPageP;
 s16 m_checkboxesBtnBack;
 s16 m_checkboxesLblTitle;
 
-s16 m_checkboxLblTxt[11];
-s16 m_checkboxBtn[11];
-s16 m_checkboxBtnOff[11];
-s16 m_checkboxBtnOn[11];
-
 void CMenu::_hideCheckboxesMenu(bool instant)
 {
 	m_btnMgr.hide(m_checkboxesLblTitle, instant);
@@ -92,7 +87,7 @@ void CMenu::_updateCheckboxes(void)
 	}
 	for(int i = 0; i < 11; ++i)
 	{
-		m_btnMgr.hide(m_checkboxBtn[i]);
+		m_btnMgr.hide(m_checkboxBtn[i]);// instant true?
 		m_btnMgr.hide(m_checkboxLblTxt[i]);
 	}
 
@@ -107,17 +102,17 @@ void CMenu::_updateCheckboxes(void)
 		if(mode == 1)
 		{
 			if(m_source.getBool(sfmt("button_%i", firstCheckbox + i - 1), "hidden", false))
-				m_checkboxBtn[i] = m_checkboxBtnOn[i];
+				m_btnMgr.setBtnTexture(m_checkboxBtn[i], theme.checkboxon, theme.checkboxons, false);
 			else
-				m_checkboxBtn[i] = m_checkboxBtnOff[i];
+				m_btnMgr.setBtnTexture(m_checkboxBtn[i], theme.checkboxoff, theme.checkboxoffs, false);
 		}
 		else if(mode == 2)
 		{
-			m_checkboxBtn[i] = m_checkboxBtnOff[i];// all sources off
+			m_btnMgr.setBtnTexture(m_checkboxBtn[i], theme.checkboxoff, theme.checkboxoffs, false);// all sources off
 		}
 		else if(mode == 3)
 		{
-			m_checkboxBtn[i] = m_checkboxBtnOff[i];// all plugins off
+			m_btnMgr.setBtnTexture(m_checkboxBtn[i], theme.checkboxoff, theme.checkboxoffs, false);// all plugins off
 		}
 		else
 		{
@@ -136,9 +131,9 @@ void CMenu::_updateCheckboxes(void)
 					}
 				}
 				if(found)
-					m_checkboxBtn[i] = m_checkboxBtnOn[i];
+					m_btnMgr.setBtnTexture(m_checkboxBtn[i], theme.checkboxon, theme.checkboxons, false);
 				else
-					m_checkboxBtn[i] = m_checkboxBtnOff[i];
+					m_btnMgr.setBtnTexture(m_checkboxBtn[i], theme.checkboxoff, theme.checkboxoffs, false);
 			}
 		}
 		m_btnMgr.show(m_checkboxBtn[i]);
@@ -225,7 +220,7 @@ void CMenu::_checkboxesMenu(u8 md)
 						bool val = !m_source.getBool(button, "hidden", false);
 						m_source.setBool(button, "hidden", val);
 						_updateCheckboxes();
-						m_btnMgr.setSelected(m_checkboxBtn[i]);
+						m_btnMgr.setSelected(m_checkboxBtn[i]);// re-select after hiding and showing with new texture in case of using d-pad instead of pointer
 						break;
 					}
 					else if(mode == 2)// link - choose source
@@ -380,25 +375,23 @@ void CMenu::_initCheckboxesMenu()
 	_setHideAnim(m_checkboxesBtnBack, "CHECKBOX/BACK_BTN", 0, 0, 1.f, -1.f);
 
 	/* init checkboxes only here to be used in all menu's */
-	m_checkboxBtnOff[0] = _addPicButton("CHECKBOX/CHECKBOX_0_OFF", theme.checkboxoff, theme.checkboxoffs, 270, 394, 44, 48);
-	m_checkboxBtnOn[0] = _addPicButton("CHECKBOX/CHECKBOX_0_ON", theme.checkboxon, theme.checkboxons, 270, 394, 44, 48);
+	m_checkboxBtn[0] = _addPicButton("CHECKBOX/CHECKBOX_0_OFF", theme.checkboxoff, theme.checkboxoffs, 270, 394, 44, 48);
 	m_checkboxLblTxt[0] = _addLabel("CHECKBOX/CHECKBOX_0_TXT", theme.lblFont, L"", 325, 397, 100, 48, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-	for(int i = 1; i < 6; ++i)
-	{ 	// Page 1
-		m_checkboxBtnOff[i] = _addPicButton(fmt("CHECKBOX/CHECKBOX_%i_OFF", i), theme.checkboxoff, theme.checkboxoffs, 30, (39+i*58), 44, 48);
-		m_checkboxBtnOn[i] = _addPicButton(fmt("CHECKBOX/CHECKBOX_%i_ON", i), theme.checkboxon, theme.checkboxons, 30, (39+i*58), 44, 48);
+	for(int i = 1; i < 6; ++i)// left
+	{
+		m_checkboxBtn[i] = _addPicButton(fmt("CHECKBOX/CHECKBOX_%i_OFF", i), theme.checkboxoff, theme.checkboxoffs, 30, (39+i*58), 44, 48);
 		m_checkboxLblTxt[i] = _addLabel(fmt("CHECKBOX/CHECKBOX_%i_TXT", i), theme.lblFont, L"", 85, (42+i*58), 230, 48, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
-		// right half
-		m_checkboxBtnOff[i+5] = _addPicButton(fmt("CHECKBOX/CHECKBOX_%i_OFF", i+5), theme.checkboxoff, theme.checkboxoffs, 325, (39+i*58), 44, 48);
-		m_checkboxBtnOn[i+5] = _addPicButton(fmt("CHECKBOX/CHECKBOX_%i_ON", i+5), theme.checkboxon, theme.checkboxons, 325, (39+i*58), 44, 48);
+	}
+	for(int i = 1; i < 6; ++i)// right
+	{
+		m_checkboxBtn[i+5] = _addPicButton(fmt("CHECKBOX/CHECKBOX_%i_OFF", i+5), theme.checkboxoff, theme.checkboxoffs, 325, (39+i*58), 44, 48);
 		m_checkboxLblTxt[i+5] = _addLabel(fmt("CHECKBOX/CHECKBOX_%i_TXT", i+5), theme.lblFont, L"", 380, (42+i*58), 230, 48, theme.lblFontColor, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_MIDDLE);
 	}
+
 	for(u8 i = 0; i < 11; ++i)
 	{
-		_setHideAnim(m_checkboxBtnOff[i], fmt("CHECKBOX/CHECKBOX_%i_OFF", i), 0, 0, 1.f, 0.f);
-		_setHideAnim(m_checkboxBtnOn[i], fmt("CHECKBOX/CHECKBOX_%i_ON", i), 0, 0, 1.f, 0.f);
+		_setHideAnim(m_checkboxBtn[i], fmt("CHECKBOX/CHECKBOX_%i_OFF", i), 0, 0, 1.f, 0.f);
 		_setHideAnim(m_checkboxLblTxt[i], fmt("CHECKBOX/CHECKBOX_%i_TXT", i), 0, 0, 1.f, 0.f);
-		m_checkboxBtn[i] = m_checkboxBtnOff[i];
 	}
 	_hideCheckboxesMenu(true);
 	_textCheckboxesMenu();

@@ -21,7 +21,6 @@ bool CButtonsMgr::init()
 	m_rumbleEnabled = false;
 	m_soundVolume = 0xFF;
 	m_noclick = false;
-	m_nohover = false;
 	m_mouse = false;
 	soundInit();
 
@@ -80,57 +79,57 @@ s16 CButtonsMgr::addPicButton(const u8 *pngNormal, const u8 *pngSelected, int x,
 
 s16 CButtonsMgr::addLabel(SFont font, const wstringEx &text, int x, int y, u32 width, u32 height, const CColor &color, s16 style, const TexData &bg)
 {
-	SLabel *b = new SLabel;
+	SLabel *lbl = new SLabel;
 
-	b->font = font;
-	b->visible = false;
-	b->textStyle = style;
-	b->text.setText(b->font, text);
-	b->text.setFrame(width, b->textStyle, false, true);
-	b->textColor = color;
-	b->x = x + width / 2;
-	b->y = y + height / 2;
-	b->w = width;
-	b->h = height;
-	b->alpha = 0;
-	b->targetAlpha = 0;
-	b->scaleX = 0.f;
-	b->scaleY = 0.f;
-	b->targetScaleX = 0.f;
-	b->targetScaleY = 0.f;
-	b->texBg = bg;
-	b->moveByX = 0;
-	b->moveByY = 0;
+	lbl->font = font;
+	lbl->visible = false;
+	lbl->textStyle = style;
+	lbl->text.setText(lbl->font, text);
+	lbl->text.setFrame(width, lbl->textStyle, false, true);
+	lbl->textColor = color;
+	lbl->x = x + width / 2;
+	lbl->y = y + height / 2;
+	lbl->w = width;
+	lbl->h = height;
+	lbl->alpha = 0;
+	lbl->targetAlpha = 0;
+	lbl->scaleX = 0.f;
+	lbl->scaleY = 0.f;
+	lbl->targetScaleX = 0.f;
+	lbl->targetScaleY = 0.f;
+	lbl->texBg = bg;
+	lbl->moveByX = 0;
+	lbl->moveByY = 0;
 
 	u32 sz = m_elts.size();
-	m_elts.push_back(b);
+	m_elts.push_back(lbl);
 
 	return m_elts.size() > sz ? m_elts.size() - 1 : -2;
 }
 
 s16 CButtonsMgr::addProgressBar(int x, int y, u32 width, u32 height, SButtonTextureSet &texSet)
 {
-	SProgressBar *b = new SProgressBar;
+	SProgressBar *pb = new SProgressBar;
 
-	b->visible = false;
-	b->x = x + width / 2;
-	b->y = y + height / 2;
-	b->w = width;
-	b->h = height;
-	b->alpha = 0;
-	b->targetAlpha = 0;
-	b->scaleX = 0.f;
-	b->scaleY = 0.f;
-	b->targetScaleX = 0.f;
-	b->targetScaleY = 0.f;
-	b->tex = texSet;
-	b->val = 0.f;
-	b->targetVal = 0.f;
-	b->moveByX = 0;
-	b->moveByY = 0;
+	pb->visible = false;
+	pb->x = x + width / 2;
+	pb->y = y + height / 2;
+	pb->w = width;
+	pb->h = height;
+	pb->alpha = 0;
+	pb->targetAlpha = 0;
+	pb->scaleX = 0.f;
+	pb->scaleY = 0.f;
+	pb->targetScaleX = 0.f;
+	pb->targetScaleY = 0.f;
+	pb->tex = texSet;
+	pb->val = 0.f;
+	pb->targetVal = 0.f;
+	pb->moveByX = 0;
+	pb->moveByY = 0;
 
 	u32 sz = m_elts.size();
-	m_elts.push_back(b);
+	m_elts.push_back(pb);
 
 	return m_elts.size() > sz ? m_elts.size() - 1 : -2;
 }
@@ -189,15 +188,17 @@ void CButtonsMgr::setText(s16 id, const wstringEx &text, u32 startline, bool unw
 	}
 }
 
-void CButtonsMgr::setBtnTexture(s16 id, TexData &texNormal, TexData &texSelected)
+void CButtonsMgr::setBtnTexture(s16 id, TexData &texNormal, TexData &texSelected, bool cleanup)
 {
 	if (id == -1) return;
 	if (id < (s32)m_elts.size())
 	{
-		SButton *b = (SButton*)m_elts[id];
-		/* free old textures */
-		TexHandle.Cleanup(b->tex.center);
-		TexHandle.Cleanup(b->tex.centerSel);
+		SButton *b = (SButton*)m_elts[id];// buttons only. ie. source buttons and checkboxes
+		if(cleanup)/* free old textures for source buttons */
+		{
+			TexHandle.Cleanup(b->tex.center);
+			TexHandle.Cleanup(b->tex.centerSel);
+		}
 		/*change textures */
 		b->tex.center = texNormal;
 		b->tex.centerSel = texSelected;
@@ -209,7 +210,7 @@ void CButtonsMgr::freeBtnTexture(s16 id)
 	if(id == -1) return;
 	if(id < (s32)m_elts.size())
 	{
-		SButton *b = (SButton*)m_elts[id];
+		SButton *b = (SButton*)m_elts[id];// for buttons only. ie. source buttons
 		TexHandle.Cleanup(b->tex.center);
 		TexHandle.Cleanup(b->tex.centerSel);
 	}
@@ -295,9 +296,9 @@ void CButtonsMgr::setProgress(s16 id, float f, bool instant)
 {
 	if(m_elts[id]->t == GUIELT_PROGRESS)
 	{
-		SProgressBar *b = (SProgressBar*)m_elts[id];
-		b->targetVal = std::min(std::max(0.f, f), 1.f);
-		if (instant) b->val = b->targetVal;
+		SProgressBar *p = (SProgressBar*)m_elts[id];
+		p->targetVal = std::min(std::max(0.f, f), 1.f);
+		if (instant) p->val = p->targetVal;
 	}
 }
 
@@ -306,18 +307,18 @@ void CButtonsMgr::reset(s16 id, bool instant)
 	if (id == -1) return;
 	if (id < (s32)m_elts.size())
 	{
-		SElement &b = *m_elts[id];
-		b.x -= b.moveByX;
-		b.y -= b.moveByY;
+		SElement &e = *m_elts[id];
+		e.x -= e.moveByX;
+		e.y -= e.moveByY;
 		if (instant)
 		{
-			b.pos.x -= b.moveByX;
-			b.pos.y -= b.moveByY;
+			e.pos.x -= e.moveByX;
+			e.pos.y -= e.moveByY;
 		}
-		b.targetPos.x -= b.moveByX;
-		b.targetPos.y -= b.moveByY;
-		b.moveByX = 0;
-		b.moveByY = 0;
+		e.targetPos.x -= e.moveByX;
+		e.targetPos.y -= e.moveByY;
+		e.moveByX = 0;
+		e.moveByY = 0;
 	}
 }
 
@@ -326,18 +327,18 @@ void CButtonsMgr::moveBy(s16 id, int x, int y, bool instant)
 	if (id == -1) return;
 	if (id < (s32)m_elts.size())
 	{
-		CButtonsMgr::SElement &b = *m_elts[id];
-		b.moveByX += x;
-		b.moveByY += y;
-		b.x += x;
-		b.y += y;
+		CButtonsMgr::SElement &e = *m_elts[id];
+		e.moveByX += x;
+		e.moveByY += y;
+		e.x += x;
+		e.y += y;
 		if (instant)
 		{
-			b.pos.x += x;
-			b.pos.y += y;
+			e.pos.x += x;
+			e.pos.y += y;
 		}
-		b.targetPos.x += x;
-		b.targetPos.y += y;
+		e.targetPos.x += x;
+		e.targetPos.y += y;
 	}
 }
 
@@ -346,8 +347,8 @@ void CButtonsMgr::getTotalHeight(s16 id, int &height)
 	if (id == -1) return;
 	if (id < (s32)m_elts.size())
 	{
-		SLabel *s = (SLabel*)m_elts[id];
-		height = s->text.getTotalHeight();
+		SLabel *l = (SLabel*)m_elts[id];
+		height = l->text.getTotalHeight();
 	}
 }
 
@@ -356,16 +357,16 @@ void CButtonsMgr::getDimensions(s16 id, int &x, int &y, u32 &width, u32 &height)
 	if (id == -1) return;
 	if (id < (s32)m_elts.size())
 	{
-		CButtonsMgr::SElement &b = *m_elts[id];
-		x = b.targetPos.x;
-		y = b.targetPos.y;
-		width = b.w;
-		height = b.h;
-		if(b.t == GUIELT_LABEL)
+		CButtonsMgr::SElement &e = *m_elts[id];
+		x = e.targetPos.x;
+		y = e.targetPos.y;
+		width = e.w;
+		height = e.h;
+		if(e.t == GUIELT_LABEL)
 		{
-			SLabel *s = (SLabel*)m_elts[id];
+			SLabel *l = (SLabel*)m_elts[id];
 			// Calculate height
-			height = s->text.getTotalHeight();
+			height = l->text.getTotalHeight();
 		}
 	}
 }
@@ -375,22 +376,22 @@ void CButtonsMgr::hide(s16 id, int dx, int dy, float scaleX, float scaleY, bool 
 	if (id == -1) return;
 	if (id < (s32)m_elts.size())
 	{
-		SElement &b = *m_elts[id];
-		b.hideParam.dx = dx;
-		b.hideParam.dy = dy;
-		b.hideParam.scaleX = scaleX;
-		b.hideParam.scaleY = scaleY;
-		b.visible = false;
-		b.targetScaleX = scaleX;
-		b.targetScaleY = scaleY;
-		b.targetPos = Vector3D((float)(b.x + dx), (float)(b.y + dy), 0.f);
-		b.targetAlpha = 0x00;
+		SElement &e = *m_elts[id];
+		e.hideParam.dx = dx;
+		e.hideParam.dy = dy;
+		e.hideParam.scaleX = scaleX;
+		e.hideParam.scaleY = scaleY;
+		e.visible = false;
+		e.targetScaleX = scaleX;
+		e.targetScaleY = scaleY;
+		e.targetPos = Vector3D((float)(e.x + dx), (float)(e.y + dy), 0.f);
+		e.targetAlpha = 0x00;
 		if (instant)
 		{
-			b.scaleX = b.targetScaleX;
-			b.scaleY = b.targetScaleY;
-			b.pos = b.targetPos;
-			b.alpha = b.targetAlpha;
+			e.scaleX = e.targetScaleX;
+			e.scaleY = e.targetScaleY;
+			e.pos = e.targetPos;
+			e.alpha = e.targetAlpha;
 		}
 		for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 			if (m_selected[chan] == id)
@@ -403,8 +404,8 @@ void CButtonsMgr::hide(s16 id, bool instant)
 	if (id == -1) return;
 	if (id < (s32)m_elts.size())
 	{
-		CButtonsMgr::SElement &b = *m_elts[id];
-		hide(id, b.hideParam.dx, b.hideParam.dy, b.hideParam.scaleX, b.hideParam.scaleY, instant);
+		CButtonsMgr::SElement &e = *m_elts[id];
+		hide(id, e.hideParam.dx, e.hideParam.dy, e.hideParam.scaleX, e.hideParam.scaleY, instant);
 	}
 }
 
@@ -413,18 +414,18 @@ void CButtonsMgr::show(s16 id, bool instant)
 	if (id == -1) return;
 	if (id < (s32)m_elts.size())
 	{
-		SElement &b = *m_elts[id];
-		b.visible = true;
-		b.targetScaleX = 1.0f;
-		b.targetScaleY = 1.0f;
-		b.targetPos = Vector3D((float)b.x, (float)b.y, 0);
-		b.targetAlpha = 0xFF;
+		SElement &e = *m_elts[id];
+		e.visible = true;
+		e.targetScaleX = 1.0f;
+		e.targetScaleY = 1.0f;
+		e.targetPos = Vector3D((float)e.x, (float)e.y, 0);
+		e.targetAlpha = 0xFF;
 		if (instant)
 		{
-			b.scaleX = b.targetScaleX;
-			b.scaleY = b.targetScaleY;
-			b.pos = b.targetPos;
-			b.alpha = b.targetAlpha;
+			e.scaleX = e.targetScaleX;
+			e.scaleY = e.targetScaleY;
+			e.pos = e.targetPos;
+			e.alpha = e.targetAlpha;
 		}
 	}
 }
@@ -457,11 +458,6 @@ void CButtonsMgr::setMouse(bool enable)
 	m_mouse = enable;
 }
 
-void CButtonsMgr::noHover(bool nohover)
-{
-	m_nohover = nohover;
-}
-
 void CButtonsMgr::noClick(bool noclick)
 {
 	m_noclick = noclick;
@@ -485,12 +481,13 @@ bool CButtonsMgr::selected(s16 button)
 	return false;
 }
 
+// we use this for checkboxes. when clicked it is hidden which looses the selected state. so when its re-shown we call this to also auto select it.
 void CButtonsMgr::setSelected(s16 button)
 {
-	SElement &b = *m_elts[button];
+	SElement &e = *m_elts[button];
 	m_selected[0] = button;
-	b.targetScaleX = 1.1f;
-	b.targetScaleY = 1.1f;
+	e.targetScaleX = 1.1f;
+	e.targetScaleY = 1.1f;
 }
 
 
@@ -528,9 +525,10 @@ void CButtonsMgr::mouse(int chan, int x, int y)
 	if (m_elts.empty()) return;
 
 	float w, h;
-	s32 start = -1;
+	s32 start = -1;// used as the current or last button
 	if(m_selected[chan] != -1 && m_selected[chan] < (s32)m_elts.size())
 	{
+		// return current or last button to its normal scale
 		m_elts[m_selected[chan]]->targetScaleX = 1.f;
 		m_elts[m_selected[chan]]->targetScaleY = 1.f;
 		start = m_selected[chan];
@@ -538,10 +536,10 @@ void CButtonsMgr::mouse(int chan, int x, int y)
 	m_selected[chan] = -1;
 	for(int i = (int)m_elts.size() - 1; i >= 0; --i)
 	{
-		SElement &b = *m_elts[i];
-		if(b.t == GUIELT_BUTTON)
+		SElement &e = *m_elts[i];
+		if(e.t == GUIELT_BUTTON)
 		{
-			SButton &but = *(SButton*)&b;
+			SButton &but = *(SButton*)&e;
 			w = (float)(but.w / 2);
 			h = (float)(but.h / 2);
 			if(but.visible && (float)x >= but.pos.x - w && (float)x < but.pos.x + w && (float)y >= but.pos.y - h && (float)y < but.pos.y + h)
@@ -550,13 +548,10 @@ void CButtonsMgr::mouse(int chan, int x, int y)
 				but.targetScaleX = 1.05f;
 				but.targetScaleY = 1.05f;
 				// 
-				if(start != m_selected[chan])
+				if(start != m_selected[chan])// if it's a new button play hover sound and rumble
 				{
 					if(m_soundVolume > 0)
-					{
-						if(!m_nohover) 
-							but.hoverSound->Play(m_soundVolume);
-					}
+						but.hoverSound->Play(m_soundVolume);
 					if(m_rumbleEnabled)
 					{
 						m_rumble[chan] = 4;
@@ -579,11 +574,13 @@ void CButtonsMgr::up(void)
 {
 	if(m_elts.empty() || m_mouse)
 		return;
-	u32 start = 0;
+	u32 start = 0;// set as first element. don't use -1.
 	for(int chan = WPAD_MAX_WIIMOTES-1; chan >= 0; chan--)
 	{
+		// check if a element is selected and if so use it as start element
 		if(m_selected[chan] != -1 && m_selected[chan] < (s32)m_elts.size())
 		{
+			// return current or last button to its normal scale
 			m_elts[m_selected[chan]]->targetScaleX = 1.f;
 			m_elts[m_selected[chan]]->targetScaleY = 1.f;
 			start = m_selected[chan];
@@ -593,12 +590,15 @@ void CButtonsMgr::up(void)
 	for(u32 i = 1; i <= m_elts.size(); ++i)
 	{
 		u32 j = loopNum<u32>(start - i, m_elts.size());
-		SElement &b = *m_elts[j];
-		if (b.t == GUIELT_BUTTON && b.visible)
+		SElement &e = *m_elts[j];
+		if(e.t == GUIELT_BUTTON && e.visible)
 		{
 			m_selected[0] = j;
-			b.targetScaleX = 1.1f;// mouse only enlarges 1.05
-			b.targetScaleY = 1.1f;
+			e.targetScaleX = 1.1f;// mouse only enlarges 1.05
+			e.targetScaleY = 1.1f;
+			SButton &but = *(SButton*)&e;
+			if(m_soundVolume > 0)
+				but.hoverSound->Play(m_soundVolume);
 			break;
 		}
 	}
@@ -626,12 +626,15 @@ void CButtonsMgr::down(void)
 	for(u32 i = 1; i <= m_elts.size(); ++i)
 	{
 		u32 j = loopNum<u32>(start + i, m_elts.size());
-		SElement &b = *m_elts[j];
-		if (b.t == GUIELT_BUTTON && b.visible)
+		SElement &e = *m_elts[j];
+		if(e.t == GUIELT_BUTTON && e.visible)
 		{
 			m_selected[0] = j;
-			b.targetScaleX = 1.1f;// mouse only enlarges 1.05
-			b.targetScaleY = 1.1f;
+			e.targetScaleX = 1.1f;// mouse only enlarges 1.05
+			e.targetScaleY = 1.1f;
+			SButton &but = *(SButton*)&e;
+			if(m_soundVolume > 0)
+				but.hoverSound->Play(m_soundVolume);
 			break;
 		}
 	}

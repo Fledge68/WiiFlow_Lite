@@ -547,26 +547,25 @@ void CMenu::_configMain(void)
 				else if(m_btnMgr.selected(m_configBtn2P) || m_btnMgr.selected(m_configBtn2M))
 				{
 					s8 direction = m_btnMgr.selected(m_configBtn2P) ? 1 : -1;
-					curLanguage = loopNum(curLanguage + direction, (u32)languages_available.size());
-					m_curLanguage = languages_available[curLanguage];
-					if(!m_loc.load(fmt("%s/%s.ini", m_languagesDir.c_str(), m_curLanguage.c_str())))
+					if(languages_available.size() > 1)
 					{
-						m_curLanguage = "Default";
-						m_cfg.setString("GENERAL", "language", m_curLanguage.c_str());
 						m_loc.unload();
-					}
-					else
+						curLanguage = loopNum(curLanguage + direction, (u32)languages_available.size());
+						m_curLanguage = languages_available[curLanguage];
+						if(m_curLanguage != "Default")
+							m_loc.load(fmt("%s/%s.ini", m_languagesDir.c_str(), m_curLanguage.c_str()));
 						m_cfg.setString("GENERAL", "language", m_curLanguage.c_str());
-					_updateText();
-					m_btnMgr.setText(m_configLbl1, _t("cfga7", L"Theme"));
-					m_btnMgr.setText(m_configLbl2, _t("cfgc9", L"WiiFlow Language"));
-					m_btnMgr.setText(m_configLbl3, _t("cfgc4", L"Adjust Coverflow"));
-					m_btnMgr.setText(m_configLbl4, _t("cfgc8", L"Startup Settings"));
-					
-					m_btnMgr.setText(m_configLbl1Val, m_cfg.getString("GENERAL", "theme"));
-					m_btnMgr.setText(m_configLbl2Val, m_curLanguage);
-					m_btnMgr.setText(m_configBtn3, _t("cfgc5", L"Go"));
-					m_btnMgr.setText(m_configBtn4, _t("cfgc5", L"Go"));
+						_updateText();
+						m_btnMgr.setText(m_configLbl1, _t("cfga7", L"Theme"));
+						m_btnMgr.setText(m_configLbl2, _t("cfgc9", L"WiiFlow Language"));
+						m_btnMgr.setText(m_configLbl3, _t("cfgc4", L"Adjust Coverflow"));
+						m_btnMgr.setText(m_configLbl4, _t("cfgc8", L"Startup Settings"));
+						
+						m_btnMgr.setText(m_configLbl1Val, m_cfg.getString("GENERAL", "theme"));
+						m_btnMgr.setText(m_configLbl2Val, m_curLanguage);
+						m_btnMgr.setText(m_configBtn3, _t("cfgc5", L"Go"));
+						m_btnMgr.setText(m_configBtn4, _t("cfgc5", L"Go"));
+					}
 				}
 				else if(m_btnMgr.selected(m_configBtn3))
 				{
@@ -959,7 +958,7 @@ void CMenu::_configMain(void)
 			}
 		}
 	}
-	if(mainCfg_curPage == 2 && m_curLanguage != prevLanguage)
+	if(m_curLanguage != prevLanguage)
 	{
 		m_cacheList.Init(m_settingsDir.c_str(), m_loc.getString(m_curLanguage, "gametdb_code", "EN").c_str(), m_pluginDataDir.c_str(),
 				 m_cfg.getString(CONFIG_FILENAME_SKIP_DOMAIN,CONFIG_FILENAME_SKIP_KEY,CONFIG_FILENAME_SKIP_DEFAULT));

@@ -184,6 +184,9 @@ bool CMenu::init(bool usb_mounted)
 	strncpy(proxyPassword, m_cfg.getString("PROXY", "proxy_password", "").c_str(), sizeof(proxyPassword) - 1);
 	getProxyInfo();
 	
+	/* set default homebrew partition for first boot */
+	m_cfg.getInt(HOMEBREW_DOMAIN, "partition", strcmp(drive, "sd") == 0 ? 0 : 1);// drive is device where wiiflow is.
+	
 	/* Set SD only to off if any usb device is attached */
 	bool cfg_sdonly = m_cfg.getBool("GENERAL", "sd_only", usb_mounted ? false : true);// will only set it if this doesn't already exist - very first boot up
 	if(cfg_sdonly != sdOnly)// done for backwards compatibility with older wiiflow lite's
