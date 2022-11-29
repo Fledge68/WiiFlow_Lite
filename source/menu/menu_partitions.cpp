@@ -64,8 +64,7 @@ void CMenu::_showPartitionsCfg(void)
 
 void CMenu::_partitionsCfg(void)
 {
-	m_prev_view = m_current_view;
-	int prevPartition = currentPartition;
+	//int prevPartition = currentPartition;
 	SetupInput();
 	_showPartitionsCfg();
 	while(!m_exit)
@@ -84,48 +83,56 @@ void CMenu::_partitionsCfg(void)
 			else if(m_btnMgr.selected(m_configBtn1P) || m_btnMgr.selected(m_configBtn1M))
 			{
 				s8 direction = m_btnMgr.selected(m_configBtn1P) ? 1 : -1;
-				currentPartition = m_cfg.getInt(WII_DOMAIN, "partition");
-				m_current_view = COVERFLOW_WII;
-				_setPartition(direction);
+				_setPartition(direction, m_cfg.getInt(WII_DOMAIN, "partition"), COVERFLOW_WII);
 				_showPartitionsCfg();
-				if(m_prev_view & COVERFLOW_WII)
+				if(m_current_view & COVERFLOW_WII || 
+					(m_current_view & COVERFLOW_PLUGIN && m_plugin.GetEnabledStatus(m_plugin.GetPluginPosition(strtoul("4E574949", NULL, 16)))))
+				{
 					m_refreshGameList = true;
+					//prevPartition = currentPartition;
+				}
 			}
 			else if(m_btnMgr.selected(m_configBtn2P) || m_btnMgr.selected(m_configBtn2M))
 			{
 				s8 direction = m_btnMgr.selected(m_configBtn2P) ? 1 : -1;
-				currentPartition = m_cfg.getInt(GC_DOMAIN, "partition");
-				m_current_view = COVERFLOW_GAMECUBE;
-				_setPartition(direction);
+				_setPartition(direction, m_cfg.getInt(GC_DOMAIN, "partition"), COVERFLOW_GAMECUBE);
 				_showPartitionsCfg();
-				if(m_prev_view & COVERFLOW_GAMECUBE)
+				if(m_current_view & COVERFLOW_GAMECUBE || 
+					(m_current_view & COVERFLOW_PLUGIN && m_plugin.GetEnabledStatus(m_plugin.GetPluginPosition(strtoul("4E47434D", NULL, 16)))))
+				{
 					m_refreshGameList = true;
+					//prevPartition = currentPartition;
+				}
 			}
 			else if(m_btnMgr.selected(m_configBtn3P) || m_btnMgr.selected(m_configBtn3M))
 			{
 				s8 direction = m_btnMgr.selected(m_configBtn3P) ? 1 : -1;
-				currentPartition = m_cfg.getInt(CHANNEL_DOMAIN, "partition");
-				m_current_view = COVERFLOW_CHANNEL;
-				_setPartition(direction);
+				_setPartition(direction, m_cfg.getInt(CHANNEL_DOMAIN, "partition"), COVERFLOW_CHANNEL);
 				_showPartitionsCfg();
-				if(m_prev_view & COVERFLOW_CHANNEL)
+				// partition only for emu nands
+				if(m_current_view & COVERFLOW_CHANNEL || 
+					(m_current_view & COVERFLOW_PLUGIN && m_plugin.GetEnabledStatus(m_plugin.GetPluginPosition(strtoul("454E414E", NULL, 16)))))
+				{
 					m_refreshGameList = true;
+					//prevPartition = currentPartition;
+				}
 			}
 			else if(m_btnMgr.selected(m_configBtn4P) || m_btnMgr.selected(m_configBtn4M))
 			{
 				s8 direction = m_btnMgr.selected(m_configBtn4P) ? 1 : -1;
-				currentPartition = m_cfg.getInt(PLUGIN_DOMAIN, "partition");
-				m_current_view = COVERFLOW_PLUGIN;
-				_setPartition(direction);
+				_setPartition(direction, m_cfg.getInt(PLUGIN_DOMAIN, "partition"), COVERFLOW_PLUGIN);
 				_showPartitionsCfg();
-				if(m_prev_view & COVERFLOW_PLUGIN)
+				if(m_current_view & COVERFLOW_PLUGIN)
+				{
 					m_refreshGameList = true;
+					//prevPartition = currentPartition;
+				}
 			}
 		}
 	}
-	m_current_view = m_prev_view;
-	m_prev_view = 0;
-	currentPartition = prevPartition;
+	//m_current_view = m_prev_view;
+	//m_prev_view = 0;
+	//currentPartition = prevPartition;
 	_hidePartitionsCfg();
 }
 

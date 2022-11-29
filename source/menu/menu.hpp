@@ -168,7 +168,6 @@ private:
 	char emu_nands_dir[32];
 	string m_saveExtGameId;
 	bool m_forceext;
-	bool m_emuSaveNand;
 
 // GC sound stuff
 	bool m_gc_play_banner_sound;
@@ -972,9 +971,10 @@ private:
 	
 // misc functions
 	void RemoveCover(const char *id);
-	void _setPartition(s8 direction = 0);
+	void _setPartition(s8 direction = 0, u8 partition = 0, u8 coverflow = 0);
 	int _sfCacheCoversNeeded();
 	int _cacheCovers(void);
+	int _cacheCover(const dir_discHdr *hdr, bool smallBox);
 	void _mainLoopCommon(bool withCF = false, bool adjusting = false);
 	void _loadDefaultFont(void);
 	void _cleanupDefaultFont();

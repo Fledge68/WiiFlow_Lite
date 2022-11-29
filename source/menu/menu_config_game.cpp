@@ -209,6 +209,11 @@ void CMenu::_showConfigGame()
 			m_btnMgr.setText(m_configBtn1, m_gcfg1.getBool("ADULTONLY", id, false) ? _t("yes", L"Yes") : _t("no", L"No"));
 		m_btnMgr.show(m_configLbl1);
 		m_btnMgr.show(m_configBtn1);
+		
+		m_btnMgr.setText(m_configLbl2, _t("cfgg62", L"Reload cached cover"));
+		m_btnMgr.setText(m_configBtn2, _t("Yes", L"Yes"));
+		m_btnMgr.show(m_configLbl2);
+		m_btnMgr.show(m_configBtn2);
 		return;
 	}
 	
@@ -503,6 +508,50 @@ void CMenu::_configGame(const dir_discHdr *hdr, bool disc)
 							m_gcfg1.setBool("ADULTONLY", id, !m_gcfg1.getBool("ADULTONLY", id, false));
 						m_btnMgr.setText(m_configBtn1, m_gcfg1.getBool("ADULTONLY", id, false) ? _t("yes", L"Yes") : _t("no", L"No"));
 					}
+				}
+				else if(m_btnMgr.selected(m_configBtn2))
+				{
+					_hideConfigGame(true);
+					m_btnMgr.setText(m_downloadLblDialog, L"");
+					m_btnMgr.show(m_downloadLblDialog);
+					_start_pThread();
+					CoverFlow.stopCoverLoader(true);
+					
+					bool smallBox = false;
+					if(m_current_view == COVERFLOW_HOMEBREW && !m_sourceflow)
+						smallBox = m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox", false);
+					//else if(m_sourceflow)
+					//	smallBox = m_cfg.getBool(SOURCEFLOW_DOMAIN, "smallbox", false);
+					else if(m_current_view == COVERFLOW_PLUGIN && !m_sourceflow)
+					{
+						if(enabledPluginsCount == 1 && m_plugin.GetEnabledStatus(m_plugin.GetPluginPosition(strtoul("48425257", NULL, 16))))
+							smallBox = m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox", false);
+					}
+					
+					//delete cached wfc
+					const char *gameNameOrID = CoverFlow.getFilenameId(GameHdr);
+					if(GameHdr->type == TYPE_PLUGIN)
+						fsop_deleteFile(fmt("%s/%s/%s.wfc", m_cacheDir.c_str(), m_plugin.GetCoverFolderName(GameHdr->settings[0]), gameNameOrID));
+					else
+						fsop_deleteFile(fmt("%s/homebrew/%s.wfc", m_cacheDir.c_str(), gameNameOrID));
+					
+					//cache new cover
+					m_thrdMessage = wfmt(_t("cfgg63", L"Converting cover please wait..."));
+					m_thrdMessageAdded = true;
+					_cacheCover(GameHdr, smallBox);
+					
+					_stop_pThread();
+					m_btnMgr.setText(m_downloadLblDialog, _t("dlmsg14", L"Done."));
+					u8 pause = 150;
+					do
+					{
+						_mainLoopCommon();
+						pause--;
+						if(pause == 0)
+							m_btnMgr.hide(m_downloadLblDialog);
+					}while(!m_exit && pause > 0);
+					CoverFlow.startCoverLoader();
+					_showConfigGame();
 				}
 				else if(m_btnMgr.selected(m_configBtn2M) || m_btnMgr.selected(m_configBtn2P))
 				{

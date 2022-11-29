@@ -93,12 +93,16 @@ void CMenu::_ConfigHB(void)
 			}
 			else if (m_btnMgr.selected(m_configBtn4P) || m_btnMgr.selected(m_configBtn4M))
 			{
-				m_refreshGameList = true;
-				m_cfg.setBool(HOMEBREW_DOMAIN, "update_cache", true);
 				s8 direction = m_btnMgr.selected(m_configBtn4P) ? 1 : -1;
-				_setPartition(direction);
+				_setPartition(direction, m_cfg.getInt(HOMEBREW_DOMAIN, "partition"), COVERFLOW_HOMEBREW);
 				const char *partitionname = DeviceName[currentPartition];
 				m_btnMgr.setText(m_configLbl4Val, upperCase(partitionname));
+				if(m_current_view & COVERFLOW_HOMEBREW || 
+					(m_current_view & COVERFLOW_PLUGIN && m_plugin.GetEnabledStatus(m_plugin.GetPluginPosition(strtoul("48425257", NULL, 16)))))
+				{
+					m_refreshGameList = true;
+					//m_cfg.setBool(HOMEBREW_DOMAIN, "update_cache", true);
+				}
 			}
 		}
 	}

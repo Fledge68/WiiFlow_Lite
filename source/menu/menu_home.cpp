@@ -530,10 +530,6 @@ int CMenu::_cacheCovers()
 {
 	CoverFlow.stopCoverLoader(true);
 	
-	char coverPath[MAX_FAT_PATH];//1024
-	char wfcPath[MAX_FAT_PATH+20];
-	char cachePath[MAX_FAT_PATH];
-	
 	u32 total = m_gameList.size();
 	m_thrdTotal = total;
 	u32 index = 0;
@@ -556,73 +552,7 @@ int CMenu::_cacheCovers()
 		m_thrdMessage = wfmt(_fmt("dlmsg31", L"Converting cover %i of %i"), index, total);
 		m_thrdMessageAdded = true;
 		
-		/* get cover png path */
-		bool blankCover = false;
-		bool fullCover = true;
-		if(smallBox)// homebrew or sourceflow
-		{
-			fullCover = false;
-			strlcpy(coverPath, getFrontPath(&(*hdr)), sizeof(coverPath));
-			if(!fsop_FileExist(coverPath))
-					continue;
-		}
-		else
-		{
-			strlcpy(coverPath, getBoxPath(&(*hdr)), sizeof(coverPath));
-			//gprintf("boxpath=%s\n", coverPath);
-			if(!fsop_FileExist(coverPath))
-			{
-				fullCover = false;
-				strlcpy(coverPath, getFrontPath(&(*hdr)), sizeof(coverPath));
-				//gprintf("frontpath=%s\n", coverPath);
-				if(!fsop_FileExist(coverPath))
-				{
-					fullCover = true;
-					strlcpy(coverPath, getBlankCoverPath(&(*hdr)), sizeof(coverPath));
-					//gprintf("blankpath=%s\n", coverPath);
-					blankCover = true;
-					if(!fsop_FileExist(coverPath))
-						continue;
-				}
-			}
-		}
-				
-		/* get cache folder path */
-		if(hdr->type == TYPE_PLUGIN)
-			snprintf(cachePath, sizeof(cachePath), "%s/%s", m_cacheDir.c_str(), m_plugin.GetCoverFolderName(hdr->settings[0]));
-		else if(m_sourceflow)
-			snprintf(cachePath, sizeof(cachePath), "%s/sourceflow", m_cacheDir.c_str());
-		else if(hdr->type == TYPE_HOMEBREW)
-			snprintf(cachePath, sizeof(cachePath), "%s/homebrew", m_cacheDir.c_str());
-		else
-			snprintf(cachePath, sizeof(cachePath), "%s", m_cacheDir.c_str());
-		//gprintf("cachepath=%s\n", cachePath);
-			
-		/* get game name or ID */
-		const char *gameNameOrID = NULL;
-		if(!blankCover)
-			gameNameOrID = CoverFlow.getFilenameId(&(*hdr));// &(*hdr) converts iterator to pointer to mem address
-		else
-			gameNameOrID = strrchr(coverPath, '/') + 1;
-		//gprintf("nameorid=%s\n", gameNameOrID);
-		
-		/* get cover wfc path */
-		if(smallBox)
-			snprintf(wfcPath, sizeof(wfcPath), "%s/%s_small.wfc", cachePath, gameNameOrID);
-		else
-			snprintf(wfcPath, sizeof(wfcPath), "%s/%s.wfc", cachePath, gameNameOrID);
-		//gprintf("wfcpath=%s\n", wfcPath);
-		
-		/* if wfc doesn't exist or is flat and have full cover */
-		if(!fsop_FileExist(wfcPath) || (!CoverFlow.fullCoverCached(wfcPath) && fullCover))
-		{
-			// create cache subfolders if needed
-			if(!fsop_FolderExist(cachePath))
-				fsop_MakeFolder(cachePath);
-		
-			// create cover texture
-			CoverFlow.cacheCoverFile(wfcPath, coverPath, fullCover);
-		}
+		_cacheCover(&(*hdr), smallBox);
 		
 		/* cache wii and channel banners */
 		if(hdr->type == TYPE_WII_GAME || hdr->type == TYPE_CHANNEL || hdr->type == TYPE_EMUCHANNEL)
@@ -647,5 +577,81 @@ int CMenu::_cacheCovers()
 	}
 	CurrentBanner.ClearBanner();
 	CoverFlow.startCoverLoader();
+	return 0;
+}
+
+int CMenu::_cacheCover(const dir_discHdr *hdr, bool smallBox)// fix hdr
+{
+	char coverPath[MAX_FAT_PATH];//1024
+	char wfcPath[MAX_FAT_PATH+20];
+	char cachePath[MAX_FAT_PATH];
+	
+	/* get cover png path */
+	bool blankCover = false;
+	bool fullCover = true;
+	if(smallBox)// homebrew or sourceflow
+	{
+		fullCover = false;
+		strlcpy(coverPath, getFrontPath(hdr), sizeof(coverPath));
+		if(!fsop_FileExist(coverPath))
+			return 0;
+	}
+	else
+	{
+		strlcpy(coverPath, getBoxPath(hdr), sizeof(coverPath));
+		//gprintf("boxpath=%s\n", coverPath);
+		if(!fsop_FileExist(coverPath))
+		{
+			fullCover = false;
+			strlcpy(coverPath, getFrontPath(hdr), sizeof(coverPath));
+			//gprintf("frontpath=%s\n", coverPath);
+			if(!fsop_FileExist(coverPath))
+			{
+				fullCover = true;
+				strlcpy(coverPath, getBlankCoverPath(hdr), sizeof(coverPath));
+				//gprintf("blankpath=%s\n", coverPath);
+				blankCover = true;
+				if(!fsop_FileExist(coverPath))
+					return 0;
+			}
+		}
+	}
+	
+	/* get cache folder path */
+	if(hdr->type == TYPE_PLUGIN)
+		snprintf(cachePath, sizeof(cachePath), "%s/%s", m_cacheDir.c_str(), m_plugin.GetCoverFolderName(hdr->settings[0]));
+	else if(m_sourceflow)
+		snprintf(cachePath, sizeof(cachePath), "%s/sourceflow", m_cacheDir.c_str());
+	else if(hdr->type == TYPE_HOMEBREW)
+		snprintf(cachePath, sizeof(cachePath), "%s/homebrew", m_cacheDir.c_str());
+	else
+		snprintf(cachePath, sizeof(cachePath), "%s", m_cacheDir.c_str());
+	gprintf("cachepath=%s\n", cachePath);
+
+	/* get game name or ID */
+	const char *gameNameOrID = NULL;
+	if(!blankCover)
+		gameNameOrID = CoverFlow.getFilenameId(hdr);
+	else
+		gameNameOrID = strrchr(coverPath, '/') + 1;
+	gprintf("nameorid=%s\n", gameNameOrID);
+	
+	/* get cover wfc path */
+	if(smallBox)
+		snprintf(wfcPath, sizeof(wfcPath), "%s/%s_small.wfc", cachePath, gameNameOrID);
+	else
+		snprintf(wfcPath, sizeof(wfcPath), "%s/%s.wfc", cachePath, gameNameOrID);
+	gprintf("wfcpath=%s\n", wfcPath);
+	
+	/* if wfc doesn't exist or is flat and have full cover */
+	if(!fsop_FileExist(wfcPath) || (!CoverFlow.fullCoverCached(wfcPath) && fullCover))
+	{
+		// create cache subfolders if needed
+		if(!fsop_FolderExist(cachePath))
+			fsop_MakeFolder(cachePath);
+	
+		// create cover texture
+		CoverFlow.cacheCoverFile(wfcPath, coverPath, fullCover);
+	}
 	return 0;
 }

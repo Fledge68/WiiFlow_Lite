@@ -366,7 +366,6 @@ int CMenu::main(void)
 	bool m_source_on_start = m_cfg.getBool("GENERAL", "source_on_start", false);
 	bool bheld = false;// bheld to indicate btn b was pressed or held
 	bool bUsed = false;// bused to indicate that it was actually used for something
-	m_emuSaveNand = false;
 	m_reload = false;
 	CFLocked = m_cfg.getBool("GENERAL", "cf_locked", false);
 	Auto_hide_icons = m_cfg.getBool("GENERAL", "auto_hide_icons", true);
@@ -1216,16 +1215,20 @@ wstringEx CMenu::_getNoticeTranslation(int sorting, wstringEx curLetter)
 	return curLetter;
 }
 
-void CMenu::_setPartition(s8 direction)
+void CMenu::_setPartition(s8 direction, u8 partition, u8 coverflow)// COVERFLOW_NONE is for emu saves nand
 {
-	if(m_source_cnt > 1 && !m_emuSaveNand)
+	if(m_source_cnt > 1 && coverflow > 0)// changing partition not allowed when more than one source is selected
 		return;
+		
+	currentPartition = partition;
+	u8 prev_view = m_current_view;
+	m_current_view = coverflow;
 	int FS_Type = 0;
-	/* change partition if direction is not zero */
-	if(direction != 0)
+	bool NeedFAT = m_current_view == COVERFLOW_CHANNEL || m_current_view == COVERFLOW_GAMECUBE || m_current_view == COVERFLOW_NONE;
+	u8 limiter = 0;
+	
+	if(direction != 0)// change partition if direction is not zero
 	{
-		bool NeedFAT = m_current_view == COVERFLOW_CHANNEL || m_current_view == COVERFLOW_GAMECUBE || m_emuSaveNand == true;
-		u8 limiter = 0;
 		do
 		{
 			currentPartition = loopNum(currentPartition + direction, 9);
@@ -1236,12 +1239,16 @@ void CMenu::_setPartition(s8 direction)
 			(m_current_view != COVERFLOW_WII && FS_Type == PART_FS_WBFS) ||
 			(NeedFAT && FS_Type != PART_FS_FAT)));
 	}
+		
 	/* set partition to currentPartition */
-	if(m_emuSaveNand)
-		m_cfg.setInt(WII_DOMAIN, "savepartition", currentPartition);
-	else if(direction == 0 || (direction != 0 && (m_current_view != COVERFLOW_CHANNEL || 
-							(FS_Type != -1 && DeviceHandle.IsInserted(currentPartition)))))
-		m_cfg.setInt(_domainFromView(), "partition", currentPartition);
+	if(limiter < 9)
+	{
+		if(coverflow == COVERFLOW_NONE)// saves emu nand
+			m_cfg.setInt(WII_DOMAIN, "savepartition", currentPartition);
+		else if(m_current_view != COVERFLOW_CHANNEL || (FS_Type != -1 && DeviceHandle.IsInserted(currentPartition)))
+			m_cfg.setInt(_domainFromView(), "partition", currentPartition);
+	}
+	m_current_view = prev_view;
 }
 
 void CMenu::exitHandler(int ExitTo)

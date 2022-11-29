@@ -297,10 +297,7 @@ int CMenu::_NandEmuCfg(void)
 				if(m_btnMgr.selected(m_configBtn1P) || m_btnMgr.selected(m_configBtn1M))
 				{
 					direction = m_btnMgr.selected(m_configBtn1P) ? 1 : -1;
-					currentPartition = m_cfg.getInt(WII_DOMAIN, "savepartition");
-					m_emuSaveNand = true;
-					_setPartition(direction);
-					m_emuSaveNand = false;
+					_setPartition(direction, m_cfg.getInt(WII_DOMAIN, "savepartition"), COVERFLOW_NONE);
 					_getEmuNands();// refresh emunands in case the partition was changed
 					const char *partitionname = DeviceName[m_cfg.getInt(WII_DOMAIN, "savepartition")];
 					m_btnMgr.setText(m_configLbl1Val, upperCase(partitionname));

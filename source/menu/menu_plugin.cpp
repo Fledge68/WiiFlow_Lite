@@ -14,6 +14,7 @@ s16 m_pluginBtnPageM;
 s16 m_pluginBtnPageP;
 s16 m_pluginBtnBack;
 s16 m_pluginLblTitle;
+s16 m_pluginBtnAll;
 s16 m_pluginLblUser[4];
 TexData m_pluginBg;
 
@@ -24,11 +25,12 @@ void CMenu::_hidePluginSettings(bool instant)
 	m_btnMgr.hide(m_pluginLblPage, instant);
 	m_btnMgr.hide(m_pluginBtnPageM, instant);
 	m_btnMgr.hide(m_pluginBtnPageP, instant);
+	m_btnMgr.hide(m_pluginBtnAll, instant);
 	for(u8 i = 0; i < ARRAY_SIZE(m_pluginLblUser); ++i)
 		if(m_pluginLblUser[i] != -1)
 			m_btnMgr.hide(m_pluginLblUser[i], instant);
 			
-	for(u8 i = 0; i < 11; ++i)
+	for(u8 i = 1; i < 11; ++i)
 	{
 		m_btnMgr.hide(m_checkboxLblTxt[i]);
 		m_btnMgr.hide(m_checkboxBtn[i]);
@@ -44,6 +46,7 @@ void CMenu::_showPluginSettings(void)
 			
 	m_btnMgr.show(m_pluginLblTitle);
 	m_btnMgr.show(m_pluginBtnBack);
+	m_btnMgr.show(m_pluginBtnAll);
 	_updatePluginCheckboxes();
 }
 
@@ -63,19 +66,17 @@ void CMenu::_updatePluginCheckboxes(void)
 		m_btnMgr.show(m_pluginBtnPageM);
 		m_btnMgr.show(m_pluginBtnPageP);
 	}
-	for(int i = 0; i < 11; ++i)
+	for(int i = 1; i < 11; ++i)
 	{
 		m_btnMgr.hide(m_checkboxBtn[i]);// instant?
 		m_btnMgr.hide(m_checkboxLblTxt[i]);
 	}
 	const vector<bool> &EnabledPlugins = m_plugin.GetEnabledPlugins(&enabledPluginsCount);
 	/* ALL Button */
-	if(EnabledPlugins.size() == 0)
-		m_btnMgr.setBtnTexture(m_checkboxBtn[0], theme.checkboxon, theme.checkboxons, false);
+	if(enabledPluginsCount == 0)
+		m_btnMgr.setText(m_pluginBtnAll, _t("cfgpl2", L"Set All"));
 	else
-		m_btnMgr.setBtnTexture(m_checkboxBtn[0], theme.checkboxoff, theme.checkboxoffs, false);
-	m_btnMgr.show(m_checkboxBtn[0]);
-	m_btnMgr.show(m_checkboxLblTxt[0]);
+		m_btnMgr.setText(m_pluginBtnAll, _t("cfgpl3", L"Clear All"));
 	/* Single Plugins */
 	u32 IteratorHelp = (Plugin_curPage - 1) * 10;
 	for(u8 i = 1; i < min(IteratorHelp+10, (u32)m_max_plugins)-IteratorHelp+1; ++i)
@@ -132,30 +133,26 @@ void CMenu::_PluginSettings()
 		}
 		if(BTN_A_PRESSED)
 		{
-			u32 IteratorHelp = (Plugin_curPage - 1) * 10;
-			for(u8 i = 0; i < min(IteratorHelp+10, (u32)m_max_plugins)-IteratorHelp+1; ++i)
+			if(m_btnMgr.selected(m_pluginBtnAll))
 			{
-				if(m_btnMgr.selected(m_checkboxBtn[i]))
+				// if all clear then set(2) them else clear(1) them all
+				for(u8 j = 0; m_plugin.PluginExist(j); j++)
+					m_plugin.SetEnablePlugin(j, (enabledPluginsCount == 0) ? 2 : 1);
+				_updatePluginCheckboxes();
+			}
+			else
+			{
+				u32 IteratorHelp = (Plugin_curPage - 1) * 10;
+				for(u8 i = 1; i < min(IteratorHelp+10, (u32)m_max_plugins)-IteratorHelp+1; ++i)
 				{
-					m_refreshGameList = true;
-					if(m_current_view != COVERFLOW_PLUGIN)
+					if(m_btnMgr.selected(m_checkboxBtn[i]))
 					{
-						/* clear all plugins */
-						for(u8 j = 0; m_plugin.PluginExist(j); j++)
-							m_plugin.SetEnablePlugin(j, 1);
-						m_current_view = COVERFLOW_PLUGIN;
-					}
-					if(i == 0)// all button to clear all or set all
-					{
-						// if all clear then set(2) them else clear(1) them all
-						for(u8 j = 0; m_plugin.PluginExist(j); j++)
-							m_plugin.SetEnablePlugin(j, (enabledPluginsCount == 0) ? 2 : 1);
-					}
-					else
+						m_refreshGameList = true;
 						m_plugin.SetEnablePlugin(i+IteratorHelp-1);// switch plugin from off to on or vice versa
-					_updatePluginCheckboxes();
-					m_btnMgr.setSelected(m_checkboxBtn[i]);
-					break;
+						_updatePluginCheckboxes();
+						m_btnMgr.setSelected(m_checkboxBtn[i]);
+						break;
+					}
 				}
 			}
 		}
@@ -204,12 +201,14 @@ void CMenu::_initPluginSettingsMenu()
 	m_pluginLblPage = _addLabel("PLUGIN/PAGE_BTN", theme.btnFont, L"", 68, 400, 104, 48, theme.btnFontColor, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_MIDDLE, theme.btnTexC);
 	m_pluginBtnPageM = _addPicButton("PLUGIN/PAGE_MINUS", theme.btnTexMinus, theme.btnTexMinusS, 20, 400, 48, 48);
 	m_pluginBtnPageP = _addPicButton("PLUGIN/PAGE_PLUS", theme.btnTexPlus, theme.btnTexPlusS, 172, 400, 48, 48);
+	m_pluginBtnAll = _addButton("PLUGIN/ALL_BTN", theme.btnFont, L"", 230, 400, 180, 48, theme.btnFontColor);
 	
 	_setHideAnim(m_pluginLblTitle, "PLUGIN/TITLE", 0, 0, -2.f, 0.f);
 	_setHideAnim(m_pluginLblPage, "PLUGIN/PAGE_BTN", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_pluginBtnPageM, "PLUGIN/PAGE_MINUS", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_pluginBtnPageP, "PLUGIN/PAGE_PLUS", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_pluginBtnBack, "PLUGIN/BACK_BTN", 0, 0, 1.f, -1.f);
+	_setHideAnim(m_pluginBtnAll, "PLUGIN/ALL_BTN", 0, 0, 1.f, -1.f);
 	
 	_hidePluginSettings(true);
 	_textPluginSettings();
@@ -219,5 +218,4 @@ void CMenu::_textPluginSettings(void)
 {
 	m_btnMgr.setText(m_pluginLblTitle, _t("cfgpl1", L"Select Plugins"));
 	m_btnMgr.setText(m_pluginBtnBack, _t("cd1", L"Back"));
-	m_btnMgr.setText(m_checkboxLblTxt[0], _t("dl25", L"All"));
 }
