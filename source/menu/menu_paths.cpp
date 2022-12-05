@@ -54,10 +54,11 @@ void CMenu::_showPaths(void)
 	m_btnMgr.show(m_configBtn2);
 	m_btnMgr.show(m_configLbl3);
 	m_btnMgr.show(m_configBtn3);
+	m_btnMgr.show(m_configLbl4);
+	m_btnMgr.show(m_configBtn4);
+		
 	if(paths_curPage == 1)
 	{
-		m_btnMgr.show(m_configLbl4);
-		m_btnMgr.show(m_configBtn4);
 		m_btnMgr.setText(m_configLbl1, _t("cfgp8", L"Box Covers"));
 		m_btnMgr.setText(m_configLbl2, _t("cfgp2", L"Flat Covers"));
 		m_btnMgr.setText(m_configLbl3, _t("cfgp9", L"Custom Banners"));
@@ -68,6 +69,7 @@ void CMenu::_showPaths(void)
 		m_btnMgr.setText(m_configLbl1, _t("cfgp5", L"Wii Games"));
 		m_btnMgr.setText(m_configLbl2, _t("cfgp6", L"GameCube Games"));
 		m_btnMgr.setText(m_configLbl3, _t("cfgp7", L"Music"));
+		m_btnMgr.setText(m_configLbl4, _t("cfgp10", L"WiiTDB Zip"));
 	}
 }
 
@@ -203,7 +205,7 @@ void CMenu::_Paths(void)
 				}
 				_showPaths();
 			}
-			if (m_btnMgr.selected(m_configBtn3))
+			else if (m_btnMgr.selected(m_configBtn3))
 			{
 				_hidePaths();
 				path = _FolderExplorer(m_cfg.getString("GENERAL", "dir_music").c_str());
@@ -213,6 +215,17 @@ void CMenu::_Paths(void)
 					m_musicDir = path;
 					MusicPlayer.Init(m_cfg, m_musicDir, fmt("%s/music", m_themeDataDir.c_str()));
 					m_music_info = m_cfg.getBool("GENERAL", "display_music_info", false);
+				}
+				_showPaths();
+			}
+			else if (m_btnMgr.selected(m_configBtn4))
+			{
+				_hidePaths();
+				path = _FolderExplorer(m_cfg.getString("GENERAL", "dir_wiitdb").c_str());
+				if(strlen(path) > 0)
+				{
+					m_cfg.setString("GENERAL", "dir_wiitdb", path);
+					m_wiiTDBDir = path;
 				}
 				_showPaths();
 			}

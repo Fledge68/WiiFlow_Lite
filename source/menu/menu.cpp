@@ -272,6 +272,7 @@ bool CMenu::init(bool usb_mounted)
 	m_helpDir = m_cfg.getString("GENERAL", "dir_help", fmt("%s/help", m_dataDir.c_str()));
 	m_screenshotDir = m_cfg.getString("GENERAL", "dir_screenshot", fmt("%s/screenshots", m_dataDir.c_str()));
 	
+	m_wiiTDBDir = m_cfg.getString("GENERAL", "dir_wiitdb", fmt("%s",m_settingsDir.c_str()));
 	m_boxPicDir = m_cfg.getString("GENERAL", "dir_box_covers", fmt("%s/boxcovers", m_dataDir.c_str()));
 	m_picDir = m_cfg.getString("GENERAL", "dir_flat_covers", fmt("%s/covers", m_dataDir.c_str()));
 	m_themeDir = m_cfg.getString("GENERAL", "dir_themes_lite", fmt("%s/themes_lite", m_dataDir.c_str()));

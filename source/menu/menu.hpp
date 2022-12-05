@@ -147,6 +147,7 @@ private:
 	string m_helpDir;
 	string m_screenshotDir;
 	
+	string m_wiiTDBDir;
 	string m_boxPicDir;
 	string m_picDir;
 	string m_themeDir;

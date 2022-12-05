@@ -1602,7 +1602,7 @@ int CMenu::_gametdbDownloaderAsync()
 		{
 			update_pThread(1); // It's downloaded
 			bool res = false;
-			char *zippath = fmt_malloc("%s/wiitdb.zip", m_settingsDir.c_str());
+			char *zippath = fmt_malloc("%s/wiitdb.zip", m_wiiTDBDir.c_str());
 			if(zippath != NULL)
 			{
 				gprintf("Writing file to '%s'\n", zippath);
@@ -1629,7 +1629,7 @@ int CMenu::_gametdbDownloaderAsync()
 				m_thrdMessage = wfmt(_fmt("dlmsg24", L"Extracting %s"), "wiitdb.zip");
 				m_thrdMessageAdded = true;
 				ZipFile zFile(zippath);
-				bool zres = zFile.ExtractAll(m_settingsDir.c_str());
+				bool zres = zFile.ExtractAll(m_wiiTDBDir.c_str());
 				gprintf(zres ? "success\n" : "failed\n");
 				// May add if zres failed return -4 extraction failed
 
@@ -1638,7 +1638,7 @@ int CMenu::_gametdbDownloaderAsync()
 				MEM2_free(zippath);
 
 				// We should always remove the offsets file to make sure it's reloaded
-				fsop_deleteFile(fmt("%s/gametdb_offsets.bin", m_settingsDir.c_str()));
+				fsop_deleteFile(fmt("%s/gametdb_offsets.bin", m_wiiTDBDir.c_str()));
 
 				update_pThread(1); // It's extracted
 
