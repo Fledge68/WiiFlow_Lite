@@ -86,6 +86,7 @@ public:
 	void AddPlugin(Config &plugin, const string &iniPath);
 	void Cleanup();
 	bool GetEnabledStatus(u8 pos);
+	bool GetEnabledStatus(const char *magic);
 	void SetEnablePlugin(u8 pos, u8 ForceMode = 0);
 	const vector<bool> &GetEnabledPlugins(u8 *num);
 	bool PluginExist(u8 pos);

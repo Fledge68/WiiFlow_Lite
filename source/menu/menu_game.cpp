@@ -49,15 +49,15 @@ void CMenu::_setCurrentItem(const dir_discHdr *hdr)
 		else
 		{
 			if(hdr->type == TYPE_WII_GAME)
-				strncpy(m_plugin.PluginMagicWord, "4E574949", 9);
+				strncpy(m_plugin.PluginMagicWord, WII_PMAGIC, 9);
 			else if(hdr->type == TYPE_GC_GAME)
-				strncpy(m_plugin.PluginMagicWord, "4E47434D", 9);
+				strncpy(m_plugin.PluginMagicWord, GC_PMAGIC, 9);
 			else if(hdr->type == TYPE_CHANNEL)
-				strncpy(m_plugin.PluginMagicWord, "4E414E44", 9);
+				strncpy(m_plugin.PluginMagicWord, NAND_PMAGIC, 9);
 			else if(hdr->type == TYPE_EMUCHANNEL)
-				strncpy(m_plugin.PluginMagicWord, "454E414E", 9);
+				strncpy(m_plugin.PluginMagicWord, ENAND_PMAGIC, 9);
 			else //HOMEBREW
-				strncpy(m_plugin.PluginMagicWord, "48425257", 9);
+				strncpy(m_plugin.PluginMagicWord, HB_PMAGIC, 9);
 		}
 		m_cfg.setString(PLUGIN_DOMAIN, "cur_magic", m_plugin.PluginMagicWord);
 		m_cfg.setString("plugin_item", m_plugin.PluginMagicWord, fn_id);

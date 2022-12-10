@@ -58,15 +58,15 @@ void CMenu::_getCustomBgTex()
 			{
 				case COVERFLOW_CHANNEL:
 					if(m_cfg.getInt(CHANNEL_DOMAIN, "channels_type") & CHANNELS_REAL)
-						strncpy(m_plugin.PluginMagicWord, "4E414E44", 9);
+						strncpy(m_plugin.PluginMagicWord, NAND_PMAGIC, 9);
 					else
-						strncpy(m_plugin.PluginMagicWord, "454E414E", 9);
+						strncpy(m_plugin.PluginMagicWord, ENAND_PMAGIC, 9);
 					break;
 				case COVERFLOW_HOMEBREW:
-					strncpy(m_plugin.PluginMagicWord, "48425257", 9);
+					strncpy(m_plugin.PluginMagicWord, HB_PMAGIC, 9);
 					break;
 				case COVERFLOW_GAMECUBE:
-					strncpy(m_plugin.PluginMagicWord, "4E47434D", 9);
+					strncpy(m_plugin.PluginMagicWord, GC_PMAGIC, 9);
 					break;
 				case COVERFLOW_PLUGIN:
 					while(m_plugin.PluginExist(i) && !m_plugin.GetEnabledStatus(i)) { ++i; }
@@ -74,7 +74,7 @@ void CMenu::_getCustomBgTex()
 						strncpy(m_plugin.PluginMagicWord, fmt("%08x", m_plugin.GetPluginMagic(i)), 8);
 					break;
 				default:// wii
-					strncpy(m_plugin.PluginMagicWord, "4E574949", 9);
+					strncpy(m_plugin.PluginMagicWord, WII_PMAGIC, 9);
 			}
 			if(strlen(m_plugin.PluginMagicWord) == 8)
 				fn = m_platform.getString("PLUGINS", m_plugin.PluginMagicWord, "");
@@ -305,7 +305,7 @@ void CMenu::_showCF(bool refreshList)
 	if(m_current_view == COVERFLOW_PLUGIN && !m_sourceflow)
 	{
 		/* check if homebrew plugin */
-		if(enabledPluginsCount == 1 && m_plugin.GetEnabledStatus(m_plugin.GetPluginPosition(strtoul("48425257", NULL, 16))) && m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox"))
+		if(enabledPluginsCount == 1 && m_plugin.GetEnabledStatus(HB_PMAGIC) && m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox"))
 			strcpy(cf_domain, "_SMALLFLOW");
 		else if(enabledPluginsCount > 0 && m_platform.loaded())
 		{
@@ -1213,42 +1213,6 @@ wstringEx CMenu::_getNoticeTranslation(int sorting, wstringEx curLetter)
 	}
 	
 	return curLetter;
-}
-
-void CMenu::_setPartition(s8 direction, u8 partition, u8 coverflow)// COVERFLOW_NONE is for emu saves nand
-{
-	if(m_source_cnt > 1 && coverflow > 0)// changing partition not allowed when more than one source is selected
-		return;
-		
-	currentPartition = partition;
-	u8 prev_view = m_current_view;
-	m_current_view = coverflow;
-	int FS_Type = 0;
-	bool NeedFAT = m_current_view == COVERFLOW_CHANNEL || m_current_view == COVERFLOW_GAMECUBE || m_current_view == COVERFLOW_NONE;
-	u8 limiter = 0;
-	
-	if(direction != 0)// change partition if direction is not zero
-	{
-		do
-		{
-			currentPartition = loopNum(currentPartition + direction, 9);
-			FS_Type = DeviceHandle.GetFSType(currentPartition);
-			limiter++;
-		}
-		while(limiter < 9 && (!DeviceHandle.IsInserted(currentPartition) ||
-			(m_current_view != COVERFLOW_WII && FS_Type == PART_FS_WBFS) ||
-			(NeedFAT && FS_Type != PART_FS_FAT)));
-	}
-		
-	/* set partition to currentPartition */
-	if(limiter < 9)
-	{
-		if(coverflow == COVERFLOW_NONE)// saves emu nand
-			m_cfg.setInt(WII_DOMAIN, "savepartition", currentPartition);
-		else if(m_current_view != COVERFLOW_CHANNEL || (FS_Type != -1 && DeviceHandle.IsInserted(currentPartition)))
-			m_cfg.setInt(_domainFromView(), "partition", currentPartition);
-	}
-	m_current_view = prev_view;
 }
 
 void CMenu::exitHandler(int ExitTo)

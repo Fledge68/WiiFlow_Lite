@@ -2226,7 +2226,7 @@ void CMenu::_initCF(void)
 		{
 			if(enabledPluginsCount == 1)// only one plugin enabled
 			{
-				if(m_plugin.GetEnabledStatus(m_plugin.GetPluginPosition(strtoul("48425257", NULL, 16))))// homebrew plugin
+				if(m_plugin.GetEnabledStatus(HB_PMAGIC))// homebrew plugin
 				{
 					CoverFlow.setBoxMode(m_cfg.getBool(HOMEBREW_DOMAIN, "box_mode", true));
 					CoverFlow.setSmallBoxMode(m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox", false));
@@ -2309,7 +2309,7 @@ void CMenu::_initCF(void)
 		u32 sourceNumber = 0;
 		if(m_current_view == COVERFLOW_PLUGIN && !m_sourceflow)
 		{
-			if(!m_plugin.GetEnabledStatus(m_plugin.GetPluginPosition(strtoul(m_cfg.getString(PLUGIN_DOMAIN, "cur_magic", "00000000").c_str(), NULL, 16))))
+			if(!m_plugin.GetEnabledStatus(m_cfg.getString(PLUGIN_DOMAIN, "cur_magic", "00000000").c_str()))
 			{
 				for(u8 i = 0; m_plugin.PluginExist(i); ++i)
 				{
@@ -2323,13 +2323,13 @@ void CMenu::_initCF(void)
 
 			strncpy(m_plugin.PluginMagicWord, m_cfg.getString(PLUGIN_DOMAIN, "cur_magic").c_str(), 8);
 			
-			if(strncasecmp(m_plugin.PluginMagicWord, "4E47434D", 8) == 0)//NGCM
+			if(strncasecmp(m_plugin.PluginMagicWord, GC_PMAGIC, 8) == 0)//NGCM
 				ID = m_cfg.getString("plugin_item", m_plugin.PluginMagicWord, "");
-			else if(strncasecmp(m_plugin.PluginMagicWord, "4E574949", 8) == 0)//NWII
+			else if(strncasecmp(m_plugin.PluginMagicWord, WII_PMAGIC, 8) == 0)//NWII
 				ID = m_cfg.getString("plugin_item", m_plugin.PluginMagicWord, "");
-			else if(strncasecmp(m_plugin.PluginMagicWord, "4E414E44", 8) == 0)//NAND
+			else if(strncasecmp(m_plugin.PluginMagicWord, NAND_PMAGIC, 8) == 0)//NAND
 				ID = m_cfg.getString("plugin_item", m_plugin.PluginMagicWord, "");
-			else if(strncasecmp(m_plugin.PluginMagicWord, "454E414E", 8) == 0)//EMUNAND
+			else if(strncasecmp(m_plugin.PluginMagicWord, ENAND_PMAGIC, 8) == 0)//EMUNAND
 				ID = m_cfg.getString("plugin_item", m_plugin.PluginMagicWord, "");
 			else
 				filename = m_cfg.getString("plugin_item", m_plugin.PluginMagicWord, "");// homebrew and plugins
@@ -2394,23 +2394,34 @@ bool CMenu::_loadList(void)
 
 bool CMenu::_loadWiiList(void)
 {
-	currentPartition = m_cfg.getInt(WII_DOMAIN, "partition", USB1);
-	if(!DeviceHandle.IsInserted(currentPartition))
-		return false;
-
 	gprintf("Adding wii list\n");
-	DeviceHandle.OpenWBFS(currentPartition);
-	string gameDir(fmt(wii_games_dir, DeviceName[currentPartition]));
-	string cacheDir(fmt("%s/%s_wii.db", m_listCacheDir.c_str(), DeviceName[currentPartition]));
+	
 	bool updateCache = m_cfg.getBool(WII_DOMAIN, "update_cache");
-	bool preCachedList = fsop_FileExist(cacheDir.c_str());
-	m_cacheList.CreateList(COVERFLOW_WII, gameDir, stringToVector(".wbfs|.iso", '|'), cacheDir, updateCache);
-	WBFS_Close();
-	m_cfg.remove(WII_DOMAIN, "update_cache");
-	for(vector<dir_discHdr>::iterator tmp_itr = m_cacheList.begin(); tmp_itr != m_cacheList.end(); tmp_itr++)
-		m_gameList.push_back(*tmp_itr);
-	if(updateCache || (!preCachedList && fsop_FileExist(cacheDir.c_str())))
+	if(updateCache)
 		cacheCovers = true;
+	m_cfg.remove(WII_DOMAIN, "update_cache");
+	for(u8 i = 0; i < 2; ++i)
+	{
+		currentPartition = m_cfg.getInt(WII_DOMAIN, "partition", USB1);
+		if(currentPartition == 8)
+			currentPartition = i;
+		else if(i == 1)
+			continue;
+			
+		if(!DeviceHandle.IsInserted(currentPartition))
+			continue;
+
+		DeviceHandle.OpenWBFS(currentPartition);
+		string gameDir(fmt(wii_games_dir, DeviceName[currentPartition]));
+		string cacheDir(fmt("%s/%s_wii.db", m_listCacheDir.c_str(), DeviceName[currentPartition]));
+		bool preCachedList = fsop_FileExist(cacheDir.c_str());
+		m_cacheList.CreateList(COVERFLOW_WII, gameDir, stringToVector(".wbfs|.iso", '|'), cacheDir, updateCache);
+		WBFS_Close();
+		for(vector<dir_discHdr>::iterator tmp_itr = m_cacheList.begin(); tmp_itr != m_cacheList.end(); tmp_itr++)
+			m_gameList.push_back(*tmp_itr);
+		if(!preCachedList && fsop_FileExist(cacheDir.c_str()))
+			cacheCovers = true;
+	}
 	return true;
 }
 
@@ -2436,25 +2447,36 @@ bool CMenu::_loadHomebrewList(const char *HB_Dir)
 
 bool CMenu::_loadGamecubeList()
 {
-	currentPartition = m_cfg.getInt(GC_DOMAIN, "partition", USB1);
-	if(!DeviceHandle.IsInserted(currentPartition))
-		return false;
-
 	gprintf("Adding gamecube list\n");
-	string gameDir(fmt(gc_games_dir, DeviceName[currentPartition]));
-	string cacheDir(fmt("%s/%s_gamecube.db", m_listCacheDir.c_str(), DeviceName[currentPartition]));
+
 	bool updateCache = m_cfg.getBool(GC_DOMAIN, "update_cache");
-	bool preCachedList = fsop_FileExist(cacheDir.c_str());
-	m_cacheList.CreateList(COVERFLOW_GAMECUBE, gameDir, stringToVector(".iso|.gcm|.ciso|root", '|'), cacheDir, updateCache);
-	m_cfg.remove(GC_DOMAIN, "update_cache");
-	for(vector<dir_discHdr>::iterator tmp_itr = m_cacheList.begin(); tmp_itr != m_cacheList.end(); tmp_itr++)
-	{
-		if(tmp_itr->settings[0] == 1) /* disc 2 */
-			continue;// skip gc disc 2 if its still part of the cached list
-		m_gameList.push_back(*tmp_itr);
-	}
-	if(updateCache || (!preCachedList && fsop_FileExist(cacheDir.c_str())))
+	if(updateCache)
 		cacheCovers = true;
+	m_cfg.remove(GC_DOMAIN, "update_cache");
+	for(u8 i = 0; i < 2; ++i)
+	{
+		currentPartition = m_cfg.getInt(GC_DOMAIN, "partition", USB1);
+		if(currentPartition == 8)
+			currentPartition = i;
+		else if(i == 1)
+			continue;
+			
+		if(!DeviceHandle.IsInserted(currentPartition))
+			continue;
+
+		string gameDir(fmt(gc_games_dir, DeviceName[currentPartition]));
+		string cacheDir(fmt("%s/%s_gamecube.db", m_listCacheDir.c_str(), DeviceName[currentPartition]));
+		bool preCachedList = fsop_FileExist(cacheDir.c_str());
+		m_cacheList.CreateList(COVERFLOW_GAMECUBE, gameDir, stringToVector(".iso|.gcm|.ciso|root", '|'), cacheDir, updateCache);
+		for(vector<dir_discHdr>::iterator tmp_itr = m_cacheList.begin(); tmp_itr != m_cacheList.end(); tmp_itr++)
+		{
+			if(tmp_itr->settings[0] == 1) /* disc 2 */
+				continue;// skip gc disc 2 if its still part of the cached list
+			m_gameList.push_back(*tmp_itr);
+		}
+		if(!preCachedList && fsop_FileExist(cacheDir.c_str()))
+			cacheCovers = true;
+	}
 	return true;
 }
 
@@ -2518,32 +2540,32 @@ bool CMenu::_loadPluginList()
 		const char *romDir = m_plugin.GetRomDir(i);
 		if(strstr(romDir, "scummvm.ini") == NULL)
 		{
-			if(strncasecmp(m_plugin.PluginMagicWord, "484252", 6) == 0)//HBRW
+			if(strncasecmp(m_plugin.PluginMagicWord, HB_PMAGIC, 6) == 0)//HBRW
 			{
 				if(updateCache)
 					m_cfg.setBool(HOMEBREW_DOMAIN, "update_cache", true);
 				_loadHomebrewList(romDir);
 			}
-			else if(strncasecmp(m_plugin.PluginMagicWord, "4E47434D", 8) == 0)//NGCM
+			else if(strncasecmp(m_plugin.PluginMagicWord, GC_PMAGIC, 8) == 0)//NGCM
 			{
 				if(updateCache)
 					m_cfg.setBool(GC_DOMAIN, "update_cache", true);
 				_loadGamecubeList();
 			}
-			else if(strncasecmp(m_plugin.PluginMagicWord, "4E574949", 8) == 0)//NWII
+			else if(strncasecmp(m_plugin.PluginMagicWord, WII_PMAGIC, 8) == 0)//NWII
 			{
 				if(updateCache)
 					m_cfg.setBool(WII_DOMAIN, "update_cache", true);
 				_loadWiiList();
 			}
-			else if(strncasecmp(m_plugin.PluginMagicWord, "4E414E44", 8) == 0)//NAND
+			else if(strncasecmp(m_plugin.PluginMagicWord, NAND_PMAGIC, 8) == 0)//NAND
 			{
 				if(updateCache)
 					m_cfg.setBool(CHANNEL_DOMAIN, "update_cache", true);
 				m_cfg.setInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_REAL);
 				_loadChannelList();
 			}
-			else if(strncasecmp(m_plugin.PluginMagicWord, "454E414E", 8) == 0)//ENAN
+			else if(strncasecmp(m_plugin.PluginMagicWord, ENAND_PMAGIC, 8) == 0)//ENAN
 			{
 				if(updateCache)
 					m_cfg.setBool(CHANNEL_DOMAIN, "update_cache", true);
@@ -2808,22 +2830,22 @@ const char *CMenu::getBlankCoverPath(const dir_discHdr *element)
 		switch(element->type)
 		{
 			case TYPE_CHANNEL:
-				strncpy(m_plugin.PluginMagicWord, "4E414E44", 9);
+				strncpy(m_plugin.PluginMagicWord, NAND_PMAGIC, 9);
 				break;
 			case TYPE_EMUCHANNEL:
-				strncpy(m_plugin.PluginMagicWord, "454E414E", 9);
+				strncpy(m_plugin.PluginMagicWord, ENAND_PMAGIC, 9);
 				break;
 			case TYPE_HOMEBREW:
-				strncpy(m_plugin.PluginMagicWord, "48425257", 9);
+				strncpy(m_plugin.PluginMagicWord, HB_PMAGIC, 9);
 				break;
 			case TYPE_GC_GAME:
-				strncpy(m_plugin.PluginMagicWord, "4E47434D", 9);
+				strncpy(m_plugin.PluginMagicWord, GC_PMAGIC, 9);
 				break;
 			case TYPE_PLUGIN:
 				strncpy(m_plugin.PluginMagicWord, fmt("%08x", element->settings[0]), 8);
 				break;
 			default:// wii
-				strncpy(m_plugin.PluginMagicWord, "4E574949", 9);
+				strncpy(m_plugin.PluginMagicWord, WII_PMAGIC, 9);
 		}
 		blankCoverTitle = m_platform.getString("PLUGINS", m_plugin.PluginMagicWord, "wii");
 	}

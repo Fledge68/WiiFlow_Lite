@@ -237,6 +237,11 @@ bool Plugin::GetEnabledStatus(u8 pos)
 	return false;
 }
 
+bool Plugin::GetEnabledStatus(const char *magic)
+{
+	return GetEnabledStatus(GetPluginPosition(strtoul(magic, NULL, 16)));
+}
+
 const vector<bool> &Plugin::GetEnabledPlugins(u8 *num)
 {
 	enabledPlugins.clear();

@@ -132,14 +132,13 @@ void CMenu::_showNandEmu(void)
 	else
 	{
 		m_btnMgr.setText(m_configLbl1, _t("cfgne38", L"Saves NAND Partition"));
+		currentPartition = m_cfg.getInt(WII_DOMAIN, "savepartition");
+		m_btnMgr.setText(m_configLbl1Val, upperCase(DeviceName[currentPartition]));
 	
 		m_btnMgr.setText(m_configLbl2, _t("cfgne40", L"Use Real NAND Config"));
-		m_btnMgr.setText(m_configLbl3, _t("cfgne41", L"Use Real NAND Miis"));
-	
-		const char *partitionname = DeviceName[m_cfg.getInt(WII_DOMAIN, "savepartition")];
-		m_btnMgr.setText(m_configLbl1Val, upperCase(partitionname));
-
 		m_btnMgr.setText(m_configBtn2, m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_config", false) ? _t("on", L"On") : _t("off", L"Off"));
+
+		m_btnMgr.setText(m_configLbl3, _t("cfgne41", L"Use Real NAND Miis"));
 		m_btnMgr.setText(m_configBtn3, m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_miis", false) ? _t("on", L"On") : _t("off", L"Off"));
 		
 		m_btnMgr.show(m_configLbl1);
@@ -298,9 +297,9 @@ int CMenu::_NandEmuCfg(void)
 				{
 					direction = m_btnMgr.selected(m_configBtn1P) ? 1 : -1;
 					_setPartition(direction, m_cfg.getInt(WII_DOMAIN, "savepartition"), COVERFLOW_NONE);
+					m_cfg.setInt(WII_DOMAIN, "savepartition", currentPartition);
+					m_btnMgr.setText(m_configLbl1Val, upperCase(DeviceName[currentPartition]));
 					_getEmuNands();// refresh emunands in case the partition was changed
-					const char *partitionname = DeviceName[m_cfg.getInt(WII_DOMAIN, "savepartition")];
-					m_btnMgr.setText(m_configLbl1Val, upperCase(partitionname));
 				}
 				else if(m_btnMgr.selected(m_configBtn2))
 				{

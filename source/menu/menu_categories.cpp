@@ -69,15 +69,15 @@ void CMenu::_setCatGenDomain()
 			if(m_plugin.GetEnabledStatus(i))
 			{
 				strncpy(m_plugin.PluginMagicWord, fmt("%08x", m_plugin.GetPluginMagic(i)), 8);
-				if(strncasecmp(m_plugin.PluginMagicWord, "4E47434D", 8) == 0)//NGCM
+				if(strncasecmp(m_plugin.PluginMagicWord, GC_PMAGIC, 8) == 0)//NGCM
 					continue;
-				else if(strncasecmp(m_plugin.PluginMagicWord, "4E574949", 8) == 0)//NWII
+				else if(strncasecmp(m_plugin.PluginMagicWord, WII_PMAGIC, 8) == 0)//NWII
 					continue;
-				else if(strncasecmp(m_plugin.PluginMagicWord, "4E414E44", 8) == 0)//NAND
+				else if(strncasecmp(m_plugin.PluginMagicWord, NAND_PMAGIC, 8) == 0)//NAND
 					continue;
-				else if(strncasecmp(m_plugin.PluginMagicWord, "454E414E", 8) == 0)//EMUNAND
+				else if(strncasecmp(m_plugin.PluginMagicWord, ENAND_PMAGIC, 8) == 0)//EMUNAND
 					continue;
-				else if(strncasecmp(m_plugin.PluginMagicWord, "48425257", 8) == 0)//HBRW
+				else if(strncasecmp(m_plugin.PluginMagicWord, HB_PMAGIC, 8) == 0)//HBRW
 					continue;	
 				else
 				{

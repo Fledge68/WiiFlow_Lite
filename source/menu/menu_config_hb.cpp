@@ -36,9 +36,8 @@ void CMenu::_showConfigHB(void)
 	m_btnMgr.setText(m_configBtn2, m_cfg.getBool(HOMEBREW_DOMAIN, "smallbox") ? _t("on", L"On") : _t("off", L"Off"));
 	m_btnMgr.setText(m_configBtn3, m_cfg.getBool(HOMEBREW_DOMAIN, "box_mode") ? _t("on", L"On") : _t("off", L"Off"));
 	
-	currentPartition = m_cfg.getInt(HOMEBREW_DOMAIN, "partition", 0);
-	const char *partitionname = DeviceName[currentPartition];
-	m_btnMgr.setText(m_configLbl4Val, upperCase(partitionname));
+	currentPartition = m_cfg.getInt(HOMEBREW_DOMAIN, "partition", SD);
+	m_btnMgr.setText(m_configLbl4Val, upperCase(DeviceName[currentPartition]));
 
 	m_btnMgr.show(m_configLbl1);
 	m_btnMgr.show(m_configBtn1);
@@ -95,10 +94,10 @@ void CMenu::_ConfigHB(void)
 			{
 				s8 direction = m_btnMgr.selected(m_configBtn4P) ? 1 : -1;
 				_setPartition(direction, m_cfg.getInt(HOMEBREW_DOMAIN, "partition"), COVERFLOW_HOMEBREW);
-				const char *partitionname = DeviceName[currentPartition];
-				m_btnMgr.setText(m_configLbl4Val, upperCase(partitionname));
+				m_cfg.setInt(HOMEBREW_DOMAIN, "partition", currentPartition);
+				m_btnMgr.setText(m_configLbl4Val, upperCase(DeviceName[currentPartition]));
 				if(m_current_view & COVERFLOW_HOMEBREW || 
-					(m_current_view & COVERFLOW_PLUGIN && m_plugin.GetEnabledStatus(m_plugin.GetPluginPosition(strtoul("48425257", NULL, 16)))))
+					(m_current_view & COVERFLOW_PLUGIN && m_plugin.GetEnabledStatus(HB_PMAGIC)))
 				{
 					m_refreshGameList = true;
 					//m_cfg.setBool(HOMEBREW_DOMAIN, "update_cache", true);

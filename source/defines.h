@@ -24,6 +24,12 @@
 #define HOMEBREW_DOMAIN			"HOMEBREW"
 #define SOURCEFLOW_DOMAIN		"SOURCEFLOW"
 
+#define	WII_PMAGIC				"4E574949"
+#define	GC_PMAGIC				"4E47434D"
+#define ENAND_PMAGIC			"454E414E"
+#define	NAND_PMAGIC				"4E414E44"
+#define	HB_PMAGIC				"48425257"
+
 #define DEVELOPERS				"Fledge68"
 #define PAST_DEVELOPERS			"FIX94, OverjoY, Hibernatus, Narolez, Hulk, Miigotu, r-win"
 #define LOADER_AUTHOR			"Kwiirk, Waninkoko, Hermes"

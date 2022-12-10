@@ -296,15 +296,15 @@ void CMenu::_checkboxesMenu(u8 md)
 						u8 pos = firstCheckbox + i - 1;
 						bool plugin_ok = true;
 						strncpy(m_plugin.PluginMagicWord, fmt("%08x", m_plugin.GetPluginMagic(pos)), 8);
-						if(strncasecmp(m_plugin.PluginMagicWord, "484252", 6) == 0)//HBRW
+						if(strncasecmp(m_plugin.PluginMagicWord, HB_PMAGIC, 6) == 0)//HBRW
 							plugin_ok = false;
-						else if(strncasecmp(m_plugin.PluginMagicWord, "4E47434D", 8) == 0)//NGCM
+						else if(strncasecmp(m_plugin.PluginMagicWord, GC_PMAGIC, 8) == 0)//NGCM
 							plugin_ok = false;						
-						else if(strncasecmp(m_plugin.PluginMagicWord, "4E574949", 8) == 0)//NWII
+						else if(strncasecmp(m_plugin.PluginMagicWord, WII_PMAGIC, 8) == 0)//NWII
 							plugin_ok = false;
-						else if(strncasecmp(m_plugin.PluginMagicWord, "4E414E44", 8) == 0)//NAND
+						else if(strncasecmp(m_plugin.PluginMagicWord, NAND_PMAGIC, 8) == 0)//NAND
 							plugin_ok = false;
-						else if(strncasecmp(m_plugin.PluginMagicWord, "454E414E", 8) == 0)//ENAN
+						else if(strncasecmp(m_plugin.PluginMagicWord, ENAND_PMAGIC, 8) == 0)//ENAN
 							plugin_ok = false;
 						else if(strncasecmp(m_plugin.PluginMagicWord, "5343564D", 8) == 0)//scummvm
 							plugin_ok = false;

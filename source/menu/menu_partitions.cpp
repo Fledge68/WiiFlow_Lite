@@ -7,6 +7,11 @@ s16 m_partitionsLblUser[4];
 
 TexData m_partitionsBg;
 
+static inline int loopNum(int i, int s)
+{
+	return (i + s) % s;
+}
+
 void CMenu::_hidePartitionsCfg(bool instant)
 {
 	m_btnMgr.hide(m_partitionsLblTitle, instant);
@@ -32,17 +37,17 @@ void CMenu::_showPartitionsCfg(void)
 	m_btnMgr.setText(m_configLbl3, _t("part3", L"Emu NANDS Partition"));
 	m_btnMgr.setText(m_configLbl4, _t("part4", L"Plugins Default Partition"));
 	
-	const char *partitionname = DeviceName[m_cfg.getInt(WII_DOMAIN, "partition", 0)];
-	m_btnMgr.setText(m_configLbl1Val, upperCase(partitionname));
+	currentPartition = m_cfg.getInt(WII_DOMAIN, "partition", USB1);
+	m_btnMgr.setText(m_configLbl1Val, currentPartition == 8 ? "SD/USB" : upperCase(DeviceName[currentPartition]));
 	
-	partitionname = DeviceName[m_cfg.getInt(GC_DOMAIN, "partition", 0)];
-	m_btnMgr.setText(m_configLbl2Val, upperCase(partitionname));
+	currentPartition = m_cfg.getInt(GC_DOMAIN, "partition", USB1);
+	m_btnMgr.setText(m_configLbl2Val, currentPartition == 8 ? "SD/USB" : upperCase(DeviceName[currentPartition]));
 	
-	partitionname = DeviceName[m_cfg.getInt(CHANNEL_DOMAIN, "partition", 0)];
-	m_btnMgr.setText(m_configLbl3Val, upperCase(partitionname));
+	currentPartition = m_cfg.getInt(CHANNEL_DOMAIN, "partition", USB1);
+	m_btnMgr.setText(m_configLbl3Val, upperCase(DeviceName[currentPartition]));
 	
-	partitionname = DeviceName[m_cfg.getInt(PLUGIN_DOMAIN, "partition", 0)];
-	m_btnMgr.setText(m_configLbl4Val, upperCase(partitionname));
+	currentPartition = m_cfg.getInt(PLUGIN_DOMAIN, "partition", SD);
+	m_btnMgr.setText(m_configLbl4Val, upperCase(DeviceName[currentPartition]));
 	
 	m_btnMgr.show(m_configLbl1);
 	m_btnMgr.show(m_configLbl1Val);
@@ -64,7 +69,6 @@ void CMenu::_showPartitionsCfg(void)
 
 void CMenu::_partitionsCfg(void)
 {
-	//int prevPartition = currentPartition;
 	SetupInput();
 	_showPartitionsCfg();
 	while(!m_exit)
@@ -84,55 +88,41 @@ void CMenu::_partitionsCfg(void)
 			{
 				s8 direction = m_btnMgr.selected(m_configBtn1P) ? 1 : -1;
 				_setPartition(direction, m_cfg.getInt(WII_DOMAIN, "partition"), COVERFLOW_WII);
+				m_cfg.setInt(WII_DOMAIN, "partition", currentPartition);
 				_showPartitionsCfg();
-				if(m_current_view & COVERFLOW_WII || 
-					(m_current_view & COVERFLOW_PLUGIN && m_plugin.GetEnabledStatus(m_plugin.GetPluginPosition(strtoul("4E574949", NULL, 16)))))
-				{
+				if(m_current_view & COVERFLOW_WII || (m_current_view & COVERFLOW_PLUGIN && m_plugin.GetEnabledStatus(WII_PMAGIC)))
 					m_refreshGameList = true;
-					//prevPartition = currentPartition;
-				}
 			}
 			else if(m_btnMgr.selected(m_configBtn2P) || m_btnMgr.selected(m_configBtn2M))
 			{
 				s8 direction = m_btnMgr.selected(m_configBtn2P) ? 1 : -1;
 				_setPartition(direction, m_cfg.getInt(GC_DOMAIN, "partition"), COVERFLOW_GAMECUBE);
+				m_cfg.setInt(GC_DOMAIN, "partition", currentPartition);
 				_showPartitionsCfg();
-				if(m_current_view & COVERFLOW_GAMECUBE || 
-					(m_current_view & COVERFLOW_PLUGIN && m_plugin.GetEnabledStatus(m_plugin.GetPluginPosition(strtoul("4E47434D", NULL, 16)))))
-				{
+				if(m_current_view & COVERFLOW_GAMECUBE || (m_current_view & COVERFLOW_PLUGIN && m_plugin.GetEnabledStatus(GC_PMAGIC)))
 					m_refreshGameList = true;
-					//prevPartition = currentPartition;
-				}
 			}
 			else if(m_btnMgr.selected(m_configBtn3P) || m_btnMgr.selected(m_configBtn3M))
 			{
 				s8 direction = m_btnMgr.selected(m_configBtn3P) ? 1 : -1;
 				_setPartition(direction, m_cfg.getInt(CHANNEL_DOMAIN, "partition"), COVERFLOW_CHANNEL);
+				m_cfg.setInt(CHANNEL_DOMAIN, "partition", currentPartition);
 				_showPartitionsCfg();
 				// partition only for emu nands
-				if(m_current_view & COVERFLOW_CHANNEL || 
-					(m_current_view & COVERFLOW_PLUGIN && m_plugin.GetEnabledStatus(m_plugin.GetPluginPosition(strtoul("454E414E", NULL, 16)))))
-				{
+				if(m_current_view & COVERFLOW_CHANNEL || (m_current_view & COVERFLOW_PLUGIN && m_plugin.GetEnabledStatus(ENAND_PMAGIC)))
 					m_refreshGameList = true;
-					//prevPartition = currentPartition;
-				}
 			}
 			else if(m_btnMgr.selected(m_configBtn4P) || m_btnMgr.selected(m_configBtn4M))
 			{
 				s8 direction = m_btnMgr.selected(m_configBtn4P) ? 1 : -1;
 				_setPartition(direction, m_cfg.getInt(PLUGIN_DOMAIN, "partition"), COVERFLOW_PLUGIN);
+				m_cfg.setInt(PLUGIN_DOMAIN, "partition", currentPartition);
 				_showPartitionsCfg();
 				if(m_current_view & COVERFLOW_PLUGIN)
-				{
 					m_refreshGameList = true;
-					//prevPartition = currentPartition;
-				}
 			}
 		}
 	}
-	//m_current_view = m_prev_view;
-	//m_prev_view = 0;
-	//currentPartition = prevPartition;
 	_hidePartitionsCfg();
 }
 
@@ -156,3 +146,29 @@ void CMenu::_textPartitionsCfg(void)
 	m_btnMgr.setText(m_partitionsLblTitle, _t("part5", L"Partition Settings"));
 	m_btnMgr.setText(m_partitionsBtnBack, _t("cfg10", L"Back"));
 }
+
+void CMenu::_setPartition(s8 direction, u8 partition, u8 coverflow)// COVERFLOW_NONE is for emu saves nand
+{
+	currentPartition = partition;
+	u8 prev_view = m_current_view;// save and restore later
+	m_current_view = coverflow;
+	int FS_Type = 0;
+	bool NeedFAT = m_current_view == COVERFLOW_CHANNEL || m_current_view == COVERFLOW_GAMECUBE || m_current_view == COVERFLOW_NONE;
+	u8 limiter = 0;
+	
+	if(direction != 0)// change partition if direction is not zero
+	{
+		do
+		{
+			currentPartition = loopNum(currentPartition + direction, 9);
+			if(currentPartition == 8 && (m_current_view == COVERFLOW_WII || m_current_view == COVERFLOW_GAMECUBE))
+				break;
+			FS_Type = DeviceHandle.GetFSType(currentPartition);
+			limiter++;
+		}
+		while(limiter < 9 && (!DeviceHandle.IsInserted(currentPartition) ||
+			(m_current_view != COVERFLOW_WII && FS_Type == PART_FS_WBFS) ||
+			(NeedFAT && FS_Type != PART_FS_FAT)));
+	}
+	m_current_view = prev_view;
+}	
