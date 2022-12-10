@@ -105,11 +105,6 @@ vector<string> stringToVector(const string &text, char sep)
 {
 	vector<string> v;
 	if (text.empty()) return v;
-	u32 count = 1;
-	for (u32 i = 0; i < text.size(); ++i)
-		if (text[i] == sep)
-			++count;
-	v.reserve(count);
 	string::size_type off = 0;
 	string::size_type i = 0;
 	do
@@ -131,11 +126,6 @@ vector<wstringEx> stringToVector(const wstringEx &text, char sep)
 {
 	vector<wstringEx> v;
 	if (text.empty()) return v;
-	u32 count = 1;
-	for (u32 i = 0; i < text.size(); ++i)
-		if (text[i] == sep)
-			++count;
-	v.reserve(count);
 	wstringEx::size_type off = 0;
 	wstringEx::size_type i = 0;
 	do
