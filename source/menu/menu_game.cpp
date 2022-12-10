@@ -65,8 +65,6 @@ void CMenu::_setCurrentItem(const dir_discHdr *hdr)
 	else
 	{
 		m_cfg.setString(_domainFromView(), "current_item", fn_id);
-		if(m_source_cnt > 1)
-			m_cfg.setInt("MULTI", "current_item_type", hdr->type);
 	}
 }
 

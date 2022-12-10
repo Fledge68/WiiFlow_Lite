@@ -63,7 +63,6 @@ public: // functions called from outside CMenu
 private:
 	u8 m_prev_view;
 	u8 m_current_view;
-	u8 m_source_cnt;
 	u8 enabledPluginsCount;
 	u8 m_catStartPage;
 	u8 m_max_categories;

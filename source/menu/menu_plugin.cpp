@@ -184,7 +184,6 @@ void CMenu::_PluginSettings()
 	if(m_refreshGameList && enabledPluginsCount > 0)
 	{
 		m_cfg.setUInt("GENERAL", "sources", m_current_view);
-		m_source_cnt = 1;
 		m_catStartPage = 1;
 		m_cfg.setInt(CHANNEL_DOMAIN, "channels_type", channels_type);
 	}

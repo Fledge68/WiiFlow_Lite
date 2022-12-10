@@ -137,7 +137,6 @@ void CMenu::_sourceFlow()
 		m_current_view = COVERFLOW_WII;
 	m_sourceflow = false;
 	m_cfg.setUInt("GENERAL", "sources", m_current_view);
-	m_source_cnt = 1;
 	_setSrcOptions();
 }
 
@@ -608,7 +607,6 @@ bool CMenu::_Source()
 				numbers.append(',' + sm_numbers[i]);
 			m_cfg.setString(SOURCEFLOW_DOMAIN, "numbers", numbers);
 			m_cfg.setUInt("GENERAL", "sources", m_current_view);
-			m_source_cnt = 1;
 			newSource = true;
 			break;
 		}

@@ -149,53 +149,45 @@ void CMenu::_showCF(bool refreshList)
 		if(m_gameList.empty())
 		{
 			cacheCovers = false;
-			if(m_source_cnt > 1)
+			switch(m_current_view)
 			{
-				Msg = _t("main1", L"Game list empty!");
-				Pth = "";
-			}
-			else
-			{
-				switch(m_current_view)
-				{
-					case COVERFLOW_WII:
+				case COVERFLOW_WII:
+					Msg = _t("main2", L"No games found in");
+					Pth = sfmt(wii_games_dir, DeviceName[currentPartition]);
+					break;
+				case COVERFLOW_GAMECUBE:
+					Msg = _t("main2", L"No games found in");
+					Pth = sfmt(gc_games_dir, DeviceName[currentPartition]);
+					break;
+				case COVERFLOW_CHANNEL:
+					Msg = _t("main3", L"No titles found in");
+					Pth = sfmt("%s:/%s/%s", DeviceName[currentPartition],  emu_nands_dir, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand").c_str());
+					break;
+				case COVERFLOW_HOMEBREW:
+					Msg = _t("main4", L"No apps found in");
+					Pth = sfmt(HOMEBREW_DIR, DeviceName[currentPartition]);
+					break;
+				case COVERFLOW_PLUGIN:
+					Pth = "";
+					if(enabledPluginsCount == 0)
+						Msg = _t("main6", L"No plugins selected.");
+					else if(enabledPluginsCount > 1)
+						Msg = _t("main5", L"No roms/items found.");
+					else
+					{
 						Msg = _t("main2", L"No games found in");
-						Pth = sfmt(wii_games_dir, DeviceName[currentPartition]);
-						break;
-					case COVERFLOW_GAMECUBE:
-						Msg = _t("main2", L"No games found in");
-						Pth = sfmt(gc_games_dir, DeviceName[currentPartition]);
-						break;
-					case COVERFLOW_CHANNEL:
-						Msg = _t("main3", L"No titles found in");
-						Pth = sfmt("%s:/%s/%s", DeviceName[currentPartition],  emu_nands_dir, m_cfg.getString(CHANNEL_DOMAIN, "current_emunand").c_str());
-						break;
-					case COVERFLOW_HOMEBREW:
-						Msg = _t("main4", L"No apps found in");
-						Pth = sfmt(HOMEBREW_DIR, DeviceName[currentPartition]);
-						break;
-					case COVERFLOW_PLUGIN:
-						Pth = "";
-						if(enabledPluginsCount == 0)
-							Msg = _t("main6", L"No plugins selected.");
-						else if(enabledPluginsCount > 1)
-							Msg = _t("main5", L"No roms/items found.");
+						u8 i = 0;
+						while(m_plugin.PluginExist(i) && !m_plugin.GetEnabledStatus(i)){ ++i; }
+						int romsPartition = m_plugin.GetRomPartition(i);
+						if(romsPartition < 0)
+							romsPartition = m_cfg.getInt(PLUGIN_DOMAIN, "partition", 0);
+						const char *romDir = m_plugin.GetRomDir(i);
+						if(strstr(romDir, "scummvm.ini") != NULL && strchr(romDir, ':') != NULL)
+							Pth = sfmt("%s", romDir);
 						else
-						{
-							Msg = _t("main2", L"No games found in");
-							u8 i = 0;
-							while(m_plugin.PluginExist(i) && !m_plugin.GetEnabledStatus(i)){ ++i; }
-							int romsPartition = m_plugin.GetRomPartition(i);
-							if(romsPartition < 0)
-								romsPartition = m_cfg.getInt(PLUGIN_DOMAIN, "partition", 0);
-							const char *romDir = m_plugin.GetRomDir(i);
-							if(strstr(romDir, "scummvm.ini") != NULL && strchr(romDir, ':') != NULL)
-								Pth = sfmt("%s", romDir);
-							else
-								Pth = sfmt("%s:/%s", DeviceName[romsPartition], m_plugin.GetRomDir(i));
-						}
-						break;
-				}
+							Pth = sfmt("%s:/%s", DeviceName[romsPartition], m_plugin.GetRomDir(i));
+					}
+					break;
 			}
 			Msg.append(wstringEx(' ' + Pth));
 			m_btnMgr.setText(m_mainLblMessage, Msg);
@@ -373,17 +365,6 @@ int CMenu::main(void)
 
 	m_prev_view = 0;
 	m_current_view = m_cfg.getUInt("GENERAL", "sources", COVERFLOW_WII);
-	m_source_cnt = 0;
-	for(u8 i = 1; i < 32; i <<= 1)
-		if(m_current_view & i)
-			m_source_cnt++;
-			
-	if(m_source_cnt == 0)
-	{
-		m_current_view = COVERFLOW_WII;
-		m_cfg.setUInt("GENERAL", "sources", m_current_view);
-		m_source_cnt++;
-	}
 	
 	m_catStartPage = m_cfg.getInt("GENERAL", "cat_startpage", 1);
 	
@@ -527,7 +508,7 @@ int CMenu::main(void)
 					m_current_view = show_plugin ? COVERFLOW_PLUGIN : (show_homebrew ? COVERFLOW_HOMEBREW : COVERFLOW_WII);
 				else if(m_current_view == COVERFLOW_PLUGIN)
 					m_current_view = show_homebrew ? COVERFLOW_HOMEBREW : COVERFLOW_WII;
-				else if(m_current_view == COVERFLOW_HOMEBREW || m_source_cnt > 1)
+				else if(m_current_view == COVERFLOW_HOMEBREW)
 					m_current_view = COVERFLOW_WII;
 				if(m_use_source)
 				{
@@ -535,7 +516,6 @@ int CMenu::main(void)
 					sm_tiers_backup = SOURCE_FILENAME;
 					_restoreSrcTiers();
 				}
-				m_source_cnt = 1;
 				m_cfg.setUInt("GENERAL", "sources", m_current_view);
 				m_catStartPage = 1;
 				_getCustomBgTex();

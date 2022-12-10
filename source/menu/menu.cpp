@@ -2212,7 +2212,7 @@ void CMenu::_initCF(void)
 	}
 
 	/*********************** sort coverflow list ***********************/
-	CoverFlow.setSorting(m_source_cnt > 1 ? (Sorting)0 : (Sorting)m_cfg.getInt(_domainFromView(), "sort", 0));
+	CoverFlow.setSorting((Sorting)m_cfg.getInt(_domainFromView(), "sort", 0));
 	
 	/*********************** set box mode and small box mode **************************/
 	if(!m_sourceflow)
@@ -2336,8 +2336,8 @@ void CMenu::_initCF(void)
 		}
 		else if(m_sourceflow && sm_numbers.size() > 0)
 			sourceNumber = stoi(sm_numbers[sm_numbers.size() - 1]);
-		else if(m_current_view == COVERFLOW_HOMEBREW || (m_source_cnt > 1 && NoGameID(m_cfg.getInt("MULTI", "current_item_type", TYPE_PLUGIN)))) 
-			filename = m_cfg.getString(_domainFromView(), "current_item", "");
+		else if(m_current_view == COVERFLOW_HOMEBREW) 
+			filename = m_cfg.getString(HOMEBREW_DOMAIN, "current_item", "");
 		else
 			ID = m_cfg.getString(_domainFromView(), "current_item", "");
 			
@@ -2765,8 +2765,6 @@ const char *CMenu::_domainFromView()
 {
 	if(m_sourceflow)
 		return SOURCEFLOW_DOMAIN;
-	if(m_source_cnt > 1)
-		return "MULTI";
 	switch(m_current_view)
 	{
 		case COVERFLOW_CHANNEL:
