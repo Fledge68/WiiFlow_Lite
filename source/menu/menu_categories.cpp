@@ -14,7 +14,7 @@ TexData m_categoryBg;
 vector<char> m_categories;
 static u8 curPage;
 char id[64];
-const char *catDomain = NULL;
+string catDomain;
 bool gameSet;
 string genDomain;
 
@@ -134,6 +134,7 @@ void CMenu::_updateCatCheckboxes(void)
 void CMenu::_getGameCategories(void)
 {
 	const dir_discHdr *hdr = CoverFlow.getHdr();
+	/* get the domain text [TEXT] */
 	switch(hdr->type)
 	{
 		case TYPE_CHANNEL:
@@ -152,20 +153,27 @@ void CMenu::_getGameCategories(void)
 			catDomain = "WII";
 			break;
 		default:
-			catDomain = m_plugin.PluginMagicWord;
+			if(strcmp(hdr->id, "PLUGIN") != 0 && !m_platform.getString("PLUGINS", m_plugin.PluginMagicWord, "").empty())
+				catDomain = m_platform.getString("PLUGINS", m_plugin.PluginMagicWord);// console/platform from platform.ini				
+			else
+				catDomain = m_plugin.PluginMagicWord;// no platform.ini - we use plugin magic
 	}
 
+	/* get KEY text (before =) */
 	memset(id, 0, 64);
-	if(NoGameID(hdr->type))
+	if(hdr->type == TYPE_HOMEBREW)
+		wcstombs(id, hdr->title, sizeof(id) - 1);//we use title(folder) because no ID and filenames are all boot.dol or boot.elf
+	else if(hdr->type == TYPE_PLUGIN && strcmp(hdr->id, "PLUGIN") == 0)// no ID from plugin database files
 	{
 		if(strrchr(hdr->path, '/') != NULL)
-			wcstombs(id, hdr->title, sizeof(id) - 1);
+			wcstombs(id, hdr->title, sizeof(id) - 1);// without ID we can't use database files. title is the rom filename without extension or custom title.
 		else
-			strcpy(id, hdr->path);// scummvm
+			memcpy(id, hdr->path, 63);// scummvm
 	}
 	else
-		strcpy(id, hdr->id);
+		strcpy(id, hdr->id);// wii, gc, channels, and plugin games with an ID from database files
 
+	/* get the game's categories uing the domain and key */
 	const char *gameCats = m_cat.getString(catDomain, id, "").c_str();
 	if(strlen(gameCats) > 0)
 	{

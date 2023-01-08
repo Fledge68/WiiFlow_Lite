@@ -162,9 +162,18 @@ void CMenu::_hideConfigGame(bool instant)
 void CMenu::_showConfigGame()
 {
 	vector<string> custom_servers = stringToVector(m_cfg.getString("custom_servers", "servers"), '|');
+	
+	bool b;
+	string adultDomain;
+	if(GameHdr->type == TYPE_PLUGIN)
+		adultDomain = "ADULTONLY_PLUGINS";
+	else
+		adultDomain = "ADULTONLY";
+
 	u8 i;
 	string id;
 	char gameTitle[64];
+	memset(gameTitle, 0 , 64);
 	
 	if(GameHdr->type == TYPE_HOMEBREW)
 	{
@@ -174,18 +183,20 @@ void CMenu::_showConfigGame()
 	else if(GameHdr->type == TYPE_PLUGIN)
 	{
 		strncpy(m_plugin.PluginMagicWord, fmt("%08x", GameHdr->settings[0]), 8);
-		if(strrchr(GameHdr->path, '/') != NULL)
+		// if game has an id from the plugin database we use the new method which uses platform name/id
+		if(strcmp(GameHdr->id, "PLUGIN") != 0 && !m_platform.getString("PLUGINS", m_plugin.PluginMagicWord, "").empty())
+			id =sfmt("%s/%s", m_platform.getString("PLUGINS", m_plugin.PluginMagicWord).c_str(), GameHdr->id);
+		else // old pre 5.4.4 method which uses plugin magic/title of game
 		{
-			wcstombs(gameTitle, GameHdr->title, 63);
-			id = string(m_plugin.PluginMagicWord) + "/" + string(gameTitle);
+			if(strrchr(GameHdr->path, '/') != NULL)
+				wcstombs(gameTitle, GameHdr->title, 63);
+			else
+				memcpy(gameTitle, GameHdr->path, 63);// scummvm
+			id = sfmt("%s/%s", m_plugin.PluginMagicWord, gameTitle);
 		}
-		else
-			id = string(m_plugin.PluginMagicWord) + "/" + GameHdr->path;
 	}
 	else
-	{
 		id = GameHdr->id;
-	}
 	
 	_setBg(m_gameSettingsBg, m_gameSettingsBg);
 	for(i = 0; i < ARRAY_SIZE(m_gameSettingsLblUser); ++i)
@@ -203,10 +214,10 @@ void CMenu::_showConfigGame()
 	{
 		m_configGameMaxPgs = 1;
 		m_btnMgr.setText(m_configLbl1, _t("cfgg58", L"Adult only"));
-		if(GameHdr->type == TYPE_PLUGIN)
-			m_btnMgr.setText(m_configBtn1, m_gcfg1.getBool("ADULTONLY_PLUGINS", id, false) ? _t("yes", L"Yes") : _t("no", L"No"));
-		else
-			m_btnMgr.setText(m_configBtn1, m_gcfg1.getBool("ADULTONLY", id, false) ? _t("yes", L"Yes") : _t("no", L"No"));
+		b = m_gcfg1.getBool(adultDomain, id, false);
+		if(!b)
+			m_gcfg1.remove(adultDomain, id);
+		m_btnMgr.setText(m_configBtn1, b ? _t("yes", L"Yes") : _t("no", L"No"));
 		m_btnMgr.show(m_configLbl1);
 		m_btnMgr.show(m_configBtn1);
 		
@@ -228,7 +239,10 @@ void CMenu::_showConfigGame()
 	if(m_configGamePage == 1)
 	{
 		m_btnMgr.setText(m_configLbl1, _t("cfgg58", L"Adult only"));
-		m_btnMgr.setText(m_configBtn1, m_gcfg1.getBool("ADULTONLY", id, false) ? _t("yes", L"Yes") : _t("no", L"No"));
+		b = m_gcfg1.getBool(adultDomain, id, false);
+		if(!b)
+			m_gcfg1.remove(adultDomain, id);
+		m_btnMgr.setText(m_configBtn1, b ? _t("yes", L"Yes") : _t("no", L"No"));
 		
 		m_btnMgr.setText(m_configLbl2, _t("cfgg10", L"IOS"));
 		i = m_gcfg2.getUInt(id, "ios", 0);
@@ -430,10 +444,16 @@ void CMenu::_configGame(const dir_discHdr *hdr, bool disc)
 	vector<string> custom_servers = stringToVector(m_cfg.getString("custom_servers", "servers"), '|');
 	m_gcfg2.load(fmt("%s/" GAME_SETTINGS2_FILENAME, m_settingsDir.c_str()));
 	GameHdr = hdr;// set for global use in other fuctions
+	string adultDomain;
+	if(hdr->type == TYPE_PLUGIN)
+		adultDomain = "ADULTONLY_PLUGINS";
+	else
+		adultDomain = "ADULTONLY";
 	u8 i;
 	string id;
 	//s8 direction;
 	char gameTitle[64];
+	memset(gameTitle, 0 , 64);
 	
 	if(GameHdr->type == TYPE_HOMEBREW)
 	{
@@ -443,18 +463,20 @@ void CMenu::_configGame(const dir_discHdr *hdr, bool disc)
 	else if(GameHdr->type == TYPE_PLUGIN)
 	{
 		strncpy(m_plugin.PluginMagicWord, fmt("%08x", GameHdr->settings[0]), 8);
-		if(strrchr(GameHdr->path, '/') != NULL)
+		// if game has an id from the plugin database we use the new method which uses platform name/id
+		if(strcmp(GameHdr->id, "PLUGIN") != 0 && !m_platform.getString("PLUGINS", m_plugin.PluginMagicWord, "").empty())
+			id =sfmt("%s/%s", m_platform.getString("PLUGINS", m_plugin.PluginMagicWord).c_str(), GameHdr->id);
+		else // old pre 5.4.4 method which uses plugin magic/title of game
 		{
-			wcstombs(gameTitle, GameHdr->title, 63);
-			id = string(m_plugin.PluginMagicWord) + "/" + string(gameTitle);
+			if(strrchr(GameHdr->path, '/') != NULL)
+				wcstombs(gameTitle, GameHdr->title, 63);
+			else
+				memcpy(gameTitle, GameHdr->path, 63);// scummvm
+			id = sfmt("%s/%s", m_plugin.PluginMagicWord, gameTitle);
 		}
-		else
-			id = string(m_plugin.PluginMagicWord) + "/" + GameHdr->path;
 	}
 	else
-	{
 		id = GameHdr->id;
-	}
 	
 	m_configGamePage = 1;
 	_showConfigGame();
@@ -502,11 +524,11 @@ void CMenu::_configGame(const dir_discHdr *hdr, bool disc)
 					}
 					else
 					{
-						if(GameHdr->type == TYPE_PLUGIN)
-							m_gcfg1.setBool("ADULTONLY_PLUGINS", id, !m_gcfg1.getBool("ADULTONLY_PLUGINS", id, false));
-						else
-							m_gcfg1.setBool("ADULTONLY", id, !m_gcfg1.getBool("ADULTONLY", id, false));
-						m_btnMgr.setText(m_configBtn1, m_gcfg1.getBool("ADULTONLY", id, false) ? _t("yes", L"Yes") : _t("no", L"No"));
+						m_gcfg1.setBool(adultDomain, id, !m_gcfg1.getBool(adultDomain, id, false));
+						bool b = m_gcfg1.getBool(adultDomain, id);
+						if(!b)
+							m_gcfg1.remove(adultDomain, id);
+						m_btnMgr.setText(m_configBtn1, b ? _t("yes", L"Yes") : _t("no", L"No"));
 					}
 				}
 				else if(m_btnMgr.selected(m_configBtn2))

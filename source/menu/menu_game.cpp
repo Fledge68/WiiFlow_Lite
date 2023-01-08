@@ -208,27 +208,31 @@ void CMenu::_game(bool launch)
 	memcpy(hdr, CoverFlow.getHdr(), sizeof(dir_discHdr));
 	_setCurrentItem(hdr);
 	
-	char id[74];
-	char catID[64];
-	memset(id, 0, 74);
-	memset(catID, 0, 64);
+	char gcfg1Key[74];
+	char gameTitle[64];
+	memset(gcfg1Key, 0, sizeof(gcfg1Key));
+	memset(gameTitle, 0, sizeof(gameTitle));
 	
 	if(hdr->type == TYPE_HOMEBREW)
-		wcstombs(id, hdr->title, 63);
+		wcstombs(gcfg1Key, hdr->title, 63);// uses title which is the folder name in apps.
 	else if(hdr->type == TYPE_PLUGIN)
 	{
 		strncpy(m_plugin.PluginMagicWord, fmt("%08x", hdr->settings[0]), 8);
-		if(strrchr(hdr->path, '/') != NULL)
-			wcstombs(catID, hdr->title, 63);
-		else
-			strcpy(catID, hdr->path);// scummvm
-		strcpy(id, m_plugin.PluginMagicWord);
-		strcat(id, fmt("/%s", catID));
+		
+		// if game has an id from the plugin database we use the new method which uses platform name/id
+		if(strcmp(hdr->id, "PLUGIN") != 0 && !m_platform.getString("PLUGINS", m_plugin.PluginMagicWord, "").empty())
+			strncpy(gcfg1Key, fmt("%s/%s", m_platform.getString("PLUGINS", m_plugin.PluginMagicWord).c_str(), hdr->id), 73);
+		else // old pre 5.4.4 method which uses plugin magic/title of game
+		{
+			if(strrchr(hdr->path, '/') != NULL)
+				wcstombs(gameTitle, hdr->title, 63);
+			else
+				memcpy(gameTitle, hdr->path, 63);// scummvm
+			strncpy(gcfg1Key, fmt("%s/%s", m_plugin.PluginMagicWord, gameTitle), 73);
+		}
 	}
-	else
-	{
-		strcpy(id, hdr->id);
-	}
+	else // wii, gc, channels
+		strcpy(gcfg1Key, hdr->id);
 
 	m_zoom_banner = m_cfg.getBool(_domainFromView(), "show_full_banner", false);
 
@@ -432,9 +436,17 @@ void CMenu::_game(bool launch)
 			else if(m_btnMgr.selected(m_gameBtnFavoriteOn) || m_btnMgr.selected(m_gameBtnFavoriteOff))
 			{
 				if(hdr->type == TYPE_PLUGIN)
-					m_gcfg1.setBool("FAVORITES_PLUGINS", id, !m_gcfg1.getBool("FAVORITES_PLUGINS", id, false));
+				{
+					m_gcfg1.setBool("FAVORITES_PLUGINS", gcfg1Key, !m_gcfg1.getBool("FAVORITES_PLUGINS", gcfg1Key, false));
+					if(!m_gcfg1.getBool("FAVORITES_PLUGINS", gcfg1Key, false))
+						m_gcfg1.remove("FAVORITES_PLUGINS", gcfg1Key);
+				}
 				else
-					m_gcfg1.setBool("FAVORITES", id, !m_gcfg1.getBool("FAVORITES", id, false));
+				{
+					m_gcfg1.setBool("FAVORITES", gcfg1Key, !m_gcfg1.getBool("FAVORITES", gcfg1Key, false));
+					if(!m_gcfg1.getBool("FAVORITES", gcfg1Key, false))
+						m_gcfg1.remove("FAVORITES", gcfg1Key);
+				}
 				if(m_favorites)
 					m_refreshGameList = true;
 			}
@@ -549,25 +561,30 @@ void CMenu::_game(bool launch)
 				memcpy(hdr, CoverFlow.getHdr(), sizeof(dir_discHdr));// get new game header
 				_setCurrentItem(hdr);
 				
-				memset(id, 0, 74);
-				memset(catID, 0, 64);
-	
+				memset(gcfg1Key, 0, sizeof(gcfg1Key));
+				memset(gameTitle, 0, sizeof(gameTitle));
+				
 				if(hdr->type == TYPE_HOMEBREW)
-					wcstombs(id, hdr->title, 64);
+					wcstombs(gcfg1Key, hdr->title, 63);// uses title which is the folder name in apps.
 				else if(hdr->type == TYPE_PLUGIN)
 				{
 					strncpy(m_plugin.PluginMagicWord, fmt("%08x", hdr->settings[0]), 8);
-					if(strrchr(hdr->path, '/') != NULL)
-						wcstombs(catID, hdr->title, 63);
-					else
-						strcpy(catID, hdr->path);// scummvm
-					strcpy(id, m_plugin.PluginMagicWord);
-					strcat(id, fmt("/%s", catID));
+					
+					// if game has an id from the plugin database we use the new method which uses platform name/id
+					if(strcmp(hdr->id, "PLUGIN") != 0 && !m_platform.getString("PLUGINS", m_plugin.PluginMagicWord, "").empty())
+						strncpy(gcfg1Key, fmt("%s/%s", m_platform.getString("PLUGINS", m_plugin.PluginMagicWord).c_str(), hdr->id), 73);
+					else // old pre 5.4.4 method which uses plugin magic/title of game
+					{
+						if(strrchr(hdr->path, '/') != NULL)
+							wcstombs(gameTitle, hdr->title, 63);
+						else
+							memcpy(gameTitle, hdr->path, 63);// scummvm
+						strncpy(gcfg1Key, fmt("%s/%s", m_plugin.PluginMagicWord, gameTitle), 73);
+					}
 				}
-				else
-				{
-					strcpy(id, hdr->id);
-				}
+				else // wii, gc, channels
+					strcpy(gcfg1Key, hdr->id);
+
 				if(m_newGame)
 				{
 					m_newGame = false;
@@ -614,9 +631,15 @@ void CMenu::_game(bool launch)
 					m_btnMgr.show(m_gameBtnCategories);
 					bool b;
 					if(hdr->type == TYPE_PLUGIN)
-						b = m_gcfg1.getBool("FAVORITES_PLUGINS", id, false);
+					{
+						b = m_gcfg1.getBool("FAVORITES_PLUGINS", gcfg1Key, false);
+						if(!b) m_gcfg1.remove("FAVORITES_PLUGINS", gcfg1Key);
+					}
 					else
-						b = m_gcfg1.getBool("FAVORITES", id, false);
+					{
+						b = m_gcfg1.getBool("FAVORITES", gcfg1Key, false);
+						if(!b) m_gcfg1.remove("FAVORITES", gcfg1Key);
+					}
 					m_btnMgr.show(b ? m_gameBtnFavoriteOn : m_gameBtnFavoriteOff);
 					m_btnMgr.hide(b ? m_gameBtnFavoriteOff : m_gameBtnFavoriteOn);
 					for(u8 i = 0; i < ARRAY_SIZE(m_gameLblUser); ++i)

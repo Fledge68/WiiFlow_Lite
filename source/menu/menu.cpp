@@ -2018,88 +2018,124 @@ void CMenu::_initCF(void)
 	CoverFlow.clear();
 	CoverFlow.reserve(m_gameList.size());
 
-	string requiredCats;
-	string selectedCats;
-	string hiddenCats;
-	char id[74];
-	char catID[64];
+	char cfgKey1[74];
+	char cfgKey2[74];
+	char catKey1[64];
+	char catKey2[64];
 	
-	// filter list based on categories and favorites
+	// filter list based on categories, favorites, and adult only
 	for(vector<dir_discHdr>::iterator hdr = m_gameList.begin(); hdr != m_gameList.end(); ++hdr)
 	{
-		requiredCats = m_cat.getString("GENERAL", "required_categories", "");
-		selectedCats = m_cat.getString("GENERAL", "selected_categories", "");
-		hiddenCats = m_cat.getString("GENERAL", "hidden_categories", "");
-		
-		const char *favDomain = "FAVORITES";
-		const char *adultDomain = "ADULTONLY";
-		
-		memset(id, 0, 74);
-		memset(catID, 0, 64);
-		
-		if(m_sourceflow)
+		if(m_sourceflow && !m_source.getBool(sfmt("button_%i", hdr->settings[0]), "hidden", false))
 		{
-			if(m_source.getBool(sfmt("button_%i", hdr->settings[0]), "hidden", false) == false)
-				CoverFlow.addItem(&(*hdr), 0, 0);
+			CoverFlow.addItem(&(*hdr), 0, 0);// no filtering for sourceflow
 			continue;
 		}
-		else if(hdr->type == TYPE_HOMEBREW)
+		
+		string favDomain = "FAVORITES";
+		string adultDomain = "ADULTONLY";
+		if(hdr->type == TYPE_PLUGIN)
 		{
-			wcstombs(id, hdr->title, 63);
-			strcpy(catID, id);
+			favDomain = "FAVORITES_PLUGINS";
+			adultDomain = "ADULTONLY_PLUGINS";
 		}
+		
+		// 1 is the one used. 2 is a temp copied to 1.
+		string catDomain1 = "";
+		string catDomain2 = "";
+		memset(catKey1, 0, 64);
+		memset(catKey2, 0, 64);
+		memset(cfgKey1, 0, 74);
+		memset(cfgKey2, 0, 74);
+		
+		if(hdr->type == TYPE_HOMEBREW)
+			wcstombs(cfgKey1, hdr->title, 63);// uses title which is the folder name in apps.
 		else if(hdr->type == TYPE_PLUGIN)
 		{
-			if(m_cat.hasDomain("PLUGINS"))// if using new style categories_lite.ini
+			strncpy(m_plugin.PluginMagicWord, fmt("%08x", hdr->settings[0]), 8);
+			
+			// old pre 5.4.4 method which uses plugin magic/title of game
+			if(strrchr(hdr->path, '/') != NULL)
+				wcstombs(catKey1, hdr->title, 63);
+			else
+				memcpy(catKey1, hdr->path, 63);// scummvm
+			strcpy(cfgKey1, fmt("%s/%s", m_plugin.PluginMagicWord, catKey1));
+			
+			// if game has an id from the plugin database we use the new method which uses platform name/id
+			if(strcmp(hdr->id, "PLUGIN") != 0 && !m_platform.getString("PLUGINS", m_plugin.PluginMagicWord, "").empty())
+			{
+				strcpy(cfgKey2, fmt("%s/%s", m_platform.getString("PLUGINS", m_plugin.PluginMagicWord).c_str(), hdr->id));
+				if(m_gcfg1.has(favDomain, cfgKey1) && !m_gcfg1.has(favDomain, cfgKey2))// convert old [DOMAIN] key= to new [DOMAIN] key=
+				{
+					m_gcfg1.setString(favDomain, cfgKey2, m_gcfg1.getString(favDomain, cfgKey1));
+					m_gcfg1.remove(favDomain, cfgKey1);// remove old method from cfg1
+				}
+				if(m_gcfg1.has(adultDomain, cfgKey1) && !m_gcfg1.has(adultDomain, cfgKey2))// convert old [DOMAIN] key= to new [DOMAIN] key=
+				{
+					m_gcfg1.setString(adultDomain, cfgKey2, m_gcfg1.getString(adultDomain, cfgKey1));
+					m_gcfg1.remove(adultDomain, cfgKey1);// remove old method from cfg1
+				}
+				strcpy(cfgKey1, cfgKey2);// copy 2 temp to 1 to use.
+			}
+		}
+		else // wii, gc, channels
+			strcpy(cfgKey1, hdr->id);
+		
+		if((!m_favorites || m_gcfg1.getBool(favDomain, cfgKey1, false))
+			&& (!m_locked || !m_gcfg1.getBool(adultDomain, cfgKey1, false)))
+		{
+			string requiredCats = m_cat.getString("GENERAL", "required_categories", "");
+			string selectedCats = m_cat.getString("GENERAL", "selected_categories", "");
+			string hiddenCats = m_cat.getString("GENERAL", "hidden_categories", "");
+			
+			if(hdr->type == TYPE_PLUGIN && m_cat.hasDomain("PLUGINS"))// if using the optional PLUGINS domain for categories_lite.ini
 			{
 				requiredCats = m_cat.getString("PLUGINS", "required_categories", "");
 				selectedCats = m_cat.getString("PLUGINS", "selected_categories", "");
 				hiddenCats = m_cat.getString("PLUGINS", "hidden_categories", "");
 			}
 			
-			strncpy(m_plugin.PluginMagicWord, fmt("%08x", hdr->settings[0]), 8);
-			if(strrchr(hdr->path, '/') != NULL)
-				wcstombs(catID, hdr->title, 63);
-			else
-				strncpy(catID, hdr->path, 63);// scummvm
-			strcpy(id, m_plugin.PluginMagicWord);
-			strcat(id, fmt("/%s", catID));
-			favDomain = "FAVORITES_PLUGINS";
-			adultDomain = "ADULTONLY_PLUGINS";
-		}
-		else // wii, gc, channels
-		{
-			strcpy(id, hdr->id);
-			strcpy(catID, id);
-		}
-		
-		u8 numReqCats = requiredCats.length();
-		u8 numSelCats = selectedCats.length();
-		u8 numHidCats = hiddenCats.length();
-		
-		if((!m_favorites || m_gcfg1.getBool(favDomain, id, false))
-			&& (!m_locked || !m_gcfg1.getBool(adultDomain, id, false)))
-		{
-			string catDomain = "";
+			u8 numReqCats = requiredCats.length();
+			u8 numSelCats = selectedCats.length();
+			u8 numHidCats = hiddenCats.length();
+			
 			if(hdr->type == TYPE_CHANNEL)
-				catDomain = "NAND";
+				catDomain1 = "NAND";
 			else if(hdr->type == TYPE_EMUCHANNEL)
-				catDomain = "CHANNELS";
+				catDomain1 = "CHANNELS";
 			else if(hdr->type == TYPE_GC_GAME)
-				catDomain = "GAMECUBE";
+				catDomain1 = "GAMECUBE";
 			else if(hdr->type == TYPE_WII_GAME)
-				catDomain = "WII";
+				catDomain1 = "WII";
 			else if(hdr->type == TYPE_HOMEBREW)
-				catDomain = "HOMEBREW";
-			else
-				catDomain = m_plugin.PluginMagicWord;
+				catDomain1 = "HOMEBREW";
+			else //hdr->type == TYPE_PLUGIN
+			{
+				// old categories method use [MAGIC] and game title as the key.
+				catDomain1 = m_plugin.PluginMagicWord;
+				// catKey1 already set above
+				
+				// if game has an id from the plugin database we use the new method which uses [platform name] and id as the key
+				if(strcmp(hdr->id, "PLUGIN") != 0 && !m_platform.getString("PLUGINS", m_plugin.PluginMagicWord, "").empty())
+				{
+					catDomain2 = m_platform.getString("PLUGINS", m_plugin.PluginMagicWord);
+					strcpy(catKey2, hdr->id);
+					if(m_cat.has(catDomain1, catKey1) && !m_cat.has(catDomain2, catKey2))// convert old [DOMAIN] key= to new [DOMAIN] key=
+					{
+						m_cat.setString(catDomain2, catKey2, m_cat.getString(catDomain1, catKey1));
+						m_cat.remove(catDomain1, catKey1);// remove old method from categories cfg
+					}
+					strcpy(catKey1, catKey2);// copy 2 temp to 1 to use.
+					catDomain1 = catDomain2;
+				}
+			}
 
 			if(numReqCats != 0 || numSelCats != 0 || numHidCats != 0) // if all 0 skip checking cats and show all games
 			{
-				string idCats= m_cat.getString(catDomain, catID, "");
+				string idCats= m_cat.getString(catDomain1, catKey1, "");
 				u8 numIdCats = idCats.length();
 				if(numIdCats == 0)
-					m_cat.remove(catDomain, catID);
+					m_cat.remove(catDomain1, catKey1);
 				bool inaCat = false;
 				bool inHiddenCat = false;
 				int reqMatch = 0;
@@ -2162,41 +2198,23 @@ void CMenu::_initCF(void)
 				}
 			}
 
-			if(dumpGameLst && !NoGameID(hdr->type))
-			{
-				const char *domain = NULL;
-				switch(hdr->type)
-				{
-					case TYPE_CHANNEL:
-						domain = "NAND";
-						break;
-					case TYPE_EMUCHANNEL:
-						domain = "CHANNELS";
-						break;
-					case TYPE_GC_GAME:
-						domain = "GAMECUBE";
-						break;
-					default:
-						domain = "WII";
-						break;
-				}
-				dump.setWString(domain, id, hdr->title);
-			}
+			if(dumpGameLst && (!NoGameID(hdr->type) || (hdr->type == TYPE_PLUGIN && strcmp(hdr->id, "PLUGIN") != 0)))
+				dump.setWString(catDomain1, catKey1, hdr->title);
 
 			if(hdr->type == TYPE_PLUGIN && m_plugin.GetEnabledStatus(m_plugin.GetPluginPosition(hdr->settings[0])))
 				CoverFlow.addItem(&(*hdr), 0, 0);
 			else
 			{
-				int playcount = m_gcfg1.getInt("PLAYCOUNT", id, 0);
-				unsigned int lastPlayed = m_gcfg1.getUInt("LASTPLAYED", id, 0);
+				int playcount = m_gcfg1.getInt("PLAYCOUNT", cfgKey1, 0);
+				unsigned int lastPlayed = m_gcfg1.getUInt("LASTPLAYED", cfgKey1, 0);
 				CoverFlow.addItem(&(*hdr), playcount, lastPlayed);
 			}
 		}
 		/* remove them if false to keep file short */
-		if(!m_gcfg1.getBool(favDomain, id))
-			m_gcfg1.remove(favDomain, id);
-		if(!m_gcfg1.getBool(adultDomain, id))
-			m_gcfg1.remove(adultDomain, id);
+		if(!m_gcfg1.getBool(favDomain, cfgKey1))
+			m_gcfg1.remove(favDomain, cfgKey1);
+		if(!m_gcfg1.getBool(adultDomain, cfgKey1))
+			m_gcfg1.remove(adultDomain, cfgKey1);
 	}
 
 	if(CoverFlow.empty())
@@ -2208,7 +2226,7 @@ void CMenu::_initCF(void)
 	if(dumpGameLst)
 	{
 		dump.save(true);
-		m_cfg.setBool("GENERAL", "dump_list", false);
+		//m_cfg.setBool("GENERAL", "dump_list", false);
 	}
 
 	/*********************** sort coverflow list ***********************/
