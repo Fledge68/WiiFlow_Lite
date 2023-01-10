@@ -267,7 +267,7 @@ static void Add_Plugin_Game(char *FullPath)
 		return;
 	}
 
-	/* Get roms's title without the extra ()'s or []'s */
+	/* Get roms's filename without the extra ()'s or []'s */
 	string ShortName = m_plugin.GetRomName(FullPath);
 	//gprintf("Add_Plugin_Game: fullName=%s, shortName=%s\n", FullPath, ShortName.c_str());
 	
@@ -291,7 +291,18 @@ static void Add_Plugin_Game(char *FullPath)
 	/* Get titles - Rom filename, custom title, and database xml title */
 	*strrchr(RomFilename, '.') = '\0';// remove extension
 	
-	string customTitle = CustomTitles.getStringCustomTitles(m_plugin.PluginMagicWord, RomFilename, "");
+	string customTitle;
+	customTitle = CustomTitles.getStringCustomTitles(m_plugin.PluginMagicWord, RomFilename, "");// old format
+	if(romID != "PLUGIN")
+	{
+		if(!customTitle.empty())
+		{
+			CustomTitles.setString(platformName, romID, customTitle);// convert old format to new format
+			CustomTitles.removeCustomTitles(m_plugin.PluginMagicWord, RomFilename);// remove old format
+		}
+		else
+			customTitle = CustomTitles.getString(platformName, romID, "");// new format
+	}
 	
 	const char *gameTDB_Title = NULL;
 	if(gameTDB.IsLoaded() && customTitle.empty() && m_cacheList.usePluginDBTitles)

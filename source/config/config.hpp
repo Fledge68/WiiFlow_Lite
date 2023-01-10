@@ -46,6 +46,7 @@ public:
 	CColor getColor(const std::string &domain, const std::string &key, const CColor &defVal = CColor());
 	// Remove
 	void remove(const std::string &domain, const std::string &key);
+	void removeCustomTitles(const std::string &domain, const std::string &key);
 	// 
 	const std::string &firstDomain(void);
 	const std::string &nextDomain(void);

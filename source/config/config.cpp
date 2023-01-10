@@ -273,6 +273,16 @@ void Config::remove(const std::string &domain, const std::string &key)
 	m_domains[upperCase(domain)].erase(lowerCase(key));
 }
 
+void Config::removeCustomTitles(const std::string &domain, const std::string &key)
+{
+	if (domain.empty() || key.empty()) return;
+	//gprintf("remove %s\n", key.c_str());
+	KeyMap::iterator i = m_groupCustomTitles.find(upperCase(domain));
+	if (i == m_groupCustomTitles.end()) return;
+	m_changed = true;
+	m_domains[i->second].erase(lowerCase(key));
+}
+
 void Config::setOptBool(const std::string &domain, const std::string &key, int val)
 {
 	if (domain.empty() || key.empty()) return;
