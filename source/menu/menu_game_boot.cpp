@@ -195,6 +195,14 @@ void CMenu::_launch(const dir_discHdr *hdr)
 
 void CMenu::_launchPlugin(dir_discHdr *hdr)
 {
+	if(strcmp(hdr->id, "PLUGIN") != 0)
+	{
+		strncpy(m_plugin.PluginMagicWord, fmt("%08x", hdr->settings[0]), 8);
+		string gcfg1Key = sfmt("%s/%s", m_platform.getString("PLUGINS", m_plugin.PluginMagicWord).c_str(), hdr->id);
+		m_gcfg1.setInt("PLAYCOUNT_PLUGINS", gcfg1Key, m_gcfg1.getInt("PLAYCOUNT_PLUGINS", gcfg1Key, 0) + 1);
+		m_gcfg1.setUInt("LASTPLAYED_PLUGINS", gcfg1Key, time(NULL));
+	}
+
 	/* get dol name and name length for music plugin */
 	const char *plugin_dol_name = m_plugin.GetDolName(hdr->settings[0]);
 	u8 plugin_dol_len = strlen(plugin_dol_name);

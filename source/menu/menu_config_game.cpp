@@ -465,7 +465,7 @@ void CMenu::_configGame(const dir_discHdr *hdr, bool disc)
 		strncpy(m_plugin.PluginMagicWord, fmt("%08x", GameHdr->settings[0]), 8);
 		// if game has an id from the plugin database we use the new method which uses platform name/id
 		if(strcmp(GameHdr->id, "PLUGIN") != 0 && !m_platform.getString("PLUGINS", m_plugin.PluginMagicWord, "").empty())
-			id =sfmt("%s/%s", m_platform.getString("PLUGINS", m_plugin.PluginMagicWord).c_str(), GameHdr->id);
+			id = sfmt("%s/%s", m_platform.getString("PLUGINS", m_plugin.PluginMagicWord).c_str(), GameHdr->id);
 		else // old pre 5.4.4 method which uses plugin magic/title of game
 		{
 			if(strrchr(GameHdr->path, '/') != NULL)

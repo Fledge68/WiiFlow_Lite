@@ -491,9 +491,9 @@ int CMenu::main(void)
 		}
 		else if(BTN_A_PRESSED)
 		{
-			if(m_btnMgr.selected(m_mainBtnPrev))
+			if(m_btnMgr.selected(m_mainBtnPrev))// A on prev icon - move back a screen of covers
 				CoverFlow.pageUp();
-		 	else if(m_btnMgr.selected(m_mainBtnNext))
+		 	else if(m_btnMgr.selected(m_mainBtnNext))// A on next icon - move forward a screen of covers
 				CoverFlow.pageDown();
 			else if(m_btnMgr.selected(m_mainBtnChannel) || m_btnMgr.selected(m_mainBtnWii) || m_btnMgr.selected(m_mainBtnGamecube) 
 					|| m_btnMgr.selected(m_mainBtnPlugin) || m_btnMgr.selected(m_mainBtnHomebrew))
@@ -639,34 +639,32 @@ int CMenu::main(void)
 		else if(BTN_B_PRESSED)
 		{
 			bheld = true;
+			// B on next or prev icon - move to next/prev sort item
 			if(m_btnMgr.selected(m_mainBtnNext) || m_btnMgr.selected(m_mainBtnPrev))
 			{
 				bUsed = true;
 				const char *domain = _domainFromView();
 				int sorting = m_cfg.getInt(domain, "sort", SORT_ALPHA);
-				if (sorting != SORT_ALPHA && sorting != SORT_PLAYERS && sorting != SORT_WIFIPLAYERS && sorting != SORT_GAMEID)
+				// sorting playcount, lastplayed, and source numbers there is no need for prev or next. playcount maybe.
+				// lastplayed time and source numbers will be different for every single game. playcount might be the same.
+				// sort gameid not useful for wii and gc. best for the different VC systems.
+				if(sorting == SORT_ALPHA || sorting == SORT_PLAYERS || sorting == SORT_WIFIPLAYERS || 
+					sorting == SORT_GAMEID || sorting == SORT_YEAR)
 				{
-					CoverFlow.setSorting((Sorting)SORT_ALPHA);
-					m_cfg.setInt(domain, "sort", SORT_ALPHA);
-					sorting = SORT_ALPHA;
-				}
-				wchar_t c[2] = {0, 0};
-				m_btnMgr.selected(m_mainBtnPrev) ? CoverFlow.prevLetter(c) : CoverFlow.nextLetter(c);
-				m_showtimer = 120;
-				curLetter.clear();
-				curLetter = wstringEx(c);
+					wchar_t c[5] = {0, 0, 0, 0, 0};// long enuff for year
+					m_btnMgr.selected(m_mainBtnPrev) ? CoverFlow.prevLetter(c) : CoverFlow.nextLetter(c);
+					m_showtimer = 120;
+					curLetter.clear();
+					curLetter = wstringEx(c);
 
-				if(sorting == SORT_ALPHA)
-				{
-					m_btnMgr.setText(m_mainLblLetter, curLetter);
-					m_btnMgr.show(m_mainLblLetter);
-				}
-				else
-				{
-					curLetter = _getNoticeTranslation(sorting, curLetter);
+					if(sorting != SORT_ALPHA && sorting != SORT_YEAR)// #players, #wifiplayers, id = VC type, wiiware, wii, or GC listed as unknown
+						curLetter = _getNoticeTranslation(sorting, curLetter);
+					m_showtimer = 120;
 					m_btnMgr.setText(m_mainLblNotice, curLetter);
 					m_btnMgr.show(m_mainLblNotice);
 				}
+				else
+					m_btnMgr.selected(m_mainBtnPrev) ? CoverFlow.pageUp() : CoverFlow.pageDown();
 			}
 		}
 		else if(WROLL_LEFT)
@@ -708,39 +706,32 @@ int CMenu::main(void)
 		else // Button B Held
 		{
 			bheld = true;
-			const char *domain = _domainFromView();
-			
 			/* b+down or up = move to previous or next cover in sort order */
 			if(!CoverFlow.empty() && (BTN_DOWN_PRESSED || BTN_UP_PRESSED))
 			{
 				bUsed = true;
+				const char *domain = _domainFromView();
 				int sorting = m_cfg.getInt(domain, "sort", SORT_ALPHA);
-				/* if for some reason domain sort value is not legal set it to alpha */
-				if(sorting != SORT_ALPHA && sorting != SORT_PLAYERS && sorting != SORT_WIFIPLAYERS && sorting != SORT_GAMEID)
+				// sorting playcount, lastplayed, and source numbers there is no need for prev or next. playcount maybe.
+				// lastplayed time and source numbers will be different for every single game. playcount might be the same.
+				// sort gameid not useful for wii and gc. best for the different VC systems.
+				if(sorting == SORT_ALPHA || sorting == SORT_PLAYERS || sorting == SORT_WIFIPLAYERS || 
+					sorting == SORT_GAMEID || sorting == SORT_YEAR)
 				{
-					CoverFlow.setSorting((Sorting)SORT_ALPHA);
-					m_cfg.setInt(domain, "sort", SORT_ALPHA);
-					sorting = SORT_ALPHA;
-				}
-				/* move coverflow */
-				wchar_t c[2] = {0, 0};
-				BTN_UP_PRESSED ? CoverFlow.prevLetter(c) : CoverFlow.nextLetter(c);
+					wchar_t c[5] = {0, 0, 0, 0, 0};// long enuough for year
+					BTN_UP_PRESSED ? CoverFlow.prevLetter(c) : CoverFlow.nextLetter(c);
+					m_showtimer = 120;
+					curLetter.clear();
+					curLetter = wstringEx(c);
 
-				/* set sort text and display it */
-				curLetter.clear();
-				curLetter = wstringEx(c);
-				m_showtimer = 120;
-				if(sorting == SORT_ALPHA)
-				{
-					m_btnMgr.setText(m_mainLblLetter, curLetter);
-					m_btnMgr.show(m_mainLblLetter);
-				}
-				else
-				{
-					curLetter = _getNoticeTranslation(sorting, curLetter);
+					if(sorting != SORT_ALPHA  && sorting != SORT_YEAR)// #players, #wifiplayers, id = VC type, wiiware, wii, or GC listed as unknown
+						curLetter = _getNoticeTranslation(sorting, curLetter);
+					m_showtimer = 120;
 					m_btnMgr.setText(m_mainLblNotice, curLetter);
 					m_btnMgr.show(m_mainLblNotice);
 				}
+				else
+					BTN_UP_PRESSED ? CoverFlow.pageUp() : CoverFlow.pageDown();
 			}
 			else if(BTN_LEFT_PRESSED)// b+left = previous song
 			{
@@ -753,9 +744,10 @@ int CMenu::main(void)
 				MusicPlayer.Next();
 			}
 			/* b+plus = change sort mode */
-			else if(!CoverFlow.empty() && BTN_PLUS_PRESSED && !m_locked && (m_current_view < 8 || m_sourceflow))// <8 excludes plugins and homebrew
+			else if(!CoverFlow.empty() && BTN_PLUS_PRESSED && !m_locked && (m_current_view < COVERFLOW_HOMEBREW || m_sourceflow))// homebrew not allowed
 			{
 				bUsed = true;
+				const char *domain = _domainFromView();
 				u8 sort = 0;
 				if(m_sourceflow)// change sourceflow sort mode
 				{
@@ -766,13 +758,24 @@ int CMenu::main(void)
 						sort = SORT_ALPHA;
 				}
 				else // change all other coverflow sort mode
-					sort = loopNum((m_cfg.getInt(domain, "sort", 0)) + 1, SORT_MAX);
-				m_cfg.setInt(domain, "sort", sort);
+				{
+					while(true)
+					{
+						sort = loopNum((m_cfg.getInt(domain, "sort", 0)) + 1, SORT_MAX);
+						m_cfg.setInt(domain, "sort", sort);
+						if(sort == SORT_GAMEID && m_current_view & COVERFLOW_CHANNEL)
+							break;
+						if(sort == SORT_WIFIPLAYERS && (m_current_view & COVERFLOW_WII || m_current_view & COVERFLOW_CHANNEL))
+							break;
+						if(sort != SORT_GAMEID && sort != SORT_WIFIPLAYERS)
+							break;
+					}
+				}
 				
 				/* set coverflow to new sorting */
 				_initCF();
 				/* set sort mode text and display it */
-				wstringEx curSort ;
+				wstringEx curSort;
 				if(sort == SORT_ALPHA)
 					curSort = m_loc.getWString(m_curLanguage, "alphabetically", L"Alphabetically");
 				else if(sort == SORT_PLAYCOUNT)
@@ -787,6 +790,8 @@ int CMenu::main(void)
 					curSort = m_loc.getWString(m_curLanguage, "byplayers", L"By Players");
 				else if(sort == SORT_BTN_NUMBERS)
 					curSort = m_loc.getWString(m_curLanguage, "bybtnnumbers", L"By Button Numbers");
+				else if(sort == SORT_YEAR)
+					curSort = m_loc.getWString(m_curLanguage, "byyear", L"By Year Released");
 				m_showtimer = 120;
 				m_btnMgr.setText(m_mainLblNotice, curSort);
 				m_btnMgr.show(m_mainLblNotice);

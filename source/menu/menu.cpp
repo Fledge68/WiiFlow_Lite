@@ -2034,10 +2034,15 @@ void CMenu::_initCF(void)
 		
 		string favDomain = "FAVORITES";
 		string adultDomain = "ADULTONLY";
+		string playcntDomain = "PLAYCOUNT";
+		string lastplayDomain = "LASTPLAYED";
+		
 		if(hdr->type == TYPE_PLUGIN)
 		{
 			favDomain = "FAVORITES_PLUGINS";
 			adultDomain = "ADULTONLY_PLUGINS";
+			string playcntDomain = "PLAYCOUNT_PLUGINS";
+			string lastplayDomain = "LASTPLAYED_PLUGINS";
 		}
 		
 		// 1 is the one used. 2 is a temp copied to 1.
@@ -2198,17 +2203,21 @@ void CMenu::_initCF(void)
 				}
 			}
 
-			if(dumpGameLst && (!NoGameID(hdr->type) || (hdr->type == TYPE_PLUGIN && strcmp(hdr->id, "PLUGIN") != 0)))
+			if(dumpGameLst && hdr->type != TYPE_HOMEBREW && strcmp(hdr->id, "PLUGIN") != 0)
 				dump.setWString(catDomain1, catKey1, hdr->title);
 
-			if(hdr->type == TYPE_PLUGIN && m_plugin.GetEnabledStatus(m_plugin.GetPluginPosition(hdr->settings[0])))
-				CoverFlow.addItem(&(*hdr), 0, 0);
-			else
+			if(hdr->type != TYPE_HOMEBREW && strcmp(hdr->id, "PLUGIN") != 0)
 			{
-				int playcount = m_gcfg1.getInt("PLAYCOUNT", cfgKey1, 0);
-				unsigned int lastPlayed = m_gcfg1.getUInt("LASTPLAYED", cfgKey1, 0);
+				int playcount = m_gcfg1.getInt(playcntDomain, cfgKey1, 0);
+				if(playcount == 0)
+					m_gcfg1.remove(playcntDomain, cfgKey1);
+				unsigned int lastPlayed = m_gcfg1.getUInt(lastplayDomain, cfgKey1, 0);
+				if(lastPlayed == 0)
+					m_gcfg1.remove("lastplayDomain", cfgKey1);
 				CoverFlow.addItem(&(*hdr), playcount, lastPlayed);
 			}
+			else
+				CoverFlow.addItem(&(*hdr), 0, 0);
 		}
 		/* remove them if false to keep file short */
 		if(!m_gcfg1.getBool(favDomain, cfgKey1))
@@ -2592,14 +2601,30 @@ bool CMenu::_loadPluginList()
 			}
 			else
 			{
-				string romsDir(fmt("%s:/%s", DeviceName[currentPartition], romDir));
 				string cachedListFile(fmt("%s/%s_%s.db", m_listCacheDir.c_str(), DeviceName[currentPartition], m_plugin.PluginMagicWord));
 				bool preCachedList = fsop_FileExist(cachedListFile.c_str());
+				
+				string romsDir(fmt("%s:/%s", DeviceName[currentPartition], romDir));
 				vector<string> FileTypes = stringToVector(m_plugin.GetFileTypes(i), '|');
 				m_cacheList.Color = m_plugin.GetCaseColor(i);
 				m_cacheList.Magic = m_plugin.GetPluginMagic(i);
 				m_cacheList.usePluginDBTitles = m_cfg.getBool(PLUGIN_DOMAIN, "database_titles", true);
-				m_cacheList.CreateRomList(m_platform, romsDir, FileTypes, cachedListFile, updateCache);
+				
+				string platformName = m_platform.getString("PLUGINS", m_plugin.PluginMagicWord, "");
+				if(!platformName.empty())
+				{
+					/* check COMBINED for platform names that mean the same system just different region */
+					/* some platforms have different names per country (ex. Genesis/Megadrive) */
+					/* but we use only one platform name for both */
+					string newName = m_platform.getString("COMBINED", platformName, "");
+					if(newName.empty())
+						m_platform.remove("COMBINED", platformName);
+					else
+						platformName = newName;
+				}
+				
+				m_cacheList.CreateRomList(platformName.c_str(), romsDir, FileTypes, cachedListFile, updateCache);
+				
 				for(vector<dir_discHdr>::iterator tmp_itr = m_cacheList.begin(); tmp_itr != m_cacheList.end(); tmp_itr++)
 					m_gameList.push_back(*tmp_itr);
 				if(updateCache || (!preCachedList && fsop_FileExist(cachedListFile.c_str())))

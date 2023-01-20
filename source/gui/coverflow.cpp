@@ -1916,6 +1916,12 @@ bool CCoverFlow::_sortByBtnNumbers(CItem item1, CItem item2)
 	return item1.hdr->settings[0] < item2.hdr->settings[0];
 }
 
+bool CCoverFlow::_sortByYear(CItem item1, CItem item2)
+{
+	if(item1.hdr->year == item2.hdr->year) return _sortByAlpha(item1, item2);
+	return item1.hdr->year < item2.hdr->year;
+}
+
 bool CCoverFlow::start(const string &m_imgsDir)
 {
 	if (m_items.empty()) return true;
@@ -1935,6 +1941,8 @@ bool CCoverFlow::start(const string &m_imgsDir)
 		sort(m_items.begin(), m_items.end(), CCoverFlow::_sortByWifiPlayers);
 	else if (m_sorting == SORT_BTN_NUMBERS)
 		sort(m_items.begin(), m_items.end(), CCoverFlow::_sortByBtnNumbers);
+	else if (m_sorting == SORT_YEAR)
+		sort(m_items.begin(), m_items.end(), CCoverFlow::_sortByYear);
 
 	/* load the colored skin/spine images if not already done */
 	if(!m_dvdskin_loaded)
@@ -2280,7 +2288,7 @@ void CCoverFlow::_completeJump(void)
 
 void CCoverFlow::nextLetter(wchar_t *c)
 {
-	if (m_covers == NULL || m_sorting == SORT_BTN_NUMBERS)
+	if (m_covers == NULL)
 	{
 		c[0] = L'\0';
 		return;
@@ -2292,6 +2300,9 @@ void CCoverFlow::nextLetter(wchar_t *c)
 	if (m_sorting == SORT_GAMEID)
 		return nextID(c);
 
+	if (m_sorting == SORT_YEAR)
+		return nextYear(c);
+		
 	LockMutex lock(m_mutex);
 
 	u32 i, j = 0, k = 0, n = m_items.size();
@@ -2319,7 +2330,7 @@ void CCoverFlow::nextLetter(wchar_t *c)
 
 void CCoverFlow::prevLetter(wchar_t *c)
 {
-	if (m_covers == NULL || m_sorting == SORT_BTN_NUMBERS)
+	if (m_covers == NULL)
 	{
 		c[0] = L'\0';
 		return;
@@ -2330,6 +2341,9 @@ void CCoverFlow::prevLetter(wchar_t *c)
 
 	if (m_sorting == SORT_GAMEID)
 		return prevID(c);
+		
+	if (m_sorting == SORT_YEAR)
+		return prevYear(c);
 
 	LockMutex lock(m_mutex);
 	u32 i, j = 0, k = 0, n = m_items.size();
@@ -2371,6 +2385,63 @@ void CCoverFlow::prevLetter(wchar_t *c)
 	_updateAllTargets();
 }
 
+void CCoverFlow::nextYear(wchar_t *c)
+{
+	LockMutex lock(m_mutex);
+	u32 i, n = m_items.size();
+
+	_completeJump();
+	u32 curPos = _currentPos();
+	int year = m_items[curPos].hdr->year;
+
+	for (i = 1; i < n; ++i)
+		if (m_items[loopNum(curPos + i, n)].hdr->year != year)
+			break;
+
+	if (i < n)
+	{
+		_setJump(i);
+		year = m_items[loopNum(curPos + i, n)].hdr->year;
+	}
+
+	char y[5] = {0 ,0 ,0 ,0, 0};
+	itoa(year, y, 10);
+	mbstowcs(c, y, strlen(y));
+
+	_updateAllTargets();
+}
+
+void CCoverFlow::prevYear(wchar_t *c)
+{
+	LockMutex lock(m_mutex);
+	u32 i, n = m_items.size();
+
+	_completeJump();
+	u32 curPos = _currentPos();
+	int year = m_items[curPos].hdr->year;
+
+	for (i = 1; i < n; ++i)
+		if (m_items[loopNum(curPos - i, n)].hdr->year != year)
+		{
+			year = m_items[loopNum(curPos - i, n)].hdr->year;
+			while(i < n && (m_items[loopNum(curPos - i, n)].hdr->year == year)) ++i;
+			i--;
+			break;
+		}
+
+	if (i < n)
+	{
+		_setJump(-i);
+		year = m_items[loopNum(curPos - i, n)].hdr->year;
+	}
+
+	char y[5] = {0 ,0 ,0 ,0, 0};
+	itoa(year, y, 10);
+	mbstowcs(c, y, strlen(y));
+
+	_updateAllTargets();
+}
+
 void CCoverFlow::nextPlayers(bool wifi, wchar_t *c)
 {
 	LockMutex lock(m_mutex);
@@ -2390,8 +2461,8 @@ void CCoverFlow::nextPlayers(bool wifi, wchar_t *c)
 		players = wifi ? m_items[loopNum(curPos + i, n)].hdr->wifi : m_items[loopNum(curPos + i, n)].hdr->players;
 	}
 
-	char p[4] = {0 ,0 ,0 ,0};
-	sprintf(p, "%d", players);
+	char p[2] = {0 ,0};
+	itoa(players, p, 10);
 	mbstowcs(c, p, strlen(p));
 
 	_updateAllTargets();
@@ -2421,8 +2492,8 @@ void CCoverFlow::prevPlayers(bool wifi, wchar_t *c)
 		players = wifi ? m_items[loopNum(curPos - i, n)].hdr->wifi : m_items[loopNum(curPos - i, n)].hdr->players;
 	}
 
-	char p[4] = {0 ,0 ,0 ,0};
-	sprintf(p, "%d", players);
+	char p[2] = {0 ,0};
+	itoa(players, p, 10);
 	mbstowcs(c, p, strlen(p));
 
 	_updateAllTargets();
@@ -2447,7 +2518,8 @@ void CCoverFlow::nextID(wchar_t *c)
 		system = m_items[loopNum(curPos + i, n)].hdr->id;
 	}
 
-	system[1] = '\0';
+	system[1] = '\0';// wouldn't this ruin the 4 or 6 digit ID for m_items since system is a pointer? 
+	// the above isn't really needed for mbstowcs which copies only 1 character and c[1] is already 0
 	mbstowcs(c, system, 1);
 
 	_updateAllTargets();

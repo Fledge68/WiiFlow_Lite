@@ -23,14 +23,13 @@ using std::max;
 enum Sorting
 {
 	SORT_ALPHA,
+	SORT_YEAR,
 	SORT_PLAYCOUNT,
 	SORT_LASTPLAYED,
 	SORT_GAMEID,
 	SORT_WIFIPLAYERS,
 	SORT_PLAYERS,
 	SORT_MAX,
-	SORT_ESRB,
-	SORT_CONTROLLERS,
 	SORT_BTN_NUMBERS,
 };
 
@@ -64,6 +63,8 @@ public:
 	void pageDown(void);
 	void nextLetter(wchar_t *c);
 	void prevLetter(wchar_t *c);
+	void nextYear(wchar_t *c);
+	void prevYear(wchar_t *c);
 	void nextPlayers(bool wifi, wchar_t *c);
 	void prevPlayers(bool wifi, wchar_t *c);
 	void nextID(wchar_t *c);
@@ -357,6 +358,7 @@ private:
 	static bool _sortByPlayers(CItem item1, CItem item2);
 	static bool _sortByWifiPlayers(CItem item1, CItem item2);
 	static bool _sortByBtnNumbers(CItem item1, CItem item2);
+	static bool _sortByYear(CItem item1, CItem item2);
 
 private:
 	static void * _coverLoader(void *obj);

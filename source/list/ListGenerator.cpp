@@ -31,7 +31,7 @@ dir_discHdr ListElement;
 Config CustomTitles;
 GameTDB gameTDB;
 Config romNamesDB;
-string platformName;
+const char *platformName;
 string pluginsDataDir;
 std::regex fileNameSkipRegex;
 
@@ -90,15 +90,24 @@ static void AddISO(const char *GameID, const char *GameTitle, const char *GamePa
 {
 	memset((void*)&ListElement, 0, sizeof(dir_discHdr));
 	ListElement.index = m_cacheList.size();
+	
 	if(GameID != NULL) strncpy(ListElement.id, GameID, 6);
+	
 	if(GamePath != NULL) strncpy(ListElement.path, GamePath, sizeof(ListElement.path) - 1);
+	
 	ListElement.casecolor = CustomTitles.getColor("COVERS", ListElement.id, GameColor).intVal();
+	
 	char CustomTitle[64];
 	memset(CustomTitle, 0, sizeof(CustomTitle));
 	strncpy(CustomTitle, CustomTitles.getString("TITLES", ListElement.id).c_str(), 63);
+	
 	const char *gameTDB_Title = NULL;
 	if(gameTDB.IsLoaded())
 	{
+		/* set the released year */
+		int PublishDate = gameTDB.GetPublishDate(ListElement.id);
+		int year = PublishDate >> 16;
+		ListElement.year = year;
 		if(ListElement.casecolor == GameColor)
 			ListElement.casecolor = gameTDB.GetCaseColor(ListElement.id);
 		ListElement.wifi = gameTDB.GetWifiPlayers(ListElement.id);
@@ -234,6 +243,10 @@ static void Create_Channel_List()
 		const char *gameTDB_Title = NULL;
 		if(gameTDB.IsLoaded())
 		{
+			/* set the released year */
+			int PublishDate = gameTDB.GetPublishDate(ListElement.id);
+			int year = PublishDate >> 16;
+			ListElement.year = year;
 			if(ListElement.casecolor == 0xFFFFFF)
 				ListElement.casecolor = gameTDB.GetCaseColor(ListElement.id);
 			ListElement.wifi = gameTDB.GetWifiPlayers(ListElement.id);
@@ -276,7 +289,7 @@ static void Add_Plugin_Game(char *FullPath)
 	if(gameTDB.IsLoaded())
 	{
 		/* Get 6 character unique romID (from Screenscraper.fr) using shortName. if fails then use CRC or CD serial to get romID */
-		romID = m_plugin.GetRomId(FullPath, m_cacheList.Magic, romNamesDB, pluginsDataDir.c_str(), platformName.c_str(), ShortName.c_str());
+		romID = m_plugin.GetRomId(FullPath, m_cacheList.Magic, romNamesDB, pluginsDataDir.c_str(), platformName, ShortName.c_str());
 	}
 	if(romID.empty())
 		romID = "PLUGIN";
@@ -316,6 +329,15 @@ static void Add_Plugin_Game(char *FullPath)
 	else
 		mbstowcs(ListElement.title, RomFilename, 63);
 	Asciify(ListElement.title);
+	
+	/* set the released year */
+	int year = 0;
+	if(romID != "PLUGIN" && gameTDB.IsLoaded())
+	{
+		int PublishDate = gameTDB.GetPublishDate(romID.c_str());
+		year = PublishDate >> 16;
+	}
+	ListElement.year = year;
 	
 	ListElement.settings[0] = m_cacheList.Magic; //Plugin magic
 	ListElement.casecolor = m_cacheList.Color;
@@ -403,6 +425,15 @@ void ListGenerator::ParseScummvmINI(Config &ini, const char *Device, const char 
 		Asciify(ListElement.title);
 		strcpy(ListElement.path, GameDomain);
 
+		/* set the released year */
+		int year = 0;
+		if(GameID != "PLUGIN" && gameTDB.IsLoaded())
+		{
+			int PublishDate = gameTDB.GetPublishDate(GameID.c_str());
+			year = PublishDate >> 16;
+		}
+		ListElement.year = year;
+		
 		ListElement.settings[0] = m_cacheList.Magic; //scummvm magic
 		ListElement.casecolor = m_cacheList.Color;
 		ListElement.type = TYPE_PLUGIN;
@@ -410,13 +441,13 @@ void ListGenerator::ParseScummvmINI(Config &ini, const char *Device, const char 
 		GameDomain = ini.nextDomain().c_str();
 	}
 	m_crc.unload();
-  CloseConfigs();
+	CloseConfigs();
 	if(!this->empty() && !DBName.empty()) /* Write a new Cache */
 		CCache(*this, DBName, SAVE);
 }
 
 /* note: scummvm games are parsed above */
-void ListGenerator::CreateRomList(Config &platform_cfg, const string& romsDir, const vector<string>& FileTypes, const string& DBName, bool UpdateCache)
+void ListGenerator::CreateRomList(const char *platform, const string& romsDir, const vector<string>& FileTypes, const string& DBName, bool UpdateCache)
 {
 	Clear();
 	if(!DBName.empty())
@@ -432,35 +463,25 @@ void ListGenerator::CreateRomList(Config &platform_cfg, const string& romsDir, c
 		}
 	}
 	
-	platformName = "";
-	if(platform_cfg.loaded())
+	platformName = platform;// done to use it in add plugin game
+	if(platformName != NULL)
 	{
-		/* Search platform.ini to find plugin magic to get platformName */
-		platformName = platform_cfg.getString("PLUGINS", m_plugin.PluginMagicWord);
-		if(!platformName.empty())
-		{
-			/* check COMBINED for platform names that mean the same system just different region */
-			/* some platforms have different names per country (ex. Genesis/Megadrive) */
-			/* but we use only one platform name for both */
-			string newName = platform_cfg.getString("COMBINED", platformName);
-			if(newName.empty())
-				platform_cfg.remove("COMBINED", platformName);
-			else
-				platformName = newName;
-			
-			/* Load rom names and crc database */
-			romNamesDB.load(fmt("%s/%s/%s.ini", pluginsDataDir.c_str(), platformName.c_str(), platformName.c_str()));
-			/* Load platform name.xml database to get game's info using the gameID */
-			gameTDB.OpenFile(fmt("%s/%s/%s.xml", pluginsDataDir.c_str(), platformName.c_str(), platformName.c_str()));
-			if(gameTDB.IsLoaded())
-				gameTDB.SetLanguageCode(gameTDB_Language.c_str());
-		}
+		/* Load rom names and crc database */
+		romNamesDB.load(fmt("%s/%s/%s.ini", pluginsDataDir.c_str(), platformName, platformName));
+
+		/* Load platform name.xml database to get game's info using the gameID */
+		gameTDB.OpenFile(fmt("%s/%s/%s.xml", pluginsDataDir.c_str(), platformName, platformName));
+		if(gameTDB.IsLoaded())
+			gameTDB.SetLanguageCode(gameTDB_Language.c_str());
 	}
 	CustomTitles.load(CustomTitlesPath.c_str());
 	CustomTitles.groupCustomTitles();
+	
 	GetFiles(romsDir.c_str(), FileTypes, Add_Plugin_Game, false, 30);//wow 30 subfolders! really?
+	
 	CloseConfigs();
 	romNamesDB.unload();
+	
 	if(!this->empty() && !DBName.empty()) /* Write a new Cache */
 		CCache(*this, DBName, SAVE);
 }
