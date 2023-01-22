@@ -105,6 +105,11 @@ vector<string> stringToVector(const string &text, char sep)
 {
 	vector<string> v;
 	if (text.empty()) return v;
+	u32 count = 1;
+	for (u32 i = 0; i < text.size() - 1; ++i)// minus 1 in case the last character is sep
+		if (text[i] == sep)
+			++count;
+	v.reserve(count);
 	string::size_type off = 0;
 	string::size_type i = 0;
 	do
@@ -115,6 +120,8 @@ vector<string> stringToVector(const string &text, char sep)
 			string ws(text.substr(off, i - off));
 			v.push_back(ws);
 			off = i + 1;
+			if(off == text.size())// in case the last character is sep
+				break;
 		}
 		else
 			v.push_back(text.substr(off));
@@ -126,6 +133,11 @@ vector<wstringEx> stringToVector(const wstringEx &text, char sep)
 {
 	vector<wstringEx> v;
 	if (text.empty()) return v;
+	u32 count = 1;
+	for (u32 i = 0; i < text.size() - 1; ++i)// minus 1 in case the last character is sep
+		if (text[i] == sep)
+			++count;
+	v.reserve(count);
 	wstringEx::size_type off = 0;
 	wstringEx::size_type i = 0;
 	do
@@ -136,6 +148,8 @@ vector<wstringEx> stringToVector(const wstringEx &text, char sep)
 			wstringEx ws(text.substr(off, i - off));
 			v.push_back(ws);
 			off = i + 1;
+			if(off == text.size())// in case the last character is sep
+				break;
 		}
 		else
 			v.push_back(text.substr(off));
