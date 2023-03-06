@@ -41,7 +41,7 @@ void CMenu::_error(const wstringEx &msg)
 	_hideGameInfo();
 	_hideConfigGame();
 	_hideWaitMessage();
-	m_btnMgr.setText(m_errorLblMessage, msg, true);
+	m_btnMgr.setText(m_errorLblMessage, msg);
 	_showError();
 
 	gprintf("error msg: %s\n", msg.toUTF8().c_str());

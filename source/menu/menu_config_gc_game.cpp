@@ -72,6 +72,29 @@ template <class T> static inline T loopNum(T i, T s)
 	return (i + s) % s;
 }
 
+void CMenu::_resetGCSettings(const string &id)
+{
+	m_gcfg2.setUInt(id, "language", 0);
+	m_gcfg2.setUInt(id, "video_mode", 0);
+	m_gcfg2.setOptBool(id, "led", 0);
+	m_gcfg2.setOptBool(id, "devo_memcard_emu", 2);// default
+	m_gcfg2.setOptBool(id, "widescreen", 0);
+	m_gcfg2.setUInt(id, "debugger", 0);
+	m_gcfg2.setOptBool(id, "deflicker", 0);
+	m_gcfg2.setOptBool(id, "cheat", 0);
+	m_gcfg2.setOptBool(id, "wiiu_widescreen", 0);
+	m_gcfg2.setUInt(id, "emu_memcard", 0);
+	m_gcfg2.setOptBool(id, "cc_rumble", 2);// default
+	m_gcfg2.setOptBool(id, "native_ctl", 2);// default
+	m_gcfg2.setOptBool(id, "triforce_arcade", 0);
+	m_gcfg2.setOptBool(id, "skip_ipl", 0);
+	m_gcfg2.setOptBool(id, "patch_pal50", 0);
+	m_gcfg2.setOptBool(id, "bba_emu", 0);
+	m_gcfg2.setUInt(id, "net_profile", 0);
+	m_gcfg2.setInt(id, "nin_width", 127);
+	m_gcfg2.setInt(id, "nin_pos", 127);
+}
+
 void CMenu::_hideConfigGCGame(bool instant)
 {
 	m_btnMgr.hide(m_gameSettingsLblTitle, instant);
@@ -106,7 +129,7 @@ void CMenu::_showConfigGCGame()
 	GCLoader = min(m_gcfg2.getUInt(id, "gc_loader", 0), ARRAY_SIZE(CMenu::_GCLoader) - 1u);
 	GCLoader = (GCLoader == 0) ? min(m_cfg.getUInt(GC_DOMAIN, "default_loader", 1), ARRAY_SIZE(CMenu::_GlobalGCLoaders) - 1u) : GCLoader-1;
 	if(GCLoader == DEVOLUTION)
-		m_configGCGameMaxPgs = 2;
+		m_configGCGameMaxPgs = 3;
 	else
 		m_configGCGameMaxPgs = 6;
 	
@@ -119,8 +142,8 @@ void CMenu::_showConfigGCGame()
 	{
 		m_btnMgr.setText(m_configLbl1, _t("cfgg58", L"Adult only"));
 		m_btnMgr.setText(m_configLbl2, _t("cfgg35", L"GameCube Loader"));
-		m_btnMgr.setText(m_configLbl3, _t("cfgg2", L"Video mode"));
-		m_btnMgr.setText(m_configLbl4, _t("cfgg3", L"Language"));
+		m_btnMgr.setText(m_configLbl3, _t("cfgg3", L"Language"));
+		m_btnMgr.setText(m_configLbl4, _t("cfgg2", L"Video mode"));
 		
 		m_btnMgr.setText(m_configBtn1, m_gcfg1.getBool("ADULTONLY", id, false) ? _t("yes", L"Yes") : _t("no", L"No"));
 		
@@ -213,33 +236,43 @@ void CMenu::_showConfigGCGame()
 	}
 	else if(m_configGCGamePage == 3)
 	{
-		m_btnMgr.setText(m_configLbl1, _t("cfgg46", L"WiiU Widescreen"));
-		m_btnMgr.setText(m_configLbl2, _t("cfgg47", L"Emulated MemCard"));
-		m_btnMgr.setText(m_configLbl3, _t("cfgg36", L"Widescreen Patch"));
-		m_btnMgr.setText(m_configLbl4, _t("cfgg40", L"Manage Cover and Banner"));
-		
-		m_btnMgr.setText(m_configBtn1, _optBoolToString(m_gcfg2.getOptBool(id, "wiiu_widescreen", 0)));
-		
-		i = min(m_gcfg2.getUInt(id, "emu_memcard", 0), ARRAY_SIZE(CMenu::_NinEmuCard) - 1u);
-		m_btnMgr.setText(m_configLbl2Val, _t(CMenu::_NinEmuCard[i].id, CMenu::_NinEmuCard[i].text));
-		
-		m_btnMgr.setText(m_configBtn3, _optBoolToString(m_gcfg2.getOptBool(id, "widescreen", 0)));
-		
-		m_btnMgr.setText(m_configBtn4, _t("cfgg41", L"Manage"));
-		
-		m_btnMgr.show(m_configLbl1);
-		m_btnMgr.show(m_configBtn1);
+		if(GCLoader == DEVOLUTION)
+		{
+			m_btnMgr.setText(m_configLbl1, _t("cfgg64", L"Reset Settings to Defaults"));
+			m_btnMgr.setText(m_configBtn1, _t("yes", L"Yes"));
+			m_btnMgr.show(m_configLbl1);
+			m_btnMgr.show(m_configBtn1);
+		}
+		else
+		{
+			m_btnMgr.setText(m_configLbl1, _t("cfgg46", L"WiiU Widescreen"));
+			m_btnMgr.setText(m_configLbl2, _t("cfgg47", L"Emulated MemCard"));
+			m_btnMgr.setText(m_configLbl3, _t("cfgg36", L"Widescreen Patch"));
+			m_btnMgr.setText(m_configLbl4, _t("cfgg40", L"Manage Cover and Banner"));
+			
+			m_btnMgr.setText(m_configBtn1, _optBoolToString(m_gcfg2.getOptBool(id, "wiiu_widescreen", 0)));
+			
+			i = min(m_gcfg2.getUInt(id, "emu_memcard", 0), ARRAY_SIZE(CMenu::_NinEmuCard) - 1u);
+			m_btnMgr.setText(m_configLbl2Val, _t(CMenu::_NinEmuCard[i].id, CMenu::_NinEmuCard[i].text));
+			
+			m_btnMgr.setText(m_configBtn3, _optBoolToString(m_gcfg2.getOptBool(id, "widescreen", 0)));
+			
+			m_btnMgr.setText(m_configBtn4, _t("cfgg41", L"Manage"));
+			
+			m_btnMgr.show(m_configLbl1);
+			m_btnMgr.show(m_configBtn1);
 
-		m_btnMgr.show(m_configLbl2);
-		m_btnMgr.show(m_configLbl2Val);
-		m_btnMgr.show(m_configBtn2P);
-		m_btnMgr.show(m_configBtn2M);
+			m_btnMgr.show(m_configLbl2);
+			m_btnMgr.show(m_configLbl2Val);
+			m_btnMgr.show(m_configBtn2P);
+			m_btnMgr.show(m_configBtn2M);
 
-		m_btnMgr.show(m_configLbl3);
-		m_btnMgr.show(m_configBtn3);
+			m_btnMgr.show(m_configLbl3);
+			m_btnMgr.show(m_configBtn3);
 
-		m_btnMgr.show(m_configLbl4);
-		m_btnMgr.show(m_configBtn4);
+			m_btnMgr.show(m_configLbl4);
+			m_btnMgr.show(m_configBtn4);
+		}
 	}
 	else if(m_configGCGamePage == 4)
 	{
@@ -311,6 +344,7 @@ void CMenu::_showConfigGCGame()
 	{
 		m_btnMgr.setText(m_configLbl1, _t("cfgg59", L"BBA Emulation"));
 		m_btnMgr.setText(m_configLbl2, _t("cfgg60", L"BBA Net Profile"));
+		m_btnMgr.setText(m_configLbl3, _t("cfgg64", L"Reset Settings to Defaults"));
 	
 		m_btnMgr.setText(m_configBtn1, _optBoolToString(m_gcfg2.getOptBool(id, "bba_emu", 0)));
 		
@@ -327,6 +361,10 @@ void CMenu::_showConfigGCGame()
 		m_btnMgr.show(m_configLbl2Val);
 		m_btnMgr.show(m_configBtn2P);
 		m_btnMgr.show(m_configBtn2M);
+		
+		m_btnMgr.setText(m_configBtn3, _t("yes", L"Yes"));
+		m_btnMgr.show(m_configLbl3);
+		m_btnMgr.show(m_configBtn3);
 	}
 }
 
@@ -490,8 +528,36 @@ void CMenu::_configGCGame(const dir_discHdr *hdr, bool disc)
 				//Manage Cover and Banner
 				if(m_btnMgr.selected(m_configBtn1))
 				{
-					m_gcfg2.setBool(id, "wiiu_widescreen", !m_gcfg2.getBool(id, "wiiu_widescreen", 0));
-					m_btnMgr.setText(m_configBtn1, _optBoolToString(m_gcfg2.getOptBool(id, "wiiu_widescreen", 0)));
+					if(GCLoader == DEVOLUTION)
+					{
+						/*m_gcfg2.setUInt(id, "language", 0);
+						m_gcfg2.setUInt(id, "video_mode", 0);
+						m_gcfg2.setOptBool(id, "led", 0);
+						m_gcfg2.setOptBool(id, "devo_memcard_emu", 2);// default
+						m_gcfg2.setOptBool(id, "widescreen", 0);
+						m_gcfg2.setUInt(id, "debugger", 0);
+						m_gcfg2.setOptBool(id, "deflicker", 0);
+						m_gcfg2.setOptBool(id, "cheat", 0);
+						m_gcfg2.setOptBool(id, "wiiu_widescreen", 0);
+						m_gcfg2.setUInt(id, "emu_memcard", 0);
+						m_gcfg2.setOptBool(id, "cc_rumble", 2);// default
+						m_gcfg2.setOptBool(id, "native_ctl", 2);// default
+						m_gcfg2.setOptBool(id, "triforce_arcade", 0);
+						m_gcfg2.setOptBool(id, "skip_ipl", 0);
+						m_gcfg2.setOptBool(id, "patch_pal50", 0);
+						m_gcfg2.setOptBool(id, "bba_emu", 0);
+						m_gcfg2.setUInt(id, "net_profile", 0);
+						m_gcfg2.setInt(id, "nin_width", 127);
+						m_gcfg2.setInt(id, "nin_pos", 127);*/
+						_resetGCSettings(id);
+						_error(_t("dlmsg14", L"Done."));
+						_showConfigGCGame();
+					}
+					else
+					{
+						m_gcfg2.setBool(id, "wiiu_widescreen", !m_gcfg2.getBool(id, "wiiu_widescreen", 0));
+						m_btnMgr.setText(m_configBtn1, _optBoolToString(m_gcfg2.getOptBool(id, "wiiu_widescreen", 0)));
+					}
 				}
 				else if(m_btnMgr.selected(m_configBtn2P) || m_btnMgr.selected(m_configBtn2M))
 				{
@@ -631,6 +697,31 @@ void CMenu::_configGCGame(const dir_discHdr *hdr, bool disc)
 						m_btnMgr.setText(m_configLbl2Val, _t("GC_Auto", L"Auto"));
 					else
 						m_btnMgr.setText(m_configLbl2Val, wfmt(L"%i", netprofile));
+				}
+				else if(m_btnMgr.selected(m_configBtn3))
+				{
+					/*m_gcfg2.setUInt(id, "language", 0);
+					m_gcfg2.setUInt(id, "video_mode", 0);
+					m_gcfg2.setOptBool(id, "led", 0);
+					m_gcfg2.setOptBool(id, "devo_memcard_emu", 2);// default
+					m_gcfg2.setOptBool(id, "widescreen", 0);
+					m_gcfg2.setUInt(id, "debugger", 0);
+					m_gcfg2.setOptBool(id, "deflicker", 0);
+					m_gcfg2.setOptBool(id, "cheat", 0);
+					m_gcfg2.setOptBool(id, "wiiu_widescreen", 0);
+					m_gcfg2.setUInt(id, "emu_memcard", 0);
+					m_gcfg2.setOptBool(id, "cc_rumble", 2);// default
+					m_gcfg2.setOptBool(id, "native_ctl", 2);// default
+					m_gcfg2.setOptBool(id, "triforce_arcade", 0);
+					m_gcfg2.setOptBool(id, "skip_ipl", 0);
+					m_gcfg2.setOptBool(id, "patch_pal50", 0);
+					m_gcfg2.setOptBool(id, "bba_emu", 0);
+					m_gcfg2.setUInt(id, "net_profile", 0);
+					m_gcfg2.setInt(id, "nin_width", 127);
+					m_gcfg2.setInt(id, "nin_pos", 127);*/
+					_resetGCSettings(id);
+					_error(_t("dlmsg14", L"Done."));
+					_showConfigGCGame();
 				}
 			}
 		}

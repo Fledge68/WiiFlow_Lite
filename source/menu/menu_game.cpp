@@ -430,6 +430,12 @@ void CMenu::_game(bool launch)
 						_configGame(hdr);
 					m_banner.ToggleGameSettings();//reset brightness
 					m_banner.ToggleZoom();//de zoom to small
+					/*if(m_newGame)
+					{
+						m_newGame = false;
+						startGameSound = 1;
+						_playGameSound();
+					}*/
 				}
 				_showGame();
 			}

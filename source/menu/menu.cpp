@@ -1829,7 +1829,7 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 	// set song title and display it if music info is allowed
 	if(MusicPlayer.SongChanged() && m_music_info)
 	{
-		m_btnMgr.setText(m_mainLblCurMusic, MusicPlayer.GetFileName(), false);// false for word wrap
+		m_btnMgr.setText(m_mainLblCurMusic, MusicPlayer.GetFileName());
 		m_btnMgr.show(m_mainLblCurMusic);
 		MusicPlayer.DisplayTime = time(NULL);
 	}
@@ -1859,8 +1859,8 @@ void CMenu::_mainLoopCommon(bool withCF, bool adjusting)
 
 	if(show_mem)
 	{
-		m_btnMgr.setText(m_mem1FreeSize, wfmt(L"Mem1 lo Free:%u, Mem1 Free:%u", MEM1_lo_freesize(), MEM1_freesize()), true);
-		m_btnMgr.setText(m_mem2FreeSize, wfmt(L"Mem2 Free:%u", MEM2_freesize()), true);
+		m_btnMgr.setText(m_mem1FreeSize, wfmt(L"Mem1 lo Free:%u, Mem1 Free:%u", MEM1_lo_freesize(), MEM1_freesize()), true);// true = dont wrap text
+		m_btnMgr.setText(m_mem2FreeSize, wfmt(L"Mem2 Free:%u", MEM2_freesize()), true);// true = dont wrap text
 	}
 
 #ifdef SHOWMEMGECKO
@@ -2026,9 +2026,10 @@ void CMenu::_initCF(void)
 	// filter list based on categories, favorites, and adult only
 	for(vector<dir_discHdr>::iterator hdr = m_gameList.begin(); hdr != m_gameList.end(); ++hdr)
 	{
-		if(m_sourceflow && !m_source.getBool(sfmt("button_%i", hdr->settings[0]), "hidden", false))
+		if(m_sourceflow)
 		{
-			CoverFlow.addItem(&(*hdr), 0, 0);// no filtering for sourceflow
+			if(!m_source.getBool(sfmt("button_%i", hdr->settings[0]), "hidden", false))
+				CoverFlow.addItem(&(*hdr), 0, 0);// no filtering for sourceflow
 			continue;
 		}
 		

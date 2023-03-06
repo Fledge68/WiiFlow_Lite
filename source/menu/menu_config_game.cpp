@@ -229,7 +229,7 @@ void CMenu::_showConfigGame()
 	}
 	
 	_hideConfigButtons();
-	m_configGameMaxPgs = IsOnWiiU() ? 6 : 5;
+	m_configGameMaxPgs = 6;
 	
 	m_btnMgr.setText(m_gameSettingsLblPage, wfmt(L"%i / %i", m_configGamePage, m_configGameMaxPgs));
 	m_btnMgr.show(m_gameSettingsLblPage);
@@ -429,13 +429,21 @@ void CMenu::_showConfigGame()
 	}
 	else if(m_configGamePage == 6)
 	{
-		m_btnMgr.setText(m_configLbl1, _t("cfgg46", L"WiiU Widescreen"));
-		i = min(m_gcfg2.getUInt(id, "widescreen_wiiu", 0), ARRAY_SIZE(CMenu::_WidescreenWiiu) - 1u);
-		m_btnMgr.setText(m_configLbl1Val, _t(CMenu::_WidescreenWiiu[i].id, CMenu::_WidescreenWiiu[i].text));
+		m_btnMgr.setText(m_configLbl1, _t("cfgg64", L"Reset Settings to Defaults"));
+		m_btnMgr.setText(m_configBtn1, _t("yes", L"Yes"));
 		m_btnMgr.show(m_configLbl1);
-		m_btnMgr.show(m_configLbl1Val);
-		m_btnMgr.show(m_configBtn1P);
-		m_btnMgr.show(m_configBtn1M);
+		m_btnMgr.show(m_configBtn1);
+			
+		if(IsOnWiiU())
+		{
+			m_btnMgr.setText(m_configLbl2, _t("cfgg46", L"WiiU Widescreen"));
+			i = min(m_gcfg2.getUInt(id, "widescreen_wiiu", 0), ARRAY_SIZE(CMenu::_WidescreenWiiu) - 1u);
+			m_btnMgr.setText(m_configLbl2Val, _t(CMenu::_WidescreenWiiu[i].id, CMenu::_WidescreenWiiu[i].text));
+			m_btnMgr.show(m_configLbl2);
+			m_btnMgr.show(m_configLbl2Val);
+			m_btnMgr.show(m_configBtn2P);
+			m_btnMgr.show(m_configBtn2M);
+		}
 	}
 }
 
@@ -763,12 +771,39 @@ void CMenu::_configGame(const dir_discHdr *hdr, bool disc)
 			}
 			else if(m_configGamePage == 6)
 			{
-				if(m_btnMgr.selected(m_configBtn1P) || m_btnMgr.selected(m_configBtn1M))
+				if(m_btnMgr.selected(m_configBtn1))
 				{
-					s8 direction = m_btnMgr.selected(m_configBtn1P) ? 1 : -1;
+					m_gcfg2.setUInt(id, "ios", 0);
+					m_gcfg2.setUInt(id, "language", 0);
+					m_gcfg2.setUInt(id, "video_mode", 0);
+					m_gcfg2.setUInt(id, "debugger", 0);
+					m_gcfg2.setOptBool(id, "cheat", 0);
+					m_gcfg2.setUInt(id, "patch_video_modes", 0);
+					m_gcfg2.setOptBool(id, "vipatch", 0);
+					m_gcfg2.setOptBool(id, "country_patch", 0);
+					m_gcfg2.setUInt(id, "aspect_ratio", 0);
+					m_gcfg2.setOptBool(id, "led", 0);
+					m_gcfg2.setUInt(id, "private_server", 0);
+					m_gcfg2.setOptBool(id, "fix480p", 2);// default
+					m_gcfg2.setUInt(id, "deflicker_wii", 0);
+					m_gcfg2.setUInt(id, "widescreen_wiiu", 0);
+					if(GameHdr->type == TYPE_WII_GAME)
+						m_gcfg2.setUInt(id, "emulate_save", 0);
+					else // channel
+					{
+						m_gcfg2.setOptBool(id, "custom", 0);
+						m_gcfg2.setOptBool(id, "apploader", 0);
+						m_gcfg2.setOptBool(id, "useneek", 0);
+					}
+					_error(_t("dlmsg14", L"Done."));
+					_showConfigGame();
+				}
+				else if(m_btnMgr.selected(m_configBtn2P) || m_btnMgr.selected(m_configBtn2M))
+				{
+					s8 direction = m_btnMgr.selected(m_configBtn2P) ? 1 : -1;
 					i = loopNum(m_gcfg2.getUInt(id, "widescreen_wiiu", 0) + direction, ARRAY_SIZE(CMenu::_WidescreenWiiu));
 					m_gcfg2.setInt(id, "widescreen_wiiu", i);
-					m_btnMgr.setText(m_configLbl1Val, _t(CMenu::_WidescreenWiiu[i].id, CMenu::_WidescreenWiiu[i].text));
+					m_btnMgr.setText(m_configLbl2Val, _t(CMenu::_WidescreenWiiu[i].id, CMenu::_WidescreenWiiu[i].text));
 				}
 			}
 		}
