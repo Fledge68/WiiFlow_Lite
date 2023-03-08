@@ -39,7 +39,7 @@ void CMenu::_showBoot()
 	if(cur_ios > 0)
 		m_btnMgr.setText(m_configLbl2Val, wfmt(L"%i", cur_ios));
 	else
-		m_btnMgr.setText(m_configLbl2Val, L"AUTO");// cIOS 249 unless the user changed it via the meta.xml
+		m_btnMgr.setText(m_configLbl2Val, _t("GC_Auto", L"AUTO"));// cIOS 249 unless the user changed it via the meta.xml
 	m_btnMgr.setText(m_configBtn3, wfmt(L"%i", set_port));
 	m_btnMgr.setText(m_configBtn4, m_cfg.getBool("GENERAL", "sd_only") ? _t("yes", L"Yes") : _t("no", L"No"));
 
