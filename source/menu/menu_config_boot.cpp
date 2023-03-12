@@ -111,7 +111,7 @@ void CMenu::_Boot(void)
 				if(cur_ios > 0)
 					m_btnMgr.setText(m_configLbl2Val, wfmt(L"%i", cur_ios));
 				else
-					m_btnMgr.setText(m_configLbl2Val, L"AUTO");
+					m_btnMgr.setText(m_configLbl2Val, _t("GC_Auto", L"AUTO"));
 			}
 			else if(m_btnMgr.selected(m_configBtn3))
 			{

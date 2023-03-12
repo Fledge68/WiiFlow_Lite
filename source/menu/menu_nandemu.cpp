@@ -343,6 +343,9 @@ int CMenu::_NandEmuCfg(void)
 					if(BTN_HOME_PRESSED || BTN_B_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_nandemuBtnBack)))
 					{
 						_hideNandEmu();
+						m_btnMgr.hide(m_nandfileLblDialog);
+						m_btnMgr.hide(m_nandemuLblDialog);
+						m_btnMgr.hide(m_nandfinLblDialog);
 						nandemuPage = 1;
 						_showNandEmu();
 						break;
