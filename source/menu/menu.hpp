@@ -994,7 +994,8 @@ private:
 	wstringEx _optBoolToString(int b);
 	void _load_installed_cioses();
 	std::map<u8, u8> _installed_cios;
-	typedef std::map<u8, u8>::iterator CIOSItr;
+	typedef std::map<u8, u8>::iterator CIOSItr;// we can use this for both maps.
+	std::map<u8, u8> _cios_base;
 
 //game boot functions
 	void _launch(const dir_discHdr *hdr);
@@ -1005,7 +1006,7 @@ private:
 	void _launchPlugin(dir_discHdr *hdr);
 	void _launchShutdown();
 	vector<string> _getMetaXML(const char *bootpath);
-	int _loadGameIOS(u8 ios, int userIOS, string id, bool RealNAND_Channels = false);
+	int _loadGameIOS(u8 ios, int userIOS, const char *id, bool RealNAND_Channels = false);
 	bool _loadFile(u8 * &buffer, u32 &size, const char *path, const char *file);// gameconfig.txt and cheats.gct
 
 //

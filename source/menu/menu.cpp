@@ -2682,7 +2682,7 @@ void CMenu::_stopSounds(void)
 	m_gameSound.Stop();
 }
 
-/* wiiflow creates a map<u8, u8> _installed_cios list for slots 200 to 253 and slot 0
+/* wiiflow creates a map<u8 slot, u8 base > _installed_cios list for slots 200 to 253 and slot 0
 the first u8 is the slot and the second u8 is the base if its a d2x cios otherwise the slot number again.
 slot 0 is set to 1 - first = 0 and second = 1
 game config only shows the first (slot) or auto if first = 0 */
@@ -2700,11 +2700,12 @@ void CMenu::_load_installed_cioses()
 		{
 			gprintf("Found d2x base %u in slot %u\n", base, slot);
 			_installed_cios[slot] = base;
+			_cios_base[base] = slot;// these are sorted low to high. no duplicates. higher slot will replace lower slot if same base.
 		}
 		else if(CustomIOS(IOS_GetType(slot)))
 		{
 			gprintf("Found cIOS in slot %u\n", slot);
-			_installed_cios[slot] = slot;
+			_installed_cios[slot] = slot;// we don't add the base for non d2x cios. only keep this if a user wants to try a hermies cios for example.
 		}
 	}
 }
