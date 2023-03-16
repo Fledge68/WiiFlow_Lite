@@ -140,7 +140,7 @@ bool CMenu::init(bool usb_mounted)
 	/* Check if we want WiFi Gecko */
 	m_use_wifi_gecko = m_cfg.getBool("DEBUG", "wifi_gecko", false);
 	WiFiDebugger.SetBuffer(m_use_wifi_gecko);
-	if(m_use_wifi_gecko)
+	if(m_use_wifi_gecko || m_cfg.getBool("GENERAL", "async_network", false))
 		_initAsyncNetwork();
 		
 	/* Check if we want SD Gecko */
