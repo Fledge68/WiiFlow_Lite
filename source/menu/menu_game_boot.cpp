@@ -731,9 +731,13 @@ bool CMenu::_loadFile(u8 * &buffer, u32 &size, const char *path, const char *fil
 
 /* used by wii and channel games to load the cIOS to use for the game */
 /* plugins, apps, and gamecube games don't use cIOS */
-int CMenu::_loadGameIOS(u8 gameIOS, int userIOS, string id, bool RealNAND_Channels)
+int CMenu::_loadGameIOS(u8 gameIOS, int userIOS, const char *id, bool RealNAND_Channels)
 {
-	gprintf("Game ID %s requested IOS %d.\nUser selected %d\n", id.c_str(), gameIOS, userIOS);
+	gprintf("Game ID %s requested IOS %d.\n", id, gameIOS);
+	if(!userIOS)
+		gprintf("User selected %d\n", userIOS);
+	else
+		gprintf("User selected AUTO\n");
 	
 	// this if seems to have been used if wiiflow was in neek2o mode
 	// or cios 249 is a stub and wiiflow runs on ios58
@@ -751,36 +755,49 @@ int CMenu::_loadGameIOS(u8 gameIOS, int userIOS, string id, bool RealNAND_Channe
 		return LOAD_IOS_SUCCEEDED;
 	}	
 	
-	if(userIOS)// if IOS is not 'auto' and set to a specific cIOS then set gameIOS to that cIOS if it's installed
+	u8 slot = 0;
+
+	// check if the user wants to use a specific cios and if it's installed.
+	if(userIOS && _installed_cios.find(userIOS) != _installed_cios.end())
+		slot = userIOS;
+	else // auto find a cios base match
 	{
-		// we need to find it just in case the gameconfig has been manually edited or that cios deleted.
-		bool found = false;
-		for(CIOSItr itr = _installed_cios.begin(); itr != _installed_cios.end(); itr++)
+		// Workaround for SpongeBobs Boating Bash
+		if(strncasecmp(id, "SBV", 3) == 0)
 		{
-			if(itr->second == userIOS || itr->first == userIOS)
+			slot = _cios_base[gameIOS];// try the games'IOS 53
+			if(!slot)
+				slot = _cios_base[58];
+			if(!slot && !IsOnWiiU())
+				slot = _cios_base[38];
+		}
+		else
+			slot = _cios_base[gameIOS];
+		if(!slot)// no direct match so we get the first cios with a greater base
+		{
+			for(CIOSItr itr = _cios_base.begin(); itr != _cios_base.end(); itr++)
 			{
-				found = true;
-				gameIOS = itr->first;
-				break;
+				if(itr->first > gameIOS)//compare bases
+				{
+					slot = itr->second;// set to cios slot
+					break;
+				}
 			}
 		}
-		if(!found)
-			gameIOS = mainIOS;
 	}
-	else
-		gameIOS = mainIOS;// mainIOS is usually 249 unless changed by boot args or changed on startup settings menu
-	gprintf("Changed requested IOS to %d.\n", gameIOS);
+	if(!slot)// shouldn't happen but just in case
+		slot = mainIOS;// set to wiiflow's cios
+	gprintf("cIOS slot %d chosen.\n", slot);
 
-	/* at this point gameIOS is a cIOS */
-	if(gameIOS != CurrentIOS.Version)
+	// now we reload to this cios slot if we need to
+	if(slot != CurrentIOS.Version)
 	{
-		gprintf("Reloading IOS into %d\n", gameIOS);
-		bool ret = loadIOS(gameIOS, true);//load cIOS requested and then remount sd and USB devices
+		bool ret = loadIOS(slot, true);//load cIOS requested and then remount sd and USB devices
 		if(has_enabled_providers() || m_use_wifi_gecko)
 			_initAsyncNetwork();// always seem to do netinit after changing IOS
 		if(ret == false)
 		{
-			_error(wfmt(_fmt("errgame4", L"Couldn't load IOS %i"), gameIOS));
+			_error(wfmt(_fmt("errgame4", L"Couldn't load IOS %i"), slot));
 			return LOAD_IOS_FAILED;
 		}
 		return LOAD_IOS_SUCCEEDED;
@@ -940,7 +957,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	}
 
 	/* load selected cIOS if necessary */
-	if(_loadGameIOS(gameIOS, userIOS, id, !NANDemuView) == LOAD_IOS_FAILED)
+	if(_loadGameIOS(gameIOS, userIOS, id.c_str(), !NANDemuView) == LOAD_IOS_FAILED)
 	{
 		/* error message already shown */
 		return;
@@ -1242,7 +1259,7 @@ void CMenu::_launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 	/* load selected cIOS if necessary */
 	if(!dvd)
 	{
-		if(_loadGameIOS(gameIOS, userIOS, id) == LOAD_IOS_FAILED)
+		if(_loadGameIOS(gameIOS, userIOS, id.c_str()) == LOAD_IOS_FAILED)
 		{
 			/* error message already shown */
 			return;
