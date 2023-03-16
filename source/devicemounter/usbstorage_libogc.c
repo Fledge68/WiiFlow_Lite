@@ -44,6 +44,7 @@ distribution.
 #include <ogc/disc_io.h>
 #include <ogc/lwp_watchdog.h>
 #include "usbstorage_libogc.h"
+#include "gecko/gecko.hpp"
 
 #define ROUNDDOWN32(v)				(((u32)(v)-0x1f)&~0x1f)
 
@@ -94,6 +95,33 @@ distribution.
 #define MAX_TRANSFER_SIZE_V5		(16*1024)
 
 #define DEVLIST_MAXSIZE    			8
+
+static inline const char *PartFromType(u8 type)
+{
+	switch (type)
+	{
+		case 0x00: return "Unused";
+		case 0x01: return "FAT12";
+		case 0x04: return "FAT16";
+		case 0x05: return "Extended";
+		case 0x06: return "FAT16";
+		case 0x07: return "NTFS";
+		case 0x0b: return "FAT32";
+		case 0x0c: return "FAT32";
+		case 0x0e: return "FAT16";
+		case 0x0f: return "Extended";
+		case 0x82: return "LxSWP";
+		case 0x83: return "LINUX";
+		case 0x8e: return "LxLVM";
+		case 0xa8: return "OSX";
+		case 0xab: return "OSXBT";
+		case 0xaf: return "OSXHF";
+		case 0xbf: return "WBFS";
+		case 0xe8: return "LUKS";
+		default: return "Unknown";
+	}
+}
+
 
 static heap_cntrl __heap;
 static bool __inited = false;
@@ -895,6 +923,25 @@ static bool __usbstorage_ogc_IsInserted(void)
 
 			if (retval < 0)
 			{
+				__usbstorage_ogc_reset(&__usbfd);
+				continue;
+			}
+
+			u8* mbr = (u8*)__lwp_heap_allocate(&__heap, 512);
+			USBStorage_OGC_Read(&__usbfd, j, 0, 1, mbr);
+			bool readablePartition = false;
+			for (u8 i = 0; i < 4; i++)
+			{
+				u8 rawPartitionType = mbr[450 + i * 16];
+				const char* partitionType = PartFromType(rawPartitionType);
+				if (strcmp(partitionType, "Unknown") != 0) {
+					readablePartition = true;
+				}
+			}
+			__lwp_heap_free(&__heap, mbr);
+
+			if (!readablePartition) {
+				gprintf("USB storage device with vid %lu pid %lu has no readable partitions. Skipping...\n", vid, pid);
 				__usbstorage_ogc_reset(&__usbfd);
 				continue;
 			}
