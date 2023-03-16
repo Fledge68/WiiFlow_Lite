@@ -106,7 +106,7 @@ const CMenu::SOption CMenu::_vidModePatch[4] = {
 };
 
 const CMenu::SOption CMenu::_hooktype[8] = {
-	{ "hook_auto", L"AUTO" },
+	{ "GC_Auto", L"Auto" },
 	{ "hooktype1", L"VBI" },
 	{ "hooktype2", L"KPAD read" },
 	{ "hooktype3", L"Joypad" },
@@ -257,7 +257,7 @@ void CMenu::_showConfigGame()
 		if(i > 0)
 			m_btnMgr.setText(m_configLbl2Val, wfmt(L"%i", i));
 		else
-			m_btnMgr.setText(m_configLbl2Val, L"AUTO");
+			m_btnMgr.setText(m_configLbl2Val, _t("GC_Auto", L"Auto"));
 			
 		i = min(m_gcfg2.getUInt(id, "language", 0), ARRAY_SIZE(CMenu::_languages) - 1u);
 		m_btnMgr.setText(m_configLbl3Val, _t(CMenu::_languages[i].id, CMenu::_languages[i].text));
@@ -604,7 +604,7 @@ void CMenu::_configGame(const dir_discHdr *hdr, bool disc)
 						if(i > 0)
 							m_btnMgr.setText(m_configLbl2Val, wfmt(L"%i", i));
 						else
-							m_btnMgr.setText(m_configLbl2Val, L"AUTO");
+							m_btnMgr.setText(m_configLbl2Val, _t("GC_Auto", L"Auto"));
 					}
 				}
 				else if(m_btnMgr.selected(m_configBtn3P) || m_btnMgr.selected(m_configBtn3M))

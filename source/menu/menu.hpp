@@ -970,6 +970,7 @@ private:
 	void _getSFlowBgTex();
 	
 // misc functions
+	void listThemes(const char * path, vector<string> &themes);
 	void _resetGCSettings(const string &id);
 	void RemoveCover(const char *id);
 	void _setPartition(s8 direction = 0, u8 partition = 0, u8 coverflow = 0);

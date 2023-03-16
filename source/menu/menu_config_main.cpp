@@ -21,7 +21,7 @@ void AddLanguage(char *Path)
 	languages_available.push_back(lng);
 }
 
-void listThemes(const char * path, vector<string> &themes)
+void CMenu::listThemes(const char * path, vector<string> &themes)
 {
 	DIR *d;
 	struct dirent *dir;
@@ -43,7 +43,7 @@ void listThemes(const char * path, vector<string> &themes)
 		closedir(d);
 	}
 	if(!def)
-		themes.push_back("Default");
+		themes.push_back(_t("def", L"Default").toUTF8());
 	sort(themes.begin(), themes.end());
 }
 
