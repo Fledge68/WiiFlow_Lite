@@ -51,7 +51,7 @@ jobs:
           mkdir -p wiiflow
           cp -r wii/wiiflow/Languages wiiflow/languages
           cp -r wii/wiiflow/themes_lite wiiflow/themes_lite
-		  echo "sha=$(git rev-parse --short=7 HEAD)" >> $GITHUB_ENV
+		  echo "sha=$(echo ${GITHUB_SHA} | head -c 7)" >> $GITHUB_OUTPUT
 
       - name: Upload binaries
         uses: actions/upload-artifact@v2
