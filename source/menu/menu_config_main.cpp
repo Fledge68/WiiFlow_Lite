@@ -43,7 +43,7 @@ void CMenu::listThemes(const char * path, vector<string> &themes)
 		closedir(d);
 	}
 	if(!def)
-		themes.push_back(_t("def", L"Default").toUTF8());
+		themes.push_back("Default");
 	sort(themes.begin(), themes.end());
 }
 
