@@ -41,7 +41,6 @@ jobs:
         run: |
           PATH=$(pwd)/devkitpro/devkitPPC/bin:$PATH DEVKITPPC=$(pwd)/devkitpro/devkitPPC DEVKITPRO=$(pwd)/devkitpro make
       - name: Package
-        id: pack
         run: |
           cp -r wii/apps apps
           mkdir -p apps/wiiflow/
