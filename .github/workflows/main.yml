@@ -40,6 +40,7 @@ jobs:
       - name: Compile
         run: |
           PATH=$(pwd)/devkitpro/devkitPPC/bin:$PATH DEVKITPPC=$(pwd)/devkitpro/devkitPPC DEVKITPRO=$(pwd)/devkitpro make
+
       - name: Package
         run: |
           cp -r wii/apps apps
