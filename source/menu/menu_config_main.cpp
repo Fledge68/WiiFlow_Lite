@@ -193,7 +193,10 @@ void CMenu::_showConfigMain()
 		m_btnMgr.setText(m_configLbl1Val, _t(CMenu::_GlobalVideoModes[i].id, CMenu::_GlobalVideoModes[i].text));
 
 		i = min(max(0, m_cfg.getInt("GENERAL", "game_language", 0)), (int)ARRAY_SIZE(CMenu::_languages) - 1);
-		m_btnMgr.setText(m_configLbl2Val, _t(CMenu::_languages[i].id, CMenu::_languages[i].text));
+		if(i == 0)
+			m_btnMgr.setText(m_configLbl2Val, _t("vidsys", L"System"));
+		else
+			m_btnMgr.setText(m_configLbl2Val, _t(CMenu::_languages[i].id, CMenu::_languages[i].text));
 		
 		i = min(max(1, m_cfg.getInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_REAL)), (int)ARRAY_SIZE(CMenu::_ChannelsType)) - 1;
 		m_btnMgr.setText(m_configLbl4Val, _t(CMenu::_ChannelsType[i].id, CMenu::_ChannelsType[i].text));
@@ -586,16 +589,19 @@ void CMenu::_configMain(void)
 				if(m_btnMgr.selected(m_configBtn1P) || m_btnMgr.selected(m_configBtn1M))
 				{
 					s8 direction = m_btnMgr.selected(m_configBtn1P) ? 1 : -1;
-					val = (int)loopNum(m_cfg.getUInt("GENERAL", "game_language", 0) + direction, ARRAY_SIZE(CMenu::_languages));
-					m_cfg.setInt("GENERAL", "game_language", val);
-					m_btnMgr.setText(m_configLbl1Val, _t(CMenu::_languages[val].id, CMenu::_languages[val].text));
+					val = (int)loopNum(m_cfg.getUInt("GENERAL", "video_mode", 0) + direction, ARRAY_SIZE(CMenu::_GlobalVideoModes));
+					m_cfg.setInt("GENERAL", "video_mode", val);
+					m_btnMgr.setText(m_configLbl1Val, _t(CMenu::_GlobalVideoModes[val].id, CMenu::_GlobalVideoModes[val].text));
 				}
 				else if(m_btnMgr.selected(m_configBtn2P) || m_btnMgr.selected(m_configBtn2M))
 				{
 					s8 direction = m_btnMgr.selected(m_configBtn2P) ? 1 : -1;
-					val = (int)loopNum(m_cfg.getUInt("GENERAL", "video_mode", 0) + direction, ARRAY_SIZE(CMenu::_GlobalVideoModes));
-					m_cfg.setInt("GENERAL", "video_mode", val);
-					m_btnMgr.setText(m_configLbl2Val, _t(CMenu::_GlobalVideoModes[val].id, CMenu::_GlobalVideoModes[val].text));
+					val = (int)loopNum(m_cfg.getUInt("GENERAL", "game_language", 0) + direction, ARRAY_SIZE(CMenu::_languages));
+					m_cfg.setInt("GENERAL", "game_language", val);
+					if(val == 0)
+						m_btnMgr.setText(m_configLbl2Val, _t("vidsys", L"System"));
+					else
+						m_btnMgr.setText(m_configLbl2Val, _t(CMenu::_languages[val].id, CMenu::_languages[val].text));
 				}
 				else if(m_btnMgr.selected(m_configBtn3))
 				{
