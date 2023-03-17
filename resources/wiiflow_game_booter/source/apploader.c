@@ -13,6 +13,7 @@
 #include "gecko.h"
 #include "memory.h"
 #include "video_tinyload.h"
+#include "kirbypatch.h"
 
 /* Apploader function pointers */
 typedef int   (*app_main)(void **dst, int *size, int *offset);
@@ -152,6 +153,7 @@ void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipa
 	u8 vfilter_medium[7] = {4, 8, 12, 16, 12, 8, 4};
 	u8 vfilter_high[7] = {8, 8, 10, 12, 10, 8, 8};
 
+	patch_kirby((u8 *)0x80000000);
 	do_wip_code((u8 *)dst, len);
 	Remove_001_Protection(dst, len);
 	if(CurrentIOS.Type == IOS_TYPE_WANIN && CurrentIOS.Revision < 13)
