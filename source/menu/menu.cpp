@@ -2085,7 +2085,10 @@ void CMenu::_initCF(void)
 			}
 		}
 		else // wii, gc, channels
+		{
 			strcpy(cfgKey1, hdr->id);
+			strcpy(catKey1, hdr->id);
+		}
 		
 		if((!m_favorites || m_gcfg1.getBool(favDomain, cfgKey1, false))
 			&& (!m_locked || !m_gcfg1.getBool(adultDomain, cfgKey1, false)))
