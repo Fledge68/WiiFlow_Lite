@@ -22,7 +22,8 @@ void CMenu::_hideCheatSettings(bool instant)
 	m_btnMgr.hide(m_cheatBtnPageM, instant);
 	m_btnMgr.hide(m_cheatBtnPageP, instant);
 	
-	for (int i=0;i<CHEATSPERPAGE;++i) {
+	for(u8 i = 0; i < CHEATSPERPAGE; ++i)
+	{
 		m_btnMgr.hide(m_cheatBtnItem[i], instant);
 		m_btnMgr.hide(m_cheatLblItem[i], instant);
 	}
@@ -34,11 +35,6 @@ void CMenu::_hideCheatSettings(bool instant)
 
 void CMenu::_showCheatSettings(void)
 {
-	if(txtavailable && m_cheatfile.getCnt() > 0)
-		m_btnMgr.setText(m_cheatLblTitle, m_cheatfile.getGameName());
-	else 
-		m_btnMgr.setText(m_cheatLblTitle, L"");
-
 	_setBg(m_cheatBg, m_cheatBg);
 	m_btnMgr.show(m_cheatLblTitle);
 	m_btnMgr.show(m_cheatBtnBack);
@@ -47,54 +43,55 @@ void CMenu::_showCheatSettings(void)
 		if(m_cheatLblUser[i] != -1)
 			m_btnMgr.show(m_cheatLblUser[i]);
 
-	if(m_cheatfile.getCnt() > 0)
+	if(txtavailable)// if we have a cheat file (txt)
 	{
-		// cheat found, show apply
-		m_btnMgr.show(m_cheatBtnApply);
-		m_btnMgr.show(m_cheatLblPage);
-		m_btnMgr.show(m_cheatBtnPageM);
-		m_btnMgr.show(m_cheatBtnPageP);
-		m_btnMgr.setText(m_cheatLblPage, wfmt(L"%i / %i", m_cheatSettingsPage, (m_cheatfile.getCnt()+CHEATSPERPAGE-1)/CHEATSPERPAGE)); 
-		
-		// Show cheats if available, else hide
-		for (u32 i=0; i < CHEATSPERPAGE; ++i)
+		if(m_cheatfile.getCnt() > 0)// if it's not empty
 		{
-			// cheat in range?
-			if (((m_cheatSettingsPage-1)*CHEATSPERPAGE + i + 1) <= m_cheatfile.getCnt()) 
+			m_btnMgr.setText(m_cheatLblTitle, m_cheatfile.getGameName());
+
+			for(u8 i = 0; i < CHEATSPERPAGE; ++i)
 			{
-				wstringEx chtName;
-				chtName.fromUTF8(m_cheatfile.getCheatName((m_cheatSettingsPage-1)*CHEATSPERPAGE + i));
-				m_btnMgr.setText(m_cheatLblItem[i], chtName);
-				m_btnMgr.setText(m_cheatBtnItem[i], _optBoolToString(m_cheatfile.sCheatSelected[(m_cheatSettingsPage-1)*CHEATSPERPAGE + i]));
-				
-				m_btnMgr.show(m_cheatLblItem[i], true);
-				m_btnMgr.show(m_cheatBtnItem[i], true);
-			}
-			else
-			{
-				// cheat out of range, hide elements
-				m_btnMgr.hide(m_cheatLblItem[i], true);
 				m_btnMgr.hide(m_cheatBtnItem[i], true);
+				m_btnMgr.hide(m_cheatLblItem[i], true);
+			}
+			m_btnMgr.setText(m_cheatLblPage, wfmt(L"%i / %i", m_cheatSettingsPage, (m_cheatfile.getCnt() + CHEATSPERPAGE - 1) / CHEATSPERPAGE)); 
+			m_btnMgr.show(m_cheatLblPage);
+			m_btnMgr.show(m_cheatBtnPageM);
+			m_btnMgr.show(m_cheatBtnPageP);
+			m_btnMgr.show(m_cheatBtnApply);
+			
+			for(u8 i = 0; i < CHEATSPERPAGE; ++i)
+			{
+				if((u8)((m_cheatSettingsPage - 1) * CHEATSPERPAGE + i + 1) <= m_cheatfile.getCnt()) 
+				{
+					wstringEx chtName;
+					chtName.fromUTF8(m_cheatfile.getCheatName((m_cheatSettingsPage - 1) * CHEATSPERPAGE + i));// converted from utf8 to WS
+					m_btnMgr.setText(m_cheatLblItem[i], chtName);
+					m_btnMgr.setText(m_cheatBtnItem[i], _optBoolToString(m_cheatfile.sCheatSelected[(m_cheatSettingsPage - 1) * CHEATSPERPAGE + i]));
+					
+					m_btnMgr.show(m_cheatLblItem[i], false);
+					m_btnMgr.show(m_cheatBtnItem[i], false);
+				}
 			}
 		}
+		else
+		{
+			m_btnMgr.setText(m_cheatLblTitle, L"");
+			m_btnMgr.setText(m_cheatLblItem[0], _t("dlmsg35", L"Downloaded cheat file has no cheats!"));
+			m_btnMgr.show(m_cheatLblItem[0]);
+		}
 	}
-	else if(!txtavailable)
+	else// no cheat file (txt). ask to download
 	{
-		// no cheat found, allow downloading
+		m_btnMgr.setText(m_cheatLblTitle, L"");
 		m_btnMgr.show(m_cheatBtnDownload);
 		m_btnMgr.setText(m_cheatLblItem[0], _t("cheat3", L"Cheat file for game not found."));
-		m_btnMgr.show(m_cheatLblItem[0]);
-	}
-	else
-	{
-		m_btnMgr.setText(m_cheatLblItem[0], _t("dlmsg35", L"Downloaded cheat file has no cheats!"));
 		m_btnMgr.show(m_cheatLblItem[0]);
 	}
 }
 
 void CMenu::_CheatSettings() 
 {
-	SetupInput();
 	m_cheatSettingsPage = 1;
 
 	const char *id = CoverFlow.getId();
@@ -106,7 +103,7 @@ void CMenu::_CheatSettings()
 		gctBuf = fsop_ReadFile(fmt("%s/%s.gct", m_cheatDir.c_str(), id), &gctSize);
 	
 	u8 chtsCnt = m_cheatfile.getCnt();
-	for(u8 i = 0; i < chtsCnt; ++i)
+	for(u16 i = 0; i < chtsCnt; ++i)
 	{
 		if(gctBuf && m_cheatfile.IsCheatIncluded(i, gctBuf, gctSize))
 			m_cheatfile.sCheatSelected.push_back(true);
@@ -114,7 +111,7 @@ void CMenu::_CheatSettings()
 			m_cheatfile.sCheatSelected.push_back(false);
 	}
 	
-	_textCheatSettings();
+	SetupInput();
 	_showCheatSettings();
 
 	while(!m_exit)
@@ -122,31 +119,29 @@ void CMenu::_CheatSettings()
 		_mainLoopCommon();
 		if(BTN_HOME_PRESSED || BTN_B_PRESSED)
 			break;
-		else if (BTN_UP_PRESSED)
+		else if(BTN_UP_PRESSED)
 			m_btnMgr.up();
-		else if (BTN_DOWN_PRESSED)
+		else if(BTN_DOWN_PRESSED)
 			m_btnMgr.down();
-		else if (txtavailable && (BTN_MINUS_PRESSED || BTN_LEFT_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_cheatBtnPageM))))
+		else if(txtavailable && (BTN_MINUS_PRESSED || BTN_LEFT_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_cheatBtnPageM))))
 		{
-			_hideCheatSettings(true);
-			if (m_cheatSettingsPage == 1)
-				m_cheatSettingsPage = (m_cheatfile.getCnt()+CHEATSPERPAGE-1)/CHEATSPERPAGE;
-			else if (m_cheatSettingsPage > 1)
+			if(m_cheatSettingsPage == 1)
+				m_cheatSettingsPage = (m_cheatfile.getCnt() + CHEATSPERPAGE - 1) / CHEATSPERPAGE;
+			else if(m_cheatSettingsPage > 1)
 				--m_cheatSettingsPage;
 			if(BTN_LEFT_PRESSED || BTN_MINUS_PRESSED) m_btnMgr.click(m_cheatBtnPageM);
 			_showCheatSettings();
 		}
-		else if (txtavailable && (BTN_PLUS_PRESSED || BTN_RIGHT_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_cheatBtnPageP))))
+		else if(txtavailable && (BTN_PLUS_PRESSED || BTN_RIGHT_PRESSED || (BTN_A_PRESSED && m_btnMgr.selected(m_cheatBtnPageP))))
 		{
-			_hideCheatSettings(true);
-			if (m_cheatSettingsPage == (m_cheatfile.getCnt()+CHEATSPERPAGE-1)/CHEATSPERPAGE)
+			if(m_cheatSettingsPage == (m_cheatfile.getCnt() + CHEATSPERPAGE - 1) / CHEATSPERPAGE)
 				m_cheatSettingsPage = 1;
-			else if (m_cheatSettingsPage < (m_cheatfile.getCnt()+CHEATSPERPAGE-1)/CHEATSPERPAGE)
+			else if(m_cheatSettingsPage < (m_cheatfile.getCnt() + CHEATSPERPAGE - 1) / CHEATSPERPAGE)
 				++m_cheatSettingsPage;
 			if(BTN_RIGHT_PRESSED || BTN_PLUS_PRESSED) m_btnMgr.click(m_cheatBtnPageP);
 			_showCheatSettings();
 		}
-		else if ((WBTN_2_HELD && WBTN_1_PRESSED) || (WBTN_1_HELD && WBTN_2_PRESSED))// pressing 1 and 2 deletes everything so cheats can be downloaded again.
+		else if((WBTN_2_HELD && WBTN_1_PRESSED) || (WBTN_1_HELD && WBTN_2_PRESSED))// pressing 1 and 2 deletes everything so cheats can be downloaded again.
 		{
 			fsop_deleteFile(fmt("%s/%s.gct", m_cheatDir.c_str(), id));
 			fsop_deleteFile(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id));
@@ -154,32 +149,33 @@ void CMenu::_CheatSettings()
 			m_gcfg2.remove(id, "hooktype");
 			break;
 		}
-		else if (BTN_A_PRESSED)
+		else if(BTN_A_PRESSED)
 		{
-			if (m_btnMgr.selected(m_cheatBtnBack))
+			if(m_btnMgr.selected(m_cheatBtnBack))
 				break;
-			for (int i = 0; i < CHEATSPERPAGE; ++i)
-				if (m_btnMgr.selected(m_cheatBtnItem[i]))
+			u16 pgFirstCht = (m_cheatSettingsPage - 1) * CHEATSPERPAGE;
+			for(int i = 0; i < CHEATSPERPAGE; ++i)
+			{
+				if(m_btnMgr.selected(m_cheatBtnItem[i]))
 				{
-					// handling code for clicked cheat
-					m_cheatfile.sCheatSelected[(m_cheatSettingsPage-1)*CHEATSPERPAGE + i] = !m_cheatfile.sCheatSelected[(m_cheatSettingsPage-1)*CHEATSPERPAGE + i];
+					m_cheatfile.sCheatSelected[pgFirstCht + i] = !m_cheatfile.sCheatSelected[pgFirstCht + i];
 					_showCheatSettings();
 				}
-			
- 			if (m_btnMgr.selected(m_cheatBtnApply))
+			}
+ 			if(m_btnMgr.selected(m_cheatBtnApply))
 			{
 				bool selected = false;
 				//checks if at least one cheat is selected
-				for (unsigned int i=0; i < m_cheatfile.getCnt(); ++i)
+				for(u16 i = 0; i < m_cheatfile.getCnt(); ++i)
 				{
-					if (m_cheatfile.sCheatSelected[i] == true) 
+					if(m_cheatfile.sCheatSelected[i] == true) 
 					{
 						selected = true;
 						break;
 					}
 				}
 					
-				if (selected)
+				if(selected)
 				{
 					m_cheatfile.createGCT(fmt("%s/%s.gct", m_cheatDir.c_str(), id)); 
 					m_gcfg2.setOptBool(id, "cheat", 1);
@@ -191,10 +187,9 @@ void CMenu::_CheatSettings()
 					m_gcfg2.remove(id, "cheat");
 					m_gcfg2.remove(id, "hooktype");
 				}
-				//m_cheatfile.createTXT(fmt("%s/%s.txt", m_txtCheatDir.c_str(), id));
 				break;
 			}
-			else if (m_btnMgr.selected(m_cheatBtnDownload))
+			else if(m_btnMgr.selected(m_cheatBtnDownload))
 			{
 				_hideCheatSettings();
 				bool dl_finished = false;
@@ -238,7 +233,7 @@ void CMenu::_CheatSettings()
 					gctBuf = fsop_ReadFile(fmt("%s/%s.gct", m_cheatDir.c_str(), id), &gctSize);
 	
 				chtsCnt = m_cheatfile.getCnt();
-				for(u8 i = 0; i < chtsCnt; ++i)
+				for(u16 i = 0; i < chtsCnt; ++i)
 				{
 					if(gctBuf && m_cheatfile.IsCheatIncluded(i, gctBuf, gctSize))
 						m_cheatfile.sCheatSelected.push_back(true);
@@ -282,7 +277,8 @@ void CMenu::_initCheatSettingsMenu()
 	_setHideAnim(m_cheatBtnPageM, "CHEAT/PAGE_MINUS", 0, 0, 1.f, -1.f);
 	_setHideAnim(m_cheatBtnPageP, "CHEAT/PAGE_PLUS", 0, 0, 1.f, -1.f);
 	
-	for (int i=0;i<CHEATSPERPAGE;++i) {
+	for (u8 i = 0;i < CHEATSPERPAGE; ++i)
+	{
 		_setHideAnim(m_cheatLblItem[i], fmt("CHEAT/ITEM_%i", i), 50, 0, -2.f, 0.f);
 		_setHideAnim(m_cheatBtnItem[i], fmt("CHEAT/ITEM_%i_BTN", i), -50, 0, 1.f, 0.f);
 	}
