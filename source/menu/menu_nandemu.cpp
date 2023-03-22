@@ -111,6 +111,38 @@ void CMenu::_showNandEmu(void)
 	}
 	else if(nandemuPage == 2)
 	{
+		m_btnMgr.setText(m_configLbl1, _t("part3", L"Emu NANDS Partition"));
+		currentPartition = m_cfg.getInt(CHANNEL_DOMAIN, "partition", USB1);
+		m_btnMgr.setText(m_configLbl1Val, upperCase(DeviceName[currentPartition]));
+
+		m_btnMgr.setText(m_configLbl2, _t("cfgne38", L"Saves NAND Partition"));
+		currentPartition = m_cfg.getInt(WII_DOMAIN, "savepartition");
+		m_btnMgr.setText(m_configLbl2Val, upperCase(DeviceName[currentPartition]));
+	
+		m_btnMgr.setText(m_configLbl3, _t("cfgne40", L"Use Real NAND Config"));
+		m_btnMgr.setText(m_configBtn3, m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_config", false) ? _t("on", L"On") : _t("off", L"Off"));
+
+		m_btnMgr.setText(m_configLbl4, _t("cfgne41", L"Use Real NAND Miis"));
+		m_btnMgr.setText(m_configBtn4, m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_miis", false) ? _t("on", L"On") : _t("off", L"Off"));
+		
+		m_btnMgr.show(m_configLbl1);
+		m_btnMgr.show(m_configLbl1Val);
+		m_btnMgr.show(m_configBtn1P);
+		m_btnMgr.show(m_configBtn1M);
+		
+		m_btnMgr.show(m_configLbl2);
+		m_btnMgr.show(m_configLbl2Val);
+		m_btnMgr.show(m_configBtn2P);
+		m_btnMgr.show(m_configBtn2M);
+		
+		m_btnMgr.show(m_configLbl3);
+		m_btnMgr.show(m_configBtn3);
+		
+		m_btnMgr.show(m_configLbl4);
+		m_btnMgr.show(m_configBtn4);
+	}
+	else
+	{
 		m_btnMgr.setText(m_configLbl1, _t("cfgne2", L"Extract Game Saves"));
 		m_btnMgr.setText(m_configBtn1, _t("cfgne3", L"All"));
 		m_btnMgr.setText(m_configBtn2, _t("cfgne4", L"Missing"));
@@ -128,29 +160,6 @@ void CMenu::_showNandEmu(void)
 		
 		m_btnMgr.show(m_configLbl4);
 		m_btnMgr.show(m_configBtn4);
-	}
-	else
-	{
-		m_btnMgr.setText(m_configLbl1, _t("cfgne38", L"Saves NAND Partition"));
-		currentPartition = m_cfg.getInt(WII_DOMAIN, "savepartition");
-		m_btnMgr.setText(m_configLbl1Val, upperCase(DeviceName[currentPartition]));
-	
-		m_btnMgr.setText(m_configLbl2, _t("cfgne40", L"Use Real NAND Config"));
-		m_btnMgr.setText(m_configBtn2, m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_config", false) ? _t("on", L"On") : _t("off", L"Off"));
-
-		m_btnMgr.setText(m_configLbl3, _t("cfgne41", L"Use Real NAND Miis"));
-		m_btnMgr.setText(m_configBtn3, m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_miis", false) ? _t("on", L"On") : _t("off", L"Off"));
-		
-		m_btnMgr.show(m_configLbl1);
-		m_btnMgr.show(m_configLbl1Val);
-		m_btnMgr.show(m_configBtn1P);
-		m_btnMgr.show(m_configBtn1M);
-		
-		m_btnMgr.show(m_configLbl2);
-		m_btnMgr.show(m_configBtn2);
-		
-		m_btnMgr.show(m_configLbl3);
-		m_btnMgr.show(m_configBtn3);
 	}
 }
 
@@ -242,6 +251,37 @@ int CMenu::_NandEmuCfg(void)
 			}
 			else if(nandemuPage == 2)
 			{
+				if(m_btnMgr.selected(m_configBtn1P) || m_btnMgr.selected(m_configBtn1M))
+				{
+					direction = m_btnMgr.selected(m_configBtn1P) ? 1 : -1;
+					_setPartition(direction, m_cfg.getInt(CHANNEL_DOMAIN, "partition"), COVERFLOW_CHANNEL);
+					m_cfg.setInt(CHANNEL_DOMAIN, "partition", currentPartition);
+					m_btnMgr.setText(m_configLbl1Val, upperCase(DeviceName[currentPartition]));
+					_getEmuNands();
+					if(m_current_view & COVERFLOW_CHANNEL || (m_current_view & COVERFLOW_PLUGIN && m_plugin.GetEnabledStatus(ENAND_PMAGIC)))
+						m_refreshGameList = true;
+				}
+				else if(m_btnMgr.selected(m_configBtn2P) || m_btnMgr.selected(m_configBtn2M))
+				{
+					direction = m_btnMgr.selected(m_configBtn2P) ? 1 : -1;
+					_setPartition(direction, m_cfg.getInt(WII_DOMAIN, "savepartition"), COVERFLOW_NONE);
+					m_cfg.setInt(WII_DOMAIN, "savepartition", currentPartition);
+					m_btnMgr.setText(m_configLbl2Val, upperCase(DeviceName[currentPartition]));
+					_getEmuNands();// refresh emunands in case the partition was changed
+				}
+				else if(m_btnMgr.selected(m_configBtn3))
+				{
+					m_cfg.setBool(CHANNEL_DOMAIN, "real_nand_config", !m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_config"));
+					m_btnMgr.setText(m_configBtn3, m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_config", false) ? _t("on", L"On") : _t("off", L"Off"));
+				}
+				else if(m_btnMgr.selected(m_configBtn4))
+				{
+					m_cfg.setBool(CHANNEL_DOMAIN, "real_nand_miis", !m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_miis"));
+					m_btnMgr.setText(m_configBtn4, m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_miis", false) ? _t("on", L"On") : _t("off", L"Off"));
+				}
+			}
+			else if(nandemuPage == 3)
+			{
 				if(m_btnMgr.selected(m_configBtn1) || m_btnMgr.selected(m_configBtn2) || m_btnMgr.selected(m_configBtn3))
 				{
 					m_nanddump = m_btnMgr.selected(m_configBtn3) ? true : false;
@@ -289,27 +329,6 @@ int CMenu::_NandEmuCfg(void)
 					_wadExplorer();
 					nandemuPage = 1;
 					_showNandEmu();
-				}
-			}
-			else if(nandemuPage == 3)
-			{
-				if(m_btnMgr.selected(m_configBtn1P) || m_btnMgr.selected(m_configBtn1M))
-				{
-					direction = m_btnMgr.selected(m_configBtn1P) ? 1 : -1;
-					_setPartition(direction, m_cfg.getInt(WII_DOMAIN, "savepartition"), COVERFLOW_NONE);
-					m_cfg.setInt(WII_DOMAIN, "savepartition", currentPartition);
-					m_btnMgr.setText(m_configLbl1Val, upperCase(DeviceName[currentPartition]));
-					_getEmuNands();// refresh emunands in case the partition was changed
-				}
-				else if(m_btnMgr.selected(m_configBtn2))
-				{
-					m_cfg.setBool(CHANNEL_DOMAIN, "real_nand_config", !m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_config"));
-					m_btnMgr.setText(m_configBtn2, m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_config", false) ? _t("on", L"On") : _t("off", L"Off"));
-				}
-				else if(m_btnMgr.selected(m_configBtn3))
-				{
-					m_cfg.setBool(CHANNEL_DOMAIN, "real_nand_miis", !m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_miis"));
-					m_btnMgr.setText(m_configBtn3, m_cfg.getBool(CHANNEL_DOMAIN, "real_nand_miis", false) ? _t("on", L"On") : _t("off", L"Off"));
 				}
 			}
 		}

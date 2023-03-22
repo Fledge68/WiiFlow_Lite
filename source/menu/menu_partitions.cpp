@@ -34,8 +34,7 @@ void CMenu::_showPartitionsCfg(void)
 
 	m_btnMgr.setText(m_configLbl1, _t("part1", L"Wii Partition"));
 	m_btnMgr.setText(m_configLbl2, _t("part2", L"GameCube Partition"));
-	m_btnMgr.setText(m_configLbl3, _t("part3", L"Emu NANDS Partition"));
-	m_btnMgr.setText(m_configLbl4, _t("part4", L"Plugins Default Partition"));
+	m_btnMgr.setText(m_configLbl3, _t("part4", L"Plugins Default Partition"));
 	
 	currentPartition = m_cfg.getInt(WII_DOMAIN, "partition", USB1);
 	m_btnMgr.setText(m_configLbl1Val, currentPartition == 8 ? "SD/USB" : upperCase(DeviceName[currentPartition]));
@@ -43,11 +42,8 @@ void CMenu::_showPartitionsCfg(void)
 	currentPartition = m_cfg.getInt(GC_DOMAIN, "partition", USB1);
 	m_btnMgr.setText(m_configLbl2Val, currentPartition == 8 ? "SD/USB" : upperCase(DeviceName[currentPartition]));
 	
-	currentPartition = m_cfg.getInt(CHANNEL_DOMAIN, "partition", USB1);
-	m_btnMgr.setText(m_configLbl3Val, upperCase(DeviceName[currentPartition]));
-	
 	currentPartition = m_cfg.getInt(PLUGIN_DOMAIN, "partition", SD);
-	m_btnMgr.setText(m_configLbl4Val, upperCase(DeviceName[currentPartition]));
+	m_btnMgr.setText(m_configLbl3Val, upperCase(DeviceName[currentPartition]));
 	
 	m_btnMgr.show(m_configLbl1);
 	m_btnMgr.show(m_configLbl1Val);
@@ -61,10 +57,6 @@ void CMenu::_showPartitionsCfg(void)
 	m_btnMgr.show(m_configLbl3Val);
 	m_btnMgr.show(m_configBtn3P);
 	m_btnMgr.show(m_configBtn3M);
-	m_btnMgr.show(m_configLbl4);
-	m_btnMgr.show(m_configLbl4Val);
-	m_btnMgr.show(m_configBtn4P);
-	m_btnMgr.show(m_configBtn4M);
 }
 
 void CMenu::_partitionsCfg(void)
@@ -105,16 +97,6 @@ void CMenu::_partitionsCfg(void)
 			else if(m_btnMgr.selected(m_configBtn3P) || m_btnMgr.selected(m_configBtn3M))
 			{
 				s8 direction = m_btnMgr.selected(m_configBtn3P) ? 1 : -1;
-				_setPartition(direction, m_cfg.getInt(CHANNEL_DOMAIN, "partition"), COVERFLOW_CHANNEL);
-				m_cfg.setInt(CHANNEL_DOMAIN, "partition", currentPartition);
-				_showPartitionsCfg();
-				// partition only for emu nands
-				if(m_current_view & COVERFLOW_CHANNEL || (m_current_view & COVERFLOW_PLUGIN && m_plugin.GetEnabledStatus(ENAND_PMAGIC)))
-					m_refreshGameList = true;
-			}
-			else if(m_btnMgr.selected(m_configBtn4P) || m_btnMgr.selected(m_configBtn4M))
-			{
-				s8 direction = m_btnMgr.selected(m_configBtn4P) ? 1 : -1;
 				_setPartition(direction, m_cfg.getInt(PLUGIN_DOMAIN, "partition"), COVERFLOW_PLUGIN);
 				m_cfg.setInt(PLUGIN_DOMAIN, "partition", currentPartition);
 				_showPartitionsCfg();
