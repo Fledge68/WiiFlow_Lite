@@ -34,6 +34,7 @@ static inline bool fmtCount(const wstringEx &format, int &i, int &s)
 				case L'%':
 					state = 0;
 					break;
+				case L'u':
 				case L'i':
 				case L'd':
 					state = 0;
@@ -51,7 +52,7 @@ static inline bool fmtCount(const wstringEx &format, int &i, int &s)
 	return true;
 }
 
-// Only handles the cases i need for translations : plain %i and %s
+// Only handles the cases i need for translations : plain %i, %d, %u, and %s
 bool checkFmt(const wstringEx &ref, const wstringEx &format)
 {
 	int s;
