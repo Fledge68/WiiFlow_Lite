@@ -445,7 +445,7 @@ void CMenu::_listEmuNands(const char *path, vector<string> &nands)
 			if(dir->d_type == DT_DIR)
 			{
 				nands.push_back(dir->d_name);
-				if(strlen(dir->d_name) == 7 && strcasecmp(dir->d_name, "default") == 0)
+				if(strlen(dir->d_name) == 7 && strcasecmp(dir->d_name, "wf_nand") == 0)
 					add_def = false;
 			}
 		}
@@ -454,16 +454,16 @@ void CMenu::_listEmuNands(const char *path, vector<string> &nands)
 	else
 		return;
 	if(add_def)
-		nands.push_back("default");
+		nands.push_back("wf_nand");
 	sort(nands.begin(), nands.end());
 }
 
 void CMenu::_getEmuNands(void)
 {
 	u8 i;
-	string emuNand = m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "default");
+	string emuNand = m_cfg.getString(CHANNEL_DOMAIN, "current_emunand", "wf_nand");
 	int emuPart = m_cfg.getInt(CHANNEL_DOMAIN, "partition", -1);
-	string savesNand = m_cfg.getString(WII_DOMAIN, "current_save_emunand", "default");
+	string savesNand = m_cfg.getString(WII_DOMAIN, "current_save_emunand", "wf_nand");
 	int savesPart = m_cfg.getInt(WII_DOMAIN, "savepartition", -1);
 
 	/* emu Nands */
@@ -485,7 +485,7 @@ void CMenu::_getEmuNands(void)
 	{
 		for(i = 0; i < emuNands.size(); ++i)
 		{
-			if(emuNands[i] == "default")
+			if(emuNands[i] == "wf_nand")
 			{
 				curEmuNand = i;
 				break;
@@ -512,7 +512,7 @@ void CMenu::_getEmuNands(void)
 	{ 
 		for(i = 0; i < savesNands.size(); ++i)
 		{
-			if(savesNands[i] == "default")
+			if(savesNands[i] == "wf_nand")
 			{
 				curSavesNand = i;
 				break;
