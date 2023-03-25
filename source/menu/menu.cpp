@@ -2555,7 +2555,6 @@ bool CMenu::_loadChannelList(void)
 bool CMenu::_loadPluginList()
 {
 	bool updateCache = m_cfg.getBool(PLUGIN_DOMAIN, "update_cache");
-	int channels_type = min(max(1, m_cfg.getInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_REAL)), (int)ARRAY_SIZE(CMenu::_ChannelsType));
 	gprintf("Adding plugins list\n");
 	for(u8 i = 0; m_plugin.PluginExist(i); ++i)
 	{
@@ -2589,18 +2588,10 @@ bool CMenu::_loadPluginList()
 					m_cfg.setBool(WII_DOMAIN, "update_cache", true);
 				_loadWiiList();
 			}
-			else if(strncasecmp(m_plugin.PluginMagicWord, NAND_PMAGIC, 8) == 0)//NAND
+			else if(strncasecmp(m_plugin.PluginMagicWord, NAND_PMAGIC, 8) == 0 || strncasecmp(m_plugin.PluginMagicWord, ENAND_PMAGIC, 8) == 0)//NAND
 			{
 				if(updateCache)
 					m_cfg.setBool(CHANNEL_DOMAIN, "update_cache", true);
-				m_cfg.setInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_REAL);
-				_loadChannelList();
-			}
-			else if(strncasecmp(m_plugin.PluginMagicWord, ENAND_PMAGIC, 8) == 0)//ENAN
-			{
-				if(updateCache)
-					m_cfg.setBool(CHANNEL_DOMAIN, "update_cache", true);
-				m_cfg.setInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_EMU);
 				_loadChannelList();
 			}
 			else
@@ -2661,7 +2652,6 @@ bool CMenu::_loadPluginList()
 		}
 	}
 	m_cfg.remove(PLUGIN_DOMAIN, "update_cache");
-	m_cfg.setInt(CHANNEL_DOMAIN, "channels_type", channels_type);
 	return true;
 }
 

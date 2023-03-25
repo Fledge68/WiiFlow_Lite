@@ -80,6 +80,8 @@ void CMenu::_sourceFlow()
 				m_plugin.SetEnablePlugin(pos, 1); // force disable all
 			enabledPluginsCount = 0;
 			string enabledMagics;
+			int channels_type = m_cfg.getInt(CHANNEL_DOMAIN, "channels_type");
+			u8 first = 1;
 			for(i = 0; i < magicNums.size(); i++)
 			{
 				u8 pos = m_plugin.GetPluginPosition(strtoul(magicNums[i].c_str(), NULL, 16));
@@ -91,8 +93,22 @@ void CMenu::_sourceFlow()
 						enabledMagics = magicNums[i];
 					else
 						enabledMagics.append(',' + magicNums[i]);
+					string magic = sfmt("%08x", m_plugin.GetPluginMagic(pos));
+					if(magic == ENAND_PMAGIC || magic == NAND_PMAGIC)
+					{
+						if(first)
+						{
+							first--;
+							channels_type = 0;
+						}
+						if(magic == ENAND_PMAGIC)
+							channels_type |= CHANNELS_EMU;
+						else if(magic == NAND_PMAGIC)
+							channels_type |= CHANNELS_REAL;
+					}
 				}
 			}
+			m_cfg.setInt(CHANNEL_DOMAIN, "channels_type", channels_type);
 			m_cfg.setString(PLUGIN_DOMAIN, "enabled_plugins", enabledMagics);
 			m_current_view = COVERFLOW_PLUGIN;
 		}
@@ -500,6 +516,8 @@ bool CMenu::_Source()
 							m_plugin.SetEnablePlugin(pos, 1); // force disable all
 						enabledPluginsCount = 0;
 						string enabledMagics;
+						int channels_type = m_cfg.getInt(CHANNEL_DOMAIN, "channels_type");
+						u8 first = 1;
 						for(i = 0; i < magicNums.size(); i++)
 						{
 							u8 pos = m_plugin.GetPluginPosition(strtoul(magicNums[i].c_str(), NULL, 16));
@@ -511,8 +529,22 @@ bool CMenu::_Source()
 									enabledMagics = magicNums[i];
 								else
 									enabledMagics.append(',' + magicNums[i]);
+								string magic = sfmt("%08x", m_plugin.GetPluginMagic(pos));
+								if(magic == ENAND_PMAGIC || magic == NAND_PMAGIC)
+								{
+									if(first)
+									{
+										first--;
+										channels_type = 0;
+									}
+									if(magic == ENAND_PMAGIC)
+										channels_type |= CHANNELS_EMU;
+									else if(magic == NAND_PMAGIC)
+										channels_type |= CHANNELS_REAL;
+								}
 							}
 						}
+						m_cfg.setInt(CHANNEL_DOMAIN, "channels_type", channels_type);
 						m_cfg.setString(PLUGIN_DOMAIN, "enabled_plugins", enabledMagics);
 						m_current_view = COVERFLOW_PLUGIN;
 						_setSrcOptions();

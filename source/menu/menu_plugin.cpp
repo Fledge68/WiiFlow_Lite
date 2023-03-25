@@ -159,7 +159,8 @@ void CMenu::_PluginSettings()
 	}
 	_hidePluginSettings();
 	
-	int channels_type = 0;
+	int channels_type = m_cfg.getInt(CHANNEL_DOMAIN, "channels_type");
+	u8 first = 1;
 	string enabledMagics;
 	enabledPluginsCount = 0;
 	for(u8 i = 0; m_plugin.PluginExist(i); i++)
@@ -173,10 +174,18 @@ void CMenu::_PluginSettings()
 			else
 				enabledMagics.append(',' + magic);
 				
-			if(magic == ENAND_PMAGIC)
-				channels_type |= CHANNELS_EMU;
-			else if(magic == NAND_PMAGIC)
-				channels_type |= CHANNELS_REAL;
+			if(magic == ENAND_PMAGIC || magic == NAND_PMAGIC)
+			{
+				if(first)
+				{
+					first--;
+					channels_type = 0;
+				}
+				if(magic == ENAND_PMAGIC)
+					channels_type |= CHANNELS_EMU;
+				else if(magic == NAND_PMAGIC)
+					channels_type |= CHANNELS_REAL;
+			}
 		}
 	}
 	m_cfg.setString(PLUGIN_DOMAIN, "enabled_plugins", enabledMagics);
