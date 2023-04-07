@@ -26,8 +26,8 @@ static u8 *appldr = (u8*)0x81200000;
 static const char *GameID = (const char*)0x80000000;
 
 /* Constants */
-#define APPLDR_OFFSET	0x910
-#define APPLDR_CODE		0x918
+#define APPLDR_OFFSET	0x910// usblgx uses 0x2440 -huh?
+#define APPLDR_CODE		0x918// usblgx uses APPLDR_OFFSET + 0x20 - huh?
 
 void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, 
 					u32 returnTo, bool patchregion, u8 private_server, const char *server_addr, u8 deflicker, u8 bootType);
@@ -39,18 +39,19 @@ static void NewSuperMarioBrosPatch();
 static void Patch_23400_and_MKWii_vulnerability();
 bool hookpatched = false;
 
+// wiiflow uses a struct to hold the appldr hdr and usblgx uses a u32 buffer[32] array to hold it.
 /* Thanks Tinyload */
 static struct
 {
-	char revision[16];
-	void *entry;
-	s32 size;
-	s32 trailersize;
-	s32 padding;
-} apploader_hdr ATTRIBUTE_ALIGN(32);
+	char revision[16];//[0-3] 16 divided by 4 bytes = 4
+	void *entry;// [4] 4 bytes
+	s32 size;//[5] 4 bytes
+	s32 trailersize;// [6] 4 bytes
+	s32 padding;// [7] 4 bytes
+} apploader_hdr ATTRIBUTE_ALIGN(32);// 16+4+4+4+4=32 bytes
 
 u32 Apploader_Run(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo, 
-					bool patchregion , u8 private_server, const char *server_addr, bool patchFix480p, u8 deflicker, u8 bootType)
+					bool patchregion , u8 private_server, const char *server_addr, u8 videoWidth, bool patchFix480p, u8 deflicker, u8 bootType)
 {
 	//! Disable private server for games that still have official servers.
 	if(memcmp(GameID, "SC7", 3) == 0 || memcmp(GameID, "RJA", 3) == 0 ||
@@ -118,6 +119,12 @@ u32 Apploader_Run(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryStrin
 		prog(20);
 	}
 	free_wip();
+
+	patch_kirby((u8 *)0x80000000);// can't be done during maindolpatches.
+	
+	if(videoWidth == WIDTH_FRAMEBUFFER)
+		patch_width((void*)0x80000000, 0x900000);
+	
 	if(hooktype != 0 && hookpatched)
 		ocarina_do_code();
 	
@@ -153,36 +160,28 @@ void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipa
 	u8 vfilter_medium[7] = {4, 8, 12, 16, 12, 8, 4};
 	u8 vfilter_high[7] = {8, 8, 10, 12, 10, 8, 8};
 
-	patch_kirby((u8 *)0x80000000);
-	do_wip_code((u8 *)dst, len);
-	Remove_001_Protection(dst, len);
-	if(CurrentIOS.Type == IOS_TYPE_WANIN && CurrentIOS.Revision < 13)
-		Anti_002_fix(dst, len);
-	if((CurrentIOS.Type == IOS_TYPE_WANIN && CurrentIOS.Revision < 13) || CurrentIOS.Type == IOS_TYPE_HERMES)
-		patch_NoDiscinDrive(dst, len);
 	patchVideoModes(dst, len, vidMode, vmode, patchVidModes, bootType);
 
 	if(debuggerselect == 2)
 		Patch_fwrite(dst, len);
 	if(hooktype != 0 && hookpatched == false)
 		hookpatched = dogamehooks(dst, len, false);
-	if(patchVidModes > 0)
-		PatchVideoSneek(dst, len);
 	if(vipatch)
 		vidolpatcher(dst, len);
+	if(patchVidModes > 0)
+		PatchVideoSneek(dst, len);
 	if(configbytes[0] != 0xCD)
 		langpatcher(dst, len);
 	if(countryString)
 		PatchCountryStrings(dst, len); // Country Patch by WiiPower
-	if(aspectRatio != -1)
-		PatchAspectRatio(dst, len, aspectRatio);
-	if(returnTo)
-		PatchReturnTo(dst, len, returnTo);
+	do_wip_code((u8 *)dst, len);
+	Remove_001_Protection(dst, len);
+	if(CurrentIOS.Type == IOS_TYPE_WANIN && CurrentIOS.Revision < 13)
+		Anti_002_fix(dst, len);
+	if((CurrentIOS.Type == IOS_TYPE_WANIN && CurrentIOS.Revision < 13) || CurrentIOS.Type == IOS_TYPE_HERMES)
+		patch_NoDiscinDrive(dst, len);
 	if(patchregion)
 		PatchRegion(dst, len);
-	if(private_server)
-		PrivateServerPatcher(dst, len, private_server, serverAddr);
-
 	if(deflicker == DEFLICKER_ON_LOW)
 	{
 		patch_vfilters(dst, len, vfilter_low);
@@ -206,6 +205,12 @@ void maindolpatches(void *dst, int len, u8 vidMode, GXRModeObj *vmode, bool vipa
 		if (deflicker == DEFLICKER_OFF_EXTENDED)
 			deflicker_patch(dst, len);
 	}
+	if(returnTo)
+		PatchReturnTo(dst, len, returnTo);
+	if(aspectRatio != -1)
+		PatchAspectRatio(dst, len, aspectRatio);
+	if(private_server)
+		PrivateServerPatcher(dst, len, private_server, serverAddr);
 }
 
 static void patch_NoDiscinDrive(void *buffer, u32 len)

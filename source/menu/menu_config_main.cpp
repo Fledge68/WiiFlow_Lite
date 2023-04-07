@@ -122,8 +122,7 @@ void CMenu::_showConfigMain()
 	{
 		m_btnMgr.show(m_configLbl1);
 		m_btnMgr.show(m_configLbl3);
-		if(mainCfg_curPage != 14)
-			m_btnMgr.show(m_configLbl4);
+		m_btnMgr.show(m_configLbl4);
 	}
 
 	if(mainCfg_curPage == 1)
@@ -409,6 +408,9 @@ void CMenu::_showConfigMain()
 		m_btnMgr.show(m_configLbl3Val);
 		m_btnMgr.show(m_configBtn3M);
 		m_btnMgr.show(m_configBtn3P);
+		m_btnMgr.show(m_configLbl4Val);
+		m_btnMgr.show(m_configBtn4M);
+		m_btnMgr.show(m_configBtn4P);
 		m_btnMgr.setText(m_configLbl1, _t("cfg729", L"Use system proxy settings"));
 		m_btnMgr.setText(m_configBtn1, m_cfg.getBool("PROXY", "proxy_use_system") ? _t("on", L"On") : _t("off", L"Off"));
 		m_btnMgr.setText(m_configLbl2, _t("cfg730", L"Always show main icons"));
@@ -416,6 +418,9 @@ void CMenu::_showConfigMain()
 		m_btnMgr.setText(m_configLbl3, _t("cfgg61", L"Deflicker Filter"));
 		int i = min(max(0, m_cfg.getInt("GENERAL", "deflicker_wii", 0)), (int)ARRAY_SIZE(CMenu::_GlobalDeflickerOptions) - 1);
 		m_btnMgr.setText(m_configLbl3Val, _t(CMenu::_GlobalDeflickerOptions[i].id, CMenu::_GlobalDeflickerOptions[i].text));
+		m_btnMgr.setText(m_configLbl4, _t("cfgg65", L"Video Width"));
+		i = min(max(0, m_cfg.getInt("GENERAL", "video_width", 0)), (int)ARRAY_SIZE(CMenu::_GlobalVideoWidths) - 1);
+		m_btnMgr.setText(m_configLbl4Val, _t(CMenu::_GlobalVideoWidths[i].id, CMenu::_GlobalVideoWidths[i].text));
 	}
 }
 
@@ -960,6 +965,13 @@ void CMenu::_configMain(void)
 					m_cfg.setInt("GENERAL", "deflicker_wii", loopNum(m_cfg.getUInt("GENERAL", "deflicker_wii") + direction, ARRAY_SIZE(CMenu::_GlobalDeflickerOptions)));
 					int val = m_cfg.getInt("GENERAL", "deflicker_wii");
 					m_btnMgr.setText(m_configLbl3Val, _t(CMenu::_GlobalDeflickerOptions[val].id, CMenu::_GlobalDeflickerOptions[val].text));
+				}
+				else if(m_btnMgr.selected(m_configBtn4P) || m_btnMgr.selected(m_configBtn4M))
+				{
+					s8 direction = m_btnMgr.selected(m_configBtn4P) ? 1 : -1;
+					m_cfg.setInt("GENERAL", "video_width", loopNum(m_cfg.getUInt("GENERAL", "video_width") + direction, ARRAY_SIZE(CMenu::_GlobalVideoWidths)));
+					int val = m_cfg.getInt("GENERAL", "video_width");
+					m_btnMgr.setText(m_configLbl4Val, _t(CMenu::_GlobalVideoWidths[val].id, CMenu::_GlobalVideoWidths[val].text));
 				}
 			}
 		}

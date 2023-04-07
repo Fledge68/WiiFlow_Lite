@@ -1018,6 +1018,8 @@ private:
 	static const SOption _languages[11];
 	static const SOption _GlobalDeflickerOptions[6];
 	static const SOption _DeflickerOptions[7];
+	static const SOption _GlobalVideoWidths[2];
+	static const SOption _VideoWidths[3];
 	static const SOption _AspectRatio[3];
 	static const SOption _WidescreenWiiu[3];
 	static const SOption _vidModePatch[4];

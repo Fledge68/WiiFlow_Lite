@@ -1337,7 +1337,7 @@ u32 do_new_wiimmfi() {
 // Deflicker filter patching by wiidev (blackb0x @ GBAtemp)
 void patch_vfilters(void *addr, u32 len, u8 *vfilter)
 {
-	u8 *addr_start = addr;
+	u8 *addr_start = (u8 *)addr;
 	while (len >= sizeof(GXRModeObj))
 	{
 		GXRModeObj *vidmode = (GXRModeObj *)addr_start;
@@ -1369,8 +1369,8 @@ void patch_vfilters_rogue(void *addr, u32 len, u8 *vfilter)
 		{4, 4, 16, 16, 16, 4, 4},
 		{2, 2, 17, 22, 17, 2, 2}
 	};
-	u8 *addr_start = addr;
-	u8 *addr_end = addr + len - 8;
+	u8 *addr_start = (u8 *)addr;
+	u8 *addr_end = addr_start + len - 8;
 	while (addr_start <= addr_end)
 	{
 		u8 known_vfilter[7];
@@ -1400,8 +1400,8 @@ void deflicker_patch(void *addr, u32 len)
 		0x508BC00E, 0x99498000, 0x500CC00E,
 		0x90698000, 0x99498000, 0x90E98000,
 		0x99498000, 0x91098000, 0x41820040};
-	u8 *addr_start = addr;
-	u8 *addr_end = addr + len - sizeof(SearchPattern);
+	u8 *addr_start = (u8 *)addr;
+	u8 *addr_end = addr_start + len - sizeof(SearchPattern);
 	while (addr_start <= addr_end)
 	{
 		if (memcmp(addr_start, SearchPattern, sizeof(SearchPattern)) == 0)
@@ -1412,4 +1412,52 @@ void deflicker_patch(void *addr, u32 len)
 		}
 		addr_start += 4;
 	}
+}
+
+void patch_width(void *addr, u32 len)
+{
+    u8 SearchPattern[32] = {
+        0x40, 0x82, 0x00, 0x08, 0x48, 0x00, 0x00, 0x1C,
+        0x28, 0x09, 0x00, 0x03, 0x40, 0x82, 0x00, 0x08,
+        0x48, 0x00, 0x00, 0x10, 0x2C, 0x03, 0x00, 0x00,
+        0x40, 0x82, 0x00, 0x08, 0x54, 0xA5, 0x0C, 0x3C};
+	u8 *addr_start = (u8 *)addr;
+    u8 *addr_end = addr_start + len - sizeof(SearchPattern);
+    while (addr_start <= addr_end)
+    {
+        if (memcmp(addr_start, SearchPattern, sizeof(SearchPattern)) == 0)
+        {
+            if (addr_start[-0x70] == 0xA0 && addr_start[-0x6E] == 0x00 && addr_start[-0x6D] == 0x0A)
+            {
+                if (addr_start[-0x44] == 0xA0 && addr_start[-0x42] == 0x00 && addr_start[-0x41] == 0x0E)
+                {
+                    u8 reg_a = (addr_start[-0x6F] >> 5);
+                    u8 reg_b = (addr_start[-0x43] >> 5);
+
+                    // Patch to the framebuffer resolution
+                    addr_start[-0x41] = 0x04;
+
+                    // Center the image
+                    void *offset = addr_start - 0x70;
+
+                    u32 old_heap_ptr = *(u32 *)0x80003110;
+                    *(u32 *)0x80003110 = old_heap_ptr - 0x40;
+                    u32 heap_space = old_heap_ptr - 0x40;
+
+                    u32 org_address = (addr_start[-0x70] << 24) | (addr_start[-0x6F] << 16);
+                    *(u32 *)(heap_space + 0x00) = org_address | 4;
+                    *(u32 *)(heap_space + 0x04) = 0x200002D0 | (reg_b << 21) | (reg_a << 16);
+                    *(u32 *)(heap_space + 0x08) = 0x38000002 | (reg_a << 21);
+                    *(u32 *)(heap_space + 0x0C) = 0x7C000396 | (reg_a << 21) | (reg_b << 16) | (reg_a << 11);
+
+                    *(u32 *)offset = 0x48000000 + ((heap_space - (u32)offset) & 0x3ffffff);
+                    *(u32 *)(heap_space + 0x10) = 0x48000000 + ((((u32)offset + 0x04) - (heap_space + 0x10)) & 0x3ffffff);
+
+                    gprintf("Patched resolution. Branched from 0x%x to 0x%x\n", offset, heap_space);
+                    return;
+                }
+            }
+        }
+        addr_start += 4;
+    }
 }

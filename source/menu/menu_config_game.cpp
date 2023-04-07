@@ -48,6 +48,17 @@ const CMenu::SOption CMenu::_DeflickerOptions[7] = {
 	{ "df_high", L"On (High)" },
 };
 
+const CMenu::SOption CMenu::_GlobalVideoWidths[2] = {
+	{ "vw_auto", L"Auto" },
+	{ "vw_frmbuf", L"Framebuffer" },
+};
+
+const CMenu::SOption CMenu::_VideoWidths[3] = {
+	{ "vw_def", L"Default" },
+	{ "vw_auto", L"Auto" },
+	{ "vw_frmbuf", L"Framebuffer" },
+};
+
 const CMenu::SOption CMenu::_languages[11] = {
 	{ "lngdef", L"Default" },// next should be console
 	{ "lngjap", L"Japanese" },
@@ -253,7 +264,6 @@ void CMenu::_showConfigGame()
 		}
 		else
 			i = 0;
-
 		if(i > 0)
 			m_btnMgr.setText(m_configLbl2Val, wfmt(L"%i", i));
 		else
@@ -396,17 +406,20 @@ void CMenu::_showConfigGame()
 	}
 	else if(m_configGamePage == 5)
 	{
-		m_btnMgr.setText(m_configLbl1, _t("cfgg38", L"Activity LED"));
-		m_btnMgr.setText(m_configBtn1, _optBoolToString(m_gcfg2.getOptBool(id, "led", 0)));
-		m_btnMgr.show(m_configLbl1);
-		m_btnMgr.show(m_configBtn1);
-
-		m_btnMgr.setText(m_configLbl2, _t("cfgg45", L"Private Server"));
+		m_btnMgr.setText(m_configLbl1, _t("cfgg45", L"Private Server"));
 		i = min(m_gcfg2.getUInt(id, "private_server", 0), ARRAY_SIZE(CMenu::_privateServer) - 1u);
 		if(i < 3)
-			m_btnMgr.setText(m_configLbl2Val, _t(CMenu::_privateServer[i].id, CMenu::_privateServer[i].text));
+			m_btnMgr.setText(m_configLbl1Val, _t(CMenu::_privateServer[i].id, CMenu::_privateServer[i].text));
 		else
-			m_btnMgr.setText(m_configLbl2Val, custom_servers[i - 3]);//wstringEx()
+			m_btnMgr.setText(m_configLbl1Val, custom_servers[i - 3]);//wstringEx()
+		m_btnMgr.show(m_configLbl1);
+		m_btnMgr.show(m_configLbl1Val);
+		m_btnMgr.show(m_configBtn1P);
+		m_btnMgr.show(m_configBtn1M);
+
+		m_btnMgr.setText(m_configLbl2, _t("cfgg65", L"Video Width"));
+		i = min(m_gcfg2.getUInt(id, "video_width", 0), ARRAY_SIZE(CMenu::_VideoWidths) - 1u);
+		m_btnMgr.setText(m_configLbl2Val, _t(CMenu::_VideoWidths[i].id, CMenu::_VideoWidths[i].text));
 		m_btnMgr.show(m_configLbl2);
 		m_btnMgr.show(m_configLbl2Val);
 		m_btnMgr.show(m_configBtn2P);
@@ -443,6 +456,13 @@ void CMenu::_showConfigGame()
 			m_btnMgr.show(m_configLbl2Val);
 			m_btnMgr.show(m_configBtn2P);
 			m_btnMgr.show(m_configBtn2M);
+		}
+		else // wii only
+		{
+			m_btnMgr.setText(m_configLbl2, _t("cfgg38", L"Activity LED"));
+			m_btnMgr.setText(m_configBtn2, _optBoolToString(m_gcfg2.getOptBool(id, "led", 0)));
+			m_btnMgr.show(m_configLbl2);
+			m_btnMgr.show(m_configBtn2);
 		}
 	}
 }
@@ -739,20 +759,22 @@ void CMenu::_configGame(const dir_discHdr *hdr, bool disc)
 			}
 			else if(m_configGamePage == 5)
 			{
-				if(m_btnMgr.selected(m_configBtn1))
+				if(m_btnMgr.selected(m_configBtn1P) || m_btnMgr.selected(m_configBtn1M))
 				{
-					m_gcfg2.setBool(id, "led", !m_gcfg2.getBool(id, "led", 0));
-					m_btnMgr.setText(m_configBtn1, _optBoolToString(m_gcfg2.getOptBool(id, "led", 0)));
+					s8 direction = m_btnMgr.selected(m_configBtn1P) ? 1 : -1;
+					i = loopNum(m_gcfg2.getUInt(id, "private_server") + direction, ARRAY_SIZE(CMenu::_privateServer) + custom_servers.size());
+					m_gcfg2.setUInt(id, "private_server", i);
+					if(i < 3)
+						m_btnMgr.setText(m_configLbl1Val, _t(CMenu::_privateServer[i].id, CMenu::_privateServer[i].text));
+					else
+						m_btnMgr.setText(m_configLbl1Val, custom_servers[i - 3]);//wstringEx()
 				}
 				else if(m_btnMgr.selected(m_configBtn2P) || m_btnMgr.selected(m_configBtn2M))
 				{
 					s8 direction = m_btnMgr.selected(m_configBtn2P) ? 1 : -1;
-					i = loopNum(m_gcfg2.getUInt(id, "private_server") + direction, ARRAY_SIZE(CMenu::_privateServer) + custom_servers.size());
-					m_gcfg2.setUInt(id, "private_server", i);
-					if(i < 3)
-						m_btnMgr.setText(m_configLbl2Val, _t(CMenu::_privateServer[i].id, CMenu::_privateServer[i].text));
-					else
-						m_btnMgr.setText(m_configLbl2Val, custom_servers[i - 3]);//wstringEx()
+					i = loopNum(m_gcfg2.getUInt(id, "video_width") + direction, ARRAY_SIZE(CMenu::_VideoWidths));
+					m_gcfg2.setInt(id, "video_width", i);
+					m_btnMgr.setText(m_configLbl2Val, _t(CMenu::_VideoWidths[i].id, CMenu::_VideoWidths[i].text));
 				}
 				else if(m_btnMgr.selected(m_configBtn3P) || m_btnMgr.selected(m_configBtn3M))
 				{
@@ -798,12 +820,17 @@ void CMenu::_configGame(const dir_discHdr *hdr, bool disc)
 					_error(_t("dlmsg14", L"Done."));
 					_showConfigGame();
 				}
-				else if(m_btnMgr.selected(m_configBtn2P) || m_btnMgr.selected(m_configBtn2M))
+				else if(m_btnMgr.selected(m_configBtn2P) || m_btnMgr.selected(m_configBtn2M))// wii u only
 				{
 					s8 direction = m_btnMgr.selected(m_configBtn2P) ? 1 : -1;
 					i = loopNum(m_gcfg2.getUInt(id, "widescreen_wiiu", 0) + direction, ARRAY_SIZE(CMenu::_WidescreenWiiu));
 					m_gcfg2.setInt(id, "widescreen_wiiu", i);
 					m_btnMgr.setText(m_configLbl2Val, _t(CMenu::_WidescreenWiiu[i].id, CMenu::_WidescreenWiiu[i].text));
+				}
+				else if(m_btnMgr.selected(m_configBtn2))// wii only
+				{
+					m_gcfg2.setBool(id, "led", !m_gcfg2.getBool(id, "led", 0));
+					m_btnMgr.setText(m_configBtn2, _optBoolToString(m_gcfg2.getOptBool(id, "led", 0)));
 				}
 			}
 		}

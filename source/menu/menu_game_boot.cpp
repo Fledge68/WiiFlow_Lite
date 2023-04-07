@@ -861,6 +861,9 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 	u8 deflicker = min(m_gcfg2.getUInt(id, "deflicker_wii", 0), ARRAY_SIZE(CMenu::_DeflickerOptions) - 1u);
 	deflicker = (deflicker == 0) ? min(m_cfg.getUInt("GENERAL", "deflicker_wii", 0), ARRAY_SIZE(CMenu::_GlobalDeflickerOptions) - 1u) : deflicker - 1;
 	
+	u8 videoWidth = min(m_gcfg2.getUInt(id, "video_width", 0), ARRAY_SIZE(CMenu::_VideoWidths) - 1u);
+	videoWidth = (videoWidth == 0) ? min(m_cfg.getUInt("GENERAL", "video_width", 0), ARRAY_SIZE(CMenu::_GlobalVideoWidths) - 1u) : videoWidth-1;
+
 	u8 private_server = m_gcfg2.getUInt(id, "private_server", 0);
 	string server_addr = "";
 	if(private_server > 2)
@@ -1010,7 +1013,7 @@ void CMenu::_launchChannel(dir_discHdr *hdr)
 
 	ExternalBooter_ChannelSetup(gameTitle, use_dol);
 	WiiFlow_ExternalBooter(videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, private_server, server_addr.c_str(), 
-							fix480p, deflicker, 0, TYPE_CHANNEL, use_led);
+							videoWidth, fix480p, deflicker, 0, TYPE_CHANNEL, use_led);
 
 	Sys_Exit();
 }
@@ -1116,6 +1119,9 @@ void CMenu::_launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 	u8 deflicker = min(m_gcfg2.getUInt(id, "deflicker_wii", 0), ARRAY_SIZE(CMenu::_DeflickerOptions) - 1u);
 	deflicker = (deflicker == 0) ? min(m_cfg.getUInt("GENERAL", "deflicker_wii", 0), ARRAY_SIZE(CMenu::_GlobalDeflickerOptions) - 1u) : deflicker-1;
 
+	u8 videoWidth = min(m_gcfg2.getUInt(id, "video_width", 0), ARRAY_SIZE(CMenu::_VideoWidths) - 1u);
+	videoWidth = (videoWidth == 0) ? min(m_cfg.getUInt("GENERAL", "video_width", 0), ARRAY_SIZE(CMenu::_GlobalVideoWidths) - 1u) : videoWidth-1;
+	
 	u8 private_server = m_gcfg2.getUInt(id, "private_server", 0);
 	string server_addr = "";
 	if(private_server > 2)
@@ -1331,7 +1337,7 @@ void CMenu::_launchWii(dir_discHdr *hdr, bool dvd, bool disc_cfg)
 	
 	ExternalBooter_WiiGameSetup(wbfs_partition, dvd, patchregion, id.c_str());
 	WiiFlow_ExternalBooter(videoMode, vipatch, countryPatch, patchVidMode, aspectRatio, private_server, server_addr.c_str(), 
-							fix480p, deflicker, returnTo, TYPE_WII_GAME, use_led);
+							videoWidth, fix480p, deflicker, returnTo, TYPE_WII_GAME, use_led);
 
 	Sys_Exit();
 }

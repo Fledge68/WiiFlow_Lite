@@ -206,7 +206,7 @@ u32 LoadChannel(u64 title, bool dol, u32 *IOS)
 }
 
 void PatchChannel(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, 
-				u32 returnTo, u8 private_server, const char *server_addr, bool patchFix480p, u8 deflicker, u8 bootType)
+				u32 returnTo, u8 private_server, const char *server_addr, u8 videoWidth, bool patchFix480p, u8 deflicker, u8 bootType)
 {
 	u8 vfilter_off[7] = {0, 0, 21, 22, 21, 0, 0};
 	u8 vfilter_low[7] = {4, 4, 16, 16, 16, 4, 4};
@@ -232,6 +232,9 @@ void PatchChannel(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryStrin
 		if(hooktype != 0 && hookpatched == false)
 			hookpatched = dogamehooks(dolchunkoffset[i], dolchunksize[i], true);
 
+		if (videoWidth == WIDTH_FRAMEBUFFER)
+            patch_width(dolchunkoffset[i], dolchunksize[i]);
+			
 		if (deflicker == DEFLICKER_ON_LOW)
 		{
 			patch_vfilters(dolchunkoffset[i], dolchunksize[i], vfilter_low);

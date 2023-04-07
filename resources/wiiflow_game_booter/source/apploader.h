@@ -7,7 +7,7 @@ extern "C" {
 
 /* Prototypes */
 u32 Apploader_Run(u8 vidMode, GXRModeObj *vmode, bool vipatch, bool countryString, u8 patchVidModes, int aspectRatio, u32 returnTo, 
-					bool patchregion, u8 private_server, const char * server_addr, bool patchFix480p, u8 deflicker, u8 bootType);
+					bool patchregion, u8 private_server, const char * server_addr, u8 videoWidth, bool patchFix480p, u8 deflicker, u8 bootType);
 
 enum
 {
@@ -26,6 +26,13 @@ enum
 	DEFLICKER_ON_LOW,
 	DEFLICKER_ON_MEDIUM,
 	DEFLICKER_ON_HIGH
+};
+
+enum
+{
+	WIDTH_AUTO,
+	WIDTH_FRAMEBUFFER,
+	WIDTH_MAX
 };
 
 #ifdef __cplusplus
