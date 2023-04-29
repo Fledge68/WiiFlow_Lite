@@ -151,7 +151,10 @@ bool PartitionHandle::Mount(int pos, const char *name, bool forceFAT)
 		}
 	}
 	if(!valid(pos))
+	{
+		gprintf("No valid partition position found! Failed to mount any partition.\n");
 		return false;
+	}
 
 	SetWbfsHandle(pos, NULL);
 	if(strncmp(GetFSName(pos), "FAT", 3) == 0 || strcmp(GetFSName(pos), "GUID-Entry") == 0)
@@ -195,6 +198,7 @@ bool PartitionHandle::Mount(int pos, const char *name, bool forceFAT)
 		}
 	}
 	/* FAIL */
+	gprintf("Exhausted all supported filesystem types! Failed to mount any partition.\n");
 	MountNameList[pos].clear();
 	return false;
 }
