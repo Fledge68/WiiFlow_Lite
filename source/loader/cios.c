@@ -169,29 +169,29 @@ u8 IOS_GetType(u8 slot)
 void IOS_GetCurrentIOSInfo()
 {
 	memset(&CurrentIOS, 0, sizeof(IOS_Info));
-	CurrentIOS.Version = IOS_GetVersion();
-	CurrentIOS.Base = CurrentIOS.Version;
-	CurrentIOS.Revision = IOS_GetRevision();
+	CurrentIOS.Version = IOS_GetVersion();// Slot
+	CurrentIOS.Base = CurrentIOS.Version;// Slot
+	CurrentIOS.Revision = IOS_GetRevision();// ios version. example ios 58 v6176. cios versions are below.
 	CurrentIOS.SubRevision = 0;
 	CurrentIOS.Type = IOS_GetType(CurrentIOS.Version);
 	if(CurrentIOS.Type == IOS_TYPE_D2X)
 	{
-		iosinfo_t *iosInfo = IOS_GetInfo(CurrentIOS.Version);
-		CurrentIOS.Revision = iosInfo->version;
-		CurrentIOS.Base = iosInfo->baseios;
+		iosinfo_t *iosInfo = IOS_GetInfo(CurrentIOS.Version);// CurrentIOS.Version = slot number
+		CurrentIOS.Revision = iosInfo->version;// v6 thru 11
+		CurrentIOS.Base = iosInfo->baseios;// base 38, 56, 57,58
 		gprintf("D2X IOS%i[%i] v%i\n", CurrentIOS.Version, CurrentIOS.Base, CurrentIOS.Revision);
 		MEM2_free(iosInfo);
 	}
 	else if(CurrentIOS.Type == IOS_TYPE_WANIN)
 	{
-		if(CurrentIOS.Revision >= 18)
+		if(CurrentIOS.Revision >= 18)// v13 thru 21
 			CurrentIOS.Base = wanin_mload_get_IOS_base();
 		gprintf("Waninkoko IOS%i[%i] v%i\n", CurrentIOS.Version, CurrentIOS.Base, CurrentIOS.Revision);
 	}
 	else if(CurrentIOS.Type == IOS_TYPE_HERMES)
 	{
 		CurrentIOS.Base = mload_get_IOS_base();
-		if(CurrentIOS.Revision > 4)
+		if(CurrentIOS.Revision > 4)// v4 thru 5
 		{
 			CurrentIOS.Revision = mload_get_version() >> 4;
 			CurrentIOS.SubRevision = mload_get_version() & 0xF;

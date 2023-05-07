@@ -44,8 +44,8 @@ void Disc_SetLowMem(void)
 	*Simulated_Mem		= 0x01800000; // Simulated Memory Size
 	*(vu32 *) 0xCD00643C = 0x00000000;	// 32Mhz on Bus
 
-	if(CurrentIOS.Type != IOS_TYPE_HERMES && CurrentIOS.Revision >= 18)
-		*GameID_Address		= 0x80000000; // Fix for Sam & Max (WiiPower)
+	//if(CurrentIOS.Type != IOS_TYPE_HERMES && CurrentIOS.Revision >= 18)
+		*GameID_Address		= 0x80000000; // Fix for Sam & Max (WiiPower) and Back to the Future.
 
 	/* Copy Disc ID */
 	memcpy((void*)Online_Check, (void*)Disc_ID, 4);
