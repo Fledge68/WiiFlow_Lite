@@ -208,7 +208,7 @@ int installWad(const char *path)
 			fread(AES_WAD_Buf, size_enc, 1, wad_file);
 			AES_EnableDecrypt(tik_key, aes_iv); //ISFS seems to reset it?
 			memcpy(aes_iv, AES_WAD_Buf+(size_enc-16), 16); //last block for cbc
-			AES_Decrypt(AES_WAD_Buf, AES_WAD_Buf, num_blocks);
+			AES_Decrypt_(AES_WAD_Buf, AES_WAD_Buf, num_blocks);
 
 			u64 size_dec = (content->size - read);
 			if(size_dec > WAD_BUF)

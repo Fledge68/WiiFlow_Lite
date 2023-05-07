@@ -53,7 +53,7 @@ void AES_EnableDecrypt(const u8 *key, const u8 *iv)
 
 #define AES_LIMIT 0x1000
 static u8 AES_BUF[AES_LIMIT*16] ATTRIBUTE_ALIGN(16); /* 64KB */
-void AES_Decrypt(u8 *inbuf, u8 *outbuf, u16 num_blocks)
+void AES_Decrypt_(u8 *inbuf, u8 *outbuf, u16 num_blocks)
 {
 	/* set mode back to 0 */
 	aes_mode = 0;

@@ -19,6 +19,6 @@
 
 void AES_ResetEngine(void);
 void AES_EnableDecrypt(const u8 *key, const u8 *iv);
-void AES_Decrypt(u8 *inbuf, u8 *outbuf, u16 num_blocks);
+void AES_Decrypt_(u8 *inbuf, u8 *outbuf, u16 num_blocks);
 
 #endif

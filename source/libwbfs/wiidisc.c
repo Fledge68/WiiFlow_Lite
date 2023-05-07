@@ -42,7 +42,7 @@ void decrypt_title_key(u8 *tik, u8 *title_key)
 	{
 		AES_ResetEngine();
 		AES_EnableDecrypt((tik[0x01f1] == 1) ? korean_key : common_key, iv);
-		AES_Decrypt(tik + 0x01bf, title_key, 1);
+		AES_Decrypt_(tik + 0x01bf, title_key, 1);
 	}
 	else
 	{
@@ -106,7 +106,7 @@ static int partition_read_block(wiidisc_t *d, u32 blockno, u8 *block)
 	{
 		AES_ResetEngine();
 		AES_EnableDecrypt(d->disc_key, iv);
-		AES_Decrypt(raw + 0x400, block, 0x7c0);
+		AES_Decrypt_(raw + 0x400, block, 0x7c0);
 	}
 	else
 	{
