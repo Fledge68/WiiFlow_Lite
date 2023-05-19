@@ -18,7 +18,6 @@
 #include "memory/mem2.hpp"
 #include "nand_save.hpp"
 #include "nand.hpp"
-#include "identify.h"
 #include "gecko/gecko.hpp"
 #include "loader/fs.h"
 #include "loader/sys.h"

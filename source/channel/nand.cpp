@@ -1117,7 +1117,7 @@ void Nand::Init_ISFS()
 {
 	if(isfs_inited)
 		return;
-	PatchIOS(IOS_GetVersion() < 222, isWiiVC);
+	PatchIOS(IOS_GetVersion() < 222, isWiiVC);// if normal IOS we patch isfs_permissions and es_identify, cIOS are already patched.
 	usleep(1000);
 	//gprintf("Init ISFS\n");
 	ISFS_Initialize();

@@ -91,7 +91,6 @@ int main(int argc, char **argv)
 		gprintf("Real Wii\n");
 		
 	gprintf("AHBPROT disabled = %s\n", AHBPROT_Patched() ? "yes" : "no");
-	IOS_GetCurrentIOSInfo();
 	
 	/* Init device partition handlers */
 	DeviceHandle.Init();

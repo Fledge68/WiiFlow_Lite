@@ -232,7 +232,7 @@ static void Create_Channel_List()
 		ListElement.index = m_cacheList.size();
 		ListElement.settings[0] = TITLE_UPPER(chan->title);
 		ListElement.settings[1] = TITLE_LOWER(chan->title);
-		if(chan->title == HBC_108)
+		if(chan->title == HBC_108)// HBC_108 ID is odd and does not work for gametdb. JODI, LULZ, and OHBC do work.
 			memcpy(ListElement.id, "JODI", 4);
 		else
 			strncpy(ListElement.id, chan->id, 4);
