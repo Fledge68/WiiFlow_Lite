@@ -122,16 +122,20 @@ bool PartitionHandle::IsMounted(int pos)
 
 bool PartitionHandle::Mount(int pos, const char *name, bool forceFAT)
 {
-	if(valid(pos))
-		UnMount(pos);
+	if(!valid(pos))
+		return false;
 
 	if(!name || strlen(name) > 8)
 		return false;
+
+	UnMount(pos);
 
 	if(pos >= (int)MountNameList.size())
 		MountNameList.resize(pos + 1);
 
 	MountNameList[pos] = name;
+	
+	/* this is used for the gprintf's */
 	char DeviceSyn[10];
 	strcpy(DeviceSyn, name);
 	strcat(DeviceSyn, ":");
@@ -150,13 +154,11 @@ bool PartitionHandle::Mount(int pos, const char *name, bool forceFAT)
 			return true;
 		}
 	}
-	if(!valid(pos))
-	{
-		gprintf("No valid partition position found! Failed to mount any partition.\n");
-		return false;
-	}
 
-	SetWbfsHandle(pos, NULL);
+	SetWbfsHandle(pos, NULL);// set this to NULL even if not a WBFS drive
+	
+	// GPT drive partition FSName are first added as "GUID-Entry"
+	// Partition FSName is changed once we determine the partition type by trying to mount it
 	if(strncmp(GetFSName(pos), "FAT", 3) == 0 || strcmp(GetFSName(pos), "GUID-Entry") == 0)
 	{
 		if(fatMount(MountNameList[pos].c_str(), interface, GetLBAStart(pos), CACHE, SECTORS))
@@ -166,7 +168,7 @@ bool PartitionHandle::Mount(int pos, const char *name, bool forceFAT)
 			return true;
 		}
 	}
-	else if(strncmp(GetFSName(pos), "NTFS", 4) == 0 || strcmp(GetFSName(pos), "GUID-Entry") == 0)
+	if(strncmp(GetFSName(pos), "NTFS", 4) == 0 || strcmp(GetFSName(pos), "GUID-Entry") == 0)
 	{
 		if(ntfsMount(MountNameList[pos].c_str(), interface, GetLBAStart(pos), CACHE, SECTORS, NTFS_SHOW_HIDDEN_FILES | NTFS_RECOVER))
 		{
@@ -175,7 +177,7 @@ bool PartitionHandle::Mount(int pos, const char *name, bool forceFAT)
 			return true;
 		}
 	}
-	else if(strncmp(GetFSName(pos), "LINUX", 5) == 0 || strcmp(GetFSName(pos), "GUID-Entry") == 0)
+	if(strncmp(GetFSName(pos), "LINUX", 5) == 0 || strcmp(GetFSName(pos), "GUID-Entry") == 0)
 	{
 		if(ext2Mount(MountNameList[pos].c_str(), interface, GetLBAStart(pos), CACHE, SECTORS, EXT2_FLAG_DEFAULT))
 		{
@@ -184,7 +186,7 @@ bool PartitionHandle::Mount(int pos, const char *name, bool forceFAT)
 			return true;
 		}
 	}
-	else if(strncmp(GetFSName(pos), "WBFS", 4) == 0)
+	if(strncmp(GetFSName(pos), "WBFS", 4) == 0)
 	{
 		if(interface == &__io_usbstorage2_port0 || interface == &__io_usbstorage2_port1)
 			SetWbfsHandle(pos, wbfs_open_partition(__WBFS_ReadUSB, __WBFS_WriteUSB, NULL, USBStorage2_GetSectorSize(), GetSecCount(pos), GetLBAStart(pos), 0));
@@ -193,12 +195,11 @@ bool PartitionHandle::Mount(int pos, const char *name, bool forceFAT)
 		if(GetWbfsHandle(pos))
 		{
 			gprintf("WBFS Partition at %s mounted.\n", DeviceSyn);
-			PartitionList[pos].FSName = "WBFS";
+			//PartitionList[pos].FSName = "WBFS";
 			return true;
 		}
 	}
 	/* FAIL */
-	gprintf("Exhausted all supported filesystem types! Failed to mount any partition.\n");
 	MountNameList[pos].clear();
 	return false;
 }

@@ -119,10 +119,11 @@ bool DeviceHandler::MountAllUSB()
 	if(WaitForDevice(GetUSBInterface()) == false)
 		return false;// failed to spin up in time or no USB HDD connected
 
+	/* calls FindPartitions() to read MBR and get list of partitions from MBR */
 	if(!usb.IsInserted() || !usb.IsMounted(0))
 		usb.SetDevice(GetUSBInterface());
 
-	/* Get Partitions and Mount them */
+	/* Mount partitions */
 	bool result = false;
 	int partCount = GetUSBPartitionCount();
 	for(int i = 0; i < partCount; i++)
@@ -134,6 +135,7 @@ bool DeviceHandler::MountAllUSB()
 	if(!result)
 		result = usb.Mount(0, DeviceName[USB1], true); /* Force FAT */
 
+	/* if a partition is mounted and wiiflow is in iOS58 libogc mode then start the USBKeepAliveThread */
 	if(result && usb_libogc_mode)
 		CreateUSBKeepAliveThread();
 
