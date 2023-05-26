@@ -21,9 +21,9 @@ jobs:
         # general-tools is needed for bin2s and gamecube-tools is needed for elf2dol
         run: | 
           mkdir cache && cd cache
-          wget "https://wii.leseratte10.de/devkitPro/file.php/devkitPPC-r42.2-1-linux_x86_64.pkg.tar.xz"
+          wget "https://wii.leseratte10.de/devkitPro/file.php/devkitPPC-r42.2-1-linux_x86_64.pkg.tar.zst"
           wget "https://wii.leseratte10.de/devkitPro/file.php/devkitppc-rules-1.1.1-1-any.pkg.tar.xz"
-          wget "https://wii.leseratte10.de/devkitPro/file.php/libogc-2.4.0-1-any.pkg.tar.xz"
+          wget "https://wii.leseratte10.de/devkitPro/file.php/libogc-2.4.0-1-any.pkg.tar.zst"
           wget "https://wii.leseratte10.de/devkitPro/file.php/general-tools-1.2.0-3-linux_x86_64.pkg.tar.xz"
           wget "https://wii.leseratte10.de/devkitPro/file.php/gamecube-tools-1.0.4-1-linux_x86_64.pkg.tar.xz"
           cd ..
@@ -31,9 +31,9 @@ jobs:
       - name: Extract downloaded files
         # general-tools is needed for bin2s and gamecube-tools is needed for elf2dol
         run: | 
-          tar -xf cache/devkitPPC-r42.2-1-linux_x86_64.pkg.tar.xz --strip-components=1
+          tar -xf cache/devkitPPC-r42.2-1-linux_x86_64.pkg.tar.zst --strip-components=1
           tar -xf cache/devkitppc-rules-1.1.1-1-any.pkg.tar.xz --strip-components=1
-          tar -xf cache/libogc-2.4.0-1-any.pkg.tar.xz --strip-components=1
+          tar -xf cache/libogc-2.4.0-1-any.pkg.tar.zst --strip-components=1
           tar -xf cache/general-tools-1.2.0-3-linux_x86_64.pkg.tar.xz --strip-components=1
           tar -xf cache/gamecube-tools-1.0.4-1-linux_x86_64.pkg.tar.xz --strip-components=1
 
