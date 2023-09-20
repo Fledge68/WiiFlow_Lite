@@ -2055,7 +2055,10 @@ void CMenu::_initCF(void)
 		memset(cfgKey2, 0, 74);
 		
 		if(hdr->type == TYPE_HOMEBREW)
+		{
 			wcstombs(cfgKey1, hdr->title, 63);// uses title which is the folder name in apps.
+			wcstombs(catKey1, hdr->title, 63);
+		}
 		else if(hdr->type == TYPE_PLUGIN)
 		{
 			strncpy(m_plugin.PluginMagicWord, fmt("%08x", hdr->settings[0]), 8);
@@ -2556,6 +2559,7 @@ bool CMenu::_loadPluginList()
 {
 	bool updateCache = m_cfg.getBool(PLUGIN_DOMAIN, "update_cache");
 	gprintf("Adding plugins list\n");
+	bool channels_done = false;
 	for(u8 i = 0; m_plugin.PluginExist(i); ++i)
 	{
 		if(!m_plugin.GetEnabledStatus(i))
@@ -2588,8 +2592,9 @@ bool CMenu::_loadPluginList()
 					m_cfg.setBool(WII_DOMAIN, "update_cache", true);
 				_loadWiiList();
 			}
-			else if(strncasecmp(m_plugin.PluginMagicWord, NAND_PMAGIC, 8) == 0 || strncasecmp(m_plugin.PluginMagicWord, ENAND_PMAGIC, 8) == 0)//NAND
+			else if(!channels_done && (strncasecmp(m_plugin.PluginMagicWord, NAND_PMAGIC, 8) == 0 || strncasecmp(m_plugin.PluginMagicWord, ENAND_PMAGIC, 8) == 0))//NAND
 			{
+				channels_done = true;
 				if(updateCache)
 					m_cfg.setBool(CHANNEL_DOMAIN, "update_cache", true);
 				_loadChannelList();
