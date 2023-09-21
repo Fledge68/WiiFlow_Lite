@@ -46,6 +46,7 @@ void ListGenerator::Init(const char *settingsDir, const char *Language,
 	if(Language != NULL) gameTDB_Language = Language;
 	if(plgnsDataDir != NULL) pluginsDataDir = fmt("%s", plgnsDataDir);
 
+	gprintf("ListGenerator: fileNameSkipPattern=%s\n", fileNameSkipPattern.c_str());
 	fileNameSkipRegex = std::regex(fileNameSkipPattern,
 					  std::regex_constants::extended |
 					  std::regex_constants::icase);
@@ -276,7 +277,7 @@ static void Add_Plugin_Game(char *FullPath)
 
 	if (std::regex_search(std::string(FullPath), fileNameSkipRegex)) 
 	{
-		//gprintf("Add_Plugin_Game: skipping '%s'\n", FullPath);
+		gprintf("Add_Plugin_Game: skipping '%s'\n", FullPath);
 		return;
 	}
 
