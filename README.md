@@ -22,6 +22,6 @@ Other wiiflow lite themes can be found on the wiki linked below. but they need t
 ## Useful Links
 [WiiFlow Lite GBATemp thread](https://gbatemp.net/threads/wiiflow-lite.422685/)
 
-[WiiFlow Wiki](https://sites.google.com/site/wiiflowiki4/)
+[WiiFlow Wiki](https://web.archive.org/web/20220414124727/https://sites.google.com/site/wiiflowiki4/)
 
 [Old Sourceforge Project Repository](https://sourceforge.net/projects/wiiflow-lite/)
