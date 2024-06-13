@@ -159,11 +159,34 @@ int installWad(const char *path)
 		fsop_MakeFolder(fmt("%s/title/%08x/%08x/content", EmuNAND, (u32)(tid>>32), (u32)tid&0xFFFFFFFF));
 		fsop_MakeFolder(fmt("%s/title/%08x/%08x/data", EmuNAND, (u32)(tid>>32), (u32)tid&0xFFFFFFFF));
 	}
+
+	// read /shared1/content.map to check later if a shared content is already installed
+	contentMapEntry *contentMap_file = NULL;
+	u32 contentMap_size = 0;
+	u8 *contentMap_buf = NULL;
+	u32 contentMapEntries = 0;
+	if(mios == false) {
+		contentMap_buf = fsop_ReadFile(fmt("%s/shared1/content.map", EmuNAND), &contentMap_size);
+		if(contentMap_buf == NULL)
+		{
+			printf("No content.map found!\n");
+			return -7;
+		}
+		else if(contentMap_size % sizeof(contentMapEntry) != 0)
+		{
+			printf("content.map size is invalid!\n");
+			MEM2_free(contentMap_buf);
+			return -8;
+		}
+		contentMap_file = (contentMapEntry*)contentMap_buf;
+	}
+
 	int hash_errors = 0;
 	u8 *AES_WAD_Buf = (u8*)MEM2_alloc(WAD_BUF);
 	/* decrypt and write app files */
-	for(u16 cnt = 0; cnt < tmd_ptr->num_contents; cnt++)
+	for(u16 cnt = 0; cnt < tmd_ptr->num_contents; cnt++ )
 	{
+		gprintf("Installing content %d\n",cnt);
 		u8 aes_iv[16];
 		memset(aes_iv, 0, 16);
 		const tmd_content *content = &tmd_ptr->contents[cnt];
@@ -174,8 +197,34 @@ int installWad(const char *path)
 		s32 fd = -1;
 		if(mios == false)
 		{
-			const char *app_name = fmt("%s/title/%08x/%08x/content/%08x.app", EmuNAND,
+			const char *app_name;
+			if (content->type == 0x8001) {
+				// shared content
+				contentMapEntries = contentMap_size/sizeof(contentMapEntry);
+				bool sharedContent_exists = false;
+				for(u32 i = 0; i < contentMapEntries; ++i) {
+					u8 *currentHash = contentMap_file[i].sha1hash;
+					if(memcmp(currentHash,content->hash,20) == 0) {
+						sharedContent_exists = true;
+						gprintf ("Shared content %08x already installed\n", content->cid);
+						break;
+					}
+				}
+				if (sharedContent_exists == true) {
+					// shared content already installed. skip installation.
+					u32 size_enc_full = ALIGN(16, content->size);
+					fseek(wad_file, size_enc_full, SEEK_CUR);
+					skip_align(wad_file, size_enc_full);
+					continue;
+				}
+				else // should be installed in /shared1 with a new name
+					app_name = fmt("%s/shared1/%08x.app", EmuNAND,(unsigned int)contentMapEntries);	
+			}
+			else
+			{
+				app_name = fmt("%s/title/%08x/%08x/content/%08x.app", EmuNAND,
 				(u32)(tid>>32), (u32)tid&0xFFFFFFFF, content->cid);
+			}
 			app_file = fopen(app_name, "wb");
 			gprintf("Writing Emu NAND File %s\n", app_name);
 		}
@@ -231,8 +280,32 @@ int installWad(const char *path)
 		else if(fd >= 0)
 			ISFS_Close(fd);
 
-		if(memcmp(app_sha1, content->hash, sizeof(sha1)) == 0)
+		
+		if(memcmp(app_sha1, content->hash, sizeof(sha1)) == 0) {
 			gprintf("sha1 matches on %08x.app, success!\n", content->cid);
+			// shared content succesfully installed. It's time to update content.map
+			if ( mios == false && content->type == 0x8001 ) {
+
+				u32 new_contentMap_size = (contentMapEntries+1)*sizeof(contentMapEntry);
+				u8 *new_contentMap_buf = (u8*)MEM2_alloc(new_contentMap_size);	
+				
+				// make room for new entry  & copy old ones
+				memset(new_contentMap_buf, 0, new_contentMap_size);
+				memcpy(new_contentMap_buf, contentMap_buf, contentMap_size);
+				MEM2_free(contentMap_buf);
+				contentMap_size = new_contentMap_size;
+				contentMap_buf = new_contentMap_buf;
+				contentMap_file = (contentMapEntry*)contentMap_buf;
+
+				const char *newSharedID = fmt("%08x", (unsigned int)contentMapEntries);
+
+				memcpy(contentMap_file[contentMapEntries].sharedID,newSharedID,8);
+				memcpy(contentMap_file[contentMapEntries].sha1hash, content->hash, 20);
+
+				gprintf("Updating content.map: %08x.app as shared1/%s.app\n",content->cid,newSharedID);
+				fsop_WriteFile(fmt("%s/shared1/content.map", EmuNAND), contentMap_file, contentMap_size);
+			}	
+		}
 		else
 		{
 			gprintf("sha1 mismatch on %08x.app!\n", content->cid);
