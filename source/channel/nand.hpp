@@ -59,6 +59,11 @@ typedef struct _uid
 	u16 uid;
 } ATTRIBUTE_PACKED uid;
 
+typedef struct _contentMapEntry {
+    char sharedID[8];
+    u8 sha1hash[20];
+} ATTRIBUTE_PACKED contentMapEntry;
+
 using std::string;
 using std::min;
 
