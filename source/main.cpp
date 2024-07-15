@@ -61,10 +61,10 @@ int main(int argc, char **argv)
 		}
 		else if(strcasestr(argv[i], "Waitloop") != NULL)
 			wait_loop = true;
-		else if(strlen(argv[i]) == 6)
+		else if(strlen(argv[i]) == 6 || strlen(argv[i]) == 4)
 		{
 			gameid = argv[i];
-			for(u8 i = 0; i < 5; i++)
+			for(u8 i = 0; i < strlen(argv[i]) - 1; i++)
 			{
 				if(!isalnum(gameid[i]))
 					gameid = NULL;
@@ -161,7 +161,7 @@ int main(int argc, char **argv)
 		startup_successful = true;
 		if(!isWiiVC)
 			writeStub();// copy return stub to memory
-		if(!isWiiVC && gameid != NULL && strlen(gameid) == 6)// if argv game ID then launch it
+		if(!isWiiVC && gameid != NULL)// if argv game ID then launch it
 			mainMenu.directlaunch(gameid);
 		else
 			mainMenu.main();// start wiiflow with main menu displayed

@@ -76,23 +76,21 @@ static u8 GetRequestedGameIOS(dir_discHdr *hdr)
 void CMenu::directlaunch(const char *GameID)// from boot arg for wii game only
 {
 	m_directLaunch = true;
-	currentPartition = m_cfg.getInt(WII_DOMAIN, "partition");
-	if(DeviceHandle.IsInserted(currentPartition))
+	u8 chantypes = m_cfg.getUInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_REAL);
+	m_cfg.setUInt(CHANNEL_DOMAIN, "channels_type", CHANNELS_EMU);
+	m_current_view = COVERFLOW_WII | COVERFLOW_GAMECUBE | COVERFLOW_CHANNEL;
+	_loadList();
+	m_cfg.setUInt(CHANNEL_DOMAIN, "channels_type", chantypes);
+	
+	for(u32 i = 0; i < m_gameList.size(); i++)
 	{
-		DeviceHandle.OpenWBFS(currentPartition);
-		string gameDir(fmt(wii_games_dir, DeviceName[currentPartition]));
-		string cacheDir(fmt("%s/%s_wii.db", m_listCacheDir.c_str(), DeviceName[currentPartition]));
-		m_cacheList.CreateList(COVERFLOW_WII, gameDir, stringToVector(".wbfs|.iso", '|'), cacheDir, false);
-		WBFS_Close();
-		for(u32 i = 0; i < m_cacheList.size(); i++)
+		if(strncasecmp(GameID, m_gameList[i].id, 6) == 0)
 		{
-			if(strncasecmp(GameID, m_cacheList[i].id, 6) == 0)
-			{
-				_launchWii(&m_cacheList[i], false); // Launch will exit wiiflow
-				break;
-			}
+			_launch(&m_gameList[i]); // Launch will exit wiiflow
+			break;
 		}
 	}
+	
 	_error(wfmt(_fmt("errgame1", L"Cannot find the game with ID: %s"), GameID));
 }
 
