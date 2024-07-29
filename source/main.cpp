@@ -40,7 +40,8 @@ int main(int argc, char **argv)
 		gprintf(" \nWelcome to %s %s!\nThis is the debug output.\n", APP_NAME, APP_VERSION);
 	#endif
 
-	char *gameid = NULL;
+	char gameid[6];
+	memset(&gameid, 0, sizeof(gameid));
 	bool wait_loop = false;
 	char wait_dir[256];
 	memset(&wait_dir, 0, sizeof(wait_dir));
@@ -63,13 +64,16 @@ int main(int argc, char **argv)
 			wait_loop = true;
 		else if(strlen(argv[i]) == 6 || strlen(argv[i]) == 4)
 		{
-			gameid = argv[i];
-			for(u8 i = 0; i < strlen(argv[i]) - 1; i++)
+			strcpy(gameid, argv[i]);
+			for(u8 i = 0; i < strlen(gameid) - 1; i++)
 			{
 				if(!isalnum(gameid[i]))
-					gameid = NULL;
+				{
+					gameid[0] = 0;
+					break;
+				}
 			}
-		}	
+		}
 			
 	}
 	/* Init video */
@@ -142,7 +146,7 @@ int main(int argc, char **argv)
 	bool usb_mounted = DeviceHandle.MountAllUSB();// only mounts any USB if !sdOnly
 	
 	/* init wait images and show wait animation */
-	if(gameid == NULL)// dont show if autobooting a wii game.
+	if(strlen(gameid) == 0)// dont show if autobooting a wii game.
 	{
 		m_vid.setCustomWaitImgs(wait_dir, wait_loop);
 		m_vid.waitMessage(0.15f);
@@ -161,7 +165,7 @@ int main(int argc, char **argv)
 		startup_successful = true;
 		if(!isWiiVC)
 			writeStub();// copy return stub to memory
-		if(!isWiiVC && gameid != NULL)// if argv game ID then launch it
+		if(!isWiiVC && strlen(gameid) != 0)// if argv game ID then launch it
 			mainMenu.directlaunch(gameid);
 		else
 			mainMenu.main();// start wiiflow with main menu displayed
