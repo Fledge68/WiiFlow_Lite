@@ -775,7 +775,7 @@ int CMenu::_loadGameIOS(u8 gameIOS, int userIOS, const char *id, bool RealNAND_C
 		{
 			for(CIOSItr itr = _cios_base.begin(); itr != _cios_base.end(); itr++)
 			{
-				if(itr->first > gameIOS && itr->first != 38)//compare bases
+				if(itr->first > gameIOS && itr->first >= 56)//compare bases
 				{
 					slot = itr->second;// set to cios slot
 					break;

@@ -65,9 +65,9 @@ int main(int argc, char **argv)
 		else if(strlen(argv[i]) == 6 || strlen(argv[i]) == 4)
 		{
 			strcpy(gameid, argv[i]);
-			for(u8 i = 0; i < strlen(gameid) - 1; i++)
+			for(u8 j = 0; j < strlen(gameid) - 1; j++)
 			{
-				if(!isalnum(gameid[i]))
+				if(!isalnum(gameid[j]))
 				{
 					gameid[0] = 0;
 					break;
