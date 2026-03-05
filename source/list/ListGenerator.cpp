@@ -275,7 +275,7 @@ static void Add_Plugin_Game(char *FullPath)
 	/* only add disc 1 of multi disc games */
 	const char *RomFilename = strrchr(FullPath, '/') + 1;
 
-	if (std::regex_search(std::string(FullPath), fileNameSkipRegex)) 
+	if (std::regex_search(std::string(RomFilename), fileNameSkipRegex))
 	{
 		gprintf("Add_Plugin_Game: skipping '%s'\n", FullPath);
 		return;
