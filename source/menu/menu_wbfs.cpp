@@ -8,6 +8,7 @@
 #include "loader/wdvd.h"
 #include "loader/gc_disc_dump.hpp"
 #include "music/SoundHandler.hpp"
+#include "extrainput_compat.h"
 
 void CMenu::_hideWBFS(bool instant)
 {

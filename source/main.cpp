@@ -21,6 +21,7 @@
 #include "loader/nk.h"
 #include "menu/menu.hpp"
 #include "memory/memory.h"
+#include "extrainput_compat.h"
 
 bool isWiiVC = false;
 bool useMainIOS = true;

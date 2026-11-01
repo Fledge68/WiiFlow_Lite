@@ -26,6 +26,7 @@
 #include "network/gcard.h"
 #include "unzip/U8Archive.h"
 #include "network/proxysettings.h"
+#include "extrainput_compat.h"
 
 // Sounds
 extern const u8 click_wav[];
