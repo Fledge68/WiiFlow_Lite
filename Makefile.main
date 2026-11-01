@@ -39,7 +39,7 @@ SOURCES		:=	source \
 				source/plugin \
 				source/sicksaxis-wrapper \
 				source/unzip \
-				source/wstringEx
+				source/wstringEx source/libwiiinput
 DATA		:=	data \
 				data/images \
 				data/help \
@@ -84,6 +84,11 @@ LIBDIRS	:=	$(CURDIR)/portlibs
 # no real need to edit anything past this point unless you need to add additional
 # rules for different file extensions
 #---------------------------------------------------------------------------------
+# Extra controllers, folded onto the Wii Remote / GameCube pad calls this program already makes (see source/libwiiinput/extrainput.h)
+export TOPDIR ?= $(CURDIR)
+CFLAGS		+=	-DHAVE_TABLET -DHAVE_GCADAPTER -I$(TOPDIR)/source/libwiiinput
+LDFLAGS		+=	-Wl,--wrap=classic_ctrl_handshake,--wrap=parse_event,--wrap=USB_GetDeviceList
+
 ifneq ($(BUILD),$(notdir $(CURDIR)))
 #---------------------------------------------------------------------------------
 export PROJECTDIR := $(CURDIR)

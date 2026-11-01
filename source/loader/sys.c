@@ -16,6 +16,7 @@
 #include "sicksaxis-wrapper/sicksaxis-wrapper.h"
 #include "wiiuse/wpad.h"
 #include "wupc/wupc.h"
+#include "extrainput_compat.h"
 
 /* Variables */
 bool reset = false;

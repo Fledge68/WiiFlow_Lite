@@ -2,6 +2,7 @@
 #include <ogc/lwp_watchdog.h>
 
 #include "menu.hpp"
+#include "extrainput_compat.h"
 
 static const u32 g_repeatDelay = 25;
 

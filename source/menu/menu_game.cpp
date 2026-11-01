@@ -3,6 +3,7 @@
 #include "banner/BannerWindow.hpp"
 #include "gc/gcdisc.hpp"
 #include "gui/WiiMovie.hpp"
+#include "extrainput_compat.h"
 
 //sounds
 extern const u8 gc_ogg[];
